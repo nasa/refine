@@ -173,6 +173,12 @@ VALUE grid_faceAR( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
   return rb_float_new( gridFaceAR(grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) ) );
 }
 
+VALUE grid_minFaceMR( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new( gridMinFaceMR(grid) );
+}
+
 VALUE grid_faceMR( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
 {
   GET_GRID_FROM_SELF;
@@ -274,6 +280,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "faceArea", grid_faceArea, 3);
   rb_define_method( cGridMetric, "faceAR", grid_faceAR, 3);
   rb_define_method( cGridMetric, "faceMR", grid_faceMR, 3);
+  rb_define_method( cGridMetric, "minFaceMR", grid_minFaceMR, 0);
   rb_define_method( cGridMetric, "faceMRDerivative", grid_faceMRDerivative, 1);
   rb_define_method( cGridMetric, "FaceMRDerivative", grid_FaceMRDerivative, 9);
   rb_define_method( cGridMetric, "nodeFaceMR", grid_nodeFaceMR, 1 );

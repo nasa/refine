@@ -46,6 +46,7 @@ bool gridRightHandedBoundary(Grid *g );
 double gridFaceArea(Grid *g, int n0, int n1, int n2);
 double gridFaceAR(Grid *g, int n0, int n1, int n2);
 double gridFaceMR(Grid *g, int n0, int n1, int n2);
+double gridMinFaceMR(Grid *g);
 Grid *gridFaceMRDerivative(Grid *g, int* nodes, double *mr, double *dMRdx );
 
 void FaceMRDerivative(double x1, double y1, double z1,

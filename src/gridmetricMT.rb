@@ -208,6 +208,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta mr,  grid.nodeFaceMR(0), 1.0e-8
   assert_in_delta mr,  grid.nodeFaceMR(1), 1.0e-8
   assert_in_delta 1.0, grid.nodeFaceMR(3), 1.0e-8
+  assert_in_delta mr,  grid.minFaceMR, 1.0e-8
 
   ans = grid.nodeFaceMRDerivative(0)
   assert_in_delta mr,    ans[0], 1.0e-8

@@ -1172,6 +1172,22 @@ double gridFaceAR(Grid *grid, int n0, int n1, int n2 )
 
 }
 
+double gridMinFaceMR( Grid *grid )
+{
+  int face;
+  double minMR;
+  minMR = 999.0;
+  for (face=0;face<grid->maxface;face++) {
+    if ( EMPTY != grid->f2n[3*face]) {
+      minMR = MIN(minMR, gridFaceMR(grid, 
+				    grid->f2n[0+3*face],
+				    grid->f2n[1+3*face],
+				    grid->f2n[2+3*face] ) );
+    }
+  }
+  return minMR;
+}
+
 #define SQRT3 (1.73205080756888)
 
 double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
