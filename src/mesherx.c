@@ -82,76 +82,38 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
 				      origin, direction );
   }else{
-    if (!blendElement) {
-      origin[0] = 0.0;
-      origin[1] = 0.0;
-      origin[2] = 0.0;
-      direction[0] = 1.0;
-      direction[1] = 0.0;
-      direction[2] = 0.0;
-      layerAssignPolynomialNormalHeight(layer, 0.01, 0.01, 2.0, 
-					origin, direction );
-      layerSetPolynomialMaxHeight(layer, 0.75, 0.0, 1.0, 
-				  origin, direction );
-      layerSaveInitialNormalHeight(layer);
-      layerComputeNormalRateWithBGSpacing(layer,0.7);
-    }
   }
 
-  if (blendElement) {
-    printf("inserting blends...\n");
-    layerBlend(layer); 
 
-    printf("extrude blends...\n");
-    origin[0] = 1.0;
-    origin[1] = 0.0;
-    origin[2] = 0.0;
-    direction[0] = 1.0;
-    direction[1] = 0.0164;
-    direction[2] = 0.0;
-    layerCreateWakeWithBGSpacing(layer, origin, direction, 13.0 );
-
-    printf("split blends...\n");
-    layerSplitBlend(layer); 
-    printf("split blends...\n");
-    layerSplitBlend(layer); 
-    printf("split blends...\n");
-    layerSplitBlend(layer); 
-    if (scale < 0.70) layerSplitBlend(layer);
-
-    origin[0] = -0.0001;
-    origin[1] = 0.0;
-    origin[2] = 0.0;
-    direction[0] = 1.0;
-    direction[1] = 0.0;
-    direction[2] = 0.0;
-    layerSetPolynomialMaxHeight(layer, 0.005, 0.095, 0.5, 
-				origin, direction );
-    origin[0] = 1;
-    layerSetPolynomialMaxHeight(layer, 0.10, 0.15, 1.0, 
-				origin, direction );
-    origin[0] = 12.5;
-    layerSetPolynomialMaxHeight(layer, 1.825, -1.0, 1.0, 
-				origin, direction );
-    origin[0] = -0.0001;
-    layerAssignPolynomialNormalHeight(layer, 1.0e-5, 4.0e-5, 1.0,
+  origin[0] = -0.0001;
+  origin[1] = 0.0;
+  origin[2] = 0.0;
+  direction[0] = 1.0;
+  direction[1] = 0.0;
+  direction[2] = 0.0;
+  layerSetPolynomialMaxHeight(layer, 0.005, 0.095, 0.5, 
+			      origin, direction );
+  origin[0] = 1;
+  layerSetPolynomialMaxHeight(layer, 0.10, 0.15, 1.0, 
+			      origin, direction );
+  origin[0] = -0.0001;
+  layerAssignPolynomialNormalHeight(layer, 1.0e-5, 4.0e-5, 1.0,
                                     origin, direction );
-    origin[0] = 1.0;
-    layerAssignPolynomialNormalHeight(layer, 5.0e-5, 1.5e-3, 2.0,
+  origin[0] = 1.0;
+  layerAssignPolynomialNormalHeight(layer, 5.0e-5, 1.5e-3, 2.0,
                                     origin, direction );
-    origin[0] = 3.0;
-    layerAssignPolynomialNormalHeight(layer, 0.00605, 1.5e-4, 2.0,
+  origin[0] = 3.0;
+  layerAssignPolynomialNormalHeight(layer, 0.00605, 1.5e-4, 2.0,
                                     origin, direction );
-    layerScaleNormalHeight(layer,scale);
-    layerSaveInitialNormalHeight(layer);
-    layerComputeNormalRateWithBGSpacing(layer,1.0);
-  }
+  layerScaleNormalHeight(layer,scale);
+  layerSaveInitialNormalHeight(layer);
+  layerComputeNormalRateWithBGSpacing(layer,1.0);
 
   i=0;
   while (i<nLayer &&
 	 layerNNormal(layer)>layerTerminateNormalWithLength(layer,1.0)){
 
-    if (i < (int)(5.0/scale) ) layerSmoothNormalDirection(layer);
+    layerSmoothNormalDirection(layer);
     layerSetNormalHeightWithRate(layer);
     layerAdvance(layer);
     layerWriteTecplotFront(layer);
