@@ -1,4 +1,10 @@
-2004-08-03 14:20 Mike Park  <mike.park@nasa.gov>
+2004-08-29 12:20 Mike Park  <mike.park@nasa.gov>
+
+	* doc/anisotropicMetric.tex renamed from doc/anIsoMesh.tex.
+	* configure.ac added doc/Makefile to build.
+	* Makefile.am add doc and doc/anisotropicMetric.tex to build.
+
+2004-08-27 17:00 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridwritetecplotsurfacezone_) now only dumps
 	out negative cells (cells with four nodes on boundary are not

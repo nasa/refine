@@ -207,6 +207,7 @@ AC_SUBST([CAPRIProElibrary])
 AC_OUTPUT( \
 	   Makefile \
 	   src/Makefile \
+	   doc/Makefile \
 	   example/Makefile \
 	   geomSGIn32/Makefile \
 	   geomSGIn32/lib/Makefile \
