@@ -8,7 +8,7 @@
   
 /* $Id$ */
 
-#include "CADGeom/CADGeom.h"
+#include "FAKEGeom.h"
 
 bool CADGeom_NearestOnEdge(int vol, int edgeId, 
 			   double *xyz, double *t, double *xyznew)
