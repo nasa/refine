@@ -920,6 +920,40 @@ Grid *gridReconnectCell(Grid *grid, int oldNode, int newNode )
   return grid;
 }
 
+Grid *gridReconnectCellUnlessFrozen(Grid *grid, int oldNode, int newNode )
+{
+  AdjIterator it;
+  int cell, i, node;
+  bool frozen;
+
+  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
+  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+  
+  it = adjFirst(grid->cellAdj,oldNode);
+  while (adjValid(it)){
+    cell = adjItem(it);
+    frozen = ( gridNodeFrozen(grid, grid->c2n[0+4*cell]) &&
+	       gridNodeFrozen(grid, grid->c2n[1+4*cell]) &&
+	       gridNodeFrozen(grid, grid->c2n[2+4*cell]) &&
+	       gridNodeFrozen(grid, grid->c2n[3+4*cell]) );
+    if (!frozen ) {
+      for (i=0;i<4;i++){
+	node = grid->c2n[i+4*cell];
+	if (oldNode == node) {
+	  grid->c2n[i+4*cell]=newNode;
+	  adjRemove( grid->cellAdj, oldNode, cell);
+	  adjRegister( grid->cellAdj, newNode, cell);
+	}
+      }
+      it = adjFirst(grid->cellAdj,oldNode);
+    }else{
+      it = adjNext(it);
+    }      
+  }
+  
+  return grid;
+}
+
 Grid *gridCell(Grid *grid, int cellId, int *nodes )
 {
   if ( cellId >= grid->maxcell ) return NULL;
@@ -1023,6 +1057,40 @@ Grid *gridReconnectFace(Grid *grid, int faceId, int oldNode, int newNode )
   while (adjValid(it)){
     face = adjItem(it);
     if (faceId == grid->faceId[face]) {
+      for (i=0;i<3;i++){
+	node = grid->f2n[i+3*face];
+	if (oldNode == node) {
+	  grid->f2n[i+3*face]=newNode;
+	  adjRemove( grid->faceAdj, oldNode, face);
+	  adjRegister( grid->faceAdj, newNode, face);
+	}
+      }
+      it = adjFirst(grid->faceAdj,oldNode);
+    }else{
+      it = adjNext(it);
+    }
+  }
+
+  return grid;
+}
+
+Grid *gridReconnectFaceUnlessFrozen(Grid *grid, int faceId, 
+				    int oldNode, int newNode )
+{
+  AdjIterator it;
+  int face, i, node;
+  bool frozen;
+
+  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
+  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+
+  it = adjFirst(grid->faceAdj,oldNode);
+  while (adjValid(it)){
+    face = adjItem(it);
+    frozen = ( gridNodeFrozen(grid, grid->f2n[0+3*face]) &&
+	       gridNodeFrozen(grid, grid->f2n[1+3*face]) &&
+	       gridNodeFrozen(grid, grid->f2n[2+3*face]) );
+    if (faceId == grid->faceId[face] && !frozen ) {
       for (i=0;i<3;i++){
 	node = grid->f2n[i+3*face];
 	if (oldNode == node) {

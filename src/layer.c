@@ -343,15 +343,20 @@ Layer *layerAdvance(Layer *layer, double height )
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     root = layer->normal[normal].root;
+    gridFreezeNode( grid, root );
+  }
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    root = layer->normal[normal].root;
     gridNodeXYZ(grid,root,xyz);
     for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
     tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
     if ( EMPTY == tip) return NULL;
     layer->normal[normal].tip = tip;
-    gridReconnectCell(grid, root, tip);
+    gridReconnectCellUnlessFrozen(grid, root, tip);
     faceId = layerConstrained(layer,normal);
     if (0 != faceId) {
-      gridReconnectFace(grid, faceId, root, tip);
+      gridReconnectFaceUnlessFrozen(grid, faceId, root, tip);
     }
   }
 

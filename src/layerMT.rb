@@ -288,17 +288,17 @@ class TestLayer < Test::Unit::TestCase
 
   assert_equal layer,     layer.advance(0.1)
   assert_equal [7,9,2,8], grid.cell(0)
-  #assert_equal [0,5,6,4], grid.cell(1)
-  #assert_equal [0,3,6,5], grid.cell(2)
-  #assert_equal [1,0,3,6], grid.cell(3)
+  assert_equal [0,5,6,4], grid.cell(1)
+  assert_equal [0,3,6,5], grid.cell(2)
+  assert_equal [1,0,3,6], grid.cell(3)
   assert_equal [4,8,9,7], grid.cell(4)
   assert_equal [4,5,9,8], grid.cell(5)
   assert_equal [6,4,5,9], grid.cell(6)
  
   assert_equal [0,3,1,1], grid.face(0)
   assert_equal [7,9,2,2], grid.face(1)
-  #assert_equal [0,1,6,2], grid.face(2)
-  #assert_equal [0,6,4,2], grid.face(3)
+  assert_equal [0,1,6,2], grid.face(2)
+  assert_equal [0,6,4,2], grid.face(3)
   assert_equal [4,6,9,2], grid.face(4)
   assert_equal [4,9,7,2], grid.face(5)
 
