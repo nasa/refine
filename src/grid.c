@@ -580,6 +580,29 @@ double gridNodeV(Grid *grid, int node, int faceId)
   return uv[1];
 }
 
+Grid *gridNodeT(Grid *grid, int  node, int edgeId, double *t )
+{
+  AdjIterator it;
+  int edge;
+
+  for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) ){
+    edge = adjItem(it);
+    if ( grid->edgeId[edge] == edgeId ) {
+      if (grid->e2n[0+2*edge] == node){
+	*t = grid->edgeT[0+2*edge];
+	return grid;
+      }
+      if (grid->e2n[1+2*edge] == node){
+	*t = grid->edgeT[1+2*edge];
+	return grid;
+      }
+    }
+  }
+
+  *t = DBL_MAX;
+  return NULL;
+}
+
 Grid *gridAddEdge(Grid *grid, int n0, int n1, 
 		  int edgeId, double t0, double t1 )
 {
