@@ -14,4 +14,4 @@ echo "Running autoconf..."
 autoconf
 
 echo "Running ./configure..."
-./configure
+./configure --prefix=`pwd`
