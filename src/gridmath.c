@@ -282,6 +282,21 @@ void gridEigOrtho3x3( double *v0, double *v1, double *v2 )
 
 void gridLU3x3( double *a, double *lu )
 {
+  lu[0] = a[0];
+  lu[1] = a[1]/lu[0];
+  lu[2] = a[2]/lu[0];
+
+  lu[3] = a[3];
+  lu[4] = a[4] - lu[1]*lu[3];
+  lu[5] =(a[5] - lu[2]*lu[3])/lu[4];
+
+  lu[6] = a[6];
+  lu[7] = a[7] - lu[1]*lu[6];
+  lu[8] = a[8] - lu[2]*lu[6] - lu[5]*lu[7];
+}
+
+void gridBackSolve3x3( double *lu, double *b )
+{
   /* 
      0 1,1
      1 2,1
@@ -294,16 +309,12 @@ void gridLU3x3( double *a, double *lu )
      8 3,3
   */
   
-  lu[0] = a[0];
-  lu[1] = a[1]/lu[0];
-  lu[2] = a[2]/lu[0];
 
-  lu[3] = a[3];
-  lu[4] = a[4] - lu[1]*lu[3];
-  lu[5] =(a[5] - lu[2]*lu[3])/lu[4];
-
-  lu[6] = a[6];
-  lu[7] = a[7] - lu[1]*lu[6];
-  lu[8] = a[8] - lu[2]*lu[6] - lu[5]*lu[7];
+  b[1] = b[1] - lu[1]*b[0];
+  b[2] = b[2] - lu[2]*b[0] - lu[5]*b[1];
+  
+  b[2] = b[2]/lu[8];
+  b[1] = (b[1] - lu[7]*b[2])/lu[4];
+  b[0] = (b[0] - lu[3]*b[1] - lu[6]*b[2])/lu[0];
 
 }

@@ -431,4 +431,13 @@ class TestGridMath < Test::Unit::TestCase
   end
  end
 
+ def testBackSolve3x3eye
+  lu = [ 1,0,0, 0,1,0, 0,0,1 ]
+  b = [1,2,3]
+  s = @gm.backsolve3x3(lu,b)
+  3.times do |n|
+   assert_in_delta( b[n], s[n], 1.0e-15, n.to_s+" entry bad" )
+  end
+ end
+
 end

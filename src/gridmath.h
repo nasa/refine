@@ -57,6 +57,7 @@ void gridEigSort3x3( double *eigenValues, double *v0, double *v1, double *v2 );
 void gridEigOrtho3x3( double *v0, double *v1, double *v2 );
 
 void gridLU3x3( double *a, double *lu );
+void gridBackSolve3x3( double *lu, double *b );
 
 END_C_DECLORATION
 
