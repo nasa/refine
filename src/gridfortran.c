@@ -654,7 +654,15 @@ void gridmovefree_( )
 
 void gridgeomsize_( int *nGeomNode, int *nGeomEdge, int *nGeomFace )
 {
-  gridGeomSize( grid, nGeomNode, nGeomEdge, nGeomFace );
+  *nGeomNode = gridNGeomNode(grid);
+  *nGeomEdge = gridNGeomEdge(grid);
+  *nGeomFace = gridNGeomFace(grid);
+}
+
+void gridgeomedgeendpoints_( int *edgeId, int *endPoints )
+{
+  endPoints[0] = 1 + gridGeomEdgeStart(grid,*edgeId);
+  endPoints[1] = 1 + gridGeomEdgeEnd(grid,*edgeId);
 }
 
 void gridmaxedge_( int *maxedge )
