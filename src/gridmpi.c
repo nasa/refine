@@ -163,8 +163,9 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
     }
   }
   
-  printf( " %6d queue applied nnode %8d AR %15.10f\n",
+  printf( " %6d queue applied                           nnode %8d AR%14.10f\n",
 	  gridPartId(grid),gridNNode(grid),gridMinAR(grid) );
+  fflush(stdout);
 
   queueFree(lq);
   return grid;
@@ -174,7 +175,7 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
 				  double minLength, double maxLength )
 {
   int n0, n1, adaptnode, origNNode, newnode;
-  int report, nnodeAdd, nnodeRemove;
+  int nnodeAdd, nnodeRemove;
   double ratio;
 
   origNNode = gridNNode(grid);
@@ -182,14 +183,8 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
   nnodeAdd = 0;
   nnodeRemove = 0;
 
-  report = 10; if (gridNNode(grid) > 100) report = gridNNode(grid)/10;
-
   for ( n0=0; adaptnode<origNNode; n0++ ) { 
     adaptnode++;
-    if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
-      printf(" %6d adapt node %8d nnode %8d added %8d AR %15.10f\n",
-	     gridPartId(grid),
-	     adaptnode,gridNNode(grid),nnodeAdd,gridMinAR(grid));
     if ( gridValidNode( grid, n0) && 
 	 !gridNodeFrozen( grid, n0 ) && 
 	 gridNodeLocal( grid, n0 ) ) {
@@ -203,6 +198,13 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
     }else{
       adaptnode++;
     }
+  }
+  if ( NULL == queue ) {
+    printf("local added %8d nnode %8d AR%14.10f\n",
+	   nnodeAdd,gridNNode(grid),gridMinAR(grid));
+  } else {
+    printf("ghost added %8d nnode %8d AR%14.10f\n",
+	   nnodeAdd,gridNNode(grid),gridMinAR(grid));
   }
   return grid;
 }
