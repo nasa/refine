@@ -501,6 +501,8 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       shelluv  = malloc(2*nnode*sizeof(double));
       for(i=0;i<nnode;i++) gridNodeXYZ(grid,l2g[i],&shellxyz[3*i]);
       for(i=0;i<nnode;i++) {
+	shelluv[2*i]=DBL_MAX;
+	shelluv[2*i+1]=DBL_MAX;
 	gridNodeUV(grid,l2g[i],faceId, &shelluv[2*i]);
 	/* project all nodes for safety. rebuilt edge has no uv */
 	CADGeom_ResolveOnFace(vol,faceId,&shellxyz[3*i],&shelluv[2*i],resolved);
