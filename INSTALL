@@ -26,7 +26,12 @@ these two arguements
 
  --x-includes=/usr/include --x-libraries=/usr/lib32
 
-to the configure or autogen.sh script commnad line options
+to the configure or autogen.sh script command line options
+
+Snapshots of SDK and CAPRI routines are included for Native Geom,
+configure as such:
+
+./configure --with-SDK=`pwd`/geomSGIn32 --with-CAPRI=`pwd`/geomSGIn32 --x-includes=/usr/include --x-libraries=/usr/lib32
 
 Note To CVS Users ONLY!
 =======================
