@@ -797,12 +797,12 @@ Grid *gridSortNodeGridEx(Grid *grid)
   }
 
   for (prismIndex=0;prismIndex<gridNPrism(grid);prismIndex++){
-    for (i=0;i<5;i++) grid->prism[prismIndex].nodes[i] =
+    for (i=0;i<6;i++) grid->prism[prismIndex].nodes[i] =
 			o2n[grid->prism[prismIndex].nodes[i]];
   }
 
   for (pyramidIndex=0;pyramidIndex<gridNPyramid(grid);pyramidIndex++){
-    for (i=0;i<6;i++) grid->pyramid[pyramidIndex].nodes[i] =
+    for (i=0;i<5;i++) grid->pyramid[pyramidIndex].nodes[i] =
 			o2n[grid->pyramid[pyramidIndex].nodes[i]];
   }
 
