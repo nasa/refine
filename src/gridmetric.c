@@ -1528,18 +1528,15 @@ double gridMinFaceMR( Grid *grid )
 
 double gridMinThawedFaceMR( Grid *grid )
 {
-  int face;
+  int face, nodes[3], faceId;
   double minMR;
   minMR = 999.0;
   for (face=0;face<grid->maxface;face++) {
-    if ( EMPTY != grid->f2n[3*face] &&
-	 ( !gridNodeFrozen(grid,grid->f2n[0+3*face]) ||
-	   !gridNodeFrozen(grid,grid->f2n[1+3*face]) ||
-	   !gridNodeFrozen(grid,grid->f2n[2+3*face]) ) ) {
-      minMR = MIN(minMR, gridFaceMR(grid, 
-				    grid->f2n[0+3*face],
-				    grid->f2n[1+3*face],
-				    grid->f2n[2+3*face] ) );
+    if ( grid == gridFace(grid,face,nodes,&faceId) &&
+	 ( !gridNodeFrozen(grid,nodes[0]) ||
+	   !gridNodeFrozen(grid,nodes[1]) ||
+	   !gridNodeFrozen(grid,nodes[2]) ) ) {
+      minMR = MIN(minMR, gridFaceMR(grid, nodes[0], nodes[1], nodes[2]) );
     }
   }
   return minMR;
@@ -1549,6 +1546,7 @@ double gridMinThawedFaceMR( Grid *grid )
 
 double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
 {
+  double xyz1[3], xyz2[3], xyz3[3]; 
   double x1, x2, x3; 
   double y1, y2, y3; 
   double z1, z2, z3;
@@ -1563,17 +1561,21 @@ double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
   double a,d;
   double r;
 
-  x1 = grid->xyz[0+3*n0];
-  y1 = grid->xyz[1+3*n0];
-  z1 = grid->xyz[2+3*n0];
+  if (grid != gridNodeXYZ(grid,n0,xyz1) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,n1,xyz2) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,n2,xyz3) ) return -1.0;
 
-  x2 = grid->xyz[0+3*n1];
-  y2 = grid->xyz[1+3*n1];
-  z2 = grid->xyz[2+3*n1];
+  x1 = xyz1[0];
+  y1 = xyz1[1];
+  z1 = xyz1[2];
 
-  x3 = grid->xyz[0+3*n2];
-  y3 = grid->xyz[1+3*n2];
-  z3 = grid->xyz[2+3*n2];
+  x2 = xyz2[0];
+  y2 = xyz2[1];
+  z2 = xyz2[2];
+
+  x3 = xyz3[0];
+  y3 = xyz3[1];
+  z3 = xyz3[2];
  
   gridMap(grid,n0,m0);
   gridMap(grid,n1,m1);
@@ -1626,25 +1628,30 @@ double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
 
 }
 
-Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
+Grid *gridFaceMRDerivative(Grid *grid, int *nodes, double *mr, double *dMRdx )
 {
+  double xyz1[3], xyz2[3], xyz3[3]; 
   double x1, x2, x3; 
   double y1, y2, y3; 
   double z1, z2, z3;
   int i;
   double m[6], m0[6], m1[6], m2[6], j[9];
   
-  x1 = grid->xyz[0+3*nodes[0]];
-  y1 = grid->xyz[1+3*nodes[0]];
-  z1 = grid->xyz[2+3*nodes[0]];
+  if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return NULL;
+  if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return NULL;
+  if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return NULL;
 
-  x2 = grid->xyz[0+3*nodes[1]];
-  y2 = grid->xyz[1+3*nodes[1]];
-  z2 = grid->xyz[2+3*nodes[1]];
+  x1 = xyz1[0];
+  y1 = xyz1[1];
+  z1 = xyz1[2];
 
-  x3 = grid->xyz[0+3*nodes[2]];
-  y3 = grid->xyz[1+3*nodes[2]];
-  z3 = grid->xyz[2+3*nodes[2]];
+  x2 = xyz2[0];
+  y2 = xyz2[1];
+  z2 = xyz2[2];
+
+  x3 = xyz3[0];
+  y3 = xyz3[1];
+  z3 = xyz3[2];
  
   gridMap(grid,nodes[0],m0);
   gridMap(grid,nodes[1],m1);
@@ -1766,7 +1773,7 @@ void FaceMRDerivative(double x1, double y1, double z1,
 Grid *gridNodeFaceMR(Grid *grid, int node, double *mr )
 {
   AdjIterator it;
-  int face;
+  int nodes[3], faceId;
   double local_mr;
 
   *mr = 1.0;
@@ -1776,12 +1783,11 @@ Grid *gridNodeFaceMR(Grid *grid, int node, double *mr )
     return grid;
   }
 
-  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
-    face = adjItem(it);
-    local_mr = gridFaceMR(grid, 
-			  grid->f2n[0+3*face],
-			  grid->f2n[1+3*face],
-			  grid->f2n[2+3*face]);
+  for ( it = adjFirst(gridFaceAdj(grid),node);
+	adjValid(it); 
+	it = adjNext(it) ){
+    gridFace(grid,adjItem(it),nodes,&faceId);
+    local_mr = gridFaceMR(grid, nodes[0], nodes[1], nodes[2]);
     if ( local_mr < *mr ) *mr = local_mr;
   }
 
