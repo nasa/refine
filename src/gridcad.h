@@ -30,6 +30,7 @@ Grid *gridRobustProject(Grid *g);
 Grid *gridSmooth(Grid *g );
 Grid *gridSmoothFaceMR(Grid *g, double optimizationLimit );
 Grid *gridSmoothVolume(Grid *g );
+Grid *gridSmoothNearNode(Grid *g, int node );
 Grid *gridSmoothNode(Grid *g, int node );
 Grid *gridSmoothNodeFaceMR(Grid *g, int node );
 Grid *gridOptimizeT(Grid *g, int node, double dt );

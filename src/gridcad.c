@@ -299,6 +299,23 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
   return grid;
 }
 
+Grid *gridSmoothNearNode(Grid *grid, int node )
+{
+  int i, nodes[4];
+  AdjIterator it;
+
+  for ( it = adjFirst(grid->cellAdj,node); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    gridCell(grid, adjItem(it), nodes);
+    for (i=0;i<4;i++)
+	if (!gridNodeFrozen( grid, nodes[i])) 
+	  gridSmoothNode( grid, nodes[i]);
+  }      
+
+  return grid;
+}
+
 Grid *gridSmoothNode(Grid *grid, int node )
 {
   double xyzProj[3], uv[2], t;
