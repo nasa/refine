@@ -5,7 +5,6 @@
 #include "adj.h"
 #include "gridmetric.h"
 #include "gridStruct.h"
-#include "Goolache/FELISASrc.h"
 
 Grid *gridMapMatrix(Grid *grid, int node, double *m)
 {
@@ -64,28 +63,17 @@ double gridMappedEdgeLength(Grid *grid, int n0, int n1 )
   double dx, dy, dz;
   double m[9], m0[9], m1[9], lengthSquared;
 
-  double sp0, sp1;
+  dx = grid->xyz[0+3*n1] - grid->xyz[0+3*n0];
+  dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
+  dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
 
-  dx = grid->xyz[0+3*n0];
-  dy = grid->xyz[1+3*n0];
-  dz = grid->xyz[2+3*n0];
+  gridMapMatrix(grid,n0,m0);
+  gridMapMatrix(grid,n1,m1);
+  for (i=0;i<9;i++) m[i]=0.5*(m0[i]+m1[i]);
 
-  dy = MIN(1.0e-15,dy);  
-  FELISASrc_GetSpacing( &dx, &dy, &dz, &sp0 );
-
-  dx = grid->xyz[0+3*n1];
-  dy = grid->xyz[1+3*n1];
-  dz = grid->xyz[2+3*n1];
-
-  dy = MIN(1.0e-15,dy);  
-  FELISASrc_GetSpacing( &dx, &dy, &dz, &sp1 );
-
-   dx = grid->xyz[0+3*n1] - grid->xyz[0+3*n0];
-   dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
-   dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
+  gridMapXYZWithM(m,&dx,&dy,&dz);
   
-
-  return sqrt(dx*dx+dy*dy+dz*dz)/(0.5*(sp1+sp0));
+  return sqrt(dx*dx+dy*dy+dz*dz);
 }
 
 double gridAverageEdgeLength(Grid *grid, int node )
@@ -150,7 +138,7 @@ Grid *gridLargestRatioEdge(Grid *grid, int node,
     gridCell( grid, cell, nodes);
     for (i=0;i<4;i++){
       if (node != nodes[i]) {
-	currentRatio = gridMappedEdgeLength( grid, node, nodes[i] );
+	currentRatio = gridMappedEdgeLength( grid, node, nodes[i] );;
 	if ( currentRatio > *ratio ){
 	  *ratio = currentRatio;
 	  *edgeNode = nodes[i];
