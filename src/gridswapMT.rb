@@ -91,8 +91,12 @@ class TestSampleUnit < Test::Unit::TestCase
  def testSwapEdge4_gapWithSameFaces
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
-  assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(1,0,5,11)
+  assert_equal grid, grid.addFaceUV(0,0.0,10.0,
+				    1,1.0,11.0,
+				    2,2.0,12.0,11)
+  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+				    0,0.0,10.0,
+				    5,5.0,15.0,11)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.swapEdge(0,1)
   assert_equal 4,    grid.ncell
@@ -104,6 +108,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_nil         grid.faceId(0,1,2)
   assert_nil         grid.faceId(0,1,5) 
   assert grid.rightHandedBoundary, "swapped boundary is not right handed"
+  assert_equal [0.0,10.0], grid.nodeUV(0,11)
+  assert_equal [1.0,11.0], grid.nodeUV(1,11)
+  assert_equal [2.0,12.0], grid.nodeUV(2,11)
+  assert_equal [5.0,15.0], grid.nodeUV(5,11)
  end
 
  def testSwapEdge4_gapWithSameFaceNotBeter
