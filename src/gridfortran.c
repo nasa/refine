@@ -15,12 +15,22 @@
 
 static Grid *grid;
 
-int gridcreate_( int *nnode, double *x, double *y, double *z )
+int gridcreate_( int *nnode, double *x, double *y, double *z ,
+		 int *ncell, int *maxcell, int *c2n )
 {
-  int node;
-  grid = gridCreate( *nnode, 5000, 5000, 0);
+  int node, cell;
+  grid = gridCreate( *nnode, *ncell, 5000, 0);
   for ( node=0; node<*nnode; node++) gridAddNode(grid,x[node],y[node],z[node]);
   printf("populated grid object with %d nodes\n",gridNNode(grid));
+  for ( cell=0; cell<*ncell; cell++) {
+    gridAddCell( grid,
+		 c2n[cell+0*(*maxcell)] - 1,
+		 c2n[cell+1*(*maxcell)] - 1,
+		 c2n[cell+2*(*maxcell)] - 1,
+		 c2n[cell+3*(*maxcell)] - 1 );
+  }
+  printf("populated grid object with %d cells\n",gridNCell(grid));
+  printf(" min AR %25.15e\n",gridMinAR(grid));
 }
 
 
