@@ -12,6 +12,11 @@ AC_ARG_WITH(CAPRI,
 	[with_CAPRI=$withval],
 	[with_CAPRI=$CAPRI_ROOT])
 
+AC_ARG_WITH(FELISA,
+	[  --with-FELISA[=ARG]      use FELISA lib [ARG=\$FELISA_LIB]],
+	[with_FELISA=$withval],
+	[with_FELISA=$FELISA_LIB])
+
 dnl Define RanLib
 
 AC_PROG_RANLIB
@@ -20,28 +25,6 @@ dnl Checks for std C stuff
 AC_PROG_CC
 AC_HEADER_STDC
 
-
-dnl Check for CAPRI header
-
-have_CAPRI='no'
-if test "$with_CAPRI" != 'no' 
-then
-    AC_CHECK_FILE([$with_CAPRI/include/capri.h],
-                  [have_CAPRI='yes'],[have_CAPRI='no'])
-fi
-
-if test "$have_CAPRI" != 'no'
-then
-   AC_PATH_X
-   CAPRI=$with_CAPRI
-   AC_DEFINE([HAVE_CAPRI])
-   CAPRILib="-L$CAPRI/Native/LINUX -lcapri"
-   if test "$x_libraries" != "" ; then
-       CAPRILib="$CAPRILib -L$x_libraries -lX11"
-   fi
-   CAPRILib="$CAPRILib -lm"
-   AC_SUBST([CAPRILib])
-fi 
 
 dnl Check for SDK
 
@@ -66,9 +49,46 @@ then
    AC_SUBST([MeatLib])
 fi 
 
-
-
 AC_SUBST(with_SDK)
+
+dnl Check for CAPRI header
+
+have_CAPRI='no'
+if test "$with_CAPRI" != 'no' 
+then
+    AC_CHECK_FILE([$with_CAPRI/include/capri.h],
+                  [have_CAPRI='yes'],[have_CAPRI='no'])
+fi
+
+if test "$have_CAPRI" != 'no'
+then
+   AC_PATH_X
+   CAPRI=$with_CAPRI
+   AC_DEFINE([HAVE_CAPRI])
+   CAPRILib="-L$CAPRI/Native/LINUX -lcapri"
+   if test "$x_libraries" != "" ; then
+       CAPRILib="$CAPRILib -L$x_libraries -lX11"
+   fi
+   AC_SUBST([CAPRILib])
+fi 
+
+
+dnl Check for FELISA Lib
+
+have_FELISA='no'
+if test "$with_FELISA" != 'no' 
+then
+    AC_CHECK_FILE([$with_FELISA/MG_util.h],
+                  [have_FELISA='yes'],[have_FELISA='no'])
+fi
+
+if test "$have_FELISA" != 'no'
+then
+   FELISA=$with_FELISA
+   AC_DEFINE([HAVE_FELISA])
+   FELISALib="-L$FELISA -lFELISA-Linux"
+   AC_SUBST([FELISALib])
+fi 
 
 dnl output
 AC_OUTPUT(Makefile

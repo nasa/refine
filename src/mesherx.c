@@ -97,7 +97,7 @@ static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Layer *layer)
       tRange[0]  = CADCurve_Param(phantomEdge[edgeId-1],0);
       tRange[1]  = CADCurve_Param(phantomEdge[edgeId-1],1);
       /* WTJ will change this to generic with DSO */
-      if( MG_DiscretizeEdge(vol, edgeId, edgexyz, tRange, &npts, &newxyz, &newt) != 0 ) {
+      if( !MeshMgr_MeshEdge(vol, edgeId, edgexyz, tRange, &npts, &newxyz, &newt) ) {
 	printf("Could NOT mesh Edge %d\n",edgeId);
 	return NULL;
       }

@@ -20,10 +20,10 @@ include_HEADERS = \
 
 bin_PROGRAMS = refine MesherX
 refine_SOURCES = main.c
-refine_LDADD = libMesherX.a @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@
+refine_LDADD = libMesherX.a @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@ -lm
 
 MesherX_SOURCES = MesherX.c
-MesherX_LDADD = libMesherX.a @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@
+MesherX_LDADD = libMesherX.a @CADGeom@ @Goolache@ @FELISALib@ @MeatLib@ @CAPRILib@ -lm
 
 EXTRA_DIST = makeRubyExtension.rb \
 	adjMT.rb adj_ruby.c \
