@@ -1359,20 +1359,24 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
   return layer;
 }
 
-Layer *layerSmoothInteriorNormalDirection(Layer *layer )
+Layer *layerSmoothInteriorNormalDirection(Layer *layer, 
+					  double relax, int iterations,
+					  double visibility)
 {
   int normal, iter, triangle, normals[3], total, i;
   double norm[3], avgdir[3], denom;
-  double relax, relaxm1; 
+  double relaxm1; 
   double mindir[3], mindot;
-  double visibility = 0.1;
-  double visTol = 1.0e-10;
+  double visTol = 1.0e-5;
   AdjIterator it;
 
   if (layerNNormal(layer) == 0 ) return NULL;
   if (layerNBlend(layer) != 0 ) return NULL;
 
-  relax = 0.2;
+  if (relax < 0.0) relax = 0.5;
+  if (iterations<0) iterations = 20;
+  if (visibility<0.0) visibility = 0.1;
+
   relaxm1 = 1.0-relax;
 
   layerProjectNormalsToConstraints(layer);
@@ -1382,7 +1386,7 @@ Layer *layerSmoothInteriorNormalDirection(Layer *layer )
     if (mindot < 0.5) layerNormalDirectionFreeze(layer,normal);
   }
 
-  for (iter=0;iter<50;iter++){
+  for (iter=0;iter<iterations;iter++){
     for (normal=0;normal<layerNNormal(layer);normal++){
       if (layerNormalDirectionFrozen(layer,normal)) continue;
       if ( 0 < layerConstrained(layer,normal) ){
@@ -1454,9 +1458,9 @@ Layer *layerSmoothInteriorNormalDirection(Layer *layer )
 	  relaxm1*layer->normal[normal].direction[2];
 	gridVectorNormalize(layer->normal[normal].direction);
       }
-      printf("iter %d\n",iter);
     }
     layerVisibleNormals(layer,visibility,visTol);
+    printf("iter %d\n",iter);
   }
 
   return layer;
