@@ -48,6 +48,11 @@ int main( int argc, char *argv[] )
     printf("Yo! it broke.\n");
   }  
 
+  printf("calling CADGeom_Load ... \n");
+  if ( ! CADGeom_LoadPart( "../test/om6ff25" ) ){
+    printf("Yo! it broke.\n");
+  }  
+
   printf("calling CADGeom_Stop ... \n");
   if ( ! CADGeom_Stop( ) ){
     printf("Yo! it broke.\n");
