@@ -1,5 +1,6 @@
-2005-03-13 19:35 Mike Park  <mike.park@nasa.gov>
+2005-03-13 19:40 Mike Park  <mike.park@nasa.gov>
 
+	* src/Makefile.am added plan.c to librefine.a
 	* src/plan.c (planFree) to prevent a memory leak, free non-NULL
 	array pointers.
 
