@@ -714,9 +714,10 @@ Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
     
     for ( i = 0 ; i < 4 ; i++ )
       gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+
+    return grid;
   }
-  
-  return grid;
+  return NULL;
 }
 
 Grid *gridCycleEquator( Grid *grid )
@@ -827,9 +828,9 @@ Grid *gridSwapEdge5(Grid *grid, int n0, int n1 )
     
     for ( i = 0 ; i < 6 ; i++ )
       gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
-  }
-  
-  return( grid );
+  return grid;
+  }  
+  return NULL;
 }
 
 Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20], 
@@ -872,9 +873,9 @@ Grid *gridSwapEdge6( Grid *grid, int n0, int n1 )
 		   nodes[bestcombo[i]+20][2], 
 		   nodes[bestcombo[i]+20][3] );
     }
+    return grid;
   }
-  
-  return grid;
+  return NULL;
 }
 
 Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20], 
@@ -950,8 +951,7 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
 #ifdef DEBUGSWAP
         printf("swap6 %d currentcost %f\n",i,cost);
 #endif
-  }
-  
+  }  
   return grid;
 }
 
@@ -1057,9 +1057,9 @@ Grid *gridSwapEdge7( Grid *grid, int n0, int n1 )
 		   nodes[bestcombo[i]+35][2], 
 		   nodes[bestcombo[i]+35][3] );
     }
-  }
-  
   return grid;
+  }  
+  return NULL;
 }
 
 Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35], 
