@@ -41,6 +41,7 @@ struct Layer {
   int nfront;
   Front *front;
   int nFrontParent, *frontParent;
+  int nblend;
   int nnormal;
   Normal *normal;
   int *globalNode2Normal;
@@ -58,6 +59,7 @@ Layer *layerCreate( Grid *grid )
   layer->front=NULL;
   layer->nFrontParent=0;
   layer->frontParent=NULL;
+  layer->nblend=0;
   layer->nnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
@@ -211,6 +213,11 @@ void layerSortGlobalNodes(void *voidLayer, int *o2n)
 int layerNFront(Layer *layer)
 {
   return layer->nfront;
+}
+
+int layerNBlend(Layer *layer)
+{
+  return layer->nblend;
 }
 
 int layerNNormal(Layer *layer)
@@ -957,6 +964,22 @@ Layer *layerWiggle(Layer *layer, double height )
   return layer;
 }
 
+Layer *layerBlendGeomEdge(Layer *layer, int edgeId )
+{
+  Grid *grid;
+  int ncurvepts, curve;
+
+  if (layerNNormal(layer) == 0 ) return NULL;
+
+  grid = layerGrid(layer);
+  ncurvepts = gridGeomEdgeSize(grid,edgeId);
+  if (ncurvepts<2) return NULL;
+
+  layer->nblend = ncurvepts-1;
+
+  return layer;
+}
+
 Layer *layerSmoothLayerNeighbors(Layer *layer )
 {
   int normal;
@@ -966,7 +989,6 @@ Layer *layerSmoothLayerNeighbors(Layer *layer )
 
   return layer;
 }
-
 
 Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
 {

@@ -27,6 +27,12 @@ VALUE layer_nfront( VALUE self )
   return INT2NUM( layerNFront(layer) );
 }
 
+VALUE layer_nblend( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerNBlend(layer) );
+}
+
 VALUE layer_nnormal( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -266,6 +272,12 @@ VALUE layer_wiggle( VALUE self, VALUE height )
   return ( layer == layerWiggle(layer,NUM2DBL(height))?self:Qnil );
 }
 
+VALUE layer_blendGeomEdge( VALUE self, VALUE edgeId )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerBlendGeomEdge(layer,NUM2INT(edgeId))?self:Qnil );
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -273,6 +285,7 @@ void Init_Layer()
   cLayer = rb_define_class( "Layer", rb_cObject );
   rb_define_singleton_method( cLayer, "new", layer_new, 1 );
   rb_define_method( cLayer, "nfront", layer_nfront, 0 );
+  rb_define_method( cLayer, "nblend", layer_nblend, 0 );
   rb_define_method( cLayer, "nnormal", layer_nnormal, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
   rb_define_method( cLayer, "makeFront", layer_makeFront, 1 );
@@ -304,4 +317,7 @@ void Init_Layer()
 		    layer_advanceConstantHeight, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 0 );
   rb_define_method( cLayer, "wiggle", layer_wiggle, 1 );
+
+   rb_define_method( cLayer, "blendGeomEdge", layer_blendGeomEdge, 1 );
+ 
 }

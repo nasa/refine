@@ -24,6 +24,7 @@ Grid *layerGrid(Layer *);
 void layerFree(Layer *);
 void layerSortGlobalNodes(void *layer, int *o2n);
 int layerNFront(Layer *);
+int layerNBlend(Layer *);
 int layerNNormal(Layer *);
 int layerMaxNode(Layer *);
 Layer *layerMakeFront(Layer *, int nbc, int *bc);
@@ -58,6 +59,9 @@ int layerNActiveNormal(Layer *);
 Layer *layerAdvance(Layer * );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
+Layer *layerBlendGeomEdge(Layer *, int edgeId );
+
+
 Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
 Layer *layerTerminateNormalWithX(Layer *, int direction, double x);
