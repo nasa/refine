@@ -139,8 +139,6 @@ Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
 
   grid->ngem = 0;
 
-  printf("gridImport: minimum Volume %12.8e\n",gridMinVolume(grid));
-
   return  grid;
 }
 
