@@ -14,7 +14,7 @@
 #include "near.h"
 #include "geometricStretch.h"
 #include "layerNormalExtra.h"
-
+#include "UG_API/UG_API.h"
 //
 // Functions:
 //        layerAssignPolarGrowthHeight		cut from mesherx_SyJet.c
@@ -46,7 +46,7 @@ Layer *layerAssignPolarGrowthHeight(Layer *layer,
 {
 
   int normal;
-  double cosAngle, arcAngle, distance, height, layerThickness;
+  double distance, height, layerThickness;
   double normalDirection[3], xyzRoot[3];
 
 // "r" dimensions of jet
@@ -89,7 +89,7 @@ Layer *layerAssignPolarGrowthHeight(Layer *layer,
     r = sqrt( xyzRoot[0]*xyzRoot[0] + xyzRoot[1]*xyzRoot[1] );
 
     if( xyzRoot[2] < -1.0e-5 || r < 3.175 + 1.0e-5) { // lip is treated as inside cavity
-      double h1, xx;
+      double xx;
           distance = sqrt( xyzRoot[0]*xyzRoot[0] +
 		        xyzRoot[1]*xyzRoot[1] +
 		        xyzRoot[2]*xyzRoot[2] )/rMin;
