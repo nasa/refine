@@ -1,3 +1,10 @@
+2004-09-16 08:50 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) A check of
+	AR was added to prevent the generation of NaN from negative sqrt()
+	in the event that the mesh has negative volumes.  Note, this
+	should "never" happen as we don't move bad meshes...right...
+
 2004-09-16 08:26 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* Function signature to gridSmoothNode() changed to add GridBool

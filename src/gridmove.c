@@ -932,7 +932,10 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
       xyz4[2] = z4;
    
       AR = 1.0 / gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 );
-      R = MIN(sqrt(AR),2.5);
+      if( AR < 0.0 )
+        R = 2.5;
+      else
+        R = MIN(sqrt(AR),2.5);
       onePlusR = 1.0 + R;
 
       /* node1 */
@@ -1173,7 +1176,7 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
   double b[3];
   double residual;
 
-  residual = 0;
+  residual = 0.0;
   
   for(row=0;row<gridMaxNode(grid);row++) {
     if ( gridValidNode(grid,row) &&
