@@ -688,6 +688,14 @@ Grid *gridSortNodeGridEx(Grid *grid)
       grid->xyz[ixyz+3*node] = temp_xyz[node];
     }
   }
+  for ( ixyz = 0; ixyz < 6 ; ixyz++ ){
+    for ( node = 0 ; node < grid->nnode ; node++ ){
+      temp_xyz[o2n[node]] = grid->spacing[ixyz+6*node];
+    }
+    for ( node = 0 ; node < grid->nnode ; node++ ){
+      grid->spacing[ixyz+6*node] = temp_xyz[node];
+    }
+  }
 
   free(temp_xyz);
 
