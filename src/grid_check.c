@@ -54,11 +54,11 @@ END_TEST
 START_TEST(testCellIterator)
 {
 
-  fail_unless( gridMoreNodeCell(grid), 
+  fail_unless( !gridMoreNodeCell(grid), 
 	       "expected the last node to be reaced if not init");
 
   gridFirstNodeCell(grid,0);
-  fail_unless( gridMoreNodeCell(grid), 
+  fail_unless( !gridMoreNodeCell(grid), 
 	       "expected the last node to be reaced if not registered");
  
   gridRegisterNodeCell(grid,2,299);
