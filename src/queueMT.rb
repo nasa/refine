@@ -79,6 +79,26 @@ class TestQueue < Test::Unit::TestCase
   assert_equal 0,     q.addedFaces(1)
  end
 
+ def testTransactionInitializedWithZeroRemovedEdges
+  q = Queue.new(3)
+  assert_equal EMPTY, q.removedEdges(-1)
+  assert_equal 0,     q.removedEdges(0)
+  assert_equal EMPTY, q.removedEdges(1)
+  q.newTransaction
+  assert_equal 0,     q.removedEdges(0)
+  assert_equal 0,     q.removedEdges(1)
+ end
+
+ def testTransactionInitializedWithZeroAddedEdges
+  q = Queue.new(3)
+  assert_equal EMPTY, q.addedEdges(-1)
+  assert_equal 0,     q.addedEdges(0)
+  assert_equal EMPTY, q.addedEdges(1)
+  q.newTransaction
+  assert_equal 0,     q.addedEdges(0)
+  assert_equal 0,     q.addedEdges(1)
+ end
+
  def testRemoveCellTransaction
   nodes = [0,1,2,3]
   nodeParts = [10,11,12,13]
@@ -140,6 +160,30 @@ class TestQueue < Test::Unit::TestCase
   assert_equal uvs,       q.addedFaceUVs(0)
  end
 
+ def testRemoveEdgeTransaction
+  nodes = [0,1]
+  nodeParts = [10,11]
+  q = Queue.new(3)
+  assert_equal q,         q.removeEdge(nodes,nodeParts)
+  assert_equal 1,         q.removedEdges(0)
+  assert_equal nodes,     q.removedEdgeNodes(0)
+  assert_equal nodeParts, q.removedEdgeNodeParts(0)
+ end
+
+ def testAddEdgeTransaction
+  edgeId = 9
+  nodes = [0,1]
+  nodeParts = [40,41]
+  t = [ 10,11 ]
+  q = Queue.new(3)
+  assert_equal q,         q.addEdge(nodes,edgeId,nodeParts,t)
+  assert_equal 1,         q.addedEdges(0)
+  assert_equal nodes,     q.addedEdgeNodes(0)
+  assert_equal edgeId,    q.addedEdgeId(0)
+  assert_equal nodeParts, q.addedEdgeNodeParts(0)
+  assert_equal t,         q.addedEdgeTs(0)
+ end
+
  def testResetZerosOutPreviouslyRemovedCellNodes
   nodes = [0,1,2,3]
   nodeParts = [10,11,12,13]
@@ -188,6 +232,30 @@ class TestQueue < Test::Unit::TestCase
   assert_equal uvs,       q.addedFaceUVs(0)
   end
 
+ def testResetZerosOutPreviouslyRemovedEdgeNodes
+  nodes = [0,1]
+  nodeParts = [20,21]
+  q = Queue.new(3).removeEdge([9,9],[8,8]).reset
+  assert_equal 0, q.removedEdges(0)
+  q.removeEdge(nodes,nodeParts)
+  assert_equal nodes,     q.removedEdgeNodes(0)  
+  assert_equal nodeParts, q.removedEdgeNodeParts(0)  
+ end
+
+ def testResetZerosOutPreviouslyRemovedAndAddedEdgeNodes
+  edgeId = 8
+  nodes = [0,1]
+  nodeParts = [50,51]
+  t = [ 30,31 ]
+  q = Queue.new(3).addEdge([9,9],60,[7,7],[1,2]).reset
+  assert_equal 0, q.addedEdges(0)
+  q.addEdge(nodes,edgeId,nodeParts,t)
+  assert_equal nodes,     q.addedEdgeNodes(0)
+  assert_equal edgeId,    q.addedEdgeId(0)
+  assert_equal nodeParts, q.addedEdgeNodeParts(0)
+  assert_equal t,         q.addedEdgeTs(0)
+  end
+
  def testReallocMemoryForLotsOfTransactions
   q = Queue.new(3)
   10000.times { q.newTransaction }
@@ -225,6 +293,22 @@ class TestQueue < Test::Unit::TestCase
   10000.times { q.removeFace(nodes,nodeParts) }
  end
 
+ def testReallocMemoryForLotsOfEdgeAdds
+  edgeId = 7
+  nodes = [0,1]
+  nodeParts = [51,52]
+  t = [ 20,21 ]
+  q = Queue.new(3)
+  10000.times { q.addEdge(nodes,edgeId,nodeParts,t) }
+ end
+
+ def testReallocMemoryForLotsOfEdgeRemoves
+  nodes = [0,1]
+  nodeParts = [50,51]
+  q = Queue.new(3)
+  10000.times { q.removeEdge(nodes,nodeParts) }
+ end
+
  def testReallocMemoryForLotsOfTransactionsPlus
   nodes = [0,1,2,3]
   id = 4
@@ -235,6 +319,7 @@ class TestQueue < Test::Unit::TestCase
    q.newTransaction
    q.addCell(nodes,id,nodeParts,xyzs).removeCell(nodes,nodeParts)
    q.addFace(nodes,id,nodeParts,xyzs).removeFace(nodes,nodeParts)
+   q.addEdge(nodes,id,nodeParts,xyzs).removeEdge(nodes,nodeParts)
   end
  end
 

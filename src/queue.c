@@ -19,37 +19,59 @@ Queue* queueCreate( int nodeSize )
   queue = malloc( sizeof(Queue) );
   queue->nodeSize = nodeSize;
   queue->maxTransactions = 100;
+
   queue->removedCells = malloc( queue->maxTransactions * sizeof(int) );
   queue->addedCells = malloc( queue->maxTransactions * sizeof(int) );
-  queue->removedFaces = malloc( queue->maxTransactions * sizeof(int) );
-  queue->addedFaces = malloc( queue->maxTransactions * sizeof(int) );
+
   queue->maxRemovedCells = 100;
   queue->removedCellNodes = malloc( 8 * queue->maxRemovedCells * sizeof(int) );
   queue->maxAddedCells = 100;
   queue->addedCellNodes = malloc( 9 * queue->maxAddedCells * sizeof(int) );
   queue->addedCellXYZs = malloc( 4*queue->nodeSize * queue->maxAddedCells 
 				 * sizeof(double) );
+
+  queue->removedFaces = malloc( queue->maxTransactions * sizeof(int) );
+  queue->addedFaces = malloc( queue->maxTransactions * sizeof(int) );
+
   queue->maxRemovedFaces = 100;
   queue->removedFaceNodes = malloc( 6 * queue->maxRemovedFaces * sizeof(int) );
   queue->maxAddedFaces = 100;
   queue->addedFaceNodes = malloc( 7 * queue->maxAddedFaces * sizeof(int) );
   queue->addedFaceUVs = malloc( 6 * queue->maxAddedFaces * sizeof(double) );
+
+  queue->removedEdges = malloc( queue->maxTransactions * sizeof(int) );
+  queue->addedEdges = malloc( queue->maxTransactions * sizeof(int) );
+
+  queue->maxRemovedEdges = 100;
+  queue->removedEdgeNodes = malloc( 4 * queue->maxRemovedEdges * sizeof(int) );
+  queue->maxAddedEdges = 100;
+  queue->addedEdgeNodes = malloc( 5 * queue->maxAddedEdges * sizeof(int) );
+  queue->addedEdgeTs = malloc( 2 * queue->maxAddedEdges * sizeof(double) );
+
   return queueReset(queue);
 }
 
 void queueFree( Queue *queue )
 {
   if (NULL==queue) return;
+  free( queue->addedEdgeTs );
+  free( queue->addedEdgeNodes );
+  free( queue->removedEdgeNodes );
+  free( queue->addedEdges );
+  free( queue->removedEdges );
+
   free( queue->addedFaceUVs );
   free( queue->addedFaceNodes );
   free( queue->removedFaceNodes );
   free( queue->addedFaces );
   free( queue->removedFaces );
+
   free( queue->addedCellXYZs );
   free( queue->addedCellNodes );
   free( queue->removedCellNodes );
   free( queue->addedCells );
   free( queue->removedCells );
+
   free( queue );
 }
 
@@ -57,14 +79,22 @@ Queue *queueReset( Queue *queue )
 {
   if (NULL==queue) return NULL;
   queue->transactions = 1;
+
   queue->nAddedCells = 0;
   queue->nRemovedCells = 0;
   queue->addedCells[0] = 0;
   queue->removedCells[0] = 0;
+
   queue->nAddedFaces = 0;
   queue->nRemovedFaces = 0;
   queue->addedFaces[0] = 0;
   queue->removedFaces[0] = 0;
+
+  queue->nAddedEdges = 0;
+  queue->nRemovedEdges = 0;
+  queue->addedEdges[0] = 0;
+  queue->removedEdges[0] = 0;
+
   return queue;
 }
 
@@ -93,11 +123,17 @@ Queue *queueNewTransaction( Queue *queue )
 				   queue->maxTransactions * sizeof(int) );
     queue->addedFaces   = realloc( queue->addedFaces, 
 				   queue->maxTransactions * sizeof(int) );
+    queue->removedEdges = realloc( queue->removedEdges, 
+				   queue->maxTransactions * sizeof(int) );
+    queue->addedEdges   = realloc( queue->addedEdges, 
+				   queue->maxTransactions * sizeof(int) );
   }
   queue->removedCells[queue->transactions] = 0;
   queue->addedCells[queue->transactions] = 0;
   queue->removedFaces[queue->transactions] = 0;
   queue->addedFaces[queue->transactions] = 0;
+  queue->removedEdges[queue->transactions] = 0;
+  queue->addedEdges[queue->transactions] = 0;
   queue->transactions++;
   return queue;
 }
@@ -346,6 +382,114 @@ Queue *queueAddedFaceUVs( Queue *queue, int index, double *xyzs )
   if (NULL==queue) return NULL;
   if ( index<0 || index>queue->nAddedFaces ) return NULL;
   for (i=0;i<6;i++) xyzs[i] = queue->addedFaceUVs[i+6*index];
+  return queue;
+}
+
+Queue *queueRemoveEdge( Queue *queue, int *nodes, int *nodeParts )
+{
+  int i;
+  if (NULL==queue) return NULL;
+  queue->removedEdges[queue->transactions-1]++;
+  if (queue->nRemovedEdges>=queue->maxRemovedEdges) {
+    queue->maxRemovedEdges += 100;
+    queue->removedEdgeNodes = realloc( queue->removedEdgeNodes, 
+				       4 * queue->maxRemovedEdges* sizeof(int));
+  }
+  for (i=0;i<2;i++) {
+    queue->removedEdgeNodes[i+4*queue->nRemovedEdges]= nodes[i];
+    queue->removedEdgeNodes[2+i+4*queue->nRemovedEdges]= nodeParts[i];
+  }
+  queue->nRemovedEdges++;
+  return queue;
+}
+
+int queueRemovedEdges( Queue *queue, int transaction )
+{
+  if (NULL==queue) return EMPTY;
+  if ( transaction<0 || transaction>=queueTransactions(queue) ) return EMPTY;
+  return queue->removedEdges[transaction];
+}
+
+Queue *queueRemovedEdgeNodes( Queue *queue, int index, int *nodes )
+{
+  int i;
+  if (NULL==queue) return NULL;
+  if ( index<0 || index>queue->nRemovedEdges ) return NULL;
+  for (i=0;i<2;i++) nodes[i] = queue->removedEdgeNodes[i+4*index];
+  return queue;
+}
+
+Queue *queueRemovedEdgeNodeParts( Queue *queue, int index, int *nodes )
+{
+  int i;
+  if (NULL==queue) return NULL;
+  if ( index<0 || index>queue->nRemovedEdges ) return NULL;
+  for (i=0;i<2;i++) nodes[i] = queue->removedEdgeNodes[2+i+4*index];
+  return queue;
+}
+
+Queue *queueAddEdge( Queue *queue, int *nodes, int edgeId, int *nodeParts,
+		     double *uvs )
+{
+  int i;
+  if (NULL==queue) return NULL;
+  queue->addedEdges[queue->transactions-1]++;
+  if (queue->nAddedEdges>=queue->maxAddedEdges) {
+    queue->maxAddedEdges += 100;
+    queue->addedEdgeNodes = realloc( queue->addedEdgeNodes, 
+				     5 * queue->maxAddedEdges * sizeof(int) );
+    queue->addedEdgeTs   = realloc( queue->addedEdgeTs, 
+				     2 * queue->maxAddedEdges* sizeof(double));
+  }
+  for (i=0;i<2;i++) {
+    queue->addedEdgeNodes[i+5*queue->nAddedEdges] = nodes[i];
+    queue->addedEdgeNodes[3+i+5*queue->nAddedEdges] = nodeParts[i];
+  }
+  queue->addedEdgeNodes[2+5*queue->nAddedEdges] = edgeId;
+  for (i=0;i<2;i++) queue->addedEdgeTs[i+2*queue->nAddedEdges] = uvs[i];
+  queue->nAddedEdges++;
+  return queue;
+}
+
+int queueAddedEdges( Queue *queue, int transaction )
+{
+  if (NULL==queue) return EMPTY;
+  if ( transaction<0 || transaction>=queueTransactions(queue) ) return EMPTY;
+  return queue->addedEdges[transaction];
+}
+
+Queue *queueAddedEdgeNodes( Queue *queue, int index, int *nodes )
+{
+  int i;
+  if (NULL==queue) return NULL;
+  if ( index<0 || index>queue->nAddedEdges ) return NULL;
+  for (i=0;i<2;i++) nodes[i] = queue->addedEdgeNodes[i+5*index];
+  return queue;
+}
+
+Queue *queueAddedEdgeNodeParts( Queue *queue, int index, int *nodeParts )
+{
+  int i;
+  if (NULL==queue) return NULL;
+  if ( index<0 || index>queue->nAddedEdges ) return NULL;
+  for (i=0;i<2;i++) nodeParts[i] = queue->addedEdgeNodes[3+i+5*index];
+  return queue;
+}
+
+Queue *queueAddedEdgeId( Queue *queue, int index, int *edgeId )
+{
+  if (NULL==queue) return NULL;
+  if ( index<0 || index>queue->nAddedEdges ) return NULL;
+  *edgeId = queue->addedEdgeNodes[2+5*index];
+  return queue;
+}
+
+Queue *queueAddedEdgeTs( Queue *queue, int index, double *xyzs )
+{
+  int i;
+  if (NULL==queue) return NULL;
+  if ( index<0 || index>queue->nAddedEdges ) return NULL;
+  for (i=0;i<2;i++) xyzs[i] = queue->addedEdgeTs[i+2*index];
   return queue;
 }
 

@@ -24,6 +24,7 @@ struct Queue {
   int nodeSize;
   int transactions;
   int maxTransactions;
+
   int *removedCells;
   int maxRemovedCells;
   int nRemovedCells;
@@ -33,6 +34,7 @@ struct Queue {
   int nAddedCells;
   int *addedCellNodes;
   double *addedCellXYZs;
+
   int *removedFaces;
   int maxRemovedFaces;
   int nRemovedFaces;
@@ -42,6 +44,16 @@ struct Queue {
   int nAddedFaces;
   int *addedFaceNodes;
   double *addedFaceUVs;
+
+  int *removedEdges;
+  int maxRemovedEdges;
+  int nRemovedEdges;
+  int *removedEdgeNodes;
+  int *addedEdges;
+  int maxAddedEdges;
+  int nAddedEdges;
+  int *addedEdgeNodes;
+  double *addedEdgeTs;
 };
 
 Queue *queueCreate( int nodeSize );
@@ -79,6 +91,18 @@ Queue *queueAddedFaceNodes( Queue *, int index, int *nodes );
 Queue *queueAddedFaceId( Queue *, int index, int *faceId );
 Queue *queueAddedFaceNodeParts( Queue *, int index, int *nodes );
 Queue *queueAddedFaceUVs( Queue *, int index, double *uvs );
+
+Queue *queueRemoveEdge( Queue *, int *nodes, int *nodeParts );
+int queueRemovedEdges( Queue *, int transaction );
+Queue *queueRemovedEdgeNodes( Queue *, int index, int *nodes );
+Queue *queueRemovedEdgeNodeParts( Queue *, int index, int *nodeParts );
+Queue *queueAddEdge( Queue *, int *nodes, int edgeId, int *nodesParts, 
+		     double *ts );
+int queueAddedEdges( Queue *, int transaction );
+Queue *queueAddedEdgeNodes( Queue *, int index, int *nodes );
+Queue *queueAddedEdgeId( Queue *, int index, int *edgeId );
+Queue *queueAddedEdgeNodeParts( Queue *, int index, int *nodes );
+Queue *queueAddedEdgeTs( Queue *, int index, double *ts );
 
 Queue *queueDumpSize( Queue *, int *nInt, int *nDouble );
 Queue *queueDump( Queue *, int *ints, double *doubles );

@@ -265,6 +265,109 @@ VALUE queue_addedFaceUVs( VALUE self, VALUE index )
   return rb_uvs;
 }
 
+/* ****************************** edges ****************************** */
+
+VALUE queue_removeEdge( VALUE self, VALUE rb_nodes, VALUE rb_nodeParts )
+{
+  int i, nodes[2], nodeParts[2];
+  GET_QUEUE_FROM_SELF;
+  for (i=0;i<2;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
+  for (i=0;i<2;i++) nodeParts[i]=NUM2INT(rb_ary_entry(rb_nodeParts,i));
+  return (queue==queueRemoveEdge(queue,nodes,nodeParts)?self:Qnil);
+}
+
+VALUE queue_removedEdges( VALUE self, VALUE transaction )
+{
+  GET_QUEUE_FROM_SELF;
+  return INT2NUM(queueRemovedEdges(queue,NUM2INT(transaction)));
+}
+
+VALUE queue_removedEdgeNodes( VALUE self, VALUE index )
+{
+  int i, nodes[2];
+  VALUE rb_nodes;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueRemovedEdgeNodes(queue,NUM2INT(index),nodes)) return Qnil;
+  rb_nodes = rb_ary_new2(2);
+  for (i=0;i<2;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
+  return rb_nodes;
+}
+
+VALUE queue_removedEdgeNodeParts( VALUE self, VALUE index )
+{
+  int i, nodeParts[2];
+  VALUE rb_nodeParts;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueRemovedEdgeNodeParts(queue,NUM2INT(index),nodeParts)) 
+    return Qnil;
+  rb_nodeParts = rb_ary_new2(2);
+  for (i=0;i<2;i++) rb_ary_store(rb_nodeParts,i,INT2NUM(nodeParts[i]));
+  return rb_nodeParts;
+}
+
+VALUE queue_addEdge( VALUE self, VALUE rb_nodes, VALUE rb_edgeId, 
+		     VALUE rb_nodeParts, VALUE rb_ts )
+{
+  int i, nodes[2], edgeId, nodeParts[2];
+  double ts[2];
+  GET_QUEUE_FROM_SELF;
+  for (i=0;i< 2;i++) {
+    nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
+    nodeParts[i]=NUM2INT(rb_ary_entry(rb_nodeParts,i));
+  }
+  edgeId = NUM2INT(rb_edgeId);
+  for (i=0;i<2;i++) ts[i] = NUM2DBL(rb_ary_entry(rb_ts,i));
+  return (queue==queueAddEdge(queue,nodes,edgeId,nodeParts,ts)?self:Qnil);
+}
+
+VALUE queue_addedEdges( VALUE self, VALUE transaction )
+{
+  GET_QUEUE_FROM_SELF;
+  return INT2NUM(queueAddedEdges(queue,NUM2INT(transaction)));
+}
+
+VALUE queue_addedEdgeNodes( VALUE self, VALUE index )
+{
+  int i, nodes[2];
+  VALUE rb_nodes;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedEdgeNodes(queue,NUM2INT(index),nodes)) return Qnil;
+  rb_nodes = rb_ary_new2(2);
+  for (i=0;i<2;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
+  return rb_nodes;
+}
+
+VALUE queue_addedEdgeId( VALUE self, VALUE index )
+{
+  int edgeId;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedEdgeId(queue,NUM2INT(index),&edgeId)) return Qnil;
+  return INT2NUM(edgeId);
+}
+
+VALUE queue_addedEdgeNodeParts( VALUE self, VALUE index )
+{
+  int i, nodeParts[2];
+  VALUE rb_nodeParts;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedEdgeNodeParts(queue,NUM2INT(index),nodeParts)) return Qnil;
+  rb_nodeParts = rb_ary_new2(2);
+  for (i=0;i<2;i++) rb_ary_store(rb_nodeParts,i,INT2NUM(nodeParts[i]));
+  return rb_nodeParts;
+}
+
+VALUE queue_addedEdgeTs( VALUE self, VALUE index )
+{
+  int i;
+  double ts[2];
+  VALUE rb_ts;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedEdgeTs(queue,NUM2INT(index),ts)) return Qnil;
+  rb_ts = rb_ary_new2(2);
+  for (i=0;i<2;i++) rb_ary_store(rb_ts,i,rb_float_new(ts[i]));
+  return rb_ts;
+}
+
 VALUE queue_dump( VALUE self )
 {
   VALUE array;
@@ -396,6 +499,17 @@ void Init_Queue()
   rb_define_method( cQueue, "addedFaceId", queue_addedFaceId, 1 );
   rb_define_method( cQueue, "addedFaceNodeParts", queue_addedFaceNodeParts, 1 );
   rb_define_method( cQueue, "addedFaceUVs", queue_addedFaceUVs, 1 );
+
+  rb_define_method( cQueue, "removeEdge", queue_removeEdge, 2 );
+  rb_define_method( cQueue, "removedEdges", queue_removedEdges, 1 );
+  rb_define_method( cQueue, "removedEdgeNodes", queue_removedEdgeNodes, 1 );
+  rb_define_method( cQueue, "removedEdgeNodeParts", queue_removedEdgeNodeParts, 1 );
+  rb_define_method( cQueue, "addEdge", queue_addEdge, 4 );
+  rb_define_method( cQueue, "addedEdges", queue_addedEdges, 1 );
+  rb_define_method( cQueue, "addedEdgeNodes", queue_addedEdgeNodes, 1 );
+  rb_define_method( cQueue, "addedEdgeId", queue_addedEdgeId, 1 );
+  rb_define_method( cQueue, "addedEdgeNodeParts", queue_addedEdgeNodeParts, 1 );
+  rb_define_method( cQueue, "addedEdgeTs", queue_addedEdgeTs, 1 );
 
   rb_define_method( cQueue, "dump", queue_dump, 0 );  
   rb_define_method( cQueue, "dumpInt", queue_dumpInt, 0 );  
