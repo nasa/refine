@@ -57,7 +57,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal [10.0,20.0],   grid.nodeUV(0,1)
  end
 
- def testProjectionToGeomerty
+ def testProjectionToGeometry
   assert_not_nil grid = Grid.new(5,1,1,1)
   assert_equal 0, grid.addNode(5.0,5.0,5.0)
   assert_equal 1, grid.addNode(0.0,0.1,0.1)
@@ -69,7 +69,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal grid, grid.addEdge(1,2,20,0.0,1.0)
   assert_equal grid, grid.setNGeomNode(1)
   5.times do |i| 
-   assert_equal grid, grid.safeProjectNode(i), "could not project node #{i}"
+   assert_equal grid, grid.safeProjectNode(i,1.0), "project node #{i}"
   end
   assert_equal [5.0,5.0,5.0], grid.nodeXYZ(0)
   assert_equal [0.0,0.0,0.0], grid.nodeXYZ(1)
@@ -83,7 +83,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal [10.0,21.0],   grid.nodeUV(3,10)
  end
 
- def testSafeProjectionAndPositiveVolume
+ def unprojectableTet
   assert_not_nil grid = Grid.new(4,1,1,1)
   assert_equal 0, grid.addNode(0.0,0.0,-0.5)
   assert_equal 1, grid.addNode(1.0,0.0,0.0)
@@ -91,13 +91,64 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 3, grid.addNode(0.0,0.0,-0.1)
   assert_equal grid, grid.addCell(0,1,2,3)
   assert_equal grid, grid.addFace(0,1,2,10)
+  grid
+ end
+
+ def testSafeProjectionForPositiveVolume
+  assert_not_nil grid = unprojectableTet
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s  
-  assert_nil   grid.safeProjectNode(0)
+  assert_nil   grid.safeProjectNode(0,1.0)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
+  assert_equal grid, grid.addEdge(0,1,20,0.0,1.0)
+  assert_nil   grid.safeProjectNode(0,1.0)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
+ end
+
+ def testSafeProjectionForBackOffRatioFace
+  assert_not_nil grid = unprojectableTet
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s  
+  assert_nil   grid.safeProjectNode(0,0.5)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal [0.0,0.0,-0.25], grid.nodeXYZ(0)
+ end
+
+ def testSafeProjectionForBackOffRatioEdge
+  assert_not_nil grid = unprojectableTet
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal grid, grid.addEdge(0,1,20,0.0,1.0)
+  assert_nil   grid.safeProjectNode(0,0.5)
+  assert_nil   grid.project
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal [0.0,0.0,-0.25], grid.nodeXYZ(0)
+ end
+
+ def testSafeProjectionForBackOffRatioFaceTimeOut
+  assert_not_nil grid = unprojectableTet
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s  
+  assert_nil   grid.safeProjectNode(0,0.0)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
+ end
+
+ def testSafeProjectionForBackOffRatioEdgeTimeOut
+  assert_not_nil grid = unprojectableTet
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal grid, grid.addEdge(0,1,20,0.0,1.0)
+  assert_nil   grid.safeProjectNode(0,0.0)
+  assert_nil   grid.project
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
+ end
+
+ def testProjectForPositiveVolume
+  assert_not_nil grid = unprojectableTet
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s  
   assert_nil   grid.project
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
   assert_equal grid, grid.addEdge(0,1,20,0.0,1.0)
-  assert_nil   grid.safeProjectNode(0)
   assert_nil   grid.project
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)

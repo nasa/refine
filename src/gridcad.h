@@ -18,9 +18,9 @@ BEGIN_C_DECLORATION
 
 Grid *gridProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridProjectNodeToFace(Grid *g, int node, int faceId );
-Grid *gridSafeProjectNode(Grid *g, int node );
-Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId );
-Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId );
+Grid *gridSafeProjectNode(Grid *g, int node, double ratio );
+Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId, double ratio );
+Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId, double ratio );
 Grid *gridProject(Grid *g);
 Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);
