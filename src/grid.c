@@ -1555,8 +1555,24 @@ Grid *gridSetNodeT(Grid *grid, int  node, int edgeId, double t )
 int gridAddEdge(Grid *grid, int n0, int n1, 
 		int edgeId, double t0, double t1 )
 {
-  int edge;
-  if ( grid->blanke2n == EMPTY ) return EMPTY;
+  int edge, i, origSize, chunkSize;
+  if ( grid->blanke2n == EMPTY ) {
+    chunkSize = 5000;
+    origSize = grid->maxedge;
+    grid->maxedge += chunkSize;
+    grid->e2n    = realloc(grid->e2n,    2 * grid->maxedge * sizeof(int));
+    grid->edgeId = realloc(grid->edgeId, 1 * grid->maxedge * sizeof(int));
+    grid->edgeT  = realloc(grid->edgeT,  2 * grid->maxedge * sizeof(double));
+    for (i=origSize;i < grid->maxedge; i++ ) {
+      grid->e2n[0+2*i] = EMPTY; 
+      grid->e2n[1+2*i] = i+1; 
+      grid->edgeId[i] = EMPTY; 
+      grid->edgeT[0+2*i] = DBL_MAX; 
+      grid->edgeT[1+2*i] = DBL_MAX; 
+    }
+    grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
+    grid->blanke2n = origSize;
+  }
   edge = grid->blanke2n;
   grid->blanke2n = grid->e2n[1+2*edge];
   grid->nedge++;
