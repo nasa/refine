@@ -464,38 +464,43 @@ stored communication pattern to update ghost node displacements.
 
 @section Parallelized Connectivity Changes
 
-The swap, node insertion, and edge collapse routines share a the same
+The swap, node insertion, and edge collapse routines share the same
 strategy for parallelization. The node insertion, and edge collapse
-routines are combined into refineParallelAdapt. First, internal
+routines are combined into @code{refineParallelAdapt}. The
+@code{gridParallelSwap} routine will be used as an exaple to
+illustrate the parallelization scheme that is common to
+@code{gridParallelSwap} and @code{refineParallelAdapt} routines.
+
+First, internal
 connnectivites (elements not near ghost nodes) are modified. This
 parallel internal pass is performed by setting the first argument
-(processor) to -1 for gridparallelswap. 
+(processor) to -1 for @code{gridparallelswap}.
 
 When new elements or nodes are created, they are assigned global
 numbering by incrementing the total global count of nodes or
 elements. This leads to overlaps in the global numberings of different
 elements on different processors. This overlap is fixed by shifting
-the global numbering with the sync_global_numbering subroutine, which
-requires the global node and cell count from before the connectitives
-where changed.
+the global numbering with the @code{sync_global_numbering} subroutine,
+which requires the global node and cell count from before the
+connectitives where changed.
 
 To change the connectities in the ghost region, a loop over processors
-is performed. Other processors block and wait for the processor who is
-taking its turn are connectivity changes. After the processor makes
-its changes, everyone calls sync_global_numbering to update global
-node and cell counts (offsets do not need to be performed). A
+is performed. Other processors wait for the the active processor to
+complete its connectivity changes. After the active processor makes
+its changes, everyone calls @code{sync_global_numbering} to update
+global node and cell counts (offsets do not need to be performed). A
 @code{queue} object is used to communicate ghost region connectivity
 changes to other processors. It is filled by the changes on the active
-processor and then serialized with queueDump. This serialized object
-is broadcast, reinstated, and used to update other processors
-(gridApplyQueue).
+processor and then serialized with @code{queueDump}. This serialized
+object is broadcast, reinstated, and used to update other processors
+@code{gridApplyQueue}.
 
 Note that the number of global nodes and cells is only incremented in
 this process. Removed global numbering are stored locally on each
 processor for reuse. Therefore, when a processor takes ownership of a
-global numbering is always has it and no other processor can use
+global index it always has it and no other processor can use
 it. These unused global numberings are cleaned up at the end of the
-adaptation process with eliminate_unused_globals.
+adaptation process with @code{eliminate_unused_globals}.
 
 @section Initial notes on building and executing HEFSS with the rad mesh adapation option.
 
