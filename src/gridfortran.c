@@ -184,7 +184,8 @@ void gridparalleladaptwithoutcad_( int *processor,
 
 void gridparallelswap_( int *processor )
 {
-  printf(" %6d swap  processor %2d ",gridPartId(grid),*processor);
+  printf(" %6d swap  processor %2d      initial AR%14.10f",
+	 gridPartId(grid),*processor,gridMinAR(grid));
   if (*processor == -1) {
     gridParallelSwap(grid,NULL);
   } else {

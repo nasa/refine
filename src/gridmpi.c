@@ -266,12 +266,6 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue )
     }
   }
 
-  if ( NULL == queue ) {
-    printf("                                    AR%14.10f\n",
-	   gridMinAR(grid));
-  } else {
-    printf("                                    AR%14.10f\n",
-	   gridMinAR(grid));
-  }
+  printf(" final AR%14.10f\n",gridMinAR(grid));
   return grid;
 }
