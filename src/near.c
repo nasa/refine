@@ -212,13 +212,13 @@ Near *private_NearestIndexAndDistance(Near *root, Near *key,
   if (root->leftChild == NULL) return root;
 
   if (myDistance-nearLeftRadius(root) <= *smallestDistance )
-    nearNearestIndexAndDistance(root->leftChild, key,
+    private_NearestIndexAndDistance(root->leftChild, key,
 				nearestIndex, smallestDistance);
 
   if (root->rightChild == NULL) return root;
 
   if (myDistance-nearRightRadius(root) <= *smallestDistance )
-    nearNearestIndexAndDistance(root->rightChild, key,
+    private_NearestIndexAndDistance(root->rightChild, key,
 				nearestIndex, smallestDistance);
 
   return root;
