@@ -23,18 +23,18 @@ struct N2C {
 #define MAXDEG 200
 
 struct Grid {
-  int maxnode;
-  int nnode;
+  int maxnode, nnode;
   double *xyz;
 
-  int maxcell;
-  int ncell;
+  int maxcell, ncell;
   int blankcell;
   N2C **first;
   N2C *current;
   N2C *blank;
   N2C *n2c;
   int *c2n;
+
+  int maxface, nface;
 
   int ngem;
   int gem[MAXDEG];
@@ -45,7 +45,7 @@ struct Grid {
 
 //#define EBUG
 
-Grid* gridCreate(int maxnode, int maxcell)
+Grid* gridCreate(int maxnode, int maxcell, int maxface)
 {
   int i, nlist;
   Grid *grid;
@@ -56,6 +56,8 @@ Grid* gridCreate(int maxnode, int maxcell)
   grid->nnode   = 0;
   grid->maxcell = maxcell;
   grid->ncell   = 0;
+  grid->maxface = maxface;
+  grid->nface   = 0;
   nlist         = grid->maxcell*4;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
@@ -114,6 +116,16 @@ int gridMaxCell(Grid *grid)
 int gridNCell(Grid *grid)
 {
   return grid->ncell;
+}
+
+int gridMaxFace(Grid *grid)
+{
+  return grid->maxface;
+}
+
+int gridNFace(Grid *grid)
+{
+  return grid->nface;
 }
 
 int gridNGem(Grid *grid)
@@ -464,8 +476,6 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     origcost = MIN(origcost,cost);
   }
 
-  printf("orig %f\n",origcost);
-
   nodes[0][0]=n0;
   nodes[0][1]=grid->equ[0];
   nodes[0][2]=grid->equ[1];
@@ -521,8 +531,6 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     bestcost = currentcost;
     bestindex = 1;
   }
-
-  printf("best %f\n",bestcost);
 
   if ( bestcost > origcost ) {
 
