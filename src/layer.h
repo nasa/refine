@@ -111,6 +111,8 @@ Layer *layerTriangleInviscidTet(Layer *, int triangle,
 				double *node0, double *node1,
 				double *node2, double *node3);
 Layer *layerTriangleMaxEdgeLength(Layer *, int triangle, double *length);
+Layer *layerAdvancedTriangleMaxEdgeLength(Layer *, 
+					  int triangle, double *length);
 #define layerTriangleAdj(layer) (layer->triangleAdj)
 Layer *layerNormalMaxEdgeLength(Layer *, int normal, double *length);
 int layerAddNormal(Layer *, int globalNodeId );

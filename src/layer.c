@@ -1,4 +1,3 @@
-
 /* Michael A. Park
  * Computational Modeling & Simulation Branch
  * NASA Langley Research Center
@@ -499,6 +498,46 @@ Layer *layerTriangleMaxEdgeLength(Layer *layer, int triangle, double *length )
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[2], node2 )) return NULL;
+
+  gridSubtractVector(node1,node0,edge0);
+  gridSubtractVector(node2,node1,edge1);
+  gridSubtractVector(node0,node2,edge2);
+
+  maxLength = -1.0;
+  maxLength = MAX(maxLength,sqrt(gridDotProduct(edge0,edge0)));
+  maxLength = MAX(maxLength,sqrt(gridDotProduct(edge1,edge1)));
+  maxLength = MAX(maxLength,sqrt(gridDotProduct(edge2,edge2)));
+  
+  *length = maxLength;
+
+  return layer;
+}
+
+Layer *layerAdvancedTriangleMaxEdgeLength(Layer *layer, 
+					  int triangle, double *length )
+{
+  int i, nodes[3], normals[3];
+  double node0[3], node1[3], node2[3];
+  double edge0[3], edge1[3], edge2[3], maxLength; 
+  
+  if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
+  if ( layer != layerTriangleNormals(layer,triangle,normals) ) return NULL;
+
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[2], node2 )) return NULL;
+
+  for(i=0;i<3;i++){
+    if (!layerNormalTerminated(layer,normals[0]))
+      node0[i] += ( layer->normal[normals[0]].height *
+		    layer->normal[normals[0]].direction[i] );
+    if (!layerNormalTerminated(layer,normals[1]))
+      node1[i] += ( layer->normal[normals[1]].height *
+		    layer->normal[normals[1]].direction[i] );
+    if (!layerNormalTerminated(layer,normals[2]))
+      node2[i] += ( layer->normal[normals[2]].height *
+		    layer->normal[normals[2]].direction[i] );
+  }
 
   gridSubtractVector(node1,node0,edge0);
   gridSubtractVector(node2,node1,edge1);
