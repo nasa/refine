@@ -85,6 +85,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   int cell, face;
   int added, addedcell, addedface;
   double xyz[36], uv[6];
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
   Queue *lq;
 
   lq = queueCreate( 1 ); /* only used for queuing local removed nodes */
@@ -141,6 +142,18 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	  printf( " %6d applied %6d %6d %6d %6d\n",
 		  gridPartId(grid),
 		  globalnodes[5],globalnodes[6],globalnodes[7],globalnodes[8] );
+	  gridNodeXYZ(grid,localnodes[0],xyz0);
+	  gridNodeXYZ(grid,localnodes[1],xyz1);
+	  gridNodeXYZ(grid,localnodes[2],xyz2);
+	  gridNodeXYZ(grid,localnodes[3],xyz3);
+	  printf( "        local %15.10f %15.10f %15.10f\n",
+		  xyz0[0],xyz0[1],xyz0[2]);
+	  printf( "        queue %15.10f %15.10f %15.10f\n",
+		  xyz[0],xyz[1],xyz[2]);
+	  printf( "        local %15.10f %15.10f %15.10f\n",
+		  xyz1[0],xyz1[1],xyz1[2]);
+	  printf( "        queue %15.10f %15.10f %15.10f\n",
+		  xyz[0+9],xyz[1+9],xyz[2+9]);
 	}
       }
     }
