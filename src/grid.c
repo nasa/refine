@@ -2906,6 +2906,10 @@ Grid *gridGlobalShiftNode(Grid *grid, int oldnnodeg, int newnnodeg,
     if ( gridValidNode(grid,node) && (grid->nodeGlobal[node] >= oldnnodeg) ) 
       grid->nodeGlobal[node] += nodeoffset;
 
+  for (node=0;node<grid->nUnusedNodeGlobal;node++)
+    if ( grid->unusedNodeGlobal[node] >= oldnnodeg )  
+      grid->unusedNodeGlobal[node] += nodeoffset;
+
   if (NULL == grid->sortedGlobal) return grid;
 
   for (node=0;node<grid->nsorted;node++)
