@@ -1168,6 +1168,50 @@ GridMove *gridmoveElasticRelaxationDumpA(GridMove *gm)
 GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
 {
   Grid *grid = gridmoveGrid(gm);
+  int row, entry, col, i;
+  double b[3];
+  double residual;
+
+  residual = 0;
+  
+  for(row=0;row<gridMaxNode(grid);row++) {
+    if ( gridValidNode(grid,row) &&
+	 !gridmoveSpecified(gm,row) && 
+	 gridNodeLocal(grid,row) ) {
+
+      b[0] = b[1] = b[2] = 0.0;
+
+      for ( entry = gridmoveRowStart(gm, row) ;
+	    entry < gridmoveRowStart(gm, row+1) ;
+	    entry++ ) {
+	col = gridmoveRowNode(gm,entry);
+	if (row != col) {
+	  for(i=0;i<3;i++) {
+	    b[i] -= 
+	      (   gm->a[i+0*3+9*entry]*gm->xyz[0+3*col]
+	        + gm->a[i+1*3+9*entry]*gm->xyz[1+3*col]
+	        + gm->a[i+2*3+9*entry]*gm->xyz[2+3*col] ) ;
+	  }
+	}
+      }
+
+      gridBackSolve3x3(&gm->lu[9*row], b);
+	
+      for(i=0;i<3;i++) 
+	residual += ( (gm->xyz[i+3*row] - b[i]) * (gm->xyz[i+3*row] - b[i]) );
+      for(i=0;i<3;i++) gm->xyz[i+3*row] = b[i];
+      
+    }
+  }
+
+  *residual2 = residual;
+
+  return gm;
+}
+
+GridMove *gridmoveElasticRelaxationEvenOdd(GridMove *gm, double *residual2)
+{
+  Grid *grid = gridmoveGrid(gm);
   int color, ncolor;
   int row, entry, col, i;
   double *b;
@@ -1228,52 +1272,6 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
   free(b);
   return gm;
 }
-
-GridMove *gridmoveElasticRelaxationGaussSeidelSubIteration(GridMove *gm, 
-							   double *residual2)
-{
-  Grid *grid = gridmoveGrid(gm);
-  int row, entry, col, i;
-  double b[3];
-  double residual;
-
-  residual = 0;
-  
-  for(row=0;row<gridMaxNode(grid);row++) {
-    if ( gridValidNode(grid,row) &&
-	 !gridmoveSpecified(gm,row) && 
-	 gridNodeLocal(grid,row) ) {
-
-      b[0] = b[1] = b[2] = 0.0;
-
-      for ( entry = gridmoveRowStart(gm, row) ;
-	    entry < gridmoveRowStart(gm, row+1) ;
-	    entry++ ) {
-	col = gridmoveRowNode(gm,entry);
-	if (row != col) {
-	  for(i=0;i<3;i++) {
-	    b[i] -= 
-	      (   gm->a[i+0*3+9*entry]*gm->xyz[0+3*col]
-	        + gm->a[i+1*3+9*entry]*gm->xyz[1+3*col]
-	        + gm->a[i+2*3+9*entry]*gm->xyz[2+3*col] ) ;
-	  }
-	}
-      }
-
-      gridBackSolve3x3(&gm->lu[9*row], b);
-	
-      for(i=0;i<3;i++) 
-	residual += ( (gm->xyz[i+3*row] - b[i]) * (gm->xyz[i+3*row] - b[i]) );
-      for(i=0;i<3;i++) gm->xyz[i+3*row] = b[i];
-      
-    }
-  }
-
-  *residual2 = residual;
-
-  return gm;
-}
-
 
 GridMove *gridmoveElasticRelaxationShutDown(GridMove *gm)
 {
