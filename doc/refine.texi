@@ -30,10 +30,11 @@ The refine library overview, version 1.0.
 
 @menu
 * Introduction :: Short description.
-* Overview ::     Basic architecture
+* Overview     :: Basic architecture
 * Base Objects :: Base objects for grid.
 * Grid Object  :: The main object: grid.
-* Index ::        Complete index.
+* Grid Mix-ins :: Additional methods for grid object
+* Index        :: Complete index.
 @end menu
 
 @node Introduction
@@ -106,7 +107,7 @@ executable (R).
 
 @heading Grid Mix-ins
 @enumerate
-@item gridmath - basic vector and matrix meth routines
+@item gridmath - basic vector and matrix math routines
 @item gridmetric - computes element metrics (volume, aspect ratio)
 @item gridswap - edge and face swapping routines
 @item gridcad - node projection and node smoothing for improved element quality
@@ -258,6 +259,47 @@ that are not defineig the edge.
 
 The map @code{gridMap} is six entries of a 3x3 symmetric matrix used
 to define an anisotropic grid metric.
+
+@node Grid Mix-ins
+@chapter Grid Mix-ins
+@cindex mix-in, grid
+
+@heading Grid Mix-ins
+@enumerate
+@item gridmath - basic vector and matrix math routines
+@item gridmetric - computes element metrics (volume, aspect ratio)
+@item gridswap - edge and face swapping routines
+@item gridcad - node projection and node smoothing for improved element quality
+@item gridgeom - parallel GeoSDK/CAPRI restart routines.
+@item gridinsert - inserts and removes nodes into grid.
+@item gridmpi - parallel grid adaptation helper
+@item gridfortran - fortran bindings for linking to FUN3D.
+@item gridfiller - sequental GeoSDK/CAPRI restart routines. (M,R)
+@end enumerate
+
+@section GridMath
+@cindex gridmath
+
+Basic vector and matrix math routines
+
+@section GridMetric
+@cindex gridmetric
+
+Computes the length of an edge in physical space and
+@code{gridEdgeLength} in mapped space with an average metric
+@code{gridEdgeRatio}. Finds longest @code{gridLargestRatioEdge} and
+shortest @code{gridSmallestRatioEdge} with an average metric
+applied. 
+
+Converts a metric M to a jacobian J
+@code{gridConvertMetricToJacobian}. Apply a jacobian to a XYZ value
+@code{gridMapXYZWithJ}.
+
+Computes element volume @code{gridVolume} in physical space and aspect
+ratio @code{gridAR} in metric mapped space. This methods call also be
+called on elements arround a node @code{gridNodeAR}. The same info is
+available for faces @code{gridFaceArea} @code{gridFaceAR}. These
+routines have also been differentiated.
 
 @node Index
 @unnumbered Index
