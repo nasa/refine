@@ -279,9 +279,13 @@ Grid *gridImportFAST( char *filename )
 Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n )
 {
-  int i, origcell, packcell, origface, packface;
+  int i;
+  int orignode, packnode, origcell, packcell;
+  int origface, packface, origedge, packedge;
   int iface, n0, n1, n2, id;
+  double t0, t1;
   bool emptyFace;
+  int *o2n;
 
   printf("gridExport: %d nodes %d faces %d cells\n",
 	 grid->nnode,grid->nface,grid->ncell);
@@ -290,15 +294,33 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
   *ncell = grid->ncell;
   *nface = grid->nface;
 
+  o2n = malloc(grid->maxnode*sizeof(int));
+  for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
+
+  packnode = 0;
+  for ( orignode=0 ; orignode < grid->maxnode ; orignode++ )
+    if ( grid->xyz[0+3*orignode] != DBL_MAX) {
+      o2n[orignode] = packnode;
+      grid->xyz[0+3*packnode] = grid->xyz[0+3*orignode];
+      grid->xyz[1+3*packnode] = grid->xyz[1+3*orignode];
+      grid->xyz[2+3*packnode] = grid->xyz[2+3*orignode];
+      packnode++;
+    } 
+  
+  if (grid->nnode != packnode) {
+    printf("ERROR: grid->nnode != packnode, file %s line %d \n",
+	   __FILE__, __LINE__ );
+    return NULL;
+  }
   *xyz = grid->xyz;
 
-  packcell =0;
+  packcell = 0;
   for ( origcell=0 ; origcell < grid->maxcell ; origcell++ )
     if ( grid->c2n[0+4*origcell] != EMPTY) {
-      grid->c2n[0+4*packcell] = grid->c2n[0+4*origcell];
-      grid->c2n[1+4*packcell] = grid->c2n[1+4*origcell];
-      grid->c2n[2+4*packcell] = grid->c2n[2+4*origcell];
-      grid->c2n[3+4*packcell] = grid->c2n[3+4*origcell];
+      grid->c2n[0+4*packcell] = o2n[grid->c2n[0+4*origcell]];
+      grid->c2n[1+4*packcell] = o2n[grid->c2n[1+4*origcell]];
+      grid->c2n[2+4*packcell] = o2n[grid->c2n[2+4*origcell]];
+      grid->c2n[3+4*packcell] = o2n[grid->c2n[3+4*origcell]];
       packcell++;
     } 
   
@@ -329,9 +351,9 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
 	grid->f2n[2+3*origface]	= grid->f2n[2+3*packface];
 	grid->faceId[origface]	= grid->faceId[packface];
 
-	grid->f2n[0+3*packface] = n0;
-	grid->f2n[1+3*packface] = n1;
-	grid->f2n[2+3*packface] = n2;
+	grid->f2n[0+3*packface] = o2n[n0];
+	grid->f2n[1+3*packface] = o2n[n1];
+	grid->f2n[2+3*packface] = o2n[n2];
 	grid->faceId[packface]  = id;
 	packface++;
       } 
@@ -347,6 +369,38 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
 
   *f2n    = grid->f2n;
   *faceId = grid->faceId;
+
+  packedge = 0;
+  for (origedge=0;origedge<grid->maxedge;origedge++){
+    if (grid->e2n[0+2*origedge] != EMPTY){
+
+      n0 = o2n[grid->e2n[0+2*origedge]];
+      n1 = o2n[grid->e2n[1+2*origedge]];
+      id = grid->edgeId[origedge];
+      t0 = grid->edgeT[0+2*origedge];
+      t1 = grid->edgeT[1+2*origedge];
+      adjRemove( grid->edgeAdj, grid->e2n[0+2*origedge], origedge );
+      adjRemove( grid->edgeAdj, grid->e2n[1+2*origedge], origedge );
+
+      grid->e2n[0+2*packedge] = n0;
+      grid->e2n[1+2*packedge] = n1;
+      grid->edgeId[packedge] = id;
+      grid->edgeT[0+2*packedge] = t0;
+      grid->edgeT[1+2*packedge] = t1;
+      adjRegister( grid->edgeAdj, n0, packedge );
+      adjRegister( grid->edgeAdj, n1, packedge );
+     
+      packedge++;
+    }
+  }
+
+  if (grid->nedge != packedge) {
+    printf("ERROR: grid->nedge %d != packedge %d, file %s line %d \n",
+	   grid->nface, packface, __FILE__, __LINE__ );
+    return NULL;
+  }
+
+  free(o2n);
 
   return  grid;
 }
