@@ -833,6 +833,15 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 
   gridRemoveNode(grid, n1);
 
+  {
+    double ar;
+    gridNodeAR(grid,n0,&ar); 
+    if (ar<0.0) {
+      printf("collapse to node %d has ar %f\n",n0,ar);
+      exit(1);
+    }    
+  }
+
   return grid;
 }
 

@@ -1,3 +1,8 @@
+2005-01-28 11:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdge) added a check for negative
+	gridAR after collapse. If it is found, exit 1.
+
 2005-01-27 16:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLineSearchT) called gridUpdateFaceParameter
