@@ -182,6 +182,15 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 4, grid.cellDegree(1)
  end
 
+ def testSwap4_gap
+  assert_not_nil grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal 3, grid.ncell
+  grid.swap(0,1)
+  assert_equal 4, grid.ncell
+  assert_equal 2, grid.cellDegree(0)
+  assert_equal 2, grid.cellDegree(1)
+ end
+
 # put faces in
 
  def testFace
@@ -204,8 +213,9 @@ class TestSampleUnit < Test::Unit::TestCase
 # make a gem case with gap and different face id's
 # make a gem case with gap and same face id's and existing backside face
 
-
- def gemGrid(nequ=4, a=0.1, dent=nil, x0 = 1.0)
+ def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
+  a  = a  || 0.1
+  x0 = x0 || 1.0
   grid = Grid.new(nequ+2,nequ,0)
   n = Array.new
   n.push grid.addNode(x0,0.0,0.0)
@@ -216,7 +226,9 @@ class TestSampleUnit < Test::Unit::TestCase
    n.push grid.addNode(0.0,s*a*Math.sin(angle),s*a*Math.cos(angle)) 
   end
   n.push 2
-  nequ.times do |i|
+  ngem =nequ
+  ngem-=1 if gap
+  ngem.times do |i|
    grid.addCell(n[0],n[1],n[i+2],n[i+3])
   end
   grid  
