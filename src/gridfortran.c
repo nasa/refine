@@ -651,3 +651,22 @@ void gridmaxedge_( int *maxedge )
 {
   *maxedge = gridMaxEdge( grid );
 }
+
+void gridedge_( int *edge, int *edgeId,
+		int *globalnodes, int *nodeparts,
+		double *t, double *xyz)
+{
+  int localnodes[2];
+  if (grid==gridEdge(grid, (*edge)-1, edgeId, localnodes)) {
+    globalnodes[0] = 1 + gridNodeGlobal(grid,localnode[0]);
+    globalnodes[1] = 1 + gridNodeGlobal(grid,localnode[1]);
+    nodeparts[0] = gridNodePart(grid,localnode[0]);
+    nodeparts[1] = gridNodePart(grid,localnode[1]);
+    gridNodeT(grid,*edgeId,localnode[0],&t[0]);
+    gridNodeT(grid,*edgeId,localnode[1],&t[1]);
+    gridNodeXYZ(grid,localnode[0],&xyz[0*3]);
+      gridNodeXYZ(grid,localnode[1],&xyz[1*3]);
+  }else{
+    *edgeId = EMPTY;
+  }
+}

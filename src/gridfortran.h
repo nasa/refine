@@ -94,6 +94,9 @@ void gridmovesetlocalnodedata_( int *ndim, int *nnode,
 void gridmovefree_( );
 
 void gridmaxedge_( int *maxedge );
+void gridedge_( int *edge, int *edgeId, 
+		int *globalnodes, int *nodeparts, 
+		double *t, double *xyz);
 
 END_C_DECLORATION
 
