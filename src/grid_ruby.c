@@ -530,6 +530,19 @@ VALUE grid_setNGeomEdge( VALUE self, VALUE nGeomEdge )
   return self;
 }
 
+VALUE grid_nGeomFace( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNGeomFace( grid ) );
+}
+
+VALUE grid_setNGeomFace( VALUE self, VALUE nGeomFace )
+{
+  GET_GRID_FROM_SELF;
+  gridSetNGeomFace( grid, NUM2INT( nGeomFace ) );
+  return self;
+}
+
 VALUE grid_addGeomEdge( VALUE self, VALUE edge, VALUE n0, VALUE n1 )
 {
   GET_GRID_FROM_SELF;
@@ -653,9 +666,11 @@ void Init_Grid()
 
   rb_define_method( cGrid, "nGeomNode", grid_nGeomNode, 0 );
   rb_define_method( cGrid, "setNGeomNode", grid_setNGeomNode, 1 );
-
   rb_define_method( cGrid, "nGeomEdge", grid_nGeomEdge, 0 );
   rb_define_method( cGrid, "setNGeomEdge", grid_setNGeomEdge, 1 );
+  rb_define_method( cGrid, "nGeomFace", grid_nGeomFace, 0 );
+  rb_define_method( cGrid, "setNGeomFace", grid_setNGeomFace, 1 );
+
   rb_define_method( cGrid, "addGeomEdge", grid_addGeomEdge, 3 );
   rb_define_method( cGrid, "geomEdgeSize", grid_geomEdgeSize, 1 );
   rb_define_method( cGrid, "geomEdge", grid_geomEdge, 1 );

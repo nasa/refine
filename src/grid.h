@@ -119,12 +119,14 @@ int gridFindCellWithFace(Grid *g, int face );
 
 int gridNGeomNode(Grid *g);
 Grid *gridSetNGeomNode(Grid *g, int nGeomNode);
-
 int gridNGeomEdge(Grid *g);
 Grid *gridSetNGeomEdge(Grid *g, int nGeomEdge);
-Grid *gridAddGeomEdge(Grid *g, int edge, int n0, int n1);
-int gridGeomEdgeSize( Grid *g, int edge );
-Grid *gridGeomEdge( Grid *g, int edge, int *curve );
+int gridNGeomFace(Grid *g);
+Grid *gridSetNGeomFace(Grid *g, int nGeomFace);
+
+Grid *gridAddGeomEdge(Grid *g, int edgeId, int n0, int n1);
+int gridGeomEdgeSize( Grid *g, int edgeId );
+Grid *gridGeomEdge( Grid *g, int edgeId, int *curve );
 
 bool gridGeometryNode(Grid *g, int node);
 bool gridGeometryEdge(Grid *g, int node);

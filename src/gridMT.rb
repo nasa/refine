@@ -416,9 +416,21 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 1,    grid.findCellWithFace(0)
  end
 
+ def testNGeomElements
+  assert_not_nil grid = Grid.new(1,1,1,1)
+  assert_equal( -1,  grid.nGeomNode )
+  assert_equal( -1,  grid.nGeomEdge )
+  assert_equal( -1,  grid.nGeomFace )
+  assert_equal grid, grid.setNGeomNode(1)
+  assert_equal grid, grid.setNGeomEdge(2)
+  assert_equal grid, grid.setNGeomFace(3)
+  assert_equal 1,    grid.nGeomNode
+  assert_equal 2,    grid.nGeomEdge
+  assert_equal 3,    grid.nGeomFace
+ end
+
  def testGeometryNode
   assert_not_nil grid = Grid.new(3,0,0,0)
-  assert_equal 0,     grid.nGeomNode
   assert_equal false, grid.geometryNode(0)
   assert_equal grid,  grid.setNGeomNode(2)
   assert_equal 2,     grid.nGeomNode
@@ -509,7 +521,6 @@ class TestGrid < Test::Unit::TestCase
 
  def testRetreveGeomEdgeAndStoreEndPoints
   assert_not_nil          grid = Grid.new(4,1,1,2)
-  assert 0,               grid.nGeomEdge
   assert_nil              grid.addGeomEdge(1,0,1)
   assert_equal grid,      grid.setNGeomEdge(1)
   assert_equal 1,         grid.nGeomEdge

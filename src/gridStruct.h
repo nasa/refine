@@ -45,6 +45,7 @@ struct Grid {
 
   int nGeomNode;
   int nGeomEdge;
+  int nGeomFace;
   int *geomEdge;
 
   int ngem;
