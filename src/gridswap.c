@@ -31,9 +31,9 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
   //test face
-  if ( grid->nequ != grid->ngem ){
-    gap0 = grid->equ[0];
-    gap1 = grid->equ[grid->ngem];
+  if ( !gridContinuousEquator(grid) ){
+    gap0 = gridEqu(grid,0);
+    gap1 = gridEqu(grid,gridNGem(grid));
     face0 = gridFindFace(grid, n0, n1, gap0 );
     face1 = gridFindFace(grid, n0, n1, gap1 );
     faceId0 = gridFaceId(grid, n0, n1, gap0 );
@@ -54,7 +54,7 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
     if ( origMR > newMR ) return NULL;
   }
 
-  switch (grid->nequ) {
+  switch (gridNEqu(grid)) {
   case 3: 
     swapStatus = gridSwapEdge3(grid, n0, n1); break;
   case 4: 
@@ -69,7 +69,7 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
     swapStatus = NULL; break;
   }
 
-  if ( grid->nequ != grid->ngem && swapStatus != NULL ) {
+  if ( !gridContinuousEquator(grid) && swapStatus != NULL ) {
     double n0uv[2], n1uv[2], gap0uv[2], gap1uv[2]; 
 
     gridNodeUV(grid, n0,   faceId0, n0uv);
