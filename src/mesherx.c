@@ -67,7 +67,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   direction[0] = 1.0;
   direction[1] = 0.0;
   direction[2] = 0.0;
-  layerSetPolynomialMaxHeight(layer, 0.35, 0.0, 1.0, 
+  layerSetPolynomialMaxHeight(layer, 0.5, 0.0, 1.0, 
 			      origin, direction );
   layerAssignPolynomialNormalHeight(layer, 1.0e-4, 0.0, 1.0,
                                     origin, direction );
@@ -85,14 +85,16 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   layerComputeNormalRateWithBGSpacing(layer,1.0);
 
+  layerSmoothInteriorNormalDirection(layer,-1.0,-1,-1.0);
+
   i=0;
   while (i<nLayer & layerAnyActiveNormals(layer)){
     i++;
 
-    if (i<10) layerSmoothNormalDirection(layer,0.2*(((double)i)/10.0));
-
     if (i>10) rate += 0.01;
     if (rate>1.3) rate=1.3;
+    if (i>25) rate += 0.01;
+    if (rate>1.4) rate=1.4;
     if (i>1) layerScaleNormalHeight(layer,rate);
     //layerSetNormalHeightWithMaxRate(layer,rate);
     //layerSetNormalHeightForLayerNumber(layer,i-1,rate);
@@ -101,7 +103,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     layerTerminateNormalWithLength(layer,1.0);
     layerTerminateNormalWithBGSpacing(layer, 0.8, 1.8);
 
-    if (i>6) layerTerminateCollidingTriangles(layer);
+    if (i>10) layerTerminateCollidingTriangles(layer);
 
     printf("advance layer %d\n",i);
     layerTerminateFutureNegativeCellNormals(layer);
