@@ -391,6 +391,7 @@ VALUE grid_findCellWithFace( VALUE self, VALUE face )
   if (returnedCell == EMPTY) return Qnil;
   return INT2NUM( returnedCell );
 }
+
 VALUE grid_nGeomNode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -402,6 +403,53 @@ VALUE grid_setNGeomNode( VALUE self, VALUE nGeomNode )
   GET_GRID_FROM_SELF;
   gridSetNGeomNode( grid, NUM2INT( nGeomNode ) );
   return self;
+}
+
+VALUE grid_nGeomEdge( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNGeomEdge( grid ) );
+}
+
+VALUE grid_setNGeomEdge( VALUE self, VALUE nGeomEdge )
+{
+  GET_GRID_FROM_SELF;
+  gridSetNGeomEdge( grid, NUM2INT( nGeomEdge ) );
+  return self;
+}
+
+VALUE grid_addGeomEdge( VALUE self, VALUE edge, VALUE n0, VALUE n1 )
+{
+  GET_GRID_FROM_SELF;
+  ;
+  return (grid==gridAddGeomEdge( grid, NUM2INT(edge),NUM2INT(n0),NUM2INT(n1) )?self:Qnil);
+}
+
+VALUE grid_geomEdgeSize( VALUE self, VALUE edge )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridGeomEdgeSize( grid, NUM2INT(edge) ) );
+}
+
+VALUE grid_geomEdge( VALUE self, VALUE edge )
+{
+  int ncurvenode, i, *curve;
+  VALUE rb_curve;
+  Grid *rGrid;
+  GET_GRID_FROM_SELF;
+  ncurvenode = gridGeomEdgeSize( grid, NUM2INT(edge) );
+  if (ncurvenode < 2) return Qnil;
+  curve = malloc(ncurvenode*sizeof(int));
+  rGrid = gridGeomEdge( grid, NUM2INT(edge), curve );
+  if ( rGrid == grid ){
+    rb_curve = rb_ary_new2(ncurvenode);
+    for ( i=0 ; i < ncurvenode ; i++ ) 
+      rb_ary_store( rb_curve, i, INT2NUM(curve[i]) );
+  }else{
+    rb_curve = Qnil;
+  }
+  free(curve);
+  return rb_curve;
 }
 
 VALUE grid_geometryNode( VALUE self, VALUE node )
@@ -477,6 +525,13 @@ void Init_Grid()
 
   rb_define_method( cGrid, "nGeomNode", grid_nGeomNode, 0 );
   rb_define_method( cGrid, "setNGeomNode", grid_setNGeomNode, 1 );
+
+  rb_define_method( cGrid, "nGeomEdge", grid_nGeomEdge, 0 );
+  rb_define_method( cGrid, "setNGeomEdge", grid_setNGeomEdge, 1 );
+  rb_define_method( cGrid, "addGeomEdge", grid_addGeomEdge, 3 );
+  rb_define_method( cGrid, "geomEdgeSize", grid_geomEdgeSize, 1 );
+  rb_define_method( cGrid, "geomEdge", grid_geomEdge, 1 );
+
   rb_define_method( cGrid, "geometryNode", grid_geometryNode, 1 );
   rb_define_method( cGrid, "geometryEdge", grid_geometryEdge, 1 );
   rb_define_method( cGrid, "geometryFace", grid_geometryFace, 1 );

@@ -33,7 +33,9 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->nface   = 0;
   grid->maxedge = MAX(maxedge,1);
   grid->nedge   = 0;
-  grid->nGeomNode   = 0;
+  grid->nGeomNode = 0;
+  grid->nGeomEdge = 0;
+  grid->geomEdge = NULL;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
   for (i=0;i < grid->maxnode; i++ ) {
@@ -126,7 +128,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nface   = nface;
   grid->maxedge = MAX(maxedge,1);
   grid->nedge   = 0;
-  grid-> nGeomNode = 0;
+  grid->nGeomNode = 0;
+  grid->nGeomEdge = 0;
+  grid->geomEdge = NULL;
 
   grid->xyz = xyz;
   for (i=grid->nnode ; i < grid->maxnode; i++ ) {
@@ -377,6 +381,7 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
 
 void gridFree(Grid *grid)
 {
+  if ( NULL != grid->geomEdge) free(grid->geomEdge);
   adjFree(grid->edgeAdj);
   free(grid->edgeId);
   free(grid->edgeT);
@@ -1254,6 +1259,39 @@ Grid *gridSetNGeomNode(Grid *grid, int nGeomNode)
 {
   grid->nGeomNode = nGeomNode;
   return grid;
+}
+
+int gridNGeomEdge(Grid *grid)
+{
+  return grid->nGeomEdge;
+}
+
+Grid *gridSetNGeomEdge(Grid *grid, int nGeomEdge)
+{
+  grid->nGeomEdge = nGeomEdge;
+  if ( NULL != grid->geomEdge) free(grid->geomEdge);
+  grid->geomEdge = malloc(2*nGeomEdge*sizeof(int));
+  return grid;
+}
+
+Grid *gridAddGeomEdge(Grid *grid, int edge, int n0, int n1 )
+{
+  if ( edge<1 || edge>grid->nGeomEdge ) return NULL;
+  grid->geomEdge[0+(edge-1)*2] = n0;
+  grid->geomEdge[1+(edge-1)*2] = n1;
+  return grid;
+}
+
+int gridGeomEdgeSize( Grid *grid, int edge )
+{
+  if ( edge<1 || edge>grid->nGeomEdge ) return EMPTY;
+  return gridGeomCurveSize( grid, edge, grid->geomEdge[0+2*(edge-1)]);
+}
+
+Grid *gridGeomEdge( Grid *grid, int edge, int *curve )
+{
+  if ( edge<1 || edge>grid->nGeomEdge ) return NULL;
+  return gridGeomCurve( grid, edge, grid->geomEdge[0+2*(edge-1)], curve );
 }
 
 bool gridGeometryNode(Grid *grid, int node)
