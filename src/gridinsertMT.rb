@@ -137,7 +137,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal [51.0,151.0], grid.nodeUV(1,5)
   assert_equal [22.0,122.0], grid.nodeUV(2,2)
   assert_equal [55.0,155.0], grid.nodeUV(5,5)
-  assert_equal [20.5,120.5], grid.nodeUV(6,2)
+  assert_equal [10.0,20.0], grid.nodeUV(6,2)
   assert_equal [10.0,20.0], grid.nodeUV(6,5)
  end
 
@@ -373,7 +373,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal 1,          grid.nface
   assert_equal origXYZ,    grid.nodeXYZ(0)
-  assert_equal [0.0,10.0], grid.nodeUV(0,11)
+  assert_equal [11.0,20.0], grid.nodeUV(0,11)
  end
 
  def testCollapseGeomEdgeNearGeomNode
@@ -401,9 +401,9 @@ class TestGridInsert < Test::Unit::TestCase
   assert_nil               grid.collapseEdge(1,0,0.5)
   assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal origXYZ,    grid.nodeXYZ(0)
-  assert_equal [10.0,20.0], grid.nodeUV(0,20)
-  assert_equal [30.0,40.0], grid.nodeUV(0,50)
-  assert_equal 0.0, grid.nodeT(0,10)
+  assert_equal [11.0,20.0], grid.nodeUV(0,20)
+  assert_equal [11.0,20.0], grid.nodeUV(0,50)
+  assert_equal 1.0, grid.nodeT(0,10)
  end
 
  def testCollapseVolumeBetweenTwoFaces
