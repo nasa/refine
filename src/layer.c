@@ -575,26 +575,13 @@ int layerNextTriangle(Layer *layer, int normal, int triangle )
   return EMPTY;
 }
 
-#define PI (3.14159265358979)
-#define ConvertRadianToDegree(radian) ((radian)*57.2957795130823)
-
-double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
+Layer *layerCommonEdge(Layer *layer, int triangle0, int triangle1, int *nodes)
 {
-  double direction0[3], direction1[3];
-  double dot, radian;
   int nodes0[3], nodes1[3];
   int n0, n1, g0, g1, start, end;
-  double xyzstart[3], xyzend[3], edge[3], cross[3];
 
-  if ( triangle0 == triangle1 ) return -3.0;
-  if ( layer != layerTriangleDirection(layer,triangle0,direction0))return -1.0;
-  if ( layer != layerTriangleDirection(layer,triangle1,direction1))return -2.0;
-
-  dot = gridDotProduct(direction0, direction1);
-  radian = acos(dot);
-  
-  layerTriangle(layer,triangle0,nodes0);
-  layerTriangle(layer,triangle1,nodes1);
+  if (layer != layerTriangle(layer,triangle0,nodes0) ) return NULL;
+  if (layer != layerTriangle(layer,triangle1,nodes1) ) return NULL;
 
   start = end = EMPTY;
   for ( n0 = 0 ; n0 < 3 ; n0++) {
@@ -607,10 +594,36 @@ double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
       end   = g1;
     } 
   }
-  if ( start == EMPTY || end == EMPTY ) return -4.0;
 
-  gridNodeXYZ( layerGrid(layer), start, xyzstart );
-  gridNodeXYZ( layerGrid(layer), end,   xyzend );
+  if ( start == EMPTY || end == EMPTY ) return NULL;
+
+  nodes[0]=start;
+  nodes[1]=end;
+
+  return layer;
+}
+
+#define PI (3.14159265358979)
+#define ConvertRadianToDegree(radian) ((radian)*57.2957795130823)
+
+double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
+{
+  double direction0[3], direction1[3];
+  double dot, radian;
+  int commonEdge[2];
+  double xyzstart[3], xyzend[3], edge[3], cross[3];
+
+  if ( triangle0 == triangle1 ) return -3.0;
+  if ( layer != layerTriangleDirection(layer,triangle0,direction0))return -1.0;
+  if ( layer != layerTriangleDirection(layer,triangle1,direction1))return -2.0;
+  if ( layer != layerCommonEdge(layer,triangle0,triangle1,commonEdge) ) 
+    return -4.0;
+
+  dot = gridDotProduct(direction0, direction1);
+  radian = acos(dot);  
+
+  gridNodeXYZ( layerGrid(layer), commonEdge[0], xyzstart );
+  gridNodeXYZ( layerGrid(layer), commonEdge[1], xyzend );
 
   gridSubtractVector( xyzstart, xyzend, edge );
   gridCrossProduct( direction0, direction1, cross);
@@ -1689,23 +1702,41 @@ Layer *layerToggleMixedElementMode(Layer *layer)
 
 Layer *layerBlend(Layer *layer)
 {
-  int triangle, previous;
+  int firsttriangle, previous;
   int normals[3], nodes[3];
   int i, n0, n1;
 
-  for ( triangle = 0 ; triangle < layerNTriangle(layer) ; triangle++ ) {
-    layerTriangleNormals(layer, triangle, normals);
-    layerTriangle(layer, triangle, nodes);
-    for ( i = 0 ; i < 3 ; i++ ) {
-      previous = layerPreviousTriangle(layer, normals[i], triangle );
-      if (EMPTY != previous && 250 < layerEdgeAngle(layer,triangle,previous)){
-	n0=i;
-	n1=i+1; if (n1>2) n1=0;
-	n0=nodes[n0];
-	n1=nodes[n1];
-	layerAddBlend(layer,n0,n1);
+
+  int normal, originalNormals;
+  AdjIterator it;
+  int triangle, splitTriangle, nextTriangle;
+  double edgeAngle, largestEdgeAngle, angleLimit;
+  int commonEdge[2];
+  angleLimit = 250; /* deg */
+
+  originalNormals = layerNNormal(layer);
+  for ( normal = 0 ; normal < originalNormals ; normal++ ) {
+    
+    largestEdgeAngle = 0;
+    splitTriangle = EMPTY;
+    for ( it = adjFirst(layer->adj,normal); 
+	  adjValid(it); 
+	  it = adjNext(it) ){
+      triangle = adjItem(it);
+      nextTriangle = layerNextTriangle(layer, normal, triangle);
+      edgeAngle = layerEdgeAngle(layer,triangle,nextTriangle);
+      if (largestEdgeAngle <= edgeAngle){
+	largestEdgeAngle = edgeAngle;
+	splitTriangle = triangle;
       }
     }
+   
+    if (splitTriangle != EMPTY && largestEdgeAngle > angleLimit){
+      nextTriangle = layerNextTriangle(layer, normal, splitTriangle);
+      layerCommonEdge(layer, splitTriangle, nextTriangle, commonEdge);
+      layerAddBlend(layer,commonEdge[0],commonEdge[1]);
+    }
+ 
   }
 
   return layer;

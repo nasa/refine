@@ -44,6 +44,7 @@ int layerNormalDeg(Layer *, int normal );
 Layer *layerNormalTriangles(Layer *, int normal, int maxtriangle, int *triangles);
 int layerPreviousTriangle(Layer *, int normal, int triangle );
 int layerNextTriangle(Layer *, int normal, int triangle );
+Layer *layerCommonEdge(Layer *, int triangle0, int triangle1, int *nodes);
 double layerEdgeAngle(Layer *, int triangle0, int triangle1 );
 Layer *layerNormalDirection(Layer *, int normal, double *direction);
 Layer *layerSetHeightOfAllNormals(Layer *, double height);
