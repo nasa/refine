@@ -437,7 +437,7 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
   int cell, ncell, inode, ixyz, n;
   
   gridNodeAR(grid, node, &origAR);
-  gridNodeXYZ(grid, node, origXYZ);
+  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
 
   xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
   ncell =0;
