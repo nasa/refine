@@ -124,12 +124,6 @@ VALUE layer_uniqueNormalId( VALUE self, VALUE globalNodeId )
   return INT2NUM(layerUniqueNormalId(layer,NUM2INT(globalNodeId)));
 }
 
-VALUE layer_makeNormal( VALUE self )
-{
-  GET_LAYER_FROM_SELF;
-  return ( layer == layerMakeNormal(layer)?self:Qnil );
-}
-
 VALUE layer_triangleNormals( VALUE self, VALUE triangle )
 {
   int normals[3];
@@ -331,7 +325,6 @@ void Init_Layer()
   rb_define_method( cLayer, "triangleDirection", layer_triangleDirection, 1 );
   rb_define_method( cLayer, "addNormal", layer_addNormal, 1 );
   rb_define_method( cLayer, "uniqueNormalId", layer_uniqueNormalId, 1 );
-  rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
   rb_define_method( cLayer, "addParentGeomFace", layer_addParentGeomFace, 1 );
   rb_define_method( cLayer, "parentGeomFace", layer_parentGeomFace, 1 );
   rb_define_method( cLayer, "triangleNormals", layer_triangleNormals, 1 );

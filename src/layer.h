@@ -36,7 +36,6 @@ Layer *layerTriangle(Layer *, int triangle, int *nodes);
 Layer *layerTriangleDirection(Layer *, int triangle, double *direction);
 int layerAddNormal(Layer *, int globalNodeId );
 int layerUniqueNormalId(Layer *, int globalNodeId );
-Layer *layerMakeNormal(Layer *);
 Layer *layerInitializeNormal(Layer *, int normal );
 Layer *layerTriangleNormals(Layer *, int triangle, int *normals);
 int layerNormalRoot(Layer *, int normal );

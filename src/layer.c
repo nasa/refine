@@ -124,8 +124,6 @@ Layer *formAdvancingTriangle( Grid *grid, char *project )
   layer = layerCreate(grid);
   printf("make advancing layer triangle.\n");
   layerMakeTriangle(layer,nbc,bc);
-  printf("make advancing layer triangle normals.\n");
-  layerMakeNormal(layer);
   if (box) {
     layerConstrainNormal(layer,-9);
     layerConstrainNormal(layer,-10);
@@ -262,6 +260,11 @@ int layerMaxNode(Layer *layer)
 Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
 {
   int i, ibc, face, id, nodes[3];
+  int triangle;
+  int globalNodeId;
+  int normal;
+  double direction[3], *norm;
+  double length;
   Grid *grid;
 
   grid = layerGrid(layer);
@@ -274,6 +277,35 @@ Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
 	  id==bc[ibc] ) {
 	layerAddTriangle(layer,nodes[0],nodes[1],nodes[2]);
       }
+    }
+  }
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    for(i=0;i<3;i++){
+      globalNodeId = layer->triangle[triangle].globalNode[i];
+      layer->triangle[triangle].normal[i] = 
+	layerUniqueNormalId(layer,globalNodeId);
+    }
+  }
+
+  layer->adj = adjCreate( layer->nnormal,layerNTriangle(layer)*3  );
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    for(i=0;i<3;i++){
+      normal = layer->triangle[triangle].normal[i];
+      adjRegister( layer->adj, normal, triangle );
+      layerTriangleDirection(layer,triangle,direction);
+      layer->normal[normal].direction[0] += direction[0];
+      layer->normal[normal].direction[1] += direction[1];
+      layer->normal[normal].direction[2] += direction[2];
+    }
+  }
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    norm = layer->normal[normal].direction;
+    length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
+    if (length > 0.0) {
+      for ( i=0;i<3;i++) norm[i] = norm[i]/length;
+    }else{
+      for ( i=0;i<3;i++) norm[i] = 0.0;
     }
   }
   
@@ -429,46 +461,6 @@ int layerUniqueNormalId(Layer *layer, int globalNodeId)
     return layerAddNormal(layer,globalNodeId);
 
   return layer->globalNode2Normal[globalNodeId];
-}
-
-Layer *layerMakeNormal(Layer *layer)
-{
-  int i, triangle, normal, globalNodeId;
-  double direction[3], *norm, length;
-
-  if (layerNTriangle(layer)==0) return NULL;
-
-  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    for(i=0;i<3;i++){
-      globalNodeId = layer->triangle[triangle].globalNode[i];
-      layer->triangle[triangle].normal[i] = 
-	layerUniqueNormalId(layer,globalNodeId);
-    }
-  }
-
-  layer->adj = adjCreate( layer->nnormal,layerNTriangle(layer)*3  );
-  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    for(i=0;i<3;i++){
-      normal = layer->triangle[triangle].normal[i];
-      adjRegister( layer->adj, normal, triangle );
-      layerTriangleDirection(layer,triangle,direction);
-      layer->normal[normal].direction[0] += direction[0];
-      layer->normal[normal].direction[1] += direction[1];
-      layer->normal[normal].direction[2] += direction[2];
-    }
-  }
-
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    norm = layer->normal[normal].direction;
-    length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
-    if (length > 0.0) {
-      for ( i=0;i<3;i++) norm[i] = norm[i]/length;
-    }else{
-      for ( i=0;i<3;i++) norm[i] = 0.0;
-    }
-  }
-
-  return layer;
 }
 
 Layer *layerTriangleNormals(Layer *layer, int triangle, int *normals )
