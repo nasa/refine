@@ -110,12 +110,11 @@ START_TEST(testUnderAlloc)
 }
 END_TEST
 
-/* test run out of memory - anything null(0) in celllist durring register */
-/* allocating a new chunk of celllist */
-/* packing */
-/* non-contiguos cellist for access and registering */
 /* allocate n1 then n2 then n1 again */
+/* non-contiguos cellist for access and registering */
+/* packing */
 
+/* allocating a new chunk of celllist */
 
 Suite *grid_suite (void) 
 { 
