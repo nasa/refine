@@ -21,6 +21,7 @@
 #include "gridinsert.h"
 #include "grid.h"
 #include "near.h"
+#include "intersect.h"
 
 #include "layerStruct.h"
 
@@ -447,6 +448,23 @@ Layer *layerTriangleFourthNode(Layer *layer, int triangle, double *xyz )
 
   return layer;
 
+}
+
+Layer *layerTriangleInviscidTet(Layer *layer, int triangle, 
+				double *node0, double *node1,
+				double *node2, double *node3) 
+{
+  int nodes[3];
+
+  if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
+
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[2], node2 )) return NULL;
+
+  if ( layer != layerTriangleFourthNode(layer,triangle,node3) ) return NULL;
+
+  return layer;
 }
 
 Layer *layerTriangleMaxEdgeLength(Layer *layer, int triangle, double *length )
@@ -1478,6 +1496,17 @@ Layer *layerTerminateFaceNormals(Layer *layer, int faceId)
     }
   }
 
+  return layer;
+}
+
+Layer *layerTerminateTriangleNormals(Layer *layer, int triangle ){
+  int normals[3];
+
+  if ( NULL == layerTriangleNormals(layer,triangle,normals) ) return(NULL);
+  layerTerminateNormal( layer, normals[0] );
+  layerTerminateNormal( layer, normals[1] );
+  layerTerminateNormal( layer, normals[2] );
+	
   return layer;
 }
 
@@ -2682,11 +2711,8 @@ Layer *layerPopulateTriangleNearTree(Layer *layer)
   layer->nearTree = malloc(layerNTriangle(layer)*sizeof(Near));
 
   for(triangle=0;triangle<layerNTriangle(layer);triangle++){
-    if (layer != layerTriangle(layer,triangle,nodes)) return NULL;
-    if (grid != gridNodeXYZ( grid, nodes[0], node0 )) return NULL;
-    if (grid != gridNodeXYZ( grid, nodes[1], node1 )) return NULL;
-    if (grid != gridNodeXYZ( grid, nodes[2], node2 )) return NULL;
-    layerTriangleFourthNode(layer,triangle,node3);
+    if (layer != layerTriangleInviscidTet(layer,triangle,
+					  node0,node1,node2,node3)) return NULL;
     for (i=0;i<3;i++) center[i] = 0.25*(node0[i]+node1[i]+node2[i]+node3[i]);
     gridSubtractVector(node0,center,dist);
     radius = gridVectorLength(dist);
@@ -2753,6 +2779,43 @@ Layer *layerTerminateCollidingNormals(Layer *layer)
     }
   }
   free(nearNormals);
+
+  return layer;
+}
+
+Layer *layerTerminateCollidingTriangles(Layer *layer)
+{
+  int triangle;
+  Near *target;
+  int i, touched, maxTouched, *nearTriangles;
+  int nearTriangle;
+  double a0[3], a1[3], a2[3], a3[3];
+  double b0[3], b1[3], b2[3], b3[3];
+
+  if ( 0 < layerNBlend(layer) ) return NULL;
+
+  printf("layerPopulateTriangleNearTree...\n");
+  layerPopulateTriangleNearTree(layer);
+
+  maxTouched = layerNTriangle(layer);
+  nearTriangles = malloc(maxTouched*sizeof(int));
+
+  printf("inspecting triangle proximity...\n");
+  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
+    target = &layer->nearTree[triangle];
+    touched = 0;
+    nearTouched(layer->nearTree, target, &touched, maxTouched, nearTriangles);
+    layerTriangleInviscidTet(layer,triangle,a0,a1,a2,a3);
+    for(i=0;i<touched;i++){
+      nearTriangle = nearTriangles[i];
+      layerTriangleInviscidTet(layer,nearTriangle,b0,b1,b2,b3);
+      if (intersectTetTet(a0,a1,a2,a3,b0,b1,b2,b3)){
+	layerTerminateTriangleNormals(layer,triangle);
+	layerTerminateTriangleNormals(layer,nearTriangle);
+      }
+    }
+  }
+  free(nearTriangles);
 
   return layer;
 }

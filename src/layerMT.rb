@@ -13,6 +13,7 @@ RubyExtensionBuilder.new('Layer').build
 require 'test/unit'
 require 'Adj/Adj'
 require 'Near/Near'
+require 'Intersect/Intersect'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
 require 'GridCAD/GridCAD'

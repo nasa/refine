@@ -19,7 +19,7 @@ class RubyExtensionBuilder
   comm['GridSwap'] = 'GridSwap adj.h grid.h gridmath.h gridmetric.h'
   comm['GridCAD'] = 'GridCAD FAKEGeom adj.h grid.h gridmath.h gridmetric.h gridinsert.h'
   comm['GridInsert'] = 'GridInsert adj.h grid.h gridmath.h gridmetric.h gridcad.h'
-  comm['Layer'] = 'Layer layerStruct.h adj.h near.h grid.h gridmath.h gridmetric.h gridcad.h gridinsert.h'
+  comm['Layer'] = 'Layer layerStruct.h adj.h near.h intersect.h grid.h gridmath.h gridmetric.h gridcad.h gridinsert.h'
   exit 1 unless system('ruby makeRubyExtension.rb ' + comm[extension] + ' master_header.h')
  end
 

@@ -41,6 +41,9 @@ Layer *layerTriangleDirection(Layer *, int triangle, double *direction);
 Layer *layerTriangleArea(Layer *, int triangle, double *area);
 Layer *layerTriangleCenter(Layer *, int triangle, double *center);
 Layer *layerTriangleFourthNode(Layer *, int triangle, double *xyz);
+Layer *layerTriangleInviscidTet(Layer *, int triangle, 
+				double *node0, double *node1,
+				double *node2, double *node3);
 Layer *layerTriangleMaxEdgeLength(Layer *, int triangle, double *length);
 Layer *layerNormalMaxEdgeLength(Layer *, int normal, double *length);
 int layerAddNormal(Layer *, int globalNodeId );
@@ -104,6 +107,7 @@ int layerNParentGeomEdgeSegments(Layer *, int edgeId );
 Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
 Layer *layerTerminateFaceNormals(Layer *, int faceId );
+Layer *layerTerminateTriangleNormals(Layer *, int triangle );
 int layerNActiveNormal(Layer *);
 bool layerAnyActiveNormals(Layer *);
 
@@ -148,6 +152,7 @@ Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 Layer *layerPopulateNormalNearTree(Layer *);
 Layer *layerPopulateTriangleNearTree(Layer *);
 Layer *layerTerminateCollidingNormals(Layer *);
+Layer *layerTerminateCollidingTriangles(Layer *);
 
 Layer *layerWriteTecplotFrontGeometry(Layer *);
 Layer *layerWriteTecplotFrontWithData(Layer *, int);
