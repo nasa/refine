@@ -244,7 +244,8 @@ int main( int argc, char *argv[] )
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     STATUS;
-    if (debugInsert) layerVerifyPhantomEdges( layer );
+    if (debugInsert) 
+      { layerVerifyPhantomEdges( layer ); layerVerifyPhantomFaces( layer ); }
         
     for (i=0;i<2;i++){
       projected = ( grid == gridRobustProject(grid));
@@ -266,7 +267,9 @@ int main( int argc, char *argv[] )
     }
   }
 
-  if (debugInsert) layerVerifyPhantomEdges( layer );
+  if (debugInsert) 
+    { layerVerifyPhantomEdges( layer ); layerVerifyPhantomFaces( layer ); }
+
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
