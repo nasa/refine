@@ -3887,9 +3887,12 @@ Grid *gridCopyAboutY0(Grid *grid, int symmetryFaceId, int mirrorAux )
 Grid *gridReportZeroDegreeNodes(Grid *grid)
 {
   int node;
+  double xyz[3];
   for( node = 0 ; node < gridMaxNode(grid) ; node++ ) {
     if ( gridValidNode(grid, node) && 0 == gridCellDegree(grid, node) ) {
       printf("node %d has zero cell degree\n",node);
+      if(grid==gridNodeXYZ(grid,node,xyz)) printf("at %f %f %f\n",
+						  xyz[0],xyz[1],xyz[2]);
     }
   }
   return grid;
