@@ -110,8 +110,8 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 
       /* for safety, I don't think I need this */
       for(node=0;node<4;node++)
-	if (0==gridCellDegree(grid,cellnode[node]))
-	  gridRemoveNodeWithOutGlobal(grid,cellnode[node]);
+	if (0==gridCellDegree(grid,cellnodes[node]))
+	  gridRemoveNodeWithOutGlobal(grid,cellnodes[node]);
 
       return grid;
     }
