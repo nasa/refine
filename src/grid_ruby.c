@@ -160,6 +160,20 @@ VALUE grid_cellFace( VALUE self, VALUE n0, VALUE n1, VALUE n2)
   return (gridCellFace(grid, 
 		       NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) )?Qtrue:Qfalse);
 }
+VALUE grid_findCellWithFace( VALUE self, VALUE face )
+{
+  int returnedCell;
+  GET_GRID_FROM_SELF;
+  returnedCell = gridFindCellWithFace(grid, NUM2INT(face) );
+  if (returnedCell == EMPTY) return Qnil;
+  return INT2NUM( returnedCell );
+}
+
+VALUE grid_findOtherCellWith3Nodes( VALUE self, VALUE node0, VALUE node1, VALUE node2, VALUE currentCell )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridFindOtherCellWith3Nodes(grid, NUM2INT(node0), NUM2INT(node1), NUM2INT(node2), NUM2INT(currentCell) ) );
+}
 
 VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
 {
@@ -531,15 +545,6 @@ VALUE grid_setNodeXYZ( VALUE self, VALUE node, VALUE rb_xyz )
   return( grid == gridSetNodeXYZ( grid, NUM2INT(node), xyz )?self:Qnil);
 }
 
-VALUE grid_findCellWithFace( VALUE self, VALUE face )
-{
-  int returnedCell;
-  GET_GRID_FROM_SELF;
-  returnedCell = gridFindCellWithFace(grid, NUM2INT(face) );
-  if (returnedCell == EMPTY) return Qnil;
-  return INT2NUM( returnedCell );
-}
-
 VALUE grid_nGeomNode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -773,6 +778,9 @@ void Init_Grid()
   rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
   rb_define_method( cGrid, "cellEdge", grid_cellEdge, 2 );
   rb_define_method( cGrid, "cellFace", grid_cellFace, 3 );
+  rb_define_method( cGrid, "findOtherCellWith3Nodes", 
+		    grid_findOtherCellWith3Nodes, 4 );
+  rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
 
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
   rb_define_method( cGrid, "addFaceUV", grid_addFaceUV, 10 );
@@ -817,8 +825,6 @@ void Init_Grid()
   rb_define_method( cGrid, "validNode", grid_validNode, 1 );
   rb_define_method( cGrid, "nodeXYZ", grid_nodeXYZ, 1 );
   rb_define_method( cGrid, "setNodeXYZ", grid_setNodeXYZ, 2 );
-
-  rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
 
   rb_define_method( cGrid, "nGeomNode", grid_nGeomNode, 0 );
   rb_define_method( cGrid, "setNGeomNode", grid_setNGeomNode, 1 );

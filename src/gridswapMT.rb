@@ -26,6 +26,29 @@ end
 
 class TestGridSwap < Test::Unit::TestCase
 
+ def faceSwapGrid(dz=nil)
+  dz = dz || 0.1
+  grid = Grid.new(10,10,10,10)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0.3,0.3,dz)
+  grid.addNode(0.3,0.3,dz)
+  grid.addCell(0,1,2,3)
+  grid.addCell(0,2,1,4)
+  grid  
+ end
+
+ def testFaceSwap
+  grid = faceSwapGrid
+  assert_equal    2, grid.ncell
+  assert_nil         grid.swapFace(1,2,3)
+  assert_nil         grid.swapFace(1,3,4)
+  assert_equal    2, grid.ncell
+  assert_equal grid, grid.swapFace(0,1,2)
+  assert_equal    3, grid.ncell
+ end
+
  def testSwapEdgeNotBeter
   assert_not_nil grid=gemGrid(3, 2.0, 0)
   assert_nil grid.swapEdge(0,1)

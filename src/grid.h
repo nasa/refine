@@ -60,6 +60,8 @@ Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 bool gridCellEdge(Grid *g, int node0, int node1 );
 bool gridCellFace(Grid *g, int node0, int node1, int node2 );
+int gridFindOtherCellWith3Nodes(Grid *g, int node0, int node1, int node2,
+				int currentCell );
 int gridFindCellWithFace(Grid *g, int face );
 Grid *gridCheckCellConnections(Grid *g);
 Grid *gridDeleteThawedCells(Grid *g);

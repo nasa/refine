@@ -1180,42 +1180,34 @@ bool gridCellEdge(Grid *grid, int n0, int n1 )
 
 bool gridCellFace(Grid *grid, int n0, int n1, int n2 )
 {
-  AdjIterator it;
-  int i, j, nodes[4];
+  return (EMPTY != gridFindOtherCellWith3Nodes(grid, n0, n1, n2, EMPTY ) );
+}
 
-  if ( n0 < 0 || n0 >= grid->maxnode ) return FALSE;
-  if ( n1 < 0 || n1 >= grid->maxnode ) return FALSE;
-  if ( n2 < 0 || n2 >= grid->maxnode ) return FALSE;
+int gridFindOtherCellWith3Nodes(Grid *grid, int n0, int n1, int n2,
+				int currentCell )
+{
+  AdjIterator it;
+  int cell, i, j, nodes[4];
 
   for ( it = adjFirst(grid->cellAdj,n0); adjValid(it); it = adjNext(it) ) {
-    gridCell( grid, adjItem(it), nodes );
-    for(i=0;i<3;i++) if (n0 == nodes[i]) for(j=i;j<3;j++) nodes[i]=nodes[i+1];
-    if ( ( n1 == nodes[0] || n1 == nodes[1] || n1 == nodes[2] ) &&
-	 ( n2 == nodes[0] || n2 == nodes[1] || n2 == nodes[2] ) ) return TRUE;
+    cell = adjItem(it);
+    if (cell != currentCell) {
+      gridCell( grid, cell, nodes );
+      if ( ( n1==nodes[0] || n1==nodes[1] || n1==nodes[2] || n1==nodes[3] ) &&
+	   ( n2==nodes[0] || n2==nodes[1] || n2==nodes[2] || n2==nodes[3] ) )
+	return cell;
+    }
   }
 
-  return FALSE;
+  return EMPTY;
 }
 
 int gridFindCellWithFace(Grid *grid, int face ){
-  int n0, n1, n2;
-  AdjIterator it0, it1, it2;
-  Adj *adj=grid->cellAdj;
+  int nodes[3], faceId;
 
-  if (face >= grid->maxface || face < 0 ) return EMPTY;
-  if (grid->f2n[3*face] == EMPTY )return EMPTY;
+  if (grid != gridFace(grid,face,nodes,&faceId)) return EMPTY;
 
-  n0 = grid->f2n[0+3*face];
-  n1 = grid->f2n[1+3*face];
-  n2 = grid->f2n[2+3*face];
-
-  for ( it0 = adjFirst(adj,n0); adjValid(it0); it0 = adjNext(it0) )
-    for ( it1 = adjFirst(adj,n1); adjValid(it1); it1 = adjNext(it1) )
-      if ( adjItem(it0) == adjItem(it1) )
-	for ( it2 = adjFirst(adj,n2); adjValid(it2); it2 = adjNext(it2) )
-	  if ( adjItem(it0)==adjItem(it2) ) return adjItem(it2);
-
-  return EMPTY;
+  return gridFindOtherCellWith3Nodes(grid, nodes[0],nodes[1],nodes[2], EMPTY);
 }
 
 Grid *gridCheckCellConnections(Grid *grid){

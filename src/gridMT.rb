@@ -170,6 +170,39 @@ class TestGrid < Test::Unit::TestCase
   assert_equal false, grid.cellFace(0,0,-1)
  end
 
+ def testFindCellWithFace
+  assert_not_nil     grid = Grid.new(5,2,0,4)
+  grid.addCell(0,1,4,3)
+  assert_nil         grid.findCellWithFace(34)
+  assert_nil         grid.findCellWithFace(0)
+  grid.addFace(0,1,2,11)
+  assert_nil         grid.findCellWithFace(0)
+  grid.addCell(0,1,2,3)
+  assert_equal 1,    grid.findCellWithFace(0)
+ end
+
+ def testFindOtherCellWithThreeNodes
+  assert_not_nil     grid = Grid.new(5,5,5,5)
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(0,1,2,0) )
+  grid.addCell(0,1,2,3)
+  assert_equal( 0,   grid.findOtherCellWith3Nodes(0,1,2,1) )
+  assert_equal( 0,   grid.findOtherCellWith3Nodes(0,1,2,-1) )
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(0,1,2,0) )
+  grid.addCell(0,1,2,4)
+  assert_equal( 1,   grid.findOtherCellWith3Nodes(0,1,2,0) )
+  assert_equal( 0,   grid.findOtherCellWith3Nodes(0,1,2,1) )
+ end
+
+ def testFindOtherCellWithThreeNodesOutOfRangeInputs
+  assert_not_nil     grid = Grid.new(5,5,5,5)
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(-1,1,2,0) )
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(10,1,2,0) )
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(0,-1,2,0) )
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(0,10,2,0) )
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(0,1,-1,0) )
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(0,1,10,0) )
+ end
+
  def testGetGem
   grid = Grid.new(5,3,0,0)
   grid.addCell(3,4,0,1)
@@ -492,17 +525,6 @@ class TestGrid < Test::Unit::TestCase
   assert_equal grid, grid.addEdge(2, 0, 10, 2.0, 0.0)
   assert_equal 4,            grid.geomCurveSize(10,0)
   assert_equal [0, 2, 1, 0], grid.geomCurve(10,0)
- end
-
- def testFindCellWithFace
-  assert_not_nil     grid = Grid.new(5,2,0,4)
-  grid.addCell(0,1,4,3)
-  assert_nil         grid.findCellWithFace(34)
-  assert_nil         grid.findCellWithFace(0)
-  grid.addFace(0,1,2,11)
-  assert_nil         grid.findCellWithFace(0)
-  grid.addCell(0,1,2,3)
-  assert_equal 1,    grid.findCellWithFace(0)
  end
 
  def testNGeomElements

@@ -15,6 +15,35 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 
+Grid *gridSwapFace(Grid *grid, int n0, int n1, int n2 )
+{
+  int cell0, cell1;
+  int nodes[5], nodes1[4], topnode, bottomnode;
+
+  cell0 = gridFindOtherCellWith3Nodes(grid, n0, n1, n2, EMPTY );
+  if ( EMPTY == cell0 ) return NULL;
+  cell1 = gridFindOtherCellWith3Nodes(grid, n0, n1, n2, cell0 );
+  if ( EMPTY == cell1 ) return NULL;
+
+  gridCell(grid, cell0, nodes);
+  topnode = nodes[0] + nodes[1] + nodes[2] + nodes[3] - n0 - n1 - n2; 
+  gridCell(grid, cell1, nodes1);
+  bottomnode = nodes1[0] + nodes1[1] + nodes1[2] + nodes1[3] - n0 - n1 - n2; 
+
+  //set nodes[0-3] to topnode orientation
+  nodes[4] = bottomnode;
+
+  gridRemoveCell(grid,cell0);
+  gridRemoveCell(grid,cell1);
+
+  gridAddCell(grid,nodes[0],nodes[2],nodes[1],nodes[4]);
+  gridAddCell(grid,nodes[0],nodes[3],nodes[2],nodes[4]);
+  gridAddCell(grid,nodes[0],nodes[1],nodes[3],nodes[4]);
+
+  return grid;
+
+}
+
 Grid *gridSwapEdge3(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge4(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge5(Grid *grid, int n0, int n1 );
