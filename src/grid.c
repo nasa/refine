@@ -344,28 +344,18 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
 
   if ( NULL == gridMakeGem( grid, n0, n1) ) return NULL;
 
-  // test this  if ( grid->ngem == 0 ) return grid;
+  if ( grid->ngem == 0 ) return grid;
 
   nodes[0] = n0;
   nodes[1] = n1;
 
-  cell[0] = grid->c2n[0+4*grid->gem[0]];
-  cell[1] = grid->c2n[1+4*grid->gem[0]];
-  cell[2] = grid->c2n[2+4*grid->gem[0]];
-  cell[3] = grid->c2n[3+4*grid->gem[0]];
-
-  if ( NULL == gridOrient( grid, cell, nodes ) ) { grid->nequ = 0; return NULL;
-  }
+  gridOrient( grid, &grid->c2n[4*grid->gem[0]], nodes );
 
   grid->equ[0]= nodes[3];
 
   for ( iequ=1 ; iequ<grid->ngem ; iequ++ ){
     for( igem=0 ; igem<grid->ngem ; igem++ ){
-      cell[0] = grid->c2n[0+4*grid->gem[igem]];
-      cell[1] = grid->c2n[1+4*grid->gem[igem]];
-      cell[2] = grid->c2n[2+4*grid->gem[igem]];
-      cell[3] = grid->c2n[3+4*grid->gem[igem]];
-      gridOrient( grid, cell, nodes );
+      gridOrient( grid, &grid->c2n[4*grid->gem[igem]], nodes );
       if ( grid->equ[iequ-1] == nodes[2] ) grid->equ[iequ] = nodes[3];
     }
   }
