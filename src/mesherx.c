@@ -39,7 +39,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double gapHeight;
 
   nLayer = (int)(10.0/scale);
-  nLayer = 45;
+  nLayer = 40;
   rate = exp(scale*log(1.2));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
@@ -66,6 +66,13 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   rate = 1.15;
   while (i<nLayer && 
 	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.3)) {
+    if (i==30) {
+      for (face=102;face<=107;face++){
+	printf("treminating normals for gap face %d\n",face);
+	layerTerminateFaceNormals(layer, face);
+      }
+    }
+
     layerSmoothNormalDirection(layer);
     layerAdvance(layer);
     if (i>20) rate = rate+0.005;
@@ -76,25 +83,16 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   printf(" -- REBUILD EDGES\n");
   if ( layer != layerRebuildEdges(layer,vol) ) {
-    sprintf(outputProject,"%s_MXerror.fgrid",project);
-    printf("writing ERROR FAST file %s\n",outputProject);
-    gridExportFAST( grid, outputProject  );
     return 0;
   }
 
   printf(" -- REBUILD FACES\n");
   if ( layer != layerRebuildFaces(layer,vol) ) {
-    sprintf(outputProject,"%s_MXerror.fgrid",project);
-    printf("writing ERROR FAST file %s\n",outputProject);
-    gridExportFAST( grid, outputProject  );
     return 0;
   }
 
   printf(" -- REBUILD VOLUME\n");
   if ( layer != layerRebuildVolume(layer,vol) ) {
-    sprintf(outputProject,"%s_MXerror.fgrid",project);
-    printf("writing ERROR FAST file %s\n",outputProject);
-    gridExportFAST( grid, outputProject  );
     return 0;
   }
 
@@ -120,7 +118,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
 int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio)
 {
-  int normal, nterm;
+  int normal, nterm, totalterm;
   int root;
   double xyz[3];
   double spacing[3];
@@ -142,8 +140,10 @@ int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio)
       layerTerminateNormal(layer, normal);
     }
   }
-  printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
-  return nterm;
+  totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
+  printf("normals %d of %d terminated. %d active.\n",
+	 nterm,layerNNormal(layer),layerNActiveNormal(layer) );
+  return totalterm;
 }
 
 Layer *layerFormAdvancingLayerWithCADGeomBCS( int vol, Grid *grid )
@@ -568,6 +568,28 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   shellxyz = malloc(3*nnode*sizeof(double));
   for(i=0;i<nnode;i++) gridNodeXYZ(grid,l2g[i],&shellxyz[3*i]);
 
+  if (TRUE) {
+    FILE *tecplotFile;
+
+    printf("%s\nCould NOT mesh Volume %d\n",ErrMgr_GetErrStr(),vol);
+    printf("writing debugVolumeShell.t\n");
+
+    tecplotFile = fopen("debugVolumeShell.t","w");
+    fprintf(tecplotFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
+    fprintf(tecplotFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  nnode, nshell);
+    for ( i=0; i<nnode ; i++ ){
+      fprintf(tecplotFile, "%23.15e%23.15e%23.15e\n",
+	      shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i]);
+    }
+    fprintf(tecplotFile, "\n");
+    for ( i=0; i<nshell ; i++ ){
+      fprintf(tecplotFile, " %9d %9d %9d\n",
+	      shell[0+3*i]+1,shell[1+3*i]+1,shell[2+3*i]+1);
+    }
+    fflush(tecplotFile);
+  }
   if( !MeshMgr_MeshTetVolume(vol, 
 			     nnode, shellxyz,
 			     &nshell, &shell,
