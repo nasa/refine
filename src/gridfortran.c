@@ -155,3 +155,15 @@ int gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
   queueReset(queue);
 }
 
+int gridsize_( int *nnodeg, int *ncellg )
+{
+  *nnodeg = gridGlobalNNode(grid);
+  *ncellg = gridGlobalNCell(grid);
+}
+
+int gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
+		      int *oldncellg, int *newncellg, int *celloffset )
+{
+  gridGlobalShiftNode( grid, *oldnnodeg, *newnnodeg, *nodeoffset);
+  gridGlobalShiftCell( grid, *oldncellg, *newncellg, *celloffset);
+}

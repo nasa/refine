@@ -1052,6 +1052,18 @@ Grid *gridSetCellGlobal(Grid *grid, int cell, int global )
   return grid;
 }
 
+Grid *gridGlobalShiftCell(Grid *grid, int oldncellg, int newncellg, 
+			  int celloffset )
+{
+  int cell;
+  gridSetGlobalNCell(grid,newncellg);
+  if (NULL == grid->cellGlobal) return NULL;  
+  for (cell=0;cell<grid->maxcell;cell++)
+    if ( gridCellValid(grid,cell) && (grid->cellGlobal[cell] >= oldncellg) ) 
+      grid->cellGlobal[cell] += celloffset;
+  return grid;
+}
+
 int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
   int cellId;
@@ -2307,6 +2319,28 @@ Grid *gridSetNodeGlobal(Grid *grid, int node, int global )
     grid->sortedGlobal[insertpoint] = global;
     grid->sortedLocal[insertpoint] = node;
   }
+
+  return grid;
+}
+
+Grid *gridGlobalShiftNode(Grid *grid, int oldnnodeg, int newnnodeg, 
+			  int nodeoffset )
+{
+  int node;
+
+  gridSetGlobalNNode(grid,newnnodeg);
+
+  if (NULL == grid->nodeGlobal) return NULL;  
+
+  for (node=0;node<grid->maxnode;node++)
+    if ( gridValidNode(grid,node) && (grid->nodeGlobal[node] >= oldnnodeg) ) 
+      grid->nodeGlobal[node] += nodeoffset;
+
+  if (NULL == grid->sortedGlobal) return grid;
+
+  for (node=0;node<grid->nsorted;node++)
+    if ( grid->sortedGlobal[node] >= oldnnodeg ) 
+      grid->sortedGlobal[node] += nodeoffset;
 
   return grid;
 }

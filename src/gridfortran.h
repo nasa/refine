@@ -35,6 +35,11 @@ int queuedumpsize_( int *nInt, int *nDouble );
 int queuedump_( int *nInt, int *nDouble, int *ints, double *doubles );
 int gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles );
 
+int gridsize_( int *nnodeg, int *ncellg );
+
+int gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
+		      int *oldncellg, int *newncellg, int *celloffset );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */

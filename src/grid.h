@@ -151,6 +151,8 @@ Grid *gridSetGlobalNCell(Grid *g, int nglobal );
 int gridCellDegree(Grid *g, int nodeIndex);
 int gridCellGlobal(Grid *g, int cellIndex);
 Grid *gridSetCellGlobal(Grid *g, int cellIndex, int globalIndex );
+Grid *gridGlobalShiftCell(Grid *g, int oldncellg, int newncellg, 
+			  int celloffset );
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
@@ -241,6 +243,8 @@ Grid *gridDeleteNodesNotUsed(Grid *);
 int gridNodeGlobal(Grid *g, int node );
 int gridGlobal2Local(Grid *g, int global );
 Grid *gridSetNodeGlobal(Grid *g, int node, int global );
+Grid *gridGlobalShiftNode(Grid *g, int oldnnodeg, int newnnodeg, 
+			  int nodeoffset );
 int gridNodePart(Grid *g, int node );
 Grid *gridSetNodePart(Grid *g, int node, int part );
 bool gridNodeLocal(Grid *g, int node );
