@@ -729,9 +729,9 @@ void gridface_( int *face, int *faceId,
     nodeparts[0] = gridNodePart(grid,localnodes[0]);
     nodeparts[1] = gridNodePart(grid,localnodes[1]);
     nodeparts[2] = gridNodePart(grid,localnodes[2]);
-    gridNodeUV(grid,*faceId,localnodes[0],&uv[0*2]);
-    gridNodeUV(grid,*faceId,localnodes[1],&uv[1*2]);
-    gridNodeUV(grid,*faceId,localnodes[2],&uv[2*2]);
+    gridNodeUV(grid,localnodes[0],*faceId,&uv[0*2]);
+    gridNodeUV(grid,localnodes[1],*faceId,&uv[1*2]);
+    gridNodeUV(grid,localnodes[2],*faceId,&uv[2*2]);
     gridNodeXYZ(grid,localnodes[0],&xyz[0*3]);
     gridNodeXYZ(grid,localnodes[1],&xyz[1*3]);
     gridNodeXYZ(grid,localnodes[2],&xyz[2*3]);
