@@ -119,6 +119,13 @@ VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
   return self;
 }
 
+VALUE grid_pack( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  gridPack( grid );
+  return self;
+}
+
 VALUE grid_getGem( VALUE self, VALUE n0, VALUE n1 )
 {
 #define MAXGEM 200
@@ -144,6 +151,7 @@ void Init_Grid()
   rb_define_method( cGrid, "maxcell", grid_maxcell, 0 );
   rb_define_method( cGrid, "ncell", grid_ncell, 0 );
   rb_define_method( cGrid, "nodeDeg", grid_nodeDeg, 1 );
+  rb_define_method( cGrid, "pack", grid_pack, 0 );
   rb_define_method( cGrid, "registerNodeCell", grid_registerNodeCell, 2 );
   rb_define_method( cGrid, "validNodeCell", grid_validNodeCell, 0 );
   rb_define_method( cGrid, "firstNodeCell", grid_firstNodeCell, 1 );
