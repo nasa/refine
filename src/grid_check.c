@@ -26,14 +26,14 @@ void teardown (void)
 
 START_TEST(test_create)
 {
-  fail_unless( grid_count(grid) == 4,
+  fail_unless( grid_nnodes(grid) == 4,
 	       "expected 4 grid mesh");
 }
 END_TEST
 
 START_TEST(test_empty_firstcell)
 {
-  fail_unless( grid_firstcell(grid,1) == NULL,
+  fail_unless( grid_firstcell(grid,1) == 0,
 	       "expected the firstcell of grid to be null");
 }
 END_TEST
