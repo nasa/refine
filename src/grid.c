@@ -343,9 +343,70 @@ Grid *gridOrient(Grid *grid, int *c, int *n )
 {
 
   /* 0 leads */
-  if ( n[0] == c[0] && n[1] == c[1] ) {
-    n[2] = c[2];
+  if ( n[0] == c[0] && n[1] == c[1] ){ 
+    n[2] = c[2]; 
+    n[3] = c[3]; 
+    return grid; 
+  }
+  if ( n[0] == c[0] && n[1] == c[2] ){ 
+    n[2] = c[3]; 
+    n[3] = c[1]; 
+    return grid; 
+  }
+  if ( n[0] == c[0] && n[1] == c[3] ) {
+    n[2] = c[1];
+    n[3] = c[2];
+    return grid;
+  }
+
+  /* 1 leads */
+  if ( n[0] == c[1] && n[1] == c[0] ) {
+    n[2] = c[3];
+    n[3] = c[2];
+    return grid;
+  }
+  if ( n[0] == c[2] && n[1] == c[0] ) {
+    n[2] = c[1];
     n[3] = c[3];
+    return grid;
+  }
+  if ( n[0] == c[3] && n[1] == c[0] ) {
+    n[2] = c[2];
+    n[3] = c[1];
+    return grid;
+  }
+
+  /* 2 leads */
+  if ( n[0] == c[2] && n[1] == c[3] ) {
+    n[2] = c[0];
+    n[3] = c[1];
+    return grid;
+  }
+  if ( n[0] == c[3] && n[1] == c[1] ) {
+    n[2] = c[0];
+    n[3] = c[2];
+    return grid;
+  }
+  if ( n[0] == c[1] && n[1] == c[2] ) {
+    n[2] = c[0];
+    n[3] = c[3];
+    return grid;
+  }
+
+  /* 3 leads */
+  if ( n[0] == c[3] && n[1] == c[2] ) {
+    n[2] = c[1];
+    n[3] = c[0];
+    return grid;
+  }
+  if ( n[0] == c[1] && n[1] == c[3] ) {
+    n[2] = c[2];
+    n[3] = c[0];
+    return grid;
+  }
+  if ( n[0] == c[2] && n[1] == c[1] ) {
+    n[2] = c[3];
+    n[3] = c[0];
     return grid;
   }
 
