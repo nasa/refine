@@ -946,32 +946,34 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
   layerProjectNormalsToConstraints(layer);
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    dir = layer->normal[normal].direction;
-    lastTriangle = EMPTY;
-    radian = 0.01;
-    layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
-    for (iter=0;iter<1000 && radian > radianLimit && mindot < dotLimit;iter++){
-      if (minTriangle != lastTriangle) {
-	radian = radian * 0.5;
-	lastTriangle = minTriangle;
-	//printf("normal %d, dot %f rad %e triangle %d\n",normal,mindot,radian,minTriangle);
-      }
-      dir[0] += radian*mindir[0];
-      dir[1] += radian*mindir[1];
-      dir[2] += radian*mindir[2];
-      length = sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
-      if (length > 0.0) {
-	for ( i=0;i<3;i++) dir[i] = dir[i]/length;
-      }else{
-	for ( i=0;i<3;i++) dir[i] = 0.0;
-      }
+    if ( 0 != layerNormalDeg(layer, normal ) ) {
+      dir = layer->normal[normal].direction;
+      lastTriangle = EMPTY;
+      radian = 0.01;
       layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
-    }
-    if (mindot <= 0.0 ) {
-      double xyz[3];
-      gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-      printf("ERROR: %s, %d, Invisible norm %d dot%9.5f X%9.5f Y%9.5f Z%9.5f\n",
-	     __FILE__, __LINE__, normal, mindot,xyz[0],xyz[1],xyz[2]);
+      for (iter=0;iter<1000 && radian > radianLimit && mindot < dotLimit;iter++){
+	if (minTriangle != lastTriangle) {
+	  radian = radian * 0.5;
+	  lastTriangle = minTriangle;
+	  //printf("normal %d, dot %f rad %e triangle %d\n",normal,mindot,radian,minTriangle);
+	}
+	dir[0] += radian*mindir[0];
+	dir[1] += radian*mindir[1];
+	dir[2] += radian*mindir[2];
+	length = sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
+	if (length > 0.0) {
+	  for ( i=0;i<3;i++) dir[i] = dir[i]/length;
+	}else{
+	  for ( i=0;i<3;i++) dir[i] = 0.0;
+	}
+	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+      }
+      if (mindot <= 0.0 ) {
+	double xyz[3];
+	gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
+	printf("ERROR: %s, %d, Invisible norm %d dot%9.5f X%9.5f Y%9.5f Z%9.5f\n",
+	       __FILE__, __LINE__, normal, mindot,xyz[0],xyz[1],xyz[2]);
+      }
     }
   }
 
