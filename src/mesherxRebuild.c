@@ -56,8 +56,8 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
       edgeEndPoints[1]=gridGeomEdgeEnd(grid,edgeId);
       printf("rebuild edge %4d:  %10d <-> %10d\n",
 	     edgeId,edgeEndPoints[0],edgeEndPoints[1]);
-      edgeEndPoints[0] = gridFrozenEdgeEndPoint(grid,edgeId,edgeEndPoints[0]);
-      edgeEndPoints[1] = gridFrozenEdgeEndPoint(grid,edgeId,edgeEndPoints[1]);
+      edgeEndPoints[0] = layerEdgeEndPoint(layer,edgeId,edgeEndPoints[0]);
+      edgeEndPoints[1] = layerEdgeEndPoint(layer,edgeId,edgeEndPoints[1]);
       printf("rebuild endpoints:  %10d <-> %10d\n",
 	     edgeEndPoints[0],edgeEndPoints[1]);
       gridNodeXYZ(grid, edgeEndPoints[0], &edgexyz[0]);
