@@ -1265,6 +1265,36 @@ Grid *gridConstructTet7( Grid *grid, int n0, int n1,
   return grid;
 }
 
+Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
+{
+  int  igem, cell, nodes[4], inode, node, newnode, newnodes0[4], newnodes1[4];
+  double newX, newY, newZ;
+
+  if ( NULL == gridMakeGem( grid, n0, n1) ) return NULL;
+
+  newX = ( grid->xyz[0+3*n0] + grid->xyz[0+3*n1] ) * 0.5;
+  newY = ( grid->xyz[1+3*n0] + grid->xyz[1+3*n1] ) * 0.5;
+  newZ = ( grid->xyz[2+3*n0] + grid->xyz[2+3*n1] ) * 0.5;
+  newnode = gridAddNode(grid, newX, newY, newZ );
+  if ( newnode == EMPTY ) return NULL;
+  
+  for ( igem=0 ; igem<grid->ngem ; igem++ ){
+    cell = grid->gem[igem];
+    gridCell(grid, cell, nodes);
+    gridRemoveCell(grid, cell);
+    for ( inode = 0 ; inode < 4 ; inode++ ){
+      node = nodes[inode];
+      newnodes0[inode]=node;
+      newnodes1[inode]=node;
+      if ( node == n0 ) newnodes0[inode] = newnode;
+      if ( node == n1 ) newnodes1[inode] = newnode;
+    }
+    gridAddCell(grid, newnodes0[0], newnodes0[1], newnodes0[2], newnodes0[3] );
+    gridAddCell(grid, newnodes1[0], newnodes1[1], newnodes1[2], newnodes1[3] );
+  }
+  printf("return grid..\n");
+  return grid;
+}
 
 int gridAddNode(Grid *grid, double x, double y, double z )
 {
