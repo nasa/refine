@@ -1211,11 +1211,21 @@ Grid *gridEliminateUnusedNodeGlobal(Grid *grid )
     }
   }
 
+  /* for safety, see if other proc has already deleted this global */
+  for ( offset = 0 ; offset < grid->nUnusedNodeGlobal ; offset++ ) {
+    node = gridGlobal2Local(grid,grid->unusedNodeGlobal[offset]);
+    if (EMPTY!=node) gridRemoveNodeWithOutGlobal(grid,node);
+  }
+
   offset = 0;
   for (sort=0;sort<grid->nsorted;sort++) {
     while ( (offset < grid->nUnusedNodeGlobal ) &&
 	    (grid->unusedNodeGlobal[offset] < grid->sortedGlobal[sort] ) ) {
       offset++;
+    }
+    if (grid->unusedNodeGlobal[offset]==grid->sortedGlobal[sort]) {
+      printf("ERROR: %s: %d: Global Node %d exists in sortedGlobal.\n",
+	     __FILE__,__LINE__,grid->unusedNodeGlobal[offset]);
     }
     node = grid->sortedLocal[sort];
     grid->nodeGlobal[node] -= offset;
