@@ -100,9 +100,9 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   fflush(stdout);
 #endif
 
+  grid->celllist[terminator]=-grid->firstcell[nodeId];
   grid->firstcell[nodeId]=entry;
   grid->celllist[entry]=cellId+1;
-  grid->celllist[terminator]=0;
   grid->celllist[0]=-nextOpen;
 
   return grid;

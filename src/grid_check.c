@@ -114,15 +114,16 @@ START_TEST(testMultipleCellExists)
 {
   fail_unless ( !gridCellExists(grid,1,198), "found non-existing cell 198" );
   gridRegisterNodeCell(grid,1,198);
-  //  gridRegisterNodeCell(grid,1,199);
+  gridRegisterNodeCell(grid,1,199);
   fail_unless ( gridCellExists(grid,1,198), "can't find cell 198" );
-  //  fail_unless ( gridCellExists(grid,1,199), "can't find cell 199" );
+  fail_unless ( gridCellExists(grid,1,199), "can't find cell 199" );
 
 }
 END_TEST
 
 /* allocate n1 then n2 then n1 again */
 /* non-contiguos cellist for access and registering */
+/* test that new list terminator is contiguous */
 /* packing */
 
 /* allocating a new chunk of celllist */
