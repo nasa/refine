@@ -983,7 +983,7 @@ Layer *layerAdvance(Layer *layer)
     }else{
       if ( nterminated == 1 ) {
 	if (n[0]==n[3]) gridAddPyramid(grid,n[1],n[2],n[0],n[4],n[5]);
-	if (n[1]==n[4]) gridAddPyramid(grid,n[2],n[0],n[1],n[3],n[5]);
+	if (n[1]==n[4]) gridAddPyramid(grid,n[2],n[0],n[1],n[5],n[3]);
 	if (n[2]==n[5]) gridAddPyramid(grid,n[0],n[1],n[2],n[3],n[4]);
       }else{
 	gridAddPrism(grid,n[0],n[1],n[2],n[3],n[4],n[5]);

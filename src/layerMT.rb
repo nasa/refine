@@ -1002,7 +1002,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,             grid.ncell
   assert_equal 0,             grid.nprism
   assert_equal 1,             grid.npyramid
-  assert_equal [2,0,1,3,4],   grid.pyramid(0)
+  assert_equal [2,0,1,4,3],   grid.pyramid(0)
  end
 
  def testAdvanceLayerIntoVolumeWithaTerminatedPrismOrPyramid2
