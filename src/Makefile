@@ -14,3 +14,6 @@ test:
 	./lineMT.rb
 	./nearMT.rb
 	./sampleunitMT.rb
+
+clean:
+	rm -rf Adj Grid* Layer Line Near SampleUnit
