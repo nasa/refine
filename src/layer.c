@@ -770,9 +770,9 @@ Layer *layerAdvance(Layer *layer, double height )
   }
 
   for (front=0;front<layerNFront(layer);front++){
-    for (i=0;i<3;i++) layer->front[front].globalNode[i] = 
-			layer->normal[layer->front[front].normal[i]].root;
     layerFrontNormals(layer, front, normals);
+    for (i=0;i<3;i++) 
+      layer->front[front].globalNode[i] = layer->normal[normals[i]].tip;
 
     /* note that tip has been set to root on terminated normals */
     /* the if (n[0]!=n[3]) checks are for layer termiantion */
