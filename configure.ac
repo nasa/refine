@@ -2,7 +2,7 @@
 
 AC_PREREQ(2.53)
 AC_INIT([src/grid.c])
-AM_INIT_AUTOMAKE([refine],[1.1.0])
+AM_INIT_AUTOMAKE([refine],[1.1.1_pre1])
 
 AC_ARG_WITH(SDK,
 	[  --with-SDK[=ARG]          use GEOLAB SDK package [ARG=GEO_SDK]],
