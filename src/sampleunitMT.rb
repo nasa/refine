@@ -6,14 +6,13 @@
 
 Dir.chdir ENV['srcdir'] if ENV['srcdir']
 
-require 'mkmf'
-
 ext = 'SampleUnit'
 `mkdir -p SampleUnit`
 Dir.chdir ext
-$objs = %w[sampleunit.o sampleunit_ruby.o]
-create_makefile(ext,'..')
-exit 1 unless system "make --quiet --no-print-directory"
+ require 'mkmf'
+ $objs = %w[sampleunit.o sampleunit_ruby.o]
+ create_makefile(ext,'..')
+ exit 1 unless system "make --quiet --no-print-directory"
 Dir.chdir '..'
 
 require 'test/unit'
