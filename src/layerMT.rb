@@ -456,6 +456,24 @@ class TestLayer < Test::Unit::TestCase
   assert_equal true,      layer.cellInLayer(3)
  end
 
+ def testAdvanceLayerIntoVolumeWithTwoFrontEdgeOfConstrainingFace
+  assert_not_nil          grid = Grid.new(10,10,10,10)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  grid.addFace(0,1,2,1)
+  grid.addFace(0,1,2,9)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.populateAdvancingFront([1])
+  assert_equal true,      layer.faceInLayer(0)
+  assert_equal false,     layer.faceInLayer(1)
+  assert_equal [0,1,2,1], grid.face(0)
+  assert_equal [0,1,2,9], grid.face(1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
+  assert_equal [0,1,2,1], grid.face(0)
+  assert_equal [0,1,2,9], grid.face(1)
+ end
+
  def testAdvanceLayerOnSymPlane
   assert_not_nil          grid = Grid.new(17,14,14,0)
   assert_equal 0,         grid.addNode(0,0,0)

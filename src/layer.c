@@ -48,6 +48,7 @@ struct Layer {
   bool mixedElementMode;
 
   bool *cellInLayer;
+  bool *faceInLayer;
 };
 
 Layer *layerCreate( Grid *grid )
@@ -74,6 +75,8 @@ Layer *layerCreate( Grid *grid )
 
   layer->cellInLayer = malloc(gridMaxCell(grid)*sizeof(bool));
   for (i=0;i<gridMaxCell(grid);i++) layer->cellInLayer[i] = FALSE;
+  layer->faceInLayer = malloc(gridMaxFace(grid)*sizeof(bool));
+  for (i=0;i<gridMaxFace(grid);i++) layer->faceInLayer[i] = FALSE;
   return layer;
 }
 
@@ -208,6 +211,7 @@ Grid *layerGrid(Layer *layer)
 
 void layerFree(Layer *layer)
 {
+  free(layer->faceInLayer);
   free(layer->cellInLayer);
   gridDetachNodeSorter( layer->grid );
   if (layer->adj != NULL) adjFree(layer->adj);
@@ -277,6 +281,7 @@ Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
       if (grid == gridFace(grid,face,nodes,&id) &&
 	  id==bc[ibc] ) {
 	layerAddTriangle(layer,nodes[0],nodes[1],nodes[2]);
+	layer->faceInLayer[face]=TRUE;
       }
     }
   }
@@ -1049,15 +1054,8 @@ bool layerCellInLayer(Layer *layer, int cell)
 
 bool layerFaceInLayer(Layer *layer, int face)
 {
-  int nodes[3], faceId;
-  Grid *grid;
-  grid = layerGrid(layer);
-
-  if ( grid != gridFace(grid, face, nodes, &faceId) ) return FALSE;
-
-  return ( gridNodeFrozen(grid,nodes[0]) && 
-	   gridNodeFrozen(grid,nodes[1]) && 
-	   gridNodeFrozen(grid,nodes[2]) );
+  if (face < 0 || face >= gridMaxFace(layerGrid(layer)) ) return FALSE;
+  return layer->faceInLayer[face];
 }
 
 bool layerEdgeInLayer(Layer *layer, int edge)
@@ -1270,11 +1268,15 @@ Layer *layerAdvance(Layer *layer)
 	n[3] = layer->normal[side[1]].tip;
 	if (layerTetrahedraOnly(layer) || n[0]==n[2] || n[1]==n[3]){
 	  if (side[0]<side[1]){
-	    if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
-	    if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
+	    if (n[1]!=n[3]) 
+	      layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[3],faceId)]=TRUE;
+	    if (n[0]!=n[2])  
+	      layer->faceInLayer[gridAddFace(grid,n[0],n[3],n[2],faceId)]=TRUE;
 	  }else{
-	    if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
-	    if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
+	    if (n[0]!=n[2])  
+	      layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	    if (n[1]!=n[3])  
+	      layer->faceInLayer[gridAddFace(grid,n[2],n[1],n[3],faceId)]=TRUE;
 	  }
 	}else{
 	  gridAddQuad(grid,n[0],n[1],n[3],n[2],faceId);
