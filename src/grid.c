@@ -109,6 +109,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 Grid *gridImport(int maxnode, int nnode, 
 		 int maxface, int nface, 
 		 int maxcell, int ncell,
+		 int maxedge, 
 		 double *xyz, int *f2n, int *faceId, int *c2n )
 {
   int i;
@@ -116,12 +117,14 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid = malloc(sizeof(Grid));
 
-  grid->maxnode = maxnode;
+  grid->maxnode = MAX(maxnode,1);
   grid->nnode   = nnode;
-  grid->maxcell = maxcell;
+  grid->maxcell = MAX(maxcell,1);
   grid->ncell   = ncell;
-  grid->maxface = maxface;
+  grid->maxface = MAX(maxface,1);
   grid->nface   = nface;
+  grid->maxedge = MAX(maxedge,1);
+  grid->nedge   = 0;
 
   grid->xyz = xyz;
 
@@ -168,6 +171,19 @@ Grid *gridImport(int maxnode, int nnode,
     adjRegister(grid->faceAdj,grid->f2n[1+3*i],i);
     adjRegister(grid->faceAdj,grid->f2n[2+3*i],i);
   }
+
+  // edge
+  grid->e2n    = malloc(2 * grid->maxedge * sizeof(int));
+  grid->edgeId = malloc(1 * grid->maxedge * sizeof(int));
+  for (i=0;i < grid->maxedge; i++ ) {
+    grid->e2n[0+2*i] = EMPTY; 
+    grid->e2n[1+2*i] = i+1; 
+    grid->edgeId[i] = EMPTY; 
+  }
+  grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
+  grid->blanke2n = 0;
+
+  grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2);
 
   grid->ngem = 0;
 
@@ -234,7 +250,7 @@ Grid *gridImportFAST( char *filename )
 
   fclose(file);
 
-  return gridImport( nnode, nnode, nface, nface, maxcell, ncell,
+  return gridImport( nnode, nnode, nface, nface, maxcell, ncell, 0,
 		     xyz, f2n, faceId, c2n );
 }
 
