@@ -37,6 +37,7 @@ void gridparallelswap_( int *processor, double *ARlimit );
 void gridparallelsmooth_( int *processor,
 			  double *optimizationLimit, double *laplacianLimit );
 void gridparallelrelaxneg_( int *processor, int *geometryAllowed );
+void gridparallelrelaxsurf_( int *processor );
 void gridparalleladapt_( int *processor, 
 			 double *minLength, double *maxLength );
 void queuedumpsize_( int *nInt, int *nDouble );

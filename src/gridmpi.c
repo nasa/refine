@@ -203,6 +203,26 @@ Grid *gridParallelRelaxNegativeCells( Grid *grid,
   return grid;
 }
 
+Grid *gridParallelRelaxNegativeFaceAreaUV( Grid *grid, 
+					   GridBool localOnly )
+{
+  int node;
+  double nodeFaceAreaUV;
+  GridBool nearGhost;
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if ( gridValidNode( grid, node ) && 
+	 !gridNodeFrozen( grid, node ) && 
+	 gridNodeLocal(grid,node) ) {
+      nearGhost = gridNodeNearGhost(grid, node);
+      if ( localOnly != nearGhost ) {
+	gridMinFaceAreaUV(grid,node,&nodeFaceAreaUV);
+	if (0.0>=nodeFaceAreaUV) gridSmoothNodeFaceAreaUV( grid, node );
+      }
+    }
+  }
+  return grid;
+}
+
 Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
 {
   int cell, maxcell;

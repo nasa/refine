@@ -1,4 +1,10 @@
-2004-07-31 13:36 Bill Jones <w.t.jones@larc.nasa.gov>
+2004-09-03 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelrelaxsurf_) added. API changed.
+	* src/gridmpi.c (gridParallelRelaxNegativeFaceAreaUV) added.
+	* src/gridcad.c (gridSmoothNodeFaceAreaUV) kick out if on edge node.
+	
+2004-09-03 13:36 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridcad.c (gridSmoothNodeFaceAreaUV) general routine for
 	modifying node location for improving small (negative) face area

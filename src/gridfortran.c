@@ -310,6 +310,13 @@ void gridparallelrelaxneg_( int *processor, int *geometryAllowed )
 #endif
 }
 
+void gridparallelrelaxsurf_( int *processor )
+{
+  GridBool localOnly;
+  localOnly = (-1 == (*processor));
+  gridParallelRelaxNegativeFaceAreaUV(grid, localOnly);
+}
+
 void gridparalleladapt_( int *processor, 
 			 double *minLength, double *maxLength )
 {

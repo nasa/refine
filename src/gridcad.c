@@ -1535,6 +1535,7 @@ Grid *gridMinFaceAreaUV(Grid *grid, int node, double *min_area)
 
 Grid *gridSmoothNodeFaceAreaUV(Grid *grid, int node )
 {
+  if (gridGeometryBetweenFace(grid,node)) return grid;
   return gridSmoothNodeFaceAreaUVSimplex(grid, node );
 }
 

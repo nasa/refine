@@ -34,6 +34,9 @@ Grid *gridParallelRelaxNegativeCells(Grid *grid,
 				     GridBool localOnly, 
 				     GridBool smoothOnSurface );
 
+Grid *gridParallelRelaxNegativeFaceAreaUV(Grid *grid, 
+					  GridBool localOnly );
+
 Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit );
 Grid *gridParallelEdgeSwap(Grid *g, Queue *q, int node0, int node1 );
 Grid *gridApplyQueue(Grid *g, Queue *q );
