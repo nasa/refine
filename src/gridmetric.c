@@ -1865,9 +1865,9 @@ double gridCellMeanRatio( double *xyz0, double *xyz1, double *xyz2, double *xyz3
   gridSubtractVector( xyz3, xyz1, edge5);
   gridSubtractVector( xyz3, xyz2, edge6);
 
-  gridCrossProduct( edge1, edge2, norm );
+  gridCrossProduct( edge5, edge4, norm );
 
-  volume = gridDotProduct(norm,edge3)/6.0;
+  volume = -gridDotProduct(norm,edge1)/6.0;
 
   if (volume <= 0.0) return volume;
 
@@ -1880,4 +1880,34 @@ double gridCellMeanRatio( double *xyz0, double *xyz1, double *xyz2, double *xyz3
       gridDotProduct(edge6,edge6) );
 
   return mr;
+}
+
+void gridCellMeanRatioDerivative( double *xyz0, double *xyz1, 
+				  double *xyz2, double *xyz3,
+				  double *mr, double *dMRdx)
+{
+  double edge1[3], edge2[3], edge3[3];
+  double edge4[3], edge5[3], edge6[3];
+  double norm[3];
+  double volume, dVdx, dVdy, dVdz; 
+
+  gridSubtractVector( xyz1, xyz0, edge1);
+  gridSubtractVector( xyz2, xyz0, edge2);
+  gridSubtractVector( xyz3, xyz0, edge3);
+  gridSubtractVector( xyz2, xyz1, edge4);
+  gridSubtractVector( xyz3, xyz1, edge5);
+  gridSubtractVector( xyz3, xyz2, edge6);
+
+  gridCrossProduct( edge5, edge4, norm );
+
+  volume = -gridDotProduct(norm,edge1)/6.0;
+
+  dVdx = norm[0]/6.0;
+  dVdy = norm[1]/6.0;
+  dVdz = norm[2]/6.0;
+
+  *mr = volume;
+  dMRdx[0] = dVdx;
+  dMRdx[1] = dVdy;
+  dMRdx[2] = dVdz;
 }
