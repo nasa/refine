@@ -809,7 +809,7 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
   int tri, triangles[MAXNORMALDEG];
   int triangle, nodes[3], side0, side1, faceId;
   double xyz0[3], xyz1[3], tangent[3];
-  double newxyz[3], uv[2], normalDirection[3];
+  double normalDirection[3];
   
   if (layer != layerNormalTriangles(layer, normal, MAXNORMALDEG, triangles )) {
     layer->normalTriangleHub = EMPTY;
@@ -841,9 +841,7 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
       
       faceId = layerConstrained(layer,normal);
       if (faceId>0) {
-	gridProjectToFace(layerGrid(layer),faceId,xyz0,uv,newxyz);
-	gridFaceNormalAtUV(layerGrid(layer), faceId,
-			   uv, newxyz, normalDirection);
+	gridFaceNormalAtXYZ(layerGrid(layer), faceId, xyz0, normalDirection);
 	gridCrossProduct(normalDirection,tangent,
 			 &layer->normalTriangleDirection[3*tri]);
 	gridVectorNormalize(&layer->normalTriangleDirection[3*tri]);
@@ -3023,15 +3021,15 @@ Layer *layerNormalBlendAxle(Layer *layer, int normal, double *axle)
 {
   int blend, blend0, blend1;
   double axle0[3], axle1[3];
-  double uv[2], xyz[3];
+  double xyz[3];
   int faceId, node;
 
   if ( 0 < layerConstrained(layer,normal) ) {
     Grid *grid = layerGrid(layer);
     faceId = layerConstrained(layer,normal);
     node = layerNormalRoot(layer,normal);
-    gridNodeUV(grid, node, faceId, uv);
-    gridFaceNormalAtUV(grid,faceId,uv,xyz,axle);
+    gridNodeXYZ(grid, node, xyz);
+    gridFaceNormalAtXYZ(grid,faceId,xyz,axle);
     blend = adjItem(adjFirst(layerBlendAdj(layer),normal));
     if (node == layer->blend[blend].nodes[0]) {
       axle[0] = -axle[0]; axle[1] = -axle[1]; axle[2] = -axle[2];
