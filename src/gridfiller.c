@@ -8,6 +8,11 @@
 
 /* $Id$ */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include "gridfiller.h"
+#include <CADGeom/CADGeom.h>
+
 Grid *gridLoadPart( char *project, int maxnode )
 {
 
@@ -23,7 +28,7 @@ Grid *gridLoadPart( char *project, int maxnode )
     return NULL;
   }
 
-  return gridFillFromPart( maxnode );
+  return gridFillFromPart( 1, maxnode );
 
 }
  

@@ -17,6 +17,7 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 #include "gridcad.h"
+#include "gridfiller.h"
 #include "layer.h"
 #include <CADGeom/CADGeom.h>
 
