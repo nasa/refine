@@ -18,10 +18,16 @@ BEGIN_C_DECLORATION
 typedef struct Grid Grid;
 
 
-Grid *gridCreate(long nnodes);
-long gridNNodes(Grid *g);
+Grid *gridCreate(long nnode, long ncell);
+long gridNNode(Grid *g);
+long gridNCell(Grid *g);
+long *gridDEBUGcelllist(Grid *g);
 long gridNodeDeg(Grid *g, long nodeIndex);
-Grid *gridRegisterCell(Grid *g, long n0, long n1, long n2, long n3);
+Grid *gridRegisterNodeCell(Grid *g, long nodeIndex);
+void gridFirstNodeCell(Grid *g, long nodeIndex);
+void gridNextNodeCell(Grid *g);
+int gridLastNodeCell(Grid *g);
+
 void gridFree(Grid *g);
 
 END_C_DECLORATION

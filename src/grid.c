@@ -12,24 +12,46 @@
 #include "grid.h"
 
 struct Grid {
-  long nnodes;
-  long *firstcell
+  long nnode;
+  long ncell;
+  long *firstcell;
+  long *celllist;
 };
 
-Grid* gridCreate(long n)
+Grid* gridCreate(long nnode, long ncell)
 {
-  long i;
+  long i, nlist;
   Grid *grid;
+
   grid = malloc(sizeof(Grid));
-  grid->nnodes =n;
-  grid->firstcell = malloc(grid->nnodes * sizeof(long));
-  for (i=0;i < grid->nnodes; i++ ) grid->firstcell[i] = 0;
+
+  grid->nnode = nnode;
+  grid->firstcell = malloc(grid->nnode * sizeof(long));
+  for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = 0;
+
+  grid->ncell = ncell;
+  nlist = (grid->ncell*4+grid->nnode)+1;
+  grid->celllist = malloc( nlist * sizeof(long));
+  for (i=0;i < nlist; i++ ) grid->celllist[i] = -(i+1);
+  grid->celllist[nlist-1] =0;
+  
+ 
   return  grid;
 }
 
-long gridNNodes(Grid *grid)
+long gridNNode(Grid *grid)
 {
-  return grid->nnodes;
+  return grid->nnode;
+}
+
+long gridNCell(Grid *grid)
+{
+  return grid->ncell;
+}
+
+long* gridDEBUGcelllist(Grid *grid)
+{
+  return grid->celllist;
 }
 
 long gridNodeDeg(Grid *grid, long id)
@@ -37,13 +59,21 @@ long gridNodeDeg(Grid *grid, long id)
   return grid->firstcell[id];
 }
 
-Grid* gridRegisterCell(Grid *grid, long n0, long n1, long n2, long n3)
+Grid* gridRegisterNodeCell(Grid *grid, long id)
 {
-  grid->firstcell[n0]++;
-  grid->firstcell[n1]++;
-  grid->firstcell[n2]++;
-  grid->firstcell[n3]++;
+  grid->firstcell[id]++;
   return grid;
+}
+
+void gridFirstNodeCell(Grid *grid, long id)
+{
+}
+void gridNextNodeCell(Grid *grid)
+{
+}
+int gridLastNodeCell(Grid *grid)
+{
+  return 0;
 }
 
 void gridFree(Grid *grid)

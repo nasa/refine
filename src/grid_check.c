@@ -16,7 +16,7 @@ Grid *grid;
 
 void setup (void)
 {
-  grid = gridCreate(4);
+  grid = gridCreate(4,1);
 }
 
 void teardown (void)
@@ -26,8 +26,12 @@ void teardown (void)
 
 START_TEST(testGridCreate)
 {
-  fail_unless( gridNNodes(grid) == 4,
-	       "expected 4 grid mesh");
+  fail_unless( gridNNode(grid) == 4,
+	       "expected 4 node mesh");
+  fail_unless( gridNCell(grid) == 1,
+	       "expected 1 cell mesh");
+  fail_unless( (gridDEBUGcelllist(grid))[0] == -1, "celllist init error");
+  fail_unless( (gridDEBUGcelllist(grid))[1] == -2, "celllist init error");
 }
 END_TEST
 
@@ -41,16 +45,21 @@ START_TEST(testNodeDeg)
 	       "expected no neighbors of node 2");
   fail_unless( gridNodeDeg(grid,3) == 0,
 	       "expected no neighbors of node 3");
-  gridRegisterCell(grid,0,1,2,3);
-  fail_unless( gridNodeDeg(grid,0) == 1,
-	       "expected one neighbors of node 0");
-  fail_unless( gridNodeDeg(grid,1) == 1,
-	       "expected one neighbors of node 1");
+  gridRegisterNodeCell(grid,2);
   fail_unless( gridNodeDeg(grid,2) == 1,
 	       "expected one neighbors of node 2");
-  fail_unless( gridNodeDeg(grid,3) == 1,
-	       "expected one neighbors of node 3");
+}
+END_TEST
 
+START_TEST(testCellIterator)
+{
+  int n;
+  n =0;
+  for ( gridFirstNodeCell(grid,0); 
+	gridLastNodeCell(grid); 
+	gridNextNodeCell(grid)) n++;
+  fail_unless( n == 0, 
+	       "expected no neighbors of node 0");
 }
 END_TEST
 
@@ -67,6 +76,7 @@ Suite *grid_suite (void)
   suite_add_tcase (s, tNeighbors);
   tcase_add_checked_fixture (tNeighbors, setup, teardown); 
   tcase_add_test (tNeighbors, testNodeDeg); 
+  tcase_add_test (tNeighbors, testCellIterator); 
 
   return s; 
 }
