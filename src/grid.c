@@ -394,6 +394,7 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
     }
     grid->nequ = grid->ngem+1;
     grid->equ[grid->ngem+1] = grid->equ[0];
+
   }else{
     grid->nequ = grid->ngem;
   }
@@ -408,6 +409,15 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
 
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
+  //test face
+  if (grid->nequ !=grid->ngem){
+    int faceId0, faceId1;
+    faceId0 = gridFaceId(grid,n0,n1,grid->equ[0]);
+    faceId1 = gridFaceId(grid,n0,n1,grid->equ[grid->ngem]);
+    
+    printf(" - %d %d %d - ",grid->ngem,faceId0, faceId1);
+  }
+
   origcost = 2.0;
 
   for ( i = 0 ; i < grid->ngem ; i++ ){
