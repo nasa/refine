@@ -44,7 +44,6 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double rate;
   int nLayer;
   int face;
-  double minVolume;
   double gapHeight;
   double origin[3] = {0.0, 0.0, 0.0};
   double direction[3] = {0, 1, 0};
@@ -106,13 +105,6 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     printf("advance layer %d\n",i);
 
     layerAdvance(layer);
-
-    minVolume = gridMinVolume( grid );
-    printf("minimum volume%16.12f\n",minVolume);
-    if (minVolume<1.0e-14) {
-      printf("ERROR: return due to volume.\n");
-      return 0;
-   }
 
     if (i/5*5==i) layerWriteTecplotFrontGeometry(layer);
   }
