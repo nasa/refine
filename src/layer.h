@@ -52,14 +52,15 @@ struct Layer {
   Grid *grid;
   int maxtriangle, ntriangle;
   Triangle *triangle;
+  Adj *triangleAdj;
   int maxParentGeomFace, nParentGeomFace, *ParentGeomFace;
   int maxblend, nblend;
   Blend *blend;
+  Adj *blendAdj;
   int maxnormal, nnormal;
   Normal *normal;
   int *globalNode2Normal;
   int nConstrainingGeometry, *constrainingGeometry;
-  Adj *triangleAdj;
   Near *nearTree;
   bool mixedElementMode;
 
@@ -212,9 +213,11 @@ Layer *layerSplitBlend(Layer *);
 int layerFirstTriangleAfterGap(Layer *, int normal );
 int layerNRequiredBlends(Layer *, int normal, double angleLimit );
 Layer *layerBlend(Layer *, double angleLimit );
-Layer *layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
+int layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
 Layer *layerDuplicateAllBlend(Layer *);
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
+#define layerBlendAdj(layer) (layer->blendAdj)
+int layerBlendDegree(Layer *, int normal);
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 
 Layer *layerPopulateNormalNearTree(Layer *);

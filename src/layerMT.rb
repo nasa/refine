@@ -27,6 +27,8 @@ end
 
 class TestLayer < Test::Unit::TestCase
 
+ EMPTY = (-1)
+
  def testInit
   assert_not_nil  grid = Grid.new(2,0,0,0)
   assert_not_nil  layer = Layer.new(grid)
@@ -1282,6 +1284,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1,     layer.nRequiredBlends(1,-1.0)
   assert_equal 1,     layer.nRequiredBlends(2,-1.0)
   assert_equal 0,     layer.nRequiredBlends(3,-1.0)
+  assert_equal 0,     layer.blendDegree(-1)
+  assert_equal 0,     layer.blendDegree(0)
   assert_equal layer, layer.blend(-1.0)
   assert_equal 1,     layer.nblend
   # y 25--3 normals
@@ -1292,6 +1296,24 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [4,1,2,5], layer.blendNormals(0)
   assert_equal [0,4,2], layer.triangleNormals(0)
   assert_equal [5,1,3], layer.triangleNormals(1)
+  assert_equal 0,       layer.blendDegree(0)
+  assert_equal 1,       layer.blendDegree(1)
+  assert_equal 0,       layer.blendDegree(4)
+ end
+
+ def testAdvanceBlendForConvextFace
+  grid  = flatTwoFaceGrid
+  # y 2---3
+  # ^ |0\1|
+  # | 0---1 -> x
+  grid.setNodeXYZ(3,[0.5,0.5,-1])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.blend(-1.0)
+  assert_equal layer, layer.advanceConstantHeight(0.1)
+  assert_equal 4, layer.ntriangle
+  assert_equal 9, grid.ncell
+  assert_equal 0, layer.nblend
+  assert_equal 0, layer.blendDegree(1)
  end
 
  def testSplitBlend
@@ -1551,6 +1573,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 3, layer.nblend 
 
   layer.advanceConstantHeight(0.1)
+  assert_equal 19, grid.ncell  
 
   layer.writeTecplotFrontGeometry
  end
@@ -1638,7 +1661,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 4, layer.nActiveNormal
  end
 
- def testDoNotCollideTriangleFor90degConer
+ def testDoNotCollideTriangleFor90degCorner
   wiggle = 1.0e-10
   tol    = 1.0e-8
   grid  = flatTwoFaceGrid

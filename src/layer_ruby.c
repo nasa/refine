@@ -459,6 +459,12 @@ VALUE layer_blendNormals( VALUE self, VALUE blend )
   return rb_normals;
 }
 
+VALUE layer_blendDegree( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerBlendDegree(layer,NUM2INT(normal)));
+}
+
 VALUE layer_terminateCollidingNormals( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -548,6 +554,7 @@ void Init_Layer()
   rb_define_method( cLayer, "splitBlend", layer_splitBlend, 0 );
   rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
+  rb_define_method( cLayer, "blendDegree", layer_blendDegree, 1 );
 
   rb_define_method( cLayer, "terminateCollidingNormals", layer_terminateCollidingNormals, 0 );
   rb_define_method( cLayer, "terminateCollidingTriangles", layer_terminateCollidingTriangles, 0 );

@@ -34,19 +34,20 @@ Layer *layerCreate( Grid *grid )
   layer->maxtriangle=0;
   layer->ntriangle=0;
   layer->triangle=NULL;
+  layer->triangleAdj=NULL;
   layer->maxParentGeomFace=0;
   layer->nParentGeomFace=0;
   layer->ParentGeomFace=NULL;
   layer->maxblend=0;
   layer->nblend=0;
   layer->blend=NULL;
+  layer->blendAdj=NULL;
   layer->maxnormal=0;
   layer->nnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
   layer->nConstrainingGeometry=0;
   layer->constrainingGeometry=NULL;
-  layer->triangleAdj=NULL;
   layer->nearTree=NULL;
   layer->mixedElementMode=FALSE;
 
@@ -78,13 +79,14 @@ void layerFree(Layer *layer)
   free(layer->cellInLayer);
   gridDetachNodeSorter( layer->grid );
   gridDetachReallocator( layer->grid );
-  if (layer->triangleAdj != NULL) adjFree(layer->triangleAdj);
   if (layer->nearTree != NULL) free(layer->nearTree);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
   if (layer->ParentGeomFace != NULL) free(layer->ParentGeomFace);
+  if (layer->blendAdj != NULL) adjFree(layer->blendAdj);
   if (layer->blend != NULL) free(layer->blend);
+  if (layer->triangleAdj != NULL) adjFree(layer->triangleAdj);
   if (layer->triangle != NULL) free(layer->triangle);
   free(layer);
 }
@@ -2071,6 +2073,7 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
     }
     layerBuildNormalTriangleAdjacency(layer);
     layer->nblend=0;
+    adjFree(layer->blendAdj); layer->blendAdj = NULL;
   }
 
 
@@ -2518,7 +2521,11 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 
   if (angleLimit < 0.0) angleLimit = 250; /* deg */
 
+  if (layer->blendAdj != NULL) adjFree(layer->blendAdj);
+
   originalNormals = layerNNormal(layer);
+  layer->blendAdj = adjCreate( originalNormals, originalNormals, 1000);
+
   for ( normal = 0 ; normal < originalNormals ; normal++ ) {
     nRequiredBlends = layerNRequiredBlends(layer, normal, angleLimit );
     if ( nRequiredBlends > 0 ) {
@@ -2546,16 +2553,20 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 	    }
 	    layerCommonEdge(layer, triangle, nextTriangle, commonEdge);
 	    if (layerNormalRoot(layer,normal) == commonEdge[0] ) {
-	      layerAddBlend(layer,leftNormal,rightNormal,commonEdge[1]);
+	      adjRegister( layerBlendAdj(layer), normal,
+			   layerAddBlend( layer,leftNormal,rightNormal,
+					  commonEdge[1]) );
 	    }else{
-	      layerAddBlend(layer,leftNormal,rightNormal,commonEdge[0]);
+	      adjRegister( layerBlendAdj(layer), normal,
+			   layerAddBlend( layer,leftNormal,rightNormal,
+					  commonEdge[0]) );
 	    }
 	  }
+	  //printf("normal %d triangle %d leftNormal %d rightNormal %d\n", normal, triangle, leftNormal, rightNormal);
+	  for (i=0;i<3;i++)
+	    if (layer->triangle[nextTriangle].normal[i] == normal) 
+	      layer->triangle[nextTriangle].normal[i] = leftNormal;
 	}
-	//printf("normal %d triangle %d leftNormal %d rightNormal %d\n", normal, triangle, leftNormal, rightNormal);
-	for (i=0;i<3;i++)
-	  if (layer->triangle[nextTriangle].normal[i] == normal) 
-	    layer->triangle[nextTriangle].normal[i] = leftNormal;
 	triangle = nextTriangle;
 	nextTriangle = layerNextTriangle(layer, normal, triangle);      
 	rightNormal = leftNormal;
@@ -2608,7 +2619,7 @@ Layer *layerDuplicateAllBlend(Layer *layer)
   return layer;
 }
 
-Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
+int layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
 {
   int i, node0, node1, n0, n1;
   bool newEdge;
@@ -2687,7 +2698,7 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
     }
   }
 
-  return layer;
+  return blend;
 }
 
 Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
@@ -2696,6 +2707,12 @@ Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
   if (blend < 0 || blend >= layerNBlend(layer)) return NULL;
   for(i=0;i<4;i++) normals[i] = layer->blend[blend].normal[i];
   return layer;
+}
+
+int layerBlendDegree(Layer *layer, int normal)
+{
+  if (NULL == layerBlendAdj(layer)) return 0;
+  return adjDegree(layerBlendAdj(layer),normal);
 }
 
 Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
