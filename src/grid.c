@@ -114,11 +114,14 @@ Grid* gridRegisterNodeCell(Grid *grid, int nodeId, int cellId)
 {
   int firstAvailable, oldTerminator, entry, terminator, nextOpen;
 
+  if (nodeId >= grid->nnode) return NULL;
+
   if ( grid->firstcell[nodeId] == 0 ) {
     entry = grid->firstblankcell;
-    if (entry == 0 ) return NULL;
+    if ( entry == 0 ) return NULL;
+    if ( grid->celllist[entry] == 0 ) return NULL;
     terminator = -grid->celllist[entry];
-    if (terminator == 0 ) return NULL;
+    if ( terminator == 0 ) return NULL;
     nextOpen = -grid->celllist[terminator];
     grid->firstcell[nodeId] = entry;
     grid->celllist[entry] = cellId+1;
@@ -250,6 +253,8 @@ Grid *gridPack(Grid *grid)
     }
   }
   grid->firstblankcell = current;
+  //  for (i=0;i < grid->nlist; i++ ) grid->celllist[i] = -(i+1);
+  // grid->celllist[grid->nlist-1] =0;
   return grid;
 }
 
