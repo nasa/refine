@@ -1,3 +1,10 @@
+2005-02-12 10:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNodeProjectionDisplacement) cleaned up how
+	the displacements for the evaluated/projected surface are
+	calculated. Made sure that all the CAD parameters are also
+	updated.
+
 2005-02-08 00:18 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLinearProgramUV) verify positive face areas

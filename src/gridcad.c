@@ -315,58 +315,36 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
   int nodes[3];
   int edge, edgeId;
   int face, faceId;
-  int vol = 1;
   double t, uv[2], xyz[3], xyznew[3];
   GridBool evaluate = TRUE;
 
   displacement[0] = displacement[1] = displacement[2] = 0.0;
-
-  if ( gridGeometryNode( grid, node ) ) return grid;
-
+  
+  if (!gridGeometryFace( grid, node ) ) return grid;
+  
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
-
-  if ( gridGeometryEdge( grid, node ) ) {
-    edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
-    gridEdge(grid, edge, nodes, &edgeId );
-    if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
-    if (evaluate) {
-      if ( !CADGeom_PointOnEdge( vol, edgeId, t, xyznew, 
-				 0, NULL, NULL) ) {
-	printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
-	return NULL;
-      }
-    }else{
-      if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) {
-	printf("%s: %d: nearestOnEdge failed.\n",__FILE__,__LINE__);
-	return NULL;
-      }
-    }
-    if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
-    if ( grid != gridUpdateFaceParameters(grid, node) ) return NULL;
-    gridSubtractVector(xyznew,xyz,displacement);
-    return grid;
-  }
-  if ( gridGeometryFace( grid, node ) ) {
-    face = adjItem(adjFirst(gridFaceAdj(grid), node));
-    gridFace(grid, face, nodes, &faceId );
-    if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
-    if (evaluate) {
-      if ( !CADGeom_PointOnFace( vol, faceId, uv, xyznew, 
-				 0, NULL, NULL, NULL, NULL, NULL) ){
-	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
-	return NULL;
-      }
-    }else{
-      if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) )  {
-	printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
-	return NULL;  
+  
+  if (evaluate) {
+    if ( gridGeometryNode( grid, node ) ) { 
+    } else {
+      if ( gridGeometryEdge( grid, node ) ) {
+	edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
+	gridEdge(grid, edge, nodes, &edgeId );
+	gridNodeT(grid, node, edgeId, &t);
+	gridEvaluateEdgeAtT(grid, node, t );
+      } else {
+	face = adjItem(adjFirst(gridFaceAdj(grid), node));
+	gridFace(grid, face, nodes, &faceId );
+	gridNodeUV(grid, node, faceId, uv);
+	gridEvaluateFaceAtUV(grid, node, uv );
       }
     }
-    gridSetNodeUV(grid, node, faceId, uv[0], uv[1]);
-    gridSubtractVector(xyznew,xyz,displacement);
-    return grid;
+  }else{
+    gridProjectNode(grid, node);
   }
-
+  gridNodeXYZ( grid, node, xyznew );
+  gridSubtractVector(xyznew,xyz,displacement);
+  gridSetNodeXYZ( grid, node, xyz );
   return grid;
 }
 
