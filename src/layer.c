@@ -1911,22 +1911,24 @@ Layer *layerSplitBlend(Layer *layer)
 {
   int blend, origblend;
   int normals[4];
-  int i, nnode, *newnormal;
-  int node0, node1, normal;
+  int i;
+  int node0, node1, normal, newnormal;
   double xyz0[3], xyz1[3], edge[3], n0[3], n1[3], c0[3], c1[3], new[3];
   double length;
+  Adj *adj;
+  AdjIterator it;
+  int fixblend, fixnormals[4];
   Grid *grid;
 
-  layerInitializeTriangleNormalDirection(layer);
+  grid = layerGrid(layer);
+  adj = layerBuildNormalBlendAdjacency(layer);
 
+  layerInitializeTriangleNormalDirection(layer);
   layerVisibleNormals(layer, 0.999, 1.0e-15 );
 
-  origblend = layerNBlend(layer);
-
-  grid = layerGrid(layer);
-  nnode = gridNNode(grid);
-  newnormal = malloc(nnode*sizeof(int));
-  for (i=0; i<nnode; i++) newnormal[i]=EMPTY;
+  for (blend=0; blend<layerNBlend(layer); blend++)
+    for(i=0;i<4;i++)
+      layer->blend[blend].oldnormal[i]=EMPTY;
 
   for (blend=0; blend<layerNBlend(layer); blend++){
 
@@ -1934,8 +1936,9 @@ Layer *layerSplitBlend(Layer *layer)
 
     node0 = layerNormalRoot(layer,normals[0]);
     node1 = layerNormalRoot(layer,normals[2]);
-    if (newnormal[node0]==EMPTY){
-      newnormal[node0] = layerDuplicateNormal(layer, normals[0] );
+    if (layer->blend[blend].oldnormal[0]==EMPTY){
+      newnormal=layerDuplicateNormal(layer, normals[0] );
+      layer->blend[blend].oldnormal[0]=newnormal;
       gridNodeXYZ(grid,node0,xyz0);
       gridNodeXYZ(grid,node1,xyz1);
       gridSubtractVector(xyz1,xyz0,edge);
@@ -1945,8 +1948,18 @@ Layer *layerSplitBlend(Layer *layer)
       gridCrossProduct(n1,edge,c1);
       for (i=0; i<3; i++) new[i] = 0.5*(c0[i]+c1[i]);
       length = sqrt(gridDotProduct(new,new));
-      for (i=0; i<3; i++) 
-	layer->normal[newnormal[node0]].direction[i]=new[i]/length;
+      for (i=0; i<3; i++) layer->normal[newnormal].direction[i] = new[i]/length;
+
+      for ( it = adjFirst(adj,normals[0]); adjValid(it); it=adjNext(it) ){
+	fixblend = adjItem(it);
+	layerBlendNormals(layer,fixblend,fixnormals);
+	if ( (fixnormals[0] == normals[0] && fixnormals[1] == normals[1] ) ||
+	     (fixnormals[1] == normals[0] && fixnormals[0] == normals[1] ) )
+	  layer->blend[fixblend].oldnormal[0]=newnormal;
+	if ( (fixnormals[2] == normals[0] && fixnormals[3] == normals[1] ) ||
+	     (fixnormals[3] == normals[0] && fixnormals[2] == normals[1] ) )
+	  layer->blend[fixblend].oldnormal[1]=newnormal;
+      }
     }
 
     normal = normals[0];
@@ -1958,8 +1971,9 @@ Layer *layerSplitBlend(Layer *layer)
 
     node0 = layerNormalRoot(layer,normals[0]);
     node1 = layerNormalRoot(layer,normals[2]);
-    if (newnormal[node0]==EMPTY){
-      newnormal[node0] = layerDuplicateNormal(layer, normals[0] );
+    if (layer->blend[blend].oldnormal[1]==EMPTY){
+      newnormal=layerDuplicateNormal(layer, normals[0] );
+      layer->blend[blend].oldnormal[1]=newnormal;
       gridNodeXYZ(grid,node0,xyz0);
       gridNodeXYZ(grid,node1,xyz1);
       gridSubtractVector(xyz1,xyz0,edge);
@@ -1969,28 +1983,34 @@ Layer *layerSplitBlend(Layer *layer)
       gridCrossProduct(n1,edge,c1);
       for (i=0; i<3; i++) new[i] = 0.5*(c0[i]+c1[i]);
       length = sqrt(gridDotProduct(new,new));
-      for (i=0; i<3; i++) 
-	layer->normal[newnormal[node0]].direction[i]=new[i]/length;
+      for (i=0; i<3; i++) layer->normal[newnormal].direction[i] = new[i]/length;
+
+      for ( it = adjFirst(adj,normals[0]); adjValid(it); it=adjNext(it) ){
+	fixblend = adjItem(it);
+	layerBlendNormals(layer,fixblend,fixnormals);
+	if ( (fixnormals[0] == normals[0] && fixnormals[1] == normals[1] ) ||
+	     (fixnormals[1] == normals[0] && fixnormals[0] == normals[1] ) )
+	  layer->blend[fixblend].oldnormal[0]=newnormal;
+	if ( (fixnormals[2] == normals[0] && fixnormals[3] == normals[1] ) ||
+	     (fixnormals[3] == normals[0] && fixnormals[2] == normals[1] ) )
+	  layer->blend[fixblend].oldnormal[1]=newnormal;
+      }
     }
+
   }
 
+  origblend = layerNBlend(layer);
   layerDuplicateAllBlend(layer);
+
   for (blend=0; blend<origblend; blend++){
-    layerBlendNormals(layer,blend,normals);
-    node0 = layerNormalRoot(layer,normals[0]);
-    node1 = layerNormalRoot(layer,normals[2]);
-    if (newnormal[node0]!=EMPTY) layer->blend[blend].normal[0]=newnormal[node0];
-    if (newnormal[node1]!=EMPTY) layer->blend[blend].normal[2]=newnormal[node1];
+    layer->blend[blend].normal[0]=layer->blend[blend].oldnormal[0];
+    layer->blend[blend].normal[2]=layer->blend[blend].oldnormal[1];
   }  
   for (blend=origblend; blend<layerNBlend(layer); blend++){
-    layerBlendNormals(layer,blend,normals);
-    node0 = layerNormalRoot(layer,normals[1]);
-    node1 = layerNormalRoot(layer,normals[3]);
-    if (newnormal[node0]!=EMPTY) layer->blend[blend].normal[1]=newnormal[node0];
-    if (newnormal[node1]!=EMPTY) layer->blend[blend].normal[3]=newnormal[node1];
+    layer->blend[blend].normal[1]=layer->blend[blend].oldnormal[0];
+    layer->blend[blend].normal[3]=layer->blend[blend].oldnormal[1];
   }
 
-  free(newnormal);
   return layer;
 }
 
@@ -2079,7 +2099,7 @@ Layer *layerBlend(Layer *layer)
 
 Layer *layerDuplicateAllBlend(Layer *layer)
 {
-  int blend, maxblend;
+  int blend, maxblend, i;
   
   maxblend = layerNBlend(layer);
   for (blend=0; blend<maxblend; blend++){
@@ -2093,24 +2113,17 @@ Layer *layerDuplicateAllBlend(Layer *layer)
       }
     }
 
-    layer->blend[layer->nblend].nodes[0] = 
-      layer->blend[blend].nodes[0];
-    layer->blend[layer->nblend].nodes[1] = 
-      layer->blend[blend].nodes[1];
+    for ( i=0; i<2; i++ )
+      layer->blend[layer->nblend].nodes[i] = layer->blend[blend].nodes[i];
 
-    layer->blend[layer->nblend].normal[0] = 
-      layer->blend[blend].normal[0];
-    layer->blend[layer->nblend].normal[1] = 
-      layer->blend[blend].normal[1];
-    layer->blend[layer->nblend].normal[2] = 
-      layer->blend[blend].normal[2];
-    layer->blend[layer->nblend].normal[3] = 
-      layer->blend[blend].normal[3];
+    for ( i=0; i<4; i++ )
+      layer->blend[layer->nblend].normal[i] = layer->blend[blend].normal[i];
     
-    layer->blend[layer->nblend].edgeId[0] = 
-      layer->blend[blend].edgeId[0];
-    layer->blend[layer->nblend].edgeId[1] = 
-      layer->blend[blend].edgeId[1];
+    for ( i=0; i<2; i++ )
+      layer->blend[layer->nblend].edgeId[i] = layer->blend[blend].edgeId[i];
+
+    for ( i=0; i<4; i++ )
+      layer->blend[layer->nblend].oldnormal[i]=layer->blend[blend].oldnormal[i];
 
     layer->nblend++;
   }
