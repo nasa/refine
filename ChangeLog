@@ -1,3 +1,9 @@
+2004-07-21 10:22 Mike Park  <mike.park@nasa.gov>
+
+	* fixed bug reported by Alan Arslan compiling on IRIX64 with cc.
+	* src/FAKEGeom.h added #include <time.h> to compile on IRIX64.
+	* src/gridfiller.c added #ifdef HAVE_SDK to include FAKEGeom.h.
+
 2004-07-16 16:45 Mike Park  <mike.park@nasa.gov>
 
 	* Replaced obsolete SDK/Goolache/MeshMgr with SDK/UG_API methods.

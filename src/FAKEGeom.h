@@ -12,6 +12,7 @@
 #define CADGEOM_H
 
 #include <stdlib.h>
+#include <time.h>
 #include "refine_defs.h"
 
 BEGIN_C_DECLORATION

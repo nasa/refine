@@ -11,7 +11,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "gridfiller.h"
+#ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
+#else
+#include "FAKEGeom.h"
+#endif
 
 Grid *gridLoadPart( char *project, int maxnode )
 {
