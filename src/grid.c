@@ -430,7 +430,8 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
 }
 
 Grid *gridAttachNodeSorter(Grid *grid, 
-			   void (*renumberFunc)(void *renumberData, int *o2n), 
+			   void (*renumberFunc)(void *renumberData, 
+						int maxnode, int *o2n), 
 			   void *renumberData )
 {
   grid->renumberFunc = renumberFunc;
@@ -731,7 +732,7 @@ Grid *gridPack(Grid *grid)
   }
 
   if ( NULL != grid->renumberFunc ) 
-    (*grid->renumberFunc)( grid->renumberData, o2n );
+    (*grid->renumberFunc)( grid->renumberData, grid->maxnode, o2n );
 
   if ( NULL != gridLines(grid) ) linesRenumber(gridLines(grid),o2n);
 
@@ -751,8 +752,8 @@ Grid *gridSortNodeGridEx(Grid *grid)
     return NULL;
   }
 
-  o2n = malloc( grid->nnode * sizeof(int) );
-  for (i=0;i<grid->nnode;i++) o2n[i] = EMPTY;
+  o2n = malloc( grid->maxnode * sizeof(int) );
+  for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
 
   // geom nodes
   for (i=0;i<grid->nGeomNode;i++) o2n[i] = i;
@@ -817,8 +818,8 @@ Grid *gridSortNodeFUN3D(Grid *grid, int *nnodes0)
     return NULL;
   }
 
-  o2n = malloc( grid->nnode * sizeof(int) );
-  for (i=0;i<grid->nnode;i++) o2n[i] = EMPTY;
+  o2n = malloc( grid->maxnode * sizeof(int) );
+  for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
 
   newnode = 0;
 
@@ -956,7 +957,7 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   }
 
   if ( NULL != grid->renumberFunc ) 
-    (*grid->renumberFunc)( grid->renumberData, o2n );
+    (*grid->renumberFunc)( grid->renumberData, grid->maxnode, o2n );
 
   if ( NULL != gridLines(grid) ) linesRenumber(gridLines(grid),o2n);
 

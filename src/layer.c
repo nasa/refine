@@ -13,13 +13,11 @@
 #include <limits.h>
 #include <values.h>
 #include <string.h>
-#include "refine_defs.h"
 #include "layer.h"
 #include "gridmath.h"
 #include "gridmetric.h"
 #include "gridcad.h"
 #include "gridinsert.h"
-#include "grid.h"
 #include "intersect.h"
 
 Layer *layerCreate( Grid *grid )
@@ -143,7 +141,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   return layer;
 }
 
-void layerSortGlobalNodes(void *voidLayer, int *o2n)
+void layerSortGlobalNodes(void *voidLayer, int maxnode, int *o2n)
 {
   Layer *layer = (Layer *)voidLayer;
   int normal;

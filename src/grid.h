@@ -109,7 +109,7 @@ struct Grid {
 
   FILE *tecplotFile;
 
-  void (*renumberFunc)(void *renumberData, int *o2n);
+  void (*renumberFunc)(void *renumberData, int maxnode, int *o2n);
   void *renumberData;
 
   void (*reallocFunc)(void *reallocData, int reallocType, 
@@ -133,7 +133,8 @@ Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
 Grid *gridImportAdapt(Grid *g, char *filename );
 
 Grid *gridAttachNodeSorter(Grid *g, 
-			   void (*renumberFunc)(void *renumberData, int *o2n),
+			   void (*renumberFunc)(void *renumberData, 
+						int maxnode, int *o2n),
 			   void *renumberData );
 Grid *gridDetachNodeSorter(Grid *g );
 
