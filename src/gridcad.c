@@ -320,6 +320,7 @@ Grid *gridSmoothNode(Grid *grid, int node )
       }
       if (grid != gridOptimizeUV( grid, node, dARdu ) ) return NULL;
     }
+    return grid;
   }
   if (FALSE) {
     gridNodeARDerivative ( grid, node, &ar, dARdx);
@@ -686,17 +687,19 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
 
 Grid *gridSmoothNodeQP(Grid *grid, int node )
 {
-  int i, minCell;
-  double minAR, newAR, searchDirection[3], length, projection;
+  int i, minCell, nearestCell;
+  double minAR, nearestAR, newAR, searchDirection[3];
+  double g00, g01, g11, minRatio, nearestRatio;
+  double length, projection;
   double deltaAR, currentAlpha, alpha, lastAlpha;
   double predictedImprovement, actualImprovement, lastImprovement;
   double origXYZ[3], xyz[3];
-  bool goodStep;
+  bool searchFlag, goodStep;
 
   if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;
   if ( grid != gridStoreARDerivative(grid, node ) ) return NULL;
 
-  minAR =1.1;
+  minAR =2.1;
   minCell = EMPTY;
   for (i=0;i<gridStoreARDegree(grid);i++){
     if (grid->AR[i]<minAR){
@@ -705,7 +708,45 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
     }
   }
 
-  for (i=0;i<3;i++) searchDirection[i] = grid->dARdX[i+minCell*3];
+  searchFlag = FALSE;
+  if (searchFlag) {
+    for (i=0;i<3;i++) searchDirection[i] = grid->dARdX[i+minCell*3];
+  }else{
+    nearestCell=EMPTY;
+    nearestAR = 2.1;
+    for (i=0;i<gridStoreARDegree(grid);i++){
+      if ( i != minCell){
+	if (ABS(grid->AR[i]-minAR)<nearestAR) {
+	  nearestCell=i;
+	  nearestAR = ABS(grid->AR[i]-minAR);
+	}
+      }
+    }
+    if (nearestCell == EMPTY || nearestAR > 0.01 ){
+      for (i=0;i<3;i++) searchDirection[i] = grid->dARdX[i+minCell*3];
+    }else{
+      g00 
+	= grid->dARdX[0+minCell*3]*grid->dARdX[0+minCell*3]
+	+ grid->dARdX[1+minCell*3]*grid->dARdX[1+minCell*3]
+	+ grid->dARdX[2+minCell*3]*grid->dARdX[2+minCell*3];
+      g11 
+	= grid->dARdX[0+nearestCell*3]*grid->dARdX[0+nearestCell*3]
+	+ grid->dARdX[1+nearestCell*3]*grid->dARdX[1+nearestCell*3]
+	+ grid->dARdX[2+nearestCell*3]*grid->dARdX[2+nearestCell*3];
+      g01 
+	= grid->dARdX[0+minCell*3]*grid->dARdX[0+nearestCell*3]
+	+ grid->dARdX[1+minCell*3]*grid->dARdX[1+nearestCell*3]
+	+ grid->dARdX[2+minCell*3]*grid->dARdX[2+nearestCell*3];
+      nearestRatio = (g00-g01)/(g00 + g11 - 2*g01);
+      if (nearestRatio > 1.0 || nearestRatio < 0.0 ) nearestRatio = 0.0;
+      minRatio = 1.0 - nearestRatio;
+      for (i=0;i<3;i++) searchDirection[i] 
+			  = minRatio*grid->dARdX[i+minCell*3]
+			  + nearestRatio*grid->dARdX[i+nearestCell*3];
+      //printf("node %5d min %10.7f near %10.7f\n",node,minRatio,nearestRatio);
+    }
+  }
+
   length 
     = searchDirection[0]*searchDirection[0]
     + searchDirection[1]*searchDirection[1]
@@ -771,7 +812,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
     return NULL;
   }
 
-  if ( newAR > 0.5) return NULL;
+  if ( newAR > 0.6) return NULL;
 
   return grid;
 }
