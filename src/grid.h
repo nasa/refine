@@ -171,6 +171,7 @@ gridNodeGhost(grid,(nodes)[3]) )
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 int gridAddCellWithGlobal(Grid *g, int n0, int n1, int n2, int n3, int global );
 Grid *gridRemoveCell(Grid *g, int cellId );
+Grid *gridRemoveCellWithOutGlobal(Grid *g, int cellId );
 #define gridCellAdj(grid) (NULL==grid?NULL:grid->cellAdj)
 Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );

@@ -128,6 +128,7 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 4, p1.parallelEdgeSplit(q,0,3)
 
   assert_equal p2, p2.applyQueue(q)
+  assert_equal 0, p2.nUnusedCellGlobal
 
   assert_equal [4,1,2,3], p2.cell(0)
 

@@ -1177,6 +1177,18 @@ int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3,
 
 Grid *gridRemoveCell(Grid *grid, int cellId )
 {
+  Grid *result;
+
+  result = gridRemoveCellWithOutGlobal(grid, cellId );
+
+  if (grid == result && NULL != grid->cellGlobal) 
+    gridJoinUnusedCellGlobal(grid,grid->cellGlobal[cellId]);
+
+  return result;
+}
+
+Grid *gridRemoveCellWithOutGlobal(Grid *grid, int cellId )
+{
   if ( !gridCellValid(grid, cellId) ) return NULL;
   
   if ( grid->ncell <= 0) return NULL;
@@ -1191,9 +1203,6 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
   grid->c2n[0+4*cellId] = EMPTY;
   grid->c2n[1+4*cellId] = grid->blankc2n;
   grid->blankc2n = cellId;
-
-  if (NULL != grid->cellGlobal) 
-    gridJoinUnusedCellGlobal(grid,grid->cellGlobal[cellId]);
 
   return grid;
 }

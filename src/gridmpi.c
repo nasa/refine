@@ -99,7 +99,8 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
       removedcell++;
       for(i=0;i<4;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
       cell = gridFindCell(grid,localnodes);
-      if (grid == gridRemoveCell(grid,cell)) queueRemoveCell(lq,localnodes);
+      if (grid == gridRemoveCellWithOutGlobal(grid,cell)) 
+	queueRemoveCell(lq,localnodes);
     }
     for (removed=0;removed<queueRemovedFaces(gq,transaction);removed++) {
       queueRemovedFaceNodes( gq, removedface, globalnodes );
