@@ -2679,9 +2679,43 @@ Layer *layerBlendAxle(Layer *layer, int blend, double *axle)
 
   gridSubtractVector(xyz1,xyz0,axle);
   gridVectorNormalize(axle);
-  return;
+  return layer;
 }
 
+Layer *layerNormalBlendAxle(Layer *layer, int normal, double *axle)
+{
+  int blend, blend0, blend1;
+  double axle0[3], axle1[3];
+  switch (layerBlendDegree(layer,normal)) {
+  case 0: break;
+  case 1:
+    blend = adjItem(adjFirst(layerBlendAdj(layer),normal));
+    layerBlendAxle(layer, blend, axle);
+    break;
+  case 2:
+    blend0 = adjItem(adjFirst(layerBlendAdj(layer),normal));
+    blend1 = adjItem(adjNext(adjFirst(layerBlendAdj(layer),normal)));
+    layerBlendAxle(layer, blend0, axle0);
+    layerBlendAxle(layer, blend1, axle1);
+    if ( layer->blend[blend0].nodes[0] == layer->blend[blend1].nodes[1] ||
+	 layer->blend[blend0].nodes[1] == layer->blend[blend1].nodes[0] ) {
+      axle[0] = axle0[0] + axle1[0];
+      axle[1] = axle0[1] + axle1[1];
+      axle[2] = axle0[2] + axle1[2];
+    }else{
+      axle[0] = axle0[0] - axle1[0];
+      axle[1] = axle0[1] - axle1[1];
+      axle[2] = axle0[2] - axle1[2];
+    }
+    gridVectorNormalize(axle);
+    break;
+  default:
+    printf( "ERROR: %s: %d: Cannot handle %d blends. use layerBlendAxle!\n",
+	    __FILE__, __LINE__, layerBlendDegree(layer,normal));
+    break;
+  }
+  return layer;
+}
 int layerBlendDegree(Layer *layer, int normal)
 {
   if (NULL == layerBlendAdj(layer)) return 0;
@@ -2742,7 +2776,7 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 	for(i=0;i<nSubNormal;i++){
 	  subNormals[i] = layerDuplicateNormal(layer, normal );
 	  rotation = (double)(i+1) / (double)(nSubNormal+1);
-	  layerBlendAxle(layer, blend, axle);
+	  layerNormalBlendAxle(layer, normal, axle);
 	  gridRotateDirection(layer->normal[blendnormals[0]].direction,
 			      layer->normal[blendnormals[1]].direction,
 			      axle, rotation,
