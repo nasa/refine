@@ -1266,6 +1266,11 @@ Grid *gridRemoveFace(Grid *grid, int face )
   return grid;
 }
 
+Adj *gridFaceAdj(Grid *grid)
+{
+  return grid->faceAdj;
+}
+
 int gridFindFace(Grid *grid, int n0, int n1, int n2 )
 {
   AdjIterator it0, it1, it2;
@@ -1547,6 +1552,11 @@ Grid *gridRemoveEdge(Grid *grid, int edge )
   grid->blanke2n = edge;
 
   return grid;
+}
+
+Adj *gridEdgeAdj(Grid *grid)
+{
+  return grid->edgeAdj;
 }
 
 int gridFindEdge(Grid *grid, int n0, int n1 )
