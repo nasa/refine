@@ -274,6 +274,16 @@ void gridparallelsmooth_( int *processor,
 #endif
 }
 
+void gridparallelrelaxneg_( int *processor )
+{
+  gridRelaxNegativeCells(grid );
+#ifdef PARALLEL_VERBOSE 
+  printf( " %6d smooth negative volumes          %s   Vol%14.10f\n",
+	  gridPartId(grid),"everything        ",gridMinVolume(grid) );
+  fflush(stdout);
+#endif
+}
+
 void gridparalleladapt_( int *processor, 
 			 double *minLength, double *maxLength )
 {
