@@ -66,15 +66,15 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
 
   gridMapMatrix(grid, n0, m);
   length0 = sqrt (
-      dx*m[0]*dx + dx*m[1]*dy + dx*m[2]*dz
-    + dy*m[1]*dx + dy*m[3]*dy + dy*m[4]*dz
-    + dz*m[2]*dx + dz*m[4]*dy + dz*m[5]*dz );
+      dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
+    + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
+    + dz * ( m[2]*dx + m[4]*dy + m[5]*dz ) );
 
   gridMapMatrix(grid, n1, m);
   length1 = sqrt (
-      dx*m[0]*dx + dx*m[1]*dy + dx*m[2]*dz
-    + dy*m[1]*dx + dy*m[3]*dy + dy*m[4]*dz
-    + dz*m[2]*dx + dz*m[4]*dy + dz*m[5]*dz );
+      dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
+    + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
+    + dz * ( m[2]*dx + m[4]*dy + m[5]*dz ) );
   
   return 0.5*(length0+length1);
 }
@@ -217,7 +217,7 @@ Grid *gridScaleSpacingSphereDirection( Grid *grid,
     if (radiusSquared >= distanceSquared){
       grid->map[0+6*node] = grid->map[0+6*node] / (scalex*scalex); 
       grid->map[3+6*node] = grid->map[3+6*node] / (scaley*scaley); 
-      grid->map[6+6*node] = grid->map[6+6*node] / (scalez*scalez); 
+      grid->map[5+6*node] = grid->map[5+6*node] / (scalez*scalez); 
     } 
   }
 
@@ -239,6 +239,37 @@ Grid *gridSetMap(Grid *grid, int node,
 
   return grid;
 }
+
+Grid *gridEigenValues(Grid *grid, double *m, double *eigenValues)
+{
+  double t;
+
+  eigenValues[0]=m[0];
+  eigenValues[1]=m[3];
+  eigenValues[2]=m[5];
+
+
+  if ( eigenValues[1] > eigenValues[0] ) {
+    t = eigenValues[0];
+    eigenValues[0] = eigenValues[1];
+    eigenValues[1] = t;
+  }
+
+  if ( eigenValues[2] > eigenValues[0] ) {
+    t = eigenValues[0];
+    eigenValues[0] = eigenValues[2];
+    eigenValues[2] = t;
+  }
+
+  if ( eigenValues[2] > eigenValues[1] ) {
+    t = eigenValues[1];
+    eigenValues[1] = eigenValues[2];
+    eigenValues[2] = t;
+  }
+
+  return grid;
+}
+
 
 double gridVolume(Grid *grid, int *nodes )
 {

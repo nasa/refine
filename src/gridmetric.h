@@ -33,7 +33,7 @@ Grid *gridSetMap(Grid *g, int node,
 		 double m11, double m12, double m13,
 		             double m22, double m23,
 		                         double m33);
-
+Grid *gridEigenValues(Grid *g, double *m, double *eigenValues);
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 Grid *gridNodeAR(Grid *g, int node, double *ar );

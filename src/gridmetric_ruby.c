@@ -85,6 +85,26 @@ VALUE grid_setMap( VALUE self, VALUE node,
 		                            NUM2DBL(m33) )==grid?self:Qnil);
 }
 
+VALUE grid_eigenValues( VALUE self, VALUE rb_m )
+{
+  int i;
+  double m[6], eigenValues[3];
+  VALUE rb_eigenValues;
+  Grid *rGrid;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<6;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
+  rGrid = gridEigenValues( grid, m, eigenValues );
+  if ( rGrid == grid ){
+    rb_eigenValues = rb_ary_new2(3);
+    rb_ary_store( rb_eigenValues, 0, rb_float_new(eigenValues[0]) );
+    rb_ary_store( rb_eigenValues, 1, rb_float_new(eigenValues[1]) );
+    rb_ary_store( rb_eigenValues, 2, rb_float_new(eigenValues[2]) );
+  }else{
+    rb_eigenValues = Qnil;
+  }
+  return rb_eigenValues;
+}
+
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -282,6 +302,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
   rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );
   rb_define_method( cGridMetric, "setMap", grid_setMap, 7 );
+  rb_define_method( cGridMetric, "eigenValues", grid_eigenValues, 1 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );

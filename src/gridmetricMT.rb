@@ -86,6 +86,16 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 1.0, grid.edgeRatio(0,2), 1.0e-15
  end
 
+ def testMatrixEigenValues
+  assert_not_nil grid = Grid.new(1,0,0,0)
+  eig = grid.eigenValues( [ 1.0, 0.0, 0.0, 
+                                 2.0, 0.0, 
+                                      3.0 ])
+  assert_in_delta 3.0, eig[0], 1.0e-15
+  assert_in_delta 2.0, eig[1], 1.0e-15
+  assert_in_delta 1.0, eig[2], 1.0e-15
+ end
+
  def testFindLargestRatioEdge
   assert_not_nil grid = isoTet.resetSpacing
   grid.scaleSpacing(0,0.50)
