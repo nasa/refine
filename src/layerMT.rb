@@ -1578,11 +1578,22 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [5,4,2,7], layer.blendNormals(1)
   assert_equal [0,5,3,8], layer.blendNormals(2)
 
+#     /3---8\
+#    / |   | \
+#    / 0---5 \
+#   / /     \ \
+#   //   1   \\
+#   6   / \   2
+#      4---7
+
+  assert_equal 3,         layer.blendDegree(0)
+  assert_equal [0, 1, 5], layerVertexNodes(0)
   layer.advanceConstantHeight(0.1)
+  layer.writeTecplotFrontGeometry
   assert_equal 10, layer.ntriangle  
   assert_equal 19, grid.ncell  
 
-  layer.writeTecplotFrontGeometry
+
  end
 
  def facingGrid(z)
