@@ -405,6 +405,7 @@ void Init_Grid()
   rb_define_method( cGrid, "removeFace", grid_removeFace, 1 );
   rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
+
   rb_define_method( cGrid, "nodeUV", grid_nodeUV, 2 );
 
   rb_define_method( cGrid, "addEdge", grid_addEdge, 5 );
