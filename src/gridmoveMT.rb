@@ -254,17 +254,20 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal [],        gm.rowEntries(5)
  end
 
- def testCompRowOneCellDiag
+ def testCompRowOneCellFindEntry
   grid = Grid.new(5,2,0,0)
   gm = GridMove.new(grid)
   5.times { grid.addNode(0.0,0.0,0.0) }
   grid.addCell(0,1,2,3)
-  assert_equal EMPTY, gm.rowDiagonal(EMPTY)
-  assert_equal  0,    gm.rowDiagonal(0)
-  assert_equal  5,    gm.rowDiagonal(1)
-  assert_equal 10,    gm.rowDiagonal(2)
-  assert_equal 15,    gm.rowDiagonal(3)
-  assert_equal EMPTY, gm.rowDiagonal(4)
+  assert_equal EMPTY, gm.rowNode(EMPTY,EMPTY)
+  assert_equal EMPTY, gm.rowNode(0,EMPTY)
+  assert_equal EMPTY, gm.rowNode(0,4)
+  assert_equal EMPTY, gm.rowNode(4,4)
+
+  assert_equal  0,    gm.rowNode(0,0)
+  assert_equal  5,    gm.rowNode(1,1)
+  assert_equal 10,    gm.rowNode(2,2)
+  assert_equal 15,    gm.rowNode(3,3)
  end
 
 end

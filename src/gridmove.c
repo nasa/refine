@@ -781,7 +781,7 @@ GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
   return gm;
 }
 
-int gridmoveRowDiagonal(GridMove *gm, int row)
+int gridmoveRowNode(GridMove *gm, int row, int node)
 {
   int entry;
   if (row<0 || row>=gridMaxNode(gridmoveGrid(gm)) ) return EMPTY;
@@ -789,8 +789,8 @@ int gridmoveRowDiagonal(GridMove *gm, int row)
   for ( entry = gridmoveRowStart(gm, row) ;
 	entry < gridmoveRowStart(gm, row+1) ;
 	entry++ ) {
-    if (gm->compRow[entry]==row) return entry;
-    if (gm->compRow[entry]>row) return EMPTY;
+    if (gm->compRow[entry]==node) return entry;
+    if (gm->compRow[entry]>node) return EMPTY;
   }
   return EMPTY;
 }
