@@ -129,8 +129,9 @@ Grid *gridProject(Grid *grid)
   int notProjected;
   notProjected = 0;
 
-  for (node=0;node<grid->nnode;node++) 
-    if ( gridSafeProjectNode(grid,node) != grid ) notProjected++;
+  for (node=0;node<grid->maxnode;node++)
+    if ( gridValidNode( grid, node ) )
+      if ( gridSafeProjectNode(grid,node) != grid ) notProjected++;
 
   if (notProjected > 0){
     printf("gridProject: %d of %d nodes not projected.\n",
@@ -148,56 +149,58 @@ Grid *gridRobustProject(Grid *grid)
   AdjIterator it;
 
   notProjected = 0;
-  for (node=0;node<grid->nnode;node++) 
-    if ( gridSafeProjectNode(grid,node) != grid ) {
-      for ( it = adjFirst(grid->cellAdj,node); 
-	    adjValid(it); 
-	    it = adjNext(it) ){
-	gridCell(grid, adjItem(it), nodes);
-	for (i=0;i<4;i++)
-	  if (!gridGeometryFace( grid, nodes[i])) 
-	    gridSmoothNode( grid, nodes[i]);
-      }      
-      for ( it = adjFirst(grid->cellAdj,node); 
-	    adjValid(it); 
-	    it = adjNext(it) ){
-	gridCell( grid, adjItem(it), nodes);
-	if ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ){
-	  it = adjFirst(grid->cellAdj,node);
+  for (node=0;node<grid->maxnode;node++) {
+    if ( gridValidNode( grid, node ) ) {
+      if ( gridSafeProjectNode(grid,node) != grid ) {
+	for ( it = adjFirst(grid->cellAdj,node); 
+	      adjValid(it); 
+	      it = adjNext(it) ){
+	  gridCell(grid, adjItem(it), nodes);
+	  for (i=0;i<4;i++)
+	    if (!gridGeometryFace( grid, nodes[i])) 
+	      gridSmoothNode( grid, nodes[i]);
+	}      
+	for ( it = adjFirst(grid->cellAdj,node); 
+	      adjValid(it); 
+	      it = adjNext(it) ){
 	  gridCell( grid, adjItem(it), nodes);
-	}
-	if ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ){
-	  it = adjFirst(grid->cellAdj,node);
-	  gridCell( grid, adjItem(it), nodes);
-	}
-	if ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ){
-	  it = adjFirst(grid->cellAdj,node);
-	  gridCell( grid, adjItem(it), nodes);
-	}
-	if ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ){
-	  it = adjFirst(grid->cellAdj,node);
-	  gridCell( grid, adjItem(it), nodes);
-	}
-	if ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ){
-	  it = adjFirst(grid->cellAdj,node);
-	  gridCell( grid, adjItem(it), nodes);
+	  if ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ){
+	    it = adjFirst(grid->cellAdj,node);
+	    gridCell( grid, adjItem(it), nodes);
 	  }
-	if ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ){
-	  it = adjFirst(grid->cellAdj,node);
-	  gridCell( grid, adjItem(it), nodes);
+	  if ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ){
+	    it = adjFirst(grid->cellAdj,node);
+	    gridCell( grid, adjItem(it), nodes);
+	  }
+	  if ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ){
+	    it = adjFirst(grid->cellAdj,node);
+	    gridCell( grid, adjItem(it), nodes);
+	  }
+	  if ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ){
+	    it = adjFirst(grid->cellAdj,node);
+	    gridCell( grid, adjItem(it), nodes);
+	  }
+	  if ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ){
+	    it = adjFirst(grid->cellAdj,node);
+	    gridCell( grid, adjItem(it), nodes);
+	  }
+	  if ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ){
+	    it = adjFirst(grid->cellAdj,node);
+	    gridCell( grid, adjItem(it), nodes);
+	  }
 	}
+	for ( it = adjFirst(grid->cellAdj,node); 
+	      adjValid(it); 
+	      it = adjNext(it) ){
+	  gridCell(grid, adjItem(it), nodes);
+	  for (i=0;i<4;i++)
+	    if (!gridGeometryFace( grid, nodes[i])) 
+	      gridSmoothNode( grid, nodes[i]);
+	}      
+	if ( gridSafeProjectNode(grid,node) != grid ) notProjected++;
       }
-      for ( it = adjFirst(grid->cellAdj,node); 
-	    adjValid(it); 
-	    it = adjNext(it) ){
-	gridCell(grid, adjItem(it), nodes);
-	for (i=0;i<4;i++)
-	  if (!gridGeometryFace( grid, nodes[i])) 
-	    gridSmoothNode( grid, nodes[i]);
-      }      
-      if ( gridSafeProjectNode(grid,node) != grid ) notProjected++;
     }
-
+  }
 
   if (notProjected > 0){
     printf("gridProject: %d of %d nodes not projected.\n",
@@ -410,16 +413,18 @@ Grid *gridSmooth( Grid *grid )
   double ar, optimizationLimit, laplacianLimit;
   optimizationLimit =0.30;
   laplacianLimit =0.60;
-  for (node=0;node<grid->nnode;node++) {
-    gridNodeAR(grid,node,&ar);
-    if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
-      gridSmartLaplacian( grid, node ); 
+  for (node=0;node<grid->maxnode;node++) {
+    if ( gridValidNode( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
-    }
-    if (ar < optimizationLimit) {
-      gridSmoothNode( grid, node );
-      gridSmoothNode( grid, node );
-      gridSmoothNode( grid, node );
+      if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
+	gridSmartLaplacian( grid, node ); 
+	gridNodeAR(grid,node,&ar);
+      }
+      if (ar < optimizationLimit) {
+	gridSmoothNode( grid, node );
+	gridSmoothNode( grid, node );
+	gridSmoothNode( grid, node );
+      }
     }
   }
   return grid;
