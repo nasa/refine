@@ -1,3 +1,9 @@
+2005-03-25 10:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelswap_) added all ghost two face
+	cells to plan. Activated ghost plan be default.
+	Revert by setting `swap_the_fast_new_way' to FALSE.
+
 2005-03-25 08:51 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridMirrorNodeAboutY0) Fixed calculation of new node

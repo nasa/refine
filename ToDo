@@ -7,15 +7,10 @@ Start Builds!!!!!
 
 --Major refactoring
 
-correctly add two faced cells to parallel swap plan
-
 refactor to use the plan object in the edge based list
 
 Use the plan object to speed up node smooth of ghost boundary in
 parallel.
-
-Check and see if I should only queue a cell for removal if it has a
-ghost node. faces and edges are that way.
 
 
 EdgeSplitAt -> edgeSplitRatio

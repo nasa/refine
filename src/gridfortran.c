@@ -316,23 +316,18 @@ void gridexportfast_( void )
 
 void gridparallelswap_( int *processor, double *ARlimit )
 {
-  GridBool swap_the_safe_old_way;
+  GridBool swap_the_fast_new_way;
 #ifdef PARALLEL_VERBOSE 
   printf(" %6d swap  processor %2d      initial AR%14.10f",
 	 gridPartId(grid),*processor,gridMinAR(grid));
 #endif
-  swap_the_safe_old_way = TRUE;
-  if (swap_the_safe_old_way) {
-    if (*processor == -1) {
-      gridParallelSwap(grid,NULL,*ARlimit);
-    } else {
-      gridParallelSwap(grid,queue,*ARlimit);
-    } 
-  }else{
+  swap_the_fast_new_way = TRUE;
+  if (swap_the_fast_new_way) {
     if (*processor == -1) {
       int plan_size_guess, plan_chunk_size;
       int cell, nodes[4];
       double ar;
+      int nodes_on_surface;
       gridParallelSwap(grid,NULL,*ARlimit);
       plan_size_guess = gridNCell(grid)/10;
       plan_chunk_size = 5000;
@@ -344,9 +339,18 @@ void gridparallelswap_( int *processor, double *ARlimit )
 	       gridNodeNearGhost(grid, nodes[1]) ||
 	       gridNodeNearGhost(grid, nodes[2]) ||
 	       gridNodeNearGhost(grid, nodes[3]) ) {
-	    ar = gridAR(grid, nodes);
-	    if ( ar < *ARlimit ) {
-	      planAddItemWithPriority(plan,cell,ar);
+	    /* if there are four nodes on surface it may be a two face cell */
+	    nodes_on_surface = 0;
+	    if ( gridGeometryFace(grid, nodes[0]) ) nodes_on_surface++;
+	    if ( gridGeometryFace(grid, nodes[1]) ) nodes_on_surface++;
+	    if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
+	    if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
+	    if ( 4 == nodes_on_surface) {
+	      planAddItemWithPriority(plan,cell,0.0); /* highest priority */
+	    } else {
+	      /* add poor quality cells */
+	      ar = gridAR(grid, nodes);
+	      if ( ar < *ARlimit ) planAddItemWithPriority(plan,cell,ar);
 	    }
 	  }
 	} 
@@ -374,6 +378,12 @@ void gridparallelswap_( int *processor, double *ARlimit )
 	}
       }
       planFree(plan); plan = NULL;
+    } 
+  } else { /* start the (swap_the_fast_new_way == FALSE) block */
+    if (*processor == -1) {
+      gridParallelSwap(grid,NULL,*ARlimit);
+    } else {
+      gridParallelSwap(grid,queue,*ARlimit);
     } 
   }
 }
