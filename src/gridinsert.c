@@ -178,7 +178,10 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
 
   volumeEdge = (grid->nequ == grid->ngem);
- 
+
+  if ( volumeEdge && gridGeometryFace(grid, n0) && gridGeometryFace(grid, n1))
+    return NULL;
+
   if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
   if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
   
