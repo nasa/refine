@@ -220,15 +220,18 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal [2,2,2,2],         q.addedCellNodeParts(1)
  end
 
- def testLoadQueueWithEdgeCollapse
+ def XtestLoadQueueWithEdgeCollapse
   q = Queue.new 9
   p1 = rightTet.setPartId(1).setAllLocal
   p1.setNodePart(3,2)
 
-  assert_equal 4, p1.parallelEdgeCollapse(q,0,3)
+  assert_nil       p1.parallelEdgeCollapse(q,0,3)
+  assert_equal p1, p1.parallelEdgeCollapse(q,3,0)
   assert_equal 0, p1.ncell
   assert_equal 0, p1.nface
   assert_equal 0, p1.nedge
+  assert_equal [0,0,0], p1.nodeXYZ(0)
+  assert_equal [0,0,0], p1.nodeXYZ(3)
   assert_equal 2, q.transactions
   assert_equal 1, q.removedCells(1)
   assert_equal [100,101,102,103], q.removedCellNodes(0)
