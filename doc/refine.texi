@@ -32,6 +32,7 @@ The refine library overview, version 1.0.
 * Introduction :: Short description.
 * Overview ::     Basic architecture
 * Base Objects :: Base objects for grid.
+* Grid Object  :: The main object: grid.
 * Index ::        Complete index.
 @end menu
 
@@ -207,7 +208,31 @@ method.
 @cindex sort
 
 The sort object contains a heap sort routine @code{sortHeap} and a
-binary search routine for sorted elements @{sortSearch}.
+binary search routine for sorted elements @code{sortSearch}.
+
+@node Grid Object
+@chapter Grid Object
+@cindex object, grid
+
+The grid object contains all the data for the grid. It contains a
+number of the base objects. It automatically reallocates data to grow
+with the grid. A grid object is created @code{gridCreate} with an
+estimate of max number of nodes, cells, faces, and edges.
+
+
+
+A grid object can be imported from arrays
+@code{gridImport} or a FAST file @code{gridImportFAST}.
+
+A grid object can be exported as arrays @code{gridExport}, a FAST file
+@code{gridExportFAST} or AFLR3 file @code{gridExportAFLR3}. The
+surface (faces) can be displayed with
+@code{gridWriteTecplotSurfaceZone}. NOTE: the export routines may
+envoke pack and sort routines.
+
+Grid children can register methods to handle packing, reordering,
+reallocation, and deallocation @code{gridAttach*}. These registered
+methods can be unregistered with @code{gridDetach*}.
 
 @node Index
 @unnumbered Index
