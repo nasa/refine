@@ -16,41 +16,48 @@
 
 void sortHeap( int length, int *arrayInput, int *sortedIndex  )
 {
-  int i, l, j, ir, indxt, q;
+  int i, l, ir, indxt, q;
+  unsigned int n, j;
 
   for(i=0;i<length;i++) sortedIndex[i] = i;
 
   if (length < 2) return;
 
-  l=(length >> 1)+1; 
-  ir=length;
+  n = length;
+  l=(n >> 1)+1; 
+  ir=n-1;
   for (;;) {
     if (l > 1) {
-      indxt=sortedIndex[(--l)-1]; 
+      l--;
+      indxt=sortedIndex[l-1]; 
       q=arrayInput[indxt];
     } else {
-      indxt=sortedIndex[ir-1];  
+      indxt=sortedIndex[ir];  
       q=arrayInput[indxt];
-      sortedIndex[ir-1]=sortedIndex[0];
-      if (--ir == 1) {
+      sortedIndex[ir]=sortedIndex[0];
+      if (--ir == 0) {
 	sortedIndex[0]=indxt;
 	break; 
       } 
     }
-    i=l;
-    j=l+l;
+    i=l-1;
+    j=l+i;
 
     while (j <= ir) { 
       if ( j < ir ) {
-	if (arrayInput[sortedIndex[j-1]] < arrayInput[sortedIndex[j]]) j++; 
+	if (arrayInput[sortedIndex[j]] < arrayInput[sortedIndex[j+1]]) j++; 
       }
-      if (q < arrayInput[sortedIndex[j-1]]) { 
-	sortedIndex[i-1]=sortedIndex[j-1];
+      if (q < arrayInput[sortedIndex[j]]) { 
+	sortedIndex[i]=sortedIndex[j];
 	i=j; 
+
+	j++;
 	j <<= 1; 
+	j--;
+
       } else break; 
     }
-    sortedIndex[i-1]=indxt;
+    sortedIndex[i]=indxt;
   } 
 }
 
