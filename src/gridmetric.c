@@ -276,6 +276,8 @@ Grid *gridEigenValues(Grid *grid, double *m, double *eigenValues)
     eigenValues[1]=m[3];
     eigenValues[2]=m[5];
   }else{
+    /* http://mathworld.wolfram.com/CubicEquation.html */
+    /* http://gandalf.sourceforge.net/ */
     b = -(m[0] + m[3] + m[5]);
     c = m[0]*m[3] + m[3]*m[5] + m[5]*m[0]
       - m[4]*m[4] - m[2]*m[2] - m[1]*m[1];
@@ -326,6 +328,8 @@ Grid *gridEigenVector(Grid *grid, double *m, double eigenValue,
   double a, d, f, n1, n2, n3;
   double e1[3], e2[3], e3[3];
  
+  /* http://gandalf.sourceforge.net/ */
+
   a = m[0]-eigenValue;
   d = m[3]-eigenValue;
   f = m[5]-eigenValue;
