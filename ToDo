@@ -5,12 +5,29 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 --Major refactoring
 
+research mapped edge length and fix edge ratio length routines
+
+fix gridCollapseEdgeToBestConfiguration gridCollapseCost logic
+
+Return NULL from edge swap if gap0 and gap1 or n1 or n0 are ghost,
+because the ghost faces will not be installed on local processor so
+that a validity check can take place.
+
+Finish face swap parallelization. there are only 5 nodes so that means
+23 posiblities. (unit testing could be less if ring, top&bottom are
+treated seperatedly)
+
+Added a face area in UV constraint to cost.
+
+Smooth face in mapped UV space instead of physical space
+
 Parameter values: verify at start and then always evaluate to avoid
 projections.
 
-continue to merge edge based research into mainline code
+think about geom edge collapse on a beth grid with no geom edges
+Make a matrix of collapse possilbities for node 0,1 on bound or not
 
-research mapped edge length and fix edge ratio length routines
+rename grid AR to cost
 
 gridcad : get rid of 
 -gridOptimizeFaceUV
@@ -20,19 +37,8 @@ gridcad : get rid of
 gridmetric : get rid of
 -gridCellRatioErrorDerivative
 
-rename grid AR to cost
-
-clean up projections for adapt drivers
-
-clean up logic for adapt drivers
-
-fix gridCollapseEdgeToBestConfiguration gridCollapseCost logic
-
 clean up gridSplitEdgeIfNear gridSplitFaceAt gridSplitCellAt
 gridInsertInToGeomEdge gridInsertInToGeomFace gridInsertInToVolume
-
-think about geom edge collapse on a beth grid with no geom edges
-Make a matrix of collapse possilbities for node 0,1 on bound or not
 
 --Edge Based
 
