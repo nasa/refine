@@ -3,17 +3,22 @@ AC_INIT([src/main.c])
 AM_INIT_AUTOMAKE([refine],[0.6])
 
 AC_ARG_WITH(SDK,
-	[  --with-SDK[=ARG]        use GEOLAB SDK package [ARG=\$GEO_SDK]],
+	[  --with-SDK[=ARG]          use GEOLAB SDK package [ARG=GEO_SDK]],
 	[with_SDK=$withval],
 	[with_SDK=$GEO_SDK])
 
 AC_ARG_WITH(CAPRI,
-	[  --with-CAPRI[=ARG]      use CAPRI package [ARG=\$CAPRI_ROOT]],
+	[  --with-CAPRI[=ARG]        use CAPRI package [ARG=CAPRI_ROOT]],
 	[with_CAPRI=$withval],
 	[with_CAPRI=$CAPRI_ROOT])
 
+AC_ARG_WITH(KERNEL,
+	[  --with-KERNEL[=ARG]       use CAPRI CAD Kernel [ARG=Native]],
+	[with_KERNEL=$withval],
+	[with_KERNEL=Native])
+
 AC_ARG_WITH(FELISA,
-	[  --with-FELISA[=ARG]      use FELISA lib [ARG=\$FELISA_LIB]],
+	[  --with-FELISA[=ARG]       use FELISA lib [ARG=FELISA_LIB]],
 	[with_FELISA=$withval],
 	[with_FELISA=$FELISA_LIB])
 
@@ -64,8 +69,15 @@ if test "$have_CAPRI" != 'no'
 then
    AC_PATH_X
    CAPRI=$with_CAPRI
+   KERNEL=$with_KERNEL
+   if test `uname` = 'Linux'
+   then  
+     CAPRI_ARCH='LINUX'
+   else
+     CAPRI_ARCH='SGIn32'
+   fi
    AC_DEFINE([HAVE_CAPRI])
-   CAPRILib="-L$CAPRI/Native/LINUX -lcapri"
+   CAPRILib="-L$CAPRI/$KERNEL/$CAPRI_ARCH -lcapri"
    if test "$x_libraries" != "" ; then
        CAPRILib="$CAPRILib -L$x_libraries -lX11"
    fi
