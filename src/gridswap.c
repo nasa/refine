@@ -48,13 +48,11 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
       if (face0!=EMPTY) face1 = face;
       if (face0==EMPTY) face0 = face;
     }
-
-    printf("cell%8d%2d face%6d faceId%4d\n",cell,face,faces[face],faceIds[face]);
   }
+
   if (2==facecount) {
     faceId0 = faceIds[face0];
     faceId1 = faceIds[face1];
-    printf("cell%8d%2d%2d faceId%4d%4d\n",cell,face0,face1,faceId0,faceId1);
     if (faceId0==faceId1) {
 
       gridRemoveCellAndQueue(grid,queue,cell);
@@ -71,7 +69,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 	  if (newface0==EMPTY) newface0 = face;
 	}
       }
-      printf("same%2d%2d\n",newface0,newface1);
 
       for(node=0;node<3;node++) facenodes[node] = cell2face[newface0][node];
 
