@@ -60,13 +60,28 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   }
 
   printf(" -- REBUILD EDGES\n");
-  layerRebuildEdges(layer,vol);
+  if ( layer != layerRebuildEdges(layer,vol) ) {
+    sprintf(outputProject,"%s_MXerror.fgrid",project);
+    printf("writing ERROR FAST file %s\n",outputProject);
+    gridExportFAST( grid, outputProject  );
+    return 0;
+  }
 
   printf(" -- REBUILD FACES\n");
-  layerRebuildFaces(layer,vol);
+  if ( layer != layerRebuildFaces(layer,vol) ) {
+    sprintf(outputProject,"%s_MXerror.fgrid",project);
+    printf("writing ERROR FAST file %s\n",outputProject);
+    gridExportFAST( grid, outputProject  );
+    return 0;
+  }
 
   printf(" -- REBUILD VOLUME\n");
-  layerRebuildVolume(layer,vol);
+  if ( layer != layerRebuildVolume(layer,vol) ) {
+    sprintf(outputProject,"%s_MXerror.fgrid",project);
+    printf("writing ERROR FAST file %s\n",outputProject);
+    gridExportFAST( grid, outputProject  );
+    return 0;
+  }
 
   printf(" -- DUMP PART\n");
 
@@ -148,21 +163,6 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
 	return NULL;
       }
 
-      /* start hack
-      {
-	double d[3],dist;
-	d[0] = newxyz[0+3*(nedgenode-1)] - newxyz[0+3*(nedgenode-2)];
-	d[1] = newxyz[1+3*(nedgenode-1)] - newxyz[1+3*(nedgenode-2)];
-	d[2] = newxyz[2+3*(nedgenode-1)] - newxyz[2+3*(nedgenode-2)];
-	dist = d[0]*d[0] + d[1]*d[1] + d[2]*d[2];
-	printf("last delta %e\n",dist);
-	if (dist<1.0e-8){
-	  printf("WARNING: duplicate node detected and deleted");
-	  nedgenode--;
-	}
-      }
-      end hack */
-
       printf("number of rebuild edge points:  %d\n",nedgenode);
 
       newnodes = malloc( nedgenode * sizeof(int));
@@ -170,15 +170,12 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
       newnodes[nedgenode-1] = edgeEndPoints[1];
       for(i=1;i<(nedgenode-1);i++){
 	newnodes[i]=gridAddNode(grid,newxyz[0+3*i],newxyz[1+3*i],newxyz[2+3*i]);
-	printf("node added %8d x %8.5f y %8.5f z %8.5f \n",
-	       newnodes[i],newxyz[0+3*i],newxyz[1+3*i],newxyz[2+3*i]);
       }
 
       gridDeleteThawedEdgeSegments(grid,edgeId);
       for(i=1;i<nedgenode;i++){
 	i0 = i-1; i1 = i;
 	gridAddEdge(grid,newnodes[i0],newnodes[i1],edgeId,newt[i0],newt[i1]);
-	printf("edge added %8d <-> %8d \n",newnodes[i0],newnodes[i1]);
       }
 
       free(newxyz);
@@ -340,33 +337,6 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	/* project all nodes for safety. rebuilt edge has no uv */
 	CADGeom_ResolveOnFace(vol,faceId,&shellxyz[3*i],&shelluv[2*i],resolved);
       }
-      for(i=0;i<nnode;i++) 
-	printf("node %4d %8d x %8.5f y %8.5f z %8.5f u %11.3e v %11.3e\n",
-	       i,l2g[i],
-	       shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i],
-	       shelluv[0+2*i],shelluv[1+2*i]
-	       );
-      for(i=0;i<nshell;i++) 
-	printf("shell %4d: %8d <-> %8d or %8d <-> %8d\n",
-	       i,shell[0+2*i],shell[1+2*i],l2g[shell[0+2*i]],l2g[shell[1+2*i]]);
-
-/*
-      for(j=0;j<nshell;j++) {
-        printf("2\n");
-        i = shell[0+2*j];
-	printf("%8.5f %8.5f %8.5f\n",shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i]);
-        i = shell[1+2*j];
-	printf("%8.5f %8.5f %8.5f\n",shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i]);
-      }
-
-      for(j=0;j<nshell;j++) {
-        printf("2\n");
-        i = shell[0+2*j];
-	printf("%8.5f %8.5f 0.0\n",shelluv[0+2*i],shelluv[1+2*i]);
-        i = shell[1+2*j];
-	printf("%8.5f %8.5f 0.0\n",shelluv[0+2*i],shelluv[1+2*i]);
-      }
- */
 
       nfacenode = EMPTY;
       nfacetri  = EMPTY;
@@ -377,7 +347,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       &nfacenode, &nfacetri, 
 			       &newface, &newxyz, &newuv) ) {
 	printf("%s\nCould NOT mesh Face %d\n",ErrMgr_GetErrStr(),faceId);
-	//return NULL;
+	return NULL;
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
 
@@ -442,7 +412,6 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
 
   for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
     if (!layerParentGeomFace(layer,faceId)) {
-      // HACK - HACK
       // use total faces for origial faces not thawed, but they should be thawed
       nshell += gridNThawedFaces(grid,faceId);
     }
@@ -507,7 +476,7 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
 			     &nvolnode, &nvolcell, 
 			     &newcell, &newxyz) ) {
     printf("%s\nCould NOT mesh Volume %d\n",ErrMgr_GetErrStr(),vol);
-    //return NULL;
+    return NULL;
   }
   printf("rebuild volume has %d nodes %d cells\n",nvolnode,nvolcell);
 
