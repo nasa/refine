@@ -177,29 +177,6 @@ class Grid
 end
 @end verbatim
 
-@section Adaptation Driver
-@cindex driver, adaptation
-
-This is the basic work flow of an adaptation cycle implemented in
-FUN3D driver to the refine library.  This cycle is repeated to
-iteratively morph the current grid into a grid that satisfies the
-mapped metric.  The aspect ratio is defined in the mapped metric.
-
-@enumerate
-@item edge and face swapping to improve cell aspect ratio 
-@item node optimization to improve the worst adjacent cell or boundary face aspect ratio
-@item node insertion and removal by edge splitting or edge collapse (does not project new surface nodes)
-@item grid movement by linear elasticity or springs (to project surface nodes)
-@item untangle faces (increase area) in UV space with node optimization (if negative area faces detected)
-@item untangle cells (increase volume) with node optimization (if negative cells detected)
-@item edge and face swapping to improve cell aspect ratio 
-@item node smoothing to improve cell aspect ratio
-@end enumerate
-
-Node optimization can be done with ``smart Laplacian'', line searches
-in steepest descent direction, linear quadratic programming with
-conjugate gradient direction, or simplex searches.
-
 @node Base Objects
 @chapter Base Objects
 @cindex object, base
@@ -440,13 +417,37 @@ other processors.
 @chapter Running FUN3D
 @cindex FUN3D, Running
 
-@section Adaptation workflow
 
-There is an @code{if (adapt) then} block named in
-Adjoint/rad_module.f90 that controls the high level workflow of the
-adaptation process.
+@section Adaptation Driver
+@cindex driver, adaptation
 
-There are to basic parallelization strategies employed in the coupled
+There is an @code{if (adapt) then} block in
+HEFSS.rps/Adjoint/rad_module.f90 that controls the high level workflow
+of the adaptation process. It contains multiple calls to the
+HEFSS.rps/LibF90/refine_interface.F90 module to envoke the high level
+operations (initialization, swapping, smoothing, etc.).
+
+This is the basic work flow of an adaptation cycle implemented in
+FUN3D driver to the refine library.  This cycle is repeated to
+iteratively morph the current grid into a grid that satisfies the
+mapped metric.  The aspect ratio is defined in the mapped metric.
+
+@enumerate
+@item edge and face swapping to improve cell aspect ratio 
+@item node optimization to improve the worst adjacent cell or boundary face aspect ratio
+@item node insertion and removal by edge splitting or edge collapse (does not project new surface nodes)
+@item grid movement by linear elasticity or springs (to project surface nodes)
+@item untangle faces (increase area) in UV space with node optimization (if negative area faces detected)
+@item untangle cells (increase volume) with node optimization (if negative cells detected)
+@item edge and face swapping to improve cell aspect ratio 
+@item node smoothing to improve cell aspect ratio
+@end enumerate
+
+Node optimization can be done with ``smart Laplacian'', line searches
+in steepest descent direction, linear quadratic programming with
+conjugate gradient direction, or simplex searches.
+
+There are two basic parallelization strategies employed in the coupled
 FUN3D and refine library execution. The first allows for the movement
 of nodes with constant connectivities. The second allows for changes
 in connectivity.
@@ -648,6 +649,12 @@ pairs to replace default ginput.faces file of HEFSS installation.
 @node Support
 @chapter Support
 @cindex support
+
+@section got bugs?
+@cindex bugs
+
+Send bug reports to @url{fun_support@@larc.nasa.gov}. There is also a
+list of authors in the distrubution AUTHORS file.
 
 @section Making a distribution
 @cindex distribution
