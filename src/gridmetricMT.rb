@@ -86,20 +86,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 1.0, grid.edgeRatio(0,2), 1.0e-15
  end
 
-# remove this
- def testFindLongestEdge
-  grid = Grid.new(4,1,0,0)
-  grid.addCell( 
-	       grid.addNode(-1.0,0.0,0.0), 
-	       grid.addNode(2.0,0.0,0.0), 
-	       grid.addNode(0.0,1.0,0.0), 
-	       grid.addNode(0.0,0.0,1.0) )
-  assert_equal 1, grid.longestEdge(0)
-  assert_equal 0, grid.longestEdge(1)
-  assert_equal 1, grid.longestEdge(2)
-  assert_equal 1, grid.longestEdge(3)
- end
-
  def testFindLargestRatioEdge
   assert_not_nil grid = isoTet.resetSpacing
   grid.scaleSpacing(0,0.50)
