@@ -14,7 +14,6 @@
 #ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
-#include "UG_API/UGMgr.h"
 #else
 #include "FAKEGeom.h"
 #endif
@@ -47,7 +46,7 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
     return NULL;
   }  
 
-  if ( ! GeoMesh_LoadPart( project ) ){
+  if ( ! CADGeom_LoadPart( project ) ){
     printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }
@@ -133,7 +132,7 @@ Grid *gridParallelGeomSave( Grid *grid, char *project )
 {
   int vol=1;
 
-  GeoMesh_UseDefaultIOCallbacks();
+  CADGeom_UseDefaultIOCallbacks();
   if( !CADGeom_SavePart(vol,project) ) {
     printf("%s: %d: Could not save CAPRI part.\n",
 	   __FILE__, __LINE__);    

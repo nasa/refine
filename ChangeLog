@@ -1,3 +1,7 @@
+2004-08-16 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c removed all references to SDK UG_API and Goolache.
+
 2004-08-13 11:00 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridgeom.c (gridParallelGeomLoad) commented out call to
