@@ -317,6 +317,7 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
   int face, faceId;
   int vol = 1;
   double t, uv[2], xyz[3], xyznew[3];
+  GridBool evaluate = TRUE;
 
   displacement[0] = displacement[1] = displacement[2] = 0.0;
 
@@ -328,9 +329,17 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
     edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
     gridEdge(grid, edge, nodes, &edgeId );
     if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
-    if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) {
-      printf("%s: %d: nearestOnEdge failed.\n",__FILE__,__LINE__);
-      return NULL;
+    if (evaluate) {
+      if ( !CADGeom_PointOnEdge( vol, edgeId, t, xyznew, 
+				 0, NULL, NULL) ) {
+	printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
+	return NULL;
+      }
+    }else{
+      if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) {
+	printf("%s: %d: nearestOnEdge failed.\n",__FILE__,__LINE__);
+	return NULL;
+      }
     }
     if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
     if ( grid != gridUpdateFaceParameters(grid, node) ) return NULL;
@@ -341,9 +350,17 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
     face = adjItem(adjFirst(gridFaceAdj(grid), node));
     gridFace(grid, face, nodes, &faceId );
     if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
-    if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) )  {
-      printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
-      return NULL;  
+    if (evaluate) {
+      if ( !CADGeom_PointOnFace( vol, faceId, uv, xyznew, 
+				 0, NULL, NULL, NULL, NULL, NULL) ){
+	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+	return NULL;
+      }
+    }else{
+      if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) )  {
+	printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
+	return NULL;  
+      }
     }
     gridSetNodeUV(grid, node, faceId, uv[0], uv[1]);
     gridSubtractVector(xyznew,xyz,displacement);
