@@ -2484,6 +2484,8 @@ int layerNRequiredBlends(Layer *layer, int normal, double angleLimit )
   double edgeAngle;
   AdjIterator it;
 
+  if (angleLimit < 0.0) angleLimit = 250; /* deg */
+
   blendCount = 0;
   for ( it = adjFirst(layer->adj,normal); 
 	adjValid(it); 
