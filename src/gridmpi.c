@@ -37,8 +37,7 @@ Grid *gridSetGhost(Grid *grid, int node )
 
 Grid *gridParallelEdgeSplit(Grid *grid, int node1, int node2 )
 {
-  if ( (gridPartId(grid) != gridNodePart(grid,node1)) &&
-       (gridPartId(grid) != gridNodePart(grid,node2)) ) return NULL;
+  if ( gridNodeGhost(grid,node1) && gridNodeGhost(grid,node2) ) return NULL;
        
   return grid;
 }
