@@ -200,6 +200,12 @@ VALUE layer_nConstrainedSides( VALUE self, VALUE faceId )
   return INT2NUM(layerNConstrainedSides(layer,NUM2INT(faceId)));
 }
 
+VALUE layer_findParentEdges( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerFindParentEdges(layer)?self:Qnil );
+}
+
 VALUE layer_setParentEdge( VALUE self, VALUE normal0, VALUE normal1, 
 			   VALUE edgeId )
 {
@@ -272,6 +278,7 @@ void Init_Layer()
   rb_define_method( cLayer, "constrainFrontSide", layer_constrainFrontSide, 3 );
   rb_define_method( cLayer, "constrainedSide", layer_constrainedSide, 2 );
   rb_define_method( cLayer, "nConstrainedSides", layer_nConstrainedSides, 1 );
+  rb_define_method( cLayer, "findParentEdges", layer_findParentEdges, 0 );
   rb_define_method( cLayer, "setParentEdge", layer_setParentEdge, 3 );
   rb_define_method( cLayer, "parentEdge", layer_parentEdge, 2 );
   rb_define_method( cLayer, "nParentEdgeSegments", layer_nParentEdgeSegments, 1 );

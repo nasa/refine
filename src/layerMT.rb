@@ -235,6 +235,30 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1,       layer.nParentEdgeSegments(1)
  end
 
+ def testFindParentalEdgesForFront
+  assert_not_nil        grid = Grid.new(10,10,10,10)
+  assert_equal grid,    grid.addFace(0,1,2,1)
+  assert_equal grid,    grid.addEdge(0,1,1,0,1)
+  assert_equal grid,    grid.addEdge(0,4,1,0,1)
+  assert_not_nil        layer = Layer.new(grid)
+  assert_nil            layer.findParentEdges
+  assert_equal layer,   layer.makeFront([1])
+  assert_equal 1,       layer.nfront
+  assert_nil            layer.findParentEdges
+  assert_equal layer,   layer.makeNormal
+  assert_equal 3,       layer.nnormal
+  assert_equal 0,       layer.parentEdge(0,0)
+  assert_equal 0,       layer.parentEdge(0,1)
+  assert_equal 0,       layer.parentEdge(0,2)
+  assert_equal 0,       layer.nParentEdgeSegments(1)
+  assert_equal layer,   layer.findParentEdges
+  assert_equal 1,       layer.parentEdge(0,0)
+  assert_equal 0,       layer.parentEdge(0,1)
+  assert_equal 0,       layer.parentEdge(0,2)
+  assert_equal 1,       layer.nParentEdgeSegments(1)
+ end
+
+
  def testNormalFrontNeighbors
   assert_not_nil        grid = Grid.new(4,0,3,0)
   assert_equal grid,    grid.addFace(0,1,2,1)

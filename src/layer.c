@@ -604,6 +604,26 @@ int layerNConstrainedSides(Layer *layer, int faceId )
   return nside;
 }
 
+Layer *layerFindParentEdges(Layer *layer)
+{
+  int front, side, n0, n1, edgeId;
+
+  if (layerNFront(layer) == 0 ) return NULL;
+  if (layerNNormal(layer) == 0 ) return NULL;
+
+  for (front=0;front<layerNFront(layer);front++){
+    for(side=0;side<3;side++){
+      n0 = side;
+      n1 = side+1; if (n1>2) n1 = 0;
+      n0 = layer->front[front].globalNode[n0];
+      n1 = layer->front[front].globalNode[n1];
+      edgeId = gridEdgeId(layer->grid,n0,n1);
+      if (EMPTY != edgeId) layer->front[front].parentEdge[side]=edgeId;
+    }
+  }
+  return layer;
+}
+
 Layer *layerSetParentEdge(Layer *layer, int normal0, int normal1, int edgeId )
 {
   AdjIterator it;

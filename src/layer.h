@@ -43,6 +43,7 @@ int layerConstrained(Layer *, int normal );
 Layer *layerConstrainFrontSide(Layer *, int normal0, int normal1, int bc );
 int layerConstrainedSide(Layer *, int front, int side );
 int layerNConstrainedSides(Layer *, int faceId );
+Layer *layerFindParentEdges(Layer *);
 Layer *layerSetParentEdge(Layer *, int normal0, int normal1, int edgeId );
 int layerParentEdge(Layer *, int front, int side );
 int layerNParentEdgeSegments(Layer *, int edgeId );
