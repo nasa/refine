@@ -234,7 +234,7 @@ Grid *gridGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
     c2 = grid->c2n[2+4*cellId];
     c3 = grid->c2n[3+4*cellId];
 
-
+    /* 0 leads */
     if ( n0 == c0 && n1 == c1 ) {
       SAFE_NGEM_INC;
       gem[0+4*(*ngem-1)] = c0;
@@ -258,6 +258,82 @@ Grid *gridGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
       gem[2+4*(*ngem-1)] = c1;
       gem[3+4*(*ngem-1)] = c2;
     }
+
+    /* 1 leads */
+    if ( n0 == c1 && n1 == c0 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c1;
+      gem[1+4*(*ngem-1)] = c0;
+      gem[2+4*(*ngem-1)] = c3;
+      gem[3+4*(*ngem-1)] = c2;
+    }
+
+    if ( n0 == c2 && n1 == c0 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c2;
+      gem[1+4*(*ngem-1)] = c0;
+      gem[2+4*(*ngem-1)] = c1;
+      gem[3+4*(*ngem-1)] = c3;
+    }
+
+    if ( n0 == c3 && n1 == c0 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c3;
+      gem[1+4*(*ngem-1)] = c0;
+      gem[2+4*(*ngem-1)] = c2;
+      gem[3+4*(*ngem-1)] = c1;
+    }
+
+    /* 2 leads */
+    if ( n0 == c2 && n1 == c3 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c2;
+      gem[1+4*(*ngem-1)] = c3;
+      gem[2+4*(*ngem-1)] = c0;
+      gem[3+4*(*ngem-1)] = c1;
+    }
+
+    if ( n0 == c3 && n1 == c1 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c3;
+      gem[1+4*(*ngem-1)] = c1;
+      gem[2+4*(*ngem-1)] = c0;
+      gem[3+4*(*ngem-1)] = c2;
+    }
+
+    if ( n0 == c1 && n1 == c2 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c1;
+      gem[1+4*(*ngem-1)] = c2;
+      gem[2+4*(*ngem-1)] = c0;
+      gem[3+4*(*ngem-1)] = c3;
+    }
+
+    /* 3 leads */
+    if ( n0 == c3 && n1 == c2 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c3;
+      gem[1+4*(*ngem-1)] = c2;
+      gem[2+4*(*ngem-1)] = c1;
+      gem[3+4*(*ngem-1)] = c0;
+    }
+
+    if ( n0 == c1 && n1 == c3 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c1;
+      gem[1+4*(*ngem-1)] = c3;
+      gem[2+4*(*ngem-1)] = c2;
+      gem[3+4*(*ngem-1)] = c0;
+    }
+
+    if ( n0 == c2 && n1 == c1 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c2;
+      gem[1+4*(*ngem-1)] = c1;
+      gem[2+4*(*ngem-1)] = c3;
+      gem[3+4*(*ngem-1)] = c0;
+    }
+
 
   }
 
