@@ -17,6 +17,8 @@
 
 BEGIN_C_DECLORATION
 
+Layer *layerRebuildInterior(Layer *, int vol);
+
 Layer *layerRebuildEdges(Layer *, int vol);
 Layer *layerRebuildFaces(Layer *, int vol);
 Layer *layerRebuildVolume(Layer *, int vol);

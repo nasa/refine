@@ -29,6 +29,21 @@
 #include "MeatLib/GeoBC.h"
 #include "mesherxRebuild.h"
 
+Layer *layerRebuildInterior(Layer *layer, int vol)
+{
+
+  printf(" -- REBUILD EDGES\n");
+  if ( layer != layerRebuildEdges(layer,vol) ) return NULL;
+
+  printf(" -- REBUILD FACES\n");
+  if ( layer != layerRebuildFaces(layer,vol) ) return NULL;
+
+  printf(" -- REBUILD VOLUME\n");
+  if ( layer != layerRebuildVolume(layer,vol) ) return NULL;
+
+  return layer;
+}
+
 Layer *layerRebuildEdges(Layer *layer, int vol){
 
   int i, edgeId, edgeEndPoints[2];

@@ -123,20 +123,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   /* case dep */
 
-  printf(" -- REBUILD EDGES\n");
-  if ( layer != layerRebuildEdges(layer,vol) ) {
-    return 0;
-  }
-
-  printf(" -- REBUILD FACES\n");
-  if ( layer != layerRebuildFaces(layer,vol) ) {
-    return 0;
-  }
-
-  printf(" -- REBUILD VOLUME\n");
-  if ( layer != layerRebuildVolume(layer,vol) ) {
-    return 0;
-  }
+  if ( layer != layerRebuildInterior(layer,vol) ) return NULL;
 
   if ( qualityImprovement ){
     printf(" -- QUALITY IMPROVEMENT\n");
