@@ -17,13 +17,15 @@ BEGIN_C_DECLORATION
 
 typedef struct Grid Grid;
 
-Grid *gridCreate(int nnode, int ncell);
+Grid *gridCreate(int maxnode, int maxcell, int maxface);
 void gridFree(Grid *g);
 
 int gridMaxNode(Grid *g);
 int gridNNode(Grid *g);
 int gridMaxCell(Grid *g);
 int gridNCell(Grid *g);
+int gridMaxFace(Grid *g);
+int gridNFace(Grid *g);
 int gridNodeDeg(Grid *g, int nodeIndex);
 bool gridCellExists(Grid *g, int nodeIndex, int cellIndex);
 Grid *gridRegisterNodeCell(Grid *g, int nodeIndex, int cellIndex);
