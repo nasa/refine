@@ -753,6 +753,17 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0, grid.nodeGlobal(2)
  end
 
+ def testRenumberGlobalNodesShiftParallel
+  grid = Grid.new(5,0,0,0)
+  grid.addNodeWithGlobal(1.0,2.0,3.0,0)
+  assert_not_nil grid.renumberGlobalNodes([2,0])
+  assert_equal 1, grid.nodeGlobal(0)
+  assert_not_nil grid.renumberGlobalNodes([2,0])
+  assert_equal 2, grid.nodeGlobal(0)
+  assert_not_nil grid.renumberGlobalNodes([2,0])
+  assert_equal 0, grid.nodeGlobal(0)
+ end
+
  def testNumberOfFaces
   assert_not_nil  grid = Grid.new(4,1,2,0)
   assert_equal 0, grid.nface 
