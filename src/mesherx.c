@@ -89,8 +89,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   while (i<nLayer & layerAnyActiveNormals(layer)){
     i++;
 
-    if (layerNNormal(layer)==layerNActiveNormal(layer)) 
-      layerSmoothNormalDirection(layer,0.1);
+    if (i<10) layerSmoothNormalDirection(layer,0.2*(((double)i)/10.0));
 
     if (i>10) rate += 0.01;
     if (rate>1.3) rate=1.3;
@@ -100,7 +99,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     //layerSmoothLayerWithHeight(layer);
 
     layerTerminateNormalWithLength(layer,1.0);
-    layerTerminateNormalWithBGSpacing(layer, 0.8, 1.9);
+    layerTerminateNormalWithBGSpacing(layer, 0.8, 1.5);
 
     if (i>6) layerTerminateCollidingTriangles(layer);
 
