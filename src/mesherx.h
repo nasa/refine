@@ -19,7 +19,7 @@ BEGIN_C_DECLORATION
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project );
 
-int layerTerminateNormalWithBGSpacing(Layer *layer);
+int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio);
 
 Layer *layerRebuildEdges(Layer *layer, int vol);
 Layer *layerRebuildFaces(Layer *layer, int vol);

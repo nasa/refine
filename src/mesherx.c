@@ -33,7 +33,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
   int nLayer;
 
   nLayer = (int)(10.0/scale);
-  nLayer = 12;
+  nLayer = 15;
   rate = exp(scale*log(1.2));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
@@ -49,11 +49,11 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
   gridThawAll(grid); 
   layerFindParentEdges(layer);
   i=0;
-  //layerLaminarInitialHeight(layer, 1000.0, -0.05 );
+  layerLaminarInitialHeight(layer, 1000.0, -0.05 );
   layerScaleNormalHeight(layer,scale);
-  while (i<nLayer ) {
+  while (i<nLayer && layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.5)) {
     //layerVisibleNormals(layer);
-    layerAdvanceConstantHeight(layer,0.03);
+    layerAdvance(layer);
     layerScaleNormalHeight(layer,rate);
     i++;
   }
@@ -84,7 +84,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
   return 1;
 }
 
-int layerTerminateNormalWithBGSpacing(Layer *layer)
+int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio)
 {
   int normal, nterm;
   int root;
@@ -103,7 +103,7 @@ int layerTerminateNormalWithBGSpacing(Layer *layer)
     gridNodeXYZ(layerGrid(layer),root,xyz);
     MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
 
-    if (height > 0.5*spacing[0]) {     /* Assume Isotropic for now */
+    if (height > ratio*spacing[0]) {     /* Assume Isotropic for now */
       nterm++;
       layerTerminateNormal(layer, normal);
     }
