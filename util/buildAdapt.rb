@@ -73,7 +73,7 @@ class Package
   File.open(File.join(@path,'Makefile.env'),'a') do |f|
    f.puts "CAPRILIBS = #{sdk_libs} #{capri_libs}"
    f.puts "REFINELIBS = #{refine_libs}"
-   f.puts "F90FLAGS = -O0"
+   #f.puts "F90FLAGS = -O0"
   end
   self
  end
@@ -99,11 +99,11 @@ sdk = Package.new("SDK")
 refine = Package.new("refine")
 hefss = Package.new("HEFSS.rps")
 
-if false
+if true
  capri.clean_checkout
  sdk.clean_checkout.bootstrap.configure(capri.with).make_make_install
  refine.clean_checkout.bootstrap.configure(sdk.with,capri.with).make_make_install
  hefss.clean_checkout.configure_env(capri.libs,sdk.libs,refine.libs).make_mpi
+ refine.adapt(hefss.path)
 end
 
-refine.adapt(hefss.path)
