@@ -112,6 +112,8 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 
   grid->tecplotFileOpen = FALSE;
 
+  grid->line = NULL;
+
   return grid;
 }
 
@@ -238,6 +240,8 @@ Grid *gridImport(int maxnode, int nnode,
   grid->degAR = 0;
 
   grid->tecplotFileOpen = FALSE;
+
+  grid->line = NULL;
 
   return  grid;
 }
@@ -393,6 +397,7 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
 
 void gridFree(Grid *grid)
 {
+  if ( grid->line != NULL ) free(grid->line);
   if ( grid->tecplotFileOpen ) fclose(grid->tecplotFile);
   if ( NULL != grid->geomEdge) free(grid->geomEdge);
   adjFree(grid->edgeAdj);

@@ -60,6 +60,9 @@ struct Grid {
   FILE *tecplotFile;
   bool tecplotFileOpen;
 
+  int nline;
+  int *line;
+
 };
 
 END_C_DECLORATION
