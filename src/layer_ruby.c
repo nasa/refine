@@ -195,7 +195,7 @@ VALUE layer_setNormalHeight( VALUE self, VALUE normal, VALUE height )
 VALUE layer_visibleNormals( VALUE self )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerVisibleNormals(layer)?self:Qnil );
+  return ( layer == layerVisibleNormals(layer,-1.0,-1.0)?self:Qnil );
 }
 
 VALUE layer_projectNormalsToConstraints( VALUE self  )

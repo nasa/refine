@@ -191,7 +191,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     layerConstrainNormal(layer,2);
   }
   printf("make advancing layer triangle normals visible to triangle.\n");
-  layerVisibleNormals(layer);
+  layerVisibleNormals(layer,-1.0,-1.0);
   return layer;
 }
 
@@ -552,41 +552,58 @@ Layer *layerLaminarInitialHeight(Layer *layer, double Re, double xStart)
   return layer;
 }
 
-Layer *layerVisibleNormals(Layer *layer)
+Layer *layerNormalMinDot(Layer *layer, int normal,
+			 double *mindot, double *mindir,
+			 int *minTriangle )
 {
-  int normal, iter, triangle, i;
-  double *dir, norm[3], mindir[3], dot, mindot, radian, length; 
+  int triangle;
+  double dir[3], norm[3], dot;
   AdjIterator it;
+
+  if (layer != layerNormalDirection(layer,normal,dir)) return NULL;
+
+  *mindot = 2.0;
+  mindir[0]=0.0;
+  mindir[1]=0.0;
+  mindir[2]=0.0;
+  *minTriangle = EMPTY;
+
+  for ( it = adjFirst(layer->adj,normal); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    triangle = adjItem(it);
+    layerTriangleDirection(layer,triangle,norm);
+    dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
+    if (dot<*mindot) {
+      *mindot = dot;
+      mindir[0]=norm[0];
+      mindir[1]=norm[1];
+      mindir[2]=norm[2];
+      *minTriangle = triangle;
+    }
+  }
+  
+  return layer;
+}
+
+Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
+{
+  int normal, iter, i;
+  double *dir, mindir[3], dot, mindot, radian, length; 
   int minTriangle, lastTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
+  if (dotLimit < 0) dotLimit = 0.90;
+  if (radianLimit < 0) radianLimit = 1.0e-10;
 
   layerProjectNormalsToConstraints(layer);
 
   for (normal=0;normal<layerNNormal(layer);normal++){
+    dir = layer->normal[normal].direction;
     lastTriangle = EMPTY;
     radian = 0.01;
-    for (iter=0;iter<1000 && radian > 1.0e-15;iter++){
-      dir = layer->normal[normal].direction;
-      mindot = 2.0;
-      mindir[0]=dir[0];
-      mindir[1]=dir[1];
-      mindir[2]=dir[2];
-      minTriangle = EMPTY;
-      for ( it = adjFirst(layer->adj,normal); 
-	    adjValid(it); 
-	    it = adjNext(it) ){
-	triangle = adjItem(it);
-	layerTriangleDirection(layer,triangle,norm);
-	dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
-	if (dot<mindot) {
-	  mindot = dot;
-	  mindir[0]=norm[0];
-	  mindir[1]=norm[1];
-	  mindir[2]=norm[2];
-	  minTriangle = triangle;
-	}
-      }
+    layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+    for (iter=0;iter<1000 && radian > radianLimit && mindot < dotLimit;iter++){
       if (minTriangle != lastTriangle) {
 	radian = radian * 0.5;
 	lastTriangle = minTriangle;
@@ -601,6 +618,7 @@ Layer *layerVisibleNormals(Layer *layer)
       }else{
 	for ( i=0;i<3;i++) dir[i] = 0.0;
       }
+      layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
     }
     if (mindot <= 0.0 ) 
       printf("ERROR: %s, %d, Invisible normal %d, min dot product %f\n",
@@ -1184,7 +1202,7 @@ Layer *layerInsertPhantomTriangle(Layer *layer, double dz )
   int normal, faceId, edgeId, newnode;
   double xyz[3], spacing, m;
 
-  layerVisibleNormals(layer);
+  layerVisibleNormals(layer,-1.0,-1.0);
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid,layer->normal[normal].root,xyz);
