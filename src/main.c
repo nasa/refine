@@ -17,7 +17,7 @@
 #include "gridcad.h"
 #include <CADGeom/CADGeom.h>
 
-Grid *gridLoadPart( char *project );
+Grid *gridLoadPart( char *project, int maxnode );
 int gridSavePart( Grid *grid, char *project );
 
 int main( int argc, char *argv[] )
@@ -32,7 +32,7 @@ int main( int argc, char *argv[] )
   project = "../test/om6_out";
   printf("running project %s\n",project);
 
-  grid = gridLoadPart( project );
+  grid = gridLoadPart( project, 500000 );
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: loaded part does not have right handed boundaries\n");
@@ -131,14 +131,14 @@ int main( int argc, char *argv[] )
 
   output = "../test/om6_out2.fgrid";
   printf("writing output FAST file %s\n",output);
-  gridExportFAST( grid, output, TRUE );
+  gridExportFAST( grid, output );
 
   printf("Done.\n");
 
   return;
 }
 
-Grid *gridLoadPart( char *project )
+Grid *gridLoadPart( char *project, int maxnode )
 {
   Grid *grid;
   int vol=1;
@@ -151,7 +151,7 @@ Grid *gridLoadPart( char *project )
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
   int nedgenode;
   int nnode, nface, ncell, nedge;
-  int maxnode, maxface, maxcell, maxedge;
+  int maxface, maxcell, maxedge;
   int i, iedge, inode;
   int face, localNode, globalNode;
   double *xyz;
@@ -199,7 +199,6 @@ Grid *gridLoadPart( char *project )
   printf("ugrid size: %d nodes %d faces %d cells %d edge elements.\n",
 	 nnode,nface,ncell,nedge);
 
-  maxnode = 500000;
   maxface = maxnode;
   maxcell = maxnode * 6;
   maxedge = maxnode / 10;
@@ -236,6 +235,46 @@ Grid *gridLoadPart( char *project )
 		     maxcell, ncell, maxedge,
 		     xyz, f2n, faceId, c2n );
 
+  gridSetNGeomNode( grid, nGeomNode );
+  gridSetNGeomEdge( grid, nGeomEdge );
+
+  inode = nGeomNode;
+
+  for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
+    if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) 
+      printf("ERROR: CADGeom_EdgeGrid(%d).\n%s\n",iedge,ErrMgr_GetErrStr());
+ 
+    nedgenode = CADCURVE_NUMPTS(edge);
+
+    CADGeom_GetEdge( vol, iedge, trange, edgeEndPoint );
+
+    edgeEndPoint[0]--; /* convert from fortran to c numbers */
+    edgeEndPoint[1]--;
+
+    gridAddGeomEdge( grid, iedge, edgeEndPoint[0], edgeEndPoint[1]);
+
+    if (nedgenode == 2) {
+      gridAddEdge(grid, edgeEndPoint[0], edgeEndPoint[1], 
+		  iedge, trange[0], trange[1]);
+    }else{
+      gridAddEdge(grid, edgeEndPoint[0], inode, iedge,
+		  edge->param[0], edge->param[1]);
+      for( i=1 ; i < (nedgenode-2) ; i++ ) { // skip end segments  
+	gridAddEdge(grid, inode, inode+1, iedge,
+		  edge->param[i], edge->param[i+1]);
+	inode++;
+      }
+      gridAddEdge(grid, inode, edgeEndPoint[1], iedge,
+		  edge->param[nedgenode-2], 
+		  edge->param[nedgenode-1]);
+      inode++;
+    }
+  }
+
+  if ( nedge != gridNEdge(grid) )
+    printf("ERROR: gridLoadPart: %s: %d: nedge != gridNEdge(grid)\n",
+	   __FILE__,__LINE__);
+
   /* get uv vals for surface(s) */
   /* we use globalPatch to track with the localPatch so that we can get global
    * node numbering relative the volume grid and NOT the face grid as would
@@ -257,42 +296,6 @@ Grid *gridLoadPart( char *project )
     globalPatch = DList_GetNextItem(&patchIterator);
   }
 
-  gridSetNGeomNode( grid, nGeomNode );
-
-  inode = nGeomNode;
-
-  for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
-    if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) 
-      printf("ERROR: CADGeom_EdgeGrid(%d).\n%s\n",iedge,ErrMgr_GetErrStr());
- 
-    nedgenode = CADCURVE_NUMPTS(edge);
-
-    CADGeom_GetEdge( vol, iedge, trange, edgeEndPoint );
-
-    edgeEndPoint[0]--; /* convert from fortran to c numbers */
-    edgeEndPoint[1]--;
-
-    if (nedgenode == 2) {
-      gridAddEdge(grid, edgeEndPoint[0], edgeEndPoint[1], 
-		  iedge, trange[0], trange[1]);
-    }else{
-      gridAddEdge(grid, edgeEndPoint[0], inode, iedge,
-		  edge->param[0], edge->param[1]);
-      for( i=1 ; i < (nedgenode-2) ; i++ ) { // skip end segments  
-	gridAddEdge(grid, inode, inode+1, iedge,
-		  edge->param[i], edge->param[i+1]);
-	inode++;
-      }
-      gridAddEdge(grid, inode, edgeEndPoint[1], iedge,
-		  edge->param[nedgenode-2], 
-		  edge->param[nedgenode-1]);
-      inode++;
-    }
-  }
-
-  if ( nedge != gridNEdge(grid) )
-    printf("ERROR: nedge != gridNEdge(grid)\n");
-
   return grid;
 }
  
@@ -303,7 +306,6 @@ int gridSavePart( Grid *grid, char *project )
   int nnode, nface, ncell;
   double *xyz;
   int *f2n, *faceId, *c2n;
-  int *o2n;
   int i, ixyz, iface, icell, inode, newnode, node;
   int iedge, curveEndPoint[2], nCurveNode, *curve;
   double trange[2];
@@ -319,15 +321,10 @@ int gridSavePart( Grid *grid, char *project )
   if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) )
     printf("ERROR: CADGeom_GetVolume, line %d of %s\n.",__LINE__, __FILE__);
 
+  gridSortNodeGridEx( grid );
+
   gridExport( grid, &nnode, &nface, &ncell,
 	      &xyz, &f2n, &faceId, &c2n );
-
-  o2n = malloc( nnode * sizeof(int) );
-  for (i=0;i<nnode;i++) o2n[i] = EMPTY;
-
-  // geom nodes
-  for (i=0;i<nGeomNode;i++) o2n[i] = i;
-  newnode = nGeomNode;
   
   // edge stuff
   for (iedge=1; iedge<=nGeomEdge; iedge++){
@@ -343,12 +340,6 @@ int gridSavePart( Grid *grid, char *project )
     gridGeomCurve( grid, iedge, curveEndPoint[0], curve );
     gridGeomCurveT( grid, iedge, curveEndPoint[0], temp_tuv );
 
-    for ( i=1; i<(nCurveNode-1); i++){ // skip end points
-      if (o2n[curve[i]] != EMPTY) printf("newnode error %d\n",o2n[curve[i]]);
-      o2n[curve[i]] = newnode;
-      newnode++;
-    }
-
     for ( i=0; i<nCurveNode; i++) // include end points
       for ( ixyz=0; ixyz<3 ; ixyz++)
 	temp_xyz[ixyz+3*i] = xyz[ixyz+3*curve[i]];
@@ -357,56 +348,6 @@ int gridSavePart( Grid *grid, char *project )
 
     free(curve);
   }
-
-  // face stuff - assuming that the bc faces are sorted.
-  for ( iface=0; iface<nface; iface++ ){
-    for ( i=0; i<3; i++ ){
-      node = f2n[i+3*iface];
-      if ( o2n[node] == EMPTY ) {
-      o2n[node] = newnode;
-      newnode++;
-      }
-    }
-  }
-  
-  // interior nodes
-  for ( node=0; node<nnode; node++ ){
-    if ( o2n[node] == EMPTY ) {
-      o2n[node] = newnode;
-      newnode++;
-    }
-  }
-
-  if (newnode != nnode) 
-    printf("ERROR: gridSavePart, newnode %d nnode %d, line %d of %s\n.",
-	   newnode,nnode,__LINE__, __FILE__);
-
-  printf ("Reorder nodes...\n");
-
-  temp_xyz = malloc( nnode * sizeof(double) );
-
-  for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
-    for ( node = 0 ; node < nnode ; node++ ){
-      temp_xyz[o2n[node]] = xyz[ixyz+3*node];
-    }
-    for ( node = 0 ; node < nnode ; node++ ){
-      xyz[ixyz+3*node] = temp_xyz[node];
-    }
-  }
-
-  for ( icell = 0; icell < ncell ; icell++ ){
-    for ( inode = 0 ; inode < 4 ; inode++ ){
-      c2n[inode+4*icell] = o2n[c2n[inode+4*icell]];
-    }
-  }
-
-  for ( iface = 0; iface < nface ; iface++ ){
-    for ( inode = 0 ; inode < 3 ; inode++ ){
-      f2n[inode+3*iface] = o2n[f2n[inode+3*iface]];
-    }
-  }
-
-  free(temp_xyz);
 
   if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, ncell, c2n  )) {
     printf(" Could not make UGridPtr, line %d of %s\n", __LINE__, __FILE__);
