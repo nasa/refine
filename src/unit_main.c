@@ -221,7 +221,7 @@ int main( int argc, char *argv[] )
 	radius = sqrt(xyz[0]*xyz[0]+xyz[2]*xyz[2]);
 	if (radius<1.0) radius = 2.0-radius;
 	theta = atan2(xyz[2],xyz[0]);
-	rSpace = cyl*radius*radius;
+	rSpace = cyl*radius*radius*radius;
 	tSpace = 0.25*radius;
 	ySpace = 0.25;
 	normal[0]=normal[1]=normal[2]=0;
@@ -281,6 +281,7 @@ int main( int argc, char *argv[] )
 
   for (i=0;i<1;i++){
     printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+    STATUS;
     printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
   }
   STATUS;
@@ -329,6 +330,7 @@ int main( int argc, char *argv[] )
       projected = ( grid == gridRobustProject(grid));
       if (projected) {
 	printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+	STATUS;
 	printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
       }else{
 	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
@@ -341,6 +343,7 @@ int main( int argc, char *argv[] )
     projected = ( grid == gridRobustProject(grid));
     if (projected) {
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      STATUS;
       printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
     }else{
       printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
