@@ -17,6 +17,7 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 #include "gridcad.h"
+#include "gridmove.h"
 #include "gridfiller.h"
 #include "layer.h"
 #include "CADGeom/CADGeom.h"
@@ -47,6 +48,7 @@ int main( int argc, char *argv[] )
   GridBool projected;
   GridBool boundaryLayerGrid = FALSE;
   GridBool debugInsert = FALSE;
+  GridBool GridMoveProjection = FALSE;
   GridBool tecplotOutput = FALSE;
   int iview = 0;
   int maxnode = 50000;
@@ -83,6 +85,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-i") == 0 ) {
       debugInsert = TRUE;
       printf("-i argument %d\n",i);
+    } else if( strcmp(argv[i],"-m") == 0 ) {
+      GridMoveProjection = TRUE;
+      printf("-m argument %d\n",i);
     } else if( strcmp(argv[i],"-n") == 0 ) {
       i++; maxnode = atoi(argv[i]);
       printf("-n argument %d: %d\n",i, maxnode);
@@ -99,6 +104,7 @@ int main( int argc, char *argv[] )
       printf(" -i insert final advancing layer (debug)\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
+      printf(" -m use grid movement for projection\n");
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
       return(0);
@@ -152,7 +158,12 @@ int main( int argc, char *argv[] )
 	ratio=0.8;
       }else{
 	printf("Scaling spacing to refine a sphere.\n");
-	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
+	if (GridMoveProjection) {
+	  gridScaleSpacingSphereDirection(grid, 0.3, 0.5, 0.0, 0.1, 
+					  0.2, 0.5, 0.2 );
+	}else{
+	  gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
+	}
       }
     }
   } else if(strcmp(adaptfile,"ident")==0) {
@@ -223,13 +234,24 @@ int main( int argc, char *argv[] )
     }else{
       printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
              ratio, ratioCollapse, ratioRefine );
-      gridAdapt(grid,ratioCollapse,ratioRefine,TRUE);
+      gridAdapt(grid,ratioCollapse,ratioRefine,!GridMoveProjection);
     }
     oldSize = newSize;
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     STATUS;
+    if (GridMoveProjection) {
+      GridMove *gm;
+      printf("Calling GridMove to project nodes...\n");
+      gm = gridmoveCreate(grid);
+      gridmoveProjectionDisplacements(gm);
+      gridmoveSpringRelaxation(gm,10,20);
+      gridmoveApplyDisplacements(gm);
+      gridmoveFree(gm);
+      STATUS;
+    }
+
     if (debugInsert) 
       { layerVerifyPhantomEdges( layer ); layerVerifyPhantomFaces( layer ); }
         
