@@ -118,7 +118,7 @@ int gridsmoothvolume_( )
 {
   gridSmoothVolume(grid);
   printf( " %6d smooth                           %s    AR%14.10f\n",
-	  gridPartId(grid),"                   ",gridMinAR(grid) );
+	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
 }
 
@@ -380,6 +380,6 @@ int gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
     gridSetNodeXYZ(grid,nodes[node]-1,&data[(*ndim)*node]);
 
   printf( " %6d update xfer                      %s    AR%14.10f\n",
-	  gridPartId(grid),"                   ",gridMinAR(grid) );
+	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
 }
