@@ -158,6 +158,7 @@ Grid *gridRenumber(Grid *g, int *o2n);
 void gridFree(Grid *g);
 
 Grid *gridWriteTecplotSurfaceZone(Grid *g, char *filename );
+Grid *gridWriteTecplotCellZone(Grid *g, int *nodes, char *filename );
 
 #define gridMaxNode(grid) (grid->maxnode)
 #define gridNNode(grid)   (grid->nnode)

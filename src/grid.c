@@ -1007,6 +1007,36 @@ Grid *gridWriteTecplotSurfaceZone(Grid *grid, char *filename)
   return grid;
 }
 
+Grid *gridWriteTecplotCellZone(Grid *grid, int *nodes, char *filename)
+{
+  int i;
+  double xyz[3];
+
+  if (NULL == grid->tecplotFile) {
+    if (NULL == filename) {
+      grid->tecplotFile = fopen("grid.t","w");
+    }else{
+      grid->tecplotFile = fopen(filename,"w");
+    } 
+    fprintf(grid->tecplotFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
+  }
+
+  fprintf(grid->tecplotFile, "zone t=cell, n=%d, e=%d, f=fepoint, et=%s\n",
+	  4, 1, "tetrahedron");
+
+  for ( i=0; i<4 ; i++ ){
+    gridNodeXYZ(grid,nodes[i],xyz);
+    fprintf(grid->tecplotFile, "%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
+  }
+
+  fprintf(grid->tecplotFile, "1 2 3 4\n");
+
+  fflush(grid->tecplotFile);
+
+  return grid;
+}
+
 int gridNPrism(Grid *grid)
 {
   return grid->nprism;

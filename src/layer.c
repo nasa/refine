@@ -1992,7 +1992,17 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
       if (layerNormalTerminated(layer,normals[i])) nterminated++;
     }
 
-#define addTet {layer->cellInLayer[gridAddCell(grid, tet[0], tet[1], tet[2], tet[3])]=TRUE; if ( 1.0e-14 > gridVolume(grid, tet ) ) { negVolume = TRUE; gridNodeXYZ(grid,tet[0],xyz); printf("volume%18.10e at%15.6f%15.6f%15.6f\n", gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]);} }
+#define addTet \
+{ \
+  layer->cellInLayer[gridAddCell(grid, tet[0], tet[1], tet[2], tet[3])]=TRUE; \
+  if ( 1.0e-14 > gridVolume(grid, tet ) ) { \
+    negVolume = TRUE; \
+    gridNodeXYZ(grid,tet[0],xyz); \
+    printf("volume%18.10e at%15.6f%15.6f%15.6f\n", \
+           gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]); \
+    gridWriteTecplotCellZone(grid,tet,"layerNegVolCell.t"); \
+  } \
+}
     
     if (layerTetrahedraOnly(layer) || nterminated >= 2){
       if (nodes[2]<nodes[1]){
