@@ -730,29 +730,6 @@ Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
 }
 
 
-Layer *layerAssignPolarGrowthHeight(Layer *layer, 
-                                         double constant,
-					 double refLength,
-					 double *referenceDirection)
-{
-  int normal;
-  double cosAngle, arcAngle, distance;
-  double normalDirection[3];
-  
-  
-  for(normal=0;normal<layerNNormal(layer);normal++){
-
-    layerNormalDirection(layer, normal, normalDirection);
-    cosAngle = gridDotProduct(normalDirection, referenceDirection);
-    arcAngle = asin( cosAngle );
-    distance = sqrt( arcAngle + refLength );
-
-    if (distance >= 0.0 ) 
-      layerSetNormalHeight( layer, normal, constant*distance );
-  }
-  return layer;	
-}
-
 Layer *layerAssignPolynomialNormalHeight(Layer *layer, 
                                          double constant, double slope,
 					 double exponent,
@@ -841,7 +818,7 @@ Layer *layerSetNormalHeight(Layer *layer, int normal, double height)
 
   layer->normal[normal].height=height;
   if (height<=0.0) layerTerminateNormal(layer,normal);
-
+  
   return layer;
 }
 
@@ -1892,7 +1869,7 @@ Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
       layerTerminateNormal(layer, normal);
     }
   }
-  printf("normals %d of %d terminated. %d active.\n",
+  printf("normals %d of %d terminated by spacing criterion. %d active.\n",
 	 nterm,layerNNormal(layer),layerNActiveNormal(layer) );
   return layer;
 }
@@ -1908,12 +1885,12 @@ Layer *layerTerminateNormalWithX(Layer *layer, int direction, double x)
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(layer->grid, layer->normal[normal].root, xyz);
     if (direction > 0 ) {
-      if (xyz[0]>x) { layerTerminateNormal(layer, normal); nterm++; }
+      if (xyz[0]>x) { layerTerminateNormal(layer, normal); nterm++;  }
     }else{
       if (xyz[0]<x) { layerTerminateNormal(layer, normal); nterm++; }     
     }
   }
-  printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
+  printf("normals %d of %d terminated by X criterion.\n",nterm,layerNNormal(layer) );
   return layer;
 }
 
@@ -1932,7 +1909,7 @@ int layerTerminateNormalWithLength(Layer *layer, double ratio)
     }
   }
   totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
-  printf("%d of %d normals terminted.\n",
+  printf("%d of %d normals terminted by length criterion.\n",
 	 totalterm,layerNNormal(layer) );
   return totalterm;
 }
@@ -2612,7 +2589,48 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
   return layer;
 }
 
-Layer *layerWriteTecplotFront(Layer *layer)
+Layer *layerWriteTecplotFrontWithData(Layer *layer, int nn )
+{
+  int i;
+  double xyz[3];
+  Grid *grid;
+
+  grid = layerGrid(layer);
+
+  if ( NULL == layer->tecplotFile) {
+    layer->tecplotFile = fopen("layer.plt","w");
+    fprintf(layer->tecplotFile, "title=\"tecplot advancing layer\"\n");
+    fprintf(layer->tecplotFile, "variables=\"X\",\"Y\",\"Z\",\"h\",\"L\",\"rate\",\"L_m_a_x\" \"n\" \n");
+  }
+
+  fprintf(layer->tecplotFile, 
+	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  layerNNormal(layer), layerNTriangle(layer));
+
+  for ( i=0; i<layerNNormal(layer) ; i++ ){
+    gridNodeXYZ(grid,layerNormalRoot(layer,i),xyz);
+    double height = layer->normal[i].height;
+    double L      = layer->normal[i].length;
+    double rate   = layer->normal[i].rate;
+    double Lmax   = layer->normal[i].maxlength;
+    fprintf(layer->tecplotFile, "%23.15e %23.15e %23.15e %23.15e %23.15e %23.15e %23.15e %d\n",xyz[0],xyz[1],xyz[2],height,L,rate,Lmax,nn);
+  }
+
+  fprintf(layer->tecplotFile, "\n");
+
+  for ( i=0; i<layerNTriangle(layer) ; i++ ){
+    fprintf(layer->tecplotFile, " %9d %9d %9d\n",
+	    layer->triangle[i].normal[0]+1,
+	    layer->triangle[i].normal[1]+1,
+	    layer->triangle[i].normal[2]+1);
+  }
+
+  fflush(layer->tecplotFile);
+
+  return layer;
+}
+
+Layer *layerWriteTecplotFrontGeometry(Layer *layer)
 {
   int i;
   double xyz[3];
@@ -2648,3 +2666,4 @@ Layer *layerWriteTecplotFront(Layer *layer)
 
   return layer;
 }
+
