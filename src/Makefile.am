@@ -150,11 +150,18 @@ MesherX_HLANative_LDFLAGS = $(all_LDFLAGS)
 
 if BUILD_PROE_KERNEL
 
-bin_PROGRAMS += libGridEx-Linux.Pro.dll
-libGridEx_Linux_Pro_dll_CFLAGS = $(all_CFLAGS) -DPROE_MAIN
-libGridEx_Linux_Pro_dll_SOURCES = proemain.c
-libGridEx_Linux_Pro_dll_LDADD = $(refineLib) @CAPRIProElibrary@ $(LastLib)
-libGridEx_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
+bin_PROGRAMS += librefine-Linux.Pro.dll
+librefine_Linux_Pro_dll_CFLAGS = $(all_CFLAGS) -DPROE_MAIN
+librefine_Linux_Pro_dll_SOURCES = proemain.c
+librefine_Linux_Pro_dll_LDADD = $(refineLib) @CAPRIProElibrary@ $(LastLib)
+librefine_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
+
+bin_PROGRAMS += libMesherX-Linux.Pro.dll
+libMesherX_Linux_Pro_dll_CFLAGS = $(all_CFLAGS) -DPROE_MAIN
+libMesherX_Linux_Pro_dll_SOURCES = MesherX.c
+libMesherX_Linux_Pro_dll_LDADD = $(MesherXLib) @CAPRIProElibrary@ $(LastLib)
+libMesherX_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
+
 endif # BUILD_PROE_KERNEL
 
 if BUILD_PARASOLID_KERNEL
