@@ -22,15 +22,24 @@ typedef struct Queue Queue;
 struct Queue {
   int transactions;
   int maxTransactions;
-  int *removed;
-  int maxRemoved;
-  int nRemoved;
-  int *removedNodes;
-  int *added;
-  int maxAdded;
-  int nAdded;
-  int *addedNodes;
-  double *addedXYZs;
+  int *removedCells;
+  int maxRemovedCells;
+  int nRemovedCells;
+  int *removedCellNodes;
+  int *addedCells;
+  int maxAddedCells;
+  int nAddedCells;
+  int *addedCellNodes;
+  double *addedCellXYZs;
+  int *removedFaces;
+  int maxRemovedFaces;
+  int nRemovedFaces;
+  int *removedFaceNodes;
+  int *addedFaces;
+  int maxAddedFaces;
+  int nAddedFaces;
+  int *addedFaceNodes;
+  double *addedFaceUVs;
 };
 
 Queue *queueCreate(  );
@@ -45,6 +54,8 @@ Queue *queueAddCell( Queue *, int *nodes, double *xyzs );
 int queueAddedCells( Queue *, int transaction );
 Queue *queueAddedCellNodes( Queue *, int index, int *nodes );
 Queue *queueAddedCellXYZs( Queue *, int index, double *xyz );
+int queueRemovedFaces( Queue *, int transaction );
+int queueAddedFaces( Queue *, int transaction );
 
 END_C_DECLORATION
 
