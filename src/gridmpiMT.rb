@@ -108,6 +108,8 @@ class TestGridMPI < Test::Unit::TestCase
   h=0.5
   assert_equal [ 0,0,h, 1,0,0, 0,1,0, 0,0,1 ], q.addedCellXYZs(0)
   assert_equal [ 0,0,0, 1,0,0, 0,1,0, 0,0,h ], q.addedCellXYZs(1)
+  assert_equal 2, q.removedFaces(1)
+  assert_equal 4, q.addedFaces(1)
  end
 
 end
