@@ -18,8 +18,8 @@ BEGIN_C_DECLORATION
 int gridcreate_( int *nnode, double *x, double *y, double *z,
 		 int *ncell, int *maxcell, int *c2n );
 int gridfree_( );
-int gridinsertboundary_( int *faceId, int *nnode, int *inode, 
-			 int *nface, int *ndim, int *f2n );
+int gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
+			 int *nface, int *dim1, int *dim2, int *f2n );
 int gridsetmap_( int *nnode, double* map );
 int gridswap_( );
 int gridsmoothvolume_( );

@@ -42,15 +42,15 @@ int gridfree_( )
   gridFree(grid);
 }
 
-int gridinsertboundary_( int *faceId, int *nnode, int *inode, 
-			 int *nface, int *ndim, int *f2n )
+int gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
+			 int *nface, int *dim1, int *dim2, int *f2n )
 {
   int face;
   int node0, node1, node2;
   for(face=0;face<*nface;face++){
-    node0 = f2n[face+0*(*nface)] - 1;
-    node1 = f2n[face+1*(*nface)] - 1;
-    node2 = f2n[face+2*(*nface)] - 1;
+    node0 = f2n[face+0*(*dim1)] - 1;
+    node1 = f2n[face+1*(*dim1)] - 1;
+    node2 = f2n[face+2*(*dim1)] - 1;
     node0 = inode[node0] - 1;
     node1 = inode[node1] - 1;
     node2 = inode[node2] - 1;
