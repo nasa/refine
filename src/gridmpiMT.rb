@@ -185,6 +185,13 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 2, p2.nface
   assert_equal [3,4,2,11], p2.face(0)
   assert_equal [3,1,4,10], p2.face(1)
+
+  assert_equal 1, p2.nedge
+  assert_equal [3,4,20], p2.edge(0)
+
+  assert_equal 4, p2.nnode
+  assert_equal FALSE, p2.validNode(0)
+
  end
 
  def testLoadQueueWithSwap
@@ -211,6 +218,31 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal [101,102,104,103], q.addedCellNodes(1)
   assert_equal 201,               q.addedCellId(1)
   assert_equal [2,2,2,2],         q.addedCellNodeParts(1)
+ end
+
+ def testLoadQueueWithEdgeCollapse
+  q = Queue.new 9
+  p1 = rightTet.setPartId(1).setAllLocal
+  p1.setNodePart(3,2)
+
+  assert_equal 4, p1.parallelEdgeCollapse(q,0,3)
+  assert_equal 0, p1.ncell
+  assert_equal 0, p1.nface
+  assert_equal 0, p1.nedge
+  assert_equal 2, q.transactions
+  assert_equal 1, q.removedCells(1)
+  assert_equal [100,101,102,103], q.removedCellNodes(0)
+  assert_equal [1,1,1,2],         q.removedCellNodeParts(0)
+
+  assert_equal 2, q.removedFaces(1)
+  assert_equal [100,103,101], q.removedFaceNodes(0)
+  assert_equal [100,102,103], q.removedFaceNodes(1)
+  assert_equal [1,2,1], q.removedFaceNodeParts(0)
+  assert_equal [1,1,2], q.removedFaceNodeParts(1)
+
+  assert_equal 1, q.removedEdges(1)
+  assert_equal [1,2], q.removedEdgeNodeParts(0)
+  assert_equal [100,103], q.removedEdgeNodes(0)
  end
 
 end

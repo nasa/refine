@@ -207,11 +207,11 @@ Grid *gridParallelEdgeSwap(Grid *grid, Queue *queue, int node0, int node1 )
 Grid *gridApplyQueue(Grid *grid, Queue *gq )
 {
   int transaction;
-  int removed, removedcell, removedface;
+  int removed, removedcell, removedface, removededge;
   int i, globalnodes[4], globalCellId, nodeParts[4], localnodes[4];
-  int cell, face, faceId;
-  int added, addedcell, addedface;
-  double xyz[1000], uv[6];
+  int cell, face, edge, faceId, edgeId;
+  int added, addedcell, addedface, addededge;
+  double xyz[1000], uv[6], ts[2];
   int dim, aux;
   Queue *lq;
 
@@ -223,8 +223,10 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 
   removedcell = 0;
   removedface = 0;
+  removededge = 0;
   addedcell = 0;
   addedface = 0;
+  addededge = 0;
   for (transaction=0;transaction<queueTransactions(gq);transaction++){
     for (removed=0;removed<queueRemovedCells(gq,transaction);removed++) {
       queueRemovedCellNodeParts( gq, removedcell, nodeParts );      
@@ -251,6 +253,17 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	gridRemoveFace(grid,face);
       }
       removedface++;
+    }
+    for (removed=0;removed<queueRemovedEdges(gq,transaction);removed++) {
+      queueRemovedEdgeNodeParts( gq, removededge, nodeParts );
+      if ( gridPartId(grid) == nodeParts[0] ||
+	   gridPartId(grid) == nodeParts[1] ) {
+	queueRemovedEdgeNodes( gq, removededge, globalnodes );
+	for(i=0;i<2;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
+	edge = gridFindEdge(grid,localnodes[0],localnodes[1]);
+	gridRemoveEdge(grid,edge);
+      }
+      removededge++;
     }
 
     for(added=0;added<queueAddedCells(gq,transaction);added++) {
@@ -301,6 +314,18 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 			     faceId);
       }
       addedface++;
+    }
+    for(added=0;added<queueAddedEdges(gq,transaction);added++) {
+      queueAddedEdgeNodeParts( gq, addededge, nodeParts );
+      if ( gridPartId(grid) == nodeParts[0] ||
+	   gridPartId(grid) == nodeParts[1] ) {
+	queueAddedEdgeNodes( gq, addededge, globalnodes );
+	queueAddedEdgeId( gq, addededge, &edgeId );
+	queueAddedEdgeTs( gq, addededge, ts );
+	for(i=0;i<2;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
+	edge = gridAddEdge(grid,localnodes[0],localnodes[1],edgeId,ts[0],ts[1]);
+      }
+      addededge++;
     }
     queueNewTransaction(lq);
   }
