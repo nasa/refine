@@ -19,7 +19,7 @@ struct Near {
   double x, y, z;
   double radius;
   Near *rightChild, *leftChild;
-  double farChild, rightDistance, leftDistance;
+  double farChild;
 };
 
 Near* nearCreate( int index, double x, double y, double z, double radius )
@@ -38,8 +38,6 @@ Near* nearCreate( int index, double x, double y, double z, double radius )
   near->leftChild = NULL;
 
   near->farChild = 0;
-  near->rightDistance = 0;
-  near->leftDistance = 0;
 
   return near;
 }
@@ -66,6 +64,12 @@ int nearLeftIndex( Near *near )
 
 Near *nearInsert( Near *near, Near *child )
 {
+  double distance;
+
+  distance = nearDistance(near,child) + child->radius;
+
+  near->farChild = MAX(near->farChild,distance);
+
   if (NULL==near->leftChild){ 
     near->leftChild = child;
     return near;
@@ -106,15 +110,15 @@ double nearClearance( Near *near, Near *other)
 
 double nearFarChild( Near *near )
 {
-  return near->farChild;
+  return (NULL==near?0:near->farChild);
 }
 
 double nearRightDistance( Near *near )
 {
-  return near->rightDistance;
+  return nearFarChild(near->rightChild);
 }
 
 double nearLeftDistance( Near *near )
 {
-  return near->leftDistance;
+  return nearFarChild(near->leftChild);
 }

@@ -97,4 +97,28 @@ class TestNear < Test::Unit::TestCase
   assert_equal 0, near.leftDistance
  end
 
+ def testComputeChildDistance
+  near   = Near.new(5,0,0,0,0)
+  child6 = Near.new(6,1,0,0,0)
+  child7 = Near.new(7,2,0,0,0)
+  assert_equal near, near.insert(child6)
+  assert_equal 1, near.farChild
+  assert_equal near, near.insert(child7)
+  assert_equal 2, near.farChild
+  assert_equal 0, near.rightDistance
+  assert_equal 0, near.leftDistance
+ end
+
+ def testComputeChildDistanceWithRadius
+  near   = Near.new(5,0,0,0,0)
+  child6 = Near.new(6,1,0,0,2)
+  child7 = Near.new(7,4,0,0,1)
+  assert_equal near, near.insert(child6)
+  assert_equal 3, near.farChild
+  assert_equal near, near.insert(child7)
+  assert_equal 5, near.farChild
+  assert_equal 0, near.rightDistance
+  assert_equal 0, near.leftDistance
+ end
+
 end
