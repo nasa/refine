@@ -6,9 +6,14 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 --Major refactoring
 
 Parameter values: verify at start and then always evaluate to avoid
-prejections.
+projections.
 
 merge edge based research into mainline code
+
+add a contriant option to grid ar(cost)
+ make it && primatives
+
+fix edge ratio length routines
 
 gridcad : get rid of 
 -gridSafeProjectNode
@@ -17,9 +22,7 @@ gridcad : get rid of
 -gridSmoothFaceMR
 -gridOptimizeUVForVolume
 
-change optmize face to only care about face qulaity with ar contriantv
-
-fix edge ratio length routines
+rename grid AR to cost
 
 --Edge Based
 
