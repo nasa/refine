@@ -60,7 +60,7 @@ Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
 Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
-Layer *layerTerminateNormalWithX(Layer *, double x);
+Layer *layerTerminateNormalWithX(Layer *, int direction, double x);
 
 Layer *layerInsertPhantomFront(Layer *, double dz);
 Layer *layerVerifyPhantomEdges(Layer *);

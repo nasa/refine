@@ -113,8 +113,8 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     layerConstrainNormal(layer,6);
   }
   if (plate) {
-    layerTerminateNormalWithX(layer,-0.0001);
-    layerTerminateNormalWithX(layer,1.0001);
+    layerTerminateNormalWithX(layer,-1, 0.0001);
+    layerTerminateNormalWithX(layer, 1, 1.0001);
 
     /*
       face and four edges
@@ -462,6 +462,7 @@ Layer *layerLaminarInitialHeight(Layer *layer, double Re, double xStart)
   for(normal=0;normal<layerNNormal(layer); normal++){
     gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
     totalHeight = 5.2 * sqrt(ABS(xyz[0]+xStart)) / sqrt(ABS(Re));
+    totalHeight = MIN(ABS(xyz[0]+xStart),totalHeight);
     initialHeight = totalHeight / 50.0;
     layerSetNormalHeight(layer,normal,initialHeight);
   }
@@ -972,7 +973,7 @@ Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
   return layer;
 }
 
-Layer *layerTerminateNormalWithX(Layer *layer, double x)
+Layer *layerTerminateNormalWithX(Layer *layer, int direction, double x)
 {
   int normal, nterm;
   double xyz[3];
@@ -982,7 +983,7 @@ Layer *layerTerminateNormalWithX(Layer *layer, double x)
   nterm = 0;
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(layer->grid, layer->normal[normal].root, xyz);
-    if (x > 0.0 ) {
+    if (direction > 0 ) {
       if (xyz[0]>x) { layerTerminateNormal(layer, normal); nterm++; }
     }else{
       if (xyz[0]<x) { layerTerminateNormal(layer, normal); nterm++; }     
