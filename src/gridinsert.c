@@ -33,11 +33,14 @@ Grid *gridThrash(Grid *grid)
 Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 {
   AdjIterator it;
-  int i, n0, n1, adaptnode, maxnode, newnode, report;
+  int i, n0, n1, adaptnode, maxnode, newnode;
+  int report, nnodeAdd, nnodeRemove;
   double ratio;
   
   maxnode = grid->nnode;
   adaptnode =0;
+  nnodeAdd = 0;
+  nnodeRemove = 0;
 
   report = 10; if (grid->nnode > 100) report = grid->nnode/10;
 
@@ -45,13 +48,15 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	adaptnode<maxnode && n0<grid->maxnode; 
 	n0++ ) { 
     if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
-      printf("adapt node %8d nnode %8d\n",adaptnode,grid->nnode);
+      printf("adapt node %8d nnode %8d added %8d removed %8d\n",
+	     adaptnode,grid->nnode,nnodeAdd,nnodeRemove);
     if ( gridValidNode( grid, n0) ) {
       adaptnode++;
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
       if ( ratio > maxLength ) {
 	newnode = gridSplitEdge(grid, n0, n1);
 	if ( newnode != EMPTY ){
+	  nnodeAdd++;
 	  gridSwapNearNode( grid, newnode );
 	  if (gridGeometryFace( grid, newnode ) ){
 	    gridRobustProjectNode(grid, newnode);
@@ -61,11 +66,15 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
       }else{
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
-	if ( ratio < minLength ) gridCollapseEdge(grid, n0, n1);
-	gridSwapNearNode( grid, n0 );
-	if (  gridGeometryFace( grid, n0 ) ) {
-	  gridRobustProjectNode(grid, n0);
-	  gridSwapNearNode( grid, n0 );
+	if ( ratio < minLength ) { 
+	  if ( grid == gridCollapseEdge(grid, n0, n1) ) {
+	    nnodeRemove++;
+	    gridSwapNearNode( grid, n0 );
+	    if (  gridGeometryFace( grid, n0 ) ) {
+	      gridRobustProjectNode(grid, n0);
+	      gridSwapNearNode( grid, n0 );
+	    }
+	  }
 	}
       }
     }else{
