@@ -49,6 +49,9 @@ int main( int argc, char *argv[] )
 
   grid = gridLoadPart( project );
 
+  if (!gridRightHandedBoundary(grid)) 
+    printf("ERROR: loaded part does not have right handed boundaries\n");
+
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
@@ -69,6 +72,8 @@ int main( int argc, char *argv[] )
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));
 
+  if (!gridRightHandedBoundary(grid)) 
+    printf("ERROR: modifed grid does not have right handed boundaries\n");
 
   output = "../test/om6_out";
   printf("writing output project %s\n",output);
