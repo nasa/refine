@@ -16,7 +16,7 @@
 
 BEGIN_C_DECLORATION
 
-Grid *gridLoadPart( char *project, int maxnode );
+Grid *gridLoadPart( char *modeler, char *project, int maxnode );
 Grid *gridFillFromPart( int vol, int maxnode );
 int gridSavePart( Grid *grid, char *project );
 

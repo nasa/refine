@@ -1,3 +1,29 @@
+2004-09-17 17:35 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* Added support for CAPRI 2.0 interface.  Configure with
+	--enable_CAPRI2.  The primary changes result from a change to the
+	*_LoadPart() interfaces of the SDK which require a modeler name
+	when built against CAPRI 2.0 (selects the backend).  Refine API
+	changed to pass new modeler argument
+
+	* src/gridfiller.c (gridLoadPart) API Changed
+	* src/gridfortran.c (gridparallelcapri_) API Changed
+	* src/gridgeom.c (gridParallelGeomLoad) API Changed
+
+	* src/FAKEGeom.h (CADGeom_LoadPart, GeoMesh_LoadPart) Added
+	modeler argument if emulating CAPRI 2.0
+	* src/FAKEGeomExtras.c (CADGeom_LoadPart, GeoMesh_LoadPart)
+	Added modeler argument if emulating CAPRI 2.0
+
+	* src/Makefile.am If CAPRI2 is enabled build kernel independent
+	binaries
+
+	* src/MesherX.c Alter command line args to acquire modeler
+	* src/MesherX_HLA.c Alter command line args to acquire modeler
+	* src/proemain.c Alter command line args to acquire modeler
+	* src/refine_main.c Alter command line args to acquire modeler
+	* src/restartTest.c Alter command line args to acquire modeler
+
 2004-09-16 16:05 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/grid.c (throughout) Cast return of malloc(3) and realloc(3) to

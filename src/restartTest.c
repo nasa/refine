@@ -40,6 +40,7 @@ int main( int argc, char *argv[] )
   int face, localNode, globalNode;
   double pxyz[3], gxyz[3], dxyz[3];
   double oldUV[2], newUV[2], xyznew[3];
+  char modeler[81];
 
   int *l2g, volumeEdgeNode, patchEdgeNode;
 
@@ -51,6 +52,35 @@ int main( int argc, char *argv[] )
     if( strcmp(argv[i],"-p") == 0 ) {
       i++; sprintf( project, "%s", argv[i] );
       printf("-p argument %d: %s\n",i, project);
+      sprintf( modeler, "FELISA" );
+    } else if( strcmp(argv[i],"-felisa") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-felisa argument %d: %s\n",i, project);
+      sprintf( modeler, "FELISA" );
+    } else if( strcmp(argv[i],"-open") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-open argument %d: %s\n",i, project);
+      sprintf( modeler, "OpenCASCADE" );
+    } else if( strcmp(argv[i],"-proe") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-proe argument %d: %s\n",i, project);
+      sprintf( modeler, "Pro/ENGINEER" );
+    } else if( strcmp(argv[i],"-parasolid") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-parasolid argument %d: %s\n",i, project);
+      sprintf( modeler, "Parasolid" );
+    } else if( strcmp(argv[i],"-catia") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-catia argument %d: %s\n",i, project);
+      sprintf( modeler, "CatiaV5" );
+    } else if( strcmp(argv[i],"-ug") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-ug argument %d: %s\n",i, project);
+      sprintf( modeler, "UniGraphics" );
+    } else if( strcmp(argv[i],"-sw") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-sw argument %d: %s\n",i, project);
+      sprintf( modeler, "SolidWorks" );
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
       i++;
@@ -65,8 +95,12 @@ int main( int argc, char *argv[] )
   }  
 
   printf("calling CADGeom_Load for project <%s> ... \n",project);
+#ifdef HAVE_CAPRI2
+  if ( ! CADGeom_LoadPart( modeler, project ) ){
+#else
   if ( ! CADGeom_LoadPart( project ) ){
-    printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
+#endif
+    printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
   }
 

@@ -12,12 +12,13 @@
 #include <stdio.h>
 #include "gridfiller.h"
 #ifdef HAVE_SDK
+#include "Goolache/CAPrI_IO.h"
 #include "CADGeom/CADGeom.h"
 #else
 #include "FAKEGeom.h"
 #endif
 
-Grid *gridLoadPart( char *project, int maxnode )
+Grid *gridLoadPart( char *modeler, char *project, int maxnode )
 {
 
   printf("calling CADGeom_Start ... \n");
@@ -26,8 +27,12 @@ Grid *gridLoadPart( char *project, int maxnode )
     return NULL;
   }  
 
-  printf("calling CADGeom_Load for project <%s> ... \n",project);
+  printf("calling CADGeom_Load for project <%s> with %s kernel... \n",project,modeler);
+#ifdef HAVE_CAPRI2
+  if ( ! GeoMesh_LoadPart( modeler, project ) ){
+#else
   if ( ! GeoMesh_LoadPart( project ) ){
+#endif
     printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }

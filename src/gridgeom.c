@@ -20,7 +20,7 @@
 
 #define UG_REFINE (6) /* Lifted from SDK/UG_API/UG_API.h to remove dependency */
 
-Grid *gridParallelGeomLoad( Grid *grid, char *project )
+Grid *gridParallelGeomLoad( Grid *grid, char *modeler, char *project )
 {
   int vol=1;
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
@@ -41,8 +41,12 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
     return NULL;
   }  
 
+#ifdef HAVE_CAPRI2
+  if ( ! CADGeom_LoadPart( modeler, project ) ){
+#else
   if ( ! CADGeom_LoadPart( project ) ){
-    printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
+#endif
+    printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }
 

@@ -90,12 +90,20 @@ GridBool CADGeom_Start( void )
   return FALSE;
 }
 
+#ifdef HAVE_CAPRI2
+GridBool GeoMesh_LoadPart( char *modeler, char *project )
+#else
 GridBool GeoMesh_LoadPart( char *project )
+#endif
 {
   return FALSE;
 }
 
+#ifdef HAVE_CAPRI2
+GridBool CADGeom_LoadPart( char *modeler, char *project )
+#else
 GridBool CADGeom_LoadPart( char *project )
+#endif
 {
   return FALSE;
 }

@@ -89,8 +89,13 @@ char *ErrMgr_GetErrStr(void);
 
 GridBool UGMgr_LoadLibs( void );
 GridBool CADGeom_Start( void );
+#ifdef HAVE_CAPRI2
+GridBool GeoMesh_LoadPart( char *modeler, char *project );
+GridBool CADGeom_LoadPart( char *modeler, char *project );
+#else
 GridBool GeoMesh_LoadPart( char *project );
 GridBool CADGeom_LoadPart( char *project );
+#endif
 GridBool CADGeom_SavePart(int vol, char *project);
 GridBool CADGeom_GetVolume(int, int *, int *, int *, int *);
 UGPatchPtr CADGeom_FaceGrid( int, int );

@@ -68,7 +68,9 @@ int main( int argc, char *argv[] )
   GridBool tecplotOutput = TRUE;
   int iview = 0;
   int maxnode = 100000;
+  char modeler[81];
 
+  sprintf( modeler,       "" );
   sprintf( project,       "" );
   sprintf( outputProject, "" );
   sprintf( adaptfile,     "" );    
@@ -80,6 +82,35 @@ int main( int argc, char *argv[] )
     if( strcmp(argv[i],"-p") == 0 ) {
       i++; sprintf( project, "%s", argv[i] );
       printf("-p argument %d: %s\n",i, project);
+      sprintf( modeler, "Unknown" );
+    } else if( strcmp(argv[i],"-felisa") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-felisa argument %d: %s\n",i, project);
+      sprintf( modeler, "FELISA" );
+    } else if( strcmp(argv[i],"-open") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-open argument %d: %s\n",i, project);
+      sprintf( modeler, "OpenCASCADE" );
+    } else if( strcmp(argv[i],"-proe") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-proe argument %d: %s\n",i, project);
+      sprintf( modeler, "Pro/ENGINEER" );
+    } else if( strcmp(argv[i],"-parasolid") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-parasolid argument %d: %s\n",i, project);
+      sprintf( modeler, "Parasolid" );
+    } else if( strcmp(argv[i],"-catia") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-catia argument %d: %s\n",i, project);
+      sprintf( modeler, "CatiaV5" );
+    } else if( strcmp(argv[i],"-ug") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-ug argument %d: %s\n",i, project);
+      sprintf( modeler, "UniGraphics" );
+    } else if( strcmp(argv[i],"-sw") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-sw argument %d: %s\n",i, project);
+      sprintf( modeler, "SolidWorks" );
     } else if( strcmp(argv[i],"-o") == 0 ) {
       i++; sprintf( outputProject, "%s", argv[i] );
       printf("-o argument %d: %s\n",i, outputProject);
@@ -112,7 +143,17 @@ int main( int argc, char *argv[] )
       printf("-t argument %d\n",i);
    } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
+#ifdef HAVE_CAPRI2
+      printf(" -felisa input FELISA project name\n");
+      printf(" -open input OpenCASCADE project name\n");
+      printf(" -proe input Pro/E project name\n");
+      printf(" -parasolid input Parasolid project name\n");
+      printf(" -catia input Catia V5 project name\n");
+      printf(" -ug input Unigraphics project name\n");
+      printf(" -sw input SolidWorks project name\n");
+#else
       printf(" -p input project name\n");
+#endif
       printf(" -o output project name\n");
       printf(" -a party project_adapt_hess file name\n");
       printf(" -l make a boundary layer grid -a ignored\n");
@@ -131,6 +172,7 @@ int main( int argc, char *argv[] )
     i++;
   }
   
+  if(strcmp(modeler,"")==0)       sprintf(modeler,"Pro/ENGINEER" );
   if(strcmp(project,"")==0)       sprintf(project,"morphr1" );
   if(strcmp(outputProject,"")==0) sprintf(outputProject,"morphr2");
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"../Adjoint/%s_adapt_hess",project);
@@ -139,7 +181,7 @@ int main( int argc, char *argv[] )
   if(boundaryLayerGrid || debugInsert ) sprintf(adaptfile,"none");
 
   printf("running project %s\n",project);
-  grid = gridLoadPart( project, maxnode );
+  grid = gridLoadPart( modeler, project, maxnode );
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: loaded part does not have right handed boundaries\n");

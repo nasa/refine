@@ -107,6 +107,46 @@ bin_PROGRAMS =
 
 if BUILD_SDK_DEPENDENTS
 
+if BUILD_CAPRI2
+
+all_CFLAGS = @SDKheader@
+refineLib  = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
+MesherXLib = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
+all_LDFLAGS = @dynamicFlag@
+hla_sources = \
+	MesherX_HLA.c \
+	mesherx_hla.h mesherx_SyJet.c \
+	layerNormalExtra.h layerNormalExtra.c \
+	geometricStretch.h geometricStretch.c \
+	SyJetSpacingControl.c
+
+LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
+
+bin_PROGRAMS += refine MesherX MesherX_HLA
+refine_CFLAGS = $(all_CFLAGS)
+refine_SOURCES = refine_main.c
+refine_LDADD = $(refineLib) @CAPRIlibrary@ $(LastLib)
+refine_LDFLAGS = $(all_LDFLAGS)
+
+MesherX_CFLAGS = $(all_CFLAGS)
+MesherX_SOURCES = MesherX.c
+MesherX_LDADD = $(MesherXLib) @CAPRIlibrary@ $(LastLib)
+MesherX_LDFLAGS = $(all_LDFLAGS)
+
+MesherX_HLA_CFLAGS = $(all_CFLAGS)
+MesherX_HLA_SOURCES = $(hla_sources)
+MesherX_HLA_LDADD = $(MesherXLib) @CAPRIlibrary@ $(LastLib)
+MesherX_HLA_LDFLAGS = $(all_LDFLAGS)
+
+bin_PROGRAMS += restartTest
+restartTest_CFLAGS = $(all_CFLAGS)
+restartTest_SOURCES = restartTest.c
+restartTest_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
+	 @CAPRIlibrary@ $(LastLib)
+restartTest_LDFLAGS = $(all_LDFLAGS)
+
+endif # BUILD_CAPRI2
+
 if BUILD_NATIVE_KERNEL
 
 all_CFLAGS = @SDKheader@

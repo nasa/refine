@@ -8,6 +8,10 @@ AC_ARG_ENABLE(exec,
 	[  --enable-exec[=ARG]       build stand alone executables [ARG=yes]],
 	[enable_exec=$enableval],    [enable_exec="yes"])
 
+AC_ARG_ENABLE(CAPRI2,
+	[  --enable-CAPRI2[=ARG]     use the CAPRI 2.0 API [ARG=no]],
+	[enable_CAPRI2=$enableval],  [enable_CAPRI2="no"])
+
 AC_ARG_WITH(SDK,
 	[  --with-SDK[=ARG]          use GEOLAB SDK package [ARG=GEO_SDK]],
 	[with_SDK=$withval],         [with_SDK=$GEO_SDK])
@@ -102,7 +106,17 @@ then
   CAPRIinclude=$with_CAPRI/include
   AC_CHECK_FILE([$CAPRIinclude/capri.h],
                 [have_CAPRI='yes'],[have_CAPRI='no'])
+  if test "$enable_CAPRI2" != 'no'
+  then
+    AC_DEFINE([HAVE_CAPRI2],[1],[CAPrI 2.0 is available])
+    AM_CONDITIONAL(BUILD_CAPRI2,true)
+    CAPRIlibrary="-L$with_CAPRI/lib -ldcapri -lcapriDyn"
+  else
+    AM_CONDITIONAL(BUILD_CAPRI2,false)
+    CAPRIlibrary=
+  fi
 fi
+AC_SUBST([CAPRIlibrary])
 
 if test "$have_CAPRI" != 'no'
 then
@@ -133,76 +147,84 @@ AC_SUBST([CAPRINativelibrary])
 
 dnl Check for Parasolid
 
-have_PARASOLID='no'
-have_FG_LIB='no'
-if test "$with_PARASOLID" != 'no' 
+if test "$have_CAPRI" != 'no' && test "$enable_CAPRI2" != 'no'
 then
-  if test "$arch" == 'Linux'
-  then  
-    AC_CHECK_FILE([$with_PARASOLID/libpskernel.so],
-                  [have_PARASOLID='yes'],[have_PARASOLID='no'])
-    FG_LIB=$with_PARASOLID/fg.lib
-    AC_CHECK_FILE([$FG_LIB],[have_FG_LIB='yes'],[have_FG_LIB='no'])
-  else
-    AC_CHECK_FILE([$with_PARASOLID/uglibs/libpskernel.so],
-                  [have_PARASOLID='yes'],[have_PARASOLID='no'])
-    FG_LIB=$CAPRI/Parasolid/$CAPRI_ARCH/fg.lib
-    AC_CHECK_FILE([$FG_LIB],[have_FG_LIB='yes'],[have_FG_LIB='no'])
-  fi
-fi
-
-if test "$have_FG_LIB" != 'no'
-then
-  AM_CONDITIONAL(BUILD_PARASOLID_KERNEL,true)
-  if test "$arch" == 'Linux'
-  then  
-    CAPRIParasolidlibrary="-L$CAPRI/Parasolid/$CAPRIarch -lcapri $FG_LIB -L$with_PARASOLID -lpskernel"
-  else
-    CAPRIParasolidlibrary="-L$CAPRI/Parasolid/$CAPRIarch -lcapri $FG_LIB -L$with_PARASOLID/uglibs -lpskernel"
-  fi
-else
+  AM_CONDITIONAL(BUILD_NATIVE_KERNEL,false)
   AM_CONDITIONAL(BUILD_PARASOLID_KERNEL,false)
-  CAPRIParasolidlibrary=
-fi 
-AC_SUBST([CAPRIParasolidlibrary])
-
-have_CAS='no'
-if test "$with_OpenCASCADE" != 'no'
-then
-  CAS_LIB=$with_OpenCASCADE/lin/lib
-  AC_CHECK_FILE([$CAS_LIB/libPTKernel.so],[have_CAS='yes'],[have_CAS='no'])
-fi
-
-if test "$have_CAS" != 'no'
-then
-  AM_CONDITIONAL(BUILD_OPENCASCADE_KERNEL,true)
-  CAPRIOpenCASCADElibrary="-L$CAPRI/OpenCASCADE/$CAPRIarch -lcapri -L$CAS_LIB -lFWOSPlugin -lPTKernel -lTKBool -lTKCDF -lTKernel -lTKFeat -lTKGeomAlgo -lTKMath -lTKOffset -lTKPrim -lTKPShape -lTKService -lTKTopAlgo -lTKBRep -lTKG2d -lTKG3d -lTKGeomBase -lTKShHealing"
-else
   AM_CONDITIONAL(BUILD_OPENCASCADE_KERNEL,false)
-  CAPRIOpenCASCADElibrary=
-fi
-AC_SUBST([CAPRIOpenCASCADElibrary])
-
-have_PROETool='no'
-have_PROEDev='no'
-if test "$with_PROE" != 'no'
-then
-  PROE_BASE=$with_PROE
-  PROE_TOOL=$PROE_BASE/protoolkit/i486_linux/obj/protk_dll.a
-  AC_CHECK_FILE([$PROE_TOOL],[have_PROETool='yes'],[have_PROETool='no'])
-  PROE_DEV=$PROE_BASE/prodevelop/i486_linux/obj/prodev_dll.a
-  AC_CHECK_FILE([$PROE_DEV],[have_PROEDev='yes'],[have_PROEDev='no'])
-fi
-
-if test "$have_PROETool" != 'no' &&  test "$have_PROEDev" != 'no' 
-then
-  AM_CONDITIONAL(BUILD_PROE_KERNEL,true)
-  CAPRIProElibrary="-L$CAPRI/ProE/$CAPRIarch -lcapri $PROE_TOOL $PROE_DEV"
-else
   AM_CONDITIONAL(BUILD_PROE_KERNEL,false)
-  CAPRIProElibrary=
+else
+  have_PARASOLID='no'
+  have_FG_LIB='no'
+  if test "$with_PARASOLID" != 'no'
+  then
+    if test "$arch" == 'Linux'
+    then  
+      AC_CHECK_FILE([$with_PARASOLID/libpskernel.so],
+                    [have_PARASOLID='yes'],[have_PARASOLID='no'])
+      FG_LIB=$with_PARASOLID/fg.lib
+      AC_CHECK_FILE([$FG_LIB],[have_FG_LIB='yes'],[have_FG_LIB='no'])
+    else
+      AC_CHECK_FILE([$with_PARASOLID/uglibs/libpskernel.so],
+                    [have_PARASOLID='yes'],[have_PARASOLID='no'])
+      FG_LIB=$CAPRI/Parasolid/$CAPRI_ARCH/fg.lib
+      AC_CHECK_FILE([$FG_LIB],[have_FG_LIB='yes'],[have_FG_LIB='no'])
+    fi
+  fi
+
+  if test "$have_FG_LIB" != 'no'
+  then
+    AM_CONDITIONAL(BUILD_PARASOLID_KERNEL,true)
+    if test "$arch" == 'Linux'
+    then  
+      CAPRIParasolidlibrary="-L$CAPRI/Parasolid/$CAPRIarch -lcapri $FG_LIB -L$with_PARASOLID -lpskernel"
+    else
+      CAPRIParasolidlibrary="-L$CAPRI/Parasolid/$CAPRIarch -lcapri $FG_LIB -L$with_PARASOLID/uglibs -lpskernel"
+    fi
+  else
+    AM_CONDITIONAL(BUILD_PARASOLID_KERNEL,false)
+    CAPRIParasolidlibrary=
+  fi 
+  AC_SUBST([CAPRIParasolidlibrary])
+
+  have_CAS='no'
+  if test "$with_OpenCASCADE" != 'no'
+  then
+    CAS_LIB=$with_OpenCASCADE/lin/lib
+    AC_CHECK_FILE([$CAS_LIB/libPTKernel.so],[have_CAS='yes'],[have_CAS='no'])
+  fi
+
+  if test "$have_CAS" != 'no'
+  then
+    AM_CONDITIONAL(BUILD_OPENCASCADE_KERNEL,true)
+    CAPRIOpenCASCADElibrary="-L$CAPRI/OpenCASCADE/$CAPRIarch -lcapri -L$CAS_LIB -lFWOSPlugin -lPTKernel -lTKBool -lTKCDF -lTKernel -lTKFeat -lTKGeomAlgo -lTKMath -lTKOffset -lTKPrim -lTKPShape -lTKService -lTKTopAlgo -lTKBRep -lTKG2d -lTKG3d -lTKGeomBase -lTKShHealing"
+  else
+    AM_CONDITIONAL(BUILD_OPENCASCADE_KERNEL,false)
+    CAPRIOpenCASCADElibrary=
+  fi
+  AC_SUBST([CAPRIOpenCASCADElibrary])
+
+  have_PROETool='no'
+  have_PROEDev='no'
+  if test "$with_PROE" != 'no'
+  then
+    PROE_BASE=$with_PROE
+    PROE_TOOL=$PROE_BASE/protoolkit/i486_linux/obj/protk_dll.a
+    AC_CHECK_FILE([$PROE_TOOL],[have_PROETool='yes'],[have_PROETool='no'])
+    PROE_DEV=$PROE_BASE/prodevelop/i486_linux/obj/prodev_dll.a
+    AC_CHECK_FILE([$PROE_DEV],[have_PROEDev='yes'],[have_PROEDev='no'])
+  fi
+
+  if test "$have_PROETool" != 'no' &&  test "$have_PROEDev" != 'no' 
+  then
+    AM_CONDITIONAL(BUILD_PROE_KERNEL,true)
+    CAPRIProElibrary="-L$CAPRI/ProE/$CAPRIarch -lcapri $PROE_TOOL $PROE_DEV"
+  else
+    AM_CONDITIONAL(BUILD_PROE_KERNEL,false)
+    CAPRIProElibrary=
+  fi
+  AC_SUBST([CAPRIProElibrary])
 fi
-AC_SUBST([CAPRIProElibrary])
 
 AC_OUTPUT( \
 	   Makefile \

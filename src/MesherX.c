@@ -14,6 +14,7 @@
 #include <math.h>
 #include <values.h>
 #include "mesherx.c"
+#include "Goolache/CAPrI_IO.h"
 #include "CADGeom/CADGeom.h"
 #include "UG_API/UGMgr.h"
 
@@ -35,7 +36,9 @@ int main( int argc, char *argv[] )
   int maxnode;
   GridBool mixedElement, blendElement, qualityImprovement, copyGridY;
   GridBool bil;
+  char     modeler[81];
 
+  sprintf( modeler,       "" );
   sprintf( project,       "" );
   scale = 1.0;
   maxnode = 50000;
@@ -50,6 +53,34 @@ int main( int argc, char *argv[] )
     if( strcmp(argv[i],"-p") == 0 ) {
       i++; sprintf( project, "%s", argv[i] );
       printf("-p argument %d: %s\n",i, project);
+    } else if( strcmp(argv[i],"-felisa") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-felisa argument %d: %s\n",i, project);
+      sprintf( modeler, "FELISA" );
+    } else if( strcmp(argv[i],"-open") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-open argument %d: %s\n",i, project);
+      sprintf( modeler, "OpenCASCADE" );
+    } else if( strcmp(argv[i],"-proe") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-proe argument %d: %s\n",i, project);
+      sprintf( modeler, "Pro/ENGINEER" );
+    } else if( strcmp(argv[i],"-parasolid") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-parasolid argument %d: %s\n",i, project);
+      sprintf( modeler, "Parasolid" );
+    } else if( strcmp(argv[i],"-catia") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-catia argument %d: %s\n",i, project);
+      sprintf( modeler, "CatiaV5" );
+    } else if( strcmp(argv[i],"-ug") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-ug argument %d: %s\n",i, project);
+      sprintf( modeler, "UniGraphics" );
+    } else if( strcmp(argv[i],"-sw") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-sw argument %d: %s\n",i, project);
+      sprintf( modeler, "SolidWorks" );
     } else if( strcmp(argv[i],"-s") == 0 ) {
       i++; scale = atof(argv[i]);
       printf("-s argument %d: %f\n",i, scale);
@@ -76,7 +107,17 @@ int main( int argc, char *argv[] )
       printf("-vgbg argument %d: activated VGRID background spacing\n",i);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
+#ifdef HAVE_CAPRI2
+      printf(" -felisa input FELISA project name\n");
+      printf(" -open input OpenCASCADE project name\n");
+      printf(" -proe input Pro/E project name\n");
+      printf(" -parasolid input Parasolid project name\n");
+      printf(" -catia input Catia V5 project name\n");
+      printf(" -ug input Unigraphics project name\n");
+      printf(" -sw input SolidWorks project name\n");
+#else
       printf(" -p input project name\n");
+#endif
       printf(" -s scale background grid\n");
       printf(" -n maximum number of nodes\n");
       printf(" -m mixed element layers\n");
@@ -93,6 +134,7 @@ int main( int argc, char *argv[] )
     i++;
   }
 
+  if(strcmp(modeler,"")==0)       sprintf(project,"FELISA" );
   if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
 
   printf("calling MeshMgr_Initialize ... \n");
@@ -108,7 +150,11 @@ int main( int argc, char *argv[] )
   }  
 
   printf("calling GeoMesh_Load for project <%s> ... \n",project);
+#ifdef HAVE_CAPRI2
+  if ( ! GeoMesh_LoadPart( modeler, project ) ){
+#else
   if ( ! GeoMesh_LoadPart( project ) ){
+#endif
     printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
   }
