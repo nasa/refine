@@ -361,6 +361,49 @@ Grid *gridCellVolumeDerivative(Grid *grid, int *nodes,
   return grid;
 }
 
+Grid *gridNodeVolumeDerivative(Grid *grid, int node, 
+			       double *volume, double *dVoldx )
+{
+  AdjIterator it;
+  int nodes[4], orientedNodes[4];
+  double local_vol, local_dVoldx[3];
+
+  *volume = DBL_MAX;
+  dVoldx[0] = DBL_MAX;
+  dVoldx[1] = DBL_MAX;
+  dVoldx[2] = DBL_MAX;
+
+  if ( !gridValidNode(grid, node) ) return NULL;
+
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
+    gridCell(grid,adjItem(it),nodes);
+    orientedNodes[0] = node;
+    if (node == nodes[0]){
+      orientedNodes[1] = nodes[1];
+    }else{
+      orientedNodes[1] = nodes[0];
+    }
+    gridOrient( grid, nodes, orientedNodes);
+    if ( grid != gridCellVolumeDerivative( grid, orientedNodes, 
+					   &local_vol, local_dVoldx ) ) {
+      *volume = DBL_MAX;
+      dVoldx[0] = DBL_MAX;
+      dVoldx[1] = DBL_MAX;
+      dVoldx[2] = DBL_MAX;
+      return NULL;
+    }
+    if ( local_vol < *volume ) {
+      *volume = local_vol;
+      dVoldx[0] = local_dVoldx[0];
+      dVoldx[1] = local_dVoldx[1];
+      dVoldx[2] = local_dVoldx[2];
+    }
+  }
+
+  return grid;
+
+}
+
 Grid *gridNodeAR(Grid *grid, int node, double *ar )
 {
   AdjIterator it;

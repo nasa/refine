@@ -238,7 +238,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta ar, grid.nodeAR(3), 1.0e-10
  end
 
- def testVolumeDerivatives
+ def testCellVolumeDerivatives
   assert_not_nil grid = rightTet
   nodes = [1,0,3,2]
   oneSixth = 1.0/6.0
@@ -260,6 +260,29 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv[1], ans[1], tol
   assert_in_delta deriv[2], ans[2], tol
   assert_in_delta deriv[3], ans[3], tol  
+ end
+
+ def testNodeVolumeDerivatives
+  tol   = 1.0e-15
+  oneSixth = 1.0/6.0
+  assert_not_nil grid = rightTet
+  assert_nil grid.nodeVolumeDerivative(-1)
+  deriv = [oneSixth,oneSixth,0.0,0.0]
+  assert_not_nil (ans = grid.nodeVolumeDerivative(1))
+
+  assert_in_delta deriv[0], ans[0], tol
+  assert_in_delta deriv[1], ans[1], tol
+  assert_in_delta deriv[2], ans[2], tol
+  assert_in_delta deriv[3], ans[3], tol  
+
+  deriv = [oneSixth,0.0,oneSixth,0.0]
+  assert_not_nil (ans = grid.nodeVolumeDerivative(2))
+
+  assert_in_delta deriv[0], ans[0], tol
+  assert_in_delta deriv[1], ans[1], tol
+  assert_in_delta deriv[2], ans[2], tol
+  assert_in_delta deriv[3], ans[3], tol  
+
  end
 
  def testARDerivatives

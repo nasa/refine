@@ -150,6 +150,23 @@ VALUE grid_cellVolumeDerivative( VALUE self, VALUE rb_nodes )
   return rb_Vol;
 }
 
+VALUE grid_nodeVolumeDerivative( VALUE self, VALUE node )
+{
+  double vol, dVoldx[3];
+  VALUE rb_Vol;
+  GET_GRID_FROM_SELF;
+  if ( grid == gridNodeVolumeDerivative( grid, NUM2INT(node), &vol, dVoldx ) ){
+    rb_Vol = rb_ary_new2(4);
+    rb_ary_store( rb_Vol, 0, rb_float_new(vol) );
+    rb_ary_store( rb_Vol, 1, rb_float_new(dVoldx[0]) );
+    rb_ary_store( rb_Vol, 2, rb_float_new(dVoldx[1]) );
+    rb_ary_store( rb_Vol, 3, rb_float_new(dVoldx[2]) );
+  }else{
+    rb_Vol = Qnil;
+  }
+  return rb_Vol;
+}
+
 VALUE grid_ar( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -392,6 +409,7 @@ void Init_GridMetric()
 		    grid_convertMetricToJacobian, 1 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "cellVolumeDerivative", grid_cellVolumeDerivative, 1 );
+  rb_define_method( cGridMetric, "nodeVolumeDerivative", grid_nodeVolumeDerivative, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
   rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );
