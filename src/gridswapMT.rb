@@ -501,7 +501,14 @@ class TestGridSwap < Test::Unit::TestCase
   grid.addNode(1,1,1)
   grid.addNode(-1,0,0)
   grid.addCell(3,1,2,4)
+  assert_nil grid.removeTwoFaceCell(0), "removed cell with no cell neighbors"
   grid.addCell(0,3,2,5)
+  grid.setNodePart(2,5)
+  assert_nil grid.removeTwoFaceCell(0), "removed cell with ghost 2"
+  grid.setNodePart(2,0)
+  grid.setNodePart(3,5)
+  assert_nil grid.removeTwoFaceCell(0), "removed cell with ghost 3"
+  grid.setNodePart(3,0)
   assert_equal grid, grid.removeTwoFaceCell(0), "failed to removed good conf"
   assert_equal 2, grid.ncell
   assert_equal 2, grid.nface

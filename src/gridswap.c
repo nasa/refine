@@ -30,14 +30,15 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   int newface0, newface1;
   int addedFace0, addedFace1;
   int cell0, cell1;
-  int nodes0[4], nodes1[4];
+  int commonNodes[4], ncommon;
+  int uncommonNodes[4], nuncommon;
 
   int cell2face[4][3] = {{0,1,2},{0,3,1},{1,3,2},{0,2,3}};
 
-  if (grid!=gridCell(grid,cell,cellnodes)) return NULL;
+  if ( grid != gridCell( grid, cell, cellnodes ) ) return NULL;
 
-  if (NULL==queue && gridCellHasGhostNode(grid,cellnodes)) return NULL;
-  if (NULL!=queue && !gridCellHasGhostNode(grid,cellnodes)) return NULL;
+  if ( NULL == queue &&  gridCellHasGhostNode( grid, cellnodes ) ) return NULL;
+  if ( NULL != queue && !gridCellHasGhostNode( grid, cellnodes ) ) return NULL;
 
   /* map out the faces on this cell */
   facecount = 0;
@@ -65,14 +66,35 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   faceId1 = faceIds[face1];
   if (faceId0!=faceId1) return NULL;
 
-  /* make sure I'm not missing a face off proc */
+  /* make sure that I have the local nodes I need to have the faces to modify 
+     and to later test validity */
+
   for(node=0;node<4;node++) degree[node]=0;
   for(face=0;face<4;face++)
     if (EMPTY!=faces[face])
       for(node=0;node<3;node++) degree[cell2face[face][node]]++;
-  for(node=0;node<4;node++) 
-    if (2==degree[node] && gridNodeGhost(grid,cellnodes[node]))
-      return NULL;
+
+  commonNodes[0]  =  commonNodes[1]=  commonNodes[2]=  commonNodes[3]= EMPTY;
+  ncommon = 0;
+  uncommonNodes[0]=uncommonNodes[1]=uncommonNodes[2]=uncommonNodes[3]= EMPTY;
+  nuncommon = 0;
+  for(node=0;node<4;node++) {
+    if (2==degree[node]) {
+      commonNodes[ncommon] = cellnodes[node];
+      ncommon++;
+    }else{
+      uncommonNodes[nuncommon] = cellnodes[node];
+      nuncommon++;
+    }
+  }
+  if ( 2 != ncommon || 2 != nuncommon ) {
+    printf("%s: %d: gridRemoveTwoFaceCell: common %d uncommon %d expected 2\n",
+	   __FILE__,__LINE__,ncommon,nuncommon);
+    return NULL;
+  }
+
+  if ( gridNodeGhost(grid,uncommonNodes[0]) ) return NULL;
+  if ( gridNodeGhost(grid,uncommonNodes[1]) ) return NULL;
 
   /* determine the two new faces of the cell */
   newface0 = newface1 = EMPTY;
@@ -97,6 +119,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 				      cellnodes[facenodes[1]],
 				      cellnodes[facenodes[2]], cell );
   if (EMPTY == cell0) {
+    printf("%s: %d: gridRemoveTwoFaceCell: EMPTY cell0\n",__FILE__,__LINE__);
     return NULL;
   }
   addedFace0 = gridAddFaceUVAndQueue(grid, queue, 
@@ -119,7 +142,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 				      cellnodes[facenodes[1]],
 				      cellnodes[facenodes[2]], cell );
   if (EMPTY == cell1) {
-    printf("\nno cell1\n");
+    printf("%s: %d: gridRemoveTwoFaceCell: EMPTY cell1\n",__FILE__,__LINE__);
     gridRemoveFaceAndQueue(grid, queue, addedFace0 );
     queueResetCurrentTransaction( queue );
     return NULL;
@@ -136,10 +159,21 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 				     uv[1+2*facenodes[2]],
 				     faceId1 );
 
-  gridCell(grid,cell0,nodes0);
-  gridCell(grid,cell1,nodes1);
-  if ( COSTLIMIT < gridAR(grid,nodes0) && COSTLIMIT < gridAR(grid,nodes1) ){
-    gridRemoveCellAndQueue(grid,queue,cell);
+  /* form gem on common edge that only contains cell to be removed to
+     exclude it from minimum cost test */
+  gridMakeGem(grid, commonNodes[0], commonNodes[1]);
+  if ( 1 != gridNGem(grid) ) {
+    printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
+	   __FILE__,__LINE__, gridNGem(grid) );
+    gridRemoveFaceAndQueue(grid, queue, addedFace0 );
+    gridRemoveFaceAndQueue(grid, queue, addedFace1 );
+    queueResetCurrentTransaction( queue );
+    return NULL;
+  }
+
+  if ( COSTLIMIT < gridMinARAroundNodeExceptGem(grid, uncommonNodes[0]) &&
+       COSTLIMIT < gridMinARAroundNodeExceptGem(grid, uncommonNodes[1]) ) {
+    gridRemoveCellAndQueue(grid, queue, cell);
     gridRemoveFaceAndQueue(grid, queue, faces[face0] );
     gridRemoveFaceAndQueue(grid, queue, faces[face1] );
     return grid;
