@@ -1,27 +1,35 @@
-#!/bin/csh
-# Run this to generate all the initial makefiles, etc.
+#!/bin/sh
+#Run to generate bootstrp AutoTools and run configure in a archetecture dir
 
-set arch = `uname`
+arch=`uname`
 
-echo "Configure $arch..."
+echo "Setting up $arch..."
 
-echo "Linking required AutoTool files..."
-( cd $arch && ln -s ../AutoConfInput configure.ac )
-( cd $arch && ln -s ../AUTHORS . )
-( cd $arch && ln -s ../ChangeLog . )
-( cd $arch && ln -s ../NEWS . )
-( cd $arch && ln -s ../COPYING . )
-( cd $arch && ln -s ../INSTALL . )
-( cd $arch && ln -s ../README . )
+if [ ! -d $arch ]; then
+  echo
+  echo "Creating \"$arch\" directory..."
+  mkdir $arch
+  echo
+fi
 
-echo "Running aclocal ..."
-( cd $arch && aclocal )
+echo "Running bootstrap ..."
+if [ ! -e $arch/acinclude.m4 ] ; then
+  echo "***********************************************************************"
+  echo "**"
+  echo "** WARNING: No \"acinclude.m4\" file found in \"$arch/\"."
+  echo "**          You may wish to copy \"libtool.m4\" into"
+  echo "**          \"$arch/acinclude.m4\" from your libtool/aclocal"
+  echo "**          installation for the most current libtool configuration."
+  echo "**"
+  echo "**          Check your libtool installation for location."
+  echo "**"
+  echo "**          Example: \"/usr/local/libtool/share/aclocal/libtool.m4\""
+  echo "**                   or \"/usr/share/aclocal/libtool.m4\""
+  echo "**"
+  echo "***********************************************************************"
+fi
 
-echo "Running automake ..."
-( cd $arch && automake --add-missing )
+./bootstrap
 
-echo "Running autoconf ..."
-( cd $arch && autoconf )
-
-( cd $arch && echo "Running ./configure --prefix=`pwd` " $* )
-( cd $arch && ./configure --prefix=`pwd` $* )
+echo "Running ../configure --prefix=`pwd` $* ..."
+( cd $arch && ../configure --prefix=`pwd` $* )

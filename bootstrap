@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -x
+
+aclocal $ACLOCAL_FLAGS \
+&& libtoolize --force --copy \
+&& automake --force --copy --gnu --add-missing \
+&& autoconf --force
