@@ -32,7 +32,7 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
     gridNodeXYZ(grid,node,n0);
     scalar[node] = n0[0];
   }
-  gridWriteTecplotSurfaceScalar(grid,"gridZ.t",scalar);
+  gridWriteTecplotSurfaceScalar(grid,"gridX.t",scalar);
   free(scalar);
   return grid;
 }

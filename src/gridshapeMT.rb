@@ -35,6 +35,7 @@ class TestGridShape < Test::Unit::TestCase
   grid.addNode(0,0,0)
   grid.addNode(0.5,0.6,0.7)
   grid.addNode(-0.8,0.5,-0.9)
+  grid.addFace(0,1,2,1)
   grid.plotMinDeterminateAtSurface
  end
 
