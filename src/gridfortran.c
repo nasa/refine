@@ -26,8 +26,6 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 		  int *ncell, int *maxcell, int *c2n )
 {
   int node, cell;
-  int nodes[4];
-  double xyz[3];
   grid = gridCreate( *nnode, *ncell, 5000, 0);
   gridSetPartId(grid, *partId );
   queue = queueCreate( 9 ); /* 3:xyz + 6:m */
@@ -210,13 +208,13 @@ void gridparallelswap_( int *processor )
   return;
 }
 
-int queuedumpsize_( int *nInt, int *nDouble )
+void queuedumpsize_( int *nInt, int *nDouble )
 {
   queueDumpSize(queue, nInt, nDouble);
   return;
 }
 
-int queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
+void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   queueDump(queue, ints, doubles);
   return;
@@ -466,7 +464,7 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
     if (nodes[node] > 0) {
       localnode = gridGlobal2Local(grid, nodes[node]-1);
       if (grid != gridNodeXYZ(grid,localnode,xyz)) 
-	printf("ERROR: %s: %d: get xyz from invalid node local %d global &d.\n",
+	printf("ERROR: %s: %d: get xyz from invalid node local %d global %d.\n",
 	       __FILE__, __LINE__, localnode, nodes[node]-1);
       data[0+(*ndim)*node] = xyz[0];
       data[1+(*ndim)*node] = xyz[1];
