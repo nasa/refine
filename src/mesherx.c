@@ -19,6 +19,8 @@
 #include "layer.h"
 #include "CADGeom/CADGeom.h"
 
+#ifdef PHANTOM
+
 #define FRONT_EDGE 211
 
 /******************** Private Functions ******************************/
@@ -120,6 +122,7 @@ static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Layer *layer)
 
 /******************** Public Functions ******************************/
 
+#endif /* PHANTOM */
 
 int
 MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
@@ -130,10 +133,7 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   int vol=1;
   Grid *grid;
   Layer *layer;
-  int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
-  CADCurvePtr *phantomEdge;
-  UGPatchPtr  *phantomFace;
-  int normal, i;
+  int i, edgeId, edgeEndPoints[2];
 
   grid = gridFillFromPart( vol, npts*10 );
 
@@ -141,27 +141,40 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
 
   for (i=0;i<5;i++) layerAdvance(layer,0.01);
 
+#ifdef PHANTOM
+  {
+    int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
+    CADCurvePtr *phantomEdge;
+    UGPatchPtr  *phantomFace;
+
 /* Allocate Phantom Edge and Face Arrays */
 
-  if( !CADGeom_GetVolume(1,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) ) {
-    printf("ERROR: CADGeom_GetVolume, line %d of %s\n.",__LINE__, __FILE__);
-    return 1;
+    if( !CADGeom_GetVolume(1,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) ) {
+      printf("ERROR: CADGeom_GetVolume, line %d of %s\n.",__LINE__, __FILE__);
+      return 1;
+    }
+
+    if( (phantomEdge=makePhantomEdges(vol,nGeomEdge,layer)) == NULL ) {
+      printf("ERROR: Could NOT create Phantom Edges line %d of %s\n.",__LINE__, __FILE__);
+      return 1;
+    }
+
+    if( (phantomFace=(UGPatchPtr *)calloc(nGeomFace,sizeof(UGPatchPtr))) == NULL ) {
+      printf("ERROR: Allocation of Phantom Faces\n");
+      return 1;
+    }
   }
+#endif /* PHANTOM */
 
-
-#ifdef PHANTOM
-
-  if( (phantomEdge=makePhantomEdges(vol,nGeomEdge,layer)) == NULL ) {
-    printf("ERROR: Could NOT create Phantom Edges line %d of %s\n.",__LINE__, __FILE__);
-    return 1;
+  for (edgeId=1;edgeId<=gridNGeomEdge(grid);edgeId++) {
+    if ( layerConstrainingGeometry(layer,-edgeId) ){
+      edgeEndPoints[0]=gridGeomEdgeStart(grid,edgeId);
+      edgeEndPoints[1]=gridGeomEdgeEnd(grid,edgeId);
+      printf("rebuild edge %d:  %d <-> %d\n",
+	     edgeId,edgeEndPoints[0],edgeEndPoints[1]);
+      
+    }
   }
-
-  if( (phantomFace=(UGPatchPtr *)calloc(nGeomFace,sizeof(UGPatchPtr))) == NULL ) {
-    printf("ERROR: Allocation of Phantom Faces\n");
-    return 1;
-  }
-
-#endif
 
   outputProject = "../test/MesherX";
   printf("writing DEBUG output project %s\n",outputProject);
