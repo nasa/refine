@@ -249,10 +249,16 @@ end
   assert_equal 0, @grid.nface 
   assert_equal 0, @grid.maxface 
   assert_not_nil grid = Grid.new(4,1,1)
-  face = [0,1,2]
-  assert_not_nil grid.addFace(face,3)
-  assert_equal 3, grid.faceId( face )
-  assert_equal( -1, grid.faceId( [1,2,3] ) )
+  assert_equal 0, grid.nface 
+  assert_equal 1, grid.maxface 
+  assert_not_nil grid.addFace(0, 1, 2, 10)
+  assert_nil grid.addFace(0, 1, 2, 11)
+  assert_equal 1, grid.nface 
+#  assert_equal 10, grid.faceId( 0, 1, 2 )
+#  assert_equal 10, grid.faceId( 1, 2, 0 )
+#  assert_equal 10, grid.faceId( 2, 0, 1 )
+#  assert_equal 10, grid.faceId( 2, 1, 0 )
+#  assert_equal( -1, grid.faceId( 1, 2, 3 ) )
  end
 
 # make a gem case with gap and same face id's

@@ -40,6 +40,9 @@ Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 
+Grid *gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
+int gridFaceId(Grid *g, int n0, int n1, int n2 );
+
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
 int gridGem(Grid *g, int index );

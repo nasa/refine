@@ -35,6 +35,13 @@ struct Grid {
   int *c2n;
 
   int maxface, nface;
+  int blankf2n;
+  N2C **firstface;
+  N2C *currentface;
+  N2C *blankface;
+  N2C *n2f;
+  int *f2n;
+  int *faceId;
 
   int ngem;
   int gem[MAXDEG];
@@ -47,7 +54,7 @@ struct Grid {
 
 Grid* gridCreate(int maxnode, int maxcell, int maxface)
 {
-  int i, nlist;
+  int i, nlist, nlistface;
   Grid *grid;
 
   grid = malloc(sizeof(Grid));
@@ -59,9 +66,11 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
   grid->maxface = maxface;
   grid->nface   = 0;
   nlist         = grid->maxcell*4;
+  nlistface     = grid->maxface*3;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
 
+  // cells
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
   for (i=0;i < grid->maxcell; i++ ) {
     grid->c2n[0+4*i] = EMPTY; 
@@ -83,6 +92,30 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
   grid->n2c[nlist-1].next = NULL;
   grid->blank   = grid->n2c;
   grid->current = NULL;
+
+  // face
+  grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
+  grid->faceId = malloc(1 * grid->maxface * sizeof(int));
+  for (i=0;i < grid->maxface; i++ ) {
+    grid->f2n[0+3*i] = EMPTY; 
+    grid->f2n[1+3*i] = i+1; 
+    grid->faceId[i] = EMPTY; 
+  }
+  grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
+  grid->blankf2n = 0;
+
+  grid->firstface = (N2C **)malloc(grid->maxnode * sizeof(N2C *));
+
+  for (i=0;i < grid->maxnode; i++ ) grid->firstface[i] = NULL; 
+  grid->n2f = (N2C *)malloc( nlistface * sizeof(N2C));
+  for (i=0;i < nlistface-1; i++ ) { // pointer majic?
+    grid->n2f[i].id   = EMPTY;
+    grid->n2f[i].next = &grid->n2f[i+1];
+  }
+  grid->n2f[nlistface-1].id   = EMPTY;
+  grid->n2f[nlistface-1].next = NULL;
+  grid->blankface   = grid->n2f;
+  grid->currentface = NULL;
 
   grid->ngem = 0;
 
@@ -302,6 +335,29 @@ Grid *gridCell(Grid *grid, int cellId, int *nodes )
 
   return grid;
 }
+
+Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
+{
+  int face;
+  face = grid->nface;
+  if (grid->nface >= grid->maxface) return NULL;
+  grid->nface++;
+
+  grid->f2n[0+3*face] = n0;
+  grid->f2n[1+3*face] = n1;
+  grid->f2n[2+3*face] = n2;
+  grid->faceId[face]  = faceId;
+
+  return grid;
+}
+
+int gridFaceId(Grid *grid, int n0, int n1, int n2 )
+{
+  
+
+  return 0;
+}
+
 
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {

@@ -152,6 +152,20 @@ VALUE grid_cell( VALUE self, VALUE cellId )
   return rb_nodes;
 }
 
+VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
+{
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  returnedGrid = 
+    gridAddFace(grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2), NUM2INT(faceId) );
+  return (returnedGrid==NULL?Qnil:self);
+}
+
+VALUE grid_faceId( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridFaceId( grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) ) );
+}
 
 VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
@@ -269,6 +283,8 @@ void Init_Grid()
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
   rb_define_method( cGrid, "cell", grid_cell, 1 );
+  rb_define_method( cGrid, "addFace", grid_addFace, 4 );
+  rb_define_method( cGrid, "faceId", grid_faceId, 3 );
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );
