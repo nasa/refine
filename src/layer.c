@@ -1016,11 +1016,7 @@ Layer *layerSetNormalHeightWithRate(Layer *layer)
     layer->normal[normal].height = 
       layer->normal[normal].initialheight * 
       pow(layer->normal[normal].rate,length);
-    printf("%5d %15.10f %15.10f %15.10f %15.10f\n",normal,
-	   length,
-	   layer->normal[normal].rate,
-	   pow(layer->normal[normal].rate,length),
-	   layer->normal[normal].height );
+
   }
 
   return layer;
