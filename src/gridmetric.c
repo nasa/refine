@@ -1452,12 +1452,12 @@ bool gridRightHandedFace(Grid *grid, int face ){
 
 bool gridRightHandedBoundary( Grid *grid )
 {
-  int face;
+  int face, nodes[3], faceId;
   bool rightHanded;
   rightHanded = TRUE;
 
-  for (face=0;face<grid->maxface;face++)
-    if ( grid->f2n[3*face] != EMPTY )
+  for (face=0;face<gridMaxFace(grid);face++)
+    if ( grid == gridFace(grid, face, nodes, &faceId ) )
       rightHanded = gridRightHandedFace(grid, face) && rightHanded;
 
   return rightHanded;
@@ -1465,19 +1465,17 @@ bool gridRightHandedBoundary( Grid *grid )
 
 double gridFaceArea(Grid *grid, int n0, int n1, int n2 )
 {
-  int ixyz;
+  double xyz0[3], xyz1[3], xyz2[3];
   double edge1[3], edge2[3], norm[3], length; 
   
-  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
-    edge1[ixyz] = grid->xyz[ixyz+3*n1]
-                - grid->xyz[ixyz+3*n0];
-    edge2[ixyz] = grid->xyz[ixyz+3*n2]
-                - grid->xyz[ixyz+3*n0];
-  }
+  if (grid != gridNodeXYZ(grid,n0,xyz0) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,n1,xyz1) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,n2,xyz2) ) return -1.0;
 
-  norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
-  norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
-  norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
+  gridSubtractVector(xyz1,xyz0,edge1);
+  gridSubtractVector(xyz2,xyz0,edge2);
+
+  gridCrossProduct(edge1, edge2, norm);
 
   length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
 
@@ -1486,26 +1484,26 @@ double gridFaceArea(Grid *grid, int n0, int n1, int n2 )
 
 double gridFaceAR(Grid *grid, int n0, int n1, int n2 )
 {
-  int ixyz;
+  double xyz0[3], xyz1[3], xyz2[3];
   double e0[3], e1[3], e2[3];
   double l0, l1, l2;
   double n[3], a28, p, ar;
 
-  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
-    e0[ixyz] = grid->xyz[ixyz+3*n1] - grid->xyz[ixyz+3*n0];
-    e1[ixyz] = grid->xyz[ixyz+3*n2] - grid->xyz[ixyz+3*n1];
-    e2[ixyz] = grid->xyz[ixyz+3*n0] - grid->xyz[ixyz+3*n2];
-  }
+  if (grid != gridNodeXYZ(grid,n0,xyz0) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,n1,xyz1) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,n2,xyz2) ) return -1.0;
 
-  n[0] = e1[1]*e2[2] - e1[2]*e2[1]; 
-  n[1] = e1[2]*e2[0] - e1[0]*e2[2]; 
-  n[2] = e1[0]*e2[1] - e1[1]*e2[0]; 
+  gridSubtractVector(xyz1,xyz0,e0);
+  gridSubtractVector(xyz2,xyz1,e1);
+  gridSubtractVector(xyz0,xyz2,e2);
 
-  l0 = sqrt(e0[0]*e0[0] + e0[1]*e0[1] + e0[2]*e0[2]);
-  l1 = sqrt(e1[0]*e1[0] + e1[1]*e1[1] + e1[2]*e1[2]);
-  l2 = sqrt(e2[0]*e2[0] + e2[1]*e2[1] + e2[2]*e2[2]);
+  gridCrossProduct(e1, e2, n);
 
-  a28 = 4.0*(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
+  l0 = sqrt(gridDotProduct(e0,e0));
+  l1 = sqrt(gridDotProduct(e1,e1));
+  l2 = sqrt(gridDotProduct(e2,e2));
+
+  a28 = 4.0*gridDotProduct(n,n);
 
   p = l0+l1+l2;
 
@@ -1517,15 +1515,12 @@ double gridFaceAR(Grid *grid, int n0, int n1, int n2 )
 
 double gridMinFaceMR( Grid *grid )
 {
-  int face;
+  int face, nodes[3], faceId;
   double minMR;
   minMR = 999.0;
-  for (face=0;face<grid->maxface;face++) {
-    if ( EMPTY != grid->f2n[3*face]) {
-      minMR = MIN(minMR, gridFaceMR(grid, 
-				    grid->f2n[0+3*face],
-				    grid->f2n[1+3*face],
-				    grid->f2n[2+3*face] ) );
+  for (face=0;face<gridMaxFace(grid);face++) {
+    if ( grid == gridFace(grid,face,nodes,&faceId) ) {
+      minMR = MIN(minMR, gridFaceMR(grid, nodes[0], nodes[1], nodes[2]) );
     }
   }
   return minMR;
