@@ -1,8 +1,9 @@
-Author:
+Authors:
   Michael Park <m.a.park@larc.nasa.gov>
   Bill Jones <w.t.jones@larc.nasa.gov> - MesherX and GEOLAB/SDK restarts 
   Bil Kleb <w.l.kleb@larc.nasa.gov> - Mixed elements
 
 Design suggestions:
-  Bil Kleb <w.l.kleb@larc.nasa.gov> - Ruby extension unit testing
+  Bil Kleb <w.l.kleb@larc.nasa.gov> - Ruby extension unit testing 
+                                    - Multiple normals
   Bill Jones <w.t.jones@larc.nasa.gov> - Anisotropic metrics
