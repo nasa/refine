@@ -670,6 +670,26 @@ Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
   return layer;
 }
 
+Layer *layerTerminateNormalWithX(Layer *layer, double x)
+{
+  int normal, nterm;
+  double xyz[3];
+  
+  if (layerNNormal(layer) == 0 ) return NULL;
+
+  nterm = 0;
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    gridNodeXYZ(layer->grid, layer->normal[normal].root, xyz);
+    if (x > 0.0 ) {
+      if (xyz[0]>x) { layerTerminateNormal(layer, normal); nterm++; }
+    }else{
+      if (xyz[0]<x) { layerTerminateNormal(layer, normal); nterm++; }     
+    }
+  }
+  printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
+  return layer;
+}
+
 Layer *layerInsertPhantomFront(Layer *layer, double dz )
 {
   Grid *grid = layer->grid;
