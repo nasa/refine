@@ -87,7 +87,7 @@ START_TEST(testUnderAlloc)
   fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, "no memory - 2");
   gridFree(localGrid);
   localGrid = gridCreate(1,1,3);
-  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, "no memory - 3");
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) != NULL, "should fit");
   gridFree(localGrid);
 }
 END_TEST
@@ -105,6 +105,13 @@ START_TEST(testMultipleCellExists)
   gridRegisterNodeCell(grid,1,198);
   fail_unless ( gridCellExists(grid,1,198), "can't re-Reg cell 198" );
   fail_unless ( gridCellExists(grid,1,199), "can't find cell 199 - 3" );
+}
+END_TEST
+
+START_TEST(testEfficientStorage)
+{
+  Grid *localGrid;
+
 }
 END_TEST
 
@@ -131,6 +138,7 @@ Suite *grid_suite (void)
   tcase_add_test (tNeighbors, testCellIterator); 
   tcase_add_test (tNeighbors, testAddedAndRemoveCell); 
   tcase_add_test (tNeighbors, testMultipleCellExists); 
+  tcase_add_test (tNeighbors, testEfficientStorage); 
 
   suite_add_tcase (s, tMemory);
   tcase_add_test (tMemory, testUnderAlloc); 

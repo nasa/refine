@@ -35,7 +35,8 @@ Grid* gridCreate(long nnode, long ncell, long nlist)
   if (nlist < 1) nlist = (grid->ncell*4+grid->nnode)+2;
 
   grid->firstcell = malloc(grid->nnode * sizeof(long));
-  for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = nlist-1;
+  /* I could set first cell to zero to terminate when realloc used */
+  for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = nlist-1; 
 
   grid->celllist = malloc( nlist * sizeof(long));
   for (i=0;i < nlist; i++ ) grid->celllist[i] = -(i+1);
@@ -91,8 +92,8 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   if ( grid->celllist[entry] == 0 ) return NULL;
   terminator = entry+1;
   //  terminator = -grid->celllist[entry]; make sure this is same as ^
-  if ( grid->celllist[terminator] == 0 ) return NULL;
   nextOpen = -grid->celllist[terminator];
+  if ( grid->celllist[terminator] == 0 ) nextOpen = terminator;
  
 #ifdef EBUG
   printf("\n Reg n %d c %3d e %d t %d n %d", 
