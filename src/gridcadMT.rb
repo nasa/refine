@@ -174,4 +174,33 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta 1.0, grid.minAR, 1.0e-3
  end
 
+ def gemGrid(nequ=4)
+  grid = Grid.new(nequ+2+1,nequ*2,0,0)
+  n = Array.new
+  n.push grid.addNode( 1.0,0.0,0.0)
+  n.push grid.addNode(-1.0,0.0,0.0)
+  nequ.times do |i| 
+   angle = 2.0*Math::PI*(i-1)/(nequ)
+   n.push grid.addNode(0.0,Math.sin(angle),Math.cos(angle)) 
+  end
+  n.push 2
+  center = grid.addNode(0.2,0.2,0.2)
+  nequ.times do |i|
+   grid.addCell(n[0],center,n[i+2],n[i+3])
+   grid.addCell(center,n[1],n[i+2],n[i+3])
+  end
+  grid  
+ end
+
+ def testSmartLaplacianSmooth
+  ngem =6
+  assert_not_nil  grid=gemGrid(ngem)
+  assert_in_delta 0.38, grid.minAR, 1.0e-3
+  assert_equal grid, grid.smartLaplacian(ngem+2)
+  assert_in_delta 0.812, grid.minAR, 1.0e-3
+  assert_in_delta 0.0, grid.nodeXYZ(ngem+2)[0], 1.0e-15
+  assert_in_delta 0.0, grid.nodeXYZ(ngem+2)[1], 1.0e-15
+  assert_in_delta 0.0, grid.nodeXYZ(ngem+2)[2], 1.0e-15
+ end
+
 end
