@@ -251,7 +251,7 @@ Layer *layerBuildNormalTriangleAdjacency(Layer *layer)
   int triangle, i, normals[3];
 
   if (NULL != layer->adj) adjFree(layer->adj);
-  layer->adj = adjCreate( layerNNormal(layer), layerNTriangle(layer)*3  );
+  layer->adj = adjCreate( layerNNormal(layer), layerNTriangle(layer)*3, 1000 );
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     layerTriangleNormals(layer,triangle,normals);
@@ -2227,7 +2227,7 @@ Adj *layerBuildNormalBlendAdjacency(Layer *layer)
   Adj *adj;
   int blend, i, normals[4];
 
-  adj = adjCreate( layerNNormal(layer), layerNBlend(layer)*4  );
+  adj = adjCreate( layerNNormal(layer), layerNBlend(layer)*4, 1000 );
 
   for (blend=0;blend<layerNBlend(layer);blend++){
     layerBlendNormals(layer,blend,normals);

@@ -77,7 +77,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
   grid->blankc2n = 0;
 
-  grid->cellAdj = adjCreate(grid->maxnode,grid->maxcell*4);
+  grid->cellAdj = adjCreate(grid->maxnode,grid->maxcell*4,5000*4);
 
   // face
   grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
@@ -99,7 +99,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
   grid->blankf2n = 0;
 
-  grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3);
+  grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3,5000*3);
 
   // edge
   grid->e2n    = malloc(2 * grid->maxedge * sizeof(int));
@@ -115,7 +115,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
   grid->blanke2n = 0;
 
-  grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2);
+  grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2,5000*2);
 
   grid->ngem = 0;
   grid->degAR = 0;
@@ -201,7 +201,7 @@ Grid *gridImport(int maxnode, int nnode,
     grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
     grid->blankc2n = grid->ncell;
   }
-  grid->cellAdj = adjCreate(grid->maxnode,grid->maxcell*4);
+  grid->cellAdj = adjCreate(grid->maxnode,grid->maxcell*4,5000*4);
 
   for ( i=0 ; i < grid->ncell ; i++ ) {
     adjRegister(grid->cellAdj,grid->c2n[0+4*i],i);
@@ -235,7 +235,7 @@ Grid *gridImport(int maxnode, int nnode,
     grid->faceV[2+3*i] = DBL_MAX;
   }
 
-  grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3);
+  grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3,5000*3);
 
   //addface
 
@@ -259,7 +259,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
   grid->blanke2n = 0;
 
-  grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2);
+  grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2,5000*2);
 
   grid->ngem = 0;
   grid->degAR = 0;
