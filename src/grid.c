@@ -359,6 +359,22 @@ Grid *gridExportFAST( Grid *grid, char *filename, bool gridPacked )
   return grid;
 }
 
+Grid *gridImportAdapt( Grid *grid, char *filename )
+{
+  int i;
+  FILE *file;
+
+  file = fopen(filename,"r");
+
+  for( i=0; i<grid->nnode ; i++ ) 
+    fscanf(file,"%lf %lf %lf %lf %lf %lf \n",
+       &grid->spacing[0+6*i], &grid->spacing[1+6*i], &grid->spacing[2+6*i],
+                              &grid->spacing[3+6*i], &grid->spacing[4+6*i],
+                                                     &grid->spacing[5+6*i]);
+  fclose(file);
+  return grid;
+}
+
 void gridFree(Grid *grid)
 {
   adjFree(grid->edgeAdj);
