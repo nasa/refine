@@ -26,6 +26,14 @@ headers.push "master_header.h"
 `cp #{(objC+headers).join(' ')} #{ext}`
 Dir.chdir ext
 
+if ARGV.include?("FAKEGeom")
+ `mkdir CADGeom`
+ `cp ../FAKEGeom.h CADGeom/CADGeom.h`
+ `cp master_header.h CADGeom/.`
+ `cp ../FAKEGeom.c CADGeom.c`
+ objC.push "CADGeom.c"
+end
+
 $objs = objC.collect{ |c| c.sub(/\.c/, ".o") }
 
 require 'mkmf'

@@ -5,7 +5,7 @@
 # Mobility test for grid c lib
 
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h'
-exit 1 unless system 'ruby makeRubyExtension.rb GridCAD adj.c grid.c gridStruct.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridStruct.h'
 
 require 'test/unit'
 require 'Grid/Grid'
@@ -26,6 +26,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_not_nil grid = Grid.new(3,0,0,2)
   assert_equal 0, grid.addNode(0.5,0.1,0.1)
   assert_equal grid, grid.projectNodeToEdge(0,0)
+  assert_equal [0.5,0.0,0.0], grid.nodeXYZ(0)
  end
 
 

@@ -8,17 +8,16 @@
   
 /* $Id$ */
 
-#ifndef GRIDCAD_H
-#define GRIDCAD_H
+#ifndef CADGEOM_H
+#define CADGEOM_H
 
 #include "master_header.h"
-#include "grid.h"
 
 BEGIN_C_DECLORATION
 
-Grid *gridProjectNodetoEdge(Grid *g, int node, int edge );
-Grid *gridSafeProject(Grid *g, int node );
+bool CADGeom_NearestOnEdge(int vol, int edge, 
+			   double *xyz, double *t, double *xyznew);
 
 END_C_DECLORATION
 
-#endif /* GRIDCAD_H */
+#endif /* CADGEOM_H */
