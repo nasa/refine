@@ -473,8 +473,8 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
     gridCycleEquator( grid );
   }
 
-  if (bestindex == -1 ) 
-    printf("ERROR in bestindex, file %s line %d \n",__FILE__, __LINE__ ); 
+  if (bestindex == -1 ) printf("%d: ERROR in bestindex, file %s line %d \n",
+			       gridPartId(grid),__FILE__, __LINE__ ); 
 
   if ( bestcost > origcost && bestcost > COSTLIMIT ) {
 
