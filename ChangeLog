@@ -1,3 +1,8 @@
+2005-03-13 20:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/adj.c (adjFree) to prevent memory leak, free adj->node2item
+	during the adjFree call.
+
 2005-03-13 20:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridparallelswap_) added a disabled block of

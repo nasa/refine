@@ -9,8 +9,6 @@ Start Builds!!!!!
 
 correctly add two faced cells to swap plan
 
-Adj node2item memory leak
-
 Make a queue (plan) of boundary mesh operations and use it to speed up
 boundary adapts in parallel.
 

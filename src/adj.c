@@ -50,6 +50,7 @@ Adj* adjCreate( int nnode, int nadj, int chunkSize )
 
 void adjFree( Adj *adj )
 {
+  free( adj->node2item );
   free( adj->first );
   free( adj );
 }
