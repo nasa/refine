@@ -38,6 +38,11 @@ typedef short   bool;
 #define FALSE   ((bool)0)
 #endif
 
+#if !defined(MIN) && !defined(MAX)
+#define MIN(a,b) ((a)<(b)?(a):(b)) 
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#endif
+
 END_C_DECLORATION
 
 #endif /* MASTER_HEADER_H */
