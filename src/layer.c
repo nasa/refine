@@ -508,11 +508,11 @@ Layer *layerAdvance(Layer *layer, double height )
       n[2] = layer->normal[side[0]].tip;
       n[3] = layer->normal[side[1]].tip;
       if (side[0]<side[1]){
-	gridAddFace(grid,n[0],n[1],n[3],faceId);
-	gridAddFace(grid,n[0],n[3],n[2],faceId);
+	if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
+	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
       }else{
-	gridAddFace(grid,n[0],n[1],n[2],faceId);
-	gridAddFace(grid,n[2],n[1],n[3],faceId);
+	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
+	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
       }
     }
     if (0 < layerConstrained(layer,normals[1]) && 
@@ -526,11 +526,11 @@ Layer *layerAdvance(Layer *layer, double height )
       n[2] = layer->normal[side[0]].tip;
       n[3] = layer->normal[side[1]].tip;
       if (side[0]<side[1]){
-	gridAddFace(grid,n[0],n[1],n[3],faceId);
-	gridAddFace(grid,n[0],n[3],n[2],faceId);
+	if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
+	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
       }else{
-	gridAddFace(grid,n[0],n[1],n[2],faceId);
-	gridAddFace(grid,n[2],n[1],n[3],faceId);
+	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
+	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
       }
     }
     if (0 < layerConstrained(layer,normals[2]) && 
@@ -544,11 +544,11 @@ Layer *layerAdvance(Layer *layer, double height )
       n[2] = layer->normal[side[0]].tip;
       n[3] = layer->normal[side[1]].tip;
       if (side[0]<side[1]){
-	gridAddFace(grid,n[0],n[1],n[3],faceId);
-	gridAddFace(grid,n[0],n[3],n[2],faceId);
+	if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
+	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
       }else{
-	gridAddFace(grid,n[0],n[1],n[2],faceId);
-	gridAddFace(grid,n[2],n[1],n[3],faceId);
+	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
+	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
       }
     }
   }
