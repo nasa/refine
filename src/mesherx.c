@@ -101,13 +101,13 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
   CADCurvePtr *phantomEdge;
   UGPatchPtr  *phantomFace;
-  int normal;
+  int normal, i;
 
   grid = gridFillFromPart( vol, npts*10 );
 
   layer = formAdvancingFront( grid, "box" );
 
-  layerAdvance(layer,0.01);
+  for (i=0;i<5;i++) layerAdvance(layer,0.01);
 
 /* Allocate Phantom Edge and Face Arrays */
 
