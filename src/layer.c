@@ -2791,7 +2791,7 @@ bool layerTrianglesShareNormal(Layer *layer, int triangle1, int triangle2 )
   if ( NULL == layerTriangleNormals(layer, triangle2, normals2) ) return FALSE;
   
   for (i=0;i<3;i++)
-    for (j=i;j<3;j++)
+    for (j=0;j<3;j++)
       if (normals1[i] == normals2[j]) return TRUE;
 
   return FALSE;
