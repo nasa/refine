@@ -727,7 +727,7 @@ Grid *gridSmooth( Grid *grid )
   double ar, optimizationLimit, laplacianLimit;
   optimizationLimit =0.40;
   laplacianLimit =0.60;
-  for (node=0;node<grid->maxnode;node++) {
+  for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && !gridNodeFrozen( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
       if (ar < optimizationLimit) {
@@ -746,7 +746,7 @@ Grid *gridSmoothFaceMR( Grid *grid, double optimizationLimit )
 {
   int node;
   double mr;
- for (node=0;node<grid->maxnode;node++) {
+ for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && gridGeometryFace( grid, node )) {
       gridNodeFaceMR(grid,node,&mr);
       if (mr < optimizationLimit) {
@@ -764,7 +764,7 @@ Grid *gridSmoothVolume( Grid *grid )
   double ar, optimizationLimit, laplacianLimit;
   optimizationLimit =0.30;
   laplacianLimit =0.60;
-  for (node=0;node<grid->maxnode;node++) {
+  for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && !gridGeometryFace( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
       if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
@@ -781,9 +781,11 @@ Grid *gridSmoothVolume( Grid *grid )
 
 Grid *gridSmartLaplacian(Grid *grid, int node )
 {
-  double origAR, newAR, origXYZ[3], xyz[3], oneOverNCell;
+  double origAR, newAR;
+  double origXYZ[3], xyz[3], nodeXYZ[3];
+  double oneOverNCell;
   AdjIterator it;
-  int cell, ncell, inode, ixyz, n;
+  int nodes[4], ncell, inode, ixyz, n;
   
   gridNodeAR(grid, node, &origAR);
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
@@ -791,25 +793,26 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
   xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
   ncell =0;
 
-  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it) ; it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node); 
+	adjValid(it) ; 
+	it = adjNext(it) ){
     ncell++;
-    cell = adjItem(it);
+    gridCell(grid,adjItem(it),nodes);
     for ( inode = 0 ; inode < 4 ; inode++ ){
-      n = grid->c2n[inode+4*cell];
-      for (ixyz = 0 ; ixyz < 3 ; ixyz++ ) xyz[ixyz] += grid->xyz[ixyz+3*n];
+      gridNodeXYZ(grid,nodes[inode],nodeXYZ);
+      for (ixyz = 0 ; ixyz < 3 ; ixyz++ ) xyz[ixyz] += nodeXYZ[ixyz];
     }
-
   }
   oneOverNCell = 1.0/(double)(ncell*3);
   for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){  
-    xyz[ixyz] -= grid->xyz[ixyz+3*node] * (double)ncell ;
-    grid->xyz[ixyz+3*node] = xyz[ixyz] * oneOverNCell;
+    xyz[ixyz] -= origXYZ[ixyz] * (double)ncell ;
+    xyz[ixyz] = xyz[ixyz] * oneOverNCell;
   }
-
+  gridSetNodeXYZ(grid,node,xyz);
   gridNodeAR(grid, node, &newAR);
   
   if ( origAR > newAR ) {
-    for (ixyz = 0 ; ixyz < 3 ; ixyz++ ) grid->xyz[ixyz+3*node] = origXYZ[ixyz];
+    gridSetNodeXYZ(grid,node,origXYZ);
     return NULL;
   }
 
