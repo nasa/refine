@@ -1,3 +1,18 @@
+Wed Aug 17, 2004: Released Refine 1.2.1
+
+Removed all references to SDK UG_API and Goolache fo the refine lib;
+you will only need to link to GEOLAB SDK CADGeom and MeatLib.  Added
+static versions of SGI n32 CADGeom+CAPRINative and MeatLib in
+geomSGIn32; see INSTALL for usage. Silenced reporting of CAD parameter
+mismatches on restart. Note that there is a bug in the recreation of
+CAPRI restarts that still needs to be fixed, but projecting points
+works for all geometries tested so far.  Limited the range of R
+(aspect ratio) to reduce the number of cases that the linear elasticy
+system goes unstable with Gauss-Seidel. Use springs if the linear
+elasticy system goes unstable. I have noticed an extra node or cell
+reported by the load balacing routine in FUN3D on rare occations for
+large grids on may processors. I have not been able to isolate
+problem.
 
 Wed Aug  9, 2004: Released Refine 1.2.0
 

@@ -1,3 +1,11 @@
+2004-08-17 08:45 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.1 Release. Interface to FUN3D 3.3.1.
+	
+2004-08-16 15:00 Mike Park  <mike.park@nasa.gov>
+
+	* geomSGIn32 added static SDK routines and headers (CVS tag sdk1_1_4)
+
 2004-08-16 14:20 Mike Park  <mike.park@nasa.gov>
 
 	* configure.ac added a --enable-exec argument that controls
