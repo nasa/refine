@@ -8,6 +8,7 @@ refine_SOURCES = \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
+	layer.h layer.c \
 	main.c
 refine_LDADD = @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@
 EXTRA_DIST = makeRubyExtension.rb \
@@ -18,5 +19,5 @@ EXTRA_DIST = makeRubyExtension.rb \
 	gridswapMT.rb gridswap_ruby.c \
 	gridcadMT.rb gridcad_ruby.c \
 	FAKEGeom.h FAKEGeom.c \
-	layer.h layer.c layerMT.rb layer_ruby.c
+	layerMT.rb layer_ruby.c
 TESTS = adjMT.rb gridMT.rb gridmetricMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb layerMT.rb
