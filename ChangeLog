@@ -1,3 +1,8 @@
+2004-08-01 16:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridtestcadparameters_) increased node and
+	parameter tolerences. Project to face first to get the edge xyz.
+
 2004-87-01 15:39 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridRelaxNegativeCells) added a bool argument to
