@@ -54,7 +54,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [10.0,20.0],   grid.nodeUV(0,1)
  end
 
-
  def XtestSafeProjection
   assert_not_nil grid = Grid.new(3,0,0,2)
   assert_equal 0, grid.addNode(0.0,0.0,0.0)

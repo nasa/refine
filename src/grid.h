@@ -92,6 +92,12 @@ int gridFindCellWithFace(Grid *g, int face );
 bool gridRightHandedFace(Grid *g, int face );
 bool gridRightHandedBoundary(Grid *g );
 
+int gridNGeomNode(Grid *g);
+Grid *gridSetNGeomNode(Grid *g, int nGeomNode);
+bool gridGeometryNode(Grid *g, int node);
+bool gridGeometryEdge(Grid *g, int node);
+bool gridGeometryFace(Grid *g, int node);
+
 END_C_DECLORATION
 
 #endif /* GRID_H */

@@ -420,6 +420,37 @@ VALUE grid_rightHandedBoundary( VALUE self )
   return (gridRightHandedBoundary(grid)?Qtrue:Qfalse);
 }
 
+VALUE grid_nGeomNode( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNGeomNode( grid ) );
+}
+
+VALUE grid_setNGeomNode( VALUE self, VALUE nGeomNode )
+{
+  GET_GRID_FROM_SELF;
+  gridSetNGeomNode( grid, NUM2INT( nGeomNode ) );
+  return self;
+}
+
+VALUE grid_geometryNode( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return ( gridGeometryNode( grid, NUM2INT( node ) ) ? Qtrue : Qfalse );
+}
+
+VALUE grid_geometryEdge( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return ( gridGeometryEdge( grid, NUM2INT( node ) ) ? Qtrue : Qfalse );
+}
+
+VALUE grid_geometryFace( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return ( gridGeometryFace( grid, NUM2INT( node ) ) ? Qtrue : Qfalse );
+}
+
 
 VALUE cGrid;
 
@@ -474,4 +505,10 @@ void Init_Grid()
   rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
   rb_define_method( cGrid, "rightHandedFace", grid_rightHandedFace, 1 );
   rb_define_method( cGrid, "rightHandedBoundary", grid_rightHandedBoundary, 0);
+
+  rb_define_method( cGrid, "nGeomNode", grid_nGeomNode, 0 );
+  rb_define_method( cGrid, "setNGeomNode", grid_setNGeomNode, 1 );
+  rb_define_method( cGrid, "geometryNode", grid_geometryNode, 1 );
+  rb_define_method( cGrid, "geometryEdge", grid_geometryEdge, 1 );
+  rb_define_method( cGrid, "geometryFace", grid_geometryFace, 1 );
 }

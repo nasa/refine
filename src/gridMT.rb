@@ -423,6 +423,31 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal false, grid.rightHandedBoundary
  end
  
+ def testGeometryNode
+  assert_not_nil grid = Grid.new(3,0,0,0)
+  assert_equal 0,     grid.nGeomNode
+  assert_equal false, grid.geometryNode(0)
+  assert_equal grid,  grid.setNGeomNode(2)
+  assert_equal 2,     grid.nGeomNode
+  assert_equal true,  grid.geometryNode(0)
+  assert_equal true,  grid.geometryNode(1)
+  assert_equal false, grid.geometryNode(2)
+ end
+
+ def testGeometryEdge
+  assert_not_nil grid = Grid.new(3,0,0,1)
+  assert_equal false, grid.geometryEdge(0)
+  assert_equal grid,  grid.addEdge(0,1,10,0.0,1.0)
+  assert_equal true,  grid.geometryEdge(0)
+ end
+
+ def testGeometryFace
+  assert_not_nil grid = Grid.new(3,0,0,1)
+  assert_equal false, grid.geometryFace(0)
+  assert_equal grid,  grid.addFace(0,1,2,10)
+  assert_equal true,  grid.geometryFace(0)
+ end
+
  # make register unique
 
  # allocating a new chunk of nodes, faces, cells

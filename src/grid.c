@@ -33,6 +33,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->nface   = 0;
   grid->maxedge = MAX(maxedge,1);
   grid->nedge   = 0;
+  grid->nGeomNode   = 0;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
 
@@ -109,6 +110,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nface   = nface;
   grid->maxedge = MAX(maxedge,1);
   grid->nedge   = 0;
+  grid-> nGeomNode = 0;
 
   grid->xyz = xyz;
 
@@ -1321,5 +1323,41 @@ bool gridRightHandedBoundary( Grid *grid )
       if ( !gridRightHandedFace(grid, face) ) return FALSE;
 
   return TRUE;
+}
+
+int gridNGeomNode(Grid *grid)
+{
+  return grid->nGeomNode;
+}
+
+Grid *gridSetNGeomNode(Grid *grid, int nGeomNode)
+{
+  grid->nGeomNode = nGeomNode;
+  return grid;
+}
+
+bool gridGeometryNode(Grid *grid, int node)
+{
+  return (node<grid->nGeomNode);
+}
+
+bool gridGeometryEdge(Grid *grid, int node)
+{
+  AdjIterator it;
+
+  for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) )
+    return TRUE;
+  
+  return FALSE;
+}
+
+bool gridGeometryFace(Grid *grid, int node)
+{
+  AdjIterator it;
+
+  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) )
+    return TRUE;
+  
+  return FALSE;
 }
 

@@ -40,6 +40,8 @@ struct Grid {
   double *edgeT;
   Adj *edgeAdj;
 
+  int nGeomNode;
+
   int ngem;
   int gem[MAXDEG];
 
