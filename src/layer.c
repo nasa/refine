@@ -16,6 +16,7 @@
 #include <string.h>
 #include "master_header.h"
 #include "layer.h"
+#include "gridmath.h"
 #include "gridmetric.h"
 #include "gridcad.h"
 #include "gridinsert.h"
@@ -208,7 +209,6 @@ Layer *layerInitializeTriangleNormalDirection(Layer *layer)
 {
   int triangle, normal, i;
   double direction[3], *normalDirection;
-  double length;
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
@@ -231,15 +231,8 @@ Layer *layerInitializeTriangleNormalDirection(Layer *layer)
     }
   }
 
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    normalDirection = layer->normal[normal].direction;
-    length = sqrt( gridDotProduct(normalDirection,normalDirection) );
-    if (length > 0.0) {
-      for ( i=0;i<3;i++) normalDirection[i] = normalDirection[i]/length;
-    }else{
-      for ( i=0;i<3;i++) normalDirection[i] = 0.0;
-    }
-  }
+  for (normal=0;normal<layerNNormal(layer);normal++)
+    gridVectorNormalize(layer->normal[normal].direction);
   
   return layer;
 }
@@ -363,7 +356,7 @@ Layer *layerTriangleDirection(Layer *layer, int triangle, double *direction )
 {
   int i, nodes[3];
   double node0[3], node1[3], node2[3];
-  double edge1[3], edge2[3], norm[3], length; 
+  double edge1[3], edge2[3], norm[3]; 
   
   if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
 
@@ -379,13 +372,9 @@ Layer *layerTriangleDirection(Layer *layer, int triangle, double *direction )
   norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
   norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
   norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
-  length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
 
-  if (length > 0.0) {
-    for ( i=0;i<3;i++) direction[i] = norm[i]/length;
-  }else{
-    for ( i=0;i<3;i++) direction[i] = 0.0;
-  }
+  for ( i=0;i<3;i++) direction[i] = norm[i];
+  gridVectorNormalize(direction);
 
   return layer;
 }
@@ -394,7 +383,7 @@ Layer *layerTriangleArea(Layer *layer, int triangle, double *area )
 {
   int i, nodes[3];
   double node0[3], node1[3], node2[3];
-  double edge1[3], edge2[3], norm[3], length; 
+  double edge1[3], edge2[3], norm[3]; 
   
   if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
 
@@ -410,9 +399,8 @@ Layer *layerTriangleArea(Layer *layer, int triangle, double *area )
   norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
   norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
   norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
-  length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
 
-  *area = length * 0.5;
+  *area = gridVectorLength(norm) * 0.5;
 
   return layer;
 }
@@ -1067,7 +1055,7 @@ Layer *layerSetNormalHeightForLayerNumber(Layer *layer, int n, double rate)
 Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
 {
   int normal, iter, i;
-  double *dir, mindir[3], mindot, radian, length; 
+  double *dir, mindir[3], mindot, worstdot; 
   int minTriangle;
 
   if (dotLimit < 0) dotLimit = 1.0e-14;
@@ -1081,22 +1069,17 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
       dir = layer->normal[normal].direction;
       layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
       for (iter=0;iter<1000 && mindot <= dotLimit; iter++){
-	dir[0] -= mindot*mindir[0];
-	dir[1] -= mindot*mindir[1];
-	dir[2] -= mindot*mindir[2];
-	length = sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
-	if (length > 0.0) {
-	  for ( i=0;i<3;i++) dir[i] = dir[i]/length;
-	}else{
-	  for ( i=0;i<3;i++) dir[i] = 0.0;
-	}
+	dir[0] -= relaxation*mindot*mindir[0];
+	dir[1] -= relaxation*mindot*mindir[1];
+	dir[2] -= relaxation*mindot*mindir[2];
+	gridVectorNormalize(dir);
 	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
       }
       worstdot = MIN(worstdot,mindot);
       if (mindot <= 0.0 ) {
 	double xyz[3];
 	gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-	printf("ERROR: %s, %d, Invisible norm %d dot%9.5f X%9.5f Y%9.5f Z%9.5f\n",
+	printf("ERROR: %s, %d, Infeasible norm %d dot%9.5f X%9.5f Y%9.5f Z%9.5f\n",
 	       __FILE__, __LINE__, normal, mindot,xyz[0],xyz[1],xyz[2]);
       }
     }
@@ -1114,7 +1097,7 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
 Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 {
   int normal, iter, i;
-  double *dir, mindir[3], mindot, radian, length, worstdot; 
+  double *dir, mindir[3], mindot, radian, worstdot; 
   int minTriangle, lastTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
@@ -1139,12 +1122,7 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 	dir[0] += radian*mindir[0];
 	dir[1] += radian*mindir[1];
 	dir[2] += radian*mindir[2];
-	length = sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
-	if (length > 0.0) {
-	  for ( i=0;i<3;i++) dir[i] = dir[i]/length;
-	}else{
-	  for ( i=0;i<3;i++) dir[i] = 0.0;
-	}
+	gridVectorNormalize(dir);
 	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
       }
       worstdot = MIN(worstdot,mindot);
