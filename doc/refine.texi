@@ -30,7 +30,7 @@ The refine library overview, version 1.0.
 @menu
 * Introduction :: Short description.
 * Overview ::     Basic architecture
-* Base Object ::  Base objects for grid.
+* Base Objects :: Base objects for grid.
 * Index ::        Complete index.
 @end menu
 
