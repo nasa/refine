@@ -33,12 +33,6 @@ VALUE layer_maxtriangle( VALUE self )
   return INT2NUM( layerMaxTriangle(layer) );
 }
 
-VALUE layer_nblend( VALUE self )
-{
-  GET_LAYER_FROM_SELF;
-  return INT2NUM( layerNBlend(layer) );
-}
-
 VALUE layer_nnormal( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -302,12 +296,6 @@ VALUE layer_wiggle( VALUE self, VALUE height )
   return ( layer == layerWiggle(layer,NUM2DBL(height))?self:Qnil );
 }
 
-VALUE layer_blend( VALUE self, VALUE edgeId )
-{
-  GET_LAYER_FROM_SELF;
-  return ( layer == layerBlend(layer)?self:Qnil );
-}
-
 VALUE layer_tetrahedraOnly( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -328,7 +316,6 @@ void Init_Layer()
   rb_define_singleton_method( cLayer, "new", layer_new, 1 );
   rb_define_method( cLayer, "ntriangle", layer_ntriangle, 0 );
   rb_define_method( cLayer, "maxtriangle", layer_maxtriangle, 0 );
-  rb_define_method( cLayer, "nblend", layer_nblend, 0 );
   rb_define_method( cLayer, "maxnormal", layer_maxnormal, 0 );
   rb_define_method( cLayer, "nnormal", layer_nnormal, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
@@ -364,8 +351,6 @@ void Init_Layer()
 		    layer_advanceConstantHeight, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 0 );
   rb_define_method( cLayer, "wiggle", layer_wiggle, 1 );
-
-  rb_define_method( cLayer, "blend", layer_blend, 0 );
 
   rb_define_method( cLayer, "tetrahedraOnly", layer_tetrahedraOnly, 0 ); 
   rb_define_method( cLayer, "toggleMixedElementMode", layer_toggleMixedElementMode, 0 ); 

@@ -25,7 +25,6 @@ void layerFree(Layer *);
 void layerSortGlobalNodes(void *layer, int *o2n);
 int layerMaxTriangle(Layer *);
 int layerNTriangle(Layer *);
-int layerNBlend(Layer *);
 int layerMaxNormal(Layer *);
 int layerNNormal(Layer *);
 int layerMaxNode(Layer *);
@@ -66,7 +65,6 @@ int layerNActiveNormal(Layer *);
 Layer *layerAdvance(Layer * );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
-Layer *layerBlend(Layer *);
 
 Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);

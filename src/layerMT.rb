@@ -802,36 +802,6 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,0.2], grid.nodeXYZ(5)
  end
 
- def XdisabledXtestBlendElements
-  assert_not_nil          grid = Grid.new(10,10,10,10)
-  assert_equal 0,         grid.addNode(0,0,0)
-  assert_equal 1,         grid.addNode(1,0,0)
-  assert_equal 2,         grid.addNode(0,1,0)
-  assert_equal 3,         grid.addNode(0,0,1)
-  assert_equal grid,      grid.addFace(0,2,1,1)
-  assert_equal grid,      grid.addFace(0,1,3,1)
-  assert_equal grid,      grid.addEdge(0,1,1,0,1)
-  assert_equal grid,      grid.setNGeomEdge(1)
-  assert_equal grid,      grid.addGeomEdge(1,0,1)
-  assert_equal [0, 1],    grid.geomEdge(1)
-  assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
-  assert_nil              layer.blend
-  assert_equal layer,     layer.makeNormal
-  assert_equal 4,         layer.nnormal
-  
-  assert_equal [0,1,2],   layer.triangleNormals(0)
-  assert_equal [0,2,3],   layer.triangleNormals(1)
-  assert_equal 0,         layer.nblend
-  assert_equal layer,     layer.blend
-  assert_equal 1,         layer.nblend
-  assert_equal 6,         layer.nnormal
-
-  assert_equal [0,1,2],   layer.triangleNormals(0)
-  assert_equal [4,5,3],   layer.triangleNormals(1)
-  assert_equal [0,4,5,1], layer.blendNormals(0)
- end
-
  def testMixedElementModeToggleSwitch
   assert_not_nil              grid = Grid.new(10,10,10,10)
   assert_not_nil              layer = Layer.new(grid)

@@ -36,18 +36,11 @@ struct Triangle {
   int parentGeomEdge[3];
 };
 
-typedef struct Blend Blend;
-struct Blend {
-  int normal[4];
-};
-
 struct Layer {
   Grid *grid;
   int maxtriangle, ntriangle;
   Triangle *triangle;
   int nTriangleParent, *triangleParent;
-  int nblend;
-  Blend *blend;
   int maxnormal, nnormal;
   Normal *normal;
   int *globalNode2Normal;
@@ -67,8 +60,6 @@ Layer *layerCreate( Grid *grid )
   layer->triangle=NULL;
   layer->nTriangleParent=0;
   layer->triangleParent=NULL;
-  layer->nblend=0;
-  layer->blend=NULL;
   layer->maxnormal=0;
   layer->nnormal=0;
   layer->normal=NULL;
@@ -218,7 +209,6 @@ void layerFree(Layer *layer)
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
-  if (layer->blend != NULL) free(layer->blend);
   if (layer->triangleParent != NULL) free(layer->triangleParent);
   if (layer->triangle != NULL) free(layer->triangle);
   free(layer);
@@ -251,11 +241,6 @@ int layerMaxTriangle(Layer *layer)
 int layerNTriangle(Layer *layer)
 {
   return layer->ntriangle;
-}
-
-int layerNBlend(Layer *layer)
-{
-  return layer->nblend;
 }
 
 int layerMaxNormal(Layer *layer)
@@ -1090,17 +1075,6 @@ Layer *layerWiggle(Layer *layer, double height )
       }
     }
   }
-
-  return layer;
-}
-
-Layer *layerBlend(Layer *layer)
-{
-  Grid *grid;
-
-  if (layerNNormal(layer) == 0 ) return NULL;
-
-  grid = layerGrid(layer);
 
   return layer;
 }
