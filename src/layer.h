@@ -27,6 +27,8 @@ Layer *layerMakeFront(Layer *, int nbc, int *bc);
 Layer *layerFront(Layer *, int front, int *nodes);
 Layer *layerMakeNormal(Layer *);
 Layer *layerFrontNormal(Layer *, int front, int *normals);
+Layer *layerConstrainNormal(Layer *, int bc );
+int layerConstrained(Layer *, int normal );
 
 END_C_DECLORATION
 

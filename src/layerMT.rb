@@ -58,4 +58,27 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,3], layer.frontNormal(1)
  end
 
+ def testConstrainNormals
+  assert_not_nil        grid = Grid.new(6,0,3,0)
+  assert_equal grid,    grid.addFace(1,2,3,1)
+  assert_equal grid,    grid.addFace(1,2,4,2)
+  assert_equal grid,    grid.addFace(3,4,5,3)
+  assert_not_nil        layer = Layer.new(grid)
+  assert_equal layer,   layer.makeFront([1,2])
+  assert_equal 2,       layer.nfront
+  assert_nil            layer.constrainNormal(3)
+  assert_equal 0,       layer.constrained(0)
+  assert_equal layer,   layer.makeNormal
+  assert_equal 4,       layer.nnormal
+  assert_equal 0,       layer.constrained(0)
+  assert_equal 0,       layer.constrained(1)
+  assert_equal 0,       layer.constrained(2)
+  assert_equal 0,       layer.constrained(3)
+  assert_equal layer,   layer.constrainNormal(3)
+  assert_equal 0,       layer.constrained(0)
+  assert_equal 0,       layer.constrained(1)
+  assert_equal 3,       layer.constrained(2)
+  assert_equal 3,       layer.constrained(3)
+ end
+
 end

@@ -11,6 +11,11 @@
 #include <stdlib.h>
 #include "layer.h"
 
+typedef struct Normal Normal;
+struct Normal {
+  int constrained;
+};
+
 typedef struct Front Front;
 struct Front {
   int globalNode[3];
@@ -22,6 +27,8 @@ struct Layer {
   int nfront;
   Front *front;
   int nnormal;
+  Normal *normal;
+  int *globalNode2Normal;
 };
 
 Layer *layerCreate( Grid *grid )
@@ -32,11 +39,15 @@ Layer *layerCreate( Grid *grid )
   layer->nfront=0;
   layer->front=NULL;
   layer->nnormal=0;
+  layer->normal=NULL;
+  layer->globalNode2Normal=NULL;
   return layer;
 }
 
 void layerFree(Layer *layer)
 {
+  if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
+  if (layer->normal != NULL) free(layer->normal);
   if (layer->front != NULL) free(layer->front);
   free(layer);
 }
@@ -69,8 +80,8 @@ Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
 	  id==bc[ibc] ) nface++;
     }
     layer->nfront += nface;
-    printf("boundary %d with %d faces added to the %d face front.\n",
-	   bc[ibc],nface,layer->nfront);
+    //printf("boundary %d with %d faces added to the %d face front.\n",
+    //   bc[ibc],nface,layer->nfront);
   }
   
   layer->front = malloc( 3 * layer->nfront * sizeof(Front) );
@@ -105,25 +116,28 @@ Layer *layerFront(Layer *layer, int front, int *nodes )
 Layer *layerMakeNormal(Layer *layer)
 {
   int i, front, normal, globalNode;
-  int *globalNode2Normal;
   if (layerNFront(layer)==0) return NULL;
-  globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
-  for (i=0;i<layerMaxNode(layer);i++) globalNode2Normal[i]=EMPTY;
+  layer->globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
+  for (i=0;i<layerMaxNode(layer);i++) layer->globalNode2Normal[i]=EMPTY;
   normal = 0;
   for (front=0;front<layerNFront(layer);front++){
     for(i=0;i<3;i++){
       globalNode = layer->front[front].globalNode[i];
-      if (EMPTY == globalNode2Normal[globalNode] ){
-	globalNode2Normal[globalNode]=normal;
+      if (EMPTY == layer->globalNode2Normal[globalNode] ){
+	layer->globalNode2Normal[globalNode]=normal;
 	layer->front[front].normal[i]=normal;
 	normal++;
       }else{
-	layer->front[front].normal[i]=globalNode2Normal[globalNode];
+	layer->front[front].normal[i]=layer->globalNode2Normal[globalNode];
       }
     }
   }
   layer->nnormal=normal;
-  free(globalNode2Normal);
+
+  layer->normal = malloc( layer->nnormal * sizeof(Normal));
+  for(normal=0;normal<layer->nnormal;normal++) 
+    layer->normal[normal].constrained = 0;
+
   return layer;
 }
 
@@ -136,5 +150,29 @@ Layer *layerFrontNormal(Layer *layer, int front, int *normals )
   normals[2] = layer->front[front].normal[2];
   
   return layer;
+}
+
+Layer *layerConstrainNormal(Layer *layer, int bc )
+{
+  int face, nodes[3], id, i, normal;  
+  if (layerNNormal(layer) == 0 ) return NULL;
+  
+  for(face=0;face<gridMaxFace(layer->grid);face++){
+    if (layer->grid == gridFace(layer->grid,face,nodes,&id) &&
+	id==bc ) {
+      for(i=0;i<3;i++){
+	normal = layer->globalNode2Normal[nodes[i]];
+	if (normal != EMPTY) layer->normal[normal].constrained=bc;
+      }
+    }
+  }
+  
+  return layer;
+}
+
+int layerConstrained(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
+  return layer->normal[normal].constrained;
 }
 
