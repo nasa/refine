@@ -16,6 +16,7 @@
 #include "grid.h"
 #include "gridmetric.h"
 #include "gridswap.h"
+#include "gridcad.h"
 #include "gridmpi.h"
 #include "gridfortran.h"
 #include "gridfiller.h"
