@@ -90,7 +90,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     origin[1] = 0.0;
     origin[2] = 0.0;
     direction[0] = 1.0;
-    direction[1] = 0.0;
+    direction[1] = 0.0164;
     direction[2] = 0.0;
     layerCreateWakeWithBGSpacing(layer, origin, direction, 2.0 );
 
