@@ -1446,8 +1446,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [5,7,1], layer.triangleNormals(5)
  end
 
- def testSingleBlend
-  grid = Grid.new(6,0,3,0)
+ def testBlendTerminatedWithCommonNormal01
+  grid = Grid.new(20,20,10,0)
   top = 0.8
   grid.addNode(0.5,0.5,top)
   grid.addNode(0,0,0)
@@ -1462,13 +1462,57 @@ class TestLayer < Test::Unit::TestCase
   grid.addFace(0,5,1,10)
   layer = Layer.new(grid).populateAdvancingFront([10])
   assert_equal 6, layer.nnormal
-  layer.writeTecplotFrontGeometry
-  layer.blend(270.0)
+  layer.blend(275.0)
   assert_equal 7, layer.nnormal  
   assert_equal 1, layer.nblend 
   assert_equal [0,0,5,6], layer.blendNormals(0)
   layer.advanceConstantHeight(0.1)
-  layer.writeTecplotFrontGeometry
+  assert_equal 17, grid.ncell
+ end
+
+ def testBlendTerminatedWithCommonNormal10
+  grid = Grid.new(20,20,10,0)
+  top = 0.8
+  grid.addNode(-0.5,0.5,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(1,1,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0.5,0.5,top)
+  grid.addFace(5,1,2,10)
+  grid.addFace(5,2,3,10)
+  grid.addFace(5,3,4,10)
+  grid.addFace(5,4,0,10)
+  grid.addFace(5,0,1,10)
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  layer.blend(275.0)
+  assert_equal 7, layer.nnormal  
+  assert_equal [0,0,5,6], layer.blendNormals(0)
+  layer.advanceConstantHeight(0.1)
+  assert_equal 16, grid.ncell
+ end
+
+#  layer.writeTecplotFrontGeometry
+
+ def testBlendTriplePoint
+  grid = Grid.new(20,20,10,0)
+  top = 0.8
+  grid.addNode(0.5,0.35,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0.5,0.7,0)
+
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,2,3,10)
+  grid.addFace(0,3,1,10)
+
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  layer.blend(270.0)
+  assert_equal 9, layer.nnormal  
+  assert_equal 3, layer.nblend 
+
+  #layer.advanceConstantHeight(0.1)
+
  end
 
  def facingGrid(z)
