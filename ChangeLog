@@ -1,3 +1,9 @@
+2004-11-03 16:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am created a new library libUnitMesh.a so that
+	-DSURFACE_VALIDITY can be defined for unit_mesh.c and it will not
+	interfere with the standalone sequential refine executable
+
 2004-11-03 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdge,gridCollapseEdge) the inserted

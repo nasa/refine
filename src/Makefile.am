@@ -47,7 +47,7 @@ if BUILD_SDK_DEPENDENTS
 
 lib_LIBRARIES += libMesherX.a
 
-libMesherX_a_CFLAGS = @SDKheader@ -DSURFACE_VALIDITY
+libMesherX_a_CFLAGS = @SDKheader@
 libMesherX_a_SOURCES = \
 	adj.h adj.c \
 	near.h near.c \
@@ -58,7 +58,6 @@ libMesherX_a_SOURCES = \
 	grid.h grid.c \
 	gridmath.h gridmath.c \
 	gridmetric.h gridmetric.c \
-	gridshape.h gridshape.c \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
@@ -81,6 +80,37 @@ libMesherX_a_include_HEADERS = \
 	queue.h
 
 libMesherX_a_includedir = @prefix@/include
+
+lib_LIBRARIES += libUnitMesh.a
+
+libUnitMesh_a_CFLAGS = @SDKheader@ -DSURFACE_VALIDITY
+libUnitMesh_a_SOURCES = \
+	adj.h adj.c \
+	near.h near.c \
+	intersect.h intersect.c \
+	line.h line.c \
+	queue.h queue.c \
+	sort.h sort.c \
+	grid.h grid.c \
+	gridmath.h gridmath.c \
+	gridmetric.h gridmetric.c \
+	gridshape.h gridshape.c \
+	gridinsert.h gridinsert.c \
+	gridswap.h gridswap.c \
+	gridcad.h gridcad.c \
+	gridmove.h gridmove.c \
+	gridmpi.h gridmpi.c \
+	gridfiller.h gridfiller.c
+
+libUnitMesh_a_include_HEADERS = \
+	refine_defs.h \
+	grid.h \
+	near.h \
+	adj.h \
+	line.h \
+	queue.h
+
+libUnitMesh_a_includedir = @prefix@/include
 
 endif # BUILD_SDK_DEPENDENTS
 
@@ -191,7 +221,10 @@ restartTestNative_LDFLAGS = $(all_LDFLAGS)
 bin_PROGRAMS += unitNative
 unitNative_CFLAGS = $(all_CFLAGS)
 unitNative_SOURCES = unit_main.c
-unitNative_LDADD = $(refineLib)	@CAPRINativelibrary@ $(LastLib)
+unitNative_LDADD = \
+	libUnitMesh.a \
+	@SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat \
+	@CAPRINativelibrary@ $(LastLib)
 unitNative_LDFLAGS = $(all_LDFLAGS)
 
 if BUILD_PROE_KERNEL
