@@ -1787,7 +1787,7 @@ Grid *gridRemoveNode(Grid *grid, int node )
 
 bool gridValidNode(Grid *grid, int node )
 {
-  if (node >=grid->maxnode) return FALSE;
+  if (node < 0 || node >=grid->maxnode) return FALSE;
   return (DBL_MAX != grid->xyz[0+3*node]);
 }
 
