@@ -1,3 +1,8 @@
+2004-05-26 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c exposed a series of lower level routines to allow
+	parallel gridmove projection when called from Fun3D.
+
 2004-05-19 08:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/layer.c (layerTerminateCollidingTriangles) modified to
