@@ -695,6 +695,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   double predictedImprovement, actualImprovement, lastImprovement;
   double origXYZ[3], xyz[3];
   bool searchFlag, goodStep;
+  int iteration;
 
   if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;
   if ( grid != gridStoreARDerivative(grid, node ) ) return NULL;
@@ -776,7 +777,9 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   
   goodStep = FALSE;
   lastImprovement = -10.0;
-  while (alpha > 10.e-10 && !goodStep) {
+  iteration = 0;
+  while (alpha > 10.e-10 && !goodStep && iteration < 30 ) {
+    iteration++;
 
     predictedImprovement = length*alpha;
   
@@ -813,6 +816,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   }
 
   if ( newAR > 0.6) return NULL;
+  if ( actualImprovement <= 0.0001 ) return NULL;
 
   return grid;
 }
