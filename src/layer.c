@@ -1208,13 +1208,19 @@ Layer *layerAdvance(Layer *layer)
     
     if (layerTetrahedraOnly(layer) || nterminated >= 2){
       if (normals[2]<normals[1]){
-	if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
-	if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[4], n[5]);
-	if (n[1]!=n[4]) gridAddCell(grid, n[2], n[0], n[1], n[4]);
+	if (n[0]!=n[3]) 
+	  layer->cellInLayer[gridAddCell(grid, n[0], n[4], n[5], n[3])]=TRUE;
+	if (n[2]!=n[5]) 
+	  layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[4], n[5])]=TRUE;
+	if (n[1]!=n[4]) 
+	  layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[1], n[4])]=TRUE;
       }else{
-	if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
-	if (n[1]!=n[4]) gridAddCell(grid, n[0], n[1], n[5], n[4]);
-	if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[1], n[5]);
+	if (n[0]!=n[3]) 
+	  layer->cellInLayer[gridAddCell(grid, n[0], n[4], n[5], n[3])]=TRUE;
+	if (n[1]!=n[4]) 
+	  layer->cellInLayer[gridAddCell(grid, n[0], n[1], n[5], n[4])]=TRUE;
+	if (n[2]!=n[5]) 
+	  layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[1], n[5])]=TRUE;
       }
     }else{
       if ( nterminated == 1 ) {
