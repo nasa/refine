@@ -111,20 +111,49 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [2,1],   layer.normalFronts(3)
  end
 
- def testNormalDirection
+ def testNormalDirection1Face
   assert_not_nil          grid = Grid.new(3,0,1,0)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
   assert_equal 2,         grid.addNode(0,1,0)
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_not_nil          layer = Layer.new(grid)
+  assert_nil              layer.frontDirection(0)
+  assert_nil              layer.normalDirection(0)
   assert_equal layer,     layer.makeFront([1])
   assert_equal 1,         layer.nfront
+  assert_nil              layer.normalDirection(0)
   assert_equal layer,     layer.makeNormal
   assert_equal 3,         layer.nnormal
   direction = [0.0,0.0,1.0]
   assert_equal direction, layer.frontDirection(0)
   assert_equal direction, layer.normalDirection(0)
+  assert_equal direction, layer.normalDirection(1)
+  assert_equal direction, layer.normalDirection(2)
+ end
+
+ def testNormalDirection2Face
+  assert_not_nil          grid = Grid.new(4,0,2,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_equal grid,      grid.addFace(0,3,1,1)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal 2,         layer.nfront
+  assert_equal layer,     layer.makeNormal
+  assert_equal 4,         layer.nnormal
+  assert_equal [0.0,0.0,1.0], layer.frontDirection(0)
+  assert_equal [0.0,1.0,0.0], layer.frontDirection(1)
+  halfSqrt2 = 0.5 * Math::sqrt(2)
+  direction = [0.0, halfSqrt2, halfSqrt2]
+  assert_equal direction, layer.normalDirection(0)
+  assert_equal direction, layer.normalDirection(1)
+  assert_equal [0.0,0.0,1.0], layer.normalDirection(2)
+  assert_equal [0.0,1.0,0.0], layer.normalDirection(3)
+
  end
 
 end

@@ -9,6 +9,7 @@
 /* $Id$ */
 
 #include <stdlib.h>
+#include <math.h>
 #include "layer.h"
 #include "adj.h"
 
@@ -140,7 +141,7 @@ Layer *layerFrontDirection(Layer *layer, int front, double *direction )
   norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
   norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
   norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
-  length = norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2];
+  length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
 
   if (length > 0.0) {
     for ( i=0;i<3;i++) direction[i] = norm[i]/length;
@@ -202,7 +203,7 @@ Layer *layerMakeNormal(Layer *layer)
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     norm = layer->normal[normal].direction;
-    length = norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2];
+    length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
     if (length > 0.0) {
       for ( i=0;i<3;i++) norm[i] = norm[i]/length;
     }else{
