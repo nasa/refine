@@ -435,6 +435,28 @@ class TestLayer < Test::Unit::TestCase
   assert       0<         grid.minVolume, "negative volumes"
  end
 
+ def testAdvanceLayerIntoVolume
+  assert_not_nil          grid = Grid.new(10,10,10,10)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(1,1,0.1)
+  assert_equal grid,      grid.addCell(0,1,2,3)
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_equal grid,      grid.addFace(1,3,2,1)
+  assert_equal true,      grid.rightHandedFace(0)
+  assert_equal true,      grid.rightHandedBoundary
+  assert       0<         grid.minVolume, "negative volumes"
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.populateAdvancingFront([1])
+  assert_equal [0,1,2,3], grid.cell(0)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
+  assert_equal [4,5,6,7], grid.cell(0)
+  assert_equal true,      grid.rightHandedFace(0)
+  assert_equal true,      grid.rightHandedBoundary
+  assert       0<         grid.minVolume, "negative volumes"
+ end
+
  def testAdvanceLayerOnSymPlane
   assert_not_nil          grid = Grid.new(17,14,14,0)
   assert_equal 0,         grid.addNode(0,0,0)
