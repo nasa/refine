@@ -148,7 +148,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 3,       layer.nnormal
   assert_equal layer,   layer.constrainNormal(-1)
   assert_equal layer,   layer.constrainNormal(2)
-  assert_equal(-1,       layer.constrained(0))
+  assert_equal(-1,      layer.constrained(0))
   assert_equal 2,       layer.constrained(1)
   assert_equal 0,       layer.constrained(2)
  end
@@ -199,6 +199,36 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,       layer.constrainedSide(0,0)
   assert_equal 2,       layer.constrainedSide(0,1)
   assert_equal 0,       layer.constrainedSide(0,2)
+ end
+
+ def testRememberFrontEdgeParent
+  assert_not_nil        grid = Grid.new(6,0,3,0)
+  assert_equal grid,    grid.addFace(0,1,2,1)
+  assert_not_nil        layer = Layer.new(grid)
+  assert_equal 0,       layer.parentEdge(0,0)
+  assert_equal layer,   layer.makeFront([1])
+  assert_equal 1,       layer.nfront
+  assert_equal 0,       layer.parentEdge(0,0)
+  assert_equal layer,   layer.makeNormal
+  assert_equal 3,       layer.nnormal
+  assert_equal 0,       layer.parentEdge(0,0)
+  assert_equal 0,       layer.parentEdge(0,1)
+  assert_equal 0,       layer.parentEdge(0,2)
+  assert_equal 0,       layer.parentEdge(0,3)
+  assert_equal 0,       layer.parentEdge(1,0)
+  assert_nil   layer.setParentEdge(-1,0,0)
+  assert_nil   layer.setParentEdge(layer.nnormal,0,0)
+  assert_nil   layer.setParentEdge(0,-1,0)
+  assert_nil   layer.setParentEdge(0,layer.nnormal,0)
+  assert_equal 0,       layer.parentEdge(0,0)
+  assert_equal 0,       layer.parentEdge(0,1)
+  assert_equal 0,       layer.parentEdge(0,2)
+  assert_equal layer,   layer.setParentEdge(0,1,1)
+  assert_equal layer,   layer.setParentEdge(1,2,2)
+  assert_equal layer,   layer.setParentEdge(0,2,3)
+  assert_equal 1,       layer.parentEdge(0,0)
+  assert_equal 2,       layer.parentEdge(0,1)
+  assert_equal 3,       layer.parentEdge(0,2)
  end
 
  def testNormalFrontNeighbors

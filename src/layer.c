@@ -32,6 +32,7 @@ struct Front {
   int globalNode[3];
   int normal[3];
   int constrainedSide[3];
+  int parentEdge[3];
 };
 
 struct Layer {
@@ -242,6 +243,7 @@ Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
 	for (i=0;i<3;i++){
 	  layer->front[ifront].normal[i] = EMPTY;
 	  layer->front[ifront].constrainedSide[i] = 0;
+	  layer->front[ifront].parentEdge[i] = 0;
 	}
 	ifront++;
       }
@@ -546,6 +548,12 @@ bool layerConstrainingGeometry(Layer *layer, int edgeface )
   return FALSE;
 }
 
+int layerConstrained(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
+  return layer->normal[normal].constrained;
+}
+
 Layer *layerConstrainFrontSide(Layer *layer, int normal0, int normal1, int bc )
 {
   AdjIterator it;
@@ -573,12 +581,6 @@ Layer *layerConstrainFrontSide(Layer *layer, int normal0, int normal1, int bc )
   return layer;
 }
 
-int layerConstrained(Layer *layer, int normal )
-{
-  if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
-  return layer->normal[normal].constrained;
-}
-
 int layerConstrainedSide(Layer *layer, int front, int side )
 {
   if (front < 0 || front >= layerNFront(layer) ) return 0;
@@ -600,6 +602,42 @@ int layerNConstrainedSides(Layer *layer, int faceId )
     }
   }
   return nside;
+}
+
+Layer *layerSetParentEdge(Layer *layer, int normal0, int normal1, int edgeId )
+{
+  AdjIterator it;
+  int i0, i1, front, side;
+ 
+  if (normal0 < 0 || normal0 >= layerNNormal(layer) ) return NULL;
+  if (normal1 < 0 || normal1 >= layerNNormal(layer) ) return NULL;
+
+  for ( it = adjFirst(layer->adj,normal0); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    front = adjItem(it);
+    for (i1=0;i1<3;i1++) {
+      if (normal1 == layer->front[front].normal[i1]) {
+	for (i0=0;i0<3;i0++) {
+	  if (normal0 == layer->front[front].normal[i0]) {
+	    side = MIN(i0,i1);
+	    if ( side == 0 && 2 == MAX(i0,i1) ) side = 2;
+	    layer->front[front].parentEdge[side]=edgeId;
+	  }
+	}
+      }   
+    }
+  }
+  return layer;
+}
+
+int layerParentEdge(Layer *layer, int front, int side )
+{
+  if (front < 0 || front >= layerNFront(layer) ) return 0;
+
+  if (side < 0 || side > 2 ) return 0;
+
+  return layer->front[front].parentEdge[side];
 }
 
 Layer *layerTerminateNormal(Layer *layer, int normal )

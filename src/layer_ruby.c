@@ -172,6 +172,12 @@ VALUE layer_constrainingGeometry( VALUE self, VALUE edgeface )
   return ( layerConstrainingGeometry(layer,NUM2INT(edgeface))?Qtrue:Qfalse );
 }
 
+VALUE layer_constrained( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerConstrained(layer,NUM2INT(normal)));
+}
+
 VALUE layer_constrainFrontSide( VALUE self, VALUE normal0, VALUE normal1, 
 				VALUE bc )
 {
@@ -180,12 +186,6 @@ VALUE layer_constrainFrontSide( VALUE self, VALUE normal0, VALUE normal1,
 					    NUM2INT(normal0),
 					    NUM2INT(normal1),
 					    NUM2INT(bc) )?self:Qnil );
-}
-
-VALUE layer_constrained( VALUE self, VALUE normal )
-{
-  GET_LAYER_FROM_SELF;
-  return INT2NUM(layerConstrained(layer,NUM2INT(normal)));
 }
 
 VALUE layer_constrainedSide( VALUE self, VALUE front, VALUE side )
@@ -198,6 +198,22 @@ VALUE layer_nConstrainedSides( VALUE self, VALUE faceId )
 {
   GET_LAYER_FROM_SELF;
   return INT2NUM(layerNConstrainedSides(layer,NUM2INT(faceId)));
+}
+
+VALUE layer_setParentEdge( VALUE self, VALUE normal0, VALUE normal1, 
+			   VALUE edgeId )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerSetParentEdge(layer,
+				       NUM2INT(normal0),
+				       NUM2INT(normal1),
+				       NUM2INT(edgeId) )?self:Qnil );
+}
+
+VALUE layer_parentEdge( VALUE self, VALUE front, VALUE side )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerParentEdge(layer,NUM2INT(front),NUM2INT(side)));
 }
 
 VALUE layer_terminateNormal( VALUE self, VALUE normal )
@@ -246,10 +262,12 @@ void Init_Layer()
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrainingGeometry", layer_constrainingGeometry, 1 );
-  rb_define_method( cLayer, "constrainFrontSide", layer_constrainFrontSide, 3 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
+  rb_define_method( cLayer, "constrainFrontSide", layer_constrainFrontSide, 3 );
   rb_define_method( cLayer, "constrainedSide", layer_constrainedSide, 2 );
   rb_define_method( cLayer, "nConstrainedSides", layer_nConstrainedSides, 1 );
+  rb_define_method( cLayer, "setParentEdge", layer_setParentEdge, 3 );
+  rb_define_method( cLayer, "parentEdge", layer_parentEdge, 2 );
   rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );
   rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 1 );
