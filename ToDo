@@ -5,7 +5,7 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 improved normal visiblity on symm planes.
 check for potential collisions of blend normals with surrounding area
-chekc out frozen normal direction smoothing (VGrid style)
+check out frozen normal direction smoothing (VGrid style)
 
 -refine
 
@@ -17,5 +17,6 @@ continue speed testing
 
 --GridMove
 
-start working on it
+put in torional springs, elasticity
+
 
