@@ -22,23 +22,24 @@
 static Grid *grid;
 static Queue *queue;
 
-int gridcreate_( int *nnode, double *x, double *y, double *z ,
+int gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 		 int *ncell, int *maxcell, int *c2n )
 {
   int node, cell;
   int nodes[4];
   double xyz[3];
   grid = gridCreate( *nnode, *ncell, 5000, 0);
+  gridSetPartId(grid, *partId );
   queue = queueCreate( 9 ); /* 3:xyz + 6:m */
   for ( node=0; node<*nnode; node++) gridAddNode(grid,x[node],y[node],z[node]);
-  printf("populated grid object with %d nodes\n",gridNNode(grid));
   for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
 						  c2n[cell+0*(*maxcell)] - 1,
 						  c2n[cell+1*(*maxcell)] - 1,
 						  c2n[cell+2*(*maxcell)] - 1,
 						  c2n[cell+3*(*maxcell)] - 1 );
-  printf("populated grid object with %d cells\n",gridNCell(grid));
-  printf(" min AR %17.15f\n",gridMinAR(grid));
+  printf(" %6d populated                nnode%9d ncell%9d AR%14.10f\n",
+	 gridPartId(grid),gridNNode(grid),gridNCell(grid),gridMinAR(grid));
+  fflush(stdout);
 }
 
 int gridfree_( )
@@ -61,10 +62,6 @@ int gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode,
     node2 = inode[node2] - 1;
     gridAddFace(grid, node0, node1, node2, *faceId);
   }
-  printf( " boundary %4d has %6d nodes and %6d faces\n",
-	  *faceId,*nnode,*nface);
-  printf( " %d total faces with min MR of %18.15f\n",
-	  gridNFace(grid),gridMinFaceMR(grid));
 }
 
 int gridsetmap_( int *nnode, double* map )
@@ -74,7 +71,8 @@ int gridsetmap_( int *nnode, double* map )
     gridSetMap( grid, node,
 		map[0+6*node], map[1+6*node], map[2+6*node],
 		map[3+6*node], map[4+6*node], map[5+6*node] );
-  printf(" min AR %17.15f\n",gridMinAR(grid));
+  printf(" %6d applied metric                                         AR%14.10f\n",
+	 gridPartId(grid),gridMinAR(grid));
 }
 
 int gridsetnodepart_( int *nnode, int *part )

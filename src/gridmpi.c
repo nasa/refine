@@ -200,10 +200,10 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
     }
   }
   if ( NULL == queue ) {
-    printf("local added %8d nnode %8d AR%14.10f\n",
+    printf("local added%9d nnode%9d AR%14.10f\n",
 	   nnodeAdd,gridNNode(grid),gridMinAR(grid));
   } else {
-    printf("ghost added %8d nnode %8d AR%14.10f\n",
+    printf("ghost added%9d nnode%9d AR%14.10f\n",
 	   nnodeAdd,gridNNode(grid),gridMinAR(grid));
   }
   return grid;
