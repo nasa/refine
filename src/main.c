@@ -43,7 +43,6 @@ int main( int argc, char *argv[] )
   bool projected;
   bool boundaryLayerGrid = FALSE;
   bool debugInsert = FALSE;
-  int ninsert, newnode;
   int iview = 0;
 
   sprintf( project,       "" );
@@ -70,8 +69,7 @@ int main( int argc, char *argv[] )
       printf("-r argument %d: %f\n",i, ratio);
     } else if( strcmp(argv[i],"-i") == 0 ) {
       debugInsert = TRUE;
-      i++; ninsert = atoi(argv[i]);
-      printf("-i argument %d: %d\n",i,ninsert);
+      printf("-i argument %d\n",i);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
@@ -79,7 +77,7 @@ int main( int argc, char *argv[] )
       printf(" -a party project_adapt_hess file name\n");
       printf(" -l make a boundary layer grid -a ignored\n");
       printf(" -r initial edge length ratio for adapt\n");
-      printf(" -i number of general insert nodes (Debug)\n");
+      printf(" -i insert final advancing layer (debug)\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
