@@ -117,6 +117,15 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 1.0, eig[1], 1.0e-15
   assert_in_delta 1.0, eig[2], 1.0e-15
 
+  assert_not_nil eig = grid.eigenValues( 
+[ 5669.182266666660325,    0.000000000000379,    0.000000000000497,
+                        5669.182266666660325,    0.000000000000436,
+                                              5669.182266666660325])
+  ans = 5669.18226
+  assert_in_delta ans, eig[0], 1.0e-5
+  assert_in_delta ans, eig[1], 1.0e-5
+  assert_in_delta ans, eig[2], 1.0e-5
+
  end
 
  def testMatrixEigenVector
