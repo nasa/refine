@@ -453,8 +453,15 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0,         grid.findEdge(0,2)
   assert_equal 1,         grid.findEdge(1,2)
   assert_equal [0,2,1],   grid.geomEdge(1)
+ end
 
-
+ def testTec
+  assert_not_nil     grid = Grid.new(3,0,1,0)
+  assert_equal grid, grid.addFace( grid.addNode(0,0,0),
+				   grid.addNode(1,0,0),
+				   grid.addNode(0,1,0),
+				   1)
+  assert_equal grid, grid.writeTecplotSurfaceZone
  end
 
 

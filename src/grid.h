@@ -32,6 +32,8 @@ Grid *gridPack(Grid *g);
 Grid *gridSortNodeGridEx(Grid *g);
 void gridFree(Grid *g);
 
+Grid *gridWriteTecplotSurfaceZone(Grid *g);
+
 int gridMaxNode(Grid *g);
 int gridNNode(Grid *g);
 int gridMaxCell(Grid *g);

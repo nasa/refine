@@ -51,6 +51,10 @@ struct Grid {
 
   int nequ;
   int equ[MAXDEG];
+
+  FILE *tecplotFile;
+  bool tecplotFileOpen;
+
 };
 
 END_C_DECLORATION

@@ -106,6 +106,8 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 
   grid->ngem = 0;
 
+  grid->tecplotFileOpen = FALSE;
+
   return grid;
 }
 
@@ -226,6 +228,8 @@ Grid *gridImport(int maxnode, int nnode,
   grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2);
 
   grid->ngem = 0;
+
+  grid->tecplotFileOpen = FALSE;
 
   return  grid;
 }
@@ -381,6 +385,7 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
 
 void gridFree(Grid *grid)
 {
+  if ( grid->tecplotFileOpen ) fclose(grid->tecplotFile);
   if ( NULL != grid->geomEdge) free(grid->geomEdge);
   adjFree(grid->edgeAdj);
   free(grid->edgeId);
@@ -610,7 +615,10 @@ Grid *gridSortNodeGridEx(Grid *grid)
   int *o2n, *curve;
   double *temp_xyz;
 
-  if ( grid != gridPack(grid) ) return NULL;
+  if (NULL == gridPack(grid)) {
+    printf("gridSortNodeGridEx: gridPack failed.\n");
+    return NULL;
+  }
 
   o2n = malloc( grid->nnode * sizeof(int) );
   if (o2n == NULL) {
@@ -705,6 +713,42 @@ Grid *gridSortNodeGridEx(Grid *grid)
       grid->e2n[inode+2*edge] = o2n[grid->e2n[inode+2*edge]];
       adjRegister( grid->edgeAdj, grid->e2n[inode+2*edge], edge );
     }
+  }
+
+  return grid;
+}
+
+Grid *gridWriteTecplotSurfaceZone(Grid *grid)
+{
+  int i, nfacenode;
+  if ( grid !=  gridSortNodeGridEx(grid) ) {
+    printf("gridWriteTecplotSurfaceZone: gridSortNodeGridEx failed.\n");
+    return NULL;
+  }
+
+  if (!grid->tecplotFileOpen) {
+    grid->tecplotFile = fopen("grid.t","w");
+    fprintf(grid->tecplotFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
+  }
+
+  nfacenode=0;
+  for(i=0;i<3*grid->nface;i++){
+    nfacenode = MAX(nfacenode, grid->f2n[i]);
+  }
+  nfacenode++;
+
+  fprintf(grid->tecplotFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  nfacenode, grid->nface);
+
+  for ( i=0; i<grid->nnode ; i++ ){
+    fprintf(grid->tecplotFile, "%23.15e%23.15e%23.15e\n",
+	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i]);
+  }
+
+  for ( i=0; i<grid->nface ; i++ ){
+    fprintf(grid->tecplotFile, " %9d %9d %9d\n",
+	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
   }
 
   return grid;
