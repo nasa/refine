@@ -2,7 +2,7 @@
 
 AC_PREREQ(2.53)
 AC_INIT([src/grid.c])
-AM_INIT_AUTOMAKE([refine],[1.2.1])
+AM_INIT_AUTOMAKE([refine],[1.2.2_pre1])
 
 AC_ARG_ENABLE(exec,
 	[  --enable-exec[=ARG]       build stand alone executables [ARG=yes]],
