@@ -27,17 +27,17 @@ bool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex2,
 
   gridSubtractVector(node, vertex0, target);
   gridCrossProduct(side, target, targetNormal);
-  if ( 0 > gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
+  if ( 0 >= gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
 
   gridSubtractVector(vertex2, vertex1, side);
   gridSubtractVector(node, vertex1, target);
   gridCrossProduct(side, target, targetNormal);
-  if ( 0 > gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
+  if ( 0 >= gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
 
   gridSubtractVector(vertex0, vertex2, side);
   gridSubtractVector(node, vertex2, target);
   gridCrossProduct(side, target, targetNormal);
-  if ( 0 > gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
+  if ( 0 >= gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
 
   return TRUE;
 }
@@ -70,7 +70,9 @@ bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
     denom = 1/(h0-h1);
     for(i=0;i<3;i++) intersection[i] = ( h0*dir1[i] - h1*dir0[i] )*denom;
     return intersectTriangleNode(vertex0, vertex1, vertex2, intersection);
+  }else{
+    if (intersectTriangleNode(vertex0, vertex1, vertex2, node0) ) return TRUE;
+    if (intersectTriangleNode(vertex0, vertex1, vertex2, node1) ) return TRUE;
+    return FALSE;
   }
-
-  return TRUE;
 }

@@ -18,18 +18,24 @@ class TestIntersect < Test::Unit::TestCase
  end
  def setup ; set_up ; end
 
- def testPlaneAndNode
+ def testPlaneAndNodeInAndOut
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
   assert_equal true, @intersect.triangleNode(v0,v1,v2,[0.3,0.3,0])
-  assert_equal true, @intersect.triangleNode(v0,v1,v2,[0,0,0])
-  assert_equal true, @intersect.triangleNode(v0,v1,v2,[1,0,0])
-  assert_equal true, @intersect.triangleNode(v0,v1,v2,[0,1,0])
-  assert_equal true, @intersect.triangleNode(v0,v1,v2,[0.5,0.5,0])
   assert_equal false, @intersect.triangleNode(v0,v1,v2,[0,-0.5,0])
   assert_equal false, @intersect.triangleNode(v0,v1,v2,[1,1,0])
   assert_equal false, @intersect.triangleNode(v0,v1,v2,[-0.5,0,0])
+ end
+
+ def testPlaneAndNodeNick
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  assert_equal false, @intersect.triangleNode(v0,v1,v2,[0,0,0])
+  assert_equal false, @intersect.triangleNode(v0,v1,v2,[1,0,0])
+  assert_equal false, @intersect.triangleNode(v0,v1,v2,[0,1,0])
+  assert_equal false, @intersect.triangleNode(v0,v1,v2,[0.5,0.5,0])
  end
 
  def testPlaneAndSegmentThroughMiddle
@@ -55,10 +61,10 @@ class TestIntersect < Test::Unit::TestCase
   v2 = [0,1,0]
   n0 = [0.5,0.5,10]
   n1 = [0.5,0.5,-1]
-  assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
   n0 = [0,0,18]
   n1 = [0,0,-3]
-  assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
  def testPlaneAndSegmentThroughMiss
@@ -73,5 +79,34 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
+ def testPlaneAndSegmentAdjecent
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  n0 = [0,0,0]
+  n1 = [1,0,0]
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  n0 = [1,0,0]
+  n1 = [0,1,0]
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  n0 = [0,1,0]
+  n1 = [0,0,0]
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+ end
+
+ def testPlaneAndSegmentCoplanarPerce
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  n0 = [0.3,0.3,0]
+  n1 = [1,1,0]
+  assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  n0 = [1,1,0]
+  n1 = [0.3,0.3,0]
+  assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  n0 = [1,1,0]
+  n1 = [2,2,0]
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+ end
 
 end
