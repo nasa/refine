@@ -216,13 +216,9 @@ end
   assert_not_nil grid=gemGrid(nequ=4, a=0.1)
   assert nequ+2, grid.nnode
   assert nequ, grid.ncell
-  grid.ncell.times do |cellId|
-   puts cellId, grid.volume(grid.cell(cellId)), grid.ar(grid.cell(cellId))
-  end
+  grid.ncell.times { |cellId| assert grid.volume(grid.cell(cellId))>0.0 }
   grid.swap(0,1)
-  grid.ncell.times do |cellId|
-   puts cellId, grid.volume(grid.cell(cellId)), grid.ar(grid.cell(cellId))
-  end
+  grid.ncell.times { |cellId| assert grid.volume(grid.cell(cellId))>0.0 }
  end
 
  def gemGrid(nequ=4, a=0.1)
