@@ -171,7 +171,7 @@ Grid *gridSmoothNode(Grid *grid, int node )
 
 Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
 {
-  int vol =0;
+  int vol =1;
   double uvOrig[2], uv[2];
   int face, faceId;
   double gold;
