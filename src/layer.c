@@ -86,6 +86,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   if(box) nbc = 1;
   if(om6) nbc = 2;
   if(plate) nbc = 3;
+  /* skip freezing
   printf("freezing distant volume nodes.\n");
   gridFreezeAll(grid);
   for (i=0;i<nbc;i++){  
@@ -93,6 +94,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     gridThawNearBC(grid,0.5,bc[i]);
     gridFreezeBCFace(grid,bc[i]);
   }
+  */
   printf("make advancing layer object.\n");
   layer = layerCreate(grid);
   printf("make advancing layer front.\n");
