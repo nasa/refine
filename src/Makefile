@@ -1,7 +1,7 @@
 
 QUIET = @$(MAKE) --quiet --no-print-directory
 
-test:
+check:
 	./adjMT.rb
 	./nearMT.rb
 	./lineMT.rb
