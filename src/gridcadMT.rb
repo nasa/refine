@@ -66,7 +66,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.addEdge(1,2,20,0.0,1.0)
   assert_equal grid, grid.setNGeomNode(1)
   5.times do |i| 
-   assert_equal grid, grid.safeProject(i), "could not project node #{i}"
+   assert_equal grid, grid.safeProjectNode(i), "could not project node #{i}"
   end
   assert_equal [5.0,5.0,5.0], grid.nodeXYZ(0)
   assert_equal [0.0,0.0,0.0], grid.nodeXYZ(1)
@@ -89,7 +89,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.addCell(0,1,2,3)
   assert_equal grid, grid.addFace(0,1,2,10)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s  
-  assert_nil   grid.safeProject(0)
+  assert_nil   grid.safeProjectNode(0)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
  end

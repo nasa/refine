@@ -54,7 +54,7 @@ Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
   return grid;
 }
 
-Grid *gridSafeProject(Grid *grid, int node )
+Grid *gridSafeProjectNode(Grid *grid, int node )
 {
   int edge, edgeId;
   int face, faceId;
@@ -94,3 +94,11 @@ Grid *gridSafeProject(Grid *grid, int node )
   return grid;
 }
 
+Grid *gridProject(Grid *grid)
+{
+  int node;
+
+  for (node=0;node<grid->nnode;node++) gridSafeProjectNode(grid,node);  
+
+  return grid;
+}

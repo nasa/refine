@@ -16,10 +16,10 @@ VALUE grid_projectNodeToFace( VALUE self, VALUE node, VALUE faceId )
   return (gridProjectNodeToFace( grid, NUM2INT(node), NUM2INT(faceId) )==grid?self:Qnil);
 }
 
-VALUE grid_safeProject( VALUE self, VALUE node )
+VALUE grid_safeProjectNode( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
-  return (gridSafeProject( grid, NUM2INT(node) )==grid?self:Qnil);
+  return (gridSafeProjectNode( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
 VALUE cGridCAD;
@@ -29,5 +29,5 @@ void Init_GridCAD()
   cGridCAD = rb_define_module( "GridCAD" );
   rb_define_method( cGridCAD, "projectNodeToEdge", grid_projectNodeToEdge, 2 );
   rb_define_method( cGridCAD, "projectNodeToFace", grid_projectNodeToFace, 2 );
-  rb_define_method( cGridCAD, "safeProject", grid_safeProject, 1 );
+  rb_define_method( cGridCAD, "safeProjectNode", grid_safeProjectNode, 1 );
 }
