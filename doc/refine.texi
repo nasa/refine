@@ -403,12 +403,6 @@ parallel scheme (describe refine_interface)
 
 node updates:
 
-processor = 1 allows only partion interior modifications.  the
-interior of the pasrtions does not affect other partionions.  Below
-loop will initially will modify partition interior, and then will
-modify its boundaries.  Note: loop executing on each processor.  Will
-first modify interior and then wait until it is its turn
-...refineUpdateGhostXYZ() will block
 
 
 connentivity updates.
@@ -421,6 +415,50 @@ rad_module workflow.
 @node Running FUN3D
 @chapter Running FUN3D
 @cindex FUN3D, Running
+
+@section Adaptation workflow
+
+There is an @code{if (adapt) then} block named in
+Adjoint/rad_module.f90 that controls the high level workflow of the
+adaptation process.
+
+There are to basic parallelization strategies employed in the coupled
+FUN3D and refine library execution. The first allows for the movement
+of nodes with constant connectivities. The second allows for changes
+in connectivity.
+
+@section Parallelized Node Movement
+
+An example of a node movement routine with constant connectivites is
+refineParallelSmooth in HEFSS.rps/LibF90/refine_interface.F90. There
+are two passes to the parallelization logic. 
+
+The first allows all processors to move nodes that are internal to the
+processor. Internal refers to nodes that are not connect to ghost
+nodes by any elements. This parallel internal pass is performed by
+setting the first argument (processor) to -1 for gridparallelsmooth.
+
+Then each processor is allowed to modify local nodes that are
+connected to other processor ghost nodes with elements. This
+modification is done by each processor in turn, with the other
+processors waiting for the active processor to finish its work.
+
+After a processor finished modifing the border region,
+refineUpdateGhostXYZ is called to broad cast any changes to the other
+processors. The refineUpdateGhostXYZ routine updates the face UV
+parameters and the edge T parameter as well as the node XYZ's.
+
+This is how Bill Jones described it:
+@verbatim
+processor = 1 allows only partion interior modifications.  the
+interior of the pasrtions does not affect other partionions.  Below
+loop will initially will modify partition interior, and then will
+modify its boundaries.  Note: loop executing on each processor.  Will
+first modify interior and then wait until it is its turn
+...refineUpdateGhostXYZ() will block
+@end verbatim
+
+@section Parallelized Connectivity Changes
 
 @section Initial notes on building and executing HEFSS with the rad mesh adapation option.
 
