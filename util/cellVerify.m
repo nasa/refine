@@ -7,7 +7,7 @@ if (exist('clean')!=1)
  load clean
 endif
 
-cell_col = 3
+cell_col = 1
 local_node_1 = 8
 nnodes0 = 12;
 length = size(clean,1)
