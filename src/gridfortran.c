@@ -424,15 +424,15 @@ void gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
 
 void gridghostcount_( int *nproc, int *count )
 {
-  int node, faces;
+  int node, faces, edges;
   for(node=0;node<(*nproc);node++) count[node] = 0;
   for(node=0;node<gridMaxNode(grid);node++) {
     if (gridNodeGhost(grid,node)) { 
       count[gridNodePart(grid,node)]++;
       faces = gridNodeFaceIdDegree(grid,node);
-      if (faces>0) {
-	count[gridNodePart(grid,node)] += (faces+1);
-      }
+      if (faces>0) count[gridNodePart(grid,node)] += (faces+1);
+      edges = gridNodeEdgeIdDegree(grid,node);
+      if (edges>0) count[gridNodePart(grid,node)] += (edges+1);
     }
   }
 }
@@ -442,7 +442,8 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
 {
   int node, part;
   int *count;
-  int face, ids, id[MAXFACEIDDEG];
+  int face, faceids, faceid[MAXFACEIDDEG];
+  int edge, edgeids, edgeid[MAXEDGEIDDEG];
 
   count = malloc( (*nproc) * sizeof(int) );
 
@@ -453,14 +454,25 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
       localnode[ count[part]+clientindex[part]-1] = node+1;
       globalnode[count[part]+clientindex[part]-1] = gridNodeGlobal(grid,node)+1;
       count[part]++;
-      gridNodeFaceId(grid, node, MAXFACEIDDEG, &ids, id );
-      if (ids>0) {
-	localnode[ count[part]+clientindex[part]-1] = -ids;
-	globalnode[count[part]+clientindex[part]-1] = -ids;
+      gridNodeFaceId(grid, node, MAXFACEIDDEG, &faceids, faceid );
+      if (faceids>0) {
+	localnode[ count[part]+clientindex[part]-1] = -faceids;
+	globalnode[count[part]+clientindex[part]-1] = -faceids;
 	count[part]++;
-	for (face=0;face<ids;face++) {
-	  localnode[ count[part]+clientindex[part]-1] = id[face];
-	  globalnode[count[part]+clientindex[part]-1] = id[face];
+	for (face=0;face<faceids;face++) {
+	  localnode[ count[part]+clientindex[part]-1] = -faceid[face];
+	  globalnode[count[part]+clientindex[part]-1] = -faceid[face];
+	  count[part]++;
+	}
+      }
+      gridNodeEdgeId(grid, node, MAXEDGEIDDEG, &edgeids, edgeid );
+      if (edgeids>0) {
+	localnode[ count[part]+clientindex[part]-1] = -edgeids;
+	globalnode[count[part]+clientindex[part]-1] = -edgeids;
+	count[part]++;
+	for (edge=0;edge<edgeids;edge++) {
+	  localnode[ count[part]+clientindex[part]-1] = -edgeid[edge];
+	  globalnode[count[part]+clientindex[part]-1] = -edgeid[edge];
 	  count[part]++;
 	}
       }
@@ -486,21 +498,18 @@ void gridloadlocalnodes_( int *nnode, int *global, int *local )
       local[node] = 1+localnode;
       node++;
     } else {
-      ids = -global[node];
       local[node] = global[node];
       node++;
-      for(face=0;face<ids;face++) {
-	local[node] = global[node];
-	node++;
-      }
     } 
   }
 }
 
 void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 {
-  int node, localnode, face, ids, faceId;
-  double uv[2], xyz[3];
+  int node, localnode;
+  int face, faceids, faceId;
+  int edge, edgeids, edgeId;
+  double t, uv[2], xyz[3];
 
   localnode=0;
   node=0;
@@ -515,14 +524,24 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
       data[2+(*ndim)*node] = xyz[2];
       node++;
     } else {
-      ids = -nodes[node];
+      faceids = -nodes[node];
       node++;
-      for(face=0;face<ids;face++) {
-	faceId = nodes[node];
+      for(face=0;face<faceids;face++) {
+	faceId = -nodes[node];
 	gridNodeUV(grid,localnode,faceId,uv);
 	data[0+(*ndim)*node] = uv[0];
 	data[1+(*ndim)*node] = uv[1];
 	node++;
+      }
+      if (nodes[node] < 0) {
+	edgeids = -nodes[node];
+	node++;
+	for(edge=0;edge<edgeids;edge++) {
+	  edgeId = -nodes[node];
+	  gridNodeT(grid,localnode,edgeId,&t);
+	  data[0+(*ndim)*node] = t;
+	  node++;
+	}
       }
     } 
   }
@@ -531,7 +550,8 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 {
   int node, localnode;
-  int face, ids, faceId;
+  int face, faceids, faceId;
+  int edge, edgeids, edgeId;
 
   localnode=0;
   node=0;
@@ -543,13 +563,22 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 	       __FILE__, __LINE__, nodes[node]-1);
       node++;
     } else {
-      ids = -nodes[node];
+      faceids = -nodes[node];
       node++;
-      for(face=0;face<ids;face++) {
-	faceId = nodes[node];
+      for(face=0;face<faceids;face++) {
+	faceId = -nodes[node];
 	gridSetNodeUV(grid,localnode,faceId,
 		      data[0+(*ndim)*node],data[1+(*ndim)*node]);
 	node++;
+      }
+      if (nodes[node] < 0) {
+	edgeids = -nodes[node];
+	node++;
+	for(edge=0;edge<edgeids;edge++) {
+	  edgeId = nodes[node];
+	  gridSetNodeT(grid,localnode,edgeId,data[0+(*ndim)*node]);
+	  node++;
+	}
       }
     } 
   }

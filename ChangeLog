@@ -1,3 +1,12 @@
+2004-06-01 08:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c included edge t in ghost update xfer load and
+	set. Face and edge id's and thier counts are now negative to make
+	it easier for other objects (gridmove) to load and set arrays.
+	* src/gridmove.c excluded negative node id's (faces and edges) in
+	load and set.
+	* src/grid.c (gridNodeEdgeIdDegree) added for xfer edge. 
+
 2004-05-28 16:11 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c fixed a bug in the load and set routines for
