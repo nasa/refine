@@ -1,7 +1,7 @@
-2005-03-13 17:42 Mike Park  <mike.park@nasa.gov>
+2005-03-13 18:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/plan.c (planAddItemWithPriority) added a reallocation
-	capability by chunk_size
+	capability by chunk_size.
 
 2005-03-13 17:42 Mike Park  <mike.park@nasa.gov>
 
