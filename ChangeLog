@@ -1,3 +1,7 @@
+2004-04-11 11:10 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.0 Release.
+
 2004-04-11 11:00 Mike Park  <mike.park@nasa.gov>
 
 	* /src/layer.c made the layer blends slightly more general. They
