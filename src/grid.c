@@ -496,6 +496,27 @@ int gridAddNode(Grid *grid, double x, double y, double z )
 
 double gridVolume(Grid *grid, int cellId )
 {
-  return -1.0;
+  int ixyz, nodes[4];
+  double edge1[3], edge2[3], edge3[3], norm[3], volume; 
+
+  gridCell(grid,cellId,nodes);
+  
+  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
+
+    edge1[ixyz] = grid->xyz[ixyz+3*nodes[1]]
+                - grid->xyz[ixyz+3*nodes[0]];
+    edge2[ixyz] = grid->xyz[ixyz+3*nodes[2]]
+                - grid->xyz[ixyz+3*nodes[0]];
+    edge3[ixyz] = grid->xyz[ixyz+3*nodes[3]]
+                - grid->xyz[ixyz+3*nodes[0]];
+      
+  }
+
+  norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
+  norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
+  norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
+
+  return  (norm[0]*edge3[0]+norm[1]*edge3[1]+norm[2]*edge3[2])/6.0;
+
 }
 
