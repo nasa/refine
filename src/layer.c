@@ -967,9 +967,12 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
       }
       layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
     }
-    if (mindot <= 0.0 ) 
-      printf("ERROR: %s, %d, Invisible normal %d, min dot product %f\n",
-	     __FILE__, __LINE__, normal, mindot);
+    if (mindot <= 0.0 ) {
+      double xyz[3];
+      gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
+      printf("ERROR: %s, %d, Invisible norm %d dot%9.5f X%9.5f Y%9.5f Z%9.5f\n",
+	     __FILE__, __LINE__, normal, mindot,xyz[0],xyz[1],xyz[2]);
+    }
   }
 
   return layer;
