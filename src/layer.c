@@ -27,8 +27,10 @@ struct Normal {
   int root, tip;
   double direction[3];
   double height;
+  double initialheight;
   double length;
   double maxlength;
+  double rate;
   bool terminated;
 };
 
@@ -510,6 +512,7 @@ Layer *layerInitializeNormal(Layer *layer, int normal)
   layer->normal[normal].direction[1] = 0.0;
   layer->normal[normal].direction[2] = 0.0;
   layer->normal[normal].height = 1.0;
+  layer->normal[normal].initialheight = layer->normal[normal].height;
   layer->normal[normal].length = 0.0;
   layer->normal[normal].maxlength = 0.0;
   layer->normal[normal].terminated = FALSE;
@@ -527,16 +530,17 @@ int layerDuplicateNormal(Layer *layer, int normal)
   newone = layerAddNormal(layer, root);
   if (EMPTY == newone) return EMPTY;
 
-  layer->normal[newone].constrained =  layer->normal[normal].constrained;
-  layer->normal[newone].root =         layer->normal[normal].root;
-  layer->normal[newone].tip =          layer->normal[normal].tip;
-  layer->normal[newone].direction[0] = layer->normal[normal].direction[0];
-  layer->normal[newone].direction[1] = layer->normal[normal].direction[1];
-  layer->normal[newone].direction[2] = layer->normal[normal].direction[2];
-  layer->normal[newone].height =       layer->normal[normal].height;
-  layer->normal[newone].length =       layer->normal[normal].length;
-  layer->normal[newone].maxlength =    layer->normal[normal].maxlength;
-  layer->normal[newone].terminated =   layer->normal[normal].terminated;
+  layer->normal[newone].constrained =   layer->normal[normal].constrained;
+  layer->normal[newone].root =          layer->normal[normal].root;
+  layer->normal[newone].tip =           layer->normal[normal].tip;
+  layer->normal[newone].direction[0] =  layer->normal[normal].direction[0];
+  layer->normal[newone].direction[1] =  layer->normal[normal].direction[1];
+  layer->normal[newone].direction[2] =  layer->normal[normal].direction[2];
+  layer->normal[newone].height =        layer->normal[normal].height;
+  layer->normal[newone].initialheight = layer->normal[normal].initialheight;
+  layer->normal[newone].length =        layer->normal[normal].length;
+  layer->normal[newone].maxlength =     layer->normal[normal].maxlength;
+  layer->normal[newone].terminated =    layer->normal[normal].terminated;
 
   return newone;
 }
@@ -964,6 +968,16 @@ Layer *layerSetPolynomialMaxHeight(Layer *layer,
   }
   return layer;	
 }
+
+Layer *layerSaveInitalNormalHeight(Layer *layer){
+  int normal;
+
+  for(normal=0;normal<layerNNormal(layer);normal++)
+    layer->normal[normal].initialheight = layer->normal[normal].height;
+
+  return layer;
+}
+
 
 Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 {

@@ -76,6 +76,7 @@ Layer *layerSetNormalMaxLength(Layer *, int normal, double maxLength);
 Layer *layerSetPolynomialMaxLength(Layer *, double constant, double slope, 
 				            double exponent, double *origin,
 				            double *direction);
+Layer *layerSaveInitalNormalHeight(Layer *);
 Layer *layerVisibleNormals(Layer *, double dotLimit, double radianLimit );
 Layer *layerSmoothNormalDirection(Layer *);
 Layer *layerProjectNormalsToConstraints(Layer *);
