@@ -17,7 +17,7 @@
 #include <values.h>
 #include "gridmetric.h"
 
-//#define USEMEANRATIO
+#define USEMEANRATIO
 
 #define VECTOR_COPY3(a,b) for(i=0;i<3;i++)a[i]=b[i];
 

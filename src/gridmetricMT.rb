@@ -308,15 +308,15 @@ class TestGridMetric < Test::Unit::TestCase
  def testVolumeMetrics
   assert_not_nil grid = rightTet
   nodes = [0,1,2,3]
-  ar = 0.732050807568877
+  ar = 0.8399473666
   assert_in_delta 1.0/6.0, grid.volume(nodes), 1.0e-15
   assert_in_delta 1.0/6.0, grid.minVolume, 1.0e-15
-  assert_in_delta ar, grid.ar(nodes), 1.0e-15
-  assert_in_delta ar, grid.minAR, 1.0e-15
-  assert_in_delta ar, grid.nodeAR(0), 1.0e-15
-  assert_in_delta ar, grid.nodeAR(1), 1.0e-15
-  assert_in_delta ar, grid.nodeAR(2), 1.0e-15
-  assert_in_delta ar, grid.nodeAR(3), 1.0e-15
+  assert_in_delta ar, grid.ar(nodes), 1.0e-10
+  assert_in_delta ar, grid.minAR, 1.0e-10
+  assert_in_delta ar, grid.nodeAR(0), 1.0e-10
+  assert_in_delta ar, grid.nodeAR(1), 1.0e-10
+  assert_in_delta ar, grid.nodeAR(2), 1.0e-10
+  assert_in_delta ar, grid.nodeAR(3), 1.0e-10
  end
 
  def testARDerivatives
@@ -328,40 +328,41 @@ class TestGridMetric < Test::Unit::TestCase
 	       grid.addNode(0.0,1.0,0.0), 
 	       grid.addNode(0.0,0.0,1.0) )
   nodes = [0,1,2,3]
-  ar = 0.732050807568877
-  deriv = -2.0/3.0
+  ar    = 0.8399473666
+  tol   = 1.0e-10
+  deriv = -0.3733099407
 
   ans = grid.cellARDerivative(nodes)
-  assert_in_delta ar,    ans[0], 1.0e-15
-  assert_in_delta deriv, ans[1], 1.0e-15
-  assert_in_delta deriv, ans[2], 1.0e-15
-  assert_in_delta deriv, ans[3], 1.0e-15  
+  assert_in_delta ar,    ans[0], tol
+  assert_in_delta deriv, ans[1], tol
+  assert_in_delta deriv, ans[2], tol
+  assert_in_delta deriv, ans[3], tol  
 
   ans = grid.nodeARDerivative(0)
-  assert_in_delta ar,    ans[0], 1.0e-15
-  assert_in_delta deriv, ans[1], 1.0e-15
-  assert_in_delta deriv, ans[2], 1.0e-15
-  assert_in_delta deriv, ans[3], 1.0e-15  
+  assert_in_delta ar,    ans[0], tol
+  assert_in_delta deriv, ans[1], tol
+  assert_in_delta deriv, ans[2], tol
+  assert_in_delta deriv, ans[3], tol  
 
-  deriv = 1.0/3.0
+  deriv = 0.1866549704
 
   ans = grid.nodeARDerivative(1)
-  assert_in_delta ar,    ans[0], 1.0e-15
-  assert_in_delta 0.0,   ans[1], 1.0e-15
-  assert_in_delta deriv, ans[2], 1.0e-15
-  assert_in_delta deriv, ans[3], 1.0e-15  
+  assert_in_delta ar,    ans[0], tol
+  assert_in_delta 0.0,   ans[1], tol
+  assert_in_delta deriv, ans[2], tol
+  assert_in_delta deriv, ans[3], tol  
 
   ans = grid.nodeARDerivative(2)
-  assert_in_delta ar,    ans[0], 1.0e-15
-  assert_in_delta deriv, ans[1], 1.0e-15
-  assert_in_delta 0.0,   ans[2], 1.0e-15
-  assert_in_delta deriv, ans[3], 1.0e-15  
+  assert_in_delta ar,    ans[0], tol
+  assert_in_delta deriv, ans[1], tol
+  assert_in_delta 0.0,   ans[2], tol
+  assert_in_delta deriv, ans[3], tol  
 
   ans = grid.nodeARDerivative(3)
-  assert_in_delta ar,    ans[0], 1.0e-15
-  assert_in_delta deriv, ans[1], 1.0e-15
-  assert_in_delta deriv, ans[2], 1.0e-15
-  assert_in_delta 0.0,   ans[3], 1.0e-15  
+  assert_in_delta ar,    ans[0], tol
+  assert_in_delta deriv, ans[1], tol
+  assert_in_delta deriv, ans[2], tol
+  assert_in_delta 0.0,   ans[3], tol  
 
   assert_nil             grid.storeARDerivative(10)
   assert_equal grid,     grid.storeARDerivative(0)

@@ -228,12 +228,12 @@ class TestGridCAD < Test::Unit::TestCase
 
  def testIsotropicTet
   assert_in_delta 1.000, isoTet.minAR, 1.0e-4
-  assert_in_delta 0.975, isoTet(-0.2).minAR, 1.0e-4
+  assert_in_delta 0.9797, isoTet(-0.2).minAR, 1.0e-4
  end
 
  def testOptimizeTDispacement
   assert_not_nil grid = isoTet(-0.2,0.0,true)
-  assert_in_delta 0.975, grid.minAR, 1.0e-3
+  assert_in_delta 0.9797, grid.minAR, 1.0e-3
   assert_equal grid, grid.optimizeT(0,1.0)
   assert_in_delta 0.999, grid.minAR, 1.0e-3
   assert_in_delta 0.0, grid.nodeT(0,20), 5.0e-2
@@ -241,7 +241,7 @@ class TestGridCAD < Test::Unit::TestCase
 
  def testSmoothEdge
   assert_not_nil grid = isoTet(-0.2,0.0,true)
-  assert_in_delta 0.975, grid.minAR, 1.0e-3
+  assert_in_delta 0.9797, grid.minAR, 1.0e-3
   assert_equal grid, grid.smoothNode(0)
   assert_in_delta 0.999, grid.minAR, 1.0e-3
  end
@@ -294,10 +294,10 @@ class TestGridCAD < Test::Unit::TestCase
 
  def testSmooth
   assert_not_nil grid = isoTet(-4.0)
-  assert_in_delta 0.278, grid.minAR, 1.0e-3
+  assert_in_delta 0.252, grid.minAR, 1.0e-3
   assert_equal grid, grid.freezeAll
   assert_equal grid, grid.smooth
-  assert_in_delta 0.278, grid.minAR, 1.0e-3
+  assert_in_delta 0.252, grid.minAR, 1.0e-3
   assert_equal grid, grid.thawAll
   assert_equal grid, grid.smooth
   assert_in_delta 0.999, grid.minAR, 1.0e-3
@@ -338,9 +338,9 @@ class TestGridCAD < Test::Unit::TestCase
  def testSmartLaplacianSmooth
   ngem =6
   assert_not_nil  grid=gemGrid(ngem)
-  assert_in_delta 0.38, grid.minAR, 1.0e-3
+  assert_in_delta 0.6041, grid.minAR, 1.0e-3
   assert_equal grid, grid.smartLaplacian(ngem+2)
-  assert_in_delta 0.812, grid.minAR, 1.0e-3
+  assert_in_delta 0.8585, grid.minAR, 1.0e-3
   assert_in_delta 0.0, grid.nodeXYZ(ngem+2)[0], 1.0e-15
   assert_in_delta 0.0, grid.nodeXYZ(ngem+2)[1], 1.0e-15
   assert_in_delta 0.0, grid.nodeXYZ(ngem+2)[2], 1.0e-15

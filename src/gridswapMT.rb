@@ -63,19 +63,19 @@ class TestGridSwap < Test::Unit::TestCase
  end
 
  def testSwapEdgeNotBeter
-  assert_not_nil grid=gemGrid(3, 2.0, 0)
+  assert_not_nil grid=gemGrid(3, 2.0)
   assert_nil grid.swapEdge(0,1)
-  assert_not_nil grid=gemGrid(4, 2.0, 0)
+  assert_not_nil grid=gemGrid(4, 2.0)
   assert_nil grid.swapEdge(0,1)
-  assert_not_nil grid=gemGrid(5, 2.0, 0)
+  assert_not_nil grid=gemGrid(5, 2.0)
   assert_nil grid.swapEdge(0,1)
-  assert_not_nil grid=gemGrid(6, 2.0, 0)
+  assert_not_nil grid=gemGrid(6, 2.0)
   assert_nil grid.swapEdge(0,1)
-  assert_not_nil grid=gemGrid(7, 2.0, 0)
+  assert_not_nil grid=gemGrid(7, 2.0)
   assert_nil grid.swapEdge(0,1)
-  assert_not_nil grid=gemGrid(8, 2.0, 0)
+  assert_not_nil grid=gemGrid(8, 2.0)
   assert_nil grid.swapEdge(0,1)
-  assert_not_nil grid=gemGrid(9, 2.0, 0)
+  assert_not_nil grid=gemGrid(9, 2.0)
   assert_nil grid.swapEdge(0,1)
  end
 
@@ -219,7 +219,9 @@ class TestGridSwap < Test::Unit::TestCase
  def testSwapEdge5_0
   assert_not_nil grid=gemGrid(5, 0.1, 0)
   initalVolume = grid.totalVolume
+  assert_equal 5,    grid.ncell
   grid.swapEdge(0,1)
+  assert_equal 6,    grid.ncell
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
   assert_equal 3, grid.cellDegree(0)
@@ -465,7 +467,7 @@ class TestGridSwap < Test::Unit::TestCase
   n.push grid.addNode(-1.0,0.0,0.0)
   nequ.times do |i| 
    angle = 2.0*Math::PI*(i-1)/(nequ)
-   s = if (dent==i) then 0.9 else 1.0 end
+   s = if (dent==i) then 0.0 else 1.0 end
    n.push grid.addNode(0.0,s*a*Math.sin(angle),s*a*Math.cos(angle)) 
   end
   n.push 2
