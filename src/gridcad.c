@@ -325,7 +325,7 @@ Grid *gridSmoothNode(Grid *grid, int node )
     gridNodeARDerivative ( grid, node, &ar, dARdx);
     return gridOptimizeXYZ( grid, node, dARdx );
   }else{
-    maxsmooth = 100;
+    maxsmooth = 40;
     while ( grid == gridSmoothNodeQP(grid,node) && maxsmooth >0) maxsmooth--;
     return grid;
   }
@@ -640,8 +640,6 @@ Grid *gridSmoothVolume( Grid *grid )
 	gridNodeAR(grid,node,&ar);
       }
       if (ar < optimizationLimit) {
-	gridSmoothNode( grid, node );
-	gridSmoothNode( grid, node );
 	gridSmoothNode( grid, node );
       }
     }
