@@ -24,6 +24,8 @@ struct N2C {
 struct Grid {
   int maxnode;
   int nnode;
+  double *xyz;
+
   int maxcell;
   int ncell;
   int blankcell;
@@ -54,6 +56,8 @@ Grid* gridCreate(int maxnode, int maxcell)
   grid->maxcell = maxcell;
   grid->ncell   = 0;
   nlist         = grid->maxcell*4;
+
+  grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
 
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
   for (i=0;i < grid->maxcell; i++ ) {
@@ -87,6 +91,7 @@ void gridFree(Grid *grid)
   free(grid->c2n);
   free(grid->first);
   free(grid->n2c);
+  free(grid->xyz);
   free(grid);
 }
 
@@ -473,5 +478,19 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
 
   return grid;
+}
+
+int gridAddNode(Grid *grid, double x, double y, double z )
+{
+  int nodeId;
+  if (grid->nnode >= grid->maxnode) return EMPTY;
+  nodeId = grid->nnode;
+  grid->nnode++;
+
+  grid->xyz[0+3*nodeId] = x;
+  grid->xyz[1+3*nodeId] = y;
+  grid->xyz[2+3*nodeId] = z;
+
+  return nodeId;
 }
 
