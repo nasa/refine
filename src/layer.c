@@ -46,7 +46,7 @@ Layer *layerCreate( Grid *grid )
   layer->globalNode2Normal=NULL;
   layer->nConstrainingGeometry=0;
   layer->constrainingGeometry=NULL;
-  layer->adj=NULL;
+  layer->triangleAdj=NULL;
   layer->nearTree=NULL;
   layer->mixedElementMode=FALSE;
 
@@ -78,7 +78,7 @@ void layerFree(Layer *layer)
   free(layer->cellInLayer);
   gridDetachNodeSorter( layer->grid );
   gridDetachReallocator( layer->grid );
-  if (layer->adj != NULL) adjFree(layer->adj);
+  if (layer->triangleAdj != NULL) adjFree(layer->triangleAdj);
   if (layer->nearTree != NULL) free(layer->nearTree);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
@@ -269,12 +269,13 @@ Layer *layerBuildNormalTriangleAdjacency(Layer *layer)
 {
   int triangle, i, normals[3];
 
-  if (NULL != layer->adj) adjFree(layer->adj);
-  layer->adj = adjCreate( layerNNormal(layer), layerNTriangle(layer)*3, 1000 );
+  if (NULL != layer->triangleAdj) adjFree(layer->triangleAdj);
+  layer->triangleAdj = adjCreate( layerNNormal(layer), 
+				  layerNTriangle(layer)*3, 1000 );
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     layerTriangleNormals(layer,triangle,normals);
-    for (i=0;i<3;i++) adjRegister( layer->adj, normals[i], triangle );
+    for (i=0;i<3;i++) adjRegister( layer->triangleAdj, normals[i], triangle );
   }
 
   return layer;
@@ -516,7 +517,7 @@ Layer *layerNormalMaxEdgeLength(Layer *layer, int normal, double *length )
 
   maxLength = 0;
 
-  for ( it = adjFirst(layer->adj,normal); 
+  for ( it = adjFirst(layer->triangleAdj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
      triangle = adjItem(it);
@@ -628,8 +629,8 @@ int layerNormalRoot(Layer *layer, int normal )
 
 int layerNormalDeg(Layer *layer, int normal )
 {
-  if (NULL == layer->adj) return 0;
-  return adjDegree(layer->adj, normal);
+  if (NULL == layer->triangleAdj) return 0;
+  return adjDegree(layer->triangleAdj, normal);
 }
 
 Layer *layerNormalMinDot(Layer *layer, int normal,
@@ -668,7 +669,7 @@ Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triang
   AdjIterator it;
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
   i=0;
-  for ( it = adjFirst(layer->adj,normal); 
+  for ( it = adjFirst(layer->triangleAdj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
     if (i>=ntriangle) return NULL;
@@ -719,7 +720,7 @@ int layerPreviousTriangle(Layer *layer, int normal, int triangle )
   if (root == nodes[2]) previousRoot = nodes[0];
   if (EMPTY == previousRoot) return EMPTY;
 
-  for ( it = adjFirst(layer->adj,normal); 
+  for ( it = adjFirst(layer->triangleAdj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
     previousTriangle = adjItem(it);
@@ -749,7 +750,7 @@ int layerNextTriangle(Layer *layer, int normal, int triangle )
   if (root == nodes[2]) nextRoot = nodes[1];
   if (EMPTY == nextRoot) return EMPTY;
 
-  for ( it = adjFirst(layer->adj,normal); 
+  for ( it = adjFirst(layer->triangleAdj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
     nextTriangle = adjItem(it);
@@ -1206,7 +1207,7 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 	avgdir[0]=0.0;
 	avgdir[1]=0.0;
 	avgdir[2]=0.0;
-	for ( it = adjFirst(layer->adj,normal); 
+	for ( it = adjFirst(layer->triangleAdj,normal); 
 	      adjValid(it); 
 	      it = adjNext(it) ){
 	  triangle = adjItem(it);
@@ -1242,7 +1243,7 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 	avgdir[0]=0.0;
 	avgdir[1]=0.0;
 	avgdir[2]=0.0;
-	for ( it = adjFirst(layer->adj,normal); 
+	for ( it = adjFirst(layer->triangleAdj,normal); 
 	      adjValid(it); 
 	      it = adjNext(it) ){
 	  triangle = adjItem(it);
@@ -1347,7 +1348,7 @@ Layer *layerAdjustNormalHeightToSmoothFront(Layer *layer, double maxHeight)
     gridNodeXYZ(grid,node,xyz0);
     dn = 0;
     n = 0;
-    for ( it = adjFirst(layer->adj,normal); 
+    for ( it = adjFirst(layer->triangleAdj,normal); 
 	  adjValid(it); 
 	  it = adjNext(it) ){
       triangle = adjItem(it);
@@ -1456,7 +1457,7 @@ Layer *layerConstrainTriangleSide(Layer *layer, int normal0, int normal1, int bc
   if (normal0 < 0 || normal0 >= layerNNormal(layer) ) return NULL;
   if (normal1 < 0 || normal1 >= layerNNormal(layer) ) return NULL;
 
-  for ( it = adjFirst(layer->adj,normal0); 
+  for ( it = adjFirst(layer->triangleAdj,normal0); 
 	adjValid(it); 
 	it = adjNext(it) ){
     triangle = adjItem(it);
@@ -1527,7 +1528,7 @@ Layer *layerSetParentGeomEdge(Layer *layer, int normal0, int normal1, int edgeId
   if (normal0 < 0 || normal0 >= layerNNormal(layer) ) return NULL;
   if (normal1 < 0 || normal1 >= layerNNormal(layer) ) return NULL;
 
-  for ( it = adjFirst(layer->adj,normal0); 
+  for ( it = adjFirst(layer->triangleAdj,normal0); 
 	adjValid(it); 
 	it = adjNext(it) ){
     triangle = adjItem(it);
@@ -2466,8 +2467,8 @@ int layerFirstTriangleAfterGap(Layer *layer, int normal )
   int firstTriangle, triangle, previousTriangle;
   AdjIterator it;
   
-  firstTriangle = adjItem(adjFirst(layer->adj,normal));
-  for ( it = adjFirst(layer->adj,normal); 
+  firstTriangle = adjItem(adjFirst(layer->triangleAdj,normal));
+  for ( it = adjFirst(layer->triangleAdj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
     triangle = adjItem(it);
@@ -2487,7 +2488,7 @@ int layerNRequiredBlends(Layer *layer, int normal, double angleLimit )
   if (angleLimit < 0.0) angleLimit = 250; /* deg */
 
   blendCount = 0;
-  for ( it = adjFirst(layer->adj,normal); 
+  for ( it = adjFirst(layer->triangleAdj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
     triangle = adjItem(it);
@@ -2664,7 +2665,9 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
   
     side = newEdge?0:1;
 
-    for ( it = adjFirst(layer->adj,normal0); adjValid(it); it=adjNext(it) ){
+    for ( it = adjFirst(layer->triangleAdj,normal0); 
+	  adjValid(it); 
+	  it=adjNext(it) ){
       triangle = adjItem(it);
       for (i=0;i<3;i++) {
 	edgeId = layer->triangle[triangle].parentGeomEdge[i];
@@ -2672,7 +2675,9 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
 	  layer->blend[blend].edgeId[side] = edgeId;
       }
     }
-    for ( it = adjFirst(layer->adj,normal1); adjValid(it); it=adjNext(it) ){
+    for ( it = adjFirst(layer->triangleAdj,normal1);
+	  adjValid(it);
+	  it=adjNext(it) ){
       triangle = adjItem(it);
       for (i=0;i<3;i++) {
 	edgeId = layer->triangle[triangle].parentGeomEdge[i];
@@ -3027,7 +3032,7 @@ Layer *layerSmoothLayerWithHeight(Layer *layer)
     layerNormalDirection(layer,normal,direction);
     hits = 0;
     avg = 0;
-    for ( it = adjFirst(layer->adj,normal);
+    for ( it = adjFirst(layer->triangleAdj,normal);
 	  adjValid(it);
 	  it = adjNext(it) ){
       triangle = adjItem(it);
@@ -3120,7 +3125,7 @@ Layer *layerOptimizeNormalDirection(Layer *layer, double offsetRatio)
       layerNormalMaxEdgeLength(layer,normal,&offset);
       offset *= offsetRatio;
       worstMR = 2.0;
-      for ( it = adjFirst(layer->adj,normal); 
+      for ( it = adjFirst(layer->triangleAdj,normal); 
 	    adjValid(it); 
 	    it = adjNext(it) ){
 	triangle = adjItem(it);
@@ -3146,7 +3151,7 @@ Layer *layerOptimizeNormalDirection(Layer *layer, double offsetRatio)
       layerNormalMaxEdgeLength(layer,normal,&offset);
       offset *= offsetRatio;
       worstMR = 2.0;
-      for ( it = adjFirst(layer->adj,normal); 
+      for ( it = adjFirst(layer->triangleAdj,normal); 
 	    adjValid(it); 
 	    it = adjNext(it) ){
 	triangle = adjItem(it);

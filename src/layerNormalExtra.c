@@ -74,7 +74,7 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
 
         total = 0;
 	aveRate = 0.0;
-        for ( it = adjFirst(layer->adj,normal);
+        for ( it = adjFirst(layerTriangleAdj(layer),normal);
               adjValid(it);
               it = adjNext(it) ){
           triangle = adjItem(it);
@@ -186,7 +186,7 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
         totalH = 0;
         totalL = 0;
 	totalY = 0;
-        for ( it = adjFirst(layer->adj,normal);
+        for ( it = adjFirst(layerTriangleAdj(layer),normal);
               adjValid(it);
               it = adjNext(it) ){
           triangle = adjItem(it);
@@ -341,7 +341,7 @@ Layer *layerRelaxNormalDirection(Layer *layer, int itMax, double omega )
         avgdir[0]=0.0;
         avgdir[1]=0.0;
         avgdir[2]=0.0;
-        for ( it = adjFirst(layer->adj,normal);
+        for ( it = adjFirst(layerTriangleAdj(layer),normal);
               adjValid(it);
               it = adjNext(it) ){
           triangle = adjItem(it);
@@ -377,7 +377,7 @@ Layer *layerRelaxNormalDirection(Layer *layer, int itMax, double omega )
         avgdir[0]=0.0;
         avgdir[1]=0.0;
         avgdir[2]=0.0;
-        for ( it = adjFirst(layer->adj,normal);
+        for ( it = adjFirst(layerTriangleAdj(layer),normal);
               adjValid(it);
               it = adjNext(it) ){
           triangle = adjItem(it);
