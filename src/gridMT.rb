@@ -334,6 +334,22 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2, grid.cellDegree(6)
  end
 
+ def testSwap5_gapWithSameFaces
+  assert_not_nil     grid=gemGrid(5, nil, nil, nil, true)
+  assert_equal 4,    grid.ncell
+  assert_equal grid, grid.addFace(0,1,2,11)
+  assert_equal grid, grid.addFace(0,1,6,11)
+  assert_equal grid, grid.swap(0,1)
+  assert_equal 6,    grid.ncell
+  assert_equal 3,    grid.cellDegree(0)
+  assert_equal 3,    grid.cellDegree(1)
+  # new bc faces
+  assert_equal 11,   grid.faceId(0,2,6)
+  assert_equal 11,   grid.faceId(1,2,6)  
+  assert_equal(-1,   grid.faceId(0,1,2) )
+  assert_equal(-1,   grid.faceId(0,1,6) ) 
+ end
+
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
   x0 = x0 || 1.0
