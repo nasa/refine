@@ -7,7 +7,16 @@ Start Builds!!!!!
 
 --Major refactoring
 
-add nodes and comments to tecplot neg cells
+when splitting or collasping on geomedge update face uv from edgeT
+
+EdgeSplitAt -> edgeSplitRatio
+Replace projections with evaluations.
+
+maintain linear data for split and collapse. 
+(this includes edge and face parameter values)
+
+Validate a mesh by spliting offending faces into three and evaluating
+(via Bob)
 
 unit test CADGeom_ReversedSurfaceNormal
 
@@ -17,17 +26,7 @@ ghost node. faces and edges are that way.
 verify that I am geeting all the performance out the the volume
 smoothing that is possible.
 
-move gridMinFaceAreaUV gridFaceAreaUV from grdcad to gridmetric
-
 make consistant use of the cost constraint functions.
-
-maintain linear data for split and collapse. 
-(this includes edge and face parameter values)
-
-EdgeSplitAt -> edgeSplitRatio
-Replace projections with evaluations.
-
-Validate a mesh by spliting and projecting offending faces (via Bob)
 
 Exact Edge smoothing with invalid backoff
 
