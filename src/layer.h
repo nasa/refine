@@ -20,6 +20,7 @@ typedef struct Layer Layer;
 
 Layer *layerCreate(Grid *);
 void layerFree(Layer *);
+void layerSortGlobalNodes(void *layer, int *o2n);
 int layerNFront(Layer *);
 int layerNNormal(Layer *);
 int layerMaxNode(Layer *);

@@ -48,6 +48,7 @@ Layer *layerCreate( Grid *grid )
   Layer *layer;
   layer = malloc(sizeof(Layer));
   layer->grid = grid;
+  gridAttachNodeSorter( grid, layerSortGlobalNodes, layer );
   layer->nfront=0;
   layer->front=NULL;
   layer->nnormal=0;
@@ -59,11 +60,31 @@ Layer *layerCreate( Grid *grid )
 
 void layerFree(Layer *layer)
 {
+  gridDetachNodeSorter( layer->grid );
   if (layer->adj != NULL) adjFree(layer->adj);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
   if (layer->front != NULL) free(layer->front);
   free(layer);
+}
+
+void layerSortGlobalNodes(void *voidLayer, int *o2n)
+{
+  Layer *layer = (Layer *)voidLayer;
+  int i, front, normal;
+
+  for (front = 0 ; front < layerNFront(layer) ; front++ )
+    for (i=0;i<3;i++) if (EMPTY != layer->front[front].globalNode[i])
+      layer->front[front].globalNode[i] = 
+	o2n[layer->front[front].globalNode[i]];
+  
+  for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
+    if (EMPTY != layer->normal[normal].root)
+      layer->normal[normal].root = o2n[layer->normal[normal].root];
+    if (EMPTY != layer->normal[normal].tip)
+      layer->normal[normal].tip = o2n[layer->normal[normal].tip];
+  }
+
 }
 
 int layerNFront(Layer *layer)
