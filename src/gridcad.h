@@ -14,6 +14,7 @@
 #include "master_header.h"
 #include "grid.h"
 
+Grid *gridProjectNodetoEdge(Grid *g, int node, int edge );
 Grid *gridSafeProject(Grid *g, int node );
 
 #endif /* GRIDCAD_H */

@@ -15,7 +15,12 @@
 #include "adj.h"
 #include "gridStruct.h"
 
-Grid *gridSafeProject(Grid *g, int node )
+Grid *gridProjectNodeToEdge(Grid *grid, int node, int edge )
+{
+  return grid;
+}
+
+Grid *gridSafeProject(Grid *grid, int node )
 {
   return NULL;
 }

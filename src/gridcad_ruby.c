@@ -4,6 +4,12 @@
 
 #define GET_GRID_FROM_SELF Grid *grid; Data_Get_Struct( self, Grid, grid );
 
+VALUE grid_projectNodeToEdge( VALUE self, VALUE node, VALUE edge )
+{
+  GET_GRID_FROM_SELF;
+  return (gridProjectNodeToEdge( grid, NUM2INT(node), NUM2INT(edge) )==grid?self:Qnil);
+}
+
 VALUE grid_safeProject( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -15,5 +21,6 @@ VALUE cGridCAD;
 void Init_GridCAD() 
 {
   cGridCAD = rb_define_module( "GridCAD" );
+  rb_define_method( cGridCAD, "projectNodeToEdge", grid_projectNodeToEdge, 2 );
   rb_define_method( cGridCAD, "safeProject", grid_safeProject, 1 );
 }

@@ -22,8 +22,18 @@ end
 
 class TestSampleUnit < Test::Unit::TestCase
 
- def testProjection
-  assert_not_nil grid = Grid.new(0,0,0,0)
+ def testEdgeProjection
+  assert_not_nil grid = Grid.new(3,0,0,2)
+  assert_equal 0, grid.addNode(0.5,0.1,0.1)
+  assert_equal grid, grid.projectNodeToEdge(0,0)
+ end
+
+
+ def testSafeProjection
+  assert_not_nil grid = Grid.new(3,0,0,2)
+  assert_equal 0, grid.addNode(0.0,0.0,0.0)
+  assert_equal 1, grid.addNode(0.5,0.0,0.0)
+  assert_equal 2, grid.addNode(1.0,0.0,0.0)
   assert_nil grid.safeProject(0)
  end
 
