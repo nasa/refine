@@ -839,6 +839,12 @@ Grid *gridStoreVolumeCostDerivatives (Grid *grid, int node )
   return grid;
 }
 
+Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
+{
+  if ( !gridValidNode( grid, node) ) return NULL;
+  return grid;
+}
+
 Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 {
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
