@@ -18,6 +18,8 @@
 #include "grid.h"
 #include "layer.h"
 #include "CADGeom/CADGeom.h"
+#include "Goolache/MeshMgr.h"
+#include "MeatLib/ErrMgr.h"
 
 Layer *layerRebuildEdges(Layer *layer, int vol){
 
@@ -68,8 +70,6 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
 	i0 = i-1; i1 = i;
 	gridAddEdge(grid,newnodes[i0],newnodes[i1],edgeId,newt[i0],newt[i1]);
       }
-      i0 = nedgenode-2; i1 = nedgenode-1;
-      gridAddEdge(grid,newnodes[i0],newnodes[i1],edgeId,newt[i0],newt[i1]);
 
       free(newxyz);
       free(newt);
@@ -240,6 +240,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	printf("shell %4d: %8d <-> %8d or %8d <-> %8d\n",
 	       i,shell[0+2*i],shell[1+2*i],l2g[shell[0+2*i]],l2g[shell[1+2*i]]);
 
+/*
       for(j=0;j<nshell;j++) {
         printf("2\n");
         i = shell[0+2*j];
@@ -248,6 +249,15 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	printf("%8.5f %8.5f %8.5f\n",shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i]);
       }
 
+      for(j=0;j<nshell;j++) {
+        printf("2\n");
+        i = shell[0+2*j];
+	printf("%8.5f %8.5f 0.0\n",shelluv[0+2*i],shelluv[1+2*i]);
+        i = shell[1+2*j];
+	printf("%8.5f %8.5f 0.0\n",shelluv[0+2*i],shelluv[1+2*i]);
+      }
+ */
+
       nfacenode = EMPTY;
       nfacetri  = EMPTY;
       if( !MeshMgr_MeshTriFace(vol, faceId, 
@@ -255,9 +265,8 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       nshell, shell,
 			       0, NULL,
 			       &nfacenode, &nfacetri, 
-			       &newface, &newxyz, &newuv, 
-			       TRUE) ) {
-	printf("Could NOT mesh Face %d\n",faceId);
+			       &newface, &newxyz, &newuv) ) {
+	printf("%s\nCould NOT mesh Face %d\n",ErrMgr_GetErrStr(),faceId);
 	//return NULL;
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
