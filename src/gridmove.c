@@ -1020,9 +1020,24 @@ GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
   }
 
   for(node=0;node<gridMaxNode(grid);node++) {
-    if ( gridmoveSpecified(gm,node) && 
-	 gridNodeLocal(grid,node) &&
-	 gridValidNode(grid,node) ) {
+    if ( gridValidNode(grid,node) &&
+	 ( gridmoveSpecified(gm,node) || gridNodeGhost(grid,node) ) ) {
+      for ( entry = gridmoveRowStart(gm, node) ;
+	    entry < gridmoveRowStart(gm, node+1) ;
+	    entry++ ) {
+	for(i=0;i<9;i++) gm->a[i+9*entry] = 0.0;
+      }
+      entry = gridmoveRowEntry(gm,node,node);
+      gm->a[0+9*entry] = 1.0;
+      gm->a[4+9*entry] = 1.0;
+      gm->a[8+9*entry] = 1.0;
+    }
+  }
+
+  for(node=0;node<gridMaxNode(grid);node++) {
+    if ( gridValidNode(grid,node) &&
+	 gridmoveSpecified(gm,node) && 
+	 gridNodeLocal(grid,node) ) {
       for(i=0;i<3;i++)
 	gm->dxyz[i+3*node] = position*gm->displacement[i+3*node];
     }
