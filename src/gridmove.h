@@ -34,7 +34,7 @@ struct GridMove {
 
   int *rowStart;
   int *compRow;
-  double *a;
+  double *a, *lu;
   double *dxyz;
 };
 

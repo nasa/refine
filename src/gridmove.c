@@ -44,6 +44,7 @@ GridMove *gridmoveCreate( Grid *grid )
   gm->rowStart = NULL;
   gm->compRow = NULL;
   gm->a = NULL;
+  gm->lu = NULL;
   gm->dxyz = NULL;
 
   return gm;
@@ -68,6 +69,7 @@ GridMove *gridmoveFreeRelaxation(GridMove *gm)
   if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
   if (NULL != gm->compRow)  { free(gm->compRow);  gm->compRow  = NULL; }
   if (NULL != gm->a)        { free(gm->a);        gm->a        = NULL; }
+  if (NULL != gm->lu)       { free(gm->lu);       gm->lu       = NULL; }
   if (NULL != gm->dxyz)     { free(gm->dxyz);     gm->dxyz     = NULL; }
   return gm;
 }
@@ -75,6 +77,7 @@ GridMove *gridmoveFreeRelaxation(GridMove *gm)
 void gridmoveFree(GridMove *gm)
 {
   if (NULL != gm->dxyz) free(gm->dxyz);
+  if (NULL != gm->lu) free(gm->lu);
   if (NULL != gm->a) free(gm->a);
   if (NULL != gm->compRow) free(gm->compRow);
   if (NULL != gm->rowStart) free(gm->rowStart);
@@ -706,6 +709,8 @@ GridMove *gridmoveElasticRelaxationStartUp(GridMove *gm)
 
   gm->a = malloc(9*gridmoveNNZ(gm)*sizeof(double));
 
+  gm->lu = malloc(9*gridMaxNode(grid)*sizeof(double));
+
   gm->xyz = malloc(3*gridMaxNode(grid)*sizeof(double));
   gm->dxyz = malloc(3*gridMaxNode(grid)*sizeof(double));
  
@@ -1032,6 +1037,18 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
       gm->a[4+9*entry] = 1.0;
       gm->a[8+9*entry] = 1.0;
     }
+  }
+
+  for(node=0;node<gridMaxNode(grid);node++) {
+    entry = gridmoveRowEntry(gm,node,node);
+    if (EMPTY != entry) {
+      gridLU3x3( &gm->a[9*entry], &gm->lu[9*node] );
+    } else {
+      for(i=0;i<9;i++) gm->lu[i+9*node] = 0.0;
+      gm->lu[0+9*entry] = 1.0;
+      gm->lu[4+9*entry] = 1.0;
+      gm->lu[8+9*entry] = 1.0;
+    }    
   }
 
   for(node=0;node<gridMaxNode(grid);node++) {
