@@ -486,6 +486,7 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
 
 Grid *gridSwapEdge4(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge5(Grid *grid, int n0, int n1 );
+Grid *gridSwapEdge6(Grid *grid, int n0, int n1 );
 
 Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
 {
@@ -512,6 +513,7 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
 
   if (grid->nequ==4) swapStatus = gridSwapEdge4(grid, n0, n1);
   if (grid->nequ==5) swapStatus = gridSwapEdge5(grid, n0, n1);
+  if (grid->nequ==6) swapStatus = gridSwapEdge6(grid, n0, n1);
 
   if ( grid->nequ != grid->ngem && swapStatus != NULL ) {
     gridRemoveFace(grid, face0 );
@@ -771,6 +773,192 @@ Grid *gridSwapEdge5(Grid *grid, int n0, int n1 )
   }
   
   return( grid );
+}
+
+Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20], 
+		     double *bestcost, int best[4] );
+Grid *gridConstructTet6( Grid *grid, int n0, int n1, 
+			 int nodes[40][4], double costs[20] );
+
+Grid *gridSwapEdge6( Grid *grid, int n0, int n1 )
+{
+  int i;
+  int nodes[40][4], bestcombo[4];
+
+  double cost, costs[20], origcost, bestcost;
+  
+  origcost = 2.0;
+
+  for ( i = 0 ; i < grid->ngem ; i++ ){
+    cost = gridAR( grid, &grid->c2n[4*grid->gem[i]] );
+    origcost = MIN(origcost,cost);
+  }
+  
+  gridConstructTet6( grid, n0, n1, nodes, costs );
+  
+  gridGetCombo6( grid, nodes, costs, &bestcost, bestcombo );
+  
+  if ( bestcost > origcost ) {
+      
+    for ( i = 0 ; i < grid->ngem ; i++ ) 
+      gridRemoveCell( grid, grid->gem[i] );
+    
+    for ( i = 0 ; i < 4 ; i++ ){
+      gridAddCell( grid, 
+		   nodes[bestcombo[i]][0], 
+		   nodes[bestcombo[i]][1], 
+		   nodes[bestcombo[i]][2], 
+		   nodes[bestcombo[i]][3] );
+      gridAddCell( grid, 
+		   nodes[bestcombo[i]+20][0], 
+		   nodes[bestcombo[i]+20][1], 
+		   nodes[bestcombo[i]+20][2], 
+		   nodes[bestcombo[i]+20][3] );
+    }
+  }
+  
+  return grid;
+}
+
+Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20], 
+		     double *bestcost, int best[4] )
+{  
+  int i, j, tet[4];
+  double cost;
+  *bestcost = -2.0;
+
+  for ( i = 0 ; i < 6 ; i++ ) {
+    tet[0] = i;
+    tet[1] = tet[0]+6;
+    tet[2] = i+4; if ( tet[2] > 5 ) tet[2] -= 6;
+    tet[3] = tet[2] + 12;
+
+    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
+		MIN( costs[tet[2]], costs[tet[3]] ) );
+    if ( cost > *bestcost ) {
+      *bestcost = cost;
+      for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
+    }
+#ifdef DEBUGSWAP
+        printf("swap6 %d currentcost %f\n",i,cost);
+#endif
+  }
+  
+  for ( i = 0 ; i < 3 ; i++ ) {
+    tet[0] = i;
+    tet[1] = tet[0] + 12;
+    tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
+    tet[3] = tet[2] + 12;
+
+    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
+		MIN( costs[tet[2]], costs[tet[3]] ) );
+    if ( cost > *bestcost ) {
+      *bestcost = cost;
+      for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
+    }
+#ifdef DEBUGSWAP
+        printf("swap6 %d currentcost %f\n",i,cost);
+#endif
+  }
+  
+  for ( i = 0 ; i < 3 ; i++ ) {
+    tet[0] = i;
+    tet[1] = tet[0] + 6;
+    tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
+    tet[3] = tet[2] + 6;
+
+    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
+		MIN( costs[tet[2]], costs[tet[3]] ) );
+    if ( cost > *bestcost ) {
+      *bestcost = cost;
+      for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
+    }
+#ifdef DEBUGSWAP
+        printf("swap6 %d currentcost %f\n",i,cost);
+#endif
+  }
+  
+  
+  for ( i = 0 ; i < 2 ; i++ ) {
+    tet[0] = i;
+    tet[1] = i+2;
+    tet[2] = i+4;
+    tet[3] = tet[0] + 18;
+
+    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
+		MIN( costs[tet[2]], costs[tet[3]] ) );
+    if ( cost > *bestcost ) {
+      *bestcost = cost;
+      for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
+    }
+#ifdef DEBUGSWAP
+        printf("swap6 %d currentcost %f\n",i,cost);
+#endif
+  }
+  
+  return grid;
+}
+
+Grid *gridConstructTet6( Grid *grid, int n0, int n1, 
+			 int nodes[40][4], double costs[20] )
+{
+  int i;
+
+  for ( i = 0; i < 6; i++ )
+    grid->equ[i+6]=grid->equ[i];
+
+  /* make the small triangles */
+  for ( i = 0; i < 6; i++ ){
+    nodes[i   ][0]=grid->equ[i];
+    nodes[i   ][1]=grid->equ[i+5];
+    nodes[i   ][2]=grid->equ[i+1];
+    nodes[i   ][3]=n0;
+    nodes[i+20][0]=grid->equ[i+1];
+    nodes[i+20][1]=grid->equ[i+5];
+    nodes[i+20][2]=grid->equ[i];
+    nodes[i+20][3]=n1;
+  }
+
+  /* make the next triangles */
+  for ( i = 0; i < 6; i++ ){
+    nodes[i+06][0]=grid->equ[i+5];
+    nodes[i+06][1]=grid->equ[i+2];
+    nodes[i+06][2]=grid->equ[i+1];
+    nodes[i+06][3]=n0;
+    nodes[i+26][0]=grid->equ[i+1];
+    nodes[i+26][1]=grid->equ[i+2];
+    nodes[i+26][2]=grid->equ[i+5];
+    nodes[i+26][3]=n1;
+  }
+
+  /* make the previous triangles */
+  for ( i = 0; i < 6; i++ ){
+    nodes[i+12][0]=grid->equ[i+5];
+    nodes[i+12][1]=grid->equ[i+4];
+    nodes[i+12][2]=grid->equ[i+1];
+    nodes[i+12][3]=n0;
+    nodes[i+32][0]=grid->equ[i+1];
+    nodes[i+32][1]=grid->equ[i+4];
+    nodes[i+32][2]=grid->equ[i+5];
+    nodes[i+32][3]=n1;
+  }
+
+  /* make the big triangles */
+  for ( i = 0; i < 2; i++ ){
+    nodes[i+18][0]=grid->equ[i+5];
+    nodes[i+18][1]=grid->equ[i+3];
+    nodes[i+18][2]=grid->equ[i+1];
+    nodes[i+18][3]=n0;
+    nodes[i+38][0]=grid->equ[i+1];
+    nodes[i+38][1]=grid->equ[i+3];
+    nodes[i+38][2]=grid->equ[i+5];
+    nodes[i+38][3]=n1;
+  }
+
+  for ( i = 0; i < 20; i++ )
+    costs[i] = MIN( gridAR(grid, nodes[i]), gridAR(grid, nodes[i+20]) );
+  
+  return grid;
 }
 
 int gridAddNode(Grid *grid, double x, double y, double z )
