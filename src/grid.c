@@ -12,15 +12,22 @@
 #include <stdio.h>
 #include "grid.h"
 
+typedef struct N2C N2C;
+
+struct N2C {
+  int id;
+  N2C *next;
+};
+
 struct Grid {
   int nnode;
   int maxcell;
   int ncell;
   int nlist;
-  int *firstcell;
-  int currentcell;
-  int firstblankcell;
-  int *celllist;
+  N2C **first;
+  N2C *current;
+  N2C *blank;
+  N2C *n2c;
   int *c2n;
 };
 
@@ -38,22 +45,21 @@ Grid* gridCreate(int nnode, int maxcell, int nlist)
   grid->ncell = 0;
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
 
-  grid->nlist = nlist;
+  if (grid->nlist < 1) grid->nlist = grid->maxcell*4;
 
-  /* pad one for [0] and one to terminate */
-  if (grid->nlist < 1) grid->nlist = (grid->maxcell*4+grid->nnode)+2;
+  grid->first = (N2C **)malloc(grid->nnode * sizeof(N2C *));
 
-  grid->firstcell = malloc(grid->nnode * sizeof(int));
-  /* I could set first cell to zero to terminate when realloc used */
-  for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = 0; 
+  for (i=0;i < grid->nnode; i++ ) grid->first[i] = NULL; 
 
-  grid->celllist = malloc( grid->nlist * sizeof(int));
-  for (i=0;i < grid->nlist; i++ ) grid->celllist[i] = -(i+1);
-  grid->celllist[grid->nlist-1] =0;
-  grid->celllist[0] =0;
-  grid->firstblankcell = 1;
-  if (grid->nlist <= 1) grid->firstblankcell = 0;
-  grid->currentcell=grid->nlist-1;
+  grid->n2c = (N2C *)malloc( grid->nlist * sizeof(N2C));
+  for (i=0;i < grid->nlist-1; i++ ) { // pointer majic?
+    grid->n2c[i].id   = EMPTY;
+    grid->n2c[i].next = &grid->n2c[i+1];
+  }
+  grid->n2c[nlist-1].id   = EMPTY;
+  grid->n2c[nlist-1].next = NULL;
+  grid->blank   = grid->n2c;
+  grid->current = &grid->n2c[nlist-1];
  
   return  grid;
 }
@@ -61,16 +67,14 @@ Grid* gridCreate(int nnode, int maxcell, int nlist)
 void gridFree(Grid *grid)
 {
   free(grid->c2n);
-  free(grid->firstcell);
+  free(grid->first);
+  free(grid->n2c);
   free(grid);
 }
 
 Grid *gridDump(Grid *grid)
 {
-  int i;
-  printf("\nfirst blank %d\n",grid->firstblankcell);
-  for ( i=0; i<grid->nnode; i++) printf("fc%5d -> %5d\n",i,grid->firstcell[i]);
-  for ( i=0; i<grid->nlist; i++) printf("cl%5d -> %5d\n",i,grid->celllist[i]);
+  printf("\n Dump Not impl.\n");
   fflush(stdout);
   return grid;
 }
@@ -113,89 +117,66 @@ int gridCellExists(Grid *grid, int nodeId, int cellId)
 
 Grid* gridRegisterNodeCell(Grid *grid, int nodeId, int cellId)
 {
-  int firstAvailable, oldTerminator, entry, terminator, nextOpen;
-
-  if (nodeId >= grid->nnode) return NULL;
-
-  if ( grid->firstcell[nodeId] == 0 ) {
-    entry = grid->firstblankcell;
-    if ( entry == 0 ) return NULL;
-    if ( grid->celllist[entry] == 0 ) return NULL;
-    terminator = -grid->celllist[entry];
-    if ( terminator == 0 ) return NULL;
-    nextOpen = -grid->celllist[terminator];
-    grid->firstcell[nodeId] = entry;
-    grid->celllist[entry] = cellId+1;
-    grid->celllist[terminator] = 0;
-    grid->firstblankcell = nextOpen;
-  }else{
-
-    for ( gridFirstNodeCell(grid,nodeId);
-	  gridValidNodeCell(grid);
-	  gridNextNodeCell(grid));  // replace a removed here
-
-    oldTerminator = grid->currentcell;
-
-    entry = grid->firstblankcell;
-    if ( entry == 0 ) return NULL;
-    
-    if (entry == (oldTerminator+1) ) { // append to current list
-      grid->celllist[oldTerminator] = cellId+1;
-      grid->firstblankcell = -grid->celllist[entry];
-      grid->celllist[entry] = 0;      
-    }else{
-      if ( grid->celllist[entry] == 0 ) return NULL;
-      terminator = entry+1;
-      grid->celllist[oldTerminator] = -entry;      
-      grid->celllist[entry] = cellId+1;
-      grid->firstblankcell = -grid->celllist[terminator];      
-      grid->celllist[terminator] = 0;
-    }
-
-  }
+  N2C *new;
+  if (grid->blank == NULL) return NULL;
+  new = grid->blank;
+  grid->blank = grid->blank->next;
+  new->next = grid->first[nodeId];
+  grid->first[nodeId] = new;
+  new->id = cellId;
 
   return grid;
 }
 
 Grid* gridRemoveNodeCell(Grid *grid, int nodeId, int cellId)
 {
-  int cellIndex;
-  cellIndex = EMPTY;
+  N2C *remove, *previous;
+  remove = NULL;
 
   for ( gridFirstNodeCell(grid,nodeId); 
 	gridValidNodeCell(grid); 
 	gridNextNodeCell(grid)) {
     if (gridCurrentNodeCell(grid)==cellId) 
-      cellIndex = grid->currentcell;
+      remove = grid->current;
   }
 
-  if (cellIndex == EMPTY) return NULL;
+  if (remove == NULL) return NULL;
+ 
+  previous = NULL;
 
-  grid->celllist[cellIndex] = -(cellIndex+1);
+  for ( gridFirstNodeCell(grid,nodeId); 
+	gridValidNodeCell(grid); 
+	gridNextNodeCell(grid)) {
+    if (grid->current->next == remove) 
+      previous = grid->current;
+  }
+
+  if ( previous == NULL ) {
+    previous->next = remove->next;
+  }else{
+    grid->first[nodeId] = remove->next;
+  }
+
+  remove->id = EMPTY;
+  remove->next = grid->blank;
+  grid->blank = remove;
 
   return grid;
 }
 
 void gridFirstNodeCell(Grid *grid, int nodeId)
 {
-  grid->currentcell = grid->firstcell[nodeId];
-  while (grid->celllist[grid->currentcell] < 0){
-    grid->currentcell = -grid->celllist[grid->currentcell];
-  }
+  grid->current = grid->first[nodeId];
 }
 
 void gridNextNodeCell(Grid *grid)
 {
-  if ( !gridValidNodeCell(grid) ) return;
-  grid->currentcell++;
-  while (grid->celllist[grid->currentcell] < 0){
-    grid->currentcell = -grid->celllist[grid->currentcell];
-  }
+  if ( grid->current != NULL) grid->current = grid->current->next;
 }
 
 int gridCurrentNodeCell(Grid *grid)
 {
-  return grid->celllist[grid->currentcell]-1;
+  return grid->current->id;
 }
 
 int gridValidNodeCell(Grid *grid)
@@ -205,14 +186,7 @@ int gridValidNodeCell(Grid *grid)
 
 int gridMoreNodeCell(Grid *grid)
 {
-  int next;
-
-  if ( !gridValidNodeCell(grid) ) return 0;
-  next = grid->currentcell + 1;
-  while (grid->celllist[next] < 0){
-    next = -grid->celllist[next];
-  }
-  return (grid->celllist[next] != 0);
+  return (grid->current != NULL);
 }
 
 Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
@@ -236,27 +210,8 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 
 Grid *gridPack(Grid *grid)
 {
-  int nodeId, current, deg, i;
-  current = 1;
-  for ( nodeId=0 ; nodeId<grid->nnode ; nodeId++) {
-    deg = gridNodeDeg( grid, nodeId );
-    if ( deg == 0 ) {
-      grid->firstcell[nodeId] = 0;
-    }else{
-      grid->firstcell[nodeId] = current;
-      for ( gridFirstNodeCell(grid,nodeId); 
-	    gridValidNodeCell(grid); 
-	    gridNextNodeCell(grid)){
-	grid->celllist[current] = gridCurrentNodeCell(grid)+1;
-	current++;
-      }
-      grid->celllist[current] = 0;
-      current++;
-    }
-  }
-  grid->firstblankcell = current;
-  for (i=current;i < grid->nlist; i++ ) grid->celllist[i] = -(i+1);
-  grid->celllist[grid->nlist-1] =0;
+  printf("\n Dump Not impl.\n");
+  fflush(stdout);
   return grid;
 }
 
