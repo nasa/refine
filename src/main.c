@@ -101,6 +101,12 @@ int main( int argc, char *argv[] )
     printf("adapt parameter >none< selected.\n");
     gridResetSpacing(grid);
     if (boundaryLayerGrid) {
+      printf("freezing distant volume nodes.\n");
+      gridFreezeAll(grid);
+      printf("thaw bc 1.\n");
+      gridThawNearBC(grid,0.5,1);
+      printf("thaw bc 2.\n");
+      gridThawNearBC(grid,0.5,2);
       gridFreezeBCFace(grid,1);
       gridFreezeBCFace(grid,2);
       printf("make advancing layer object.\n");
@@ -144,11 +150,11 @@ int main( int argc, char *argv[] )
 	j++){
 
     if (boundaryLayerGrid) {
-      height = 0.002*pow(1.5,j);
-      layerTerminateNormalWithSpacing(layer,height*3.);
+      height = 0.00001*pow(1.2,j);
+      layerTerminateNormalWithSpacing(layer,height*5.);
       if (layerNActiveNormal(layer) == 0 ) jmax=0;
       printf("insert layer height = %f\n",height);
-      wiggleSteps = (int)(height/0.01)+1;
+      wiggleSteps = MIN(5,(int)(height/0.001)+1);
       height = height / (double)wiggleSteps;
       layerVisibleNormals(layer);
       layerAdvance(layer,height);
