@@ -339,6 +339,19 @@ Grid *gridGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
   return grid;
 }
 
+Grid *gridOrient(Grid *grid, int *c, int *n )
+{
+
+  /* 0 leads */
+  if ( n[0] == c[0] && n[1] == c[1] ) {
+    n[2] = c[2];
+    n[3] = c[3];
+    return grid;
+  }
+
+  return NULL;
+}
+
 Grid *gridEquator(Grid *grid, int n0, int n1, int maxequ, int *nequ, int *equ )
 {
 #define MAXGEM 200
