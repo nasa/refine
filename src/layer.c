@@ -236,7 +236,7 @@ Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
 Layer *layerInitializeTriangleNormalDirection(Layer *layer)
 {
   int triangle, normal, i;
-  double direction[3], *normalDirection;
+  double direction[3];
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
@@ -1104,7 +1104,7 @@ Layer *layerSetNormalHeightForLayerNumber(Layer *layer, int n, double rate)
 
 Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
 {
-  int normal, iter, i;
+  int normal, iter;
   double *dir, mindir[3], mindot, worstdot; 
 
   if (dotLimit < 0) dotLimit = 1.0e-14;
@@ -1138,7 +1138,7 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
 
 Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 {
-  int normal, iter, i;
+  int normal, iter;
   double *dir, mindir[3], mindot, radian, worstdot; 
   double lastdir[3], lastdot;
 
@@ -2004,6 +2004,13 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
   if (layerNBlend(layer) > 0){
     int blend, blendnormals[4];
     int triangle0, triangle1;
+
+    if (!layerTetrahedraOnly(layer)) {
+      printf("ERROR: %s: %d: Using blends requires layerTetrahedraOnly %s.\n",
+	     __FILE__,__LINE__,"(no mixed elements)");
+      return NULL;
+    }
+
     for (blend=0;blend<layerNBlend(layer);blend++){
       layerBlendNormals(layer, blend, blendnormals );
       
@@ -2050,9 +2057,15 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
       n[4] = layer->normal[blendnormals[2]].tip;
       n[5] = layer->normal[blendnormals[3]].tip;
 
-      layer->cellInLayer[gridAddCell(grid, n[0], n[4], n[5], n[3])]=TRUE;
-      layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[4], n[5])]=TRUE;
-      layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[1], n[4])]=TRUE;
+      if (n[4]!=n[5]) {
+	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
+      }
+      if (n[4]!=n[5]) {
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5]; addTet;
+      }
+      if (n[1]!=n[2]) {
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
+      }
 
     }
     layerBuildNormalTriangleAdjacency(layer);
