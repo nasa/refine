@@ -2827,7 +2827,7 @@ Layer *layerSubBlendSmooth(Layer *layer)
   int blendnormals[4];
   int nSubNormal, origSubNormal;
   GridBool allSmooth;
-  int slope = 1;
+  int slope = 2;
 
   if (layerNBlend(layer) <= 0) return layer;
 
