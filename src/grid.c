@@ -850,6 +850,7 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
   double newX, newY, newZ;
   int gap0, gap1, face0, face1, faceId0, faceId1;
   int edge, edgeId;
+  double t0,t1, newT;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
 
@@ -896,9 +897,12 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
     edge = gridFindEdge(grid,n0,n1);
     if ( edge != EMPTY ) {
       edgeId = gridEdgeId(grid,n0,n1);
+      t0 = grid->edgeT[0+2*edge];
+      t1 = grid->edgeT[1+2*edge];
+      newT = 0.5 * (t0+t1);
       gridRemoveEdge(grid,edge);
-      gridAddEdge(grid,n0,newnode,edgeId,DBL_MAX,DBL_MAX);
-      gridAddEdge(grid,n1,newnode,edgeId,DBL_MAX,DBL_MAX);
+      gridAddEdge(grid,n0,newnode,edgeId,t0,newT);
+      gridAddEdge(grid,n1,newnode,edgeId,t1,newT);
     }
   }
 

@@ -303,11 +303,13 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.addFace(0,1,2,2)
   assert_equal grid, grid.addFace(1,0,5,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.addEdge(0,1,15, 0.0, 0.0)
+  assert_equal grid, grid.addEdge(0,1,15, 0.0, 1.0)
   assert_equal grid, grid.splitEdge(0,1)
   assert_nil         grid.edgeId(0,1)
   assert_equal 15,   grid.edgeId(0,6)
   assert_equal 15,   grid.edgeId(6,1)
+  assert_equal [0.0, 0.5, 1.0], grid.geomCurveT(15,0)
+  assert_equal [1.0, 0.5, 0.0], grid.geomCurveT(15,1)
  end
 
  def testSplitWithoutGeometryEdge4
