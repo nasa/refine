@@ -1,3 +1,9 @@
+2004-08-09 16:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R =
+	MIN(sqrt(AR),2.5). Previous value of MIN(sqrt(AR),5.0) went
+	unstable for double cone boom case.
+
 2004-08-09 08:05 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.0 Release.

@@ -932,7 +932,7 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
       xyz4[2] = z4;
    
       AR = 1.0 / gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 );
-      R = MIN(sqrt(AR),5.0);
+      R = MIN(sqrt(AR),2.5);
       onePlusR = 1.0 + R;
 
       /* node1 */
