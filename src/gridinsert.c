@@ -643,6 +643,15 @@ Grid *gridInsertLineOnSymPlane(Grid *grid, int n,
   return grid;
 }
 
+Grid *gridInsertLine(Grid *grid, int n, int *line )
+{
+
+  grid->nline = n+1;
+  grid->line = line;
+
+  return grid;
+}
+
 Grid *gridVerifyEdgesInLine(Grid *grid)
 {
   int i, n0, n1;

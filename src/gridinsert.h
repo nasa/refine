@@ -35,6 +35,7 @@ Grid *gridFreezeGoodNodes(Grid *g, double goodAR,
 
 Grid *gridInsertLineOnSymPlane(Grid *g, int nSegments, 
 			       double x0, double x1, double z);
+Grid *gridInsertLine(Grid *g, int nSegments, int *line );
 Grid *gridVerifyEdgesInLine(Grid *g);
 END_C_DECLORATION
 
