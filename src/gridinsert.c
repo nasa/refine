@@ -673,12 +673,12 @@ Grid *gridVerifyEdgesInLine(Grid *grid)
 	      adjValid(it0) && !gotIt; 
 	      it0 = adjNext(it0) ) {
 	  gridCell( grid, adjItem(it0), nodes0 );
-	  for(i0=0;i0<4;i0++){
+	  for(i0=0;i0<4&&!gotIt;i0++){
 	    for ( it1 = adjFirst(grid->cellAdj,nodes0[i0]); 
 		  adjValid(it1) && !gotIt; 
 		  it1 = adjNext(it1) ) {
 	      gridCell( grid, adjItem(it1), nodes1 );
-	      for(i1=0;i1<4;i1++){
+	      for(i1=0;i1<4&&!gotIt;i1++){
 		if (nodes1[i1] == n1 && !gridNodeFrozen( grid, nodes0[i0] )) {
 		  gridCollapseEdge(grid, n0, nodes0[i0], 0.0);
 		  gotIt = gridCellEdge( grid, n0, n1 );
