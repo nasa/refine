@@ -728,6 +728,7 @@ Grid *gridWriteTecplotSurfaceZone(Grid *grid)
 
   if (!grid->tecplotFileOpen) {
     grid->tecplotFile = fopen("grid.t","w");
+    grid->tecplotFileOpen = TRUE;
     fprintf(grid->tecplotFile, "title=\"tecplot refine geometry file\"\n");
     fprintf(grid->tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
   }
