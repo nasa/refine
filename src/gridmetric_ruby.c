@@ -129,6 +129,27 @@ VALUE grid_volume( VALUE self, VALUE rb_nodes )
   return rb_float_new( gridVolume( grid, nodes ) );
 }
 
+VALUE grid_cellVolumeDerivative( VALUE self, VALUE rb_nodes )
+{
+  int i, nodes[4];
+  double vol, dVoldx[3];
+  VALUE rb_Vol;
+  GET_GRID_FROM_SELF;
+
+  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
+
+  if ( grid==gridCellVolumeDerivative( grid, nodes, &vol, dVoldx )){
+    rb_Vol = rb_ary_new2(4);
+    rb_ary_store( rb_Vol, 0, rb_float_new(vol) );
+    rb_ary_store( rb_Vol, 1, rb_float_new(dVoldx[0]) );
+    rb_ary_store( rb_Vol, 2, rb_float_new(dVoldx[1]) );
+    rb_ary_store( rb_Vol, 3, rb_float_new(dVoldx[2]) );
+  }else{
+    rb_Vol = Qnil;
+  }
+  return rb_Vol;
+}
+
 VALUE grid_ar( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -357,7 +378,8 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "edgeLength", grid_edgeLength, 2 );
   rb_define_method( cGridMetric, "edgeRatio", grid_edgeRatio, 2 );
   rb_define_method( cGridMetric, "averageEdgeLength", grid_averageEdgeLength, 1 );
-  rb_define_method( cGridMetric, "largestRatioEdge", grid_largestRatioEdge, 1 );  rb_define_method( cGridMetric, "smallestRatioEdge", grid_smallestRatioEdge, 1 );
+  rb_define_method( cGridMetric, "largestRatioEdge", grid_largestRatioEdge, 1 );
+  rb_define_method( cGridMetric, "smallestRatioEdge", grid_smallestRatioEdge, 1 );
   rb_define_method( cGridMetric, "spacing", grid_spacing, 1 );
   rb_define_method( cGridMetric, "resetSpacing", grid_resetSpacing, 0 );
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
@@ -369,9 +391,12 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "convertMetricToJacobian", 
 		    grid_convertMetricToJacobian, 1 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
+  rb_define_method( cGridMetric, "cellVolumeDerivative", grid_cellVolumeDerivative, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
-  rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );  rb_define_method( cGridMetric, "nodeARDerivative", grid_nodeARDerivative, 1 );  rb_define_method( cGridMetric, "storeARDerivative", grid_storeARDerivative, 1 );
+  rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );
+  rb_define_method( cGridMetric, "nodeARDerivative", grid_nodeARDerivative, 1 );
+  rb_define_method( cGridMetric, "storeARDerivative", grid_storeARDerivative, 1 );
   rb_define_method( cGridMetric, "storedARDegree", grid_storedARDegree, 0 );
   rb_define_method( cGridMetric, "minVolume", grid_minVolume, 0 );
   rb_define_method( cGridMetric, "minAR", grid_minAR, 0 );

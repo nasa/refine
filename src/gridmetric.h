@@ -40,6 +40,8 @@ Grid *gridCopySpacing(Grid *g, int originalNode, int newNode);
 Grid *gridConvertMetricToJacobian(Grid *g, double *m, double *j);
 
 double gridVolume(Grid *g, int *nodes );
+Grid *gridCellVolumeDerivative(Grid *g, int *nodes, 
+			       double *volume, double *dVoldx );
 double gridAR(Grid *g, int *nodes );
 double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
 Grid *gridNodeAR(Grid *g, int node, double *ar );

@@ -330,6 +330,37 @@ double gridVolume(Grid *grid, int *nodes )
   return gridDotProduct(norm,edge3)/6.0;
 }
 
+Grid *gridCellVolumeDerivative(Grid *grid, int *nodes, 
+			       double *volume, double *dVoldx )
+{
+  double *xyz0, *xyz1, *xyz2, *xyz3;
+  double edge1[3], edge2[3], edge3[3];
+
+  if ( !gridValidNode(grid, nodes[0]) || 
+       !gridValidNode(grid, nodes[1]) ||
+       !gridValidNode(grid, nodes[2]) ||
+       !gridValidNode(grid, nodes[3]) ) {
+    return NULL;
+  }
+
+  xyz0=gridNodeXYZPointer(grid,nodes[0]);
+  xyz1=gridNodeXYZPointer(grid,nodes[1]);
+  xyz2=gridNodeXYZPointer(grid,nodes[2]);
+  xyz3=gridNodeXYZPointer(grid,nodes[3]);
+
+  gridSubtractVector( xyz3, xyz1, edge1);
+  gridSubtractVector( xyz2, xyz1, edge2);
+  gridSubtractVector( xyz0, xyz1, edge3);
+
+  gridCrossProduct( edge1, edge2, dVoldx );
+
+  gridVectorScale(dVoldx,(1.0/6.0));
+
+  *volume = gridDotProduct(dVoldx,edge3);
+
+  return grid;
+}
+
 Grid *gridNodeAR(Grid *grid, int node, double *ar )
 {
   AdjIterator it;

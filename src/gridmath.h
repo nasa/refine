@@ -38,6 +38,7 @@ BEGIN_C_DECLORATION
 
 #define gridVectorCopy(a,b) (a)[0]=(b)[0];(a)[1]=(b)[1];(a)[2]=(b)[2];
 #define gridVectorMirror(a,b) (a)[0]=-(b)[0];(a)[1]=-(b)[1];(a)[2]=-(b)[2];
+#define gridVectorScale(v,s) (v)[0]*=(s); (v)[1]*=(s); (v)[2]*=(s);
 
 double gridVectorLength(double *norm);
 void gridVectorNormalize(double *norm);
