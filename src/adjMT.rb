@@ -45,13 +45,21 @@ class TestAdj < Test::Unit::TestCase
   assert_equal 12, @adj.nadj
  end
 
- def testReallocateNNodesUpAndDown
+ def testReallocateNNodesUp
   assert_equal 4, @adj.nnode
   assert_not_nil  @adj.realloc(9)
   assert_equal 9, @adj.nnode
   assert_equal @adj,  @adj.register( 8, 899 )
   assert_not_nil  @adj.realloc(0)
   assert_equal 1, @adj.nnode
+ end
+
+ def testReallocateDownWithoutMemoryLeak
+  assert_equal @adj, @adj.register( 2, 299 )
+  assert_not_nil  @adj.realloc(0)
+  assert_equal 1, @adj.nnode
+  6.times {|i| assert_not_nil @adj.register(0,i)}
+  assert_equal  6, @adj.nadj
  end
 
  def testIteratorInitialState
