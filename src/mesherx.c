@@ -236,6 +236,7 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
   double *newt;
   int *newnodes;
   int i0, i1;
+  int edge, nodes[2], id;
 
   Grid *grid;
   grid = layerGrid(layer);
@@ -271,7 +272,14 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
 	newnodes[i]=gridAddNode(grid,newxyz[0+3*i],newxyz[1+3*i],newxyz[2+3*i]);
       }
 
-      gridDeleteThawedEdgeSegments(grid,edgeId);
+      for(edge=0;edge<gridMaxEdge(grid);edge++){
+	if( (grid==gridEdge(grid,edge,nodes,&id)) && 
+	    (id == edgeId) && 
+	    !layerEdgeInLayer(layer,edge) ){
+	  gridRemoveEdge(grid,edge);
+	}
+      }
+
       for(i=1;i<nedgenode;i++){
 	i0 = i-1; i1 = i;
 	gridAddEdge(grid,newnodes[i0],newnodes[i1],edgeId,newt[i0],newt[i1]);
