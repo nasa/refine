@@ -27,6 +27,8 @@ struct Normal {
   int root, tip;
   double direction[3];
   double height;
+  double length;
+  double maxlength;
   bool terminated;
 };
 
@@ -508,6 +510,8 @@ Layer *layerInitializeNormal(Layer *layer, int normal)
   layer->normal[normal].direction[1] = 0.0;
   layer->normal[normal].direction[2] = 0.0;
   layer->normal[normal].height = 1.0;
+  layer->normal[normal].length = 0.0;
+  layer->normal[normal].maxlength = 0.0;
   layer->normal[normal].terminated = FALSE;
 
   return layer;
@@ -530,6 +534,8 @@ int layerDuplicateNormal(Layer *layer, int normal)
   layer->normal[newone].direction[1] = layer->normal[normal].direction[1];
   layer->normal[newone].direction[2] = layer->normal[normal].direction[2];
   layer->normal[newone].height =       layer->normal[normal].height;
+  layer->normal[newone].length =       layer->normal[normal].length;
+  layer->normal[newone].maxlength =    layer->normal[normal].maxlength;
   layer->normal[newone].terminated =   layer->normal[normal].terminated;
 
   return newone;
@@ -929,6 +935,34 @@ Layer *layerNormalMinDot(Layer *layer, int normal,
   }
   
   return layer;
+}
+
+Layer *layerSetNormalMaxLength(Layer *layer, int normal, double maxLength)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
+  layer->normal[normal].maxlength=maxLength;
+
+  return layer;
+}
+
+Layer *layerSetPolynomialMaxHeight(Layer *layer, 
+				   double constant, double slope,
+				   double exponent,
+				   double *origin, double *direction)
+{
+  int normal;
+  double distance;
+  double distanceVector[3], normalOrigin[3];
+  
+  for(normal=0;normal<layerNNormal(layer);normal++){
+    gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer,normal), normalOrigin);
+    gridSubtractVector(normalOrigin,origin,distanceVector);
+    distance = gridDotProduct(distanceVector,direction);
+    if (distance >= 0.0 ) 
+      layerSetNormalMaxLength( layer, normal, constant + slope*pow(distance,exponent) );
+  }
+  return layer;	
 }
 
 Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
@@ -1503,6 +1537,7 @@ Layer *layerAdvance(Layer *layer)
 	xyz[i] = xyz[i] 
 	  + layer->normal[normal].height
           * layer->normal[normal].direction[i];
+      layer->normal[normal].length += layer->normal[normal].height;
       tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
       if ( EMPTY == tip) return NULL;
       layer->normal[normal].tip = tip;
@@ -1802,6 +1837,26 @@ Layer *layerTerminateNormalWithX(Layer *layer, int direction, double x)
   }
   printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
   return layer;
+}
+
+int layerTerminateNormalWithLength(Layer *layer, double ratio)
+{
+  int normal, nterm, totalterm;
+  
+  if (layerNNormal(layer) == 0 ) return NULL;
+
+  nterm = 0;
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    if ( layer->normal[normal].length > 
+	 (ratio * layer->normal[normal].maxlength) ) {
+      layerTerminateNormal(layer, normal); 
+      nterm++; 
+    }
+  }
+  totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
+  printf("%d of %d normals terminted.\n",
+	 totalterm,layerNNormal(layer) );
+  return totalterm;
 }
 
 Layer *layerInsertPhantomTriangle(Layer *layer, double dz )

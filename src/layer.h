@@ -70,8 +70,12 @@ Layer *layerGetNormalHeight(Layer *, int normal, double *height);
 Layer *layerScaleNormalHeight(Layer *, double scale);
 Layer *layerScaleNormalHeightWithPolynomial(Layer *, 
 					    double constant, double slope,
-					     double exponent, double scale,
+				            double exponent, double scale,
 					    double *origin, double *direction);
+Layer *layerSetNormalMaxLength(Layer *, int normal, double maxLength);
+Layer *layerSetPolynomialMaxLength(Layer *, double constant, double slope, 
+				            double exponent, double *origin,
+				            double *direction);
 Layer *layerVisibleNormals(Layer *, double dotLimit, double radianLimit );
 Layer *layerSmoothNormalDirection(Layer *);
 Layer *layerProjectNormalsToConstraints(Layer *);
@@ -109,6 +113,7 @@ Layer *layerWiggle(Layer *, double height );
 Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
 Layer *layerTerminateNormalWithX(Layer *, int direction, double x);
+int layerTerminateNormalWithLength(Layer *, double ratio);
 
 Layer *layerInsertPhantomTriangle(Layer *, double dz);
 Layer *layerVerifyPhantomEdges(Layer *);
