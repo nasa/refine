@@ -1,3 +1,9 @@
+2005-02-03 22:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) added. This is a copy and
+	edit of gridSmoothNodeQP to smooth faces using quadratic
+	programing.
+	
 2005-02-03 17:37 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridStoreAllARDerivatives) moved to gridcad

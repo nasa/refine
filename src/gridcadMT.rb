@@ -317,7 +317,12 @@ class TestGridCAD < Test::Unit::TestCase
   assert_nil         grid.linearProgramUV(-1)
   assert_nil         grid.linearProgramUV(15)
   assert_equal grid, grid.linearProgramUV(3)
-  assert_equal [0,0,1], grid.nodeXZY(3)
+  assert_equal [0,0,1], grid.nodeXYZ(3)
+  assert_equal grid, grid.linearProgramUV(0)
+  tol =1.0e-8
+  assert_in_delta( -0.346482322781409, grid.nodeXYZ(0)[0], tol )
+  assert_in_delta( -0.346482322781409, grid.nodeXYZ(0)[1], tol )
+  assert_in_delta(  0.000000000000000, grid.nodeXYZ(0)[2], tol )
  end
 
  def gemGrid(nequ=4,disp=0.2,dent=nil, dentratio=-0.5)

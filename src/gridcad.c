@@ -720,65 +720,69 @@ Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
 
 Grid *gridLinearProgramUV(Grid *grid, int node )
 {
-  int i, minCell, nearestCell;
-  double minAR, nearestAR, nearestDifference, newAR, searchDirection[3];
+  int i, minFace, nearestFace;
+  double minCost, nearestCost, nearestDifference, newCost, searchDirection[3];
   double g00, g01, g11, minRatio, nearestRatio;
   double length, projection;
-  double deltaAR, currentAlpha, alpha, lastAlpha;
+  double deltaCost, currentAlpha, alpha, lastAlpha;
   double predictedImprovement, actualImprovement, lastImprovement;
-  double minDirection[3], nearestDirection[3], dARdX[3];
-  double origXYZ[3], xyz[3];
+  double minDirection[3], nearestDirection[3], dCostdX[3];
+  int face, faceId, nodes[3];
+  double origUV[2], uv[2];
   double denom;
   GridBool searchFlag, goodStep;
   int iteration;
 
-  return NULL;
-
-  if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;
+  if ( !gridValidNode(grid, node) ) return NULL; 
   if ( !gridGeometryFace(grid, node) || 
-       gridGeometryEdge(grid, node)) return NULL;
+       gridGeometryEdge(grid, node)) return grid;
+
+  face = adjItem(adjFirst(gridFaceAdj(grid),node));
+  if ( grid != gridFace(grid, face, nodes, &faceId)) return NULL;
+  if ( grid != gridNodeUV(grid, node, faceId, origUV)) return NULL;    
+
   if ( grid != gridStoreFaceCostParameterDerivatives(grid, node ) )return NULL;
 
-  minAR =2.1;
-  minCell = EMPTY;
+  minCost =2.1;
+  minFace = EMPTY;
   for (i=0;i<gridStoredCostDegree(grid);i++){
-    if (gridStoredCost(grid,i)<minAR){
-      minAR = gridStoredCost(grid,i);
-      minCell = i;
+    if (gridStoredCost(grid,i)<minCost){
+      minCost = gridStoredCost(grid,i);
+      minFace = i;
     }
   }
 
   searchFlag = FALSE;
   if (searchFlag) {
-    gridStoredCostDerivative(grid, minCell, searchDirection);
+    gridStoredCostDerivative(grid, minFace, searchDirection);
   }else{
-    nearestCell=EMPTY;
-    nearestAR = 2.1;
+    nearestFace=EMPTY;
+    nearestCost = 2.1;
     for (i=0;i<gridStoredCostDegree(grid);i++){
-      if ( i != minCell){
-	nearestDifference = ABS(gridStoredCost(grid,i)-minAR);
-	if (nearestDifference<nearestAR) {
-	  nearestCell=i;
-	  nearestAR = nearestDifference;
+      if ( i != minFace){
+	nearestDifference = ABS(gridStoredCost(grid,i)-minCost);
+	if (nearestDifference<nearestCost) {
+	  nearestFace=i;
+	  nearestCost = nearestDifference;
 	}
       }
     }
-    if (nearestCell == EMPTY || nearestAR > 0.001 ){
-      gridStoredCostDerivative(grid, minCell, searchDirection);
-      gridStoredCostDerivative(grid, minCell, minDirection);
+    if (nearestFace == EMPTY || nearestCost > 0.001 ){
+      gridStoredCostDerivative(grid, minFace, searchDirection);
+      gridStoredCostDerivative(grid, minFace, minDirection);
     }else{
-      gridStoredCostDerivative(grid, minCell, minDirection);
-      gridStoredCostDerivative(grid, nearestCell, nearestDirection);
+      gridStoredCostDerivative(grid, minFace, minDirection);
+      gridStoredCostDerivative(grid, nearestFace, nearestDirection);
       g00 = gridDotProduct(minDirection,minDirection);
       g11 = gridDotProduct(nearestDirection,nearestDirection);
       g01 = gridDotProduct(minDirection,nearestDirection);
       /*
-       * Note: If two incedent cells have the same AR (more specifically
-       *       ARDerivative), then nearestDirection == minDirection
+       * Note: If two incedent cells have the same Cost (more specifically
+       *       CostDerivative), then nearestDirection == minDirection
        *       which will result in 0/0 for nearestRatio (g00 == g11).
        *       Could have check nearestDifference != 0.0 in above loop
-       *       before setting nearestCell.  Would then have same result
-       *       (e.g. searchDirection == minDirection) since nearestCell
+       *       before setting nearestFace.  Would then have same result
+       *       (e.g. searchDirection == minDirection) since nearestFace
        *       would be EMPTY and previous block would execute.
        */
       denom = g00 + g11 - 2*g01;
@@ -801,49 +805,52 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
     }
   }
 
+  /* printf("\n node %d dir %f %f %f\n",node,searchDirection[0],
+     searchDirection[1],searchDirection[2]); */
+
   length = sqrt(gridDotProduct(searchDirection,searchDirection));
   for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
 
   alpha = 1.0;
   for (i=0;i<gridStoredCostDegree(grid);i++){
-    if (i != minCell ) {
-      gridStoredCostDerivative(grid,i,dARdX);
-      projection = gridDotProduct(searchDirection,dARdX);
-      deltaAR = gridStoredCost(grid,i) - minAR;
+    if (i != minFace ) {
+      gridStoredCostDerivative(grid,i,dCostdX);
+      projection = gridDotProduct(searchDirection,dCostdX);
+      deltaCost = gridStoredCost(grid,i) - minCost;
       if (ABS(length-projection) < 1e-12){
 	currentAlpha=0.0; /* no intersection */
       }else{
-	currentAlpha = deltaAR / ( length + projection);
+	currentAlpha = deltaCost / ( length + projection);
       }
       if (currentAlpha > 0 && currentAlpha < alpha ) alpha = currentAlpha;
     }
   }
 
-  //printf( "node %5d deg %3d active %3d old %12.9f\n",
-  //	  node, gridStoredCostDegree(grid), minCell, minAR );
+  /* printf( "node %5d deg %3d active %3d old %12.9f\n",
+     node, gridStoredCostDegree(grid), minFace, minCost ); */
   
   goodStep = FALSE;
   actualImprovement = 0.0;
   lastImprovement = -10.0;
   lastAlpha = alpha;
   iteration = 0;
-  while (alpha > 10.e-10 && !goodStep && iteration < 30 ) {
+  while (alpha > 0.1e-9 && !goodStep && iteration < 30 ) {
     iteration++;
 
     predictedImprovement = length*alpha;
   
-    for (i=0;i<3;i++) xyz[i] = origXYZ[i] + alpha*searchDirection[i];
-    gridSetNodeXYZ(grid,node,xyz);
-    gridNodeAR(grid,node,&newAR);
-    actualImprovement = newAR-minAR;
-    //printf(" alpha %12.5e predicted %12.9f actual %12.9f new %12.9f\n",
-    //	   alpha, predictedImprovement, actualImprovement, newAR);
+    for (i=0;i<2;i++) uv[i] = origUV[i] + alpha*searchDirection[i];
+    gridEvaluateFaceAtUV(grid, node, uv );
+    gridNodeFaceMR(grid,node,&newCost);
+    actualImprovement = newCost-minCost;
+    /* printf(" alpha %12.5e predicted %12.9f actual %12.9f new %12.9f\n",
+       alpha, predictedImprovement, actualImprovement, newCost); */
 
     if ( actualImprovement > 0.0 && actualImprovement < lastImprovement) {
-      for (i=0;i<3;i++) xyz[i] = origXYZ[i] + lastAlpha*searchDirection[i];
-      gridSetNodeXYZ(grid,node,xyz);
-      gridNodeAR(grid,node,&newAR);
-      actualImprovement = newAR-minAR;
+      for (i=0;i<2;i++) uv[i] = origUV[i] + lastAlpha*searchDirection[i];
+      gridEvaluateFaceAtUV(grid,node,uv);
+      gridNodeFaceMR(grid,node,&newCost);
+      actualImprovement = newCost-minCost;
       goodStep = TRUE;
     }
     
@@ -852,20 +859,17 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
     }else{
       lastImprovement = actualImprovement;
       lastAlpha = alpha;
-      alpha =alpha*0.5;
+      alpha =alpha*0.7;
     }
   }
 
-  //printf( "node %5d deg %3d active %3d old %8.5f new %8.5f\n",
-  //  node, gridStoredCostDegree(grid), minCell, minAR, newAR );
+  /* printf( "node %5d deg %3d active %3d old %8.5f new %8.5f\n",
+     node, gridStoredCostDegree(grid), minFace, minCost, newCost ); */
 
   if ( actualImprovement <= 0.0  ){
-    gridSetNodeXYZ(grid,node,origXYZ);
+    gridEvaluateFaceAtUV(grid,node,origUV);
     return NULL;
   }
-
-  if ( newAR > 0.6) return NULL;
-  if ( actualImprovement <= 0.000001 ) return NULL;
 
   return grid;
 }
@@ -1292,7 +1296,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   lastImprovement = -10.0;
   lastAlpha = alpha;
   iteration = 0;
-  while (alpha > 10.e-10 && !goodStep && iteration < 30 ) {
+  while (alpha > 1.0e-10 && !goodStep && iteration < 30 ) {
     iteration++;
 
     predictedImprovement = length*alpha;
