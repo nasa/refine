@@ -1091,6 +1091,11 @@ Grid *gridRemoveNode(Grid *grid, int node )
   return grid;
 }
 
+bool gridValidNode(Grid *grid, int node )
+{
+  return (DBL_MAX != grid->xyz[0+3*node]);
+}
+
 Grid *gridNodeXYZ(Grid *grid, int node, double *xyz )
 {
   if (node >=grid->nnode) return NULL;
