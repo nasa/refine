@@ -194,14 +194,19 @@ Grid *gridLoadPart( char *project )
     edgeEndPoint[1]--;
 
     if (nedgenode == 2) {
-      gridAddEdge(grid, edgeEndPoint[0], edgeEndPoint[1], iedge);
+      gridAddEdge(grid, edgeEndPoint[0], edgeEndPoint[1], 
+		  iedge, trange[0], trange[1]);
     }else{
-      gridAddEdge(grid, edgeEndPoint[0], inode, iedge);
+      gridAddEdge(grid, edgeEndPoint[0], inode, iedge,
+		  edge->param[0], edge->param[1]);
       for( i=1 ; i < (nedgenode-2) ; i++ ) { // skip end segments  
-	gridAddEdge(grid, inode, inode+1, iedge);
+	gridAddEdge(grid, inode, inode+1, iedge,
+		  edge->param[i], edge->param[i+1]);
 	inode++;
       }
-      gridAddEdge(grid, inode, edgeEndPoint[1], iedge);
+      gridAddEdge(grid, inode, edgeEndPoint[1], iedge,
+		  edge->param[nedgenode-2], 
+		  edge->param[nedgenode-1]);
       inode++;
     }
   }
