@@ -170,8 +170,9 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
   AdjIterator it;
   bool volumeEdge;
 
-  if ( gridGeometryEdge(grid, n0) ) return NULL;
-  if ( gridGeometryEdge(grid, n1) ) return NULL;
+  if ( gridGeometryNode(grid, n1) ) return NULL;
+  if ( gridGeometryEdge(grid, n1) && !gridGeometryEdge(grid, n0) ) return NULL;
+
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
 
   volumeEdge = (grid->nequ == grid->ngem);
@@ -183,6 +184,8 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
     xyzAvg[i] = 0.5 * ( xyz0[i] + xyz1[i] );
     if ( volumeEdge && gridGeometryFace(grid, n0) ) xyzAvg[i] = xyz0[i];
     if ( volumeEdge && gridGeometryFace(grid, n1) ) xyzAvg[i] = xyz1[i];
+    if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) 
+      xyzAvg[i] = xyz0[i];
     grid->xyz[i+3*n0] = xyzAvg[i];
     grid->xyz[i+3*n1] = xyzAvg[i];
   }
@@ -208,15 +211,34 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
   }
 
   if ( !volumeEdge ) {
-    faceId = grid->faceId[adjItem(adjFirst(grid->faceAdj,n0))];
-    if ( NULL == gridNodeUV(grid,n0,faceId,uv0) )
-      printf("CollapseEdge: %s: %d: NULL gridNodeUV n0\n",__FILE__,__LINE__);
-    if ( NULL == gridNodeUV(grid,n1,faceId,uv1) )
-      printf("CollapseEdge: %s: %d: NULL gridNodeUV n1\n",__FILE__,__LINE__);
-    for (i=0 ; i<2 ; i++) uvAvg[i] = 0.5 * ( uv0[i] + uv1[i] );
+    int gap0, gap1, faceId0, faceId1;
+    double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
+    double newId0uv[2], newId1uv[2]; 
+    int edge, edgeId;
+    double t0, t1, newT;
+    gap0 = grid->equ[0];
+    gap1 = grid->equ[grid->ngem];
+    face0 = gridFindFace(grid, n0, n1, gap0 );
+    face1 = gridFindFace(grid, n0, n1, gap1 );
+    faceId0 = gridFaceId(grid, n0, n1, gap0 );
+    faceId1 = gridFaceId(grid, n0, n1, gap1 );
+    if ( faceId0 == EMPTY || faceId1 == EMPTY ) return EMPTY;
+    gridNodeUV(grid,n0,faceId0,n0Id0uv);
+    gridNodeUV(grid,n1,faceId0,n1Id0uv);
+    gridNodeUV(grid,n0,faceId1,n0Id1uv);
+    gridNodeUV(grid,n1,faceId1,n1Id1uv);
+    if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) {
+      newId0uv[0] = n0Id0uv[0];
+      newId0uv[1] = n0Id0uv[1];
+      newId1uv[0] = n0Id1uv[0];
+      newId1uv[1] = n0Id1uv[1];
+    }else{
+      newId0uv[0] = 0.5 * (n0Id0uv[0]+n1Id0uv[0]);
+      newId0uv[1] = 0.5 * (n0Id0uv[1]+n1Id0uv[1]);
+      newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
+      newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
+    }
 
-    face0 = gridFindFace(grid, n0, n1, grid->equ[0] );
-    face1 = gridFindFace(grid, n0, n1, grid->equ[grid->ngem] );
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
 
@@ -230,7 +252,30 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
 	if (grid->f2n[i+3*face] == n1 ) 
 	  grid->f2n[i+3*face] = n0;
     }
-    gridSetNodeUV(grid, n0, faceId, uvAvg[0], uvAvg[1]);
+    gridSetNodeUV(grid, n0, faceId0, newId0uv[0], newId0uv[1]);
+    gridSetNodeUV(grid, n0, faceId1, newId1uv[0], newId1uv[1]);
+
+    edge = gridFindEdge(grid,n0,n1);
+    if ( edge != EMPTY ) {
+      edgeId = gridEdgeId(grid,n0,n1);
+      t0 = grid->edgeT[0+2*edge];
+      t1 = grid->edgeT[1+2*edge];
+      newT = 0.5 * (t0+t1);
+      gridRemoveEdge(grid,edge);
+
+      it = adjFirst(grid->edgeAdj, n1);
+      while (adjValid(it)) {
+	edge = adjItem(it);
+	adjRemove( grid->edgeAdj, n1, edge );
+	adjRegister( grid->edgeAdj, n0, edge );
+	it = adjFirst(grid->edgeAdj, n1);
+	for ( i=0 ; i<2 ; i++ ) 
+	  if (grid->e2n[i+2*edge] == n1 ) 
+	    grid->e2n[i+2*edge] = n0;
+      }
+      gridSetNodeT(grid, n0, edgeId, newT);
+
+    }
   }
 
   if ( volumeEdge && gridGeometryFace(grid, n1) ) {
@@ -240,9 +285,9 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
       adjRemove( grid->faceAdj, n1, face );
       adjRegister( grid->faceAdj, n0, face );
       it = adjFirst(grid->faceAdj, n1);
-      for ( i=0 ; i<3 ; i++ ) 
-	if (grid->f2n[i+3*face] == n1 ) 
-	  grid->f2n[i+3*face] = n0;    
+      for ( i=0 ; i<3 ; i++ )
+	if (grid->f2n[i+3*face] == n1 )
+	  grid->f2n[i+3*face] = n0;
     }
   }
 
