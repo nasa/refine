@@ -1,3 +1,9 @@
+2005-01-28 14:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridMinARAroundNodeExceptGemRecon) operates
+	like gridMinARAroundNodeExceptGem, except it reconnects cells as
+	is works.
+
 2005-01-28 11:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridCollapseEdge) added a check for negative

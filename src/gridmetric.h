@@ -77,6 +77,7 @@ double gridMinVolume(Grid *g);
 GridBool gridNegCellAroundNode(Grid *g, int node );
 GridBool gridNegCellAroundNodeExceptGem(Grid *g, int node );
 double gridMinARAroundNodeExceptGem(Grid *g, int node );
+double gridMinARAroundNodeExceptGemRecon(Grid *g, int node, int becomes );
 double gridMinAR(Grid *g);
 double gridMinThawedAR(Grid *g);
 
