@@ -320,6 +320,18 @@ VALUE grid_thawNode( VALUE self, VALUE node )
   return ( grid == gridThawNode( grid, NUM2INT(node) ) ? self : Qnil );
 }
 
+VALUE grid_freezeAll( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridFreezeAll( grid ) ? self : Qnil );
+}
+
+VALUE grid_thawAll( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridThawAll( grid ) ? self : Qnil );
+}
+
 VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
   VALUE rb_gem;
@@ -547,6 +559,8 @@ void Init_Grid()
   rb_define_method( cGrid, "nodeFrozen", grid_nodeFrozen, 1 );
   rb_define_method( cGrid, "freezeNode", grid_freezeNode, 1 );
   rb_define_method( cGrid, "thawNode", grid_thawNode, 1 );
+  rb_define_method( cGrid, "freezeAll", grid_freezeAll, 0 );
+  rb_define_method( cGrid, "thawAll", grid_thawAll, 0 );
 
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );

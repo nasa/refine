@@ -1288,6 +1288,20 @@ Grid *gridThawNode( Grid *grid, int node )
   return grid;
 }
 
+Grid *gridFreezeAll( Grid *grid )
+{
+  int node;
+  for ( node = 0; node<grid->maxnode; node++ ) grid->frozen[node] = TRUE;
+  return grid;
+}
+
+Grid *gridThawAll( Grid *grid )
+{
+  int node;
+  for ( node = 0; node<grid->maxnode; node++ ) grid->frozen[node] = FALSE;
+  return grid;
+}
+
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {
   AdjIterator it;

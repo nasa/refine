@@ -91,6 +91,18 @@ class TestGrid < Test::Unit::TestCase
   assert_equal false, @grid.nodeFrozen(1)
  end
 
+ def testGlobalFreezeState
+  grid = Grid.new(2,0,0,0)
+  assert_equal 0,     grid.addNode(0,0,0)
+  assert_equal 1,     grid.addNode(1,0,0)
+  assert_equal grid,  grid.freezeAll
+  assert_equal true,  grid.nodeFrozen(0)
+  assert_equal true,  grid.nodeFrozen(1)
+  assert_equal grid,  grid.thawAll
+  assert_equal false, grid.nodeFrozen(0)
+  assert_equal false, grid.nodeFrozen(1)
+ end
+
  def testReplaceCell
   grid = Grid.new(8,2,0,0)
   assert_equal grid, grid.addCell(0,1,2,3).addCell(4,5,6,7)
