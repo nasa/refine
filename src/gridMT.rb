@@ -243,8 +243,11 @@ end
   assert_equal 4, grid.nodeDeg(1)
  end
 
- # dent for both ways and neg cells
- 
+# put faces in
+# make a gem case with gap and same face id's
+# make a gem case with gap and different face id's
+# make a gem case with gap and same face id's and existing backside face
+
 
  def gemGrid(nequ=4, a=0.1, dent=nil, x0 = 1.0)
   grid = Grid.new(nequ+2,nequ)
