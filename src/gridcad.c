@@ -291,7 +291,6 @@ Grid *gridProjectNode(Grid *grid, int node )
   int nodes[3];
   int edge, edgeId;
   int face, faceId;
-  AdjIterator it;
 
   if ( gridGeometryNode( grid, node ) ) { 
     return gridUpdateParameters(grid,node);
@@ -316,7 +315,6 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
   int nodes[3];
   int edge, edgeId;
   int face, faceId;
-  AdjIterator it;
   int vol = 1;
   double t, uv[2], xyz[3], xyznew[3];
 

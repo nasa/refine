@@ -709,9 +709,6 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   GridBool volumeEdge;
   int iequ, equ0, equ1;
 
-  int parent;
-  double origxyz[3], tuv[2], tuv0[2], tuv1[2];
-
   int gap0, gap1, faceId0, faceId1;
   double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
   double newId0uv[2], newId1uv[2], uvAvg[2]; 
