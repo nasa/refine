@@ -237,6 +237,20 @@ Grid children can register methods to handle packing, reordering,
 reallocation, and deallocation @code{gridAttach*}. These registered
 methods can be unregistered with @code{gridDetach*}.
 
+Stuff can be added and removed with @code{gridAdd*} and
+@code{gridRemove*}. Remove operations leave empty spaces in arrays. To
+iterate over items, loop out to max array size and test each item to
+see if it is vaild. 
+
+@verbatim
+int cell;
+for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
+  if ( gridCellValid(grid,cell) ) {
+    printf ( "cell %d is valid.\n", cell );
+  } 
+}
+@end verbatim
+
 @node Index
 @unnumbered Index
 
