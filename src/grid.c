@@ -1285,7 +1285,7 @@ int gridGetNextCellGlobal(Grid *grid)
     if (grid->nUnusedCellGlobal > 0) {
       global = grid->unusedCellGlobal[0];
       for (i=1;i<grid->nUnusedCellGlobal;i++)
-	grid->unusedCellGlobal[i-1]=grid->unusedCellGlobal[i];;
+	grid->unusedCellGlobal[i-1]=grid->unusedCellGlobal[i];
       grid->nUnusedCellGlobal--;
     }else{
       global = grid->globalNCell;
