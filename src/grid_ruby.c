@@ -297,12 +297,9 @@ VALUE grid_setNodeT( VALUE self, VALUE node, VALUE edgeId, VALUE t )
 VALUE grid_addEdge( VALUE self, VALUE n0, VALUE n1, 
 		    VALUE edgeId, VALUE t0, VALUE t1 )
 {
-  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
-  returnedGrid = 
-    gridAddEdge(grid, NUM2INT(n0), NUM2INT(n1), 
-		NUM2INT(edgeId), NUM2DBL(t0), NUM2DBL(t1) );
-  return (returnedGrid==NULL?Qnil:self);
+  return INT2NUM(gridAddEdge(grid, NUM2INT(n0), NUM2INT(n1), 
+			     NUM2INT(edgeId), NUM2DBL(t0), NUM2DBL(t1) ));
 }
 
 VALUE grid_removeEdge( VALUE self, VALUE edge )

@@ -88,8 +88,8 @@ double gridNodeV(Grid *grid, int node, int faceId);
 Grid *gridNodeT(Grid *g, int node, int edgeId, double *t );
 Grid *gridSetNodeT(Grid *g, int node, int edgeId, double t );
 
-Grid *gridAddEdge(Grid *g, int n0, int n1, 
-		  int edgeId, double t0, double t1 );
+int gridAddEdge(Grid *g, int n0, int n1, 
+		int edgeId, double t0, double t1 );
 Grid *gridRemoveEdge(Grid *g, int edge );
 Adj *gridEdgeAdj(Grid *g);
 int gridFindEdge(Grid *g, int n0, int n1 );

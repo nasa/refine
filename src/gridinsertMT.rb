@@ -142,7 +142,7 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addFace(0,1,2,2)
   grid.addFace(1,0,5,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.addEdge(0,1,15, 0.0, 1.0)
+  grid.addEdge(0,1,15, 0.0, 1.0)
   assert_equal 1, grid.nedge
   assert_equal grid.nnode, grid.splitEdge(0,1)
   assert_equal 2, grid.nedge
@@ -258,7 +258,7 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addFaceUV(1,1.0,11.0,
 		 0,0.0,10.0,
 		 5,5.0,15.0,11)
-  assert_equal grid, grid.addEdge(0,2,10,0.0,2.0)
+  grid.addEdge(0,2,10,0.0,2.0)
   node = grid.addNode(-2.0,0.0,1.0)
   grid.addFaceUV(1,1.0,11.0,
 		 node,8.0,18.0,
@@ -277,7 +277,7 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addFaceUV(1,31.0,41.0,
 		 0,30.0,40.0,
 		 5,35.0,45.0,50)
-  assert_equal grid, grid.addEdge(0,1,10,0.0,1.0)
+  grid.addEdge(0,1,10,0.0,1.0)
   node = grid.addNode(-2.0,0.0,1.0)
   grid.addFaceUV(1,11.0,21.0,
 		 node,18.0,28.0,
@@ -285,7 +285,7 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addFaceUV(1,31.0,41.0,
 		 node,38.0,48.0,
 		 5,35.0,45.0,50)
-  assert_equal grid, grid.addEdge(1,node,10,1.0,8.0)
+  grid.addEdge(1,node,10,1.0,8.0)
   assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal [10.5,20.5], grid.nodeUV(0,20)
   assert_equal [30.5,40.5], grid.nodeUV(0,50)
@@ -294,7 +294,7 @@ class TestGridInsert < Test::Unit::TestCase
 
  def testCollapseVolumeEdgeNearGeomEdge0
   assert_not_nil     grid=gemGrid
-  assert_equal grid, grid.addEdge(0,2,10,0.0,1.0)
+  grid.addEdge(0,2,10,0.0,1.0)
   assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal [1.0,0.0,0.0], grid.nodeXYZ(0)
   assert_equal 0.0, grid.nodeT(0,10)
@@ -302,7 +302,7 @@ class TestGridInsert < Test::Unit::TestCase
 
  def testCollapseVolumeEdgeNearGeomEdge1
   assert_not_nil     grid=gemGrid
-  assert_equal grid, grid.addEdge(1,2,10,0.0,1.0)
+  grid.addEdge(1,2,10,0.0,1.0)
   assert_nil       grid.collapseEdge(0,1,0.5)
  end
 
@@ -380,7 +380,7 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addFaceUV(1,31.0,41.0,
 		 0,30.0,40.0,
 		 5,35.0,45.0,50)
-  assert_equal grid, grid.addEdge(0,1,10,0.0,1.0)
+  grid.addEdge(0,1,10,0.0,1.0)
   node = grid.addNode(-2.0,0.0,1.0)
   grid.addFaceUV(1,11.0,21.0,
 		 node,18.0,28.0,
@@ -388,7 +388,7 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addFaceUV(1,31.0,41.0,
 		 node,38.0,48.0,
 		 5,35.0,45.0,50)
-  assert_equal grid, grid.addEdge(1,node,10,1.0,8.0)
+  grid.addEdge(1,node,10,1.0,8.0)
 
   assert_not_nil           origXYZ = grid.nodeXYZ(0)
   assert_equal grid,       grid.setNGeomNode(2)
@@ -415,8 +415,8 @@ class TestGridInsert < Test::Unit::TestCase
  def testCollapseVolumeBetweenTwoEdges
   assert_not_nil     grid=gemGrid
   origXYZ = grid.nodeXYZ(0)
-  assert_equal grid, grid.addEdge(0,2,10,0,2)
-  assert_equal grid, grid.addEdge(1,2,20,1,2)
+  grid.addEdge(0,2,10,0,2)
+  grid.addEdge(1,2,20,1,2)
   assert             grid.geometryEdge(0)
   assert             grid.geometryEdge(1)
   assert_nil         grid.findEdge(0,1)
@@ -505,8 +505,8 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 0, grid.addNode(0,0,0)
   assert_equal 1, grid.addNode(1,0,0)
   assert_equal 2, grid.addNode(2,0,0)
-  assert_equal grid, grid.addEdge(0,1,1,0,1)
-  assert_equal grid, grid.addEdge(1,2,1,1,2)
+  grid.addEdge(0,1,1,0,1)
+  grid.addEdge(1,2,1,1,2)
   assert_equal [0,1,1], grid.edge(0)
   assert_equal 2, grid.nedge
   assert_equal( -1, grid.insertInToGeomEdge(5,0,0) )
@@ -527,8 +527,8 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 0, grid.addNode(0,0,0)
   assert_equal 1, grid.addNode(1,0,0)
   assert_equal 2, grid.addNode(2,0,0)
-  assert_equal grid, grid.addEdge(0,1,1,0,1)
-  assert_equal grid, grid.addEdge(1,2,1,1,2)
+  grid.addEdge(0,1,1,0,1)
+  grid.addEdge(1,2,1,1,2)
   assert_equal 1, grid.insertInToGeomEdge(1.01,0,0)
   assert_equal 3, grid.nnode
   assert_equal 2, grid.nedge

@@ -185,7 +185,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,    grid.setNGeomNode(2)
   assert_equal grid,    grid.setNGeomEdge(1)
   assert_equal grid,    grid.addGeomEdge(1,0,2)
-  assert_equal grid,    grid.addEdge(0,1,1,0.0,1.0)
+  grid.addEdge(0,1,1,0.0,1.0)
   assert_not_nil        layer = Layer.new(grid)
   assert_equal layer,   layer.populateAdvancingFront([1])
   assert_equal 3,       layer.nnormal
@@ -274,8 +274,8 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil        grid = Grid.new(10,10,10,10)
   0.upto(2) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
-  assert_equal grid,    grid.addEdge(0,1,1,0,1)
-  assert_equal grid,    grid.addEdge(0,4,1,0,1)
+  grid.addEdge(0,1,1,0,1)
+  grid.addEdge(0,4,1,0,1)
   assert_not_nil        layer = Layer.new(grid)
   assert_nil            layer.findParentGeomEdges
   assert_equal layer,   layer.populateAdvancingFront([1])
@@ -379,7 +379,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,         grid.addNode( 1, 0, 1)
   assert_equal 3,         grid.addNode( 1, 0, 0)
   grid.addFace(0,1,2,22)
-  assert_equal grid,      grid.addEdge(0,3,1,0,1)
+  grid.addEdge(0,3,1,0,1)
   assert_equal grid,      grid.setNGeomEdge(1)
   assert_equal grid,      grid.addGeomEdge(1,0,3)
   assert_not_nil          layer = Layer.new(grid).populateAdvancingFront([22])
@@ -676,7 +676,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.setNGeomNode(2)
   assert_equal grid,      grid.setNGeomEdge(1)
   assert_equal grid,      grid.addGeomEdge(1,0,2)
-  assert_equal grid,      grid.addEdge(0,1,1,0.0,1.0)
+  grid.addEdge(0,1,1,0.0,1.0)
   assert_not_nil          layer = Layer.new(grid)
   assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal layer,     layer.constrainNormal(-1)

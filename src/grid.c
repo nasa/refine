@@ -1598,11 +1598,11 @@ Grid *gridSetNodeT(Grid *grid, int  node, int edgeId, double t )
   return NULL;
 }
 
-Grid *gridAddEdge(Grid *grid, int n0, int n1, 
-		  int edgeId, double t0, double t1 )
+int gridAddEdge(Grid *grid, int n0, int n1, 
+		int edgeId, double t0, double t1 )
 {
   int edge;
-  if ( grid->blanke2n == EMPTY ) return NULL;
+  if ( grid->blanke2n == EMPTY ) return EMPTY;
   edge = grid->blanke2n;
   grid->blanke2n = grid->e2n[1+2*edge];
   grid->nedge++;
@@ -1613,10 +1613,10 @@ Grid *gridAddEdge(Grid *grid, int n0, int n1,
   grid->edgeT[0+2*edge] = t0;
   grid->edgeT[1+2*edge] = t1;
 
-  if ( NULL == adjRegister( grid->edgeAdj, n0, edge ) ) return NULL;
-  if ( NULL == adjRegister( grid->edgeAdj, n1, edge ) ) return NULL;
+  if ( NULL == adjRegister( grid->edgeAdj, n0, edge ) ) return EMPTY;
+  if ( NULL == adjRegister( grid->edgeAdj, n1, edge ) ) return EMPTY;
 
-  return grid;
+  return edge;
 }
 
 Grid *gridRemoveEdge(Grid *grid, int edge )
