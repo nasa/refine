@@ -314,7 +314,11 @@ Grid *gridExportFAST( Grid *grid, char *filename )
     return NULL;
   }
 
-  file = fopen(filename,"w");
+  if (NULL != filename) {
+    file = fopen(filename,"w");
+  }else{
+    file = fopen("grid.fgrid","w");
+  }
 
   fprintf(file,"%10d %10d %10d\n",grid->nnode,grid->nface,grid->ncell);
 

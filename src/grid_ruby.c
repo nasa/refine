@@ -41,6 +41,12 @@ VALUE grid_writeTecplotSurfaceZone( VALUE self )
   return (gridWriteTecplotSurfaceZone(grid,NULL)==grid?self:Qnil);
 }
 
+VALUE grid_exportFAST( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (gridExportFAST(grid,NULL)==grid?self:Qnil);
+}
+
 VALUE grid_maxnode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1019,6 +1025,7 @@ void Init_Grid()
   rb_define_method( cGrid, "pack", grid_pack, 0 );
   rb_define_method( cGrid, "sortNodeGridEx", grid_sortNodeGridEx, 0 );
   rb_define_method( cGrid, "writeTecplotSurfaceZone", grid_writeTecplotSurfaceZone, 0 );
+  rb_define_method( cGrid, "exportFAST", grid_exportFAST, 0 );
   rb_define_method( cGrid, "maxnode", grid_maxnode, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
   rb_define_method( cGrid, "maxcell", grid_maxcell, 0 );
