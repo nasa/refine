@@ -27,6 +27,12 @@ VALUE layer_nfront( VALUE self )
   return INT2NUM( layerNFront(layer) );
 }
 
+VALUE layer_nnormal( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerNNormal(layer) );
+}
+
 VALUE layer_maxnode( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -60,6 +66,12 @@ VALUE layer_front( VALUE self, VALUE front )
   return rb_front;
 }
 
+VALUE layer_makeNormal( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerMakeNormal(layer)?self:Qnil );
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -67,7 +79,9 @@ void Init_Layer()
   cLayer = rb_define_class( "Layer", rb_cObject );
   rb_define_singleton_method( cLayer, "new", layer_new, 1 );
   rb_define_method( cLayer, "nfront", layer_nfront, 0 );
+  rb_define_method( cLayer, "nnormal", layer_nnormal, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
   rb_define_method( cLayer, "makeFront", layer_makeFront, 1 );
   rb_define_method( cLayer, "front", layer_front, 1 );
+  rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
 }

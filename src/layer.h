@@ -21,9 +21,11 @@ typedef struct Layer Layer;
 Layer *layerCreate(Grid *);
 void layerFree(Layer *);
 int layerNFront(Layer *);
+int layerNNormal(Layer *);
 int layerMaxNode(Layer *);
 Layer *layerMakeFront(Layer *, int nbc, int *bc);
 Layer *layerFront(Layer *, int front, int *nodes);
+Layer *layerMakeNormal(Layer *);
 
 END_C_DECLORATION
 

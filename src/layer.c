@@ -12,18 +12,20 @@
 #include "layer.h"
 
 struct Layer {
+  Grid *grid;
   int nfront;
   int *front;
-  Grid *grid;
+  int nnormal;
 };
 
 Layer *layerCreate( Grid *grid )
 {
   Layer *layer;
   layer = malloc(sizeof(Layer));
+  layer->grid = grid;
   layer->nfront=0;
   layer->front=NULL;
-  layer->grid = grid;
+  layer->nnormal=0;
   return layer;
 }
 
@@ -36,6 +38,11 @@ void layerFree(Layer *layer)
 int layerNFront(Layer *layer)
 {
   return layer->nfront;
+}
+
+int layerNNormal(Layer *layer)
+{
+  return layer->nnormal;
 }
 
 int layerMaxNode(Layer *layer)
@@ -81,10 +88,18 @@ Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
 Layer *layerFront(Layer *layer, int front, int *nodes )
 {
 
-  if (front < 0 || front >= layer->nfront) return NULL;
+  if (front < 0 || front >= layerNFront(layer)) return NULL;
   nodes[0] = layer->front[0+3*front];
   nodes[1] = layer->front[1+3*front];
   nodes[2] = layer->front[2+3*front];
   
   return layer;
 }
+
+Layer *layerMakeNormal(Layer *layer)
+{
+  if (layerNFront(layer)==0) return NULL;
+  layer->nnormal=4;
+  return layer;
+}
+
