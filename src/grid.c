@@ -1825,7 +1825,8 @@ int gridFindCellWithFace(Grid *grid, int face ){
   AdjIterator it0, it1, it2;
   Adj *adj=grid->cellAdj;
 
-  if (face >= grid->maxface || face < 0 || grid->f2n[3*face])return EMPTY;
+  if (face >= grid->maxface || face < 0 ) return EMPTY;
+  if (grid->f2n[3*face] == EMPTY )return EMPTY;
 
   n0 = grid->f2n[0+3*face];
   n1 = grid->f2n[1+3*face];
@@ -1845,6 +1846,7 @@ bool gridRightHandedFace(Grid *grid, int face ){
   int nodes[4];
   cell = gridFindCellWithFace(grid, face );
   if (cell == EMPTY) return FALSE;
+
   nodes[0] = grid->f2n[0+3*face];
   nodes[1] = grid->f2n[1+3*face];
   nodes[2] = grid->f2n[2+3*face];
@@ -1863,9 +1865,11 @@ bool gridRightHandedFace(Grid *grid, int face ){
 bool gridRightHandedBoundary( Grid *grid )
 {
   int face;
+
   for (face=0;face<grid->maxface;face++)
     if ( grid->f2n[3*face] != EMPTY )
       if ( !gridRightHandedFace(grid, face) ) return FALSE;
+
   return TRUE;
 }
 
