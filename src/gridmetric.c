@@ -17,6 +17,8 @@
 #include <values.h>
 #include "gridmetric.h"
 
+//#define USEMEANRATIO
+
 #define VECTOR_COPY3(a,b) for(i=0;i<3;i++)a[i]=b[i];
 
 Grid *gridSetMapMatrixToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
@@ -588,7 +590,11 @@ double gridAR(Grid *grid, int *nodes )
   gridMapXYZWithJ(j, &xyz3[0], &xyz3[1], &xyz3[2]);
   gridMapXYZWithJ(j, &xyz4[0], &xyz4[1], &xyz4[2]);
 
+#ifdef USEMEANRATIO
+  aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 );
+#else
   aspect = gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 );
+#endif
 
   if ( FALSE ) {
     printf("nodes %d %d %d %d aspect %f\n",nodes[0],nodes[1],nodes[2],nodes[3],aspect);
@@ -805,7 +811,11 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   gridMapXYZWithJ(j, &xyz3[0], &xyz3[1], &xyz3[2]);
   gridMapXYZWithJ(j, &xyz4[0], &xyz4[1], &xyz4[2]);
 
+#ifdef USEMEANRATIO
+  gridCellMeanRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx);
+#else
   gridCellAspectRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx);
+#endif
 
   return grid;
 }
