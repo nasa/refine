@@ -429,15 +429,16 @@ in connectivity.
 
 @section Parallelized Node Movement
 
-An example of a node movement routine with constant connectivites is
-refineParallelSmooth in HEFSS.rps/LibF90/refine_interface.F90. There
-are two passes to the parallelization logic. 
+An example of a node movement routine with constant connectivities is
+@code{refineParallelSmooth} in
+HEFSS.rps/LibF90/refine_interface.F90. There are two passes to the
+parallelization logic.
 
 The first allows all processors to move nodes that are internal to the
 processor. Nodes are considered internal if they are not connect to
 ghost nodes by any elements. This parallel internal pass is performed
 by setting the first argument (processor) to -1 for
-gridparallelsmooth.
+@code{gridparallelsmooth}.
 
 Then each processor is allowed to modify the boundary region, which is
 the local nodes that are connected to other processor ghost nodes with
@@ -445,30 +446,21 @@ elements. This modification is done by each processor in turn, with
 the other processors waiting for the active processor to finish its
 work.
 
-After a processor finished modifing the border region,
-refineUpdateGhostXYZ is called to broad cast any changes to the other
-processors. The refineUpdateGhostXYZ routine updates the face UV
-parameters and the edge T parameter as well as the node XYZ's.
+After a processor finished modifying its border region,
+@code{refineUpdateGhostXYZ} is called to broad cast any changes to the
+other processors. The @code{refineUpdateGhostXYZ} routine updates the
+face UV parameters and the edge T parameter as well as the node XYZ's.
 
-This is how Bill Jones described it:
-@verbatim
-processor = 1 allows only partion interior modifications.  the
-interior of the pasrtions does not affect other partionions.  Below
-loop will initially will modify partition interior, and then will
-modify its boundaries.  Note: loop executing on each processor.  Will
-first modify interior and then wait until it is its turn
-...refineUpdateGhostXYZ() will block
-@end verbatim
+The @code{gridmove} child object has a slightly different methodology
+for parallelization. It needs to do hundreds of operations similar to
+@code{refineUpdateGhostXYZ} to a different vector, the grid movement
+displacements. Also, the communication pattern is constant for each
+grid movement operation.
 
-The gridmove module has a slightly different methodology for
-parallelization. I needs to do hundreds of operations similar to
-refineUpdateGhostXYZ to a different vector, the gridmove
-displacements.
-
-A LibF90/refine_interface.F90:refineParallelProjectGridMove starts by
-precomputing and storing the communication pattern that will be
-required. I then calls refineUpdateGridMoveGhost with the stored
-communication pattern to update ghost node displacements.
+A LibF90/refine_interface.F90:@code{refineParallelProjectGridMove}
+starts by precomputing and storing the communication pattern that will
+be required. It then calls @code{refineUpdateGridMoveGhost} with the
+stored communication pattern to update ghost node displacements.
 
 @section Parallelized Connectivity Changes
 
