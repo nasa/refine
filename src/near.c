@@ -70,10 +70,12 @@ Near *nearInsert( Near *near, Near *child )
 
   if (NULL==near->leftChild){ 
     near->leftChild = child;
+    child->farChild = distance;
     return near;
   }
   if (NULL==near->rightChild){ 
     near->rightChild = child;
+    child->farChild = distance;
     return near;
   }
   if ( nearDistance(near->leftChild,child)
@@ -136,13 +138,19 @@ int nearCollisions(Near *near, Near *target)
 
 Near *nearTouched(Near *near, Near *target, int *found, int maxfound, int *list)
 {
+  double distance, safeZone;
 
-  if (NULL==near || NULL == target) return 0;
+  if (NULL==near || NULL==target) return NULL;
 
-  nearTouched(near->rightChild, target, found, maxfound, list);
-  nearTouched(near->leftChild,  target, found, maxfound, list);
+  distance = nearDistance( near, target);
+  safeZone = distance - target->radius;
 
-  if (nearClearance(near,target) <= 0) {
+  if (safeZone <= nearRightDistance(near) ) 
+    nearTouched(near->rightChild, target, found, maxfound, list);
+  if (safeZone <= nearLeftDistance(near) ) 
+    nearTouched(near->leftChild, target, found, maxfound, list);
+
+  if ( (safeZone - near->radius) <= 0) {
     if (*found >= maxfound) return NULL;
     list[*found] = near->index;
     (*found)++;

@@ -105,8 +105,8 @@ class TestNear < Test::Unit::TestCase
   assert_equal 1, near.farChild
   assert_equal near, near.insert(child7)
   assert_equal 2, near.farChild
-  assert_equal 0, near.rightDistance
-  assert_equal 0, near.leftDistance
+  assert_equal 2, near.rightDistance
+  assert_equal 1, near.leftDistance
  end
 
  def testComputeChildDistanceWithRadius
@@ -117,8 +117,8 @@ class TestNear < Test::Unit::TestCase
   assert_equal 3, near.farChild
   assert_equal near, near.insert(child7)
   assert_equal 5, near.farChild
-  assert_equal 0, near.rightDistance
-  assert_equal 0, near.leftDistance
+  assert_equal 5, near.rightDistance
+  assert_equal 3, near.leftDistance
  end
 
  def testSingleCollisions
@@ -126,7 +126,9 @@ class TestNear < Test::Unit::TestCase
   smalltarget = Near.new(6,1,0,0,0)
   largetarget = Near.new(7,1,0,0,2)
   assert_equal 0, near.collisions(smalltarget)
+  assert_equal [], near.touched(smalltarget)
   assert_equal 1, near.collisions(largetarget)
+  assert_equal [5], near.touched(largetarget)
  end
 
  def testTreeCollisions
