@@ -1153,6 +1153,9 @@ Grid *gridGetUnusedCellGlobal(Grid *grid, int *unused )
 Grid *gridJoinUnusedNodeGlobal(Grid *grid, int global )
 {
   int insertpoint, index;
+
+  if (EMPTY == global) return grid;
+
   if (NULL == grid->unusedNodeGlobal) {
     grid->maxUnusedNodeGlobal = 500;
     grid->unusedNodeGlobal = malloc(grid->maxUnusedNodeGlobal * sizeof(int));
@@ -1186,6 +1189,9 @@ Grid *gridJoinUnusedNodeGlobal(Grid *grid, int global )
 Grid *gridJoinUnusedCellGlobal(Grid *grid, int global )
 {
   int insertpoint, index;
+
+  if (EMPTY == global) return grid;
+
   if (NULL == grid->unusedCellGlobal) {
     grid->maxUnusedCellGlobal = 500;
     grid->unusedCellGlobal = malloc(grid->maxUnusedCellGlobal * sizeof(int));
@@ -1213,6 +1219,37 @@ Grid *gridJoinUnusedCellGlobal(Grid *grid, int global )
   grid->unusedCellGlobal[insertpoint] = global;
   grid->nUnusedCellGlobal++;
   
+  return grid;
+}
+
+Grid *gridEliminateUnusedNodeGlobal(Grid *grid )
+{
+  int node;
+  int sort, offset;
+
+  if ( 0 == gridNUnusedNodeGlobal(grid) ) return grid;
+
+  if ( (NULL == grid->sortedLocal) || (grid->nnode != grid->nsorted) ) {
+    if ( grid != gridCreateSortedGlobal(grid ) ) {
+      printf("%s: %d: gridEliminateUnusedNodeGlobal: gridCreateSortedGlobal NULL.",
+	     __FILE__,__LINE__);
+      return NULL;
+    }
+  }
+
+  offset = 0;
+  for (sort=0;sort<grid->nsorted;sort++) {
+    while ( (offset < grid->nUnusedNodeGlobal ) &&
+	    (grid->unusedNodeGlobal[offset] < grid->sortedGlobal[sort] ) ) {
+      offset++;
+    }
+    node = grid->sortedLocal[sort];
+    grid->nodeGlobal[node] -= offset;
+    grid->sortedGlobal[sort] -= offset;
+  }
+  grid->globalNNode -= grid->nUnusedNodeGlobal;
+  grid->nUnusedNodeGlobal = 0;
+
   return grid;
 }
 
@@ -2643,6 +2680,7 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   global = gridGetNextNodeGlobal(grid);
   return gridAddNodeWithGlobal(grid,x,y,z,global);
 }
+
 int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
 {
   int node, i, origSize, chunkSize;
@@ -2698,7 +2736,7 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
   grid->map[3+6*node] = 1.0;
   grid->map[4+6*node] = 0.0;
   grid->map[5+6*node] = 1.0;
-  if (EMPTY != global) gridSetNodeGlobal(grid, node, global );
+  if (0 <= global) gridSetNodeGlobal(grid, node, global );
   if (NULL != grid->part) grid->part[node] = gridPartId(grid);
 
   return node;
@@ -2707,10 +2745,13 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
 Grid *gridRemoveNode(Grid *grid, int node )
 {
   Grid *result;
+  int global;
+
+  global = gridNodeGlobal(grid,node);
 
   result = gridRemoveNodeWithOutGlobal(grid, node );
 
-  if (grid == result && NULL != grid->nodeGlobal) 
+  if (grid == result && global != EMPTY ) 
     gridJoinUnusedNodeGlobal(grid,grid->nodeGlobal[node]);
 
   return result;
@@ -2764,40 +2805,53 @@ int gridNodeGlobal(Grid *grid, int node )
   return grid->nodeGlobal[node];
 }
 
+Grid *gridCreateSortedGlobal(Grid *grid ) 
+{
+  int local, nnode;
+  int *pack;
+
+  if (NULL == grid->nodeGlobal) return NULL;
+
+  if (NULL != grid->sortedLocal) free(grid->sortedLocal);
+  if (NULL != grid->sortedGlobal) free(grid->sortedGlobal);
+  grid->sortedLocal  = malloc(grid->maxnode * sizeof(int));
+  grid->sortedGlobal = malloc(grid->maxnode * sizeof(int));
+
+  pack = malloc(grid->maxnode * sizeof(int));
+
+  nnode = 0;
+  for (local=0;local<grid->maxnode;local++)
+    if (gridValidNode(grid,local)) {
+      grid->sortedGlobal[nnode] = grid->nodeGlobal[local];
+      pack[nnode] = local;
+      nnode++;
+    }
+
+  if (nnode != grid->nnode) {
+    printf("%s: %d: gridCreateSortedGlobal: nnode error %d %d.",
+	   __FILE__,__LINE__,nnode,grid->nnode);
+    return NULL;
+  }
+
+  grid->nsorted = grid->nnode;
+  sortHeap(grid->nsorted,grid->sortedGlobal,grid->sortedLocal);
+
+  for (local=0;local<grid->nsorted;local++) {
+    grid->sortedLocal[local] =  pack[grid->sortedLocal[local]];
+    grid->sortedGlobal[local] = grid->nodeGlobal[grid->sortedLocal[local]];
+  }
+  free(pack);
+
+  return grid;
+}
+
 int gridGlobal2Local(Grid *grid, int global )
 {
-  int nnode, local;
-  int *pack;
+  int local;
 
   if (NULL == grid->nodeGlobal) return EMPTY;
 
-  if (NULL == grid->sortedLocal) {
-    grid->sortedLocal  = malloc(grid->maxnode * sizeof(int));
-    grid->sortedGlobal = malloc(grid->maxnode * sizeof(int));
-
-    pack = malloc(grid->maxnode * sizeof(int));
-
-    nnode = 0;
-    for (local=0;local<grid->maxnode;local++)
-      if (gridValidNode(grid,local)) {
-	grid->sortedGlobal[nnode] = grid->nodeGlobal[local];
-	pack[nnode] = local;
-	nnode++;
-      }
-
-    if (nnode != grid->nnode) 
-      printf("%s: %d: gridGlobal2Local: nnode error %d %d.",
-	     __FILE__,__LINE__,nnode,grid->nnode);
-
-    grid->nsorted = grid->nnode;
-    sortHeap(grid->nsorted,grid->sortedGlobal,grid->sortedLocal);
-
-    for (local=0;local<grid->nsorted;local++) {
-      grid->sortedLocal[local] =  pack[grid->sortedLocal[local]];
-      grid->sortedGlobal[local] = grid->nodeGlobal[grid->sortedLocal[local]];
-    }
-    free(pack);
-  }
+  if (NULL == grid->sortedLocal) gridCreateSortedGlobal(grid);
 
   local = sortSearch(grid->nsorted,grid->sortedGlobal,global);
 

@@ -46,8 +46,8 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0, @grid.partId
   assert_equal 0, @grid.globalnnode
   assert_equal 0, @grid.globalncell
-  assert_equal 0, @grid.nUnusedCellGlobal
   assert_equal 0, @grid.nUnusedNodeGlobal
+  assert_equal 0, @grid.nUnusedCellGlobal
  end
 
  def testSetPartId
@@ -665,6 +665,31 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 17,   grid.nodeGlobal(0)
   assert_equal 1148, grid.nodeGlobal(1)
   assert_equal 1149, grid.globalnnode
+ end
+
+ def testEliminateUnusedGlobalNodeId
+  grid = Grid.new(5,0,0,0)
+  grid.setGlobalNNode(100)
+  grid.addNodeWithGlobal(1.0,2.0,3.0,99)
+  4.times { grid.addNode(0,1,2) }
+  grid.removeNode(1)
+  grid.removeNode(3)
+  assert_equal [100,102], grid.getUnusedNodeGlobal
+  assert_equal 104, grid.globalnnode 
+  assert_equal  99, grid.nodeGlobal(0)
+  assert_equal 101, grid.nodeGlobal(2)
+  assert_equal 103, grid.nodeGlobal(4)
+
+  assert_equal grid, grid.eliminateUnusedNodeGlobal
+
+  assert_equal [], grid.getUnusedNodeGlobal
+  assert_equal 102, grid.globalnnode 
+  assert_equal  99, grid.nodeGlobal(0)
+  assert_equal 100, grid.nodeGlobal(2)
+  assert_equal 101, grid.nodeGlobal(4)  
+  assert_equal 0, grid.global2local(99)
+  assert_equal 2, grid.global2local(100)
+  assert_equal 4, grid.global2local(101)
  end
 
  def testNumberOfFaces

@@ -165,7 +165,9 @@ int gridNUnusedNodeGlobal(Grid *g );
 int gridNUnusedCellGlobal(Grid *g );
 Grid *gridGetUnusedNodeGlobal(Grid *g, int *unused );
 Grid *gridGetUnusedCellGlobal(Grid *g, int *unused );
+Grid *gridJoinUnusedNodeGlobal(Grid *g, int global );
 Grid *gridJoinUnusedCellGlobal(Grid *g, int global );
+Grid *gridEliminateUnusedNodeGlobal(Grid *g );
 Grid *gridEliminateUnusedCellGlobal(Grid *g );
 int gridCellDegree(Grid *g, int nodeIndex);
 int gridCellGlobal(Grid *g, int cellIndex);
@@ -294,6 +296,7 @@ Grid *gridSetNodeXYZ(Grid *g, int node, double *xyz );
 Grid *gridDeleteNodesNotUsed(Grid *);
 
 int gridNodeGlobal(Grid *g, int node );
+Grid *gridCreateSortedGlobal(Grid *g );
 int gridGlobal2Local(Grid *g, int global );
 Grid *gridSetNodeGlobal(Grid *g, int node, int global );
 Grid *gridGlobalShiftNode(Grid *g, int oldnnodeg, int newnnodeg, 
