@@ -10,7 +10,7 @@ class RubyExtensionBuilder
 
  def buildOnly extension
   extraFiles = Hash.new('')
-  extraFiles['GridCAD'] = 'FAKEGeom.c'
+  extraFiles['GridCAD'] = 'FAKEGeom.c FAKEGeomExtras.c'
   systemCall = ['ruby makeRubyExtension.rb',extension,extraFiles[extension],'refine_defs.h'].join(' ')
   exit 1 unless system(systemCall )
  end

@@ -103,6 +103,9 @@ GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g);
 GridBool CADTopo_VolEdgePts(int vol, int *count);
 GridBool CADTopo_ShellStats(int vol, int *nc, int *tPts, int *tTri, int *maxF);
 UGridPtr CADTopo_AssembleTShell(int vol,int tPts, int tTri, int maxFace);
+GridBool CADGeom_DisplacementIsIdentity(int vol);
+GridBool CADGeom_UnMapPoint(int vol, double *xyz, double *pt);
+GridBool CADGeom_MapPoint(int vol, double *xyz, double *pt);
 
 void GeoMesh_UseDefaultIOCallbacks( void );
 void CADGeeom_UseDefaultIOCallbacks( void );

@@ -68,6 +68,11 @@ Grid *gridRelaxNegativeCells(Grid *g, GridBool dumpTecplot );
 Grid *gridSmoothVolumeNearNode(Grid *grid, int node, 
 			       GridBool smoothOnSurface );
 
+GridBool nearestOnEdge(int vol, int edge, double *xyz, double *t,
+                       double *xyznew);
+GridBool nearestOnFace(int vol, int face, double *xyz, double *uv,
+                       double *xyznew);
+
 END_C_DECLORATION
 
 #endif /* GRIDCAD_H */

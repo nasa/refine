@@ -31,7 +31,7 @@ Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
   t = DBL_MAX;
 
-  if (!CADGeom_NearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
+  if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
 
   if ( grid != gridSetNodeXYZ( grid, node, xyznew ) ) return NULL;
 
@@ -47,8 +47,8 @@ Grid *gridForceNodeToFace(Grid *grid, int node, int faceId )
   uv[0] = DBL_MAX;
   uv[1] = DBL_MAX;
 
-  if (!CADGeom_NearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
-    printf("%s: %d: CADGeom_NearestOnFace failed.",__FILE__,__LINE__);
+  if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
+    printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
     return NULL;  
   }
 
@@ -65,7 +65,7 @@ Grid *gridProjectNodeToEdge(Grid *grid, int node, int edgeId )
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
   if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
 
-  if (!CADGeom_NearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
+  if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
 
   if ( grid != gridSetNodeXYZ( grid, node, xyznew ) ) return NULL;
   if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
@@ -81,8 +81,8 @@ Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
   if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
 
-  if (!CADGeom_NearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
-    printf("%s: %d: CADGeom_NearestOnFace failed.",__FILE__,__LINE__);
+  if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
+    printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
     return NULL;  
   }
 
@@ -100,8 +100,8 @@ Grid *gridSetUVofFace(Grid *grid, int node, int faceId )
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
   if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
 
-  if (!CADGeom_NearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
-    printf("%s: %d: CADGeom_NearestOnFace failed.",__FILE__,__LINE__);
+  if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
+    printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
     return NULL;
   }
 
@@ -179,8 +179,8 @@ Grid *gridProjectToFace(Grid *grid, int faceId,
 {
   int vol = 1;
 
-  if (!CADGeom_NearestOnFace( vol, faceId, xyz, uv, newxyz) ) {
-    printf("%s: %d: CADGeom_NearestOnFace failed.",__FILE__,__LINE__);
+  if (!nearestOnFace( vol, faceId, xyz, uv, newxyz) ) {
+    printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
     return NULL;  
   }
 
@@ -350,7 +350,7 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node, double *displacement 
     edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
     gridEdge(grid, edge, nodes, &edgeId );
     if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
-    if (!CADGeom_NearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
+    if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
     if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
     for ( it = adjFirst(gridFaceAdj(grid),node); 
 	  adjValid(it); 
@@ -366,8 +366,8 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node, double *displacement 
     face = adjItem(adjFirst(gridFaceAdj(grid), node));
     gridFace(grid, face, nodes, &faceId );
     if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
-    if (!CADGeom_NearestOnFace( vol, faceId, xyz, uv, xyznew) )  {
-      printf("%s: %d: CADGeom_NearestOnFace failed.",__FILE__,__LINE__);
+    if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) )  {
+      printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
       return NULL;  
     }
     gridSetNodeUV(grid, node, faceId, uv[0], uv[1]);
@@ -1420,4 +1420,72 @@ Grid *gridSmoothVolumeNearNode(Grid *grid, int node, GridBool smoothOnSurface )
       gridSmoothNodeVolume( grid, nodelist[i]);
 
   return grid;
+}
+
+GridBool nearestOnEdge(int vol, int edgeId, double *xyz, double *t,
+                       double *xyznew)
+{
+  double ptLocal[3], pt[3];
+
+  /* Local coordinate system */
+  if( !CADGeom_DisplacementIsIdentity(vol) ) {
+    if( !CADGeom_UnMapPoint(vol,xyz,ptLocal) ) {
+      printf("%s: %d: CADGeom_UnMapPoint failed.\n",__FILE__,__LINE__);
+      return FALSE;
+    }
+  } else {
+    ptLocal[0] = xyz[0]; ptLocal[1] = xyz[1]; ptLocal[2] = xyz[2];
+  }
+
+  /* Project Point */
+  if (!CADGeom_NearestOnEdge( vol, edgeId, ptLocal, t, pt) ) {
+    printf("%s: %d: CADGeom_NearestOnEdge failed.\n",__FILE__,__LINE__);
+    return FALSE;  
+  }
+
+  /* Global coordinate system */
+  if( !CADGeom_DisplacementIsIdentity(vol) ) {
+    if( !CADGeom_MapPoint(vol,pt,xyznew) ) {
+      printf("%s: %d: CADGeom_MapPoint failed.\n",__FILE__,__LINE__);
+      return FALSE;  
+    }
+  } else {
+    xyznew[0] = pt[0]; xyznew[1] = pt[1]; xyznew[2] = pt[2];
+  }
+
+  return TRUE;
+}
+
+GridBool nearestOnFace(int vol, int faceId, double *xyz, double *uv,
+                       double *xyznew)
+{
+  double ptLocal[3], pt[3];
+
+  /* Local coordinate system */
+  if( !CADGeom_DisplacementIsIdentity(vol) ) {
+    if( !CADGeom_UnMapPoint(vol,xyz,ptLocal) ) {
+      printf("%s: %d: CADGeom_UnMapPoint failed.\n",__FILE__,__LINE__);
+      return FALSE;
+    }
+  } else {
+    ptLocal[0] = xyz[0]; ptLocal[1] = xyz[1]; ptLocal[2] = xyz[2];
+  }
+
+  /* Project Point */
+  if (!CADGeom_NearestOnFace( vol, faceId, ptLocal, uv, pt) ) {
+    printf("%s: %d: CADGeom_NearestOnFace failed.\n",__FILE__,__LINE__);
+    return FALSE;  
+  }
+
+  /* Global coordinate system */
+  if( !CADGeom_DisplacementIsIdentity(vol) ) {
+    if( !CADGeom_MapPoint(vol,pt,xyznew) ) {
+      printf("%s: %d: CADGeom_MapPoint failed.\n",__FILE__,__LINE__);
+      return FALSE;  
+    }
+  } else {
+    xyznew[0] = pt[0]; xyznew[1] = pt[1]; xyznew[2] = pt[2];
+  }
+
+  return TRUE;
 }

@@ -1,3 +1,10 @@
+2004-09-02 15:55 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (nearestOnFace,nearestOnEdge) added to apply
+	CAPRI displacement matrix prior to projection.
+	* src/FAKEGeomExtras.c added mock CADGeom_DisplacementIsIdentity,
+	CADGeom_UnMapPoint, CADGeom_MapPoint
+
 2004-08-31 22:31 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridparallelrelaxneg_) API change to add an

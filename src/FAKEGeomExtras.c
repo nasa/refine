@@ -128,12 +128,6 @@ GridBool CADGeom_SetFaceGrid( int vol, int faceId, UGPatchPtr ugrid)
   return FALSE;
 }
 
-GridBool CADGeom_NormalToFace( int vol, int faceId, 
-			       double *uv, double *xyz, double *normal)
-{
-  return FALSE;
-}
-
 GridBool CADTopo_FaceNumEdgePts(int vol, int faceId, int *count)
 {
   return FALSE;
@@ -157,4 +151,19 @@ GridBool CADTopo_ShellStats(int vol, int *nc, int *tPts, int *tTri, int *maxFac)
 UGridPtr CADTopo_AssembleTShell(int vol,int tPts, int tTri, int maxFace)
 {
   return NULL;
+}
+
+GridBool CADGeom_DisplacementIsIdentity(int vol)
+{
+  return TRUE;
+}
+
+GridBool CADGeom_UnMapPoint(int vol, double *xyz, double *pt)
+{
+  return FALSE;
+}
+
+GridBool CADGeom_MapPoint(int vol, double *xyz, double *pt)
+{
+  return FALSE;
 }
