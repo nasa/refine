@@ -53,7 +53,7 @@ class TestQueue < Test::Unit::TestCase
   assert_equal 0,     q.addedCells(1)
  end
 
- def XtestTransactionInitializedWithZeroRemovedFaces
+ def testTransactionInitializedWithZeroRemovedFaces
   q = Queue.new
   assert_equal EMPTY, q.removedFaces(-1)
   assert_equal 0,     q.removedFaces(0)
@@ -63,7 +63,7 @@ class TestQueue < Test::Unit::TestCase
   assert_equal 0,     q.removedFaces(1)
  end
 
- def XtestTransactionInitializedWithZeroAddedFaces
+ def testTransactionInitializedWithZeroAddedFaces
   q = Queue.new
   assert_equal EMPTY, q.addedFaces(-1)
   assert_equal 0,     q.addedFaces(0)
@@ -92,6 +92,25 @@ class TestQueue < Test::Unit::TestCase
   assert_equal xyzs,  q.addedCellXYZs(0)
  end
 
+ def testRemoveFaceTransaction
+  nodes = [0,1,2]
+  q = Queue.new
+  assert_equal q,     q.removeFace(nodes)
+  assert_equal 1,     q.removedFaces(0)
+  assert_equal nodes, q.removedFaceNodes(0)
+ end
+
+ def testAddFaceTransaction
+  faceId = 9
+  nodes = [0,1,2,faceId]
+  uvs = [ 10,11, 20,21, 30,31 ]
+  q = Queue.new
+  assert_equal q,     q.addFace(nodes,uvs)
+  assert_equal 1,     q.addedFaces(0)
+  assert_equal nodes, q.addedFaceNodes(0)
+  assert_equal uvs,   q.addedFaceUVs(0)
+ end
+
  def testResetZerosOutPreviouslyRemovedCellNodes
   nodes = [0,1,2,3]
   q = Queue.new.removeCell([9,9,9,9]).reset
@@ -108,6 +127,24 @@ class TestQueue < Test::Unit::TestCase
   q.addCell(nodesCellId,xyzs)
   assert_equal nodesCellId, q.addedCellNodes(0)  
   assert_equal xyzs, q.addedCellXYZs(0)  
+ end
+
+ def testResetZerosOutPreviouslyRemovedFaceNodes
+  nodes = [0,1,2]
+  q = Queue.new.removeFace([9,9,9]).reset
+  assert_equal 0, q.removedFaces(0)
+  q.removeFace(nodes)
+  assert_equal nodes, q.removedFaceNodes(0)  
+ end
+
+ def testResetZerosOutPreviouslyRemovedAndAddedFaceNodes
+  nodesFaceId = [0,1,2,8]
+  uvs = [ 10,11, 20,21, 30,31 ]
+  q = Queue.new.addFace([9,9,9,9],[1,2, 1,2, 1,2]).reset
+  assert_equal 0, q.addedFaces(0)
+  q.addFace(nodesFaceId,uvs)
+  assert_equal nodesFaceId, q.addedFaceNodes(0)  
+  assert_equal uvs, q.addedFaceUVs(0)  
  end
 
  def testReallocMemoryForLotsOfTransactions
@@ -128,11 +165,28 @@ class TestQueue < Test::Unit::TestCase
   10000.times { q.removeCell(nodes) }
  end
 
+ def testReallocMemoryForLotsOfFaceAdds
+  nodes = [0,1,2,3]
+  uvs = [ 10,11, 20,21, 30,31 ]
+  q = Queue.new
+  10000.times { q.addFace(nodes,uvs) }
+ end
+
+ def testReallocMemoryForLotsOfFaceRemoves
+  nodes = [0,1,2]
+  q = Queue.new
+  10000.times { q.removeFace(nodes) }
+ end
+
  def testReallocMemoryForLotsOfTransactionsPlus
   nodes = [0,1,2,3,4]
   xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
   q = Queue.new
-  10000.times { q.newTransaction.addCell(nodes,xyzs).removeCell(nodes) }
+  10000.times do
+   q.newTransaction
+   q.addCell(nodes,xyzs).removeCell(nodes)
+   q.addFace(nodes,xyzs).removeFace(nodes)
+  end
  end
 
 end

@@ -47,15 +47,22 @@ void queueFree( Queue * );
 Queue *queueReset( Queue * );
 int queueTransactions( Queue * );
 Queue *queueNewTransaction( Queue * );
+
 Queue *queueRemoveCell( Queue *, int *nodes );
 int queueRemovedCells( Queue *, int transaction );
 Queue *queueRemovedCellNodes( Queue *, int index, int *nodes );
 Queue *queueAddCell( Queue *, int *nodes, double *xyzs );
 int queueAddedCells( Queue *, int transaction );
 Queue *queueAddedCellNodes( Queue *, int index, int *nodes );
-Queue *queueAddedCellXYZs( Queue *, int index, double *xyz );
+Queue *queueAddedCellXYZs( Queue *, int index, double *xyzs );
+
+Queue *queueRemoveFace( Queue *, int *nodes );
 int queueRemovedFaces( Queue *, int transaction );
+Queue *queueRemovedFaceNodes( Queue *, int index, int *nodes );
+Queue *queueAddFace( Queue *, int *nodes, double *uvs );
 int queueAddedFaces( Queue *, int transaction );
+Queue *queueAddedFaceNodes( Queue *, int index, int *nodes );
+Queue *queueAddedFaceUVs( Queue *, int index, double *uvs );
 
 END_C_DECLORATION
 
