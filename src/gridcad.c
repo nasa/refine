@@ -609,7 +609,12 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 				 uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
 	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
       
-    if (ar<mr || gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) ) {
+#ifdef SURFACE_VALIDITY
+      dARdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
+      dARdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
+      if (grid != gridOptimizeFaceUV( grid, node, dARdu ) ) return NULL;
+#else
+      if (ar<mr || gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) ) {
 	dARdu[0] = dARdx[0]*du[0] + dARdx[1]*du[1] + dARdx[2]*du[2] ; 
 	dARdu[1] = dARdx[0]*dv[0] + dARdx[1]*dv[1] + dARdx[2]*dv[2] ; 
       }else{
@@ -617,6 +622,7 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 	dARdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
       }
       if (grid != gridOptimizeUV( grid, node, dARdu ) ) return NULL;
+#endif
     }
     return grid;
   }

@@ -1,3 +1,9 @@
+2004-11-09 00:14 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNode) if -DSURFACE_VALIDITY defined, 
+	optimizeFaceUV is called instead of optimizedUV, so that the volume
+	quality is ignored.
+
 2004-11-03 16:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/Makefile.am created a new library libUnitMesh.a so that
