@@ -1484,9 +1484,9 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [5,4,2,7], layer.blendNormals(1)
   assert_equal [0,5,3,8], layer.blendNormals(2)
 
-#     /3---8\
+#     /3   8\
 #    / |   | \
-#    / 0---5 \
+#    / 0   5 \
 #   / /     \ \
 #   //   4   \\
 #   6   / \   2
