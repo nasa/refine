@@ -291,9 +291,9 @@ int layerConstrained(Layer *layer, int normal )
 Layer *layerAdvance(Layer *layer, double height )
 {
   Grid *grid = layer->grid;
-  int normal, root, tip, i;
+  int normal, root, tip, faceId, i;
   int cell, node;
-  int front, normals[3], n[6];
+  int front, normals[3], n[6], side[2];
   double xyz[3];
   AdjIterator it;  
 
@@ -305,6 +305,11 @@ Layer *layerAdvance(Layer *layer, double height )
     if ( EMPTY == tip) return NULL;
     layer->normal[normal].tip = tip;
     gridReconnectCell(grid, root, tip);
+    faceId = layerConstrained(layer,normal);
+    if (0 != faceId) {
+      gridReconnectFace(grid, faceId, root, tip);
+      // do projection
+    }
   }
 
   for (front=0;front<layerNFront(layer);front++){
@@ -323,8 +328,8 @@ Layer *layerAdvance(Layer *layer, double height )
       normals[0] = normal;
     }
     for (i=0;i<3;i++){
-      n[i]   = layer->normal[i].root;
-      n[i+3] = layer->normal[i].tip;
+      n[i]   = layer->normal[normals[i]].root;
+      n[i+3] = layer->normal[normals[i]].tip;
     }
     if (normals[2]<normals[1]){
       gridAddCell(grid, n[0], n[4], n[5], n[3]);
@@ -337,14 +342,59 @@ Layer *layerAdvance(Layer *layer, double height )
     }
 
     if (0 < layerConstrained(layer,normals[0]) && 
-	0 < layerConstrained(layer,normals[1]) )
-      printf("const 0 1\n");
+	0 < layerConstrained(layer,normals[1]) ){
+      side[0] = normals[1];
+      side[1] = normals[0];
+
+      faceId = layerConstrained(layer,side[0]);
+      n[0] = layer->normal[side[0]].root;
+      n[1] = layer->normal[side[1]].root;
+      n[2] = layer->normal[side[0]].tip;
+      n[3] = layer->normal[side[1]].tip;
+      if (side[0]<side[1]){
+	gridAddFace(grid,n[0],n[1],n[3],faceId);
+	gridAddFace(grid,n[0],n[3],n[2],faceId);
+      }else{
+	gridAddFace(grid,n[0],n[1],n[2],faceId);
+	gridAddFace(grid,n[2],n[1],n[3],faceId);
+      }
+    }
     if (0 < layerConstrained(layer,normals[1]) && 
-	0 < layerConstrained(layer,normals[2]) )
-      printf("const 1 2\n");
+	0 < layerConstrained(layer,normals[2]) ){
+      side[0] = normals[2];
+      side[1] = normals[1];
+
+      faceId = layerConstrained(layer,side[0]);
+      n[0] = layer->normal[side[0]].root;
+      n[1] = layer->normal[side[1]].root;
+      n[2] = layer->normal[side[0]].tip;
+      n[3] = layer->normal[side[1]].tip;
+      if (side[0]<side[1]){
+	gridAddFace(grid,n[0],n[1],n[3],faceId);
+	gridAddFace(grid,n[0],n[3],n[2],faceId);
+      }else{
+	gridAddFace(grid,n[0],n[1],n[2],faceId);
+	gridAddFace(grid,n[2],n[1],n[3],faceId);
+      }
+    }
     if (0 < layerConstrained(layer,normals[2]) && 
-	0 < layerConstrained(layer,normals[0]) )
-	printf("const 2 1\n");
+	0 < layerConstrained(layer,normals[0]) ){
+      side[0] = normals[0];
+      side[1] = normals[2];
+
+      faceId = layerConstrained(layer,side[0]);
+      n[0] = layer->normal[side[0]].root;
+      n[1] = layer->normal[side[1]].root;
+      n[2] = layer->normal[side[0]].tip;
+      n[3] = layer->normal[side[1]].tip;
+      if (side[0]<side[1]){
+	gridAddFace(grid,n[0],n[1],n[3],faceId);
+	gridAddFace(grid,n[0],n[3],n[2],faceId);
+      }else{
+	gridAddFace(grid,n[0],n[1],n[2],faceId);
+	gridAddFace(grid,n[2],n[1],n[3],faceId);
+      }
+    }
   }
 
   return layer;
