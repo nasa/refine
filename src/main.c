@@ -131,6 +131,7 @@ int main( int argc, char *argv[] )
       if (debugInsert) {
 	printf("Inserting a line of nodes.\n");
 	gridInsertLineOnSymPlane( grid, ninsert, 0.0, 1.0, 0.33);
+	gridVerifyEdgesInLine(grid);
 	ratio=0.9;
       }else{
 	printf("Scaling spacing to refine a sphere.\n");
@@ -210,6 +211,7 @@ int main( int argc, char *argv[] )
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     STATUS;
+    if (debugInsert) gridVerifyEdgesInLine(grid);
         
     for (i=0;i<2;i++){
       projected = ( grid == gridRobustProject(grid));
@@ -230,6 +232,8 @@ int main( int argc, char *argv[] )
       printf("nodes frozen %d\n",gridNFrozen(grid));
     }
   }
+
+  if (debugInsert) gridVerifyEdgesInLine(grid);
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");

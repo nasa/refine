@@ -645,3 +645,19 @@ Grid *gridInsertLineOnSymPlane(Grid *grid, int n,
   
   return grid;
 }
+
+Grid *gridVerifyEdgesInLine(Grid *grid)
+{
+  int i, n0, n1;
+
+  if ( grid->nline <= 0 || grid->line == NULL ) return NULL;
+
+  for ( i=1 ; i<grid->nline ; i++ ) {
+    n0 = grid->line[i-1];
+    n1 = grid->line[i];
+    if( !gridCellEdge( grid, n0, n1 ) ) {
+      printf("Segment %3i of line n0 %10d n1 %10d not found\n",i,n0,n1);
+    }
+  }
+  return grid;
+}
