@@ -732,6 +732,19 @@ GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
   double nx3, ny3, nz3;
   double nx4, ny4, nz4;
   double vol;
+
+  int idiag1, idiag2, idiag3, idiag4;
+  int ioff12, ioff13, ioff14;
+  int ioff21, ioff23, ioff24;
+  int ioff31, ioff32, ioff34;
+  int ioff41, ioff42, ioff43;
+
+  double c;
+  double c1x, c1y, c1z;
+  double c2x, c2y, c2z;
+  double c3x, c3y, c3z;
+  double c4x, c4y, c4z;
+
   int node;
 
   for(i=0;i<9*gridmoveNNZ(gm);i++) gm->a[i]=0.0;
@@ -780,6 +793,42 @@ GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
 
       if(vol <= 0.0)printf("%s: %d: Negative Vol %f %f %f\n",
 			   __FILE__,__LINE__,x1,y1,z1);
+
+      idiag1 = 9*gridmoveRowEntry(gm,nodes[0],nodes[0]);
+      ioff12 = 9*gridmoveRowEntry(gm,nodes[0],nodes[1]);
+      ioff13 = 9*gridmoveRowEntry(gm,nodes[0],nodes[2]);
+      ioff14 = 9*gridmoveRowEntry(gm,nodes[0],nodes[3]);
+
+      ioff21 = 9*gridmoveRowEntry(gm,nodes[1],nodes[0]);
+      idiag2 = 9*gridmoveRowEntry(gm,nodes[1],nodes[1]);
+      ioff23 = 9*gridmoveRowEntry(gm,nodes[1],nodes[2]);
+      ioff24 = 9*gridmoveRowEntry(gm,nodes[1],nodes[3]);
+
+      ioff31 = 9*gridmoveRowEntry(gm,nodes[2],nodes[0]);
+      ioff32 = 9*gridmoveRowEntry(gm,nodes[2],nodes[1]);
+      idiag3 = 9*gridmoveRowEntry(gm,nodes[2],nodes[2]);
+      ioff34 = 9*gridmoveRowEntry(gm,nodes[2],nodes[3]);
+
+      ioff41 = 9*gridmoveRowEntry(gm,nodes[3],nodes[0]);
+      ioff42 = 9*gridmoveRowEntry(gm,nodes[3],nodes[1]);
+      ioff43 = 9*gridmoveRowEntry(gm,nodes[3],nodes[2]);
+      idiag4 = 9*gridmoveRowEntry(gm,nodes[3],nodes[3]);
+
+      c = 1.0/(3.0*vol);
+      c1x = c*(nx2 + nx3 + nx4);
+      c2x = c*(nx3 + nx4 + nx1);
+      c3x = c*(nx4 + nx1 + nx2);
+      c4x = c*(nx1 + nx2 + nx3);
+
+      c1y = c*(ny2 + ny3 + ny4);
+      c2y = c*(ny3 + ny4 + ny1);
+      c3y = c*(ny4 + ny1 + ny2);
+      c4y = c*(ny1 + ny2 + ny3);
+
+      c1z = c*(nz2 + nz3 + nz4);
+      c2z = c*(nz3 + nz4 + nz1);
+      c3z = c*(nz4 + nz1 + nz2);
+      c4z = c*(nz1 + nz2 + nz3);
 
     }
   }
