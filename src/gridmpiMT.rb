@@ -83,18 +83,10 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal EMPTY, grid.nodePart(0)
  end
 
- def testSplitEdgeAcrossProc
+ def testLoadQueue
   q = Queue.new
   p1 = rightTet.setPartId(1).setAllLocal
-  p2 = rightTet.setPartId(2).setAllLocal
-  p2.setGhost(0)
-  p2.setGhost(1)
-  p2.setGhost(2)
   p1.setGhost(3)
-
-  assert_equal EMPTY, p2.parallelEdgeSplit(q,0,1), "split a ghost edge"
-  assert_equal 1, p1.ncell
-  assert_equal 1, q.transactions
 
   assert_equal 4, p1.parallelEdgeSplit(q,0,3)
   assert_equal 2, p1.ncell
@@ -116,6 +108,20 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal [ 0,0,0, 1,0,0, 0,1,0, 0,0,h ], q.addedCellXYZs(1)
   assert_equal 2, q.removedFaces(1)
   assert_equal 4, q.addedFaces(1)
+ end
+
+ def testUnPackQueue
+  q = Queue.new
+  p1 = rightTet.setPartId(1).setAllLocal
+  p2 = rightTet.setPartId(2).setAllLocal
+  p2.setGhost(0).setGhost(1).setGhost(2)
+  p1.setGhost(3)
+
+  assert_equal EMPTY, p2.parallelEdgeSplit(q,0,1), "split a ghost edge"
+  assert_equal 1, p1.ncell
+  assert_equal 1, q.transactions
+
+  assert_equal 4, p1.parallelEdgeSplit(q,0,3)
 
   assert_equal p2, p2.applyQueue(q)
  end
