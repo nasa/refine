@@ -467,26 +467,42 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2, grid.cellDegree(6)
  end
  
- def testSplitEdge
-  grid = Grid.new(5,2,2)
-  grid.addCell( grid.addNode(0.0,0.0,0.0), grid.addNode(1.0,0.0,0.0), 
-	        grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
-  initalVolume = grid.totalVolume
-  assert_equal grid, grid.splitEdge(0,1)
-  assert_equal 2, grid.ncell
-  assert_equal 5, grid.nnode
-  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
- end
-
  def testSplitEdge4
-  grid = gemGrid
+  assert_not_nil grid = gemGrid
   initalVolume = grid.totalVolume
-  assert_equal 4, grid.ncell
-  assert_equal 6, grid.nnode
   assert_equal grid, grid.splitEdge(0,1)
+  assert_equal 7, grid.nnode
   assert_equal 8, grid.ncell
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
  end
+
+ def testSplitEdge4onSameBC
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal grid, grid.addFace(0,1,2,11)
+  assert_equal grid, grid.addFace(0,1,5,11)
+  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal(-1,   grid.faceId(0,1,2) )
+  assert_equal(-1,   grid.faceId(0,1,5) ) 
+  assert_equal(11,   grid.faceId(0,6,2) )
+  assert_equal(11,   grid.faceId(6,1,2) )
+  assert_equal(11,   grid.faceId(0,6,5) ) 
+  assert_equal(11,   grid.faceId(6,1,5) ) 
+ end
+
+ def testSplitEdge4onDifferentBC
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal grid, grid.addFace(0,1,2,2)
+  assert_equal grid, grid.addFace(0,1,5,5)
+  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal(-1,   grid.faceId(0,1,2) )
+  assert_equal(-1,   grid.faceId(0,1,5) ) 
+  assert_equal( 2,   grid.faceId(0,6,2) )
+  assert_equal( 2,   grid.faceId(6,1,2) )
+  assert_equal( 5,   grid.faceId(0,6,5) ) 
+  assert_equal( 5,   grid.faceId(6,1,5) ) 
+ end
+
+#test for not enough mem for swap and split
 
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
