@@ -91,7 +91,6 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
   double *xyz0, *xyz1;
   double dx, dy, dz;
   double *m0, *m1, m[6];
-  int i;
 
   if (!gridValidNode(grid, n0) || !gridValidNode(grid, n1)) return -1.0;
 
