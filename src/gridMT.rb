@@ -4,11 +4,10 @@
 #
 # Mobility test for grid c lib
 
-exit unless system 'ruby extconf.rb Grid adj.c'
-exit unless system 'make'
+exit unless system 'ruby makeRubyExtension.rb Grid adj.c'
 
 require 'test/unit'
-require 'Grid'
+require 'Grid/Grid'
 
 class Grid
  def totalVolume

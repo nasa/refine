@@ -4,15 +4,10 @@
 #
 # Mobility test for sampleunit c lib
 
-`rm -rf unittest`
-`mkdir unittest`
-`cp sampleunit.h sampleunit.c sampleunit_ruby.c unittest`
-Dir.chdir "unittest"
-`ruby ../extconf.rb SampleUnit`
-`make`
+exit unless system 'ruby makeRubyExtension.rb SampleUnit'
 
 require 'test/unit'
-require 'SampleUnit'
+require 'SampleUnit/SampleUnit'
 
 class TestSampleUnit < Test::Unit::TestCase
 

@@ -4,11 +4,10 @@
 #
 # Mobility test for adj c lib
 
-exit unless system 'ruby extconf.rb Adj'
-exit unless system 'make'
+exit unless system 'ruby makeRubyExtension.rb Adj'
 
 require 'test/unit'
-require 'Adj'
+require 'Adj/Adj'
 
 class TestSampleUnit < Test::Unit::TestCase
 
