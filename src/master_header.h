@@ -19,4 +19,6 @@
 #  define END_C_DECLORATION
 #endif
 
+#define EMPTY (-1)
+
 #endif /* MASTER_HEADER_H */
