@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <limits.h>
 #include <values.h>
 #include "adj.h"
 #include "gridmetric.h"
