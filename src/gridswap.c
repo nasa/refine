@@ -829,3 +829,16 @@ Grid *gridConstructTet7( Grid *grid, int n0, int n1,
   
   return grid;
 }
+
+Grid *gridSwapFaceArea(Grid *grid)
+{
+  int cell, nodes[4];
+  int nface;
+  for (cell=0;cell<grid->maxcell;cell++){
+    if ( NULL != gridCell( grid, cell, nodes) ){
+      nface = 0;
+    }
+  }
+  return grid;
+}
+
