@@ -386,6 +386,29 @@ class TestGrid < Test::Unit::TestCase
   assert_nil         grid.addEdge(1, 2, 13, 0.0, 0.0)
  end
 
+ def testDeleteEdgesWithThawedNode
+  assert_not_nil             grid = Grid.new(10,0,0,10)
+  assert_equal 0,            grid.addNode(0,0,0)
+  assert_equal 1,            grid.addNode(1,0,0)
+  assert_equal 2,            grid.addNode(2,0,0)
+  assert_equal 3,            grid.addNode(3,0,0)
+  assert_equal grid,         grid.addEdge(0,1,1,0.0,1.0)
+  assert_equal grid,         grid.addEdge(2,1,1,2.0,1.0)
+  assert_equal grid,         grid.addEdge(2,3,1,2.0,3.0)
+  assert_equal grid,         grid.addEdge(1,3,99,99.0,99.0)
+  assert_equal 4,            grid.nedge
+  assert_equal grid,         grid.freezeNode(0)
+  assert_equal grid,         grid.freezeNode(1)
+  assert_nil                 grid.deleteThawedEdgeSegments(-1)
+  assert_nil                 grid.deleteThawedEdgeSegments(0)
+  assert_equal grid,         grid.deleteThawedEdgeSegments(1)
+  assert_equal 2,            grid.nedge
+  assert_equal [0,1,1],  grid.edge(0)
+  assert_nil             grid.edge(1)
+  assert_nil             grid.edge(2)
+  assert_equal [1,3,99], grid.edge(3)
+ end
+
  def testGetGeomCurve
   assert_not_nil     grid = Grid.new(4,0,0,4)
   assert_equal grid, grid.addEdge(0, 1, 10, 10.0, 11.0)
