@@ -434,7 +434,7 @@ GridMove *gridmoveProjectionDisplacements(GridMove *gm)
   double displacement[3];
 
   for ( node=0 ; node<gridMaxNode(grid) ; node++ ) {
-    if (gridGeometryFace( grid, node )) {
+    if ( gridNodeLocal(grid,node) && gridGeometryFace( grid, node ) ) {
       gridNodeProjectionDisplacement(grid,node,displacement);
       gridmoveDisplace(gm,node,displacement);
     }
