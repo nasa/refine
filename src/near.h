@@ -14,6 +14,7 @@
 #define NEAR_H
 
 #include "refine_defs.h"
+#include <math.h>
 
 BEGIN_C_DECLORATION
 
@@ -33,11 +34,14 @@ void nearFree( Near * );
 int nearIndex( Near * );
 int nearLeftIndex( Near * );
 int nearRightIndex( Near * );
-double nearDistance( Near *, Near *other);
+#define nearDistance(near,other) \
+  ( sqrt( (near->x - other->x)*(near->x - other->x) + \
+          (near->y - other->y)*(near->y - other->y) + \
+          (near->z - other->z)*(near->z - other->z) ) )
 double nearClearance( Near *, Near *other);
 Near *nearInsert( Near *, Near *child );
-double nearLeftRadius( Near * );
-double nearRightRadius( Near * );
+#define nearLeftRadius(near) (near->leftRadius)
+#define nearRightRadius(near) (near->rightRadius)
 
 Near *nearVisualize( Near * );
 

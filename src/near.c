@@ -12,7 +12,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include <limits.h>
 #include <values.h>
 #include "near.h"
@@ -99,18 +98,6 @@ Near *nearInsert( Near *near, Near *child )
   return NULL;
 }
 
-double nearDistance( Near *near, Near *other)
-{
-  double dx, dy, dz, distance;
-
-  dx = near->x - other->x;
-  dy = near->y - other->y;
-  dz = near->z - other->z;
-
-  distance  = sqrt( dx*dx + dy*dy + dz*dz );
-  return distance;
-}
-
 double nearClearance( Near *near, Near *other)
 {
   double clearance;
@@ -118,16 +105,6 @@ double nearClearance( Near *near, Near *other)
   clearance = nearDistance(near,other) - near->radius - other->radius;
 
   return clearance;
-}
-
-double nearLeftRadius( Near *near )
-{
-  return near->leftRadius;
-}
-
-double nearRightRadius( Near *near )
-{
-  return near->rightRadius;
 }
 
 Near *nearVisualize( Near *near )
