@@ -50,14 +50,17 @@ class TestSampleUnit < Test::Unit::TestCase
  end
  
  def testRemoveCell
-  assert_equal @grid, @grid.addCell(0,1,2,3)
-  assert_equal nil, @grid.removeCell(25625)
-  assert_equal 1, @grid.ncell
-  assert_equal @grid, @grid.removeCell(0)
-  assert_equal nil, @grid.cell(0)
-  assert_equal nil, @grid.removeCell(0)
-  assert_equal 0, @grid.ncell
-  (0..3).each { |n| assert_equal 0, @grid.cellDegree(n)}
+  assert_not_nil     grid = Grid.new(4,2,0)
+  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_nil         grid.removeCell(-1)
+  assert_nil         grid.removeCell(1)
+  assert_nil         grid.removeCell(25625)
+  assert_equal 1,    grid.ncell
+  assert_equal grid, grid.removeCell(0)
+  assert_nil         grid.cell(0)
+  assert_nil         grid.removeCell(0)
+  assert_equal 0,    grid.ncell
+  (0..3).each { |n| assert_equal 0, grid.cellDegree(n)}
  end
 
  def testReplaceCell
@@ -184,25 +187,53 @@ class TestSampleUnit < Test::Unit::TestCase
 
 # put faces in
 
- def testFace
+ def testNumberOfFaces
   assert_equal 0, @grid.nface 
   assert_equal 0, @grid.maxface 
   assert_not_nil  grid = Grid.new(4,1,2)
   assert_equal 0, grid.nface 
   assert_equal 2, grid.maxface 
+ end
 
-  assert_not_nil    grid.addFace(0, 1, 2, 10)
-  assert_equal 1,   grid.nface 
-  assert_equal 10,  grid.faceId( 0, 1, 2 )
-  assert_equal 10,  grid.faceId( 1, 2, 0 )
-  assert_equal 10,  grid.faceId( 2, 0, 1 )
-  assert_equal 10,  grid.faceId( 2, 1, 0 )
-  assert_equal( -1, grid.faceId( 1, 2, 3 ) )
+ def testAddAndFindFace
+  assert_not_nil     grid = Grid.new(4,1,2)
+  
+  assert_equal grid, grid.addFace(0, 1, 2, 10)
+  assert_equal 0,    grid.findFace(0,1,2)
+  assert_equal -1,   grid.findFace(3,1,2)
+ end
 
-  assert_not_nil   grid.addFace(3, 1, 2, 11)
-  assert_equal 10, grid.faceId( 0, 1, 2 )
-  assert_equal 11, grid.faceId( 1, 2, 3 )
-  assert_nil       grid.addFace(0, 1, 2, 12)
+ def testAddAndRemoveFace
+  assert_not_nil     grid = Grid.new(4,1,2)
+  
+  assert_nil         grid.removeFace(0)
+  assert_nil         grid.removeFace(1)
+  assert_equal grid, grid.addFace(0, 1, 2, 10)
+  assert_nil         grid.removeFace(-1)
+  assert_nil         grid.removeFace(1)
+  assert_equal grid, grid.addFace(3, 1, 2, 11)
+  assert_equal 2,    grid.nface 
+  assert_nil         grid.addFace(0, 1, 3, 12)
+  assert_equal 2,    grid.nface 
+  assert_nil         grid.removeFace(3)
+  assert_equal 2,    grid.nface 
+ end
+
+ def testFaceId
+  assert_not_nil     grid = Grid.new(4,1,2)
+
+  assert_equal( -1,  grid.faceId( 1, 2, 3 ) )
+
+  assert_equal grid, grid.addFace(0, 1, 2, 10)
+  assert_equal 10,   grid.faceId( 0, 1, 2 )
+  assert_equal 10,   grid.faceId( 1, 2, 0 )
+  assert_equal 10,   grid.faceId( 2, 0, 1 )
+  assert_equal 10,   grid.faceId( 2, 1, 0 )
+  assert_equal( -1,  grid.faceId( 1, 2, 3 ) )
+
+  assert_equal grid, grid.addFace(3, 1, 2, 11)
+  assert_equal 10,   grid.faceId( 0, 1, 2 )
+  assert_equal 11,   grid.faceId( 1, 2, 3 )
  end
 
  def testSwap4_gapWithSameFaces
