@@ -1,13 +1,15 @@
 Authors:
   Mike Park <Mike.Park@nasa.gov>
   Bill Jones <William.T.Jones@nasa.gov> - MesherX and GEOLAB/SDK restarts 
-  Bil Kleb <Bil.Kleb@nasa.gov> - Mixed elements, Multiple normals
+  Bil Kleb <Bil.Kleb@nasa.gov> - MesherX mixed elements and multiple normals
   Bill Wood <Bill.Wood@nasa.gov> - Testing framework
-  Harold Atkins <Harold.L.Atkins@nasa.gov> - Synthetic jet MesherX application
+  Harold Atkins <Harold.L.Atkins@nasa.gov> - MesherX enhancements
 
 Design suggestions:
   Bil Kleb <Bil.Kleb@.nasa.gov> - Ruby extension unit testing 
   Bill Jones <William.T.Jones@nasa.gov> - Anisotropic metrics
 
-Assitance:
-  Beth Lee-Rausch <Elizabeth.M.Lee-Rausch@nasa.gov> - Parallel adaptation
+Applications:
+  Harold Atkins <Harold.L.Atkins@nasa.gov> - MesherX Synthetic jet
+  Beth Lee-Rausch <Elizabeth.M.Lee-Rausch@nasa.gov> - Parallel adaptation 
+    in Fun3D
