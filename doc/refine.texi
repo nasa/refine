@@ -36,6 +36,7 @@ The refine library overview, version 1.0.
 * Grid Mix-ins  :: Additional methods for grid object
 * Add Me        :: Documentation Wish List.
 * Running FUN3D :: HOWTO run FUN3D with refine
+* Support       :: Performing support tasts
 * Index         :: Complete index.
 @end menu
 
@@ -537,6 +538,52 @@ pairs to replace default ginput.faces file of HEFSS installation.
   You can monitor progress of rad with `tail -F Adjoint/rad_out`
   Output
 
+@node Support
+@chapter Support
+@cindex support
+
+@section Making a distribution
+@cindex distribution
+
+If anything has changed in the GEOLAB SDK up date the static snapshots
+of the libraries in geomSGIn32. Build these on an SGI with the legecy
+SDK Makefiles. MeatLib is created wiht @code{make sgi} and CADGeom is
+created with @code{make alan}.
+
+In preparation to creating a distribution edit the @code{ChangeLog},
+@code{NEWS} and @code{configure.ac} files.
+
+@enumerate
+@item @code{ChangeLog} - contains detailed summaries of changes.
+@item @code{NEWS} - contains an overview of changes between releases.
+@item @code{configure.ac} - the release version is set and the second argument to @code{AM_INIT_AUTOMAKE([refine],[version])}
+@end enumerate
+
+First add an entry to the Change log that looks like:
+
+@verbatim
+2004-08-17 12:55 FirstName LastName  <myEMail@nasa.gov>
+
+	* Made 1.2.2 Release. Interface to FUN3D 3.3.1.
+
+@end verbatim
+
+Note that * is proceeded by a tab and that any compatibility issues
+with specific FUN3D and the SDK versions should be listed.
+
+Next, summarize the changes listed in the ChangeLog between now and
+the last distribution and put them in the NEWS file. Again, note and
+compatibility issues with specific versions of FUN3D and the SDK
+should be noted.
+
+Commit your changes to @code{ChangeLog}, @code{NEWS} and
+@code{configure.ac} and tag the repository.
+
+A distribution is created by typing @code{make dist} where you have
+configured the package.
+
+After you have created a distribution increment the version string at
+the top of configure.ac to the next test release.
 
 @node Index
 @unnumbered Index
