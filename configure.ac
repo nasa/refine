@@ -170,14 +170,14 @@ dnl Check for FELISA header
 have_FELISA='no'
 if test "$with_FELISA" != 'no' 
 then
-  AC_CHECK_FILE([$with_FELISA/MG_util.h],
+  AC_CHECK_FILE([$with_FELISA/include/MG_util.h],
                 [have_FELISA='yes'],[have_FELISA='no'])
 fi
 
 if test "$have_FELISA" != 'no'
 then
   AC_DEFINE([HAVE_FELISA])
-  FELISAheader=-I$with_FELISA
+  FELISAheader=-I$with_FELISA/include
   FELISAlibrary="-L$with_FELISA/$arch/lib -lFELISA"
 else
   FELISAheader=
