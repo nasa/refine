@@ -42,24 +42,36 @@ lib_LIBRARIES += libMesherX.a libOctree_Stub.a
 
 libMesherX_a_CFLAGS = @SDKheader@
 libMesherX_a_SOURCES = \
-	master_header.h \
-	adj.h adj.c \
-	near.h near.c \
+	adj.c \
+	near.c \
 	intersect.h intersect.c \
-	line.h line.c \
-	queue.h queue.c \
+	line.c \
+	queue.c \
 	sort.h sort.c \
-	grid.h grid.c \
+	grid.c \
 	gridmath.h gridmath.c \
 	gridmetric.h gridmetric.c \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
 	gridfiller.h gridfiller.c \
-	layer.h layer.c \
+	layer.c \
 	mesherxInit.h mesherxInit.c \
 	mesherxRebuild.h mesherxRebuild.c \
-	mesherx.h mesherx.c
+	mesherx.c
+
+libMesherX_a_include_HEADERS = \
+	master_header.h \
+	mesherx.h \
+	layer.h \
+	grid.h \
+	near.h \
+	adj.h \
+	line.h \
+	queue.h
+
+libMesherX_a_includedir = @prefix@/include
+
 
 libOctree_Stub_a_CFLAGS = @SDKheader@
 libOctree_Stub_a_SOURCES = Octree_Stub.c
