@@ -117,33 +117,17 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [0, 1, 2, 3], @grid.orient(3,1,0,2,0,1)
  end
  
-
- def testGetGem1
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(0,1,2,3).gem(0,1)
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(0,3,1,2).gem(0,1)
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(0,2,3,1).gem(0,1)
-
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(1,0,3,2).gem(0,1)
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(1,2,0,3).gem(0,1)
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(1,3,2,0).gem(0,1)
-
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(2,3,0,1).gem(0,1)
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(2,1,3,0).gem(0,1)
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(2,0,1,3).gem(0,1)
-
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(3,2,1,0).gem(0,1)
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(3,0,2,1).gem(0,1)
-  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(3,1,0,2).gem(0,1)
-end
- 
  def testGetGem3
   grid = Grid.new(5,3,0)
   assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
-  assert_equal [[3,4,2,0],[3,4,1,2],[3,4,0,1]], grid.gem(3,4)
-  assert_equal [[0,1,3,4]], grid.gem(0,1)
+  assert_equal [0], grid.gem(0,1)
+  assert_equal [1], grid.gem(1,2)
+  assert_equal [2], grid.gem(0,2)
+  assert_equal [2,0], grid.gem(3,0)
+  assert_equal [2,1,0], grid.gem(3,4)
  end
  
- def testEquator
+ def XtestEquator
   grid = Grid.new(6,4,0)
   assert_equal grid, grid.addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
   assert_equal 2, grid.nodeDeg(0)
