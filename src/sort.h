@@ -1,0 +1,24 @@
+
+/* Sort - for doing sorts and searches
+ * 
+ * Michael A. Park
+ * Computational Modeling & Simulation Branch
+ * NASA Langley Research Center
+ * Phone:(757)864-6604
+ * Email:m.a.park@larc.nasa.gov 
+ */
+  
+/* $Id$ */
+
+#ifndef SORT_H
+#define SORT_H
+
+#include "master_header.h"
+
+BEGIN_C_DECLORATION
+
+void sortHeap( int length, int *arrayInput, int *sortedIndex  );
+
+END_C_DECLORATION
+
+#endif /* QUEUE_H */
