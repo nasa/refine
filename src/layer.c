@@ -293,6 +293,7 @@ Layer *layerAdvance(Layer *layer, double height )
   Grid *grid = layer->grid;
   int normal, root, tip, i;
   int cell, node;
+  int front, normals[3], n[6];
   double xyz[3];
   AdjIterator it;  
 
@@ -303,6 +304,37 @@ Layer *layerAdvance(Layer *layer, double height )
     tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
     if ( EMPTY == tip) return NULL;
     layer->normal[normal].tip = tip;
+    gridReconnectCell(grid, root, tip);
+  }
+
+  for (front=0;front<layerNFront(layer);front++){
+    layerFrontNormals(layer, front, normals);
+    /* pg. 82-85 of Garimella Thesis*/
+    if (normals[1]<normals[0] && normals[1]<normals[2]){
+      normal = normals[1];
+      normals[1] = normals[2];
+      normals[2] = normals[0];
+      normals[0] = normal;
+    }
+    if (normals[2]<normals[0] && normals[2]<normals[1]){
+      normal = normals[2];
+      normals[2] = normals[1];
+      normals[1] = normals[0];
+      normals[0] = normal;
+    }
+    for (i=0;i<3;i++){
+      n[i]   = layer->normal[i].root;
+      n[i+3] = layer->normal[i].tip;
+    }
+    if (normals[2]<normals[1]){
+      gridAddCell(grid, n[0], n[4], n[5], n[3]);
+      gridAddCell(grid, n[2], n[0], n[4], n[5]);
+      gridAddCell(grid, n[2], n[0], n[1], n[4]);
+    }else{
+      gridAddCell(grid, n[0], n[4], n[5], n[3]);
+      gridAddCell(grid, n[0], n[1], n[5], n[4]);
+      gridAddCell(grid, n[2], n[0], n[1], n[5]);
+    }
   }
 
   return layer;

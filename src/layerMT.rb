@@ -5,11 +5,17 @@
 # Mobility test for layer c lib
 
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb Layer adj.c grid.h master_header.h'
 
 require 'test/unit'
 require 'Grid/Grid'
+require 'GridMetric/GridMetric'
 require 'Layer/Layer'
+
+class Grid
+ include GridMetric
+end
 
 class TestLayer < Test::Unit::TestCase
 
@@ -165,6 +171,9 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addCell(0,1,2,3)
   assert_equal 1,         grid.ncell
   assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_equal true,      grid.rightHandedFace(0)
+  assert_equal true,      grid.rightHandedBoundary
+  assert       0<         grid.minVolume, "negative volumes"
   assert_not_nil          layer = Layer.new(grid)
   assert_equal layer,     layer.makeFront([1])
   assert_equal 1,         layer.nfront
@@ -172,7 +181,11 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 3,         layer.nnormal
   assert_equal layer,     layer.advance(0.1)
   assert_equal 7,         grid.nnode
-  #assert_equal [4,5,6,3], grid.cell(0)
+  assert_equal [4,5,6,3], grid.cell(0)
+  assert_equal 4,         grid.ncell
+  assert_equal true,      grid.rightHandedFace(0)
+  assert_equal true,      grid.rightHandedBoundary
+  assert       0<         grid.minVolume, "negative volumes"
  end
 
 end
