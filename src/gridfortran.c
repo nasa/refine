@@ -13,7 +13,9 @@
 #include "gridfortran.h"
 #include "grid.h"
 #include "gridmetric.h"
+#include "gridswap.h"
 #include "gridcad.h"
+#include "gridinsert.h"
 
 static Grid *grid;
 
@@ -60,10 +62,22 @@ int gridinsertboundary_( int *faceId, int *nnode, int *inode,
 	  gridNFace(grid),gridMinFaceMR(grid));
 }
 
+int gridswap_( )
+{
+  gridSwap(grid);
+  printf(" post swap minn AR %17.15f\n",gridMinAR(grid));
+}
+
 int gridsmoothvolume_( )
 {
   gridSmoothVolume(grid);
-  printf(" min AR %17.15f\n",gridMinAR(grid));
+  printf(" post smooth min AR %17.15f\n",gridMinAR(grid));
+}
+
+int gridadaptwithoutcad_( double *minLength, double *maxLength )
+{
+  gridAdaptWithOutCAD(grid,*minLength, *maxLength);
+  printf(" post adapt min AR %17.15f\n",gridMinAR(grid));
 }
 
 int gridwritetecplotsurfacezone_( )
