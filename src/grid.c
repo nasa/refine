@@ -1823,7 +1823,10 @@ Grid *gridRemoveFaceAndQueue(Grid *grid, Queue *queue, int face )
   if (face >= grid->maxface || face < 0) return NULL;
   if (EMPTY == grid->f2n[3*face]) return NULL;
 
-  if (NULL!=queue) {
+  if (NULL!=queue && gridFaceHasGhostNode(grid,
+					  grid->f2n[0+3*face],
+					  grid->f2n[1+3*face],
+					  grid->f2n[2+3*face])) {
     for ( inode = 0 ; inode < 3 ; inode++ ) {
       globalnodes[inode] = gridNodeGlobal(grid, grid->f2n[inode+3*face]);
       nodeParts[inode] = gridNodePart(grid, grid->f2n[inode+3*face]);
@@ -2153,6 +2156,29 @@ int gridAddEdge(Grid *grid, int n0, int n1,
   return edge;
 }
 
+int gridAddEdgeAndQueue(Grid *grid, Queue *queue, int n0, int n1, 
+			int edgeId, double t0, double t1 )
+{
+  int globalNodes[2];
+  int nodeParts[2];
+  double ts[2];
+
+  if ( NULL != queue && gridEdgeHasGhostNode(grid,n0,n1) ) {
+    globalNodes[0] = gridNodeGlobal(grid,n0);
+    globalNodes[1] = gridNodeGlobal(grid,n1);
+    nodeParts[0] = gridNodePart(grid,n0);
+    nodeParts[1] = gridNodePart(grid,n1);
+    ts[0] = t0;
+    ts[1] = t1;
+    queueAddEdge(queue, globalNodes,  edgeId, nodeParts, ts);
+  }
+  
+  if ( gridEdgeHasLocalNode(grid,n0,n1) )
+    return gridAddEdge( grid, n0, n1, edgeId, t0, t1);
+  
+  return EMPTY;
+}
+
 Grid *gridRemoveEdge(Grid *grid, int edge )
 {
   if (edge >= grid->maxedge || edge < 0) return NULL;
@@ -2170,6 +2196,26 @@ Grid *gridRemoveEdge(Grid *grid, int edge )
   grid->blanke2n = edge;
 
   return grid;
+}
+
+Grid *gridRemoveEdgeAndQueue(Grid *grid, Queue *queue, int edge )
+{
+  int n0, n1, globalnodes[2], nodeParts[2];
+  if (edge >= grid->maxedge || edge < 0) return NULL;
+  if (EMPTY == grid->e2n[2*edge]) return NULL;
+  
+  n0 = grid->e2n[0+2*edge];
+  n1 = grid->e2n[1+2*edge];
+
+  if (NULL!=queue && gridEdgeHasGhostNode(grid,n0,n1)) {
+    globalnodes[0] = gridNodeGlobal(grid, n0);
+    globalnodes[1] = gridNodeGlobal(grid, n1);
+    nodeParts[0] = gridNodePart(grid, n0);
+    nodeParts[1] = gridNodePart(grid, n1);
+    queueRemoveEdge(queue,globalnodes,nodeParts);
+  }
+  
+  return gridRemoveEdge(grid, edge );
 }
 
 int gridFindEdge(Grid *grid, int n0, int n1 )

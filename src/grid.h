@@ -213,6 +213,12 @@ gridNodeLocal(grid,n2) )
 gridNodeGhost(grid,n0) || \
 gridNodeGhost(grid,n1) || \
 gridNodeGhost(grid,n2) )
+#define gridEdgeHasLocalNode(grid,n0,n1) ( \
+gridNodeLocal(grid,n0) || \
+gridNodeLocal(grid,n1) )
+#define gridEdgeHasGhostNode(grid,n0,n1) ( \
+gridNodeGhost(grid,n0) || \
+gridNodeGhost(grid,n1) )
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 int gridAddCellAndQueue(Grid *g, Queue *, int n0, int n1, int n2, int n3 );
@@ -264,7 +270,10 @@ Grid *gridSetNodeT(Grid *g, int node, int edgeId, double t );
 
 int gridAddEdge(Grid *g, int n0, int n1, 
 		int edgeId, double t0, double t1 );
+int gridAddEdgeAndQueue(Grid *g, Queue *, int n0, int n1, 
+		int edgeId, double t0, double t1 );
 Grid *gridRemoveEdge(Grid *g, int edge );
+Grid *gridRemoveEdgeAndQueue(Grid *g, Queue *, int edge );
 #define gridEdgeAdj(grid) (NULL==grid?NULL:grid->edgeAdj)
 int gridFindEdge(Grid *g, int n0, int n1 );
 int gridEdgeId(Grid *g, int n0, int n1 );
