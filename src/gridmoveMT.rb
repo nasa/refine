@@ -12,7 +12,12 @@ require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
 require 'Grid/Grid'
+require 'GridMetric/GridMetric'
 require 'GridMove/GridMove'
+
+class Grid
+ include GridMetric
+end
 
 class TestGridMove < Test::Unit::TestCase
 
@@ -169,17 +174,15 @@ class TestGridMove < Test::Unit::TestCase
  end
 
  def testSpringRelaxationSqwish
-  h = 0.5
+  h = 0.1
   grid = isoTet4 h
   gm = GridMove.new(grid)
   3.times{|n| gm.displace(n,[0.0,0.0,0.0])}
-  gm.displace(3,[0.0,0.0,-0.4])
+  gm.displace(3,[0.0,0.0,-0.7])
   gm.springRelaxation(1,1)
-  ans = [0.0,0.0,-0.202398]
-  delta = 1.0e-5
-  assert_in_delta ans[0], gm.displacement(4)[0], delta
-  assert_in_delta ans[1], gm.displacement(4)[1], delta
-  assert_in_delta ans[2], gm.displacement(4)[2], delta
+  gm.applyDisplacements
+  minVol = grid.minVolume
+  assert(1.0e-12<minVol,"negative volule of #{minVol}")
  end
 
  def testApplyDisplacement
@@ -188,7 +191,7 @@ class TestGridMove < Test::Unit::TestCase
   grid.addNode(0,1,0)
   gm = GridMove.new(grid)
   gm.displace(0,[0,0,1])
-  gm.applyDisplacements
+  assert_equal gm, gm.applyDisplacements
   assert_equal [0,0,1], grid.nodeXYZ(0)
   assert_equal [0,1,0], grid.nodeXYZ(1)
  end
