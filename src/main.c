@@ -32,8 +32,10 @@ int main( int argc, char *argv[] )
   char project[256];
   char adaptfile[256], outputProject[256], outputFAST[256];
   int i, j, oldSize, newSize;
-  double ratio, ratioRefine, ratioCollapse;
+  double ratio=0.3;
+  double ratioRefine, ratioCollapse;
   bool projected;
+  bool boundaryLayerGrid = FALSE;
   int iview = 0;
 
   sprintf( project,       "" );
@@ -52,11 +54,19 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-a") == 0 ) {
       i++; sprintf( adaptfile,"%s",argv[i]  );
       printf("-a argument %d: %s\n",i, adaptfile);
+    } else if( strcmp(argv[i],"-l") == 0 ) {
+      boundaryLayerGrid = TRUE;
+      printf("-l argument %d, ignoring -a \n",i);
+    } else if( strcmp(argv[i],"-r") == 0 ) {
+      i++; ratio = atof(argv[i]);
+      printf("-r argument %d: %f\n",i, ratio);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
       printf(" -o output project name\n");
       printf(" -a party project_adapt_hess file name\n");
+      printf(" -l make a boundary layer grid -a ignored\n");
+      printf(" -r initial edge length ratio for adapt\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -70,6 +80,8 @@ int main( int argc, char *argv[] )
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
   if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
 
+  if(boundaryLayerGrid) sprintf(adaptfile,"none");
+
   printf("running project %s\n",project);
   grid = gridLoadPart( project, 500000 );
 
@@ -82,7 +94,16 @@ int main( int argc, char *argv[] )
   if(strcmp(adaptfile,"none")==0) {
     printf("adapt parameter >none< selected.\n");
     gridResetSpacing(grid);
-    gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
+    if (boundaryLayerGrid) {
+      gridFreezeAll(grid);
+      gridThawNearBC(grid,0.5,1);
+      gridThawNearBC(grid,0.5,2);
+      gridFreezeBCFace(grid,1);
+      gridFreezeBCFace(grid,2);
+      printf("inviscid nodes to remove %d\n",gridNNode(grid)-gridNFrozen(grid));
+    }else{
+      gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
+    }
   }else{
     printf("reading adapt parameter from file %s ...\n",adaptfile);
     gridImportAdapt(grid, adaptfile); // Do not sort nodes before this call.
@@ -100,7 +121,6 @@ int main( int argc, char *argv[] )
   }
   STATUS;
 
-  ratio = 0.30;
   oldSize = 1;
   newSize = gridNNode(grid) ;
   for ( j=0; (j<40) && (
@@ -113,9 +133,13 @@ int main( int argc, char *argv[] )
     if (ratio>1.0) ratio = 1.0;
     ratioCollapse = 0.4*ratio;
     ratioRefine   = 1.5/ratio;
-    printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
-	   ratio, ratioCollapse, ratioRefine );
-    gridAdapt(grid,ratioCollapse,ratioRefine);
+    if (boundaryLayerGrid) {
+      gridRemoveAllNodes(grid);
+    }else{
+      printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
+	     ratio, ratioCollapse, ratioRefine );
+      gridAdapt(grid,ratioCollapse,ratioRefine);
+    }
     oldSize = newSize;
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
@@ -135,8 +159,12 @@ int main( int argc, char *argv[] )
       }
     }
     STATUS;
-    gridFreezeGoodNodes(grid,0.6,0.4,1.5);
-    printf("nodes frozen %d\n",gridNFrozen(grid));
+    if (boundaryLayerGrid) {
+      printf("inviscid nodes to remove %d\n",gridNNode(grid)-gridNFrozen(grid));
+    }else{
+      gridFreezeGoodNodes(grid,0.6,0.4,1.5);
+      printf("nodes frozen %d\n",gridNFrozen(grid));
+    }
   }
 
   if (!gridRightHandedBoundary(grid)) 
