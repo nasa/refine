@@ -40,6 +40,7 @@ struct Blend {
   int nodes[2];
   int normal[4];
   int edgeId[2];
+  int oldnormal[4];
 };
 
 struct Layer {
@@ -2131,7 +2132,7 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
   int i, node0, node1, n0, n1;
   bool newEdge;
   int blend;
-  int edge, nodes[2], excludeId, edgeId, side;
+  int triangle, edge, nodes[2], excludeId, edgeId, side;
   AdjIterator it;
   Grid *grid;
   grid=layerGrid(layer);
@@ -2177,13 +2178,23 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
   excludeId=0;
   gridEdge(grid,edge,nodes,&excludeId);
   
-  side = 1;
-  if (newEdge) side = 0;
+  side = newEdge?0:1;
 
-  for ( it = adjFirst(gridEdgeAdj(grid),n0); adjValid(it); it=adjNext(it) ){
-    edge = adjItem(it);
-    gridEdge(grid,edge,nodes,&edgeId);
-    if (edgeId != excludeId) layer->blend[blend].edgeId[side] = edgeId;
+  for ( it = adjFirst(layer->adj,normal0); adjValid(it); it=adjNext(it) ){
+    triangle = adjItem(it);
+    for (i=0;i<3;i++) {
+      edgeId = layer->triangle[triangle].parentGeomEdge[i];
+      if (edgeId > 0 && edgeId != excludeId) 
+	layer->blend[blend].edgeId[side] = edgeId;
+    }
+  }
+  for ( it = adjFirst(layer->adj,normal1); adjValid(it); it=adjNext(it) ){
+    triangle = adjItem(it);
+    for (i=0;i<3;i++) {
+      edgeId = layer->triangle[triangle].parentGeomEdge[i];
+      if (edgeId > 0 && edgeId != excludeId) 
+	layer->blend[blend].edgeId[side] = edgeId;
+    }
   }
 
   return layer;
