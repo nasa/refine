@@ -20,19 +20,20 @@ BEGIN_C_DECLORATION
 typedef struct Near Near;
 
 Near *nearCreate(int index, double x, double y, double z, double radius );
-void nearFree( Near *near );
-int nearIndex( Near *near );
-int nearRightIndex( Near *near );
-int nearLeftIndex( Near *near );
-double nearDistance( Near *near, Near *other);
-double nearClearance( Near *near, Near *other);
-Near *nearInsert( Near *near, Near *child );
-double nearFarChild( Near *near );
-double nearRightDistance( Near *near );
-double nearLeftDistance( Near *near );
+Near *nearInit(Near *, int index, double x, double y, double z, double radius );
+void nearFree( Near * );
+int nearIndex( Near * );
+int nearRightIndex( Near * );
+int nearLeftIndex( Near * );
+double nearDistance( Near *, Near *other);
+double nearClearance( Near *, Near *other);
+Near *nearInsert( Near *, Near *child );
+double nearFarChild( Near * );
+double nearRightDistance( Near * );
+double nearLeftDistance( Near * );
 
-int nearCollisions(Near *near, Near *target);
-Near *nearTouched(Near *near, Near *target, int *found, int maxfound, int *list);
+int nearCollisions(Near *, Near *target);
+Near *nearTouched(Near *, Near *target, int *found, int maxfound, int *list);
 
 END_C_DECLORATION
 

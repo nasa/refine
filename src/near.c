@@ -28,6 +28,12 @@ Near* nearCreate( int index, double x, double y, double z, double radius )
 
   near = malloc( sizeof(Near) );
 
+  return nearInit( near, index, x, y, z, radius );
+}
+
+Near* nearInit( Near *near, 
+		int index, double x, double y, double z, double radius )
+{
   near->index = index;
   near->x = x;
   near->y = y;
