@@ -15,6 +15,7 @@
 #include <values.h>
 #include "grid.h"
 #include "gridmetric.h"
+#include "gridinsert.h"
 #include "gridswap.h"
 #include "gridcad.h"
 #include "gridmove.h"
@@ -45,7 +46,7 @@ int main( int argc, char *argv[] )
   char outputFAST[256];
   char outputlines[256];
   int i, j, oldSize, newSize;
-  int wiggleSteps, wiggle;
+  int wiggleSteps;
   double ratio=1.0;
   double minAR=-1.0;
   double ratioRefine, ratioCollapse;
@@ -361,6 +362,6 @@ int main( int argc, char *argv[] )
 
   printf("Done.\n");
 
-  return;
+  return 0;
 }
 
