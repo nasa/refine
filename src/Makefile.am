@@ -124,7 +124,7 @@ LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
 
 bin_PROGRAMS += refineNative MesherXNative MesherX_HLANative
 refineNative_CFLAGS = $(all_CFLAGS)
-refineNative_SOURCES = main.c
+refineNative_SOURCES = refine_main.c
 refineNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 refineNative_LDFLAGS = $(all_LDFLAGS)
 
@@ -165,7 +165,7 @@ endif # BUILD_PROE_KERNEL
 if BUILD_PARASOLID_KERNEL
 bin_PROGRAMS += refineParasolid MesherXParasolid MesherX_HLAParasolid
 refineParasolid_CFLAGS = $(all_CFLAGS)
-refineParasolid_SOURCES = main.c
+refineParasolid_SOURCES = refine_main.c
 refineParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
 refineParasolid_LDFLAGS = $(all_LDFLAGS)
 
@@ -183,7 +183,7 @@ endif # BUILD_PARASOLID_KERNEL
 if BUILD_OPENCASCADE_KERNEL
 bin_PROGRAMS += refineOpenCASCADE MesherXOpenCASCADE MesherX_HLAOpenCASCADE
 refineOpenCASCADE_CFLAGS = $(all_CFLAGS)
-refineOpenCASCADE_SOURCES = main.c
+refineOpenCASCADE_SOURCES = refine_main.c
 refineOpenCASCADE_LDADD = $(refineLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
 refineOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
 

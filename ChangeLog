@@ -1,3 +1,9 @@
+2004-08-30 21:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/refine_main.c added, was src/main.c.
+	* src/main.c removed, renamed to src/refine_main.c.
+	* src/Makefile.am renamed refine stand-alone main main.c -> refine_main.c
+
 2004-08-30 20:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/Makefile.am removed unused near object from librefine.a.
