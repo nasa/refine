@@ -556,6 +556,11 @@ Grid *gridSortNodeGridEx(Grid *grid)
   if ( grid != gridPack(grid) ) return NULL;
 
   o2n = malloc( grid->nnode * sizeof(int) );
+  if (o2n == NULL) {
+    printf("ERROR: gridSortNodeGridEx: %s: %d: could not allocate o2n\n",
+	   __FILE__,__LINE__);
+    return NULL;
+  }
   for (i=0;i<grid->nnode;i++) o2n[i] = EMPTY;
 
   // geom nodes
@@ -604,6 +609,11 @@ Grid *gridSortNodeGridEx(Grid *grid)
 	   newnode,grid->nnode,__LINE__, __FILE__);
 
   temp_xyz = malloc( grid->nnode * sizeof(double) );
+  if (temp_xyz == NULL) {
+    printf("ERROR: gridSortNodeGridEx: %s: %d: could not allocate temp_xyz\n",
+	   __FILE__,__LINE__);
+    return NULL;
+  }
 
   for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
     for ( node = 0 ; node < grid->nnode ; node++ ){
