@@ -95,6 +95,7 @@ void layerPack(void *voidLayer,
 void layerSortNodes(void *voidLayer, int maxnode, int *o2n);
 void layerReallocator(void *voidLayer, int reallocType, 
 		      int lastSize, int newSize);
+void layerGridHasBeenFreed(void *voidLayer );
 int layerMaxTriangle(Layer *);
 int layerNTriangle(Layer *);
 int layerNBlend(Layer *);

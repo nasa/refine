@@ -29,6 +29,7 @@ Layer *layerCreate( Grid *grid )
   gridAttachPacker( grid, layerPack, (void *)layer );
   gridAttachNodeSorter( grid, layerSortNodes, (void *)layer );
   gridAttachReallocator( grid, layerReallocator, (void *)layer );
+  gridAttachFreeNotifier( grid, layerGridHasBeenFreed, (void *)layer );
   layer->maxtriangle=0;
   layer->ntriangle=0;
   layer->triangle=NULL;
@@ -77,9 +78,12 @@ void layerFree(Layer *layer)
   free(layer->edgeInLayer);
   free(layer->faceInLayer);
   free(layer->cellInLayer);
-  gridDetachPacker( layer->grid );
-  gridDetachNodeSorter( layer->grid );
-  gridDetachReallocator( layer->grid );
+  if (NULL != layer->grid) {
+    gridDetachPacker( layer->grid );
+    gridDetachNodeSorter( layer->grid );
+    gridDetachReallocator( layer->grid );
+    gridDetachFreeNotifier( layer->grid );
+  }
   if (layer->nearTree != NULL) free(layer->nearTree);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->vertexNormal != NULL) free(layer->vertexNormal);
@@ -225,6 +229,12 @@ void layerReallocator(void *voidLayer, int reallocType,
     break;
   }
 
+}
+
+void layerGridHasBeenFreed(void *voidLayer )
+{
+  Layer *layer = (Layer *)voidLayer;
+  layer->grid = NULL;
 }
 
 int layerMaxTriangle(Layer *layer)
@@ -1640,13 +1650,15 @@ Layer *layerConstrainNormal(Layer *layer, int edgeface )
   }else{
     edgeId = -edgeface;
     nCurveNode = gridGeomEdgeSize( layer->grid, edgeId );
-    curve = malloc( nCurveNode * sizeof(int) );
-    gridGeomEdge( layer->grid, edgeId, curve );
-    for ( i=0; i<nCurveNode; i++){ 
-      normal = layer->globalNode2Normal[curve[i]];
-      if (normal != EMPTY) layer->normal[normal].constrained=-edgeId;
+    if (nCurveNode>0) {
+      curve = malloc( nCurveNode * sizeof(int) );
+      gridGeomEdge( layer->grid, edgeId, curve );
+      for ( i=0; i<nCurveNode; i++){ 
+	normal = layer->globalNode2Normal[curve[i]];
+	if (normal != EMPTY) layer->normal[normal].constrained=-edgeId;
+      }
+      free(curve);
     }
-    free(curve);
   }
   
   if ( !layerConstrainingGeometry(layer, edgeface) ) {
