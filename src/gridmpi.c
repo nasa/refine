@@ -181,7 +181,9 @@ Grid *gridParallelSmooth( Grid *grid, GridBool localOnly,
   return grid;
 }
 
-Grid *gridParallelRelaxNegativeCells( Grid *grid, GridBool localOnly )
+Grid *gridParallelRelaxNegativeCells( Grid *grid, 
+				      GridBool localOnly,
+				      GridBool smoothOnSurface )
 {
   int node;
   double nodeVolume;
@@ -193,7 +195,8 @@ Grid *gridParallelRelaxNegativeCells( Grid *grid, GridBool localOnly )
       nearGhost = gridNodeNearGhost(grid, node);
       if ( localOnly != nearGhost ) {
 	gridNodeVolume(grid,node,&nodeVolume);
-	if (0.0>=nodeVolume) gridSmoothVolumeNearNode(grid, node);
+	if (0.0>=nodeVolume) gridSmoothVolumeNearNode( grid, node, 
+						       smoothOnSurface );
       }
     }
   }

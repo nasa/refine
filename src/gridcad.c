@@ -1372,7 +1372,7 @@ Grid *gridRelaxNegativeCells(Grid *grid, GridBool dumpTecplot )
 	}
 	for (i=0;i<4;i++) {
 	  node = nodes[i];
-	  gridSmoothVolumeNearNode(grid, node);
+	  gridSmoothVolumeNearNode(grid, node, FALSE);
 	}
       }
     }
@@ -1380,7 +1380,7 @@ Grid *gridRelaxNegativeCells(Grid *grid, GridBool dumpTecplot )
   return grid;
 }
 
-Grid *gridSmoothVolumeNearNode(Grid *grid, int node )
+Grid *gridSmoothVolumeNearNode(Grid *grid, int node, GridBool smoothOnSurface )
 {
   int i, i0, nodes[4], nodes0[4];
   int nlist, smooth, look, nodelist[SMOOTHDEG];
@@ -1400,6 +1400,7 @@ Grid *gridSmoothVolumeNearNode(Grid *grid, int node )
 	    it = adjNext(it) ){
 	gridCell(grid, adjItem(it), nodes);
 	for (i=0;i<4;i++) {
+	  if ( !smoothOnSurface && gridGeometryFace(grid, nodes[i]) ) continue;
 	  looking = (nlist<=SMOOTHDEG);
 	  look = 0;
 	  for (look=0;look<nlist && looking ; look++){

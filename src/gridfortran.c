@@ -292,11 +292,12 @@ void gridparallelsmooth_( int *processor,
 #endif
 }
 
-void gridparallelrelaxneg_( int *processor )
+void gridparallelrelaxneg_( int *processor, int *geometryAllowed )
 {
-  GridBool localOnly;
+  GridBool localOnly, smoothOnSurface;
   localOnly = (-1 == (*processor));
-  gridParallelRelaxNegativeCells(grid, localOnly);
+  smoothOnSurface = (0 != (*geometryAllowed));
+  gridParallelRelaxNegativeCells(grid, localOnly, smoothOnSurface);
 #ifdef PARALLEL_VERBOSE 
   if (localOnly) {
     printf( " %6d relaxN volume and face interior  %s    AR%14.10f\n",

@@ -65,7 +65,8 @@ Grid *gridSmoothNodeVolumeWithSurf(Grid *g, int node );
 Grid *gridSmoothNodeVolumeSimplex(Grid *g, int node );
 
 Grid *gridRelaxNegativeCells(Grid *g, GridBool dumpTecplot );
-Grid *gridSmoothVolumeNearNode(Grid *grid, int node );
+Grid *gridSmoothVolumeNearNode(Grid *grid, int node, 
+			       GridBool smoothOnSurface );
 
 END_C_DECLORATION
 
