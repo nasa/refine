@@ -254,13 +254,6 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
 		  radiusVector[1]*radiusVector[1] + 
 		  radiusVector[2]*radiusVector[2] );
       
-  if ( edgePosition > 0.0 && edgePosition < 1.0 && 
-       radius < 0.001*edgeLength) {
-    newnode = gridSplitEdgeAt(grid, n0, n1, newX, newY, newZ);
-    
-    return newnode;
-  }
-
   if ( edgePosition > -0.05 && edgePosition < 0.05 && 
        radius < 0.05*edgeLength) {
     newnode = n0;
@@ -413,37 +406,39 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 	newnode = gridSplitEdgeIfNear(grid,nodes[2],nodes[0],newX,newY,newZ);
 	edgeSplit = (EMPTY != newnode);
       }
-      /* then try putting it on the face */
-      gridNodeXYZ(grid, nodes[0], xyz0);
-      gridNodeXYZ(grid, nodes[1], xyz1);
-      gridNodeXYZ(grid, nodes[2], xyz2);
-      gridSubtractVector(xyz1, xyz0, edge0);
-      gridSubtractVector(xyz2, xyz1, edge1);
-      gridSubtractVector(xyz0, xyz2, edge2);
-      gridSubtractVector(newxyz, xyz0, leg0);
-      gridSubtractVector(newxyz, xyz1, leg1);
-      gridSubtractVector(newxyz, xyz2, leg2);
-      gridCrossProduct(edge0,edge1,norm);
-      gridCrossProduct(edge0,leg0,norm0);
-      gridCrossProduct(edge1,leg1,norm1);
-      gridCrossProduct(edge2,leg2,norm2);
-      normLength = sqrt( gridDotProduct( norm, norm ) );
-      unit[0] = norm[0] / normLength;
-      unit[1] = norm[1] / normLength;
-      unit[2] = norm[2] / normLength;
-      normDistance = gridDotProduct( unit, leg0 );
-      if (FALSE) {
-	printf("f %d X %8.5f Y %8.5f Z %8.5f  %6.3f 0 %6.3f 1 %6.3f 2 %6.3f\n",
-	       face, newX, newY, newZ, normDistance,
-	       gridDotProduct( norm, norm0 ),
-	       gridDotProduct( norm, norm1 ),
-	       gridDotProduct( norm, norm2 ) );
-      }
-      if ( gridDotProduct( norm, norm0 ) > 0.0 &&
-	   gridDotProduct( norm, norm1 ) > 0.0 &&
-	   gridDotProduct( norm, norm2 ) > 0.0 &&
-	   normDistance < 0.01*normLength ){
-	foundFace = face;
+      if (!edgeSplit) {
+	/* then try putting it on the face */
+	gridNodeXYZ(grid, nodes[0], xyz0);
+	gridNodeXYZ(grid, nodes[1], xyz1);
+	gridNodeXYZ(grid, nodes[2], xyz2);
+	gridSubtractVector(xyz1, xyz0, edge0);
+	gridSubtractVector(xyz2, xyz1, edge1);
+	gridSubtractVector(xyz0, xyz2, edge2);
+	gridSubtractVector(newxyz, xyz0, leg0);
+	gridSubtractVector(newxyz, xyz1, leg1);
+	gridSubtractVector(newxyz, xyz2, leg2);
+	gridCrossProduct(edge0,edge1,norm);
+	gridCrossProduct(edge0,leg0,norm0);
+	gridCrossProduct(edge1,leg1,norm1);
+	gridCrossProduct(edge2,leg2,norm2);
+	normLength = sqrt( gridDotProduct( norm, norm ) );
+	unit[0] = norm[0] / normLength;
+	unit[1] = norm[1] / normLength;
+	unit[2] = norm[2] / normLength;
+	normDistance = gridDotProduct( unit, leg0 );
+	if (FALSE) {
+	  printf("f%d X%8.5f Y%8.5f Z%8.5f %6.3f 0 %6.3f 1 %6.3f 2 %6.3f\n",
+		 face, newX, newY, newZ, normDistance,
+		 gridDotProduct( norm, norm0 ),
+		 gridDotProduct( norm, norm1 ),
+		 gridDotProduct( norm, norm2 ) );
+	}
+	if ( gridDotProduct( norm, norm0 ) > 0.00 &&
+	     gridDotProduct( norm, norm1 ) > 0.00 &&
+	     gridDotProduct( norm, norm2 ) > 0.00 &&
+	     ABS(normDistance) < 0.01*normLength ){
+	  foundFace = face;
+	}
       }
     }
     face++;
