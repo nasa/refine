@@ -1768,9 +1768,9 @@ Layer *layerBlend(Layer *layer)
       nextTriangle = layerNextTriangle(layer, normal, splitTriangle);
       layerCommonEdge(layer, splitTriangle, nextTriangle, commonEdge);
       if (layerNormalRoot(layer,normal) == commonEdge[0] ) {
-	layerAddBlend(layer,normal,newNormal,commonEdge[1]);
+	layerAddBlend(layer,newNormal,normal,commonEdge[1]);
       }else{
-	layerAddBlend(layer,normal,newNormal,commonEdge[0]);
+	layerAddBlend(layer,newNormal,normal,commonEdge[0]);
       }
       triangle = nextTriangle;
       done = FALSE;

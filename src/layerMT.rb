@@ -1164,7 +1164,7 @@ grid.addCell(0,1,2,3)
   assert_equal [5,1,3], layer.triangleNormals(1)
   assert_equal [0,1,2], layer.triangle(0)
   assert_equal [2,1,3], layer.triangle(1)
-  assert_equal [1,4,5,2], layer.blendNormals(0)
+  assert_equal [4,1,2,5], layer.blendNormals(0)
  end
 
 end
