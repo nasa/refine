@@ -56,8 +56,8 @@ int main( int argc, char *argv[] )
 
   printf("thrashing grid...\n");
   gridThrash(grid);
-  printf("new size: %d nodes %d faces %d cells.\n",
-	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
+  printf("new size: %d nodes %d faces %d cells %d edge elements.\n",
+	 gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));
   printf("edge swapping grid...\n");
