@@ -51,7 +51,7 @@ class TestGridInsert < Test::Unit::TestCase
 
  def testSplitEdge4
   assert_not_nil grid = gemGrid
-  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal grid.nnode, grid.splitEdge(0,1)
   assert_equal 7, grid.nnode
   assert_equal 8, grid.ncell
  end
@@ -65,7 +65,7 @@ class TestGridInsert < Test::Unit::TestCase
 				    0,0.0,10.0,
 				    5,5.0,15.0,11)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal grid.nnode, grid.splitEdge(0,1)
   assert_nil         grid.faceId(0,1,2)
   assert_nil         grid.faceId(0,1,5) 
   assert_equal 11,   grid.faceId(0,6,2)
@@ -89,7 +89,7 @@ class TestGridInsert < Test::Unit::TestCase
 				    0,50.0,150.0,
 				    5,55.0,155.0,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal grid.nnode, grid.splitEdge(0,1)
   assert_nil         grid.faceId(0,1,2)
   assert_nil         grid.faceId(0,1,5) 
   assert_equal 2,    grid.faceId(0,6,2)
@@ -113,7 +113,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.addFace(1,0,5,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.addEdge(0,1,15, 0.0, 1.0)
-  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal grid.nnode, grid.splitEdge(0,1)
   assert_nil         grid.edgeId(0,1)
   assert_equal 15,   grid.edgeId(0,6)
   assert_equal 15,   grid.edgeId(6,1)
@@ -126,7 +126,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.addFace(0,1,2,11)
   assert_equal grid, grid.addFace(1,0,5,11)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal grid.nnode, grid.splitEdge(0,1)
   assert_nil         grid.edgeId(0,6)
   assert_nil         grid.edgeId(6,1)
  end

@@ -13,7 +13,7 @@ VALUE grid_adapt( VALUE self )
 VALUE grid_splitEdge( VALUE self, VALUE n0, VALUE n1 )
 {
   GET_GRID_FROM_SELF;
-  return (gridSplitEdge( grid, NUM2INT(n0),  NUM2INT(n1) )==grid?self:Qnil);
+  return INT2NUM(gridSplitEdge( grid, NUM2INT(n0),  NUM2INT(n1) ));
 }
 
 VALUE grid_collapseEdge( VALUE self, VALUE n0, VALUE n1 )
