@@ -317,14 +317,14 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
   return  grid;
 }
 
-Grid *gridExportFAST( Grid *grid, char *filename, bool gridPacked )
+Grid *gridExportFAST( Grid *grid, char *filename )
 {
   FILE *file;
   int i;
 
-  if (!gridPacked) {
-    printf("gridExportFAST: pack... %s\n");
-    gridPack(grid);
+  if (NULL == gridPack(grid)) {
+    printf("gridExportFAST: gridPack failed.\n");
+    return NULL;
   }
 
   printf("gridExportFAST: open file: %s\n",filename);
