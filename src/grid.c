@@ -867,18 +867,20 @@ Grid *gridSortNodeGridEx(Grid *grid)
   for (edge=1; edge<=grid->nGeomEdge; edge++){
 
     nCurveNode = gridGeomEdgeSize( grid, edge );
-    curve = (int *)malloc( nCurveNode * sizeof(int) );
-    gridGeomEdge( grid, edge, curve );
+    if (nCurveNode > 0) { /* do not malloc size 0 for off proc edges */
+      curve = (int *)malloc( nCurveNode * sizeof(int) );
+      gridGeomEdge( grid, edge, curve );
 
-    for ( i=1; i<(nCurveNode-1); i++){ // skip end points
-      if (o2n[curve[i]] != EMPTY) 
-	printf("gridSortNodeGridEx: %s: %d: newnode error %d\n",
-	       __FILE__, __LINE__, o2n[curve[i]] );
-      o2n[curve[i]] = newnode;
-      newnode++;
+      for ( i=1; i<(nCurveNode-1); i++){ // skip end points
+	if (o2n[curve[i]] != EMPTY) 
+	  printf("gridSortNodeGridEx: %s: %d: newnode error %d\n",
+		 __FILE__, __LINE__, o2n[curve[i]] );
+	o2n[curve[i]] = newnode;
+	newnode++;
+      }
+
+      free(curve);
     }
-
-    free(curve);
   }
 
   // face stuff - assuming that the bc faces are sorted.
