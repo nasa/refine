@@ -2001,7 +2001,7 @@ int layerTerminateNormalWithLength(Layer *layer, double ratio)
 {
   int normal, nterm, totalterm;
   
-  if (layerNNormal(layer) == 0 ) return NULL;
+  if (layerNNormal(layer) == 0 ) return 0;
 
   nterm = 0;
   for (normal=0;normal<layerNNormal(layer);normal++){
