@@ -1,15 +1,15 @@
-2004-08-02 15:55 Mike Park  <mike.park@nasa.gov>
+2004-08-03 15:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell) will remove a cell with
 	two faces with the same face Id and swap the face diagonal.
 
-2004-08-02 14:20 Mike Park  <mike.park@nasa.gov>
+2004-08-03 14:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridwritetecplotsurfacezone_) now dumps out
 	negative cells or cells with four nodes on boundary after the
 	surface.
 
-2004-08-01 16:21 Mike Park  <mike.park@nasa.gov>
+2004-08-02 16:21 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelRelaxNegativeCells) started on a
 	parallel version of gridRelaxNegativeCells, but
@@ -18,17 +18,17 @@
 	* src/gridfortran.c (gridparallelrelaxneg_) now calls
 	gridParallelRelaxNegativeCells.
 
-2004-08-01 16:10 Mike Park  <mike.park@nasa.gov>
+2004-08-02 16:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridtestcadparameters_) increased node and
 	parameter tolerences. Project to face first to get the edge xyz.
 
-2004-87-01 15:39 Mike Park  <mike.park@nasa.gov>
+2004-08-02 15:39 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridRelaxNegativeCells) added a bool argument to
 	optionally dump out tecplot surface and negative volume plots.
 
-2004-07-22 14:10 Mike Park  <mike.park@nasa.gov>
+2004-07-31 16:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridparallelrelaxneg_) exposed
 	gridRelaxNegativeCells.
