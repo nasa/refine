@@ -69,6 +69,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     layerConstrainNormal(layer,-12);
     layerConstrainNormal(layer,3);
     layerConstrainNormal(layer,4);
+    layerConstrainNormal(layer,5);
     layerConstrainNormal(layer,6);
   }
   if (plate) {
