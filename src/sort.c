@@ -11,28 +11,38 @@
 /* $Id$ */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "sort.h"
 
 void sortHeap( int length, int *arrayInput, int *sortedIndex  )
 {
-  int i,l,j,ir, indxt,q;
+  int i,l,j,ir, indxt,q,n;
 
   if(0==length) return;
   for(i=0;i<length;i++) sortedIndex[i] = i;
   if(1==length) return;
 
-  l=(length >> 1)+1; 
-  ir=length;
+  //printf("length: %d\n",length);
+  //printf("arrin:  %d %d %d\n",arrayInput[0],arrayInput[1],arrayInput[2]);
+  //printf("arrout: %d %d %d\n",sortedIndex[0],sortedIndex[1],sortedIndex[2]);
+
+  n = length;
+
+  if (n < 2) return;
+
+  l=(n >> 1)+1; 
+  ir=n;
+  //printf("l ir: %d %d\n",l,ir);
   for (;;) {
     if (l > 1) {
-      indxt=sortedIndex[--l]; 
+      indxt=sortedIndex[(--l)-1]; 
       q=arrayInput[indxt];
     } else {
-      indxt=sortedIndex[ir];  
+      indxt=sortedIndex[ir-1];  
       q=arrayInput[indxt];
-      sortedIndex[ir]=sortedIndex[1];
+      sortedIndex[ir-1]=sortedIndex[0];
       if (--ir == 1) {
-	sortedIndex[1]=indxt;
+	sortedIndex[0]=indxt;
 	break; 
       } 
     }
@@ -40,15 +50,17 @@ void sortHeap( int length, int *arrayInput, int *sortedIndex  )
     j=l+l;
 
     while (j <= ir) { 
-      if ( j < ir && 
-	   arrayInput[sortedIndex[j]] < arrayInput[sortedIndex[j+1]]) j++; 
-      if (q < arrayInput[sortedIndex[j]]) { 
-	sortedIndex[i]=sortedIndex[j];
+      //printf("j ir: %d %d\n",j,ir);
+      if ( j < ir ) {
+	if (arrayInput[sortedIndex[j-1]] < arrayInput[sortedIndex[j]]) j++; 
+      }
+      if (q < arrayInput[sortedIndex[j-1]]) { 
+	sortedIndex[i-1]=sortedIndex[j-1];
 	i=j; 
 	j <<= 1; 
       } else break; 
     }
-    sortedIndex[i]=indxt;
+    sortedIndex[i-1]=indxt;
   } 
 }
 
