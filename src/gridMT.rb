@@ -116,6 +116,9 @@ class TestSampleUnit < Test::Unit::TestCase
   grid = Grid.new(6,4,0)
   assert_equal grid, grid.addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
   assert_equal 2, grid.nodeDeg(0)
+  assert_equal 4, grid.nodeDeg(5)
+  assert_equal [3,2,1,0], grid.getGem(4,5)
+  assert_equal [], grid.equator(4,5)
  end
 
  # adding a cell bigger than maxcell
