@@ -18,8 +18,8 @@ BEGIN_C_DECLORATION
 int gridcreate_( int *nnode, double *x, double *y, double *z,
 		 int *ncell, int *maxcell, int *c2n );
 
-int gridinsertboundary_( int *faceId, double *nnode, double *inode, 
-			 double *nface, double *ndim, int *f2n );
+int gridinsertboundary_( int *faceId, int *nnode, int *inode, 
+			 int *nface, int *ndim, int *f2n );
 
 END_C_DECLORATION
 
