@@ -189,4 +189,14 @@ class TestQueue < Test::Unit::TestCase
   end
  end
 
+ def testExposeTotalNumberOfRemovedCells
+  nodes = [0,1,2,3]
+  q = Queue.new
+  assert_equal 0, q.totalRemovedCells
+  q.removeCell(nodes)
+  assert_equal 1, q.totalRemovedCells
+  q.removeCell(nodes)
+  assert_equal 2, q.totalRemovedCells
+ end
+
 end

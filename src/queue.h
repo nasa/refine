@@ -55,6 +55,7 @@ Queue *queueAddCell( Queue *, int *nodes, double *xyzs );
 int queueAddedCells( Queue *, int transaction );
 Queue *queueAddedCellNodes( Queue *, int index, int *nodes );
 Queue *queueAddedCellXYZs( Queue *, int index, double *xyzs );
+int queueTotalRemovedCells( Queue * );
 
 Queue *queueRemoveFace( Queue *, int *nodes );
 int queueRemovedFaces( Queue *, int transaction );

@@ -157,6 +157,12 @@ Queue *queueAddedCellXYZs( Queue *queue, int index, double *xyzs )
   return queue;
 }
 
+int queueTotalRemovedCells( Queue *queue )
+{
+  return queue->nRemovedCells;
+}
+
+
 Queue *queueRemoveFace( Queue *queue, int *nodes )
 {
   int i;

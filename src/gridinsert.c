@@ -238,7 +238,8 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   int cell0, cell1, globalCellId0, globalCellId1;
   double xyz0[12], xyz1[12];
   int globaln0, globaln1, globalgap0, globalgap1;
-  int gap0, gap1, face0, face1, faceNodes0[4], faceNodes1[4], faceId0, faceId1;
+  int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
+  int globalFaceNodes0[4], globalFaceNodes1[4];
   int edge, edgeId;
   double t0,t1, newT;
 
@@ -313,8 +314,12 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
 
     if (NULL!=queue) {
-      queueRemoveFace(queue,faceNodes0);
-      queueRemoveFace(queue,faceNodes1);
+      for ( inode = 0 ; inode < 3 ; inode++ ) {
+	globalFaceNodes0[inode] = gridNodeGlobal(grid,faceNodes0[inode]);
+	globalFaceNodes1[inode] = gridNodeGlobal(grid,faceNodes1[inode]);
+      }
+      queueRemoveFace(queue,globalFaceNodes0);
+      queueRemoveFace(queue,globalFaceNodes1);
       globaln0 = gridNodeGlobal(grid,n0);
       globaln1 = gridNodeGlobal(grid,n1);
       globalgap0 = gridNodeGlobal(grid,gap0);
