@@ -121,10 +121,32 @@ Layer *layerFront(Layer *layer, int front, int *nodes )
 
 Layer *layerFrontDirection(Layer *layer, int front, double *direction )
 {
-  int i;
+  int i, *nodes;
+  double node0[3], node1[3], node2[3];
+  double edge1[3], edge2[3], norm[3], length; 
+  
   if (front < 0 || front >= layerNFront(layer) ) return NULL;
+  nodes = layer->front[front].globalNode;
 
-  for ( i=0;i<3;i++) direction[i] = 0.0;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[2], node2 )) return NULL;
+
+  for (i = 0 ; i < 3 ; i++ ){
+    edge1[i] = node1[i] - node0[i];
+    edge2[i] = node2[i] - node0[i];
+  }
+
+  norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
+  norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
+  norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
+  length = norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2];
+
+  if (length > 0.0) {
+    for ( i=0;i<3;i++) direction[i] = norm[i]/length;
+  }else{
+    for ( i=0;i<3;i++) direction[i] = 0.0;
+  }
 
   return layer;
 }
@@ -132,6 +154,8 @@ Layer *layerFrontDirection(Layer *layer, int front, double *direction )
 Layer *layerMakeNormal(Layer *layer)
 {
   int i, front, normal, globalNode;
+  double direction[3], *norm, length;
+
   if (layerNFront(layer)==0) return NULL;
   layer->globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
   for (i=0;i<layerMaxNode(layer);i++) layer->globalNode2Normal[i]=EMPTY;
@@ -167,7 +191,22 @@ Layer *layerMakeNormal(Layer *layer)
   layer->adj = adjCreate( layer->nnormal,layerNFront(layer)*3  );
   for (front=0;front<layerNFront(layer);front++){
     for(i=0;i<3;i++){
-      adjRegister( layer->adj, layer->front[front].normal[i], front );
+      normal = layer->front[front].normal[i];
+      adjRegister( layer->adj, normal, front );
+      layerFrontDirection(layer,front,direction);
+      layer->normal[normal].direction[0] += direction[0];
+      layer->normal[normal].direction[1] += direction[1];
+      layer->normal[normal].direction[2] += direction[2];
+    }
+  }
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    norm = layer->normal[normal].direction;
+    length = norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2];
+    if (length > 0.0) {
+      for ( i=0;i<3;i++) norm[i] = norm[i]/length;
+    }else{
+      for ( i=0;i<3;i++) norm[i] = 0.0;
     }
   }
 
