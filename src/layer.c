@@ -2066,15 +2066,15 @@ int layerTerminateNormalWithLength(Layer *layer, double ratio)
 
   nterm = 0;
   for (normal=0;normal<layerNNormal(layer);normal++){
-    if ( layer->normal[normal].length > 
+    if ( layer->normal[normal].length + layer->normal[normal].height > 
 	 (ratio * layer->normal[normal].maxlength) ) {
+      if( !layerNormalTerminated(layer, normal ) ) nterm++; 
       layerTerminateNormal(layer, normal); 
-      nterm++; 
     }
   }
   totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
-  printf("%d of %d normals terminted by length criterion.\n",
-	 totalterm,layerNNormal(layer) );
+  printf("%d terminated by Length test; %d of %d normals terminted.\n",
+	 nterm, totalterm,layerNNormal(layer) );
   return totalterm;
 }
 
@@ -3022,14 +3022,14 @@ Layer *layerWriteTecplotFrontWithData(Layer *layer, int nn )
   double xyz[3];
   Grid *grid;
 
-  double height, L, rate, Lmax;
+  double height, L, rate, Lmax, r;
 
   grid = layerGrid(layer);
 
   if ( NULL == layer->tecplotFile) {
     layer->tecplotFile = fopen("layer.plt","w");
     fprintf(layer->tecplotFile, "title=\"tecplot advancing layer\"\n");
-    fprintf(layer->tecplotFile, "variables=\"X\",\"Y\",\"Z\",\"h\",\"L\",\"rate\",\"L_m_a_x\" \"n\" \n");
+    fprintf(layer->tecplotFile, "variables=\"X\",\"Y\",\"Z\",\"r\", \"id\", \"h\",\"L\",\"rate\",\"L_m_a_x\" \"term\" \"n\" \n");
   }
 
   fprintf(layer->tecplotFile, 
@@ -3037,12 +3037,15 @@ Layer *layerWriteTecplotFrontWithData(Layer *layer, int nn )
 	  layerNNormal(layer), layerNTriangle(layer));
 
   for ( i=0; i<layerNNormal(layer) ; i++ ){
+    int term=0;
+    if( layerNormalTerminated(layer, i) ) term = 1;
     gridNodeXYZ(grid,layerNormalRoot(layer,i),xyz);
+    r      = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2] );
     height = layer->normal[i].height;
     L      = layer->normal[i].length;
     rate   = layer->normal[i].rate;
     Lmax   = layer->normal[i].maxlength;
-    fprintf(layer->tecplotFile, "%23.15e %23.15e %23.15e %23.15e %23.15e %23.15e %23.15e %d\n",xyz[0],xyz[1],xyz[2],height,L,rate,Lmax,nn);
+    fprintf(layer->tecplotFile, "%23.15e %23.15e %23.15e %23.15e %d %23.15e %23.15e %23.15e %23.15e %d %d\n",xyz[0],xyz[1],xyz[2],r,i,height,L,rate,Lmax,term,nn);
   }
 
   fprintf(layer->tecplotFile, "\n");
