@@ -706,6 +706,7 @@ grid.addCell(0,1,2,3)
   grid.addNode(0,0,1)
   grid.addCell(0,1,2,3)
   grid.addFace(0,1,2,1)
+  grid
  end
 
  def volumeLayer(grid)

@@ -288,7 +288,7 @@ class TestGrid < Test::Unit::TestCase
  def testAddAndFindFace
   assert_not_nil           grid = Grid.new(4,1,2,0)
   assert_nil               grid.face(0)
-  grid.addFace(0, 1, 2, 10)
+  assert_equal 0,          grid.addFace(0, 1, 2, 10)
   assert_equal 0,          grid.findFace(0,1,2)
   assert_equal [0,1,2,10], grid.face(0)
   assert_nil               grid.findFace(3,1,2)
@@ -298,12 +298,12 @@ class TestGrid < Test::Unit::TestCase
   assert_not_nil     grid = Grid.new(4,1,2,0)
   assert_nil         grid.removeFace(0)
   assert_nil         grid.removeFace(1)
-  grid.addFace(0, 1, 2, 10)
+  assert_equal 0,    grid.addFace(0, 1, 2, 10)
   assert_nil         grid.removeFace(-1)
   assert_nil         grid.removeFace(1)
-  grid.addFace(3, 1, 2, 11)
+  assert_equal 1,    grid.addFace(3, 1, 2, 11)
   assert_equal 2,    grid.nface 
-  grid.addFace(0, 1, 3, 12)
+  assert_equal(-1,   grid.addFace(0, 1, 3, 12) )
   assert_equal 2,    grid.nface 
   assert_nil         grid.removeFace(3)
   assert_equal 2,    grid.nface 

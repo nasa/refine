@@ -163,11 +163,9 @@ VALUE grid_cellFace( VALUE self, VALUE n0, VALUE n1, VALUE n2)
 
 VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
 {
-  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
-  returnedGrid = 
-    gridAddFace(grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2), NUM2INT(faceId) );
-  return (returnedGrid==NULL?Qnil:self);
+  return INT2NUM( gridAddFace(grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2), 
+			      NUM2INT(faceId)) );
 }
 
 VALUE grid_addFaceUV( VALUE self, 
@@ -175,14 +173,12 @@ VALUE grid_addFaceUV( VALUE self,
 		      VALUE n1, VALUE u1, VALUE v1,
 		      VALUE n2, VALUE u2, VALUE v2, VALUE faceId )
 {
-  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
-  returnedGrid = 
-    gridAddFaceUV(grid, 
-		  NUM2INT(n0), NUM2DBL(u0), NUM2DBL(v0),
-		  NUM2INT(n1), NUM2DBL(u1), NUM2DBL(v1), 
-		  NUM2INT(n2), NUM2DBL(u2), NUM2DBL(v2), NUM2INT(faceId) );
-  return (returnedGrid==NULL?Qnil:self);
+  return INT2NUM( gridAddFaceUV(grid, 
+				NUM2INT(n0), NUM2DBL(u0), NUM2DBL(v0),
+				NUM2INT(n1), NUM2DBL(u1), NUM2DBL(v1), 
+				NUM2INT(n2), NUM2DBL(u2), NUM2DBL(v2), 
+				NUM2INT(faceId)) );
 }
 
 VALUE grid_removeFace( VALUE self, VALUE face )

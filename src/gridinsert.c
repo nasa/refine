@@ -330,11 +330,11 @@ int gridSplitFaceAt(Grid *grid, int face,
     for (n=0;n<3;n++) newV[n] = V[n];
     newU[i] = avgU;
     newV[i] = avgV;
-    if (grid != gridAddFaceUV(grid, 
-			      newnodes[0], newU[0], newV[0], 
-			      newnodes[1], newU[1], newV[1],  
-			      newnodes[2], newU[2], newV[2],  
-			      faceId ) ) return EMPTY;
+    if (EMPTY == gridAddFaceUV(grid, 
+			       newnodes[0], newU[0], newV[0], 
+			       newnodes[1], newU[1], newV[1],  
+			       newnodes[2], newU[2], newV[2],  
+			       faceId ) ) return EMPTY;
   }
 
   if (grid!=gridProjectNodeToFace(grid, newnode, faceId )) return EMPTY;

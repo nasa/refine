@@ -1249,7 +1249,7 @@ Grid *gridDeleteThawedCells(Grid *grid){
   return grid;
 }
 
-Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
+int gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 {
  return gridAddFaceUV(grid, 
 		      n0, DBL_MAX, DBL_MAX,
@@ -1258,13 +1258,13 @@ Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 		      faceId );
 }
 
-Grid *gridAddFaceUV(Grid *grid, 
-		    int n0, double u0, double v0,
-		    int n1, double u1, double v1,
-		    int n2, double u2, double v2, int faceId )
+int gridAddFaceUV(Grid *grid, 
+		  int n0, double u0, double v0,
+		  int n1, double u1, double v1,
+		  int n2, double u2, double v2, int faceId )
 {
   int face;
-  if ( grid->blankf2n == EMPTY ) return NULL;
+  if ( grid->blankf2n == EMPTY ) return EMPTY;
   face = grid->blankf2n;
   grid->blankf2n = grid->f2n[1+3*face];
   grid->nface++;
@@ -1280,11 +1280,11 @@ Grid *gridAddFaceUV(Grid *grid,
   grid->faceV[2+3*face] = v2;
   grid->faceId[face]  = faceId;
 
-  if ( NULL == adjRegister( grid->faceAdj, n0, face ) ) return NULL;
-  if ( NULL == adjRegister( grid->faceAdj, n1, face ) ) return NULL;
-  if ( NULL == adjRegister( grid->faceAdj, n2, face ) ) return NULL;
+  if ( NULL == adjRegister( grid->faceAdj, n0, face ) ) return EMPTY;
+  if ( NULL == adjRegister( grid->faceAdj, n1, face ) ) return EMPTY;
+  if ( NULL == adjRegister( grid->faceAdj, n2, face ) ) return EMPTY;
 
- return grid;
+ return face;
 }
 
 Grid *gridRemoveFace(Grid *grid, int face )
