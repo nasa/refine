@@ -120,6 +120,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   if (EMPTY == cell1) {
     printf("\nno cell1\n");
     gridRemoveFaceAndQueue(grid, queue, addedFace0 );
+    queueResetCurrentTransaction( queue );
     return NULL;
   }
   addedFace1 = gridAddFaceUVAndQueue(grid, queue, 
@@ -144,6 +145,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   }else{
     gridRemoveFaceAndQueue(grid, queue, addedFace0 );
     gridRemoveFaceAndQueue(grid, queue, addedFace1 );
+    queueResetCurrentTransaction( queue );
     return NULL;
   }
 }
@@ -288,6 +290,7 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
   if ( swapStatus == NULL ) {
     if (EMPTY!=newFace0) gridRemoveFaceAndQueue(grid, queue, newFace0 );
     if (EMPTY!=newFace1) gridRemoveFaceAndQueue(grid, queue, newFace1 );
+    queueResetCurrentTransaction( queue );
   } else {
     if (EMPTY!=oldFace0) gridRemoveFaceAndQueue(grid, queue, oldFace0 );
     if (EMPTY!=oldFace1) gridRemoveFaceAndQueue(grid, queue, oldFace1 );

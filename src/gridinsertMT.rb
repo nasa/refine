@@ -13,6 +13,7 @@ RubyExtensionBuilder.new('GridInsert').build
 require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
+require 'Queue/Queue'
 require 'Grid/Grid'
 require 'GridMath/GridMath'
 require 'GridShape/GridShape'

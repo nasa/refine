@@ -302,7 +302,6 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 
   /* if the worst cell is not good enough then undo the split and return */
   if (minAR < gridADAPT_COST_FLOOR ) {
-    gridRemoveNode(grid,newnode);
     /* the remove and queue methods test for EMPTY==target */
     gridRemoveFaceAndQueue(grid, queue, newface_gap0n0 );
     gridRemoveFaceAndQueue(grid, queue, newface_gap0n1 );
@@ -310,6 +309,9 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     gridRemoveFaceAndQueue(grid, queue, newface_gap1n1 );
     gridRemoveEdgeAndQueue(grid, queue, newedge0 );
     gridRemoveEdgeAndQueue(grid, queue, newedge1 );
+    queueResetCurrentTransaction(queue);
+
+    gridRemoveNode(grid,newnode);
     return EMPTY;
   }
 
