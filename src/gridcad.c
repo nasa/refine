@@ -520,7 +520,7 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
     maxsmooth = 40;
     lastCost = -2.0;
     gridNodeAR(grid,node,&cost);
-    while ( maxsmooth > 0 && (cost-lastCost) > 1.0e-8 ) {
+    while ( maxsmooth > 0 && (cost-lastCost) > 1.0e-6*cost ) {
       maxsmooth--;
       if (grid != gridLinearProgramXYZ(grid,node) ) {
 	return NULL;
