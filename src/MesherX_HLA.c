@@ -119,7 +119,7 @@ int main( int argc, char *argv[] )
 
   if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
   if(strcmp(outputName,"")==0) {
-      sprintf( outputName, "%s_MX", project );
+      sprintf( outputName, "%s_mx", project );
       printf(" %d: %s\n",i, outputName);
   }
 

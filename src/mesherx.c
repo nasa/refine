@@ -146,11 +146,11 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   if ( NULL != project ) {
 
     if (mixedElement) {
-      sprintf(outputProject,"%s_MX.ugrid",project);
+      sprintf(outputProject,"%s_mx.ugrid",project);
       printf("writing output AFL3R file %s\n",outputProject);
       gridExportAFLR3( grid, outputProject  );
     }else{
-      sprintf(outputProject,"%s_MX.fgrid",project);
+      sprintf(outputProject,"%s_mx.fgrid",project);
       printf("writing output FAST file %s\n",outputProject);
       gridExportFAST( grid, outputProject  );
     }
@@ -160,7 +160,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     if ( project == NULL ) {
       gridSavePart( grid, NULL );
     }else{
-      sprintf(outputProject,"%s_MX",project);
+      sprintf(outputProject,"%s_mx",project);
       printf("writing output GridEx/CADGeom/CAPRI project %s\n",outputProject);
       gridSavePart( grid, outputProject );
     }
@@ -169,7 +169,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   }
 
   if ( project != NULL ) {
-    sprintf(linesProject,"%s_MX.lines",project);
+    sprintf(linesProject,"%s_mx.lines",project);
     printf("saving lines restart %s\n",linesProject);
     linesSave(gridLines(grid),linesProject);
   }
