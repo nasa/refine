@@ -1949,7 +1949,7 @@ Adj *layerBuildNormalBlendAdjacency(Layer *layer)
   Adj *adj;
   int blend, i, normals[4];
 
-  adj = adjCreate( layerNNormal(layer), layerNblend(layer)*4  );
+  adj = adjCreate( layerNNormal(layer), layerNBlend(layer)*4  );
 
   for (blend=0;blend<layerNBlend(layer);blend++){
     layerBlendNormals(layer,blend,normals);
