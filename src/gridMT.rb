@@ -97,6 +97,12 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal nil, grid.addCell(0,1,2,3)
  end
  
+
+ def testOrient
+  assert_equal [2, 3], @grid.orient(0,1,2,3,0,1)
+ end
+ 
+
  def testGetGem1
   assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(0,1,2,3).gem(0,1)
   assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(0,3,1,2).gem(0,1)
