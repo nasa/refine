@@ -93,17 +93,49 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   Layer *layer;
   int i;
 
+  int edgeId;
+  int faceId;
+  double uv[4];
+  int loop, nloop;
+  int *loopLength;
+  int *loopEdge;
+  int edge;
+
   grid = gridFillFromPart( vol, npts*10 );
 
   layer = formAdvancingFront( grid, "box" );
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid); 
+  layerFindParentEdges(layer);
 
   for (i=0;i<5;i++) layerAdvance(layer,0.01);
 
+  printf(" -- REBUILD EDGES\n");
   layerRebuildEdges(layer,vol);
 
+  printf(" -- REBUILD FACES\n");
+  for (edgeId=1;edgeId<=gridNGeomEdge(grid);edgeId++){
+    if (layerNParentEdgeSegments(layer,edgeId)>0) 
+      printf("edgeId %d has %d parent edge segments\n",
+	     edgeId,layerNParentEdgeSegments(layer,edgeId));
+    if (layerConstrainingGeometry(layer,-edgeId)) 
+      printf("edgeId %d is a rebuilt edge.\n",edgeId);
+  }
+  for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
+    CADGeom_GetFace(vol, faceId, uv, &nloop, &loopLength, &loopEdge);
+    printf("face %d has %d loops\n",faceId,nloop);
+    for (loop=0;loop<nloop;loop++){
+      printf("  loop %d has %d edges\n",loop,loopLength[loop]);
+      printf("   ");
+      for(edge=0;edge<loopLength[loop];edge++){
+	printf(" edge %d dir %d",loopEdge[0+2*edge],loopEdge[1+2*edge]);
+      }
+      printf("\n");
+    }
+  }
+
+  printf(" -- DUMP PART\n");
   outputProject = "../test/MesherX";
   printf("writing DEBUG output project %s\n",outputProject);
   gridSavePart( grid, outputProject );
