@@ -226,6 +226,12 @@ VALUE grid_ar( VALUE self, VALUE rb_nodes )
   return rb_float_new( gridAR( grid, nodes ) );
 }
 
+VALUE grid_minVolume( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new( gridMinVolume( grid ) );
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -256,4 +262,5 @@ void Init_Grid()
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );
   rb_define_method( cGrid, "volume", grid_volume, 1 );
   rb_define_method( cGrid, "ar", grid_ar, 1 );
+  rb_define_method( cGrid, "minVolume", grid_minVolume, 0 );
 }
