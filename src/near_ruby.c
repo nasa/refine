@@ -34,16 +34,16 @@ VALUE near_clearance( VALUE rb_self, VALUE rb_other )
   return(rb_float_new(nearClearance(self, other)));
 }
 
-VALUE near_rightIndex( VALUE self )
-{
-  GET_NEAR_FROM_SELF;
-  return INT2NUM(nearRightIndex(near));
-}
-
 VALUE near_leftIndex( VALUE self )
 {
   GET_NEAR_FROM_SELF;
   return INT2NUM(nearLeftIndex(near));
+}
+
+VALUE near_rightIndex( VALUE self )
+{
+  GET_NEAR_FROM_SELF;
+  return INT2NUM(nearRightIndex(near));
 }
 
 VALUE near_insert( VALUE rb_self, VALUE rb_child )
@@ -54,22 +54,16 @@ VALUE near_insert( VALUE rb_self, VALUE rb_child )
   return (self==nearInsert(self,child)?rb_self:Qnil);
 }
 
-VALUE near_farChild( VALUE self )
+VALUE near_leftRadius( VALUE self )
 {
   GET_NEAR_FROM_SELF;
-  return rb_float_new(nearFarChild(near));
+  return rb_float_new(nearLeftRadius(near));
 }
 
-VALUE near_rightDistance( VALUE self )
+VALUE near_rightRadius( VALUE self )
 {
   GET_NEAR_FROM_SELF;
-  return rb_float_new(nearRightDistance(near));
-}
-
-VALUE near_leftDistance( VALUE self )
-{
-  GET_NEAR_FROM_SELF;
-  return rb_float_new(nearLeftDistance(near));
+  return rb_float_new(nearRightRadius(near));
 }
 
 VALUE near_collisions( VALUE self, VALUE rb_target )
@@ -111,12 +105,11 @@ void Init_Near()
   rb_define_singleton_method( cNear, "new", near_new, 5 );
   rb_define_method( cNear, "index", near_index, 0 );
   rb_define_method( cNear, "clearance", near_clearance, 1 );
-  rb_define_method( cNear, "rightIndex", near_rightIndex, 0 );
   rb_define_method( cNear, "leftIndex", near_leftIndex, 0 );
+  rb_define_method( cNear, "rightIndex", near_rightIndex, 0 );
   rb_define_method( cNear, "insert", near_insert, 1 );
-  rb_define_method( cNear, "farChild", near_farChild, 0 );
-  rb_define_method( cNear, "rightDistance", near_rightDistance, 0 );
-  rb_define_method( cNear, "leftDistance", near_leftDistance, 0 );
+  rb_define_method( cNear, "leftRadius", near_leftRadius, 0 );
+  rb_define_method( cNear, "rightRadius", near_rightRadius, 0 );
   rb_define_method( cNear, "collisions", near_collisions, 1 );
   rb_define_method( cNear, "touched", near_touched, 1 );
 }

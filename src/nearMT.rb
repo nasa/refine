@@ -42,16 +42,16 @@ class TestNear < Test::Unit::TestCase
  
  def testInitializeWithNoChildren
   near = Near.new(5,0,0,0,0)
-  assert_equal( -1, near.rightIndex)
   assert_equal( -1, near.leftIndex)
+  assert_equal( -1, near.rightIndex)
  end
  
  def testPopulateLeftChildFirst
   near  = Near.new(5,0,0,0,0)
   child = Near.new(6,1,0,0,0)
   assert_equal near, near.insert(child)
-  assert_equal(-1, near.rightIndex)
   assert_equal 6, near.leftIndex
+  assert_equal(-1, near.rightIndex)
  end
  
  def testPopulateRightChildSecond
@@ -60,8 +60,8 @@ class TestNear < Test::Unit::TestCase
   child7 = Near.new(7,1,0,0,0)
   assert_equal near, near.insert(child6)
   assert_equal near, near.insert(child7)
-  assert_equal 7, near.rightIndex
   assert_equal 6, near.leftIndex
+  assert_equal 7, near.rightIndex
  end
  
  def testPopulateLeftCloser
@@ -72,8 +72,8 @@ class TestNear < Test::Unit::TestCase
   assert_equal near, near.insert(child6)
   assert_equal near, near.insert(child7)
   assert_equal near, near.insert(child8)
-  assert_equal 7, near.rightIndex
   assert_equal 6, near.leftIndex
+  assert_equal 7, near.rightIndex
   assert_equal 8, child6.leftIndex
  end
  
@@ -85,40 +85,51 @@ class TestNear < Test::Unit::TestCase
   assert_equal near, near.insert(child6)
   assert_equal near, near.insert(child7)
   assert_equal near, near.insert(child8)
-  assert_equal 7, near.rightIndex
   assert_equal 6, near.leftIndex
+  assert_equal 7, near.rightIndex
   assert_equal 8, child7.leftIndex
  end
  
- def testInitializeChildDistance
+ def testInitializeChildRadius
   near  = Near.new(5,0,0,0,0)
-  assert_equal 0, near.farChild
-  assert_equal 0, near.rightDistance
-  assert_equal 0, near.leftDistance
+  assert_equal 0, near.leftRadius
+  assert_equal 0, near.rightRadius
  end
 
- def testComputeChildDistance
+ def testComputePointChildRadius
   near   = Near.new(5,0,0,0,0)
   child6 = Near.new(6,1,0,0,0)
   child7 = Near.new(7,2,0,0,0)
   assert_equal near, near.insert(child6)
-  assert_equal 1, near.farChild
+  assert_equal 1, near.leftRadius
+  assert_equal 0, near.rightRadius
   assert_equal near, near.insert(child7)
-  assert_equal 2, near.farChild
-  assert_equal 2, near.rightDistance
-  assert_equal 1, near.leftDistance
+  assert_equal 1, near.leftRadius
+  assert_equal 2, near.rightRadius
  end
 
- def testComputeChildDistanceWithRadius
+ def testComputeSphericalChildRadius
   near   = Near.new(5,0,0,0,0)
   child6 = Near.new(6,1,0,0,2)
   child7 = Near.new(7,4,0,0,1)
   assert_equal near, near.insert(child6)
-  assert_equal 3, near.farChild
+  assert_equal 3, near.leftRadius
   assert_equal near, near.insert(child7)
-  assert_equal 5, near.farChild
-  assert_equal 5, near.rightDistance
-  assert_equal 3, near.leftDistance
+  assert_equal 5, near.rightRadius
+ end
+
+ def testComputePointChildRadiusInTree
+  near   = Near.new(5,0,0,0,0)
+  child6 = Near.new(6,1,0,0,0)
+  child7 = Near.new(7,8,0,0,0)
+  child8 = Near.new(8,3,0,0,0)
+  assert_equal near, near.insert(child6)
+  assert_equal near, near.insert(child7)
+  assert_equal 1, near.leftRadius
+  assert_equal near, near.insert(child8)
+  assert_equal 3, near.leftRadius
+  assert_equal 8, child6.leftIndex
+  assert_equal 2, child6.leftRadius
  end
 
  def testSingleCollisions
@@ -145,10 +156,10 @@ class TestNear < Test::Unit::TestCase
   assert_equal [7], near.touched(target)
   target = Near.new(8,10,0,0,5)
   assert_equal 2, near.collisions(target)
-  assert_equal [7,6], near.touched(target)
+  assert_equal [6,7], near.touched(target)
   target = Near.new(8,10,0,0,10)
   assert_equal 3, near.collisions(target)
-  assert_equal [7,6,5], near.touched(target)
+  assert_equal [6,7,5], near.touched(target)
   target = Near.new(8,5,0,0,1)
   assert_equal 1, near.collisions(target)
   assert_equal [6], near.touched(target)

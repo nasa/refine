@@ -32,10 +32,11 @@ Near* nearInit( Near *near,
   near->z = z;
   near->radius = radius;
 
-  near->rightChild = NULL;
   near->leftChild = NULL;
+  near->rightChild = NULL;
 
-  near->farChild = 0;
+  near->leftRadius = 0;
+  near->rightRadius = 0;
 
   return near;
 }
@@ -50,40 +51,49 @@ int nearIndex( Near *near )
   return (NULL==near?EMPTY:near->index);
 }
 
-int nearRightIndex( Near *near )
-{
-  return nearIndex(near->rightChild);
-}
-
 int nearLeftIndex( Near *near )
 {
   return nearIndex(near->leftChild);
 }
 
+int nearRightIndex( Near *near )
+{
+  return nearIndex(near->rightChild);
+}
+
 Near *nearInsert( Near *near, Near *child )
 {
-  double distance;
+  double childRadius;
+  double leftDistance, rightDistance;
 
-  distance = nearDistance(near,child) + child->radius;
-
-  near->farChild = MAX(near->farChild,distance);
+  childRadius = nearDistance(near,child) + child->radius;
 
   if (NULL==near->leftChild){ 
     near->leftChild = child;
-    child->farChild = distance;
+    near->leftRadius = childRadius;
     return near;
   }
   if (NULL==near->rightChild){ 
     near->rightChild = child;
-    child->farChild = distance;
+    near->rightRadius = childRadius;
     return near;
   }
-  if ( nearDistance(near->leftChild,child)
-     < nearDistance(near->rightChild,child) ) {
-    return (near->leftChild==nearInsert(near->leftChild,child)?near:NULL);
+
+  leftDistance  = nearDistance(near->leftChild,child);
+  rightDistance = nearDistance(near->rightChild,child);
+
+  if ( leftDistance < rightDistance) {
+    if ( near->leftChild == nearInsert(near->leftChild,child) ) {
+      near->leftRadius = MAX(childRadius,near->leftRadius);
+      return near;
+    }
   }else{
-    return (near->rightChild==nearInsert(near->rightChild,child)?near:NULL);
+    if ( near->rightChild == nearInsert(near->rightChild,child) ) {
+      near->rightRadius = MAX(childRadius,near->rightRadius);
+      return near;
+    }
   }
+  return NULL;
 }
 
 double nearDistance( Near *near, Near *other)
@@ -107,19 +117,14 @@ double nearClearance( Near *near, Near *other)
   return clearance;
 }
 
-double nearFarChild( Near *near )
+double nearLeftRadius( Near *near )
 {
-  return (NULL==near?0:near->farChild);
+  return near->leftRadius;
 }
 
-double nearRightDistance( Near *near )
+double nearRightRadius( Near *near )
 {
-  return nearFarChild(near->rightChild);
-}
-
-double nearLeftDistance( Near *near )
-{
-  return nearFarChild(near->leftChild);
+  return near->rightRadius;
 }
 
 int nearCollisions(Near *near, Near *target)
@@ -145,12 +150,12 @@ Near *nearTouched(Near *near, Near *target, int *found, int maxfound, int *list)
   distance = nearDistance( near, target);
   safeZone = distance - target->radius;
 
-  if (safeZone <= nearRightDistance(near) ) 
-    nearTouched(near->rightChild, target, found, maxfound, list);
-  if (safeZone <= nearLeftDistance(near) ) 
+  if (safeZone <= nearLeftRadius(near) ) 
     nearTouched(near->leftChild, target, found, maxfound, list);
+  if (safeZone <= nearRightRadius(near) ) 
+    nearTouched(near->rightChild, target, found, maxfound, list);
 
-  if ( (safeZone - near->radius) <= 0) {
+  if ( near->radius >= safeZone ) {
     if (*found >= maxfound) return NULL;
     list[*found] = near->index;
     (*found)++;

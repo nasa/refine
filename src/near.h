@@ -23,22 +23,21 @@ struct Near {
   int index;
   double x, y, z;
   double radius;
-  Near *rightChild, *leftChild;
-  double farChild;
+  Near *leftChild, *rightChild;
+  double leftRadius, rightRadius;
 };
 
 Near *nearCreate(int index, double x, double y, double z, double radius );
 Near *nearInit(Near *, int index, double x, double y, double z, double radius );
 void nearFree( Near * );
 int nearIndex( Near * );
-int nearRightIndex( Near * );
 int nearLeftIndex( Near * );
+int nearRightIndex( Near * );
 double nearDistance( Near *, Near *other);
 double nearClearance( Near *, Near *other);
 Near *nearInsert( Near *, Near *child );
-double nearFarChild( Near * );
-double nearRightDistance( Near * );
-double nearLeftDistance( Near * );
+double nearLeftRadius( Near * );
+double nearRightRadius( Near * );
 
 int nearCollisions(Near *, Near *target);
 Near *nearTouched(Near *, Near *target, int *found, int maxfound, int *list);
