@@ -370,7 +370,7 @@ void gridparallelswap_( int *processor, double *ARlimit )
 	    continue;
 	}
       }
-      planFree(plan);
+      planFree(plan); plan = NULL;
     } 
   }
 }
