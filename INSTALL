@@ -28,10 +28,11 @@ these two arguements
 
 to the configure or autogen.sh script command line options
 
-Snapshots of SDK and CAPRI routines are included for Native Geom,
-configure as such:
+Snapshots of SDK and CAPRI routines compiled -n32 -mips4 are
+included for the CAPRI Native Geom, configure as such to obtain
+only the refine libs for linking to FUN3D:
 
-./configure --with-SDK=`pwd`/geomSGIn32 --with-CAPRI=`pwd`/geomSGIn32 --x-includes=/usr/include --x-libraries=/usr/lib32
+./configure --prefix=`pwd` --disable-exec --with-SDK=`pwd`/geomSGIn32
 
 Note To CVS Users ONLY!
 =======================
