@@ -77,6 +77,12 @@ int gridsetmap_( int *nnode, double* map )
   printf(" min AR %17.15f\n",gridMinAR(grid));
 }
 
+int gridsetnodepart_( int *nnode, int *part )
+{
+  int node;
+  for ( node=0; node<*nnode; node++) gridSetNodePart(grid, node, part[node]-1);
+}
+
 int gridsetnodelocal2global_( int *partId, int *nnodeg, 
 			      int *nnode, int *nnode0, int *local2global )
 {

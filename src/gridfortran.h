@@ -23,6 +23,7 @@ int gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode,
 int gridsetmap_( int *nnode, double* map );
 int gridsetnodelocal2global_( int *partId, int *nnodeg, 
 			      int *nnode, int *nnode0, int *local2global );
+int gridsetnodepart_( int *nnode, int *part );
 int gridsetcelllocal2global_( int *ncell, int *local2global );
 int gridswap_( );
 int gridsmoothvolume_( );
