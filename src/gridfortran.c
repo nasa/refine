@@ -90,6 +90,8 @@ int gridsetnodelocal2global_( int *partId, int *nnodeg,
     }else{
       gridSetNodePart(grid, node, EMPTY );
     }
+    /*printf("%d l2g node %d global %d part %d\n", gridPartId(grid),node,
+      gridNodeGlobal(grid,node),gridNodePart(grid, node)); */
   }
 }
 
