@@ -1312,6 +1312,37 @@ Grid *gridThawAll( Grid *grid )
   return grid;
 }
 
+Grid *gridThawSphere( Grid *grid, double x, double y, double z, double r )
+{
+  int node;
+  double dx, dy, dz, distanceSquared, radiusSquared;
+  radiusSquared = r*r;
+  
+  for ( node=0; node<grid->nnode; node++ ) {
+    dx = grid->xyz[0+3*node] - x;
+    dy = grid->xyz[1+3*node] - y;
+    dz = grid->xyz[2+3*node] - z;
+    distanceSquared = dx*dx + dy*dy + dz*dz;
+    if (radiusSquared >= distanceSquared) gridThawNode(grid, node );
+  }
+
+  return grid;
+}
+
+Grid *gridFreezeBCFace( Grid *grid, int faceId )
+{
+  int face, node, i;
+  for ( face=0; face<grid->nface; face++ ){
+    if (grid->faceId[face] == faceId ){
+      for ( i=0; i<3; i++ ){
+	node = grid->f2n[i+3*face];
+	gridFreezeNode(grid,node);
+      }
+    }
+  }
+  return grid;
+}
+
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {
   AdjIterator it;

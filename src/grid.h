@@ -80,6 +80,8 @@ Grid *gridFreezeNode( Grid *g, int node );
 Grid *gridThawNode( Grid *g, int node );
 Grid *gridFreezeAll( Grid *g );
 Grid *gridThawAll( Grid *g );
+Grid *gridThawSphere( Grid *g, double x, double y, double z, double r );
+Grid *gridFreezeBCFace( Grid *g, int faceId );
 
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
