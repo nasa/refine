@@ -154,6 +154,14 @@ VALUE layer_normalDirection( VALUE self, VALUE normal )
   return rb_direction;
 }
 
+VALUE layer_setNormalHeight( VALUE self, VALUE normal, VALUE height )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerSetNormalHeight( layer,
+					  NUM2INT(normal),
+					  NUM2DBL(height) )?self:Qnil );
+}
+
 VALUE layer_visibleNormals( VALUE self, VALUE height )
 {
   GET_LAYER_FROM_SELF;
@@ -240,6 +248,12 @@ VALUE layer_normalTerminated( VALUE self, VALUE normal )
   return ( layerNormalTerminated(layer,NUM2INT(normal))?Qtrue:Qfalse );
 }
 
+VALUE layer_advance( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerAdvance(layer)?self:Qnil );
+}
+
 VALUE layer_advanceConstantHeight( VALUE self, VALUE height )
 {
   GET_LAYER_FROM_SELF;
@@ -271,6 +285,7 @@ void Init_Layer()
   rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );
   rb_define_method( cLayer, "normalFronts", layer_normalFronts, 1 );
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
+  rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrainingGeometry", layer_constrainingGeometry, 1 );
@@ -287,5 +302,6 @@ void Init_Layer()
   rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );
   rb_define_method( cLayer, "advanceConstantHeight", 
 		    layer_advanceConstantHeight, 1 );
+  rb_define_method( cLayer, "advance", layer_advance, 0 );
   rb_define_method( cLayer, "wiggle", layer_wiggle, 1 );
 }

@@ -258,7 +258,6 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1,       layer.nParentEdgeSegments(1)
  end
 
-
  def testNormalFrontNeighbors
   assert_not_nil        grid = Grid.new(4,0,3,0)
   assert_equal grid,    grid.addFace(0,1,2,1)
@@ -737,7 +736,34 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2,5], grid.cell(2)
  end
 
-# blends?
+ def testAdvanceLayerIntoVolumeWithVaribleHeight
+  assert_not_nil          grid = Grid.new(7,4,1,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addCell(0,1,2,3)
+  assert_equal 1,         grid.ncell
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal layer,     layer.makeNormal
+  assert_equal 3,         layer.nnormal
+  assert_nil              layer.setNormalHeight(-1,0.0)
+  assert_nil              layer.setNormalHeight(3,0.0)
+  assert_equal layer,     layer.setNormalHeight(0,0.0)
+  assert_equal layer,     layer.setNormalHeight(1,0.1)
+  assert_equal layer,     layer.setNormalHeight(2,0.2)
+  assert_equal true,      layer.normalTerminated(0)
+  assert_equal false,     layer.normalTerminated(1)
+  assert_equal false,     layer.normalTerminated(2)
+  assert_equal layer,     layer.advance
+  assert_equal 6,         grid.nnode
+  assert_equal [0,0,0],   grid.nodeXYZ(0)
+  assert_equal [1,0,0.1], grid.nodeXYZ(4)
+  assert_equal [0,1,0.2], grid.nodeXYZ(5)
+ end
+
 
 
 end

@@ -24,6 +24,7 @@ struct Normal {
   int constrained;
   int root, tip;
   double direction[3];
+  double height;
   bool terminated;
 };
 
@@ -344,6 +345,7 @@ Layer *layerMakeNormal(Layer *layer)
       layer->normal[normal].direction[0] = 0.0;
       layer->normal[normal].direction[1] = 0.0;
       layer->normal[normal].direction[2] = 0.0;
+      layer->normal[normal].height = 1.0;
       layer->normal[normal].terminated = FALSE;
     }
   }
@@ -418,6 +420,16 @@ Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
 
   for ( i=0;i<3;i++) direction[i] = layer->normal[normal].direction[i];
+
+  return layer;
+}
+
+Layer *layerSetNormalHeight(Layer *layer, int normal, double height)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
+  layer->normal[normal].height=height;
+  if (height<=0.0) layerTerminateNormal(layer,normal);
 
   return layer;
 }
@@ -706,6 +718,16 @@ int layerNActiveNormal(Layer *layer )
 
 Layer *layerAdvanceConstantHeight(Layer *layer, double height )
 {
+  int normal;
+
+  for(normal=0;normal<layerNNormal(layer);normal++)
+    layerSetNormalHeight( layer, normal, height );
+
+  return layerAdvance(layer);
+}
+
+Layer *layerAdvance(Layer *layer)
+{
   Grid *grid = layer->grid;
   int normal, normal0, normal1, root, tip, faceId, edgeId, i;
   int cell, node;
@@ -725,7 +747,10 @@ Layer *layerAdvanceConstantHeight(Layer *layer, double height )
     }else{
       root = layer->normal[normal].root;
       gridNodeXYZ(grid,root,xyz);
-      for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
+      for(i=0;i<3;i++)
+	xyz[i] = xyz[i] 
+	  + layer->normal[normal].height
+          * layer->normal[normal].direction[i];
       tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
       if ( EMPTY == tip) return NULL;
       layer->normal[normal].tip = tip;
