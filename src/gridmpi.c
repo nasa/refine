@@ -134,27 +134,6 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 				     localnodes[0],localnodes[1],
 				     localnodes[2],localnodes[3],
 				     globalnodes[4]);
-	if (0>gridAR(grid,localnodes)) {
-	  printf( " %6d applied %6d %6d %6d %6d %15.10f\n",
-		  gridPartId(grid),
-		  globalnodes[0],globalnodes[1],globalnodes[2],globalnodes[3],
-		  gridAR(grid,localnodes) );
-	  printf( " %6d applied %6d %6d %6d %6d\n",
-		  gridPartId(grid),
-		  globalnodes[5],globalnodes[6],globalnodes[7],globalnodes[8] );
-	  gridNodeXYZ(grid,localnodes[0],xyz0);
-	  gridNodeXYZ(grid,localnodes[1],xyz1);
-	  gridNodeXYZ(grid,localnodes[2],xyz2);
-	  gridNodeXYZ(grid,localnodes[3],xyz3);
-	  printf( "        local %15.10f %15.10f %15.10f\n",
-		  xyz0[0],xyz0[1],xyz0[2]);
-	  printf( "        queue %15.10f %15.10f %15.10f\n",
-		  xyz[0],xyz[1],xyz[2]);
-	  printf( "        local %15.10f %15.10f %15.10f\n",
-		  xyz1[0],xyz1[1],xyz1[2]);
-	  printf( "        queue %15.10f %15.10f %15.10f\n",
-		  xyz[0+9],xyz[1+9],xyz[2+9]);
-	}
       }
     }
     for(added=0;added<queueAddedFaces(gq,transaction);added++) {
@@ -166,13 +145,6 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
       if ( gridNodeLocal(grid,localnodes[0]) ||
 	   gridNodeLocal(grid,localnodes[1]) ||
 	   gridNodeLocal(grid,localnodes[2]) ) {
-	for(i=0;i<3;i++)
-	  if ( EMPTY == localnodes[i] ) 
-	    printf("face insert error. %d %d %d %d %d %d \n",
-		   localnodes[0],localnodes[1],localnodes[2],
-		   gridNodePart(grid,localnodes[0]),
-		   gridNodePart(grid,localnodes[1]),
-		   gridNodePart(grid,localnodes[2]) );
 	face = gridAddFaceUV(grid,
 			     localnodes[0],uv[0],uv[1],
 			     localnodes[1],uv[2],uv[3],
