@@ -21,6 +21,21 @@
 
 2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
 
+	* /src/adj.h Grid struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/grid.h Grid struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/layer.h Layer struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/line.h Line struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/near.h Near struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/queue.h Queue struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
 	* /src/Octree_Stub.c put in a stub to compile with gridex.
 
 2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
