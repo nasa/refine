@@ -688,7 +688,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
 {
   int i, minCell;
   double minAR, newAR, searchDirection[3], length, projection;
-  double deltaAR, currentAlpha, alpha;
+  double deltaAR, currentAlpha, alpha, lastAlpha;
   double predictedImprovement, actualImprovement, lastImprovement;
   double origXYZ[3], xyz[3];
   bool goodStep;
@@ -745,14 +745,22 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
     actualImprovement = newAR-minAR;
     //printf(" alpha %12.5e predicted %12.9f actual %12.9f new %12.9f\n",
     //	   alpha, predictedImprovement, actualImprovement, newAR);
-    if ( actualImprovement > 0.9*predictedImprovement || 
-	 ( actualImprovement > 0.0 && actualImprovement < lastImprovement) ){
+
+    if ( actualImprovement > 0.0 && actualImprovement < lastImprovement) {
+      for (i=0;i<3;i++) xyz[i] = origXYZ[i] + lastAlpha*searchDirection[i];
+      gridSetNodeXYZ(grid,node,xyz);
+      gridNodeAR(grid,node,&newAR);
+      actualImprovement = newAR-minAR;
+      goodStep = TRUE;
+    }
+    
+    if ( actualImprovement > 0.9*predictedImprovement  ){
       goodStep = TRUE;
     }else{
       lastImprovement = actualImprovement;
+      lastAlpha = alpha;
       alpha =alpha*0.5;
     }
-
   }
 
   //printf( "node %5d deg %3d active %3d old %8.5f new %8.5f\n",
