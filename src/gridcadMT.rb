@@ -383,7 +383,7 @@ class TestGridCAD < Test::Unit::TestCase
 
  def testSmartLaplacianVolumeImprovement4
   grid = isoTet4 -1.0
-  grid.smartVolumeLaplacian(4)
+  assert_equal grid, grid.smartVolumeLaplacian(4)
   avgVol = grid.totalVolume/grid.ncell.to_f
   assert_in_delta avgVol, grid.minVolume, 1.0e-8 
  end
@@ -398,7 +398,8 @@ class TestGridCAD < Test::Unit::TestCase
  def testImproveMinVolumeForConcaveGemWithBadLapacian
   grid = gemGrid 4, 5.0, 0
   avgVol = grid.totalVolume/grid.ncell.to_f
-  grid.smoothNodeVolume(6)
+  assert_nil grid.smoothNodeVolume(0)
+  assert_equal grid, grid.smoothNodeVolume(6)
   assert_in_delta avgVol, grid.minVolume, 1.0e-4
  end
 
@@ -407,6 +408,13 @@ class TestGridCAD < Test::Unit::TestCase
   avgVol = grid.totalVolume/grid.ncell.to_f
   grid.smoothNodeVolume(6)
   assert_in_delta avgVol, grid.silentMinVolume, 1.0e-4
+ end
+
+ def testRelaxNegativeCellsForConcaveGemWithBadLapacian
+  grid = gemGrid 4, 5.0, 0
+  avgVol = grid.totalVolume/grid.ncell.to_f
+  assert_equal grid, grid.relaxNegativeCells
+  assert_in_delta avgVol, grid.minVolume, 1.0e-4
  end
 
 end

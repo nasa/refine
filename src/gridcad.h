@@ -63,6 +63,8 @@ Grid *gridSmoothNodeQP(Grid *g, int node );
 Grid *gridSmoothNodeVolume(Grid *g, int node );
 Grid *gridSmoothNodeVolumeSimplex(Grid *g, int node );
 
+Grid *gridRelaxNegativeCells(Grid *g);
+
 END_C_DECLORATION
 
 #endif /* GRIDCAD_H */

@@ -125,6 +125,12 @@ VALUE grid_smoothNodeVolume( VALUE self, VALUE node )
   return (gridSmoothNodeVolume( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
+VALUE grid_relaxNegativeCells( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridRelaxNegativeCells( grid )==grid?self:Qnil);
+}
+
 VALUE cGridCAD;
 
 void Init_GridCAD() 
@@ -155,4 +161,5 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "smartVolumeLaplacian", grid_smartVolumeLaplacian, 1 );
 
   rb_define_method( cGridCAD, "smoothNodeVolume", grid_smoothNodeVolume, 1 );
+  rb_define_method( cGridCAD, "relaxNegativeCells", grid_relaxNegativeCells, 0 );
 }

@@ -942,8 +942,8 @@ Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
   AdjIterator it;
   int nodes[4], ncell, inode, ixyz;
   
-  gridNodeVolume(grid, node, &origVol);
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
+  gridNodeVolume(grid, node, &origVol);
 
   xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
   ncell =0;
@@ -1116,8 +1116,12 @@ static Grid *gridMakeFacesFromSimplex(Grid *grid,
 
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
+  if ( !gridValidNode(grid, node)   ||
+       gridGeometryFace(grid, node) ||
+       gridNodeGhost(grid, node)    ) return NULL;
   gridSmartVolumeLaplacian( grid, node );
-  return gridSmoothNodeVolumeSimplex( grid, node );  
+  gridSmoothNodeVolumeSimplex( grid, node );
+  return grid;
 }
 
 Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
@@ -1132,8 +1136,6 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
   double newVolume, savedVolume;
   GridBool makefaces = FALSE;
   int faceId = 1;
-
-  gridSmartVolumeLaplacian( grid, node );
 
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
 
@@ -1258,5 +1260,24 @@ static Grid *gridMakeFacesFromSimplex(Grid *grid,
   gridAddFace(grid,nodes[0],nodes[1],nodes[3],faceId);
   gridAddFace(grid,nodes[1],nodes[2],nodes[3],faceId);
   gridAddFace(grid,nodes[0],nodes[3],nodes[2],faceId);
+  return grid;
+}
+
+Grid *gridRelaxNegativeCells(Grid *grid)
+{
+  int cell, nodes[4], i, node;
+  double volume;
+  
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      volume = gridVolume(grid,nodes);
+      if (0.0>volume){
+	for (i=0;i<4;i++) {
+	  node = nodes[i];
+	  gridSmoothNodeVolume(grid, node);
+	}
+      }
+    }
+  }
   return grid;
 }
