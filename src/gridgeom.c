@@ -13,6 +13,7 @@
 #include "gridgeom.h"
 #ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
+#include "CADGeom/CADTopo.h"
 #include "UG_API/UG_API.h"
 #else
 #include "FAKEGeom.h"
