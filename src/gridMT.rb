@@ -212,12 +212,42 @@ end
   assert_in_delta 1.366025403784439, @grid.ar(nodes), 1.0e-15
  end
 
+ def testGemGrid
+  assert_not_nil grid=gemGrid(nequ=4, a=0.1)
+  assert nequ+2, grid.nnode
+  assert nequ, grid.ncell
+  grid.ncell.times do |cellId|
+   puts cellId, grid.volume(grid.cell(cellId)), grid.ar(grid.cell(cellId))
+  end
+  grid.swap(0,1)
+  grid.ncell.times do |cellId|
+   puts cellId, grid.volume(grid.cell(cellId)), grid.ar(grid.cell(cellId))
+  end
+ end
+
+ def gemGrid(nequ=4, a=0.1)
+  grid = Grid.new(nequ+2,nequ)
+  n = Array.new
+  n.push grid.addNode(1.0,0.0,0.0)
+  n.push grid.addNode(-1.0,0.0,0.0)
+  nequ.times do |i| 
+   angle = 2.0*Math::PI*(i-1)/(nequ)
+   n.push grid.addNode(0.0,a*Math.sin(angle),a*Math.cos(angle)) 
+  end
+  n.push 2
+  nequ.times do |i|
+   grid.addCell(n[0],n[1],n[i+2],n[i+3])
+  end
+  grid  
+ end
+
+
  def XtestMaxSize
   nnode = 6000000
   grid = Grid.new(nnode,nnode*6)
   1.upto(nnode*6) {grid.addCell(3,4,0,1)}
-
  end
+
 
  # make register unique
 
