@@ -394,6 +394,7 @@ class TestGridCAD < Test::Unit::TestCase
   puts
   grid.smoothNodeVolume(6)
   assert_in_delta avgVol, grid.minVolume, 1.0e-4
+  grid.exportFAST
  end
 
 end

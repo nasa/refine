@@ -1111,6 +1111,9 @@ static double reflect( Grid *grid,
 		       double simplex[4][3], double volume[4], double avgXYZ[3],
 		       int node, int worst, double factor );
 
+static Grid *gridMakeFacesFromSimplex(Grid *grid, 
+				      double simplex[4][3], int faceId);
+
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
   int evaluations;
@@ -1121,6 +1124,8 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   double lengthScale;
   int best, worst, secondworst; 
   double newVolume, savedVolume;
+  GridBool makefaces = TRUE;
+  int faceId = 1;
 
   gridSmartVolumeLaplacian( grid, node );
 
@@ -1170,7 +1175,7 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
 
     printf("evaluations%6d best%20.15f worst%20.15f\n", 
 	   evaluations, volume[best], volume[worst]);
-
+    if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
     if (volume[best]-volume[worst] < 1.0e-5*volume[best]) break;
 
     evaluations++;
@@ -1230,4 +1235,21 @@ static double reflect( Grid *grid,
   }
 
   return reflectedVolume;
+}
+
+static Grid *gridMakeFacesFromSimplex(Grid *grid, 
+				      double simplex[4][3], int faceId)
+{
+  int node;
+  int nodes[4];
+  for(node=0;node<4;node++)
+    nodes[node]=gridAddNode(grid,
+			    simplex[node][0],
+			    simplex[node][1],
+			    simplex[node][2]);
+  gridAddFace(grid,nodes[0],nodes[1],nodes[2],faceId);
+  gridAddFace(grid,nodes[0],nodes[1],nodes[3],faceId);
+  gridAddFace(grid,nodes[1],nodes[2],nodes[3],faceId);
+  gridAddFace(grid,nodes[0],nodes[3],nodes[2],faceId);
+  return grid;
 }
