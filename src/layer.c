@@ -2257,12 +2257,14 @@ Layer *layerBlendExtend(Layer *layer, double dx, double dy, double dz )
     normals[1] = layer->blend[blend].oldnormal[2];
     normals[2] = layer->blend[blend].normal[0];
     normals[3] = layer->blend[blend].normal[2];
+    printf("norm %d %d %d %d\n",normals[0],normals[1],normals[2],normals[3]);
     layerForceTriangle(layer,normals[0],normals[1],normals[2]);
     layerForceTriangle(layer,normals[1],normals[3],normals[2]);
     normals[0] = layer->blend[blend].oldnormal[3];
     normals[1] = layer->blend[blend].oldnormal[1];
     normals[2] = layer->blend[blend].normal[3];
     normals[3] = layer->blend[blend].normal[1];
+    printf("norm %d %d %d %d\n",normals[0],normals[1],normals[2],normals[3]);
     layerForceTriangle(layer,normals[0],normals[1],normals[2]);
     layerForceTriangle(layer,normals[1],normals[3],normals[2]);
   }
