@@ -19,97 +19,6 @@
 
 #include "layerStruct.h"
 
-// Set the desired layer thickness and height of first element
-//
-// much of this function is tailored to the synthentic jet in cross-flow
-//
-// Inside of jet,
-//     make the first spacing a function of r that
-//          grows like the sqrt(r) for r < rTrans
-//          and then grows exponentially for r > rTrans: dy0 = c^(r-rTrans)
-//
-//     The layer thickness is C * sqrt(r) but bounded to half the height
-//     of the jet cavity
-//
-// In the tunnel, the b.l. has a constant first spacing and total height
-// based on input from experiment.
-//
-
-Layer *layerAssignPolarGrowthHeight(Layer *layer, 
-                                         double scale,
-					 double scalev,
-					 double *referenceDirection)
-{
-
-  int normal;
-  double cosAngle, arcAngle, distance, height, layerThickness;
-  double normalDirection[3], xyzRoot[3];
-
-// "r" dimensions of jet
-
-  double rMin     = 3.175;
-  double rMax     = 70.0/rMin;
-
-// parameters describing (controlling) grid inside jet
-
-  double rTrans   = 3.0;
-  double pwrInner = 0.5; // growth for turbulent B.L.
-  double hMin	  = 0.005*scalev;
-  double hMax     = 2.0*scale;
-  double hLayer   = 200.0;
-  double hLmax    = 2.0;
-
-  double hTrans   = hMin * pow( rTrans, pwrInner );
-  double sRate    = pow( hMax/hTrans, 2.0/(rMax-rTrans) );
-
-  hMax     = MIN ( hLmax, hMax );
-
-  printf( " Parameters describing first spacing and layer thickness\n");
-  printf( " rMin 	= %f\n", rMin);
-  printf( " rMax 	= %f\n", rMax);
-  printf( " rTrans	= %f\n", rTrans);
-  printf( " pwrInner	= %f\n", pwrInner);
-  printf( " hTrans	= %f\n", hTrans);
-  printf( " hMax	= %f\n", hMax);
-  printf( " sRate	= %f\n", sRate);
-  
-  for(normal=0;normal<layerNNormal(layer);normal++){
-    double r;
-    gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer,normal), xyzRoot );
-    layerNormalDirection(layer, normal, normalDirection);
-
-    r = sqrt( xyzRoot[0]*xyzRoot[0] + xyzRoot[1]*xyzRoot[1] );
-
-    if( xyzRoot[2] < -1.0e-5 || r < 3.175 + 1.0e-5) { // inside jet cavity
-      double h1, xx;
-          distance = sqrt( xyzRoot[0]*xyzRoot[0] +
-		        xyzRoot[1]*xyzRoot[1] +
-		        xyzRoot[2]*xyzRoot[2] )/rMin;
-   
-          h1 = hMin * pow( distance, pwrInner );
-          layerThickness = MIN( hLmax, hLayer * h1 );
-
-          if( distance < rTrans )  height = h1;
-          else {
-	    xx = (distance-rTrans);
-	    height = MAX( h1, hTrans * pow( sRate, xx ));
-          }
-    } else {	// assume node is in the crossflow
-		// use normal boundary layer profile
-           layerThickness = 30.0;
-           height = hMin;
-
-    }
-
-    height = MIN( height, 0.99*layerThickness );
-
-    layerSetNormalMaxLength( layer, normal, layerThickness );
-    layerSetNormalHeight( layer, normal, height);
-
-  }
-  return layer;	
-}
-
 
 // adjust the height (and rate) between each layer.
 
@@ -133,7 +42,7 @@ Layer *layerSetNormalHeightWithRateAcceleration(Layer *layer, double maxRate)
        layerSetNormalRate( layer, normal, rate );
     }
 
-    layerGetNormalHeight( layer, normal, &height);
+    height = layerNormalHeight( layer, normal );
     layerSetNormalHeight( layer, normal, height*rate);
   }
 
@@ -151,9 +60,9 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
   FILE *tecPlot, *tecPlot2;
   if( iprt ) {
     tecPlot = fopen("SmooRt.plt","w");
-    fprintf( tecPlot, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
     tecPlot2 = fopen("SmooRt2.plt","w");
-    fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
+    fprintf( tecPlot, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE t=\"In tunnel after smoothing rate\"\n");
+    fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE t=\"In cavity after smoothing rate\"\n");
   }
 
 
@@ -199,7 +108,7 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
          z = xyz[2];
          r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
          length = layerNormalMaxLength(layer,normal);
-         height = layerNormalInitialHeight(layer,normal);
+         height = layerNormalHeight(layer,normal);
          npts = NptsOfGeometricStretch( length, height, rate );
 
          if( z >= -1.0e-5 && r > 3.17501 )
@@ -251,10 +160,10 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
 
   FILE *tecPlot, *tecPlot2;
   if( iprt ) {
-    tecPlot = fopen("SmooPt.plt","w");
-    fprintf( tecPlot, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
-    tecPlot2 = fopen("SmooRt2.plt","w");
-    fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
+    tecPlot = fopen("SmooNp.plt","w");
+    tecPlot2 = fopen("SmooNp2.plt","w");
+    fprintf( tecPlot , " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE t=\"In tunnel after smoothing h and L\"\n");
+    fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE t=\"In cavity after smoothing h and L\"\n");
   }
 
 
@@ -269,9 +178,11 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
       double aveLength = 0.0;
       double aveDyMax  = 0.0;
 
+// temporally store a gross upper bound on length in the "initialHeight"
+
       length = layerNormalMaxLength(layer,normal);
-      height = layerNormalInitialHeight(layer,normal);
-      if( iter == 0 ) layerSetNormalInitialHeight(layer,normal,1.5*length);
+//      height = layerNormalHeight(layer,normal);
+      if( iter == 0 ) layerSetNormalInitialHeight(layer,normal, length);
 
         totalR = 0;
         totalH = 0;
@@ -285,20 +196,20 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
           for (i=0;i<3;i++){
             if ( !layerNormalTerminated( layer,normals[i]) ){
 
-	      if( itMax[0] > 0 ) {
+	      if( iter < itMax[0] ) {
                  aveRate += layerNormalRate(layer,normals[i]);
                  totalR++;
 	      }
-	      if( itMax[1] > 0 ) {
+	      if( iter < itMax[1] ) {
                  aveHeight+= layerNormalHeight(layer,normals[i]);
                  totalH++;
 	      }
-	      if( itMax[2] > 0 ) {
+	      if( iter < itMax[2] ) {
                  aveLength += layerNormalMaxLength(layer,normals[i]);
                  totalL++;
 	      }
 /*
-	      if( itMax[3] > 0 ) {
+	      if( iter < itMax[3] ) {
                  aveDyMax += layerNormalMaxDy(layer,normals[i]);
                  totalY++;
 	      }
@@ -320,13 +231,13 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
           layerSetNormalHeight( layer, normal, height);
 	}
 	if( totalL > 0 ) {
-          aveRate /= (double)totalR;
-          length = layerNormalRate(layer,normal);
-	  length += omega*(aveRate-rate);
+          aveLength /= (double)totalL;
+          length = layerNormalMaxLength(layer,normal);
+	  length += omega*(aveLength-length);
           layerSetNormalMaxLengthConstrained( layer, normal, length );
 	}
 /*
-	if( totalL > 0 ) {
+	if( totalY > 0 ) {
           aveDyMax /= (double)totalY;
           DyMax = layerNormalMaxDy(layer,normal);
 	  DyMax += omega*(aveDyMax-DyMax);
@@ -348,7 +259,7 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
          r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 	 rate = layerNormalRate(layer,normal);
          length = layerNormalMaxLength(layer,normal);
-         height = layerNormalInitialHeight(layer,normal);
+         height = layerNormalHeight(layer,normal);
          npts = NptsOfGeometricStretch( length, height, rate );
 	 layerSetNormalInitialHeight( layer, normal, height );
 
@@ -362,10 +273,6 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
                sp1, rate, npts);
       }
     }
-    itMax[0]--;
-    itMax[1]--;
-    itMax[2]--;
-    itMax[3]--;
   }
 
   if( iprt ) {
@@ -394,6 +301,9 @@ Layer *layerSetNormalMaxDy( Layer *layer, int normal, double DyMax ) {
    double rate   = layer->normal[normal].rate;
    layerSetNormalMaxLength(layer,normal,  (rate*DyMax-height)/(rate-1.0) );
 }
+
+// note: in the following function, initialHeight has been loaded
+// with a gross upper bound on the length
 
 Layer *layerSetNormalMaxLengthConstrained( Layer *layer, int normal, double length ) {
       double ih = layer->normal[normal].initialheight;

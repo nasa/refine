@@ -38,14 +38,14 @@ int NptsOfGeometricStretch( double yMax, double dyMin, double rate )
 {
        int numPts;
        if( rate <= 1.0001 ) numPts = (int)(0.5 + yMax/dyMin);
-       else numPts = (int)(0.5 + log( (rate-1.0)*yMax/dyMin + 1.0) / log(rate));
+       else numPts = (int)(1.5 + log( (rate-1.0)*yMax/dyMin + 1.0) / log(rate));
        return numPts;
 }
 
 double RptsOfGeometricStretch( double yMax, double dyMin, double rate )
 {
        if( rate <= 1.0001 ) return yMax/dyMin;
-       else return log( (rate-1.0)*yMax/dyMin + 1.0) / log(rate) ;
+       else return 1.0 + log( (rate-1.0)*yMax/dyMin + 1.0) / log(rate) ;
 }
 
 double DyMaxFromN( int n, double rate, double dy0 ) {

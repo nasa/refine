@@ -60,6 +60,7 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
   int startRateIncrease;
   double rateOfRate;
   double rateMax;
+  double rateMin;
   double hFirst;
   double hLayer;
   double trSpacing;
@@ -69,6 +70,7 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
   double rate1,rate2;
   int nLayer1,nLayer2;
   int numSmooIter;
+  int numSmooIterNP[4];
   double maxRate;
 
   layer = mesherxInit(vol, maxNodes);
@@ -78,12 +80,13 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
 // parameters controlling rate (in general)
 
 
-  startRateIncrease=10*scalev;
+  startRateIncrease=10000*scalev;
   rateOfRate = 1.02;
   rateMax = 1.3;
+  rateMin = 1.1;
   hFirst = 0.005*scalev;
   hLayer = 150.0*hFirst;
-  trSpacing = 0.7;			// spacing matching criterion
+  trSpacing = 0.9;			// spacing matching criterion
   bgSpacingJet = 0.25*scale*trSpacing;
   bgSpacingTunnel = 2.4*scale*trSpacing;
 
@@ -102,21 +105,25 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
     printf( "NumPts and rate in cavity: %d %f\n", nLayer1, rate1 );
 
 // inner region
-    rate2 = MAX( 1.01, RateOfGeometricStretch( 10.0, hFirst, bgSpacingTunnel ));
-    nLayer2 = NptsOfGeometricStretch( 10.0, hFirst, rate2 );
+    rate2 = MAX( 1.01, RateOfGeometricStretch( 24.0, hFirst, bgSpacingTunnel ));
+    nLayer2 = NptsOfGeometricStretch( 24.0, hFirst, rate2 );
     printf( "NumPts and rate in BL: %d %f\n", nLayer2, rate2 );
 
     rate = MIN( rate1, rate2 );
+    rate = MIN( rateMax, MAX( rateMin, rate ));
+
     nLayer1 = MAX( nLayer1, NptsOfGeometricStretch( hLayer, hFirst, rate ));
-    nLayer2 = MAX( nLayer2, NptsOfGeometricStretch( 10.0, hFirst, rate ));
-//    nLayer = 2*MAX( nLayer1, nLayer2 );
+    nLayer2 = MAX( nLayer2, NptsOfGeometricStretch( 24.0, hFirst, rate ));
     nLayer = MAX( nLayer1, nLayer2 );
-    rateMax = MIN( rateMax, MAX( rate1, rate2 ));
+
 
     if( nLayer < 3 ) exit(0);
   }
 
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
+
+//  nLayer /= 2;
+//  printf("number of layers is reduced to %d.\n",nLayer);
 
 
   if (mixedElement) layerToggleMixedElementMode(layer);
@@ -130,6 +137,12 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
   layerAssignPolarGrowthHeight(layer, scale, scalev,
 				 direction );
 
+
+  numSmooIterNP[0] = 0.0;
+  numSmooIterNP[1] = (int)(0.5+10.0/scalev);
+  numSmooIterNP[2] = numSmooIterNP[1];
+  numSmooIterNP[3] = 0.0;
+  layerSmoothNormalProperty( layer, numSmooIterNP, 0.5, TRUE );
 
   layerSaveInitialNormalHeight(layer);
   layerComputeNormalRateWithBGSpacing2(layer,trSpacing);
@@ -190,8 +203,8 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
 
   i=0;
   while (i<nLayer
-	&& layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer,trSpacing,1.5)
-	&& layerNNormal(layer)>layerTerminateNormalWithLength(layer,1.25) 
+	&& layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer,trSpacing,2.9)
+	&& layerNNormal(layer)>layerTerminateNormalWithLength(layer,0.90) 
 		 ) {
 
     if( i > 5.0/scalev ) layerRelaxNormalDirection(layer, 1, 0.5);
@@ -253,134 +266,3 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
 
   return 1;
 }
-
-
-
-Layer *layerComputeNormalRateWithBGSpacing2(Layer *layer, double finalRatio)
-{
-  int normal, root, maxNpts, npts;
-  
-  double xyz[3], xyz0[3], length, normalDirection[3];
-  double initialDelta, finalDelta, rate, maxRate;
-  double spacing[3], direction[9];
-  FILE *tecPlot, *tecPlot2;
-
-  maxNpts = 0;
-  maxRate = 0;
-
-  tecPlot = fopen("CNRwBGS.plt","w");
-  fprintf( tecPlot, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
-  tecPlot2 = fopen("CNRwBGS2.plt","w");
-  fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
-
-  for(normal=0;normal<layerNNormal(layer);normal++){
-    double sp1, sp2, z, r;
-    double minSpacing, lengthOfMinSpacing;
-
-    root = layerNormalRoot(layer, normal );
-    gridNodeXYZ(layerGrid(layer),root,xyz);
-    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-    sp1 = spacing[0];
-    z = -xyz[2];
-    r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
-    layerNormalDirection(layer,normal,normalDirection);
-    length = layerNormalMaxLength(layer,normal);
-    xyz0[0] = xyz[0] + (length * normalDirection[0]);
-    xyz0[1] = xyz[1] + (length * normalDirection[1]);
-    xyz0[2] = xyz[2] + (length * normalDirection[2]);
-    MeshMgr_GetSpacing(&(xyz0[0]),&(xyz0[1]),&(xyz0[2]),spacing,direction);
-    sp2 = spacing[0];
-    
-
-// sample the background spacing at several points
-// in the direction of the normal
-
-    minSpacing = MAX( sp1, sp2 );
-    lengthOfMinSpacing = length;
-
-/*
-    int sample;
-    for( sample=1; sample<10; sample++ ) {
-       double len = sample*length/10.0;
-       xyz0[0] = xyz[0] + (len * normalDirection[0]);
-       xyz0[1] = xyz[1] + (len * normalDirection[1]);
-       xyz0[2] = xyz[2] + (len * normalDirection[2]);
-       MeshMgr_GetSpacing(&(xyz0[0]),&(xyz0[1]),&(xyz0[2]),spacing,direction);
-	if( spacing[0] < minSpacing ) {
-	   minSpacing = spacing[0];
-	   lengthOfMinSpacing = len;
-        }
-    }
-*/
-
-    finalDelta = minSpacing*finalRatio;
-
-// override and hardcode if in tunnel
-//    if( length > 5.0 ) finalDelta = (finalDelta + 2.4)/2.0;
-
-    initialDelta = layerNormalInitialHeight(layer,normal);
-
-// check some stuff
-
-    if( lengthOfMinSpacing < initialDelta ) {
-	printf("Node %d : layer thickness < dy-Min :  %f  %f ",
-                normal, lengthOfMinSpacing, initialDelta );
-	printf("at (%f, %f).     Resetting dy-Min\n", r, z );
-
-        initialDelta = 0.99*lengthOfMinSpacing;
-        layerSetNormalHeight( layer, normal, initialDelta );
-    }
-
-    if( finalDelta*0.75 < initialDelta ) {
-/*
-	printf(" node %d : dy-Max  <  0.75 * dy-Min :  %f   %f",
-		 normal, finalDelta, initialDelta );
-	printf("  at (%f, %f)  : TERMINATING NORMAL.\n",
-		 r, z );
-*/
-
-// Setting height to 0.0 generates "CAPrI Projection errors???" errors
-	initialDelta = finalDelta*0.75; //0.0;
-        layerSetNormalHeight( layer, normal, initialDelta );
-	layerTerminateNormal(layer,normal);
-	rate = 1.001;
-        layerSetNormalRate(layer, normal, rate );
-        npts = 0;
-    } else {
-
-       if( lengthOfMinSpacing < finalDelta || initialDelta > finalDelta ) {
-	   printf(" node %d : layer thickness  <  dy-Max :  %f  %f",
-		    normal, lengthOfMinSpacing, finalDelta );
-	   printf("  at (%f, %f)\n", r, z );
-
-	   finalDelta = (2.0*lengthOfMinSpacing+initialDelta)/3.0;
-       }
-
-       rate = RateOfGeometricStretch( lengthOfMinSpacing, initialDelta, finalDelta );
-       rate = MIN( 1.3, MAX( 1.15, rate ));
-       npts = NptsOfGeometricStretch( lengthOfMinSpacing, initialDelta, rate );
-       maxNpts = MAX( maxNpts, npts );
-       maxRate = MAX( maxRate, rate );
-
-
-    }
-
-    layerSetNormalRate(layer, normal, rate);
-
-    if( z >= -1.0e-5 && r > 3.17501 )
-       fprintf(tecPlot, " %d  %f  %f  %f  %f  %f  %f  %f  %f  %d \n",
-               normal, xyz[0], xyz[1], z, r, lengthOfMinSpacing, initialDelta,
-               finalDelta, rate, npts);
-    else
-       fprintf(tecPlot2, " %d  %f  %f  %f  %f  %f  %f  %f  %f  %d \n",
-               normal, xyz[0], xyz[1], z, r, lengthOfMinSpacing, initialDelta,
-               finalDelta, rate, npts);
-  }
-
-  fclose(tecPlot);
-  fclose(tecPlot2);
-  printf(" Max rate and thickness layer : %f  %d \n", maxRate, maxNpts );
-//  exit(0);
-  return layer;
-}
-
