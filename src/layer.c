@@ -566,6 +566,9 @@ double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
 {
   double direction0[3], direction1[3];
   double dot, radian;
+  int nodes0[3], nodes1[3];
+  int n0, n1, g0, g1, start, end;
+  double xyzstart[3], xyzend[3], edge[3], cross[3];
 
   if ( triangle0 == triangle1 ) return -3.0;
   if ( layer != layerTriangleDirection(layer,triangle0,direction0))return -1.0;
@@ -573,6 +576,31 @@ double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
 
   dot = gridDotProduct(direction0, direction1);
   radian = acos(dot) + PI;
+  
+  layerTriangle(layer,triangle0,nodes0);
+  layerTriangle(layer,triangle1,nodes1);
+
+  start = end = EMPTY;
+  for ( n0 = 0 ; n0 < 3 ; n0++) {
+    n1 = n0+1; if ( n1 >= 3 ) n1 = 0;
+    g0 = nodes0[n0];
+    g1 = nodes0[n1];
+    if ( ( g0 == nodes1[0] || g0 == nodes1[1] || g0 == nodes1[2] ) &&
+	 ( g1 == nodes1[0] || g1 == nodes1[1] || g1 == nodes1[2] ) ) {
+      start = g0;
+      end   = g1;
+    } 
+  }
+  if ( start == EMPTY || end == EMPTY ) return -4.0;
+
+  gridNodeXYZ( layerGrid(layer), start, xyzstart );
+  gridNodeXYZ( layerGrid(layer), end,   xyzend );
+
+  gridSubtractVector( xyzstart, xyzend, edge );
+  gridCrossProduct( direction0, direction1, cross);
+  
+  if ( gridDotProduct( edge, cross ) > 0.0 ) radian -= PI;
+
   return ConvertRadianToDegree(radian);
 }
 
