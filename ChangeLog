@@ -1,3 +1,9 @@
+2004-04-28 11:28 Mike Park  <mike.park@nasa.gov>
+
+	* /src/queue.c (addFace,removeFace) provides the node parts.
+	* /src/gridmpi.c (gridApplyQueue) only decode global nodes if
+	adding or removing the face.
+
 2004-04-23 15:45 Mike Park  <mike.park@nasa.gov>
 
 	* /src/layer.c added mechanics to manage a normal direction frozen 
