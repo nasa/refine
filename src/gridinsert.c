@@ -82,10 +82,10 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength,
 	newnode = gridSplitEdge(grid, n0, n1);
 	if ( newnode != EMPTY ){
 	  nnodeAdd++;
-	  gridSwapNearNode( grid, newnode );
+	  gridSwapNearNode( grid, newnode, -1.0 );
 	  if ( project && gridGeometryFace( grid, newnode ) ){
 	    gridRobustProjectNode(grid, newnode);
-	    gridSwapNearNode( grid, newnode );
+	    gridSwapNearNode( grid, newnode, -1.0 );
 	  }
 	}
       }else{
@@ -94,10 +94,10 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength,
 	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
 	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
 	    nnodeRemove++;
-	    gridSwapNearNode( grid, n0 );
+	    gridSwapNearNode( grid, n0, -1.0 );
 	    if ( project &&  gridGeometryFace( grid, n0 ) ) {
 	      gridRobustProjectNode(grid, n0);
-	      gridSwapNearNode( grid, n0 );
+	      gridSwapNearNode( grid, n0, -1.0 );
 	    }
 	  }
 	}
@@ -152,14 +152,14 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 	  newnode = gridSplitEdge(grid, nodes[0], nodes[1]);
 	  if ( newnode != EMPTY ){
 	    nnodeAdd++;
-	    gridSwapNearNode( grid, newnode );
+	    gridSwapNearNode( grid, newnode, 1.0 );
 	  }
 	}else if (ratio < 1.0/1.35) {
 	  if ( grid == gridCollapseEdgeToBestConfiguration(grid, NULL, 
 							   nodes[0], 
 							   nodes[1] ) ) {
 	    nnodeRemove++;
-	    gridSwapNearNode( grid, nodes[0] );
+	    gridSwapNearNode( grid, nodes[0], 1.0 );
 	  }
 	}
       }

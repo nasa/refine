@@ -270,16 +270,16 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
   return swapStatus;
 }
 
-Grid *gridSwapNearNode(Grid *grid, int node)
+Grid *gridSwapNearNode(Grid *grid, int node, double limit )
 {
   int nswap, nodes[4];
   AdjIterator it;
-
+  if (limit<0.0) limit = 0.7;
   nswap = 0;
   it = adjFirst(gridCellAdj(grid),node);
   while ( adjValid(it) ){
     gridCell( grid, adjItem(it), nodes);
-    if ( gridAR(grid, nodes) < 0.5 ) {
+    if ( gridAR(grid, nodes) < limit ) {
       if ( ( NULL != gridSwapFace( grid, NULL, nodes[1],nodes[2],nodes[3]) ) ||
 	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[2],nodes[3]) ) ||
 	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[3]) ) ||
@@ -299,7 +299,7 @@ Grid *gridSwapNearNode(Grid *grid, int node)
       it = adjNext(it);
     }
     if (nswap>100) {
-      printf("node %d swap out.",node);
+      /* printf("node %d swap out.",node); */
       return NULL;
     }
   }
