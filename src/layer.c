@@ -1801,6 +1801,8 @@ Layer *layerAdvance(Layer *layer)
   int side[2], sidenode[2], sidenormal[2];
   double xyz[3];
   int nterminated;
+  int tet[4];
+  bool negVolume = FALSE;
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
@@ -1939,22 +1941,29 @@ Layer *layerAdvance(Layer *layer)
       if (layerNormalTerminated(layer,normals[i])) nterminated++;
     }
 
+#define addTet {layer->cellInLayer[gridAddCell(grid, tet[0], tet[1], tet[2], tet[3])]=TRUE; if ( 1.0e-14 > gridVolume(grid, tet ) ) { negVolume = TRUE; gridNodeXYZ(grid,tet[0],xyz); printf("volume%17.10e at %12.6f%12.6f%12.6f\n", gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]);} }
     
     if (layerTetrahedraOnly(layer) || nterminated >= 2){
       if (nodes[2]<nodes[1]){
-	if (n[0]!=n[3]) 
-	  layer->cellInLayer[gridAddCell(grid, n[0], n[4], n[5], n[3])]=TRUE;
-	if (n[2]!=n[5]) 
-	  layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[4], n[5])]=TRUE;
-	if (n[1]!=n[4]) 
-	  layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[1], n[4])]=TRUE;
+	if (n[0]!=n[3]) {
+	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
+	}
+	if (n[2]!=n[5]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5]; addTet;
+	}
+	if (n[1]!=n[4]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
+	}
       }else{
-	if (n[0]!=n[3]) 
-	  layer->cellInLayer[gridAddCell(grid, n[0], n[4], n[5], n[3])]=TRUE;
-	if (n[1]!=n[4]) 
-	  layer->cellInLayer[gridAddCell(grid, n[0], n[1], n[5], n[4])]=TRUE;
-	if (n[2]!=n[5]) 
-	  layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[1], n[5])]=TRUE;
+	if (n[0]!=n[3]) {
+	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
+	}
+	if (n[1]!=n[4]) {
+	  tet[0] = n[0]; tet[1] = n[1]; tet[2] = n[5]; tet[3] = n[4]; addTet;
+	}
+	if (n[2]!=n[5]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[5]; addTet;
+	}
       }
     }else{
       if ( nterminated == 1 ) {
@@ -2047,7 +2056,11 @@ Layer *layerAdvance(Layer *layer)
     gridFreezeNode(grid,layer->normal[normal].root);
   }
 
-  return layer;
+  if ( negVolume ) {
+    return NULL;
+  } else {
+    return layer;
+  }
 }
 
 Layer *layerWiggle(Layer *layer, double height )
