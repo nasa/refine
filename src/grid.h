@@ -24,6 +24,7 @@ BEGIN_C_DECLORATION
 
 #define MAXDEG 200
 #define MAXFACEIDDEG 100
+#define MAXEDGEIDDEG 100
 
 typedef struct Prism Prism;
 struct Prism {
@@ -294,6 +295,8 @@ double gridNodeU(Grid *grid, int node, int faceId);
 double gridNodeV(Grid *grid, int node, int faceId);
 Grid *gridNodeT(Grid *g, int node, int edgeId, double *t );
 Grid *gridSetNodeT(Grid *g, int node, int edgeId, double t );
+int gridNodeEdgeIdDegree(Grid *g, int node);
+Grid *gridNodeEdgeId(Grid *g, int node, int maxId, int *ids, int *id );
 
 int gridAddEdge(Grid *g, int n0, int n1, 
 		int edgeId, double t0, double t1 );

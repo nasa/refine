@@ -465,6 +465,26 @@ VALUE grid_setNodeT( VALUE self, VALUE node, VALUE edgeId, VALUE t )
 			NUM2DBL(t) )==grid?self:Qnil);
 }
 
+VALUE grid_nodeEdgeIdDegree( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM(gridNodeEdgeIdDegree( grid, NUM2INT(node) ));
+}
+
+VALUE grid_nodeEdgeId( VALUE self, VALUE node )
+{
+  VALUE rb_ids;
+  int i, ids, id[MAXEDGEIDDEG];
+  GET_GRID_FROM_SELF;
+  if (grid == gridNodeEdgeId(grid, NUM2INT(node), MAXEDGEIDDEG, &ids, id )) {
+    rb_ids = rb_ary_new2(ids);
+    for(i=0;i<ids;i++) rb_ary_store( rb_ids, i, INT2NUM(id[i]) );
+    return rb_ids;
+  } else {
+    return Qnil;
+  }
+}
+
 VALUE grid_addEdge( VALUE self, VALUE n0, VALUE n1, 
 		    VALUE edgeId, VALUE t0, VALUE t1 )
 {
@@ -1049,6 +1069,8 @@ void Init_Grid()
 
   rb_define_method( cGrid, "nodeT", grid_nodeT, 2 );
   rb_define_method( cGrid, "setNodeT", grid_setNodeT, 3 );
+  rb_define_method( cGrid, "nodeEdgeIdDegree", grid_nodeEdgeIdDegree, 1 );
+  rb_define_method( cGrid, "nodeEdgeId", grid_nodeEdgeId, 1 );
 
   rb_define_method( cGrid, "addEdge", grid_addEdge, 5 );
   rb_define_method( cGrid, "removeEdge", grid_removeEdge, 1 );

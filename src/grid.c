@@ -2188,6 +2188,76 @@ Grid *gridSetNodeT(Grid *grid, int  node, int edgeId, double t )
   return NULL;
 }
 
+int gridNodeEdgeIdDegree(Grid *grid, int node)
+{
+  int id[MAXEDGEIDDEG];
+  int edge, edgeId, search, ids;
+  GridBool found;
+  AdjIterator it;
+
+  if (!gridValidNode(grid,node)) return EMPTY;
+
+  ids = 0;
+  for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) ){
+    edge = adjItem(it);
+    edgeId = grid->edgeId[edge];
+    found = FALSE;
+    for (search=0;!found && (search<ids);search++) {
+      found = ( id[search] == edgeId );
+    }
+    if (!found) {
+      if (ids >= MAXEDGEIDDEG) {
+	printf("%s: %d: need more MAXEDGEIDDEG.\n",__FILE__,__LINE__);
+	return EMPTY;
+      }
+      id[ids] = edgeId;
+      ids++;
+    }
+  }
+
+  return ids;
+}
+
+Grid *gridNodeEdgeId(Grid *grid, int node, int maxId, int *ids_arg, int *id )
+{
+  int edge, edgeId, search, insertpoint, index, ids;
+  GridBool found;
+  AdjIterator it;
+
+  if (!gridValidNode(grid,node)) return NULL;
+
+  *ids_arg = 0;
+  ids = 0;
+  for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) ){
+    edge = adjItem(it);
+    edgeId = grid->edgeId[edge];
+    found = FALSE;
+    for (search=0;!found && (search<ids);search++) {
+      found = ( id[search] == edgeId );
+    }
+    if (!found) {
+      if (ids >= maxId) {
+	printf("%s: %d: need more maxId.\n",__FILE__,__LINE__);
+	return NULL;
+      }
+      insertpoint = 0;
+      for (index=ids-1; index>=0; index--) {
+	if (id[index] < edgeId) {
+	  insertpoint = index+1;
+	  break;
+	}
+      }
+      for(index=ids;index>insertpoint;index--)
+	id[index] = id[index-1];
+      ids++;
+      id[insertpoint] = edgeId;
+    }
+  }
+
+  *ids_arg = ids;
+  return grid;
+}
+
 int gridAddEdge(Grid *grid, int n0, int n1, 
 		int edgeId, double t0, double t1 )
 {

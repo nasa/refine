@@ -893,6 +893,46 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 2,    grid.nedge
  end
 
+ def testNodeEdgeIdDegree
+  grid = Grid.new(2,0,10,0)
+  assert_equal EMPTY, grid.nodeEdgeIdDegree(0)
+  assert_nil          grid.nodeEdgeId(0)
+  2.times{grid.addNode(1,2,3)}
+  assert_equal 0,  grid.nodeEdgeIdDegree(0)
+  assert_equal [], grid.nodeEdgeId(0)
+  grid.addEdge(0,1,4,0.0,1.0)
+  assert_equal 1,   grid.nodeEdgeIdDegree(0)
+  assert_equal [4], grid.nodeEdgeId(0)
+  grid.addEdge(0,1,4,0.0,1.0)
+  assert_equal 1, grid.nodeEdgeIdDegree(0)
+  assert_equal [4], grid.nodeEdgeId(0)
+  grid.addEdge(0,1,5,0.0,1.0)
+  assert_equal 2, grid.nodeEdgeIdDegree(0)
+  assert_equal [4,5], grid.nodeEdgeId(0)
+  grid.addEdge(0,1,4,0.0,1.0)
+  assert_equal 2, grid.nodeEdgeIdDegree(0)
+  assert_equal [4,5], grid.nodeEdgeId(0)
+  grid.addEdge(0,1,2,0.0,1.0)
+  assert_equal 3, grid.nodeEdgeIdDegree(0)
+  assert_equal [2,4,5], grid.nodeEdgeId(0)
+ end
+
+ def testNodeEdgeIdDegreeRandom
+  grid = Grid.new(3,0,10,0)
+  assert_equal EMPTY, grid.nodeEdgeIdDegree(0)
+  2.times{grid.addNode(1,2,3)}
+  grid.addEdge(0,1,7,0.0,1.0)
+  grid.addEdge(0,1,3,0.0,1.0)
+  grid.addEdge(0,1,5,0.0,1.0)
+  grid.addEdge(0,1,4,0.0,1.0)
+  grid.addEdge(0,1,5,0.0,1.0)
+  grid.addEdge(0,1,2,0.0,1.0)
+  grid.addEdge(0,1,8,0.0,1.0)
+  grid.addEdge(0,1,2,0.0,1.0)
+  grid.addEdge(0,1,1,0.0,1.0)
+  assert_equal [1,2,3,4,5,7,8], grid.nodeEdgeId(0)
+ end
+
  def testAddEdgeRealloc
   assert_not_nil     grid = Grid.new(4,0,0,1)
   assert_equal 0,    grid.addEdge(0, 1, 10, 0.0, 1.0)
