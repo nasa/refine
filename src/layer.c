@@ -335,6 +335,16 @@ Layer *layerAdvance(Layer *layer, double height )
       gridAddCell(grid, n[0], n[1], n[5], n[4]);
       gridAddCell(grid, n[2], n[0], n[1], n[5]);
     }
+
+    if (0 < layerConstrained(layer,normals[0]) && 
+	0 < layerConstrained(layer,normals[1]) )
+      printf("const 0 1\n");
+    if (0 < layerConstrained(layer,normals[1]) && 
+	0 < layerConstrained(layer,normals[2]) )
+      printf("const 1 2\n");
+    if (0 < layerConstrained(layer,normals[2]) && 
+	0 < layerConstrained(layer,normals[0]) )
+	printf("const 2 1\n");
   }
 
   return layer;
