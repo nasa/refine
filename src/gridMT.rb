@@ -120,6 +120,7 @@ class TestSampleUnit < Test::Unit::TestCase
  def testGetGem3
   grid = Grid.new(5,3,0)
   assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
+#  assert_equal [], grid.gem(5,6)
   assert_equal [0], grid.gem(0,1)
   assert_equal [1], grid.gem(1,2)
   assert_equal [2], grid.gem(0,2)
@@ -127,7 +128,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [2,1,0], grid.gem(3,4)
  end
  
- def XtestEquator
+ def testEquator
   grid = Grid.new(6,4,0)
   assert_equal grid, grid.addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
   assert_equal 2, grid.nodeDeg(0)
@@ -144,6 +145,8 @@ class TestSampleUnit < Test::Unit::TestCase
 
  # adding a cell bigger than maxcell
  
+ # first cell on a large node number;
+
  # make register unique
 
  # allocating a new chunk of celllist
