@@ -22,7 +22,7 @@
 Grid *gridLoadPart( char *project, int maxnode );
 int gridSavePart( Grid *grid, char *project );
 
-#define PRINT_STATUS printf("minimum Thawed Aspect Ratio %10.8f Mean Ratio %10.8f Volume %12.8e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid));
+#define PRINT_STATUS printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid));
 
 #define DUMP_TEC if (!boundaryLayerGrid) {iview++;printf("Frame %d\n",iview);gridWriteTecplotSurfaceZone(grid);}
 
@@ -156,6 +156,11 @@ int main( int argc, char *argv[] )
 	printf("node smoothing grid...\n");gridSmooth(grid);
 	printf("edge swapping grid...\n");gridSwap(grid);
 	printf("node smoothing grid...\n");gridSmooth(grid);
+	gridAdapt(grid,0.4,1.5);
+	printf("edge swapping grid...\n");gridSwap(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid);
+	printf("edge swapping grid...\n");gridSwap(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid);
 	printf("wiggle step %d of %d, minAR %8.5f\n",i+1,wiggleSteps,gridMinThawedAR(grid));
 	layerWiggle(layer,height);
 	//printf("minimum Volume %12.8e\n", gridMinVolume(grid));
@@ -164,6 +169,7 @@ int main( int argc, char *argv[] )
       printf("node smoothing grid...\n");gridSmooth(grid);
       printf("edge swapping grid...\n");gridSwap(grid);
       printf("node smoothing grid...\n");gridSmooth(grid);
+      STATUS;
     }
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
