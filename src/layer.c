@@ -1944,7 +1944,7 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
       }
     }
 
-    // advance cells
+    /* advance cells */
     /* pg. 82-85 of Garimella Thesis*/
     /* sort so that normals[0] is the smallest normal id*/
     if (nodes[1]<nodes[0] && nodes[1]<nodes[2]){
@@ -2010,6 +2010,7 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
     }
   }
 
+    /* advance blends */
   if (layerNBlend(layer) > 0){
     int blend, blendnormals[4];
     int triangle0, triangle1;
