@@ -664,7 +664,11 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
     face1 = gridFindFace(grid, n0, n1, gap1 );
     faceId0 = gridFaceId(grid, n0, n1, gap0 );
     faceId1 = gridFaceId(grid, n0, n1, gap1 );
-    if ( faceId0 == EMPTY || faceId1 == EMPTY ) return NULL;
+    if ( faceId0 == EMPTY || faceId1 == EMPTY ) {
+      printf("ERROR %s: %d: collapse faceId empty: %d %d\n",__FILE__,__LINE__,
+	     faceId0, faceId1);
+      return NULL;
+    }
     gridNodeUV(grid,n0,faceId0,n0Id0uv);
     gridNodeUV(grid,n1,faceId0,n1Id0uv);
     gridNodeUV(grid,n0,faceId1,n0Id1uv);

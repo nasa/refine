@@ -207,7 +207,7 @@ int main( int argc, char *argv[] )
     double radius, theta;
     double rSpace, tSpace, ySpace;
     double normal[3], tangent[3], third[3];
-    printf("spacing set to cylinder space %f.\n",cyl);
+    printf("spacing set to cylinder with %f in normal direction.\n",cyl);
     for (node=0;node<gridMaxNode(grid);node++) {
       if (grid==gridNodeXYZ(grid,node,xyz)) {
 	radius = sqrt(xyz[0]*xyz[0]+xyz[2]*xyz[2]);

@@ -1129,9 +1129,26 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
 	for(i=0;i<9;i++) gm->a[i+9*entry] = 0.0;
       }
       entry = gridmoveRowEntry(gm,node,node);
-      gm->a[0+9*entry] = 1.0;
-      gm->a[4+9*entry] = 1.0;
-      gm->a[8+9*entry] = 1.0;
+      if (0 <= entry && entry<gridmoveNNZ(gm) ) {
+	gm->a[0+9*entry] = 1.0;
+	gm->a[4+9*entry] = 1.0;
+	gm->a[8+9*entry] = 1.0;
+      }else{
+	printf("ERROR %s: %d: %s: node %d entry %d NNZ %d valid %d spec %d ghost %d\n",
+	       __FILE__,__LINE__,"Entry out of range",
+	       node, entry, gridmoveNNZ(gm),  
+	       gridValidNode(grid,node),
+	       gridmoveSpecified(gm,node),
+	       gridNodeGhost(grid,node));
+	printf("node %d cell degree %d\n",node,gridCellDegree(grid, node));
+	printf("row %d start %d\n",node,gridmoveRowStart(gm, node));
+	printf("row %d start %d\n",node+1,gridmoveRowStart(gm, node+1));
+	for ( entry = gridmoveRowStart(gm, node) ;
+	      entry < gridmoveRowStart(gm, node+1) ;
+	      entry++ ) {
+	  printf("entry %d value %d\n",entry,gm->compRow[entry]);	  
+	}
+      }
     }
   }
 
