@@ -16,11 +16,48 @@ dnl Checks for std C stuff
 AC_PROG_CC
 AC_HEADER_STDC
 
-dnl Checks for external libs
-AC_CHECK_FILE($with_SDK/CADGeom/CADGeom.h,AC_DEFINE([HAVE_CADGEOM]))
-AC_CHECK_FILE($with_SDK/CADGeom/libCADGeom-Linux-CAPrI.a)
 
-AC_CHECK_FILE($with_CAPRI/include/capri.h,AC_DEFINE([HAVE_CAPRI]))
+dnl Check for CAPRI header
+
+have_CAPRI='no'
+if test "$with_CAPRI" != 'no' 
+then
+    AC_CHECK_FILE([$with_CAPRI/include/capri.h],
+                  [have_CAPRI='yes'],[have_CAPRI='no'])
+fi
+
+if test "$have_CAPRI" != 'no'
+then
+   AC_PATH_X
+   CAPRI=$with_CARPI
+   AC_DEFINE([HAVE_CAPRI])
+   CAPRILib="-L$CAPRI/Native/LINUX -lcapri -lX11"
+   if test "$x_libraries" != "" ; then
+       CAPRILibs="$CAPRILib -L$x_libraries -lX11"
+   fi
+   AC_SUBST([CAPRILib])
+fi 
+
+dnl Check for SDK
+
+have_SDK='no'
+if test "$with_SDK" != 'no' 
+then
+   AC_CHECK_FILE([$with_SDK/MeatLib/Common.h],
+                 [have_SDK='yes'],[have_SDK='no'])
+fi
+
+if test "$have_SDK" != 'no'
+then
+   SDK=$with_SDK
+   AC_DEFINE([HAVE_SDK])
+   CPPFLAGS="$CPPFLAGS -I$SDK"
+   SDK_ARCH=`uname -s`
+   CADGeomLib="-L$SDK/CADGeom -lCADGeom-$SDK_ARCH"
+   AC_SUBST([CADGeomLib])
+fi 
+
+
 
 AC_SUBST(with_SDK)
 
