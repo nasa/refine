@@ -134,6 +134,12 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_in_delta 0.999, grid.minAR, 1.0e-3
  end
 
+ def testSmoothVol
+  assert_not_nil grid = isoTet(-0.2)
+  assert_equal grid, grid.smoothNode(3)
+  assert_in_delta 0.975, grid.minAR, 1.0e-3
+ end
+
  def testSmooth
   assert_not_nil grid = isoTet(-0.2)
   assert_equal grid, grid.smooth
