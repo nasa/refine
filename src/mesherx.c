@@ -45,7 +45,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   int nLayer;
   int face;
   double gapHeight;
-  double origin[3] = {0.0, -1.5, 0.0};
+  double origin[3] = {0.0, 0.0, 0.0};
   double direction[3] = {0, 1, 0};
 
   layer = mesherxInit(vol, maxNodes);
@@ -67,9 +67,9 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   direction[0] = 1.0;
   direction[1] = 0.0;
   direction[2] = 0.0;
-  layerSetPolynomialMaxHeight(layer, 0.25, 0.0, 1.0, 
+  layerSetPolynomialMaxHeight(layer, 0.35, 0.0, 1.0, 
 			      origin, direction );
-  layerAssignPolynomialNormalHeight(layer, 1.0e-5, 0.0, 1.0,
+  layerAssignPolynomialNormalHeight(layer, 1.0e-4, 0.0, 1.0,
                                     origin, direction );
   layerScaleNormalHeight(layer,scale);
   layerSaveInitialNormalHeight(layer);
@@ -81,16 +81,18 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     layerSplitBlend(layer);
   }
 
+  layerWriteTecplotFrontGeometry(layer);
+
   layerComputeNormalRateWithBGSpacing(layer,1.0);
 
   i=0;
   while (i<nLayer & layerAnyActiveNormals(layer)){
     i++;
 
-    layerSmoothNormalDirection(layer);
+    if (i>8) layerSmoothNormalDirection(layer);
 
-    //layerSetNormalHeightWithMaxRate(layer,rate);
-    layerSetNormalHeightForLayerNumber(layer,i-1,rate);
+    layerSetNormalHeightWithMaxRate(layer,rate);
+    //layerSetNormalHeightForLayerNumber(layer,i-1,rate);
     //layerSmoothLayerWithHeight(layer);
 
     layerTerminateNormalWithLength(layer,1.0);
