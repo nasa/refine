@@ -434,14 +434,16 @@ refineParallelSmooth in HEFSS.rps/LibF90/refine_interface.F90. There
 are two passes to the parallelization logic. 
 
 The first allows all processors to move nodes that are internal to the
-processor. Internal refers to nodes that are not connect to ghost
-nodes by any elements. This parallel internal pass is performed by
-setting the first argument (processor) to -1 for gridparallelsmooth.
+processor. Nodes are considered internal if they are not connect to
+ghost nodes by any elements. This parallel internal pass is performed
+by setting the first argument (processor) to -1 for
+gridparallelsmooth.
 
-Then each processor is allowed to modify local nodes that are
-connected to other processor ghost nodes with elements. This
-modification is done by each processor in turn, with the other
-processors waiting for the active processor to finish its work.
+Then each processor is allowed to modify the boundary region, which is
+the local nodes that are connected to other processor ghost nodes with
+elements. This modification is done by each processor in turn, with
+the other processors waiting for the active processor to finish its
+work.
 
 After a processor finished modifing the border region,
 refineUpdateGhostXYZ is called to broad cast any changes to the other
