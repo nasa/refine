@@ -150,6 +150,7 @@ class TestGrid < Test::Unit::TestCase
   assert_nil          grid.removeNode(5)
   assert_nil          grid.removeNode(2)
   assert_equal false, grid.validNode(2)
+  assert_equal false, grid.validNode(20)
   assert_equal 0,     grid.addNode(1.0,2.0,3.0)
   assert_equal 1,     grid.addNode(1.1,2.1,3.1)
   assert_equal 2,     grid.addNode(1.2,2.2,3.2)
@@ -158,6 +159,8 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 4,     grid.nnode
   assert_equal grid,  grid.removeNode(2)
   assert_equal false, grid.validNode(2)
+  assert_equal true,  grid.validNode(3)
+  assert_not_nil      grid.nodeXYZ(3)
   assert_equal 3,     grid.nnode
   assert_nil          grid.removeNode(2)
   assert_nil          grid.nodeXYZ(2)
