@@ -116,6 +116,7 @@ int gridCellExists(Grid *grid, int nodeId, int cellId)
 Grid* gridRegisterNodeCell(Grid *grid, int nodeId, int cellId)
 {
   N2C *new;
+  if (nodeId > grid->nnode-1) return NULL;
   if (grid->blank == NULL) return NULL;
   new = grid->blank;
   grid->blank = grid->blank->next;
@@ -145,14 +146,14 @@ Grid* gridRemoveNodeCell(Grid *grid, int nodeId, int cellId)
   for ( gridFirstNodeCell(grid,nodeId); 
 	gridValidNodeCell(grid); 
 	gridNextNodeCell(grid)) {
-    if (grid->current->next == remove) 
+    if (grid->current != NULL && grid->current->next == remove) 
       previous = grid->current;
   }
 
   if ( previous == NULL ) {
-    previous->next = remove->next;
-  }else{
     grid->first[nodeId] = remove->next;
+  }else{
+    previous->next = remove->next;
   }
 
   remove->id = EMPTY;
@@ -174,6 +175,7 @@ void gridNextNodeCell(Grid *grid)
 
 int gridCurrentNodeCell(Grid *grid)
 {
+  if (grid->current == NULL ) return EMPTY;
   return grid->current->id;
 }
 
