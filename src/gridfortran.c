@@ -263,9 +263,9 @@ void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 void gridrenumberglobalnodes_( int *nnode, int *new2old )
 {
   int i;
-  for (i=0;i<*nnode;i++) new2old--;
+  for (i=0;i<*nnode;i++) new2old[i]--;
   gridRenumberGlobalNodes( grid, *nnode, new2old );
-  for (i=0;i<*nnode;i++) new2old++;
+  for (i=0;i<*nnode;i++) new2old[i]++;
 }
 
 void gridnunusednodeglobal_( int *nunused )
