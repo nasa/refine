@@ -558,10 +558,11 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.addCell(1,3,2,4)
   assert_equal grid, grid.addFace(0,1,2,1)
   assert_equal grid, grid.addFace(1,3,2,1)
-  assert_equal 0, grid.insertInToGeomFace(0.0,0.0,0.0)
+  assert_equal 0, grid.insertInToGeomFace(0.01,0.01,0.0)
   assert_equal 5, grid.nnode
   assert_equal 2, grid.nface
   assert_equal 2, grid.ncell
+  assert_equal [0.01,0.01,0], grid.nodeXYZ(0)
  end
 
 end
