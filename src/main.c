@@ -134,6 +134,7 @@ int main( int argc, char *argv[] )
   
   if(strcmp(project,"")==0)       sprintf(project,"../test/om6" );
   if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
+  if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"none");
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
   if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
 
