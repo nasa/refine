@@ -119,6 +119,7 @@ Grid *gridFillFromPart( int vol, int maxnode )
 
   gridSetNGeomNode( grid, nGeomNode );
   gridSetNGeomEdge( grid, nGeomEdge );
+  gridSetNGeomFace( grid, nGeomFace );
 
   inode = nGeomNode;
 
