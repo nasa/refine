@@ -268,6 +268,13 @@ VALUE layer_getNormalHeight( VALUE self, VALUE normal )
   return rb_float_new(height);
 }
 
+VALUE layer_setHeightOfAllNormals( VALUE self, VALUE height )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerSetHeightOfAllNormals( layer, 
+						NUM2DBL(height) )?self:Qnil );
+}
+
 VALUE layer_assignPolynomialNormalHeight( VALUE self, VALUE constant, VALUE slope, VALUE exponent, VALUE rb_origin, VALUE rb_direction )
 {
   int i;
@@ -629,6 +636,7 @@ void Init_Layer()
   rb_define_method( cLayer, "normalDirectionFreeze", layer_normalDirectionFreeze, 1 );
   rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );
   rb_define_method( cLayer, "getNormalHeight", layer_getNormalHeight, 1 );
+  rb_define_method( cLayer, "setHeightOfAllNormals", layer_setHeightOfAllNormals, 1 );
   rb_define_method( cLayer, "assignPolynomialNormalHeight",
                     layer_assignPolynomialNormalHeight, 5 );
   rb_define_method( cLayer, "feasibleNormals", layer_feasibleNormals, 0 );

@@ -918,6 +918,20 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1.0, layer.getNormalHeight(0)
  end
 
+ def testSetAllNormalHeights
+  grid = Grid.new(10,10,10,10)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addFace(0,1,2,1)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  h = 0.546
+  assert_equal layer, layer.setHeightOfAllNormals(h)
+  assert_equal h, layer.getNormalHeight(0)
+  assert_equal h, layer.getNormalHeight(1)
+  assert_equal h, layer.getNormalHeight(2)
+ end
+
  def testSetConstantNormalHeight
   grid = Grid.new(10,10,10,10)
   grid.addNode(0,0,0)
@@ -931,6 +945,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0.1, layer.getNormalHeight(1)
   assert_equal 1.0, layer.getNormalHeight(2)
  end
+
 
  def testSettingLinearNormalHeightDistribution
   grid = Grid.new(10,10,10,10)
@@ -2039,7 +2054,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testCollideTriangleClose
   grid  = facingGrid(0.5)
-  layer = Layer.new(grid).populateAdvancingFront([1]).advanceConstantHeight(0.1)
+  layer = Layer.new(grid).populateAdvancingFront([1]).setHeightOfAllNormals(0.1)
   assert_equal 6, layer.nActiveNormal
   layer.terminateCollidingTriangles(1.0)
   assert_equal 0, layer.nActiveNormal
