@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "gridmove.h"
+#include "adj.h"
 
 GridMove *gridmoveCreate( Grid *grid )
 {
@@ -120,6 +121,32 @@ GridMove *gridmoveMove(GridMove *gm)
   return gm;
 }
 
+void grimoveAddEdgeToC2E(Grid *grid, int *c2e, int edge, int node0, int node1)
+{
+  int iedge;
+  int cell, nodes[4];
+  int edge2node0[6] = {0, 0, 0, 1, 1, 2};
+  int edge2node1[6] = {1, 2, 3, 2, 3, 3};
+  int local0, local1;
+  AdjIterator it;
+
+  for ( it = adjFirst(gridCellAdj(grid),node0); 
+	adjValid(it); 
+	it = adjNext(it) ) {
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes );
+    for(iedge=0;iedge<6;iedge++) {
+      local0 = nodes[edge2node0[iedge]];
+      local1 = nodes[edge2node1[iedge]];
+      if ( MIN(local0, local1) == MIN(node0,node1) &&
+	   MAX(local0, local1) == MAX(node0,node1) ) {
+	c2e[iedge+6*cell] = edge;
+      } 
+    }
+  }
+
+}
+
 GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
 {
   Grid *grid = gridmoveGrid(gm);
@@ -127,6 +154,7 @@ GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
   int nodes[4];
   int edge2node0[6] = {0, 0, 0, 1, 1, 2};
   int edge2node1[6] = {1, 2, 3, 2, 3, 3};
+  int node0, node1;
   int *c2e;
 
   c2e = malloc(6*gridMaxCell(grid)*sizeof(int));
@@ -138,7 +166,8 @@ GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
       for(edge=0;edge<6;edge++) {
 	if ( EMPTY == c2e[edge+6*cell] ) {
 	  c2e[edge+6*cell] = nedge;
-
+	  grimoveAddEdgeToC2E(grid, c2e, nedge,
+			      nodes[edge2node0[edge]], nodes[edge2node1[edge]]);
 	  nedge++;
 	}
       }
@@ -150,8 +179,10 @@ GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
     if (grid == gridCell(grid,cell,nodes)) {
       for(edge=0;edge<6;edge++) {
 	if (EMPTY!=c2e[edge+6*cell]) {
-	  (*springs)[0+2*c2e[edge+6*cell]] = nodes[edge2node0[edge]];
-	  (*springs)[1+2*c2e[edge+6*cell]] = nodes[edge2node1[edge]];
+	  node0 = MIN(nodes[edge2node0[edge]],nodes[edge2node1[edge]]);
+	  node1 = MAX(nodes[edge2node0[edge]],nodes[edge2node1[edge]]);
+	  (*springs)[0+2*c2e[edge+6*cell]] = node0;
+	  (*springs)[1+2*c2e[edge+6*cell]] = node1;
 	}else{
 	  printf("ERROR: %s: %d: c2e EMPTY.\n",__FILE__,__LINE__);
 	}
