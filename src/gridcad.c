@@ -83,6 +83,47 @@ Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
   return grid;
 }
 
+Grid *gridEvaluateEdgeAtT(Grid *grid, int node, double t )
+{
+  int vol =1;
+  int nodes[3];
+  int edge, edgeId;
+  double xyz[3];
+
+  if (gridGeometryNode(grid,node)) return NULL;
+  if ( grid != gridNodeXYZ(grid, node, xyz) ) return NULL;
+
+  edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
+  if (EMPTY == edge) return NULL;
+
+  gridEdge(grid,edge,nodes,&edgeId);
+
+  if ( !CADGeom_PointOnEdge( vol, edgeId, t, xyz, 
+			     0, NULL, NULL) ) {
+    printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
+    return NULL;
+  }
+  gridSetNodeT(grid, node, edgeId, t);
+  gridSetNodeXYZ(grid, node, xyz);
+  return grid;
+}
+
+Grid *gridUpdateFaceParameter(Grid *grid, int node ){
+
+  AdjIterator it;
+  int nodes[3];
+  int face, faceId;
+
+  for ( it = adjFirst(gridFaceAdj(grid),node); adjValid(it); it = adjNext(it) ){
+    face = adjItem(it);
+    if ( grid != gridFace(grid, face, nodes, &faceId) )  return NULL;
+    if ( grid != gridSafeProjectNodeToFace( grid, node, faceId, 1.0 ) ) 
+      return NULL;
+  }
+
+  return grid;
+}
+
 Grid *gridSafeProjectNode(Grid *grid, int node, double ratio )
 {
   int nodes[3];
@@ -466,36 +507,30 @@ Grid *gridSmoothNodeFaceMR(Grid *grid, int node )
 
 Grid *gridOptimizeT(Grid *grid, int node, double dt )
 {
-  int vol =1;
   double tOrig, t;
-  int nodes[3];
-  int edge, edgeId;
-  int face, faceId;
-  AdjIterator it;
   double gold;
   double alpha[2], ar[2], mr;
   int iter;
+  int nodes[2];
+  int edge, edgeId;
 
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
 
   edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
-  gridEdge(grid,edge,nodes,&edgeId);
+  if (EMPTY == edge) return NULL;
+  if ( grid != gridEdge(grid,edge,nodes,&edgeId) ) return NULL;
   gridNodeT( grid, node, edgeId, &tOrig);
 
   alpha[0] = 0.0;
   t = tOrig + alpha[0]*dt;
-  if ( !CADGeom_PointOnEdge( vol, edgeId, t, &grid->xyz[3*node], 
-			     0, NULL, NULL) )
-    printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
+  if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
   gridNodeAR( grid, node, &ar[0] );
   gridNodeFaceMR( grid, node, &mr );
   ar[0] = MIN(mr, ar[0]);
 
   alpha[1] = 1.0e-10;
   t = tOrig + alpha[1]*dt;
-  if ( !CADGeom_PointOnEdge( vol, edgeId, t, &grid->xyz[3*node], 
-			     0, NULL, NULL) )
-    printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
+  if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
   gridNodeAR( grid, node, &ar[1] );
   gridNodeFaceMR( grid, node, &mr );
   ar[1] = MIN(mr, ar[1]);
@@ -506,31 +541,16 @@ Grid *gridOptimizeT(Grid *grid, int node, double dt )
     alpha[0] = alpha[1]; ar[0] = ar[1];
     alpha[1] = alpha[0] * gold;
     t = tOrig + alpha[1]*dt;
-    if ( !CADGeom_PointOnEdge( vol, edgeId, t, &grid->xyz[3*node], 
-			       0, NULL, NULL) )
-      printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
+    if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
     gridNodeAR( grid, node, &ar[1] );
     gridNodeFaceMR( grid, node, &mr );
     ar[1] = MIN(mr, ar[1]);
   }
 
   t = tOrig + alpha[0]*dt;
-  if ( !CADGeom_PointOnEdge( vol, edgeId, t, &grid->xyz[3*node], 
-			     0, NULL, NULL) )
-    printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
-  gridSetNodeT(grid, node, edgeId, t);
+  if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
+  if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
 
-  for ( it = adjFirst(gridFaceAdj(grid),node); adjValid(it); it = adjNext(it) ){
-    face = adjItem(it);
-    faceId = grid->faceId[face];
-    if ( grid != gridSafeProjectNodeToFace( grid, node, faceId, 1.0 ) ) 
-      return NULL;
-  }
-
-  if ( !CADGeom_PointOnEdge( vol, edgeId, t, &grid->xyz[3*node], 
-			     0, NULL, NULL) )
-    printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
-  
   return grid;
 }
 

@@ -60,6 +60,38 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal [10.0,20.0],   grid.nodeUV(0,1)
  end
 
+ def testEvaluateEdgeTvalue
+  assert_not_nil  grid = Grid.new(4,1,1,1)
+  assert_equal 0, grid.addNode(0,0,0)
+  assert_equal 1, grid.addNode(1,0,0)
+  assert_equal 2, grid.addNode(0,1,0)
+  assert_equal 3, grid.addNode(0,0,1)
+  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_equal grid, grid.addFace(0,1,2,7)
+  assert_equal grid, grid.addEdge(0,1,5,-2,-3)
+  assert_equal grid, grid.setNGeomNode(1)
+  assert_nil         grid.evaluateEdgeAtT(-1,0)
+  assert_nil         grid.evaluateEdgeAtT(4,0)
+  assert_nil         grid.evaluateEdgeAtT(0,0) 
+  assert_equal(-2,  grid.nodeT(0,5))
+  assert_equal(-3,  grid.nodeT(1,5))
+  assert_equal grid, grid.evaluateEdgeAtT(1,0.5)
+  assert_equal 0.5,  grid.nodeT(1,5)
+  assert_equal [0.5,0,0],  grid.nodeXYZ(1)
+ end
+
+ def testUpdateFaceParameters
+  assert_not_nil     grid = Grid.new(4,1,2,1)
+  assert_equal 0,    grid.addNode(0,0,0)
+  assert_equal 1,    grid.addNode(1,0,0)
+  assert_equal 2,    grid.addNode(0,1,0)
+  assert_equal 3,    grid.addNode(1,1,0)
+  assert_equal grid, grid.addFace(0,1,2,7).addFace(1,3,2,8)
+  assert_equal grid, grid.updateFaceParameter(1)
+  assert_equal [11,20], grid.nodeUV(1,7)
+  assert_equal [11,20], grid.nodeUV(1,8)
+ end
+
  def testProjectionToGeometry
   assert_not_nil grid = Grid.new(5,1,1,1)
   assert_equal 0, grid.addNode(5.0,5.0,5.0)

@@ -18,11 +18,17 @@ BEGIN_C_DECLORATION
 
 Grid *gridForceNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridForceNodeToFace(Grid *g, int node, int faceId );
+
 Grid *gridProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridProjectNodeToFace(Grid *g, int node, int faceId );
+
+Grid *gridEvaluateEdgeAtT(Grid *g, int node, double t );
+Grid *gridUpdateFaceParameter(Grid *g, int node );
+
 Grid *gridSafeProjectNode(Grid *g, int node, double ratio );
 Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId, double ratio );
 Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId, double ratio );
+
 Grid *gridProject(Grid *g);
 Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);
@@ -34,10 +40,12 @@ Grid *gridSmoothNearNode1(Grid *g, int node );
 Grid *gridSmoothNearNode(Grid *g, int node );
 Grid *gridSmoothNode(Grid *g, int node );
 Grid *gridSmoothNodeFaceMR(Grid *g, int node );
+
 Grid *gridOptimizeT(Grid *g, int node, double dt );
 Grid *gridOptimizeUV(Grid *g, int node, double *dudv );
 Grid *gridOptimizeFaceUV(Grid *g, int node, double *dudv );
 Grid *gridOptimizeXYZ(Grid *g, int node, double *dxdydz );
+
 Grid *gridSmartLaplacian(Grid *g, int node );
 
 Grid *gridSmoothNodeQP(Grid *g, int node );
