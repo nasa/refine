@@ -11,7 +11,7 @@ end
 
 
 
-rubyExt = ext + "_ruby.c"
+rubyExt = ext.downcase + "_ruby.c"
 
 sourceExt = rubyExt.collect{ |r| r.sub(/_ruby.c/, ".c") }
 

@@ -4,11 +4,11 @@
 #
 # Mobility test for sampleunit c lib
 
-system 'ruby extconf.rb sampleunit'
+system 'ruby extconf.rb SampleUnit'
 system 'make'
 
 require 'test/unit'
-require 'sampleunit'
+require 'SampleUnit'
 
 class TestSampleUnit < Test::Unit::TestCase
 
