@@ -1984,7 +1984,7 @@ Layer *layerSplitBlend(Layer *layer)
 
     node0 = layerNormalRoot(layer,normals[0]);
     node1 = layerNormalRoot(layer,normals[2]);
-    if (newnormal[node0]!=EMPTY){
+    if (newnormal[node0]==EMPTY){
       newnormal[node0] = layerDuplicateNormal(layer, normals[0] );
       gridNodeXYZ(grid,node0,xyz0);
       gridNodeXYZ(grid,node1,xyz1);
@@ -2008,7 +2008,7 @@ Layer *layerSplitBlend(Layer *layer)
 
     node0 = layerNormalRoot(layer,normals[0]);
     node1 = layerNormalRoot(layer,normals[2]);
-    if (newnormal[node0]!=EMPTY){
+    if (newnormal[node0]==EMPTY){
       newnormal[node0] = layerDuplicateNormal(layer, normals[0] );
       gridNodeXYZ(grid,node0,xyz0);
       gridNodeXYZ(grid,node1,xyz1);
