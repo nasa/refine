@@ -73,4 +73,25 @@ class TestSampleUnit < Test::Unit::TestCase
     assert_equal localGrid, localGrid.registerNodeCell(0,1)
   end
 
+ def testMultipleCellExists
+   assert_equal false, @grid.cellExists(1,198)
+   @grid.registerNodeCell(1,198)
+   @grid.registerNodeCell(1,199)
+   assert_equal true,  @grid.cellExists(1,198)
+   assert_equal true,  @grid.cellExists(1,199)
+   @grid.removeNodeCell(1,198)
+   assert_equal false, @grid.cellExists(1,198)
+   assert_equal true,  @grid.cellExists(1,199)
+   @grid.registerNodeCell(1,198)
+   assert_equal true,  @grid.cellExists(1,198)
+   assert_equal true,  @grid.cellExists(1,199)
+ end
+
+# make register unique
+# non-contiguos cellist for access and registering
+# test that new list terminator is contiguous
+# packing
+
+# allocating a new chunk of celllist
+
 end
