@@ -39,6 +39,13 @@ GridBool CADGeom_UpdateEdgeGrid(int vol, int iedge, int nCurveNode,
   return FALSE;
 }
 
+GridBool CADGeom_UpdateFaceGrid(int vol, int faceId, int nnode,
+				double *xyz, double *t,
+				int nface, int *f2n)
+{
+  return FALSE;
+}
+
 CADCurvePtr CADGeom_EdgeGrid( int, int );
 
 void *DList_SetIteratorToHead(DListPtr dlp,Iterator *dli)
@@ -127,4 +134,14 @@ GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g)
 GridBool CADTopo_VolEdgePts(int vol, int *count)
 {
   return FALSE;
+}
+
+GridBool CADTopo_ShellStats(int vol, int *nc, int *tPts, int *tTri, int *maxFac)
+{
+  return FALSE;
+}
+
+UGridPtr CADTopo_AssembleTShell(int vol,int tPts, int tTri, int maxFace)
+{
+  return NULL;
 }

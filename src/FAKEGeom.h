@@ -66,6 +66,7 @@ CADCurvePtr CADGeom_EdgeGrid( int, int );
 #define CADCURVE_NUMPTS(edge) (-1)
 
 GridBool CADGeom_UpdateEdgeGrid(int, int, int, double *, double *);
+GridBool CADGeom_UpdateFaceGrid(int, int, int, double *, double *, int, int *);
 
 typedef struct _DList {
    magic_t    magic;
@@ -81,6 +82,7 @@ typedef struct _UGPatchPtr {
 void UGPatch_GetDims(UGPatchPtr upp, int *dims);
 int UGPatch_GlobalIndex(UGPatchPtr upp, int ndx);
 #define UGPatch_Parameter(upp,i,l) (DBL_MAX)
+#define UGPatch_Parent(upp) (NULL)
 
 GridBool UGPatch_InitSurfacePatches(UGridPtr ugp);
 
@@ -99,6 +101,8 @@ GridBool CADGeom_NormalToFace( int vol, int faceId,
 GridBool CADTopo_FaceNumEdgePts(int vol, int faceId, int *count);
 GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g);
 GridBool CADTopo_VolEdgePts(int vol, int *count);
+GridBool CADTopo_ShellStats(int vol, int *nc, int *tPts, int *tTri, int *maxF);
+UGridPtr CADTopo_AssembleTShell(int vol,int tPts, int tTri, int maxFace);
 
 #define GeoMesh_UseDefaultIOCallbacks (FALSE)
 

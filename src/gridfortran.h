@@ -17,7 +17,7 @@ BEGIN_C_DECLORATION
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z,
 		 int *ncell, int *maxcell, int *c2n );
-void gridfree_( );
+void gridfree_( void );
 void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
 			 int *nface, int *dim1, int *dim2, int *f2n );
 void gridsetmap_( int *nnode, double* map );
@@ -27,10 +27,10 @@ void gridsetnodepart_( int *nnode, int *part );
 void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
 void gridfreezenode_( int *node );
 void gridparallelloadcapri_( char *capriProject );
-void gridprojectallfaces_( );
+void gridprojectallfaces_( void );
 void gridminar_( double *aspectratio );
-void gridwritetecplotsurfacezone_( );
-void gridexportfast_( );
+void gridwritetecplotsurfacezone_( void );
+void gridexportfast_( void );
 
 void gridparallelswap_( int *processor, double *ARlimit );
 void gridparallelsmooth_( int *processor );
@@ -48,11 +48,11 @@ void gridrenumberglobalnodes_( int *nnode, int *new2old );
 void gridnunusednodeglobal_( int *nunused );
 void gridgetunusednodeglobal_( int *nunused, int *unused );
 void gridjoinunusednodeglobal_( int *nunused, int *unused );
-void grideliminateunusednodeglobal_( );
+void grideliminateunusednodeglobal_( void );
 void gridnunusedcellglobal_( int *nunused );
 void gridgetunusedcellglobal_( int *nunused, int *unused );
 void gridjoinunusedcellglobal_( int *nunused, int *unused );
-void grideliminateunusedcellglobal_( );
+void grideliminateunusedcellglobal_( void );
 
 void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
 		    int *ncell, int *ncellg );
@@ -79,12 +79,12 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
 
 void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux );
 
-void gridmovesetprojectiondisp_( );
-void gridmovesprrelaxstartup_( );
+void gridmovesetprojectiondisp_( void );
+void gridmovesprrelaxstartup_( void );
 void gridmovesprrelaxstartstep_( double *position); 
 void gridmovesprrelaxsubiter_( double *residual);
-void gridmovesprrelaxshutdown_( );
-void gridmoveapplydisplacements_( );
+void gridmovesprrelaxshutdown_( void );
+void gridmoveapplydisplacements_( void );
 
 void gridmovedataleadingdim_( int *ndim );
 void gridmoveloadlocalnodedata_( int *ndim, int *nnode, 
@@ -92,7 +92,7 @@ void gridmoveloadlocalnodedata_( int *ndim, int *nnode,
 void gridmovesetlocalnodedata_( int *ndim, int *nnode, 
 				int *nodes, double *data );
 
-void gridmovefree_( );
+void gridmovefree_( void );
 
 void gridgeomsize_( int *nGeomNode, int *nGeomEdge, int *nGeomFace );
 void gridlocalboundnode_( int *nBoundNode );
@@ -111,6 +111,8 @@ void gridfaceedgel2g_( int *faceId, int *faceEdgeCount, int *local2global );
 
 void gridupdategeometryface_( int *faceId, int *nnode, double *xyz, double *uv,
 			      int *nface, int *f2n );
+
+void gridcreateshellfromfaces_( void );
 
 END_C_DECLORATION
 

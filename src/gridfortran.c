@@ -44,7 +44,7 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 #endif
 }
 
-void gridfree_( )
+void gridfree_( void )
 {
   queueFree(queue); queue = NULL;
   gridFree(grid); grid = NULL;
@@ -132,7 +132,7 @@ void gridparallelsavecapri_( char *capriProject )
   gridParallelGeomSave( grid, capriProject );
 }
 
-void gridprojectallfaces_( )
+void gridprojectallfaces_( void )
 {
   int face, node, nodes[3], faceId;
   double ar0, ar1;
@@ -164,7 +164,7 @@ void gridminar_( double *aspectratio )
   *aspectratio = gridMinAR( grid );
 }
 
-void gridwritetecplotsurfacezone_( )
+void gridwritetecplotsurfacezone_( void )
 {
   char filename[256];
   double ar0, ar1;
@@ -180,7 +180,7 @@ void gridwritetecplotsurfacezone_( )
 #endif
 }
 
-void gridexportfast_( )
+void gridexportfast_( void )
 {
   char filename[256];
   sprintf(filename, "grid%03d.fgrid", gridPartId(grid)+1 );
@@ -607,13 +607,13 @@ void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux )
   gridCopyAboutY0(grid, *symmetryFaceId, *mirrorAux-1 );
 }
 
-void gridmovesetprojectiondisp_( )
+void gridmovesetprojectiondisp_( void )
 {
   gm = gridmoveCreate( grid );
   gridmoveProjectionDisplacements( gm );
 }
 
-void gridmovesprrelaxstartup_( )
+void gridmovesprrelaxstartup_( void )
 {
   gridmoveSpringRelaxationStartUp(gm);
 }
@@ -628,12 +628,12 @@ void gridmovesprrelaxsubiter_( double *residual)
   gridmoveSpringRelaxationSubIteration( gm, residual );
 }
 
-void gridmovesprrelaxshutdown_( )
+void gridmovesprrelaxshutdown_( void )
 {
   gridmoveSpringRelaxationShutDown(gm);
 }
 
-void gridmoveapplydisplacements_( )
+void gridmoveapplydisplacements_( void )
 {
   gridmoveApplyDisplacements(gm);
 }
@@ -655,7 +655,7 @@ void gridmovesetlocalnodedata_( int *ndim, int *nnode,
   gridmoveSetFortranNodeData( gm, *nnode, nodes, data);
 }
 
-void gridmovefree_( )
+void gridmovefree_( void )
 {
   gridmoveFree( gm ); gm = NULL;
 }
@@ -760,4 +760,9 @@ void gridupdategeometryface_( int *faceId, int *nnode, double *xyz, double *uv,
   gridUpdateGeometryFace( grid, *faceId, *nnode, xyz, uv,
 			  *nface, f2n );
   for( i=0 ; i<3*(*nface) ; i++) f2n[i]++; 
+}
+
+void gridcreateshellfromfaces_( void )
+{
+  gridCreateShellFromFaces( grid );
 }

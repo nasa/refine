@@ -195,44 +195,51 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
 			      int nface, int *f2n )
 {
   int vol=1;
-  UGridPtr ugrid;  
-  int iface, i;
-  double *xyzCopy;
+  int i;
+  double *xyzCopy, *uvCopy;
   int *f2nCopy;
   
   xyzCopy = malloc(3*nnode*sizeof(double));
   for(i=0;i<3*nnode;i++) xyzCopy[i] = xyz[i];
 
+  uvCopy = malloc(2*nnode*sizeof(double));
+  for(i=0;i<2*nnode;i++) uvCopy[i] = uv[i];
+
   f2nCopy = malloc(3*nface*sizeof(int));
   for(i=0;i<3*nface;i++) f2nCopy[i] = f2n[i];
 
-  if ( !UGrid_FromArrays( &ugrid, nnode, xyzCopy, nface, f2nCopy, 0, NULL  )) {
-    printf("%s: %d: Could not make UGrid_FromArrays.\n", __FILE__, __LINE__);
-    free(xyzCopy);
-    free(f2nCopy);
+  if ( !CADGeom_UpdateFaceGrid( vol, faceId, nnode, xyzCopy, uvCopy, 
+				nface, f2nCopy )) {
+    printf("%s: %d: CADGeom_UpdateFaceGrid Failed.\n", __FILE__, __LINE__);
     return NULL;
   }
 
-  for (iface = 0 ; iface < nface ; iface++ ) {
-    UGrid_FlagValue(ugrid,iface) = faceId;
-  }
+  UGrid_TIMESTAMP(UGPatch_Parent(CADGeom_FaceGrid(vol,faceId))) = time( NULL );
+  UGrid_ALGORITHM(UGPatch_Parent(CADGeom_FaceGrid(vol,faceId))) = UG_REFINE;
 
-  if( !UGPatch_InitSurfacePatches(ugrid) ) {
-    printf("%s: %d: Could not make surface patches for new UGridPtr.\n",
-	   __FILE__, __LINE__);    
+  return grid;
+}
+
+Grid *gridCreateShellFromFaces( Grid *grid )
+{
+  int vol=1;
+  int nc;               /* Total Edge points (Not used here) */
+  int tPts;             /* Total UNIQUE Points in Volume Shell */
+  int tTri;             /* Total Triangles in Volume Shell */
+  int maxFace=0;        /* Number of Pts of largest Face */
+  UGridPtr ugp;
+
+  if( !CADTopo_ShellStats(vol,&nc,&tPts,&tTri,&maxFace) ) {
+    printf("%s: %d: Could NOT total Shell Statistics\n",__FILE__,__LINE__);
     return NULL;
   }
 
-  printf("WARNING %s: %d: set patch UV param's.\n", __FILE__, __LINE__);
-
-  UGrid_TIMESTAMP(ugrid) = time( NULL );	/* Updated time */
-  UGrid_ALGORITHM(ugrid) = UG_UNKNOWN;
-
-  if( !CADGeom_SetFaceGrid(vol,faceId,ugrid) ) {
-    printf("%s: %d: Could not set CAPRI face UGridPtr.\n",
-	   __FILE__, __LINE__);    
-    return NULL;
+  if( (ugp=CADTopo_AssembleTShell(vol,tPts,tTri,maxFace)) == NULL ) {
+    printf("%s: %d: Failed to create Shell from faces\n",__FILE__,__LINE__);
   }
+
+  UGrid_TIMESTAMP(ugp) = time( NULL );
+  UGrid_ALGORITHM(ugp) = UG_REFINE;
 
   return grid;
 }

@@ -1,3 +1,11 @@
+2004-07-01 10:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridCreateShellFromFaces) added to call 
+	CADTopo_AssembleTShell to create shell of volume ugrid.
+	* src/gridfortran.c (gridcreateshellfromfaces_) gridCreateShellFromFaces
+	* src/FAKEGeomExtras.c added mock CADGeom_UpdateFaceGrid 
+	UGPatch_Parent CADTopo_ShellStats CADTopo_AssembleTShell.
+
 2004-06-30 11:23 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridgeom.c (gridParallelGeomLoad) called MeshMgr_Initialize.

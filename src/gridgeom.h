@@ -30,6 +30,8 @@ Grid *gridUpdateGeometryFace( Grid *, int faceId,
 			      int nnode, double *xyz, double *uv, 
 			      int nface, int *f2n );
 
+Grid *gridCreateShellFromFaces( Grid * );
+
 END_C_DECLORATION
 
 #endif /* GRIDGEOM_H */
