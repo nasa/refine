@@ -52,8 +52,8 @@ The simplest way to compile this package is:
 
   2. Type `make' to compile the package.
 
-  3. Optionally, type `make check' to run any self-tests that come with
-     the package.
+  3. Optionally, type `make check' (requires ruby <http:www.ruby-lang.org>) 
+     to run self-tests that come with the package.
 
   4. Type `make install' to install the programs and any data files and
      documentation.
