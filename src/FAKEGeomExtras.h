@@ -15,6 +15,12 @@
 
 BEGIN_C_DECLORATION
 
+char *ErrMgr_GetErrStr(void);
+
+GridBool CADGeom_Start( void );
+GridBool GeoMesh_LoadPart( char *project );
+GridBool CADGeom_GetVolume(int, int *, int *, int *, int *);
+
 GridBool CADGeom_NormalToFace( int vol, int faceId, 
 			       double *uv, double *xyz, double *normal);
 

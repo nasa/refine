@@ -120,6 +120,7 @@ void gridfreezenode_( int *node )
 
 void gridparallelloadcapri_( char *capriProject )
 {
+  gridParallelGeomLoad( grid, capriProject );
 }
 
 void gridprojectallfaces_( )

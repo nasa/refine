@@ -26,6 +26,7 @@ librefine_a_SOURCES = \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
+	gridgeom.h gridgeom.c \
 	gridmpi.h gridmpi.c \
 	gridfortran.h gridfortran.c
 
