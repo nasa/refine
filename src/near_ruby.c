@@ -66,6 +66,12 @@ VALUE near_rightRadius( VALUE self )
   return rb_float_new(nearRightRadius(near));
 }
 
+VALUE near_visualize( VALUE self )
+{
+  GET_NEAR_FROM_SELF;
+  return (near==nearVisualize(near)?self:Qnil);
+}
+
 VALUE near_collisions( VALUE self, VALUE rb_target )
 {
   Near *tree, *target;
@@ -138,6 +144,7 @@ void Init_Near()
   rb_define_method( cNear, "insert", near_insert, 1 );
   rb_define_method( cNear, "leftRadius", near_leftRadius, 0 );
   rb_define_method( cNear, "rightRadius", near_rightRadius, 0 );
+  rb_define_method( cNear, "visualize", near_visualize, 0 );
   rb_define_method( cNear, "collisions", near_collisions, 1 );
   rb_define_method( cNear, "touched", near_touched, 1 );
   rb_define_method( cNear, "nearestIndex", near_nearestIndex, 1 );
