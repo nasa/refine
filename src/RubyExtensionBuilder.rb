@@ -16,7 +16,7 @@ class RubyExtensionBuilder
   extraFiles['GridSwap'] = 'adj.h line.h grid.h gridmath.h gridmetric.h'
   extraFiles['GridCAD'] = 'FAKEGeom adj.h line.h grid.h gridmath.h gridmetric.h gridinsert.h'
   extraFiles['GridInsert'] = 'adj.h line.h grid.h gridmath.h gridmetric.h gridcad.h'
-  extraFiles['GridMPI'] = 'adj.h line.h grid.h'
+  extraFiles['GridMPI'] = 'adj.h line.h queue.h grid.h gridinsert.h'
   extraFiles['Layer'] = 'layerStruct.h adj.h line.h grid.h gridmath.h near.h intersect.h gridmetric.h gridcad.h gridinsert.h'
 
   systemCall = ['ruby makeRubyExtension.rb',extension,extraFiles[extension],'master_header.h'].join(' ')
@@ -30,7 +30,7 @@ class RubyExtensionBuilder
   requiredPackages['GridSwap'] = %w{ Adj Line Grid GridMetric }
   requiredPackages['GridCAD'] = %w{ Adj Line Grid GridMetric }
   requiredPackages['GridInsert'] = %w{ Adj Line Grid GridMetric GridSwap GridCAD }
-  requiredPackages['GridMPI'] = %w{ Adj Line Grid }
+  requiredPackages['GridMPI'] = %w{ Adj Line Queue Grid GridMetric GridInsert }
   requiredPackages['Layer'] = %w{ Adj Near Intersect Line Grid GridMetric GridCAD GridInsert }
 
   requiredPackages[@extension].each { |extension| buildOnly extension }

@@ -13,6 +13,7 @@
 #ifndef GRIDMPI_H
 
 #include "master_header.h"
+#include "queue.h"
 #include "grid.h"
 
 BEGIN_C_DECLORATION
@@ -20,7 +21,7 @@ BEGIN_C_DECLORATION
 Grid *gridIdentityGlobal(Grid *g );
 Grid *gridSetAllLocal(Grid *g );
 Grid *gridSetGhost(Grid *g, int node );
-Grid *gridParallelEdgeSplit(Grid *g, int node1, int node2 );
+Grid *gridParallelEdgeSplit(Grid *g, Queue *q, int node1, int node2 );
 
 END_C_DECLORATION
 

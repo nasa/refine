@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "gridinsert.h"
 #include "gridmpi.h"
 
 Grid *gridIdentityGlobal(Grid *grid )
@@ -35,9 +36,13 @@ Grid *gridSetGhost(Grid *grid, int node )
   return gridSetNodePart(grid,node,EMPTY);
 }
 
-Grid *gridParallelEdgeSplit(Grid *grid, int node1, int node2 )
+Grid *gridParallelEdgeSplit(Grid *grid, Queue *queue, int node1, int node2 )
 {
+  int newnode;
   if ( gridNodeGhost(grid,node1) && gridNodeGhost(grid,node2) ) return NULL;
-       
+  queueNewTransaction(queue);
+  newnode = gridSplitEdge(grid,node1, node2);
+  if (EMPTY == newnode) return NULL;
+  gridSetNodePart(grid,newnode,gridPartId(grid));
   return grid;
 }

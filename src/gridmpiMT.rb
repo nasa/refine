@@ -11,10 +11,15 @@ RubyExtensionBuilder.new('GridMPI').build
 require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
+require 'Queue/Queue'
 require 'Grid/Grid'
+require 'GridMetric/GridMetric'
+require 'GridInsert/GridInsert'
 require 'GridMPI/GridMPI'
 
 class Grid
+ include GridMetric
+ include GridInsert
  include GridMPI
 end
 
@@ -60,14 +65,22 @@ class TestGridMPI < Test::Unit::TestCase
  end
 
  def testSplitEdgeAcrossProc
-  p1 = rightTet.setPartId(1).setAllLocal
-  p2 = rightTet.setPartId(2).setAllLocal
+  q = Queue.new
+  p1 = rightTet.setPartId(1).setAllLocal.identityGlobal
+  p2 = rightTet.setPartId(2).setAllLocal.identityGlobal
   p2.setGhost(0)
   p2.setGhost(1)
   p2.setGhost(2)
   p1.setGhost(3)
-  assert_nil p2.parallelEdgeSplit(0,1)
-  assert_equal p1, p1.parallelEdgeSplit(0,3)
+
+  assert_nil p2.parallelEdgeSplit(q,0,1)
+  assert_equal 1, p1.ncell
+  assert_equal 1, q.transactions
+
+  assert_equal p1, p1.parallelEdgeSplit(q,0,3), "no gem for one cell!!"
+  assert_equal 2, p1.ncell
+  assert_equal p1.partId, p1.nodePart(4)
+  assert_equal 2, q.transactions
  end
 
 end
