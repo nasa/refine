@@ -22,10 +22,15 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
   int vol=1;
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
   UGridPtr ugrid;
-  UGPatchPtr  localPatch, globalPatch;
-  Iterator patchIterator;
+  int i, iedge, inode;
+  int nedgenode;
+  double trange[2];
+  int edgeEndPoint[2];
+  CADCurvePtr edge;
   int face, localNode, globalNode, partitionNode;
   int patchDimensions[3];
+  UGPatchPtr  localPatch, globalPatch;
+  Iterator patchIterator;
 
 
   if ( ! CADGeom_Start( ) ){
@@ -44,6 +49,45 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
 
   printf("Geometry: %d nodes %d edges %d faces %d boundaries\n",
 	 nGeomNode,nGeomEdge,nGeomFace,nGeomGroups);
+
+  gridSetNGeomNode( grid, nGeomNode );
+  gridSetNGeomEdge( grid, nGeomEdge );
+  gridSetNGeomFace( grid, nGeomFace );
+
+  printf("ADD ME grid geom node mask. ADD ME\nADD ME mark the geom nodes. ADD ME\n");
+
+  inode = nGeomNode;
+
+  for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
+    if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) 
+      printf("ERROR: CADGeom_EdgeGrid(%d).\n%s\n",iedge,ErrMgr_GetErrStr());
+ 
+    nedgenode = CADCURVE_NUMPTS(edge);
+
+    CADGeom_GetEdge( vol, iedge, trange, edgeEndPoint );
+
+    edgeEndPoint[0]--; /* convert from fortran to c numbers */
+    edgeEndPoint[1]--;
+
+    gridAddGeomEdge( grid, iedge, edgeEndPoint[0], edgeEndPoint[1]);
+
+    if (nedgenode == 2) {
+      gridAddEdgeInGlobal(grid, edgeEndPoint[0], edgeEndPoint[1], 
+			  iedge, trange[0], trange[1]);
+    }else{
+      gridAddEdgeInGlobal(grid, edgeEndPoint[0], inode, iedge,
+			  edge->param[0], edge->param[1]);
+      for( i=1 ; i < (nedgenode-2) ; i++ ) { // skip end segments  
+	gridAddEdgeInGlobal(grid, inode, inode+1, iedge,
+			    edge->param[i], edge->param[i+1]);
+	inode++;
+      }
+      gridAddEdgeInGlobal(grid, inode, edgeEndPoint[1], iedge,
+			  edge->param[nedgenode-2], 
+			  edge->param[nedgenode-1]);
+      inode++;
+    }
+  }
 
   /* get uv vals for surface(s) */
   /* we use globalPatch to track with the localPatch so that we can get global
