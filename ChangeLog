@@ -1,3 +1,9 @@
+2004-10-01 09:07 Mike Park  <mike.park@nasa.gov>
+
+	* test/cyl.* Added a unit cylander test case with 5 unit outer
+	boundary. Created Plot3D surfaces with cyl.m, patched up with
+	GridTool (cyl.rst), and dumped Native cyl.dat
+
 2004-09-29 23:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridConn2Node) Added. returns the nodes at each end
