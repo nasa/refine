@@ -16,14 +16,14 @@ interacts with the SDK to rebuild the inviscid protions of the grid.
 
 See the INSTALL file for build instructions.
 
+Contact Mike Park <Mike.Park@NASA.Gov> (757) 864-6604 or anyone listed
+in the AUTHORS file for help or more information.
+
 To gain cvs access, you will need a NASA Langley CFDLAB account. Then
 run:
 
 % setenv CVS_RSH ssh  # for csh
 % export=CVS_RSH ssh  # for sh
 
-% cvs -d :ext:cmb20.larc.nasa.gov:/ump/fldmd/home/mikepark/cvsroot co -P refine
-
-Contact Mike Park <Mike.Park@NASA.Gov> (757) 864-6604 or anyone listed
-in the AUTHORS file for help or more information.
+% cvs -d :ext:cfdlab.larc.nasa.gov:/ump/fldmd/home/mikepark/cvsroot co -P refine
 
