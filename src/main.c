@@ -20,6 +20,12 @@
 Grid *gridLoadPart( char *project, int maxnode );
 int gridSavePart( Grid *grid, char *project );
 
+#define PRINT_STATUS printf("minimum Aspect Ratio %10.8f Mean Ratio %10.8f Volume %12.8e\n", gridMinAR(grid),gridMinFaceMR(grid), gridMinVolume(grid));
+
+#define DUMP_TEC iview++;printf("Frame %d\n",iview);gridWriteTecplotSurfaceZone(grid);
+
+#define STATUS DUMP_TEC PRINT_STATUS
+
 int main( int argc, char *argv[] )
 {
   Grid *grid;
@@ -28,8 +34,9 @@ int main( int argc, char *argv[] )
   int i, j, oldSize, newSize;
   double ratio;
   bool projected;
+  int iview = 0;
 
-  project = "../test/om6_out";
+  project = "../test/om6";
   printf("running project %s\n",project);
 
   grid = gridLoadPart( project, 500000 );
@@ -39,36 +46,23 @@ int main( int argc, char *argv[] )
 
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-  printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	 gridMinAR(grid),gridMinVolume(grid));
+  STATUS;  
 
   printf("reading adapt parameter...\n");
   gridImportAdapt(grid, "../test/adapt_hess");
-  printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	 gridMinAR(grid),gridMinVolume(grid));
+  STATUS;
 
   for (i=0;i<3;i++){
     projected = ( grid == gridRobustProject(grid));
     if (projected) {
       printf("edge swapping grid...\n");gridSwap(grid);
+      STATUS;
       printf("node smoothing grid...\n");gridSmooth(grid);
-      printf("smoothing for face MR grid...\n"); 
-      printf("initial MR %f",gridMinFaceMR(grid));
-      gridSmoothFaceMR(grid,0.9);
-      printf(" final MR %f\n",gridMinFaceMR(grid));
-      printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	     gridMinAR(grid),gridMinVolume(grid));
-      for (j=0;j<2;j++){
-	printf("edge swapping grid...\n");gridSwap(grid);
-	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);    
-	printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	       gridMinAR(grid),gridMinVolume(grid));
-      }
+      STATUS;
     }else{
       printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
+      STATUS;
     }
-    printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	   gridMinAR(grid),gridMinVolume(grid));
   }
 
   ratio = 0.3;
@@ -88,35 +82,21 @@ int main( int argc, char *argv[] )
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
-    printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	   gridMinAR(grid),gridMinVolume(grid));
+    STATUS;
         
     for (i=0;i<2;i++){
       projected = ( grid == gridRobustProject(grid));
       if (projected) {
 	printf("edge swapping grid...\n");gridSwap(grid);
+	STATUS;
 	printf("node smoothing grid...\n");gridSmooth(grid);
+	STATUS;
 	if (((double)ABS(newSize-oldSize)/(double)oldSize)<0.3)
 	  ratio = ratio + 0.025;
       }else{
 	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
+	STATUS;
 	ratio = ratio - 0.05;
-      }
-      printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	     gridMinAR(grid),gridMinVolume(grid));
-    }
-    if (projected) {
-      printf("smoothing for face MR grid...\n"); 
-      printf("initial MR %f",gridMinFaceMR(grid));
-      gridSmoothFaceMR(grid,0.9);
-      printf(" final MR %f\n",gridMinFaceMR(grid));
-      printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	     gridMinAR(grid),gridMinVolume(grid));
-      for (i=0;i<2;i++){
-	printf("edge swapping grid...\n");gridSwap(grid);
-	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);    
-	printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	       gridMinAR(grid),gridMinVolume(grid));
       }
     }
   }
@@ -124,12 +104,12 @@ int main( int argc, char *argv[] )
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
 
-  output = "../test/om6_out2";
+  output = "../test/om6_out";
   printf("writing output project %s\n",output);
 
   gridSavePart( grid, output );
 
-  output = "../test/om6_out2.fgrid";
+  output = "../test/om6_out.fgrid";
   printf("writing output FAST file %s\n",output);
   gridExportFAST( grid, output );
 
