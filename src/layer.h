@@ -87,6 +87,8 @@ Layer *layerVisibleNormals(Layer *, double dotLimit, double radianLimit );
 Layer *layerSmoothNormalDirection(Layer *);
 Layer *layerProjectNormalsToConstraints(Layer *);
 
+Layer *layerAdjustNormalHeightToSmoothFront(Layer *, double maxHeight);
+
 Layer *layerConstrainNormal(Layer *, int edgeface );
 bool layerConstrainingGeometry(Layer *, int edgeface );
 int layerConstrained(Layer *, int normal );

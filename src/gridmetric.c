@@ -27,6 +27,17 @@ void gridCrossProduct(double *edge1, double *edge2, double *norm)
   norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
 }
 
+void gridVectorNormalize(double *norm)
+{
+  double length;
+  length = gridDotProduct(norm,norm);
+  if (length > 0 ) {
+    norm[0] /= length;
+    norm[1] /= length;
+    norm[2] /= length;
+  }
+}
+
 Grid *gridSetMapMatrixToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
 {
   int i;

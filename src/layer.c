@@ -1190,6 +1190,48 @@ Layer *layerProjectNormalsToConstraints(Layer *layer)
   return layer;
 }
 
+Layer *layerAdjustNormalHeightToSmoothFront(Layer *layer, double maxHeight)
+{
+  int normal, node, nodes[3];
+  double direction[3], xyz0[3], xyz1[3], tangent[3];
+  double dn, height;
+  AdjIterator it;
+  int triangle;
+  int i,n;
+  Grid *grid;
+
+  grid = layerGrid(layer);
+
+  for ( normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
+    layerNormalDirection(layer, normal, direction);
+    node = layerNormalRoot(layer,normal);
+    gridNodeXYZ(grid,node,xyz0);
+    dn = 0;
+    n = 0;
+    for ( it = adjFirst(layer->adj,normal); 
+	  adjValid(it); 
+	  it = adjNext(it) ){
+      triangle = adjItem(it);
+      layerTriangle(layer, triangle, nodes);
+      for(i=0;i<2;i++){
+	if(node != nodes[i]){
+	  n++;
+	  gridNodeXYZ(grid,nodes[i],xyz1);
+	  gridSubtractVector(xyz1,xyz0,tangent);
+	  gridVectorNormalize(tangent);
+	  dn += gridDotProduct(direction, tangent);
+	}
+      }
+    }
+    dn /= (double)n;
+    layerGetNormalHeight(layer, normal, &height);
+    height += dn*maxHeight*height;
+    layerSetNormalHeight(layer, normal, height);
+  }
+
+  return layer;
+}
+
 Layer *layerConstrainNormal(Layer *layer, int edgeface )
 {
   int edgeId, faceId, face, nodes[3], id, i, normal;
