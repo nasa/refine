@@ -494,3 +494,8 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   return nodeId;
 }
 
+double gridVolume(Grid *grid, int cellId )
+{
+  return -1.0;
+}
+
