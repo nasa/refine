@@ -194,7 +194,7 @@ morph the current grid into a grid that satisfies the mapped metric.
 @item node smoothing to improve cell aspect ratio
 @end enumerate
 
-Node optimization can be done with ``smart Lapacian'', line searches
+Node optimization can be done with ``smart Laplacian'', line searches
 in steepest descent direction, linear quadratic programming with
 conjugate gradient direction, or simplex searches.
 
