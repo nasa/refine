@@ -128,10 +128,27 @@ int nearCollisions(Near *near, Near *target)
 
   if (NULL==near || NULL == target) return 0;
 
+  collisions += nearCollisions(near->rightChild,target);
+  collisions += nearCollisions(near->leftChild,target);
+
   if (nearClearance(near,target) <= 0) collisions++;
 
-  collisions+= nearCollisions(near->rightChild,target);
-  collisions+= nearCollisions(near->leftChild,target);
-
   return collisions;
+}
+
+Near *nearTouched(Near *near, Near *target, int *found, int maxfound, int *list)
+{
+
+  if (NULL==near || NULL == target) return 0;
+
+  nearTouched(near->rightChild, target, found, maxfound, list);
+  nearTouched(near->leftChild,  target, found, maxfound, list);
+
+  if (nearClearance(near,target) <= 0) {
+    if (*found >= maxfound) return NULL;
+    list[*found] = near->index;
+    (*found)++;
+  }
+
+  return near;
 }

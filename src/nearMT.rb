@@ -137,14 +137,19 @@ class TestNear < Test::Unit::TestCase
   assert_equal near, near.insert(child7)
   target = Near.new(8,10,0,0,0)
   assert_equal 0, near.collisions(target)
+  assert_equal [], near.touched(target)
   target = Near.new(8,10,0,0,2)
   assert_equal 1, near.collisions(target)
+  assert_equal [7], near.touched(target)
   target = Near.new(8,10,0,0,5)
   assert_equal 2, near.collisions(target)
+  assert_equal [7,6], near.touched(target)
   target = Near.new(8,10,0,0,10)
   assert_equal 3, near.collisions(target)
+  assert_equal [7,6,5], near.touched(target)
   target = Near.new(8,5,0,0,1)
   assert_equal 1, near.collisions(target)
+  assert_equal [6], near.touched(target)
  end
 
 end

@@ -32,6 +32,7 @@ double nearRightDistance( Near *near );
 double nearLeftDistance( Near *near );
 
 int nearCollisions(Near *near, Near *target);
+Near *nearTouched(Near *near, Near *target, int *found, int maxfound, int *list);
 
 END_C_DECLORATION
 

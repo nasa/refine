@@ -81,6 +81,28 @@ VALUE near_collisions( VALUE self, VALUE rb_target )
   return INT2NUM(nearCollisions(tree,target));
 }
 
+VALUE near_touched( VALUE self, VALUE rb_target )
+{
+  Near *tree, *target;
+  int i, collisions, found, maxfound, *list;
+  VALUE array;
+  Data_Get_Struct( self,      Near, tree );
+  Data_Get_Struct( rb_target, Near, target );
+
+  collisions = nearCollisions(tree,target);
+  list = malloc(MAX(1,collisions)*sizeof(int));
+
+  maxfound = collisions;
+  found = 0;
+  nearTouched(tree,target,&found,maxfound,list);
+
+  array = rb_ary_new2(collisions);
+  for(i=0;i<collisions;i++) rb_ary_store(array, i, INT2NUM(list[i]));
+
+  free(list);
+  return array;
+}
+
 VALUE cNear;
 
 void Init_Near() 
@@ -96,4 +118,5 @@ void Init_Near()
   rb_define_method( cNear, "rightDistance", near_rightDistance, 0 );
   rb_define_method( cNear, "leftDistance", near_leftDistance, 0 );
   rb_define_method( cNear, "collisions", near_collisions, 1 );
+  rb_define_method( cNear, "touched", near_touched, 1 );
 }
