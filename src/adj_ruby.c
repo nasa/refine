@@ -26,10 +26,14 @@ VALUE adj_nnode( VALUE self )
 
 VALUE adj_register( VALUE self, VALUE node, VALUE item )
 {
-  Adj *returned;
   GET_ADJ_FROM_SELF;
-  returned = adjRegister( adj, NUM2INT(node), NUM2INT(item) );
-  return (returned==NULL?Qnil:self);
+  return (adjRegister( adj, NUM2INT(node), NUM2INT(item) )==NULL?Qnil:self);
+}
+
+VALUE adj_remove( VALUE self, VALUE node, VALUE item )
+{
+  GET_ADJ_FROM_SELF;
+  return ( adjRemove( adj, NUM2INT(node), NUM2INT(item) )==NULL?Qnil:self );
 }
 
 VALUE adj_valid( VALUE self )
@@ -64,15 +68,23 @@ VALUE adj_next( VALUE self )
   return self;
 }
 
+VALUE adj_exists( VALUE self, VALUE node, VALUE item )
+{
+  GET_ADJ_FROM_SELF;
+  return( adjExists( adj, NUM2INT(node), NUM2INT(item) )?Qtrue:Qfalse );
+}
+
 void Init_Adj() 
 {
   cAdj = rb_define_class( "Adj", rb_cObject );
   rb_define_singleton_method( cAdj, "new", adj_new, 2 );
   rb_define_method( cAdj, "nnode", adj_nnode, 0 );
   rb_define_method( cAdj, "register", adj_register, 2 );
+  rb_define_method( cAdj, "remove", adj_remove, 2 );
   rb_define_method( cAdj, "valid", adj_valid, 0 );
   rb_define_method( cAdj, "more", adj_more, 0 );
   rb_define_method( cAdj, "first", adj_first, 1 );
   rb_define_method( cAdj, "current", adj_current, 0);
   rb_define_method( cAdj, "next", adj_next, 0);
+  rb_define_method( cAdj, "exists", adj_exists, 2 );
 }
