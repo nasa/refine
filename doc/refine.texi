@@ -190,7 +190,13 @@ Existing transactions can be queried with the
 @code{queueRemovedCells}, @code{queueAddedCells},
 @code{queueRemovedFaces}, @code{queueAddedFaces},
 @code{queueRemovedEdges}, @code{queueAddedEdges} method to obtain
-counts of the element changes.
+counts of the element changes. Running totals of cells, faces, and
+edges are used the acesses the actual data in the rest of the
+@code{queueRemoved*} and @code{queueAdded*} routines.
+
+All the internal data stturctures of a queue can be dumped to a single
+array of @code{int}s and a single array of @code{double}s.
+
 
 @section Sort
 @cindex sort
