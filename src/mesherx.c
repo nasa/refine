@@ -83,6 +83,7 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
 
 Layer *layerRebuildFaces(Layer *layer, int vol){
 
+  int maxnode, nnode;
   int edgeId;
   int faceId;
   double uv[4];
@@ -100,10 +101,20 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   int ncurve, *curve;
   int i;
   int n0,n1;
-    
+  int *l2g, *g2l;
+  int node;
+  double *shellxyz, *shelluv;
+  int nfacenode, nfacetri, *newface;
+  double *newxyz, *newuv;
+  
 
   Grid *grid;
   grid = layerGrid(layer);
+
+  maxnode = gridMaxNode(grid);
+
+  l2g = malloc(maxnode*sizeof(int));
+  g2l = malloc(maxnode*sizeof(int));
 
   for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
     if (layerConstrainingGeometry(layer,faceId)) {
@@ -194,9 +205,46 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       }
       for(i=0;i<nshell;i++) 
 	printf("shell %4d: %8d <-> %8d\n",i,shell[0+2*i],shell[1+2*i]);
+
+      for(i=0;i<maxnode;i++) l2g[i]=EMPTY;
+      for(i=0;i<maxnode;i++) g2l[i]=EMPTY;
+      nnode = 0;
+      for(i=0;i<nshell;i++){
+	if (EMPTY == g2l[shell[0+2*i]] ) { 
+	  g2l[shell[0+2*i]] = nnode; 
+	  nnode++;
+	}
+	if (EMPTY == g2l[shell[1+2*i]] ) { 
+	  g2l[shell[1+2*i]] = nnode; 
+	  nnode++;
+	}
+	shell[0+2*i] = g2l[shell[0+2*i]];
+	shell[1+2*i] = g2l[shell[1+2*i]];
+      }
+      printf("the shell has %8d nodes.\n",nnode);
+      for(i=0;i<maxnode;i++)if (EMPTY != g2l[i]) l2g[g2l[i]]=i;
+      shellxyz = malloc(3*nnode*sizeof(int));
+      shelluv  = malloc(2*nnode*sizeof(int));
+      for(i=0;i<nnode;i++) gridNodeXYZ(grid,l2g[i],&shellxyz[3*i]);
+      for(i=0;i<nnode;i++) gridNodeUV(grid,l2g[i],faceId, &shelluv[2*i]);
+
+      if( !MeshMgr_MeshTriFace(vol, faceId, 
+			       nnode, shellxyz, shelluv,
+			       nshell, shell,
+			       0, NULL,
+			       &nfacenode, &nfacetri, 
+			       &newface, &newxyz, &newuv, 
+			       TRUE) ) {
+	printf("Could NOT mesh Face %d\n",faceId);
+	return NULL;
+      }
+
       free(shell);
     }
   }
+
+  free(g2l);
+  free(l2g);
 
   return layer;
 }
