@@ -45,7 +45,7 @@ GridMove *gridmoveCreate( Grid *grid )
   gm->compRow = NULL;
   gm->a = NULL;
   gm->lu = NULL;
-  gm->dxyz = NULL;
+  gm->lastxyz = NULL;
 
   return gm;
 }
@@ -73,7 +73,7 @@ GridMove *gridmoveFreeRelaxation(GridMove *gm)
   if (NULL != gm->compRow)  { free(gm->compRow);  gm->compRow  = NULL; w=TRUE; }
   if (NULL != gm->a)        { free(gm->a);        gm->a        = NULL; w=TRUE; }
   if (NULL != gm->lu)       { free(gm->lu);       gm->lu       = NULL; w=TRUE; }
-  if (NULL != gm->dxyz)     { free(gm->dxyz);     gm->dxyz     = NULL; w=TRUE; }
+  if (NULL != gm->lastxyz)  { free(gm->lastxyz);  gm->lastxyz  = NULL; w=TRUE; }
 
   if (w) {
     printf("ERROR: A grid resize or renumber has called in the middle of a \n");
@@ -87,7 +87,7 @@ GridMove *gridmoveFreeRelaxation(GridMove *gm)
 
 void gridmoveFree(GridMove *gm)
 {
-  if (NULL != gm->dxyz) free(gm->dxyz);
+  if (NULL != gm->lastxyz) free(gm->lastxyz);
   if (NULL != gm->lu) free(gm->lu);
   if (NULL != gm->a) free(gm->a);
   if (NULL != gm->compRow) free(gm->compRow);
@@ -723,13 +723,13 @@ GridMove *gridmoveElasticRelaxationStartUp(GridMove *gm)
   gm->lu = malloc(9*gridMaxNode(grid)*sizeof(double));
 
   gm->xyz = malloc(3*gridMaxNode(grid)*sizeof(double));
-  gm->dxyz = malloc(3*gridMaxNode(grid)*sizeof(double));
+  gm->lastxyz = malloc(3*gridMaxNode(grid)*sizeof(double));
  
   for(node=0;node<gridMaxNode(grid);node++)
     gridNodeXYZ(grid,node,&(gm->xyz[3*node]));
 
   for(node=0;node<3*gridMaxNode(grid);node++)
-    gm->dxyz[node] = 0.0;
+    gm->lastxyz[node] = 0.0;
 
   return gm;
 }
@@ -770,10 +770,10 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
   for(i=0;i<9*gridmoveNNZ(gm);i++) gm->a[i]=0.0;
 
   for(node=0;node<3*gridMaxNode(grid);node++)
-    gm->xyz[node] += gm->dxyz[node];
+    gm->xyz[node] += gm->lastxyz[node];
 
   for(node=0;node<3*gridMaxNode(grid);node++)
-    gm->dxyz[node] = 0.0;
+    gm->lastxyz[node] = 0.0;
 
   for(cell=0;cell<gridMaxCell(grid);cell++){
     if (grid==gridCell(grid,cell,nodes)) {
@@ -1067,7 +1067,7 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
 	 gridmoveSpecified(gm,node) && 
 	 gridNodeLocal(grid,node) ) {
       for(i=0;i<3;i++)
-	gm->dxyz[i+3*node] = position*gm->displacement[i+3*node];
+	gm->lastxyz[i+3*node] = position*gm->displacement[i+3*node];
     }
   }
 
@@ -1114,9 +1114,9 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
 	if (row != col) {
 	  for(i=0;i<3;i++) {
 	    b[i+3*row] -= 
-	      (   gm->a[i+0*3+9*entry]*gm->dxyz[0+3*col]
-		+ gm->a[i+1*3+9*entry]*gm->dxyz[1+3*col]
-		+ gm->a[i+2*3+9*entry]*gm->dxyz[2+3*col] ) ;
+	      (   gm->a[i+0*3+9*entry]*gm->lastxyz[0+3*col]
+		+ gm->a[i+1*3+9*entry]*gm->lastxyz[1+3*col]
+		+ gm->a[i+2*3+9*entry]*gm->lastxyz[2+3*col] ) ;
 	  }
 	}
       }
@@ -1138,9 +1138,9 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
 	 gridNodeLocal(grid,row) ) {
       for(i=0;i<3;i++) 
 	residual 
-	  += ( (gm->dxyz[i+3*row] - b[i+3*row])
-	  *    (gm->dxyz[i+3*row] - b[i+3*row]) );
-      for(i=0;i<3;i++) gm->dxyz[i+3*row] = b[i+3*row];
+	  += ( (gm->lastxyz[i+3*row] - b[i+3*row])
+	  *    (gm->lastxyz[i+3*row] - b[i+3*row]) );
+      for(i=0;i<3;i++) gm->lastxyz[i+3*row] = b[i+3*row];
     }
   }
 
@@ -1157,7 +1157,7 @@ GridMove *gridmoveElasticRelaxationShutDown(GridMove *gm)
   double xyz0[3];
 
   for(node=0;node<3*gridMaxNode(grid);node++)
-    gm->xyz[node] += gm->dxyz[node];
+    gm->xyz[node] += gm->lastxyz[node];
 
   for(node=0;node<gridMaxNode(grid);node++) {
     if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node)) {
@@ -1171,7 +1171,7 @@ GridMove *gridmoveElasticRelaxationShutDown(GridMove *gm)
 
   free(gm->a);        gm->a=NULL;
   free(gm->xyz);      gm->xyz=NULL;
-  free(gm->dxyz);     gm->dxyz=NULL;
+  free(gm->lastxyz);     gm->lastxyz=NULL;
 
   return gm;
 }
