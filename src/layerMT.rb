@@ -1441,41 +1441,17 @@ class TestLayer < Test::Unit::TestCase
  def testCollideNormalFarApart
   grid  = facingGrid(5)
   layer = Layer.new(grid).populateAdvancingFront([1])
-  assert !layer.normalTerminated(0)
-  assert !layer.normalTerminated(1)
-  assert !layer.normalTerminated(2)
-  assert !layer.normalTerminated(3)
-  assert !layer.normalTerminated(4)
-  assert !layer.normalTerminated(5)
-
+  assert_equal 6, layer.nActiveNormal
   layer.terminateCollidingNormals
-
-  assert !layer.normalTerminated(0)
-  assert !layer.normalTerminated(1)
-  assert !layer.normalTerminated(2)
-  assert !layer.normalTerminated(3)
-  assert !layer.normalTerminated(4)
-  assert !layer.normalTerminated(5)
+  assert_equal 6, layer.nActiveNormal
  end
 
  def testCollideNormalClose
   grid  = facingGrid(0.5)
   layer = Layer.new(grid).populateAdvancingFront([1])
-  assert !layer.normalTerminated(0)
-  assert !layer.normalTerminated(1)
-  assert !layer.normalTerminated(2)
-  assert !layer.normalTerminated(3)
-  assert !layer.normalTerminated(4)
-  assert !layer.normalTerminated(5)
-
+  assert_equal 6, layer.nActiveNormal
   layer.terminateCollidingNormals
-
-  assert layer.normalTerminated(0)
-  assert layer.normalTerminated(1)
-  assert layer.normalTerminated(2)
-  assert layer.normalTerminated(3)
-  assert layer.normalTerminated(4)
-  assert layer.normalTerminated(5)
+  assert_equal 0, layer.nActiveNormal
  end
 
  def testDoNotCollideAtSharpTrailingEdge
@@ -1487,12 +1463,10 @@ class TestLayer < Test::Unit::TestCase
 
   assert_in_delta 360, layer.edgeAngle(0,1), tol
 
+  assert_equal 4, layer.nActiveNormal
   layer.terminateCollidingNormals
+  assert_equal 4, layer.nActiveNormal
 
-  assert !layer.normalTerminated(0)
-  assert !layer.normalTerminated(1)
-  assert !layer.normalTerminated(2)
-  assert !layer.normalTerminated(3)
  end
 
 end
