@@ -301,6 +301,20 @@ called on elements arround a node @code{gridNodeAR}. The same info is
 available for faces @code{gridFaceArea} @code{gridFaceAR}. These
 routines have also been differentiated.
 
+@section GridSwap
+@cindex gridswap
+
+Allows modification of grid connectivites by face @code{gridSwapFace}
+and edge @code{gridSwapEdge} swapping. There is a special routine that
+cleans up cells with two faces the surface
+@code{gridRemoveTwoFaceCell}. These two face cells are very
+troublesome for projection. The @code{gridSwapEdge} and
+@code{gridRemoveTwoFaceCell} have been parallelized. (The
+@code{gridSwapFace} routine could easily be parallelized, but this has
+not been gotten to yet.) The parallelization is enmabled by populating
+a queue opject, which is broadcast to other processors and applyed to
+keep other processors up to date.
+
 @node Index
 @unnumbered Index
 
