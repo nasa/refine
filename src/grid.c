@@ -33,6 +33,7 @@ Grid* gridCreate(long nnode, long ncell, long nlist)
   grid->nnode = nnode;
   grid->ncell = ncell;
   grid->nlist = nlist;
+
   /* pad one for [0] and one to terminate */
   if (grid->nlist < 1) grid->nlist = (grid->ncell*4+grid->nnode)+2;
 
@@ -58,7 +59,7 @@ Grid *gridDump(Grid *grid)
 {
   int i;
   printf("\n");
-  for ( i=0; i<grid->nnode; i++) printf("n %5d -> %5d\n",i,grid->firstcell[i]);
+  for ( i=0; i<grid->nnode; i++) printf("fc%5d -> %5d\n",i,grid->firstcell[i]);
   for ( i=0; i<grid->nlist; i++) printf("cl%5d -> %5d\n",i,grid->celllist[i]);
   fflush(stdout);
   return grid;
@@ -108,13 +109,7 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
 
   for ( gridFirstNodeCell(grid,nodeId); 
 	gridValidNodeCell(grid); 
-	gridNextNodeCell(grid)) {
-#ifdef EBUG
-  printf("\n Term  n %d c %3d current %d \n", 
-  nodeId, cellId, grid->currentcell);
-  fflush(stdout);
-#endif
-  }
+	gridNextNodeCell(grid));
 
   oldTerminator = grid->currentcell;
 
@@ -125,15 +120,8 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
     entry = firstAvailable;
   }
 
-#ifdef EBUG
-  printf("\n Reg n %d c %3d e %d f %d o %d", 
-  nodeId, cellId, entry, firstAvailable, oldTerminator);
-  fflush(stdout);
-#endif
-
   if ( grid->celllist[entry] == 0 ) return NULL;
   terminator = entry+1;
-  //  terminator = -grid->celllist[entry]; make sure this is same as ^
   nextOpen = -grid->celllist[terminator];
   if ( grid->celllist[terminator] == 0 ) nextOpen = terminator;
  
@@ -144,7 +132,8 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
 #endif
 
   grid->celllist[terminator]=0;
-  if (grid->celllist[grid->firstcell[nodeId]]==0) grid->firstcell[nodeId]=entry;
+  if (grid->celllist[grid->firstcell[nodeId]]==0)
+    grid->firstcell[nodeId]=entry;
   grid->celllist[entry]=cellId+1;
   grid->celllist[0]=-nextOpen;
 
@@ -155,12 +144,6 @@ Grid* gridRemoveNodeCell(Grid *grid, long nodeId, long cellId)
 {
   long cellIndex;
   cellIndex = EMPTY;
-
-#ifdef EBUG
-  printf("\n Start Rem n %d c %3d\n", 
-  nodeId, cellId);
-  fflush(stdout);
-#endif
 
   for ( gridFirstNodeCell(grid,nodeId); 
 	gridValidNodeCell(grid); 
@@ -183,6 +166,7 @@ void gridFirstNodeCell(Grid *grid, long nodeId)
     grid->currentcell = -grid->celllist[grid->currentcell];
   }
 }
+
 void gridNextNodeCell(Grid *grid)
 {
   if ( !gridValidNodeCell(grid) ) return;
@@ -191,14 +175,17 @@ void gridNextNodeCell(Grid *grid)
     grid->currentcell = -grid->celllist[grid->currentcell];
   }
 }
+
 long gridCurrentNodeCell(Grid *grid)
 {
   return grid->celllist[grid->currentcell]-1;
 }
+
 int gridValidNodeCell(Grid *grid)
 {
   return (gridCurrentNodeCell(grid) != EMPTY);
 }
+
 int gridMoreNodeCell(Grid *grid)
 {
   long next;
