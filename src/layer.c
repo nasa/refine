@@ -1468,7 +1468,6 @@ Layer *layerSmoothInteriorNormalDirection(Layer *layer,
   AdjIterator it;
 
   if (layerNNormal(layer) == 0 ) return NULL;
-  if (layerNBlend(layer) != 0 ) return NULL;
 
   if (relax < 0.0) relax = 0.5;
   if (iterations<0) iterations = 20;
@@ -1477,6 +1476,8 @@ Layer *layerSmoothInteriorNormalDirection(Layer *layer,
   relaxm1 = 1.0-relax;
 
   layerProjectNormalsToConstraints(layer);
+
+  layerBlendNormalDirectionFreeze(layer);
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     layerNormalMinDot(layer, normal, &mindot, mindir );
@@ -3358,6 +3359,21 @@ int layerNSubBlend(Layer *layer, int blend )
 	      layer->blend[blend].nSubNormal1 ) + 1;
 }
 
+Layer *layerBlendNormalDirectionFreeze(Layer *layer)
+{
+  int blend, normal;
+
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    for(normal=0;normal<4;normal++) 
+      layerNormalDirectionFreeze(layer,layer->blend[blend].normal[normal]);
+    for(normal=0;normal<layer->blend[blend].nSubNormal0;normal++) 
+      layerNormalDirectionFreeze(layer,layer->blend[blend].subNormal0[normal]);
+    for(normal=0;normal<layer->blend[blend].nSubNormal1;normal++) 
+      layerNormalDirectionFreeze(layer,layer->blend[blend].subNormal1[normal]);
+  }
+  return layer;
+}
+
 Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
 {
   Adj *adj;
@@ -3412,7 +3428,6 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
 
   return layer;
 }
-
 
 Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 {

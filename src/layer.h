@@ -249,6 +249,8 @@ int layerSubNormalDegree(Layer *, int normal);
 Layer *layerSubBlend(Layer *, double maxNormalAngle);
 int layerNSubBlend(Layer *, int blend );
 
+Layer *layerBlendNormalDirectionFreeze(Layer *);
+
 Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *);
 
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
