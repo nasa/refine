@@ -137,6 +137,16 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta v1[2], result[2], 1.0e-7
  end
 
+ def testRotateDirectionMiddleOrthogWithUnequalSkew
+  v0 = [@cos30,0,-@sin30]
+  v1 = [0,@sin30,@cos30]
+  axle = [0,0,1]
+  result = @gm.rotateDirection(v0,v1,axle,(1.0/3.0))
+  assert_in_delta 0.0,   result[2], 1.0e-7
+  result = @gm.rotateDirection(v0,v1,axle,(2.0/3.0))
+  assert_in_delta @sin30,   result[2], 1.0e-7
+ end
+
  def testTriDiagAlreadyDiag
   m = [1,0,0,
          2,0,
