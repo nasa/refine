@@ -23,6 +23,7 @@ GridMove *gridmoveCreate( Grid *grid )
   gridAttachPacker( grid, gridmovePack, gm );
   gridAttachNodeSorter( grid, gridmoveSortNode, gm );
   gridAttachReallocator( grid, gridmoveReallocator, gm );
+  gridAttachFreeNotifier( grid, gridmoveGridHasBeenFreed, gm );
 
   gm->displacement = malloc(3*gridMaxNode(grid)*sizeof(double));
   for (i=0;i<3*gridMaxNode(grid);i++) gm->displacement[i] = 0.0;
@@ -40,10 +41,14 @@ Grid *gridmoveGrid(GridMove *gm)
 
 void gridmoveFree(GridMove *gm)
 {
+  free(gm->specified);
   free(gm->displacement);
-  gridDetachPacker( gm->grid );
-  gridDetachNodeSorter( gm->grid );
-  gridDetachReallocator( gm->grid );
+  if (NULL != gm->grid) { 
+    gridDetachPacker( gm->grid );
+    gridDetachNodeSorter( gm->grid );
+    gridDetachReallocator( gm->grid );
+    gridDetachFreeNotifier( gm->grid );
+  }
   free(gm);
 }
 
@@ -124,6 +129,12 @@ void gridmoveReallocator(void *voidGridMove, int reallocType,
     gm->specified = realloc(gm->specified, newSize*sizeof(GridBool));
     for (i=lastSize;i<newSize;i++) gm->specified[i] = FALSE;
   }
+}
+
+void gridmoveGridHasBeenFreed(void *voidGridMove )
+{
+  GridMove *gm = (GridMove *)voidGridMove;
+  gm->grid = NULL;
 }
 
 GridMove *gridmoveDisplace(GridMove *gm, int node, double *displace)

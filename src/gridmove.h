@@ -35,6 +35,7 @@ void gridmovePack(void *voidGridMove,
 void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n);
 void gridmoveReallocator(void *voidGridMove, int reallocType, 
 			 int lastSize, int newSize);
+void gridmoveGridHasBeenFreed(void *voidGridMove );
 
 GridMove *gridmoveDisplace(GridMove *, int node, double *displace);
 GridMove *gridmoveDisplacement(GridMove *, int node, double *displacement);
