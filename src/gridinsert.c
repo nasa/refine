@@ -143,7 +143,7 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 {
   int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
-  double ratio;
+  double ratios[3];
   int newnode;
   
   nnodeAdd = 0;
@@ -164,19 +164,20 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 	   gridValidNode(grid, nodes[1]) && 
 	   !gridNodeFrozen(grid, nodes[0]) &&
 	   !gridNodeFrozen(grid, nodes[1]) ) {
-	ratio = gridEdgeRatio(grid,nodes[0],nodes[1]);
-	if ( ratio > 1.55 ) {
-	  newnode = gridSplitEdge(grid, nodes[0], nodes[1]);
-	  if ( newnode != EMPTY ){
-	    nnodeAdd++;
-	    gridSwapNearNode( grid, newnode, 1.0 );
-	  }
-	}else if (ratio < 1.0/1.35) {
-	  if ( grid == gridCollapseEdgeToBestConfiguration(grid, NULL, 
-							   nodes[0], 
-							   nodes[1] ) ) {
-	    nnodeRemove++;
-	    gridSwapNearNode( grid, nodes[0], 1.0 );
+	if (grid == gridEdgeRatio3(grid, nodes[0], nodes[1], ratios ) ) {
+	  if ( ratios[2] > 1.55 ) {
+	    newnode = gridSplitEdge(grid, nodes[0], nodes[1]);
+	    if ( newnode != EMPTY ){
+	      nnodeAdd++;
+	      gridSwapNearNode( grid, newnode, 1.0 );
+	    }
+	  }else if (ratios[2] < 1.0/1.35) {
+	    if ( grid == gridCollapseEdgeToBestConfiguration(grid, NULL, 
+							     nodes[0], 
+							     nodes[1] ) ) {
+	      nnodeRemove++;
+  	      gridSwapNearNode( grid, nodes[0], 1.0 );
+	    }
 	  }
 	}
       }
