@@ -2632,6 +2632,8 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   double angle;
   if (layerNBlend(layer) <= 0) return layer;
 
+  if ( 0.0 >= maxNormalAngle ) maxNormalAngle = 30.0;
+
   for (normal=0;normal<layer->originalnormal;normal++){
     switch (layerBlendDegree(layer,normal)) {
     case 0: break;
