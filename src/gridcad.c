@@ -1896,8 +1896,8 @@ Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *grid, int node )
   best = 0;
   for(s=1;s<3;s++) if (area[s]>=area[best]) best = s;
 
-  gridSetNodeUV(grid, node, faceId, simplex[best][0], simplex[best][1]);
-
+  gridEvaluateFaceAtUV(grid, node, simplex[best]);
+  
   return grid;
 }
 
