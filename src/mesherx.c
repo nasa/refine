@@ -162,7 +162,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 		shell[0+2*nshell] = n1;
 		shell[1+2*nshell] = n0;
 		nshell++;
-	      }
+ 	      }
 	    }
 	  }
 	  printf("phantom %4d %4d edge added. nshell %8d\n",edge,edgeId,nshell);
@@ -203,6 +203,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	  printf("original%4d %4d edge added. nshell %8d\n",edge,edgeId,nshell);
 	}
       }
+      printf("faceId %4d has %4d segments\n",faceId,nshell);
       for(i=0;i<nshell;i++) 
 	printf("shell %4d: %8d <-> %8d\n",i,shell[0+2*i],shell[1+2*i]);
 
@@ -223,11 +224,19 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       }
       printf("the shell has %8d nodes.\n",nnode);
       for(i=0;i<maxnode;i++)if (EMPTY != g2l[i]) l2g[g2l[i]]=i;
-      shellxyz = malloc(3*nnode*sizeof(int));
-      shelluv  = malloc(2*nnode*sizeof(int));
+      shellxyz = malloc(3*nnode*sizeof(double));
+      shelluv  = malloc(2*nnode*sizeof(double));
       for(i=0;i<nnode;i++) gridNodeXYZ(grid,l2g[i],&shellxyz[3*i]);
       for(i=0;i<nnode;i++) gridNodeUV(grid,l2g[i],faceId, &shelluv[2*i]);
 
+      for(i=0;i<nnode;i++) 
+	printf("node %4d %8d x %8.5f y %8.5f z %8.5f u %11.3e v %11.3e\n",
+	       i,l2g[i],
+	       shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i],
+	       shelluv[0+2*i],shelluv[1+2*i]
+	       );
+
+      
       if( !MeshMgr_MeshTriFace(vol, faceId, 
 			       nnode, shellxyz, shelluv,
 			       nshell, shell,
@@ -236,9 +245,9 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       &newface, &newxyz, &newuv, 
 			       TRUE) ) {
 	printf("Could NOT mesh Face %d\n",faceId);
-	return NULL;
+	//return NULL;
       }
-
+      
       free(shell);
     }
   }
