@@ -2265,7 +2265,7 @@ int gridGlobal2Local(Grid *grid, int global )
     grid->nsorted = grid->nnode;
     sortHeap(grid->nsorted,grid->sortedGlobal,grid->sortedLocal);
 
-    for (local=0;local<grid->maxnode;local++) {
+    for (local=0;local<grid->nsorted;local++) {
       grid->sortedLocal[local] =  pack[grid->sortedLocal[local]];
       grid->sortedGlobal[local] = grid->nodeGlobal[grid->sortedLocal[local]];
     }
