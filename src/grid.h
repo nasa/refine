@@ -55,6 +55,7 @@ int gridAddNode(Grid *g, double x, double y, double z );
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 double gridMinVolume(Grid *g);
+double gridMinAR(Grid *g);
 
 END_C_DECLORATION
 
