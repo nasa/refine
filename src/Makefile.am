@@ -7,7 +7,7 @@ refine_SOURCES = \
 	gridswap.h gridswap.c \
 	main.c
 refine_LDADD = @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@
-EXTRA_DIST = \
+EXTRA_DIST = makeRubyExtension.rb \
 	adjMT.rb adj_ruby.c \
 	gridMT.rb grid_ruby.c \
 	gridswapMT.rb gridswap_ruby.c
