@@ -257,8 +257,7 @@ Grid *gridProject(Grid *grid)
       if ( gridSafeProjectNode(grid,node,1.0) != grid ) notProjected++;
 
   if (notProjected > 0){
-    printf("gridProject: %d of %d nodes not projected.\n",
-	   notProjected,gridNNode(grid));
+    // printf("gridProject: %d of %d nodes not projected.\n", notProjected,gridNNode(grid));
     return NULL;
   }
 
