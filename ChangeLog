@@ -1,3 +1,7 @@
+2004-07-16 15:10 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.1.0 Release. SDK tagged DynLoader_MeshMgr_Used
+	
 2004-07-16 09:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationSubIteration) put in 
