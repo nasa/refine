@@ -517,6 +517,9 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,         grid.nedge
   assert_equal [4,1,1],   grid.edge(0)
   assert_equal [0,4,1],   grid.edge(1)
+  assert_equal 0.0,       grid.nodeT(0,1)
+  assert_equal 1.0,       grid.nodeT(1,1)
+  assert_equal 0.1,       grid.nodeT(4,1)
   assert_equal [0,2,3,1], grid.face(0)
   assert_equal [4,1,5,2], grid.face(1)
   assert_equal [4,6,1,3], grid.face(2)

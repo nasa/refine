@@ -695,9 +695,14 @@ Layer *layerAdvance(Layer *layer, double height )
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
+    faceId = layerConstrained(layer,normal);
+    if (0 > faceId) {
+      edgeId = -faceId;
+      gridProjectNodeToEdge(grid, layer->normal[normal].root, edgeId );
+      // need to do faces to get the UV vals but have xyz.
+    }
     layer->normal[normal].root = layer->normal[normal].tip;
     layer->normal[normal].tip = EMPTY;
-    faceId = layerConstrained(layer,normal);
     if (0 < faceId) {
       gridProjectNodeToFace(grid, layer->normal[normal].root, faceId );
     }
