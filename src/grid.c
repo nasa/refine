@@ -2455,10 +2455,6 @@ Grid *gridFreezeLinesNodes(Grid *grid)
     index = 0;
     node = linesNode(lines,line,index);
     while (node>=0) {
-      double xyz[3];
-      gridNodeXYZ(grid,node,xyz);
-      printf("line %5d index %5d node %5d x %10.8f y %10.8f z %10.8f\n",
-	     line,index,node,xyz[0],xyz[1],xyz[2]);
       gridFreezeNode(grid,node);
       index++;
       node = linesNode(lines,line,index);
