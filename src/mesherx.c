@@ -53,7 +53,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     rate = exp(scale*log(1.05));
   }else{
     nLayer = (int)(100.0/scale);
-    rate = exp(scale*log(1.25));
+    rate = exp(scale*log(1.20));
   }
 
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
@@ -115,7 +115,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 	 layerNNormal(layer)>layerTerminateNormalWithLength(layer,1.0)){
 
     layerSmoothNormalDirection(layer);
-    layerSetNormalHeightWithRate(layer);
+    layerSetNormalHeightWithMaxRate(layer,rate);
     layerAdvance(layer);
     layerWriteTecplotFront(layer);
     printf("advance layer %d rate %f\n",i,rate);
