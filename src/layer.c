@@ -46,6 +46,11 @@ struct Prism {
   int nodes[6];
 };
 
+typedef struct Quad Quad;
+struct Quad {
+  int nodes[4];
+};
+
 struct Layer {
   Grid *grid;
   int nfront;
@@ -58,10 +63,10 @@ struct Layer {
   int *globalNode2Normal;
   int nConstrainingGeometry, *constrainingGeometry;
   Adj *adj;
-  int nprism;
+  int nprism, maxprism;
   Prism *prism;
-  int maxprism;
-  int nquad;
+  int nquad, maxquad;
+  Quad *quad;
 };
 
 Layer *layerCreate( Grid *grid )
@@ -86,6 +91,8 @@ Layer *layerCreate( Grid *grid )
   layer->maxprism=0;
   layer->prism=NULL;
   layer->nquad=0;
+  layer->maxquad=0;
+  layer->quad=NULL;
   return layer;
 }
 
@@ -202,6 +209,7 @@ Grid *layerGrid(Layer *layer)
 void layerFree(Layer *layer)
 {
   gridDetachNodeSorter( layer->grid );
+  if (layer->quad!=NULL) free(layer->quad);
   if (layer->prism!=NULL) free(layer->prism);
   if (layer->adj != NULL) adjFree(layer->adj);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
@@ -216,19 +224,30 @@ void layerFree(Layer *layer)
 void layerSortGlobalNodes(void *voidLayer, int *o2n)
 {
   Layer *layer = (Layer *)voidLayer;
-  int i, front, normal;
+  int i, front, normal, prismIndex, quadIndex;
 
   for (front = 0 ; front < layerNFront(layer) ; front++ )
     for (i=0;i<3;i++) if (EMPTY != layer->front[front].globalNode[i])
       layer->front[front].globalNode[i] = 
 	o2n[layer->front[front].globalNode[i]];
-  
+
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
       layer->normal[normal].root = o2n[layer->normal[normal].root];
     if (EMPTY != layer->normal[normal].tip)
       layer->normal[normal].tip = o2n[layer->normal[normal].tip];
   }
+
+  for (prismIndex=0;prismIndex<layerNPrism(layer);prismIndex++){
+    for (i=0;i<6;i++) layer->prism[prismIndex].nodes[i] =
+			o2n[layer->prism[prismIndex].nodes[i]];
+  }
+
+  for (quadIndex=0;quadIndex<layerNQuad(layer);quadIndex++){
+    for (i=0;i<4;i++) layer->quad[quadIndex].nodes[i] =
+			o2n[layer->quad[quadIndex].nodes[i]];
+  }
+
 
 }
 
@@ -1068,6 +1087,40 @@ Layer *layerPrism(Layer *layer, int prismIndex, int *nodes)
 
   for (i=0;i<6;i++){
     nodes[i]=layer->prism[prismIndex].nodes[i];
+  }
+
+  return layer;
+}
+
+Layer *layerAddQuad(Layer *layer, int n0, int n1, int n2, int n3 )
+{
+
+  if (layer->nquad >= layer->maxquad) {
+    layer->maxquad += 5000;
+    if (layer->quad == NULL) {
+      layer->quad = malloc(layer->maxquad*sizeof(Quad));
+    }else{
+      layer->quad = realloc(layer->quad,layer->maxquad*sizeof(Quad));
+    }
+  }
+
+  layer->quad[layer->nquad].nodes[0] = n0;
+  layer->quad[layer->nquad].nodes[1] = n1;
+  layer->quad[layer->nquad].nodes[2] = n2;
+  layer->quad[layer->nquad].nodes[3] = n3;
+
+  layer->nquad++;
+
+  return layer;
+}
+
+Layer *layerQuad(Layer *layer, int quadIndex, int *nodes)
+{
+  int i;
+  if (quadIndex<0 || quadIndex >= layerNQuad(layer) ) return NULL; 
+
+  for (i=0;i<4;i++){
+    nodes[i]=layer->quad[quadIndex].nodes[i];
   }
 
   return layer;

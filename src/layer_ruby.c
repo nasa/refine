@@ -312,6 +312,27 @@ VALUE layer_prism( VALUE self, VALUE prismIndex )
   return rb_prism;
 }
 
+VALUE layer_addQuad( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerAddQuad(layer,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2),
+				  NUM2INT(n3) )?self:Qnil );
+}
+
+VALUE layer_quad( VALUE self, VALUE quadIndex )
+{
+  int i;
+  int nodes[4];
+  VALUE rb_quad;
+  GET_LAYER_FROM_SELF;
+  if ( layer != layerQuad(layer,NUM2INT(quadIndex),nodes) ) return Qnil;
+  rb_quad = rb_ary_new2(4);
+  for (i=0;i<4;i++){
+    rb_ary_store( rb_quad, i, INT2NUM(nodes[i]) );
+  }
+  return rb_quad;
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -358,5 +379,8 @@ void Init_Layer()
 
   rb_define_method( cLayer, "addPrism", layer_addPrism, 6 );
   rb_define_method( cLayer, "prism", layer_prism, 1 );
+
+  rb_define_method( cLayer, "addQuad", layer_addQuad, 4 );
+  rb_define_method( cLayer, "quad", layer_quad, 1 );
 
 }

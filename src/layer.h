@@ -68,6 +68,9 @@ Layer *layerBlend(Layer *);
 Layer *layerAddPrism(Layer *, int n0, int n1, int n2, int n3, int n4, int n5);
 Layer *layerPrism(Layer *, int prismIndex, int *nodes);
 
+Layer *layerAddQuad(Layer *, int n0, int n1, int n2, int n3 );
+Layer *layerQuad(Layer *, int quadIndex, int *nodes);
+
 Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
 Layer *layerTerminateNormalWithX(Layer *, int direction, double x);

@@ -809,7 +809,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2,3,4,5], layer.prism(0)
  end
 
- def XtestInsertQuad
+ def testInsertQuad
   assert_not_nil           grid = Grid.new(10,10,10,10)
   assert_not_nil           layer = Layer.new(grid)
   assert_equal 0,          layer.nquad
@@ -819,6 +819,5 @@ class TestLayer < Test::Unit::TestCase
   assert_nil               layer.quad(1)
   assert_equal [0,1,2,3,], layer.quad(0)
  end
-
 
 end
