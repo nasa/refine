@@ -55,7 +55,7 @@ int main( int argc, char *argv[] )
   double minAR=-1.0;
   double ratioSplit, ratioCollapse;
   GridBool projected;
-  GridBool EdgeBasedOperators = FALSE;
+  int EdgeBasedCycles = EMPTY;
   GridBool GridMoveProjection = FALSE;
   GridBool tecplotOutput = FALSE;
   int iview = 0;
@@ -119,8 +119,8 @@ int main( int argc, char *argv[] )
       i++; cyl = atof(argv[i]);
       printf("-c argument %d: %f\n",i, cyl);
     } else if( strcmp(argv[i],"-e") == 0 ) {
-      EdgeBasedOperators = TRUE;
-      printf("-e argument %d\n",i);
+      i++; EdgeBasedCycles = atoi(argv[i]);
+      printf("-e argument %d: %d\n",i, EdgeBasedCycles);
     } else if( strcmp(argv[i],"-v") == 0 ) {
       i++; minAR = atof(argv[i]);
       printf("-v argument %d: %f\n",i, minAR);
@@ -154,7 +154,7 @@ int main( int argc, char *argv[] )
       printf(" -s uniform grid size\n");
       printf(" -z linearly vary spacing to this in z dir\n");
       printf(" -c cylinder spacing\n");
-      printf(" -e Use Edge Based Operators for Adaptation\n");
+      printf(" -e Number of Edge Based Operators Adaptation Cycles\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
       printf(" -m use grid movement for projection\n");
@@ -175,7 +175,7 @@ int main( int argc, char *argv[] )
 
   printf("running project %s\n",project);
   grid = gridLoadPart( modeler, project, maxnode );
-  if (EdgeBasedOperators) gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
+  if (EdgeBasedCycles!=EMPTY) gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: loaded part does not have right handed boundaries\n");
@@ -254,12 +254,12 @@ int main( int argc, char *argv[] )
 
   STATUS;
 
-  if (EdgeBasedOperators) {
+  if (EMPTY!=EdgeBasedCycles) {
     sprintf(filename,"%s_surface.t",project);
     gridWriteTecplotSurfaceZone(grid,filename); gridCloseTecplotFile(grid);
     printf("edge swapping grid...\n");gridSwap(grid,0.9);
     STATUS;
-    for (j=0;j<6;j++){
+    for (j=0;j<EdgeBasedCycles;j++){
       printf("start edge based cycle %d\n",j);
       gridCreateConn(grid);
       gridSetConnValuesWithMetricErrorMagnatude(grid);

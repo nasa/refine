@@ -1,3 +1,7 @@
+2004-10-18 13:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c number of edge-based cycles is a -e argument.
+
 2004-10-15 23:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwapNearNode) exposed limit. Will be set to
