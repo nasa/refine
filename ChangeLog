@@ -1,5 +1,13 @@
 2005-02-07 10:10 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridcad.c (gridLinearProgramUV) Put in a divide by zero
+	check to avoid NaN. The lowest and next lowest gradients pointed
+	in exactly opposite directions, which gave me a zero length
+	congigate direction. This resulted in a divide by zero when it was
+	normalized to unity length.
+
+2005-02-07 10:10 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridcad.c (gridSmoothNode) to speed up volume smoothing, the
 	required improvement for smoothing to continue has been raised and
 	made porportional to current cost.

@@ -816,29 +816,35 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
        *       would be EMPTY and previous block would execute.
        */
       denom = g00 + g11 - 2*g01;
-      if( denom == 0.0 ) {
+      if( abs(denom) < 1.0e-12 ) {
         nearestRatio = 0.0;
       } else {
         nearestRatio = (g00-g01)/denom;
-      if (nearestRatio > 1.0 || nearestRatio < 0.0 ) nearestRatio = 0.0;
       }
-      minRatio = 1.0 - nearestRatio;
-      for (i=0;i<3;i++) searchDirection[i] 
-			  = minRatio*minDirection[i]
-			  + nearestRatio*nearestDirection[i];
-      /* reset length to the projection of min cell to search dir*/
-      length = sqrt(gridDotProduct(searchDirection,searchDirection));
-      for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
-      projection = gridDotProduct(searchDirection,minDirection);
-      for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
-      //printf("node %5d min %10.7f near %10.7f\n",node,minRatio,nearestRatio);
+      if (nearestRatio < 1.0 && nearestRatio > 0.0 ) {
+	minRatio = 1.0 - nearestRatio;
+	for (i=0;i<3;i++) searchDirection[i] 
+			    = minRatio*minDirection[i]
+			    + nearestRatio*nearestDirection[i];
+	/* reset length to the projection of min cell to search dir*/
+	length = sqrt(gridDotProduct(searchDirection,searchDirection));
+	if (ABS(length) > 1.0e-12) {
+	  for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
+	  projection = gridDotProduct(searchDirection,minDirection);
+	  for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
+	}else{
+	  gridStoredCostDerivative(grid, minFace, searchDirection);
+	  gridStoredCostDerivative(grid, minFace, minDirection);
+	}
+      }else{
+	gridStoredCostDerivative(grid, minFace, searchDirection);
+	gridStoredCostDerivative(grid, minFace, minDirection);
+      }
     }
   }
 
-  /* printf("\n node %d dir %f %f %f\n",node,searchDirection[0],
-     searchDirection[1],searchDirection[2]); */
-
   length = sqrt(gridDotProduct(searchDirection,searchDirection));
+  if (ABS(length) < 1.0e-12) return NULL;
   for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
 
   alpha = 1.0;
@@ -847,7 +853,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
       gridStoredCostDerivative(grid,i,dCostdX);
       projection = gridDotProduct(searchDirection,dCostdX);
       deltaCost = gridStoredCost(grid,i) - minCost;
-      if (ABS(length-projection) < 1e-12){
+      if (ABS(length-projection) < 1e-8){
 	currentAlpha=0.0; /* no intersection */
       }else{
 	currentAlpha = deltaCost / ( length + projection);
