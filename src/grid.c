@@ -741,15 +741,19 @@ Grid *gridWriteTecplotSurfaceZone(Grid *grid)
   fprintf(grid->tecplotFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
 	  nfacenode, grid->nface);
 
-  for ( i=0; i<grid->nnode ; i++ ){
+  for ( i=0; i<nfacenode ; i++ ){
     fprintf(grid->tecplotFile, "%23.15e%23.15e%23.15e\n",
 	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i]);
   }
+
+  fprintf(grid->tecplotFile, "\n");
 
   for ( i=0; i<grid->nface ; i++ ){
     fprintf(grid->tecplotFile, " %9d %9d %9d\n",
 	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
   }
+
+  fflush(grid->tecplotFile);
 
   return grid;
 }
