@@ -13,8 +13,8 @@
 #include "intersect.h"
 #include "gridmath.h"
 
-int intersectSide( double *vertex0, double *vertex1, double *vertex2,
-                   double *node )
+bool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
+		     double *node )
 {
   double edge1[3], edge2[3], normal[3], direction[3];
   double height;
@@ -23,9 +23,8 @@ int intersectSide( double *vertex0, double *vertex1, double *vertex2,
   gridCrossProduct(edge1, edge2, normal);
   gridSubtractVector(node, vertex0, direction);
   height = gridDotProduct(normal,direction);
-  if ( height == 0 ) return 0;
-  if ( height > 0 ) return 1;
-  return -1;
+  if ( height > 0 ) return TRUE;
+  return FALSE;
 }
 
 bool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex2,
@@ -92,10 +91,36 @@ bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
   }
 }
 
+bool intersectInsideTet(double *vertex0, double *vertex1, 
+			double *vertex2, double *vertex3,
+			double *node)
+{
+  if ( !intersectAbove( vertex1, vertex3, vertex2, node )) return FALSE;
+  if ( !intersectAbove( vertex2, vertex3, vertex0, node )) return FALSE;
+  if ( !intersectAbove( vertex3, vertex1, vertex0, node )) return FALSE;
+  if ( !intersectAbove( vertex0, vertex1, vertex2, node )) return FALSE;
+
+  return TRUE;
+}
+
 bool intersectTetSegment(double *vertex0, double *vertex1, 
 			 double *vertex2, double *vertex3,
 			 double *node0, double *node1)
 {
+  if (intersectInsideTet( vertex0, vertex1, vertex2, vertex3, node0 )) 
+    return TRUE;
 
-  return TRUE;
+  if (intersectInsideTet( vertex0, vertex1, vertex2, vertex3, node1 )) 
+    return TRUE;
+
+  if (intersectTriangleSegment( vertex1, vertex3, vertex2, node0, node1)) 
+    return TRUE;
+  if (intersectTriangleSegment( vertex2, vertex3, vertex0, node0, node1)) 
+    return TRUE;
+  if (intersectTriangleSegment( vertex3, vertex1, vertex0, node0, node1)) 
+    return TRUE;
+  if (intersectTriangleSegment( vertex0, vertex1, vertex2, node0, node1)) 
+    return TRUE;
+
+  return FALSE;
 }

@@ -18,16 +18,16 @@ class TestIntersect < Test::Unit::TestCase
  end
  def setup ; set_up ; end
 
- def testNodeSide
+ def testNodeAboveTrianglePlane
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
   nn = [0,0,-1]
   n0 = [0,0,0]
   np = [0,0,1]
-  assert_equal( -1, @intersect.side(v0,v1,v2,nn))
-  assert_equal(  0, @intersect.side(v0,v1,v2,n0))
-  assert_equal(  1, @intersect.side(v0,v1,v2,np))
+  assert_equal false, @intersect.above(v0,v1,v2,nn)
+  assert_equal false, @intersect.above(v0,v1,v2,n0)
+  assert_equal true,  @intersect.above(v0,v1,v2,np)
  end
 
  def testTriangleAndNodeInAndOut
@@ -64,6 +64,15 @@ class TestIntersect < Test::Unit::TestCase
   n1 = [0.3,0.3,0]
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
   n0 = [0.3,0.3,-0]
+  assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+ end
+
+ def testTriangleAndSegmentThroughMiddleSlant
+  v0 = [1,0,0]
+  v1 = [0,1,0]
+  v2 = [0,0,1]
+  n0 = [2,2,2]
+  n1 = [1,1,1]
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
@@ -121,7 +130,24 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
- def testTetAndSegmentInside
+ def testTetAndNode
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  v3 = [0,0,1]
+  n = [0.1,0.1,0.1]
+  assert_equal true, @intersect.insideTet(v0,v1,v2,v3,n)
+  n = [1,1,1]
+  assert_equal false, @intersect.insideTet(v0,v1,v2,v3,n)
+  n = [-1,0.3,0.3]
+  assert_equal false, @intersect.insideTet(v0,v1,v2,v3,n)
+  n = [0.3,-1,0.3]
+  assert_equal false, @intersect.insideTet(v0,v1,v2,v3,n)
+  n = [0.3,0.3,-1]
+  assert_equal false, @intersect.insideTet(v0,v1,v2,v3,n)
+ end
+
+ def testTetAndSegmentNodeInside
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -129,6 +155,29 @@ class TestIntersect < Test::Unit::TestCase
   n0 = [0.1,0.1,0.1]
   n1 = [0.2,0.2,0.2]
   assert_equal true, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
+  n0 = [1,1,1]
+  assert_equal true, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
+  n0 = [0.1,0.1,0.1]
+  n1 = [2,2,2]
+  assert_equal true, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
+  n0 = [1,1,1]
+  n1 = [2,2,2]
+  assert_equal false, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
+ end
+
+ def testTetAndSegmentPerce
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  v3 = [0,0,1]
+  n0 = [1,1,1]
+  n1 = [2,2,2]
+  assert_equal false, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
+  n0 = [-1,-1,-1]
+  n1 = [2,2,2]
+  assert_equal true, @intersect.triangleSegment(v1,v2,v3,n0,n1)
+  assert_equal true, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
+
  end
 
 end
