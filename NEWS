@@ -1,3 +1,11 @@
+Next Release:
+
+refine now has parallel fortran bindings for FUN3D(HEFSS) see
+HEFSS.rps/LibF90/refine_interface.f90 and refine/src/gridfortran.c.
+Added collision detection, varible normals, and multiple normals to
+advancing fronts. Harold Atkins added code to generate an Synthetic
+Jet Grid.
+
 Thu Jan 30, 2003: Released Refine 0.6
 
 MesherX makes viscous grids on a box, plate, and om6
