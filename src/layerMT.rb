@@ -1461,7 +1461,7 @@ class TestLayer < Test::Unit::TestCase
  end
 
 #BROKEN
- def XtestAdvanceBlendForConvextFace_AddConstrainingFace
+ def testAdvanceBlendForConvextFace_AddConstrainingFace
   # z 2---3
   # ^ |0\1|
   # | 0---1 -> y
@@ -1473,20 +1473,18 @@ class TestLayer < Test::Unit::TestCase
   grid.addFace(0,1,2,1)
   grid.addFace(0,2,3,1)
   grid.addNode(-1,-1,0)
-  grid.addFace(1,0,4,11)
-  grid.addFace(0,3,4,11)
-  grid.writeTecplotSurfaceZone
+  grid.addFace(1,0,3,11)
   layer = Layer.new(grid).populateAdvancingFront([1])
   layer.constrainNormal(11)
-layer.writeTecplotFrontGeometry
+  grid.removeFace(2)
   layer.blend(180.0)
-  assert_equal 4,       grid.nface
-layer.writeTecplotFrontGeometry
+  assert_equal 2, grid.nface
   layer.advanceConstantHeight(0.1)
-  grid.writeTecplotSurfaceZone
-layer.writeTecplotFrontGeometry
-  assert_equal 7,       grid.nface
+  assert_equal 9, grid.ncell
+  assert_equal 7, grid.nface
  end
+#layer.writeTecplotFrontGeometry
+#grid.writeTecplotSurfaceZone
 
  def testBlendTriplePoint
   grid = Grid.new(20,20,10,0)
