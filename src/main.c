@@ -62,10 +62,8 @@ int main( int argc, char *argv[] )
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));
 
   printf("adapting grid...\n");
-  gridResetSpacing(grid);
-  gridScaleSpacingSphereDirection(grid,-2.0,0.0,0.0,1.00,0.3,1.0,1.8);
-  gridScaleSpacingSphereDirection(grid,2.0,0.0,0.0,1.50,1.8,1.0,0.4);
-  gridScaleSpacingSphereDirection(grid,0.5,0.5,0.0,1.00,0.3,1.8,1.0);
+  gridImportAdapt(grid, "../test/adapt_hess");
+
   oldSize = 1;
   newSize = gridNNode(grid) ;
   for (j=0;(((double)ABS(newSize-oldSize)/(double)oldSize)>0.01)&&(j<15);j++){
@@ -167,10 +165,10 @@ Grid *gridLoadPart( char *project )
   printf("ugrid size: %d nodes %d faces %d cells %d edge elements.\n",
 	 nnode,nface,ncell,nedge);
 
-  maxnode = nnode * 100;
-  maxface = nface * 100;
-  maxcell = ncell * 100;
-  maxedge = nedge * 100;
+  maxnode = 100000;
+  maxface = maxnode;
+  maxcell = maxnode * 6;
+  maxedge = maxnode / 10;
 
   printf("max grid size: %d nodes %d faces %d cells %d edge elements.\n",
 	 maxnode,maxface,maxcell,maxedge);
