@@ -559,15 +559,38 @@ int layerNextTriangle(Layer *layer, int normal, int triangle )
   return EMPTY;
 }
 
+#define PI (3.14159265358979)
+#define RADIAN2DEG (57.2957795130823)
+
 double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
 {
   int nodes0[3], nodes1[3];
+  int i0, i1, side0, side1;
+  double xyz0[3], xyz1[3];
+  double direction0[3], direction1[3], cross[3], edge[3];
+  double dot, radian;
 
   if ( triangle0 == triangle1 ) return -3.0;
   if ( layer != layerTriangle( layer, triangle0, nodes0 ) ) return -1.0;
   if ( layer != layerTriangle( layer, triangle1, nodes1 ) ) return -2.0;
 
-  return 180.0;
+  layerTriangleDirection(layer,triangle0,direction0);
+  layerTriangleDirection(layer,triangle1,direction1);
+  dot = gridDotProduct(direction0, direction1);
+  radian = acos(dot) + PI;
+
+  side0 = side1 = EMPTY;
+  for ( i0=0 ; i0<3 ; i0++ ) {
+    for ( i1=0 ; i1<3 ; i1++ ) {
+      if (nodes0[i0] == nodes1[i1]) {
+	side0 = i0;
+	side1 = i1;
+      }
+    } 
+  } 
+  if ( side0 == EMPTY || side1 == EMPTY ) return -4.0;
+
+  return radian * RADIAN2DEG;
 }
 
 Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
