@@ -1389,6 +1389,11 @@ Grid *gridNodeFaceMR(Grid *grid, int node, double *mr )
 
   *mr = 1.0;
 
+  if ( gridNegCellAroundNode( grid, node ) ) {
+    *mr = -1.0;
+    return grid;
+  }
+
   for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
     face = adjItem(it);
     local_mr = gridFaceMR(grid, 
