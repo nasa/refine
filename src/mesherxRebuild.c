@@ -160,7 +160,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   int loop, nloop;
   int *loopLength;
   int *loopEdge;
-  int edge;
+  int edge, edgeIndex;
   int nedge;
   int nshell;
   int nparent;
@@ -202,7 +202,8 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	  printf(" edge %4d, edgeId %4d %2d has %4d phantom.\n",
 		 edge,edgeId,orient,nparent);
 	} else if ( layerConstrainingGeometry(layer,-edgeId) ) {
-	  nthaw = gridNThawedEdgeSegments(grid,edgeId);
+	  nthaw = gridGeomEdgeSize(grid,edgeId) 
+	        - layerNEdgeInLayer(layer,edgeId);
 	  nshell += nthaw;
 	  printf(" edge %4d, edgeId %4d %2d has %4d rebuild.\n",
 		 edge,edgeId,orient,nthaw);
@@ -241,8 +242,12 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	  curve = malloc( ncurve * sizeof(int) );
 	  gridGeomEdge( grid, edgeId, curve );
 	  for(i=1;i<ncurve;i++){
-	    if ( !gridNodeFrozen(grid,curve[i-1]) || 
+	    edgeIndex = gridFindEdge(grid, curve[i-1], curve[i]);
+	    if ( !layerEdgeInLayer(layer, edgeIndex) ){
+	    /*
+	    if ( !gridNodeFrozen(grid,curve[i-1]) ||
 		 !gridNodeFrozen(grid,curve[i])   ){
+	    */
 	      if (orient>0){
 		shell[0+2*nshell] = curve[i-1];
 		shell[1+2*nshell] = curve[i];

@@ -77,7 +77,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   direction[0] = 1.0;
   direction[1] = 0.0;
   direction[2] = 0.0;
-  layerSetPolynomialMaxHeight(layer, 0.01, 0.05, 1.0, 
+  layerSetPolynomialMaxHeight(layer, 0.71, 0.05, 1.0, 
 			      origin, direction );
   origin[0] = 1.2;
   layerSetPolynomialMaxHeight(layer, 0.07, 0.1, 1.0, 
@@ -86,9 +86,9 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   layerSetPolynomialMaxHeight(layer, 0.12, 0.04, 1.0, 
 			      origin, direction );
   origin[0] = -0.0001;
-  layerAssignPolynomialNormalHeight(layer, 1.0e-5, 4.0e-5, 1.0,
+  layerAssignPolynomialNormalHeight(layer, 1.1e-3, 2.0e-3, 2.0,
                                     origin, direction );
-  origin[0] = 1.0;
+  origin[0] = 1.1;
   layerAssignPolynomialNormalHeight(layer, 5.0e-5, 0.0, 1.0,
                                     origin, direction );
   origin[0] = 1.5;
@@ -107,6 +107,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
     layerSmoothNormalDirection(layer);
     layerSetNormalHeightWithMaxRate(layer,rate);
+    layerTerminateCollidingFronts(layer);
     layerAdvance(layer);
     layerWriteTecplotFrontGeometry(layer);
     printf("advance layer %d rate %f\n",i,rate);
