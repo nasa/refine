@@ -112,7 +112,7 @@ int gridsetcelllocal2global_( int *ncell, int *local2global )
 int gridswap_( )
 {
   gridSwap(grid);
-  printf(" post swap minn AR %17.15f\n",gridMinAR(grid));
+  printf(" post swap min AR %17.15f\n",gridMinAR(grid));
 }
 
 int gridsmoothvolume_( )
@@ -124,7 +124,6 @@ int gridsmoothvolume_( )
 int gridadaptwithoutcad_( double *minLength, double *maxLength )
 {
   gridAdaptWithOutCAD(grid,*minLength, *maxLength);
-  printf(" post adapt min AR %17.15f\n",gridMinAR(grid));
 }
 
 int gridwritetecplotsurfacezone_( )
@@ -135,14 +134,13 @@ int gridwritetecplotsurfacezone_( )
 int gridparalleladaptwithoutcad_( int *processor, 
 				  double *minLength, double *maxLength )
 {
-  printf(" %6d adapt processor %d\n",gridPartId(grid),*processor);
+  printf(" %6d adapt processor %2d ",gridPartId(grid),*processor);
   if (*processor == -1) {
     gridParallelAdaptWithOutCAD(grid,NULL,*minLength, *maxLength);
   } else {
     gridParallelAdaptWithOutCAD(grid,queue,*minLength, *maxLength);
   }
     
-  printf(" %6d post adapt min AR %17.15f\n",gridPartId(grid),gridMinAR(grid));
 }
 
 int queuedumpsize_( int *nInt, int *nDouble )
