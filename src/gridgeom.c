@@ -142,7 +142,8 @@ Grid *gridFaceEdgeLocal2Global( Grid *grid, int faceId,
   int count;
   if (!CADTopo_VolFacePts(vol, faceId, &count, local2global)) return NULL;
   if (count > faceEdgeCount) {
-    printf("%s: %d: ran out of array length\n",__FILE__,__LINE__);
+    printf("%s: %d: ran out of array length %d %d\n",
+	   __FILE__, __LINE__, count, faceEdgeCount);
     return NULL;
   }
   return grid;
