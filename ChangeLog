@@ -1,3 +1,8 @@
+2004-05-28 16:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c fixed a bug in the load and set routines for
+	gm->xyz to fix a parallelization bug. The OM6 adapts!
+
 2004-05-27 11:35 Mike Park  <mike.park@nasa.gov>
 
 	* /src/FAKEGeomExtras.c added CADGeom_GetEdge and CADGeom_EdgeGrid.
