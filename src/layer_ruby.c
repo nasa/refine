@@ -218,6 +218,15 @@ VALUE layer_setNormalHeight( VALUE self, VALUE normal, VALUE height )
 					  NUM2DBL(height) )?self:Qnil );
 }
 
+VALUE layer_getNormalHeight( VALUE self, VALUE normal )
+{
+  double height;
+  GET_LAYER_FROM_SELF;
+  if (layer != layerGetNormalHeight( layer, NUM2INT(normal), &height ) )
+    return Qnil;
+  return rb_float_new(height);
+}
+
 VALUE layer_visibleNormals( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -404,6 +413,7 @@ void Init_Layer()
   rb_define_method( cLayer, "edgeAngle", layer_edgeAngle, 2 );
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );
+  rb_define_method( cLayer, "getNormalHeight", layer_getNormalHeight, 1 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "projectNormalsToConstraints", 
 		    layer_projectNormalsToConstraints, 0 );

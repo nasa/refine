@@ -811,7 +811,7 @@ grid.addCell(0,1,2,3)
   assert_equal [0,1,2,5], grid.cell(2)
  end
 
- def testAdvanceLayerIntoVolumeWithVaribleHeight
+ def testAdvanceLayerIntoVolumeWithVariableHeight
   assert_not_nil          grid = Grid.new(7,4,1,0)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
@@ -835,6 +835,19 @@ grid.addCell(0,1,2,3)
   assert_equal [0,0,0],   grid.nodeXYZ(0)
   assert_equal [1,0,0.1], grid.nodeXYZ(4)
   assert_equal [0,1,0.2], grid.nodeXYZ(5)
+ end
+
+ def testSettingCorrectNormalHeight
+  grid = Grid.new(10,10,10,10)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addFace(1,2,3,1)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_nil        layer.getNormalHeight(-1)
+  assert_nil        layer.getNormalHeight(4)
+  assert_equal 1.0, layer.getNormalHeight(0)
+  
  end
 
  def testMixedElementModeToggleSwitch
