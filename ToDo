@@ -5,7 +5,10 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 --Major refactoring
 
-Parameter values: verify at start and then always evaluate.
+Parameter values: verify at start and then always evaluate to avoid
+prejections.
+
+merge edge based research into mainline code
 
 --Edge Based
 
