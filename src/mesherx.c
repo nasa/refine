@@ -46,6 +46,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double gapHeight;
   double origin[3] = {0.0, -1.5, 0.0};
   double direction[3] = {0, 1, 0};
+  bool blend;
 
   layer = mesherxInit(vol, maxNodes);
   if (NULL == layer) return 0; 
@@ -77,17 +78,21 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   direction[0] = 1.0;
   direction[1] = 0.0;
   direction[2] = 0.0;
-  layerSetPolynomialMaxHeight(layer, 0.75, 0.0, 1.0, 
+  layerSetPolynomialMaxHeight(layer, 0.50, 0.0, 1.0, 
 			      origin, direction );
-  layerAssignPolynomialNormalHeight(layer, 1.0e-2, 0.0, 1.0,
+  layerAssignPolynomialNormalHeight(layer, 1.0e-4, 0.0, 1.0,
                                     origin, direction );
   layerScaleNormalHeight(layer,scale);
   layerSaveInitialNormalHeight(layer);
 
-  printf("inserting blends...\n");
-  layerBlend(layer);
-  printf("split blends...\n");
-  layerSplitBlend(layer);
+  blend = TRUE;
+
+  if (blend){
+    printf("inserting blends...\n");
+    layerBlend(layer);
+    printf("split blends...\n");
+    layerSplitBlend(layer);
+  }
 
   layerComputeNormalRateWithBGSpacing(layer,1.0);
 
@@ -95,14 +100,16 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   while (layerAnyActiveNormals(layer)){
     i++;
 
-    layerSmoothNormalDirection(layer);
+    if (i>8) layerSmoothNormalDirection(layer);
 
-    layerSetNormalHeightWithMaxRate(layer,rate);
+    //layerSetNormalHeightWithMaxRate(layer,rate);
+    layerSetNormalHeightForLayerNumber(layer,i-1,rate);
+    layerSmoothLayerWithHeight(layer);
 
     layerTerminateNormalWithLength(layer,1.0);
     layerTerminateNormalWithBGSpacing(layer, 1.5, 1.9);
 
-    if(i>1)layerTerminateCollidingNormals(layer);
+    if (i>8) layerTerminateCollidingTriangles(layer);
 
     printf("advance layer %d\n",i);
 
