@@ -85,6 +85,15 @@ int main( int argc, char *argv[] )
   grid = gridImport( nnode, nface, maxcell, ncell,
 		     xyz, f2n, faceId, c2n );
 
+  printf("import size: %d nodes %d faces %d cells.\n",
+	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
+  printf("gridImport: minimum Volume %12.8e\n",gridMinVolume(grid));
+
+  printf("edge swapping grid...\n");
+  gridSwap(grid);
+
+  printf("new size: %d nodes %d faces %d cells.\n",
+	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
   printf("gridImport: minimum Volume %12.8e\n",gridMinVolume(grid));
 
   return;
