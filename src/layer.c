@@ -415,6 +415,7 @@ int layerAddNormal(Layer *layer, int globalNodeId )
   }
 
   if (layer != layerInitializeNormal(layer, layer->nnormal)) return EMPTY;
+  layer->normal[layer->nnormal].root = globalNodeId;
   layer->globalNode2Normal[globalNodeId] = layer->nnormal;
 
   layer->nnormal++;
