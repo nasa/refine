@@ -134,7 +134,7 @@ void gridprojectallfaces_( )
       for(node=0;node<3;node++) {
 	if ( !gridNodeFrozen(grid,nodes[node])  ) {
 	  if (grid != gridProjectNodeToFace(grid, nodes[node], faceId ) )
-	    printf( "ERROR: %s: %d: project failed.%d\n",
+	    printf( "ERROR: %s: %d: project failed on part %d.\n",
 		    __FILE__,__LINE__,gridPartId(grid) );
 
 	}
