@@ -493,18 +493,18 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 0.5, grid.nodeT(3,1)
  end
 
- def XtestInsertNodeInToGeomEdgeMoveExisting
+ def testInsertNodeInToGeomEdgeMoveExisting
   assert_not_nil grid = Grid.new(4,0,0,3)
   assert_equal 0, grid.addNode(0,0,0)
   assert_equal 1, grid.addNode(1,0,0)
   assert_equal 2, grid.addNode(2,0,0)
   assert_equal grid, grid.addEdge(0,1,1,0,1)
   assert_equal grid, grid.addEdge(1,2,1,1,2)
-  assert_equal 2, grid.insertInToGeomEdge(1.05,0,0)
+  assert_equal 1, grid.insertInToGeomEdge(1.01,0,0)
   assert_equal 3, grid.nnode
   assert_equal 2, grid.nedge
-  assert_equal [1.05,0,0], grid.nodeXYZ(1)
-  assert_equal 1.05, grid.nodeT(1,1)
+  assert_equal [1.01,0,0], grid.nodeXYZ(1)
+  assert_equal 1.01, grid.nodeT(1,1)
  end
 
  def testInsertNodeInToGeomFaceNewPoint
