@@ -434,6 +434,21 @@ Layer *layerTriangleCenter(Layer *layer, int triangle, double *center )
   return layer;
 }
 
+Layer *layerTriangleFourthNode(Layer *layer, int triangle, double *xyz )
+{
+  int i;
+  double center[3], direction[3], h;
+
+  if ( layer != layerTriangleCenter(layer,triangle,center) ) return NULL;
+  layerTriangleDirection(layer,triangle,direction);
+  layerTriangleMaxEdgeLength(layer,triangle,&h);
+  
+  for (i=0;i<3;i++) xyz[i] = center[i] + h*direction[i];
+
+  return layer;
+
+}
+
 Layer *layerTriangleMaxEdgeLength(Layer *layer, int triangle, double *length )
 {
   int i, nodes[3];
@@ -2649,6 +2664,41 @@ Layer *layerPopulateNormalNearTree(Layer *layer)
     radius = MAX(edgeLength, 2*height);
     nearInit(&layer->nearTree[normal], normal, xyz[0], xyz[1], xyz[2], radius);
     if (normal>0) nearInsert(layer->nearTree,&layer->nearTree[normal]);
+  }
+
+  return layer;
+}
+
+Layer *layerPopulateTriangleNearTree(Layer *layer)
+{
+  int i, triangle, nodes[3];
+  Grid *grid;
+  double node0[3], node1[3], node2[3], node3[3];
+  double center[3], dist[3], radius;
+
+  grid = layerGrid(layer);
+  if (NULL != layer->nearTree) free(layer->nearTree);
+
+  layer->nearTree = malloc(layerNTriangle(layer)*sizeof(Near));
+
+  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
+    if (layer != layerTriangle(layer,triangle,nodes)) return NULL;
+    if (grid != gridNodeXYZ( grid, nodes[0], node0 )) return NULL;
+    if (grid != gridNodeXYZ( grid, nodes[1], node1 )) return NULL;
+    if (grid != gridNodeXYZ( grid, nodes[2], node2 )) return NULL;
+    layerTriangleFourthNode(layer,triangle,node3);
+    for (i=0;i<3;i++) center[i] = 0.25*(node0[i]+node1[i]+node2[i]+node3[i]);
+    gridSubtractVector(node0,center,dist);
+    radius = gridVectorLength(dist);
+    gridSubtractVector(node1,center,dist);
+    radius = MAX(radius,gridVectorLength(dist));
+    gridSubtractVector(node2,center,dist);
+    radius = MAX(radius,gridVectorLength(dist));
+    gridSubtractVector(node3,center,dist);
+    radius = MAX(radius,gridVectorLength(dist));
+    nearInit(&layer->nearTree[triangle], 
+	     triangle, center[0], center[1], center[2], radius);
+    if (triangle>0) nearInsert(layer->nearTree,&layer->nearTree[triangle]);    
   }
 
   return layer;

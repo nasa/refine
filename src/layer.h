@@ -40,6 +40,7 @@ Layer *layerTriangle(Layer *, int triangle, int *nodes);
 Layer *layerTriangleDirection(Layer *, int triangle, double *direction);
 Layer *layerTriangleArea(Layer *, int triangle, double *area);
 Layer *layerTriangleCenter(Layer *, int triangle, double *center);
+Layer *layerTriangleFourthNode(Layer *, int triangle, double *xyz);
 Layer *layerTriangleMaxEdgeLength(Layer *, int triangle, double *length);
 Layer *layerNormalMaxEdgeLength(Layer *, int normal, double *length);
 int layerAddNormal(Layer *, int globalNodeId );
@@ -145,6 +146,7 @@ Layer *layerBlendNormals(Layer *, int blend, int *normals );
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 
 Layer *layerPopulateNormalNearTree(Layer *);
+Layer *layerPopulateTriangleNearTree(Layer *);
 Layer *layerTerminateCollidingNormals(Layer *);
 
 Layer *layerWriteTecplotFrontGeometry(Layer *);
