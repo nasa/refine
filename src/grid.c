@@ -50,17 +50,15 @@ Grid* gridCreate(int nnode, int maxcell, int nlist)
   grid->first = (N2C **)malloc(grid->nnode * sizeof(N2C *));
 
   for (i=0;i < grid->nnode; i++ ) grid->first[i] = NULL; 
-
   grid->n2c = (N2C *)malloc( grid->nlist * sizeof(N2C));
   for (i=0;i < grid->nlist-1; i++ ) { // pointer majic?
     grid->n2c[i].id   = EMPTY;
     grid->n2c[i].next = &grid->n2c[i+1];
   }
-  grid->n2c[nlist-1].id   = EMPTY;
-  grid->n2c[nlist-1].next = NULL;
+  grid->n2c[grid->nlist-1].id   = EMPTY;
+  grid->n2c[grid->nlist-1].next = NULL;
   grid->blank   = grid->n2c;
-  grid->current = &grid->n2c[nlist-1];
- 
+  grid->current = NULL;
   return  grid;
 }
 
