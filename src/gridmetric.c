@@ -1852,7 +1852,32 @@ Grid *gridNodeFaceMRDerivative (Grid *grid, int node, double *mr, double *dMRdx 
   return grid;
 }
 
-double gridCellMeanRatio( double *n0, double *n1, double *n2, double *n3 )
+double gridCellMeanRatio( double *xyz0, double *xyz1, double *xyz2, double *xyz3 )
 {
-  return 1.0;
+  double edge1[3], edge2[3], edge3[3];
+  double edge4[3], edge5[3], edge6[3];
+  double norm[3], volume, mr; 
+
+  gridSubtractVector( xyz1, xyz0, edge1);
+  gridSubtractVector( xyz2, xyz0, edge2);
+  gridSubtractVector( xyz3, xyz0, edge3);
+  gridSubtractVector( xyz2, xyz1, edge4);
+  gridSubtractVector( xyz3, xyz1, edge5);
+  gridSubtractVector( xyz3, xyz2, edge6);
+
+  gridCrossProduct( edge1, edge2, norm );
+
+  volume = gridDotProduct(norm,edge3)/6.0;
+
+  if (volume <= 0.0) return volume;
+
+  mr = 12.0 * pow(9.0*volume*volume,1.0/3.0) /
+    ( gridDotProduct(edge1,edge1) +
+      gridDotProduct(edge2,edge2) + 
+      gridDotProduct(edge3,edge3) +
+      gridDotProduct(edge4,edge4) +
+      gridDotProduct(edge5,edge5) +
+      gridDotProduct(edge6,edge6) );
+
+  return mr;
 }
