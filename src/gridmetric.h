@@ -75,6 +75,8 @@ void FaceMRDerivative(double x1, double y1, double z1,
 Grid *gridNodeFaceMR(Grid *g, int node, double *mr );
 Grid *gridNodeFaceMRDerivative(Grid *g, int node, double *mr, double *dMRdx );
 
+double gridCellMeanRatio( double *n0, double *n1, double *n2, double *n3 );
+
 END_C_DECLORATION
 
 #endif /* GRIDMETRIC_H */

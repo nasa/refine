@@ -387,6 +387,21 @@ VALUE grid_nodeFaceMRDerivative( VALUE self, VALUE node )
   return rb_mr;
 }
 
+VALUE grid_cellMeanRatio( VALUE self, VALUE rb_n0, VALUE rb_n1,  
+			  VALUE rb_n2, VALUE rb_n3 )
+{
+  int i;
+  double n0[3], n1[3], n2[3], n3[3];
+  GET_GRID_FROM_SELF;
+  for (i=0;i<3;i++) {
+    n0[i] = NUM2DBL(rb_ary_entry(rb_n0,i));
+    n1[i] = NUM2DBL(rb_ary_entry(rb_n1,i));
+    n2[i] = NUM2DBL(rb_ary_entry(rb_n2,i));
+    n3[i] = NUM2DBL(rb_ary_entry(rb_n3,i));
+  }
+  return rb_float_new(gridCellMeanRatio(n0,n1,n2,n3));
+}
+
 VALUE cGridMetric;
 
 void Init_GridMetric() 
@@ -426,4 +441,5 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "FaceMRDerivative", grid_FaceMRDerivative, 9);
   rb_define_method( cGridMetric, "nodeFaceMR", grid_nodeFaceMR, 1 );
   rb_define_method( cGridMetric, "nodeFaceMRDerivative", grid_nodeFaceMRDerivative, 1);
+  rb_define_method( cGridMetric, "cellMeanRatio", grid_cellMeanRatio, 4 );
 }

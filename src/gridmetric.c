@@ -1852,3 +1852,7 @@ Grid *gridNodeFaceMRDerivative (Grid *grid, int node, double *mr, double *dMRdx 
   return grid;
 }
 
+double gridCellMeanRatio( double *n0, double *n1, double *n2, double *n3 )
+{
+  return 1.0;
+}
