@@ -3158,21 +3158,35 @@ Grid *gridGlobalShiftNode(Grid *grid, int oldnnodeg, int newnnodeg,
 
 Grid *gridRenumberGlobalNodes(Grid *grid, int nnode, int *n2o)
 {
-  int local;
   int oldglobal, newglobal;
+  int oldposition, newposition;
+  int oldlocal, newlocal;
+  int fix;
+
+  if ( NULL == grid->sortedLocal ) gridCreateSortedGlobal(grid);
 
   for (newglobal=0;newglobal<nnode;newglobal++){
     oldglobal = n2o[newglobal];
-    if (newglobal != oldglobal) {
-      local = gridGlobal2Local(grid, oldglobal );
-      if ( EMPTY != local ) {
-	grid->nodeGlobal[local] = newglobal;
-      }
-    }
-    if ( oldglobal >= nnode ) {
-      local = gridGlobal2Local(grid, newglobal );
-      if ( EMPTY != local ) {
-	grid->nodeGlobal[local] = oldglobal;
+
+    newposition = sortSearch(grid->nsorted,grid->sortedGlobal,newglobal);
+    newlocal = EMPTY;
+    if (EMPTY!=newposition) newlocal = grid->sortedLocal[newposition];
+
+    oldposition = sortSearch(grid->nsorted,grid->sortedGlobal,oldglobal);
+    oldlocal = EMPTY;
+    if (EMPTY!=oldposition) oldlocal = grid->sortedLocal[oldposition];
+
+    if ( EMPTY != oldlocal ) grid->nodeGlobal[oldlocal] = newglobal;
+    if ( EMPTY != newlocal ) grid->nodeGlobal[newlocal] = oldglobal;
+
+    gridCreateSortedGlobal(grid);
+
+    /* fix n2o list */
+    n2o[newglobal] = newglobal;
+    for (fix=newglobal+1;fix<nnode;fix++) {
+      if ( newglobal == n2o[fix] ) {
+	n2o[fix] = oldglobal;
+	break;
       }
     }
   }
