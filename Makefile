@@ -10,3 +10,7 @@ install:
 clean:
 	( cd src && $(MAKE) clean )
 	( cd `uname` && $(MAKE) clean )
+
+bu:
+	echo `find . -name '*~'`
+	rm -f `find . -name '*~'`
