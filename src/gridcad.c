@@ -230,7 +230,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
   if ( !gridValidNode( grid, node ) ) return NULL;
   
   if ( gridSafeProjectNode(grid,node,0.95) != grid ) {
-    for ( it = adjFirst(grid->cellAdj,node); 
+    for ( it = adjFirst(gridCellAdj(grid),node); 
 	  adjValid(it); 
 	  it = adjNext(it) ){
       gridCell(grid, adjItem(it), nodes);
@@ -239,7 +239,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	  gridSmoothNode( grid, nodes[i]);
     }      
     gridSwapNearNodeExceptBoundary( grid, node);
-    for ( it = adjFirst(grid->cellAdj,node); 
+    for ( it = adjFirst(gridCellAdj(grid),node); 
 	  adjValid(it); 
 	  it = adjNext(it) ){
       gridCell(grid, adjItem(it), nodes);
@@ -248,12 +248,12 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	  gridSmoothNode( grid, nodes[i]);
     }      
     if ( gridSafeProjectNode(grid,node,0.9) != grid ) {
-      for ( it = adjFirst(grid->cellAdj,node); 
+      for ( it = adjFirst(gridCellAdj(grid),node); 
 	    adjValid(it); 
 	    it = adjNext(it) ){
 	gridCell(grid, adjItem(it), nodes);
 	for (i=0;i<4;i++) {
-	  for ( level2 = adjFirst(grid->cellAdj,nodes[i]); 
+	  for ( level2 = adjFirst(gridCellAdj(grid),nodes[i]); 
 		adjValid(level2); 
 		level2 = adjNext(level2) ){
 	    gridCell(grid, adjItem(level2), level2nodes);
@@ -268,7 +268,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	gridNodeXYZ(grid,node,xyz);
 	printf(" try to collapse-project %d X %10.5f Y %10.5f Z %10.5f\n",
 	       node,xyz[0],xyz[1],xyz[2]);
-	for ( it = adjFirst(grid->cellAdj,node); 
+	for ( it = adjFirst(gridCellAdj(grid),node); 
 	      adjValid(it); 
 	      it = adjNext(it) ){
 	  gridCell(grid, adjItem(it), nodes);
@@ -303,7 +303,7 @@ Grid *gridSmoothNearNode1(Grid *grid, int node )
   if (!gridValidNode(grid,node)) return NULL;
   
   nlist =0;
-  for ( it = adjFirst(grid->cellAdj,node); 
+  for ( it = adjFirst(gridCellAdj(grid),node); 
 	adjValid(it); 
 	it = adjNext(it) ){
     gridCell(grid, adjItem(it), nodes);
@@ -339,12 +339,12 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
   if (!gridValidNode(grid,node)) return NULL;
 
   nlist =0;
-  for ( it0 = adjFirst(grid->cellAdj,node); 
+  for ( it0 = adjFirst(gridCellAdj(grid),node); 
 	adjValid(it0); 
 	it0 = adjNext(it0) ){
     gridCell(grid, adjItem(it0), nodes0);
     for (i0=0;i0<4;i0++) {
-      for ( it = adjFirst(grid->cellAdj,nodes0[i0]); 
+      for ( it = adjFirst(gridCellAdj(grid),nodes0[i0]); 
 	    adjValid(it); 
 	    it = adjNext(it) ){
 	gridCell(grid, adjItem(it), nodes);
@@ -380,14 +380,15 @@ Grid *gridSmoothNode(Grid *grid, int node )
   double du[3], dv[3], dt[3];
   double dARdu[2], dARdt;
   int vol =1;
+  int nodes[3];
   int face, faceId;
   int edge, edgeId;
   int maxsmooth;
 
   if ( gridGeometryNode( grid, node ) ) return grid;
   if ( gridGeometryEdge( grid, node ) ) {
-    edge = adjItem(adjFirst(grid->edgeAdj, node));
-    edgeId = grid->edgeId[edge];
+    edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
+    gridEdge(grid,edge,nodes,&edgeId);
     gridNodeARDerivative ( grid, node, &ar, dARdx);
     gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
     gridNodeT( grid, node, edgeId, &t);
@@ -403,8 +404,8 @@ Grid *gridSmoothNode(Grid *grid, int node )
   }
   if ( gridGeometryFace( grid, node ) ) {
     for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
-      face = adjItem(adjFirst(grid->faceAdj, node));
-      faceId = grid->faceId[face];
+      face = adjItem(adjFirst(gridFaceAdj(grid), node));
+      gridFace(grid,face,nodes,&faceId);
       gridNodeARDerivative ( grid, node, &ar, dARdx);
       gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
       gridNodeUV( grid, node, faceId, uv);
@@ -441,6 +442,7 @@ Grid *gridSmoothNodeFaceMR(Grid *grid, int node )
   double du[3], dv[3], dt[3];
   double dMRdu[2], dMRdt;
   int vol =1;
+  int nodes[3];
   int face, faceId;
   int edge, edgeId;
 
@@ -448,8 +450,8 @@ Grid *gridSmoothNodeFaceMR(Grid *grid, int node )
   if ( !gridGeometryFace( grid, node ) ) return grid;
 
 
-  face = adjItem(adjFirst(grid->faceAdj, node));
-  faceId = grid->faceId[face];
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
+  gridFace(grid,face,nodes,&faceId);
   gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
   gridNodeUV( grid, node, faceId, uv);
   if ( !CADGeom_PointOnFace( vol, faceId,   
@@ -475,7 +477,7 @@ Grid *gridOptimizeT(Grid *grid, int node, double dt )
 
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
 
-  edge = adjItem(adjFirst(grid->edgeAdj, node));
+  edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
   edgeId = grid->edgeId[edge];
 
   gridNodeT( grid, node, edgeId, &tOrig);
@@ -518,7 +520,7 @@ Grid *gridOptimizeT(Grid *grid, int node, double dt )
     printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
   gridSetNodeT(grid, node, edgeId, t);
 
-  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridFaceAdj(grid),node); adjValid(it); it = adjNext(it) ){
     face = adjItem(it);
     faceId = grid->faceId[face];
     if ( grid != gridSafeProjectNodeToFace( grid, node, faceId, 1.0 ) ) 
@@ -543,7 +545,7 @@ Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
 
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
 
-  face = adjItem(adjFirst(grid->faceAdj, node));
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
   faceId = grid->faceId[face];
 
   gridNodeUV( grid, node, faceId, uvOrig);
@@ -608,7 +610,7 @@ Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
 
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
 
-  face = adjItem(adjFirst(grid->faceAdj, node));
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
   faceId = grid->faceId[face];
 
   gridNodeUV( grid, node, faceId, uvOrig);
@@ -761,7 +763,7 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
   xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
   ncell =0;
 
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it) ; it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it) ; it = adjNext(it) ){
     ncell++;
     cell = adjItem(it);
     for ( inode = 0 ; inode < 4 ; inode++ ){
