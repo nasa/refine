@@ -1,3 +1,8 @@
+2005-03-13 19:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/plan.c (planFree) to prevent a memory leak, free non-NULL
+	array pointers.
+
 2005-03-13 18:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/plan.c (planAddItemWithPriority) added a reallocation

@@ -33,6 +33,9 @@ Plan* planCreate( int max_size, int chunk_size )
 
 void planFree( Plan *plan )
 {
+  if (NULL!=plan->ranking)  free(plan->ranking);
+  if (NULL!=plan->priority) free(plan->priority);
+  if (NULL!=plan->item)     free(plan->item);
   free( plan );
 }
 

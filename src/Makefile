@@ -15,6 +15,7 @@ local:
 	./lineMT.rb
 	./queueMT.rb
 	./sortMT.rb
+	./planMT.rb
 	./intersectMT.rb
 	./gridMT.rb
 	./gridcadMT.rb
