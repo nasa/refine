@@ -52,7 +52,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     rate = exp(scale*log(1.05));
   }else{
     nLayer = (int)(60.0/scale);
-    rate = exp(scale*log(1.15));
+    rate = exp(scale*log(1.25));
   }
 
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
@@ -78,10 +78,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid);
   layerFindParentGeomEdges(layer);
-  if (bil) {
-    layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
-				      origin, direction );
-  }
+  if (bil) layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
+					     origin, direction );
 
   if (blendElement) {
     printf("inserting blends...\n");
@@ -94,7 +92,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     direction[0] = 1.0;
     direction[1] = 0.0;
     direction[2] = 0.0;
-    layerCreateWakeWithBGSpacing(layer, origin, direction, 1.0 );
+    layerCreateWakeWithBGSpacing(layer, origin, direction, 2.0 );
 
     origin[0] = -0.01;
     origin[1] = 0.0;
@@ -102,14 +100,12 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     direction[0] = 1.0;
     direction[1] = 0.0;
     direction[2] = 0.0;
-    layerAssignPolynomialNormalHeight(layer, 1.5e-4, 1.0e-3, 1.0, 
+    layerAssignPolynomialNormalHeight(layer, 1.0e-5, 4.0e-5, 1.0, 
 				      origin, direction );
     origin[0] = 1.0;
-    layerAssignPolynomialNormalHeight(layer, 1.15e-3, 1.0e-2, 2.0, 
+    layerAssignPolynomialNormalHeight(layer, 5.0e-5, 2.5e-3, 2.0, 
 				      origin, direction );
     layerScaleNormalHeight(layer,scale);
-    printf("split blends...\n");
-    layerSplitBlend(layer); 
     printf("split blends...\n");
     layerSplitBlend(layer); 
     printf("split blends...\n");
