@@ -619,79 +619,39 @@ Grid *gridFreezeGoodNodes(Grid *grid, double goodAR,
   return grid;
 }
 
-Grid *gridInsertLineOnSymPlane(Grid *grid, int n, 
-			       double x0, double x1, double z)
+Grid *gridVerifyEdgeExists(Grid *grid, int n0, int n1 )
 {
-  int i, newnode;
-  double x, y, ratio;
-
-  if ( n != 0 ) {
-    grid->nline = n+1;
-    grid->line = malloc( grid->nline * sizeof(int) );
-    for ( i=0 ; i<=n ; i++ ) {
-      ratio = (double)i / (double)n;
-      x = x0 + (x1-x0)*ratio;
-      y = 0.0;
-      newnode = gridInsertInToGeomFace(grid, x, y, z);
-      printf("insert node %10d x %10.5f y %10.5f z %10.5f\n",newnode,x,y,z);
-      if (EMPTY == newnode) printf("Could not insert node %d\n",i);
-      grid->line[i] = newnode;
-      gridFreezeNode( grid, newnode );
-    }
-  }
-
-  return grid;
-}
-
-Grid *gridInsertLine(Grid *grid, int n, int *line )
-{
-
-  grid->nline = n+1;
-  grid->line = line;
-
-  return grid;
-}
-
-Grid *gridVerifyEdgesInLine(Grid *grid)
-{
-  int i, i0, i1, n0, n1, nodes0[4], nodes1[4];
+  int i0, i1, nodes0[4], nodes1[4];
   bool gotIt;
   int removeNode;
   double ratio;
   AdjIterator it0, it1;
 
-  if ( grid->nline <= 0 || grid->line == NULL ) return NULL;
+  gotIt=gridCellEdge( grid, n0, n1 );
 
-  for ( i=1 ; i<grid->nline ; i++ ) {
-    n0 = grid->line[i-1];
-    n1 = grid->line[i];
-    if( !gridCellEdge( grid, n0, n1 ) ) {
-      printf("Segment %3i of line n0 %10d n1 %10d not found\n",i,n0,n1);
-      gotIt=FALSE;
-      if ( n0 != EMPTY && n1 != EMPTY ) {
-	for ( it0 = adjFirst(grid->cellAdj,n0); 
-	      adjValid(it0) && !gotIt; 
-	      it0 = adjNext(it0) ) {
-	  gridCell( grid, adjItem(it0), nodes0 );
-	  for(i0=0;i0<4&&!gotIt;i0++){
-	    for ( it1 = adjFirst(grid->cellAdj,nodes0[i0]); 
-		  adjValid(it1) && !gotIt; 
-		  it1 = adjNext(it1) ) {
-	      gridCell( grid, adjItem(it1), nodes1 );
-	      for(i1=0;i1<4&&!gotIt;i1++){
-		if (nodes1[i1] == n1 && !gridNodeFrozen( grid, nodes0[i0] )) {
-		  gridCollapseEdge(grid, n0, nodes0[i0], 0.0);
-		  gotIt = gridCellEdge( grid, n0, n1 );
-		  if (!gotIt) gridCollapseEdge(grid, n1, nodes0[i0], 0.0);
-		  gotIt = gridCellEdge( grid, n0, n1 );
-		}	    
-	      }     
-	    }
-	  }
+  if( !gotIt && n0 != EMPTY && n1 != EMPTY ) {
+    for ( it0 = adjFirst(grid->cellAdj,n0); 
+	  adjValid(it0) && !gotIt; 
+	  it0 = adjNext(it0) ) {
+      gridCell( grid, adjItem(it0), nodes0 );
+      for(i0=0;i0<4&&!gotIt;i0++){
+	for ( it1 = adjFirst(grid->cellAdj,nodes0[i0]); 
+	      adjValid(it1) && !gotIt; 
+	      it1 = adjNext(it1) ) {
+	  gridCell( grid, adjItem(it1), nodes1 );
+	  for(i1=0;i1<4&&!gotIt;i1++){
+	    if (nodes1[i1] == n1 && !gridNodeFrozen( grid, nodes0[i0] )) {
+	      gridCollapseEdge(grid, n0, nodes0[i0], 0.0);
+	      gotIt = gridCellEdge( grid, n0, n1 );
+	      if (!gotIt) gridCollapseEdge(grid, n1, nodes0[i0], 0.0);
+	      gotIt = gridCellEdge( grid, n0, n1 );
+	    }	    
+	  }     
 	}
-	if (gotIt) printf("  gotIt!\n");
       }
     }
   }
-  return grid;
+
+  if (gotIt) return grid;
+  return NULL;
 }

@@ -33,10 +33,8 @@ Grid *gridCollapseEdge(Grid *g, int n0, int n1, double ratio );
 Grid *gridFreezeGoodNodes(Grid *g, double goodAR, 
 			  double minLength, double maxLength );
 
-Grid *gridInsertLineOnSymPlane(Grid *g, int nSegments, 
-			       double x0, double x1, double z);
-Grid *gridInsertLine(Grid *g, int nSegments, int *line );
-Grid *gridVerifyEdgesInLine(Grid *g);
+Grid *gridVerifyEdgeExists(Grid *g, int n0, int n1);
+
 END_C_DECLORATION
 
 #endif /* GRIDINSERT_H */
