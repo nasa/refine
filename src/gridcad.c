@@ -162,8 +162,8 @@ Grid *gridRobustProject(Grid *grid)
 
 Grid *gridRobustProjectNode(Grid *grid, int node)
 {
-  int i,nodes[4];
-  AdjIterator it;
+  int i, j, nodes[4], level2nodes[4];
+  AdjIterator it, level2;
 
   if ( !gridValidNode( grid, node ) ) return NULL;
   
@@ -185,7 +185,25 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	if (!gridGeometryFace( grid, nodes[i])) 
 	  gridSmoothNode( grid, nodes[i]);
     }      
-    if ( gridSafeProjectNode(grid,node) != grid ) return NULL;
+    if ( gridSafeProjectNode(grid,node) != grid ) {
+      for ( it = adjFirst(grid->cellAdj,node); 
+	    adjValid(it); 
+	    it = adjNext(it) ){
+	gridCell(grid, adjItem(it), nodes);
+	for (i=0;i<4;i++) {
+	  for ( level2 = adjFirst(grid->cellAdj,nodes[i]); 
+		adjValid(level2); 
+		level2 = adjNext(level2) ){
+	    gridCell(grid, adjItem(level2), level2nodes);
+	    for (j=0;j<4;j++) {
+	      if (!gridGeometryFace( grid, level2nodes[j])) 
+		gridSmoothNode( grid, level2nodes[j]);
+	    }
+	  }
+	}
+      }
+      if ( gridSafeProjectNode(grid,node) != grid )return NULL;
+    }
   }
 
   return grid;
