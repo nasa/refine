@@ -20,6 +20,7 @@ typedef struct Layer Layer;
 
 Layer *layerCreate(Grid *);
 Layer *formAdvancingFront( Grid *grid, char *project );
+Grid *layerGrid(Layer *);
 void layerFree(Layer *);
 void layerSortGlobalNodes(void *layer, int *o2n);
 int layerNFront(Layer *);

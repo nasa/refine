@@ -22,8 +22,9 @@
 
 /******************** Private Functions ******************************/
 
-static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Grid *grid, Layer *layer)
+static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Layer *layer)
 {
+  Grid *grid;
   int normal, edgeId, globalNode;
   double direction[3],edgexyz[3],dumxyz[3];
   double t;
@@ -32,6 +33,8 @@ static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Grid *grid, Layer *
   int    nodes[2];
   CADCurvePtr *phantomEdge;
   
+  grid = layerGrid(layer);
+
   if( (phantomEdge=(CADCurvePtr *)calloc(nGeomEdge,sizeof(CADCurvePtr))) == NULL
  ) {
     printf("ERROR: Allocation of Phantom Edges\n");
@@ -115,7 +118,7 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
     return 1;
   }
 
-  if( (phantomEdge=makePhantomEdges(vol,nGeomEdge,grid,layer)) == NULL ) {
+  if( (phantomEdge=makePhantomEdges(vol,nGeomEdge,layer)) == NULL ) {
     printf("ERROR: Could NOT create Phantom Edges line %d of %s\n.",__LINE__, __FILE__);
     return 1;
   }

@@ -151,6 +151,11 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   return layer;
 }
 
+Grid *layerGrid(Layer *layer)
+{
+  return layer->grid;
+}
+
 void layerFree(Layer *layer)
 {
   gridDetachNodeSorter( layer->grid );
