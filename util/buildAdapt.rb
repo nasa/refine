@@ -24,22 +24,37 @@ class Package
   self
  end
 
- def check_out
+ def checkout
   command = "cvs -q #@repository co -P #@name"
   puts command
   `#{command}`
   self
  end
 
- def clean_check_out
+ def clean_checkout
   kill
-  check_out
+  checkout
   self
  end
 
  def bootstrap
-  autogen = File.join(path,"autogen.sh")
-  `(cd #@path && #{autogen} > autogen.out)` if File.executable?(autogen)
+  autogen = File.join(@path,"autogen.sh")
+  `(cd #@path && #{autogen} > build.autogen)` if File.executable?(autogen)
+  self
+ end
+
+ def with
+  "--with-#{@name}=#{@path}"
+ end
+
+ def configure( option1="", option2="" ) 
+  `(cd #@path && ./configure --prefix=#@path #{option1} #{option2} > build.configure)`
+  self
+ end
+
+ def make_make_install
+  `(cd #@path && make > build.make && make install > build.install )`
+  self
  end
 
 end
@@ -49,4 +64,6 @@ sdk = Package.new("SDK")
 refine = Package.new("refine")
 hefss = Package.new("HEFSS.rps")
 
-sdk.bootstrap
+capri.clean_checkout
+sdk.clean_checkout.bootstrap.configure(capri.with).make_make_install
+refine.clean_checkout.bootstrap.configure(sdk.with,capri.with).make_make_install
