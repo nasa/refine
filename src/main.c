@@ -62,6 +62,8 @@ int main( int argc, char *argv[] )
 
   printf("adapting grid...\n");
   gridResetSpacing(grid);
+  gridScaleSpacingSphereDirection(grid,0.0,0.0,0.0,0.3,
+				  0.1,2.5,1.0);
   //  gridImportAdapt(grid, "../test/adapt_hess");
   printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	 gridMinAR(grid),gridMinVolume(grid));
