@@ -186,4 +186,4 @@ fi
 AC_SUBST([FELISAheader])
 AC_SUBST([FELISAlibrary])
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile src/Makefile)
