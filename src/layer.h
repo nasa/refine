@@ -34,6 +34,7 @@ Layer *layerNormalFronts(Layer *, int normal, int maxfront, int *fronts);
 Layer *layerNormalDirection(Layer *, int normal, double *direction);
 Layer *layerConstrainNormal(Layer *, int bc );
 int layerConstrained(Layer *, int normal );
+Layer *layerAdvance(Layer *, double height );
 
 END_C_DECLORATION
 

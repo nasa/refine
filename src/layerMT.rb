@@ -143,6 +143,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil          layer = Layer.new(grid)
   assert_equal layer,     layer.makeFront([1])
   assert_equal 2,         layer.nfront
+  assert_nil              layer.normalDirection(0)
   assert_equal layer,     layer.makeNormal
   assert_equal 4,         layer.nnormal
   assert_equal [0.0,0.0,1.0], layer.frontDirection(0)
@@ -153,7 +154,24 @@ class TestLayer < Test::Unit::TestCase
   assert_equal direction, layer.normalDirection(1)
   assert_equal [0.0,0.0,1.0], layer.normalDirection(2)
   assert_equal [0.0,1.0,0.0], layer.normalDirection(3)
+ end
 
+ def testAdvanceLayer
+  assert_not_nil          grid = Grid.new(7,4,1,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addCell(0,1,2,3)
+  assert_equal 1,         grid.ncell
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal 1,         layer.nfront
+  assert_equal layer,     layer.makeNormal
+  assert_equal 3,         layer.nnormal
+  assert_equal layer,     layer.advance(0.1)
+  #assert_equal 4,         grid.ncell
  end
 
 end

@@ -287,3 +287,8 @@ int layerConstrained(Layer *layer, int normal )
   return layer->normal[normal].constrained;
 }
 
+Layer *layerAdvance(Layer *layer, double height )
+{
+  return layer;
+}
+

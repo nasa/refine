@@ -160,6 +160,12 @@ VALUE layer_constrained( VALUE self, VALUE normal )
   return INT2NUM(layerConstrained(layer,NUM2INT(normal)));
 }
 
+VALUE layer_advance( VALUE self, VALUE height )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerAdvance(layer,NUM2DBL(height))?self:Qnil );
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -180,4 +186,5 @@ void Init_Layer()
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
+  rb_define_method( cLayer, "advance", layer_advance, 1 );
 }
