@@ -29,7 +29,7 @@ int intersectSide( double *vertex0, double *vertex1, double *vertex2,
 }
 
 bool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex2,
-			      double *node)
+			    double *node)
 {
   int i;
   double side[3], otherSide[3], target[3];
@@ -82,8 +82,9 @@ bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
   coplanar = (h0==0 && h1==0);
 
   if (!coplanar) {
-    denom = h0-h1;
-    for(i=0;i<3;i++) intersection[i] = ( h0*dir1[i] + h1*dir0[i] );
+    denom = 1/(h0-h1);
+    for(i=0;i<3;i++) intersection[i] = ( h0*dir1[i] - h1*dir0[i] )*denom;
+    return intersectTriangleNode(vertex0, vertex1, vertex2, intersection);
   }
 
   return TRUE;

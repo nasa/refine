@@ -49,7 +49,7 @@ class TestIntersect < Test::Unit::TestCase
   v1 = [1,0,0]
   v2 = [0,1,0]
   n0 = [0.3,0.3,1]
-  n1 = [0,3,0.3,1]
+  n1 = [0.3,0.3,1]
   assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
   n0 = [0.3,0.3,-1]
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
@@ -59,6 +59,30 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
   n0 = [0.3,0.3,-0]
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+ end
+
+ def testPlaneAndSegmentThroughNick
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  n0 = [0.5,0.5,10]
+  n1 = [0.5,0.5,-1]
+  assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  n0 = [0,0,18]
+  n1 = [0,0,-3]
+  assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+ end
+
+ def testPlaneAndSegmentThroughMiss
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  n0 = [1,1,10]
+  n1 = [1,1,-1]
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  n0 = [0,-1,18]
+  n1 = [0,-1,-3]
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
 
