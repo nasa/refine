@@ -207,7 +207,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->connValue = NULL;
   grid->connRanking = NULL;
 
-  grid->degAR = 0;
+  grid->costDegree = 0;
 
   grid->costFunction = gridCOST_FCN_MEAN_RATIO;
   grid->costConstraint = gridCOST_CNST_VOLUME;
@@ -3941,43 +3941,42 @@ Grid *gridSetCostConstraint(Grid *grid, int costConstraint)
   return grid;
 }
 
-int gridStoredARDegree( Grid *grid )
+int gridStoredCostDegree( Grid *grid )
 {
-  return grid->degAR;
+  return grid->costDegree;
 }
 
-Grid *gridClearStoredAR( Grid *grid )
+Grid *gridClearStoredCost( Grid *grid )
 {
-  grid->degAR = 0;
+  grid->costDegree = 0;
   return grid;
 }
 
-Grid *gridStoreAR( Grid *grid, double AR, double *dARdX )
+Grid *gridStoreCost( Grid *grid, double cost, double *costDerivative )
 {
-  if (grid->degAR == MAXDEG) return NULL;
+  if (grid->costDegree == MAXDEG) return NULL;
 
-  grid->AR[grid->degAR] = AR;
-  grid->dARdX[0+3*grid->degAR] = dARdX[0];
-  grid->dARdX[1+3*grid->degAR] = dARdX[1];
-  grid->dARdX[2+3*grid->degAR] = dARdX[2];
+  grid->storedCost[grid->costDegree] = cost;
+  grid->storedCostDerivative[0+3*grid->costDegree] = costDerivative[0];
+  grid->storedCostDerivative[1+3*grid->costDegree] = costDerivative[1];
+  grid->storedCostDerivative[2+3*grid->costDegree] = costDerivative[2];
 
-  grid->degAR++;
+  grid->costDegree++;
   return grid;
 }
 
-double gridStoredAR( Grid *grid, int index )
+double gridStoredCost( Grid *grid, int index )
 {
-  if ( index < 0 || index >= gridStoredARDegree( grid ) ) return DBL_MAX;
-  return grid->AR[index];
+  if ( index < 0 || index >= gridStoredCostDegree( grid ) ) return DBL_MAX;
+  return grid->storedCost[index];
 }
 
-Grid *gridStoredARDerivative( Grid *grid, int index, double *dARdX )
+Grid *gridStoredCostDerivative( Grid *grid, int index, double *costDerivative )
 {
-  if ( index < 0 || index >= gridStoredARDegree( grid ) ) return NULL;
-  dARdX[0] = grid->dARdX[0+3*index];
-  dARdX[1] = grid->dARdX[1+3*index];
-  dARdX[2] = grid->dARdX[2+3*index];
-  
+  if ( index < 0 || index >= gridStoredCostDegree( grid ) ) return NULL;
+  costDerivative[0] = grid->storedCostDerivative[0+3*index];
+  costDerivative[1] = grid->storedCostDerivative[1+3*index];
+  costDerivative[2] = grid->storedCostDerivative[2+3*index];
   return grid;
 }
 

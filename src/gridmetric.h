@@ -72,7 +72,7 @@ void gridCellAspectRatioDerivative( double *xyz1, double *xyz2,
 				    double *ar, double *dARdx);
 
 Grid *gridNodeARDerivative(Grid *g, int node, double *ar, double *dARdx );
-Grid *gridStoreAllARDerivatives(Grid *g, int node );
+Grid *gridStoreVolumeCostDerivatives(Grid *g, int node );
 double gridMinVolume(Grid *g);
 GridBool gridNegCellAroundNode(Grid *g, int node );
 GridBool gridNegCellAroundNodeExceptGem(Grid *g, int node );

@@ -1,3 +1,8 @@
+2005-02-03 13:44 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c,src/gridmetric.c,src/gridcad.c renamed the stored AR
+	routines to stored cost.
+	
 2005-02-03 13:11 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridStoreAR) renamed from gridAddStoredAR. Also

@@ -964,26 +964,26 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   int iteration;
 
   if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;
-  if ( grid != gridStoreAllARDerivatives(grid, node ) ) return NULL;
+  if ( grid != gridStoreVolumeCostDerivatives(grid, node ) ) return NULL;
 
   minAR =2.1;
   minCell = EMPTY;
-  for (i=0;i<gridStoredARDegree(grid);i++){
-    if (gridStoredAR(grid,i)<minAR){
-      minAR = gridStoredAR(grid,i);
+  for (i=0;i<gridStoredCostDegree(grid);i++){
+    if (gridStoredCost(grid,i)<minAR){
+      minAR = gridStoredCost(grid,i);
       minCell = i;
     }
   }
 
   searchFlag = FALSE;
   if (searchFlag) {
-    gridStoredARDerivative(grid, minCell, searchDirection);
+    gridStoredCostDerivative(grid, minCell, searchDirection);
   }else{
     nearestCell=EMPTY;
     nearestAR = 2.1;
-    for (i=0;i<gridStoredARDegree(grid);i++){
+    for (i=0;i<gridStoredCostDegree(grid);i++){
       if ( i != minCell){
-	nearestDifference = ABS(gridStoredAR(grid,i)-minAR);
+	nearestDifference = ABS(gridStoredCost(grid,i)-minAR);
 	if (nearestDifference<nearestAR) {
 	  nearestCell=i;
 	  nearestAR = nearestDifference;
@@ -991,11 +991,11 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
       }
     }
     if (nearestCell == EMPTY || nearestAR > 0.001 ){
-      gridStoredARDerivative(grid, minCell, searchDirection);
-      gridStoredARDerivative(grid, minCell, minDirection);
+      gridStoredCostDerivative(grid, minCell, searchDirection);
+      gridStoredCostDerivative(grid, minCell, minDirection);
     }else{
-      gridStoredARDerivative(grid, minCell, minDirection);
-      gridStoredARDerivative(grid, nearestCell, nearestDirection);
+      gridStoredCostDerivative(grid, minCell, minDirection);
+      gridStoredCostDerivative(grid, nearestCell, nearestDirection);
       g00 = gridDotProduct(minDirection,minDirection);
       g11 = gridDotProduct(nearestDirection,nearestDirection);
       g01 = gridDotProduct(minDirection,nearestDirection);
@@ -1032,11 +1032,11 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
 
   alpha = 1.0;
-  for (i=0;i<gridStoredARDegree(grid);i++){
+  for (i=0;i<gridStoredCostDegree(grid);i++){
     if (i != minCell ) {
-      gridStoredARDerivative(grid,i,dARdX);
+      gridStoredCostDerivative(grid,i,dARdX);
       projection = gridDotProduct(searchDirection,dARdX);
-      deltaAR = gridStoredAR(grid,i) - minAR;
+      deltaAR = gridStoredCost(grid,i) - minAR;
       if (ABS(length-projection) < 1e-12){
 	currentAlpha=0.0; /* no intersection */
       }else{
@@ -1047,7 +1047,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   }
 
   //printf( "node %5d deg %3d active %3d old %12.9f\n",
-  //	  node, gridStoredARDegree(grid), minCell, minAR );
+  //	  node, gridStoredCostDegree(grid), minCell, minAR );
   
   goodStep = FALSE;
   actualImprovement = 0.0;
@@ -1084,7 +1084,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   }
 
   //printf( "node %5d deg %3d active %3d old %8.5f new %8.5f\n",
-  //  node, gridStoredARDegree(grid), minCell, minAR, newAR );
+  //  node, gridStoredCostDegree(grid), minCell, minAR, newAR );
 
   if ( actualImprovement <= 0.0  ){
     gridSetNodeXYZ(grid,node,origXYZ);

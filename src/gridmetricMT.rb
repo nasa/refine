@@ -460,8 +460,8 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv, ans[2], tol
   assert_in_delta 0.0,   ans[3], tol  
 
-  assert_nil             grid.storeAllARDerivatives(10)
-  assert_equal grid,     grid.storeAllARDerivatives(0)
+  assert_nil             grid.storeVolumeCostDerivatives(10)
+  assert_equal grid,     grid.storeVolumeCostDerivatives(0)
  end
 
  def testEdgeErrorDerivatives
@@ -498,14 +498,14 @@ class TestGridMetric < Test::Unit::TestCase
 	       2, 
 	       3, 
 	       grid.addNode(0.7,0.7,0.7) )
-  assert_equal 0,        grid.storedARDegree
-  assert_nil             grid.storeAllARDerivatives(10)
+  assert_equal 0,        grid.storedCostDegree
+  assert_nil             grid.storeVolumeCostDerivatives(10)
   assert_equal 1,        grid.cellDegree(0)
-  assert_equal grid,     grid.storeAllARDerivatives(0)
-  assert_equal 1,        grid.storedARDegree
+  assert_equal grid,     grid.storeVolumeCostDerivatives(0)
+  assert_equal 1,        grid.storedCostDegree
   assert_equal 2,        grid.cellDegree(1)
-  assert_equal grid,     grid.storeAllARDerivatives(1)
-  assert_equal 2,        grid.storedARDegree
+  assert_equal grid,     grid.storeVolumeCostDerivatives(1)
+  assert_equal 2,        grid.storedCostDegree
  end
 
  def testRightHandedFaces

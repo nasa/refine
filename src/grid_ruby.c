@@ -1128,49 +1128,49 @@ VALUE grid_setCostConstraint( VALUE self, VALUE costConstraint )
   return ( grid == gridSetCostConstraint(grid,NUM2INT(costConstraint))?self:Qnil );
 }
 
-VALUE grid_storedARDegree( VALUE self )
+VALUE grid_storedCostDegree( VALUE self )
 {
   GET_GRID_FROM_SELF;
-  return INT2NUM( gridStoredARDegree(grid) );
+  return INT2NUM( gridStoredCostDegree(grid) );
 }
 
-VALUE grid_storedAR( VALUE self, VALUE rb_node )
+VALUE grid_storedCost( VALUE self, VALUE node )
 {
-  double ar;
+  double cost;
   GET_GRID_FROM_SELF;
-  ar = gridStoredAR(grid, NUM2INT(rb_node));
-  if ( ar == DBL_MAX ) return Qnil;
-  return rb_float_new(ar);
+  cost = gridStoredCost(grid, NUM2INT(node));
+  if ( cost == DBL_MAX ) return Qnil;
+  return rb_float_new(cost);
 }
 
-VALUE grid_storedARDerivative( VALUE self, VALUE rb_node )
+VALUE grid_storedCostDerivative( VALUE self, VALUE node )
 {
-  VALUE rb_ar;
-  double dar[3];
+  VALUE rb_deriv;
+  double deriv[3];
   GET_GRID_FROM_SELF;
-  if (grid != gridStoredARDerivative(grid, NUM2INT(rb_node), dar)) return Qnil;
-  rb_ar = rb_ary_new2(3);
-  rb_ary_store( rb_ar, 0, rb_float_new(dar[0]) );
-  rb_ary_store( rb_ar, 1, rb_float_new(dar[1]) );
-  rb_ary_store( rb_ar, 2, rb_float_new(dar[2]) );
-  return rb_ar;
+  if (grid != gridStoredCostDerivative(grid, NUM2INT(node), deriv)) return Qnil;
+  rb_deriv = rb_ary_new2(3);
+  rb_ary_store( rb_deriv, 0, rb_float_new(deriv[0]) );
+  rb_ary_store( rb_deriv, 1, rb_float_new(deriv[1]) );
+  rb_ary_store( rb_deriv, 2, rb_float_new(deriv[2]) );
+  return rb_deriv;
 }
 
-VALUE grid_storeAR( VALUE self, VALUE rb_ar, VALUE rb_dar )
+VALUE grid_storeCost( VALUE self, VALUE rb_cost, VALUE rb_deriv )
 {
-  double ar, dar[3];
+  double cost, deriv[3];
   GET_GRID_FROM_SELF;
-  ar = NUM2DBL( rb_ar );
-  dar[0] = NUM2DBL( rb_ary_entry( rb_dar, 0) );
-  dar[1] = NUM2DBL( rb_ary_entry( rb_dar, 1) );
-  dar[2] = NUM2DBL( rb_ary_entry( rb_dar, 2) );
-  return( grid == gridStoreAR( grid, ar, dar )?self:Qnil);
+  cost = NUM2DBL( rb_cost );
+  deriv[0] = NUM2DBL( rb_ary_entry( rb_deriv, 0) );
+  deriv[1] = NUM2DBL( rb_ary_entry( rb_deriv, 1) );
+  deriv[2] = NUM2DBL( rb_ary_entry( rb_deriv, 2) );
+  return( grid == gridStoreCost( grid, cost, deriv )?self:Qnil);
 }
 
-VALUE grid_clearStoredAR( VALUE self )
+VALUE grid_clearStoredCost( VALUE self )
 {
   GET_GRID_FROM_SELF;
-  return( grid == gridClearStoredAR( grid )?self:Qnil);
+  return( grid == gridClearStoredCost( grid )?self:Qnil);
 }
 
 
@@ -1339,10 +1339,10 @@ void Init_Grid()
   rb_define_method( cGrid, "costConstraint", grid_costConstraint, 0 );
   rb_define_method( cGrid, "setCostConstraint", grid_setCostConstraint, 1 );
 
-  rb_define_method( cGrid, "storedARDegree", grid_storedARDegree, 0 );
-  rb_define_method( cGrid, "storedAR", grid_storedAR, 1 );
-  rb_define_method( cGrid, "storedARDerivative", grid_storedARDerivative, 1 );
-  rb_define_method( cGrid, "storeAR", grid_storeAR, 2 );
-  rb_define_method( cGrid, "clearStoredAR", grid_clearStoredAR, 0 );
+  rb_define_method( cGrid, "storedCostDegree", grid_storedCostDegree, 0 );
+  rb_define_method( cGrid, "storedCost", grid_storedCost, 1 );
+  rb_define_method( cGrid, "storedCostDerivative", grid_storedCostDerivative, 1 );
+  rb_define_method( cGrid, "storeCost", grid_storeCost, 2 );
+  rb_define_method( cGrid, "clearStoredCost", grid_clearStoredCost, 0 );
 
 }

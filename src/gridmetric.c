@@ -808,7 +808,7 @@ Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
   return grid;
 }
 
-Grid *gridStoreAllARDerivatives (Grid *grid, int node )
+Grid *gridStoreVolumeCostDerivatives (Grid *grid, int node )
 {
   AdjIterator it;
   int nodes[4], orientedNodes[4];
@@ -816,7 +816,7 @@ Grid *gridStoreAllARDerivatives (Grid *grid, int node )
 
   if ( !gridValidNode( grid, node) ) return NULL;
 
-  gridClearStoredAR( grid );
+  gridClearStoredCost( grid );
   for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     gridCell(grid,adjItem(it),nodes);
     orientedNodes[0] = node;
@@ -827,11 +827,11 @@ Grid *gridStoreAllARDerivatives (Grid *grid, int node )
     }
     gridOrient( grid, nodes, orientedNodes);
     if (grid != gridCellARDerivative(grid, orientedNodes, &AR, dARdX ) ) {
-      gridClearStoredAR( grid );
+      gridClearStoredCost( grid );
       return NULL;
     }
-    if (grid != gridStoreAR(grid, AR, dARdX ) ) {
-      gridClearStoredAR( grid );
+    if (grid != gridStoreCost(grid, AR, dARdX ) ) {
+      gridClearStoredCost( grid );
       return NULL;
     }
   }

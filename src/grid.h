@@ -111,9 +111,9 @@ struct Grid {
   double *connValue;
   int *connRanking;
 
-  int degAR;
-  double AR[MAXDEG];
-  double dARdX[3*MAXDEG];
+  int costDegree;
+  double storedCost[MAXDEG];
+  double storedCostDerivative[3*MAXDEG];
 
   FILE *tecplotGeomFile;
   FILE *tecplotScalarFile;
@@ -444,11 +444,11 @@ Grid *gridSetCostConstraint(Grid *g, int costConstraint);
 #define gridCOST_CNST_VOLUME (0x01)
 #define gridCOST_CNST_VALID  (0x02)
 
-int gridStoredARDegree( Grid *g );
-Grid *gridClearStoredAR( Grid *g );
-Grid *gridStoreAR( Grid *g, double AR, double *dARdX );
-double gridStoredAR( Grid *g, int index );
-Grid *gridStoredARDerivative( Grid *g, int index, double *dARdX );
+int gridStoredCostDegree( Grid *g );
+Grid *gridClearStoredCost( Grid *g );
+Grid *gridStoreCost( Grid *g, double cost, double *costDerivative );
+double gridStoredCost( Grid *g, int index );
+Grid *gridStoredCostDerivative( Grid *g, int index, double *costDerivative );
 
 #define gridLines(grid) (NULL==grid?NULL:grid->lines)
 Grid *gridFreezeLinesNodes(Grid *g);
