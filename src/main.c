@@ -67,28 +67,22 @@ int main( int argc, char *argv[] )
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));
-  printf("edge swapping grid...\n");
-  gridSwap(grid);
-
-  printf("new size: %d nodes %d faces %d cells.\n",
-	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
-  printf("minimum Volume %12.8e\n",gridMinVolume(grid));
-
-  if (!gridRightHandedBoundary(grid)) 
-    printf("ERROR: modifed grid does not have right handed boundaries\n");
 
   printf("projecting grid...\n");
   gridProject(grid);
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
 
-  for (i=0;i<0;i++){
+  for (i=0;i<2;i++){
+    printf("iteration %3d ...\n",i);
     printf("edge swapping grid...\n");gridSwap(grid);
     printf("node smoothin grid...\n");gridSmooth(grid);
     printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
     printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
   }
+
+  if (!gridRightHandedBoundary(grid)) 
+    printf("ERROR: modifed grid does not have right handed boundaries\n");
 
   output = "../test/om6_out";
   printf("writing output project %s\n",output);
