@@ -133,7 +133,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
   int edge, edgeId;
   double t0, t1, newT;
-
+  double minAR;
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
 
   gap0 = gridEqu(grid,0);
@@ -149,6 +149,25 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   if ( newnode == EMPTY ) return EMPTY;
   gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
   gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
+
+  minAR = 2.0; 
+  for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
+    cell = gridGem(grid,igem);
+    gridCell(grid, cell, nodes);
+    for ( inode = 0 ; inode < 4 ; inode++ ){
+      node = nodes[inode];
+      newnodes0[inode]=node;
+      newnodes1[inode]=node;
+      if ( node == n0 ) newnodes0[inode] = newnode;
+      if ( node == n1 ) newnodes1[inode] = newnode;
+    }
+    minAR = MIN(minAR,gridAR(grid,newnodes0));
+    minAR = MIN(minAR,gridAR(grid,newnodes1));
+  }
+  if (minAR < 0.01) {
+    gridRemoveNode(grid,newnode);
+    return EMPTY;
+  }
 
   for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
     cell = gridGem(grid,igem);
@@ -219,12 +238,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
   }
   
-  if ( gridNegCellAroundNode(grid, newnode) ) {
-    gridCollapseEdge(grid, queue, n0, newnode, 0.0 );
-    return EMPTY;
-  }else{
-    return newnode;
-  }
+  return newnode;
 }
 
 int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,

@@ -1,9 +1,19 @@
+2004-09-15 10:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeAt) The new cell configuration
+	with the inserted node is tested for its minimum aspect ratio. A
+	node will not be inserted if causes the aspect ratio to drop below
+	0.01. Note that negative cells have an aspect ratio of -1.0, so
+	the creation of negative cells will also be avoided. This replaces
+	the logic that would "undo" a split with an edge collapse, which
+	was not correctly paralleized.
+
 2004-09-10 17:36 Bill Jones <w.t.jones@larc.nasa.gov>
 
-	* src/gridcad.c (gridSmoothNodeQP) added check to avoid 0/0 if
-	two incedent cells have same ARDerivative resulting in same
-	minDirection as nearestDirection where ???covariant metric terms???
-	are all equal, therefore 0/0 => NaN.
+	* src/gridcad.c (gridSmoothNodeQP) added check to avoid 0/0 if two
+	incedent cells have same ARDerivative resulting in same
+	minDirection as nearestDirection where ???covariant metric
+	terms??? are all equal, therefore 0/0 => NaN.
 
 2004-09-03 10:10 Mike Park  <mike.park@nasa.gov>
 
