@@ -43,7 +43,7 @@ struct Blend {
 
 struct Layer {
   Grid *grid;
-  int nfront;
+  int maxfront, nfront;
   Front *front;
   int nFrontParent, *frontParent;
   int nblend;
@@ -62,6 +62,7 @@ Layer *layerCreate( Grid *grid )
   layer = malloc(sizeof(Layer));
   layer->grid = grid;
   gridAttachNodeSorter( grid, layerSortGlobalNodes, layer );
+  layer->maxfront=0;
   layer->nfront=0;
   layer->front=NULL;
   layer->nFrontParent=0;
@@ -241,6 +242,11 @@ void layerSortGlobalNodes(void *voidLayer, int *o2n)
 
 }
 
+int layerMaxFront(Layer *layer)
+{
+  return layer->nfront;
+}
+
 int layerNFront(Layer *layer)
 {
   return layer->nfront;
@@ -263,41 +269,20 @@ int layerMaxNode(Layer *layer)
 
 Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
 {
-  int i, ibc, face, nface, id, nodes[3], ifront;
+  int i, ibc, face, id, nodes[3];
+  Grid *grid;
 
-  layer->nfront=0;
+  grid = layerGrid(layer);
 
   layer->nFrontParent = nbc;
   layer->frontParent = malloc( layer->nFrontParent * sizeof(int) );
   for(ibc=0;ibc<layer->nFrontParent;ibc++) layer->frontParent[ibc] = bc[ibc];
 
   for (ibc=0;ibc<nbc;ibc++){
-    nface =0;
     for(face=0;face<gridMaxFace(layer->grid);face++){
-      if (layer->grid == gridFace(layer->grid,face,nodes,&id) &&
-	  id==bc[ibc] ) nface++;
-    }
-    layer->nfront += nface;
-    //printf("boundary %d with %d faces added to the %d face front.\n",
-    //   bc[ibc],nface,layer->nfront);
-  }
-  
-  layer->front = malloc( 3 * layer->nfront * sizeof(Front) );
-
-  ifront =0;
-  for (ibc=0;ibc<nbc;ibc++){
-    for(face=0;face<gridMaxFace(layer->grid);face++){
-      if (layer->grid == gridFace(layer->grid,face,nodes,&id) &&
+      if (grid == gridFace(grid,face,nodes,&id) &&
 	  id==bc[ibc] ) {
-	layer->front[ifront].globalNode[0] = nodes[0];
-	layer->front[ifront].globalNode[1] = nodes[1];
-	layer->front[ifront].globalNode[2] = nodes[2];
-	for (i=0;i<3;i++){
-	  layer->front[ifront].normal[i] = EMPTY;
-	  layer->front[ifront].constrainedSide[i] = 0;
-	  layer->front[ifront].parentEdge[i] = 0;
-	}
-	ifront++;
+	layerAddFront(layer,nodes[0],nodes[1],nodes[2]);
       }
     }
   }
@@ -313,6 +298,33 @@ bool layerParentFace(Layer *layer, int faceId )
     if (faceId == layer->frontParent[i]) return TRUE;
 
   return FALSE;
+}
+
+Layer *layerAddFront(Layer *layer, int n0, int n1, int n2 )
+{
+  int i;
+
+  if (layer->nfront >= layer->maxfront) {
+    layer->maxfront += 5000;
+    if (layer->front == NULL) {
+      layer->front = malloc(layer->maxfront*sizeof(Front));
+    }else{
+      layer->front = realloc(layer->front,layer->maxfront*sizeof(Front));
+    }
+  }
+
+  layer->front[layer->nfront].globalNode[0] = n0;
+  layer->front[layer->nfront].globalNode[1] = n1;
+  layer->front[layer->nfront].globalNode[2] = n2;
+  for (i=0;i<3;i++){
+    layer->front[layer->nfront].normal[i] = EMPTY;
+    layer->front[layer->nfront].constrainedSide[i] = 0;
+    layer->front[layer->nfront].parentEdge[i] = 0;
+  }
+
+  layer->nfront++;
+
+  return layer;
 }
 
 Layer *layerFront(Layer *layer, int front, int *nodes )
@@ -456,7 +468,6 @@ Layer *layerMakeNormal(Layer *layer)
 
 Layer *layerFrontNormals(Layer *layer, int front, int *normals )
 {
-  if (layerNNormal(layer) == 0 ) return NULL;
   if (front < 0 || front >= layerNFront(layer)) return NULL;
   normals[0] = layer->front[front].normal[0];
   normals[1] = layer->front[front].normal[1];

@@ -27,6 +27,12 @@ VALUE layer_nfront( VALUE self )
   return INT2NUM( layerNFront(layer) );
 }
 
+VALUE layer_maxfront( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerMaxFront(layer) );
+}
+
 VALUE layer_nblend( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -43,6 +49,12 @@ VALUE layer_maxnode( VALUE self )
 {
   GET_LAYER_FROM_SELF;
   return INT2NUM( layerMaxNode(layer) );
+}
+
+VALUE layer_addFront( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerAddFront(layer,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2))?self:Qnil );
 }
 
 VALUE layer_makeFront( VALUE self, VALUE rb_bc )
@@ -297,9 +309,11 @@ void Init_Layer()
   cLayer = rb_define_class( "Layer", rb_cObject );
   rb_define_singleton_method( cLayer, "new", layer_new, 1 );
   rb_define_method( cLayer, "nfront", layer_nfront, 0 );
+  rb_define_method( cLayer, "maxfront", layer_maxfront, 0 );
   rb_define_method( cLayer, "nblend", layer_nblend, 0 );
   rb_define_method( cLayer, "nnormal", layer_nnormal, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
+  rb_define_method( cLayer, "addFront", layer_addFront, 3 );
   rb_define_method( cLayer, "makeFront", layer_makeFront, 1 );
   rb_define_method( cLayer, "front", layer_front, 1 );
   rb_define_method( cLayer, "frontDirection", layer_frontDirection, 1 );

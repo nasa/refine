@@ -41,14 +41,34 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2, layer.maxnode
  end
 
+ def testInserFrontTriangle
+  assert_not_nil           grid = Grid.new(4,0,2,0)
+  assert_not_nil           layer = Layer.new(grid)
+  assert_equal 0,          layer.nfront
+  assert_equal 0,          layer.maxfront
+  assert_nil               layer.front(0)
+  assert_nil               layer.frontNormals(0)
+  assert_equal layer,      layer.addFront(0,1,2)
+  assert_equal 1,          layer.nfront
+  assert                   layer.maxfront>=1
+  assert_nil               layer.front(-1)
+  assert_equal [0,1,2],    layer.front(0)
+  assert_equal [-1,-1,-1], layer.frontNormals(0)
+  assert_equal 0,          layer.constrainedSide(0,0)
+  assert_equal 0,          layer.constrainedSide(0,1)
+  assert_equal 0,          layer.constrainedSide(0,2)
+  assert_equal 0,          layer.parentEdge(0,0)
+  assert_equal 0,          layer.parentEdge(0,1)
+  assert_equal 0,          layer.parentEdge(0,2)
+  assert_nil               layer.front(1)
+ end
+
  def testMakeFront
   assert_not_nil        grid = Grid.new(4,0,2,0)
   assert_equal grid,    grid.addFace(0,1,2,1)
   assert_equal grid,    grid.addFace(0,1,3,2)
   assert_equal 2,       grid.nface
   assert_not_nil        layer = Layer.new(grid)
-  assert_equal 0,       layer.nfront
-  assert_nil            layer.front(0)
   assert_equal layer,   layer.makeFront([1,2])
   assert_equal 2,       layer.nfront
   assert_equal [0,1,2], layer.front(0)
@@ -77,7 +97,6 @@ class TestLayer < Test::Unit::TestCase
   assert_nil            layer.makeNormal
   assert_equal layer,   layer.makeFront([1,2])
   assert_equal 0,       layer.nnormal
-  assert_nil            layer.frontNormals(0)
   assert_equal 0,       layer.normalRoot(0)
   assert_equal layer,   layer.makeNormal
   assert_equal 4,       layer.nnormal
