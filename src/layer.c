@@ -2416,7 +2416,8 @@ Layer *layerSplitBlend(Layer *layer)
   adj = layerBuildNormalBlendAdjacency(layer);
 
   layerInitializeTriangleNormalDirection(layer);
-  layerVisibleNormals(layer, 0.999, 1.0e-15 );
+  layerFeasibleNormals(layer, -1.0, -1.0 );
+  layerVisibleNormals(layer, 0.999, -1.0 );
 
   for (blend=0; blend<layerNBlend(layer); blend++)
     for(i=0;i<4;i++)
