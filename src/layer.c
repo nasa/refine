@@ -71,15 +71,17 @@ Layer *formAdvancingFront( Grid *grid, char *project )
 {
   Layer *layer;
   int i, nbc, bc[3];
-  bool box, plate, om6;
+  bool box, plate, om6, n12;
   
   box = (NULL != strstr( project, "box"));
   plate = (NULL != strstr( project, "plate"));
   om6 = (NULL != strstr( project, "om6"));
+  n12 = (NULL != strstr( project, "n12"));
 
   if (box) printf("string %s has box.\n",project);
   if (plate) printf("string %s has plate.\n",project);
   if (om6) printf("string %s has om6.\n",project);
+  if (n12) printf("string %s has n12.\n",project);
 
   bc[0]=1;
   bc[1]=2;
@@ -87,6 +89,11 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   if(box) nbc = 1;
   if(om6) nbc = 2;
   if(plate) nbc = 3;
+  if(n12){
+    nbc=2;
+    bc[0]=5;
+    bc[1]=6;
+  }
   /* skip freezing
   printf("freezing distant volume nodes.\n");
   gridFreezeAll(grid);
@@ -155,6 +162,10 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   }
   if (om6) {
     layerConstrainNormal(layer,5);
+  }
+  if(n12){
+    layerConstrainNormal(layer,1);
+    layerConstrainNormal(layer,2);
   }
   printf("make advancing layer front normals visible to front.\n");
   layerVisibleNormals(layer);
