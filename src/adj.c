@@ -88,24 +88,40 @@ Adj *adjRealloc( Adj *adj, int nnode )
 
 Adj *adjRegister( Adj *adj, int node, int item )
 {
+  NodeItem *oldnode2item;
+  NodeItem *oldfirst;
   NodeItem *new;
-  int i, currentSize;
+  int i, copynode;
 
   if (node>=adj->nnode || node<0) return NULL;
 
-  if (adj->blank == NULL) {
-    currentSize = adj->nadj;
+  if (NULL == adj->blank) {
     adj->nadj += adj->chunkSize;
-    adj->node2item = (NodeItem *)realloc( adj->node2item, 
-					  adj->nadj * sizeof(NodeItem) );
-    for ( i = currentSize ; i < (adj->nadj-1) ; i++ ) {
+    oldnode2item = adj->node2item;
+    adj->node2item = (NodeItem *)malloc( adj->nadj * sizeof(NodeItem) );
+    for ( i = 0 ; i < (adj->nadj-1) ; i++ ) {
       adj->node2item[i].item = EMPTY;
       adj->node2item[i].next = &adj->node2item[i+1];
     }
     adj->node2item[adj->nadj-1].item = EMPTY;
     adj->node2item[adj->nadj-1].next = NULL;
-    adj->blank = &adj->node2item[currentSize];
+    adj->blank = adj->node2item;
+    for ( copynode = 0 ; copynode < adj->nnode ; copynode++ ) {
+      oldfirst = adj->first[copynode];
+      adj->first[copynode] = NULL;
+      while ( NULL != oldfirst ) {
+	new = adj->blank;
+	adj->blank = adj->blank->next;
+	new->next = adj->first[copynode];
+	adj->first[copynode] = new;
+	new->item = oldfirst->item;
+	oldfirst = oldfirst->next;
+      }
+    }
+    free(oldnode2item);
   }
+
+  adj->current = NULL;
 
   new = adj->blank;
   adj->blank = adj->blank->next;
