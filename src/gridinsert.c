@@ -320,7 +320,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   }
   
   if ( gridNegCellAroundNode(grid, newnode) ) {
-    gridCollapseEdge(grid, NULL, n0, newnode, 0.0 );
+    gridCollapseEdge(grid, queue, n0, newnode, 0.0 );
     return EMPTY;
   }else{
     return newnode;
