@@ -4,8 +4,8 @@
 #
 # $Id$
 
+Dir.chdir ENV['srcdir'] if ENV['srcdir']
 require 'RubyExtensionBuilder'
-
 RubyExtensionBuilder.new('Intersect').build
 
 require 'test/unit'

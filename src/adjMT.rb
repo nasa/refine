@@ -4,6 +4,8 @@
 #
 # Mobility test for adj c lib
 
+Dir.chdir ENV['srcdir'] if ENV['srcdir']
+
 require 'RubyExtensionBuilder'
 
 RubyExtensionBuilder.new('Adj').build

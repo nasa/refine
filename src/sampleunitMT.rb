@@ -4,7 +4,9 @@
 #
 # Mobility test for sampleunit c lib
 
-exit 1 unless system 'ruby makeRubyExtension.rb SampleUnit master_header.h'
+Dir.chdir ENV['srcdir'] if ENV['srcdir']
+require 'RubyExtensionBuilder'
+RubyExtensionBuilder.new('Sort').build
 
 require 'test/unit'
 require 'SampleUnit/SampleUnit'

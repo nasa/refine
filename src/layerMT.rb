@@ -6,8 +6,8 @@
 
 GC.disable # layer does not mark grid, so bug on GC
 
+Dir.chdir ENV['srcdir'] if ENV['srcdir']
 require 'RubyExtensionBuilder'
-
 RubyExtensionBuilder.new('Layer').build
 
 require 'test/unit'

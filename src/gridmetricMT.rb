@@ -4,6 +4,8 @@
 #
 # Mobility test for grid c lib
 
+Dir.chdir ENV['srcdir'] if ENV['srcdir']
+
 require 'RubyExtensionBuilder'
 
 RubyExtensionBuilder.new('GridMetric').build

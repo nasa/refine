@@ -4,7 +4,11 @@
 #
 # $Id$
 
-exit 1 unless system 'ruby makeRubyExtension.rb GridMath master_header.h'
+Dir.chdir ENV['srcdir'] if ENV['srcdir']
+
+require 'RubyExtensionBuilder'
+
+RubyExtensionBuilder.new('GridMath').build
 
 require 'test/unit'
 require 'GridMath/GridMath'
