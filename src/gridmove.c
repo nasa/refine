@@ -1131,10 +1131,15 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
     }
   }
 
+  residual = 0;
   for(row=0;row<gridMaxNode(grid);row++) {
     if ( gridValidNode(grid,row) &&
 	 !gridmoveSpecified(gm,row) && 
 	 gridNodeLocal(grid,row) ) {
+      for(i=0;i<3;i++) 
+	residual 
+	  += ( (gm->dxyz[i+3*row] - b[i+3*row])
+	  *    (gm->dxyz[i+3*row] - b[i+3*row]) );
       for(i=0;i<3;i++) gm->dxyz[i+3*row] = b[i+3*row];
     }
   }
@@ -1183,7 +1188,7 @@ GridMove *gridmoveElasticRelaxation(GridMove *gm, int nsteps, int subIterations)
     gridmoveElasticRelaxationStartStep(gm, position);    
     for(iteration=0;iteration<subIterations;iteration++) {
       gridmoveElasticRelaxationSubIteration(gm, &rmsResidual);
-      /* printf("Iteration %4d Residual %23.15e\n",iteration,rmsResidual); */ 
+      printf("Iteration %4d Residual %23.15e\n",iteration,rmsResidual);
     }
   }
   gridmoveElasticRelaxationShutDown(gm);
