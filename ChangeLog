@@ -1,3 +1,9 @@
+2004-09-22 20:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwap) Exposed the improvementLimit as a
+	calling argument. Note it will be reset to default values if it is
+	less than 0.0. Modified all the drivers that call gridSwap
+
 2004-09-22 20:31 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c extensively modifed to: expose a constant ratio,

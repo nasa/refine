@@ -350,16 +350,19 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
   return grid;
 }
 
-Grid *gridSwap(Grid *grid)
+Grid *gridSwap(Grid *grid, double improvementLimit)
 {
   int cellId, maxcell;
   int nodes[4];
   GridBool swap;
 
+  if ( improvementLimit < 0.0 ) improvementLimit = 0.5;
+
   maxcell = gridMaxCell(grid);
 
   for (cellId=0;cellId<maxcell;cellId++){
-    if ( grid == gridCell( grid, cellId, nodes) && gridAR(grid, nodes) < 0.5) {
+    if ( grid == gridCell( grid, cellId, nodes) && 
+	 gridAR(grid, nodes) < improvementLimit) {
       swap = TRUE;
       if (swap) swap = (grid != gridSwapFace(grid, NULL,nodes[1],nodes[2],nodes[3]) )
 		  || ( grid == gridCell( grid, cellId, nodes) );

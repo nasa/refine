@@ -20,7 +20,7 @@ VALUE grid_swapEdge( VALUE self, VALUE n0, VALUE n1 )
 VALUE grid_swap( VALUE self )
 {
   GET_GRID_FROM_SELF;
-  return (gridSwap( grid )==grid?self:Qnil);
+  return (gridSwap( grid, -1.0 )==grid?self:Qnil);
 }
 
 VALUE grid_removeTwoFaceCell( VALUE self, VALUE cell )
