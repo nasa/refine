@@ -62,6 +62,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal nil,   @grid.removeNodeCell(1,0)
  end
  
+ def testRegisterNodeCellLimit
+  assert_equal nil, @grid.registerNodeCell(1000,0)
+ end
+
  def testEfficientStorage
   grid = Grid.new(1,1,1)
   assert_equal nil, grid.registerNodeCell(0,0)
@@ -89,20 +93,24 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal true, grid.cellExists(0,1)
  end
  
- def testPackStorage
-  grid = Grid.new(2,1,5)
-  grid.pack
+ def testPackStorageReset
+  grid = Grid.new(1,1,5)
   assert_equal grid, grid.registerNodeCell(0,0)
-  assert_equal grid, grid.registerNodeCell(1,1)
-  grid.removeNodeCell(1,1)
-  assert_equal nil, grid.registerNodeCell(0,1)
-  grid.pack
-  assert_equal true, grid.cellExists(0,0)
-  assert_equal false, grid.cellExists(0,1)
   assert_equal grid, grid.registerNodeCell(0,1)
-  assert_equal true, grid.cellExists(0,1)
+  grid.dump
+  grid.removeNodeCell(0,0)
+  grid.removeNodeCell(0,1)
+  grid.dump
+  assert_equal nil, grid.registerNodeCell(0,1)
+  grid.dump
+  grid.pack
+  grid.dump
+  assert_equal grid, grid.registerNodeCell(0,1)
+  grid.dump
  end
  
+# put in test for register being the last entry in celllist
+
  def testMultipleNodeCellExists
   assert_equal false, @grid.cellExists(1,198)
   @grid.registerNodeCell(1,198)
