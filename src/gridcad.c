@@ -252,7 +252,9 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	  gridCell(grid, adjItem(it), nodes);
 	  for (i=0;i<4;i++) {
 	    goodnode = nodes[i];
-	    if ( node != goodnode && gridGeometryFace( grid, goodnode) ) { 
+	    if ( node != goodnode && 
+		 gridGeometryFace( grid, goodnode) &&
+		 grid == gridSafeProjectNode( grid, goodnode, 1.0 ) ) { 
 	      if ( grid == gridCollapseEdge(grid, goodnode, node, 0.0 ) ){
 		printf(" got it ! %d\n",goodnode);
 		return grid;
