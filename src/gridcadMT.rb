@@ -240,6 +240,10 @@ class TestGridCAD < Test::Unit::TestCase
  def testSmooth
   assert_not_nil grid = isoTet(-4.0)
   assert_in_delta 0.278, grid.minAR, 1.0e-3
+  assert_equal grid, grid.freezeAll
+  assert_equal grid, grid.smooth
+  assert_in_delta 0.278, grid.minAR, 1.0e-3
+  assert_equal grid, grid.thawAll
   assert_equal grid, grid.smooth
   assert_in_delta 0.999, grid.minAR, 1.0e-3
   assert_in_delta 0.999, grid.minFaceMR, 1.0e-3

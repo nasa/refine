@@ -189,7 +189,7 @@ Grid *gridRobustProject(Grid *grid)
   int notProjected;
   notProjected = 0;
   for (node=0;node<grid->maxnode;node++)
-    if ( gridValidNode( grid, node ) ) 
+    if ( gridValidNode( grid, node ) && !gridNodeFrozen(grid, node) ) 
       if (gridRobustProjectNode( grid, node)!= grid ) 
 	notProjected++;
 
@@ -586,7 +586,7 @@ Grid *gridSmooth( Grid *grid )
   optimizationLimit =0.30;
   laplacianLimit =0.60;
   for (node=0;node<grid->maxnode;node++) {
-    if ( gridValidNode( grid, node ) ) {
+    if ( gridValidNode( grid, node ) && !gridNodeFrozen( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
       if (ar < optimizationLimit) {
 	gridSmoothNode( grid, node );
