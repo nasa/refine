@@ -563,7 +563,7 @@ Grid *gridNodeUV(Grid *grid, int  node, int faceId, double *uv )
 
   uv[0] = DBL_MAX;
   uv[1] = DBL_MAX;
-  return EMPTY;
+  return NULL;
 }
 
 Grid *gridAddEdge(Grid *grid, int n0, int n1, 
