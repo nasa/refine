@@ -481,7 +481,7 @@ class TestGrid < Test::Unit::TestCase
   assert_nil         grid.equator(4,5)
  end
 
- def testCellConnections
+ def testCellNodeConnections
   grid = Grid.new(5,2,0,0)
   assert_equal 0, grid.nconn
   5.times { grid.addNode(0.0,0.0,0.0) }
@@ -515,6 +515,34 @@ class TestGrid < Test::Unit::TestCase
    assert_equal conn, grid.cell2Conn(1,conn)
   end
   assert_equal 6, grid.nconn  
+ end
+
+ def testNodeConnections
+  grid = Grid.new(5,2,0,0)
+  assert_equal 0, grid.nconn
+  5.times { grid.addNode(0.0,0.0,0.0) }
+  assert_nil grid.conn2Node(EMPTY)
+  assert_nil grid.conn2Node(0)
+  grid.addCell(0,1,2,3)
+  assert [0,1], grid.conn2Node(0)
+  assert [0,2], grid.conn2Node(1)
+  assert [0,3], grid.conn2Node(2)
+  assert [1,1], grid.conn2Node(3)
+  assert [1,3], grid.conn2Node(4)
+  assert [2,3], grid.conn2Node(5)
+
+  assert_equal grid, grid.eraseConn
+  grid.addCell(1,0,2,4)
+  assert [0,1], grid.conn2Node(0)
+  assert [0,2], grid.conn2Node(1)
+  assert [0,3], grid.conn2Node(2)
+  assert [1,1], grid.conn2Node(3)
+  assert [1,3], grid.conn2Node(4)
+  assert [2,3], grid.conn2Node(5)
+
+  assert [1,4], grid.conn2Node(6)
+  assert [0,4], grid.conn2Node(7)
+  assert [2,4], grid.conn2Node(8)
  end
 
  def testAddNode

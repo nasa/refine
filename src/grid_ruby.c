@@ -344,6 +344,18 @@ VALUE grid_cell2Conn( VALUE self, VALUE cell, VALUE index )
   return INT2NUM( gridCell2Conn( grid, NUM2INT(cell), NUM2INT(index) ) );
 }
 
+VALUE grid_conn2Node( VALUE self, VALUE conn )
+{
+  int nodes[2];
+  VALUE rb_nodes;
+  GET_GRID_FROM_SELF;
+  if (grid != gridConn2Node(grid,conn,nodes) ) return Qnil;
+  rb_nodes = rb_ary_new2(2);
+  rb_ary_store( rb_nodes, 0, INT2NUM(nodes[0]) );
+  rb_ary_store( rb_nodes, 1, INT2NUM(nodes[1]) );
+  return rb_nodes;
+}
+
 VALUE grid_eraseConn( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1092,6 +1104,7 @@ void Init_Grid()
 
   rb_define_method( cGrid, "nconn", grid_nconn, 0 );
   rb_define_method( cGrid, "cell2Conn", grid_cell2Conn, 2 );
+  rb_define_method( cGrid, "conn2Node", grid_conn2Node, 1 );
   rb_define_method( cGrid, "eraseConn", grid_eraseConn, 0 );
 
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );

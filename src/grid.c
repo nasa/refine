@@ -203,6 +203,7 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->nconn = 0;
   grid->cell2conn = NULL;
+  grid->conn2node = NULL;
 
   grid->degAR = 0;
 
@@ -530,6 +531,7 @@ void gridFree(Grid *grid)
 
   if (NULL != grid->tecplotFile) fclose(grid->tecplotFile);
 
+  if (NULL != grid->conn2node) free(grid->conn2node);
   if (NULL != grid->cell2conn) free(grid->cell2conn);
 
   if (NULL != grid->geomEdge) free(grid->geomEdge);
@@ -1784,7 +1786,7 @@ Grid *gridDeleteThawedCells(Grid *grid){
   return grid;
 }
 
-void gridAddConnToCell2Conn(Grid *grid, int conn, int node0, int node1)
+static void gridAddConnToCell2Conn(Grid *grid, int conn, int node0, int node1)
 {
   int iconn;
   int cell, nodes[4];
@@ -1809,35 +1811,67 @@ void gridAddConnToCell2Conn(Grid *grid, int conn, int node0, int node1)
   }
 }
 
-int gridCell2Conn(Grid *grid, int cell, int index )
+static void gridCreateConn(Grid *grid) 
 {
-  int c, conn;
+  int cell, conn;
   int nodes[4];
+  int node0, node1;
   int conn2node0[6] = {0, 0, 0, 1, 1, 2};
   int conn2node1[6] = {1, 2, 3, 2, 3, 3};
 
-  if (!gridCellValid(grid, cell)) return EMPTY;
-  if (index<0||index>5) return EMPTY;
-  if (NULL==grid->cell2conn){
-    grid->cell2conn = (int*)malloc(6*gridMaxCell(grid)*sizeof(int));
-    for(c=0;c<6*gridMaxCell(grid);c++) grid->cell2conn[c] = EMPTY;
-    grid->nconn = 0;
-    for(c=0;c<gridMaxCell(grid);c++) {
-      if (grid == gridCell(grid,c,nodes)) {
-	for(conn=0;conn<6;conn++) {
-	  if ( EMPTY == grid->cell2conn[conn+6*c] ) {
-	    grid->cell2conn[conn+6*c] = grid->nconn;
-	    gridAddConnToCell2Conn(grid, grid->nconn,
-				   nodes[conn2node0[conn]], 
-				   nodes[conn2node1[conn]]);
-	    grid->nconn++;
-	  }
+  grid->cell2conn = (int*)malloc(6*gridMaxCell(grid)*sizeof(int));
+  for(cell=0;cell<6*gridMaxCell(grid);cell++) grid->cell2conn[cell] = EMPTY;
+  grid->nconn = 0;
+  for(cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid == gridCell(grid,cell,nodes)) {
+      for(conn=0;conn<6;conn++) {
+	if ( EMPTY == grid->cell2conn[conn+6*cell] ) {
+	  grid->cell2conn[conn+6*cell] = grid->nconn;
+	  gridAddConnToCell2Conn(grid, grid->nconn,
+				 nodes[conn2node0[conn]], 
+				 nodes[conn2node1[conn]]);
+	  grid->nconn++;
 	}
       }
     }
-    
+  } 
+
+  grid->conn2node = (int*)malloc(2*gridNConn(grid)*sizeof(int));
+  for(conn=0;conn<2*gridNConn(grid);conn++) grid->conn2node[conn] = EMPTY;
+
+  for(cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid == gridCell(grid,cell,nodes)) {
+      for(conn=0;conn<6;conn++) {
+	if (EMPTY!=grid->cell2conn[conn+6*cell]) {
+	  node0 = MIN(nodes[conn2node0[conn]],nodes[conn2node1[conn]]);
+	  node1 = MAX(nodes[conn2node0[conn]],nodes[conn2node1[conn]]);
+	  grid->conn2node[0+2*grid->cell2conn[conn+6*cell]] = node0;
+	  grid->conn2node[1+2*grid->cell2conn[conn+6*cell]] = node1;
+	}else{
+	  printf("ERROR: %s: %d: cell2conn EMPTY.\n",__FILE__,__LINE__);
+	}
+      }
+    }
   }
+
+
+}
+
+int gridCell2Conn(Grid *grid, int cell, int index )
+{
+  if (!gridCellValid(grid, cell)) return EMPTY;
+  if (index<0||index>5) return EMPTY;
+  if (NULL==grid->cell2conn) gridCreateConn(grid);
   return grid->cell2conn[index+6*cell];
+}
+
+Grid *gridConn2Node(Grid *grid, int conn, int *nodes )
+{
+  if (conn<0||conn>gridNConn(grid)) return NULL;
+  if (NULL==grid->conn2node) gridCreateConn(grid);
+  nodes[0] = grid->conn2node[0+2*conn];
+  nodes[1] = grid->conn2node[1+2*conn];
+  return grid;
 }
 
 Grid *gridEraseConn(Grid* grid)
@@ -1845,6 +1879,8 @@ Grid *gridEraseConn(Grid* grid)
   grid->nconn=0;
   if (NULL != grid->cell2conn) free(grid->cell2conn);
   grid->cell2conn = NULL;
+  if (NULL != grid->conn2node) free(grid->conn2node);
+  grid->conn2node = NULL;
   return grid;
 }
 

@@ -1,3 +1,8 @@
+2004-09-29 23:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridConn2Node) Added. returns the nodes at each end
+	of the connection(conn).
+
 2004-09-29 23:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridCell2Conn,gridNConn,gridEraseConn) Added
