@@ -23,32 +23,12 @@ int gridSavePart( Grid *grid, char *project );
 int main( int argc, char *argv[] )
 {
   Grid *grid;
-  char *filename;
   char *project;
   char *output;
   int i, j, oldSize, newSize;
 
-  filename = "../test/om6_inv08.fgrid";
-  printf("running default filename %s\n",filename);
   project = "../test/om6";
-  printf("running default project %s\n",project);
-  
-  grid = gridImportFAST( filename );
-  
-  printf("orig size: %d nodes %d faces %d cells.\n",
-	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-  printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	 gridMinAR(grid),gridMinVolume(grid));
-
-  printf("edge swapping grid...\n");
-  gridSwap(grid);
-
-  printf("new size: %d nodes %d faces %d cells.\n",
-	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-  printf("minimum Aspect Ratio %12f Volume %12.8e\n",
-	 gridMinAR(grid),gridMinVolume(grid));
-
-  gridFree(grid);
+  printf("running project %s\n",project);
 
   grid = gridLoadPart( project );
 
