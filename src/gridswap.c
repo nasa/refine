@@ -162,7 +162,11 @@ Grid *gridSwapNearNode(Grid *grid, int node)
   while ( adjValid(it) ){
     gridCell( grid, adjItem(it), nodes);
     if ( gridAR(grid, nodes) < 0.5 ) {
-      if ( ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ) ||
+      if ( ( NULL != gridSwapFace(grid,nodes[1],nodes[2],nodes[3]) ) ||
+	   ( NULL != gridSwapFace(grid,nodes[0],nodes[2],nodes[3]) ) ||
+	   ( NULL != gridSwapFace(grid,nodes[0],nodes[1],nodes[3]) ) ||
+	   ( NULL != gridSwapFace(grid,nodes[0],nodes[1],nodes[2]) ) ||
+	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ) ||
 	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ) ||
 	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ) ||
 	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ) ||
@@ -232,26 +236,39 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
 
 Grid *gridSwap(Grid *grid)
 {
-  int cellId, nodes[4], maxcell;
+  int cellId, maxcell;
+  int nodes[4];
   bool swap;
+
   maxcell = gridMaxCell(grid);
+
   for (cellId=0;cellId<maxcell;cellId++){
-    swap = (grid == gridCell( grid, cellId, nodes) );
-    swap = swap && (gridAR(grid, nodes) < 0.5);
+    if ( grid == gridCell( grid, cellId, nodes) && gridAR(grid, nodes) < 0.5) {
+      swap = TRUE;
+      if (swap) swap = (grid != gridSwapFace(grid,nodes[1],nodes[2],nodes[3]) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+      if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[2],nodes[3]) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+      if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[1],nodes[3]) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+      if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[1],nodes[2]) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
 
-    if (swap) swap = (grid != gridSwapFace(grid,nodes[1],nodes[2],nodes[3]) );
-    if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[2],nodes[3]) );
-    if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[1],nodes[3]) );
-    if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[1],nodes[2]) );
-
-    if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[1] ) );
-    if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[2] ) );
-    if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[3] ) );
-    if (swap) swap = ( grid != gridSwapEdge( grid, nodes[1], nodes[2] ) );
-    if (swap) swap = ( grid != gridSwapEdge( grid, nodes[1], nodes[3] ) );
-    if (swap) swap = ( grid != gridSwapEdge( grid, nodes[2], nodes[3] ) );
-
+      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[1] ) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[2] ) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[3] ) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[1], nodes[2] ) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[1], nodes[3] ) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[2], nodes[3] ) )
+		  || ( grid == gridCell( grid, cellId, nodes) );
+    }
   }
+
   return grid;
 }
 
