@@ -164,9 +164,9 @@ Grid *gridSmoothNode(Grid *grid, int node )
     dARdu[0] = dARdx[0]*du[0] + dARdx[1]*du[1] + dARdx[2]*du[2] ; 
     dARdu[1] = dARdx[0]*dv[0] + dARdx[1]*dv[1] + dARdx[2]*dv[2] ; 
 
-  }    
-    
   return gridOptimizeUV( grid, node, dARdu );
+  }    
+  return grid;
 }
 
 Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
