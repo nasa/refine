@@ -149,6 +149,11 @@ class TestGridInsert < Test::Unit::TestCase
   assert_in_delta sp*2.0,  grid.spacing(2), 1e-3
   assert_equal grid,       grid.scaleSpacing(3,2.0)
   assert_in_delta 2.367,   grid.edgeRatio(0,1), 1e-3
+  assert_equal grid,       grid.freezeAll
+  assert_equal grid,       grid.freezeAll
+  assert_equal grid,       grid.adapt(0.4,2.2)
+  assert_equal 1,          grid.ncell
+  assert_equal grid,       grid.thawAll
   assert_equal grid,       grid.adapt(0.4,2.2)
   assert_equal 2,          grid.ncell
  end
