@@ -22,6 +22,12 @@ VALUE grid_safeProjectNode( VALUE self, VALUE node )
   return (gridSafeProjectNode( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
+VALUE grid_smoothNode( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSmoothNode( grid, NUM2INT(node) )==grid?self:Qnil);
+}
+
 VALUE cGridCAD;
 
 void Init_GridCAD() 
@@ -30,4 +36,5 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "projectNodeToEdge", grid_projectNodeToEdge, 2 );
   rb_define_method( cGridCAD, "projectNodeToFace", grid_projectNodeToFace, 2 );
   rb_define_method( cGridCAD, "safeProjectNode", grid_safeProjectNode, 1 );
+  rb_define_method( cGridCAD, "smoothNode", grid_smoothNode, 1 );
 }

@@ -130,3 +130,9 @@ Grid *gridProject(Grid *grid)
 
   return grid;
 }
+
+Grid *gridSmoothNode(Grid *grid, int node )
+{
+
+  return grid;
+}

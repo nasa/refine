@@ -23,6 +23,8 @@ Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId );
 Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridProject(Grid *g);
 
+Grid *gridsmoothNode(Grid *g, int node );
+
 END_C_DECLORATION
 
 #endif /* GRIDCAD_H */

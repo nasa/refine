@@ -113,5 +113,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_in_delta 0.975, isoTet(-0.2).minAR, 1.0e-4
  end
 
+ def testSmoothSurf
+  assert_not_nil grid = isoTet(-0.2)
+  assert_equal grid, grid.smoothNode(0)
+# assert_in_delta 1.000, grid.minAR, 1.0e-4
+ end
 
 end
