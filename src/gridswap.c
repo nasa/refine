@@ -108,11 +108,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 			    uv[1+2*facenodes[2]],
 			    faceId1 );
 
-      /* for safety, I don't think I need this */
-      for(node=0;node<4;node++)
-	if (0==gridCellDegree(grid,cellnodes[node]))
-	  gridRemoveNodeWithOutGlobal(grid,cellnodes[node]);
-
       return grid;
     }
   }
