@@ -25,6 +25,9 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 			      bool bil );
 
 Layer *layerFormAdvancingLayerWithCADGeomBCS( int volumeId, Grid * );
+
+Layer *layerComputeNormalRateWithBGSpacing(Layer *);
+
 Layer *layerCreateWakeWithBGSpacing(Layer *, double *origin, double *direction, 
 				    double length );
 
