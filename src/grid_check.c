@@ -98,7 +98,7 @@ START_TEST(testEfficientStorage)
   gridFree(localGrid);
   localGrid = gridCreate(1,1,4);
   fail_unless ( gridRegisterNodeCell(localGrid,0,0) != NULL, "should fit -1");
-  //  fail_unless ( gridRegisterNodeCell(localGrid,0,1) != NULL, "should fit -2");
+  fail_unless ( gridRegisterNodeCell(localGrid,0,1) != NULL, "should fit -2");
   gridFree(localGrid);
 }
 END_TEST
