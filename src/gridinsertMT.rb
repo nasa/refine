@@ -6,7 +6,7 @@
 
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb GridInsert adj.c grid.h gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridInsert adj.c grid.h gridmetric.h gridStruct.h master_header.h'
 
 require 'test/unit'
 require 'Grid/Grid'
@@ -19,6 +19,15 @@ class Grid
 end
 
 class TestGridInsert < Test::Unit::TestCase
+
+ def rightTet
+  grid = Grid.new(10,12,0,0)
+  grid.addCell( 
+	       grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+ end
 
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
@@ -120,6 +129,26 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.splitEdge(0,1)
   assert_nil         grid.edgeId(0,6)
   assert_nil         grid.edgeId(6,1)
+ end
+
+ def testAdaptToSpacing1
+  assert_not_nil     grid = rightTet
+  assert_equal grid, grid.resetSpacing
+  assert_equal grid, grid.scaleSpacing(0,0.4)
+  assert_equal grid, grid.scaleSpacing(1,0.4)
+  assert_equal grid, grid.adapt
+  assert_equal 2, grid.ncell
+ end
+
+ def testAdaptToSpacing3
+  assert_not_nil     grid = rightTet
+  assert_equal grid, grid.resetSpacing
+  assert_equal grid, grid.scaleSpacing(0,0.2)
+  assert_equal grid, grid.scaleSpacing(1,0.6)
+  assert_equal grid, grid.scaleSpacing(2,0.6)
+  assert_equal grid, grid.scaleSpacing(3,0.6)
+  assert_equal grid, grid.adapt
+  assert_equal 4, grid.ncell
  end
 
 end
