@@ -127,6 +127,11 @@ void gridparallelloadcapri_( char *capriProject )
   gridParallelGeomLoad( grid, capriProject );
 }
 
+void gridparallelsavecapri_( char *capriProject )
+{
+  gridParallelGeomSave( grid, capriProject );
+}
+
 void gridprojectallfaces_( )
 {
   int face, node, nodes[3], faceId;

@@ -17,6 +17,7 @@
 BEGIN_C_DECLORATION
 
 Grid *gridParallelGeomLoad( Grid *grid, char *project );
+Grid *gridParallelGeomSave( Grid *grid, char *project );
 
 END_C_DECLORATION
 

@@ -116,3 +116,10 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
 
   return grid;
 }
+
+Grid *gridParallelGeomSave( Grid *grid, char *project )
+{
+  if (0==gridPartId(grid))
+    printf("DUMMY: gridParallelGeomSave for project %s\n",project);
+  return grid;
+}
