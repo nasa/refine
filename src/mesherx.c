@@ -134,7 +134,6 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   CADCurvePtr *phantomEdge;
   UGPatchPtr  *phantomFace;
   int normal, i;
-  int iFace, nphantom;
 
   grid = gridFillFromPart( vol, npts*10 );
 
@@ -149,6 +148,9 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
     return 1;
   }
 
+
+#ifdef PHANTOM
+
   if( (phantomEdge=makePhantomEdges(vol,nGeomEdge,layer)) == NULL ) {
     printf("ERROR: Could NOT create Phantom Edges line %d of %s\n.",__LINE__, __FILE__);
     return 1;
@@ -159,8 +161,7 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
     return 1;
   }
 
-  nphantom = layerNConstrainedSides(layer, iFace);
-
+#endif
 
   outputProject = "../test/MesherX";
   printf("writing DEBUG output project %s\n",outputProject);
