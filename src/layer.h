@@ -73,6 +73,8 @@ Grid *layerGrid(Layer *);
 void layerFree(Layer *);
 Layer *formAdvancingFront( Grid *grid, char *project );
 void layerSortGlobalNodes(void *layer, int *o2n);
+void layerReallocator(void *layer, int reallocType, 
+		      int lastSize, int newSize);
 int layerMaxTriangle(Layer *);
 int layerNTriangle(Layer *);
 int layerNBlend(Layer *);

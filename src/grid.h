@@ -112,6 +112,10 @@ struct Grid {
   void (*renumberFunc)(void *renumberData, int *o2n);
   void *renumberData;
 
+  void (*reallocFunc)(void *reallocData, int reallocType, 
+		      int lastSize, int newSize);
+  void *reallocData;
+
   Lines *lines;
 };
 
@@ -127,10 +131,26 @@ Grid *gridExportAFLR3(Grid *g, char *filename );
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n );
 Grid *gridImportAdapt(Grid *g, char *filename );
+
 Grid *gridAttachNodeSorter(Grid *g, 
 			   void (*renumberFunc)(void *renumberData, int *o2n),
 			   void *renumberData );
 Grid *gridDetachNodeSorter(Grid *g );
+
+Grid *gridAttachReallocator(Grid *g, 
+			    void (*reallocFunc)(void *reallocData, 
+						int reallocType, 
+						int lastSize, int newSize), 
+			    void *reallocData );
+Grid *gridDetachReallocator(Grid *g);
+#define gridREALLOC_NODE (1)
+#define gridREALLOC_EDGE (2)
+#define gridREALLOC_FACE (3)
+#define gridREALLOC_CELL (4)
+#define gridREALLOC_PRISM (5)
+#define gridREALLOC_PYRAMID (6)
+#define gridREALLOC_QUAD (7)
+
 Grid *gridPack(Grid *g);
 Grid *gridSortNodeGridEx(Grid *g);
 Grid *gridSortNodeFUN3D(Grid *g, int *nnodes0);

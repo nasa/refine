@@ -30,6 +30,7 @@ Layer *layerCreate( Grid *grid )
   layer = malloc(sizeof(Layer));
   layer->grid = grid;
   gridAttachNodeSorter( grid, layerSortGlobalNodes, layer );
+  gridAttachReallocator( grid, layerReallocator, layer );
   layer->maxtriangle=0;
   layer->ntriangle=0;
   layer->triangle=NULL;
@@ -73,6 +74,7 @@ void layerFree(Layer *layer)
   free(layer->faceInLayer);
   free(layer->cellInLayer);
   gridDetachNodeSorter( layer->grid );
+  gridDetachReallocator( layer->grid );
   if (layer->adj != NULL) adjFree(layer->adj);
   if (layer->nearTree != NULL) free(layer->nearTree);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
@@ -144,6 +146,29 @@ void layerSortGlobalNodes(void *voidLayer, int *o2n)
       layer->normal[normal].root = o2n[layer->normal[normal].root];
     if (EMPTY != layer->normal[normal].tip)
       layer->normal[normal].tip = o2n[layer->normal[normal].tip];
+  }
+
+}
+
+void layerReallocator(void *voidLayer, int reallocType, 
+		      int lastSize, int newSize)
+{
+  Layer *layer = (Layer *)voidLayer;
+  int i;
+
+  switch (reallocType) {
+  case gridREALLOC_EDGE:
+    layer->edgeInLayer = realloc(layer->edgeInLayer, newSize*sizeof(bool));
+    for (i=lastSize;i<newSize;i++) layer->edgeInLayer[i] = FALSE;
+    break;
+  case gridREALLOC_FACE:
+    layer->faceInLayer = realloc(layer->faceInLayer, newSize*sizeof(bool));
+    for (i=lastSize;i<newSize;i++) layer->faceInLayer[i] = FALSE;
+    break;
+  case gridREALLOC_CELL:
+    layer->cellInLayer = realloc(layer->cellInLayer, newSize*sizeof(bool));
+    for (i=lastSize;i<newSize;i++) layer->cellInLayer[i] = FALSE;
+    break;
   }
 
 }

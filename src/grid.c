@@ -200,6 +200,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->renumberFunc = NULL;
   grid->renumberData = NULL;
 
+  grid->reallocFunc = NULL;
+  grid->reallocData = NULL;
+
   grid->lines = linesCreate();
 
   return  grid;
@@ -439,6 +442,24 @@ Grid *gridDetachNodeSorter(Grid *grid )
 {
   grid->renumberFunc = NULL;
   grid->renumberData = NULL;
+  return grid;
+}
+
+Grid *gridAttachReallocator(Grid *grid, 
+			    void (*reallocFunc)(void *reallocData, 
+						int reallocType, 
+						int lastSize, int newSize), 
+			    void *reallocData )
+{
+  grid->reallocFunc = reallocFunc;
+  grid->reallocData = reallocData;
+  return grid;
+}
+
+Grid *gridDetachReallocator(Grid *grid )
+{
+  grid->reallocFunc = NULL;
+  grid->reallocData = NULL;
   return grid;
 }
 
@@ -1433,6 +1454,9 @@ int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3,
     grid->blankc2n = currentSize;
     if (NULL != grid->cellGlobal) 
       grid->cellGlobal = realloc(grid->cellGlobal,grid->maxcell * sizeof(int));
+    if (NULL != grid->reallocFunc)
+      (*grid->reallocFunc)( grid->reallocData, gridREALLOC_CELL, 
+			    currentSize, grid->maxcell);
   }
   cellId = grid->blankc2n;
   grid->blankc2n = grid->c2n[1+4*cellId];
@@ -1738,6 +1762,9 @@ int gridAddFaceUV(Grid *grid,
     }
     grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
     grid->blankf2n = origSize;
+    if (NULL != grid->reallocFunc)
+      (*grid->reallocFunc)( grid->reallocData, gridREALLOC_FACE, 
+			    origSize, grid->maxface);
   }
   face = grid->blankf2n;
   grid->blankf2n = grid->f2n[1+3*face];
@@ -2096,6 +2123,9 @@ int gridAddEdge(Grid *grid, int n0, int n1,
     }
     grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
     grid->blanke2n = origSize;
+    if (NULL != grid->reallocFunc)
+      (*grid->reallocFunc)( grid->reallocData, gridREALLOC_EDGE, 
+			    origSize, grid->maxedge);
   }
   edge = grid->blanke2n;
   grid->blanke2n = grid->e2n[1+2*edge];
@@ -2713,6 +2743,9 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
       grid->prismDeg = realloc(grid->prismDeg,grid->maxnode * sizeof(int));
       for (i=origSize;i < grid->maxnode; i++ ) grid->prismDeg[i] = 0;
     }
+    if (NULL != grid->reallocFunc)
+      (*grid->reallocFunc)( grid->reallocData, gridREALLOC_NODE, 
+			    origSize, grid->maxnode);
   }
 
   node = grid->blanknode;
@@ -3119,8 +3152,10 @@ bool gridGeometryBetweenFace(Grid *grid, int node)
 Grid *gridAddPrism(Grid *grid, int n0, int n1, int n2, int n3, int n4, int n5)
 {
   int i;
+  int origSize;
 
   if (grid->nprism >= grid->maxprism) {
+    origSize = grid->maxprism;
     grid->maxprism += 5000;
     if (grid->prism == NULL) {
       grid->prism = malloc(grid->maxprism*sizeof(Prism));
@@ -3128,6 +3163,10 @@ Grid *gridAddPrism(Grid *grid, int n0, int n1, int n2, int n3, int n4, int n5)
       for(i=0;i<grid->maxnode;i++) grid->prismDeg[i]=0;
     }else{
       grid->prism = realloc(grid->prism,grid->maxprism*sizeof(Prism));
+      if (NULL != grid->reallocFunc)
+	(*grid->reallocFunc)( grid->reallocData, 
+			      gridREALLOC_PRISM, 
+			      origSize, grid->maxprism);
     }
   }
 
@@ -3167,13 +3206,19 @@ Grid *gridPrism(Grid *grid, int prismIndex, int *nodes)
 
 Grid *gridAddPyramid(Grid *grid, int n0, int n1, int n2, int n3, int n4)
 {
+  int origSize;
 
   if (grid->npyramid >= grid->maxpyramid) {
+    origSize = grid->maxpyramid;
     grid->maxpyramid += 5000;
     if (grid->pyramid == NULL) {
       grid->pyramid = malloc(grid->maxpyramid*sizeof(Pyramid));
     }else{
       grid->pyramid = realloc(grid->pyramid,grid->maxpyramid*sizeof(Pyramid));
+      if (NULL != grid->reallocFunc)
+	(*grid->reallocFunc)( grid->reallocData, 
+			      gridREALLOC_PYRAMID, 
+			      origSize, grid->maxpyramid);
     }
   }
 
@@ -3202,13 +3247,19 @@ Grid *gridPyramid(Grid *grid, int pyramidIndex, int *nodes)
 
 Grid *gridAddQuad(Grid *grid, int n0, int n1, int n2, int n3, int faceId )
 {
+  int origSize;
 
   if (grid->nquad >= grid->maxquad) {
+    origSize = grid->maxquad;
     grid->maxquad += 5000;
     if (grid->quad == NULL) {
       grid->quad = malloc(grid->maxquad*sizeof(Quad));
     }else{
       grid->quad = realloc(grid->quad,grid->maxquad*sizeof(Quad));
+      if (NULL != grid->reallocFunc)
+	(*grid->reallocFunc)( grid->reallocData, 
+			      gridREALLOC_QUAD, 
+			      origSize, grid->maxquad);
     }
   }
 
