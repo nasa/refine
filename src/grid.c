@@ -620,7 +620,8 @@ Grid *gridPack(Grid *grid)
     grid->blanke2n = grid->nedge;
   }
 
-  for(i=0;i<grid->nline;i++) grid->line[i] = o2n[grid->line[i]];
+  for(i=0;i<grid->nline;i++) 
+    if (EMPTY != grid->line[i]) grid->line[i] = o2n[grid->line[i]];
 
   free(o2n);
 
@@ -755,7 +756,8 @@ Grid *gridSortNodeGridEx(Grid *grid)
     }
   }
 
-  for(i=0;i<grid->nline;i++) grid->line[i] = o2n[grid->line[i]];
+  for(i=0;i<grid->nline;i++) 
+    if (EMPTY != grid->line[i]) grid->line[i] = o2n[grid->line[i]];
 
   free(o2n);
 
