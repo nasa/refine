@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
 #include <limits.h>         /* Needed in some systems for DBL_MAX definition */
 #include <float.h>
@@ -22,9 +21,7 @@
 #include "gridswap.h"
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
-#include "Goolache/CAPrIMesh.h"
 #include "Goolache/MeshMgr.h"
-#include "Goolache/FELISASrc.h"
 #include "Goolache/UGPatch.h"
 #include "MeatLib/ErrMgr.h"
 #include "MeatLib/GeoBC.h"
