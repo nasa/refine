@@ -31,7 +31,7 @@ Octree* octreeCreate( double xMin, double xMax,
   octree->yMax = yMax;
   octree->zMin = zMin;
   octree->zMax = zMax;
-  octree->nOctant=0;
+  octree->nOctant=1;
 }
 
 void octreeFree( Octree *octree )
