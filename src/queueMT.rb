@@ -336,16 +336,16 @@ class TestQueue < Test::Unit::TestCase
 
  def testSerializeTransactions
   q = Queue.new(3)
-  assert_equal [3,1,0,0,0,0, 0, 0, 0, 0], q.dump
+  assert_equal [3,1,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0], q.dump
   q.newTransaction.newTransaction
-  assert_equal [3,3,0,0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0], q.dump
+  assert_equal [3,3,0,0,0,0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0], q.dump
  end
 
  def testSerializeRemoveCells
   nodes = [5,6,7,8]
   nodeParts = [15,16,17,18]
   q = Queue.new(3).removeCell(nodes,nodeParts)
-  assert_equal [3,1,1,0,0,0, 1, 5,6,7,8,  15,16,17,18, 0, 0, 0 ], q.dump
+  assert_equal [3,1,1,0,0,0,0,0, 1, 5,6,7,8,  15,16,17,18, 0, 0, 0, 0, 0 ], q.dump
  end
 
  def testSerializeAddCells3
@@ -354,7 +354,7 @@ class TestQueue < Test::Unit::TestCase
   nodeParts = [10,11,12,13]
   xyz = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2]
   q = Queue.new(3).addCell(nodes,cellId,nodeParts,xyz)
-  assert_equal [3,1,0,1,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0, 
+  assert_equal [3,1,0,1,0,0,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0, 0, 0, 
     0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2  ], q.dump
  end
 
@@ -364,7 +364,7 @@ class TestQueue < Test::Unit::TestCase
   nodeParts = [10,11,12,13]
   xyz = [0.1,0.2,0.3,0.4]
   q = Queue.new(1).addCell(nodes,cellId,nodeParts,xyz)
-  assert_equal [1,1,0,1,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0, 
+  assert_equal [1,1,0,1,0,0,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0, 0, 0, 
     0.1,0.2,0.3,0.4 ], q.dump
  end
 
@@ -372,7 +372,7 @@ class TestQueue < Test::Unit::TestCase
   nodes = [5,6,7]
   nodeParts = [15,16,17]
   q = Queue.new(3).removeFace(nodes,nodeParts)
-  assert_equal [3,1,0,0,1,0, 0, 0, 1, 5,6,7, 15,16,17, 0 ], q.dump
+  assert_equal [3,1,0,0,1,0,0,0, 0, 0, 1, 5,6,7, 15,16,17, 0, 0, 0 ], q.dump
  end
 
  def testSerializeAddFaces
@@ -381,32 +381,32 @@ class TestQueue < Test::Unit::TestCase
   nodeParts = [25,26,27]
   uv = [0.1,0.2,0.3,0.4,0.5,0.6]
   q = Queue.new(3).addFace(nodes,faceId,nodeParts,uv)
-  assert_equal [3,1,0,0,0,1, 0, 0, 0, 1, 5,6,7, 99, 25,26,27,
+  assert_equal [3,1,0,0,0,1,0,0, 0, 0, 0, 1, 5,6,7, 99, 25,26,27, 0, 0,
     0.1,0.2,0.3,0.4,0.5,0.6 ], q.dump
  end
 
  def testLoadSerializedQueuewithZeroTransactions
   q = Queue.new(3).newTransaction.newTransaction
   assert_equal 3, q.transactions
-  assert_equal q, q.load([3,1,0,0,0,0, 0, 0, 0, 0], [])
+  assert_equal q, q.load([3,1,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0], [])
   assert_equal 1, q.transactions
  end
 
  def testLoadFailsWhenNodeSizeChanges
   q = Queue.new(3)
-  assert_nil q.load([5,1,0,0,0,0, 0, 0, 0, 0], [])
+  assert_nil q.load([5,1,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0], [])
  end
 
  def testLoadSerializedQueuewithThreeTransactions
   q = Queue.new(3)
   assert_equal 1, q.transactions
-  assert_equal q, q.load([3,3,0,0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0], [])
+  assert_equal q, q.load([3,3,0,0,0,0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0], [])
   assert_equal 3, q.transactions
  end
 
  def testLoadSerializedQueuewithRemovedCell
   q = Queue.new(3)
-  assert_equal q, q.load([3,1,1,0,0,0, 1, 5,6,7,8, 15,16,17,18, 0, 0, 0 ], [])
+  assert_equal q, q.load([3,1,1,0,0,0,0,0, 1, 5,6,7,8, 15,16,17,18, 0, 0, 0, 0, 0 ], [])
   assert_equal 1, q.removedCells(0)
   assert_equal [5,6,7,8], q.removedCellNodes(0)
   assert_equal [15,16,17,18], q.removedCellNodeParts(0)
@@ -414,7 +414,7 @@ class TestQueue < Test::Unit::TestCase
 
  def testLoadSerializedQueuewithAddedCell
   q = Queue.new(3)
-  assert_equal q, q.load([3,1,0,1,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0 ], 
+  assert_equal q, q.load([3,1,0,1,0,0,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0, 0, 0 ], 
 			 [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2])
   assert_equal 1, q.addedCells(0)
   assert_equal [5,6,7,8], q.addedCellNodes(0)
@@ -425,7 +425,7 @@ class TestQueue < Test::Unit::TestCase
 
  def testLoadSerializedQueuewithRemovedFace
   q = Queue.new(3)
-  assert_equal q, q.load([3,1,0,0,1,0, 0, 0, 1, 5,6,7, 35,36,37, 0 ], [])
+  assert_equal q, q.load([3,1,0,0,1,0,0,0, 0, 0, 1, 5,6,7, 35,36,37, 0, 0, 0 ], [])
   assert_equal 1, q.removedFaces(0)
   assert_equal [5,6,7], q.removedFaceNodes(0)
   assert_equal [35,36,37], q.removedFaceNodeParts(0)
@@ -433,7 +433,7 @@ class TestQueue < Test::Unit::TestCase
 
  def testLoadSerializedQueuewithAddedFace
   q = Queue.new(3)
-  assert_equal q, q.load([3,1,0,0,0,1, 0, 0, 0, 1, 5,6,7, 88, 45,46,47 ], 
+  assert_equal q, q.load([3,1,0,0,0,1,0,0, 0, 0, 0, 1, 5,6,7, 88, 45,46,47, 0, 0 ], 
 			 [0.1,0.2,0.3,0.4,0.5,0.6])
   assert_equal 1, q.addedFaces(0)
   assert_equal [5,6,7], q.addedFaceNodes(0)

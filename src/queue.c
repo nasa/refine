@@ -499,13 +499,18 @@ Queue *queueDumpSize( Queue *queue, int *nInt, int *nDouble )
   *nDouble = EMPTY;
   if (NULL==queue) return NULL;
   *nInt 
-    = 6
-    + 4 * queue->transactions
+    = 8
+    + 6 * queue->transactions
     + 8 * queue->nRemovedCells
     + 9 * queue->nAddedCells
     + 6 * queue->nRemovedFaces
     + 7 * queue->nAddedFaces;
-  *nDouble = 4*queue->nodeSize * queue->nAddedCells + 6 * queue->nAddedFaces ;
+    + 4 * queue->nRemovedEdges
+    + 5 * queue->nAddedEdges;
+  *nDouble = 
+    4 * queue->nodeSize * queue->nAddedCells + 
+    6 * queue->nAddedFaces +
+    2 * queue->nAddedEdges;
   return queue;
 }
 
@@ -519,7 +524,9 @@ Queue *queueDump( Queue *queue, int *ints, double *doubles )
   ints[3] = queue->nAddedCells;
   ints[4] = queue->nRemovedFaces;
   ints[5] = queue->nAddedFaces;
-  i = 6;
+  ints[6] = queue->nRemovedEdges;
+  ints[7] = queue->nAddedEdges;
+  i = 8;
   d = 0;
 
   for(transaction=0;transaction<queue->transactions;transaction++){
@@ -570,6 +577,30 @@ Queue *queueDump( Queue *queue, int *ints, double *doubles )
     }
   }
 
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    ints[i] = queue->removedEdges[transaction]; i++;
+  }
+  for(removed=0;removed<queue->nRemovedEdges;removed++){
+    size = 4;
+    for (node=0;node<size;node++) { 
+      ints[i] = queue->removedEdgeNodes[node+size*removed]; i++;
+    }
+  }
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    ints[i] = queue->addedEdges[transaction]; i++;
+  }
+  for(added=0;added<queue->nAddedEdges;added++){
+    size = 5;
+    for (node=0;node<size;node++) { 
+      ints[i] = queue->addedEdgeNodes[node+size*added]; i++;
+    }
+    size = 2;
+    for (node=0;node<size;node++) { 
+      doubles[d] = queue->addedEdgeTs[node+size*added]; d++;
+    }
+  }
+
   return queue;
 }
 
@@ -589,7 +620,9 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
   queue->nAddedCells   = ints[3];
   queue->nRemovedFaces = ints[4];
   queue->nAddedFaces   = ints[5];
-  i = 6;
+  queue->nRemovedEdges = ints[6];
+  queue->nAddedEdges   = ints[7];
+  i = 8;
   d = 0;
 
   if (queue->transactions > queue->maxTransactions) {
@@ -601,6 +634,10 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
     queue->removedFaces = realloc( queue->removedFaces, 
 				   queue->maxTransactions * sizeof(int) );
     queue->addedFaces   = realloc( queue->addedFaces, 
+				   queue->maxTransactions * sizeof(int) );
+    queue->removedEdges = realloc( queue->removedEdges, 
+				   queue->maxTransactions * sizeof(int) );
+    queue->addedEdges   = realloc( queue->addedEdges, 
 				   queue->maxTransactions * sizeof(int) );
   }
   if (queue->nRemovedCells > queue->maxRemovedCells) {
@@ -628,6 +665,19 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
 				     7 * queue->maxAddedFaces * sizeof(int) );
     queue->addedFaceUVs   = realloc( queue->addedFaceUVs, 
 				     6 * queue->maxAddedFaces* sizeof(double));
+  }
+
+  if (queue->nRemovedEdges > queue->maxRemovedEdges) {
+    queue->maxRemovedEdges = queue->nRemovedEdges;
+    queue->removedEdgeNodes = realloc( queue->removedEdgeNodes, 
+				       4 * queue->maxRemovedEdges* sizeof(int));
+  }
+  if (queue->nAddedEdges > queue->maxAddedEdges) {
+    queue->maxAddedEdges = queue->nAddedEdges;
+    queue->addedEdgeNodes = realloc( queue->addedEdgeNodes, 
+				     5 * queue->maxAddedEdges * sizeof(int) );
+    queue->addedEdgeTs    = realloc( queue->addedEdgeTs, 
+				     2 * queue->maxAddedEdges* sizeof(double));
   }
 
   for(transaction=0;transaction<queue->transactions;transaction++){
@@ -675,6 +725,30 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
     size = 6;
     for (node=0;node<size;node++) { 
       queue->addedFaceUVs[node+size*added] = doubles[d]; d++;
+    }
+  }
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    queue->removedEdges[transaction] = ints[i]; i++;
+  }
+  for(removed=0;removed<queue->nRemovedEdges;removed++){
+    size = 4;
+    for (node=0;node<size;node++) { 
+      queue->removedEdgeNodes[node+size*removed] = ints[i]; i++;
+    }
+  }
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    queue->addedEdges[transaction] = ints[i]; i++;
+  }
+  for(added=0;added<queue->nAddedEdges;added++){
+    size = 5;
+    for (node=0;node<size;node++) { 
+      queue->addedEdgeNodes[node+size*added] = ints[i]; i++;
+    }
+    size = 2;
+    for (node=0;node<size;node++) { 
+      queue->addedEdgeTs[node+size*added] = doubles[d]; d++;
     }
   }
 
