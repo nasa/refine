@@ -43,6 +43,7 @@ int main( int argc, char *argv[] )
   bool projected;
   bool boundaryLayerGrid = FALSE;
   bool debugInsert = FALSE;
+  int ninsert;
   int iview = 0;
 
   sprintf( project,       "" );
@@ -69,7 +70,8 @@ int main( int argc, char *argv[] )
       printf("-r argument %d: %f\n",i, ratio);
     } else if( strcmp(argv[i],"-i") == 0 ) {
       debugInsert = TRUE;
-      printf("-i argument %d\n",i);
+      i++; ninsert = atoi(argv[i]);
+      printf("-i argument %d: %d\n",i,ninsert);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
@@ -77,7 +79,7 @@ int main( int argc, char *argv[] )
       printf(" -a party project_adapt_hess file name\n");
       printf(" -l make a boundary layer grid -a ignored\n");
       printf(" -r initial edge length ratio for adapt\n");
-      printf(" -i debug general insert nodes\n");
+      printf(" -i number of general insert nodes (Debug)\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -129,10 +131,10 @@ int main( int argc, char *argv[] )
     }else{
       if (debugInsert) {
 	printf("Inserting a line of nodes.\n");
-	gridFreezeNode(grid,gridInsertInToGeomEdge(grid, 1.0, 0.0, 0.33));
-	gridFreezeNode(grid,gridInsertInToGeomEdge(grid, 1.0, 1.0, 0.33));
-	for(i=1;i<50;i++)
-	  gridFreezeNode(grid,gridInsertInToGeomFace(grid, 1.0, 0.02*i, 0.33));
+	for(i=0;i<=ninsert;i++)
+	  gridFreezeNode( grid,
+			  gridInsertInToGeomFace(grid,(1.0/(double)ninsert)*i, 
+						 0.0, 0.33));
 	ratio=0.9;
       }else{
 	printf("Scaling spacing to refine a sphere.\n");
