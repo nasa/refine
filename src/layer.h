@@ -68,6 +68,10 @@ Layer *layerSetNormalHeightOfFace(Layer *, int faceId, double height);
 Layer *layerSetNormalHeight(Layer *, int normal, double height);
 Layer *layerGetNormalHeight(Layer *, int normal, double *height);
 Layer *layerScaleNormalHeight(Layer *, double scale);
+Layer *layerScaleNormalHeightWithPolynomial(Layer *, 
+					    double constant, double slope,
+					     double exponent, double scale,
+					    double *origin, double *direction);
 Layer *layerVisibleNormals(Layer *, double dotLimit, double radianLimit );
 Layer *layerSmoothNormalDirection(Layer *);
 Layer *layerProjectNormalsToConstraints(Layer *);

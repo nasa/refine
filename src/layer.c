@@ -867,6 +867,28 @@ Layer *layerScaleNormalHeight(Layer *layer, double scale)
   return layer;
 }
 
+Layer *layerScaleNormalHeightWithPolynomial(Layer *layer, 
+					    double constant, double slope,
+					    double exponent, double scale,
+					    double *origin, double *direction)
+{
+  int normal;
+  double distance, rate;
+  double distanceVector[3], normalOrigin[3];
+  
+  for(normal=0;normal<layerNNormal(layer);normal++){
+    gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer,normal), normalOrigin);
+    gridSubtractVector(normalOrigin,origin,distanceVector);
+    distance = gridDotProduct(distanceVector,direction);
+    if (distance >= 0.0 ){
+      rate = constant + slope*pow(distance,exponent);
+      rate = exp(scale*log(rate));
+      layer->normal[normal].height=rate*layer->normal[normal].height;
+    }
+  }
+  return layer;	
+}
+
 Layer *layerNormalMinDot(Layer *layer, int normal,
 			 double *mindot, double *mindir,
 			 int *minTriangle )
