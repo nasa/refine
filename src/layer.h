@@ -41,6 +41,7 @@ Layer *layerTriangleDirection(Layer *, int triangle, double *direction);
 Layer *layerTriangleArea(Layer *, int triangle, double *area);
 Layer *layerTriangleCenter(Layer *, int triangle, double *center);
 Layer *layerTriangleMaxEdgeLength(Layer *, int triangle, double *length);
+Layer *layerNormalMaxEdgeLength(Layer *, int normal, double *length);
 int layerAddNormal(Layer *, int globalNodeId );
 int layerUniqueNormalId(Layer *, int globalNodeId );
 int layerDuplicateNormal(Layer *, int normal );

@@ -502,6 +502,27 @@ Layer *layerTriangleMaxEdgeLength(Layer *layer, int triangle, double *length )
   return layer;
 }
 
+Layer *layerNormalMaxEdgeLength(Layer *layer, int normal, double *length )
+{
+  int triangle;
+  double maxLength, currentLength;
+  AdjIterator it;
+
+  maxLength = 0;
+
+  for ( it = adjFirst(layer->adj,normal); 
+	adjValid(it); 
+	it = adjNext(it) ){
+     triangle = adjItem(it);
+     layerTriangleMaxEdgeLength(layer, triangle, &currentLength );
+     maxLength = MAX(maxLength, currentLength);
+  }
+
+  *length = maxLength;
+ 
+  return layer;
+}
+
 Layer *layerInitializeNormal(Layer *layer, int normal)
 {
   if (normal < 0 || normal >= layerMaxNormal(layer) ) return NULL;
@@ -2577,26 +2598,33 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 
 Layer *layerTerminateCollidingFronts(Layer *layer)
 {
-  int normal;
+  int normal, degree, *triangles;
   Grid *grid;
   Near *near, *target;
-  double xyz[3];
-  
+  double xyz[3], radius;
+  int i, collisions, touched, *nearNormals;
+
   grid = layerGrid(layer);
   near = malloc(layerNNormal(layer)*sizeof(Near));
 
   for(normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid, layerNormalRoot(layer, normal ), xyz);
-    nearInit(&near[normal], normal, xyz[0], xyz[1], xyz[2], 0.0);
+    layerNormalMaxEdgeLength(layer, normal, &radius);
+    nearInit(&near[normal], normal, xyz[0], xyz[1], xyz[2], radius);
+    printf("normal %d radius %f\n",normal,radius);
     if (normal>0) nearInsert(near,&near[normal]);
   }
 
-  target = nearCreate(EMPTY,0,0,0,0.1);
-  printf("normals rad 0.1 %d\n",nearCollisions(near,target));
-  target = nearCreate(EMPTY,0,0,0,1.0);
-  printf("normals rad 1.0 %d\n",nearCollisions(near,target));
-  target = nearCreate(EMPTY,0,0,0,2.0);
-  printf("normals rad 2.0 %d\n",nearCollisions(near,target));
+  for(normal=0;normal<layerNNormal(layer);normal++){
+    target = &near[normal];
+    collisions = nearCollisions(near,target);
+    printf("normal %d near %d\n",normal,collisions );
+    nearNormals = malloc(collisions*sizeof(int));
+    touched = 0;
+    nearTouched(near, target, &touched, collisions, nearNormals);
+    for(i=0;i<collisions;i++)printf("         %d\n", nearNormals[i]);
+    free(nearNormals);
+  }
 
   free(near);
 
