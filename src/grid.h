@@ -17,7 +17,7 @@ BEGIN_C_DECLORATION
 
 typedef struct Grid Grid;
 
-Grid *gridCreate(int maxnode, int maxcell, int maxface);
+Grid *gridCreate(int maxnode, int maxcell, int maxface, int maxedge );
 Grid *gridImport(int maxnode, int nnode, 
 		 int maxface, int nface, 
 		 int maxcell, int ncell,
@@ -33,6 +33,8 @@ int gridMaxCell(Grid *g);
 int gridNCell(Grid *g);
 int gridMaxFace(Grid *g);
 int gridNFace(Grid *g);
+int gridMaxEdge(Grid *g);
+int gridNEdge(Grid *g);
 int gridCellDegree(Grid *g, int nodeIndex);
 
 Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );

@@ -20,14 +20,15 @@ end
 class TestSampleUnit < Test::Unit::TestCase
 
  def set_up
-  @grid = Grid.new(4,1,0)
+  @grid = Grid.new(4,1,0,0)
  end
 
  def testSafeAlloc
-  grid = Grid.new(0,0,0)
+  grid = Grid.new(0,0,0,0)
   assert_equal 1, grid.maxnode
   assert_equal 1, grid.maxcell
   assert_equal 1, grid.maxface
+  assert_equal 1, grid.maxedge
  end
 
   def testCreateGrid
@@ -35,6 +36,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 0, @grid.nnode
   assert_equal 1, @grid.maxcell
   assert_equal 0, @grid.ncell
+  assert_equal 1, @grid.maxface
+  assert_equal 0, @grid.nface
+  assert_equal 1, @grid.maxedge
+  assert_equal 0, @grid.nedge
  end
 
  def testAddCellDegAndCell
@@ -48,15 +53,15 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testAddCellRegFailure
-  grid = Grid.new(3,1,0)
+  grid = Grid.new(3,1,0,0)
   assert_equal nil, grid.addCell(0,1,2,3)
-  grid = Grid.new(4,1,0)
+  grid = Grid.new(4,1,0,0)
   assert_equal grid, grid.addCell(0,1,2,3)
   assert_equal nil, grid.addCell(0,1,2,3)
  end
  
  def testRemoveCell
-  assert_not_nil     grid = Grid.new(4,2,0)
+  assert_not_nil     grid = Grid.new(4,2,0,0)
   assert_equal grid, grid.addCell(0,1,2,3)
   assert_nil         grid.removeCell(-1)
   assert_nil         grid.removeCell(1)
@@ -70,7 +75,7 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testReplaceCell
-  grid = Grid.new(8,2,0)
+  grid = Grid.new(8,2,0,0)
   assert_equal grid, grid.addCell(0,1,2,3).addCell(4,5,6,7)
   assert_equal grid, grid.removeCell(0)
   assert_equal grid, grid.addCell(0,1,2,3)
@@ -79,7 +84,7 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testGetGem
-  grid = Grid.new(5,3,0)
+  grid = Grid.new(5,3,0,0)
   assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
   assert_equal [], grid.gem(5,6)
   assert_equal [0], grid.gem(0,1)
@@ -110,7 +115,7 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testEquator
-  grid = Grid.new(6,4,0)
+  grid = Grid.new(6,4,0,0)
   assert_equal grid, grid.
    addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0).addCell(4,5,0,1)
   assert_equal [3,2,1,0], grid.gem(4,5)
@@ -122,26 +127,26 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testEquatorGapInMiddle
-  grid = Grid.new(6,3,0)
+  grid = Grid.new(6,3,0,0)
   assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,2,3)
   assert_equal [1,0], grid.gem(4,5)
   assert_equal [1,2,3,1], grid.equator(4,5)
  end
 
  def testEquatorGapInEnd
-  grid = Grid.new(6,3,0)
+  grid = Grid.new(6,3,0,0)
   assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,3,1)
   assert_equal [3,1,2,3], grid.equator(4,5)
  end
 
  def testEquatorTwoGaps
-  grid = Grid.new(6,3,0)
+  grid = Grid.new(6,3,0,0)
   assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,3,0)
   assert_equal nil, grid.equator(4,5)
  end
 
  def testAddNode
-  grid = Grid.new(1,1,0)
+  grid = Grid.new(1,1,0,0)
   assert_equal 0, grid.addNode(1.0,0.0,0.0)
   assert_equal( -1, grid.addNode(1.0,0.0,0.0))
  end
@@ -224,20 +229,20 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testNumberOfFaces
   assert_equal 0, @grid.nface 
-  assert_not_nil  grid = Grid.new(4,1,2)
+  assert_not_nil  grid = Grid.new(4,1,2,0)
   assert_equal 0, grid.nface 
   assert_equal 2, grid.maxface 
  end
 
  def testAddAndFindFace
-  assert_not_nil     grid = Grid.new(4,1,2)
+  assert_not_nil     grid = Grid.new(4,1,2,0)
   assert_equal grid, grid.addFace(0, 1, 2, 10)
   assert_equal 0,    grid.findFace(0,1,2)
   assert_equal(-1,   grid.findFace(3,1,2) )
  end
 
  def testAddAndRemoveFace
-  assert_not_nil     grid = Grid.new(4,1,2)
+  assert_not_nil     grid = Grid.new(4,1,2,0)
   assert_nil         grid.removeFace(0)
   assert_nil         grid.removeFace(1)
   assert_equal grid, grid.addFace(0, 1, 2, 10)
@@ -252,7 +257,7 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testFaceId
-  assert_not_nil     grid = Grid.new(4,1,2)
+  assert_not_nil     grid = Grid.new(4,1,2,0)
 
   assert_equal( -1,  grid.faceId( 1, 2, 3 ) )
 
@@ -522,7 +527,7 @@ class TestSampleUnit < Test::Unit::TestCase
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
   x0 = x0 || 1.0
-  grid = Grid.new(nequ+2+1,14,14)
+  grid = Grid.new(nequ+2+1,14,14,0)
   n = Array.new
   n.push grid.addNode(  x0,0.0,0.0)
   n.push grid.addNode(-1.0,0.0,0.0)
@@ -541,7 +546,7 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def XtestMaxSize
   nnode = 6000000
-  grid = Grid.new(nnode,nnode*6,0)
+  grid = Grid.new(nnode,nnode*6,0,0)
   1.upto(nnode*6) {grid.addCell(3,4,0,1)}
  end
 

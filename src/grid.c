@@ -31,6 +31,8 @@ struct Grid {
   int *faceId;
   Adj *faceAdj;
 
+  int maxedge, nedge;
+
   int ngem;
   int gem[MAXDEG];
 
@@ -40,7 +42,7 @@ struct Grid {
 
 //#define EBUG
 
-Grid* gridCreate(int maxnode, int maxcell, int maxface)
+Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 {
   int i;
   Grid *grid;
@@ -53,6 +55,8 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
   grid->ncell   = 0;
   grid->maxface = MAX(maxface,1);
   grid->nface   = 0;
+  grid->maxedge = MAX(maxedge,1);
+  grid->nedge   = 0;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
 
@@ -309,6 +313,16 @@ int gridMaxFace(Grid *grid)
 int gridNFace(Grid *grid)
 {
   return grid->nface;
+}
+
+int gridMaxEdge(Grid *grid)
+{
+  return grid->maxedge;
+}
+
+int gridNEdge(Grid *grid)
+{
+  return grid->nedge;
 }
 
 int gridNGem(Grid *grid)

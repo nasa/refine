@@ -14,12 +14,12 @@ VALUE grid_init( VALUE self ) // not needed but for example
   return self;
 }
 
-VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nface)
+VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nface, VALUE nedge)
 {
   Grid *grid;
   VALUE *argv;
   VALUE obj;
-  grid = gridCreate( NUM2INT(nnode), NUM2INT(ncell), NUM2INT(nface) );
+  grid = gridCreate( NUM2INT(nnode), NUM2INT(ncell), NUM2INT(nface), NUM2INT(nedge) );
   obj = Data_Wrap_Struct( class, 0, grid_free, grid );
   rb_obj_call_init( obj, 0, argv ); // not needed but for example
   return obj;
@@ -59,6 +59,18 @@ VALUE grid_nface( VALUE self )
 {
   GET_GRID_FROM_SELF;
   return INT2NUM( gridNFace(grid) );
+}
+
+VALUE grid_maxedge( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridMaxEdge(grid) );
+}
+
+VALUE grid_nedge( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNEdge(grid) );
 }
 
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
@@ -234,7 +246,7 @@ VALUE cGrid;
 void Init_Grid() 
 {
   cGrid = rb_define_class( "Grid", rb_cObject );
-  rb_define_singleton_method( cGrid, "new", grid_new, 3 );
+  rb_define_singleton_method( cGrid, "new", grid_new, 4 );
   rb_define_method( cGrid, "initialize", grid_init, 0 );
   rb_define_method( cGrid, "maxnode", grid_maxnode, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
@@ -242,6 +254,8 @@ void Init_Grid()
   rb_define_method( cGrid, "ncell", grid_ncell, 0 );
   rb_define_method( cGrid, "maxface", grid_maxface, 0 );
   rb_define_method( cGrid, "nface", grid_nface, 0 );
+  rb_define_method( cGrid, "maxedge", grid_maxedge, 0 );
+  rb_define_method( cGrid, "nedge", grid_nedge, 0 );
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
   rb_define_method( cGrid, "cell", grid_cell, 1 );
