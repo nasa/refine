@@ -549,6 +549,40 @@ int gridFindEdge(Grid *grid, int n0, int n1 )
   return EMPTY;
 }
 
+int gridGeomCurveSize( Grid *grid, int edgeId, int startNode ){
+  AdjIterator it;
+  int node, lastnode, edge, n0, n1, nedgenode;
+  bool found;
+
+  nedgenode=0;
+  node = startNode;
+  lastnode = EMPTY;
+  found = TRUE;
+  while (found) {
+    found = FALSE;
+    for ( it = adjFirst(grid->edgeAdj,node); 
+	  adjValid(it) && !found; 
+	  it = adjNext(it)) {
+      edge = adjItem(it);
+      if (grid->edgeId[edge] == edgeId) {
+	if ( node == grid->e2n[0+2*edge] ) {
+	  n1 = grid->e2n[1+2*edge];
+	}else{
+	  n1 = grid->e2n[0+2*edge];	  
+	}
+	if ( n1 != lastnode ) { 
+	  lastnode = node;
+	  node = n1;
+	  found = TRUE;
+	  nedgenode++;
+	}
+      }
+    }
+  }
+  if (nedgenode>0) nedgenode++;
+  return nedgenode;
+}
+
 int gridEdgeId(Grid *grid, int n0, int n1 )
 {
   int edge = gridFindEdge(grid, n0, n1 );
