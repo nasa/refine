@@ -689,6 +689,7 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
 {
   int i, face0, face1;
+  int requiredRatio;
   double xyz0[3], xyz1[3], xyzAvg[3];
   GridBool volumeEdge;
 
@@ -706,13 +707,17 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
   if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
   if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
   
-  for (i=0 ; i<3 ; i++) {
-    if ( volumeEdge && gridGeometryFace(grid, n0) ) ratio = 0.0;
-    if ( volumeEdge && gridGeometryFace(grid, n1) ) ratio = 1.0;    
-    if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) ratio=0.0;
-    if ( gridGeometryNode(grid, n0) ) ratio = 0.0;
-    xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
-  }
+  requiredRatio = EMPTY;
+  if ( volumeEdge && gridGeometryFace(grid, n1) ) requiredRatio = 1;    
+  if ( volumeEdge && gridGeometryFace(grid, n0) ) requiredRatio = 0;
+  if ( gridGeometryEdge(grid, n0) && 
+       !gridGeometryEdge(grid, n1) ) requiredRatio = 0;
+  if ( gridGeometryNode(grid, n0) ) requiredRatio = 0;
+  
+  if (0 == requiredRatio) { if (0.99 < ratio) return NULL; ratio = 0.0; }
+  if (1 == requiredRatio) { if (0.01 > ratio) return NULL; ratio = 1.0; }
+
+  for (i=0 ; i<3 ; i++) xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
 
   if ( NULL == gridSetNodeXYZ( grid, n0, xyzAvg) ) return NULL;
   if ( NULL == gridSetNodeXYZ( grid, n1, xyzAvg) ) return NULL;  
