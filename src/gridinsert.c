@@ -14,6 +14,7 @@
 #include <values.h>
 #include "adj.h"
 #include "gridStruct.h"
+#include "gridmetric.h"
 #include "gridinsert.h"
 
 Grid *gridThrash(Grid *grid)
@@ -25,6 +26,41 @@ Grid *gridThrash(Grid *grid)
     if ( NULL != gridCell( grid, cellId, nodes) )
       gridSplitEdge( grid, nodes[0], nodes[1] );
   
+  return grid;
+}
+
+Grid *gridAdapt(Grid *grid)
+{
+  AdjIterator it;
+  int i, n0, n1, nnode, cell, nodes[4];
+  double length, spacing, ratio;
+  bool skipToNextNode;
+
+  nnode = grid->nnode;
+  for ( n0=0; n0<nnode ; n0++ ) {
+    skipToNextNode = FALSE;
+    for ( it = adjFirst(grid->cellAdj,n0); 
+	  !skipToNextNode && adjValid(it); 
+	  it = adjNext(it) ){
+      cell = adjItem(it);
+      gridCell(grid, cell, nodes);
+      for (i=0; !skipToNextNode && i<4; i++ ){
+	if ( n0 != nodes[i] ) {
+	  n1 = nodes[i];
+	  length = gridEdgeLength( grid, n0, n1);
+	  spacing = 0.5 * (gridSpacing( grid, n0) + gridSpacing( grid, n1));
+	  if (spacing <= 0.0) return NULL;
+	  ratio = length/spacing;
+	  // printf("n0 %d n1 %d length %f spacing %f ratio %f \n",
+	  // n0,n1,length,spacing,ratio);
+	  if ( ratio > 2.0 ) {
+	    gridSplitEdge(grid, n0, n1);
+	    skipToNextNode = TRUE;
+	  }
+	}
+      }    
+    }
+  }
   return grid;
 }
 
@@ -43,7 +79,8 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
   newZ = ( grid->xyz[2+3*n0] + grid->xyz[2+3*n1] ) * 0.5;
   newnode = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return NULL;
-  
+  grid->spacing[newnode] = 0.5*(grid->spacing[n0]+grid->spacing[n1]);
+
   for ( igem=0 ; igem<grid->ngem ; igem++ ){
     cell = grid->gem[igem];
     gridCell(grid, cell, nodes);
