@@ -453,16 +453,17 @@ Layer *layerScaleNormalHeight(Layer *layer, double scale)
   return layer;
 }
 
-Layer *layerLaminarInitialHeight(Layer *layer, double Re)
+Layer *layerLaminarInitialHeight(Layer *layer, double Re, double xStart)
 {
   int normal;
   double xyz[3];
-  double height;
+  double totalHeight, initialHeight;
 
   for(normal=0;normal<layerNNormal(layer); normal++){
     gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-    height = 5.2 * sqrt(xyz[0]+0.005) / sqrt(Re) / 50.0;
-    layerSetNormalHeight(layer,normal,height);
+    totalHeight = 5.2 * sqrt(ABS(xyz[0]+xStart)) / sqrt(ABS(Re));
+    initialHeight = totalHeight / 50.0;
+    layerSetNormalHeight(layer,normal,initialHeight);
   }
 
   return layer;

@@ -39,7 +39,7 @@ Layer *layerNormalDirection(Layer *, int normal, double *direction);
 Layer *layerSetNormalHeight(Layer *, int normal, double height);
 Layer *layerGetNormalHeight(Layer *, int normal, double *height);
 Layer *layerScaleNormalHeight(Layer *, double scale);
-Layer *layerLaminarInitialHeight(Layer *, double Re );
+Layer *layerLaminarInitialHeight(Layer *, double Re, double xStart );
 Layer *layerVisibleNormals(Layer *);
 Layer *layerConstrainNormal(Layer *, int edgeface );
 bool layerConstrainingGeometry(Layer *, int edgeface );

@@ -25,17 +25,29 @@ int main( int argc, char *argv[] )
   int    nel;
   int    *iel;
   double *xyz;
+  double scale;
+  int maxnode;
 
   sprintf( project,       "" );
+  scale = 1.0;
+  maxnode = 2000000;
 
   i = 1;
   while( i < argc ) {
     if( strcmp(argv[i],"-p") == 0 ) {
       i++; sprintf( project, "%s", argv[i] );
       printf("-p argument %d: %s\n",i, project);
+    } else if( strcmp(argv[i],"-s") == 0 ) {
+      i++; scale = atof(argv[i]);
+      printf("-s argument %d: %f\n",i, scale);
+    } else if( strcmp(argv[i],"-n") == 0 ) {
+      i++; maxnode = atoi(argv[i]);
+      printf("-n argument %d: %f\n",i, maxnode);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
+      printf(" -s scale background grid\n");
+      printf(" -n maximum number of nodes\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -58,7 +70,7 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  MesherX_DiscretizeVolume( 2000000, project );
+  MesherX_DiscretizeVolume( maxnode, scale, project );
 
   return(0);
 }

@@ -470,7 +470,7 @@ int layerTerminateNormalWithBGSpacing(Layer *layer)
 }
 
 
-int MesherX_DiscretizeVolume( int maxNodes, char *project )
+int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
 {
   char *outputProject;
   int vol=1;
@@ -478,8 +478,17 @@ int MesherX_DiscretizeVolume( int maxNodes, char *project )
   Layer *layer;
   int i;
   double h;
+  double rate;
+  int nLayer;
+
+  nLayer = (int)(10.0/scale);
+  rate = exp(scale*log(1.2));
+  printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
   grid = gridFillFromPart( vol, maxNodes );
+
+  MeshMgr_SetElementScale( scale );
+  //CAPrIMesh_TetVolume( vol );
 
   layer = formAdvancingFront( grid, project );
 
@@ -487,11 +496,12 @@ int MesherX_DiscretizeVolume( int maxNodes, char *project )
   gridThawAll(grid); 
   layerFindParentEdges(layer);
   i=0;
-  layerLaminarInitialHeight(layer, 1000.0);
-  while (i<10 &&layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer)) {
+  layerLaminarInitialHeight(layer, 1000.0, 0.005 );
+  layerScaleNormalHeight(layer,scale);
+  while (i<nLayer &&layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer)) {
     //layerVisibleNormals(layer);
     layerAdvance(layer);
-    layerScaleNormalHeight(layer,1.2);
+    layerScaleNormalHeight(layer,rate);
     i++;
   }
 

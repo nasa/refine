@@ -15,7 +15,7 @@
 
 BEGIN_C_DECLORATION
 
-int MesherX_DiscretizeVolume( int maxNodes, char *project );
+int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project );
 
 END_C_DECLORATION
 
