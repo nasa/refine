@@ -173,6 +173,7 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   double *xyz, *source, *ksum, *kxyz;
   int step, iteration;
   double stepSize;
+  double residual, count;
 
   if (gm != gridmoveSprings(gm, &nsprings, &springs)) return NULL;
   
@@ -225,12 +226,21 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
 	}
       }
 
+      residual = 0.0; count =0.0;
       for(node=0;node<gridMaxNode(grid);node++)
-	if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node))
-	  for(i=0;i<3;i++)
+	if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node)) {
+	  for(i=0;i<3;i++) {
+	    res[i] = xyz[i+3*node] - 
+	      ( kxyz[i+3*node] + source[i+3*node] ) / ksum[node];
 	    xyz[i+3*node] = (  kxyz[i+3*node] + source[i+3*node] ) / ksum[node];
-      
-    }
+	  }
+	  residual += gridDotProduct(res,res);
+	  count += 1.0;
+	}
+      /*
+      printf("Iteration %4d Residual %23.15e\n",iteration,sqrt(residual/count));
+      */ 
+   }
   }
   
   for(node=0;node<gridMaxNode(grid);node++)
