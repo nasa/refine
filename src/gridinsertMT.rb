@@ -381,6 +381,22 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.addFace(0,2,5,20)
   assert_equal grid, grid.addFace(1,2,5,50)
   assert_nil         grid.collapseEdge(0,1,0.5)
+  assert_nil         grid.collapseEdge(1,0,0.5)
+  assert_equal origXYZ, grid.nodeXYZ(0)
+ end
+
+ def testCollapseVolumeBetweenTwoEdges
+  assert_not_nil     grid=gemGrid
+  origXYZ = grid.nodeXYZ(0)
+  assert_equal grid, grid.addEdge(0,2,10,0,2)
+  assert_equal grid, grid.addEdge(1,2,20,1,2)
+  assert             grid.geometryEdge(0)
+  assert             grid.geometryEdge(1)
+  assert_nil         grid.findEdge(0,1)
+  assert_nil         grid.findEdge(1,0)
+  assert grid.geometryEdge(1)&&(nil==grid.findEdge(0,1))
+  assert_nil         grid.collapseEdge(0,1,0.5)
+  assert_nil         grid.collapseEdge(1,0,0.5)
   assert_equal origXYZ, grid.nodeXYZ(0)
  end
 
