@@ -2663,6 +2663,8 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
   double xyz1[3], xyz2[3], view[3];
   double length, visible, reciprocal;
 
+  if ( 0 < layerNBlend(layer) ) return NULL;
+
   printf("layerPopulateNormalNearTree...\n");
   layerPopulateNormalNearTree(layer);
 
