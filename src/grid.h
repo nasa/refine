@@ -48,6 +48,7 @@ Grid *gridEquator(Grid *g, int n0, int n1 );
 int gridNEqu(Grid *g );
 int gridEqu(Grid *g, int index );
 Grid *gridSwapEdge(Grid *g, int n0, int n1 );
+Grid *gridSwap(Grid *g );
 
 int gridAddNode(Grid *g, double x, double y, double z );
 
