@@ -1,3 +1,11 @@
+2005-01-31 22:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelSwap) called gridSwapFace when queue
+	in NULL to allow face swapping on partition interiors.
+	* src/gridswap.c (gridSwapFace) added protectection so that it
+	will not face swap on partition boundaries, so it can be used on
+	the interior of partitions.
+
 2005-01-31 21:28 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeAt,gridCollapseEdge) only perform

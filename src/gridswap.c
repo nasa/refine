@@ -158,6 +158,11 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   int i;
   double origcost, bestcost;
 
+  if ( NULL != queue ) return NULL; /* not parallelized yet :( */
+  if ( gridNodeGhost(grid,n0) ||
+       gridNodeGhost(grid,n1) ||
+       gridNodeGhost(grid,n2) ) return NULL; /* not parallelized yet :( */
+
   if ( gridNodeFrozen( grid, n0 ) && 
        gridNodeFrozen( grid, n1 ) && 
        gridNodeFrozen( grid, n2 ) )return NULL;  
@@ -181,6 +186,9 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   gridCell(grid, cell1, nodes1);
   bottomnode = nodes1[0] + nodes1[1] + nodes1[2] + nodes1[3] - n0 - n1 - n2; 
 
+  if ( gridNodeGhost(grid,topnode) || gridNodeGhost(grid,bottomnode) )
+    return NULL; /* not parallelized yet :( */
+
   //set nodes[0-3] to topnode orientation
   tent[4] = bottomnode;
 
@@ -202,10 +210,12 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   bestcost = MIN( gridAR( grid, nodes[2] ), bestcost ); 
 
   if ( bestcost > origcost && bestcost > COSTLIMIT ) {
-    gridRemoveCell(grid,cell0);
-    gridRemoveCell(grid,cell1);
+    gridRemoveCellAndQueue(grid, queue, cell0);
+    gridRemoveCellAndQueue(grid, queue, cell1);
     for ( i = 0 ; i < 3 ; i++ )
-      gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+      gridAddCellAndQueue( grid, queue, 
+			   nodes[i][0], nodes[i][1],
+			   nodes[i][2], nodes[i][3] );
     return grid;
   }
   return NULL;

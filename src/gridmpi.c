@@ -231,6 +231,16 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
       if ( NULL == queue && gridCellHasGhostNode(grid,nodes) ) continue;
       if ( grid == gridRemoveTwoFaceCell(grid, queue, cell) ) continue;
       if ( gridAR(grid, nodes)<ARlimit ) {
+	if ( NULL == queue ) {
+	  if ( grid == gridSwapFace(grid, queue, nodes[1],nodes[2],nodes[3]) )
+	    continue;
+	  if ( grid == gridSwapFace(grid, queue, nodes[0],nodes[2],nodes[3]) )
+	    continue;
+	  if ( grid == gridSwapFace(grid, queue, nodes[0],nodes[1],nodes[3]) )
+	    continue;
+	  if ( grid == gridSwapFace(grid, queue, nodes[0],nodes[1],nodes[2]) )
+	    continue;
+	}
 	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
 	  continue;
 	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
