@@ -17,6 +17,9 @@ class TestGridMath < Test::Unit::TestCase
 
  def set_up
   @gm = GridMath.new
+  @sin45 = 0.707106781186547
+  @sin30 = 0.5
+  @cos30 = 0.866025403784439
  end
  def setup ; set_up ; end
 
@@ -64,11 +67,74 @@ class TestGridMath < Test::Unit::TestCase
   v0 = [1,0,0]
   v1 = [0,1,0]
   axle = [0,0,1]
-  assert_equal v0, @gm.rotateDirection(v0,v1,axle,0)
-  assert_equal v1, @gm.rotateDirection(v0,v1,axle,1)
+  tol = 1.0e-12
+  result = @gm.rotateDirection(v0,v1,axle,0)
+  assert_in_delta v0[0], result[0], tol
+  assert_in_delta v0[1], result[1], tol
+  assert_in_delta v0[2], result[2], tol
+  result = @gm.rotateDirection(v0,v1,axle,1)
+  assert_in_delta v1[0], result[0], tol
+  assert_in_delta v1[1], result[1], tol
+  assert_in_delta v1[2], result[2], tol
   negaxle = [0,0,-1]
-  assert_equal v1, @gm.rotateDirection(v1,v0,negaxle,0)
-  assert_equal v0, @gm.rotateDirection(v1,v0,negaxle,1)
+  result = @gm.rotateDirection(v1,v0,negaxle,1)
+  assert_in_delta v0[0], result[0], tol
+  assert_in_delta v0[1], result[1], tol
+  assert_in_delta v0[2], result[2], tol
+  result = @gm.rotateDirection(v1,v0,negaxle,0)
+  assert_in_delta v1[0], result[0], tol
+  assert_in_delta v1[1], result[1], tol
+  assert_in_delta v1[2], result[2], tol
+ end
+
+ def testRotateDirectionMiddleOrthog
+  v0 = [1,0,0]
+  v1 = [0,1,0]
+  axle = [0,0,1]
+  result = @gm.rotateDirection(v0,v1,axle,0.5)
+  assert_in_delta @sin45, result[0], 1.0e-7
+  assert_in_delta @sin45, result[1], 1.0e-7
+  assert_in_delta 0,      result[2], 1.0e-7
+  result = @gm.rotateDirection(v0,v1,axle,(1.0/3.0))
+  assert_in_delta @cos30, result[0], 1.0e-7
+  assert_in_delta @sin30, result[1], 1.0e-7
+  assert_in_delta 0,      result[2], 1.0e-7
+  result = @gm.rotateDirection(v0,v1,axle,(2.0/3.0))
+  assert_in_delta @sin30, result[0], 1.0e-7
+  assert_in_delta @cos30, result[1], 1.0e-7
+  assert_in_delta 0,      result[2], 1.0e-7
+ end
+
+ def testRotateDirectionMiddleObtose
+  v0 = [1,0,0]
+  v1 = [-@sin45,@sin45,0]
+  axle = [0,0,1]
+  result = @gm.rotateDirection(v0,v1,axle,(2.0/3.0))
+  assert_in_delta 0, result[0], 1.0e-7
+  assert_in_delta 1, result[1], 1.0e-7
+  assert_in_delta 0, result[2], 1.0e-7
+  result = @gm.rotateDirection(v0,v1,axle,(1.0/3.0))
+  assert_in_delta @sin45, result[0], 1.0e-7
+  assert_in_delta @sin45, result[1], 1.0e-7
+  assert_in_delta 0,      result[2], 1.0e-7
+ end
+
+ def testRotateDirectionMiddleOrthogWithEqualSkew
+  v0 = [@sin45,0,@sin45]
+  v1 = [0,@sin45,-@sin45]
+  axle = [0,0,1]
+  result = @gm.rotateDirection(v0,v1,axle,0.0)
+  assert_in_delta v0[0], result[0], 1.0e-7
+  assert_in_delta v0[1], result[1], 1.0e-7
+  assert_in_delta v0[2], result[2], 1.0e-7
+  result = @gm.rotateDirection(v0,v1,axle,0.5)
+  assert_in_delta @sin45, result[0], 1.0e-7
+  assert_in_delta @sin45, result[1], 1.0e-7
+  assert_in_delta 0,      result[2], 1.0e-7
+  result = @gm.rotateDirection(v0,v1,axle,1.0)
+  assert_in_delta v1[0], result[0], 1.0e-7
+  assert_in_delta v1[1], result[1], 1.0e-7
+  assert_in_delta v1[2], result[2], 1.0e-7
  end
 
  def testTriDiagAlreadyDiag

@@ -29,14 +29,52 @@ void gridVectorNormalize(double *norm)
 void gridRotateDirection(double *v0, double *v1, 
 			 double *axle, double rotation, double *result)
 {
-  double antirotation;
-  antirotation = 1.0 - rotation;
+  double n0[3], n1[3], n2[3];
+  double alpha, a0, a1;
+  double dot0, dot1, skew0, skew1, skew;
+  double corrector[3], adjecent;
 
-  result[0] = antirotation*v0[0] + rotation*v1[0];
-  result[1] = antirotation*v0[1] + rotation*v1[1];
-  result[2] = antirotation*v0[2] + rotation*v1[2];
+  gridVectorCopy(n0,v0);   gridVectorNormalize(n0);
+  gridVectorCopy(n1,v1);   gridVectorNormalize(n1);
+  gridVectorCopy(n2,axle); gridVectorNormalize(n2);
+
+  dot0 = gridDotProduct(n0, n2); skew0 = asin(dot0);
+  dot1 = gridDotProduct(n1, n2); skew1 = asin(dot1);
+
+  n0[0] -= dot0*n2[0]; n0[1] -= dot0*n2[1]; n0[2] -= dot0*n2[2];
+  n1[0] -= dot0*n2[0]; n1[1] -= dot0*n2[1]; n1[2] -= dot0*n2[2];
+  gridVectorNormalize(n0); gridVectorNormalize(n1);
+
+  alpha = acos(gridDotProduct(n0, n1));
+  alpha = alpha * rotation;
+
+  a0 = cos(alpha);
+  a1 = sin(alpha);
+
+  gridCrossProduct(n2,n0,n1); gridVectorNormalize(n1);
+
+  result[0] = a0*n0[0] + a1*n1[0];
+  result[1] = a0*n0[1] + a1*n1[1];
+  result[2] = a0*n0[2] + a1*n1[2];
 
   gridVectorNormalize(result);
+
+  skew = (1.0-rotation) * skew0 + rotation * skew1;
+
+
+  adjecent = tan(skew);
+
+  result[0] += adjecent * n2[0];
+  result[1] += adjecent * n2[1];
+  result[2] += adjecent * n2[2];
+
+  gridVectorNormalize(result);
+
+  if (FALSE) {
+    printf("\nv0 %f %f %f v1 %f %f %f",v0[0],v0[1],v0[2],v1[0],v1[1],v1[2]);
+    printf("\nskew %f %f %f %f",skew0, skew1, rotation, skew);
+    printf("\nresult %f %f %f",result[0],result[1],result[2]);
+  }
 }
 
 void gridTriDiag3x3(double *m, double *d, double *e, 
