@@ -267,6 +267,8 @@ int gridFindCell(Grid *g, int *nodes );
 Grid *gridCheckCellConnections(Grid *g);
 Grid *gridDeleteThawedCells(Grid *g);
 
+int gridCellConnection(Grid *g, int cell, int index );
+
 int gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
 int gridAddFaceUV(Grid *g, 
 		  int n0, double u0, double v0,

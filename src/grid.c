@@ -1789,6 +1789,11 @@ Grid *gridDeleteThawedCells(Grid *grid){
   return grid;
 }
 
+int gridCellConnection(Grid *g, int cell, int index )
+{
+  return index;
+}
+
 int gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 {
  return gridAddFaceUV(grid, 

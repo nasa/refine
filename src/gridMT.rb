@@ -336,7 +336,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 2,            grid.cellDegree(7)
  end
 
- def testCellConnectivity
+ def testCellElements
   assert_not_nil      grid = Grid.new(5,2,0,0)
   grid.addCell(0,1,2,3)
   grid.addCell(0,1,2,4)
@@ -479,6 +479,15 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell(4,5,1,2)
   grid.addCell(4,5,3,0)
   assert_nil         grid.equator(4,5)
+ end
+
+ def testSingleCellConnections
+  grid = Grid.new(4,1,0,0)
+  4.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  6.times do |conn|
+   assert_equal conn, grid.cellConnection(0,conn)
+  end
  end
 
  def testAddNode

@@ -332,6 +332,12 @@ VALUE grid_findCell( VALUE self, VALUE rb_nodes )
   return INT2NUM( gridFindCell( grid, nodes ) );
 }
 
+VALUE grid_cellConnection( VALUE self, VALUE cell, VALUE index )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridCellConnection( grid, cell, index ) );
+}
+
 VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
 {
   GET_GRID_FROM_SELF;
@@ -1071,6 +1077,7 @@ void Init_Grid()
 		    grid_findOtherCellWith3Nodes, 4 );
   rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
   rb_define_method( cGrid, "findCell", grid_findCell, 1 );
+  rb_define_method( cGrid, "cellConnection", grid_cellConnection, 2 );
 
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
   rb_define_method( cGrid, "addFaceUV", grid_addFaceUV, 10 );
