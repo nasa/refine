@@ -219,12 +219,16 @@ Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
   grid->f2n[2+3*face] = n2;
   grid->faceId[face]  = faceId;
 
-  return grid;
+  if ( NULL == adjRegister( grid->faceAdj, n0, faceId ) ) return NULL;
+  if ( NULL == adjRegister( grid->faceAdj, n1, faceId ) ) return NULL;
+  if ( NULL == adjRegister( grid->faceAdj, n2, faceId ) ) return NULL;
+
+ return grid;
 }
 
 int gridFaceId(Grid *grid, int n0, int n1, int n2 )
 {
-  return 0;
+  return EMPTY;
 }
 
 
