@@ -321,6 +321,11 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   return layer;
 }
 
+Layer *layerRebuildVolume(Layer *layer, int vol){
+
+  return layer;
+}
+
 int
 MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
                           int ntri, int *tri, int nsid, int *sid, int *npo,
@@ -352,6 +357,9 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
 
   printf(" -- REBUILD FACES\n");
   layerRebuildFaces(layer,vol);
+
+  printf(" -- REBUILD VOLUME\n");
+  layerRebuildVolume(layer,vol);
 
   printf(" -- DUMP PART\n");
   outputProject = "../test/MesherX";
