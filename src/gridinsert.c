@@ -32,15 +32,16 @@ Grid *gridThrash(Grid *grid)
 Grid *gridAdapt(Grid *grid)
 {
   AdjIterator it;
-  int i, n0, n1, adaptnode;
+  int i, n0, n1, adaptnode, maxnode;
   double ratio;
   
-  adaptnode = grid->nnode;
+  maxnode = grid->nnode;
+  adaptnode =0;
 
-  for ( n0=0; n0<adaptnode ; n0++ ) { 
+  for ( n0=0; adaptnode<maxnode && n0<grid->maxnode ; n0++ ) { 
     if ( gridValidNode( grid, n0) ) {
+      adaptnode++;
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
-      // printf("n0 %d n1 %d ratio %f \n",n0,n1,ratio);
       if ( ratio > 2.2 ) {
 	gridSplitEdge(grid, n0, n1);
       }else{
@@ -155,19 +156,14 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
   double uv0[2], uv1[2], uvAvg[2];
   AdjIterator it;
 
-  if ( gridGeometryFace(grid, n0) ) return NULL;
-  if ( gridGeometryFace(grid, n1) ) return NULL;
-
   if ( gridGeometryEdge(grid, n0) ) return NULL;
   if ( gridGeometryEdge(grid, n1) ) return NULL;
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
-  if ( grid->nequ != grid->ngem ) {
-    if ( !gridGeometryFace(grid, n0) ) return NULL;
-    if ( !gridGeometryFace(grid, n1) ) return NULL;
-  }
 
-  gridNodeXYZ( grid, n0, xyz0);
-  gridNodeXYZ( grid, n1, xyz1);
+  if ( (grid->nequ == grid->ngem) && gridGeometryFace(grid, n1) ) return NULL;
+ 
+  if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
+  if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
   
   for (i=0 ; i<3 ; i++) xyzAvg[i] = 0.5 * ( xyz0[i] + xyz1[i] );
   for (i=0 ; i<3 ; i++) grid->xyz[i+3*n0] = xyzAvg[i];
@@ -181,22 +177,24 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
   }
 
   for (i=0 ; i<grid->ngem ; i++) gridRemoveCell( grid, grid->gem[i] );
-
+  
   it = adjFirst(grid->cellAdj, n1);
   while (adjValid(it)) {
     cell = adjItem(it);
     adjRemove( grid->cellAdj, n1, cell );
+    adjRegister( grid->cellAdj, n0, cell );
     it = adjFirst(grid->cellAdj, n1);
     for ( i=0 ; i<4 ; i++ ) 
       if (grid->c2n[i+4*cell] == n1 ) 
 	grid->c2n[i+4*cell] = n0;
-    adjRegister( grid->cellAdj, n0, cell );
   }
 
   if ( grid->nequ != grid->ngem ) {
     faceId = grid->faceId[adjItem(adjFirst(grid->faceAdj,n0))];
-    gridNodeUV(grid,n0,faceId,uv0);
-    gridNodeUV(grid,n1,faceId,uv1);
+    if ( NULL == gridNodeUV(grid,n0,faceId,uv0) )
+      printf("CollapseEdge: %s: %d: NULL gridNodeUV n0\n",__FILE__,__LINE__);
+    if ( NULL == gridNodeUV(grid,n1,faceId,uv1) )
+      printf("CollapseEdge: %s: %d: NULL gridNodeUV n1\n",__FILE__,__LINE__);
     for (i=0 ; i<2 ; i++) uvAvg[i] = 0.5 * ( uv0[i] + uv1[i] );
 
     face0 = gridFindFace(grid, n0, n1, grid->equ[0] );
@@ -207,19 +205,17 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
     it = adjFirst(grid->faceAdj, n1);
     while (adjValid(it)) {
       face = adjItem(it);
+      adjRemove( grid->faceAdj, n1, face );
+      adjRegister( grid->faceAdj, n0, face );
+      it = adjFirst(grid->faceAdj, n1);
       for ( i=0 ; i<3 ; i++ ) 
 	if (grid->f2n[i+3*face] == n1 ) 
 	  grid->f2n[i+3*face] = n0;
-      adjRemove( grid->faceAdj, n1, face );
-      adjRegister( grid->faceAdj, n0, face );
-      it = adjNext(it);
     }
     gridSetNodeUV(grid, n0, faceId, uvAvg[0], uvAvg[1]);
   }
 
   gridRemoveNode(grid, n1);
-
-  printf(" node %d removed.\n",n1);
 
   return grid;
 }
