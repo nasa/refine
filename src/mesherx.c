@@ -52,6 +52,10 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   }
 
   grid = gridFillFromPart( vol, maxNodes );
+  if (NULL == grid){
+    printf("ERROR: MesherX_DiscretizeVolume: could not fill grid with part.\n");
+    return 0;
+  }
 
   layer = layerFormAdvancingLayerWithCADGeomBCS( 1, grid );
 

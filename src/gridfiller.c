@@ -88,6 +88,11 @@ Grid *gridFillFromPart( int vol, int maxnode )
   printf("max grid size: %d nodes %d faces %d cells %d edge elements.\n",
 	 maxnode,maxface,maxcell,maxedge);
 
+  if (  nnode>maxnode || nface>maxface || ncell>maxcell || nedge>maxedge){
+    printf("ERROR: gridFillFromPart: max grid size is smaller then ugrid\n");
+    return NULL;
+  }
+
   c2n    = malloc( maxcell * 4 * sizeof(int) );
   f2n    = malloc( maxface * 3 * sizeof(int) );
   faceId = malloc( maxface *     sizeof(int) );
