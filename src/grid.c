@@ -3361,11 +3361,32 @@ Grid *gridReportLinesLocation(Grid *grid)
   return grid;
 }
 
-Grid *gridCopyAboutY0(Grid *grid, int symmetryFace, int mirrorAux )
+int gridMirrorNodeAboutY0(Grid *grid, int node, int origGlobal, int mirrorAux )
 {
-  int node, orignode, origface, origcell;
-  int *o2n;
+  int newNode;
   double xyz[3];
+  double map[6];
+  int aux;
+
+  gridNodeXYZ(grid,node,xyz);
+  newNode = gridAddNodeWithGlobal(grid,xyz[0],-xyz[1],xyz[2],
+				  gridNodeGlobal(grid,node)+origGlobal);
+  gridSetNodePart(grid,newNode,gridNodePart(grid,node));
+  gridMap(grid, node, map);
+  gridSetMap(grid, newNode, map[0], map[1], map[2], map[3], map[4], map[5]);
+  for ( aux = 0; aux<gridNAux(grid);aux++)
+    gridSetAux(grid, newNode, aux, gridAux(grid, node, aux));
+  if (mirrorAux>EMPTY) 
+    gridSetAux(grid, newNode, mirrorAux, -gridAux(grid, node, mirrorAux));
+  if (gridNodeFrozen(grid,node)) gridFreezeNode(grid,newNode);
+ 
+  return newNode;
+}
+
+Grid *gridCopyAboutY0(Grid *grid, int symmetryFaceId, int mirrorAux )
+{
+  int node, orignode, origNodeGlobal, origface, origcell, origCellGlobal;
+  int *o2n;
   int nodes[4];
   int face, i, faceid;
   int cell;
@@ -3377,22 +3398,23 @@ Grid *gridCopyAboutY0(Grid *grid, int symmetryFace, int mirrorAux )
   }
 
   orignode = gridNNode(grid);
+  origNodeGlobal = gridGlobalNNode(grid);
 
   o2n = malloc(sizeof(int) * orignode); 
 
   printf("gridCopyAboutY0: copy nodes, y = -y\n");
 
   for ( node = 0 ; node < orignode ; node++){
-    gridNodeXYZ(grid,node,xyz);
-    o2n[node] = gridAddNode(grid,xyz[0],-xyz[1],xyz[2]);
+    o2n[node] = gridMirrorNodeAboutY0(grid,node,origNodeGlobal,mirrorAux);
   }
+  gridSetGlobalNNode(grid,2*origNodeGlobal);
 
   printf("gridCopyAboutY0: remove duplicate nodes.\n");
 
   origface = gridNFace(grid);
   for ( face = 0 ; face < origface ; face++ ){
     gridFace(grid,face,nodes,&faceid);
-    if ( faceid == symmetryFace ) {
+    if ( faceid == symmetryFaceId ) {
       for (i=0;i<3;i++){
 	node = nodes[i];
 	if (o2n[node] >= orignode){
@@ -3410,19 +3432,24 @@ Grid *gridCopyAboutY0(Grid *grid, int symmetryFace, int mirrorAux )
     gridAddFace(grid,o2n[nodes[1]],o2n[nodes[0]],o2n[nodes[2]],faceid);
   }
 
-
   printf("gridCopyAboutY0: copy cells, swap node 0 and 1\n");
 
   origcell = gridNCell(grid);
+  origCellGlobal = gridGlobalNCell(grid);
   for ( cell = 0 ; cell < origcell ; cell++ ){
     gridCell(grid,cell,nodes);
-    gridAddCell(grid,o2n[nodes[1]],o2n[nodes[0]],o2n[nodes[2]],o2n[nodes[3]]);
+    gridAddCellWithGlobal(grid,
+			  o2n[nodes[1]],
+			  o2n[nodes[0]],
+			  o2n[nodes[2]],
+			  o2n[nodes[3]],
+			  origCellGlobal+gridCellGlobal(grid,cell));
   }
-
+  gridSetGlobalNCell(grid,2*origCellGlobal);
   printf("gridCopyAboutY0: remove sym face\n");
 
   gridThawAll(grid);
-  gridDeleteThawedFaces(grid,symmetryFace);
+  gridDeleteThawedFaces(grid,symmetryFaceId);
 
   free(o2n);
     
