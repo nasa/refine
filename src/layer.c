@@ -10,6 +10,8 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <values.h>
+#include "master_header.h"
 #include "layer.h"
 #include "gridmetric.h"
 #include "gridcad.h"
@@ -19,6 +21,7 @@
 typedef struct Normal Normal;
 struct Normal {
   int constrained;
+  int faceId1, faceId2;
   int root, tip;
   double direction[3];
   bool terminated;
@@ -180,8 +183,11 @@ Layer *layerMakeNormal(Layer *layer)
   layer->nnormal=normal;
 
   layer->normal = malloc( layer->nnormal * sizeof(Normal));
-  for(normal=0;normal<layer->nnormal;normal++) 
+  for(normal=0;normal<layer->nnormal;normal++){ 
     layer->normal[normal].constrained = 0;
+    layer->normal[normal].faceId1 = EMPTY;
+    layer->normal[normal].faceId2 = EMPTY;
+  }
 
   for(i=0;i<layerMaxNode(layer);i++){
     normal = layer->globalNode2Normal[i];
@@ -329,6 +335,7 @@ Layer *layerConstrainNormal(Layer *layer, int bc )
 {
   int face, nodes[3], id, i, normal;
   int edge, nCurveNode, *curve;
+  int exist;
   if (layerNNormal(layer) == 0 ) return NULL;
   
   if (bc > 0) {
@@ -337,7 +344,18 @@ Layer *layerConstrainNormal(Layer *layer, int bc )
 	  id==bc ) {
 	for(i=0;i<3;i++){
 	  normal = layer->globalNode2Normal[nodes[i]];
-	  if (normal != EMPTY) layer->normal[normal].constrained=bc;
+	  if (normal != EMPTY) {
+	    if ( layer->normal[normal].constrained >= 0) {
+	      layer->normal[normal].constrained=bc;
+	    }else{
+	      if (layer->normal[normal].faceId1 == EMPTY ||
+		  layer->normal[normal].faceId1 == bc ) {
+		layer->normal[normal].faceId1 = bc;
+	      }else{
+		layer->normal[normal].faceId2 = bc;
+	      }
+	    }
+	  }
 	}
       }
     }
@@ -350,6 +368,7 @@ Layer *layerConstrainNormal(Layer *layer, int bc )
       normal = layer->globalNode2Normal[curve[i]];
       if (normal != EMPTY) layer->normal[normal].constrained=bc;
     }
+    free(curve);
   }
   
   return layer;
@@ -392,7 +411,7 @@ int layerNActiveNormal(Layer *layer )
 Layer *layerAdvance(Layer *layer, double height )
 {
   Grid *grid = layer->grid;
-  int normal, root, tip, faceId, i;
+  int normal, root, tip, faceId, edgeId, i;
   int cell, node;
   int front, normals[3], n[6], side[2];
   double xyz[3];
@@ -417,8 +436,14 @@ Layer *layerAdvance(Layer *layer, double height )
       layer->normal[normal].tip = tip;
       gridReconnectCellUnlessFrozen(grid, root, tip);
       faceId = layerConstrained(layer,normal);
-      if (0 != faceId) {
+      if (0 < faceId) {
 	gridReconnectFaceUnlessFrozen(grid, faceId, root, tip);
+      }
+      if (0 > faceId) {
+	edgeId = -faceId;
+	gridReconnectEdgeUnlessFrozen(grid, edgeId, root, tip);
+	gridReconnectFaceUnlessFrozen(grid, layer->normal[normal].faceId1, root, tip);
+	gridReconnectFaceUnlessFrozen(grid, layer->normal[normal].faceId2, root, tip);
       }
       gridCopySpacing(grid, root, tip );
       gridFreezeNode( grid, tip );
@@ -461,12 +486,25 @@ Layer *layerAdvance(Layer *layer, double height )
       if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[1], n[5]);
     }
     
-    if (0 < layerConstrained(layer,normals[0]) && 
-	0 < layerConstrained(layer,normals[1]) ){
+    edgeId = -layerConstrained(layer,normals[0]);
+    if (edgeId > 0 && n[0]!=n[3]) 
+      gridAddEdge(grid,n[0],n[3],edgeId,DBL_MAX,DBL_MAX);
+
+    edgeId = -layerConstrained(layer,normals[1]);
+    if (edgeId > 0 && n[1]!=n[4]) 
+      gridAddEdge(grid,n[1],n[5],edgeId,DBL_MAX,DBL_MAX);
+
+    edgeId = -layerConstrained(layer,normals[2]);
+    if (edgeId > 0 && n[2]!=n[4]) 
+      gridAddEdge(grid,n[2],n[5],edgeId,DBL_MAX,DBL_MAX);
+
+    if (0 != layerConstrained(layer,normals[0]) && 
+	0 != layerConstrained(layer,normals[1]) ){
       side[0] = normals[1];
       side[1] = normals[0];
 
-      faceId = layerConstrained(layer,side[0]);
+      faceId = MAX(layerConstrained(layer,side[0]),
+		   layerConstrained(layer,side[1]));
       n[0] = layer->normal[side[0]].root;
       n[1] = layer->normal[side[1]].root;
       n[2] = layer->normal[side[0]].tip;
@@ -479,12 +517,13 @@ Layer *layerAdvance(Layer *layer, double height )
 	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
       }
     }
-    if (0 < layerConstrained(layer,normals[1]) && 
-	0 < layerConstrained(layer,normals[2]) ){
+    if (0 != layerConstrained(layer,normals[1]) && 
+	0 != layerConstrained(layer,normals[2]) ){
       side[0] = normals[2];
       side[1] = normals[1];
 
-      faceId = layerConstrained(layer,side[0]);
+      faceId = MAX(layerConstrained(layer,side[0]),
+		   layerConstrained(layer,side[1]));
       n[0] = layer->normal[side[0]].root;
       n[1] = layer->normal[side[1]].root;
       n[2] = layer->normal[side[0]].tip;
@@ -497,12 +536,13 @@ Layer *layerAdvance(Layer *layer, double height )
 	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
       }
     }
-    if (0 < layerConstrained(layer,normals[2]) && 
-	0 < layerConstrained(layer,normals[0]) ){
+    if (0 != layerConstrained(layer,normals[2]) && 
+	0 != layerConstrained(layer,normals[0]) ){
       side[0] = normals[0];
       side[1] = normals[2];
 
-      faceId = layerConstrained(layer,side[0]);
+      faceId = MAX(layerConstrained(layer,side[0]),
+		   layerConstrained(layer,side[1]));
       n[0] = layer->normal[side[0]].root;
       n[1] = layer->normal[side[1]].root;
       n[2] = layer->normal[side[0]].tip;
@@ -515,14 +555,20 @@ Layer *layerAdvance(Layer *layer, double height )
 	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
       }
     }
+
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     layer->normal[normal].root = layer->normal[normal].tip;
     layer->normal[normal].tip = EMPTY;
     faceId = layerConstrained(layer,normal);
-    if (0 != faceId) {
+    if (0 < faceId) {
       gridProjectNodeToFace(grid, layer->normal[normal].root, faceId );
+    }
+    if (0 > faceId) {
+      edgeId = -faceId;
+      gridProjectNodeToEdge(grid, layer->normal[normal].root, edgeId );
+      // need to do faces to get the UV vals but have xyz.
     }
     gridFreezeNode(grid,layer->normal[normal].root);
   }
