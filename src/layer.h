@@ -142,6 +142,8 @@ Layer *layerDuplicateAllBlend(Layer *);
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 
+Layer *layerFindNearNormals(Layer *);
+
 Layer *layerWriteTecplotFront(Layer *);
 
 END_C_DECLORATION

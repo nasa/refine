@@ -9,7 +9,7 @@ GC.disable # layer does not mark grid, so bug on GC
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridmetric.h gridinsert.h gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb Layer adj.c grid.h gridmetric.h gridcad.h gridinsert.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb Layer adj.c near.c grid.h gridmetric.h gridcad.h gridinsert.h master_header.h'
 
 require 'test/unit'
 require 'Grid/Grid'
@@ -1408,6 +1408,12 @@ class TestLayer < Test::Unit::TestCase
   # |   1
   assert_equal [5,9,7], layer.triangleNormals(4)
   assert_equal [5,7,1], layer.triangleNormals(5)
+ end
+
+ def testCollideFront
+  grid  = flatTwoFaceGrid
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.findNearNormals
  end
 
 end

@@ -416,6 +416,12 @@ VALUE layer_blendNormals( VALUE self, VALUE blend )
   return rb_normals;
 }
 
+VALUE layer_findNearNormals( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerFindNearNormals(layer)?self:Qnil );
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -482,4 +488,5 @@ void Init_Layer()
   rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
 
+  rb_define_method( cLayer, "findNearNormals", layer_findNearNormals, 0 );
 }

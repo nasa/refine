@@ -20,6 +20,7 @@
 #include "gridcad.h"
 #include "gridinsert.h"
 #include "grid.h"
+#include "near.h"
 
 typedef struct Normal Normal;
 struct Normal {
@@ -2570,6 +2571,34 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 				 faceId);
     }
   }
+
+  return layer;
+}
+
+Layer *layerFindNearNormals(Layer *layer)
+{
+  int normal;
+  Grid *grid;
+  Near *near, *target;
+  double xyz[3];
+  
+  grid = layerGrid(layer);
+  near = malloc(layerNNormal(layer)*sizeof(Near));
+
+  for(normal=0;normal<layerNNormal(layer);normal++){
+    gridNodeXYZ(grid, layerNormalRoot(layer, normal ), xyz);
+    nearInit(&near[normal], normal, xyz[0], xyz[1], xyz[2], 0.0);
+    if (normal>0) nearInsert(near,&near[normal]);
+  }
+
+  target = nearCreate(EMPTY,0,0,0,0.1);
+  printf("normals rad 0.1 %d\n",nearCollisions(near,target));
+  target = nearCreate(EMPTY,0,0,0,1.0);
+  printf("normals rad 1.0 %d\n",nearCollisions(near,target));
+  target = nearCreate(EMPTY,0,0,0,2.0);
+  printf("normals rad 2.0 %d\n",nearCollisions(near,target));
+
+  free(near);
 
   return layer;
 }
