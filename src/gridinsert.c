@@ -86,13 +86,15 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	  nnodeAdd++;
 	  gridNodeAR(grid,newnode,&ar); 
 	  if (ar<0.0) {
-	    printf("split to node %d has ar %f\n",newnode,ar);
+	    printf("%s: %d: split to node %d has ar %f\n",
+		   __FILE__,__LINE__,newnode,ar);
 	    exit(1);
 	  }   
 	  gridSwapNearNode( grid, newnode, -1.0 );
 	  gridNodeAR(grid,newnode,&ar); 
 	  if (ar<0.0) {
-	    printf("split swap to node %d has ar %f\n",newnode,ar);
+	    printf("%s: %d: split swap to node %d has ar %f\n",
+		   __FILE__,__LINE__,newnode,ar);
 	    exit(1);
 	  }   
 	}
@@ -104,13 +106,15 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	    nnodeRemove++;
 	    gridNodeAR(grid,n0,&ar); 
 	    if (ar<0.0) {
-	      printf("collapse to node %d has ar %f\n",n0,ar);
+	      printf("%s: %d: collapse to node %d has ar %f\n",
+		     __FILE__,__LINE__,n0,ar);
 	      exit(1);
 	    }   
 	    gridSwapNearNode( grid, n0, -1.0 );
 	    gridNodeAR(grid,n0,&ar); 
 	    if (ar<0.0) {
-	      printf("collapse swap to node %d has ar %f\n",n0,ar);
+	      printf("%s: %d: collapse swap to node %d has ar %f\n",
+		     __FILE__,__LINE__,n0,ar);
 	      exit(1);
 	    }   
 	  }
