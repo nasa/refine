@@ -1,3 +1,8 @@
+2005-01-31 21:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeAt,gridCollapseEdge) only perform
+	projection when gridCostConstraint contains gridCOST_CNST_VALID.
+
 2005-01-31 17:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridProjectNode) Major refactoring to clean out
