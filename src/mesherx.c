@@ -97,7 +97,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     //layerSmoothLayerWithHeight(layer);
 
     layerTerminateNormalWithLength(layer,1.0);
-    layerTerminateNormalWithBGSpacing(layer, 0.8, 1.7);
+    layerTerminateNormalWithBGSpacing(layer, 0.8, 1.6);
 
     if (i>10) layerTerminateCollidingTriangles(layer,1.1);
 
