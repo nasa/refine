@@ -40,6 +40,7 @@ int main( int argc, char *argv[] )
   int patchDimensions[3];
   int face, localNode, globalNode;
   double pxyz[3], gxyz[3], dxyz[3];
+  double oldUV[2], newUV[2], xyznew[3];
 
   int *l2g, volumeEdgeNode, patchEdgeNode;
 
@@ -178,6 +179,15 @@ int main( int argc, char *argv[] )
       printf("f%3d p%6d%10.5f%10.5f%10.5f g%6d%10.5f%10.5f%10.5f\n",face, 
 	     localNode, pxyz[0], pxyz[1], pxyz[2], 
 	     globalNode, gxyz[0], gxyz[1], gxyz[2]);
+      oldUV[0] = newUV[0] = UGPatch_Parameter(localPatch,localNode,0);
+      oldUV[1] = newUV[1] = UGPatch_Parameter(localPatch,localNode,1);
+      if (!CADGeom_NearestOnFace( vol, face, pxyz, newUV, xyznew) ) {
+	printf("%s: %d: CADGeom_NearestOnFace failed.",__FILE__,__LINE__);
+	return NULL;  
+      }
+      printf("f%3d o%6d%10.5f%10.5f%10.5f p%6d%10.5f%10.5f%10.5f\n",face, 
+	     localNode, pxyz[0], pxyz[1], pxyz[2], 
+	     localNode, xyznew[0], xyznew[1], xyznew[2]);
     }
    
     free(l2g);
