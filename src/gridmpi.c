@@ -133,6 +133,11 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 				     localnodes[0],localnodes[1],
 				     localnodes[2],localnodes[3],
 				     globalnodes[4]);
+	if (0>gridAR(grid,localnodes))
+	  printf( " %6d applied %6d %6d %6d %6d %15.10f\n",
+		  gridPartId(grid),
+		  globalnodes[0],globalnodes[1],globalnodes[2],globalnodes[3],
+		  gridAR(grid,localnodes) );
       }
     }
     for(added=0;added<queueAddedFaces(gq,transaction);added++) {
@@ -169,6 +174,8 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
     }
   }
   
+  printf( " %6d queue applied nnode %8d AR %15.10f\n",
+	  gridPartId(grid),gridNNode(grid),gridMinAR(grid) );
 
   queueFree(lq);
   return grid;
