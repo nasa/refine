@@ -1,8 +1,12 @@
+2004-08-30 10:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am removed unused near object from librefine.a.
+
 2004-08-30 09:21 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridfortran.c, src/gridfortran.h (gridparallelloadcapri_) API
-	change to add return code
-	* src/gridgeom.c (gridParallelGeomLoad) return NULL on failures
+	change to add return code.
+	* src/gridgeom.c (gridParallelGeomLoad) return NULL on failures.
 
 2004-08-29 22:10 Mike Park  <mike.park@nasa.gov>
 
