@@ -245,6 +245,8 @@ Layer *layerPopulateTriangleNearTree(Layer *);
 Layer *layerTerminateCollidingNormals(Layer *);
 Layer *layerTerminateCollidingTriangles(Layer *);
 
+Layer *layerTerminateFutureNegativeCellNormals(Layer *);
+
 Layer *layerSmoothLayerWithHeight(Layer *);
 
 Layer *layerOffsetTriangleMR(Layer *, int triangle, int normal, double offset,

@@ -1325,7 +1325,7 @@ Layer *layerProjectNormalToConstraints(Layer *layer, int normal)
 
   grid = layerGrid(layer);
 
-  tipnode = gridAddNode(grid,0,0,0);
+  tipnode = gridAddNode(grid,0.0,0.0,0.0);
   if (EMPTY == tipnode) return NULL;
 
   gridNodeXYZ(grid, layerNormalRoot(layer,normal), xyzroot );
@@ -2743,7 +2743,6 @@ Layer *layerSubBlendNormals(Layer *layer, int blend, int subBlend, int *normals)
 
 Layer *layerBlendAxle(Layer *layer, int blend, double *axle)
 {
-  int *nodes;
   double xyz0[3], xyz1[3];
   Grid *grid = layerGrid(layer);
   
@@ -2770,6 +2769,7 @@ Layer *layerNormalBlendAxle(Layer *layer, int normal, double *axle)
     node = layerNormalRoot(layer,normal);
     gridNodeUV(grid, node, faceId, uv);
     gridFaceNormalAtUV(grid,faceId,uv,xyz,axle);
+    blend = adjItem(adjFirst(layerBlendAdj(layer),normal));
     if (node == layer->blend[blend].nodes[1]) {
       axle[0] = -axle[0]; axle[1] = -axle[1]; axle[2] = -axle[2];
     }
@@ -2842,7 +2842,6 @@ Layer *layerSubBlendCount(Layer *layer, double maxNormalAngle)
   int blendnormals[4];
   double angle;
   int nSubNormal;
-  int i;
 
   if (layerNBlend(layer) <= 0) return layer;
 
@@ -2897,7 +2896,6 @@ Layer *layerSubBlendCount(Layer *layer, double maxNormalAngle)
 Layer *layerSubBlendSmooth(Layer *layer)
 {
   int normal;
-  AdjIterator it;
   int blend;
   int blendnormals[4];
   int nSubNormal, origSubNormal;
@@ -2961,7 +2959,7 @@ Layer *layerSubBlendFill(Layer *layer)
   AdjIterator it;
   int blend;
   int blendnormals[4];
-  double angle, rotation;
+  double rotation;
   int nSubNormal, subNormal, subNormals[MAXSUBNORMAL];
   int startNormal;
   double axle[3];
@@ -3437,6 +3435,115 @@ Layer *layerTerminateCollidingNormals(Layer *layer)
     }
   }
   free(nearNormals);
+
+  return layer;
+}
+
+Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
+{
+  Grid *grid = layer->grid;
+  int triangle, normals[3], nodes[3], n[6], tet[4];
+  int i, normal;
+  int  root, tip, node, nterminated;
+  double xyz[3];
+  int savedNodes[3];
+  double volumeLimit = 1.0e-14;
+
+  if (layerNNormal(layer) == 0 ) return NULL;
+
+  for (i=0;i<3;i++){
+    savedNodes[i] = gridAddNode(grid,0.0,0.0,0.0);
+    if (EMPTY == savedNodes[i]) return NULL;
+  }
+  
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    layerTriangleNormals(layer, triangle, normals);
+    layerTriangle(layer, triangle, nodes);
+    
+    for (i=0;i<3;i++){
+      normal = normals[i];
+      if (layerNormalTerminated(layer,normal)){
+	layer->normal[normal].tip = layer->normal[normal].root;
+      }else{
+	root = layer->normal[normal].root;
+	gridNodeXYZ(grid,root,xyz);
+	for(i=0;i<3;i++)
+	  xyz[i] = xyz[i] 
+	    + layer->normal[normal].height
+	    * layer->normal[normal].direction[i];
+	tip = savedNodes[i];
+	gridSetNodeXYZ(grid,tip,xyz);
+	layer->normal[normal].tip = tip;
+      }
+    }
+
+    if (nodes[1]<nodes[0] && nodes[1]<nodes[2]){
+      node = nodes[1];
+      nodes[1] = nodes[2];
+      nodes[2] = nodes[0];
+      nodes[0] = node;
+      normal = normals[1];
+      normals[1] = normals[2];
+      normals[2] = normals[0];
+      normals[0] = normal;
+    }
+    if (nodes[2]<nodes[0] && nodes[2]<nodes[1]){
+      node = nodes[2];
+      nodes[2] = nodes[1];
+      nodes[1] = nodes[0];
+      nodes[0] = node;
+      normal = normals[2];
+      normals[2] = normals[1];
+      normals[1] = normals[0];
+      normals[0] = normal;
+    }
+
+    nterminated = 0;
+    for (i=0;i<3;i++){
+      n[i]   = layer->normal[normals[i]].root;
+      n[i+3] = layer->normal[normals[i]].tip;
+      if (layerNormalTerminated(layer,normals[i])) nterminated++;
+    }
+    
+    if (nodes[2]<nodes[1]){
+      if (n[0]!=n[3]) {
+	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3];
+	if ( volumeLimit > gridVolume(grid, tet ) ) 
+	  layerTerminateNormal( layer, normals[0] );
+      }
+      if (n[2]!=n[5]) {
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5];
+	if ( volumeLimit > gridVolume(grid, tet ) ) 
+	  layerTerminateNormal( layer, normals[1] );
+      }
+      if (n[1]!=n[4]) {
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4];
+	if ( volumeLimit > gridVolume(grid, tet ) ) 
+	  layerTerminateNormal( layer, normals[2] );
+      }
+    }else{
+      if (n[0]!=n[3]) {
+	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3];
+	if ( volumeLimit > gridVolume(grid, tet ) ) 
+	  layerTerminateNormal( layer, normals[0] );
+      }
+      if (n[1]!=n[4]) {
+	tet[0] = n[0]; tet[1] = n[1]; tet[2] = n[5]; tet[3] = n[4];
+	if ( volumeLimit > gridVolume(grid, tet ) ) 
+	  layerTerminateNormal( layer, normals[1] );
+      }
+      if (n[2]!=n[5]) {
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[5];
+	if ( volumeLimit > gridVolume(grid, tet ) ) 
+	  layerTerminateNormal( layer, normals[2] );
+      }
+    }
+    for (i=0;i<3;i++){
+      layer->normal[normals[i]].tip = EMPTY;
+    }
+  }
+  
+  for (i=0;i<3;i++) gridRemoveNode(grid,savedNodes[i]);
 
   return layer;
 }
