@@ -26,16 +26,55 @@ class TestSampleUnit < Test::Unit::TestCase
 				  grid.addNode(0.0,1.0,0.0), 
 				  grid.addNode(0.0,0.0,1.0) )
   nodes = [0,1,2,3]
+  ar = 0.732050807568877
   assert_in_delta 1.0/6.0, grid.volume(nodes), 1.0e-15
   assert_in_delta 1.0/6.0, grid.minVolume, 1.0e-15
-  assert_in_delta 0.732050807568877, grid.ar(nodes), 1.0e-15
-  assert_in_delta 0.732050807568877, grid.minAR, 1.0e-15
-  ans = grid.arDerivative(0)
+  assert_in_delta ar, grid.ar(nodes), 1.0e-15
+  assert_in_delta ar, grid.minAR, 1.0e-15
+
+ end
+
+ def testDerivatives
+  assert_not_nil grid = Grid.new(4,1,0,0)
+
+  assert_equal grid, grid.addCell( 
+				  grid.addNode(0.0,0.0,0.0), 
+				  grid.addNode(1.0,0.0,0.0), 
+				  grid.addNode(0.0,1.0,0.0), 
+				  grid.addNode(0.0,0.0,1.0) )
+  nodes = [0,1,2,3]
+  ar = 0.732050807568877
+  ans = grid.cellARDerivative(nodes)
   deriv = -2.0/3.0
-  assert_in_delta 0.732050807568877, ans[0], 1.0e-15
+  assert_in_delta ar,    ans[0], 1.0e-15
   assert_in_delta deriv, ans[1], 1.0e-15
   assert_in_delta deriv, ans[2], 1.0e-15
-  assert_in_delta deriv, ans[3], 1.0e-15
+  assert_in_delta deriv, ans[3], 1.0e-15  
+
+  ans = grid.nodeARDerivative(0)
+  assert_in_delta ar,    ans[0], 1.0e-15
+  assert_in_delta deriv, ans[1], 1.0e-15
+  assert_in_delta deriv, ans[2], 1.0e-15
+  assert_in_delta deriv, ans[3], 1.0e-15  
+
+  ans = grid.nodeARDerivative(1)
+  deriv = 1.0/3.0
+  assert_in_delta ar,    ans[0], 1.0e-15
+  assert_in_delta 0.0,   ans[1], 1.0e-15
+  assert_in_delta deriv, ans[2], 1.0e-15
+  assert_in_delta deriv, ans[3], 1.0e-15  
+
+  ans = grid.nodeARDerivative(2)
+  assert_in_delta ar,    ans[0], 1.0e-15
+  assert_in_delta deriv, ans[1], 1.0e-15
+  assert_in_delta 0.0,   ans[2], 1.0e-15
+  assert_in_delta deriv, ans[3], 1.0e-15  
+
+  ans = grid.nodeARDerivative(3)
+  assert_in_delta ar,    ans[0], 1.0e-15
+  assert_in_delta deriv, ans[1], 1.0e-15
+  assert_in_delta deriv, ans[2], 1.0e-15
+  assert_in_delta 0.0,   ans[3], 1.0e-15  
  end
 
  def testRightHandedFaces

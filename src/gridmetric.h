@@ -18,7 +18,8 @@ BEGIN_C_DECLORATION
 
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
-Grid *gridARDervative(Grid *g, int node, double *ar, double *dARdx );
+Grid *gridCellARDervative(Grid *g, int *nodes, double *ar, double *dARdx );
+Grid *gridNodeARDervative(Grid *g, int node, double *ar, double *dARdx );
 double gridMinVolume(Grid *g);
 bool gridNegCellAroundNode(Grid *g, int node );
 double gridMinAR(Grid *g);

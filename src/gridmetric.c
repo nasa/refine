@@ -139,7 +139,46 @@ double gridAR(Grid *grid, int *nodes )
   return aspect;
 }
 
-Grid *gridARDervative(Grid *grid, int node, double *ar, double *dARdx )
+
+Grid *gridNodeARDervative(Grid *grid, int node, double *ar, double *dARdx )
+{
+  AdjIterator it;
+  int cell, nodes[4];
+  double local_ar, local_dARdx[3];
+
+  *ar = 1.0;
+  dARdx[0] = DBL_MAX;
+  dARdx[1] = DBL_MAX;
+  dARdx[2] = DBL_MAX;
+
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+    cell = adjItem(it);
+    nodes[0] = node;
+    if (node == grid->c2n[0+4*cell]){
+      nodes[1] = grid->c2n[1+4*cell];
+    }else{
+      nodes[1] = grid->c2n[0+4*cell];
+    }
+    gridOrient( grid, &grid->c2n[4*cell], nodes);
+    if ( grid != gridCellARDervative(grid, nodes, &local_ar, local_dARdx ) ) {
+      *ar = 0.0;
+      dARdx[0] = DBL_MAX;
+      dARdx[1] = DBL_MAX;
+      dARdx[2] = DBL_MAX;
+      return NULL;
+    }
+    if ( local_ar < *ar ) {
+      *ar = local_ar;
+      dARdx[0] = local_dARdx[0];
+      dARdx[1] = local_dARdx[1];
+      dARdx[2] = local_dARdx[2];
+    }
+  }
+
+  return grid;
+}
+
+Grid *gridCellARDervative(Grid *grid, int *nodes, double *ar, double *dARdx )
 {
 
   double x1, x2, x3, x4; 
@@ -180,21 +219,21 @@ Grid *gridARDervative(Grid *grid, int node, double *ar, double *dARdx )
 
   double xins_dx, xins_dy, xins_dz;
 
-  x1 = grid->xyz[0+3*grid->c2n[0+4*node]];
-  y1 = grid->xyz[1+3*grid->c2n[0+4*node]];
-  z1 = grid->xyz[2+3*grid->c2n[0+4*node]];
+  x1 = grid->xyz[0+3*nodes[0]];
+  y1 = grid->xyz[1+3*nodes[0]];
+  z1 = grid->xyz[2+3*nodes[0]];
 
-  x2 = grid->xyz[0+3*grid->c2n[1+4*node]];
-  y2 = grid->xyz[1+3*grid->c2n[1+4*node]];
-  z2 = grid->xyz[2+3*grid->c2n[1+4*node]];
+  x2 = grid->xyz[0+3*nodes[1]];
+  y2 = grid->xyz[1+3*nodes[1]];
+  z2 = grid->xyz[2+3*nodes[1]];
 
-  x3 = grid->xyz[0+3*grid->c2n[2+4*node]];
-  y3 = grid->xyz[1+3*grid->c2n[2+4*node]];
-  z3 = grid->xyz[2+3*grid->c2n[2+4*node]];
+  x3 = grid->xyz[0+3*nodes[2]];
+  y3 = grid->xyz[1+3*nodes[2]];
+  z3 = grid->xyz[2+3*nodes[2]];
 
-  x4 = grid->xyz[0+3*grid->c2n[3+4*node]];
-  y4 = grid->xyz[1+3*grid->c2n[3+4*node]];
-  z4 = grid->xyz[2+3*grid->c2n[3+4*node]];
+  x4 = grid->xyz[0+3*nodes[3]];
+  y4 = grid->xyz[1+3*nodes[3]];
+  z4 = grid->xyz[2+3*nodes[3]];
 
   /* Compute the aspect ratios */
 
