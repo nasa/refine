@@ -321,20 +321,24 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal node3, grid.nodeXYZ(3)
  end
 
- def gemGrid(nequ=4)
-  grid = Grid.new(nequ+2+1,nequ*2,0,0)
+ def gemGrid(nequ=4,disp=0.2,dent=nil)
+  grid = Grid.new(nequ+2+1,nequ*2,nequ*2,0)
   n = Array.new
   n.push grid.addNode( 1.0,0.0,0.0)
   n.push grid.addNode(-1.0,0.0,0.0)
   nequ.times do |i| 
    angle = 2.0*Math::PI*(i-1)/(nequ)
-   n.push grid.addNode(0.0,Math.sin(angle),Math.cos(angle)) 
+   s = if (dent==i) then -0.5 else 1.0 end
+   n.push grid.addNode(0.0,s*Math.sin(angle),s*Math.cos(angle)) 
   end
   n.push 2
-  center = grid.addNode(0.2,0.2,0.2)
+  center = grid.addNode(disp,disp,disp)
+  faceId = 1
   nequ.times do |i|
    grid.addCell(n[0],center,n[i+2],n[i+3])
+   grid.addFace(n[0],n[i+2],n[i+3],faceId) # 0,2,3
    grid.addCell(center,n[1],n[i+2],n[i+3])
+   grid.addFace(n[1],n[i+3],n[i+2],faceId) # 1,3,2
   end
   grid  
  end
@@ -370,11 +374,28 @@ class TestGridCAD < Test::Unit::TestCase
   grid
  end
 
- def testVolumeImprovement
+ def testSmartLaplacianVolumeImprovement4
   grid = isoTet4 -1.0
   grid.smartVolumeLaplacian(4)
   avgVol = grid.totalVolume/grid.ncell.to_f
   assert_in_delta avgVol, grid.minVolume, 1.0e-8 
+ end
+
+ def testSmartLaplacianVolumeImprovement8
+  grid = gemGrid 4, 5.0
+  grid.smartVolumeLaplacian(6)
+  avgVol = grid.totalVolume/grid.ncell.to_f
+  assert_in_delta avgVol, grid.minVolume, 1.0e-8 
+ end
+
+ def testImproveMinVolumeForInvalidConcaveGem
+  grid = gemGrid 4, 5.0, 0
+  avgVol = grid.totalVolume/grid.ncell.to_f
+  puts
+  puts grid.minVolume
+  grid.smartVolumeLaplacian(6)
+  puts grid.minVolume
+  puts avgVol
  end
 
 end
