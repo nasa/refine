@@ -1555,7 +1555,7 @@ class TestLayer < Test::Unit::TestCase
   assert_in_delta(  0.000, norm[2], tol)
  end
 
- def XtestForCollidingNormalsBetweenBlendAndConcaveNeighbor
+ def testForCollidingNormalsBetweenBlendAndConcaveNeighbor
   grid = Grid.new(100,100,100,100)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
@@ -1563,29 +1563,45 @@ class TestLayer < Test::Unit::TestCase
   grid.addNode(0,1,0)
   grid.addFace(0,1,2,1)
   grid.addFace(0,2,3,1)
+  grid.addNode(0,1,1)
+  grid.addNode(-1,1,0)
+  grid.addFace(3,4,5,1)
+  grid.addFace(1,0,3,11)
   grid.addFace(1,0,3,11)
   layer = Layer.new(grid).populateAdvancingFront([1])
   layer.constrainNormal(11)
-  grid.removeFace(2)
+  grid.removeFace(3)
+  grid.removeFace(4)
   layer.blend(200.0)
 
-  assert_equal [0,1,5], layer.triangleNormals(0)
-  assert_equal [4,2,3], layer.triangleNormals(1)
+  assert_equal [0,1,7], layer.triangleNormals(0)
+  assert_equal [6,2,3], layer.triangleNormals(1)
+  assert_equal [3,4,5], layer.triangleNormals(2)
 
-  # Y    3
+layer.writeTecplotFrontGeometry
+
+  #      5
+  #      |\
+  # Y    3-4
   # |    |\
-  # +--Z 4-2
-  # +--Z 0-5
+  # +--Z 6-2
+  # +--Z 0-7
   # |    |/
   # X    1
 
-  assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(0,0)
-  assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(1,0)
-  assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(5,0)
-
-  assert_equal [-1.0,0.0,0.0], layer.normalTriangleDirection(4,0)
-  assert_equal [-1.0,0.0,0.0], layer.normalTriangleDirection(2,0)
-  assert_equal [-1.0,0.0,0.0], layer.normalTriangleDirection(3,0)
+  tol = 1.0e-5
+  norm = layer.normalDirection(3)
+  assert_in_delta( -0.707107, norm[0], tol)
+  assert_in_delta( -0.707107, norm[1], tol)
+  assert_in_delta(  0.000000, norm[2], tol)
+  norm = layer.normalDirection(6)
+  assert_in_delta( -0.707107, norm[0], tol, "6-X")
+  assert_in_delta( -0.707107, norm[1], tol, "6-Y")
+  assert_in_delta(  0.000000, norm[2], tol, "6-Z")
+  norm = layer.normalDirection(2)
+  assert_in_delta( -0.707107, norm[0], tol, "3-X")
+  assert_in_delta( -0.707107, norm[1], tol, "3-Y")
+  assert_in_delta(  0.000000, norm[2], tol, "3-Z")
 
  end
 #layer.writeTecplotFrontGeometry
