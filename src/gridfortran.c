@@ -22,6 +22,8 @@
 static Grid *grid;
 static Queue *queue;
 
+#define FORTRAN_RETURN_INT (0);
+
 int gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 		 int *ncell, int *maxcell, int *c2n )
 {
@@ -40,12 +42,14 @@ int gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
   printf(" %6d populated                nnode%9d ncell%9d AR%14.10f\n",
 	 gridPartId(grid),gridNNode(grid),gridNCell(grid),gridMinAR(grid));
   fflush(stdout);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridfree_( )
 {
   queueFree(queue);
   gridFree(grid);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
@@ -67,6 +71,7 @@ int gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode,
       gridAddFace(grid, node0, node1, node2, *faceId);
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetmap_( int *nnode, double* map )
@@ -78,12 +83,14 @@ int gridsetmap_( int *nnode, double* map )
 		map[3+6*node], map[4+6*node], map[5+6*node] );
   printf(" %6d applied metric                                         AR%14.10f\n",
 	 gridPartId(grid),gridMinAR(grid));
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetnodepart_( int *nnode, int *part )
 {
   int node;
   for ( node=0; node<*nnode; node++) gridSetNodePart(grid, node, part[node]-1);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetnodelocal2global_( int *partId, int *nnodeg, 
@@ -102,6 +109,7 @@ int gridsetnodelocal2global_( int *partId, int *nnodeg,
     /*printf("%d l2g node %d global %d part %d\n", gridPartId(grid),node,
       gridNodeGlobal(grid,node),gridNodePart(grid, node)); */
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
@@ -111,6 +119,7 @@ int gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
   for ( cell=0; cell<*ncell; cell++){ 
     gridSetCellGlobal(grid, cell, local2global[cell]-1);
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridprojectallfaces_( )
@@ -123,12 +132,14 @@ int gridprojectallfaces_( )
       gridProjectNodeToFace(grid, nodes[2], faceId );
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridswap_( )
 {
   gridSwap(grid);
   printf(" post swap min AR %17.15f\n",gridMinAR(grid));
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsmoothvolume_( )
@@ -137,6 +148,7 @@ int gridsmoothvolume_( )
   printf( " %6d smooth volume                    %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsmoothfaceinterior_( int *processor )
@@ -152,11 +164,13 @@ int gridsmoothfaceinterior_( int *processor )
 	    gridPartId(grid),"near ghost only   ",gridMinAR(grid) );
   }
   fflush(stdout);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridadaptwithoutcad_( double *minLength, double *maxLength )
 {
   gridAdaptWithOutCAD(grid,*minLength, *maxLength);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridwritetecplotsurfacezone_( )
@@ -164,6 +178,7 @@ int gridwritetecplotsurfacezone_( )
   char filename[256];
   sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
   gridWriteTecplotSurfaceZone(grid,filename);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridexportfast_( )
@@ -171,7 +186,7 @@ int gridexportfast_( )
   char filename[256];
   sprintf(filename, "grid%03d.fgrid", gridPartId(grid)+1 );
   gridExportFAST(grid,filename);
-  
+  return FORTRAN_RETURN_INT;  
 }
 
 int gridparalleladaptwithoutcad_( int *processor, 
@@ -183,6 +198,7 @@ int gridparalleladaptwithoutcad_( int *processor,
   } else {
     gridParallelAdaptWithOutCAD(grid,queue,*minLength, *maxLength);
   } 
+  return FORTRAN_RETURN_INT;
 }
 
 int gridparallelswap_( int *processor )
@@ -193,16 +209,19 @@ int gridparallelswap_( int *processor )
   } else {
     gridParallelSwap(grid,queue);
   } 
+  return FORTRAN_RETURN_INT;
 }
 
 int queuedumpsize_( int *nInt, int *nDouble )
 {
   queueDumpSize(queue, nInt, nDouble);
+  return FORTRAN_RETURN_INT;
 }
 
 int queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   queueDump(queue, ints, doubles);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
@@ -210,12 +229,14 @@ int gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
   queueLoad(queue, ints, doubles);
   gridApplyQueue(grid,queue);
   queueReset(queue);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsize_( int *nnodeg, int *ncellg )
 {
   *nnodeg = gridGlobalNNode(grid);
   *ncellg = gridGlobalNCell(grid);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
@@ -223,27 +244,32 @@ int gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 {
   gridGlobalShiftNode( grid, *oldnnodeg, *newnnodeg, *nodeoffset);
   gridGlobalShiftCell( grid, *oldncellg, *newncellg, *celloffset);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridnunusedcellglobal_( int *nunused )
 {
   *nunused = gridNUnusedCellGlobal( grid );
+  return FORTRAN_RETURN_INT;
 }
 
 int gridgetunusedcellglobal_( int *nunused, int *unused )
 {
   gridGetUnusedCellGlobal( grid, unused );
+  return FORTRAN_RETURN_INT;
 }
 
 int gridjoinunusedcellglobal_( int *nunused, int *unused )
 {
   int i;
   for (i=0;i<(*nunused);i++) gridJoinUnusedCellGlobal( grid, unused[i] );
+  return FORTRAN_RETURN_INT;
 }
 
 int grideliminateunusedcellglobal_(  )
 {
   gridEliminateUnusedCellGlobal( grid );
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
@@ -254,6 +280,7 @@ int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg,
   *nnodesg = gridGlobalNNode(grid);
   *ncell = gridNCell(grid);
   *ncellg = gridGlobalNCell(grid);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
@@ -267,6 +294,7 @@ int gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
     y[node] = xyz[1];
     z[node] = xyz[2];
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridgetcell_( int *cell, int *nodes, int *global )
@@ -277,6 +305,7 @@ int gridgetcell_( int *cell, int *nodes, int *global )
   nodes[2]++;
   nodes[3]++;
   *global = gridCellGlobal(grid,(*cell)-1)+1;
+  return FORTRAN_RETURN_INT;
 }
 
 int gridgetbcsize_( int *ibound, int *nface )
@@ -289,6 +318,7 @@ int gridgetbcsize_( int *ibound, int *nface )
       if ( *ibound == id ) (*nface)++;
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
@@ -306,6 +336,7 @@ int gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
       }
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetnaux_( int *naux )
@@ -313,6 +344,7 @@ int gridsetnaux_( int *naux )
   gridSetNAux(grid, *naux);
   queueFree( queue );
   queue = queueCreate( 9 + gridNAux(grid) ); /* 3:xyz + 6:m + naux */
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetauxvector_( int *nnode, int *offset, double *x )
@@ -321,6 +353,7 @@ int gridsetauxvector_( int *nnode, int *offset, double *x )
   for (node=0;node<(*nnode);node++) {
     gridSetAux(grid,node,(*offset),x[node]);
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
@@ -331,6 +364,7 @@ int gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
       gridSetAux(grid,node,(*offset)+dim,x[dim+(*ndim)*node]);
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
@@ -341,6 +375,7 @@ int gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
       gridSetAux(grid,node,(*offset)+dim,x[dim+(*ndim)*node]);
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridgetauxvector_( int *nnode, int *offset, double *x )
@@ -349,6 +384,7 @@ int gridgetauxvector_( int *nnode, int *offset, double *x )
   for (node=0;node<(*nnode);node++) {
     x[node] = gridAux(grid,node,(*offset));
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
@@ -359,6 +395,7 @@ int gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
       x[dim+(*ndim)*node] = gridAux(grid,node,(*offset)+dim);
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
@@ -369,6 +406,7 @@ int gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
       x[dim+(*ndim)*node] = gridAux(grid,node,(*offset)+dim);
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridghostcount_( int *nproc, int *count )
@@ -384,6 +422,7 @@ int gridghostcount_( int *nproc, int *count )
       }
     }
   }
+  return FORTRAN_RETURN_INT;
 }
 
 int gridloadghostnodes_( int *nproc, int *clientindex,
@@ -416,6 +455,7 @@ int gridloadghostnodes_( int *nproc, int *clientindex,
     }
   }
   free(count);
+  return FORTRAN_RETURN_INT;
 }
 
 int gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
@@ -446,7 +486,7 @@ int gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
       }
     } 
   }
-
+  return FORTRAN_RETURN_INT;
 }
 
 int gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
@@ -477,4 +517,5 @@ int gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   printf( " %6d update xfer                      %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
+  return FORTRAN_RETURN_INT;
 }
