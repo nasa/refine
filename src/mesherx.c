@@ -467,6 +467,28 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
   return layer;
 }
 
+void layerDumpFaceWire(int faceId, int nshell, int *shell, double *shellxyz){
+  FILE *mfile;
+  char filename[256];
+  int i;
+
+  printf("Dumping face wire shell.\n");
+  sprintf(filename,"face%dwire.plt",faceId);
+  mfile = fopen(filename,"w");
+  fprintf(mfile,"Varibles = \"x\" \"y\" \"z\"\n");
+  for(i=0;i<nshell;i++){
+    fprintf(mfile,"Zone\n%20.10f %20.10f %20.10f\n%20.10f %20.10f %20.10f\n",
+	    shellxyz[0+3*shell[0+2*i]],
+	    shellxyz[1+3*shell[0+2*i]],
+	    shellxyz[2+3*shell[0+2*i]],
+	    shellxyz[0+3*shell[1+2*i]],
+	    shellxyz[1+3*shell[1+2*i]],
+	    shellxyz[2+3*shell[1+2*i]]);
+  }
+  fclose(mfile);
+}
+
+
 Layer *layerRebuildFaces(Layer *layer, int vol){
 
   int maxnode, nnode;
@@ -619,25 +641,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	CADGeom_ResolveOnFace(vol,faceId,&shellxyz[3*i],&shelluv[2*i],resolved);
       }
 
-      if (FALSE) {
-	FILE *mfile;
-	char filename[256];
-
-	printf("Dumping face wire shell.\n");
-	sprintf(filename,"face%d.m",faceId);
-	mfile = fopen(filename,"w");
-	fprintf(mfile,"face=[\n");
-	for(i=0;i<nshell;i++){
-	  fprintf(mfile,"%20.10f %20.10f\n%20.10f %20.10f\n",
-		  shellxyz[0+3*shell[0+2*i]],shellxyz[1+3*shell[0+2*i]],
-		  shellxyz[0+3*shell[1+2*i]],shellxyz[1+3*shell[1+2*i]]);
-	}
-	fprintf(mfile,"];\n");
-	fprintf(mfile," gset term postscript; gset output 'face%d.ps'; \n",faceId);
-	fprintf(mfile,"gplot [:] [:] face\n");
-	fclose(mfile);
-      }
-
+      layerDumpFaceWire(faceId, nshell, shell, shellxyz);
 
       nfacenode = EMPTY;
       nfacetri  = EMPTY;
@@ -647,20 +651,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       0, NULL,
 			       &nfacenode, &nfacetri, 
 			       &newface, &newxyz, &newuv) ) {
-	FILE *mfile;
-	printf("%s\nCould NOT mesh Face %d\n",ErrMgr_GetErrStr(),faceId);
-	printf("Dumping face wire shell to faceError.m\n");
-	mfile = fopen("faceError.m","w");
-	fprintf(mfile,"face=[\n");
-	for(i=0;i<nshell;i++){
-	  fprintf(mfile,"%20.10f %20.10f\n%20.10f %20.10f\n",
-		  shellxyz[0+3*shell[0+2*i]],shellxyz[1+3*shell[0+2*i]],
-		  shellxyz[0+3*shell[1+2*i]],shellxyz[1+3*shell[1+2*i]]);
-	}
-	fprintf(mfile,"];\n");
-	fprintf(mfile," gset term postscript; gset output 'faceError.ps'; \n");
-	fprintf(mfile,"gplot [:] [:] face\n");
-	fclose(mfile);
+	layerDumpFaceWire(faceId, nshell, shell, shellxyz);
 	return NULL;
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
