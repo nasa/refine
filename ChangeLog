@@ -1,6 +1,13 @@
+2005-03-13 20:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelswap_) added a disabled block of
+	code to speed up parallel swapping by formulating a plan in
+	parallel and executing this plan during the blocking ghost swaps.
+	Activate by setting `swap_the_safe_old_way' to FALSE.
+
 2005-03-13 19:40 Mike Park  <mike.park@nasa.gov>
 
-	* src/Makefile.am added plan.c to librefine.a
+	* src/Makefile.am added plan.c to librefine.a and lbMesherX.a
 	* src/plan.c (planFree) to prevent a memory leak, free non-NULL
 	array pointers.
 

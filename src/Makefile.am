@@ -61,6 +61,7 @@ libMesherX_a_SOURCES = \
 	line.h line.c \
 	queue.h queue.c \
 	sort.h sort.c \
+	plan.h plan.c \
 	grid.h grid.c \
 	gridmath.h gridmath.c \
 	gridshape.h gridshape.c \

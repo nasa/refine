@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "gridfortran.h"
+#include "plan.h"
 #include "grid.h"
 #include "gridmove.h"
 #include "gridmetric.h"
@@ -30,6 +31,7 @@
 static Grid *grid = NULL;
 static GridMove *gm = NULL;
 static Queue *queue = NULL;
+static Plan *plan = NULL;
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 		  int *ncell, int *maxcell, int *c2n )
@@ -311,15 +313,66 @@ void gridexportfast_( void )
 
 void gridparallelswap_( int *processor, double *ARlimit )
 {
+  GridBool swap_the_safe_old_way;
 #ifdef PARALLEL_VERBOSE 
   printf(" %6d swap  processor %2d      initial AR%14.10f",
 	 gridPartId(grid),*processor,gridMinAR(grid));
 #endif
-  if (*processor == -1) {
-    gridParallelSwap(grid,NULL,*ARlimit);
-  } else {
-    gridParallelSwap(grid,queue,*ARlimit);
-  } 
+  swap_the_safe_old_way = TRUE;
+  if (swap_the_safe_old_way) {
+    if (*processor == -1) {
+      gridParallelSwap(grid,NULL,*ARlimit);
+    } else {
+      gridParallelSwap(grid,queue,*ARlimit);
+    } 
+  }else{
+    if (*processor == -1) {
+      int plan_size_guess, plan_chunk_size;
+      int cell, nodes[4];
+      double ar;
+      gridParallelSwap(grid,NULL,*ARlimit);
+      plan_size_guess = gridNCell(grid)/10;
+      plan_chunk_size = 5000;
+      plan = planCreate(plan_size_guess, plan_chunk_size);
+      for (cell=0;cell<gridMAXCell(grid);cell++){
+	if (grid == gridCell( grid, cell, nodes) ) {
+	  if ( gridCellHasGhostNode(grid,nodes)  ||
+	       gridNodeNearGhost(grid, nodes[0]) ||
+	       gridNodeNearGhost(grid, nodes[1]) ||
+	       gridNodeNearGhost(grid, nodes[2]) ||
+	       gridNodeNearGhost(grid, nodes[3]) ) {
+	    ar = gridAR(grid, nodes);
+	    if ( ar < *ARlimit ) {
+	      planAddItemWithPriority(plan,cell,ar);
+	    }
+	  }
+	} 
+      }
+      planDeriveRankingsFromPriorities(plan);
+    } else {
+      int ranking;
+      int cell, nodes[4];
+      for (ranking = 0 ; ranking < planSize(plan) ; ranking++) {
+	cell = planItemWithThisRanking(plan, ranking);
+	if ( grid==gridCell( grid, cell, nodes) ) {
+	  if ( grid == gridRemoveTwoFaceCell(grid, queue, cell) ) continue;
+	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
+	    continue;
+	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
+	    continue;
+	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[3] ) )
+	    continue;
+	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[2] ) )
+	    continue;
+	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[3] ) )
+	    continue;
+	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
+	    continue;
+	}
+      }
+      planFree(plan);
+    } 
+  }
 }
 
 void gridparallelsmooth_( int *processor,
