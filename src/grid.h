@@ -18,10 +18,9 @@ BEGIN_C_DECLORATION
 typedef struct Grid Grid;
 
 
-Grid *grid_create(long nnodes);
-long grid_nnodes(Grid *n);
-long *grid_firstcell(Grid *n, long);
-void grid_free(Grid *n);
+Grid *gridCreate(long nnodes);
+long gridNNodes(Grid *n);
+void gridFree(Grid *n);
 
 END_C_DECLORATION
 

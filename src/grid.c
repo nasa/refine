@@ -16,7 +16,7 @@ struct Grid {
   long *firstcell
 };
 
-Grid* grid_create(long n)
+Grid* gridCreate(long n)
 {
   long i;
   Grid *grid;
@@ -27,17 +27,12 @@ Grid* grid_create(long n)
   return  grid;
 }
 
-long grid_nnodes(Grid *grid)
+long gridNNodes(Grid *grid)
 {
   return grid->nnodes;
 }
 
-long *grid_firstcell(Grid *grid, long id)
-{
-  return (grid->firstcell[id]-1);
-}
-
-void grid_free(Grid *grid)
+void gridFree(Grid *grid)
 {
   free(grid->firstcell);
   free(grid);

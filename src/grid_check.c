@@ -16,50 +16,29 @@ Grid *grid;
 
 void setup (void)
 {
-  grid = grid_create(4);
+  grid = gridCreate(4);
 }
 
 void teardown (void)
 {
-  grid_free (grid);
+  gridFree (grid);
 }
 
-START_TEST(test_create)
+START_TEST(testGridCreate)
 {
-  fail_unless( grid_nnodes(grid) == 4,
+  fail_unless( gridNNodes(grid) == 4,
 	       "expected 4 grid mesh");
 }
 END_TEST
-
-START_TEST(test_empty_firstcell)
-{
-  fail_unless( grid_firstcell(grid,0) == EMPTY,
-	       "expected the firstcell of node 0 to be EMPTY");
-  fail_unless( grid_firstcell(grid,1) == EMPTY,
-	       "expected the firstcell of node 1 to be EMPTY");
-  fail_unless( grid_firstcell(grid,2) == EMPTY,
-	       "expected the firstcell of node 2 to be EMPTY");
-  fail_unless( grid_firstcell(grid,3) == EMPTY,
-	       "expected the firstcell of node 3 to be EMPTY");
-}
-END_TEST
-
-
-
 
 Suite *grid_suite (void) 
 { 
   Suite *s = suite_create ("Grid"); 
   TCase *tc_core = tcase_create ("Core");
-  TCase *tc_neighbors = tcase_create ("Neighbors");
  
   suite_add_tcase (s, tc_core);
   tcase_add_checked_fixture (tc_core, setup, teardown); 
-  tcase_add_test (tc_core, test_create); 
-
-  suite_add_tcase (s, tc_neighbors);
-  tcase_add_checked_fixture (tc_neighbors, setup, teardown); 
-  tcase_add_test (tc_neighbors, test_empty_firstcell); 
+  tcase_add_test (tc_core, testGridCreate); 
 
   return s; 
 }
