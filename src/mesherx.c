@@ -106,6 +106,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
     layerAdvance(layer);
 
+    printf("minimum volume%16.12f\n",gridMinVolume( grid ));
+
     if (i/5*5==i) layerWriteTecplotFrontGeometry(layer);
   }
   layerWriteTecplotFrontGeometry(layer);
