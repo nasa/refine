@@ -209,7 +209,7 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
 
     if( i > 5.0/scalev ) layerRelaxNormalDirection(layer, 1, 0.5);
     layerWriteTecplotFrontWithData(layer, i);
-    layerAdvance(layer);
+    layerAdvance(layer, FALSE);
 
     maxRate = 1.0;
     if( i > startRateIncrease ) {

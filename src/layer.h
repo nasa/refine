@@ -179,7 +179,7 @@ Layer *layerReconnectEdgeUnlessInLayer(Layer *, int edgeId,
 Layer *layerReconnectFaceUnlessInLayer(Layer *, int faceId, 
 				       int oldNode, int newNode );
 
-Layer *layerAdvance(Layer * );
+Layer *layerAdvance(Layer *, bool reconnect );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
 

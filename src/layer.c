@@ -1789,10 +1789,10 @@ Layer *layerReconnectEdgeUnlessInLayer(Layer *layer, int edgeId,
 Layer *layerAdvanceConstantHeight(Layer *layer, double height )
 {
   layerSetHeightOfAllNormals(layer, height );
-  return layerAdvance(layer);
+  return layerAdvance(layer, TRUE);
 }
 
-Layer *layerAdvance(Layer *layer)
+Layer *layerAdvance(Layer *layer, bool reconnect)
 {
   Grid *grid = layer->grid;
   int normal, normal0, normal1, root, tip, faceId, edgeId, i;
@@ -1825,9 +1825,9 @@ Layer *layerAdvance(Layer *layer)
       tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
       if ( EMPTY == tip) return NULL;
       layer->normal[normal].tip = tip;
-      layerReconnectCellUnlessInLayer(layer, root, tip);
+      if (reconnect) layerReconnectCellUnlessInLayer(layer, root, tip);
       faceId = layerConstrained(layer,normal);
-      if (0 > faceId) {
+      if (reconnect && 0 > faceId) {
 	edgeId = -faceId;
 	layerReconnectEdgeUnlessInLayer(layer, edgeId, root, tip);
       }
@@ -1839,24 +1839,26 @@ Layer *layerAdvance(Layer *layer)
   }
 
   /* reconnect faces for constrained triangleside */
-  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    for (i=0;i<3;i++){
-      faceId = layerConstrainedSide(layer, triangle, i);
-      if (faceId > 0) {
-	normal0 = i;
-	normal1 = i+1; if (normal1>2) normal1 = 0;
-	normal0 = layer->triangle[triangle].normal[normal0];
-	normal1 = layer->triangle[triangle].normal[normal1];
-	layerReconnectFaceUnlessInLayer(layer, faceId, 
-					layer->normal[normal0].root, 
-					layer->normal[normal0].tip);
-	layerReconnectFaceUnlessInLayer(layer, faceId, 
-					layer->normal[normal1].root, 
-					layer->normal[normal1].tip);
-      }
-    }    
+  if (reconnect) {
+    for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+      for (i=0;i<3;i++){
+	faceId = layerConstrainedSide(layer, triangle, i);
+	if (faceId > 0) {
+	  normal0 = i;
+	  normal1 = i+1; if (normal1>2) normal1 = 0;
+	  normal0 = layer->triangle[triangle].normal[normal0];
+	  normal1 = layer->triangle[triangle].normal[normal1];
+	  layerReconnectFaceUnlessInLayer(layer, faceId, 
+					  layer->normal[normal0].root, 
+					  layer->normal[normal0].tip);
+	  layerReconnectFaceUnlessInLayer(layer, faceId, 
+					  layer->normal[normal1].root, 
+					  layer->normal[normal1].tip);
+	}
+      }    
+    }
   }
-
+  
   /* advance edges */
   for (normal=0;normal<layerNNormal(layer);normal++) {
     edgeId = -layerConstrained(layer,normal);

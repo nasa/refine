@@ -387,7 +387,7 @@ VALUE layer_edgeEndPoint( VALUE self, VALUE edgeId, VALUE startNode )
 VALUE layer_advance( VALUE self )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerAdvance(layer)?self:Qnil );
+  return ( layer == layerAdvance(layer, TRUE)?self:Qnil );
 }
 
 VALUE layer_advanceConstantHeight( VALUE self, VALUE height )
