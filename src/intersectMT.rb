@@ -9,6 +9,7 @@ require 'RubyExtensionBuilder'
 RubyExtensionBuilder.new('Intersect').build
 
 require 'test/unit'
+require 'GridMath/GridMath'
 require 'Intersect/Intersect'
 
 class TestIntersect < Test::Unit::TestCase
