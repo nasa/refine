@@ -1,3 +1,8 @@
+2004-07-06 11:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridtestcadparameters_) added function to
+	test CAD Parameters and projection XYS's.
+
 2004-07-01 11:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/FAKEGeomExtras.c added mock UG_REFINE. 

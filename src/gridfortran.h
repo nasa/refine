@@ -28,6 +28,7 @@ void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
 void gridfreezenode_( int *node );
 void gridparallelloadcapri_( char *capriProject );
 void gridprojectallfaces_( void );
+void gridtestcadparameters_( void );
 void gridminar_( double *aspectratio );
 void gridwritetecplotsurfacezone_( void );
 void gridexportfast_( void );
