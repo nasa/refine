@@ -1095,11 +1095,24 @@ grid.addCell(0,1,2,3)
   assert            0> layer.edgeAngle(0,0)
   assert            0> layer.edgeAngle(3,0)
   assert            0> layer.edgeAngle(0,3)
-  assert_in_delta 180, layer.edgeAngle(0,1), 1.0e-10
+  grid.setNodeXYZ(3,[0,0,1.0e-8])
+  assert_in_delta   0, layer.edgeAngle(0,1), 0.001
+  grid.setNodeXYZ(3,[0,0,0.707])
+  assert_in_delta  45, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[0.5,0.5,1])
   assert_in_delta  90, layer.edgeAngle(0,1), 1.0e-10
+  grid.setNodeXYZ(3,[1,1,0.707])
+  assert_in_delta 135, layer.edgeAngle(0,1), 0.005
+  grid.setNodeXYZ(3,[1,1,0])
+  assert_in_delta 180, layer.edgeAngle(0,1), 1.0e-10
+  grid.setNodeXYZ(3,[0,0,-0.707])
+  assert_in_delta 225, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   assert_in_delta 270, layer.edgeAngle(0,1), 1.0e-10
+  grid.setNodeXYZ(3,[0,0,-0.707])
+  assert_in_delta 315, layer.edgeAngle(0,1), 0.005
+  grid.setNodeXYZ(3,[0,0,-1.0e-8])
+  assert_in_delta 360, layer.edgeAngle(0,1), 0.001
  end
 
 end
