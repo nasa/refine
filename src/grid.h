@@ -263,6 +263,8 @@ double gridStoredAR( Grid *g, int index );
 Grid *gridStoredARDerivative( Grid *g, int index, double *dARdX );
 
 #define gridLines(grid) (NULL==grid?NULL:grid->lines)
+Grid *gridFreezeLinesNodes(Grid *g);
+Grid *gridReportLinesLocation(Grid *g);
 
 Grid *gridCopyAboutY0(Grid *g);
 

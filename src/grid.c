@@ -927,6 +927,8 @@ Grid *gridSortNodeGridEx(Grid *grid)
   if ( NULL != grid->renumberFunc ) 
     (*grid->renumberFunc)( grid->renumberData, o2n );
 
+  if ( NULL != gridLines(grid) ) linesRenumber(gridLines(grid),o2n);
+
   free(o2n);
 
   return grid;
@@ -2438,6 +2440,53 @@ Grid *gridStoredARDerivative( Grid *grid, int index, double *dARdX )
   dARdX[0] = grid->dARdX[0+3*index];
   dARdX[1] = grid->dARdX[1+3*index];
   dARdX[2] = grid->dARdX[2+3*index];
+  
+  return grid;
+}
+
+Grid *gridFreezeLinesNodes(Grid *grid)
+{
+  int line, index, node;
+  Lines *lines;
+
+  lines = gridLines(grid);
+
+  for(line=0;line<linesNumber(lines);line++){
+    index = 0;
+    node = linesNode(lines,line,index);
+    while (node>=0) {
+      double xyz[3];
+      gridNodeXYZ(grid,node,xyz);
+      printf("line %5d index %5d node %5d x %10.8f y %10.8f z %10.8f\n",
+	     line,index,node,xyz[0],xyz[1],xyz[2]);
+      gridFreezeNode(grid,node);
+      index++;
+      node = linesNode(lines,line,index);
+    }
+  }
+
+  return grid;
+}
+
+Grid *gridReportLinesLocation(Grid *grid)
+{
+  int line, index, node;
+  double xyz[3];
+  Lines *lines;
+
+  lines = gridLines(grid);
+
+  for(line=0;line<linesNumber(lines);line++){
+    index = 0;
+    node = linesNode(lines,line,index);
+    while (node>=0) {
+      gridNodeXYZ(grid,node,xyz);
+      printf("line %5d index %5d node %5d x %10.8f y %10.8f z %10.8f\n",
+	     line,index,node,xyz[0],xyz[1],xyz[2]);
+      index++;
+      node = linesNode(lines,line,index);
+    }
+  }
   
   return grid;
 }
