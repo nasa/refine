@@ -1,3 +1,9 @@
+2003-01-30 14:00 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* MesherX can rebuild edges, faces, and volume with 
+	SDK/Goolache/MeshMgr to make valid viscous grid.
+	* Made 0.6 Release.
+
 2003-01-15 11:12 Mike Park  <m.a.park@larc.nasa.gov>
 
 	* New MesherX library created and installed with header files 
