@@ -22,6 +22,9 @@ gridcad : get rid of
 -gridSmoothFaceMR
 -gridOptimizeUVForVolume
 
+gridmetric : get rid of
+-gridCellRatioErrorDerivative
+
 rename grid AR to cost
 
 --Edge Based
