@@ -284,6 +284,7 @@ GridMove *gridmoveSpringRelaxationStartStep(GridMove *gm, double position)
 
   for(node=0;node<gridMaxNode(grid);node++) {
     if ( gridmoveSpecified(gm,node) && 
+	 gridNodeLocal(grid,node) &&
 	 grid == gridNodeXYZ(grid,node,&(gm->xyz[3*node]))) {
       for(i=0;i<3;i++) {
 	gm->xyz[i+3*node] += position*gm->displacement[i+3*node];
@@ -317,7 +318,9 @@ GridMove *gridmoveSpringRelaxationSubIteration(GridMove *gm, double *rmsResidual
 
   residual = count = 0.0;
   for(node=0;node<gridMaxNode(grid);node++)
-    if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node)) {
+    if ( gridNodeLocal(grid,node) &&
+	 gridValidNode(grid,node) && 
+	 !gridmoveSpecified(gm,node)) {
       for(i=0;i<3;i++) {
 	res[i] = gm->xyz[i+3*node] - 
 	  ( gm->kxyz[i+3*node] + gm->source[i+3*node] ) / gm->ksum[node];
@@ -478,7 +481,8 @@ GridMove *gridmoveApplyDisplacements(GridMove *gm)
   double xyz[3], displacement[3];
 
   for ( node=0 ; node<gridMaxNode(grid) ; node++ ) {
-    if (grid == gridNodeXYZ(grid,node,xyz)) {
+    if ( gridNodeLocal(grid,node) && 
+	 grid == gridNodeXYZ(grid,node,xyz)) {
       gridmoveDisplacement(gm,node,displacement);
       gridAddToVector(xyz,displacement);
       gridSetNodeXYZ(grid,node,xyz);
