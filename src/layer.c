@@ -54,6 +54,8 @@ Layer *layerCreate( Grid *grid )
   for (i=0;i<gridMaxCell(grid);i++) layer->cellInLayer[i] = FALSE;
   layer->faceInLayer = malloc(gridMaxFace(grid)*sizeof(bool));
   for (i=0;i<gridMaxFace(grid);i++) layer->faceInLayer[i] = FALSE;
+  layer->edgeInLayer = malloc(gridMaxEdge(grid)*sizeof(bool));
+  for (i=0;i<gridMaxEdge(grid);i++) layer->edgeInLayer[i] = FALSE;
 
   layer->tecplotFile = NULL;
 
@@ -68,6 +70,7 @@ Grid *layerGrid(Layer *layer)
 void layerFree(Layer *layer)
 {
   if ( layer->tecplotFile != NULL ) fclose(layer->tecplotFile);
+  free(layer->edgeInLayer);
   free(layer->faceInLayer);
   free(layer->cellInLayer);
   gridDetachNodeSorter( layer->grid );
@@ -1448,13 +1451,8 @@ bool layerFaceInLayer(Layer *layer, int face)
 
 bool layerEdgeInLayer(Layer *layer, int edge)
 {
-  int nodes[2], edgeId;
-  Grid *grid;
-  grid = layerGrid(layer);
-
-  if ( grid != gridEdge(grid, edge, nodes, &edgeId) ) return FALSE;
-
-  return (gridNodeFrozen(grid,nodes[0]) && gridNodeFrozen(grid,nodes[1]) );
+  if (edge < 0 || edge >= gridMaxEdge(layerGrid(layer)) ) return FALSE;
+  return layer->edgeInLayer[edge];
 }
 
 Layer *layerReconnectCellUnlessInLayer(Layer *layer, int oldNode, int newNode )
@@ -1633,7 +1631,9 @@ Layer *layerAdvance(Layer *layer)
       root = layer->normal[normal].root;
       tip  = layer->normal[normal].tip;
       /* note that tip has been set to root on terminated normals */
-      if (root != tip) gridAddEdge(grid,root,tip,edgeId,DBL_MAX,DBL_MAX);
+      if (root != tip) layer->edgeInLayer[gridAddEdge(grid,
+						      root,tip,edgeId,
+						      DBL_MAX,DBL_MAX)] = TRUE;
     }
 
   }

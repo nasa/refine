@@ -43,6 +43,7 @@ struct Layer {
 
   bool *cellInLayer;
   bool *faceInLayer;
+  bool *edgeInLayer;
 
   FILE *tecplotFile;
 };
