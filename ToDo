@@ -13,11 +13,12 @@ merge edge based research into mainline code
 research mapped edge length and fix edge ratio length routines
 
 gridcad : get rid of 
--gridSafeProjectNode
 -gridRobustProjectNode
 -gridOptimizeFaceUV
 -gridSmoothFaceMR
 -gridOptimizeUVForVolume
+
+rename gridSafeProjectNode to just Projectnode
 
 gridmetric : get rid of
 -gridCellRatioErrorDerivative

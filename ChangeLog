@@ -1,3 +1,11 @@
+2005-01-27 09:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeAt) Correctly constructed new
+	surface topology (edges and faces) to use to project node as it is
+	created. This is required for the validity checks.
+	* src/gridmpi.c (gridParallelEdgeSplit) removed the gridSplitEdgeAt
+	returned EMPTY warning. A split `undo' is correctly parallelized.
+
 2005-01-26 20:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdapt) removed the project argument from

@@ -180,11 +180,14 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   int igem, cell, nodes[4], inode, node;
   int newnode, newnodes0[4], newnodes1[4];
   int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
+  int newface_gap0n0, newface_gap0n1, newface_gap1n0, newface_gap1n1;
   int edge, edgeId;
+  int newedge0, newedge1;
   double t0, t1, newT;
   double minAR;
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
 
+  /* If the equator has a gap find the faces to be split or return */
   gap0 = gridEqu(grid,0);
   gap1 = gridEqu(grid,gridNGem(grid));
   face0 = face1 = EMPTY;
@@ -194,11 +197,68 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     if ( face0 == EMPTY || face1 == EMPTY ) return EMPTY;
   }
 
-  newnode   = gridAddNode(grid, newX, newY, newZ );
+  /* create new node and initialize */
+  newnode = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
   gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
   gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
 
+  /* insert new faces to use for projection and validity check */
+  newface_gap0n0 = newface_gap0n1 = EMPTY;
+  newface_gap1n0 = newface_gap1n1 = EMPTY;
+  if ( !gridContinuousEquator(grid) ){
+    double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
+    double gap0uv[2], gap1uv[2], newId0uv[2], newId1uv[2]; 
+    gridFace(grid,face0,faceNodes0,&faceId0);
+    gridFace(grid,face1,faceNodes1,&faceId1);
+    gridNodeUV(grid,n0,faceId0,n0Id0uv);
+    gridNodeUV(grid,n1,faceId0,n1Id0uv);
+    gridNodeUV(grid,n0,faceId1,n0Id1uv);
+    gridNodeUV(grid,n1,faceId1,n1Id1uv);
+    gridNodeUV(grid,gap0,faceId0,gap0uv);
+    gridNodeUV(grid,gap1,faceId1,gap1uv);
+    newId0uv[0] = 0.5 * (n0Id0uv[0]+n1Id0uv[0]);
+    newId0uv[1] = 0.5 * (n0Id0uv[1]+n1Id0uv[1]);
+    newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
+    newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
+
+    newface_gap0n0 = gridAddFaceUVAndQueue(grid, queue,
+					   n0, n0Id0uv[0], n0Id0uv[1],
+					   newnode, newId0uv[0],newId0uv[1],
+					   gap0, gap0uv[0], gap0uv[1],
+					   faceId0 );
+    newface_gap0n1 = gridAddFaceUVAndQueue(grid, queue,
+					   n1, n1Id0uv[0], n1Id0uv[1], 
+					   gap0, gap0uv[0], gap0uv[1], 
+					   newnode, newId0uv[0], newId0uv[1], 
+					   faceId0 );
+    newface_gap1n0 = gridAddFaceUVAndQueue(grid, queue,
+					   n0, n0Id1uv[0], n0Id1uv[1], 
+					   gap1, gap1uv[0], gap1uv[1], 
+					   newnode, newId1uv[0], newId1uv[1], 
+					   faceId1 );
+    newface_gap1n1 = gridAddFaceUVAndQueue(grid, queue,
+					   n1, n1Id1uv[0], n1Id1uv[1], 
+					   newnode, newId1uv[0], newId1uv[1], 
+					   gap1, gap1uv[0], gap1uv[1], 
+					   faceId1 );
+  }
+
+  /* insert new edges to use for projection and validity check */
+  newedge0 = newedge1 = EMPTY;
+  edge = gridFindEdge(grid,n0,n1);
+  if ( edge != EMPTY ) {
+    edgeId = gridEdgeId(grid,n0,n1);
+    gridNodeT(grid,n0,edgeId,&t0);
+    gridNodeT(grid,n1,edgeId,&t1);
+    newT = 0.5 * (t0+t1);
+    newedge0 = gridAddEdgeAndQueue(grid,queue,n0,newnode,edgeId,t0,newT);
+    newedge1 = gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
+  }
+
+  gridSafeProjectNode(grid, newnode, 0.0 );
+
+  /* find the worst cell */
   minAR = 2.0; 
   for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
     cell = gridGem(grid,igem);
@@ -213,11 +273,21 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     minAR = MIN(minAR,gridAR(grid,newnodes0));
     minAR = MIN(minAR,gridAR(grid,newnodes1));
   }
+
+  /* if the worst cell is not good enough then undo the split and return */
   if (minAR < gridADAPT_COST_FLOOR ) {
     gridRemoveNode(grid,newnode);
+    /* the remove and queue methods test for EMPTY==target */
+    gridRemoveFaceAndQueue(grid, queue, newface_gap0n0 );
+    gridRemoveFaceAndQueue(grid, queue, newface_gap0n1 );
+    gridRemoveFaceAndQueue(grid, queue, newface_gap1n0 );
+    gridRemoveFaceAndQueue(grid, queue, newface_gap1n1 );
+    gridRemoveEdgeAndQueue(grid, queue, newedge0 );
+    gridRemoveEdgeAndQueue(grid, queue, newedge1 );
     return EMPTY;
   }
 
+  /* update cell connectivity */
   for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
     cell = gridGem(grid,igem);
     gridCell(grid, cell, nodes);
@@ -235,58 +305,11 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 			 newnodes1[0],newnodes1[1],newnodes1[2],newnodes1[3]);
   }
 
-  //test face
-  if ( !gridContinuousEquator(grid) ){
-    double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
-    double gap0uv[2], gap1uv[2], newId0uv[2], newId1uv[2]; 
-    gridFace(grid,face0,faceNodes0,&faceId0);
-    gridFace(grid,face1,faceNodes1,&faceId1);
-    gridNodeUV(grid,n0,faceId0,n0Id0uv);
-    gridNodeUV(grid,n1,faceId0,n1Id0uv);
-    gridNodeUV(grid,n0,faceId1,n0Id1uv);
-    gridNodeUV(grid,n1,faceId1,n1Id1uv);
-    gridNodeUV(grid,gap0,faceId0,gap0uv);
-    gridNodeUV(grid,gap1,faceId1,gap1uv);
-    newId0uv[0] = 0.5 * (n0Id0uv[0]+n1Id0uv[0]);
-    newId0uv[1] = 0.5 * (n0Id0uv[1]+n1Id0uv[1]);
-    newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
-    newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
+  /* remove original faces and edge */
+  gridRemoveFaceAndQueue(grid, queue, face0 );
+  gridRemoveFaceAndQueue(grid, queue, face1 );
+  gridRemoveEdgeAndQueue(grid,queue,edge);
 
-    gridRemoveFaceAndQueue(grid, queue, face0 );
-    gridRemoveFaceAndQueue(grid, queue, face1 );
-    gridAddFaceUVAndQueue(grid, queue,
-			  n0, n0Id0uv[0], n0Id0uv[1],
-			  newnode, newId0uv[0],newId0uv[1],
-			  gap0, gap0uv[0], gap0uv[1],
-			  faceId0 );
-    gridAddFaceUVAndQueue(grid, queue,
-			  n1, n1Id0uv[0], n1Id0uv[1], 
-			  gap0, gap0uv[0], gap0uv[1], 
-			  newnode, newId0uv[0], newId0uv[1], 
-			  faceId0 );
-    gridAddFaceUVAndQueue(grid, queue,
-			  n0, n0Id1uv[0], n0Id1uv[1], 
-			  gap1, gap1uv[0], gap1uv[1], 
-			  newnode, newId1uv[0], newId1uv[1], 
-			  faceId1 );
-    gridAddFaceUVAndQueue(grid, queue,
-			  n1, n1Id1uv[0], n1Id1uv[1], 
-			  newnode, newId1uv[0], newId1uv[1], 
-			  gap1, gap1uv[0], gap1uv[1], 
-			  faceId1 );
-  }
-
-  edge = gridFindEdge(grid,n0,n1);
-  if ( edge != EMPTY ) {
-    edgeId = gridEdgeId(grid,n0,n1);
-    gridNodeT(grid,n0,edgeId,&t0);
-    gridNodeT(grid,n1,edgeId,&t1);
-    newT = 0.5 * (t0+t1);
-    gridRemoveEdgeAndQueue(grid,queue,edge);
-    gridAddEdgeAndQueue(grid,queue,n0,newnode,edgeId,t0,newT);
-    gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
-  }
-  
   return newnode;
 }
 

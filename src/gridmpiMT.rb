@@ -16,6 +16,7 @@ require 'Sort/Sort'
 require 'Grid/Grid'
 require 'GridMath/GridMath'
 require 'GridMetric/GridMetric'
+require 'GridCAD/GridCAD'
 require 'GridInsert/GridInsert'
 require 'GridSwap/GridSwap'
 require 'GridMPI/GridMPI'
@@ -34,7 +35,7 @@ class TestGridMPI < Test::Unit::TestCase
  def rightTet
   grid = Grid.new(4,2,4,2)
   grid.addCell( 
-	       grid.addNode(0,0,0), 
+	       grid.addNode(0,0,-1), 
 	       grid.addNode(1,0,0), 
 	       grid.addNode(0,1,0), 
 	       grid.addNode(0,0,1) )
@@ -127,7 +128,7 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal [104,101,102,103], q.addedCellNodes(0)
   assert_equal 200,               q.addedCellId(0)
   assert_equal [1,1,1,2],         q.addedCellNodeParts(0)
-  h=0.5
+  h=0.0
   assert_equal [ 0,0,h, 1,0,0,1,0,1, 
                  1,0,0, 1,0,0,1,0,1, 
                  0,1,0, 1,0,0,1,0,1, 
@@ -179,7 +180,7 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 102, p2.nodeGlobal(2)
   assert_equal 103, p2.nodeGlobal(3)
   assert_equal 104, p2.nodeGlobal(4)
-  assert_equal [0,0,0.5], p2.nodeXYZ(4)
+  assert_equal [0,0,0], p2.nodeXYZ(4)
   assert p2.nodeGhost(4)
 
   assert_equal 2, p2.nface

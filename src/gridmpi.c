@@ -124,11 +124,6 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 
   if (NULL != queue) queueNewTransaction(queue);
   newnode = gridSplitEdgeAt( grid, queue, node0, node1, newX, newY, newZ );
-  if (EMPTY == newnode) {
-    printf("%d: WARNING: %s: %d: gridSplitEdgeAt returned EMPTY.\n",
-	   gridPartId(grid),__FILE__,__LINE__);
-    return EMPTY;
-  }
   
   return newnode;
 }

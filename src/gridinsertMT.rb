@@ -111,7 +111,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal [1.0,11.0], grid.nodeUV(1,11)
   assert_equal [2.0,12.0], grid.nodeUV(2,11)
   assert_equal [5.0,15.0], grid.nodeUV(5,11)
-  assert_equal [0.5,10.5], grid.nodeUV(6,11)
+  assert_equal [10.0,20.0], grid.nodeUV(6,11)
  end
 
  def testSplitEdge4onDifferentBC
@@ -138,7 +138,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal [22.0,122.0], grid.nodeUV(2,2)
   assert_equal [55.0,155.0], grid.nodeUV(5,5)
   assert_equal [20.5,120.5], grid.nodeUV(6,2)
-  assert_equal [50.5,150.5], grid.nodeUV(6,5)
+  assert_equal [10.0,20.0], grid.nodeUV(6,5)
  end
 
  def testSplitGeometryEdge4
@@ -146,15 +146,15 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addFace(0,1,2,2)
   grid.addFace(1,0,5,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
-  grid.addEdge(0,1,15, 0.0, 1.0)
+  grid.addEdge(0,1,15, -1.0, 1.0)
   assert_equal 1, grid.nedge
   assert_equal grid.nnode, grid.splitEdge(0,1)
   assert_equal 2, grid.nedge
   assert_nil         grid.edgeId(0,1)
   assert_equal 15,   grid.edgeId(0,6)
   assert_equal 15,   grid.edgeId(6,1)
-  assert_equal [0.0, 0.5, 1.0], grid.geomCurveT(15,0)
-  assert_equal [1.0, 0.5, 0.0], grid.geomCurveT(15,1)
+  assert_equal [-1.0, 0.0,  1.0], grid.geomCurveT(15,0)
+  assert_equal [ 1.0, 0.0, -1.0], grid.geomCurveT(15,1)
  end
 
  def testSplitWithoutGeometryEdge4
@@ -529,9 +529,10 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 3, grid.nnode
   assert_equal 3, grid.insertInToGeomEdge(0.5,0.0001,0)
   assert_equal 4, grid.nnode
-  assert_equal [0,3,1], grid.edge(0)
+  assert_nil            grid.edge(0)
   assert_equal [1,2,1], grid.edge(1)
-  assert_equal [1,3,1], grid.edge(2)
+  assert_equal [0,3,1], grid.edge(2)
+  assert_equal [1,3,1], grid.edge(3)
   assert_equal 3, grid.nedge
   assert_equal [0.5,0,0], grid.nodeXYZ(3)
   assert_equal 0.5, grid.nodeT(3,1)
