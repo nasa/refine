@@ -1172,34 +1172,79 @@ double gridFaceAR(Grid *grid, int n0, int n1, int n2 )
 
 }
 
-double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
-{
-  int ixyz;
-  double e0[3], e1[3], e2[3];
-  double l0, l1, l2;
-  double n[3], a, mr;
-
 #define SQRT3 (1.73205080756888)
 
-  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
-    e0[ixyz] = grid->xyz[ixyz+3*n1] - grid->xyz[ixyz+3*n0];
-    e1[ixyz] = grid->xyz[ixyz+3*n2] - grid->xyz[ixyz+3*n1];
-    e2[ixyz] = grid->xyz[ixyz+3*n0] - grid->xyz[ixyz+3*n2];
-  }
+double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
+{
+  double x1, x2, x3; 
+  double y1, y2, y3; 
+  double z1, z2, z3;
+  int i;
+  double m[9], m0[9], m1[9], m2[9];
+  
+  double ex1, ey1, ez1;
+  double ex2, ey2, ez2;
+  double ex3, ey3, ez3;
+  double nx, ny, nz;
+  double l1, l2, l3;
+  double a,d;
+  double r;
 
-  n[0] = e1[1]*e2[2] - e1[2]*e2[1]; 
-  n[1] = e1[2]*e2[0] - e1[0]*e2[2]; 
-  n[2] = e1[0]*e2[1] - e1[1]*e2[0]; 
+  x1 = grid->xyz[0+3*n0];
+  y1 = grid->xyz[1+3*n0];
+  z1 = grid->xyz[2+3*n0];
 
-  l0 = (e0[0]*e0[0] + e0[1]*e0[1] + e0[2]*e0[2]);
-  l1 = (e1[0]*e1[0] + e1[1]*e1[1] + e1[2]*e1[2]);
-  l2 = (e2[0]*e2[0] + e2[1]*e2[1] + e2[2]*e2[2]);
+  x2 = grid->xyz[0+3*n1];
+  y2 = grid->xyz[1+3*n1];
+  z2 = grid->xyz[2+3*n1];
 
-  a = 0.5*sqrt(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
+  x3 = grid->xyz[0+3*n2];
+  y3 = grid->xyz[1+3*n2];
+  z3 = grid->xyz[2+3*n2];
+ 
+  gridMapMatrix(grid,n0,m0);
+  gridMapMatrix(grid,n1,m1);
+  gridMapMatrix(grid,n2,m2);
 
-  mr = 4*SQRT3*a/(l0+l1+l2);
+  for (i=0;i<9;i++) m[i]=0.333333333333333*(m0[i]+m1[i]+m2[i]);
 
-  return mr;
+  gridMapXYZWithM(m, &x1, &y1, &z1);
+  gridMapXYZWithM(m, &x2, &y2, &z2);
+  gridMapXYZWithM(m, &x3, &y3, &z3);
+
+  ex1 = x2-x1;
+  ey1 = y2-y1;
+  ez1 = z2-z1;
+
+  ex2 = x3-x2;
+  ey2 = y3-y2;
+  ez2 = z3-z2;
+
+  ex3 = x1-x3;
+  ey3 = y1-y3;
+  ez3 = z1-z3;
+
+  nx = ey1*ez2 - ez1*ey2; 
+
+  ny = ez1*ex2 - ex1*ez2; 
+
+  nz = ex1*ey2 - ey1*ex2; 
+
+  l1 = ex1*ex1 + ey1*ey1 + ez1*ez1;
+
+  l2 = ex2*ex2 + ey2*ey2 + ez2*ez2;
+
+  l3 = ex3*ex3 + ey3*ey3 + ez3*ez3;
+
+  a = sqrt(nx*nx + ny*ny + nz*nz);
+
+  a = 0.5*a;
+
+  d = l1+l2+l3;
+
+  r = a/d;
+
+  return 4*SQRT3*r;
 
 }
 
@@ -1208,7 +1253,9 @@ Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
   double x1, x2, x3; 
   double y1, y2, y3; 
   double z1, z2, z3;
-
+  int i;
+  double m[9], m0[9], m1[9], m2[9];
+  
   x1 = grid->xyz[0+3*nodes[0]];
   y1 = grid->xyz[1+3*nodes[0]];
   z1 = grid->xyz[2+3*nodes[0]];
@@ -1221,6 +1268,16 @@ Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
   y3 = grid->xyz[1+3*nodes[2]];
   z3 = grid->xyz[2+3*nodes[2]];
  
+  gridMapMatrix(grid,nodes[0],m0);
+  gridMapMatrix(grid,nodes[1],m1);
+  gridMapMatrix(grid,nodes[2],m2);
+
+  for (i=0;i<9;i++) m[i]=0.333333333333333*(m0[i]+m1[i]+m2[i]);
+
+  gridMapXYZWithM(m, &x1, &y1, &z1);
+  gridMapXYZWithM(m, &x2, &y2, &z2);
+  gridMapXYZWithM(m, &x3, &y3, &z3);
+
   FaceMRDerivative(x1,y1,z1,x2,y2,z2,x3,y3,z3,mr,dMRdx );
   return grid;
 }
