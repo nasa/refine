@@ -29,16 +29,45 @@ int gridSavePart( Grid *grid, char *project );
 int main( int argc, char *argv[] )
 {
   Grid *grid;
-  char *project;
-  char *output;
+  char project[256];
+  char adaptfile[256], outputProject[256], outputFAST[256];
   int i, j, oldSize, newSize;
   double ratio;
   bool projected;
   int iview = 0;
 
-  project = "../test/om6";
-  printf("running project %s\n",project);
+  sprintf( project,       "" );
+  sprintf( outputProject, "" );
+  sprintf( adaptfile,     "" );    
+  sprintf( outputFAST,    "" );
 
+  i = 1;
+  while( i < argc ) {
+    if( strcmp(argv[i],"-p") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+    } else if( strcmp(argv[i],"-o") == 0 ) {
+      i++; sprintf( outputProject, "%s", argv[i] );
+    } else if( strcmp(argv[i],"-a") == 0 ) {
+      i++; sprintf( adaptfile,"%s",argv[i]  );
+    } else if( strcmp(argv[i],"-h") == 0 ) {
+      printf("Usage: flag value pairs:\n");
+      printf(" -p input project name\n");
+      printf(" -o output project name\n");
+      printf(" -a party project_adapt_hess file name\n");
+      return(0);
+    } else {
+      fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
+      i++;
+    }
+    i++;
+  }
+
+  if(strcmp(project,"")==0)       sprintf(project,"../test/om6" );
+  if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
+  if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
+  if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
+
+  printf("running project %s\n",project);
   grid = gridLoadPart( project, 500000 );
 
   if (!gridRightHandedBoundary(grid)) 
@@ -46,10 +75,10 @@ int main( int argc, char *argv[] )
 
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-  STATUS;  
 
-  printf("reading adapt parameter...\n");
-  gridImportAdapt(grid, "../test/adapt_hess");
+  sprintf(adaptfile, "%s_adapt_hess",project);
+  printf("reading adapt parameter from file %s ...\n",adaptfile);
+  gridImportAdapt(grid, adaptfile); // Do not sort nodes before this call.
   STATUS;
 
   for (i=0;i<3;i++){
@@ -65,7 +94,7 @@ int main( int argc, char *argv[] )
     }
   }
 
-  ratio = 0.3;
+  ratio = 0.30;
   oldSize = 1;
   newSize = gridNNode(grid) ;
   for ( j=0; (j<40) && (
@@ -104,14 +133,11 @@ int main( int argc, char *argv[] )
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
 
-  output = "../test/om6_out";
-  printf("writing output project %s\n",output);
+  printf("writing output project %s\n",outputProject);
+  gridSavePart( grid, outputProject );
 
-  gridSavePart( grid, output );
-
-  output = "../test/om6_out.fgrid";
-  printf("writing output FAST file %s\n",output);
-  gridExportFAST( grid, output );
+  printf("writing output FAST file %s\n",outputFAST);
+  gridExportFAST( grid, outputFAST );
 
   printf("Done.\n");
 
