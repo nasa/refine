@@ -28,20 +28,29 @@ class TestGridMPI < Test::Unit::TestCase
 	       grid.addNode(0,1,0), 
 	       grid.addNode(0,0,1) )
   grid.identityGlobal
-  grid.setAllLocal
   grid
  end 
 
  def testCopyLocalNodeNumberingToGlobalNumbering
-  assert_not_nil      grid = Grid.new(10,0,0,0)
+  grid = Grid.new(10,0,0,0)
   10.times { grid.addNode(1,2,3) }
-  assert_equal grid,  grid.identityGlobal
+  assert_equal grid,grid.identityGlobal
   10.times { |node| assert_equal node, grid.nodeGlobal(node) }
  end
 
+ def testMarkAllNodesAsLocal
+  partId = 5
+  grid = Grid.new(10,0,0,0).setPartId(partId)
+  10.times { grid.addNode(1,2,3) }
+  assert_equal grid, grid.setAllLocal
+  10.times do |node| 
+   assert_equal partId, grid.nodePart(node), "node #{node} part failed" 
+  end
+ end
+
  def testSplitEdgeAcrossProc
-  p1 = rightTet
-  p2 = rightTet
+  p1 = rightTet.setPartId(1).setAllLocal
+  p2 = rightTet.setPartId(2).setAllLocal
   p2.setGhost(0)
   p2.setGhost(1)
   p2.setGhost(2)
