@@ -11,7 +11,13 @@
 #ifndef SAMPLEUNIT_H
 #define SAMPLEUNIT_H
 
-#include "refine_defs.h"
+#ifdef __cplusplus
+#  define BEGIN_C_DECLORATION extern "C" {
+#  define END_C_DECLORATION }
+#else
+#  define BEGIN_C_DECLORATION
+#  define END_C_DECLORATION
+#endif
 
 BEGIN_C_DECLORATION
 
