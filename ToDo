@@ -38,6 +38,10 @@ fix gridCollapseEdgeToBestConfiguration gridCollapseCost logic
 clean up gridSplitEdgeIfNear gridSplitFaceAt gridSplitCellAt gridInsertInToGeomEdge gridInsertInToGeomFace gridInsertInToVolume 
 
 
+think aboutgeom edge  collapse on a beth grid with no geom edges
+
+Make a matrix of collapse possilbities for node 0,1 on bound or not
+
 --Edge Based
 
 parallelize the edge queue

@@ -1,3 +1,9 @@
+2005-01-27 10:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdge) Correctly constructed new
+	surface topology (edges and faces) to use to project common
+	node. This is required for the validity checks.
+
 2005-01-27 09:12 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeAt) Correctly constructed new

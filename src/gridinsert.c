@@ -185,6 +185,8 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   int newedge0, newedge1;
   double t0, t1, newT;
   double minAR;
+
+  if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
 
   /* If the equator has a gap find the faces to be split or return */
@@ -679,12 +681,20 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   double ratio;
   double xyz0[3], xyz1[3], xyzAvg[3];
   GridBool volumeEdge;
-  double arLimit;
   int iequ, equ0, equ1;
 
   int parent;
   double origxyz[3], tuv[2], tuv0[2], tuv1[2];
 
+  int gap0, gap1, faceId0, faceId1;
+  double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
+  double newId0uv[2], newId1uv[2], uvAvg[2]; 
+  int edge, edgeId;
+  double t0, t1, newT, tAvg;
+
+  if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return NULL; 
+
+  /* logic to make sure collapse is valid w.r.t. boundary connectivity */
   if ( gridGeometryNode(grid, n1) ) return NULL;
   if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
     return NULL;
@@ -703,9 +713,7 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 	EMPTY != gridFindFace(grid,n1,equ0,equ1) ) return NULL;
   }
 
-  if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
-  if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
-  
+  /* override user specified ratio to keep nodes on boundary */
   ratio = requestedratio;
   
   requiredRatio = EMPTY;
@@ -718,47 +726,12 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   if (0 == requiredRatio) { if (0.99 < ratio) return NULL; ratio = 0.0; }
   if (1 == requiredRatio) { if (0.01 > ratio) return NULL; ratio = 1.0; }
 
-  for (i=0 ; i<3 ; i++) xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
-
-  parent = gridParentGeometry(grid,n0,n1);
-  if (0!=parent) {
-    gridVectorCopy(origxyz,xyzAvg);
-    tuv[0] = tuv[1] = DBL_MAX;
-    if (parent<0) {
-      gridNodeT(grid,n0,-parent, tuv0);
-      gridNodeT(grid,n1,-parent, tuv1);
-      tuv[0] = 0.5 * ( tuv0[0] + tuv1[0] );
-      gridProjectToEdge(grid, -parent, origxyz, tuv, xyzAvg);
-    } else {
-      gridNodeUV(grid,n0,parent, tuv0);
-      gridNodeUV(grid,n1,parent, tuv1);
-      tuv[0] = 0.5 * ( tuv0[0] + tuv1[0] );
-      tuv[1] = 0.5 * ( tuv0[1] + tuv1[1] );
-      gridProjectToFace(grid, parent, origxyz, tuv, xyzAvg);    
-    }
-  }
-
-  if ( NULL == gridSetNodeXYZ( grid, n0, xyzAvg) ) return NULL;
-  if ( NULL == gridSetNodeXYZ( grid, n1, xyzAvg) ) return NULL;  
-
-  arLimit = 0.02;
-  if ( gridMinARAroundNodeExceptGem( grid, n0 ) < arLimit || 
-       gridMinARAroundNodeExceptGem( grid, n1 ) < arLimit ) {
-    gridSetNodeXYZ( grid, n0, xyz0);
-    gridSetNodeXYZ( grid, n1, xyz1);
-    return NULL;
-  }
-
-  gridRemoveGem( grid );
-  
-  gridReconnectAllCell(grid, n1, n0 );
-
+  /* interpolate parameters */
+  face0 = face1 = faceId0 = faceId1 = EMPTY;
+  newId0uv[0] = newId0uv[1] = newId1uv[0] = newId1uv[1] = DBL_MAX;
+  edge = edgeId = EMPTY;
+  t0 = t1 = DBL_MAX;
   if ( !volumeEdge ) {
-    int gap0, gap1, faceId0, faceId1;
-    double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
-    double newId0uv[2], newId1uv[2]; 
-    int edge, edgeId;
-    double t0, t1, newT;
     gap0 = gridEqu(grid,0);
     gap1 = gridEqu(grid,gridNGem(grid));
     face0 = gridFindFace(grid, n0, n1, gap0 );
@@ -779,10 +752,6 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
     newId1uv[0] = (1.0-ratio) * n0Id1uv[0] + ratio * n1Id1uv[0];
     newId1uv[1] = (1.0-ratio) * n0Id1uv[1] + ratio * n1Id1uv[1];
 
-    gridRemoveFace(grid, face0 );
-    gridRemoveFace(grid, face1 );
-
-    gridReconnectAllFace(grid, n1, n0);
     gridSetNodeUV(grid, n0, faceId0, newId0uv[0], newId0uv[1]);
     gridSetNodeUV(grid, n0, faceId1, newId1uv[0], newId1uv[1]);
 
@@ -792,14 +761,72 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
       gridNodeT(grid, n0, edgeId, &t0 );
       gridNodeT(grid, n1, edgeId, &t1 );
       newT =  (1.0-ratio) * t0 + ratio * t1;
-      gridRemoveEdge(grid,edge);
-      gridReconnectAllEdge(grid, n1, n0 );
       gridSetNodeT(grid, n0, edgeId, newT);
     }
   }
 
-  if ( volumeEdge && gridGeometryFace(grid, n1) ) 
-    gridReconnectAllFace(grid,n1,n0);
+  /* determine new node location from ratio */
+  if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
+  if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
+  for (i=0 ; i<3 ; i++) xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
+
+  /* project and match node locations and parmeters */
+  gridSetNodeXYZ( grid, n0, xyzAvg);
+  gridSafeProjectNode(grid, n0, 1.0);
+  gridNodeXYZ( grid, n0, xyzAvg);
+  gridSetNodeXYZ( grid, n1, xyzAvg); 
+ 
+  if ( EMPTY != faceId0) {
+    gridNodeUV( grid, n0, faceId0, uvAvg);
+    gridSetNodeUV( grid, n1, faceId0, uvAvg[0],  uvAvg[1]);
+  }
+  if ( EMPTY != faceId1) {
+    gridNodeUV( grid, n0, faceId1, uvAvg);
+    gridSetNodeUV( grid, n1, faceId1, uvAvg[0],  uvAvg[1]);
+  }
+  if ( edgeId != EMPTY ) {
+    gridNodeT(grid, n0, edgeId, &tAvg );
+    gridSetNodeT(grid, n1, edgeId, tAvg );
+  }
+
+  /* if this is not a valid configuration set everything back */
+  if ( gridMinARAroundNodeExceptGem( grid, n0 ) < gridADAPT_COST_FLOOR || 
+       gridMinARAroundNodeExceptGem( grid, n1 ) < gridADAPT_COST_FLOOR ) {
+    gridSetNodeXYZ( grid, n0, xyz0);
+    gridSetNodeXYZ( grid, n1, xyz1);
+    if ( EMPTY != faceId0) {
+      gridSetNodeUV( grid, n0, faceId0, n0Id0uv[0], n0Id0uv[1]);
+      gridSetNodeUV( grid, n1, faceId0, n1Id0uv[0], n1Id0uv[1]);
+    }
+    if ( EMPTY != faceId1) {
+      gridSetNodeUV( grid, n0, faceId1, n0Id1uv[0], n0Id1uv[1]);
+      gridSetNodeUV( grid, n1, faceId1, n1Id1uv[0], n1Id1uv[1]);
+    }
+    if ( edgeId != EMPTY ) {
+      gridSetNodeT(grid, n0, edgeId, t0 );
+      gridSetNodeT(grid, n1, edgeId, t1 );
+    }
+    return NULL;
+  }
+
+  gridRemoveGem( grid );
+  
+  gridReconnectAllCell(grid, n1, n0 );
+  if ( !volumeEdge ) {
+    gridRemoveFace(grid, face0 );
+    gridRemoveFace(grid, face1 );
+    gridReconnectAllFace(grid, n1, n0);
+  }
+  if ( edge != EMPTY ) {
+    gridRemoveEdge(grid,edge);
+    gridReconnectAllEdge(grid, n1, n0 );
+  }
+
+  if ( volumeEdge && gridGeometryFace(grid, n1) ) {
+    gridReconnectAllFace(grid, n1, n0 );
+    gridReconnectAllEdge(grid, n1, n0 );
+    /* CHECK ME - do edges need to be reconnected too??? */
+  }
 
   gridRemoveNode(grid, n1);
 
