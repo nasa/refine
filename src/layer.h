@@ -39,12 +39,15 @@ struct Triangle {
   int parentGeomEdge[3];
 };
 
+#define MAXSUBBLEND (20)
 typedef struct Blend Blend;
 struct Blend {
   int nodes[2];
   int normal[4];
   int edgeId[2];
   int oldnormal[4];
+
+  int nSubNormal0, nSubNormal1;
 };
 
 typedef struct Layer Layer;
@@ -58,7 +61,7 @@ struct Layer {
   int maxblend, nblend;
   Blend *blend;
   Adj *blendAdj;
-  int maxnormal, nnormal;
+  int maxnormal, nnormal, originalnormal;
   Normal *normal;
   int *globalNode2Normal;
   int nConstrainingGeometry, *constrainingGeometry;
@@ -115,6 +118,7 @@ Layer *layerTriangleNormals(Layer *, int triangle, int *normals);
 int layerNormalRoot(Layer *, int normal );
 int layerNormalTip(Layer *, int normal );
 int layerNormalDeg(Layer *, int normal );
+double layerNormalAngle(Layer *, int normal0, int normal1);
 Layer *layerNormalTriangles(Layer *, int normal, int maxtriangle, int *triangles);
 int layerPreviousTriangle(Layer *, int normal, int triangle );
 int layerNextTriangle(Layer *, int normal, int triangle );
@@ -218,6 +222,10 @@ int layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
 #define layerBlendAdj(layer) (layer->blendAdj)
 int layerBlendDegree(Layer *, int normal);
+
+Layer *layerSubBlend(Layer *, double maxNormalAngle);
+int layerNSubBlend(Layer *, int blend );
+
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 
 Layer *layerOrderedVertexNormals(Layer *, int normal, 

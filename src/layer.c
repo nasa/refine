@@ -23,6 +23,10 @@
 #include "grid.h"
 #include "intersect.h"
 
+#define PI (3.14159265358979)
+#define ConvertRadianToDegree(radian) ((radian)*57.2957795130823)
+#define ConvertDegreeToRadian(degree) ((degree)*0.0174532925199433)
+
 Layer *layerCreate( Grid *grid )
 {
   int i;
@@ -44,6 +48,7 @@ Layer *layerCreate( Grid *grid )
   layer->blendAdj=NULL;
   layer->maxnormal=0;
   layer->nnormal=0;
+  layer->originalnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
   layer->nConstrainingGeometry=0;
@@ -641,6 +646,15 @@ int layerNormalDeg(Layer *layer, int normal )
   return adjDegree(layer->triangleAdj, normal);
 }
 
+double layerNormalAngle(Layer *layer, int normal0, int normal1)
+{
+  double direction0[3], direction1[3];
+  double dot;
+  if ( layer != layerNormalDirection(layer, normal0, direction0) ) return -1.0;
+  if ( layer != layerNormalDirection(layer, normal1, direction1) ) return -1.0;
+  return ConvertRadianToDegree(acos(gridDotProduct(direction0,direction1)));
+}
+
 Layer *layerNormalMinDot(Layer *layer, int normal,
 			 double *mindot, double *mindir)
 {
@@ -800,10 +814,6 @@ Layer *layerCommonEdge(Layer *layer, int triangle0, int triangle1, int *nodes)
 
   return layer;
 }
-
-#define PI (3.14159265358979)
-#define ConvertRadianToDegree(radian) ((radian)*57.2957795130823)
-#define ConvertDegreeToRadian(degree) ((degree)*0.0174532925199433)
 
 double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
 {
@@ -2442,7 +2452,7 @@ int layerNRequiredBlends(Layer *layer, int normal, double angleLimit )
 
 Layer *layerBlend(Layer *layer, double angleLimit )
 {
-  int normal, originalNormals;
+  int normal;
   AdjIterator it;
   int triangle, firstTriangle, nextTriangle;
   double edgeAngle;
@@ -2458,10 +2468,11 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 
   if (layer->blendAdj != NULL) adjFree(layer->blendAdj);
 
-  originalNormals = layerNNormal(layer);
-  layer->blendAdj = adjCreate( originalNormals, originalNormals, 1000);
+  layer->originalnormal = layerNNormal(layer);
+  layer->blendAdj = adjCreate( layer->originalnormal, 
+			       layer->originalnormal, 1000);
 
-  for ( normal = 0 ; normal < originalNormals ; normal++ ) {
+  for ( normal = 0 ; normal < layer->originalnormal ; normal++ ) {
     nRequiredBlends = layerNRequiredBlends(layer, normal, angleLimit );
     if ( nRequiredBlends > 0 ) {
       firstTriangle = layerFirstTriangleAfterGap(layer,normal);
@@ -2564,6 +2575,8 @@ int layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
     layer->blend[blend].normal[3] = EMPTY;
     layer->blend[blend].edgeId[0] = EMPTY;
     layer->blend[blend].edgeId[1] = EMPTY;
+    layer->blend[blend].nSubNormal0 = 0;
+    layer->blend[blend].nSubNormal1 = 0;
     layer->nblend++;
   }
 
@@ -2613,6 +2626,50 @@ int layerBlendDegree(Layer *layer, int normal)
   if (NULL == layerBlendAdj(layer)) return 0;
   return adjDegree(layerBlendAdj(layer),normal);
 }
+
+Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
+{
+  int normal;
+  AdjIterator it;
+  int blend;
+  int blendnormals[4];
+  double angle;
+  if (layerNBlend(layer) <= 0) return layer;
+
+  for (normal=0;normal<layer->originalnormal;normal++){
+    switch (layerBlendDegree(layer,normal)) {
+    case 0: break;
+    case 1: case 2:
+      for ( it = adjFirst(layerBlendAdj(layer),normal); 
+	    adjValid(it); 
+	    it=adjNext(it) ){
+	blend = adjItem(it);
+	layerBlendNormals(layer, blend, blendnormals );
+	if (normal == blendnormals[0] || normal == blendnormals[1] ) {
+	  angle = layerNormalAngle(layer,blendnormals[0], blendnormals[1]);
+	  layer->blend[blend].nSubNormal0 = (int)(angle/maxNormalAngle)-1;
+	}else{
+	  angle = layerNormalAngle(layer,blendnormals[2], blendnormals[3]);
+	  layer->blend[blend].nSubNormal1 = (int)(angle/maxNormalAngle)-1;
+	}
+      }
+      break;
+    default:
+      printf( "ERROR: %s: %d: Cannot handle %d blends. Write more code!\n",
+	      layerBlendDegree(layer,normal));
+      break;
+    }
+    
+  }
+  return layer;
+}
+
+int layerNSubBlend(Layer *layer, int blend )
+{
+  if (blend < 0 || blend >= layerNBlend(layer)) return EMPTY;
+  return MAX(layer->blend[blend].nSubNormal0,layer->blend[blend].nSubNormal1)+1;
+}
+
 
 Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 {

@@ -467,6 +467,18 @@ VALUE layer_blendDegree( VALUE self, VALUE normal )
   return INT2NUM(layerBlendDegree(layer,NUM2INT(normal)));
 }
 
+VALUE layer_subBlend( VALUE self, VALUE angle )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerSubBlend(layer,NUM2DBL(angle))?self:Qnil );
+}
+
+VALUE layer_nSubBlend( VALUE self, VALUE blend )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerNSubBlend(layer,NUM2INT(blend)));
+}
+
 VALUE layer_orderedVertexNormals( VALUE self, VALUE normal )
 {
   int i, *vertexNormals, nVertexNormals;
@@ -580,6 +592,9 @@ void Init_Layer()
   rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
   rb_define_method( cLayer, "blendDegree", layer_blendDegree, 1 );
+
+  rb_define_method( cLayer, "subBlend", layer_subBlend, 1 );
+  rb_define_method( cLayer, "nSubBlend", layer_nSubBlend, 1 );
 
   rb_define_method( cLayer, "orderedVertexNormals", layer_orderedVertexNormals, 1 );
 

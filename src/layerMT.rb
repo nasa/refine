@@ -1500,6 +1500,20 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 19, grid.ncell  
  end
 
+ def testSubBlendCount
+  grid  = flatTwoFaceGrid
+  grid.setNodeXYZ(3,[0.5,0.5,-1])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_in_delta 270.0, layer.edgeAngle(0,1), 1.0e-8
+  layer.blend(180.0)
+  assert_equal 1, layer.nblend
+  assert_equal EMPTY, layer.nSubBlend(-1)
+  assert_equal 1, layer.nSubBlend(0)
+  assert_equal EMPTY, layer.nSubBlend(1)
+  assert_equal layer, layer.subBlend(29.0)
+  assert_equal 3, layer.nSubBlend(0)
+ end
+
  def testExtrudeBlend
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
