@@ -63,6 +63,25 @@ VALUE grid_firstNodeCell( VALUE self, VALUE nodeId )
   return Qnil;
 }
 
+VALUE grid_currentNodeCell( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridCurrentNodeCell(grid) );
+}
+
+VALUE grid_moreNodeCell( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (gridMoreNodeCell(grid)?Qtrue:Qfalse);
+}
+
+VALUE grid_nextNodeCell( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  gridNextNodeCell(grid);
+  return self;
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -77,4 +96,7 @@ void Init_Grid()
   rb_define_method( cGrid, "registerNodeCell", grid_registerNodeCell, 2 );
   rb_define_method( cGrid, "validNodeCell", grid_validNodeCell, 0 );
   rb_define_method( cGrid, "firstNodeCell", grid_firstNodeCell, 1 );
+  rb_define_method( cGrid, "currentNodeCell", grid_currentNodeCell, 0 );
+  rb_define_method( cGrid, "moreNodeCell", grid_moreNodeCell, 0 );
+  rb_define_method( cGrid, "nextNodeCell", grid_nextNodeCell, 0 );
 }
