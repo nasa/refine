@@ -1215,6 +1215,68 @@ Grid *gridCloseTecplotScalarFile(Grid *grid)
   return grid;
 }
 
+Grid *gridWriteVTK(Grid *grid, char *filename)
+{
+  FILE *vtk;
+  int i;
+  if ( grid !=  gridSortNodeGridEx(grid) ) {
+    printf("gridWriteTecplotSurfaceGeom: gridSortNodeGridEx failed.\n");
+    return NULL;
+  }
+
+  if (NULL == filename) {
+    vtk = fopen("grid.vtu","w");
+  }else{
+    vtk = fopen(filename,"w");
+  } 
+  fprintf(vtk, "<?xml version=\"1.0\"?>\n");
+  fprintf(vtk, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+  fprintf(vtk, "  <UnstructuredGrid>\n");
+
+  fprintf(vtk, "    <Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",
+	  gridNNode(grid), gridNCell(grid));
+
+  fprintf(vtk, "      <Points Scalars=\"my_scalars\">\n");
+  fprintf(vtk, "        <DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");
+  for ( i=0; i<gridNNode(grid) ; i++ ){
+    fprintf(vtk, "           %23.15e%23.15e%23.15e\n",
+	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i]);
+  }
+  fprintf(vtk, "        </DataArray>\n");
+  fprintf(vtk, "      </Points>\n");
+  fprintf(vtk, "      <Cells>\n");
+
+  fprintf(vtk, "        <DataArray type=\"Int32\" Name=\"%s\" format=\"ascii\">\n","connectivity");
+  for ( i=0; i<gridNCell(grid) ; i++ ){
+    fprintf(vtk, "           %10d %10d %10d %10d\n",
+	    grid->c2n[0+4*i],grid->c2n[1+4*i],
+	    grid->c2n[2+4*i],grid->c2n[3+4*i]);
+  }
+  fprintf(vtk, "        </DataArray>\n");
+
+  fprintf(vtk, "        <DataArray type=\"Int32\" Name=\"%s\" format=\"ascii\">\n","offsets");
+  fprintf(vtk, "          ");
+  for ( i=0; i<gridNCell(grid) ; i++ ) fprintf(vtk, " %d",(i+1)*4);
+  fprintf(vtk, "\n");
+  fprintf(vtk, "        </DataArray>\n");
+
+
+  fprintf(vtk, "        <DataArray type=\"Int32\" Name=\"%s\" format=\"ascii\">\n","types");
+  fprintf(vtk, "          ");
+  for ( i=0; i<gridNCell(grid) ; i++ ) fprintf(vtk, " %d",10);
+  fprintf(vtk, "\n");
+  fprintf(vtk, "        </DataArray>\n");
+
+  fprintf(vtk, "      </Cells>\n");
+  fprintf(vtk, "    </Piece>\n");
+  fprintf(vtk, "  </UnstructuredGrid>\n");
+  fprintf(vtk, "</VTKFile>\n");
+
+  fclose(vtk);
+
+  return grid;
+}
+
 int gridNPrism(Grid *grid)
 {
   return grid->nprism;

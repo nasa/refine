@@ -201,6 +201,7 @@ Grid *gridCloseTecplotGeomFile(Grid *g);
  * in gridWriteTecplotSurfaceScalar to avoid a renumbering bug. */
 Grid *gridWriteTecplotSurfaceScalar(Grid *g, char *filename, double *scalar );
 Grid *gridCloseTecplotScalarFile(Grid *g);
+Grid *gridWriteVTK(Grid *g, char *filename );
 
 #define gridMaxNode(grid) (grid->maxnode)
 #define gridNNode(grid)   (grid->nnode)

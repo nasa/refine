@@ -1483,6 +1483,15 @@ class TestGrid < Test::Unit::TestCase
   assert_equal grid, grid.writeTecplotSurfaceScalar(scalar)
  end
 
+ def XtestVTK
+  grid = Grid.new(4,1,0,0)
+  grid.addCell(grid.addNode(0,0,0),
+	       grid.addNode(1,0,0),
+	       grid.addNode(0,1,0),
+	       grid.addNode(0,0,1))
+  assert_equal grid, grid.writeVTK
+ end
+
  def testInsertPrism
   grid = Grid.new(6,0,0,0)
   assert_equal 0,             grid.nprism

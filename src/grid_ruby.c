@@ -55,6 +55,12 @@ VALUE grid_writeTecplotSurfaceScalar( VALUE self, VALUE rb_scalar )
   return value;
 }
 
+VALUE grid_writeVTK( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (gridWriteVTK(grid,NULL)==grid?self:Qnil);
+}
+
 VALUE grid_exportFAST( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1118,6 +1124,7 @@ void Init_Grid()
   rb_define_method( cGrid, "sortNodeGridEx", grid_sortNodeGridEx, 0 );
   rb_define_method( cGrid, "writeTecplotSurfaceGeom", grid_writeTecplotSurfaceGeom, 0 );
   rb_define_method( cGrid, "writeTecplotSurfaceScalar", grid_writeTecplotSurfaceScalar, 1 );
+  rb_define_method( cGrid, "writeVTK", grid_writeVTK, 0 );
   rb_define_method( cGrid, "exportFAST", grid_exportFAST, 0 );
   rb_define_method( cGrid, "maxnode", grid_maxnode, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
