@@ -1143,8 +1143,11 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 Layer *layerSmoothNormalDirection(Layer *layer)
 {
   int normal, iter, triangle, normals[3], total, i;
-  double norm[3], avgdir[3], denom; 
+  double norm[3], avgdir[3], denom, relax, relaxm1; 
   AdjIterator it;
+
+  relax = 1.0;
+  relaxm1 = 1.0-relax;
 
   if (layerNNormal(layer) == 0 ) return NULL;
   if (layerNBlend(layer) != 0 ) return NULL;
@@ -1174,9 +1177,16 @@ Layer *layerSmoothNormalDirection(Layer *layer)
 	  }
 	}
 	denom = 1.0 / (double)total;
-	layer->normal[normal].direction[0] = avgdir[0] * denom;
-	layer->normal[normal].direction[1] = avgdir[1] * denom;
-	layer->normal[normal].direction[2] = avgdir[2] * denom;
+	layer->normal[normal].direction[0] = 
+	  relax*(avgdir[0] * denom) + 
+	  relaxm1*layer->normal[normal].direction[0];
+	layer->normal[normal].direction[1] = 
+	  relax*(avgdir[1] * denom) +
+	  relaxm1*layer->normal[normal].direction[1];
+	layer->normal[normal].direction[2] = 
+	  relax*(avgdir[2] * denom) +
+	  relaxm1*layer->normal[normal].direction[2];
+	gridVectorNormalize(layer->normal[normal].direction);
       }
     }
     layerVisibleNormals(layer,0.5,1.0e-5);
@@ -1202,9 +1212,16 @@ Layer *layerSmoothNormalDirection(Layer *layer)
 	  }
 	}
 	denom = 1.0 / (double)total;
-	layer->normal[normal].direction[0] = avgdir[0] * denom;
-	layer->normal[normal].direction[1] = avgdir[1] * denom;
-	layer->normal[normal].direction[2] = avgdir[2] * denom;
+	layer->normal[normal].direction[0] = 
+	  relax*(avgdir[0] * denom) + 
+	  relaxm1*layer->normal[normal].direction[0];
+	layer->normal[normal].direction[1] = 
+	  relax*(avgdir[1] * denom) +
+	  relaxm1*layer->normal[normal].direction[1];
+	layer->normal[normal].direction[2] = 
+	  relax*(avgdir[2] * denom) +
+	  relaxm1*layer->normal[normal].direction[2];
+	gridVectorNormalize(layer->normal[normal].direction);
       }
     }
     layerVisibleNormals(layer,0.5,1.0e-5);
