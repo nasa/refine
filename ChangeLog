@@ -1,3 +1,10 @@
+2005-01-31 15:22 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.5 Release. ** internal release ** the
+	-DSURFACE_VALIDITY path has been removed. om6 test case runs, but
+	generates surface grid cliffs due to projection durring
+	adaptation.
+
 2005-01-31 13:44 Mike Park  <mike.park@nasa.gov>
 
 	* src/queue.c (queueResetCurrentTransaction) added new method to

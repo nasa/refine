@@ -2,7 +2,20 @@
 
 Works with FUN3D Version(s): **SomeFUN3DVersion**
 
-Tue Jan 18, 2005: Released Refine 1.2.4
+Tue Jan 31, 2005: Released Refine 1.2.5
+
+** internal release ** 
+The -DSURFACE_VALIDITY path has been merged into the mainline code.
+Node smoothing hierarchy: edge nodes move to improve geometry edge
+lengths, surface nodes more to increase face mean ratio, and volume
+nodes move to improve volume.  Cost constraints (volume,validity) can
+be turned on and off with bitwise switches.  Adapted nodes are
+projected and new faces are added to correctly evaluate surface
+validity.  Fixed a parallel geom edge memory bug in
+gridSortNodeGridEx.  The OM6 example case runs two iterations, but
+generates surface grid cliffs due to projection durring adaptation.
+
+Tue Jan 25, 2005: Released Refine 1.2.4
 
 ** internal release ** 
 To save stable snapshot before merging the -DSURFACE_VALIDITY path
