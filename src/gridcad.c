@@ -141,6 +141,73 @@ Grid *gridProject(Grid *grid)
   return grid;
 }
 
+Grid *gridRobustProject(Grid *grid)
+{
+  int i, node, nodes[4];
+  int notProjected;
+  AdjIterator it;
+
+  notProjected = 0;
+  for (node=0;node<grid->nnode;node++) 
+    if ( gridSafeProjectNode(grid,node) != grid ) {
+      for ( it = adjFirst(grid->cellAdj,node); 
+	    adjValid(it); 
+	    it = adjNext(it) ){
+	gridCell(grid, adjItem(it), nodes);
+	for (i=0;i<4;i++)
+	  if (!gridGeometryFace( grid, nodes[i])) 
+	    gridSmoothNode( grid, nodes[i]);
+      }      
+      for ( it = adjFirst(grid->cellAdj,node); 
+	    adjValid(it); 
+	    it = adjNext(it) ){
+	gridCell( grid, adjItem(it), nodes);
+	if ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ){
+	  it = adjFirst(grid->cellAdj,node);
+	  gridCell( grid, adjItem(it), nodes);
+	}
+	if ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ){
+	  it = adjFirst(grid->cellAdj,node);
+	  gridCell( grid, adjItem(it), nodes);
+	}
+	if ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ){
+	  it = adjFirst(grid->cellAdj,node);
+	  gridCell( grid, adjItem(it), nodes);
+	}
+	if ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ){
+	  it = adjFirst(grid->cellAdj,node);
+	  gridCell( grid, adjItem(it), nodes);
+	}
+	if ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ){
+	  it = adjFirst(grid->cellAdj,node);
+	  gridCell( grid, adjItem(it), nodes);
+	  }
+	if ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ){
+	  it = adjFirst(grid->cellAdj,node);
+	  gridCell( grid, adjItem(it), nodes);
+	}
+      }
+      for ( it = adjFirst(grid->cellAdj,node); 
+	    adjValid(it); 
+	    it = adjNext(it) ){
+	gridCell(grid, adjItem(it), nodes);
+	for (i=0;i<4;i++)
+	  if (!gridGeometryFace( grid, nodes[i])) 
+	    gridSmoothNode( grid, nodes[i]);
+      }      
+      if ( gridSafeProjectNode(grid,node) != grid ) notProjected++;
+    }
+
+
+  if (notProjected > 0){
+    printf("gridProject: %d of %d nodes not projected.\n",
+	   notProjected,grid->nnode);
+    return NULL;
+  }
+
+  return grid;
+}
+
 Grid *gridSmoothNode(Grid *grid, int node )
 {
   double xyzProj[3], uv[2], t;
