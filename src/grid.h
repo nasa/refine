@@ -53,6 +53,7 @@ int gridFindEdge(Grid *g, int n0, int n1 );
 int gridEdgeId(Grid *g, int n0, int n1 );
 
 int gridGeomCurveSize( Grid *g, int edgeId, int startNode );
+Grid *gridGeomCurve( Grid *g, int edgeId, int startNode, int *curve );
 
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
