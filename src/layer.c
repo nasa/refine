@@ -496,6 +496,16 @@ Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
   return layer;
 }
 
+Layer *layerSetHeightOfAllNormals(Layer *layer, double height )
+{
+  int normal;
+
+  for(normal=0;normal<layerNNormal(layer);normal++)
+    layerSetNormalHeight( layer, normal, height );
+
+  return layer;
+}
+
 Layer *layerSetNormalHeight(Layer *layer, int normal, double height)
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
@@ -875,11 +885,7 @@ int layerNActiveNormal(Layer *layer )
 
 Layer *layerAdvanceConstantHeight(Layer *layer, double height )
 {
-  int normal;
-
-  for(normal=0;normal<layerNNormal(layer);normal++)
-    layerSetNormalHeight( layer, normal, height );
-
+  layerSetHeightOfAllNormals(layer, height );
   return layerAdvance(layer);
 }
 
