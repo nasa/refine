@@ -302,7 +302,10 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     gap1 = gridEqu(grid,gridNGem(grid));
     face0 = gridFindFace(grid, n0, n1, gap0 );
     face1 = gridFindFace(grid, n0, n1, gap1 );
-    if ( face0 == EMPTY || face1 == EMPTY ) return EMPTY;
+    if ( face0 == EMPTY || face1 == EMPTY ) {
+      printf("face bomb!\n");
+      return EMPTY;
+    }
     gridFace(grid,face0,faceNodes0,&faceId0);
     gridFace(grid,face1,faceNodes1,&faceId1);
     gridNodeUV(grid,n0,faceId0,n0Id0uv);
