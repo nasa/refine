@@ -94,10 +94,52 @@ class TestSort < Test::Unit::TestCase
   (n-1).times { |index| assert(input[output[index]]<=input[output[index+1]])}
  end
 
- def XtestLengthZeroBinarySearch
+ def testLengthZeroBinarySearch
   assert_equal EMPTY, Sort.Search([],-1)
   assert_equal EMPTY, Sort.Search([],0)
   assert_equal EMPTY, Sort.Search([],1)
+ end
+
+ def testLengthOneBinarySearch
+  assert_equal EMPTY, Sort.Search([7],3)
+  assert_equal EMPTY, Sort.Search([7],10)
+  assert_equal 0,     Sort.Search([5],5)
+ end
+
+ def testBinarySearch2
+  sorted = [1,10]
+  assert_equal 0,     Sort.Search(sorted,1)
+  assert_equal EMPTY, Sort.Search(sorted,5)
+  assert_equal 1,     Sort.Search(sorted,10)
+ end
+
+ def testBinarySearch3
+  sorted = [1,5,10]
+  assert_equal 0,     Sort.Search(sorted,1)
+  assert_equal EMPTY, Sort.Search(sorted,2)
+  assert_equal 1,     Sort.Search(sorted,5)
+  assert_equal EMPTY, Sort.Search(sorted,7)
+  assert_equal 2,     Sort.Search(sorted,10)
+ end
+
+
+ def testBinarySearch5
+  sorted = [1,2,3,4,5]
+  assert_equal 0, Sort.Search(sorted,1)
+  assert_equal 1, Sort.Search(sorted,2)
+  assert_equal 2, Sort.Search(sorted,3)
+  assert_equal 3, Sort.Search(sorted,4)
+  assert_equal 4, Sort.Search(sorted,5)
+ end
+
+ def testBinarySearch6
+  sorted = [1,2,3,4,5,6]
+  assert_equal 0, Sort.Search(sorted,1)
+  assert_equal 1, Sort.Search(sorted,2)
+  assert_equal 2, Sort.Search(sorted,3)
+  assert_equal 3, Sort.Search(sorted,4)
+  assert_equal 4, Sort.Search(sorted,5)
+  assert_equal 5, Sort.Search(sorted,6)
  end
 
 end
