@@ -691,6 +691,16 @@ Grid *gridSwap(Grid *grid)
   return grid;
 }
 
+Grid *gridThrash(Grid *grid)
+{
+  int ncell, cellId, nodes[4];
+  ncell = grid->ncell;
+  for (cellId=0;cellId<ncell;cellId++)
+    if ( NULL != gridCell( grid, cellId, nodes) )
+      gridSplitEdge( grid, nodes[0], nodes[1] );
+  
+  return grid;
+}
 
 Grid *gridSwapEdge3(Grid *grid, int n0, int n1 )
 {

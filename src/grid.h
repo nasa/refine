@@ -54,6 +54,7 @@ int gridNEqu(Grid *g );
 int gridEqu(Grid *g, int index );
 Grid *gridSwapEdge(Grid *g, int n0, int n1 );
 Grid *gridSwap(Grid *g );
+Grid *gridThrash(Grid *g );
 
 Grid *gridSplitEdge(Grid *g, int n0, int n1 );
 
