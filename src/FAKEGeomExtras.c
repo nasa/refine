@@ -175,3 +175,34 @@ GridBool CADGeom_MapPoint(int vol, double *xyz, double *pt)
 {
   return FALSE;
 }
+
+#define DOTP(a,b) ((a)[0]*(b)[0] + (a)[1]*(b)[1] + (a)[2]*(b)[2])
+#define CROSS(a, b, r)                                          \
+{                                                               \
+  ((r)[0]) = ((a)[1]) * ((b)[2]) - ((a)[2]) * ((b)[1]);         \
+  ((r)[1]) = ((a)[2]) * ((b)[0]) - ((a)[0]) * ((b)[2]);         \
+  ((r)[2]) = ((a)[0]) * ((b)[1]) - ((a)[1]) * ((b)[0]);         \
+}
+GeoBool CADGeom_ReversedSurfaceNormal(int vol, int face)
+{
+  double     pt[3];
+  double     du[3],dv[3];
+  double     sNorm[3],fNorm[3];
+  double     uv[2]={0.0,0.0};	/* Irrelevant anything should work for planes */
+
+  /* Surface normal */
+  if( !CADGeom_PointOnFace(vol,face,uv,pt,1,du,dv,NULL,NULL,NULL) ) {
+    ErrMgr_Append(__FILE__,__LINE__,"Could not get Volume %d, Face %d surface derivatives\n",vol,face);
+    return( FALSE );
+  }
+  CROSS(du,dv,sNorm);
+
+  /* Face normal */
+  if( !CADGeom_NormalToFace(vol,face,uv,pt,fNorm) ) {
+    ErrMgr_Append(__FILE__,__LINE__,"Could not get Volume %d, Face %d normal\n",vol,face);
+    return( FALSE );
+  }
+  if( DOTP(sNorm,fNorm) < 0.0 ) return( TRUE );
+
+  return( FALSE );
+}
