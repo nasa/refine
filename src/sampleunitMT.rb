@@ -4,8 +4,12 @@
 #
 # Mobility test for sampleunit c lib
 
-system 'ruby extconf.rb SampleUnit'
-system 'make'
+`rm -rf unittest`
+`mkdir unittest`
+`cp sampleunit.h sampleunit.c sampleunit_ruby.c unittest`
+Dir.chdir "unittest"
+`ruby ../extconf.rb SampleUnit`
+`make`
 
 require 'test/unit'
 require 'SampleUnit'
