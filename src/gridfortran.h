@@ -53,6 +53,15 @@ int gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z);
 int gridgetcell_( int *cell, int *nodes, int *global );
 int gridgetbcsize_( int *ibound, int *nface );
 int gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n );
+
+int gridsetnaux_( int *naux );
+int gridsetauxvector_( int *nnode, int *offset, double *x );
+int gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x );
+int gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x );
+int gridgetauxvector_( int *nnode, int *offset, double *x );
+int gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x );
+int gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */

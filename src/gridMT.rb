@@ -256,6 +256,16 @@ class TestGrid < Test::Unit::TestCase
   assert_equal false, grid.nodeFrozen(1)
  end
 
+ def testGetAndSetNAux
+  assert_equal 0, @grid.naux
+  assert_nil @grid.setAux(0,0,0.5)
+  assert_equal 0, @grid.aux(0,0)
+  assert_equal @grid, @grid.setNAux(5)
+  assert_equal 5, @grid.naux
+  assert_equal @grid, @grid.setAux(0,0,0.5)
+  assert_equal 0.5, @grid.aux(0,0)
+ end
+
  def testReplaceCell
   grid = Grid.new(8,2,0,0)
   assert_equal 0, grid.addCell(0,1,2,3)

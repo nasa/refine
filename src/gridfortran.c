@@ -263,3 +263,64 @@ int gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
     }
   }
 }
+
+int gridsetnaux_( int *naux )
+{
+  gridSetNAux(grid, *naux);
+}
+
+int gridsetauxvector_( int *nnode, int *offset, double *x )
+{
+  int node;
+  for (node=0;node<(*nnode);node++) {
+    gridSetAux(grid,node,(*offset),x[node]);
+  }
+}
+
+int gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
+{
+  int node, dim;
+  for (node=0;node<(*nnode);node++) {
+    for (dim=0;dim<(*ndim);dim++){
+      gridSetAux(grid,node,(*offset)+dim,x[dim+(*ndim)*node]);
+    }
+  }
+}
+
+int gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
+{
+  int node, dim;
+  for (node=0;node<(*nnode);node++) {
+    for (dim=0;dim<(*ndim);dim++){
+      gridSetAux(grid,node,(*offset)+dim,x[dim+(*ndim)*node]);
+    }
+  }
+}
+
+int gridgetauxvector_( int *nnode, int *offset, double *x )
+{
+  int node;
+  for (node=0;node<(*nnode);node++) {
+    x[node] = gridAux(grid,node,(*offset));
+  }
+}
+
+int gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
+{
+  int node, dim;
+  for (node=0;node<(*nnode);node++) {
+    for (dim=0;dim<(*ndim);dim++){
+      x[dim+(*ndim)*node] = gridAux(grid,node,(*offset)+dim);
+    }
+  }
+}
+
+int gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
+{
+  int node, dim;
+  for (node=0;node<(*nnode);node++) {
+    for (dim=0;dim<(*ndim);dim++){
+      x[dim+(*ndim)*node] = gridAux(grid,node,(*offset)+dim);
+    }
+  }
+}

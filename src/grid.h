@@ -47,6 +47,8 @@ struct Grid {
   double *xyz;
   double *map;
   bool *frozen;
+  int naux;
+  double *aux;
 
   int *nodeGlobal;
   int *part;
@@ -146,6 +148,10 @@ int gridNEdge(Grid *g);
 int gridNPrism(Grid *g);
 int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);
+int gridNAux(Grid *g);
+Grid *gridSetNAux(Grid *g, int naux);
+double gridAux(Grid *g, int node, int aux);
+Grid *gridSetAux(Grid *g, int node, int aux, double value);
 int gridPartId(Grid *g);
 Grid *gridSetPartId(Grid *g, int partId );
 int gridGlobalNNode(Grid *g);

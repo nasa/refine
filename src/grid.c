@@ -96,6 +96,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->sortedGlobal = NULL;
   grid->sortedLocal = NULL;
 
+  grid->aux = NULL;
+  grid->naux = 0;
+
   // cells
   if ( NULL == c2n ) {
     grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
@@ -472,6 +475,7 @@ void gridFree(Grid *grid)
   if (NULL != grid->sortedGlobal) free(grid->sortedGlobal);
   if (NULL != grid->part) free(grid->part);
   if (NULL != grid->nodeGlobal) free(grid->nodeGlobal);
+  if (NULL != grid->aux) free(grid->aux);
   free(grid->frozen);
   free(grid->map);
   free(grid->xyz);
@@ -514,6 +518,8 @@ Grid *gridPack(Grid *grid)
       if (NULL != grid->nodeGlobal) 
 	grid->nodeGlobal[packnode] = grid->nodeGlobal[orignode];
       if (NULL != grid->part) grid->part[packnode] = grid->part[orignode];
+      for ( i=0;i<grid->naux;i++) 
+	grid->aux[i+grid->naux*packnode] = grid->aux[i+grid->naux*orignode];
       packnode++;
     } 
   
@@ -860,6 +866,14 @@ Grid *gridRenumber(Grid *grid, int *o2n)
       grid->map[ixyz+6*node] = temp_xyz[node];
     }
   }
+  for ( ixyz = 0; ixyz < grid->naux ; ixyz++ ){
+    for ( node = 0 ; node < grid->nnode ; node++ ){
+      temp_xyz[o2n[node]] = grid->aux[ixyz+grid->naux*node];
+    }
+    for ( node = 0 ; node < grid->nnode ; node++ ){
+      grid->aux[ixyz+grid->naux*node] = temp_xyz[node];
+    }
+  }
   free(temp_xyz);
 
   temp_frozen = malloc( grid->nnode * sizeof(bool) );
@@ -1037,6 +1051,36 @@ int gridNQuad(Grid *grid)
 int gridPartId(Grid *grid)
 {
   return grid->partId;
+}
+
+int gridNAux(Grid *grid)
+{
+  return grid->naux;
+}
+
+Grid *gridSetNAux(Grid *grid, int naux )
+{
+  grid->naux = MAX(0,naux);
+  if (NULL != grid->aux) free(grid->aux);
+  if (grid->naux>0) 
+    grid->aux = malloc( grid->maxnode * grid->naux * sizeof(double) );
+  return grid;
+}
+
+double gridAux(Grid *grid, int node, int aux)
+{
+  if (aux<0  || aux >= grid->naux) return 0.0;
+  if (node<0 || node >= grid->maxnode) return 0.0;
+  
+  return grid->aux[aux+grid->naux*node];
+}
+
+Grid *gridSetAux(Grid *grid, int node, int aux, double value )
+{
+  if (aux<0  || aux >= grid->naux) return NULL;
+  if (node<0 || node >= grid->maxnode) return NULL;
+  grid->aux[aux+grid->naux*node] = value;
+  return grid;
 }
 
 Grid *gridSetPartId(Grid *grid, int partId )
@@ -2440,6 +2484,8 @@ int gridAddNode(Grid *grid, double x, double y, double z )
     grid->blanknode = origSize;
 
     grid->map = realloc(grid->map, grid->maxnode * 6 * sizeof(double));
+    if ( grid->naux > 0 ) grid->aux = 
+      realloc(grid->aux, grid->maxnode * grid->naux * sizeof(double));
     grid->frozen = realloc(grid->frozen,grid->maxnode * sizeof(bool));
 
     if (NULL != grid->nodeGlobal) 
