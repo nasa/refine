@@ -250,11 +250,14 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
+  STATUS;
+
   if (EdgeBasedOperators) {
     gridCreateConn(grid);
     gridSetConnValuesWithMetricErrorMagnatude(grid);
     gridSortConnValues(grid);
     gridAdaptBasedOnConnRankings(grid);
+    STATUS;
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
     printf("Done.\n");
