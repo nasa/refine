@@ -179,7 +179,9 @@ int gridSplitEdgeAt(Grid *grid, int n0, int n1,
     newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
     newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
 
-    if ( faceId0 == EMPTY || faceId1 == EMPTY ) return EMPTY;
+    if ( faceId0 == EMPTY || faceId1 == EMPTY ) {
+      return EMPTY;
+    }
 
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
@@ -222,6 +224,43 @@ int gridSplitEdgeAt(Grid *grid, int n0, int n1,
   }else{
     return newnode;
   }
+}
+
+int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
+			double newX, double newY, double newZ)
+{
+  int i;
+  int newnode;
+  double newXYZ[3], xyz0[3], xyz1[3];
+  double edgeXYZ[3], edgeLength, edgeDir[3];
+  double newEdge[3], edgePosition, radius, radiusVector[3];
+
+  newXYZ[0] = newX;  newXYZ[1] = newY;  newXYZ[2] = newZ;
+
+  gridNodeXYZ(grid, n0, xyz0);
+  gridNodeXYZ(grid, n1, xyz1);
+  for (i=0;i<3;i++) edgeXYZ[i] = xyz1[i]   - xyz0[i];
+  edgeLength = sqrt ( edgeXYZ[0]*edgeXYZ[0] + 
+		      edgeXYZ[1]*edgeXYZ[1] +
+		      edgeXYZ[2]*edgeXYZ[2] );
+  for (i=0;i<3;i++) edgeDir[i] = edgeXYZ[i]/edgeLength;
+  for (i=0;i<3;i++) newEdge[i] = newXYZ[i] - xyz0[i];
+  edgePosition =  ( newEdge[0]*edgeDir[0] + 
+		    newEdge[1]*edgeDir[1] + 
+		    newEdge[2]*edgeDir[2] ) / edgeLength;
+  for (i=0;i<3;i++) radiusVector[i] = newEdge[i] -
+		      edgePosition*edgeLength*edgeDir[i];
+  radius = sqrt ( radiusVector[0]*radiusVector[0] + 
+		  radiusVector[1]*radiusVector[1] + 
+		  radiusVector[2]*radiusVector[2] );
+      
+  if ( edgePosition > 0.0 && edgePosition < 1.0 && 
+       radius < 0.001*edgeLength) {
+    newnode = gridSplitEdgeAt(grid, n0, n1, newX, newY, newZ);
+    return newnode;
+  }
+
+  return EMPTY;
 }
 
 int gridSplitFaceAt(Grid *grid, int face,
@@ -291,52 +330,20 @@ int gridSplitFaceAt(Grid *grid, int face,
 
 int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
 {
-  int i, edge, maxedge, edgeId, nodes[2], foundEdge;
+  int i, edge, maxedge, edgeId, nodes[2];
   int newnode;
-  double newXYZ[3], xyz0[3], xyz1[3];
-  double edgeXYZ[3], edgeLength, edgeDir[3];
-  double newEdge[3], edgePosition, radius, radiusVector[3];
 
-  newXYZ[0] = newX;  newXYZ[1] = newY;  newXYZ[2] = newZ;
-
-  foundEdge = EMPTY;
+  newnode = EMPTY;
   edge = 0;
   maxedge = gridMaxEdge(grid);
-  while ( EMPTY == foundEdge && edge < maxedge ) {
+  while ( EMPTY == newnode && edge < maxedge ) {
     if (grid == gridEdge(grid, edge, nodes, &edgeId) ){
-      gridNodeXYZ(grid, nodes[0], xyz0);
-      gridNodeXYZ(grid, nodes[1], xyz1);
-      for (i=0;i<3;i++) edgeXYZ[i] = xyz1[i]   - xyz0[i];
-      edgeLength = sqrt ( edgeXYZ[0]*edgeXYZ[0] + 
-			  edgeXYZ[1]*edgeXYZ[1] +
-			  edgeXYZ[2]*edgeXYZ[2] );
-      for (i=0;i<3;i++) edgeDir[i] = edgeXYZ[i]/edgeLength;
-      for (i=0;i<3;i++) newEdge[i] = newXYZ[i] - xyz0[i];
-      edgePosition =  ( newEdge[0]*edgeDir[0] + 
-			newEdge[1]*edgeDir[1] + 
-			newEdge[2]*edgeDir[2] ) / edgeLength;
-      for (i=0;i<3;i++) radiusVector[i] = newEdge[i] -
-			  edgePosition*edgeLength*edgeDir[i];
-      radius = sqrt ( radiusVector[0]*radiusVector[0] + 
-		      radiusVector[1]*radiusVector[1] + 
-		      radiusVector[2]*radiusVector[2] );
-      
-      if ( edgePosition > 0.0 && edgePosition < 1.0 && 
-	   radius < 0.001*edgeLength) {
-	foundEdge = edge;
-      }
+      newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],newX,newY,newZ);
     }
     edge++;
   }
 
-  if ( EMPTY == foundEdge) return EMPTY;
-
-  if (grid != gridEdge(grid, foundEdge, nodes, &edgeId) ) return EMPTY;
-
-  newnode = gridSplitEdgeAt(grid, nodes[0], nodes[1], newX, newY, newZ);
-  if (EMPTY == newnode) return EMPTY;
-
-  gridSafeProjectNode(grid, newnode, 1.0);
+  if ( newnode != EMPTY ) gridSafeProjectNode(grid, newnode, 1.0);
 
   return newnode;
 }
@@ -352,13 +359,30 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
   double normLength, unit[3], normDistance;
   int newnode;
 
+  bool edgeSplit;
+
   newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
 
   foundFace = EMPTY;
+  edgeSplit = FALSE;
   face = 0;
   maxface = gridMaxFace(grid);
-  while ( EMPTY == foundFace && face < maxface ) {
+  while ( EMPTY == foundFace && !edgeSplit && face < maxface ) {
     if (grid == gridFace(grid, face, nodes, &faceId) ){
+      /* first try putting it on an edge */
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[2],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[2],nodes[0],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+      /* then try putting it on the face */
       gridNodeXYZ(grid, nodes[0], xyz0);
       gridNodeXYZ(grid, nodes[1], xyz1);
       gridNodeXYZ(grid, nodes[2], xyz2);
@@ -394,6 +418,7 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
     face++;
   }
 
+  if ( edgeSplit ) return newnode;
   if ( EMPTY == foundFace ) return EMPTY;
 
   newnode = gridSplitFaceAt(grid, foundFace, newX, newY, newZ);
