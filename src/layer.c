@@ -39,6 +39,7 @@ typedef struct Blend Blend;
 struct Blend {
   int nodes[2];
   int normal[4];
+  int edgeId[2];
 };
 
 struct Layer {
@@ -399,6 +400,34 @@ Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
   gridFreezeNode(grid,n0);
   gridFreezeNode(grid,n1);
   gridFreezeNode(grid,n2);
+
+  layer->ntriangle++;
+
+  return layer;
+}
+
+Layer *layerForceTriangle(Layer *layer, int normal0, int normal1, int normal2 )
+{
+  int i;
+  Grid *grid;
+  grid = layerGrid(layer);
+
+  if (layer->ntriangle >= layer->maxtriangle) {
+    layer->maxtriangle += 5000;
+    if (layer->triangle == NULL) {
+      layer->triangle = malloc(layer->maxtriangle*sizeof(Triangle));
+    }else{
+      layer->triangle = realloc(layer->triangle,layer->maxtriangle*sizeof(Triangle));
+    }
+  }
+
+  layer->triangle[layer->ntriangle].normal[0] = normal0;
+  layer->triangle[layer->ntriangle].normal[1] = normal1;
+  layer->triangle[layer->ntriangle].normal[2] = normal2;
+  for (i=0;i<3;i++){
+    layer->triangle[layer->ntriangle].constrainedSide[i] = 0;
+    layer->triangle[layer->ntriangle].parentGeomEdge[i] = 0;
+  }
 
   layer->ntriangle++;
 
@@ -1602,7 +1631,7 @@ Layer *layerAdvance(Layer *layer)
     }
   }
 
-  /*
+
   if (layerNBlend(layer) > 0){
     for (blend=0;blend<layerNBlend(layer);blend++){
       layerBlendNormals(layer, blend, blendnormals );
@@ -1626,7 +1655,7 @@ Layer *layerAdvance(Layer *layer)
     layerBuildNormalTriangleAdjacency(layer);
     layer->nblend=0;
   }
-  */
+
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     faceId = layerConstrained(layer,normal);
@@ -1950,6 +1979,10 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
 {
   int i, node0, node1, n0, n1;
   bool newEdge;
+  int edge, nodes[2], excludeId, edgeId;
+  AdjIterator it;
+  Grid *grid;
+  grid=layerGrid(layer);
 
   if (layer->nblend >= layer->maxblend) {
     layer->maxblend += 5000;
@@ -1980,6 +2013,22 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
     layer->blend[layer->nblend].nodes[1] = n1;
     layer->blend[layer->nblend].normal[0] = normal0;
     layer->blend[layer->nblend].normal[1] = normal1;
+    edge = gridFindEdge(grid,n0,n1);
+    excludeId=0;
+    gridEdge(grid,edge,nodes,&excludeId);
+    layer->blend[layer->nblend].edgeId[0] = EMPTY;
+    for ( it = adjFirst(gridEdgeAdj(grid),n0); adjValid(it); it=adjNext(it) ){
+      edge = adjItem(it);
+      gridEdge(grid,edge,nodes,&edgeId);
+      if (edgeId != excludeId) layer->blend[layer->nblend].edgeId[0] = edgeId;
+    }
+    layer->blend[layer->nblend].edgeId[1] = EMPTY;
+    for ( it = adjFirst(gridEdgeAdj(grid),n1); adjValid(it); it=adjNext(it) ){
+      edge = adjItem(it);
+      gridEdge(grid,edge,nodes,&edgeId);
+      if (edgeId != excludeId) layer->blend[layer->nblend].edgeId[1] = edgeId;
+    }
+
     layer->nblend++;
   }
 

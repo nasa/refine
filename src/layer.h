@@ -34,6 +34,7 @@ Layer *layerBuildNormalTriangleAdjacency(Layer *);
 Layer *layerAddParentGeomFace(Layer *, int faceId);
 bool layerParentGeomFace(Layer *, int faceId);
 Layer *layerAddTriangle(Layer *, int n0, int n1, int n2);
+Layer *layerForceTriangle(Layer *, int normal0, int normal1, int nnormal2);
 Layer *layerTriangle(Layer *, int triangle, int *nodes);
 Layer *layerTriangleDirection(Layer *, int triangle, double *direction);
 Layer *layerTriangleArea(Layer *, int triangle, double *area);
