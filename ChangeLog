@@ -1,6 +1,7 @@
-2004-05-05 10:36 Mike Park  <mike.park@nasa.gov>
+2004-05-05 16:20 Mike Park  <mike.park@nasa.gov>
 
 	* /src/grid.c (gridPack) made pack register method for child objects.
+	* /src/grid.c added a method to register for grid free notification.
 
 2004-05-04 10:35 Mike Park  <mike.park@nasa.gov>
 
