@@ -21,6 +21,7 @@ struct GridMove {
   Grid *grid;
   void *gridRubyVALUEusedForGC;
   double *displacement;
+  GridBool *specified;
 };
 
 GridMove *gridmoveCreate(Grid *);
@@ -37,6 +38,7 @@ void gridmoveReallocator(void *voidGridMove, int reallocType,
 
 GridMove *gridmoveDisplace(GridMove *, int node, double *displace);
 GridMove *gridmoveDisplacement(GridMove *, int node, double *displacement);
+GridBool gridmoveSpecified(GridMove *, int node);
 GridMove *gridmoveMove(GridMove *);
 GridMove *gridmoveSprings(GridMove *, int *nsprings, int **springs);
 

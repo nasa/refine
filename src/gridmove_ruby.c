@@ -55,6 +55,13 @@ VALUE gridmove_displacement( VALUE self, VALUE node )
   return rb_displacement;
 }
 
+VALUE gridmove_specified( VALUE self, VALUE node )
+{
+  int i;
+  GET_GM_FROM_SELF;
+  return ( gridmoveSpecified( gm, NUM2INT(node) )?Qtrue:Qfalse );
+}
+
 VALUE gridmove_move( VALUE self )
 {
   GET_GM_FROM_SELF;
@@ -85,6 +92,7 @@ void Init_GridMove()
   rb_define_singleton_method( cGridMove, "new", gridmove_new, 1 );
   rb_define_method( cGridMove, "displace", gridmove_displace, 2 );
   rb_define_method( cGridMove, "displacement", gridmove_displacement, 1 );
+  rb_define_method( cGridMove, "specified", gridmove_specified, 1 );
   rb_define_method( cGridMove, "move", gridmove_move, 0 );
   rb_define_method( cGridMove, "springs", gridmove_springs, 0 );
 }

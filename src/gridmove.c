@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "gridmove.h"
-#include "adj.h"
 
 GridMove *gridmoveCreate( Grid *grid )
 {
@@ -26,6 +25,9 @@ GridMove *gridmoveCreate( Grid *grid )
 
   gm->displacement = malloc(3*gridMaxNode(grid)*sizeof(double));
   for (i=0;i<3*gridMaxNode(grid);i++) gm->displacement[i] = 0.0;
+
+  gm->specified = malloc(gridMaxNode(grid)*sizeof(GridBool));
+  for (i=0;i<gridMaxNode(grid);i++) gm->specified[i] = FALSE;
 
   return gm;
 }
@@ -66,6 +68,16 @@ void gridmovePack(void *voidGridMove,
       gm->displacement[ixyz+3*packnode] = 0.0;
     }
   }
+
+  for ( orignode = 0 ; orignode < maxnode ; orignode++ ){
+    packnode = nodeo2n[orignode];
+    if (EMPTY!=packnode) {
+      gm->specified[packnode] = gm->specified[orignode];
+    }
+  }
+  for ( packnode=nnode ; packnode < maxnode ; packnode++ ){ 
+    gm->specified[packnode] = FALSE;
+  }
 }
 
 void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n)
@@ -73,6 +85,8 @@ void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n)
   GridMove *gm = (GridMove *)voidGridMove;
   int node, ixyz;
   double *temp_xyz;
+  GridBool *temp_bool;
+
   temp_xyz = malloc( maxnode * sizeof(double) );
   for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
     for ( node = 0 ; node < maxnode ; node++ )temp_xyz[node]=0.0;
@@ -85,6 +99,17 @@ void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n)
     }
   }
   free(temp_xyz);
+
+  temp_bool = malloc( maxnode * sizeof(GridBool) );
+  for ( node = 0 ; node < maxnode ; node++ )temp_bool[node]=FALSE;
+  for ( node = 0 ; node < maxnode ; node++ ){
+    if (EMPTY != o2n[node])
+      temp_bool[o2n[node]] = gm->specified[node];
+  }
+  for ( node = 0 ; node < maxnode ; node++ ){
+    gm->specified[node] = temp_bool[node];
+  }
+  free(temp_bool);
 }
 
 void gridmoveReallocator(void *voidGridMove, int reallocType, 
@@ -95,6 +120,8 @@ void gridmoveReallocator(void *voidGridMove, int reallocType,
   if (gridREALLOC_NODE == reallocType) {
     gm->displacement = realloc(gm->displacement, 3*newSize*sizeof(double));
     for (i=3*lastSize;i<3*newSize;i++) gm->displacement[i] = 0.0;
+    gm->specified = realloc(gm->specified, newSize*sizeof(GridBool));
+    for (i=lastSize;i<newSize;i++) gm->specified[i] = FALSE;
   }
 }
 
@@ -104,6 +131,7 @@ GridMove *gridmoveDisplace(GridMove *gm, int node, double *displace)
   gm->displacement[0+3*node] = displace[0];
   gm->displacement[1+3*node] = displace[1];
   gm->displacement[2+3*node] = displace[2];
+  gm->specified[node] = TRUE;
   return gm;
 }
 
@@ -114,6 +142,12 @@ GridMove *gridmoveDisplacement(GridMove *gm, int node, double *displacement)
   displacement[1] = gm->displacement[1+3*node];
   displacement[2] = gm->displacement[2+3*node];
   return gm;
+}
+
+GridBool gridmoveSpecified(GridMove *gm, int node)
+{
+  if (node < 0 || node >= gridMaxNode(gm->grid)) return FALSE;
+  return gm->specified[node];
 }
 
 GridMove *gridmoveMove(GridMove *gm)
