@@ -204,8 +204,6 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	}
       }
       printf("faceId %4d has %4d segments\n",faceId,nshell);
-      for(i=0;i<nshell;i++) 
-	printf("shell %4d: %8d <-> %8d\n",i,shell[0+2*i],shell[1+2*i]);
 
       for(i=0;i<maxnode;i++) l2g[i]=EMPTY;
       for(i=0;i<maxnode;i++) g2l[i]=EMPTY;
@@ -238,8 +236,12 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	       shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i],
 	       shelluv[0+2*i],shelluv[1+2*i]
 	       );
+      for(i=0;i<nshell;i++) 
+	printf("shell %4d: %8d <-> %8d or %8d <-> %8d\n",
+	       i,shell[0+2*i],shell[1+2*i],l2g[shell[0+2*i]],l2g[shell[1+2*i]]);
 
-      
+      nfacenode = EMPTY;
+      nfacetri  = EMPTY;
       if( !MeshMgr_MeshTriFace(vol, faceId, 
 			       nnode, shellxyz, shelluv,
 			       nshell, shell,
@@ -250,7 +252,8 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	printf("Could NOT mesh Face %d\n",faceId);
 	//return NULL;
       }
-      
+      printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
+
       free(shell);
     }
   }
