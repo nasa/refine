@@ -22,6 +22,8 @@ AC_CHECK_FILE($with_SDK/CADGeom/libCADGeom-Linux-CAPrI.a)
 
 AC_CHECK_FILE($with_CAPRI/include/capri.h,AC_DEFINE([HAVE_CAPRI]))
 
+AC_SUBST(with_SDK)
+
 dnl output
 AC_OUTPUT(Makefile
 	  src/Makefile)
