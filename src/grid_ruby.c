@@ -29,7 +29,7 @@ VALUE grid_dump( VALUE self )
 {
   GET_GRID_FROM_SELF;
   gridDump( grid );
-  return Qnil;
+  return self;
 }
 
 VALUE grid_nnode( VALUE self )
