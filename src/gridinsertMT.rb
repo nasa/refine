@@ -472,8 +472,9 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal [0,1,1], grid.edge(0)
   assert_equal 2, grid.nedge
   assert_equal( -1, grid.insertInToGeomEdge(5,0,0) )
-  assert_equal [], grid.equator(0,1)
-  assert_equal 3, grid.insertInToGeomEdge(0.5,0,0)
+  assert_equal( -1, grid.insertInToGeomEdge(0.5,0.1,0) )
+  assert_equal 3, grid.nnode
+  assert_equal 3, grid.insertInToGeomEdge(0.5,0.0001,0)
   assert_equal 4, grid.nnode
   assert_equal [0,3,1], grid.edge(0)
   assert_equal [1,2,1], grid.edge(1)
