@@ -1,3 +1,11 @@
+2005-02-08 00:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) verify positive face areas
+	in parameter space before evaluating CAD parameters. This should
+	fix two issues: prevent surface `cliffs' while smoothing and
+	evaluating parameters that are outside of the face, which causing
+	CAD warnings.
+
 2005-02-10 00:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell) refactored the parallel

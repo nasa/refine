@@ -774,7 +774,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
   double denom;
   GridBool searchFlag, goodStep;
   int iteration;
-  double constraint;
+  double constraint, parameterArea;
 
   *callAgain = FALSE;
 
@@ -883,6 +883,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
   goodStep = FALSE;
   actualImprovement = 0.0;
   lastImprovement = -10.0;
+  constraint = 1.0;
   lastAlpha = alpha;
   iteration = 0;
   while (alpha > 0.1e-9 && !goodStep && iteration < 30 ) {
@@ -891,6 +892,12 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
     predictedImprovement = length*alpha;
   
     for (i=0;i<2;i++) uv[i] = origUV[i] + alpha*searchDirection[i];
+    gridSetNodeUV(grid,node,faceId,uv[0],uv[1]);
+    gridMinFaceAreaUV(grid,node,&parameterArea);
+    if ( parameterArea < 1.0e-14 ) {
+      alpha = alpha*0.6;      
+      continue;
+    }
     gridEvaluateFaceAtUV(grid, node, uv );
     gridNodeFaceMR(grid,node,&newCost);
     gridNodeAR(grid,node,&constraint);
@@ -901,6 +908,12 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
     if ( actualImprovement < lastImprovement &&
 	 constraint > gridOPTIM_COST_FLOOR ) {
       for (i=0;i<2;i++) uv[i] = origUV[i] + lastAlpha*searchDirection[i];
+      gridSetNodeUV(grid,node,faceId,uv[0],uv[1]);
+      gridMinFaceAreaUV(grid,node,&parameterArea);
+      if ( parameterArea < 1.0e-14 ) {
+	alpha = alpha*0.6;      
+	continue;
+      }
       gridEvaluateFaceAtUV(grid,node,uv);
       gridNodeFaceMR(grid,node,&newCost);
       gridNodeAR(grid,node,&constraint);
@@ -922,7 +935,8 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
      node, gridStoredCostDegree(grid), minFace, minCost, newCost ); */
 
   if ( actualImprovement <= 0.0 ||
-       constraint < gridOPTIM_COST_FLOOR ) {
+       constraint < gridOPTIM_COST_FLOOR ||
+       parameterArea < 1.0e-14 ) {
     gridEvaluateFaceAtUV(grid,node,origUV);
     return NULL;
   }
