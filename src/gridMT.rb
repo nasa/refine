@@ -719,11 +719,27 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 1, grid.nodeGlobal(1)
  end
 
- def testRenumberGlobalNodesMoveWithoutSwitch
+ def testRenumberGlobalNodesMoveWithoutSwitchForOffProc
   grid = Grid.new(5,0,0,0)
   grid.addNodeWithGlobal(1.0,2.0,3.0,0)
   assert_not_nil grid.renumberGlobalNodes([1])
   assert_equal 1, grid.nodeGlobal(0)
+ end
+
+ def testRenumberGlobalNodesMoveForOffProc
+  grid = Grid.new(5,0,0,0)
+  grid.addNodeWithGlobal(1.0,2.0,3.0,4)
+  assert_not_nil grid.renumberGlobalNodes([4])
+  assert_equal 0, grid.nodeGlobal(0)
+ end
+
+ def testRenumberGlobalNodesMoveBigSmall
+  grid = Grid.new(5,0,0,0)
+  grid.addNodeWithGlobal(1.0,2.0,3.0,10)
+  grid.addNodeWithGlobal(1.0,2.0,3.0,0)
+  assert_not_nil grid.renumberGlobalNodes([10,0])
+  assert_equal 0, grid.nodeGlobal(0)
+  assert_equal 1, grid.nodeGlobal(1)
  end
 
  def testNumberOfFaces
