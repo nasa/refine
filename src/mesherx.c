@@ -78,7 +78,6 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid);
   layerFindParentGeomEdges(layer);
-  i=0;
   if (bil) {
     layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
 				      origin, direction );
@@ -94,6 +93,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     layerSplitBlend(layer); 
   }
 
+  i=0;
   while (i<nLayer &&
 	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer,0.7,1.9)){
 
