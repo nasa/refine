@@ -15,11 +15,11 @@
 
 BEGIN_C_DECLORATION
 
+int gridcreate_( int *maxnode, int *maxcell, int *maxface, int *maxedge );
+int gridcreate__( int *maxnode, int *maxcell, int *maxface, int *maxedge );
+int gridcreate( int *maxnode, int *maxcell, int *maxface, int *maxedge );
+int GRIDCREATE( int *maxnode, int *maxcell, int *maxface, int *maxedge );
+
 END_C_DECLORATION
 
 #endif /* FORTRAN_H */
-
-int gridcreate( int *maxnode, int *maxcell, int *maxface, int *maxedge );
-int gridcreate_( int *maxnode, int *maxcell, int *maxface, int *maxedge );
-int gridcreate__( int *maxnode, int *maxcell, int *maxface, int *maxedge );
-int GRIDCREATE( int *maxnode, int *maxcell, int *maxface, int *maxedge );
