@@ -280,6 +280,54 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2, grid.cellDegree(7)
  end
 
+ def testSwapEdge6OnePoint_1
+  assert_not_nil grid=gemGrid(6, 0.1, 1)
+  initalVolume = grid.totalVolume
+  grid.swapEdge(0,1)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 4, grid.cellDegree(0)
+  assert_equal 4, grid.cellDegree(1)
+  assert_equal 2, grid.cellDegree(2)
+  assert_equal 8, grid.cellDegree(3)
+  assert_equal 2, grid.cellDegree(4)
+  assert_equal 4, grid.cellDegree(5)
+  assert_equal 4, grid.cellDegree(6)
+  assert_equal 4, grid.cellDegree(7)
+ end
+
+ def testSwapEdge6OnePoint_2
+  assert_not_nil grid=gemGrid(6, 0.1, 2)
+  initalVolume = grid.totalVolume
+  grid.swapEdge(0,1)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 4, grid.cellDegree(0)
+  assert_equal 4, grid.cellDegree(1)
+  assert_equal 4, grid.cellDegree(2)
+  assert_equal 2, grid.cellDegree(3)
+  assert_equal 8, grid.cellDegree(4)
+  assert_equal 2, grid.cellDegree(5)
+  assert_equal 4, grid.cellDegree(6)
+  assert_equal 4, grid.cellDegree(7)
+ end
+
+ def testSwapEdge6OnePoint_3
+  assert_not_nil grid=gemGrid(6, 0.1, 3)
+  initalVolume = grid.totalVolume
+  grid.swapEdge(0,1)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 4, grid.cellDegree(0)
+  assert_equal 4, grid.cellDegree(1)
+  assert_equal 4, grid.cellDegree(2)
+  assert_equal 4, grid.cellDegree(3)
+  assert_equal 2, grid.cellDegree(4)
+  assert_equal 8, grid.cellDegree(5)
+  assert_equal 2, grid.cellDegree(6)
+  assert_equal 4, grid.cellDegree(7)
+ end
+
  def testSwapEdge6OnePoint_4
   assert_not_nil grid=gemGrid(6, 0.1, 4)
   initalVolume = grid.totalVolume
@@ -294,6 +342,22 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2, grid.cellDegree(5)
   assert_equal 8, grid.cellDegree(6)
   assert_equal 2, grid.cellDegree(7)
+ end
+
+ def testSwapEdge6OnePoint_5
+  assert_not_nil grid=gemGrid(6, 0.1, 5)
+  initalVolume = grid.totalVolume
+  grid.swapEdge(0,1)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 4, grid.cellDegree(0)
+  assert_equal 4, grid.cellDegree(1)
+  assert_equal 2, grid.cellDegree(2)
+  assert_equal 4, grid.cellDegree(3)
+  assert_equal 4, grid.cellDegree(4)
+  assert_equal 4, grid.cellDegree(5)
+  assert_equal 2, grid.cellDegree(6)
+  assert_equal 8, grid.cellDegree(7)
  end
 
  def testSwapEdge7OnePoint_0
