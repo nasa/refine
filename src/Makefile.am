@@ -31,19 +31,19 @@ librefine_a_SOURCES = \
 	gridfortran.h gridfortran.c
 
 libFAKEGeomExtras_a_CFLAGS = @SDKheader@
-libFAKEGeomExtras_a_SOURCES = FAKEGeomExtras.h FAKEGeomExtras.c
+libFAKEGeomExtras_a_SOURCES = FAKEGeom.h FAKEGeomExtras.c
 
 libFAKEGeomBox_a_CFLAGS = @SDKheader@
-libFAKEGeomBox_a_SOURCES = FAKEGeomBox.h FAKEGeomBox.c
+libFAKEGeomBox_a_SOURCES = FAKEGeom.h FAKEGeomBox.c
 
 libFAKEGeomPlate_a_CFLAGS = @SDKheader@
-libFAKEGeomPlate_a_SOURCES = FAKEGeomPlate.h FAKEGeomPlate.c
+libFAKEGeomPlate_a_SOURCES = FAKEGeom.h FAKEGeomPlate.c
 
 libFAKEGeomTrap_a_CFLAGS = @SDKheader@
-libFAKEGeomTrap_a_SOURCES = FAKEGeomTrap.h FAKEGeomTrap.c
+libFAKEGeomTrap_a_SOURCES = FAKEGeom.h FAKEGeomTrap.c
 
 libFAKEGeomDPWwbi_a_CFLAGS = @SDKheader@
-libFAKEGeomDPWwbi_a_SOURCES = FAKEGeomDPWwbi.h FAKEGeomDPWwbi.c
+libFAKEGeomDPWwbi_a_SOURCES = FAKEGeom.h FAKEGeomDPWwbi.c
 
 if BUILD_SDK_DEPENDENTS
 

@@ -9,7 +9,7 @@
 /* $Id$ */
 
 #include <stdlib.h>
-#include "FAKEGeomExtras.h"
+#include "FAKEGeom.h"
   
 UGridPtr CADGeom_VolumeGrid( int vol )
 {
