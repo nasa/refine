@@ -64,6 +64,7 @@ Grid *gridSmoothNodeVolume(Grid *g, int node );
 Grid *gridSmoothNodeVolumeSimplex(Grid *g, int node );
 
 Grid *gridRelaxNegativeCells(Grid *g);
+Grid *gridSmoothVolumeNearNode(Grid *grid, int node );
 
 END_C_DECLORATION
 
