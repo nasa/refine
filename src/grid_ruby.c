@@ -105,11 +105,24 @@ VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
   return (returnedGrid==NULL?Qnil:self);
 }
 
+VALUE grid_removeFace( VALUE self, VALUE face )
+{
+  GET_GRID_FROM_SELF;
+  return (gridRemoveFace(grid, NUM2INT(face) )==NULL?Qnil:self);
+}
+
+VALUE grid_findFace( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridFindFace(grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) ) );
+}
+
 VALUE grid_faceId( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
 {
   GET_GRID_FROM_SELF;
   return INT2NUM( gridFaceId( grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) ) );
 }
+
 
 VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
@@ -220,6 +233,8 @@ void Init_Grid()
   rb_define_method( cGrid, "cell", grid_cell, 1 );
   rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
+  rb_define_method( cGrid, "removeFace", grid_removeFace, 1 );
+  rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
