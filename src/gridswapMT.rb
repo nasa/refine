@@ -47,9 +47,6 @@ class TestGridSwap < Test::Unit::TestCase
   assert_equal    2, grid.ncell
   assert_equal grid, grid.swapFace(0,1,2)
   assert_equal    3, grid.ncell
-  assert grid.volume(grid.cell(0))>0.0
-  assert grid.volume(grid.cell(1))>0.0
-  assert grid.volume(grid.cell(2))>0.0
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
  end
 
@@ -57,6 +54,12 @@ class TestGridSwap < Test::Unit::TestCase
   grid = faceSwapGrid(1.0)
   assert_nil      grid.swapFace(0,1,2)
   assert_equal 2, grid.ncell
+ end
+
+ def testSwapCallsEdgeSwap
+  grid = faceSwapGrid
+  assert_equal grid, grid.swap
+  assert_equal    3, grid.ncell
  end
 
  def testSwapEdgeNotBeter
