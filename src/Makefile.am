@@ -22,13 +22,20 @@ include_HEADERS = \
 	near.h \
 	layer.h
 
-bin_PROGRAMS = refine MesherX
+bin_PROGRAMS = refine MesherX MesherX_HLA
 refine_SOURCES = main.c
 refine_LDADD = libMesherX.a @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@ -lm
 
 MesherX_SOURCES = MesherX.c
 MesherX_LDADD = libMesherX.a @CADGeom@ @Goolache@ @FELISALib@ @MeatLib@ @CAPRILib@ -lm
 MesherX_LDFLAGS = -rdynamic
+
+MesherX_HLA_SOURCES = MesherX_HLA.c \
+	mesherx_hla.c mesherx_hla.h \
+	layerNormalExtra.h layerNormalExtra.c \
+	geometricStretch.h geometricStretch.c
+MesherX_HLA_LDADD = libMesherX.a @CADGeom@ @Goolache@ @FELISALib@ @MeatLib@ @CAPRILib@ -lm
+MesherX_HLA_LDFLAGS = -rdynamic
 
 EXTRA_DIST = makeRubyExtension.rb \
 	adjMT.rb adj_ruby.c \
