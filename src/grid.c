@@ -188,6 +188,8 @@ Grid *gridImport(int maxnode, int nnode,
   }
 
   grid->f2n    = f2n;
+  grid->faceId = faceId;
+
   for ( i=grid->nface ; i < grid->maxface ; i++ ) {
     grid->f2n[0+3*i] = EMPTY; 
     grid->f2n[1+3*i] = i+1; 
@@ -209,8 +211,6 @@ Grid *gridImport(int maxnode, int nnode,
     grid->faceV[1+3*i] = DBL_MAX;
     grid->faceV[2+3*i] = DBL_MAX;
   }
-
-  grid->faceId = faceId;
 
   grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3);
 
