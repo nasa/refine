@@ -283,21 +283,6 @@ VALUE grid_nodeARDerivative( VALUE self, VALUE node )
   return rb_ar;
 }
 
-VALUE grid_storeVolumeCostDerivatives( VALUE self, VALUE node )
-{
-  GET_GRID_FROM_SELF;
-  return (grid == gridStoreVolumeCostDerivatives( grid, 
-						  NUM2INT(node) )?self:Qnil);
-}
-
-VALUE grid_storeFaceCostParameterDerivatives( VALUE self, VALUE node )
-{
-  GET_GRID_FROM_SELF;
-  return (grid == gridStoreFaceCostParameterDerivatives( grid, 
-							NUM2INT(node) 
-							)?self:Qnil);
-}
-
 VALUE grid_minVolume( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -503,10 +488,6 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );
   rb_define_method( cGridMetric, "cellRatioErrorDerivative", grid_cellRatioErrorDerivative, 1 );
   rb_define_method( cGridMetric, "nodeARDerivative", grid_nodeARDerivative, 1 );
-  rb_define_method( cGridMetric, "storeVolumeCostDerivatives",
-		    grid_storeVolumeCostDerivatives, 1 );
-  rb_define_method( cGridMetric, "storeFaceCostParameterDerivatives",
-		    grid_storeFaceCostParameterDerivatives, 1 );
   rb_define_method( cGridMetric, "minVolume", grid_minVolume, 0 );
   rb_define_method( cGridMetric, "minAR", grid_minAR, 0 );
 

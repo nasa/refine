@@ -949,6 +949,80 @@ Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
   return grid;
 }
 
+Grid *gridStoreVolumeCostDerivatives (Grid *grid, int node )
+{
+  AdjIterator it;
+  int nodes[4], orientedNodes[4];
+  double AR, dARdX[3];
+
+  if ( !gridValidNode( grid, node) ) return NULL;
+
+  gridClearStoredCost( grid );
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
+    gridCell(grid,adjItem(it),nodes);
+    orientedNodes[0] = node;
+    if (node == nodes[0]){
+      orientedNodes[1] = nodes[1];
+    }else{
+      orientedNodes[1] = nodes[0];
+    }
+    gridOrient( grid, nodes, orientedNodes);
+    if (grid != gridCellARDerivative(grid, orientedNodes, &AR, dARdX ) ) {
+      gridClearStoredCost( grid );
+      return NULL;
+    }
+    if (grid != gridStoreCost(grid, AR, dARdX ) ) {
+      gridClearStoredCost( grid );
+      return NULL;
+    }
+  }
+
+  return grid;
+}
+
+Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
+{
+  AdjIterator it;
+  int face, faceId, nodes[3];
+  int swapnode;
+  double cost, costDerivative[3];
+
+  if ( !gridValidNode( grid, node) ) return NULL;
+
+  gridClearStoredCost( grid );
+  for ( it = adjFirst(gridFaceAdj(grid),node);
+	adjValid(it);
+	it = adjNext(it) ){
+    face = adjItem(it);
+    if ( grid != gridFace(grid,face,nodes,&faceId) ) {
+      gridClearStoredCost( grid );
+      return NULL;
+    }
+    /* orient face so that nodes[0] is node for differentiation */
+    if (node == nodes[1]) {
+      swapnode = nodes[0];
+      nodes[0] = nodes[1];
+      nodes[1] = nodes[2];
+      nodes[2] = swapnode;
+    }
+    if (node == nodes[2]) {
+      swapnode = nodes[2];
+      nodes[2] = nodes[1];
+      nodes[1] = nodes[0];
+      nodes[0] = swapnode;
+    }
+    if (grid != gridFaceMRDerivative(grid, nodes, &cost, costDerivative ) ) {
+      gridClearStoredCost( grid );
+      return NULL;
+    }
+    if (grid != gridStoreCost(grid, cost, costDerivative ) ) {
+      gridClearStoredCost( grid );
+      return NULL;
+    }
+  }
+  return grid;
+}
+
 Grid *gridSmoothNodeQP(Grid *grid, int node )
 {
   int i, minCell, nearestCell;

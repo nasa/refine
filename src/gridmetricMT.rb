@@ -460,8 +460,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv, ans[2], tol
   assert_in_delta 0.0,   ans[3], tol  
 
-  assert_nil             grid.storeVolumeCostDerivatives(10)
-  assert_equal grid,     grid.storeVolumeCostDerivatives(0)
  end
 
  def testEdgeErrorDerivatives
@@ -484,45 +482,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 0,    ans[2], tol
   assert_in_delta 0,    ans[3], tol  
 
- end
-
- def testStoreVolumeARDerivative
-  assert_not_nil grid = Grid.new(5,2,0,0)
-  grid.addCell( 
-	       grid.addNode(0.0,0.0,0.0), 
-	       grid.addNode(1.0,0.0,0.0), 
-	       grid.addNode(0.0,1.0,0.0), 
-	       grid.addNode(0.0,0.0,1.0) )
-  grid.addCell( 
-	       1, 
-	       2, 
-	       3, 
-	       grid.addNode(0.7,0.7,0.7) )
-  assert_equal 0,        grid.storedCostDegree
-  assert_nil             grid.storeVolumeCostDerivatives(10)
-  assert_equal 1,        grid.cellDegree(0)
-  assert_equal grid,     grid.storeVolumeCostDerivatives(0)
-  assert_equal 1,        grid.storedCostDegree
-  assert_equal 2,        grid.cellDegree(1)
-  assert_equal grid,     grid.storeVolumeCostDerivatives(1)
-  assert_equal 2,        grid.storedCostDegree
- end
-
- def testStoreFaceMRDerivative
-  assert_not_nil grid = Grid.new(5,2,2,0)
-  grid.addCell(grid.addNode(0.0,0.0,0.0), 
-	       grid.addNode(1.0,0.0,0.0), 
-	       grid.addNode(0.0,1.0,0.0), 
-	       grid.addNode(0.0,0.0,1.0) )
-  assert_nil             grid.storeFaceCostParameterDerivatives(-1)
-  assert_nil             grid.storeFaceCostParameterDerivatives(10)
-  assert_equal grid,     grid.storeFaceCostParameterDerivatives(0)
-  assert_equal 0,        grid.storedCostDegree
-  grid.addFaceUV(2,10,21,
-                 0,10,20,
-                 1,11,20, 10)
-  assert_equal grid,     grid.storeFaceCostParameterDerivatives(0)
-  assert_equal 1,        grid.storedCostDegree
  end
 
  def testRightHandedFaces

@@ -114,6 +114,21 @@ VALUE grid_smartVolumeLaplacian( VALUE self, VALUE node )
   return (gridSmartVolumeLaplacian( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
+VALUE grid_storeVolumeCostDerivatives( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (grid == gridStoreVolumeCostDerivatives( grid, 
+						  NUM2INT(node) )?self:Qnil);
+}
+
+VALUE grid_storeFaceCostParameterDerivatives( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (grid == gridStoreFaceCostParameterDerivatives( grid, 
+							NUM2INT(node) 
+							)?self:Qnil);
+}
+
 VALUE grid_smoothNodeVolume( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -180,6 +195,10 @@ void Init_GridCAD()
 
   rb_define_method( cGridCAD, "smartLaplacian", grid_smartLaplacian, 1 );
   rb_define_method( cGridCAD, "smartVolumeLaplacian", grid_smartVolumeLaplacian, 1 );
+  rb_define_method( cGridCAD, "storeVolumeCostDerivatives",
+		    grid_storeVolumeCostDerivatives, 1 );
+  rb_define_method( cGridCAD, "storeFaceCostParameterDerivatives",
+		    grid_storeFaceCostParameterDerivatives, 1 );
 
   rb_define_method( cGridCAD, "smoothNodeVolume", grid_smoothNodeVolume, 1 );
   rb_define_method( cGridCAD, "smoothNodeVolumeWithSurf", grid_smoothNodeVolumeWithSurf, 1 );

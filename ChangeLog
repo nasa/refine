@@ -1,3 +1,12 @@
+2005-02-03 17:37 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridStoreAllARDerivatives) moved to gridcad
+	and renamed.
+	* src/gridcad.c (gridStoreVolumeCostDerivatives) moved from
+	gridmetric and renamed.
+	* src/gridcad.c (gridStoreFaceCostParameterDerivatives) created
+	to allow quadradic programming optimization of face nodes.
+	
 2005-02-03 13:44 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c,src/gridmetric.c,src/gridcad.c renamed the stored AR

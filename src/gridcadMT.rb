@@ -256,6 +256,45 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal node3, grid.nodeXYZ(3)
  end
 
+ def testStoreVolumeARDerivative
+  assert_not_nil grid = Grid.new(5,2,0,0)
+  grid.addCell( 
+	       grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+  grid.addCell( 
+	       1, 
+	       2, 
+	       3, 
+	       grid.addNode(0.7,0.7,0.7) )
+  assert_equal 0,        grid.storedCostDegree
+  assert_nil             grid.storeVolumeCostDerivatives(10)
+  assert_equal 1,        grid.cellDegree(0)
+  assert_equal grid,     grid.storeVolumeCostDerivatives(0)
+  assert_equal 1,        grid.storedCostDegree
+  assert_equal 2,        grid.cellDegree(1)
+  assert_equal grid,     grid.storeVolumeCostDerivatives(1)
+  assert_equal 2,        grid.storedCostDegree
+ end
+
+ def testStoreFaceMRDerivative
+  assert_not_nil grid = Grid.new(5,2,2,0)
+  grid.addCell(grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+  assert_nil             grid.storeFaceCostParameterDerivatives(-1)
+  assert_nil             grid.storeFaceCostParameterDerivatives(10)
+  assert_equal grid,     grid.storeFaceCostParameterDerivatives(0)
+  assert_equal 0,        grid.storedCostDegree
+  grid.addFaceUV(2,10,21,
+                 0,10,20,
+                 1,11,20, 10)
+  assert_equal grid,     grid.storeFaceCostParameterDerivatives(0)
+  assert_equal 1,        grid.storedCostDegree
+ end
+
  def gemGrid(nequ=4,disp=0.2,dent=nil, dentratio=-0.5)
   grid = Grid.new(nequ+2+1,nequ*2,nequ*2,0)
   n = Array.new
