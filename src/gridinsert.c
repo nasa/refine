@@ -251,6 +251,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     cell = gridGem(grid,igem);
     gridCell(grid, cell, nodes);
     gridRemoveCell(grid, cell);
+    if (NULL!=queue) queueRemoveCell(queue,nodes);
     for ( inode = 0 ; inode < 4 ; inode++ ){
       node = nodes[inode];
       newnodes0[inode]=node;
