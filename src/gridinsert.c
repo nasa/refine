@@ -259,18 +259,25 @@ int gridSplitFaceAt(Grid *grid, int face,
 
   for (i=0;i<3;i++){
     for (n=0;n<4;n++) newnodes[n] = nodes[n];
+    newnodes[i] = newnode; 
     for (n=0;n<3;n++) newU[n] = U[n];
     for (n=0;n<3;n++) newV[n] = V[n];
-    newnodes[i] = newnode; 
     newU[i] = avgU;
     newV[i] = avgV;
-    if (grid != gridAddCell(grid, newnodes[0], newnodes[1], 
-			    newnodes[2], newnodes[3] ) ) return EMPTY;
     if (grid != gridAddFaceUV(grid, 
 			      newnodes[0], newU[0], newV[0], 
 			      newnodes[1], newU[1], newV[1],  
 			      newnodes[2], newU[2], newV[2],  
 			      faceId ) ) return EMPTY;
+  }
+
+  if (grid!=gridProjectNodeToFace(grid, newnode, faceId )) return EMPTY;
+
+  for (i=0;i<3;i++){
+    for (n=0;n<4;n++) newnodes[n] = nodes[n];
+    newnodes[i] = newnode; 
+    if (grid != gridAddCell(grid, newnodes[0], newnodes[1], 
+			    newnodes[2], newnodes[3] ) ) return EMPTY;
   }
 
   if ( gridNegCellAroundNode(grid, newnode) ) {
