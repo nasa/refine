@@ -38,6 +38,7 @@ librefine_a_SOURCES = \
 	../src/gridinsert.c \
 	../src/gridswap.c \
 	../src/gridcad.c \
+	../src/gridmpi.c \
 	../src/gridfiller.c \
 	../src/gridfortran.c \
 	../src/FAKEGeom.c
