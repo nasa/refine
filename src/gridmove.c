@@ -125,6 +125,8 @@ GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
   Grid *grid = gridmoveGrid(gm);
   int cell, edge, nedge;
   int nodes[4];
+  int edge2node0[6] = {0, 0, 0, 1, 1, 2};
+  int edge2node1[6] = {1, 2, 3, 2, 3, 3};
   int *c2e;
 
   c2e = malloc(6*gridMaxCell(grid)*sizeof(int));
@@ -136,14 +138,27 @@ GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
       for(edge=0;edge<6;edge++) {
 	if ( EMPTY == c2e[edge+6*cell] ) {
 	  c2e[edge+6*cell] = nedge;
-	  fill all neighboring c2e
+
 	  nedge++;
 	}
       }
     }
   }
-  
+  *nsprings = nedge;
+  *springs = malloc(2*nedge*sizeof(int));
+  for(cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid == gridCell(grid,cell,nodes)) {
+      for(edge=0;edge<6;edge++) {
+	if (EMPTY!=c2e[edge+6*cell]) {
+	  (*springs)[0+2*c2e[edge+6*cell]] = nodes[edge2node0[edge]];
+	  (*springs)[1+2*c2e[edge+6*cell]] = nodes[edge2node1[edge]];
+	}else{
+	  printf("ERROR: %s: %d: c2e EMPTY.\n",__FILE__,__LINE__);
+	}
+      }
+    }
+  }
 
   free(c2e);
-  return NULL;
+  return gm;
 }
