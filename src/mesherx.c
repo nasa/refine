@@ -39,7 +39,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double gapHeight;
 
   nLayer = (int)(10.0/scale);
-  nLayer = 40;
+  nLayer = 45;
   rate = exp(scale*log(1.2));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
@@ -57,7 +57,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   i=0;
   layerLaminarInitialHeightNegZ(layer);
   //layerScaleNormalHeight(layer,scale);
-  gapHeight=0.0005;
+  gapHeight=0.001;
   for (face=102;face<=107;face++){
     printf("reset normal height to %f for gap face %d\n",gapHeight,face);
     layerSetNormalHeightOfFace(layer, face, gapHeight);
@@ -65,8 +65,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   rate = 1.15;
   while (i<nLayer && 
-	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.3)) {
-    if (i==30) {
+	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.7)) {
+    if (i==35) {
       for (face=102;face<=107;face++){
 	printf("treminating normals for gap face %d\n",face);
 	layerTerminateFaceNormals(layer, face);
@@ -75,7 +75,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
     layerSmoothNormalDirection(layer);
     layerAdvance(layer);
-    if (i>20) rate = rate+0.005;
+    if (i>20) rate = rate+0.0025;
     printf("advance layer %d rate %f\n",i,rate);
     layerScaleNormalHeight(layer,rate);
     i++;
