@@ -281,7 +281,7 @@ Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
   return layer;
 }
 
-bool layerParentFace(Layer *layer, int faceId )
+bool layerParentGeomFace(Layer *layer, int faceId )
 {
   int i;
 

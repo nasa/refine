@@ -84,10 +84,10 @@ VALUE layer_triangle( VALUE self, VALUE triangle )
   return rb_triangle;
 }
 
-VALUE layer_parentFace( VALUE self, VALUE faceId )
+VALUE layer_parentGeomFace( VALUE self, VALUE faceId )
 {
   GET_LAYER_FROM_SELF;
-  return ( layerParentFace(layer,NUM2INT(faceId))?Qtrue:Qfalse );
+  return ( layerParentGeomFace(layer,NUM2INT(faceId))?Qtrue:Qfalse );
 }
 
 VALUE layer_triangleDirection( VALUE self, VALUE triangle )
@@ -326,7 +326,7 @@ void Init_Layer()
   rb_define_method( cLayer, "addNormal", layer_addNormal, 1 );
   rb_define_method( cLayer, "uniqueNormalId", layer_uniqueNormalId, 1 );
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
-  rb_define_method( cLayer, "parentFace", layer_parentFace, 1 );
+  rb_define_method( cLayer, "parentGeomFace", layer_parentGeomFace, 1 );
   rb_define_method( cLayer, "triangleNormals", layer_triangleNormals, 1 );
   rb_define_method( cLayer, "normalRoot", layer_normalRoot, 1 );
   rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );
