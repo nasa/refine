@@ -38,6 +38,7 @@ int main( int argc, char *argv[] )
   char linesfile[256];
   char outputProject[256];
   char outputFAST[256];
+  char outputlines[256];
   int i, j, oldSize, newSize;
   int wiggleSteps, wiggle;
   double ratio=1.0;
@@ -264,6 +265,12 @@ int main( int argc, char *argv[] )
 
   printf("writing output FAST file %s\n",outputFAST);
   gridExportFAST( grid, outputFAST );
+
+  if(strcmp(linesfile,"")!=0) {
+    sprintf(outputlines,"%s.lines",outputProject);
+    printf("saving lines restart %s\n",outputlines);
+    linesSave(gridLines(grid),outputlines);
+  }
 
   printf("Done.\n");
 
