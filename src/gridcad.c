@@ -208,7 +208,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 
   if ( !gridValidNode( grid, node ) ) return NULL;
   
-  if ( gridSafeProjectNode(grid,node,0.9) != grid ) {
+  if ( gridSafeProjectNode(grid,node,0.95) != grid ) {
     for ( it = adjFirst(grid->cellAdj,node); 
 	  adjValid(it); 
 	  it = adjNext(it) ){
@@ -226,7 +226,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	if (!gridGeometryFace( grid, nodes[i])) 
 	  gridSmoothNode( grid, nodes[i]);
     }      
-    if ( gridSafeProjectNode(grid,node,0.7) != grid ) {
+    if ( gridSafeProjectNode(grid,node,0.9) != grid ) {
       for ( it = adjFirst(grid->cellAdj,node); 
 	    adjValid(it); 
 	    it = adjNext(it) ){
