@@ -1256,7 +1256,8 @@ Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
       layerTerminateNormal(layer, normal);
     }
   }
-  printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
+  printf("normals %d of %d terminated. %d active.\n",
+	 nterm,layerNNormal(layer),layerNActiveNormal(layer) );
   return layer;
 }
 
