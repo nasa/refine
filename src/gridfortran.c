@@ -751,3 +751,13 @@ void gridfaceedgel2g_( int *faceId, int *faceEdgeCount, int *local2global )
   gridFaceEdgeLocal2Global( grid, *faceId, *faceEdgeCount, local2global );
   for (i=0;i<*faceEdgeCount;i++) local2global[i]++;
 }
+
+void gridupdategeometryface_( int *faceId, int *nnode, double *xyz, double *uv,
+			      int *nface, int *f2n )
+{
+  int i;
+  for( i=0 ; i<3*(*nface) ; i++) f2n[i]--;
+  gridUpdateGeometryFace( grid, *faceId, *nnode, xyz, uv,
+			  *nface, f2n );
+  for( i=0 ; i<3*(*nface) ; i++) f2n[i]++; 
+}

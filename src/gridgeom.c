@@ -160,3 +160,34 @@ Grid *gridFaceEdgeLocal2Global( Grid *grid, int faceId,
   }
   return grid;
 }
+
+Grid *gridUpdateGeometryFace( Grid *grid, int faceId, 
+			      int nnode, double *xyz, double *uv, 
+			      int nface, int *f2n )
+{
+  int vol=1;
+  UGridPtr ugrid;  
+  int iface;
+  
+  if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, 0, NULL  )) {
+    printf("%s: %d: Could not make UGrid_FromArrays\n", __LINE__, __FILE__);
+    return NULL;
+  }
+
+  for (iface = 0 ; iface < nface ; iface++ ) {
+    UGrid_FlagValue(ugrid,iface) = faceId;
+  }
+
+  UGrid_BuildConnectivity(ugrid);
+
+  if( !UGPatch_InitSurfacePatches(ugrid) ) {
+    printf("%s: %d: Could not make surface patches for new UGridPtr\n",
+	   __LINE__, __FILE__);    
+    return NULL;
+  }
+
+  UGrid_TIMESTAMP(ugrid) = time( NULL );	/* Updated time */
+  UGrid_ALGORITHM(ugrid) = UGrid_ALGORITHM(CADGeom_VolumeGrid(vol));
+
+  return grid;
+}

@@ -109,6 +109,9 @@ void gridface_( int *face, int *faceId,
 void gridfaceedgecount_( int *faceId, int *faceEdgeCount );
 void gridfaceedgel2g_( int *faceId, int *faceEdgeCount, int *local2global );
 
+void gridupdategeometryface_( int *faceId, int *nnode, double *xyz, double *uv,
+			      int *nface, int *f2n );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */

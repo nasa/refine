@@ -11,6 +11,17 @@
 #include <stdlib.h>
 #include "FAKEGeom.h"
   
+GridBool UGrid_FromArrays(UGridPtr *ugp,
+			  int a,double *b,int c,int *d,int e,int *f)
+{
+  return NULL;
+}
+
+int UGrid_BuildConnectivity(UGridPtr ugp)
+{
+  return 0;
+}
+
 UGridPtr CADGeom_VolumeGrid( int vol )
 {
   return NULL;
@@ -55,6 +66,11 @@ void UGPatch_GetDims(UGPatchPtr upp, int *dims)
 int UGPatch_GlobalIndex(UGPatchPtr upp, int ndx)
 {
   return EMPTY;
+}
+
+GridBool UGPatch_InitSurfacePatches(UGridPtr ugp)
+{
+  return FALSE;
 }
 
 char *ErrMgr_GetErrStr(void)

@@ -26,6 +26,10 @@ int gridFaceEdgeCount( Grid *, int faceId );
 Grid *gridFaceEdgeLocal2Global( Grid *, int faceId, 
 				int faceEdgeCount, int *local2global );
 
+Grid *gridUpdateGeometryFace( Grid *, int faceId, 
+			      int nnode, double *xyz, double *uv, 
+			      int nface, int *f2n );
+
 END_C_DECLORATION
 
 #endif /* GRIDGEOM_H */

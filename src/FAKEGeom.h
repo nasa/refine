@@ -11,6 +11,7 @@
 #ifndef CADGEOM_H
 #define CADGEOM_H
 
+#include <stdlib.h>
 #include "refine_defs.h"
 
 BEGIN_C_DECLORATION
@@ -34,13 +35,23 @@ GridBool CADGeom_NormalToFace( int vol, int faceId,
 #ifdef HAVE_SDK
 #else
 typedef unsigned char magic_t;		/* Magic Number type */
+typedef unsigned char algo_t;          /* Computed Algorithm type */
 typedef void          *Iterator;
 #endif /* HAVE_SDK */
 
 typedef struct _UGridPtr {
    magic_t    magic;		/* Magic Number */
+   int flags;
+   time_t     updated;		/* Last Updated Timestamp */
+   algo_t     algorithm;	/* Algorithm used to compute grid */
 } UGrid, *UGridPtr;
+#define UGrid_FlagValue(ugp,i)   ((ugp)->flags)
 #define UGrid_PatchList(ugp)     (NULL)
+#define UGrid_TIMESTAMP(ugp)     ((ugp)->updated)
+#define UGrid_ALGORITHM(ugp)     ((ugp)->algorithm)
+
+GridBool UGrid_FromArrays(UGridPtr *,int,double *,int,int *,int,int *);
+int UGrid_BuildConnectivity(UGridPtr);
 
 UGridPtr CADGeom_VolumeGrid( int );
 
@@ -69,6 +80,8 @@ typedef struct _UGPatchPtr {
 void UGPatch_GetDims(UGPatchPtr upp, int *dims);
 int UGPatch_GlobalIndex(UGPatchPtr upp, int ndx);
 #define UGPatch_Parameter(upp,i,l) (DBL_MAX)
+
+GridBool UGPatch_InitSurfacePatches(UGridPtr ugp);
 
 char *ErrMgr_GetErrStr(void);
 
