@@ -1107,10 +1107,14 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   return grid;
 }
 
+static double reflect( Grid *grid,
+		       double simplex[4][3], double volume[4], double avgXYZ[3],
+		       int node, int worst, double factor );
+
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
   int s, i;
-  double origXYZ[3];
+  double origXYZ[3], avgXYZ[3];
   double simplex[4][3];
   double volume[4];
   double lengthScale;
@@ -1137,6 +1141,10 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
 	   s, simplex[s][0], simplex[s][1], simplex[s][2], volume[s]);
   }
 
+  for(i=0;i<3;i++) avgXYZ[i] = 0.0;
+  for(s=0;s<4;s++)
+    for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
+
   best = 0;
   if ( volume[0] > volume[1] ) {
     secondworst = 0;
@@ -1158,8 +1166,38 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   printf("the best is %d the secondworst is %d and the worst is %d\n",
 	 best,secondworst,worst);
 
-  
+  reflect( grid, simplex, volume, avgXYZ, node, worst, -1.0 );
 
+  gridSetNodeXYZ(grid, node, simplex[best]);
   return grid;
+}
 
+static double reflect( Grid *grid,
+		       double simplex[4][3], double volume[4], double avgXYZ[3],
+		       int node, int worst, double factor)
+{
+  int i;
+  double factor1, factor2;
+  double reflectedXYZ[3];
+  double reflectedVolume;
+
+  factor1 = (1.0-factor) / 3.0;
+  factor2 = factor1 - factor;
+
+  for(i=0;i<3;i++) 
+    reflectedXYZ[i] = factor1*avgXYZ[i] - factor2*simplex[worst][i];
+
+  gridSetNodeXYZ(grid,node,reflectedXYZ );
+  gridNodeVolume(grid,node,&reflectedVolume);
+
+  if ( reflectedVolume > volume[worst] ) {
+    volume[worst] = reflectedVolume;
+    for(i=0;i<3;i++) avgXYZ[i] += ( reflectedXYZ[i] - simplex[worst][i] );
+    for(i=0;i<3;i++) simplex[worst][i] = reflectedXYZ[i];
+    for(i=0;i<4;i++)
+      printf("r%1d x%10.6f y%10.6f z%10.6f v%10.6f\n",
+	     i, simplex[i][0], simplex[i][1], simplex[i][2], volume[i]);
+  }
+
+  return reflectedVolume;
 }
