@@ -1,5 +1,4 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_CONFIG_AUX_DIR(config)
 AC_INIT(src/main.c)
 AM_INIT_AUTOMAKE(refine,0.1)
 
