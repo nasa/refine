@@ -523,5 +523,5 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 }
 void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux )
 {
-  gridCopyAboutY0(grid, *symmetryFaceId, *mirrorAux );
+  gridCopyAboutY0(grid, *symmetryFaceId, *mirrorAux-1 );
 }
