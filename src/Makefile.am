@@ -5,10 +5,12 @@ refine_SOURCES = \
 	gridStruct.h \
 	grid.h grid.c \
 	gridswap.h gridswap.c \
+	gridcad.h gridcad.c \
 	main.c
 refine_LDADD = @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@
 EXTRA_DIST = makeRubyExtension.rb \
 	adjMT.rb adj_ruby.c \
 	gridMT.rb grid_ruby.c \
-	gridswapMT.rb gridswap_ruby.c
-TESTS = adjMT.rb gridMT.rb gridswapMT.rb
+	gridswapMT.rb gridswap_ruby.c \
+	gridcadMT.rb gridcad_ruby.c
+TESTS = adjMT.rb gridMT.rb gridswapMT.rb gridcadMT.rb
