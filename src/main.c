@@ -20,13 +20,17 @@ int main( int argc, char *argv[] )
   int *f2n, *faceId;
   int *c2n;
   Grid *grid;
+  char *filename;
 
-  if (argc == 1) {
+  if (argc == 2) {
+    filename = argv[1];
+  }else{
     printf("\nUsage: refine project.fgrid\n\n");
-    return;
+    filename = "../test/om6_inv08.fgrid";
+    printf("running default filename %s\n",filename);
   }
 
-  file = fopen(argv[1],"r");
+  file = fopen(filename,"r");
   fscanf(file,"%d %d %d",&nnode,&nface,&ncell);
   printf("fast size: %d nodes %d faces %d cells.\n",nnode,nface,ncell);
 
