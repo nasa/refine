@@ -700,6 +700,39 @@ Layer *layerSetHeightOfAllNormals(Layer *layer, double height )
   return layer;
 }
 
+Layer *layerLaminarInitialHeight(Layer *layer, double Re, double xStart)
+{
+  int normal;
+  double xyz[3];
+  double totalHeight, initialHeight;
+
+  for(normal=0;normal<layerNNormal(layer); normal++){
+    gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
+    totalHeight = 5.2 * sqrt(ABS(xyz[0]-xStart)) / sqrt(ABS(Re));
+    totalHeight = MIN(ABS(xyz[0]-xStart),totalHeight);
+    initialHeight = totalHeight / 50.0;
+    layerSetNormalHeight(layer,normal,initialHeight);
+  }
+
+  return layer;
+}
+
+Layer *layerLaminarInitialHeightNegZ(Layer *layer)
+{
+  int normal;
+  double xyz[3];
+  double initialHeight;
+
+  for(normal=0;normal<layerNNormal(layer); normal++){
+    gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
+    initialHeight = 0.0004 - 1.2e-6 * xyz[2];
+    if (xyz[0]>20.0) initialHeight += (xyz[0]-20.0)*0.00005;
+    layerSetNormalHeight(layer,normal,initialHeight);
+  }
+
+  return layer;
+}
+
 Layer *layerSetNormalHeightOfFace(Layer *layer, int faceId, double height )
 {
   int face, nodes[3], id;
@@ -744,39 +777,6 @@ Layer *layerScaleNormalHeight(Layer *layer, double scale)
 
   for(normal=0;normal<layerNNormal(layer); normal++)
     layer->normal[normal].height=scale*layer->normal[normal].height;
-
-  return layer;
-}
-
-Layer *layerLaminarInitialHeight(Layer *layer, double Re, double xStart)
-{
-  int normal;
-  double xyz[3];
-  double totalHeight, initialHeight;
-
-  for(normal=0;normal<layerNNormal(layer); normal++){
-    gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-    totalHeight = 5.2 * sqrt(ABS(xyz[0]-xStart)) / sqrt(ABS(Re));
-    totalHeight = MIN(ABS(xyz[0]-xStart),totalHeight);
-    initialHeight = totalHeight / 50.0;
-    layerSetNormalHeight(layer,normal,initialHeight);
-  }
-
-  return layer;
-}
-
-Layer *layerLaminarInitialHeightNegZ(Layer *layer)
-{
-  int normal;
-  double xyz[3];
-  double initialHeight;
-
-  for(normal=0;normal<layerNNormal(layer); normal++){
-    gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-    initialHeight = 0.0004 - 1.2e-6 * xyz[2];
-    if (xyz[0]>20.0) initialHeight += (xyz[0]-20.0)*0.00005;
-    layerSetNormalHeight(layer,normal,initialHeight);
-  }
 
   return layer;
 }
