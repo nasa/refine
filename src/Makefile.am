@@ -36,6 +36,7 @@ EXTRA_DIST = makeRubyExtension.rb \
 	gridswapMT.rb gridswap_ruby.c \
 	gridcadMT.rb gridcad_ruby.c \
 	FAKEGeom.h FAKEGeom.c \
+	nearMT.rb near_ruby.c \
 	layerMT.rb layer_ruby.c
 
 TESTS = adjMT.rb gridMT.rb gridmetricMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb layerMT.rb nearMT.rb MesherX
