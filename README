@@ -9,3 +9,7 @@ CAD geometry access is facilitated with the NASA Langley Geomerty
 Labratory SDK <http://geolab.larc.nasa.gov/>, which assess CAD
 information with the CAPRI API
 <http://raphael.mit.edu/capri/docs.html>.
+
+MesherX is an advancing layer mesher
+<http://www.scorec.rpi.edu/~garimell/thesis/THESIS-FULL.PDF> that
+interacts with the SDK to rebuild the inviscid protions of the grid.
