@@ -19,6 +19,8 @@
 
 BEGIN_C_DECLORATION
 
+#define gridADAPT_COST_FLOOR (0.01)
+
 Grid *gridSetMapWithSpacingVectors(Grid *g, int node,
 				   double *v1, double *v2, double *v3,
                                    double s1, double s2, double s3);

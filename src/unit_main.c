@@ -298,7 +298,7 @@ int main( int argc, char *argv[] )
     ratioSplit   = 1.0/sqrt(ratio);
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	   ratio, ratioCollapse, ratioSplit );
-    gridAdapt(grid,ratioCollapse,ratioSplit, !GridMoveProjection);
+    gridAdapt(grid,ratioCollapse,ratioSplit);
 
     oldSize = newSize;
     newSize = gridNNode(grid) ;

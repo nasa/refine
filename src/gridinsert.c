@@ -84,10 +84,6 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength,
 	if ( newnode != EMPTY ){
 	  nnodeAdd++;
 	  gridSwapNearNode( grid, newnode, -1.0 );
-	  if ( project && gridGeometryFace( grid, newnode ) ){
-	    gridRobustProjectNode(grid, newnode);
-	    gridSwapNearNode( grid, newnode, -1.0 );
-	  }
 	}
       }else{
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
@@ -96,10 +92,6 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength,
 	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, n0, -1.0 );
-	    if ( project &&  gridGeometryFace( grid, n0 ) ) {
-	      gridRobustProjectNode(grid, n0);
-	      gridSwapNearNode( grid, n0, -1.0 );
-	    }
 	  }
 	}
       }
@@ -222,7 +214,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     minAR = MIN(minAR,gridAR(grid,newnodes0));
     minAR = MIN(minAR,gridAR(grid,newnodes1));
   }
-  if (minAR < 0.01) {
+  if (minAR < gridADAPT_COST_FLOOR ) {
     gridRemoveNode(grid,newnode);
     return EMPTY;
   }

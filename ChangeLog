@@ -1,3 +1,8 @@
+2005-01-26 20:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdapt) removed the project argument from
+	adapt. Nodes will always be projected from now on.
+
 2005-01-26 19:55 Mike Park  <mike.park@nasa.gov>
 
 	* WARNING: continuing effort to merge unit mesh research path
