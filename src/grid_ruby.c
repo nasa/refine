@@ -221,6 +221,12 @@ VALUE grid_deleteThawedFaces( VALUE self, VALUE faceId )
   return (gridDeleteThawedFaces(grid, NUM2INT(faceId) )==NULL?Qnil:self);
 }
 
+VALUE grid_nThawedFaces( VALUE self, VALUE faceId )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM(gridNThawedFaces(grid, NUM2INT(faceId) ));
+}
+
 VALUE grid_nodeUV( VALUE self, VALUE node, VALUE faceId )
 {
   VALUE rb_uv;
@@ -669,6 +675,7 @@ void Init_Grid()
   rb_define_method( cGrid, "reconnectFace", grid_reconnectFace, 3 );
   rb_define_method( cGrid, "face", grid_face, 1 );
   rb_define_method( cGrid, "deleteThawedFaces", grid_deleteThawedFaces, 1 );
+  rb_define_method( cGrid, "nThawedFaces", grid_nThawedFaces, 1 );
 
   rb_define_method( cGrid, "nodeUV", grid_nodeUV, 2 );
   rb_define_method( cGrid, "setNodeUV", grid_setNodeUV, 4 );

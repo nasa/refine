@@ -69,6 +69,7 @@ Grid *gridReconnectFaceUnlessFrozen(Grid *g, int faceId,
 				    int oldNode, int newNode );
 Grid *gridFace(Grid *g, int face, int *nodes, int *id );
 Grid *gridDeleteThawedFaces(Grid *g, int faceId );
+int gridNThawedFaces(Grid *g, int faceId );
 
 Grid *gridNodeUV(Grid *g, int node, int faceId, double *uv );
 Grid *gridSetNodeUV(Grid *g, int node, int faceId, double u, double v );
