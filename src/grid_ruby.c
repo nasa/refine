@@ -38,6 +38,12 @@ VALUE grid_nnode( VALUE self )
   return INT2NUM( gridNNode(grid) );
 }
 
+VALUE grid_maxcell( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridMaxCell(grid) );
+}
+
 VALUE grid_ncell( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -106,6 +112,13 @@ VALUE grid_cellExists( VALUE self, VALUE nodeId, VALUE cellId )
     ( gridCellExists( grid, NUM2INT(nodeId), NUM2INT(cellId) )?Qtrue:Qfalse );
 }
 
+VALUE grid_addCell( VALUE self, VALUE n1, VALUE n2, VALUE n3, VALUE n4 )
+{
+  GET_GRID_FROM_SELF;
+  gridAddCell( grid, NUM2INT(n1),  NUM2INT(n2),  NUM2INT(n3),  NUM2INT(n4) );
+  return self;
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -116,6 +129,7 @@ void Init_Grid()
   rb_define_method( cGrid, "initialize", grid_init, 0 );
   rb_define_method( cGrid, "dump", grid_dump, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
+  rb_define_method( cGrid, "maxcell", grid_maxcell, 0 );
   rb_define_method( cGrid, "ncell", grid_ncell, 0 );
   rb_define_method( cGrid, "nodeDeg", grid_nodeDeg, 1 );
   rb_define_method( cGrid, "registerNodeCell", grid_registerNodeCell, 2 );
@@ -126,4 +140,5 @@ void Init_Grid()
   rb_define_method( cGrid, "nextNodeCell", grid_nextNodeCell, 0 );
   rb_define_method( cGrid, "removeNodeCell", grid_removeNodeCell, 2 );
   rb_define_method( cGrid, "cellExists", grid_cellExists, 2 );
+  rb_define_method( cGrid, "addCell", grid_addCell, 4 );
 }

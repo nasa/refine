@@ -18,16 +18,17 @@ class TestSampleUnit < Test::Unit::TestCase
 
   def testCreateGrid
     assert_equal 4, @grid.nnode
-    assert_equal 1, @grid.ncell
+    assert_equal 1, @grid.maxcell
+    assert_equal 0, @grid.ncell
   end
 
-  def testNodeDeg
+  def testNodeCellDeg
     assert_equal 0, @grid.nodeDeg(0)
     @grid.registerNodeCell( 0, 299 )
     assert_equal 1, @grid.nodeDeg(0)
   end
 
-  def testCellIterator
+  def testNodeCellIterator
     assert_equal false, @grid.validNodeCell
     assert_equal false, @grid.moreNodeCell
 
@@ -51,7 +52,7 @@ class TestSampleUnit < Test::Unit::TestCase
     100.times {@grid.nextNodeCell} # abusive use of next
   end
 
-  def testAddAndRemoveCell
+  def testAddAndRemoveNodeCell
     assert_equal false, @grid.cellExists(1,0)
     assert_equal nil,   @grid.removeNodeCell(1,0)
     assert_equal @grid, @grid.registerNodeCell(1,0)
@@ -73,7 +74,7 @@ class TestSampleUnit < Test::Unit::TestCase
     assert_equal localGrid, localGrid.registerNodeCell(0,1)
   end
 
- def testMultipleCellExists
+ def testMultipleNodeCellExists
    assert_equal false, @grid.cellExists(1,198)
    @grid.registerNodeCell(1,198)
    @grid.registerNodeCell(1,199)
@@ -86,6 +87,15 @@ class TestSampleUnit < Test::Unit::TestCase
    assert_equal true,  @grid.cellExists(1,198)
    assert_equal true,  @grid.cellExists(1,199)
  end
+
+ def testAddCell
+   assert_equal 0, @grid.ncell
+   @grid.addCell(0,1,2,3)
+   assert_equal 1, @grid.ncell
+   (0..3).each { |n| assert_equal 1, @grid.nodeDeg(n)}
+ end
+
+ 
 
 # make register unique
 # non-contiguos cellist for access and registering

@@ -31,6 +31,8 @@ long gridCurrentNodeCell(Grid *g);
 int gridValidNodeCell(Grid *g);
 int gridMoreNodeCell(Grid *g);
 
+Grid *gridAddCell(Grid *g, long n0, long n1, long n2, long n3 );
+
 Grid *gridDump(Grid *g);
 
 void gridFree(Grid *g);

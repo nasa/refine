@@ -14,6 +14,7 @@
 
 struct Grid {
   long nnode;
+  long maxcell;
   long ncell;
   long nlist;
   long *firstcell;
@@ -23,7 +24,7 @@ struct Grid {
 
 //#define EBUG
 
-Grid* gridCreate(long nnode, long ncell, long nlist)
+Grid* gridCreate(long nnode, long maxcell, long nlist)
 {
   long i;
   Grid *grid;
@@ -31,11 +32,12 @@ Grid* gridCreate(long nnode, long ncell, long nlist)
   grid = malloc(sizeof(Grid));
 
   grid->nnode = nnode;
-  grid->ncell = ncell;
+  grid->maxcell = maxcell;
+  grid->ncell = 0;
   grid->nlist = nlist;
 
   /* pad one for [0] and one to terminate */
-  if (grid->nlist < 1) grid->nlist = (grid->ncell*4+grid->nnode)+2;
+  if (grid->nlist < 1) grid->nlist = (grid->maxcell*4+grid->nnode)+2;
 
   grid->firstcell = malloc(grid->nnode * sizeof(long));
   /* I could set first cell to zero to terminate when realloc used */
@@ -48,7 +50,7 @@ Grid* gridCreate(long nnode, long ncell, long nlist)
  
 #ifdef EBUG
   printf("\n Cre n %d c %d l %d\n", 
-  grid->nnode,grid->ncell,grid->nlist);
+  grid->nnode,grid->maxcell,grid->nlist);
   fflush(stdout);
 #endif
 
@@ -68,6 +70,11 @@ Grid *gridDump(Grid *grid)
 long gridNNode(Grid *grid)
 {
   return grid->nnode;
+}
+
+long gridMaxCell(Grid *grid)
+{
+  return grid->maxcell;
 }
 
 long gridNCell(Grid *grid)
@@ -196,6 +203,18 @@ int gridMoreNodeCell(Grid *grid)
     next = -grid->celllist[next];
   }
   return (grid->celllist[next] != 0);
+}
+
+Grid *gridAddCell(Grid *grid, long n0, long n1, long n2, long n3)
+{
+  long cellId;
+  cellId = 0;
+  grid->ncell++;
+  gridRegisterNodeCell( grid, n0, cellId );
+  gridRegisterNodeCell( grid, n1, cellId );
+  gridRegisterNodeCell( grid, n2, cellId );
+  gridRegisterNodeCell( grid, n3, cellId );
+  return grid;
 }
 
 void gridFree(Grid *grid)
