@@ -569,8 +569,6 @@ Grid *gridSwap5(Grid *grid, int n0, int n1 )
     origcost = MIN(origcost,cost);
   }
 
-  printf("orig %f \n",origcost);
-
   bestcost  =  -1.0;
   bestindex = -1;
 
@@ -604,11 +602,8 @@ Grid *gridSwap5(Grid *grid, int n0, int n1 )
 
     for ( i = 0 ; i < 6 ; i++ ) {
       cost = gridAR( grid, nodes[i] );
-      printf("cost %d %d %f \n",currentindex,i,cost);
       currentcost = MIN(currentcost,cost);
     } 
-
-    printf("curr %d %f \n",currentindex,currentcost);
 
     if ( currentcost > bestcost ) {
       bestcost = currentcost;
@@ -617,8 +612,6 @@ Grid *gridSwap5(Grid *grid, int n0, int n1 )
 
     gridCycleEquator( grid );
   }
-
-  printf("best %d %f \n",bestindex,bestcost);
 
   if (bestindex == -1 ) 
     printf("ERROR in bestindex, file %s line %d \n",__FILE__, __LINE__ ); 
