@@ -88,7 +88,7 @@ int main( int argc, char *argv[] )
 	     gridMinAR(grid),gridMinVolume(grid));
     }
     if (projected) {
-      printf("node smoothing for face MR grid...\n");gridSmoothFaceMR(grid);
+      printf("smoothing for face MR grid...\n"); gridSmoothFaceMR(grid,0.9);
       printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	     gridMinAR(grid),gridMinVolume(grid));
       printf("edge swapping grid...\n");gridSwap(grid);
