@@ -381,6 +381,7 @@ Grid *gridOrient(Grid *grid, int *c, int *n )
 Grid *gridEquator(Grid *grid, int n0, int n1 )
 {
   int igem, iequ, cell[4], nodes[4];
+  bool gap, found;
   grid->nequ = 0;
 
   if ( NULL == gridMakeGem( grid, n0, n1) ) return NULL;
@@ -391,18 +392,48 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
   nodes[0] = n0;
   nodes[1] = n1;
 
+  gap = FALSE;
+
   gridOrient( grid, &grid->c2n[4*grid->gem[0]], nodes );
 
   grid->equ[0]= nodes[3];
 
-  for ( iequ=1 ; iequ<grid->ngem ; iequ++ ){
+  // put and not found in loops
+
+  for ( iequ=1 ; iequ <= grid->ngem && !gap ; iequ++ ){
+    found = FALSE;
     for( igem=0 ; igem<grid->ngem ; igem++ ){
       gridOrient( grid, &grid->c2n[4*grid->gem[igem]], nodes );
-      if ( grid->equ[iequ-1] == nodes[2] ) grid->equ[iequ] = nodes[3];
+      if ( grid->equ[iequ-1] == nodes[2] ) {
+	grid->equ[iequ] = nodes[3];
+	found = TRUE;
+      }
+    }
+    if (!found) {
+      gap = TRUE;
+      grid->equ[grid->ngem] = grid->equ[iequ-1];
     }
   }
-  grid->nequ = grid->ngem;
-  grid->equ[grid->ngem] = grid->equ[0];
+  
+  if ( gap ) {
+
+    for ( iequ=grid->ngem-1 ; iequ >= 0 ; iequ-- ){
+      found = FALSE;
+      for( igem=0 ; igem<grid->ngem ; igem++ ){
+	gridOrient( grid, &grid->c2n[4*grid->gem[igem]], nodes );
+	if ( grid->equ[iequ+1] == nodes[3] ) {
+	  grid->equ[iequ] = nodes[2];
+	  found = TRUE;
+	}
+      }
+      if (!found) return NULL;
+    }
+    grid->nequ = grid->ngem+1;
+    grid->equ[grid->ngem+1] = grid->equ[0];
+  }else{
+    grid->nequ = grid->ngem;
+  }
+
   return grid;
 }
 
