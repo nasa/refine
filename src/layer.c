@@ -2241,21 +2241,57 @@ Layer *layerBlendExtend(Layer *layer, double dx, double dy, double dz )
   }
 
   for (blend=0; blend < layerNBlend(layer); blend++){
-    for(i=0;i<4;i++){
-      if (layer->blend[blend].normal[i]==EMPTY){
-	normal = layer->blend[blend].oldnormal[i];
-	node = layerNormalRoot(layer,normal);
-	gridNodeXYZ(grid,node,xyz);
-	xyz[0] += dx; xyz[1] += dy; xyz[2] += dz;
-	newnode = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
-	newnormal = layerDuplicateNormal(layer, normal);
-	layer->normal[newnormal].root = newnode;
-	for ( it = adjFirst(adj,normal); adjValid(it); it=adjNext(it) ){
-	  fixblend = adjItem(it);
-	  for (fix=0;fix<4;fix++)
-	    if ( layer->blend[fixblend].oldnormal[fix] == normal )
-	      layer->blend[fixblend].normal[fix] = newnormal;
-	}
+    if (layer->blend[blend].normal[0]==EMPTY){
+      node = layerNormalRoot(layer,layer->blend[blend].oldnormal[0]);
+      gridNodeXYZ(grid,node,xyz);
+      xyz[0] += dx; xyz[1] += dy; xyz[2] += dz;
+      newnode = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
+
+      normal = layer->blend[blend].oldnormal[0];
+      newnormal = layerDuplicateNormal(layer, normal);
+      layer->normal[newnormal].root = newnode;
+      for ( it = adjFirst(adj,normal); adjValid(it); it=adjNext(it) ){
+	fixblend = adjItem(it);
+	for (fix=0;fix<4;fix++)
+	  if ( layer->blend[fixblend].oldnormal[fix] == normal )
+	    layer->blend[fixblend].normal[fix] = newnormal;
+      }
+
+      normal = layer->blend[blend].oldnormal[1];
+      newnormal = layerDuplicateNormal(layer, normal);
+      layer->normal[newnormal].root = newnode;
+      for ( it = adjFirst(adj,normal); adjValid(it); it=adjNext(it) ){
+	fixblend = adjItem(it);
+	for (fix=0;fix<4;fix++)
+	  if ( layer->blend[fixblend].oldnormal[fix] == normal )
+	    layer->blend[fixblend].normal[fix] = newnormal;
+      }
+    }
+
+    if (layer->blend[blend].normal[2]==EMPTY){
+      node = layerNormalRoot(layer,layer->blend[blend].oldnormal[2]);
+      gridNodeXYZ(grid,node,xyz);
+      xyz[0] += dx; xyz[1] += dy; xyz[2] += dz;
+      newnode = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
+
+      normal = layer->blend[blend].oldnormal[2];
+      newnormal = layerDuplicateNormal(layer, normal);
+      layer->normal[newnormal].root = newnode;
+      for ( it = adjFirst(adj,normal); adjValid(it); it=adjNext(it) ){
+	fixblend = adjItem(it);
+	for (fix=0;fix<4;fix++)
+	  if ( layer->blend[fixblend].oldnormal[fix] == normal )
+	    layer->blend[fixblend].normal[fix] = newnormal;
+      }
+
+      normal = layer->blend[blend].oldnormal[3];
+      newnormal = layerDuplicateNormal(layer, normal);
+      layer->normal[newnormal].root = newnode;
+      for ( it = adjFirst(adj,normal); adjValid(it); it=adjNext(it) ){
+	fixblend = adjItem(it);
+	for (fix=0;fix<4;fix++)
+	  if ( layer->blend[fixblend].oldnormal[fix] == normal )
+	    layer->blend[fixblend].normal[fix] = newnormal;
       }
     }
   }
