@@ -137,7 +137,22 @@ Grid *gridUpdateEdgeGrid( Grid *grid, int edgeId, int nCurveNode,
 			  double *xyz, double *t )
 {
   int vol=1;
-  if (!CADGeom_UpdateEdgeGrid( vol, edgeId, nCurveNode, xyz, t)) return NULL;
+  int i;
+  double *xyzCopy, *tCopy;
+
+  xyzCopy = malloc(3*nCurveNode*sizeof(double));
+  for(i=0;i<3*nCurveNode;i++) xyzCopy[i] = xyz[i];
+
+  tCopy = malloc(nCurveNode*sizeof(double));
+  for(i=0;i<nCurveNode;i++) tCopy[i] = t[i];
+
+  if (!CADGeom_UpdateEdgeGrid( vol, edgeId, 
+			       nCurveNode, xyzCopy, tCopy ) ) {
+    free(xyzCopy);
+    free(tCopy);
+    return NULL;
+  }
+
   return grid;
 }
 
@@ -181,10 +196,20 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
 {
   int vol=1;
   UGridPtr ugrid;  
-  int iface;
+  int iface, i;
+  double *xyzCopy;
+  int *f2nCopy;
   
-  if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, 0, NULL  )) {
+  xyzCopy = malloc(3*nnode*sizeof(double));
+  for(i=0;i<3*nnode;i++) xyzCopy[i] = xyz[i];
+
+  f2nCopy = malloc(3*nface*sizeof(int));
+  for(i=0;i<3*nface;i++) f2nCopy[i] = f2n[i];
+
+  if ( !UGrid_FromArrays( &ugrid, nnode, xyzCopy, nface, f2nCopy, 0, NULL  )) {
     printf("%s: %d: Could not make UGrid_FromArrays.\n", __FILE__, __LINE__);
+    free(xyzCopy);
+    free(f2nCopy);
     return NULL;
   }
 
