@@ -1,3 +1,50 @@
+2004-04-02 08:00 Harold Atkins <Harold.L.Atkins@nasa.gov>
+
+	* /src/geometricStretch.c functions to evaluate geometric Stretching.
+	* /src/layerNormalExtra.c smoother for normal parameters
+	* /src/SyJetSpacingControl.c spacing controls for Syntetic Jet case.
+	* /src/mesherx_bl1.c driver for Flat Plate case.
+	* /src/mesherx_bl2.c  driver for Flat Plate case
+	* /src/mesherx_SyJet.c driver for Syntetic Jet case
+	* /src/MesherX_HLA.c main driver for batch jobs.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/Octree_Stub.c put in a stub to compile with gridex.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/FAKEGeomBox.c added fake analitic geom for OM6 Box.
+	* /src/FAKEGeomPlate.c added fake analitic geom for Flat Plate.
+	* /src/FAKEGeomTrap.c added fake analitic geom for Trap Wing. 
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/gridfortran.c added fortran interface for parallelized
+	adaptation.
+	* /src/gridmpi.c low-level feeder routines for parallel adapt.
+	* /src/sort.c heap sort routine for looking up global index.
+	* /src/queue.c forms a transcript of grid modifications to
+	be played for off-processors
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/near.c put in a neartree search for layer colliding fronts.
+	* /src/intersect.c put in intersection calculation for layer 
+	colliding fronts.
+	* /src/line.c added opject to recoard advancing normal lines.
+	This is intented to be used for partitioning and adaptation
+	in the future.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* makeRubyExtension.rb builds a C ruby extension using mkmf.
+	* RubyExtensionBuilder.rb Builds a ruby extension and its dependants.
+	
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* I have been lazy and I have not been updating ChangeLog entries. 
+	
 2003-03-28 10:39 Mike Park  <m.a.park@larc.nasa.gov>
 
 	* /src/layer.c (layerBlend) multiple normals are handled with
