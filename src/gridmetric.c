@@ -486,7 +486,7 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
 	  c3 = c2;
 	  c2 = c;
 	  s2 = s;
-	  i = m - ii;
+	  i = m - ii - 1;
 	  g = c * e[i];
 	  h = c * p;
 	  r = sqrt(p*p+e[i]*e[i]);
