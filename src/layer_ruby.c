@@ -414,6 +414,19 @@ VALUE layer_toggleMixedElementMode( VALUE self )
   return ( layer == layerToggleMixedElementMode(layer)?self:Qnil );
 }
 
+VALUE layer_firstTriangleAfterGap( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerFirstTriangleAfterGap(layer,NUM2INT(normal)) );
+}
+
+VALUE layer_nRequiredBlends( VALUE self, VALUE normal, VALUE angle )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerNRequiredBlends(layer, 
+				       NUM2INT(normal), NUM2DBL(angle)) );
+}
+
 VALUE layer_blend( VALUE self, VALUE angle )
 {
   GET_LAYER_FROM_SELF;
@@ -529,6 +542,8 @@ void Init_Layer()
   rb_define_method( cLayer, "tetrahedraOnly", layer_tetrahedraOnly, 0 ); 
   rb_define_method( cLayer, "toggleMixedElementMode", layer_toggleMixedElementMode, 0 ); 
 
+  rb_define_method( cLayer, "firstTriangleAfterGap", layer_firstTriangleAfterGap, 1 );
+  rb_define_method( cLayer, "nRequiredBlends", layer_nRequiredBlends, 2 );
   rb_define_method( cLayer, "blend", layer_blend, 1 );
   rb_define_method( cLayer, "splitBlend", layer_splitBlend, 0 );
   rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );

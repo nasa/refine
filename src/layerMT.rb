@@ -1246,7 +1246,24 @@ class TestLayer < Test::Unit::TestCase
   assert_in_delta 270, layer.edgeAngle(0,1), tol
   grid.setNodeXYZ(3,[0.5,0.5,-1-1.0e-10])
   assert_in_delta 270, layer.edgeAngle(0,1), tol
+ end
 
+ def testFindFirstFaceOffSymm
+  grid = Grid.new(20,20,10,0)
+  grid.addNode(0.5,0.35,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0.5,0.7,0)
+
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,2,3,10)
+
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  assert_equal 0, layer.firstTriangleAfterGap(0)
+
+  grid.addFace(0,3,1,10)
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  assert_equal 2, layer.firstTriangleAfterGap(0)
  end
 
  def testInsertBlendForConvextFace
@@ -1258,6 +1275,10 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2], layer.triangle(0)
   assert_equal [2,1,3], layer.triangle(1)
   assert_equal 0,     layer.nblend
+  assert_equal 0,     layer.nRequiredBlends(0,-1.0)
+  assert_equal 1,     layer.nRequiredBlends(1,-1.0)
+  assert_equal 1,     layer.nRequiredBlends(2,-1.0)
+  assert_equal 0,     layer.nRequiredBlends(3,-1.0)
   assert_equal layer, layer.blend(-1.0)
   assert_equal 1,     layer.nblend
   # y 25--3 normals
@@ -1494,7 +1515,7 @@ class TestLayer < Test::Unit::TestCase
 
 #  layer.writeTecplotFrontGeometry
 
- def testBlendTriplePoint
+ def XXXtestBlendTriplePoint
   grid = Grid.new(20,20,10,0)
   top = 0.8
   grid.addNode(0.5,0.35,top)

@@ -2461,11 +2461,49 @@ Layer *layerSplitBlend(Layer *layer)
   return layer;
 }
 
+int layerFirstTriangleAfterGap(Layer *layer, int normal )
+{
+  int firstTriangle, triangle, previousTriangle;
+  AdjIterator it;
+  
+  firstTriangle = adjItem(adjFirst(layer->adj,normal));
+  for ( it = adjFirst(layer->adj,normal); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    triangle = adjItem(it);
+    previousTriangle = layerPreviousTriangle(layer, normal, triangle);
+    if (EMPTY == previousTriangle) firstTriangle = triangle;
+  }
+  return firstTriangle;
+}
+
+int layerNRequiredBlends(Layer *layer, int normal, double angleLimit )
+{
+  int blendCount;
+  int triangle, nextTriangle;
+  double edgeAngle;
+  AdjIterator it;
+
+  blendCount = 0;
+  for ( it = adjFirst(layer->adj,normal); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    triangle = adjItem(it);
+    nextTriangle = layerNextTriangle(layer, normal, triangle);
+    if (EMPTY != nextTriangle) {
+      edgeAngle = layerEdgeAngle(layer,triangle,nextTriangle);
+      if (edgeAngle > angleLimit) blendCount++;
+    }
+  }
+
+  return blendCount;
+}
+
 Layer *layerBlend(Layer *layer, double angleLimit )
 {
   int normal, originalNormals;
   AdjIterator it;
-  int triangle, splitTriangle, nextTriangle, previousTriangle;
+  int triangle, splitTriangle, nextTriangle;
   double edgeAngle, largestEdgeAngle;
   int commonEdge[2];
   int numberOfEdges;
