@@ -2064,10 +2064,30 @@ Grid *gridCycleEquator( Grid *grid )
 
 int gridAddNode(Grid *grid, double x, double y, double z )
 {
-  int node;
-  if (grid->nnode >= grid->maxnode) return EMPTY;
+  int node, i, origSize, chunkSize;
+
+  if (EMPTY == grid->blanknode) {
+    chunkSize = 5000;
+    origSize = grid->maxnode;
+    grid->maxnode += chunkSize;
+    
+    grid->xyz = realloc(grid->xyz, 3 * grid->maxnode * sizeof(double));
+    for (i=origSize;i < grid->maxnode; i++ ) {
+      grid->xyz[0+3*i] = DBL_MAX;
+      grid->xyz[1+3*i] = (double)(i+1);
+    }
+    grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
+    grid->blanknode = origSize;
+
+    grid->map = realloc(grid->map, grid->maxnode * 6 * sizeof(double));
+    grid->frozen = realloc(grid->frozen,grid->maxnode * sizeof(bool));
+
+    adjRealloc(grid->cellAdj,grid->maxnode);
+    adjRealloc(grid->faceAdj,grid->maxnode);
+    adjRealloc(grid->edgeAdj,grid->maxnode);
+  }
+
   node = grid->blanknode;
-  if (EMPTY == node) return EMPTY;
   grid->blanknode = (int)grid->xyz[1+3*node];
   grid->nnode++;
 
