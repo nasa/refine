@@ -120,6 +120,7 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 2, q.transactions
   assert_equal 1, q.removedCells(1)
   assert_equal [100,101,102,103], q.removedCellNodes(0)
+  assert_equal [1,1,1,2],         q.removedCellNodeParts(0)
   assert_equal 1, q.addedCells(1)
   assert_equal [104,101,102,103], q.addedCellNodes(0)
   assert_equal 200,               q.addedCellId(0)
@@ -132,6 +133,8 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 2, q.removedFaces(1)
   assert_equal [100,103,101], q.removedFaceNodes(0)
   assert_equal [100,102,103], q.removedFaceNodes(1)
+  assert_equal [1,2,1], q.removedFaceNodeParts(0)
+  assert_equal [1,1,2], q.removedFaceNodeParts(1)
   assert_equal 2, q.addedFaces(1)
   assert_equal [103,101,104], q.addedFaceNodes(0)
   assert_equal [103,104,102], q.addedFaceNodes(1)
