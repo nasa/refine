@@ -56,6 +56,21 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
 	return NULL;
       }
 
+      /* start hack
+      {
+	double d[3],dist;
+	d[0] = newxyz[0+3*(nedgenode-1)] - newxyz[0+3*(nedgenode-2)];
+	d[1] = newxyz[1+3*(nedgenode-1)] - newxyz[1+3*(nedgenode-2)];
+	d[2] = newxyz[2+3*(nedgenode-1)] - newxyz[2+3*(nedgenode-2)];
+	dist = d[0]*d[0] + d[1]*d[1] + d[2]*d[2];
+	printf("last delta %e\n",dist);
+	if (dist<1.0e-8){
+	  printf("WARNING: duplicate node detected and deleted");
+	  nedgenode--;
+	}
+      }
+      end hack */
+
       printf("number of rebuild edge points:  %d\n",nedgenode);
 
       newnodes = malloc( nedgenode * sizeof(int));
@@ -63,12 +78,15 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
       newnodes[nedgenode-1] = edgeEndPoints[1];
       for(i=1;i<(nedgenode-1);i++){
 	newnodes[i]=gridAddNode(grid,newxyz[0+3*i],newxyz[1+3*i],newxyz[2+3*i]);
+	printf("node added %8d x %8.5f y %8.5f z %8.5f \n",
+	       newnodes[i],newxyz[0+3*i],newxyz[1+3*i],newxyz[2+3*i]);
       }
 
       gridDeleteThawedEdgeSegments(grid,edgeId);
-      for(i=1;i<(nedgenode-1);i++){
+      for(i=1;i<nedgenode;i++){
 	i0 = i-1; i1 = i;
 	gridAddEdge(grid,newnodes[i0],newnodes[i1],edgeId,newt[i0],newt[i1]);
+	printf("edge added %8d <-> %8d \n",newnodes[i0],newnodes[i1]);
       }
 
       free(newxyz);
@@ -159,8 +177,8 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 		layerFront(layer,front,nodes);
 		n0 = nodes[n0];
 		n1 = nodes[n1];
-		shell[0+2*nshell] = n1;
-		shell[1+2*nshell] = n0;
+		shell[0+2*nshell] = n0;
+		shell[1+2*nshell] = n1;
 		nshell++;
  	      }
 	    }
@@ -173,7 +191,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	  for(i=1;i<ncurve;i++){
 	    if ( !gridNodeFrozen(grid,curve[i-1]) || 
 		 !gridNodeFrozen(grid,curve[i])   ){
-	      if (orient<0){
+	      if (orient>0){
 		shell[0+2*nshell] = curve[i-1];
 		shell[1+2*nshell] = curve[i];
 	      }else{
@@ -190,7 +208,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	  curve = malloc( ncurve * sizeof(int) );
 	  gridGeomEdge( grid, edgeId, curve );
 	  for(i=1;i<ncurve;i++){
-	    if (orient<0){
+	    if (orient>0){
 	      shell[0+2*nshell] = curve[i-1];
 	      shell[1+2*nshell] = curve[i];
 	    }else{
