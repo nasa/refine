@@ -385,6 +385,23 @@ class TestQueue < Test::Unit::TestCase
     0.1,0.2,0.3,0.4,0.5,0.6 ], q.dump
  end
 
+ def testSerializeRemoveEdges
+  nodes = [5,6]
+  nodeParts = [15,16]
+  q = Queue.new(3).removeEdge(nodes,nodeParts)
+  assert_equal [3,1,0,0,0,0,1,0, 0, 0, 0, 0, 1, 5,6, 15,16, 0 ], q.dump
+ end
+
+ def testSerializeAddEdges
+  edgeId = 99
+  nodes = [5,6]
+  nodeParts = [25,26]
+  uv = [0.1,0.2]
+  q = Queue.new(3).addEdge(nodes,edgeId,nodeParts,uv)
+  assert_equal [3,1,0,0,0,0,0,1, 0, 0, 0, 0, 0, 1, 5,6, 99, 25,26, 
+    0.1,0.2 ], q.dump
+ end
+
  def testLoadSerializedQueuewithZeroTransactions
   q = Queue.new(3).newTransaction.newTransaction
   assert_equal 3, q.transactions
@@ -442,6 +459,25 @@ class TestQueue < Test::Unit::TestCase
   assert_equal [0.1,0.2,0.3,0.4,0.5,0.6], q.addedFaceUVs(0)
  end
 
+ def testLoadSerializedQueuewithRemovedEdge
+  q = Queue.new(3)
+  assert_equal q, q.load([3,1,0,0,0,0,1,0, 0, 0, 0, 0, 1, 5,6, 35,36, 0 ], [])
+  assert_equal 1, q.removedEdges(0)
+  assert_equal [5,6], q.removedEdgeNodes(0)
+  assert_equal [35,36], q.removedEdgeNodeParts(0)
+ end
+
+ def testLoadSerializedQueuewithAddedEdge
+  q = Queue.new(3)
+  assert_equal q, q.load([3,1,0,0,0,0,0,1, 0, 0, 0, 0, 0, 1, 5,6, 88, 45,46 ], 
+			 [1.1,1.2])
+  assert_equal 1, q.addedEdges(0)
+  assert_equal [5,6], q.addedEdgeNodes(0)
+  assert_equal 88,      q.addedEdgeId(0)
+  assert_equal [45,46], q.addedEdgeNodeParts(0)
+  assert_equal [1.1,1.2], q.addedEdgeTs(0)
+ end
+
  def testSerialIsStableAfterARemalloc
   nodes = [5,6,7,8]
   id = 9
@@ -456,6 +492,8 @@ class TestQueue < Test::Unit::TestCase
    q.removeCell(nodes,nodeParts).addCell(nodes,id,nodeParts,xyz)
    q.removeFace(nodes,nodeParts).addFace(nodes,id,nodeParts,xyz)
    q.removeFace(nodes,nodeParts).addFace(nodes,id,nodeParts,xyz)
+   q.removeEdge(nodes,nodeParts).addEdge(nodes,id,nodeParts,xyz)
+   q.removeEdge(nodes,nodeParts).addEdge(nodes,id,nodeParts,xyz)
   } 
   i = q.dumpInt
   f = q.dumpFloat

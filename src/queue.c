@@ -504,7 +504,7 @@ Queue *queueDumpSize( Queue *queue, int *nInt, int *nDouble )
     + 8 * queue->nRemovedCells
     + 9 * queue->nAddedCells
     + 6 * queue->nRemovedFaces
-    + 7 * queue->nAddedFaces;
+    + 7 * queue->nAddedFaces
     + 4 * queue->nRemovedEdges
     + 5 * queue->nAddedEdges;
   *nDouble = 
