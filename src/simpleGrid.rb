@@ -21,9 +21,9 @@ dz = 0.4
 grid = Grid.new(10,10,10,10)
 grid.addNode(0,0,0)
 grid.addNode(1,0,0)
-grid.addNode(0,1,0)
-grid.addNode(0.3,0.3,dz)
-grid.addNode(0.3,0.3,-dz)
+grid.addNode(0.5,0.866,0)
+grid.addNode(0.5,0.35,0.8)
+grid.addNode(0.5,0.35,-0.8)
 grid.addCell(0,1,2,3)
 grid.addCell(0,2,1,4)
 faceId = 1
@@ -35,7 +35,8 @@ grid.addFace(0,4,2,faceId)
 grid.addFace(2,4,1,faceId)
 grid.addFace(1,4,0,faceId)
 
-puts 'volume'+grid.minVolume.to_s
+puts 'volume '+grid.minVolume.to_s
+puts 'AR '+grid.minAR.to_s
 puts "original boundary is not right handed" if !grid.rightHandedBoundary
 
 grid.exportFAST
