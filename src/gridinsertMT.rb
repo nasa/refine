@@ -183,7 +183,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 1,          grid.ncell
   assert_equal grid,       grid.thawAll
   assert_equal grid,       grid.adapt(0.4,2.2)
-  assert_equal 2,          grid.ncell
+  assert_equal 1,          grid.ncell
  end
 
  def testAdaptToSpacing3
@@ -194,7 +194,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.scaleSpacing(2,0.55)
   assert_equal grid, grid.scaleSpacing(3,0.55)
   assert_equal grid, grid.adapt(0.4,2.2)
-  assert_equal 4, grid.ncell
+  assert_equal 1, grid.ncell
  end
 
  def testCollapseEdge
@@ -473,12 +473,14 @@ class TestGridInsert < Test::Unit::TestCase
  end
 
  def oneCellSplitGrid
-  grid = Grid.new(5,4,0,0)
+  grid = Grid.new(5,4,4,0)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
   grid.addNode(0,1,0)
   grid.addNode(0,0,1)
   grid.addCell(0,1,2,3)
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,1,3,11)
   grid
  end
 

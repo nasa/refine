@@ -40,6 +40,10 @@ int gridsize_( int *nnodeg, int *ncellg );
 int gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 		      int *oldncellg, int *newncellg, int *celloffset );
 
+int gridnunusedcellglobal_( int *nunused );
+int gridgetunusedcellglobal_( int *nunused, int *unused );
+int gridjoinunusedcellglobal_( int *nunused, int *unused );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */

@@ -388,6 +388,147 @@ Grid *gridEigenVector(Grid *grid, double *m, double eigenValue,
   
   return grid;
 }
+Grid *gridTriDiag3x3(Grid *grid, double *m, double *d, double *e, double *q)
+{
+  double l,u,v,s;
+  d[0] = m[0];
+  e[2] = 0.0;
+  q[0] = 1.0;
+  q[1] = q[2] = q[3] = q[6] = 0.0;
+  
+  if ( abs(m[2]) > 1.0e-12 ) {
+    l = sqrt( m[1]*m[1] + m[2]*m[2] );
+    u = m[1] / l;
+    v = m[2] / l;
+    s = 2.0 * u * m[4] + v * ( m[5] - m[3] );
+    d[1] = m[3] + v*s;
+    d[2] = m[5] - v*s;
+    e[0] = l;
+    e[1] = m[4] - u*s;
+    q[4] = u;
+    q[5] = v;
+    q[7] = v;
+    q[8] = -u;
+  } else {
+    d[1] = m[3];
+    d[2] = m[5];
+    e[0] = m[1];
+    e[1] = m[4];
+    q[4] = 1.0;
+    q[5] = 0.0;
+    q[7] = 0.0;
+    q[8] = 1.0;
+  }
+  return grid;
+}
+
+Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
+{
+  int ierr;
+  double f,tst1,tst2;
+  int i,j,l,m;
+  int l1, l2;
+  double h, g, p, r, dl1;
+  double c, c2, c3, el1, s;
+  int mml, ii, k;
+  double s2;
+
+  ierr = 0;
+
+  f = 0.0;
+  tst1 = 0.0;
+  e[2] = 0.0;
+
+  for( l = 0; l < 3; l++){ /* row_loop  */
+    h = ABS(d[l]) + ABS(e[l]);
+    if (tst1 < h) tst1 = h;
+    /* look for small sub-diagonal element */
+    for( m = l; m<3;m++) { /*test_for_zero_e */
+      tst2 = tst1 + ABS(e[m]);
+      if (abs(tst2 - tst1) < 1.0e-14 ) break;
+      /* e[2] is always zero, so there is no exit through the bottom of loop*/
+    }
+    if (m != l) { /* l_not_equal_m */
+      for (j=0;j<40;j++) {
+	/* set error -- no convergence to an eigenvalue after 30 iterations */
+	if (j > 30 ) {
+	  ierr = l;
+	  printf( "linear_algebra: EigTriDiag3x3: ierr = %d\n",ierr);
+	  return NULL;
+        }
+	/* form shift */
+	l1 = l + 1;
+	l2 = l1 + 1;
+	g = d[l];
+	p = (d[l1] - g) / (2.0 * e[l]);
+	r = sqrt(p*p+1.0);
+#define SIGN(a,b) (b>=0?ABS(a):-ABS(a))
+	d[l] = e[l] / (p + SIGN(r,p));
+	d[l1] = e[l] * (p + SIGN(r,p));
+	dl1 = d[l1];
+	h = g - d[l];
+	for (i = l2; i<3; i++) d[i] = d[i] - h;
+	f = f + h;
+	/* ql transformation */
+	p = d[m];
+	c = 1.0;
+	c2 = c;
+	el1 = e[l1];
+	s = 0.0;
+	mml = m - l;
+	for (ii = 0;ii< mml; ii++ ) {
+	  c3 = c2;
+	  c2 = c;
+	  s2 = s;
+	  i = m - ii;
+	  g = c * e[i];
+	  h = c * p;
+	  r = sqrt(p*p+e[i]*e[i]);
+	  e[i+1] = s * r;
+	  s = e[i] / r;
+	  c = p / r;
+	  p = c * d[i] - s * g;
+	  d[i+1] = h + s * (c * g + s * d[i]);
+	  /* form vector */
+	  for (k = 0;k< 3;k++){
+	    h = z[k+3*(i+1)];
+	    z[k+3*(i+1)] = s * z[k+3*i] + c * h;
+	    z[k+3*i] = c * z[k+3*i] - s * h;
+	  }
+	}
+	p = -s * s2 * c3 * el1 * e[l] / dl1;
+	e[l] = s * p;
+	d[l] = c * p;
+	tst2 = tst1 + ABS(e[l]);
+	if (ABS(tst2 - tst1) < 1.0e-14) break;
+      } /* iterate */
+    } /* l_not_equal_m */
+    d[l] = d[l] + f;
+  } /* row_loop */
+
+  for( ii = 1; ii<3;ii++){
+    i = ii - 1;
+    k = i;
+    p = d[i];
+    for( j = ii;j < 3;j++) {
+      if (d[j] > p) { 
+        k = j;
+        p = d[j];
+      }
+    }
+    if (k != i) {
+      d[k] = d[i];
+      d[i] = p;
+      for (j = 0;j<3;j++) {
+	p = z[j+3*i];
+	z[j+3*i] = z[j+3*k];
+	z[j+3*k] = p;
+      }
+    }
+  }
+
+  return grid;
+}
 
 Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
 		      double *v1, double *v2, double *v3)

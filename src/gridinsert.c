@@ -234,9 +234,9 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 {
   int igem, cell, nodes[4], globalnodes[4], inode, node;
   int newnode, newglobal, newnodes0[4], newnodes1[4];
-  int globalnewnodes0[5], globalnewnodes1[5];
-  int cell0, cell1, globalCellId0, globalCellId1;
-  double xyz0[12], xyz1[12];
+  int globalnewnodes0[9], globalnewnodes1[9];
+  int cell0, cell1;
+  double xyz0[36], xyz1[36];
   int globaln0, globaln1, globalgap0, globalgap1;
   int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
   int globalFaceNodes0[4], globalFaceNodes1[4];
@@ -244,6 +244,14 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   double t0,t1, newT;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
+
+  gap0 = gridEqu(grid,0);
+  gap1 = gridEqu(grid,gridNGem(grid));
+  if ( !gridContinuousEquator(grid) ){
+    face0 = gridFindFace(grid, n0, n1, gap0 );
+    face1 = gridFindFace(grid, n0, n1, gap1 );
+    if ( face0 == EMPTY || face1 == EMPTY ) return EMPTY;
+  }
 
   newnode   = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
@@ -258,7 +266,6 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
     cell = gridGem(grid,igem);
     gridCell(grid, cell, nodes);
-    globalCellId0 = gridCellGlobal(grid,cell);
     if (NULL!=queue) {
       for ( inode = 0 ; inode < 4 ; inode++ ) 
 	globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
@@ -274,23 +281,23 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     }
     cell0=gridAddCell(grid,newnodes0[0],newnodes0[1],newnodes0[2],newnodes0[3]);
     cell1=gridAddCell(grid,newnodes1[0],newnodes1[1],newnodes1[2],newnodes1[3]);
-    if ( globalCellId0 > EMPTY ) {
-      globalCellId1 = gridGlobalNCell(grid);
-      gridSetGlobalNCell(grid,globalCellId1+1);
-      gridSetCellGlobal(grid,cell0,globalCellId0);
-      gridSetCellGlobal(grid,cell1,globalCellId1);
-    }
     if (NULL!=queue) {
       for ( inode = 0 ; inode < 4 ; inode++ ) {
 	globalnewnodes0[inode] = gridNodeGlobal(grid,newnodes0[inode]);
 	globalnewnodes1[inode] = gridNodeGlobal(grid,newnodes1[inode]);
-	gridNodeXYZ(grid,newnodes0[inode],&xyz0[3*inode]);
-	gridNodeXYZ(grid,newnodes1[inode],&xyz1[3*inode]);
+	globalnewnodes0[5+inode] = gridNodePart(grid,newnodes0[inode]);
+	globalnewnodes1[5+inode] = gridNodePart(grid,newnodes1[inode]);
+	gridNodeXYZ(grid,newnodes0[inode],&xyz0[9*inode]);
+	gridNodeXYZ(grid,newnodes1[inode],&xyz1[9*inode]);
+	gridMap(grid,newnodes0[inode],&xyz0[3+9*inode]);
+	gridMap(grid,newnodes1[inode],&xyz1[3+9*inode]);
       }
-      globalnewnodes0[4] = globalCellId0;
-      globalnewnodes1[4] = globalCellId1;
-      queueAddCell(queue,globalnewnodes0,xyz0);
-      queueAddCell(queue,globalnewnodes1,xyz1);
+      globalnewnodes0[4] = gridCellGlobal(grid, cell0);
+      globalnewnodes1[4] = gridCellGlobal(grid, cell1);
+      if (gridCellHasGhostNode(grid, newnodes0))
+	queueAddCell(queue,globalnewnodes0,xyz0);
+      if (gridCellHasGhostNode(grid, newnodes1))
+	queueAddCell(queue,globalnewnodes1,xyz1);
     }    
   }
 
@@ -298,14 +305,6 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   if ( !gridContinuousEquator(grid) ){
     double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
     double gap0uv[2], gap1uv[2], newId0uv[2], newId1uv[2]; 
-    gap0 = gridEqu(grid,0);
-    gap1 = gridEqu(grid,gridNGem(grid));
-    face0 = gridFindFace(grid, n0, n1, gap0 );
-    face1 = gridFindFace(grid, n0, n1, gap1 );
-    if ( face0 == EMPTY || face1 == EMPTY ) {
-      printf("face bomb!\n");
-      return EMPTY;
-    }
     gridFace(grid,face0,faceNodes0,&faceId0);
     gridFace(grid,face1,faceNodes1,&faceId1);
     gridNodeUV(grid,n0,faceId0,n0Id0uv);

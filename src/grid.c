@@ -122,6 +122,9 @@ Grid *gridImport(int maxnode, int nnode,
   }
 
   grid->cellGlobal  = NULL;
+  grid->maxUnusedCellGlobal = 0;
+  grid->nUnusedCellGlobal = 0;
+  grid->unusedCellGlobal  = NULL;
 
   if (NULL == f2n) {
     grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
@@ -462,6 +465,7 @@ void gridFree(Grid *grid)
   free(grid->faceU);
   free(grid->f2n);
   adjFree(grid->cellAdj);
+  if (NULL != grid->unusedCellGlobal) free(grid->unusedCellGlobal);
   if (NULL != grid->cellGlobal) free(grid->cellGlobal);
   free(grid->c2n);
   if (NULL != grid->sortedLocal) free(grid->sortedLocal);
@@ -1014,6 +1018,51 @@ Grid *gridSetGlobalNCell(Grid *grid, int nglobal )
   return grid;
 }
 
+int gridNUnusedCellGlobal(Grid *grid )
+{
+  return grid->nUnusedCellGlobal;
+}
+
+Grid *gridGetUnusedCellGlobal(Grid *grid, int *unused )
+{
+  int i;
+  for (i=0;i<grid->nUnusedCellGlobal;i++) 
+    unused[i] = grid->unusedCellGlobal[i];
+  return grid;
+}
+
+Grid *gridJoinUnusedCellGlobal(Grid *grid, int global )
+{
+  int insertpoint, index;
+  if (NULL == grid->unusedCellGlobal) {
+    grid->maxUnusedCellGlobal = 500;
+    grid->unusedCellGlobal = malloc(grid->maxUnusedCellGlobal * sizeof(int));
+  }
+  if ((grid->nUnusedCellGlobal+1) >= grid->maxUnusedCellGlobal) {
+    grid->maxUnusedCellGlobal += 500;
+    grid->unusedCellGlobal = realloc( grid->unusedCellGlobal, 
+				      grid->maxUnusedCellGlobal*sizeof(int));
+  }
+  
+  insertpoint = 0;
+  if (grid->nUnusedCellGlobal > 0) {
+    for (index=grid->nUnusedCellGlobal-1; index>=0; index--) {
+      if (grid->unusedCellGlobal[index] < global) {
+	insertpoint = index+1;
+	break;
+      }
+    }
+    if (grid->unusedCellGlobal[insertpoint] == global) return grid;
+    for(index=grid->nUnusedCellGlobal;index>insertpoint;index--)
+      grid->unusedCellGlobal[index] = grid->unusedCellGlobal[index-1];
+  }
+
+  grid->unusedCellGlobal[insertpoint] = global;
+  grid->nUnusedCellGlobal++;
+  
+  return grid;
+}
+
 int gridNGem(Grid *grid)
 {
   return grid->ngem;
@@ -1061,10 +1110,35 @@ Grid *gridGlobalShiftCell(Grid *grid, int oldncellg, int newncellg,
   for (cell=0;cell<grid->maxcell;cell++)
     if ( gridCellValid(grid,cell) && (grid->cellGlobal[cell] >= oldncellg) ) 
       grid->cellGlobal[cell] += celloffset;
+  for (cell=0;cell<grid->nUnusedCellGlobal;cell++)
+    if ( grid->unusedCellGlobal[cell] >= oldncellg )  
+      grid->unusedCellGlobal[cell] += celloffset;
   return grid;
 }
 
 int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
+{
+  int global,i;
+  
+  if (NULL == grid->cellGlobal) {
+    global = EMPTY;
+  } else {
+    if (grid->nUnusedCellGlobal > 0) {
+      global = grid->unusedCellGlobal[0];
+      for (i=1;i<grid->nUnusedCellGlobal;i++)
+	grid->unusedCellGlobal[i-1]=grid->unusedCellGlobal[i];;
+      grid->nUnusedCellGlobal--;
+    }else{
+      global = grid->globalNCell;
+      grid->globalNCell++;
+    }
+  }
+
+  return gridAddCellWithGlobal(grid,n0,n1,n2,n3,global);
+}
+
+int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3, 
+			  int global )
 {
   int cellId;
   if ( grid->blankc2n == EMPTY ) {
@@ -1096,7 +1170,7 @@ int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
   if ( NULL == adjRegister( grid->cellAdj, n2, cellId ) ) return EMPTY;
   if ( NULL == adjRegister( grid->cellAdj, n3, cellId ) ) return EMPTY;
   
-  if (NULL != grid->cellGlobal) grid->cellGlobal[cellId] = EMPTY;
+  if (NULL != grid->cellGlobal) grid->cellGlobal[cellId] = global;
 
   return cellId;
 }
@@ -1117,6 +1191,9 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
   grid->c2n[0+4*cellId] = EMPTY;
   grid->c2n[1+4*cellId] = grid->blankc2n;
   grid->blankc2n = cellId;
+
+  if (NULL != grid->cellGlobal) 
+    gridJoinUnusedCellGlobal(grid,grid->cellGlobal[cellId]);
 
   return grid;
 }
@@ -1970,9 +2047,10 @@ Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 bool gridGemIsAllLocal(Grid *grid)
 {
   int gem, cell;
-  for ( gem = 0 ; gem < grid->ngem ; gem++ )
+  for ( gem = 0 ; gem < grid->ngem ; gem++ ) {
     cell = grid->gem[gem];
     if ( gridCellHasGhostNode(grid, &(grid->c2n[4*cell])) ) return FALSE;
+  }
   return TRUE;
 }
 

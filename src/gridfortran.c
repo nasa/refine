@@ -29,7 +29,7 @@ int gridcreate_( int *nnode, double *x, double *y, double *z ,
   int nodes[4];
   double xyz[3];
   grid = gridCreate( *nnode, *ncell, 5000, 0);
-  queue = queueCreate( );
+  queue = queueCreate( 9 ); /* 3:xyz + 6:m */
   for ( node=0; node<*nnode; node++) gridAddNode(grid,x[node],y[node],z[node]);
   printf("populated grid object with %d nodes\n",gridNNode(grid));
   for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
@@ -166,4 +166,20 @@ int gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 {
   gridGlobalShiftNode( grid, *oldnnodeg, *newnnodeg, *nodeoffset);
   gridGlobalShiftCell( grid, *oldncellg, *newncellg, *celloffset);
+}
+
+int gridnunusedcellglobal_( int *nunused )
+{
+  *nunused = gridNUnusedCellGlobal( grid );
+}
+
+int gridgetunusedcellglobal_( int *nunused, int *unused )
+{
+  gridGetUnusedCellGlobal( grid, unused );
+}
+
+int gridjoinunusedcellglobal_( int *nunused, int *unused )
+{
+  int i;
+  for (i=0;i<*nunused;i++) gridJoinUnusedCellGlobal( grid, unused[i] );
 }

@@ -143,6 +143,35 @@ VALUE grid_setGlobalNCell( VALUE self, VALUE nglobal )
   return ( grid == gridSetGlobalNCell(grid,NUM2INT(nglobal))?self:Qnil );
 }
 
+VALUE grid_nUnusedCellGlobal( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNUnusedCellGlobal(grid) );
+}
+
+VALUE grid_getUnusedCellGlobal( VALUE self )
+{
+  int i, n, *unused;
+  VALUE rb_unused;
+  GET_GRID_FROM_SELF;
+  n = gridNUnusedCellGlobal(grid);
+  unused = malloc( n * sizeof(int) );
+  if ( grid != gridGetUnusedCellGlobal(grid,unused) ) {
+    free(unused);
+    return Qnil;
+  } else {
+    rb_unused = rb_ary_new2(n);
+    for (i=0;i<n;i++) rb_ary_store( rb_unused, i, INT2NUM(unused[i]) );
+    return rb_unused;
+  }
+}
+
+VALUE grid_joinUnusedCellGlobal( VALUE self, VALUE global )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridJoinUnusedCellGlobal(grid,NUM2INT(global))?self:Qnil );
+}
+
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
   GET_GRID_FROM_SELF;
@@ -509,6 +538,12 @@ VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
   return rb_gem;
 }
 
+VALUE grid_gemIsAllLocal( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return( gridGemIsAllLocal( grid )?Qtrue:Qfalse);
+}
+
 VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
 {
   int nequ, i;
@@ -873,6 +908,10 @@ void Init_Grid()
   rb_define_method( cGrid, "globalncell", grid_globalncell, 0 );
   rb_define_method( cGrid, "setGlobalNCell", grid_setGlobalNCell, 1 );
 
+  rb_define_method( cGrid, "nUnusedCellGlobal", grid_nUnusedCellGlobal, 0 );
+  rb_define_method( cGrid, "getUnusedCellGlobal", grid_getUnusedCellGlobal, 0 );
+  rb_define_method( cGrid, "joinUnusedCellGlobal", grid_joinUnusedCellGlobal, 1 );
+
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
   rb_define_method( cGrid, "reconnectAllCell", grid_reconnectAllCell, 2 );
@@ -922,6 +961,7 @@ void Init_Grid()
   rb_define_method( cGrid, "thawAll", grid_thawAll, 0 );
 
   rb_define_method( cGrid, "gem", grid_gem, 2 );
+  rb_define_method( cGrid, "gemIsAllLocal", grid_gemIsAllLocal, 0 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );
 

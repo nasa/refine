@@ -21,6 +21,7 @@ BEGIN_C_DECLORATION
 typedef struct Queue Queue;
 
 struct Queue {
+  int nodeSize;
   int transactions;
   int maxTransactions;
   int *removedCells;
@@ -43,9 +44,10 @@ struct Queue {
   double *addedFaceUVs;
 };
 
-Queue *queueCreate(  );
+Queue *queueCreate( int nodeSize );
 void queueFree( Queue * );
 Queue *queueReset( Queue * );
+int queueNodeSize( Queue * );
 int queueTransactions( Queue * );
 Queue *queueNewTransaction( Queue * );
 

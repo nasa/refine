@@ -81,13 +81,13 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 {
   int transaction;
   int removed, removedcell, removedface;
-  int i, globalnodes[5], localnodes[4];
+  int i, globalnodes[9], localnodes[4];
   int cell, face;
   int added, addedcell, addedface;
-  double xyz[12], uv[6];
+  double xyz[36], uv[6];
   Queue *lq;
 
-  lq = queueCreate();
+  lq = queueCreate( 1 ); /* only used for queuing local removed nodes */
 
   removedcell = 0;
   removedface = 0;
@@ -120,15 +120,18 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	   gridNodeLocal(grid,localnodes[3]) ) {
 	for(i=0;i<4;i++) {
 	  if ( EMPTY == localnodes[i] ) {
-	    localnodes[i]=gridAddNode(grid,xyz[0+3*i],xyz[1+3*i],xyz[2+3*i]);
+	    localnodes[i]=gridAddNode(grid,xyz[0+9*i],xyz[1+9*i],xyz[2+9*i]);
+	    gridSetMap(grid,localnodes[i],
+		       xyz[3+9*i],xyz[4+9*i],xyz[5+9*i],
+		       xyz[6+9*i],xyz[7+9*i],xyz[8+9*i]);		       
 	    gridSetNodeGlobal(grid, localnodes[i], globalnodes[i]);
-	    gridSetNodePart(grid, localnodes[i], EMPTY);
+	    gridSetNodePart(grid, localnodes[i], globalnodes[5+i]);
 	  }
 	}
-	cell = gridAddCell(grid,
-			   localnodes[0],localnodes[1],
-			   localnodes[2],localnodes[3]);
-	gridSetCellGlobal(grid,cell,globalnodes[4]);
+	cell = gridAddCellWithGlobal(grid,
+				     localnodes[0],localnodes[1],
+				     localnodes[2],localnodes[3],
+				     globalnodes[4]);
       }
     }
     for(added=0;added<queueAddedFaces(gq,transaction);added++) {

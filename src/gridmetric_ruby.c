@@ -103,44 +103,88 @@ VALUE grid_setMapMatrixToAverageOfNodes( VALUE self, VALUE avgNode,
 					   NUM2INT(node1) )==grid?self:Qnil);
 }
 
-VALUE grid_eigenValues( VALUE self, VALUE rb_m )
+VALUE grid_triDiag( VALUE self, VALUE rb_m )
 {
   int i;
-  double m[6], eigenValues[3];
-  VALUE rb_eigenValues;
-  Grid *rGrid;
+  double m[6], d[3], e[3], q[9];
+  VALUE rb_d;
   GET_GRID_FROM_SELF;
   for (i=0;i<6;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
-  rGrid = gridEigenValues( grid, m, eigenValues );
-  if ( rGrid == grid ){
-    rb_eigenValues = rb_ary_new2(3);
-    rb_ary_store( rb_eigenValues, 0, rb_float_new(eigenValues[0]) );
-    rb_ary_store( rb_eigenValues, 1, rb_float_new(eigenValues[1]) );
-    rb_ary_store( rb_eigenValues, 2, rb_float_new(eigenValues[2]) );
+  if (grid == gridTriDiag3x3(grid,m,d,e,q)) {
+    rb_d = rb_ary_new2(3);
+    for(i=0;i<3;i++) rb_ary_store( rb_d, i, rb_float_new(d[i]) );
+    return rb_d;
   }else{
-    rb_eigenValues = Qnil;
+    return Qnil;
   }
-  return rb_eigenValues;
 }
 
-VALUE grid_eigenVector( VALUE self, VALUE rb_m, VALUE rb_eigenValue )
+VALUE grid_triOffDiag( VALUE self, VALUE rb_m )
 {
   int i;
-  double m[6], eigenVector[3];
-  VALUE rb_eigenVector;
-  Grid *rGrid;
+  double m[6], d[3], e[3], q[9];
+  VALUE rb_e;
   GET_GRID_FROM_SELF;
   for (i=0;i<6;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
-  rGrid = gridEigenVector( grid, m, NUM2DBL(rb_eigenValue), eigenVector );
-  if ( rGrid == grid ){
-    rb_eigenVector = rb_ary_new2(3);
-    rb_ary_store( rb_eigenVector, 0, rb_float_new(eigenVector[0]) );
-    rb_ary_store( rb_eigenVector, 1, rb_float_new(eigenVector[1]) );
-    rb_ary_store( rb_eigenVector, 2, rb_float_new(eigenVector[2]) );
+  if (grid == gridTriDiag3x3(grid,m,d,e,q)) {
+    rb_e = rb_ary_new2(3);
+    for(i=0;i<3;i++) rb_ary_store( rb_e, i, rb_float_new(e[i]) );
+    return rb_e;
   }else{
-    rb_eigenVector = Qnil;
+    return Qnil;
   }
-  return rb_eigenVector;
+}
+
+VALUE grid_triDiagTransform( VALUE self, VALUE rb_m )
+{
+  int i;
+  double m[6], d[3], e[3], q[9];
+  VALUE rb_q;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<6;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
+  if (grid == gridTriDiag3x3(grid,m,d,e,q)) {
+    rb_q = rb_ary_new2(9);
+    for(i=0;i<9;i++) rb_ary_store( rb_q, i, rb_float_new(q[i]) );
+    return rb_q;
+  }else{
+    return Qnil;
+  }
+}
+
+VALUE grid_eigTriDiag( VALUE self, VALUE rb_d, VALUE rb_e, VALUE rb_q  )
+{
+  int i;
+  double d[3], e[3], q[9];
+  VALUE rb_eig;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<3;i++) d[i] = NUM2DBL(rb_ary_entry(rb_d,i));
+  for (i=0;i<3;i++) e[i] = NUM2DBL(rb_ary_entry(rb_e,i));
+  for (i=0;i<9;i++) q[i] = NUM2DBL(rb_ary_entry(rb_q,i));
+  if ( grid == gridEigTriDiag3x3( grid, d, e, q ) ) {
+    rb_eig = rb_ary_new2(3);
+    for(i=0;i<3;i++) rb_ary_store( rb_eig, i, rb_float_new(d[i]) );
+    return rb_eig;
+  } else {
+    return Qnil;
+  }
+}
+
+VALUE grid_vectTriDiag( VALUE self, VALUE rb_d, VALUE rb_e, VALUE rb_q  )
+{
+  int i;
+  double d[3], e[3], q[9];
+  VALUE rb_vect;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<3;i++) d[i] = NUM2DBL(rb_ary_entry(rb_d,i));
+  for (i=0;i<3;i++) e[i] = NUM2DBL(rb_ary_entry(rb_e,i));
+  for (i=0;i<9;i++) q[i] = NUM2DBL(rb_ary_entry(rb_q,i));
+  if ( grid == gridEigTriDiag3x3( grid, d, e, q ) ) {
+    rb_vect = rb_ary_new2(9);
+    for(i=0;i<9;i++) rb_ary_store( rb_vect, i, rb_float_new(q[i]) );
+    return rb_vect;
+  } else {
+    return Qnil;
+  }
 }
 
 VALUE grid_eigenSystem( VALUE self, VALUE rb_m )
@@ -436,8 +480,12 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "copySpacing", grid_copySpacing, 2 );
   rb_define_method( cGridMetric, "setMapMatrixToAverageOfNodes", 
 		    grid_setMapMatrixToAverageOfNodes, 3 );
-  rb_define_method( cGridMetric, "eigenValues", grid_eigenValues, 1 );
-  rb_define_method( cGridMetric, "eigenVector", grid_eigenVector, 2 );
+  rb_define_method( cGridMetric, "triDiag", grid_triDiag, 1 );
+  rb_define_method( cGridMetric, "triOffDiag", grid_triOffDiag, 1 );
+  rb_define_method( cGridMetric, "triDiagTransform", grid_triDiagTransform, 1 );
+  rb_define_method( cGridMetric, "eigTriDiag", grid_eigTriDiag, 3 );
+  rb_define_method( cGridMetric, "vectTriDiag", grid_vectTriDiag, 3 );
+
   rb_define_method( cGridMetric, "eigenSystem", grid_eigenSystem, 1 );
   rb_define_method( cGridMetric, "convertMetricToJacobian", 
 		    grid_convertMetricToJacobian, 1 );

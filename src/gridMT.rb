@@ -46,6 +46,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0, @grid.partId
   assert_equal 0, @grid.globalnnode
   assert_equal 0, @grid.globalncell
+  assert_equal 0, @grid.nUnusedCellGlobal
  end
 
  def testSetPartId
@@ -115,6 +116,42 @@ class TestGrid < Test::Unit::TestCase
   assert_equal EMPTY, grid.cellGlobal(-1)
   assert_equal 15,    grid.cellGlobal(0)
   assert_equal EMPTY, grid.cellGlobal(1)
+ end
+
+ def testRemoveAndAddTracksGlobalCellId
+  grid = Grid.new(5,2,0,0)
+  5.times { grid.addNode(1.0,2.0,3.0) }
+  grid.addCell(0,1,2,3)
+  grid.setGlobalNCell(3512)
+  grid.setCellGlobal(0,15)
+  grid.removeCell(0)
+  assert_equal [15], grid.getUnusedCellGlobal
+  grid.addCell(0,1,2,3)
+  assert_equal [], grid.getUnusedCellGlobal
+  grid.addCell(0,2,1,4)
+  assert_equal 15,   grid.cellGlobal(0)
+  assert_equal 3512, grid.cellGlobal(1)
+  assert_equal 3513, grid.globalncell
+ end
+
+ def testJoinUnusedGlobalCellId
+  grid = Grid.new(5,2,0,0)
+  5.times { grid.addNode(1.0,2.0,3.0) }
+  grid.addCell(0,1,2,3)
+  grid.setGlobalNCell(3512)
+  grid.setCellGlobal(0,15)
+  grid.removeCell(0)
+  assert_equal 1, grid.nUnusedCellGlobal
+  assert_equal [15], grid.getUnusedCellGlobal
+  assert_equal grid, grid.joinUnusedCellGlobal(75)
+  assert_equal [15,75], grid.getUnusedCellGlobal
+  assert_equal grid, grid.joinUnusedCellGlobal(5)
+  assert_equal [5,15,75], grid.getUnusedCellGlobal
+  assert_equal grid, grid.joinUnusedCellGlobal(15)
+  assert_equal [5,15,75], grid.getUnusedCellGlobal
+  grid.addCell(0,1,2,3)
+  assert_equal 5, grid.cellGlobal(0)
+  assert_equal [15,75], grid.getUnusedCellGlobal
  end
 
  def testInitNodeFrozenState
@@ -271,7 +308,22 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [2,1,0], grid.gem(3,4)
  end
  
-  def testOrient
+ def testGemLocality
+  grid = Grid.new(5,2,0,0).setPartId(5)
+  5.times { |n| grid.addNode(1,2,3); grid.setNodePart(n,5)}
+  grid.addCell(0,1,2,3)
+  grid.addCell(0,2,1,4)
+  grid.gem(0,1)
+  assert_equal true, grid.gemIsAllLocal
+  grid.setNodePart(4,2)
+  assert_equal false, grid.gemIsAllLocal
+  grid.setNodePart(4,5)
+  assert_equal true, grid.gemIsAllLocal
+  grid.setNodePart(3,2)
+  assert_equal false, grid.gemIsAllLocal
+ end
+
+ def testOrient
   assert_equal nil, @grid.orient(0,1,2,3,4,5)
   
   assert_equal [0, 1, 2, 3], @grid.orient(0,1,2,3,0,1)

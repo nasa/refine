@@ -7,14 +7,14 @@
 VALUE grid_swapFace( VALUE self, VALUE n0, VALUE n1, VALUE n2)
 {
   GET_GRID_FROM_SELF;
-  return (gridSwapFace( grid, NUM2INT(n0),  
+  return (gridSwapFace( grid, NULL, NUM2INT(n0),  
 			NUM2INT(n1), NUM2INT(n2) )==grid?self:Qnil);
 }
 
 VALUE grid_swapEdge( VALUE self, VALUE n0, VALUE n1 )
 {
   GET_GRID_FROM_SELF;
-  return (gridSwapEdge( grid, NUM2INT(n0),  NUM2INT(n1) )==grid?self:Qnil);
+  return (gridSwapEdge( grid, NULL, NUM2INT(n0), NUM2INT(n1) )==grid?self:Qnil);
 }
 
 VALUE grid_swap( VALUE self )

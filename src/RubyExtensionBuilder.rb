@@ -13,7 +13,7 @@ class RubyExtensionBuilder
   extraFiles['Intersect'] = 'gridmath.c'
   extraFiles['Grid'] = 'adj.h line.h sort.h'
   extraFiles['GridMetric'] = 'adj.h line.h grid.h gridmath.c'
-  extraFiles['GridSwap'] = 'adj.h line.h grid.h gridmath.h gridmetric.h'
+  extraFiles['GridSwap'] = 'adj.h line.h queue.h grid.h gridmath.h gridmetric.h'
   extraFiles['GridCAD'] = 'FAKEGeom adj.h line.h grid.h gridmath.h gridmetric.h gridswap.h queue.h gridinsert.h'
   extraFiles['GridInsert'] = 'adj.h line.h grid.h gridmath.h gridswap.h gridmetric.h gridcad.h queue.h '
   extraFiles['GridMPI'] = 'adj.h line.h queue.h grid.h gridmath.h gridmetric.h gridinsert.h'

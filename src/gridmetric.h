@@ -39,6 +39,8 @@ Grid *gridCopySpacing(Grid *g, int originalNode, int newNode);
 Grid *gridEigenValues(Grid *g, double *m, double *eigenValues);
 Grid *gridEigenVector(Grid *g, double *m, double eigenValue, 
 		      double *eigenVector );
+Grid *gridTriDiag3x3(Grid *g, double *m, double *d, double *e, double *q);
+Grid *gridEigTriDiag3x3(Grid *g, double *d, double *e, double *q);
 Grid *gridEigenSystem(Grid *g, double *m, double *eigenValues, 
 		      double *v1, double *v2, double *v3);
 Grid *gridConvertMetricToJacobian(Grid *g, double *m, double *j);

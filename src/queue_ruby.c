@@ -9,11 +9,11 @@ static void queue_free( void *queue )
   queueFree( queue );
 }
 
-VALUE queue_new( VALUE class )
+VALUE queue_new( VALUE class, VALUE nodeSize )
 {
   Queue *queue;
   VALUE obj;
-  queue = queueCreate(  );
+  queue = queueCreate( NUM2INT(nodeSize) );
   obj = Data_Wrap_Struct( class, 0, queue_free, queue );
   return obj;
 }
@@ -22,6 +22,12 @@ VALUE queue_reset(VALUE self )
 {
   GET_QUEUE_FROM_SELF;
   return (queue==queueReset(queue)?self:Qnil);
+}
+
+VALUE queue_nodeSize( VALUE self )
+{
+  GET_QUEUE_FROM_SELF;
+  return INT2NUM(queueNodeSize(queue));
 }
 
 VALUE queue_transactions( VALUE self )
@@ -65,12 +71,17 @@ VALUE queue_removedCellNodes( VALUE self, VALUE index )
 
 VALUE queue_addCell( VALUE self, VALUE rb_nodes, VALUE rb_xyzs )
 {
-  int i, nodes[5];
-  double xyzs[12];
+  int i, nodes[9];
+  double *xyzs;
+  VALUE result;
   GET_QUEUE_FROM_SELF;
-  for (i=0;i< 5;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
-  for (i=0;i<12;i++) xyzs[i] =NUM2DBL(rb_ary_entry(rb_xyzs,i));
-  return (queue==queueAddCell(queue,nodes,xyzs)?self:Qnil);
+  for (i=0;i< 9;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
+  xyzs = malloc(4*queueNodeSize(queue)*sizeof(double));
+  for (i=0;i<4*queueNodeSize(queue);i++) 
+    xyzs[i] = NUM2DBL(rb_ary_entry(rb_xyzs,i));
+  result = (queue==queueAddCell(queue,nodes,xyzs)?self:Qnil);
+  free(xyzs);
+  return result;
 }
 
 VALUE queue_addedCells( VALUE self, VALUE transaction )
@@ -81,25 +92,31 @@ VALUE queue_addedCells( VALUE self, VALUE transaction )
 
 VALUE queue_addedCellNodes( VALUE self, VALUE index )
 {
-  int i, nodes[5];
+  int i, nodes[9];
   VALUE rb_nodes;
   GET_QUEUE_FROM_SELF;
   if (queue != queueAddedCellNodes(queue,NUM2INT(index),nodes)) return Qnil;
-  rb_nodes = rb_ary_new2(5);
-  for (i=0;i<5;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
+  rb_nodes = rb_ary_new2(9);
+  for (i=0;i<9;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
   return rb_nodes;
 }
 
 VALUE queue_addedCellXYZs( VALUE self, VALUE index )
 {
   int i;
-  double xyzs[12];
+  double *xyzs;
   VALUE rb_xyzs;
   GET_QUEUE_FROM_SELF;
-  if (queue != queueAddedCellXYZs(queue,NUM2INT(index),xyzs)) return Qnil;
-  rb_xyzs = rb_ary_new2(12);
-  for (i=0;i<12;i++) rb_ary_store(rb_xyzs,i,rb_float_new(xyzs[i]));
-  return rb_xyzs;
+  xyzs = malloc(4*queueNodeSize(queue)*sizeof(double));
+  if (queue != queueAddedCellXYZs(queue,NUM2INT(index),xyzs)) {
+    free (xyzs);
+    return Qnil;
+  }else{
+    rb_xyzs = rb_ary_new2(4*queueNodeSize(queue));
+    for (i=0;i<4*queueNodeSize(queue);i++) 
+      rb_ary_store(rb_xyzs,i,rb_float_new(xyzs[i]));
+    return rb_xyzs;
+  }
 }
 
 VALUE queue_totalRemovedCells( VALUE self )
@@ -277,8 +294,9 @@ VALUE cQueue;
 void Init_Queue() 
 {
   cQueue = rb_define_class( "Queue", rb_cObject );
-  rb_define_singleton_method( cQueue, "new", queue_new, 0 );
+  rb_define_singleton_method( cQueue, "new", queue_new, 1 );
   rb_define_method( cQueue, "reset", queue_reset, 0 );
+  rb_define_method( cQueue, "nodeSize", queue_nodeSize, 0 );
   rb_define_method( cQueue, "transactions", queue_transactions, 0 );
   rb_define_method( cQueue, "newTransaction", queue_newTransaction, 0 );
 

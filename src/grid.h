@@ -57,6 +57,7 @@ struct Grid {
   int *c2n;
   Adj *cellAdj;
   int *cellGlobal;
+  int maxUnusedCellGlobal, nUnusedCellGlobal, *unusedCellGlobal;
 
   int maxface, nface;
   int blankf2n;
@@ -148,6 +149,9 @@ int gridGlobalNNode(Grid *g);
 Grid *gridSetGlobalNNode(Grid *g, int nglobal );
 int gridGlobalNCell(Grid *g);
 Grid *gridSetGlobalNCell(Grid *g, int nglobal );
+int gridNUnusedCellGlobal(Grid *g );
+Grid *gridGetUnusedCellGlobal(Grid *g, int *unused );
+Grid *gridJoinUnusedCellGlobal(Grid *g, int global );
 int gridCellDegree(Grid *g, int nodeIndex);
 int gridCellGlobal(Grid *g, int cellIndex);
 Grid *gridSetCellGlobal(Grid *g, int cellIndex, int globalIndex );
@@ -165,6 +169,7 @@ gridNodeGhost(grid,(nodes)[2]) || \
 gridNodeGhost(grid,(nodes)[3]) )
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
+int gridAddCellWithGlobal(Grid *g, int n0, int n1, int n2, int n3, int global );
 Grid *gridRemoveCell(Grid *g, int cellId );
 #define gridCellAdj(grid) (NULL==grid?NULL:grid->cellAdj)
 Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );

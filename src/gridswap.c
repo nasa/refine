@@ -14,7 +14,7 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 
-Grid *gridSwapFace(Grid *grid, int n0, int n1, int n2 )
+Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
 {
   int cell0, cell1;
   int nodes0[4], nodes1[4], topnode, bottomnode;
@@ -81,7 +81,7 @@ Grid *gridSwapEdge5(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge6(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge7(Grid *grid, int n0, int n1 );
 
-Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
 {
   int gap0, gap1, face0, face1, faceId0, faceId1, newFaceId0, newFaceId1;
   double origMR, newMR;
@@ -165,16 +165,16 @@ Grid *gridSwapNearNode(Grid *grid, int node)
   while ( adjValid(it) ){
     gridCell( grid, adjItem(it), nodes);
     if ( gridAR(grid, nodes) < 0.5 ) {
-      if ( ( NULL != gridSwapFace(grid,nodes[1],nodes[2],nodes[3]) ) ||
-	   ( NULL != gridSwapFace(grid,nodes[0],nodes[2],nodes[3]) ) ||
-	   ( NULL != gridSwapFace(grid,nodes[0],nodes[1],nodes[3]) ) ||
-	   ( NULL != gridSwapFace(grid,nodes[0],nodes[1],nodes[2]) ) ||
-	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ) ||
-	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ) ||
-	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ) ||
-	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ) ||
-	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ) ||
-	   ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ) ) {
+      if ( ( NULL != gridSwapFace( grid, NULL, nodes[1],nodes[2],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[2],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[2]) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[1] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[2] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[3] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[2] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[3] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[2], nodes[3] ) ) ) {
 	it = adjFirst(gridCellAdj(grid),node);
 	nswap++;
       }else{
@@ -204,22 +204,22 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
     if ( gridAR(grid, nodes) < 0.5 ) {
       if ( ( !gridGeometryFace(grid, nodes[0]) && 
 	     !gridGeometryFace(grid, nodes[1]) &&
-	     ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ) ) ||
+	     ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[1] ) ) ) ||
 	   ( !gridGeometryFace(grid, nodes[0]) && 
 	     !gridGeometryFace(grid, nodes[2]) &&
-	     ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ) ) ||
+	     ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[2] ) ) ) ||
 	   ( !gridGeometryFace(grid, nodes[0]) && 
 	     !gridGeometryFace(grid, nodes[3]) &&
-	     ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ) ) ||
+	     ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[3] ) ) ) ||
 	   ( !gridGeometryFace(grid, nodes[1]) && 
 	     !gridGeometryFace(grid, nodes[2]) &&
-	     ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ) ) ||
+	     ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[2] ) ) ) ||
 	   ( !gridGeometryFace(grid, nodes[1]) && 
 	     !gridGeometryFace(grid, nodes[3]) &&
-	     ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ) ) ||
+	     ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[3] ) ) ) ||
 	   ( !gridGeometryFace(grid, nodes[2]) && 
 	     !gridGeometryFace(grid, nodes[3]) &&
-	     ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ) ) ) {
+	     ( NULL != gridSwapEdge( grid, NULL, nodes[2], nodes[3] ) ) ) ) {
 	it = adjFirst(gridCellAdj(grid),node);
 	nswap++;
       }else{
@@ -248,26 +248,26 @@ Grid *gridSwap(Grid *grid)
   for (cellId=0;cellId<maxcell;cellId++){
     if ( grid == gridCell( grid, cellId, nodes) && gridAR(grid, nodes) < 0.5) {
       swap = TRUE;
-      if (swap) swap = (grid != gridSwapFace(grid,nodes[1],nodes[2],nodes[3]) )
+      if (swap) swap = (grid != gridSwapFace(grid, NULL,nodes[1],nodes[2],nodes[3]) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-      if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[2],nodes[3]) )
+      if (swap) swap = (grid != gridSwapFace(grid, NULL,nodes[0],nodes[2],nodes[3]) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-      if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[1],nodes[3]) )
+      if (swap) swap = (grid != gridSwapFace(grid, NULL,nodes[0],nodes[1],nodes[3]) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-      if (swap) swap = (grid != gridSwapFace(grid,nodes[0],nodes[1],nodes[2]) )
+      if (swap) swap = (grid != gridSwapFace(grid, NULL,nodes[0],nodes[1],nodes[2]) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
 
-      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[1] ) )
+      if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[0], nodes[1] ) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[2] ) )
+      if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[0], nodes[2] ) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[0], nodes[3] ) )
+      if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[0], nodes[3] ) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[1], nodes[2] ) )
+      if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[1], nodes[2] ) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[1], nodes[3] ) )
+      if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[1], nodes[3] ) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-      if (swap) swap = ( grid != gridSwapEdge( grid, nodes[2], nodes[3] ) )
+      if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[2], nodes[3] ) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
     }
   }

@@ -13,9 +13,10 @@
 
 #include "master_header.h"
 #include "grid.h"
+#include "queue.h"
 
-Grid *gridSwapFace(Grid *g, int n0, int n1, int n2 );
-Grid *gridSwapEdge(Grid *g, int n0, int n1 );
+Grid *gridSwapFace(Grid *g, Queue *q, int n0, int n1, int n2 );
+Grid *gridSwapEdge(Grid *g, Queue *q, int n0, int n1 );
 Grid *gridSwapNearNode(Grid *g, int node );
 Grid *gridSwapNearNodeExceptBoundary(Grid *g, int node );
 Grid *gridSwap(Grid *g );

@@ -13,10 +13,11 @@
 #include <stdlib.h>
 #include "queue.h"
 
-Queue* queueCreate(  )
+Queue* queueCreate( int nodeSize )
 {
   Queue *queue;
   queue = malloc( sizeof(Queue) );
+  queue->nodeSize = nodeSize;
   queue->maxTransactions = 100;
   queue->removedCells = malloc( queue->maxTransactions * sizeof(int) );
   queue->addedCells = malloc( queue->maxTransactions * sizeof(int) );
@@ -25,8 +26,9 @@ Queue* queueCreate(  )
   queue->maxRemovedCells = 100;
   queue->removedCellNodes = malloc( 4 * queue->maxRemovedCells * sizeof(int) );
   queue->maxAddedCells = 100;
-  queue->addedCellNodes = malloc( 5 * queue->maxAddedCells * sizeof(int) );
-  queue->addedCellXYZs = malloc( 12 * queue->maxAddedCells * sizeof(double) );
+  queue->addedCellNodes = malloc( 9 * queue->maxAddedCells * sizeof(int) );
+  queue->addedCellXYZs = malloc( 4*queue->nodeSize * queue->maxAddedCells 
+				 * sizeof(double) );
   queue->maxRemovedFaces = 100;
   queue->removedFaceNodes = malloc( 3 * queue->maxRemovedFaces * sizeof(int) );
   queue->maxAddedFaces = 100;
@@ -64,6 +66,12 @@ Queue *queueReset( Queue *queue )
   queue->addedFaces[0] = 0;
   queue->removedFaces[0] = 0;
   return queue;
+}
+
+int queueNodeSize( Queue *queue )
+{
+  if (NULL==queue) return EMPTY;
+  return queue->nodeSize;
 }
 
 int queueTransactions( Queue *queue )
@@ -133,12 +141,14 @@ Queue *queueAddCell( Queue *queue, int *nodes, double *xyzs )
   if (queue->nAddedCells>=queue->maxAddedCells) {
     queue->maxAddedCells += 100;
     queue->addedCellNodes = realloc( queue->addedCellNodes, 
-				     5 * queue->maxAddedCells * sizeof(int) );
+				     9 * queue->maxAddedCells * sizeof(int) );
     queue->addedCellXYZs  = realloc( queue->addedCellXYZs, 
-				     12 * queue->maxAddedCells* sizeof(double));
+				     4*queue->nodeSize * queue->maxAddedCells 
+				     * sizeof(double));
   }
-  for (i=0;i<5 ;i++) queue->addedCellNodes[i+5*queue->nAddedCells] = nodes[i];
-  for (i=0;i<12;i++) queue->addedCellXYZs[i+12*queue->nAddedCells] = xyzs[i];
+  for (i=0;i<9 ;i++) queue->addedCellNodes[i+9*queue->nAddedCells] = nodes[i];
+  for (i=0;i<4*queue->nodeSize;i++) 
+    queue->addedCellXYZs[i+4*queue->nodeSize*queue->nAddedCells] = xyzs[i];
   queue->nAddedCells++;
   return queue;
 }
@@ -155,7 +165,7 @@ Queue *queueAddedCellNodes( Queue *queue, int index, int *nodes )
   int i;
   if (NULL==queue) return NULL;
   if ( index<0 || index>queue->nAddedCells ) return NULL;
-  for (i=0;i<5;i++) nodes[i] = queue->addedCellNodes[i+5*index];
+  for (i=0;i<9;i++) nodes[i] = queue->addedCellNodes[i+9*index];
   return queue;
 }
 
@@ -164,7 +174,8 @@ Queue *queueAddedCellXYZs( Queue *queue, int index, double *xyzs )
   int i;
   if (NULL==queue) return NULL;
   if ( index<0 || index>queue->nAddedCells ) return NULL;
-  for (i=0;i<12;i++) xyzs[i] = queue->addedCellXYZs[i+12*index];
+  for (i=0;i<4*queue->nodeSize;i++) 
+    xyzs[i] = queue->addedCellXYZs[i+4*queue->nodeSize*index];
   return queue;
 }
 
@@ -275,13 +286,13 @@ Queue *queueDumpSize( Queue *queue, int *nInt, int *nDouble )
   *nDouble = EMPTY;
   if (NULL==queue) return NULL;
   *nInt 
-    = 5
+    = 6
     + 4 * queue->transactions
     + 4 * queue->nRemovedCells
-    + 5 * queue->nAddedCells
+    + 9 * queue->nAddedCells
     + 3 * queue->nRemovedFaces
     + 4 * queue->nAddedFaces;
-  *nDouble = 12 * queue->nAddedCells + 6 * queue->nAddedFaces ;
+  *nDouble = 4*queue->nodeSize * queue->nAddedCells + 6 * queue->nAddedFaces ;
   return queue;
 }
 
@@ -289,12 +300,13 @@ Queue *queueDump( Queue *queue, int *ints, double *doubles )
 {
   int i, d, node, size, transaction, removed, added;
   if (NULL==queue) return NULL;
-  ints[0] = queue->transactions;
-  ints[1] = queue->nRemovedCells;
-  ints[2] = queue->nAddedCells;
-  ints[3] = queue->nRemovedFaces;
-  ints[4] = queue->nAddedFaces;
-  i = 5;
+  ints[0] = queue->nodeSize;
+  ints[1] = queue->transactions;
+  ints[2] = queue->nRemovedCells;
+  ints[3] = queue->nAddedCells;
+  ints[4] = queue->nRemovedFaces;
+  ints[5] = queue->nAddedFaces;
+  i = 6;
   d = 0;
 
   for(transaction=0;transaction<queue->transactions;transaction++){
@@ -311,11 +323,11 @@ Queue *queueDump( Queue *queue, int *ints, double *doubles )
     ints[i] = queue->addedCells[transaction]; i++;
   }
   for(added=0;added<queue->nAddedCells;added++){
-    size = 5;
+    size = 9;
     for (node=0;node<size;node++) { 
       ints[i] = queue->addedCellNodes[node+size*added]; i++;
     }
-    size = 12;
+    size = 4*queue->nodeSize;
     for (node=0;node<size;node++) { 
       doubles[d] = queue->addedCellXYZs[node+size*added]; d++;
     }
@@ -354,12 +366,17 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
 
   if (NULL==queue) return NULL;
 
-  queue->transactions  = ints[0];
-  queue->nRemovedCells = ints[1];
-  queue->nAddedCells   = ints[2];
-  queue->nRemovedFaces = ints[3];
-  queue->nAddedFaces   = ints[4];
-  i = 5;
+  if ( queue->nodeSize != ints[0] ) {
+    printf("ERROR: %s: %d: queueLoad: incompatable nodeSize: %d %d\n",
+	   __FILE__, __LINE__, queue->nodeSize, ints[0] );
+    return NULL;
+  }			    
+  queue->transactions  = ints[1];
+  queue->nRemovedCells = ints[2];
+  queue->nAddedCells   = ints[3];
+  queue->nRemovedFaces = ints[4];
+  queue->nAddedFaces   = ints[5];
+  i = 6;
   d = 0;
 
   if (queue->transactions > queue->maxTransactions) {
@@ -382,9 +399,10 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
   if (queue->nAddedCells > queue->maxAddedCells) {
     queue->maxAddedCells = queue->nAddedCells;
     queue->addedCellNodes = realloc( queue->addedCellNodes, 
-				     5 * queue->maxAddedCells * sizeof(int) );
+				     9 * queue->maxAddedCells * sizeof(int) );
     queue->addedCellXYZs  = realloc( queue->addedCellXYZs, 
-				     12 * queue->maxAddedCells* sizeof(double));
+				     4*queue->nodeSize * queue->maxAddedCells
+				     * sizeof(double));
   }
   if (queue->nRemovedFaces > queue->maxRemovedFaces) {
     queue->maxRemovedFaces = queue->nRemovedFaces;
@@ -413,11 +431,11 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
     queue->addedCells[transaction] = ints[i]; i++;
   }
   for(added=0;added<queue->nAddedCells;added++){
-    size = 5;
+    size = 9;
     for (node=0;node<size;node++) { 
       queue->addedCellNodes[node+size*added] = ints[i]; i++;
     }
-    size = 12;
+    size = 4*queue->nodeSize;
     for (node=0;node<size;node++) { 
       queue->addedCellXYZs[node+size*added] = doubles[d]; d++;
     }
@@ -453,7 +471,7 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
 Queue *queueContents(Queue *queue, FILE *f)
 {
   int transaction, removed, removedcell;
-  int globalnodes[5];
+  int globalnodes[9];
 
   if (NULL==queue) return NULL;
 

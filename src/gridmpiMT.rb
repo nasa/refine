@@ -85,9 +85,9 @@ class TestGridMPI < Test::Unit::TestCase
  end
 
  def testLoadQueue
-  q = Queue.new
+  q = Queue.new 9
   p1 = rightTet.setPartId(1).setAllLocal
-  p1.setGhost(3)
+  p1.setNodePart(3,2)
 
   assert_equal 4, p1.parallelEdgeSplit(q,0,3)
   assert_equal 2, p1.ncell
@@ -101,12 +101,13 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 2, q.transactions
   assert_equal 1, q.removedCells(1)
   assert_equal [100,101,102,103], q.removedCellNodes(0)
-  assert_equal 2, q.addedCells(1)
-  assert_equal [104,101,102,103,200], q.addedCellNodes(0)
-  assert_equal [100,101,102,104,201], q.addedCellNodes(1)
+  assert_equal 1, q.addedCells(1)
+  assert_equal [104,101,102,103,200,1,1,1,2], q.addedCellNodes(0)
   h=0.5
-  assert_equal [ 0,0,h, 1,0,0, 0,1,0, 0,0,1 ], q.addedCellXYZs(0)
-  assert_equal [ 0,0,0, 1,0,0, 0,1,0, 0,0,h ], q.addedCellXYZs(1)
+  assert_equal [ 0,0,h, 1,0,0,1,0,1, 
+                 1,0,0, 1,0,0,1,0,1, 
+                 0,1,0, 1,0,0,1,0,1, 
+                 0,0,1, 1,0,0,1,0,1], q.addedCellXYZs(0)
   assert_equal 2, q.removedFaces(1)
   assert_equal [100,103,101], q.removedFaceNodes(0)
   assert_equal [100,102,103], q.removedFaceNodes(1)
@@ -114,7 +115,7 @@ class TestGridMPI < Test::Unit::TestCase
  end
 
  def testUnPackQueue
-  q = Queue.new
+  q = Queue.new 9
   p1 = rightTet.setPartId(1).setAllLocal
   p2 = rightTet.setPartId(2).setAllLocal
   p2.setGhost(0).setGhost(1).setGhost(2)
