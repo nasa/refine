@@ -434,6 +434,40 @@ Layer *layerSetNormalHeight(Layer *layer, int normal, double height)
   return layer;
 }
 
+Layer *layerGetNormalHeight(Layer *layer, int normal, double *height)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
+  *height = layer->normal[normal].height;
+
+  return layer;
+}
+
+Layer *layerScaleNormalHeight(Layer *layer, double scale)
+{
+  int normal;
+
+  for(normal=0;normal<layerNNormal(layer); normal++)
+    layer->normal[normal].height=scale*layer->normal[normal].height;
+
+  return layer;
+}
+
+Layer *layerLaminarInitialHeight(Layer *layer, double Re)
+{
+  int normal;
+  double xyz[3];
+  double height;
+
+  for(normal=0;normal<layerNNormal(layer); normal++){
+    gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
+    height = 5.2 * sqrt(xyz[0]+0.005) / sqrt(Re) / 50.0;
+    layerSetNormalHeight(layer,normal,height);
+  }
+
+  return layer;
+}
+
 Layer *layerVisibleNormals(Layer *layer)
 {
   int normal, iter, front, i;

@@ -441,23 +441,26 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   return layer;
 }
 
-int layerTerminateNormalWithBGSpacing(Layer *layer, double height)
+int layerTerminateNormalWithBGSpacing(Layer *layer)
 {
   int normal, nterm;
   int root;
   double xyz[3];
   double spacing[3];
   double direction[9];
+  double height;
 
   if (layerNNormal(layer) == 0 ) return EMPTY;
 
   nterm = 0;
   for (normal=0;normal<layerNNormal(layer);normal++){
+    layerGetNormalHeight(layer,normal,&height);
+
     root = layerNormalRoot(layer, normal );
     gridNodeXYZ(layerGrid(layer),root,xyz);
-
     MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-    if (height > spacing[0]) {		/* Assume Isotropic for now */
+
+    if (height > 0.5*spacing[0]) {     /* Assume Isotropic for now */
       nterm++;
       layerTerminateNormal(layer, normal);
     }
@@ -483,12 +486,13 @@ int MesherX_DiscretizeVolume( int maxNodes, char *project )
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid); 
   layerFindParentEdges(layer);
-
-  h =0.0002;
-  while (layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer,h*2.0)) {
-    layerVisibleNormals(layer);
-    layerAdvanceConstantHeight(layer,h);
-    h=h*1.5;
+  i=0;
+  layerLaminarInitialHeight(layer, 1000.0);
+  while (i<10 &&layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer)) {
+    //layerVisibleNormals(layer);
+    layerAdvance(layer);
+    layerScaleNormalHeight(layer,1.2);
+    i++;
   }
 
   printf(" -- REBUILD EDGES\n");
