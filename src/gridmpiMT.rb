@@ -16,11 +16,13 @@ require 'Sort/Sort'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
 require 'GridInsert/GridInsert'
+require 'GridSwap/GridSwap'
 require 'GridMPI/GridMPI'
 
 class Grid
  include GridMetric
  include GridInsert
+ include GridSwap
  include GridMPI
 end
 
@@ -45,6 +47,22 @@ class TestGridMPI < Test::Unit::TestCase
 		 11)
   grid.identityNodeGlobal(100).identityCellGlobal(200)
   grid.setGlobalNNode(104).setGlobalNCell(201)
+  grid
+ end 
+
+ def swapTet3
+  grid = Grid.new(5,3,0,0)
+  grid.addNode(0,0,-10)
+  grid.addNode(0,0,10)
+  grid.addNode( 1,-1,0)
+  grid.addNode( 0, 1,0)
+  grid.addNode(-1,-1,0)
+  grid.addCell(0,2,3,1)
+  grid.addCell(0,3,4,1)
+  grid.addCell(0,4,2,1)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  grid.identityNodeGlobal(100).identityCellGlobal(200)
+  grid.setGlobalNNode(105).setGlobalNCell(205)
   grid
  end 
 
@@ -84,7 +102,7 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal EMPTY, grid.nodePart(0)
  end
 
- def testLoadQueue
+ def testLoadQueueWithSplit
   q = Queue.new 9
   p1 = rightTet.setPartId(1).setAllLocal
   p1.setNodePart(3,2)
@@ -146,6 +164,28 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 2, p2.nface
   assert_equal [3,4,2,11], p2.face(0)
   assert_equal [3,1,4,10], p2.face(1)
+ end
+
+ def testLoadQueueWithSwap
+  q = Queue.new 9
+  p1 = swapTet3.setPartId(1).setAllLocal
+  p1.setNodePart(1,2).setNodePart(2,2).setNodePart(3,2).setNodePart(4,2)
+
+  assert_equal p1, p1.parallelEdgeSwap(q,0,1)
+  assert_equal 1, p1.ncell
+  assert_equal 200, p1.cellGlobal(0)
+  assert_equal [202], p1.getUnusedCellGlobal
+
+  assert_equal 2, q.transactions
+
+  assert_equal 3, q.removedCells(1)
+  assert_equal [100,102,103,101], q.removedCellNodes(2)
+  assert_equal [100,103,104,101], q.removedCellNodes(1)
+  assert_equal [100,104,102,101], q.removedCellNodes(0)
+
+  assert_equal 2, q.addedCells(1)
+  assert_equal [100,102,103,104,200,1,2,2,2], q.addedCellNodes(0)
+  assert_equal [101,102,104,103,201,2,2,2,2], q.addedCellNodes(1)
  end
 
 end
