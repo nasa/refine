@@ -154,6 +154,7 @@ Layer *layerFormAdvancingLayerWithCADGeomBCS( Grid *grid )
   nFrontFaces =0;
   for (face=1;face<=gridNGeomFace(grid);face++){
     upp = CADGeom_FaceGrid(vol,face);
+    if (NULL == upp) printf("ERROR CADGeom_FaceGrid(%d,%d) failed: %s: %d\n",vol,face,__FILE__,__LINE__);
     if ( BC_NOSLIP == GeoBC_GenericType(UGPatch_BC(upp))){
       printf("face %d is added to front.\n",face);
       frontFaces[nFrontFaces] = face;
