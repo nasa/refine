@@ -60,7 +60,15 @@ int gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode,
     node0 = inode[node0] - 1;
     node1 = inode[node1] - 1;
     node2 = inode[node2] - 1;
-    gridAddFace(grid, node0, node1, node2, *faceId);
+    if ( gridNodeGhost(grid,node0) && 
+	 gridNodeGhost(grid,node1) && 
+	 gridNodeGhost(grid,node2) ) {
+      printf(" %6d skipped add of phatom face %d bound %d.\n",
+	     gridPartId(grid),face,*faceId);
+      fflush(stdout);
+    }else{
+      gridAddFace(grid, node0, node1, node2, *faceId);
+    }
   }
 }
 
