@@ -67,6 +67,7 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   long entry, terminator, nextOpen;
 
   entry = -grid->celllist[0];
+  if (entry == 0 ) return NULL;
   terminator = -grid->celllist[entry];
   nextOpen = -grid->celllist[terminator];
  

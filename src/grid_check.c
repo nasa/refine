@@ -79,6 +79,9 @@ START_TEST(testAddedAndRemoveCell)
   for ( i =0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 1,
 	       "expected one neighbor of node");
 
+  fail_unless ( gridRegisterNodeCell(grid,i,0) == NULL, 
+		"ran out of memory");
+
   for ( i =0; i<4 ; i++ ) gridRemoveNodeCell(grid,i,0);
   for ( i =0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 0,
 	       "expected no neighbors of node");
