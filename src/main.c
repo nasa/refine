@@ -104,7 +104,7 @@ int main( int argc, char *argv[] )
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
   if(strcmp(adaptfile,"none")==0) {
-    printf("adapt parameter >none< selected.\n");
+    printf("adapt parameter >none< selected. Spacing reset.\n");
     gridResetSpacing(grid);
     if (boundaryLayerGrid) {
       printf("freezing distant volume nodes.\n");
@@ -127,8 +127,17 @@ int main( int argc, char *argv[] )
       printf("make advancing layer front normals visible to front.\n");
       layerVisibleNormals(layer);
     }else{
-      if (!debugInsert)
+      if (debugInsert) {
+	printf("Inserting a line of nodes.\n");
+	gridFreezeNode(grid,gridInsertInToGeomEdge(grid, 1.0, 0.0, 0.33));
+	gridFreezeNode(grid,gridInsertInToGeomEdge(grid, 1.0, 1.0, 0.33));
+	for(i=1;i<50;i++)
+	  gridFreezeNode(grid,gridInsertInToGeomFace(grid, 1.0, 0.02*i, 0.33));
+	ratio=0.9;
+      }else{
+	printf("Scaling spacing to refine a sphere.\n");
 	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
+      }
     }
   }else{
     printf("reading adapt parameter from file %s ...\n",adaptfile);
@@ -150,7 +159,6 @@ int main( int argc, char *argv[] )
   oldSize = 1;
   newSize = gridNNode(grid);
   jmax = 40;
-  if (debugInsert) jmax = -1;
   for ( j=0; (j<jmax) && (
 	(ratio < 0.99) || 
 	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
@@ -223,13 +231,6 @@ int main( int argc, char *argv[] )
       gridFreezeGoodNodes(grid,0.6,0.4,1.5);
       printf("nodes frozen %d\n",gridNFrozen(grid));
     }
-  }
-
-  if (debugInsert) {
-    gridInsertInToGeomEdge(grid, 1.0, 0.0, 0.33);
-    gridInsertInToGeomEdge(grid, 1.0, 1.0, 0.33);
-    for(i=1;i<100;i++)
-      gridInsertInToGeomFace(grid, 1.0, 0.01*i, 0.33);
   }
 
   if (!gridRightHandedBoundary(grid)) 
