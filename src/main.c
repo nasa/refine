@@ -27,7 +27,7 @@ int main( int argc, char *argv[] )
   char *output;
   int i, j, oldSize, newSize;
 
-  project = "../test/om6";
+  project = "../test/om6_fine";
   printf("running project %s\n",project);
 
   grid = gridLoadPart( project );
@@ -41,12 +41,16 @@ int main( int argc, char *argv[] )
 	 gridMinAR(grid),gridMinVolume(grid));
 
   printf("adapting grid...\n");
-  gridResetSpacing(grid);
-    gridScaleSpacingSphereDirection(grid,0.0,0.0,0.0,0.3,
-  				  0.2,2.5,0.2);
-  //  gridImportAdapt(grid, "../test/adapt_hess");
+  gridImportAdapt(grid, "../test/adapt_hess");
   printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	 gridMinAR(grid),gridMinVolume(grid));
+
+  for (i=0;i<2;i++){
+    printf("edge swapping grid...\n");gridSwap(grid);
+    printf("node smoothing grid...\n");gridSmooth(grid);
+    printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	   gridMinAR(grid),gridMinVolume(grid));
+  }
 
   oldSize = 1;
   newSize = gridNNode(grid) ;
@@ -63,8 +67,9 @@ int main( int argc, char *argv[] )
     for (i=0;i<2;i++){
       printf("edge swapping grid...\n");gridSwap(grid);
       if ( NULL != gridRobustProject(grid)) {
-	printf("node smoothin grid...\n");
-	gridSmooth(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid);
+      }else{
+	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
       }
       printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	     gridMinAR(grid),gridMinVolume(grid));
