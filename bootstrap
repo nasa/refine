@@ -3,5 +3,5 @@
 set -x
 
 aclocal $ACLOCAL_FLAGS \
-&& automake --force --copy --gnu --add-missing \
-&& autoconf --force
+&& automake --copy --gnu --add-missing \
+&& autoconf 
