@@ -30,6 +30,7 @@ Grid *gridProjectToFace(Grid *g, int faceId,
 			double *xyz, double *uv, double *newxyz );
 Grid *gridFaceNormalAtUV(Grid *g, int faceId, 
 			 double *uv, double *xyz, double *normal );
+Grid *gridFaceNormalAtXYZ(Grid *g, int faceId, double *xyz, double *normal );
 
 Grid *gridSafeProjectNode(Grid *g, int node, double ratio );
 Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId, double ratio );

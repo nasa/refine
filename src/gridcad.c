@@ -173,6 +173,19 @@ Grid *gridFaceNormalAtUV(Grid *grid, int faceId,
   return grid;
 }
 
+Grid *gridFaceNormalAtXYZ(Grid *grid, int faceId, double *xyz, double *normal )
+{
+  int vol =1;
+  double uv[2], newxyz[3];
+
+  uv[0] = DBL_MAX;
+  uv[1] = DBL_MAX;
+  if (grid != gridProjectToFace(grid,faceId,xyz,uv,newxyz)) return NULL;
+  if (grid != gridFaceNormalAtUV(grid, faceId, uv, newxyz, normal)) return NULL;
+
+  return grid;
+}
+
 Grid *gridSafeProjectNode(Grid *grid, int node, double ratio )
 {
   int nodes[3];
