@@ -1463,6 +1463,7 @@ Layer *layerSmoothInteriorNormalDirection(Layer *layer,
   }
 
   for (iter=0;iter<iterations;iter++){
+    printf("Normal smoothing iteration %d.\n",iter);
     for (normal=0;normal<layerNNormal(layer);normal++){
       if (layerNormalDirectionFrozen(layer,normal)) continue;
       if ( 0 < layerConstrained(layer,normal) ){
@@ -1536,7 +1537,6 @@ Layer *layerSmoothInteriorNormalDirection(Layer *layer,
       }
     }
     layerVisibleNormals(layer,visibility,visTol);
-    printf("iter %d\n",iter);
   }
 
   return layer;
