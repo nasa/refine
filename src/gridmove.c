@@ -507,3 +507,31 @@ GridMove *gridmoveProjectionDisplacements(GridMove *gm)
 
   return gm;
 }
+
+GridMove *gridmoveDataLeadingDimension( GridMove *gm, int *ndim )
+{
+  *ndim = 3;
+  return gm;
+}
+
+GridMove *gridmoveLoadFortranNodeData( GridMove *gm, int nnode, 
+				     int *nodes, double *data)
+{
+  int index, node, i;
+  for (index=0;index<nnode;index++) {
+    node = nodes[index]-1;
+    for(i=0;i<3;i++) data[i+3*index] = gm->xyz[i+3*node];
+  }
+  return gm;
+}
+
+GridMove *gridmoveSetFortranNodeData( GridMove *gm, int nnode, 
+				    int *nodes, double *data)
+{
+  int index, node, i;
+  for (index=0;index<nnode;index++) {
+    node = nodes[index]-1;
+    for(i=0;i<3;i++) gm->xyz[i+3*node]= data[i+3*index];
+  }
+  return gm;
+}

@@ -64,6 +64,13 @@ GridMove *gridmoveSprings(GridMove *, int *nsprings, int **springs);
 GridMove *gridmoveApplyDisplacements(GridMove *);
 GridMove *gridmoveProjectionDisplacements(GridMove *);
 
+GridMove *gridmoveDataLeadingDimension( GridMove *, int *ndim );
+GridMove *gridmoveLoadFortranNodeData( GridMove *, int nnode, 
+				     int *nodes, double *data);
+GridMove *gridmoveSetFortranNodeData( GridMove *, int nnode, 
+				    int *nodes, double *data);
+
+
 END_C_DECLORATION
 
 #endif /* GRIDMOVE_H */

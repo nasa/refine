@@ -596,6 +596,23 @@ void gridmoveapplydisplacements_( )
   gridmoveApplyDisplacements(gm);
 }
 
+void gridmovedataleadingdim_( int *ndim )
+{
+  gridmoveDataLeadingDimension( gm, ndim );
+}
+
+void gridmoveloadlocalnodedata_( int *ndim, int *nnode, 
+				 int *nodes, double *data )
+{
+  gridmoveLoadFortranNodeData( gm, *nnode, nodes, data);
+}
+
+void gridmovesetlocalnodedata_( int *ndim, int *nnode, 
+				 int *nodes, double *data )
+{
+  gridmoveSetFortranNodeData( gm, *nnode, nodes, data);
+}
+
 void gridmovefree_( )
 {
   gridmoveFree( gm );

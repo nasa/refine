@@ -85,6 +85,12 @@ void gridmovesprrelaxsubiter_( double *residual);
 void gridmovesprrelaxshutdown_( );
 void gridmoveapplydisplacements_( );
 
+void gridmovedataleadingdim_( int *ndim );
+void gridmoveloadlocalnodedata_( int *ndim, int *nnode, 
+				 int *nodes, double *data );
+void gridmovesetlocalnodedata_( int *ndim, int *nnode, 
+				int *nodes, double *data );
+
 void gridmovefree_( );
 
 END_C_DECLORATION
