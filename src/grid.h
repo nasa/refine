@@ -159,14 +159,14 @@ void gridFree(Grid *g);
 
 Grid *gridWriteTecplotSurfaceZone(Grid *g, char *filename );
 
-int gridMaxNode(Grid *g);
-int gridNNode(Grid *g);
-int gridMaxCell(Grid *g);
-int gridNCell(Grid *g);
-int gridMaxFace(Grid *g);
-int gridNFace(Grid *g);
-int gridMaxEdge(Grid *g);
-int gridNEdge(Grid *g);
+#define gridMaxNode(grid) (grid->maxnode)
+#define gridNNode(grid)   (grid->nnode)
+#define gridMaxCell(grid) (grid->maxcell)
+#define gridNCell(grid)   (grid->ncell)
+#define gridMaxFace(grid) (grid->maxface)
+#define gridNFace(grid)   (grid->nface)
+#define gridMaxEdge(grid) (grid->maxedge)
+#define gridNEdge(grid)   (grid->nedge)
 int gridNPrism(Grid *g);
 int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);

@@ -1007,46 +1007,6 @@ Grid *gridWriteTecplotSurfaceZone(Grid *grid, char *filename)
   return grid;
 }
 
-int gridMaxNode(Grid *grid)
-{
-  return grid->maxnode;
-}
-
-int gridNNode(Grid *grid)
-{
-  return grid->nnode;
-}
-
-int gridMaxCell(Grid *grid)
-{
-  return grid->maxcell;
-}
-
-int gridNCell(Grid *grid)
-{
-  return grid->ncell;
-}
-
-int gridMaxFace(Grid *grid)
-{
-  return grid->maxface;
-}
-
-int gridNFace(Grid *grid)
-{
-  return grid->nface;
-}
-
-int gridMaxEdge(Grid *grid)
-{
-  return grid->maxedge;
-}
-
-int gridNEdge(Grid *grid)
-{
-  return grid->nedge;
-}
-
 int gridNPrism(Grid *grid)
 {
   return grid->nprism;
