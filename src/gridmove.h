@@ -37,6 +37,7 @@ void gridmoveReallocator(void *voidGridMove, int reallocType,
 
 GridMove *gridmoveDisplace(GridMove *, int node, double *displace);
 GridMove *gridmoveDisplacement(GridMove *, int node, double *displacement);
+GridMove *gridmoveMove(GridMove *);
 
 END_C_DECLORATION
 

@@ -74,7 +74,20 @@ class TestGridMove < Test::Unit::TestCase
   grid.pack
   assert_equal zero, gm.displacement(3)
   assert_equal d,    gm.displacement(2)
-   
+ end
+
+ def testMove
+  grid = equalTetWithFaceBase
+  assert_not_nil gm = GridMove.new(grid)
+  zero = [0.0,0.0,0.0]
+  up  = [0.0,0.0,1.0]
+  3.times{|n| gm.displace(n,up)}
+  assert_equal zero, gm.displacement(3)
+  assert_equal gm, gm.move
+  assert_equal up, gm.displacement(0)
+  assert_equal up, gm.displacement(1)
+  assert_equal up, gm.displacement(2)
+  assert_equal up, gm.displacement(3)
  end
 
 end

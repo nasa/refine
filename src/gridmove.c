@@ -114,3 +114,8 @@ GridMove *gridmoveDisplacement(GridMove *gm, int node, double *displacement)
   displacement[2] = gm->displacement[2+3*node];
   return gm;
 }
+
+GridMove *gridmoveMove(GridMove *gm)
+{
+  return gm;
+}
