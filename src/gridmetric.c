@@ -194,6 +194,20 @@ Grid *gridSmallestRatioEdge(Grid *grid, int node,
   return grid;
 }
 
+Grid *gridSetConnValuesWithMetricErrorMagnatude(Grid *grid )
+{
+  int conn, nodes[2];
+  double ratio, error;
+  if (0==gridNConn(grid)) return NULL;
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    ratio = gridEdgeRatio(grid,nodes[0], nodes[1]);
+    error = (1-ratio)/(1+ratio);
+    gridSetConnValue(grid,conn,ABS(error));
+  }
+  return grid;
+}
+
 double gridSpacing(Grid *grid, int node )
 {
   double map[6];
