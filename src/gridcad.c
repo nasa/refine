@@ -744,6 +744,18 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
       for (i=0;i<3;i++) searchDirection[i] 
 			  = minRatio*grid->dARdX[i+minCell*3]
 			  + nearestRatio*grid->dARdX[i+nearestCell*3];
+      /* reset length to the projection of min cell to search dir*/
+      length 
+	= searchDirection[0]*searchDirection[0]
+	+ searchDirection[1]*searchDirection[1]
+	+ searchDirection[2]*searchDirection[2];
+      length = sqrt(length);
+      for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
+      projection
+	= searchDirection[0]*grid->dARdX[0+minCell*3]
+	+ searchDirection[1]*grid->dARdX[1+minCell*3]
+	+ searchDirection[2]*grid->dARdX[2+minCell*3];
+      for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
       //printf("node %5d min %10.7f near %10.7f\n",node,minRatio,nearestRatio);
     }
   }
@@ -816,7 +828,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   }
 
   if ( newAR > 0.6) return NULL;
-  if ( actualImprovement <= 0.0001 ) return NULL;
+  if ( actualImprovement <= 0.000001 ) return NULL;
 
   return grid;
 }
