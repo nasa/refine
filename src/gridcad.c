@@ -468,6 +468,7 @@ Grid *gridOptimizeT(Grid *grid, int node, double dt )
 {
   int vol =1;
   double tOrig, t;
+  int nodes[3];
   int edge, edgeId;
   int face, faceId;
   AdjIterator it;
@@ -478,8 +479,7 @@ Grid *gridOptimizeT(Grid *grid, int node, double dt )
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
 
   edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
-  edgeId = grid->edgeId[edge];
-
+  gridEdge(grid,edge,nodes,&edgeId);
   gridNodeT( grid, node, edgeId, &tOrig);
 
   alpha[0] = 0.0;
