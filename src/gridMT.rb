@@ -79,7 +79,7 @@ class TestSampleUnit < Test::Unit::TestCase
    @grid.registerNodeCell(1,198)
    @grid.registerNodeCell(2,198)
    @grid.registerNodeCell(1,199)
-@grid.dump
+
    assert_equal true,  @grid.cellExists(1,198)
    assert_equal true,  @grid.cellExists(1,199)
    @grid.removeNodeCell(1,198)
