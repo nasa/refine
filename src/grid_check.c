@@ -75,7 +75,17 @@ START_TEST(testCellIterator)
 }
 END_TEST
 
+START_TEST(testRegisterCell)
+{
+  long i;
+  for ( i =0; i<4 ; i++ ) gridRegisterNodeCell(grid,i,0);
+  for ( i =0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 1,
+	       "expected one neighbor of node");
+}
+END_TEST
+
 /* test run out of memory - anything null(0) in celllist durring register */
+/* allocating a new chunk of celllist */
 /* packing */
 /* non-contiguos cellist for access and registering */
 /* removal */
@@ -94,6 +104,7 @@ Suite *grid_suite (void)
   tcase_add_checked_fixture (tNeighbors, setup, teardown); 
   tcase_add_test (tNeighbors, testNodeDeg); 
   tcase_add_test (tNeighbors, testCellIterator); 
+  tcase_add_test (tNeighbors, testRegisterCell); 
 
   return s; 
 }
