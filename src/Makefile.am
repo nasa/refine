@@ -148,6 +148,14 @@ MesherX_HLANative_SOURCES = $(hla_sources)
 MesherX_HLANative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
 MesherX_HLANative_LDFLAGS = $(all_LDFLAGS)
 
+bin_PROGRAMS += restartTestNative
+restartTestNative_CFLAGS = $(all_CFLAGS)
+restartTestNative_SOURCES = restartTest.c
+restartTestNative_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lGoolache -lMeat \
+	@CAPRINativelibrary@ $(LastLib)
+restartTestNative_LDFLAGS = $(all_LDFLAGS)
+
+
 if BUILD_PROE_KERNEL
 
 bin_PROGRAMS += librefine-Linux.Pro.dll
