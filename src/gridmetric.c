@@ -16,9 +16,7 @@
 #include <limits.h>
 #include <values.h>
 #include "gridmath.h"
-#ifdef SURFACE_VALIDITY
 #include "gridshape.h"
-#endif
 #include "gridmetric.h"
 
 Grid *gridSetMapWithSpacingVectors(Grid *grid, int node,
@@ -562,27 +560,12 @@ double gridAR(Grid *grid, int *nodes )
   double edge1[3], edge2[3], edge3[3];
   double norm[3];
 
-#ifdef SURFACE_VALIDITY
   int nodes_on_surface;
-#endif
-
-  if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
-    return gridEdgeRatioCost(grid, nodes);
 
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
        !gridValidNode(grid, nodes[2]) ||
        !gridValidNode(grid, nodes[3]) ) return -1.0;
-
-#ifdef SURFACE_VALIDITY
-  nodes_on_surface = 0;
-  if ( gridGeometryFace(grid, nodes[0]) ) nodes_on_surface++;
-  if ( gridGeometryFace(grid, nodes[1]) ) nodes_on_surface++;
-  if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
-  if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
-  if ( ( nodes_on_surface > 1 ) && 
-       ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -1.0;
-#endif
   
   p1 = gridNodeXYZPointer(grid,nodes[0]);
   p2 = gridNodeXYZPointer(grid,nodes[1]);
@@ -594,7 +577,22 @@ double gridAR(Grid *grid, int *nodes )
   gridSubtractVector( p4, p1, edge3);
   gridCrossProduct( edge1, edge2, norm );
 
-  if (  gridDotProduct(norm,edge3) <= 6.0e-14) return -1.0;
+  if (gridCostConstraint(grid)&gridCOST_CNST_VOLUME) {
+    if ( gridDotProduct(norm,edge3) <= 6.0e-14) return -1.0;
+  }
+
+  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+    nodes_on_surface = 0;
+    if ( gridGeometryFace(grid, nodes[0]) ) nodes_on_surface++;
+    if ( gridGeometryFace(grid, nodes[1]) ) nodes_on_surface++;
+    if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
+    if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
+    if ( ( nodes_on_surface > 1 ) && 
+	 ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -1.0;
+  }
+
+  if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
+    return gridEdgeRatioCost(grid, nodes);
 
   m0 = gridMapPointer(grid,nodes[0]);
   m1 = gridMapPointer(grid,nodes[1]);
@@ -634,7 +632,6 @@ double gridAR(Grid *grid, int *nodes )
     return -1.0;
   }
 
-
   if ( FALSE ) {
     printf("nodes %d %d %d %d aspect %f\n",nodes[0],nodes[1],nodes[2],nodes[3],aspect);
     printf("m \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
@@ -649,8 +646,6 @@ double gridEdgeRatioCost(Grid *grid, int *nodes )
 {
   double err[6], worstErr;
   int edge;
-
-  if ( gridVolume(grid,nodes) < 1.0e-14 ) return -1.0;
 
   err[0] = gridEdgeRatioError(grid, nodes[0], nodes[1] );
   err[1] = gridEdgeRatioError(grid, nodes[0], nodes[2] );

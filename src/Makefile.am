@@ -18,6 +18,7 @@ librefine_a_SOURCES = \
 	sort.h sort.c \
 	grid.h grid.c \
 	gridmath.h gridmath.c \
+	gridshape.h gridshape.c \
 	gridmetric.h gridmetric.c \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \
@@ -61,6 +62,7 @@ libMesherX_a_SOURCES = \
 	sort.h sort.c \
 	grid.h grid.c \
 	gridmath.h gridmath.c \
+	gridshape.h gridshape.c \
 	gridmetric.h gridmetric.c \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \

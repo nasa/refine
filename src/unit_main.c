@@ -176,6 +176,7 @@ int main( int argc, char *argv[] )
   printf("running project %s\n",project);
   grid = gridLoadPart( modeler, project, maxnode );
   if (EdgeBasedCycles!=EMPTY) gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
+  gridSetCostConstraint(grid,gridCOST_CNST_VOLUME|gridCOST_CNST_VALID);
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: loaded part does not have right handed boundaries\n");
