@@ -2,7 +2,7 @@
 If You Recieved a *.tar.gz file
 ===============================
 
-run (replace x_x_x with the current version number):
+run (replace `x_x_x' with the current version number):
 
   gunzip refine_x_x_x.tar.gz
   tar xvf refine_x_x_x.tar
@@ -10,8 +10,8 @@ run (replace x_x_x with the current version number):
 
 Read the `Basic Installation' section.
 
-Note To CVS Users
-=================
+Note To CVS Users ONLY!
+=======================
 
 (Skip this step and goto `Basic Installation' if you have a *.tar.gz 
 file.)
@@ -25,7 +25,7 @@ dir. Finally, it will cd to the arch dir and and run:
 Note To SGI IRIX Users
 ======================
 
-If configure does not find the X libs. add 
+If configure does not find the X libs add 
 
   --x-includes=/usr/include --x-libraries=/usr/lib32
 
