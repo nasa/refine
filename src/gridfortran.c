@@ -115,7 +115,9 @@ void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
 
 void gridfreezenode_( int *node )
 {
-  gridFreezeNode( grid, *node );
+  int cNumbering;
+  cNumbering = (*node)-1;
+  gridFreezeNode( grid, cNumbering );
 }
 
 void gridparallelloadcapri_( char *capriProject )
@@ -132,7 +134,7 @@ void gridprojectallfaces_( )
   for(face=0;face<gridMaxFace(grid);face++) {
     if (grid == gridFace(grid,face,nodes,&faceId) ) {
       for(node=0;node<3;node++) {
-	if ( !gridNodeFrozen(grid,nodes[node])  ) {
+	if ( !gridNodeFrozen(grid,nodes[node]) ) {
 	  if (grid != gridProjectNodeToFace(grid, nodes[node], faceId ) )
 	    printf( "ERROR: %s: %d: project failed on part %d.\n",
 		    __FILE__,__LINE__,gridPartId(grid) );
