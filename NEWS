@@ -2,6 +2,13 @@
 
 Works with FUN3D Version(s): **SomeFUN3DVersion**
 
+Tue Jan 31, 2005: Released Refine 1.2.6
+
+** internal release ** 
+Split and collapse only project when the validity cost constraint is
+activated. Face swapping was added to parallel partition interiors.
+The OM6 example case runs.
+
 Tue Jan 31, 2005: Released Refine 1.2.5
 
 ** internal release ** 
