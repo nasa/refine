@@ -15,6 +15,7 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 #include "gridcad.h"
+#include "layer.h"
 #include <CADGeom/CADGeom.h>
 
 Grid *gridLoadPart( char *project, int maxnode );
@@ -29,6 +30,8 @@ int gridSavePart( Grid *grid, char *project );
 int main( int argc, char *argv[] )
 {
   Grid *grid;
+  Layer *layer;
+  int bcs[2], jmax;
   char project[256];
   char adaptfile[256], outputProject[256], outputFAST[256];
   int i, j, oldSize, newSize;
@@ -95,11 +98,19 @@ int main( int argc, char *argv[] )
     printf("adapt parameter >none< selected.\n");
     gridResetSpacing(grid);
     if (boundaryLayerGrid) {
-      gridFreezeAll(grid);
-      gridThawNearBC(grid,0.5,1);
       gridFreezeBCFace(grid,1);
       gridFreezeBCFace(grid,2);
-      printf("inviscid nodes to remove %d\n",gridNNode(grid)-gridNFrozen(grid));
+      printf("make advancing layer object.\n");
+      layer = layerCreate(grid);
+      bcs[0]=1;
+      bcs[1]=2;
+      printf("make advancing layer front.\n");
+      layerMakeFront(layer,2,bcs);
+      printf("make advancing layer front normals.\n");
+      layerMakeNormal(layer);
+      layerConstrainNormal(layer,5);
+      printf("make advancing layer front normals visible to front.\n");
+      layerVisibleNormals(layer);
     }else{
       gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
     }
@@ -121,19 +132,24 @@ int main( int argc, char *argv[] )
   STATUS;
 
   oldSize = 1;
-  newSize = gridNNode(grid) ;
-  for ( j=0; (j<40) && (
+  newSize = gridNNode(grid);
+  jmax = 40;
+  if (boundaryLayerGrid) jmax = 1;
+  for ( j=0; (j<jmax) && (
 	(ratio < 0.99) || 
 	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
 	  !projected );
 	j++){
 
+    if (boundaryLayerGrid) layerAdvance(layer,0.01);
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
     ratioCollapse = 0.4*ratio;
     ratioRefine   = 1.5/ratio;
     if (boundaryLayerGrid) {
-      gridRemoveAllNodes(grid);
+      printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
+	     ratio, 0.4, 1.5 );
+      gridAdapt(grid,0.4,1.5);
     }else{
       printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	     ratio, ratioCollapse, ratioRefine );
@@ -159,7 +175,6 @@ int main( int argc, char *argv[] )
     }
     STATUS;
     if (boundaryLayerGrid) {
-      printf("inviscid nodes to remove %d\n",gridNNode(grid)-gridNFrozen(grid));
     }else{
       gridFreezeGoodNodes(grid,0.6,0.4,1.5);
       printf("nodes frozen %d\n",gridNFrozen(grid));
