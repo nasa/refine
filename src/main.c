@@ -149,6 +149,7 @@ int main( int argc, char *argv[] )
       printf("insert layer height = %f\n",height);
       wiggleSteps = (int)(height/0.005)+1;
       height = height / (double)wiggleSteps;
+      layerVisibleNormals(layer);
       layerAdvance(layer,height);
       for (i=1;i<wiggleSteps;i++) {
 	printf("wiggle step %d of %d\n",i+1,wiggleSteps);
