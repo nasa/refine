@@ -47,7 +47,7 @@ Grid *gridSmoothFaceMR(Grid *g, double optimizationLimit );
 Grid *gridSmoothVolume(Grid *g );
 Grid *gridSmoothNearNode1(Grid *g, int node );
 Grid *gridSmoothNearNode(Grid *g, int node );
-Grid *gridSmoothNode(Grid *g, int node );
+Grid *gridSmoothNode(Grid *g, int node, GridBool smoothOnSurface );
 Grid *gridSmoothNodeFaceMR(Grid *g, int node );
 
 Grid *gridOptimizeT(Grid *g, int node, double dt );

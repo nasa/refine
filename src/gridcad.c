@@ -413,7 +413,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
     gridCell(grid, adjItem(it), nodes);
     for (i=0;i<4;i++)
       if (!gridGeometryFace( grid, nodes[i])) 
-	gridSmoothNode( grid, nodes[i]);
+	gridSmoothNode( grid, nodes[i], TRUE);
   }      
   gridSwapNearNodeExceptBoundary( grid, node);
   for ( it = adjFirst(gridCellAdj(grid),node); 
@@ -422,7 +422,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
     gridCell(grid, adjItem(it), nodes);
     for (i=0;i<4;i++)
       if (!gridGeometryFace( grid, nodes[i])) 
-	gridSmoothNode( grid, nodes[i]);
+	gridSmoothNode( grid, nodes[i], TRUE);
   }
       
   if ( gridSafeProjectNode(grid,node,0.95) == grid ) return grid;
@@ -438,7 +438,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	gridCell(grid, adjItem(level2), level2nodes);
 	for (j=0;j<4;j++) {
 	  if (!gridGeometryFace( grid, level2nodes[j])) 
-	    gridSmoothNode( grid, level2nodes[j]);
+	    gridSmoothNode( grid, level2nodes[j], TRUE);
 	}
       }
     }
@@ -502,7 +502,7 @@ Grid *gridSmoothNearNode1(Grid *grid, int node )
 
   for (smooth=0;smooth<5;smooth++)
     for (i=0;i<nlist;i++) 
-      gridSmoothNode( grid, nodelist[i]);
+      gridSmoothNode( grid, nodelist[i], TRUE);
 
   return grid;
 }
@@ -545,12 +545,12 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
 
   for (smooth=0;smooth<2;smooth++)
     for (i=0;i<nlist;i++) 
-      gridSmoothNode( grid, nodelist[i]);
+      gridSmoothNode( grid, nodelist[i], TRUE);
 
   return grid;
 }
 
-Grid *gridSmoothNode(Grid *grid, int node )
+Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 {
   double xyzProj[3], uv[2], t;
   double ar, dARdx[3];
@@ -566,6 +566,9 @@ Grid *gridSmoothNode(Grid *grid, int node )
   if ( gridGeometryNode( grid, node ) ) return grid;
   if ( gridGeometryBetweenFace( grid, node ) &&
        !gridGeometryEdge( grid, node ) ) return grid;
+  if ( gridGeometryEdge( grid, node ) && !smoothOnSurface ) return grid;
+  if ( gridGeometryFace( grid, node ) && !smoothOnSurface ) return grid;
+
   if ( gridGeometryEdge( grid, node ) ) {
     edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
     gridEdge(grid,edge,nodes,&edgeId);
@@ -892,7 +895,7 @@ Grid *gridSmooth( Grid *grid )
     if ( gridValidNode( grid, node ) && !gridNodeFrozen( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
       if (ar < optimizationLimit) {
-	gridSmoothNode( grid, node );
+	gridSmoothNode( grid, node, TRUE );
       }else{
 	if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
 	  gridSmartLaplacian( grid, node ); 
@@ -935,7 +938,7 @@ Grid *gridSmoothVolume( Grid *grid )
 	gridNodeAR(grid,node,&ar);
       }
       if (ar < optimizationLimit) {
-	gridSmoothNode( grid, node );
+	gridSmoothNode( grid, node, TRUE );
       }
     }
   }

@@ -29,7 +29,8 @@ int gridParallelEdgeSplit(Grid *g, Queue *q, int node0, int node1 );
 Grid *gridParallelEdgeCollapse(Grid *g, Queue *q, int node0, int node1 );
 
 Grid *gridParallelSmooth(Grid *grid, GridBool localOnly,
-			 double optimizationLimit, double laplacianLimit );
+			 double optimizationLimit, double laplacianLimit,
+                         GridBool smoothOnSurface );
 Grid *gridParallelRelaxNegativeCells(Grid *grid, 
 				     GridBool localOnly, 
 				     GridBool smoothOnSurface );

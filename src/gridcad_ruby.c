@@ -64,7 +64,7 @@ VALUE grid_smoothFaceMR( VALUE self, VALUE optimizationLimit )
 VALUE grid_smoothNode( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
-  return (gridSmoothNode( grid, NUM2INT(node) )==grid?self:Qnil);
+  return (gridSmoothNode( grid, NUM2INT(node), TRUE )==grid?self:Qnil);
 }
 
 VALUE grid_smoothNodeFaceMR( VALUE self, VALUE node )

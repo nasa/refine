@@ -1,3 +1,20 @@
+2004-09-16 08:26 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* Function signature to gridSmoothNode() changed to add GridBool
+	arg that allows caller conditional smoothing of nodes on geometry.
+	Argument FALSE prevents any nodes on geometry from being modified
+	in an attempt to optimize the corresponding Tet.  Modules affected
+	include src/gridcad.c, src/gridcad_ruby.c, src/gridfortran.c, and
+	src/gridmpi.c.	This change propagates from gridparallelsmooth_()
+	in src/gridfortran.c to gridParallelSmooth() of src/gridmpi.c
+	and finally to gridSmoothNode() of src/gridcad.c.  Unit test of
+	gridSmoothNode() was also changed in gridcad_ruby.c.
+
+	* Added conditional compilation of GNU gcc Floating Point Exception
+	trapping (SIGFPE) to gridcreate_() of src/gridfortran.c.  If TRAPFPE
+	is defined, FE_INVALID, FE_DIVBYZERO, and FE_OVERFLOW will be trapped
+	and will cause segfault on occurance.  Used mainly for debugging.
+
 2004-09-15 10:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeAt) The new cell configuration

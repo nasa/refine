@@ -21,6 +21,12 @@
 #include "gridmpi.h"
 #include "gridgeom.h"
 
+/* #define TRAPFPE 1 */
+#ifdef TRAPFPE
+#define _GNU_SOURCE 1
+#include <fenv.h>
+#endif
+
 static Grid *grid = NULL;
 static GridMove *gm = NULL;
 static Queue *queue = NULL;
@@ -29,6 +35,12 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 		  int *ncell, int *maxcell, int *c2n )
 {
   int node, cell;
+
+#ifdef TRAPFPE
+  /* Enable some exceptions.  At startup all exceptions are masked.  */
+  feenableexcept (FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
+#endif
+
   grid = gridCreate( *nnode, *ncell, 5000, 0);
   gridSetPartId(grid, *partId );
   queue = queueCreate( 9 ); /* 3:xyz + 6:m */
@@ -275,11 +287,14 @@ void gridparallelswap_( int *processor, double *ARlimit )
 }
 
 void gridparallelsmooth_( int *processor,
-			  double *optimizationLimit, double *laplacianLimit )
+			  double *optimizationLimit, double *laplacianLimit,
+                          int *geometryAllowed )
 {
-  GridBool localOnly;
+  GridBool localOnly, smoothOnSurface;
   localOnly = (-1 == (*processor));
-  gridParallelSmooth(grid, localOnly, *optimizationLimit, *laplacianLimit);
+  smoothOnSurface = (0 != (*geometryAllowed));
+  gridParallelSmooth(grid, localOnly, *optimizationLimit, *laplacianLimit,
+                     smoothOnSurface);
 #ifdef PARALLEL_VERBOSE 
   if (localOnly) {
     printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",

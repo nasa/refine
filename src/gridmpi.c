@@ -156,7 +156,8 @@ Grid *gridParallelEdgeCollapse(Grid *grid, Queue *queue, int node0, int node1 )
 }
 
 Grid *gridParallelSmooth( Grid *grid, GridBool localOnly,
-			  double optimizationLimit, double laplacianLimit )
+			  double optimizationLimit, double laplacianLimit,
+                          GridBool smoothOnSurface )
 {
   int node;
   double ar;
@@ -169,7 +170,7 @@ Grid *gridParallelSmooth( Grid *grid, GridBool localOnly,
       if ( localOnly != nearGhost ) {
 	gridNodeAR(grid,node,&ar);
 	if (ar < optimizationLimit) {
-	  gridSmoothNode( grid, node );
+	  gridSmoothNode( grid, node, smoothOnSurface );
 	}else{
 	  if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
 	    gridSmartLaplacian( grid, node ); 

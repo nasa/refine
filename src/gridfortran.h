@@ -35,7 +35,8 @@ void gridexportfast_( void );
 
 void gridparallelswap_( int *processor, double *ARlimit );
 void gridparallelsmooth_( int *processor,
-			  double *optimizationLimit, double *laplacianLimit );
+			  double *optimizationLimit, double *laplacianLimit,
+                          int *geometryAllowed );
 void gridparallelrelaxneg_( int *processor, int *geometryAllowed );
 void gridparallelrelaxsurf_( int *processor );
 void gridparalleladapt_( int *processor, 
