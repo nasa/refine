@@ -1,3 +1,10 @@
+2004-09-29 15:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSetMapWithSpacingVectors) added function
+	to compute the spacing metric at a node with three principle axis
+	and three spacing values. (Note the principle axis must be
+	orthogonal and length one)
+
 2004-09-22 20:31 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c added argument -z to allow a linear variation in

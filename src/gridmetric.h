@@ -19,6 +19,9 @@
 
 BEGIN_C_DECLORATION
 
+Grid *gridSetMapWithSpacingVectors(Grid *g, int node,
+				   double *v1, double *v2, double *v3,
+                                   double s1, double s2, double s3);
 Grid *gridSetMapMatrixToAverageOfNodes(Grid *g, int avgNode, int n0, int n1 );
 void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
 

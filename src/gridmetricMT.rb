@@ -170,6 +170,20 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 0.0, jacob[8], 1.0e-15
  end
 
+ def testCreateMetricFromOrthVectorsAndSpacings124
+  v1=[1, 0, 0]
+  v2=[0, 1, 0]
+  v3=[0, 0, 1]
+  s1=1
+  s2=2
+  s3=4
+  node = 0
+  grid = Grid.new(1,0,0,0)
+  grid.addNode(0,0,0)
+  assert_equal grid, grid.setMapWithSpacingVectors(node,v1,v2,v3,s1,s2,s3)
+  assert_equal [1, 0, 0, 0.25, 0, 0.0625], grid.map(node)
+ end
+
  def testFindLargestRatioEdge
   assert_not_nil grid = isoTet.resetSpacing
   grid.scaleSpacing(0,0.50)
