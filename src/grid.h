@@ -81,6 +81,7 @@ Grid *gridThawNode( Grid *g, int node );
 Grid *gridFreezeAll( Grid *g );
 Grid *gridThawAll( Grid *g );
 Grid *gridThawSphere( Grid *g, double x, double y, double z, double r );
+Grid *gridThawNearBC( Grid *g, double r, int faceId );
 Grid *gridFreezeBCFace( Grid *g, int faceId );
 
 Grid *gridMakeGem(Grid *g, int n0, int n1 );

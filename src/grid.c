@@ -1343,6 +1343,21 @@ Grid *gridFreezeBCFace( Grid *grid, int faceId )
   return grid;
 }
 
+Grid *gridThawNearBC( Grid *grid, double r, int faceId )
+{
+  int face, node, i;
+  for ( face=0; face<grid->nface; face++ ){
+    if (grid->faceId[face] == faceId ){
+      for ( i=0; i<3; i++ ){
+	node = grid->f2n[i+3*face];
+	gridThawSphere(grid, grid->xyz[0+3*node], 
+		       grid->xyz[1+3*node], grid->xyz[2+3*node], r);
+      }
+    }
+  }
+  return grid;
+}
+
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {
   AdjIterator it;
