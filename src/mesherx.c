@@ -47,7 +47,6 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double gapHeight;
   double origin[3] = {0.0, -1.5, 0.0};
   double direction[3] = {0, 1, 0};
-  bool blend;
 
   layer = mesherxInit(vol, maxNodes);
   if (NULL == layer) return 0; 
@@ -55,23 +54,12 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   /* case dependant */
 
-  if (bil) {
-    nLayer = (int)(20.0/scale);
-    rate = exp(scale*log(1.05));
-  }else{
-    nLayer = (int)(100.0/scale);
-    rate = exp(scale*log(1.20));
-  }
+  nLayer = (int)(60.0/scale);
+  rate = exp(scale*log(1.20));
 
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
   if (mixedElement) layerToggleMixedElementMode(layer);
-
-  if (bil ) { 
-    layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
-				      origin, direction );
-  }else{
-  }
 
   origin[0] = -10000;
   origin[1] = 0.0;
@@ -79,16 +67,14 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   direction[0] = 1.0;
   direction[1] = 0.0;
   direction[2] = 0.0;
-  layerSetPolynomialMaxHeight(layer, 0.50, 0.0, 1.0, 
+  layerSetPolynomialMaxHeight(layer, 0.25, 0.0, 1.0, 
 			      origin, direction );
-  layerAssignPolynomialNormalHeight(layer, 1.0e-4, 0.0, 1.0,
+  layerAssignPolynomialNormalHeight(layer, 1.0e-5, 0.0, 1.0,
                                     origin, direction );
   layerScaleNormalHeight(layer,scale);
   layerSaveInitialNormalHeight(layer);
 
-  blend = TRUE;
-
-  if (blend){
+  if (blendElement){
     printf("inserting blends...\n");
     layerBlend(layer);
     printf("split blends...\n");
@@ -98,19 +84,19 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   layerComputeNormalRateWithBGSpacing(layer,1.0);
 
   i=0;
-  while (layerAnyActiveNormals(layer)){
+  while (i<nLayer & layerAnyActiveNormals(layer)){
     i++;
 
-    if (i>8) layerSmoothNormalDirection(layer);
+    layerSmoothNormalDirection(layer);
 
     //layerSetNormalHeightWithMaxRate(layer,rate);
     layerSetNormalHeightForLayerNumber(layer,i-1,rate);
-    layerSmoothLayerWithHeight(layer);
+    //layerSmoothLayerWithHeight(layer);
 
     layerTerminateNormalWithLength(layer,1.0);
-    layerTerminateNormalWithBGSpacing(layer, 1.5, 1.9);
+    layerTerminateNormalWithBGSpacing(layer, 0.8, 1.9);
 
-    if (i>8) layerTerminateCollidingTriangles(layer);
+    // if (i>8) layerTerminateCollidingTriangles(layer);
 
     printf("advance layer %d\n",i);
 
