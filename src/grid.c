@@ -1758,19 +1758,6 @@ int gridFindCell(Grid *grid, int *nodes )
   return EMPTY;
 }
 
-Grid *gridCheckCellConnections(Grid *grid){
-  int cell, nodes[4];
-  
-  for (cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
-    if (grid == gridCell(grid,cell,nodes)) {
-      
-    }
-  }
-
-  return grid;
-}
-
-
 Grid *gridDeleteThawedCells(Grid *grid){
   int cell, maxcell, nodes[4];
 

@@ -264,7 +264,6 @@ int gridFindOtherCellWith3Nodes(Grid *g, int node0, int node1, int node2,
 				int currentCell );
 int gridFindCellWithFace(Grid *g, int face );
 int gridFindCell(Grid *g, int *nodes );
-Grid *gridCheckCellConnections(Grid *g);
 Grid *gridDeleteThawedCells(Grid *g);
 
 int gridCellConnection(Grid *g, int cell, int index );
