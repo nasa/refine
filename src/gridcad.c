@@ -1116,6 +1116,12 @@ static Grid *gridMakeFacesFromSimplex(Grid *grid,
 
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
+  gridSmartVolumeLaplacian( grid, node );
+  return gridSmoothNodeVolumeSimplex( grid, node );  
+}
+
+Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
+{
   int evaluations;
   int s, i;
   double origXYZ[3], avgXYZ[3];

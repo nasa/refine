@@ -61,6 +61,7 @@ Grid *gridSmartVolumeLaplacian(Grid *g, int node );
 Grid *gridSmoothNodeQP(Grid *g, int node );
 
 Grid *gridSmoothNodeVolume(Grid *g, int node );
+Grid *gridSmoothNodeVolumeSimplex(Grid *g, int node );
 
 END_C_DECLORATION
 
