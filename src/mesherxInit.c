@@ -108,6 +108,7 @@ Layer *layerFormAdvancingLayerWithCADGeomBCS( int vol, Grid *grid )
     }
   }
 
+  layerFeasibleNormals(layer,-1.0,-1.0);
   layerVisibleNormals(layer,-1.0,-1.0);
 
   return layer;
