@@ -1,3 +1,9 @@
+2004-07-26 14:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationSubIteration) now does
+	Gauss-Seidel. The old Even-Odd was renamed to
+	gridmoveElasticRelaxationEvenOdd.
+
 2004-07-23 16:31 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R to be
@@ -41,7 +47,7 @@
 2004-07-16 09:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationSubIteration) put in 
-	two color Gauss-Seidel for linear elasticity.
+	two color Even-Odd for linear elasticity.
 
 2004-07-15 10:10 Mike Park  <mike.park@nasa.gov>
 
@@ -57,7 +63,7 @@
 2004-07-14 12:56 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c now has ElasticRelaxation that should work like 
-	the springs do. (move in steps and parallel)
+	the springs do (move in steps and parallel). Point Jacobi solve.
 
 2004-07-14 11:34 Mike Park  <mike.park@nasa.gov>
 
