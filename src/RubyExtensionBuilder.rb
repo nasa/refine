@@ -12,7 +12,7 @@ class RubyExtensionBuilder
   comm = Hash.new('puts "Error, extension not known";exit 1')
   comm['Adj'] = 'Adj'
   comm['Near'] = 'Near'
-  comm['Intersect'] = 'Intersect'
+  comm['Intersect'] = 'Intersect gridmath.c'
   comm['Grid'] = 'Grid adj.h'
   comm['GridMath'] = 'GridMath'
   comm['GridMetric'] = 'GridMetric adj.h grid.h gridmath.c'
