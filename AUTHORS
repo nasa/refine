@@ -1,6 +1,7 @@
 Authors:
   Mike Park <Mike.Park@nasa.gov>
-  Bill Jones <William.T.Jones@nasa.gov> - MesherX and GEOLAB/SDK restarts 
+  Bill Jones <William.T.Jones@nasa.gov> - MesherX, GEOLAB/SDK restarts, and
+    parallel adaptation with Fun3D 
   Bil Kleb <Bil.Kleb@nasa.gov> - MesherX mixed elements and multiple normals
   Bill Wood <Bill.Wood@nasa.gov> - Testing framework
   Harold Atkins <Harold.L.Atkins@nasa.gov> - MesherX enhancements
