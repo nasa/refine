@@ -809,6 +809,8 @@ Grid *gridSortNodeFUN3D(Grid *grid, int *nnodes0)
     }
   }
 
+  *nnodes0 = newnode;
+
   // interior nodes
   for ( node=0; node<grid->nnode; node++ ){
     if ( o2n[node] == EMPTY ) {

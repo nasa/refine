@@ -195,3 +195,13 @@ int gridjoinunusedcellglobal_( int *nunused, int *unused )
   int i;
   for (i=0;i<*nunused;i++) gridJoinUnusedCellGlobal( grid, unused[i] );
 }
+
+int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
+		    int *ncell, int *ncellg )
+{
+  gridSortNodeFUN3D( grid, nnodes0 );
+  *nnodes01 = gridNNode(grid);
+  *nnodesg = gridGlobalNNode(grid);
+  *ncell = gridNCell(grid);
+  *ncellg = gridGlobalNCell(grid);
+}

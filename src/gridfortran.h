@@ -46,6 +46,9 @@ int gridnunusedcellglobal_( int *nunused );
 int gridgetunusedcellglobal_( int *nunused, int *unused );
 int gridjoinunusedcellglobal_( int *nunused, int *unused );
 
+int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
+		    int *ncell, int *ncellg );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */
