@@ -407,11 +407,16 @@ Grid *gridOptimizeXYZ(Grid *grid, int node, double *dxdydz )
 Grid *gridSmooth( Grid *grid )
 {
   int node;
-  double ar,limit;
-  limit =0.50;
+  double ar, optimizationLimit, laplacianLimit;
+  optimizationLimit =0.30;
+  laplacianLimit =0.60;
   for (node=0;node<grid->nnode;node++) {
     gridNodeAR(grid,node,&ar);
-    if (ar < limit) {
+    if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
+      gridSmartLaplacian( grid, node ); 
+      gridNodeAR(grid,node,&ar);
+    }
+    if (ar < optimizationLimit) {
       gridSmoothNode( grid, node );
       gridSmoothNode( grid, node );
       gridSmoothNode( grid, node );
