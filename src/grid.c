@@ -210,7 +210,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->degAR = 0;
 
   grid->costFunction = gridCOST_FCN_MEAN_RATIO;
-  grid->costConstraint = gridCOST_CNST_VOLUME|gridCOST_CNST_VALID;
+  grid->costConstraint = gridCOST_CNST_VOLUME;
 
   grid->tecplotGeomFile = NULL;
   grid->tecplotScalarFile = NULL;

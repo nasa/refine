@@ -1,8 +1,3 @@
-2005-01-27 12:25 Mike Park  <mike.park@nasa.gov>
-
-	* src/grid.c (gridCreate) the grid cost function constraint now
-	includes gridCOST_CNST_VOLUME and gridCOST_CNST_VALID by default
-
 2005-01-27 11:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c to speed up the adaptation cycles, I have
