@@ -1,9 +1,12 @@
-
-# do all if no args and put in rubyext
+#!/usr/bin/env ruby
+#
+# Creates a ruby c extension from the args
+#
+# $Id$
 
 unless ext = ARGV[0] 
-  puts "ERROR: usage: ruby extconf.rb rubyExtensionName"
-  exit 1
+ puts "ERROR: usage: ruby #{__FILE__} rubyExtensionName [extraFiles.(c|h)]"
+ exit 1
 end
 
 rubyExt = ext.downcase + "_ruby.c"
