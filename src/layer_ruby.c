@@ -216,6 +216,12 @@ VALUE layer_parentEdge( VALUE self, VALUE front, VALUE side )
   return INT2NUM(layerParentEdge(layer,NUM2INT(front),NUM2INT(side)));
 }
 
+VALUE layer_nParentEdgeSegments( VALUE self, VALUE edgeId )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerNParentEdgeSegments(layer,NUM2INT(edgeId)));
+}
+
 VALUE layer_terminateNormal( VALUE self, VALUE normal )
 {
   GET_LAYER_FROM_SELF;
@@ -268,6 +274,8 @@ void Init_Layer()
   rb_define_method( cLayer, "nConstrainedSides", layer_nConstrainedSides, 1 );
   rb_define_method( cLayer, "setParentEdge", layer_setParentEdge, 3 );
   rb_define_method( cLayer, "parentEdge", layer_parentEdge, 2 );
+  rb_define_method( cLayer, "nParentEdgeSegments", layer_nParentEdgeSegments, 1 );
+
   rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );
   rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 1 );

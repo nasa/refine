@@ -45,6 +45,7 @@ int layerConstrainedSide(Layer *, int front, int side );
 int layerNConstrainedSides(Layer *, int faceId );
 Layer *layerSetParentEdge(Layer *, int normal0, int normal1, int edgeId );
 int layerParentEdge(Layer *, int front, int side );
+int layerNParentEdgeSegments(Layer *, int edgeId );
 
 Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
