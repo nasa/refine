@@ -565,7 +565,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal [0.01,0.01,0], grid.nodeXYZ(0)
  end
 
- def testInsertNodeInToVolumeNewNode
+ def testInsertNodeInToVolumeMoveNode
   assert_not_nil     grid = Grid.new(5,3,0,0)
   assert_equal 0,    grid.addNode(0,0,0)
   assert_equal 1,    grid.addNode(1,0,0)
@@ -575,6 +575,10 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal(-1,   grid.insertInToVolume(1,1,1))
   assert_equal 4,    grid.nnode
   assert_equal 1,    grid.ncell
+  assert_equal 0,    grid.insertInToVolume(0.01,0.01,0.01)
+  assert_equal 4,    grid.nnode
+  assert_equal 1,    grid.ncell
+  assert_equal [0.01,0.01,0.01], grid.nodeXYZ(0)
  end
   
 
