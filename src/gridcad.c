@@ -565,8 +565,9 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
 
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
 
-  /* do not allow geometry nodes to move */
+  /* do not allow geometry or ghost nodes to move */
   if ( gridGeometryNode( grid, node ) ) return grid;
+  if ( gridNodeGhost(grid, node ) ) return NULL;
 
   /* get the two edges involved (incident to node) */
   edge1 = adjItem(adjFirst(gridEdgeAdj(grid), node));
