@@ -56,10 +56,10 @@ Grid *gridAdapt(Grid *grid)
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
 	if ( ratio < 0.4 ) gridCollapseEdge(grid, n0, n1);
-	gridSwapNearNode( grid, newnode );
+	gridSwapNearNode( grid, n0 );
 	if (  gridGeometryFace( grid, n0 ) ) {
 	  gridRobustProjectNode(grid, n0);
-	  gridSwapNearNode( grid, newnode );
+	  gridSwapNearNode( grid, n0 );
 	}
       }
     }else{
