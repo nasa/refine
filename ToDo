@@ -1,5 +1,5 @@
 
-List of stuff to work on for refine/MesherX
+List of stuff to work on for refine/MesherX (bug fixes, improvements)
 
 -MesherX
 
@@ -13,6 +13,7 @@ chekc out frozen normal direction smoothing (VGrid style)
 
 corsening on partition boundaries 
 swap and smooth durring adaptation
+continue speed testing
 
 --GridMove
 
