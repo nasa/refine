@@ -41,16 +41,26 @@ Grid *gridAdapt(Grid *grid)
   for ( n0=0; adaptnode<maxnode && n0<grid->maxnode ; n0++ ) { 
     if ( gridValidNode( grid, n0) ) {
       adaptnode++;
+      //  if (adaptnode/100*100 == adaptnode)printf("adapt node %d\n",n0);
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
       if ( ratio > 2.2 ) {
 	newnode = gridSplitEdge(grid, n0, n1);
-	if ( newnode != EMPTY && gridGeometryFace( grid, newnode ) )
-	     gridRobustProjectNode(grid, newnode);
+	if ( newnode != EMPTY ){
+	  gridSwapNearNode( grid, newnode );
+	  if (gridGeometryFace( grid, newnode ) ){
+	    gridRobustProjectNode(grid, newnode);
+	    gridSwapNearNode( grid, newnode );
+	  }
+	}
       }else{
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
 	if ( ratio < 0.4 ) gridCollapseEdge(grid, n0, n1);
-	if (  gridGeometryFace( grid, n0 ) ) gridRobustProjectNode(grid, n0);
+	gridSwapNearNode( grid, newnode );
+	if (  gridGeometryFace( grid, n0 ) ) {
+	  gridRobustProjectNode(grid, n0);
+	  gridSwapNearNode( grid, newnode );
+	}
       }
     }else{
       adaptnode++;
