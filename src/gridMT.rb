@@ -485,6 +485,15 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [1.0, 2.0, 3.0], grid.geomCurveT(11,1)
  end
 
+ def testGetGeomCurveLoop
+  assert_not_nil     grid = Grid.new(4,0,0,4)
+  assert_equal grid, grid.addEdge(0, 1, 10, 1.0, 2.0)
+  assert_equal grid, grid.addEdge(1, 2, 10, 1.0, 2.0)
+  assert_equal grid, grid.addEdge(2, 0, 10, 2.0, 0.0)
+  assert_equal 4,            grid.geomCurveSize(10,0)
+  assert_equal [0, 2, 1, 0], grid.geomCurve(10,0)
+ end
+
  def testFindCellWithFace
   assert_not_nil     grid = Grid.new(5,2,0,4)
   grid.addCell(0,1,4,3)

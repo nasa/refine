@@ -1686,6 +1686,7 @@ int gridGeomCurveSize( Grid *grid, int edgeId, int startNode )
 	  lastnode = node;
 	  node = n1;
 	  nedgenode++;
+	  if ( n1 == startNode ) found = FALSE; /* periodic edge check */
 	}
       }
     }
@@ -1724,6 +1725,7 @@ Grid *gridGeomCurve( Grid *grid, int edgeId, int startNode, int *curve )
 	  node = n1;
 	  curve[nedgenode]=node;
 	  nedgenode++;
+	  if ( n1 == startNode ) found = FALSE; /* periodic edge check */
 	}
       }
     }
@@ -1765,6 +1767,7 @@ Grid *gridGeomCurveT( Grid *grid, int edgeId, int startNode, double *curve )
 	  curve[nedgenode-1]=t0;
 	  curve[nedgenode]=t1;
 	  nedgenode++;
+	  if ( n1 == startNode ) found = FALSE; /* periodic edge check */
 	}
       }
     }
