@@ -8,11 +8,39 @@
   
 /* $Id$ */
 
+#include <stdlib.h>
 #include "FAKEGeomExtras.h"
   
+UGridPtr CADGeom_VolumeGrid( int vol )
+{
+  return NULL;
+}
+
+void *DList_SetIteratorToHead(DListPtr dlp,Iterator *dli)
+{
+  return NULL;
+}
+
+void *DList_GetNextItem(Iterator *dli)
+{
+  return NULL;
+}
+
+void UGPatch_GetDims(UGPatchPtr upp, int *dims)
+{
+  dims[0]=EMPTY;
+  dims[1]=EMPTY;
+  dims[2]=EMPTY;
+}
+
+int UGPatch_GlobalIndex(UGPatchPtr upp, int ndx)
+{
+  return EMPTY;
+}
+
 char *ErrMgr_GetErrStr(void)
 {
-  return "Non-functional FAKEGeomExtras";
+  return "Non-functional FAKEGeomExtras\n";
 }
 
 GridBool CADGeom_Start( void )
@@ -26,6 +54,11 @@ GridBool GeoMesh_LoadPart( char *project )
 }
 
 GridBool CADGeom_GetVolume(int a, int *b, int *c, int *d, int *e)
+{
+  return FALSE;
+}
+
+UGPatchPtr CADGeom_FaceGrid( int vol, int face )
 {
   return FALSE;
 }
