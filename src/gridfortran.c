@@ -25,7 +25,7 @@ int gridcreate_( int *nnode, double *x, double *y, double *z ,
   int node, cell;
   int nodes[4];
   double xyz[3];
-  grid = gridCreate( *nnode, *ncell, 5000, 0);
+  grid = gridCreate( *nnode+5000, *ncell+30000, 5000, 0);
   for ( node=0; node<*nnode; node++) gridAddNode(grid,x[node],y[node],z[node]);
   printf("populated grid object with %d nodes\n",gridNNode(grid));
   for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
@@ -69,6 +69,7 @@ int gridsetmap_( int *nnode, double* map )
     gridSetMap( grid, node,
 		map[0+6*node], map[1+6*node], map[2+6*node],
 		map[3+6*node], map[4+6*node], map[5+6*node] );
+  printf(" min AR %17.15f\n",gridMinAR(grid));
 }
 
 int gridswap_( )
