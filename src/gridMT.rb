@@ -23,7 +23,14 @@ class TestSampleUnit < Test::Unit::TestCase
   @grid = Grid.new(4,1,0)
  end
 
- def testCreateGrid
+ def testSafeAlloc
+  grid = Grid.new(0,0,0)
+  assert_equal 1, grid.maxnode
+  assert_equal 1, grid.maxcell
+  assert_equal 1, grid.maxface
+ end
+
+  def testCreateGrid
   assert_equal 4, @grid.maxnode
   assert_equal 0, @grid.nnode
   assert_equal 1, @grid.maxcell
@@ -186,7 +193,6 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testNumberOfFaces
   assert_equal 0, @grid.nface 
-  assert_equal 0, @grid.maxface 
   assert_not_nil  grid = Grid.new(4,1,2)
   assert_equal 0, grid.nface 
   assert_equal 2, grid.maxface 
@@ -369,16 +375,14 @@ class TestSampleUnit < Test::Unit::TestCase
   grid  
  end
 
-
  def XtestMaxSize
   nnode = 6000000
   grid = Grid.new(nnode,nnode*6,0)
   1.upto(nnode*6) {grid.addCell(3,4,0,1)}
  end
 
-
  # make register unique
 
- # allocating a new chunk of celllist
+ # allocating a new chunk of nodes, faces, cells
 
 end
