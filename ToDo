@@ -33,6 +33,10 @@ clean up projections for adapt drivers
 
 clean up logic for adapt drivers
 
+fix gridCollapseEdgeToBestConfiguration gridCollapseCost logic
+
+clean up gridSplitEdgeIfNear gridSplitFaceAt gridSplitCellAt gridInsertInToGeomEdge gridInsertInToGeomFace gridInsertInToVolume 
+
 
 --Edge Based
 
