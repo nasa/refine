@@ -1123,10 +1123,10 @@ Grid *gridGlobalShiftCell(Grid *grid, int oldncellg, int newncellg,
   return grid;
 }
 
-int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
+int gridGetNextCellGlobal(Grid *grid)
 {
-  int global,i;
-  
+  int global, i;
+
   if (NULL == grid->cellGlobal) {
     global = EMPTY;
   } else {
@@ -1141,34 +1141,41 @@ int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
     }
   }
 
+  return global;
+}
+
+int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
+{
+  int global;
+  global = gridGetNextCellGlobal(grid);
   return gridAddCellWithGlobal(grid,n0,n1,n2,n3,global);
 }
 
 int gridAddCellAndQueue(Grid *grid, Queue *queue, 
 			int n0, int n1, int n2, int n3)
 {
-  int cell;
+  int global;
   int inode;
   int nodes[4], globalnodes[9];
   double xyz[36];
   
+  global = gridGetNextCellGlobal(grid);
+
   nodes[0] = n0; nodes[1] = n1; nodes[2] = n2; nodes[3] = n3;
 
-  if ( NULL != queue ) {
-    if (gridCellHasGhostNode(grid, nodes)) {
-      for ( inode = 0 ; inode < 4 ; inode++ ) {
-	globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
-	globalnodes[5+inode] = gridNodePart(grid,nodes[inode]);
-	gridNodeXYZ(grid,nodes[inode],&xyz[9*inode]);
-	gridMap(grid,nodes[inode],&xyz[3+9*inode]);
-      }
-      globalnodes[4] = gridCellGlobal(grid, cell);
-      queueAddCell(queue,globalnodes,xyz);
+  if ( NULL != queue && gridCellHasGhostNode(grid, nodes) ) {
+    for ( inode = 0 ; inode < 4 ; inode++ ) {
+      globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
+      globalnodes[5+inode] = gridNodePart(grid,nodes[inode]);
+      gridNodeXYZ(grid,nodes[inode],&xyz[9*inode]);
+      gridMap(grid,nodes[inode],&xyz[3+9*inode]);
     }
+    globalnodes[4] = global;
+    queueAddCell(queue,globalnodes,xyz);
   }
-
+  
   if ( gridCellHasLocalNode(grid,nodes) )
-    return gridAddCell(grid, n0, n1, n2, n3);
+    return gridAddCellWithGlobal(grid, n0, n1, n2, n3, global);
 
   return EMPTY;
 }
@@ -1448,17 +1455,9 @@ int gridAddFaceUVAndQueue(Grid *grid, Queue *queue,
 		  int n1, double u1, double v1,
 		  int n2, double u2, double v2, int faceId )
 {
-  int face;
   int g0, g1, g2;
 
-  if ( !gridFaceHasLocalNode(grid,n0,n1,n2) ) return NULL;
-
-  face = gridAddFaceUV( grid, 
-			n0, u0, v0,
-			n1, u1, v1,
-			n2, u2, v2, faceId );
-
-  if ( NULL != queue && EMPTY != face && gridFaceHasGhostNode(grid,n0,n1,n2) ) {
+  if ( NULL != queue && gridFaceHasGhostNode(grid,n0,n1,n2) ) {
     g0 = gridNodeGlobal(grid,n0);
     g1 = gridNodeGlobal(grid,n1);
     g2 = gridNodeGlobal(grid,n2);
@@ -1468,7 +1467,13 @@ int gridAddFaceUVAndQueue(Grid *grid, Queue *queue,
 		       g2, u2, v2, faceId );   
   }
   
-  return face;
+  if ( gridFaceHasLocalNode(grid,n0,n1,n2) )
+    return gridAddFaceUV( grid, 
+			  n0, u0, v0,
+			  n1, u1, v1,
+			  n2, u2, v2, faceId );
+  
+  return EMPTY;
 }
 
 int gridAddFaceUV(Grid *grid, 
