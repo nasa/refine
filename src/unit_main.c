@@ -43,17 +43,16 @@ int main( int argc, char *argv[] )
   char outputFAST[256];
   char outputlines[256];
   int i, j, oldSize, newSize;
-  double ratio=1.0;
+  double ratio=0.6;
+  double spacing =1.0/3.0;
   double minAR=-1.0;
-  double ratioRefine, ratioCollapse;
+  double ratioSplit, ratioCollapse;
   GridBool projected;
   GridBool GridMoveProjection = FALSE;
   GridBool tecplotOutput = FALSE;
   int iview = 0;
   int maxnode = 50000;
   char modeler[81];
-
-  double h;
 
   sprintf( modeler,       "" );
   sprintf( project,       "" );
@@ -102,6 +101,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-r") == 0 ) {
       i++; ratio = atof(argv[i]);
       printf("-r argument %d: %f\n",i, ratio);
+    } else if( strcmp(argv[i],"-s") == 0 ) {
+      i++; spacing = atof(argv[i]);
+      printf("-s argument %d: %f\n",i, spacing);
     } else if( strcmp(argv[i],"-v") == 0 ) {
       i++; minAR = atof(argv[i]);
       printf("-v argument %d: %f\n",i, minAR);
@@ -129,6 +131,7 @@ int main( int argc, char *argv[] )
 #endif
       printf(" -o output project name\n");
       printf(" -r initial edge length ratio for adapt\n");
+      printf(" -s uniform grid size\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
       printf(" -n max number of nodes in grid\n");
@@ -171,8 +174,7 @@ int main( int argc, char *argv[] )
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
   printf("spacing set to constant.\n");
-  h = 1.0/3.0;
-  gridSetGlobalMap(grid, 1.0/h/h, 0.0, 0.0, 1.0/h/h, 0.0, 1.0/h/h);
+  gridSetGlobalMap(grid, 1.0/spacing/spacing, 0.0, 0.0, 1.0/spacing/spacing, 0.0, 1.0/spacing/spacing);
   STATUS;
 
   for (i=0;i<3;i++){
@@ -190,19 +192,17 @@ int main( int argc, char *argv[] )
   oldSize = 1;
   newSize = gridNNode(grid);
   jmax = 40;
-  for ( j=0; (j<jmax) && (
-	(ratio < 0.99) || 
-	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
-	  !projected );
+  for ( j=0; 
+	(j<jmax) && 
+	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) || 
+	  !projected;
 	j++){
 
-    if (ratio<0.01) ratio = 0.01;
-    if (ratio>1.0) ratio = 1.0;
-    ratioCollapse = 0.8*ratio;
-    ratioRefine   = 1.2/ratio;
+    ratioCollapse = 1.0*ratio;
+    ratioSplit   = 1.0/sqrt(ratio);
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
-	   ratio, ratioCollapse, ratioRefine );
-    gridAdapt(grid,ratioCollapse,ratioRefine,!GridMoveProjection);
+	   ratio, ratioCollapse, ratioSplit );
+    gridAdapt(grid,ratioCollapse,ratioSplit, !GridMoveProjection);
 
     oldSize = newSize;
     newSize = gridNNode(grid) ;
@@ -215,12 +215,22 @@ int main( int argc, char *argv[] )
       if (projected) {
 	printf("edge swapping grid...\n");gridSwap(grid);
 	printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
-	if (((double)ABS(newSize-oldSize)/(double)oldSize)<0.3)
-	  ratio = ratio + 0.025;
+	printf("node smoothing surface grid...\n");gridSmoothFaceMR(grid,1.0);
       }else{
 	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
-	ratio = ratio - 0.05;
       }
+    }
+    STATUS;
+  }
+
+  for (i=0;i<5;i++){
+    projected = ( grid == gridRobustProject(grid));
+    if (projected) {
+      printf("edge swapping grid...\n");gridSwap(grid);
+      printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
+      printf("node smoothing surface grid...\n");gridSmoothFaceMR(grid,1.0);
+    }else{
+      printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
     }
     STATUS;
   }

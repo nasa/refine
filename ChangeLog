@@ -1,3 +1,8 @@
+2004-09-22 20:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c extensively modifed to: expose a constant ratio,
+	expose a constant spacing, add a final improvement sweep.
+
 2004-09-22 20:12 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmooth,gridSmoothFaceMR) Exposed the
