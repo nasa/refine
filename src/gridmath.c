@@ -9,16 +9,9 @@
 #include <math.h>
 #include "gridmath.h"
 
-void gridCrossProduct(double *edge1, double *edge2, double *norm)
-{
-  norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
-  norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
-  norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
-}
-
 double gridVectorLength(double *v)
 {
-  return sqrt( v[0]*v[0] +  v[1]*v[1] + v[2]*v[2] );
+  return sqrt( gridDotProduct(v, v) );
 }
 
 void gridVectorNormalize(double *norm)
