@@ -2,7 +2,7 @@
 
 	* src/gridinsert.c (gridAdaptBasedOnConnRankings) When a new node
 	is added by spliting it is positioned to be the correct distance
-	from the node with the smallest edge requirement.
+	from the node with the smallest edge length requirement.
 
 2005-02-01 18:10 Mike Park  <mike.park@nasa.gov>
 
