@@ -62,6 +62,8 @@ int gridgetauxvector_( int *nnode, int *offset, double *x );
 int gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x );
 int gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x );
 
+int gridghostcount_( int *nproc, int *count );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */

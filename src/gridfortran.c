@@ -328,3 +328,12 @@ int gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
     }
   }
 }
+
+int gridghostcount_( int *nproc, int *count )
+{
+  int node;
+  for(node=0;node<(*nproc);node++) count[node] = 0;
+  for(node=0;node<gridMaxNode(grid);node++) {
+    if (gridNodeGhost(grid,node)) count[gridNodePart(grid,node)]++;
+  }
+}
