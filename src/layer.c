@@ -2071,6 +2071,20 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
       }
 
     }
+ 
+    for ( normal = 0 ; normal < adjNNode(layer->blendAdj) ; normal++ ) {
+      switch (layerBlendDegree(layer,normal)) {
+      case 0: case 1: case 2: break;
+      case 3:
+	printf( "three blend normal\n");
+	break;
+      default:
+	printf( "ERROR: %s: %d: Cannot handle %d blends. Write more code!\n",
+		layerBlendDegree(layer,normal));
+	break;
+      }
+    }
+   
     layerBuildNormalTriangleAdjacency(layer);
     layer->nblend=0;
     adjFree(layer->blendAdj); layer->blendAdj = NULL;
