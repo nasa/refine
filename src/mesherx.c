@@ -489,6 +489,30 @@ void layerDumpFaceWire(char *fileroot, int faceId, int nshell,
   fclose(mfile);
 }
 
+void layerDumpTecplotShell( char *filename, int nnode, int nshell, 
+			    double *xyz, int *shell )
+{
+  int i;
+  FILE *tecplotFile;
+  
+  printf("writing shell to tecplot file %s\n",filename);
+
+  tecplotFile = fopen(filename,"w");
+  fprintf(tecplotFile, "title=\"tecplot refine geometry file\"\n");
+  fprintf(tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
+  fprintf(tecplotFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  nnode, nshell);
+  for ( i=0; i<nnode ; i++ ){
+    fprintf(tecplotFile, "%23.15e%23.15e%23.15e\n",
+	    xyz[0+3*i],xyz[1+3*i],xyz[2+3*i]);
+  }
+  fprintf(tecplotFile, "\n");
+  for ( i=0; i<nshell ; i++ ){
+    fprintf(tecplotFile, " %9d %9d %9d\n",
+	    shell[0+3*i]+1,shell[1+3*i]+1,shell[2+3*i]+1);
+  }
+  fclose(tecplotFile);
+}
 
 Layer *layerRebuildFaces(Layer *layer, int vol){
 
@@ -656,7 +680,13 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	return NULL;
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
-
+      
+      if (TRUE) {
+	char filename[256];
+	sprintf(filename,"rebuildFace%d.plt",faceId);
+	layerDumpTecplotShell( filename, nfacenode, nfacetri, 
+			       newxyz,  newface);
+      }
       for(face=0;face<gridMaxFace(grid);face++){
 	if( (grid==gridFace(grid,face,nodes,&id)) && 
 	    (id == faceId) && 
@@ -693,31 +723,6 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   free(l2g);
 
   return layer;
-}
-
-void layerDumpTecplotShell( char *filename, int nnode, int nshell, 
-			    double *xyz, int *shell )
-{
-  int i;
-  FILE *tecplotFile;
-  
-  printf("writing shell to tecplot file %s\n",filename);
-
-  tecplotFile = fopen(filename,"w");
-  fprintf(tecplotFile, "title=\"tecplot refine geometry file\"\n");
-  fprintf(tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
-  fprintf(tecplotFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
-	  nnode, nshell);
-  for ( i=0; i<nnode ; i++ ){
-    fprintf(tecplotFile, "%23.15e%23.15e%23.15e\n",
-	    xyz[0+3*i],xyz[1+3*i],xyz[2+3*i]);
-  }
-  fprintf(tecplotFile, "\n");
-  for ( i=0; i<nshell ; i++ ){
-    fprintf(tecplotFile, " %9d %9d %9d\n",
-	    shell[0+3*i]+1,shell[1+3*i]+1,shell[2+3*i]+1);
-  }
-  fclose(tecplotFile);
 }
 
 Layer *layerRebuildVolume(Layer *layer, int vol){
