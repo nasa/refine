@@ -50,7 +50,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal true,  @grid.moreNodeCell
   
   100.times {@grid.nextNodeCell} # abusive use of next
-  @grid.firstNodeCell(3000000);
+  @grid.firstNodeCell(300000);
 end
  
  def testAddAndRemoveNodeCell
@@ -98,7 +98,18 @@ end
   assert_equal nil, grid.addCell(0,1,2,3)
  end
  
- def testOrient
+ def testGetGem
+  grid = Grid.new(5,3,0)
+  assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
+  assert_equal [], grid.gem(5,6)
+  assert_equal [0], grid.gem(0,1)
+  assert_equal [1], grid.gem(1,2)
+  assert_equal [2], grid.gem(0,2)
+  assert_equal [2,0], grid.gem(3,0)
+  assert_equal [2,1,0], grid.gem(3,4)
+ end
+ 
+  def testOrient
   assert_equal nil, @grid.orient(0,1,2,3,4,5)
   
   assert_equal [0, 1, 2, 3], @grid.orient(0,1,2,3,0,1)
@@ -117,21 +128,11 @@ end
   assert_equal [0, 1, 2, 3], @grid.orient(3,0,2,1,0,1)
   assert_equal [0, 1, 2, 3], @grid.orient(3,1,0,2,0,1)
  end
- 
- def testGetGem3
-  grid = Grid.new(5,3,0)
-  assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
-  assert_equal [], grid.gem(5,6)
-  assert_equal [0], grid.gem(0,1)
-  assert_equal [1], grid.gem(1,2)
-  assert_equal [2], grid.gem(0,2)
-  assert_equal [2,0], grid.gem(3,0)
-  assert_equal [2,1,0], grid.gem(3,4)
- end
- 
+
  def testEquator
   grid = Grid.new(6,4,0)
-  assert_equal grid, grid.addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
+  assert_equal grid, grid.
+   addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
   assert_equal 2, grid.nodeDeg(0)
   assert_equal 4, grid.nodeDeg(5)
   assert_equal [0,1,2,3], grid.equator(4,5)
