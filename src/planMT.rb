@@ -13,6 +13,7 @@ require 'Plan/Plan'
 
 class TestQueue < Test::Unit::TestCase
 
+# create plan with intial size and growth stride
 # a plan has item
 #   planAddItemWithPriority
 #   planItems
