@@ -20,6 +20,7 @@ int main( int argc, char *argv[] )
 {
 
   char   project[256];
+  int    vol=1;
   int    i;
   int    npo;
   int    nel;
