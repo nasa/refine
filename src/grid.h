@@ -109,6 +109,13 @@ struct Grid {
 
   FILE *tecplotFile;
 
+  void (*packFunc)(void *packData, 
+		   int nnode, int maxnode, int *nodeo2n,
+		   int ncell, int maxcell, int *cello2n,
+		   int nface, int maxface, int *faceo2n,
+		   int nedge, int maxedge, int *edgeo2n);
+  void *packData;
+
   void (*renumberFunc)(void *renumberData, int maxnode, int *o2n);
   void *renumberData;
 
@@ -131,6 +138,15 @@ Grid *gridExportAFLR3(Grid *g, char *filename );
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n );
 Grid *gridImportAdapt(Grid *g, char *filename );
+
+Grid *gridAttachPacker(Grid *g, 
+		       void (*packFunc)(void *packData, 
+					int nnode, int maxnode, int *nodeo2n,
+					int ncell, int maxcell, int *cello2n,
+					int nface, int maxface, int *faceo2n,
+					int nedge, int maxedge, int *edgeo2n),
+		       void *packData );
+Grid *gridDetachPacker(Grid *g );
 
 Grid *gridAttachNodeSorter(Grid *g, 
 			   void (*renumberFunc)(void *renumberData, 

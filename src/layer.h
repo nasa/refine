@@ -87,8 +87,13 @@ Layer *layerCreate(Grid *);
 Grid *layerGrid(Layer *);
 void layerFree(Layer *);
 Layer *formAdvancingFront( Grid *grid, char *project );
-void layerSortGlobalNodes(void *layer, int maxnode, int *o2n);
-void layerReallocator(void *layer, int reallocType, 
+void layerPack(void *voidLayer, 
+	       int nnode, int maxnode, int *nodeo2n,
+	       int ncell, int maxcell, int *cello2n,
+	       int nface, int maxface, int *faceo2n,
+	       int nedge, int maxedge, int *edgeo2n);
+void layerSortNodes(void *voidLayer, int maxnode, int *o2n);
+void layerReallocator(void *voidLayer, int reallocType, 
 		      int lastSize, int newSize);
 int layerMaxTriangle(Layer *);
 int layerNTriangle(Layer *);

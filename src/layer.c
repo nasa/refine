@@ -26,8 +26,9 @@ Layer *layerCreate( Grid *grid )
   Layer *layer;
   layer = malloc(sizeof(Layer));
   layer->grid = grid;
-  gridAttachNodeSorter( grid, layerSortGlobalNodes, layer );
-  gridAttachReallocator( grid, layerReallocator, layer );
+  gridAttachPacker( grid, layerPack, (void *)layer );
+  gridAttachNodeSorter( grid, layerSortNodes, (void *)layer );
+  gridAttachReallocator( grid, layerReallocator, (void *)layer );
   layer->maxtriangle=0;
   layer->ntriangle=0;
   layer->triangle=NULL;
@@ -76,6 +77,7 @@ void layerFree(Layer *layer)
   free(layer->edgeInLayer);
   free(layer->faceInLayer);
   free(layer->cellInLayer);
+  gridDetachPacker( layer->grid );
   gridDetachNodeSorter( layer->grid );
   gridDetachReallocator( layer->grid );
   if (layer->nearTree != NULL) free(layer->nearTree);
@@ -141,7 +143,51 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   return layer;
 }
 
-void layerSortGlobalNodes(void *voidLayer, int maxnode, int *o2n)
+void layerPack(void *voidLayer, 
+	       int nnode, int maxnode, int *nodeo2n,
+	       int ncell, int maxcell, int *cello2n,
+	       int nface, int maxface, int *faceo2n,
+	       int nedge, int maxedge, int *edgeo2n)
+{
+  Layer *layer = (Layer *)voidLayer;
+  int normal;
+  int packcell, origcell;
+  int packface, origface;
+  int packedge, origedge;
+
+  for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
+    if (EMPTY != layer->normal[normal].root)
+      layer->normal[normal].root = nodeo2n[layer->normal[normal].root];
+    if (EMPTY != layer->normal[normal].tip)
+      layer->normal[normal].tip = nodeo2n[layer->normal[normal].tip];
+  }
+
+  for (origcell=0; origcell<maxcell; origcell++) {
+    packcell = cello2n[origcell];
+    layer->cellInLayer[packcell]=layer->cellInLayer[origcell];
+  }
+  for ( packcell=ncell ; packcell < maxcell ; packcell++ ){ 
+    layer->cellInLayer[packcell] = FALSE;
+  }
+
+  for (origface=0; origface<maxface; origface++) {
+    packface = faceo2n[origface];
+    layer->faceInLayer[packface]=layer->faceInLayer[origface];
+  }
+  for ( packface=nface ; packface < maxface ; packface++ ){ 
+    layer->faceInLayer[packface] = FALSE;
+  }
+
+  for (origedge=0; origedge<maxedge; origedge++) {
+    packedge = edgeo2n[origedge];
+    layer->edgeInLayer[packedge]=layer->edgeInLayer[origedge];
+  }
+  for ( packedge=nedge ; packedge < maxedge ; packedge++ ){
+    layer->edgeInLayer[packedge] = FALSE;
+  }
+}
+
+void layerSortNodes(void *voidLayer, int maxnode, int *o2n)
 {
   Layer *layer = (Layer *)voidLayer;
   int normal;

@@ -197,6 +197,9 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->tecplotFile = NULL;
 
+  grid->packFunc = NULL;
+  grid->packData = NULL;
+
   grid->renumberFunc = NULL;
   grid->renumberData = NULL;
 
@@ -429,6 +432,26 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
   return grid;
 }
 
+Grid *gridAttachPacker(Grid *grid, 
+		       void (*packFunc)(void *packData, 
+					int nnode, int maxnode, int *nodeo2n,
+					int ncell, int maxcell, int *cello2n,
+					int nface, int maxface, int *faceo2n,
+					int nedge, int maxedge, int *edgeo2n),
+		       void *packData )
+{
+  grid->packFunc = packFunc;
+  grid->packData = packData;
+  return grid;
+}
+
+Grid *gridDetachPacker(Grid *grid )
+{
+  grid->packFunc = NULL;
+  grid->packData = NULL;
+  return grid;
+}
+
 Grid *gridAttachNodeSorter(Grid *grid, 
 			   void (*renumberFunc)(void *renumberData, 
 						int maxnode, int *o2n), 
@@ -509,20 +532,22 @@ Grid *gridPack(Grid *grid)
   int nFaceId;
   int iface, n0, n1, id, n[3];
   double t0, t1, u[3], v[3];
-  int *o2n;
+  int *nodeo2n, *cello2n, *faceo2n, *edgeo2n;
   int prismIndex, pyramidIndex, quadIndex;
 
-  o2n = malloc(grid->maxnode*sizeof(int));
-  if (o2n == NULL) {
-    printf("ERROR: Pack: %s: %d: could not allocate o2n\n",__FILE__,__LINE__);
-    return NULL;
-  }
-  for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
+  nodeo2n = malloc(grid->maxnode*sizeof(int));
+  for (i=0;i<grid->maxnode;i++) nodeo2n[i] = EMPTY;
+  cello2n = malloc(grid->maxcell*sizeof(int));
+  for (i=0;i<grid->maxcell;i++) cello2n[i] = EMPTY;
+  faceo2n = malloc(grid->maxface*sizeof(int));
+  for (i=0;i<grid->maxface;i++) faceo2n[i] = EMPTY;
+  edgeo2n = malloc(grid->maxedge*sizeof(int));
+  for (i=0;i<grid->maxedge;i++) edgeo2n[i] = EMPTY;
 
   packnode = 0;
   for ( orignode=0 ; orignode < grid->maxnode ; orignode++ )
     if ( grid->xyz[0+3*orignode] != DBL_MAX) {
-      o2n[orignode] = packnode;
+      nodeo2n[orignode] = packnode;
       grid->xyz[0+3*packnode] = grid->xyz[0+3*orignode];
       grid->xyz[1+3*packnode] = grid->xyz[1+3*orignode];
       grid->xyz[2+3*packnode] = grid->xyz[2+3*orignode];
@@ -560,19 +585,20 @@ Grid *gridPack(Grid *grid)
 
   if (NULL != grid->sortedLocal)
     for (i=0 ; i < grid->nsorted; i++ )
-      grid->sortedLocal[i] = o2n[grid->sortedLocal[i]];
+      grid->sortedLocal[i] = nodeo2n[grid->sortedLocal[i]];
 
   packcell = 0;
   for ( origcell=0 ; origcell < grid->maxcell ; origcell++ )
     if ( grid->c2n[0+4*origcell] != EMPTY) {
+      cello2n[origcell] = packcell;
       adjRemove( grid->cellAdj, grid->c2n[0+4*origcell], origcell );
       adjRemove( grid->cellAdj, grid->c2n[1+4*origcell], origcell );
       adjRemove( grid->cellAdj, grid->c2n[2+4*origcell], origcell );
       adjRemove( grid->cellAdj, grid->c2n[3+4*origcell], origcell );
-      grid->c2n[0+4*packcell] = o2n[grid->c2n[0+4*origcell]];
-      grid->c2n[1+4*packcell] = o2n[grid->c2n[1+4*origcell]];
-      grid->c2n[2+4*packcell] = o2n[grid->c2n[2+4*origcell]];
-      grid->c2n[3+4*packcell] = o2n[grid->c2n[3+4*origcell]];
+      grid->c2n[0+4*packcell] = nodeo2n[grid->c2n[0+4*origcell]];
+      grid->c2n[1+4*packcell] = nodeo2n[grid->c2n[1+4*origcell]];
+      grid->c2n[2+4*packcell] = nodeo2n[grid->c2n[2+4*origcell]];
+      grid->c2n[3+4*packcell] = nodeo2n[grid->c2n[3+4*origcell]];
       if (NULL != grid->cellGlobal) 
 	grid->cellGlobal[packcell] = grid->cellGlobal[origcell];
       adjRegister( grid->cellAdj, grid->c2n[0+4*packcell], packcell );
@@ -610,10 +636,11 @@ Grid *gridPack(Grid *grid)
   for (iface=1;iface <= nFaceId;iface++){
     for ( origface=0 ; origface < grid->maxface ; origface++ ){ 
       if ( grid->faceId[origface]==iface && grid->f2n[0+3*origface] != EMPTY) {
+	faceo2n[origface] = packface;
 	if (origface == packface) {
 	  for (i=0;i<3;i++){
 	    adjRemove( grid->faceAdj, grid->f2n[i+3*packface], packface );
-	    grid->f2n[i+3*packface] = o2n[grid->f2n[i+3*packface]];
+	    grid->f2n[i+3*packface] = nodeo2n[grid->f2n[i+3*packface]];
 	    adjRegister( grid->faceAdj, grid->f2n[i+3*packface], packface );
 	  }
 	}else{
@@ -638,7 +665,7 @@ Grid *gridPack(Grid *grid)
 	  grid->faceId[origface]	= grid->faceId[packface];
 	  
 	  for (i=0;i<3;i++) {
-	    grid->f2n[i+3*packface] = o2n[n[i]];
+	    grid->f2n[i+3*packface] = nodeo2n[n[i]];
 	    adjRegister( grid->faceAdj, grid->f2n[i+3*packface], packface );
 	    grid->faceU[i+3*packface] = u[i];
 	    grid->faceV[i+3*packface] = v[i];
@@ -671,9 +698,9 @@ Grid *gridPack(Grid *grid)
   packedge = 0;
   for (origedge=0;origedge<grid->maxedge;origedge++){
     if (grid->e2n[0+2*origedge] != EMPTY){
-
-      n0 = o2n[grid->e2n[0+2*origedge]];
-      n1 = o2n[grid->e2n[1+2*origedge]];
+      edgeo2n[origedge] = packedge;
+      n0 = nodeo2n[grid->e2n[0+2*origedge]];
+      n1 = nodeo2n[grid->e2n[1+2*origedge]];
       if (n0==EMPTY || n1==EMPTY) {
 	printf("ERROR: Pack: %s: %d: n0 %d n1 %d: edge orig %d pack %d\n",
 	       __FILE__, __LINE__, n0, n1, origedge, packedge);
@@ -717,26 +744,34 @@ Grid *gridPack(Grid *grid)
 
   for (prismIndex=0;prismIndex<gridNPrism(grid);prismIndex++){
     for (i=0;i<6;i++) grid->prism[prismIndex].nodes[i] =
-			o2n[grid->prism[prismIndex].nodes[i]];
+			nodeo2n[grid->prism[prismIndex].nodes[i]];
   }
 
   for (pyramidIndex=0;pyramidIndex<gridNPyramid(grid);pyramidIndex++){
     for (i=0;i<5;i++) grid->pyramid[pyramidIndex].nodes[i] =
-			o2n[grid->pyramid[pyramidIndex].nodes[i]];
+			nodeo2n[grid->pyramid[pyramidIndex].nodes[i]];
   }
 
   // note, these should be counted as boundaries
   for (quadIndex=0;quadIndex<gridNQuad(grid);quadIndex++){
     for (i=0;i<4;i++) grid->quad[quadIndex].nodes[i] =
-			o2n[grid->quad[quadIndex].nodes[i]];
+			nodeo2n[grid->quad[quadIndex].nodes[i]];
   }
 
-  if ( NULL != grid->renumberFunc ) 
-    (*grid->renumberFunc)( grid->renumberData, grid->maxnode, o2n );
+  if ( NULL != grid->packFunc ) 
+    (*grid->packFunc)( grid->packData, 
+		       grid->nnode, grid->maxnode, nodeo2n,
+		       grid->ncell, grid->maxcell, cello2n,
+		       grid->nface, grid->maxface, faceo2n,
+		       grid->nedge, grid->maxedge, edgeo2n);
 
-  if ( NULL != gridLines(grid) ) linesRenumber(gridLines(grid),o2n);
 
-  free(o2n);
+  if ( NULL != gridLines(grid) ) linesRenumber(gridLines(grid),nodeo2n);
+
+  free(nodeo2n);
+  free(cello2n);
+  free(faceo2n);
+  free(edgeo2n);
 
   return  grid;
 }
