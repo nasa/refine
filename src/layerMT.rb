@@ -1606,6 +1606,37 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 30, grid.ncell
  end
 
+ def testSubBlendTriplePoint2
+  grid = Grid.new(20,20,10,0)
+  top = 0.8
+  grid.addNode(0.5,0.35,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0.5,0.7,0)
+
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,2,3,10)
+  grid.addFace(0,3,1,10)
+
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  layer.blend(270.0)
+  layer.subBlend(44.0)
+  assert_equal 15, layer.nnormal  
+  assert_equal 2, layer.nSubBlend(0)
+  assert_equal 2, layer.nSubBlend(1)
+  assert_equal 2, layer.nSubBlend(2)
+  assert_equal [ 4, 9, 1,12], layer.subBlendNormals(0,0)
+  assert_equal [ 9, 0,12, 6], layer.subBlendNormals(0,1)
+  assert_equal [ 5,10, 2,13], layer.subBlendNormals(1,0)
+  assert_equal [10, 4,13, 7], layer.subBlendNormals(1,1)
+  assert_equal [ 0,11, 3,14], layer.subBlendNormals(2,0)
+  assert_equal [11, 5,14, 8], layer.subBlendNormals(2,1)
+
+  #assert_equal [4, 5, 0], layer.orderedVertexNormals(0)
+  layer.advanceConstantHeight(0.1)
+  layer.writeTecplotFrontGeometry
+ end
+
  def testExtrudeBlend
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])

@@ -2756,7 +2756,8 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 	    it=adjNext(it) ){
 	blend = adjItem(it);
 	layerBlendNormals(layer, blend, blendnormals );
-	if (normal == blendnormals[0] || normal == blendnormals[1] ) {
+	if ( layerNormalRoot(layer, normal) == 
+	     layerNormalRoot(layer, blendnormals[0]) ) {
 	  angle = layerNormalAngle(layer,blendnormals[0], blendnormals[1]);
 	  nSubNormal = (int)(angle/maxNormalAngle)-1;
 	  nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
