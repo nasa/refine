@@ -106,6 +106,7 @@ int layerNActiveNormal(Layer *);
 bool layerCellInLayer(Layer *, int cell);
 bool layerFaceInLayer(Layer *, int face);
 bool layerEdgeInLayer(Layer *, int edge);
+int layerNEdgeInLayer(Layer *, int edgeId);
 
 Layer *layerReconnectCellUnlessInLayer(Layer *, int oldNode, int newNode );
 Layer *layerReconnectEdgeUnlessInLayer(Layer *, int edgeId, 

@@ -354,6 +354,12 @@ VALUE layer_edgeInLayer( VALUE self, VALUE edge )
   return ( layerEdgeInLayer(layer,NUM2INT(edge))?Qtrue:Qfalse );
 }
 
+VALUE layer_nEdgeInLayer( VALUE self, VALUE edgeId )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerNEdgeInLayer(layer,NUM2INT(edgeId)) );
+}
+
 VALUE layer_advance( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -474,6 +480,7 @@ void Init_Layer()
   rb_define_method( cLayer, "cellInLayer", layer_cellInLayer, 1 );
   rb_define_method( cLayer, "faceInLayer", layer_faceInLayer, 1 );
   rb_define_method( cLayer, "edgeInLayer", layer_edgeInLayer, 1 );
+  rb_define_method( cLayer, "nEdgeInLayer", layer_nEdgeInLayer, 1 );
 
   rb_define_method( cLayer, "advanceConstantHeight", 
 		    layer_advanceConstantHeight, 1 );

@@ -1455,6 +1455,23 @@ bool layerEdgeInLayer(Layer *layer, int edge)
   return layer->edgeInLayer[edge];
 }
 
+int layerNEdgeInLayer(Layer *layer, int edgeId)
+{
+  int edge, count;
+  int nodes[2], currentEdgeId;
+  Grid *grid;
+
+  grid = layerGrid(layer);
+  count = 0;
+
+  for(edge=0;edge<gridMaxEdge(grid);edge++)
+    if ( ( grid == gridEdge(grid, edge, nodes, &currentEdgeId ) ) &&
+	 ( edgeId == currentEdgeId ) &&
+	 ( layerEdgeInLayer(layer, edge) ) ) count++;
+	 
+  return count;
+}
+
 Layer *layerReconnectCellUnlessInLayer(Layer *layer, int oldNode, int newNode )
 {
   AdjIterator it;

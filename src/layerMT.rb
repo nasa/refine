@@ -690,6 +690,9 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,3,1,3], grid.face(2)
   assert_equal [0,1,1],   grid.edge(0)
   assert_equal false,     layer.edgeInLayer(0)
+  assert_equal 0,         layer.nEdgeInLayer(-1)
+  assert_equal 0,         layer.nEdgeInLayer(1)
+  assert_equal 0,         layer.nEdgeInLayer(2)
   assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 7,         grid.nnode
   assert_equal 4,         grid.ncell
@@ -699,6 +702,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,4,1],   grid.edge(1)
   assert_equal false,     layer.edgeInLayer(0)
   assert_equal true,      layer.edgeInLayer(1)
+  assert_equal 1,         layer.nEdgeInLayer(1)
   assert_equal 0.0,       grid.nodeT(0,1)
   assert_equal 1.0,       grid.nodeT(1,1)
   assert_equal 0.1,       grid.nodeT(4,1)
