@@ -79,7 +79,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal nil,  grid.registerNodeCell(0,2)
  end
 
- def testPackStorage
+ def testPackStorageSetFirstCell
   grid = Grid.new(2,1,5)
   grid.pack
   assert_equal grid, grid.registerNodeCell(0,0)
@@ -97,16 +97,12 @@ class TestSampleUnit < Test::Unit::TestCase
   grid = Grid.new(1,1,5)
   assert_equal grid, grid.registerNodeCell(0,0)
   assert_equal grid, grid.registerNodeCell(0,1)
-  grid.dump
   grid.removeNodeCell(0,0)
   grid.removeNodeCell(0,1)
-  grid.dump
-  assert_equal nil, grid.registerNodeCell(0,1)
-  grid.dump
   grid.pack
-  grid.dump
   assert_equal grid, grid.registerNodeCell(0,1)
-  grid.dump
+  assert_equal grid, grid.registerNodeCell(0,2)
+  assert_equal grid, grid.registerNodeCell(0,3)
  end
  
 # put in test for register being the last entry in celllist
