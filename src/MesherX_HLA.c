@@ -13,7 +13,7 @@
 #include <string.h>
 #include <math.h>
 #include <values.h>
-#include "mesherx.c"
+#include "mesherx_hla.h"
 #include "CADGeom/CADGeom.h"
 #include "Goolache/CAPrIMesh.h"
 #include "Goolache/MeshMgr.h"

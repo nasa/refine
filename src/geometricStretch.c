@@ -18,6 +18,8 @@
 //
 // given three out of 5 of the basic properties: return one of the other two
 
+#include<math.h>
+
 
 double LengthFromN( int n, double dy0, double rate ) {
    return dy0*(pow(rate,n)-1.0)/(rate-1.0);
@@ -34,8 +36,10 @@ double RateOfGeometricStretch( double yMax, double dyMin, double dyMax )
 
 int NptsOfGeometricStretch( double yMax, double dyMin, double rate )
 {
-       if( rate <= 1.0001 ) return (int)(yMax/dyMin+0.5);
-       else return (int)(0.5 + log( (rate-1.0)*yMax/dyMin + 1.0) / log(rate));
+       int numPts;
+       if( rate <= 1.0001 ) numPts = (int)(0.5 + yMax/dyMin);
+       else numPts = (int)(0.5 + log( (rate-1.0)*yMax/dyMin + 1.0) / log(rate));
+       return numPts;
 }
 
 double RptsOfGeometricStretch( double yMax, double dyMin, double rate )

@@ -59,9 +59,10 @@ Layer *layerAssignPolarGrowthHeight(Layer *layer,
   double hLayer   = 200.0;
   double hLmax    = 2.0;
 
-
   double hTrans   = hMin * pow( rTrans, pwrInner );
   double sRate    = pow( hMax/hTrans, 2.0/(rMax-rTrans) );
+
+  hMax     = MIN ( hLmax, hMax );
 
   printf( " Parameters describing first spacing and layer thickness\n");
   printf( " rMin 	= %f\n", rMin);
@@ -79,7 +80,7 @@ Layer *layerAssignPolarGrowthHeight(Layer *layer,
 
     r = sqrt( xyzRoot[0]*xyzRoot[0] + xyzRoot[1]*xyzRoot[1] );
 
-    if( xyzRoot[2] > 1.0e-5 || r < 3.175 + 1.0e-5) { // inside jet cavity
+    if( xyzRoot[2] < -1.0e-5 || r < 3.175 + 1.0e-5) { // inside jet cavity
       double h1, xx;
           distance = sqrt( xyzRoot[0]*xyzRoot[0] +
 		        xyzRoot[1]*xyzRoot[1] +
@@ -95,7 +96,7 @@ Layer *layerAssignPolarGrowthHeight(Layer *layer,
           }
     } else {	// assume node is in the crossflow
 		// use normal boundary layer profile
-           layerThickness = 10.0;
+           layerThickness = 30.0;
            height = hMin;
 
     }
@@ -195,7 +196,7 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
          gridNodeXYZ(layerGrid(layer),root,xyz);
          MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
          sp1 = spacing[0];
-         z = -xyz[2];
+         z = xyz[2];
          r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
          length = layerNormalMaxLength(layer,normal);
          height = layerNormalInitialHeight(layer,normal);
@@ -343,7 +344,7 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
          gridNodeXYZ(layerGrid(layer),root,xyz);
          MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
          sp1 = spacing[0];
-         z = -xyz[2];
+         z = xyz[2];
          r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 	 rate = layerNormalRate(layer,normal);
          length = layerNormalMaxLength(layer,normal);
@@ -406,7 +407,7 @@ void WriteTerminationMessage(Layer* layer, int normal, char *message ) {
      int root = layerNormalRoot(layer, normal );
      double xyz[3], spacing[3], direction[9];
      gridNodeXYZ(layerGrid(layer),root,xyz);
-     z = -xyz[2];
+     z = xyz[2];
      r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 //     if( z >= -1.0e-5 && r > 3.17501 && r < 3.3 ) {
 	printf(" terminating normal %d because %s\n", normal, message );
