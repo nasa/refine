@@ -82,7 +82,7 @@ int main( int argc, char *argv[] )
   if(strcmp(adaptfile,"none")==0) {
     printf("adapt parameter >none< selected.\n");
     gridResetSpacing(grid);
-    gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
+    gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
   }else{
     printf("reading adapt parameter from file %s ...\n",adaptfile);
     gridImportAdapt(grid, adaptfile); // Do not sort nodes before this call.
@@ -139,7 +139,7 @@ int main( int argc, char *argv[] )
 	ratio = ratio - 0.05;
       }
     }
-    gridFreezeGoodNodes(grid,0.5,0.4,1.5);
+    gridFreezeGoodNodes(grid,0.6,0.4,1.5);
   }
 
   if (!gridRightHandedBoundary(grid)) 
