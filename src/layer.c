@@ -47,6 +47,7 @@ Layer *layerCreate( Grid *grid )
   layer->originalnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
+  layer->vertexNormal=NULL;
   layer->nConstrainingGeometry=0;
   layer->constrainingGeometry=NULL;
   layer->nearTree=NULL;
@@ -82,6 +83,7 @@ void layerFree(Layer *layer)
   gridDetachReallocator( layer->grid );
   if (layer->nearTree != NULL) free(layer->nearTree);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
+  if (layer->vertexNormal != NULL) free(layer->vertexNormal);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
   if (layer->ParentGeomFace != NULL) free(layer->ParentGeomFace);
@@ -581,18 +583,25 @@ int layerDuplicateNormal(Layer *layer, int normal)
 
 int layerAddNormal(Layer *layer, int globalNodeId )
 {
-  int i; 
+  int i;
+  int oldNNormal;
 
   if (globalNodeId < 0 || globalNodeId >= layerMaxNode(layer) ) return EMPTY;
 
   if (layer->nnormal >= layer->maxnormal) {
+    oldNNormal = layer->maxnormal;
     layer->maxnormal += 5000;
     if (layer->normal == NULL) {
       layer->normal = malloc(layer->maxnormal*sizeof(Normal));
       layer->globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
       for (i=0;i<layerMaxNode(layer);i++) layer->globalNode2Normal[i]=EMPTY;
+      layer->vertexNormal = malloc(layer->maxnormal*sizeof(int));
+      for (i=oldNNormal;i<layer->maxnormal;i++) layer->vertexNormal[i]=EMPTY;
     }else{
       layer->normal = realloc(layer->normal,layer->maxnormal*sizeof(Normal));
+      layer->vertexNormal = realloc(layer->vertexNormal, 
+				    layer->maxnormal*sizeof(int));
+      for (i=oldNNormal;i<layer->maxnormal;i++) layer->vertexNormal[i]=EMPTY;
     }
   }
 
@@ -2106,10 +2115,14 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
 	allVertexNormals = malloc(nVertexNormals*sizeof(int));
 	layerOrderedVertexNormals( layer, normal, 
 				   &nVertexNormals, allVertexNormals);
-	for(sweep=1;sweep<(nVertexNormals-1);sweep++) {
-	  vertexNormals[0] = allVertexNormals[0];
+	for(sweep=0;sweep<nVertexNormals;sweep++) {
+	  vertexNormals[0] = layer->vertexNormal[normal];
 	  vertexNormals[1] = allVertexNormals[sweep];
-	  vertexNormals[2] = allVertexNormals[sweep+1];
+	  if (sweep < (nVertexNormals-1) ) {
+	    vertexNormals[2] = allVertexNormals[sweep+1];
+	  }else{
+	    vertexNormals[2] = allVertexNormals[0];
+	  }
 	  triangle0 = layerForceTriangle(layer,vertexNormals[0],
 					 vertexNormals[1],vertexNormals[2]);
 	  /*face oriented opposite direction to cell*/ 
@@ -2478,6 +2491,8 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 
   for ( normal = 0 ; normal < layer->originalnormal ; normal++ ) {
     nRequiredBlends = layerNRequiredBlends(layer, normal, angleLimit );
+    if ( nRequiredBlends > 2 ) 
+      layer->vertexNormal[normal] = layerDuplicateNormal(layer,normal);
     if ( nRequiredBlends > 0 ) {
       firstTriangle = layerFirstTriangleAfterGap(layer,normal);
       continuous = ( EMPTY != 

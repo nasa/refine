@@ -1475,29 +1475,29 @@ class TestLayer < Test::Unit::TestCase
   layer = Layer.new(grid).populateAdvancingFront([10])
   assert_equal 3,     layer.nRequiredBlends(0,270.0)
   layer.blend(270.0)
-  assert_equal 9, layer.nnormal  
+  assert_equal 10, layer.nnormal  
   assert_equal 3, layer.nblend 
-  assert_equal [4,1,7], layer.triangleNormals(0)
-  assert_equal [5,2,8], layer.triangleNormals(1)
-  assert_equal [0,3,6], layer.triangleNormals(2)
-  assert_equal [4,0,1,6], layer.blendNormals(0)
-  assert_equal [5,4,2,7], layer.blendNormals(1)
-  assert_equal [0,5,3,8], layer.blendNormals(2)
+  assert_equal [5,1,8], layer.triangleNormals(0)
+  assert_equal [6,2,9], layer.triangleNormals(1)
+  assert_equal [0,3,7], layer.triangleNormals(2)
+  assert_equal [5,0,1,7], layer.blendNormals(0)
+  assert_equal [6,5,2,8], layer.blendNormals(1)
+  assert_equal [0,6,3,9], layer.blendNormals(2)
 
-#     /3   8\
+#     /3   9\
 #    / |   | \
-#    / 0   5 \
+#    / 0   6 \
 #   / /     \ \
-#   //   4   \\
-#   6   / \   2
-#      1---7
+#   //   5   \\
+#   7   / \   2
+#      1---8
 
   assert_equal 3,         layer.blendDegree(0)
-  assert_equal [0, 4, 5], layer.orderedVertexNormals(0)
-  layer.advanceConstantHeight(0.1)
+  assert_equal [0, 5, 6], layer.orderedVertexNormals(0)
+  assert_equal layer, layer.advanceConstantHeight(0.1)
   #layer.writeTecplotFrontGeometry
-  assert_equal 10, layer.ntriangle  
-  assert_equal 19, grid.ncell  
+  assert_equal 12, layer.ntriangle  
+  assert_equal 21, grid.ncell  
  end
 
  def testSubBlendCount
@@ -1601,18 +1601,18 @@ class TestLayer < Test::Unit::TestCase
   layer = Layer.new(grid).populateAdvancingFront([10])
   layer.blend(270.0)
   layer.subBlend(44.0)
-  assert_equal 15, layer.nnormal  
+  assert_equal 16, layer.nnormal  
   assert_equal 2, layer.nSubBlend(0)
   assert_equal 2, layer.nSubBlend(1)
   assert_equal 2, layer.nSubBlend(2)
-  assert_equal [ 4, 9, 1,12], layer.subBlendNormals(0,0)
-  assert_equal [ 9, 0,12, 6], layer.subBlendNormals(0,1)
-  assert_equal [ 5,10, 2,13], layer.subBlendNormals(1,0)
-  assert_equal [10, 4,13, 7], layer.subBlendNormals(1,1)
-  assert_equal [ 0,11, 3,14], layer.subBlendNormals(2,0)
-  assert_equal [11, 5,14, 8], layer.subBlendNormals(2,1)
+  assert_equal [ 5,10, 1,13], layer.subBlendNormals(0,0)
+  assert_equal [10, 0,13, 7], layer.subBlendNormals(0,1)
+  assert_equal [ 6,11, 2,14], layer.subBlendNormals(1,0)
+  assert_equal [11, 5,14, 8], layer.subBlendNormals(1,1)
+  assert_equal [ 0,12, 3,15], layer.subBlendNormals(2,0)
+  assert_equal [12, 6,15, 9], layer.subBlendNormals(2,1)
 
-  assert_equal [0, 9, 4, 10, 5, 11], layer.orderedVertexNormals(0)
+  assert_equal [0,10, 5, 11, 6, 12], layer.orderedVertexNormals(0)
  end
 
  def testsubBlendForTwoConvextFaces2Advance
@@ -1650,9 +1650,10 @@ class TestLayer < Test::Unit::TestCase
   layer = Layer.new(grid).populateAdvancingFront([10])
   layer.blend(270.0)
   layer.subBlend(44.0)
-
-  layer.advanceConstantHeight(0.1)
+  assert_equal 16, layer.nnormal
+  assert_equal layer, layer.advanceConstantHeight(0.1)
   layer.writeTecplotFrontGeometry
+  assert_equal 21, layer.ntriangle
  end
 
  def testExtrudeBlend

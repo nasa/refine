@@ -66,6 +66,7 @@ struct Layer {
   int maxnormal, nnormal, originalnormal;
   Normal *normal;
   int *globalNode2Normal;
+  int *vertexNormal;
   int nConstrainingGeometry, *constrainingGeometry;
   Near *nearTree;
   bool mixedElementMode;
