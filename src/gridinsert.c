@@ -654,10 +654,11 @@ Grid *gridInsertLine(Grid *grid, int n, int *line )
 
 Grid *gridVerifyEdgesInLine(Grid *grid)
 {
-  int i, n0, n1;
+  int i, i0, i1, n0, n1, nodes0[4], nodes1[4];
   bool gotIt;
   int removeNode;
   double ratio;
+  AdjIterator it0, it1;
 
   if ( grid->nline <= 0 || grid->line == NULL ) return NULL;
 
@@ -666,19 +667,27 @@ Grid *gridVerifyEdgesInLine(Grid *grid)
     n1 = grid->line[i];
     if( !gridCellEdge( grid, n0, n1 ) ) {
       printf("Segment %3i of line n0 %10d n1 %10d not found\n",i,n0,n1);
+      gotIt=FALSE;
       if ( n0 != EMPTY && n1 != EMPTY ) {
-	gotIt = FALSE;
-	if (!gotIt){
-	  gridSmallestRatioEdge(grid,n0,&removeNode,&ratio);
-	  if ( !gridNodeFrozen( grid, removeNode ) )
-	    gridCollapseEdge(grid, n0, removeNode, 0.0);
-	  gotIt = gridCellEdge( grid, n0, n1 );
-	}
-	if (!gotIt){
-	  gridSmallestRatioEdge(grid,n1,&removeNode,&ratio);
-	  if ( !gridNodeFrozen( grid, removeNode ) )
-	    gridCollapseEdge(grid, n1, removeNode, 0.0);
-	  gotIt = gridCellEdge( grid, n0, n1 );
+	for ( it0 = adjFirst(grid->cellAdj,n0); 
+	      adjValid(it0) && !gotIt; 
+	      it0 = adjNext(it0) ) {
+	  gridCell( grid, adjItem(it0), nodes0 );
+	  for(i0=0;i0<4;i0++){
+	    for ( it1 = adjFirst(grid->cellAdj,nodes0[i0]); 
+		  adjValid(it1) && !gotIt; 
+		  it1 = adjNext(it1) ) {
+	      gridCell( grid, adjItem(it1), nodes1 );
+	      for(i1=0;i1<4;i1++){
+		if (nodes1[i1] == n1 && !gridNodeFrozen( grid, nodes0[i0] )) {
+		  gridCollapseEdge(grid, n0, nodes0[i0], 0.0);
+		  gotIt = gridCellEdge( grid, n0, n1 );
+		  if (!gotIt) gridCollapseEdge(grid, n1, nodes0[i0], 0.0);
+		  gotIt = gridCellEdge( grid, n0, n1 );
+		}	    
+	      }     
+	    }
+	  }
 	}
 	if (gotIt) printf("  gotIt!\n");
       }
