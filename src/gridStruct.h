@@ -61,6 +61,7 @@ struct Grid {
 
   int nprism, maxprism;
   Prism *prism;
+  int *prismDeg;
 
   int npyramid, maxpyramid;
   Pyramid *pyramid;

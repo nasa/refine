@@ -37,6 +37,9 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->nprism=0;
   grid->maxprism=0;
   grid->prism=NULL;
+
+  grid->prismDeg=NULL;
+
   grid->npyramid=0;
   grid->maxpyramid=0;
   grid->pyramid=NULL;
@@ -151,6 +154,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nprism=0;
   grid->maxprism=0;
   grid->prism=NULL;
+  grid->prismDeg=NULL;
   grid->npyramid=0;
   grid->maxpyramid=0;
   grid->pyramid=NULL;
@@ -435,8 +439,8 @@ Grid *gridExportAFLR3( Grid *grid, char *filename )
 
   for( i=0; i<grid->nquad ; i++ ) {
     fprintf(file,"%10d %10d %10d %10d\n",
-	    grid->quad[i].nodes[0],grid->quad[i].nodes[1],
-	    grid->quad[i].nodes[2],grid->quad[i].nodes[3]);
+	    grid->quad[i].nodes[0]+1,grid->quad[i].nodes[1]+1,
+	    grid->quad[i].nodes[2]+1,grid->quad[i].nodes[3]+1);
   }
 
   for( i=0; i<grid->nface ; i++ ) {
@@ -458,21 +462,21 @@ Grid *gridExportAFLR3( Grid *grid, char *filename )
 
   for( i=0; i<grid->npyramid ; i++ ) {
     fprintf(file,"%10d %10d %10d %10d %10d\n",
-	    grid->pyramid[i].nodes[0],
-	    grid->pyramid[i].nodes[1],
-	    grid->pyramid[i].nodes[2],
-	    grid->pyramid[i].nodes[3],
-	    grid->pyramid[i].nodes[4]);
+	    grid->pyramid[i].nodes[0]+1,
+	    grid->pyramid[i].nodes[1]+1,
+	    grid->pyramid[i].nodes[2]+1,
+	    grid->pyramid[i].nodes[3]+1,
+	    grid->pyramid[i].nodes[4]+1);
   }
 
   for( i=0; i<grid->nprism ; i++ ) {
     fprintf(file,"%10d %10d %10d %10d %10d %10d\n",
-	    grid->prism[i].nodes[0],
-	    grid->prism[i].nodes[1],
-	    grid->prism[i].nodes[2],
-	    grid->prism[i].nodes[3],
-	    grid->prism[i].nodes[4],
-	    grid->prism[i].nodes[5]);
+	    grid->prism[i].nodes[0]+1,
+	    grid->prism[i].nodes[1]+1,
+	    grid->prism[i].nodes[2]+1,
+	    grid->prism[i].nodes[3]+1,
+	    grid->prism[i].nodes[4]+1,
+	    grid->prism[i].nodes[5]+1);
   }
 
   /* ain't got no hexes */
@@ -518,6 +522,9 @@ void gridFree(Grid *grid)
 {
   if ( grid->tecplotFileOpen ) fclose(grid->tecplotFile);
   if ( NULL != grid->geomEdge) free(grid->geomEdge);
+
+  if (grid->prismDeg!=NULL) free(grid->prismDeg);
+
   if (grid->quad!=NULL) free(grid->quad);
   if (grid->pyramid!=NULL) free(grid->pyramid);
   if (grid->prism!=NULL) free(grid->prism);
@@ -2101,13 +2108,17 @@ Grid *gridSetNodeXYZ(Grid *grid, int node, double *xyz )
 
 Grid *gridDeleteNodesNotUsed(Grid *grid){
   int node, maxnode;
+  bool prism;
 
   maxnode = gridMaxNode(grid);
+  prism = FALSE;
   for( node=0 ; node < maxnode ; node++ ) {
+    if ( grid->prismDeg != NULL ) prism = (grid->prismDeg[node] > 0);
     if ( gridValidNode(grid,node) && 
 	 0 == gridCellDegree(grid, node) &&
 	 !gridGeometryFace(grid, node) &&
-	 !gridGeometryEdge(grid, node) )
+	 !gridGeometryEdge(grid, node) &&
+	 !prism )
       gridRemoveNode(grid,node);
   }
 
@@ -2276,11 +2287,14 @@ bool gridGeometryFace(Grid *grid, int node)
 
 Grid *gridAddPrism(Grid *grid, int n0, int n1, int n2, int n3, int n4, int n5)
 {
+  int i;
 
   if (grid->nprism >= grid->maxprism) {
     grid->maxprism += 5000;
     if (grid->prism == NULL) {
       grid->prism = malloc(grid->maxprism*sizeof(Prism));
+      grid->prismDeg = malloc(grid->maxnode*sizeof(int));
+      for(i=0;i<grid->maxnode;i++) grid->prismDeg[i]=0;
     }else{
       grid->prism = realloc(grid->prism,grid->maxprism*sizeof(Prism));
     }
@@ -2292,6 +2306,8 @@ Grid *gridAddPrism(Grid *grid, int n0, int n1, int n2, int n3, int n4, int n5)
   grid->prism[grid->nprism].nodes[3] = n3;
   grid->prism[grid->nprism].nodes[4] = n4;
   grid->prism[grid->nprism].nodes[5] = n5;
+
+  for(i=0;i<6;i++) grid->prismDeg[grid->prism[grid->nprism].nodes[i]]++;
 
   grid->nprism++;
 
