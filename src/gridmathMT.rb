@@ -182,7 +182,7 @@ class TestGridMath < Test::Unit::TestCase
   assert_equal 0, v2[2]
  end
 
- def XtestEigTriDiag2x2plus1
+ def testEigTriDiag2x2plus1
   m = [0.5,0.5,0,
            3.5,0,
                1]

@@ -87,7 +87,7 @@ bool gridEigTriDiag3x3(double *d, double *e,
     /* look for small sub-diagonal element */
     for( m = l; m<3;m++) { /*test_for_zero_e */
       tst2 = tst1 + ABS(e[m]);
-      if (abs(tst2 - tst1) < 1.0e-14 ) break;
+      if (ABS(tst2 - tst1) < 1.0e-14 ) break;
       /* e[2] is always zero, so there is no exit through the bottom of loop*/
     }
     if (m != l) { /* l_not_equal_m */
