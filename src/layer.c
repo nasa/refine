@@ -384,7 +384,9 @@ Layer *layerAdvance(Layer *layer, double height )
   int front, normals[3], n[6], side[2];
   double xyz[3];
   AdjIterator it;  
+  int nterm;
   bool term0, term1, term2;
+
   if (layerNNormal(layer) == 0 ) return NULL;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
@@ -436,17 +438,52 @@ Layer *layerAdvance(Layer *layer, double height )
     term0 = layerNormalTerminated(layer,normals[0]);
     term1 = layerNormalTerminated(layer,normals[1]);
     term2 = layerNormalTerminated(layer,normals[2]);
-    if ( term0 || term1 || term2 ) {
-      if ( term0 && term1 && !term2 ) {
-	gridAddCell(grid, n[0], n[1], n[2], n[5]);	
+    nterm = 0;
+    if (term0) nterm++;
+    if (term1) nterm++;
+    if (term2) nterm++;
+
+    switch ( nterm ) {
+    case 3 :
+      /* add no tets */
+      break;
+    case 2 :
+      /* add 1 tet */
+      if ( !term0 ) gridAddCell(grid, n[0], n[1], n[2], n[3]);
+      if ( !term1 ) gridAddCell(grid, n[0], n[1], n[2], n[4]);
+      if ( !term2 ) gridAddCell(grid, n[0], n[1], n[2], n[5]);
+      break;
+    case 1 :
+      /* add 2 tets of prz */
+      if ( term0 ) {
+	if (normals[2]<normals[1]){
+	  gridAddCell(grid, n[2], n[0], n[4], n[5]);
+	  gridAddCell(grid, n[2], n[0], n[1], n[4]);
+	}else{
+	  gridAddCell(grid, n[0], n[1], n[5], n[4]);
+	  gridAddCell(grid, n[2], n[0], n[1], n[5]);
+	}
+      }      
+      if ( term1 ) {
+	if (normals[2]<normals[1]){
+	  gridAddCell(grid, n[0], n[4], n[5], n[3]);
+	  gridAddCell(grid, n[2], n[0], n[4], n[5]);
+	}else{
+	  gridAddCell(grid, n[0], n[4], n[5], n[3]);
+	  gridAddCell(grid, n[2], n[0], n[1], n[5]);
+	}
       }
-      if ( !term0 && term1 && term2 ) {
-	gridAddCell(grid, n[0], n[1], n[2], n[3]);	
+      if ( term2 ) {
+	if (normals[2]<normals[1]){
+	  gridAddCell(grid, n[0], n[4], n[5], n[3]);
+	  gridAddCell(grid, n[2], n[0], n[1], n[4]);
+	}else{
+	  gridAddCell(grid, n[0], n[4], n[5], n[3]);
+	  gridAddCell(grid, n[0], n[1], n[5], n[4]);
+	}
       }
-      if ( term0 && !term1 && term2 ) {
-	gridAddCell(grid, n[0], n[1], n[2], n[4]);	
-      }
-    }else{
+      break;
+    case 0 :
       /* add full 3 tet prz */
       if (normals[2]<normals[1]){
 	gridAddCell(grid, n[0], n[4], n[5], n[3]);
@@ -457,6 +494,7 @@ Layer *layerAdvance(Layer *layer, double height )
 	gridAddCell(grid, n[0], n[1], n[5], n[4]);
 	gridAddCell(grid, n[2], n[0], n[1], n[5]);
       }
+      break;
     }
 
     if (0 < layerConstrained(layer,normals[0]) && 

@@ -444,6 +444,39 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2,4], grid.cell(1)
  end
 
+ def testTerminate0
+  assert_not_nil grid  = volumeGrid
+  assert_not_nil layer = volumeLayer(grid)
+  assert_equal layer,     layer.terminateNormal(0)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal 6,         grid.nnode
+  assert_equal 3,         grid.ncell
+  assert_equal [0,1,5,4], grid.cell(1)
+  assert_equal [2,0,1,5], grid.cell(2)
+ end
+
+ def testTerminate1
+  assert_not_nil grid  = volumeGrid
+  assert_not_nil layer = volumeLayer(grid)
+  assert_equal layer,     layer.terminateNormal(1)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal 6,         grid.nnode
+  assert_equal 3,         grid.ncell
+  assert_equal [0,1,5,4], grid.cell(1)
+  assert_equal [2,0,1,5], grid.cell(2)
+ end
+
+ def testTerminate2
+  assert_not_nil grid  = volumeGrid
+  assert_not_nil layer = volumeLayer(grid)
+  assert_equal layer,     layer.terminateNormal(2)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal 6,         grid.nnode
+  assert_equal 3,         grid.ncell
+  assert_equal [0,5,2,4], grid.cell(1)
+  assert_equal [0,1,2,5], grid.cell(2)
+ end
+
 # blends?
 
 
