@@ -44,7 +44,11 @@ int main( int argc, char *argv[] )
   char outputlines[256];
   int i, j, oldSize, newSize;
   double ratio=0.6;
-  double spacing =1.0/3.0;
+  double spacing = 1.0/3.0;
+  double Zcommand = -1.0;
+  int node;
+  double Zspacing;
+  double xyz[3];
   double minAR=-1.0;
   double ratioSplit, ratioCollapse;
   GridBool projected;
@@ -104,6 +108,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-s") == 0 ) {
       i++; spacing = atof(argv[i]);
       printf("-s argument %d: %f\n",i, spacing);
+    } else if( strcmp(argv[i],"-z") == 0 ) {
+      i++; Zcommand = atof(argv[i]);
+      printf("-z argument %d: %f\n",i, Zcommand);
     } else if( strcmp(argv[i],"-v") == 0 ) {
       i++; minAR = atof(argv[i]);
       printf("-v argument %d: %f\n",i, minAR);
@@ -132,6 +139,7 @@ int main( int argc, char *argv[] )
       printf(" -o output project name\n");
       printf(" -r initial edge length ratio for adapt\n");
       printf(" -s uniform grid size\n");
+      printf(" -z linearly vary spacing to this in z dir\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
       printf(" -n max number of nodes in grid\n");
@@ -173,8 +181,18 @@ int main( int argc, char *argv[] )
 
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
-  printf("spacing set to constant.\n");
-  gridSetGlobalMap(grid, 1.0/spacing/spacing, 0.0, 0.0, 1.0/spacing/spacing, 0.0, 1.0/spacing/spacing);
+  printf("spacing set to constant %f with %f z variation.\n",spacing,Zcommand);
+  for (node=0;node<gridMaxNode(grid);node++)
+    if (grid==gridNodeXYZ(grid,node,xyz)) {
+      Zspacing = spacing;
+      if (Zcommand>0.0) 
+	Zspacing = ABS(2.0*xyz[2]-1.0)*spacing 
+	  + (1.0-ABS(2.0*xyz[2]-1.0))*Zcommand ;
+      gridSetMap(grid, node,
+		 1.0/spacing/spacing, 0.0, 0.0, 
+		 1.0/spacing/spacing, 0.0, 
+		 1.0/Zspacing/Zspacing);
+    }
   STATUS;
 
   for (i=0;i<3;i++){
@@ -194,7 +212,7 @@ int main( int argc, char *argv[] )
   jmax = 40;
   for ( j=0; 
 	(j<jmax) && 
-	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) || 
+	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01) || 
 	  !projected;
 	j++){
 

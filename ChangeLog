@@ -1,3 +1,10 @@
+2004-09-22 20:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c added argument -z to allow a linear variation in
+	Z spacing from the middle of the box to the top and bottom.
+	Increased the kick out tolerence to a 1 percent change in number
+	of nodes.
+
 2004-09-22 20:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwap) Exposed the improvementLimit as a
