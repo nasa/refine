@@ -52,6 +52,8 @@ class TestGridMetric < Test::Unit::TestCase
 # remove a node and pack
 # test ratio
 
+# strech sqrt2 in xy to test rotation or principle axes
+
 # remove this
  def testFindLongestEdge
   grid = Grid.new(4,1,0,0)
