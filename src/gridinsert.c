@@ -238,7 +238,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   int newnode, newglobal, newnodes0[4], newnodes1[4];
   int globalnewnodes0[5], globalnewnodes1[5];
   int cell0, cell1, globalCellId0, globalCellId1;
-  double dummyXYZs[12];
+  double xyz0[12], xyz1[12];
   int gap0, gap1, face0, face1, faceId0, faceId1;
   int edge, edgeId;
   double t0,t1, newT;
@@ -278,6 +278,8 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
       for ( inode = 0 ; inode < 4 ; inode++ ) {
 	globalnewnodes0[inode] = gridNodeGlobal(grid,newnodes0[inode]);
 	globalnewnodes1[inode] = gridNodeGlobal(grid,newnodes1[inode]);
+	gridNodeXYZ(grid,newnodes0[inode],&xyz0[3*inode]);
+	gridNodeXYZ(grid,newnodes1[inode],&xyz1[3*inode]);
       }
       globalCellId1 = gridGlobalNCell(grid);
       gridSetGlobalNCell(grid,globalCellId1+1);
@@ -285,8 +287,8 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
       gridSetCellGlobal(grid,cell1,globalCellId1);
       globalnewnodes0[4] = globalCellId0;
       globalnewnodes1[4] = globalCellId1;
-      queueAddCell(queue,globalnewnodes0,dummyXYZs);
-      queueAddCell(queue,globalnewnodes1,dummyXYZs);
+      queueAddCell(queue,globalnewnodes0,xyz0);
+      queueAddCell(queue,globalnewnodes1,xyz1);
     }    
   }
 
