@@ -112,7 +112,6 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   int cell, face;
   int added, addedcell, addedface;
   double xyz[36], uv[6];
-  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
   Queue *lq;
 
   lq = queueCreate( 1 ); /* only used for queuing local removed nodes */
