@@ -81,7 +81,7 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
     if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
       adaptnode++;
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
-      if ( ratio > maxLength ) {
+      if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
 	newnode = gridSplitEdge(grid, n0, n1);
 	if ( newnode != EMPTY ){
 	  nnodeAdd++;
