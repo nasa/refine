@@ -69,7 +69,10 @@ int main( int argc, char *argv[] )
   gridScaleSpacingSphere(grid,
 			 1.0,1.0,0.0,0.3,
 			 0.2);
-  for (j=0;j<15;j++){
+  gridScaleSpacingSphere(grid,
+			 0.0,0.0,-0.8,1.0,
+			 3.0);
+  for (j=0;j<8;j++){
     gridAdapt(grid);
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
