@@ -87,6 +87,7 @@ int main( int argc, char *argv[] )
 
   printf("import size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
+  printf("gridImport: minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("gridImport: minimum Volume %12.8e\n",gridMinVolume(grid));
 
   printf("edge swapping grid...\n");
@@ -94,6 +95,7 @@ int main( int argc, char *argv[] )
 
   printf("new size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
+  printf("gridImport: minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("gridImport: minimum Volume %12.8e\n",gridMinVolume(grid));
 
   return;
