@@ -271,14 +271,18 @@ Layer *layerVisibleNormals(Layer *layer)
   int normal, iter, front, i;
   double *dir, norm[3], mindir[3], dot, mindot, radian, length; 
   AdjIterator it;
+  int minFront, lastFront;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    for (iter=0;iter<1000;iter++){
+    lastFront = EMPTY;
+    radian = 0.01;
+    for (iter=0;iter<1000 && radian > 1.0e-15;iter++){
       dir = layer->normal[normal].direction;
       mindot = 2.0;
       mindir[0]=dir[0];
       mindir[1]=dir[1];
-      mindir[2]=dir[2];      
+      mindir[2]=dir[2];
+      minFront = EMPTY;
       for ( it = adjFirst(layer->adj,normal); 
 	    adjValid(it); 
 	    it = adjNext(it) ){
@@ -290,9 +294,14 @@ Layer *layerVisibleNormals(Layer *layer)
 	  mindir[0]=norm[0];
 	  mindir[1]=norm[1];
 	  mindir[2]=norm[2];
+	  minFront = front;
 	}
       }
-      radian =0.002;
+      if (minFront != lastFront) {
+	radian = radian * 0.5;
+	lastFront = minFront;
+	//printf("normal %d, dot %f rad %e front %d\n",normal,mindot,radian,minFront);
+      }
       dir[0] += radian*mindir[0];
       dir[1] += radian*mindir[1];
       dir[2] += radian*mindir[2];
@@ -303,6 +312,9 @@ Layer *layerVisibleNormals(Layer *layer)
 	for ( i=0;i<3;i++) dir[i] = 0.0;
       }
     }
+    if (mindot <= 0.0 ) 
+      printf("ERROR: %s, %d, Invisible normal %d, min dot product %f\n",
+	     __FILE__, __LINE__, normal, mindot);
   }
 
   return layer;
