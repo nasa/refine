@@ -85,19 +85,20 @@ Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
 
 Grid *gridSafeProjectNode(Grid *grid, int node, double ratio )
 {
+  int nodes[3];
   int edge, edgeId;
   int face, faceId;
   AdjIterator it;
 
   if ( gridGeometryNode( grid, node ) ) return grid;
   if ( gridGeometryEdge( grid, node ) ) {
-    edge = adjItem(adjFirst(grid->edgeAdj, node));
-    edgeId = grid->edgeId[edge];
+    edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
+    gridEdge(grid, edge, nodes, &edgeId );
     if ( grid != gridSafeProjectNodeToEdge( grid, node, edgeId, ratio ) ) 
       return NULL;
-    for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+    for ( it = adjFirst(gridFaceAdj(grid),node); adjValid(it); it = adjNext(it) ){
       face = adjItem(it);
-      faceId = grid->faceId[face];
+      gridFace(grid, face, nodes, &faceId );
       if ( grid != gridSafeProjectNodeToFace( grid, node, faceId, 1.0 ) ) 
 	return NULL;
     }
@@ -105,8 +106,8 @@ Grid *gridSafeProjectNode(Grid *grid, int node, double ratio )
     return grid;
   }
   if ( gridGeometryFace( grid, node ) ) {
-    face = adjItem(adjFirst(grid->faceAdj, node));
-    faceId = grid->faceId[face];
+    face = adjItem(adjFirst(gridFaceAdj(grid), node));
+    gridFace(grid, face, nodes, &faceId );
     if ( grid != gridSafeProjectNodeToFace( grid, node, faceId, ratio ) ) 
       return NULL;
     return grid;
