@@ -565,15 +565,14 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
 
 Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 {
-  double xyzProj[3], uv[2], t;
+  double xyzProj[3], uv[2];
   double ar, dARdx[3];
   double mr, dMRdx[3];
-  double du[3], dv[3], dt[3];
-  double dARdu[2], dARdt;
+  double du[3], dv[3];
+  double dMRdu[2];
   int vol =1;
   int nodes[3];
   int face, faceId;
-  int edge, edgeId;
   int maxsmooth;
 
   if ( gridGeometryNode( grid, node ) ) return grid;
@@ -596,9 +595,9 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 				 uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
 	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
       
-      dARdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
-      dARdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
-      if (grid != gridLineSearchUV( grid, node, dARdu, 
+      dMRdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
+      dMRdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
+      if (grid != gridLineSearchUV( grid, node, dMRdu, 
 				    gridOPTIM_COST_FLOOR ) ) return NULL;
     }
     return grid;
