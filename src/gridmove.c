@@ -164,14 +164,54 @@ GridBool gridmoveSpecified(GridMove *gm, int node)
 
 GridMove *gridmoveSpringConstant(GridMove *gm, double *xyz, int nsprings, 
 				 double *k, int *springs, int *c2e) {
+  Grid *grid = gridmoveGrid(gm);
   int s, n0, n1;
   double dxyz[3];
+  int cell, edge, face;
+  int nodes[4];
+  double e[6][3], n[4][3];
+  int edge2node0[6] = {0, 0, 0, 1, 1, 2};
+  int edge2node1[6] = {1, 2, 3, 2, 3, 3};
+  int face2edge0[6] = {0, 2, 4, 1};
+  int face2edge1[6] = {1, 0, 3, 2};
+  int edge2face0[6] = {2, 1, 0, 1, 0, 0}; /* end points */
+  int edge2face1[6] = {3, 2, 2, 3, 3, 1};
+  double angle, invsinangle;
+
+  /* touching
+  int edge2face0[6] = {0, 0, 1, 0, 1, 2};
+  int edge2face1[6] = {1, 3, 3, 2, 2, 3};
+  */
+
   for(s=0;s<nsprings;s++) {
     n0 = springs[0+2*s];
     n1 = springs[1+2*s];
     gridSubtractVector(&xyz[3*n1],&xyz[3*n0],dxyz);
     k[s]= 1.0/gridVectorLength(dxyz);
   }
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid == gridCell(grid,cell,nodes)) {
+      for(edge=0;edge<6;edge++) {
+	n0 = nodes[edge2node0[edge]];
+	n1 = nodes[edge2node1[edge]];
+	gridSubtractVector(&xyz[3*n1],&xyz[3*n0],e[edge]);
+	gridVectorNormalize(e[edge]);
+      }
+      for(face=0;face<4;face++){
+	gridCrossProduct(e[face2edge0[face]],e[face2edge1[face]],n[face]);
+	gridVectorNormalize(n[face]);
+      }
+      for(edge=0;edge<6;edge++) {
+	angle = acos(-gridDotProduct(n[edge2face0[edge]],n[edge2face1[edge]]));
+	printf("cell %d edge %d angle %f\n",
+	       cell,edge,gridConvertRadianToDegree(angle));
+	invsinangle = 1.0 / sin(angle);
+	k[c2e[edge+6*cell]] += invsinangle*invsinangle;
+      }
+    }
+  }
+
   return gm;
 }
 
