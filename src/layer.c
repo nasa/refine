@@ -571,6 +571,21 @@ Layer *layerLaminarInitialHeight(Layer *layer, double Re, double xStart)
   return layer;
 }
 
+Layer *layerLaminarInitialHeightNegZ(Layer *layer)
+{
+  int normal;
+  double xyz[3];
+  double initialHeight;
+
+  for(normal=0;normal<layerNNormal(layer); normal++){
+    gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
+    initialHeight = 0.0005 - 1.5e-6 * xyz[3];
+    layerSetNormalHeight(layer,normal,initialHeight);
+  }
+
+  return layer;
+}
+
 Layer *layerNormalMinDot(Layer *layer, int normal,
 			 double *mindot, double *mindir,
 			 int *minTriangle )
