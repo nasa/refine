@@ -1615,6 +1615,40 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,10, 5, 11, 6, 12], layer.orderedVertexNormals(0)
  end
 
+ def testSubBlendTriplePoint3
+  grid = Grid.new(20,20,10,0)
+  top = 0.8
+  grid.addNode(0.5,0.35,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0.5,0.7,0)
+
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,2,3,10)
+  grid.addFace(0,3,1,10)
+
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  layer.blend(270.0)
+  layer.subBlend(29.0)
+  assert_equal 22, layer.nnormal  
+  assert_equal 3, layer.nSubBlend(0)
+  assert_equal 3, layer.nSubBlend(1)
+  assert_equal 3, layer.nSubBlend(2)
+  assert_equal [ 5,10, 1,16], layer.subBlendNormals(0,0)
+  assert_equal [10,11,16,17], layer.subBlendNormals(0,1)
+  assert_equal [11, 0,17, 7], layer.subBlendNormals(0,2)
+
+  assert_equal [ 6,12, 2,18], layer.subBlendNormals(1,0)
+  assert_equal [12,13,18,19], layer.subBlendNormals(1,1)
+  assert_equal [13, 5,19, 8], layer.subBlendNormals(1,2)
+
+  assert_equal [ 0,14, 3,20], layer.subBlendNormals(2,0)
+  assert_equal [14,15,20,21], layer.subBlendNormals(2,1)
+  assert_equal [15, 6,21, 9], layer.subBlendNormals(2,2)
+
+  assert_equal [0, 11, 10, 5, 13, 12, 6, 15, 14], layer.orderedVertexNormals(0)
+ end
+
  def testsubBlendForTwoConvextFaces2Advance
   grid = fourFaceConvex
   layer = Layer.new(grid).populateAdvancingFront([1])
@@ -1652,8 +1686,28 @@ class TestLayer < Test::Unit::TestCase
   layer.subBlend(44.0)
   assert_equal 16, layer.nnormal
   assert_equal layer, layer.advanceConstantHeight(0.1)
-  layer.writeTecplotFrontGeometry
   assert_equal 21, layer.ntriangle
+ end
+
+ def testSubBlendTriplePoint3Advance
+  grid = Grid.new(20,20,10,0)
+  top = 0.8
+  grid.addNode(0.5,0.35,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0.5,0.7,0)
+
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,2,3,10)
+  grid.addFace(0,3,1,10)
+
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  layer.blend(270.0)
+  layer.subBlend(29.0)
+  assert_equal 22, layer.nnormal
+  assert_equal layer, layer.advanceConstantHeight(0.1)
+  assert_equal 30, layer.ntriangle
+  layer.writeTecplotFrontGeometry
  end
 
  def testExtrudeBlend

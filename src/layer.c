@@ -3022,7 +3022,8 @@ Layer *layerOrderedVertexNormals(Layer *layer, int normal,
       count++;
       nSubNormal = layer->blend[blend].nSubNormal0;
       for (subNormal=0;subNormal<nSubNormal;subNormal++){
-	vertexNormals[count] = layer->blend[blend].subNormal0[subNormal];
+	vertexNormals[count] = 
+	  layer->blend[blend].subNormal0[nSubNormal-subNormal-1];
 	count++;
       }
     }else{
@@ -3031,7 +3032,7 @@ Layer *layerOrderedVertexNormals(Layer *layer, int normal,
       nSubNormal = layer->blend[blend].nSubNormal1;
       for (subNormal=0;subNormal<nSubNormal;subNormal++){
 	vertexNormals[count] = 
-	  layer->blend[blend].subNormal1[nSubNormal-subNormal-1];
+	  layer->blend[blend].subNormal1[subNormal];
 	count++;
       }
     }
