@@ -1955,6 +1955,18 @@ Grid *gridMakeGem(Grid *grid, int n0, int n1 )
   return grid;
 }
 
+bool gridGemIsLocal(Grid *grid)
+{
+  int gem, cell;
+  for ( gem = 0 ; gem < grid->ngem ; gem++ )
+    cell = grid->gem[gem];
+    if ( gridNodeGhost(grid, grid->c2n[0+4*cell]) ||
+	 gridNodeGhost(grid, grid->c2n[1+4*cell]) ||
+	 gridNodeGhost(grid, grid->c2n[2+4*cell]) ||
+	 gridNodeGhost(grid, grid->c2n[3+4*cell]) ) return FALSE;
+  return TRUE;
+}
+
 Grid *gridOrient(Grid *grid, int *c, int *n )
 {
 
