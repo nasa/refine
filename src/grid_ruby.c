@@ -25,6 +25,12 @@ VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nface, VALUE nedge)
   return obj;
 }
 
+VALUE grid_pack( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (gridPack(grid)==grid?self:Qnil);
+}
+
 VALUE grid_maxnode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -424,6 +430,7 @@ void Init_Grid()
   cGrid = rb_define_class( "Grid", rb_cObject );
   rb_define_singleton_method( cGrid, "new", grid_new, 4 );
   rb_define_method( cGrid, "initialize", grid_init, 0 );
+  rb_define_method( cGrid, "pack", grid_pack, 0 );
   rb_define_method( cGrid, "maxnode", grid_maxnode, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
   rb_define_method( cGrid, "maxcell", grid_maxcell, 0 );

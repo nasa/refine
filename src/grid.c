@@ -423,6 +423,152 @@ void gridFree(Grid *grid)
   free(grid);
 }
 
+Grid *gridPack(Grid *grid)
+{
+  int i;
+  int orignode, packnode, origcell, packcell;
+  int origface, packface, origedge, packedge;
+  int iface, n0, n1, n2, id, n[3];
+  double t0, t1, u[3], v[3];
+  bool emptyFace;
+  int *o2n;
+
+  o2n = malloc(grid->maxnode*sizeof(int));
+  if (o2n == NULL) {
+    printf("ERROR: Pack: %s: %d: could not allocate o2n\n",__FILE__,__LINE__);
+    return NULL;
+  }
+  for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
+
+  packnode = 0;
+  for ( orignode=0 ; orignode < grid->maxnode ; orignode++ )
+    if ( grid->xyz[0+3*orignode] != DBL_MAX) {
+      o2n[orignode] = packnode;
+      grid->xyz[0+3*packnode] = grid->xyz[0+3*orignode];
+      grid->xyz[1+3*packnode] = grid->xyz[1+3*orignode];
+      grid->xyz[2+3*packnode] = grid->xyz[2+3*orignode];
+      packnode++;
+    } 
+  
+  if (grid->nnode != packnode) {
+    printf("ERROR: Pack: %s: %d: grid->nnode != packnode\n",
+	   __FILE__, __LINE__ );
+    return NULL;
+  }
+
+  packcell = 0;
+  for ( origcell=0 ; origcell < grid->maxcell ; origcell++ )
+    if ( grid->c2n[0+4*origcell] != EMPTY) {
+      adjRemove( grid->cellAdj, grid->c2n[0+4*origcell], origcell );
+      adjRemove( grid->cellAdj, grid->c2n[1+4*origcell], origcell );
+      adjRemove( grid->cellAdj, grid->c2n[2+4*origcell], origcell );
+      adjRemove( grid->cellAdj, grid->c2n[3+4*origcell], origcell );
+      grid->c2n[0+4*packcell] = o2n[grid->c2n[0+4*origcell]];
+      grid->c2n[1+4*packcell] = o2n[grid->c2n[1+4*origcell]];
+      grid->c2n[2+4*packcell] = o2n[grid->c2n[2+4*origcell]];
+      grid->c2n[3+4*packcell] = o2n[grid->c2n[3+4*origcell]];
+      adjRegister( grid->cellAdj, grid->c2n[0+4*packcell], packcell );
+      adjRegister( grid->cellAdj, grid->c2n[1+4*packcell], packcell );
+      adjRegister( grid->cellAdj, grid->c2n[2+4*packcell], packcell );
+      adjRegister( grid->cellAdj, grid->c2n[3+4*packcell], packcell );
+      packcell++;
+    } 
+  
+  if (grid->ncell != packcell) {
+    printf("ERROR: grid->ncell != packcell, file %s line %d \n",
+	   __FILE__, __LINE__ );
+    return NULL;
+  }
+
+  packface=0;
+
+  emptyFace = FALSE;
+  iface=0;
+  while (!emptyFace) {
+    emptyFace = TRUE;
+    iface++;
+    for ( origface=0 ; origface < grid->maxface ; origface++ ){ 
+      if ( grid->faceId[origface]==iface && grid->f2n[0+3*origface] != EMPTY) {
+	emptyFace = FALSE;
+	if (origface == packface) {
+	  for (i=0;i<3;i++){
+	    adjRemove( grid->faceAdj, grid->f2n[i+3*packface], packface );
+	    grid->f2n[i+3*packface] = o2n[grid->f2n[i+3*packface]];
+	    adjRegister( grid->faceAdj, grid->f2n[i+3*packface], packface );
+	  }
+	}else{
+	  for (i=0;i<3;i++) {
+	    n[i] = grid->f2n[i+3*origface];
+	    adjRemove( grid->faceAdj, grid->f2n[i+3*origface], origface );
+	    u[i] = grid->faceU[i+3*origface];
+	    v[i] = grid->faceV[i+3*origface];
+	  }
+	  id = grid->faceId[origface];
+	  
+	  for (i=0;i<3;i++) {
+	    grid->f2n[i+3*origface] = grid->f2n[i+3*packface];
+	    adjRemove( grid->faceAdj, grid->f2n[i+3*packface], packface );
+	    adjRegister( grid->faceAdj, grid->f2n[i+3*origface], origface );
+	    grid->faceU[i+3*origface] = grid->faceU[i+3*packface];
+	    grid->faceV[i+3*origface] = grid->faceV[i+3*packface];
+	  }
+	  grid->faceId[origface]	= grid->faceId[packface];
+	  
+	  for (i=0;i<3;i++) {
+	    grid->f2n[i+3*packface] = o2n[n[i]];
+	    adjRegister( grid->faceAdj, grid->f2n[i+3*packface], packface );
+	    grid->faceU[i+3*packface] = u[i];
+	    grid->faceV[i+3*packface] = v[i];
+	  }
+	  grid->faceId[packface]  = id;
+	}
+	packface++;
+      } 
+    }
+  }
+  //iface--; printf("gridPack: %d geometry faces detected.\n",iface);
+
+  if (grid->nface != packface) {
+    printf("ERROR: grid->nface %d != packface %d, file %s line %d \n",
+	   grid->nface, packface, __FILE__, __LINE__ );
+    return NULL;
+  }
+
+  packedge = 0;
+  for (origedge=0;origedge<grid->maxedge;origedge++){
+    if (grid->e2n[0+2*origedge] != EMPTY){
+
+      n0 = o2n[grid->e2n[0+2*origedge]];
+      n1 = o2n[grid->e2n[1+2*origedge]];
+      id = grid->edgeId[origedge];
+      t0 = grid->edgeT[0+2*origedge];
+      t1 = grid->edgeT[1+2*origedge];
+      adjRemove( grid->edgeAdj, grid->e2n[0+2*origedge], origedge );
+      adjRemove( grid->edgeAdj, grid->e2n[1+2*origedge], origedge );
+
+      grid->e2n[0+2*packedge] = n0;
+      grid->e2n[1+2*packedge] = n1;
+      grid->edgeId[packedge] = id;
+      grid->edgeT[0+2*packedge] = t0;
+      grid->edgeT[1+2*packedge] = t1;
+      adjRegister( grid->edgeAdj, n0, packedge );
+      adjRegister( grid->edgeAdj, n1, packedge );
+     
+      packedge++;
+    }
+  }
+
+  if (grid->nedge != packedge) {
+    printf("ERROR: grid->nedge %d != packedge %d, file %s line %d \n",
+	   grid->nface, packface, __FILE__, __LINE__ );
+    return NULL;
+  }
+
+  free(o2n);
+
+  return  grid;
+}
+
 int gridMaxNode(Grid *grid)
 {
   return grid->maxnode;
