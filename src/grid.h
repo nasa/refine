@@ -19,8 +19,9 @@ typedef struct Grid Grid;
 
 
 Grid *gridCreate(long nnodes);
-long gridNNodes(Grid *n);
-void gridFree(Grid *n);
+long gridNNodes(Grid *g);
+long gridNodeDeg(Grid *g, long nodeIndex);
+void gridFree(Grid *g);
 
 END_C_DECLORATION
 

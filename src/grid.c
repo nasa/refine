@@ -32,6 +32,11 @@ long gridNNodes(Grid *grid)
   return grid->nnodes;
 }
 
+long gridNodeDeg(Grid *grid, long id)
+{
+  return grid->firstcell[id];
+}
+
 void gridFree(Grid *grid)
 {
   free(grid->firstcell);

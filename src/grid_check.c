@@ -31,14 +31,32 @@ START_TEST(testGridCreate)
 }
 END_TEST
 
+START_TEST(testNodeDeg)
+{
+  fail_unless( gridNodeDeg(grid,0) == 0,
+	       "expected no neighbors of node 0");
+  fail_unless( gridNodeDeg(grid,1) == 0,
+	       "expected no neighbors of node 1");
+  fail_unless( gridNodeDeg(grid,2) == 0,
+	       "expected no neighbors of node 2");
+  fail_unless( gridNodeDeg(grid,3) == 0,
+	       "expected no neighbors of node 3");
+}
+END_TEST
+
 Suite *grid_suite (void) 
 { 
   Suite *s = suite_create ("Grid"); 
-  TCase *tc_core = tcase_create ("Core");
+  TCase *tCore = tcase_create ("Core");
+  TCase *tNeighbors = tcase_create ("Neighbors");
  
-  suite_add_tcase (s, tc_core);
-  tcase_add_checked_fixture (tc_core, setup, teardown); 
-  tcase_add_test (tc_core, testGridCreate); 
+  suite_add_tcase (s, tCore);
+  tcase_add_checked_fixture (tCore, setup, teardown); 
+  tcase_add_test (tCore, testGridCreate); 
+
+  suite_add_tcase (s, tNeighbors);
+  tcase_add_checked_fixture (tNeighbors, setup, teardown); 
+  tcase_add_test (tNeighbors, testNodeDeg); 
 
   return s; 
 }
