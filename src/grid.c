@@ -176,7 +176,8 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 
 Grid *gridRemoveCell(Grid *grid, int cellId )
 {
-  if (cellId >= grid->maxcell) return NULL;
+  if (cellId >= grid->maxcell || cellId < 0 ) return NULL;
+  if (EMPTY == grid->c2n[4*cellId]) return NULL;
   
   if ( grid->ncell <= 0) return NULL;
   grid->ncell--;
@@ -226,7 +227,27 @@ Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
  return grid;
 }
 
-int gridFaceId(Grid *grid, int n0, int n1, int n2 )
+Grid *gridRemoveFace(Grid *grid, int face )
+{
+  if (face >= grid->maxface || face < 0) return NULL;
+  if (EMPTY == grid->f2n[3*face]) return NULL;
+  
+  if ( grid->nface <= 0) return NULL;
+  grid->nface--;
+
+  if( ( NULL == adjRemove( grid->faceAdj, grid->f2n[0+3*face], face ) ) || 
+      ( NULL == adjRemove( grid->faceAdj, grid->f2n[1+3*face], face ) ) || 
+      ( NULL == adjRemove( grid->faceAdj, grid->f2n[2+3*face], face ) ) )
+    return NULL;  
+
+  grid->f2n[0+3*face] = EMPTY;
+  grid->f2n[1+3*face] = grid->blankf2n;
+  grid->blankf2n = face;
+
+  return grid;
+}
+
+int gridFindFace(Grid *grid, int n0, int n1, int n2 )
 {
   AdjIterator it0, it1, it2;
   Adj *adj=grid->faceAdj;
@@ -235,11 +256,17 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
     for ( it1 = adjFirst(adj,n1); adjValid(it1); it1 = adjNext(it1) )
       if ( adjItem(it0) == adjItem(it1) )
 	for ( it2 = adjFirst(adj,n2); adjValid(it2); it2 = adjNext(it2) )
-	  if ( adjItem(it0)==adjItem(it2) ) return grid->faceId[adjItem(it2)];
+	  if ( adjItem(it0)==adjItem(it2) ) return adjItem(it2);
 
   return EMPTY;
 }
 
+int gridFaceId(Grid *grid, int n0, int n1, int n2 )
+{
+  int face = gridFindFace(grid, n0, n1, n2 );
+  if ( face == EMPTY ) return EMPTY;
+  return grid->faceId[face];
+}
 
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {
