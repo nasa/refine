@@ -30,6 +30,7 @@ Grid *gridParallelEdgeCollapse(Grid *g, Queue *q, int node0, int node1 );
 
 Grid *gridParallelSmooth(Grid *grid, GridBool localOnly,
 			 double optimizationLimit, double laplacianLimit );
+Grid *gridParallelRelaxNegativeCells(Grid *grid, GridBool localOnly );
 
 Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit );
 Grid *gridParallelEdgeSwap(Grid *g, Queue *q, int node0, int node1 );

@@ -1,3 +1,12 @@
+2004-08-01 16:21 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelRelaxNegativeCells) started on a
+	parallel version of gridRelaxNegativeCells, but
+	gridSmoothVolumeNearNode needs to also be parallelized to
+	be consistant. The extra ghost passes should not hurt that bad.
+	* src/gridfortran.c (gridparallelrelaxneg_) now calls
+	gridParallelRelaxNegativeCells.
+
 2004-08-01 16:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridtestcadparameters_) increased node and

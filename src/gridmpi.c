@@ -181,6 +181,25 @@ Grid *gridParallelSmooth( Grid *grid, GridBool localOnly,
   return grid;
 }
 
+Grid *gridParallelRelaxNegativeCells( Grid *grid, GridBool localOnly )
+{
+  int node;
+  double nodeVolume;
+  GridBool nearGhost;
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if ( gridValidNode( grid, node ) && 
+	 !gridNodeFrozen( grid, node ) && 
+	 gridNodeLocal(grid,node) ) {
+      nearGhost = gridNodeNearGhost(grid, node);
+      if ( localOnly != nearGhost ) {
+	gridNodeVolume(grid,node,&nodeVolume);
+	if (0.0>=nodeVolume) gridSmoothVolumeNearNode(grid, node);
+      }
+    }
+  }
+  return grid;
+}
+
 Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
 {
   int cell, maxcell;
