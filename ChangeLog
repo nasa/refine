@@ -1,5 +1,11 @@
 2004-10-15 01:53 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridmetric.c (gridCellRatioErrorDerivative) added a hacked
+	derivative routine to try and hook up smoothing with edge
+	based operators. I think I may need a new smoothing strategy.
+
+2004-10-15 01:53 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridswap.c (gridSwapEdge5) removed debug bestindex report.
 
 2004-10-15 00:33 Mike Park  <mike.park@nasa.gov>

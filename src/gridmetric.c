@@ -790,6 +790,10 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   double *m0, *m1, *m2, *m3; 
   double m[6], j[9];
 
+#ifdef EDGE_BASED_OPERATORS
+  return gridCellRatioErrorDerivative(grid, nodes, ar, dARdx );
+#endif
+
   if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return NULL;
   if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return NULL;
   if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return NULL;
@@ -816,6 +820,46 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 #else
   gridCellAspectRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx);
 #endif
+
+  return grid;
+}
+
+Grid *gridCellRatioErrorDerivative(Grid *grid, int *nodes, 
+				   double *cost, double *dCostdx )
+{
+  int edge, worstEdge;
+  double err, worstErr;
+  double xyz0[3], xyz1[3], direction[3];
+  double ratio;
+
+  *cost = gridEdgeRatioCost(grid,nodes);
+  dCostdx[0] = 0.0;
+  dCostdx[1] = 0.0;
+  dCostdx[2] = 0.0;
+
+  worstErr = -1.0;
+  worstEdge = EMPTY;
+  for (edge=0;edge<3;edge++){
+    err = gridEdgeRatioError(grid,nodes[0], nodes[edge+1]);
+    if (err >= worstErr) {
+      worstEdge=edge;
+      worstErr =err;
+    }
+  }
+
+  if (worstEdge==EMPTY) return NULL;
+  
+  if (grid!=gridNodeXYZ(grid,nodes[0],xyz0))return NULL;
+  if (grid!=gridNodeXYZ(grid,nodes[worstEdge+1],xyz1))return NULL;
+  gridSubtractVector(xyz1,xyz0,direction);
+  ratio = gridEdgeRatio(grid,nodes[0], nodes[worstEdge+1]);
+  if (ratio>=1.0) {
+    gridVectorScale(direction,ratio-1.0);
+  }else{
+    gridVectorScale(direction,-(1.0-ratio));
+  }    
+  
+  gridVectorCopy(dCostdx,direction);
 
   return grid;
 }

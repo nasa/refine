@@ -424,6 +424,28 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal grid,     grid.storeARDerivative(0)
  end
 
+ def testEdgeErrorDerivatives
+  assert_not_nil grid = Grid.new(4,1,0,0)
+
+  grid.addCell( 
+	       grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+  nodes = [0,1,2,3]
+  ratio = Math::sqrt(2)
+  err = (1.0-ratio)/(1.0+ratio)
+  cost = 1.0/(1.0+err.abs)
+  tol   = 1.0e-10
+
+  ans = grid.cellRatioErrorDerivative(nodes)
+  assert_in_delta cost, ans[0], tol
+  assert_in_delta 0,    ans[1], tol
+  assert_in_delta 0,    ans[2], tol
+  assert_in_delta 0,    ans[3], tol  
+
+ end
+
  def testStoreARDerivative
   assert_not_nil grid = Grid.new(5,2,0,0)
   grid.addCell( 

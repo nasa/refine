@@ -229,6 +229,27 @@ VALUE grid_cellARDerivative( VALUE self, VALUE rb_nodes )
   return rb_ar;
 }
 
+VALUE grid_cellRatioErrorDerivative( VALUE self, VALUE rb_nodes )
+{
+  int i, nodes[4];
+  double cost, dCostdx[3];
+  VALUE rb_cost;
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
+  returnedGrid = gridCellRatioErrorDerivative( grid, nodes, &cost, dCostdx );
+  if ( returnedGrid == grid ){
+    rb_cost = rb_ary_new2(4);
+    rb_ary_store( rb_cost, 0, rb_float_new(cost) );
+    rb_ary_store( rb_cost, 1, rb_float_new(dCostdx[0]) );
+    rb_ary_store( rb_cost, 2, rb_float_new(dCostdx[1]) );
+    rb_ary_store( rb_cost, 3, rb_float_new(dCostdx[2]) );
+  }else{
+    rb_cost = Qnil;
+  }
+  return rb_cost;
+}
+
 VALUE grid_nodeARDerivative( VALUE self, VALUE node )
 {
   double ar, dARdx[3];
@@ -445,6 +466,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "edgeRatioCost", grid_edgeRatioCost, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
   rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );
+  rb_define_method( cGridMetric, "cellRatioErrorDerivative", grid_cellRatioErrorDerivative, 1 );
   rb_define_method( cGridMetric, "nodeARDerivative", grid_nodeARDerivative, 1 );
   rb_define_method( cGridMetric, "storeARDerivative", grid_storeARDerivative, 1 );
   rb_define_method( cGridMetric, "storedARDegree", grid_storedARDegree, 0 );
