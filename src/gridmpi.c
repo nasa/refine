@@ -74,8 +74,6 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   return newnode;
 }
 
-#define VERBOSE (TRUE)
-
 Grid *gridApplyQueue(Grid *grid, Queue *gq )
 {
   int transaction;
@@ -93,31 +91,12 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   addedcell = 0;
   addedface = 0;
   for (transaction=0;transaction<queueTransactions(gq);transaction++){
-    if (VERBOSE) printf( "transaction %d has %d removed cells\n",
-			 transaction,queueRemovedCells(gq,transaction));
     for (removed=0;removed<queueRemovedCells(gq,transaction);removed++) {
-      if (VERBOSE) printf( "cell removed %d %d\n",removed,removedcell);
       queueRemovedCellNodes( gq, removedcell, globalnodes );
       removedcell++;
-      if (VERBOSE) printf( "remove global cell %d %d %d %d\n",
-			   globalnodes[0],
-			   globalnodes[1],
-			   globalnodes[2],
-			   globalnodes[3]);
-      for(i=0;i<4;i++){
-	if (VERBOSE) printf( "global[%d] = %d\n",i,globalnodes[i]);
-	localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
-	if (VERBOSE) printf( "local [%d] = %d\n",i,localnodes[i]);
-      }
-      if (VERBOSE) printf( "remove local cell %d %d %d %d\n",
-			   localnodes[0],
-			   localnodes[1],
-			   localnodes[2],
-			   localnodes[3]);
+      for(i=0;i<4;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
       cell = gridFindCell(grid,localnodes);
-      if (VERBOSE) printf( "cell removed local id %d\n",cell);
-      gridRemoveCell(grid,cell);
-      queueRemoveCell(lq,localnodes);
+      if (grid == gridRemoveCell(grid,cell)) queueRemoveCell(lq,localnodes);
     }
     for (removed=0;removed<queueRemovedFaces(gq,transaction);removed++) {
       queueRemovedFaceNodes( gq, removedface, globalnodes );
@@ -125,14 +104,6 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
       for(i=0;i<3;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
       face = gridFindFace(grid,localnodes[0],localnodes[1],localnodes[2]);
       gridRemoveFace(grid,face);
-      if (VERBOSE) printf( "remove global face %d %d %d\n",
-			   globalnodes[0],
-			   globalnodes[1],
-			   globalnodes[2]);
-      if (VERBOSE) printf( "remove local face %d %d %d\n",
-			   localnodes[0],
-			   localnodes[1],
-			   localnodes[2]);
     }
 
     for(added=0;added<queueAddedCells(gq,transaction);added++) {
@@ -150,20 +121,11 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	    gridSetNodeGlobal(grid, localnodes[i], globalnodes[i]);
 	  }
 	}
-	cell = gridAddCell(grid,localnodes[0],localnodes[1],localnodes[2],localnodes[3]);
+	cell = gridAddCell(grid,
+			   localnodes[0],localnodes[1],
+			   localnodes[2],localnodes[3]);
 	gridSetCellGlobal(grid,cell,globalnodes[4]);
-	if (VERBOSE) printf("local cell %d to be added\n",cell);
       }
-      if (VERBOSE) printf( "add global cell %d %d %d %d\n",
-			   globalnodes[0],
-			   globalnodes[1],
-			   globalnodes[2],
-			   globalnodes[3]);
-      if (VERBOSE) printf( "add local cell %d %d %d %d\n",
-			   localnodes[0],
-			   localnodes[1],
-			   localnodes[2],
-			   localnodes[3]);      
     }
     for(added=0;added<queueAddedFaces(gq,transaction);added++) {
       queueAddedFaceNodes( gq, addedface, globalnodes );
@@ -182,18 +144,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 			     localnodes[1],uv[2],uv[3],
 			     localnodes[2],uv[4],uv[5],
 			     localnodes[3]);
-	if (VERBOSE) printf("local face %d to be added\n",face);
       }
-      if (VERBOSE) printf( "add global face %d %d %d %d\n",
-			   globalnodes[0],
-			   globalnodes[1],
-			   globalnodes[2],
-			   globalnodes[3]);
-      if (VERBOSE) printf( "add local face %d %d %d %d\n",
-			   localnodes[0],
-			   localnodes[1],
-			   localnodes[2],
-			   localnodes[3]);      
     }
     queueNewTransaction(lq);
   }
@@ -202,7 +153,6 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
     for (i=0;i<4;i++) {
       if ( 0 == gridCellDegree(grid,localnodes[i]) ) {
 	gridRemoveNode(grid,localnodes[i]);
-	if (VERBOSE) printf("removed unused node %d\n",localnodes[i]);
       }
     }
   }
