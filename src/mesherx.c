@@ -29,7 +29,9 @@
 #include "MeatLib/GeoBC.h"
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
-			      bool mixedElement, bool qualityImprovement )
+			      bool mixedElement, 
+			      bool blendElement, 
+			      bool qualityImprovement )
 {
   char outputProject[256];
   int vol=1;
@@ -67,6 +69,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   i=0;
   layerLaminarInitialHeight(layer, 5000.0, -0.05 );
   layerScaleNormalHeight(layer,scale);
+  if (blendElement) layerBlend(layer);
 
   while (i<nLayer && 
 	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.7, 1.9)) {
