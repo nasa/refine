@@ -9,7 +9,7 @@ libMesherX_a_SOURCES = \
 	gridcad.h gridcad.c \
 	gridfiller.h gridfiller.c \
 	near.h near.c \
-	layer.h layer.c \
+	layer.h layerStruct.h layer.c \
 	mesherx.c
 
 include_HEADERS = \
