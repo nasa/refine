@@ -62,13 +62,13 @@ class TestLayer < Test::Unit::TestCase
   assert_nil               layer.triangle(1)
  end
 
- def testMakeTriangle
+ def testPopulateAdvancingFront
   assert_not_nil        grid = Grid.new(4,0,2,0)
   assert_equal grid,    grid.addFace(0,1,2,1)
   assert_equal grid,    grid.addFace(0,1,3,2)
   assert_equal 2,       grid.nface
   assert_not_nil        layer = Layer.new(grid)
-  assert_equal layer,   layer.makeTriangle([1,2])
+  assert_equal layer,   layer.populateAdvancingFront([1,2])
   assert_equal 2,       layer.ntriangle
   assert_equal [0,1,2], layer.triangle(0)
   assert_equal [0,1,3], layer.triangle(1)
@@ -119,7 +119,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,    grid.addFace(1,2,3,1)
   assert_equal grid,    grid.addFace(1,2,4,2)
   assert_not_nil        layer = Layer.new(grid)
-  assert_equal layer,   layer.makeTriangle([1,2])
+  assert_equal layer,   layer.populateAdvancingFront([1,2])
   assert_equal 4,       layer.nnormal
   assert_equal [0,1,2], layer.triangleNormals(0)
   assert_equal [0,1,3], layer.triangleNormals(1)
@@ -137,7 +137,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil        layer = Layer.new(grid)
   assert_nil            layer.constrainNormal(3)
   assert_equal 0,       layer.constrained(0)
-  assert_equal layer,   layer.makeTriangle([1,2])
+  assert_equal layer,   layer.populateAdvancingFront([1,2])
   assert_equal 2,       layer.ntriangle
   assert_equal 4,       layer.nnormal
   assert_equal 0,       layer.constrained(0)
@@ -159,7 +159,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil        grid = Grid.new(3,0,1,0)
   assert_equal grid,    grid.addFace(0,1,2,1)
   assert_not_nil        layer = Layer.new(grid)
-  assert_equal layer,   layer.makeTriangle([1])
+  assert_equal layer,   layer.populateAdvancingFront([1])
   assert_nil            layer.constrainNormal(0)
   assert_equal layer,   layer.constrainNormal(2)
   assert_equal layer,   layer.constrainNormal(-1)
@@ -180,7 +180,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,    grid.addGeomEdge(1,0,2)
   assert_equal grid,    grid.addEdge(0,1,1,0.0,1.0)
   assert_not_nil        layer = Layer.new(grid)
-  assert_equal layer,   layer.makeTriangle([1])
+  assert_equal layer,   layer.populateAdvancingFront([1])
   assert_equal 3,       layer.nnormal
   assert_equal layer,   layer.constrainNormal(-1)
   assert_equal layer,   layer.constrainNormal(2)
@@ -194,7 +194,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,    grid.addFace(0,1,2,1)
   assert_not_nil        layer = Layer.new(grid)
   assert_equal 0,       layer.constrainedSide(0,0)
-  assert_equal layer,   layer.makeTriangle([1])
+  assert_equal layer,   layer.populateAdvancingFront([1])
   assert_equal 0,       layer.constrainedSide(0,0)
   assert_equal 0,       layer.constrainedSide(0,1)
   assert_equal 0,       layer.constrainedSide(0,2)
@@ -220,7 +220,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,    grid.addFace(0,1,2,1)
   assert_equal grid,    grid.addFace(1,2,3,2)
   assert_not_nil        layer = Layer.new(grid)
-  assert_equal layer,   layer.makeTriangle([1])
+  assert_equal layer,   layer.populateAdvancingFront([1])
   assert_equal 0,       layer.constrainedSide(0,0)
   assert_equal 0,       layer.constrainedSide(0,1)
   assert_equal 0,       layer.constrainedSide(0,2)
@@ -235,7 +235,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,    grid.addFace(0,1,2,1)
   assert_not_nil        layer = Layer.new(grid)
   assert_equal 0,       layer.parentGeomEdge(0,0)
-  assert_equal layer,   layer.makeTriangle([1])
+  assert_equal layer,   layer.populateAdvancingFront([1])
   assert_equal 0,       layer.parentGeomEdge(0,0)
   assert_equal 0,       layer.parentGeomEdge(0,1)
   assert_equal 0,       layer.parentGeomEdge(0,2)
@@ -267,7 +267,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,    grid.addEdge(0,4,1,0,1)
   assert_not_nil        layer = Layer.new(grid)
   assert_nil            layer.findParentGeomEdges
-  assert_equal layer,   layer.makeTriangle([1])
+  assert_equal layer,   layer.populateAdvancingFront([1])
   assert_equal 0,       layer.parentGeomEdge(0,0)
   assert_equal 0,       layer.parentGeomEdge(0,1)
   assert_equal 0,       layer.parentGeomEdge(0,2)
@@ -287,7 +287,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil        layer = Layer.new(grid)
   assert_equal 0,       layer.normalDeg(0)
   assert_nil            layer.normalTriangles(0)
-  assert_equal layer,   layer.makeTriangle([1,2,3])
+  assert_equal layer,   layer.populateAdvancingFront([1,2,3])
   assert_equal [0,1,2], layer.triangleNormals(0)
   assert_equal [0,1,3], layer.triangleNormals(1)
   assert_equal [1,2,3], layer.triangleNormals(2)
@@ -309,7 +309,7 @@ class TestLayer < Test::Unit::TestCase
   assert_nil              layer.triangleDirection(-1)
   assert_nil              layer.triangleDirection(0)
   assert_nil              layer.normalDirection(0)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   direction = [0.0,0.0,1.0]
   assert_equal direction, layer.triangleDirection(0)
   assert_equal direction, layer.normalDirection(0)
@@ -326,7 +326,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_equal grid,      grid.addFace(0,3,1,1)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal [0.0,0.0,1.0], layer.triangleDirection(0)
   assert_equal [0.0,1.0,0.0], layer.triangleDirection(1)
   halfSqrt2 = 0.5 * Math::sqrt(2)
@@ -348,7 +348,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,1,4,1)
   assert_equal grid,      grid.addFace(0,4,2,1)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   norm = layer.normalDirection(0)
   assert_in_delta(  0.000, norm[0], 1e-3)
   assert_in_delta( -0.287, norm[1], 1e-3)
@@ -374,7 +374,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal true,      grid.rightHandedBoundary
   assert       0<         grid.minVolume, "negative volumes"
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 7,         grid.nnode
@@ -404,7 +404,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,1,2,2)
   assert_equal true,      grid.rightHandedBoundary
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal layer,     layer.constrainNormal(2)
   assert_equal 2,         layer.constrained(0)
   assert_equal 0,         layer.constrained(1)
@@ -438,7 +438,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_equal grid,      grid.addFace(0,3,1,2)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal layer,     layer.constrainNormal(2)
   assert_equal 2,         layer.constrainedSide(0,0)
   assert_equal 0,         layer.constrainedSide(0,1)
@@ -459,7 +459,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_equal grid,      grid.addFace(1,3,2,2)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal layer,     layer.constrainNormal(2)
   assert_equal 0,         layer.constrainedSide(0,0)
   assert_equal 2,         layer.constrainedSide(0,1)
@@ -480,7 +480,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_equal grid,      grid.addFace(2,3,0,2)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal layer,     layer.constrainNormal(2)
   assert_equal 0,         layer.constrainedSide(0,0)
   assert_equal 0,         layer.constrainedSide(0,1)
@@ -501,7 +501,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_equal grid,      grid.addFace(0,4,1,2)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal layer,     layer.constrainNormal(2)
   assert_equal 0,         layer.constrainedSide(0,0)
   assert_equal 0,         layer.constrainedSide(0,1)
@@ -526,7 +526,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,1,2,2)
   assert_equal true,      grid.rightHandedBoundary
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal layer,     layer.constrainNormal(2)
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal [0,3,1,1], grid.face(0)
@@ -578,7 +578,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addGeomEdge(1,0,2)
   assert_equal grid,      grid.addEdge(0,1,1,0.0,1.0)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal layer,     layer.constrainNormal(-1)
   assert_equal layer,     layer.constrainNormal(2)
   assert_equal layer,     layer.constrainNormal(3)
@@ -614,7 +614,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1,         grid.ncell
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_equal false,     layer.normalTerminated(0)
   assert_equal false,     layer.normalTerminated(1)
   assert_equal false,     layer.normalTerminated(2)
@@ -637,7 +637,7 @@ class TestLayer < Test::Unit::TestCase
 
  def volumeLayer(grid)
   layer = Layer.new(grid)
-  layer.makeTriangle([1])
+  layer.populateAdvancingFront([1])
  end
 
  def testTerminateAll
@@ -727,7 +727,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1,         grid.ncell
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_not_nil          layer = Layer.new(grid)
-  assert_equal layer,     layer.makeTriangle([1])
+  assert_equal layer,     layer.populateAdvancingFront([1])
   assert_nil              layer.setNormalHeight(-1,0.0)
   assert_nil              layer.setNormalHeight(3,0.0)
   assert_equal layer,     layer.setNormalHeight(0,0.0)
@@ -759,7 +759,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1,             grid.addNode(1,0,0)
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
-  layer = Layer.new(grid).makeTriangle([1]).toggleMixedElementMode
+  layer = Layer.new(grid).populateAdvancingFront([1]).toggleMixedElementMode
   assert_equal layer,         layer.terminateNormal(0)
   assert_equal layer,         layer.terminateNormal(1)
   assert_equal layer,         layer.terminateNormal(2)
@@ -776,7 +776,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
   assert_not_nil              layer = Layer.new(grid)
-  assert_equal layer,         layer.makeTriangle([1])
+  assert_equal layer,         layer.populateAdvancingFront([1])
   assert_equal layer,         layer.toggleMixedElementMode
   assert_equal 3,             layer.nnormal
   assert_equal layer,         layer.advanceConstantHeight(0.1)
@@ -796,7 +796,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,           grid.addFace(0,1,2,4000)
   assert_equal grid,           grid.addFace(0,3,1,6000)
   assert_not_nil               layer = Layer.new(grid)
-  assert_equal layer,          layer.makeTriangle([4000])
+  assert_equal layer,          layer.populateAdvancingFront([4000])
   assert_equal layer,          layer.constrainNormal(6000)
   assert_equal layer,          layer.toggleMixedElementMode
   assert_equal 0,              grid.nquad
@@ -814,7 +814,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,           grid.addFace(0,1,2,4000)
   assert_equal grid,           grid.addFace(0,3,1,6000)
   assert_not_nil               layer = Layer.new(grid)
-  assert_equal layer,          layer.makeTriangle([4000])
+  assert_equal layer,          layer.populateAdvancingFront([4000])
   assert_equal layer,          layer.constrainNormal(6000)
   assert_equal layer,          layer.toggleMixedElementMode
   assert_equal 2,              grid.nface
@@ -833,7 +833,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,           grid.addFace(0,1,2,4000)
   assert_equal grid,           grid.addFace(0,3,1,6000)
   assert_not_nil               layer = Layer.new(grid)
-  assert_equal layer,          layer.makeTriangle([4000])
+  assert_equal layer,          layer.populateAdvancingFront([4000])
   assert_equal layer,          layer.constrainNormal(6000)
   assert_equal layer,          layer.toggleMixedElementMode
   assert_equal 2,              grid.nface
@@ -850,7 +850,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
   assert_not_nil              layer = Layer.new(grid)
-  assert_equal layer,         layer.makeTriangle([1])
+  assert_equal layer,         layer.populateAdvancingFront([1])
   assert_equal layer,         layer.toggleMixedElementMode
   assert_equal layer,         layer.terminateNormal(1)
   assert_equal layer,         layer.terminateNormal(2)
@@ -868,7 +868,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
   assert_not_nil              layer = Layer.new(grid)
-  assert_equal layer,         layer.makeTriangle([1])
+  assert_equal layer,         layer.populateAdvancingFront([1])
   assert_equal layer,         layer.toggleMixedElementMode
   assert_equal layer,         layer.terminateNormal(0)
   assert_equal layer,         layer.terminateNormal(2)
@@ -886,7 +886,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
   assert_not_nil              layer = Layer.new(grid)
-  assert_equal layer,         layer.makeTriangle([1])
+  assert_equal layer,         layer.populateAdvancingFront([1])
   assert_equal layer,         layer.toggleMixedElementMode
   assert_equal layer,         layer.terminateNormal(0)
   assert_equal layer,         layer.terminateNormal(1)
@@ -904,7 +904,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
   assert_not_nil              layer = Layer.new(grid)
-  assert_equal layer,         layer.makeTriangle([1])
+  assert_equal layer,         layer.populateAdvancingFront([1])
   assert_equal layer,         layer.toggleMixedElementMode
   assert_equal layer,         layer.terminateNormal(0)
   assert_equal layer,         layer.advanceConstantHeight(0.1)
@@ -922,7 +922,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
   assert_not_nil              layer = Layer.new(grid)
-  assert_equal layer,         layer.makeTriangle([1])
+  assert_equal layer,         layer.populateAdvancingFront([1])
   assert_equal layer,         layer.toggleMixedElementMode
   assert_equal layer,         layer.terminateNormal(1)
   assert_equal layer,         layer.advanceConstantHeight(0.1)
@@ -940,7 +940,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
   assert_not_nil              layer = Layer.new(grid)
-  assert_equal layer,         layer.makeTriangle([1])
+  assert_equal layer,         layer.populateAdvancingFront([1])
   assert_equal layer,         layer.toggleMixedElementMode
   assert_equal layer,         layer.terminateNormal(2)
   assert_equal layer,         layer.advanceConstantHeight(0.1)

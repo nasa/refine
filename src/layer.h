@@ -28,7 +28,7 @@ int layerNTriangle(Layer *);
 int layerMaxNormal(Layer *);
 int layerNNormal(Layer *);
 int layerMaxNode(Layer *);
-Layer *layerMakeTriangle(Layer *, int nbc, int *bc);
+Layer *layerPopulateAdvancingFront(Layer *, int nbc, int *bc);
 Layer *layerAddParentGeomFace(Layer *, int faceId);
 bool layerParentGeomFace(Layer *, int faceId);
 Layer *layerAddTriangle(Layer *, int n0, int n1, int n2);

@@ -57,7 +57,7 @@ VALUE layer_addTriangle( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
   return ( layer == layerAddTriangle(layer,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2))?self:Qnil );
 }
 
-VALUE layer_makeTriangle( VALUE self, VALUE rb_bc )
+VALUE layer_populateAdvancingFront( VALUE self, VALUE rb_bc )
 {
   Layer *rLayer;
   int i, nbc, *bc;
@@ -66,7 +66,7 @@ VALUE layer_makeTriangle( VALUE self, VALUE rb_bc )
   while ( Qnil != rb_ary_entry(rb_bc,nbc) ) nbc++;
   bc = malloc( nbc*sizeof(int));
   for (i=0;i<nbc;i++) bc[i] = NUM2INT(rb_ary_entry(rb_bc,i));
-  rLayer = layerMakeTriangle(layer,nbc,bc);
+  rLayer = layerPopulateAdvancingFront(layer,nbc,bc);
   free(bc);
   return ( layer == rLayer?self:Qnil );
 }
@@ -320,7 +320,7 @@ void Init_Layer()
   rb_define_method( cLayer, "nnormal", layer_nnormal, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
   rb_define_method( cLayer, "addTriangle", layer_addTriangle, 3 );
-  rb_define_method( cLayer, "makeTriangle", layer_makeTriangle, 1 );
+  rb_define_method( cLayer, "populateAdvancingFront", layer_populateAdvancingFront, 1 );
   rb_define_method( cLayer, "triangle", layer_triangle, 1 );
   rb_define_method( cLayer, "triangleDirection", layer_triangleDirection, 1 );
   rb_define_method( cLayer, "addNormal", layer_addNormal, 1 );

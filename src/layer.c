@@ -122,7 +122,7 @@ Layer *formAdvancingTriangle( Grid *grid, char *project )
   printf("make advancing layer object.\n");
   layer = layerCreate(grid);
   printf("make advancing layer triangle.\n");
-  layerMakeTriangle(layer,nbc,bc);
+  layerPopulateAdvancingFront(layer,nbc,bc);
   if (box) {
     layerConstrainNormal(layer,-9);
     layerConstrainNormal(layer,-10);
@@ -251,7 +251,7 @@ int layerMaxNode(Layer *layer)
   return gridMaxNode(layer->grid);
 }
 
-Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
+Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
 {
   int i, ibc, face, id, nodes[3];
   int triangle;
