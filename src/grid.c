@@ -466,6 +466,18 @@ Grid *gridCell(Grid *grid, int cellId, int *nodes )
 
 Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 {
+ return gridAddFaceUV(grid, 
+		      n0, DBL_MAX, DBL_MAX,
+		      n1, DBL_MAX, DBL_MAX,
+		      n2, DBL_MAX, DBL_MAX,
+		      faceId );
+}
+
+Grid *gridAddFaceUV(Grid *grid, 
+		    int n0, double u0, double v0,
+		    int n1, double u1, double v1,
+		    int n2, double u2, double v2, int faceId )
+{
   int face;
   if ( grid->blankf2n == EMPTY ) return NULL;
   face = grid->blankf2n;
@@ -475,6 +487,12 @@ Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
   grid->f2n[0+3*face] = n0;
   grid->f2n[1+3*face] = n1;
   grid->f2n[2+3*face] = n2;
+  grid->faceU[0+3*face] = u0;
+  grid->faceU[1+3*face] = u1;
+  grid->faceU[2+3*face] = u2;
+  grid->faceV[0+3*face] = v0;
+  grid->faceV[1+3*face] = v1;
+  grid->faceV[2+3*face] = v2;
   grid->faceId[face]  = faceId;
 
   if ( NULL == adjRegister( grid->faceAdj, n0, face ) ) return NULL;

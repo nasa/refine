@@ -300,8 +300,12 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testSplitGeometryEdge4
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal grid, grid.addFace(0,1,2,2)
-  assert_equal grid, grid.addFace(1,0,5,5)
+  assert_equal grid, grid.addFaceUV(0,20.0,30.0,
+				    1,21.0,31.0,
+				    2,22.0,32.0,2)
+  assert_equal grid, grid.addFaceUV(1,51.0,61.0,
+				    0,50.0,60.0,
+				    5,55.0,65.0,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.addEdge(0,1,15, 0.0, 1.0)
   assert_equal grid, grid.splitEdge(0,1)

@@ -117,6 +117,21 @@ VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
   return (returnedGrid==NULL?Qnil:self);
 }
 
+VALUE grid_addFaceUV( VALUE self, 
+		      VALUE n0, VALUE u0, VALUE v0,
+		      VALUE n1, VALUE u1, VALUE v1,
+		      VALUE n2, VALUE u2, VALUE v2, VALUE faceId )
+{
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  returnedGrid = 
+    gridAddFaceUV(grid, 
+		  NUM2INT(n0), NUM2DBL(u0), NUM2DBL(v0),
+		  NUM2INT(n1), NUM2DBL(u0), NUM2DBL(v0), 
+		  NUM2INT(n2), NUM2DBL(u0), NUM2DBL(v0), NUM2INT(faceId) );
+  return (returnedGrid==NULL?Qnil:self);
+}
+
 VALUE grid_removeFace( VALUE self, VALUE face )
 {
   GET_GRID_FROM_SELF;
@@ -368,6 +383,7 @@ void Init_Grid()
   rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
 
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
+  rb_define_method( cGrid, "addFaceUV", grid_addFaceUV, 10 );
   rb_define_method( cGrid, "removeFace", grid_removeFace, 1 );
   rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
