@@ -521,18 +521,23 @@ Layer *layerTriangleFourthNode(Layer *layer, int triangle, double *xyz )
   layerTriangleDirection(layer,triangle,direction);
   layerTriangleMaxEdgeLength(layer,triangle,&h);
   
-  for (i=0;i<3;i++) xyz[i] = center[i] + 0.5*h*direction[i];
+  for (i=0;i<3;i++) xyz[i] = center[i] + 0.8*h*direction[i];
 
   return layer;
 
 }
 
-Layer *layerTriangleInviscidTet(Layer *layer, int triangle, 
+Layer *layerTriangleInviscidTet(Layer *layer, int triangle, double scale,
 				double *node0, double *node1,
 				double *node2, double *node3) 
 {
-  int nodes[3];
+  int i, nodes[3], normals[3];
+  double center[3];
+  double oneMinusScale;
 
+  oneMinusScale = 1.0-scale;
+
+  if ( layer != layerTriangleNormals(layer,triangle,normals) ) return NULL;
   if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
 
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
@@ -541,6 +546,22 @@ Layer *layerTriangleInviscidTet(Layer *layer, int triangle,
 
   if ( layer != layerTriangleFourthNode(layer,triangle,node3) ) return NULL;
 
+  for(i=0;i<3;i++) {
+    if (!layerNormalTerminated(layer,normals[0]))
+	node0[i] += layer->normal[normals[0]].direction[i] 
+	* layer->normal[normals[0]].height;
+    if (!layerNormalTerminated(layer,normals[1]))
+	node1[i] += layer->normal[normals[1]].direction[i] 
+	* layer->normal[normals[1]].height;
+    if (!layerNormalTerminated(layer,normals[2]))
+	node2[i] += layer->normal[normals[2]].direction[i] 
+	* layer->normal[normals[2]].height;
+    center[i] = 0.25*(node0[i]+node1[i]+node2[i]+node3[i]);
+    node0[i] = scale*node0[i] + oneMinusScale*center[i];
+    node1[i] = scale*node1[i] + oneMinusScale*center[i];
+    node2[i] = scale*node2[i] + oneMinusScale*center[i];
+    node3[i] = scale*node3[i] + oneMinusScale*center[i];
+  }  
   return layer;
 }
 
@@ -3707,7 +3728,7 @@ Layer *layerPopulateNormalNearTree(Layer *layer)
   return layer;
 }
 
-Layer *layerPopulateTriangleNearTree(Layer *layer)
+Layer *layerPopulateTriangleNearTree(Layer *layer, double scale)
 {
   int i, triangle;
   Grid *grid;
@@ -3720,7 +3741,7 @@ Layer *layerPopulateTriangleNearTree(Layer *layer)
   layer->nearTree = malloc(layerNTriangle(layer)*sizeof(Near));
 
   for(triangle=0;triangle<layerNTriangle(layer);triangle++){
-    if (layer != layerTriangleInviscidTet(layer,triangle,
+    if (layer != layerTriangleInviscidTet(layer,triangle,scale,
 					  node0,node1,node2,node3)) return NULL;
     for (i=0;i<3;i++) center[i] = 0.25*(node0[i]+node1[i]+node2[i]+node3[i]);
     gridSubtractVector(node0,center,dist);
@@ -3916,7 +3937,7 @@ GridBool layerTrianglesShareNormal(Layer *layer, int triangle1, int triangle2 )
 }
 
 
-Layer *layerTerminateCollidingTriangles(Layer *layer)
+Layer *layerTerminateCollidingTriangles(Layer *layer, double scale)
 {
   int triangle;
   Near *target;
@@ -3928,7 +3949,7 @@ Layer *layerTerminateCollidingTriangles(Layer *layer)
   if ( 0 < layerNBlend(layer) ) return NULL;
 
   //printf("layerPopulateTriangleNearTree...\n");
-  layerPopulateTriangleNearTree(layer);
+  layerPopulateTriangleNearTree(layer, scale);
 
   maxTouched = layerNTriangle(layer);
   nearTriangles = malloc(maxTouched*sizeof(int));
@@ -3939,11 +3960,11 @@ Layer *layerTerminateCollidingTriangles(Layer *layer)
     touched = 0;
     nearTouched(layer->nearTree, target, &touched, maxTouched, nearTriangles);
     //printf("triangle %d  touched %d\n",triangle,touched);
-    layerTriangleInviscidTet(layer,triangle,a0,a1,a2,a3);
+    layerTriangleInviscidTet(layer,triangle,scale,a0,a1,a2,a3);
     for(i=0;i<touched;i++){
       nearTriangle = nearTriangles[i];
       if (!layerTrianglesShareNormal(layer, nearTriangle, triangle)) {
-	layerTriangleInviscidTet(layer,nearTriangle,b0,b1,b2,b3);
+	layerTriangleInviscidTet(layer,nearTriangle,scale,b0,b1,b2,b3);
 	if (intersectTetTet(a0,a1,a2,a3,b0,b1,b2,b3)){
 	  layerTerminateTriangleNormals(layer,triangle);
 	  layerTerminateTriangleNormals(layer,nearTriangle);

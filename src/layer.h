@@ -115,7 +115,7 @@ Layer *layerTriangleDirection(Layer *, int triangle, double *direction);
 Layer *layerTriangleArea(Layer *, int triangle, double *area);
 Layer *layerTriangleCenter(Layer *, int triangle, double *center);
 Layer *layerTriangleFourthNode(Layer *, int triangle, double *xyz);
-Layer *layerTriangleInviscidTet(Layer *, int triangle, 
+Layer *layerTriangleInviscidTet(Layer *, int triangle, double scale, 
 				double *node0, double *node1,
 				double *node2, double *node3);
 Layer *layerTriangleMaxEdgeLength(Layer *, int triangle, double *length);
@@ -261,9 +261,9 @@ Layer *layerOrderedVertexNormals(Layer *, int normal,
 				 int *nVertexNormals, int *vertexNormals );
 
 Layer *layerPopulateNormalNearTree(Layer *);
-Layer *layerPopulateTriangleNearTree(Layer *);
+Layer *layerPopulateTriangleNearTree(Layer *, double scale);
 Layer *layerTerminateCollidingNormals(Layer *);
-Layer *layerTerminateCollidingTriangles(Layer *);
+Layer *layerTerminateCollidingTriangles(Layer *, double scale);
 
 Layer *layerTerminateFutureNegativeCellNormals(Layer *);
 

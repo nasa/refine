@@ -584,10 +584,10 @@ VALUE layer_terminateCollidingNormals( VALUE self )
   return ( layer == layerTerminateCollidingNormals(layer)?self:Qnil );
 }
 
-VALUE layer_terminateCollidingTriangles( VALUE self )
+VALUE layer_terminateCollidingTriangles( VALUE self, VALUE scale )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerTerminateCollidingTriangles(layer)?self:Qnil );
+  return ( layer == layerTerminateCollidingTriangles(layer,NUM2DBL(scale))?self:Qnil );
 }
 
 VALUE layer_writeTecplotFrontGeometry( VALUE self )
@@ -680,7 +680,7 @@ void Init_Layer()
   rb_define_method( cLayer, "orderedVertexNormals", layer_orderedVertexNormals, 1 );
 
   rb_define_method( cLayer, "terminateCollidingNormals", layer_terminateCollidingNormals, 0 );
-  rb_define_method( cLayer, "terminateCollidingTriangles", layer_terminateCollidingTriangles, 0 );
+  rb_define_method( cLayer, "terminateCollidingTriangles", layer_terminateCollidingTriangles, 1 );
 
   rb_define_method( cLayer, "writeTecplotFrontGeometry", layer_writeTecplotFrontGeometry, 0);
 
