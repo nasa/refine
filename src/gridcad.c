@@ -120,11 +120,10 @@ Grid *gridSafeProjectNodeToEdge(Grid *grid, int node, int edgeId, double ratio )
 {
   double origxyz[3], origt;
   double projxyz[3];
+  double xyz[3];
   int attempts;
 
-  origxyz[0] = grid->xyz[0+3*node];
-  origxyz[1] = grid->xyz[1+3*node];
-  origxyz[2] = grid->xyz[2+3*node];
+  if ( grid != gridNodeXYZ( grid, node, origxyz ) ) return NULL; 
   if ( grid != gridNodeT( grid, node, edgeId, &origt ) ) return NULL; 
 
   if ( grid != gridProjectNodeToEdge( grid, node, edgeId ) ) return NULL;
@@ -133,23 +132,20 @@ Grid *gridSafeProjectNodeToEdge(Grid *grid, int node, int edgeId, double ratio )
 
   gridSetNodeT( grid, node, edgeId, origt );
 
-  projxyz[0] = grid->xyz[0+3*node];
-  projxyz[1] = grid->xyz[1+3*node];
-  projxyz[2] = grid->xyz[2+3*node];
+  if ( grid != gridNodeXYZ( grid, node, projxyz ) ) return NULL; 
+  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
 
   attempts = 0;
   while ( attempts < 10 && gridNegCellAroundNode( grid, node ) ) {
     attempts++;
-    grid->xyz[0+3*node] = (1.0-ratio)*grid->xyz[0+3*node] + ratio*origxyz[0];
-    grid->xyz[1+3*node] = (1.0-ratio)*grid->xyz[1+3*node] + ratio*origxyz[1];
-    grid->xyz[2+3*node] = (1.0-ratio)*grid->xyz[2+3*node] + ratio*origxyz[2];
+    xyz[0] = (1.0-ratio)*xyz[0] + ratio*origxyz[0];
+    xyz[1] = (1.0-ratio)*xyz[1] + ratio*origxyz[1];
+    xyz[2] = (1.0-ratio)*xyz[2] + ratio*origxyz[2];
+    gridSetNodeXYZ( grid, node, xyz );
   }
 
-  if (gridNegCellAroundNode( grid, node )) {
-    grid->xyz[0+3*node] = origxyz[0];
-    grid->xyz[1+3*node] = origxyz[1];
-    grid->xyz[2+3*node] = origxyz[2];
-  }
+  if (gridNegCellAroundNode( grid, node )) 
+    gridSetNodeXYZ( grid, node, origxyz );
 
   return NULL;
 }
@@ -158,11 +154,10 @@ Grid *gridSafeProjectNodeToFace(Grid *grid, int node, int faceId, double ratio )
 {
   double origxyz[3], origuv[2];
   double projxyz[3];
+  double xyz[3];
   int attempts;
 
-  origxyz[0] = grid->xyz[0+3*node];
-  origxyz[1] = grid->xyz[1+3*node];
-  origxyz[2] = grid->xyz[2+3*node];
+  if ( grid != gridNodeXYZ( grid, node, origxyz ) ) return NULL; 
   if ( grid != gridNodeUV( grid, node, faceId, origuv ) ) return NULL; 
 
   if ( grid != gridProjectNodeToFace( grid, node, faceId ) ) return NULL;
@@ -171,24 +166,20 @@ Grid *gridSafeProjectNodeToFace(Grid *grid, int node, int faceId, double ratio )
 
   gridSetNodeUV( grid, node, faceId, origuv[0], origuv[1] );
 
-  projxyz[0] = grid->xyz[0+3*node];
-  projxyz[1] = grid->xyz[1+3*node];
-  projxyz[2] = grid->xyz[2+3*node];
+  if ( grid != gridNodeXYZ( grid, node, projxyz ) ) return NULL; 
+  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
 
   attempts = 0;
   while ( attempts < 10 && gridNegCellAroundNode( grid, node ) ) {
     attempts++;
-    grid->xyz[0+3*node] = (1.0-ratio)*grid->xyz[0+3*node] + ratio*origxyz[0];
-    grid->xyz[1+3*node] = (1.0-ratio)*grid->xyz[1+3*node] + ratio*origxyz[1];
-    grid->xyz[2+3*node] = (1.0-ratio)*grid->xyz[2+3*node] + ratio*origxyz[2];
+    xyz[0] = (1.0-ratio)*xyz[0] + ratio*origxyz[0];
+    xyz[1] = (1.0-ratio)*xyz[1] + ratio*origxyz[1];
+    xyz[2] = (1.0-ratio)*xyz[2] + ratio*origxyz[2];
+    gridSetNodeXYZ( grid, node, xyz );
   }
 
-  if (gridNegCellAroundNode( grid, node )) {
-    grid->xyz[0+3*node] = origxyz[0];
-    grid->xyz[1+3*node] = origxyz[1];
-    grid->xyz[2+3*node] = origxyz[2];
-  }
- 
+  if (gridNegCellAroundNode( grid, node )) 
+    gridSetNodeXYZ( grid, node, origxyz );
 
   return NULL;
 }
@@ -199,13 +190,13 @@ Grid *gridProject(Grid *grid)
   int notProjected;
   notProjected = 0;
 
-  for (node=0;node<grid->maxnode;node++)
+  for (node=0;node<gridMaxNode(grid);node++)
     if ( gridValidNode( grid, node ) )
       if ( gridSafeProjectNode(grid,node,1.0) != grid ) notProjected++;
 
   if (notProjected > 0){
     printf("gridProject: %d of %d nodes not projected.\n",
-	   notProjected,grid->nnode);
+	   notProjected,gridNNode(grid));
     return NULL;
   }
 
@@ -216,14 +207,14 @@ Grid *gridRobustProject(Grid *grid)
   int  node;
   int notProjected;
   notProjected = 0;
-  for (node=0;node<grid->maxnode;node++)
+  for (node=0;node<gridMaxNode(grid);node++)
     if ( gridValidNode( grid, node ) && !gridNodeFrozen(grid, node) ) 
       if (gridRobustProjectNode( grid, node)!= grid ) 
 	notProjected++;
 
   if (notProjected > 0){
     printf("gridRobustProject: %d of %d nodes not projected.\n",
-	   notProjected,grid->nnode);
+	   notProjected,gridNNode(grid));
     return NULL;
   }
 
