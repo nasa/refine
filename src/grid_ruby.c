@@ -158,6 +158,28 @@ VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
   return rb_equ;
 }
 
+VALUE grid_orient( VALUE self, VALUE c0, VALUE c1 , VALUE c2, VALUE c3,
+		   VALUE n0, VALUE n1 )
+{
+  VALUE rb_result;
+  int i, cell[4], result[4];
+  GET_GRID_FROM_SELF;
+
+  cell[0] = NUM2INT(c0);
+  cell[1] = NUM2INT(c1);
+  cell[2] = NUM2INT(c2);
+  cell[3] = NUM2INT(c3);
+
+  result[0] = NUM2INT(n0);
+  result[1] = NUM2INT(n1);
+
+  if ( NULL == gridOrient( grid, cell, result ) ) return Qnil;
+
+  rb_result = rb_ary_new2(2);
+  for ( i=0 ; i<2 ; i++ ) rb_ary_store( rb_result, i, INT2NUM(result[i+2]) );
+  return rb_result;
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -182,4 +204,5 @@ void Init_Grid()
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
+  rb_define_method( cGrid, "orient", grid_orient, 6 );
 }
