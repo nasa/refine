@@ -23,6 +23,12 @@ class TestGrid < Test::Unit::TestCase
  end
  def setup ; set_up ; end
 
+ def tear_down
+  require 'ftools'
+  File.rm_f 'grid.t'
+ end
+ def teardown ; tear_down ; end
+
  def testSafeAlloc
   grid = Grid.new(0,0,0,0)
   assert_equal 1, grid.maxnode
