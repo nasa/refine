@@ -78,8 +78,20 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid);
   layerFindParentGeomEdges(layer);
-  layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
-				    origin, direction );
+  if (bil ) { 
+    layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
+				      origin, direction );
+  }else{
+    origin[0] = 0.0;
+    origin[1] = 0.0;
+    origin[2] = 0.0;
+    direction[0] = 1.0;
+    direction[1] = 0.0;
+    direction[2] = 0.0;
+    layerAssignPolynomialNormalHeight(layer, 0.01, 0.01, 2.0, 
+				      origin, direction );
+   
+  }
 
   if (blendElement) {
     printf("inserting blends...\n");
