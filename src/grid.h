@@ -76,6 +76,9 @@ double gridAR(Grid *g, int *nodes );
 double gridMinVolume(Grid *g);
 double gridMinAR(Grid *g);
 
+int gridFindCellWithFace(Grid *g, int face );
+bool gridRightHandedFace(Grid *g, int face );
+
 END_C_DECLORATION
 
 #endif /* GRID_H */
