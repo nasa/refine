@@ -148,7 +148,7 @@ class TestSampleUnit < Test::Unit::TestCase
  def testAddNode
   grid = Grid.new(1,1,0,0)
   assert_equal 0, grid.addNode(1.0,0.0,0.0)
-  assert_equal( -1, grid.addNode(1.0,0.0,0.0))
+  assert_nil      grid.addNode(1.0,0.0,0.0)
  end
 
  def testMetrics
@@ -237,7 +237,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_not_nil     grid = Grid.new(4,1,2,0)
   assert_equal grid, grid.addFace(0, 1, 2, 10)
   assert_equal 0,    grid.findFace(0,1,2)
-  assert_equal(-1,   grid.findFace(3,1,2) )
+  assert_nil         grid.findFace(3,1,2)
  end
 
  def testAddAndRemoveFace
@@ -258,14 +258,14 @@ class TestSampleUnit < Test::Unit::TestCase
  def testFaceId
   assert_not_nil     grid = Grid.new(4,1,2,0)
 
-  assert_equal( -1,  grid.faceId( 1, 2, 3 ) )
+  assert_nil         grid.faceId( 1, 2, 3 )
 
   assert_equal grid, grid.addFace(0, 1, 2, 10)
   assert_equal 10,   grid.faceId( 0, 1, 2 )
   assert_equal 10,   grid.faceId( 1, 2, 0 )
   assert_equal 10,   grid.faceId( 2, 0, 1 )
   assert_equal 10,   grid.faceId( 2, 1, 0 )
-  assert_equal( -1,  grid.faceId( 1, 2, 3 ) )
+  assert_nil         grid.faceId( 1, 2, 3 )
 
   assert_equal grid, grid.addFace(3, 1, 2, 11)
   assert_equal 10,   grid.faceId( 0, 1, 2 )
@@ -284,8 +284,8 @@ class TestSampleUnit < Test::Unit::TestCase
   # new bc faces
   assert_equal 11,   grid.faceId(0,2,5)
   assert_equal 11,   grid.faceId(1,2,5)  
-  assert_equal(-1,   grid.faceId(0,1,2) )
-  assert_equal(-1,   grid.faceId(0,1,5) ) 
+  assert_nil         grid.faceId(0,1,2)
+  assert_nil         grid.faceId(0,1,5) 
  end
 
  def testSwapEdge4_gapWithSameFaceNotBeter
@@ -399,8 +399,8 @@ class TestSampleUnit < Test::Unit::TestCase
   # new bc faces
   assert_equal 11,   grid.faceId(0,2,6)
   assert_equal 11,   grid.faceId(1,2,6)  
-  assert_equal(-1,   grid.faceId(0,1,2) )
-  assert_equal(-1,   grid.faceId(0,1,6) ) 
+  assert_nil         grid.faceId(0,1,2)
+  assert_nil         grid.faceId(0,1,6) 
  end
 
  def testSwapEdge6OnePoint_0
@@ -500,12 +500,12 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.addFace(0,1,2,11)
   assert_equal grid, grid.addFace(0,1,5,11)
   assert_equal grid, grid.splitEdge(0,1)
-  assert_equal(-1,   grid.faceId(0,1,2) )
-  assert_equal(-1,   grid.faceId(0,1,5) ) 
-  assert_equal(11,   grid.faceId(0,6,2) )
-  assert_equal(11,   grid.faceId(6,1,2) )
-  assert_equal(11,   grid.faceId(0,6,5) ) 
-  assert_equal(11,   grid.faceId(6,1,5) ) 
+  assert_nil         grid.faceId(0,1,2)
+  assert_nil         grid.faceId(0,1,5) 
+  assert_equal 11,   grid.faceId(0,6,2)
+  assert_equal 11,   grid.faceId(6,1,2)
+  assert_equal 11,   grid.faceId(0,6,5) 
+  assert_equal 11,   grid.faceId(6,1,5) 
  end
 
  def testSplitEdge4onDifferentBC
@@ -513,12 +513,12 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.addFace(0,1,2,2)
   assert_equal grid, grid.addFace(0,1,5,5)
   assert_equal grid, grid.splitEdge(0,1)
-  assert_equal(-1,   grid.faceId(0,1,2) )
-  assert_equal(-1,   grid.faceId(0,1,5) ) 
-  assert_equal( 2,   grid.faceId(0,6,2) )
-  assert_equal( 2,   grid.faceId(6,1,2) )
-  assert_equal( 5,   grid.faceId(0,6,5) ) 
-  assert_equal( 5,   grid.faceId(6,1,5) ) 
+  assert_nil         grid.faceId(0,1,2)
+  assert_nil         grid.faceId(0,1,5) 
+  assert_equal 2,    grid.faceId(0,6,2)
+  assert_equal 2,    grid.faceId(6,1,2)
+  assert_equal 5,    grid.faceId(0,6,5) 
+  assert_equal 5,    grid.faceId(6,1,5) 
  end
 
 #test for not enough mem for swap and split
@@ -549,7 +549,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2, grid.maxedge
  end
 
- def testAddAndFindFace
+ def testAddAndFindEdge
   assert_not_nil     grid = Grid.new(4,0,0,2)
   assert_equal grid, grid.addEdge(0, 1, 10)
   assert_equal 1,    grid.nedge

@@ -125,14 +125,20 @@ VALUE grid_removeFace( VALUE self, VALUE face )
 
 VALUE grid_findFace( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
 {
+  int returnedFace;
   GET_GRID_FROM_SELF;
-  return INT2NUM( gridFindFace(grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) ) );
+  returnedFace = gridFindFace(grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) );
+  if (returnedFace == EMPTY) return Qnil;
+  return INT2NUM( returnedFace );
 }
 
 VALUE grid_faceId( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
 {
+  int returnedFace;
   GET_GRID_FROM_SELF;
-  return INT2NUM( gridFaceId( grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) ) );
+  returnedFace = gridFaceId( grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) );
+  if (returnedFace == EMPTY) return Qnil;
+  return INT2NUM( returnedFace );
 }
 
 VALUE grid_addEdge( VALUE self, VALUE n0, VALUE n1, VALUE edgeId )
@@ -217,8 +223,11 @@ VALUE grid_splitEdge( VALUE self, VALUE n0, VALUE n1 )
 
 VALUE grid_addNode( VALUE self, VALUE x, VALUE y, VALUE z )
 {
+  int returnedNode;
   GET_GRID_FROM_SELF;
-  return INT2NUM( gridAddNode( grid, NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ) );
+  returnedNode = gridAddNode( grid, NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) );
+  if (returnedNode == EMPTY) return Qnil;
+  return INT2NUM( returnedNode );
 }
 
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
