@@ -23,7 +23,7 @@ Grid* grid_create(long n)
   grid = malloc(sizeof(Grid));
   grid->nnodes =n;
   grid->firstcell = malloc(grid->nnodes * sizeof(long));
-  for (i=1;i < grid->nnodes; i++ ) grid->firstcell[i] = 0;
+  for (i=0;i < grid->nnodes; i++ ) grid->firstcell[i] = 0;
   return  grid;
 }
 
