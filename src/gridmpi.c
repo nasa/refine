@@ -34,3 +34,11 @@ Grid *gridSetGhost(Grid *grid, int node )
 {
   return gridSetNodePart(grid,node,EMPTY);
 }
+
+Grid *gridParallelEdgeSplit(Grid *grid, int node1, int node2 )
+{
+  if ( (gridPartId(grid) != gridNodePart(grid,node1)) &&
+       (gridPartId(grid) != gridNodePart(grid,node2)) ) return NULL;
+       
+  return grid;
+}

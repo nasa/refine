@@ -22,6 +22,12 @@ VALUE grid_setGhost( VALUE self, VALUE node )
   return (gridSetGhost(grid, NUM2INT(node))==grid?self:Qnil);
 }
 
+VALUE grid_parallelEdgeSplit( VALUE self, VALUE node1, VALUE node2 )
+{
+  GET_GRID_FROM_SELF;
+  return (gridParallelEdgeSplit(grid, NUM2INT(node1), NUM2INT(node2))==grid?self:Qnil);
+}
+
 VALUE cGridMPI;
 
 void Init_GridMPI() 
@@ -30,4 +36,5 @@ void Init_GridMPI()
   rb_define_method( cGridMPI, "setAllLocal", grid_setAllLocal, 0 );
   rb_define_method( cGridMPI, "identityGlobal", grid_identityGlobal, 0 );
   rb_define_method( cGridMPI, "setGhost", grid_setGhost, 1 );
+  rb_define_method( cGridMPI, "parallelEdgeSplit", grid_parallelEdgeSplit, 2 );
 }

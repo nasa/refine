@@ -66,6 +66,8 @@ class TestGridMPI < Test::Unit::TestCase
   p2.setGhost(1)
   p2.setGhost(2)
   p1.setGhost(3)
+  assert_nil p2.parallelEdgeSplit(0,1)
+  assert_equal p1, p1.parallelEdgeSplit(0,3)
  end
 
 end
