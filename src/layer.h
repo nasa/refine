@@ -127,6 +127,8 @@ Layer *layerDuplicateAllBlend(Layer *);
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 
+Layer *layerWriteTecplotFront(Layer *);
+
 END_C_DECLORATION
 
 #endif /* LAYER_H */

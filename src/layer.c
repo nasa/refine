@@ -9,6 +9,7 @@
 /* $Id$ */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include <limits.h>
 #include <values.h>
@@ -60,6 +61,9 @@ struct Layer {
 
   bool *cellInLayer;
   bool *faceInLayer;
+
+  FILE *tecplotFile;
+
 };
 
 Layer *layerCreate( Grid *grid )
@@ -91,6 +95,9 @@ Layer *layerCreate( Grid *grid )
   for (i=0;i<gridMaxCell(grid);i++) layer->cellInLayer[i] = FALSE;
   layer->faceInLayer = malloc(gridMaxFace(grid)*sizeof(bool));
   for (i=0;i<gridMaxFace(grid);i++) layer->faceInLayer[i] = FALSE;
+
+  layer->tecplotFile = NULL;
+
   return layer;
 }
 
@@ -101,6 +108,7 @@ Grid *layerGrid(Layer *layer)
 
 void layerFree(Layer *layer)
 {
+  if ( layer->tecplotFile != NULL ) fclose(layer->tecplotFile);
   free(layer->faceInLayer);
   free(layer->cellInLayer);
   gridDetachNodeSorter( layer->grid );
@@ -2406,6 +2414,43 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 				 faceId);
     }
   }
+
+  return layer;
+}
+
+Layer *layerWriteTecplotFront(Layer *layer)
+{
+  int i;
+  double xyz[3];
+  Grid *grid;
+
+  grid = layerGrid(layer);
+
+  if ( NULL == layer->tecplotFile) {
+    layer->tecplotFile = fopen("layer.t","w");
+    fprintf(layer->tecplotFile, "title=\"tecplot advancing layer\"\n");
+    fprintf(layer->tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
+  }
+
+  fprintf(layer->tecplotFile, 
+	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  layerNNormal(layer), layerNTriangle(layer));
+
+  for ( i=0; i<layerNNormal(layer) ; i++ ){
+    gridNodeXYZ(grid,layerNormalRoot(layer,i),xyz);
+    fprintf(layer->tecplotFile, "%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
+  }
+
+  fprintf(layer->tecplotFile, "\n");
+
+  for ( i=0; i<layerNTriangle(layer) ; i++ ){
+    fprintf(layer->tecplotFile, " %9d %9d %9d\n",
+	    layer->triangle[i].normal[0]+1,
+	    layer->triangle[i].normal[1]+1,
+	    layer->triangle[i].normal[2]+1);
+  }
+
+  fflush(layer->tecplotFile);
 
   return layer;
 }
