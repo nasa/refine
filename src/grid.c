@@ -3084,17 +3084,17 @@ Grid *gridCreateSortedGlobal(Grid *grid )
 
 int gridGlobal2Local(Grid *grid, int global )
 {
-  int local;
+  int position;
 
   if (NULL == grid->nodeGlobal) return EMPTY;
 
   if (NULL == grid->sortedLocal) gridCreateSortedGlobal(grid);
 
-  local = sortSearch(grid->nsorted,grid->sortedGlobal,global);
+  position = sortSearch(grid->nsorted,grid->sortedGlobal,global);
 
-  if (EMPTY == local) return EMPTY;
+  if (EMPTY == position) return EMPTY;
 
-  return grid->sortedLocal[local];
+  return grid->sortedLocal[position];
 }
 
 Grid *gridSetNodeGlobal(Grid *grid, int node, int global )
@@ -3160,6 +3160,7 @@ Grid *gridRenumberGlobalNodes(Grid *grid, int nnode, int *n2o)
 {
   int local;
   int oldglobal, newglobal;
+
   for (newglobal=0;newglobal<nnode;newglobal++){
     oldglobal = n2o[newglobal];
     if (newglobal != oldglobal) {
@@ -3168,8 +3169,16 @@ Grid *gridRenumberGlobalNodes(Grid *grid, int nnode, int *n2o)
 	grid->nodeGlobal[local] = newglobal;
       }
     }
+    if ( oldglobal >= nnode ) {
+      local = gridGlobal2Local(grid, newglobal );
+      if ( EMPTY != local ) {
+	grid->nodeGlobal[local] = oldglobal;
+      }
+    }
   }
+
   gridCreateSortedGlobal(grid);
+
   return grid;
 }
 
