@@ -106,10 +106,10 @@ int main( int argc, char *argv[] )
     printf("adapt parameter >none< selected. Spacing reset.\n");
     gridResetSpacing(grid);
     if (boundaryLayerGrid) {
-      layer = formAdvancingTriangle(grid,project);
+      layer = formAdvancingFront(grid,project);
     }else{
       if (debugInsert) {
-	layer = formAdvancingTriangle(grid,project);
+	layer = formAdvancingFront(grid,project);
 	printf("Inserting Phantom triangle.\n");
 	layerInsertPhantomTriangle( layer, 0.22 );
 	ratio=0.8;

@@ -43,10 +43,10 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   MeshMgr_SetElementScale( scale );
   //CAPrIMesh_TetVolume( vol );
 
-  layer = formAdvancingTriangle( grid, project );
+  layer = formAdvancingFront( grid, project );
   if (mixedElement) layerToggleMixedElementMode(layer);
 
-  /* only needed for formAdvancingTriangle freeze distant volume nodes */
+  /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid); 
   layerFindParentGeomEdges(layer);
   i=0;

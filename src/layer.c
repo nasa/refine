@@ -71,7 +71,7 @@ Layer *layerCreate( Grid *grid )
   return layer;
 }
 
-Layer *formAdvancingTriangle( Grid *grid, char *project )
+Layer *formAdvancingFront( Grid *grid, char *project )
 {
   Layer *layer;
   int i, nbc, bc[4];
