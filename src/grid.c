@@ -3143,6 +3143,7 @@ Grid *gridSetNGeomNode(Grid *grid, int nGeomNode)
 {
   int global, node;
   grid->nGeomNode = nGeomNode;
+  for(node=0;node<grid->maxnode;node++) grid->geomNode[node]=EMPTY;
   if (NULL == grid->nodeGlobal) {
     for(node=0;node<grid->nGeomNode;node++) grid->geomNode[node]=node;
   }else{
