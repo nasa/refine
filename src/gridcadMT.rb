@@ -321,14 +321,14 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal node3, grid.nodeXYZ(3)
  end
 
- def gemGrid(nequ=4,disp=0.2,dent=nil)
+ def gemGrid(nequ=4,disp=0.2,dent=nil, dentratio=-0.5)
   grid = Grid.new(nequ+2+1,nequ*2,nequ*2,0)
   n = Array.new
   n.push grid.addNode( 1.0,0.0,0.0)
   n.push grid.addNode(-1.0,0.0,0.0)
   nequ.times do |i| 
    angle = 2.0*Math::PI*(i-1)/(nequ)
-   s = if (dent==i) then -0.5 else 1.0 end
+   s = if (dent==i) then dentratio else 1.0 end
    n.push grid.addNode(0.0,s*Math.sin(angle),s*Math.cos(angle)) 
   end
   n.push 2
@@ -388,8 +388,16 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta avgVol, grid.minVolume, 1.0e-8 
  end
 
- def testImproveMinVolumeForInvalidConcaveGem
+ def testImproveMinVolumeForConcaveGemWithBadLapacian
   grid = gemGrid 4, 5.0, 0
+  avgVol = grid.totalVolume/grid.ncell.to_f
+  puts
+  grid.smoothNodeVolume(6)
+  assert_in_delta avgVol, grid.minVolume, 1.0e-4
+ end
+
+ def testImproveMinVolumeForInvalidConcaveGem
+  grid = gemGrid 4, 5.0, 0, -1.5
   avgVol = grid.totalVolume/grid.ncell.to_f
   puts
   grid.smoothNodeVolume(6)
