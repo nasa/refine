@@ -27,33 +27,40 @@ VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nlist )
 
 VALUE grid_nnode( VALUE self )
 {
-  GET_GRID_FROM_SELF
+  GET_GRID_FROM_SELF;
   return INT2NUM( gridNNode(grid) );
 }
 
 VALUE grid_ncell( VALUE self )
 {
-  GET_GRID_FROM_SELF
+  GET_GRID_FROM_SELF;
   return INT2NUM( gridNCell(grid) );
 }
 
 VALUE grid_nodeDeg( VALUE self, VALUE nodeId )
 {
-  GET_GRID_FROM_SELF
+  GET_GRID_FROM_SELF;
   return INT2NUM( gridNodeDeg(grid, NUM2INT(nodeId) ) );
 }
 
 VALUE grid_registerNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
 {
-  GET_GRID_FROM_SELF
+  GET_GRID_FROM_SELF;
   gridRegisterNodeCell(grid, NUM2INT(nodeId), NUM2INT(cellId) );
   return self;
 }
 
 VALUE grid_validNodeCell( VALUE self )
 {
-  GET_GRID_FROM_SELF
+  GET_GRID_FROM_SELF;
   return (gridValidNodeCell(grid)?Qtrue:Qfalse);
+}
+
+VALUE grid_firstNodeCell( VALUE self, VALUE nodeId )
+{
+  GET_GRID_FROM_SELF;
+  gridFirstNodeCell(grid, NUM2INT(nodeId) );
+  return Qnil;
 }
 
 VALUE cGrid;
@@ -69,4 +76,5 @@ void Init_Grid()
   rb_define_method( cGrid, "nodeDeg", grid_nodeDeg, 1 );
   rb_define_method( cGrid, "registerNodeCell", grid_registerNodeCell, 2 );
   rb_define_method( cGrid, "validNodeCell", grid_validNodeCell, 0 );
+  rb_define_method( cGrid, "firstNodeCell", grid_firstNodeCell, 1 );
 }
