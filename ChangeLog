@@ -1,3 +1,12 @@
+2003-03-28 10:39 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* /src/layer.c (layerBlend) multiple normals are handled with
+	blend elements. The number of normals is increased with
+	layerSplitBlend. Blends are not entirely general yet.
+
+	* /src/layer.c (layerExtrudeBlend) wakes are created by extruding
+	blend elements
+
 2003-02-05 17:00 Mike Park  <m.a.park@larc.nasa.gov>
 
 	* gridinsert no longer needs gridStruct.h.
