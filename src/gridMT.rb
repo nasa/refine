@@ -185,8 +185,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 4, grid.cellDegree(1)
  end
 
-# put faces in
-
  def testNumberOfFaces
   assert_equal 0, @grid.nface 
   assert_equal 0, @grid.maxface 
@@ -197,7 +195,6 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testAddAndFindFace
   assert_not_nil     grid = Grid.new(4,1,2)
-  
   assert_equal grid, grid.addFace(0, 1, 2, 10)
   assert_equal 0,    grid.findFace(0,1,2)
   assert_equal -1,   grid.findFace(3,1,2)
@@ -205,7 +202,6 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testAddAndRemoveFace
   assert_not_nil     grid = Grid.new(4,1,2)
-  
   assert_nil         grid.removeFace(0)
   assert_nil         grid.removeFace(1)
   assert_equal grid, grid.addFace(0, 1, 2, 10)
@@ -245,9 +241,11 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 4,    grid.ncell
   assert_equal 2,    grid.cellDegree(0)
   assert_equal 2,    grid.cellDegree(1)
-# new bcfaces
-#  assert_equal 11,   grid.faceId(0,2,5)
-#  assert_equal 11,   grid.faceId(1,2,5)  
+  # new bc faces
+  assert_equal 11,   grid.faceId(0,2,5)
+  assert_equal 11,   grid.faceId(1,2,5)  
+  assert_equal(-1,   grid.faceId(0,1,2) )
+  assert_equal(-1,   grid.faceId(0,1,5) ) 
  end
 
  def testSwap4_gapWithDifferentFaces
@@ -287,6 +285,8 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
   assert_equal 3,    grid.cellDegree(1)
+  assert_equal 11,   grid.faceId(0,1,2)
+  assert_equal 11,   grid.faceId(0,1,5)  
  end
 
  def testSwap5_0
