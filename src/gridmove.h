@@ -44,6 +44,7 @@ GridMove *gridmoveSpringRelaxation(GridMove *, int nsteps, int subIterations);
 GridMove *gridmoveSprings(GridMove *, int *nsprings, int **springs);
 
 GridMove *gridmoveApplyDisplacements(GridMove *);
+GridMove *gridmoveProjectionDisplacements(GridMove *);
 
 END_C_DECLORATION
 

@@ -350,3 +350,19 @@ GridMove *gridmoveApplyDisplacements(GridMove *gm)
 
   return gm;
 }
+
+GridMove *gridmoveProjectionDisplacements(GridMove *gm)
+{
+  Grid *grid = gridmoveGrid(gm);
+  int node;
+  double displacement[3];
+
+  for ( node=0 ; node<gridMaxNode(grid) ; node++ ) {
+    if (gridGeometryFace( grid, node )) {
+      gridNodeProjectionDisplacement(grid,node,displacement);
+      gridmoveDisplace(gm,node,displacement);
+    }
+  }
+
+  return gm;
+}
