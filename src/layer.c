@@ -3366,7 +3366,7 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
   int n, normal, normals[4];
   int triangle[3];
   int o, other;
-  double xyz0[3], xyz1[3], edge[3];
+  double xyz0[3], xyz1[3], edge[3], axle[3];
   double normalDot, otherDot;
   int i;
   
@@ -3399,6 +3399,8 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
 		     normalDot,otherDot);
 	      gridVectorCopy(layer->normal[normal].direction,
 			     layer->normal[other].direction);
+	      layerNormalBlendAxle(layer, normal, axle);
+	      gridVectorOrthogonalize(layer->normal[normal].direction, axle);
 	    }
 	  }
 	}
