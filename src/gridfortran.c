@@ -114,6 +114,9 @@ void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
 void gridprojectallfaces_( )
 {
   int face, nodes[3], faceId;
+  double ar0, ar1;
+
+  ar0 = gridMinAR(grid);
   for(face=0;face<gridMaxFace(grid);face++) {
     if (grid == gridFace(grid,face,nodes,&faceId) ) {
       gridProjectNodeToFace(grid, nodes[0], faceId );
@@ -121,6 +124,11 @@ void gridprojectallfaces_( )
       gridProjectNodeToFace(grid, nodes[2], faceId );
     }
   }
+  ar1 = gridMinAR(grid);
+
+  printf( " %6d project faces           initial AR%14.10f final AR%14.10f\n",
+	  gridPartId(grid),ar0,ar1 );
+  fflush(stdout);
 }
 
 void gridswap_( )
@@ -160,8 +168,15 @@ void gridadaptwithoutcad_( double *minLength, double *maxLength )
 void gridwritetecplotsurfacezone_( )
 {
   char filename[256];
+  double ar0, ar1;
+  ar0 = gridMinAR(grid);
   sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
   gridWriteTecplotSurfaceZone(grid,filename);
+  ar1 = gridMinAR(grid);
+
+  printf( " %6d tecplot dump            initial AR%14.10f final AR%14.10f\n",
+	  gridPartId(grid),ar0,ar1 );
+  fflush(stdout);
 }
 
 void gridexportfast_( )
