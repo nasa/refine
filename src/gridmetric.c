@@ -696,11 +696,10 @@ double gridAR(Grid *grid, int *nodes )
   return aspect;
 }
 
-
 Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
 {
   AdjIterator it;
-  int cell, nodes[4];
+  int nodes[4], orientedNodes[4];
   double local_ar, local_dARdx[3];
 
   *ar = 1.1;
@@ -709,15 +708,16 @@ Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
   dARdx[2] = DBL_MAX;
 
   for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
-    cell = adjItem(it);
-    nodes[0] = node;
-    if (node == grid->c2n[0+4*cell]){
-      nodes[1] = grid->c2n[1+4*cell];
+    gridCell(grid,adjItem(it),nodes);
+    orientedNodes[0] = node;
+    if (node == nodes[0]){
+      orientedNodes[1] = nodes[1];
     }else{
-      nodes[1] = grid->c2n[0+4*cell];
+      orientedNodes[1] = nodes[0];
     }
-    gridOrient( grid, &grid->c2n[4*cell], nodes);
-    if ( grid != gridCellARDerivative(grid, nodes, &local_ar, local_dARdx ) ) {
+    gridOrient( grid, nodes, orientedNodes);
+    if ( grid != gridCellARDerivative( grid, orientedNodes, 
+				      &local_ar, local_dARdx ) ) {
       *ar = 0.0;
       dARdx[0] = DBL_MAX;
       dARdx[1] = DBL_MAX;
@@ -738,26 +738,28 @@ Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
 Grid *gridStoreARDerivative (Grid *grid, int node )
 {
   AdjIterator it;
-  int icell, cell, nodes[4];
+  int nodes[4], orientedNodes[4];
 
   if ( !gridValidNode( grid, node) ) return NULL;
 
   grid->degAR = 0;
   for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
-    grid->degAR++;
-    cell = adjItem(it);
-    nodes[0] = node;
-    if (node == grid->c2n[0+4*cell]){
-      nodes[1] = grid->c2n[1+4*cell];
+    gridCell(grid,adjItem(it),nodes);
+    orientedNodes[0] = node;
+    if (node == nodes[0]){
+      orientedNodes[1] = nodes[1];
     }else{
-      nodes[1] = grid->c2n[0+4*cell];
+      orientedNodes[1] = nodes[0];
     }
-    gridOrient( grid, &grid->c2n[4*cell], nodes);
+    gridOrient( grid, nodes, orientedNodes);
+    grid->degAR++;
     if (grid->degAR > MAXDEG) return NULL;
-    if (grid != gridCellARDerivative(grid, nodes, 
+    if (grid != gridCellARDerivative(grid, orientedNodes, 
 				     &(grid->AR[grid->degAR-1]), 
-				     &(grid->dARdX[(grid->degAR-1)*3]) ) ) 
+				     &(grid->dARdX[(grid->degAR-1)*3]) ) ) {
+      grid->degAR = 0;
       return NULL;
+    }
   }
 
   return grid;
@@ -770,7 +772,7 @@ int gridStoreARDegree( Grid *grid )
 
 Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 {
-
+  double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
   double x1, x2, x3, x4; 
   double y1, y2, y3, y4; 
   double z1, z2, z3, z4; 
@@ -812,21 +814,26 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   int i;
   double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
 
-  x1 = grid->xyz[0+3*nodes[0]];
-  y1 = grid->xyz[1+3*nodes[0]];
-  z1 = grid->xyz[2+3*nodes[0]];
+  if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return NULL;
+  if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return NULL;
+  if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return NULL;
+  if (grid != gridNodeXYZ(grid,nodes[3],xyz4) ) return NULL;
 
-  x2 = grid->xyz[0+3*nodes[1]];
-  y2 = grid->xyz[1+3*nodes[1]];
-  z2 = grid->xyz[2+3*nodes[1]];
+  x1 = xyz1[0];
+  y1 = xyz1[1];
+  z1 = xyz1[2];
 
-  x3 = grid->xyz[0+3*nodes[2]];
-  y3 = grid->xyz[1+3*nodes[2]];
-  z3 = grid->xyz[2+3*nodes[2]];
+  x2 = xyz2[0];
+  y2 = xyz2[1];
+  z2 = xyz2[2];
 
-  x4 = grid->xyz[0+3*nodes[3]];
-  y4 = grid->xyz[1+3*nodes[3]];
-  z4 = grid->xyz[2+3*nodes[3]];
+  x3 = xyz3[0];
+  y3 = xyz3[1];
+  z3 = xyz3[2];
+
+  x4 = xyz4[0];
+  y4 = xyz4[1];
+  z4 = xyz4[2];
 
   gridMap(grid,nodes[0],m0);
   gridMap(grid,nodes[1],m1);
@@ -1355,7 +1362,7 @@ double gridMinVolume( Grid *grid )
   int cellId, nodes[4];
   double minVol;
   minVol = 999.0;
-  for (cellId=0;cellId<grid->maxcell;cellId++)
+  for (cellId=0;cellId<gridMaxCell(grid);cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) )
       minVol = MIN(minVol,gridVolume(grid, nodes) );
   return minVol;
@@ -1363,12 +1370,13 @@ double gridMinVolume( Grid *grid )
 
 bool gridNegCellAroundNode( Grid *grid, int node )
 {
-  int cellId, nodes[4];
+  int nodes[4];
   AdjIterator it;
 
-  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ) {
-    cellId = adjItem(it);
-    gridCell( grid, cellId, nodes );
+  for ( it = adjFirst(gridCellAdj(grid),node); 
+	adjValid(it); 
+	it = adjNext(it) ) {
+    gridCell( grid, adjItem(it), nodes );
     if (gridVolume(grid, nodes) <= 0.0) return TRUE;
   }
 
@@ -1384,8 +1392,8 @@ bool gridNegCellAroundNodeExceptGem( Grid *grid, int node )
   for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ) {
     cellId = adjItem(it);
     inGem = FALSE;
-    for ( igem =0; !inGem && igem < grid->ngem ; igem++)
-      inGem = inGem || (cellId == grid->gem[igem]);
+    for ( igem =0; !inGem && igem < gridNGem(grid) ; igem++)
+      inGem = inGem || (cellId == gridGem(grid,igem));
     if ( !inGem ) {
       gridCell( grid, cellId, nodes );
       if (gridVolume(grid, nodes) <= 0.0) return TRUE;
@@ -1400,7 +1408,7 @@ double gridMinAR( Grid *grid )
   int cellId, nodes[4];
   double minAR;
   minAR = 999.0;
-  for (cellId=0;cellId<grid->maxcell;cellId++)
+  for (cellId=0;cellId<gridMaxCell(grid);cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) )
       minAR = MIN(minAR, gridAR(grid, nodes) );
   return minAR;
@@ -1411,7 +1419,7 @@ double gridMinThawedAR( Grid *grid )
   int cellId, nodes[4];
   double minAR;
   minAR = 999.0;
-  for (cellId=0;cellId<grid->maxcell;cellId++)
+  for (cellId=0;cellId<gridMaxCell(grid);cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) &&
 	 ( !gridNodeFrozen(grid,nodes[0]) ||
 	   !gridNodeFrozen(grid,nodes[1]) ||
@@ -1423,28 +1431,23 @@ double gridMinThawedAR( Grid *grid )
 
 bool gridRightHandedFace(Grid *grid, int face ){
   int cell;
-  int nodes[4];
+  int faceNodes[4], faceId;
+  int cellNodes[4];
+
+  if ( grid != gridFace(grid, face, faceNodes, &faceId ) ) return FALSE;
+
   cell = gridFindCellWithFace(grid, face );
-  if (cell == EMPTY) {
+  if (grid != gridCell(grid, cell, cellNodes) ) {
     printf("gridRightHandedFace: %s: %d: no cell - face %d id %d n %d %d %d\n",
 	   __FILE__, __LINE__,
-	   face, grid->faceId[face],
-	   grid->f2n[0+3*face], grid->f2n[1+3*face], grid->f2n[2+3*face]);
+	   face, faceId, faceNodes[0], faceNodes[1], faceNodes[2]);
     return FALSE;
   }
-  nodes[0] = grid->f2n[0+3*face];
-  nodes[1] = grid->f2n[1+3*face];
-  nodes[2] = grid->f2n[2+3*face];
-  nodes[3] 
-    = grid->c2n[0+4*cell] 
-    + grid->c2n[1+4*cell] 
-    + grid->c2n[2+4*cell] 
-    + grid->c2n[3+4*cell]
-    - nodes[0]
-    - nodes[1]
-    - nodes[2];
 
-  return (gridVolume(grid, nodes) > 0.0);
+  faceNodes[3] = cellNodes[0] + cellNodes[1] + cellNodes[2] + cellNodes[3]
+      - faceNodes[0] - faceNodes[1] - faceNodes[2];
+
+  return (gridVolume(grid, faceNodes) > 0.0);
 }
 
 bool gridRightHandedBoundary( Grid *grid )
