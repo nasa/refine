@@ -60,6 +60,25 @@ Grid *gridScaleSpacing(Grid *grid, int node, double scale )
   return grid;
 }
 
+Grid *gridScaleSpacingSphere( Grid *grid, 
+			      double x, double y, double z, double r,
+			      double scale )
+{
+  int node;
+  double dx, dy, dz, distanceSquared, radiusSquared;
+  radiusSquared = r*r;
+  
+  for ( node=0; node<grid->nnode; node++ ) {
+    dx = grid->xyz[0+3*node] - x;
+    dy = grid->xyz[1+3*node] - y;
+    dz = grid->xyz[2+3*node] - z;
+    distanceSquared = dx*dx + dy*dy + dz*dz;
+    if (radiusSquared >= distanceSquared) gridScaleSpacing(grid, node, scale );
+  }
+
+  return grid;
+}
+
 double gridVolume(Grid *grid, int *nodes )
 {
   int ixyz;

@@ -66,6 +66,17 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta grid.averageEdgeLength(0)*0.5, grid.spacing(0), 1.0e-15
  end
 
+ def testScaleSpacingFunctionSphere
+  assert_not_nil grid = rightTet
+  spacing = grid.spacing(0)
+  assert_equal grid, grid.scaleSpacingSphere(1.0,0.0,0.0,1.1,0.5)
+  delta = 1.0e-15
+  assert_in_delta spacing*0.5, grid.spacing(0), delta
+  assert_in_delta spacing*0.5, grid.spacing(1), delta
+  assert_in_delta spacing,     grid.spacing(2), delta
+  assert_in_delta spacing,     grid.spacing(3), delta
+ end
+
  def testMetrics
   assert_not_nil grid = rightTet
   nodes = [0,1,2,3]

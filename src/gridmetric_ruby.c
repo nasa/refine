@@ -35,6 +35,17 @@ VALUE grid_scaleSpacing( VALUE self, VALUE node, VALUE scale )
     (gridScaleSpacing(grid, NUM2INT(node), NUM2DBL(scale))==grid?self:Qnil);
 }
 
+VALUE grid_scaleSpacingSphere( VALUE self, 
+			       VALUE x, VALUE y, VALUE z, VALUE r, 
+			       VALUE scale )
+{
+  GET_GRID_FROM_SELF;
+  return
+    (gridScaleSpacingSphere(grid, 
+			    NUM2DBL(x), NUM2DBL(y), NUM2DBL(z), NUM2DBL(r), 
+			    NUM2DBL(scale))==grid?self:Qnil);
+}
+
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -133,6 +144,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "spacing", grid_spacing, 1 );
   rb_define_method( cGridMetric, "resetSpacing", grid_resetSpacing, 0 );
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
+  rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
