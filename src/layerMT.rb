@@ -4,6 +4,8 @@
 #
 # Mobility test for layer c lib
 
+GC.disable # layer does not mark grid, so bug on GC
+
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridmetric.h gridinsert.h gridStruct.h master_header.h'
@@ -400,6 +402,32 @@ class TestLayer < Test::Unit::TestCase
   assert_equal layer,     layer.advance(0.1)
   assert_equal [0,2,6,2], grid.face(2)
   assert_equal [0,6,4,2], grid.face(3)
+ end
+
+ def testAdvanceLayerOnSymPlane0TwoFace
+  assert_not_nil          grid = Grid.new(17,14,14,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(1,1,0)
+  assert_equal 4,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addFace(1,3,2,1)
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_equal grid,      grid.addFace(0,4,1,2)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal layer,     layer.makeNormal
+  assert_equal 4,         layer.nnormal
+  assert_equal layer,     layer.constrainNormal(2)
+  assert_equal 0,         layer.constrainedSide(0,0)
+  assert_equal 0,         layer.constrainedSide(0,1)
+  assert_equal 0,         layer.constrainedSide(0,2)
+  assert_equal 2,         layer.constrainedSide(1,0)
+  assert_equal 0,         layer.constrainedSide(1,1)
+  assert_equal 0,         layer.constrainedSide(1,2)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal [1,0,8,2], grid.face(3)
+  assert_equal [1,8,5,2], grid.face(4)
  end
 
  def testAdvanceLayerTwiceOnSymPlane
