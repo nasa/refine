@@ -41,6 +41,10 @@ void gridsize_( int *nnodeg, int *ncellg );
 void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 		      int *oldncellg, int *newncellg, int *celloffset );
 
+void gridnunusednodeglobal_( int *nunused );
+void gridgetunusednodeglobal_( int *nunused, int *unused );
+void gridjoinunusednodeglobal_( int *nunused, int *unused );
+void grideliminateunusednodeglobal_( );
 void gridnunusedcellglobal_( int *nunused );
 void gridgetunusedcellglobal_( int *nunused, int *unused );
 void gridjoinunusedcellglobal_( int *nunused, int *unused );

@@ -219,6 +219,27 @@ void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
   gridGlobalShiftCell( grid, *oldncellg, *newncellg, *celloffset);
 }
 
+void gridnunusednodeglobal_( int *nunused )
+{
+  *nunused = gridNUnusedNodeGlobal( grid );
+}
+
+void gridgetunusednodeglobal_( int *nunused, int *unused )
+{
+  gridGetUnusedNodeGlobal( grid, unused );
+}
+
+void gridjoinunusednodeglobal_( int *nunused, int *unused )
+{
+  int i;
+  for (i=0;i<(*nunused);i++) gridJoinUnusedNodeGlobal( grid, unused[i] );
+}
+
+void grideliminateunusednodeglobal_(  )
+{
+  gridEliminateUnusedNodeGlobal( grid );
+}
+
 void gridnunusedcellglobal_( int *nunused )
 {
   *nunused = gridNUnusedCellGlobal( grid );
