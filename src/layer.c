@@ -2791,7 +2791,7 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 	for(i=0;i<nSubNormal;i++){
 	  subNormals[i] = layerDuplicateNormal(layer, normal );
 	  rotation = (double)(i+1) / (double)(nSubNormal+1);
-	  layerBlendAxle(layer, blend, axle);
+	  layerNormalBlendAxle(layer, normal, axle);
 	  gridRotateDirection(layer->normal[blendnormals[2]].direction,
 			      layer->normal[blendnormals[3]].direction,
 			      axle, rotation,
