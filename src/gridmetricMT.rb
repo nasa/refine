@@ -124,6 +124,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta ar, grid.nodeAR(1), 1.0e-15
   assert_in_delta ar, grid.nodeAR(2), 1.0e-15
   assert_in_delta ar, grid.nodeAR(3), 1.0e-15
+  assert_in_delta 1.0, grid.faceAR(1,2,3), 1.0e-15
  end
 
  def testDerivatives
