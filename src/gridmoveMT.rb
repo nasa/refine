@@ -221,12 +221,12 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal 16,    gm.rowStart(5)
   assert_equal EMPTY, gm.rowStart(6)
   assert_equal 16, gm.nnz
-  assert_nil              gm.rowEntries(EMPTY)
-  assert_equal [0,1,2,3], gm.rowEntries(0)
-  assert_equal [0,1,2,3], gm.rowEntries(1)
-  assert_equal [0,1,2,3], gm.rowEntries(2)
-  assert_equal [0,1,2,3], gm.rowEntries(3)
-  assert_equal [],        gm.rowEntries(4)
+  assert_nil              gm.rowNodes(EMPTY)
+  assert_equal [0,1,2,3], gm.rowNodes(0)
+  assert_equal [0,1,2,3], gm.rowNodes(1)
+  assert_equal [0,1,2,3], gm.rowNodes(2)
+  assert_equal [0,1,2,3], gm.rowNodes(3)
+  assert_equal [],        gm.rowNodes(4)
  end
 
  def testCompRowTwoCells
@@ -245,13 +245,13 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal 23,    gm.rowStart(6)
   assert_equal EMPTY, gm.rowStart(7)
   assert_equal 23, gm.nnz
-  assert_nil              gm.rowEntries(EMPTY)
-  assert_equal [0,1,2,3,4], gm.rowEntries(0)
-  assert_equal [0,1,2,3,4], gm.rowEntries(1)
-  assert_equal [0,1,2,3,4], gm.rowEntries(2)
-  assert_equal [0,1,2,3], gm.rowEntries(3)
-  assert_equal [0,1,2,4], gm.rowEntries(4)
-  assert_equal [],        gm.rowEntries(5)
+  assert_nil              gm.rowNodes(EMPTY)
+  assert_equal [0,1,2,3,4], gm.rowNodes(0)
+  assert_equal [0,1,2,3,4], gm.rowNodes(1)
+  assert_equal [0,1,2,3,4], gm.rowNodes(2)
+  assert_equal [0,1,2,3], gm.rowNodes(3)
+  assert_equal [0,1,2,4], gm.rowNodes(4)
+  assert_equal [],        gm.rowNodes(5)
  end
 
  def testCompRowOneCellFindEntry
@@ -259,15 +259,23 @@ class TestGridMove < Test::Unit::TestCase
   gm = GridMove.new(grid)
   5.times { grid.addNode(0.0,0.0,0.0) }
   grid.addCell(0,1,2,3)
-  assert_equal EMPTY, gm.rowNode(EMPTY,EMPTY)
-  assert_equal EMPTY, gm.rowNode(0,EMPTY)
-  assert_equal EMPTY, gm.rowNode(0,4)
-  assert_equal EMPTY, gm.rowNode(4,4)
+  assert_equal EMPTY, gm.rowEntry(EMPTY,EMPTY)
+  assert_equal EMPTY, gm.rowEntry(0,EMPTY)
+  assert_equal EMPTY, gm.rowEntry(0,4)
+  assert_equal EMPTY, gm.rowEntry(4,4)
 
-  assert_equal  0,    gm.rowNode(0,0)
-  assert_equal  5,    gm.rowNode(1,1)
-  assert_equal 10,    gm.rowNode(2,2)
-  assert_equal 15,    gm.rowNode(3,3)
+  assert_equal  0,    gm.rowEntry(0,0)
+  assert_equal  5,    gm.rowEntry(1,1)
+  assert_equal 10,    gm.rowEntry(2,2)
+  assert_equal 15,    gm.rowEntry(3,3)
+
+  assert_equal  1,    gm.rowEntry(0,1)
+  assert_equal  2,    gm.rowEntry(0,2)
+  assert_equal  3,    gm.rowEntry(0,3)
+
+  assert_equal  4,    gm.rowEntry(1,0)
+  assert_equal  6,    gm.rowEntry(1,2)
+  assert_equal  7,    gm.rowEntry(1,3)
  end
 
 end

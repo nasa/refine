@@ -83,8 +83,8 @@ GridMove *gridmoveSetFortranNodeData(GridMove *, int nnode,
 GridMove *gridmoveInitializeCompRow(GridMove *);
 int gridmoveRowStart(GridMove *, int row);
 int gridmoveNNZ(GridMove *);
-int gridmoveRowEntry(GridMove *, int entry);
-int gridmoveRowNode(GridMove *, int row, int node);
+int gridmoveRowNode(GridMove *, int entry);
+int gridmoveRowEntry(GridMove *, int row, int node);
 
 GridMove *gridmoveElasticityRelaxationStartUp(GridMove *);
 GridMove *gridmoveElasticityRelaxationStartStep(GridMove *, double position);
