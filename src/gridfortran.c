@@ -35,9 +35,11 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 						  c2n[cell+1*(*maxcell)] - 1,
 						  c2n[cell+2*(*maxcell)] - 1,
 						  c2n[cell+3*(*maxcell)] - 1 );
+#ifdef PARALLEL_VERBOSE 
   printf(" %6d populated                nnode%9d ncell%9d AR%14.10f\n",
 	 gridPartId(grid),gridNNode(grid),gridNCell(grid),gridMinAR(grid));
   fflush(stdout);
+#endif
 }
 
 void gridfree_( )
@@ -74,8 +76,10 @@ void gridsetmap_( int *nnode, double* map )
     gridSetMap( grid, node,
 		map[0+6*node], map[1+6*node], map[2+6*node],
 		map[3+6*node], map[4+6*node], map[5+6*node] );
+#ifdef PARALLEL_VERBOSE 
   printf(" %6d applied metric                                         AR%14.10f\n",
 	 gridPartId(grid),gridMinAR(grid));
+#endif
 }
 
 void gridsetnodepart_( int *nnode, int *part )
@@ -97,8 +101,6 @@ void gridsetnodelocal2global_( int *partId, int *nnodeg,
     }else{
       gridSetNodePart(grid, node, EMPTY );
     }
-    /*printf("%d l2g node %d global %d part %d\n", gridPartId(grid),node,
-      gridNodeGlobal(grid,node),gridNodePart(grid, node)); */
   }
 }
 
@@ -126,9 +128,11 @@ void gridprojectallfaces_( )
   }
   ar1 = gridMinAR(grid);
 
+#ifdef PARALLEL_VERBOSE 
   printf( " %6d project faces           initial AR%14.10f final AR%14.10f\n",
 	  gridPartId(grid),ar0,ar1 );
   fflush(stdout);
+#endif
 }
 
 void gridwritetecplotsurfacezone_( )
@@ -156,8 +160,10 @@ void gridexportfast_( )
 
 void gridparallelswap_( int *processor, double *ARlimit )
 {
+#ifdef PARALLEL_VERBOSE 
   printf(" %6d swap  processor %2d      initial AR%14.10f",
 	 gridPartId(grid),*processor,gridMinAR(grid));
+#endif
   if (*processor == -1) {
     gridParallelSwap(grid,NULL,*ARlimit);
   } else {
@@ -170,6 +176,7 @@ void gridparallelsmoothfaceinterior_( int *processor )
   bool localOnly;
   localOnly = (-1 == (*processor));
   gridSmoothFaceInterior(grid, localOnly );
+#ifdef PARALLEL_VERBOSE 
   if (localOnly) {
     printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
 	    gridPartId(grid),"local only        ",gridMinAR(grid) );
@@ -178,12 +185,15 @@ void gridparallelsmoothfaceinterior_( int *processor )
 	    gridPartId(grid),"near ghost only   ",gridMinAR(grid) );
   }
   fflush(stdout);
+#endif
 }
 
 void gridparalleladaptwithoutcad_( int *processor, 
 				   double *minLength, double *maxLength )
 {
+#ifdef PARALLEL_VERBOSE 
   printf(" %6d adapt processor %2d ",gridPartId(grid),*processor);
+#endif
   if (*processor == -1) {
     gridParallelAdaptWithOutCAD(grid,NULL,*minLength, *maxLength);
   } else {

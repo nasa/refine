@@ -82,6 +82,7 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
       adaptnode++;
     }
   }
+#ifdef PARALLEL_VERBOSE 
   if ( NULL == queue ) {
     printf("local added%9d remov%9d AR%14.10f\n",
 	   nnodeAdd,nnodeRemove,gridMinAR(grid));
@@ -89,6 +90,7 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
     printf("ghost added%9d remov%9d AR%14.10f\n",
 	   nnodeAdd,nnodeRemove,gridMinAR(grid));
   }
+#endif
   return grid;
 }
 
@@ -170,7 +172,9 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
     }
   }
 
+#ifdef PARALLEL_VERBOSE 
   printf(" final AR%14.10f\n",gridMinAR(grid));
+#endif
   return grid;
 }
 
