@@ -722,12 +722,8 @@ Grid *gridPack(Grid *grid)
 Grid *gridSortNodeGridEx(Grid *grid)
 {
   int i, newnode, edge, nCurveNode;
-  int ixyz, node, face, cell, inode;
+  int node, face, cell;
   int *o2n, *curve;
-  double *temp_xyz;
-  bool *temp_frozen;
-  int *temp_int;
-  int prismIndex, pyramidIndex, quadIndex;
 
   if (NULL == gridPack(grid)) {
     printf("gridSortNodeGridEx: gridPack failed.\n");
@@ -786,6 +782,22 @@ Grid *gridSortNodeGridEx(Grid *grid)
   if (newnode != grid->nnode) 
     printf("ERROR: gridSortNodeGridEx, newnode %d nnode %d, line %d of %s\n.",
 	   newnode,grid->nnode,__LINE__, __FILE__);
+
+  gridRenumber(grid, o2n);
+
+  free(o2n);
+
+  return grid;
+}
+
+Grid *gridRenumber(Grid *grid, int *o2n)
+{
+  int i, newnode, edge, nCurveNode;
+  int ixyz, node, face, cell, inode;
+  double *temp_xyz;
+  bool *temp_frozen;
+  int *temp_int;
+  int prismIndex, pyramidIndex, quadIndex;
 
   temp_xyz = malloc( grid->nnode * sizeof(double) );
   if (temp_xyz == NULL) {
@@ -884,8 +896,6 @@ Grid *gridSortNodeGridEx(Grid *grid)
     (*grid->renumberFunc)( grid->renumberData, o2n );
 
   if ( NULL != gridLines(grid) ) linesRenumber(gridLines(grid),o2n);
-
-  free(o2n);
 
   return grid;
 }
