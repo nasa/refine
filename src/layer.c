@@ -540,8 +540,8 @@ Layer *layerLaminarInitialHeight(Layer *layer, double Re, double xStart)
 
   for(normal=0;normal<layerNNormal(layer); normal++){
     gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-    totalHeight = 5.2 * sqrt(ABS(xyz[0]+xStart)) / sqrt(ABS(Re));
-    totalHeight = MIN(ABS(xyz[0]+xStart),totalHeight);
+    totalHeight = 5.2 * sqrt(ABS(xyz[0]-xStart)) / sqrt(ABS(Re));
+    totalHeight = MIN(ABS(xyz[0]-xStart),totalHeight);
     initialHeight = totalHeight / 50.0;
     layerSetNormalHeight(layer,normal,initialHeight);
   }
