@@ -22,6 +22,7 @@ Grid *gridSafeProjectNode(Grid *g, int node );
 Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId );
 Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridProject(Grid *g);
+Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);
 
 Grid *gridSmooth(Grid *g );
