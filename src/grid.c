@@ -1115,12 +1115,21 @@ double gridAR(Grid *grid, int *nodes )
 double gridMinVolume( Grid *grid )
 {
   int cellId, nodes[4];
-  double minVol, vol;
+  double minVol;
   minVol = 999.0;
   for (cellId=0;cellId<grid->maxcell;cellId++)
-    if ( NULL != gridCell( grid, cellId, nodes) ){
-      vol = gridVolume(grid, nodes);
-      minVol = MIN(minVol,vol);
-    }
+    if ( NULL != gridCell( grid, cellId, nodes) )
+      minVol = MIN(minVol,gridVolume(grid, nodes) );
   return minVol;
+}
+
+double gridMinAR( Grid *grid )
+{
+  int cellId, nodes[4];
+  double minAR;
+  minAR = 999.0;
+  for (cellId=0;cellId<grid->maxcell;cellId++)
+    if ( NULL != gridCell( grid, cellId, nodes) )
+      minAR = MIN(minAR, gridAR(grid, nodes) );
+  return minAR;
 }
