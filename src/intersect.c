@@ -28,6 +28,35 @@ int intersectSide( double *vertex0, double *vertex1, double *vertex2,
   return -1;
 }
 
+bool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex2,
+			      double *node)
+{
+  int i;
+  double side[3], otherSide[3], target[3];
+  double triangleNormal[3], targetNormal[3];
+
+  gridSubtractVector(vertex1, vertex0, side);
+
+  gridSubtractVector(vertex2, vertex0, otherSide);
+  gridCrossProduct(side, otherSide, triangleNormal);
+
+  gridSubtractVector(node, vertex0, target);
+  gridCrossProduct(side, target, targetNormal);
+  if ( 0 > gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
+
+  gridSubtractVector(vertex2, vertex1, side);
+  gridSubtractVector(node, vertex1, target);
+  gridCrossProduct(side, target, targetNormal);
+  if ( 0 > gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
+
+  gridSubtractVector(vertex0, vertex2, side);
+  gridSubtractVector(node, vertex2, target);
+  gridCrossProduct(side, target, targetNormal);
+  if ( 0 > gridDotProduct( triangleNormal, targetNormal) ) return FALSE;
+
+  return TRUE;
+}
+
 bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
 			      double *node0, double *node1)
 {

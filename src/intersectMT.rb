@@ -30,7 +30,21 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal(  1, @intersect.side(v0,v1,v2,np))
  end
 
- def testPlaneAndSegemntThroughMiddle
+ def testPlaneAndNode
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  assert_equal true, @intersect.triangleNode(v0,v1,v2,[0.3,0.3,0])
+  assert_equal true, @intersect.triangleNode(v0,v1,v2,[0,0,0])
+  assert_equal true, @intersect.triangleNode(v0,v1,v2,[1,0,0])
+  assert_equal true, @intersect.triangleNode(v0,v1,v2,[0,1,0])
+  assert_equal true, @intersect.triangleNode(v0,v1,v2,[0.5,0.5,0])
+  assert_equal false, @intersect.triangleNode(v0,v1,v2,[0,-0.5,0])
+  assert_equal false, @intersect.triangleNode(v0,v1,v2,[1,1,0])
+  assert_equal false, @intersect.triangleNode(v0,v1,v2,[-0.5,0,0])
+ end
+
+ def testPlaneAndSegmentThroughMiddle
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -46,5 +60,6 @@ class TestIntersect < Test::Unit::TestCase
   n0 = [0.3,0.3,-0]
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
+
 
 end

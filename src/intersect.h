@@ -17,15 +17,14 @@
 
 BEGIN_C_DECLORATION
 
-#define INTERSECT_POINT (0)
-#define INTERSECT_COPLANAR (1)
-#define INTERSECT_NONE (2)
-
 int intersectSide( double *vertex0, double *vertex1, double *vertex2, 
 		   double *node );
 
+bool intersectTriangleNode(double *vertex0, double *vertex1, double *vertex2,
+			   double *node );
+
 bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
-			      double *node0, double *node1);
+			      double *node0, double *node1 );
 
 END_C_DECLORATION
 
