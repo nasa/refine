@@ -134,6 +134,32 @@ executable (R).
 @item mesherxRebuild - Inviscid mesh rebuild routines for advaning layer meshes. (M)
 @end enumerate
 
+@section Unit Testing
+@cindex test, unit
+
+Each of the objects listed in the previous Architecture section is composed of four files:
+
+@enumerate
+@item @code{anobjectMT.rb} - Ruby unit test script, This contains the object's Mobility Test (MT).
+@item @code{anobject_ruby.c} - Ruby wrapper code to allow Ruby to load the objecty.
+@item @code{anobject.h} - C header file
+@item @code{anobject.c} - C source file.
+@end enumerate
+
+When the @code{anobjectMT.rb} script is envoked, it first calls
+@code{RubyExtensionBuilder.rb}. The @code{RubyExtensionBuilder.rb}
+script handles any dependencies by making any ruby extensions that the
+@code{anobjectMT.rb} script requires to run. Each object is created
+with the @code{makeRubyExtension.rb} script. The
+@code{makeRubyExtension.rb} script C\creates a subdirectory named
+AnObject. Inside this directory the standard Ruby @code{mkmf.rb}
+module is envoked to create a makefile, which is used to create a
+shared object. The shared object is loading into the
+@code{anobjectMT.rb} script with
+@verbatim
+  require 'AnObject/AnObject'
+@end verbatim
+
 @node Base Objects
 @chapter Base Objects
 @cindex object, base
