@@ -358,7 +358,29 @@ class TestLayer < Test::Unit::TestCase
   assert_in_delta(  0.000, norm[0], 1e-3)
   assert_in_delta( -1.000, norm[1], 1e-4)
   assert_in_delta(  0.000, norm[2], 1e-2)
+ end
 
+ def testProjectNormalToEdge
+  assert_not_nil          grid = Grid.new(9,9,9,9)
+  assert_equal 0,         grid.addNode( 0, 0, 0)
+  assert_equal 1,         grid.addNode( 0, 1, 0)
+  assert_equal 2,         grid.addNode( 1, 0, 1)
+  assert_equal 3,         grid.addNode( 1, 0, 0)
+  assert_equal grid,      grid.addFace(0,1,2,22)
+  assert_equal grid,      grid.addEdge(0,3,1,0,1)
+  assert_equal grid,      grid.setNGeomEdge(1)
+  assert_equal grid,      grid.addGeomEdge(1,0,3)
+  assert_not_nil          layer = Layer.new(grid).populateAdvancingFront([22])
+  assert_equal layer,     layer.constrainNormal(-1)
+  norm = layer.normalDirection(0)
+  assert_in_delta(  0.707, norm[0], 1e-3)
+  assert_in_delta(  0.000, norm[1], 1e-3)
+  assert_in_delta( -0.707, norm[2], 1e-3)
+  assert_equal layer, layer.projectNormalsToConstraints
+  norm = layer.normalDirection(0)
+  assert_in_delta( 1.000, norm[0], 1e-3)
+  assert_in_delta( 0.000, norm[1], 1e-3)
+  assert_in_delta( 0.000, norm[2], 1e-3)
  end
 
  def testAdvanceLayerIntoVolume

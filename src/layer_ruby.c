@@ -192,10 +192,16 @@ VALUE layer_setNormalHeight( VALUE self, VALUE normal, VALUE height )
 					  NUM2DBL(height) )?self:Qnil );
 }
 
-VALUE layer_visibleNormals( VALUE self, VALUE height )
+VALUE layer_visibleNormals( VALUE self )
 {
   GET_LAYER_FROM_SELF;
   return ( layer == layerVisibleNormals(layer)?self:Qnil );
+}
+
+VALUE layer_projectNormalsToConstraints( VALUE self  )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerProjectNormalsToConstraints(layer)?self:Qnil );
 }
 
 VALUE layer_constrainNormal( VALUE self, VALUE edgeface )
@@ -334,6 +340,8 @@ void Init_Layer()
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
+  rb_define_method( cLayer, "projectNormalsToConstraints", 
+		    layer_projectNormalsToConstraints, 0 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrainingGeometry", layer_constrainingGeometry, 1 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );

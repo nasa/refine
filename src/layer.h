@@ -47,6 +47,8 @@ Layer *layerGetNormalHeight(Layer *, int normal, double *height);
 Layer *layerScaleNormalHeight(Layer *, double scale);
 Layer *layerLaminarInitialHeight(Layer *, double Re, double xStart );
 Layer *layerVisibleNormals(Layer *);
+Layer *layerProjectNormalsToConstraints(Layer *);
+
 Layer *layerConstrainNormal(Layer *, int edgeface );
 bool layerConstrainingGeometry(Layer *, int edgeface );
 int layerConstrained(Layer *, int normal );
