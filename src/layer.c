@@ -1761,6 +1761,16 @@ Layer *layerVerifyPhantomFaces(Layer *layer)
   return layer;
 }
 
+Layer *layerThaw(Layer *layer)
+{
+  int normal;
+  for(normal=0;normal<layerNNormal(layer);normal++)
+    gridThawNode(layerGrid(layer),layerNormalRoot(layer,normal));
+
+  return layer;
+}
+
+
 bool layerTetrahedraOnly(Layer *layer)
 {
   return !layer->mixedElementMode;

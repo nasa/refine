@@ -98,6 +98,8 @@ Layer *layerInsertPhantomTriangle(Layer *, double dz);
 Layer *layerVerifyPhantomEdges(Layer *);
 Layer *layerVerifyPhantomFaces(Layer *);
 
+Layer *layerThaw(Layer*);
+
 bool layerTetrahedraOnly(Layer *);
 Layer *layerToggleMixedElementMode(Layer *);
 
