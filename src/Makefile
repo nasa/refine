@@ -3,16 +3,16 @@ QUIET = @$(MAKE) --quiet --no-print-directory
 
 test:
 	./adjMT.rb
+	./nearMT.rb
+	./lineMT.rb
+	./intersectMT.rb
+	./gridMT.rb
 	./gridcadMT.rb
-	./gridinsertMT.rb
 	./gridmathMT.rb
 	./gridmetricMT.rb
-	./gridMT.rb
 	./gridswapMT.rb
-	./intersectMT.rb
+	./gridinsertMT.rb
 	./layerMT.rb
-	./lineMT.rb
-	./nearMT.rb
 	./sampleunitMT.rb
 
 clean:
