@@ -76,6 +76,9 @@ GridBool nearestOnFace(int vol, int face, double *xyz, double *uv,
 double gridFaceAreaUV(Grid *g, int face);
 Grid *gridMinFaceAreaUV(Grid *g, int node, double *min_area);
 
+Grid *gridSmoothNodeFaceAreaUV(Grid *g, int node );
+Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *g, int node );
+
 END_C_DECLORATION
 
 #endif /* GRIDCAD_H */

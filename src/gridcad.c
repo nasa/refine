@@ -1532,3 +1532,132 @@ Grid *gridMinFaceAreaUV(Grid *grid, int node, double *min_area)
 
   return grid;
 }
+
+Grid *gridSmoothNodeFaceAreaUV(Grid *grid, int node )
+{
+  return gridSmoothNodeFaceAreaUVSimplex(grid, node );
+}
+
+static double reflectUV( Grid *grid,
+		       double simplex[3][2], double area[3], double avgUV[2],
+		       int node, int faceId, int worst, double factor)
+{
+  int i;
+  double factor1, factor2;
+  double reflectedUV[2];
+  double reflectedArea;
+
+  factor1 = (1.0-factor) / 2.0;
+  factor2 = factor1 - factor;
+
+  for(i=0;i<2;i++) 
+    reflectedUV[i] = factor1*avgUV[i] - factor2*simplex[worst][i];
+
+  gridSetNodeUV(grid, node, faceId, reflectedUV[0],  reflectedUV[1] );
+  gridMinFaceAreaUV(grid,node,&reflectedArea);
+
+  if ( reflectedArea > area[worst] ) {
+    area[worst] = reflectedArea;
+    for(i=0;i<2;i++) avgUV[i] += ( reflectedUV[i] - simplex[worst][i] );
+    for(i=0;i<2;i++) simplex[worst][i] = reflectedUV[i];
+  }
+
+  return reflectedArea;
+}
+
+Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *grid, int node )
+{
+  int evaluations;
+  int s, i;
+  double origUV[2], avgUV[2];
+  double simplex[3][2];
+  double area[3];
+  double lengthScale;
+  int best, worst, middle; 
+  double newArea, savedArea;
+  int face, faceId, nodes[3];
+  /* GridBool makefaces = FALSE; int debugFaceId = 1; */
+
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
+  gridFace(grid,face,nodes,&faceId); /* FAILED??? */
+
+  if ( NULL == gridNodeUV(grid, node, faceId, origUV)) return NULL;
+
+  lengthScale = 0.1*gridAverageEdgeLength(grid, node );/* FAILED??? */
+
+  for(s=0;s<3;s++)
+    for(i=0;i<2;i++)
+      simplex[s][i] = origUV[i];
+
+  simplex[1][0] += lengthScale;
+  simplex[2][1] += lengthScale;
+
+  for(s=0;s<3;s++) {
+    gridSetNodeUV(grid, node, faceId, simplex[s][0], simplex[s][1]);
+    gridMinFaceAreaUV(grid,node,&area[s]);
+  }
+
+  for(i=0;i<2;i++) avgUV[i] = 0.0;
+  for(s=0;s<3;s++)
+    for(i=0;i<2;i++) avgUV[i] += simplex[s][i];
+
+  evaluations = 3;
+  while (evaluations < 1000 ) {
+
+    best = 0;
+    if ( area[0] > area[1] ) {
+      middle = 0;
+      worst = 1;
+    }else{
+      middle = 1;
+      worst = 0;
+    }
+    
+    for(s=0;s<3;s++) {
+      if (area[s]>=area[best]) best = s;
+      if (area[s]<area[worst]) {
+	middle = worst;
+	worst = s;
+      }else{
+	if ( s!=worst && area[s]<area[middle]) middle = s;
+      }
+    }
+
+    /* printf( "evaluations%6d best%20.15f mid%20.15f  worst%20.15f\n", 
+       evaluations, area[best], area[middle], area[worst]);*/
+    /* if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId); */
+
+    if (area[best]-area[worst] < ABS(1.0e-8*area[best])) break;
+
+    evaluations++;
+    newArea = reflectUV( grid, simplex, area, avgUV, node, faceId, worst, -1.0 );
+    if ( newArea >= area[best] ) {
+      evaluations++;
+      newArea = reflectUV( grid, simplex, area, avgUV, node, faceId, worst, 2.0 );
+    } else {
+      if (newArea <= area[middle]) {
+	savedArea = area[worst];
+	evaluations++;
+	newArea = reflectUV( grid, simplex, area, avgUV, node, faceId, worst, 0.5 );
+	if (newArea <= savedArea) {
+	  for(s=0;s<3;s++) {
+	    if (s != best) {
+	      for(i=0;i<2;i++) 
+		simplex[s][i]=0.5*(simplex[s][i]+simplex[best][i]);
+	      gridSetNodeUV(grid, node, faceId, simplex[s][0], simplex[s][1]);
+	      gridMinFaceAreaUV(grid,node,&area[s]);
+	    }
+	  }
+	}      
+      }
+    }
+  }    
+
+  best = 0;
+  for(s=1;s<3;s++) if (area[s]>=area[best]) best = s;
+
+  gridSetNodeUV(grid, node, faceId, simplex[best][0], simplex[best][1]);
+
+  return grid;
+}
+

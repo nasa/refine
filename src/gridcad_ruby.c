@@ -152,6 +152,12 @@ VALUE grid_minFaceAreaUV( VALUE self, VALUE node )
 	  Qnil );
 }
 
+VALUE grid_smoothNodeFaceAreaUV( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSmoothNodeFaceAreaUV( grid, NUM2INT(node) )==grid?self:Qnil);
+}
+
 VALUE cGridCAD;
 
 void Init_GridCAD() 
@@ -186,4 +192,5 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "relaxNegativeCells", grid_relaxNegativeCells, 0 );
   rb_define_method( cGridCAD, "faceAreaUV", grid_faceAreaUV, 1 );
   rb_define_method( cGridCAD, "minFaceAreaUV", grid_minFaceAreaUV, 1 );
+  rb_define_method( cGridCAD, "smoothNodeFaceAreaUV", grid_smoothNodeFaceAreaUV, 1 );
 }
