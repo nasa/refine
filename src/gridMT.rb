@@ -772,6 +772,45 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [8.0,9.0],    grid.nodeUV(0,2)
  end
 
+ def testNodeFaceIdDegree
+  grid = Grid.new(3,0,20,0)
+  assert_equal EMPTY, grid.nodeFaceIdDegree(0)
+  assert_nil          grid.nodeFaceId(0)
+  3.times{grid.addNode(1,2,3)}
+  assert_equal 0,  grid.nodeFaceIdDegree(0)
+  assert_equal [], grid.nodeFaceId(0)
+  grid.addFace(0,1,2,4)
+  assert_equal 1,   grid.nodeFaceIdDegree(0)
+  assert_equal [4], grid.nodeFaceId(0)
+  grid.addFace(0,1,2,4)
+  assert_equal 1, grid.nodeFaceIdDegree(0)
+  assert_equal [4], grid.nodeFaceId(0)
+  grid.addFace(0,1,2,5)
+  assert_equal 2, grid.nodeFaceIdDegree(0)
+  assert_equal [4,5], grid.nodeFaceId(0)
+  grid.addFace(0,1,2,4)
+  assert_equal 2, grid.nodeFaceIdDegree(0)
+  assert_equal [4,5], grid.nodeFaceId(0)
+  grid.addFace(0,1,2,2)
+  assert_equal 3, grid.nodeFaceIdDegree(0)
+  assert_equal [2,4,5], grid.nodeFaceId(0)
+ end
+
+ def testNodeFaceIdDegreeRandom
+  grid = Grid.new(3,0,20,0)
+  assert_equal EMPTY, grid.nodeFaceIdDegree(0)
+  3.times{grid.addNode(1,2,3)}
+  grid.addFace(0,1,2,7)
+  grid.addFace(0,1,2,3)
+  grid.addFace(0,1,2,5)
+  grid.addFace(0,1,2,4)
+  grid.addFace(0,1,2,5)
+  grid.addFace(0,1,2,2)
+  grid.addFace(0,1,2,8)
+  grid.addFace(0,1,2,1)
+  assert_equal [1,2,3,4,5,7,8], grid.nodeFaceId(0)
+ end
+
  def testNumberOfGeomEdges
   assert_not_nil  grid = Grid.new(0,0,0,2)
   assert_equal 0, grid.nedge
@@ -1119,30 +1158,33 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def testInsertPrism
-  assert_equal 0,             @grid.nprism
-  assert_equal @grid,         @grid.addPrism(0,1,2,3,4,5)
-  assert_equal 1,             @grid.nprism
-  assert_nil                  @grid.prism(-1) 
-  assert_nil                  @grid.prism(1)
-  assert_equal [0,1,2,3,4,5], @grid.prism(0)
+  grid = Grid.new(6,0,0,0)
+  assert_equal 0,             grid.nprism
+  assert_equal grid,          grid.addPrism(0,1,2,3,4,5)
+  assert_equal 1,             grid.nprism
+  assert_nil                  grid.prism(-1) 
+  assert_nil                  grid.prism(1)
+  assert_equal [0,1,2,3,4,5], grid.prism(0)
  end
 
  def testInsertPyramid
-  assert_equal 0,           @grid.npyramid
-  assert_equal @grid,       @grid.addPyramid(0,1,2,3,4)
-  assert_equal 1,           @grid.npyramid
-  assert_nil                @grid.pyramid(-1) 
-  assert_nil                @grid.pyramid(1)
-  assert_equal [0,1,2,3,4], @grid.pyramid(0)
+  grid = Grid.new(5,0,0,0)
+  assert_equal 0,           grid.npyramid
+  assert_equal grid,        grid.addPyramid(0,1,2,3,4)
+  assert_equal 1,           grid.npyramid
+  assert_nil                grid.pyramid(-1) 
+  assert_nil                grid.pyramid(1)
+  assert_equal [0,1,2,3,4], grid.pyramid(0)
  end
 
  def testInsertQuad
-  assert_equal 0,            @grid.nquad
-  assert_equal @grid,        @grid.addQuad(0,1,2,3,33)
-  assert_equal 1,            @grid.nquad
-  assert_nil                 @grid.quad(-1) 
-  assert_nil                 @grid.quad(1)
-  assert_equal [0,1,2,3,33], @grid.quad(0)
+  grid = Grid.new(4,0,0,0)
+  assert_equal 0,            grid.nquad
+  assert_equal grid,         grid.addQuad(0,1,2,3,33)
+  assert_equal 1,            grid.nquad
+  assert_nil                 grid.quad(-1) 
+  assert_nil                 grid.quad(1)
+  assert_equal [0,1,2,3,33], grid.quad(0)
  end
 
  def testMapMatrix

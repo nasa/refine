@@ -394,6 +394,26 @@ VALUE grid_setNodeUV( VALUE self, VALUE node, VALUE faceId, VALUE u, VALUE v )
 			 NUM2DBL(u), NUM2DBL(v) )==grid?self:Qnil);
 }
 
+VALUE grid_nodeFaceIdDegree( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM(gridNodeFaceIdDegree( grid, NUM2INT(node) ));
+}
+
+VALUE grid_nodeFaceId( VALUE self, VALUE node )
+{
+  VALUE rb_ids;
+  int i, ids, id[MAXFACEIDDEG];
+  GET_GRID_FROM_SELF;
+  if (grid == gridNodeFaceId(grid, NUM2INT(node), MAXFACEIDDEG, &ids, id )) {
+    rb_ids = rb_ary_new2(ids);
+    for(i=0;i<ids;i++) rb_ary_store( rb_ids, i, INT2NUM(id[i]) );
+    return rb_ids;
+  } else {
+    return Qnil;
+  }
+}
+
 VALUE grid_nodeT( VALUE self, VALUE node, VALUE edgeId )
 {
   double t;
@@ -973,6 +993,9 @@ void Init_Grid()
 
   rb_define_method( cGrid, "nodeUV", grid_nodeUV, 2 );
   rb_define_method( cGrid, "setNodeUV", grid_setNodeUV, 4 );
+  rb_define_method( cGrid, "nodeFaceIdDegree", grid_nodeFaceIdDegree, 1 );
+  rb_define_method( cGrid, "nodeFaceId", grid_nodeFaceId, 1 );
+
   rb_define_method( cGrid, "nodeT", grid_nodeT, 2 );
   rb_define_method( cGrid, "setNodeT", grid_setNodeT, 3 );
 

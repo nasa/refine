@@ -1880,6 +1880,77 @@ double gridNodeV(Grid *grid, int node, int faceId)
   return uv[1];
 }
 
+int gridNodeFaceIdDegree(Grid *grid, int node)
+{
+  int id[MAXFACEIDDEG];
+  int face, faceId, search, ids;
+  bool found;
+  AdjIterator it;
+
+  if (!gridValidNode(grid,node)) return EMPTY;
+
+  ids = 0;
+  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+    face = adjItem(it);
+    faceId = grid->faceId[face];
+    found = FALSE;
+    for (search=0;!found && (search<ids);search++) {
+      found = ( id[search] == faceId );
+    }
+    if (!found) {
+      if (ids >= MAXFACEIDDEG) {
+	printf("%s: %d: need more MAXFACEIDDEG.\n",__FILE__,__LINE__);
+	return EMPTY;
+      }
+      id[ids] = faceId;
+      ids++;
+    }
+  }
+
+  return ids;
+}
+
+Grid *gridNodeFaceId(Grid *grid, int node, int maxId, int *ids_arg, int *id )
+{
+  int face, faceId, search, insertpoint, index, ids;
+  bool found;
+  AdjIterator it;
+
+  if (!gridValidNode(grid,node)) return NULL;
+
+  *ids_arg = 0;
+  ids = 0;
+  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+    face = adjItem(it);
+    faceId = grid->faceId[face];
+    found = FALSE;
+    for (search=0;!found && (search<ids);search++) {
+      found = ( id[search] == faceId );
+    }
+    if (!found) {
+      if (ids >= maxId) {
+	printf("%s: %d: need more maxId.\n",__FILE__,__LINE__);
+	return NULL;
+      }
+      insertpoint = 0;
+      for (index=ids-1; index>=0; index--) {
+	if (id[index] < faceId) {
+	  insertpoint = index+1;
+	  break;
+	}
+      }
+      for(index=ids;index>insertpoint;index--)
+	id[index] = id[index-1];
+      ids++;
+      id[insertpoint] = faceId;
+    }
+  }
+
+  *ids_arg = ids;
+  return grid;
+}
+
+
 Grid *gridNodeT(Grid *grid, int  node, int edgeId, double *t )
 {
   AdjIterator it;
@@ -2324,7 +2395,6 @@ bool gridGemIsAllLocal(Grid *grid)
 bool gridNodeNearGhost(Grid *grid, int node )
 {
   AdjIterator it;
-  int cell;
 
   for ( it = adjFirst(grid->cellAdj,node); 
 	adjValid(it); 
@@ -2930,8 +3000,15 @@ Grid *gridAddPrism(Grid *grid, int n0, int n1, int n2, int n3, int n4, int n5)
   grid->prism[grid->nprism].nodes[4] = n4;
   grid->prism[grid->nprism].nodes[5] = n5;
 
-  for(i=0;i<6;i++) grid->prismDeg[grid->prism[grid->nprism].nodes[i]]++;
-
+  for(i=0;i<6;i++) {
+    if ( (0 > grid->prism[grid->nprism].nodes[i]) || 
+	 (grid->maxnode <= grid->prism[grid->nprism].nodes[i]) ) {
+      printf("%s: %d: Could not register new prism, invalid node.\n",
+	     __FILE__,__LINE__);
+    } else {
+      grid->prismDeg[grid->prism[grid->nprism].nodes[i]]++;      
+    }
+  }
   grid->nprism++;
 
   return grid;
