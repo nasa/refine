@@ -63,13 +63,9 @@ int main( int argc, char *argv[] )
 
   printf("adapting grid...\n");
   gridResetSpacing(grid);
-  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.90,0.9);
-  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.85,0.8);
-  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.80,0.7);
-  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.75,0.6);
-  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.70,0.5);
-  gridScaleSpacingSphere(grid,1.0,1.0,0.0,0.5,3.0);
-  gridScaleSpacingSphere(grid,1.5,0.0,0.0,1.0,3.5);
+  gridScaleSpacingSphereDirection(grid,-2.0,0.0,0.0,1.00,0.3,1.0,1.8);
+  gridScaleSpacingSphereDirection(grid,2.0,0.0,0.0,1.50,1.8,1.0,0.4);
+  gridScaleSpacingSphereDirection(grid,0.5,0.5,0.0,1.00,0.3,1.8,1.0);
   oldSize = 1;
   newSize = gridNNode(grid) ;
   for (j=0;(((double)ABS(newSize-oldSize)/(double)oldSize)>0.01)&&(j<15);j++){
