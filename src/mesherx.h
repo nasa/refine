@@ -21,7 +21,7 @@ BEGIN_C_DECLORATION
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project, 
 			      bool mixedElement );
 
-Layer *layerFormAdvancingLayerWithCADGeomBCS( Grid * );
+Layer *layerFormAdvancingLayerWithCADGeomBCS( int volumeId, Grid * );
 
 int layerTerminateNormalWithBGSpacing(Layer *, double ratio);
 

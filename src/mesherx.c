@@ -47,7 +47,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   MeshMgr_SetElementScale( scale );
   //CAPrIMesh_TetVolume( vol );
 
-  layer = layerFormAdvancingLayerWithCADGeomBCS( grid );
+  layer = layerFormAdvancingLayerWithCADGeomBCS( 1, grid );
+
   if (mixedElement) layerToggleMixedElementMode(layer);
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
@@ -132,13 +133,12 @@ int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio)
   return nterm;
 }
 
-Layer *layerFormAdvancingLayerWithCADGeomBCS( Grid *grid )
+Layer *layerFormAdvancingLayerWithCADGeomBCS( int vol, Grid *grid )
 {
   int nFrontFaces, frontFaces[10000];
   int face;
   UGPatchPtr upp;
 
-  int vol=1;
   int    i,loop,edge,current;
   int    nloop;
   int    *nedge;
