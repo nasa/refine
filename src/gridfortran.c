@@ -19,6 +19,7 @@
 #include "gridinsert.h"
 #include "queue.h"
 #include "gridmpi.h"
+#include "gridgeom.h"
 
 static Grid *grid = NULL;
 static GridMove *gm = NULL;
