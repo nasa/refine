@@ -116,13 +116,10 @@ MesherXLib = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
 all_LDFLAGS = @dynamicFlag@
 hla_sources = \
 	MesherX_HLA.c \
-	mesherx_hla.h mesherx_hla.c \
+	mesherx_hla.h mesherx_SyJet.c \
 	layerNormalExtra.h layerNormalExtra.c \
 	geometricStretch.h geometricStretch.c \
 	SyJetSpacingControl.c
-
-mesherx_hla.c : mesherx_SyJet.c
-	( cd $(srcdir) && ln -s mesherx_SyJet.c mesherx_hla.c )
 
 LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
 
