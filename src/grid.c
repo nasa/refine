@@ -1214,7 +1214,11 @@ Grid *gridEliminateUnusedNodeGlobal(Grid *grid )
   /* for safety, see if other proc has already deleted this global */
   for ( offset = 0 ; offset < grid->nUnusedNodeGlobal ; offset++ ) {
     node = gridGlobal2Local(grid,grid->unusedNodeGlobal[offset]);
-    if (EMPTY!=node) gridRemoveNodeWithOutGlobal(grid,node);
+    if (EMPTY!=node) {
+      printf("WARNING: %s: %d: Something is hosed. Found an eliminated node.%d\n",
+	     __FILE__,__LINE__,node);      
+      gridRemoveNodeWithOutGlobal(grid,node);
+    }
   }
 
   offset = 0;
