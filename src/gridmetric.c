@@ -1429,13 +1429,13 @@ double gridMinThawedAR( Grid *grid )
   return minAR;
 }
 
-Grid *gridFreezeHighARCells(Grid *grid, double maxAR )
+Grid *gridFreezeSmallARCells(Grid *grid, double minAR )
 {
   int cellId, nodes[4];
 
   for (cellId=0;cellId<gridMaxCell(grid);cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) &&
-	 gridAR(grid, nodes) >= maxAR ) {
+	 gridAR(grid, nodes) <= minAR ) {
       gridFreezeNode(grid,nodes[0]);
       gridFreezeNode(grid,nodes[1]);
       gridFreezeNode(grid,nodes[2]);
