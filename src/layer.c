@@ -1318,7 +1318,7 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 	layerProjectNormalToConstraints(layer,normal);
       }
     }
-    layerVisibleNormals(layer,visTol,1.0e-5);
+    layerVisibleNormals(layer,visibility,visTol);
     for (normal=0;normal<layerNNormal(layer);normal++){
       if ( 0 == layerConstrained(layer,normal) ){
 	total = 0;
@@ -1352,6 +1352,109 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 	  relaxm1*layer->normal[normal].direction[2];
 	gridVectorNormalize(layer->normal[normal].direction);
       }
+    }
+    layerVisibleNormals(layer,visibility,visTol);
+  }
+
+  return layer;
+}
+
+Layer *layerSmoothInteriorNormalDirection(Layer *layer )
+{
+  int normal, iter, triangle, normals[3], total, i;
+  double norm[3], avgdir[3], denom;
+  double relax, relaxm1; 
+  double mindir[3], mindot;
+  double visibility = 0.1;
+  double visTol = 1.0e-10;
+  AdjIterator it;
+
+  if (layerNNormal(layer) == 0 ) return NULL;
+  if (layerNBlend(layer) != 0 ) return NULL;
+
+  relax = 0.2;
+  relaxm1 = 1.0-relax;
+
+  layerProjectNormalsToConstraints(layer);
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    layerNormalMinDot(layer, normal, &mindot, mindir );
+    if (mindot < 0.5) layerNormalDirectionFreeze(layer,normal);
+  }
+
+  for (iter=0;iter<50;iter++){
+    for (normal=0;normal<layerNNormal(layer);normal++){
+      if (layerNormalDirectionFrozen(layer,normal)) continue;
+      if ( 0 < layerConstrained(layer,normal) ){
+	total = 0;
+	avgdir[0]=0.0;
+	avgdir[1]=0.0;
+	avgdir[2]=0.0;
+	for ( it = adjFirst(layer->triangleAdj,normal); 
+	      adjValid(it); 
+	      it = adjNext(it) ){
+	  triangle = adjItem(it);
+	  layerTriangleNormals(layer,triangle,normals);
+	  for (i=0;i<3;i++){
+	    if (normal != normals[i] && 0 != layerConstrained(layer,normal) ){
+	      layerNormalDirection(layer,normals[i],norm);
+	      avgdir[0] += norm[0];
+	      avgdir[1] += norm[1];
+	      avgdir[2] += norm[2];
+	      total++;
+	    }
+	  }
+	}
+	denom = 1.0 / (double)total;
+	layer->normal[normal].direction[0] = 
+	  relax*(avgdir[0] * denom) + 
+	  relaxm1*layer->normal[normal].direction[0];
+	layer->normal[normal].direction[1] = 
+	  relax*(avgdir[1] * denom) +
+	  relaxm1*layer->normal[normal].direction[1];
+	layer->normal[normal].direction[2] = 
+	  relax*(avgdir[2] * denom) +
+	  relaxm1*layer->normal[normal].direction[2];
+	gridVectorNormalize(layer->normal[normal].direction);
+	layerProjectNormalToConstraints(layer,normal);
+      }
+    }
+    layerVisibleNormals(layer,visibility,visTol);
+    for (normal=0;normal<layerNNormal(layer);normal++){
+      if (layerNormalDirectionFrozen(layer,normal)) continue;
+      if ( 0 == layerConstrained(layer,normal) ){
+	total = 0;
+	avgdir[0]=0.0;
+	avgdir[1]=0.0;
+	avgdir[2]=0.0;
+	for ( it = adjFirst(layer->triangleAdj,normal); 
+	      adjValid(it); 
+	      it = adjNext(it) ){
+	  triangle = adjItem(it);
+	  layerTriangleNormals(layer,triangle,normals);
+	  for (i=0;i<3;i++){
+	    if (normal != normals[i]){
+	      layerNormalDirection(layer,normals[i],norm);
+	      avgdir[0] += norm[0];
+	      avgdir[1] += norm[1];
+	      avgdir[2] += norm[2];
+	      total++;
+	    }
+	  }
+	}
+	denom = 1.0 / (double)total;
+	layer->normal[normal].direction[0] = 
+	  relax*(avgdir[0] * denom) + 
+	  relaxm1*layer->normal[normal].direction[0];
+	layer->normal[normal].direction[1] = 
+	  relax*(avgdir[1] * denom) +
+	  relaxm1*layer->normal[normal].direction[1];
+	layer->normal[normal].direction[2] = 
+	  relax*(avgdir[2] * denom) +
+	  relaxm1*layer->normal[normal].direction[2];
+	gridVectorNormalize(layer->normal[normal].direction);
+      }
+      printf("iter %d\n",iter);
     }
     layerVisibleNormals(layer,visibility,visTol);
   }
