@@ -96,9 +96,9 @@ GridBool CADGeom_NormalToFace( int vol, int faceId,
   xyz[1] = uv[1]-20.0;
   xyz[2] = 0.0;
 
-  normal[0] = 0.0;
-  normal[1] = 0.0;
-  normal[2] = 1.0;
+  normal[0] =  0.0;
+  normal[1] =  0.0;
+  normal[2] = -1.0;
 
   return TRUE;
 }
