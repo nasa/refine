@@ -215,7 +215,7 @@
 	* /bootstrap script to create configure script from configure.ac
 	in top level directory
 	* /autogen.sh runs bootstrap, Make archetecture directory, runs
-	../configure --prefine=`pwd` in archetecture directory.
+	../configure --prefix=`pwd` in architecture directory.
 	* /configure.ac now in standard AutoTools trim. configure is 
 	created in top level directory. No more AutoConfInput. Can
 	be configured in a subdirectory with ../configure.
