@@ -73,11 +73,11 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 0, grid.addNode( 0.0,0.0,0.0)
   assert_equal 1, grid.addNode( 2.0,2.0,0.0)
   assert_equal 2, grid.addNode(-1.0,1.0,0.0)
-  sr2 = Math::sqrt(2.0)
+  sr2  = Math::sqrt(2.0)
   0.upto(2) do |n| 
-   assert_equal grid, grid.setMap(n, 1.0, 0.0, 0.0,
-	 		             0.0, 1.0, 0.0,
-			             0.0, 0.0, 1.0)
+   assert_equal grid, grid.setMap(n, 0.25,  0.25,  0.00,
+	 		            -0.50,  0.50,  0.00,
+			             0.00,  0.00,  1.00)
   end
   assert_equal grid, grid.sortNodeGridEx
   assert_in_delta 2*sr2, grid.edgeLength(0,1), 1.0e-15
@@ -85,8 +85,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 1.0, grid.edgeRatio(0,1), 1.0e-15
   assert_in_delta 1.0, grid.edgeRatio(0,2), 1.0e-15
  end
-
-# strech sqrt2 in xy to test rotation or principle axes
 
 # remove this
  def testFindLongestEdge
