@@ -406,7 +406,7 @@ Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
   return layer;
 }
 
-Layer *layerForceTriangle(Layer *layer, int normal0, int normal1, int normal2 )
+int layerForceTriangle(Layer *layer, int normal0, int normal1, int normal2 )
 {
   int i;
   Grid *grid;
@@ -431,7 +431,7 @@ Layer *layerForceTriangle(Layer *layer, int normal0, int normal1, int normal2 )
 
   layer->ntriangle++;
 
-  return layer;
+  return (layer->ntriangle-1);
 }
 
 Layer *layerTriangle(Layer *layer, int triangle, int *nodes )
@@ -1480,8 +1480,6 @@ Layer *layerAdvance(Layer *layer)
   double xyz[3];
   int nterminated;
 
-  int blend, blendnormals[4];
-
   if (layerNNormal(layer) == 0 ) return NULL;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
@@ -1633,24 +1631,36 @@ Layer *layerAdvance(Layer *layer)
 
 
   if (layerNBlend(layer) > 0){
+    int blend, blendnormals[4];
+    int triangle0, triangle1;
     for (blend=0;blend<layerNBlend(layer);blend++){
       layerBlendNormals(layer, blend, blendnormals );
+      
+      triangle0 = layerForceTriangle(layer,blendnormals[0],
+				     blendnormals[1],blendnormals[2]);
+      triangle1 = layerForceTriangle(layer,blendnormals[1],
+				     blendnormals[3],blendnormals[2]);
+
       faceId = layerConstrained(layer,blendnormals[0]);
       if (faceId>0){
 	n[0] = layerNormalRoot(layer,blendnormals[0]);
 	n[1] = layer->normal[blendnormals[0]].tip;
 	n[2] = layer->normal[blendnormals[1]].tip;
-	gridAddFace(grid,n[0],n[1],n[2],faceId);
+	layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	layer->triangle[triangle0].constrainedSide[0]=faceId;
+	layer->triangle[triangle0].parentGeomEdge[0] =
+	  layer->blend[blend].edgeId[0];
       }
       faceId = layerConstrained(layer,blendnormals[2]);
       if (faceId>0){
 	n[0] = layerNormalRoot(layer,blendnormals[2]);
 	n[1] = layer->normal[blendnormals[3]].tip;
 	n[2] = layer->normal[blendnormals[2]].tip;
-	gridAddFace(grid,n[0],n[1],n[2],faceId);
+	layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	layer->triangle[triangle1].constrainedSide[1]=faceId;
+	layer->triangle[triangle1].parentGeomEdge[1] =
+	  layer->blend[blend].edgeId[1];
       }
-      layerForceTriangle(layer,blendnormals[0],blendnormals[1],blendnormals[2]);
-      layerForceTriangle(layer,blendnormals[1],blendnormals[3],blendnormals[2]);
     }
     layerBuildNormalTriangleAdjacency(layer);
     layer->nblend=0;

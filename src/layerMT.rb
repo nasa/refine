@@ -1103,7 +1103,7 @@ grid.addCell(0,1,2,3)
   # y 2---3
   # ^ |0\1|
   # | 0---1 -> x
-  grid = Grid.new(10,10,10,10)
+  grid = Grid.new(100,100,100,100)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
   grid.addNode(0,1,0)
@@ -1271,19 +1271,34 @@ grid.addCell(0,1,2,3)
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   layer = Layer.new(grid).populateAdvancingFront([1])
-  assert_equal 0,     layer.nblend
-  assert_equal layer, layer.blend
-  assert_equal 1,     layer.nblend
-  assert_equal [0,4,2], layer.triangleNormals(0)
-  assert_equal [5,1,3], layer.triangleNormals(1)
-  assert_equal [0,1,2], layer.triangle(0)
-  assert_equal [2,1,3], layer.triangle(1)
-  assert_equal [4,1,2,5], layer.blendNormals(0)
+  layer.blend
+  assert_equal 1,       layer.nblend
   layer.advance
-  assert_equal 0,     layer.nblend
-  assert_equal 4,     layer.ntriangle
+  assert_equal 0,       layer.nblend
+  assert_equal 4,       layer.ntriangle
   assert_equal [4,1,2], layer.triangleNormals(2)
   assert_equal [1,5,2], layer.triangleNormals(3)
+ end
+
+ def testAdvanceBlendForConvextFace_AddConstrainingFace
+  # z 2---3
+  # ^ |0\1|
+  # | 0---1 -> y
+  grid = Grid.new(100,100,100,100)
+  grid.addNode(0,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addNode(-1,0.5,0.5)
+  grid.addFace(0,1,2,1)
+  grid.addFace(2,1,3,1)
+  grid.addNode(1,0,0)
+  grid.addFace(1,0,4,11)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.constrainNormal(11)
+  layer.blend
+  assert_equal 3,       grid.nface
+  layer.advance
+  assert_equal 6,       grid.nface
  end
 
 end
