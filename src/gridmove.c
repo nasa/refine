@@ -531,10 +531,19 @@ GridMove *gridmoveDataLeadingDimension( GridMove *gm, int *ndim )
 GridMove *gridmoveLoadFortranNodeData( GridMove *gm, int nnode, 
 				     int *nodes, double *data)
 {
-  int index, node, i;
-  for (index=0;index<nnode;index++) {
-    node = nodes[index]-1;
-    if (0<=node) for(i=0;i<3;i++) data[i+3*index] = gm->xyz[i+3*node];
+  int node, localnode, i, ids, face;
+  while (node<nnode) {
+    if (nodes[node] > 0) {
+      localnode = nodes[node]-1;
+      for(i=0;i<3;i++) data[i+3*node] = gm->xyz[i+3*localnode];
+      node++;
+    } else {
+      ids = -nodes[node];
+      node++;
+      for(face=0;face<ids;face++) {
+	node++;
+      }
+    }
   }
   return gm;
 }
@@ -542,10 +551,19 @@ GridMove *gridmoveLoadFortranNodeData( GridMove *gm, int nnode,
 GridMove *gridmoveSetFortranNodeData( GridMove *gm, int nnode, 
 				    int *nodes, double *data)
 {
-  int index, node, i;
-  for (index=0;index<nnode;index++) {
-    node = nodes[index]-1;
-    if (0<=node) for(i=0;i<3;i++) gm->xyz[i+3*node]= data[i+3*index];
+  int node, localnode, i, ids, face;
+  while (node<nnode) {
+    if (nodes[node] > 0) {
+      localnode = nodes[node]-1;
+      for(i=0;i<3;i++) gm->xyz[i+3*localnode] = data[i+3*node] ;
+      node++;
+    } else {
+      ids = -nodes[node];
+      node++;
+      for(face=0;face<ids;face++) {
+	node++;
+      }
+    }
   }
   return gm;
 }
