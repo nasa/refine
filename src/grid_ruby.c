@@ -311,6 +311,21 @@ VALUE grid_minAR( VALUE self )
   return rb_float_new( gridMinAR( grid ) );
 }
 
+VALUE grid_findCellWithFace( VALUE self, VALUE face )
+{
+  int returnedCell;
+  GET_GRID_FROM_SELF;
+  returnedCell = gridFindCellWithFace(grid, NUM2INT(face) );
+  if (returnedCell == EMPTY) return Qnil;
+  return INT2NUM( returnedCell );
+}
+
+VALUE grid_rightHandedFace( VALUE self, VALUE face )
+{
+  GET_GRID_FROM_SELF;
+  return (gridRightHandedFace(grid, NUM2INT(face))?Qtrue:Qfalse);
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -355,4 +370,6 @@ void Init_Grid()
   rb_define_method( cGrid, "ar", grid_ar, 1 );
   rb_define_method( cGrid, "minVolume", grid_minVolume, 0 );
   rb_define_method( cGrid, "minAR", grid_minAR, 0 );
+  rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
+  rb_define_method( cGrid, "rightHandedFace", grid_rightHandedFace, 1 );
 }
