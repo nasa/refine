@@ -52,9 +52,11 @@ VALUE grid_nodeDeg( VALUE self, VALUE nodeId )
 
 VALUE grid_registerNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
 {
+  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
-  gridRegisterNodeCell(grid, NUM2INT(nodeId), NUM2INT(cellId) );
-  return self;
+  returnedGrid = 
+    gridRegisterNodeCell( grid, NUM2INT(nodeId), NUM2INT(cellId) );
+  return (returnedGrid==NULL?Qnil:self);
 }
 
 VALUE grid_validNodeCell( VALUE self )
