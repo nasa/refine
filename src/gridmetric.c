@@ -585,14 +585,20 @@ double gridAR(Grid *grid, int *nodes )
     if ( gridDotProduct(norm,edge3) <= 6.0e-14) return -1.0;
   }
 
-  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+  if ( (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) ||
+       (gridCostConstraint(grid)&gridCOST_CNST_VALID)  ) {
     nodes_on_surface = 0;
     if ( gridGeometryFace(grid, nodes[0]) ) nodes_on_surface++;
     if ( gridGeometryFace(grid, nodes[1]) ) nodes_on_surface++;
     if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
     if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
-    if ( ( nodes_on_surface > 1 ) && 
-	 ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -1.0;
+    if ( nodes_on_surface > 1 ) {
+      if ( ( nodes_on_surface > 2 ) &&
+	   (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) &&
+	   ( gridMinCellFaceAreaUV(grid,nodes) <= 1.0e-12 ) ) return -1.0;
+      if ( (gridCostConstraint(grid)&gridCOST_CNST_VALID) &&
+	   ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -1.0;
+    }
   }
 
   if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )

@@ -444,6 +444,7 @@ Grid *gridSetCostFunction(Grid *g, int costFunction);
 Grid *gridSetCostConstraint(Grid *g, int costConstraint);
 #define gridCOST_CNST_VOLUME (0x01)
 #define gridCOST_CNST_VALID  (0x02)
+#define gridCOST_CNST_AREAUV (0x04)
 
 int gridStoredCostDegree( Grid *g );
 Grid *gridClearStoredCost( Grid *g );
