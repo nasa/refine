@@ -2097,23 +2097,29 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
     }
  
     for ( normal = 0 ; normal < adjNNode(layer->blendAdj) ; normal++ ) {
-      int *vertexNormals, nVertexNormals;
+      int sweep;
+      int *allVertexNormals, vertexNormals[3], nVertexNormals;
       switch (layerBlendDegree(layer,normal)) {
       case 0: case 1: case 2: break;
       case 3:
-	nVertexNormals = layerBlendDegree(layer,normal);
-	vertexNormals = malloc(nVertexNormals*sizeof(int));
+	nVertexNormals = layerSubNormalDegree(layer,normal);
+	allVertexNormals = malloc(nVertexNormals*sizeof(int));
 	layerOrderedVertexNormals( layer, normal, 
-				   &nVertexNormals, vertexNormals);
-	triangle0 = layerForceTriangle(layer,vertexNormals[0],
-				       vertexNormals[1],vertexNormals[2]);
-	/*face oriented opposite direction to cell*/ 
-	tet[0] = layerNormalTip(layer,vertexNormals[1]);
-	tet[1] = layerNormalTip(layer,vertexNormals[0]); 
-	tet[2] = layerNormalTip(layer,vertexNormals[2]); 
-	tet[3] = layerNormalRoot(layer,normal); 
-	addTet;	
-	free(vertexNormals);
+				   &nVertexNormals, allVertexNormals);
+	for(sweep=1;sweep<(nVertexNormals-1);sweep++) {
+	  vertexNormals[0] = allVertexNormals[0];
+	  vertexNormals[1] = allVertexNormals[sweep];
+	  vertexNormals[2] = allVertexNormals[sweep+1];
+	  triangle0 = layerForceTriangle(layer,vertexNormals[0],
+					 vertexNormals[1],vertexNormals[2]);
+	  /*face oriented opposite direction to cell*/ 
+	  tet[0] = layerNormalTip(layer,vertexNormals[1]);
+	  tet[1] = layerNormalTip(layer,vertexNormals[0]); 
+	  tet[2] = layerNormalTip(layer,vertexNormals[2]); 
+	  tet[3] = layerNormalRoot(layer,normal); 
+	  addTet;
+	}
+	free(allVertexNormals);
 	break;
       default:
 	printf( "ERROR: %s: %d: Cannot handle %d blends. Write more code!\n",
@@ -2997,7 +3003,7 @@ Layer *layerOrderedVertexNormals(Layer *layer, int normal,
 	it=adjNext(it) ){
     blend = adjItem(it);
     if (node == layer->blend[blend].nodes[0]) {
-      vertexNormals[count] = layer->blend[blend].normal[0];
+      vertexNormals[count] = layer->blend[blend].normal[1];
       count++;
       nSubNormal = layer->blend[blend].nSubNormal0;
       for (subNormal=0;subNormal<nSubNormal;subNormal++){
@@ -3005,7 +3011,7 @@ Layer *layerOrderedVertexNormals(Layer *layer, int normal,
 	count++;
       }
     }else{
-      vertexNormals[count] = layer->blend[blend].normal[3];
+      vertexNormals[count] = layer->blend[blend].normal[2];
       count++;
       nSubNormal = layer->blend[blend].nSubNormal1;
       for (subNormal=0;subNormal<nSubNormal;subNormal++){
