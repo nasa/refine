@@ -3004,19 +3004,67 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
   return layer;
 }
 
+Layer *layerOrderedVertexBlends(Layer *layer, int normal, 
+				 int *nVertexBlends, int *vertexBlends ){
+
+  int node;
+  AdjIterator it;
+  int blend, nextNormal;
+  int count;
+
+  if (0 == layerBlendDegree(layer, normal)) return layer;
+
+  node = layerNormalRoot(layer,normal);
+
+  blend = adjItem(adjFirst(layerBlendAdj(layer),normal));
+  vertexBlends[0] = blend;
+  if (node == layer->blend[blend].nodes[0]) {
+    nextNormal = layer->blend[blend].normal[0];
+  }else{
+    nextNormal = layer->blend[blend].normal[3];
+  }
+
+  for (count=1;count<*nVertexBlends;count++){
+    for ( it = adjFirst(layerBlendAdj(layer),normal);
+	  adjValid(it);
+	  it=adjNext(it) ){
+      blend = adjItem(it);
+      if (node == layer->blend[blend].nodes[0]) {
+	if (nextNormal == layer->blend[blend].normal[1]){
+	  vertexBlends[count] = blend;
+	  nextNormal = layer->blend[blend].normal[0];
+	  break;
+	}
+      }else{
+	if (nextNormal == layer->blend[blend].normal[2]){
+	  vertexBlends[count] = blend;
+	  nextNormal = layer->blend[blend].normal[3];
+	  break;
+	}
+      }
+    }
+  }
+  
+  return layer;
+}
+
 Layer *layerOrderedVertexNormals(Layer *layer, int normal, 
 				 int *nVertexNormals, int *vertexNormals ){
   int node;
-  AdjIterator it;
-  int blend, subNormal, nSubNormal;
+  int i, blend, subNormal, nSubNormal;
   int count;
+  int nVertexBlends, *vertexBlends;
 
+  nVertexBlends = layerBlendDegree(layer, normal);
+
+  if (0 == nVertexBlends) return layer;
+  vertexBlends = malloc(nVertexBlends*sizeof(int));
+  layerOrderedVertexBlends(layer, normal, &nVertexBlends, vertexBlends );
+  
   node = layerNormalRoot(layer,normal);
   count = 0;
-  for ( it = adjFirst(layerBlendAdj(layer),normal);
-	adjValid(it);
-	it=adjNext(it) ){
-    blend = adjItem(it);
+  for (i=0;i<nVertexBlends;i++){
+    blend = vertexBlends[i];
     if (node == layer->blend[blend].nodes[0]) {
       vertexNormals[count] = layer->blend[blend].normal[1];
       count++;
@@ -3038,6 +3086,8 @@ Layer *layerOrderedVertexNormals(Layer *layer, int normal,
     }
   }
   
+  free(vertexBlends);
+
   return layer;
 }
 
