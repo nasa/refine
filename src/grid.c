@@ -546,6 +546,103 @@ Grid *gridPack(Grid *grid)
   return  grid;
 }
 
+Grid *gridSortNodeGridEx(Grid *grid)
+{
+  int i, newnode, edge, nCurveNode;
+  int ixyz, node, face, cell, inode;
+  int *o2n, *curve;
+  double *temp_xyz;
+
+  if ( grid != gridPack(grid) ) return NULL;
+
+  o2n = malloc( grid->nnode * sizeof(int) );
+  for (i=0;i<grid->nnode;i++) o2n[i] = EMPTY;
+
+  // geom nodes
+  for (i=0;i<grid->nGeomNode;i++) o2n[i] = i;
+  newnode = grid->nGeomNode;
+
+  // edge stuff
+  for (edge=1; edge<=grid->nGeomEdge; edge++){
+
+    nCurveNode = gridGeomEdgeSize( grid, edge );
+    curve = malloc( nCurveNode * sizeof(int) );
+    gridGeomEdge( grid, edge, curve );
+
+    for ( i=1; i<(nCurveNode-1); i++){ // skip end points
+      if (o2n[curve[i]] != EMPTY) 
+	printf("gridSortNodeGridEx: %s: %d: newnode error %d\n",
+	       __FILE__, __LINE__, o2n[curve[i]] );
+      o2n[curve[i]] = newnode;
+      newnode++;
+    }
+
+    free(curve);
+  }
+
+  // face stuff - assuming that the bc faces are sorted.
+  for ( face=0; face<grid->nface; face++ ){
+    for ( i=0; i<3; i++ ){
+      node = grid->f2n[i+3*face];
+      if ( o2n[node] == EMPTY ) {
+	o2n[node] = newnode;
+	newnode++;
+      }
+    }
+  }
+
+  // interior nodes
+  for ( node=0; node<grid->nnode; node++ ){
+    if ( o2n[node] == EMPTY ) {
+      o2n[node] = newnode;
+      newnode++;
+    }
+  }
+
+  if (newnode != grid->nnode) 
+    printf("ERROR: gridSortNodeGridEx, newnode %d nnode %d, line %d of %s\n.",
+	   newnode,grid->nnode,__LINE__, __FILE__);
+
+  temp_xyz = malloc( grid->nnode * sizeof(double) );
+
+  for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
+    for ( node = 0 ; node < grid->nnode ; node++ ){
+      temp_xyz[o2n[node]] = grid->xyz[ixyz+3*node];
+    }
+    for ( node = 0 ; node < grid->nnode ; node++ ){
+      grid->xyz[ixyz+3*node] = temp_xyz[node];
+    }
+  }
+
+  free(temp_xyz);
+
+  for ( cell = 0; cell < grid->ncell ; cell++ ){
+    for ( inode = 0 ; inode < 4 ; inode++ ){
+      adjRemove( grid->cellAdj, grid->c2n[inode+4*cell], cell );
+      grid->c2n[inode+4*cell] = o2n[grid->c2n[inode+4*cell]];
+      adjRegister( grid->cellAdj, grid->c2n[inode+4*cell], cell );
+    }
+  }
+
+  for ( face = 0; face < grid->nface ; face++ ){
+    for ( inode = 0 ; inode < 3 ; inode++ ){
+      adjRemove( grid->faceAdj, grid->f2n[inode+3*face], face );
+      grid->f2n[inode+3*face] = o2n[grid->f2n[inode+3*face]];
+      adjRegister( grid->faceAdj, grid->f2n[inode+3*face], face );
+    }
+  }
+
+  for ( edge = 0; edge < grid->nedge ; edge++ ){
+    for ( inode = 0 ; inode < 2 ; inode++ ){
+      adjRemove( grid->edgeAdj, grid->e2n[inode+2*edge], edge );
+      grid->e2n[inode+2*edge] = o2n[grid->e2n[inode+2*edge]];
+      adjRegister( grid->edgeAdj, grid->e2n[inode+2*edge], edge );
+    }
+  }
+
+  return grid;
+}
+
 int gridMaxNode(Grid *grid)
 {
   return grid->maxnode;
