@@ -1,14 +1,22 @@
 **SomeFutureDate**: Released Refine **NextRelase**
 
+Works with FUN3D Version(s): **SomeFUN3DVersion**
+
+Mon Oct 18, 2004: Released Refine 1.2.3
+
+** internal release **
+Added a texinfo refine manual, refine/doc/refine.texi.
 Added extra check on collapse edge to prevent invalid connectivities.
 Added CAPRI2 compatibility to current CAPRI (CADGeom) routines (run
 ./configure with --enable_CAPRI2 to activate).  Imposed limits on the
 minimum element quality allowed after a edge split or collapse.  Added
 functionality to untangle surfaces triangles in UV space.  Correctly
 handle adaptation on geometry that has been transformed in the
-SDK. Various FORTRAN API changes.
+SDK. Various FORTRAN API changes that require a compatible version
+of FUN3D. 
 
-Works with FUN3D Version(s): **FUN3DVersion**
+Started on research into edge-based operator adaptation. Cost function
+for grid improvement is selectable with gridSetCostFunction.
 
 Wed Aug 17, 2004: Released Refine 1.2.2
 
