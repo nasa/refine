@@ -150,5 +150,6 @@ int gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   queueLoad(queue, ints, doubles);
   gridApplyQueue(grid,queue);
+  queueReset(queue);
 }
 
