@@ -190,22 +190,40 @@ class TestGridMetric < Test::Unit::TestCase
   assert_not_nil grid = rightTet
   assert_in_delta 0.5, grid.faceArea(0,1,2), 1.0e-15
   assert_in_delta 1.0, grid.faceAR(1,2,3), 1.0e-15
-  assert_in_delta 0.8284271247, grid.faceAR(0,1,2), 1.0e-8
+  ar = 0.8284271247
+  assert_in_delta ar, grid.faceAR(0,1,2), 1.0e-8
+  mr = 0.8660254038
   assert_in_delta 1.0, grid.faceMR(1,2,3), 1.0e-14
-  assert_in_delta 0.8660254038, grid.faceMR(0,1,2), 1.0e-8
+  assert_in_delta mr,  grid.faceMR(0,1,2), 1.0e-8
 
+  deriv = -0.433
   ans = grid.faceMRDerivative([0,1,2])
-  assert_in_delta 0.8660254038, ans[0], 1.0e-8
-  assert_in_delta -0.433, ans[1], 1.0e-4
-  assert_in_delta -0.433, ans[2], 1.0e-4
-  assert_in_delta 0.0, ans[3], 1.0e-14
+  assert_in_delta mr,    ans[0], 1.0e-8
+  assert_in_delta deriv, ans[1], 1.0e-4
+  assert_in_delta deriv, ans[2], 1.0e-4
+  assert_in_delta 0.0,   ans[3], 1.0e-14
 
-  assert_equal grid, grid.addFace(0,1,2,10)
-  assert_equal grid, grid.addFace(1,2,3,10)
-  assert_in_delta 0.8660254038, grid.nodeFaceMR(0), 1.0e-8
-  assert_in_delta 0.8660254038, grid.nodeFaceMR(1), 1.0e-8
-  assert_in_delta 1.0,          grid.nodeFaceMR(3), 1.0e-8
+  assert_equal grid,   grid.addFace(0,1,2,10)
+  assert_equal grid,   grid.addFace(1,2,3,10)
+  assert_in_delta mr,  grid.nodeFaceMR(0), 1.0e-8
+  assert_in_delta mr,  grid.nodeFaceMR(1), 1.0e-8
+  assert_in_delta 1.0, grid.nodeFaceMR(3), 1.0e-8
 
+  ans = grid.nodeFaceMRDerivative(0)
+  assert_in_delta mr,    ans[0], 1.0e-8
+  assert_in_delta deriv, ans[1], 1.0e-4
+  assert_in_delta deriv, ans[2], 1.0e-4
+  assert_in_delta 0.0,   ans[3], 1.0e-15  
+  ans = grid.nodeFaceMRDerivative(1)
+  assert_in_delta mr,    ans[0], 1.0e-8
+  assert_in_delta 0.0, ans[1], 1.0e-4
+  assert_in_delta -deriv, ans[2], 1.0e-4
+  assert_in_delta 0.0,   ans[3], 1.0e-15  
+  ans = grid.nodeFaceMRDerivative(3)
+  assert_in_delta 1.0,    ans[0], 1.0e-8
+  assert_in_delta 0.0, ans[1], 1.0e-4
+  assert_in_delta 0.0, ans[2], 1.0e-4
+  assert_in_delta 0.0,   ans[3], 1.0e-15  
  end
  
 

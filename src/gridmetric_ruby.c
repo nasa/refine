@@ -230,6 +230,25 @@ VALUE grid_nodeFaceMR( VALUE self, VALUE node )
   return (gridNodeFaceMR( grid, NUM2INT(node), &ar )==grid?rb_float_new(ar):Qnil);
 }
 
+VALUE grid_nodeFaceMRDerivative( VALUE self, VALUE node )
+{
+  double mr, dMRdx[3];
+  VALUE rb_mr;
+  Grid *rGrid;
+  GET_GRID_FROM_SELF;
+  rGrid = gridNodeFaceMRDerivative( grid, NUM2INT(node), &mr, dMRdx );
+  if ( rGrid == grid ){
+    rb_mr = rb_ary_new2(4);
+    rb_ary_store( rb_mr, 0, rb_float_new(mr) );
+    rb_ary_store( rb_mr, 1, rb_float_new(dMRdx[0]) );
+    rb_ary_store( rb_mr, 2, rb_float_new(dMRdx[1]) );
+    rb_ary_store( rb_mr, 3, rb_float_new(dMRdx[2]) );
+  }else{
+    rb_mr = Qnil;
+  }
+  return rb_mr;
+}
+
 VALUE cGridMetric;
 
 void Init_GridMetric() 
@@ -258,4 +277,5 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "faceMRDerivative", grid_faceMRDerivative, 1);
   rb_define_method( cGridMetric, "FaceMRDerivative", grid_FaceMRDerivative, 9);
   rb_define_method( cGridMetric, "nodeFaceMR", grid_nodeFaceMR, 1 );
+  rb_define_method( cGridMetric, "nodeFaceMRDerivative", grid_nodeFaceMRDerivative, 1);
 }

@@ -416,7 +416,7 @@ Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
   int cell, nodes[4];
   double local_ar, local_dARdx[3];
 
-  *ar = 1.0;
+  *ar = 1.1;
   dARdx[0] = DBL_MAX;
   dARdx[1] = DBL_MAX;
   dARdx[2] = DBL_MAX;
@@ -1401,3 +1401,42 @@ Grid *gridNodeFaceMR(Grid *grid, int node, double *mr )
   return grid;
 }
 
+Grid *gridNodeFaceMRDerivative (Grid *grid, int node, double *mr, double *dMRdx )
+{
+  AdjIterator it;
+  int face, nodes[3], index, inode;
+  double local_mr, local_dMRdx[3];
+
+  *mr = 1.1;
+  dMRdx[0] = DBL_MAX;
+  dMRdx[1] = DBL_MAX;
+  dMRdx[2] = DBL_MAX;
+
+  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+    face = adjItem(it);
+    nodes[0] = node;
+    index = 1;
+    for (inode=0; inode<3;inode++) {
+      if ( node != grid->f2n[inode+3*face]){
+	nodes[index] = grid->f2n[inode+3*face];
+	index++;
+      }
+    }
+
+    if ( grid != gridFaceMRDerivative(grid, nodes, &local_mr, local_dMRdx ) ) {
+      *mr = 0.0;
+      dMRdx[0] = DBL_MAX;
+      dMRdx[1] = DBL_MAX;
+      dMRdx[2] = DBL_MAX;
+      return NULL;
+    }
+    if ( local_mr < *mr ) {
+      *mr = local_mr;
+      dMRdx[0] = local_dMRdx[0];
+      dMRdx[1] = local_dMRdx[1];
+      dMRdx[2] = local_dMRdx[2];
+    }
+  }
+
+  return grid;
+}
