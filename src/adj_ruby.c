@@ -54,10 +54,10 @@ VALUE adj_first( VALUE self, VALUE node )
   return (adjFirst(adj, NUM2INT(node) )==adj?self:Qnil);
 }
 
-VALUE adj_current( VALUE self )
+VALUE adj_item( VALUE self )
 {
   GET_ADJ_FROM_SELF;
-  return INT2NUM( adjCurrent(adj) );
+  return INT2NUM( adjItem(adj) );
 }
 
 VALUE adj_next( VALUE self )
@@ -91,7 +91,7 @@ void Init_Adj()
   rb_define_method( cAdj, "valid", adj_valid, 0 );
   rb_define_method( cAdj, "more", adj_more, 0 );
   rb_define_method( cAdj, "first", adj_first, 1 );
-  rb_define_method( cAdj, "current", adj_current, 0);
+  rb_define_method( cAdj, "item", adj_item, 0);
   rb_define_method( cAdj, "next", adj_next, 0);
   rb_define_method( cAdj, "exists", adj_exists, 2 );
   rb_define_method( cAdj, "degree", adj_degree, 1 );

@@ -247,7 +247,7 @@ Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 	adjValid(grid->cellAdj); 
 	adjNext(grid->cellAdj)) {
 
-    cellId = adjCurrent(grid->cellAdj);
+    cellId = adjItem(grid->cellAdj);
     if ( n1 == grid->c2n[0+4*cellId] ||
 	 n1 == grid->c2n[1+4*cellId] ||
 	 n1 == grid->c2n[2+4*cellId] ||

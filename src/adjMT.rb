@@ -30,7 +30,7 @@ class TestSampleUnit < Test::Unit::TestCase
  def testIterator
   assert_equal false, @adj.valid
   assert_equal false, @adj.more
-  assert_equal( -1, @adj.current)
+  assert_equal( -1, @adj.item)
   
   assert_nil @adj.first(@bigNode);
   assert_equal @adj, @adj.first(0);
@@ -38,7 +38,7 @@ class TestSampleUnit < Test::Unit::TestCase
   
   assert_equal @adj,  @adj.register( 2, 299 )
   assert_equal @adj,  @adj.first(2)
-  assert_equal 299,   @adj.current
+  assert_equal 299,   @adj.item
   assert_equal true,  @adj.valid
   assert_equal false, @adj.more
   assert_equal @adj,  @adj.next

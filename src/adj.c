@@ -86,7 +86,7 @@ Adj* adjRemove(Adj *adj, int node, int item)
   remove = NULL;
 
   for ( adjFirst(adj,node); adjValid(adj); adjNext(adj) ) 
-    if (adjCurrent(adj)==item) 
+    if (adjItem(adj)==item) 
       remove = adj->current;
 
   if (remove == NULL) return NULL;
@@ -131,7 +131,7 @@ Adj *adjFirst( Adj *adj, int node )
   return adj;
 }
 
-int adjCurrent( Adj *adj )
+int adjItem( Adj *adj )
 {
   if (adj->current == NULL ) return EMPTY;
   return adj->current->item;
@@ -149,7 +149,7 @@ bool adjExists( Adj *adj, int node, int item )
   for ( adjFirst(adj,node); 
 	!exist && adjValid(adj); 
 	adjNext(adj)) 
-    exist = (item == adjCurrent(adj));
+    exist = (item == adjItem(adj));
   return exist;
 }
 
