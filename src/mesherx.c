@@ -49,9 +49,6 @@ static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Layer *layer)
       gridNodeXYZ(grid,globalNode,edgexyz);
       gridNodeT(grid,globalNode,edgeId, &t);
 
-/* Remove when gridNodeT() returns good t value */
-CADGeom_ResolveOnEdge(vol,edgeId,edgexyz,&t,projectedxyz);
-
       if( !CADGeom_CurvOfEdge(vol,edgeId,t,tangent,&curvature) ) {
         printf("ERROR: Tangent Broke\n");
         return NULL;
