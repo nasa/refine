@@ -1,4 +1,9 @@
-2004-09-29 23:40 Mike Park  <mike.park@nasa.gov>
+2004-10-04 16:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridPack) conn structures are now packed.
+	* src/grid.c (gridRenumber) conn structures are now renumbered.
+
+2004-10-04 15:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridConn2Node) Fixed. gridCreateConn called under hood.
 	* src/grid.c (gridCreateConn) Exposed. Error if called when conn exits

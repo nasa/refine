@@ -568,6 +568,26 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0.0,  grid.connError(0)
  end
  
+ def testPackedConnections
+  grid = Grid.new(5,2,0,0)
+  5.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  grid.addCell(1,2,3,4)
+  grid.removeNode(0)
+  grid.removeCell(0)
+  grid.createConn
+  grid.pack
+  assert_equal [0,1], grid.conn2Node(0)
+  assert_equal [0,2], grid.conn2Node(1)
+  assert_equal [0,3], grid.conn2Node(2)
+  assert_equal [1,2], grid.conn2Node(3)
+  assert_equal [1,3], grid.conn2Node(4)
+  assert_equal [2,3], grid.conn2Node(5)
+  6.times do |conn|
+   assert_equal conn, grid.cell2Conn(0,conn)
+  end
+ end
+
  def testAddNode
   assert_not_nil              grid = Grid.new(1,0,0,0)
   assert_nil                  grid.nodeXYZ(0)

@@ -574,6 +574,7 @@ Grid *gridPack(Grid *grid)
   int i;
   int orignode, packnode, origcell, packcell;
   int origface, packface, origedge, packedge;
+  int conn;
   int nFaceId;
   int iface, n0, n1, id, n[3];
   double t0, t1, u[3], v[3];
@@ -651,6 +652,9 @@ Grid *gridPack(Grid *grid)
       adjRegister( grid->cellAdj, grid->c2n[1+4*packcell], packcell );
       adjRegister( grid->cellAdj, grid->c2n[2+4*packcell], packcell );
       adjRegister( grid->cellAdj, grid->c2n[3+4*packcell], packcell );
+      if (NULL != grid->cell2conn)
+	for(conn=0;conn<6;conn++)
+	  grid->cell2conn[conn+6*packcell] = grid->cell2conn[conn+6*origcell];
       packcell++;
     } 
   
@@ -669,6 +673,13 @@ Grid *gridPack(Grid *grid)
   }else{
     grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
     grid->blankc2n = grid->ncell;
+  }
+
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    if (EMPTY!=grid->conn2node[0+2*conn]) 
+      grid->conn2node[0+2*conn] = nodeo2n[grid->conn2node[0+2*conn]];
+    if (EMPTY!=grid->conn2node[1+2*conn]) 
+      grid->conn2node[1+2*conn] = nodeo2n[grid->conn2node[1+2*conn]];
   }
 
   packface=0;
@@ -1012,6 +1023,13 @@ Grid *gridRenumber(Grid *grid, int *o2n)
       grid->c2n[inode+4*cell] = o2n[grid->c2n[inode+4*cell]];
       adjRegister( grid->cellAdj, grid->c2n[inode+4*cell], cell );
     }
+  }
+
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    if (EMPTY!=grid->conn2node[0+2*conn]) 
+      grid->conn2node[0+2*conn] = o2n[grid->conn2node[0+2*conn]];
+    if (EMPTY!=grid->conn2node[1+2*conn]) 
+      grid->conn2node[1+2*conn] = o2n[grid->conn2node[1+2*conn]];
   }
 
   for ( face = 0; face < grid->nface ; face++ ){
