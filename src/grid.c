@@ -67,7 +67,7 @@ long gridNodeDeg(Grid *grid, long id)
   int n;
   n =0;
   for ( gridFirstNodeCell(grid,id); 
-	gridMoreNodeCell(grid); 
+	gridValidNodeCell(grid); 
 	gridNextNodeCell(grid)) n++;
   return n;
 }
@@ -77,7 +77,7 @@ int gridCellExists(Grid *grid, long nodeId, long cellId)
   int exist;
   exist = (0==1);
   for ( gridFirstNodeCell(grid,nodeId); 
-	!exist && gridMoreNodeCell(grid); 
+	!exist && gridValidNodeCell(grid); 
 	gridNextNodeCell(grid)) 
     exist = (cellId == gridCurrentNodeCell(grid));
   return exist;
@@ -85,10 +85,12 @@ int gridCellExists(Grid *grid, long nodeId, long cellId)
 
 Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
 {
-  long entry, terminator, nextOpen;
+  long firstAvailable, entry, terminator, nextOpen;
 
-  entry = -grid->celllist[0];
-  if (entry == 0 ) return NULL;
+  firstAvailable = -grid->celllist[0];
+  if ( firstAvailable == 0 ) return NULL; /* list full */
+  entry = firstAvailable;
+
   if ( grid->celllist[entry] == 0 ) return NULL;
   terminator = entry+1;
   //  terminator = -grid->celllist[entry]; make sure this is same as ^
@@ -115,7 +117,7 @@ Grid* gridRemoveNodeCell(Grid *grid, long nodeId, long cellId)
   cellIndex = EMPTY;
 
   for ( gridFirstNodeCell(grid,nodeId); 
-	gridMoreNodeCell(grid); 
+	gridValidNodeCell(grid); 
 	gridNextNodeCell(grid)) {
     if (gridCurrentNodeCell(grid)==cellId) 
       cellIndex = grid->currentcell;
@@ -146,7 +148,7 @@ long gridCurrentNodeCell(Grid *grid)
 {
   return grid->celllist[grid->currentcell]-1;
 }
-int gridMoreNodeCell(Grid *grid)
+int gridValidNodeCell(Grid *grid)
 {
   return (gridCurrentNodeCell(grid) != EMPTY);
 }

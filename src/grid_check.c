@@ -42,10 +42,10 @@ END_TEST
 
 START_TEST(testCellIterator)
 {
-  fail_unless( !gridMoreNodeCell(grid), "expected last cell - init");
+  fail_unless( !gridValidNodeCell(grid), "expected last cell - init");
 
   gridFirstNodeCell(grid,0);
-  fail_unless( !gridMoreNodeCell(grid), "expected last cell - no register");
+  fail_unless( !gridValidNodeCell(grid), "expected last cell - no register");
  
   gridRegisterNodeCell(grid,2,299);
   gridRegisterNodeCell(grid,3,399);
@@ -55,7 +55,7 @@ START_TEST(testCellIterator)
   gridFirstNodeCell(grid,3);
   fail_unless( gridCurrentNodeCell(grid) == 399, "cell 399 about node 3");
   gridNextNodeCell(grid);
-  fail_unless( !gridMoreNodeCell(grid), "expected last cell - node 3");
+  fail_unless( !gridValidNodeCell(grid), "expected last cell - node 3");
 }
 END_TEST
 
@@ -76,7 +76,7 @@ START_TEST(testAddedAndRemoveCell)
 }
 END_TEST
 
-START_TEST(testUnderAlloc)
+START_TEST(testEfficientStorage)
 {
   Grid *localGrid;
 
@@ -87,7 +87,11 @@ START_TEST(testUnderAlloc)
   fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, "no memory - 2");
   gridFree(localGrid);
   localGrid = gridCreate(1,1,3);
-  fail_unless ( gridRegisterNodeCell(localGrid,0,0) != NULL, "should fit");
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) != NULL, "should fit -0");
+  gridFree(localGrid);
+  localGrid = gridCreate(1,1,4);
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) != NULL, "should fit -1");
+  //  fail_unless ( gridRegisterNodeCell(localGrid,0,1) != NULL, "should fit -2");
   gridFree(localGrid);
 }
 END_TEST
@@ -108,13 +112,8 @@ START_TEST(testMultipleCellExists)
 }
 END_TEST
 
-START_TEST(testEfficientStorage)
-{
-  Grid *localGrid;
-
-}
-END_TEST
-
+/* make register unique */
+/* iterator more construct? */
 /* non-contiguos cellist for access and registering */
 /* test that new list terminator is contiguous */
 /* packing */
@@ -138,10 +137,9 @@ Suite *grid_suite (void)
   tcase_add_test (tNeighbors, testCellIterator); 
   tcase_add_test (tNeighbors, testAddedAndRemoveCell); 
   tcase_add_test (tNeighbors, testMultipleCellExists); 
-  tcase_add_test (tNeighbors, testEfficientStorage); 
 
   suite_add_tcase (s, tMemory);
-  tcase_add_test (tMemory, testUnderAlloc); 
+  tcase_add_test (tMemory, testEfficientStorage); 
 
   return s; 
 }

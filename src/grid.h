@@ -28,7 +28,7 @@ Grid *gridRemoveNodeCell(Grid *g, long nodeIndex, long cellIndex);
 void gridFirstNodeCell(Grid *g, long nodeIndex);
 void gridNextNodeCell(Grid *g);
 long gridCurrentNodeCell(Grid *g);
-int gridMoreNodeCell(Grid *g);
+int gridValidNodeCell(Grid *g);
 
 void gridFree(Grid *g);
 
