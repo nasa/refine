@@ -13,8 +13,8 @@
 #include <string.h>
 #include <math.h>
 #include <values.h>
+#include "mesherx.c"
 #include "CADGeom/CADGeom.h"
-
 
 int main( int argc, char *argv[] )
 {
@@ -28,6 +28,7 @@ int main( int argc, char *argv[] )
   double scale;
   int maxnode;
   bool mixedElement, blendElement, qualityImprovement;
+  bool bil;
 
   sprintf( project,       "" );
   scale = 1.0;
@@ -35,6 +36,7 @@ int main( int argc, char *argv[] )
   mixedElement = FALSE;
   blendElement = FALSE;
   qualityImprovement = FALSE;
+  bil = FALSE;
 
   i = 1;
   while( i < argc ) {
@@ -56,6 +58,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-b") == 0 ) {
       blendElement = TRUE;
       printf("-b argument %d: activated blend elements\n",i);
+    } else if( strcmp(argv[i],"-bil") == 0 ) {
+      bil = TRUE;
+      printf("-bil argument %d: activated Bil Kleb's case\n",i);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
@@ -64,6 +69,7 @@ int main( int argc, char *argv[] )
       printf(" -m mixed element layers\n");
       printf(" -q use edge swapping to improve grid quality\n");
       printf(" -b use blend elements on first layer\n");
+      printf(" -bil Bil Kleb's case\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -87,7 +93,8 @@ int main( int argc, char *argv[] )
   }
 
   MesherX_DiscretizeVolume( maxnode, scale, project, 
-			    mixedElement, blendElement, qualityImprovement );
+			    mixedElement, blendElement, qualityImprovement,
+			    bil );
 
   return(0);
 }

@@ -29,9 +29,10 @@
 #include "MeatLib/GeoBC.h"
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
-			      bool mixedElement, 
-			      bool blendElement, 
-			      bool qualityImprovement )
+			      bool mixedElement,
+			      bool blendElement,
+			      bool qualityImprovement,
+			      bool bil )
 {
   char outputProject[256];
   int vol=1;
@@ -43,14 +44,25 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   int nLayer;
   int face;
   double gapHeight;
+  double origin[3] = {0.0, -1.5, 0.0};
+  double direction[3] = {0, 1, 0};
 
-  nLayer = (int)(30.0/scale);
-  rate = exp(scale*log(1.20));
+  if (bil) {
+    nLayer = (int)(1.0/scale);
+    rate = exp(scale*log(1.1));
+  }else{
+    nLayer = (int)(30.0/scale);
+    rate = exp(scale*log(1.20));
+  }
+
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
   if ( scale != 1.0 ) {
     MeshMgr_SetElementScale( scale );
-    CAPrIMesh_CreateTShell( vol );
+    if ( !CAPrIMesh_CreateTShell( vol )) {
+      printf("ERROR: could not create shell\n");
+      return 0;
+    }
   }
 
   grid = gridFillFromPart( vol, maxNodes );
@@ -59,20 +71,26 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     return 0;
   }
 
-  layer = layerFormAdvancingLayerWithCADGeomBCS( 1, grid );
+  layer = layerFormAdvancingLayerWithCADGeomBCS( vol, grid );
 
   if (mixedElement) layerToggleMixedElementMode(layer);
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
-  gridThawAll(grid); 
+  gridThawAll(grid);
   layerFindParentGeomEdges(layer);
   i=0;
-  layerLaminarInitialHeight(layer, 5000.0, -0.05 );
-  layerScaleNormalHeight(layer,scale);
+  if (bil) {
+    layerAssignPolynomialNormalHeight(layer, 0.003, 0.01, 2.0, 
+				      origin, direction );
+  }else{
+    layerLaminarInitialHeight(layer, 5000.0, -0.05 );
+    layerScaleNormalHeight(layer,scale);
+  }
+
   if (blendElement) layerBlend(layer);
 
-  while (i<nLayer && 
-	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.7, 1.9)) {
+  while (i<nLayer &&
+	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer,0.7,1.9)){
 
     layerSmoothNormalDirection(layer);
     layerAdvance(layer);
@@ -109,19 +127,20 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   printf("total grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-  printf(" -- DUMP PART\n");
-
-  sprintf(outputProject,"%s_MX.fgrid",project);
-  printf("writing output FAST file %s\n",outputProject);
-  gridExportFAST( grid, outputProject  );
-
-  sprintf(outputProject,"%s_MX",project);
-  printf("writing output GridEx/CADGeom/CAPRI project %s\n",outputProject);
-  gridSavePart( grid, outputProject );
+  if (!bil) {
+    printf(" -- DUMP PART\n");
+    sprintf(outputProject,"%s_MX.fgrid",project);
+    printf("writing output FAST file %s\n",outputProject);
+    gridExportFAST( grid, outputProject  );
+  } 
 
   sprintf(outputProject,"%s_MX.ugrid",project);
   printf("writing output AFL3R file %s\n",outputProject);
   gridExportAFLR3( grid, outputProject  );
+
+  /*  sprintf(outputProject,"%s_MX",project);
+  printf("writing output GridEx/CADGeom/CAPRI project %s\n",outputProject);
+  gridSavePart( grid, outputProject ); */
 
   return 1;
 }
