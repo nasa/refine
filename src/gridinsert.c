@@ -139,7 +139,7 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 
   for ( ranking=gridNConn(grid)-1; ranking>=0; ranking-- ) { 
     conn = gridConnWithThisRanking(grid,ranking);
-    if (ranking/report*report == ranking ) {
+    if (ranking/report*report == ranking || ranking==gridNConn(grid)-1) {
       printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
 	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
 	     gridConnValue(grid,conn));
