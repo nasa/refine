@@ -2886,7 +2886,8 @@ Layer *layerSmoothLayerWithHeight(Layer *layer)
       correction = 1 + avg;
     }else{
       correction = 1 + avg;
-      correction = correction * correction ;
+      correction = correction * correction;
+      correction = MIN(correction,2.0);
     }
     layer->normal[normal].height =
       layer->normal[normal].height * correction;
