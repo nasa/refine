@@ -1,3 +1,9 @@
+2005-03-25 08:51 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMirrorNodeAboutY0) Fixed calculation of new node
+	Y location when Y0 is non zero. This is to fix the BWB mirror
+	case.
+
 2005-03-24 16:24 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridCopyAboutY0, gridMirrorNodeAboutY0) Generalized

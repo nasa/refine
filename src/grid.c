@@ -4045,7 +4045,7 @@ int gridMirrorNodeAboutY0(Grid *grid, int node, int origGlobal, int mirrorAux )
 
   gridNodeXYZ(grid,node,xyz);
   if ( origGlobal > 0 ) {
-    newNode = gridAddNodeWithGlobal(grid,xyz[0],Y0-xyz[1],xyz[2],
+    newNode = gridAddNodeWithGlobal(grid,xyz[0],Y0-(xyz[1]-Y0),xyz[2],
 				    gridNodeGlobal(grid,node)+origGlobal);
     gridSetNodePart(grid,newNode,gridNodePart(grid,node));
   } else {
