@@ -279,4 +279,27 @@ class TestGridMath < Test::Unit::TestCase
   v2 = @gm.vectTriDiag2(d,e,q0,q1,q2)
  end
 
+ def reconstruct(e,v0,v1,v2)
+  
+ end
+
+ def testEigTriDiagMessyDiag
+  m = [ 5669.182266666660325,    0.000000000379356,    0.000000000497356,
+                              5669.182266666660325,    0.000000000436356,
+                                                    5669.182266666660325]
+  ans = 5669.18227
+  d = @gm.triDiag(m)
+  e = @gm.triOffDiag(m)
+  q0 = @gm.triDiagTransform0(m)
+  q1 = @gm.triDiagTransform1(m)
+  q2 = @gm.triDiagTransform2(m)
+  eig = @gm.eigTriDiag(d,e)
+  assert_in_delta( ans, eig[0], 1.0e-5 )
+  assert_in_delta( ans, eig[1], 1.0e-5 )
+  assert_in_delta( ans, eig[2], 1.0e-5 )
+  v0 = @gm.vectTriDiag0(d,e,q0,q1,q2)
+  v1 = @gm.vectTriDiag1(d,e,q0,q1,q2)
+  v2 = @gm.vectTriDiag2(d,e,q0,q1,q2)
+ end
+
 end
