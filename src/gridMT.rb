@@ -207,7 +207,7 @@ end
   assert_equal @grid, @grid.
    addCell( @grid.addNode(0.0,0.0,0.0), @grid.addNode(1.0,0.0,0.0), 
 	    @grid.addNode(0.0,1.0,0.0), @grid.addNode(0.0,0.0,1.0) )
-  assert_equal 0.125, @grid.volume(0) 
+  assert_equal( 1.0/6.0, @grid.volume(0) )
  end
 
  def XtestMaxSize
