@@ -1079,7 +1079,7 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
       if (mindot <= 0.0 ) {
 	double xyz[3];
 	gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-	printf("ERROR: %s, %d, Infeasible norm %d dot%9.5f X%9.5f Y%9.5f Z%9.5f\n",
+	printf("ERROR: %s,%5d, Infeasible norm%6d dot%14.10f X%9.5f Y%9.5f Z%9.5f\n",
 	       __FILE__, __LINE__, normal, mindot,xyz[0],xyz[1],xyz[2]);
       }
     }
@@ -1098,11 +1098,12 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 {
   int normal, iter, i;
   double *dir, mindir[3], mindot, radian, worstdot; 
-  int minTriangle, lastTriangle;
+  double lastdir[3], lastdot;
+  int minTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
   if (dotLimit < 0) dotLimit = 0.90;
-  if (radianLimit < 0) radianLimit = 1.0e-10;
+  if (radianLimit < 0) radianLimit = 1.0e-15;
 
   layerProjectNormalsToConstraints(layer);
 
@@ -1110,26 +1111,27 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
   for (normal=0;normal<layerNNormal(layer);normal++){
     if ( 0 != layerNormalDeg(layer, normal ) ) {
       dir = layer->normal[normal].direction;
-      lastTriangle = EMPTY;
       radian = 0.01;
       layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
-      for (iter=0;iter<1000 && radian > radianLimit && mindot < dotLimit;iter++){
-	if (minTriangle != lastTriangle) {
-	  radian = radian * 0.5;
-	  lastTriangle = minTriangle;
-	  //printf("normal %d, dot %f rad %e triangle %d\n",normal,mindot,radian,minTriangle);
-	}
+      for (iter=0;iter<1000 && radian>radianLimit && mindot<dotLimit;iter++){
+	lastdir[0] = dir[0]; lastdir[1] = dir[1]; lastdir[2] = dir[2];
 	dir[0] += radian*mindir[0];
 	dir[1] += radian*mindir[1];
 	dir[2] += radian*mindir[2];
 	gridVectorNormalize(dir);
+	lastdot = mindot;
 	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+	if (mindot <= lastdot) {
+	  radian *= 0.8;
+	  dir[0] = lastdir[0]; dir[1] = lastdir[1]; dir[2] = lastdir[2];
+	  layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+	}
       }
       worstdot = MIN(worstdot,mindot);
       if (mindot <= 0.0 ) {
 	double xyz[3];
 	gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-	printf("ERROR: %s, %d, Invisible norm %d dot%9.5f X%9.5f Y%9.5f Z%9.5f\n",
+	printf("ERROR: %s,%5d, Invisible norm%6d dot%14.10f X%9.5f Y%9.5f Z%9.5f\n",
 	       __FILE__, __LINE__, normal, mindot,xyz[0],xyz[1],xyz[2]);
       }
     }
