@@ -17,7 +17,6 @@ BEGIN_C_DECLORATION
 
 typedef struct Grid Grid;
 
-
 Grid *gridCreate(int nnode, int ncell, int nlist);
 int gridNNode(Grid *g);
 int gridNCell(Grid *g);
@@ -32,7 +31,10 @@ bool gridValidNodeCell(Grid *g);
 bool gridMoreNodeCell(Grid *g);
 
 Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
-Grid *gridGetGem(Grid *g, int n0, int n1, int maxgem,int *ngem, int *gem );
+
+Grid *gridMakeGem(Grid *g, int n0, int n1 );
+int gridNGem(Grid *g );
+int gridGem(Grid *g, int index );
 
 Grid *gridDump(Grid *g);
 
