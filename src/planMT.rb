@@ -23,11 +23,12 @@ class TestQueue < Test::Unit::TestCase
 #   planItemWithThisRanking
 
  def test_create_initializes_sizes
-  size = 273
-  chunk = 1527
-  plan = Plan.new(size,chunk)
-  assert_equal size,  plan.size
-  assert_equal chunk, plan.chunk_size
+  max_size = 273
+  chunk    = 1527
+  plan = Plan.new(max_size,chunk)
+  assert_equal 0,        plan.size
+  assert_equal max_size, plan.max_size
+  assert_equal chunk,    plan.chunk_size
  end
 
 

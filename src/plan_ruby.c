@@ -24,7 +24,13 @@ VALUE plan_size( VALUE self )
   return INT2NUM( planSize(plan) );
 }
 
-VALUE plan_chunkSize( VALUE self )
+VALUE plan_max_size( VALUE self )
+{
+  GET_PLAN_FROM_SELF;
+  return INT2NUM( planMaxSize(plan) );
+}
+
+VALUE plan_chunk_size( VALUE self )
 {
   GET_PLAN_FROM_SELF;
   return INT2NUM( planChunkSize(plan) );
@@ -35,7 +41,8 @@ VALUE cPlan;
 void Init_Plan() 
 {
   cPlan = rb_define_class( "Plan", rb_cObject );
-  rb_define_singleton_method( cPlan, "new", plan_new, 3 );
+  rb_define_singleton_method( cPlan, "new", plan_new, 2 );
   rb_define_method( cPlan, "size", plan_size, 0 );
-  rb_define_method( cPlan, "chunkSize", plan_chunkSize, 0 );
+  rb_define_method( cPlan, "max_size", plan_max_size, 0 );
+  rb_define_method( cPlan, "chunk_size", plan_chunk_size, 0 );
 }

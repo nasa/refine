@@ -10,6 +10,7 @@ install:
 local:
 	./sampleunitMT.rb
 	./adjMT.rb
+	./planMT.rb
 	./nearMT.rb
 	./lineMT.rb
 	./queueMT.rb
@@ -26,4 +27,4 @@ local:
 	./layerMT.rb
 
 clean:
-	rm -rf Adj Grid* Intersect Layer Queue Sort Line Near SampleUnit
+	rm -rf Adj Grid* Intersect Layer Queue Sort Line Plan Near SampleUnit
