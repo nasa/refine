@@ -59,7 +59,7 @@ int main( int argc, char *argv[] )
   newSize = gridNNode(grid) ;
   for ( j=0; (j<40) && (
 	(ratio < 0.99) || 
-	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01) &&
+	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01) ||
 	  !projected );
 	j++){
 
@@ -84,6 +84,15 @@ int main( int argc, char *argv[] )
 	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
 	ratio = ratio - 0.05;
       }
+      printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	     gridMinAR(grid),gridMinVolume(grid));
+    }
+    if (projected) {
+      printf("node smoothing for face MR grid...\n");gridSmoothFaceMR(grid);
+      printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	     gridMinAR(grid),gridMinVolume(grid));
+      printf("edge swapping grid...\n");gridSwap(grid);
+      printf("node smoothing volume grid...\n");gridSmoothVolume(grid);    
       printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	     gridMinAR(grid),gridMinVolume(grid));
     }
