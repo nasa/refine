@@ -260,6 +260,40 @@ GridMove *gridmoveSpringRelaxationStartUp(GridMove *gm)
   return gm;
 }
 
+GridMove *gridmoveSpringRelaxationStartStep(GridMove *gm, double position)
+{
+  Grid *grid = gridmoveGrid(gm);
+  int node, s, i;
+  int n0, n1;
+  double res[3];
+
+  gridmoveSpringConstant(gm, gm->xyz, 
+			 gm->nsprings, gm->k, gm->springs,
+			 gm->c2e);
+  
+  for(node=0;node<3*gridMaxNode(grid);node++) gm->source[node]=0.0;
+  for(s=0;s<gm->nsprings;s++) {
+    n0 = gm->springs[0+2*s];
+    n1 = gm->springs[1+2*s];
+    for(i=0;i<3;i++) {
+      res[i] = gm->k[s] * ( gm->xyz[i+3*n0] - gm->xyz[i+3*n1] );
+      gm->source[i+3*n0] += res[i];
+      gm->source[i+3*n1] -= res[i];
+    }
+  }
+
+  for(node=0;node<gridMaxNode(grid);node++) {
+    if ( gridmoveSpecified(gm,node) && 
+	 grid == gridNodeXYZ(grid,node,&(gm->xyz[3*node]))) {
+      for(i=0;i<3;i++) {
+	gm->xyz[i+3*node] += position*gm->displacement[i+3*node];
+      }
+    }
+  }
+
+  return gm;
+}
+
 GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
 {
   Grid *grid = gridmoveGrid(gm);
@@ -267,32 +301,15 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   int s, node;
   int i, n0, n1;
   int step, iteration;
-  double stepSize;
+  double position;
   double residual, count;
 
   if (gm != gridmoveSpringRelaxationStartUp(gm)) return NULL;
 
-  stepSize = 1.0 / (double)nsteps;
   for(step=0;step<nsteps;step++) {
+    position = (double)(step+1)/(double)nsteps;
 
-    gridmoveSpringConstant(gm, gm->xyz, 
-			   gm->nsprings, gm->k, gm->springs,
-			   gm->c2e);
-
-    for(node=0;node<3*gridMaxNode(grid);node++) gm->source[node]=0.0;
-    for(s=0;s<gm->nsprings;s++) {
-      n0 = gm->springs[0+2*s];
-      n1 = gm->springs[1+2*s];
-      for(i=0;i<3;i++) {
-	res[i] = gm->k[s] * ( gm->xyz[i+3*n0] - gm->xyz[i+3*n1] );
-	gm->source[i+3*n0] += res[i];
-	gm->source[i+3*n1] -= res[i];
-      }
-    }
-
-    for(node=0;node<gridMaxNode(grid);node++)
-      if (gridValidNode(grid,node) && gridmoveSpecified(gm,node))
-	for(i=0;i<3;i++) gm->xyz[i+3*node] += stepSize*gm->displacement[i+3*node];
+    gridmoveSpringRelaxationStartStep(gm, position);    
 
     for(iteration=0;iteration<subIterations;iteration++) {
 
@@ -324,7 +341,7 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
       /*
       printf("Iteration %4d Residual %23.15e\n",iteration,sqrt(residual/count));
       */ 
-   }
+    }
   }
   
   for(node=0;node<gridMaxNode(grid);node++) {
