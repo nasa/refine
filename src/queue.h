@@ -69,7 +69,7 @@ int queueAddedFaces( Queue *, int transaction );
 Queue *queueAddedFaceNodes( Queue *, int index, int *nodes );
 Queue *queueAddedFaceUVs( Queue *, int index, double *uvs );
 
-Queue *queueDumpSize( Queue *, int *nInt, double *nDouble );
+Queue *queueDumpSize( Queue *, int *nInt, int *nDouble );
 Queue *queueDump( Queue *, int *ints, double *doubles );
 
 END_C_DECLORATION

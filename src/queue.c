@@ -251,44 +251,76 @@ Queue *queueAddedFaceUVs( Queue *queue, int index, double *xyzs )
   return queue;
 }
 
-Queue *queueDumpSize( Queue *queue, int *nInt, double *nDouble )
+Queue *queueDumpSize( Queue *queue, int *nInt, int *nDouble )
 {
   *nInt 
     = 5
     + 4 * queue->transactions
-    + 4 * queue->nRemovedCells;
-  *nDouble = 0;
+    + 4 * queue->nRemovedCells
+    + 5 * queue->nAddedCells
+    + 3 * queue->nRemovedFaces
+    + 4 * queue->nAddedFaces;
+  *nDouble = 12 * queue->nAddedCells + 6 * queue->nAddedFaces ;
   return queue;
 }
 
 Queue *queueDump( Queue *queue, int *ints, double *doubles )
 {
-  int i, transaction, removed;
+  int i, d, node, size, transaction, removed, added;
   ints[0] = queue->transactions;
   ints[1] = queue->nRemovedCells;
   ints[2] = queue->nAddedCells;
   ints[3] = queue->nRemovedFaces;
   ints[4] = queue->nAddedFaces;
   i = 5;
+  d = 0;
 
   for(transaction=0;transaction<queue->transactions;transaction++){
     ints[i] = queue->removedCells[transaction]; i++;
   }
   for(removed=0;removed<queue->nRemovedCells;removed++){
-    ints[i] = queue->removedCellNodes[0+4*removed]; i++;
-    ints[i] = queue->removedCellNodes[1+4*removed]; i++;
-    ints[i] = queue->removedCellNodes[2+4*removed]; i++;
-    ints[i] = queue->removedCellNodes[3+4*removed]; i++;
+    size = 4;
+    for (node=0;node<size;node++) { 
+      ints[i] = queue->removedCellNodes[node+size*removed]; i++;
+    }
   }
 
   for(transaction=0;transaction<queue->transactions;transaction++){
     ints[i] = queue->addedCells[transaction]; i++;
   }
+  for(added=0;added<queue->nAddedCells;added++){
+    size = 5;
+    for (node=0;node<size;node++) { 
+      ints[i] = queue->addedCellNodes[node+size*added]; i++;
+    }
+    size = 12;
+    for (node=0;node<size;node++) { 
+      doubles[d] = queue->addedCellXYZs[node+size*added]; d++;
+    }
+  }
+
   for(transaction=0;transaction<queue->transactions;transaction++){
     ints[i] = queue->removedFaces[transaction]; i++;
   }
+  for(removed=0;removed<queue->nRemovedFaces;removed++){
+    size = 3;
+    for (node=0;node<size;node++) { 
+      ints[i] = queue->removedFaceNodes[node+size*removed]; i++;
+    }
+  }
+
   for(transaction=0;transaction<queue->transactions;transaction++){
-    ints[i] = queue->removedFaces[transaction]; i++;
+    ints[i] = queue->addedFaces[transaction]; i++;
+  }
+  for(added=0;added<queue->nAddedFaces;added++){
+    size = 4;
+    for (node=0;node<size;node++) { 
+      ints[i] = queue->addedFaceNodes[node+size*added]; i++;
+    }
+    size = 6;
+    for (node=0;node<size;node++) { 
+      doubles[d] = queue->addedFaceUVs[node+size*added]; d++;
+    }
   }
 
   

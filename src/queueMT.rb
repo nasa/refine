@@ -211,4 +211,27 @@ class TestQueue < Test::Unit::TestCase
   q = Queue.new.removeCell(nodes)
   assert_equal [1,1,0,0,0, 1, 5,6,7,8, 0, 0, 0 ], q.dump
  end
+
+ def testSerializeAddCells
+  nodes = [5,6,7,8,9]
+  xyz = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2]
+  q = Queue.new.addCell(nodes,xyz)
+  assert_equal [1,0,1,0,0, 0, 1, 5,6,7,8,9, 0, 0, 
+    0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2  ], q.dump
+ end
+
+ def testSerializeRemoveFaces
+  nodes = [5,6,7]
+  q = Queue.new.removeFace(nodes)
+  assert_equal [1,0,0,1,0, 0, 0, 1, 5,6,7, 0 ], q.dump
+ end
+
+ def testSerializeAddFaces
+  nodes = [5,6,7,8]
+  uv = [0.1,0.2,0.3,0.4,0.5,0.6]
+  q = Queue.new.addFace(nodes,uv)
+  assert_equal [1,0,0,0,1, 0, 0, 0, 1, 5,6,7,8,
+    0.1,0.2,0.3,0.4,0.5,0.6 ], q.dump
+ end
+
 end
