@@ -53,6 +53,8 @@ GridBool CADGeom_GetEdge(int, int, double *, int *);
 CADCurvePtr CADGeom_EdgeGrid( int, int );
 #define CADCURVE_NUMPTS(edge) (-1)
 
+GridBool CADGeom_UpdateEdgeGrid(int, int, int, double *, double *);
+
 typedef struct _DList {
    magic_t    magic;
 } DList,*DListPtr;

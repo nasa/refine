@@ -260,6 +260,14 @@ void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
   gridGlobalShiftCell( grid, *oldncellg, *newncellg, *celloffset);
 }
 
+void gridrenumberglobalnodes_( int *nnode, int *new2old )
+{
+  int i;
+  for (i=0;i<*nnode;i++) new2old--;
+  gridRenumberGlobalNodes( grid, *nnode, new2old );
+  for (i=0;i<*nnode;i++) new2old++;
+}
+
 void gridnunusednodeglobal_( int *nunused )
 {
   *nunused = gridNUnusedNodeGlobal( grid );
@@ -659,6 +667,16 @@ void gridgeomsize_( int *nGeomNode, int *nGeomEdge, int *nGeomFace )
   *nGeomFace = gridNGeomFace(grid);
 }
 
+void gridlocalboundnode_( int *nBoundNode )
+{
+  int node, nnode;
+  nnode = 0;
+  for(node=0;node<gridMaxNode(grid);node++) 
+    if ( gridGeometryFace(grid,node) && gridNodeLocal(grid,node) ) nnode++;
+
+  *nBoundNode = nnode;
+}
+
 void gridgeomedgeendpoints_( int *edgeId, int *endPoints )
 {
   endPoints[0] = 1 + gridGeomEdgeStart(grid,*edgeId);
@@ -689,3 +707,35 @@ void gridedge_( int *edge, int *edgeId,
   }
 }
 
+void gridupdateedgegrid_(int *edgeId, int *nCurveNode, double *xyz, double *t)
+{
+  gridUpdateEdgeGrid( grid, *edgeId, *nCurveNode, xyz, t);
+}
+
+void gridmaxface_( int *maxface )
+{
+  *maxface = gridMaxFace( grid );
+}
+
+void gridface_( int *face, int *faceId,
+		int *globalnodes, int *nodeparts,
+		double *uv, double *xyz)
+{
+  int localnodes[3];
+  if (grid==gridFace(grid, (*face)-1, localnodes, faceId)) {
+    globalnodes[0] = 1 + gridNodeGlobal(grid,localnodes[0]);
+    globalnodes[1] = 1 + gridNodeGlobal(grid,localnodes[1]);
+    globalnodes[2] = 1 + gridNodeGlobal(grid,localnodes[2]);
+    nodeparts[0] = gridNodePart(grid,localnodes[0]);
+    nodeparts[1] = gridNodePart(grid,localnodes[1]);
+    nodeparts[2] = gridNodePart(grid,localnodes[2]);
+    gridNodeUV(grid,*faceId,localnodes[0],&uv[0*2]);
+    gridNodeUV(grid,*faceId,localnodes[1],&uv[1*2]);
+    gridNodeUV(grid,*faceId,localnodes[2],&uv[2*2]);
+    gridNodeXYZ(grid,localnodes[0],&xyz[0*3]);
+    gridNodeXYZ(grid,localnodes[1],&xyz[1*3]);
+    gridNodeXYZ(grid,localnodes[2],&xyz[2*3]);
+  }else{
+    *faceId = EMPTY;
+  }
+}

@@ -43,6 +43,7 @@ void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles );
 void gridsize_( int *nnodeg, int *ncellg );
 void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 		      int *oldncellg, int *newncellg, int *celloffset );
+void gridrenumberglobalnodes_( int *nnode, int *new2old );
 
 void gridnunusednodeglobal_( int *nunused );
 void gridgetunusednodeglobal_( int *nunused, int *unused );
@@ -94,11 +95,17 @@ void gridmovesetlocalnodedata_( int *ndim, int *nnode,
 void gridmovefree_( );
 
 void gridgeomsize_( int *nGeomNode, int *nGeomEdge, int *nGeomFace );
+void gridlocalboundnode_( int *nBoundNode );
 void gridgeomedgeendpoints_( int *edgeId, int *endPoints );
 void gridmaxedge_( int *maxedge );
 void gridedge_( int *edge, int *edgeId, 
 		int *globalnodes, int *nodeparts, 
 		double *t, double *xyz);
+void gridupdateedgegrid_(int *edgeId, int *nCurveNode, double *xyz, double *t);
+void gridmaxface_( int *maxface );
+void gridface_( int *face, int *faceId, 
+		int *globalnodes, int *nodeparts, 
+		double *uv, double *xyz);
 
 END_C_DECLORATION
 

@@ -19,6 +19,9 @@ BEGIN_C_DECLORATION
 Grid *gridParallelGeomLoad( Grid *, char *project );
 Grid *gridParallelGeomSave( Grid *, char *project );
 
+Grid *gridUpdateEdgeGrid( Grid *, int edgeId, int nCurveNode,
+			  double *xyz, double *t );
+
 END_C_DECLORATION
 
 #endif /* GRIDGEOM_H */

@@ -122,3 +122,11 @@ Grid *gridParallelGeomSave( Grid *grid, char *project )
   printf("DUMMY: gridParallelGeomSave for project %s\n",project);
   return grid;
 }
+
+Grid *gridUpdateEdgeGrid( Grid *grid, int edgeId, int nCurveNode, 
+			  double *xyz, double *t )
+{
+  int vol=1;
+  if (!CADGeom_UpdateEdgeGrid( vol, edgeId, nCurveNode, xyz, t)) return NULL;
+  return grid;
+}

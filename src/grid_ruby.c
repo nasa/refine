@@ -769,6 +769,19 @@ VALUE grid_global2local( VALUE self, VALUE global )
   return INT2NUM( gridGlobal2Local( grid, NUM2INT(global) ) );
 }
 
+VALUE grid_renumberGlobalNodes( VALUE self, VALUE rb_n2o )
+{
+  int i, nnode, *n2o;
+  VALUE value;
+  GET_GRID_FROM_SELF;
+  nnode = RARRAY(rb_n2o)->len;
+  n2o = malloc(nnode*sizeof(int));
+  for(i=0;i<nnode;i++) n2o[i] = NUM2INT( rb_ary_entry(rb_n2o,i) );
+  value = (grid==gridRenumberGlobalNodes(grid,nnode,n2o)?self:Qnil);
+  free(n2o);
+  return value;
+}
+
 VALUE grid_nodePart( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -1106,6 +1119,7 @@ void Init_Grid()
   rb_define_method( cGrid, "nodeGlobal", grid_nodeGlobal, 1 );
   rb_define_method( cGrid, "global2local", grid_global2local, 1 );
   rb_define_method( cGrid, "setNodeGlobal", grid_setNodeGlobal, 2 );
+  rb_define_method( cGrid, "renumberGlobalNodes", grid_renumberGlobalNodes, 1 );
   rb_define_method( cGrid, "nodePart", grid_nodePart, 1 );
   rb_define_method( cGrid, "setNodePart", grid_setNodePart, 2 );
   rb_define_method( cGrid, "nodeLocal", grid_nodeLocal, 1 );

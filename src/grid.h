@@ -199,6 +199,7 @@ Grid *gridWriteTecplotCellZone(Grid *g, int *nodes, char *filename );
 int gridNPrism(Grid *g);
 int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);
+int gridNBoundNode(Grid *g);
 int gridNAux(Grid *g);
 Grid *gridSetNAux(Grid *g, int naux);
 double gridAux(Grid *g, int node, int aux);
@@ -363,6 +364,7 @@ int gridGlobal2Local(Grid *g, int global );
 Grid *gridSetNodeGlobal(Grid *g, int node, int global );
 Grid *gridGlobalShiftNode(Grid *g, int oldnnodeg, int newnnodeg, 
 			  int nodeoffset );
+Grid *gridRenumberGlobalNodes(Grid *g, int nnode, int *n2o);
 int gridNodePart(Grid *g, int node );
 Grid *gridSetNodePart(Grid *g, int node, int part );
 GridBool gridNodeLocal(Grid *g, int node );

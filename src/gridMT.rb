@@ -692,6 +692,19 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 4, grid.global2local(101)
  end
 
+ def testRenumberGlobalNodes
+  grid = Grid.new(5,0,0,0)
+  5.times do |n|
+   grid.addNodeWithGlobal(1.0,2.0,3.0,100+n)
+  end
+  assert_not_nil grid.renumberGlobalNodes([100,101,102,103,104])
+  assert_equal 0, grid.nodeGlobal(0)
+  assert_equal 1, grid.nodeGlobal(1)
+  assert_equal 2, grid.nodeGlobal(2)
+  assert_equal 3, grid.nodeGlobal(3)
+  assert_equal 4, grid.nodeGlobal(4)
+ end
+
  def testNumberOfFaces
   assert_not_nil  grid = Grid.new(4,1,2,0)
   assert_equal 0, grid.nface 

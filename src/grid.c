@@ -1124,6 +1124,15 @@ int gridNQuad(Grid *grid)
   return grid->nquad;
 }
 
+int gridNBoundNode(Grid *grid)
+{
+  int node, nnode;
+  nnode = 0;
+  for(node=0;node<gridMaxNode(grid);node++) 
+    if (gridGeometryFace(grid,node)) nnode++;
+  return nnode;
+}
+
 int gridPartId(Grid *grid)
 {
   return grid->partId;
@@ -3154,6 +3163,22 @@ Grid *gridGlobalShiftNode(Grid *grid, int oldnnodeg, int newnnodeg,
       grid->sortedGlobal[node] += nodeoffset;
 
   return grid;
+}
+
+Grid *gridRenumberGlobalNodes(Grid *grid, int nnode, int *n2o)
+{
+  int local;
+  int oldglobal, newglobal;
+  for (newglobal=0;newglobal<nnode;newglobal++){
+    oldglobal = n2o[newglobal];
+    if (newglobal != oldglobal) {
+      local = gridGlobal2Local(grid, oldglobal );
+      if ( EMPTY != local ) {
+	gridSetNodeGlobal(grid, local, newglobal);
+      }
+    }
+  }
+  return NULL;
 }
 
 int gridNodePart(Grid *grid, int node )

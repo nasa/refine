@@ -27,6 +27,12 @@ CADCurvePtr CADGeom_EdgeGrid( int a, int b)
   return NULL;
 }
 
+GridBool CADGeom_UpdateEdgeGrid(int vol, int iedge, int nCurveNode,
+				double *xyz, double *t)
+{
+  return FALSE;
+}
+
 CADCurvePtr CADGeom_EdgeGrid( int, int );
 
 void *DList_SetIteratorToHead(DListPtr dlp,Iterator *dli)

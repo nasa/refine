@@ -1,3 +1,13 @@
+2004-06-21 11:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c exposed gridedge and gridface.
+
+2004-06-10 20:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c exposed CADGeom_UpdateEdgeGrid to enable 
+	an CAPRI update and save of post-adaptation edge geometry. 
+	* src/FAKEGeomExtras.c added mock CADGeom_UpdateEdgeGrid.
+
 2004-06-02 08:29 Mike Park  <mike.park@nasa.gov>
 
 	* Made 0.7.4 Release. gridmove and CAPRI(CADGeom) work in parallel.
