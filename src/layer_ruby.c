@@ -441,12 +441,6 @@ VALUE layer_blend( VALUE self, VALUE angle )
   return ( layer == layerBlend(layer,NUM2DBL(angle))?self:Qnil );
 }
 
-VALUE layer_splitBlend( VALUE self )
-{
-  GET_LAYER_FROM_SELF;
-  return ( layer == layerSplitBlend(layer)?self:Qnil );
-}
-
 VALUE layer_extrudeBlend( VALUE self, VALUE dx, VALUE dy, VALUE dz )
 {
   GET_LAYER_FROM_SELF;
@@ -583,7 +577,6 @@ void Init_Layer()
   rb_define_method( cLayer, "firstTriangleAfterGap", layer_firstTriangleAfterGap, 1 );
   rb_define_method( cLayer, "nRequiredBlends", layer_nRequiredBlends, 2 );
   rb_define_method( cLayer, "blend", layer_blend, 1 );
-  rb_define_method( cLayer, "splitBlend", layer_splitBlend, 0 );
   rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
   rb_define_method( cLayer, "blendDegree", layer_blendDegree, 1 );

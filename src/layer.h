@@ -211,12 +211,10 @@ bool layerTetrahedraOnly(Layer *);
 Layer *layerToggleMixedElementMode(Layer *);
 
 Adj *layerBuildNormalBlendAdjacency(Layer *layer);
-Layer *layerSplitBlend(Layer *);
 int layerFirstTriangleAfterGap(Layer *, int normal );
 int layerNRequiredBlends(Layer *, int normal, double angleLimit );
 Layer *layerBlend(Layer *, double angleLimit );
 int layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
-Layer *layerDuplicateAllBlend(Layer *);
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
 #define layerBlendAdj(layer) (layer->blendAdj)
 int layerBlendDegree(Layer *, int normal);

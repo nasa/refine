@@ -1316,35 +1316,6 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0, layer.blendDegree(1)
  end
 
- def testSplitBlend
-  grid  = flatTwoFaceGrid
-  grid.setNodeXYZ(3,[0.5,0.5,-1])
-  layer = Layer.new(grid).populateAdvancingFront([1])
-  layer.blend(-1.0)
-  assert_equal 1,     layer.nblend
-  assert_equal layer, layer.splitBlend
-  assert_equal 2,     layer.nblend
-  assert_equal [0,4,2], layer.triangleNormals(0)
-  assert_equal [5,1,3], layer.triangleNormals(1)
-  assert_equal [6,1,7,5], layer.blendNormals(0)
-  assert_equal [4,6,2,7], layer.blendNormals(1)
- end
-
- def testSplitSplitBlend
-  grid  = flatTwoFaceGrid
-  grid.setNodeXYZ(3,[0.5,0.5,-1])
-  layer = Layer.new(grid).populateAdvancingFront([1])
-  layer.blend(-1.0).splitBlend
-  assert_equal 2,     layer.nblend
-  assert_equal layer, layer.splitBlend
-  assert_equal 4,     layer.nblend
-  assert_equal [0,4,2], layer.triangleNormals(0)
-  assert_equal [5,1,3], layer.triangleNormals(1)
-  assert_equal [ 8, 1, 9, 5], layer.blendNormals(0)
-  assert_equal [10, 6,11, 7], layer.blendNormals(1)
-  assert_equal [ 6, 8, 7, 9], layer.blendNormals(2)
-  assert_equal [ 4,10, 2,11], layer.blendNormals(3)
- end
 
  def fourFaceConvex
   #        2
@@ -1453,18 +1424,6 @@ class TestLayer < Test::Unit::TestCase
   #       7 3
   assert_equal [0,5,2,6], layer.blendNormals(1)
   assert_equal [5,0,3,7], layer.blendNormals(0)
- end
-
- def testSplitBlendForTwoConvextFaces
-  grid = fourFaceConvex
-  layer = Layer.new(grid).populateAdvancingFront([1])
-  layer.blend(-1.0)
-  layer.splitBlend
-  assert_equal 4,         layer.nblend
-  assert_equal [8,0,9,7], layer.blendNormals(0)
-  assert_equal [8,5,10,6],layer.blendNormals(1)
-  assert_equal [5,8,3,9], layer.blendNormals(2)
-  assert_equal [0,8,2,10],layer.blendNormals(3)
  end
 
  def testAdvanceBlendForConvextFace_ConvertBlendToTriangle

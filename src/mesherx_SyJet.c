@@ -188,17 +188,6 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
     layerScaleNormalHeight(layer,scalev);
 */
 
-    printf( "split blends...\n");
-    layerSplitBlend(layer); 
-
-/*
-    printf( "split blends...\n");
-    layerSplitBlend(layer); 
-
-    printf( "split blends...\n");
-    layerSplitBlend(layer); 
-    if (scalev < 0.55) layerSplitBlend(layer);
-*/
   }
 
   i=0;
