@@ -8,6 +8,7 @@ libMesherX_a_SOURCES = \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
 	gridfiller.h gridfiller.c \
+	near.h near.c \
 	layer.h layer.c \
 	mesherx.c
 
@@ -16,6 +17,7 @@ include_HEADERS = \
 	mesherx.h \
 	adj.h \
 	grid.h \
+	near.h \
 	layer.h
 
 bin_PROGRAMS = refine MesherX
@@ -36,4 +38,4 @@ EXTRA_DIST = makeRubyExtension.rb \
 	FAKEGeom.h FAKEGeom.c \
 	layerMT.rb layer_ruby.c
 
-TESTS = adjMT.rb gridMT.rb gridmetricMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb layerMT.rb MesherX
+TESTS = adjMT.rb gridMT.rb gridmetricMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb layerMT.rb nearMT.rb MesherX
