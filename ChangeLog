@@ -10,7 +10,7 @@
 
 	* test/cyl.* Added a unit cylander test case with 5 unit outer
 	boundary. Created Plot3D surfaces with cyl.m, patched up with
-	GridTool (cyl.rst), and dumped Native cyl.dat
+	GridTool (cyl.rst), and dumped Native cyl.dat and cyl.capri.
 
 2004-09-29 23:40 Mike Park  <mike.park@nasa.gov>
 
