@@ -36,6 +36,8 @@ Grid *gridOptimizeFaceUV(Grid *g, int node, double *dudv );
 Grid *gridOptimizeXYZ(Grid *g, int node, double *dxdydz );
 Grid *gridSmartLaplacian(Grid *g, int node );
 
+Grid *gridSmoothNodeQP(Grid *g, int node );
+
 END_C_DECLORATION
 
 #endif /* GRIDCAD_H */

@@ -13,6 +13,7 @@
 #include <math.h>
 #include <values.h>
 #include "CADGeom/CADGeom.h"
+#include "gridmetric.h"
 #include "gridcad.h"
 #include "gridinsert.h"
 #include "adj.h"
@@ -280,6 +281,7 @@ Grid *gridSmoothNode(Grid *grid, int node )
   int vol =1;
   int face, faceId;
   int edge, edgeId;
+  int maxsmooth;
 
   if ( gridGeometryNode( grid, node ) ) return grid;
   if ( gridGeometryEdge( grid, node ) ) {
@@ -316,9 +318,15 @@ Grid *gridSmoothNode(Grid *grid, int node )
       dARdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
     }
     return gridOptimizeUV( grid, node, dARdu );
-  }    
-  gridNodeARDerivative ( grid, node, &ar, dARdx);
-  return gridOptimizeXYZ( grid, node, dARdx );
+  }
+  if (FALSE) {
+    gridNodeARDerivative ( grid, node, &ar, dARdx);
+    return gridOptimizeXYZ( grid, node, dARdx );
+  }else{
+    maxsmooth = 100;
+    while ( grid == gridSmoothNodeQP(grid,node) && maxsmooth >0) maxsmooth--;
+    return grid;
+  }
 }
 
 
@@ -672,6 +680,61 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
   
   if ( origAR > newAR ) {
     for (ixyz = 0 ; ixyz < 3 ; ixyz++ ) grid->xyz[ixyz+3*node] = origXYZ[ixyz];
+    return NULL;
+  }
+
+  return grid;
+}
+
+Grid *gridSmoothNodeQP(Grid *grid, int node )
+{
+  int i, minCell;
+  double minAR, newAR, searchDirection[3], length, projection;
+  double deltaAR, currentAlpha, alpha;
+  double origXYZ[3], xyz[3];
+
+  if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;
+  if ( grid != gridStoreARDerivative(grid, node ) ) return NULL;
+
+  minAR =1.1;
+  minCell = EMPTY;
+  for (i=0;i<gridStoreARDegree(grid);i++){
+    if (grid->AR[i]<minAR){
+      minAR = grid->AR[i];
+      minCell = i;
+    }
+  }
+
+  for (i=0;i<3;i++) searchDirection[i] = grid->dARdX[i+minCell*3];
+  length 
+    = searchDirection[0]*searchDirection[0]
+    + searchDirection[1]*searchDirection[1]
+    + searchDirection[2]*searchDirection[2];
+  for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
+
+  alpha = 1.0;
+  for (i=0;i<gridStoreARDegree(grid);i++){
+    if (i != minCell ) {
+      projection
+	= searchDirection[0]*grid->dARdX[0+i*3]
+	+ searchDirection[1]*grid->dARdX[1+i*3]
+	+ searchDirection[2]*grid->dARdX[2+i*3];
+      deltaAR = grid->AR[i] - minAR;
+      if (ABS(length-projection) < 1e-12){
+	currentAlpha=0.0; /* no intersection */
+      }else{
+	currentAlpha = deltaAR / ( length / projection);
+      }
+      if (currentAlpha > 0 && currentAlpha < alpha ) alpha = currentAlpha;
+    }
+  }
+
+  for (i=0;i<3;i++) xyz[i] = origXYZ[i] + alpha*searchDirection[i];
+  gridSetNodeXYZ(grid,node,xyz);
+  gridNodeAR(grid,node,&newAR);
+  
+  if ( newAR < minAR ){
+    gridSetNodeXYZ(grid,node,origXYZ);
     return NULL;
   }
 
