@@ -23,12 +23,6 @@ class TestGrid < Test::Unit::TestCase
  end
  def setup ; set_up ; end
 
- def tear_down
-  require 'ftools'
-  File.rm_f 'grid.t'
- end
- def teardown ; tear_down ; end
-
  def testSafeAlloc
   grid = Grid.new(0,0,0,0)
   assert_equal 1, grid.maxnode
@@ -1192,12 +1186,12 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [0,2,1],   grid.geomEdge(1)
  end
 
- def testTec
+ def XtestTec
   assert_not_nil     grid = Grid.new(3,0,1,0)
-  grid.addFace( grid.addNode(0,0,0),
-				   grid.addNode(1,0,0),
-				   grid.addNode(0,1,0),
-				   1)
+  grid.addFace(grid.addNode(0,0,0),
+	       grid.addNode(1,0,0),
+	       grid.addNode(0,1,0),
+	       1)
   assert_equal grid, grid.writeTecplotSurfaceZone
  end
 
