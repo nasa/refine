@@ -1140,7 +1140,7 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
 
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
 
-  lengthScale = gridAverageEdgeLength(grid, node );
+  lengthScale = 0.1*gridAverageEdgeLength(grid, node );
 
   for(s=0;s<4;s++)
     for(i=0;i<3;i++)
@@ -1160,8 +1160,7 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
     for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
 
   evaluations = 4;
-  while (evaluations < 200 ) {
-
+  while (evaluations < 1000 ) {
 
     best = 0;
     if ( volume[0] > volume[1] ) {
@@ -1186,7 +1185,7 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
                evaluations, volume[best], volume[worst]); */
     if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
 
-    if (volume[best]-volume[worst] < ABS(1.0e-5*volume[best])) break;
+    if (volume[best]-volume[worst] < ABS(1.0e-8*volume[best])) break;
 
     evaluations++;
     newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, -1.0 );
@@ -1273,6 +1272,16 @@ Grid *gridRelaxNegativeCells(Grid *grid)
     if (grid==gridCell(grid, cell, nodes)) {
       volume = gridVolume(grid,nodes);
       if (0.0>=volume){
+	if ( gridGeometryFace(grid, nodes[0]) &&
+	     gridGeometryFace(grid, nodes[1]) &&
+	     gridGeometryFace(grid, nodes[2]) &&
+	     gridGeometryFace(grid, nodes[3]) ) {
+	  printf("all nodes at %f are on boundary\n",volume);
+	  printf("faceId 0 %d\n",gridFaceId(grid,nodes[0],nodes[1],nodes[2]));
+	  printf("faceId 1 %d\n",gridFaceId(grid,nodes[1],nodes[0],nodes[3]));
+	  printf("faceId 2 %d\n",gridFaceId(grid,nodes[1],nodes[3],nodes[2]));
+	  printf("faceId 3 %d\n",gridFaceId(grid,nodes[0],nodes[2],nodes[3]));
+	}
 	for (i=0;i<4;i++) {
 	  node = nodes[i];
 	  gridSmoothVolumeNearNode(grid, node);
