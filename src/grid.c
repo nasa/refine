@@ -229,6 +229,30 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
   return grid;
 }
 
+Grid *gridPack(Grid *grid)
+{
+  int nodeId, current, deg;
+  current = 1;
+  for ( nodeId=0 ; nodeId<grid->nnode ; nodeId++) {
+    deg = gridNodeDeg( grid, nodeId );
+    if ( deg == 0 ) {
+      grid->firstcell[nodeId] = 0;
+    }else{
+      grid->firstcell[nodeId] = current;
+      for ( gridFirstNodeCell(grid,nodeId); 
+	    gridValidNodeCell(grid); 
+	    gridNextNodeCell(grid)){
+	grid->celllist[current] = gridCurrentNodeCell(grid)+1;
+	current++;
+      }
+      grid->celllist[current] = 0;
+      current++;
+    }
+  }
+  grid->firstblankcell = current;
+  return grid;
+}
+
 Grid *gridGetGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
 {
   int cellId, inode;
