@@ -52,7 +52,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     rate = exp(scale*log(1.05));
   }else{
     nLayer = (int)(60.0/scale);
-    rate = exp(scale*log(1.25));
+    rate = exp(scale*log(1.15));
   }
 
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
@@ -81,9 +81,6 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   if (bil) {
     layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
 				      origin, direction );
-  }else{
-    layerLaminarInitialHeight(layer, 5000.0, -0.01 );
-    layerScaleNormalHeight(layer,scale);
   }
 
   if (blendElement) {
@@ -95,9 +92,9 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     origin[1] = 0.0;
     origin[2] = 0.0;
     direction[0] = 1.0;
-    direction[1] = 0.0164;
+    direction[1] = 0.0;
     direction[2] = 0.0;
-    layerCreateWakeWithBGSpacing(layer, origin, direction, 1.5 );
+    layerCreateWakeWithBGSpacing(layer, origin, direction, 1.0 );
 
     origin[0] = -0.01;
     origin[1] = 0.0;
@@ -105,10 +102,10 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     direction[0] = 1.0;
     direction[1] = 0.0;
     direction[2] = 0.0;
-    layerAssignPolynomialNormalHeight(layer, 1.0e-5, 4.0e-5, 1.0, 
+    layerAssignPolynomialNormalHeight(layer, 1.5e-4, 1.0e-3, 1.0, 
 				      origin, direction );
     origin[0] = 1.0;
-    layerAssignPolynomialNormalHeight(layer, 5.0e-5, 5.0e-4, 1.0, 
+    layerAssignPolynomialNormalHeight(layer, 1.15e-3, 1.0e-2, 2.0, 
 				      origin, direction );
     layerScaleNormalHeight(layer,scale);
     printf("split blends...\n");
@@ -560,6 +557,26 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	/* project all nodes for safety. rebuilt edge has no uv */
 	CADGeom_ResolveOnFace(vol,faceId,&shellxyz[3*i],&shelluv[2*i],resolved);
       }
+
+      if (FALSE) {
+	FILE *mfile;
+	char filename[256];
+
+	printf("Dumping face wire shell.\n");
+	sprintf(filename,"face%d.m",faceId);
+	mfile = fopen(filename,"w");
+	fprintf(mfile,"face=[\n");
+	for(i=0;i<nshell;i++){
+	  fprintf(mfile,"%20.10f %20.10f\n%20.10f %20.10f\n",
+		  shellxyz[0+3*shell[0+2*i]],shellxyz[1+3*shell[0+2*i]],
+		  shellxyz[0+3*shell[1+2*i]],shellxyz[1+3*shell[1+2*i]]);
+	}
+	fprintf(mfile,"];\n");
+	fprintf(mfile," gset term postscript; gset output 'face%d.ps'; \n",faceId);
+	fprintf(mfile,"gplot [:] [:] face\n");
+	fclose(mfile);
+      }
+
 
       nfacenode = EMPTY;
       nfacetri  = EMPTY;
