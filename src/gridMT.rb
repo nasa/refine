@@ -533,6 +533,8 @@ class TestGrid < Test::Unit::TestCase
   assert_nil              grid.addGeomEdge(1,0,1)
   assert_equal grid,      grid.setNGeomEdge(1)
   assert_equal 1,         grid.nGeomEdge
+  assert_equal( -1,       grid.geomEdgeStart(1))
+  assert_equal( -1,       grid.geomEdgeEnd(1))
   assert_equal grid,      grid.addGeomEdge(1,0,1)
   assert_nil              grid.addGeomEdge(2,0,1)
   assert_equal grid,      grid.addEdge(0,2,1,0.0,2.0)
@@ -540,6 +542,14 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 3,         grid.geomEdgeSize(1)
   assert_equal grid,      grid.addGeomEdge(1,1,0)
   assert_equal [1, 2, 0], grid.geomEdge(1)
+  assert_equal( -1,        grid.geomEdgeStart(-1))
+  assert_equal( -1,        grid.geomEdgeEnd(-1))
+  assert_equal( -1,        grid.geomEdgeStart(0))
+  assert_equal( -1,        grid.geomEdgeEnd(0))
+  assert_equal(  1,        grid.geomEdgeStart(1))
+  assert_equal(  0,        grid.geomEdgeEnd(1))
+  assert_equal( -1,        grid.geomEdgeStart(2))
+  assert_equal( -1,        grid.geomEdgeEnd(2))
  end
 
  def testSortNodesToGridExStandard

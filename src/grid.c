@@ -1889,9 +1889,11 @@ int gridNGeomEdge(Grid *grid)
 
 Grid *gridSetNGeomEdge(Grid *grid, int nGeomEdge)
 {
+  int i;
   grid->nGeomEdge = nGeomEdge;
   if ( NULL != grid->geomEdge) free(grid->geomEdge);
   grid->geomEdge = malloc(2*nGeomEdge*sizeof(int));
+  for (i=0;i<2*nGeomEdge;i++) grid->geomEdge[i]=EMPTY;
   return grid;
 }
 
@@ -1914,16 +1916,34 @@ Grid *gridAddGeomEdge(Grid *grid, int edge, int n0, int n1 )
   return grid;
 }
 
-int gridGeomEdgeSize( Grid *grid, int edge )
+int gridGeomEdgeStart( Grid *grid, int edge )
 {
   if ( edge<1 || edge>grid->nGeomEdge ) return EMPTY;
-  return gridGeomCurveSize( grid, edge, grid->geomEdge[0+2*(edge-1)]);
+  if ( NULL == grid->geomEdge) return EMPTY;
+  return grid->geomEdge[0+2*(edge-1)];
+}
+
+int gridGeomEdgeEnd( Grid *grid, int edge )
+{
+  if ( edge<1 || edge>grid->nGeomEdge ) return EMPTY;
+  if ( NULL == grid->geomEdge) return EMPTY;
+  return grid->geomEdge[1+2*(edge-1)];
+}
+
+int gridGeomEdgeSize( Grid *grid, int edge )
+{
+  int startNode;
+  startNode = gridGeomEdgeStart( grid, edge );
+  if ( startNode == EMPTY ) return EMPTY;
+  return gridGeomCurveSize( grid, edge, startNode );
 }
 
 Grid *gridGeomEdge( Grid *grid, int edge, int *curve )
 {
-  if ( edge<1 || edge>grid->nGeomEdge ) return NULL;
-  return gridGeomCurve( grid, edge, grid->geomEdge[0+2*(edge-1)], curve );
+  int startNode;
+  startNode = gridGeomEdgeStart( grid, edge );
+  if ( startNode == EMPTY ) return NULL;
+  return gridGeomCurve( grid, edge, startNode, curve );
 }
 
 bool gridGeometryNode(Grid *grid, int node)

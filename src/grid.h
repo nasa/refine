@@ -125,6 +125,8 @@ int gridNGeomFace(Grid *g);
 Grid *gridSetNGeomFace(Grid *g, int nGeomFace);
 
 Grid *gridAddGeomEdge(Grid *g, int edgeId, int n0, int n1);
+int gridGeomEdgeStart( Grid *g, int edgeId );
+int gridGeomEdgeEnd( Grid *g, int edgeId );
 int gridGeomEdgeSize( Grid *g, int edgeId );
 Grid *gridGeomEdge( Grid *g, int edgeId, int *curve );
 
