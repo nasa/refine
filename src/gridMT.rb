@@ -224,6 +224,9 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [30.0,130.0], grid.nodeUV(0,3)
   assert_equal [31.0,131.0], grid.nodeUV(1,3)
   assert_equal [33.0,133.0], grid.nodeUV(3,3)
+  assert_equal grid,         grid.setNodeUV(0,2,8.0,9.0)
+  assert_equal [8.0,9.0],    grid.nodeUV(0,2)
+
  end
 
  def testSplitEdge4

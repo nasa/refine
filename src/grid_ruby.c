@@ -174,6 +174,13 @@ VALUE grid_nodeUV( VALUE self, VALUE node, VALUE faceId )
   return rb_uv;
 }
 
+VALUE grid_setNodeUV( VALUE self, VALUE node, VALUE faceId, VALUE u, VALUE v )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSetNodeUV( grid, NUM2INT(node), NUM2INT(faceId), 
+			 NUM2DBL(u), NUM2DBL(v) )==grid?self:Qnil);
+}
+
 VALUE grid_nodeT( VALUE self, VALUE node, VALUE edgeId )
 {
   double t;
@@ -186,7 +193,8 @@ VALUE grid_nodeT( VALUE self, VALUE node, VALUE edgeId )
 VALUE grid_setNodeT( VALUE self, VALUE node, VALUE edgeId, VALUE t )
 {
   GET_GRID_FROM_SELF;
-  return (gridSetNodeT( grid, NUM2INT(node), NUM2INT(edgeId), NUM2DBL(t) )==grid?self:Qnil);
+  return (gridSetNodeT( grid, NUM2INT(node), NUM2INT(edgeId), 
+			NUM2DBL(t) )==grid?self:Qnil);
 }
 
 VALUE grid_addEdge( VALUE self, VALUE n0, VALUE n1, 
@@ -441,6 +449,7 @@ void Init_Grid()
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
 
   rb_define_method( cGrid, "nodeUV", grid_nodeUV, 2 );
+  rb_define_method( cGrid, "setNodeUV", grid_setNodeUV, 4 );
   rb_define_method( cGrid, "nodeT", grid_nodeT, 2 );
   rb_define_method( cGrid, "setNodeT", grid_setNodeT, 3 );
 

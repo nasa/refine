@@ -566,6 +566,30 @@ Grid *gridNodeUV(Grid *grid, int  node, int faceId, double *uv )
   return NULL;
 }
 
+Grid *gridSetNodeUV(Grid *grid, int  node, int faceId, double u, double v )
+{
+  AdjIterator it;
+  int face, i;
+  bool found;
+  found = FALSE;
+
+  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+    face = adjItem(it);
+    if ( grid->faceId[face] == faceId ) {
+      for ( i=0 ; i<3 ; i++ ) {
+	if (grid->f2n[i+3*face] == node){
+	  grid->faceU[i+3*face] = u;
+	  grid->faceV[i+3*face] = v;
+	  found = TRUE;
+	}
+      }
+    }
+  }
+
+  if (found) return grid;
+  return NULL;
+}
+
 double gridNodeU(Grid *grid, int node, int faceId)
 {
   double uv[2];

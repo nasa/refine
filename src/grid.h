@@ -52,6 +52,7 @@ int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 
 Grid *gridNodeUV(Grid *g, int node, int faceId, double *uv );
+Grid *gridSetNodeUV(Grid *g, int node, int faceId, double u, double v );
 double gridNodeU(Grid *grid, int node, int faceId);
 double gridNodeV(Grid *grid, int node, int faceId);
 Grid *gridNodeT(Grid *g, int node, int edgeId, double *t );
