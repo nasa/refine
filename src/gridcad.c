@@ -1222,7 +1222,7 @@ Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
   return grid;
 }
 
-Grid *gridSmoothNodeQP(Grid *grid, int node )
+Grid *gridLinearProgramXYZ(Grid *grid, int node )
 {
   int i, minCell, nearestCell;
   double minAR, nearestAR, nearestDifference, newAR, searchDirection[3];
