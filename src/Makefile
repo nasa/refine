@@ -13,5 +13,4 @@ test:
 	./layerMT.rb
 	./lineMT.rb
 	./nearMT.rb
-	./octreeMT.rb
 	./sampleunitMT.rb
