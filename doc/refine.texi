@@ -206,6 +206,9 @@ method.
 @section Sort
 @cindex sort
 
+The sort object contains a heap sort routine @code{sortHeap} and a
+binary search routine for sorted elements @{sortSearch}.
+
 @node Index
 @unnumbered Index
 
