@@ -1126,6 +1126,14 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
   return grid;
 }
 
+Grid *gridWriteTecplotComment(Grid *grid, char *comment)
+{
+  if (NULL == grid->tecplotGeomFile) return NULL;
+  fprintf(grid->tecplotGeomFile, "# %s\n", comment);
+  fflush(grid->tecplotGeomFile);
+  return grid;
+}
+
 Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, char *filename)
 {
   int i;

@@ -1,3 +1,12 @@
+2005-02-21 00:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotComment) To allow the insertion of
+	comments into tecplot files I added this function.
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) dump flagged
+	cell info to tecplot file as comments instead of stdout. This is
+	to make it easier to investigate negative cells by having full
+	info on hte cell next to its geometry.
+	
 2005-02-17 22:36 Mike Park  <mike.park@nasa.gov>
 
 	* src/FAKEGeomExtras.c (ErrMgr_Append) Added for fake
