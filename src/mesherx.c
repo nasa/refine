@@ -27,6 +27,8 @@
 #include "MeatLib/ErrMgr.h"
 #include "MeatLib/GeoBC.h"
 
+#define CHK_VOLUME { double minVolume; minVolume = gridMinVolume( grid ); printf("minimum volume%16.12f\n",minVolume); if (minVolume<1.0e-14) { printf("ERROR: return due to volume.\n"); return 0; } }
+
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 			      bool mixedElement,
 			      bool blendElement,
@@ -92,11 +94,13 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     if (layerNNormal(layer)==layerNActiveNormal(layer)) 
       layerSmoothNormalDirection(layer,0.1);
 
+    if (i>10) rate += 0.01;
+    if (rate>1.3) rate=1.3;
     layerSetNormalHeightWithMaxRate(layer,rate);
     //layerSetNormalHeightForLayerNumber(layer,i-1,rate);
     //layerSmoothLayerWithHeight(layer);
 
-    //layerTerminateNormalWithLength(layer,1.0);
+    layerTerminateNormalWithLength(layer,1.0);
     layerTerminateNormalWithBGSpacing(layer, 0.8, 1.9);
 
     if (layerNNormal(layer)>layerNActiveNormal(layer)) 
@@ -106,7 +110,10 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
     layerAdvance(layer);
 
-    if (i/5*5==i) layerWriteTecplotFrontGeometry(layer);
+    if (i/5*5==i || i >15) {
+      layerWriteTecplotFrontGeometry(layer);
+      CHK_VOLUME;
+    }
   }
   layerWriteTecplotFrontGeometry(layer);
 /* case dep */
