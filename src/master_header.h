@@ -19,6 +19,25 @@
 #  define END_C_DECLORATION
 #endif
 
+BEGIN_C_DECLORATION
+
 #define EMPTY (-1)
+
+/* lifted defs from the SDK/MeatLib/Common.h */
+
+#undef TRUE
+#undef FALSE
+ 
+#if defined(__cplusplus)
+typedef short   bool;
+#define TRUE    ((bool)true)
+#define FALSE   ((bool)false)
+#else
+typedef short   bool;
+#define TRUE    ((bool)1)
+#define FALSE   ((bool)0)
+#endif
+
+END_C_DECLORATION
 
 #endif /* MASTER_HEADER_H */
