@@ -89,6 +89,9 @@ TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb queueMT.rb gridMT.
 bin_PROGRAMS =
 
 if BUILD_SDK_DEPENDENTS
+
+if BUILD_NATIVE_KERNEL
+
 all_CFLAGS = @SDKheader@
 refineLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache -lMeat
 MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache libOctree_Stub.a -lMeat
@@ -105,7 +108,6 @@ mesherx_hla.c : mesherx_SyJet.c
 
 LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
 
-if BUILD_NATIVE_KERNEL
 bin_PROGRAMS += refineNative MesherXNative MesherX_HLANative
 refineNative_CFLAGS = $(all_CFLAGS)
 refineNative_SOURCES = main.c
