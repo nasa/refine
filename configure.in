@@ -3,6 +3,7 @@ AC_INIT(src/tet_test.c)
 AM_INIT_AUTOMAKE(tet_test,1.0)
 
 dnl Checks for std C stuff
+AC_PROG_CC
 AC_HEADER_STDC
 
 dnl This macro is defined in check.m4 and tests if check.h and libcheck.a
