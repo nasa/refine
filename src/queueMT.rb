@@ -254,7 +254,21 @@ class TestQueue < Test::Unit::TestCase
   assert_equal edgeId,    q.addedEdgeId(0)
   assert_equal nodeParts, q.addedEdgeNodeParts(0)
   assert_equal t,         q.addedEdgeTs(0)
-  end
+ end
+
+ def testResetCurrentTransactionFaces
+  faceId = 8
+  nodes = [0,1,2]
+  nodeParts = [50,51,52]
+  uvs = [ 10,11, 20,21, 30,31 ]
+  q = Queue.new(3).addFace(nodes,faceId,nodeParts,uvs)
+  q.newTransaction
+  q.addFace([9,9,9],60,[7,7,7],[1,2, 1,2, 1,2])
+  q.resetCurrentTransaction
+  assert_equal 2, q.transactions
+  assert_equal 1, q.addedFaces(0)
+  assert_equal 0, q.addedFaces(1)
+ end
 
  def testReallocMemoryForLotsOfTransactions
   q = Queue.new(3)

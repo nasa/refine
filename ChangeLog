@@ -1,3 +1,11 @@
+2005-01-31 13:44 Mike Park  <mike.park@nasa.gov>
+
+	* src/queue.c (queueResetCurrentTransaction) added new method to
+	cancel the current transaction. This new menthod is intented to be
+	used when a primative operation undos an invalid
+	configuration. This should speed up parallel ops and fix a bug
+	resulting from faces floating around without nodes.
+
 2005-01-31  9:42 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridSortNodeGridEx) Fixed parallel memory bug that

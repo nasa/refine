@@ -98,6 +98,28 @@ Queue *queueReset( Queue *queue )
   return queue;
 }
 
+Queue *queueResetCurrentTransaction( Queue *queue )
+{
+  if (NULL==queue) return NULL;
+
+  queue->nAddedCells -= queue->addedCells[queue->transactions-1];
+  queue->nRemovedCells -= queue->removedCells[queue->transactions-1];
+  queue->addedCells[queue->transactions-1] = 0;
+  queue->removedCells[queue->transactions-1] = 0;
+
+  queue->nAddedFaces -= queue->addedFaces[queue->transactions-1];
+  queue->nRemovedFaces -= queue->removedFaces[queue->transactions-1];
+  queue->addedFaces[queue->transactions-1] = 0;
+  queue->removedFaces[queue->transactions-1] = 0;
+
+  queue->nAddedEdges -= queue->addedEdges[queue->transactions-1];
+  queue->nRemovedEdges -= queue->removedEdges[queue->transactions-1];
+  queue->addedEdges[queue->transactions-1] = 0;
+  queue->removedEdges[queue->transactions-1] = 0;
+
+  return queue;
+}
+
 int queueNodeSize( Queue *queue )
 {
   if (NULL==queue) return EMPTY;

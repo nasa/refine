@@ -42,6 +42,12 @@ VALUE queue_newTransaction( VALUE self )
   return (queue==queueNewTransaction(queue)?self:Qnil);
 }
 
+VALUE queue_resetCurrentTransaction(VALUE self )
+{
+  GET_QUEUE_FROM_SELF;
+  return (queue==queueResetCurrentTransaction(queue)?self:Qnil);
+}
+
 /* ****************************** cells ****************************** */
 
 VALUE queue_removeCell( VALUE self, VALUE rb_nodes, VALUE rb_nodeParts )
@@ -476,6 +482,7 @@ void Init_Queue()
   rb_define_method( cQueue, "nodeSize", queue_nodeSize, 0 );
   rb_define_method( cQueue, "transactions", queue_transactions, 0 );
   rb_define_method( cQueue, "newTransaction", queue_newTransaction, 0 );
+  rb_define_method( cQueue, "resetCurrentTransaction", queue_resetCurrentTransaction, 0 );
 
   rb_define_method( cQueue, "removeCell", queue_removeCell, 2 );
   rb_define_method( cQueue, "removedCells", queue_removedCells, 1 );

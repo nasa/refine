@@ -62,6 +62,7 @@ Queue *queueReset( Queue * );
 int queueNodeSize( Queue * );
 int queueTransactions( Queue * );
 Queue *queueNewTransaction( Queue * );
+Queue *queueResetCurrentTransaction( Queue * );
 
 Queue *queueRemoveCell( Queue *, int *nodes, int *nodeParts );
 int queueRemovedCells( Queue *, int transaction );
