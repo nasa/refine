@@ -22,12 +22,15 @@ void adjFree( Adj *adj );
 
 int adjNNode( Adj *adj );
 Adj *adjRegister( Adj *adj, int node, int item );
+Adj *adjRemove( Adj *adj, int node, int item );
 
 bool adjValid( Adj *adj );
 bool adjMore( Adj *adj );
 Adj *adjFirst( Adj *adj, int node );
 int adjCurrent( Adj *adj );
 void adjNext( Adj *adj );
+
+bool adjExists( Adj *adj, int node, int item );
 
 END_C_DECLORATION
 
