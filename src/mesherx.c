@@ -76,7 +76,9 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   if (blendElement){
     printf("inserting blends...\n");
-    layerBlend(layer, -1.0 );
+    layerBlend(layer, 240.0 );
+    printf("inserting sub blends...\n");
+    layerSubBlend(layer, 30.0 );
   }
 
   layerWriteTecplotFrontGeometry(layer);
