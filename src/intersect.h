@@ -17,11 +17,18 @@
 
 BEGIN_C_DECLORATION
 
+int intersectSide( double *vertex0, double *vertex1, double *vertex2,
+                   double *node );
+
 bool intersectTriangleNode(double *vertex0, double *vertex1, double *vertex2,
 			   double *node );
 
 bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
 			      double *node0, double *node1 );
+
+bool intersectTetSegment(double *vertex0, double *vertex1, 
+			 double *vertex2, double *vertex3,
+			 double *node0, double *node1 );
 
 END_C_DECLORATION
 

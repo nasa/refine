@@ -18,7 +18,19 @@ class TestIntersect < Test::Unit::TestCase
  end
  def setup ; set_up ; end
 
- def testPlaneAndNodeInAndOut
+ def testNodeSide
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  nn = [0,0,-1]
+  n0 = [0,0,0]
+  np = [0,0,1]
+  assert_equal( -1, @intersect.side(v0,v1,v2,nn))
+  assert_equal(  0, @intersect.side(v0,v1,v2,n0))
+  assert_equal(  1, @intersect.side(v0,v1,v2,np))
+ end
+
+ def testTriangleAndNodeInAndOut
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -28,7 +40,7 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal false, @intersect.triangleNode(v0,v1,v2,[-0.5,0,0])
  end
 
- def testPlaneAndNodeNick
+ def testTriangleAndNodeNick
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -38,7 +50,7 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal false, @intersect.triangleNode(v0,v1,v2,[0.5,0.5,0])
  end
 
- def testPlaneAndSegmentThroughMiddle
+ def testTriangleAndSegmentThroughMiddle
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -55,7 +67,7 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
- def testPlaneAndSegmentThroughNick
+ def testTriangleAndSegmentThroughNick
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -67,7 +79,7 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
- def testPlaneAndSegmentThroughMiss
+ def testTriangleAndSegmentThroughMiss
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -79,7 +91,7 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
- def testPlaneAndSegmentAdjecent
+ def testTriangleAndSegmentAdjecent
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -94,7 +106,7 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
- def testPlaneAndSegmentCoplanarPerce
+ def testTriangleAndSegmentCoplanarPerce
   v0 = [0,0,0]
   v1 = [1,0,0]
   v2 = [0,1,0]
@@ -107,6 +119,16 @@ class TestIntersect < Test::Unit::TestCase
   n0 = [1,1,0]
   n1 = [2,2,0]
   assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+ end
+
+ def testTetAndSegmentInside
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  v3 = [0,0,1]
+  n0 = [0.1,0.1,0.1]
+  n1 = [0.2,0.2,0.2]
+  assert_equal true, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
  end
 
 end
