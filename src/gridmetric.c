@@ -363,17 +363,17 @@ Grid *gridEigenVector(Grid *grid, double *m, double eigenValue,
 
    if ( n1 > n2 && n1 > n3 )
    {
-      n1 = sqrt(n1);
-      eigenVector[0] = e1[0]/n1;
-      eigenVector[1] = e1[1]/n1;
-      eigenVector[2] = e1[2]/n1;
+      n1 = 1.0/sqrt(n1);
+      eigenVector[0] = e1[0]*n1;
+      eigenVector[1] = e1[1]*n1;
+      eigenVector[2] = e1[2]*n1;
    }
    else if ( n2 > n3 )
    {
-      n2 = sqrt(n2);
-      eigenVector[0] = e2[0]/n2;
-      eigenVector[1] = e2[1]/n2;
-      eigenVector[2] = e2[2]/n2;
+      n2 = 1.0/sqrt(n2);
+      eigenVector[0] = e2[0]*n2;
+      eigenVector[1] = e2[1]*n2;
+      eigenVector[2] = e2[2]*n2;
    }
    else
    {
@@ -382,10 +382,10 @@ Grid *gridEigenVector(Grid *grid, double *m, double eigenValue,
 	      __FILE__,__LINE__);
        return NULL;
      }
-      n3 = sqrt(n3);
-      eigenVector[0] = e3[0]/n3;
-      eigenVector[1] = e3[1]/n3;
-      eigenVector[2] = e3[2]/n3;
+      n3 = 1.0/sqrt(n3);
+      eigenVector[0] = e3[0]*n3;
+      eigenVector[1] = e3[1]*n3;
+      eigenVector[2] = e3[2]*n3;
    }
   
   return grid;
