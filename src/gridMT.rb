@@ -276,7 +276,8 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
   assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(0,1,5,11)
+  assert_equal grid, grid.addFace(1,0,5,11)
+  assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.swapEdge(0,1)
   assert_equal 4,    grid.ncell
   assert_equal 2,    grid.cellDegree(0)
@@ -286,6 +287,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 11,   grid.faceId(1,2,5)  
   assert_nil         grid.faceId(0,1,2)
   assert_nil         grid.faceId(0,1,5) 
+  assert grid.rightHandedBoundary, "swapped boundary is not right handed"
  end
 
  def testSwapEdge4_gapWithSameFaceNotBeter
@@ -391,7 +393,8 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_not_nil     grid=gemGrid(5, nil, nil, nil, true)
   assert_equal 4,    grid.ncell
   assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(0,1,6,11)
+  assert_equal grid, grid.addFace(1,0,6,11)
+  assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.swapEdge(0,1)
   assert_equal 6,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
@@ -401,6 +404,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 11,   grid.faceId(1,2,6)  
   assert_nil         grid.faceId(0,1,2)
   assert_nil         grid.faceId(0,1,6) 
+  assert grid.rightHandedBoundary, "swapped boundary is not right handed"
  end
 
  def testSwapEdge6OnePoint_0
@@ -498,7 +502,8 @@ class TestSampleUnit < Test::Unit::TestCase
  def testSplitEdge4onSameBC
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(0,1,5,11)
+  assert_equal grid, grid.addFace(1,0,5,11)
+  assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.splitEdge(0,1)
   assert_nil         grid.faceId(0,1,2)
   assert_nil         grid.faceId(0,1,5) 
@@ -506,12 +511,14 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 11,   grid.faceId(6,1,2)
   assert_equal 11,   grid.faceId(0,6,5) 
   assert_equal 11,   grid.faceId(6,1,5) 
+  assert grid.rightHandedBoundary, "split boundary is not right handed"
  end
 
  def testSplitEdge4onDifferentBC
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal grid, grid.addFace(0,1,2,2)
-  assert_equal grid, grid.addFace(0,1,5,5)
+  assert_equal grid, grid.addFace(1,0,5,5)
+  assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.splitEdge(0,1)
   assert_nil         grid.faceId(0,1,2)
   assert_nil         grid.faceId(0,1,5) 
@@ -519,6 +526,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2,    grid.faceId(6,1,2)
   assert_equal 5,    grid.faceId(0,6,5) 
   assert_equal 5,    grid.faceId(6,1,5) 
+  assert grid.rightHandedBoundary, "split boundary is not right handed"
  end
 
 #test for not enough mem for swap and split
@@ -576,7 +584,8 @@ class TestSampleUnit < Test::Unit::TestCase
  def testSplitGeometryEdge4
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal grid, grid.addFace(0,1,2,2)
-  assert_equal grid, grid.addFace(0,1,5,5)
+  assert_equal grid, grid.addFace(1,0,5,5)
+  assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.addEdge(0,1,15)
   assert_equal grid, grid.splitEdge(0,1)
   assert_nil         grid.edgeId(0,1)
@@ -587,7 +596,8 @@ class TestSampleUnit < Test::Unit::TestCase
  def testSplitWithoutGeometryEdge4
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(0,1,5,11)
+  assert_equal grid, grid.addFace(1,0,5,11)
+  assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.splitEdge(0,1)
   assert_nil         grid.edgeId(0,6)
   assert_nil         grid.edgeId(6,1)
@@ -629,9 +639,11 @@ class TestSampleUnit < Test::Unit::TestCase
 	    grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
   assert_equal grid,  grid.addFace(0,1,2,11)
   assert_equal true,  grid.rightHandedFace(0)
+  assert_equal grid,  grid.addFace(0,2,3,11)
   assert_equal true,  grid.rightHandedBoundary
+  assert_equal grid,  grid.removeFace(grid.findFace(0,1,2))
   assert_equal grid,  grid.addFace(0,2,1,11)
-  assert_equal false, grid.rightHandedFace(1)
+  assert_equal false, grid.rightHandedFace(0)
   assert_equal false, grid.rightHandedBoundary
  end
  
