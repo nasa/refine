@@ -1,4 +1,13 @@
 
+Wed Aug  9, 2004: Released Refine 1.2.0
+
+Replaced obsolete SDK/Goolache/MeshMgr with SDK/UG_API methods.  The
+combination of removing cells from the mesh with two bounday triangles
+(gridRemoveTwoFaceCell), Simplex optimization of volume
+(gridRelaxNegativeCells), and existing edge swapping has been able to
+fix the few negative elements that result from linear elasticy grid
+movement to perform surface projection.
+
 Wed Jul 16, 2004: Released Refine 1.1.0
 
 Added linear elasticy grid movement

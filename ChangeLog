@@ -1,3 +1,7 @@
+2004-08-09 08:05 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.0 Release.
+	
 2004-08-04 16:04 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell) fixed a bug that inserted
