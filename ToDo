@@ -13,6 +13,9 @@ merge edge based research into mainline code
 gridcad : get rid of 
 -gridSafeProjectNode
 -gridRobustProjectNode
+-gridOptimizeFaceUV
+-gridSmoothFaceMR
+-gridOptimizeUVForVolume
 
 change optmize face to only care about face qulaity with ar contriantv
 
