@@ -27,7 +27,7 @@ int main( int argc, char *argv[] )
   double *xyz;
   double scale;
   int maxnode;
-  bool mixedElement, blendElement, qualityImprovement;
+  bool mixedElement, blendElement, qualityImprovement, copyGridY;
   bool bil;
 
   sprintf( project,       "" );
@@ -36,6 +36,7 @@ int main( int argc, char *argv[] )
   mixedElement = FALSE;
   blendElement = FALSE;
   qualityImprovement = FALSE;
+  copyGridY = FALSE;
   bil = FALSE;
 
   i = 1;
@@ -58,6 +59,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-b") == 0 ) {
       blendElement = TRUE;
       printf("-b argument %d: activated blend elements\n",i);
+    } else if( strcmp(argv[i],"-cy") == 0 ) {
+      copyGridY = TRUE;
+      printf("-cy argument %d: activated grid copy about y=0 elements\n",i);
     } else if( strcmp(argv[i],"-bil") == 0 ) {
       bil = TRUE;
       printf("-bil argument %d: activated Bil Kleb's case\n",i);
@@ -72,6 +76,7 @@ int main( int argc, char *argv[] )
       printf(" -m mixed element layers\n");
       printf(" -q use edge swapping to improve grid quality\n");
       printf(" -b use blend elements on first layer\n");
+      printf(" -cy copy grid about the y=0 plane\n");
       printf(" -vgbg set background spacing to VGRID\n");
       printf(" -bil Bil Kleb's case\n");
       return(0);
@@ -104,7 +109,7 @@ int main( int argc, char *argv[] )
 
   MesherX_DiscretizeVolume( maxnode, scale, project, 
 			    mixedElement, blendElement, qualityImprovement,
-			    bil );
+			    copyGridY, bil );
 
   return(0);
 }

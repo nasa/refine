@@ -22,6 +22,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 			      bool mixedElement,
 			      bool blendElement,
 			      bool qualityImprovement,
+			      bool copyGridY,
 			      bool bil );
 
 Layer *layerFormAdvancingLayerWithCADGeomBCS( int volumeId, Grid * );

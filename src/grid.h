@@ -173,6 +173,8 @@ Grid *gridAddStoredAR( Grid *g, double AR, double *dARdX );
 double gridStoredAR( Grid *g, int index );
 Grid *gridStoredARDerivative( Grid *g, int index, double *dARdX );
 
+Grid *gridCopyAboutY0(Grid *g);
+
 END_C_DECLORATION
 
 #endif /* GRID_H */

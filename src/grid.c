@@ -712,7 +712,7 @@ Grid *gridPack(Grid *grid)
 
   nFaceId = 0;
   for ( origface=0 ; origface < grid->maxface ; origface++ ) 
-    if (grid->f2n[0+3*origface] != EMPTY) 
+    if (grid->f2n[0+3*origface] != EMPTY)
       nFaceId = MAX(nFaceId, grid->faceId[origface]);
 
   emptyFace = FALSE;
@@ -2531,5 +2531,49 @@ Grid *gridStoredARDerivative( Grid *grid, int index, double *dARdX )
   dARdX[1] = grid->dARdX[1+3*index];
   dARdX[2] = grid->dARdX[2+3*index];
   
+  return grid;
+}
+
+Grid *gridCopyAboutY0(Grid *grid)
+{
+  int node, orignode;
+  int *o2n;
+  double xyz[3];
+  int nodes[4];
+  int face, i, faceid;
+
+  printf("gridCopyAboutY0: pack\n");
+  if (NULL == gridPack(grid)) {
+    printf("gridCopyAboutY0: gridPack failed.\n");
+    return NULL;
+  }
+
+  orignode = gridNNode(grid);
+
+  o2n = malloc(sizeof(int) * orignode); 
+
+  printf("gridCopyAboutY0: copy nodes\n");
+
+  for ( node = 0 ; node < orignode ; node++){
+    gridNodeXYZ(grid,node,xyz);
+    o2n[node] = gridAddNode(grid,xyz[0],-xyz[1],xyz[2]);
+  }
+
+  for ( face = 0 ; face < gridMaxFace(grid) ; face++ ){
+    if ( (grid==gridFace(grid,face,nodes,&faceid)) &&
+	 (faceid ==3) ) {
+      for (i=0;i<3;i++){
+	node = nodes[i];
+	if (o2n[node] >= orignode){
+	  gridRemoveNode(grid,o2n[node]);
+	  o2n[node] = node;
+	}
+      }
+      gridRemoveFace(grid,face);
+    }
+  }
+
+  free(o2n);
+    
   return grid;
 }

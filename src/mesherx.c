@@ -32,6 +32,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 			      bool mixedElement,
 			      bool blendElement,
 			      bool qualityImprovement,
+			      bool copyGridY,
 			      bool bil )
 {
   char outputProject[256];
@@ -151,6 +152,11 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   printf(" -- DUMP PART\n");
 
+  if ( copyGridY ) {
+    printf("copy grid about y=0.\n");
+    gridCopyAboutY0(grid);
+  }
+
   if ( NULL != project ) {
 
     if (mixedElement) {
@@ -164,7 +170,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     }
   }
 
-  if (!bil) {
+  if (!bil && !copyGridY ) {
     if ( project == NULL ) {
       gridSavePart( grid, NULL );
     }else{
@@ -172,8 +178,11 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
       printf("writing output GridEx/CADGeom/CAPRI project %s\n",outputProject);
       gridSavePart( grid, outputProject );
     }
+  }else{
+    printf("skip save grid.\n");
   }
 
+  printf("MesherX Done.\n");
   return 1;
 }
 
