@@ -32,9 +32,14 @@ int main( int argc, char *argv[] )
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
   UGPatchPtr  localPatch, globalPatch;
   Iterator patchIterator;
+  CADCurvePtr edge;
+  int inode, iedge, nedgenode;
+  double trange[2];
+  int edgeEndPoint[2];
+
   int patchDimensions[3];
   int face, localNode, globalNode;
-
+  double pxyz[3], gxyz[3], dxyz[3];
   int vol;
   vol=1;
 
@@ -71,26 +76,46 @@ int main( int argc, char *argv[] )
     printf("ERROR: CADGeom_GetVolume. \n%s\n",ErrMgr_GetErrStr());
   }
 
+  inode = nGeomNode;
+  for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
+    if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) 
+      printf("ERROR: CADGeom_EdgeGrid(%d).\n%s\n",iedge,ErrMgr_GetErrStr());
+ 
+    nedgenode = CADCURVE_NUMPTS(edge);
+
+    CADGeom_GetEdge( vol, iedge, trange, edgeEndPoint );
+
+    edgeEndPoint[0]--; /* convert from fortran to c numbers */
+    edgeEndPoint[1]--;
+
+    printf("e%3d local%6d global%6d\n",iedge,0,edgeEndPoint[0]);
+    for( i=1 ; i < (nedgenode-1) ; i++ ) { // skip end segments  
+      printf("e%3d local%6d global%6d\n",iedge,i,inode);
+      inode++;
+    }
+    printf("e%3d local%6d global%6d\n",iedge,nedgenode-1,edgeEndPoint[1]);
+  }
+
   globalPatch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&patchIterator);
 
   for( face=1; face<=nGeomFace; face++ ) {
-	double xyz[3], pxyz[3], gxyz[3], dxyz[3], txyz[3];
     localPatch = CADGeom_FaceGrid(vol,face);
     UGPatch_GetDims(localPatch,patchDimensions);
     for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {
       globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
-	gxyz[0] = UGrid_PtValue(ugrid,globalNode,0);
-	gxyz[1] = UGrid_PtValue(ugrid,globalNode,1);
-	gxyz[2] = UGrid_PtValue(ugrid,globalNode,2);
-	pxyz[0] = UGPatch_PtValue(localPatch,localNode,0);
-	pxyz[1] = UGPatch_PtValue(localPatch,localNode,1);
-	pxyz[2] = UGPatch_PtValue(localPatch,localNode,2);
-	SubtractVector( pxyz, gxyz, dxyz);
-	printf("face%3d patch%6d vol%6d err%10.2e%10.2e%10.2e\n",
-	       face, localNode, globalNode,
-	       dxyz[0],dxyz[1],dxyz[2]);
+      gxyz[0] = UGrid_PtValue(ugrid,globalNode,0);
+      gxyz[1] = UGrid_PtValue(ugrid,globalNode,1);
+      gxyz[2] = UGrid_PtValue(ugrid,globalNode,2);
+      pxyz[0] = UGPatch_PtValue(localPatch,localNode,0);
+      pxyz[1] = UGPatch_PtValue(localPatch,localNode,1);
+      pxyz[2] = UGPatch_PtValue(localPatch,localNode,2);
+      SubtractVector( pxyz, gxyz, dxyz);
+      printf("f%3d p%6d%10.5f%10.5f%10.5f g%6d%10.5f%10.5f%10.5f\n",
+	     face, 
+	     localNode, pxyz[0], pxyz[1], pxyz[2], 
+	     globalNode, gxyz[0], gxyz[1], gxyz[2]);
     }
-
+    
     globalPatch = DList_GetNextItem(&patchIterator);
   }
 
