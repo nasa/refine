@@ -1,3 +1,10 @@
+2004-09-10 17:36 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeQP) added check to avoid 0/0 if
+	two incedent cells have same ARDerivative resulting in same
+	minDirection as nearestDirection where ???covariant metric terms???
+	are all equal, therefore 0/0 => NaN.
+
 2004-09-03 10:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridparallelrelaxsurf_) added. API changed.

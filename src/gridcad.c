@@ -1032,6 +1032,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   double predictedImprovement, actualImprovement, lastImprovement;
   double minDirection[3], nearestDirection[3], dARdX[3];
   double origXYZ[3], xyz[3];
+  double denom;
   GridBool searchFlag, goodStep;
   int iteration;
 
@@ -1071,8 +1072,22 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
       g00 = gridDotProduct(minDirection,minDirection);
       g11 = gridDotProduct(nearestDirection,nearestDirection);
       g01 = gridDotProduct(minDirection,nearestDirection);
-      nearestRatio = (g00-g01)/(g00 + g11 - 2*g01);
+      /*
+       * Note: If two incedent cells have the same AR (more specifically
+       *       ARDerivative), then nearestDirection == minDirection
+       *       which will result in 0/0 for nearestRatio (g00 == g11).
+       *       Could have check nearestDifference != 0.0 in above loop
+       *       before setting nearestCell.  Would then have same result
+       *       (e.g. searchDirection == minDirection) since nearestCell
+       *       would be EMPTY and previous block would execute.
+       */
+      denom = g00 + g11 - 2*g01;
+      if( denom == 0.0 ) {
+        nearestRatio = 0.0;
+      } else {
+        nearestRatio = (g00-g01)/denom;
       if (nearestRatio > 1.0 || nearestRatio < 0.0 ) nearestRatio = 0.0;
+      }
       minRatio = 1.0 - nearestRatio;
       for (i=0;i<3;i++) searchDirection[i] 
 			  = minRatio*minDirection[i]
