@@ -12,7 +12,7 @@ lib_LIBRARIES = \
 
 librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
-	master_header.h \
+	refine_defs.h \
 	adj.h adj.c \
 	near.h near.c \
 	line.h line.c \
@@ -61,7 +61,7 @@ libMesherX_a_SOURCES = \
 	mesherx.c
 
 libMesherX_a_include_HEADERS = \
-	master_header.h \
+	refine_defs.h \
 	mesherx.h \
 	layer.h \
 	grid.h \

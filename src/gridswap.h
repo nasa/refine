@@ -11,7 +11,7 @@
 #ifndef GRIDSWAP_H
 #define GRIDSWAP_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 #include "grid.h"
 #include "queue.h"
 

@@ -13,7 +13,7 @@
 #ifndef INTERSECT_H
 #define INTERSECT_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 
 BEGIN_C_DECLORATION
 

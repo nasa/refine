@@ -19,7 +19,7 @@ class RubyExtensionBuilder
   extraFiles['GridMPI'] = 'adj.h line.h queue.h grid.h gridmath.h gridmetric.h gridinsert.h gridswap.h'
   extraFiles['Layer'] = 'layerStruct.h adj.h line.h grid.h gridmath.h near.h intersect.h gridmetric.h gridcad.h queue.h gridinsert.h'
 
-  systemCall = ['ruby makeRubyExtension.rb',extension,extraFiles[extension],'master_header.h'].join(' ')
+  systemCall = ['ruby makeRubyExtension.rb',extension,extraFiles[extension],'refine_defs.h'].join(' ')
   exit 1 unless system(systemCall )
  end
 

@@ -11,7 +11,7 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 #include "grid.h"
 #include "near.h"
 

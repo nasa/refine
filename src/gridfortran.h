@@ -11,7 +11,7 @@
 #ifndef GRIDFORTRAN_H
 #define GRIDFORTRAN_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 
 BEGIN_C_DECLORATION
 

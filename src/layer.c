@@ -14,7 +14,7 @@
 #include <limits.h>
 #include <values.h>
 #include <string.h>
-#include "master_header.h"
+#include "refine_defs.h"
 #include "layer.h"
 #include "gridmath.h"
 #include "gridmetric.h"

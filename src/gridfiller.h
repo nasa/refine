@@ -11,7 +11,7 @@
 #ifndef GRIDFILLER_H
 #define GRIDFILLER_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 #include "grid.h"
 
 BEGIN_C_DECLORATION

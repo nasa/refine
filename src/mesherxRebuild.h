@@ -11,7 +11,7 @@
 #ifndef MESHERXREBUILD_H
 #define MESHERXREBUILD_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 
 #include "layer.h"
 

@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <values.h>
-#include "master_header.h"
+#include "refine_defs.h"
 #include "adj.h"
 #include "line.h"
 #include "queue.h"

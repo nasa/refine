@@ -11,7 +11,7 @@
 #ifndef GRIDINSERT_H
 #define GRIDINSERT_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 #include "queue.h"
 #include "grid.h"
 

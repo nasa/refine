@@ -12,7 +12,7 @@
 #ifndef MESHERXINIT_H
 #define MESHERXINIT_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 #include "grid.h"
 #include "layer.h"
 

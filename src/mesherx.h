@@ -11,7 +11,7 @@
 #ifndef MESHERX_H
 #define MESHERX_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 
 #include "layer.h"
 

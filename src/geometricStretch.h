@@ -21,7 +21,7 @@
 #ifndef GEOMETRICSTRETCH_H
 #define GEOMETRICSTRETCH_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 
 BEGIN_C_DECLORATION
 

@@ -13,7 +13,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 #include <stdio.h>
 
 BEGIN_C_DECLORATION

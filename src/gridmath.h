@@ -10,7 +10,7 @@
 #ifndef GRIDMATH_H
 #define GRIDMATH_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 
 BEGIN_C_DECLORATION
 

@@ -13,7 +13,7 @@
 #ifndef GRIDMETRIC_H
 #define GRIDMETRIC_H
 
-#include "master_header.h"
+#include "refine_defs.h"
 #include "grid.h"
 #include "gridmath.h"
 
