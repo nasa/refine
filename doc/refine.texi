@@ -168,7 +168,8 @@ GridBool adjExists( Adj *adj, int node, int item )
 }
 @end verbatim
 
-
+Use @code{adjRealloc} to change the number of nodes. Additional items are
+automatically reallocated in @code{adjChunkSize} blocks.
 
 @section Queue
 @cindex queue
