@@ -25,7 +25,7 @@
 
 #define PRINT_STATUS printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);
 
-#define DUMP_TEC if (tecplotOutput) {iview++;printf("Frame %d\n",iview);gridWriteTecplotSurfaceGeom(grid,NULL);}
+#define DUMP_TEC if (tecplotOutput) {iview++;printf("Frame %d\n",iview);gridWriteTecplotSurfaceGeom(grid,NULL); gridPlotMinDeterminateAtSurface(grid);}
 
 #define STATUS DUMP_TEC PRINT_STATUS
 
@@ -255,7 +255,6 @@ int main( int argc, char *argv[] )
   STATUS;
 
   if (EMPTY!=EdgeBasedCycles) {
-    gridPlotMinDeterminateAtSurface(grid);
     sprintf(filename,"%s_surface.t",project);
     gridWriteTecplotSurfaceGeom(grid,filename); gridCloseTecplotGeomFile(grid);
     printf("edge swapping grid...\n");gridSwap(grid,0.9);
@@ -268,7 +267,6 @@ int main( int argc, char *argv[] )
       gridAdaptBasedOnConnRankings(grid);
       gridEraseConn(grid);
       STATUS;
-      gridPlotMinDeterminateAtSurface(grid);
     }
     printf("edge swapping grid...\n");gridSwap(grid,0.9);
     STATUS;
