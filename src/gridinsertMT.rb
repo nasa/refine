@@ -32,7 +32,7 @@ class TestGridInsert < Test::Unit::TestCase
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
   x0 = x0 || 1.0
-  grid = Grid.new(nequ+2+1,14,14,14)
+  grid = Grid.new(nequ+10,14,14,14)
   n = Array.new
   n.push grid.addNode(  x0,0.0,0.0)
   n.push grid.addNode(-1.0,0.0,0.0)
@@ -149,6 +149,40 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.scaleSpacing(3,0.6)
   assert_equal grid, grid.adapt
   assert_equal 4, grid.ncell
+ end
+
+ def testCollapseEdge
+  assert_not_nil      grid = gemGrid
+  assert_equal grid,  grid.addCell(1,2,3,grid.addNode(-0.01,1.0,1.0))
+  assert_equal grid,  grid.collapseEdge(0,1)
+  assert_equal 1,     grid.ncell
+  assert_equal false, grid.validNode(1)
+  assert_equal [0,2,3,6], grid.cell(4)
+ end
+
+ def testCollapseEdgeNegVol
+  assert_not_nil      grid = gemGrid
+  assert_equal grid,  grid.addCell(1,2,3,grid.addNode(0.01,1.0,1.0))
+  assert_nil          grid.collapseEdge(0,1)
+  assert_equal 5,     grid.ncell
+  assert_equal true,  grid.validNode(1)
+ end
+
+ def testCollapseEdgeonSameBC
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal grid, grid.addFaceUV(0,0.0,10.0,
+				    1,1.0,11.0,
+				    2,2.0,12.0,11)
+  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+				    0,0.0,10.0,
+				    5,5.0,15.0,11)
+  node = grid.addNode(-2.0,0.0,1.0)
+  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+				    node,8.0,18.0,
+				    2,2.0,12.0,11)
+  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal 1,          grid.nface
+  assert_equal [0.5,10.5], grid.nodeUV(0,11)
  end
 
 end
