@@ -3075,7 +3075,7 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   if (layerNBlend(layer) <= 0) return layer;
   if ( 0.0 >= maxNormalAngle ) maxNormalAngle = 30.0;
   if (layer != layerSubBlendCount(layer,maxNormalAngle)) return NULL;
-  if (layer != layerSubBlendSmooth(layer)) return NULL;
+  /* if (layer != layerSubBlendSmooth(layer)) return NULL; */
   if (layer != layerSubBlendFill(layer)) return NULL;
   return layer;
 }   
