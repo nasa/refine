@@ -13,11 +13,15 @@
 
 struct Layer {
   int nfront;
+  Grid *grid;
 };
 
-Layer *layerCreate(void)
+Layer *layerCreate( Grid *grid )
 {
-  return malloc(sizeof(Layer));
+  Layer *layer;
+  layer = malloc(sizeof(Layer));
+  layer->grid = grid;
+  return layer;
 }
 
 void layerFree(Layer *layer)
@@ -28,4 +32,9 @@ void layerFree(Layer *layer)
 int layerNFront(Layer *layer)
 {
   return layer->nfront;
+}
+
+int layerMaxNode(Layer *layer)
+{
+  return gridMaxNode(layer->grid);
 }

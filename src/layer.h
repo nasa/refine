@@ -12,14 +12,16 @@
 #define LAYER_H
 
 #include "master_header.h"
+#include "grid.h"
 
 BEGIN_C_DECLORATION
 
 typedef struct Layer Layer;
 
-Layer *layerCreate( void );
+Layer *layerCreate(Grid *);
 void layerFree(Layer *);
 int layerNFront(Layer *);
+int layerMaxNode(Layer *);
 
 END_C_DECLORATION
 
