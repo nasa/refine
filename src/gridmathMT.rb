@@ -440,4 +440,22 @@ class TestGridMath < Test::Unit::TestCase
   end
  end
 
+ def testMatrixDeterminate
+  tol = 1.0e-14
+  assert_in_delta( 0.0, @gm.matrixDeterminate([ 1,0,0, 0,1,0, 0,1,0 ]), tol)
+
+  assert_in_delta( 1.0, @gm.matrixDeterminate([ 1,0,0, 0,1,0, 0,0,1 ]), tol)
+  assert_in_delta( 1.0, @gm.matrixDeterminate([ 0,1,0, 0,0,1, 1,0,0 ]), tol)
+  assert_in_delta( 1.0, @gm.matrixDeterminate([ 0,0,1, 1,0,0, 0,1,0 ]), tol)
+
+  assert_in_delta(-1.0, @gm.matrixDeterminate([ 0,0,1, 0,1,0, 1,0,0 ]), tol)
+  assert_in_delta(-1.0, @gm.matrixDeterminate([ 0,1,0, 1,0,0, 0,0,1 ]), tol)
+  assert_in_delta(-1.0, @gm.matrixDeterminate([ 1,0,0, 0,0,1, 0,1,0 ]), tol)
+
+  assert_in_delta(-1.0, @gm.matrixDeterminate([-1,0,0, 0,1,0, 0,0,1 ]), tol)
+  assert_in_delta(-9.0, @gm.matrixDeterminate([-1,0,0, 0,9,0, 0,0,1 ]), tol)
+
+  assert_in_delta(-9.0, @gm.matrixDeterminate([-1,-2,-2, -4,-3,-4, -4,-4,-3 ]),
+                  tol)
+ end
 end

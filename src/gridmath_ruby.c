@@ -251,6 +251,15 @@ static VALUE grid_backsolve3x3( VALUE self, VALUE rb_lu, VALUE rb_b )
   return rb_s;
 }
 
+static VALUE grid_matrixDeterminate( VALUE self, VALUE rb_m )
+{
+  int i;
+  double m[9];
+  VALUE rb_s;
+  for (i=0;i<9;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
+  return rb_float_new(gridMatrixDeterminate( m ));
+}
+
 VALUE cGridMath;
 
 void Init_GridMath(  )
@@ -274,4 +283,5 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "vectTriDiag2", grid_vectTriDiag2, 5 );
   rb_define_method( cGridMath, "lu3x3", grid_lu3x3, 1 );
   rb_define_method( cGridMath, "backsolve3x3", grid_backsolve3x3, 2 );
+  rb_define_method( cGridMath, "matrixDeterminate", grid_matrixDeterminate, 1);
 }
