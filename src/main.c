@@ -112,12 +112,16 @@ Grid *gridLoadPart( char *project )
   int vol=1;
   UGridPtr ugrid;
   CADCurvePtr edge;
+  UGPatchPtr  localPatch, globalPatch;
+  Iterator patchIterator;
   int gridDimensions[3];
+  int patchDimensions[3];
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
   int nedgenode;
   int nnode, nface, ncell, nedge;
   int maxnode, maxface, maxcell, maxedge;
   int i, iedge, inode;
+  int face, localNode, globalNode;
   double *xyz;
   int *c2n, *f2n, *faceId;
   double trange[2];
@@ -200,6 +204,27 @@ Grid *gridLoadPart( char *project )
 		     maxcell, ncell, maxedge,
 		     xyz, f2n, faceId, c2n );
 
+  /* get uv vals for surface(s) */
+  /* we use globalPatch to track with the localPatch so that we can get global
+   * node numbering relative the volume grid and NOT the face grid as would
+   * be the case of global index of upp
+   */
+
+  globalPatch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&patchIterator);
+
+  for( face=1; face<=nGeomFace; face++ ) {
+    localPatch = CADGeom_FaceGrid(vol,face);
+    UGPatch_GetDims(localPatch,patchDimensions);
+    for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {
+      globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
+      gridSetNodeUV( grid, globalNode, face,
+		     UGPatch_Parameter(localPatch,localNode,0), 
+		     UGPatch_Parameter(localPatch,localNode,1));
+    }
+
+    globalPatch = DList_GetNextItem(&patchIterator);
+  }
+
   gridSetNGeomNode( grid, nGeomNode );
 
   inode = nGeomNode;
@@ -235,6 +260,9 @@ Grid *gridLoadPart( char *project )
 
   if ( nedge != gridNEdge(grid) )
     printf("ERROR: nedge != gridNEdge(grid)\n");
+
+
+
 
   return grid;
 }
