@@ -2619,7 +2619,12 @@ Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
 
 Layer *layerSubBlendNormals(Layer *layer, int blend, int subBlend, int *normals)
 {
-  return layerBlendNormals(layer, blend, normals );
+  if (subBlend <0 || subBlend >= layerNSubBlend(layer,blend)) return NULL;
+  if (layer != layerBlendNormals(layer, blend, normals)) return NULL;
+
+  /* do magic to replace BlendNormals with SubNormals */
+
+  return layer;
 }
 
 int layerBlendDegree(Layer *layer, int normal)
