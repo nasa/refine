@@ -1172,3 +1172,34 @@ double gridFaceAR(Grid *grid, int n0, int n1, int n2 )
 
 }
 
+double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
+{
+  int ixyz;
+  double e0[3], e1[3], e2[3];
+  double l0, l1, l2;
+  double n[3], a, mr;
+  
+#define SQRT3 (1.73205080756888)
+
+  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
+    e0[ixyz] = grid->xyz[ixyz+3*n1] - grid->xyz[ixyz+3*n0];
+    e1[ixyz] = grid->xyz[ixyz+3*n2] - grid->xyz[ixyz+3*n1];
+    e2[ixyz] = grid->xyz[ixyz+3*n0] - grid->xyz[ixyz+3*n2];
+  }
+
+  n[0] = e1[1]*e2[2] - e1[2]*e2[1]; 
+  n[1] = e1[2]*e2[0] - e1[0]*e2[2]; 
+  n[2] = e1[0]*e2[1] - e1[1]*e2[0]; 
+
+  l0 = (e0[0]*e0[0] + e0[1]*e0[1] + e0[2]*e0[2]);
+  l1 = (e1[0]*e1[0] + e1[1]*e1[1] + e1[2]*e1[2]);
+  l2 = (e2[0]*e2[0] + e2[1]*e2[1] + e2[2]*e2[2]);
+
+  a = 0.5*sqrt(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
+
+  mr = 4*SQRT3*a/(l0+l1+l2);
+
+  return mr;
+
+}
+
