@@ -207,6 +207,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 {
   int i, j, goodnode, nodes[4], level2nodes[4];
   AdjIterator it, level2;
+  double xyz[3];
 
   if ( !gridValidNode( grid, node ) ) return NULL;
   
@@ -246,7 +247,9 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	}
       }
       if ( gridSafeProjectNode(grid,node,1.0) != grid ){
-	printf(" try to collapse-project %d\n",node);
+	gridNodeXYZ(grid,node,xyz);
+	printf(" try to collapse-project %d X %10.5f Y %10.5f Z %10.5f\n",
+	       node,xyz[0],xyz[1],xyz[2]);
 	for ( it = adjFirst(grid->cellAdj,node); 
 	      adjValid(it); 
 	      it = adjNext(it) ){
