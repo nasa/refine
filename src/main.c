@@ -54,7 +54,7 @@ int main( int argc, char *argv[] )
 
   oldSize = 1;
   newSize = gridNNode(grid) ;
-  for (j=0;(((double)ABS(newSize-oldSize)/(double)oldSize)>0.01)&&(j<15);j++){
+  for (j=0;(j<3)||(((double)ABS(newSize-oldSize)/(double)oldSize)>0.01)&&(j<15);j++){
     printf("adapt grid...\n");
     gridAdapt(grid);
     oldSize = newSize;
@@ -65,8 +65,8 @@ int main( int argc, char *argv[] )
 	   gridMinAR(grid),gridMinVolume(grid));
         
     for (i=0;i<2;i++){
-      printf("edge swapping grid...\n");gridSwap(grid);
-      if ( NULL != gridRobustProject(grid)) {
+      if ( grid == gridRobustProject(grid)) {
+	printf("edge swapping grid...\n");gridSwap(grid);
 	printf("node smoothing grid...\n");gridSmooth(grid);
       }else{
 	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
