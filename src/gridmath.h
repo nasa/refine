@@ -36,6 +36,7 @@ BEGIN_C_DECLORATION
 
 double gridVectorLength(double *norm);
 void gridVectorNormalize(double *norm);
+void gridVectorOrthogonalize(double *norm, double *axle);
 
 void gridRotateDirection(double *v0, double *v1, 
 			 double *axle, double rotation, double *result);

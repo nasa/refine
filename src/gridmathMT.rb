@@ -63,6 +63,14 @@ class TestGridMath < Test::Unit::TestCase
   assert_equal [0,0,-1], @gm.vectorNormalize([0,0,-3])
  end
 
+ def testOrthogonalizeVector
+  axle = [0,0,1]
+  assert_equal [1,0,0], @gm.vectorOrthogonalize([1,0,0],axle)
+  assert_equal [0,1,0], @gm.vectorOrthogonalize([0,1,0],axle)
+  assert_equal [1,0,0], @gm.vectorOrthogonalize([1,0,1],axle)
+  assert_equal [0,1,0], @gm.vectorOrthogonalize([0,1,1],axle)
+ end
+
  def testRotateDirectionEndPoints
   v0 = [1,0,0]
   v1 = [0,1,0]

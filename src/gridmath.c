@@ -26,6 +26,18 @@ void gridVectorNormalize(double *norm)
   }
 }
 
+void gridVectorOrthogonalize(double *norm, double *axle)
+{
+  double dot;
+  dot = sqrt(gridDotProduct(norm,axle));
+  if (ABS(dot) < 1e-15) return;
+  
+  norm[0] -= dot*axle[0];
+  norm[1] -= dot*axle[1];
+  norm[2] -= dot*axle[2];
+  gridVectorNormalize(norm);
+}
+
 void gridRotateDirection(double *v0, double *v1, 
 			 double *axle, double rotation, double *result)
 {

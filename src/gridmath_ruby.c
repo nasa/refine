@@ -61,6 +61,17 @@ static VALUE grid_vectorNormalize( VALUE self, VALUE rb_vect )
   return rb_vect;
 }
 
+static VALUE grid_vectorOrthogonalize( VALUE self, VALUE rb_vect, VALUE rb_axle)
+{
+  int i;
+  double vect[3], axle[3];
+  for (i=0;i<3;i++) vect[i] = NUM2DBL(rb_ary_entry(rb_vect, i));
+  for (i=0;i<3;i++) axle[i] = NUM2DBL(rb_ary_entry(rb_axle, i));
+  gridVectorOrthogonalize(vect,axle);
+  for (i=0;i<3;i++) rb_ary_store(rb_vect, i, rb_float_new(vect[i]));
+  return rb_vect;
+}
+
 static VALUE grid_rotateDirection( VALUE self, VALUE rb_v0, VALUE rb_v1,
 				VALUE rb_axle, VALUE rotation )
 {
@@ -225,6 +236,7 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "crossProduct", grid_crossProduct, 2 );
   rb_define_method( cGridMath, "vectorLength", grid_vectorLength, 1 );
   rb_define_method( cGridMath, "vectorNormalize", grid_vectorNormalize, 1 );
+  rb_define_method( cGridMath, "vectorOrthogonalize", grid_vectorOrthogonalize, 2 );
   rb_define_method( cGridMath, "rotateDirection", grid_rotateDirection, 4 );
   rb_define_method( cGridMath, "triDiag", grid_triDiag, 1 );
   rb_define_method( cGridMath, "triOffDiag", grid_triOffDiag, 1 );
