@@ -17,117 +17,11 @@
 
 Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 {
-  int i;
-  Grid *grid;
-
-  grid = malloc(sizeof(Grid));
-
-  grid->maxnode = MAX(maxnode,1);
-  grid->nnode   = 0;
-  grid->maxcell = MAX(maxcell,1);
-  grid->ncell   = 0;
-  grid->maxface = MAX(maxface,1);
-  grid->nface   = 0;
-  grid->maxedge = MAX(maxedge,1);
-  grid->nedge   = 0;
-  grid->nprism=0;
-  grid->maxprism=0;
-  grid->prism=NULL;
-
-  grid->prismDeg=NULL;
-
-  grid->npyramid=0;
-  grid->maxpyramid=0;
-  grid->pyramid=NULL;
-  grid->nquad=0;
-  grid->maxquad=0;
-  grid->quad=NULL;
-  grid->nGeomNode = 0;
-  grid->nGeomEdge = 0;
-  grid->nGeomFace = 0;
-  grid->geomEdge = NULL;
-
-  grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
-  for (i=0;i < grid->maxnode; i++ ) {
-    grid->xyz[0+3*i] = DBL_MAX;
-    grid->xyz[1+3*i] = (double)(i+1);
-  }
-  grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
-  grid->blanknode = 0;
-
-  grid->map = malloc(grid->maxnode * 6 * sizeof(double));
-  for (i=0;i < grid->maxnode; i++ ) {
-    grid->map[0+6*i] = 1.0;
-    grid->map[1+6*i] = 0.0;
-    grid->map[2+6*i] = 0.0;
-    grid->map[3+6*i] = 1.0;
-    grid->map[4+6*i] = 0.0;
-    grid->map[5+6*i] = 1.0;
-  }
-
-  grid->frozen = malloc(grid->maxnode * sizeof(bool));
-  for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
-
-  // cells
-  grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
-  for (i=0;i < grid->maxcell; i++ ) {
-    grid->c2n[0+4*i] = EMPTY; 
-    grid->c2n[1+4*i] = i+1; 
-  }
-  grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
-  grid->blankc2n = 0;
-
-  grid->cellAdj = adjCreate(grid->maxnode,grid->maxcell*4,5000*4);
-
-  // face
-  grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
-  grid->faceU  = malloc(3 * grid->maxface * sizeof(double));
-  grid->faceV  = malloc(3 * grid->maxface * sizeof(double));
-  grid->faceId = malloc(1 * grid->maxface * sizeof(int));
-
-  for (i=0;i < grid->maxface; i++ ) {
-    grid->f2n[0+3*i] = EMPTY; 
-    grid->f2n[1+3*i] = i+1; 
-    grid->faceId[i] = EMPTY; 
-    grid->faceU[0+3*i] = DBL_MAX;
-    grid->faceU[1+3*i] = DBL_MAX;
-    grid->faceU[2+3*i] = DBL_MAX;
-    grid->faceV[0+3*i] = DBL_MAX;
-    grid->faceV[1+3*i] = DBL_MAX;
-    grid->faceV[2+3*i] = DBL_MAX;
-  }
-  grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
-  grid->blankf2n = 0;
-
-  grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3,5000*3);
-
-  // edge
-  grid->e2n    = malloc(2 * grid->maxedge * sizeof(int));
-  grid->edgeId = malloc(1 * grid->maxedge * sizeof(int));
-  grid->edgeT  = malloc(2 * grid->maxedge * sizeof(double));
-  for (i=0;i < grid->maxedge; i++ ) {
-    grid->e2n[0+2*i] = EMPTY; 
-    grid->e2n[1+2*i] = i+1; 
-    grid->edgeId[i] = EMPTY; 
-    grid->edgeT[0+2*i] = DBL_MAX; 
-    grid->edgeT[1+2*i] = DBL_MAX; 
-  }
-  grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
-  grid->blanke2n = 0;
-
-  grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2,5000*2);
-
-  grid->ngem = 0;
-  grid->degAR = 0;
-
-  grid->tecplotFileOpen = FALSE;
-
-  grid->renumberFunc = NULL;
-  grid->renumberData = NULL;
-
-  grid->lines = linesCreate();
-
-  return grid;
+  return gridImport(maxnode, 0, 
+		    maxface, 0, 
+		    maxcell, 0,
+		    maxedge, 
+		    NULL, NULL, NULL, NULL);
 }
 
 Grid *gridImport(int maxnode, int nnode, 
@@ -164,7 +58,11 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nGeomFace = 0;
   grid->geomEdge = NULL;
 
-  grid->xyz = xyz;
+  if (NULL == xyz ){
+    grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
+  }else{
+    grid->xyz = xyz;
+  }
   for (i=grid->nnode ; i < grid->maxnode; i++ ) {
     grid->xyz[0+3*i] = DBL_MAX;
     grid->xyz[1+3*i] = (double)(i+1);
@@ -190,7 +88,11 @@ Grid *gridImport(int maxnode, int nnode,
   for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
 
   // cells
-  grid->c2n = c2n;
+  if ( NULL == c2n ) {
+    grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
+  } else {
+    grid->c2n = c2n;
+  }
   for ( i=grid->ncell ; i < grid->maxcell ; i++ ) {
     grid->c2n[0+4*i] = EMPTY; 
     grid->c2n[1+4*i] = i+1; 
@@ -210,8 +112,17 @@ Grid *gridImport(int maxnode, int nnode,
     adjRegister(grid->cellAdj,grid->c2n[3+4*i],i);
   }
 
-  grid->f2n    = f2n;
-  grid->faceId = faceId;
+  if (NULL == f2n) {
+    grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
+  }else{
+    grid->f2n    = f2n;
+  }
+
+  if (NULL == f2n) {
+    grid->faceId = malloc(1 * grid->maxface * sizeof(int));
+  }else{
+    grid->faceId = faceId;
+  }
 
   for ( i=grid->nface ; i < grid->maxface ; i++ ) {
     grid->f2n[0+3*i] = EMPTY; 
