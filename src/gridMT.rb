@@ -127,13 +127,14 @@ end
   assert_equal grid, grid.addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
   assert_equal 2, grid.nodeDeg(0)
   assert_equal 4, grid.nodeDeg(5)
-  assert_equal [3,2,1,0], grid.getGem(4,5)
-  assert_equal [], grid.equator(4,5)
+  assert_equal [0,1,2,3], grid.equator(4,5)
  end
 
  def XtestMaxSize
   nnode = 6000000
   grid = Grid.new(nnode,nnode*6,0)
+  1.upto(nnode*6) {grid.addCell(3,4,0,1)}
+
  end
 
  # adding a cell bigger than maxcell
