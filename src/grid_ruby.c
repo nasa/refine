@@ -217,6 +217,12 @@ VALUE grid_minVolume( VALUE self )
   return rb_float_new( gridMinVolume( grid ) );
 }
 
+VALUE grid_minAR( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new( gridMinAR( grid ) );
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -247,4 +253,5 @@ void Init_Grid()
   rb_define_method( cGrid, "volume", grid_volume, 1 );
   rb_define_method( cGrid, "ar", grid_ar, 1 );
   rb_define_method( cGrid, "minVolume", grid_minVolume, 0 );
+  rb_define_method( cGrid, "minAR", grid_minAR, 0 );
 }
