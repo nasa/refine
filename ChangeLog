@@ -1,6 +1,11 @@
-2004-07-14 09:15 Mike Park  <mike.park@nasa.gov>
+2004-07-14 12:56 Mike Park  <mike.park@nasa.gov>
 
-	* src/gridmath.c added LU 3x3 routine
+	* src/gridmove.c now has ElasticRelaxation that should work like 
+	the springs do. (move in steps and parallel)
+
+2004-07-14 11:34 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c added LU and BackSolve 3x3 routines
 
 2004-07-13 16:21 Mike Park  <mike.park@nasa.gov>
 
