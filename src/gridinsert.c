@@ -288,6 +288,19 @@ int gridSplitFaceAt(Grid *grid, int face,
   }
 }
 
+int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
+{
+  int edge;
+  double newXYZ[3], xyz1[3], xyz2[3], edgeXYZ[3];
+
+  newXYZ[0] = newX;  newXYZ[1] = newY;  newXYZ[2] = newZ;
+  for (edge=0;edge<gridMaxEdge(grid);edge++){
+  }
+
+  return EMPTY;
+}
+
+
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
 {
   int i, cell, face, face0, face1, faceId;
