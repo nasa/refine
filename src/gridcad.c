@@ -1114,6 +1114,7 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   double simplex[4][3];
   double volume[4];
   double lengthScale;
+  int best, worst, secondworst; 
 
   gridSmartVolumeLaplacian( grid, node );
 
@@ -1135,6 +1136,29 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
     printf("%2d x%10.6f y%10.6f z%10.6f v%10.6f\n",
 	   s, simplex[s][0], simplex[s][1], simplex[s][2], volume[s]);
   }
+
+  best = 0;
+  if ( volume[0] > volume[1] ) {
+    secondworst = 0;
+    worst = 1;
+  }else{
+    secondworst = 1;
+    worst = 0;
+  }
+
+  for(s=0;s<4;s++) {
+    if (volume[s]>=volume[best]) best = s;
+    if (volume[s]<volume[worst]) {
+      secondworst = worst;
+      worst = s;
+    }else{
+      if ( s!=worst && volume[s]<volume[secondworst]) secondworst = s;
+    }
+  }
+  printf("the best is %d the secondworst is %d and the worst is %d\n",
+	 best,secondworst,worst);
+
+  
 
   return grid;
 
