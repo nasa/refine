@@ -113,17 +113,23 @@ void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
   }
 }
 
+void gridfreezenode_( int *node )
+{
+  gridFreezeNode( grid, *node );
+}
+
 void gridprojectallfaces_( )
 {
-  int face, nodes[3], faceId;
+  int face, node, nodes[3], faceId;
   double ar0, ar1;
 
   ar0 = gridMinAR(grid);
   for(face=0;face<gridMaxFace(grid);face++) {
     if (grid == gridFace(grid,face,nodes,&faceId) ) {
-      gridProjectNodeToFace(grid, nodes[0], faceId );
-      gridProjectNodeToFace(grid, nodes[1], faceId );
-      gridProjectNodeToFace(grid, nodes[2], faceId );
+      for(node=0;node<3;node++) {
+	if ( !gridNodeFrozen(grid,nodes[node])  )
+	     gridProjectNodeToFace(grid, nodes[node], faceId );
+      }
     }
   }
   ar1 = gridMinAR(grid);

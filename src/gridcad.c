@@ -787,6 +787,7 @@ Grid *gridSmoothFaceInterior( Grid *grid, bool localOnly )
   laplacianLimit =0.60;
   for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && 
+	 !gridNodeFrozen( grid, node ) && 
 	 !gridGeometryBetweenFace( grid, node ) &&
 	 gridNodeLocal(grid,node) ) {
       nearGhost = gridNodeNearGhost(grid, node);
