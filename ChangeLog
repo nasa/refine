@@ -1,3 +1,8 @@
+2004-07-13 15:12 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.0.0 Release. First public release. 
+	Use with FUN3D version 3.3.0
+
 2004-07-09 12:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridMinARAroundNodeExceptGem) added.
