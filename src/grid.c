@@ -189,7 +189,11 @@ Grid* gridRemoveNodeCell(Grid *grid, int nodeId, int cellId)
 
 void gridFirstNodeCell(Grid *grid, int nodeId)
 {
-  grid->current = grid->first[nodeId];
+  if ( nodeId < grid->nnode) {
+    grid->current = grid->first[nodeId];
+  }else{
+    grid->current = NULL;
+  }
 }
 
 void gridNextNodeCell(Grid *grid)
