@@ -1101,7 +1101,6 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
   double residual;
 
   b = malloc(3*gridMaxNode(grid)*sizeof(double));
-
   for(row=0;row<3*gridMaxNode(grid);row++) b[row] = 0.0;
  
   for(row=0;row<gridMaxNode(grid);row++) {
@@ -1124,6 +1123,22 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
     }
   }
 
+  for(row=0;row<gridMaxNode(grid);row++) {
+    if ( gridValidNode(grid,row) &&
+	 !gridmoveSpecified(gm,row) && 
+	 gridNodeLocal(grid,row) ) {
+      gridBackSolve3x3(&gm->lu[9*row], &b[3*row]);
+    }
+  }
+
+  for(row=0;row<gridMaxNode(grid);row++) {
+    if ( gridValidNode(grid,row) &&
+	 !gridmoveSpecified(gm,row) && 
+	 gridNodeLocal(grid,row) ) {
+      for(i=0;i<3;i++) gm->dxyz[i+3*row] = b[i+3*row];
+    }
+  }
+
   *residual2 = residual;
 
   free(b);
@@ -1132,7 +1147,20 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
 
 GridMove *gridmoveElasticRelaxationShutDown(GridMove *gm)
 {
-  
+  Grid *grid = gridmoveGrid(gm);
+  int node, i;
+  double xyz0[3];
+
+  for(node=0;node<3*gridMaxNode(grid);node++)
+    gm->xyz[node] += gm->dxyz[node];
+
+  for(node=0;node<gridMaxNode(grid);node++) {
+    if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node)) {
+      gridNodeXYZ(grid,node,xyz0);
+      for(i=0;i<3;i++) gm->displacement[i+3*node] = gm->xyz[i+3*node] - xyz0[i];
+    }
+  }
+
   free(gm->rowStart); gm->rowStart=NULL;
   free(gm->compRow);  gm->compRow=NULL;
 
