@@ -1,3 +1,8 @@
+2004-11-23 10:56 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio3) The `integrated average' is
+	really the average metric over the edge.
+
 2004-11-16 09:39 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridEdgeRatio3) Computes the ratio of unity to
