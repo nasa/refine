@@ -8,5 +8,6 @@ New MesherX library structure
 
 Thu Jan  9, 2003: Released Refine 0.4
 
-Now have advancing layers with inflation and non-manifold edges on faces
+Now have advancing layers with inflation and can insert non-manifold
+edges on faces
 
