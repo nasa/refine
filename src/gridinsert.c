@@ -13,7 +13,6 @@
 #include <math.h>
 #include <values.h>
 #include "adj.h"
-#include "gridStruct.h"
 #include "gridmetric.h"
 #include "gridinsert.h"
 #include "gridcad.h"
@@ -693,7 +692,7 @@ Grid *gridFreezeGoodNodes(Grid *grid, double goodAR,
   double ratio;
   double ar;
 
-  for ( n0=0; n0<grid->maxnode; n0++ ) { 
+  for ( n0=0; n0<gridMaxNode(grid); n0++ ) { 
     if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) 
 	return NULL;
@@ -722,12 +721,12 @@ Grid *gridVerifyEdgeExists(Grid *grid, int n0, int n1 )
   gotIt=gridCellEdge( grid, n0, n1 );
 
   if( !gotIt && n0 != EMPTY && n1 != EMPTY ) {
-    for ( it0 = adjFirst(grid->cellAdj,n0); 
+    for ( it0 = adjFirst(gridCellAdj(grid),n0); 
 	  adjValid(it0) && !gotIt; 
 	  it0 = adjNext(it0) ) {
       gridCell( grid, adjItem(it0), nodes0 );
       for(i0=0;i0<4&&!gotIt;i0++){
-	for ( it1 = adjFirst(grid->cellAdj,nodes0[i0]); 
+	for ( it1 = adjFirst(gridCellAdj(grid),nodes0[i0]); 
 	      adjValid(it1) && !gotIt; 
 	      it1 = adjNext(it1) ) {
 	  gridCell( grid, adjItem(it1), nodes1 );
