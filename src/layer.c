@@ -1885,7 +1885,7 @@ Adj *layerBuildNormalBlendAdjacency(Layer *layer)
 
   for (blend=0;blend<layerNBlend(layer);blend++){
     layerBlendNormals(layer,blend,normals);
-    for (i=0;i<4;i++) adjRegister( layer->adj, normals[i], blend );
+    for (i=0;i<4;i++) adjRegister( adj, normals[i], blend );
   }
 
   return adj;
