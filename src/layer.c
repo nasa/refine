@@ -851,9 +851,11 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
       layer->normalTriangleExclusive = TRUE;
       layer->normalTriangleExclude[tri] = FALSE;
       layerTriangle(layer,triangle,nodes);
+      side0 = EMPTY;
       if (0<layerConstrainedSide(layer, triangle, 0 )) side0 = 0; 
       if (0<layerConstrainedSide(layer, triangle, 1 )) side0 = 1; 
       if (0<layerConstrainedSide(layer, triangle, 2 )) side0 = 2;
+      if (EMPTY == side0) printf("%s: %d: side0 EMPTY\n",__FILE__,__LINE__);
       side1 = side0+1; if (side1>2) side1 = 0;
       gridNodeXYZ(layerGrid(layer),nodes[side0],xyz0);
       gridNodeXYZ(layerGrid(layer),nodes[side1],xyz1);
@@ -3377,7 +3379,6 @@ Layer *layerSubBlendFill(Layer *layer)
 
 Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 {
-  int blend;
   if (layerNBlend(layer) <= 0) return layer;
   if ( 0.0 >= maxNormalAngle ) maxNormalAngle = 30.0;
   if (layer != layerSubBlendCount(layer,maxNormalAngle)) return NULL;
@@ -3414,12 +3415,11 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer, dou
   Adj *adj;
   AdjIterator it;
   int blend;
-  int n, normal, normals[4];
+  int normal, normals[4];
   int triangle[3];
   int o, other;
   double xyz0[3], xyz1[3], edge[3], axle[3];
   double normalDot, otherDot;
-  int i;
   
   adj = adjCreate( layerNNormal(layer), 4*layerNBlend(layer), 100);
   for (blend=0; blend < layerNBlend(layer); blend++){
