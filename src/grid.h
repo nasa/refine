@@ -425,6 +425,8 @@ Grid *gridReportLinesLocation(Grid *g);
 
 Grid *gridCopyAboutY0(Grid *g, int symmetryFaceId, int mirrorAux );
 
+Grid *gridReportZeroDegreeNodes(Grid *g);
+
 END_C_DECLORATION
 
 #endif /* GRID_H */
