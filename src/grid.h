@@ -123,6 +123,9 @@ struct Grid {
 		      int lastSize, int newSize);
   void *reallocData;
 
+  void (*freeNotificationFunc)(void *freeNotificationData);
+  void *freeNotificationData;
+
   Lines *lines;
 };
 
@@ -167,6 +170,12 @@ Grid *gridDetachReallocator(Grid *g);
 #define gridREALLOC_PRISM (5)
 #define gridREALLOC_PYRAMID (6)
 #define gridREALLOC_QUAD (7)
+
+Grid *gridAttachFreeNotifier(Grid *g, void (*freeNotificationFunc)
+			     (void *freeNotificationData),
+			     void *freeNotificationData);
+Grid *gridDetachFreeNotifier(Grid *g);
+
 
 Grid *gridPack(Grid *g);
 Grid *gridSortNodeGridEx(Grid *g);

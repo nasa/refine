@@ -206,6 +206,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->reallocFunc = NULL;
   grid->reallocData = NULL;
 
+  grid->freeNotificationFunc = NULL;
+  grid->freeNotificationData = NULL;
+
   grid->lines = linesCreate();
 
   return  grid;
@@ -487,8 +490,27 @@ Grid *gridDetachReallocator(Grid *grid )
   return grid;
 }
 
+Grid *gridAttachFreeNotifier(Grid *grid, void (*freeNotificationFunc)
+			     (void *freeNotificationData),
+			     void *freeNotificationData)
+{
+  grid->freeNotificationFunc = freeNotificationFunc;
+  grid->freeNotificationData = freeNotificationData;
+  return grid;
+}
+
+Grid *gridDetachFreeNotifier(Grid *grid)
+{
+  grid->freeNotificationFunc = NULL;
+  grid->freeNotificationData = NULL;
+  return grid;
+}
+
+
 void gridFree(Grid *grid)
 {
+  if (NULL != grid->freeNotificationFunc) 
+    (*grid->freeNotificationFunc)( grid->freeNotificationData );
   if (NULL != grid->lines) linesFree(grid->lines);
 
   if (NULL != grid->tecplotFile) fclose(grid->tecplotFile);
