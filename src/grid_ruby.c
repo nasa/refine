@@ -155,9 +155,14 @@ VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
   GET_GRID_FROM_SELF;
   gridEquator( grid, NUM2INT(n0), NUM2INT(n1) );
   nequ = gridNEqu(grid);
-  rb_equ = rb_ary_new2(nequ);
-  for ( i=0 ; i < nequ ; i++ ) 
-    rb_ary_store( rb_equ, i, INT2NUM( gridEqu(grid,i) ) );
+  if (nequ>0) {
+    rb_equ = rb_ary_new2(nequ+1);
+    for ( i=0 ; i < nequ ; i++ ) 
+      rb_ary_store( rb_equ, i, INT2NUM( gridEqu(grid,i) ) );
+    rb_ary_store( rb_equ, nequ, INT2NUM( gridEqu(grid,nequ) ) );
+  }else{
+    rb_equ = rb_ary_new2(0);
+  }
   return rb_equ;
 }
 

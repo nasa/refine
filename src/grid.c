@@ -385,6 +385,7 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
 
   if ( NULL == gridMakeGem( grid, n0, n1) ) return NULL;
 
+  if ( grid->ngem == (MAXDEG-1) ) return NULL;
   if ( grid->ngem == 0 ) return grid;
 
   nodes[0] = n0;
@@ -401,7 +402,7 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
     }
   }
   grid->nequ = grid->ngem;
-  
+  grid->equ[grid->ngem] = grid->equ[0];
   return grid;
 }
 
