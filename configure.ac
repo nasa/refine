@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT([src/main.c])
-AM_INIT_AUTOMAKE([refine],[0.3])
+AM_INIT_AUTOMAKE([refine],[0.4])
 
 AC_ARG_WITH(SDK,
 	[  --with-SDK[=ARG]        use GEOLAB SDK package [ARG=\$GEO_SDK]],
