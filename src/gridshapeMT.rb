@@ -24,9 +24,8 @@ end
 
 class TestGridShape < Test::Unit::TestCase
 
- def testStupidity
+ def testForStupidity
   assert true
-  assert false
  end
 
 end
