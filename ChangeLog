@@ -1,3 +1,8 @@
+2004-07-23 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) do not split an edge if it is
+	near a cell with small aspect ratio to prevent really bad cells.
+
 2004-07-23 13:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R to be

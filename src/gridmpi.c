@@ -53,6 +53,9 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   int n0, n1, adaptnode, origNNode, newnode;
   int nnodeAdd, nnodeRemove;
   double ratio;
+  double ar, arLimit;
+
+  arLimit = 0.05;
 
   origNNode   = gridNNode(grid);
   adaptnode   = 0;
@@ -66,9 +69,12 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 	 gridNodeLocal( grid, n0 ) ) {
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
       if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
-	newnode = gridParallelEdgeSplit(grid, queue, n0, n1);
-	if ( newnode != EMPTY ){
-	  nnodeAdd++;
+	gridNodeAR(grid,n0,&ar);
+	if (ar > arLimit) {
+	  newnode = gridParallelEdgeSplit(grid, queue, n0, n1);
+	  if ( newnode != EMPTY ){
+	    nnodeAdd++;
+	  }
 	}
       }else{
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
