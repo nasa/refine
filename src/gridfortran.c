@@ -163,7 +163,9 @@ void gridprojectallfaces_( void )
   int face, node, nodes[3], faceId;
   double ar0, ar1;
 
-  ar0 = gridMinAR(grid);
+#ifdef PARALLEL_VERBOSE 
+  ar0 = gridMinThawedAR(grid);
+#endif
   for(face=0;face<gridMaxFace(grid);face++) {
     if (grid == gridFace(grid,face,nodes,&faceId) ) {
       for(node=0;node<3;node++) {
@@ -176,9 +178,9 @@ void gridprojectallfaces_( void )
       }
     }
   }
-  ar1 = gridMinAR(grid);
-
 #ifdef PARALLEL_VERBOSE 
+  ar1 = gridMinThawedAR(grid);
+
   printf( " %6d project faces           initial AR%14.10f final AR%14.10f\n",
 	  gridPartId(grid),ar0,ar1 );
   fflush(stdout);
