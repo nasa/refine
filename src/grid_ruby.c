@@ -175,8 +175,8 @@ VALUE grid_orient( VALUE self, VALUE c0, VALUE c1 , VALUE c2, VALUE c3,
 
   if ( NULL == gridOrient( grid, cell, result ) ) return Qnil;
 
-  rb_result = rb_ary_new2(2);
-  for ( i=0 ; i<2 ; i++ ) rb_ary_store( rb_result, i, INT2NUM(result[i+2]) );
+  rb_result = rb_ary_new2(4);
+  for ( i=0 ; i<4 ; i++ ) rb_ary_store( rb_result, i, INT2NUM(result[i]) );
   return rb_result;
 }
 
