@@ -1766,6 +1766,7 @@ Grid *gridMinFaceAreaUV(Grid *grid, int node, double *min_area)
 
 Grid *gridSmoothNodeFaceAreaUV(Grid *grid, int node )
 {
+  if (!gridGeometryFace(grid,node)) return NULL;
   if (gridGeometryBetweenFace(grid,node)) return grid;
   return gridSmoothNodeFaceAreaUVSimplex(grid, node );
 }
@@ -1810,8 +1811,11 @@ Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *grid, int node )
   int face, faceId, nodes[3];
   /* GridBool makefaces = FALSE; int debugFaceId = 1; */
 
+  if (!gridGeometryFace(grid,node)) return NULL;
+  if (gridGeometryBetweenFace(grid,node)) return NULL;
+
   face = adjItem(adjFirst(gridFaceAdj(grid), node));
-  gridFace(grid,face,nodes,&faceId); /* FAILED??? */
+  if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
 
   if ( NULL == gridNodeUV(grid, node, faceId, origUV)) return NULL;
 

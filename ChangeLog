@@ -1,3 +1,16 @@
+2005-02-12 11:56 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelRelaxNegativeFaceAreaUV) added checks
+	to make sure that only allow boundary nodes can be selected to fix
+	negative face areas with gridSmoothNodeFaceAreaUV. Increased the
+	face area seletion from smaller than 0.0 to smaller then 1.0e-14.
+	* src/gridcad.c (gridSmoothNodeFaceAreaUV) return immediately with
+	NULL if it was not called with a boundary node.
+	* src/gridcad.c (gridSmoothNodeFaceAreaUVSimplex) return
+	immediately with NULL if the it was called for a node that it
+	cannot handle. Return NULL if it cannot find a valid face
+	associated with this node.
+
 2005-02-12 10:19 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridNodeProjectionDisplacement) cleaned up how
