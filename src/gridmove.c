@@ -1391,3 +1391,28 @@ GridMove *gridmoveRelaxationShutDown(GridMove *gm)
   }
   return NULL;
 }
+
+GridMove *gridmoveRelaxation(GridMove *gm, int relaxationScheme,
+			     int nsteps, int subIterations)
+{
+  int step, iteration, echo;
+  double position;
+  double rmsResidual;
+
+  if (gm != gridmoveRelaxationStartUp(gm, relaxationScheme )) return NULL;
+    
+  for(step=0;step<nsteps;step++) {
+    position = (double)(step+1)/(double)nsteps;
+    gridmoveRelaxationStartStep(gm, position);
+    echo = subIterations/5;
+    for(iteration=1;iteration<=subIterations;iteration++) {
+      gridmoveRelaxationSubIteration(gm, &rmsResidual);
+      rmsResidual = sqrt(rmsResidual/(double)gridNNode(gridmoveGrid(gm)));
+      if (1==iteration || iteration/echo*echo==iteration)
+	printf("Iteration %4d Residual %23.15e\n",iteration,rmsResidual);
+    }
+  }
+  gridmoveRelaxationShutDown(gm);
+
+  return gm;
+}

@@ -108,6 +108,9 @@ GridMove *gridmoveRelaxationStartStep(GridMove *, double position);
 GridMove *gridmoveRelaxationSubIteration(GridMove *, double *residual2);
 GridMove *gridmoveRelaxationShutDown(GridMove *);
 
+GridMove *gridmoveRelaxation(GridMove *, int relaxationScheme, 
+			     int nsteps, int subIterations);
+
 END_C_DECLORATION
 
 #endif /* GRIDMOVE_H */
