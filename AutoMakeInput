@@ -35,7 +35,8 @@ librefine_a_SOURCES = \
 	../src/gridswap.c \
 	../src/gridcad.c \
 	../src/gridfiller.c \
-	../src/gridfortran.c
+	../src/gridfortran.c \
+	../src/FAKEGeom.c
 
 libOctree_Stub_a_CFLAGS = -I../src @SDKheader@
 libOctree_Stub_a_SOURCES = ../src/Octree_Stub.c

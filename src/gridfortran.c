@@ -13,6 +13,7 @@
 #include "gridfortran.h"
 #include "grid.h"
 #include "gridmetric.h"
+#include "gridcad.h"
 
 static Grid *grid;
 
@@ -34,6 +35,11 @@ int gridcreate_( int *nnode, double *x, double *y, double *z ,
   printf(" min AR %17.15f\n",gridMinAR(grid));
 }
 
+int gridfree_( )
+{
+  gridFree(grid);
+}
+
 int gridinsertboundary_( int *faceId, int *nnode, int *inode, 
 			 int *nface, int *ndim, int *f2n )
 {
@@ -52,4 +58,15 @@ int gridinsertboundary_( int *faceId, int *nnode, int *inode,
 	  *faceId,*nnode,*nface);
   printf( " %d total faces with min MR of %18.15f\n",
 	  gridNFace(grid),gridMinFaceMR(grid));
+}
+
+int gridsmoothvolume_( )
+{
+  gridSmoothVolume(grid);
+  printf(" min AR %17.15f\n",gridMinAR(grid));
+}
+
+int gridwritetecplotsurfacezone_( )
+{
+  gridWriteTecplotSurfaceZone(grid);
 }
