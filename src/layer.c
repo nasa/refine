@@ -2611,13 +2611,16 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
   Near *target;
   int i, touched, maxTouched, *nearNormals;
   double dir1[3], dir2[3], dot;
-  double xyz1[3], xyz2[3], view[3], visible;
+  double xyz1[3], xyz2[3], view[3];
+  double visible, reciprocal;
 
+  printf("layerPopulateNormalNearTree...\n");
   layerPopulateNormalNearTree(layer);
 
   maxTouched = layerNNormal(layer);
   nearNormals = malloc(maxTouched*sizeof(int));
 
+  printf("inspecting normal proximity...\n");
   for(normal=0;normal<layerNNormal(layer);normal++){
     target = &layer->nearTree[normal];
     touched = 0;
@@ -2633,7 +2636,9 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
 		    xyz2);
 	gridSubtractVector(xyz2, xyz1, view);
 	visible = gridDotProduct( dir1, view );
-	if (visible > 0) {
+	gridSubtractVector(xyz1, xyz2, view);
+	reciprocal = gridDotProduct( dir2, view );
+	if (visible > 0 && reciprocal > 0) {
 	  layerTerminateNormal(layer,normal);
 	  layerTerminateNormal(layer,nearNormals[i]);
 	}
