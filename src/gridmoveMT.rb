@@ -179,7 +179,7 @@ class TestGridMove < Test::Unit::TestCase
   grid = isoTet4 h
   gm = GridMove.new(grid)
   3.times{|n| gm.displace(n,[0.0,0.0,0.0])}
-  gm.displace(3,[0.0,0.0,-0.7])
+  gm.displace(3,[0.0,0.0,-0.78])
   gm.springRelaxation(1,1)
   gm.applyDisplacements
   minVol = grid.minVolume
@@ -316,6 +316,18 @@ class TestGridMove < Test::Unit::TestCase
   assert_in_delta up[0], gm.displacement(3)[0], delta
   assert_in_delta up[1], gm.displacement(3)[1], delta
   assert_in_delta up[2], gm.displacement(3)[2], delta
+ end
+
+ def testElasticRelaxationSqwish
+  h = 0.1
+  grid = isoTet4 h
+  gm = GridMove.new(grid)
+  3.times{|n| gm.displace(n,[0.0,0.0,0.0])}
+  gm.displace(3,[0.0,0.0,-0.78])
+  gm.elasticRelaxation(3,1)
+  gm.applyDisplacements
+  minVol = grid.minVolume
+  assert(1.0e-12<minVol,"negative volume of #{minVol}")
  end
 
 end
