@@ -20,6 +20,9 @@ Grid *gridAdapt(Grid *g, double minLength, double maxLength );
 int gridSplitEdge(Grid *g, int n0, int n1 );
 Grid *gridCollapseEdge(Grid *g, int n0, int n1, double ratio );
 
+Grid *gridFreezeGoodNodes(Grid *g, double goodAR, 
+			  double minLength, double maxLength );
+
 END_C_DECLORATION
 
 #endif /* GRIDINSERT_H */

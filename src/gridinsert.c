@@ -319,3 +319,25 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
   return grid;
 }
 
+Grid *gridFreezeGoodNodes(Grid *grid, double goodAR, 
+			  double minLength, double maxLength )
+{
+  int n0, n1;
+  double ratio;
+  
+  for ( n0=0; n0<grid->maxnode; n0++ ) { 
+    if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
+      if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
+      if ( ratio < maxLength ) {
+	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
+	  return NULL;
+	if ( ratio > minLength ) { 
+	  if (grid == gridSafeProjectNode(grid, n0, 1.0 ) ) 
+	    gridFreezeNode(grid,n0);
+	}
+      }
+    }
+  }
+  return grid;
+}
+
