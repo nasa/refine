@@ -49,11 +49,8 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
   Grid *grid;
   Layer *layer;
   int i;
-  double h;
   double rate;
   int nLayer;
-  int face;
-  double gapHeight;
   double origin[3] = {0.0, -1.5, 0.0};
   double direction[3] = {0, 1, 0};
 
