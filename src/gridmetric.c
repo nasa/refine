@@ -561,6 +561,48 @@ Grid *gridGemAR( Grid *grid, double *ar ){
 double gridAR(Grid *grid, int *nodes )
 {
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
+  int i;
+  double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
+  double aspect;
+
+  if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[3],xyz4) ) return -1.0;
+
+  if ( gridVolume( grid, nodes ) <= 1.0e-14) return -1.0;
+
+  gridMap(grid,nodes[0],m0);
+  gridMap(grid,nodes[1],m1);
+  gridMap(grid,nodes[2],m2);
+  gridMap(grid,nodes[3],m3);
+
+  for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
+  if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
+    printf("%s: %d: gridAR: gridConvertMetricToJacobian NULL\n",
+	   __FILE__,__LINE__);
+  }
+  
+  gridMapXYZWithJ(j, &xyz1[0], &xyz1[1], &xyz1[2]);
+  gridMapXYZWithJ(j, &xyz2[0], &xyz2[1], &xyz2[2]);
+  gridMapXYZWithJ(j, &xyz3[0], &xyz3[1], &xyz3[2]);
+  gridMapXYZWithJ(j, &xyz4[0], &xyz4[1], &xyz4[2]);
+
+  aspect = gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 );
+
+  if ( FALSE ) {
+    printf("nodes %d %d %d %d aspect %f\n",nodes[0],nodes[1],nodes[2],nodes[3],aspect);
+    printf("m \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
+    printf("j \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",j[0],j[1],j[2],j[3],j[4],j[5],j[6],j[7],j[8]);
+  }
+
+  return aspect;
+
+}
+
+double gridCellAspectRatio( double *xyz1, double *xyz2, 
+			    double *xyz3, double *xyz4 )
+{
   double x1, x2, x3, x4; 
   double y1, y2, y3, y4; 
   double z1, z2, z3, z4; 
@@ -573,13 +615,6 @@ double gridAR(Grid *grid, int *nodes )
   double nx4, ny4, nz4, rmag4;
   double xins;
   double aspect, cost;
-  int i;
-  double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
-
-  if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[3],xyz4) ) return -1.0;
 
   x1 = xyz1[0];
   y1 = xyz1[1];
@@ -596,24 +631,6 @@ double gridAR(Grid *grid, int *nodes )
   x4 = xyz4[0];
   y4 = xyz4[1];
   z4 = xyz4[2];
-
-  gridMap(grid,nodes[0],m0);
-  gridMap(grid,nodes[1],m1);
-  gridMap(grid,nodes[2],m2);
-  gridMap(grid,nodes[3],m3);
-
-  for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
-  if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
-    printf("%s: %d: gridAR: gridConvertMetricToJacobian NULL\n",
-	   __FILE__,__LINE__);
-  }
-  
-  gridMapXYZWithJ(j, &x1, &y1, &z1);
-  gridMapXYZWithJ(j, &x2, &y2, &z2);
-  gridMapXYZWithJ(j, &x3, &y3, &z3);
-  gridMapXYZWithJ(j, &x4, &y4, &z4);
-
- /* Compute the aspect ratios */
 
   det = (x4-x1)*((y2-y1)*(z3-z1) - (y3-y1)*(z2-z1))
       + (y4-y1)*((x3-x1)*(z2-z1) - (x2-x1)*(z3-z1))
@@ -688,16 +705,7 @@ double gridAR(Grid *grid, int *nodes )
 	  nx3*ny1*nz2*s4 - nx1*ny3*nz2*s4 - nx2*ny1*nz3*s4 +
 	  nx1*ny2*nz3*s4)/det;
 
-  aspect = xins/circ*3.0;
-
-  if ( FALSE ) {
-    printf("nodes %d %d %d %d aspect %f\n",nodes[0],nodes[1],nodes[2],nodes[3],aspect);
-    printf("m \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
-    printf("j \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",j[0],j[1],j[2],j[3],j[4],j[5],j[6],j[7],j[8]);
-  }
-
-  if ( gridVolume( grid, nodes ) <= 1.0e-14) aspect = -1.0;
-  return aspect;
+  return xins/circ*3.0;
 }
 
 Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
@@ -1869,7 +1877,7 @@ double gridCellMeanRatio( double *xyz0, double *xyz1, double *xyz2, double *xyz3
 
   volume = -gridDotProduct(norm,edge1)/6.0;
 
-  if (volume <= 0.0) return volume;
+  if ( volume < 1.0e-14 ) return -1.0;
 
   mr = 12.0 * pow(9.0*volume*volume,1.0/3.0) /
     ( gridDotProduct(edge1,edge1) +

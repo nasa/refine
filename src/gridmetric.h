@@ -45,6 +45,7 @@ Grid *gridConvertMetricToJacobian(Grid *g, double *m, double *j);
 
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
+double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
 Grid *gridNodeAR(Grid *g, int node, double *ar );
 Grid *gridGemAR(Grid *g, double *ar);
 Grid *gridCellARDerivative(Grid *g, int *nodes, double *ar, double *dARdx );
@@ -76,6 +77,10 @@ Grid *gridNodeFaceMR(Grid *g, int node, double *mr );
 Grid *gridNodeFaceMRDerivative(Grid *g, int node, double *mr, double *dMRdx );
 
 double gridCellMeanRatio( double *n0, double *n1, double *n2, double *n3 );
+
+void gridCellMeanRatioDerivative( double *xyz0, double *xyz1, 
+				  double *xyz2, double *xyz3,
+				  double *mr, double *dMRdx);
 
 END_C_DECLORATION
 
