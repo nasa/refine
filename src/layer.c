@@ -799,8 +799,13 @@ Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triang
 	adjValid(it); 
 	it = adjNext(it) ){
     if (i>=ntriangle) return NULL;
-    triangles[i] = adjItem(it);
-    i++;
+    if (!layerConstrained(layer,normal) || 
+	layerConstrainedSide(layer, adjItem(it), 0 ) ||
+	layerConstrainedSide(layer, adjItem(it), 1 ) ||
+	layerConstrainedSide(layer, adjItem(it), 2 ) ) {
+      triangles[i] = adjItem(it);
+      i++;
+    }
   }
   return layer;
 }
@@ -808,17 +813,48 @@ Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triang
 Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
 {
   int tri, triangles[MAXNORMALDEG];
-
+  int triangle, nodes[3], side0, side1;
+  double xyz0[3], xyz1[3], tangent[3], saveDir[3], direction[3], dot;
+  
   if (layer != layerNormalTriangles(layer, normal, MAXNORMALDEG, triangles )) {
     layer->normalTriangleDegree = EMPTY;
     return NULL;
   }
   layer->normalTriangleHub = normal;
   layer->normalTriangleDegree = layerNormalDeg(layer, normal );
-  for (tri=0;tri<layer->normalTriangleDegree;tri++)
-    layerTriangleDirection( layer, triangles[tri], 
-			    &layer->normalTriangleDirection[3*tri] );
-
+  for (tri=0;tri<layer->normalTriangleDegree;tri++) {
+    triangle = triangles[tri];
+    if (!layerConstrained(layer,normal) ) {
+      layerTriangleDirection( layer, triangle, 
+			      &layer->normalTriangleDirection[3*tri] );
+    }else{
+      layerNormalDirection(layer,normal,saveDir);
+      layerTriangle(layer,triangle,nodes);
+      if (layerConstrainedSide(layer, triangle, 0 )) side0 = 0; 
+      if (layerConstrainedSide(layer, triangle, 1 )) side0 = 1; 
+      if (layerConstrainedSide(layer, triangle, 2 )) side0 = 2;
+      side1 = side0+1; if (side1>2) side1 = 0;
+      gridNodeXYZ(layerGrid(layer),nodes[side0],xyz0);
+      gridNodeXYZ(layerGrid(layer),nodes[side1],xyz1);
+      gridSubtractVector(xyz1,xyz0,tangent);
+      gridVectorNormalize(tangent);
+      layerTriangleDirection( layer, triangle, 
+			      layer->normal[normal].direction );
+      layerProjectNormalToConstraints(layer, normal);
+      layerNormalDirection(layer,normal,direction);
+      dot = gridDotProduct(tangent, direction);
+      direction[0] -= dot*tangent[0];
+      direction[1] -= dot*tangent[1];
+      direction[2] -= dot*tangent[2];
+      gridVectorNormalize(direction);
+      layer->normalTriangleDirection[0+3*tri] = direction[0];
+      layer->normalTriangleDirection[1+3*tri] = direction[1];
+      layer->normalTriangleDirection[2+3*tri] = direction[2];
+      layer->normal[normal].direction[0] = saveDir[0];
+      layer->normal[normal].direction[1] = saveDir[1];
+      layer->normal[normal].direction[2] = saveDir[2];
+    }
+  }
   return layer;
 }
 
