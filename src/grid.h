@@ -21,6 +21,7 @@ Grid *gridCreate(int maxnode, int maxcell, int maxface, int maxedge );
 Grid *gridImport(int maxnode, int nnode, 
 		 int maxface, int nface, 
 		 int maxcell, int ncell,
+		 int maxedge,
 		 double *xyz, int *f2n, int *faceId, int *c2n );
 Grid *gridImportFAST( char *filename );
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
