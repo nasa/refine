@@ -24,10 +24,12 @@
 Grid *gridSetMapMatrixToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
 {
   int i;
-  double map[6], map0[6], map1[6];
+  double map[6];
+  double *map0, *map1;
 
-  if (grid != gridMap(grid, n0, map0) ) return NULL;
-  if (grid != gridMap(grid, n1, map1) ) return NULL;
+  if (!gridValidNode(grid,n0) || !gridValidNode(grid,n1)) return NULL;
+  map0 = gridMapPointer(grid, n0);
+  map1 = gridMapPointer(grid, n1);
   for (i=0;i<6;i++) map[i] = 0.5*(map0[i]+map1[i]);
   if (grid != gridSetMap( grid, avgNode, 
 			  map[0], map[1], map[2], 
@@ -69,7 +71,7 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
 {
   double xyz0[3], xyz1[3];
   double dx, dy, dz;
-  double m[6];
+  double *m;
   double length0, length1;
 
   if (grid != gridNodeXYZ(grid, n0, xyz0) ) return -1.0;
@@ -79,13 +81,13 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
   dy = xyz1[1] - xyz0[1];
   dz = xyz1[2] - xyz0[2];
 
-  gridMap(grid, n0, m);
+  m = gridMapPointer(grid, n0);
   length0 = sqrt (
       dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
     + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
     + dz * ( m[2]*dx + m[4]*dy + m[5]*dz ) );
 
-  gridMap(grid, n1, m);
+  m = gridMapPointer(grid, n1);
   length1 = sqrt (
       dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
     + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
@@ -564,7 +566,8 @@ double gridAR(Grid *grid, int *nodes )
 {
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
   int i;
-  double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
+  double *m0, *m1, *m2, *m3; 
+  double m[6], j[9];
   double aspect;
 
   if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return -1.0;
@@ -574,10 +577,10 @@ double gridAR(Grid *grid, int *nodes )
 
   if ( gridVolume( grid, nodes ) <= 1.0e-14) return -1.0;
 
-  gridMap(grid,nodes[0],m0);
-  gridMap(grid,nodes[1],m1);
-  gridMap(grid,nodes[2],m2);
-  gridMap(grid,nodes[3],m3);
+  m0 = gridMapPointer(grid,nodes[0]);
+  m1 = gridMapPointer(grid,nodes[1]);
+  m2 = gridMapPointer(grid,nodes[2]);
+  m3 = gridMapPointer(grid,nodes[3]);
 
   for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
@@ -788,17 +791,18 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 {
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
   int i;
-  double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
+  double *m0, *m1, *m2, *m3; 
+  double m[6], j[9];
 
   if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return NULL;
   if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return NULL;
   if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return NULL;
   if (grid != gridNodeXYZ(grid,nodes[3],xyz4) ) return NULL;
 
-  gridMap(grid,nodes[0],m0);
-  gridMap(grid,nodes[1],m1);
-  gridMap(grid,nodes[2],m2);
-  gridMap(grid,nodes[3],m3);
+  m0 = gridMapPointer(grid,nodes[0]);
+  m1 = gridMapPointer(grid,nodes[1]);
+  m2 = gridMapPointer(grid,nodes[2]);
+  m3 = gridMapPointer(grid,nodes[3]);
 
   for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
