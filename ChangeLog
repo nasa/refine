@@ -1,3 +1,11 @@
+2004-11-01 16:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridPlotMinDeterminateAtSurface) Call
+	tecplot scalar to display the min Jacobian determinate for
+	a node.
+	* src/gridshape.c (gridMinCellJacDet2) gives the minimum nodal
+	Jacobian determinate for a cell.
+
 2004-10-29 15:38 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridParentGeometry) added a method for find the

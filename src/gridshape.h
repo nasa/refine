@@ -18,6 +18,10 @@
 
 BEGIN_C_DECLORATION
 
+Grid *gridCurvedEdgeMidpoint(Grid *,int node0, int node1, double *midpoint);
+
+double gridMinCellJacDet2(Grid *, int *nodes);
+
 Grid *gridPlotMinDeterminateAtSurface(Grid *);
 
 Grid *gridShapeJacobian1(Grid *,
