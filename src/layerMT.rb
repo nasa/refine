@@ -1466,4 +1466,21 @@ class TestLayer < Test::Unit::TestCase
   assert layer.normalTerminated(5)
  end
 
+ def testDoNotCollideAtSharpTrailingEdge
+  wiggle = 1.0e-10
+  tol    = 1.0e-8
+  grid  = flatTwoFaceGrid
+  grid.setNodeXYZ(3,[0,0,-wiggle])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+
+  assert_in_delta 360, layer.edgeAngle(0,1), tol
+
+  layer.terminateCollidingFronts
+
+  assert !layer.normalTerminated(0)
+  assert !layer.normalTerminated(1)
+  assert !layer.normalTerminated(2)
+  assert !layer.normalTerminated(3)
+ end
+
 end

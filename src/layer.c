@@ -2624,9 +2624,9 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
 {
   int normal;
   Near *target;
-  double xyz[3], radius;
   int i, collisions, touched, *nearNormals;
   double dir1[3], dir2[3], dot;
+  double xyz1[3], xyz2[3], view[3], visible;
 
   layerPopulateNormalNearTree(layer);
 
@@ -2643,8 +2643,15 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
       dot = gridDotProduct( dir1, dir2 );
       // printf("         %d dot %f\n", nearNormals[i], dot);
       if (dot < -0.5) {
-	layerTerminateNormal(layer,normal);
-	layerTerminateNormal(layer,nearNormals[i]);
+	gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer, normal ), xyz1);
+	gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer, nearNormals[i] ), 
+		    xyz2);
+	gridSubtractVector(xyz2, xyz1, view);
+	visible = gridDotProduct( dir1, view );
+	if (visible > 0) {
+	  layerTerminateNormal(layer,normal);
+	  layerTerminateNormal(layer,nearNormals[i]);
+	}
       }
     }
     free(nearNormals);
