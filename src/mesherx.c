@@ -48,8 +48,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double direction[3] = {0, 1, 0};
 
   if (bil) {
-    nLayer = (int)(1.0/scale);
-    rate = exp(scale*log(1.1));
+    nLayer = (int)(20.0/scale);
+    rate = exp(scale*log(1.05));
   }else{
     nLayer = (int)(30.0/scale);
     rate = exp(scale*log(1.20));
@@ -80,7 +80,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   layerFindParentGeomEdges(layer);
   i=0;
   if (bil) {
-    layerAssignPolynomialNormalHeight(layer, 0.003, 0.01, 2.0, 
+    layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
 				      origin, direction );
   }else{
     layerLaminarInitialHeight(layer, 5000.0, -0.05 );
@@ -127,12 +127,11 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   printf("total grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-  if (!bil) {
-    printf(" -- DUMP PART\n");
-    sprintf(outputProject,"%s_MX.fgrid",project);
-    printf("writing output FAST file %s\n",outputProject);
-    gridExportFAST( grid, outputProject  );
-  } 
+  printf(" -- DUMP PART\n");
+
+  sprintf(outputProject,"%s_MX.fgrid",project);
+  printf("writing output FAST file %s\n",outputProject);
+  gridExportFAST( grid, outputProject  );
 
   sprintf(outputProject,"%s_MX.ugrid",project);
   printf("writing output AFL3R file %s\n",outputProject);
