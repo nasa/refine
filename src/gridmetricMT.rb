@@ -222,11 +222,11 @@ class TestGridMetric < Test::Unit::TestCase
  end
 
  def testSetConnValuesWithMetricErrorMagnatude1
+  tol = 1.0e-15
   grid = rightTet 
   assert_nil grid.setConnValuesWithMetricErrorMagnatude
   grid.createConn
   assert_equal grid, grid.setConnValuesWithMetricErrorMagnatude
-  tol = 1.0e-15
   ratio = Math::sqrt(2.0)
   diag = ((1-ratio)/(1+ratio)).abs
   assert_in_delta 0.0, grid.connValue(0), tol
@@ -238,12 +238,12 @@ class TestGridMetric < Test::Unit::TestCase
  end
 
  def testSetConnValuesWithMetricErrorMagnatude2
+  tol = 1.0e-15
   grid = rightTet 
   4.times{ |node| d = 0.25; grid.setMap(node,d,0.0,0.0,d,0.0,d)}
   assert_in_delta 0.5, grid.edgeRatio(0,1), tol
   grid.createConn
   grid.setConnValuesWithMetricErrorMagnatude
-  tol = 1.0e-15
   ratio = 0.5
   side = ((1-ratio)/(1+ratio)).abs
   assert_in_delta side, grid.connValue(0), tol
