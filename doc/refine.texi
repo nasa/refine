@@ -71,9 +71,10 @@ with the SDK to rebuild the inviscid portions of the grid.
 @section Conventions
 @cindex conventions
 
-The term `object' will be used loosely in this manual. An object
-defined is a pointer to a C structure with its associated methods that
-are generally bundled into a C header and source file. I got this idea
+The term `object' will be used loosely in this manual. An object is
+defined as a pointer to a C structure with a number of methods that
+operate on that structure. The C struct and assocated methods are
+generally bundled into a C header and source file. I got this idea
 from the way that the Ruby interpreture is written in C.
 
 NOTE: although the C struct of the objects is often exposed for macro
@@ -179,15 +180,16 @@ end
 @section Adaptation Driver
 @cindex driver, adaptation
 
-This is the basic work flow of an adaptation cycle. The aspect ratio
-is defined in the mapped metric. This cycle is repeated to iteratively
-morph the current grid into a grid that satisfies the mapped metric.
+This is the basic work flow of an adaptation cycle implemented in
+FUN3D driver to the refine library.  This cycle is repeated to
+iteratively morph the current grid into a grid that satisfies the
+mapped metric.  The aspect ratio is defined in the mapped metric.
 
 @enumerate
 @item edge and face swapping to improve cell aspect ratio 
-@item node optimization to improve adjacent cell aspect ratio
-@item node insertion and removal by edge splitting or edge collapse
-@item grid movement by linear elasticity or springs
+@item node optimization to improve the worst adjacent cell or boundary face aspect ratio
+@item node insertion and removal by edge splitting or edge collapse (does not project new surface nodes)
+@item grid movement by linear elasticity or springs (to project surface nodes)
 @item untangle faces (increase area) in UV space with node optimization (if negative area faces detected)
 @item untangle cells (increase volume) with node optimization (if negative cells detected)
 @item edge and face swapping to improve cell aspect ratio 
