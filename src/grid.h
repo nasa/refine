@@ -48,6 +48,8 @@ int gridNEqu(Grid *g );
 int gridEqu(Grid *g, int index );
 Grid *gridSwap(Grid *g, int n0, int n1 );
 
+int gridAddNode(Grid *g, double x, double y, double z );
+
 END_C_DECLORATION
 
 #endif /* GRID_H */
