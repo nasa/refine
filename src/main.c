@@ -43,6 +43,7 @@ int main( int argc, char *argv[] )
   bool boundaryLayerGrid = FALSE;
   bool debugInsert = FALSE;
   int iview = 0;
+  int maxnode = 50000;
 
   sprintf( project,       "" );
   sprintf( outputProject, "" );
@@ -69,6 +70,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-i") == 0 ) {
       debugInsert = TRUE;
       printf("-i argument %d\n",i);
+    } else if( strcmp(argv[i],"-n") == 0 ) {
+      i++; maxnode = atoi(argv[i]);
+      printf("-n argument %d: %d\n",i, maxnode);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
@@ -77,6 +81,7 @@ int main( int argc, char *argv[] )
       printf(" -l make a boundary layer grid -a ignored\n");
       printf(" -r initial edge length ratio for adapt\n");
       printf(" -i insert final advancing layer (debug)\n");
+      printf(" -n max number of nodes in grid\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -94,7 +99,7 @@ int main( int argc, char *argv[] )
   if(boundaryLayerGrid || debugInsert ) sprintf(adaptfile,"none");
 
   printf("running project %s\n",project);
-  grid = gridLoadPart( project, 500000 );
+  grid = gridLoadPart( project, maxnode );
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: loaded part does not have right handed boundaries\n");
