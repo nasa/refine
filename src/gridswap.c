@@ -350,18 +350,6 @@ Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridCycleEquator( Grid *grid )
-{
-  int i;
-
-  for ( i = grid->nequ ; i > 0 ; i-- )
-    grid->equ[i] = grid->equ[i-1];
-
-  grid->equ[0] = grid->equ[grid->nequ];
-
-  return grid;
-}
-
 Grid *gridSwapEdge5(Grid *grid, int n0, int n1 )
 {
   int i;

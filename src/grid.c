@@ -2065,6 +2065,18 @@ bool gridContinuousEquator(Grid *grid)
   return (gridNEqu(grid) == gridNGem(grid));
 }
 
+Grid *gridCycleEquator( Grid *grid )
+{
+  int i;
+
+  for ( i = grid->nequ ; i > 0 ; i-- )
+    grid->equ[i] = grid->equ[i-1];
+
+  grid->equ[0] = grid->equ[grid->nequ];
+
+  return grid;
+}
+
 int gridAddNode(Grid *grid, double x, double y, double z )
 {
   int node;
