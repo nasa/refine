@@ -99,7 +99,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     //layerSmoothLayerWithHeight(layer);
 
     layerTerminateNormalWithLength(layer,1.0);
-    layerTerminateNormalWithBGSpacing(layer, 0.8, 1.5);
+    layerTerminateNormalWithBGSpacing(layer, 0.8, 1.8);
 
     if (i>6) layerTerminateCollidingTriangles(layer);
 
@@ -282,7 +282,7 @@ int layerTerminateNormalWithBGSpacing(Layer *layer,
   }
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    layerTriangleMaxEdgeLength(layer,triangle,&edgeLength );
+    layerAdvancedTriangleMaxEdgeLength(layer,triangle,&edgeLength );
     layerTriangleCenter(layer,triangle,center);
 
     UG_GetSpacing(&(center[0]),&(center[1]),&(center[2]),
