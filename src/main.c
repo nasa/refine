@@ -136,7 +136,6 @@ int main( int argc, char *argv[] )
   oldSize = 1;
   newSize = gridNNode(grid);
   jmax = 40;
-  if (boundaryLayerGrid) jmax = 3;
   for ( j=0; (j<jmax) && (
 	(ratio < 0.99) || 
 	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
@@ -144,9 +143,8 @@ int main( int argc, char *argv[] )
 	j++){
 
     if (boundaryLayerGrid) {
-      height = 0.00001*pow(1.5,j);
-      height = 0.01;
-      // if (height > 0.0025) jmax=0;
+      height = 0.0001*pow(1.2,j);
+      if (height > 0.015) jmax=0;
       printf("insert layer height = %f\n",height);
       layerAdvance(layer,height);
     }
