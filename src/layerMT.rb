@@ -900,5 +900,130 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 3,              grid.nface
  end
 
+ def testAdvanceLayerIntoVolumeWithaTerminatedPrismOrTet0
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_equal 0,             grid.addNode(0,0,0)
+  assert_equal 1,             grid.addNode(1,0,0)
+  assert_equal 2,             grid.addNode(0,1,0)
+  assert_equal grid,          grid.addFace(0,1,2,1)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal layer,         layer.makeFront([1])
+  assert_equal 1,             layer.nfront
+  assert_equal layer,         layer.makeNormal
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal 3,             layer.nnormal
+  assert_equal layer,         layer.terminateNormal(1)
+  assert_equal layer,         layer.terminateNormal(2)
+  assert_equal layer,         layer.advanceConstantHeight(0.1)
+  assert_equal 4,             grid.nnode
+  assert_equal [0,0,0.1],     grid.nodeXYZ(3)
+  assert_equal 1,             grid.ncell
+  assert_equal [0,1,2,3],     grid.cell(0)
+ end
+
+ def testAdvanceLayerIntoVolumeWithaTerminatedPrismOrTet1
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_equal 0,             grid.addNode(0,0,0)
+  assert_equal 1,             grid.addNode(1,0,0)
+  assert_equal 2,             grid.addNode(0,1,0)
+  assert_equal grid,          grid.addFace(0,1,2,1)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal layer,         layer.makeFront([1])
+  assert_equal 1,             layer.nfront
+  assert_equal layer,         layer.makeNormal
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal 3,             layer.nnormal
+  assert_equal layer,         layer.terminateNormal(0)
+  assert_equal layer,         layer.terminateNormal(2)
+  assert_equal layer,         layer.advanceConstantHeight(0.1)
+  assert_equal 4,             grid.nnode
+  assert_equal [1,0,0.1],     grid.nodeXYZ(3)
+  assert_equal 1,             grid.ncell
+  assert_equal [0,1,2,3],     grid.cell(0)
+ end
+
+ def testAdvanceLayerIntoVolumeWithaTerminatedPrismOrTet2
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_equal 0,             grid.addNode(0,0,0)
+  assert_equal 1,             grid.addNode(1,0,0)
+  assert_equal 2,             grid.addNode(0,1,0)
+  assert_equal grid,          grid.addFace(0,1,2,1)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal layer,         layer.makeFront([1])
+  assert_equal 1,             layer.nfront
+  assert_equal layer,         layer.makeNormal
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal 3,             layer.nnormal
+  assert_equal layer,         layer.terminateNormal(0)
+  assert_equal layer,         layer.terminateNormal(1)
+  assert_equal layer,         layer.advanceConstantHeight(0.1)
+  assert_equal 4,             grid.nnode
+  assert_equal [0,1,0.1],     grid.nodeXYZ(3)
+  assert_equal 1,             grid.ncell
+  assert_equal [2,0,1,3],     grid.cell(0)
+ end
+
+ def testAdvanceLayerIntoVolumeWithaTerminatedPrismOrPyramid0
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_equal 0,             grid.addNode(0,0,0)
+  assert_equal 1,             grid.addNode(1,0,0)
+  assert_equal 2,             grid.addNode(0,1,0)
+  assert_equal grid,          grid.addFace(0,1,2,1)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal layer,         layer.makeFront([1])
+  assert_equal 1,             layer.nfront
+  assert_equal layer,         layer.makeNormal
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal 3,             layer.nnormal
+  assert_equal layer,         layer.terminateNormal(0)
+  assert_equal layer,         layer.advanceConstantHeight(0.1)
+  assert_equal 5,             grid.nnode
+  assert_equal 0,             grid.ncell
+  assert_equal 0,             grid.nprism
+  assert_equal 1,             grid.npyramid
+  assert_equal [0,1,2,3,4],   grid.pyramid(0)
+ end
+
+ def testAdvanceLayerIntoVolumeWithaTerminatedPrismOrPyramid1
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_equal 0,             grid.addNode(0,0,0)
+  assert_equal 1,             grid.addNode(1,0,0)
+  assert_equal 2,             grid.addNode(0,1,0)
+  assert_equal grid,          grid.addFace(0,1,2,1)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal layer,         layer.makeFront([1])
+  assert_equal 1,             layer.nfront
+  assert_equal layer,         layer.makeNormal
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal 3,             layer.nnormal
+  assert_equal layer,         layer.terminateNormal(1)
+  assert_equal layer,         layer.advanceConstantHeight(0.1)
+  assert_equal 5,             grid.nnode
+  assert_equal 0,             grid.ncell
+  assert_equal 0,             grid.nprism
+  assert_equal 1,             grid.npyramid
+  assert_equal [0,1,2,3,4],   grid.pyramid(0)
+ end
+
+ def testAdvanceLayerIntoVolumeWithaTerminatedPrismOrPyramid2
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_equal 0,             grid.addNode(0,0,0)
+  assert_equal 1,             grid.addNode(1,0,0)
+  assert_equal 2,             grid.addNode(0,1,0)
+  assert_equal grid,          grid.addFace(0,1,2,1)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal layer,         layer.makeFront([1])
+  assert_equal 1,             layer.nfront
+  assert_equal layer,         layer.makeNormal
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal 3,             layer.nnormal
+  assert_equal layer,         layer.terminateNormal(2)
+  assert_equal layer,         layer.advanceConstantHeight(0.1)
+  assert_equal 5,             grid.nnode
+  assert_equal 0,             grid.ncell
+  assert_equal 0,             grid.nprism
+  assert_equal 1,             grid.npyramid
+  assert_equal [0,1,2,3,4],   grid.pyramid(0)
+ end
 
 end

@@ -848,6 +848,7 @@ Layer *layerAdvance(Layer *layer)
   int cell, node;
   int front, normals[3], n[6], side[2];
   double xyz[3];
+  int nterminated;
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
@@ -857,7 +858,7 @@ Layer *layerAdvance(Layer *layer)
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    if (layer->normal[normal].terminated){
+    if (layerNormalTerminated(layer,normal)){
       layer->normal[normal].tip = layer->normal[normal].root;
     }else{
       root = layer->normal[normal].root;
@@ -961,12 +962,15 @@ Layer *layerAdvance(Layer *layer)
       normals[0] = normal;
     }
 
+    nterminated = 0;
     for (i=0;i<3;i++){
       n[i]   = layer->normal[normals[i]].root;
       n[i+3] = layer->normal[normals[i]].tip;
+      if (layerNormalTerminated(layer,normals[i])) nterminated++;
     }
 
-    if (layerTetrahedraOnly(layer)){
+    
+    if (layerTetrahedraOnly(layer) || nterminated >= 2){
       if (normals[2]<normals[1]){
 	if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
 	if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[4], n[5]);
@@ -977,7 +981,13 @@ Layer *layerAdvance(Layer *layer)
 	if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[1], n[5]);
       }
     }else{
-      gridAddPrism(grid,n[0],n[1],n[2],n[3],n[4],n[5]);
+      if ( nterminated == 1 ) {
+	if (n[0]==n[3]) gridAddPyramid(grid,n[0],n[1],n[2],n[4],n[5]);
+	if (n[1]==n[4]) gridAddPyramid(grid,n[0],n[1],n[2],n[3],n[5]);
+	if (n[2]==n[5]) gridAddPyramid(grid,n[0],n[1],n[2],n[3],n[4]);
+      }else{
+	gridAddPrism(grid,n[0],n[1],n[2],n[3],n[4],n[5]);
+      }
     }
   }
 
