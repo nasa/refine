@@ -19,7 +19,9 @@
 #include "gridfiller.h"
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
+#include "Goolache/CAPrIMesh.h"
 #include "Goolache/MeshMgr.h"
+#include "Goolache/FELISASrc.h"
 #include "Goolache/UGPatch.h"
 #include "MeatLib/ErrMgr.h"
 #include "MeatLib/GeoBC.h"
@@ -43,9 +45,13 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   rate = exp(scale*log(1.2));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
-  grid = gridFillFromPart( vol, maxNodes );
+  if ( scale != 1.0 ) {
+    MeshMgr_SetElementScale( scale );
+    FELISASrc_SetTimeStamp( );
+    CAPrIMesh_CreateTShell( vol );
+  }
 
-  MeshMgr_SetElementScale( scale );
+  grid = gridFillFromPart( vol, maxNodes );
 
   layer = layerFormAdvancingLayerWithCADGeomBCS( 1, grid );
 
