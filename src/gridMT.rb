@@ -42,7 +42,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 0, @grid.nedge
  end
 
- def testAddCellDegAndCell
+ def testAddCellAndCellDegree
   assert_equal 0, @grid.ncell
   assert_equal nil, @grid.cell(0)
   assert_equal nil, @grid.cell(5)
@@ -52,12 +52,12 @@ class TestSampleUnit < Test::Unit::TestCase
   (0..3).each { |n| assert_equal 1, @grid.cellDegree(n)}
  end
 
- def testAddCellRegFailure
-  grid = Grid.new(3,1,0,0)
-  assert_equal nil, grid.addCell(0,1,2,3)
-  grid = Grid.new(4,1,0,0)
+ def testAddCellFailure
+  assert_not_nil     grid = Grid.new(3,1,0,0)
+  assert_nil         grid.addCell(0,1,2,3)
+  assert_not_nil     grid = Grid.new(4,1,0,0)
   assert_equal grid, grid.addCell(0,1,2,3)
-  assert_equal nil, grid.addCell(0,1,2,3)
+  assert_nil         grid.addCell(0,1,2,3)
  end
  
  def testRemoveCell
@@ -226,7 +226,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [33.0,133.0], grid.nodeUV(3,3)
   assert_equal grid,         grid.setNodeUV(0,2,8.0,9.0)
   assert_equal [8.0,9.0],    grid.nodeUV(0,2)
-
  end
 
  def testSplitEdge4
@@ -311,13 +310,13 @@ class TestSampleUnit < Test::Unit::TestCase
   grid  
  end
 
- def testNumberOfEdges
+ def testNumberOfGeomEdges
   assert_not_nil  grid = Grid.new(0,0,0,2)
   assert_equal 0, grid.nedge
   assert_equal 2, grid.maxedge
  end
 
- def testAddAndFindEdge
+ def testAddAndFindGeomEdge
   assert_not_nil     grid = Grid.new(4,0,0,2)
   assert_nil         grid.findEdge(0,1)
   assert_equal grid, grid.addEdge(0, 1, 10, 0.0, 1.0)
@@ -325,7 +324,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 0,    grid.findEdge(0,1)
  end
 
- def testEdgeTValues
+ def testGeomEdgeTValues
   assert_not_nil     grid = Grid.new(4,0,0,2)
   assert_nil         grid.nodeT(0,10)
   assert_nil         grid.setNodeT(1,10,1.5) 
@@ -337,7 +336,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 1.5,  grid.nodeT(1,10) 
  end
 
- def testAddAndRemoveEdge
+ def testAddAndRemoveGeomEdge
   assert_not_nil     grid = Grid.new(4,0,0,2)
   assert_nil         grid.removeEdge(-1)
   assert_nil         grid.removeEdge(0)
