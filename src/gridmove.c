@@ -283,15 +283,6 @@ GridMove *gridmoveSpringRelaxationStartStep(GridMove *gm, double position)
   }
 
   for(node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode(grid,node) && gridNodeLocal(grid,node) )
-      printf(" gma %05d%24.15e%24.15e%24.15e source\n",
-	     grid->nodeGlobal[node],
-	     gm->source[0+3*node],
-	     gm->source[1+3*node],
-	     gm->source[2+3*node]);
-  }
-
-  for(node=0;node<gridMaxNode(grid);node++) {
     if ( gridmoveSpecified(gm,node) && 
 	 gridNodeLocal(grid,node) &&
 	 grid == gridNodeXYZ(grid,node,&(gm->xyz[3*node]))) {
@@ -299,15 +290,6 @@ GridMove *gridmoveSpringRelaxationStartStep(GridMove *gm, double position)
 	gm->xyz[i+3*node] += position*gm->displacement[i+3*node];
       }
     }
-  }
-
-  for(node=0;node<gridMaxNode(grid);node++) {
-    if (gridValidNode(grid,node) &&  gridNodeLocal(grid,node) )
-      printf(" gmb %05d%24.15e%24.15e%24.15e disp xyz\n",
-	     grid->nodeGlobal[node],
-	     gm->xyz[0+3*node],
-	     gm->xyz[1+3*node],
-	     gm->xyz[2+3*node]);
   }
 
   return gm;
@@ -320,15 +302,6 @@ GridMove *gridmoveSpringRelaxationSubIteration(GridMove *gm, double *residual2)
   int n0, n1;
   double res[3];
   double residual;
-
-  for(node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode(grid,node) )
-      printf(" gmc %05d%24.15e%24.15e%24.15e xfer xyz\n",
-	     grid->nodeGlobal[node],
-	     gm->xyz[0+3*node],
-	     gm->xyz[1+3*node],
-	     gm->xyz[2+3*node]);
-  }
 
   for(node=0;node<gridMaxNode(grid);node++) gm->ksum[node]=0.0;
   for(node=0;node<3*gridMaxNode(grid);node++) gm->kxyz[node]=0.0;
@@ -343,22 +316,6 @@ GridMove *gridmoveSpringRelaxationSubIteration(GridMove *gm, double *residual2)
     }
   }
 
-  for(node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode(grid,node) && gridNodeLocal(grid,node) )
-      printf(" gmd %05d%24.15e%24.15e%24.15e kxyz\n",
-	     grid->nodeGlobal[node],
-	     gm->kxyz[0+3*node],
-	     gm->kxyz[1+3*node],
-	     gm->kxyz[2+3*node]);
-  }
-
-  for(node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode(grid,node) && gridNodeLocal(grid,node) )
-      printf(" gme %05d%24.15e ksum\n",
-	     grid->nodeGlobal[node],
-	     gm->ksum[node]);
-  }
-
   residual = 0.0;
   for(node=0;node<gridMaxNode(grid);node++)
     if ( gridValidNode(grid,node) && 
@@ -370,22 +327,10 @@ GridMove *gridmoveSpringRelaxationSubIteration(GridMove *gm, double *residual2)
 	gm->xyz[i+3*node] = (  gm->kxyz[i+3*node] + gm->source[i+3*node] ) 
 	                    / gm->ksum[node];
       }
-      printf(" gmf %05d%24.15e%24.15e%24.15e res\n",
-	     grid->nodeGlobal[node],res[0],res[1],res[2]);
       residual += gridDotProduct(res,res);
     }
 
   *residual2 = residual;
-
-  for(s=0;s<gm->nsprings;s++) {
-    int g0, g1;
-    n0 = gm->springs[0+2*s];
-    n1 = gm->springs[1+2*s];
-    g0 = grid->nodeGlobal[n0];
-    g1 = grid->nodeGlobal[n1];
-    printf(" gms %05d %05d %05d %05d%24.15e spring\n",
-	   MIN(g0,g1),MAX(g0,g1), g0, g1, gm->k[s]);
-  }
 
   return gm;
 }
@@ -555,9 +500,6 @@ GridMove *gridmoveProjectionDisplacements(GridMove *gm)
   for ( node=0 ; node<gridMaxNode(grid) ; node++ ) {
     if ( gridNodeLocal(grid,node) && gridGeometryFace( grid, node ) ) {
       gridNodeProjectionDisplacement(grid,node,displacement);
-      displacement[0]+=0.001;
-      displacement[0]+=0.002;
-      displacement[0]+=0.003;
       gridmoveDisplace(gm,node,displacement);
     }
   }
