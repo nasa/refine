@@ -160,7 +160,15 @@ int gridSavePart( Grid *grid, char *project )
   int nnode, nface, ncell;
   double *xyz;
   int *f2n, *faceId, *c2n;
-  int iface; 
+  int i, iface;
+  int patchDimensions[4]; // check on 4
+  int         nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
+
+  double *temp_xyz, *temp_tuv;
+  int *temp_face;
+
+  Iterator    it;        /* DList Iterator */
+  UGPatchPtr  patch;     /* UGPatch of Face relative to Volume */
 
   gridExport( grid, &nnode, &nface, &ncell,
 	      &xyz, &f2n, &faceId, &c2n );
@@ -191,6 +199,38 @@ int gridSavePart( Grid *grid, char *project )
     printf(" Could not replace CADGeom volume grid, line %d of %s\n",
 	   __LINE__, __FILE__);    
     return(-1);
+  }
+
+  if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) ) {
+    printf("Yo! CADGeom_GetVolume, it broke.\n");
+  }
+
+  /* Face Stuff */
+
+  patch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&it);
+
+  for( iface=1; iface<=nGeomFace; iface++ ) {
+    UGPatch_GetDims(patch,patchDimensions);
+    temp_xyz = malloc( patchDimensions[0] * 3 * sizeof( double ) );
+    temp_tuv = malloc( patchDimensions[0] * 2 * sizeof( double ) );
+    temp_face = malloc( patchDimensions[1] * 3 * sizeof( int ) );
+    for( i=0; i<patchDimensions[0]; i++ ) {
+      temp_xyz[3*i+X] = UGPatch_PtValue(patch,i,X);
+      temp_xyz[3*i+Y] = UGPatch_PtValue(patch,i,Y);
+      temp_xyz[3*i+Z] = UGPatch_PtValue(patch,i,Z);
+    }
+
+    for( i=0; i<patchDimensions[1]; i++ ) {
+      temp_face[3*i+0] =  UGPatch_VertValue(patch,i,0);
+      temp_face[3*i+1] =  UGPatch_VertValue(patch,i,1);
+      temp_face[3*i+2] =  UGPatch_VertValue(patch,i,2);
+    }
+    
+    if( !CADGeom_UpdateFaceGrid(vol, iface, patchDimensions[0], temp_xyz, temp_tuv, patchDimensions[1], temp_face) ) {
+      fprintf(stderr, "%s\nWarning face %d update in %s\n",ErrMgr_GetErrStr(),iface,__FILE__);
+    }
+
+    patch = (UGPatchPtr)DList_GetNextItem(&it);
   }
 
   CADGeom_UseDefaultIOCallbacks();
