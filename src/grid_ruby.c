@@ -25,6 +25,13 @@ VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nlist )
   return obj;
 }
 
+VALUE grid_dump( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  gridDump( grid );
+  return Qnil;
+}
+
 VALUE grid_nnode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -90,6 +97,12 @@ VALUE grid_removeNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
   return (returnedGrid==NULL?Qnil:self);
 }
 
+VALUE grid_cellExists( VALUE self, VALUE nodeId, VALUE cellId )
+{
+  GET_GRID_FROM_SELF;
+  return
+    ( gridCellExists( grid, NUM2INT(nodeId), NUM2INT(cellId) )?Qtrue:Qfalse );
+}
 
 VALUE cGrid;
 
@@ -99,6 +112,7 @@ void Init_Grid()
   cGrid = rb_define_class( "Grid", rb_cObject );
   rb_define_singleton_method( cGrid, "new", grid_new, 3 );
   rb_define_method( cGrid, "initialize", grid_init, 0 );
+  rb_define_method( cGrid, "dump", grid_dump, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
   rb_define_method( cGrid, "ncell", grid_ncell, 0 );
   rb_define_method( cGrid, "nodeDeg", grid_nodeDeg, 1 );
@@ -109,4 +123,5 @@ void Init_Grid()
   rb_define_method( cGrid, "moreNodeCell", grid_moreNodeCell, 0 );
   rb_define_method( cGrid, "nextNodeCell", grid_nextNodeCell, 0 );
   rb_define_method( cGrid, "removeNodeCell", grid_removeNodeCell, 2 );
+  rb_define_method( cGrid, "cellExists", grid_cellExists, 2 );
 }
