@@ -61,68 +61,6 @@ VALUE grid_nface( VALUE self )
   return INT2NUM( gridNFace(grid) );
 }
 
-VALUE grid_nodeDeg( VALUE self, VALUE nodeId )
-{
-  GET_GRID_FROM_SELF;
-  return INT2NUM( gridNodeDeg(grid, NUM2INT(nodeId) ) );
-}
-
-VALUE grid_registerNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
-{
-  Grid *returnedGrid;
-  GET_GRID_FROM_SELF;
-  returnedGrid = 
-    gridRegisterNodeCell( grid, NUM2INT(nodeId), NUM2INT(cellId) );
-  return (returnedGrid==NULL?Qnil:self);
-}
-
-VALUE grid_validNodeCell( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return (gridValidNodeCell(grid)?Qtrue:Qfalse);
-}
-
-VALUE grid_firstNodeCell( VALUE self, VALUE nodeId )
-{
-  GET_GRID_FROM_SELF;
-  gridFirstNodeCell(grid, NUM2INT(nodeId) );
-  return Qnil;
-}
-
-VALUE grid_currentNodeCell( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return INT2NUM( gridCurrentNodeCell(grid) );
-}
-
-VALUE grid_moreNodeCell( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return (gridMoreNodeCell(grid)?Qtrue:Qfalse);
-}
-
-VALUE grid_nextNodeCell( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  gridNextNodeCell(grid);
-  return self;
-}
-
-VALUE grid_removeNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
-{
-  Grid *returnedGrid;
-  GET_GRID_FROM_SELF;
-  returnedGrid = gridRemoveNodeCell( grid, NUM2INT(nodeId), NUM2INT(cellId) );
-  return (returnedGrid==NULL?Qnil:self);
-}
-
-VALUE grid_cellExists( VALUE self, VALUE nodeId, VALUE cellId )
-{
-  GET_GRID_FROM_SELF;
-  return
-    ( gridCellExists( grid, NUM2INT(nodeId), NUM2INT(cellId) )?Qtrue:Qfalse );
-}
-
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
   Grid *returnedGrid;
@@ -150,6 +88,12 @@ VALUE grid_cell( VALUE self, VALUE cellId )
   rb_nodes = rb_ary_new2(4);
   for ( i=0 ; i < 4 ; i++ ) rb_ary_store( rb_nodes, i, INT2NUM(nodes[i]) );
   return rb_nodes;
+}
+
+VALUE grid_cellDegree( VALUE self, VALUE nodeId )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridCellDegree(grid, NUM2INT(nodeId) ) );
 }
 
 VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
@@ -271,18 +215,10 @@ void Init_Grid()
   rb_define_method( cGrid, "ncell", grid_ncell, 0 );
   rb_define_method( cGrid, "maxface", grid_maxface, 0 );
   rb_define_method( cGrid, "nface", grid_nface, 0 );
-  rb_define_method( cGrid, "nodeDeg", grid_nodeDeg, 1 );
-  rb_define_method( cGrid, "registerNodeCell", grid_registerNodeCell, 2 );
-  rb_define_method( cGrid, "validNodeCell", grid_validNodeCell, 0 );
-  rb_define_method( cGrid, "firstNodeCell", grid_firstNodeCell, 1 );
-  rb_define_method( cGrid, "currentNodeCell", grid_currentNodeCell, 0 );
-  rb_define_method( cGrid, "moreNodeCell", grid_moreNodeCell, 0 );
-  rb_define_method( cGrid, "nextNodeCell", grid_nextNodeCell, 0 );
-  rb_define_method( cGrid, "removeNodeCell", grid_removeNodeCell, 2 );
-  rb_define_method( cGrid, "cellExists", grid_cellExists, 2 );
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
   rb_define_method( cGrid, "cell", grid_cell, 1 );
+  rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
   rb_define_method( cGrid, "gem", grid_gem, 2 );

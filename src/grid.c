@@ -12,13 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "grid.h"
-
-typedef struct N2C N2C;
-
-struct N2C {
-  int id;
-  N2C *next;
-};
+#include "adj.h"
 
 #define MAXDEG 200
 
@@ -27,21 +21,15 @@ struct Grid {
   double *xyz;
 
   int maxcell, ncell;
-  int blankcell;
-  N2C **first;
-  N2C *current;
-  N2C *blank;
-  N2C *n2c;
+  int blankc2n;
   int *c2n;
+  Adj *cellAdj;
 
   int maxface, nface;
   int blankf2n;
-  N2C **firstface;
-  N2C *currentface;
-  N2C *blankface;
-  N2C *n2f;
   int *f2n;
   int *faceId;
+  Adj *faceAdj;
 
   int ngem;
   int gem[MAXDEG];
@@ -77,21 +65,9 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
     grid->c2n[1+4*i] = i+1; 
   }
   grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
-  grid->blankcell = 0;
+  grid->blankc2n = 0;
 
-
-  grid->first = (N2C **)malloc(grid->maxnode * sizeof(N2C *));
-
-  for (i=0;i < grid->maxnode; i++ ) grid->first[i] = NULL; 
-  grid->n2c = (N2C *)malloc( nlist * sizeof(N2C));
-  for (i=0;i < nlist-1; i++ ) { // pointer majic?
-    grid->n2c[i].id   = EMPTY;
-    grid->n2c[i].next = &grid->n2c[i+1];
-  }
-  grid->n2c[nlist-1].id   = EMPTY;
-  grid->n2c[nlist-1].next = NULL;
-  grid->blank   = grid->n2c;
-  grid->current = NULL;
+  grid->cellAdj = adjCreate(grid->maxnode,4);
 
   // face
   grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
@@ -104,18 +80,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
   grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
   grid->blankf2n = 0;
 
-  grid->firstface = (N2C **)malloc(grid->maxnode * sizeof(N2C *));
-
-  for (i=0;i < grid->maxnode; i++ ) grid->firstface[i] = NULL; 
-  grid->n2f = (N2C *)malloc( nlistface * sizeof(N2C));
-  for (i=0;i < nlistface-1; i++ ) { // pointer majic?
-    grid->n2f[i].id   = EMPTY;
-    grid->n2f[i].next = &grid->n2f[i+1];
-  }
-  grid->n2f[nlistface-1].id   = EMPTY;
-  grid->n2f[nlistface-1].next = NULL;
-  grid->blankface   = grid->n2f;
-  grid->currentface = NULL;
+  grid->faceAdj = adjCreate(grid->maxnode,3);
 
   grid->ngem = 0;
 
@@ -124,9 +89,11 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
 
 void gridFree(Grid *grid)
 {
+  adjFree(grid->faceAdj);
+  free(grid->faceId);
+  free(grid->f2n);
+  adjFree(grid->cellAdj);
   free(grid->c2n);
-  free(grid->first);
-  free(grid->n2c);
   free(grid->xyz);
   free(grid);
 }
@@ -181,113 +148,17 @@ int gridEqu(Grid *grid, int index)
   return grid->equ[index];
 }
 
-int gridNodeDeg(Grid *grid, int id)
+int gridCellDegree(Grid *grid, int id)
 {
-  int n;
-  n =0;
-  for ( gridFirstNodeCell(grid,id); 
-	gridValidNodeCell(grid); 
-	gridNextNodeCell(grid)) n++;
-  return n;
-}
-
-bool gridCellExists(Grid *grid, int nodeId, int cellId)
-{
-  bool exist;
-  exist = FALSE;
-  for ( gridFirstNodeCell(grid,nodeId); 
-	!exist && gridValidNodeCell(grid); 
-	gridNextNodeCell(grid)) 
-    exist = (cellId == gridCurrentNodeCell(grid));
-  return exist;
-}
-
-Grid* gridRegisterNodeCell(Grid *grid, int nodeId, int cellId)
-{
-  N2C *new;
-  if (nodeId > grid->maxnode-1) return NULL;
-  if (grid->blank == NULL) return NULL;
-  new = grid->blank;
-  grid->blank = grid->blank->next;
-  new->next = grid->first[nodeId];
-  grid->first[nodeId] = new;
-  new->id = cellId;
-
-  return grid;
-}
-
-Grid* gridRemoveNodeCell(Grid *grid, int nodeId, int cellId)
-{
-  N2C *remove, *previous;
-  remove = NULL;
-
-  for ( gridFirstNodeCell(grid,nodeId); 
-	gridValidNodeCell(grid); 
-	gridNextNodeCell(grid)) {
-    if (gridCurrentNodeCell(grid)==cellId) 
-      remove = grid->current;
-  }
-
-  if (remove == NULL) return NULL;
- 
-  previous = NULL;
-
-  for ( gridFirstNodeCell(grid,nodeId); 
-	gridValidNodeCell(grid); 
-	gridNextNodeCell(grid)) {
-    if (grid->current != NULL && grid->current->next == remove) 
-      previous = grid->current;
-  }
-
-  if ( previous == NULL ) {
-    grid->first[nodeId] = remove->next;
-  }else{
-    previous->next = remove->next;
-  }
-
-  remove->id = EMPTY;
-  remove->next = grid->blank;
-  grid->blank = remove;
-
-  return grid;
-}
-
-void gridFirstNodeCell(Grid *grid, int nodeId)
-{
-  if ( nodeId < grid->maxnode ) {
-    grid->current = grid->first[nodeId];
-  }else{
-    grid->current = NULL;
-  }
-}
-
-void gridNextNodeCell(Grid *grid)
-{
-  if ( grid->current != NULL) grid->current = grid->current->next;
-}
-
-int gridCurrentNodeCell(Grid *grid)
-{
-  if (grid->current == NULL ) return EMPTY;
-  return grid->current->id;
-}
-
-bool gridValidNodeCell(Grid *grid)
-{
-  return (grid->current != NULL);
-}
-
-bool gridMoreNodeCell(Grid *grid)
-{
-  return ( (grid->current != NULL) && (grid->current->next != NULL) );
+  return adjDegree(grid->cellAdj, id);
 }
 
 Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
   int cellId,icell;
-  if ( grid->blankcell == EMPTY ) return NULL;
-  cellId = grid->blankcell;
-  grid->blankcell = grid->c2n[1+4*cellId];
+  if ( grid->blankc2n == EMPTY ) return NULL;
+  cellId = grid->blankc2n;
+  grid->blankc2n = grid->c2n[1+4*cellId];
   grid->ncell++;
   
   grid->c2n[0+4*cellId] = n0;
@@ -295,10 +166,10 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
   grid->c2n[2+4*cellId] = n2;
   grid->c2n[3+4*cellId] = n3;
   
-  if ( NULL == gridRegisterNodeCell( grid, n0, cellId ) ) return NULL;
-  if ( NULL == gridRegisterNodeCell( grid, n1, cellId ) ) return NULL;
-  if ( NULL == gridRegisterNodeCell( grid, n2, cellId ) ) return NULL;
-  if ( NULL == gridRegisterNodeCell( grid, n3, cellId ) ) return NULL;
+  if ( NULL == adjRegister( grid->cellAdj, n0, cellId ) ) return NULL;
+  if ( NULL == adjRegister( grid->cellAdj, n1, cellId ) ) return NULL;
+  if ( NULL == adjRegister( grid->cellAdj, n2, cellId ) ) return NULL;
+  if ( NULL == adjRegister( grid->cellAdj, n3, cellId ) ) return NULL;
   
   return grid;
 }
@@ -310,15 +181,15 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
   if ( grid->ncell <= 0) return NULL;
   grid->ncell--;
 
-  if( ( NULL == gridRemoveNodeCell( grid, grid->c2n[0+4*cellId], cellId ) ) || 
-      ( NULL == gridRemoveNodeCell( grid, grid->c2n[1+4*cellId], cellId ) ) ||
-      ( NULL == gridRemoveNodeCell( grid, grid->c2n[2+4*cellId], cellId ) ) || 
-      ( NULL == gridRemoveNodeCell( grid, grid->c2n[3+4*cellId], cellId ) ) ) 
+  if( ( NULL == adjRemove( grid->cellAdj, grid->c2n[0+4*cellId], cellId ) ) || 
+      ( NULL == adjRemove( grid->cellAdj, grid->c2n[1+4*cellId], cellId ) ) ||
+      ( NULL == adjRemove( grid->cellAdj, grid->c2n[2+4*cellId], cellId ) ) || 
+      ( NULL == adjRemove( grid->cellAdj, grid->c2n[3+4*cellId], cellId ) ) ) 
     return NULL;  
 
   grid->c2n[0+4*cellId] = EMPTY;
-  grid->c2n[1+4*cellId] = grid->blankcell;
-  grid->blankcell = cellId;
+  grid->c2n[1+4*cellId] = grid->blankc2n;
+  grid->blankc2n = cellId;
 
   return grid;
 }
@@ -353,8 +224,6 @@ Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 
 int gridFaceId(Grid *grid, int n0, int n1, int n2 )
 {
-  
-
   return 0;
 }
 
@@ -364,11 +233,11 @@ Grid *gridMakeGem(Grid *grid, int n0, int n1 )
   int cellId;
   grid->ngem = 0;
 
-  for ( gridFirstNodeCell(grid,n0); 
-	gridValidNodeCell(grid); 
-	gridNextNodeCell(grid)) {
+  for ( adjFirst(grid->cellAdj,n0); 
+	adjValid(grid->cellAdj); 
+	adjNext(grid->cellAdj)) {
 
-    cellId = gridCurrentNodeCell(grid);
+    cellId = adjCurrent(grid->cellAdj);
     if ( n1 == grid->c2n[0+4*cellId] ||
 	 n1 == grid->c2n[1+4*cellId] ||
 	 n1 == grid->c2n[2+4*cellId] ||

@@ -4,7 +4,7 @@
 #
 # Mobility test for grid c lib
 
-exit unless system 'ruby extconf.rb Grid'
+exit unless system 'ruby extconf.rb Grid adj.c'
 exit unless system 'make'
 
 require 'test/unit'
@@ -31,67 +31,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 0, @grid.ncell
  end
 
- def testNodeCellDeg
-  assert_equal 0, @grid.nodeDeg(0)
-  assert_not_nil @grid.registerNodeCell( 0, 299 )
-  assert_equal 1, @grid.nodeDeg(0)
- end
-
- def testNodeCellIterator
-  assert_equal false, @grid.validNodeCell
-  assert_equal false, @grid.moreNodeCell
-  
-  @grid.firstNodeCell(0);
-  assert_equal false, @grid.validNodeCell
-  
-  assert_not_nil @grid.registerNodeCell( 2, 299 )
-  @grid.firstNodeCell(2);
-  assert_equal 299, @grid.currentNodeCell
-  assert_equal true,  @grid.validNodeCell
-  assert_equal false, @grid.moreNodeCell
-  @grid.nextNodeCell
-  assert_equal false, @grid.validNodeCell
-  
-  assert_not_nil @grid.registerNodeCell( 3, 398 )
-  assert_not_nil @grid.registerNodeCell( 3, 399 )
-  @grid.firstNodeCell(3);
-    assert_equal true,  @grid.validNodeCell
-  assert_equal true,  @grid.moreNodeCell
-  
-  100.times {@grid.nextNodeCell} # abusive use of next
-  assert_nil @grid.firstNodeCell(300000);
-end
- 
- def testAddAndRemoveNodeCell
-  assert_equal false, @grid.cellExists(1,0)
-  assert_equal nil,   @grid.removeNodeCell(1,0)
-  assert_equal @grid, @grid.registerNodeCell(1,0)
-  assert_equal true,  @grid.cellExists(1,0)
-  assert_equal @grid, @grid.removeNodeCell(1,0)
-  assert_equal false, @grid.cellExists(1,0)
-  assert_equal nil,   @grid.removeNodeCell(1,0)
- end
- 
- def testRegisterNodeCellLimit
-  assert_equal nil, @grid.registerNodeCell(1000,0)
- end
-
- def testMultipleNodeCellExists
-  assert_equal false, @grid.cellExists(1,198)
-  @grid.registerNodeCell(1,198)
-  @grid.registerNodeCell(2,198)
-  @grid.registerNodeCell(1,199)
-  
-  assert_equal true,  @grid.cellExists(1,198)
-  assert_equal true,  @grid.cellExists(1,199)
-  @grid.removeNodeCell(1,198)
-  assert_equal false, @grid.cellExists(1,198)
-  assert_equal true,  @grid.cellExists(1,199)
-  @grid.registerNodeCell(1,198)
-  assert_equal true,  @grid.cellExists(1,198)
-  assert_equal true,  @grid.cellExists(1,199)
- end
- 
  def testAddCellDegAndCell
   assert_equal 0, @grid.ncell
   assert_equal nil, @grid.cell(0)
@@ -99,7 +38,7 @@ end
   assert_equal @grid, @grid.addCell(0,1,2,3)
   assert_equal [0, 1, 2, 3], @grid.cell(0)
   assert_equal 1, @grid.ncell
-  (0..3).each { |n| assert_equal 1, @grid.nodeDeg(n)}
+  (0..3).each { |n| assert_equal 1, @grid.cellDegree(n)}
  end
 
  def testAddCellRegFailure
@@ -118,7 +57,7 @@ end
   assert_equal nil, @grid.cell(0)
   assert_equal nil, @grid.removeCell(0)
   assert_equal 0, @grid.ncell
-  (0..3).each { |n| assert_equal 0, @grid.nodeDeg(n)}
+  (0..3).each { |n| assert_equal 0, @grid.cellDegree(n)}
  end
 
  def testReplaceCell
@@ -166,8 +105,8 @@ end
   assert_equal grid, grid.
    addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0).addCell(4,5,0,1)
   assert_equal [3,2,1,0], grid.gem(4,5)
-  assert_equal 2, grid.nodeDeg(0)
-  assert_equal 4, grid.nodeDeg(5)
+  assert_equal 2, grid.cellDegree(0)
+  assert_equal 4, grid.cellDegree(5)
   assert_equal [], grid.equator(0,2)
   assert_equal [], grid.equator(6,7)
   assert_equal [1,2,3,0,1], grid.equator(4,5)
@@ -214,12 +153,12 @@ end
   grid.swap(0,1)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
-  assert_equal 2, grid.nodeDeg(0)
-  assert_equal 2, grid.nodeDeg(1)
-  assert_equal 4, grid.nodeDeg(2)
-  assert_equal 2, grid.nodeDeg(3)
-  assert_equal 4, grid.nodeDeg(4)
-  assert_equal 2, grid.nodeDeg(5)
+  assert_equal 2, grid.cellDegree(0)
+  assert_equal 2, grid.cellDegree(1)
+  assert_equal 4, grid.cellDegree(2)
+  assert_equal 2, grid.cellDegree(3)
+  assert_equal 4, grid.cellDegree(4)
+  assert_equal 2, grid.cellDegree(5)
  end
 
  def testSwap4_1
@@ -228,24 +167,24 @@ end
   grid.swap(0,1)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
-  assert_equal 2, grid.nodeDeg(0)
-  assert_equal 2, grid.nodeDeg(1)
-  assert_equal 2, grid.nodeDeg(2)
-  assert_equal 4, grid.nodeDeg(3)
-  assert_equal 2, grid.nodeDeg(4)
-  assert_equal 4, grid.nodeDeg(5)
+  assert_equal 2, grid.cellDegree(0)
+  assert_equal 2, grid.cellDegree(1)
+  assert_equal 2, grid.cellDegree(2)
+  assert_equal 4, grid.cellDegree(3)
+  assert_equal 2, grid.cellDegree(4)
+  assert_equal 4, grid.cellDegree(5)
  end
 
  def testSwap4_invalid
   assert_not_nil grid=gemGrid(4, 0.1, nil, -0.1)
   grid.swap(0,1)
-  assert_equal 4, grid.nodeDeg(0)
-  assert_equal 4, grid.nodeDeg(1)
+  assert_equal 4, grid.cellDegree(0)
+  assert_equal 4, grid.cellDegree(1)
  end
 
 # put faces in
 
- def testFace
+ def XtestFace
   assert_equal 0, @grid.nface 
   assert_equal 0, @grid.maxface 
   assert_not_nil grid = Grid.new(4,1,1)

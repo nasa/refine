@@ -26,15 +26,7 @@ int gridMaxCell(Grid *g);
 int gridNCell(Grid *g);
 int gridMaxFace(Grid *g);
 int gridNFace(Grid *g);
-int gridNodeDeg(Grid *g, int nodeIndex);
-bool gridCellExists(Grid *g, int nodeIndex, int cellIndex);
-Grid *gridRegisterNodeCell(Grid *g, int nodeIndex, int cellIndex);
-Grid *gridRemoveNodeCell(Grid *g, int nodeIndex, int cellIndex);
-void gridFirstNodeCell(Grid *g, int nodeIndex);
-void gridNextNodeCell(Grid *g);
-int gridCurrentNodeCell(Grid *g);
-bool gridValidNodeCell(Grid *g);
-bool gridMoreNodeCell(Grid *g);
+int gridCellDegree(Grid *g, int nodeIndex);
 
 Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
