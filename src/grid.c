@@ -9,6 +9,7 @@
 /* $Id$ */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "grid.h"
 
 struct Grid {
@@ -68,10 +69,10 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   entry = -grid->celllist[0];
   terminator = -grid->celllist[entry];
   nextOpen = -grid->celllist[terminator];
-
-  if (entry == 0 || terminator == 0) {
-    printf("overalloc");
-  }
+ 
+  // printf("\n Reg n %d c %3d e %d t %d n %d", 
+  // nodeId, cellId, entry, terminator, nextOpen);
+  // fflush(stdout);
 
   grid->firstcell[nodeId]=entry;
   grid->celllist[entry]=cellId+1;

@@ -46,7 +46,6 @@ END_TEST
 
 START_TEST(testCellIterator)
 {
-
   fail_unless( !gridMoreNodeCell(grid), 
 	       "expected the last cell to be reached if not init");
 
@@ -66,7 +65,6 @@ START_TEST(testCellIterator)
   gridNextNodeCell(grid);
   fail_unless( !gridMoreNodeCell(grid), 
 	       "expected the last cell to be reached for node 3");
-
 }
 END_TEST
 
@@ -87,7 +85,6 @@ START_TEST(testAddedAndRemoveCell)
   
   fail_unless( gridRemoveNodeCell(grid,0,0) == NULL,
 	       "tried to remove non-existant cell");
-  
 }
 END_TEST
 
@@ -95,17 +92,16 @@ END_TEST
 /* allocating a new chunk of celllist */
 /* packing */
 /* non-contiguos cellist for access and registering */
-/* removal */
 
 Suite *grid_suite (void) 
 { 
   Suite *s = suite_create ("Grid"); 
-  TCase *tCore = tcase_create ("Core");
+  TCase *tCreate = tcase_create ("Create");
   TCase *tNeighbors = tcase_create ("Neighbors");
  
-  suite_add_tcase (s, tCore);
-  tcase_add_checked_fixture (tCore, setup, teardown); 
-  tcase_add_test (tCore, testGridCreate); 
+  suite_add_tcase (s, tCreate);
+  tcase_add_checked_fixture (tCreate, setup, teardown); 
+  tcase_add_test (tCreate, testGridCreate); 
 
   suite_add_tcase (s, tNeighbors);
   tcase_add_checked_fixture (tNeighbors, setup, teardown); 
