@@ -47,6 +47,9 @@ struct Grid {
   double *map;
   bool *frozen;
 
+  int *l2g;
+  int *part;
+
   int maxcell, ncell;
   int blankc2n;
   int *c2n;
@@ -92,7 +95,6 @@ struct Grid {
   double dARdX[3*MAXDEG];
 
   FILE *tecplotFile;
-  bool tecplotFileOpen;
 
   void (*renumberFunc)(void *renumberData, int *o2n);
   void *renumberData;

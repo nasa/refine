@@ -87,6 +87,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->frozen = malloc(grid->maxnode * sizeof(bool));
   for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
 
+  grid->l2g  = NULL;
+  grid->part = NULL;
+
   // cells
   if ( NULL == c2n ) {
     grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
@@ -175,7 +178,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->ngem = 0;
   grid->degAR = 0;
 
-  grid->tecplotFileOpen = FALSE;
+  grid->tecplotFile = NULL;
 
   grid->renumberFunc = NULL;
   grid->renumberData = NULL;
@@ -431,16 +434,16 @@ Grid *gridDetachNodeSorter(Grid *grid )
 
 void gridFree(Grid *grid)
 {
-  if ( NULL != grid->lines ) linesFree(grid->lines);
+  if (NULL != grid->lines) linesFree(grid->lines);
 
-  if ( grid->tecplotFileOpen ) fclose(grid->tecplotFile);
-  if ( NULL != grid->geomEdge) free(grid->geomEdge);
+  if (NULL != grid->tecplotFile) fclose(grid->tecplotFile);
+  if (NULL != grid->geomEdge) free(grid->geomEdge);
 
-  if (grid->prismDeg!=NULL) free(grid->prismDeg);
+  if (NULL != grid->prismDeg) free(grid->prismDeg);
 
-  if (grid->quad!=NULL) free(grid->quad);
-  if (grid->pyramid!=NULL) free(grid->pyramid);
-  if (grid->prism!=NULL) free(grid->prism);
+  if (NULL != grid->quad) free(grid->quad);
+  if (NULL != grid->pyramid) free(grid->pyramid);
+  if (NULL != grid->prism) free(grid->prism);
   adjFree(grid->edgeAdj);
   free(grid->edgeId);
   free(grid->edgeT);
@@ -452,6 +455,8 @@ void gridFree(Grid *grid)
   free(grid->f2n);
   adjFree(grid->cellAdj);
   free(grid->c2n);
+  if (NULL != grid->part) free(grid->part);
+  if (NULL != grid->l2g) free(grid->l2g);
   free(grid->frozen);
   free(grid->map);
   free(grid->xyz);
@@ -853,9 +858,8 @@ Grid *gridWriteTecplotSurfaceZone(Grid *grid)
     return NULL;
   }
 
-  if (!grid->tecplotFileOpen) {
+  if (NULL == grid->tecplotFile) {
     grid->tecplotFile = fopen("grid.t","w");
-    grid->tecplotFileOpen = TRUE;
     fprintf(grid->tecplotFile, "title=\"tecplot refine geometry file\"\n");
     fprintf(grid->tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
   }
