@@ -102,6 +102,15 @@ class TestSampleUnit < Test::Unit::TestCase
    assert_equal [0], gem
  end
 
+ def testGetGem2
+   grid = Grid.new(5,2,20)
+   grid.addCell(0,1,2,3)
+   grid.addCell(0,1,2,4)
+   grid.dump
+   gem = grid.getGem(0,1)
+   assert_equal [0, 1], gem
+ end
+
 # make register unique
 # non-contiguos cellist for access and registering
 # test that new list terminator is contiguous

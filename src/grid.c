@@ -138,6 +138,7 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   }
 
   if ( grid->celllist[entry] == 0 ) return NULL;
+
   terminator = entry+1;
   nextOpen = -grid->celllist[terminator];
   if ( grid->celllist[terminator] == 0 ) nextOpen = terminator;
@@ -218,14 +219,13 @@ int gridMoreNodeCell(Grid *grid)
 Grid *gridAddCell(Grid *grid, long n0, long n1, long n2, long n3)
 {
   long cellId,icell;
-  cellId = 0;
-  icell = grid->ncell;
+  cellId = grid->ncell;
   grid->ncell++;
   
-  grid->c2n[0+4*icell] = n0;
-  grid->c2n[1+4*icell] = n1;
-  grid->c2n[2+4*icell] = n2;
-  grid->c2n[3+4*icell] = n3;
+  grid->c2n[0+4*cellId] = n0;
+  grid->c2n[1+4*cellId] = n1;
+  grid->c2n[2+4*cellId] = n2;
+  grid->c2n[3+4*cellId] = n3;
   
   gridRegisterNodeCell( grid, n0, cellId );
   gridRegisterNodeCell( grid, n1, cellId );
