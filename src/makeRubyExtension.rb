@@ -30,4 +30,4 @@ require 'mkmf'
 
 create_makefile(ext)
 
-system "make"
+exit 1 unless system "make"

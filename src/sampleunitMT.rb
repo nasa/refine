@@ -4,7 +4,7 @@
 #
 # Mobility test for sampleunit c lib
 
-exit unless system 'ruby makeRubyExtension.rb SampleUnit'
+exit 1 unless system 'ruby makeRubyExtension.rb SampleUnit'
 
 require 'test/unit'
 require 'SampleUnit/SampleUnit'

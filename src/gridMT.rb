@@ -4,7 +4,7 @@
 #
 # Mobility test for grid c lib
 
-exit unless system 'ruby makeRubyExtension.rb Grid adj.c'
+exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c'
 
 require 'test/unit'
 require 'Grid/Grid'
