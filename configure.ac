@@ -49,15 +49,15 @@ dnl Check for SDK
 have_SDK='no'
 if test "$with_SDK" != 'no' 
 then
-  AC_CHECK_FILE([$with_SDK/MeatLib/Common.h],
+  AC_CHECK_FILE([$with_SDK/include/MeatLib/Common.h],
                  [have_SDK='yes'],[have_SDK='no'])
 fi
 
 if test "$have_SDK" != 'no'
 then
   AC_DEFINE([HAVE_SDK])
-  SDKheader=-I$with_SDK
-  SDKlibrary=-L$with_SDK/$arch/lib
+  SDKheader=-I$with_SDK/include
+  SDKlibrary=-L$with_SDK/lib
 else
   SDKheader=
   SDKlibrary=
@@ -170,15 +170,15 @@ dnl Check for FELISA header
 have_FELISA='no'
 if test "$with_FELISA" != 'no' 
 then
-  AC_CHECK_FILE([$with_FELISA/src/MG_util.h],
+  AC_CHECK_FILE([$with_FELISA/include/MG_util.h],
                 [have_FELISA='yes'],[have_FELISA='no'])
 fi
 
 if test "$have_FELISA" != 'no'
 then
   AC_DEFINE([HAVE_FELISA])
-  FELISAheader=-I$with_FELISA/src
-  FELISAlibrary="-L$with_FELISA/$arch/lib -lFELISA"
+  FELISAheader=-I$with_FELISA/include
+  FELISAlibrary="-L$with_FELISA/lib -lFELISA"
 else
   FELISAheader=
   FELISAlibrary=
