@@ -1153,11 +1153,8 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
   double xyz[36];
   
   nodes[0] = n0; nodes[1] = n1; nodes[2] = n2; nodes[3] = n3;
-  if ( !gridCellHasLocalNode(grid,nodes) ) return EMPTY;
 
-  cell = gridAddCell(grid, n0, n1, n2, n3);
-
-  if ( NULL != queue && EMPTY != cell ) {
+  if ( NULL != queue ) {
     if (gridCellHasGhostNode(grid, nodes)) {
       for ( inode = 0 ; inode < 4 ; inode++ ) {
 	globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
@@ -1170,7 +1167,10 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
     }
   }
 
-  return cell;
+  if ( gridCellHasLocalNode(grid,nodes) )
+    return gridAddCell(grid, n0, n1, n2, n3);
+
+  return EMPTY;
 }
 
 int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3, 
