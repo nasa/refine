@@ -183,8 +183,6 @@ end
 
  end
 
- # check the cell nodes on a swap
-
  # gaps in the equator
  
  # make register unique
