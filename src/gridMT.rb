@@ -177,6 +177,12 @@ end
   assert_equal [3,1,2,3], grid.equator(4,5)
  end
 
+ def testEquatorGapTwo
+  grid = Grid.new(6,3,0)
+  assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,3,0)
+  assert_equal nil, grid.equator(4,5)
+ end
+
  def testSwap4for4
   grid = Grid.new(6,4,0)
   assert_equal grid, grid.
