@@ -458,4 +458,34 @@ class TestGridCAD < Test::Unit::TestCase
   assert grid.minVolume>0.0
  end
 
+ def testComputeFaceAreaInParameterSpaceHalf
+  grid = Grid.new(3,0,1,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  # FAKEGeom: U = X+10; V = Y+20;
+  grid.addFaceUV(0,10.0,20.0,
+		 1,11.0,20.0,
+		 2,10.0,21.0,
+		 55)
+  tol = 1.0e-15
+  area = 0.5
+  assert_in_delta area, grid.faceAreaUV(0), tol
+ end
+
+ def testComputeFaceAreaInParameterSpaceTwo
+  grid = Grid.new(3,0,1,0)
+  grid.addNode(0,0,0)
+  grid.addNode(2,0,0)
+  grid.addNode(0,2,0)
+  # FAKEGeom: U = X+10; V = Y+20;
+  grid.addFaceUV(0,10.0,20.0,
+		 1,12.0,20.0,
+		 2,10.0,22.0,
+		 55)
+  tol = 1.0e-15
+  area = 2.0
+  assert_in_delta area, grid.faceAreaUV(0), tol
+ end
+
 end

@@ -1,3 +1,8 @@
+2004-09-02 16:35 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridFaceAreaUV) added to compute face area in UV
+	space
+	
 2004-09-02 15:55 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridcad.c (nearestOnFace,nearestOnEdge) added to apply

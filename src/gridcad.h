@@ -73,6 +73,8 @@ GridBool nearestOnEdge(int vol, int edge, double *xyz, double *t,
 GridBool nearestOnFace(int vol, int face, double *xyz, double *uv,
                        double *xyznew);
 
+double gridFaceAreaUV(Grid *g, int face);
+
 END_C_DECLORATION
 
 #endif /* GRIDCAD_H */
