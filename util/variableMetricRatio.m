@@ -6,9 +6,9 @@ function m = metric(x)
   m = m0 * (1-x) + m1 * x;
 endfunction
 
-s0_0 = sqrt(metric(0))
-s1_0 = sqrt(metric(1))
-s0_5 = sqrt(metric(0.5))
+dx = 1;
+s0_0 = sqrt(dx*metric(0)*dx)
+s1_0 = sqrt(dx*metric(1)*dx)
 
 function integrated_length(w)
   w
@@ -32,8 +32,7 @@ function integrated_length(w)
   ratio
 endfunction
 
-integrated_length(4)
-integrated_length(2)
+integrated_length(1000)
 integrated_length(1)
 integrated_length(.1)
 integrated_length(.05)
