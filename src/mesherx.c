@@ -87,10 +87,10 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   while (i<nLayer & layerAnyActiveNormals(layer)){
     i++;
 
-    if (i>10) rate += 0.01;
-    if (rate>1.3) rate=1.3;
-    if (i>25) rate += 0.01;
-    if (rate>1.4) rate=1.4;
+    if (i>(int)(10.0/scale)) rate += exp(scale*log(0.01));
+    if (rate>exp(scale*log(1.3))) rate=exp(scale*log(1.3));
+    if (i>(int)(25.0/scale)) rate += exp(scale*log(0.01));
+    if (rate>exp(scale*log(1.4))) rate=exp(scale*log(1.4));
     if (i>1) layerScaleNormalHeight(layer,rate);
     //layerSetNormalHeightWithMaxRate(layer,rate);
     //layerSetNormalHeightForLayerNumber(layer,i-1,rate);
