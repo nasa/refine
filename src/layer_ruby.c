@@ -272,10 +272,10 @@ VALUE layer_wiggle( VALUE self, VALUE height )
   return ( layer == layerWiggle(layer,NUM2DBL(height))?self:Qnil );
 }
 
-VALUE layer_blendGeomEdge( VALUE self, VALUE edgeId )
+VALUE layer_blend( VALUE self, VALUE edgeId )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerBlendGeomEdge(layer,NUM2INT(edgeId))?self:Qnil );
+  return ( layer == layerBlend(layer)?self:Qnil );
 }
 
 VALUE cLayer;
@@ -318,6 +318,6 @@ void Init_Layer()
   rb_define_method( cLayer, "advance", layer_advance, 0 );
   rb_define_method( cLayer, "wiggle", layer_wiggle, 1 );
 
-   rb_define_method( cLayer, "blendGeomEdge", layer_blendGeomEdge, 1 );
+   rb_define_method( cLayer, "blend", layer_blend, 0 );
  
 }

@@ -764,7 +764,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,0.2], grid.nodeXYZ(5)
  end
 
- def XtestBlendElements
+ def testBlendElements
   assert_not_nil          grid = Grid.new(10,10,10,10)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
@@ -778,22 +778,17 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0, 1],    grid.geomEdge(1)
   assert_not_nil          layer = Layer.new(grid)
   assert_equal layer,     layer.makeFront([1])
-  assert_nil              layer.blendGeomEdge(1)
+  assert_nil              layer.blend
   assert_equal layer,     layer.makeNormal
   assert_equal 4,         layer.nnormal
   
   assert_equal [0,1,2],   layer.frontNormals(0)
   assert_equal [0,2,3],   layer.frontNormals(1)
-  assert_nil              layer.blendGeomEdge(0)
-  assert_nil              layer.blendGeomEdge(-1)
   assert_equal 0,         layer.nblend
-  assert_equal layer,     layer.blendGeomEdge(1)
+  assert_equal layer,     layer.blend
   assert_equal 1,         layer.nblend
   assert_equal 6,         layer.nnormal
-  assert_equal 0,         layer.normalRoot(0)
-  assert_equal 1,         layer.normalRoot(2)
-  assert_equal 0,         layer.normalRoot(4)
-  assert_equal 1,         layer.normalRoot(5)
+
   assert_equal [0,1,2],   layer.frontNormals(0)
   assert_equal [4,5,3],   layer.frontNormals(1)
   assert_equal [0,4,5,1], layer.blendNormals(0)

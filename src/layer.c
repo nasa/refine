@@ -1002,59 +1002,13 @@ Layer *layerWiggle(Layer *layer, double height )
   return layer;
 }
 
-Layer *layerBlendGeomEdge(Layer *layer, int edgeId )
+Layer *layerBlend(Layer *layer)
 {
   Grid *grid;
-  int ncurvepts, *curve;
-  int newNormals;
-  int origNormal, newNormal;
-  int i;
-  AdjIterator it;
-  int front;
-  int n0, n1, nodes[3];
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
   grid = layerGrid(layer);
-  ncurvepts = gridGeomEdgeSize(grid,edgeId);
-  if (ncurvepts<2) return NULL;
-  curve = malloc(ncurvepts*sizeof(int));
-  gridGeomEdge(grid,edgeId,curve);
-
-  layer->nblend = ncurvepts-1;
-  layer->blend = malloc( layer->nblend * sizeof(Blend) );
-  newNormals = ncurvepts;
-
-  newNormal = layer->nnormal;
-  layer->nnormal += newNormals;
-  layer->normal = realloc( layer->normal, layer->nnormal * sizeof(Normal));
-
-  for (i=0;i<ncurvepts;i++){
-    origNormal = layer->globalNode2Normal[curve[i]];
-    layerCopyNormal(layer,origNormal, newNormal);
-    if (i<ncurvepts-1){
-      layer->blend[i].normal[0] = newNormal;
-      layer->blend[i].normal[1] = origNormal;
-    }
-    if (i>0){
-      layer->blend[i-1].normal[3] = newNormal;
-      layer->blend[i-1].normal[4] = origNormal;
-    }
-    newNormal++;
-  }
-  for (i=0;i<layer->nblend;i++){
-    for ( it = adjFirst(layer->adj,n0); 
-	  adjValid(it); 
-	  it = adjNext(it) ){
-      front = adjItem(it);
-      n0 = layerNormalRoot(layer,layer->blend[i].normal[0]);
-      n1 = layerNormalRoot(layer,layer->blend[i].normal[3]);
-      layerFront(layer, front, nodes);
-      if (n0 == nodes[0] && n1 == nodes[1]){
-
-      }
-    }
-  }
 
   return layer;
 }

@@ -61,7 +61,7 @@ int layerNActiveNormal(Layer *);
 Layer *layerAdvance(Layer * );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
-Layer *layerBlendGeomEdge(Layer *, int edgeId );
+Layer *layerBlend(Layer *);
 
 
 Layer *layerSmoothLayerNeighbors(Layer * );
