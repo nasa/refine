@@ -572,6 +572,7 @@ Grid *gridGemAR( Grid *grid, double *ar ){
 double gridAR(Grid *grid, int *nodes )
 {
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
+  double *p1, *p2, *p3, *p4; 
   int i;
   double *m0, *m1, *m2, *m3; 
   double m[6], j[9];
@@ -585,17 +586,14 @@ double gridAR(Grid *grid, int *nodes )
        !gridValidNode(grid, nodes[2]) ||
        !gridValidNode(grid, nodes[3]) ) return -1.0;
 
+  p1 = gridNodeXYZPointer(grid,nodes[0]);
+  p2 = gridNodeXYZPointer(grid,nodes[1]);
+  p3 = gridNodeXYZPointer(grid,nodes[2]);
+  p4 = gridNodeXYZPointer(grid,nodes[3]);
 
-  for(i=0;i<3;i++){
-    xyz1[i]=gridNodeXYZEntry(grid,nodes[0],i);
-    xyz2[i]=gridNodeXYZEntry(grid,nodes[1],i);
-    xyz3[i]=gridNodeXYZEntry(grid,nodes[2],i);
-    xyz4[i]=gridNodeXYZEntry(grid,nodes[3],i);
-  }
-
-  gridSubtractVector( xyz2, xyz1, edge1);
-  gridSubtractVector( xyz3, xyz1, edge2);
-  gridSubtractVector( xyz4, xyz1, edge3);
+  gridSubtractVector( p2, p1, edge1);
+  gridSubtractVector( p3, p1, edge2);
+  gridSubtractVector( p4, p1, edge3);
   gridCrossProduct( edge1, edge2, norm );
 
   if (  gridDotProduct(norm,edge3) <= 6.0e-14) return -1.0;
@@ -611,10 +609,21 @@ double gridAR(Grid *grid, int *nodes )
 	   __FILE__,__LINE__);
   }
   
-  gridMapXYZWithJ(j, &xyz1[0], &xyz1[1], &xyz1[2]);
-  gridMapXYZWithJ(j, &xyz2[0], &xyz2[1], &xyz2[2]);
-  gridMapXYZWithJ(j, &xyz3[0], &xyz3[1], &xyz3[2]);
-  gridMapXYZWithJ(j, &xyz4[0], &xyz4[1], &xyz4[2]);
+  xyz1[0] = j[0] * p1[0] + j[1] * p1[1] + j[2] * p1[2]; 
+  xyz1[1] = j[3] * p1[0] + j[4] * p1[1] + j[5] * p1[2]; 
+  xyz1[2] = j[6] * p1[0] + j[7] * p1[1] + j[8] * p1[2]; 
+
+  xyz2[0] = j[0] * p2[0] + j[1] * p2[1] + j[2] * p2[2]; 
+  xyz2[1] = j[3] * p2[0] + j[4] * p2[1] + j[5] * p2[2]; 
+  xyz2[2] = j[6] * p2[0] + j[7] * p2[1] + j[8] * p2[2]; 
+
+  xyz3[0] = j[0] * p3[0] + j[1] * p3[1] + j[2] * p3[2]; 
+  xyz3[1] = j[3] * p3[0] + j[4] * p3[1] + j[5] * p3[2]; 
+  xyz3[2] = j[6] * p3[0] + j[7] * p3[1] + j[8] * p3[2]; 
+
+  xyz4[0] = j[0] * p4[0] + j[1] * p4[1] + j[2] * p4[2]; 
+  xyz4[1] = j[3] * p4[0] + j[4] * p4[1] + j[5] * p4[2]; 
+  xyz4[2] = j[6] * p4[0] + j[7] * p4[1] + j[8] * p4[2]; 
 
 #ifdef GRIDUSEMEANRATIO
   aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 );
