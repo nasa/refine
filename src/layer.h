@@ -110,8 +110,11 @@ Layer *layerThaw(Layer*);
 bool layerTetrahedraOnly(Layer *);
 Layer *layerToggleMixedElementMode(Layer *);
 
+Adj *layerBuildNormalBlendAdjacency(Layer *layer);
+Layer *layerSplitBlend(Layer *);
 Layer *layerBlend(Layer *);
 Layer *layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
+Layer *layerDuplicateAllBlend(Layer *);
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
 
 END_C_DECLORATION

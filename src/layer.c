@@ -309,7 +309,9 @@ Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
       normal = layer->triangle[triangle].normal[i];
-      layerTriangleDirection(layer,triangle,direction);
+      if (layer != layerTriangleDirection(layer,triangle,direction))
+	printf("Error: layerPopulateAdvancingFront: %s: %d: %s\n",
+	       __FILE__,__LINE__,"triangle direction");
       layer->normal[normal].direction[0] += direction[0];
       layer->normal[normal].direction[1] += direction[1];
       layer->normal[normal].direction[2] += direction[2];
@@ -334,7 +336,6 @@ Layer *layerBuildNormalTriangleAdjacency(Layer *layer)
   int triangle, i, normals[3];
 
   if (NULL != layer->adj) adjFree(layer->adj);
-
   layer->adj = adjCreate( layerNNormal(layer), layerNTriangle(layer)*3  );
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
@@ -1943,6 +1944,100 @@ Layer *layerToggleMixedElementMode(Layer *layer)
   return layer;
 }
 
+Adj *layerBuildNormalBlendAdjacency(Layer *layer)
+{
+  Adj *adj;
+  int blend, i, normals[4];
+
+  adj = adjCreate( layerNNormal(layer), layerNblend(layer)*4  );
+
+  for (blend=0;blend<layerNBlend(layer);blend++){
+    layerBlendNormals(layer,blend,normals);
+    for (i=0;i<4;i++) adjRegister( layer->adj, normals[i], blend );
+  }
+
+  return adj;
+}
+
+Layer *layerSplitBlend(Layer *layer)
+{
+  int blend, origblend;
+  int normals[4];
+  int i, nnode, *newnormal;
+  int node0, node1, normal;
+  double xyz0[3], xyz1[3], edge[3], n0[3], n1[3], c0[3], c1[3], new[3];
+  double length;
+  Grid *grid;
+
+  origblend = layerNBlend(layer);
+
+  grid = layerGrid(layer);
+  nnode = gridNNode(grid);
+  newnormal = malloc(nnode*sizeof(int));
+  for (i=0; i<nnode; i++) newnormal[i]=EMPTY;
+
+  for (blend=0; blend<layerNBlend(layer); blend++){
+    layerBlendNormals(layer,blend,normals);
+    node0 = layerNormalRoot(layer,normals[0]);
+    node1 = layerNormalRoot(layer,normals[2]);
+    if (newnormal[node0]!=EMPTY){
+      newnormal[node0] = layerDuplicateNormal(layer, normals[0] );
+      gridNodeXYZ(grid,node0,xyz0);
+      gridNodeXYZ(grid,node1,xyz1);
+      gridSubtractVector(xyz1,xyz0,edge);
+      layerNormalDirection(layer,normals[0],n0);
+      layerNormalDirection(layer,normals[1],n1);
+      gridCrossProduct(edge,n0,c0);
+      gridCrossProduct(n1,edge,c1);
+      for (i=0; i<3; i++) new[i] = 0.5*(c0[i]+c1[i]);
+      length = gridDotProduct(new,new);
+      for (i=0; i<3; i++) 
+	layer->normal[newnormal[node0]].direction[i]=new[i]/length;
+    }
+    normal = normals[0];
+    normals[0] = normals[3];
+    normals[3] = normal;
+    normal = normals[1];
+    normals[1] = normals[2];
+    normals[2] = normal;
+    node0 = layerNormalRoot(layer,normals[0]);
+    node1 = layerNormalRoot(layer,normals[2]);
+    if (newnormal[node0]!=EMPTY){
+      newnormal[node0] = layerDuplicateNormal(layer, normals[0] );
+      gridNodeXYZ(grid,node0,xyz0);
+      gridNodeXYZ(grid,node1,xyz1);
+      gridSubtractVector(xyz1,xyz0,edge);
+      layerNormalDirection(layer,normals[0],n0);
+      layerNormalDirection(layer,normals[1],n1);
+      gridCrossProduct(edge,n0,c0);
+      gridCrossProduct(n1,edge,c1);
+      for (i=0; i<3; i++) new[i] = 0.5*(c0[i]+c1[i]);
+      length = gridDotProduct(new,new);
+      for (i=0; i<3; i++) 
+	layer->normal[newnormal[node0]].direction[i]=new[i]/length;
+    }
+  }
+
+  layerDuplicateAllBlend(layer);
+  for (blend=0; blend<origblend; blend++){
+    layerBlendNormals(layer,blend,normals);
+    node0 = layerNormalRoot(layer,normals[0]);
+    node1 = layerNormalRoot(layer,normals[2]);
+    if (newnormal[node0]|=EMPTY) layer->blend[blend].normal[0]=newnormal[node0];
+    if (newnormal[node1]|=EMPTY) layer->blend[blend].normal[2]=newnormal[node1];
+  }  
+  for (blend=origblend; blend<layerNBlend(layer); blend++){
+    layerBlendNormals(layer,blend,normals);
+    node0 = layerNormalRoot(layer,normals[1]);
+    node1 = layerNormalRoot(layer,normals[3]);
+    if (newnormal[node0]|=EMPTY) layer->blend[blend].normal[1]=newnormal[node0];
+    if (newnormal[node1]|=EMPTY) layer->blend[blend].normal[3]=newnormal[node1];
+  }
+
+  free(newnormal);
+  return layer;
+}
+
 Layer *layerBlend(Layer *layer)
 {
   int normal, originalNormals;
@@ -2015,6 +2110,47 @@ Layer *layerBlend(Layer *layer)
   layerVisibleNormals(layer , 
 		      sin(ConvertDegreeToRadian(largestEdgeAngle*0.333)), 
 		      1.0e-8 );
+  //layerSplitBlend(layer);
+  return layer;
+}
+
+Layer *layerDuplicateAllBlend(Layer *layer)
+{
+  int blend, maxblend;
+  
+  maxblend = layerNBlend(layer);
+  for (blend=0; blend<maxblend; blend++){
+    
+    if (layer->nblend >= layer->maxblend) {
+      layer->maxblend += 5000;
+      if (layer->blend == NULL) {
+	layer->blend = malloc(layer->maxblend*sizeof(Blend));
+      }else{
+	layer->blend = realloc(layer->blend,layer->maxblend*sizeof(Blend));
+      }
+    }
+
+    layer->blend[layer->nblend].nodes[0] = 
+      layer->blend[blend].nodes[0];
+    layer->blend[layer->nblend].nodes[1] = 
+      layer->blend[blend].nodes[1];
+
+    layer->blend[layer->nblend].normal[0] = 
+      layer->blend[blend].normal[0];
+    layer->blend[layer->nblend].normal[1] = 
+      layer->blend[blend].normal[1];
+    layer->blend[layer->nblend].normal[2] = 
+      layer->blend[blend].normal[2];
+    layer->blend[layer->nblend].normal[3] = 
+      layer->blend[blend].normal[3];
+    
+    layer->blend[layer->nblend].edgeId[0] = 
+      layer->blend[blend].edgeId[0];
+    layer->blend[layer->nblend].edgeId[1] = 
+      layer->blend[blend].edgeId[1];
+
+    layer->nblend++;
+  }
 
   return layer;
 }
