@@ -2882,6 +2882,31 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
   return layer;
 }
 
+Layer *layerOrderedVertexNormals(Layer *layer, int normal, 
+				 int *nVertexNormals, int *vertexNormals ){
+  int node;
+  AdjIterator it;
+  int blend;
+  int count;
+
+  node = layerNormalRoot(layer,normal);
+  count = 0;
+  for ( it = adjFirst(layerBlendAdj(layer),normal);
+	adjValid(it);
+	it=adjNext(it) ){
+    blend = adjItem(it);
+    if (node == layer->blend[blend].nodes[0]) {
+      vertexNormals[count] = layer->blend[blend].normal[0];
+    }else{
+      vertexNormals[count] = layer->blend[blend].normal[3];
+    }
+    count++;
+  }
+  
+  return layer;
+}
+
+
 Layer *layerPopulateNormalNearTree(Layer *layer)
 {
   int normal;

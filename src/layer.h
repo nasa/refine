@@ -221,6 +221,9 @@ Layer *layerBlendNormals(Layer *, int blend, int *normals );
 int layerBlendDegree(Layer *, int normal);
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 
+Layer *layerOrderedVertexNormals(Layer *, int normal, 
+				 int *nVertexNormals, int *vertexNormals );
+
 Layer *layerPopulateNormalNearTree(Layer *);
 Layer *layerPopulateTriangleNearTree(Layer *);
 Layer *layerTerminateCollidingNormals(Layer *);
