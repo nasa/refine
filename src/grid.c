@@ -3176,10 +3176,17 @@ Grid *gridRenumberGlobalNodes(Grid *grid, int nnode, int *n2o)
       oldlocal = EMPTY;
       if (EMPTY!=oldposition) oldlocal = grid->sortedLocal[oldposition];
 
-      if ( EMPTY != oldlocal ) grid->nodeGlobal[oldlocal] = newglobal;
-      if ( EMPTY != newlocal ) grid->nodeGlobal[newlocal] = oldglobal;
+      if ( EMPTY != oldlocal || EMPTY != newlocal ) {
+	if ( EMPTY != oldlocal ) grid->nodeGlobal[oldlocal] = newglobal;
+	if ( EMPTY != newlocal ) grid->nodeGlobal[newlocal] = oldglobal;
 
-      gridCreateSortedGlobal(grid);
+	if ( EMPTY != oldlocal && EMPTY != newlocal ) {
+	  grid->sortedLocal[newposition] = oldlocal;
+	  grid->sortedLocal[oldposition] = newlocal;
+	}else{
+	  gridCreateSortedGlobal(grid);
+	}
+      }
 
       /* fix n2o list */
       n2o[newglobal] = newglobal;
@@ -3191,8 +3198,6 @@ Grid *gridRenumberGlobalNodes(Grid *grid, int nnode, int *n2o)
       }
     }
   }
-
-  gridCreateSortedGlobal(grid);
 
   return grid;
 }
