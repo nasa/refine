@@ -434,10 +434,10 @@ VALUE layer_blendNormals( VALUE self, VALUE blend )
   return rb_normals;
 }
 
-VALUE layer_terminateCollidingFronts( VALUE self )
+VALUE layer_terminateCollidingNormals( VALUE self )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerTerminateCollidingFronts(layer)?self:Qnil );
+  return ( layer == layerTerminateCollidingNormals(layer)?self:Qnil );
 }
 
 VALUE cLayer;
@@ -508,5 +508,5 @@ void Init_Layer()
   rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
 
-  rb_define_method( cLayer, "terminateCollidingFronts", layer_terminateCollidingFronts, 0 );
+  rb_define_method( cLayer, "terminateCollidingNormals", layer_terminateCollidingNormals, 0 );
 }

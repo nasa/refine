@@ -2654,7 +2654,7 @@ Layer *layerPopulateNormalNearTree(Layer *layer)
   return layer;
 }
 
-Layer *layerTerminateCollidingFronts(Layer *layer)
+Layer *layerTerminateCollidingNormals(Layer *layer)
 {
   int normal;
   Near *target;
@@ -2665,13 +2665,13 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
 
   if ( 0 < layerNBlend(layer) ) return NULL;
 
-  printf("layerPopulateNormalNearTree...\n");
+  //printf("layerPopulateNormalNearTree...\n");
   layerPopulateNormalNearTree(layer);
 
   maxTouched = layerNNormal(layer);
   nearNormals = malloc(maxTouched*sizeof(int));
 
-  printf("inspecting normal proximity...\n");
+  //printf("inspecting normal proximity...\n");
   for(normal=0;normal<layerNNormal(layer);normal++){
     target = &layer->nearTree[normal];
     touched = 0;

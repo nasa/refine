@@ -102,7 +102,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     layerTerminateNormalWithLength(layer,1.0);
     layerTerminateNormalWithBGSpacing(layer, 1.5, 1.9);
 
-    if(i>1)layerTerminateCollidingFronts(layer);
+    if(i>1)layerTerminateCollidingNormals(layer);
 
     printf("advance layer %d\n",i);
 

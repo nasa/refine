@@ -1437,7 +1437,7 @@ class TestLayer < Test::Unit::TestCase
   grid
  end
 
- def testCollideFrontFarApart
+ def testCollideNormalFarApart
   grid  = facingGrid(5)
   layer = Layer.new(grid).populateAdvancingFront([1])
   assert !layer.normalTerminated(0)
@@ -1447,7 +1447,7 @@ class TestLayer < Test::Unit::TestCase
   assert !layer.normalTerminated(4)
   assert !layer.normalTerminated(5)
 
-  layer.terminateCollidingFronts
+  layer.terminateCollidingNormals
 
   assert !layer.normalTerminated(0)
   assert !layer.normalTerminated(1)
@@ -1457,7 +1457,7 @@ class TestLayer < Test::Unit::TestCase
   assert !layer.normalTerminated(5)
  end
 
- def testCollideFrontClose
+ def testCollideNormalClose
   grid  = facingGrid(0.5)
   layer = Layer.new(grid).populateAdvancingFront([1])
   assert !layer.normalTerminated(0)
@@ -1467,7 +1467,7 @@ class TestLayer < Test::Unit::TestCase
   assert !layer.normalTerminated(4)
   assert !layer.normalTerminated(5)
 
-  layer.terminateCollidingFronts
+  layer.terminateCollidingNormals
 
   assert layer.normalTerminated(0)
   assert layer.normalTerminated(1)
@@ -1486,7 +1486,7 @@ class TestLayer < Test::Unit::TestCase
 
   assert_in_delta 360, layer.edgeAngle(0,1), tol
 
-  layer.terminateCollidingFronts
+  layer.terminateCollidingNormals
 
   assert !layer.normalTerminated(0)
   assert !layer.normalTerminated(1)
