@@ -46,6 +46,14 @@ double gridSpacing(Grid *grid, int node )
   return grid->spacing[node];
 }
 
+Grid *gridResetSpacing(Grid *grid )
+{
+  int node;
+  for ( node=0; node < grid->nnode; node++) 
+    grid->spacing[node] = gridAverageEdgeLength( grid, node );
+  return grid;
+}
+
 double gridVolume(Grid *grid, int *nodes )
 {
   int ixyz;
