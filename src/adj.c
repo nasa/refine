@@ -31,7 +31,8 @@ Adj* adjCreate( int nnode, int nadj )
 
   adj = malloc( sizeof(Adj) );
 
-  adj->nnode   = nnode;
+  adj->nnode   = MAX(nnode,1);
+  nadj         = MAX(nadj,1);
 
   adj->node2item = (NodeItem *)malloc( nadj * sizeof(NodeItem));
 
