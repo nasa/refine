@@ -77,8 +77,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   if (blendElement){
     printf("inserting blends...\n");
     layerBlend(layer, 250.0 );
-    printf("prevent blend normal collision...\n");
-    layerPreventBlendNormalDirectionFromPointingAtNeighbors(layer,0.8);
+    printf("prevent blend normal collision...TURNED OFF\n");
+    //layerPreventBlendNormalDirectionFromPointingAtNeighbors(layer,0.8);
     printf("inserting sub blends...\n");
     layerSubBlend(layer, 30.0 );
   }
