@@ -27,6 +27,7 @@ void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
 
 double gridEdgeLength(Grid *g, int n0, int n1 );
 double gridEdgeRatio(Grid *g, int n0, int n1 );
+Grid *gridEdgeRatio3(Grid *g, int n0, int n1, double *ratio );
 double gridEdgeRatioError(Grid *g, int n0, int n1 );
 double gridAverageEdgeLength(Grid *g, int node );
 Grid *gridLargestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );

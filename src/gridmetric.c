@@ -118,6 +118,37 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
   
   return 0.5*(length0+length1);
 }
+Grid *gridEdgeRatio3(Grid *grid, int n0, int n1, double *ratio )
+{
+  double *xyz0, *xyz1;
+  double dx, dy, dz;
+  double *m;
+
+  if (!gridValidNode(grid, n0) || !gridValidNode(grid, n1)) return NULL;
+
+  xyz0 = gridNodeXYZPointer(grid, n0);
+  xyz1 = gridNodeXYZPointer(grid, n1);
+  
+  dx = xyz1[0] - xyz0[0];
+  dy = xyz1[1] - xyz0[1];
+  dz = xyz1[2] - xyz0[2];
+
+  m = gridMapPointer(grid, n0);
+  ratio[0] = sqrt (
+      dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
+    + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
+    + dz * ( m[2]*dx + m[4]*dy + m[5]*dz ) );
+
+  m = gridMapPointer(grid, n1);
+  ratio[1] = sqrt (
+      dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
+    + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
+    + dz * ( m[2]*dx + m[4]*dy + m[5]*dz ) );
+  
+  ratio[2] = 0.5*(ratio[0]+ratio[1]);
+
+  return grid;
+}
 
 double gridEdgeRatioError(Grid *grid, int n0, int n1 )
 {

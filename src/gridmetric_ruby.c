@@ -16,6 +16,20 @@ VALUE grid_edgeRatio( VALUE self, VALUE n0, VALUE n1 )
   return rb_float_new( gridEdgeRatio( grid, NUM2INT(n0), NUM2INT(n1) ) );
 }
 
+VALUE grid_edgeRatio3( VALUE self, VALUE n0, VALUE n1 )
+{
+  int i;
+  double ratio[3];
+  VALUE rb_ratio;
+  GET_GRID_FROM_SELF;
+  if ( grid == gridEdgeRatio3( grid, NUM2INT(n0), NUM2INT(n1), ratio ) ) {
+    rb_ratio = rb_ary_new2(3);
+    for(i=0;i<3;i++) rb_ary_store( rb_ratio, i, rb_float_new(ratio[i]) );
+    return rb_ratio;
+  }
+  return Qnil;
+}
+
 VALUE grid_edgeRatioError( VALUE self, VALUE n0, VALUE n1 )
 {
   GET_GRID_FROM_SELF;
@@ -458,6 +472,7 @@ void Init_GridMetric()
   cGridMetric = rb_define_module( "GridMetric" );
   rb_define_method( cGridMetric, "edgeLength", grid_edgeLength, 2 );
   rb_define_method( cGridMetric, "edgeRatio", grid_edgeRatio, 2 );
+  rb_define_method( cGridMetric, "edgeRatio3", grid_edgeRatio3, 2 );
   rb_define_method( cGridMetric, "edgeRatioError", grid_edgeRatioError, 2 );
   rb_define_method( cGridMetric, "averageEdgeLength", grid_averageEdgeLength, 1 );
   rb_define_method( cGridMetric, "largestRatioEdge", grid_largestRatioEdge, 1 );

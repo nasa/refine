@@ -1,3 +1,9 @@
+2004-11-16 09:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio3) Computes the ratio of unity to
+	the legth of an edge in the metric map. Returns the ratio with
+	respect to the meric at node 0, node 1, and an integrated average.
+
 2004-11-09 00:14 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmoothNode) if -DSURFACE_VALIDITY defined, 

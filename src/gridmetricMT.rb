@@ -319,6 +319,16 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta length, grid.edgeRatio(3,1), 1.0e-10
  end
 
+ def testEdgeLengthRatio3InMetricForUniformRightTet
+  assert_not_nil grid = rightTet
+  nodes = [0,1,2,3]
+  tol = 1.0e-12
+  ratio = grid.edgeRatio3(0,1)
+  assert_in_delta 1.0, ratio[0], tol
+  assert_in_delta 1.0, ratio[0], tol
+  assert_in_delta 1.0, ratio[0], tol
+ end
+
  def testVolumeMetrics
   assert_not_nil grid = rightTet
   nodes = [0,1,2,3]
