@@ -101,7 +101,7 @@ int main( int argc, char *argv[] )
   newSize = gridNNode(grid) ;
   for ( j=0; (j<40) && (
 	(ratio < 0.99) || 
-	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01) ||
+	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
 	  !projected );
 	j++){
 
