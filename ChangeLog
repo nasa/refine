@@ -1,7 +1,8 @@
-2004-08-02 12:50 Mike Park  <mike.park@nasa.gov>
+2004-08-02 14:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridwritetecplotsurfacezone_) now dumps out
-	negative cells after the surface.
+	negative cells or cells with four nodes on boundary after the
+	surface.
 
 2004-08-01 16:21 Mike Park  <mike.park@nasa.gov>
 

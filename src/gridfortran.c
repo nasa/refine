@@ -227,15 +227,24 @@ void gridminar_( double *aspectratio )
 void gridwritetecplotsurfacezone_( void )
 {
   char filename[256];
-  int cell, nodes[4];
+  int cell, nodes[4], onbound;
 
   sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
   gridWriteTecplotSurfaceZone(grid,filename);
 
   for (cell=0;cell<gridMaxCell(grid);cell++)
-    if (grid==gridCell(grid, cell, nodes))
+    if (grid==gridCell(grid, cell, nodes)) {
       if (0.0>=gridVolume(grid,nodes))
 	gridWriteTecplotCellZone(grid,nodes,filename);
+      onbound = 0;
+      if (gridGeometryFace(grid,nodes[0])) onbound++;
+      if (gridGeometryFace(grid,nodes[1])) onbound++;
+      if (gridGeometryFace(grid,nodes[2])) onbound++;
+      if (gridGeometryFace(grid,nodes[3])) onbound++;
+      if (4==onbound)
+	gridWriteTecplotCellZone(grid,nodes,filename);
+      
+    }
 
 #ifdef PARALLEL_VERBOSE 
   printf( " %6d tecplot dump with negative cells                         \n",
