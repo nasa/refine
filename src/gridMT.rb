@@ -50,7 +50,8 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal true,  @grid.moreNodeCell
   
   100.times {@grid.nextNodeCell} # abusive use of next
- end
+  @grid.firstNodeCell(3000000);
+end
  
  def testAddAndRemoveNodeCell
   assert_equal false, @grid.cellExists(1,0)
