@@ -654,7 +654,7 @@ class TestGridMetric < Test::Unit::TestCase
    ans[0], 1.0e-15, "function"
  end
 
- def testCostAfterCollapse
+ def XtestCostAfterCollapse
   grid = rightTet3
   grid.setCostFunction(2)
   tol = 1.0e-10

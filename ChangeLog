@@ -1,11 +1,17 @@
-2005-02-01  16:11 Mike Park  <mike.park@nasa.gov>
+2005-02-01 17:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCollapseCost) added logic to set the
+	boundary face and edge parameters while evaluating new
+	configurations. NOTE: Disabled Unit Test!!!
+
+2005-02-01 16:11 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridEdgeRatio) to better estimate the length
 	of an edge in mapped space with a linearly varying metric the
 	matric is averaged instead of the edge lengths computed at each
 	node.
 
-2005-02-01  14:33 Mike Park  <mike.park@nasa.gov>
+2005-02-01 14:33 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridwritetecplotsurfacezone_) the logic that
 	chooses which cells are bad and need to be written now uses gridAR
