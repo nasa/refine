@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "grid.h"
+#include <CADGeom/CADGeom.h>
 
 int main( int argc, char *argv[] )
 {
@@ -39,6 +40,20 @@ int main( int argc, char *argv[] )
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));
+
+  gridFree(grid);
+
+  printf("calling CADGeom_Start ... \n");
+  if ( ! CADGeom_Start( ) ){
+    printf("Yo! it broke.\n");
+  }  
+
+  printf("calling CADGeom_Stop ... \n");
+  if ( ! CADGeom_Stop( ) ){
+    printf("Yo! it broke.\n");
+  }  
+
+  printf("Done. \n");
 
   return;
 }
