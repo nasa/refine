@@ -1194,6 +1194,26 @@ Grid *gridFace(Grid *grid, int face, int *nodes, int *id )
   return grid;
 }
 
+Grid *gridDeleteThawedFaces(Grid *grid, int faceId ){
+  int face, maxface, nodes[3], id;
+
+  if (faceId < 1) return NULL;
+
+  maxface = gridMaxFace(grid);
+  for( face=0 ; face < maxface ; face++ ) {
+    if (grid == gridFace(grid,face,nodes,&id)) {
+      if ( id == faceId && 
+	   ( !gridNodeFrozen(grid,nodes[0]) || 
+	     !gridNodeFrozen(grid,nodes[1]) || 
+	     !gridNodeFrozen(grid,nodes[2]) ) ){
+	gridRemoveFace(grid,face);
+      }
+    }
+  }
+
+  return grid;
+}
+
 Grid *gridNodeUV(Grid *grid, int node, int faceId, double *uv )
 {
   AdjIterator it;

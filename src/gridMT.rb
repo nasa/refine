@@ -296,6 +296,27 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 2,    grid.nface 
  end
 
+ def testDeleteFacesWithThawedNodes
+  assert_not_nil             grid = Grid.new(10,10,10,10)
+  assert_equal 0,            grid.addNode(0,0,0)
+  assert_equal 1,            grid.addNode(1,0,0)
+  assert_equal 2,            grid.addNode(0,1,0)
+  assert_equal 3,            grid.addNode(1,1,0)
+  assert_equal grid,         grid.addFace(0,1,2,1)
+  assert_equal grid,         grid.addFace(2,1,3,1)
+  assert_equal grid,         grid.addFace(2,1,3,2)
+  assert_equal grid,         grid.freezeNode(0)
+  assert_equal grid,         grid.freezeNode(1)
+  assert_equal grid,         grid.freezeNode(2)
+  assert_nil                 grid.deleteThawedFaces(-1)
+  assert_nil                 grid.deleteThawedFaces(0)
+  assert_equal grid,         grid.deleteThawedFaces(1)
+  assert_equal 2,            grid.nface
+  assert_equal [0,1,2,1],    grid.face(0)
+  assert_nil                 grid.face(1)
+  assert_equal [2,1,3,2],    grid.face(2)
+ end
+
  def testFaceId
   assert_not_nil     grid = Grid.new(4,1,2,0)
 
