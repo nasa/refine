@@ -651,6 +651,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       0, NULL,
 			       &nfacenode, &nfacetri, 
 			       &newface, &newxyz, &newuv) ) {
+	printf("rebuild face %d has FAILED.\n", faceId );
 	return NULL;
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
