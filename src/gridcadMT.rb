@@ -488,18 +488,22 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta area, grid.faceAreaUV(0), tol
  end
 
- def testComputeMinFaceAreaInParameterSpaceForNode
+ def threeSurfaceTriangles( x=1, y=1)
   grid = Grid.new(5,0,3,0)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
   grid.addNode(0,1,0)
-  grid.addNode(1,1,0)
+  grid.addNode(x,y,0)
   faceId = 55
   grid.addFace(0,1,3,faceId)
   grid.addFace(1,2,3,faceId)
   grid.addFace(2,0,3,faceId)
   4.times { |node| grid.projectNodeToFace(node,faceId) }
-  
+  grid # note ruby retruns result of last line if return is missing
+ end
+
+ def testComputeMinFaceAreaInParameterSpaceForNode
+  grid = threeSurfaceTriangles
   tol = 1.0e-15
   area = -0.5
   assert_in_delta area, grid.minFaceAreaUV(3), tol
