@@ -34,7 +34,11 @@ hla_sources = \
 	../src/MesherX_HLA.c \
 	../src/mesherx_hla.c \
 	../src/layerNormalExtra.c \
-	../src/geometricStretch.c
+	../src/geometricStretch.c \
+	../src/SyJetSpacingControl.c
+
+../src/mesherx_hla.c : ../src/mesherx_SyJet.c
+	ln -s ../src/mesherx_SyJet.c ../src/mesherx_hla.c
 
 LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
 
