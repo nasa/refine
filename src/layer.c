@@ -35,11 +35,18 @@ struct Triangle {
   int parentGeomEdge[3];
 };
 
+typedef struct Blend Blend;
+struct Blend {
+  int nodes[2];
+};
+
 struct Layer {
   Grid *grid;
   int maxtriangle, ntriangle;
   Triangle *triangle;
   int maxParentGeomFace, nParentGeomFace, *ParentGeomFace;
+  int maxblend, nblend;
+  Blend *blend;
   int maxnormal, nnormal;
   Normal *normal;
   int *globalNode2Normal;
@@ -64,6 +71,9 @@ Layer *layerCreate( Grid *grid )
   layer->maxParentGeomFace=0;
   layer->nParentGeomFace=0;
   layer->ParentGeomFace=NULL;
+  layer->maxblend=0;
+  layer->nblend=0;
+  layer->blend=NULL;
   layer->maxnormal=0;
   layer->nnormal=0;
   layer->normal=NULL;
@@ -219,6 +229,7 @@ void layerFree(Layer *layer)
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
   if (layer->ParentGeomFace != NULL) free(layer->ParentGeomFace);
+  if (layer->blend != NULL) free(layer->blend);
   if (layer->triangle != NULL) free(layer->triangle);
   free(layer);
 }
@@ -245,6 +256,11 @@ int layerMaxTriangle(Layer *layer)
 int layerNTriangle(Layer *layer)
 {
   return layer->ntriangle;
+}
+
+int layerNBlend(Layer *layer)
+{
+  return layer->nblend;
 }
 
 int layerMaxNormal(Layer *layer)
@@ -1668,5 +1684,57 @@ bool layerTetrahedraOnly(Layer *layer)
 Layer *layerToggleMixedElementMode(Layer *layer)
 {
   layer->mixedElementMode = !layer->mixedElementMode;
+  return layer;
+}
+
+Layer *layerBlend(Layer *layer)
+{
+  int triangle, previous;
+  int normals[3], nodes[3];
+  int i, n0, n1;
+
+  for ( triangle = 0 ; triangle < layerNTriangle(layer) ; triangle++ ) {
+    layerTriangleNormals(layer, triangle, normals);
+    layerTriangle(layer, triangle, nodes);
+    for ( i = 0 ; i < 3 ; i++ ) {
+      previous = layerPreviousTriangle(layer, normals[i], triangle );
+      if (EMPTY != previous && 250 < layerEdgeAngle(layer,triangle,previous)){
+	n0=i;
+	n1=i+1; if (n1>2) n1=0;
+	n0=nodes[n0];
+	n1=nodes[n1];
+	layerAddBlend(layer,n0,n1);
+      }
+    }
+  }
+
+  return layer;
+}
+
+Layer *layerAddBlend(Layer *layer, int n0, int n1 )
+{
+  int i;
+  bool newEdge;
+
+  if (layer->nblend >= layer->maxblend) {
+    layer->maxblend += 5000;
+    if (layer->blend == NULL) {
+      layer->blend = malloc(layer->maxblend*sizeof(Blend));
+    }else{
+      layer->blend = realloc(layer->blend,layer->maxblend*sizeof(Blend));
+    }
+  }
+  
+  newEdge=TRUE;
+  for (i=0;i<layerNBlend(layer);i++){
+    if ( ( layer->blend[i].nodes[0] == n0 && layer->blend[i].nodes[1] == n1 ) ||
+	 ( layer->blend[i].nodes[0] == n1 && layer->blend[i].nodes[1] == n0 ) )
+      newEdge=FALSE;
+  }
+  if (newEdge){
+    layer->blend[layer->nblend].nodes[0] = n0;
+    layer->blend[layer->nblend].nodes[1] = n1;
+    layer->nblend++;
+  }
   return layer;
 }

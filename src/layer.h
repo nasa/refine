@@ -25,6 +25,7 @@ void layerFree(Layer *);
 void layerSortGlobalNodes(void *layer, int *o2n);
 int layerMaxTriangle(Layer *);
 int layerNTriangle(Layer *);
+int layerNBlend(Layer *);
 int layerMaxNormal(Layer *);
 int layerNNormal(Layer *);
 int layerMaxNode(Layer *);
@@ -96,6 +97,9 @@ Layer *layerVerifyPhantomFaces(Layer *);
 
 bool layerTetrahedraOnly(Layer *);
 Layer *layerToggleMixedElementMode(Layer *);
+
+Layer *layerBlend(Layer *);
+Layer *layerAddBlend(Layer *, int n0, int n1);
 
 END_C_DECLORATION
 

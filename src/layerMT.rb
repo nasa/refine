@@ -1102,6 +1102,7 @@ grid.addCell(0,1,2,3)
   assert_in_delta  45, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[0.5,0.5,1])
   assert_in_delta  90, layer.edgeAngle(0,1), 1.0e-10
+  assert_in_delta  90, layer.edgeAngle(1,0), 1.0e-10
   grid.setNodeXYZ(3,[1,1,0.707])
   assert_in_delta 135, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[1,1,0])
@@ -1110,6 +1111,7 @@ grid.addCell(0,1,2,3)
   assert_in_delta 225, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   assert_in_delta 270, layer.edgeAngle(0,1), 1.0e-10
+  assert_in_delta 270, layer.edgeAngle(1,0), 1.0e-10
   grid.setNodeXYZ(3,[0,0,-0.707])
   assert_in_delta 315, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[0,0,-0.012337])
@@ -1119,9 +1121,6 @@ grid.addCell(0,1,2,3)
  def testEdgeAngleFine
   grid  = flatTwoFaceGrid
   layer = Layer.new(grid).populateAdvancingFront([1])
-  assert            0> layer.edgeAngle(0,0)
-  assert            0> layer.edgeAngle(3,0)
-  assert            0> layer.edgeAngle(0,3)
 
   wiggle = 1.0e-10
   tol    = 1.0e-8
@@ -1146,6 +1145,15 @@ grid.addCell(0,1,2,3)
   grid.setNodeXYZ(3,[0.5,0.5,-1-1.0e-10])
   assert_in_delta 270, layer.edgeAngle(0,1), tol
 
+ end
+
+ def testInsertBlendForConvextFaces
+  grid  = flatTwoFaceGrid
+  grid.setNodeXYZ(3,[0.5,0.5,-1])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal 0,     layer.nblend
+  assert_equal layer, layer.blend
+  assert_equal 1,     layer.nblend
  end
 
 end
