@@ -115,12 +115,11 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(3,1,0,2).gem(0,1)
 end
  
- def XtestGetGem2
-  grid = Grid.new(5,2,20)
-  grid.addCell(0,1,2,3)
-  grid.addCell(0,1,2,4)
-  gem = grid.getGem(0,1)
-  assert_equal [1, 0], gem
+ def testGetGem3
+  grid = Grid.new(5,3,0)
+  assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
+  assert_equal [[3,4,2,0],[3,4,1,2],[3,4,0,1]], grid.gem(3,4)
+  assert_equal [[0,1,3,4]], grid.gem(0,1)
  end
  
  def XtestEquator
