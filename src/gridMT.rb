@@ -227,9 +227,29 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 3, grid.cellDegree(1)
  end
 
-# make a gem case with gap and same face id's
-# make a gem case with gap and different face id's
-# make a gem case with gap and same face id's and existing backside face
+ def testSwap4_gapWithSameAndExistingFace0
+  assert_not_nil grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal 3, grid.ncell
+  grid.addFace(0,1,2,11)
+  grid.addFace(0,1,5,11)
+  grid.addFace(0,2,5,20)
+  grid.swap(0,1)
+  assert_equal 3, grid.ncell
+  assert_equal 3, grid.cellDegree(0)
+  assert_equal 3, grid.cellDegree(1)
+ end
+
+ def testSwap4_gapWithSameAndExistingFace1
+  assert_not_nil grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal 3, grid.ncell
+  grid.addFace(0,1,2,11)
+  grid.addFace(0,1,5,11)
+  grid.addFace(1,2,5,20)
+  grid.swap(0,1)
+  assert_equal 3, grid.ncell
+  assert_equal 3, grid.cellDegree(0)
+  assert_equal 3, grid.cellDegree(1)
+ end
 
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
