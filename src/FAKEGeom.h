@@ -20,6 +20,14 @@ bool CADGeom_NearestOnEdge(int vol, int edgeId,
 bool CADGeom_NearestOnFace(int vol, int faceId, 
 			   double *xyz, double *uv, double *xyznew);
 
+bool CADGeom_PointOnEdge(int vol, int edgeId, 
+			 double t, double *xyz, 
+			 int derivativeFlag, double *dt, double *dtdt );
+bool CADGeom_PointOnFace(int vol, int faceId, 
+			 double *uv, double *xyz, 
+			 int derivativeFlag, double *du, double *dv,
+			 double *dudu, double *dudv, double *dvdv );
+
 END_C_DECLORATION
 
 #endif /* CADGEOM_H */

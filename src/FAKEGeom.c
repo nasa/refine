@@ -32,3 +32,59 @@ bool CADGeom_NearestOnFace(int vol, int faceId,
 
   return TRUE;
 }
+
+bool CADGeom_PointOnEdge(int vol, int edgeId, 
+			 double t, double *xyz, 
+			 int derivativeFlag, double *dt, double *dtdt )
+{
+  xyz[0] = t;
+  xyz[1] = 0.0;
+  xyz[2] = 0.0;
+
+  if (derivativeFlag > 0){
+    dt[0] = 1.0;
+    dt[1] = 0.0;
+    dt[2] = 0.0;
+  }
+
+  if (derivativeFlag > 1){
+    dtdt[0] = 0.0;
+    dtdt[1] = 0.0;
+    dtdt[2] = 0.0;
+  }
+
+  return TRUE;
+}
+
+bool CADGeom_PointOnFace(int vol, int faceId, 
+			 double *uv, double *xyz, 
+			 int derivativeFlag, double *du, double *dv,
+			 double *dudu, double *dudv, double *dvdv )
+{
+  xyz[0] = uv[0]-10.0;
+  xyz[1] = uv[1]-20.0;
+  xyz[2] = 0.0;
+
+  if (derivativeFlag > 0){
+    du[0] = 1.0;
+    du[1] = 0.0;
+    du[2] = 0.0;
+    dv[0] = 0.0;
+    dv[1] = 1.0;
+    dv[2] = 0.0;
+  }
+
+  if (derivativeFlag > 1){
+    dudu[0] = 0.0;
+    dudu[1] = 0.0;
+    dudu[2] = 0.0;
+    dudv[0] = 0.0;
+    dudv[1] = 0.0;
+    dudv[2] = 0.0;
+    dvdv[0] = 0.0;
+    dvdv[1] = 0.0;
+    dvdv[2] = 0.0;
+  }
+
+  return TRUE;
+}
