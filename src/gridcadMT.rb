@@ -305,6 +305,21 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta(  0.0,              grid.storedCostDerivative(0)[2], tol )
  end
 
+ def testLinearProgramVU
+  assert_not_nil grid = Grid.new(5,2,2,0)
+  grid.addCell(grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+  grid.addFaceUV(2,10,21,
+                 0,10,20,
+                 1,11,20, 10)
+  assert_nil         grid.linearProgramUV(-1)
+  assert_nil         grid.linearProgramUV(15)
+  assert_equal grid, grid.linearProgramUV(3)
+  assert_equal [0,0,1], grid.nodeXZY(3)
+ end
+
  def gemGrid(nequ=4,disp=0.2,dent=nil, dentratio=-0.5)
   grid = Grid.new(nequ+2+1,nequ*2,nequ*2,0)
   n = Array.new
