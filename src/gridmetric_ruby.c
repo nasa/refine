@@ -22,6 +22,16 @@ VALUE grid_longestEdge( VALUE self, VALUE node )
   return INT2NUM( gridLongestEdge( grid, NUM2INT(node) ) );
 }
 
+VALUE grid_largestRatioEdge( VALUE self, VALUE node )
+{
+  double ratio;
+  int edgeNode;
+  Grid *rGrid;
+  GET_GRID_FROM_SELF;
+  rGrid = gridLargestRatioEdge( grid, NUM2INT(node), &edgeNode, &ratio );
+  return INT2NUM(edgeNode);
+}
+
 VALUE grid_spacing( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -148,6 +158,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "edgeLength", grid_edgeLength, 2 );
   rb_define_method( cGridMetric, "averageEdgeLength", grid_averageEdgeLength, 1 );
   rb_define_method( cGridMetric, "longestEdge", grid_longestEdge, 1 );
+  rb_define_method( cGridMetric, "largestRatioEdge", grid_largestRatioEdge, 1 );
   rb_define_method( cGridMetric, "spacing", grid_spacing, 1 );
   rb_define_method( cGridMetric, "resetSpacing", grid_resetSpacing, 0 );
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );

@@ -59,6 +59,17 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 1, grid.longestEdge(3)
  end
 
+ def testFindLargestRatioEdge
+  assert_not_nil grid = isoTet.resetSpacing
+  grid.scaleSpacing(0,0.50)
+  grid.scaleSpacing(1,0.95)
+
+  assert_equal 1, grid.largestRatioEdge(0)
+  assert_equal 0, grid.largestRatioEdge(1)
+  assert_equal 0, grid.largestRatioEdge(2)
+  assert_equal 0, grid.largestRatioEdge(3)
+ end
+
  def testAverageEdgeLength
   assert_not_nil grid = isoTet
   4.times do |i| 
