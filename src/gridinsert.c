@@ -55,8 +55,7 @@ Grid *gridRemoveAllNodes(Grid *grid )
   return grid;
 }
 
-Grid *gridAdapt(Grid *grid, double minLength, double maxLength, 
-		GridBool project )
+Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 {
   int n0, n1, adaptnode, origNNode, newnode;
   int report, nnodeAdd, nnodeRemove;
