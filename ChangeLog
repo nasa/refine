@@ -1,3 +1,7 @@
+2004-08-29 22:10 Mike Park  <mike.park@nasa.gov>
+
+	* doc/refine.texi added texinfo file.
+
 2004-08-29 12:20 Mike Park  <mike.park@nasa.gov>
 
 	* doc/anisotropicMetric.tex renamed from doc/anIsoMesh.tex.
