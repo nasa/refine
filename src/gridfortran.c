@@ -221,10 +221,22 @@ int gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
 
 int gridgetcell_( int *cell, int *nodes, int *global )
 {
-  gridCell(grid,*cell-1,nodes);
+  gridCell(grid,(*cell)-1,nodes);
   nodes[0]++;
   nodes[1]++;
   nodes[2]++;
   nodes[3]++;
-  *global = gridCellGlobal(grid,*cell-1)+1;
+  *global = gridCellGlobal(grid,(*cell)-1)+1;
+}
+
+int gridgetbcsize_( int *ibound, int *nface )
+{
+  int face, nodes[3], id;
+  
+  *nface = 0;
+  for (face=0;face<gridMaxFace(grid);face++) {
+    if ( grid == gridFace(grid,face,nodes,&id) ) {
+      if ( *ibound == id ) (*nface)++;
+    }
+  }
 }
