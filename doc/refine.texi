@@ -97,16 +97,16 @@ executable (R).
 @heading Base objects:
 @enumerate
 @item adj - element node adjacency
-@item queue - transaction queue for parallel connectivity modifications.
-@item sort - list sorting and searching routines.
-@item line - stores arrays of nodes (advancing layer growth curves).
+@item queue - transaction queue for parallel connectivity modifications
+@item sort - list sorting and searching routines
+@item line - stores arrays of nodes (advancing layer growth curves)
 @item near - near tree for finding nearby things (M)
-@item intersect - computes if elements intersect. (M)
+@item intersect - computes if elements intersect (M)
 @end enumerate
 
 @heading Grid Object:
 @enumerate
-@item grid - stores majority of grid data and low-level methods.
+@item grid - stores the majority of grid data and provides low-level methods.
 @end enumerate
 
 @heading Grid Mix-ins
@@ -115,17 +115,17 @@ executable (R).
 @item gridmetric - computes element metrics (volume, aspect ratio)
 @item gridswap - edge and face swapping routines
 @item gridcad - node projection and node smoothing for improved element quality
-@item gridgeom - parallel GeoSDK/CAPRI restart routines.
-@item gridinsert - inserts and removes nodes into grid.
+@item gridgeom - parallel GeoSDK/CAPRI restart routines (R)
+@item gridinsert - inserts and removes nodes into grid
 @item gridmpi - parallel grid adaptation helper
-@item gridfortran - fortran bindings for linking to FUN3D.
-@item gridfiller - sequential GeoSDK/CAPRI restart routines. (M,R)
+@item gridfortran - fortran bindings for linking to FUN3D
+@item gridfiller - sequential GeoSDK/CAPRI restart routines (M,R)
 @end enumerate
 
-@heading Grid Children
+@heading Grid Children (inherits from grid object)
 @enumerate
-@item gridmove - grid movement by linear elasticity or springs (inherits form grid)
-@item layer - advancing layer mesher object. (M)
+@item gridmove - grid movement by linear elasticity or springs 
+@item layer - advancing layer mesher object (M)
 @end enumerate
 
 @heading Others
@@ -140,7 +140,8 @@ executable (R).
 @section Unit Testing
 @cindex test, unit
 
-Each of the objects listed in the previous ``Architecture'' section is composed of four files:
+Most of the objects listed in the previous ``Architecture'' section is
+composed of four files:
 
 @enumerate
 @item @code{anobjectMT.rb} - Ruby unit test script, This contains the object's Mobility Test (MT).
@@ -194,9 +195,9 @@ specifying a node and integer item index. It can also be removed with
 @code{adjRemove}. A node's item count is @code{adjDegree}. The
 presence of a item attached to a node is tested with @code{adjExists}.
 
-To loop over the items attached to a node use a
-@code{AdjIterator}. Here is an example of adj.c code that uses a
-@code{AdjIterator}, @code{adjExists}.
+Use a @code{AdjIterator} to loop over the items attached to a
+node. Here is an example of adj.c code that uses a @code{AdjIterator},
+@code{adjExists}.
 
 @verbatim
 GridBool adjExists( Adj *adj, int node, int item )
@@ -277,8 +278,8 @@ surface (faces) can be displayed with
 evoke pack @code{gridPack} and sort routines @code{gridSort*}.
 
 Grid children can register methods to handle packing, reordering,
-reallocation, and deallocation @code{gridAttach*}. These registered
-methods can be unregistered with @code{gridDetach*}.
+reallocation, and deallocation, see @code{gridAttach*}. These
+registered methods can be unregistered with @code{gridDetach*}.
 
 Stuff can be added and removed with @code{gridAdd*} and
 @code{gridRemove*}. Remove operations leave empty spaces in arrays. To
@@ -296,8 +297,9 @@ for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
 
 A gem is the set of cells that surround an edge. It is used for edge
 swapping, node insertion, and edge collapse. A gem is formed with
-@code{gridMakeGem}. An equator is an ordered set of nodes in a gem
-that are not defineig the edge.
+@code{gridMakeGem}. An equator @code{gridEquator} can be formed from a
+gem. An equator is an ordered set of nodes in a gem that are not
+part of the edge in the center of the gem.
 
 The map @code{gridMap} is six entries of a 3x3 symmetric matrix used
 to define an anisotropic grid metric.
