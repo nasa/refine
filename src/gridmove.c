@@ -1115,9 +1115,9 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
 	if (row != col) {
 	  for(i=0;i<3;i++) {
 	    b[i+3*row] -= 
-	      (   gm->a[i+3*0+9*entry]*gm->dxyz[0+3*col]
-		+ gm->a[i+3*1+9*entry]*gm->dxyz[1+3*col]
-		+ gm->a[i+3*2+9*entry]*gm->dxyz[2+3*col] ) ;
+	      (   gm->a[i+0*3+9*entry]*gm->dxyz[0+3*col]
+		+ gm->a[i+1*3+9*entry]*gm->dxyz[1+3*col]
+		+ gm->a[i+2*3+9*entry]*gm->dxyz[2+3*col] ) ;
 	  }
 	}
       }
