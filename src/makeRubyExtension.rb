@@ -20,16 +20,17 @@ headers = objC.collect do
 end
 ARGV[1..ARGV.size].each { |h| headers.push h if h =~/\.h/ }
 
-`rm -rf #{ext}`
-`mkdir #{ext}`
-`cp #{(objC+headers).join(' ')} #{ext}`
+`mkdir -p #{ext}`
 Dir.chdir ext
+(objC+headers).compact.each { |f| `ln -sf ../#{f} .`}
 
 if ARGV.include?("FAKEGeom")
- `mkdir CADGeom`
- `cp ../FAKEGeom.h CADGeom/CADGeom.h`
- `cp master_header.h CADGeom/.`
- `cp ../FAKEGeom.c CADGeom.c`
+ `ln -sf ../FAKEGeom.c CADGeom.c`
+ `mkdir -p CADGeom`
+ Dir.chdir "CADGeom"
+ `ln -sf ../../FAKEGeom.h CADGeom.h`
+ `ln -sf ../../master_header.h .`
+ Dir.chdir ".."
  objC.push "CADGeom.c"
 end
 
