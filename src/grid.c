@@ -440,11 +440,11 @@ Grid *gridExportAFLR3( Grid *grid, char *filename )
   }
 
   for( i=0; i<grid->nface ; i++ ) {
-    fprintf(file,"%4d",grid->faceId[i]);
+    fprintf(file,"%d\n",grid->faceId[i]);
   }
 
   for( i=0; i<grid->nquad ; i++ ) {
-    fprintf(file,"%4d",grid->quad[i].faceId);
+    fprintf(file,"%d\n",grid->quad[i].faceId);
   }
 
   printf("gridExportAFLR3: writing cells...\n");
