@@ -29,12 +29,13 @@ The refine library overview, version 1.0.
 @end ifnottex
 
 @menu
-* Introduction :: Short description.
-* Overview     :: Basic architecture
-* Base Objects :: Base objects for grid.
-* Grid Object  :: The main object: grid.
-* Grid Mix-ins :: Additional methods for grid object
-* Index        :: Complete index.
+* Introduction  :: Short description.
+* Overview      :: Basic architecture
+* Base Objects  :: Base objects for grid.
+* Grid Object   :: The main object: grid.
+* Grid Mix-ins  :: Additional methods for grid object
+* Running FUN3D :: HOWTO run FUN3D with refine
+* Index         :: Complete index.
 @end menu
 
 @node Introduction
@@ -314,6 +315,114 @@ troublesome for projection. The @code{gridSwapEdge} and
 not been gotten to yet.) The parallelization is enmabled by populating
 a queue opject, which is broadcast to other processors and applyed to
 keep other processors up to date.
+
+@node Running FUN3D
+@chapter Running FUN3D
+@cindex FUN3D, Running
+
+
+@section Initial notes on building and executing HEFSS with the rad mesh adapation option.
+
+@verbatim
+cvs -d :ext:geolab:/usr/local/inhouse/CVS co CAPRI
+cvs -d :ext:geolab:/usr/local/inhouse/CVS co SDK
+cvs -d :ext:cmb20:/ump/fldmd/home/mikepark/cvsroot co refine
+@end verbatim
+
+User can define locations of components (modeling kernels, libraries, etc) either as command line arguments to configuration scripts or as environment variables that will be used as defaults by the configuration scripts.  The components of interest are:
+
+@verbatim
+  Component      (Environment variable)
+  GEOLAB SDK     ($GEO_SDK)
+  CAPRI          ($CAPRI_ROOT and $CAPRI_ARCH)
+  refine         ($REFINELib)
+  Geometry modeling kernels,
+    PARASOLID    ($PARASOLID and $P_SCHEMA)
+    PRO/Engineer ($PRODIR)
+    OpenCASCADE  ($CASROOT)
+@end verbatim
+
+Here we will elect to set environment variables up front.
+
+@verbatim
+  setenv CAPRI_ROOT `pwd`/CAPRI
+  setenv GEO_SDK `pwd`/SDK/`uname`
+  setenv REFINELib `pwd`/refine/`uname`
+@end verbatim
+
+The autogen.sh script will create AND run the GNU Autotools configure script.  Any arguments that might be needed by configure can be given to autogen.sh (i.e. in lew of using environment variables).  (Ex: ./autogen --with-CAPRI=... instead of setenv CAPRI_ROOT ...)
+
+The SDK is only dependent on CAPRI (no modelers needed) so we will simply configure with no arguments noting that $CAPRI_ROOT was set above.
+
+@code{./autogen.sh}
+
+@verbatim
+ls
+
+AUTHORS     GeoMap/      Makefile     RacerX/          config.guess*  ltmain.sh
+CADGeom/    GeoObjects/  Makefile.Z   UG_API/          config.sub*    missing*
+COPYING     Goolache/    Makefile.am  aclocal.m4       configure*
+CVS/        GravyLib/    Makefile.in  autogen.sh*      configure.ac
+ChangeLog   INSTALL      MeatLib/     autom4te.cache/  depcomp*
+Cranberry/  IRIX64/      NEWS         bootstrap*       install-sh*
+Fruitcake/  Linux/       README       compile*         libltdl/
+
+cd `uname`
+make
+make install
+[geowulf.larc.nasa.gov Linux]$ ls
+CADGeom/    GeoMap/    Makefile  UG_API/     config.status*  libltdl/
+Cranberry/  Goolache/  MeatLib/  bin/        include/        libtool*
+Fruitcake/  GravyLib/  RacerX/   config.log  lib/            translators/
+@end verbatim
+
+Refine will be built against the FELISA Native modeling kernel by default.  To enable other modelers, either set the environment variables above or configure with command line arguments that enable them (configure --help will list the command line args and syntax)
+
+@verbatim
+cd ../../refine
+./autogen.sh
+cd `uname`
+make
+make install
+[geowulf.larc.nasa.gov Linux]$ ls
+CVS/      bin/        config.status*  example/     include/  lib/
+Makefile  config.log  doc/            geomSGIn32/  info/     src/
+@end verbatim
+
+Now for HEFSS
+
+Must set $GEO_SDK and $REFINElib prior to runing HEFSS ./Configure (see the geowulf host settings for details about building against refine)
+cd HEFSS.rps
+make
+
+@verbatim
+cd refine/example
+[geowulf.larc.nasa.gov example]$ ls
+CVS/               Makefile.in   om6p01.capri   om6ref.m
+DebugRunAdapt.rb*  RunAdapt.rb*  om6p01.dat     papmachtop04aniso.lay
+FlowConditions.rb  om6mach84.m   om6p01.fastbc  papmachtop06.lay
+Makefile.am        om6p01.bac    om6p01.fgrid   propagateLay.rb*
+
+mkdir Flow Adjoint
+@end verbatim
+
+edit RunAdapt.rb
+  Change $hefssRoot to the location of your working copy of HEFSS (i.e.$hefssRoot = ' /scratchZZ:q!/HEFSS.rps').  Other variables of interest include
+@verbatim
+    projectRoot  -
+    do |n|       - number of adaptation cycles (defaults 1-6)
+    numberOfPart - number of partitions
+    outputError  - error tolerance
+    maxAR        - allowable aspect ratio
+    maxEdge      - allowed edge length.
+@end verbatim
+
+Edit FlowConditions .rb and make any desired changes as key/value pairs to replace default ginput.faces file of HEFSS installation.
+
+@code{./RunAdapt.rb}
+  You can monitor progress of rad with `tail -F Adjoint/rad_out`
+  Output
+
 
 @node Index
 @unnumbered Index
