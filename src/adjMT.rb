@@ -66,4 +66,20 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_nil          @adj.remove(1,0)
  end
  
+ def testMultipleExists
+  assert_equal false, @adj.exists(1,198)
+  assert_equal @adj,  @adj.register(1,198)
+  assert_equal @adj,  @adj.register(2,198)
+  assert_equal @adj,  @adj.register(1,199)
+  
+  assert_equal true,  @adj.exists(1,198)
+  assert_equal true,  @adj.exists(1,199)
+  @adj.remove(1,198)
+  assert_equal false, @adj.exists(1,198)
+  assert_equal true,  @adj.exists(1,199)
+  @adj.register(1,198)
+  assert_equal true,  @adj.exists(1,198)
+  assert_equal true,  @adj.exists(1,199)
+ end
+
 end
