@@ -1,3 +1,9 @@
+2005-02-01  14:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) the logic that
+	chooses which cells are bad and need to be written now uses gridAR
+	to be consistant with all other contraint tests.
+
 2005-02-01  9:18 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwapEdge) added local processor checks to

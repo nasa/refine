@@ -263,7 +263,7 @@ void gridwritetecplotsurfacezone_( void )
 
   for (cell=0;cell<gridMaxCell(grid);cell++)
     if (grid==gridCell(grid, cell, nodes)) {
-      if (1.0e-12>=gridVolume(grid,nodes))
+      if ( -0.5 > gridAR(grid,nodes) )
 	gridWriteTecplotCellGeom(grid,nodes,filename);
     }
 
