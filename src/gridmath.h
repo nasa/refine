@@ -24,8 +24,19 @@ norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; \
 norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; \
 norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
 
+#define gridVectorCopy(a,b) a[0]=b[0];a[1]=b[1];a[2]=b[2];
+
 double gridVectorLength(double *norm);
 void gridVectorNormalize(double *norm);
+
+void gridTriDiag3x3( double *m, double *d, double *e, 
+		     double *q0, double *q1, double *q2 );
+
+#define gridSign(a,b) (b>=0?ABS(a):-ABS(a))
+bool gridEigTriDiag3x3( double *d, double *e,
+		        double *q0, double *q1, double *q2 );
+
+void gridEigSort3x3( double *eigenValues, double *v0, double *v1, double *v2 );
 
 END_C_DECLORATION
 
