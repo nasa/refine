@@ -175,6 +175,7 @@ int main( int argc, char *argv[] )
 
   printf("running project %s\n",project);
   grid = gridLoadPart( modeler, project, maxnode );
+  if (EdgeBasedOperators) gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: loaded part does not have right handed boundaries\n");
@@ -254,7 +255,6 @@ int main( int argc, char *argv[] )
   STATUS;
 
   if (EdgeBasedOperators) {
-    gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
     sprintf(filename,"%s_surface.t",project);
     gridWriteTecplotSurfaceZone(grid,filename); gridCloseTecplotFile(grid);
     printf("edge swapping grid...\n");gridSwap(grid,0.9);
@@ -267,9 +267,9 @@ int main( int argc, char *argv[] )
       gridAdaptBasedOnConnRankings(grid);
       gridEraseConn(grid);
       STATUS;
-      printf("edge swapping grid...\n");gridSwap(grid,0.9);
-      STATUS;
     }
+    printf("edge swapping grid...\n");gridSwap(grid,0.9);
+    STATUS;
     sprintf(filename,"%s_surface.t",outputProject);
     gridWriteTecplotSurfaceZone(grid,filename); gridCloseTecplotFile(grid);
     printf("writing output project %s\n",outputProject);
