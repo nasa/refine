@@ -1117,6 +1117,7 @@ static Grid *gridMakeFacesFromSimplex(Grid *grid,
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
   if ( !gridValidNode(grid, node)   ||
+       gridNodeFrozen(grid, node)   ||
        gridGeometryFace(grid, node) ||
        gridNodeGhost(grid, node)    ) return NULL;
   gridSmartVolumeLaplacian( grid, node );
@@ -1271,7 +1272,7 @@ Grid *gridRelaxNegativeCells(Grid *grid)
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       volume = gridVolume(grid,nodes);
-      if (0.0>volume){
+      if (0.0>=volume){
 	for (i=0;i<4;i++) {
 	  node = nodes[i];
 	  gridSmoothNodeVolume(grid, node);
