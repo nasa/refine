@@ -428,6 +428,29 @@ Grid *gridSmooth( Grid *grid )
   return grid;
 }
 
+Grid *gridSmoothVolume( Grid *grid )
+{
+  int node;
+  double ar, optimizationLimit, laplacianLimit;
+  optimizationLimit =0.30;
+  laplacianLimit =0.60;
+  for (node=0;node<grid->maxnode;node++) {
+    if ( gridValidNode( grid, node ) && !gridGeometryFace( grid, node ) ) {
+      gridNodeAR(grid,node,&ar);
+      if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
+	gridSmartLaplacian( grid, node ); 
+	gridNodeAR(grid,node,&ar);
+      }
+      if (ar < optimizationLimit) {
+	gridSmoothNode( grid, node );
+	gridSmoothNode( grid, node );
+	gridSmoothNode( grid, node );
+      }
+    }
+  }
+  return grid;
+}
+
 Grid *gridSmartLaplacian(Grid *grid, int node )
 {
   double origAR, newAR, origXYZ[3], xyz[3], oneOverNCell;
