@@ -127,8 +127,12 @@ void gridprojectallfaces_( )
   for(face=0;face<gridMaxFace(grid);face++) {
     if (grid == gridFace(grid,face,nodes,&faceId) ) {
       for(node=0;node<3;node++) {
-	if ( !gridNodeFrozen(grid,nodes[node])  )
-	     gridProjectNodeToFace(grid, nodes[node], faceId );
+	if ( !gridNodeFrozen(grid,nodes[node])  ) {
+	  if (grid != gridProjectNodeToFace(grid, nodes[node], faceId ) )
+	    printf( "ERROR: %s: %d: project failed.%d\n",
+		    __FILE__,__LINE__,gridPartId(grid) );
+
+	}
       }
     }
   }
