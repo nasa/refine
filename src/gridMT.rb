@@ -63,7 +63,13 @@ class TestSampleUnit < Test::Unit::TestCase
     assert_equal nil, val
   end
 
-  def AddAndRemoveCell
+  def testAddAndRemoveCell
+    assert_nil @grid.removeNodeCell(0,0)
+    0.upto(3) { |i| assert_equal @grid, @grid.registerNodeCell(i,0) }
+    0.upto(3) { |i| assert_equal 1, @grid.nodeDeg(i) }
+
+    0.upto(3) { |i| assert_equal @grid, @grid.removeNodeCell(i,0) }
+    0.upto(3) { |i| assert_equal 0, @grid.nodeDeg(i) }
     assert_nil @grid.removeNodeCell(0,0)
   end
 
