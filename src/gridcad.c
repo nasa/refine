@@ -1364,9 +1364,6 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node )
     return NULL;
   }
 
-  if ( newAR > 0.6) return NULL;
-  if ( actualImprovement <= 0.000001 ) return NULL;
-
   return grid;
 }
 
