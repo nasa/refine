@@ -1268,6 +1268,16 @@ Grid *gridGeomCurveT( Grid *grid, int edgeId, int startNode, double *curve )
   return grid;
 }
 
+int gridNFrozen( Grid *grid )
+{
+  int node, nfrozen;
+  nfrozen =0;
+  for ( node=0 ; node<grid->maxnode ; node++ )
+    if ( gridValidNode( grid, node) && gridNodeFrozen( grid, node ) ) 
+      nfrozen++; 
+  return nfrozen;
+}
+
 bool gridNodeFrozen( Grid *grid, int node )
 {
   if ( !gridValidNode( grid, node) ) return TRUE;

@@ -302,6 +302,12 @@ VALUE grid_geomCurveT( VALUE self, VALUE edgeId, VALUE startNode )
   return rb_curve;
 }
 
+VALUE grid_nfrozen( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNFrozen( grid ) );
+}
+
 VALUE grid_nodeFrozen( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -556,6 +562,7 @@ void Init_Grid()
   rb_define_method( cGrid, "geomCurve", grid_geomCurve, 2 );
   rb_define_method( cGrid, "geomCurveT", grid_geomCurveT, 2 );
 
+  rb_define_method( cGrid, "nfrozen", grid_nfrozen, 0 );
   rb_define_method( cGrid, "nodeFrozen", grid_nodeFrozen, 1 );
   rb_define_method( cGrid, "freezeNode", grid_freezeNode, 1 );
   rb_define_method( cGrid, "thawNode", grid_thawNode, 1 );

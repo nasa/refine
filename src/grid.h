@@ -74,6 +74,7 @@ int gridGeomCurveSize( Grid *g, int edgeId, int startNode );
 Grid *gridGeomCurve( Grid *g, int edgeId, int startNode, int *curve );
 Grid *gridGeomCurveT( Grid *g, int edgeId, int startNode, double *curve );
 
+int gridNFrozen( Grid *g );
 bool gridNodeFrozen( Grid *g, int node );
 Grid *gridFreezeNode( Grid *g, int node );
 Grid *gridThawNode( Grid *g, int node );

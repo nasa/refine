@@ -79,14 +79,17 @@ class TestGrid < Test::Unit::TestCase
  def testNodeFrozenState
   @grid.addNode(0,0,0)
   @grid.addNode(1,0,0)
+  assert_equal 0,     @grid.nfrozen
   assert_equal false, @grid.nodeFrozen(0)
   assert_equal false, @grid.nodeFrozen(1)
   assert_nil          @grid.freezeNode(@grid.maxnode)
   assert_equal @grid, @grid.freezeNode(0)
+  assert_equal 1,     @grid.nfrozen
   assert_equal true,  @grid.nodeFrozen(0)
   assert_equal false, @grid.nodeFrozen(1)
   assert_nil          @grid.thawNode(@grid.maxnode)
   assert_equal @grid, @grid.thawNode(0)
+  assert_equal 0,     @grid.nfrozen
   assert_equal false, @grid.nodeFrozen(0)
   assert_equal false, @grid.nodeFrozen(1)
  end
