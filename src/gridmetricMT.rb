@@ -67,6 +67,11 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal grid, grid.removeNode(0)
   assert_equal grid, grid.sortNodeGridEx
   assert_in_delta 1.0, grid.edgeRatio(0,1), 1.0e-15
+  assert_in_delta 1.0, grid.edgeRatio(0,2), 1.0e-15
+  assert_in_delta 1.0, grid.edgeRatio(0,3), 1.0e-15
+  assert_in_delta 1.0, grid.edgeLength(0,1), 1.0e-15
+  assert_in_delta 2.0, grid.edgeLength(0,2), 1.0e-15
+  assert_in_delta 5.0, grid.edgeLength(0,3), 1.0e-15
  end
 
 # strech sqrt2 in xy to test rotation or principle axes
