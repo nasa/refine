@@ -22,6 +22,37 @@ class Header2Wrapper
 #include "#{headername}"
  
    HEADER
+
+   func = Array.new
+   header.each do |line|
+    if line =~ /\/\*w/
+     puts line
+     gridFunction = line.scan(/\s.*\(/).first.gsub(/\s/,'').gsub(/\*/,'').gsub(/\(/,'')
+     rbFunction = gridFunction.gsub(/^grid/,"")
+     rbFunction[0,1] =  rbFunction[0,1].downcase
+     args = line.scan(/\(.*\)/).first.gsub(/\(/,'').gsub(/\)/,'').split(',')
+     rbargs = args.collect do |a|
+      if a =~ /grid/i
+       "VALUE self"
+      else
+       var = a.gsub(/^\s*\S*\s\*?/,"")
+       "VALUE rb_#{var}"
+      end
+     end
+     desc = line.scan(/\/\*w.*\*\//).first.gsub(/\/\*w/,'').gsub(/\*\//,'').split(',')
+
+
+     puts gridFunction
+     puts rbFunction
+     puts args
+     puts rbargs
+     puts desc
+
+
+    end
+   end
+   puts 'functions'
+   puts func
    f.puts <<-FOOTER
 
 VALUE c#{@object};
