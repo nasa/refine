@@ -1029,16 +1029,6 @@ int gridGem(Grid *grid, int index)
   return grid->gem[index];
 }
 
-int gridNEqu(Grid *grid)
-{
-  return grid->nequ;
-}
-
-int gridEqu(Grid *grid, int index)
-{
-  return grid->equ[index];
-}
-
 int gridCellDegree(Grid *grid, int id)
 {
   return adjDegree(grid->cellAdj, id);
@@ -2056,6 +2046,21 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
   }
 
   return grid;
+}
+
+int gridNEqu(Grid *grid)
+{
+  return grid->nequ;
+}
+
+int gridEqu(Grid *grid, int index)
+{
+  return grid->equ[index];
+}
+
+bool gridContinuousEquator(Grid *grid)
+{
+  return (gridNEqu(grid) == gridNGgem(grid));
 }
 
 int gridAddNode(Grid *grid, double x, double y, double z )

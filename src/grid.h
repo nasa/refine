@@ -119,6 +119,7 @@ Grid *gridOrient(Grid *g, int *cell, int *nodes );
 Grid *gridEquator(Grid *g, int n0, int n1 );
 int gridNEqu(Grid *g );
 int gridEqu(Grid *g, int index );
+bool gridContinuousEquator(Grid *g);
 
 int gridAddNode(Grid *g, double x, double y, double z );
 Grid *gridRemoveNode(Grid *g, int node );
