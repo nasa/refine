@@ -287,48 +287,68 @@ void grimoveAddEdgeToC2E(Grid *grid, int *c2e, int edge, int node0, int node1)
 
 }
 
-GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
+GridMove *gridmoveComputeC2E(GridMove *gm, int *nedge, int *c2e)
 {
   Grid *grid = gridmoveGrid(gm);
-  int cell, edge, nedge;
+  int cell, edge, count;
   int nodes[4];
   int edge2node0[6] = {0, 0, 0, 1, 1, 2};
   int edge2node1[6] = {1, 2, 3, 2, 3, 3};
-  int node0, node1;
-  int *c2e;
 
-  c2e = malloc(6*gridMaxCell(grid)*sizeof(int));
   for(cell=0;cell<6*gridMaxCell(grid);cell++) c2e[cell] = EMPTY;
 
-  nedge = 0;
+  count = 0;
   for(cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid == gridCell(grid,cell,nodes)) {
       for(edge=0;edge<6;edge++) {
 	if ( EMPTY == c2e[edge+6*cell] ) {
-	  c2e[edge+6*cell] = nedge;
-	  grimoveAddEdgeToC2E(grid, c2e, nedge,
+	  c2e[edge+6*cell] = count;
+	  grimoveAddEdgeToC2E(grid, c2e, count,
 			      nodes[edge2node0[edge]], nodes[edge2node1[edge]]);
-	  nedge++;
+	  count++;
 	}
       }
     }
   }
-  *nsprings = nedge;
-  *springs = malloc(2*nedge*sizeof(int));
+  *nedge = count;
+  return gm;
+}
+
+GridMove *gridmoveComputeSpringsWithC2E(GridMove *gm, int *c2e, int *springs)
+{
+  Grid *grid = gridmoveGrid(gm);
+  int cell, edge;
+  int nodes[4];
+  int edge2node0[6] = {0, 0, 0, 1, 1, 2};
+  int edge2node1[6] = {1, 2, 3, 2, 3, 3};
+  int node0, node1;
+
   for(cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid == gridCell(grid,cell,nodes)) {
       for(edge=0;edge<6;edge++) {
 	if (EMPTY!=c2e[edge+6*cell]) {
 	  node0 = MIN(nodes[edge2node0[edge]],nodes[edge2node1[edge]]);
 	  node1 = MAX(nodes[edge2node0[edge]],nodes[edge2node1[edge]]);
-	  (*springs)[0+2*c2e[edge+6*cell]] = node0;
-	  (*springs)[1+2*c2e[edge+6*cell]] = node1;
+	  springs[0+2*c2e[edge+6*cell]] = node0;
+	  springs[1+2*c2e[edge+6*cell]] = node1;
 	}else{
 	  printf("ERROR: %s: %d: c2e EMPTY.\n",__FILE__,__LINE__);
 	}
       }
     }
   }
+
+  return gm;
+}
+
+GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
+{
+  int *c2e;
+
+  c2e = malloc(6*gridMaxCell(gridmoveGrid(gm))*sizeof(int));
+  gridmoveComputeC2E(gm, nsprings, c2e);
+  *springs = malloc(2*(*nsprings)*sizeof(int));
+  gridmoveComputeSpringsWithC2E(gm, c2e, *springs);
 
   free(c2e);
   return gm;

@@ -41,6 +41,9 @@ GridMove *gridmoveDisplace(GridMove *, int node, double *displace);
 GridMove *gridmoveDisplacement(GridMove *, int node, double *displacement);
 GridBool gridmoveSpecified(GridMove *, int node);
 GridMove *gridmoveSpringRelaxation(GridMove *, int nsteps, int subIterations);
+
+GridMove *gridmoveComputeC2E(GridMove *, int *nedge, int *c2e);
+GridMove *gridmoveComputeSpringsWithC2E(GridMove *, int *c2e, int *springs);
 GridMove *gridmoveSprings(GridMove *, int *nsprings, int **springs);
 
 GridMove *gridmoveApplyDisplacements(GridMove *);
