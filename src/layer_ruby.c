@@ -242,7 +242,7 @@ VALUE layer_setParentEdge( VALUE self, VALUE normal0, VALUE normal1,
 				       NUM2INT(edgeId) )?self:Qnil );
 }
 
-VALUE layer_parentEdge( VALUE self, VALUE triangle, VALUE side )
+VALUE layer_parentGeomEdge( VALUE self, VALUE triangle, VALUE side )
 {
   GET_LAYER_FROM_SELF;
   return INT2NUM(layerParentEdge(layer,NUM2INT(triangle),NUM2INT(side)));
@@ -334,7 +334,7 @@ void Init_Layer()
   rb_define_method( cLayer, "nConstrainedSides", layer_nConstrainedSides, 1 );
   rb_define_method( cLayer, "findParentEdges", layer_findParentEdges, 0 );
   rb_define_method( cLayer, "setParentEdge", layer_setParentEdge, 3 );
-  rb_define_method( cLayer, "parentEdge", layer_parentEdge, 2 );
+  rb_define_method( cLayer, "parentGeomEdge", layer_parentGeomEdge, 2 );
   rb_define_method( cLayer, "nParentEdgeSegments", layer_nParentEdgeSegments, 1 );
 
   rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );

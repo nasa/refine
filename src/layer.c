@@ -33,7 +33,7 @@ struct Triangle {
   int globalNode[3];
   int normal[3];
   int constrainedSide[3];
-  int parentEdge[3];
+  int parentGeomEdge[3];
 };
 
 typedef struct Blend Blend;
@@ -319,7 +319,7 @@ Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
   for (i=0;i<3;i++){
     layer->triangle[layer->ntriangle].normal[i] = EMPTY;
     layer->triangle[layer->ntriangle].constrainedSide[i] = 0;
-    layer->triangle[layer->ntriangle].parentEdge[i] = 0;
+    layer->triangle[layer->ntriangle].parentGeomEdge[i] = 0;
   }
 
   layer->ntriangle++;
@@ -758,7 +758,7 @@ Layer *layerFindParentEdges(Layer *layer)
       n0 = layer->triangle[triangle].globalNode[n0];
       n1 = layer->triangle[triangle].globalNode[n1];
       edgeId = gridEdgeId(layer->grid,n0,n1);
-      if (EMPTY != edgeId) layer->triangle[triangle].parentEdge[side]=edgeId;
+      if (EMPTY != edgeId) layer->triangle[triangle].parentGeomEdge[side]=edgeId;
     }
   }
   return layer;
@@ -782,7 +782,7 @@ Layer *layerSetParentEdge(Layer *layer, int normal0, int normal1, int edgeId )
 	  if (normal0 == layer->triangle[triangle].normal[i0]) {
 	    side = MIN(i0,i1);
 	    if ( side == 0 && 2 == MAX(i0,i1) ) side = 2;
-	    layer->triangle[triangle].parentEdge[side]=edgeId;
+	    layer->triangle[triangle].parentGeomEdge[side]=edgeId;
 	  }
 	}
       }   
@@ -797,7 +797,7 @@ int layerParentEdge(Layer *layer, int triangle, int side )
 
   if (side < 0 || side > 2 ) return 0;
 
-  return layer->triangle[triangle].parentEdge[side];
+  return layer->triangle[triangle].parentGeomEdge[side];
 }
 
 int layerNParentEdgeSegments(Layer *layer, int edgeId )
