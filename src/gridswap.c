@@ -830,14 +830,63 @@ Grid *gridConstructTet7( Grid *grid, int n0, int n1,
   return grid;
 }
 
+Grid *gridSwapCellFaceArea(Grid *grid, int cell)
+{
+  int nodes[4];
+  int i, nface, emptyIndex, faceCheck[4], face[4], haveFace[4];
+  double origArea, newArea;
+  int faceNodes[4][3]= {{0,1,2},{0,3,1},{1,3,2},{2,3,0}};
+
+  if ( NULL == gridCell( grid, cell, nodes) ) return NULL;
+
+  for (i=0;i<4;i++){
+    faceCheck[i] = 
+      gridFindFace(grid,faceNodes[i][0],faceNodes[i][1],faceNodes[i][2]);
+  }
+
+  nface = 0;
+  emptyIndex = 3;
+  for (i=0;i<4;i++){
+    if (EMPTY != faceCheck[i]) {
+      face[nface] = faceCheck[i];
+      haveFace[nface] = i;
+      nface++;
+    }else{
+      haveFace[emptyIndex] = i;
+      emptyIndex--;
+    }
+  }
+
+  if ( 2 != nface ) return NULL;
+  if ( grid->faceId[face[0]] != grid->faceId[face[1]] )return NULL;
+  
+  i = haveFace[0];
+  origArea = 
+    gridFaceArea(grid,faceNodes[i][0],faceNodes[i][1],faceNodes[i][2]);
+  i = haveFace[1];
+  origArea = origArea + 
+    gridFaceArea(grid,faceNodes[i][0],faceNodes[i][1],faceNodes[i][2]);
+
+  i = haveFace[2];
+  newArea = 
+    gridFaceArea(grid,faceNodes[i][0],faceNodes[i][1],faceNodes[i][2]);
+  i = haveFace[3];
+  newArea = newArea + 
+    gridFaceArea(grid,faceNodes[i][0],faceNodes[i][1],faceNodes[i][2]);
+
+  //printf("gridSwapCellFaceArea: %f\n",newArea/origArea);
+
+  if (newArea>origArea) return NULL;
+
+  return grid;
+}
+
 Grid *gridSwapFaceArea(Grid *grid)
 {
-  int cell, nodes[4];
-  int nface;
-  for (cell=0;cell<grid->maxcell;cell++){
-    if ( NULL != gridCell( grid, cell, nodes) ){
-      nface = 0;
-    }
+  int cell;
+
+  for (cell=0;cell<grid->maxcell;cell++) {
+    if ( EMPTY != grid->c2n[4*cell] ) gridSwapCellFaceArea( grid, cell );
   }
   return grid;
 }

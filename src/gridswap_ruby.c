@@ -16,6 +16,12 @@ VALUE grid_swap( VALUE self )
   return (gridSwap( grid )==grid?self:Qnil);
 }
 
+VALUE grid_swapCellFaceArea( VALUE self, VALUE cell )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSwapCellFaceArea( grid, NUM2INT(cell) )==grid?self:Qnil);
+}
+
 VALUE grid_swapFaceArea( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -29,5 +35,6 @@ void Init_GridSwap()
   cGridSwap = rb_define_module( "GridSwap" );
   rb_define_method( cGridSwap, "swapEdge", grid_swapEdge, 2 );
   rb_define_method( cGridSwap, "swap", grid_swap, 0 );
+  rb_define_method( cGridSwap, "swapCellFaceArea", grid_swapCellFaceArea, 1 );
   rb_define_method( cGridSwap, "swapFaceArea", grid_swapFaceArea, 0 );
 }
