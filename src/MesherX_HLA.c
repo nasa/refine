@@ -171,8 +171,8 @@ int main( int argc, char *argv[] )
       printf(" %d: %s\n",i, outputName);
   }
 
-  printf("calling MeshMgr_Initialize ... \n");
-  if ( ! UGMgr_LoadLibs( ) ){
+  printf("calling UGMgr_LoadLibs ... \n");
+  if ( UGMgr_LoadLibs( ) != UG_TRUE ){
     printf("ERROR: UGMgr_LoadLibs broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
   }  

@@ -137,8 +137,8 @@ int main( int argc, char *argv[] )
   if(strcmp(modeler,"")==0)       sprintf(modeler,"FELISA" );
   if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
 
-  printf("calling MeshMgr_Initialize ... \n");
-  if ( ! UGMgr_LoadLibs( ) ){
+  printf("calling UGMgr_LoadLibs ... \n");
+  if ( UGMgr_LoadLibs( ) != UG_TRUE ){
     printf("ERROR: UGMgr_LoadLibs broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
   }  
