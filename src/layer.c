@@ -3074,10 +3074,17 @@ Layer *layerSubBlendFill(Layer *layer)
 
 Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 {
+  int blend;
   if (layerNBlend(layer) <= 0) return layer;
   if ( 0.0 >= maxNormalAngle ) maxNormalAngle = 30.0;
   if (layer != layerSubBlendCount(layer,maxNormalAngle)) return NULL;
   /* if (layer != layerSubBlendSmooth(layer)) return NULL; */
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    if (EMPTY != layer->blend[blend].edgeId[0]) 
+      layer->blend[blend].nSubNormal0 = layer->blend[blend].nSubNormal1;
+    if (EMPTY != layer->blend[blend].edgeId[1]) 
+      layer->blend[blend].nSubNormal1 = layer->blend[blend].nSubNormal0;	
+  }
   if (layer != layerSubBlendFill(layer)) return NULL;
   return layer;
 }   
