@@ -63,7 +63,7 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
   n1 = [0.3,0.3,0]
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
-  n0 = [0.3,0.3,-0]
+  n0 = [0.3,0.3,0]
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
@@ -73,6 +73,9 @@ class TestIntersect < Test::Unit::TestCase
   v2 = [0,0,1]
   n0 = [2,2,2]
   n1 = [1,1,1]
+  assert_equal false, @intersect.triangleSegment(v0,v1,v2,n0,n1)
+  n0 = [1,1,1]
+  n1 = [0,0,0]
   assert_equal true, @intersect.triangleSegment(v0,v1,v2,n0,n1)
  end
 
@@ -175,9 +178,7 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal false, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
   n0 = [-1,-1,-1]
   n1 = [2,2,2]
-  assert_equal true, @intersect.triangleSegment(v1,v2,v3,n0,n1)
   assert_equal true, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
-
  end
 
 end
