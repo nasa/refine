@@ -1695,6 +1695,15 @@ Grid *gridNodeXYZ(Grid *grid, int node, double *xyz )
   return grid;
 }
 
+Grid *gridSetNodeXYZ(Grid *grid, int node, double *xyz )
+{
+  if (!gridValidNode(grid,node)) return NULL;
+  grid->xyz[0+3*node] = xyz[0];
+  grid->xyz[1+3*node] = xyz[1];
+  grid->xyz[2+3*node] = xyz[2];
+  return grid;
+}
+
 int gridFindCellWithFace(Grid *grid, int face ){
   int n0, n1, n2;
   AdjIterator it0, it1, it2;

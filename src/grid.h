@@ -103,6 +103,7 @@ int gridAddNode(Grid *g, double x, double y, double z );
 Grid *gridRemoveNode(Grid *g, int node );
 bool gridValidNode(Grid *g, int node );
 Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
+Grid *gridSetNodeXYZ(Grid *g, int node, double *xyz );
 
 int gridFindCellWithFace(Grid *g, int face );
 

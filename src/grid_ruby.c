@@ -459,6 +459,16 @@ VALUE grid_nodeXYZ( VALUE self, VALUE node )
   return rb_xyz;
 }
 
+VALUE grid_setNodeXYZ( VALUE self, VALUE node, VALUE rb_xyz )
+{
+  double xyz[3];
+  GET_GRID_FROM_SELF;
+  xyz[0] = NUM2DBL( rb_ary_entry( rb_xyz, 0) );
+  xyz[1] = NUM2DBL( rb_ary_entry( rb_xyz, 1) );
+  xyz[2] = NUM2DBL( rb_ary_entry( rb_xyz, 2) );
+  return( grid == gridSetNodeXYZ( grid, NUM2INT(node), xyz )?self:Qnil);
+}
+
 VALUE grid_findCellWithFace( VALUE self, VALUE face )
 {
   int returnedCell;
@@ -608,6 +618,7 @@ void Init_Grid()
   rb_define_method( cGrid, "removeNode", grid_removeNode, 1 );
   rb_define_method( cGrid, "validNode", grid_validNode, 1 );
   rb_define_method( cGrid, "nodeXYZ", grid_nodeXYZ, 1 );
+  rb_define_method( cGrid, "setNodeXYZ", grid_setNodeXYZ, 2 );
 
   rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
 

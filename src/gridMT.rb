@@ -182,23 +182,31 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def testEquatorGapInEnd
-  grid = Grid.new(6,3,0,0)
-  assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,3,1)
+  assert_not_nil          grid = Grid.new(6,3,0,0)
+  assert_equal grid,      grid.addCell(4,5,1,2).addCell(4,5,3,1)
   assert_equal [3,1,2,3], grid.equator(4,5)
  end
 
  def testEquatorTwoGaps
-  grid = Grid.new(6,3,0,0)
+  assert_not_nil     grid = Grid.new(6,3,0,0)
   assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,3,0)
-  assert_equal nil, grid.equator(4,5)
+  assert_nil         grid.equator(4,5)
  end
 
  def testAddNode
-  grid = Grid.new(1,0,0,0)
-  assert_nil      grid.nodeXYZ(0)
-  assert_equal 0, grid.addNode(1.0,2.0,3.0)
-  assert_nil      grid.addNode(1.0,0.0,0.0)
+  assert_not_nil              grid = Grid.new(1,0,0,0)
+  assert_nil                  grid.nodeXYZ(0)
+  assert_equal 0,             grid.addNode(1.0,2.0,3.0)
+  assert_nil                  grid.addNode(1.0,0.0,0.0)
   assert_equal [1.0,2.0,3.0], grid.nodeXYZ(0)
+ end
+
+ def testSetNodeXYZ
+  assert_not_nil                 grid = Grid.new(1,0,0,0)
+  assert_equal 0,                grid.addNode(1.0,2.0,3.0)
+  assert_equal [1.0,2.0,3.0],    grid.nodeXYZ(0)
+  assert_equal grid,             grid.setNodeXYZ(0,[10.0,20.0,30.0])
+  assert_equal [10.0,20.0,30.0], grid.nodeXYZ(0)
  end
 
  def testAddAndRemoveNode
