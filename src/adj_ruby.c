@@ -47,7 +47,6 @@ VALUE adj_more( VALUE self )
   GET_ADJ_FROM_SELF;
   return (adjMore(adj)?Qtrue:Qfalse);
 }
-VALUE cAdj;
 
 VALUE adj_first( VALUE self, VALUE node )
 {
@@ -79,6 +78,8 @@ VALUE adj_degree( VALUE self, VALUE node )
   GET_ADJ_FROM_SELF;
   return INT2NUM( adjDegree(adj, NUM2INT(node) ) );
 }
+
+VALUE cAdj;
 
 void Init_Adj() 
 {
