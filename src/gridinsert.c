@@ -108,6 +108,20 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength,
   }
   return grid;
 }
+
+Grid *gridCollapseEdgeToBestConfiguration( Grid *grid, Queue *queue, 
+					   int node0, int node1 )
+{
+  double currentCost, node0Cost, node1Cost;
+  double ratio;
+  if (grid!=gridCollapseCost(grid, node0, node1, 
+			     &currentCost, &node0Cost, &node1Cost))
+    return NULL;
+  if (node0Cost<currentCost && node1Cost<currentCost) return NULL;
+  ratio = (node0Cost>node1Cost?0.0:1.0);
+  return gridCollapseEdge(grid, queue, node0, node1, ratio);
+}
+
 Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 {
   int ranking, conn, nodes[2];
@@ -140,8 +154,10 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 	    nnodeAdd++;
 	    gridSwapNearNode( grid, newnode );
 	  }
-	}else if (ratio < 0.55) {
-	  if ( grid == gridCollapseEdge(grid, NULL, nodes[0], nodes[1], 0.5) ){
+	}else if (ratio < 1.0/1.35) {
+	  if ( grid == gridCollapseEdgeToBestConfiguration(grid, NULL, 
+							   nodes[0], 
+							   nodes[1] ) ) {
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, nodes[0] );
 	  }

@@ -1,3 +1,10 @@
+2004-10-15 23:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) calls
+	gridCollapseEdgeToBestConfiguration to remove edge.
+	* src/gridinsert.c (gridCollapseEdgeToBestConfiguration) 
+	collapses edge to the best site for metric, 
+	either node0 or node1.
 
 2004-10-15 10:30 Mike Park  <mike.park@nasa.gov>
 
