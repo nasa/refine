@@ -109,7 +109,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     direction[0] = 1.0;
     direction[1] = 0.0164;
     direction[2] = 0.0;
-    layerCreateWakeWithBGSpacing(layer, origin, direction, 10.0 );
+    layerCreateWakeWithBGSpacing(layer, origin, direction, 11.5 );
 
     printf("split blends...\n");
     layerSplitBlend(layer); 
@@ -127,7 +127,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     direction[0] = 1.0;
     direction[1] = 0.0;
     direction[2] = 0.0;
-    layerSetPolynomialMaxHeight(layer, 0.005, 0.095, 1.0, 
+    layerSetPolynomialMaxHeight(layer, 0.005, 0.095, 0.5, 
 				origin, direction );
     origin[0] = 1;
     layerSetPolynomialMaxHeight(layer, 0.10, 0.15, 1.0, 
@@ -150,7 +150,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   while (i<nLayer &&
 	 layerNNormal(layer)>layerTerminateNormalWithLength(layer,1.0)){
 
-    if (i < 4 ) layerSmoothNormalDirection(layer);
+    if (i < (int)(10.0/scale) ) layerSmoothNormalDirection(layer);
     layerSetNormalHeightWithRate(layer);
     layerAdvance(layer);
     layerWriteTecplotFront(layer);
