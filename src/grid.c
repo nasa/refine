@@ -258,6 +258,8 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n )
 {
   int i, origcell, packcell, origface, packface;
+  int iface, n0, n1, n2, id;
+  bool emptyFace;
 
   printf("gridExport: %d nodes %d faces %d cells\n",
 	 grid->nnode,grid->nface,grid->ncell);
@@ -286,14 +288,34 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
   *c2n = grid->c2n;
 
   packface=0;
-  for ( origface=0 ; origface < grid->maxface ; origface++ ) 
-    if ( grid->f2n[0+3*origface] != EMPTY) {
-      grid->f2n[0+3*packface] = grid->f2n[0+3*origface];
-      grid->f2n[1+3*packface] = grid->f2n[1+3*origface];
-      grid->f2n[2+3*packface] = grid->f2n[2+3*origface];
-      grid->faceId[packface]  = grid->faceId[origface];
-      packface++;
-    } 
+
+  emptyFace = FALSE;
+  iface=0;
+  while (!emptyFace) {
+    emptyFace = TRUE;
+    iface++;
+    for ( origface=0 ; origface < grid->maxface ; origface++ ){ 
+      if ( grid->faceId[origface]==iface && grid->f2n[0+3*origface] != EMPTY) {
+	emptyFace = FALSE;
+	n0 = grid->f2n[0+3*origface];
+	n1 = grid->f2n[1+3*origface];
+	n2 = grid->f2n[2+3*origface];
+	id = grid->faceId[origface];
+
+	grid->f2n[0+3*origface]	= grid->f2n[0+3*packface];
+	grid->f2n[1+3*origface]	= grid->f2n[1+3*packface];
+	grid->f2n[2+3*origface]	= grid->f2n[2+3*packface];
+	grid->faceId[origface]	= grid->faceId[packface];
+
+	grid->f2n[0+3*packface] = n0;
+	grid->f2n[1+3*packface] = n1;
+	grid->f2n[2+3*packface] = n2;
+	grid->faceId[packface]  = id;
+	packface++;
+      } 
+    }
+  }
+  printf("gridExport: %d geometry faces detected.\n",iface);
 
   if (grid->nface != packface) {
     printf("ERROR: grid->nface %d != packface %d, file %s line %d \n",
