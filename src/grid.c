@@ -87,7 +87,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->frozen = malloc(grid->maxnode * sizeof(bool));
   for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
 
-  grid->l2g  = NULL;
+  grid->global  = NULL;
   grid->part = NULL;
 
   // cells
@@ -456,7 +456,7 @@ void gridFree(Grid *grid)
   adjFree(grid->cellAdj);
   free(grid->c2n);
   if (NULL != grid->part) free(grid->part);
-  if (NULL != grid->l2g) free(grid->l2g);
+  if (NULL != grid->global) free(grid->global);
   free(grid->frozen);
   free(grid->map);
   free(grid->xyz);
@@ -496,8 +496,8 @@ Grid *gridPack(Grid *grid)
       grid->map[4+6*packnode] = grid->map[4+6*orignode];
       grid->map[5+6*packnode] = grid->map[5+6*orignode];
       grid->frozen[packnode]  = grid->frozen[orignode];
-      if (NULL != grid->l2g) grid->l2g[packnode]  = grid->l2g[orignode];
-      if (NULL != grid->part) grid->part[packnode]  = grid->part[orignode];
+      if (NULL != grid->global) grid->global[packnode] = grid->global[orignode];
+      if (NULL != grid->part) grid->part[packnode] = grid->part[orignode];
       packnode++;
     } 
   
@@ -796,13 +796,13 @@ Grid *gridSortNodeGridEx(Grid *grid)
     grid->frozen[node] = temp_frozen[node];
   free(temp_frozen);
 
-  if ((NULL != grid->l2g) || (NULL != grid->part)) {
+  if ((NULL != grid->global) || (NULL != grid->part)) {
     temp_int = malloc( grid->nnode * sizeof(int) );
-    if (NULL != grid->l2g) {
+    if (NULL != grid->global) {
       for ( node = 0 ; node < grid->nnode ; node++ )
-	temp_int[o2n[node]] = grid->l2g[node];
+	temp_int[o2n[node]] = grid->global[node];
       for ( node = 0 ; node < grid->nnode ; node++ )
-	grid->l2g[node] = temp_int[node];
+	grid->global[node] = temp_int[node];
     }
     if (NULL != grid->part) {
       for ( node = 0 ; node < grid->nnode ; node++ )
@@ -2047,8 +2047,8 @@ int gridAddNode(Grid *grid, double x, double y, double z )
     grid->map = realloc(grid->map, grid->maxnode * 6 * sizeof(double));
     grid->frozen = realloc(grid->frozen,grid->maxnode * sizeof(bool));
 
-    if (NULL != grid->l2g) 
-      grid->l2g = realloc(grid->l2g,grid->maxnode * sizeof(int));
+    if (NULL != grid->global) 
+      grid->global = realloc(grid->global,grid->maxnode * sizeof(int));
     if (NULL != grid->part) 
       grid->part = realloc(grid->part,grid->maxnode * sizeof(int));
 
@@ -2076,7 +2076,7 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   grid->map[3+6*node] = 1.0;
   grid->map[4+6*node] = 0.0;
   grid->map[5+6*node] = 1.0;
-  if (NULL != grid->l2g) grid->l2g[node] = EMPTY;
+  if (NULL != grid->global) grid->global[node] = EMPTY;
   if (NULL != grid->part) grid->part[node] = EMPTY;
 
   return node;
@@ -2114,15 +2114,15 @@ Grid *gridSetNodeXYZ(Grid *grid, int node, double *xyz )
 int gridNodeGlobal(Grid *grid, int node )
 {
   if (!gridValidNode(grid,node)) return EMPTY;
-  if (NULL == grid->l2g) return EMPTY;
-  return grid->l2g[node];
+  if (NULL == grid->global) return EMPTY;
+  return grid->global[node];
 }
 
 Grid *gridSetNodeGlobal(Grid *grid, int node, int global )
 {
   if (!gridValidNode(grid,node)) return NULL;
-  if (NULL == grid->l2g) grid->l2g = malloc(grid->maxnode*sizeof(int));
-  grid->l2g[node] = global;
+  if (NULL == grid->global) grid->global = malloc(grid->maxnode*sizeof(int));
+  grid->global[node] = global;
   return grid;
 }
 

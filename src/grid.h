@@ -47,7 +47,7 @@ struct Grid {
   double *map;
   bool *frozen;
 
-  int *l2g;
+  int *global;
   int *part;
 
   int maxcell, ncell;
