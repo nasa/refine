@@ -807,8 +807,6 @@ Layer *layerTerminateNormal(Layer *layer, int normal )
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
 
-  if (!layerTetrahedraOnly(layer)) return NULL;
-
   layer->normal[normal].terminated = TRUE;
 
   return layer;

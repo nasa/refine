@@ -805,19 +805,19 @@ class TestLayer < Test::Unit::TestCase
   assert_equal true,          layer.tetrahedraOnly
  end
 
- def testNotAllowedToTerminateMixedElementNormals
+ def testAllowedToTerminateMixedElementNormals
   assert_not_nil              grid = Grid.new(10,10,10,10)
   assert_equal 0,             grid.addNode(0,0,0)
   assert_equal 1,             grid.addNode(1,0,0)
   assert_equal 2,             grid.addNode(0,1,0)
   assert_equal grid,          grid.addFace(0,1,2,1)
   layer = Layer.new(grid).makeFront([1]).makeNormal.toggleMixedElementMode
-  assert_nil                  layer.terminateNormal(0)
-  assert_nil                  layer.terminateNormal(1)
-  assert_nil                  layer.terminateNormal(2)
-  assert_equal false,         layer.normalTerminated(0)
-  assert_equal false,         layer.normalTerminated(1)
-  assert_equal false,         layer.normalTerminated(2)
+  assert_equal layer,         layer.terminateNormal(0)
+  assert_equal layer,         layer.terminateNormal(1)
+  assert_equal layer,         layer.terminateNormal(2)
+  assert_equal true,          layer.normalTerminated(0)
+  assert_equal true,          layer.normalTerminated(1)
+  assert_equal true,          layer.normalTerminated(2)
  end
 
  
