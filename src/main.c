@@ -159,7 +159,7 @@ int main( int argc, char *argv[] )
 	layer = formAdvancingFront(grid,project);
 	printf("Inserting Phantom front.\n");
 	layerInsertPhantomFront( layer, 0.22 );
-	ratio=0.9;
+	ratio=0.8;
       }else{
 	printf("Scaling spacing to refine a sphere.\n");
 	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
