@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "grid.h"
 
 typedef struct N2C N2C;
@@ -518,5 +519,115 @@ double gridVolume(Grid *grid, int cellId )
 
   return  (norm[0]*edge3[0]+norm[1]*edge3[1]+norm[2]*edge3[2])/6.0;
 
+}
+
+double gridAR(Grid *grid, int *nodes )
+{
+  double x1, x2, x3, x4; 
+  double y1, y2, y3, y4; 
+  double z1, z2, z3, z4; 
+  double s1, s2, s3, s4, det;
+  double xr, yr, zr;
+  double circ;
+  double nx1, ny1, nz1, rmag1;
+  double nx2, ny2, nz2, rmag2;
+  double nx3, ny3, nz3, rmag3;
+  double nx4, ny4, nz4, rmag4;
+  double xins;
+  double aspect, cost;
+
+  x1 = grid->xyz[0+3*nodes[0]];
+  y1 = grid->xyz[1+3*nodes[0]];
+  z1 = grid->xyz[2+3*nodes[0]];
+
+  x2 = grid->xyz[0+3*nodes[1]];
+  y2 = grid->xyz[1+3*nodes[1]];
+  z2 = grid->xyz[2+3*nodes[1]];
+
+  x3 = grid->xyz[0+3*nodes[2]];
+  y3 = grid->xyz[1+3*nodes[2]];
+  z3 = grid->xyz[2+3*nodes[2]];
+
+  x4 = grid->xyz[0+3*nodes[3]];
+  y4 = grid->xyz[1+3*nodes[3]];
+  z4 = grid->xyz[2+3*nodes[3]];
+
+  /* Compute the aspect ratios */
+
+  det = (x4-x1)*((y2-y1)*(z3-z1) - (y3-y1)*(z2-z1))
+      + (y4-y1)*((x3-x1)*(z2-z1) - (x2-x1)*(z3-z1))
+      + (z4-z1)*((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1));
+  s1 = ((x2*x2 + y2*y2 + z2*z2) - (x1*x1 + y1*y1 + z1*z1))/2.0;
+  s2 = ((x3*x3 + y3*y3 + z3*z3) - (x1*x1 + y1*y1 + z1*z1))/2.0;
+  s3 = ((x4*x4 + y4*y4 + z4*z4) - (x1*x1 + y1*y1 + z1*z1))/2.0;
+  xr  =(s3     *((y2-y1)*(z3-z1) - (y3-y1)*(z2-z1))
+       	+ (y4-y1)*(s2     *(z2-z1) - s1     *(z3-z1))
+	+ (z4-z1)*(s1     *(y3-y1) - s2     *(y2-y1)))/det;
+  yr  =((x4-x1)*(s1     *(z3-z1) - s2     *(z2-z1))
+	+ s3     *((x3-x1)*(z2-z1) - (x2-x1)*(z3-z1))
+	+ (z4-z1)*((x2-x1)*s2      - (x3-x1)*s1     ))/det;
+  zr  =((x4-x1)*((y2-y1)*s2      - (y3-y1)*s1     )
+	+ (y4-y1)*((x3-x1)*s1      - (x2-x1)*s2     )
+	+ s3     *((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)))/det;
+  circ = sqrt((x1-xr)*(x1-xr) + (y1-yr)*(y1-yr) + (z1-zr)*(z1-zr));
+
+  /* Get the in-circle */
+
+  nx1 = (y3 - y1)*(z2 - z1) - (y2 - y1)*(z3 - z1);
+  ny1 =-(x3 - x1)*(z2 - z1) + (x2 - x1)*(z3 - z1);
+  nz1 = (x3 - x1)*(y2 - y1) - (x2 - x1)*(y3 - y1);
+  rmag1 = sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
+
+  nx2 = (y2 - y1)*(z4 - z1) - (y4 - y1)*(z2 - z1);
+  ny2 =-(x2 - x1)*(z4 - z1) + (x4 - x1)*(z2 - z1);
+  nz2 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
+  rmag2 = sqrt(nx2*nx2 + ny2*ny2 + nz2*nz2);
+
+  nx3 = (y4 - y1)*(z3 - z1) - (y3 - y1)*(z4 - z1);
+  ny3 =-(x4 - x1)*(z3 - z1) + (x3 - x1)*(z4 - z1);
+  nz3 = (x4 - x1)*(y3 - y1) - (x3 - x1)*(y4 - y1);
+  rmag3 = sqrt(nx3*nx3 + ny3*ny3 + nz3*nz3);
+
+  nx4 = (y3 - y2)*(z4 - z2) - (y4 - y2)*(z3 - z2);
+  ny4 =-(x3 - x2)*(z4 - z2) + (x4 - x2)*(z3 - z2);
+  nz4 = (x3 - x2)*(y4 - y2) - (x4 - x2)*(y3 - y2);
+  rmag4 = sqrt(nx4*nx4 + ny4*ny4 + nz4*nz4);
+  nx1 = nx1/rmag1;
+  ny1 = ny1/rmag1;
+  nz1 = nz1/rmag1;
+  nx2 = nx2/rmag2;
+  ny2 = ny2/rmag2;
+  nz2 = nz2/rmag2;
+  nx3 = nx3/rmag3;
+  ny3 = ny3/rmag3;
+  nz3 = nz3/rmag3;
+  nx4 = nx4/rmag4;
+  ny4 = ny4/rmag4;
+  nz4 = nz4/rmag4;
+  det= -(nx3*ny2*nz1) + nx4*ny2*nz1 + nx2*ny3*nz1 - nx4*ny3*nz1
+    -nx2*ny4*nz1 + nx3*ny4*nz1 + nx3*ny1*nz2 - nx4*ny1*nz2
+    -nx1*ny3*nz2 + nx4*ny3*nz2 + nx1*ny4*nz2 - nx3*ny4*nz2
+    -nx2*ny1*nz3 + nx4*ny1*nz3 + nx1*ny2*nz3 - nx4*ny2*nz3
+    -nx1*ny4*nz3 + nx2*ny4*nz3 + nx2*ny1*nz4 - nx3*ny1*nz4
+    -nx1*ny2*nz4 + nx3*ny2*nz4 + nx1*ny3*nz4 - nx2*ny3*nz4;
+  s1 = nx1*x1 + ny1*y1 + nz1*z1;
+  s2 = nx2*x1 + ny2*y1 + nz2*z1;
+  s3 = nx3*x1 + ny3*y1 + nz3*z1;
+  s4 = nx4*x4 + ny4*y4 + nz4*z4;
+  xins = (nx4*ny3*nz2*s1 - nx3*ny4*nz2*s1 - nx4*ny2*nz3*s1 +
+	  nx2*ny4*nz3*s1 +
+	  nx3*ny2*nz4*s1 - nx2*ny3*nz4*s1 - nx4*ny3*nz1*s2 +
+	  nx3*ny4*nz1*s2 +
+	  nx4*ny1*nz3*s2 - nx1*ny4*nz3*s2 - nx3*ny1*nz4*s2 +
+	  nx1*ny3*nz4*s2 +
+	  nx4*ny2*nz1*s3 - nx2*ny4*nz1*s3 - nx4*ny1*nz2*s3 +
+	  nx1*ny4*nz2*s3 +
+	  nx2*ny1*nz4*s3 - nx1*ny2*nz4*s3 - nx3*ny2*nz1*s4 +
+	  nx2*ny3*nz1*s4 +
+	  nx3*ny1*nz2*s4 - nx1*ny3*nz2*s4 - nx2*ny1*nz3*s4 +
+	  nx1*ny2*nz3*s4)/det;
+
+  aspect = circ/xins/3.0;
+  return aspect;
 }
 
