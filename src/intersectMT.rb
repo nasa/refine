@@ -195,7 +195,16 @@ class TestIntersect < Test::Unit::TestCase
  end
 
  def testTetSliceTet
-
+  v0 = [1,1,1]
+  v1 = [4,1,1]
+  v2 = [1,4,1]
+  v3 = [1,1,4]
+  n0 = [2,2,0]
+  n1 = [3,2,0]
+  n2 = [2,3,0]
+  n3 = [2,2,5]
+  assert_equal true, @intersect.tetTet(v0,v1,v2,v3,n0,n1,n2,n3)
+  assert_equal true, @intersect.tetTet(n0,n1,n2,n3,v0,v1,v2,v3)
  end
 
 end

@@ -148,6 +148,33 @@ bool intersectTetTet(double *vertex0, double *vertex1,
   if (intersectInsideTet( node0, node1, node2, node3, vertex3 )) 
     return TRUE;
 
+  if (intersectTetSegment( vertex0, vertex1, vertex2, vertex3, node0, node1 )) 
+    return TRUE;
+  if (intersectTetSegment( vertex0, vertex1, vertex2, vertex3, node0, node2 )) 
+    return TRUE;
+  if (intersectTetSegment( vertex0, vertex1, vertex2, vertex3, node0, node3 )) 
+    return TRUE;
+  if (intersectTetSegment( vertex0, vertex1, vertex2, vertex3, node1, node2 )) 
+    return TRUE;
+  if (intersectTetSegment( vertex0, vertex1, vertex2, vertex3, node1, node3 )) 
+    return TRUE;
+  if (intersectTetSegment( vertex0, vertex1, vertex2, vertex3, node2, node3 )) 
+    return TRUE;
+
+  if (intersectTetSegment( node0, node1, node2, node3, vertex0, vertex1 )) 
+    return TRUE;
+  if (intersectTetSegment( node0, node1, node2, node3, vertex0, vertex2 )) 
+    return TRUE;
+  if (intersectTetSegment( node0, node1, node2, node3, vertex0, vertex3 )) 
+    return TRUE;
+  if (intersectTetSegment( node0, node1, node2, node3, vertex1, vertex2 )) 
+    return TRUE;
+  if (intersectTetSegment( node0, node1, node2, node3, vertex1, vertex3 )) 
+    return TRUE;
+  if (intersectTetSegment( node0, node1, node2, node3, vertex2, vertex3 )) 
+    return TRUE;
+
+
   return FALSE;
 }
 
