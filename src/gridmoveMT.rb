@@ -63,4 +63,18 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal zero, gm.displacement(1000)
  end
 
+ def testNodePack
+  grid = Grid.new(4,0,0,0)
+  4.times { grid.addNode(0.0,0.0,0.0) }
+  gm = GridMove.new(grid)
+  zero = [0.0,0.0,0.0]
+  d = [1.1,2.2,3.3]
+  assert_equal gm, gm.displace(3,d)
+  grid.removeNode(0)
+  grid.pack
+  assert_equal zero, gm.displacement(3)
+  assert_equal d,    gm.displacement(2)
+   
+ end
+
 end
