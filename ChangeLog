@@ -2,12 +2,12 @@
 
 	* New MesherX library created and installed with header files 
 	* Made 0.5 Release.
-	
+
 2003-01-14 10:10 Mike Park  <m.a.park@larc.nasa.gov>
 
 	* /src/layer.c (layerAdvance): fixed bug for multiple constrained
 	edges and incorrect constrained faces. Refactored for clarity.
-	
+
 2003-01-09 08:01 Michael Park <m.a.park@larc.nasa.gov>
 
 	* Made 0.4 Release.
