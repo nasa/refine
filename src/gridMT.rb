@@ -25,7 +25,7 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testNodeCellDeg
   assert_equal 0, @grid.nodeDeg(0)
-  @grid.registerNodeCell( 0, 299 )
+  assert_not_nil @grid.registerNodeCell( 0, 299 )
   assert_equal 1, @grid.nodeDeg(0)
  end
 
@@ -36,7 +36,7 @@ class TestSampleUnit < Test::Unit::TestCase
   @grid.firstNodeCell(0);
   assert_equal false, @grid.validNodeCell
   
-  @grid.registerNodeCell( 2, 299 )
+  assert_not_nil @grid.registerNodeCell( 2, 299 )
   @grid.firstNodeCell(2);
   assert_equal 299, @grid.currentNodeCell
   assert_equal true,  @grid.validNodeCell
@@ -44,14 +44,14 @@ class TestSampleUnit < Test::Unit::TestCase
   @grid.nextNodeCell
   assert_equal false, @grid.validNodeCell
   
-  @grid.registerNodeCell( 3, 398 )
-  @grid.registerNodeCell( 3, 399 )
+  assert_not_nil @grid.registerNodeCell( 3, 398 )
+  assert_not_nil @grid.registerNodeCell( 3, 399 )
   @grid.firstNodeCell(3);
     assert_equal true,  @grid.validNodeCell
   assert_equal true,  @grid.moreNodeCell
   
   100.times {@grid.nextNodeCell} # abusive use of next
-  @grid.firstNodeCell(300000);
+  assert_nil @grid.firstNodeCell(300000);
 end
  
  def testAddAndRemoveNodeCell
@@ -200,14 +200,15 @@ end
  def testAddNode
   grid = Grid.new(1,1)
   assert_equal 0, grid.addNode(1.0,0.0,0.0)
-  assert_equal -1, grid.addNode(1.0,0.0,0.0)
+  assert_equal( -1, grid.addNode(1.0,0.0,0.0))
  end
 
- def testMetric
+ def testMetic
   assert_equal @grid, @grid.
    addCell( @grid.addNode(0.0,0.0,0.0), @grid.addNode(1.0,0.0,0.0), 
 	    @grid.addNode(0.0,1.0,0.0), @grid.addNode(0.0,0.0,1.0) )
   assert_equal( 1.0/6.0, @grid.volume(0) )
+  assert_in_delta 1.366025403784439, @grid.ar([0,1,2,3]), 1.0e-15
  end
 
  def XtestMaxSize
