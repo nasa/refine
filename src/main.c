@@ -138,6 +138,11 @@ int main( int argc, char *argv[] )
 	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
       }
     }
+  } else if(strcmp(adaptfile,"ident")==0) {
+    printf("adapt parameter >ident< selected. Spacing set to identity.\n");
+    printf("edge swapping grid...\n");gridSwap(grid);
+    printf("node smoothing grid...\n");gridSmooth(grid);
+    return 0;
   }else{
     printf("reading adapt parameter from file %s ...\n",adaptfile);
     gridImportAdapt(grid, adaptfile); // Do not sort nodes before this call.
