@@ -2001,7 +2001,6 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
     }
   }
 
-
   if (layerNBlend(layer) > 0){
     int blend, blendnormals[4];
     int triangle0, triangle1;
@@ -2449,7 +2448,7 @@ Layer *layerSplitBlend(Layer *layer)
   return layer;
 }
 
-Layer *layerBlend(Layer *layer)
+Layer *layerBlend(Layer *layer, double angleLimit )
 {
   int normal, originalNormals;
   AdjIterator it;
@@ -2460,7 +2459,7 @@ Layer *layerBlend(Layer *layer)
   int newNormal, i;
   bool done;
 
-  angleLimit = 250; /* deg */
+  if (angleLimit < 0.0)angleLimit = 250; /* deg */
 
   originalNormals = layerNNormal(layer);
   for ( normal = 0 ; normal < originalNormals ; normal++ ) {
@@ -2518,6 +2517,8 @@ Layer *layerBlend(Layer *layer)
   }
 
   layerBuildNormalTriangleAdjacency(layer);
+  layerInitializeTriangleNormalDirection(layer);
+  layerFeasibleNormals(layer, -1.0, -1.0 );
   layerVisibleNormals(layer , 
 		      sin(ConvertDegreeToRadian(largestEdgeAngle*0.333)), 
 		      1.0e-8 );
@@ -2600,6 +2601,8 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
     layer->blend[blend].nodes[1] = n1;
     layer->blend[blend].normal[0] = normal0;
     layer->blend[blend].normal[1] = normal1;
+    layer->blend[blend].normal[2] = EMPTY;
+    layer->blend[blend].normal[3] = EMPTY;
     layer->blend[blend].edgeId[0] = EMPTY;
     layer->blend[blend].edgeId[1] = EMPTY;
     layer->nblend++;

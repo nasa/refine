@@ -208,7 +208,7 @@ Layer *layerToggleMixedElementMode(Layer *);
 
 Adj *layerBuildNormalBlendAdjacency(Layer *layer);
 Layer *layerSplitBlend(Layer *);
-Layer *layerBlend(Layer *);
+Layer *layerBlend(Layer *, double angleLimit );
 Layer *layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
 Layer *layerDuplicateAllBlend(Layer *);
 Layer *layerBlendNormals(Layer *, int blend, int *normals );

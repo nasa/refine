@@ -161,7 +161,7 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
 
   if (blendElement) {
     printf( "inserting blends...\n");
-    layerBlend(layer); 
+    layerBlend(layer,-1.0); 
 
 /*
     printf( "extrude blends...\n");
