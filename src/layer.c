@@ -30,6 +30,7 @@ struct Normal {
 
 typedef struct Triangle Triangle;
 struct Triangle {
+  int globalNode[3];
   int normal[3];
   int constrainedSide[3];
   int parentGeomEdge[3];
@@ -215,7 +216,12 @@ void layerFree(Layer *layer)
 void layerSortGlobalNodes(void *voidLayer, int *o2n)
 {
   Layer *layer = (Layer *)voidLayer;
-  int i, normal;
+  int i, triangle, normal;
+
+  for (triangle = 0 ; triangle < layerNTriangle(layer) ; triangle++ )
+    for (i=0;i<3;i++) if (EMPTY != layer->triangle[triangle].globalNode[i])
+      layer->triangle[triangle].globalNode[i] = 
+	o2n[layer->triangle[triangle].globalNode[i]];
 
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
@@ -253,8 +259,9 @@ int layerMaxNode(Layer *layer)
 
 Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
 {
-  int i, ibc, faceId, face, id, nodes[3];
+  int i, ibc, face, id, nodes[3];
   int triangle;
+  int globalNodeId;
   int normal;
   double direction[3], *norm;
   double length;
@@ -264,17 +271,23 @@ Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
 
   for(ibc=0;ibc<nbc;ibc++) layerAddParentGeomFace(layer,bc[ibc]);
 
-  for (ibc=0;ibc<layer->nParentGeomFace;ibc++){
-    faceId = layer->ParentGeomFace[ibc];
+  for (ibc=0;ibc<nbc;ibc++){
     for(face=0;face<gridMaxFace(layer->grid);face++){
       if (grid == gridFace(grid,face,nodes,&id) &&
-	  id==faceId ) {
+	  id==bc[ibc] ) {
 	layerAddTriangle(layer,nodes[0],nodes[1],nodes[2]);
       }
     }
   }
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    for(i=0;i<3;i++){
+      globalNodeId = layer->triangle[triangle].globalNode[i];
+      layer->triangle[triangle].normal[i] = 
+	layerUniqueNormalId(layer,globalNodeId);
+    }
+  }
 
-  layer->adj = adjCreate( layerNNormal(layer),layerNTriangle(layer)*3  );
+  layer->adj = adjCreate( layer->nnormal,layerNTriangle(layer)*3  );
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
       normal = layer->triangle[triangle].normal[i];
@@ -342,10 +355,11 @@ Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
     }
   }
 
-  layer->triangle[layer->ntriangle].normal[0] = layerUniqueNormalId(layer,n0);
-  layer->triangle[layer->ntriangle].normal[1] = layerUniqueNormalId(layer,n1);
-  layer->triangle[layer->ntriangle].normal[2] = layerUniqueNormalId(layer,n2);
+  layer->triangle[layer->ntriangle].globalNode[0] = n0;
+  layer->triangle[layer->ntriangle].globalNode[1] = n1;
+  layer->triangle[layer->ntriangle].globalNode[2] = n2;
   for (i=0;i<3;i++){
+    layer->triangle[layer->ntriangle].normal[i] = EMPTY;
     layer->triangle[layer->ntriangle].constrainedSide[i] = 0;
     layer->triangle[layer->ntriangle].parentGeomEdge[i] = 0;
   }
@@ -357,12 +371,11 @@ Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
 
 Layer *layerTriangle(Layer *layer, int triangle, int *nodes )
 {
-  
-  if (triangle < 0 || triangle >= layerNTriangle(layer)) return NULL;
 
-  nodes[0] = layerNormalRoot(layer, layer->triangle[triangle].normal[0]);
-  nodes[1] = layerNormalRoot(layer, layer->triangle[triangle].normal[1]);
-  nodes[2] = layerNormalRoot(layer, layer->triangle[triangle].normal[2]);
+  if (triangle < 0 || triangle >= layerNTriangle(layer)) return NULL;
+  nodes[0] = layer->triangle[triangle].globalNode[0];
+  nodes[1] = layer->triangle[triangle].globalNode[1];
+  nodes[2] = layer->triangle[triangle].globalNode[2];
   
   return layer;
 }
@@ -374,7 +387,7 @@ Layer *layerTriangleDirection(Layer *layer, int triangle, double *direction )
   double edge1[3], edge2[3], norm[3], length; 
   
   if (triangle < 0 || triangle >= layerNTriangle(layer) ) return NULL;
-  layerTriangle(layer,triangle,nodes);
+  nodes = layer->triangle[triangle].globalNode;
 
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
@@ -443,7 +456,6 @@ int layerAddNormal(Layer *layer, int globalNodeId )
 
 int layerUniqueNormalId(Layer *layer, int globalNodeId)
 {
-  if (globalNodeId < 0 || globalNodeId >= layerMaxNode(layer) ) return EMPTY;
   if ( layer->globalNode2Normal == NULL || 
        layer->globalNode2Normal[globalNodeId] == EMPTY ) 
     return layerAddNormal(layer,globalNodeId);
@@ -740,8 +752,8 @@ Layer *layerFindParentGeomEdges(Layer *layer)
     for(side=0;side<3;side++){
       n0 = side;
       n1 = side+1; if (n1>2) n1 = 0;
-      n0 = layerNormalRoot(layer,layer->triangle[triangle].normal[n0]);
-      n1 = layerNormalRoot(layer,layer->triangle[triangle].normal[n1]);
+      n0 = layer->triangle[triangle].globalNode[n0];
+      n1 = layer->triangle[triangle].globalNode[n1];
       edgeId = gridEdgeId(layer->grid,n0,n1);
       if (EMPTY != edgeId) layer->triangle[triangle].parentGeomEdge[side]=edgeId;
     }
@@ -910,6 +922,8 @@ Layer *layerAdvance(Layer *layer)
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     layerTriangleNormals(layer, triangle, normals);
+    for (i=0;i<3;i++) 
+      layer->triangle[triangle].globalNode[i] = layer->normal[normals[i]].tip;
 
     /* note that tip has been set to root on terminated normals */
     /* the if (n[0]!=n[3]) checks are for layer termiantion */
