@@ -179,12 +179,13 @@ int gridCurrentNodeCell(Grid *grid)
 
 int gridValidNodeCell(Grid *grid)
 {
-  return (gridCurrentNodeCell(grid) != EMPTY);
+  return (grid->current != NULL);
 }
 
 int gridMoreNodeCell(Grid *grid)
 {
-  return (grid->current != NULL);
+  if ( grid->current == NULL) return (1==0); 
+  return (grid->current->next != NULL);
 }
 
 Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
