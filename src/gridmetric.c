@@ -440,6 +440,7 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
   e[2] = 0.0;
 
   for( l = 0; l < 3; l++){ /* row_loop  */
+    j = 0;
     h = ABS(d[l]) + ABS(e[l]);
     if (tst1 < h) tst1 = h;
     /* look for small sub-diagonal element */
@@ -449,7 +450,8 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
       /* e[2] is always zero, so there is no exit through the bottom of loop*/
     }
     if (m != l) { /* l_not_equal_m */
-      for (j=0;j<40;j++) {
+      do {
+	j = j + 1;
 	/* set error -- no convergence to an eigenvalue after 30 iterations */
 	if (j > 30 ) {
 	  ierr = l;
@@ -467,7 +469,11 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
 	d[l1] = e[l] * (p + SIGN(r,p));
 	dl1 = d[l1];
 	h = g - d[l];
-	for (i = l2; i<3; i++) d[i] = d[i] - h;
+	if (l2<=2) {
+	  for (i = l2; i<3; i++) {
+	    d[i] = d[i] - h;
+	  }
+	}
 	f = f + h;
 	/* ql transformation */
 	p = d[m];
@@ -501,7 +507,7 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
 	d[l] = c * p;
 	tst2 = tst1 + ABS(e[l]);
 	if (ABS(tst2 - tst1) < 1.0e-14) break;
-      } /* iterate */
+      } while (TRUE); /* iterate */
     } /* l_not_equal_m */
     d[l] = d[l] + f;
   } /* row_loop */
