@@ -124,7 +124,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   double *shellxyz, *shelluv, resolved[3];
   int nfacenode, nfacetri, *newface;
   double *newxyz, *newuv;
-  
+  int l0,l1,l2,g0,g1,g2;
 
   Grid *grid;
   grid = layerGrid(layer);
@@ -289,7 +289,29 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
 
+      gridDeleteThawedFaces(grid, faceId);
+
+      for(i=nnode;i<nfacenode;i++){
+	l2g[i]=gridAddNode(grid,newxyz[0+3*i],newxyz[1+3*i],newxyz[2+3*i]);
+      }
+      for(i=0;i<nfacetri;i++){
+	l0 = newface[0+3*i]; 
+	l1 = newface[1+3*i]; 
+	l2 = newface[2+3*i];
+	g0 = l2g[l0];
+	g1 = l2g[l1];
+	g2 = l2g[l2];
+	gridAddFaceUV(grid,
+		      g0, newuv[0+2*l0], newuv[1+2*l0],
+		      g1, newuv[0+2*l1], newuv[1+2*l1],
+		      g2, newuv[0+2*l2], newuv[1+2*l2],
+		      faceId );
+      }
+
       free(shell);
+      free(newface);
+      free(newxyz);
+      free(newuv);
     }
   }
 
