@@ -229,7 +229,7 @@ void gridminar_( double *aspectratio )
 void gridwritetecplotsurfacezone_( void )
 {
   char filename[256];
-  int cell, nodes[4], onbound;
+  int cell, nodes[4];
 
   sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
   gridWriteTecplotSurfaceZone(grid,filename);
@@ -238,14 +238,6 @@ void gridwritetecplotsurfacezone_( void )
     if (grid==gridCell(grid, cell, nodes)) {
       if (0.0>=gridVolume(grid,nodes))
 	gridWriteTecplotCellZone(grid,nodes,filename);
-      onbound = 0;
-      if (gridGeometryFace(grid,nodes[0])) onbound++;
-      if (gridGeometryFace(grid,nodes[1])) onbound++;
-      if (gridGeometryFace(grid,nodes[2])) onbound++;
-      if (gridGeometryFace(grid,nodes[3])) onbound++;
-      if (4==onbound)
-	gridWriteTecplotCellZone(grid,nodes,filename);
-      
     }
 
 #ifdef PARALLEL_VERBOSE 

@@ -1,3 +1,9 @@
+2004-08-03 14:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) now only dumps
+	out negative cells (cells with four nodes on boundary are not
+	written).
+
 2004-08-17 12:55 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.2 Release. Interface to FUN3D 3.3.1. Fix FAKEGeom.
