@@ -181,4 +181,21 @@ class TestIntersect < Test::Unit::TestCase
   assert_equal true, @intersect.tetSegment(v0,v1,v2,v3,n0,n1)
  end
 
+ def testTetInsideTet
+  v0 = [0,0,0]
+  v1 = [1,0,0]
+  v2 = [0,1,0]
+  v3 = [0,0,1]
+  n0 = [0.1,0.1,0.1]
+  n1 = [0.9,0.1,0.1]
+  n2 = [0.1,0.9,0.1]
+  n3 = [0.1,0.1,0.9]
+  assert_equal true, @intersect.tetTet(v0,v1,v2,v3,n0,n1,n2,n3)
+  assert_equal true, @intersect.tetTet(n0,n1,n2,n3,v0,v1,v2,v3)
+ end
+
+ def testTetSliceTet
+
+ end
+
 end

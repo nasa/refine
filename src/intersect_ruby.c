@@ -82,6 +82,28 @@ static VALUE intersect_tetSegment( VALUE self,
   return (intersectTetSegment(v0,v1,v2,v3,n0,n1)?Qtrue:Qfalse);
 }
 
+static VALUE intersect_tetTet( VALUE self, 
+			       VALUE vert0, VALUE vert1, 
+			       VALUE vert2, VALUE vert3, 
+			       VALUE node0, VALUE node1,
+			       VALUE node2, VALUE node3 )
+{
+  int i;
+  double v0[3], v1[3], v2[3], v3[3];
+  double n0[3], n1[3], n2[3], n3[3];
+  for (i=0;i<3;i++){
+    v0[i] = NUM2DBL(rb_ary_entry(vert0, i));
+    v1[i] = NUM2DBL(rb_ary_entry(vert1, i));
+    v2[i] = NUM2DBL(rb_ary_entry(vert2, i));
+    v3[i] = NUM2DBL(rb_ary_entry(vert3, i));
+    n0[i] = NUM2DBL(rb_ary_entry(node0, i));
+    n1[i] = NUM2DBL(rb_ary_entry(node1, i));
+    n2[i] = NUM2DBL(rb_ary_entry(node2, i));
+    n3[i] = NUM2DBL(rb_ary_entry(node3, i));
+  }
+  return (intersectTetTet(v0,v1,v2,v3,n0,n1,n2,n3)?Qtrue:Qfalse);
+}
+
 VALUE cIntersect;
 
 void Init_Intersect(  )
@@ -92,4 +114,5 @@ void Init_Intersect(  )
   rb_define_method( cIntersect, "triangleSegment", intersect_triangleSegment, 5 );
   rb_define_method( cIntersect, "insideTet", intersect_insideTet, 5 );
   rb_define_method( cIntersect, "tetSegment", intersect_tetSegment, 6 );
+  rb_define_method( cIntersect, "tetTet", intersect_tetTet, 8 );
 }

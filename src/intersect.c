@@ -125,6 +125,32 @@ bool intersectTetSegment(double *vertex0, double *vertex1,
   return FALSE;
 }
 
+bool intersectTetTet(double *vertex0, double *vertex1, 
+		     double *vertex2, double *vertex3,
+		     double *node0, double *node1,
+		     double *node2, double *node3 )
+{
+  if (intersectInsideTet( vertex0, vertex1, vertex2, vertex3, node0 )) 
+    return TRUE;
+  if (intersectInsideTet( vertex0, vertex1, vertex2, vertex3, node1 )) 
+    return TRUE;
+  if (intersectInsideTet( vertex0, vertex1, vertex2, vertex3, node2 )) 
+    return TRUE;
+  if (intersectInsideTet( vertex0, vertex1, vertex2, vertex3, node3 )) 
+    return TRUE;
+
+  if (intersectInsideTet( node0, node1, node2, node3, vertex0 )) 
+    return TRUE;
+  if (intersectInsideTet( node0, node1, node2, node3, vertex1 )) 
+    return TRUE;
+  if (intersectInsideTet( node0, node1, node2, node3, vertex2 )) 
+    return TRUE;
+  if (intersectInsideTet( node0, node1, node2, node3, vertex3 )) 
+    return TRUE;
+
+  return FALSE;
+}
+
 /* debug chaff
     printf("\nnode0 %10.5f %10.5f %10.5f\n",node0[0],node0[1],node0[2]);
     printf("node1 %10.5f %10.5f %10.5f\n",node1[0],node1[1],node1[2]);

@@ -34,6 +34,11 @@ bool intersectTetSegment(double *vertex0, double *vertex1,
 			 double *vertex2, double *vertex3,
 			 double *node0, double *node1 );
 
+bool intersectTetTet(double *vertex0, double *vertex1, 
+		     double *vertex2, double *vertex3,
+		     double *node0, double *node1,
+		     double *node2, double *node3 );
+
 END_C_DECLORATION
 
 #endif /* INTERSECT_H */
