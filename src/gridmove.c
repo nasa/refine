@@ -745,6 +745,10 @@ GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
   double c3x, c3y, c3z;
   double c4x, c4y, c4z;
 
+  double xn, yn, zn;
+
+  double R, onePlusR;
+
   int node;
 
   for(i=0;i<9*gridmoveNNZ(gm);i++) gm->a[i]=0.0;
@@ -830,6 +834,188 @@ GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
       c3z = c*(nz4 + nz1 + nz2);
       c4z = c*(nz1 + nz2 + nz3);
 
+      R = 1.0 / vol;
+      onePlusR = 1.0 + R;
+
+      /* node1 */
+      xn = nx1/3.0;
+      yn = ny1/3.0;
+      zn = nz1/3.0;
+
+      gm->a[0+idiag1] = gm->a[0+idiag1] + xn*onePlusR*c1x + yn*c1y+ zn*c1z;
+      gm->a[1+idiag1] = gm->a[1+idiag1] + xn*R*c1y;
+      gm->a[2+idiag1] = gm->a[2+idiag1] + xn*R*c1z;
+      gm->a[3+idiag1] = gm->a[3+idiag1] + yn*R*c1x;
+      gm->a[4+idiag1] = gm->a[4+idiag1] + yn*onePlusR*c1y + zn*c1z+ xn*c1x;
+      gm->a[5+idiag1] = gm->a[5+idiag1] + yn*R*c1z;
+      gm->a[6+idiag1] = gm->a[6+idiag1] + zn*R*c1x;
+      gm->a[7+idiag1] = gm->a[7+idiag1] + zn*R*c1y;
+      gm->a[8+idiag1] = gm->a[8+idiag1] + zn*onePlusR*c1z + xn*c1x+ yn*c1y;
+
+      gm->a[0+ioff12] = gm->a[0+ioff12] + xn*onePlusR*c2x + yn*c2y+ zn*c2z;
+      gm->a[1+ioff12] = gm->a[1+ioff12] + xn*R*c2y;
+      gm->a[2+ioff12] = gm->a[2+ioff12] + xn*R*c2z;
+      gm->a[3+ioff12] = gm->a[3+ioff12] + yn*R*c2x;
+      gm->a[4+ioff12] = gm->a[4+ioff12] + yn*onePlusR*c2y + zn*c2z+ xn*c2x;
+      gm->a[5+ioff12] = gm->a[5+ioff12] + yn*R*c2z;
+      gm->a[6+ioff12] = gm->a[6+ioff12] + zn*R*c2x;
+      gm->a[7+ioff12] = gm->a[7+ioff12] + zn*R*c2y;
+      gm->a[8+ioff12] = gm->a[8+ioff12] + zn*onePlusR*c2z + xn*c2x+ yn*c2y;
+
+      gm->a[0+ioff13] = gm->a[0+ioff13] + xn*onePlusR*c3x + yn*c3y+ zn*c3z;
+      gm->a[1+ioff13] = gm->a[1+ioff13] + xn*R*c3y;
+      gm->a[2+ioff13] = gm->a[2+ioff13] + xn*R*c3z;
+      gm->a[3+ioff13] = gm->a[3+ioff13] + yn*R*c3x;
+      gm->a[4+ioff13] = gm->a[4+ioff13] + yn*onePlusR*c3y + zn*c3z+ xn*c3x;
+      gm->a[5+ioff13] = gm->a[5+ioff13] + yn*R*c3z;
+      gm->a[6+ioff13] = gm->a[6+ioff13] + zn*R*c3x;
+      gm->a[7+ioff13] = gm->a[7+ioff13] + zn*R*c3y;
+      gm->a[8+ioff13] = gm->a[8+ioff13] + zn*onePlusR*c3z + xn*c3x+ yn*c3y;
+
+      gm->a[0+ioff14] = gm->a[0+ioff14] + xn*onePlusR*c4x + yn*c4y+ zn*c4z;
+      gm->a[1+ioff14] = gm->a[1+ioff14] + xn*R*c4y;
+      gm->a[2+ioff14] = gm->a[2+ioff14] + xn*R*c4z;
+      gm->a[3+ioff14] = gm->a[3+ioff14] + yn*R*c4x;
+      gm->a[4+ioff14] = gm->a[4+ioff14] + yn*onePlusR*c4y + zn*c4z+ xn*c4x;
+      gm->a[5+ioff14] = gm->a[5+ioff14] + yn*R*c4z;
+      gm->a[6+ioff14] = gm->a[6+ioff14] + zn*R*c4x;
+      gm->a[7+ioff14] = gm->a[7+ioff14] + zn*R*c4y;
+      gm->a[8+ioff14] = gm->a[8+ioff14] + zn*onePlusR*c4z + xn*c4x+ yn*c4y;
+
+      /* node2 */
+      xn = nx2/3.0;
+      yn = ny2/3.0;
+      zn = nz2/3.0;
+
+      gm->a[0+idiag2] = gm->a[0+idiag2] + xn*onePlusR*c2x + yn*c2y+ zn*c2z;
+      gm->a[1+idiag2] = gm->a[1+idiag2] + xn*R*c2y;
+      gm->a[2+idiag2] = gm->a[2+idiag2] + xn*R*c2z;
+      gm->a[3+idiag2] = gm->a[3+idiag2] + yn*R*c2x;
+      gm->a[4+idiag2] = gm->a[4+idiag2] + yn*onePlusR*c2y + zn*c2z+ xn*c2x;
+      gm->a[5+idiag2] = gm->a[5+idiag2] + yn*R*c2z;
+      gm->a[6+idiag2] = gm->a[6+idiag2] + zn*R*c2x;
+      gm->a[7+idiag2] = gm->a[7+idiag2] + zn*R*c2y;
+      gm->a[8+idiag2] = gm->a[8+idiag2] + zn*onePlusR*c2z + xn*c2x+ yn*c2y;
+
+      gm->a[0+ioff23] = gm->a[0+ioff23] + xn*onePlusR*c3x + yn*c3y+ zn*c3z;
+      gm->a[1+ioff23] = gm->a[1+ioff23] + xn*R*c3y;
+      gm->a[2+ioff23] = gm->a[2+ioff23] + xn*R*c3z;
+      gm->a[3+ioff23] = gm->a[3+ioff23] + yn*R*c3x;
+      gm->a[4+ioff23] = gm->a[4+ioff23] + yn*onePlusR*c3y + zn*c3z+ xn*c3x;
+      gm->a[5+ioff23] = gm->a[5+ioff23] + yn*R*c3z;
+      gm->a[6+ioff23] = gm->a[6+ioff23] + zn*R*c3x;
+      gm->a[7+ioff23] = gm->a[7+ioff23] + zn*R*c3y;
+      gm->a[8+ioff23] = gm->a[8+ioff23] + zn*onePlusR*c3z + xn*c3x+ yn*c3y;
+
+      gm->a[0+ioff24] = gm->a[0+ioff24] + xn*onePlusR*c4x + yn*c4y+ zn*c4z;
+      gm->a[1+ioff24] = gm->a[1+ioff24] + xn*R*c4y;
+      gm->a[2+ioff24] = gm->a[2+ioff24] + xn*R*c4z;
+      gm->a[3+ioff24] = gm->a[3+ioff24] + yn*R*c4x;
+      gm->a[4+ioff24] = gm->a[4+ioff24] + yn*onePlusR*c4y + zn*c4z+ xn*c4x;
+      gm->a[5+ioff24] = gm->a[5+ioff24] + yn*R*c4z;
+      gm->a[6+ioff24] = gm->a[6+ioff24] + zn*R*c4x;
+      gm->a[7+ioff24] = gm->a[7+ioff24] + zn*R*c4y;
+      gm->a[8+ioff24] = gm->a[8+ioff24] + zn*onePlusR*c4z + xn*c4x+ yn*c4y;
+
+      gm->a[0+ioff21] = gm->a[0+ioff21] + xn*onePlusR*c1x + yn*c1y+ zn*c1z;
+      gm->a[1+ioff21] = gm->a[1+ioff21] + xn*R*c1y;
+      gm->a[2+ioff21] = gm->a[2+ioff21] + xn*R*c1z;
+      gm->a[3+ioff21] = gm->a[3+ioff21] + yn*R*c1x;
+      gm->a[4+ioff21] = gm->a[4+ioff21] + yn*onePlusR*c1y + zn*c1z+ xn*c1x;
+      gm->a[5+ioff21] = gm->a[5+ioff21] + yn*R*c1z;
+      gm->a[6+ioff21] = gm->a[6+ioff21] + zn*R*c1x;
+      gm->a[7+ioff21] = gm->a[7+ioff21] + zn*R*c1y;
+      gm->a[8+ioff21] = gm->a[8+ioff21] + zn*onePlusR*c1z + xn*c1x+ yn*c1y;
+    
+      /* node3 */
+      xn = nx3/3.0;
+      yn = ny3/3.0;
+      zn = nz3/3.0;
+
+      gm->a[0+idiag3] = gm->a[0+idiag3] + xn*onePlusR*c3x + yn*c3y+ zn*c3z;
+      gm->a[1+idiag3] = gm->a[1+idiag3] + xn*R*c3y;
+      gm->a[2+idiag3] = gm->a[2+idiag3] + xn*R*c3z;
+      gm->a[3+idiag3] = gm->a[3+idiag3] + yn*R*c3x;
+      gm->a[4+idiag3] = gm->a[4+idiag3] + yn*onePlusR*c3y + zn*c3z+ xn*c3x;
+      gm->a[5+idiag3] = gm->a[5+idiag3] + yn*R*c3z;
+      gm->a[6+idiag3] = gm->a[6+idiag3] + zn*R*c3x;
+      gm->a[7+idiag3] = gm->a[7+idiag3] + zn*R*c3y;
+      gm->a[8+idiag3] = gm->a[8+idiag3] + zn*onePlusR*c3z + xn*c3x+ yn*c3y;
+
+      gm->a[0+ioff34] = gm->a[0+ioff34] + xn*onePlusR*c4x + yn*c4y+ zn*c4z;
+      gm->a[1+ioff34] = gm->a[1+ioff34] + xn*R*c4y;
+      gm->a[2+ioff34] = gm->a[2+ioff34] + xn*R*c4z;
+      gm->a[3+ioff34] = gm->a[3+ioff34] + yn*R*c4x;
+      gm->a[4+ioff34] = gm->a[4+ioff34] + yn*onePlusR*c4y + zn*c4z+ xn*c4x;
+      gm->a[5+ioff34] = gm->a[5+ioff34] + yn*R*c4z;
+      gm->a[6+ioff34] = gm->a[6+ioff34] + zn*R*c4x;
+      gm->a[7+ioff34] = gm->a[7+ioff34] + zn*R*c4y;
+      gm->a[8+ioff34] = gm->a[8+ioff34] + zn*onePlusR*c4z + xn*c4x+ yn*c4y;
+
+      gm->a[0+ioff31] = gm->a[0+ioff31] + xn*onePlusR*c1x + yn*c1y+ zn*c1z;
+      gm->a[1+ioff31] = gm->a[1+ioff31] + xn*R*c1y;
+      gm->a[2+ioff31] = gm->a[2+ioff31] + xn*R*c1z;
+      gm->a[3+ioff31] = gm->a[3+ioff31] + yn*R*c1x;
+      gm->a[4+ioff31] = gm->a[4+ioff31] + yn*onePlusR*c1y + zn*c1z+ xn*c1x;
+      gm->a[5+ioff31] = gm->a[5+ioff31] + yn*R*c1z;
+      gm->a[6+ioff31] = gm->a[6+ioff31] + zn*R*c1x;
+      gm->a[7+ioff31] = gm->a[7+ioff31] + zn*R*c1y;
+      gm->a[8+ioff31] = gm->a[8+ioff31] + zn*onePlusR*c1z + xn*c1x+ yn*c1y;
+
+      gm->a[0+ioff32] = gm->a[0+ioff32] + xn*onePlusR*c2x + yn*c2y+ zn*c2z;
+      gm->a[1+ioff32] = gm->a[1+ioff32] + xn*R*c2y;
+      gm->a[2+ioff32] = gm->a[2+ioff32] + xn*R*c2z;
+      gm->a[3+ioff32] = gm->a[3+ioff32] + yn*R*c2x;
+      gm->a[4+ioff32] = gm->a[4+ioff32] + yn*onePlusR*c2y + zn*c2z+ xn*c2x;
+      gm->a[5+ioff32] = gm->a[5+ioff32] + yn*R*c2z;
+      gm->a[6+ioff32] = gm->a[6+ioff32] + zn*R*c2x;
+      gm->a[7+ioff32] = gm->a[7+ioff32] + zn*R*c2y;
+      gm->a[8+ioff32] = gm->a[8+ioff32] + zn*onePlusR*c2z + xn*c2x+ yn*c2y;
+
+      /* node4 */
+      xn = nx4/3.0;
+      yn = ny4/3.0;
+      zn = nz4/3.0;
+
+      gm->a[0+idiag4] = gm->a[0+idiag4] + xn*onePlusR*c4x + yn*c4y+ zn*c4z;
+      gm->a[1+idiag4] = gm->a[1+idiag4] + xn*R*c4y;
+      gm->a[2+idiag4] = gm->a[2+idiag4] + xn*R*c4z;
+      gm->a[3+idiag4] = gm->a[3+idiag4] + yn*R*c4x;
+      gm->a[4+idiag4] = gm->a[4+idiag4] + yn*onePlusR*c4y + zn*c4z+ xn*c4x;
+      gm->a[5+idiag4] = gm->a[5+idiag4] + yn*R*c4z;
+      gm->a[6+idiag4] = gm->a[6+idiag4] + zn*R*c4x;
+      gm->a[7+idiag4] = gm->a[7+idiag4] + zn*R*c4y;
+      gm->a[8+idiag4] = gm->a[8+idiag4] + zn*onePlusR*c4z + xn*c4x+ yn*c4y;
+
+      gm->a[0+ioff41] = gm->a[0+ioff41] + xn*onePlusR*c1x + yn*c1y+ zn*c1z;
+      gm->a[1+ioff41] = gm->a[1+ioff41] + xn*R*c1y;
+      gm->a[2+ioff41] = gm->a[2+ioff41] + xn*R*c1z;
+      gm->a[3+ioff41] = gm->a[3+ioff41] + yn*R*c1x;
+      gm->a[4+ioff41] = gm->a[4+ioff41] + yn*onePlusR*c1y + zn*c1z+ xn*c1x;
+      gm->a[5+ioff41] = gm->a[5+ioff41] + yn*R*c1z;
+      gm->a[6+ioff41] = gm->a[6+ioff41] + zn*R*c1x;
+      gm->a[7+ioff41] = gm->a[7+ioff41] + zn*R*c1y;
+      gm->a[8+ioff41] = gm->a[8+ioff41] + zn*onePlusR*c1z + xn*c1x+ yn*c1y;
+
+      gm->a[0+ioff42] = gm->a[0+ioff42] + xn*onePlusR*c2x + yn*c2y+ zn*c2z;
+      gm->a[1+ioff42] = gm->a[1+ioff42] + xn*R*c2y;
+      gm->a[2+ioff42] = gm->a[2+ioff42] + xn*R*c2z;
+      gm->a[3+ioff42] = gm->a[3+ioff42] + yn*R*c2x;
+      gm->a[4+ioff42] = gm->a[4+ioff42] + yn*onePlusR*c2y + zn*c2z+ xn*c2x;
+      gm->a[5+ioff42] = gm->a[5+ioff42] + yn*R*c2z;
+      gm->a[6+ioff42] = gm->a[6+ioff42] + zn*R*c2x;
+      gm->a[7+ioff42] = gm->a[7+ioff42] + zn*R*c2y;
+      gm->a[8+ioff42] = gm->a[8+ioff42] + zn*onePlusR*c2z + xn*c2x+ yn*c2y;
+
+      gm->a[0+ioff43] = gm->a[0+ioff43] + xn*onePlusR*c3x + yn*c3y+ zn*c3z;
+      gm->a[1+ioff43] = gm->a[1+ioff43] + xn*R*c3y;
+      gm->a[2+ioff43] = gm->a[2+ioff43] + xn*R*c3z;
+      gm->a[3+ioff43] = gm->a[3+ioff43] + yn*R*c3x;
+      gm->a[4+ioff43] = gm->a[4+ioff43] + yn*onePlusR*c3y + zn*c3z+ xn*c3x;
+      gm->a[5+ioff43] = gm->a[5+ioff43] + yn*R*c3z;
+      gm->a[6+ioff43] = gm->a[6+ioff43] + zn*R*c3x;
+      gm->a[7+ioff43] = gm->a[7+ioff43] + zn*R*c3y;
+      gm->a[8+ioff43] = gm->a[8+ioff43] + zn*onePlusR*c3z + xn*c3x+ yn*c3y;
     }
   }
 
