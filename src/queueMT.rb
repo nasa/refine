@@ -108,4 +108,11 @@ class TestQueue < Test::Unit::TestCase
   10000.times { q.removeCell(nodes) }
  end
 
+ def testReallocMemoryForLotsOfTransactionsPlus
+  nodes = [0,1,2,3,4]
+  xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
+  q = Queue.new
+  10000.times { q.newTransaction.addCell(nodes,xyzs).removeCell(nodes) }
+ end
+
 end
