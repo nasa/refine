@@ -443,17 +443,7 @@ Layer *layerTriangleFourthNode(Layer *layer, int triangle, double *xyz )
   double direction[3], direction0[3], direction1[3], direction2[3];
 
   if ( layer != layerTriangleCenter(layer,triangle,center) ) return NULL;
-
-  layerTriangleNormals(layer,triangle,normals);
-  layerNormalDirection(layer,normals[0],direction0);
-  layerNormalDirection(layer,normals[1],direction1);
-  layerNormalDirection(layer,normals[2],direction2);
-  for (i=0;i<3;i++)
-    direction[i] = ( direction0[i] + direction1[i] + direction2[i] )/3.0;
-  gridVectorNormalize(direction);
-
-  //layerTriangleDirection(layer,triangle,direction);
-
+  layerTriangleDirection(layer,triangle,direction);
   layerTriangleMaxEdgeLength(layer,triangle,&h);
   
   for (i=0;i<3;i++) xyz[i] = center[i] + 0.5*h*direction[i];
