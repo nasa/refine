@@ -61,10 +61,11 @@ VALUE gridmove_specified( VALUE self, VALUE node )
   return ( gridmoveSpecified( gm, NUM2INT(node) )?Qtrue:Qfalse );
 }
 
-VALUE gridmove_move( VALUE self )
+VALUE gridmove_springRelaxation( VALUE self, VALUE nsteps, VALUE subIterations )
 {
   GET_GM_FROM_SELF;
-  return ( gm == gridmoveMove( gm )?self:Qnil );
+  return ( gm == gridmoveSpringRelaxation( gm, NUM2INT(nsteps), 
+					   NUM2INT(subIterations) )?self:Qnil );
 }
 
 VALUE gridmove_springs( VALUE self )
@@ -92,6 +93,6 @@ void Init_GridMove()
   rb_define_method( cGridMove, "displace", gridmove_displace, 2 );
   rb_define_method( cGridMove, "displacement", gridmove_displacement, 1 );
   rb_define_method( cGridMove, "specified", gridmove_specified, 1 );
-  rb_define_method( cGridMove, "move", gridmove_move, 0 );
+  rb_define_method( cGridMove, "springRelaxation", gridmove_springRelaxation, 2 );
   rb_define_method( cGridMove, "springs", gridmove_springs, 0 );
 }

@@ -40,7 +40,7 @@ void gridmoveGridHasBeenFreed(void *voidGridMove );
 GridMove *gridmoveDisplace(GridMove *, int node, double *displace);
 GridMove *gridmoveDisplacement(GridMove *, int node, double *displacement);
 GridBool gridmoveSpecified(GridMove *, int node);
-GridMove *gridmoveMove(GridMove *);
+GridMove *gridmoveSpringRelaxation(GridMove *, int nsteps, int subIterations);
 GridMove *gridmoveSprings(GridMove *, int *nsprings, int **springs);
 
 END_C_DECLORATION

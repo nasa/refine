@@ -19,17 +19,16 @@ class TestGridMove < Test::Unit::TestCase
  EMPTY = (-1)
  
  def equalTetWithFaceBase
-  grid = Grid.new(4,1,1,0)
+  grid = Grid.new(4,1,0,0)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
   grid.addNode(0.5,0.866,0)
   grid.addNode(0.5,0.35,0.8)
   grid.addCell(0,1,2,3)
-  grid.addFace(0,1,2,10)
   grid
  end
 
- def testDisplacement
+ def testSpecifiedDisplacement
   grid = equalTetWithFaceBase
   assert_not_nil gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
@@ -94,14 +93,14 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal [0,1, 0,2, 0,3, 1,2, 1,3, 2,3, 1,4, 0,4, 2,4], gm.springs  
  end
 
- def testMove
+ def testSpringRelaxationUp
   grid = equalTetWithFaceBase
   assert_not_nil gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
   up  = [0.0,0.0,1.0]
   3.times{|n| gm.displace(n,up)}
   assert_equal zero, gm.displacement(3)
-  assert_equal gm, gm.move
+  assert_equal gm, gm.springRelaxation(1,1)
   assert_equal up, gm.displacement(0)
   assert_equal up, gm.displacement(1)
   assert_equal up, gm.displacement(2)
@@ -109,6 +108,21 @@ class TestGridMove < Test::Unit::TestCase
   assert_in_delta up[0], gm.displacement(3)[0], delta
   assert_in_delta up[1], gm.displacement(3)[1], delta
   assert_in_delta up[2], gm.displacement(3)[2], delta
+ end
+
+ def testSpringRelaxationRotate
+  grid = equalTetWithFaceBase
+  assert_not_nil gm = GridMove.new(grid)
+  2.times{|n| gm.displace(n,[0.0,0.0,0.0])}
+  gm.displace(2,[0.5,0,-0.866])
+  gm.springRelaxation(1,1)
+
+  puts gm.displacement(3)
+  ans = [0.5,0.8,-0.35]
+  delta = 1.0e-15
+  assert_in_delta ans[0], gm.displacement(3)[0], delta
+  assert_in_delta ans[1], gm.displacement(3)[1], delta
+  assert_in_delta ans[2], gm.displacement(3)[2], delta
  end
 
 end
