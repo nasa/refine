@@ -323,6 +323,106 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 
 Layer *layerRebuildVolume(Layer *layer, int vol){
 
+  int faceId;
+  int nshell, *shell;
+  int *l2g, *g2l;
+  int maxnode, nnode;
+  int maxface, face;
+  int nodes[3];
+  int front;
+  int i;
+  double *shellxyz;
+
+  int nvolnode, nvolcell;
+  int *newcell;
+  int *newxyz;
+
+  Grid *grid;
+  grid = layerGrid(layer);
+
+  maxnode = gridMaxNode(grid);
+  maxface = gridMaxFace(grid);
+
+  l2g = malloc(maxnode*sizeof(int));
+  g2l = malloc(maxnode*sizeof(int));
+
+  nshell =0;
+
+  for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
+    if (!layerParentFace(layer,faceId)) {
+      // HACK - HACK
+      // use total faces for origial faces not thawed, but they should be thawed
+      nshell += gridNThawedFaces(grid,faceId);
+    }
+  }
+  nshell += layerNFront(layer);
+  printf("allocating  %10d faces for shell.\n",nshell);
+
+  shell = malloc(3*nshell*sizeof(int));
+
+  nshell =0;
+  for (face=0;face<maxface;face++){
+    if (grid==gridFace(grid,face,nodes,&faceId)){
+      if (!layerParentFace(layer,faceId) && 
+	  ( !gridNodeFrozen(grid,nodes[0]) ||
+	    !gridNodeFrozen(grid,nodes[1]) ||
+	    !gridNodeFrozen(grid,nodes[2])    ) ){
+	shell[0+3*nshell] = nodes[0];
+	shell[1+3*nshell] = nodes[1];
+	shell[2+3*nshell] = nodes[2];
+	nshell++;
+      }
+    }
+  }
+  for(front=0;front<layerNFront(layer);front++){
+    layerFront(layer, front, nodes);
+    shell[0+3*nshell] = nodes[0];
+    shell[1+3*nshell] = nodes[1];
+    shell[2+3*nshell] = nodes[2];
+    nshell++;
+  }
+  printf("inserted  %12d faces into shell.\n",nshell);
+
+  for(i=0;i<maxnode;i++) l2g[i]=EMPTY;
+  for(i=0;i<maxnode;i++) g2l[i]=EMPTY;
+  nnode = 0;
+  for(i=0;i<nshell;i++){
+    if (EMPTY == g2l[shell[0+3*i]] ) { 
+      g2l[shell[0+3*i]] = nnode; 
+      nnode++;
+    }
+    if (EMPTY == g2l[shell[1+3*i]] ) { 
+      g2l[shell[1+3*i]] = nnode; 
+      nnode++;
+    }
+    if (EMPTY == g2l[shell[2+3*i]] ) { 
+      g2l[shell[2+3*i]] = nnode; 
+      nnode++;
+    }
+    shell[0+3*i] = g2l[shell[0+3*i]];
+    shell[1+3*i] = g2l[shell[1+3*i]];
+    shell[2+3*i] = g2l[shell[2+3*i]];
+  }
+  printf("the shell has %8d nodes.\n",nnode);
+  for(i=0;i<maxnode;i++)if (EMPTY != g2l[i]) l2g[g2l[i]]=i;
+  shellxyz = malloc(3*nnode*sizeof(double));
+  for(i=0;i<nnode;i++) gridNodeXYZ(grid,l2g[i],&shellxyz[3*i]);
+
+  if( !MeshMgr_MeshTetVolume(vol, 
+			     nnode, shellxyz,
+			     &nshell, &shell,
+			     0, NULL, 0, NULL,
+			     &nvolnode, &nvolcell, 
+			     &newcell, &newxyz) ) {
+    printf("%s\nCould NOT mesh Volume %d\n",ErrMgr_GetErrStr(),vol);
+    //return NULL;
+  }
+  printf("rebuild volume has %d nodes %d cells\n",nvolnode,nvolcell);
+
+
+  free(l2g);
+  free(g2l);
+
   return layer;
 }
 
