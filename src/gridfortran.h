@@ -93,6 +93,7 @@ void gridmovesetlocalnodedata_( int *ndim, int *nnode,
 
 void gridmovefree_( );
 
+void gridgeomsize_( int *nGeomNode, int *nGeomEdge, int *nGeomFace );
 void gridmaxedge_( int *maxedge );
 void gridedge_( int *edge, int *edgeId, 
 		int *globalnodes, int *nodeparts, 

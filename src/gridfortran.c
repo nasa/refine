@@ -652,6 +652,11 @@ void gridmovefree_( )
   gridmoveFree( gm ); gm = NULL;
 }
 
+void gridgeomsize_( int *nGeomNode, int *nGeomEdge, int *nGeomFace )
+{
+  gridGeomSize( grid, nGeomNode, nGeomEdge, nGeomFace );
+}
+
 void gridmaxedge_( int *maxedge )
 {
   *maxedge = gridMaxEdge( grid );
@@ -662,7 +667,7 @@ void gridedge_( int *edge, int *edgeId,
 		double *t, double *xyz)
 {
   int localnodes[2];
-  if (grid==gridEdge(grid, (*edge)-1, edgeId, localnodes)) {
+  if (grid==gridEdge(grid, (*edge)-1, localnodes, edgeId)) {
     globalnodes[0] = 1 + gridNodeGlobal(grid,localnodes[0]);
     globalnodes[1] = 1 + gridNodeGlobal(grid,localnodes[1]);
     nodeparts[0] = gridNodePart(grid,localnodes[0]);
@@ -675,3 +680,4 @@ void gridedge_( int *edge, int *edgeId,
     *edgeId = EMPTY;
   }
 }
+
