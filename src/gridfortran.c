@@ -140,9 +140,11 @@ void gridwritetecplotsurfacezone_( )
   gridWriteTecplotSurfaceZone(grid,filename);
   ar1 = gridMinAR(grid);
 
+#ifdef PARALLEL_VERBOSE 
   printf( " %6d tecplot dump            initial AR%14.10f final AR%14.10f\n",
 	  gridPartId(grid),ar0,ar1 );
   fflush(stdout);
+#endif
 }
 
 void gridexportfast_( )
@@ -488,7 +490,9 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
     } 
   }
 
+#ifdef PARALLEL_VERBOSE 
   printf( " %6d update xfer                      %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
+#endif
 }

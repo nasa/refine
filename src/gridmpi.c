@@ -294,10 +294,12 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
       }
     }
   }
-  
+ 
+#ifdef PARALLEL_VERBOSE 
   printf( " %6d queue applied                           nnode %8d AR%14.10f\n",
 	  gridPartId(grid),gridNNode(grid),gridMinAR(grid) );
   fflush(stdout);
+#endif
 
   queueFree(lq);
   return grid;
