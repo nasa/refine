@@ -82,11 +82,19 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal true,  @grid.cellExists(1,199)
  end
  
- def testAddCell
+ def testAddCellDeg
   assert_equal 0, @grid.ncell
   @grid.addCell(0,1,2,3)
   assert_equal 1, @grid.ncell
   (0..3).each { |n| assert_equal 1, @grid.nodeDeg(n)}
+ end
+
+ def testAddCellRegFailure
+  grid = Grid.new(3,1,0)
+  assert_equal nil, grid.addCell(0,1,2,3)
+  grid = Grid.new(4,1,0)
+  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_equal nil, grid.addCell(0,1,2,3)
  end
  
  def testGetGem1
