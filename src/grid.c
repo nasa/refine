@@ -4039,11 +4039,18 @@ int gridMirrorNodeAboutY0(Grid *grid, int node, int origGlobal, int mirrorAux )
   double xyz[3];
   double map[6];
   int aux;
+  double Y0;
+
+  Y0 = 0.0;
 
   gridNodeXYZ(grid,node,xyz);
-  newNode = gridAddNodeWithGlobal(grid,xyz[0],-xyz[1],xyz[2],
-				  gridNodeGlobal(grid,node)+origGlobal);
-  gridSetNodePart(grid,newNode,gridNodePart(grid,node));
+  if ( origGlobal > 0 ) {
+    newNode = gridAddNodeWithGlobal(grid,xyz[0],Y0-xyz[1],xyz[2],
+				    gridNodeGlobal(grid,node)+origGlobal);
+    gridSetNodePart(grid,newNode,gridNodePart(grid,node));
+  } else {
+    newNode = gridAddNode(grid,xyz[0],Y0-xyz[1],xyz[2]);
+  } 
   gridMap(grid, node, map);
   gridSetMap(grid, newNode, map[0], map[1], map[2], map[3], map[4], map[5]);
   for ( aux = 0; aux<gridNAux(grid);aux++)
@@ -4079,7 +4086,7 @@ Grid *gridCopyAboutY0(Grid *grid, int symmetryFaceId, int mirrorAux )
   for ( node = 0 ; node < orignode ; node++){
     o2n[node] = gridMirrorNodeAboutY0(grid,node,origNodeGlobal,mirrorAux);
   }
-  gridSetGlobalNNode(grid,2*origNodeGlobal);
+  if ( origNodeGlobal > 0 ) gridSetGlobalNNode(grid,2*origNodeGlobal);
 
   printf("gridCopyAboutY0: remove duplicate nodes.\n");
 
@@ -4110,14 +4117,22 @@ Grid *gridCopyAboutY0(Grid *grid, int symmetryFaceId, int mirrorAux )
   origCellGlobal = gridGlobalNCell(grid);
   for ( cell = 0 ; cell < origcell ; cell++ ){
     gridCell(grid,cell,nodes);
-    gridAddCellWithGlobal(grid,
-			  o2n[nodes[1]],
-			  o2n[nodes[0]],
-			  o2n[nodes[2]],
-			  o2n[nodes[3]],
-			  origCellGlobal+gridCellGlobal(grid,cell));
+    if ( origCellGlobal > 0 ) {
+      gridAddCellWithGlobal(grid,
+			    o2n[nodes[1]],
+			    o2n[nodes[0]],
+			    o2n[nodes[2]],
+			    o2n[nodes[3]],
+			    origCellGlobal+gridCellGlobal(grid,cell));
+    } else {
+      gridAddCell(grid,
+		  o2n[nodes[1]],
+		  o2n[nodes[0]],
+		  o2n[nodes[2]],
+		  o2n[nodes[3]]);
+    }
   }
-  gridSetGlobalNCell(grid,2*origCellGlobal);
+  if ( origCellGlobal > 0 ) gridSetGlobalNCell(grid,2*origCellGlobal);
   printf("gridCopyAboutY0: remove sym face\n");
 
   gridThawAll(grid);
