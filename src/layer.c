@@ -303,11 +303,11 @@ Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
     }
   }
 
-  layer->adj = adjCreate( layer->nnormal,layerNTriangle(layer)*3  );
+  layerBuildNormalTriangleAdjacency(layer);
+
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
       normal = layer->triangle[triangle].normal[i];
-      adjRegister( layer->adj, normal, triangle );
       layerTriangleDirection(layer,triangle,direction);
       layer->normal[normal].direction[0] += direction[0];
       layer->normal[normal].direction[1] += direction[1];
@@ -325,6 +325,22 @@ Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
     }
   }
   
+  return layer;
+}
+
+Layer *layerBuildNormalTriangleAdjacency(Layer *layer)
+{
+  int triangle, i, normals[3];
+
+  if (NULL != layer->adj) adjFree(layer->adj);
+
+  layer->adj = adjCreate( layerNNormal(layer), layerNTriangle(layer)*3  );
+
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    layerTriangleNormals(layer,triangle,normals);
+    for (i=0;i<3;i++) adjRegister( layer->adj, normals[i], triangle );
+  }
+
   return layer;
 }
 
@@ -1795,7 +1811,7 @@ Layer *layerBlend(Layer *layer)
  
   }
 
-  // redo adj for normal-face
+  layerBuildNormalTriangleAdjacency(layer);
 
   return layer;
 }
