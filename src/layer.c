@@ -978,6 +978,16 @@ double layerNormalMaxLength(Layer *layer, int normal)
   return layer->normal[normal].maxlength;
 }
 
+Layer *layerSetNormalInitialHeight(Layer *layer, int normal, 
+				   double initialHeight)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
+  layer->normal[normal].initialheight = initialHeight;
+
+  return layer;
+}
+
 Layer *layerSaveInitialNormalHeight(Layer *layer)
 {
   int normal;
@@ -1000,6 +1010,22 @@ Layer *layerSetNormalRate(Layer *layer, int normal, double rate)
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
 
   layer->normal[normal].rate=rate;
+
+  return layer;
+}
+
+double layerNormalRate(Layer *layer, int normal)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return -1.0;
+
+  return layer->normal[normal].rate;
+}
+
+Layer *layerSetAllNormalRate(Layer *layer, double rate)
+{
+  int normal;
+  for(normal=0;normal<layerNNormal(layer);normal++)
+    layerSetNormalRate(layer, normal, rate);
 
   return layer;
 }
