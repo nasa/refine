@@ -2565,7 +2565,7 @@ Grid *gridCopyAboutY0(Grid *grid)
   origface = gridNFace(grid);
   for ( face = 0 ; face < origface ; face++ ){
     gridFace(grid,face,nodes,&faceid);
-    if ( faceid == 3 ) {
+    if ( faceid == 5 || faceid == 6 ) {
       for (i=0;i<3;i++){
 	node = nodes[i];
 	if (o2n[node] >= orignode){
@@ -2595,7 +2595,8 @@ Grid *gridCopyAboutY0(Grid *grid)
   printf("gridCopyAboutY0: remove sym face\n");
 
   gridThawAll(grid);
-  gridDeleteThawedFaces(grid,3);
+  gridDeleteThawedFaces(grid,5);
+  gridDeleteThawedFaces(grid,6);
 
   free(o2n);
     
