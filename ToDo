@@ -7,7 +7,10 @@ Start Builds!!!!!
 
 --Major refactoring
 
-add face area in uv check to linear program before evaluation
+verify that I am geeting all the performance out the the volume
+smoothing that is possible.
+
+move gridMinFaceAreaUV gridFaceAreaUV from grdcad to gridmetric
 
 make consistant use of the cost constraint functions.
 
