@@ -174,6 +174,19 @@ Grid *gridUpdateFaceParameter(Grid *grid, int node ){
   return grid;
 }
 
+Grid *gridProjectToEdge(Grid *grid, int edgeId, 
+			double *xyz, double *t, double *newxyz )
+{
+  int vol = 1;
+
+  if (!nearestOnEdge( vol, edgeId, xyz, t, newxyz) ) {
+    printf("%s: %d: nearestOnEdge failed.\n",__FILE__,__LINE__);
+    return NULL;  
+  }
+
+  return grid;
+}
+
 Grid *gridProjectToFace(Grid *grid, int faceId, 
 			double *xyz, double *uv, double *newxyz )
 {
