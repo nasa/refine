@@ -24,11 +24,55 @@ VALUE adj_nnode( VALUE self )
   return INT2NUM( adjNNode(adj) );
 }
 
+VALUE adj_register( VALUE self, VALUE node, VALUE item )
+{
+  Adj *returned;
+  GET_ADJ_FROM_SELF;
+  returned = adjRegister( adj, NUM2INT(node), NUM2INT(item) );
+  return (returned==NULL?Qnil:self);
+}
+
+VALUE adj_valid( VALUE self )
+{
+  GET_ADJ_FROM_SELF;
+  return (adjValid(adj)?Qtrue:Qfalse);
+}
+
+VALUE adj_more( VALUE self )
+{
+  GET_ADJ_FROM_SELF;
+  return (adjMore(adj)?Qtrue:Qfalse);
+}
 VALUE cAdj;
+
+VALUE adj_first( VALUE self, VALUE node )
+{
+  GET_ADJ_FROM_SELF;
+  return (adjFirst(adj, NUM2INT(node) )==adj?self:Qnil);
+}
+
+VALUE adj_current( VALUE self )
+{
+  GET_ADJ_FROM_SELF;
+  return INT2NUM( adjCurrent(adj) );
+}
+
+VALUE adj_next( VALUE self )
+{
+  GET_ADJ_FROM_SELF;
+  adjNext(adj);
+  return self;
+}
 
 void Init_Adj() 
 {
   cAdj = rb_define_class( "Adj", rb_cObject );
   rb_define_singleton_method( cAdj, "new", adj_new, 2 );
   rb_define_method( cAdj, "nnode", adj_nnode, 0 );
+  rb_define_method( cAdj, "register", adj_register, 2 );
+  rb_define_method( cAdj, "valid", adj_valid, 0 );
+  rb_define_method( cAdj, "more", adj_more, 0 );
+  rb_define_method( cAdj, "first", adj_first, 1 );
+  rb_define_method( cAdj, "current", adj_current, 0);
+  rb_define_method( cAdj, "next", adj_next, 0);
 }
