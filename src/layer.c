@@ -575,13 +575,15 @@ Layer *layerWiggle(Layer *layer, double height )
   if (layerNNormal(layer) == 0 ) return NULL;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    root = layer->normal[normal].root;
-    gridNodeXYZ(grid,root,xyz);
-    for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
-    gridSetNodeXYZ(grid, root, xyz);
-    faceId = layerConstrained(layer,normal);
-    if (0 != faceId) {
-      gridProjectNodeToFace(grid, root, faceId );
+    if ( !layerNormalTerminated(layer,normal) ) {
+      root = layer->normal[normal].root;
+      gridNodeXYZ(grid,root,xyz);
+      for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
+      gridSetNodeXYZ(grid, root, xyz);
+      faceId = layerConstrained(layer,normal);
+      if (0 != faceId) {
+	gridProjectNodeToFace(grid, root, faceId );
+      }
     }
   }
 
