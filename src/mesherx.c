@@ -71,50 +71,47 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   }else{
   }
 
-  origin[0] = -0.0001;
+  origin[0] = -10000;
   origin[1] = 0.0;
   origin[2] = 0.0;
   direction[0] = 1.0;
   direction[1] = 0.0;
   direction[2] = 0.0;
-  layerSetPolynomialMaxHeight(layer, 0.71, 0.05, 1.0, 
+  layerSetPolynomialMaxHeight(layer, 0.75, 0.0, 1.0, 
 			      origin, direction );
-  origin[0] = 1.2;
-  layerSetPolynomialMaxHeight(layer, 0.07, 0.1, 1.0, 
-			      origin, direction );
-  origin[0] = 1.7;
-  layerSetPolynomialMaxHeight(layer, 0.12, 0.04, 1.0, 
-			      origin, direction );
-  origin[0] = -0.0001;
-  layerAssignPolynomialNormalHeight(layer, 1.1e-3, 2.0e-3, 2.0,
-                                    origin, direction );
-  origin[0] = 1.1;
-  layerAssignPolynomialNormalHeight(layer, 5.0e-5, 0.0, 1.0,
-                                    origin, direction );
-  origin[0] = 1.5;
-  layerAssignPolynomialNormalHeight(layer, 5.0e-5, 1.0e-3, 2.0,
-                                    origin, direction );
-  origin[0] = 2.5;
-  layerAssignPolynomialNormalHeight(layer, 0.00105, 1.5e-4, 1.0,
+  layerAssignPolynomialNormalHeight(layer, 1.0e-2, 0.0, 1.0,
                                     origin, direction );
   layerScaleNormalHeight(layer,scale);
   layerSaveInitialNormalHeight(layer);
+
+  printf("inserting blends...\n");
+  layerBlend(layer);
+  printf("split blends...\n");
+  layerSplitBlend(layer);
+
   layerComputeNormalRateWithBGSpacing(layer,1.0);
 
   i=0;
-  while (i<nLayer &&
-	 layerNNormal(layer)>layerTerminateNormalWithLength(layer,1.0)){
+  while (layerAnyActiveNormals(layer)){
+    i++;
 
     layerSmoothNormalDirection(layer);
+
     layerSetNormalHeightWithMaxRate(layer,rate);
-    layerTerminateCollidingFronts(layer);
+
+    layerTerminateNormalWithLength(layer,1.0);
+    layerTerminateNormalWithBGSpacing(layer, 1.5, 1.9);
+
+    if(i>1)layerTerminateCollidingFronts(layer);
+
+    printf("advance layer %d\n",i);
+
     layerAdvance(layer);
+
     layerWriteTecplotFrontGeometry(layer);
-    printf("advance layer %d rate %f\n",i,rate);
-    i++;
   }
 
-  /* case dep */
+/* case dep */
 
   if ( layer != layerRebuildInterior(layer,vol) ) return 0;
 
