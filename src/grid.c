@@ -403,6 +403,85 @@ Grid *gridExportFAST( Grid *grid, char *filename )
   return grid;
 }
 
+Grid *gridExportAFLR3( Grid *grid, char *filename )
+{
+  FILE *file;
+  int i;
+
+  if (NULL == gridPack(grid)) {
+    printf("gridExportAFLR3: gridPack failed.\n");
+    return NULL;
+  }
+
+  printf("gridExportAFLR3: open file: %s\n",filename);
+  file = fopen(filename,"w");
+
+  fprintf(file,"%10d %10d %10d %10d %10d %10d %10d\n",
+	  grid->nnode,grid->nface,grid->nquad,
+	  grid->ncell,grid->npyramid,grid->nprism,0);
+
+  printf("gridExportAFLR3: writing xyz...\n");
+  
+  for( i=0; i<grid->nnode ; i++ ) 
+    fprintf(file,"%25.15e %25.15e %25.15e\n",
+	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i]);
+
+  printf("gridExportAFLR3: writing faces...\n");
+
+  for( i=0; i<grid->nface ; i++ ) {
+    fprintf(file,"%10d %10d %10d\n",
+	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
+  }
+
+  for( i=0; i<grid->nquad ; i++ ) {
+    fprintf(file,"%10d %10d %10d %10d\n",
+	    grid->quad[i].nodes[0],grid->quad[i].nodes[1],
+	    grid->quad[i].nodes[2],grid->quad[i].nodes[3]);
+  }
+
+  for( i=0; i<grid->nface ; i++ ) {
+    fprintf(file,"%4d",grid->faceId[i]);
+  }
+
+  for( i=0; i<grid->nquad ; i++ ) {
+    fprintf(file,"%4d",grid->quad[i].faceId);
+  }
+
+  printf("gridExportAFLR3: writing cells...\n");
+  
+  for( i=0; i<grid->ncell ; i++ ) {
+    fprintf(file,"%10d %10d %10d %10d\n",
+	    grid->c2n[0+4*i]+1,grid->c2n[1+4*i]+1,
+	    grid->c2n[2+4*i]+1,grid->c2n[3+4*i]+1);
+
+  }
+
+  for( i=0; i<grid->npyramid ; i++ ) {
+    fprintf(file,"%10d %10d %10d %10d %10d\n",
+	    grid->pyramid[i].nodes[0],
+	    grid->pyramid[i].nodes[1],
+	    grid->pyramid[i].nodes[2],
+	    grid->pyramid[i].nodes[3],
+	    grid->pyramid[i].nodes[4]);
+  }
+
+  for( i=0; i<grid->nprism ; i++ ) {
+    fprintf(file,"%10d %10d %10d %10d %10d %10d\n",
+	    grid->prism[i].nodes[0],
+	    grid->prism[i].nodes[1],
+	    grid->prism[i].nodes[2],
+	    grid->prism[i].nodes[3],
+	    grid->prism[i].nodes[4],
+	    grid->prism[i].nodes[5]);
+  }
+
+  /* ain't got no hexes */
+
+  fclose(file);
+
+  return grid;
+}
+
 Grid *gridImportAdapt( Grid *grid, char *filename )
 {
   int i;
