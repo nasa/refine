@@ -625,6 +625,7 @@ Grid *gridPack(Grid *grid)
   int i;
   int orignode, packnode, origcell, packcell;
   int origface, packface, origedge, packedge;
+  int nFaceId;
   int iface, n0, n1, id, n[3];
   double t0, t1, u[3], v[3];
   bool emptyFace;
@@ -709,11 +710,14 @@ Grid *gridPack(Grid *grid)
 
   packface=0;
 
+  nFaceId = 0;
+  for ( origface=0 ; origface < grid->maxface ; origface++ ) 
+    if (grid->f2n[0+3*origface] != EMPTY) 
+      nFaceId = MAX(nFaceId, grid->faceId[origface]);
+
   emptyFace = FALSE;
   iface=0;
-  while (!emptyFace) {
-    emptyFace = TRUE;
-    iface++;
+  for (iface=1;iface <= nFaceId;iface++){
     for ( origface=0 ; origface < grid->maxface ; origface++ ){ 
       if ( grid->faceId[origface]==iface && grid->f2n[0+3*origface] != EMPTY) {
 	emptyFace = FALSE;
