@@ -85,7 +85,7 @@ end
  
  def testAddCellDeg
   assert_equal 0, @grid.ncell
-  @grid.addCell(0,1,2,3)
+  assert_equal @grid, @grid.addCell(0,1,2,3)
   assert_equal 1, @grid.ncell
   (0..3).each { |n| assert_equal 1, @grid.nodeDeg(n)}
  end
@@ -98,6 +98,16 @@ end
   assert_equal nil, grid.addCell(0,1,2,3)
  end
  
+ def testRemoveCell
+  assert_equal @grid, @grid.addCell(0,1,2,3)
+  assert_equal nil, @grid.removeCell(25625)
+  assert_equal 1, @grid.ncell
+  assert_equal @grid, @grid.removeCell(0)
+  assert_equal nil, @grid.removeCell(0)
+  assert_equal 0, @grid.ncell
+  (0..3).each { |n| assert_equal 0, @grid.nodeDeg(n)}
+ end
+
  def testGetGem
   grid = Grid.new(5,3,0)
   assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
@@ -140,6 +150,15 @@ end
   assert_equal [0,1,2,3], grid.equator(4,5)
  end
 
+ def testSwap4for4
+  grid = Grid.new(6,4,0)
+  assert_equal grid, grid.
+   addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
+  assert_equal grid, grid.swap(4,5)
+  assert_equal 2, grid.nodeDeg(4)
+  assert_equal 2, grid.nodeDeg(5)
+ end
+
  def XtestMaxSize
   nnode = 6000000
   grid = Grid.new(nnode,nnode*6,0)
@@ -147,10 +166,8 @@ end
 
  end
 
- # adding a cell bigger than maxcell
+ # gaps in the equator
  
- # first cell on a large node number;
-
  # make register unique
 
  # allocating a new chunk of celllist
