@@ -514,10 +514,10 @@ Layer *layerAdvance(Layer *layer, double height )
 
     edgeId = -layerConstrained(layer,normals[1]);
     if (edgeId > 0 && n[1]!=n[4]) 
-      gridAddEdge(grid,n[1],n[5],edgeId,DBL_MAX,DBL_MAX);
+      gridAddEdge(grid,n[1],n[4],edgeId,DBL_MAX,DBL_MAX);
 
     edgeId = -layerConstrained(layer,normals[2]);
-    if (edgeId > 0 && n[2]!=n[4]) 
+    if (edgeId > 0 && n[2]!=n[5]) 
       gridAddEdge(grid,n[2],n[5],edgeId,DBL_MAX,DBL_MAX);
 
     if (0 != layerConstrained(layer,normals[0]) && 
