@@ -161,6 +161,21 @@ else
 fi
 AC_SUBST([CAPRIOpenCASCADElibrary])
 
+have_PROE='no'
+AC_CHECK_FILE([/ump/fldmd/home/mikepark/local/pkgs/ptc/proeWildfire/protoolkit/i486_linux/obj/protk_dll.a],[have_PROE='yes'],[have_PROE='no'])
+AC_CHECK_FILE([/ump/fldmd/home/mikepark/local/pkgs/ptc/proeWildfire/prodevelop/i486_linux/obj/prodev_dll.a],[have_PROE='yes'],[have_PROE='no'])
+
+
+if test "$have_PROE" != 'no'
+then
+  AM_CONDITIONAL(BUILD_PROE_KERNEL,true)
+  CAPRIProElibrary="-L$CAPRI/ProE/$CAPRIarch -lcapri /ump/fldmd/home/mikepark/local/pkgs/ptc/proeWildfire/protoolkit/i486_linux/obj/protk_dll.a /ump/fldmd/home/mikepark/local/pkgs/ptc/proeWildfire/prodevelop/i486_linux/obj/prodev_dll.a"
+else
+  AM_CONDITIONAL(BUILD_PROE_KERNEL,false)
+  CAPRIProElibrary=
+fi
+AC_SUBST([CAPRIProElibrary])
+
 AC_SUBST([GridExKernels])
 
 AC_OUTPUT(Makefile src/Makefile)
