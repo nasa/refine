@@ -83,9 +83,12 @@ end
   assert_equal true,  @grid.cellExists(1,199)
  end
  
- def testAddCellDeg
+ def testAddCellDegAndCell
   assert_equal 0, @grid.ncell
+  assert_equal nil, @grid.cell(0)
+  assert_equal nil, @grid.cell(5)
   assert_equal @grid, @grid.addCell(0,1,2,3)
+  assert_equal [0, 1, 2, 3], @grid.cell(0)
   assert_equal 1, @grid.ncell
   (0..3).each { |n| assert_equal 1, @grid.nodeDeg(n)}
  end
@@ -103,6 +106,7 @@ end
   assert_equal nil, @grid.removeCell(25625)
   assert_equal 1, @grid.ncell
   assert_equal @grid, @grid.removeCell(0)
+  assert_equal nil, @grid.cell(0)
   assert_equal nil, @grid.removeCell(0)
   assert_equal 0, @grid.ncell
   (0..3).each { |n| assert_equal 0, @grid.nodeDeg(n)}
@@ -165,6 +169,10 @@ end
   1.upto(nnode*6) {grid.addCell(3,4,0,1)}
 
  end
+
+ # add a cell to a blank spot
+
+ # check the cell nodes on a swap
 
  # gaps in the equator
  
