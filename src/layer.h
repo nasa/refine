@@ -37,8 +37,10 @@ Layer *layerConstrainNormal(Layer *, int bc );
 int layerConstrained(Layer *, int normal );
 Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
+int layerNActiveNormal(Layer *);
 Layer *layerAdvance(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
+Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
 
 END_C_DECLORATION
 

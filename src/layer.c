@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "layer.h"
+#include "gridmetric.h"
 #include "gridcad.h"
 #include "grid.h"
 #include "adj.h"
@@ -376,6 +377,18 @@ bool layerNormalTerminated(Layer *layer, int normal )
   return layer->normal[normal].terminated;
 }
 
+int layerNActiveNormal(Layer *layer )
+{
+  int normal, nActive;
+
+  nActive=0;
+
+  for ( normal=0 ; normal < layerNNormal(layer); normal++ ) 
+    if ( !layer->normal[normal].terminated ) nActive++;
+
+  return nActive;
+}
+
 Layer *layerAdvance(Layer *layer, double height )
 {
   Grid *grid = layer->grid;
@@ -587,6 +600,22 @@ Layer *layerWiggle(Layer *layer, double height )
     }
   }
 
+  return layer;
+}
+
+Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
+{
+  int normal, nterm;;
+  if (layerNNormal(layer) == 0 ) return NULL;
+
+  nterm = 0;
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    if (gridSpacing(layer->grid, layer->normal[normal].root ) < spacing ) {
+      nterm++;
+      layerTerminateNormal(layer, normal);
+    }
+  }
+  printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
   return layer;
 }
 
