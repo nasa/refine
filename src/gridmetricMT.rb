@@ -88,12 +88,35 @@ class TestGridMetric < Test::Unit::TestCase
 
  def testMatrixEigenValues
   assert_not_nil grid = Grid.new(1,0,0,0)
-  eig = grid.eigenValues( [ 1.0, 0.0, 0.0, 
-                                 2.0, 0.0, 
-                                      3.0 ])
+
+  assert_not_nil eig = grid.eigenValues( [ 1.0, 0.0, 0.0, 
+                                                2.0, 0.0, 
+                                                     3.0 ])
   assert_in_delta 3.0, eig[0], 1.0e-15
   assert_in_delta 2.0, eig[1], 1.0e-15
   assert_in_delta 1.0, eig[2], 1.0e-15
+
+  assert_not_nil eig = grid.eigenValues( [ 0.3125, -0.1875,  0.0000,
+                                                    0.3125,  0.0000,
+                                                             1.0000 ] )
+  assert_in_delta 1.000, eig[0], 1.0e-15
+  assert_in_delta 0.500, eig[1], 1.0e-15
+  assert_in_delta 0.125, eig[2], 1.0e-15
+
+  assert_not_nil eig = grid.eigenValues( [ 1.0, 0.0, 0.0, 
+                                                1.0, 0.0, 
+                                                     1.0 ])
+  assert_in_delta 1.0, eig[0], 1.0e-15
+  assert_in_delta 1.0, eig[1], 1.0e-15
+  assert_in_delta 1.0, eig[2], 1.0e-15
+
+  assert_not_nil eig = grid.eigenValues( [ 2.0, 0.0, 0.0, 
+                                                1.0, 0.0, 
+                                                     1.0 ])
+  assert_in_delta 2.0, eig[0], 1.0e-15
+  assert_in_delta 1.0, eig[1], 1.0e-15
+  assert_in_delta 1.0, eig[2], 1.0e-15
+
  end
 
  def testFindLargestRatioEdge
@@ -256,7 +279,7 @@ class TestGridMetric < Test::Unit::TestCase
   ans = grid.nodeFaceMRDerivative(1)
   assert_in_delta mr,    ans[0], 1.0e-8
   assert_in_delta 0.0, ans[1], 1.0e-4
-  assert_in_delta -deriv, ans[2], 1.0e-4
+  assert_in_delta( -deriv, ans[2], 1.0e-4)
   assert_in_delta 0.0,   ans[3], 1.0e-15  
   ans = grid.nodeFaceMRDerivative(3)
   assert_in_delta 1.0,    ans[0], 1.0e-8

@@ -242,12 +242,32 @@ Grid *gridSetMap(Grid *grid, int node,
 
 Grid *gridEigenValues(Grid *grid, double *m, double *eigenValues)
 {
-  double t;
+  double t, b, c, d;
+  double Q, Rp, Q3, Qr2m, b3;
 
-  eigenValues[0]=m[0];
-  eigenValues[1]=m[3];
-  eigenValues[2]=m[5];
+  if (ABS(m[1])+ABS(m[2])+ABS(m[4]) < 1e-12) {
+    eigenValues[0]=m[0];
+    eigenValues[1]=m[3];
+    eigenValues[2]=m[5];
+  }else{
+    b = -(m[0] + m[3] + m[5]);
+    c = m[0]*m[3] + m[3]*m[5] + m[5]*m[0]
+      - m[4]*m[4] - m[2]*m[2] - m[1]*m[1];
+    d = m[0]*m[4]*m[4] + m[3]*m[2]*m[2] + m[5]*m[1]*m[1]
+      - m[0]*m[3]*m[5] - 2.0*m[4]*m[2]*m[1];
 
+    Q = (b*b - 3.0*c)/9.0;
+    Rp = (2.0*b*b*b - 9.0*b*c + 27.0*d)/54.0;
+    Q3 = Q*Q*Q;
+    if ( Rp*Rp > Q3 ) return NULL;
+    
+    b3 = b/3.0;
+    t = acos(Rp/sqrt(Q3));
+    Qr2m = -2.0*sqrt(Q);
+    eigenValues[0] = Qr2m*cos(t/3.0) - b3;
+    eigenValues[1] = Qr2m*cos((t + 2.0*M_PI)/3.0) - b3;
+    eigenValues[2] = Qr2m*cos((t - 2.0*M_PI)/3.0) - b3;
+  }
 
   if ( eigenValues[1] > eigenValues[0] ) {
     t = eigenValues[0];
