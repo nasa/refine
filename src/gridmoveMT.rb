@@ -22,7 +22,7 @@ class TestGridMove < Test::Unit::TestCase
   grid = Grid.new(4,1,1,0)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
-  grid.addNode(0.5,0.7,0)
+  grid.addNode(0.5,0.866,0)
   grid.addNode(0.5,0.35,0.8)
   grid.addCell(0,1,2,3)
   grid.addFace(0,1,2,10)
@@ -105,7 +105,10 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal up, gm.displacement(0)
   assert_equal up, gm.displacement(1)
   assert_equal up, gm.displacement(2)
-  assert_equal up, gm.displacement(3)
+  delta = 1.0e-15
+  assert_in_delta up[0], gm.displacement(3)[0], delta
+  assert_in_delta up[1], gm.displacement(3)[1], delta
+  assert_in_delta up[2], gm.displacement(3)[2], delta
  end
 
 end
