@@ -1139,8 +1139,6 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   for(s=0;s<4;s++) {
     gridSetNodeXYZ(grid, node, simplex[s]);
     gridNodeVolume(grid,node,&volume[s]);
-    printf("%2d x%10.6f y%10.6f z%10.6f v%10.6f\n",
-	   s, simplex[s][0], simplex[s][1], simplex[s][2], volume[s]);
   }
 
   for(i=0;i<3;i++) avgXYZ[i] = 0.0;
@@ -1150,7 +1148,6 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   evaluations = 4;
   while (evaluations < 200 ) {
 
-    printf("evaluations %d\n", evaluations );
 
     best = 0;
     if ( volume[0] > volume[1] ) {
@@ -1170,8 +1167,9 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
 	if ( s!=worst && volume[s]<volume[secondworst]) secondworst = s;
       }
     }
-    printf("the best is %d the secondworst is %d and the worst is %d\n",
-	   best,secondworst,worst);
+
+    printf("evaluations%6d best%20.15f worst%20.15f\n", 
+	   evaluations, volume[best], volume[worst]);
 
     if (volume[best]-volume[worst] < 1.0e-5*volume[best]) break;
 
@@ -1192,8 +1190,6 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
 		simplex[s][i]=0.5*(simplex[s][i]+simplex[best][i]);
 	      gridSetNodeXYZ(grid, node, simplex[s]);
 	      gridNodeVolume(grid,node,&volume[s]);
-	      printf("s%1d x%10.6f y%10.6f z%10.6f v%10.6f\n",
-		     s, simplex[s][0], simplex[s][1], simplex[s][2], volume[s]);
 	    }
 	  }
 	}      
@@ -1231,9 +1227,6 @@ static double reflect( Grid *grid,
     volume[worst] = reflectedVolume;
     for(i=0;i<3;i++) avgXYZ[i] += ( reflectedXYZ[i] - simplex[worst][i] );
     for(i=0;i<3;i++) simplex[worst][i] = reflectedXYZ[i];
-    for(i=0;i<4;i++)
-      printf("r%1d x%10.6f y%10.6f z%10.6f v%10.6f\n",
-	     i, simplex[i][0], simplex[i][1], simplex[i][2], volume[i]);
   }
 
   return reflectedVolume;
