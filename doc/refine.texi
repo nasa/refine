@@ -484,7 +484,8 @@ result in negative volume cells.
 If the area of any faces in UV parameters is found to be negative. The
 nodes of the triangle and its neigbors are moved using simplex
 searches to optimize the minimum incident trangle area in UV. The
-quality of the volume cells is not considered in this step may worsen.
+quality of the volume cells is not considered in this step and may
+worsen.
 
 @subsection Untangle Cells (Increase Volume)
 If any negative cells exist then they are untangled by node movement
