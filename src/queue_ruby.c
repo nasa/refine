@@ -100,6 +100,18 @@ VALUE queue_addedCellXYZs( VALUE self, VALUE index )
   return rb_xyzs;
 }
 
+VALUE queue_removedFaces( VALUE self, VALUE transaction )
+{
+  GET_QUEUE_FROM_SELF;
+  return INT2NUM(queueRemovedFaces(queue,NUM2INT(transaction)));
+}
+
+VALUE queue_addedFaces( VALUE self, VALUE transaction )
+{
+  GET_QUEUE_FROM_SELF;
+  return INT2NUM(queueAddedFaces(queue,NUM2INT(transaction)));
+}
+
 VALUE cQueue;
 
 void Init_Queue() 
@@ -116,4 +128,7 @@ void Init_Queue()
   rb_define_method( cQueue, "addedCells", queue_addedCells, 1 );
   rb_define_method( cQueue, "addedCellNodes", queue_addedCellNodes, 1 );
   rb_define_method( cQueue, "addedCellXYZs", queue_addedCellXYZs, 1 );
+  rb_define_method( cQueue, "removedFaces", queue_removedFaces, 1 );
+  rb_define_method( cQueue, "addedFaces", queue_addedFaces, 1 );
+  
 }
