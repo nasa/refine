@@ -31,7 +31,6 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
   int i0, i1;
 
   Grid *grid;
-
   grid = layerGrid(layer);
 
   for (edgeId=1;edgeId<=gridNGeomEdge(grid);edgeId++) {
@@ -82,16 +81,7 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
   return layer;
 }
 
-int
-MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
-                          int ntri, int *tri, int nsid, int *sid, int *npo,
-                          int *nel, int **iel, double **xyz)
-{
-  char *outputProject;
-  int vol=1;
-  Grid *grid;
-  Layer *layer;
-  int i;
+Layer *layerRebuildFaces(Layer *layer, int vol){
 
   int edgeId;
   int faceId;
@@ -103,32 +93,8 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   int nedge;
   int orient;
 
-  grid = gridFillFromPart( vol, npts*10 );
-
-  layer = formAdvancingFront( grid, "box" );
-
-  /* only needed for formAdvancingFront freeze distant volume nodes */
-  gridThawAll(grid); 
-  layerFindParentEdges(layer);
-
-  for (i=0;i<5;i++) layerAdvance(layer,0.01);
-
-  printf(" -- REBUILD EDGES\n");
-  layerRebuildEdges(layer,vol);
-
-  printf(" -- REBUILD FACES\n");
-  for (faceId=1;FALSE && faceId<=gridNGeomFace(grid);faceId++){
-    CADGeom_GetFace(vol, faceId, uv, &nloop, &loopLength, &loopEdge);
-    printf("face %d has %d loops\n",faceId,nloop);
-    for (loop=0;loop<nloop;loop++){
-      printf("  loop %d has %d edges\n",loop,loopLength[loop]);
-      printf("   ");
-      for(edge=0;edge<loopLength[loop];edge++){
-	printf(" edge %d dir %d",loopEdge[0+2*edge],loopEdge[1+2*edge]);
-      }
-      printf("\n");
-    }
-  }
+  Grid *grid;
+  grid = layerGrid(layer);
 
   for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
     if (layerConstrainingGeometry(layer,faceId)) {
@@ -149,6 +115,36 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
       }
     }
   }
+
+  return layer;
+}
+
+int
+MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
+                          int ntri, int *tri, int nsid, int *sid, int *npo,
+                          int *nel, int **iel, double **xyz)
+{
+  char *outputProject;
+  int vol=1;
+  Grid *grid;
+  Layer *layer;
+  int i;
+
+  grid = gridFillFromPart( vol, npts*10 );
+
+  layer = formAdvancingFront( grid, "box" );
+
+  /* only needed for formAdvancingFront freeze distant volume nodes */
+  gridThawAll(grid); 
+  layerFindParentEdges(layer);
+
+  for (i=0;i<5;i++) layerAdvance(layer,0.01);
+
+  printf(" -- REBUILD EDGES\n");
+  layerRebuildEdges(layer,vol);
+
+  printf(" -- REBUILD FACES\n");
+  layerRebuildFaces(layer,vol);
 
   printf(" -- DUMP PART\n");
   outputProject = "../test/MesherX";
