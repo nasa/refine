@@ -1972,7 +1972,42 @@ Layer *layerSplitBlend(Layer *layer)
   double length;
   Grid *grid;
 
-  layerVisibleNormals(layer, 0.99, 1.0e-8 );
+  int triangle;
+  double direction[3],*norm;
+
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    for(i=0;i<3;i++){
+      normal = layer->triangle[triangle].normal[i];
+      layer->normal[normal].direction[0]=0.0;
+      layer->normal[normal].direction[1]=0.0;
+      layer->normal[normal].direction[2]=0.0;
+    }
+  }
+
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    for(i=0;i<3;i++){
+      normal = layer->triangle[triangle].normal[i];
+      if (layer != layerTriangleDirection(layer,triangle,direction))
+	printf("Error: layerPopulateAdvancingFront: %s: %d: %s\n",
+	       __FILE__,__LINE__,"triangle direction");
+      layer->normal[normal].direction[0] += direction[0];
+      layer->normal[normal].direction[1] += direction[1];
+      layer->normal[normal].direction[2] += direction[2];
+    }
+  }
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    norm = layer->normal[normal].direction;
+    length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
+    if (length > 0.0) {
+      for ( i=0;i<3;i++) norm[i] = norm[i]/length;
+    }else{
+      printf("zero length normal\n");
+      for ( i=0;i<3;i++) norm[i] = 0.0;
+    }
+  }
+
+  layerVisibleNormals(layer, 0.99, 1.0e-15 );
 
   origblend = layerNBlend(layer);
 
