@@ -1,4 +1,4 @@
-2005-02-27 21:35 Mike Park  <mike.park@nasa.gov>
+2005-02-28 09:02 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLineSearchT) added parallel check
 	to return NULL if envoked for a ghost node.
