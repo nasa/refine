@@ -1,14 +1,32 @@
 
-If You Recieved a *.tar.gz file
-===============================
+(Quick Start) If You Recieved a *.tar.gz File
+=============================================
 
 run (replace `x_x_x' with the current version number):
 
-  gunzip refine_x_x_x.tar.gz
-  tar xvf refine_x_x_x.tar
-  cd refine_x_x_x
+ % gunzip refine_x_x_x.tar.gz
+ % tar xvf refine_x_x_x.tar
+ % cd refine_x_x_x
+ % ./configure --prefix=`pwd`
+ % make
+ % make install
 
-Read the `Basic Installation' section.
+Read the `Basic Installation' section for more detailed instructions.
+
+Note To SGI IRIX Users
+======================
+
+If configure does not find the X libs you will see a line that
+looks like
+
+checking for X... libraries , headers
+
+If this happens please rerun the configure script with 
+these two arguements  
+
+ --x-includes=/usr/include --x-libraries=/usr/lib32
+
+to the configure or autogen.sh script commnad line options
 
 Note To CVS Users ONLY!
 =======================
@@ -21,15 +39,6 @@ archetecture directory(e.g., Linux, IRIX64). It will run ./bootstrap
 to create the configure script. Then it will create an arch
 dir. Finally, it will cd to the arch dir and and run: 
 ../configure --prefix=`pwd`.
-
-Note To SGI IRIX Users
-======================
-
-If configure does not find the X libs add 
-
-  --x-includes=/usr/include --x-libraries=/usr/lib32
-
-to the configure or autogen.sh script commnad line options
 
 Basic Installation
 ==================
