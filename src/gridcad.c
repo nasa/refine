@@ -762,7 +762,9 @@ Grid *gridSmoothVolume( Grid *grid )
   optimizationLimit =0.30;
   laplacianLimit =0.60;
   for (node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode( grid, node ) && !gridGeometryFace( grid, node ) ) {
+    if ( gridValidNode( grid, node ) && 
+	 !gridGeometryFace( grid, node ) &&
+	 gridNodeLocal(grid,node) ) {
       gridNodeAR(grid,node,&ar);
       if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
 	gridSmartLaplacian( grid, node ); 
