@@ -103,7 +103,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   int n0,n1;
   int *l2g, *g2l;
   int node;
-  double *shellxyz, *shelluv;
+  double *shellxyz, *shelluv, resolved[3];
   int nfacenode, nfacetri, *newface;
   double *newxyz, *newuv;
   
@@ -227,8 +227,11 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       shellxyz = malloc(3*nnode*sizeof(double));
       shelluv  = malloc(2*nnode*sizeof(double));
       for(i=0;i<nnode;i++) gridNodeXYZ(grid,l2g[i],&shellxyz[3*i]);
-      for(i=0;i<nnode;i++) gridNodeUV(grid,l2g[i],faceId, &shelluv[2*i]);
-
+      for(i=0;i<nnode;i++) {
+	gridNodeUV(grid,l2g[i],faceId, &shelluv[2*i]);
+	/* project all nodes for safety. rebuilt edge has no uv */
+	CADGeom_ResolveOnFace(vol,faceId,&shellxyz[3*i],&shelluv[2*i],resolved);
+      }
       for(i=0;i<nnode;i++) 
 	printf("node %4d %8d x %8.5f y %8.5f z %8.5f u %11.3e v %11.3e\n",
 	       i,l2g[i],
