@@ -184,74 +184,51 @@ Near *nearTouched(Near *near, Near *target, int *found, int maxfound, int *list)
 
 int nearNearestIndex(Near *root, Near *key)
 {
-  double distanceToMe, distanceToLeft, distanceToRight;
+  int nearestIndex;
+  double smallestDistance;
 
-  if (root->leftChild == NULL) return nearIndex( root );
+  if (NULL == nearNearestIndexAndDistance(root, key,
+					  &nearestIndex, &smallestDistance))
+    return EMPTY;
 
-  distanceToMe   = nearDistance( root, key);
-  
-  distanceToLeft = nearDistance( root->leftChild, key);
+  return nearestIndex;
+}
 
-  if (root->rightChild == NULL) {
+Near *private_NearestIndexAndDistance(Near *root, Near *key,
+				      int *nearestIndex, 
+				      double *smallestDistance)
+{
+  double myDistance;
 
-    if (distanceToMe<distanceToLeft){
-      return nearIndex( root );
-    }else{
-      return nearNearestIndex(root->leftChild, key);
-    }
+  if (NULL==root || NULL==key) return NULL;
 
+  myDistance = nearDistance(root, key);
+
+  if (myDistance < *smallestDistance) {
+    *smallestDistance = myDistance;
+    *nearestIndex = nearIndex(root);
   }
 
-  distanceToRight = nearDistance( root->rightChild, key);
+  if (root->leftChild == NULL) return root;
 
-  if (distanceToMe<distanceToLeft && distanceToMe<distanceToRight) 
-    return nearIndex( root );
+  if (myDistance-nearLeftRadius(root) <= *smallestDistance )
+    nearNearestIndexAndDistance(root->leftChild, key,
+				nearestIndex, smallestDistance);
 
-  if (distanceToLeft<distanceToMe && distanceToLeft<distanceToRight) 
-    return nearNearestIndex(root->leftChild, key);
+  if (root->rightChild == NULL) return root;
 
-  if (distanceToRight<distanceToMe && distanceToRight<distanceToLeft) 
-    return nearNearestIndex(root->rightChild, key);
+  if (myDistance-nearRightRadius(root) <= *smallestDistance )
+    nearNearestIndexAndDistance(root->rightChild, key,
+				nearestIndex, smallestDistance);
 
+  return root;
 }
 
 Near *nearNearestIndexAndDistance(Near *root, Near *key,
 				  int *index, double *distance)
 {
-  int leftIndex, rightIndex;
-  double leftDistance=DBL_MAX, rightDistance=DBL_MAX;
-  Near *leftNear, *rightNear, *returnNear;
-
-  if (NULL==root || NULL==key) return NULL;
-
-  *index = nearIndex( root );
-  *distance = nearDistance( root, key);
-  returnNear = root;
-
-  if (root->leftChild == NULL) return returnNear;
-
-  if (*distance <= nearLeftRadius(root) ) {
-    leftNear = nearNearestIndexAndDistance(root->leftChild, key,
-					   &leftIndex, &leftDistance);
-    if (leftDistance<*distance){
-      *index = leftIndex;
-      *distance = leftDistance;
-      returnNear = leftNear;
-    }
-  }
-
-  if (root->rightChild == NULL) return returnNear;
-
-  if (*distance <= nearRightRadius(root) ) {
-    rightNear = nearNearestIndexAndDistance(root->rightChild, key,
-					    &rightIndex, &rightDistance);
-    if (rightDistance<*distance){
-      *index = rightIndex;
-      *distance = rightDistance;
-      returnNear = rightNear;
-    }
-  }
-  
-  return returnNear;
-
+  *index = EMPTY;
+  *distance = DBL_MAX;
+  return private_NearestIndexAndDistance(root, key, index, distance);
 }
+
