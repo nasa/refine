@@ -214,6 +214,10 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
       i0 = nedgenode-2; i1 = nedgenode-1;
       gridAddEdge(grid,newnodes[i0],newnodes[i1],edgeId,newt[i0],newt[i1]);
 
+      free(newxyz);
+      free(newt);
+      free(newnodes);
+      
     }
   }
 
