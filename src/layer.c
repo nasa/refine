@@ -2453,13 +2453,13 @@ Layer *layerBlend(Layer *layer, double angleLimit )
   int normal, originalNormals;
   AdjIterator it;
   int triangle, splitTriangle, nextTriangle, previousTriangle;
-  double edgeAngle, largestEdgeAngle, angleLimit;
+  double edgeAngle, largestEdgeAngle;
   int commonEdge[2];
 
   int newNormal, i;
   bool done;
 
-  if (angleLimit < 0.0)angleLimit = 250; /* deg */
+  if (angleLimit < 0.0) angleLimit = 250; /* deg */
 
   originalNormals = layerNNormal(layer);
   for ( normal = 0 ; normal < originalNormals ; normal++ ) {
