@@ -214,7 +214,7 @@ int gridSavePart( Grid *grid, char *project )
   double *xyz;
   int *f2n, *faceId, *c2n;
   int *o2n;
-  int i, ixyz, iface, newnode, node;
+  int i, ixyz, iface, icell, inode, newnode, node;
   int iedge, curveEndPoint[2], nCurveNode, *curve;
   double trange[2];
   int patchDimensions[4]; // check on 4
@@ -291,6 +291,33 @@ int gridSavePart( Grid *grid, char *project )
   if (newnode != nnode) 
     printf("ERROR: gridSavePart, newnode %d nnode %d, line %d of %s\n.",
 	   newnode,nnode,__LINE__, __FILE__);
+
+  printf ("Reorder nodes...\n");
+
+  temp_xyz = malloc( nnode * sizeof(double) );
+
+  for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
+    for ( node = 0 ; node < nnode ; node++ ){
+      temp_xyz[o2n[node]] = xyz[ixyz+3*node];
+    }
+    for ( node = 0 ; node < nnode ; node++ ){
+      xyz[ixyz+3*node] = temp_xyz[node];
+    }
+  }
+
+  for ( icell = 0; icell < ncell ; icell++ ){
+    for ( inode = 0 ; inode < 4 ; inode++ ){
+      c2n[inode+4*icell] = o2n[c2n[inode+4*icell]];
+    }
+  }
+
+  for ( iface = 0; iface < nface ; iface++ ){
+    for ( inode = 0 ; inode < 3 ; inode++ ){
+      f2n[inode+3*iface] = o2n[f2n[inode+3*iface]];
+    }
+  }
+
+  free(temp_xyz);
 
   if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, ncell, c2n  )) {
     printf(" Could not make UGridPtr, line %d of %s\n", __LINE__, __FILE__);
