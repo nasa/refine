@@ -1443,9 +1443,9 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
 int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3, 
 			  int global )
 {
+  int cell, currentSize, chunkSize;
   int cellId;
   if ( grid->blankc2n == EMPTY ) {
-    int cell, currentSize, chunkSize;
     currentSize = grid->maxcell;
     chunkSize = MAX(5000,currentSize/10);
     grid->maxcell += chunkSize;
