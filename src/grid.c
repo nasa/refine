@@ -15,6 +15,7 @@ struct Grid {
   long nnode;
   long ncell;
   long *firstcell;
+  long currentcell;
   long *celllist;
 };
 
@@ -26,15 +27,16 @@ Grid* gridCreate(long nnode, long ncell)
   grid = malloc(sizeof(Grid));
 
   grid->nnode = nnode;
-  grid->firstcell = malloc(grid->nnode * sizeof(long));
-  for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = 0;
-
   grid->ncell = ncell;
   nlist = (grid->ncell*4+grid->nnode)+1;
+
+  grid->firstcell = malloc(grid->nnode * sizeof(long));
+  for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = nlist-1;
+
   grid->celllist = malloc( nlist * sizeof(long));
   for (i=0;i < nlist; i++ ) grid->celllist[i] = -(i+1);
   grid->celllist[nlist-1] =0;
-  
+  grid->currentcell=nlist-1;
  
   return  grid;
 }
@@ -56,24 +58,42 @@ long* gridDEBUGcelllist(Grid *grid)
 
 long gridNodeDeg(Grid *grid, long id)
 {
-  return grid->firstcell[id];
+  int n;
+  n =0;
+  for ( gridFirstNodeCell(grid,id); 
+	gridMoreNodeCell(grid); 
+	gridNextNodeCell(grid)) n++;
+  return n;
 }
 
-Grid* gridRegisterNodeCell(Grid *grid, long id)
+Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
 {
-  grid->firstcell[id]++;
+  grid->firstcell[nodeId]=1;
+  grid->celllist[1]=cellId+1;
+  grid->celllist[2]=0;
+  grid->celllist[0]=-3;
+
   return grid;
 }
 
-void gridFirstNodeCell(Grid *grid, long id)
+void gridFirstNodeCell(Grid *grid, long nodeId)
 {
+  grid->currentcell = grid->firstcell[nodeId];
 }
 void gridNextNodeCell(Grid *grid)
 {
+  grid->currentcell++;
+  while (grid->celllist[grid->currentcell] < 0){
+    grid->currentcell = -grid->celllist[grid->currentcell];
+  }
 }
-int gridLastNodeCell(Grid *grid)
+long gridCurrentNodeCell(Grid *grid)
 {
-  return 0;
+  return grid->celllist[grid->currentcell]-1;
+}
+int gridMoreNodeCell(Grid *grid)
+{
+  return (gridCurrentNodeCell(grid) != EMPTY);
 }
 
 void gridFree(Grid *grid)

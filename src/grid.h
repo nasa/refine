@@ -23,10 +23,11 @@ long gridNNode(Grid *g);
 long gridNCell(Grid *g);
 long *gridDEBUGcelllist(Grid *g);
 long gridNodeDeg(Grid *g, long nodeIndex);
-Grid *gridRegisterNodeCell(Grid *g, long nodeIndex);
+Grid *gridRegisterNodeCell(Grid *g, long nodeIndex, long cellIndex);
 void gridFirstNodeCell(Grid *g, long nodeIndex);
 void gridNextNodeCell(Grid *g);
-int gridLastNodeCell(Grid *g);
+long gridCurrectNodeCell(Grid *g);
+int gridMoreNodeCell(Grid *g);
 
 void gridFree(Grid *g);
 

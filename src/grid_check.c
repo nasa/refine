@@ -45,21 +45,27 @@ START_TEST(testNodeDeg)
 	       "expected no neighbors of node 2");
   fail_unless( gridNodeDeg(grid,3) == 0,
 	       "expected no neighbors of node 3");
-  gridRegisterNodeCell(grid,2);
+  gridRegisterNodeCell(grid,2,299);
   fail_unless( gridNodeDeg(grid,2) == 1,
-	       "expected one neighbors of node 2");
+	       "expected one neighbor of node 2");
 }
 END_TEST
 
 START_TEST(testCellIterator)
 {
-  int n;
-  n =0;
-  for ( gridFirstNodeCell(grid,0); 
-	gridLastNodeCell(grid); 
-	gridNextNodeCell(grid)) n++;
-  fail_unless( n == 0, 
-	       "expected no neighbors of node 0");
+
+  fail_unless( gridMoreNodeCell(grid), 
+	       "expected the last node to be reaced if not init");
+
+  gridFirstNodeCell(grid,0);
+  fail_unless( gridMoreNodeCell(grid), 
+	       "expected the last node to be reaced if not registered");
+ 
+  gridRegisterNodeCell(grid,2,299);
+  gridFirstNodeCell(grid,2);
+  fail_unless( gridCurrentNodeCell(grid) == 299, 
+	       "expected cell 299 as neighbor of node 2");
+
 }
 END_TEST
 
