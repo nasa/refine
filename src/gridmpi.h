@@ -17,6 +17,7 @@
 
 BEGIN_C_DECLORATION
 
+Grid *gridIdentityGlobal(Grid *g );
 Grid *gridSetAllLocal(Grid *g );
 
 END_C_DECLORATION

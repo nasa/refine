@@ -2126,14 +2126,6 @@ Grid *gridSetNodeGlobal(Grid *grid, int node, int global )
   return grid;
 }
 
-Grid *gridIdentityGlobal(Grid *grid )
-{
-  int node;
-  for (node = 0; node < gridNNode(grid) ; node++ )
-    if (grid != gridSetNodeGlobal(grid,node,node)) return NULL;
-  return grid;
-}
-
 int gridNodePart(Grid *grid, int node )
 {
   if (!gridValidNode(grid,node)) return EMPTY;

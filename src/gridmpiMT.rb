@@ -32,6 +32,13 @@ class TestGridMPI < Test::Unit::TestCase
   grid
  end 
 
+ def testCopyLocalNodeNumberingToGlobalNumbering
+  assert_not_nil      grid = Grid.new(10,0,0,0)
+  10.times { grid.addNode(1,2,3) }
+  assert_equal grid,  grid.identityGlobal
+  10.times { |node| assert_equal node, grid.nodeGlobal(node) }
+ end
+
  def testSplitEdgeAcrossProc
   p1 = rightTet
   p2 = rightTet

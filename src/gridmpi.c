@@ -14,6 +14,14 @@
 #include <stdio.h>
 #include "gridmpi.h"
 
+Grid *gridIdentityGlobal(Grid *grid )
+{
+  int node;
+  for (node = 0; node < gridNNode(grid) ; node++ )
+    if (grid != gridSetNodeGlobal(grid,node,node)) return NULL;
+  return grid;
+}
+
 Grid *gridSetAllLocal(Grid *grid )
 {
   return grid;
