@@ -46,8 +46,8 @@ Grid *gridSetGhost(Grid *grid, int node )
   return gridSetNodePart(grid,node,EMPTY);
 }
 
-Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
-				  double minLength, double maxLength )
+Grid *gridParallelAdapt(Grid *grid, Queue *queue,
+			double minLength, double maxLength )
 {
   int n0, n1, adaptnode, origNNode, newnode;
   int nnodeAdd, nnodeRemove;
@@ -58,7 +58,7 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
   nnodeAdd    = 0;
   nnodeRemove = 0;
 
-  for ( n0=0; adaptnode<origNNode; n0++ ) { 
+  for ( n0=0; adaptnode<origNNode && n0<gridMaxNode(grid); n0++ ) { 
     adaptnode++;
     if ( gridValidNode( grid, n0) && 
 	 !gridNodeFrozen( grid, n0 ) && 

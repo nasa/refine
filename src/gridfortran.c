@@ -210,16 +210,16 @@ void gridparallelsmoothfaceinterior_( int *processor )
 #endif
 }
 
-void gridparalleladaptwithoutcad_( int *processor, 
-				   double *minLength, double *maxLength )
+void gridparalleladapt_( int *processor, 
+			 double *minLength, double *maxLength )
 {
 #ifdef PARALLEL_VERBOSE 
   printf(" %6d adapt processor %2d ",gridPartId(grid),*processor);
 #endif
   if (*processor == -1) {
-    gridParallelAdaptWithOutCAD(grid,NULL,*minLength, *maxLength);
+    gridParallelAdapt(grid,NULL,*minLength, *maxLength);
   } else {
-    gridParallelAdaptWithOutCAD(grid,queue,*minLength, *maxLength);
+    gridParallelAdapt(grid,queue,*minLength, *maxLength);
   } 
 }
 
