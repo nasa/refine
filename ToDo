@@ -6,7 +6,9 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 Start Builds!!!!!
 
 --Major refactoring
- 
+
+add face area in uv check to linear program before evaluation
+
 make consistant use of the cost constraint functions.
 
 maintain linear data for split and collapse. 
