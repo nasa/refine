@@ -102,11 +102,16 @@ VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 
 VALUE grid_removeCell( VALUE self, VALUE cellId )
 {
-  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
-  returnedGrid = 
-    gridRemoveCell( grid, NUM2INT(cellId) );
-  return (returnedGrid==NULL?Qnil:self);
+  return (grid==gridRemoveCell( grid, NUM2INT(cellId) )?self:Qnil);
+}
+
+VALUE grid_reconnectCell( VALUE self, VALUE oldNode, VALUE newNode )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridReconnectCell( grid, 
+				      NUM2INT(oldNode), 
+				      NUM2INT(newNode) )?self:Qnil);
 }
 
 VALUE grid_cell( VALUE self, VALUE cellId )
@@ -554,6 +559,7 @@ void Init_Grid()
 
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
+  rb_define_method( cGrid, "reconnectCell", grid_reconnectCell, 2 );
   rb_define_method( cGrid, "cell", grid_cell, 1 );
   rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
 

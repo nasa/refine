@@ -115,6 +115,22 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [4, 5, 6, 7], grid.cell(1)
  end
 
+ def testReconnectCell
+  assert_not_nil             grid = Grid.new(8,3,0,0)
+  assert_equal grid,         grid.addCell(0,1,2,3).addCell(3,4,5,6)
+  assert_equal [0, 1, 2, 3], grid.cell(0)
+  assert_equal [3, 4, 5, 6], grid.cell(1)
+  assert_equal 2,            grid.cellDegree(3)
+  assert_equal 0,            grid.cellDegree(7)
+  assert_nil                 grid.reconnectCell(-1,-1)
+  assert_nil                 grid.reconnectCell(8,8)
+  assert_equal grid,         grid.reconnectCell(3,7)
+  assert_equal [0, 1, 2, 7], grid.cell(0)
+  assert_equal [7, 4, 5, 6], grid.cell(1)
+  assert_equal 0,            grid.cellDegree(3)
+  assert_equal 2,            grid.cellDegree(7)
+ end
+
  def testGetGem
   grid = Grid.new(5,3,0,0)
   assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)

@@ -895,6 +895,30 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
   return grid;
 }
 
+Grid *gridReconnectCell(Grid *grid, int oldNode, int newNode )
+{
+  AdjIterator it;
+  int cell, i, node;
+  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
+  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+
+  it = adjFirst(grid->cellAdj,oldNode);
+  while (adjValid(it)){
+    cell = adjItem(it);
+    for (i=0;i<4;i++){
+      node = grid->c2n[i+4*cell];
+      if (oldNode == node) {
+	grid->c2n[i+4*cell]=newNode;
+	adjRemove( grid->cellAdj, oldNode, cell);
+	adjRegister( grid->cellAdj, newNode, cell);
+      }
+    }
+    it = adjFirst(grid->cellAdj,oldNode);
+  }
+
+  return grid;
+}
+
 Grid *gridCell(Grid *grid, int cellId, int *nodes )
 {
   if ( cellId >= grid->maxcell ) return NULL;

@@ -46,6 +46,7 @@ int gridCellDegree(Grid *g, int nodeIndex);
 
 Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
+Grid *gridReconnectCell(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 
 Grid *gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
