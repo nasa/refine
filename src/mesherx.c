@@ -478,7 +478,7 @@ int MesherX_DiscretizeVolume( int maxNodes, char *project )
 
   grid = gridFillFromPart( vol, maxNodes );
 
-  layer = formAdvancingFront( grid, pj );
+  layer = formAdvancingFront( grid, project );
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid); 
