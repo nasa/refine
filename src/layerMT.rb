@@ -45,14 +45,17 @@ class TestLayer < Test::Unit::TestCase
 
  def testMakeNormals
   assert_not_nil        grid = Grid.new(5,0,2,0)
-  assert_equal grid,    grid.addFace(0,1,2,1)
-  assert_equal grid,    grid.addFace(0,1,3,2)
+  assert_equal grid,    grid.addFace(1,2,3,1)
+  assert_equal grid,    grid.addFace(1,2,4,2)
   assert_not_nil        layer = Layer.new(grid)
   assert_nil            layer.makeNormal
   assert_equal layer,   layer.makeFront([1,2])
   assert_equal 0,       layer.nnormal
+  assert_nil            layer.frontNormal(0)
   assert_equal layer,   layer.makeNormal
   assert_equal 4,       layer.nnormal
+  assert_equal [0,1,2], layer.frontNormal(0)
+  assert_equal [0,1,3], layer.frontNormal(1)
  end
 
 end

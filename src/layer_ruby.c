@@ -72,6 +72,19 @@ VALUE layer_makeNormal( VALUE self )
   return ( layer == layerMakeNormal(layer)?self:Qnil );
 }
 
+VALUE layer_frontNormal( VALUE self, VALUE front )
+{
+  int normals[3];
+  VALUE rb_normals;
+  GET_LAYER_FROM_SELF;
+  if (layer != layerFrontNormal(layer, NUM2INT(front), normals )) return Qnil;
+  rb_normals = rb_ary_new2(3);
+  rb_ary_store( rb_normals, 0, INT2NUM(normals[0]) );
+  rb_ary_store( rb_normals, 1, INT2NUM(normals[1]) );
+  rb_ary_store( rb_normals, 2, INT2NUM(normals[2]) );
+  return rb_normals;
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -84,4 +97,5 @@ void Init_Layer()
   rb_define_method( cLayer, "makeFront", layer_makeFront, 1 );
   rb_define_method( cLayer, "front", layer_front, 1 );
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
+  rb_define_method( cLayer, "frontNormal", layer_frontNormal, 1 );
 }

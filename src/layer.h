@@ -26,6 +26,7 @@ int layerMaxNode(Layer *);
 Layer *layerMakeFront(Layer *, int nbc, int *bc);
 Layer *layerFront(Layer *, int front, int *nodes);
 Layer *layerMakeNormal(Layer *);
+Layer *layerFrontNormal(Layer *, int front, int *normals);
 
 END_C_DECLORATION
 
