@@ -27,6 +27,9 @@ int nearLeftIndex( Near *near );
 double nearDistance( Near *near, Near *other);
 double nearClearance( Near *near, Near *other);
 Near *nearInsert( Near *near, Near *child );
+double nearFarChild( Near *near );
+double nearRightDistance( Near *near );
+double nearLeftDistance( Near *near );
 
 END_C_DECLORATION
 
