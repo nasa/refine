@@ -334,7 +334,7 @@ void gridparallelswap_( int *processor, double *ARlimit )
       plan_size_guess = gridNCell(grid)/10;
       plan_chunk_size = 5000;
       plan = planCreate(plan_size_guess, plan_chunk_size);
-      for (cell=0;cell<gridMAXCell(grid);cell++){
+      for (cell=0;cell<gridMaxCell(grid);cell++){
 	if (grid == gridCell( grid, cell, nodes) ) {
 	  if ( gridCellHasGhostNode(grid,nodes)  ||
 	       gridNodeNearGhost(grid, nodes[0]) ||
