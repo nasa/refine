@@ -229,9 +229,11 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal grid, grid.setConnValuesWithMetricErrorMagnatude
   ratio = Math::sqrt(2.0)
   diag = ((1-ratio)/(1+ratio)).abs
+  assert_in_delta 0.0, grid.edgeRatioError(0,1), tol
   assert_in_delta 0.0, grid.connValue(0), tol
   assert_in_delta 0.0, grid.connValue(1), tol
   assert_in_delta 0.0, grid.connValue(2), tol
+  assert_in_delta diag, grid.edgeRatioError(2,3), tol
   assert_in_delta diag, grid.connValue(3), tol
   assert_in_delta diag, grid.connValue(4), tol
   assert_in_delta diag, grid.connValue(5), tol
@@ -288,6 +290,18 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta spacing,     grid.spacing(3), delta
  end
 
+ def testEdgeLengthRatioInMetricForRightTet
+  assert_not_nil grid = rightTet
+  nodes = [0,1,2,3]
+  assert_in_delta 1.0, grid.edgeRatio(0,1), 1.0e-10
+  assert_in_delta 1.0, grid.edgeRatio(0,2), 1.0e-10
+  assert_in_delta 1.0, grid.edgeRatio(0,3), 1.0e-10
+  length = Math::sqrt(2)
+  assert_in_delta length, grid.edgeRatio(1,2), 1.0e-10
+  assert_in_delta length, grid.edgeRatio(2,3), 1.0e-10
+  assert_in_delta length, grid.edgeRatio(3,1), 1.0e-10
+ end
+
  def testVolumeMetrics
   assert_not_nil grid = rightTet
   nodes = [0,1,2,3]
@@ -302,13 +316,23 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta ar, grid.nodeAR(3), 1.0e-10
  end
 
+ def testEdgeLengthRatioCostForRightTet
+  assert_not_nil grid = rightTet
+  nodes = [0,1,2,3]
+  ratio = Math::sqrt(2)
+  err = (1.0-ratio)/(1.0+ratio)
+  cost = 1.0/(1.0+err.abs)
+  assert_in_delta cost, grid.edgeRatioCost(nodes), 1.0e-10
+ end
+
  def testCellVolumeDerivatives
   assert_not_nil grid = rightTet
   nodes = [1,0,3,2]
   oneSixth = 1.0/6.0
   deriv = [oneSixth,oneSixth,0.0,0.0]
   assert_nil( grid.cellVolumeDerivative([-1,5,78,345]) )
-  assert_not_nil (ans = grid.cellVolumeDerivative(nodes))
+  ans = grid.cellVolumeDerivative(nodes)
+  assert_not_nil ans
   tol   = 1.0e-15
 
   assert_in_delta deriv[0], ans[0], tol
@@ -317,7 +341,8 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv[3], ans[3], tol  
 
   grid.setNodeXYZ(1,[2.0,0.0,0.0]);
-  assert_not_nil (ans = grid.cellVolumeDerivative(nodes))
+  ans = grid.cellVolumeDerivative(nodes)
+  assert_not_nil ans
   deriv = [2.0*oneSixth,oneSixth,0.0,0.0]
 
   assert_in_delta deriv[0], ans[0], tol
@@ -332,7 +357,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_not_nil grid = rightTet
   assert_nil grid.nodeVolumeDerivative(-1)
   deriv = [oneSixth,oneSixth,0.0,0.0]
-  assert_not_nil (ans = grid.nodeVolumeDerivative(1))
+  ans = grid.nodeVolumeDerivative(1)
 
   assert_in_delta deriv[0], ans[0], tol
   assert_in_delta deriv[1], ans[1], tol
@@ -340,7 +365,8 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv[3], ans[3], tol  
 
   deriv = [oneSixth,0.0,oneSixth,0.0]
-  assert_not_nil (ans = grid.nodeVolumeDerivative(2))
+  ans = grid.nodeVolumeDerivative(2)
+  assert_not_nil ans
 
   assert_in_delta deriv[0], ans[0], tol
   assert_in_delta deriv[1], ans[1], tol

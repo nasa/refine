@@ -118,6 +118,14 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
   return 0.5*(length0+length1);
 }
 
+double gridEdgeRatioError(Grid *grid, int n0, int n1 )
+{
+  double ratio;
+  ratio = gridEdgeRatio(grid, n0, n1 );
+  if (ratio<0.0) return ratio;
+  return ABS((1.0-ratio)/(1.0+ratio));
+}
+
 double gridAverageEdgeLength(Grid *grid, int node )
 {
   AdjIterator it;
@@ -197,13 +205,10 @@ Grid *gridSmallestRatioEdge(Grid *grid, int node,
 Grid *gridSetConnValuesWithMetricErrorMagnatude(Grid *grid )
 {
   int conn, nodes[2];
-  double ratio, error;
   if (0==gridNConn(grid)) return NULL;
   for(conn=0;conn<gridNConn(grid);conn++) {
     gridConn2Node(grid,conn,nodes);
-    ratio = gridEdgeRatio(grid,nodes[0], nodes[1]);
-    error = (1-ratio)/(1+ratio);
-    gridSetConnValue(grid,conn,ABS(error));
+    gridSetConnValue(grid,conn,gridEdgeRatioError(grid,nodes[0],nodes[1]));
   }
   return grid;
 }
@@ -573,6 +578,28 @@ double gridAR(Grid *grid, int *nodes )
 
   return aspect;
 
+}
+
+double gridEdgeRatioCost(Grid *grid, int *nodes )
+{
+  double err[6], worstErr;
+  int edge;
+
+  if ( gridVolume(grid,nodes) < 1.0e-14 ) return -1.0;
+
+  err[0] = gridEdgeRatioError(grid, nodes[0], nodes[1] );
+  err[1] = gridEdgeRatioError(grid, nodes[0], nodes[2] );
+  err[2] = gridEdgeRatioError(grid, nodes[0], nodes[3] );
+  err[3] = gridEdgeRatioError(grid, nodes[1], nodes[2] );
+  err[4] = gridEdgeRatioError(grid, nodes[1], nodes[3] );
+  err[5] = gridEdgeRatioError(grid, nodes[2], nodes[3] );
+  
+  worstErr = 0.0;
+  for (edge=0;edge<6;edge++) {
+    if (err[edge] < -0.5) return err[edge];
+    worstErr=MAX(worstErr,err[edge]);
+  }
+  return 1.0/(1.0+worstErr);
 }
 
 double gridCellAspectRatio( double *xyz1, double *xyz2, 

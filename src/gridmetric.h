@@ -27,6 +27,7 @@ void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
 
 double gridEdgeLength(Grid *g, int n0, int n1 );
 double gridEdgeRatio(Grid *g, int n0, int n1 );
+double gridEdgeRatioError(Grid *g, int n0, int n1 );
 double gridAverageEdgeLength(Grid *g, int node );
 Grid *gridLargestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
 Grid *gridSmallestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
@@ -54,6 +55,7 @@ Grid *gridNodeVolumeDerivative(Grid *g, int node,
 			       double *volume, double *dVoldx );
 
 double gridAR(Grid *g, int *nodes );
+double gridEdgeRatioCost(Grid *g, int *nodes );
 double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
 Grid *gridNodeAR(Grid *g, int node, double *ar );
 Grid *gridNodeVolume(Grid *g, int node, double *volume );

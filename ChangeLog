@@ -1,3 +1,11 @@
+2004-10-14 23:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSetConnValuesWithMetricErrorMagnatude) added.
+	* src/gridmetric.c (gridEdgeRatioCost) analog to gridAR for edge
+	based operators uses.
+	* src/gridmetric.c (gridEdgeRatioError) created ina refactoring
+	for the above two functions to use.
+
 2004-10-04 23:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdaptBasedOnConnRankings) added as a spike
