@@ -54,7 +54,8 @@ Grid *gridRemoveAllNodes(Grid *grid )
   return grid;
 }
 
-Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
+Grid *gridAdapt(Grid *grid, double minLength, double maxLength, 
+		GridBool project )
 {
   int n0, n1, adaptnode, origNNode, newnode;
   int report, nnodeAdd, nnodeRemove;
@@ -81,7 +82,7 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	if ( newnode != EMPTY ){
 	  nnodeAdd++;
 	  gridSwapNearNode( grid, newnode );
-	  if (gridGeometryFace( grid, newnode ) ){
+	  if ( project && gridGeometryFace( grid, newnode ) ){
 	    gridRobustProjectNode(grid, newnode);
 	    gridSwapNearNode( grid, newnode );
 	  }
@@ -93,55 +94,10 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, n0 );
-	    if (  gridGeometryFace( grid, n0 ) ) {
+	    if ( project &&  gridGeometryFace( grid, n0 ) ) {
 	      gridRobustProjectNode(grid, n0);
 	      gridSwapNearNode( grid, n0 );
 	    }
-	  }
-	}
-      }
-    }else{
-      adaptnode++;
-    }
-  }
-  return grid;
-}
-
-Grid *gridAdaptWithOutCAD(Grid *grid, double minLength, double maxLength )
-{
-  int n0, n1, adaptnode, origNNode, newnode;
-  int report, nnodeAdd, nnodeRemove;
-  double ratio;
-  
-  origNNode = gridNNode(grid);
-  adaptnode =0;
-  nnodeAdd = 0;
-  nnodeRemove = 0;
-
-  report = 10; if (gridNNode(grid) > 100) report = gridNNode(grid)/10;
-
-  for ( n0=0; 
-	adaptnode<origNNode && n0<gridMaxNode(grid); 
-	n0++ ) { 
-    if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
-      printf("adapt node %8d nnode %8d added %8d removed %8d\n",
-	     adaptnode,gridNNode(grid),nnodeAdd,nnodeRemove);
-    if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
-      adaptnode++;
-      if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
-      if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
-	newnode = gridSplitEdge(grid, n0, n1);
-	if ( newnode != EMPTY ){
-	  nnodeAdd++;
-	  gridSwapNearNode( grid, newnode );
-	}
-      }else{
-	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
-	  return NULL;
-	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
-	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
-	    nnodeRemove++;
-	    gridSwapNearNode( grid, n0 );
 	  }
 	}
       }

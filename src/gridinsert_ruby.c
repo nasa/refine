@@ -8,7 +8,8 @@ VALUE grid_adapt( VALUE self, VALUE minLength, VALUE maxLength)
 {
   GET_GRID_FROM_SELF;
   return (gridAdapt( grid, 
-		     NUM2DBL(minLength), NUM2DBL(maxLength) )==grid?self:Qnil);
+		     NUM2DBL(minLength), NUM2DBL(maxLength),
+		     TRUE )==grid?self:Qnil);
 }
 
 VALUE grid_splitEdge( VALUE self, VALUE n0, VALUE n1 )

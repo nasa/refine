@@ -199,7 +199,7 @@ int main( int argc, char *argv[] )
 	printf("edge swapping grid...\n");gridSwap(grid);
 	layerSmoothLayerNeighbors(layer );
 	printf("node smoothing grid...\n");gridSmooth(grid);
-	gridAdapt(grid,0.6,1.4);
+	gridAdapt(grid,0.6,1.4,TRUE);
 	printf("edge swapping grid...\n");gridSwap(grid);
 	layerSmoothLayerNeighbors(layer );
 	printf("node smoothing grid...\n");gridSmooth(grid);
@@ -219,11 +219,11 @@ int main( int argc, char *argv[] )
     if (boundaryLayerGrid) {
       printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	     ratio, 0.4, 1.5 );
-      gridAdapt(grid,0.4,1.5);
+      gridAdapt(grid,0.4,1.5,TRUE);
     }else{
       printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
              ratio, ratioCollapse, ratioRefine );
-      gridAdapt(grid,ratioCollapse,ratioRefine);
+      gridAdapt(grid,ratioCollapse,ratioRefine,TRUE);
     }
     oldSize = newSize;
     newSize = gridNNode(grid) ;

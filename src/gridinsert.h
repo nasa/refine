@@ -18,8 +18,7 @@
 BEGIN_C_DECLORATION
 Grid *gridThrash(Grid *g );
 Grid *gridRemoveAllNodes(Grid *g );
-Grid *gridAdapt(Grid *g, double minLength, double maxLength );
-Grid *gridAdaptWithOutCAD(Grid *g, double minLength, double maxLength );
+Grid *gridAdapt(Grid *g, double minLength, double maxLength, GridBool project );
 int gridSplitEdge(Grid *g, int n0, int n1 );
 int gridSplitEdgeAt(Grid *g, Queue *q, int n0, int n1, 
 		    double newX, double newY, double newZ);
