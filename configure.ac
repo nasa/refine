@@ -20,6 +20,10 @@ AC_ARG_WITH(OpenCASCADE,
 	[  --with-OpenCASCADE[=ARG]  use OpenCASCADE kernel [ARG=CASROOT]],
 	[with_OpenCASCADE=$withval], [with_OpenCASCADE=$CASROOT])
 
+AC_ARG_WITH(PROE,
+	[  --with-PROE[=ARG]         use Pro-Engineer kernel [ARG=PRODIR]],
+	[with_PROE=$withval],        [with_PROE=$PRODIR])
+
 AC_PROG_RANLIB
 
 AC_PROG_CC
@@ -87,7 +91,6 @@ then
                 [have_CAPRI='yes'],[have_CAPRI='no'])
 fi
 
-GridExKernels=
 if test "$have_CAPRI" != 'no'
 then
   AC_DEFINE([HAVE_CAPRI])
@@ -161,15 +164,21 @@ else
 fi
 AC_SUBST([CAPRIOpenCASCADElibrary])
 
-have_PROE='no'
-AC_CHECK_FILE([/ump/fldmd/home/mikepark/local/pkgs/ptc/proeWildfire/protoolkit/i486_linux/obj/protk_dll.a],[have_PROE='yes'],[have_PROE='no'])
-AC_CHECK_FILE([/ump/fldmd/home/mikepark/local/pkgs/ptc/proeWildfire/prodevelop/i486_linux/obj/prodev_dll.a],[have_PROE='yes'],[have_PROE='no'])
+have_PROETool='no'
+have_PROEDev='no'
+if test "$with_PROE" != 'no'
+then
+  PROE_BASE=$with_PROE
+  PROE_TOOL=$PROE_BASE/protoolkit/i486_linux/obj/protk_dll.a
+  AC_CHECK_FILE([$PROE_TOOL],[have_PROETool='yes'],[have_PROETool='no'])
+  PROE_DEV=$PROE_BASE/prodevelop/i486_linux/obj/prodev_dll.a
+  AC_CHECK_FILE([$PROE_DEV],[have_PROEDev='yes'],[have_PROEDev='no'])
+fi
 
-
-if test "$have_PROE" != 'no'
+if test "$have_PROETool" != 'no' &&  test "$have_PROEDev" != 'no' 
 then
   AM_CONDITIONAL(BUILD_PROE_KERNEL,true)
-  CAPRIProElibrary="-L$CAPRI/ProE/$CAPRIarch -lcapri /ump/fldmd/home/mikepark/local/pkgs/ptc/proeWildfire/protoolkit/i486_linux/obj/protk_dll.a /ump/fldmd/home/mikepark/local/pkgs/ptc/proeWildfire/prodevelop/i486_linux/obj/prodev_dll.a"
+  CAPRIPROElibrary="-L$CAPRI/ProE/$CAPRIarch -lcapri $PROE_TOOL $PROE_DEV"
 else
   AM_CONDITIONAL(BUILD_PROE_KERNEL,false)
   CAPRIProElibrary=
