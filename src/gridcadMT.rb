@@ -93,10 +93,12 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.addFace(0,1,2,10)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s  
   assert_nil   grid.safeProjectNode(0)
+  assert_nil   grid.project
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
   assert_equal grid, grid.addEdge(0,1,20,0.0,1.0)
   assert_nil   grid.safeProjectNode(0)
+  assert_nil   grid.project
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
  end
