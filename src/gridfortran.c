@@ -131,40 +131,6 @@ void gridprojectallfaces_( )
   fflush(stdout);
 }
 
-void gridswap_( )
-{
-  gridSwap(grid);
-  printf(" post swap min AR %17.15f\n",gridMinAR(grid));
-}
-
-void gridsmoothvolume_( )
-{
-  gridSmoothVolume(grid);
-  printf( " %6d smooth volume                    %s    AR%14.10f\n",
-	  gridPartId(grid),"                  ",gridMinAR(grid) );
-  fflush(stdout);
-}
-
-void gridsmoothfaceinterior_( int *processor )
-{
-  bool localOnly;
-  localOnly = (-1 == (*processor));
-  gridSmoothFaceInterior(grid, localOnly );
-  if (localOnly) {
-    printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
-	    gridPartId(grid),"local only        ",gridMinAR(grid) );
-  } else {
-    printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
-	    gridPartId(grid),"near ghost only   ",gridMinAR(grid) );
-  }
-  fflush(stdout);
-}
-
-void gridadaptwithoutcad_( double *minLength, double *maxLength )
-{
-  gridAdaptWithOutCAD(grid,*minLength, *maxLength);
-}
-
 void gridwritetecplotsurfacezone_( )
 {
   char filename[256];
@@ -186,17 +152,6 @@ void gridexportfast_( )
   gridExportFAST(grid,filename);
 }
 
-void gridparalleladaptwithoutcad_( int *processor, 
-				   double *minLength, double *maxLength )
-{
-  printf(" %6d adapt processor %2d ",gridPartId(grid),*processor);
-  if (*processor == -1) {
-    gridParallelAdaptWithOutCAD(grid,NULL,*minLength, *maxLength);
-  } else {
-    gridParallelAdaptWithOutCAD(grid,queue,*minLength, *maxLength);
-  } 
-}
-
 void gridparallelswap_( int *processor, double *ARlimit )
 {
   printf(" %6d swap  processor %2d      initial AR%14.10f",
@@ -205,6 +160,32 @@ void gridparallelswap_( int *processor, double *ARlimit )
     gridParallelSwap(grid,NULL,*ARlimit);
   } else {
     gridParallelSwap(grid,queue,*ARlimit);
+  } 
+}
+
+void gridparallelsmoothfaceinterior_( int *processor )
+{
+  bool localOnly;
+  localOnly = (-1 == (*processor));
+  gridSmoothFaceInterior(grid, localOnly );
+  if (localOnly) {
+    printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
+	    gridPartId(grid),"local only        ",gridMinAR(grid) );
+  } else {
+    printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
+	    gridPartId(grid),"near ghost only   ",gridMinAR(grid) );
+  }
+  fflush(stdout);
+}
+
+void gridparalleladaptwithoutcad_( int *processor, 
+				   double *minLength, double *maxLength )
+{
+  printf(" %6d adapt processor %2d ",gridPartId(grid),*processor);
+  if (*processor == -1) {
+    gridParallelAdaptWithOutCAD(grid,NULL,*minLength, *maxLength);
+  } else {
+    gridParallelAdaptWithOutCAD(grid,queue,*minLength, *maxLength);
   } 
 }
 

@@ -26,22 +26,18 @@ void gridsetnodelocal2global_( int *partId, int *nnodeg,
 void gridsetnodepart_( int *nnode, int *part );
 void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
 void gridprojectallfaces_( );
-void gridswap_( );
-void gridsmoothvolume_( );
-void gridsmoothfaceinterior_( int *processor );
-void gridadaptwithoutcad_( double *minLength, double *maxLength );
 void gridwritetecplotsurfacezone_( );
 void gridexportfast_( );
 
+void gridparallelswap_( int *processor, double *ARlimit );
+void gridparallelsmoothfaceinterior_( int *processor );
 void gridparalleladaptwithoutcad_( int *processor, 
 				  double *minLength, double *maxLength );
-void gridparallelswap_( int *processor, double *ARlimit );
 void queuedumpsize_( int *nInt, int *nDouble );
 void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles );
 void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles );
 
 void gridsize_( int *nnodeg, int *ncellg );
-
 void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 		      int *oldncellg, int *newncellg, int *celloffset );
 
