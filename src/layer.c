@@ -92,130 +92,6 @@ Layer *layerCreate( Grid *grid )
   return layer;
 }
 
-Layer *formAdvancingFront( Grid *grid, char *project )
-{
-  Layer *layer;
-  int i, nbc, bc[4];
-  bool box, plate, om6, n12, quarter, spherecone;
-  
-  box = (NULL != strstr( project, "box"));
-  plate = (NULL != strstr( project, "plate"));
-  om6 = (NULL != strstr( project, "om6"));
-  n12 = (NULL != strstr( project, "n12"));
-  quarter = (NULL != strstr( project, "quarter"));
-  spherecone = (NULL != strstr( project, "Mach6sphere"));
-
-  if (box) printf("string %s has box.\n",project);
-  if (plate) printf("string %s has plate.\n",project);
-  if (om6) printf("string %s has om6.\n",project);
-  if (n12) printf("string %s has n12.\n",project);
-  if (quarter) printf("string %s has quarter.\n",project);
-  if (spherecone) printf("string %s has spherecone (Mach6sphere).\n",project);
-
-  bc[0]=1;
-  bc[1]=2;
-  bc[2]=3;
-  if(box) nbc = 1;
-  if(om6) nbc = 2;
-  if(plate) nbc = 3;
-  if(n12){
-    nbc=2;
-    bc[0]=5;
-    bc[1]=6;
-  }
-  if(quarter) nbc = 1;
-  if(spherecone){
-    nbc=4;
-    bc[0]=1;
-    bc[1]=3;
-    bc[2]=4;
-    bc[3]=5;
-  }
-  /* skip freezing
-  printf("freezing distant volume nodes.\n");
-  gridFreezeAll(grid);
-  for (i=0;i<nbc;i++){  
-    printf("thaw bc %d.\n",bc[i]);
-    gridThawNearBC(grid,0.5,bc[i]);
-    gridFreezeBCFace(grid,bc[i]);
-  }
-  */
-  printf("make advancing layer object.\n");
-  layer = layerCreate(grid);
-  printf("make advancing layer triangle.\n");
-  layerPopulateAdvancingFront(layer,nbc,bc);
-  if (box) {
-    layerConstrainNormal(layer,-9);
-    layerConstrainNormal(layer,-10);
-    layerConstrainNormal(layer,-11);
-    layerConstrainNormal(layer,-12);
-    layerConstrainNormal(layer,3);
-    layerConstrainNormal(layer,4);
-    layerConstrainNormal(layer,5);
-    layerConstrainNormal(layer,6);
-  }
-  if (plate) {
-    layerTerminateNormalWithX(layer,-1, 0.0001);
-    layerTerminateNormalWithX(layer, 1, 1.0001);
-
-    /*
-      face and four edges
-      04 13 12 07 11
-      05 15 11 02 14
-      06 17 14 10 16
-
-      14 20 26 16 08
-
-      07 20 09 19 18
-      08 19 04 22 21
-      09 24 23 22 05
-
-      13 12 28 24 06
-    */
-    layerConstrainNormal(layer,-11);
-    layerConstrainNormal(layer,-14);
-    layerConstrainNormal(layer,-16);
-
-    layerConstrainNormal(layer,-20);
-
-    layerConstrainNormal(layer,-19);
-    layerConstrainNormal(layer,-22);
-    layerConstrainNormal(layer,-24);
-
-    layerConstrainNormal(layer,-12);
-    /* y1 */
-    layerConstrainNormal(layer,4);
-    layerConstrainNormal(layer,5);
-    layerConstrainNormal(layer,6);
-    /* y0 */
-    layerConstrainNormal(layer,7);
-    layerConstrainNormal(layer,8);
-    layerConstrainNormal(layer,9);
-    /* inout */
-    layerConstrainNormal(layer,13);
-    layerConstrainNormal(layer,14);
-  }
-  if (om6) {
-    layerConstrainNormal(layer,5);
-  }
-  if(n12){
-    layerConstrainNormal(layer,1);
-    layerConstrainNormal(layer,2);
-  }
-  if(quarter){
-    layerConstrainNormal(layer,2);
-    layerConstrainNormal(layer,4);
-    layerConstrainNormal(layer,-5);
-    layerConstrainNormal(layer,-6);
-  }
-  if(spherecone){
-    layerConstrainNormal(layer,2);
-  }
-  printf("make advancing layer triangle normals visible to triangle.\n");
-  layerVisibleNormals(layer,-1.0,-1.0);
-  return layer;
-}
-
 Grid *layerGrid(Layer *layer)
 {
   return layer->grid;
@@ -234,6 +110,55 @@ void layerFree(Layer *layer)
   if (layer->blend != NULL) free(layer->blend);
   if (layer->triangle != NULL) free(layer->triangle);
   free(layer);
+}
+
+Layer *formAdvancingFront( Grid *grid, char *project )
+{
+  Layer *layer;
+  int i, nbc, bc[2];
+  bool box, om6, n12;
+  
+  box = (NULL != strstr( project, "box"));
+  om6 = (NULL != strstr( project, "om6"));
+  n12 = (NULL != strstr( project, "n12"));
+
+  if (box) printf("string %s has box.\n",project);
+  if (om6) printf("string %s has om6.\n",project);
+  if (n12) printf("string %s has n12.\n",project);
+
+  bc[0]=1;
+  bc[1]=2;
+  if(box) nbc = 1;
+  if(om6) nbc = 2;
+  if(n12){
+    nbc=2;
+    bc[0]=5;
+    bc[1]=6;
+  }
+  printf("make advancing layer object.\n");
+  layer = layerCreate(grid);
+  printf("make advancing layer triangle.\n");
+  layerPopulateAdvancingFront(layer,nbc,bc);
+  if (box) {
+    layerConstrainNormal(layer,-9);
+    layerConstrainNormal(layer,-10);
+    layerConstrainNormal(layer,-11);
+    layerConstrainNormal(layer,-12);
+    layerConstrainNormal(layer,3);
+    layerConstrainNormal(layer,4);
+    layerConstrainNormal(layer,5);
+    layerConstrainNormal(layer,6);
+  }
+  if (om6) {
+    layerConstrainNormal(layer,5);
+  }
+  if(n12){
+    layerConstrainNormal(layer,1);
+    layerConstrainNormal(layer,2);
+  }
+  printf("make advancing layer triangle normals visible to triangle.\n");
+  layerVisibleNormals(layer,-1.0,-1.0);
+  return layer;
 }
 
 void layerSortGlobalNodes(void *voidLayer, int *o2n)
