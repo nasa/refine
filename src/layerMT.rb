@@ -1258,7 +1258,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2], layer.triangle(0)
   assert_equal [2,1,3], layer.triangle(1)
   assert_equal 0,     layer.nblend
-  assert_equal layer, layer.blend
+  assert_equal layer, layer.blend(-1.0)
   assert_equal 1,     layer.nblend
   # y 25--3 normals
   # ^ |0\1|
@@ -1274,7 +1274,7 @@ class TestLayer < Test::Unit::TestCase
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   layer = Layer.new(grid).populateAdvancingFront([1])
-  layer.blend
+  layer.blend(-1.0)
   assert_equal 1,     layer.nblend
   assert_equal layer, layer.splitBlend
   assert_equal 2,     layer.nblend
@@ -1288,7 +1288,7 @@ class TestLayer < Test::Unit::TestCase
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   layer = Layer.new(grid).populateAdvancingFront([1])
-  layer.blend.splitBlend
+  layer.blend(-1.0).splitBlend
   assert_equal 2,     layer.nblend
   assert_equal layer, layer.splitBlend
   assert_equal 4,     layer.nblend
@@ -1331,7 +1331,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,3,1], layer.triangleNormals(1)
   assert_equal [0,4,3], layer.triangleNormals(2)
   assert_equal [0,2,4], layer.triangleNormals(3)
-  assert_equal layer, layer.blend
+  assert_equal layer, layer.blend(-1.0)
   assert_equal 2,     layer.nblend
   assert_equal [0,1,6], layer.triangleNormals(0)
   assert_equal [0,3,1], layer.triangleNormals(1)
@@ -1360,7 +1360,7 @@ class TestLayer < Test::Unit::TestCase
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   layer = Layer.new(grid).populateAdvancingFront([1])
-  layer.blend
+  layer.blend(-1.0)
   assert_equal 1,       layer.nblend
   layer.advance
   assert_equal 0,       layer.nblend
@@ -1384,7 +1384,7 @@ class TestLayer < Test::Unit::TestCase
   grid.addFace(1,0,4,11)
   layer = Layer.new(grid).populateAdvancingFront([1])
   layer.constrainNormal(11)
-  layer.blend
+  layer.blend(-1.0)
   assert_equal 3,       grid.nface
   layer.advance
   assert_equal 6,       grid.nface
@@ -1394,7 +1394,7 @@ class TestLayer < Test::Unit::TestCase
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   layer = Layer.new(grid).populateAdvancingFront([1])
-  layer.blend
+  layer.blend(-1.0)
   assert_equal 1,     layer.nblend
   assert_equal 2,     layer.ntriangle
   assert_equal 6,     layer.nnormal
@@ -1444,6 +1444,26 @@ class TestLayer < Test::Unit::TestCase
   # |   1
   assert_equal [5,9,7], layer.triangleNormals(4)
   assert_equal [5,7,1], layer.triangleNormals(5)
+ end
+
+ def testSingleBlend
+  grid = Grid.new(6,0,3,0)
+  top = 0.8
+  grid.addNode(0.5,0.5,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(1,1,0)
+  grid.addNode(0,1,0)
+  grid.addNode(-0.5,0.5,top)
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,2,3,10)
+  grid.addFace(0,3,4,10)
+  grid.addFace(0,4,5,10)
+  grid.addFace(0,5,1,10)
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  assert_equal 6, layer.nnormal
+  layer.blend(270.0)
+  assert_equal 7, layer.nnormal  
  end
 
  def facingGrid(z)
