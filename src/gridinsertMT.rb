@@ -61,6 +61,21 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 8, grid.ncell
  end
 
+ def testSplitEdgeAt4
+  assert_not_nil grid = gemGrid
+  assert_equal grid.nnode, grid.splitEdgeAt(0,1,0.1,0,0)
+  assert_equal 7, grid.nnode
+  assert_equal [0.1,0,0], grid.nodeXYZ(6)
+  assert_equal 8, grid.ncell
+ end
+
+ def testSplitEdgeAt4NegVolume
+  assert_not_nil grid = gemGrid
+  assert_equal( -1, grid.splitEdgeAt(0,1,2,0,0) )
+  assert_equal 6, grid.nnode
+  assert_equal 4, grid.ncell
+ end
+
  def testSplitEdge4onSameBC
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal grid, grid.addFaceUV(0,0.0,10.0,
