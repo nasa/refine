@@ -19,7 +19,7 @@
 #include "gridcad.h"
 #include "gridfiller.h"
 #include "layer.h"
-#include <CADGeom/CADGeom.h>
+#include "CADGeom/CADGeom.h"
 
 #define PRINT_STATUS printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid));
 
