@@ -171,7 +171,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal layer,     layer.makeNormal
   assert_equal 3,         layer.nnormal
   assert_equal layer,     layer.advance(0.1)
-  #assert_equal 4,         grid.ncell
+  assert_equal 7,         grid.nnode
+  #assert_equal [4,5,6,3], grid.cell(0)
  end
 
 end

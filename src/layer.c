@@ -16,7 +16,7 @@
 typedef struct Normal Normal;
 struct Normal {
   int constrained;
-  int root;
+  int root, tip;
   double direction[3];
 };
 
@@ -183,6 +183,7 @@ Layer *layerMakeNormal(Layer *layer)
     normal = layer->globalNode2Normal[i];
     if (normal!=EMPTY) {
       layer->normal[normal].root = i;
+      layer->normal[normal].tip = EMPTY;
       layer->normal[normal].direction[0] = 0.0;
       layer->normal[normal].direction[1] = 0.0;
       layer->normal[normal].direction[2] = 0.0;
@@ -289,6 +290,21 @@ int layerConstrained(Layer *layer, int normal )
 
 Layer *layerAdvance(Layer *layer, double height )
 {
+  Grid *grid = layer->grid;
+  int normal, root, tip, i;
+  int cell, node;
+  double xyz[3];
+  AdjIterator it;  
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    root = layer->normal[normal].root;
+    gridNodeXYZ(grid,root,xyz);
+    for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
+    tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
+    if ( EMPTY == tip) return NULL;
+    layer->normal[normal].tip = tip;
+  }
+
   return layer;
 }
 
