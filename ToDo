@@ -10,7 +10,7 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 Parameter values: verify at start and then always evaluate to avoid
 projections.
 
-merge edge based research into mainline code
+continue to merge edge based research into mainline code
 
 research mapped edge length and fix edge ratio length routines
 
@@ -27,20 +27,16 @@ gridmetric : get rid of
 
 rename grid AR to cost
 
-make sure that a node xyz and params are consistant after split/collapse
-
-make sure that new split configureation has faces to trigger validuty check
-
 clean up projections for adapt drivers
 
 clean up logic for adapt drivers
 
 fix gridCollapseEdgeToBestConfiguration gridCollapseCost logic
 
-clean up gridSplitEdgeIfNear gridSplitFaceAt gridSplitCellAt gridInsertInToGeomEdge gridInsertInToGeomFace gridInsertInToVolume 
+clean up gridSplitEdgeIfNear gridSplitFaceAt gridSplitCellAt
+gridInsertInToGeomEdge gridInsertInToGeomFace gridInsertInToVolume
 
-
-think aboutgeom edge  collapse on a beth grid with no geom edges
+think aboutgeom edge collapse on a beth grid with no geom edges
 
 Make a matrix of collapse possilbities for node 0,1 on bound or not
 
