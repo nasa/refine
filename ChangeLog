@@ -1,3 +1,14 @@
+2004-07-15 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveRelaxation*) generalized the grid
+	relaxation methods. Now the relaxation scheme is controled is an
+	argument to gridmoveRelaxationStartUp.
+	* src/gridmove.h added relaxationScheme macros gridmove*_SCHEME
+	to select relaxation method for gridmoveRelaxationStartUp.
+	* src/gridfortran.c (gridmoverelax*_) generalized the grimove
+	relax functions to call the general src/gridmove.c methods. 
+	Now the relaxation scheme is controled is an argument to startup.
+
 2004-07-14 12:56 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c now has ElasticRelaxation that should work like 

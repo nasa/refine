@@ -32,6 +32,8 @@ GridMove *gridmoveCreate( Grid *grid )
   gm->specified = malloc(gridMaxNode(grid)*sizeof(GridBool));
   for (i=0;i<gridMaxNode(grid);i++) gm->specified[i] = FALSE;
 
+  gm->relaxationScheme = gridmoveEMPTY_SCHEME;
+
   gm->c2e = NULL;
   gm->springs = NULL;
   gm->xyz = NULL;
@@ -1199,4 +1201,75 @@ GridMove *gridmoveElasticRelaxation(GridMove *gm, int nsteps, int subIterations)
   gridmoveElasticRelaxationShutDown(gm);
 
   return gm;
+}
+
+GridMove *gridmoveRelaxationStartUp(GridMove *gm, int relaxationScheme )
+{
+  switch (relaxationScheme) {
+  case gridmoveELASTIC_SCHEME:
+    gm->relaxationScheme = relaxationScheme;
+    return gridmoveElasticRelaxationStartUp(gm);
+    break;
+  case gridmoveSPRING_SCHEME:
+    gm->relaxationScheme = relaxationScheme;
+    return gridmoveSpringRelaxationStartUp(gm);
+    break;
+  default:
+    printf("%s: %d: ERROR relaxationScheme %d unknown\n",
+	   __FILE__,__LINE__,relaxationScheme);
+  }
+  return NULL;
+}
+
+GridMove *gridmoveRelaxationStartStep(GridMove *gm, double position)
+{
+  switch (gm->relaxationScheme) {
+  case gridmoveELASTIC_SCHEME:
+    return gridmoveElasticRelaxationStartStep(gm, position);
+    break;
+  case gridmoveSPRING_SCHEME:
+    return gridmoveSpringRelaxationStartStep(gm, position);
+    break;
+  default:
+    printf("%s: %d: ERROR relaxationScheme %d unknown.\n",
+	   __FILE__,__LINE__,gm->relaxationScheme);
+    printf("call gridmoveRelaxationStartUp first.\n");
+  }
+  return NULL;
+}
+
+GridMove *gridmoveRelaxationSubIteration(GridMove *gm, double *residual2)
+{
+  switch (gm->relaxationScheme) {
+  case gridmoveELASTIC_SCHEME:
+    return gridmoveElasticRelaxationSubIteration(gm, residual2);
+    break;
+  case gridmoveSPRING_SCHEME:
+    return gridmoveSpringRelaxationSubIteration(gm, residual2);
+    break;
+  default:
+    printf("%s: %d: ERROR relaxationScheme %d unknown.\n",
+	   __FILE__,__LINE__,gm->relaxationScheme);
+    printf("call gridmoveRelaxationStartUp first.\n");
+  }
+  return NULL;
+}
+
+GridMove *gridmoveRelaxationShutDown(GridMove *gm)
+{
+  switch (gm->relaxationScheme) {
+  case gridmoveELASTIC_SCHEME:
+    gm->relaxationScheme = gridmoveEMPTY_SCHEME;
+    return gridmoveElasticRelaxationShutDown(gm);
+    break;
+  case gridmoveSPRING_SCHEME:
+    gm->relaxationScheme = gridmoveEMPTY_SCHEME;
+    return gridmoveSpringRelaxationShutDown(gm);
+    break;
+  default:
+    printf("%s: %d: ERROR relaxationScheme %d unknown.\n",
+	   __FILE__,__LINE__,gm->relaxationScheme);
+    printf("call gridmoveRelaxationStartUp first.\n");
+  }
+  return NULL;
 }

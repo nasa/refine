@@ -23,6 +23,8 @@ struct GridMove {
   double *displacement;
   GridBool *specified;
 
+  int relaxationScheme;
+
   int *c2e;
   int nsprings, *springs;
   double *xyz;
@@ -94,6 +96,14 @@ GridMove *gridmoveElasticRelaxationShutDown(GridMove *);
 GridMove *gridmoveElasticRelaxationDumpA(GridMove *);
 
 GridMove *gridmoveElasticRelaxation(GridMove *, int nsteps, int subIterations);
+
+#define gridmoveEMPTY_SCHEME (EMPTY)
+#define gridmoveELASTIC_SCHEME (1)
+#define gridmoveSPRING_SCHEME (2)
+GridMove *gridmoveRelaxationStartUp(GridMove *, int relaxationScheme );
+GridMove *gridmoveRelaxationStartStep(GridMove *, double position);
+GridMove *gridmoveRelaxationSubIteration(GridMove *, double *residual2);
+GridMove *gridmoveRelaxationShutDown(GridMove *);
 
 END_C_DECLORATION
 

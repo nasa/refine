@@ -82,10 +82,10 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
 void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux );
 
 void gridmovesetprojectiondisp_( void );
-void gridmovesprrelaxstartup_( void );
-void gridmovesprrelaxstartstep_( double *position); 
-void gridmovesprrelaxsubiter_( double *residual);
-void gridmovesprrelaxshutdown_( void );
+void gridmoverelaxstartup_( int *relaxationScheme );
+void gridmoverelaxstartstep_( double *position); 
+void gridmoverelaxsubiter_( double *residual);
+void gridmoverelaxshutdown_( void );
 void gridmoveapplydisplacements_( void );
 
 void gridmovedataleadingdim_( int *ndim );
