@@ -10,8 +10,7 @@
 	* src/grid.c (gridConnValue,gridSetConnValue) renamed from
 	(gridConnError,gridSetConnError)
 	* src/grid.c (gridSortConnValues,gridConnWithThisRanking) added to
-	sort the conn values low to high.
-	
+	sort the conn values low to high.	
 
 2004-10-04 16:37 Mike Park  <mike.park@nasa.gov>
 

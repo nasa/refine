@@ -1,35 +1,47 @@
+**SomeFutureDate**: Released Refine **NextRelase**
+
+Added extra check on collapse edge to prevent invalid connectivities.
+Added CAPRI2 compatibility to current CAPRI (CADGeom) routines (run
+./configure with --enable_CAPRI2 to activate).  Imposed limits on the
+minimum element quality allowed after a edge split or collapse.  Added
+functionality to untangle surfaces triangles in UV space.  Correctly
+handle adaptation on geometry that has been transformed in the
+SDK. Various FORTRAN API changes.
+
+Works with FUN3D Version(s): **FUN3DVersion**
+
 Wed Aug 17, 2004: Released Refine 1.2.2
 
 Fixed FAKEGeom.
 
 Wed Aug 17, 2004: Released Refine 1.2.1
 
-Removed all references to SDK UG_API and Goolache fo the refine lib;
+Removed all references to SDK UG_API and Goolache from the refine lib;
 you will only need to link to GEOLAB SDK CADGeom and MeatLib.  Added
 static versions of SGI n32 CADGeom+CAPRINative and MeatLib in
 geomSGIn32; see INSTALL for usage. Silenced reporting of CAD parameter
 mismatches on restart. Note that there is a bug in the recreation of
 CAPRI restarts that still needs to be fixed, but projecting points
 works for all geometries tested so far.  Limited the range of R
-(aspect ratio) to reduce the number of cases that the linear elasticy
+(aspect ratio) to reduce the number of cases that the linear elasticity
 system goes unstable with Gauss-Seidel. Use springs if the linear
-elasticy system goes unstable. I have noticed an extra node or cell
-reported by the load balacing routine in FUN3D on rare occations for
+elasticity system goes unstable. I have noticed an extra node or cell
+reported by the load balancing routine in FUN3D on rare occasions for
 large grids on may processors. I have not been able to isolate
 problem.
 
 Wed Aug  9, 2004: Released Refine 1.2.0
 
 Replaced obsolete SDK/Goolache/MeshMgr with SDK/UG_API methods.  The
-combination of removing cells from the mesh with two bounday triangles
+combination of removing cells from the mesh with two boundary triangles
 (gridRemoveTwoFaceCell), Simplex optimization of volume
 (gridRelaxNegativeCells), and existing edge swapping has been able to
-fix the few negative elements that result from linear elasticy grid
+fix the few negative elements that result from linear elasticity grid
 movement to perform surface projection.
 
 Wed Jul 16, 2004: Released Refine 1.1.0
 
-Added linear elasticy grid movement
+Added linear elasticity grid movement
 SDK tagged DynLoader_MeshMgr_Used
 
 Wed Jul 13, 2004: Released Refine 1.0.0
@@ -45,7 +57,7 @@ Wed Jun  2, 2004: Released Refine 0.7.4
 
 gridmove and CAPRI(CADGeom) read work in parallel. Parallel node
 smoothing works for CAD and fake geometry. Fixed off-by-one numbering
-bug in fortran interface gridfreezenode.
+bug in FORTRAN interface gridfreezenode.
 
 Mon May  3, 2004: Released Refine 0.7.3
 
@@ -58,15 +70,15 @@ Tagging before queue refactor and gridmpi:gridApplayQueue speedup.
 Thu Apr 15, 2004: Released Refine 0.7.1
 
 Last version to use old pre-GeoBool tag on the SDK. Fixed more bugs in
-mulitple normals for BWB case.
+multiple normals for BWB case.
 
 Thu Apr 11, 2004: Released Refine 0.7.0
 
-refine now has parallel fortran bindings for FUN3D(HEFSS) see
+refine now has parallel FORTRAN bindings for FUN3D(HEFSS) see
 HEFSS.rps/LibF90/refine_interface.f90 and refine/src/gridfortran.c.
-Added collision detection, varible normals, and multiple normals to
+Added collision detection, variable normals, and multiple normals to
 advancing fronts. Harold Atkins added code to generate an Synthetic
-Jet Grid. Muliple normals (blends) are more general.
+Jet Grid. Multiple normals (blends) are more general.
 
 Thu Jan 30, 2003: Released Refine 0.6
 
