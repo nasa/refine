@@ -52,6 +52,10 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return EMPTY;
 
+  gridMakeGem(grid, node0, node1 );
+  if ( NULL == queue && !gridGemIsLocal(grid)) return EMPTY;
+  if ( NULL != queue && gridGemIsLocal(grid)) return EMPTY;
+
   if (grid != gridNodeXYZ(grid,node0,xyz0)) return EMPTY;
   if (grid != gridNodeXYZ(grid,node1,xyz1)) return EMPTY;
 
@@ -203,13 +207,12 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   return grid;
 }
 
-Grid *gridParallelAdaptWithOutCAD(Grid *grid, double minLength, double maxLength )
+Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
+				  double minLength, double maxLength )
 {
   int n0, n1, adaptnode, origNNode, newnode;
   int report, nnodeAdd, nnodeRemove;
   double ratio;
-  
-  int processor;
 
   origNNode = gridNNode(grid);
   adaptnode =0;
@@ -218,29 +221,19 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, double minLength, double maxLength
 
   report = 10; if (gridNNode(grid) > 100) report = gridNNode(grid)/10;
 
-  for (processor=-1;processor<gridNPart(grid); processor++);
-
-  for ( n0=0; 
-	adaptnode<origNNode && n0<gridMaxNode(grid); 
-	n0++ ) { 
+  for ( n0=0; adaptnode<origNNode; n0++ ) { 
+    adaptnode++;
     if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
       printf("adapt node %8d nnode %8d added %8d removed %8d\n",
 	     adaptnode,gridNNode(grid),nnodeAdd,nnodeRemove);
-    if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
-      adaptnode++;
+    if ( gridValidNode( grid, n0) && 
+	 !gridNodeFrozen( grid, n0 ) && 
+	 gridNodeLocal( grid, n0 ) ) {
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
       if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
-	newnode = gridSplitEdge(grid, n0, n1);
+	newnode = gridParallelSplitEdge(grid, queue, n0, n1);
 	if ( newnode != EMPTY ){
 	  nnodeAdd++;
-	}
-      }else{
-	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
-	  return NULL;
-	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
-	  if ( grid == gridCollapseEdge(grid, n0, n1, 0.5) ) {
-	    nnodeRemove++;
-	  }
 	}
       }
     }else{
