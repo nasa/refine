@@ -112,11 +112,24 @@ VALUE grid_cellExists( VALUE self, VALUE nodeId, VALUE cellId )
     ( gridCellExists( grid, NUM2INT(nodeId), NUM2INT(cellId) )?Qtrue:Qfalse );
 }
 
-VALUE grid_addCell( VALUE self, VALUE n1, VALUE n2, VALUE n3, VALUE n4 )
+VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
   GET_GRID_FROM_SELF;
-  gridAddCell( grid, NUM2INT(n1),  NUM2INT(n2),  NUM2INT(n3),  NUM2INT(n4) );
+  gridAddCell( grid, NUM2INT(n0),  NUM2INT(n1),  NUM2INT(n2),  NUM2INT(n3) );
   return self;
+}
+
+VALUE grid_getGem( VALUE self, VALUE n0, VALUE n1 )
+{
+#define MAXGEM 200
+  int i, ngem;
+  int gem[MAXGEM];
+  VALUE rb_gem; // bug, what is return if this is cleaned up?
+  GET_GRID_FROM_SELF;
+  gridGetGem( grid, NUM2INT(n0),  NUM2INT(n1), MAXGEM, &ngem, gem );
+  rb_gem = rb_ary_new();
+  for ( i=0 ; i < ngem ; i++ ) rb_gem = rb_ary_push( rb_gem, INT2NUM(gem[i]) );
+  return rb_gem;
 }
 
 VALUE cGrid;
@@ -141,4 +154,5 @@ void Init_Grid()
   rb_define_method( cGrid, "removeNodeCell", grid_removeNodeCell, 2 );
   rb_define_method( cGrid, "cellExists", grid_cellExists, 2 );
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
+  rb_define_method( cGrid, "getGem", grid_getGem, 2 );
 }

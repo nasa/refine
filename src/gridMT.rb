@@ -95,10 +95,21 @@ class TestSampleUnit < Test::Unit::TestCase
    (0..3).each { |n| assert_equal 1, @grid.nodeDeg(n)}
  end
 
+ def testGetGem1
+   grid = @grid
+   grid.addCell(0,1,2,3)
+   gem = grid.getGem(0,1)
+   assert_equal [0], gem
+ end
+
 # make register unique
 # non-contiguos cellist for access and registering
 # test that new list terminator is contiguous
 # packing
+
+# adding a cell bigger than maxcell
+
+# get rid of long, use int
 
 # allocating a new chunk of celllist
 

@@ -32,6 +32,7 @@ int gridValidNodeCell(Grid *g);
 int gridMoreNodeCell(Grid *g);
 
 Grid *gridAddCell(Grid *g, long n0, long n1, long n2, long n3 );
+Grid *gridGetGem(Grid *g, long n0,long n1, int maxgem,int *ngem, int *gem );
 
 Grid *gridDump(Grid *g);
 

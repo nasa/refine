@@ -20,6 +20,7 @@ struct Grid {
   long *firstcell;
   long currentcell;
   long *celllist;
+  long *c2n;
 };
 
 //#define EBUG
@@ -34,6 +35,8 @@ Grid* gridCreate(long nnode, long maxcell, long nlist)
   grid->nnode = nnode;
   grid->maxcell = maxcell;
   grid->ncell = 0;
+  grid->c2n = malloc(4 * grid->maxcell * sizeof(long));
+
   grid->nlist = nlist;
 
   /* pad one for [0] and one to terminate */
@@ -55,6 +58,13 @@ Grid* gridCreate(long nnode, long maxcell, long nlist)
 #endif
 
   return  grid;
+}
+
+void gridFree(Grid *grid)
+{
+  free(grid->c2n);
+  free(grid->firstcell);
+  free(grid);
 }
 
 Grid *gridDump(Grid *grid)
@@ -207,18 +217,42 @@ int gridMoreNodeCell(Grid *grid)
 
 Grid *gridAddCell(Grid *grid, long n0, long n1, long n2, long n3)
 {
-  long cellId;
+  long cellId,icell;
   cellId = 0;
+  icell = grid->ncell;
   grid->ncell++;
+  
+  grid->c2n[0+4*icell] = n0;
+  grid->c2n[1+4*icell] = n1;
+  grid->c2n[2+4*icell] = n2;
+  grid->c2n[3+4*icell] = n3;
+  
   gridRegisterNodeCell( grid, n0, cellId );
   gridRegisterNodeCell( grid, n1, cellId );
   gridRegisterNodeCell( grid, n2, cellId );
   gridRegisterNodeCell( grid, n3, cellId );
+  
   return grid;
 }
 
-void gridFree(Grid *grid)
+Grid *gridGetGem(Grid *grid, long n0, long n1, int maxgem, int *ngem, int *gem )
 {
-  free(grid->firstcell);
-  free(grid);
+  int cellId, inode;
+  *ngem = 0;
+  
+  for ( gridFirstNodeCell(grid,n0); 
+	gridValidNodeCell(grid); 
+	gridNextNodeCell(grid)) {
+    cellId = gridCurrentNodeCell(grid);
+    for ( inode = 0 ; inode < 4 ; inode++) {
+      if ( grid->c2n[inode+4*cellId] == n1 ) {
+	(*ngem)++;
+	if ( *ngem > (maxgem-1) ) return NULL;
+	gem[*ngem-1] = cellId;
+      }
+    }
+  }
+
+  return grid;
 }
+
