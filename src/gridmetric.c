@@ -397,6 +397,29 @@ Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
   return grid;
 }
 
+Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
+{
+  double eigenValues[3], e1, e2, e3, v1[3], v2[3], v3[3];
+  if ( grid != gridEigenSystem(grid, m, eigenValues, v1, v2, v3 )) return NULL;
+
+  e1 = sqrt(eigenValues[0]);
+  e2 = sqrt(eigenValues[1]);
+  e3 = sqrt(eigenValues[2]);
+
+  /* sqrt(eigenValues) * transpose(eigenVectors) */
+  j[0] = e1*v1[0];
+  j[1] = e1*v1[1];
+  j[2] = e1*v1[2];
+  j[3] = e2*v2[0];
+  j[4] = e2*v2[1];
+  j[5] = e2*v2[2];
+  j[6] = e3*v3[0];
+  j[7] = e3*v3[1];
+  j[8] = e3*v3[2];
+
+  return grid;
+}
+
 double gridVolume(Grid *grid, int *nodes )
 {
   int ixyz;

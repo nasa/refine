@@ -38,6 +38,8 @@ Grid *gridEigenVector(Grid *g, double *m, double eigenValue,
 		      double *eigenVector );
 Grid *gridEigenSystem(Grid *g, double *m, double *eigenValues, 
 		      double *v1, double *v2, double *v3);
+Grid *gridConvertMetricToJacobian(Grid *g, double *m, double *j);
+
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 Grid *gridNodeAR(Grid *g, int node, double *ar );

@@ -130,7 +130,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta( -1.0, v1[2], 1.0e-15 )
  end
 
-
  def testMatrixEigenSystem
   assert_not_nil grid = Grid.new(1,0,0,0)
 
@@ -180,6 +179,37 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta( -os2, v3[1], 1.0e-15)
   assert_in_delta 0.0, v3[2], 1.0e-15
  end
+
+ def testConvertMetricToJacobian
+  assert_not_nil grid = Grid.new(1,0,0,0)
+  assert_not_nil jacob = grid.convertMetricToJacobian( [ 1.0, 0.0, 0.0, 
+                                                              4.0, 0.0, 
+                                                                   9.0 ] )
+  assert_in_delta 0.0, jacob[0], 1.0e-15
+  assert_in_delta 0.0, jacob[1], 1.0e-15
+  assert_in_delta 3.0, jacob[2], 1.0e-15
+  assert_in_delta 0.0, jacob[3], 1.0e-15
+  assert_in_delta 2.0, jacob[4], 1.0e-15
+  assert_in_delta 0.0, jacob[5], 1.0e-15
+  assert_in_delta 1.0, jacob[6], 1.0e-15
+  assert_in_delta 0.0, jacob[7], 1.0e-15
+  assert_in_delta 0.0, jacob[8], 1.0e-15
+
+  assert_not_nil jacob = grid.convertMetricToJacobian([0.3125, -0.1875,  0.0,
+                                                                0.3125,  0.0,
+                                                                         1.0])
+  assert_in_delta 0.0, jacob[0], 1.0e-15
+  assert_in_delta 0.0, jacob[1], 1.0e-15
+  assert_in_delta(-1.0, jacob[2], 1.0e-15)
+  assert_in_delta(-0.5, jacob[3], 1.0e-15)
+  assert_in_delta 0.5, jacob[4], 1.0e-15
+  assert_in_delta 0.0, jacob[5], 1.0e-15
+  assert_in_delta(-0.25, jacob[6], 1.0e-15)
+  assert_in_delta(-0.25, jacob[7], 1.0e-15)
+  assert_in_delta 0.0, jacob[8], 1.0e-15
+
+ end
+
 
  def testFindLargestRatioEdge
   assert_not_nil grid = isoTet.resetSpacing

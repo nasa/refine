@@ -156,6 +156,24 @@ VALUE grid_eigenSystem( VALUE self, VALUE rb_m )
   return rb_eigenSystem;
 }
 
+VALUE grid_convertMetricToJacobian( VALUE self, VALUE rb_m )
+{
+  int i;
+  double m[6], j[9];
+  VALUE rb_j;
+  Grid *rGrid;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<6;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
+  rGrid = gridConvertMetricToJacobian( grid, m, j );
+  if ( rGrid == grid ){
+    rb_j = rb_ary_new2(9);
+    for(i=0;i<9;i++) rb_ary_store( rb_j, i, rb_float_new(j[i]) );
+  }else{
+    rb_j = Qnil;
+  }
+  return rb_j;
+}
+
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -356,6 +374,8 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "eigenValues", grid_eigenValues, 1 );
   rb_define_method( cGridMetric, "eigenVector", grid_eigenVector, 2 );
   rb_define_method( cGridMetric, "eigenSystem", grid_eigenSystem, 1 );
+  rb_define_method( cGridMetric, "convertMetricToJacobian", 
+		    grid_convertMetricToJacobian, 1 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
