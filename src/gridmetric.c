@@ -3,7 +3,7 @@
 #include <math.h>
 #include <limits.h>
 #include <values.h>
-#include "adj.h"
+#include "grid.h"
 #include "gridmetric.h"
 #include "gridStruct.h"
 
@@ -31,8 +31,16 @@ void gridCrossProduct(double *edge1, double *edge2, double *norm)
 Grid *gridSetMapMatrixToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
 {
   int i;
-  for (i=0;i<6;i++) grid->map[i+6*avgNode] = 
-		      0.5*(grid->map[i+6*n0]+grid->map[i+6*n1]);
+  double map[6], map0[6], map1[6];
+
+  if (grid != gridMap(grid, n0, map0) ) return NULL;
+  if (grid != gridMap(grid, n1, map1) ) return NULL;
+  for (i=0;i<6;i++) map[i] = 0.5*(map0[i]+map1[i]);
+  if (grid != gridSetMap( grid, n1, 
+			  map[0], map[1], map[2], 
+			  map[3], map[4], map[5] ) ) return NULL;
+
+  return grid;
 }
 
 void gridMapXYZWithJ( double *j,

@@ -188,7 +188,7 @@ class TestGridInsert < Test::Unit::TestCase
  def testAdaptToSpacing3
   assert_not_nil     grid = rightTet
   assert_equal grid, grid.resetSpacing
-  assert_equal grid, grid.scaleSpacing(0,0.2)
+  assert_equal grid, grid.scaleSpacing(0,0.25)
   assert_equal grid, grid.scaleSpacing(1,0.55)
   assert_equal grid, grid.scaleSpacing(2,0.55)
   assert_equal grid, grid.scaleSpacing(3,0.55)

@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
-#include "adj.h"
 #include "gridmetric.h"
 #include "gridinsert.h"
 #include "gridcad.h"
