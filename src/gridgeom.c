@@ -54,8 +54,6 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
   gridSetNGeomEdge( grid, nGeomEdge );
   gridSetNGeomFace( grid, nGeomFace );
 
-  printf("ADD ME grid geom node mask. ADD ME\nADD ME mark the geom nodes. ADD ME\n");
-
   inode = nGeomNode;
 
   for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
