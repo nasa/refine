@@ -44,7 +44,7 @@ The refine library overview, version 1.0.
 @chapter Introduction
 @cindex introduction
 
-This is a copy of refine/README file from the distribution.
+This is a copy of the refine/README file from the distribution.
 
 Refine is a 3D tetrahedral grid adaptation framework. It is
 implemented with an object-oriented flavor in the C language.  Most
@@ -71,11 +71,11 @@ with the SDK to rebuild the inviscid portions of the grid.
 @section Conventions
 @cindex conventions
 
-The term `object' will be used loosely in this manual. An object is
-defined as a pointer to a C structure with a number of methods that
-operate on that structure. The C struct and assocated methods are
-generally bundled into a C header and source file. I got this idea
-from the way that the Ruby interpreture is written in C.
+The term `object' will be used to define a pointer to a C structure
+with a number of methods that operate on that structure. The C struct
+and assocated methods are generally bundled into a C header and source
+file. I got this idea from the way that the Ruby interpreture is
+written in C.
 
 NOTE: although the C struct of the objects is often exposed for macro
 access to increase efficiency by reducing the number of function
@@ -116,7 +116,7 @@ executable (R).
 @item gridmetric - computes element metrics (volume, aspect ratio)
 @item gridswap - edge and face swapping routines
 @item gridcad - node projection and node smoothing for improved element quality
-@item gridgeom - parallel GeoSDK/CAPRI restart routines (R)
+@item gridgeom - parallel GeoSDK/CAPRI restart routines
 @item gridinsert - inserts and removes nodes into grid
 @item gridmpi - parallel grid adaptation helper
 @item gridfortran - fortran bindings for linking to FUN3D
@@ -224,7 +224,9 @@ The queue object stores transactions to comminucate connectity changes
 (i.e., edge swaps and node insertion) across processors during
 parallel grid adaptation operations. A queue object is created with
 @code{queueCreate}. The @code{nodeSize} argument specifies how many
-doubles will be stored for each node. 
+doubles will be stored for each node. If only X, Y, and Z need to be
+stored then @code{nodeSize} would be 3. Typically it is larger,
+because the spacing metric and the solution is also stored.
 
 A new transaction started with a call to @code{queueNewTransaction}.
 The @code{queueReset} clears all existing tranactions. A transaction
@@ -235,7 +237,7 @@ is composed of @code{queueRemoveCell}, @code{queueAddCell},
 Existing transactions can be queried with the
 @code{queueRemovedCells}, @code{queueAddedCells},
 @code{queueRemovedFaces}, @code{queueAddedFaces},
-@code{queueRemovedEdges}, @code{queueAddedEdges} method to obtain
+@code{queueRemovedEdges}, @code{queueAddedEdges} methods to obtain
 counts of the element changes. Running totals of cells, faces, and
 edges are used the accesses the actual data in the rest of the
 @code{queueRemoved*} and @code{queueAdded*} routines.
@@ -274,7 +276,7 @@ A grid object can be imported from arrays
 
 A grid object can be exported as arrays @code{gridExport}, a FAST file
 @code{gridExportFAST} or AFLR3 file @code{gridExportAFLR3}. The
-surface (faces) can be displayed with
+surface (faces) can be written with
 @code{gridWriteTecplotSurfaceZone}. NOTE: the export routines may
 evoke pack @code{gridPack} and sort routines @code{gridSort*}.
 
@@ -302,8 +304,8 @@ swapping, node insertion, and edge collapse. A gem is formed with
 gem. An equator is an ordered set of nodes in a gem that are not
 part of the edge in the center of the gem.
 
-The map @code{gridMap} is six entries of a 3x3 symmetric matrix used
-to define an anisotropic grid metric.
+The map @code{gridMap} is the six unique entries of a 3x3 symmetric
+matrix used to define an anisotropic grid metric.
 
 @node Grid Mix-ins
 @chapter Grid Mix-ins
@@ -342,22 +344,22 @@ Converts a metric M to a jacobian J
 Computes element volume @code{gridVolume} in physical space and aspect
 ratio @code{gridAR} in metric mapped space. The aspect ration of the
 worst elements around a node is provided by the @code{gridNodeAR}
-function. The same info is available for faces @code{gridFaceArea}
-@code{gridFaceAR}. These routines have also been differentiated.
+function. The same info is available for faces (@code{gridFaceArea}
+and @code{gridFaceAR}). These routines have also been differentiated.
 
 @section GridSwap
 @cindex gridswap
 
 The gridswap mix-in allows modification of grid connectivites by face
 @code{gridSwapFace} and edge @code{gridSwapEdge} swapping. There is a
-special routine that cleans up cells with two faces the surface
-@code{gridRemoveTwoFaceCell}. These two face cells are very
+special routine that removes cells with two faces the on the boundary
+surface @code{gridRemoveTwoFaceCell}. These two face cells are very
 troublesome for projection. The @code{gridSwapEdge} and
 @code{gridRemoveTwoFaceCell} have been parallelized. (The
 @code{gridSwapFace} routine could easily be parallelized, but this has
 not been completed.) The parallelization is enabled by populating a
 @code{queue} object, which is broadcast to other processors and
-applyed to keep the connectivities on all  processors consistent.
+applyed to keep the connectivities on all processors consistent.
 
 @section GridCAD
 @cindex gridcad
@@ -402,7 +404,7 @@ connectivities with the @code{gridApplyQueue} method.
 
 The @code{gridfortran} mixin contins FORTRAN bindings for
 FUN3D. Currently, only FORTRAN binding with one underscore are
-provided. Additional bindings can be added for compatability with more
+provided. Additional bindings can be added for compatability with other
 FORTRAN compilers. The @code{gridfortran} mixin stores static pointers
 to the @code{grid}, @code{gridmove}, and @code{queue} objects to allow
 FORTRAN routines to use refine. This mixin contains routines to
@@ -705,7 +707,7 @@ the top of configure.ac to the next test release.
 Put your documentation wish list here.
 
 @enumerate
-@item FORTRAN stuff: rad_module workflow.
+@item 
 @end enumerate
 
 @node Index
