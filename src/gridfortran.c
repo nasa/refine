@@ -373,10 +373,16 @@ int gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
 
 int gridghostcount_( int *nproc, int *count )
 {
-  int node;
+  int node, faces;
   for(node=0;node<(*nproc);node++) count[node] = 0;
   for(node=0;node<gridMaxNode(grid);node++) {
-    if (gridNodeGhost(grid,node)) count[gridNodePart(grid,node)]++;
+    if (gridNodeGhost(grid,node)) { 
+      count[gridNodePart(grid,node)]++;
+      faces = gridNodeFaceIdDegree(grid,node);
+      if (faces>0) {
+	count[gridNodePart(grid,node)] += (faces+1);
+      }
+    }
   }
 }
 
@@ -385,6 +391,7 @@ int gridloadghostnodes_( int *nproc, int *clientindex,
 {
   int node, part;
   int *count;
+  int face, ids, id[MAXFACEIDDEG];
 
   count = malloc( (*nproc) * sizeof(int) );
 
@@ -395,6 +402,17 @@ int gridloadghostnodes_( int *nproc, int *clientindex,
       localnode[ count[part]+clientindex[part]-1] = node+1;
       globalnode[count[part]+clientindex[part]-1] = gridNodeGlobal(grid,node)+1;
       count[part]++;
+      gridNodeFaceId(grid, node, MAXFACEIDDEG, &ids, id );
+      if (ids>0) {
+	localnode[ count[part]+clientindex[part]-1] = -ids;
+	globalnode[count[part]+clientindex[part]-1] = -ids;
+	count[part]++;
+	for (face=0;face<ids;face++) {
+	  localnode[ count[part]+clientindex[part]-1] = id[face];
+	  globalnode[count[part]+clientindex[part]-1] = id[face];
+	  count[part]++;
+	}
+      }
     }
   }
   free(count);
@@ -402,29 +420,60 @@ int gridloadghostnodes_( int *nproc, int *clientindex,
 
 int gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 {
-  int node, localnode;
-  double xyz[3];
+  int node, localnode, face, ids, faceId;
+  double uv[2], xyz[3];
 
-  for(node=0;node<(*nnode);node++) {
-    localnode = gridGlobal2Local(grid, nodes[node]-1);
-    if (grid != gridNodeXYZ(grid,localnode,xyz)) 
-      printf("ERROR: %s: %d: get xyz from invalid node local %d global &d.\n",
-	     __FILE__, __LINE__, localnode, nodes[node]-1);
-    data[0+(*ndim)*node] = xyz[0];
-    data[1+(*ndim)*node] = xyz[1];
-    data[2+(*ndim)*node] = xyz[2];
+  node=0;
+  while (node<(*nnode)) {
+    if (nodes[node] > 0) {
+      localnode = gridGlobal2Local(grid, nodes[node]-1);
+      if (grid != gridNodeXYZ(grid,localnode,xyz)) 
+	printf("ERROR: %s: %d: get xyz from invalid node local %d global &d.\n",
+	       __FILE__, __LINE__, localnode, nodes[node]-1);
+      data[0+(*ndim)*node] = xyz[0];
+      data[1+(*ndim)*node] = xyz[1];
+      data[2+(*ndim)*node] = xyz[2];
+      node++;
+    } else {
+      ids = -nodes[node];
+      node++;
+      for(face=0;face<ids;face++) {
+	faceId = nodes[node];
+	gridNodeUV(grid,localnode,faceId,uv);
+	data[0+(*ndim)*node] = uv[0];
+	data[1+(*ndim)*node] = uv[1];
+	node++;
+      }
+    } 
   }
+
 }
 
 int gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 {
-  int node;
+  int node, localnode;
+  int face, ids, faceId;
 
-  for(node=0;node<(*nnode);node++) { 
-    if (grid != gridSetNodeXYZ(grid,nodes[node]-1,&data[(*ndim)*node]) )
-      printf("ERROR: %s: %d: set invalid node %d .\n",
-	     __FILE__, __LINE__, nodes[node]-1);
+  node=0;
+  while (node<(*nnode)) {
+    if (nodes[node] > 0) {
+      localnode = nodes[node]-1;
+      if (grid != gridSetNodeXYZ(grid,localnode,&data[(*ndim)*node]) )
+	printf("ERROR: %s: %d: set invalid node %d .\n",
+	       __FILE__, __LINE__, nodes[node]-1);
+      node++;
+    } else {
+      ids = -nodes[node];
+      node++;
+      for(face=0;face<ids;face++) {
+	faceId = nodes[node];
+	gridSetNodeUV(grid,localnode,faceId,
+		      data[0+(*ndim)*node],data[1+(*ndim)*node]);
+	node++;
+      }
+    } 
   }
+
   printf( " %6d update xfer                      %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
