@@ -22,6 +22,10 @@ Grid *gridParallelGeomSave( Grid *, char *project );
 Grid *gridUpdateEdgeGrid( Grid *, int edgeId, int nCurveNode,
 			  double *xyz, double *t );
 
+int gridFaceEdgeCount( Grid *, int faceId );
+Grid *gridFaceEdgeLocal2Global( Grid *, int faceId, 
+				int faceEdgeCount, int *local2global );
+
 END_C_DECLORATION
 
 #endif /* GRIDGEOM_H */

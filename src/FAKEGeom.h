@@ -79,6 +79,9 @@ UGPatchPtr CADGeom_FaceGrid( int, int );
 GridBool CADGeom_NormalToFace( int vol, int faceId, 
 			       double *uv, double *xyz, double *normal);
 
+GridBool CADTopo_FaceNumEdgePts(int vol, int faceId, int *count);
+GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g);
+
 END_C_DECLORATION
 
 #endif /* CADGEOM_H */

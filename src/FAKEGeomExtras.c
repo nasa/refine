@@ -87,3 +87,13 @@ GridBool CADGeom_NormalToFace( int vol, int faceId,
 {
   return FALSE;
 }
+
+GridBool CADTopo_FaceNumEdgePts(int vol, int faceId, int *count)
+{
+  return FALSE;
+}
+
+GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g)
+{
+  return FALSE;
+}

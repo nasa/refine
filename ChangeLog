@@ -1,3 +1,12 @@
+2004-06-28 14:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridfaceedgecount_,gridfaceedgel2g_) added
+	routines to get the number of nodes on the outer edge of a face.
+	* src/gridgeom.c added new calls to CADGeom CADTopo_FaceNumEdgePts 
+	and CADTopo_VolFacePts.
+	* src/FAKEGeomExtras.c added mock CADTopo_FaceNumEdgePts and
+	CADTopo_VolFacePts.
+
 2004-06-26 16:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridRenumberGlobalNodes) added

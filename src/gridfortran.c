@@ -739,3 +739,15 @@ void gridface_( int *face, int *faceId,
     *faceId = EMPTY;
   }
 }
+
+void gridfaceedgecount_( int *faceId, int *faceEdgeCount )
+{
+  *faceEdgeCount = gridFaceEdgeCount( grid, *faceId );
+}
+
+void gridfaceedgel2g_( int *faceId, int *faceEdgeCount, int *local2global )
+{
+  int i;
+  gridFaceEdgeLocal2Global( grid, *faceId, *faceEdgeCount, local2global );
+  for (i=0;i<*faceEdgeCount;i++) local2global[i]++;
+}

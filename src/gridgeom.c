@@ -126,3 +126,24 @@ Grid *gridUpdateEdgeGrid( Grid *grid, int edgeId, int nCurveNode,
   if (!CADGeom_UpdateEdgeGrid( vol, edgeId, nCurveNode, xyz, t)) return NULL;
   return grid;
 }
+
+int gridFaceEdgeCount( Grid *grid, int faceId )
+{
+  int vol=1;
+  int count;
+  if (!CADTopo_FaceNumEdgePts(vol, faceId, &count)) return EMPTY;
+  return count;
+}
+
+Grid *gridFaceEdgeLocal2Global( Grid *grid, int faceId, 
+				int faceEdgeCount, int *local2global )
+{
+  int vol=1;
+  int count;
+  if (!CADTopo_VolFacePts(vol, faceId, &count, local2global)) return NULL;
+  if (count > faceEdgeCount) {
+    printf("%s: %d: ran out of array length\n",__FILE__,__LINE__);
+    return NULL;
+  }
+  return grid;
+}

@@ -106,6 +106,8 @@ void gridmaxface_( int *maxface );
 void gridface_( int *face, int *faceId, 
 		int *globalnodes, int *nodeparts, 
 		double *uv, double *xyz);
+void gridfaceedgecount_( int *faceId, int *faceEdgeCount );
+void gridfaceedgel2g_( int *faceId, int *faceEdgeCount, int *local2global );
 
 END_C_DECLORATION
 
