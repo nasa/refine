@@ -236,8 +236,8 @@ int main( int argc, char *argv[] )
 	j++){
 
     if (boundaryLayerGrid) {
-      height = 0.001*pow(1.2,j);
-      layerTerminateNormalWithSpacing(layer,height*4.);
+      height = 0.0001*pow(1.2,j);
+      layerTerminateNormalWithSpacing(layer,height*3.);
       if (layerNActiveNormal(layer) == 0 ) jmax=0;
       printf("insert layer height = %f\n",height);
       wiggleSteps = MIN(3,(int)(height/0.001)+1);
@@ -248,13 +248,7 @@ int main( int argc, char *argv[] )
 	printf("edge swapping grid...\n");gridSwap(grid);
 	layerSmoothLayerNeighbors(layer );
 	printf("node smoothing grid...\n");gridSmooth(grid);
-	printf("edge swapping grid...\n");gridSwap(grid);
-	layerSmoothLayerNeighbors(layer );
-	printf("node smoothing grid...\n");gridSmooth(grid);
-	gridAdapt(grid,0.4,1.5);
-	printf("edge swapping grid...\n");gridSwap(grid);
-	layerSmoothLayerNeighbors(layer );
-	printf("node smoothing grid...\n");gridSmooth(grid);
+	gridAdapt(grid,0.6,1.4);
 	printf("edge swapping grid...\n");gridSwap(grid);
 	layerSmoothLayerNeighbors(layer );
 	printf("node smoothing grid...\n");gridSmooth(grid);
@@ -262,9 +256,6 @@ int main( int argc, char *argv[] )
 	layerWiggle(layer,height);
 	//printf("minimum Volume %12.8e\n", gridMinVolume(grid));
       }
-      printf("edge swapping grid...\n");gridSwap(grid);
-	layerSmoothLayerNeighbors(layer );
-      printf("node smoothing grid...\n");gridSmooth(grid);
       printf("edge swapping grid...\n");gridSwap(grid);
 	layerSmoothLayerNeighbors(layer );
       printf("node smoothing grid...\n");gridSmooth(grid);
