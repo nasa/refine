@@ -134,8 +134,8 @@ class TestGridInsert < Test::Unit::TestCase
  def testAdaptToSpacing1
   assert_not_nil     grid = rightTet
   assert_equal grid, grid.resetSpacing
-  assert_equal grid, grid.scaleSpacing(0,0.4)
-  assert_equal grid, grid.scaleSpacing(1,0.4)
+  assert_equal grid, grid.scaleSpacing(0,0.3)
+  assert_equal grid, grid.scaleSpacing(1,0.3)
   assert_equal grid, grid.adapt
   assert_equal 2, grid.ncell
  end
@@ -144,9 +144,9 @@ class TestGridInsert < Test::Unit::TestCase
   assert_not_nil     grid = rightTet
   assert_equal grid, grid.resetSpacing
   assert_equal grid, grid.scaleSpacing(0,0.2)
-  assert_equal grid, grid.scaleSpacing(1,0.6)
-  assert_equal grid, grid.scaleSpacing(2,0.6)
-  assert_equal grid, grid.scaleSpacing(3,0.6)
+  assert_equal grid, grid.scaleSpacing(1,0.55)
+  assert_equal grid, grid.scaleSpacing(2,0.55)
+  assert_equal grid, grid.scaleSpacing(3,0.55)
   assert_equal grid, grid.adapt
   assert_equal 4, grid.ncell
  end
@@ -183,6 +183,38 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid,       grid.collapseEdge(0,1)
   assert_equal 1,          grid.nface
   assert_equal [0.5,10.5], grid.nodeUV(0,11)
+ end
+
+ def testCollapseEdge1NearBC
+  assert_not_nil     grid=gemGrid
+  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+				    3,3.0,13.0,
+				    2,2.0,12.0,11)
+  node = grid.addNode(2.0,0.0,0.0)
+  assert_equal grid, grid.addCell(0,3,2,node)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert grid.rightHandedBoundary, "orig boundary is not right handed"
+  assert_nil grid.nodeUV(0,11)
+  origXYZ = grid.nodeXYZ(1)
+  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal origXYZ, grid.nodeXYZ(0)
+  assert_equal [1.0,11.0], grid.nodeUV(0,11)
+  assert grid.rightHandedBoundary, "collapse boundary is not right handed"
+ end
+
+ def testCollapseEdge0NearBC
+  assert_not_nil     grid=gemGrid
+  assert_equal grid, grid.addFaceUV(0,0.0,10.0,
+				    2,2.0,12.0,
+				    3,3.0,13.0,11)
+  node = grid.addNode(-2.0,0.0,0.0)
+  assert_equal grid, grid.addCell(1,2,3,node)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert grid.rightHandedBoundary, "orig boundary is not right handed"
+  origXYZ = grid.nodeXYZ(0)
+  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal origXYZ, grid.nodeXYZ(0)
+  assert grid.rightHandedBoundary, "collapse boundary is not right handed"
  end
 
 end
