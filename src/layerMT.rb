@@ -236,23 +236,23 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,       layer.parentGeomEdge(0,2)
   assert_equal 0,       layer.parentGeomEdge(0,3)
   assert_equal 0,       layer.parentGeomEdge(1,0)
-  assert_nil            layer.setParentEdge(-1,0,0)
-  assert_nil            layer.setParentEdge(layer.nnormal,0,0)
-  assert_nil            layer.setParentEdge(0,-1,0)
-  assert_nil            layer.setParentEdge(0,layer.nnormal,0)
+  assert_nil            layer.setParentGeomEdge(-1,0,0)
+  assert_nil            layer.setParentGeomEdge(layer.nnormal,0,0)
+  assert_nil            layer.setParentGeomEdge(0,-1,0)
+  assert_nil            layer.setParentGeomEdge(0,layer.nnormal,0)
   assert_equal 0,       layer.parentGeomEdge(0,0)
   assert_equal 0,       layer.parentGeomEdge(0,1)
   assert_equal 0,       layer.parentGeomEdge(0,2)
-  assert_equal 0,       layer.nParentEdgeSegments(0)
-  assert_equal 0,       layer.nParentEdgeSegments(1)
-  assert_equal layer,   layer.setParentEdge(0,1,1)
-  assert_equal layer,   layer.setParentEdge(1,2,2)
-  assert_equal layer,   layer.setParentEdge(0,2,3)
+  assert_equal 0,       layer.nParentGeomEdgeSegments(0)
+  assert_equal 0,       layer.nParentGeomEdgeSegments(1)
+  assert_equal layer,   layer.setParentGeomEdge(0,1,1)
+  assert_equal layer,   layer.setParentGeomEdge(1,2,2)
+  assert_equal layer,   layer.setParentGeomEdge(0,2,3)
   assert_equal 1,       layer.parentGeomEdge(0,0)
   assert_equal 2,       layer.parentGeomEdge(0,1)
   assert_equal 3,       layer.parentGeomEdge(0,2)
-  assert_equal 0,       layer.nParentEdgeSegments(0)
-  assert_equal 1,       layer.nParentEdgeSegments(1)
+  assert_equal 0,       layer.nParentGeomEdgeSegments(0)
+  assert_equal 1,       layer.nParentGeomEdgeSegments(1)
  end
 
  def testFindParentalEdgesForTriangle
@@ -261,21 +261,21 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,    grid.addEdge(0,1,1,0,1)
   assert_equal grid,    grid.addEdge(0,4,1,0,1)
   assert_not_nil        layer = Layer.new(grid)
-  assert_nil            layer.findParentEdges
+  assert_nil            layer.findParentGeomEdges
   assert_equal layer,   layer.makeTriangle([1])
   assert_equal 1,       layer.ntriangle
-  assert_nil            layer.findParentEdges
+  assert_nil            layer.findParentGeomEdges
   assert_equal layer,   layer.makeNormal
   assert_equal 3,       layer.nnormal
   assert_equal 0,       layer.parentGeomEdge(0,0)
   assert_equal 0,       layer.parentGeomEdge(0,1)
   assert_equal 0,       layer.parentGeomEdge(0,2)
-  assert_equal 0,       layer.nParentEdgeSegments(1)
-  assert_equal layer,   layer.findParentEdges
+  assert_equal 0,       layer.nParentGeomEdgeSegments(1)
+  assert_equal layer,   layer.findParentGeomEdges
   assert_equal 1,       layer.parentGeomEdge(0,0)
   assert_equal 0,       layer.parentGeomEdge(0,1)
   assert_equal 0,       layer.parentGeomEdge(0,2)
-  assert_equal 1,       layer.nParentEdgeSegments(1)
+  assert_equal 1,       layer.nParentGeomEdgeSegments(1)
  end
 
  def testNormalTriangleNeighbors

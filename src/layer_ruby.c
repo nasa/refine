@@ -226,17 +226,17 @@ VALUE layer_nConstrainedSides( VALUE self, VALUE faceId )
   return INT2NUM(layerNConstrainedSides(layer,NUM2INT(faceId)));
 }
 
-VALUE layer_findParentEdges( VALUE self )
+VALUE layer_findParentGeomEdges( VALUE self )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerFindParentEdges(layer)?self:Qnil );
+  return ( layer == layerFindParentGeomEdges(layer)?self:Qnil );
 }
 
-VALUE layer_setParentEdge( VALUE self, VALUE normal0, VALUE normal1, 
+VALUE layer_setParentGeomEdge( VALUE self, VALUE normal0, VALUE normal1, 
 			   VALUE edgeId )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerSetParentEdge(layer,
+  return ( layer == layerSetParentGeomEdge(layer,
 				       NUM2INT(normal0),
 				       NUM2INT(normal1),
 				       NUM2INT(edgeId) )?self:Qnil );
@@ -245,13 +245,13 @@ VALUE layer_setParentEdge( VALUE self, VALUE normal0, VALUE normal1,
 VALUE layer_parentGeomEdge( VALUE self, VALUE triangle, VALUE side )
 {
   GET_LAYER_FROM_SELF;
-  return INT2NUM(layerParentEdge(layer,NUM2INT(triangle),NUM2INT(side)));
+  return INT2NUM(layerParentGeomEdge(layer,NUM2INT(triangle),NUM2INT(side)));
 }
 
-VALUE layer_nParentEdgeSegments( VALUE self, VALUE edgeId )
+VALUE layer_nParentGeomEdgeSegments( VALUE self, VALUE edgeId )
 {
   GET_LAYER_FROM_SELF;
-  return INT2NUM(layerNParentEdgeSegments(layer,NUM2INT(edgeId)));
+  return INT2NUM(layerNParentGeomEdgeSegments(layer,NUM2INT(edgeId)));
 }
 
 VALUE layer_terminateNormal( VALUE self, VALUE normal )
@@ -332,10 +332,10 @@ void Init_Layer()
   rb_define_method( cLayer, "constrainTriangleSide", layer_constrainTriangleSide, 3 );
   rb_define_method( cLayer, "constrainedSide", layer_constrainedSide, 2 );
   rb_define_method( cLayer, "nConstrainedSides", layer_nConstrainedSides, 1 );
-  rb_define_method( cLayer, "findParentEdges", layer_findParentEdges, 0 );
-  rb_define_method( cLayer, "setParentEdge", layer_setParentEdge, 3 );
+  rb_define_method( cLayer, "findParentGeomEdges", layer_findParentGeomEdges, 0 );
+  rb_define_method( cLayer, "setParentGeomEdge", layer_setParentGeomEdge, 3 );
   rb_define_method( cLayer, "parentGeomEdge", layer_parentGeomEdge, 2 );
-  rb_define_method( cLayer, "nParentEdgeSegments", layer_nParentEdgeSegments, 1 );
+  rb_define_method( cLayer, "nParentGeomEdgeSegments", layer_nParentGeomEdgeSegments, 1 );
 
   rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );
   rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );

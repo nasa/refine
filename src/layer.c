@@ -744,7 +744,7 @@ int layerNConstrainedSides(Layer *layer, int faceId )
   return nside;
 }
 
-Layer *layerFindParentEdges(Layer *layer)
+Layer *layerFindParentGeomEdges(Layer *layer)
 {
   int triangle, side, n0, n1, edgeId;
 
@@ -764,7 +764,7 @@ Layer *layerFindParentEdges(Layer *layer)
   return layer;
 }
 
-Layer *layerSetParentEdge(Layer *layer, int normal0, int normal1, int edgeId )
+Layer *layerSetParentGeomEdge(Layer *layer, int normal0, int normal1, int edgeId )
 {
   AdjIterator it;
   int i0, i1, triangle, side;
@@ -791,7 +791,7 @@ Layer *layerSetParentEdge(Layer *layer, int normal0, int normal1, int edgeId )
   return layer;
 }
 
-int layerParentEdge(Layer *layer, int triangle, int side )
+int layerParentGeomEdge(Layer *layer, int triangle, int side )
 {
   if (triangle < 0 || triangle >= layerNTriangle(layer) ) return 0;
 
@@ -800,7 +800,7 @@ int layerParentEdge(Layer *layer, int triangle, int side )
   return layer->triangle[triangle].parentGeomEdge[side];
 }
 
-int layerNParentEdgeSegments(Layer *layer, int edgeId )
+int layerNParentGeomEdgeSegments(Layer *layer, int edgeId )
 {
   int triangle, i, nSegments;
 
@@ -808,7 +808,7 @@ int layerNParentEdgeSegments(Layer *layer, int edgeId )
   nSegments = 0;
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
-      if (layerParentEdge(layer,triangle,i)==edgeId) nSegments++;
+      if (layerParentGeomEdge(layer,triangle,i)==edgeId) nSegments++;
     }
   }
   return nSegments;

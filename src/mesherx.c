@@ -48,7 +48,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   /* only needed for formAdvancingTriangle freeze distant volume nodes */
   gridThawAll(grid); 
-  layerFindParentEdges(layer);
+  layerFindParentGeomEdges(layer);
   i=0;
   layerLaminarInitialHeight(layer, 1000.0, -0.05 );
   layerScaleNormalHeight(layer,scale);
@@ -236,7 +236,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       for(edge=0;edge<nedge;edge++){
 	edgeId = loopEdge[0+2*edge];
 	orient = loopEdge[1+2*edge];
-	nparent = layerNParentEdgeSegments(layer,edgeId);
+	nparent = layerNParentGeomEdgeSegments(layer,edgeId);
 	if (nparent > 0 ) {
 	  nshell += nparent;
 	  printf(" edge %4d, edgeId %4d %2d has %4d phantom.\n",
@@ -259,11 +259,11 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       for(edge=0;edge<nedge;edge++){
 	edgeId = loopEdge[0+2*edge];
 	orient = loopEdge[1+2*edge];
-	nparent = layerNParentEdgeSegments(layer,edgeId);
+	nparent = layerNParentGeomEdgeSegments(layer,edgeId);
 	if (nparent > 0 ) {
 	  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
 	    for(side=0;side<3;side++){
-	      if (edgeId == layerParentEdge(layer,triangle,side)){
+	      if (edgeId == layerParentGeomEdge(layer,triangle,side)){
 		n0 = side;
 		n1 = side+1; if (n1>2) n1 = 0;
 		layerTriangle(layer,triangle,nodes);

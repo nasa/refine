@@ -52,10 +52,10 @@ int layerConstrained(Layer *, int normal );
 Layer *layerConstrainTriangleSide(Layer *, int normal0, int normal1, int bc );
 int layerConstrainedSide(Layer *, int triangle, int side );
 int layerNConstrainedSides(Layer *, int faceId );
-Layer *layerFindParentEdges(Layer *);
-Layer *layerSetParentEdge(Layer *, int normal0, int normal1, int edgeId );
-int layerParentEdge(Layer *, int triangle, int side );
-int layerNParentEdgeSegments(Layer *, int edgeId );
+Layer *layerFindParentGeomEdges(Layer *);
+Layer *layerSetParentGeomEdge(Layer *, int normal0, int normal1, int edgeId );
+int layerParentGeomEdge(Layer *, int triangle, int side );
+int layerNParentGeomEdgeSegments(Layer *, int edgeId );
 
 Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
