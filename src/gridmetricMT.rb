@@ -112,7 +112,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta spacing,     grid.spacing(3), delta
  end
 
- def testMetrics
+ def testVolumeMetrics
   assert_not_nil grid = rightTet
   nodes = [0,1,2,3]
   ar = 0.732050807568877
@@ -124,10 +124,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta ar, grid.nodeAR(1), 1.0e-15
   assert_in_delta ar, grid.nodeAR(2), 1.0e-15
   assert_in_delta ar, grid.nodeAR(3), 1.0e-15
-  assert_in_delta 1.0, grid.faceAR(1,2,3), 1.0e-15
-  assert_in_delta 0.8284271247, grid.faceAR(0,1,2), 1.0e-8
-  assert_in_delta 1.0, grid.faceMR(1,2,3), 1.0e-14
-  assert_in_delta 0.8660254038, grid.faceMR(0,1,2), 1.0e-8
  end
 
  def testDerivatives
@@ -190,9 +186,20 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal false, grid.rightHandedBoundary
  end
 
- def testFaceArea
+ def testFaceMetrics
   assert_not_nil grid = rightTet
   assert_in_delta 0.5, grid.faceArea(0,1,2), 1.0e-15
+  assert_in_delta 1.0, grid.faceAR(1,2,3), 1.0e-15
+  assert_in_delta 0.8284271247, grid.faceAR(0,1,2), 1.0e-8
+  assert_in_delta 1.0, grid.faceMR(1,2,3), 1.0e-14
+  assert_in_delta 0.8660254038, grid.faceMR(0,1,2), 1.0e-8
+
+  #ans = grid.faceMRDerivative([0,1,2])
+  #assert_in_delta 0.8660254038, ans[0], 1.0e-8
+  #assert_in_delta 1.0, ans[1], 1.0e-14
+  #assert_in_delta 1.0, ans[2], 1.0e-14
+  #assert_in_delta 0.0, ans[3], 1.0e-14
+  
  end
  
 end

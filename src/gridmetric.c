@@ -1178,7 +1178,7 @@ double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
   double e0[3], e1[3], e2[3];
   double l0, l1, l2;
   double n[3], a, mr;
-  
+
 #define SQRT3 (1.73205080756888)
 
   for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
@@ -1203,3 +1203,61 @@ double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
 
 }
 
+Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
+{
+  double x1, x2, x3; 
+  double y1, y2, y3; 
+  double z1, z2, z3; 
+
+  double ex1, ey1, ez1;
+  double ex2, ey2, ez2;
+  double ex3, ey3, ez3;
+
+  double ex1_dx, ey1_dy, ez1_dz;
+  double ex3_dx, ey3_dy, ez3_dz;
+
+  double nx, ny, nz;
+
+  x1 = grid->xyz[0+3*nodes[0]];
+  y1 = grid->xyz[1+3*nodes[0]];
+  z1 = grid->xyz[2+3*nodes[0]];
+
+  x2 = grid->xyz[0+3*nodes[1]];
+  y2 = grid->xyz[1+3*nodes[1]];
+  z2 = grid->xyz[2+3*nodes[1]];
+
+  x3 = grid->xyz[0+3*nodes[2]];
+  y3 = grid->xyz[1+3*nodes[2]];
+  z3 = grid->xyz[2+3*nodes[2]];
+
+  ex1 = x2-x1;
+  ey1 = y2-y1;
+  ez1 = z2-z1;
+
+  ex1_dx = -1.0;
+  ey1_dy = -1.0;
+  ez1_dz = -1.0;
+
+  ex2 = x3-x2;
+  ey2 = y3-y2;
+  ez2 = z3-z2;
+
+  ex3 = x1-x3;
+  ey3 = y1-y3;
+  ez3 = z1-z3;
+
+  ex3_dx = 1.0;
+  ey3_dy = 1.0;
+  ez3_dz = 1.0;
+
+  nx = ey1*ez2 - ez1*ey2; 
+  ny = ez1*ex2 - ex1*ez2; 
+  nz = ex1*ey2 - ey1*ex2; 
+
+  *mr = nx;
+  dMRdx[0] =0.0;
+  dMRdx[1] =0.0;
+  dMRdx[2] =0.0;
+  return grid;
+
+}
