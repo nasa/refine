@@ -40,7 +40,7 @@ int main( int argc, char *argv[] )
   printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	 gridMinAR(grid),gridMinVolume(grid));
 
-  printf("adapting grid...\n");
+  printf("reading adapt parameter...\n");
   gridImportAdapt(grid, "../test/adapt_hess");
   printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	 gridMinAR(grid),gridMinVolume(grid));
