@@ -35,7 +35,7 @@ Grid *gridSetMapMatrixToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
   if (grid != gridMap(grid, n0, map0) ) return NULL;
   if (grid != gridMap(grid, n1, map1) ) return NULL;
   for (i=0;i<6;i++) map[i] = 0.5*(map0[i]+map1[i]);
-  if (grid != gridSetMap( grid, n1, 
+  if (grid != gridSetMap( grid, avgNode, 
 			  map[0], map[1], map[2], 
 			  map[3], map[4], map[5] ) ) return NULL;
 

@@ -93,6 +93,16 @@ VALUE grid_copySpacing( VALUE self, VALUE originalNode, VALUE newNode )
 			  NUM2INT(newNode) )==grid?self:Qnil);
 }
 
+VALUE grid_setMapMatrixToAverageOfNodes( VALUE self, VALUE avgNode, 
+					 VALUE node0, VALUE node1 ) 
+{
+  GET_GRID_FROM_SELF;
+  return (gridSetMapMatrixToAverageOfNodes(grid, 
+					   NUM2INT(avgNode), 
+					   NUM2INT(node0), 
+					   NUM2INT(node1) )==grid?self:Qnil);
+}
+
 VALUE grid_eigenValues( VALUE self, VALUE rb_m )
 {
   int i;
@@ -391,6 +401,8 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
   rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );
   rb_define_method( cGridMetric, "copySpacing", grid_copySpacing, 2 );
+  rb_define_method( cGridMetric, "setMapMatrixToAverageOfNodes", 
+		    grid_setMapMatrixToAverageOfNodes, 3 );
   rb_define_method( cGridMetric, "eigenValues", grid_eigenValues, 1 );
   rb_define_method( cGridMetric, "eigenVector", grid_eigenVector, 2 );
   rb_define_method( cGridMetric, "eigenSystem", grid_eigenSystem, 1 );

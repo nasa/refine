@@ -83,7 +83,20 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 1, grid.spacing(0)
   assert_equal Math::sqrt(0.5), grid.spacing(1)
   assert_equal grid, grid.copySpacing(0,1)
-  assert_equal 1, grid.spacing(0)  
+  assert_equal 1, grid.spacing(1)  
+ end
+
+ def testAverageSpacing
+  assert_not_nil grid = Grid.new(3,0,0,0)
+  grid.addNode(0,0,0)
+  grid.addNode(0,0,0)
+  grid.addNode(0,0,0)
+  assert_equal grid, grid.setMap(0, 1, 2, 3, 4, 5, 6)
+  assert_equal grid, grid.setMap(1,11,12,13,14,15,16)
+  assert_equal grid, grid.setMap(2,20,20,20,20,20,20)
+  assert_equal [20,20,20,20,20,20], grid.map(2)
+  assert_equal grid, grid.setMapMatrixToAverageOfNodes(2,0,1)
+  assert_equal [6,7,8,9,10,11], grid.map(2)
  end
 
  def testMatrixSpaceMapRotate
