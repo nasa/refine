@@ -23,7 +23,7 @@
 
 #define PRINT_STATUS printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid));
 
-#define DUMP_TEC iview++;printf("Frame %d\n",iview);gridWriteTecplotSurfaceZone(grid);
+#define DUMP_TEC if (tecplotOutput) {iview++;printf("Frame %d\n",iview);gridWriteTecplotSurfaceZone(grid);}
 
 #define STATUS DUMP_TEC PRINT_STATUS
 
@@ -43,6 +43,7 @@ int main( int argc, char *argv[] )
   bool projected;
   bool boundaryLayerGrid = FALSE;
   bool debugInsert = FALSE;
+  bool tecplotOutput = FALSE;
   int iview = 0;
   int maxnode = 50000;
 
@@ -77,7 +78,10 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-n") == 0 ) {
       i++; maxnode = atoi(argv[i]);
       printf("-n argument %d: %d\n",i, maxnode);
-    } else if( strcmp(argv[i],"-h") == 0 ) {
+     } else if( strcmp(argv[i],"-t") == 0 ) {
+      tecplotOutput = TRUE;
+      printf("-t argument %d\n",i);
+   } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
       printf(" -o output project name\n");
@@ -87,6 +91,7 @@ int main( int argc, char *argv[] )
       printf(" -i insert final advancing layer (debug)\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -n max number of nodes in grid\n");
+      printf(" -t write tecplot zones durring adaptation\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
