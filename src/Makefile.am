@@ -187,9 +187,10 @@ restartTestNative_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 restartTestNative_LDFLAGS = $(all_LDFLAGS)
 
 bin_PROGRAMS += unitNative
-unitNative_CFLAGS = $(all_CFLAGS)
-unitNative_SOURCES = unit_main.c
-unitNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
+unitNative_CFLAGS = $(all_CFLAGS) -DEDGE_BASED_OPERATORS
+unitNative_SOURCES = unit_main.c $(libMesherX_a_SOURCES)
+unitNative_LDADD = @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat \
+	@CAPRINativelibrary@ $(LastLib)
 unitNative_LDFLAGS = $(all_LDFLAGS)
 
 if BUILD_PROE_KERNEL

@@ -520,6 +520,10 @@ double gridAR(Grid *grid, int *nodes )
   double edge1[3], edge2[3], edge3[3];
   double norm[3];
 
+#ifdef EDGE_BASED_OPERATORS
+  return gridEdgeRatioCost(grid, nodes);
+#endif  
+
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
        !gridValidNode(grid, nodes[2]) ||

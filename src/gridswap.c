@@ -219,12 +219,14 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
     newFaceId1 = gridFaceId(grid, n1, gap0, gap1 );
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
 
+#ifndef EDGE_BASED_OPERATORS
     // make sure that face MR can improve
     origMR = MIN( gridFaceMR(grid, n0, n1, gap0 ), 
 		  gridFaceMR(grid, n0, n1, gap1 ) );
     newMR  = MIN( gridFaceMR(grid, n0, gap0, gap1 ),
 		  gridFaceMR(grid, n1, gap0, gap1 ) );
     if ( origMR > newMR ) return NULL;
+#endif
   }
 
   switch (gridNEqu(grid)) {

@@ -253,11 +253,19 @@ int main( int argc, char *argv[] )
   STATUS;
 
   if (EdgeBasedOperators) {
-    gridCreateConn(grid);
-    gridSetConnValuesWithMetricErrorMagnatude(grid);
-    gridSortConnValues(grid);
-    gridAdaptBasedOnConnRankings(grid);
+    printf("edge swapping grid...\n");gridSwap(grid,0.9);
     STATUS;
+    for (j=0;j<6;j++){
+      printf("start edge based cycle %d\n",j);
+      gridCreateConn(grid);
+      gridSetConnValuesWithMetricErrorMagnatude(grid);
+      gridSortConnValues(grid);
+      gridAdaptBasedOnConnRankings(grid);
+      gridEraseConn(grid);
+      STATUS;
+      printf("edge swapping grid...\n");gridSwap(grid,0.9);
+      STATUS;
+    }
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
     printf("Done.\n");

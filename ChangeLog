@@ -1,3 +1,16 @@
+2004-10-15 00:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am unitNative noew builds it own copy of the 
+	objects that it can have its own #defines. Added a 
+	EDGE_BASED_OPERATORS #define that affects gridmetric.c and 
+	gridswap.c in the following ways:
+	* src/gridmetric.c (gridAR) gridAR returns gridEdgeRatioCost
+	when EDGE_BASED_OPERATORS is defined.
+	* src/gridswap.c (gridSwapEdge) does not abort swap if mean ratio
+	goes down when EDGE_BASED_OPERATORS is defined, this was fighting
+	the edge length err.
+	* src/unit_main.c set up a loop of six cycles with swaps with -e
+
 2004-10-14 23:48 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridSetConnValuesWithMetricErrorMagnatude) added.
