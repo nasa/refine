@@ -2499,6 +2499,8 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
     gridFreezeNode(grid,layer->normal[normal].root);
   }
 
+  layer->normalTriangleHub = EMPTY;
+
   if ( negVolume ) {
     return NULL;
   } else {
