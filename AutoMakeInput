@@ -4,7 +4,7 @@
 
 AUTOMAKE_OPTIONS = 1.7
 
-lib_LIBRARIES = libMesherX.a libOctree_Stub.a
+lib_LIBRARIES = libMesherX.a librefine.a libOctree_Stub.a
 libMesherX_a_CFLAGS = -I../src @SDKheader@
 libMesherX_a_SOURCES = \
 	../src/adj.c \
@@ -22,6 +22,20 @@ libMesherX_a_SOURCES = \
 	../src/mesherxInit.c \
 	../src/mesherxRebuild.c \
 	../src/mesherx.c
+
+librefine_a_CFLAGS = -I../src @SDKheader@
+librefine_a_SOURCES = \
+	../src/adj.c \
+	../src/near.c \
+	../src/line.c \
+	../src/grid.c \
+	../src/gridmath.c \
+	../src/gridmetric.c \
+	../src/gridinsert.c \
+	../src/gridswap.c \
+	../src/gridcad.c \
+	../src/gridfiller.c \
+	../src/fortran.c
 
 libOctree_Stub_a_CFLAGS = -I../src @SDKheader@
 libOctree_Stub_a_SOURCES = ../src/Octree_Stub.c
