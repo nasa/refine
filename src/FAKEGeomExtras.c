@@ -102,12 +102,10 @@ GridBool CADGeom_LoadPart( char *project )
 
 void GeoMesh_UseDefaultIOCallbacks( void )
 {
-  return FALSE;
 }
 
 void CADGeom_UseDefaultIOCallbacks( void )
 {
-  return FALSE;
 }
 
 GridBool CADGeom_SavePart( int vol, char *project )
