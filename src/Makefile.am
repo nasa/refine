@@ -59,8 +59,8 @@ libOctree_Stub_a_CFLAGS = @SDKheader@
 libOctree_Stub_a_SOURCES = Octree_Stub.c
 
 all_CFLAGS = @SDKheader@
-refineLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache -lMeat
-MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache libOctree_Stub.a @FELISAlibrary@ -ldl -lMeat
+refineLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache -lMeat
+MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache libOctree_Stub.a @FELISAlibrary@ -ldl -lMeat
 all_LDFLAGS = @dynamicFlag@
 hla_sources = \
 	MesherX_HLA.c \
