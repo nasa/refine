@@ -147,18 +147,23 @@ int main( int argc, char *argv[] )
       height = 0.002*pow(1.5,j);
       if (height > 0.05) jmax=0;
       printf("insert layer height = %f\n",height);
-      wiggleSteps = (int)(height/0.005)+1;
+      wiggleSteps = (int)(height/0.01)+1;
       height = height / (double)wiggleSteps;
       layerVisibleNormals(layer);
       layerAdvance(layer,height);
       for (i=1;i<wiggleSteps;i++) {
-	gridSwap(grid);
-	gridSmooth(grid);
-	gridSmooth(grid);
+	printf("edge swapping grid...\n");gridSwap(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid);
+	printf("edge swapping grid...\n");gridSwap(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid);
 	printf("wiggle step %d of %d, minAR %8.5f\n",i+1,wiggleSteps,gridMinThawedAR(grid));
 	layerWiggle(layer,height);
 	//printf("minimum Volume %12.8e\n", gridMinVolume(grid));
       }
+      printf("edge swapping grid...\n");gridSwap(grid);
+      printf("node smoothing grid...\n");gridSmooth(grid);
+      printf("edge swapping grid...\n");gridSwap(grid);
+      printf("node smoothing grid...\n");gridSmooth(grid);
     }
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
