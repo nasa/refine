@@ -95,7 +95,7 @@ Employing Equ.~\ref{e:x} this expression becomes
  l=\sqrt{ \mathbf{x}^t\mathbf{M}\mathbf{x}}
 \end{equation}
 
-\section{Transformation Example}
+\section{Pure Scaling Transformation Example}
 
 Map a sphere of diameter 2 to a unit sphere. 
 The requested spacing is therefore $h=2$.
@@ -171,6 +171,84 @@ And its length is
    &\frac{1}{4}&\\
    &&\frac{1}{4}\\
  \end{array}\right]\left[2~0~0\right]^t}=1
+\end{equation}
+
+\section{Rotaion and Scaling Transformation Example}
+
+Map three vectors to unit length.
+
+\begin{equation}
+ \mathbf{v}_1=\left[
+ \begin{array}{c}
+   2\\
+   2\\
+   0\\
+ \end{array}\right]
+\end{equation}
+\begin{equation}
+ \mathbf{v}_2=\left[
+ \begin{array}{c}
+   -1\\
+   1\\
+   0\\
+ \end{array}\right]
+\end{equation}
+\begin{equation}
+ \mathbf{v}_3=\left[
+ \begin{array}{c}
+   0\\
+   0\\
+   1\\
+ \end{array}\right]
+\end{equation}
+ 
+The requested spacing is therefore $h_1=2\sqrt{2}$, $h_2=\sqrt{2}$, .$h_3=1$, 
+Which is the following Eigen values
+\begin{equation}
+ \Lambda^\frac{1}{2}=\left[
+ \begin{array}{ccc}
+   \frac{1}{2\sqrt{2}}&&\\
+   &\frac{1}{\sqrt{2}}&\\
+   &&1\\
+ \end{array}\right]
+\end{equation}
+\begin{equation}
+ \Lambda=\left[
+ \begin{array}{ccc}
+   \frac{1}{8}&&\\
+   &\frac{1}{2}&\\
+   &&1\\
+ \end{array}\right]
+\end{equation}
+and Eigen Vectors
+\begin{equation}
+ \mathbf{R}=\left[
+ \begin{array}{ccc}
+   \frac{\sqrt{2}}{2}&-\frac{\sqrt{2}}{2}&0\\
+   \frac{\sqrt{2}}{2}&\frac{\sqrt{2}}{2}&0\\
+   0&0&1\\
+ \end{array}\right]
+\end{equation}
+The Jacobian of transformation is
+\begin{equation}
+ \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}^t=\left[
+ \begin{array}{ccc}
+   \frac{1}{4}&\frac{1}{4}&0\\
+   -\frac{1}{2}&\frac{1}{2}&0\\
+   0&0&1\\
+ \end{array}\right]
+\end{equation}
+The Metric Matrix is 
+\begin{equation}
+ \mathbf{M}=
+  \mathbf{J}^t\mathbf{J}=
+  \mathbf{R}\Lambda^\frac{1}{2}\Lambda^\frac{1}{2}\mathbf{R}^t=
+  \mathbf{R}\Lambda\mathbf{R}^t=
+  \left[\begin{array}{ccc}
+   \frac{1}{16}&-\frac{1}{8}&0\\
+   -\frac{1}{8}&\frac{1}{4}&0\\
+   0&0&1\\
+ \end{array}\right]
 \end{equation}
 
 \end{document}
