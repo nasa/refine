@@ -1,14 +1,14 @@
 #!/bin/sh
 # Run this to generate all the initial makefiles, etc.
 
-echo "Running aclocal..."
+echo "Running aclocal ..."
 aclocal
 
-echo "Running automake..."
+echo "Running automake ..."
 automake --add-missing
 
-echo "Running autoconf..."
+echo "Running autoconf ..."
 autoconf
 
-echo "Running ./configure..."
+echo "Running ./configure --prefix=`pwd` ..."
 ./configure --prefix=`pwd`
