@@ -152,6 +152,7 @@ int gridNAux(Grid *g);
 Grid *gridSetNAux(Grid *g, int naux);
 double gridAux(Grid *g, int node, int aux);
 Grid *gridSetAux(Grid *g, int node, int aux, double value);
+Grid *gridSetAuxToAverageOfNodes(Grid *g, int avgNode, int n0, int n1 );
 int gridPartId(Grid *g);
 Grid *gridSetPartId(Grid *g, int partId );
 int gridGlobalNNode(Grid *g);

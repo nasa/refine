@@ -267,6 +267,8 @@ int gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
 int gridsetnaux_( int *naux )
 {
   gridSetNAux(grid, *naux);
+  queueFree( queue );
+  queue = queueCreate( 9 + gridNAux(grid) ); /* 3:xyz + 6:m + naux */
 }
 
 int gridsetauxvector_( int *nnode, int *offset, double *x )

@@ -1083,6 +1083,19 @@ Grid *gridSetAux(Grid *grid, int node, int aux, double value )
   return grid;
 }
 
+Grid *gridSetAuxToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
+{
+  int aux;
+  if (!gridValidNode(grid,n0) || !gridValidNode(grid,n1)) return NULL;
+
+  for (aux=0;aux<gridNAux(grid);aux++) {
+    gridSetAux(grid, avgNode, aux, 
+	       0.5*(gridAux(grid, n0, aux)+gridAux(grid, n1, aux)) );
+  }
+
+  return grid;
+}
+
 Grid *gridSetPartId(Grid *grid, int partId )
 {
   grid->partId = partId;
@@ -1296,18 +1309,24 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
   int global;
   int inode;
   int nodes[4], globalnodes[9];
-  double xyz[36];
+  double xyz[1000];
+  int dim, aux;
   
   global = gridGetNextCellGlobal(grid);
 
   nodes[0] = n0; nodes[1] = n1; nodes[2] = n2; nodes[3] = n3;
 
   if ( NULL != queue && gridCellHasGhostNode(grid, nodes) ) {
+    dim = 3 + 6 + gridNAux(grid);
+    if (dim>250) printf( "ERROR: %s: %d: undersized static xyz.\n", 
+			 __FILE__, __LINE__);
     for ( inode = 0 ; inode < 4 ; inode++ ) {
       globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
       globalnodes[5+inode] = gridNodePart(grid,nodes[inode]);
-      gridNodeXYZ(grid,nodes[inode],&xyz[9*inode]);
-      gridMap(grid,nodes[inode],&xyz[3+9*inode]);
+      gridNodeXYZ(grid,nodes[inode],&xyz[dim*inode]);
+      gridMap(grid,nodes[inode],&xyz[3+dim*inode]);
+      for ( aux = 0 ; aux < gridNAux(grid) ; aux++ ) 
+	xyz[aux+9+dim*inode] = gridAux(grid, nodes[inode], aux);
     }
     globalnodes[4] = global;
     queueAddCell(queue,globalnodes,xyz);

@@ -111,8 +111,13 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   int i, globalnodes[9], localnodes[4];
   int cell, face;
   int added, addedcell, addedface;
-  double xyz[36], uv[6];
+  double xyz[1000], uv[6];
+  int dim, aux;
   Queue *lq;
+
+  dim = 3 + 6 + gridNAux(grid);
+  if (dim>250) printf( "ERROR: %s: %d: undersized static xyz.\n", 
+		       __FILE__, __LINE__);
 
   lq = queueCreate( 1 ); /* only used for queuing local removed nodes */
 
@@ -148,10 +153,13 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	   gridNodeLocal(grid,localnodes[3]) ) {
 	for(i=0;i<4;i++) {
 	  if ( EMPTY == localnodes[i] ) {
-	    localnodes[i]=gridAddNode(grid,xyz[0+9*i],xyz[1+9*i],xyz[2+9*i]);
+	    localnodes[i]=gridAddNode( grid,
+				       xyz[0+dim*i],xyz[1+dim*i],xyz[2+dim*i]);
 	    gridSetMap(grid,localnodes[i],
-		       xyz[3+9*i],xyz[4+9*i],xyz[5+9*i],
-		       xyz[6+9*i],xyz[7+9*i],xyz[8+9*i]);		       
+		       xyz[3+dim*i],xyz[4+dim*i],xyz[5+dim*i],
+		       xyz[6+dim*i],xyz[7+dim*i],xyz[8+dim*i]);
+	    for ( aux = 0 ; aux < gridNAux(grid) ; aux++ )     
+	      gridSetAux(grid, localnodes[i], aux, xyz[aux+9+dim*i]);
 	    gridSetNodeGlobal(grid, localnodes[i], globalnodes[i]);
 	    gridSetNodePart(grid, localnodes[i], globalnodes[5+i]);
 	  }
