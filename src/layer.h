@@ -74,7 +74,9 @@ struct Layer {
 
   int normalTriangleHub;
   int normalTriangleDegree;
+  GridBool normalTriangleExclusive;
   double normalTriangleDirection[3*MAXNORMALDEG];
+  GridBool normalTriangleExclude[MAXNORMALDEG];
 
   GridBool *cellInLayer;
   GridBool *faceInLayer;

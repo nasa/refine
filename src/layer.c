@@ -776,13 +776,15 @@ Layer *layerNormalMinDot(Layer *layer, int normal,
   mindir[2]=0.0;
 
   for ( index =0; index < layer->normalTriangleDegree; index++ ){
-    layerNormalTriangleDirection(layer,index,norm);
-    dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
-    if (dot<*mindot) {
-      *mindot = dot;
-      mindir[0]=norm[0];
-      mindir[1]=norm[1];
-      mindir[2]=norm[2];
+    if (!layer->normalTriangleExclusive|| !layer->normalTriangleExclude[index]){
+      layerNormalTriangleDirection(layer,index,norm);
+      dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
+      if (dot<*mindot) {
+	*mindot = dot;
+	mindir[0]=norm[0];
+	mindir[1]=norm[1];
+	mindir[2]=norm[2];
+      }
     }
   }
   
@@ -799,13 +801,8 @@ Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triang
 	adjValid(it); 
 	it = adjNext(it) ){
     if (i>=ntriangle) return NULL;
-    if (!layerConstrained(layer,normal) || 
-	layerConstrainedSide(layer, adjItem(it), 0 ) ||
-	layerConstrainedSide(layer, adjItem(it), 1 ) ||
-	layerConstrainedSide(layer, adjItem(it), 2 ) ) {
-      triangles[i] = adjItem(it);
-      i++;
-    }
+    triangles[i] = adjItem(it);
+    i++;
   }
   return layer;
 }
@@ -823,35 +820,41 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
   }
   layer->normalTriangleHub = normal;
   layer->normalTriangleDegree = layerNormalDeg(layer, normal );
+  layer->normalTriangleExclusive = FALSE;
   for (tri=0;tri<layer->normalTriangleDegree;tri++) {
     triangle = triangles[tri];
-    if (!layerConstrained(layer,normal) ) {
-      layerTriangleDirection( layer, triangle, 
+    if ( 0 == layerConstrained(layer,normal) || 
+	 ( 0 == layerConstrainedSide(layer, triangle, 0 ) &&
+	   0 == layerConstrainedSide(layer, triangle, 1 ) &&
+	   0 == layerConstrainedSide(layer, triangle, 2 ) ) ) {
+      layer->normalTriangleExclude[tri] = TRUE;
+      layerTriangleDirection( layer, triangle,
 			      &layer->normalTriangleDirection[3*tri] );
     }else{
+      layer->normalTriangleExclusive = TRUE;
+      layer->normalTriangleExclude[tri] = FALSE;
       layerTriangle(layer,triangle,nodes);
-      if (layerConstrainedSide(layer, triangle, 0 )) side0 = 0; 
-      if (layerConstrainedSide(layer, triangle, 1 )) side0 = 1; 
-      if (layerConstrainedSide(layer, triangle, 2 )) side0 = 2;
+      if (0<layerConstrainedSide(layer, triangle, 0 )) side0 = 0; 
+      if (0<layerConstrainedSide(layer, triangle, 1 )) side0 = 1; 
+      if (0<layerConstrainedSide(layer, triangle, 2 )) side0 = 2;
       side1 = side0+1; if (side1>2) side1 = 0;
       gridNodeXYZ(layerGrid(layer),nodes[side0],xyz0);
       gridNodeXYZ(layerGrid(layer),nodes[side1],xyz1);
       gridSubtractVector(xyz1,xyz0,tangent);
       gridVectorNormalize(tangent);
-
+      
       faceId = layerConstrained(layer,normal);
       if (faceId>0) {
 	gridProjectToFace(layerGrid(layer),faceId,xyz0,uv,newxyz);
-	gridFaceNormalAtUV(layerGrid(layer),faceId,uv, newxyz, normalDirection);
-	gridCrossProduct(tangent,normalDirection,
+	gridFaceNormalAtUV(layerGrid(layer), faceId,
+			   uv, newxyz, normalDirection);
+	gridCrossProduct(normalDirection,tangent,
 			 &layer->normalTriangleDirection[3*tri]);
 	gridVectorNormalize(&layer->normalTriangleDirection[3*tri]);
       } else {
 	layerNormalDirection( layer, normal, 
 			      &layer->normalTriangleDirection[3*tri] );
       }
-
-
     }
   }
   return layer;
@@ -2808,7 +2811,6 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 
   if (angleLimit < 0.0) angleLimit = 250; /* deg */
 
-
   if (NULL != layer->vertexNormal) free(layer->vertexNormal);
   layer->vertexNormal = malloc(layer->maxnormal*sizeof(int));
   for (i=0;i<layer->maxnormal;i++) layer->vertexNormal[i]=EMPTY;
@@ -2868,6 +2870,7 @@ Layer *layerBlend(Layer *layer, double angleLimit )
  
   }
 
+  layer->normalTriangleHub = EMPTY;
   layerBuildNormalTriangleAdjacency(layer);
   layerInitializeTriangleNormalDirection(layer);
   layerFeasibleNormals(layer, -1.0, -1.0 );
