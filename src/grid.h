@@ -209,7 +209,10 @@ Grid *gridRemoveNode(Grid *g, int node );
 #define gridValidNode(grid,node) \
 (node>-1 && node<grid->maxnode && DBL_MAX!=grid->xyz[0+3*node])
 
+
 Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
+#define gridNodeXYZPointer(grid, node) (&grid->xyz[3*node])
+#define gridNodeXYZEntry(grid, node, ixyz) (grid->xyz[ixyz+3*node])
 Grid *gridSetNodeXYZ(Grid *g, int node, double *xyz );
 Grid *gridDeleteNodesNotUsed(Grid *);
 

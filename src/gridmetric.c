@@ -69,13 +69,15 @@ double gridEdgeLength(Grid *grid, int n0, int n1 )
 
 double gridEdgeRatio(Grid *grid, int n0, int n1 )
 {
-  double xyz0[3], xyz1[3];
+  double *xyz0, *xyz1;
   double dx, dy, dz;
   double *m;
   double length0, length1;
 
-  if (grid != gridNodeXYZ(grid, n0, xyz0) ) return -1.0;
-  if (grid != gridNodeXYZ(grid, n1, xyz1) ) return -1.0;
+  if (!gridValidNode(grid, n0) || !gridValidNode(grid, n1)) return -1.0;
+
+  xyz0 = gridNodeXYZPointer(grid, n0);
+  xyz1 = gridNodeXYZPointer(grid, n1);
   
   dx = xyz1[0] - xyz0[0];
   dy = xyz1[1] - xyz0[1];
@@ -134,7 +136,7 @@ Grid *gridLargestRatioEdge(Grid *grid, int node,
     gridCell( grid, cell, nodes);
     for (i=0;i<4;i++){
       if (node != nodes[i]) {
-	currentRatio = gridEdgeRatio( grid, node, nodes[i] );;
+	currentRatio = gridEdgeRatio( grid, node, nodes[i] );
 	if ( currentRatio > *ratio ){
 	  *ratio = currentRatio;
 	  *edgeNode = nodes[i];
@@ -160,7 +162,7 @@ Grid *gridSmallestRatioEdge(Grid *grid, int node,
     gridCell( grid, cell, nodes);
     for (i=0;i<4;i++){
       if (node != nodes[i]) {
-	currentRatio = gridEdgeRatio( grid, node, nodes[i] );;
+	currentRatio = gridEdgeRatio( grid, node, nodes[i] );
 	if ( currentRatio < *ratio ){
 	  *ratio = currentRatio;
 	  *edgeNode = nodes[i];
@@ -514,14 +516,19 @@ Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
 
 double gridVolume(Grid *grid, int *nodes )
 {
-  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double *xyz0, *xyz1, *xyz2, *xyz3;
   double edge1[3], edge2[3], edge3[3];
   double norm[3], volume; 
   
-  if (grid != gridNodeXYZ(grid,nodes[0],xyz0) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[1],xyz1) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[2],xyz2) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[3],xyz3) ) return -1.0;
+  if ( !gridValidNode(grid, nodes[0]) || 
+       !gridValidNode(grid, nodes[1]) ||
+       !gridValidNode(grid, nodes[2]) ||
+       !gridValidNode(grid, nodes[3]) ) return -1.0;
+
+  xyz0=gridNodeXYZPointer(grid,nodes[0]);
+  xyz1=gridNodeXYZPointer(grid,nodes[1]);
+  xyz2=gridNodeXYZPointer(grid,nodes[2]);
+  xyz3=gridNodeXYZPointer(grid,nodes[3]);
 
   gridSubtractVector( xyz1, xyz0, edge1);
   gridSubtractVector( xyz2, xyz0, edge2);
@@ -570,12 +577,28 @@ double gridAR(Grid *grid, int *nodes )
   double m[6], j[9];
   double aspect;
 
-  if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return -1.0;
-  if (grid != gridNodeXYZ(grid,nodes[3],xyz4) ) return -1.0;
+  double edge1[3], edge2[3], edge3[3];
+  double norm[3], volume; 
 
-  if ( gridVolume( grid, nodes ) <= 1.0e-14) return -1.0;
+  if ( !gridValidNode(grid, nodes[0]) || 
+       !gridValidNode(grid, nodes[1]) ||
+       !gridValidNode(grid, nodes[2]) ||
+       !gridValidNode(grid, nodes[3]) ) return -1.0;
+
+
+  for(i=0;i<3;i++){
+    xyz1[i]=gridNodeXYZEntry(grid,nodes[0],i);
+    xyz2[i]=gridNodeXYZEntry(grid,nodes[1],i);
+    xyz3[i]=gridNodeXYZEntry(grid,nodes[2],i);
+    xyz4[i]=gridNodeXYZEntry(grid,nodes[3],i);
+  }
+
+  gridSubtractVector( xyz2, xyz1, edge1);
+  gridSubtractVector( xyz3, xyz1, edge2);
+  gridSubtractVector( xyz4, xyz1, edge3);
+  gridCrossProduct( edge1, edge2, norm );
+
+  if (  gridDotProduct(norm,edge3) <= 6.0e-14) return -1.0;
 
   m0 = gridMapPointer(grid,nodes[0]);
   m1 = gridMapPointer(grid,nodes[1]);
