@@ -142,3 +142,69 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
   return grid;
 }
 
+Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
+{
+  int i, cell, face, face0, face1, faceId;
+  double xyz0[3], xyz1[3], xyzAvg[3];
+  double uv0[2], uv1[2], uvAvg[2];
+  AdjIterator it;
+
+  if ( gridGeometryEdge(grid, n0) ) return NULL;
+  if ( gridGeometryEdge(grid, n1) ) return NULL;
+  if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
+  gridNodeXYZ( grid, n0, xyz0);
+  gridNodeXYZ( grid, n1, xyz1);
+  
+  for (i=0 ; i<3 ; i++) xyzAvg[i] = 0.5 * ( xyz0[i] + xyz1[i] );
+  for (i=0 ; i<3 ; i++) grid->xyz[i+3*n0] = xyzAvg[i];
+  for (i=0 ; i<3 ; i++) grid->xyz[i+3*n1] = xyzAvg[i];
+  
+  if ( gridNegCellAroundNodeExceptGem( grid, n0 ) || 
+       gridNegCellAroundNodeExceptGem( grid, n1 ) ) {
+    for (i=0 ; i<3 ; i++) grid->xyz[i+3*n0] = xyz0[i];
+    for (i=0 ; i<3 ; i++) grid->xyz[i+3*n1] = xyz1[i];
+    return NULL;
+  }
+
+  for (i=0 ; i<grid->ngem ; i++) gridRemoveCell( grid, grid->gem[i] );
+
+  it = adjFirst(grid->cellAdj, n1);
+  while (adjValid(it)) {
+    cell = adjItem(it);
+    for ( i=0 ; i<4 ; i++ ) 
+      if (grid->c2n[i+4*cell] == n1 ) 
+	grid->c2n[i+4*cell] = n0;
+    adjRemove( grid->cellAdj, n1, cell );
+    adjRegister( grid->cellAdj, n0, cell );
+    it = adjNext(it);
+  }
+
+  if ( grid->nequ != grid->ngem ) {
+    faceId = grid->faceId[adjItem(adjFirst(grid->faceAdj,n0))];
+    gridNodeUV(grid,n0,faceId,uv0);
+    gridNodeUV(grid,n1,faceId,uv1);
+    for (i=0 ; i<2 ; i++) uvAvg[i] = 0.5 * ( uv0[i] + uv1[i] );
+
+    face0 = gridFindFace(grid, n0, n1, grid->equ[0] );
+    face1 = gridFindFace(grid, n0, n1, grid->equ[grid->ngem] );
+    gridRemoveFace(grid, face0 );
+    gridRemoveFace(grid, face1 );
+
+    it = adjFirst(grid->faceAdj, n1);
+    while (adjValid(it)) {
+      face = adjItem(it);
+      for ( i=0 ; i<3 ; i++ ) 
+	if (grid->f2n[i+3*face] == n1 ) 
+	  grid->f2n[i+3*face] = n0;
+      adjRemove( grid->faceAdj, n1, face );
+      adjRegister( grid->faceAdj, n0, face );
+      it = adjNext(it);
+    }
+    gridSetNodeUV(grid, n0, faceId, uvAvg[0], uvAvg[1]);
+  }
+
+  gridRemoveNode(grid, n1);
+
+  return grid;
+}
+
