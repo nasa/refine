@@ -1779,8 +1779,17 @@ Layer *layerBlend(Layer *layer)
 	  if (layer->triangle[triangle].normal[i] == normal) 
 	    layer->triangle[triangle].normal[i] = newNormal;
 	nextTriangle = layerNextTriangle(layer, normal, triangle);
-	done = done || ( EMPTY == nextTriangle ) ||
-	  angleLimit < layerEdgeAngle(layer,triangle,nextTriangle);
+	done = (EMPTY == nextTriangle);
+	if (!done && angleLimit < layerEdgeAngle(layer,triangle,nextTriangle)){
+	  layerCommonEdge(layer, triangle, nextTriangle, commonEdge);
+	  if (layerNormalRoot(layer,normal) == commonEdge[0] ) {
+	    layerAddBlend(layer,normal,newNormal,commonEdge[1]);
+	  }else{
+	    layerAddBlend(layer,normal,newNormal,commonEdge[0]);
+	  }
+	  done = TRUE;
+	}
+	triangle = nextTriangle;
       }
     }
  

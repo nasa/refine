@@ -1210,7 +1210,7 @@ grid.addCell(0,1,2,3)
   #      \ | / 
   #       7 3
   assert_equal [5,0,2,6], layer.blendNormals(0)
-  assert_equal [7,3,5,0], layer.blendNormals(1)
+  assert_equal [0,5,3,7], layer.blendNormals(1)
  end
 
 end
