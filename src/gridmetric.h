@@ -26,6 +26,9 @@ Grid *gridResetSpacing(Grid *g );
 Grid *gridScaleSpacing(Grid *g, int node, double scale );
 Grid *gridScaleSpacingSphere(Grid *g, double x, double y, double z, double r,
 			     double scale );
+Grid *gridScaleSpacingSphereDirection(Grid *g, 
+				 double x, double y, double z, double r,
+				 double scalex, double scaley, double scalez );
 
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
@@ -39,6 +42,13 @@ double gridMinAR(Grid *g);
 
 bool gridRightHandedFace(Grid *g, int face );
 bool gridRightHandedBoundary(Grid *g );
+
+
+Grid *gridMapMatrix(Grid *g, int node, double *m);
+void gridMapXYZWithM( double *m, double *x, double *y, double *z );
+void gridMapXYZWithNode( Grid *g, int node, double *x, double *y, double *z );
+
+double gridMappedEdgeLength(Grid *g, int n0, int n1 );
 
 END_C_DECLORATION
 

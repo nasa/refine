@@ -221,6 +221,29 @@ Grid *gridScaleSpacingSphere( Grid *grid,
   return grid;
 }
 
+Grid *gridScaleSpacingSphereDirection( Grid *grid, 
+			      double x, double y, double z, double r,
+			      double scalex, double scaley, double scalez )
+{
+  int node;
+  double dx, dy, dz, distanceSquared, radiusSquared;
+  radiusSquared = r*r;
+  
+  for ( node=0; node<grid->nnode; node++ ) {
+    dx = grid->xyz[0+3*node] - x;
+    dy = grid->xyz[1+3*node] - y;
+    dz = grid->xyz[2+3*node] - z;
+    distanceSquared = dx*dx + dy*dy + dz*dz;
+    if (radiusSquared >= distanceSquared){
+      grid->spacing[0+6*node] = grid->spacing[0+6*node] / scalex; 
+      grid->spacing[3+6*node] = grid->spacing[3+6*node] / scaley; 
+      grid->spacing[5+6*node] = grid->spacing[5+6*node] / scalez; 
+    } 
+  }
+
+  return grid;
+}
+
 double gridVolume(Grid *grid, int *nodes )
 {
   int ixyz;
