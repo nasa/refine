@@ -600,7 +600,7 @@ Layer *layerVisibleNormals(Layer *layer)
 
 Layer *layerProjectNormalsToConstraints(Layer *layer)
 {
-  int normal, tipnode, edgeId;
+  int normal, tipnode, edgeId, faceId;
   double xyzroot[3], xyztip[3], direction[3], height;
   Grid *grid;
 
@@ -611,8 +611,8 @@ Layer *layerProjectNormalsToConstraints(Layer *layer)
   if (EMPTY == tipnode) return NULL;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    edgeId = -layerConstrained(layer,normal);
-    if (edgeId > 0 ) {
+    faceId = layerConstrained(layer,normal);
+    if (faceId != 0 ) {
       gridNodeXYZ(grid, layerNormalRoot(layer,normal), xyzroot );
       layerNormalDirection(layer,normal,direction);
       layerGetNormalHeight(layer,normal,&height);
@@ -623,7 +623,12 @@ Layer *layerProjectNormalsToConstraints(Layer *layer)
       xyztip[1] = xyzroot[1] + direction[1];
       xyztip[2] = xyzroot[2] + direction[2];
       gridSetNodeXYZ(grid,tipnode,xyztip);
-      gridForceNodeToEdge(grid, tipnode, edgeId );
+      if (faceId >0) {
+	gridForceNodeToFace(grid, tipnode, faceId );
+      }else{
+	edgeId = -faceId;
+	gridForceNodeToEdge(grid, tipnode, edgeId );
+      }
       gridNodeXYZ(grid, tipnode, xyztip);
       gridSubtractVector(xyztip,xyzroot,direction);
       height = sqrt(gridDotProduct(direction,direction));
