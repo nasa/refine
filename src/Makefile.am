@@ -8,7 +8,8 @@ lib_LIBRARIES = \
 	librefine.a \
 	libFAKEGeomPlate.a \
 	libFAKEGeomBox.a \
-	libFAKEGeomTrap.a
+	libFAKEGeomTrap.a \
+	libFAKEGeomDPWwbi.a
 
 librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
@@ -32,6 +33,9 @@ libFAKEGeomBox_a_SOURCES = FAKEGeomBox.h FAKEGeomBox.c
 
 libFAKEGeomTrap_a_CFLAGS = @SDKheader@
 libFAKEGeomTrap_a_SOURCES = FAKEGeomTrap.h FAKEGeomTrap.c
+
+libFAKEGeomDPWwbi_a_CFLAGS = @SDKheader@
+libFAKEGeomDPWwbi_a_SOURCES = FAKEGeomDPWwbi.h FAKEGeomDPWwbi.c
 
 libFAKEGeomPlate_a_CFLAGS = @SDKheader@
 libFAKEGeomPlate_a_SOURCES = FAKEGeomPlate.h FAKEGeomPlate.c
