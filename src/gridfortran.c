@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "gridfortran.h"
 #include "grid.h"
+#include "gridmove.h"
 #include "gridmetric.h"
 #include "gridswap.h"
 #include "gridcad.h"
@@ -20,6 +21,7 @@
 #include "gridmpi.h"
 
 static Grid *grid;
+static GridMove *gm;
 static Queue *queue;
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
@@ -561,4 +563,15 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux )
 {
   gridCopyAboutY0(grid, *symmetryFaceId, *mirrorAux-1 );
+}
+
+void gridmovesetprojectiondisp_( )
+{
+  gm = gridmoveCreate( grid );
+  gridmoveProjectionDisplacements( gm );
+}
+
+void gridmovefree_( )
+{
+  gridmoveFree( gm );
 }
