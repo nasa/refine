@@ -13,11 +13,12 @@ require 'Grid'
 class TestSampleUnit < Test::Unit::TestCase
 
  def set_up
-  @grid = Grid.new(4,1,0)
+  @grid = Grid.new(4,1)
  end
 
  def testCreateGrid
-  assert_equal 4, @grid.nnode
+  assert_equal 4, @grid.maxnode
+  assert_equal 0, @grid.nnode
   assert_equal 1, @grid.maxcell
   assert_equal 0, @grid.ncell
  end
@@ -94,9 +95,9 @@ end
  end
 
  def testAddCellRegFailure
-  grid = Grid.new(3,1,0)
+  grid = Grid.new(3,1)
   assert_equal nil, grid.addCell(0,1,2,3)
-  grid = Grid.new(4,1,0)
+  grid = Grid.new(4,1)
   assert_equal grid, grid.addCell(0,1,2,3)
   assert_equal nil, grid.addCell(0,1,2,3)
  end
@@ -113,7 +114,7 @@ end
  end
 
  def testReplaceCell
-  grid = Grid.new(8,2,0)
+  grid = Grid.new(8,2)
   assert_equal grid, grid.addCell(0,1,2,3).addCell(4,5,6,7)
   assert_equal grid, grid.removeCell(0)
   assert_equal grid, grid.addCell(0,1,2,3)
@@ -122,7 +123,7 @@ end
  end
 
  def testGetGem
-  grid = Grid.new(5,3,0)
+  grid = Grid.new(5,3)
   assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
   assert_equal [], grid.gem(5,6)
   assert_equal [0], grid.gem(0,1)
@@ -153,7 +154,7 @@ end
  end
 
  def testEquator
-  grid = Grid.new(6,4,0)
+  grid = Grid.new(6,4)
   assert_equal grid, grid.
    addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0).addCell(4,5,0,1)
   assert_equal [3,2,1,0], grid.gem(4,5)
@@ -165,26 +166,26 @@ end
  end
 
  def testEquatorGapInMiddle
-  grid = Grid.new(6,3,0)
+  grid = Grid.new(6,3)
   assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,2,3)
   assert_equal [1,0], grid.gem(4,5)
   assert_equal [1,2,3,1], grid.equator(4,5)
  end
 
  def testEquatorGapInEnd
-  grid = Grid.new(6,3,0)
+  grid = Grid.new(6,3)
   assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,3,1)
   assert_equal [3,1,2,3], grid.equator(4,5)
  end
 
  def testEquatorTwoGaps
-  grid = Grid.new(6,3,0)
+  grid = Grid.new(6,3)
   assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,3,0)
   assert_equal nil, grid.equator(4,5)
  end
 
  def testSwap4for4
-  grid = Grid.new(6,4,0)
+  grid = Grid.new(6,4)
   assert_equal grid, grid.
    addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
   assert_equal grid, grid.swap(4,5)
@@ -198,7 +199,7 @@ end
 
  def XtestMaxSize
   nnode = 6000000
-  grid = Grid.new(nnode,nnode*6,0)
+  grid = Grid.new(nnode,nnode*6)
   1.upto(nnode*6) {grid.addCell(3,4,0,1)}
 
  end

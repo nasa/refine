@@ -22,11 +22,11 @@ struct N2C {
 #define MAXDEG 200
 
 struct Grid {
+  int maxnode;
   int nnode;
   int maxcell;
   int ncell;
   int blankcell;
-  int nlist;
   N2C **first;
   N2C *current;
   N2C *blank;
@@ -42,16 +42,19 @@ struct Grid {
 
 //#define EBUG
 
-Grid* gridCreate(int nnode, int maxcell, int nlist)
+Grid* gridCreate(int maxnode, int maxcell)
 {
-  int i;
+  int i, nlist;
   Grid *grid;
 
   grid = malloc(sizeof(Grid));
 
-  grid->nnode = nnode;
+  grid->maxnode = maxnode;
+  grid->nnode   = 0;
   grid->maxcell = maxcell;
-  grid->ncell = 0;
+  grid->ncell   = 0;
+  nlist         = grid->maxcell*4;
+
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
   for (i=0;i < grid->maxcell; i++ ) {
     grid->c2n[0+4*i] = EMPTY; 
@@ -60,18 +63,17 @@ Grid* gridCreate(int nnode, int maxcell, int nlist)
   grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
   grid->blankcell = 0;
 
-  if (grid->nlist < 1) grid->nlist = grid->maxcell*4;
 
-  grid->first = (N2C **)malloc(grid->nnode * sizeof(N2C *));
+  grid->first = (N2C **)malloc(grid->maxnode * sizeof(N2C *));
 
-  for (i=0;i < grid->nnode; i++ ) grid->first[i] = NULL; 
-  grid->n2c = (N2C *)malloc( grid->nlist * sizeof(N2C));
-  for (i=0;i < grid->nlist-1; i++ ) { // pointer majic?
+  for (i=0;i < grid->maxnode; i++ ) grid->first[i] = NULL; 
+  grid->n2c = (N2C *)malloc( nlist * sizeof(N2C));
+  for (i=0;i < nlist-1; i++ ) { // pointer majic?
     grid->n2c[i].id   = EMPTY;
     grid->n2c[i].next = &grid->n2c[i+1];
   }
-  grid->n2c[grid->nlist-1].id   = EMPTY;
-  grid->n2c[grid->nlist-1].next = NULL;
+  grid->n2c[nlist-1].id   = EMPTY;
+  grid->n2c[nlist-1].next = NULL;
   grid->blank   = grid->n2c;
   grid->current = NULL;
 
@@ -86,6 +88,11 @@ void gridFree(Grid *grid)
   free(grid->first);
   free(grid->n2c);
   free(grid);
+}
+
+int gridMaxNode(Grid *grid)
+{
+  return grid->maxnode;
 }
 
 int gridNNode(Grid *grid)
@@ -147,7 +154,7 @@ bool gridCellExists(Grid *grid, int nodeId, int cellId)
 Grid* gridRegisterNodeCell(Grid *grid, int nodeId, int cellId)
 {
   N2C *new;
-  if (nodeId > grid->nnode-1) return NULL;
+  if (nodeId > grid->maxnode-1) return NULL;
   if (grid->blank == NULL) return NULL;
   new = grid->blank;
   grid->blank = grid->blank->next;
@@ -196,7 +203,7 @@ Grid* gridRemoveNodeCell(Grid *grid, int nodeId, int cellId)
 
 void gridFirstNodeCell(Grid *grid, int nodeId)
 {
-  if ( nodeId < grid->nnode ) {
+  if ( nodeId < grid->maxnode ) {
     grid->current = grid->first[nodeId];
   }else{
     grid->current = NULL;
