@@ -82,7 +82,7 @@ bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
 
   if (!coplanar) {
     denom = 1/(h0-h1);
-    for(i=0;i<3;i++) intersection[i] = ( h0*dir1[i] - h1*dir0[i] )*denom;
+    for(i=0;i<3;i++) intersection[i] = ( h0*node1[i] - h1*node0[i] )*denom;
     return intersectTriangleNode(vertex0, vertex1, vertex2, intersection);
   }else{
     if (intersectTriangleNode(vertex0, vertex1, vertex2, node0) ) return TRUE;
@@ -124,3 +124,14 @@ bool intersectTetSegment(double *vertex0, double *vertex1,
 
   return FALSE;
 }
+
+/* debug chaff
+    printf("\nnode0 %10.5f %10.5f %10.5f\n",node0[0],node0[1],node0[2]);
+    printf("node1 %10.5f %10.5f %10.5f\n",node1[0],node1[1],node1[2]);
+    printf("norm  %10.5f %10.5f %10.5f\n",normal[0],normal[1],normal[2]);
+    printf("dir0  %10.5f %10.5f %10.5f\n",dir0[0],dir0[1],dir0[2]);
+    printf("dir1  %10.5f %10.5f %10.5f\n",dir1[0],dir1[1],dir1[2]);
+    printf("h0 %10.5f h1 %10.5f\n",h0,h1);
+    printf("isect %10.5f %10.5f %10.5f\n",
+	   intersection[0],intersection[1],intersection[2]);
+*/
