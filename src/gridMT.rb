@@ -112,6 +112,15 @@ end
   (0..3).each { |n| assert_equal 0, @grid.nodeDeg(n)}
  end
 
+ def testReplaceCell
+  grid = Grid.new(8,2,0)
+  assert_equal grid, grid.addCell(0,1,2,3).addCell(4,5,6,7)
+  assert_equal grid, grid.removeCell(0)
+  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_equal [0, 1, 2, 3], grid.cell(0)
+  assert_equal [4, 5, 6, 7], grid.cell(1)
+ end
+
  def testGetGem
   grid = Grid.new(5,3,0)
   assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
