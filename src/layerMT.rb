@@ -1149,7 +1149,7 @@ grid.addCell(0,1,2,3)
 
  end
 
- def testInsertBlendForConvextFaces
+ def testInsertBlendForConvextFace
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   layer = Layer.new(grid).populateAdvancingFront([1])
@@ -1165,6 +1165,52 @@ grid.addCell(0,1,2,3)
   assert_equal [0,1,2], layer.triangle(0)
   assert_equal [2,1,3], layer.triangle(1)
   assert_equal [4,1,2,5], layer.blendNormals(0)
+ end
+
+ def testInsertBlendForTwoConvextFaces
+  #        2
+  #      / y \
+  #    /4  ^  0\  
+  #  /     |     \
+  # 4 -z<- 0 -> x 1
+  #  \     |     /
+  #    \3  |  1/
+  #      \ | / 
+  #        3
+
+  grid = Grid.new(10,10,10,10)
+  grid.addNode(0, 0, 0)
+  grid.addNode(1, 0, 0)
+  grid.addNode(0, 1, 0)
+  grid.addNode(0,-1, 0)
+  grid.addNode(0.01, 0,-1)
+  grid.addFace(0,1,2,1)
+  grid.addFace(0,3,1,1)
+  grid.addFace(0,4,3,1)
+  grid.addFace(0,2,4,1)
+
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal [0,1,2], layer.triangleNormals(0)
+  assert_equal [0,3,1], layer.triangleNormals(1)
+  assert_equal [0,4,3], layer.triangleNormals(2)
+  assert_equal [0,2,4], layer.triangleNormals(3)
+  assert_equal layer, layer.blend
+  assert_equal 2,     layer.nblend
+  assert_equal [0,1,6], layer.triangleNormals(0)
+  assert_equal [0,3,1], layer.triangleNormals(1)
+  assert_equal [5,4,7], layer.triangleNormals(2)
+  assert_equal [5,2,4], layer.triangleNormals(3)
+  #       2 6
+  #      / y \
+  #    /4  ^  0\  
+  #  /     |     \
+  # 4 -z<-5 0-> x 1
+  #  \     |     /
+  #    \3  |  1/
+  #      \ | / 
+  #       7 3
+  assert_equal [5,0,2,6], layer.blendNormals(0)
+  assert_equal [7,3,5,0], layer.blendNormals(1)
  end
 
 end
