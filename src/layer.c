@@ -375,7 +375,7 @@ Layer *layerConstrainNormal(Layer *layer, int bc )
 	  }
 	}
 	for(n0=0;n0<3;n0++){
-	  n1 = n0 + 1; n1 = MIN( n1, 2 );
+	  n1 = n0 + 1; if ( n1 > 2 ) n1 = 0;
 	  normal0 = layer->globalNode2Normal[nodes[n0]];
 	  normal1 = layer->globalNode2Normal[nodes[n1]];
 	  layerConstrainFrontSide( layer, normal0, normal1, bc );
@@ -470,7 +470,7 @@ int layerNActiveNormal(Layer *layer )
 Layer *layerAdvance(Layer *layer, double height )
 {
   Grid *grid = layer->grid;
-  int normal, root, tip, faceId, edgeId, i;
+  int normal, normal0, normal1, root, tip, faceId, edgeId, i;
   int cell, node;
   int front, normals[3], n[6], side[2];
   double xyz[3];
@@ -503,10 +503,24 @@ Layer *layerAdvance(Layer *layer, double height )
     }
   }
 
-  // reconnect faces for constrained frontside
-  // if (0 < faceId) {
-  //   gridReconnectFaceUnlessFrozen(grid, faceId, root, tip);
-  // }
+  /* reconnect faces for constrained frontside */
+  for (front=0;front<layerNFront(layer);front++){
+    for (i=0;i<3;i++){
+      faceId = layerConstrainedSide(layer, front, i);
+      if (faceId > 0) {
+	normal0 = i;
+	normal1 = i+1; if (normal1>2) normal1 = 0;
+	normal0 = layer->front[front].normal[normal0];
+	normal1 = layer->front[front].normal[normal1];
+	gridReconnectFaceUnlessFrozen(grid, faceId, 
+				      layer->normal[normal0].root, 
+				      layer->normal[normal0].tip);
+	gridReconnectFaceUnlessFrozen(grid, faceId, 
+				      layer->normal[normal1].root, 
+				      layer->normal[normal1].tip);
+      }
+    }    
+  }
 
   for (front=0;front<layerNFront(layer);front++){
     for (i=0;i<3;i++) layer->front[front].globalNode[i] = 
@@ -556,61 +570,24 @@ Layer *layerAdvance(Layer *layer, double height )
     if (edgeId > 0 && n[2]!=n[5]) 
       gridAddEdge(grid,n[2],n[5],edgeId,DBL_MAX,DBL_MAX);
 
-    if (0 != layerConstrained(layer,normals[0]) && 
-	0 != layerConstrained(layer,normals[1]) ){
-      side[0] = normals[1];
-      side[1] = normals[0];
-
-      faceId = MAX(layerConstrained(layer,side[0]),
-		   layerConstrained(layer,side[1]));
-      n[0] = layer->normal[side[0]].root;
-      n[1] = layer->normal[side[1]].root;
-      n[2] = layer->normal[side[0]].tip;
-      n[3] = layer->normal[side[1]].tip;
-      if (side[0]<side[1]){
-	if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
-	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
-      }else{
-	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
-	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
-      }
-    }
-    if (0 != layerConstrained(layer,normals[1]) && 
-	0 != layerConstrained(layer,normals[2]) ){
-      side[0] = normals[2];
-      side[1] = normals[1];
-
-      faceId = MAX(layerConstrained(layer,side[0]),
-		   layerConstrained(layer,side[1]));
-      n[0] = layer->normal[side[0]].root;
-      n[1] = layer->normal[side[1]].root;
-      n[2] = layer->normal[side[0]].tip;
-      n[3] = layer->normal[side[1]].tip;
-      if (side[0]<side[1]){
-	if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
-	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
-      }else{
-	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
-	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
-      }
-    }
-    if (0 != layerConstrained(layer,normals[2]) && 
-	0 != layerConstrained(layer,normals[0]) ){
-      side[0] = normals[0];
-      side[1] = normals[2];
-
-      faceId = MAX(layerConstrained(layer,side[0]),
-		   layerConstrained(layer,side[1]));
-      n[0] = layer->normal[side[0]].root;
-      n[1] = layer->normal[side[1]].root;
-      n[2] = layer->normal[side[0]].tip;
-      n[3] = layer->normal[side[1]].tip;
-      if (side[0]<side[1]){
-	if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
-	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
-      }else{
-	if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
-	if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
+    for (i=0;i<3;i++){
+      faceId = layerConstrainedSide(layer, front, i);
+      if (faceId > 0) {
+	side[1] = i;
+	side[0] = i+1; if (side[0]>2) side[0] = 0;
+	side[0] = normals[side[0]];
+	side[1] = normals[side[1]];
+	n[0] = layer->normal[side[0]].root;
+	n[1] = layer->normal[side[1]].root;
+	n[2] = layer->normal[side[0]].tip;
+	n[3] = layer->normal[side[1]].tip;
+	if (side[0]<side[1]){
+	  if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
+	  if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
+	}else{
+	  if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
+	  if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
+	}
       }
     }
 
