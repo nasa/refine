@@ -15,6 +15,8 @@
 #include <values.h>
 #include "mesherx.c"
 #include "CADGeom/CADGeom.h"
+#include "Goolache/CAPrIMesh.h"
+#include "Goolache/MeshMgr.h"
 
 int main( int argc, char *argv[] )
 {
