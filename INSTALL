@@ -1,3 +1,9 @@
+Note To CVS Users
+=================
+
+   Run ./autogen.sh to set the package up to install inside it's self
+(e.g. ./configure --prefix=`pwd`).
+
 Basic Installation
 ==================
 
