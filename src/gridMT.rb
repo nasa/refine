@@ -23,7 +23,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 1, grid.maxedge
  end
 
-  def testCreateGrid
+ def testCreateGrid
   assert_equal 4, @grid.maxnode
   assert_equal 0, @grid.nnode
   assert_equal 1, @grid.maxcell
@@ -64,6 +64,31 @@ class TestGrid < Test::Unit::TestCase
   assert_nil         grid.removeCell(0)
   assert_equal 0,    grid.ncell
   (0..3).each { |n| assert_equal 0, grid.cellDegree(n)}
+ end
+
+ def testInitNodeFrozenState
+  @grid.addNode(0,0,0)
+  @grid.addNode(1,0,0)
+  @grid.removeNode(0)
+  assert_equal true, @grid.nodeFrozen(0)
+  assert_equal false, @grid.nodeFrozen(1)
+  assert_equal true, @grid.nodeFrozen(2)
+  assert_equal true, @grid.nodeFrozen(@grid.maxnode)
+ end
+
+ def testNodeFrozenState
+  @grid.addNode(0,0,0)
+  @grid.addNode(1,0,0)
+  assert_equal false, @grid.nodeFrozen(0)
+  assert_equal false, @grid.nodeFrozen(1)
+  assert_nil          @grid.freezeNode(@grid.maxnode)
+  assert_equal @grid, @grid.freezeNode(0)
+  assert_equal true,  @grid.nodeFrozen(0)
+  assert_equal false, @grid.nodeFrozen(1)
+  assert_nil          @grid.thawNode(@grid.maxnode)
+  assert_equal @grid, @grid.thawNode(0)
+  assert_equal false, @grid.nodeFrozen(0)
+  assert_equal false, @grid.nodeFrozen(1)
  end
 
  def testReplaceCell
@@ -273,6 +298,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 2,    grid.nedge
   assert_nil         grid.addEdge(1, 2, 13, 0.0, 0.0)
  end
+
  def testGetGeomCurve
   assert_not_nil     grid = Grid.new(4,0,0,4)
   assert_equal grid, grid.addEdge(0, 1, 10, 10.0, 11.0)
@@ -359,9 +385,12 @@ class TestGrid < Test::Unit::TestCase
   assert_equal grid, grid.removeFace(0)
   assert_equal grid, grid.removeEdge(0)
   assert_equal grid, grid.removeNode(0)
+  assert_equal grid, grid.freezeNode(1)
 
   assert_equal grid, grid.pack
   assert_equal grid, grid.pack
+  assert_equal true, grid.nodeFrozen(0)
+  assert_equal false, grid.nodeFrozen(1)
   assert_equal 1, grid.ncell
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal [0], grid.gem(0,1)
@@ -417,6 +446,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 4,         grid.addNode( 0, 0, 0)
   assert_equal 5,         grid.addNode( 1, 0, 0)
   assert_equal [0,0,1],   grid.nodeXYZ(3)
+  assert_equal grid,      grid.freezeNode(3)
   assert_equal grid,      grid.addCell( 1, 4, 2, 3)
   assert_equal grid,      grid.addCell( 0, 2, 4, 3)
   assert_equal grid,      grid.addCell( 0, 4, 5, 3)
@@ -437,6 +467,8 @@ class TestGrid < Test::Unit::TestCase
   assert_equal grid,      grid.sortNodeGridEx
 
   assert_equal [0,0,1],   grid.nodeXYZ(5)
+  assert_equal false,     grid.nodeFrozen(3)
+  assert_equal true,      grid.nodeFrozen(5)
   assert_equal [0,2,3,5], grid.cell(2)
   assert_equal [2,1,0],   grid.gem(2,5)
   assert_equal 0,         grid.findFace(0, 2, 3)

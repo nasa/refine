@@ -22,6 +22,7 @@ struct Grid {
   int blanknode;
   double *xyz;
   double *map;
+  bool *frozen;
 
   int maxcell, ncell;
   int blankc2n;

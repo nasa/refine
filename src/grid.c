@@ -55,6 +55,9 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
     grid->map[5+6*i] = 1.0;
   }
 
+  grid->frozen = malloc(grid->maxnode * sizeof(bool));
+  for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
+
   // cells
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
   for (i=0;i < grid->maxcell; i++ ) {
@@ -155,6 +158,9 @@ Grid *gridImport(int maxnode, int nnode,
     grid->map[4+6*i] = 0.0;
     grid->map[5+6*i] = 1.0;
   }
+
+  grid->frozen = malloc(grid->maxnode * sizeof(bool));
+  for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
 
   // cells
   grid->c2n = c2n;
@@ -398,6 +404,7 @@ void gridFree(Grid *grid)
   free(grid->f2n);
   adjFree(grid->cellAdj);
   free(grid->c2n);
+  free(grid->frozen);
   free(grid->map);
   free(grid->xyz);
   free(grid);
@@ -433,6 +440,7 @@ Grid *gridPack(Grid *grid)
       grid->map[3+6*packnode] = grid->map[3+6*orignode];
       grid->map[4+6*packnode] = grid->map[4+6*orignode];
       grid->map[5+6*packnode] = grid->map[5+6*orignode];
+      grid->frozen[packnode]  = grid->frozen[orignode];
       packnode++;
     } 
   
@@ -614,6 +622,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
   int ixyz, node, face, cell, inode;
   int *o2n, *curve;
   double *temp_xyz;
+  bool *temp_frozen;
 
   if (NULL == gridPack(grid)) {
     printf("gridSortNodeGridEx: gridPack failed.\n");
@@ -674,6 +683,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
 	   newnode,grid->nnode,__LINE__, __FILE__);
 
   temp_xyz = malloc( grid->nnode * sizeof(double) );
+
   if (temp_xyz == NULL) {
     printf("ERROR: gridSortNodeGridEx: %s: %d: could not allocate temp_xyz\n",
 	   __FILE__,__LINE__);
@@ -698,6 +708,17 @@ Grid *gridSortNodeGridEx(Grid *grid)
   }
 
   free(temp_xyz);
+
+  temp_frozen = malloc( grid->nnode * sizeof(bool) );
+
+  for ( node = 0 ; node < grid->nnode ; node++ ){
+    temp_frozen[o2n[node]] = grid->frozen[node];
+  }
+  for ( node = 0 ; node < grid->nnode ; node++ ){
+    grid->frozen[node] = temp_frozen[node];
+  }
+
+  free(temp_frozen);
 
   for ( cell = 0; cell < grid->ncell ; cell++ ){
     for ( inode = 0 ; inode < 4 ; inode++ ){
@@ -1247,6 +1268,26 @@ Grid *gridGeomCurveT( Grid *grid, int edgeId, int startNode, double *curve )
   return grid;
 }
 
+bool gridNodeFrozen( Grid *grid, int node )
+{
+  if ( !gridValidNode( grid, node) ) return TRUE;
+  return grid->frozen[node];
+}
+
+Grid *gridFreezeNode( Grid *grid, int node )
+{
+  if ( !gridValidNode( grid, node) ) return NULL;
+  grid->frozen[node] = TRUE;
+  return grid;
+}
+
+Grid *gridThawNode( Grid *grid, int node )
+{
+  if ( !gridValidNode( grid, node) ) return NULL;
+  grid->frozen[node] = FALSE;
+  return grid;
+}
+
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {
   AdjIterator it;
@@ -1420,6 +1461,7 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   grid->xyz[0+3*node] = x;
   grid->xyz[1+3*node] = y;
   grid->xyz[2+3*node] = z;
+  grid->frozen[node] = FALSE;
 
   return node;
 }
