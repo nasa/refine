@@ -148,6 +148,12 @@ MesherX_HLANative_SOURCES = $(hla_sources)
 MesherX_HLANative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
 MesherX_HLANative_LDFLAGS = $(all_LDFLAGS)
 
+bin_PROGRAMS += libGridEx-Linux.Pro.dll
+libGridEx_Linux_Pro_dll_CFLAGS = $(all_CFLAGS) -DPROE_MAIN
+libGridEx_Linux_Pro_dll_SOURCES = main.c
+libGridEx_Linux_Pro_dll_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
+libGridEx_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
+
 if BUILD_PARASOLID_KERNEL
 bin_PROGRAMS += refineParasolid MesherXParasolid MesherX_HLAParasolid
 refineParasolid_CFLAGS = $(all_CFLAGS)

@@ -28,7 +28,11 @@
 
 #define STATUS DUMP_TEC PRINT_STATUS
 
+#ifdef PROE_MAIN
+int GridEx_Main( int argc, char *argv[] )
+#else
 int main( int argc, char *argv[] )
+#endif
 {
   Grid *grid;
   Layer *layer;
