@@ -35,10 +35,11 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double h;
   double rate;
   int nLayer;
-
+  int face;
+  double gapHeight;
 
   nLayer = (int)(10.0/scale);
-  nLayer = 8;
+  nLayer = 45;
   rate = exp(scale*log(1.2));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
@@ -54,12 +55,21 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   gridThawAll(grid); 
   layerFindParentGeomEdges(layer);
   i=0;
-  layerLaminarInitialHeight(layer, 1000.0, -0.05 );
-  layerScaleNormalHeight(layer,scale);
+  layerLaminarInitialHeightNegZ(layer);
+  //layerScaleNormalHeight(layer,scale);
+  gapHeight=0.0005;
+  for (face=102;face<=107;face++){
+    printf("reset normal height to %f for gap face %d\n",gapHeight,face);
+    layerSetNormalHeightOfFace(layer, face, gapHeight);
+  }
+
+  rate = 1.15;
   while (i<nLayer && 
-	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.5)) {
+	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.3)) {
     layerSmoothNormalDirection(layer);
     layerAdvance(layer);
+    if (i>20) rate = rate+0.005;
+    printf("advance layer %d rate %f\n",i,rate);
     layerScaleNormalHeight(layer,rate);
     i++;
   }
@@ -88,19 +98,22 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     return 0;
   }
 
+  printf("total grid size: %d nodes %d faces %d cells.\n",
+	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
+
   printf(" -- DUMP PART\n");
 
   sprintf(outputProject,"%s_MX.fgrid",project);
   printf("writing output FAST file %s\n",outputProject);
   gridExportFAST( grid, outputProject  );
 
+  sprintf(outputProject,"%s_MX",project);
+  printf("writing output GridEx/CADGeom/CAPRI project %s\n",outputProject);
+  gridSavePart( grid, outputProject );
+
   sprintf(outputProject,"%s_MX.ugrid",project);
   printf("writing output AFL3R file %s\n",outputProject);
   gridExportAFLR3( grid, outputProject  );
-
-  sprintf(outputProject,"%s_MX",project);
-  printf("writing DEBUG output project %s\n",outputProject);
-  gridSavePart( grid, outputProject );
 
   return 1;
 }
@@ -561,7 +574,27 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
 			     0, NULL, 0, NULL,
 			     &nvolnode, &nvolcell, 
 			     &newcell, &newxyz) ) {
+    FILE *tecplotFile;
+
     printf("%s\nCould NOT mesh Volume %d\n",ErrMgr_GetErrStr(),vol);
+    printf("writing failedVolumeShell.t\n");
+
+    tecplotFile = fopen("failedVolumeShell.t","w");
+    fprintf(tecplotFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
+    fprintf(tecplotFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  nnode, nshell);
+    for ( i=0; i<nnode ; i++ ){
+      fprintf(tecplotFile, "%23.15e%23.15e%23.15e\n",
+	      shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i]);
+    }
+    fprintf(tecplotFile, "\n");
+    for ( i=0; i<nshell ; i++ ){
+      fprintf(tecplotFile, " %9d %9d %9d\n",
+	      shell[0+3*i]+1,shell[1+3*i]+1,shell[2+3*i]+1);
+    }
+    fflush(tecplotFile);
+    
     return NULL;
   }
   printf("rebuild volume has %d nodes %d cells\n",nvolnode,nvolcell);
