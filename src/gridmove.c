@@ -204,8 +204,6 @@ GridMove *gridmoveSpringConstant(GridMove *gm, double *xyz, int nsprings,
       }
       for(edge=0;edge<6;edge++) {
 	angle = acos(-gridDotProduct(n[edge2face0[edge]],n[edge2face1[edge]]));
-	printf("cell %d edge %d angle %f\n",
-	       cell,edge,gridConvertRadianToDegree(angle));
 	invsinangle = 1.0 / sin(angle);
 	k[c2e[edge+6*cell]] += invsinangle*invsinangle;
       }
