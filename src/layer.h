@@ -71,6 +71,9 @@ Layer *layerInsertPhantomFront(Layer *, double dz);
 Layer *layerVerifyPhantomEdges(Layer *);
 Layer *layerVerifyPhantomFaces(Layer *);
 
+bool layerTetrahedraOnly(Layer *);
+Layer *layerToggleMixedElementMode(Layer *);
+
 END_C_DECLORATION
 
 #endif /* LAYER_H */

@@ -795,4 +795,26 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,4,5,1], layer.blendNormals(0)
  end
 
+ def testAdvanceLayerIntoVolumeWithaPrism
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_equal 0,             grid.addNode(0,0,0)
+  assert_equal 1,             grid.addNode(1,0,0)
+  assert_equal 2,             grid.addNode(0,1,0)
+  assert_equal grid,          grid.addFace(0,1,2,1)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal layer,         layer.makeFront([1])
+  assert_equal 1,             layer.nfront
+  assert_equal layer,         layer.makeNormal
+  assert_equal true,          layer.tetrahedraOnly
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal false,         layer.tetrahedraOnly
+  assert_equal 3,             layer.nnormal
+  assert_equal layer,         layer.advanceConstantHeight(0.1)
+  assert_equal 6,             grid.nnode
+  assert_equal [0,0,0.1],     grid.nodeXYZ(3)
+  assert_equal [1,0,0.1],     grid.nodeXYZ(4)
+  assert_equal [0,1,0.1],     grid.nodeXYZ(5)
+  assert_equal [0,1,2,3,4,5], grid.prism(0)
+ end
+
 end

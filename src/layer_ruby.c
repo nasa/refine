@@ -278,6 +278,18 @@ VALUE layer_blend( VALUE self, VALUE edgeId )
   return ( layer == layerBlend(layer)?self:Qnil );
 }
 
+VALUE layer_tetrahedraOnly( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layerTetrahedraOnly(layer)?Qtrue:Qfalse);
+}
+
+VALUE layer_toggleMixedElementMode( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerToggleMixedElementMode(layer)?self:Qnil );
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -319,5 +331,8 @@ void Init_Layer()
   rb_define_method( cLayer, "wiggle", layer_wiggle, 1 );
 
   rb_define_method( cLayer, "blend", layer_blend, 0 );
+
+  rb_define_method( cLayer, "tetrahedraOnly", layer_tetrahedraOnly, 0 ); 
+  rb_define_method( cLayer, "toggleMixedElementMode", layer_toggleMixedElementMode, 0 ); 
 
 }

@@ -54,6 +54,7 @@ struct Layer {
   int *globalNode2Normal;
   int nConstrainingGeometry, *constrainingGeometry;
   Adj *adj;
+  bool mixedElementMode;
 };
 
 Layer *layerCreate( Grid *grid )
@@ -74,6 +75,7 @@ Layer *layerCreate( Grid *grid )
   layer->nConstrainingGeometry=0;
   layer->constrainingGeometry=NULL;
   layer->adj=NULL;
+  layer->mixedElementMode=FALSE;
   return layer;
 }
 
@@ -877,7 +879,7 @@ Layer *layerAdvance(Layer *layer)
     }    
   }
 
-  // advance edges
+  /* advance edges */
   for (normal=0;normal<layerNNormal(layer);normal++) {
     edgeId = -layerConstrained(layer,normal);
     if (edgeId > 0) {
@@ -940,16 +942,19 @@ Layer *layerAdvance(Layer *layer)
       n[i+3] = layer->normal[normals[i]].tip;
     }
 
-    if (normals[2]<normals[1]){
-      if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
-      if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[4], n[5]);
-      if (n[1]!=n[4]) gridAddCell(grid, n[2], n[0], n[1], n[4]);
+    if (layerTetrahedraOnly(layer)){
+      if (normals[2]<normals[1]){
+	if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
+	if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[4], n[5]);
+	if (n[1]!=n[4]) gridAddCell(grid, n[2], n[0], n[1], n[4]);
+      }else{
+	if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
+	if (n[1]!=n[4]) gridAddCell(grid, n[0], n[1], n[5], n[4]);
+	if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[1], n[5]);
+      }
     }else{
-      if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
-      if (n[1]!=n[4]) gridAddCell(grid, n[0], n[1], n[5], n[4]);
-      if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[1], n[5]);
+      gridAddPrism(grid,n[0],n[1],n[2],n[3],n[4],n[5]);
     }
-    
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
@@ -1180,5 +1185,16 @@ Layer *layerVerifyPhantomFaces(Layer *layer)
   }
   printf("faces %d of %d verified.\n",ngot,nface);
  
+  return layer;
+}
+
+bool layerTetrahedraOnly(Layer *layer)
+{
+  return !layer->mixedElementMode;
+}
+
+Layer *layerToggleMixedElementMode(Layer *layer)
+{
+  layer->mixedElementMode = !layer->mixedElementMode;
   return layer;
 }
