@@ -14,6 +14,7 @@
 #include <limits.h>         /* Needed in some systems for DBL_MAX definition */
 #include <float.h>
 #include "mesherx.h"
+#include "mesherxInit.h"
 #include "mesherxRebuild.h"
 #include "grid.h"
 #include "gridfiller.h"
