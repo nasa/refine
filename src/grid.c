@@ -2267,7 +2267,7 @@ Grid *gridPyramid(Grid *grid, int pyramidIndex, int *nodes)
   return grid;
 }
 
-Grid *gridAddQuad(Grid *grid, int n0, int n1, int n2, int n3 )
+Grid *gridAddQuad(Grid *grid, int n0, int n1, int n2, int n3, int faceId )
 {
 
   if (grid->nquad >= grid->maxquad) {
@@ -2283,13 +2283,14 @@ Grid *gridAddQuad(Grid *grid, int n0, int n1, int n2, int n3 )
   grid->quad[grid->nquad].nodes[1] = n1;
   grid->quad[grid->nquad].nodes[2] = n2;
   grid->quad[grid->nquad].nodes[3] = n3;
+  grid->quad[grid->nquad].faceId = faceId;
 
   grid->nquad++;
 
   return grid;
 }
 
-Grid *gridQuad(Grid *grid, int quadIndex, int *nodes)
+Grid *gridQuad(Grid *grid, int quadIndex, int *nodes, int *faceId )
 {
   int i;
   if (quadIndex<0 || quadIndex >= gridNQuad(grid) ) return NULL; 
@@ -2297,6 +2298,7 @@ Grid *gridQuad(Grid *grid, int quadIndex, int *nodes)
   for (i=0;i<4;i++){
     nodes[i]=grid->quad[quadIndex].nodes[i];
   }
+  *faceId = grid->quad[quadIndex].faceId;
 
   return grid;
 }

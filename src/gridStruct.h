@@ -30,6 +30,7 @@ struct Pyramid {
 typedef struct Quad Quad;
 struct Quad {
   int nodes[4];
+  int faceId;
 };
 
 struct Grid {

@@ -743,12 +743,12 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def testInsertQuad
-  assert_equal 0,          @grid.nquad
-  assert_equal @grid,      @grid.addQuad(0,1,2,3)
-  assert_equal 1,          @grid.nquad
-  assert_nil               @grid.quad(-1) 
-  assert_nil               @grid.quad(1)
-  assert_equal [0,1,2,3,], @grid.quad(0)
+  assert_equal 0,            @grid.nquad
+  assert_equal @grid,        @grid.addQuad(0,1,2,3,33)
+  assert_equal 1,            @grid.nquad
+  assert_nil                 @grid.quad(-1) 
+  assert_nil                 @grid.quad(1)
+  assert_equal [0,1,2,3,33], @grid.quad(0)
  end
 
 

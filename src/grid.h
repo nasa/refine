@@ -150,8 +150,8 @@ Grid *gridPrism(Grid *g, int prismIndex, int *nodes);
 Grid *gridAddPyramid(Grid *g, int n0, int n1, int n2, int n3, int n4);
 Grid *gridPyramid(Grid *g, int pyramidIndex, int *nodes);
 
-Grid *gridAddQuad(Grid *g, int n0, int n1, int n2, int n3 );
-Grid *gridQuad(Grid *g, int quadIndex, int *nodes);
+Grid *gridAddQuad(Grid *g, int n0, int n1, int n2, int n3, int faceId );
+Grid *gridQuad(Grid *g, int quadIndex, int *nodes, int *faceId );
 
 END_C_DECLORATION
 

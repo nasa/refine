@@ -702,24 +702,26 @@ VALUE grid_pyramid( VALUE self, VALUE pyramidIndex )
   return rb_pyramid;
 }
 
-VALUE grid_addQuad( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
+VALUE grid_addQuad( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3, 
+		    VALUE faceId )
 {
   GET_GRID_FROM_SELF;
   return ( grid == gridAddQuad(grid,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2),
-				  NUM2INT(n3) )?self:Qnil );
+				  NUM2INT(n3), NUM2INT(faceId) )?self:Qnil );
 }
 
 VALUE grid_quad( VALUE self, VALUE quadIndex )
 {
   int i;
-  int nodes[4];
+  int nodes[4], faceId;
   VALUE rb_quad;
   GET_GRID_FROM_SELF;
-  if ( grid != gridQuad(grid,NUM2INT(quadIndex),nodes) ) return Qnil;
-  rb_quad = rb_ary_new2(4);
+  if ( grid != gridQuad(grid,NUM2INT(quadIndex),nodes,&faceId) ) return Qnil;
+  rb_quad = rb_ary_new2(5);
   for (i=0;i<4;i++){
     rb_ary_store( rb_quad, i, INT2NUM(nodes[i]) );
   }
+  rb_ary_store( rb_quad, 4, INT2NUM(faceId) );
   return rb_quad;
 }
 
@@ -823,6 +825,6 @@ void Init_Grid()
   rb_define_method( cGrid, "addPyramid", grid_addPyramid, 5 );
   rb_define_method( cGrid, "pyramid", grid_pyramid, 1 );
 
-  rb_define_method( cGrid, "addQuad", grid_addQuad, 4 );
+  rb_define_method( cGrid, "addQuad", grid_addQuad, 5 );
   rb_define_method( cGrid, "quad", grid_quad, 1 );
 }
