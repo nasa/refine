@@ -595,13 +595,13 @@ int layerAddNormal(Layer *layer, int globalNodeId )
       layer->normal = malloc(layer->maxnormal*sizeof(Normal));
       layer->globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
       for (i=0;i<layerMaxNode(layer);i++) layer->globalNode2Normal[i]=EMPTY;
-      layer->vertexNormal = malloc(layer->maxnormal*sizeof(int));
-      for (i=oldNNormal;i<layer->maxnormal;i++) layer->vertexNormal[i]=EMPTY;
     }else{
       layer->normal = realloc(layer->normal,layer->maxnormal*sizeof(Normal));
-      layer->vertexNormal = realloc(layer->vertexNormal, 
-				    layer->maxnormal*sizeof(int));
-      for (i=oldNNormal;i<layer->maxnormal;i++) layer->vertexNormal[i]=EMPTY;
+      if ( NULL != layer->vertexNormal ) {
+	layer->vertexNormal = realloc(layer->vertexNormal, 
+				      layer->maxnormal*sizeof(int));
+	for (i=oldNNormal;i<layer->maxnormal;i++) layer->vertexNormal[i]=EMPTY;
+      }
     }
   }
 
@@ -1840,6 +1840,149 @@ Layer *layerAdvanceConstantHeight(Layer *layer, double height )
   return layerAdvance(layer, TRUE);
 }
 
+#define addTet \
+{ \
+  layer->cellInLayer[gridAddCell(grid, tet[0], tet[1], tet[2], tet[3])]=TRUE; \
+  if ( 1.0e-14 > gridVolume(grid, tet ) ) { \
+    negVolume = TRUE; \
+    gridNodeXYZ(grid,tet[0],xyz); \
+    printf("volume%18.10e at%15.6f%15.6f%15.6f\n", \
+           gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]); \
+    gridWriteTecplotCellZone(grid,tet,"layerNegVolCell.t"); \
+  } \
+}
+
+Layer *layerAdvanceBlends(Layer *layer)
+{
+  int blend, blendnormals[4];
+  int subBlend;
+  int triangle0, triangle1;
+  int normal, faceId;
+  int tet[4], n[6];
+  double xyz[3];
+  GridBool negVolume = FALSE;
+  Grid *grid = layer->grid;
+  if (!layerTetrahedraOnly(layer)) {
+    printf("ERROR: %s: %d: Using blends requires layerTetrahedraOnly %s.\n",
+	   __FILE__,__LINE__,"(no mixed elements)");
+    return NULL;
+  }
+  
+  for (blend=0;blend<layerNBlend(layer);blend++){
+    for(subBlend=0; subBlend< layerNSubBlend(layer,blend); subBlend++){
+      layerSubBlendNormals(layer, blend, subBlend, blendnormals );
+      
+      triangle0 = EMPTY;
+      triangle1 = EMPTY;
+      if (blendnormals[0] != blendnormals[1]) 
+	triangle0 = layerForceTriangle(layer,blendnormals[0],
+				       blendnormals[1],blendnormals[2]);
+      if (blendnormals[2] != blendnormals[3]) 
+	triangle1 = layerForceTriangle(layer,blendnormals[1],
+				       blendnormals[3],blendnormals[2]);
+      
+      if ( EMPTY != triangle0) {
+	faceId = layerConstrained(layer,blendnormals[0]);
+	if (faceId>0){
+	  n[0] = layerNormalRoot(layer,blendnormals[0]);
+	  n[1] = layer->normal[blendnormals[0]].tip;
+	  n[2] = layer->normal[blendnormals[1]].tip;
+	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	  layer->triangle[triangle0].constrainedSide[0]=faceId;
+	  layer->triangle[triangle0].parentGeomEdge[0] =
+	    layer->blend[blend].edgeId[0];
+	}
+      }
+      if ( EMPTY != triangle1) {
+	faceId = layerConstrained(layer,blendnormals[2]);
+	if (faceId>0){
+	  n[0] = layerNormalRoot(layer,blendnormals[2]);
+	  n[1] = layer->normal[blendnormals[3]].tip;
+	  n[2] = layer->normal[blendnormals[2]].tip;
+	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	  layer->triangle[triangle1].constrainedSide[1]=faceId;
+	  layer->triangle[triangle1].parentGeomEdge[1] =
+	    layer->blend[blend].edgeId[1];
+	}
+      }
+
+      if ( layerNormalRoot(layer,blendnormals[0]) > 
+	   layerNormalRoot(layer,blendnormals[2]) ) {
+	normal = blendnormals[0];
+	blendnormals[0] = blendnormals[3];
+	blendnormals[3] = normal;
+	normal = blendnormals[1];
+	blendnormals[1] = blendnormals[2];
+	blendnormals[2] = normal;
+      }
+
+      n[0] = layerNormalRoot(layer,blendnormals[0]);
+      n[1] = layer->normal[blendnormals[0]].tip;
+      n[2] = layer->normal[blendnormals[1]].tip;
+      n[3] = layerNormalRoot(layer,blendnormals[2]);
+      n[4] = layer->normal[blendnormals[2]].tip;
+      n[5] = layer->normal[blendnormals[3]].tip;
+
+      if (n[4]!=n[5]) {
+	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
+      }
+      if (n[4]!=n[5]) {
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5]; addTet;
+      }
+      if (n[1]!=n[2]) {
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
+      }
+    }
+  }
+ 
+  for ( normal = 0 ; normal < adjNNode(layer->blendAdj) ; normal++ ) {
+    int sweep;
+    int *allVertexNormals, vertexNormals[3], nVertexNormals;
+    switch (layerBlendDegree(layer,normal)) {
+    case 0: case 1: case 2: break;
+    case 3:
+      nVertexNormals = layerSubNormalDegree(layer,normal);
+      allVertexNormals = malloc(nVertexNormals*sizeof(int));
+      layerOrderedVertexNormals( layer, normal, 
+				 &nVertexNormals, allVertexNormals);
+      for(sweep=0;sweep<nVertexNormals;sweep++) {
+	vertexNormals[0] = layer->vertexNormal[normal];
+	vertexNormals[1] = allVertexNormals[sweep];
+	if (sweep < (nVertexNormals-1) ) {
+	  vertexNormals[2] = allVertexNormals[sweep+1];
+	}else{
+	  vertexNormals[2] = allVertexNormals[0];
+	}
+	triangle0 = layerForceTriangle(layer,vertexNormals[0],
+				       vertexNormals[1],vertexNormals[2]);
+	/*face oriented opposite direction to cell*/ 
+	tet[0] = layerNormalTip(layer,vertexNormals[1]);
+	tet[1] = layerNormalTip(layer,vertexNormals[0]); 
+	tet[2] = layerNormalTip(layer,vertexNormals[2]); 
+	tet[3] = layerNormalRoot(layer,normal); 
+	addTet;
+      }
+      free(allVertexNormals);
+      break;
+    default:
+      printf( "ERROR: %s: %d: Cannot handle %d blends. Write more code!\n",
+	      __FILE__, __LINE__, layerBlendDegree(layer,normal));
+      break;
+    }
+  }
+  
+  layerBuildNormalTriangleAdjacency(layer);
+  layer->nblend=0;
+  adjFree(layer->blendAdj); layer->blendAdj = NULL;
+  free(layer->vertexNormal); layer->vertexNormal = NULL;
+
+  if ( negVolume ) {
+    return NULL;
+  } else {
+    return layer;
+  }
+}
+
 Layer *layerAdvance(Layer *layer, GridBool reconnect)
 {
   Grid *grid = layer->grid;
@@ -1850,7 +1993,6 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
   double xyz[3];
   int nterminated;
   int tet[4];
-  int subBlend;
   GridBool negVolume = FALSE;
 
   if (layerNNormal(layer) == 0 ) return NULL;
@@ -1991,18 +2133,6 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
       n[i+3] = layer->normal[normals[i]].tip;
       if (layerNormalTerminated(layer,normals[i])) nterminated++;
     }
-
-#define addTet \
-{ \
-  layer->cellInLayer[gridAddCell(grid, tet[0], tet[1], tet[2], tet[3])]=TRUE; \
-  if ( 1.0e-14 > gridVolume(grid, tet ) ) { \
-    negVolume = TRUE; \
-    gridNodeXYZ(grid,tet[0],xyz); \
-    printf("volume%18.10e at%15.6f%15.6f%15.6f\n", \
-           gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]); \
-    gridWriteTecplotCellZone(grid,tet,"layerNegVolCell.t"); \
-  } \
-}
     
     if (layerTetrahedraOnly(layer) || nterminated >= 2){
       if (nodes[2]<nodes[1]){
@@ -2037,125 +2167,9 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
     }
   }
 
-  /* advance blends */
-  if (layerNBlend(layer) > 0){
-    int blend, blendnormals[4];
-    int triangle0, triangle1;
-
-    if (!layerTetrahedraOnly(layer)) {
-      printf("ERROR: %s: %d: Using blends requires layerTetrahedraOnly %s.\n",
-	     __FILE__,__LINE__,"(no mixed elements)");
-      return NULL;
-    }
-
-    for (blend=0;blend<layerNBlend(layer);blend++){
-      for(subBlend=0; subBlend< layerNSubBlend(layer,blend); subBlend++){
-	layerSubBlendNormals(layer, blend, subBlend, blendnormals );
-      
-	triangle0 = EMPTY;
-	triangle1 = EMPTY;
-	if (blendnormals[0] != blendnormals[1]) 
-	  triangle0 = layerForceTriangle(layer,blendnormals[0],
-					 blendnormals[1],blendnormals[2]);
-	if (blendnormals[2] != blendnormals[3]) 
-	  triangle1 = layerForceTriangle(layer,blendnormals[1],
-					 blendnormals[3],blendnormals[2]);
-
-	if ( EMPTY != triangle0) {
-	  faceId = layerConstrained(layer,blendnormals[0]);
-	  if (faceId>0){
-	    n[0] = layerNormalRoot(layer,blendnormals[0]);
-	    n[1] = layer->normal[blendnormals[0]].tip;
-	    n[2] = layer->normal[blendnormals[1]].tip;
-	    layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
-	    layer->triangle[triangle0].constrainedSide[0]=faceId;
-	    layer->triangle[triangle0].parentGeomEdge[0] =
-	      layer->blend[blend].edgeId[0];
-	  }
-	}
-	if ( EMPTY != triangle1) {
-	  faceId = layerConstrained(layer,blendnormals[2]);
-	  if (faceId>0){
-	    n[0] = layerNormalRoot(layer,blendnormals[2]);
-	    n[1] = layer->normal[blendnormals[3]].tip;
-	    n[2] = layer->normal[blendnormals[2]].tip;
-	    layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
-	    layer->triangle[triangle1].constrainedSide[1]=faceId;
-	    layer->triangle[triangle1].parentGeomEdge[1] =
-	      layer->blend[blend].edgeId[1];
-	  }
-	}
-
-	if ( layerNormalRoot(layer,blendnormals[0]) > 
-	     layerNormalRoot(layer,blendnormals[2]) ) {
-	  normal = blendnormals[0];
-	  blendnormals[0] = blendnormals[3];
-	  blendnormals[3] = normal;
-	  normal = blendnormals[1];
-	  blendnormals[1] = blendnormals[2];
-	  blendnormals[2] = normal;
-	}
-
-	n[0] = layerNormalRoot(layer,blendnormals[0]);
-	n[1] = layer->normal[blendnormals[0]].tip;
-	n[2] = layer->normal[blendnormals[1]].tip;
-	n[3] = layerNormalRoot(layer,blendnormals[2]);
-	n[4] = layer->normal[blendnormals[2]].tip;
-	n[5] = layer->normal[blendnormals[3]].tip;
-
-	if (n[4]!=n[5]) {
-	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
-	}
-	if (n[4]!=n[5]) {
-	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5]; addTet;
-	}
-	if (n[1]!=n[2]) {
-	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
-	}
-      }
-    }
- 
-    for ( normal = 0 ; normal < adjNNode(layer->blendAdj) ; normal++ ) {
-      int sweep;
-      int *allVertexNormals, vertexNormals[3], nVertexNormals;
-      switch (layerBlendDegree(layer,normal)) {
-      case 0: case 1: case 2: break;
-      case 3:
-	nVertexNormals = layerSubNormalDegree(layer,normal);
-	allVertexNormals = malloc(nVertexNormals*sizeof(int));
-	layerOrderedVertexNormals( layer, normal, 
-				   &nVertexNormals, allVertexNormals);
-	for(sweep=0;sweep<nVertexNormals;sweep++) {
-	  vertexNormals[0] = layer->vertexNormal[normal];
-	  vertexNormals[1] = allVertexNormals[sweep];
-	  if (sweep < (nVertexNormals-1) ) {
-	    vertexNormals[2] = allVertexNormals[sweep+1];
-	  }else{
-	    vertexNormals[2] = allVertexNormals[0];
-	  }
-	  triangle0 = layerForceTriangle(layer,vertexNormals[0],
-					 vertexNormals[1],vertexNormals[2]);
-	  /*face oriented opposite direction to cell*/ 
-	  tet[0] = layerNormalTip(layer,vertexNormals[1]);
-	  tet[1] = layerNormalTip(layer,vertexNormals[0]); 
-	  tet[2] = layerNormalTip(layer,vertexNormals[2]); 
-	  tet[3] = layerNormalRoot(layer,normal); 
-	  addTet;
-	}
-	free(allVertexNormals);
-	break;
-      default:
-	printf( "ERROR: %s: %d: Cannot handle %d blends. Write more code!\n",
-		__FILE__, __LINE__, layerBlendDegree(layer,normal));
-	break;
-      }
-    }
-   
-    layerBuildNormalTriangleAdjacency(layer);
-    layer->nblend=0;
-    adjFree(layer->blendAdj); layer->blendAdj = NULL;
+  if (layerNBlend(layer) > 0) {
+    if (layer != layerAdvanceBlends(layer)) return NULL;
   }
-
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     faceId = layerConstrained(layer,normal);
@@ -2493,9 +2507,13 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 
   if (angleLimit < 0.0) angleLimit = 250; /* deg */
 
-  if (layer->blendAdj != NULL) adjFree(layer->blendAdj);
+
+  if (NULL != layer->vertexNormal) free(layer->vertexNormal);
+  layer->vertexNormal = malloc(layer->maxnormal*sizeof(int));
+  for (i=0;i<layer->maxnormal;i++) layer->vertexNormal[i]=EMPTY;
 
   layer->originalnormal = layerNNormal(layer);
+  if (layer->blendAdj != NULL) adjFree(layer->blendAdj);
   layer->blendAdj = adjCreate( layer->originalnormal, 
 			       layer->originalnormal, 1000);
 
