@@ -219,7 +219,10 @@ number of the base objects. It automatically reallocates data to grow
 with the grid. A grid object is created @code{gridCreate} with an
 estimate of max number of nodes, cells, faces, and edges.
 
-
+Empty spaces in node and element arrays (created as the result of
+removal form mesh) are removed the the arrays compacted with
+@code{gridPack}. The nodes (and face) can be sorted to GridEx
+@code{gridSortNodeGridEx} and FUN3D conventions @code{gridSortFUN3D}.
 
 A grid object can be imported from arrays
 @code{gridImport} or a FAST file @code{gridImportFAST}.
@@ -228,7 +231,7 @@ A grid object can be exported as arrays @code{gridExport}, a FAST file
 @code{gridExportFAST} or AFLR3 file @code{gridExportAFLR3}. The
 surface (faces) can be displayed with
 @code{gridWriteTecplotSurfaceZone}. NOTE: the export routines may
-envoke pack and sort routines.
+envoke pack @code{gridPack} and sort routines @code{gridSort*}.
 
 Grid children can register methods to handle packing, reordering,
 reallocation, and deallocation @code{gridAttach*}. These registered
