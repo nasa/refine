@@ -19,6 +19,37 @@
 #include "adj.h"
 #include "gridStruct.h"
 
+Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )
+{
+  int vol = 1;
+  double t, xyz[3], xyznew[3];
+
+  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
+  t = DBL_MAX;
+
+  if (!CADGeom_NearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
+
+  if ( grid != gridSetNodeXYZ( grid, node, xyznew ) ) return NULL;
+
+  return grid;
+}
+
+Grid *gridForceNodeToFace(Grid *grid, int node, int faceId )
+{
+  int vol = 1;
+  double uv[2], xyz[3], xyznew[3];
+
+  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
+  uv[0] = DBL_MAX;
+  uv[1] = DBL_MAX;
+
+  if (!CADGeom_NearestOnFace( vol, faceId, xyz, uv, xyznew) ) return NULL;  
+
+  if ( grid != gridSetNodeXYZ( grid, node, xyznew ) ) return NULL;
+
+  return grid;
+}
+
 Grid *gridProjectNodeToEdge(Grid *grid, int node, int edgeId )
 {
   int vol = 1;

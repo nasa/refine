@@ -16,6 +16,8 @@
 
 BEGIN_C_DECLORATION
 
+Grid *gridForceNodeToEdge(Grid *g, int node, int edgeId );
+Grid *gridForceNodeToFace(Grid *g, int node, int faceId );
 Grid *gridProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridProjectNodeToFace(Grid *g, int node, int faceId );
 Grid *gridSafeProjectNode(Grid *g, int node, double ratio );
