@@ -204,9 +204,14 @@ Grid *gridResetSpacing(Grid *grid )
 
 Grid *gridScaleSpacing(Grid *grid, int node, double scale )
 {
-  grid->map[0+6*node] = grid->map[0+6*node]/(scale*scale);
-  grid->map[3+6*node] = grid->map[3+6*node]/(scale*scale);
-  grid->map[5+6*node] = grid->map[5+6*node]/(scale*scale);
+  int i;
+  double map[6];
+  double s;
+  if (grid != gridMap(grid, node, map)) return NULL;
+  s = 1.0/(scale*scale);
+  gridSetMap(grid, node, 
+	     map[0]*s, map[1]*s, map[2]*s, 
+	     map[3]*s, map[4]*s, map[5]*s);
   return grid;
 }
 
@@ -215,15 +220,18 @@ Grid *gridScaleSpacingSphere( Grid *grid,
 			      double scale )
 {
   int node;
+  double xyz[3];
   double dx, dy, dz, distanceSquared, radiusSquared;
   radiusSquared = r*r;
   
-  for ( node=0; node<grid->nnode; node++ ) {
-    dx = grid->xyz[0+3*node] - x;
-    dy = grid->xyz[1+3*node] - y;
-    dz = grid->xyz[2+3*node] - z;
-    distanceSquared = dx*dx + dy*dy + dz*dz;
-    if (radiusSquared >= distanceSquared) gridScaleSpacing(grid, node, scale );
+  for ( node=0; node<gridMaxNode(grid); node++ ) {
+    if (grid == gridNodeXYZ(grid,node,xyz)) {
+      dx = xyz[0] - x;
+      dy = xyz[1] - y;
+      dz = xyz[2] - z;
+      distanceSquared = dx*dx + dy*dy + dz*dz;
+      if (radiusSquared >= distanceSquared) gridScaleSpacing(grid,node,scale);
+    }
   }
 
   return grid;
