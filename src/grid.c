@@ -78,13 +78,6 @@ void gridFree(Grid *grid)
   free(grid);
 }
 
-Grid *gridDump(Grid *grid)
-{
-  printf("\n Dump Not impl.\n");
-  fflush(stdout);
-  return grid;
-}
-
 int gridNNode(Grid *grid)
 {
   return grid->nnode;
@@ -224,13 +217,6 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
   if ( NULL == gridRegisterNodeCell( grid, n2, cellId ) ) return NULL;
   if ( NULL == gridRegisterNodeCell( grid, n3, cellId ) ) return NULL;
   
-  return grid;
-}
-
-Grid *gridPack(Grid *grid)
-{
-  printf("\n Pack Not impl.\n");
-  fflush(stdout);
   return grid;
 }
 

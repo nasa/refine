@@ -18,6 +18,8 @@ BEGIN_C_DECLORATION
 typedef struct Grid Grid;
 
 Grid *gridCreate(int nnode, int ncell, int nlist);
+void gridFree(Grid *g);
+
 int gridNNode(Grid *g);
 int gridNCell(Grid *g);
 int gridNodeDeg(Grid *g, int nodeIndex);
@@ -35,10 +37,6 @@ Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
 int gridGem(Grid *g, int index );
-
-Grid *gridDump(Grid *g);
-
-void gridFree(Grid *g);
 
 END_C_DECLORATION
 

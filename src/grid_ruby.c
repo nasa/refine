@@ -25,13 +25,6 @@ VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nlist )
   return obj;
 }
 
-VALUE grid_dump( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  gridDump( grid );
-  return self;
-}
-
 VALUE grid_nnode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -121,13 +114,6 @@ VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
   return (returnedGrid==NULL?Qnil:self);
 }
 
-VALUE grid_pack( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  gridPack( grid );
-  return self;
-}
-
 VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
   VALUE rb_gem;
@@ -183,12 +169,10 @@ void Init_Grid()
   cGrid = rb_define_class( "Grid", rb_cObject );
   rb_define_singleton_method( cGrid, "new", grid_new, 3 );
   rb_define_method( cGrid, "initialize", grid_init, 0 );
-  rb_define_method( cGrid, "dump", grid_dump, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
   rb_define_method( cGrid, "maxcell", grid_maxcell, 0 );
   rb_define_method( cGrid, "ncell", grid_ncell, 0 );
   rb_define_method( cGrid, "nodeDeg", grid_nodeDeg, 1 );
-  rb_define_method( cGrid, "pack", grid_pack, 0 );
   rb_define_method( cGrid, "registerNodeCell", grid_registerNodeCell, 2 );
   rb_define_method( cGrid, "validNodeCell", grid_validNodeCell, 0 );
   rb_define_method( cGrid, "firstNodeCell", grid_firstNodeCell, 1 );
