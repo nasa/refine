@@ -381,10 +381,10 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
   file = fopen(filename,"r");
 
   for( i=0; i<grid->nnode ; i++ ) 
-    fscanf(file,"%lf %lf %lf %lf %lf %lf \n",
-       &grid->map[0+6*i], &grid->map[1+6*i], &grid->map[2+6*i],
-       &grid->map[3+6*i], &grid->map[4+6*i], &grid->map[5+6*i],
-       &grid->map[6+6*i], &grid->map[7+6*i], &grid->map[8+6*i]);
+    fscanf(file,"%lf %lf %lf %lf %lf %lf %lf %lf %lf\n",
+       &grid->map[0+9*i], &grid->map[1+9*i], &grid->map[2+9*i],
+       &grid->map[3+9*i], &grid->map[4+9*i], &grid->map[5+9*i],
+       &grid->map[6+9*i], &grid->map[7+9*i], &grid->map[8+9*i]);
   fclose(file);
   return grid;
 }
