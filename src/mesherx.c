@@ -91,6 +91,9 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   int *loopEdge;
   int edge;
   int nedge;
+  int nshell;
+  int nparent;
+  int nthaw;
   int orient;
 
   Grid *grid;
@@ -98,21 +101,32 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 
   for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
     if (layerConstrainingGeometry(layer,faceId)) {
-      printf("faceId %d is a rebuild face.\n",faceId);    
+      printf("faceId %4d is a rebuild face.\n",faceId);    
       CADGeom_GetFace(vol, faceId, uv, &nloop, &loopLength, &loopEdge);
       nedge = 0;
       for (loop=0;loop<nloop;loop++) nedge += loopLength[loop];
+      nshell =0;
       for(edge=0;edge<nedge;edge++){
 	edgeId = loopEdge[0+2*edge];
 	orient = loopEdge[1+2*edge];
-	if (layerConstrainingGeometry(layer,-edgeId)) {
-	  printf(" edge %4d, edgeId %4d %2d is rebuild.\n",edge,edgeId,orient);
-	} else if ( layerNParentEdgeSegments(layer,edgeId)>0 ) {
-	  printf(" edge %4d, edgeId %4d %2d is phantom.\n",edge,edgeId,orient);
+	nparent = layerNParentEdgeSegments(layer,edgeId);
+	if (nparent > 0 ) {
+	  nshell += nparent;
+	  printf(" edge %4d, edgeId %4d %2d has %4d phantom.\n",
+		 edge,edgeId,orient,nparent);
+	} else if ( layerConstrainingGeometry(layer,-edgeId) ) {
+	  nthaw = gridNThawedEdgeSegments(grid,edgeId);
+	  nshell += nthaw;
+	  printf(" edge %4d, edgeId %4d %2d has %4d rebuild.\n",
+		 edge,edgeId,orient,nthaw);
 	} else {
-	  printf(" edge %4d, edgeId %4d %2d is original.\n",edge,edgeId,orient);
+	  nthaw = gridGeomEdgeSize(grid,edgeId)-1;
+	  nshell += nthaw;
+	  printf(" edge %4d, edgeId %4d %2d has %4d original.\n",
+		 edge,edgeId,orient,nthaw);
 	}
       }
+      printf("faceId %4d has %4d segments\n",faceId,nshell);
     }
   }
 
@@ -122,7 +136,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 int
 MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
                           int ntri, int *tri, int nsid, int *sid, int *npo,
-                          int *nel, int **iel, double **xyz)
+                          int *nel, int **iel, double **xyz, char *pj)
 {
   char *outputProject;
   int vol=1;
@@ -132,7 +146,7 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
 
   grid = gridFillFromPart( vol, npts*10 );
 
-  layer = formAdvancingFront( grid, "box" );
+  layer = formAdvancingFront( grid, pj );
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid); 

@@ -60,7 +60,7 @@ int main( int argc, char *argv[] )
 
   MesherX_DiscretizeVolume( 2000, NULL, 0, NULL,
 			    0, NULL, 0, NULL, &npo,
-			    &nel, &iel, &xyz);
+			    &nel, &iel, &xyz,project);
 
   return(0);
 }

@@ -18,7 +18,7 @@ BEGIN_C_DECLORATION
 int
 MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
                           int ntri, int *tri, int nsid, int *sid, int *npo,
-                          int *nel, int **iel, double **xyz);
+                          int *nel, int **iel, double **xyz, char *pj);
 END_C_DECLORATION
 
 #endif /* MESHERX_H */
