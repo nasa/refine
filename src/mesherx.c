@@ -40,14 +40,12 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   int face;
   double gapHeight;
 
-  nLayer = (int)(10.0/scale);
-  nLayer = 45;
-  rate = exp(scale*log(1.2));
+  nLayer = (int)(20.0/scale);
+  rate = exp(scale*log(1.20));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
   if ( scale != 1.0 ) {
     MeshMgr_SetElementScale( scale );
-    FELISASrc_SetTimeStamp( );
     CAPrIMesh_CreateTShell( vol );
   }
 
@@ -65,27 +63,14 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   gridThawAll(grid); 
   layerFindParentGeomEdges(layer);
   i=0;
-  layerLaminarInitialHeightNegZ(layer);
-  //layerScaleNormalHeight(layer,scale);
-  gapHeight=0.001;
-  for (face=102;face<=107;face++){
-    printf("reset normal height to %f for gap face %d\n",gapHeight,face);
-    layerSetNormalHeightOfFace(layer, face, gapHeight);
-  }
+  layerLaminarInitialHeight(layer, 1000.0, -0.05 );
+  layerScaleNormalHeight(layer,scale);
 
-  rate = 1.15;
   while (i<nLayer && 
 	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.7)) {
-    if (i==35) {
-      for (face=102;face<=107;face++){
-	printf("treminating normals for gap face %d\n",face);
-	layerTerminateFaceNormals(layer, face);
-      }
-    }
 
     layerSmoothNormalDirection(layer);
     layerAdvance(layer);
-    if (i>20) rate = rate+0.0025;
     printf("advance layer %d rate %f\n",i,rate);
     layerScaleNormalHeight(layer,rate);
     i++;
