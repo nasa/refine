@@ -655,7 +655,7 @@ Note that * is proceeded by a tab and that any compatibility issues
 with specific FUN3D and the SDK versions should be listed.
 
 Next, summarize the changes listed in the ChangeLog between now and
-the last distribution and put them in the NEWS file. Again, note and
+the last distribution and put them in the NEWS file. Again, note any
 compatibility issues with specific versions of FUN3D and the SDK
 should be noted.
 
