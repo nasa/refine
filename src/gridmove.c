@@ -1084,12 +1084,49 @@ GridMove *gridmoveElasticRelaxationDumpA(GridMove *gm)
 	  entry < gridmoveRowStart(gm, node+1) ;
 	  entry++ ) {
       for(i=0;i<9;i++) {
-	printf(" node%6d entry%6d elem%2d %20.15f\n",
-	       node, entry, i, gm->a[i+9*entry]);
+	printf(" node%6d off%6d entry%6d elem%2d %20.15f\n",
+	       node, gridmoveRowNode(gm,entry), entry, i, gm->a[i+9*entry]);
       }
     }
   }
 
+  return gm;
+}
+
+GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
+{
+  Grid *grid = gridmoveGrid(gm);
+  int row, entry, col, i;
+  double *b;
+  double residual;
+
+  b = malloc(3*gridMaxNode(grid)*sizeof(double));
+
+  for(row=0;row<3*gridMaxNode(grid);row++) b[row] = 0.0;
+ 
+  for(row=0;row<gridMaxNode(grid);row++) {
+    if ( gridValidNode(grid,row) &&
+	 !gridmoveSpecified(gm,row) && 
+	 gridNodeLocal(grid,row) ) {
+      for ( entry = gridmoveRowStart(gm, row) ;
+	    entry < gridmoveRowStart(gm, row+1) ;
+	    entry++ ) {
+	col = gridmoveRowNode(gm,entry);
+	if (row != col) {
+	  for(i=0;i<3;i++) {
+	    b[i+3*row] -= 
+	      (   gm->a[i+3*0+9*entry]*gm->dxyz[0+3*col]
+		+ gm->a[i+3*1+9*entry]*gm->dxyz[1+3*col]
+		+ gm->a[i+3*2+9*entry]*gm->dxyz[2+3*col] ) ;
+	  }
+	}
+      }
+    }
+  }
+
+  *residual2 = residual;
+
+  free(b);
   return gm;
 }
 
