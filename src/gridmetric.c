@@ -497,9 +497,9 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
 	  d[i+1] = h + s * (c * g + s * d[i]);
 	  /* form vector */
 	  for (k = 0;k< 3;k++){
-	    h = z[k+3*(i+1)];
-	    z[k+3*(i+1)] = s * z[k+3*i] + c * h;
-	    z[k+3*i] = c * z[k+3*i] - s * h;
+	    h = z[(i+1)+3*k];
+	    z[(i+1)+3*k] = s * z[i+3*k] + c * h;
+	    z[i+3*k] = c * z[i+3*k] - s * h;
 	  }
 	}
 	p = -s * s2 * c3 * el1 * e[l] / dl1;
@@ -526,9 +526,9 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
       d[k] = d[i];
       d[i] = p;
       for (j = 0;j<3;j++) {
-	p = z[j+3*i];
-	z[j+3*i] = z[j+3*k];
-	z[j+3*k] = p;
+	p = z[i+3*j];
+	z[i+3*j] = z[k+3*j];
+	z[k+3*j] = p;
       }
     }
   }
