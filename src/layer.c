@@ -2640,6 +2640,8 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   int blend;
   int blendnormals[4];
   double angle;
+  int i;
+
   if (layerNBlend(layer) <= 0) return layer;
 
   if ( 0.0 >= maxNormalAngle ) maxNormalAngle = 30.0;
@@ -2647,7 +2649,7 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   for (normal=0;normal<layer->originalnormal;normal++){
     switch (layerBlendDegree(layer,normal)) {
     case 0: break;
-    case 1: case 2:
+    case 1:
       for ( it = adjFirst(layerBlendAdj(layer),normal); 
 	    adjValid(it); 
 	    it=adjNext(it) ){
@@ -2656,9 +2658,24 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 	if (normal == blendnormals[0] || normal == blendnormals[1] ) {
 	  angle = layerNormalAngle(layer,blendnormals[0], blendnormals[1]);
 	  layer->blend[blend].nSubNormal0 = (int)(angle/maxNormalAngle)-1;
+	  layer->blend[blend].nSubNormal0 = 
+	    MIN(layer->blend[blend].nSubNormal0,MAXSUBNORMAL);
+	  for(i=0;i<layer->blend[blend].nSubNormal0;i++){
+	    layer->blend[blend].subNormal0[i] =
+	      layerDuplicateNormal(layer, normal );
+	    layerSubNormalDirection(layer,blendnormals[0],blendnormals[1],
+				    layer->blend[blend].subNormal0[i], i);
+	  }
 	}else{
 	  angle = layerNormalAngle(layer,blendnormals[2], blendnormals[3]);
 	  layer->blend[blend].nSubNormal1 = (int)(angle/maxNormalAngle)-1;
+	  layer->blend[blend].nSubNormal1 = 
+	    MIN(layer->blend[blend].nSubNormal1,MAXSUBNORMAL);
+	  for(i=0;i<layer->blend[blend].nSubNormal1;i++){
+	    layer->blend[blend].subNormal1[i] =
+	      layerDuplicateNormal(layer, normal );
+	    layerSubNormalDirection(layer,blendnormals[2],blendnormals[3],
+				    layer->blend[blend].subNormal0[i], i);
 	}
       }
       break;

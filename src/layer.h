@@ -39,7 +39,7 @@ struct Triangle {
   int parentGeomEdge[3];
 };
 
-#define MAXSUBBLEND (20)
+#define MAXSUBNORMAL (20)
 typedef struct Blend Blend;
 struct Blend {
   int nodes[2];
@@ -48,6 +48,8 @@ struct Blend {
   int oldnormal[4];
 
   int nSubNormal0, nSubNormal1;
+  int subNormal0[MAXSUBNORMAL];
+  int subNormal1[MAXSUBNORMAL];
 };
 
 typedef struct Layer Layer;
