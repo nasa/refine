@@ -73,6 +73,9 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     layerConstrainNormal(layer,6);
   }
   if (plate) {
+    layerTerminateNormalWithX(layer,-0.0001);
+    layerTerminateNormalWithX(layer,1.0001);
+
     /*
       face and four edges
       04 13 12 07 11
