@@ -108,6 +108,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     printf("advance layer %d\n",i);
 
     if (layer != layerAdvance(layer, FALSE)) {
+      printf("Error, layer advancement failed.\n");
       layerWriteTecplotFrontGeometry(layer);
       return 0;
     }
