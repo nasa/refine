@@ -211,6 +211,7 @@ int main( int argc, char *argv[] )
     for (node=0;node<gridMaxNode(grid);node++) {
       if (grid==gridNodeXYZ(grid,node,xyz)) {
 	radius = sqrt(xyz[0]*xyz[0]+xyz[2]*xyz[2]);
+	if (radius<1.0) radius = 2.0-radius;
 	theta = atan2(xyz[2],xyz[0]);
 	rSpace = 0.025*radius*radius;
 	tSpace = 0.5*radius;
