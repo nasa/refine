@@ -277,12 +277,12 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta(0.57735027,vect[0],1.0e-7)
   assert_in_delta(0.57735027,vect[3],1.0e-7)
   assert_in_delta(0.57735027,vect[6],1.0e-7)
-  assert_in_delta(0,vect[1],1.0e-7)
-  assert_in_delta(invsqrt2,vect[4],1.0e-7)
-  assert_in_delta(-invsqrt2,vect[7],1.0e-7)
-  assert_in_delta( 0.81649658,vect[2],1.0e-7)
-  assert_in_delta(-0.40824829,vect[5],1.0e-7)
+  assert_in_delta( 0.81649658,vect[1],1.0e-7)
+  assert_in_delta(-0.40824829,vect[4],1.0e-7)
   assert_in_delta(-0.40824829,vect[7],1.0e-7)
+  assert_in_delta(0,vect[2],1.0e-7)
+  assert_in_delta(invsqrt2,vect[5],1.0e-7)
+  assert_in_delta(-invsqrt2,vect[8],1.0e-7)
  end
 
  def testEigTriDiagAlreadyTridiagFull13n471
