@@ -1153,9 +1153,17 @@ grid.addCell(0,1,2,3)
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal [0,1,2], layer.triangleNormals(0)
+  assert_equal [2,1,3], layer.triangleNormals(1)
+  assert_equal [0,1,2], layer.triangle(0)
+  assert_equal [2,1,3], layer.triangle(1)
   assert_equal 0,     layer.nblend
   assert_equal layer, layer.blend
   assert_equal 1,     layer.nblend
+  assert_equal [0,4,2], layer.triangleNormals(0)
+  assert_equal [5,1,3], layer.triangleNormals(1)
+  assert_equal [0,1,2], layer.triangle(0)
+  assert_equal [2,1,3], layer.triangle(1)
  end
 
 end
