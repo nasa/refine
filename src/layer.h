@@ -42,6 +42,7 @@ int layerNormalRoot(Layer *, int normal );
 int layerNormalDeg(Layer *, int normal );
 Layer *layerNormalTriangles(Layer *, int normal, int maxtriangle, int *triangles);
 int layerNextTriangle(Layer *, int normal, int triangle );
+int layerPreviousTriangle(Layer *, int normal, int triangle );
 Layer *layerNormalDirection(Layer *, int normal, double *direction);
 Layer *layerSetHeightOfAllNormals(Layer *, double height);
 Layer *layerSetNormalHeightOfFace(Layer *, int faceId, double height);

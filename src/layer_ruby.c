@@ -168,12 +168,17 @@ VALUE layer_normalTriangles( VALUE self, VALUE normal )
   return rb_triangle;
 }
 
+VALUE layer_previousTriangle( VALUE self, VALUE normal, VALUE triangle )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerPreviousTriangle(layer,NUM2INT(normal),NUM2INT(triangle)) );
+}
+
 VALUE layer_nextTriangle( VALUE self, VALUE normal, VALUE triangle )
 {
   GET_LAYER_FROM_SELF;
   return INT2NUM( layerNextTriangle(layer,NUM2INT(normal),NUM2INT(triangle)) );
 }
-
 
 VALUE layer_normalDirection( VALUE self, VALUE normal )
 {
@@ -362,6 +367,7 @@ void Init_Layer()
   rb_define_method( cLayer, "normalRoot", layer_normalRoot, 1 );
   rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );
   rb_define_method( cLayer, "normalTriangles", layer_normalTriangles, 1 );
+  rb_define_method( cLayer, "previousTriangle", layer_previousTriangle, 2 );
   rb_define_method( cLayer, "nextTriangle", layer_nextTriangle, 2 );
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );

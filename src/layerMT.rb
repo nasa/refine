@@ -1057,7 +1057,23 @@ grid.addCell(0,1,2,3)
   grid
  end
 
- def testTriangleNeighbor
+ def testFindPreviousTriangleAroundNormal
+  grid  = flatTwoFaceGrid
+  layer = Layer.new(grid).populateAdvancingFront([1])
+
+  assert_equal(-1, layer.previousTriangle(4,0) )
+  assert_equal(-1, layer.previousTriangle(0,4) )
+
+  assert_equal(-1, layer.previousTriangle(0,0) )
+  assert_equal  1, layer.previousTriangle(1,0)
+  assert_equal(-1, layer.previousTriangle(2,0) )
+
+  assert_equal(-1, layer.previousTriangle(1,1) )
+  assert_equal  0, layer.previousTriangle(2,1)
+  assert_equal(-1, layer.previousTriangle(3,1) )
+ end
+
+ def testFindNextTriangleAroundNormal
   grid  = flatTwoFaceGrid
   layer = Layer.new(grid).populateAdvancingFront([1])
 
