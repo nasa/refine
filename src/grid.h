@@ -34,6 +34,7 @@ bool gridMoreNodeCell(Grid *g);
 
 Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
+Grid *gridCell(Grid *g, int cellId, int *nodes );
 
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );

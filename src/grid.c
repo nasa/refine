@@ -52,6 +52,7 @@ Grid* gridCreate(int nnode, int maxcell, int nlist)
   grid->maxcell = maxcell;
   grid->ncell = 0;
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
+  for (i=0;i < grid->maxcell; i++ ) grid->c2n[4*i] = EMPTY; 
 
   if (grid->nlist < 1) grid->nlist = grid->maxcell*4;
 
@@ -249,6 +250,21 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
       ( NULL == gridRemoveNodeCell( grid, grid->c2n[2+4*cellId], cellId ) ) || 
       ( NULL == gridRemoveNodeCell( grid, grid->c2n[3+4*cellId], cellId ) ) ) 
     return NULL;  
+
+  grid->c2n[4*cellId] = EMPTY;
+
+  return grid;
+}
+
+Grid *gridCell(Grid *grid, int cellId, int *nodes )
+{
+  if ( cellId >= grid->maxcell ) return NULL;
+  if ( grid->c2n[4*cellId] == EMPTY ) return NULL;
+
+  nodes[0] = grid->c2n[0+4*cellId];
+  nodes[1] = grid->c2n[1+4*cellId];
+  nodes[2] = grid->c2n[2+4*cellId];
+  nodes[3] = grid->c2n[3+4*cellId];
 
   return grid;
 }
