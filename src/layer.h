@@ -223,6 +223,7 @@ Layer *layerBlend(Layer *, double angleLimit );
 int layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
 Layer *layerSubBlendNormals(Layer *, int blend, int subBlend, int *normals );
+Layer *layerBlendAxle(Layer *, int blend, double *axle);
 #define layerBlendAdj(layer) (layer->blendAdj)
 int layerBlendDegree(Layer *, int normal);
 

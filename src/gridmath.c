@@ -26,6 +26,16 @@ void gridVectorNormalize(double *norm)
   }
 }
 
+void gridRotateDirection(double *v0, double *v1, 
+			 double *axle, double rotation, double *result)
+{
+  result[0] = 1.0;
+  result[1] = 0.0;
+  result[2] = 0.0;
+
+  gridVectorNormalize(result);
+}
+
 void gridTriDiag3x3(double *m, double *d, double *e, 
 		    double *q0, double *q1, double *q2)
 {

@@ -33,6 +33,9 @@ norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0];
 double gridVectorLength(double *norm);
 void gridVectorNormalize(double *norm);
 
+void gridRotateDirection(double *v0, double *v1, 
+			 double *axle, double rotation, double *result);
+
 void gridTriDiag3x3( double *m, double *d, double *e, 
 		     double *q0, double *q1, double *q2 );
 

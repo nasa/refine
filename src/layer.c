@@ -2628,6 +2628,22 @@ Layer *layerSubBlendNormals(Layer *layer, int blend, int subBlend, int *normals)
   return layer;
 }
 
+Layer *layerBlendAxle(Layer *layer, int blend, double *axle)
+{
+  int *nodes;
+  double xyz0[3], xyz1[3];
+  Grid *grid = layerGrid(layer);
+  
+  if (blend < 0 || blend >= layerNBlend(layer)) return NULL; 
+
+  if (grid != gridNodeXYZ(grid,layer->blend[blend].nodes[0],xyz0)) return NULL;
+  if (grid != gridNodeXYZ(grid,layer->blend[blend].nodes[1],xyz1)) return NULL;
+
+  gridSubtractVector(xyz1,xyz0,axle);
+  gridVectorNormalize(axle);
+  return;
+}
+
 int layerBlendDegree(Layer *layer, int normal)
 {
   if (NULL == layerBlendAdj(layer)) return 0;
@@ -2640,7 +2656,9 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   AdjIterator it;
   int blend;
   int blendnormals[4];
-  double angle;
+  double angle, rotation;
+  int nSubNormal, subNormal;
+  double axle[3];
   int i;
 
   if (layerNBlend(layer) <= 0) return layer;
@@ -2658,25 +2676,33 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 	layerBlendNormals(layer, blend, blendnormals );
 	if (normal == blendnormals[0] || normal == blendnormals[1] ) {
 	  angle = layerNormalAngle(layer,blendnormals[0], blendnormals[1]);
-	  layer->blend[blend].nSubNormal0 = (int)(angle/maxNormalAngle)-1;
-	  layer->blend[blend].nSubNormal0 = 
-	    MIN(layer->blend[blend].nSubNormal0,MAXSUBNORMAL);
-	  for(i=0;i<layer->blend[blend].nSubNormal0;i++){
-	    layer->blend[blend].subNormal0[i] =
-	      layerDuplicateNormal(layer, normal );
-	    layerSubNormalDirection(layer,blendnormals[0],blendnormals[1],
-				    layer->blend[blend].subNormal0[i], i);
+	  nSubNormal = (int)(angle/maxNormalAngle)-1;
+	  nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
+	  layer->blend[blend].nSubNormal0 = nSubNormal;
+	  for(i=0;i<nSubNormal;i++){
+	    subNormal = layerDuplicateNormal(layer, normal );
+	    layer->blend[blend].subNormal0[i] = subNormal;
+	    rotation = (double)(i+1) / (double)(nSubNormal+1);
+	    layerBlendAxle(layer, blend, axle);
+	    gridRotateDirection(layer->normal[blendnormals[0]].direction,
+				layer->normal[blendnormals[1]].direction,
+				axle, rotation,
+				layer->normal[subNormal].direction);
 	  }
 	}else{
 	  angle = layerNormalAngle(layer,blendnormals[2], blendnormals[3]);
-	  layer->blend[blend].nSubNormal1 = (int)(angle/maxNormalAngle)-1;
-	  layer->blend[blend].nSubNormal1 = 
-	    MIN(layer->blend[blend].nSubNormal1,MAXSUBNORMAL);
-	  for(i=0;i<layer->blend[blend].nSubNormal1;i++){
-	    layer->blend[blend].subNormal1[i] =
-	      layerDuplicateNormal(layer, normal );
-	    layerSubNormalDirection(layer,blendnormals[2],blendnormals[3],
-				    layer->blend[blend].subNormal0[i], i);
+	  nSubNormal = (int)(angle/maxNormalAngle)-1;
+	  nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
+	  layer->blend[blend].nSubNormal1 = nSubNormal;
+	  for(i=0;i<nSubNormal;i++){
+	    subNormal = layerDuplicateNormal(layer, normal );
+	    layer->blend[blend].subNormal1[i] = subNormal;
+	    rotation = (double)(i+1) / (double)(nSubNormal+1);
+	    layerBlendAxle(layer, blend, axle);
+	    gridRotateDirection(layer->normal[blendnormals[2]].direction,
+				layer->normal[blendnormals[3]].direction,
+				axle, rotation,
+				layer->normal[subNormal].direction);
 	  }
 	}
       }
