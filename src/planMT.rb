@@ -22,4 +22,13 @@ class TestQueue < Test::Unit::TestCase
 # the items priority is sorted to give its ranking 
 #   planItemWithThisRanking
 
+ def test_create_initializes_sizes
+  size = 273
+  chunk = 1527
+  plan = Plan.new(size,chunk)
+  assert_equal size,  plan.size
+  assert_equal chunk, plan.chunk_size
+ end
+
+
 end
