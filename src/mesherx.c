@@ -45,20 +45,19 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   grid = gridFillFromPart( vol, maxNodes );
 
   MeshMgr_SetElementScale( scale );
-  //CAPrIMesh_TetVolume( vol );
 
   layer = layerFormAdvancingLayerWithCADGeomBCS( 1, grid );
-  //layer = formAdvancingFront( grid, project);
+
   if (mixedElement) layerToggleMixedElementMode(layer);
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid); 
   layerFindParentGeomEdges(layer);
   i=0;
-  layerLaminarInitialHeight(layer, 100.0, -2.55 );
+  layerLaminarInitialHeight(layer, 1000.0, -0.05 );
   layerScaleNormalHeight(layer,scale);
-  while (i<nLayer && layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.5)) {
-
+  while (i<nLayer && 
+	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.5)) {
     layerSmoothNormalDirection(layer);
     layerAdvance(layer);
     layerScaleNormalHeight(layer,rate);
@@ -151,11 +150,13 @@ Layer *layerFormAdvancingLayerWithCADGeomBCS( int vol, Grid *grid )
   Layer *layer;
 
   layer = layerCreate( grid );
-  if (NULL == layer) printf("ERROR layerCreate failed: %s: %d\n",__FILE__,__LINE__);
+  if (NULL == layer) printf("ERROR layerCreate failed: %s: %d\n",
+			    __FILE__,__LINE__);
   nFrontFaces =0;
   for (face=1;face<=gridNGeomFace(grid);face++){
     upp = CADGeom_FaceGrid(vol,face);
-    if (NULL == upp) printf("ERROR CADGeom_FaceGrid(%d,%d) failed: %s: %d\n",vol,face,__FILE__,__LINE__);
+    if (NULL == upp) printf("ERROR CADGeom_FaceGrid(%d,%d) failed: %s: %d\n",
+			    vol,face,__FILE__,__LINE__);
     if ( NULL != UGPatch_BC(upp) &&
 	 BC_NOSLIP == GeoBC_GenericType(UGPatch_BC(upp))){
       printf("face %d is added to front.\n",face);
@@ -170,22 +171,21 @@ Layer *layerFormAdvancingLayerWithCADGeomBCS( int vol, Grid *grid )
     upp = CADGeom_FaceGrid(vol,face);
     if ( NULL == UGPatch_BC(upp) ||
 	 BC_NOSLIP != GeoBC_GenericType(UGPatch_BC(upp))){
-      
-      if( !CADGeom_GetFace(vol,face,uv,&nloop,&nedge,&edges) ) {  /* Face Info */
-        ErrMgr_Set(__FILE__,__LINE__,"%s\nCould NOT get Volume %d, Face %d Info",ErrMgr_GetErrStr(),vol,face);
+      if( !CADGeom_GetFace(vol,face,uv,&nloop,&nedge,&edges) ) {/* Face Info */
+        ErrMgr_Set(__FILE__,__LINE__,
+		   "%s\nCould NOT get Volume %d, Face %d Info",
+		   ErrMgr_GetErrStr(),vol,face);
         return( NULL );
       }
 
       edgeindex = 0;
-      for( loop=0; loop<nloop; loop++ ) {                         /* Each Loop */
+      for( loop=0; loop<nloop; loop++ ) {                 /* Each Loop */
         for( current=0; current<nedge[loop]; current++) { /* Each Edge */
 	  self = other = -1;
 	  if( edges[edgeindex*2+1] > 0 )
             CADTopo_EdgeFaces(vol,edges[edgeindex*2],&self,&other);
           else
             CADTopo_EdgeFaces(vol,edges[edgeindex*2],&other,&self);
-	  //printf("face %d loop %d edge %d self %d other %d.\n",
-	  //face,loop,edges[edgeindex*2],self,other);
 	  upp = CADGeom_FaceGrid(vol,other);
 	  if ( NULL != UGPatch_BC(upp) &&
 	       BC_NOSLIP == GeoBC_GenericType(UGPatch_BC(upp))){
@@ -243,7 +243,8 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
       gridNodeT(grid, edgeEndPoints[1], edgeId, &tRange[1] );
 
       /* WTJ will change this to generic with DSO */
-      if( !MeshMgr_MeshEdge(vol, edgeId, edgexyz, tRange, &nedgenode, &newxyz, &newt) ) {
+      if( !MeshMgr_MeshEdge(vol, edgeId, edgexyz, tRange, 
+			    &nedgenode, &newxyz, &newt) ) {
 	printf("Could NOT mesh Edge %d\n",edgeId);
 	return NULL;
       }
