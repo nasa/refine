@@ -48,7 +48,7 @@ struct Layer {
   int nTriangleParent, *triangleParent;
   int nblend;
   Blend *blend;
-  int nnormal;
+  int maxnormal, nnormal;
   Normal *normal;
   int *globalNode2Normal;
   int nConstrainingGeometry, *constrainingGeometry;
@@ -69,6 +69,7 @@ Layer *layerCreate( Grid *grid )
   layer->triangleParent=NULL;
   layer->nblend=0;
   layer->blend=NULL;
+  layer->maxnormal=0;
   layer->nnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
@@ -257,6 +258,11 @@ int layerNBlend(Layer *layer)
   return layer->nblend;
 }
 
+int layerMaxNormal(Layer *layer)
+{
+  return layer->maxnormal;
+}
+
 int layerNNormal(Layer *layer)
 {
   return layer->nnormal;
@@ -372,7 +378,7 @@ Layer *layerTriangleDirection(Layer *layer, int triangle, double *direction )
 
 Layer *layerInitializeNormal(Layer *layer, int normal)
 {
-  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+  if (normal < 0 || normal >= layerMaxNormal(layer) ) return NULL;
  
   layer->normal[normal].root = EMPTY;
   layer->normal[normal].tip = EMPTY;
@@ -403,6 +409,27 @@ Layer *layerCopyNormal(Layer *layer, int originalNormal, int newNormal )
     layer->normal[originalNormal].terminated;
 
   return layer;
+}
+
+int layerAddNormal(Layer *layer, int globalNodeId )
+{
+
+  if (globalNodeId < 0 || globalNodeId >= layerMaxNode(layer) ) return EMPTY;
+
+  if (layer->nnormal >= layer->maxnormal) {
+    layer->maxnormal += 5000;
+    if (layer->normal == NULL) {
+      layer->normal = malloc(layer->maxnormal*sizeof(Normal));
+    }else{
+      layer->normal = realloc(layer->normal,layer->maxnormal*sizeof(Normal));
+    }
+  }
+
+  if (layer != layerInitializeNormal(layer, layer->nnormal)) return EMPTY;
+
+  layer->nnormal++;
+
+  return (layer->nnormal - 1);
 }
 
 Layer *layerMakeNormal(Layer *layer)

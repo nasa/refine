@@ -29,7 +29,9 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil  layer = Layer.new(grid)
   assert_equal 2, layer.maxnode
   assert_equal 0, layer.ntriangle
+  assert_equal 0, layer.maxtriangle
   assert_equal 0, layer.nnormal
+  assert_equal 0, layer.maxnormal
  end
 
  def XtestInitGC # GC is disabled now
@@ -41,11 +43,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2, layer.maxnode
  end
 
- def testInserTriangleTriangle
-  assert_not_nil           grid = Grid.new(4,0,2,0)
-  assert_not_nil           layer = Layer.new(grid)
-  assert_equal 0,          layer.ntriangle
-  assert_equal 0,          layer.maxtriangle
+ def testInsertTriangleIntoLayer
+  layer = Layer.new(Grid.new(4,0,2,0))
   assert_nil               layer.triangle(0)
   assert_nil               layer.triangleNormals(0)
   assert_equal layer,      layer.addTriangle(0,1,2)
@@ -87,6 +86,17 @@ class TestLayer < Test::Unit::TestCase
   assert_equal false,   layer.parentFace(0)
   assert_equal true,    layer.parentFace(1)
   assert_equal false,   layer.parentFace(2)
+ end
+
+ def testAddNormalDynamicAllocates
+  layer = Layer.new(Grid.new(235,0,0,0))
+  assert_equal(-1,         layer.addNormal(-1) )
+  assert_equal(-1,         layer.addNormal(layer.maxnode) )
+  assert_equal 0,          layer.nnormal
+  assert_equal 0,          layer.addNormal(33)
+  assert_equal 1,          layer.addNormal(234)
+  assert_equal 2,          layer.nnormal
+  assert                   layer.maxnormal>=layer.nnormal
  end
 
  def testMakeNormals

@@ -45,6 +45,12 @@ VALUE layer_nnormal( VALUE self )
   return INT2NUM( layerNNormal(layer) );
 }
 
+VALUE layer_maxnormal( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerMaxNormal(layer) );
+}
+
 VALUE layer_maxnode( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -104,6 +110,12 @@ VALUE layer_triangleDirection( VALUE self, VALUE triangle )
     rb_direction = Qnil;
   }
   return rb_direction;
+}
+
+VALUE layer_addNormal( VALUE self, VALUE globalNodeId )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerAddNormal(layer,NUM2INT(globalNodeId)));
 }
 
 VALUE layer_makeNormal( VALUE self )
@@ -311,12 +323,14 @@ void Init_Layer()
   rb_define_method( cLayer, "ntriangle", layer_ntriangle, 0 );
   rb_define_method( cLayer, "maxtriangle", layer_maxtriangle, 0 );
   rb_define_method( cLayer, "nblend", layer_nblend, 0 );
+  rb_define_method( cLayer, "maxnormal", layer_maxnormal, 0 );
   rb_define_method( cLayer, "nnormal", layer_nnormal, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
   rb_define_method( cLayer, "addTriangle", layer_addTriangle, 3 );
   rb_define_method( cLayer, "makeTriangle", layer_makeTriangle, 1 );
   rb_define_method( cLayer, "triangle", layer_triangle, 1 );
   rb_define_method( cLayer, "triangleDirection", layer_triangleDirection, 1 );
+  rb_define_method( cLayer, "addNormal", layer_addNormal, 1 );
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
   rb_define_method( cLayer, "parentFace", layer_parentFace, 1 );
   rb_define_method( cLayer, "triangleNormals", layer_triangleNormals, 1 );
