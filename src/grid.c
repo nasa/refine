@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <values.h>
 #include "grid.h"
 #include "adj.h"
 #include "gridStruct.h"
@@ -62,10 +63,13 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   // edge
   grid->e2n    = malloc(2 * grid->maxedge * sizeof(int));
   grid->edgeId = malloc(1 * grid->maxedge * sizeof(int));
+  grid->edgeT  = malloc(2 * grid->maxedge * sizeof(double));
   for (i=0;i < grid->maxedge; i++ ) {
     grid->e2n[0+2*i] = EMPTY; 
     grid->e2n[1+2*i] = i+1; 
     grid->edgeId[i] = EMPTY; 
+    grid->edgeT[0+2*i] = DBL_MAX; 
+    grid->edgeT[1+2*i] = DBL_MAX; 
   }
   grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
   grid->blanke2n = 0;
@@ -146,10 +150,13 @@ Grid *gridImport(int maxnode, int nnode,
   // edge
   grid->e2n    = malloc(2 * grid->maxedge * sizeof(int));
   grid->edgeId = malloc(1 * grid->maxedge * sizeof(int));
+  grid->edgeT  = malloc(2 * grid->maxedge * sizeof(double));
   for (i=0;i < grid->maxedge; i++ ) {
     grid->e2n[0+2*i] = EMPTY; 
     grid->e2n[1+2*i] = i+1; 
     grid->edgeId[i] = EMPTY; 
+    grid->edgeT[0+2*i] = DBL_MAX; 
+    grid->edgeT[1+2*i] = DBL_MAX; 
   }
   grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
   grid->blanke2n = 0;
@@ -492,7 +499,8 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   return grid->faceId[face];
 }
 
-Grid *gridAddEdge(Grid *grid, int n0, int n1, int edgeId )
+Grid *gridAddEdge(Grid *grid, int n0, int n1, 
+		  int edgeId, double t0, double t1 )
 {
   int edge;
   if ( grid->blanke2n == EMPTY ) return NULL;
@@ -503,12 +511,13 @@ Grid *gridAddEdge(Grid *grid, int n0, int n1, int edgeId )
   grid->e2n[0+2*edge] = n0;
   grid->e2n[1+2*edge] = n1;
   grid->edgeId[edge]  = edgeId;
+  grid->edgeT[0+2*edge] = t0;
+  grid->edgeT[1+2*edge] = t1;
 
   if ( NULL == adjRegister( grid->edgeAdj, n0, edge ) ) return NULL;
   if ( NULL == adjRegister( grid->edgeAdj, n1, edge ) ) return NULL;
 
   return grid;
-
 }
 
 Grid *gridRemoveEdge(Grid *grid, int edge )
@@ -549,7 +558,8 @@ int gridEdgeId(Grid *grid, int n0, int n1 )
   return grid->edgeId[edge];
 }
 
-int gridGeomCurveSize( Grid *grid, int edgeId, int startNode ){
+int gridGeomCurveSize( Grid *grid, int edgeId, int startNode )
+{
   AdjIterator it;
   int node, lastnode, edge, n1, nedgenode;
   bool found;
@@ -583,11 +593,11 @@ int gridGeomCurveSize( Grid *grid, int edgeId, int startNode ){
   return nedgenode;
 }
 
-Grid *gridGeomCurve( Grid *grid, int edgeId, int startNode, int *curve ){
+Grid *gridGeomCurve( Grid *grid, int edgeId, int startNode, int *curve )
+{
   AdjIterator it;
   int node, lastnode, edge, n1, nedgenode;
   bool found;
-
 
   node = startNode;
   nedgenode=0;
@@ -612,6 +622,47 @@ Grid *gridGeomCurve( Grid *grid, int edgeId, int startNode, int *curve ){
 	  lastnode = node;
 	  node = n1;
 	  curve[nedgenode]=node;
+	  nedgenode++;
+	}
+      }
+    }
+  }
+  return grid;
+}
+
+Grid *gridGeomCurveT( Grid *grid, int edgeId, int startNode, double *curve )
+{
+  AdjIterator it;
+  int node, lastnode, edge, n1, nedgenode;
+  double t0, t1;
+  bool found;
+
+  node = startNode;
+  nedgenode=1;
+  lastnode = EMPTY;
+  found = TRUE;
+  while (found) {
+    found = FALSE;
+    for ( it = adjFirst(grid->edgeAdj,node); 
+	  adjValid(it) && !found; 
+	  it = adjNext(it)) {
+      edge = adjItem(it);
+      if (grid->edgeId[edge] == edgeId) {
+	if ( node == grid->e2n[0+2*edge] ) {
+	  n1 = grid->e2n[1+2*edge];
+	  t0 = grid->edgeT[0+2*edge];
+	  t1 = grid->edgeT[1+2*edge];
+	}else{
+	  n1 = grid->e2n[0+2*edge];	  
+	  t0 = grid->edgeT[1+2*edge];
+	  t1 = grid->edgeT[0+2*edge];
+	}
+	if ( n1 != lastnode ) { 
+	  found = TRUE;
+	  lastnode = node;
+	  node = n1;
+	  curve[nedgenode-1]=t0;
+	  curve[nedgenode]=t1;
 	  nedgenode++;
 	}
       }
@@ -846,8 +897,8 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
     if ( edge != EMPTY ) {
       edgeId = gridEdgeId(grid,n0,n1);
       gridRemoveEdge(grid,edge);
-      gridAddEdge(grid,n0,newnode,edgeId);
-      gridAddEdge(grid,n1,newnode,edgeId);
+      gridAddEdge(grid,n0,newnode,edgeId,DBL_MAX,DBL_MAX);
+      gridAddEdge(grid,n1,newnode,edgeId,DBL_MAX,DBL_MAX);
     }
   }
 

@@ -47,13 +47,15 @@ Grid *gridRemoveFace(Grid *g, int face );
 int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 
-Grid *gridAddEdge(Grid *g, int n0, int n1, int edgeId );
+Grid *gridAddEdge(Grid *g, int n0, int n1, 
+		  int edgeId, double t0, double t1 );
 Grid *gridRemoveEdge(Grid *g, int edge );
 int gridFindEdge(Grid *g, int n0, int n1 );
 int gridEdgeId(Grid *g, int n0, int n1 );
 
 int gridGeomCurveSize( Grid *g, int edgeId, int startNode );
 Grid *gridGeomCurve( Grid *g, int edgeId, int startNode, int *curve );
+Grid *gridGeomCurveT( Grid *g, int edgeId, int startNode, double *curve );
 
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );

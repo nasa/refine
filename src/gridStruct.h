@@ -36,6 +36,7 @@ struct Grid {
   int blanke2n;
   int *e2n;
   int *edgeId;
+  double *edgeT;
   Adj *edgeAdj;
 
   int ngem;

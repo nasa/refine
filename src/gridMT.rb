@@ -277,7 +277,7 @@ class TestSampleUnit < Test::Unit::TestCase
  def testAddAndFindEdge
   assert_not_nil     grid = Grid.new(4,0,0,2)
   assert_nil         grid.findEdge(0,1)
-  assert_equal grid, grid.addEdge(0, 1, 10)
+  assert_equal grid, grid.addEdge(0, 1, 10, 0.0, 0.0)
   assert_equal 1,    grid.nedge
   assert_equal 0,    grid.findEdge(0,1)
  end
@@ -287,15 +287,15 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_nil         grid.removeEdge(-1)
   assert_nil         grid.removeEdge(0)
   assert_nil         grid.removeEdge(1)
-  assert_equal grid, grid.addEdge(0, 1, 10)
+  assert_equal grid, grid.addEdge(0, 1, 10, 0.0, 0.0)
   assert_equal 10,   grid.edgeId(1, 0)
   assert_equal grid, grid.removeEdge(0)
   assert_nil         grid.edgeId(1, 0)
-  assert_equal grid, grid.addEdge(3, 1, 11)
-  assert_equal grid, grid.addEdge(0, 2, 12)
+  assert_equal grid, grid.addEdge(3, 1, 11, 0.0, 0.0)
+  assert_equal grid, grid.addEdge(0, 2, 12, 0.0, 0.0)
   assert_equal 11,   grid.edgeId(3, 1)
   assert_equal 2,    grid.nedge
-  assert_nil         grid.addEdge(1, 2, 13)
+  assert_nil         grid.addEdge(1, 2, 13, 0.0, 0.0)
  end
 
  def testSplitGeometryEdge4
@@ -303,7 +303,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.addFace(0,1,2,2)
   assert_equal grid, grid.addFace(1,0,5,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.addEdge(0,1,15)
+  assert_equal grid, grid.addEdge(0,1,15, 0.0, 0.0)
   assert_equal grid, grid.splitEdge(0,1)
   assert_nil         grid.edgeId(0,1)
   assert_equal 15,   grid.edgeId(0,6)
@@ -322,10 +322,10 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testGetGeomCurve
   assert_not_nil     grid = Grid.new(4,0,0,4)
-  assert_equal grid, grid.addEdge(0, 1, 10)
-  assert_equal grid, grid.addEdge(1, 2, 11)
-  assert_equal grid, grid.addEdge(2, 3, 11)
-  assert_equal grid, grid.addEdge(3, 1, 12)
+  assert_equal grid, grid.addEdge(0, 1, 10, 10.0, 11.0)
+  assert_equal grid, grid.addEdge(1, 2, 11, 1.0, 2.0)
+  assert_equal grid, grid.addEdge(2, 3, 11, 2.0, 3.0)
+  assert_equal grid, grid.addEdge(3, 1, 12, 23.0, 21.0)
   assert_equal 0,         grid.geomCurveSize(15,0)
   assert_equal 2,         grid.geomCurveSize(10,0)
   assert_equal 2,         grid.geomCurveSize(10,1)
@@ -336,6 +336,9 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [1, 0],    grid.geomCurve(10,1)
   assert_equal [1, 2, 3], grid.geomCurve(11,1)
   assert_equal [3, 2, 1], grid.geomCurve(11,3)
+  assert_equal [10.0, 11.0],    grid.geomCurveT(10,0)
+  assert_equal [11.0, 10.0],    grid.geomCurveT(10,1)
+  assert_equal [1.0, 2.0, 3.0], grid.geomCurveT(11,1)
  end
 
  def testFindCellWithFace

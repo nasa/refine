@@ -141,12 +141,14 @@ VALUE grid_faceId( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
   return INT2NUM( returnedFace );
 }
 
-VALUE grid_addEdge( VALUE self, VALUE n0, VALUE n1, VALUE edgeId )
+VALUE grid_addEdge( VALUE self, VALUE n0, VALUE n1, 
+		    VALUE edgeId, VALUE t0, VALUE t1 )
 {
   Grid *returnedGrid;
   GET_GRID_FROM_SELF;
   returnedGrid = 
-    gridAddEdge(grid, NUM2INT(n0), NUM2INT(n1), NUM2INT(edgeId) );
+    gridAddEdge(grid, NUM2INT(n0), NUM2INT(n1), 
+		NUM2INT(edgeId), NUM2DBL(t0), NUM2DBL(t1) );
   return (returnedGrid==NULL?Qnil:self);
 }
 
@@ -196,6 +198,29 @@ VALUE grid_geomCurve( VALUE self, VALUE edgeId, VALUE startNode )
     rb_curve = rb_ary_new2(ncurvenode);
     for ( i=0 ; i < ncurvenode ; i++ ) 
       rb_ary_store( rb_curve, i, INT2NUM(curve[i]) );
+  }else{
+    rb_curve = Qnil;
+  }
+  free(curve);
+  return rb_curve;
+}
+
+VALUE grid_geomCurveT( VALUE self, VALUE edgeId, VALUE startNode )
+{
+  int ncurvenode, i;
+  double *curve;
+  VALUE rb_curve;
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  ncurvenode = gridGeomCurveSize( grid, NUM2INT(edgeId), NUM2INT(startNode) );
+  if (ncurvenode < 2) return Qnil;
+  curve = malloc(ncurvenode*sizeof(double));
+  returnedGrid = 
+    gridGeomCurveT( grid, NUM2INT(edgeId), NUM2INT(startNode), curve );
+  if ( returnedGrid == grid ){
+    rb_curve = rb_ary_new2(ncurvenode);
+    for ( i=0 ; i < ncurvenode ; i++ ) 
+      rb_ary_store( rb_curve, i, rb_float_new(curve[i]) );
   }else{
     rb_curve = Qnil;
   }
@@ -347,12 +372,13 @@ void Init_Grid()
   rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
 
-  rb_define_method( cGrid, "addEdge", grid_addEdge, 3 );
+  rb_define_method( cGrid, "addEdge", grid_addEdge, 5 );
   rb_define_method( cGrid, "removeEdge", grid_removeEdge, 1 );
   rb_define_method( cGrid, "findEdge", grid_findEdge, 2 );
   rb_define_method( cGrid, "edgeId", grid_edgeId, 2 );
   rb_define_method( cGrid, "geomCurveSize", grid_geomCurveSize, 2 );
   rb_define_method( cGrid, "geomCurve", grid_geomCurve, 2 );
+  rb_define_method( cGrid, "geomCurveT", grid_geomCurveT, 2 );
 
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
