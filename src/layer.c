@@ -1076,12 +1076,6 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
 	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
       }
       worstdot = MIN(worstdot,mindot);
-      if (mindot <= 0.0 ) {
-	double xyz[3];
-	gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-	printf("ERROR: %s,%5d, Infeasible norm%6d dot%14.10f X%9.5f Y%9.5f Z%9.5f\n",
-	       __FILE__, __LINE__, normal, mindot,xyz[0],xyz[1],xyz[2]);
-      }
     }
   }
 
