@@ -778,23 +778,27 @@ Grid *gridSmoothVolume( Grid *grid )
   return grid;
 }
 
-Grid *gridSmoothFaceInterior( Grid *grid )
+Grid *gridSmoothFaceInterior( Grid *grid, bool localOnly )
 {
   int node;
   double ar, optimizationLimit, laplacianLimit;
+  bool nearGhost;
   optimizationLimit =0.30;
   laplacianLimit =0.60;
   for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && 
 	 !gridGeometryBetweenFace( grid, node ) &&
 	 gridNodeLocal(grid,node) ) {
-      gridNodeAR(grid,node,&ar);
-      if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
-	gridSmartLaplacian( grid, node ); 
+      nearGhost = gridNodeNearGhost(grid, node);
+      if ( localOnly != nearGhost ) {
 	gridNodeAR(grid,node,&ar);
-      }
-      if (ar < optimizationLimit) {
-	gridSmoothNode( grid, node );
+	if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
+	  gridSmartLaplacian( grid, node ); 
+	  gridNodeAR(grid,node,&ar);
+	}
+	if (ar < optimizationLimit) {
+	  gridSmoothNode( grid, node );
+	}
       }
     }
   }

@@ -28,7 +28,7 @@ int gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
 int gridprojectallfaces_( );
 int gridswap_( );
 int gridsmoothvolume_( );
-int gridsmoothfaceinterior_( );
+int gridsmoothfaceinterior_( int *processor );
 int gridadaptwithoutcad_( double *minLength, double *maxLength );
 int gridwritetecplotsurfacezone_( );
 int gridexportfast_( );

@@ -263,6 +263,7 @@ int gridGem(Grid *g, int index );
 Grid *gridRemoveGem(Grid *g);
 Grid *gridRemoveGemAndQueue(Grid *g, Queue*);
 bool gridGemIsAllLocal(Grid *g);
+bool gridNodeNearGhost(Grid *g, int node );
 
 Grid *gridOrient(Grid *g, int *cell, int *nodes );
 Grid *gridEquator(Grid *g, int n0, int n1 );

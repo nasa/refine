@@ -2321,6 +2321,20 @@ bool gridGemIsAllLocal(Grid *grid)
   return TRUE;
 }
 
+bool gridNodeNearGhost(Grid *grid, int node )
+{
+  AdjIterator it;
+  int cell;
+
+  for ( it = adjFirst(grid->cellAdj,node); 
+	adjValid(it); 
+	it = adjNext(it)) {
+    if (gridCellHasGhostNode(grid, &(grid->c2n[4*adjItem(it)]))) return TRUE;
+  }
+
+  return FALSE;
+}
+
 Grid *gridOrient(Grid *grid, int *c, int *n )
 {
 

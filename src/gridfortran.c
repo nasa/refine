@@ -139,9 +139,9 @@ int gridsmoothvolume_( )
   fflush(stdout);
 }
 
-int gridsmoothfaceinterior_( )
+int gridsmoothfaceinterior_( int *processor )
 {
-  gridSmoothFaceInterior(grid);
+  gridSmoothFaceInterior(grid, (-1 == (*processor)) );
   printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
