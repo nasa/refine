@@ -1,3 +1,9 @@
+2004-08-31 20:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolume) added
+	gridSmoothNodeVolumeWithSurf. To allow volume improvement of
+	invalid surface meshes to make them vaild.
+
 2004-08-31 19:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmoothNodeVolumeWithSurf) added. Note that

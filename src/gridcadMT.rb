@@ -340,8 +340,8 @@ class TestGridCAD < Test::Unit::TestCase
   end
   n.push 2
   center = grid.addNode(disp,disp,disp)
-  faceId = 1
   nequ.times do |i|
+   faceId = i+1
    grid.addCell(n[0],center,n[i+2],n[i+3])
    grid.addFace(n[0],n[i+2],n[i+3],faceId) # 0,2,3
    grid.addCell(center,n[1],n[i+2],n[i+3])
@@ -417,7 +417,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta avgVol, grid.minVolume, 1.0e-4
  end
 
- def testRelaxNegativeCellsOnSurface
+ def rightTet3
   grid = Grid.new(5,3,6,0)
 
   nodeXY = 1.0
@@ -441,12 +441,21 @@ class TestGridCAD < Test::Unit::TestCase
   grid.addFace(0,2,3,realFaceId)
   grid.addFace(0,3,1,realFaceId)
   grid.projectNodeToFace(0,realFaceId)
+  grid
+ end
 
+ def testRelaxNegativeCellsOnSurface
+  grid = rightTet3
   #grid.exportFAST
-
   assert_equal grid, grid.smoothNodeVolumeWithSurf(0)
   assert grid.minVolume>0.0
+ end
 
+ def testRelaxNegativeCellsOnSurfaceWithGeneralSmooth
+  grid = rightTet3
+  #grid.exportFAST
+  assert_equal grid, grid.smoothNodeVolume(0)
+  assert grid.minVolume>0.0
  end
 
 end

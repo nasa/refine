@@ -1166,10 +1166,14 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
   if ( !gridValidNode(grid, node)   ||
        gridNodeFrozen(grid, node)   ||
-       gridGeometryFace(grid, node) ||
+       gridGeometryBetweenFace(grid, node) ||
        gridNodeGhost(grid, node)    ) return NULL;
-  gridSmartVolumeLaplacian( grid, node );
-  gridSmoothNodeVolumeSimplex( grid, node );
+  if (gridGeometryFace(grid, node)) {
+    gridSmoothNodeVolumeWithSurf( grid, node );
+  }else{
+    gridSmartVolumeLaplacian( grid, node );
+    gridSmoothNodeVolumeSimplex( grid, node );
+  }
   return grid;
 }
 
