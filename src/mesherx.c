@@ -422,8 +422,21 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   gridDeleteThawedCells(grid);
   gridDeleteNodesNotUsed(grid);
 
+  for(i=nnode;i<nvolnode;i++){
+    l2g[i]=gridAddNode(grid,newxyz[0+3*i],newxyz[1+3*i],newxyz[2+3*i]);
+  }
+  for(i=0;i<nvolcell;i++){
+    gridAddCell(grid,
+		l2g[newcell[0+4*i]],
+		l2g[newcell[1+4*i]],
+		l2g[newcell[2+4*i]],
+		l2g[newcell[3+4*i]]);
+  }
+
   free(l2g);
   free(g2l);
+  free(newcell);
+  free(newxyz);
 
   return layer;
 }
