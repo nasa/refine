@@ -178,6 +178,7 @@ class TestGridCAD < Test::Unit::TestCase
 
  def testOptimizeTDispacement
   assert_not_nil grid = isoTet(-0.2,0.0,true)
+  assert_in_delta 0.975, grid.minAR, 1.0e-3
   assert_equal grid, grid.optimizeT(0,1.0)
   assert_in_delta 0.999, grid.minAR, 1.0e-3
   assert_in_delta 0.0, grid.nodeT(0,20), 5.0e-2
@@ -238,8 +239,8 @@ class TestGridCAD < Test::Unit::TestCase
  def testSmooth
   assert_not_nil grid = isoTet(-4.0)
   assert_equal grid, grid.smooth
-  assert_in_delta 0.997, grid.minAR, 1.0e-3
-  assert_in_delta 0.997, grid.minFaceMR, 1.0e-3
+  assert_in_delta 0.999, grid.minAR, 1.0e-3
+  assert_in_delta 0.999, grid.minFaceMR, 1.0e-3
  end
 
  def testSmoothFaceMR
