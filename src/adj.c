@@ -11,19 +11,6 @@
 #include <stdlib.h>
 #include "adj.h"
 
-struct NodeItem {
-  int item;
-  NodeItem *next;
-};
-
-struct Adj {
-  int nnode;
-  NodeItem *node2item;
-  NodeItem **first;
-  NodeItem *current;
-  NodeItem *blank;
-};
-
 Adj* adjCreate( int nnode, int nadj )
 {
   int i;
@@ -105,34 +92,6 @@ Adj* adjRemove(Adj *adj, int node, int item)
   adj->blank = remove;
 
   return adj;
-}
-
-bool adjValid( AdjIterator iterator )
-{
-  return (iterator != NULL);
-}
-
-bool adjMore( AdjIterator iterator )
-{
-  return ( (iterator != NULL) && (iterator->next != NULL) );
-}
-
-AdjIterator adjFirst( Adj *adj, int node )
-{
-  if ( node >= 0 && node < adj->nnode ) return adj->first[node];
-  return NULL;
-}
-
-int adjItem( AdjIterator iterator )
-{
-  if ( iterator == NULL ) return EMPTY;
-  return iterator->item;
-}
-
-AdjIterator adjNext( AdjIterator iterator )
-{
-  if ( iterator != NULL ) return iterator->next;
-  return NULL;
 }
 
 AdjIterator adjGetCurrent( Adj *adj ){

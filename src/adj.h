@@ -19,6 +19,19 @@ typedef struct Adj Adj;
 typedef struct NodeItem NodeItem;
 typedef NodeItem * AdjIterator;
 
+struct NodeItem {
+  int item;
+  NodeItem *next;
+};
+
+struct Adj {
+  int nnode;
+  NodeItem *node2item;
+  NodeItem **first;
+  NodeItem *current;
+  NodeItem *blank;
+};
+
 Adj *adjCreate( int nnode, int nadj );
 void adjFree( Adj *adj );
 
@@ -26,11 +39,13 @@ int adjNNode( Adj *adj );
 Adj *adjRegister( Adj *adj, int node, int item );
 Adj *adjRemove( Adj *adj, int node, int item );
 
-bool adjValid( AdjIterator iterator );
-bool adjMore( AdjIterator iterator );
-AdjIterator adjFirst( Adj *adj, int node );
-int adjItem( AdjIterator iterator );
-AdjIterator adjNext( AdjIterator iterator );
+#define adjValid(iterator) (iterator!=NULL)
+#define adjMore(iterator) ((iterator!=NULL)&&(iterator->next != NULL))
+#define adjFirst(adj,node) \
+((node < 0 || node >= adj->nnode)?NULL:adj->first[node])
+
+#define adjItem(iterator) (iterator==NULL?EMPTY:iterator->item)
+#define adjNext(iterator) (iterator==NULL?NULL:iterator->next)
 
 AdjIterator adjGetCurrent( Adj *adj );
 Adj *adjSetCurrent( Adj *adj, AdjIterator iterator );
