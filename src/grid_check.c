@@ -103,6 +103,19 @@ START_TEST(testEfficientStorage)
 }
 END_TEST
 
+START_TEST(testPackStorage)
+{
+  Grid *localGrid;
+  localGrid = gridCreate(1,1,4);
+  gridRegisterNodeCell(localGrid,0,10); 
+  gridRegisterNodeCell(localGrid,0,11);
+  gridRemoveNodeCell(localGrid,0,10);
+  gridDump(localGrid);
+  fail_unless ( gridRegisterNodeCell(localGrid,0,1) != NULL, "should fit -2");
+  gridFree(localGrid);
+}
+END_TEST
+
 START_TEST(testMultipleCellExists)
 {
   fail_unless ( !gridCellExists(grid,1,198), "found non-existing cell 198" );
@@ -146,6 +159,7 @@ Suite *grid_suite (void)
 
   suite_add_tcase (s, tMemory);
   tcase_add_test (tMemory, testEfficientStorage); 
+  tcase_add_test (tMemory, testPackStorage); 
 
   return s; 
 }
