@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "gridmath.h"
+#include "gridmetric.h"
 #include "gridcad.h"
 #include "gridmove.h"
 
@@ -814,7 +815,7 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
   double xn, yn, zn;
 
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3];
-  double R, onePlusR;
+  double AR, R, onePlusR;
 
   int node, entry;
   double xyz[3];
@@ -930,7 +931,8 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
       xyz4[1] = y4;
       xyz4[2] = z4;
    
-      R = 1.25;
+      AR = 1.0 / gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 );
+      R = MIN(sqrt(AR),5.0);
       onePlusR = 1.0 + R;
 
       /* node1 */

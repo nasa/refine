@@ -1,3 +1,10 @@
+2004-07-26 17:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R =
+	MIN(sqrt(AR),5.0). Varible R seems to reduce the number of
+	negative volumes. Setting the Max R at 10 caused the Ax=B system
+	to go unstable.
+
 2004-07-26 14:38 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R to be
