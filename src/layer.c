@@ -2219,7 +2219,7 @@ Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
   return layer;
 }
 
-Layer *layerBlendExtend(Layer *layer, double dx, double dy, double dz )
+Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 {
 
   int blend, i, fix, fixblend, node, newnode, normal, newnormal;
@@ -2306,15 +2306,15 @@ Layer *layerBlendExtend(Layer *layer, double dx, double dy, double dz )
     normals[2] = layer->blend[blend].normal[0];
     normals[3] = layer->blend[blend].normal[2];
     printf("blend %d norm %d %d %d %d\n",blend,normals[0],normals[1],normals[2],normals[3]);
-    layerForceTriangle(layer,normals[0],normals[1],normals[2]);
-    layerForceTriangle(layer,normals[1],normals[3],normals[2]);
+    layerForceTriangle(layer,normals[0],normals[2],normals[1]);
+    layerForceTriangle(layer,normals[1],normals[2],normals[3]);
     normals[0] = layer->blend[blend].oldnormal[3];
     normals[1] = layer->blend[blend].oldnormal[1];
     normals[2] = layer->blend[blend].normal[3];
     normals[3] = layer->blend[blend].normal[1];
     printf("blend %d norm %d %d %d %d\n",blend,normals[0],normals[1],normals[2],normals[3]);
-    layerForceTriangle(layer,normals[0],normals[1],normals[2]);
-    layerForceTriangle(layer,normals[1],normals[3],normals[2]);
+    layerForceTriangle(layer,normals[0],normals[2],normals[3]);
+    layerForceTriangle(layer,normals[0],normals[3],normals[1]);
   }
 
   layerBuildNormalTriangleAdjacency(layer);
