@@ -98,5 +98,20 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
  end
 
+ def isoTet(pert = 0.0)
+  grid = Grid.new(4,1,1,1)
+  grid.addNode( pert,  0.000, 0.000 )
+  grid.addNode( 1.000, 0.000, 0.000 )
+  grid.addNode( 0.500, 0.866, 0.000 )
+  grid.addNode( 0.500, 0.289, 0.823 ) 
+  grid.addCell(0,1,2,3)
+  grid.addFace(0,1,2,10)
+ end
+
+ def testIsotropicTet
+  assert_in_delta 1.000, isoTet.minAR, 1.0e-4
+  assert_in_delta 0.975, isoTet(-0.2).minAR, 1.0e-4
+ end
+
 
 end
