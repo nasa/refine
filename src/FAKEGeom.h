@@ -46,6 +46,7 @@ UGridPtr CADGeom_VolumeGrid( int );
 
 typedef struct {
   magic_t   magic;
+  double *param;
 } CADCurve, *CADCurvePtr;
  
 GridBool CADGeom_GetEdge(int, int, double *, int *);
