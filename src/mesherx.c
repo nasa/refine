@@ -441,6 +441,32 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   return layer;
 }
 
+int layerTerminateNormalWithBGSpacing(Layer *layer, double height)
+{
+  int normal, nterm;
+  int root;
+  double xyz[3];
+  double spacing[3];
+  double direction[9];
+
+  if (layerNNormal(layer) == 0 ) return EMPTY;
+
+  nterm = 0;
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    root = layerNormalRoot(layer, normal );
+    gridNodeXYZ(layerGrid(layer),root,xyz);
+
+    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+    if (height > spacing[0]) {		/* Assume Isotropic for now */
+      nterm++;
+      layerTerminateNormal(layer, normal);
+    }
+  }
+  printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
+  return nterm;
+}
+
+
 int
 MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
                           int ntri, int *tri, int nsid, int *sid, int *npo,
@@ -461,10 +487,11 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   gridThawAll(grid); 
   layerFindParentEdges(layer);
 
-  h =0.00002;
-  for (i=0;i<40;i++) {
+  h =0.0002;
+  while (layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer,h*2.0)) {
+    layerVisibleNormals(layer);
     layerAdvance(layer,h);
-    h=h*1.2;
+    h=h*1.5;
   }
 
   printf(" -- REBUILD EDGES\n");
