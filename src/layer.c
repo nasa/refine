@@ -38,6 +38,7 @@ struct Layer {
   Grid *grid;
   int nfront;
   Front *front;
+  int nFrontParent, *frontParent;
   int nnormal;
   Normal *normal;
   int *globalNode2Normal;
@@ -52,6 +53,8 @@ Layer *layerCreate( Grid *grid )
   gridAttachNodeSorter( grid, layerSortGlobalNodes, layer );
   layer->nfront=0;
   layer->front=NULL;
+  layer->nFrontParent=0;
+  layer->frontParent=NULL;
   layer->nnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
@@ -162,6 +165,7 @@ void layerFree(Layer *layer)
   if (layer->adj != NULL) adjFree(layer->adj);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
+  if (layer->frontParent != NULL) free(layer->frontParent);
   if (layer->front != NULL) free(layer->front);
   free(layer);
 }
@@ -206,6 +210,10 @@ Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
 
   layer->nfront=0;
 
+  layer->nFrontParent = nbc;
+  layer->frontParent = malloc( layer->nFrontParent * sizeof(int) );
+  for(ibc=0;ibc<layer->nFrontParent;ibc++) layer->frontParent[ibc] = bc[ibc];
+
   for (ibc=0;ibc<nbc;ibc++){
     nface =0;
     for(face=0;face<gridMaxFace(layer->grid);face++){
@@ -237,6 +245,16 @@ Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
   }
   
   return layer;
+}
+
+bool layerParentFace(Layer *layer, int faceId )
+{
+  int i;
+
+  for (i=0;i<layer->nFrontParent;i++) 
+    if (faceId == layer->frontParent[i]) return TRUE;
+
+  return FALSE;
 }
 
 Layer *layerFront(Layer *layer, int front, int *nodes )

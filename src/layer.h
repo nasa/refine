@@ -27,6 +27,7 @@ int layerNFront(Layer *);
 int layerNNormal(Layer *);
 int layerMaxNode(Layer *);
 Layer *layerMakeFront(Layer *, int nbc, int *bc);
+bool layerParentFace(Layer *, int faceId);
 Layer *layerFront(Layer *, int front, int *nodes);
 Layer *layerFrontDirection(Layer *, int front, double *direction);
 Layer *layerMakeNormal(Layer *);

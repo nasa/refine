@@ -66,6 +66,12 @@ VALUE layer_front( VALUE self, VALUE front )
   return rb_front;
 }
 
+VALUE layer_parentFace( VALUE self, VALUE faceId )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layerParentFace(layer,NUM2INT(faceId))?Qtrue:Qfalse );
+}
+
 VALUE layer_frontDirection( VALUE self, VALUE front )
 {
   int i;
@@ -225,6 +231,7 @@ void Init_Layer()
   rb_define_method( cLayer, "front", layer_front, 1 );
   rb_define_method( cLayer, "frontDirection", layer_frontDirection, 1 );
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
+  rb_define_method( cLayer, "parentFace", layer_parentFace, 1 );
   rb_define_method( cLayer, "frontNormals", layer_frontNormals, 1 );
   rb_define_method( cLayer, "normalRoot", layer_normalRoot, 1 );
   rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );

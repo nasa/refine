@@ -168,6 +168,19 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,       layer.constrainedSide(0,2)
  end
 
+ def testRememberFrontParentFaces
+  assert_not_nil        grid = Grid.new(0,0,0,0)
+  assert_not_nil        layer = Layer.new(grid)
+  assert_equal false,   layer.parentFace(-1)
+  assert_equal false,   layer.parentFace(0)
+  assert_equal false,   layer.parentFace(1)
+  assert_equal layer,   layer.makeFront([1])
+  assert_equal 0,       layer.nfront  
+  assert_equal false,   layer.parentFace(-1)
+  assert_equal false,   layer.parentFace(0)
+  assert_equal true,    layer.parentFace(1)
+  assert_equal false,   layer.parentFace(2)
+ end
 
  def testNormalFrontNeighbors
   assert_not_nil        grid = Grid.new(4,0,3,0)
