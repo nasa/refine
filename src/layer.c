@@ -2503,7 +2503,6 @@ Layer *layerBlend(Layer *layer, double angleLimit )
       nextTriangle = layerNextTriangle(layer, normal, triangle);
       edge = 0;
       for ( count = 0; count < layerNormalDeg(layer,normal); count++ ){
-	//printf("normal %d count %d triangle %d nextTriangle %d\n", normal, count, triangle, nextTriangle);
 	if (EMPTY != nextTriangle) {
 	  edgeAngle = layerEdgeAngle(layer,triangle,nextTriangle);
 	  if (edgeAngle > angleLimit) {
@@ -2527,7 +2526,6 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 					  commonEdge[0]) );
 	    }
 	  }
-	  //printf("normal %d triangle %d leftNormal %d rightNormal %d\n", normal, triangle, leftNormal, rightNormal);
 	  for (i=0;i<3;i++)
 	    if (layer->triangle[nextTriangle].normal[i] == normal) 
 	      layer->triangle[nextTriangle].normal[i] = leftNormal;
