@@ -352,6 +352,37 @@ int gridSplitFaceAt(Grid *grid, int face,
   }
 }
 
+int gridSplitCellAt(Grid *grid, int cell,
+		    double newX, double newY, double newZ )
+{
+  int newnode;
+  int nodes[4], newnodes[4];
+  int n, i;
+
+  if (grid != gridCell(grid, cell, nodes) ) return EMPTY;
+
+  //if (0.0>=gridVolume(grid, nodes ) ) return EMPTY;
+
+  newnode = gridAddNode(grid, newX, newY, newZ );
+  if ( newnode == EMPTY ) return EMPTY;
+
+  if ( grid != gridRemoveCell(grid, cell ) ) return EMPTY;
+
+  for (i=0;i<4;i++){
+    for (n=0;n<4;n++) newnodes[n] = nodes[n];
+    newnodes[i] = newnode; 
+    if (grid != gridAddCell(grid, newnodes[0], newnodes[1], 
+			    newnodes[2], newnodes[3] ) ) return EMPTY;
+  }
+
+  if ( gridNegCellAroundNode(grid, newnode) ) {
+    gridCollapseEdge(grid, nodes[0], newnode, 0.0 );
+    return EMPTY;
+  }else{
+    return newnode;
+  }
+}
+
 int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
 {
   int i, edge, maxedge, edgeId, nodes[2];
@@ -506,22 +537,28 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 
 	gridSubtractVector(xyz3, xyz0, edge0);
 	gridSubtractVector(xyz1, xyz0, edge1);
-	gridCrossProduct(edge0,edge1,norm0);
+	gridCrossProduct(edge0,edge1,norm2);
 
 	gridSubtractVector(xyz1, xyz0, edge0);
 	gridSubtractVector(xyz2, xyz0, edge1);
-	gridCrossProduct(edge0,edge1,norm0);
+	gridCrossProduct(edge0,edge1,norm3);
 
 	gridSubtractVector(newxyz, xyz0, leg0);
 	gridSubtractVector(newxyz, xyz1, leg1);
-	
+
+	if (FALSE) {	
 	  printf("c%d X%8.5f Y%8.5f Z%8.5f 0 %6.3f 1 %6.3f 2 %6.3f 3 %6.3f\n",
 		 cell, newX, newY, newZ, 
 		 gridDotProduct( leg1, norm0 ),
 		 gridDotProduct( leg0, norm1 ),
 		 gridDotProduct( leg0, norm2 ),
 		 gridDotProduct( leg0, norm3 ) );
-
+	  printf("xyz0 X%8.5f Y%8.5f Z%8.5f\n",xyz0[0],xyz0[1],xyz0[2]);
+	  printf("xyz1 X%8.5f Y%8.5f Z%8.5f\n",xyz1[0],xyz1[1],xyz1[2]);
+	  printf("xyz2 X%8.5f Y%8.5f Z%8.5f\n",xyz2[0],xyz2[1],xyz2[2]);
+	  printf("xyz3 X%8.5f Y%8.5f Z%8.5f\n",xyz3[0],xyz3[1],xyz3[2]);
+	  printf("norm0 X%8.5f Y%8.5f Z%8.5f\n",norm0[0],norm0[1],norm0[2]);
+	}
 
 	if ( gridDotProduct( leg1, norm0 ) > 0.00 &&
 	     gridDotProduct( leg0, norm1 ) > 0.00 &&
@@ -536,9 +573,9 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 
   if ( edgeSplit ) return newnode;
 
-  if (EMPTY == foundCell) EMPTY;
+  if (EMPTY == foundCell) return EMPTY;
 
-  return 10;
+  return gridSplitCellAt(grid,foundCell,newX,newY,newZ);
 }
 
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )

@@ -41,6 +41,14 @@ VALUE grid_splitFaceAt( VALUE self, VALUE face,
 				  NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ));
 }
 
+VALUE grid_splitCellAt( VALUE self, VALUE cell, 
+			VALUE x, VALUE y, VALUE z )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM(gridSplitCellAt( grid, NUM2INT(cell),
+				  NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ));
+}
+
 VALUE grid_insertInToGeomEdge( VALUE self, VALUE x, VALUE y, VALUE z )
 {
   GET_GRID_FROM_SELF;
@@ -77,6 +85,7 @@ void Init_GridInsert()
   rb_define_method( cGridInsert, "splitEdgeAt", grid_splitEdgeAt, 5 );
   rb_define_method( cGridInsert, "splitEdgeIfNear", grid_splitEdgeIfNear, 5 );
   rb_define_method( cGridInsert, "splitFaceAt", grid_splitFaceAt, 4 );
+  rb_define_method( cGridInsert, "splitCellAt", grid_splitCellAt, 4 );
   rb_define_method( cGridInsert, "insertInToGeomEdge", 
 		    grid_insertInToGeomEdge, 3 );
   rb_define_method( cGridInsert, "insertInToGeomFace", 

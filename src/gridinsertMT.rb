@@ -471,6 +471,33 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 1, grid.nface 
  end
 
+ def oneCellSplitGrid
+  grid = Grid.new(5,4,0,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addCell(0,1,2,3)
+ end
+
+ def testSplitCellAt
+  assert_not_nil grid = oneCellSplitGrid
+  assert_equal 4, grid.nnode
+  assert_equal 1, grid.ncell
+  assert_equal grid.nnode, grid.splitCellAt(0,0.3,0.3,0.3)
+  assert_equal 5, grid.nnode
+  assert_equal 4, grid.ncell
+ end
+
+ def testSplitCellAtNegCell
+  assert_not_nil grid = oneCellSplitGrid
+  assert_equal 4, grid.nnode
+  assert_equal 1, grid.ncell
+  assert_equal(-1, grid.splitCellAt(0,1,1,1))
+  assert_equal 4, grid.nnode
+  assert_equal 1, grid.ncell
+ end
+
  def testInsertNodeInToGeomEdgeNewPoint
   assert_not_nil grid = Grid.new(4,0,0,3)
   assert_equal 0, grid.addNode(0,0,0)
@@ -566,12 +593,7 @@ class TestGridInsert < Test::Unit::TestCase
  end
 
  def testInsertNodeInToVolumeMoveNode
-  assert_not_nil     grid = Grid.new(5,3,0,0)
-  assert_equal 0,    grid.addNode(0,0,0)
-  assert_equal 1,    grid.addNode(1,0,0)
-  assert_equal 2,    grid.addNode(0,1,0)
-  assert_equal 3,    grid.addNode(0,0,1)
-  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_not_nil     grid = oneCellSplitGrid
   assert_equal(-1,   grid.insertInToVolume(1,1,1))
   assert_equal(-1,   grid.insertInToVolume(0.5,0.5,-1))
   assert_equal(-1,   grid.insertInToVolume(0.5,-1,0.5))
@@ -585,24 +607,14 @@ class TestGridInsert < Test::Unit::TestCase
  end
   
  def testInsertNodeInToVolumeSplitEdge
-  assert_not_nil     grid = Grid.new(5,3,0,0)
-  assert_equal 0,    grid.addNode(0,0,0)
-  assert_equal 1,    grid.addNode(1,0,0)
-  assert_equal 2,    grid.addNode(0,1,0)
-  assert_equal 3,    grid.addNode(0,0,1)
-  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_not_nil     grid = oneCellSplitGrid
   assert_equal 4,    grid.insertInToVolume(0.5,0,0)
   assert_equal 5,    grid.nnode
   assert_equal 2,    grid.ncell
  end
   
  def testInsertNodeInToVolumeSplitCell
-  assert_not_nil     grid = Grid.new(5,3,0,0)
-  assert_equal 0,    grid.addNode(0,0,0)
-  assert_equal 1,    grid.addNode(1,0,0)
-  assert_equal 2,    grid.addNode(0,1,0)
-  assert_equal 3,    grid.addNode(0,0,1)
-  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_not_nil     grid = oneCellSplitGrid
   assert_equal 4,    grid.insertInToVolume(0.3,0.3,0.3)
   assert_equal 5,    grid.nnode
   assert_equal 4,    grid.ncell

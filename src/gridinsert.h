@@ -25,6 +25,8 @@ int gridSplitEdgeIfNear(Grid *g, int n0, int n1,
 			double newX, double newY, double newZ);
 int gridSplitFaceAt(Grid *g, int face,  
 		    double newX, double newY, double newZ);
+int gridSplitCellAt(Grid *g, int cell,  
+		    double newX, double newY, double newZ);
 int gridInsertInToGeomEdge(Grid *g, double newX, double newY, double newZ);
 int gridInsertInToGeomFace(Grid *g, double newX, double newY, double newZ);
 int gridInsertInToVolume(Grid *g, double newX, double newY, double newZ);
