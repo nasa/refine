@@ -308,8 +308,6 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	CADGeom_ResolveOnFace(vol,faceId,&shellxyz[3*i],&shelluv[2*i],resolved);
       }
 
-      layerDumpFaceWire("faceWireOrig", faceId, nshell, shell, shellxyz);
-
       nfacenode = EMPTY;
       nfacetri  = EMPTY;
       if( !MeshMgr_MeshTriFace(vol, faceId, 
@@ -319,11 +317,12 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       &nfacenode, &nfacetri, 
 			       &newface, &newxyz, &newuv) ) {
 	printf("rebuild face %d has FAILED.\n", faceId );
+	layerDumpFaceWire("faceWireOrig", faceId, nshell, shell, shellxyz);
 	return NULL;
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
       
-      if (TRUE) {
+      if (FALSE) {
 	char filename[256];
 	sprintf(filename,"rebuildFace%d.plt",faceId);
 	layerDumpTecplotShell( filename, nfacenode, nfacetri, 
@@ -450,7 +449,8 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   shellxyz = malloc(3*nnode*sizeof(double));
   for(i=0;i<nnode;i++) gridNodeXYZ(grid,l2g[i],&shellxyz[3*i]);
 
-  layerDumpTecplotShell("debugVolumeShell.t", nnode, nshell, shellxyz, shell);
+  if (FALSE)
+    layerDumpTecplotShell("debugVolumeShell.t", nnode, nshell, shellxyz, shell);
 
   if( !MeshMgr_MeshTetVolume(vol, 
 			     nnode, shellxyz,
