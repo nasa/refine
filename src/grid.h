@@ -298,6 +298,8 @@ int gridAddEdge(Grid *g, int n0, int n1,
 		int edgeId, double t0, double t1 );
 int gridAddEdgeAndQueue(Grid *g, Queue *, int n0, int n1, 
 		int edgeId, double t0, double t1 );
+int gridAddEdgeInGlobal(Grid *g, int g0, int g1, 
+			int edgeId, double t0, double t1 );
 Grid *gridRemoveEdge(Grid *g, int edge );
 Grid *gridRemoveEdgeAndQueue(Grid *g, Queue *, int edge );
 #define gridEdgeAdj(grid) (NULL==grid?NULL:grid->edgeAdj)

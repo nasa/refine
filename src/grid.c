@@ -2237,6 +2237,17 @@ int gridAddEdgeAndQueue(Grid *grid, Queue *queue, int n0, int n1,
   return EMPTY;
 }
 
+int gridAddEdgeInGlobal(Grid *grid, int g0, int g1, 
+			int edgeId, double t0, double t1 )
+{
+  int n0, n1;
+  n0 = gridGlobal2Local(grid, g0);
+  n1 = gridGlobal2Local(grid, g1);
+  if ( EMPTY == n0 || EMPTY == n1 ) return EMPTY;
+  if ( !gridNodeLocal( grid, n0 ) && !gridNodeLocal( grid, n1 ) ) return EMPTY;
+  return gridAddEdge(grid, n0, n1, edgeId, t0, t1);
+}
+
 Grid *gridRemoveEdge(Grid *grid, int edge )
 {
   if (edge >= grid->maxedge || edge < 0) return NULL;
