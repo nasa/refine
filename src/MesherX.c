@@ -49,13 +49,13 @@ int main( int argc, char *argv[] )
   printf("calling CADGeom_Start ... \n");
   if ( ! CADGeom_Start( ) ){
     printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());
-    return NULL;
+    return 1;
   }  
 
   printf("calling CADGeom_Load for project <%s> ... \n",project);
   if ( ! CADGeom_LoadPart( project ) ){
     printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
-    return NULL;
+    return 1;
   }
 
   MesherX_DiscretizeVolume( 2000, NULL, 0, NULL,
