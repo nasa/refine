@@ -12,6 +12,7 @@
 #include <math.h>
 #include <limits.h>
 #include <values.h>
+#include <string.h>
 #include "master_header.h"
 #include "layer.h"
 #include "gridmetric.h"
