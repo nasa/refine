@@ -52,9 +52,11 @@ fi
 if test "$have_SDK" != 'no'
 then
   AC_DEFINE([HAVE_SDK])
+  AM_CONDITIONAL(BUILD_SDK_DEPENDENTS,true)
   SDKheader=-I$with_SDK/include
   SDKlibrary=-L$with_SDK/lib
 else
+  AM_CONDITIONAL(BUILD_SDK_DEPENDENTS,false)
   SDKheader=
   SDKlibrary=
 fi

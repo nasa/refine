@@ -100,6 +100,7 @@ TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb queueMT.rb gridMT.
 
 bin_PROGRAMS =
 
+if BUILD_SDK_DEPENDENTS
 if BUILD_NATIVE_KERNEL
 bin_PROGRAMS += refineNative MesherXNative MesherX_HLANative
 refineNative_CFLAGS = $(all_CFLAGS)
@@ -133,7 +134,7 @@ MesherX_HLAParasolid_CFLAGS = $(all_CFLAGS)
 MesherX_HLAParasolid_SOURCES = $(hla_sources)
 MesherX_HLAParasolid_LDADD = $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
 MesherX_HLAParasolid_LDFLAGS = $(all_LDFLAGS)
-endif
+endif # BUILD_PARASOLID_KERNEL
 
 if BUILD_OPENCASCADE_KERNEL
 bin_PROGRAMS += refineOpenCASCADE MesherXOpenCASCADE MesherX_HLAOpenCASCADE
@@ -151,7 +152,8 @@ MesherX_HLAOpenCASCADE_CFLAGS = $(all_CFLAGS)
 MesherX_HLAOpenCASCADE_SOURCES = $(hla_sources)
 MesherX_HLAOpenCASCADE_LDADD = $(MesherXLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
 MesherX_HLAOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
-endif
+endif # BUILD_OPENCASCADE_KERNEL
 
-endif
+endif # BUILD_NATIVE_KERNEL
 
+endif # BUILD_SDK_DEPENDENTS
