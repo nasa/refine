@@ -42,7 +42,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   int face;
   double gapHeight;
 
-  nLayer = (int)(20.0/scale);
+  nLayer = (int)(30.0/scale);
   rate = exp(scale*log(1.20));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
@@ -65,7 +65,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   gridThawAll(grid); 
   layerFindParentGeomEdges(layer);
   i=0;
-  layerLaminarInitialHeight(layer, 1000.0, -0.05 );
+  layerLaminarInitialHeight(layer, 5000.0, -0.05 );
   layerScaleNormalHeight(layer,scale);
 
   while (i<nLayer && 
