@@ -217,10 +217,15 @@ void gridtestcadparameters_( void )
 	dist = gridVectorLength(dXYZ);
 	dUV = sqrt( (newUV[0]-oldUV[0])*(newUV[0]-oldUV[0]) +
 		    (newUV[1]-oldUV[1])*(newUV[1]-oldUV[1]) );
-	if (reportMismatch && (dist>xyzTol || dUV > uvTol))
+	if (reportMismatch && (dist>xyzTol ||
+            (oldUV[0] != DBL_MAX && dUV > uvTol))) {
 	  printf("%03d global %d local %d face %d dXYZ %e dUV %e\n",
 		 gridPartId(grid), global, local, faceId,
 		 dist, dUV);
+	  printf("    %g %g %g [%g %g %g]\n",newXYZ[0],newXYZ[1],newXYZ[2],
+                 oldXYZ[0],oldXYZ[1],oldXYZ[2]);
+	  printf("    %g %g [%g %g]\n",newUV[0],newUV[1],oldUV[0],oldUV[1]);
+        }
       }
       for ( it = adjFirst(gridEdgeAdj(grid),local); 
 	    adjValid(it); 

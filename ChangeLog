@@ -1,3 +1,9 @@
+2005-02-28 10:02 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridfortran.c (gridtestcadparameters_) added extra diagnostics
+	if mismatch is detected from parameter recovery.  Only impacts if
+        reportMismatch = TRUE.
+
 2005-02-28 09:02 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLineSearchT) added parallel check
