@@ -26,10 +26,10 @@ static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Layer *layer)
 {
   Grid *grid;
   int normal, edgeId, globalNode;
-  double direction[3],edgexyz[3],dumxyz[3];
+  double direction[3],edgexyz[3],projectedxyz[3];
   double t;
-  double tangent[3],curv;
-  double trange[2];
+  double tangent[3],curvature;
+  double tRange[2];
   int    nodes[2];
   CADCurvePtr *phantomEdge;
   
@@ -50,9 +50,9 @@ static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Layer *layer)
       gridNodeT(grid,globalNode,edgeId, &t);
 
 /* Remove when gridNodeT() returns good t value */
-CADGeom_ResolveOnEdge(vol,edgeId,edgexyz,&t,dumxyz);
+CADGeom_ResolveOnEdge(vol,edgeId,edgexyz,&t,projectedxyz);
 
-      if( !CADGeom_CurvOfEdge(vol,edgeId,t,tangent,&curv) ) {
+      if( !CADGeom_CurvOfEdge(vol,edgeId,t,tangent,&curvature) ) {
         printf("ERROR: Tangent Broke\n");
         return NULL;
       }
@@ -63,11 +63,11 @@ CADGeom_ResolveOnEdge(vol,edgeId,edgexyz,&t,dumxyz);
           return NULL;
         }
 
-        CADGeom_GetEdge(vol,edgeId,trange,nodes);
+        CADGeom_GetEdge(vol,edgeId,tRange,nodes);
         CADGeom_GetNode(vol,nodes[0],CADCurve_Point(phantomEdge[edgeId-1],0));
-        CADCurve_Param(phantomEdge[edgeId-1],0) = trange[0];
+        CADCurve_Param(phantomEdge[edgeId-1],0) = tRange[0];
         CADGeom_GetNode(vol,nodes[1],CADCurve_Point(phantomEdge[edgeId-1],1));
-        CADCurve_Param(phantomEdge[edgeId-1],1) = trange[1];
+        CADCurve_Param(phantomEdge[edgeId-1],1) = tRange[1];
       }
 
       if( gridDotProduct(direction,tangent) > 0.0 ) {
