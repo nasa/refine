@@ -37,6 +37,7 @@ int main( int argc, char *argv[] )
   GridBool mixedElement, blendElement, qualityImprovement, copyGridY;
   GridBool bil;
   char     modeler[81];
+  int sizer_identity = UG_FELISA;
 
   sprintf( modeler,       "" );
   sprintf( project,       "" );
@@ -103,7 +104,7 @@ int main( int argc, char *argv[] )
       bil = TRUE;
       printf("-bil argument %d: activated Bil Kleb's case\n",i);
     } else if( strcmp(argv[i],"-vgbg") == 0 ) {
-      UGMgr_SetSizerFromIdentity( UG_VGRID );
+      sizer_identity = UG_VGRID;
       printf("-vgbg argument %d: activated VGRID background spacing\n",i);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
@@ -157,6 +158,15 @@ int main( int argc, char *argv[] )
 #endif
     printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
+  }
+
+  if (sizer_identity != UG_FELISA ) {
+    printf("calling UGMgr_SetSizerFromIdentity( %d ) ... \n",sizer_identity);
+    if ( UGMgr_SetSizerFromIdentity( sizer_identity ) != UG_TRUE ) {
+      printf("ERROR: UGMgr_SetSizerFromIdentity( %d ) broke.\n%s\n",
+	     sizer_identity, ErrMgr_GetErrStr());
+      return 1;
+    }
   }
 
   if ( scale != 1.0 ) {
