@@ -4,7 +4,7 @@
 #
 # Mobility test for layer c lib
 
-GC.disable # layer does not mark grid, so bug on GC
+#GC.disable # turn off GC if layer does not mark grid
 
 Dir.chdir ENV['srcdir'] if ENV['srcdir']
 require 'RubyExtensionBuilder'
@@ -39,7 +39,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0, layer.maxnormal
  end
 
- def XtestInitGC # GC is disabled now
+ def testInitGC
   assert_not_nil  grid = Grid.new(2,0,0,0)
   assert_not_nil  layer = Layer.new(grid)
   assert_equal 2, layer.maxnode

@@ -5,6 +5,12 @@
 
 #define GET_LAYER_FROM_SELF Layer *layer; Data_Get_Struct(self, Layer, layer);
 
+static void layer_mark( void *voidLayer )
+{
+  Layer *layer = (Layer *)voidLayer;
+  rb_gc_mark(layer->gridRubyVALUEusedForGC);
+}
+
 static void layer_free( void *layer )
 {
   layerFree( layer );
@@ -17,7 +23,8 @@ VALUE layer_new( VALUE class, VALUE rb_grid )
   VALUE obj;
   Data_Get_Struct(rb_grid, Grid, grid);
   layer = layerCreate( grid );
-  obj = Data_Wrap_Struct( class, 0, layer_free, layer ); // GC mark for grid?
+  layer->gridRubyVALUEusedForGC = (void *)rb_grid;
+  obj = Data_Wrap_Struct( class, layer_mark, layer_free, layer );
   return obj;
 }
 

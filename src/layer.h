@@ -50,6 +50,7 @@ struct Blend {
 typedef struct Layer Layer;
 struct Layer {
   Grid *grid;
+  void *gridRubyVALUEusedForGC;
   int maxtriangle, ntriangle;
   Triangle *triangle;
   Adj *triangleAdj;
