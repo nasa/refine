@@ -212,7 +212,5 @@ AC_OUTPUT( \
 	   geomSGIn32/lib/Makefile \
 	   geomSGIn32/include/Makefile \
 	   geomSGIn32/include/CADGeom/Makefile \
-	   geomSGIn32/include/Goolache/Makefile \
 	   geomSGIn32/include/MeatLib/Makefile \
-	   geomSGIn32/include/UG_API/Makefile \
 	   )
