@@ -1,7 +1,7 @@
-2005-02-08 22:05 Mike Park  <mike.park@nasa.gov>
+2005-02-08 22:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwapEdge) added gridNodeGhost checks on edge
-	nodes. Note that these checks are redundent with
+	nodes. Note that these checks are redundant with
 	gridmpi:gridParallelEdgeSwap, I added them to help me think
 	parallel.
 
