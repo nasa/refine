@@ -22,7 +22,6 @@ struct Layer {
   int nfront;
   Front *front;
   int nnormal;
-  int *globalNode2Normal;
 };
 
 Layer *layerCreate( Grid *grid )
@@ -33,13 +32,11 @@ Layer *layerCreate( Grid *grid )
   layer->nfront=0;
   layer->front=NULL;
   layer->nnormal=0;
-  layer->globalNode2Normal=NULL;
   return layer;
 }
 
 void layerFree(Layer *layer)
 {
-  if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->front != NULL) free(layer->front);
   free(layer);
 }
@@ -108,23 +105,25 @@ Layer *layerFront(Layer *layer, int front, int *nodes )
 Layer *layerMakeNormal(Layer *layer)
 {
   int i, front, normal, globalNode;
+  int *globalNode2Normal;
   if (layerNFront(layer)==0) return NULL;
-  layer->globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
-  for (i=0;i<layerMaxNode(layer);i++) layer->globalNode2Normal[i]=EMPTY;
+  globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
+  for (i=0;i<layerMaxNode(layer);i++) globalNode2Normal[i]=EMPTY;
   normal = 0;
   for (front=0;front<layerNFront(layer);front++){
     for(i=0;i<3;i++){
       globalNode = layer->front[front].globalNode[i];
-      if (EMPTY == layer->globalNode2Normal[globalNode] ){
-	layer->globalNode2Normal[globalNode]=normal;
+      if (EMPTY == globalNode2Normal[globalNode] ){
+	globalNode2Normal[globalNode]=normal;
 	layer->front[front].normal[i]=normal;
 	normal++;
       }else{
-	layer->front[front].normal[i]=layer->globalNode2Normal[globalNode];
+	layer->front[front].normal[i]=globalNode2Normal[globalNode];
       }
     }
   }
   layer->nnormal=normal;
+  free(globalNode2Normal);
   return layer;
 }
 
