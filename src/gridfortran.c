@@ -169,7 +169,9 @@ void gridtestcadparameters_( void )
   double dXYZ[3], dist, dT, dUV;
   double xyzTol, uvTol, tTol;
   AdjIterator it;
+  gridBool reportMismatch;
 
+  reportMismatch = FALSE;
   xyzTol = 1e-7;
   uvTol  = 1e-4;
   tTol   = 1e-4;
@@ -191,7 +193,7 @@ void gridtestcadparameters_( void )
 	dist = gridVectorLength(dXYZ);
 	dUV = sqrt( (newUV[0]-oldUV[0])*(newUV[0]-oldUV[0]) +
 		    (newUV[1]-oldUV[1])*(newUV[1]-oldUV[1]) );
-	if (dist>xyzTol || dUV > uvTol)
+	if (reportMismatch && (dist>xyzTol || dUV > uvTol))
 	  printf("%03d global %d local %d face %d dXYZ %e dUV %e\n",
 		 gridPartId(grid), global, local, faceId,
 		 dist, dUV);
@@ -209,7 +211,7 @@ void gridtestcadparameters_( void )
 	gridSubtractVector(newXYZ,oldXYZ,dXYZ);
 	dist = gridVectorLength(dXYZ);
 	dT = ABS(newT-oldT);
-	if (dist>xyzTol || dT > tTol)
+	if (reportMismatch && (dist>xyzTol || dT > tTol))
 	  printf("%03d global %d local %d edge %d dXYZ %e dT %e\n",
 		 gridPartId(grid), global, local, edgeId,
 		 dist, dT);

@@ -1,3 +1,9 @@
+2004-08-10 13:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridtestcadparameters_) silenced reporting of
+	CAD parameter mismatches on restart. Note that there is a bug in
+	the recreation of CAPRI restarts that still needs to be fixed.
+
 2004-08-09 16:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R =
