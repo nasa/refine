@@ -279,128 +279,22 @@ Grid *gridImportFAST( char *filename )
 Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n )
 {
-  int i;
-  int orignode, packnode, origcell, packcell;
-  int origface, packface, origedge, packedge;
-  int iface, n0, n1, n2, id;
-  double t0, t1;
-  bool emptyFace;
-  int *o2n;
 
-  printf("gridExport: %d nodes %d faces %d cells\n",
-	 grid->nnode,grid->nface,grid->ncell);
+  if (NULL == gridPack(grid)) {
+    printf("gridExport, gridPack failed.\n");
+    return NULL;
+  }
 
   *nnode = grid->nnode;
   *ncell = grid->ncell;
   *nface = grid->nface;
 
-  o2n = malloc(grid->maxnode*sizeof(int));
-  for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
-
-  packnode = 0;
-  for ( orignode=0 ; orignode < grid->maxnode ; orignode++ )
-    if ( grid->xyz[0+3*orignode] != DBL_MAX) {
-      o2n[orignode] = packnode;
-      grid->xyz[0+3*packnode] = grid->xyz[0+3*orignode];
-      grid->xyz[1+3*packnode] = grid->xyz[1+3*orignode];
-      grid->xyz[2+3*packnode] = grid->xyz[2+3*orignode];
-      packnode++;
-    } 
-  
-  if (grid->nnode != packnode) {
-    printf("ERROR: grid->nnode != packnode, file %s line %d \n",
-	   __FILE__, __LINE__ );
-    return NULL;
-  }
   *xyz = grid->xyz;
 
-  packcell = 0;
-  for ( origcell=0 ; origcell < grid->maxcell ; origcell++ )
-    if ( grid->c2n[0+4*origcell] != EMPTY) {
-      grid->c2n[0+4*packcell] = o2n[grid->c2n[0+4*origcell]];
-      grid->c2n[1+4*packcell] = o2n[grid->c2n[1+4*origcell]];
-      grid->c2n[2+4*packcell] = o2n[grid->c2n[2+4*origcell]];
-      grid->c2n[3+4*packcell] = o2n[grid->c2n[3+4*origcell]];
-      packcell++;
-    } 
-  
-  if (grid->ncell != packcell) {
-    printf("ERROR: grid->ncell != packcell, file %s line %d \n",
-	   __FILE__, __LINE__ );
-    return NULL;
-  }
   *c2n = grid->c2n;
-
-  packface=0;
-
-  emptyFace = FALSE;
-  iface=0;
-  while (!emptyFace) {
-    emptyFace = TRUE;
-    iface++;
-    for ( origface=0 ; origface < grid->maxface ; origface++ ){ 
-      if ( grid->faceId[origface]==iface && grid->f2n[0+3*origface] != EMPTY) {
-	emptyFace = FALSE;
-	n0 = grid->f2n[0+3*origface];
-	n1 = grid->f2n[1+3*origface];
-	n2 = grid->f2n[2+3*origface];
-	id = grid->faceId[origface];
-
-	grid->f2n[0+3*origface]	= grid->f2n[0+3*packface];
-	grid->f2n[1+3*origface]	= grid->f2n[1+3*packface];
-	grid->f2n[2+3*origface]	= grid->f2n[2+3*packface];
-	grid->faceId[origface]	= grid->faceId[packface];
-
-	grid->f2n[0+3*packface] = o2n[n0];
-	grid->f2n[1+3*packface] = o2n[n1];
-	grid->f2n[2+3*packface] = o2n[n2];
-	grid->faceId[packface]  = id;
-	packface++;
-      } 
-    }
-  }
-  printf("gridExport: %d geometry faces detected.\n",iface);
-
-  if (grid->nface != packface) {
-    printf("ERROR: grid->nface %d != packface %d, file %s line %d \n",
-	   grid->nface, packface, __FILE__, __LINE__ );
-    return NULL;
-  }
 
   *f2n    = grid->f2n;
   *faceId = grid->faceId;
-
-  packedge = 0;
-  for (origedge=0;origedge<grid->maxedge;origedge++){
-    if (grid->e2n[0+2*origedge] != EMPTY){
-
-      n0 = o2n[grid->e2n[0+2*origedge]];
-      n1 = o2n[grid->e2n[1+2*origedge]];
-      id = grid->edgeId[origedge];
-      t0 = grid->edgeT[0+2*origedge];
-      t1 = grid->edgeT[1+2*origedge];
-      adjRemove( grid->edgeAdj, grid->e2n[0+2*origedge], origedge );
-      adjRemove( grid->edgeAdj, grid->e2n[1+2*origedge], origedge );
-
-      grid->e2n[0+2*packedge] = n0;
-      grid->e2n[1+2*packedge] = n1;
-      grid->edgeId[packedge] = id;
-      grid->edgeT[0+2*packedge] = t0;
-      grid->edgeT[1+2*packedge] = t1;
-      adjRegister( grid->edgeAdj, n0, packedge );
-      adjRegister( grid->edgeAdj, n1, packedge );
-     
-      packedge++;
-    }
-  }
-
-  if (grid->nedge != packedge) {
-    printf("ERROR: grid->nedge %d != packedge %d, file %s line %d \n",
-	   grid->nface, packface, __FILE__, __LINE__ );
-    return NULL;
-  }
-
-  free(o2n);
 
   return  grid;
 }
@@ -428,7 +322,7 @@ Grid *gridPack(Grid *grid)
   int i;
   int orignode, packnode, origcell, packcell;
   int origface, packface, origedge, packedge;
-  int iface, n0, n1, n2, id, n[3];
+  int iface, n0, n1, id, n[3];
   double t0, t1, u[3], v[3];
   bool emptyFace;
   int *o2n;
@@ -475,8 +369,8 @@ Grid *gridPack(Grid *grid)
     } 
   
   if (grid->ncell != packcell) {
-    printf("ERROR: grid->ncell != packcell, file %s line %d \n",
-	   __FILE__, __LINE__ );
+    printf("ERROR: Pack: %s: %d: grid->ncell %d != packcell %d \n",
+	   __FILE__, __LINE__, grid->ncell, packcell);
     return NULL;
   }
 
@@ -529,8 +423,8 @@ Grid *gridPack(Grid *grid)
   //iface--; printf("gridPack: %d geometry faces detected.\n",iface);
 
   if (grid->nface != packface) {
-    printf("ERROR: grid->nface %d != packface %d, file %s line %d \n",
-	   grid->nface, packface, __FILE__, __LINE__ );
+    printf("ERROR: Pack: %s: %d: grid->nface %d != packface %d \n",
+	   __FILE__, __LINE__, grid->nface, packface );
     return NULL;
   }
 
@@ -559,8 +453,8 @@ Grid *gridPack(Grid *grid)
   }
 
   if (grid->nedge != packedge) {
-    printf("ERROR: grid->nedge %d != packedge %d, file %s line %d \n",
-	   grid->nface, packface, __FILE__, __LINE__ );
+    printf("ERROR: Pack: %s: %d: grid->nedge %d != packedge %d\n",
+	   __FILE__, __LINE__, grid->nface, packface);
     return NULL;
   }
 
