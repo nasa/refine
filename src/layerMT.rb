@@ -1689,6 +1689,19 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 30, grid.ncell
  end
 
+ def testVaribleSubBlendForTwoConvextFaces12Advance
+  grid = fourFaceConvex
+  grid.setNodeXYZ(2,[0.3,1,-0.3])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.blend(-1.0)
+  layer.subBlend(44.0)
+  assert_equal [0, 5, 2, 6], layer.blendNormals(1)
+  assert_equal [0, 8, 2, 6], layer.subBlendNormals(1,0)
+  assert_equal [8, 5, 6, 6], layer.subBlendNormals(1,1)
+  layer.advanceConstantHeight(0.1)
+  assert_equal 11, layer.ntriangle
+ end
+
  def testSubBlendTriplePoint2Advance
   grid = Grid.new(20,20,10,0)
   top = 0.8

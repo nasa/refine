@@ -2646,16 +2646,18 @@ Layer *layerSubBlendNormals(Layer *layer, int blend, int subBlend, int *normals)
   if (layer != layerBlendNormals(layer, blend, normals)) return NULL;
 
   subnormal = subBlend - 1;
-  subnormal = MIN(subnormal, layer->blend[blend].nSubNormal0-1);
-  if (subnormal>=0) normals[0] = layer->blend[blend].subNormal0[subnormal];
+  if (subnormal>=0 && subnormal<layer->blend[blend].nSubNormal0 ) 
+    normals[0] = layer->blend[blend].subNormal0[subnormal];
+  if (subnormal>=layer->blend[blend].nSubNormal0) normals[0] = normals[1];
 
   subnormal = subBlend;
   if (subnormal<layer->blend[blend].nSubNormal0) 
     normals[1] = layer->blend[blend].subNormal0[subnormal];
 
   subnormal = subBlend - 1;
-  subnormal = MIN(subnormal, layer->blend[blend].nSubNormal1-1);
-  if (subnormal>=0) normals[2] = layer->blend[blend].subNormal1[subnormal];
+  if (subnormal>=0 && subnormal<layer->blend[blend].nSubNormal1 ) 
+    normals[2] = layer->blend[blend].subNormal1[subnormal];
+  if (subnormal>=layer->blend[blend].nSubNormal1) normals[2] = normals[3];
 
   subnormal = subBlend;
   if (subnormal<layer->blend[blend].nSubNormal1) 
