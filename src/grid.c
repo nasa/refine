@@ -845,11 +845,6 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   int prismIndex, pyramidIndex, quadIndex;
 
   temp_xyz = malloc( grid->nnode * sizeof(double) );
-  if (temp_xyz == NULL) {
-    printf("ERROR: gridSortNodeGridEx: %s: %d: could not allocate temp_xyz\n",
-	   __FILE__,__LINE__);
-    return NULL;
-  }
   for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
     for ( node = 0 ; node < grid->nnode ; node++ ){
       temp_xyz[o2n[node]] = grid->xyz[ixyz+3*node];
