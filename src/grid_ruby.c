@@ -127,8 +127,8 @@ VALUE grid_addFaceUV( VALUE self,
   returnedGrid = 
     gridAddFaceUV(grid, 
 		  NUM2INT(n0), NUM2DBL(u0), NUM2DBL(v0),
-		  NUM2INT(n1), NUM2DBL(u0), NUM2DBL(v0), 
-		  NUM2INT(n2), NUM2DBL(u0), NUM2DBL(v0), NUM2INT(faceId) );
+		  NUM2INT(n1), NUM2DBL(u1), NUM2DBL(v1), 
+		  NUM2INT(n2), NUM2DBL(u2), NUM2DBL(v2), NUM2INT(faceId) );
   return (returnedGrid==NULL?Qnil:self);
 }
 
