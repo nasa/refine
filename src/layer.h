@@ -19,9 +19,9 @@ BEGIN_C_DECLORATION
 typedef struct Layer Layer;
 
 Layer *layerCreate(Grid *);
-Layer *formAdvancingFront( Grid *grid, char *project );
 Grid *layerGrid(Layer *);
 void layerFree(Layer *);
+Layer *formAdvancingFront( Grid *grid, char *project );
 void layerSortGlobalNodes(void *layer, int *o2n);
 int layerMaxTriangle(Layer *);
 int layerNTriangle(Layer *);
