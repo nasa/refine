@@ -51,6 +51,7 @@ typedef struct {
  
 GridBool CADGeom_GetEdge(int, int, double *, int *);
 CADCurvePtr CADGeom_EdgeGrid( int, int );
+#define CADCURVE_NUMPTS(edge) (-1)
 
 typedef struct _DList {
    magic_t    magic;
