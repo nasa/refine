@@ -17,7 +17,7 @@ VALUE layer_new( VALUE class, VALUE rb_grid )
   VALUE obj;
   Data_Get_Struct(rb_grid, Grid, grid);
   layer = layerCreate( grid );
-  obj = Data_Wrap_Struct( class, 0, layer_free, layer );
+  obj = Data_Wrap_Struct( class, 0, layer_free, layer ); // GC mark for grid?
   return obj;
 }
 
@@ -33,6 +33,20 @@ VALUE layer_maxnode( VALUE self )
   return INT2NUM( layerMaxNode(layer) );
 }
 
+VALUE layer_makeFront( VALUE self, VALUE rb_bc )
+{
+  Layer *rLayer;
+  int i, nbc, *bc;
+  GET_LAYER_FROM_SELF;
+  nbc=0;
+  while ( Qnil != rb_ary_entry(rb_bc,nbc) ) nbc++;
+  bc = malloc( nbc*sizeof(int));
+  for (i=0;i<nbc;i++) bc[i] = NUM2INT(rb_ary_entry(rb_bc,1));
+  rLayer = layerMakeFront(layer,nbc,bc);
+  free(bc);
+  return ( layer == rLayer?self:Qnil );
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -41,4 +55,5 @@ void Init_Layer()
   rb_define_singleton_method( cLayer, "new", layer_new, 1 );
   rb_define_method( cLayer, "nfront", layer_nfront, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
+  rb_define_method( cLayer, "makeFront", layer_makeFront, 1 );
 }

@@ -22,6 +22,7 @@ Layer *layerCreate(Grid *);
 void layerFree(Layer *);
 int layerNFront(Layer *);
 int layerMaxNode(Layer *);
+Layer *layerMakeFront(Layer *, int nbc, int *bc);
 
 END_C_DECLORATION
 

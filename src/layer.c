@@ -38,3 +38,8 @@ int layerMaxNode(Layer *layer)
 {
   return gridMaxNode(layer->grid);
 }
+
+Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
+{
+  return layer;
+}

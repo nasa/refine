@@ -14,10 +14,27 @@ require 'Layer/Layer'
 class TestLayer < Test::Unit::TestCase
 
  def testInit
-  grid = Grid.new(2,0,0,0)
-  layer = Layer.new(grid)
+  assert_not_nil  grid = Grid.new(2,0,0,0)
+  assert_not_nil  layer = Layer.new(grid)
   assert_equal 2, layer.maxnode
   assert_equal 0, layer.nfront
+ end
+
+ def testInitGC
+  assert_not_nil  grid = Grid.new(2,0,0,0)
+  assert_not_nil  layer = Layer.new(grid)
+  assert_equal 2, layer.maxnode
+  assert_not_nil  grid = String.new("hello")
+  assert_nil      GC.start
+  assert_equal 2, layer.maxnode
+ end
+
+ def testMakeFront
+  assert_not_nil      grid = Grid.new(4,0,2,0)
+  assert_equal grid,  grid.addFace(0,1,2,1)
+  assert_equal grid,  grid.addFace(0,1,3,2)
+  assert_not_nil      layer = Layer.new(grid)
+  assert_equal layer, layer.makeFront([1,2])
  end
 
 end
