@@ -23,6 +23,7 @@ long gridNNode(Grid *g);
 long gridNCell(Grid *g);
 long gridNodeDeg(Grid *g, long nodeIndex);
 Grid *gridRegisterNodeCell(Grid *g, long nodeIndex, long cellIndex);
+Grid *gridRemoveNodeCell(Grid *g, long nodeIndex, long cellIndex);
 void gridFirstNodeCell(Grid *g, long nodeIndex);
 void gridNextNodeCell(Grid *g);
 long gridCurrectNodeCell(Grid *g);

@@ -69,6 +69,10 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   terminator = -grid->celllist[entry];
   nextOpen = -grid->celllist[terminator];
 
+  if (entry == 0 || terminator == 0) {
+    printf("overalloc");
+  }
+
   grid->firstcell[nodeId]=entry;
   grid->celllist[entry]=cellId+1;
   grid->celllist[terminator]=0;
@@ -77,9 +81,31 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   return grid;
 }
 
+Grid* gridRemoveNodeCell(Grid *grid, long nodeId, long cellId)
+{
+  long cellIndex;
+  cellIndex = EMPTY;
+
+  for ( gridFirstNodeCell(grid,nodeId); 
+	gridMoreNodeCell(grid); 
+	gridNextNodeCell(grid)) {
+    if (gridCurrentNodeCell(grid)==cellId) 
+      cellIndex = grid->currentcell;
+  }
+
+  if (cellIndex == EMPTY) return NULL;
+
+  grid->celllist[cellIndex] = -(cellIndex+1);
+
+  return grid;
+}
+
 void gridFirstNodeCell(Grid *grid, long nodeId)
 {
   grid->currentcell = grid->firstcell[nodeId];
+  while (grid->celllist[grid->currentcell] < 0){
+    grid->currentcell = -grid->celllist[grid->currentcell];
+  }
 }
 void gridNextNodeCell(Grid *grid)
 {

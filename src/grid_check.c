@@ -70,12 +70,24 @@ START_TEST(testCellIterator)
 }
 END_TEST
 
-START_TEST(testRegisterCell)
+START_TEST(testAddedAndRemoveCell)
 {
   long i;
+
+  fail_unless( gridRemoveNodeCell(grid,0,0) == NULL,
+	       "tried to remove non-existant cell");
+
   for ( i =0; i<4 ; i++ ) gridRegisterNodeCell(grid,i,0);
   for ( i =0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 1,
 	       "expected one neighbor of node");
+
+  for ( i =0; i<4 ; i++ ) gridRemoveNodeCell(grid,i,0);
+  for ( i =0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 0,
+	       "expected no neighbors of node");
+  
+  fail_unless( gridRemoveNodeCell(grid,0,0) == NULL,
+	       "tried to remove non-existant cell");
+  
 }
 END_TEST
 
@@ -99,7 +111,7 @@ Suite *grid_suite (void)
   tcase_add_checked_fixture (tNeighbors, setup, teardown); 
   tcase_add_test (tNeighbors, testNodeDeg); 
   tcase_add_test (tNeighbors, testCellIterator); 
-  tcase_add_test (tNeighbors, testRegisterCell); 
+  tcase_add_test (tNeighbors, testAddedAndRemoveCell); 
 
   return s; 
 }
