@@ -37,16 +37,16 @@ int main( int argc, char *argv[] )
   
   printf("orig size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
-  printf("minimum Volume %12.8e\n",gridMinVolume(grid));
+  printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	 gridMinAR(grid),gridMinVolume(grid));
 
   printf("edge swapping grid...\n");
   gridSwap(grid);
 
   printf("new size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
-  printf("minimum Volume %12.8e\n",gridMinVolume(grid));
+  printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	 gridMinAR(grid),gridMinVolume(grid));
 
   gridFree(grid);
 
@@ -57,12 +57,13 @@ int main( int argc, char *argv[] )
 
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-
-  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
-  printf("minimum Volume %12.8e\n",gridMinVolume(grid));
+  printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	 gridMinAR(grid),gridMinVolume(grid));
 
   printf("adapting grid...\n");
   gridImportAdapt(grid, "../test/adapt_hess");
+  printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	 gridMinAR(grid),gridMinVolume(grid));
 
   oldSize = 1;
   newSize = gridNNode(grid) ;
