@@ -50,6 +50,9 @@ int main( int argc, char *argv[] )
     fscanf(file,"%d",&f2n[0+3*i]);
     fscanf(file,"%d",&f2n[1+3*i]);
     fscanf(file,"%d",&f2n[2+3*i]);
+    f2n[0+3*i]--;
+    f2n[1+3*i]--;
+    f2n[2+3*i]--;
   }
 
   printf("reading face ID tags...\n");
@@ -71,6 +74,10 @@ int main( int argc, char *argv[] )
     fscanf(file,"%d",&c2n[1+4*i]);
     fscanf(file,"%d",&c2n[2+4*i]);
     fscanf(file,"%d",&c2n[3+4*i]);
+    c2n[0+4*i]--;
+    c2n[1+4*i]--;
+    c2n[2+4*i]--;
+    c2n[3+4*i]--;
   }
 
   fclose(file);
