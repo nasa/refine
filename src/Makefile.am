@@ -15,6 +15,7 @@ libMesherX_a_SOURCES = \
 include_HEADERS = \
 	master_header.h \
 	mesherx.h \
+	adj.h \
 	grid.h \
 	layer.h
 
