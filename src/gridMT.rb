@@ -187,68 +187,68 @@ class TestSampleUnit < Test::Unit::TestCase
  def testFace
   assert_equal 0, @grid.nface 
   assert_equal 0, @grid.maxface 
-  assert_not_nil grid = Grid.new(4,1,2)
+  assert_not_nil  grid = Grid.new(4,1,2)
   assert_equal 0, grid.nface 
   assert_equal 2, grid.maxface 
 
-  assert_not_nil grid.addFace(0, 1, 2, 10)
-  assert_equal 1, grid.nface 
-  assert_equal 10, grid.faceId( 0, 1, 2 )
-  assert_equal 10, grid.faceId( 1, 2, 0 )
-  assert_equal 10, grid.faceId( 2, 0, 1 )
-  assert_equal 10, grid.faceId( 2, 1, 0 )
+  assert_not_nil    grid.addFace(0, 1, 2, 10)
+  assert_equal 1,   grid.nface 
+  assert_equal 10,  grid.faceId( 0, 1, 2 )
+  assert_equal 10,  grid.faceId( 1, 2, 0 )
+  assert_equal 10,  grid.faceId( 2, 0, 1 )
+  assert_equal 10,  grid.faceId( 2, 1, 0 )
   assert_equal( -1, grid.faceId( 1, 2, 3 ) )
 
-  assert_not_nil grid.addFace(3, 1, 2, 11)
+  assert_not_nil   grid.addFace(3, 1, 2, 11)
   assert_equal 10, grid.faceId( 0, 1, 2 )
   assert_equal 11, grid.faceId( 1, 2, 3 )
-  assert_nil grid.addFace(0, 1, 2, 12)
+  assert_nil       grid.addFace(0, 1, 2, 12)
  end
 
  def testSwap4_gapWithSameFaces
-  assert_not_nil grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal 3, grid.ncell
-  grid.addFace(0,1,2,11)
-  grid.addFace(0,1,5,11)
-  grid.swap(0,1)
-  assert_equal 4, grid.ncell
-  assert_equal 2, grid.cellDegree(0)
-  assert_equal 2, grid.cellDegree(1)
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal 3,    grid.ncell
+  assert_equal grid, grid.addFace(0,1,2,11)
+  assert_equal grid, grid.addFace(0,1,5,11)
+  assert_equal grid, grid.swap(0,1)
+  assert_equal 4,    grid.ncell
+  assert_equal 2,    grid.cellDegree(0)
+  assert_equal 2,    grid.cellDegree(1)
  end
 
  def testSwap4_gapWithDifferentFaces
-  assert_not_nil grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal 3, grid.ncell
-  grid.addFace(0,1,2,2)
-  grid.addFace(0,1,5,5)
-  grid.swap(0,1)
-  assert_equal 3, grid.ncell
-  assert_equal 3, grid.cellDegree(0)
-  assert_equal 3, grid.cellDegree(1)
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal 3,    grid.ncell
+  assert_equal grid, grid.addFace(0,1,2,2)
+  assert_equal grid, grid.addFace(0,1,5,5)
+  assert_nil         grid.swap(0,1)
+  assert_equal 3,    grid.ncell
+  assert_equal 3,    grid.cellDegree(0)
+  assert_equal 3,    grid.cellDegree(1)
  end
 
  def testSwap4_gapWithSameAndExistingFace0
-  assert_not_nil grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal 3, grid.ncell
-  grid.addFace(0,1,2,11)
-  grid.addFace(0,1,5,11)
-  grid.addFace(0,2,5,20)
-  grid.swap(0,1)
-  assert_equal 3, grid.ncell
-  assert_equal 3, grid.cellDegree(0)
-  assert_equal 3, grid.cellDegree(1)
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal 3,    grid.ncell
+  assert_equal grid, grid.addFace(0,1,2,11)
+  assert_equal grid, grid.addFace(0,1,5,11)
+  assert_equal grid, grid.addFace(0,2,5,20)
+  assert_nil         grid.swap(0,1)
+  assert_equal 3,    grid.ncell
+  assert_equal 3,    grid.cellDegree(0)
+  assert_equal 3,    grid.cellDegree(1)
  end
 
  def testSwap4_gapWithSameAndExistingFace1
-  assert_not_nil grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal 3, grid.ncell
-  grid.addFace(0,1,2,11)
-  grid.addFace(0,1,5,11)
-  grid.addFace(1,2,5,20)
-  grid.swap(0,1)
-  assert_equal 3, grid.ncell
-  assert_equal 3, grid.cellDegree(0)
-  assert_equal 3, grid.cellDegree(1)
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal 3,    grid.ncell
+  assert_equal grid, grid.addFace(0,1,2,11)
+  assert_equal grid, grid.addFace(0,1,5,11)
+  assert_equal grid, grid.addFace(1,2,5,20)
+  assert_nil         grid.swap(0,1)
+  assert_equal 3,    grid.ncell
+  assert_equal 3,    grid.cellDegree(0)
+  assert_equal 3,    grid.cellDegree(1)
  end
 
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
