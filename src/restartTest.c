@@ -183,11 +183,11 @@ int main( int argc, char *argv[] )
       oldUV[1] = newUV[1] = UGPatch_Parameter(localPatch,localNode,1);
       if (!CADGeom_NearestOnFace( vol, face, pxyz, newUV, xyznew) ) {
 	printf("%s: %d: CADGeom_NearestOnFace failed.",__FILE__,__LINE__);
-	return NULL;  
+	return 1;  
       }
-      printf("f%3d o%6d%10.5f%10.5f%10.5f p%6d%10.5f%10.5f%10.5f\n",face, 
-	     localNode, pxyz[0], pxyz[1], pxyz[2], 
-	     localNode, xyznew[0], xyznew[1], xyznew[2]);
+      printf("proj u%10.5f%10.5f v%10.5f%10.5f j%10.5f%10.5f%10.5f\n",
+	     oldUV[0], newUV[0], oldUV[1], newUV[1],
+	     xyznew[0], xyznew[1], xyznew[2]);
     }
    
     free(l2g);
