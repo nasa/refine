@@ -21,7 +21,7 @@
 #include "gridmpi.h"
 #include "gridgeom.h"
 
-/* #define TRAPFPE 1 */
+/*#define TRAPFPE 1 */
 #ifdef TRAPFPE
 #define _GNU_SOURCE 1
 #include <fenv.h>
@@ -39,6 +39,7 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 #ifdef TRAPFPE
   /* Enable some exceptions.  At startup all exceptions are masked.  */
   feenableexcept (FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
+  fprintf(stderr,"gridcreate_: Floating Point Exception Handling On!\n");
 #endif
 
   grid = gridCreate( *nnode, *ncell, 5000, 0);
