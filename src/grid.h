@@ -85,6 +85,7 @@ Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
 
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
+Grid *gridARDervative(Grid *g, int node, double *ar, double *dARdx );
 double gridMinVolume(Grid *g);
 bool gridNegCellAroundNode(Grid *g, int node );
 double gridMinAR(Grid *g);
