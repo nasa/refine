@@ -6,11 +6,13 @@
 
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridSwap adj.c grid.c gridmetric.h gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridInsert adj.c grid.h gridmetric.h gridStruct.h master_header.h'
 
 require 'test/unit'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
+require 'GridSwap/GridSwap'
 require 'GridInsert/GridInsert'
 
 class Grid
@@ -183,6 +185,62 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid,       grid.collapseEdge(0,1)
   assert_equal 1,          grid.nface
   assert_equal [0.5,10.5], grid.nodeUV(0,11)
+ end
+
+ def testCollapseEdgeonSameBCNearEdge
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal grid, grid.addFaceUV(0,0.0,10.0,
+				    1,1.0,11.0,
+				    2,2.0,12.0,11)
+  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+				    0,0.0,10.0,
+				    5,5.0,15.0,11)
+  assert_equal grid, grid.addEdge(0,2,10,0.0,2.0)
+  node = grid.addNode(-2.0,0.0,1.0)
+  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+				    node,8.0,18.0,
+				    2,2.0,12.0,11)
+  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal 1,          grid.nface
+  assert_equal [1.0,0.0,0.0], grid.nodeXYZ(0)
+  assert_equal [0.0,10.0], grid.nodeUV(0,11)
+ end
+
+ def testCollapseEdgeonGeomEdge
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal grid, grid.addFaceUV(0,10.0,20.0,
+				    1,11.0,21.0,
+				    2,12.0,22.0,20)
+  assert_equal grid, grid.addFaceUV(1,31.0,41.0,
+				    0,30.0,40.0,
+				    5,35.0,45.0,50)
+  assert_equal grid, grid.addEdge(0,1,10,0.0,1.0)
+  node = grid.addNode(-2.0,0.0,1.0)
+  assert_equal grid, grid.addFaceUV(1,11.0,21.0,
+				    node,18.0,28.0,
+				    2,12.0,22.0,20)
+  assert_equal grid, grid.addFaceUV(1,31.0,41.0,
+				    node,38.0,48.0,
+				    5,35.0,45.0,50)
+  assert_equal grid, grid.addEdge(1,node,10,1.0,8.0)
+  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal [10.5,20.5], grid.nodeUV(0,20)
+  assert_equal [30.5,40.5], grid.nodeUV(0,50)
+  assert_equal 0.5, grid.nodeT(0,10)
+ end
+
+ def testCollapseVolumeEdgeNearGeomEdge0
+  assert_not_nil     grid=gemGrid
+  assert_equal grid, grid.addEdge(0,2,10,0.0,1.0)
+  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal [1.0,0.0,0.0], grid.nodeXYZ(0)
+  assert_equal 0.0, grid.nodeT(0,10)
+ end
+
+ def testCollapseVolumeEdgeNearGeomEdge1
+  assert_not_nil     grid=gemGrid
+  assert_equal grid, grid.addEdge(1,2,10,0.0,1.0)
+  assert_nil       grid.collapseEdge(0,1)
  end
 
  def testCollapseEdge1NearBC
