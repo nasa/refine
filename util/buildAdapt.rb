@@ -4,7 +4,7 @@ class Package
 
  def initialize name
   @name = name
-  @repository = case name
+  @repository = case @name
 		when "CAPRI", "SDK"
 		 "-d :ext:geolab:/usr/local/inhouse/CVS"
 		when "refine"
@@ -12,7 +12,7 @@ class Package
 		when "HEFSS.rps"
 		 "-d :ext:hefss-core:/usr/local/cvsroot"
 		else
-		 puts "repository unknown: "+package
+		 puts "repository unknown: "+name
 		 nil
 		end
   @where=`pwd`.chomp
@@ -52,8 +52,37 @@ class Package
   self
  end
 
+ def libs
+  case @name
+  when "SDK"
+   "-L#{File.join(@path,'lib')} -lCADGeom-CAPRI -lMeat"
+  when "CAPRI"
+   "-L#{File.join(@path,'Native','LINUX')} -lcapri -L/usr/X11R6/lib -lX11"
+  when "refine"
+   "-L#{File.join(@path,'lib')} -lrefine"
+  else
+   puts "repository unknown: "+name
+   nil
+  end
+ end
+
+ def configure_env(capri_libs, sdk_libs, refine_libs)
+  `(cd #@path && ./Configure)`
+  File.open(File.join(@path,'Makefile.env'),'a') do |f|
+   f.puts "CAPRILIBS = #{sdk_libs} #{capri_libs}"
+   f.puts "REFINELIBS = #{refine_libs}"
+   f.puts "F90FLAGS = -O0"
+  end
+  self
+ end
+
  def make_make_install
   `(cd #@path && make > build.make && make install > build.install )`
+  self
+ end
+
+ def make_mpi
+  `(cd #@path && make mpi > build.make )`
   self
  end
 
@@ -64,6 +93,11 @@ sdk = Package.new("SDK")
 refine = Package.new("refine")
 hefss = Package.new("HEFSS.rps")
 
-capri.clean_checkout
-sdk.clean_checkout.bootstrap.configure(capri.with).make_make_install
-refine.clean_checkout.bootstrap.configure(sdk.with,capri.with).make_make_install
+if false
+ capri.clean_checkout
+ sdk.clean_checkout.bootstrap.configure(capri.with).make_make_install
+ refine.clean_checkout.bootstrap.configure(sdk.with,capri.with).make_make_install
+ hefss.clean_checkout.configure_env(capri.libs,sdk.libs,refine.libs)
+end
+
+hefss.configure_env(capri.libs,sdk.libs,refine.libs).make_mpi
