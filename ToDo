@@ -8,7 +8,7 @@ Start Builds!!!!!
 --Major refactoring
 
 Check and see if I should only queue a cell for removal if it has a
-ghost node.
+ghost node. faces and edges are that way.
 
 verify that I am geeting all the performance out the the volume
 smoothing that is possible.
