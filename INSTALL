@@ -38,7 +38,7 @@ To link with FUN3D <http://fun3d.larc.nasa.gov>:
 Make sure to comple FUN3D with -n32 instead of the default -64.
 Add these lines to the FUN3D Makefile.env file:
 
-REFINELIBS = -L[refine]/src -lrefine
+REFINELIBS = -L[refine]/lib -lrefine
 CAPRILIBS = -L[refine]/geomSGIn32/lib -lCADGeomNative -lMeat -lX11
 
 replace [refine] with the path to the refine package
