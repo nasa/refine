@@ -112,6 +112,8 @@ GridBool CADGeom_DisplacementIsIdentity(int vol);
 GridBool CADGeom_UnMapPoint(int vol, double *xyz, double *pt);
 GridBool CADGeom_MapPoint(int vol, double *xyz, double *pt);
 
+GridBool CADGeom_ReversedSurfaceNormal(int vol, int face);
+
 void GeoMesh_UseDefaultIOCallbacks( void );
 void CADGeeom_UseDefaultIOCallbacks( void );
 

@@ -183,7 +183,7 @@ GridBool CADGeom_MapPoint(int vol, double *xyz, double *pt)
   ((r)[1]) = ((a)[2]) * ((b)[0]) - ((a)[0]) * ((b)[2]);         \
   ((r)[2]) = ((a)[0]) * ((b)[1]) - ((a)[1]) * ((b)[0]);         \
 }
-GeoBool CADGeom_ReversedSurfaceNormal(int vol, int face)
+GridBool CADGeom_ReversedSurfaceNormal(int vol, int face)
 {
   double     pt[3];
   double     du[3],dv[3];
