@@ -92,9 +92,8 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
       }else{
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
-	if ( ratio < minLength ) { 
-	  if ( !gridNodeFrozen( grid, n1 ) && 
-	       grid == gridCollapseEdge(grid, n0, n1, 0.5) ) {
+	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
+	  if ( grid == gridCollapseEdge(grid, n0, n1, 0.5) ) {
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, n0 );
 	    if (  gridGeometryFace( grid, n0 ) ) {
