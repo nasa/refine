@@ -1443,24 +1443,24 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
 int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3, 
 			  int global )
 {
-  int cell, currentSize, chunkSize;
+  int cell, origSize, chunkSize;
   int cellId;
   if ( grid->blankc2n == EMPTY ) {
-    currentSize = grid->maxcell;
-    chunkSize = MAX(5000,currentSize/10);
+    origSize = grid->maxcell;
+    chunkSize = MAX(5000,origSize/6);
     grid->maxcell += chunkSize;
     grid->c2n = (int *)realloc( grid->c2n, 4 * grid->maxcell * sizeof(int) );
-    for (cell=currentSize;cell < grid->maxcell; cell++ ) {
+    for (cell=origSize;cell < grid->maxcell; cell++ ) {
       grid->c2n[0+4*cell] = EMPTY; 
       grid->c2n[1+4*cell] = cell+1; 
     }
     grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
-    grid->blankc2n = currentSize;
+    grid->blankc2n = origSize;
     if (NULL != grid->cellGlobal) 
       grid->cellGlobal = realloc(grid->cellGlobal,grid->maxcell * sizeof(int));
     if (NULL != grid->reallocFunc)
       (*grid->reallocFunc)( grid->reallocData, gridREALLOC_CELL, 
-			    currentSize, grid->maxcell);
+			    origSize, grid->maxcell);
   }
   cellId = grid->blankc2n;
   grid->blankc2n = grid->c2n[1+4*cellId];
@@ -1747,7 +1747,7 @@ int gridAddFaceUV(Grid *grid,
   int face, i, origSize, chunkSize;
   if ( grid->blankf2n == EMPTY ) {
     origSize = grid->maxface;
-    chunkSize = MAX(5000,origSize/10);
+    chunkSize = MAX(5000,origSize/6);
     grid->maxface += chunkSize;
     grid->f2n    = realloc(grid->f2n,    3 * grid->maxface * sizeof(int));
     grid->faceU  = realloc(grid->faceU,  3 * grid->maxface * sizeof(double));
@@ -2113,7 +2113,7 @@ int gridAddEdge(Grid *grid, int n0, int n1,
   int edge, i, origSize, chunkSize;
   if ( grid->blanke2n == EMPTY ) {
     origSize = grid->maxedge;
-    chunkSize = MAX(5000,origSize/10);
+    chunkSize = MAX(5000,origSize/6);
     grid->maxedge += chunkSize;
     grid->e2n    = realloc(grid->e2n,    2 * grid->maxedge * sizeof(int));
     grid->edgeId = realloc(grid->edgeId, 1 * grid->maxedge * sizeof(int));
@@ -2714,9 +2714,8 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
 
   if (EMPTY == grid->blanknode) {
     origSize = grid->maxnode;
-    chunkSize = MAX(5000,origSize/10);
+    chunkSize = MAX(5000,origSize/6);
     grid->maxnode += chunkSize;
-    
     grid->xyz = realloc(grid->xyz, 3 * grid->maxnode * sizeof(double));
     for (i=origSize;i < grid->maxnode; i++ ) {
       grid->xyz[0+3*i] = DBL_MAX;
