@@ -48,6 +48,7 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
 
   if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) ) {
     printf("ERROR: CADGeom_GetVolume. \n%s\n",ErrMgr_GetErrStr());
+    return NULL;
   }
 
   gridSetNGeomNode( grid, nGeomNode );
@@ -57,8 +58,10 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
   inode = nGeomNode;
 
   for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
-    if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) 
+    if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) {
       printf("ERROR: CADGeom_EdgeGrid(%d).\n%s\n",iedge,ErrMgr_GetErrStr());
+      return NULL;
+    }
  
     nedgenode = CADCURVE_NUMPTS(edge);
 
@@ -96,6 +99,7 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
     printf("%s: %d: Edge node count error %d %d.\n",
 	   __FILE__, __LINE__, inode, volumeEdgeNode);
     inode = volumeEdgeNode;
+    return NULL;
   }
 
   for( face=1; face<=nGeomFace; face++ ) {
@@ -104,6 +108,7 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
     patch2global = malloc(patchDimensions[0]*sizeof(int));
     if (!CADTopo_VolFacePts(vol, face, patch2global, &patchEdgeNode)) {
       printf("%s: %d: CADTopo_VolFacePts failied.\n",__FILE__, __LINE__);
+      free(patch2global);
       return NULL;
     }
     for( localNode=patchEdgeNode;localNode<patchDimensions[0]; localNode++ ) {

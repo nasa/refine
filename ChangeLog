@@ -1,3 +1,9 @@
+2004-08-30 09:21 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridfortran.c, src/gridfortran.h (gridparallelloadcapri_) API
+	change to add return code
+	* src/gridgeom.c (gridParallelGeomLoad) return NULL on failures
+
 2004-08-29 22:10 Mike Park  <mike.park@nasa.gov>
 
 	* doc/refine.texi added texinfo file.
