@@ -219,9 +219,9 @@ Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
   grid->f2n[2+3*face] = n2;
   grid->faceId[face]  = faceId;
 
-  if ( NULL == adjRegister( grid->faceAdj, n0, faceId ) ) return NULL;
-  if ( NULL == adjRegister( grid->faceAdj, n1, faceId ) ) return NULL;
-  if ( NULL == adjRegister( grid->faceAdj, n2, faceId ) ) return NULL;
+  if ( NULL == adjRegister( grid->faceAdj, n0, face ) ) return NULL;
+  if ( NULL == adjRegister( grid->faceAdj, n1, face ) ) return NULL;
+  if ( NULL == adjRegister( grid->faceAdj, n2, face ) ) return NULL;
 
  return grid;
 }
