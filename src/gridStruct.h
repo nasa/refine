@@ -17,6 +17,16 @@ BEGIN_C_DECLORATION
 
 #define MAXDEG 200
 
+typedef struct Prism Prism;
+struct Prism {
+  int nodes[6];
+};
+
+typedef struct Quad Quad;
+struct Quad {
+  int nodes[4];
+};
+
 struct Grid {
   int maxnode, nnode;
   int blanknode;
@@ -42,6 +52,12 @@ struct Grid {
   int *edgeId;
   double *edgeT;
   Adj *edgeAdj;
+
+  int nprism, maxprism;
+  Prism *prism;
+
+  int nquad, maxquad;
+  Quad *quad;
 
   int nGeomNode;
   int nGeomEdge;

@@ -39,18 +39,6 @@ VALUE layer_nnormal( VALUE self )
   return INT2NUM( layerNNormal(layer) );
 }
 
-VALUE layer_nprism( VALUE self )
-{
-  GET_LAYER_FROM_SELF;
-  return INT2NUM( layerNPrism(layer) );
-}
-
-VALUE layer_nquad( VALUE self )
-{
-  GET_LAYER_FROM_SELF;
-  return INT2NUM( layerNQuad(layer) );
-}
-
 VALUE layer_maxnode( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -290,49 +278,6 @@ VALUE layer_blend( VALUE self, VALUE edgeId )
   return ( layer == layerBlend(layer)?self:Qnil );
 }
 
-VALUE layer_addPrism( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3,
-		      VALUE n4, VALUE n5 )
-{
-  GET_LAYER_FROM_SELF;
-  return ( layer == layerAddPrism(layer,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2),
-				  NUM2INT(n3),NUM2INT(n4),NUM2INT(n5) )?self:Qnil );
-}
-
-VALUE layer_prism( VALUE self, VALUE prismIndex )
-{
-  int i;
-  int nodes[6];
-  VALUE rb_prism;
-  GET_LAYER_FROM_SELF;
-  if ( layer != layerPrism(layer,NUM2INT(prismIndex),nodes) ) return Qnil;
-  rb_prism = rb_ary_new2(6);
-  for (i=0;i<6;i++){
-    rb_ary_store( rb_prism, i, INT2NUM(nodes[i]) );
-  }
-  return rb_prism;
-}
-
-VALUE layer_addQuad( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
-{
-  GET_LAYER_FROM_SELF;
-  return ( layer == layerAddQuad(layer,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2),
-				  NUM2INT(n3) )?self:Qnil );
-}
-
-VALUE layer_quad( VALUE self, VALUE quadIndex )
-{
-  int i;
-  int nodes[4];
-  VALUE rb_quad;
-  GET_LAYER_FROM_SELF;
-  if ( layer != layerQuad(layer,NUM2INT(quadIndex),nodes) ) return Qnil;
-  rb_quad = rb_ary_new2(4);
-  for (i=0;i<4;i++){
-    rb_ary_store( rb_quad, i, INT2NUM(nodes[i]) );
-  }
-  return rb_quad;
-}
-
 VALUE cLayer;
 
 void Init_Layer() 
@@ -342,8 +287,6 @@ void Init_Layer()
   rb_define_method( cLayer, "nfront", layer_nfront, 0 );
   rb_define_method( cLayer, "nblend", layer_nblend, 0 );
   rb_define_method( cLayer, "nnormal", layer_nnormal, 0 );
-  rb_define_method( cLayer, "nprism", layer_nprism, 0 );
-  rb_define_method( cLayer, "nquad", layer_nquad, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
   rb_define_method( cLayer, "makeFront", layer_makeFront, 1 );
   rb_define_method( cLayer, "front", layer_front, 1 );
@@ -376,11 +319,5 @@ void Init_Layer()
   rb_define_method( cLayer, "wiggle", layer_wiggle, 1 );
 
   rb_define_method( cLayer, "blend", layer_blend, 0 );
-
-  rb_define_method( cLayer, "addPrism", layer_addPrism, 6 );
-  rb_define_method( cLayer, "prism", layer_prism, 1 );
-
-  rb_define_method( cLayer, "addQuad", layer_addQuad, 4 );
-  rb_define_method( cLayer, "quad", layer_quad, 1 );
 
 }

@@ -91,6 +91,18 @@ VALUE grid_nedge( VALUE self )
   return INT2NUM( gridNEdge(grid) );
 }
 
+VALUE grid_nprism( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNPrism(grid) );
+}
+
+VALUE grid_nquad( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNQuad(grid) );
+}
+
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
   Grid *returnedGrid;
@@ -640,6 +652,49 @@ VALUE grid_geometryFace( VALUE self, VALUE node )
 }
 
 
+VALUE grid_addPrism( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3,
+		      VALUE n4, VALUE n5 )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridAddPrism(grid,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2),
+				  NUM2INT(n3),NUM2INT(n4),NUM2INT(n5) )?self:Qnil );
+}
+
+VALUE grid_prism( VALUE self, VALUE prismIndex )
+{
+  int i;
+  int nodes[6];
+  VALUE rb_prism;
+  GET_GRID_FROM_SELF;
+  if ( grid != gridPrism(grid,NUM2INT(prismIndex),nodes) ) return Qnil;
+  rb_prism = rb_ary_new2(6);
+  for (i=0;i<6;i++){
+    rb_ary_store( rb_prism, i, INT2NUM(nodes[i]) );
+  }
+  return rb_prism;
+}
+
+VALUE grid_addQuad( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridAddQuad(grid,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2),
+				  NUM2INT(n3) )?self:Qnil );
+}
+
+VALUE grid_quad( VALUE self, VALUE quadIndex )
+{
+  int i;
+  int nodes[4];
+  VALUE rb_quad;
+  GET_GRID_FROM_SELF;
+  if ( grid != gridQuad(grid,NUM2INT(quadIndex),nodes) ) return Qnil;
+  rb_quad = rb_ary_new2(4);
+  for (i=0;i<4;i++){
+    rb_ary_store( rb_quad, i, INT2NUM(nodes[i]) );
+  }
+  return rb_quad;
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -658,6 +713,8 @@ void Init_Grid()
   rb_define_method( cGrid, "nface", grid_nface, 0 );
   rb_define_method( cGrid, "maxedge", grid_maxedge, 0 );
   rb_define_method( cGrid, "nedge", grid_nedge, 0 );
+  rb_define_method( cGrid, "nprism", grid_nprism, 0 );
+  rb_define_method( cGrid, "nquad", grid_nquad, 0 );
 
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
@@ -730,4 +787,10 @@ void Init_Grid()
   rb_define_method( cGrid, "geometryNode", grid_geometryNode, 1 );
   rb_define_method( cGrid, "geometryEdge", grid_geometryEdge, 1 );
   rb_define_method( cGrid, "geometryFace", grid_geometryFace, 1 );
+
+  rb_define_method( cGrid, "addPrism", grid_addPrism, 6 );
+  rb_define_method( cGrid, "prism", grid_prism, 1 );
+
+  rb_define_method( cGrid, "addQuad", grid_addQuad, 4 );
+  rb_define_method( cGrid, "quad", grid_quad, 1 );
 }

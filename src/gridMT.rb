@@ -34,6 +34,8 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0, @grid.nface
   assert_equal 1, @grid.maxedge
   assert_equal 0, @grid.nedge
+  assert_equal 0, @grid.nprism
+  assert_equal 0, @grid.nquad
  end
 
  def testAddCellAndCellDegree
@@ -719,6 +721,24 @@ class TestGrid < Test::Unit::TestCase
 				   grid.addNode(0,1,0),
 				   1)
   assert_equal grid, grid.writeTecplotSurfaceZone
+ end
+
+ def testInsertPrism
+  assert_equal 0,             @grid.nprism
+  assert_equal @grid,         @grid.addPrism(0,1,2,3,4,5)
+  assert_equal 1,             @grid.nprism
+  assert_nil                  @grid.prism(-1) 
+  assert_nil                  @grid.prism(1)
+  assert_equal [0,1,2,3,4,5], @grid.prism(0)
+ end
+
+ def testInsertQuad
+  assert_equal 0,          @grid.nquad
+  assert_equal @grid,      @grid.addQuad(0,1,2,3)
+  assert_equal 1,          @grid.nquad
+  assert_nil               @grid.quad(-1) 
+  assert_nil               @grid.quad(1)
+  assert_equal [0,1,2,3,], @grid.quad(0)
  end
 
 
