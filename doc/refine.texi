@@ -30,12 +30,12 @@ The refine library overview, version 1.0.
 @menu
 * Introduction :: Short description.
 * Overview ::     Basic architecture
+* Base Object ::  Base objects for grid.
 * Index ::        Complete index.
 @end menu
 
 @node Introduction
 @chapter Introduction
-
 @cindex introduction
 
 This is a copy of refine/README file from the distribution.
@@ -57,35 +57,46 @@ information with the CAPRI API
  
 @node Overview
 @chapter Overview
-
 @cindex overview
+
+@section Conventions
+@cindex conventions
+
+The term `object' will be used loosely in this manual. An object
+defined is a pointer to a C structure with its assoicated methods that
+are generally bundled into a C header and source file. I got this idea
+from the way that the Ruby interpreture is writen in C.
+
+NOTE: although the C strut of the objects is often exposed for macro
+acess to increasing efficiency, please DO NOT acess them directly, use
+the available methods or macros.
+
+Methods generally return @code{NULL} or @code{EMPTY} (-1) when they
+fail. They will return a C struct pointer (object) or the result if
+they are sucessful.
+
+@section Architecture
+@cindex architecture
 
 The refine library is composed of base objects, the grid object, grid
 mix-ins, and child objects
 
-Base objects:
+@heading Base objects:
 @enumerate
-@item
-adj - element node adjacency
-@item
-queue - transaction queue for parallel connectivity modifcations.
-@item
-sort - list sorting and searching routines.
-@item
-line - stores arrays of nodes (advancing layer growth curves).
-@item
-near - near tree for finding nearby things
-@item
-intersect - computes if elements intersect. 
+@item adj - element node adjacency
+@item queue - transaction queue for parallel connectivity modifcations.
+@item sort - list sorting and searching routines.
+@item line - stores arrays of nodes (advancing layer growth curves).
+@item near - near tree for finding nearby things
+@item intersect - computes if elements intersect. 
 @end enumerate
 
-Grid Object:
+@heading Grid Object:
 @enumerate
-@item
-grid - stores majority of grid data and low-level methods.
+@item grid - stores majority of grid data and low-level methods.
 @end enumerate
 
-Grid Mix-ins
+@heading Grid Mix-ins
 @enumerate
 @item
 gridmath - basic vector and matrix meth routines
@@ -105,11 +116,56 @@ gridmpi - parallel grid adaptation helper
 gridfortran - fortran bindings for linking to FUN3D.
 @end enumerate
 
-Grid Mix-ins
+@heading Grid Mix-ins
 @enumerate
 @item
 gridmove - grid movement by linear elasticity or springs (inherts form grid)
 @end enumerate
+
+@node Base Objects
+@chapter Base Objects
+@cindex object, base
+
+The most important refine library base objects are adj, queue, and sort.
+
+@section Adj
+@cindex adj
+
+The adj object stores the adjacency of items (elements) to nodes. It
+has the ability to be dynamically resized and grown. It is initialized
+@code{adjCreate} with the max node count, max adjacency, and a chunk
+size for growing more adjacencies.
+
+A new item adjacency is added with @code{adjRegister} method by
+specifing a node and integer item index. It can also be removed with
+@code{adjRemove}. A node's item count is @code{adjDegree}. The
+presence of a item attached to a node is tested with @code{adjExists}.
+
+To loop over the items attached to a node use a
+@code{AdjIterator}. Here is an example of adj.c code that uses a
+@code{AdjIterator}, @code{adjExists}.
+
+@verbatim
+GridBool adjExists( Adj *adj, int node, int item )
+{
+  AdjIterator it;
+  GridBool exist;
+  exist = FALSE;
+  for ( it = adjFirst(adj,node); 
+	!exist && adjValid(it); 
+	it = adjNext(it)) 
+    exist = (item == adjItem(it));
+  return exist;
+}
+@end verbatim
+
+
+
+@section Queue
+@cindex queue
+
+@section Sort
+@cindex sort
 
 @node Index
 @unnumbered Index
