@@ -36,22 +36,68 @@ VALUE queue_newTransaction( VALUE self )
   return (queue==queueNewTransaction(queue)?self:Qnil);
 }
 
-VALUE queue_transactionNodes( VALUE self, VALUE transaction )
+VALUE queue_remove( VALUE self, VALUE rb_nodes )
 {
+  int i, nodes[4];
   GET_QUEUE_FROM_SELF;
-  return INT2NUM(queueTransactionNodes(queue,NUM2INT(transaction)));
+  for (i=0;i<4;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
+  return (queue==queueRemove(queue,nodes)?self:Qnil);
 }
 
-VALUE queue_addNode( VALUE self, VALUE node )
+VALUE queue_removed( VALUE self, VALUE transaction )
 {
   GET_QUEUE_FROM_SELF;
-  return (queue==queueAddNode(queue,NUM2INT(node))?self:Qnil);
+  return INT2NUM(queueRemoved(queue,NUM2INT(transaction)));
 }
 
-VALUE queue_addedNode( VALUE self, VALUE index )
+VALUE queue_removedNodes( VALUE self, VALUE index )
+{
+  int i, nodes[4];
+  VALUE rb_nodes;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueRemovedNodes(queue,NUM2INT(index),nodes)) return Qnil;
+  rb_nodes = rb_ary_new2(4);
+  for (i=0;i<4;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
+  return rb_nodes;
+}
+
+VALUE queue_add( VALUE self, VALUE rb_nodes, VALUE rb_xyzs )
+{
+  int i, nodes[5];
+  double xyzs[12];
+  GET_QUEUE_FROM_SELF;
+  for (i=0;i< 5;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
+  for (i=0;i<12;i++) xyzs[i] =NUM2DBL(rb_ary_entry(rb_xyzs,i));
+  return (queue==queueAdd(queue,nodes,xyzs)?self:Qnil);
+}
+
+VALUE queue_added( VALUE self, VALUE transaction )
 {
   GET_QUEUE_FROM_SELF;
-  return INT2NUM(queueAddedNode(queue,NUM2INT(index)));
+  return INT2NUM(queueAdded(queue,NUM2INT(transaction)));
+}
+
+VALUE queue_addedNodes( VALUE self, VALUE index )
+{
+  int i, nodes[5];
+  VALUE rb_nodes;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedNodes(queue,NUM2INT(index),nodes)) return Qnil;
+  rb_nodes = rb_ary_new2(5);
+  for (i=0;i<5;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
+  return rb_nodes;
+}
+
+VALUE queue_addedXYZs( VALUE self, VALUE index )
+{
+  int i;
+  double xyzs[12];
+  VALUE rb_xyzs;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedXYZs(queue,NUM2INT(index),xyzs)) return Qnil;
+  rb_xyzs = rb_ary_new2(12);
+  for (i=0;i<12;i++) rb_ary_store(rb_xyzs,i,rb_float_new(xyzs[i]));
+  return rb_xyzs;
 }
 
 VALUE cQueue;
@@ -63,7 +109,11 @@ void Init_Queue()
   rb_define_method( cQueue, "reset", queue_reset, 0 );
   rb_define_method( cQueue, "transactions", queue_transactions, 0 );
   rb_define_method( cQueue, "newTransaction", queue_newTransaction, 0 );
-  rb_define_method( cQueue, "transactionNodes", queue_transactionNodes, 1 );
-  rb_define_method( cQueue, "addNode", queue_addNode, 1 );
-  rb_define_method( cQueue, "addedNode", queue_addedNode, 1 );
+  rb_define_method( cQueue, "remove", queue_remove, 1 );
+  rb_define_method( cQueue, "removed", queue_removed, 1 );
+  rb_define_method( cQueue, "removedNodes", queue_removedNodes, 1 );
+  rb_define_method( cQueue, "add", queue_add, 2 );
+  rb_define_method( cQueue, "added", queue_added, 1 );
+  rb_define_method( cQueue, "addedNodes", queue_addedNodes, 1 );
+  rb_define_method( cQueue, "addedXYZs", queue_addedXYZs, 1 );
 }

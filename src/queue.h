@@ -22,10 +22,15 @@ typedef struct Queue Queue;
 struct Queue {
   int transactions;
   int maxTransactions;
-  int *transactionNodes;
-  int addedNodes;
-  int maxAddedNode;
-  int *addedNode;
+  int *removed;
+  int maxRemoved;
+  int nRemoved;
+  int *removedNodes;
+  int *added;
+  int maxAdded;
+  int nAdded;
+  int *addedNodes;
+  double *addedXYZs;
 };
 
 Queue *queueCreate(  );
@@ -33,9 +38,13 @@ void queueFree( Queue * );
 Queue *queueReset( Queue * );
 int queueTransactions( Queue * );
 Queue *queueNewTransaction( Queue * );
-int queueTransactionNodes( Queue *, int transaction );
-Queue *queueAddNode( Queue *, int node );
-int queueAddedNode( Queue *, int index );
+Queue *queueRemove( Queue *, int *nodes );
+int queueRemoved( Queue *, int transaction );
+Queue *queueRemovedNodes( Queue *, int index, int *nodes );
+Queue *queueAdd( Queue *, int *nodes, double *xyzs );
+int queueAdded( Queue *, int transaction );
+Queue *queueAddedNodes( Queue *, int index, int *nodes );
+Queue *queueAddedXYZs( Queue *, int index, double *xyz );
 
 END_C_DECLORATION
 
