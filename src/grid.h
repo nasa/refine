@@ -79,6 +79,8 @@ struct Grid {
   int nquad, maxquad;
   Quad *quad;
 
+  int partId;
+
   int nGeomNode;
   int nGeomEdge;
   int nGeomFace;
@@ -135,6 +137,8 @@ int gridNEdge(Grid *g);
 int gridNPrism(Grid *g);
 int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);
+int gridPartId(Grid *g);
+Grid *gridSetPartId(Grid *g, int partId );
 int gridCellDegree(Grid *g, int nodeIndex);
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );

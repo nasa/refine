@@ -109,6 +109,18 @@ VALUE grid_nquad( VALUE self )
   return INT2NUM( gridNQuad(grid) );
 }
 
+VALUE grid_partId( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridPartId(grid) );
+}
+
+VALUE grid_setPartId( VALUE self, VALUE partId )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridSetPartId(grid,NUM2INT(partId))?self:Qnil );
+}
+
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
   GET_GRID_FROM_SELF;
@@ -790,6 +802,9 @@ void Init_Grid()
   rb_define_method( cGrid, "nprism", grid_nprism, 0 );
   rb_define_method( cGrid, "npyramid", grid_npyramid, 0 );
   rb_define_method( cGrid, "nquad", grid_nquad, 0 );
+
+  rb_define_method( cGrid, "partId", grid_partId, 0 );
+  rb_define_method( cGrid, "setPartId", grid_setPartId, 1 );
 
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );

@@ -42,6 +42,12 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0, @grid.nprism
   assert_equal 0, @grid.npyramid
   assert_equal 0, @grid.nquad
+  assert_equal 0, @grid.partId  
+ end
+
+ def testSetPartId
+  assert_equal @grid, @grid.setPartId(17)
+  assert_equal 17,    @grid.partId  
  end
 
  def testAddCellAndCellDegree

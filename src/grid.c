@@ -53,6 +53,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nquad=0;
   grid->maxquad=0;
   grid->quad=NULL;
+  grid->partId=0;
   grid->nGeomNode = 0;
   grid->nGeomEdge = 0;
   grid->nGeomFace = 0;
@@ -956,6 +957,17 @@ int gridNPyramid(Grid *grid)
 int gridNQuad(Grid *grid)
 {
   return grid->nquad;
+}
+
+int gridPartId(Grid *grid)
+{
+  return grid->partId;
+}
+
+Grid *gridSetPartId(Grid *grid, int partId )
+{
+  grid->partId = partId;
+  return grid;
 }
 
 int gridNGem(Grid *grid)
