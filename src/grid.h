@@ -22,14 +22,14 @@ Grid *gridCreate(int nnode, int ncell, int nlist);
 int gridNNode(Grid *g);
 int gridNCell(Grid *g);
 int gridNodeDeg(Grid *g, int nodeIndex);
-int gridCellExists(Grid *g, int nodeIndex, int cellIndex);
+bool gridCellExists(Grid *g, int nodeIndex, int cellIndex);
 Grid *gridRegisterNodeCell(Grid *g, int nodeIndex, int cellIndex);
 Grid *gridRemoveNodeCell(Grid *g, int nodeIndex, int cellIndex);
 void gridFirstNodeCell(Grid *g, int nodeIndex);
 void gridNextNodeCell(Grid *g);
 int gridCurrentNodeCell(Grid *g);
-int gridValidNodeCell(Grid *g);
-int gridMoreNodeCell(Grid *g);
+bool gridValidNodeCell(Grid *g);
+bool gridMoreNodeCell(Grid *g);
 
 Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridGetGem(Grid *g, int n0, int n1, int maxgem,int *ngem, int *gem );

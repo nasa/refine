@@ -102,10 +102,10 @@ int gridNodeDeg(Grid *grid, int id)
   return n;
 }
 
-int gridCellExists(Grid *grid, int nodeId, int cellId)
+bool gridCellExists(Grid *grid, int nodeId, int cellId)
 {
-  int exist;
-  exist = (0==1);
+  bool exist;
+  exist = FALSE;
   for ( gridFirstNodeCell(grid,nodeId); 
 	!exist && gridValidNodeCell(grid); 
 	gridNextNodeCell(grid)) 
@@ -179,15 +179,14 @@ int gridCurrentNodeCell(Grid *grid)
   return grid->current->id;
 }
 
-int gridValidNodeCell(Grid *grid)
+bool gridValidNodeCell(Grid *grid)
 {
   return (grid->current != NULL);
 }
 
-int gridMoreNodeCell(Grid *grid)
+bool gridMoreNodeCell(Grid *grid)
 {
-  if ( grid->current == NULL) return (1==0); 
-  return (grid->current->next != NULL);
+  return ( (grid->current != NULL) && (grid->current->next != NULL) );
 }
 
 Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
