@@ -236,11 +236,11 @@ int main( int argc, char *argv[] )
 	j++){
 
     if (boundaryLayerGrid) {
-      height = 0.0001*pow(1.2,j);
-      layerTerminateNormalWithSpacing(layer,height*3.);
+      height = 0.0016*pow(1.2,j);
+      layerTerminateNormalWithSpacing(layer,height*2.5);
       if (layerNActiveNormal(layer) == 0 ) jmax=0;
       printf("insert layer height = %f\n",height);
-      wiggleSteps = MIN(3,(int)(height/0.001)+1);
+      wiggleSteps = MIN(4,(int)(height/0.001)+1);
       height = height / (double)wiggleSteps;
       layerVisibleNormals(layer);
       layerAdvance(layer,height);
