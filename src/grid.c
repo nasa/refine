@@ -217,9 +217,9 @@ Grid *gridPack(Grid *grid)
   return grid;
 }
 
-Grid *gridGetGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
+Grid *gridGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
 {
-  int cellId, inode;
+  int cellId, inode, i;
   *ngem = 0;
   
   for ( gridFirstNodeCell(grid,n0); 
@@ -230,7 +230,10 @@ Grid *gridGetGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
       if ( grid->c2n[inode+4*cellId] == n1 ) {
 	(*ngem)++;
 	if ( *ngem > (maxgem-1) ) return NULL;
-	gem[*ngem-1] = cellId;
+	gem[0+4*(*ngem-1)] = grid->c2n[0+4*cellId];
+	gem[1+4*(*ngem-1)] = grid->c2n[1+4*cellId];
+	gem[2+4*(*ngem-1)] = grid->c2n[2+4*cellId];
+	gem[3+4*(*ngem-1)] = grid->c2n[3+4*cellId];
       }
     }
   }
