@@ -1571,8 +1571,15 @@ class TestLayer < Test::Unit::TestCase
   layer.blend(270.0)
   assert_equal 9, layer.nnormal  
   assert_equal 3, layer.nblend 
+  assert_equal [4,1,7], layer.triangleNormals(0)
+  assert_equal [5,2,8], layer.triangleNormals(1)
+  assert_equal [0,3,6], layer.triangleNormals(2)
+  assert_equal [4,0,1,6], layer.blendNormals(0)
+  assert_equal [5,4,2,7], layer.blendNormals(1)
+  assert_equal [0,5,3,8], layer.blendNormals(2)
 
   layer.advanceConstantHeight(0.1)
+  assert_equal 10, layer.ntriangle  
   assert_equal 19, grid.ncell  
 
   layer.writeTecplotFrontGeometry
