@@ -16,4 +16,4 @@ test:
 	./sampleunitMT.rb
 
 clean:
-	rm -rf Adj Grid* Layer Line Near SampleUnit
+	rm -rf Adj Grid* Intersect Layer Line Near SampleUnit
