@@ -20,10 +20,10 @@ GridMove *gridmoveCreate( Grid *grid )
   gm = malloc(sizeof(GridMove));
   gm->grid = grid;
 
-  gridAttachPacker( grid, gridmovePack, gm );
-  gridAttachNodeSorter( grid, gridmoveSortNode, gm );
-  gridAttachReallocator( grid, gridmoveReallocator, gm );
-  gridAttachFreeNotifier( grid, gridmoveGridHasBeenFreed, gm );
+  gridAttachPacker( grid, gridmovePack, (void *)gm );
+  gridAttachNodeSorter( grid, gridmoveSortNode, (void *)gm );
+  gridAttachReallocator( grid, gridmoveReallocator, (void *)gm );
+  gridAttachFreeNotifier( grid, gridmoveGridHasBeenFreed, (void *)gm );
 
   gm->displacement = malloc(3*gridMaxNode(grid)*sizeof(double));
   for (i=0;i<3*gridMaxNode(grid);i++) gm->displacement[i] = 0.0;
