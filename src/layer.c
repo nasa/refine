@@ -391,6 +391,8 @@ Layer *layerAdvance(Layer *layer, double height )
   }
 
   for (front=0;front<layerNFront(layer);front++){
+    for (i=0;i<3;i++) layer->front[front].globalNode[i] = 
+			layer->normal[layer->front[front].normal[i]].root;
     layerFrontNormals(layer, front, normals);
     /* pg. 82-85 of Garimella Thesis*/
     if (normals[1]<normals[0] && normals[1]<normals[2]){
