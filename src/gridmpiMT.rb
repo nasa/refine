@@ -44,8 +44,17 @@ class TestGridMPI < Test::Unit::TestCase
   plus = 544
   grid = Grid.new(10,0,0,0)
   10.times { grid.addNode(1,2,3) }
-  assert_equal grid,grid.identityNodeGlobal(544)
-  10.times { |node| assert_equal node+544, grid.nodeGlobal(node) }
+  assert_equal grid,grid.identityNodeGlobal(plus)
+  10.times { |node| assert_equal node+plus, grid.nodeGlobal(node) }
+ end
+
+ def testCopyLocalCellNumberingToGlobalNumbering
+  plus = 654
+  grid = Grid.new(4,10,0,0)
+  4.times { grid.addNode(1,2,3) }
+  10.times { grid.addCell(0,1,2,3) }
+  assert_equal grid, grid.identityCellGlobal(plus)
+  10.times { |cell| assert_equal cell+plus, grid.cellGlobal(cell) }
  end
 
  def testMarkAllNodesAsLocal

@@ -10,6 +10,12 @@ VALUE grid_identityNodeGlobal( VALUE self, VALUE offset )
   return( grid == gridIdentityNodeGlobal( grid, NUM2INT(offset) )?self:Qnil);
 }
 
+VALUE grid_identityCellGlobal( VALUE self, VALUE offset )
+{
+  GET_GRID_FROM_SELF;
+  return( grid == gridIdentityCellGlobal( grid, NUM2INT(offset) )?self:Qnil);
+}
+
 VALUE grid_setAllLocal( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -39,6 +45,7 @@ void Init_GridMPI()
   cGridMPI = rb_define_module( "GridMPI" );
   rb_define_method( cGridMPI, "setAllLocal", grid_setAllLocal, 0 );
   rb_define_method( cGridMPI, "identityNodeGlobal", grid_identityNodeGlobal, 1);
+  rb_define_method( cGridMPI, "identityCellGlobal", grid_identityCellGlobal, 1);
   rb_define_method( cGridMPI, "setGhost", grid_setGhost, 1 );
   rb_define_method( cGridMPI, "parallelEdgeSplit", grid_parallelEdgeSplit, 3 );
 }

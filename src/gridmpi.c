@@ -23,6 +23,14 @@ Grid *gridIdentityNodeGlobal(Grid *grid, int offset )
   return grid;
 }
 
+Grid *gridIdentityCellGlobal(Grid *grid, int offset )
+{
+  int cell;
+  for (cell = 0; cell < gridNCell(grid) ; cell++ )
+    if (grid != gridSetCellGlobal(grid,cell,cell+offset)) return NULL;
+  return grid;
+}
+
 Grid *gridSetAllLocal(Grid *grid )
 {
   int node;
