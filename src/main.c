@@ -213,7 +213,7 @@ int gridSavePart( Grid *grid, char *project )
   int *f2n, *faceId, *c2n;
   int i, iface;
   int patchDimensions[4]; // check on 4
-  int         nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
+  int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
 
   double *temp_xyz, *temp_tuv;
   int *temp_face;
