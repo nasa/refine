@@ -411,12 +411,16 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
   
   //test face
   if ( grid->nequ != grid->ngem ){
-    int faceId0, faceId1;
+    int faceId0, faceId1, newFaceId0, newFaceId1;
     faceId0 = gridFaceId(grid,n0,n1,grid->equ[0]);
     faceId1 = gridFaceId(grid,n0,n1,grid->equ[grid->ngem]);
     
     if ( faceId0 == EMPTY || faceId1 == EMPTY ) return NULL;
     if ( faceId0 != faceId1 ) return NULL;
+
+    newFaceId0 = gridFaceId(grid,n0,grid->equ[0],grid->equ[grid->ngem]);
+    newFaceId1 = gridFaceId(grid,n1,grid->equ[0],grid->equ[grid->ngem]);
+    if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
   }
 
   origcost = 2.0;
