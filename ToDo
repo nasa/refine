@@ -27,6 +27,12 @@ gridmetric : get rid of
 
 rename grid AR to cost
 
+make sure that a node xyz and params are consistant after split/collapse
+
+make sure that new split configureation has faces to trigger validuty check
+
+clean up projections for adpat drivers
+
 --Edge Based
 
 parallelize the edge queue
