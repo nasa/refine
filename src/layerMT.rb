@@ -1239,6 +1239,10 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1,     layer.nblend
   assert_equal layer, layer.splitBlend
   assert_equal 2,     layer.nblend
+  assert_equal [0,4,2], layer.triangleNormals(0)
+  assert_equal [5,1,3], layer.triangleNormals(1)
+  assert_equal [4,1,2,5], layer.blendNormals(0)
+  assert_equal [4,1,2,5], layer.blendNormals(1)
  end
 
  def testInsertBlendForTwoConvextFaces

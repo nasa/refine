@@ -1979,7 +1979,9 @@ Layer *layerSplitBlend(Layer *layer)
   for (i=0; i<nnode; i++) newnormal[i]=EMPTY;
 
   for (blend=0; blend<layerNBlend(layer); blend++){
+
     layerBlendNormals(layer,blend,normals);
+
     node0 = layerNormalRoot(layer,normals[0]);
     node1 = layerNormalRoot(layer,normals[2]);
     if (newnormal[node0]!=EMPTY){
@@ -1996,12 +1998,14 @@ Layer *layerSplitBlend(Layer *layer)
       for (i=0; i<3; i++) 
 	layer->normal[newnormal[node0]].direction[i]=new[i]/length;
     }
+
     normal = normals[0];
     normals[0] = normals[3];
     normals[3] = normal;
     normal = normals[1];
     normals[1] = normals[2];
     normals[2] = normal;
+
     node0 = layerNormalRoot(layer,normals[0]);
     node1 = layerNormalRoot(layer,normals[2]);
     if (newnormal[node0]!=EMPTY){
@@ -2025,15 +2029,15 @@ Layer *layerSplitBlend(Layer *layer)
     layerBlendNormals(layer,blend,normals);
     node0 = layerNormalRoot(layer,normals[0]);
     node1 = layerNormalRoot(layer,normals[2]);
-    if (newnormal[node0]|=EMPTY) layer->blend[blend].normal[0]=newnormal[node0];
-    if (newnormal[node1]|=EMPTY) layer->blend[blend].normal[2]=newnormal[node1];
+    if (newnormal[node0]!=EMPTY) layer->blend[blend].normal[0]=newnormal[node0];
+    if (newnormal[node1]!=EMPTY) layer->blend[blend].normal[2]=newnormal[node1];
   }  
   for (blend=origblend; blend<layerNBlend(layer); blend++){
     layerBlendNormals(layer,blend,normals);
     node0 = layerNormalRoot(layer,normals[1]);
     node1 = layerNormalRoot(layer,normals[3]);
-    if (newnormal[node0]|=EMPTY) layer->blend[blend].normal[1]=newnormal[node0];
-    if (newnormal[node1]|=EMPTY) layer->blend[blend].normal[3]=newnormal[node1];
+    if (newnormal[node0]!=EMPTY) layer->blend[blend].normal[1]=newnormal[node0];
+    if (newnormal[node1]!=EMPTY) layer->blend[blend].normal[3]=newnormal[node1];
   }
 
   free(newnormal);
