@@ -18,6 +18,7 @@
 BEGIN_C_DECLORATION
 
 void sortHeap( int length, int *arrayInput, int *sortedIndex  );
+int sortSearch( int length, int *arrayInput, int index  );
 
 END_C_DECLORATION
 

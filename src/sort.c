@@ -18,3 +18,8 @@ void sortHeap( int length, int *arrayInput, int *sortedIndex  )
   int i;
   for(i=0;i<length;i++) sortedIndex[i] = i;
 }
+
+int sortSearch( int length, int *arrayInput, int index  )
+{
+  return EMPTY;
+}
