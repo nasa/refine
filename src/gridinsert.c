@@ -67,7 +67,7 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
 	if ( ratio < minLength ) { 
-	  if ( grid == gridCollapseEdge(grid, n0, n1) ) {
+	  if ( grid == gridCollapseEdge(grid, n0, n1, 0.5) ) {
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, n0 );
 	    if (  gridGeometryFace( grid, n0 ) ) {
@@ -179,7 +179,7 @@ int gridSplitEdge(Grid *grid, int n0, int n1 )
   return newnode;
 }
 
-Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
+Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
 {
   int i, cell, face, face0, face1, faceId;
   double xyz0[3], xyz1[3], xyzAvg[3];
@@ -201,7 +201,7 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
   if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
   
   for (i=0 ; i<3 ; i++) {
-    xyzAvg[i] = 0.5 * ( xyz0[i] + xyz1[i] );
+    xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
     if ( volumeEdge && gridGeometryFace(grid, n0) ) xyzAvg[i] = xyz0[i];
     if ( volumeEdge && gridGeometryFace(grid, n1) ) xyzAvg[i] = xyz1[i];
     if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) 
@@ -255,10 +255,10 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
       newId1uv[0] = n0Id1uv[0];
       newId1uv[1] = n0Id1uv[1];
     }else{
-      newId0uv[0] = 0.5 * (n0Id0uv[0]+n1Id0uv[0]);
-      newId0uv[1] = 0.5 * (n0Id0uv[1]+n1Id0uv[1]);
-      newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
-      newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
+      newId0uv[0] = (1.0-ratio) * n0Id0uv[0] + ratio * n1Id0uv[0];
+      newId0uv[1] = (1.0-ratio) * n0Id0uv[1] + ratio * n1Id0uv[1];
+      newId1uv[0] = (1.0-ratio) * n0Id1uv[0] + ratio * n1Id1uv[0];
+      newId1uv[1] = (1.0-ratio) * n0Id1uv[1] + ratio * n1Id1uv[1];
     }
 
     gridRemoveFace(grid, face0 );
@@ -282,7 +282,7 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
       edgeId = gridEdgeId(grid,n0,n1);
       t0 = grid->edgeT[0+2*edge];
       t1 = grid->edgeT[1+2*edge];
-      newT = 0.5 * (t0+t1);
+      newT =  (1.0-ratio) * t0 + ratio * t1;
       if (gridGeometryNode(grid, n0) ) newT = t0;
       gridRemoveEdge(grid,edge);
 
