@@ -14,7 +14,7 @@
 #ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
 #else
-#include "FAKEGeomExtras.h"
+#include "FAKEGeom.h"
 #endif
 
 Grid *gridParallelGeomLoad( Grid *grid, char *project )
