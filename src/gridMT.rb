@@ -502,7 +502,15 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 1,    grid.addEdge(0, 2, 12, 0.0, 0.0)
   assert_equal 11,   grid.edgeId(3, 1)
   assert_equal 2,    grid.nedge
-  assert_equal(-1,   grid.addEdge(1, 2, 13, 0.0, 0.0))
+ end
+
+ def testAddEdgeRealloc
+  assert_not_nil     grid = Grid.new(4,0,0,1)
+  assert_equal 0,    grid.addEdge(0, 1, 10, 0.0, 1.0)
+  assert_equal 1,    grid.maxedge
+  assert_equal 1,    grid.addEdge(1, 2, 11, 1.0, 2.0)
+  assert_equal 5001, grid.maxedge
+  assert_equal 11,   grid.edgeId(1, 2)
  end
 
  def testDeleteEdgesWithThawedNode
