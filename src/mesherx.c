@@ -41,7 +41,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   int i;
   double h;
   double rate;
-  int nLayer;
+  int nLayer, nWake;
   int face;
   double gapHeight;
   double origin[3] = {0.0, -1.5, 0.0};
@@ -90,7 +90,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     printf("inserting blends...\n");
     layerBlend(layer); 
     printf("extrude blends...\n");
-    for (i=0;i<75;i++) layerExtrudeBlend(layer,0.02*scale,0,0); 
+    nWake = (int)(75.0/scale);
+    for (i=0;i<nWake;i++) layerExtrudeBlend(layer,0.02*scale,0,0); 
     origin[0] = -0.01;
     origin[1] = 0.0;
     origin[2] = 0.0;
