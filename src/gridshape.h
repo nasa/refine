@@ -18,7 +18,13 @@
 
 BEGIN_C_DECLORATION
 
-Grid *gridShapeJacobian1(Grid *, double *n0,double *n1,double *n2, double *n3, 
+Grid *gridShapeJacobian1(Grid *,
+			 double *n0, double *n1, double *n2, double *n3,
+			 double *where, double *jacobian );
+Grid *gridShapeJacobian2(Grid *,
+			 double *n0, double *n1, double *n2, double *n3,
+			 double *e01, double *e02, double *e03,
+			 double *e12, double *e13, double *e23,
 			 double *where, double *jacobian );
 END_C_DECLORATION
 
