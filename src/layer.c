@@ -2115,8 +2115,8 @@ Layer *layerAdvanceConstantHeight(Layer *layer, double height )
   if ( 1.0e-14 > gridVolume(grid, tet ) ) { \
     negVolume = TRUE; \
     gridNodeXYZ(grid,tet[0],xyz); \
-    printf("volume%18.10e at%15.6f%15.6f%15.6f\n", \
-           gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]); \
+    printf("%04d: layer tet vol%14.6e at%14.5f%14.5f%14.5f\n", \
+           __LINE__,gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]); \
     gridWriteTecplotCellZone(grid,tet,"layerNegVolCell.t"); \
   } \
 }
@@ -2127,6 +2127,7 @@ Layer *layerAdvanceBlends(Layer *layer)
   int subBlend;
   int triangle0, triangle1;
   int normal, faceId;
+  int edgeId0, edgeId1;
   int tet[4], n[6];
   double xyz[3];
   double minVolume0, minVolume1;
@@ -2142,40 +2143,8 @@ Layer *layerAdvanceBlends(Layer *layer)
     for(subBlend=0; subBlend< layerNSubBlend(layer,blend); subBlend++){
       layerSubBlendNormals(layer, blend, subBlend, blendnormals );
       
-      triangle0 = EMPTY;
-      triangle1 = EMPTY;
-      if (blendnormals[0] != blendnormals[1]) 
-	triangle0 = layerForceTriangle(layer,blendnormals[0],
-				       blendnormals[1],blendnormals[2]);
-      if (blendnormals[2] != blendnormals[3]) 
-	triangle1 = layerForceTriangle(layer,blendnormals[1],
-				       blendnormals[3],blendnormals[2]);
-      
-      if ( EMPTY != triangle0) {
-	faceId = layerConstrained(layer,blendnormals[0]);
-	if (faceId>0){
-	  n[0] = layerNormalRoot(layer,blendnormals[0]);
-	  n[1] = layerNormalTip(layer,blendnormals[0]);
-	  n[2] = layerNormalTip(layer,blendnormals[1]);
-	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
-	  layer->triangle[triangle0].constrainedSide[0]=faceId;
-	  layer->triangle[triangle0].parentGeomEdge[0] =
-	    layer->blend[blend].edgeId[0];
-	}
-      }
-      if ( EMPTY != triangle1) {
-	faceId = layerConstrained(layer,blendnormals[2]);
-	if (faceId>0){
-	  n[0] = layerNormalRoot(layer,blendnormals[2]);
-	  n[1] = layerNormalTip(layer,blendnormals[3]);
-	  n[2] = layerNormalTip(layer,blendnormals[2]);
-	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
-	  layer->triangle[triangle1].constrainedSide[1]=faceId;
-	  layer->triangle[triangle1].parentGeomEdge[1] =
-	    layer->blend[blend].edgeId[1];
-	}
-      }
-
+      edgeId0 = layer->blend[blend].edgeId[0];
+      edgeId1 = layer->blend[blend].edgeId[1];
       if ( layerNormalRoot(layer,blendnormals[0]) > 
 	   layerNormalRoot(layer,blendnormals[2]) ) {
 	normal = blendnormals[0];
@@ -2184,6 +2153,8 @@ Layer *layerAdvanceBlends(Layer *layer)
 	normal = blendnormals[1];
 	blendnormals[1] = blendnormals[2];
 	blendnormals[2] = normal;
+	edgeId0 = layer->blend[blend].edgeId[1];
+	edgeId1 = layer->blend[blend].edgeId[0];
       }
 
       n[0] = layerNormalRoot(layer,blendnormals[0]);
@@ -2220,6 +2191,8 @@ Layer *layerAdvanceBlends(Layer *layer)
 	minVolume1=MIN(minVolume1,gridVolume(grid, tet ));
       }
 
+      triangle0 = EMPTY;
+      triangle1 = EMPTY;
       if (minVolume0>minVolume1) {
 	if (n[4]!=n[5]) {
 	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
@@ -2230,6 +2203,12 @@ Layer *layerAdvanceBlends(Layer *layer)
 	if (n[1]!=n[2]) {
 	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
 	}
+	if (blendnormals[0] != blendnormals[1]) 
+	  triangle0 = layerForceTriangle(layer,blendnormals[0],
+					 blendnormals[1],blendnormals[2]);
+	if (blendnormals[2] != blendnormals[3]) 
+	  triangle1 = layerForceTriangle(layer,blendnormals[3],
+					 blendnormals[2],blendnormals[1]);
       }else{
 	if (n[4]!=n[5]) {
 	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
@@ -2239,6 +2218,35 @@ Layer *layerAdvanceBlends(Layer *layer)
 	}
 	if (n[1]!=n[2]) {
 	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[5]; addTet;
+	}
+	if (blendnormals[0] != blendnormals[1]) 
+	  triangle0 = layerForceTriangle(layer,blendnormals[0],
+					 blendnormals[1],blendnormals[3]);
+	if (blendnormals[2] != blendnormals[3]) 
+	  triangle1 = layerForceTriangle(layer,blendnormals[3],
+					 blendnormals[2],blendnormals[0]);
+      }
+      
+      if ( EMPTY != triangle0) {
+	faceId = layerConstrained(layer,blendnormals[0]);
+	if (faceId>0){
+	  n[0] = layerNormalRoot(layer,blendnormals[0]);
+	  n[1] = layerNormalTip(layer,blendnormals[0]);
+	  n[2] = layerNormalTip(layer,blendnormals[1]);
+	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	  layer->triangle[triangle0].constrainedSide[0] = faceId;
+	  layer->triangle[triangle0].parentGeomEdge[0] = edgeId0;
+	}
+      }
+      if ( EMPTY != triangle1) {
+	faceId = layerConstrained(layer,blendnormals[2]);
+	if (faceId>0){
+	  n[0] = layerNormalRoot(layer,blendnormals[2]);
+	  n[1] = layerNormalTip(layer,blendnormals[3]);
+	  n[2] = layerNormalTip(layer,blendnormals[2]);
+	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	  layer->triangle[triangle1].constrainedSide[0] = faceId;
+	  layer->triangle[triangle1].parentGeomEdge[0] = edgeId1;
 	}
       }
     }
