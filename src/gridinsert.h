@@ -37,6 +37,7 @@ Grid *gridFreezeGoodNodes(Grid *g, double goodAR,
 			  double minLength, double maxLength );
 
 Grid *gridVerifyEdgeExists(Grid *g, int n0, int n1);
+Grid *gridVerifyFaceExists(Grid *g, int n0, int n1, int n2);
 
 END_C_DECLORATION
 

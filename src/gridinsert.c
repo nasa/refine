@@ -780,3 +780,14 @@ Grid *gridVerifyEdgeExists(Grid *grid, int n0, int n1 )
   if (gotIt) return grid;
   return NULL;
 }
+
+Grid *gridVerifyFaceExists(Grid *grid, int n0, int n1, int n2 )
+{
+  bool gotIt;
+
+  gotIt=gridCellFace( grid, n0, n1, n2 );
+
+  if (gotIt) return grid;
+  return NULL;
+}
+

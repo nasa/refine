@@ -46,6 +46,7 @@ Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
 
 Layer *layerInsertPhantomFront(Layer *, double dz);
 Layer *layerVerifyPhantomEdges(Layer *);
+Layer *layerVerifyPhantomFaces(Layer *);
 
 END_C_DECLORATION
 

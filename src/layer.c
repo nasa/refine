@@ -721,7 +721,7 @@ Layer *layerVerifyPhantomEdges(Layer *layer)
       if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
 	ngot++;
       }else{
-	printf("line %d<->%d is missing.\n");
+	printf("line %d<->%d is missing.\n",n0,n1);
       }
     }
     n0 = layer->normal[normals[1]].tip;
@@ -731,7 +731,7 @@ Layer *layerVerifyPhantomEdges(Layer *layer)
       if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
 	ngot++;
       }else{
-	printf("line %d<->%d is missing.\n");
+	printf("line %d<->%d is missing.\n",n0,n1);
       }
     }
     n0 = layer->normal[normals[2]].tip;
@@ -741,11 +741,37 @@ Layer *layerVerifyPhantomEdges(Layer *layer)
       if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
 	ngot++;
       }else{
-	printf("line %d<->%d is missing.\n");
+	printf("line %d<->%d is missing.\n",n0,n1);
       }
     }
   }
   printf("lines %d of %d verified.\n",ngot,nline);
+ 
+  return layer;
+}
+
+Layer *layerVerifyPhantomFaces(Layer *layer)
+{
+  Grid *grid = layer->grid;
+  int front, normals[3], nface, ngot, n0, n1, n2;
+
+  nface = 0;
+  ngot  = 0;
+  for(front=0;front<layerNFront(layer);front++){
+    layerFrontNormals(layer, front, normals );
+    n0 = layer->normal[normals[0]].tip;
+    n1 = layer->normal[normals[1]].tip;
+    n2 = layer->normal[normals[2]].tip;
+    if ( n0 != EMPTY && n1 != EMPTY && n2 != EMPTY ) {
+      nface++;
+      if (grid == gridVerifyFaceExists(grid, n0, n1, n2) ){
+	ngot++;
+      }else{
+	printf("face %d %d %d is missing.\n",n0,n1,n2);
+      }
+    }
+  }
+  printf("faces %d of %d verified.\n",ngot,nface);
  
   return layer;
 }
