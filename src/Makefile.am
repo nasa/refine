@@ -4,8 +4,14 @@
 
 AUTOMAKE_OPTIONS = 1.7
 
-lib_LIBRARIES = libMesherX.a librefine.a libOctree_Stub.a
-libMesherX_a_CFLAGS = -I../src @SDKheader@
+lib_LIBRARIES = \
+	libMesherX.a \
+	librefine.a \
+	libFAKEGeomPlate.a \
+	libFAKEGeomBox.a \
+	libOctree_Stub.a
+
+libMesherX_a_CFLAGS = @SDKheader@
 libMesherX_a_SOURCES = \
 	master_header.h \
 	adj.h adj.c \
@@ -26,7 +32,7 @@ libMesherX_a_SOURCES = \
 	mesherxRebuild.h mesherxRebuild.c \
 	mesherx.h mesherx.c
 
-librefine_a_CFLAGS = -I../src @SDKheader@
+librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
 	master_header.h \
 	adj.h adj.c \
@@ -41,13 +47,18 @@ librefine_a_SOURCES = \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
 	gridmpi.h gridmpi.c \
-	gridfortran.h gridfortran.c \
-	FAKEGeomBox.h FAKEGeomBox.c
+	gridfortran.h gridfortran.c
 
-libOctree_Stub_a_CFLAGS = -I../src @SDKheader@
+libFAKEGeomBox_a_CFLAGS = @SDKheader@
+libFAKEGeomBox_a_SOURCES = FAKEGeomBox.h FAKEGeomBox.c
+
+libFAKEGeomPlate_a_CFLAGS = @SDKheader@
+libFAKEGeomPlate_a_SOURCES = FAKEGeomPlate.h FAKEGeomPlate.c
+
+libOctree_Stub_a_CFLAGS = @SDKheader@
 libOctree_Stub_a_SOURCES = Octree_Stub.c
 
-all_CFLAGS = -I../src @SDKheader@
+all_CFLAGS = @SDKheader@
 refineLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache -lMeat
 MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache libOctree_Stub.a @FELISAlibrary@ -ldl -lMeat
 all_LDFLAGS = @dynamicFlag@
