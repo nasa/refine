@@ -467,13 +467,14 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
   return layer;
 }
 
-void layerDumpFaceWire(int faceId, int nshell, int *shell, double *shellxyz){
+void layerDumpFaceWire(char *fileroot, int faceId, int nshell, 
+		       int *shell, double *shellxyz){
   FILE *mfile;
   char filename[256];
   int i;
 
   printf("Dumping face wire shell.\n");
-  sprintf(filename,"face%dwire.plt",faceId);
+  sprintf(filename,"%s%d.plt",fileroot,faceId);
   mfile = fopen(filename,"w");
   fprintf(mfile,"Variables = \"x\",\"y\",\"z\"\n");
   for(i=0;i<nshell;i++){
@@ -641,7 +642,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	CADGeom_ResolveOnFace(vol,faceId,&shellxyz[3*i],&shelluv[2*i],resolved);
       }
 
-      layerDumpFaceWire(faceId, nshell, shell, shellxyz);
+      layerDumpFaceWire("faceWireOrig", faceId, nshell, shell, shellxyz);
 
       nfacenode = EMPTY;
       nfacetri  = EMPTY;
