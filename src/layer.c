@@ -1136,8 +1136,8 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 	dir[0] += radian*mindir[0];
 	dir[1] += radian*mindir[1];
 	dir[2] += radian*mindir[2];
-	layerProjectNormalToConstraints(layer,normal);
 	gridVectorNormalize(dir);
+	layerProjectNormalToConstraints(layer,normal);
 	lastdot = mindot;
 	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
 	if (mindot <= lastdot) {
@@ -1209,6 +1209,7 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 	  relax*(avgdir[2] * denom) +
 	  relaxm1*layer->normal[normal].direction[2];
 	gridVectorNormalize(layer->normal[normal].direction);
+	layerProjectNormalToConstraints(layer,normal);
       }
     }
     layerVisibleNormals(layer,0.5,1.0e-5);
