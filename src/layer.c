@@ -2022,6 +2022,8 @@ Layer *layerBlend(Layer *layer)
   int newNormal, i;
   bool done;
 
+  int blend, edgeId;
+
   angleLimit = 250; /* deg */
 
   originalNormals = layerNNormal(layer);
@@ -2083,6 +2085,12 @@ Layer *layerBlend(Layer *layer)
   layerVisibleNormals(layer , 
 		      sin(ConvertDegreeToRadian(largestEdgeAngle*0.333)), 
 		      1.0e-8 );
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    edgeId = layer->blend[blend].edgeId[0];
+    if ( edgeId > 0 ) printf("blend %d edgeId %d\n",blend,edgeId);
+    edgeId = layer->blend[blend].edgeId[1];
+    if ( edgeId > 0 ) printf("blend %d edgeId %d\n",blend,edgeId);
+  }
   return layer;
 }
 
@@ -2174,26 +2182,29 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
     layer->nblend++;
   }
 
-  edge = gridFindEdge(grid,n0,n1);
-  excludeId=0;
-  gridEdge(grid,edge,nodes,&excludeId);
-  
-  side = newEdge?0:1;
 
-  for ( it = adjFirst(layer->adj,normal0); adjValid(it); it=adjNext(it) ){
-    triangle = adjItem(it);
-    for (i=0;i<3;i++) {
-      edgeId = layer->triangle[triangle].parentGeomEdge[i];
-      if (edgeId > 0 && edgeId != excludeId) 
-	layer->blend[blend].edgeId[side] = edgeId;
+  if ( layerConstrained(layer,normal0) != 0 ) {
+    edge = gridFindEdge(grid,n0,n1);
+    excludeId=0;
+    gridEdge(grid,edge,nodes,&excludeId);
+  
+    side = newEdge?0:1;
+
+    for ( it = adjFirst(layer->adj,normal0); adjValid(it); it=adjNext(it) ){
+      triangle = adjItem(it);
+      for (i=0;i<3;i++) {
+	edgeId = layer->triangle[triangle].parentGeomEdge[i];
+	if (edgeId > 0 && edgeId != excludeId) 
+	  layer->blend[blend].edgeId[side] = edgeId;
+      }
     }
-  }
-  for ( it = adjFirst(layer->adj,normal1); adjValid(it); it=adjNext(it) ){
-    triangle = adjItem(it);
-    for (i=0;i<3;i++) {
-      edgeId = layer->triangle[triangle].parentGeomEdge[i];
-      if (edgeId > 0 && edgeId != excludeId) 
-	layer->blend[blend].edgeId[side] = edgeId;
+    for ( it = adjFirst(layer->adj,normal1); adjValid(it); it=adjNext(it) ){
+      triangle = adjItem(it);
+      for (i=0;i<3;i++) {
+	edgeId = layer->triangle[triangle].parentGeomEdge[i];
+	if (edgeId > 0 && edgeId != excludeId) 
+	  layer->blend[blend].edgeId[side] = edgeId;
+      }
     }
   }
 
@@ -2213,6 +2224,7 @@ Layer *layerBlendExtend(Layer *layer, double dx, double dy, double dz )
 
   int blend, i, fix, fixblend, node, newnode, normal, newnormal;
   int normals[4];
+  int edgeId;
   double xyz[3];
   Adj *adj;
   AdjIterator it;
@@ -2270,6 +2282,33 @@ Layer *layerBlendExtend(Layer *layer, double dx, double dy, double dz )
   }
 
   layerBuildNormalTriangleAdjacency(layer);
+
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    edgeId = layer->blend[blend].edgeId[0];
+    if ( edgeId > 0 ) {
+      printf("%d %d\n",blend,edgeId);
+      layerSetParentGeomEdge(layer,
+			     layer->blend[blend].normal[0],
+			     layer->blend[blend].oldnormal[0],
+			     edgeId);
+      layerSetParentGeomEdge(layer,
+			     layer->blend[blend].normal[1],
+			     layer->blend[blend].oldnormal[1],
+			     edgeId);
+    }
+    edgeId = layer->blend[blend].edgeId[1];
+    if ( edgeId > 0 ) {
+      printf("%d %d\n",blend,edgeId);
+      layerSetParentGeomEdge(layer,
+			     layer->blend[blend].normal[2],
+			     layer->blend[blend].oldnormal[2],
+			     edgeId);
+      layerSetParentGeomEdge(layer,
+			     layer->blend[blend].normal[3],
+			     layer->blend[blend].oldnormal[3],
+			     edgeId);
+    }
+  }
 
   return layer;
 }
