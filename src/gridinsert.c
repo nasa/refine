@@ -230,7 +230,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 		    double newX, double newY, double newZ )
 {
   int igem, cell, nodes[4], inode, node;
-  int newnode, newglobal, newnodes0[4], newnodes1[4];
+  int newnode, newnodes0[4], newnodes1[4];
   int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
   int edge, edgeId;
   double t0, t1, newT;
@@ -247,14 +247,8 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 
   newnode   = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
-  newglobal = gridGlobalNNode(grid);
   gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
   gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
-  if (newglobal>0) {
-    gridSetNodeGlobal(grid,newnode,newglobal);
-    gridSetGlobalNNode(grid,newglobal+1);
-    gridSetNodePart(grid,newnode,gridPartId(grid));
-  }
 
   for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
     cell = gridGem(grid,igem);

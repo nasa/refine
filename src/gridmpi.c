@@ -97,8 +97,8 @@ Grid *gridParallelEdgeSwap(Grid *grid, Queue *queue, int node0, int node1 )
   result = gridSwapEdge( grid, queue, node0, node1 );
 
   if (NULL != result) {
-    if (0 == gridCellDegree(grid,node0)) gridRemoveNode(grid,node0);
-    if (0 == gridCellDegree(grid,node1)) gridRemoveNode(grid,node1);
+    if (0==gridCellDegree(grid,node0)) gridRemoveNodeWithOutGlobal(grid,node0);
+    if (0==gridCellDegree(grid,node1)) gridRemoveNodeWithOutGlobal(grid,node1);
   }
 
   return result;
@@ -153,14 +153,16 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	   gridNodeLocal(grid,localnodes[3]) ) {
 	for(i=0;i<4;i++) {
 	  if ( EMPTY == localnodes[i] ) {
-	    localnodes[i]=gridAddNode( grid,
-				       xyz[0+dim*i],xyz[1+dim*i],xyz[2+dim*i]);
+	    localnodes[i]=gridAddNodeWithGlobal( grid,
+						 xyz[0+dim*i],
+						 xyz[1+dim*i],
+						 xyz[2+dim*i],
+						 globalnodes[i]);
 	    gridSetMap(grid,localnodes[i],
 		       xyz[3+dim*i],xyz[4+dim*i],xyz[5+dim*i],
 		       xyz[6+dim*i],xyz[7+dim*i],xyz[8+dim*i]);
 	    for ( aux = 0 ; aux < gridNAux(grid) ; aux++ )     
 	      gridSetAux(grid, localnodes[i], aux, xyz[aux+9+dim*i]);
-	    gridSetNodeGlobal(grid, localnodes[i], globalnodes[i]);
 	    gridSetNodePart(grid, localnodes[i], globalnodes[5+i]);
 	  }
 	}
@@ -192,7 +194,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
     queueRemovedCellNodes( lq, removed, localnodes );
     for (i=0;i<4;i++) {
       if ( 0 == gridCellDegree(grid,localnodes[i]) ) {
-	gridRemoveNode(grid,localnodes[i]);
+	gridRemoveNodeWithOutGlobal(grid,localnodes[i]);
       }
     }
   }

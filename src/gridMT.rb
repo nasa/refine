@@ -47,6 +47,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0, @grid.globalnnode
   assert_equal 0, @grid.globalncell
   assert_equal 0, @grid.nUnusedCellGlobal
+  assert_equal 0, @grid.nUnusedNodeGlobal
  end
 
  def testSetPartId
@@ -554,18 +555,14 @@ class TestGrid < Test::Unit::TestCase
 
  def testFindNodeLocalFromGlobalWithAddedNode
   assert_not_nil      grid = Grid.new(5,0,0,0)
-  2.times { grid.addNode(1.0,2.0,3.0) }
-  grid.setNodeGlobal(0,100)
-  grid.setNodeGlobal(1,110)
+  grid.addNodeWithGlobal(1.0,2.0,3.0,100)
+  grid.addNodeWithGlobal(1.0,2.0,3.0,110)
   assert_equal 0, grid.global2local(100)
-  node = grid.addNode(1.0,2.0,3.0)
-  grid.setNodeGlobal(node,254)
+  node = grid.addNodeWithGlobal(1.0,2.0,3.0,254)
   assert_equal node, grid.global2local(254)
-  node = grid.addNode(1.0,2.0,3.0)
-  grid.setNodeGlobal(node,8)
+  node = grid.addNodeWithGlobal(1.0,2.0,3.0,8)
   assert_equal node, grid.global2local(8)
-  node = grid.addNode(1.0,2.0,3.0)
-  grid.setNodeGlobal(node,105)
+  node = grid.addNodeWithGlobal(1.0,2.0,3.0,105)
   assert_equal node, grid.global2local(105)
  end
 
@@ -652,6 +649,22 @@ class TestGrid < Test::Unit::TestCase
   assert_equal true,  grid.validNode(0)
   assert_not_nil      grid.removeNode(0)
   assert_equal false, grid.validNode(0)
+ end
+
+ def testRemoveAndAddTracksGlobaNodeId
+  grid = Grid.new(2,0,0,0)
+  grid.addNode(1.0,2.0,3.0)
+  grid.setGlobalNNode(1148)
+  grid.setNodeGlobal(0,17)
+  grid.removeNode(0)
+  assert_equal [17], grid.getUnusedNodeGlobal
+  grid.addNode(1.0,2.0,3.0)
+  assert_equal 1148, grid.globalnnode
+  assert_equal [], grid.getUnusedNodeGlobal
+  grid.addNode(1.0,2.0,3.0)
+  assert_equal 17,   grid.nodeGlobal(0)
+  assert_equal 1148, grid.nodeGlobal(1)
+  assert_equal 1149, grid.globalnnode
  end
 
  def testNumberOfFaces

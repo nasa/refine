@@ -95,6 +95,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->part = NULL;
   grid->sortedGlobal = NULL;
   grid->sortedLocal = NULL;
+  grid->maxUnusedNodeGlobal = 0;
+  grid->nUnusedNodeGlobal = 0;
+  grid->unusedNodeGlobal  = NULL;
 
   grid->aux = NULL;
   grid->naux = 0;
@@ -471,6 +474,7 @@ void gridFree(Grid *grid)
   if (NULL != grid->unusedCellGlobal) free(grid->unusedCellGlobal);
   if (NULL != grid->cellGlobal) free(grid->cellGlobal);
   free(grid->c2n);
+  if (NULL != grid->unusedNodeGlobal) free(grid->unusedNodeGlobal);
   if (NULL != grid->sortedLocal) free(grid->sortedLocal);
   if (NULL != grid->sortedGlobal) free(grid->sortedGlobal);
   if (NULL != grid->part) free(grid->part);
@@ -1120,9 +1124,22 @@ Grid *gridSetGlobalNCell(Grid *grid, int nglobal )
   return grid;
 }
 
+int gridNUnusedNodeGlobal(Grid *grid )
+{
+  return grid->nUnusedNodeGlobal;
+}
+
 int gridNUnusedCellGlobal(Grid *grid )
 {
   return grid->nUnusedCellGlobal;
+}
+
+Grid *gridGetUnusedNodeGlobal(Grid *grid, int *unused )
+{
+  int i;
+  for (i=0;i<grid->nUnusedNodeGlobal;i++) 
+    unused[i] = grid->unusedNodeGlobal[i];
+  return grid;
 }
 
 Grid *gridGetUnusedCellGlobal(Grid *grid, int *unused )
@@ -1130,6 +1147,39 @@ Grid *gridGetUnusedCellGlobal(Grid *grid, int *unused )
   int i;
   for (i=0;i<grid->nUnusedCellGlobal;i++) 
     unused[i] = grid->unusedCellGlobal[i];
+  return grid;
+}
+
+Grid *gridJoinUnusedNodeGlobal(Grid *grid, int global )
+{
+  int insertpoint, index;
+  if (NULL == grid->unusedNodeGlobal) {
+    grid->maxUnusedNodeGlobal = 500;
+    grid->unusedNodeGlobal = malloc(grid->maxUnusedNodeGlobal * sizeof(int));
+  }
+  if ((grid->nUnusedNodeGlobal+1) >= grid->maxUnusedNodeGlobal) {
+    grid->maxUnusedNodeGlobal += 500;
+    grid->unusedNodeGlobal = realloc( grid->unusedNodeGlobal, 
+				      grid->maxUnusedNodeGlobal*sizeof(int));
+  }
+  
+  insertpoint = 0;
+  if (grid->nUnusedNodeGlobal > 0) {
+    for (index=grid->nUnusedNodeGlobal-1; index>=0; index--) {
+      if (grid->unusedNodeGlobal[index] < global) {
+	insertpoint = index+1;
+	break;
+      }
+    }
+    if ( grid->nUnusedNodeGlobal != insertpoint &&
+	 grid->unusedNodeGlobal[insertpoint] == global) return grid;
+    for(index=grid->nUnusedNodeGlobal;index>insertpoint;index--)
+      grid->unusedNodeGlobal[index] = grid->unusedNodeGlobal[index-1];
+  }
+
+  grid->unusedNodeGlobal[insertpoint] = global;
+  grid->nUnusedNodeGlobal++;
+  
   return grid;
 }
 
@@ -2566,7 +2616,34 @@ Grid *gridCycleEquator( Grid *grid )
   return grid;
 }
 
+int gridGetNextNodeGlobal(Grid *grid)
+{
+  int global, i;
+
+  if (NULL == grid->nodeGlobal) {
+    global = EMPTY;
+  } else {
+    if (grid->nUnusedNodeGlobal > 0) {
+      global = grid->unusedNodeGlobal[0];
+      for (i=1;i<grid->nUnusedNodeGlobal;i++)
+	grid->unusedNodeGlobal[i-1]=grid->unusedNodeGlobal[i];
+      grid->nUnusedNodeGlobal--;
+    }else{
+      global = grid->globalNNode;
+      grid->globalNNode++;
+    }
+  }
+
+  return global;
+}
+
 int gridAddNode(Grid *grid, double x, double y, double z )
+{
+  int global;
+  global = gridGetNextNodeGlobal(grid);
+  return gridAddNodeWithGlobal(grid,x,y,z,global);
+}
+int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
 {
   int node, i, origSize, chunkSize;
 
@@ -2621,13 +2698,25 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   grid->map[3+6*node] = 1.0;
   grid->map[4+6*node] = 0.0;
   grid->map[5+6*node] = 1.0;
-  if (NULL != grid->nodeGlobal) grid->nodeGlobal[node] = EMPTY;
-  if (NULL != grid->part) grid->part[node] = EMPTY;
+  if (EMPTY != global) gridSetNodeGlobal(grid, node, global );
+  if (NULL != grid->part) grid->part[node] = gridPartId(grid);
 
   return node;
 }
 
 Grid *gridRemoveNode(Grid *grid, int node )
+{
+  Grid *result;
+
+  result = gridRemoveNodeWithOutGlobal(grid, node );
+
+  if (grid == result && NULL != grid->nodeGlobal) 
+    gridJoinUnusedNodeGlobal(grid,grid->nodeGlobal[node]);
+
+  return result;
+}
+
+Grid *gridRemoveNodeWithOutGlobal(Grid *grid, int node )
 {
   int index, removepoint;
   if (!gridValidNode(grid,node)) return NULL;
@@ -2646,6 +2735,7 @@ Grid *gridRemoveNode(Grid *grid, int node )
 	grid->sortedLocal[index] = grid->sortedLocal[index+1];
     }
   }
+
   return grid;
 }
 

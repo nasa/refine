@@ -167,10 +167,33 @@ VALUE grid_setGlobalNCell( VALUE self, VALUE nglobal )
   return ( grid == gridSetGlobalNCell(grid,NUM2INT(nglobal))?self:Qnil );
 }
 
+VALUE grid_nUnusedNodeGlobal( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNUnusedNodeGlobal(grid) );
+}
+
 VALUE grid_nUnusedCellGlobal( VALUE self )
 {
   GET_GRID_FROM_SELF;
   return INT2NUM( gridNUnusedCellGlobal(grid) );
+}
+
+VALUE grid_getUnusedNodeGlobal( VALUE self )
+{
+  int i, n, *unused;
+  VALUE rb_unused;
+  GET_GRID_FROM_SELF;
+  n = gridNUnusedNodeGlobal(grid);
+  unused = malloc( n * sizeof(int) );
+  if ( grid != gridGetUnusedNodeGlobal(grid,unused) ) {
+    free(unused);
+    return Qnil;
+  } else {
+    rb_unused = rb_ary_new2(n);
+    for (i=0;i<n;i++) rb_ary_store( rb_unused, i, INT2NUM(unused[i]) );
+    return rb_unused;
+  }
 }
 
 VALUE grid_getUnusedCellGlobal( VALUE self )
@@ -643,6 +666,18 @@ VALUE grid_addNode( VALUE self, VALUE x, VALUE y, VALUE z )
   return INT2NUM( returnedNode );
 }
 
+VALUE grid_addNodeWithGlobal( VALUE self, VALUE x, VALUE y, VALUE z, 
+			      VALUE global )
+{
+  int returnedNode;
+  GET_GRID_FROM_SELF;
+  returnedNode = gridAddNodeWithGlobal( grid, 
+					NUM2DBL(x), NUM2DBL(y), NUM2DBL(z),
+					NUM2INT(global) );
+  if (returnedNode == EMPTY) return Qnil;
+  return INT2NUM( returnedNode );
+}
+
 VALUE grid_removeNode( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -962,7 +997,9 @@ void Init_Grid()
   rb_define_method( cGrid, "globalncell", grid_globalncell, 0 );
   rb_define_method( cGrid, "setGlobalNCell", grid_setGlobalNCell, 1 );
 
+  rb_define_method( cGrid, "nUnusedNodeGlobal", grid_nUnusedNodeGlobal, 0 );
   rb_define_method( cGrid, "nUnusedCellGlobal", grid_nUnusedCellGlobal, 0 );
+  rb_define_method( cGrid, "getUnusedNodeGlobal", grid_getUnusedNodeGlobal, 0 );
   rb_define_method( cGrid, "getUnusedCellGlobal", grid_getUnusedCellGlobal, 0 );
   rb_define_method( cGrid, "joinUnusedCellGlobal", grid_joinUnusedCellGlobal, 1 );
   rb_define_method( cGrid, "eliminateUnusedCellGlobal", grid_eliminateUnusedCellGlobal, 0 );
@@ -1024,6 +1061,7 @@ void Init_Grid()
   rb_define_method( cGrid, "orient", grid_orient, 6 );
 
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );
+  rb_define_method( cGrid, "addNodeWithGlobal", grid_addNodeWithGlobal, 4 );
   rb_define_method( cGrid, "removeNode", grid_removeNode, 1 );
   rb_define_method( cGrid, "validNode", grid_validNode, 1 );
   rb_define_method( cGrid, "nodeXYZ", grid_nodeXYZ, 1 );

@@ -55,6 +55,7 @@ struct Grid {
   int *part;
   int nsorted;
   int *sortedGlobal, *sortedLocal;
+  int maxUnusedNodeGlobal, nUnusedNodeGlobal, *unusedNodeGlobal;
 
   int maxcell, ncell;
   int blankc2n;
@@ -160,7 +161,9 @@ int gridGlobalNNode(Grid *g);
 Grid *gridSetGlobalNNode(Grid *g, int nglobal );
 int gridGlobalNCell(Grid *g);
 Grid *gridSetGlobalNCell(Grid *g, int nglobal );
+int gridNUnusedNodeGlobal(Grid *g );
 int gridNUnusedCellGlobal(Grid *g );
+Grid *gridGetUnusedNodeGlobal(Grid *g, int *unused );
 Grid *gridGetUnusedCellGlobal(Grid *g, int *unused );
 Grid *gridJoinUnusedCellGlobal(Grid *g, int global );
 Grid *gridEliminateUnusedCellGlobal(Grid *g );
@@ -277,7 +280,9 @@ bool gridContinuousEquator(Grid *g);
 Grid *gridCycleEquator( Grid *g );
 
 int gridAddNode(Grid *g, double x, double y, double z );
+int gridAddNodeWithGlobal(Grid *g, double x, double y, double z, int global );
 Grid *gridRemoveNode(Grid *g, int node );
+Grid *gridRemoveNodeWithOutGlobal(Grid *g, int node );
 #define gridValidNode(grid,node) \
 (node>-1 && node<grid->maxnode && DBL_MAX!=grid->xyz[0+3*node])
 
