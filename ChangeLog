@@ -1,3 +1,12 @@
+2003-02-05 17:00 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* gridinsert no longer needs gridStruct.h.
+
+2003-02-04 17:00 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* MesherX can create prisms with the layer object.
+	* grid can write out AFLR3 ugrid.
+
 2003-01-30 14:00 Mike Park  <m.a.park@larc.nasa.gov>
 
 	* MesherX can rebuild edges, faces, and volume with 
