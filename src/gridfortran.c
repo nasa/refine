@@ -240,3 +240,20 @@ int gridgetbcsize_( int *ibound, int *nface )
     }
   }
 }
+
+int gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
+{
+  int face, n, nodes[3], id;
+  
+  n = 0;
+  for (face=0;face<gridMaxFace(grid);face++) {
+    if ( grid == gridFace(grid,face,nodes,&id) ) {
+      if ( *ibound == id ) {
+	f2n[n+(*nface)*0] = nodes[0]+1;
+	f2n[n+(*nface)*1] = nodes[1]+1;
+	f2n[n+(*nface)*2] = nodes[2]+1;
+	n++;
+      }
+    }
+  }
+}

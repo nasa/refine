@@ -51,6 +51,7 @@ int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg,
 int gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z);
 int gridgetcell_( int *cell, int *nodes, int *global );
 int gridgetbcsize_( int *ibound, int *nface );
+int gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n );
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */
