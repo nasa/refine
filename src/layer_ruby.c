@@ -66,18 +66,34 @@ VALUE layer_front( VALUE self, VALUE front )
   return rb_front;
 }
 
+VALUE layer_frontDirection( VALUE self, VALUE front )
+{
+  int i;
+  double direction[3];
+  VALUE rb_direction;
+  GET_LAYER_FROM_SELF;
+  if (layer == layerFrontDirection(layer,NUM2INT(front),direction)){
+    rb_direction = rb_ary_new2(3);
+    for ( i=0 ; i < 3 ; i++ ) 
+      rb_ary_store( rb_direction, i, rb_float_new(direction[i]) );
+  }else{
+    rb_direction = Qnil;
+  }
+  return rb_direction;
+}
+
 VALUE layer_makeNormal( VALUE self )
 {
   GET_LAYER_FROM_SELF;
   return ( layer == layerMakeNormal(layer)?self:Qnil );
 }
 
-VALUE layer_frontNormal( VALUE self, VALUE front )
+VALUE layer_frontNormals( VALUE self, VALUE front )
 {
   int normals[3];
   VALUE rb_normals;
   GET_LAYER_FROM_SELF;
-  if (layer != layerFrontNormal(layer, NUM2INT(front), normals )) return Qnil;
+  if (layer != layerFrontNormals(layer, NUM2INT(front), normals )) return Qnil;
   rb_normals = rb_ary_new2(3);
   rb_ary_store( rb_normals, 0, INT2NUM(normals[0]) );
   rb_ary_store( rb_normals, 1, INT2NUM(normals[1]) );
@@ -116,6 +132,22 @@ VALUE layer_normalFronts( VALUE self, VALUE normal )
   return rb_front;
 }
 
+VALUE layer_normalDirection( VALUE self, VALUE normal )
+{
+  int i;
+  double direction[3];
+  VALUE rb_direction;
+  GET_LAYER_FROM_SELF;
+  if (layer == layerNormalDirection(layer,NUM2INT(normal),direction)){
+    rb_direction = rb_ary_new2(3);
+    for ( i=0 ; i < 3 ; i++ ) 
+      rb_ary_store( rb_direction, i, rb_float_new(direction[i]) );
+  }else{
+    rb_direction = Qnil;
+  }
+  return rb_direction;
+}
+
 VALUE layer_constrainNormal( VALUE self, VALUE bc )
 {
   GET_LAYER_FROM_SELF;
@@ -139,11 +171,13 @@ void Init_Layer()
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
   rb_define_method( cLayer, "makeFront", layer_makeFront, 1 );
   rb_define_method( cLayer, "front", layer_front, 1 );
+  rb_define_method( cLayer, "frontDirection", layer_frontDirection, 1 );
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
-  rb_define_method( cLayer, "frontNormal", layer_frontNormal, 1 );
+  rb_define_method( cLayer, "frontNormals", layer_frontNormals, 1 );
   rb_define_method( cLayer, "normalRoot", layer_normalRoot, 1 );
   rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );
   rb_define_method( cLayer, "normalFronts", layer_normalFronts, 1 );
+  rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
 }

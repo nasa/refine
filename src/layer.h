@@ -25,11 +25,13 @@ int layerNNormal(Layer *);
 int layerMaxNode(Layer *);
 Layer *layerMakeFront(Layer *, int nbc, int *bc);
 Layer *layerFront(Layer *, int front, int *nodes);
+Layer *layerFrontDirection(Layer *, int front, double *direction);
 Layer *layerMakeNormal(Layer *);
-Layer *layerFrontNormal(Layer *, int front, int *normals);
+Layer *layerFrontNormals(Layer *, int front, int *normals);
 int layerNormalRoot(Layer *, int normal );
 int layerNormalDeg(Layer *, int normal );
 Layer *layerNormalFronts(Layer *, int normal, int maxfront, int *fronts);
+Layer *layerNormalDirection(Layer *, int normal, double *direction);
 Layer *layerConstrainNormal(Layer *, int bc );
 int layerConstrained(Layer *, int normal );
 

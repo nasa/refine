@@ -16,6 +16,7 @@ typedef struct Normal Normal;
 struct Normal {
   int constrained;
   int root;
+  double direction[3];
 };
 
 typedef struct Front Front;
@@ -118,6 +119,16 @@ Layer *layerFront(Layer *layer, int front, int *nodes )
   return layer;
 }
 
+Layer *layerFrontDirection(Layer *layer, int front, double *direction )
+{
+  int i;
+  if (front < 0 || front >= layerNFront(layer) ) return NULL;
+
+  for ( i=0;i<3;i++) direction[i] = 0.0;
+
+  return layer;
+}
+
 Layer *layerMakeNormal(Layer *layer)
 {
   int i, front, normal, globalNode;
@@ -145,7 +156,12 @@ Layer *layerMakeNormal(Layer *layer)
 
   for(i=0;i<layerMaxNode(layer);i++){
     normal = layer->globalNode2Normal[i];
-    if (normal!=EMPTY) layer->normal[normal].root = i;
+    if (normal!=EMPTY) {
+      layer->normal[normal].root = i;
+      layer->normal[normal].direction[0] = 0.0;
+      layer->normal[normal].direction[1] = 0.0;
+      layer->normal[normal].direction[2] = 0.0;
+    }
   }
 
   layer->adj = adjCreate( layer->nnormal,layerNFront(layer)*3  );
@@ -158,7 +174,7 @@ Layer *layerMakeNormal(Layer *layer)
   return layer;
 }
 
-Layer *layerFrontNormal(Layer *layer, int front, int *normals )
+Layer *layerFrontNormals(Layer *layer, int front, int *normals )
 {
   if (layerNNormal(layer) == 0 ) return NULL;
   if (front < 0 || front >= layerNFront(layer)) return NULL;
@@ -194,6 +210,16 @@ Layer *layerNormalFronts(Layer *layer, int normal, int nfront, int *fronts )
     fronts[i] = adjItem(it);
     i++;
   }
+  return layer;
+}
+
+Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
+{
+  int i;
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
+  for ( i=0;i<3;i++) direction[i] = layer->normal[normal].direction[i];
+
   return layer;
 }
 
