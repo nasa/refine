@@ -341,9 +341,7 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node, double *displacement 
   int vol = 1;
   double t, uv[2], xyz[3], xyznew[3];
 
-  displacement[0] = 0.0;
-  displacement[1] = 0.0;
-  displacement[2] = 0.0;
+  displacement[0] = displacement[1] = displacement[2] = 0.0;
 
   if ( gridGeometryNode( grid, node ) ) return grid;
 
