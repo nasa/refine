@@ -885,12 +885,14 @@ Grid *gridOptimizeXYZ(Grid *grid, int node, double *dxdydz )
   return grid;
 }
 
-Grid *gridSmooth( Grid *grid )
+Grid *gridSmooth( Grid *grid, double optimizationLimit, double laplacianLimit )
 {
   int node;
-  double ar, optimizationLimit, laplacianLimit;
-  optimizationLimit =0.40;
-  laplacianLimit =0.60;
+  double ar;
+
+  if ( optimizationLimit < 0.0 ) optimizationLimit = 0.40;
+  if ( laplacianLimit    < 0.0 ) laplacianLimit    = 0.60;
+
   for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && !gridNodeFrozen( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
@@ -910,7 +912,10 @@ Grid *gridSmoothFaceMR( Grid *grid, double optimizationLimit )
 {
   int node;
   double mr;
- for (node=0;node<gridMaxNode(grid);node++) {
+
+  if ( optimizationLimit < 0.0 ) optimizationLimit = 0.40;
+
+  for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && gridGeometryFace( grid, node )) {
       gridNodeFaceMR(grid,node,&mr);
       if (mr < optimizationLimit) {

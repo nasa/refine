@@ -1,3 +1,10 @@
+2004-09-22 20:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmooth,gridSmoothFaceMR) Exposed the
+	optimizationLimit and laplacianLimit parameters as calling
+	arguments. Note they will be reset to default values if they are
+	less than 0.0. Modified all the drivers that call gridSmooth
+
 2004-09-22 18:28 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c new driver to start looking at unit adaptation

@@ -217,7 +217,7 @@ int main( int argc, char *argv[] )
   } else if(strcmp(adaptfile,"ident")==0) {
     printf("adapt parameter >ident< selected. Spacing set to identity.\n");
     printf("edge swapping grid...\n");gridSwap(grid);
-    printf("node smoothing grid...\n");gridSmooth(grid);
+    printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
     return 0;
   }else{
     printf("reading adapt parameter from file %s ...\n",adaptfile);
@@ -229,7 +229,7 @@ int main( int argc, char *argv[] )
     projected = ( grid == gridRobustProject(grid));
     if (projected) {
       printf("edge swapping grid...\n");gridSwap(grid);
-      printf("node smoothing grid...\n");gridSmooth(grid);
+      printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
     }else{
       printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
     }
@@ -257,18 +257,18 @@ int main( int argc, char *argv[] )
       for (i=1;i<wiggleSteps;i++) {
 	printf("edge swapping grid...\n");gridSwap(grid);
 	layerSmoothLayerNeighbors(layer );
-	printf("node smoothing grid...\n");gridSmooth(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
 	gridAdapt(grid,0.6,1.4,TRUE);
 	printf("edge swapping grid...\n");gridSwap(grid);
 	layerSmoothLayerNeighbors(layer );
-	printf("node smoothing grid...\n");gridSmooth(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
 	printf("wiggle step %d of %d, minAR %8.5f\n",i+1,wiggleSteps,gridMinThawedAR(grid));
 	layerWiggle(layer,height);
 	//printf("minimum Volume %12.8e\n", gridMinVolume(grid));
       }
       printf("edge swapping grid...\n");gridSwap(grid);
 	layerSmoothLayerNeighbors(layer );
-      printf("node smoothing grid...\n");gridSmooth(grid);
+      printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
       STATUS;
     }
     if (ratio<0.01) ratio = 0.01;
@@ -309,10 +309,10 @@ int main( int argc, char *argv[] )
 	}
 	if (0.0<minVolume) {
 	  printf("edge swapping grid...\n");gridSwap(grid);
-	  printf("node smoothing grid...\n");gridSmooth(grid);
+	  printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
 	  printf("edge swapping grid...\n");gridSwap(grid);
-	  printf("node smoothing grid...\n");gridSmooth(grid);	  
-	  printf("node smoothing grid...\n");gridSmooth(grid);	  
+	  printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
+	  printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);  
 	}
 	STATUS;
       }
@@ -325,7 +325,7 @@ int main( int argc, char *argv[] )
       projected = ( grid == gridRobustProject(grid));
       if (projected) {
 	printf("edge swapping grid...\n");gridSwap(grid);
-	printf("node smoothing grid...\n");gridSmooth(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
 	if (((double)ABS(newSize-oldSize)/(double)oldSize)<0.3)
 	  ratio = ratio + 0.025;
       }else{

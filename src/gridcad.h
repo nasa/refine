@@ -42,7 +42,8 @@ Grid *gridProject(Grid *g);
 Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);
 
-Grid *gridSmooth(Grid *g );
+/* the {optimzation,lapacian}Limits will be set to a default if < 0.0 */ 
+Grid *gridSmooth(Grid *g, double optimizationLimit, double laplacianLimit );
 Grid *gridSmoothFaceMR(Grid *g, double optimizationLimit );
 Grid *gridSmoothVolume(Grid *g );
 Grid *gridSmoothNearNode1(Grid *g, int node );

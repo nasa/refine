@@ -52,7 +52,7 @@ VALUE grid_project( VALUE self )
 VALUE grid_smooth( VALUE self )
 {
   GET_GRID_FROM_SELF;
-  return (gridSmooth( grid )==grid?self:Qnil);
+  return (gridSmooth( grid, -1.0, -1.0 )==grid?self:Qnil);
 }
 
 VALUE grid_smoothFaceMR( VALUE self, VALUE optimizationLimit )

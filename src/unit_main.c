@@ -179,7 +179,7 @@ int main( int argc, char *argv[] )
     projected = ( grid == gridRobustProject(grid));
     if (projected) {
       printf("edge swapping grid...\n");gridSwap(grid);
-      printf("node smoothing grid...\n");gridSmooth(grid);
+      printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
     }else{
       printf("could not project grid. stop.\n");
       return 1;
@@ -214,7 +214,7 @@ int main( int argc, char *argv[] )
       projected = ( grid == gridRobustProject(grid));
       if (projected) {
 	printf("edge swapping grid...\n");gridSwap(grid);
-	printf("node smoothing grid...\n");gridSmooth(grid);
+	printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
 	if (((double)ABS(newSize-oldSize)/(double)oldSize)<0.3)
 	  ratio = ratio + 0.025;
       }else{
