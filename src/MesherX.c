@@ -134,7 +134,7 @@ int main( int argc, char *argv[] )
     i++;
   }
 
-  if(strcmp(modeler,"")==0)       sprintf(project,"FELISA" );
+  if(strcmp(modeler,"")==0)       sprintf(modeler,"FELISA" );
   if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
 
   printf("calling MeshMgr_Initialize ... \n");
