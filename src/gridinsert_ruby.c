@@ -73,7 +73,9 @@ VALUE grid_insertInToVolume( VALUE self, VALUE x, VALUE y, VALUE z )
 VALUE grid_collapseEdge( VALUE self, VALUE n0, VALUE n1, VALUE ratio )
 {
   GET_GRID_FROM_SELF;
-  return (gridCollapseEdge( grid, NUM2INT(n0), NUM2INT(n1), NUM2DBL(ratio) )==grid?self:Qnil);
+  return (gridCollapseEdge( grid, NULL, 
+			    NUM2INT(n0), NUM2INT(n1), 
+			    NUM2DBL(ratio) )==grid?self:Qnil);
 }
 VALUE cGridInsert;
 

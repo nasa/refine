@@ -45,7 +45,7 @@ Grid *gridRemoveAllNodes(Grid *grid )
 	gridCell( grid, cell, nodes);
 	for (i=0;nodeExists && i<4;i++){
 	  if (n0 != nodes[i]) {
-	    nodeExists = (grid == gridCollapseEdge(grid, nodes[i], n0, 1.0));
+	    nodeExists = (grid == gridCollapseEdge(grid,NULL,nodes[i],n0,1.0));
 	  }
 	}
       }
@@ -90,7 +90,7 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
 	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
-	  if ( grid == gridCollapseEdge(grid, n0, n1, 0.5) ) {
+	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, n0 );
 	    if (  gridGeometryFace( grid, n0 ) ) {
@@ -147,7 +147,7 @@ Grid *gridAdaptSurface(Grid *grid, double minLength, double maxLength )
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
 	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
-	  if ( grid == gridCollapseEdge(grid, n0, n1, 0.5) ) {
+	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, n0 );
 	    if (  gridGeometryFace( grid, n0 ) ) {
@@ -196,7 +196,7 @@ Grid *gridAdaptWithOutCAD(Grid *grid, double minLength, double maxLength )
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
 	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
-	  if ( grid == gridCollapseEdge(grid, n0, n1, 0.5) ) {
+	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, n0 );
 	  }
@@ -320,7 +320,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   }
   
   if ( gridNegCellAroundNode(grid, newnode) ) {
-    gridCollapseEdge(grid, n0, newnode, 0.0 );
+    gridCollapseEdge(grid, NULL, n0, newnode, 0.0 );
     return EMPTY;
   }else{
     return newnode;
@@ -446,7 +446,7 @@ int gridSplitFaceAt(Grid *grid, int face,
   }
 
   if ( gridNegCellAroundNode(grid, newnode) ) {
-    gridCollapseEdge(grid, nodes[0], newnode, 0.0 );
+    gridCollapseEdge(grid, NULL, nodes[0], newnode, 0.0 );
     return EMPTY;
   }else{
     return newnode;
@@ -467,6 +467,15 @@ int gridSplitCellAt(Grid *grid, int cell,
   newnode = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
 
+  for (i=0;i<4;i++){
+    for (n=0;n<4;n++) newnodes[n] = nodes[n];
+    newnodes[i] = newnode; 
+    if (1.0e-12 > gridVolume(grid, newnodes ) ) {
+      gridRemoveNode(grid, newnode );
+      return EMPTY;
+    }
+  }
+
   if ( grid != gridRemoveCell(grid, cell ) ) return EMPTY;
 
   for (i=0;i<4;i++){
@@ -476,12 +485,7 @@ int gridSplitCellAt(Grid *grid, int cell,
 		     	           newnodes[2], newnodes[3] ) ) return EMPTY;
   }
 
-  if ( gridNegCellAroundNode(grid, newnode) ) {
-    gridCollapseEdge(grid, nodes[0], newnode, 0.0 );
-    return EMPTY;
-  }else{
-    return newnode;
-  }
+  return newnode;
 }
 
 int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
@@ -679,11 +683,16 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
   return gridSplitCellAt(grid,foundCell,newX,newY,newZ);
 }
 
-Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
+Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
 {
   int i, face0, face1;
   double xyz0[3], xyz1[3], xyzAvg[3];
   bool volumeEdge;
+
+  if ( NULL != queue ) return NULL;
+  if (gridNodeNearGhost(grid,n0)||gridNodeNearGhost(grid,n1))return NULL;
+  if (!gridGeometryEdge(grid,n0)&&gridNodeFaceIdDegree(grid,n0)>1)return NULL;
+  if (!gridGeometryEdge(grid,n1)&&gridNodeFaceIdDegree(grid,n1)>1)return NULL;
 
   if ( gridGeometryNode(grid, n1) ) return NULL;
   if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
@@ -826,9 +835,9 @@ Grid *gridVerifyEdgeExists(Grid *grid, int n0, int n1 )
 	  gridCell( grid, adjItem(it1), nodes1 );
 	  for(i1=0;i1<4&&!gotIt;i1++){
 	    if (nodes1[i1] == n1 && !gridNodeFrozen( grid, nodes0[i0] )) {
-	      gridCollapseEdge(grid, n0, nodes0[i0], 0.0);
+	      gridCollapseEdge(grid, NULL, n0, nodes0[i0], 0.0);
 	      gotIt = gridCellEdge( grid, n0, n1 );
-	      if (!gotIt) gridCollapseEdge(grid, n1, nodes0[i0], 0.0);
+	      if (!gotIt) gridCollapseEdge(grid, NULL, n1, nodes0[i0], 0.0);
 	      gotIt = gridCellEdge( grid, n0, n1 );
 	    }	    
 	  }     

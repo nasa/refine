@@ -46,6 +46,51 @@ Grid *gridSetGhost(Grid *grid, int node )
   return gridSetNodePart(grid,node,EMPTY);
 }
 
+Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
+				  double minLength, double maxLength )
+{
+  int n0, n1, adaptnode, origNNode, newnode;
+  int nnodeAdd, nnodeRemove;
+  double ratio;
+
+  origNNode = gridNNode(grid);
+  adaptnode =0;
+  nnodeAdd = 0;
+
+  for ( n0=0; adaptnode<origNNode; n0++ ) { 
+    adaptnode++;
+    if ( gridValidNode( grid, n0) && 
+	 !gridNodeFrozen( grid, n0 ) && 
+	 gridNodeLocal( grid, n0 ) ) {
+      if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
+      if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
+	newnode = gridParallelEdgeSplit(grid, queue, n0, n1);
+	if ( newnode != EMPTY ){
+	  nnodeAdd++;
+	}
+      }else{
+	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
+	  return NULL;
+	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
+	  if ( grid == gridCollapseEdge(grid, queue, n0, n1, 0.5) ) {
+	    nnodeRemove++;
+	  }
+	}
+      }
+    }else{
+      adaptnode++;
+    }
+  }
+  if ( NULL == queue ) {
+    printf("local added%9d remov%9d AR%14.10f\n",
+	   nnodeAdd,nnodeRemove,gridMinAR(grid));
+  } else {
+    printf("ghost added%9d remov%9d AR%14.10f\n",
+	   nnodeAdd,nnodeRemove,gridMinAR(grid));
+  }
+  return grid;
+}
+
 int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 {
   double xyz0[3], xyz1[3];
@@ -76,6 +121,44 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   }
   
   return newnode;
+}
+
+Grid *gridParallelEdgeCollapse(Grid *grid, Queue *queue, int node0, int node1 )
+{
+
+  bool gemLocal;
+
+  if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return NULL;
+
+  return gridCollapseEdge(grid, queue, node0, node1, 0.5 );
+}
+
+Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
+{
+  int cell, maxcell;
+  int nodes[4];
+
+  maxcell = gridMaxCell(grid);
+
+  for (cell=0;cell<maxcell;cell++){
+    if ( grid==gridCell( grid, cell, nodes) && gridAR(grid, nodes)<ARlimit ) {
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[3] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[2] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[3] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
+	   continue;
+    }
+  }
+
+  printf(" final AR%14.10f\n",gridMinAR(grid));
+  return grid;
 }
 
 Grid *gridParallelEdgeSwap(Grid *grid, Queue *queue, int node0, int node1 )
@@ -204,70 +287,5 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   fflush(stdout);
 
   queueFree(lq);
-  return grid;
-}
-
-Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
-				  double minLength, double maxLength )
-{
-  int n0, n1, adaptnode, origNNode, newnode;
-  int nnodeAdd;
-  double ratio;
-
-  origNNode = gridNNode(grid);
-  adaptnode =0;
-  nnodeAdd = 0;
-
-  for ( n0=0; adaptnode<origNNode; n0++ ) { 
-    adaptnode++;
-    if ( gridValidNode( grid, n0) && 
-	 !gridNodeFrozen( grid, n0 ) && 
-	 gridNodeLocal( grid, n0 ) ) {
-      if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
-      if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
-	newnode = gridParallelEdgeSplit(grid, queue, n0, n1);
-	if ( newnode != EMPTY ){
-	  nnodeAdd++;
-	}
-      }
-    }else{
-      adaptnode++;
-    }
-  }
-  if ( NULL == queue ) {
-    printf("local added%9d nnode%9d AR%14.10f\n",
-	   nnodeAdd,gridNNode(grid),gridMinAR(grid));
-  } else {
-    printf("ghost added%9d nnode%9d AR%14.10f\n",
-	   nnodeAdd,gridNNode(grid),gridMinAR(grid));
-  }
-  return grid;
-}
-
-Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
-{
-  int cell, maxcell;
-  int nodes[4];
-
-  maxcell = gridMaxCell(grid);
-
-  for (cell=0;cell<maxcell;cell++){
-    if ( grid==gridCell( grid, cell, nodes) && gridAR(grid, nodes)<ARlimit ) {
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[3] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[2] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[3] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
-	   continue;
-    }
-  }
-
-  printf(" final AR%14.10f\n",gridMinAR(grid));
   return grid;
 }

@@ -34,7 +34,7 @@ int gridInsertInToGeomEdge(Grid *g, double newX, double newY, double newZ);
 int gridInsertInToGeomFace(Grid *g, double newX, double newY, double newZ);
 int gridInsertInToVolume(Grid *g, double newX, double newY, double newZ);
 
-Grid *gridCollapseEdge(Grid *g, int n0, int n1, double ratio );
+Grid *gridCollapseEdge(Grid *g, Queue *q, int n0, int n1, double ratio );
 
 Grid *gridFreezeGoodNodes(Grid *g, double goodAR, 
 			  double minLength, double maxLength );
