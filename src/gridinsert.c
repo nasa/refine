@@ -33,16 +33,21 @@ Grid *gridThrash(Grid *grid)
 Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 {
   AdjIterator it;
-  int i, n0, n1, adaptnode, maxnode, newnode;
+  int i, n0, n1, adaptnode, maxnode, newnode, report;
   double ratio;
   
   maxnode = grid->nnode;
   adaptnode =0;
 
-  for ( n0=0; adaptnode<maxnode && n0<grid->maxnode ; n0++ ) { 
+  report = 10; if (grid->nnode > 100) report = grid->nnode/10;
+
+  for ( n0=0; 
+	adaptnode<maxnode && n0<grid->maxnode; 
+	n0++ ) { 
+    if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
+      printf("adapt node %8d nnode %8d\n",adaptnode,grid->nnode);
     if ( gridValidNode( grid, n0) ) {
       adaptnode++;
-      //  if (adaptnode/100*100 == adaptnode)printf("adapt node %d\n",n0);
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
       if ( ratio > maxLength ) {
 	newnode = gridSplitEdge(grid, n0, n1);
