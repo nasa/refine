@@ -34,10 +34,10 @@ VALUE grid_smooth( VALUE self )
   return (gridSmooth( grid )==grid?self:Qnil);
 }
 
-VALUE grid_smoothFaceMR( VALUE self )
+VALUE grid_smoothFaceMR( VALUE self, VALUE optimizationLimit )
 {
   GET_GRID_FROM_SELF;
-  return (gridSmoothFaceMR( grid )==grid?self:Qnil);
+  return (gridSmoothFaceMR(grid, NUM2DBL(optimizationLimit) )==grid?self:Qnil);
 }
 
 VALUE grid_smoothNode( VALUE self, VALUE node )
@@ -102,7 +102,7 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "safeProjectNode", grid_safeProjectNode, 2 );
   rb_define_method( cGridCAD, "project", grid_project, 0 );
   rb_define_method( cGridCAD, "smooth", grid_smooth, 0 );
-  rb_define_method( cGridCAD, "smoothFaceMR", grid_smoothFaceMR, 0 );
+  rb_define_method( cGridCAD, "smoothFaceMR", grid_smoothFaceMR, 1 );
   rb_define_method( cGridCAD, "smoothNode", grid_smoothNode, 1 );
   rb_define_method( cGridCAD, "smoothNodeFaceMR", grid_smoothNodeFaceMR, 1 );
   rb_define_method( cGridCAD, "optimizeT", grid_optimizeT, 2 );

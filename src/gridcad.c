@@ -557,12 +557,11 @@ Grid *gridSmooth( Grid *grid )
   return grid;
 }
 
-Grid *gridSmoothFaceMR( Grid *grid )
+Grid *gridSmoothFaceMR( Grid *grid, double optimizationLimit )
 {
   int node;
-  double mr, optimizationLimit;
-  optimizationLimit =0.60;
-  for (node=0;node<grid->maxnode;node++) {
+  double mr;
+ for (node=0;node<grid->maxnode;node++) {
     if ( gridValidNode( grid, node ) && gridGeometryFace( grid, node )) {
       gridNodeFaceMR(grid,node,&mr);
       if (mr < optimizationLimit) {
