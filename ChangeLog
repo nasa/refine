@@ -1,3 +1,8 @@
+2005-01-30 19:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) added in new faces to
+	allow for validity checks durring two face cell removal.
+
 2005-01-28 11:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwapEdge) added in new faces to allow for
