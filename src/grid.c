@@ -390,7 +390,7 @@ Grid *gridExportFAST( Grid *grid, char *filename )
   }
 
   for( i=0; i<grid->nface ; i++ ) {
-    fprintf(file,"%4d",grid->faceId[i]);
+    fprintf(file,"%4d\n",grid->faceId[i]);
   }
 
   printf("gridExportFAST: writing cells...\n");
