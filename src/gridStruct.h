@@ -12,6 +12,7 @@
 #define GRIDSTRUCT_H
 
 #include "master_header.h"
+#include "adj.h"
 
 BEGIN_C_DECLORATION
 

@@ -59,24 +59,32 @@ void gridMapXYZWithJ( double *j,
 
 double gridEdgeLength(Grid *grid, int n0, int n1 )
 {
+  double xyz0[3], xyz1[3];
   double dx, dy, dz;
 
-  dx = grid->xyz[0+3*n1] - grid->xyz[0+3*n0];
-  dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
-  dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
+  if (grid != gridNodeXYZ(grid, n0, xyz0) ) return -1.0;
+  if (grid != gridNodeXYZ(grid, n1, xyz1) ) return -1.0;
+  
+  dx = xyz1[0] - xyz0[0];
+  dy = xyz1[1] - xyz0[1];
+  dz = xyz1[2] - xyz0[2];
 
   return  sqrt(dx*dx+dy*dy+dz*dz);
 }
 
 double gridEdgeRatio(Grid *grid, int n0, int n1 )
 {
+  double xyz0[3], xyz1[3];
   double dx, dy, dz;
   double m[6];
   double length0, length1;
 
-  dx = grid->xyz[0+3*n1] - grid->xyz[0+3*n0];
-  dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
-  dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
+  if (grid != gridNodeXYZ(grid, n0, xyz0) ) return -1.0;
+  if (grid != gridNodeXYZ(grid, n1, xyz1) ) return -1.0;
+  
+  dx = xyz1[0] - xyz0[0];
+  dy = xyz1[1] - xyz0[1];
+  dz = xyz1[2] - xyz0[2];
 
   gridMap(grid, n0, m);
   length0 = sqrt (
@@ -100,7 +108,7 @@ double gridAverageEdgeLength(Grid *grid, int node )
   double length, celllength;
   ncell = 0;
   length = 0.0;
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     ncell++;
     cell = adjItem(it);
     gridCell( grid, cell, nodes);
@@ -126,7 +134,7 @@ Grid *gridLargestRatioEdge(Grid *grid, int node,
   
   *edgeNode = EMPTY;
   *ratio = -1.0;
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     cell = adjItem(it);
     gridCell( grid, cell, nodes);
     for (i=0;i<4;i++){
@@ -152,7 +160,7 @@ Grid *gridSmallestRatioEdge(Grid *grid, int node,
   
   *edgeNode = EMPTY;
   *ratio = DBL_MAX;
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     cell = adjItem(it);
     gridCell( grid, cell, nodes);
     for (i=0;i<4;i++){
@@ -171,19 +179,25 @@ Grid *gridSmallestRatioEdge(Grid *grid, int node,
 
 double gridSpacing(Grid *grid, int node )
 {
-  return 1.0/sqrt(grid->map[0+6*node]);
+  double map[6];
+  if (grid != gridMap(grid, node, map)) return -1.0;
+  return 1.0/sqrt(map[0]);
 }
 
 Grid *gridResetSpacing(Grid *grid )
 {
   int node;
   double spacingInverse;
-  for ( node=0; node < grid->nnode; node++) { 
-    spacingInverse = 1.0/gridAverageEdgeLength( grid, node );
-    spacingInverse = spacingInverse * spacingInverse;
-    grid->map[0+6*node] = spacingInverse; 
-    grid->map[3+6*node] = spacingInverse; 
-    grid->map[5+6*node] = spacingInverse;
+  double map[6];
+  for ( node=0; node < gridMaxNode(grid); node++) {
+    if ( gridValidNode(grid,node) ) {
+      spacingInverse = 1.0/gridAverageEdgeLength( grid, node );
+      spacingInverse = spacingInverse * spacingInverse;
+      gridSetMap(grid,node,
+		 spacingInverse,0,0,
+		 spacingInverse,0,
+		 spacingInverse);
+    }
   } 
   return grid;
 }
@@ -507,7 +521,7 @@ Grid *gridNodeAR(Grid *grid, int node, double *ar )
 
   *ar = 1.0;
 
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     cell = adjItem(it);
     gridCell( grid, cell, nodes);
     local_ar = gridAR(grid, nodes);
@@ -665,7 +679,7 @@ Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
   dARdx[1] = DBL_MAX;
   dARdx[2] = DBL_MAX;
 
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     cell = adjItem(it);
     nodes[0] = node;
     if (node == grid->c2n[0+4*cell]){
@@ -700,7 +714,7 @@ Grid *gridStoreARDerivative (Grid *grid, int node )
   if ( !gridValidNode( grid, node) ) return NULL;
 
   grid->degAR = 0;
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     grid->degAR++;
     cell = adjItem(it);
     nodes[0] = node;
@@ -1323,7 +1337,7 @@ bool gridNegCellAroundNode( Grid *grid, int node )
   int cellId, nodes[4];
   AdjIterator it;
 
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ) {
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ) {
     cellId = adjItem(it);
     gridCell( grid, cellId, nodes );
     if (gridVolume(grid, nodes) <= 0.0) return TRUE;
@@ -1338,7 +1352,7 @@ bool gridNegCellAroundNodeExceptGem( Grid *grid, int node )
   bool inGem;
   AdjIterator it;
 
-  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ) {
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ) {
     cellId = adjItem(it);
     inGem = FALSE;
     for ( igem =0; !inGem && igem < grid->ngem ; igem++)
