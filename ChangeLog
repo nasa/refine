@@ -1,3 +1,9 @@
+2004-07-26 14:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R to be
+	a constant 1.25 for all elements. This value is similar to
+	concrete. The G-S Ax=B linear elasticity solve appears more stable.
+
 2004-07-26 14:06 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationSubIteration) now does
