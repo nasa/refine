@@ -16,6 +16,19 @@ UGridPtr CADGeom_VolumeGrid( int vol )
   return NULL;
 }
 
+GridBool CADGeom_GetEdge(int a, int b, double *c, int *d) {
+  c = NULL;
+  d = NULL;
+  return FALSE;
+}
+
+CADCurvePtr CADGeom_EdgeGrid( int a, int b)
+{
+  return NULL;
+}
+
+CADCurvePtr CADGeom_EdgeGrid( int, int );
+
 void *DList_SetIteratorToHead(DListPtr dlp,Iterator *dli)
 {
   return NULL;

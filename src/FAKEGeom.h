@@ -44,6 +44,13 @@ typedef struct _UGridPtr {
 
 UGridPtr CADGeom_VolumeGrid( int );
 
+typedef struct {
+  magic_t   magic;
+} CADCurve, *CADCurvePtr;
+ 
+GridBool CADGeom_GetEdge(int, int, double *, int *);
+CADCurvePtr CADGeom_EdgeGrid( int, int );
+
 typedef struct _DList {
    magic_t    magic;
 } DList,*DListPtr;
@@ -67,7 +74,6 @@ GridBool CADGeom_GetVolume(int, int *, int *, int *, int *);
 UGPatchPtr CADGeom_FaceGrid( int, int );
 GridBool CADGeom_NormalToFace( int vol, int faceId, 
 			       double *uv, double *xyz, double *normal);
-
 
 END_C_DECLORATION
 
