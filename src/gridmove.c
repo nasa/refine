@@ -1170,3 +1170,23 @@ GridMove *gridmoveElasticRelaxationShutDown(GridMove *gm)
 
   return gm;
 }
+
+GridMove *gridmoveElasticRelaxation(GridMove *gm, int nsteps, int subIterations)
+{
+  int step, iteration;
+  double position;
+  double rmsResidual;
+
+  if (gm != gridmoveElasticRelaxationStartUp(gm)) return NULL;
+  for(step=0;step<nsteps;step++) {
+    position = (double)(step+1)/(double)nsteps;
+    gridmoveElasticRelaxationStartStep(gm, position);    
+    for(iteration=0;iteration<subIterations;iteration++) {
+      gridmoveElasticRelaxationSubIteration(gm, &rmsResidual);
+      /* printf("Iteration %4d Residual %23.15e\n",iteration,rmsResidual); */ 
+    }
+  }
+  gridmoveElasticRelaxationShutDown(gm);
+
+  return gm;
+}

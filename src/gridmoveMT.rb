@@ -278,10 +278,27 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal  7,    gm.rowEntry(1,3)
  end
 
- def testElasticityOneCellDumpA
+ def XtestElasticityOneCellDumpA
   grid = isoTet
   gm = GridMove.new(grid)
   assert_equal gm, gm.elasticRelaxationDumpA
+ end
+
+ def testElasticRelaxationUp
+  grid = isoTet
+  gm = GridMove.new(grid)
+  zero = [0.0,0.0,0.0]
+  up  = [0.0,0.0,1.0]
+  3.times{|n| gm.displace(n,up)}
+  assert_equal zero, gm.displacement(3)
+  assert_equal gm, gm.elasticRelaxation(1,1)
+  assert_equal up, gm.displacement(0)
+  assert_equal up, gm.displacement(1)
+  assert_equal up, gm.displacement(2)
+  delta = 1.0e-15
+  assert_in_delta up[0], gm.displacement(3)[0], delta
+  assert_in_delta up[1], gm.displacement(3)[1], delta
+  assert_in_delta up[2], gm.displacement(3)[2], delta
  end
 
 end

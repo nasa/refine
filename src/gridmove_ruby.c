@@ -165,6 +165,13 @@ static VALUE gridmove_elasticRelaxationDumpA( VALUE self )
   return self;
 }
 
+static VALUE gridmove_elasticRelaxation( VALUE self, VALUE nsteps, VALUE subIterations )
+{
+  GET_GM_FROM_SELF;
+  return (gm == gridmoveElasticRelaxation( gm, NUM2INT(nsteps), 
+					   NUM2INT(subIterations) )?self:Qnil );
+}
+
 VALUE cGridMove;
 
 void Init_GridMove() 
@@ -185,4 +192,5 @@ void Init_GridMove()
   rb_define_method( cGridMove, "rowNodes", gridmove_rowNodes, 1 );
   rb_define_method( cGridMove, "rowEntry", gridmove_rowEntry, 2 );
   rb_define_method( cGridMove, "elasticRelaxationDumpA", gridmove_elasticRelaxationDumpA, 0 );
+  rb_define_method( cGridMove, "elasticRelaxation", gridmove_elasticRelaxation, 2 );
 }
