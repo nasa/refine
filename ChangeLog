@@ -1,3 +1,10 @@
+2004-04-22 16:02 Mike Park  <mike.park@nasa.gov>
+
+	* /src/layer.c (layerAdvancedTriangleMaxEdgeLength) calculate
+	the max edge length of a triangle after it is advanced next.
+	* /src/mesherx.c used Advanced Triangle Edge Length in terminating
+	trangles that will cause headaces for FELISA boundary reconstruction.
+
 2004-04-20 16:58 Mike Park  <mike.park@nasa.gov>
 
 	* /src/queue.c (addCell) provides the nodes, cellId, and partIds
