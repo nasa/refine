@@ -7,6 +7,10 @@ Start Builds!!!!!
 
 --Major refactoring
 
+add nodes and comments to tecplot neg cells
+
+unit test CADGeom_ReversedSurfaceNormal
+
 Check and see if I should only queue a cell for removal if it has a
 ghost node. faces and edges are that way.
 
