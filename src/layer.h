@@ -32,6 +32,8 @@ bool layerParentFace(Layer *, int faceId);
 Layer *layerFront(Layer *, int front, int *nodes);
 Layer *layerFrontDirection(Layer *, int front, double *direction);
 Layer *layerMakeNormal(Layer *);
+Layer *layerInitializeNormal(Layer *, int normal );
+Layer *layerCopyNormal(Layer *, int originalNormal, int newNormal );
 Layer *layerFrontNormals(Layer *, int front, int *normals);
 int layerNormalRoot(Layer *, int normal );
 int layerNormalDeg(Layer *, int normal );

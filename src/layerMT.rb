@@ -780,6 +780,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal layer,     layer.makeFront([1])
   assert_nil              layer.blendGeomEdge(1)
   assert_equal layer,     layer.makeNormal
+  assert_equal 4,         layer.nnormal
+  
   assert_equal [0,1,2],   layer.frontNormals(0)
   assert_equal [0,2,3],   layer.frontNormals(1)
   assert_nil              layer.blendGeomEdge(0)
@@ -787,6 +789,14 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,         layer.nblend
   assert_equal layer,     layer.blendGeomEdge(1)
   assert_equal 1,         layer.nblend
+  assert_equal 6,         layer.nnormal
+  assert_equal 0,         layer.normalRoot(0)
+  assert_equal 1,         layer.normalRoot(2)
+  assert_equal 0,         layer.normalRoot(4)
+  assert_equal 1,         layer.normalRoot(5)
+  assert_equal [0,1,2],   layer.frontNormals(0)
+  assert_equal [4,5,3],   layer.frontNormals(1)
+  assert_equal [0,4,5,1], layer.blendNormals(0)
  end
 
 

@@ -36,12 +36,18 @@ struct Front {
   int parentEdge[3];
 };
 
+typedef struct Blend Blend;
+struct Blend {
+  int normal[4];
+};
+
 struct Layer {
   Grid *grid;
   int nfront;
   Front *front;
   int nFrontParent, *frontParent;
   int nblend;
+  Blend *blend;
   int nnormal;
   Normal *normal;
   int *globalNode2Normal;
@@ -60,6 +66,7 @@ Layer *layerCreate( Grid *grid )
   layer->nFrontParent=0;
   layer->frontParent=NULL;
   layer->nblend=0;
+  layer->blend=NULL;
   layer->nnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
@@ -186,6 +193,7 @@ void layerFree(Layer *layer)
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
+  if (layer->blend != NULL) free(layer->blend);
   if (layer->frontParent != NULL) free(layer->frontParent);
   if (layer->front != NULL) free(layer->front);
   free(layer);
@@ -327,6 +335,41 @@ Layer *layerFrontDirection(Layer *layer, int front, double *direction )
   return layer;
 }
 
+Layer *layerInitializeNormal(Layer *layer, int normal)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+ 
+  layer->normal[normal].root = EMPTY;
+  layer->normal[normal].tip = EMPTY;
+  layer->normal[normal].direction[0] = 0.0;
+  layer->normal[normal].direction[1] = 0.0;
+  layer->normal[normal].direction[2] = 0.0;
+  layer->normal[normal].height = 1.0;
+  layer->normal[normal].terminated = FALSE;
+
+  return layer;
+}
+
+Layer *layerCopyNormal(Layer *layer, int originalNormal, int newNormal )
+{
+  if (originalNormal < 0 || originalNormal >= layerNNormal(layer) ) return NULL;
+  if (newNormal < 0 || newNormal >= layerNNormal(layer) ) return NULL;
+ 
+  layer->normal[newNormal].root = layer->normal[originalNormal].root; 
+  layer->normal[newNormal].tip = layer->normal[originalNormal].tip;
+  layer->normal[newNormal].direction[0] = 
+    layer->normal[originalNormal].direction[0];
+  layer->normal[newNormal].direction[1] = 
+    layer->normal[originalNormal].direction[1];
+  layer->normal[newNormal].direction[2] = 
+    layer->normal[originalNormal].direction[2];
+  layer->normal[newNormal].height = layer->normal[originalNormal].height;
+  layer->normal[newNormal].terminated = 
+    layer->normal[originalNormal].terminated;
+
+  return layer;
+}
+
 Layer *layerMakeNormal(Layer *layer)
 {
   int i, front, normal, globalNode;
@@ -358,13 +401,8 @@ Layer *layerMakeNormal(Layer *layer)
   for(i=0;i<layerMaxNode(layer);i++){
     normal = layer->globalNode2Normal[i];
     if (normal!=EMPTY) {
+      layerInitializeNormal(layer,normal);
       layer->normal[normal].root = i;
-      layer->normal[normal].tip = EMPTY;
-      layer->normal[normal].direction[0] = 0.0;
-      layer->normal[normal].direction[1] = 0.0;
-      layer->normal[normal].direction[2] = 0.0;
-      layer->normal[normal].height = 1.0;
-      layer->normal[normal].terminated = FALSE;
     }
   }
 
@@ -967,15 +1005,43 @@ Layer *layerWiggle(Layer *layer, double height )
 Layer *layerBlendGeomEdge(Layer *layer, int edgeId )
 {
   Grid *grid;
-  int ncurvepts, curve;
+  int ncurvepts, *curve;
+  int newNormals;
+  int origNormal, newNormal;
+  int i;
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
   grid = layerGrid(layer);
   ncurvepts = gridGeomEdgeSize(grid,edgeId);
   if (ncurvepts<2) return NULL;
+  curve = malloc(ncurvepts*sizeof(int));
+  gridGeomEdge(grid,edgeId,curve);
 
   layer->nblend = ncurvepts-1;
+  layer->blend = malloc( layer->nblend * sizeof(Blend) );
+  newNormals = ncurvepts;
+
+  newNormal = layer->nnormal;
+  layer->nnormal += newNormals;
+  layer->normal = realloc( layer->normal, layer->nnormal * sizeof(Normal));
+
+  for (i=0;i<ncurvepts;i++){
+    origNormal = layer->globalNode2Normal[curve[i]];
+    layerCopyNormal(layer,origNormal, newNormal);
+    if (i<ncurvepts-1){
+      layer->blend[i].normal[0] = newNormal;
+      layer->blend[i].normal[1] = origNormal;
+    }
+    if (i>0){
+      layer->blend[i-1].normal[3] = newNormal;
+      layer->blend[i-1].normal[4] = origNormal;
+    }
+    newNormal++;
+  }
+  for (i=0;i<layer->nblend;i++){
+    
+  }
 
   return layer;
 }
