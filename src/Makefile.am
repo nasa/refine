@@ -57,7 +57,7 @@ hla_sources = \
 	SyJetSpacingControl.c
 
 mesherx_hla.c : mesherx_SyJet.c
-	ln -s mesherx_SyJet.c mesherx_hla.c
+	( cd $(srcdir) && ln -s mesherx_SyJet.c mesherx_hla.c )
 
 LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
 
