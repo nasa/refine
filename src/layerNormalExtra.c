@@ -17,8 +17,6 @@
 #include "geometricStretch.h"
 #include "layerNormalExtra.h"
 
-#include "layerStruct.h"
-
 
 // adjust the height (and rate) between each layer.
 

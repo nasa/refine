@@ -15,9 +15,6 @@
 #include "geometricStretch.h"
 #include "layerNormalExtra.h"
 
-#include "layerStruct.h"
-
-
 //
 // Functions:
 //        layerAssignPolarGrowthHeight		cut from mesherx_SyJet.c

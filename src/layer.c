@@ -23,8 +23,6 @@
 #include "near.h"
 #include "intersect.h"
 
-#include "layerStruct.h"
-
 Layer *layerCreate( Grid *grid )
 {
   int i;
