@@ -1410,7 +1410,7 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
 {
   int global;
   int inode;
-  int nodes[4], globalnodes[9];
+  int nodes[4], globalnodes[4], nodeParts[4];
   double xyz[1000];
   int dim, aux;
   
@@ -1424,14 +1424,13 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
 			 __FILE__, __LINE__);
     for ( inode = 0 ; inode < 4 ; inode++ ) {
       globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
-      globalnodes[5+inode] = gridNodePart(grid,nodes[inode]);
+      nodeParts[inode] = gridNodePart(grid,nodes[inode]);
       gridNodeXYZ(grid,nodes[inode],&xyz[dim*inode]);
       gridMap(grid,nodes[inode],&xyz[3+dim*inode]);
       for ( aux = 0 ; aux < gridNAux(grid) ; aux++ ) 
 	xyz[aux+9+dim*inode] = gridAux(grid, nodes[inode], aux);
     }
-    globalnodes[4] = global;
-    queueAddCell(queue,globalnodes,xyz);
+    queueAddCell(queue,globalnodes,global,nodeParts,xyz);
   }
   
   if ( gridCellHasLocalNode(grid,nodes) )

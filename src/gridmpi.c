@@ -208,7 +208,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 {
   int transaction;
   int removed, removedcell, removedface;
-  int i, globalnodes[9], localnodes[4];
+  int i, globalnodes[5], globalCellId, nodeParts[4], localnodes[4];
   int cell, face;
   int added, addedcell, addedface;
   double xyz[1000], uv[6];
@@ -243,15 +243,16 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
     }
 
     for(added=0;added<queueAddedCells(gq,transaction);added++) {
-      queueAddedCellNodes( gq, addedcell, globalnodes );
-      queueAddedCellXYZs( gq, addedcell, xyz );
-      addedcell++;
-      for(i=0;i<4;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
-      if ( gridNodeLocal(grid,localnodes[0]) ||
-	   gridNodeLocal(grid,localnodes[1]) ||
-	   gridNodeLocal(grid,localnodes[2]) ||
-	   gridNodeLocal(grid,localnodes[3]) ) {
+      queueAddedCellNodeParts( gq, addedcell, nodeParts );
+      if ( gridPartId(grid) == nodeParts[0] ||
+	   gridPartId(grid) == nodeParts[1] ||
+	   gridPartId(grid) == nodeParts[2] ||
+	   gridPartId(grid) == nodeParts[3] ) {
+	queueAddedCellNodes( gq, addedcell, globalnodes );
+	queueAddedCellId( gq, addedcell, &globalCellId );
+	queueAddedCellXYZs( gq, addedcell, xyz );
 	for(i=0;i<4;i++) {
+	  localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
 	  if ( EMPTY == localnodes[i] ) {
 	    localnodes[i]=gridAddNodeWithGlobal( grid,
 						 xyz[0+dim*i],
@@ -263,14 +264,15 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 		       xyz[6+dim*i],xyz[7+dim*i],xyz[8+dim*i]);
 	    for ( aux = 0 ; aux < gridNAux(grid) ; aux++ )     
 	      gridSetAux(grid, localnodes[i], aux, xyz[aux+9+dim*i]);
-	    gridSetNodePart(grid, localnodes[i], globalnodes[5+i]);
+	    gridSetNodePart(grid, localnodes[i], nodeParts[i]);
 	  }
 	}
 	cell = gridAddCellWithGlobal(grid,
 				     localnodes[0],localnodes[1],
 				     localnodes[2],localnodes[3],
-				     globalnodes[4]);
+				     globalCellId);
       }
+      addedcell++;
     }
     for(added=0;added<queueAddedFaces(gq,transaction);added++) {
       queueAddedFaceNodes( gq, addedface, globalnodes );

@@ -133,7 +133,8 @@ Queue *queueRemovedCellNodes( Queue *queue, int index, int *nodes )
   return queue;
 }
 
-Queue *queueAddCell( Queue *queue, int *nodes, double *xyzs )
+Queue *queueAddCell( Queue *queue, int *nodes, int cellId, int *nodeParts,
+		     double *xyzs )
 {
   int i;
   if (NULL==queue) return NULL;
@@ -146,7 +147,10 @@ Queue *queueAddCell( Queue *queue, int *nodes, double *xyzs )
 				     4*queue->nodeSize * queue->maxAddedCells 
 				     * sizeof(double));
   }
-  for (i=0;i<9 ;i++) queue->addedCellNodes[i+9*queue->nAddedCells] = nodes[i];
+  for (i=0;i<4 ;i++) queue->addedCellNodes[i+9*queue->nAddedCells] = nodes[i];
+  queue->addedCellNodes[4+9*queue->nAddedCells] = cellId;
+  for (i=0;i<4 ;i++) 
+    queue->addedCellNodes[5+i+9*queue->nAddedCells] = nodeParts[i];
   for (i=0;i<4*queue->nodeSize;i++) 
     queue->addedCellXYZs[i+4*queue->nodeSize*queue->nAddedCells] = xyzs[i];
   queue->nAddedCells++;
@@ -165,7 +169,24 @@ Queue *queueAddedCellNodes( Queue *queue, int index, int *nodes )
   int i;
   if (NULL==queue) return NULL;
   if ( index<0 || index>queue->nAddedCells ) return NULL;
-  for (i=0;i<9;i++) nodes[i] = queue->addedCellNodes[i+9*index];
+  for (i=0;i<4;i++) nodes[i] = queue->addedCellNodes[i+9*index];
+  return queue;
+}
+
+Queue *queueAddedCellId( Queue *queue, int index, int *cellId )
+{
+  if (NULL==queue) return NULL;
+  if ( index<0 || index>queue->nAddedCells ) return NULL;
+  *cellId = queue->addedCellNodes[4+9*index];
+  return queue;
+}
+
+Queue *queueAddedCellNodeParts( Queue *queue, int index, int *nodeParts )
+{
+  int i;
+  if (NULL==queue) return NULL;
+  if ( index<0 || index>queue->nAddedCells ) return NULL;
+  for (i=0;i<4;i++) nodeParts[i] = queue->addedCellNodes[5+i+9*index];
   return queue;
 }
 
@@ -367,8 +388,8 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
   if (NULL==queue) return NULL;
 
   if ( queue->nodeSize != ints[0] ) {
-    printf("ERROR: %s: %d: queueLoad: incompatable nodeSize: %d %d\n",
-	   __FILE__, __LINE__, queue->nodeSize, ints[0] );
+    /* printf("ERROR: %s: %d: queueLoad: incompatable nodeSize: %d %d\n",
+              __FILE__, __LINE__, queue->nodeSize, ints[0] ); */
     return NULL;
   }			    
   queue->transactions  = ints[1];

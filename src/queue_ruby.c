@@ -69,17 +69,22 @@ VALUE queue_removedCellNodes( VALUE self, VALUE index )
   return rb_nodes;
 }
 
-VALUE queue_addCell( VALUE self, VALUE rb_nodes, VALUE rb_xyzs )
+VALUE queue_addCell( VALUE self, VALUE rb_nodes, VALUE rb_cellId, 
+		     VALUE rb_nodeParts, VALUE rb_xyzs )
 {
-  int i, nodes[9];
+  int i, nodes[4], cellId, nodeParts[4];
   double *xyzs;
   VALUE result;
   GET_QUEUE_FROM_SELF;
-  for (i=0;i< 9;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
+  for (i=0;i< 4;i++) {
+    nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
+    nodeParts[i]=NUM2INT(rb_ary_entry(rb_nodeParts,i));
+  }
+  cellId = NUM2INT(rb_cellId);
   xyzs = malloc(4*queueNodeSize(queue)*sizeof(double));
   for (i=0;i<4*queueNodeSize(queue);i++) 
     xyzs[i] = NUM2DBL(rb_ary_entry(rb_xyzs,i));
-  result = (queue==queueAddCell(queue,nodes,xyzs)?self:Qnil);
+  result = (queue==queueAddCell(queue,nodes,cellId,nodeParts,xyzs)?self:Qnil);
   free(xyzs);
   return result;
 }
@@ -92,13 +97,32 @@ VALUE queue_addedCells( VALUE self, VALUE transaction )
 
 VALUE queue_addedCellNodes( VALUE self, VALUE index )
 {
-  int i, nodes[9];
+  int i, nodes[4];
   VALUE rb_nodes;
   GET_QUEUE_FROM_SELF;
   if (queue != queueAddedCellNodes(queue,NUM2INT(index),nodes)) return Qnil;
-  rb_nodes = rb_ary_new2(9);
-  for (i=0;i<9;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
+  rb_nodes = rb_ary_new2(4);
+  for (i=0;i<4;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
   return rb_nodes;
+}
+
+VALUE queue_addedCellId( VALUE self, VALUE index )
+{
+  int cellId;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedCellId(queue,NUM2INT(index),&cellId)) return Qnil;
+  return INT2NUM(cellId);
+}
+
+VALUE queue_addedCellNodeParts( VALUE self, VALUE index )
+{
+  int i, nodeParts[4];
+  VALUE rb_nodeParts;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedCellNodeParts(queue,NUM2INT(index),nodeParts)) return Qnil;
+  rb_nodeParts = rb_ary_new2(4);
+  for (i=0;i<4;i++) rb_ary_store(rb_nodeParts,i,INT2NUM(nodeParts[i]));
+  return rb_nodeParts;
 }
 
 VALUE queue_addedCellXYZs( VALUE self, VALUE index )
@@ -303,9 +327,11 @@ void Init_Queue()
   rb_define_method( cQueue, "removeCell", queue_removeCell, 1 );
   rb_define_method( cQueue, "removedCells", queue_removedCells, 1 );
   rb_define_method( cQueue, "removedCellNodes", queue_removedCellNodes, 1 );
-  rb_define_method( cQueue, "addCell", queue_addCell, 2 );
+  rb_define_method( cQueue, "addCell", queue_addCell, 4 );
   rb_define_method( cQueue, "addedCells", queue_addedCells, 1 );
   rb_define_method( cQueue, "addedCellNodes", queue_addedCellNodes, 1 );
+  rb_define_method( cQueue, "addedCellId", queue_addedCellId, 1 );
+  rb_define_method( cQueue, "addedCellNodeParts", queue_addedCellNodeParts, 1 );
   rb_define_method( cQueue, "addedCellXYZs", queue_addedCellXYZs, 1 );
   rb_define_method( cQueue, "totalRemovedCells", queue_totalRemovedCells, 0 );
   

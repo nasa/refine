@@ -89,26 +89,28 @@ class TestQueue < Test::Unit::TestCase
 
  def testAddCellTransaction
   cellId = 7
-  nodes = [0,1,2,3,cellId,5,5,5,5]
+  nodes = [0,1,2,3]
+  nodeParts = [5,5,5,5]
   xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
   q = Queue.new(3)
-  assert_equal q,     q.addCell(nodes,xyzs)
-  assert_equal 1,     q.addedCells(0)
-  assert_equal nodes, q.addedCellNodes(0)
-  assert_equal xyzs,  q.addedCellXYZs(0)
+  assert_equal q,         q.addCell(nodes,cellId,nodeParts,xyzs)
+  assert_equal 1,         q.addedCells(0)
+  assert_equal nodes,     q.addedCellNodes(0)
+  assert_equal cellId,    q.addedCellId(0)
+  assert_equal nodeParts, q.addedCellNodeParts(0)
+  assert_equal xyzs,      q.addedCellXYZs(0)
  end
 
  def testAddCellTransactionWithBigNodeSize
   cellId = 7
-  nodes = [0,1,2,3,cellId,5,5,5,5]
+  nodes = [0,1,2,3]
+  nodeParts = [5,5,5,5]
   xyzs = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
           10,11,12,13,14,15,16,17,18,19,
           20,21,22,23,24,25,26,27,28,29,
           30,31,32,33,34,35,36,37,38,39]
   q = Queue.new(10)
-  assert_equal q,     q.addCell(nodes,xyzs)
-  assert_equal 1,     q.addedCells(0)
-  assert_equal nodes, q.addedCellNodes(0)
+  assert_equal q,     q.addCell(nodes,cellId,nodeParts,xyzs)
   assert_equal xyzs,  q.addedCellXYZs(0)
  end
 
@@ -140,13 +142,17 @@ class TestQueue < Test::Unit::TestCase
  end
 
  def testResetZerosOutPreviouslyRemovedAndAddedCellNodes
-  nodesCellId = [0,1,2,3,5,6,7,8,9]
+  cellId = 5
+  nodes = [0,1,2,3]
+  nodeParts = [6,7,8,9]
   xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
-  q = Queue.new(3).addCell([1,2,3,4,5,6,7,8,9],[1,2,3, 1,2,3, 1,2,3, 1,2,3]).reset
-  assert_equal 0, q.addedCells(0)
-  q.addCell(nodesCellId,xyzs)
-  assert_equal nodesCellId, q.addedCellNodes(0)  
-  assert_equal xyzs, q.addedCellXYZs(0)  
+  q = Queue.new(3).addCell([1,2,3,4],5,[6,7,8,9],[1,2,3, 1,2,3, 1,2,3, 1,2,3]).reset
+  assert_equal 0,         q.addedCells(0)
+  q.addCell(nodes, cellId, nodeParts, xyzs)
+  assert_equal nodes,     q.addedCellNodes(0)  
+  assert_equal cellId,    q.addedCellId(0)  
+  assert_equal nodeParts, q.addedCellNodeParts(0)  
+  assert_equal xyzs,      q.addedCellXYZs(0)  
  end
 
  def testResetZerosOutPreviouslyRemovedFaceNodes
@@ -173,10 +179,12 @@ class TestQueue < Test::Unit::TestCase
  end
 
  def testReallocMemoryForLotsOfCellAdds
-  nodes = [0,1,2,3,4,5,6,7,8]
+  nodes = [0,1,2,3]
+  cellId = 4
+  nodeParts = [5,6,7,8]
   xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
   q = Queue.new(3)
-  10000.times { q.addCell(nodes,xyzs) }
+  10000.times { q.addCell(nodes, cellId, nodeParts, xyzs) }
  end
 
  def testReallocMemoryForLotsOfCellRemoves
@@ -199,12 +207,14 @@ class TestQueue < Test::Unit::TestCase
  end
 
  def testReallocMemoryForLotsOfTransactionsPlus
-  nodes = [0,1,2,3,4,5,6,7,8]
+  nodes = [0,1,2,3,4]
+  cellId = 4
+  nodeParts = [5,6,7,8]
   xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
   q = Queue.new(3)
   10000.times do
    q.newTransaction
-   q.addCell(nodes,xyzs).removeCell(nodes)
+   q.addCell(nodes,cellId,nodeParts,xyzs).removeCell(nodes)
    q.addFace(nodes,xyzs).removeFace(nodes)
   end
  end
@@ -233,17 +243,21 @@ class TestQueue < Test::Unit::TestCase
  end
 
  def testSerializeAddCells3
-  nodes = [5,6,7,8,9,10,11,12,13]
+  nodes = [5,6,7,8]
+  cellId = 9
+  nodeParts = [10,11,12,13]
   xyz = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2]
-  q = Queue.new(3).addCell(nodes,xyz)
+  q = Queue.new(3).addCell(nodes,cellId,nodeParts,xyz)
   assert_equal [3,1,0,1,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0, 
     0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2  ], q.dump
  end
 
  def testSerializeAddCells1
-  nodes = [5,6,7,8,9,10,11,12,13]
+  nodes = [5,6,7,8]
+  cellId = 9
+  nodeParts = [10,11,12,13]
   xyz = [0.1,0.2,0.3,0.4]
-  q = Queue.new(1).addCell(nodes,xyz)
+  q = Queue.new(1).addCell(nodes,cellId,nodeParts,xyz)
   assert_equal [1,1,0,1,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0, 
     0.1,0.2,0.3,0.4 ], q.dump
  end
@@ -293,7 +307,9 @@ class TestQueue < Test::Unit::TestCase
   assert_equal q, q.load([3,1,0,1,0,0, 0, 1, 5,6,7,8,9,10,11,12,13, 0, 0 ], 
 			 [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2])
   assert_equal 1, q.addedCells(0)
-  assert_equal [5,6,7,8,9,10,11,12,13], q.addedCellNodes(0)
+  assert_equal [5,6,7,8], q.addedCellNodes(0)
+  assert_equal 9, q.addedCellId(0)
+  assert_equal [10,11,12,13], q.addedCellNodeParts(0)
   assert_equal [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2], q.addedCellXYZs(0)
  end
 
@@ -314,14 +330,17 @@ class TestQueue < Test::Unit::TestCase
  end
 
  def testSerialIsStatbleAfterARemalloc
+  nodes = [5,6,7,8,9]
+  cellId = 9
+  nodeParts = [10,11,12,13]
   nodes = [5,6,7,8,9,10,11,12,13]
   xyz = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2]
   q = Queue.new(3)
   n=1000
   n.times { 
    q.newTransaction
-   q.removeCell(nodes).addCell(nodes,xyz)
-   q.removeCell(nodes).addCell(nodes,xyz)
+   q.removeCell(nodes).addCell(nodes,cellId,nodeParts,xyz)
+   q.removeCell(nodes).addCell(nodes,cellId,nodeParts,xyz)
    q.removeFace(nodes).addFace(nodes,xyz)
    q.removeFace(nodes).addFace(nodes,xyz)
   } 
