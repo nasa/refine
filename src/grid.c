@@ -490,7 +490,6 @@ Grid *gridPack(Grid *grid)
   int nFaceId;
   int iface, n0, n1, id, n[3];
   double t0, t1, u[3], v[3];
-  bool emptyFace;
   int *o2n;
   int prismIndex, pyramidIndex, quadIndex;
 
@@ -588,12 +587,10 @@ Grid *gridPack(Grid *grid)
     if (grid->f2n[0+3*origface] != EMPTY)
       nFaceId = MAX(nFaceId, grid->faceId[origface]);
 
-  emptyFace = FALSE;
   iface=0;
   for (iface=1;iface <= nFaceId;iface++){
     for ( origface=0 ; origface < grid->maxface ; origface++ ){ 
       if ( grid->faceId[origface]==iface && grid->f2n[0+3*origface] != EMPTY) {
-	emptyFace = FALSE;
 	if (origface == packface) {
 	  for (i=0;i<3;i++){
 	    adjRemove( grid->faceAdj, grid->f2n[i+3*packface], packface );

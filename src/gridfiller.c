@@ -194,17 +194,12 @@ int gridSavePart( Grid *grid, char *project )
   int nnode, nface, ncell;
   double *xyz;
   int *f2n, *faceId, *c2n;
-  int i, ixyz, iface, icell, inode, newnode, node;
+  int i, ixyz, iface;
   int iedge, curveEndPoint[2], nCurveNode, *curve;
   double trange[2];
-  int patchDimensions[4]; // check on 4
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
 
   double *temp_xyz, *temp_tuv;
-  int *temp_face;
-
-  Iterator    it;        /* DList Iterator */
-  UGPatchPtr  patch;     /* UGPatch of Face relative to Volume */
 
   if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) )
     printf("ERROR: CADGeom_GetVolume, line %d of %s\n.",__LINE__, __FILE__);
