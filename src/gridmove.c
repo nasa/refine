@@ -41,6 +41,9 @@ GridMove *gridmoveCreate( Grid *grid )
   gm->ksum = NULL;
   gm->kxyz = NULL;
 
+  gm->rowStart = NULL;
+  gm->compRow = NULL;
+
   return gm;
 }
 
@@ -51,6 +54,9 @@ Grid *gridmoveGrid(GridMove *gm)
 
 void gridmoveFree(GridMove *gm)
 {
+  if (NULL != gm->compRow) free(gm->compRow);
+  if (NULL != gm->rowStart) free(gm->rowStart);
+
   if (NULL != gm->ksum) free(gm->ksum);
   if (NULL != gm->kxyz) free(gm->kxyz);
 
@@ -103,6 +109,9 @@ void gridmovePack(void *voidGridMove,
   for ( packnode=nnode ; packnode < maxnode ; packnode++ ){ 
     gm->specified[packnode] = FALSE;
   }
+
+  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
+  if (NULL != gm->compRow) { free(gm->compRow); gm->compRow = NULL; }
 }
 
 void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n)
@@ -135,6 +144,9 @@ void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n)
     gm->specified[node] = temp_bool[node];
   }
   free(temp_bool);
+
+  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
+  if (NULL != gm->compRow) { free(gm->compRow); gm->compRow = NULL; }
 }
 
 void gridmoveReallocator(void *voidGridMove, int reallocType, 
@@ -148,6 +160,9 @@ void gridmoveReallocator(void *voidGridMove, int reallocType,
     gm->specified = realloc(gm->specified, newSize*sizeof(GridBool));
     for (i=lastSize;i<newSize;i++) gm->specified[i] = FALSE;
   }
+
+  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
+  if (NULL != gm->compRow) { free(gm->compRow); gm->compRow = NULL; }
 }
 
 void gridmoveGridHasBeenFreed(void *voidGridMove )
@@ -553,4 +568,60 @@ GridMove *gridmoveSetFortranNodeData( GridMove *gm, int nnode,
     }
   }
   return gm;
+}
+
+GridMove *gridmoveInitializeCompRow(GridMove *gm)
+{
+  int node, nnode;
+  int node0, node1;
+  int spring, nsprings, *springs;
+  gridmoveSprings(gm, &nsprings, &springs);
+  nnode = gridMaxNode(gridmoveGrid(gm));
+  gm->rowStart = malloc( (1+nnode) *sizeof(int));
+  for ( node = 0 ; node < nnode+1 ; node++ ) gm->rowStart[node] = 0;
+  for ( spring = 0 ; spring < nsprings ; spring ++ ) {
+    gm->rowStart[springs[0+2*spring]]++;
+    gm->rowStart[springs[1+2*spring]]++;
+  }
+  for ( node = 0 ; node < nnode ; node++ ) 
+    if (gm->rowStart[node]>0) gm->rowStart[node]++; /*diagonal*/
+  for ( node = 0 ; node < nnode ; node++ ) 
+    gm->rowStart[node+1] += gm->rowStart[node];
+  gm->compRow = malloc( gm->rowStart[nnode] *sizeof(int));
+
+  for ( node = nnode ; node > 0 ; node-- ) {
+    if (gm->rowStart[node] > gm->rowStart[node-1]) {
+      gm->rowStart[node]--;
+      gm->compRow[gm->rowStart[node]] = node;
+    }
+  }
+  if (gm->rowStart[0] > 0){
+    gm->rowStart[node]--;
+    gm->compRow[gm->rowStart[node]] = node;
+  }
+
+  for ( spring = 0 ; spring < nsprings ; spring ++ ) {
+    node0 = springs[0+2*spring];
+    node1 = springs[1+2*spring];
+    gm->rowStart[node0]--;
+    gm->compRow[gm->rowStart[node0]] = node1;
+    node0 = springs[1+2*spring];
+    node1 = springs[0+2*spring];
+    gm->rowStart[node0]--;
+    gm->compRow[gm->rowStart[node0]] = node1;
+  }
+
+  free(springs);
+}
+
+int gridmoveRowStart(GridMove *gm, int row)
+{
+  if (row<0 || row>gridMaxNode(gridmoveGrid(gm)) ) return EMPTY;
+  if (NULL == gm->rowStart) gridmoveInitializeCompRow(gm);
+  return gm->rowStart[row];
+}
+
+int gridmoveNNZ(GridMove * gm)
+{
+  return 16;
 }

@@ -120,6 +120,18 @@ VALUE gridmove_cellFaceNormal( VALUE self, VALUE rb_xyz, VALUE rb_nodes,
   return rb_normal;
 }
 
+static VALUE gridmove_rowStart(VALUE self, VALUE row)
+{
+  GET_GM_FROM_SELF;
+  return INT2NUM(gridmoveRowStart(gm,NUM2INT(row)));
+}
+
+static VALUE gridmove_nnz(VALUE self)
+{
+  GET_GM_FROM_SELF;
+  return INT2NUM(gridmoveNNZ(gm));
+}
+
 VALUE cGridMove;
 
 void Init_GridMove() 
@@ -135,4 +147,6 @@ void Init_GridMove()
 
   rb_define_method( cGridMove, "cellFaceNormal", gridmove_cellFaceNormal, 3 );
   
+  rb_define_method( cGridMove, "rowStart", gridmove_rowStart, 1 );
+  rb_define_method( cGridMove, "nnz", gridmove_nnz, 0 );
 }

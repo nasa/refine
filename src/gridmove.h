@@ -31,6 +31,9 @@ struct GridMove {
 
   double *ksum;
   double *kxyz;
+
+  int *rowStart;
+  int *compRow;
 };
 
 GridMove *gridmoveCreate(Grid *);
@@ -69,12 +72,15 @@ GridMove *gridmoveSprings(GridMove *, int *nsprings, int **springs);
 GridMove *gridmoveApplyDisplacements(GridMove *);
 GridMove *gridmoveProjectionDisplacements(GridMove *);
 
-GridMove *gridmoveDataLeadingDimension( GridMove *, int *ndim );
-GridMove *gridmoveLoadFortranNodeData( GridMove *, int nnode, 
+GridMove *gridmoveDataLeadingDimension(GridMove *, int *ndim );
+GridMove *gridmoveLoadFortranNodeData(GridMove *, int nnode, 
 				     int *nodes, double *data);
-GridMove *gridmoveSetFortranNodeData( GridMove *, int nnode, 
+GridMove *gridmoveSetFortranNodeData(GridMove *, int nnode, 
 				    int *nodes, double *data);
 
+GridMove *gridmoveInitializeCompRow(GridMove *);
+int gridmoveRowStart(GridMove *, int row);
+int gridmoveNNZ(GridMove *);
 
 END_C_DECLORATION
 

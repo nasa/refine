@@ -207,4 +207,20 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal [0,0,1], gm.cellFaceNormal(xyz,[2,3,0,1],3)
  end
 
+ def testCompRow
+  grid = Grid.new(5,2,0,0)
+  gm = GridMove.new(grid)
+  5.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  assert_equal EMPTY, gm.rowStart(EMPTY)
+  assert_equal  0,    gm.rowStart(0)
+  assert_equal  4,    gm.rowStart(1)
+  assert_equal  8,    gm.rowStart(2)
+  assert_equal 12,    gm.rowStart(3)
+  assert_equal 16,    gm.rowStart(4)
+  assert_equal 16,    gm.rowStart(5)
+  assert_equal EMPTY, gm.rowStart(6)
+  assert_equal 16, gm.nnz
+ end
+
 end
