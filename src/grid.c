@@ -228,6 +228,12 @@ Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 
 int gridFaceId(Grid *grid, int n0, int n1, int n2 )
 {
+
+  //loop over faces around node0
+  //loop over faces around node1
+  //if face0 = face1
+  //loop over faces around node2
+  //if face2=face0 return faceId
   return EMPTY;
 }
 
