@@ -23,6 +23,7 @@ Grid *gridIdentityCellGlobal(Grid *g, int offset );
 Grid *gridSetAllLocal(Grid *g );
 Grid *gridSetGhost(Grid *g, int node );
 int gridParallelEdgeSplit(Grid *g, Queue *q, int node0, int node1 );
+Grid *gridParallelEdgeSwap(Grid *g, Queue *q, int node0, int node1 );
 Grid *gridApplyQueue(Grid *g, Queue *q );
 
 Grid *gridParallelAdaptWithOutCAD(Grid *g, Queue *q, 

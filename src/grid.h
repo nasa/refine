@@ -168,6 +168,10 @@ gridNodeGhost(grid,(nodes)[0]) || \
 gridNodeGhost(grid,(nodes)[1]) || \
 gridNodeGhost(grid,(nodes)[2]) || \
 gridNodeGhost(grid,(nodes)[3]) )
+#define gridFaceHasLocalNode(grid,n0,n1,n2) ( \
+gridNodeLocal(grid,n0) || \
+gridNodeLocal(grid,n1) || \
+gridNodeLocal(grid,n2) )
 #define gridFaceHasGhostNode(grid,n0,n1,n2) ( \
 gridNodeGhost(grid,n0) || \
 gridNodeGhost(grid,n1) || \
@@ -247,6 +251,7 @@ Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
 int gridGem(Grid *g, int index );
 Grid *gridRemoveGem(Grid *g);
+Grid *gridRemoveGemAndQueue(Grid *g, Queue*);
 bool gridGemIsAllLocal(Grid *g);
 
 Grid *gridOrient(Grid *g, int *cell, int *nodes );

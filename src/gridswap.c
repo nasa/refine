@@ -137,19 +137,19 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
     gridNodeUV(grid, gap0, faceId0, gap0uv);
     gridNodeUV(grid, gap1, faceId0, gap1uv);
 
-    gridRemoveFace(grid, face0 );
-    gridRemoveFace(grid, face1 );
+    gridRemoveFaceAndQueue(grid, queue, face0 );
+    gridRemoveFaceAndQueue(grid, queue, face1 );
 
-    gridAddFaceUV(grid, 
-		  n0,   n0uv[0],   n0uv[1], 
-		  gap1, gap1uv[0], gap1uv[1], 
-		  gap0, gap0uv[0], gap0uv[1], 
-		  faceId0 );
-    gridAddFaceUV(grid, 
-		  n1,   n1uv[0],   n1uv[1], 
-		  gap0, gap0uv[0], gap0uv[1], 
-		  gap1, gap1uv[0], gap1uv[1], 
-		  faceId0 );
+    gridAddFaceUVAndQueue(grid, queue, 
+			  n0,   n0uv[0],   n0uv[1], 
+			  gap1, gap1uv[0], gap1uv[1], 
+			  gap0, gap0uv[0], gap0uv[1], 
+			  faceId0 );
+    gridAddFaceUVAndQueue(grid, queue, 
+			  n1,   n1uv[0],   n1uv[1], 
+			  gap0, gap0uv[0], gap0uv[1], 
+			  gap1, gap1uv[0], gap1uv[1], 
+			  faceId0 );
   }
 
   return swapStatus;
@@ -295,10 +295,11 @@ Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 )
 
   if ( bestcost > origcost ) {
 
-    gridRemoveGem(grid);
+    gridRemoveGemAndQueue(grid,queue);
 
     for ( i = 0 ; i < 2 ; i++ )
-      gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+      gridAddCellAndQueue( grid, queue, 
+			   nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
 
     return grid;
   }
@@ -406,10 +407,11 @@ Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 )
       nodes[3][3]=gridEqu(grid,2);
     }
 
-    gridRemoveGem(grid);
+    gridRemoveGemAndQueue(grid,queue);
     
     for ( i = 0 ; i < 4 ; i++ )
-      gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+      gridAddCellAndQueue( grid, queue,
+			   nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
 
     return grid;
   }
@@ -502,11 +504,12 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
     nodes[5][2]=gridEqu(grid,4);
     nodes[5][3]=gridEqu(grid,3);
 
-    gridRemoveGem(grid);
+    gridRemoveGemAndQueue(grid,queue);
     
     for ( i = 0 ; i < 6 ; i++ )
-      gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
-  return grid;
+      gridAddCellAndQueue( grid, queue,
+			   nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+    return grid;
   }  
   return NULL;
 }
@@ -531,19 +534,19 @@ Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
   
   if ( bestcost > origcost ) {
       
-    gridRemoveGem(grid);
+    gridRemoveGemAndQueue(grid,queue);
     
     for ( i = 0 ; i < 4 ; i++ ){
-      gridAddCell( grid, 
-		   nodes[bestcombo[i]][0], 
-		   nodes[bestcombo[i]][1], 
-		   nodes[bestcombo[i]][2], 
-		   nodes[bestcombo[i]][3] );
-      gridAddCell( grid, 
-		   nodes[bestcombo[i]+20][0], 
-		   nodes[bestcombo[i]+20][1], 
-		   nodes[bestcombo[i]+20][2], 
-		   nodes[bestcombo[i]+20][3] );
+      gridAddCellAndQueue( grid, queue,
+			   nodes[bestcombo[i]][0], 
+			   nodes[bestcombo[i]][1], 
+			   nodes[bestcombo[i]][2], 
+			   nodes[bestcombo[i]][3] );
+      gridAddCellAndQueue( grid,  queue,
+			   nodes[bestcombo[i]+20][0], 
+			   nodes[bestcombo[i]+20][1], 
+			   nodes[bestcombo[i]+20][2], 
+			   nodes[bestcombo[i]+20][3] );
     }
     return grid;
   }
@@ -706,21 +709,21 @@ Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
   
   if ( bestcost > origcost ) {
 
-    gridRemoveGem(grid);
-      
+    gridRemoveGemAndQueue(grid,queue);
+    
     for ( i = 0 ; i < 5 ; i++ ){
-      gridAddCell( grid, 
-		   nodes[bestcombo[i]][0], 
-		   nodes[bestcombo[i]][1], 
-		   nodes[bestcombo[i]][2], 
-		   nodes[bestcombo[i]][3] );
-      gridAddCell( grid, 
-		   nodes[bestcombo[i]+35][0], 
-		   nodes[bestcombo[i]+35][1], 
-		   nodes[bestcombo[i]+35][2], 
-		   nodes[bestcombo[i]+35][3] );
+      gridAddCellAndQueue( grid, queue,
+			   nodes[bestcombo[i]][0], 
+			   nodes[bestcombo[i]][1], 
+			   nodes[bestcombo[i]][2], 
+			   nodes[bestcombo[i]][3] );
+      gridAddCellAndQueue( grid,  queue,
+			   nodes[bestcombo[i]+35][0], 
+			   nodes[bestcombo[i]+35][1], 
+			   nodes[bestcombo[i]+35][2], 
+			   nodes[bestcombo[i]+35][3] );
     }
-  return grid;
+    return grid;
   }  
   return NULL;
 }

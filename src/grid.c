@@ -1080,6 +1080,13 @@ Grid *gridRemoveGem(Grid *grid) {
   return grid;
 }
 
+Grid *gridRemoveGemAndQueue(Grid *grid, Queue *queue) {
+  int i;
+  for ( i = 0 ; i < grid->ngem ; i++ ) 
+    gridRemoveCellAndQueue( grid, queue, grid->gem[i] );
+  return grid;
+}
+
 int gridCellDegree(Grid *grid, int id)
 {
   return adjDegree(grid->cellAdj, id);
@@ -1145,10 +1152,12 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
   int nodes[4], globalnodes[9];
   double xyz[36];
   
+  nodes[0] = n0; nodes[1] = n1; nodes[2] = n2; nodes[3] = n3;
+  if ( !gridCellHasLocalNode(grid,nodes) ) return EMPTY;
+
   cell = gridAddCell(grid, n0, n1, n2, n3);
 
   if ( NULL != queue && EMPTY != cell ) {
-    nodes[0] = n0; nodes[1] = n1; nodes[2] = n2; nodes[3] = n3;
     if (gridCellHasGhostNode(grid, nodes)) {
       for ( inode = 0 ; inode < 4 ; inode++ ) {
 	globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
@@ -1441,6 +1450,8 @@ int gridAddFaceUVAndQueue(Grid *grid, Queue *queue,
 {
   int face;
   int g0, g1, g2;
+
+  if ( !gridFaceHasLocalNode(grid,n0,n1,n2) ) return NULL;
 
   face = gridAddFaceUV( grid, 
 			n0, u0, v0,

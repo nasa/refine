@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include "gridmetric.h"
 #include "gridinsert.h"
+#include "gridswap.h"
 #include "gridmpi.h"
 
 Grid *gridIdentityNodeGlobal(Grid *grid, int offset )
@@ -75,6 +76,29 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   }
   
   return newnode;
+}
+
+Grid *gridParallelEdgeSwap(Grid *grid, Queue *queue, int node0, int node1 )
+{
+  bool gemLocal;
+  Grid *result;
+
+  if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return NULL;
+
+  gridMakeGem(grid, node0, node1 );
+  gemLocal = gridGemIsAllLocal(grid);
+  if ( NULL == queue && !gemLocal) return NULL;
+  if ( NULL != queue && gemLocal) return NULL;
+
+  if (NULL != queue) queueNewTransaction(queue);
+  result = gridSwapEdge( grid, queue, node0, node1 );
+
+  if (NULL != result) {
+    if (0 == gridCellDegree(grid,node0)) gridRemoveNode(grid,node0);
+    if (0 == gridCellDegree(grid,node1)) gridRemoveNode(grid,node1);
+  }
+
+  return result;
 }
 
 Grid *gridApplyQueue(Grid *grid, Queue *gq )
