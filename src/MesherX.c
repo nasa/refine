@@ -107,6 +107,14 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
+  if ( scale != 1.0 ) {
+    MeshMgr_SetElementScale( scale );
+    if ( !CAPrIMesh_CreateTShell( vol )) {
+      printf("ERROR: could not create shell\n");
+      return 0;
+    }
+  }
+
   MesherX_DiscretizeVolume( maxnode, scale, project, 
 			    mixedElement, blendElement, qualityImprovement,
 			    copyGridY, bil );

@@ -48,6 +48,18 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double origin[3] = {0.0, -1.5, 0.0};
   double direction[3] = {0, 1, 0};
 
+  grid = gridFillFromPart( vol, maxNodes );
+  if (NULL == grid){
+    printf("ERROR: MesherX_DiscretizeVolume: could not fill grid with part.\n");
+    return 0;
+  }
+
+  layer = layerFormAdvancingLayerWithCADGeomBCS( vol, grid );
+  layerFindParentGeomEdges(layer);
+  gridThawAll(grid);
+
+  /* case dependant */
+
   if (bil) {
     nLayer = (int)(20.0/scale);
     rate = exp(scale*log(1.05));
@@ -58,33 +70,13 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
-  if ( scale != 1.0 ) {
-    MeshMgr_SetElementScale( scale );
-    if ( !CAPrIMesh_CreateTShell( vol )) {
-      printf("ERROR: could not create shell\n");
-      return 0;
-    }
-  }
-
-  grid = gridFillFromPart( vol, maxNodes );
-  if (NULL == grid){
-    printf("ERROR: MesherX_DiscretizeVolume: could not fill grid with part.\n");
-    return 0;
-  }
-
-  layer = layerFormAdvancingLayerWithCADGeomBCS( vol, grid );
-
   if (mixedElement) layerToggleMixedElementMode(layer);
 
-  /* only needed for formAdvancingFront freeze distant volume nodes */
-  gridThawAll(grid);
-  layerFindParentGeomEdges(layer);
   if (bil ) { 
     layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
 				      origin, direction );
   }else{
   }
-
 
   origin[0] = -0.0001;
   origin[1] = 0.0;
@@ -127,6 +119,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     printf("advance layer %d rate %f\n",i,rate);
     i++;
   }
+
+  /* case dep */
 
   printf(" -- REBUILD EDGES\n");
   if ( layer != layerRebuildEdges(layer,vol) ) {
