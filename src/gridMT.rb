@@ -203,7 +203,7 @@ end
   assert_equal( -1, grid.addNode(1.0,0.0,0.0))
  end
 
- def testMetic
+ def testMetrics
   assert_equal @grid, @grid.
    addCell( @grid.addNode(0.0,0.0,0.0), @grid.addNode(1.0,0.0,0.0), 
 	    @grid.addNode(0.0,1.0,0.0), @grid.addNode(0.0,0.0,1.0) )
