@@ -348,6 +348,24 @@ Grid *gridNodeAR(Grid *grid, int node, double *ar )
   return grid;
 }
 
+Grid *gridNodeVolume(Grid *grid, int node, double *volume )
+{
+  AdjIterator it;
+  int cell, nodes[4];
+  double local_volume;
+
+  *volume = DBL_MAX;
+
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes);
+    local_volume = gridVolume(grid, nodes);
+    if ( local_volume < *volume ) *volume = local_volume;
+  }
+
+  return grid;
+}
+
 Grid *gridGemAR( Grid *grid, double *ar ){
   int i, nodes[4];
 

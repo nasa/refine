@@ -43,6 +43,7 @@ double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
 Grid *gridNodeAR(Grid *g, int node, double *ar );
+Grid *gridNodeVolume(Grid *g, int node, double *volume );
 Grid *gridGemAR(Grid *g, double *ar);
 Grid *gridCellARDerivative(Grid *g, int *nodes, double *ar, double *dARdx );
 
