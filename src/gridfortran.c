@@ -149,7 +149,9 @@ int gridadaptwithoutcad_( double *minLength, double *maxLength )
 
 int gridwritetecplotsurfacezone_( )
 {
-  gridWriteTecplotSurfaceZone(grid);
+  char filename[256];
+  sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
+  gridWriteTecplotSurfaceZone(grid,filename);
 }
 
 int gridexportfast_( )

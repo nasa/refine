@@ -953,7 +953,7 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   return grid;
 }
 
-Grid *gridWriteTecplotSurfaceZone(Grid *grid)
+Grid *gridWriteTecplotSurfaceZone(Grid *grid, char *filename)
 {
   int i, nfacenode;
   if ( grid !=  gridSortNodeGridEx(grid) ) {
@@ -962,7 +962,11 @@ Grid *gridWriteTecplotSurfaceZone(Grid *grid)
   }
 
   if (NULL == grid->tecplotFile) {
-    grid->tecplotFile = fopen("grid.t","w");
+    if (NULL == filename) {
+      grid->tecplotFile = fopen("grid.t","w");
+    }else{
+      grid->tecplotFile = fopen(filename,"w");
+    } 
     fprintf(grid->tecplotFile, "title=\"tecplot refine geometry file\"\n");
     fprintf(grid->tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
   }

@@ -38,7 +38,7 @@ VALUE grid_sortNodeGridEx( VALUE self )
 VALUE grid_writeTecplotSurfaceZone( VALUE self )
 {
   GET_GRID_FROM_SELF;
-  return (gridWriteTecplotSurfaceZone(grid)==grid?self:Qnil);
+  return (gridWriteTecplotSurfaceZone(grid,NULL)==grid?self:Qnil);
 }
 
 VALUE grid_maxnode( VALUE self )

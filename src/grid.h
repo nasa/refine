@@ -135,7 +135,7 @@ Grid *gridSortNodeFUN3D(Grid *g, int *nnodes0);
 Grid *gridRenumber(Grid *g, int *o2n);
 void gridFree(Grid *g);
 
-Grid *gridWriteTecplotSurfaceZone(Grid *g);
+Grid *gridWriteTecplotSurfaceZone(Grid *g, char *filename );
 
 int gridMaxNode(Grid *g);
 int gridNNode(Grid *g);
