@@ -2620,10 +2620,25 @@ Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
 
 Layer *layerSubBlendNormals(Layer *layer, int blend, int subBlend, int *normals)
 {
+  int subnormal;
   if (subBlend <0 || subBlend >= layerNSubBlend(layer,blend)) return NULL;
   if (layer != layerBlendNormals(layer, blend, normals)) return NULL;
 
-  /* do magic to replace BlendNormals with SubNormals */
+  subnormal = subBlend - 1;
+  subnormal = MIN(subnormal, layer->blend[blend].nSubNormal0-1);
+  if (subnormal>=0) normals[0] = layer->blend[blend].subNormal0[subnormal];
+
+  subnormal = subBlend;
+  if (subnormal<layer->blend[blend].nSubNormal0) 
+    normals[1] = layer->blend[blend].subNormal0[subnormal];
+
+  subnormal = subBlend - 1;
+  subnormal = MIN(subnormal, layer->blend[blend].nSubNormal1-1);
+  if (subnormal>=0) normals[2] = layer->blend[blend].subNormal1[subnormal];
+
+  subnormal = subBlend;
+  if (subnormal<layer->blend[blend].nSubNormal1) 
+    normals[3] = layer->blend[blend].subNormal1[subnormal];
 
   return layer;
 }
