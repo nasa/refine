@@ -64,6 +64,11 @@ int gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x );
 
 int gridghostcount_( int *nproc, int *count );
 
+int gridloadghostnodes_( int *nproc, int *clientindex,
+			 int *clientsize, int *localnode, int *globalnode );
+int gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
+int gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */

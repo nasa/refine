@@ -337,3 +337,49 @@ int gridghostcount_( int *nproc, int *count )
     if (gridNodeGhost(grid,node)) count[gridNodePart(grid,node)]++;
   }
 }
+
+int gridloadghostnodes_( int *nproc, int *clientindex,
+			 int *clientsize, int *localnode, int *globalnode )
+{
+  int node, part;
+  int *count;
+
+  count = malloc( (*nproc) * sizeof(int) );
+
+  for(node=0;node<(*nproc);node++) count[node] = 0;
+  for(node=0;node<gridMaxNode(grid);node++) {
+    if (gridNodeGhost(grid,node)) {
+      part = gridNodePart(grid,node);
+      localnode[ count[part]+clientindex[part]-1] = node+1;
+      globalnode[count[part]+clientindex[part]-1] = gridNodeGlobal(grid,node)+1;
+      count[part]++;
+    }
+  }
+  free(count);
+}
+
+int gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
+{
+  int node, localnode;
+  double xyz[3];
+
+  for(node=0;node<(*nnode);node++) {
+    localnode = gridGlobal2Local(grid, nodes[node]-1);
+    gridNodeXYZ(grid,localnode,xyz);
+    data[0+(*ndim)*node] = xyz[0];
+    data[1+(*ndim)*node] = xyz[1];
+    data[2+(*ndim)*node] = xyz[2];
+  }
+}
+
+int gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
+{
+  int node;
+
+  for(node=0;node<(*nnode);node++) 
+    gridSetNodeXYZ(grid,nodes[node]-1,&data[(*ndim)*node]);
+
+  printf( " %6d update xfer                      %s    AR%14.10f\n",
+	  gridPartId(grid),"                   ",gridMinAR(grid) );
+  fflush(stdout);
+}
