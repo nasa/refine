@@ -222,7 +222,7 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta(-invsqrt2,   v2[2],1.0e-7)
  end
 
- def testEigTriDiagAlreadyTridiagFull13n471
+ def testEigTriDiag13n471
   m = [13,-4,0,
            7,0,
              1]
@@ -234,7 +234,7 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta  1, eig[2], 1.0e-15
  end
 
- def testEigTriDiagAlreadyTridiagFull1554
+ def testEigTriDiag1554
   m = [4, 0, 0,
          13,-7,
              7]
@@ -246,7 +246,7 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta 2.38422690, eig[2], 1.0e-7
  end
 
- def testEigTriDiagAlreadyTridiagSplit1554
+ def testEigTriDiagSplit1554
   m = [13,0,-4,
           4, 0,
              7]
@@ -256,6 +256,24 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta 15, eig[0], 1.0e-15
   assert_in_delta  5, eig[1], 1.0e-15
   assert_in_delta  4, eig[2], 1.0e-15
+ end
+
+ def testEigTriDiagRandom
+  m = [  0.22461, 0.43558, 0.12848,
+                  0.40385, 0.65227,
+                           0.75951]
+  d = @gm.triDiag(m)
+  e = @gm.triOffDiag(m)
+  q0 = @gm.triDiagTransform0(m)
+  q1 = @gm.triDiagTransform1(m)
+  q2 = @gm.triDiagTransform2(m)
+  eig = @gm.eigTriDiag(d,e)
+  assert_in_delta(  1.37923, eig[0], 1.0e-5 )
+  assert_in_delta(  0.27956, eig[1], 1.0e-5 )
+  assert_in_delta( -0.27082, eig[2], 1.0e-5 )
+  v0 = @gm.vectTriDiag0(d,e,q0,q1,q2)
+  v1 = @gm.vectTriDiag1(d,e,q0,q1,q2)
+  v2 = @gm.vectTriDiag2(d,e,q0,q1,q2)
  end
 
 end

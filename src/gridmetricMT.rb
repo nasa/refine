@@ -533,4 +533,16 @@ class TestGridMetric < Test::Unit::TestCase
 
  end
 
+ def testRandomEig
+  grid = Grid.new(0,0,0,0)
+  m = [  0.22461, 0.43558, 0.12848,
+                  0.40385, 0.65227,
+                           0.75951]
+  assert_not_nil eigsys = grid.eigenSystem( m)
+  eig = eigsys[0]
+  assert_in_delta(  1.37923, eig[0], 1.0e-5 )
+  assert_in_delta(  0.27957, eig[1], 1.0e-5 )
+  assert_in_delta( -0.27083, eig[2], 1.0e-5 )
+ end
+
 end
