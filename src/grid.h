@@ -50,7 +50,7 @@ Grid *gridSwap(Grid *g, int n0, int n1 );
 
 int gridAddNode(Grid *g, double x, double y, double z );
 
-double gridVolume(Grid *g, int cellId );
+double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 
 END_C_DECLORATION

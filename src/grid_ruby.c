@@ -210,10 +210,12 @@ VALUE grid_addNode( VALUE self, VALUE x, VALUE y, VALUE z )
   return INT2NUM( gridAddNode( grid, NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ) );
 }
 
-VALUE grid_volume( VALUE self, VALUE cellId )
+VALUE grid_volume( VALUE self, VALUE rb_nodes )
 {
+  int i, nodes[4];
   GET_GRID_FROM_SELF;
-  return rb_float_new( gridVolume( grid, NUM2INT(cellId) ) );
+  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
+  return rb_float_new( gridVolume( grid, nodes ) );
 }
 
 VALUE grid_ar( VALUE self, VALUE rb_nodes )

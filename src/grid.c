@@ -495,12 +495,10 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   return nodeId;
 }
 
-double gridVolume(Grid *grid, int cellId )
+double gridVolume(Grid *grid, int *nodes )
 {
-  int ixyz, nodes[4];
+  int ixyz;
   double edge1[3], edge2[3], edge3[3], norm[3], volume; 
-
-  gridCell(grid,cellId,nodes);
   
   for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
 
