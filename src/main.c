@@ -97,6 +97,10 @@ int main( int argc, char *argv[] )
 
   gridSavePart( grid, output );
 
+  output = "../test/om6_out.fgrid";
+  printf("writing output FAST file %s\n",output);
+  gridExportFAST( grid, output, TRUE );
+
   printf("Done.\n");
 
   return;
@@ -256,9 +260,6 @@ Grid *gridLoadPart( char *project )
 
   if ( nedge != gridNEdge(grid) )
     printf("ERROR: nedge != gridNEdge(grid)\n");
-
-
-
 
   return grid;
 }
@@ -437,12 +438,13 @@ int gridSavePart( Grid *grid, char *project )
     printf("Yo! Could NOT save \"%s\".\n",project);
   }
 
-  printf("calling CADGeom_Stop ... \n");
+  printf("WARNING: skipping CADGeom_Stop ... \n");
+  /*
   if ( ! CADGeom_Stop( ) ){
     printf("ERROR: CADGeom_Stop broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }  
-  
+  */
 }
 
  
