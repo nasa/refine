@@ -1,3 +1,7 @@
+2004-10-04 16:37 Mike Park  <mike.park@nasa.gov>
+
+	* src/sort.c (sortDoubleHeap) added to sort array of doubles.
+
 2004-10-04 16:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridPack) conn structures are now packed.

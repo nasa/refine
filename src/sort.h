@@ -17,8 +17,9 @@
 
 BEGIN_C_DECLORATION
 
-void sortHeap( int length, int *arrayInput, int *sortedIndex  );
-int sortSearch( int length, int *arrayInput, int index  );
+void sortHeap( int length, int *arrayInput, int *sortedIndex );
+void sortDoubleHeap( int length, double *arrayInput, int *sortedIndex );
+int sortSearch( int length, int *arrayInput, int index );
 
 END_C_DECLORATION
 

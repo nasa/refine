@@ -61,6 +61,54 @@ void sortHeap( int length, int *arrayInput, int *sortedIndex  )
   } 
 }
 
+void sortDoubleHeap( int length, double *arrayInput, int *sortedIndex  )
+{
+  int i, l, ir, indxt;
+  double q;
+  unsigned int n, j;
+
+  for(i=0;i<length;i++) sortedIndex[i] = i;
+
+  if (length < 2) return;
+
+  n = length;
+  l=(n >> 1)+1; 
+  ir=n-1;
+  for (;;) {
+    if (l > 1) {
+      l--;
+      indxt=sortedIndex[l-1]; 
+      q=arrayInput[indxt];
+    } else {
+      indxt=sortedIndex[ir];  
+      q=arrayInput[indxt];
+      sortedIndex[ir]=sortedIndex[0];
+      if (--ir == 0) {
+	sortedIndex[0]=indxt;
+	break; 
+      } 
+    }
+    i=l-1;
+    j=l+i;
+
+    while (j <= ir) { 
+      if ( j < ir ) {
+	if (arrayInput[sortedIndex[j]] < arrayInput[sortedIndex[j+1]]) j++; 
+      }
+      if (q < arrayInput[sortedIndex[j]]) { 
+	sortedIndex[i]=sortedIndex[j];
+	i=j; 
+
+	j++;
+	j <<= 1; 
+	j--;
+
+      } else break; 
+    }
+    sortedIndex[i]=indxt;
+  } 
+}
+
 int sortSearch( int length, int *sortednodes, int targetnode  )
 {
   int lower, upper, mid;

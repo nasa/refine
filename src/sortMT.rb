@@ -142,4 +142,16 @@ class TestSort < Test::Unit::TestCase
   assert_equal 5, Sort.Search(sorted,6)
  end
 
+ def testHeapSortDouble012
+  assert_equal [0,1,2], Sort.DoubleHeap([1.0,10.0,100.0])
+ end
+
+ def testHeapSortDouble210
+  assert_equal [2,1,0], Sort.DoubleHeap([100.0,10.0,1.0])
+ end
+
+ def testHeapSortDouble210Sign
+  assert_equal [2,1,0], Sort.DoubleHeap([1.0,0.0,-1.0])
+ end
+
 end
