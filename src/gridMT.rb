@@ -327,11 +327,14 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def testAddAndFindGeomEdge
-  assert_not_nil     grid = Grid.new(4,0,0,2)
-  assert_nil         grid.findEdge(0,1)
-  assert_equal grid, grid.addEdge(0, 1, 10, 0.0, 1.0)
-  assert_equal 1,    grid.nedge
-  assert_equal 0,    grid.findEdge(0,1)
+  assert_not_nil         grid = Grid.new(4,0,0,2)
+  assert_nil             grid.findEdge(0,1)
+  assert_equal grid,     grid.addEdge(0, 1, 10, 0.0, 1.0)
+  assert_equal 1,        grid.nedge
+  assert_equal 0,        grid.findEdge(0,1)
+  assert_nil             grid.edge(-1)
+  assert_nil             grid.edge(5)
+  assert_equal [0,1,10], grid.edge(0)
  end
 
  def testGeomEdgeTValues

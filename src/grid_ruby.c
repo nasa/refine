@@ -278,6 +278,19 @@ VALUE grid_edgeId( VALUE self, VALUE n0, VALUE n1 )
   return INT2NUM( returnedEdge );
 }
 
+VALUE grid_edge( VALUE self, VALUE edge )
+{
+  int id, nodes[2];
+  VALUE rb_edge;
+  GET_GRID_FROM_SELF;
+  if (grid != gridEdge(grid, NUM2INT(edge), nodes, &id )) return Qnil;
+  rb_edge = rb_ary_new2(3);
+  rb_ary_store( rb_edge, 0, INT2NUM(nodes[0]) );
+  rb_ary_store( rb_edge, 1, INT2NUM(nodes[1]) );
+  rb_ary_store( rb_edge, 2, INT2NUM(id) );
+  return rb_edge;
+}
+
 VALUE grid_geomCurveSize( VALUE self, VALUE edgeId, VALUE startNode )
 {
   GET_GRID_FROM_SELF;
@@ -599,6 +612,7 @@ void Init_Grid()
   rb_define_method( cGrid, "removeEdge", grid_removeEdge, 1 );
   rb_define_method( cGrid, "findEdge", grid_findEdge, 2 );
   rb_define_method( cGrid, "edgeId", grid_edgeId, 2 );
+  rb_define_method( cGrid, "edge", grid_edge, 1 );
   rb_define_method( cGrid, "geomCurveSize", grid_geomCurveSize, 2 );
   rb_define_method( cGrid, "geomCurve", grid_geomCurve, 2 );
   rb_define_method( cGrid, "geomCurveT", grid_geomCurveT, 2 );

@@ -1290,6 +1290,17 @@ int gridEdgeId(Grid *grid, int n0, int n1 )
   return grid->edgeId[edge];
 }
 
+Grid *gridEdge(Grid *grid, int edge, int *nodes, int *id )
+{
+  if (edge >= grid->maxedge || edge < 0) return NULL;
+  if (EMPTY == grid->e2n[2*edge]) return NULL;
+
+  nodes[0] = grid->e2n[0+2*edge];
+  nodes[1] = grid->e2n[1+2*edge];
+  *id = grid->edgeId[edge];
+  return grid;
+}
+
 int gridGeomCurveSize( Grid *grid, int edgeId, int startNode )
 {
   AdjIterator it;
