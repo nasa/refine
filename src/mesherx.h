@@ -23,7 +23,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
 Layer *layerFormAdvancingLayerWithCADGeomBCS( int volumeId, Grid * );
 
-int layerTerminateNormalWithBGSpacing(Layer *, double ratio);
+int layerTerminateNormalWithBGSpacing(Layer *, 
+				      double normalRatio, double edgeRatio);
 
 Layer *layerRebuildEdges(Layer *, int vol);
 Layer *layerRebuildFaces(Layer *, int vol);

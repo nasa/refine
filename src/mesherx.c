@@ -67,7 +67,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   layerScaleNormalHeight(layer,scale);
 
   while (i<nLayer && 
-	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.7)) {
+	 layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.7, 1.9)) {
 
     layerSmoothNormalDirection(layer);
     layerAdvance(layer);
@@ -121,18 +121,20 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   return 1;
 }
 
-int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio)
+int layerTerminateNormalWithBGSpacing(Layer *layer, 
+				      double normalRatio, double edgeRatio)
 {
-  int normal, nterm, totalterm;
-  int root;
+  int normal, root;
   double xyz[3];
   double spacing[3];
   double direction[9];
   double height;
+  int triangle, normals[3];
+  double edgeLength, center[3];
+  int totalterm;
 
   if (layerNNormal(layer) == 0 ) return EMPTY;
 
-  nterm = 0;
   for (normal=0;normal<layerNNormal(layer);normal++){
     layerGetNormalHeight(layer,normal,&height);
 
@@ -140,14 +142,29 @@ int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio)
     gridNodeXYZ(layerGrid(layer),root,xyz);
     MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
 
-    if (height > ratio*spacing[0]) {     /* Assume Isotropic for now */
-      nterm++;
+    if (height > normalRatio*spacing[0]) {     /* Assume Isotropic for now */
       layerTerminateNormal(layer, normal);
     }
   }
+
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    layerTriangleMaxEdgeLength(layer,triangle,&edgeLength );
+    layerTriangleCenter(layer,triangle,center);
+
+    MeshMgr_GetSpacing(&(center[0]),&(center[1]),&(center[2]),
+		       spacing,direction);
+
+    if ( edgeLength > edgeRatio*spacing[0]) { /* Assume Isotropic for now */
+      layerTriangleNormals(layer, triangle, normals);
+      layerTerminateNormal(layer, normals[0]);
+      layerTerminateNormal(layer, normals[1]);
+      layerTerminateNormal(layer, normals[2]);
+    }
+  }
+
   totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
-  printf("normals %d of %d terminated. %d active.\n",
-	 nterm,layerNNormal(layer),layerNActiveNormal(layer) );
+  printf("%d of %d normals terminted.\n",
+	 totalterm,layerNNormal(layer) );
   return totalterm;
 }
 
