@@ -8,6 +8,13 @@
 
 #define VECTOR_COPY3(a,b) for(i=0;i<3;i++)a[i]=b[i];
 
+void gridCrossProduct(double *norm, double *edge1, double *edge2)
+{
+  norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
+  norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
+  norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
+}
+
 Grid *gridMapMatrix(Grid *grid, int node, double *m)
 {
   m[0] = grid->map[0+6*node];
@@ -491,9 +498,7 @@ double gridVolume(Grid *grid, int *nodes )
                 - grid->xyz[ixyz+3*nodes[0]];
   }
 
-  norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
-  norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
-  norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
+  gridCrossProduct( norm, edge1, edge2);
 
   return  (norm[0]*edge3[0]+norm[1]*edge3[1]+norm[2]*edge3[2])/6.0;
 }
