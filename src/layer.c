@@ -3033,7 +3033,7 @@ Layer *layerNormalBlendAxle(Layer *layer, int normal, double *axle)
     gridNodeUV(grid, node, faceId, uv);
     gridFaceNormalAtUV(grid,faceId,uv,xyz,axle);
     blend = adjItem(adjFirst(layerBlendAdj(layer),normal));
-    if (node == layer->blend[blend].nodes[1]) {
+    if (node == layer->blend[blend].nodes[0]) {
       axle[0] = -axle[0]; axle[1] = -axle[1]; axle[2] = -axle[2];
     }
     return layer;

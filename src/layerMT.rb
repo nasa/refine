@@ -1523,6 +1523,44 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 7, grid.nface
  end
 
+ def testCheckSubBlendNormalDirectionForConvextWithConstrainingFace
+  grid = Grid.new(100,100,100,100)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,0,1)
+  grid.addNode(0,1,0)
+  grid.addFace(0,1,2,1)
+  grid.addFace(0,2,3,1)
+  grid.addNode(-1,-1,0)
+  grid.addFace(1,0,3,11)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.constrainNormal(11)
+  grid.removeFace(2)
+  layer.blend(200.0)
+
+  layer.subBlend(44.0)
+  assert_equal [4,6,2,7], layer.subBlendNormals(0,0)
+  assert_equal [6,0,7,5], layer.subBlendNormals(0,1)
+
+  # Y    3
+  # |    |\
+  # +--Z 4-2
+  #      6-7
+  # +--Z 0-5
+  # |    |/
+  # X    1
+
+  tol = 1.0e-3
+  norm = layer.normalDirection(6)
+  assert_in_delta( -0.707, norm[0], tol)
+  assert_in_delta( -0.707, norm[1], tol)
+  assert_in_delta(  0.000, norm[2], tol)
+  norm = layer.normalDirection(7)
+  assert_in_delta( -0.707, norm[0], tol)
+  assert_in_delta( -0.707, norm[1], tol)
+  assert_in_delta(  0.000, norm[2], tol)
+ end
+
  def testBlendTriplePoint
   grid = Grid.new(20,20,10,0)
   top = 0.8
