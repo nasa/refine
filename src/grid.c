@@ -402,11 +402,10 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
   return grid;
 }
 
+Grid *gridSwap4(Grid *grid, int n0, int n1 );
+
 Grid *gridSwap(Grid *grid, int n0, int n1 )
 {
-  int i, nodes[4][4], bestindex;
-  double cost, origcost, currentcost, bestcost;
-
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
   //test face
@@ -422,6 +421,14 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     newFaceId1 = gridFaceId(grid,n1,grid->equ[0],grid->equ[grid->ngem]);
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
   }
+
+  return gridSwap4(grid, n0, n1);
+}
+
+Grid *gridSwap4(Grid *grid, int n0, int n1 )
+{
+  int i, nodes[4][4], bestindex;
+  double cost, origcost, currentcost, bestcost;
 
   origcost = 2.0;
 
