@@ -1,3 +1,9 @@
+2004-05-06 12:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/gridmove.c made a new grid child object to test grid
+	movement. Has methods to calculate edges (gridmoveSprings) and
+	(gridmoveSpringRelaxation).
+
 2004-05-05 16:20 Mike Park  <mike.park@nasa.gov>
 
 	* /src/grid.c (gridPack) made pack register method for child objects.
