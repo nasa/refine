@@ -1111,6 +1111,8 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
     }
   }
 
+  layerProjectNormalsToConstraints(layer);
+
   return layer;
 }
 
