@@ -14,7 +14,7 @@
 #include "gridfiller.h"
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
-#include "Goolache/UGPatch.h"
+#include "MeatLib/UGPatch.h"
 
 Layer *mesherxInit(int vol, int maxNodes)
 {

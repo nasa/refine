@@ -15,7 +15,7 @@
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
 #include "Goolache/MeshMgr.h"
-#include "Goolache/UGPatch.h"
+#include "MeatLib/UGPatch.h"
 #include "MeatLib/ErrMgr.h"
 #include "grid.h"
 #include "mesherxRebuild.h"
