@@ -629,6 +629,12 @@ int layerNormalRoot(Layer *layer, int normal )
   return layer->normal[normal].root;
 }
 
+int layerNormalTip(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return EMPTY;
+  return layer->normal[normal].tip;
+}
+
 int layerNormalDeg(Layer *layer, int normal )
 {
   if (NULL == layer->triangleAdj) return 0;
@@ -2073,10 +2079,23 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
     }
  
     for ( normal = 0 ; normal < adjNNode(layer->blendAdj) ; normal++ ) {
+      int *vertexNormals, nVertexNormals;
       switch (layerBlendDegree(layer,normal)) {
       case 0: case 1: case 2: break;
       case 3:
-	printf( "three blend normal\n");
+	nVertexNormals = layerBlendDegree(layer,normal);
+	vertexNormals = malloc(nVertexNormals*sizeof(int));
+	layerOrderedVertexNormals( layer, normal, 
+				   &nVertexNormals, vertexNormals);
+	triangle0 = layerForceTriangle(layer,vertexNormals[0],
+				       vertexNormals[1],vertexNormals[2]);
+	/*face oriented opposite direction to cell*/ 
+	tet[0] = layerNormalTip(layer,vertexNormals[1]);
+	tet[1] = layerNormalTip(layer,vertexNormals[0]); 
+	tet[2] = layerNormalTip(layer,vertexNormals[2]); 
+	tet[3] = layerNormalRoot(layer,normal); 
+	addTet;	
+	free(vertexNormals);
 	break;
       default:
 	printf( "ERROR: %s: %d: Cannot handle %d blends. Write more code!\n",

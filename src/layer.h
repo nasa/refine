@@ -113,6 +113,7 @@ int layerDuplicateNormal(Layer *, int normal );
 Layer *layerInitializeNormal(Layer *, int normal );
 Layer *layerTriangleNormals(Layer *, int triangle, int *normals);
 int layerNormalRoot(Layer *, int normal );
+int layerNormalTip(Layer *, int normal );
 int layerNormalDeg(Layer *, int normal );
 Layer *layerNormalTriangles(Layer *, int normal, int maxtriangle, int *triangles);
 int layerPreviousTriangle(Layer *, int normal, int triangle );
