@@ -142,7 +142,7 @@ Grid *gridProject(Grid *grid)
 
 Grid *gridSmoothNode(Grid *grid, int node )
 {
-  double xyz[3], xyzProj[3], uv[2];
+  double xyzProj[3], uv[2];
   double ar, dARdx[4];
   double du[3], dv[3];
   double dARdu[2];
@@ -155,7 +155,6 @@ Grid *gridSmoothNode(Grid *grid, int node )
     face = adjItem(adjFirst(grid->faceAdj, node));
     faceId = grid->faceId[face];
     gridNodeARDerivative ( grid, node, &ar, dARdx);
-    gridNodeXYZ( grid, node, xyz);
     gridNodeUV( grid, node, faceId, uv);
     if ( !CADGeom_PointOnFace( vol, faceId,   
 			       uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
@@ -166,7 +165,8 @@ Grid *gridSmoothNode(Grid *grid, int node )
 
     return gridOptimizeUV( grid, node, dARdu );
   }    
-  return grid;
+  gridNodeARDerivative ( grid, node, &ar, dARdx);
+  return gridOptimizeXYZ( grid, node, dARdx );
 }
 
 Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
@@ -224,6 +224,39 @@ Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
   gridSetNodeUV(grid, node, faceId, uv[0], uv[1]);
 
 //printf("node %d alpha %e ar %f uv %e %e\n",node,alpha[0],ar[0],uv[0],uv[1]);
+  
+  return grid;
+}
+
+Grid *gridOptimizeXYZ(Grid *grid, int node, double *dxdydz )
+{
+  double xyzOrig[2];
+  double gold;
+  double alpha[2], ar[2];
+  int i, iter;
+
+  gold = ( 1.0 + sqrt(5.0) ) / 2.0;
+
+  for(i=0;i<3;i++) xyzOrig[i] = grid->xyz[i+3*node];
+
+  alpha[0] = 0.0;
+  for(i=0;i<3;i++) grid->xyz[i+3*node] = xyzOrig[i] + alpha[0]*dxdydz[i];
+  gridNodeAR( grid, node, &ar[0] );
+
+  alpha[1] = 1.0e-10;
+  for(i=0;i<3;i++) grid->xyz[i+3*node] = xyzOrig[i] + alpha[1]*dxdydz[i];
+  gridNodeAR( grid, node, &ar[1] );
+
+  iter = 0;
+  while ( ar[1] > ar[0] && ar[1] > 0.0 && iter < 100){
+    iter++;
+    alpha[0] = alpha[1]; ar[0] = ar[1];
+    alpha[1] = alpha[0] * gold;
+    for(i=0;i<3;i++) grid->xyz[i+3*node] = xyzOrig[i] + alpha[1]*dxdydz[i];
+    gridNodeAR( grid, node, &ar[1] );
+  }
+
+  for(i=0;i<3;i++) grid->xyz[i+3*node] = xyzOrig[i] + alpha[0]*dxdydz[i];
   
   return grid;
 }

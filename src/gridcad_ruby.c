@@ -49,6 +49,16 @@ VALUE grid_optimizeUV( VALUE self, VALUE node, VALUE rb_dudv )
   return (gridOptimizeUV( grid, NUM2INT(node), dudv )==grid?self:Qnil);
 }
 
+VALUE grid_optimizeXYZ( VALUE self, VALUE node, VALUE rb_dxdydz )
+{
+  double dxdydz[2];
+  GET_GRID_FROM_SELF;
+  dxdydz[0] = NUM2DBL(rb_ary_entry(rb_dxdydz,0));
+  dxdydz[1] = NUM2DBL(rb_ary_entry(rb_dxdydz,1));
+  dxdydz[2] = NUM2DBL(rb_ary_entry(rb_dxdydz,2));
+  return (gridOptimizeXYZ( grid, NUM2INT(node), dxdydz )==grid?self:Qnil);
+}
+
 VALUE cGridCAD;
 
 void Init_GridCAD() 
@@ -61,4 +71,5 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "smooth", grid_smooth, 0 );
   rb_define_method( cGridCAD, "smoothNode", grid_smoothNode, 1 );
   rb_define_method( cGridCAD, "optimizeUV", grid_optimizeUV, 2 );
+  rb_define_method( cGridCAD, "optimizeXYZ", grid_optimizeXYZ, 2 );
 }

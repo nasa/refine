@@ -26,6 +26,7 @@ Grid *gridProject(Grid *g);
 Grid *gridSmooth(Grid *g );
 Grid *gridSmoothNode(Grid *g, int node );
 Grid *gridOptimizeUV(Grid *g, int node, double *dudv );
+Grid *gridOptimizeXYZ(Grid *g, int node, double *dxdydz );
 
 END_C_DECLORATION
 
