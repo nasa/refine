@@ -1473,6 +1473,27 @@ Grid *gridDeleteThawedEdgeSegments(Grid *grid, int edgeId ){
   return grid;
 }
 
+int gridNThawedEdgeSegments(Grid *grid, int edgeId ){
+  int edge, maxedge, nodes[2], id;
+  int nSegments;
+
+  if (edgeId < 1) return EMPTY;
+
+  nSegments = 0;
+  maxedge = gridMaxEdge(grid);
+  for( edge=0 ; edge < maxedge ; edge++ ) {
+    if (grid == gridEdge(grid,edge,nodes,&id)) {
+      if ( id == edgeId && 
+	   ( !gridNodeFrozen(grid,nodes[0]) || 
+	     !gridNodeFrozen(grid,nodes[1]) ) ){
+	nSegments++;
+      }
+    }
+  }
+
+  return nSegments;
+}
+
 int gridGeomCurveSize( Grid *grid, int edgeId, int startNode )
 {
   AdjIterator it;

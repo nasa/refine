@@ -316,6 +316,12 @@ VALUE grid_deleteThawedEdgeSegments( VALUE self, VALUE edgeId )
   return (gridDeleteThawedEdgeSegments(grid, NUM2INT(edgeId) )==NULL?Qnil:self);
 }
 
+VALUE grid_nThawedEdgeSegments( VALUE self, VALUE edgeId )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNThawedEdgeSegments(grid, NUM2INT(edgeId) ) );
+}
+
 VALUE grid_geomCurveSize( VALUE self, VALUE edgeId, VALUE startNode )
 {
   GET_GRID_FROM_SELF;
@@ -676,6 +682,7 @@ void Init_Grid()
   rb_define_method( cGrid, "edge", grid_edge, 1 );
   rb_define_method( cGrid, "deleteThawedEdgeSegments", 
 		    grid_deleteThawedEdgeSegments, 1 );
+  rb_define_method( cGrid, "nThawedEdgeSegments", grid_nThawedEdgeSegments, 1 );
   rb_define_method( cGrid, "geomCurveSize", grid_geomCurveSize, 2 );
   rb_define_method( cGrid, "geomCurve", grid_geomCurve, 2 );
   rb_define_method( cGrid, "geomCurveT", grid_geomCurveT, 2 );

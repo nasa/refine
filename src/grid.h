@@ -87,6 +87,7 @@ Grid *gridReconnectEdgeUnlessFrozen(Grid *g, int edgeId,
 				    int oldNode, int newNode );
 Grid *gridEdge(Grid *g, int edge, int *nodes, int *edgeId );
 Grid *gridDeleteThawedEdgeSegments(Grid *g, int edgeId );
+int gridNThawedEdgeSegments(Grid *g, int edgeId );
 
 int gridGeomCurveSize( Grid *g, int edgeId, int startNode );
 Grid *gridGeomCurve( Grid *g, int edgeId, int startNode, int *curve );

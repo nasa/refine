@@ -431,12 +431,18 @@ class TestGrid < Test::Unit::TestCase
   assert_equal grid,         grid.addEdge(2,3,1,2.0,3.0)
   assert_equal grid,         grid.addEdge(1,3,99,99.0,99.0)
   assert_equal 4,            grid.nedge
+  assert_equal(-1,           grid.nThawedEdgeSegments(-1))
+  assert_equal(-1,           grid.nThawedEdgeSegments(0))
+  assert_equal 3,            grid.nThawedEdgeSegments(1)
+  assert_equal 1,            grid.nThawedEdgeSegments(99)
   assert_equal grid,         grid.freezeNode(0)
   assert_equal grid,         grid.freezeNode(1)
+  assert_equal 2,            grid.nThawedEdgeSegments(1)
   assert_nil                 grid.deleteThawedEdgeSegments(-1)
   assert_nil                 grid.deleteThawedEdgeSegments(0)
   assert_equal grid,         grid.deleteThawedEdgeSegments(1)
   assert_equal 2,            grid.nedge
+  assert_equal 0,            grid.nThawedEdgeSegments(1)
   assert_equal [0,1,1],  grid.edge(0)
   assert_nil             grid.edge(1)
   assert_nil             grid.edge(2)
