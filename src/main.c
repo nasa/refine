@@ -16,6 +16,7 @@
 #include "gridswap.h"
 #include "gridcad.h"
 #include <CADGeom/CADGeom.h>
+#include <MeatLib/FileT.h>
 
 Grid *gridLoadPart( char *project );
 int gridSavePart( Grid *grid, char *project );
@@ -405,6 +406,23 @@ int gridSavePart( Grid *grid, char *project )
 	   __LINE__, __FILE__);    
     return(-1);
   }
+
+{
+	FormatRec fr;
+	DListPtr dlp=DList_New();
+
+	fr.ftype = FMT_ASCII;
+	fr.gtype = FMT_UGRID;
+	fr.doubleprec = TRUE;
+	fr.multiblock = FALSE;
+	fr.iblanks = FALSE;
+	fr.facesOnly = FALSE;
+	DList_InsertAfter(dlp,NULL,ugrid);
+	printf("Writing wtj.fgrid\n");
+	if( !FileT_Write("wtj.fgrid","fastu_w",&fr,dlp) ) {
+          printf("ERROR: FileT_Write broke.\n%s\n",ErrMgr_GetErrStr());
+	}
+}
 
   if( !CADTopo_FlushPatches(vol,ugrid) ) {
     printf(" Could not flush patches CADTopo, line %d of %s\n",
