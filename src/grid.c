@@ -15,6 +15,7 @@
 struct Grid {
   long nnode;
   long ncell;
+  long nlist;
   long *firstcell;
   long currentcell;
   long *celllist;
@@ -31,25 +32,36 @@ Grid* gridCreate(long nnode, long ncell, long nlist)
 
   grid->nnode = nnode;
   grid->ncell = ncell;
+  grid->nlist = nlist;
   /* pad one for [0] and one to terminate */
-  if (nlist < 1) nlist = (grid->ncell*4+grid->nnode)+2;
+  if (grid->nlist < 1) grid->nlist = (grid->ncell*4+grid->nnode)+2;
 
   grid->firstcell = malloc(grid->nnode * sizeof(long));
   /* I could set first cell to zero to terminate when realloc used */
-  for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = nlist-1; 
+  for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = grid->nlist-1; 
 
-  grid->celllist = malloc( nlist * sizeof(long));
-  for (i=0;i < nlist; i++ ) grid->celllist[i] = -(i+1);
-  grid->celllist[nlist-1] =0;
-  grid->currentcell=nlist-1;
+  grid->celllist = malloc( grid->nlist * sizeof(long));
+  for (i=0;i < grid->nlist; i++ ) grid->celllist[i] = -(i+1);
+  grid->celllist[grid->nlist-1] =0;
+  grid->currentcell=grid->nlist-1;
  
 #ifdef EBUG
   printf("\n Cre n %d c %d l %d\n", 
-  nnode,ncell,nlist);
+  grid->nnode,grid->ncell,grid->nlist);
   fflush(stdout);
 #endif
 
   return  grid;
+}
+
+Grid *gridDump(Grid *grid)
+{
+  int i;
+  printf("\n");
+  for ( i=0; i<grid->nnode; i++) printf("n %5d -> %5d\n",i,grid->firstcell[i]);
+  for ( i=0; i<grid->nlist; i++) printf("cl%5d -> %5d\n",i,grid->celllist[i]);
+  fflush(stdout);
+  return grid;
 }
 
 long gridNNode(Grid *grid)
@@ -85,11 +97,39 @@ int gridCellExists(Grid *grid, long nodeId, long cellId)
 
 Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
 {
-  long firstAvailable, entry, terminator, nextOpen;
+  long firstAvailable, oldTerminator, entry, terminator, nextOpen;
+
+#ifdef EBUG
+  gridDump(grid);
+#endif
 
   firstAvailable = -grid->celllist[0];
   if ( firstAvailable == 0 ) return NULL; /* list full */
-  entry = firstAvailable;
+
+  for ( gridFirstNodeCell(grid,nodeId); 
+	gridValidNodeCell(grid); 
+	gridNextNodeCell(grid)) {
+#ifdef EBUG
+  printf("\n Term  n %d c %3d current %d \n", 
+  nodeId, cellId, grid->currentcell);
+  fflush(stdout);
+#endif
+  }
+
+  oldTerminator = grid->currentcell;
+
+  if (oldTerminator == (firstAvailable-1) ) {
+    entry = oldTerminator;
+    grid->celllist[entry] = -firstAvailable;
+  }else{
+    entry = firstAvailable;
+  }
+
+#ifdef EBUG
+  printf("\n Reg n %d c %3d e %d f %d o %d", 
+  nodeId, cellId, entry, firstAvailable, oldTerminator);
+  fflush(stdout);
+#endif
 
   if ( grid->celllist[entry] == 0 ) return NULL;
   terminator = entry+1;
@@ -98,13 +138,13 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   if ( grid->celllist[terminator] == 0 ) nextOpen = terminator;
  
 #ifdef EBUG
-  printf("\n Reg n %d c %3d e %d t %d n %d", 
+  printf("\n FReg n %d c %3d e %d t %d n %d", 
   nodeId, cellId, entry, terminator, nextOpen);
   fflush(stdout);
 #endif
 
-  grid->celllist[terminator]=-grid->firstcell[nodeId];
-  grid->firstcell[nodeId]=entry;
+  grid->celllist[terminator]=0;
+  if (grid->celllist[grid->firstcell[nodeId]]==0) grid->firstcell[nodeId]=entry;
   grid->celllist[entry]=cellId+1;
   grid->celllist[0]=-nextOpen;
 
@@ -115,6 +155,12 @@ Grid* gridRemoveNodeCell(Grid *grid, long nodeId, long cellId)
 {
   long cellIndex;
   cellIndex = EMPTY;
+
+#ifdef EBUG
+  printf("\n Start Rem n %d c %3d\n", 
+  nodeId, cellId);
+  fflush(stdout);
+#endif
 
   for ( gridFirstNodeCell(grid,nodeId); 
 	gridValidNodeCell(grid); 
