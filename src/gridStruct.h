@@ -60,9 +60,6 @@ struct Grid {
   FILE *tecplotFile;
   bool tecplotFileOpen;
 
-  int nline;
-  int *line;
-
   void (*renumberFunc)(void *renumberData, int *o2n);
   void *renumberData;
 

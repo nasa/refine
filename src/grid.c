@@ -112,9 +112,6 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 
   grid->tecplotFileOpen = FALSE;
 
-  grid->nline = EMPTY;
-  grid->line = NULL;
-
   grid->renumberFunc = NULL;
   grid->renumberData = NULL;
 
@@ -245,9 +242,6 @@ Grid *gridImport(int maxnode, int nnode,
   grid->degAR = 0;
 
   grid->tecplotFileOpen = FALSE;
-
-  grid->nline = EMPTY;
-  grid->line = NULL;
 
   grid->renumberFunc = NULL;
   grid->renumberData = NULL;
@@ -422,7 +416,6 @@ Grid *gridDetachNodeSorter(Grid *grid )
 
 void gridFree(Grid *grid)
 {
-  if ( grid->line != NULL ) free(grid->line);
   if ( grid->tecplotFileOpen ) fclose(grid->tecplotFile);
   if ( NULL != grid->geomEdge) free(grid->geomEdge);
   adjFree(grid->edgeAdj);
@@ -643,9 +636,6 @@ Grid *gridPack(Grid *grid)
     grid->blanke2n = grid->nedge;
   }
 
-  for(i=0;i<grid->nline;i++) 
-    if (EMPTY != grid->line[i]) grid->line[i] = o2n[grid->line[i]];
-
   if ( NULL != grid->renumberFunc ) 
     (*grid->renumberFunc)( grid->renumberData, o2n );
 
@@ -781,9 +771,6 @@ Grid *gridSortNodeGridEx(Grid *grid)
       adjRegister( grid->edgeAdj, grid->e2n[inode+2*edge], edge );
     }
   }
-
-  for(i=0;i<grid->nline;i++) 
-    if (EMPTY != grid->line[i]) grid->line[i] = o2n[grid->line[i]];
 
   if ( NULL != grid->renumberFunc ) 
     (*grid->renumberFunc)( grid->renumberData, o2n );
