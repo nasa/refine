@@ -180,6 +180,14 @@ VALUE layer_nextTriangle( VALUE self, VALUE normal, VALUE triangle )
   return INT2NUM( layerNextTriangle(layer,NUM2INT(normal),NUM2INT(triangle)) );
 }
 
+VALUE layer_edgeAngle( VALUE self, VALUE triangle0, VALUE triangle1 )
+{
+  GET_LAYER_FROM_SELF;
+  return rb_float_new( layerEdgeAngle(layer,
+				      NUM2INT(triangle0),
+				      NUM2INT(triangle1) ) );
+}
+
 VALUE layer_normalDirection( VALUE self, VALUE normal )
 {
   int i;
@@ -369,6 +377,7 @@ void Init_Layer()
   rb_define_method( cLayer, "normalTriangles", layer_normalTriangles, 1 );
   rb_define_method( cLayer, "previousTriangle", layer_previousTriangle, 2 );
   rb_define_method( cLayer, "nextTriangle", layer_nextTriangle, 2 );
+  rb_define_method( cLayer, "edgeAngle", layer_edgeAngle, 2 );
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
