@@ -2179,6 +2179,11 @@ int gridNodeGlobal(Grid *grid, int node )
   return grid->nodeGlobal[node];
 }
 
+int gridGlobal2Local(Grid *grid, int global )
+{
+  return EMPTY;
+}
+
 Grid *gridSetNodeGlobal(Grid *grid, int node, int global )
 {
   if (!gridValidNode(grid,node)) return NULL;

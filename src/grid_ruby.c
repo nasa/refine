@@ -602,6 +602,12 @@ VALUE grid_setNodeGlobal( VALUE self, VALUE node, VALUE global )
   return( grid == gridSetNodeGlobal( grid, NUM2INT(node), NUM2INT(global) )?self:Qnil);
 }
 
+VALUE grid_global2local( VALUE self, VALUE global )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridGlobal2Local( grid, NUM2INT(global) ) );
+}
+
 VALUE grid_nodePart( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -916,6 +922,7 @@ void Init_Grid()
   rb_define_method( cGrid, "setNodeXYZ", grid_setNodeXYZ, 2 );
 
   rb_define_method( cGrid, "nodeGlobal", grid_nodeGlobal, 1 );
+  rb_define_method( cGrid, "global2local", grid_global2local, 1 );
   rb_define_method( cGrid, "setNodeGlobal", grid_setNodeGlobal, 2 );
   rb_define_method( cGrid, "nodePart", grid_nodePart, 1 );
   rb_define_method( cGrid, "setNodePart", grid_setNodePart, 2 );
