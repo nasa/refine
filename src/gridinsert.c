@@ -119,7 +119,10 @@ Grid *gridCollapseEdgeToBestConfiguration( Grid *grid, Queue *queue,
     return NULL;
   if (node0Cost<currentCost && node1Cost<currentCost) return NULL;
   ratio = (node0Cost>node1Cost?0.0:1.0);
-  return gridCollapseEdge(grid, queue, node0, node1, ratio);
+  if (grid==gridCollapseEdge(grid, queue, node0, node1, ratio)) return grid;
+  if (MIN(node0Cost,node1Cost)>currentCost)
+    return gridCollapseEdge(grid, queue, node0, node1, 1.0-ratio);
+  return NULL;
 }
 
 Grid *gridAdaptBasedOnConnRankings(Grid *grid )
