@@ -73,24 +73,24 @@ Layer *layerAssignPolarGrowthHeight(Layer *layer,
   printf( " sRate	= %f\n", sRate);
   
   for(normal=0;normal<layerNNormal(layer);normal++){
-
+    double r;
     gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer,normal), xyzRoot );
     layerNormalDirection(layer, normal, normalDirection);
 
-    double r = sqrt( xyzRoot[0]*xyzRoot[0] + xyzRoot[1]*xyzRoot[1] );
+    r = sqrt( xyzRoot[0]*xyzRoot[0] + xyzRoot[1]*xyzRoot[1] );
 
     if( xyzRoot[2] > 1.0e-5 || r < 3.175 + 1.0e-5) { // inside jet cavity
-
+      double h1, xx;
           distance = sqrt( xyzRoot[0]*xyzRoot[0] +
 		        xyzRoot[1]*xyzRoot[1] +
 		        xyzRoot[2]*xyzRoot[2] )/rMin;
    
-          double h1 = hMin * pow( distance, pwrInner );
+          h1 = hMin * pow( distance, pwrInner );
           layerThickness = MIN( hLmax, hLayer * h1 );
 
           if( distance < rTrans )  height = h1;
           else {
-	    double xx = (distance-rTrans);
+	    xx = (distance-rTrans);
 	    height = MAX( h1, hTrans * pow( sRate, xx ));
           }
     } else {	// assume node is in the crossflow
@@ -162,10 +162,11 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
   for (iter=0;iter<itMax;iter++){
 
     for (normal=0;normal<layerNNormal(layer);normal++){
+      double aveRate, rr;
       double rate = layerNormalRate(layer,normal);
 
         total = 0;
-	double aveRate = 0.0;
+	aveRate = 0.0;
         for ( it = adjFirst(layer->adj,normal);
               adjValid(it);
               it = adjNext(it) ){
@@ -173,7 +174,7 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
           layerTriangleNormals(layer,triangle,normals);
           for (i=0;i<3;i++){
             if ( !layerNormalTerminated( layer,normals[i]) ){
-	      double rr = layerNormalRate(layer,normals[i]);
+	      rr = layerNormalRate(layer,normals[i]);
               aveRate += rr;
               total++;
             }
@@ -188,16 +189,18 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
 // write a tecplot file on last iteration
 
       if( iter == itMax-1 && !layerNormalTerminated( layer,normal) && iprt ) {
+	double sp1, z, r, length, height;
+	int npts;
          int root = layerNormalRoot(layer, normal );
          double xyz[3], spacing[3], direction[9];
          gridNodeXYZ(layerGrid(layer),root,xyz);
          MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-         double sp1 = spacing[0];
-         double z = -xyz[2];
-         double r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
-         double length = layerNormalMaxLength(layer,normal);
-         double height = layerNormalInitialHeight(layer,normal);
-         int npts = NptsOfGeometricStretch( length, height, rate );
+         sp1 = spacing[0];
+         z = -xyz[2];
+         r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+         length = layerNormalMaxLength(layer,normal);
+         height = layerNormalInitialHeight(layer,normal);
+         npts = NptsOfGeometricStretch( length, height, rate );
 
          if( z >= -1.0e-5 && r > 3.17501 )
             fprintf(tecPlot, " %d  %f  %f  %f  %f  %f  %f  %f  %f  %d \n",
@@ -262,6 +265,10 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
   for (iter=0;iter<ItMax;iter++){
 
     for (normal=0;normal<layerNNormal(layer);normal++){
+      double aveRate   = 0.0;
+      double aveHeight = 0.0;
+      double aveLength = 0.0;
+      double aveDyMax  = 0.0;
 
       length = layerNormalMaxLength(layer,normal);
       height = layerNormalInitialHeight(layer,normal);
@@ -271,10 +278,6 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
         totalH = 0;
         totalL = 0;
 	totalY = 0;
-	double aveRate   = 0.0;
-	double aveHeight = 0.0;
-	double aveLength = 0.0;
-	double aveDyMax  = 0.0;
         for ( it = adjFirst(layer->adj,normal);
               adjValid(it);
               it = adjNext(it) ){
@@ -335,17 +338,19 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
 // write a tecplot file on last iteration
 
       if( iter == ItMax-1 && !layerNormalTerminated( layer,normal) && iprt ) {
+	double sp1, z, r;
+	int npts;
          int root = layerNormalRoot(layer, normal );
          double xyz[3], spacing[3], direction[9];
          gridNodeXYZ(layerGrid(layer),root,xyz);
          MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-         double sp1 = spacing[0];
-         double z = -xyz[2];
-         double r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+         sp1 = spacing[0];
+         z = -xyz[2];
+         r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 	 rate = layerNormalRate(layer,normal);
          length = layerNormalMaxLength(layer,normal);
          height = layerNormalInitialHeight(layer,normal);
-         int npts = NptsOfGeometricStretch( length, height, rate );
+         npts = NptsOfGeometricStretch( length, height, rate );
 	 layerSetNormalInitialHeight( layer, normal, height );
 
          if( z >= -1.0e-5 && r > 3.17501 )
@@ -399,12 +404,12 @@ Layer *layerSetNormalMaxLengthConstrained( Layer *layer, int normal, double leng
 // function to find out why some points are terminating
 
 void WriteTerminationMessage(Layer* layer, int normal, char *message ) {
-
+  double z, r;
      int root = layerNormalRoot(layer, normal );
      double xyz[3], spacing[3], direction[9];
      gridNodeXYZ(layerGrid(layer),root,xyz);
-     double z = -xyz[2];
-     double r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+     z = -xyz[2];
+     r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 //     if( z >= -1.0e-5 && r > 3.17501 && r < 3.3 ) {
 	printf(" terminating normal %d because %s\n", normal, message );
 //    }
@@ -502,15 +507,16 @@ Layer *layerRelaxNormalDirection(Layer *layer, int itMax, double omega )
 
 int layerTerminateNormalIfInX(Layer *layer, int s, double x)
 {
- 
+  double xyz[3];
+  int normal;
+  int iflag = 1;
+  int totalterm;
+
 // terminate all remaining normals if any normal is a region has
 // been terminated
 
   if (layerNNormal(layer) == 0 ) return 0;
 
-  double xyz[3];
-  int normal;
-  int iflag = 1;
 
   for (normal=0;normal<layerNNormal(layer)&&iflag;normal++){
     gridNodeXYZ(layer->grid, layer->normal[normal].root, xyz);
@@ -520,7 +526,7 @@ int layerTerminateNormalIfInX(Layer *layer, int s, double x)
   if( !iflag ) {
      for (normal=0;normal<layerNNormal(layer);normal++)
 	layerTerminateNormal(layer,normal);
-     int totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
+     totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
      printf("%d of %d normals terminted by region criterion.\n",
          totalterm,layerNNormal(layer) );
      return totalterm;
