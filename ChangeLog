@@ -1,3 +1,11 @@
+2004-10-03 01:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.* (gridCollapseEdge) added an extra check to make
+	sure that an edge collapse does not cause faces on the top and
+	bottom of the gem to have the same connectivity after
+	collapse. This showed up as a pathological case, which I have
+	never seen before.
+
 2004-10-01 09:07 Mike Park  <mike.park@nasa.gov>
 
 	* test/cyl.* Added a unit cylander test case with 5 unit outer

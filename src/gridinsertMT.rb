@@ -430,6 +430,15 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal origXYZ, grid.nodeXYZ(0)
  end
 
+ def testDoNotCollapseEdgeIfItBringsFacesTogether
+  grid = gemGrid(3, nil, nil, nil, true)
+  grid.addFace(0,1,2,20)
+  grid.addFace(1,0,4,50)
+  grid.addFace(0,2,3,120)
+  grid.addFace(1,2,3,150)
+  assert_nil grid.collapseEdge(0,1,0.5)
+ end
+
  def faceGrid
   grid = Grid.new(5,3,3,0)
   grid.addNode(0,0,0)

@@ -71,9 +71,10 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength,
   for ( n0=0; 
 	adaptnode<origNNode && n0<gridMaxNode(grid); 
 	n0++ ) { 
-    if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
+    if (adaptnode > 100 &&adaptnode/report*report == adaptnode ) {
       printf("adapt node %8d nnode %8d added %8d removed %8d\n",
 	     adaptnode,gridNNode(grid),nnodeAdd,nnodeRemove);
+    }
     if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
       adaptnode++;
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
@@ -608,6 +609,7 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   double xyz0[3], xyz1[3], xyzAvg[3];
   GridBool volumeEdge;
   double arLimit;
+  int iequ, equ0, equ1;
 
   if ( gridGeometryNode(grid, n1) ) return NULL;
   if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
@@ -619,6 +621,13 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 
   if ( volumeEdge && gridGeometryFace(grid, n0) && gridGeometryFace(grid, n1))
     return NULL;
+
+  for(iequ=0;iequ<gridNEqu(grid)-1;iequ++) {
+    equ0 = gridEqu(grid,iequ);
+    equ1 = gridEqu(grid,iequ+1);
+    if (EMPTY != gridFindFace(grid,n0,equ0,equ1) && 
+	EMPTY != gridFindFace(grid,n1,equ0,equ1) ) return NULL;
+  }
 
   if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
   if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
