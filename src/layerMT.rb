@@ -1493,6 +1493,7 @@ class TestLayer < Test::Unit::TestCase
 #      1---8
 
   assert_equal 3,         layer.blendDegree(0)
+  assert_equal [0, 1, 2], layer.orderedVertexBlends(0)
   assert_equal [0, 5, 6], layer.orderedVertexNormals(0)
   assert_equal layer, layer.advanceConstantHeight(0.1)
   #layer.writeTecplotFrontGeometry
@@ -1632,6 +1633,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [ 0,12, 3,15], layer.subBlendNormals(2,0)
   assert_equal [12, 6,15, 9], layer.subBlendNormals(2,1)
 
+  assert_equal [0, 1, 2], layer.orderedVertexBlends(0)
   assert_equal [0,10, 5, 11, 6, 12], layer.orderedVertexNormals(0)
  end
 

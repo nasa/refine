@@ -492,6 +492,30 @@ VALUE layer_nSubBlend( VALUE self, VALUE blend )
   return INT2NUM(layerNSubBlend(layer,NUM2INT(blend)));
 }
 
+VALUE layer_orderedVertexBlends( VALUE self, VALUE normal )
+{
+  int i, *vertexBlends, nVertexBlends;
+  VALUE blends;
+  GET_LAYER_FROM_SELF;
+
+  nVertexBlends = layerBlendDegree(layer,NUM2INT(normal));
+
+  if (0 == nVertexBlends) return rb_ary_new();
+
+  vertexBlends = malloc(nVertexBlends*sizeof(int));
+
+  if (layer == layerOrderedVertexBlends( layer, NUM2INT(normal), 
+					  &nVertexBlends, vertexBlends) ) {
+    blends = rb_ary_new2(nVertexBlends);
+    for(i=0;i<nVertexBlends;i++) 
+      rb_ary_store( blends, i, INT2NUM(vertexBlends[i]) );
+    return blends;
+  }else{
+    free(vertexBlends);
+    return Qnil;
+  }
+}
+
 VALUE layer_orderedVertexNormals( VALUE self, VALUE normal )
 {
   int i, *vertexNormals, nVertexNormals;
@@ -610,6 +634,7 @@ void Init_Layer()
   rb_define_method( cLayer, "subBlend", layer_subBlend, 1 );
   rb_define_method( cLayer, "nSubBlend", layer_nSubBlend, 1 );
 
+  rb_define_method( cLayer, "orderedVertexBlends", layer_orderedVertexBlends, 1 );
   rb_define_method( cLayer, "orderedVertexNormals", layer_orderedVertexNormals, 1 );
 
   rb_define_method( cLayer, "terminateCollidingNormals", layer_terminateCollidingNormals, 0 );
