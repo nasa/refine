@@ -178,6 +178,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil          layer = Layer.new(grid)
   assert_equal layer,     layer.makeFront([1])
   assert_equal 3,         layer.nfront
+  assert_nil              layer.visibleNormals
   assert_equal layer,     layer.makeNormal
   assert_equal 5,         layer.nnormal
   norm = layer.normalDirection(0)
@@ -207,11 +208,20 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil          layer = Layer.new(grid)
   assert_equal layer,     layer.makeFront([1])
   assert_equal 1,         layer.nfront
+  assert_nil              layer.advance(0.1)
+  assert_nil              layer.wiggle(0.1)
   assert_equal layer,     layer.makeNormal
   assert_equal 3,         layer.nnormal
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal layer,     layer.advance(0.1)
   assert_equal 7,         grid.nnode
+  assert_equal [0,0,0.1], grid.nodeXYZ(4)
+  assert_equal [1,0,0.1], grid.nodeXYZ(5)
+  assert_equal [0,1,0.1], grid.nodeXYZ(6)
+  assert_equal layer,     layer.wiggle(0.1)
+  assert_equal [0,0,0.2], grid.nodeXYZ(4)
+  assert_equal [1,0,0.2], grid.nodeXYZ(5)
+  assert_equal [0,1,0.2], grid.nodeXYZ(6)
   assert_equal [4,5,6,3], grid.cell(0)
   assert_equal 4,         grid.ncell
   assert_equal true,      grid.rightHandedFace(0)

@@ -273,6 +273,8 @@ Layer *layerVisibleNormals(Layer *layer)
   AdjIterator it;
   int minFront, lastFront;
 
+  if (layerNNormal(layer) == 0 ) return NULL;
+
   for (normal=0;normal<layerNNormal(layer);normal++){
     lastFront = EMPTY;
     radian = 0.01;
@@ -364,6 +366,8 @@ Layer *layerAdvance(Layer *layer, double height )
   int front, normals[3], n[6], side[2];
   double xyz[3];
   AdjIterator it;  
+
+  if (layerNNormal(layer) == 0 ) return NULL;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     root = layer->normal[normal].root;
@@ -479,6 +483,28 @@ Layer *layerAdvance(Layer *layer, double height )
       gridProjectNodeToFace(grid, layer->normal[normal].root, faceId );
     }
     gridFreezeNode(grid,layer->normal[normal].root);
+  }
+
+  return layer;
+}
+
+Layer *layerWiggle(Layer *layer, double height )
+{
+  Grid *grid = layer->grid;
+  int normal, root, faceId, i;
+  double xyz[3];
+
+  if (layerNNormal(layer) == 0 ) return NULL;
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    root = layer->normal[normal].root;
+    gridNodeXYZ(grid,root,xyz);
+    for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
+    gridSetNodeXYZ(grid, root, xyz);
+    faceId = layerConstrained(layer,normal);
+    if (0 != faceId) {
+      gridProjectNodeToFace(grid, root, faceId );
+    }
   }
 
   return layer;
