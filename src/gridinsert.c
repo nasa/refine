@@ -140,7 +140,7 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 	    nnodeAdd++;
 	    gridSwapNearNode( grid, newnode );
 	  }
-	}else if (ratio < (1/1.35)) {
+	}else if (ratio < 0.55) {
 	  if ( grid == gridCollapseEdge(grid, NULL, nodes[0], nodes[1], 0.5) ){
 	    nnodeRemove++;
 	    gridSwapNearNode( grid, nodes[0] );
