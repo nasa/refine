@@ -61,11 +61,11 @@ Grid *gridRemoveAllNodes(Grid *grid )
 Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 {
   AdjIterator it;
-  int i, n0, n1, adaptnode, maxnode, newnode;
+  int i, n0, n1, adaptnode, origNNode, newnode;
   int report, nnodeAdd, nnodeRemove;
   double ratio;
   
-  maxnode = gridMaxNode(grid);
+  origNNode = gridNNode(grid);
   adaptnode =0;
   nnodeAdd = 0;
   nnodeRemove = 0;
@@ -73,7 +73,7 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
   report = 10; if (gridNNode(grid) > 100) report = gridNNode(grid)/10;
 
   for ( n0=0; 
-	adaptnode<maxnode && n0<gridMaxNode(grid); 
+	adaptnode<origNNode && n0<gridMaxNode(grid); 
 	n0++ ) { 
     if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
       printf("adapt node %8d nnode %8d added %8d removed %8d\n",
