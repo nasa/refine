@@ -25,6 +25,7 @@ Grid *gridSwapEdge7(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
 {
   int gap0, gap1, face0, face1, faceId0, faceId1, newFaceId0, newFaceId1;
+  double origMR, newMR;
   Grid *swapStatus;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
@@ -44,6 +45,13 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
     newFaceId0 = gridFaceId(grid, n0, gap0, gap1 );
     newFaceId1 = gridFaceId(grid, n1, gap0, gap1 );
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
+
+    // make sure that face MR can improve
+    origMR = MIN( gridFaceMR(grid, n0, n1, gap0 ), 
+		  gridFaceMR(grid, n0, n1, gap1 ) );
+    newMR  = MIN( gridFaceMR(grid, n0, gap0, gap1 ),
+		  gridFaceMR(grid, n1, gap0, gap1 ) );
+    if ( origMR > newMR ) return NULL;
   }
 
   switch (grid->nequ) {
