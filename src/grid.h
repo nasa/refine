@@ -153,6 +153,16 @@ int gridCellGlobal(Grid *g, int cellIndex);
 Grid *gridSetCellGlobal(Grid *g, int cellIndex, int globalIndex );
 Grid *gridGlobalShiftCell(Grid *g, int oldncellg, int newncellg, 
 			  int celloffset );
+#define gridCellHasLocalNode(grid,nodes) ( \
+gridNodeLocal(grid,(nodes)[0]) || \
+gridNodeLocal(grid,(nodes)[1]) || \
+gridNodeLocal(grid,(nodes)[2]) || \
+gridNodeLocal(grid,(nodes)[3]) )
+#define gridCellHasGhostNode(grid,nodes) ( \
+gridNodeGhost(grid,(nodes)[0]) || \
+gridNodeGhost(grid,(nodes)[1]) || \
+gridNodeGhost(grid,(nodes)[2]) || \
+gridNodeGhost(grid,(nodes)[3]) )
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
@@ -219,7 +229,7 @@ Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
 int gridGem(Grid *g, int index );
 Grid *gridRemoveGem(Grid *g);
-bool gridGemIsLocal(Grid *g);
+bool gridGemIsAllLocal(Grid *g);
 
 Grid *gridOrient(Grid *g, int *cell, int *nodes );
 Grid *gridEquator(Grid *g, int n0, int n1 );

@@ -55,7 +55,7 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return EMPTY;
 
   gridMakeGem(grid, node0, node1 );
-  gemLocal = gridGemIsLocal(grid);
+  gemLocal = gridGemIsAllLocal(grid);
   if ( NULL == queue && !gemLocal) return EMPTY;
   if ( NULL != queue && gemLocal) return EMPTY;
 
