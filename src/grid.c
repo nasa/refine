@@ -3165,11 +3165,12 @@ Grid *gridRenumberGlobalNodes(Grid *grid, int nnode, int *n2o)
     if (newglobal != oldglobal) {
       local = gridGlobal2Local(grid, oldglobal );
       if ( EMPTY != local ) {
-	gridSetNodeGlobal(grid, local, newglobal);
+	grid->nodeGlobal[local] = newglobal;
       }
     }
   }
-  return NULL;
+  gridCreateSortedGlobal(grid);
+  return grid;
 }
 
 int gridNodePart(Grid *grid, int node )
