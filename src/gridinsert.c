@@ -226,12 +226,12 @@ int gridSplitEdge(Grid *grid, int n0, int n1)
   newY = ( xyz0[1] + xyz1[1] ) * 0.5;
   newZ = ( xyz0[2] + xyz1[2] ) * 0.5;
   
-  return gridSplitEdgeAt(grid, n0, n1,
+  return gridSplitEdgeAt(grid, NULL, n0, n1,
 			 newX, newY, newZ );
 
 }
 
-int gridSplitEdgeAt(Grid *grid, int n0, int n1,
+int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 		    double newX, double newY, double newZ )
 {
   int i, igem, cell, nodes[4], inode, node;
@@ -385,7 +385,7 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
 
   if ( edgePosition > 0.0 && edgePosition < 1.0 && 
        radius < 0.001*edgeLength) {
-    newnode = gridSplitEdgeAt(grid, n0, n1, newX, newY, newZ);
+    newnode = gridSplitEdgeAt(grid, NULL, n0, n1, newX, newY, newZ);
     return newnode;
   }
 

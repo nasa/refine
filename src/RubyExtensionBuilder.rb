@@ -14,10 +14,10 @@ class RubyExtensionBuilder
   extraFiles['Grid'] = 'adj.h line.h'
   extraFiles['GridMetric'] = 'adj.h line.h grid.h gridmath.c'
   extraFiles['GridSwap'] = 'adj.h line.h grid.h gridmath.h gridmetric.h'
-  extraFiles['GridCAD'] = 'FAKEGeom adj.h line.h grid.h gridmath.h gridmetric.h gridinsert.h'
-  extraFiles['GridInsert'] = 'adj.h line.h grid.h gridmath.h gridmetric.h gridcad.h'
+  extraFiles['GridCAD'] = 'FAKEGeom adj.h line.h grid.h gridmath.h gridmetric.h queue.h gridinsert.h'
+  extraFiles['GridInsert'] = 'adj.h line.h grid.h gridmath.h gridmetric.h gridcad.h queue.h '
   extraFiles['GridMPI'] = 'adj.h line.h queue.h grid.h gridinsert.h'
-  extraFiles['Layer'] = 'layerStruct.h adj.h line.h grid.h gridmath.h near.h intersect.h gridmetric.h gridcad.h gridinsert.h'
+  extraFiles['Layer'] = 'layerStruct.h adj.h line.h grid.h gridmath.h near.h intersect.h gridmetric.h gridcad.h queue.h gridinsert.h'
 
   systemCall = ['ruby makeRubyExtension.rb',extension,extraFiles[extension],'master_header.h'].join(' ')
   exit 1 unless system(systemCall )

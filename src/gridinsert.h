@@ -12,6 +12,7 @@
 #define GRIDINSERT_H
 
 #include "master_header.h"
+#include "queue.h"
 #include "grid.h"
 
 BEGIN_C_DECLORATION
@@ -21,7 +22,7 @@ Grid *gridAdapt(Grid *g, double minLength, double maxLength );
 Grid *gridAdaptSurface(Grid *g, double minLength, double maxLength );
 Grid *gridAdaptWithOutCAD(Grid *g, double minLength, double maxLength );
 int gridSplitEdge(Grid *g, int n0, int n1 );
-int gridSplitEdgeAt(Grid *g, int n0, int n1, 
+int gridSplitEdgeAt(Grid *g, Queue *q, int n0, int n1, 
 		    double newX, double newY, double newZ);
 int gridSplitEdgeIfNear(Grid *g, int n0, int n1, 
 			double newX, double newY, double newZ);

@@ -21,7 +21,7 @@ VALUE grid_splitEdgeAt( VALUE self, VALUE n0, VALUE n1,
 			VALUE x, VALUE y, VALUE z )
 {
   GET_GRID_FROM_SELF;
-  return INT2NUM(gridSplitEdgeAt( grid, NUM2INT(n0),  NUM2INT(n1),
+  return INT2NUM(gridSplitEdgeAt( grid, NULL, NUM2INT(n0),  NUM2INT(n1),
 				  NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ));
 }
 
