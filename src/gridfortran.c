@@ -215,6 +215,16 @@ int gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
     gridNodeXYZ(grid,node,xyz);
     x[node] = xyz[0];
     y[node] = xyz[1];
-    x[node] = xyz[2];
+    z[node] = xyz[2];
   }
+}
+
+int gridgetcell_( int *cell, int *nodes, int *global )
+{
+  gridCell(grid,*cell-1,nodes);
+  nodes[0]++;
+  nodes[1]++;
+  nodes[2]++;
+  nodes[3]++;
+  *global = gridCellGlobal(grid,*cell-1)+1;
 }
