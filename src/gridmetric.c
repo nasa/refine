@@ -521,6 +521,10 @@ double gridAR(Grid *grid, int *nodes )
   double edge1[3], edge2[3], edge3[3];
   double norm[3];
 
+#ifdef SURFACE_VALIDITY
+  int nodes_on_surface;
+#endif
+
   if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
     return gridEdgeRatioCost(grid, nodes);
 
@@ -530,12 +534,13 @@ double gridAR(Grid *grid, int *nodes )
        !gridValidNode(grid, nodes[3]) ) return -1.0;
 
 #ifdef SURFACE_VALIDITY
-  if ( gridGeometryFace(grid, nodes[0]) || 
-       gridGeometryFace(grid, nodes[1]) ||
-       gridGeometryFace(grid, nodes[2]) ||
-       gridGeometryFace(grid, nodes[3]) ) {
-    if (gridMinCellJacDet2(grid,nodes)  <= 6.0e-14) return -1.0;
-  }
+  nodes_on_surface = 0;
+  if ( gridGeometryFace(grid, nodes[0]) ) nodes_on_surface++;
+  if ( gridGeometryFace(grid, nodes[1]) ) nodes_on_surface++;
+  if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
+  if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
+  if ( ( nodes_on_surface > 1 ) && 
+       ( gridMinCellJacDet2(grid,nodes) <= 6.0e-14 ) ) return -1.0;
 #endif
   
   p1 = gridNodeXYZPointer(grid,nodes[0]);
