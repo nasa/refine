@@ -4,10 +4,10 @@
 
 #define GET_GRID_FROM_SELF Grid *grid; Data_Get_Struct( self, Grid, grid );
 
-VALUE grid_identityGlobal( VALUE self, VALUE offset )
+VALUE grid_identityNodeGlobal( VALUE self, VALUE offset )
 {
   GET_GRID_FROM_SELF;
-  return( grid == gridIdentityGlobal( grid, NUM2INT(offset) )?self:Qnil);
+  return( grid == gridIdentityNodeGlobal( grid, NUM2INT(offset) )?self:Qnil);
 }
 
 VALUE grid_setAllLocal( VALUE self )
@@ -38,7 +38,7 @@ void Init_GridMPI()
 {
   cGridMPI = rb_define_module( "GridMPI" );
   rb_define_method( cGridMPI, "setAllLocal", grid_setAllLocal, 0 );
-  rb_define_method( cGridMPI, "identityGlobal", grid_identityGlobal, 1 );
+  rb_define_method( cGridMPI, "identityNodeGlobal", grid_identityNodeGlobal, 1);
   rb_define_method( cGridMPI, "setGhost", grid_setGhost, 1 );
   rb_define_method( cGridMPI, "parallelEdgeSplit", grid_parallelEdgeSplit, 3 );
 }

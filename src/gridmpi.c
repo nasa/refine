@@ -15,7 +15,7 @@
 #include "gridinsert.h"
 #include "gridmpi.h"
 
-Grid *gridIdentityGlobal(Grid *grid, int offset )
+Grid *gridIdentityNodeGlobal(Grid *grid, int offset )
 {
   int node;
   for (node = 0; node < gridNNode(grid) ; node++ )

@@ -36,7 +36,7 @@ class TestGridMPI < Test::Unit::TestCase
 	       grid.addNode(0,0,1) )
   grid.addFace(0,3,1,10)
   grid.addFace(0,2,3,11)
-  grid.identityGlobal(100)
+  grid.identityNodeGlobal(100)
   grid
  end 
 
@@ -44,7 +44,7 @@ class TestGridMPI < Test::Unit::TestCase
   plus = 544
   grid = Grid.new(10,0,0,0)
   10.times { grid.addNode(1,2,3) }
-  assert_equal grid,grid.identityGlobal(544)
+  assert_equal grid,grid.identityNodeGlobal(544)
   10.times { |node| assert_equal node+544, grid.nodeGlobal(node) }
  end
 
