@@ -150,10 +150,12 @@ Layer *layerFormAdvancingLayerWithCADGeomBCS( Grid *grid )
   Layer *layer;
 
   layer = layerCreate( grid );
+  if (NULL == layer) printf("ERROR layerCreate failed: %s: %d\n",__FILE__,__LINE__);
   nFrontFaces =0;
   for (face=1;face<=gridNGeomFace(grid);face++){
     upp = CADGeom_FaceGrid(vol,face);
     if ( BC_NOSLIP == GeoBC_GenericType(UGPatch_BC(upp))){
+      printf("face %d is added to front.\n",face);
       frontFaces[nFrontFaces] = face;
       nFrontFaces++;
     }
@@ -177,9 +179,10 @@ Layer *layerFormAdvancingLayerWithCADGeomBCS( Grid *grid )
           else
             CADTopo_EdgeFaces(vol,edges[i],&other,&self);
 	  upp = CADGeom_FaceGrid(vol,other);
-	  if ( BC_NOSLIP == GeoBC_GenericType(UGPatch_BC(upp)))
+	  if ( BC_NOSLIP == GeoBC_GenericType(UGPatch_BC(upp))){
 	    layerConstrainNormal(layer,self);
-	  
+	    printf("face %d is used to constrain normals.\n",face);
+	  }
         }
       }
     }
@@ -190,6 +193,7 @@ Layer *layerFormAdvancingLayerWithCADGeomBCS( Grid *grid )
     if ( layerConstrainingGeometry(layer,left) &&
 	 layerConstrainingGeometry(layer,right) ){
       layerConstrainNormal(layer,-edge);
+      printf("edge %d is used to constrain normals.\n",edge);
     }
   }
 
