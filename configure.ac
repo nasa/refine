@@ -88,6 +88,9 @@ then
    if test "$KERNEL" == 'Parasolid' ; then
      CAPRILib="$CAPRILib $PARASOLID/fg.lib -L$PARASOLID -lparasolid"
    fi
+   if test "$KERNEL" == 'OpenCASCADE' ; then
+     CAPRILib="$CAPRILib -L$CASROOT/Linux/lib -lFWOSPlugin -lPTKernel -lTKBool -lTKCDF -lTKernel -lTKFeat -lTKGeomAlgo -lTKMath -lTKOffset -lTKPrim -lTKPShape -lTKService -lTKTopAlgo -lTKBRep -lTKG2d -lTKG3d -lTKGeomBase -lTKShHealing"
+   fi
    if test "$x_libraries" != "" ; then
      CAPRILib="$CAPRILib -L$x_libraries -lX11"
    fi
