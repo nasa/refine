@@ -211,7 +211,8 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->costFunction = gridCOST_FCN_MEAN_RATIO;
 
-  grid->tecplotFile = NULL;
+  grid->tecplotGeomFile = NULL;
+  grid->tecplotScalarFile = NULL;
 
   grid->packFunc = NULL;
   grid->packData = NULL;
@@ -533,7 +534,8 @@ void gridFree(Grid *grid)
     (*grid->freeNotificationFunc)( grid->freeNotificationData );
   if (NULL != grid->lines) linesFree(grid->lines);
 
-  gridCloseTecplotFile(grid);
+  gridCloseTecplotGeomFile(grid);
+  gridCloseTecplotScalarFile(grid);
 
   if (NULL != grid->connRanking) free(grid->connRanking);
   if (NULL != grid->connValue) free(grid->connValue);
@@ -1077,22 +1079,22 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   return grid;
 }
 
-Grid *gridWriteTecplotSurfaceZone(Grid *grid, char *filename)
+Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
 {
   int i, nfacenode;
   if ( grid !=  gridSortNodeGridEx(grid) ) {
-    printf("gridWriteTecplotSurfaceZone: gridSortNodeGridEx failed.\n");
+    printf("gridWriteTecplotSurfaceGeom: gridSortNodeGridEx failed.\n");
     return NULL;
   }
 
-  if (NULL == grid->tecplotFile) {
+  if (NULL == grid->tecplotGeomFile) {
     if (NULL == filename) {
-      grid->tecplotFile = fopen("grid.t","w");
+      grid->tecplotGeomFile = fopen("gridGeom.t","w");
     }else{
-      grid->tecplotFile = fopen(filename,"w");
+      grid->tecplotGeomFile = fopen(filename,"w");
     } 
-    fprintf(grid->tecplotFile, "title=\"tecplot refine geometry file\"\n");
-    fprintf(grid->tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
+    fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\"\n");
   }
 
   nfacenode=0;
@@ -1101,62 +1103,115 @@ Grid *gridWriteTecplotSurfaceZone(Grid *grid, char *filename)
   }
   nfacenode++;
 
-  fprintf(grid->tecplotFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+  fprintf(grid->tecplotGeomFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
 	  nfacenode, grid->nface);
 
   for ( i=0; i<nfacenode ; i++ ){
-    fprintf(grid->tecplotFile, "%23.15e%23.15e%23.15e\n",
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e\n",
 	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i]);
   }
 
-  fprintf(grid->tecplotFile, "\n");
+  fprintf(grid->tecplotGeomFile, "\n");
 
   for ( i=0; i<grid->nface ; i++ ){
-    fprintf(grid->tecplotFile, " %9d %9d %9d\n",
+    fprintf(grid->tecplotGeomFile, " %9d %9d %9d\n",
 	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
   }
 
-  fflush(grid->tecplotFile);
+  fflush(grid->tecplotGeomFile);
 
   return grid;
 }
 
-Grid *gridWriteTecplotCellZone(Grid *grid, int *nodes, char *filename)
+Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, char *filename)
 {
   int i;
   double xyz[3];
 
-  if (NULL == grid->tecplotFile) {
+  if (NULL == grid->tecplotGeomFile) {
     if (NULL == filename) {
-      grid->tecplotFile = fopen("grid.t","w");
+      grid->tecplotGeomFile = fopen("grid.t","w");
     }else{
-      grid->tecplotFile = fopen(filename,"w");
+      grid->tecplotGeomFile = fopen(filename,"w");
     } 
-    fprintf(grid->tecplotFile, "title=\"tecplot refine geometry file\"\n");
-    fprintf(grid->tecplotFile, "variables=\"X\",\"Y\",\"Z\"\n");
+    fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\"\n");
   }
 
-  fprintf(grid->tecplotFile, "zone t=cell, n=%d, e=%d, f=fepoint, et=%s\n",
+  fprintf(grid->tecplotGeomFile, "zone t=cell, n=%d, e=%d, f=fepoint, et=%s\n",
 	  4, 1, "tetrahedron");
 
   for ( i=0; i<4 ; i++ ){
     gridNodeXYZ(grid,nodes[i],xyz);
-    fprintf(grid->tecplotFile, "%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
   }
 
-  fprintf(grid->tecplotFile, "1 2 3 4\n");
+  fprintf(grid->tecplotGeomFile, "1 2 3 4\n");
 
-  fflush(grid->tecplotFile);
+  fflush(grid->tecplotGeomFile);
 
   return grid;
 }
 
-Grid *gridCloseTecplotFile(Grid *grid)
+Grid *gridCloseTecplotGeomFile(Grid *grid)
 {
-  if (NULL == grid->tecplotFile) return NULL;
+  if (NULL == grid->tecplotGeomFile) return NULL;
 
-  fclose(grid->tecplotFile);
-  grid->tecplotFile = NULL;
+  fclose(grid->tecplotGeomFile);
+  grid->tecplotGeomFile = NULL;
+  return grid;
+}
+
+Grid *gridWriteTecplotSurfaceScalar(Grid *grid, char *filename, double *scalar)
+{
+  int i, nfacenode;
+  if ( grid !=  gridSortNodeGridEx(grid) ) {
+    printf("gridWriteTecplotSurfaceScalar: gridSortNodeGridEx failed.\n");
+    return NULL;
+  }
+
+  if (NULL == grid->tecplotScalarFile) {
+    if (NULL == filename) {
+      grid->tecplotScalarFile = fopen("gridScalar.t","w");
+    }else{
+      grid->tecplotScalarFile = fopen(filename,"w");
+    } 
+    fprintf(grid->tecplotScalarFile, "title=\"tecplot refine scalar file\"\n");
+    fprintf(grid->tecplotScalarFile, "variables=\"X\",\"Y\",\"Z\",\"S\"\n");
+  }
+
+  nfacenode=0;
+  for(i=0;i<3*grid->nface;i++){
+    nfacenode = MAX(nfacenode, grid->f2n[i]);
+  }
+  nfacenode++;
+
+  fprintf(grid->tecplotScalarFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  nfacenode, grid->nface);
+
+  for ( i=0; i<nfacenode ; i++ ){
+    fprintf(grid->tecplotScalarFile, "%23.15e%23.15e%23.15e%23.15e\n",
+	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i],scalar[i]);
+  }
+
+  fprintf(grid->tecplotScalarFile, "\n");
+
+  for ( i=0; i<grid->nface ; i++ ){
+    fprintf(grid->tecplotScalarFile, " %9d %9d %9d\n",
+	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
+  }
+
+  fflush(grid->tecplotScalarFile);
+
+  return grid;
+}
+
+Grid *gridCloseTecplotScalarFile(Grid *grid)
+{
+  if (NULL == grid->tecplotScalarFile) return NULL;
+
+  fclose(grid->tecplotScalarFile);
+  grid->tecplotScalarFile = NULL;
   return grid;
 }
 

@@ -255,12 +255,12 @@ void gridwritetecplotsurfacezone_( void )
   int cell, nodes[4];
 
   sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
-  gridWriteTecplotSurfaceZone(grid,filename);
+  gridWriteTecplotSurfaceGeom(grid,filename);
 
   for (cell=0;cell<gridMaxCell(grid);cell++)
     if (grid==gridCell(grid, cell, nodes)) {
       if (0.0>=gridVolume(grid,nodes))
-	gridWriteTecplotCellZone(grid,nodes,filename);
+	gridWriteTecplotCellGeom(grid,nodes,filename);
     }
 
 #ifdef PARALLEL_VERBOSE 

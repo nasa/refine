@@ -1,3 +1,10 @@
+2004-10-29 09:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotSurfaceGeom) renamed from
+	gridWriteTecplotSurfaceZone, same with gridCloseTecplotGeomFile.
+	* src/grid.c (gridWriteTecplotSurfaceScalar) added to dump
+	nodal scalar info to a sperate tecplot file.
+	* aBunchOfFiles implemented the tecplot renaming
 2004-10-29 01:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridshape.c (gridShapeJacobian1,gridShapeJacobian2) Added to

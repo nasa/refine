@@ -115,7 +115,8 @@ struct Grid {
   double AR[MAXDEG];
   double dARdX[3*MAXDEG];
 
-  FILE *tecplotFile;
+  FILE *tecplotGeomFile;
+  FILE *tecplotScalarFile;
 
   int costFunction;
 
@@ -193,9 +194,13 @@ Grid *gridSortNodeFUN3D(Grid *g, int *nnodes0);
 Grid *gridRenumber(Grid *g, int *o2n);
 void gridFree(Grid *g);
 
-Grid *gridWriteTecplotSurfaceZone(Grid *g, char *filename );
-Grid *gridWriteTecplotCellZone(Grid *g, int *nodes, char *filename );
-Grid *gridCloseTecplotFile(Grid *g);
+Grid *gridWriteTecplotSurfaceGeom(Grid *g, char *filename );
+Grid *gridWriteTecplotCellGeom(Grid *g, int *nodes, char *filename );
+Grid *gridCloseTecplotGeomFile(Grid *g);
+/* Warning, call gridSortNodeGridEx before calculating scalar 
+ * in gridWriteTecplotSurfaceScalar to avoid a renumbering bug. */
+Grid *gridWriteTecplotSurfaceScalar(Grid *g, char *filename, double *scalar );
+Grid *gridCloseTecplotScalarFile(Grid *g);
 
 #define gridMaxNode(grid) (grid->maxnode)
 #define gridNNode(grid)   (grid->nnode)

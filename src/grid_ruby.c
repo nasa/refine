@@ -35,10 +35,24 @@ VALUE grid_sortNodeGridEx( VALUE self )
   return (gridSortNodeGridEx(grid)==grid?self:Qnil);
 }
 
-VALUE grid_writeTecplotSurfaceZone( VALUE self )
+VALUE grid_writeTecplotSurfaceGeom( VALUE self )
 {
   GET_GRID_FROM_SELF;
-  return (gridWriteTecplotSurfaceZone(grid,NULL)==grid?self:Qnil);
+  return (gridWriteTecplotSurfaceGeom(grid,NULL)==grid?self:Qnil);
+}
+
+VALUE grid_writeTecplotSurfaceScalar( VALUE self, VALUE rb_scalar )
+{
+  int length, i;
+  double *scalar;
+  VALUE value;
+  GET_GRID_FROM_SELF;
+  length = RARRAY(rb_scalar)->len;
+  scalar = (double *)malloc(length*sizeof(double));
+  for(i=0;i<length;i++) scalar[i] = NUM2DBL( rb_ary_entry( rb_scalar, i) );
+  value = (grid==gridWriteTecplotSurfaceScalar(grid,NULL,scalar)?self:Qnil);
+  free(scalar);
+  return value;
 }
 
 VALUE grid_exportFAST( VALUE self )
@@ -1096,7 +1110,8 @@ void Init_Grid()
   rb_define_method( cGrid, "initialize", grid_init, 0 );
   rb_define_method( cGrid, "pack", grid_pack, 0 );
   rb_define_method( cGrid, "sortNodeGridEx", grid_sortNodeGridEx, 0 );
-  rb_define_method( cGrid, "writeTecplotSurfaceZone", grid_writeTecplotSurfaceZone, 0 );
+  rb_define_method( cGrid, "writeTecplotSurfaceGeom", grid_writeTecplotSurfaceGeom, 0 );
+  rb_define_method( cGrid, "writeTecplotSurfaceScalar", grid_writeTecplotSurfaceScalar, 1 );
   rb_define_method( cGrid, "exportFAST", grid_exportFAST, 0 );
   rb_define_method( cGrid, "maxnode", grid_maxnode, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );

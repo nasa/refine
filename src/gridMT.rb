@@ -1452,13 +1452,23 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [0,2,1],   grid.geomEdge(1)
  end
 
- def XtestTec
+ def XtestTecGeom
   assert_not_nil     grid = Grid.new(3,0,1,0)
   grid.addFace(grid.addNode(0,0,0),
 	       grid.addNode(1,0,0),
 	       grid.addNode(0,1,0),
 	       1)
   assert_equal grid, grid.writeTecplotSurfaceZone
+ end
+
+ def XtestTecScalar
+  grid = Grid.new(3,0,1,0)
+  grid.addFace(grid.addNode(0,0,0),
+	       grid.addNode(1,0,0),
+	       grid.addNode(0,1,0),
+	       1)
+  scalar = [1.25, 2.5, 3.75]
+  assert_equal grid, grid.writeTecplotSurfaceScalar(scalar)
  end
 
  def testInsertPrism

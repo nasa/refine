@@ -1375,14 +1375,14 @@ Grid *gridRelaxNegativeCells(Grid *grid, GridBool dumpTecplot )
 
   if (dumpTecplot) {
     sprintf(filename,"gridNegativeCell%04d.t",gridPartId(grid));
-    gridWriteTecplotSurfaceZone(grid, filename);
+    gridWriteTecplotSurfaceGeom(grid, filename);
   }
 
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       volume = gridVolume(grid,nodes);
       if (0.0>=volume){
-	if (dumpTecplot) gridWriteTecplotCellZone(grid,nodes,filename);
+	if (dumpTecplot) gridWriteTecplotCellGeom(grid,nodes,filename);
 	for (i=0;i<4;i++) {
 	  node = nodes[i];
 	  gridSmoothVolumeNearNode(grid, node, FALSE);
