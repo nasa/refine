@@ -1,0 +1,11 @@
+Refine is a 3D tetrahedral grid adaptation framework. It is
+implemented with an object-oriented flavor in the C language.  Most
+functionality is wrapped into Ruby scripting language extensions
+<http://www.ruby-lang.org/> for use in test first programing and unit
+testing. See the README.EXT file in the Ruby distribution for details
+on ruby extensions. 
+
+CAD geometry access is facilitated with the NASA Langley Geomerty
+Labratory SDK <http://geolab.larc.nasa.gov/>, which assess CAD
+information with the CAPRI API
+<http://raphael.mit.edu/capri/docs.html>.
