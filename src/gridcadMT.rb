@@ -6,8 +6,8 @@
 
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.h gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.h grid.h gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridInsert adj.h grid.h gridmetric.h gridcad.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.h grid.h gridmetric.h gridinsert.h gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb GridInsert adj.h grid.h gridmetric.h gridcad.h gridStruct.h master_header.h'
 
 require 'test/unit'
 require 'Adj/Adj'
