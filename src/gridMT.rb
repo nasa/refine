@@ -158,6 +158,8 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testSwapEdgeNotBeter
+  assert_not_nil grid=gemGrid(3, 2.0, 0)
+  assert_nil grid.swapEdge(0,1)
   assert_not_nil grid=gemGrid(4, 2.0, 0)
   assert_nil grid.swapEdge(0,1)
   assert_not_nil grid=gemGrid(5, 2.0, 0)
@@ -170,6 +172,19 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_nil grid.swapEdge(0,1)
   assert_not_nil grid=gemGrid(9, 2.0, 0)
   assert_nil grid.swapEdge(0,1)
+ end
+
+ def testSwapEdge3
+  assert_not_nil grid=gemGrid(3, 0.1, 0)
+  initalVolume = grid.totalVolume
+  assert_equal grid, grid.swapEdge(0,1)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 1, grid.cellDegree(0)
+  assert_equal 1, grid.cellDegree(1)
+  assert_equal 2, grid.cellDegree(2)
+  assert_equal 2, grid.cellDegree(3)
+  assert_equal 2, grid.cellDegree(4)
  end
 
  def testSwapEdge4_0
