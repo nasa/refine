@@ -26,8 +26,10 @@ Grid *gridCurvedEdgeMidpoint(Grid *grid,int node0, int node1, double *e)
   double tuv0[2], tuv1[2], tuv[2];
   int parent;
 
-  gridNodeXYZ(grid,node0,n0);
-  gridNodeXYZ(grid,node1,n1);
+  e[0]=e[1]=e[2]=DBL_MAX;
+
+  if (grid != gridNodeXYZ(grid,node0,n0)) return NULL;
+  if (grid != gridNodeXYZ(grid,node1,n1)) return NULL;
   gridAverageVector(n0,n1,e);
 
   parent = gridParentGeometry(grid,node0,node1);
