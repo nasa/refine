@@ -18,7 +18,11 @@
 #include "Goolache/CAPrIMesh.h"
 #include "Goolache/MeshMgr.h"
 
+#ifdef PROE_MAIN
+int GridEx_Main( int argc, char *argv[] )
+#else
 int main( int argc, char *argv[] )
+#endif
 {
 
   char   project[256];
