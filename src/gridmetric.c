@@ -1889,7 +1889,9 @@ void gridCellMeanRatioDerivative( double *xyz0, double *xyz1,
   double edge1[3], edge2[3], edge3[3];
   double edge4[3], edge5[3], edge6[3];
   double norm[3];
-  double volume, dVdx, dVdy, dVdz; 
+  double volume, dVdx, dVdy, dVdz;
+  double i, didx, didy, didz;
+  double n, dndx, dndy, dndz;
 
   gridSubtractVector( xyz1, xyz0, edge1);
   gridSubtractVector( xyz2, xyz0, edge2);
@@ -1906,8 +1908,21 @@ void gridCellMeanRatioDerivative( double *xyz0, double *xyz1,
   dVdy = norm[1]/6.0;
   dVdz = norm[2]/6.0;
 
-  *mr = volume;
-  dMRdx[0] = dVdx;
-  dMRdx[1] = dVdy;
-  dMRdx[2] = dVdz;
+  i = 9.0*volume*volume;
+
+  didx = 9.0 * 2.0 * volume * dVdx;
+  didy = 9.0 * 2.0 * volume * dVdy;
+  didz = 9.0 * 2.0 * volume * dVdz;
+
+  n = 12.0 * pow(i,1.0/3.0);
+
+  dndx = 12.0 * (1.0/3.0) * pow(i,-2.0/3.0) * didx;
+  dndy = 12.0 * (1.0/3.0) * pow(i,-2.0/3.0) * didy;
+  dndz = 12.0 * (1.0/3.0) * pow(i,-2.0/3.0) * didz;
+
+  *mr = n;
+
+  dMRdx[0] = dndx;
+  dMRdx[1] = dndy;
+  dMRdx[2] = dndz;
 }
