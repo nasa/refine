@@ -1439,7 +1439,8 @@ Grid *gridEliminateUnusedNodeGlobal(Grid *grid )
 	    (grid->unusedNodeGlobal[offset] < grid->sortedGlobal[sort] ) ) {
       offset++;
     }
-    if (grid->unusedNodeGlobal[offset]==grid->sortedGlobal[sort]) {
+    if ( offset < grid->nUnusedNodeGlobal &&
+	 grid->unusedNodeGlobal[offset]==grid->sortedGlobal[sort]) {
       printf("ERROR: %s: %d: Global Node %d exists in sortedGlobal.%d\n",
 	     __FILE__,__LINE__,grid->unusedNodeGlobal[offset],gridPartId(grid));
     }
