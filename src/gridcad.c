@@ -733,6 +733,7 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
   alpha[0] = 0.0;
   t = tStart + alpha[0]*dt;
   if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
+  if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
   gridNodeAR( grid, node, &ar[0] );
   ratio1 = gridEdgeRatio(grid, node, node1);
   ratio2 = gridEdgeRatio(grid, node, node2);
@@ -741,6 +742,7 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
   alpha[1] = 1.0e-10;
   t = tStart + alpha[1]*dt;
   if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
+  if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
   gridNodeAR( grid, node, &ar[1] );
   ratio1 = gridEdgeRatio(grid, node, node1);
   ratio2 = gridEdgeRatio(grid, node, node2);
@@ -757,6 +759,7 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
     alpha[1] = alpha[0] * gold;
     t = tStart + alpha[1]*dt;
     if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
+    if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
     gridNodeAR( grid, node, &ar[1] );
     ratio1 = gridEdgeRatio(grid, node, node1);
     ratio2 = gridEdgeRatio(grid, node, node2);
