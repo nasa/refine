@@ -290,67 +290,69 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 
   if ( !gridValidNode( grid, node ) ) return NULL;
   
-  if ( gridSafeProjectNode(grid,node,0.95) != grid ) {
-    for ( it = adjFirst(gridCellAdj(grid),node); 
-	  adjValid(it); 
-	  it = adjNext(it) ){
-      gridCell(grid, adjItem(it), nodes);
-      for (i=0;i<4;i++)
-	if (!gridGeometryFace( grid, nodes[i])) 
-	  gridSmoothNode( grid, nodes[i]);
-    }      
-    gridSwapNearNodeExceptBoundary( grid, node);
-    for ( it = adjFirst(gridCellAdj(grid),node); 
-	  adjValid(it); 
-	  it = adjNext(it) ){
-      gridCell(grid, adjItem(it), nodes);
-      for (i=0;i<4;i++)
-	if (!gridGeometryFace( grid, nodes[i])) 
-	  gridSmoothNode( grid, nodes[i]);
-    }      
-    if ( gridSafeProjectNode(grid,node,0.9) != grid ) {
-      for ( it = adjFirst(gridCellAdj(grid),node); 
-	    adjValid(it); 
-	    it = adjNext(it) ){
-	gridCell(grid, adjItem(it), nodes);
-	for (i=0;i<4;i++) {
-	  for ( level2 = adjFirst(gridCellAdj(grid),nodes[i]); 
-		adjValid(level2); 
-		level2 = adjNext(level2) ){
-	    gridCell(grid, adjItem(level2), level2nodes);
-	    for (j=0;j<4;j++) {
-	      if (!gridGeometryFace( grid, level2nodes[j])) 
-		gridSmoothNode( grid, level2nodes[j]);
-	    }
-	  }
+  if ( gridSafeProjectNode(grid,node,0.95) == grid ) return grid;
+
+  for ( it = adjFirst(gridCellAdj(grid),node); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    gridCell(grid, adjItem(it), nodes);
+    for (i=0;i<4;i++)
+      if (!gridGeometryFace( grid, nodes[i])) 
+	gridSmoothNode( grid, nodes[i]);
+  }      
+  gridSwapNearNodeExceptBoundary( grid, node);
+  for ( it = adjFirst(gridCellAdj(grid),node); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    gridCell(grid, adjItem(it), nodes);
+    for (i=0;i<4;i++)
+      if (!gridGeometryFace( grid, nodes[i])) 
+	gridSmoothNode( grid, nodes[i]);
+  }
+      
+  if ( gridSafeProjectNode(grid,node,0.95) == grid ) return grid;
+
+  for ( it = adjFirst(gridCellAdj(grid),node); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    gridCell(grid, adjItem(it), nodes);
+    for (i=0;i<4;i++) {
+      for ( level2 = adjFirst(gridCellAdj(grid),nodes[i]); 
+	    adjValid(level2); 
+	    level2 = adjNext(level2) ){
+	gridCell(grid, adjItem(level2), level2nodes);
+	for (j=0;j<4;j++) {
+	  if (!gridGeometryFace( grid, level2nodes[j])) 
+	    gridSmoothNode( grid, level2nodes[j]);
 	}
-      }
-      if ( gridSafeProjectNode(grid,node,1.0) != grid ){
-	gridNodeXYZ(grid,node,xyz);
-	printf(" try to collapse-project %d X %10.5f Y %10.5f Z %10.5f\n",
-	       node,xyz[0],xyz[1],xyz[2]);
-	for ( it = adjFirst(gridCellAdj(grid),node); 
-	      adjValid(it); 
-	      it = adjNext(it) ){
-	  gridCell(grid, adjItem(it), nodes);
-	  for (i=0;i<4;i++) {
-	    goodnode = nodes[i];
-	    if ( node != goodnode && 
-		 gridGeometryFace( grid, goodnode) &&
-		 grid == gridSafeProjectNode( grid, goodnode, 1.0 ) ) { 
-	      if ( grid == gridCollapseEdge(grid, goodnode, node, 0.0 ) ){
-		printf(" got it ! %d\n",goodnode);
-		return grid;
-	      }
-	    }
-	  }
-	}      
-	return NULL;
       }
     }
   }
 
-  return grid;
+  if ( gridSafeProjectNode(grid,node,1.0) == grid ) return grid;
+  
+  gridNodeXYZ(grid,node,xyz);
+  printf(" try to c-p %d X %10.5f Y %10.5f Z %10.5f ...",
+	 node,xyz[0],xyz[1],xyz[2]);
+  for ( it = adjFirst(gridCellAdj(grid),node); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    gridCell(grid, adjItem(it), nodes);
+    for (i=0;i<4;i++) {
+      goodnode = nodes[i];
+      if ( node != goodnode && 
+	   gridGeometryFace( grid, goodnode) &&
+	   grid == gridSafeProjectNode( grid, goodnode, 1.0 ) ) { 
+	if ( grid == gridCollapseEdge(grid, goodnode, node, 0.0 ) ){
+	  printf(" got it ! %d\n",goodnode);
+	  return grid;
+	}
+      }
+    }
+  }
+  printf("\n");
+
+  return NULL;
 }
 
 Grid *gridSmoothNearNode1(Grid *grid, int node )
