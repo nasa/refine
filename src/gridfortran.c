@@ -34,8 +34,22 @@ int gridcreate_( int *nnode, double *x, double *y, double *z ,
   printf(" min AR %17.15f\n",gridMinAR(grid));
 }
 
-int gridinsertboundary_( int *faceId, double *nnode, double *inode, 
-			 double *nface, double *ndim, int *f2n )
+int gridinsertboundary_( int *faceId, int *nnode, int *inode, 
+			 int *nface, int *ndim, int *f2n )
 {
-  printf(" boundary %4d has %6d nodes and %6d faces\n",*faceId,*nnode,*nface);
+  int face;
+  int node0, node1, node2;
+  for(face=0;face<*nface;face++){
+    node0 = f2n[face+0*(*nface)] - 1;
+    node1 = f2n[face+1*(*nface)] - 1;
+    node2 = f2n[face+2*(*nface)] - 1;
+    node0 = inode[node0] - 1;
+    node1 = inode[node1] - 1;
+    node2 = inode[node2] - 1;
+    gridAddFace(grid, node0, node1, node2, *faceId);
+  }
+  printf( " boundary %4d has %6d nodes and %6d faces\n",
+	  *faceId,*nnode,*nface);
+  printf( " %d total faces with min MR of %18.15f\n",
+	  gridNFace(grid),gridMinFaceMR(grid));
 }
