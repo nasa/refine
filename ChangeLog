@@ -1,3 +1,12 @@
+2005-03-21 15:56 Beth Lee-Rausch  <e.m.lee-rausch@larc.nasa.gov>
+
+	* src/gridfortran.c (gridcreate_) Removed the uv check from
+	the default cost constraint. To allow the fake geometry cases
+	to run with out accessing frozen surface faces.
+	* src/gridfortran.c (gridparallelloadcapri_) Turned on uv checks
+	when using cad based geometry where all the surface face have 
+	a valid geometry.
+
 2005-03-21 11:02 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridprojectallfaces_) now calls

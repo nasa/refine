@@ -49,7 +49,7 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 
   grid = gridCreate( *nnode, *ncell, 5000, 0);
   gridSetPartId(grid, *partId );
-  gridSetCostConstraint(grid, gridCOST_CNST_VOLUME|gridCOST_CNST_AREAUV);
+  gridSetCostConstraint(grid, gridCOST_CNST_VOLUME);
   queue = queueCreate( 9 ); /* 3:xyz + 6:m */
   for ( node=0; node<*nnode; node++) gridAddNode(grid,x[node],y[node],z[node]);
   for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
@@ -144,6 +144,7 @@ void gridfreezenode_( int *nodeFortran )
 
 void gridparallelloadcapri_( char *modeler, char *capriProject, int *status )
 {
+  gridSetCostConstraint(grid, gridCostConstraint(grid)|gridCOST_CNST_AREAUV);
   if( grid != gridParallelGeomLoad( grid, modeler, capriProject ) ) {
     printf( "ERROR: %s: %d: failed to load part %s, partition %d, Modeler %s\n",
 	    __FILE__,__LINE__,capriProject,gridPartId(grid),modeler );
