@@ -220,22 +220,45 @@ Grid *gridPack(Grid *grid)
 Grid *gridGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
 {
   int cellId, inode, i;
+  int c0,c1,c2,c3;
   *ngem = 0;
   
+#define SAFE_NGEM_INC (*ngem)++;if(*ngem>(maxgem-1)){*ngem=0;return(NULL);}
+
   for ( gridFirstNodeCell(grid,n0); 
 	gridValidNodeCell(grid); 
 	gridNextNodeCell(grid)) {
     cellId = gridCurrentNodeCell(grid);
-    for ( inode = 0 ; inode < 4 ; inode++) {
-      if ( grid->c2n[inode+4*cellId] == n1 ) {
-	(*ngem)++;
-	if ( *ngem > (maxgem-1) ) return NULL;
-	gem[0+4*(*ngem-1)] = grid->c2n[0+4*cellId];
-	gem[1+4*(*ngem-1)] = grid->c2n[1+4*cellId];
-	gem[2+4*(*ngem-1)] = grid->c2n[2+4*cellId];
-	gem[3+4*(*ngem-1)] = grid->c2n[3+4*cellId];
-      }
+    c0 = grid->c2n[0+4*cellId];
+    c1 = grid->c2n[1+4*cellId];
+    c2 = grid->c2n[2+4*cellId];
+    c3 = grid->c2n[3+4*cellId];
+
+
+    if ( n0 == c0 && n1 == c1 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c0;
+      gem[1+4*(*ngem-1)] = c1;
+      gem[2+4*(*ngem-1)] = c2;
+      gem[3+4*(*ngem-1)] = c3;
     }
+
+    if ( n0 == c0 && n1 == c2 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c0;
+      gem[1+4*(*ngem-1)] = c2;
+      gem[2+4*(*ngem-1)] = c3;
+      gem[3+4*(*ngem-1)] = c1;
+    }
+
+    if ( n0 == c0 && n1 == c3 ) {
+      SAFE_NGEM_INC;
+      gem[0+4*(*ngem-1)] = c0;
+      gem[1+4*(*ngem-1)] = c3;
+      gem[2+4*(*ngem-1)] = c1;
+      gem[3+4*(*ngem-1)] = c2;
+    }
+
   }
 
   return grid;
