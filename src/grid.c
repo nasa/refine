@@ -530,6 +530,10 @@ Grid *gridPack(Grid *grid)
     grid->blanknode = grid->nnode;
   }
 
+  if (NULL != grid->sortedLocal)
+    for (i=0 ; i < grid->nsorted; i++ )
+      grid->sortedLocal[i] = o2n[grid->sortedLocal[i]];
+
   packcell = 0;
   for ( origcell=0 ; origcell < grid->maxcell ; origcell++ )
     if ( grid->c2n[0+4*origcell] != EMPTY) {
@@ -826,6 +830,11 @@ Grid *gridSortNodeGridEx(Grid *grid)
     }
     free(temp_int);
   }
+
+  if (NULL != grid->sortedLocal)
+    for (i=0 ; i < grid->nsorted; i++ )
+      grid->sortedLocal[i] = o2n[grid->sortedLocal[i]];
+
 
   for ( cell = 0; cell < grid->ncell ; cell++ ){
     for ( inode = 0 ; inode < 4 ; inode++ ){
@@ -2117,6 +2126,10 @@ int gridAddNode(Grid *grid, double x, double y, double z )
       grid->nodeGlobal = realloc(grid->nodeGlobal,grid->maxnode * sizeof(int));
     if (NULL != grid->part) 
       grid->part = realloc(grid->part,grid->maxnode * sizeof(int));
+    if (NULL != grid->sortedGlobal) 
+      grid->sortedGlobal=realloc(grid->sortedGlobal,grid->maxnode*sizeof(int));
+    if (NULL != grid->sortedLocal) 
+      grid->sortedLocal=realloc(grid->sortedLocal,grid->maxnode*sizeof(int));
 
     adjRealloc(grid->cellAdj,grid->maxnode);
     adjRealloc(grid->faceAdj,grid->maxnode);
@@ -2150,12 +2163,24 @@ int gridAddNode(Grid *grid, double x, double y, double z )
 
 Grid *gridRemoveNode(Grid *grid, int node )
 {
+  int index, removepoint;
   if (node < 0 || node>grid->maxnode) return NULL;
   if (DBL_MAX == grid->xyz[0+3*node]) return NULL;
   grid->nnode--;
   grid->xyz[0+3*node] = DBL_MAX;
   grid->xyz[1+3*node] = (double)grid->blanknode;
   grid->blanknode = node;
+  if (NULL != grid->sortedLocal) {
+    removepoint = 
+      sortSearch(grid->nsorted,grid->sortedGlobal,grid->nodeGlobal[node]);
+    if (EMPTY != removepoint) {
+      grid->nsorted--;
+      for(index=removepoint;index<grid->nsorted;index++)
+	grid->sortedGlobal[index] = grid->sortedGlobal[index+1];
+      for(index=removepoint;index<grid->nsorted;index++)
+	grid->sortedLocal[index] = grid->sortedLocal[index+1];
+    }
+  }
   return grid;
 }
 
@@ -2218,7 +2243,7 @@ int gridGlobal2Local(Grid *grid, int global )
     free(pack);
   }
 
-  local = sortSearch(grid->nnode,grid->sortedGlobal,global);
+  local = sortSearch(grid->nsorted,grid->sortedGlobal,global);
 
   if (EMPTY == local) return EMPTY;
 
