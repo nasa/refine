@@ -140,17 +140,19 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
       queueAddedFaceUVs( gq, addedface, uv );
       addedface++;
       for(i=0;i<3;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
-      localnodes[3] = globalnodes[3];
-      if ( gridNodeLocal(grid,localnodes[0]) ||
-	   gridNodeLocal(grid,localnodes[1]) ||
-	   gridNodeLocal(grid,localnodes[2]) ) {
-	for(i=0;i<3;i++)
-	  if ( EMPTY == localnodes[i] ) printf("face insert error.");
-	face = gridAddFaceUV(grid,
-			     localnodes[0],uv[0],uv[1],
-			     localnodes[1],uv[2],uv[3],
-			     localnodes[2],uv[4],uv[5],
-			     globalnodes[3]);
+      if ( EMPTY != localnodes[0] &&
+	   EMPTY != localnodes[1] &&
+	   EMPTY != localnodes[2] ) {
+	localnodes[3] = globalnodes[3];
+	if ( gridNodeLocal(grid,localnodes[0]) ||
+	     gridNodeLocal(grid,localnodes[1]) ||
+	     gridNodeLocal(grid,localnodes[2]) ) {
+	  face = gridAddFaceUV(grid,
+			       localnodes[0],uv[0],uv[1],
+			       localnodes[1],uv[2],uv[3],
+			       localnodes[2],uv[4],uv[5],
+			       globalnodes[3]);
+	}
       }
     }
     queueNewTransaction(lq);
