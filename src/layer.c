@@ -1973,6 +1973,8 @@ Layer *layerAdvanceBlends(Layer *layer)
   
   layerBuildNormalTriangleAdjacency(layer);
   layer->nblend=0;
+  layer->maxblend=0;
+  free(layer->blend); layer->blend = NULL;
   adjFree(layer->blendAdj); layer->blendAdj = NULL;
   free(layer->vertexNormal); layer->vertexNormal = NULL;
 
@@ -2584,13 +2586,14 @@ int layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
   Grid *grid;
   grid=layerGrid(layer);
 
+  if (NULL == layer->blend) {
+    layer->maxblend = 5000;
+    layer->blend = malloc(layer->maxblend*sizeof(Blend));
+  }
+
   if (layer->nblend >= layer->maxblend) {
     layer->maxblend += 5000;
-    if (layer->blend == NULL) {
-      layer->blend = malloc(layer->maxblend*sizeof(Blend));
-    }else{
-      layer->blend = realloc(layer->blend,layer->maxblend*sizeof(Blend));
-    }
+    layer->blend = realloc(layer->blend,layer->maxblend*sizeof(Blend));
   }
   
   n0 = layerNormalRoot(layer,normal0);
