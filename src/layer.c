@@ -50,6 +50,9 @@ Layer *layerCreate( Grid *grid )
   layer->nearTree=NULL;
   layer->mixedElementMode=FALSE;
 
+  layer->normalTriangleHub = EMPTY;
+  layer->normalTriangleDegree = EMPTY;
+
   layer->cellInLayer = malloc(gridMaxCell(grid)*sizeof(bool));
   for (i=0;i<gridMaxCell(grid);i++) layer->cellInLayer[i] = FALSE;
   layer->faceInLayer = malloc(gridMaxFace(grid)*sizeof(bool));
@@ -629,6 +632,36 @@ int layerNormalDeg(Layer *layer, int normal )
   return adjDegree(layer->adj, normal);
 }
 
+Layer *layerNormalMinDot(Layer *layer, int normal,
+			 double *mindot, double *mindir)
+{
+  int index;
+  double dir[3], norm[3], dot;
+
+  if (layer != layerNormalDirection(layer,normal,dir)) return NULL;
+
+  if (normal != layer->normalTriangleHub)
+    layerStoreNormalTriangleDirections(layer, normal);
+
+  *mindot = 2.0;
+  mindir[0]=0.0;
+  mindir[1]=0.0;
+  mindir[2]=0.0;
+
+  for ( index =0; index < layer->normalTriangleDegree; index++ ){
+    layerNormalTriangleDirection(layer,index,norm);
+    dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
+    if (dot<*mindot) {
+      *mindot = dot;
+      mindir[0]=norm[0];
+      mindir[1]=norm[1];
+      mindir[2]=norm[2];
+    }
+  }
+  
+  return layer;
+}
+
 Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triangles )
 {
   int i;
@@ -642,6 +675,32 @@ Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triang
     triangles[i] = adjItem(it);
     i++;
   }
+  return layer;
+}
+
+Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
+{
+  int tri, triangles[MAXNORMALDEG];
+
+  if (layer != layerNormalTriangles(layer, normal, MAXNORMALDEG, triangles )) {
+    layer->normalTriangleDegree = EMPTY;
+    return NULL;
+  }
+  layer->normalTriangleHub = normal;
+  layer->normalTriangleDegree = layerNormalDeg(layer, normal );
+  for (tri=0;tri<layer->normalTriangleDegree;tri++)
+    layerTriangleDirection( layer, triangles[tri], 
+			    &layer->normalTriangleDirection[3*tri] );
+
+  return layer;
+}
+
+Layer *layerNormalTriangleDirection(Layer *layer, int index, double *direction )
+{
+  if (index<0||index>layer->normalTriangleDegree) return NULL;
+  direction[0] = layer->normalTriangleDirection[0+3*index];
+  direction[1] = layer->normalTriangleDirection[1+3*index];
+  direction[2] = layer->normalTriangleDirection[2+3*index];
   return layer;
 }
 
@@ -911,40 +970,6 @@ Layer *layerScaleNormalHeightWithPolynomial(Layer *layer,
   return layer;	
 }
 
-Layer *layerNormalMinDot(Layer *layer, int normal,
-			 double *mindot, double *mindir,
-			 int *minTriangle )
-{
-  int triangle;
-  double dir[3], norm[3], dot;
-  AdjIterator it;
-
-  if (layer != layerNormalDirection(layer,normal,dir)) return NULL;
-
-  *mindot = 2.0;
-  mindir[0]=0.0;
-  mindir[1]=0.0;
-  mindir[2]=0.0;
-  *minTriangle = EMPTY;
-
-  for ( it = adjFirst(layer->adj,normal); 
-	adjValid(it); 
-	it = adjNext(it) ){
-    triangle = adjItem(it);
-    layerTriangleDirection(layer,triangle,norm);
-    dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
-    if (dot<*mindot) {
-      *mindot = dot;
-      mindir[0]=norm[0];
-      mindir[1]=norm[1];
-      mindir[2]=norm[2];
-      *minTriangle = triangle;
-    }
-  }
-  
-  return layer;
-}
-
 Layer *layerSetNormalMaxLength(Layer *layer, int normal, double maxLength)
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
@@ -1081,7 +1106,6 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
 {
   int normal, iter, i;
   double *dir, mindir[3], mindot, worstdot; 
-  int minTriangle;
 
   if (dotLimit < 0) dotLimit = 1.0e-14;
   if (relaxation < 0) relaxation = 1.01;
@@ -1092,14 +1116,14 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
   for (normal=0;normal<layerNNormal(layer);normal++){
     if ( 0 != layerNormalDeg(layer, normal ) ) {
       dir = layer->normal[normal].direction;
-      layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+      layerNormalMinDot(layer, normal, &mindot, mindir );
       for (iter=0;iter<1000 && mindot <= dotLimit; iter++){
 	dir[0] -= relaxation*mindot*mindir[0];
 	dir[1] -= relaxation*mindot*mindir[1];
 	dir[2] -= relaxation*mindot*mindir[2];
 	gridVectorNormalize(dir);
 	layerProjectNormalToConstraints(layer,normal);
-	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+	layerNormalMinDot(layer, normal, &mindot, mindir );
       }
       worstdot = MIN(worstdot,mindot);
     }
@@ -1117,7 +1141,6 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
   int normal, iter, i;
   double *dir, mindir[3], mindot, radian, worstdot; 
   double lastdir[3], lastdot;
-  int minTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
   if (dotLimit < 0) dotLimit = 0.90;
@@ -1130,7 +1153,7 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
     if ( 0 != layerNormalDeg(layer, normal ) ) {
       dir = layer->normal[normal].direction;
       radian = 0.01;
-      layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+      layerNormalMinDot(layer, normal, &mindot, mindir );
       for (iter=0;iter<1000 && radian>radianLimit && mindot<dotLimit;iter++){
 	lastdir[0] = dir[0]; lastdir[1] = dir[1]; lastdir[2] = dir[2];
 	dir[0] += radian*mindir[0];
@@ -1139,11 +1162,11 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 	gridVectorNormalize(dir);
 	layerProjectNormalToConstraints(layer,normal);
 	lastdot = mindot;
-	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+	layerNormalMinDot(layer, normal, &mindot, mindir );
 	if (mindot <= lastdot) {
 	  radian *= 0.8;
 	  dir[0] = lastdir[0]; dir[1] = lastdir[1]; dir[2] = lastdir[2];
-	  layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+	  layerNormalMinDot(layer, normal, &mindot, mindir );
 	}
       }
       worstdot = MIN(worstdot,mindot);
@@ -1943,7 +1966,7 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
       if (layerNormalTerminated(layer,normals[i])) nterminated++;
     }
 
-#define addTet {layer->cellInLayer[gridAddCell(grid, tet[0], tet[1], tet[2], tet[3])]=TRUE; if ( 1.0e-14 > gridVolume(grid, tet ) ) { negVolume = TRUE; gridNodeXYZ(grid,tet[0],xyz); printf("volume%17.10e at %12.6f%12.6f%12.6f\n", gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]);} }
+#define addTet {layer->cellInLayer[gridAddCell(grid, tet[0], tet[1], tet[2], tet[3])]=TRUE; if ( 1.0e-14 > gridVolume(grid, tet ) ) { negVolume = TRUE; gridNodeXYZ(grid,tet[0],xyz); printf("volume%18.10e at%15.6f%15.6f%15.6f\n", gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]);} }
     
     if (layerTetrahedraOnly(layer) || nterminated >= 2){
       if (nodes[2]<nodes[1]){

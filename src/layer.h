@@ -17,6 +17,8 @@
 
 BEGIN_C_DECLORATION
 
+#define MAXNORMALDEG 100
+
 typedef struct Normal Normal;
 struct Normal {
   int constrained;
@@ -60,6 +62,10 @@ struct Layer {
   Adj *adj;
   Near *nearTree;
   bool mixedElementMode;
+
+  int normalTriangleHub;
+  int normalTriangleDegree;
+  double normalTriangleDirection[3*MAXNORMALDEG];
 
   bool *cellInLayer;
   bool *faceInLayer;
@@ -108,6 +114,9 @@ int layerNormalDeg(Layer *, int normal );
 Layer *layerNormalTriangles(Layer *, int normal, int maxtriangle, int *triangles);
 int layerPreviousTriangle(Layer *, int normal, int triangle );
 int layerNextTriangle(Layer *, int normal, int triangle );
+Layer *layerNormalMinDot(Layer *, int normal, double *mindot, double *mindir );
+Layer *layerStoreNormalTriangleDirections(Layer *, int normal);
+Layer *layerNormalTriangleDirection(Layer *, int index, double *direction);
 Layer *layerCommonEdge(Layer *, int triangle0, int triangle1, int *nodes);
 double layerEdgeAngle(Layer *, int triangle0, int triangle1 );
 Layer *layerNormalDirection(Layer *, int normal, double *direction);
