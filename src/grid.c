@@ -91,6 +91,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->frozen = malloc(grid->maxnode * sizeof(GridBool));
   for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
 
+  grid->geomNode = malloc(grid->maxnode * sizeof(int));;
+  for (i=0;i < grid->maxnode; i++ ) grid->geomNode[i] = EMPTY;
+
   grid->nodeGlobal  = NULL;
   grid->part = NULL;
   grid->sortedGlobal = NULL;
@@ -515,6 +518,7 @@ void gridFree(Grid *grid)
 
   if (NULL != grid->tecplotFile) fclose(grid->tecplotFile);
   if (NULL != grid->geomEdge) free(grid->geomEdge);
+  if (NULL != grid->geomNode) free(grid->geomNode);
 
   if (NULL != grid->prismDeg) free(grid->prismDeg);
 
@@ -585,6 +589,7 @@ Grid *gridPack(Grid *grid)
       if (NULL != grid->part) grid->part[packnode] = grid->part[orignode];
       for ( i=0;i<grid->naux;i++) 
 	grid->aux[i+grid->naux*packnode] = grid->aux[i+grid->naux*orignode];
+      grid->geomNode[packnode] = grid->geomNode[orignode];
       packnode++;
     } 
   
@@ -813,8 +818,13 @@ Grid *gridSortNodeGridEx(Grid *grid)
   for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
 
   // geom nodes
-  for (i=0;i<grid->nGeomNode;i++) o2n[i] = i;
-  newnode = MAX(0,grid->nGeomNode);
+  newnode = 0;
+  for (node=0;node<grid->nnode;node++) {
+    if ( EMPTY != grid->geomNode[node] ) {
+      o2n[node] = newnode;
+      newnode++;
+    }
+  }
 
   // edge stuff
   for (edge=1; edge<=grid->nGeomEdge; edge++){
@@ -951,8 +961,12 @@ Grid *gridRenumber(Grid *grid, int *o2n)
     grid->frozen[node] = temp_frozen[node];
   free(temp_frozen);
 
+  temp_int = malloc( grid->nnode * sizeof(int) );
+  for ( node = 0 ; node < grid->nnode ; node++ )
+    temp_int[o2n[node]] = grid->geomNode[node];
+  for ( node = 0 ; node < grid->nnode ; node++ )
+    grid->geomNode[node] = temp_int[node];
   if ((NULL != grid->nodeGlobal) || (NULL != grid->part)) {
-    temp_int = malloc( grid->nnode * sizeof(int) );
     if (NULL != grid->nodeGlobal) {
       for ( node = 0 ; node < grid->nnode ; node++ )
 	temp_int[o2n[node]] = grid->nodeGlobal[node];
@@ -965,8 +979,8 @@ Grid *gridRenumber(Grid *grid, int *o2n)
       for ( node = 0 ; node < grid->nnode ; node++ )
 	grid->part[node] = temp_int[node];
     }
-    free(temp_int);
   }
+  free(temp_int);
 
   if (NULL != grid->sortedLocal)
     for (i=0 ; i < grid->nsorted; i++ )
@@ -2850,6 +2864,9 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
       realloc(grid->aux, grid->maxnode * grid->naux * sizeof(double));
     grid->frozen = realloc(grid->frozen,grid->maxnode * sizeof(GridBool));
 
+    grid->geomNode = realloc(grid->geomNode, grid->maxnode * sizeof(int));;
+    for (i=origSize;i < grid->maxnode; i++ ) grid->geomNode[i] = EMPTY;
+
     if (NULL != grid->nodeGlobal) 
       grid->nodeGlobal = realloc(grid->nodeGlobal,grid->maxnode * sizeof(int));
     if (NULL != grid->part) 
@@ -3124,7 +3141,16 @@ int gridNGeomNode(Grid *grid)
 
 Grid *gridSetNGeomNode(Grid *grid, int nGeomNode)
 {
+  int global, node;
   grid->nGeomNode = nGeomNode;
+  if (NULL == grid->nodeGlobal) {
+    for(node=0;node<grid->nGeomNode;node++) grid->geomNode[node]=node;
+  }else{
+    for(global=0;global<grid->nGeomNode;global++) {
+      node = gridGlobal2Local(grid, global );
+      if (node!=EMPTY) grid->geomNode[node]=global;
+    }
+  }
   return grid;
 }
 
@@ -3232,8 +3258,8 @@ int gridFrozenEdgeEndPoint( Grid *grid, int edgeId, int startNode )
 
 GridBool gridGeometryNode(Grid *grid, int node)
 {
-  if (node < 0 ) return FALSE;
-  return (node<grid->nGeomNode);
+  if (node < 0 || node >= grid->maxnode ) return FALSE;
+  return (EMPTY!=grid->geomNode[node]);
 }
 
 GridBool gridGeometryEdge(Grid *grid, int node)
