@@ -2208,7 +2208,8 @@ int gridGlobal2Local(Grid *grid, int global )
     if (nnode != grid->nnode) 
       printf("%s: %d: gridGlobal2Local: nnode error.",__FILE__,__LINE__);
 
-    sortHeap(grid->nnode,grid->sortedGlobal,grid->sortedLocal);
+    grid->nsorted = grid->nnode;
+    sortHeap(grid->nsorted,grid->sortedGlobal,grid->sortedLocal);
 
     for (local=0;local<grid->maxnode;local++) {
       grid->sortedLocal[local] =  pack[grid->sortedLocal[local]];
@@ -2226,10 +2227,34 @@ int gridGlobal2Local(Grid *grid, int global )
 
 Grid *gridSetNodeGlobal(Grid *grid, int node, int global )
 {
+  int index, insertpoint;
   if (!gridValidNode(grid,node)) return NULL;
   if (NULL == grid->nodeGlobal) 
     grid->nodeGlobal = malloc(grid->maxnode*sizeof(int));
   grid->nodeGlobal[node] = global;
+
+  if (NULL != grid->sortedLocal) {
+    if (grid->nsorted >= grid->maxnode) {
+      printf("%s: %d: Error: gridSetNodeGlobal called twice on a node.\n",
+	     __FILE__,__LINE__);
+      return NULL;
+    }
+    insertpoint = 0;
+    for (index=grid->nsorted-1; index>=0; index--) {
+      if (grid->sortedGlobal[index] < global) {
+	insertpoint = index+1;
+	break;
+      }
+    }
+    for(index=grid->nsorted;index>insertpoint;index--)
+      grid->sortedGlobal[index] = grid->sortedGlobal[index-1];
+    for(index=grid->nsorted;index>insertpoint;index--)
+      grid->sortedLocal[index] = grid->sortedLocal[index-1];
+    grid->nsorted++;
+    grid->sortedGlobal[insertpoint] = global;
+    grid->sortedLocal[insertpoint] = node;
+  }
+
   return grid;
 }
 

@@ -388,6 +388,23 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 2, grid.global2local(102)
  end
 
+ def testFindNodeLocalFromGlobalWithAddedNode
+  assert_not_nil      grid = Grid.new(5,0,0,0)
+  2.times { grid.addNode(1.0,2.0,3.0) }
+  grid.setNodeGlobal(0,100)
+  grid.setNodeGlobal(1,110)
+  assert_equal 0, grid.global2local(100)
+  node = grid.addNode(1.0,2.0,3.0)
+  grid.setNodeGlobal(node,254)
+  assert_equal node, grid.global2local(254)
+  node = grid.addNode(1.0,2.0,3.0)
+  grid.setNodeGlobal(node,8)
+  assert_equal node, grid.global2local(8)
+  node = grid.addNode(1.0,2.0,3.0)
+  grid.setNodeGlobal(node,105)
+  assert_equal node, grid.global2local(105)
+ end
+
  def testGetAndSetNodePart
   assert_not_nil      grid = Grid.new(1,0,0,0)
   assert_equal EMPTY, grid.nodePart(-1)
