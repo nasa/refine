@@ -686,10 +686,12 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
   return gridSplitCellAt(grid,foundCell,newX,newY,newZ);
 }
 
-Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
+Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, 
+		       double requestedratio )
 {
   int i, face0, face1;
   int requiredRatio;
+  double ratio;
   double xyz0[3], xyz1[3], xyzAvg[3];
   GridBool volumeEdge;
 
@@ -706,6 +708,8 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
 
   if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
   if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
+  
+  ratio = requestedratio;
   
   requiredRatio = EMPTY;
   if ( volumeEdge && gridGeometryFace(grid, n1) ) requiredRatio = 1;    
