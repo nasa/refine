@@ -197,4 +197,14 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal [0,1,0], grid.nodeXYZ(1)
  end
  
+ def testCellFaceNormals
+  grid = isoTet
+  gm = GridMove.new(grid)
+  xyz=[grid.nodeXYZ(0),grid.nodeXYZ(1),grid.nodeXYZ(2),grid.nodeXYZ(3)].flatten
+  assert_equal [0,0,1], gm.cellFaceNormal(xyz,[0,1,2,3],0)
+  assert_equal [0,0,1], gm.cellFaceNormal(xyz,[1,0,3,2],1)
+  assert_equal [0,0,1], gm.cellFaceNormal(xyz,[3,2,1,0],2)
+  assert_equal [0,0,1], gm.cellFaceNormal(xyz,[2,3,0,1],3)
+ end
+
 end

@@ -180,8 +180,32 @@ GridBool gridmoveSpecified(GridMove *gm, int node)
   return gm->specified[node];
 }
 
+GridMove *gridmoveCellFaceNormals(GridMove *gm, double *xyz, int *nodes, 
+				  double normals[4][3])
+{
+  int edge, n0, n1, face;
+  double e[6][3];
+  int edge2node0[6] = {0, 0, 0, 1, 1, 2};
+  int edge2node1[6] = {1, 2, 3, 2, 3, 3};
+  int face2edge0[6] = {0, 2, 4, 1};
+  int face2edge1[6] = {1, 0, 3, 2};
+
+  for(edge=0;edge<6;edge++) {
+    n0 = nodes[edge2node0[edge]];
+    n1 = nodes[edge2node1[edge]];
+    gridSubtractVector(&xyz[3*n1],&xyz[3*n0],e[edge]);
+    gridVectorNormalize(e[edge]);
+  }
+  for(face=0;face<4;face++){
+    gridCrossProduct(e[face2edge0[face]],e[face2edge1[face]],normals[face]);
+    gridVectorNormalize(normals[face]);
+  }
+  return gm;
+}
+
 GridMove *gridmoveSpringConstant(GridMove *gm, double *xyz, int nsprings, 
-				 double *k, int *springs, int *c2e) {
+				 double *k, int *springs, int *c2e)
+{
   Grid *grid = gridmoveGrid(gm);
   int s, n0, n1;
   double dxyz[3];
@@ -210,16 +234,7 @@ GridMove *gridmoveSpringConstant(GridMove *gm, double *xyz, int nsprings,
 
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid == gridCell(grid,cell,nodes)) {
-      for(edge=0;edge<6;edge++) {
-	n0 = nodes[edge2node0[edge]];
-	n1 = nodes[edge2node1[edge]];
-	gridSubtractVector(&xyz[3*n1],&xyz[3*n0],e[edge]);
-	gridVectorNormalize(e[edge]);
-      }
-      for(face=0;face<4;face++){
-	gridCrossProduct(e[face2edge0[face]],e[face2edge1[face]],n[face]);
-	gridVectorNormalize(n[face]);
-      }
+      gridmoveCellFaceNormals( gm, xyz, nodes, n);
       for(edge=0;edge<6;edge++) {
 	angle = acos(-gridDotProduct(n[edge2face0[edge]],n[edge2face1[edge]]));
 	invsinangle = 1.0 / sin(angle);

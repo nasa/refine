@@ -50,6 +50,11 @@ GridMove *gridmoveDisplace(GridMove *, int node, double *displace);
 GridMove *gridmoveDisplacement(GridMove *, int node, double *displacement);
 GridBool gridmoveSpecified(GridMove *, int node);
 
+GridMove *gridmoveCellFaceNormals(GridMove *, double *xyz, int *nodes, 
+				  double normals[4][3]);
+GridMove *gridmoveSpringConstant(GridMove *, double *xyz, int nsprings, 
+				 double *k, int *springs, int *c2e);
+
 GridMove *gridmoveSpringRelaxationStartUp(GridMove *);
 GridMove *gridmoveSpringRelaxationStartStep(GridMove *, double position);
 GridMove *gridmoveSpringRelaxationSubIteration(GridMove *, double *residual2);

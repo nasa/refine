@@ -90,6 +90,36 @@ VALUE gridmove_applyDisplacements( VALUE self )
   return ( gm == gridmoveApplyDisplacements( gm )?self:Qnil );
 }
 
+static VALUE rb_ary_length(VALUE ary)
+{
+  return INT2NUM(RARRAY(ary)->len);
+}
+
+VALUE gridmove_cellFaceNormal( VALUE self, VALUE rb_xyz, VALUE rb_nodes, 
+			       VALUE normalIndex )
+{
+  int len, i;
+  double *xyz;
+  int nodes[4];
+  double normals[4][3];
+  VALUE rb_normal;
+  GET_GM_FROM_SELF;
+  len = NUM2INT(rb_ary_length(rb_xyz));
+  xyz = malloc(len*sizeof(double));
+  for(i=0;i<len;i++) xyz[i] = NUM2DBL(rb_ary_entry(rb_xyz, i));
+  for(i=0;i<4;i++) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes, i));
+  if ( gm == gridmoveCellFaceNormals( gm, xyz, nodes, normals ) ) {
+    rb_normal = rb_ary_new2(3);
+    for ( i=0 ; i < 3 ; i++ ) 
+      rb_ary_store( rb_normal, i, 
+		    rb_float_new( normals[NUM2INT(normalIndex)][i]) );
+  }else{
+    rb_normal = Qnil;
+  }
+  free(xyz);
+  return rb_normal;
+}
+
 VALUE cGridMove;
 
 void Init_GridMove() 
@@ -102,4 +132,7 @@ void Init_GridMove()
   rb_define_method( cGridMove, "springRelaxation", gridmove_springRelaxation, 2 );
   rb_define_method( cGridMove, "springs", gridmove_springs, 0 );
   rb_define_method( cGridMove, "applyDisplacements", gridmove_applyDisplacements, 0 );
+
+  rb_define_method( cGridMove, "cellFaceNormal", gridmove_cellFaceNormal, 3 );
+  
 }
