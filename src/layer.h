@@ -54,6 +54,10 @@ int layerNextTriangle(Layer *, int normal, int triangle );
 Layer *layerCommonEdge(Layer *, int triangle0, int triangle1, int *nodes);
 double layerEdgeAngle(Layer *, int triangle0, int triangle1 );
 Layer *layerNormalDirection(Layer *, int normal, double *direction);
+Layer *layerAssignPolarGrowthHeight(Layer *layer,
+				    double constant,
+				    double refLength,
+				    double *referenceDirection);
 Layer *layerAssignPolynomialNormalHeight(Layer *, double constant, double slope, 
                                          double exponent, double *origin,
 					 double *direction);

@@ -731,6 +731,31 @@ Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
 
   return layer;
 }
+
+
+Layer *layerAssignPolarGrowthHeight(Layer *layer, 
+                                         double constant,
+					 double refLength,
+					 double *referenceDirection)
+{
+  int normal;
+  double cosAngle, arcAngle, distance;
+  double normalDirection[3];
+  
+  
+  for(normal=0;normal<layerNNormal(layer);normal++){
+
+    layerNormalDirection(layer, normal, normalDirection);
+    cosAngle = gridDotProduct(normalDirection, referenceDirection);
+    arcAngle = asin( cosAngle );
+    distance = sqrt( arcAngle + refLength );
+
+    if (distance >= 0.0 ) 
+      layerSetNormalHeight( layer, normal, constant*distance );
+  }
+  return layer;	
+}
+
 Layer *layerAssignPolynomialNormalHeight(Layer *layer, 
                                          double constant, double slope,
 					 double exponent,
