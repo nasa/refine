@@ -8,8 +8,8 @@
 
 /* $Id$ */
 
-#ifndef FORTRAN_H
-#define FORTRAN_H
+#ifndef GRIDFORTRAN_H
+#define GRIDFORTRAN_H
 
 #include "master_header.h"
 
@@ -22,4 +22,4 @@ int GRIDCREATE( int *maxnode, int *maxcell, int *maxface, int *maxedge );
 
 END_C_DECLORATION
 
-#endif /* FORTRAN_H */
+#endif /* GRIDFORTRAN_H */

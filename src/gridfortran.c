@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "fortran.h"
+#include "gridfortran.h"
 #include "grid.h"
 
 static Grid *grid;
