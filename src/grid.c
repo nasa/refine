@@ -43,8 +43,15 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
   grid->blanknode = 0;
 
-  grid->spacing = malloc(grid->maxnode * sizeof(double));
-  for (i=0;i < grid->maxnode; i++ ) grid->spacing[i] = 0.0;
+  grid->spacing = malloc(grid->maxnode * 6 * sizeof(double));
+  for (i=0;i < grid->maxnode; i++ ) {
+    grid->spacing[0+6*i] = 1.0;
+    grid->spacing[1+6*i] = 0.0;
+    grid->spacing[2+6*i] = 0.0;
+    grid->spacing[3+6*i] = 1.0;
+    grid->spacing[4+6*i] = 0.0;
+    grid->spacing[5+6*i] = 1.0;
+  }
 
   // cells
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
@@ -133,8 +140,15 @@ Grid *gridImport(int maxnode, int nnode,
     grid->blanknode = grid->nnode;
   }
 
-  grid->spacing = malloc(grid->maxnode * sizeof(double));
-  for (i=0;i < grid->maxnode; i++ ) grid->spacing[i] = 0.0;
+  grid->spacing = malloc(grid->maxnode * 6 * sizeof(double));
+  for (i=0;i < grid->maxnode; i++ ) {
+    grid->spacing[0+6*i] = 1.0;
+    grid->spacing[1+6*i] = 0.0;
+    grid->spacing[2+6*i] = 0.0;
+    grid->spacing[3+6*i] = 1.0;
+    grid->spacing[4+6*i] = 0.0;
+    grid->spacing[5+6*i] = 1.0;
+  }
 
   // cells
   grid->c2n = c2n;

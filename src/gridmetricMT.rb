@@ -91,7 +91,7 @@ class TestGridMetric < Test::Unit::TestCase
  def testSpacingFunction
   assert_not_nil grid = isoTet
   4.times do |i| 
-   assert_in_delta 0.0, grid.spacing(i), 1.0e-15, "node #{i} spacing"
+   assert_in_delta 1.0, grid.spacing(i), 1.0e-15, "node #{i} spacing"
   end
   assert_equal grid, grid.resetSpacing
   4.times do |i| 
