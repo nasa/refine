@@ -65,6 +65,6 @@ void Init_GridShape()
 {
    cGridShape = rb_define_module( "GridShape" );
    rb_define_method( cGridShape, "shapeJacobian1", grid_shapeJacobian1, 5 );
-   rb_define_method( cGridShape, "shapeJacobian2", grid_shapeJacobian1, 11 );
+   rb_define_method( cGridShape, "shapeJacobian2", grid_shapeJacobian2, 11 );
  }
 

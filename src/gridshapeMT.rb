@@ -158,4 +158,116 @@ class TestGridShape < Test::Unit::TestCase
   assert_in_delta(1.0,jac[8],tol)
  end
 
+ def testSecondOrderLagrangeJacobianIceCreamCone
+  n0 = [0, 0, 0]
+  n1 = [1, 0, 0]
+  n2 = [0, 1, 0]
+  n3 = [0, 0, 1]
+  h=0.5
+  e01 = [h, 0, 0]
+  e02 = [0, h, 0]
+  e03 = [0, 0, h]
+  e12 = [1, 1, 0]
+  e13 = [1, 0, 1]
+  e23 = [0, 1, 1]
+  
+  where = [0.0, 0.0, 0.0]
+  
+  jac = @g.shapeJacobian2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  tol=1.0e-14
+  assert_in_delta(1.0,jac[0],tol)
+  assert_in_delta(0.0,jac[1],tol)
+  assert_in_delta(0.0,jac[2],tol)
+  assert_in_delta(0.0,jac[3],tol)
+  assert_in_delta(1.0,jac[4],tol)
+  assert_in_delta(0.0,jac[5],tol)
+  assert_in_delta(0.0,jac[6],tol)
+  assert_in_delta(0.0,jac[7],tol)
+  assert_in_delta(1.0,jac[8],tol)
+
+  where = [0.5, 0.5, 0.0]
+  
+  jac = @g.shapeJacobian2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  tol=1.0e-14
+  assert_in_delta(2.0,jac[0],tol)
+  assert_in_delta(1.0,jac[1],tol)
+  assert_in_delta(1.0,jac[2],tol)
+  assert_in_delta(1.0,jac[3],tol)
+  assert_in_delta(2.0,jac[4],tol)
+  assert_in_delta(1.0,jac[5],tol)
+  assert_in_delta(0.0,jac[6],tol)
+  assert_in_delta(0.0,jac[7],tol)
+  assert_in_delta(5.0,jac[8],tol)
+ end
+
+ def testSecondOrderLagrangeJacobianPartialIceCreamCone
+  n0 = [0, 0, 0]
+  n1 = [1, 0, 0]
+  n2 = [0, 1, 0]
+  n3 = [0, 0, 1]
+  h=0.5
+  e01 = [h, 0, 0]
+  e02 = [0, h, 0]
+  e03 = [0, 0, h]
+  e12 = [h, h, 0]
+  e13 = [1, 0, 1]
+  e23 = [0, 1, 1]
+  
+  where = [0.5, 0.5, 0.0]
+
+  jac = @g.shapeJacobian2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  tol=1.0e-14
+  assert_in_delta(1.0,jac[0],tol)
+  assert_in_delta(0.0,jac[1],tol)
+  assert_in_delta(1.0,jac[2],tol)
+  assert_in_delta(0.0,jac[3],tol)
+  assert_in_delta(1.0,jac[4],tol)
+  assert_in_delta(1.0,jac[5],tol)
+  assert_in_delta(0.0,jac[6],tol)
+  assert_in_delta(0.0,jac[7],tol)
+  assert_in_delta(5.0,jac[8],tol)
+ end
+
+ def testSecondOrderLagrangeJacobianInvertedEdge01
+  n0 = [0, 0, 0]
+  n1 = [1, 0, 0]
+  n2 = [0, 1, 0]
+  n3 = [0, 0, 1]
+  h=0.5
+  e01 = [1, 1, 1]
+  e02 = [0, h, 0]
+  e03 = [0, 0, h]
+  e12 = [h, h, 0]
+  e13 = [h, 0, h]
+  e23 = [0, h, h]
+  
+  where = [0.0, 0.0, 0.0]
+
+  jac = @g.shapeJacobian2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  tol=1.0e-14
+  assert_in_delta(3.0,jac[0],tol)
+  assert_in_delta(0.0,jac[1],tol)
+  assert_in_delta(0.0,jac[2],tol)
+  assert_in_delta(4.0,jac[3],tol)
+  assert_in_delta(1.0,jac[4],tol)
+  assert_in_delta(0.0,jac[5],tol)
+  assert_in_delta(4.0,jac[6],tol)
+  assert_in_delta(0.0,jac[7],tol)
+  assert_in_delta(1.0,jac[8],tol)
+
+  where = [1.0, 0.0, 0.0]
+
+  jac = @g.shapeJacobian2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  tol=1.0e-14
+  assert_in_delta(-1.0,jac[0],tol)
+  assert_in_delta(-2.0,jac[1],tol)
+  assert_in_delta(-2.0,jac[2],tol)
+  assert_in_delta(-4.0,jac[3],tol)
+  assert_in_delta(-3.0,jac[4],tol)
+  assert_in_delta(-4.0,jac[5],tol)
+  assert_in_delta(-4.0,jac[6],tol)
+  assert_in_delta(-4.0,jac[7],tol)
+  assert_in_delta(-3.0,jac[8],tol)
+ end
+
 end
