@@ -48,6 +48,7 @@ int gridjoinunusedcellglobal_( int *nunused, int *unused );
 
 int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
 		    int *ncell, int *ncellg );
+int gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z);
 
 END_C_DECLORATION
 

@@ -205,3 +205,16 @@ int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg,
   *ncell = gridNCell(grid);
   *ncellg = gridGlobalNCell(grid);
 }
+
+int gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
+{
+  int node;
+  double xyz[3];
+  for (node=0;node<gridNNode(grid);node++) {
+    l2g[node] = gridNodeGlobal(grid,node)+1;
+    gridNodeXYZ(grid,node,xyz);
+    x[node] = xyz[0];
+    y[node] = xyz[1];
+    x[node] = xyz[2];
+  }
+}
