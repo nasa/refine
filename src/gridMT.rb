@@ -611,6 +611,30 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [3, 2, 1], grid.geomCurve(11,3)
  end
 
+ def testFindCellWithFace
+  assert_not_nil     grid = Grid.new(5,2,0,4)
+  assert_equal grid, grid.addCell(0,1,4,3)
+  assert_nil         grid.findCellWithFace(34)
+  assert_nil         grid.findCellWithFace(0)
+  assert_equal grid, grid.addFace(0,1,2,11)
+  assert_nil         grid.findCellWithFace(0)
+  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_equal 1,    grid.findCellWithFace(0)
+ end
+
+ def testRightHandedFaces
+  assert_not_nil grid = Grid.new(4,1,2,0)
+  assert_equal grid, grid.
+   addCell( grid.addNode(0.0,0.0,0.0), grid.addNode(1.0,0.0,0.0), 
+	    grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
+  assert_equal grid,  grid.addFace(0,1,2,11)
+  assert_equal true,  grid.rightHandedFace(0)
+#  assert_equal true,  grid.rightHandedBoundary
+  assert_equal grid,  grid.addFace(0,2,1,11)
+  assert_equal false, grid.rightHandedFace(1)
+#  assert_equal false, grid.rightHandedBoundary
+ end
+ 
  # make register unique
 
  # allocating a new chunk of nodes, faces, cells
