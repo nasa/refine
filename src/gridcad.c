@@ -17,7 +17,6 @@
 #include "gridmetric.h"
 #include "gridcad.h"
 #include "gridinsert.h"
-#include "adj.h"
 #include "gridStruct.h"
 
 Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )

@@ -18,7 +18,6 @@
 #include "gridcad.h"
 #include "gridinsert.h"
 #include "grid.h"
-#include "adj.h"
 
 typedef struct Normal Normal;
 struct Normal {

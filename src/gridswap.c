@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "adj.h"
 #include "gridStruct.h"
 #include "gridmetric.h"
 #include "gridswap.h"
