@@ -17,6 +17,7 @@
 BEGIN_C_DECLORATION
 
 void gridCrossProduct(double *norm, double *edge1, double *edge2);
+void gridSubtractVector(double *v1, double *v2, double *result);
 
 double gridEdgeLength(Grid *g, int n0, int n1 );
 double gridEdgeRatio(Grid *g, int n0, int n1 );

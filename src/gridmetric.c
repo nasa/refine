@@ -8,7 +8,14 @@
 
 #define VECTOR_COPY3(a,b) for(i=0;i<3;i++)a[i]=b[i];
 
-void gridCrossProduct(double *norm, double *edge1, double *edge2)
+void gridSubtractVector(double *v1, double *v2, double *result)
+{
+  result[0] = v1[0] - v2[0];
+  result[1] = v1[1] - v2[1];
+  result[2] = v1[2] - v2[2];
+}
+
+void gridCrossProduct(double *edge1, double *edge2, double *norm)
 {
   norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
   norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
@@ -486,19 +493,12 @@ Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
 
 double gridVolume(Grid *grid, int *nodes )
 {
-  int ixyz;
   double edge1[3], edge2[3], edge3[3], norm[3], volume; 
   
-  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
-    edge1[ixyz] = grid->xyz[ixyz+3*nodes[1]]
-                - grid->xyz[ixyz+3*nodes[0]];
-    edge2[ixyz] = grid->xyz[ixyz+3*nodes[2]]
-                - grid->xyz[ixyz+3*nodes[0]];
-    edge3[ixyz] = grid->xyz[ixyz+3*nodes[3]]
-                - grid->xyz[ixyz+3*nodes[0]];
-  }
-
-  gridCrossProduct( norm, edge1, edge2);
+  gridSubtractVector( &grid->xyz[3*nodes[1]], &grid->xyz[3*nodes[0]], edge1);
+  gridSubtractVector( &grid->xyz[3*nodes[2]], &grid->xyz[3*nodes[0]], edge2);
+  gridSubtractVector( &grid->xyz[3*nodes[3]], &grid->xyz[3*nodes[0]], edge3);
+  gridCrossProduct( edge1, edge2, norm );
 
   return  (norm[0]*edge3[0]+norm[1]*edge3[1]+norm[2]*edge3[2])/6.0;
 }
