@@ -1,3 +1,8 @@
+2004-04-11 11:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/layer.c made the layer blends slightly more general. They
+	can handle triple points and termination to a single normal.
+
 2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
 
 	* /bootstrap script to create configure script from configure.ac
