@@ -522,54 +522,27 @@ Layer *layerAdvance(Layer *layer, double height )
     }    
   }
 
+  // advance edges
+  for (normal=0;normal<layerNNormal(layer);normal++) {
+    edgeId = -layerConstrained(layer,normal);
+    if (edgeId > 0) {
+      root = layer->normal[normal].root;
+      tip  = layer->normal[normal].tip;
+      /* note that tip has been set to root on terminated normals */
+      if (root != tip) gridAddEdge(grid,root,tip,edgeId,DBL_MAX,DBL_MAX);
+    }
+
+  }
+
   for (front=0;front<layerNFront(layer);front++){
     for (i=0;i<3;i++) layer->front[front].globalNode[i] = 
 			layer->normal[layer->front[front].normal[i]].root;
     layerFrontNormals(layer, front, normals);
-    /* pg. 82-85 of Garimella Thesis*/
-    if (normals[1]<normals[0] && normals[1]<normals[2]){
-      normal = normals[1];
-      normals[1] = normals[2];
-      normals[2] = normals[0];
-      normals[0] = normal;
-    }
-    if (normals[2]<normals[0] && normals[2]<normals[1]){
-      normal = normals[2];
-      normals[2] = normals[1];
-      normals[1] = normals[0];
-      normals[0] = normal;
-    }
 
     /* note that tip has been set to root on terminated normals */
     /* the if (n[0]!=n[3]) checks are for layer termiantion */
 
-    for (i=0;i<3;i++){
-      n[i]   = layer->normal[normals[i]].root;
-      n[i+3] = layer->normal[normals[i]].tip;
-    }
-
-    if (normals[2]<normals[1]){
-      if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
-      if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[4], n[5]);
-      if (n[1]!=n[4]) gridAddCell(grid, n[2], n[0], n[1], n[4]);
-    }else{
-      if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
-      if (n[1]!=n[4]) gridAddCell(grid, n[0], n[1], n[5], n[4]);
-      if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[1], n[5]);
-    }
-    
-    edgeId = -layerConstrained(layer,normals[0]);
-    if (edgeId > 0 && n[0]!=n[3]) 
-      gridAddEdge(grid,n[0],n[3],edgeId,DBL_MAX,DBL_MAX);
-
-    edgeId = -layerConstrained(layer,normals[1]);
-    if (edgeId > 0 && n[1]!=n[4]) 
-      gridAddEdge(grid,n[1],n[4],edgeId,DBL_MAX,DBL_MAX);
-
-    edgeId = -layerConstrained(layer,normals[2]);
-    if (edgeId > 0 && n[2]!=n[5]) 
-      gridAddEdge(grid,n[2],n[5],edgeId,DBL_MAX,DBL_MAX);
-
+    // advance faces
     for (i=0;i<3;i++){
       faceId = layerConstrainedSide(layer, front, i);
       if (faceId > 0) {
@@ -591,6 +564,37 @@ Layer *layerAdvance(Layer *layer, double height )
       }
     }
 
+    // advance cells
+    /* pg. 82-85 of Garimella Thesis*/
+    /* sort so that normals[0] is the smallest normal id*/
+    if (normals[1]<normals[0] && normals[1]<normals[2]){
+      normal = normals[1];
+      normals[1] = normals[2];
+      normals[2] = normals[0];
+      normals[0] = normal;
+    }
+    if (normals[2]<normals[0] && normals[2]<normals[1]){
+      normal = normals[2];
+      normals[2] = normals[1];
+      normals[1] = normals[0];
+      normals[0] = normal;
+    }
+
+    for (i=0;i<3;i++){
+      n[i]   = layer->normal[normals[i]].root;
+      n[i+3] = layer->normal[normals[i]].tip;
+    }
+
+    if (normals[2]<normals[1]){
+      if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
+      if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[4], n[5]);
+      if (n[1]!=n[4]) gridAddCell(grid, n[2], n[0], n[1], n[4]);
+    }else{
+      if (n[0]!=n[3]) gridAddCell(grid, n[0], n[4], n[5], n[3]);
+      if (n[1]!=n[4]) gridAddCell(grid, n[0], n[1], n[5], n[4]);
+      if (n[2]!=n[5]) gridAddCell(grid, n[2], n[0], n[1], n[5]);
+    }
+    
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
