@@ -29,9 +29,26 @@ class TestSampleUnit < Test::Unit::TestCase
 
   def testCellIterator
     assert_equal false, @grid.validNodeCell
+    assert_equal false, @grid.moreNodeCell
 
     @grid.firstNodeCell(0);
     assert_equal false, @grid.validNodeCell
+
+    @grid.registerNodeCell( 2, 299 )
+    @grid.firstNodeCell(2);
+    assert_equal 299, @grid.currentNodeCell
+    assert_equal true, @grid.validNodeCell
+    assert_equal false, @grid.moreNodeCell
+    @grid.nextNodeCell
+    assert_equal false, @grid.validNodeCell
+
+    @grid.registerNodeCell( 3, 398 )
+    @grid.registerNodeCell( 3, 399 )
+    @grid.firstNodeCell(3);
+    assert_equal true, @grid.validNodeCell
+    assert_equal true, @grid.moreNodeCell
+
+    100.times {@grid.nextNodeCell} # abusive use of next
   end
 
 end
