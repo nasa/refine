@@ -191,6 +191,7 @@ Grid *gridImport(int maxnode, int nnode,
   for ( i=grid->nface ; i < grid->maxface ; i++ ) {
     grid->f2n[0+3*i] = EMPTY; 
     grid->f2n[1+3*i] = i+1; 
+    grid->faceId[0+3*i] = EMPTY; 
   }
   if (grid->maxface == grid->nface) {
     grid->blankf2n = EMPTY;

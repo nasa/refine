@@ -791,6 +791,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   //	  node, gridStoreARDegree(grid), minCell, minAR );
   
   goodStep = FALSE;
+  actualImprovement = 0.0;
   lastImprovement = -10.0;
   iteration = 0;
   while (alpha > 10.e-10 && !goodStep && iteration < 30 ) {
