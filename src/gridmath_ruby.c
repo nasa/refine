@@ -61,7 +61,22 @@ static VALUE grid_vectorNormalize( VALUE self, VALUE rb_vect )
   return rb_vect;
 }
 
-VALUE grid_triDiag( VALUE self, VALUE rb_m )
+static VALUE grid_rotateDirection( VALUE self, VALUE rb_v0, VALUE rb_v1,
+				VALUE rb_axle, VALUE rotation )
+{
+  int i;
+  double v0[3], v1[3], axle[3], vect[3];
+  VALUE rb_vect;
+  for (i=0;i<3;i++) v0[i] = NUM2DBL(rb_ary_entry(rb_v0, i));
+  for (i=0;i<3;i++) v1[i] = NUM2DBL(rb_ary_entry(rb_v1, i));
+  for (i=0;i<3;i++) axle[i] = NUM2DBL(rb_ary_entry(rb_axle, i));
+  gridRotateDirection(v0,v1,axle,NUM2DBL(rotation),vect);
+  rb_vect = rb_ary_new2(3);
+  for (i=0;i<3;i++) rb_ary_store(rb_vect, i, rb_float_new(vect[i]));
+  return rb_vect;
+}
+
+static VALUE grid_triDiag( VALUE self, VALUE rb_m )
 {
   int i;
   double m[6], d[3], e[3], q0[3], q1[3], q2[3];
@@ -73,7 +88,7 @@ VALUE grid_triDiag( VALUE self, VALUE rb_m )
   return rb_d;
 }
 
-VALUE grid_triOffDiag( VALUE self, VALUE rb_m )
+static VALUE grid_triOffDiag( VALUE self, VALUE rb_m )
 {
   int i;
   double m[6], d[3], e[3], q0[3], q1[3], q2[3];
@@ -85,7 +100,7 @@ VALUE grid_triOffDiag( VALUE self, VALUE rb_m )
   return rb_e;
 }
 
-VALUE grid_triDiagTransform0( VALUE self, VALUE rb_m )
+static VALUE grid_triDiagTransform0( VALUE self, VALUE rb_m )
 {
   int i;
   double m[6], d[3], e[3], q0[3], q1[3], q2[3];
@@ -97,7 +112,7 @@ VALUE grid_triDiagTransform0( VALUE self, VALUE rb_m )
   return rb_q;
 }
 
-VALUE grid_triDiagTransform1( VALUE self, VALUE rb_m )
+static VALUE grid_triDiagTransform1( VALUE self, VALUE rb_m )
 {
   int i;
   double m[6], d[3], e[3], q0[3], q1[3], q2[3];
@@ -109,7 +124,7 @@ VALUE grid_triDiagTransform1( VALUE self, VALUE rb_m )
   return rb_q;
 }
 
-VALUE grid_triDiagTransform2( VALUE self, VALUE rb_m )
+static VALUE grid_triDiagTransform2( VALUE self, VALUE rb_m )
 {
   int i;
   double m[6], d[3], e[3], q0[3], q1[3], q2[3];
@@ -121,7 +136,7 @@ VALUE grid_triDiagTransform2( VALUE self, VALUE rb_m )
   return rb_q;
 }
 
-VALUE grid_eigTriDiag( VALUE self, VALUE rb_d, VALUE rb_e )
+static VALUE grid_eigTriDiag( VALUE self, VALUE rb_d, VALUE rb_e )
 {
   int i;
   double d[3], e[3], q0[3], q1[3], q2[3];
@@ -140,8 +155,8 @@ VALUE grid_eigTriDiag( VALUE self, VALUE rb_d, VALUE rb_e )
   }
 }
 
-VALUE grid_vectTriDiag0( VALUE self, VALUE rb_d, VALUE rb_e, 
-			 VALUE rb_q0, VALUE rb_q1,  VALUE rb_q2 )
+static VALUE grid_vectTriDiag0( VALUE self, VALUE rb_d, VALUE rb_e, 
+				VALUE rb_q0, VALUE rb_q1,  VALUE rb_q2 )
 {
   int i;
   double d[3], e[3], q0[3], q1[3], q2[3];
@@ -160,8 +175,8 @@ VALUE grid_vectTriDiag0( VALUE self, VALUE rb_d, VALUE rb_e,
   }
 }
 
-VALUE grid_vectTriDiag1( VALUE self, VALUE rb_d, VALUE rb_e, 
-			 VALUE rb_q0, VALUE rb_q1,  VALUE rb_q2 )
+static VALUE grid_vectTriDiag1( VALUE self, VALUE rb_d, VALUE rb_e, 
+				VALUE rb_q0, VALUE rb_q1,  VALUE rb_q2 )
 {
   int i;
   double d[3], e[3], q0[3], q1[3], q2[3];
@@ -180,8 +195,8 @@ VALUE grid_vectTriDiag1( VALUE self, VALUE rb_d, VALUE rb_e,
   }
 }
 
-VALUE grid_vectTriDiag2( VALUE self, VALUE rb_d, VALUE rb_e, 
-			 VALUE rb_q0, VALUE rb_q1,  VALUE rb_q2 )
+static VALUE grid_vectTriDiag2( VALUE self, VALUE rb_d, VALUE rb_e, 
+				VALUE rb_q0, VALUE rb_q1,  VALUE rb_q2 )
 {
   int i;
   double d[3], e[3], q0[3], q1[3], q2[3];
@@ -210,6 +225,7 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "crossProduct", grid_crossProduct, 2 );
   rb_define_method( cGridMath, "vectorLength", grid_vectorLength, 1 );
   rb_define_method( cGridMath, "vectorNormalize", grid_vectorNormalize, 1 );
+  rb_define_method( cGridMath, "rotateDirection", grid_rotateDirection, 4 );
   rb_define_method( cGridMath, "triDiag", grid_triDiag, 1 );
   rb_define_method( cGridMath, "triOffDiag", grid_triOffDiag, 1 );
   rb_define_method( cGridMath, "triDiagTransform0", grid_triDiagTransform0, 1 );

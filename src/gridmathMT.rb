@@ -60,6 +60,17 @@ class TestGridMath < Test::Unit::TestCase
   assert_equal [0,0,-1], @gm.vectorNormalize([0,0,-3])
  end
 
+ def testRotateDirectionEndPoints
+  v0 = [1,0,0]
+  v1 = [0,1,0]
+  axle = [0,0,1]
+  assert_equal v0, @gm.rotateDirection(v0,v1,axle,0)
+  assert_equal v1, @gm.rotateDirection(v0,v1,axle,1)
+  negaxle = [0,0,-1]
+  assert_equal v1, @gm.rotateDirection(v1,v0,negaxle,0)
+  assert_equal v0, @gm.rotateDirection(v1,v0,negaxle,1)
+ end
+
  def testTriDiagAlreadyDiag
   m = [1,0,0,
          2,0,

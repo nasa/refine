@@ -29,9 +29,12 @@ void gridVectorNormalize(double *norm)
 void gridRotateDirection(double *v0, double *v1, 
 			 double *axle, double rotation, double *result)
 {
-  result[0] = 1.0;
-  result[1] = 0.0;
-  result[2] = 0.0;
+  double antirotation;
+  antirotation = 1.0 - rotation;
+
+  result[0] = antirotation*v0[0] + rotation*v1[0];
+  result[1] = antirotation*v0[1] + rotation*v1[1];
+  result[2] = antirotation*v0[2] + rotation*v1[2];
 
   gridVectorNormalize(result);
 }
