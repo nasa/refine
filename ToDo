@@ -7,7 +7,9 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 research mapped edge length and fix edge ratio length routines
 
-fix gridCollapseEdgeToBestConfiguration gridCollapseCost logic
+maintain linear data for split and collapse.
+
+Validate a mesh by spliting and projecting offending faces (via Bob)
 
 Finish face swap parallelization. there are only 5 nodes so that means
 32 posiblities. (unit testing could be less if ring, top&bottom are
@@ -52,5 +54,3 @@ continue speed testing
 improved normal visiblity on symm planes.
 check for potential collisions of blend normals with surrounding area
 check out frozen normal direction smoothing (VGrid style)
-
-
