@@ -246,7 +246,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 0, vect[8]
  end
 
- def XtestEigTriDiag2x2plus1
+ def testEigTriDiag2x2plus1
   grid = Grid.new(0,0,0,0)
   m = [0.5,0.5,0,
            3.5,0,
@@ -255,12 +255,12 @@ class TestGridMetric < Test::Unit::TestCase
   e = grid.triOffDiag(m)
   q = grid.triDiagTransform(m)
   eig = grid.eigTriDiag(d,e,q)
-  assert_equal 3, eig[0]
-  assert_equal 2, eig[1]
-  assert_equal 1, eig[2]
+  assert_in_delta 3.58113883, eig[0], 1.0e-7
+  assert_in_delta 1,          eig[1], 1.0e-7
+  assert_in_delta 0.41886117, eig[2], 1.0e-7
  end
 
- def XtestEigTriDiagFull211212
+ def testEigTriDiagFull211212
   grid = Grid.new(0,0,0,0)
   m = [2,1,1,
          2,1,
@@ -285,7 +285,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta(-0.40824829,vect[7],1.0e-7)
  end
 
- def XtestEigTriDiagAlreadyTridiagFull13n471
+ def testEigTriDiagAlreadyTridiagFull13n471
   grid = Grid.new(0,0,0,0)
   m = [13,-4,0,
            7,0,
@@ -299,7 +299,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 1, eig[2], 1.0e-15
  end
 
- def XtestEigTriDiagAlreadyTridiagFull1554
+ def testEigTriDiagAlreadyTridiagFull1554
   grid = Grid.new(0,0,0,0)
   m = [4, 0, 0,
          13,-7,
@@ -308,12 +308,12 @@ class TestGridMetric < Test::Unit::TestCase
   e = grid.triOffDiag(m)
   q = grid.triDiagTransform(m)
   eig = grid.eigTriDiag(d,e,q)
-  assert_equal 15, eig[0]
-  assert_in_delta 5, eig[1], 1.0e-15
-  assert_in_delta 4, eig[2], 1.0e-15
+  assert_in_delta 17.6157731, eig[0], 1.0e-7
+  assert_in_delta 4,          eig[1], 1.0e-7
+  assert_in_delta 2.38422690, eig[2], 1.0e-7
  end
 
- def XtestEigTriDiagAlreadyTridiagSplit1554
+ def testEigTriDiagAlreadyTridiagSplit1554
   grid = Grid.new(0,0,0,0)
   m = [13,0,-4,
           4, 0,
