@@ -11,19 +11,19 @@
 #include <stdlib.h>
 #include "adj.h"
 
-typedef struct NODE2ITEM NODE2ITEM;
+typedef struct NodeItem NodeItem;
 
-struct NODE2ITEM {
+struct NodeItem {
   int item;
-  NODE2ITEM *next;
+  NodeItem *next;
 };
 
 struct Adj {
   int nnode;
-  NODE2ITEM *node2item;
-  NODE2ITEM **first;
-  NODE2ITEM *current;
-  NODE2ITEM *blank;
+  NodeItem *node2item;
+  NodeItem **first;
+  NodeItem *current;
+  NodeItem *blank;
 };
 
 Adj* adjCreate( int nnode, int perNode )
@@ -36,7 +36,7 @@ Adj* adjCreate( int nnode, int perNode )
   adj->nnode   = nnode;
   nlist = adj->nnode * perNode;
 
-  adj->node2item = (NODE2ITEM *)malloc( nlist * sizeof(NODE2ITEM));
+  adj->node2item = (NodeItem *)malloc( nlist * sizeof(NodeItem));
 
   for ( i=0 ; i<nlist-1 ; i++ ) { // pointer majic?
     adj->node2item[i].item = EMPTY;
@@ -49,7 +49,7 @@ Adj* adjCreate( int nnode, int perNode )
 
   adj->current = NULL;
 
-  adj->first = malloc( perNode * adj->nnode * sizeof(NODE2ITEM) );
+  adj->first = malloc( perNode * adj->nnode * sizeof(NodeItem) );
 
   for ( i=0 ; i<adj->nnode; i++ ) adj->first[i] = NULL; 
 
@@ -69,7 +69,7 @@ int adjNNode( Adj *adj )
 
 Adj *adjRegister( Adj *adj, int node, int item )
 {
-  NODE2ITEM *new;
+  NodeItem *new;
   if (node>=adj->nnode) return NULL;
   if (adj->blank == NULL) return NULL;
   new = adj->blank;
@@ -82,7 +82,7 @@ Adj *adjRegister( Adj *adj, int node, int item )
 
 Adj* adjRemove(Adj *adj, int node, int item)
 {
-  NODE2ITEM *remove, *previous;
+  NodeItem *remove, *previous;
   remove = NULL;
 
   for ( adjFirst(adj,node); adjValid(adj); adjNext(adj) ) 
