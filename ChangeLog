@@ -1,3 +1,8 @@
+2005-01-28 11:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdapt,gridCollapseEdge) moved the check
+	for negative gridAR into gridAdapt. If it is found, exit 1.
+
 2005-01-28 14:12 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridCollapseEdge) added

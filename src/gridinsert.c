@@ -61,6 +61,7 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
   int n0, n1, adaptnode, origNNode, newnode;
   int report, nnodeAdd, nnodeRemove;
   double ratio;
+  double ar;
   
   origNNode = gridNNode(grid);
   adaptnode =0;
@@ -83,7 +84,17 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	newnode = gridSplitEdge(grid, n0, n1);
 	if ( newnode != EMPTY ){
 	  nnodeAdd++;
+	  gridNodeAR(grid,newnode,&ar); 
+	  if (ar<0.0) {
+	    printf("split to node %d has ar %f\n",newnode,ar);
+	    exit(1);
+	  }   
 	  gridSwapNearNode( grid, newnode, -1.0 );
+	  gridNodeAR(grid,newnode,&ar); 
+	  if (ar<0.0) {
+	    printf("split swap to node %d has ar %f\n",newnode,ar);
+	    exit(1);
+	  }   
 	}
       }else{
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
@@ -91,7 +102,17 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
 	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
 	    nnodeRemove++;
+	    gridNodeAR(grid,n0,&ar); 
+	    if (ar<0.0) {
+	      printf("collapse to node %d has ar %f\n",n0,ar);
+	      exit(1);
+	    }   
 	    gridSwapNearNode( grid, n0, -1.0 );
+	    gridNodeAR(grid,n0,&ar); 
+	    if (ar<0.0) {
+	      printf("collapse swap to node %d has ar %f\n",n0,ar);
+	      exit(1);
+	    }   
 	  }
 	}
       }
@@ -836,15 +857,6 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   }
 
   gridRemoveNode(grid, n1);
-
-  {
-    double ar;
-    gridNodeAR(grid,n0,&ar); 
-    if (ar<0.0) {
-      printf("collapse to node %d has ar %f\n",n0,ar);
-      exit(1);
-    }    
-  }
 
   return grid;
 }
