@@ -1460,7 +1460,6 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [1,5,2], layer.triangleNormals(3)
  end
 
-#BROKEN
  def testCheckAfterBlendForConvextWithConstrainingFace
   grid = Grid.new(100,100,100,100)
   grid.addNode(0,0,0)
@@ -1469,7 +1468,6 @@ class TestLayer < Test::Unit::TestCase
   grid.addNode(0,1,0)
   grid.addFace(0,1,2,1)
   grid.addFace(0,2,3,1)
-  grid.addNode(-1,-1,0)
   grid.addFace(1,0,3,11)
   layer = Layer.new(grid).populateAdvancingFront([1])
   layer.constrainNormal(11)
@@ -1495,8 +1493,6 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [-1.0,0.0,0.0], layer.normalTriangleDirection(3,0)
 
  end
-#layer.writeTecplotFrontGeometry
-#grid.writeTecplotSurfaceZone
 
  def testAdvanceBlendForConvextFace_AddConstrainingFace
   # Y    3
@@ -1511,7 +1507,6 @@ class TestLayer < Test::Unit::TestCase
   grid.addNode(0,1,0)
   grid.addFace(0,1,2,1)
   grid.addFace(0,2,3,1)
-  grid.addNode(-1,-1,0)
   grid.addFace(1,0,3,11)
   layer = Layer.new(grid).populateAdvancingFront([1])
   layer.constrainNormal(11)
@@ -1531,7 +1526,6 @@ class TestLayer < Test::Unit::TestCase
   grid.addNode(0,1,0)
   grid.addFace(0,1,2,1)
   grid.addFace(0,2,3,1)
-  grid.addNode(-1,-1,0)
   grid.addFace(1,0,3,11)
   layer = Layer.new(grid).populateAdvancingFront([1])
   layer.constrainNormal(11)
@@ -1560,6 +1554,42 @@ class TestLayer < Test::Unit::TestCase
   assert_in_delta( -0.707, norm[1], tol)
   assert_in_delta(  0.000, norm[2], tol)
  end
+
+ def XtestForCollidingNormalsBetweenBlendAndConcaveNeighbor
+  grid = Grid.new(100,100,100,100)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,0,1)
+  grid.addNode(0,1,0)
+  grid.addFace(0,1,2,1)
+  grid.addFace(0,2,3,1)
+  grid.addFace(1,0,3,11)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.constrainNormal(11)
+  grid.removeFace(2)
+  layer.blend(200.0)
+
+  assert_equal [0,1,5], layer.triangleNormals(0)
+  assert_equal [4,2,3], layer.triangleNormals(1)
+
+  # Y    3
+  # |    |\
+  # +--Z 4-2
+  # +--Z 0-5
+  # |    |/
+  # X    1
+
+  assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(0,0)
+  assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(1,0)
+  assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(5,0)
+
+  assert_equal [-1.0,0.0,0.0], layer.normalTriangleDirection(4,0)
+  assert_equal [-1.0,0.0,0.0], layer.normalTriangleDirection(2,0)
+  assert_equal [-1.0,0.0,0.0], layer.normalTriangleDirection(3,0)
+
+ end
+#layer.writeTecplotFrontGeometry
+#grid.writeTecplotSurfaceZone
 
  def testBlendTriplePoint
   grid = Grid.new(20,20,10,0)
