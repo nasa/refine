@@ -19,6 +19,7 @@
 #include "gridinsert.h"
 #include "gridcad.h"
 #include "gridmove.h"
+#include "gridmpi.h"
 #include "gridfiller.h"
 #include "CADGeom/CADGeom.h"
 
@@ -211,9 +212,9 @@ int main( int argc, char *argv[] )
       if (grid==gridNodeXYZ(grid,node,xyz)) {
 	radius = sqrt(xyz[0]*xyz[0]+xyz[2]*xyz[2]);
 	theta = atan2(xyz[2],xyz[0]);
-	rSpace = 0.01*radius*radius;
-	tSpace = 0.25*radius;
-	ySpace = 0.5;
+	rSpace = 0.025*radius*radius;
+	tSpace = 0.5*radius;
+	ySpace = 0.25;
 	normal[0]=normal[1]=normal[2]=0;
 	tangent[0]=tangent[1]=tangent[2]=0;
 	third[0]=third[1]=third[2]=0;
@@ -282,8 +283,10 @@ int main( int argc, char *argv[] )
       gridmoveFree(gm);
       STATUS; minVolume = gridMinVolume(grid);
       while (0.0>=minVolume) {
-	printf("relax neg cells...\n");gridRelaxNegativeCells(grid,FALSE);
-	printf("edge swapping grid...\n");gridSwap(grid, -1.0);
+	printf("relax neg faces...\n");
+	gridParallelRelaxNegativeFaceAreaUV(grid,FALSE);
+	printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
+	printf("edge swapping grid...\n");gridSwap(grid,1.0);
 	STATUS; minVolume = gridMinVolume(grid);
       }
     }
