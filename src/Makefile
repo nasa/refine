@@ -12,6 +12,7 @@ check:
 	./gridmetricMT.rb
 	./gridswapMT.rb
 	./gridinsertMT.rb
+	./gridmpiMT.rb
 	./layerMT.rb
 	./sampleunitMT.rb
 
