@@ -390,6 +390,12 @@ VALUE layer_blend( VALUE self )
   return ( layer == layerBlend(layer)?self:Qnil );
 }
 
+VALUE layer_splitBlend( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerSplitBlend(layer)?self:Qnil );
+}
+
 VALUE layer_blendNormals( VALUE self, VALUE blend )
 {
   int i, normals[4];
@@ -463,6 +469,7 @@ void Init_Layer()
   rb_define_method( cLayer, "toggleMixedElementMode", layer_toggleMixedElementMode, 0 ); 
 
   rb_define_method( cLayer, "blend", layer_blend, 0 );
+  rb_define_method( cLayer, "splitBlend", layer_splitBlend, 0 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
 
 }

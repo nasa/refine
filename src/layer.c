@@ -1969,6 +1969,8 @@ Layer *layerSplitBlend(Layer *layer)
   double length;
   Grid *grid;
 
+  layerVisibleNormals(layer, 0.99, 1.0e-8 );
+
   origblend = layerNBlend(layer);
 
   grid = layerGrid(layer);
@@ -2110,7 +2112,6 @@ Layer *layerBlend(Layer *layer)
   layerVisibleNormals(layer , 
 		      sin(ConvertDegreeToRadian(largestEdgeAngle*0.333)), 
 		      1.0e-8 );
-  //layerSplitBlend(layer);
   return layer;
 }
 

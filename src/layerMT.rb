@@ -1311,4 +1311,14 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 6,       grid.nface
  end
 
+ def testSplitBlend
+  grid  = flatTwoFaceGrid
+  grid.setNodeXYZ(3,[0.5,0.5,-1])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.blend
+  assert_equal 1,     layer.nblend
+  assert_equal layer, layer.splitBlend
+  assert_equal 2,     layer.nblend
+ end
+
 end
