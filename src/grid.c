@@ -1859,3 +1859,13 @@ bool gridRightHandedFace(Grid *grid, int face ){
 
   return (gridVolume(grid, nodes) > 0.0);
 }
+
+bool gridRightHandedBoundary( Grid *grid )
+{
+  int face;
+  for (face=0;face<grid->maxface;face++)
+    if ( grid->f2n[3*face] != EMPTY )
+      if ( !gridRightHandedFace(grid, face) ) return FALSE;
+  return TRUE;
+}
+

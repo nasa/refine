@@ -326,6 +326,13 @@ VALUE grid_rightHandedFace( VALUE self, VALUE face )
   return (gridRightHandedFace(grid, NUM2INT(face))?Qtrue:Qfalse);
 }
 
+VALUE grid_rightHandedBoundary( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (gridRightHandedBoundary(grid)?Qtrue:Qfalse);
+}
+
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -372,4 +379,5 @@ void Init_Grid()
   rb_define_method( cGrid, "minAR", grid_minAR, 0 );
   rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
   rb_define_method( cGrid, "rightHandedFace", grid_rightHandedFace, 1 );
+  rb_define_method( cGrid, "rightHandedBoundary", grid_rightHandedBoundary, 0);
 }
