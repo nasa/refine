@@ -105,8 +105,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.registerNodeCell(0,3)
  end
  
-# put in test for register being the last entry in celllist
-
  def testMultipleNodeCellExists
   assert_equal false, @grid.cellExists(1,198)
   @grid.registerNodeCell(1,198)
@@ -145,15 +143,11 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [0, 1], gem
  end
  
- # make register unique
- # non-contiguos cellist for access and registering
- # test that new list terminator is contiguous
- # packing
  
  # adding a cell bigger than maxcell
  
- # get rid of long, use int
- 
+ # make register unique
+
  # allocating a new chunk of celllist
 
 end
