@@ -10,6 +10,14 @@ exit unless system 'make'
 require 'test/unit'
 require 'Grid'
 
+class Grid
+ def totalVolume
+  vol = 0.0
+  ncell.times { |cellId| vol += volume(cell(cellId)) }
+  vol
+ end
+end
+
 class TestSampleUnit < Test::Unit::TestCase
 
  def set_up
@@ -209,16 +217,18 @@ end
 	    @grid.addNode(0.0,1.0,0.0), @grid.addNode(0.0,0.0,1.0) )
   nodes = [0,1,2,3]
   assert_equal( 1.0/6.0, @grid.volume(nodes) )
-  assert_in_delta 1.366025403784439, @grid.ar(nodes), 1.0e-15
+  assert_in_delta 0.732050807568877, @grid.ar(nodes), 1.0e-15
  end
 
  def testGemGrid
   assert_not_nil grid=gemGrid(nequ=4, a=0.1)
   assert nequ+2, grid.nnode
   assert nequ, grid.ncell
+  initalVolume =  grid.totalVolume
   grid.ncell.times { |cellId| assert grid.volume(grid.cell(cellId))>0.0 }
   grid.swap(0,1)
   grid.ncell.times { |cellId| assert grid.volume(grid.cell(cellId))>0.0 }
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
  end
 
  def gemGrid(nequ=4, a=0.1)
