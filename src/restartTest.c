@@ -40,6 +40,9 @@ int main( int argc, char *argv[] )
   int patchDimensions[3];
   int face, localNode, globalNode;
   double pxyz[3], gxyz[3], dxyz[3];
+
+  int *l2g, volumeEdgeNode, patchEdgeNode;
+
   int vol;
   vol=1;
 
@@ -121,14 +124,31 @@ int main( int argc, char *argv[] )
 	   UGrid_PtValue(ugrid,edgeEndPoint[1],2) );
   }
 
+
+  if (!CADTopo_VolEdgePts( vol, &volumeEdgeNode )){
+    printf("%s: %d: CADTopo_VolEdgePts failied.\n",__FILE__, __LINE__);
+    return NULL;
+  }
+
+  inode = volumeEdgeNode;
+  
   globalPatch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&patchIterator);
 
   for( face=1; face<=nGeomFace; face++ ) {
     printf("face %3d\n",face);
     localPatch = CADGeom_FaceGrid(vol,face);
     UGPatch_GetDims(localPatch,patchDimensions);
+    l2g = malloc(patchDimensions[0]*sizeof(int));
+    if (!CADTopo_VolFacePts(vol, face, l2g, &patchEdgeNode)) {
+      printf("%s: %d: CADTopo_VolFacePts failied.\n",__FILE__, __LINE__);
+      return NULL;
+    }
+    for( localNode=patchEdgeNode;localNode<patchDimensions[0]; localNode++ ) {
+      l2g[localNode] = inode; inode++;
+    }
     for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {
       globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
+      globalNode = l2g[localNode];
       gxyz[0] = UGrid_PtValue(ugrid,globalNode,0);
       gxyz[1] = UGrid_PtValue(ugrid,globalNode,1);
       gxyz[2] = UGrid_PtValue(ugrid,globalNode,2);
@@ -140,7 +160,8 @@ int main( int argc, char *argv[] )
 	     localNode, pxyz[0], pxyz[1], pxyz[2], 
 	     globalNode, gxyz[0], gxyz[1], gxyz[2]);
     }
-    
+   
+    free(l2g);
     globalPatch = DList_GetNextItem(&patchIterator);
   }
 
