@@ -255,7 +255,6 @@ static VALUE grid_matrixDeterminate( VALUE self, VALUE rb_m )
 {
   int i;
   double m[9];
-  VALUE rb_s;
   for (i=0;i<9;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
   return rb_float_new(gridMatrixDeterminate( m ));
 }
