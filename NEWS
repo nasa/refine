@@ -1,3 +1,8 @@
+Wed Jun 29, 2004: Released Refine 0.7.5
+
+Tag before going to new GeoSDK UG_API implementation.
+Continued work on parallel rebuild of GeoSDK restart info.
+
 Wed Jun  2, 2004: Released Refine 0.7.4
 
 gridmove and CAPRI(CADGeom) read work in parallel. Parallel node
