@@ -22,13 +22,13 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 0, @grid.ncell
  end
 
- def XtestNodeCellDeg
+ def testNodeCellDeg
   assert_equal 0, @grid.nodeDeg(0)
   @grid.registerNodeCell( 0, 299 )
   assert_equal 1, @grid.nodeDeg(0)
  end
 
- def XtestNodeCellIterator
+ def testNodeCellIterator
   assert_equal false, @grid.validNodeCell
   assert_equal false, @grid.moreNodeCell
   
