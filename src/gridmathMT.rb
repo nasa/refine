@@ -263,6 +263,9 @@ class TestGridMath < Test::Unit::TestCase
                   0.40385, 0.65227,
                            0.75951]
   d = @gm.triDiag(m)
+  assert_in_delta( 0.22461, d[0], 1.0e-5 )
+  assert_in_delta( 0.78631, d[1], 1.0e-5 )
+  assert_in_delta( 0.37705, d[2], 1.0e-5 )
   e = @gm.triOffDiag(m)
   q0 = @gm.triDiagTransform0(m)
   q1 = @gm.triDiagTransform1(m)

@@ -37,7 +37,7 @@ void gridTriDiag3x3(double *m, double *d, double *e,
   q1[0] = 0.0;
   q2[0] = 0.0;
   
-  if ( abs(m[2]) > 1.0e-12 ) {
+  if ( ABS(m[2]) > 1.0e-12 ) {
     l = sqrt( m[1]*m[1] + m[2]*m[2] );
     u = m[1] / l;
     v = m[2] / l;
