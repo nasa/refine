@@ -140,8 +140,6 @@ bin_PROGRAMS =
 
 if BUILD_SDK_DEPENDENTS
 
-if BUILD_CAPRI2
-
 all_CFLAGS = @SDKheader@
 refineLib  = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
 MesherXLib = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
@@ -154,6 +152,8 @@ hla_sources = \
 	SyJetSpacingControl.c
 
 LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
+
+if BUILD_CAPRI2
 
 bin_PROGRAMS += refine MesherX MesherX_HLA
 refine_CFLAGS = $(all_CFLAGS)
@@ -181,19 +181,6 @@ restartTest_LDFLAGS = $(all_LDFLAGS)
 endif # BUILD_CAPRI2
 
 if BUILD_NATIVE_KERNEL
-
-all_CFLAGS = @SDKheader@
-refineLib = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
-MesherXLib = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
-all_LDFLAGS = @dynamicFlag@
-hla_sources = \
-	MesherX_HLA.c \
-	mesherx_hla.h mesherx_SyJet.c \
-	layerNormalExtra.h layerNormalExtra.c \
-	geometricStretch.h geometricStretch.c \
-	SyJetSpacingControl.c
-
-LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
 
 bin_PROGRAMS += refineNative MesherXNative MesherX_HLANative
 refineNative_CFLAGS = $(all_CFLAGS)
