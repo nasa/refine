@@ -1330,8 +1330,8 @@ Grid *gridEliminateUnusedNodeGlobal(Grid *grid )
       offset++;
     }
     if (grid->unusedNodeGlobal[offset]==grid->sortedGlobal[sort]) {
-      printf("ERROR: %s: %d: Global Node %d exists in sortedGlobal.\n",
-	     __FILE__,__LINE__,grid->unusedNodeGlobal[offset]);
+      printf("ERROR: %s: %d: Global Node %d exists in sortedGlobal.%d\n",
+	     __FILE__,__LINE__,grid->unusedNodeGlobal[offset],gridPartId(grid));
     }
     node = grid->sortedLocal[sort];
     grid->nodeGlobal[node] -= offset;
