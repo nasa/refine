@@ -1582,12 +1582,12 @@ class TestLayer < Test::Unit::TestCase
 #    / |   | \
 #    / 0---5 \
 #   / /     \ \
-#   //   1   \\
+#   //   4   \\
 #   6   / \   2
-#      4---7
+#      1---7
 
   assert_equal 3,         layer.blendDegree(0)
-  assert_equal [0, 1, 5], layerOrderedVertexNodes(0)
+  assert_equal [4, 5, 0], layer.orderedVertexNormals(0)
   layer.advanceConstantHeight(0.1)
   layer.writeTecplotFrontGeometry
   assert_equal 10, layer.ntriangle  
