@@ -2193,8 +2193,7 @@ int gridAddNode(Grid *grid, double x, double y, double z )
 Grid *gridRemoveNode(Grid *grid, int node )
 {
   int index, removepoint;
-  if (node < 0 || node>grid->maxnode) return NULL;
-  if (DBL_MAX == grid->xyz[0+3*node]) return NULL;
+  if (!gridValidNode(grid,node)) return NULL;
   grid->nnode--;
   grid->xyz[0+3*node] = DBL_MAX;
   grid->xyz[1+3*node] = (double)grid->blanknode;
