@@ -20,10 +20,6 @@ AC_ARG_WITH(OpenCASCADE,
 	[  --with-OpenCASCADE[=ARG]  use OpenCASCADE kernel [ARG=CASROOT]],
 	[with_OpenCASCADE=$withval], [with_OpenCASCADE=$CASROOT])
 
-AC_ARG_WITH(FELISA,
-	[  --with-FELISA[=ARG]       use FELISA lib [ARG=FELISA_LIB]],
-	[with_FELISA=$withval],      [with_FELISA=$FELISA_LIB])
-
 AC_PROG_RANLIB
 
 AC_PROG_CC
@@ -164,26 +160,5 @@ fi
 AC_SUBST([CAPRIOpenCASCADElibrary])
 
 AC_SUBST([GridExKernels])
-
-dnl Check for FELISA header
-
-have_FELISA='no'
-if test "$with_FELISA" != 'no' 
-then
-  AC_CHECK_FILE([$with_FELISA/include/MG_util.h],
-                [have_FELISA='yes'],[have_FELISA='no'])
-fi
-
-if test "$have_FELISA" != 'no'
-then
-  AC_DEFINE([HAVE_FELISA])
-  FELISAheader=-I$with_FELISA/include
-  FELISAlibrary="-L$with_FELISA/lib -lFELISA"
-else
-  FELISAheader=
-  FELISAlibrary=
-fi 
-AC_SUBST([FELISAheader])
-AC_SUBST([FELISAlibrary])
 
 AC_OUTPUT(Makefile src/Makefile)
