@@ -203,8 +203,6 @@ end
 
  end
 
- # gaps in the equator
- 
  # make register unique
 
  # allocating a new chunk of celllist
