@@ -514,7 +514,8 @@ Layer *layerInitializeNormal(Layer *layer, int normal)
   layer->normal[normal].height = 1.0;
   layer->normal[normal].initialheight = layer->normal[normal].height;
   layer->normal[normal].length = 0.0;
-  layer->normal[normal].maxlength = 0.0;
+  layer->normal[normal].maxlength = 1.0;
+  layer->normal[normal].rate = 1.0;
   layer->normal[normal].terminated = FALSE;
 
   return layer;
@@ -540,6 +541,7 @@ int layerDuplicateNormal(Layer *layer, int normal)
   layer->normal[newone].initialheight = layer->normal[normal].initialheight;
   layer->normal[newone].length =        layer->normal[normal].length;
   layer->normal[newone].maxlength =     layer->normal[normal].maxlength;
+  layer->normal[newone].rate =          layer->normal[normal].rate;
   layer->normal[newone].terminated =    layer->normal[normal].terminated;
 
   return newone;
@@ -969,7 +971,8 @@ Layer *layerSetPolynomialMaxHeight(Layer *layer,
   return layer;	
 }
 
-Layer *layerSaveInitalNormalHeight(Layer *layer){
+Layer *layerSaveInitalNormalHeight(Layer *layer)
+{
   int normal;
 
   for(normal=0;normal<layerNNormal(layer);normal++)
@@ -978,6 +981,32 @@ Layer *layerSaveInitalNormalHeight(Layer *layer){
   return layer;
 }
 
+Layer *layerSetNormalRate(Layer *layer, int normal, double rate)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
+  layer->normal[normal].rate=rate;
+
+  return layer;
+}
+
+Layer *layerSetNormalHeightWithRate(Layer *layer)
+{
+  int normal;
+  double length;
+
+  for(normal=0;normal<layerNNormal(layer);normal++){
+
+    length = layer->normal[normal].length / layer->normal[normal].maxlength;
+
+    layer->normal[normal].height = 
+      layer->normal[normal].initialheight * 
+      pow(layer->normal[normal].rate,length);
+    
+  }
+
+  return layer;
+}
 
 Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 {
