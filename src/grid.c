@@ -595,17 +595,20 @@ Grid *gridSwap(Grid *grid)
   int cellId, nodes[4];
   for (cellId=0;cellId<grid->maxcell;cellId++){
     if ( NULL != gridCell( grid, cellId, nodes) )
-      gridSwapEdge( grid, nodes[0], nodes[1] );
-    if ( NULL != gridCell( grid, cellId, nodes) )
-      gridSwapEdge( grid, nodes[0], nodes[2] );
-    if ( NULL != gridCell( grid, cellId, nodes) )
-      gridSwapEdge( grid, nodes[0], nodes[3] );
-    if ( NULL != gridCell( grid, cellId, nodes) )
-      gridSwapEdge( grid, nodes[1], nodes[2] );
-    if ( NULL != gridCell( grid, cellId, nodes) )
-      gridSwapEdge( grid, nodes[1], nodes[3] );
-    if ( NULL != gridCell( grid, cellId, nodes) )
-      gridSwapEdge( grid, nodes[2], nodes[3] );
+      if ( gridAR(grid, nodes) < 0.5 ) {
+	if ( NULL != gridCell( grid, cellId, nodes) )
+	  gridSwapEdge( grid, nodes[0], nodes[1] );
+	if ( NULL != gridCell( grid, cellId, nodes) )
+	  gridSwapEdge( grid, nodes[0], nodes[2] );
+	if ( NULL != gridCell( grid, cellId, nodes) )
+	  gridSwapEdge( grid, nodes[0], nodes[3] );
+	if ( NULL != gridCell( grid, cellId, nodes) )
+	  gridSwapEdge( grid, nodes[1], nodes[2] );
+	if ( NULL != gridCell( grid, cellId, nodes) )
+	  gridSwapEdge( grid, nodes[1], nodes[3] );
+	if ( NULL != gridCell( grid, cellId, nodes) )
+	  gridSwapEdge( grid, nodes[2], nodes[3] );
+      }
   }
   return grid;
 }
