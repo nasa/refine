@@ -372,7 +372,7 @@ Grid *gridStoredARDerivative( Grid *g, int index, double *dARdX );
 Grid *gridFreezeLinesNodes(Grid *g);
 Grid *gridReportLinesLocation(Grid *g);
 
-Grid *gridCopyAboutY0(Grid *g);
+Grid *gridCopyAboutY0(Grid *g, int symmetryFace, int mirrorAux );
 
 END_C_DECLORATION
 

@@ -134,7 +134,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
   if ( copyGridY ) {
     printf("copy grid about y=0.\n");
-    gridCopyAboutY0(grid);
+    gridCopyAboutY0(grid,EMPTY,EMPTY);
     printf("total grid size: %d nodes %d faces %d cells.\n",
 	   gridNNode(grid),gridNFace(grid),gridNCell(grid));
   }

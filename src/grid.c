@@ -3361,7 +3361,7 @@ Grid *gridReportLinesLocation(Grid *grid)
   return grid;
 }
 
-Grid *gridCopyAboutY0(Grid *grid)
+Grid *gridCopyAboutY0(Grid *grid, int symmetryFace, int mirrorAux )
 {
   int node, orignode, origface, origcell;
   int *o2n;
@@ -3392,7 +3392,7 @@ Grid *gridCopyAboutY0(Grid *grid)
   origface = gridNFace(grid);
   for ( face = 0 ; face < origface ; face++ ){
     gridFace(grid,face,nodes,&faceid);
-    if ( faceid == 5 || faceid == 6 ) {
+    if ( faceid == symmetryFace ) {
       for (i=0;i<3;i++){
 	node = nodes[i];
 	if (o2n[node] >= orignode){
@@ -3422,8 +3422,7 @@ Grid *gridCopyAboutY0(Grid *grid)
   printf("gridCopyAboutY0: remove sym face\n");
 
   gridThawAll(grid);
-  gridDeleteThawedFaces(grid,5);
-  gridDeleteThawedFaces(grid,6);
+  gridDeleteThawedFaces(grid,symmetryFace);
 
   free(o2n);
     
