@@ -536,6 +536,20 @@ int layerConstrainedSide(Layer *layer, int front, int side )
   return layer->front[front].constrainedSide[side];
 }
 
+int layerNConstrainedSides(Layer *layer, int faceId )
+{
+  int front, i, nside;
+
+  if (faceId==0) return 0;
+  nside = 0;
+  for (front=0;front<layerNFront(layer);front++){
+    for(i=0;i<3;i++){
+      if (layerConstrainedSide(layer,front,i)==faceId) nside++;
+    }
+  }
+  return nside;
+}
+
 Layer *layerTerminateNormal(Layer *layer, int normal )
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;

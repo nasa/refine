@@ -76,9 +76,9 @@ class TestLayer < Test::Unit::TestCase
 
  def testConstrainNormals
   assert_not_nil        grid = Grid.new(6,0,3,0)
-  assert_equal grid,    grid.addFace(1,2,3,1)
-  assert_equal grid,    grid.addFace(1,2,4,2)
-  assert_equal grid,    grid.addFace(3,4,5,3)
+  assert_equal grid,    grid.addFace(0,1,2,1)
+  assert_equal grid,    grid.addFace(0,1,3,2)
+  assert_equal grid,    grid.addFace(0,3,4,773)
   assert_not_nil        layer = Layer.new(grid)
   assert_equal layer,   layer.makeFront([1,2])
   assert_equal 2,       layer.nfront
@@ -90,11 +90,14 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,       layer.constrained(1)
   assert_equal 0,       layer.constrained(2)
   assert_equal 0,       layer.constrained(3)
-  assert_equal layer,   layer.constrainNormal(3)
-  assert_equal 0,       layer.constrained(0)
+  assert_equal layer,   layer.constrainNormal(773)
+  assert_equal 773,     layer.constrained(0)
   assert_equal 0,       layer.constrained(1)
-  assert_equal 3,       layer.constrained(2)
-  assert_equal 3,       layer.constrained(3)
+  assert_equal 0,       layer.constrained(2)
+  assert_equal 773,     layer.constrained(3)
+
+  assert_equal 0,       layer.nConstrainedSides(0)
+  assert_equal 1,       layer.nConstrainedSides(773)
  end
 
  def testConstrainNormalForEdge

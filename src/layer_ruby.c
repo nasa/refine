@@ -182,6 +182,12 @@ VALUE layer_constrainedSide( VALUE self, VALUE front, VALUE side )
   return INT2NUM(layerConstrainedSide(layer,NUM2INT(front),NUM2INT(side)));
 }
 
+VALUE layer_nConstrainedSides( VALUE self, VALUE faceId )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerNConstrainedSides(layer,NUM2INT(faceId)));
+}
+
 VALUE layer_terminateNormal( VALUE self, VALUE normal )
 {
   GET_LAYER_FROM_SELF;
@@ -229,6 +235,7 @@ void Init_Layer()
   rb_define_method( cLayer, "constrainFrontSide", layer_constrainFrontSide, 3 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
   rb_define_method( cLayer, "constrainedSide", layer_constrainedSide, 2 );
+  rb_define_method( cLayer, "nConstrainedSides", layer_nConstrainedSides, 1 );
   rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );
   rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 1 );

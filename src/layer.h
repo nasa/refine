@@ -40,6 +40,7 @@ Layer *layerConstrainNormal(Layer *, int bc );
 Layer *layerConstrainFrontSide(Layer *, int normal0, int normal1, int bc );
 int layerConstrained(Layer *, int normal );
 int layerConstrainedSide(Layer *, int front, int side );
+int layerNConstrainedSides(Layer *, int faceId );
 Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
 int layerNActiveNormal(Layer *);
