@@ -392,10 +392,8 @@ class TestGridCAD < Test::Unit::TestCase
   grid = gemGrid 4, 5.0, 0
   avgVol = grid.totalVolume/grid.ncell.to_f
   puts
-  puts grid.minVolume
-  grid.smartVolumeLaplacian(6)
-  puts grid.minVolume
-  puts avgVol
+  grid.smoothNodeVolume(6)
+  assert_in_delta avgVol, grid.minVolume, 1.0e-8 
  end
 
 end

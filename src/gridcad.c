@@ -1109,7 +1109,33 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
 
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
+  int s, i;
+  double origXYZ[3];
+  double simplex[4][3];
+  double volume[4];
+  double lengthScale;
 
-  return gridSmartVolumeLaplacian( grid, node );
+  gridSmartVolumeLaplacian( grid, node );
+
+  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
+
+  lengthScale = gridAverageEdgeLength(grid, node );
+
+  for(s=0;s<4;s++)
+    for(i=0;i<3;i++)
+      simplex[s][i] = origXYZ[i];
+
+  simplex[1][0] += lengthScale;
+  simplex[2][1] += lengthScale;
+  simplex[3][2] += lengthScale;
+
+  for(s=0;s<4;s++) {
+    gridSetNodeXYZ(grid, node, simplex[s]);
+    gridNodeVolume(grid,node,&volume[s]);
+    printf("%2d x%10.6f y%10.6f z%10.6f v%10.6f\n",
+	   s, simplex[s][0], simplex[s][1], simplex[s][2], volume[s]);
+  }
+
+  return grid;
 
 }
