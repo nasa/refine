@@ -28,6 +28,11 @@ void gridCrossProduct(double *edge1, double *edge2, double *norm)
   norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
 }
 
+double gridVectorLength(double *v)
+{
+  return sqrt( v[0]*v[0] +  v[1]*v[1] + v[2]*v[2] );
+}
+
 void gridVectorNormalize(double *norm)
 {
   double length;

@@ -43,6 +43,14 @@ static VALUE grid_crossProduct( VALUE self, VALUE rb_v1, VALUE rb_v2)
   return rb_result;
 }
 
+static VALUE grid_vectorLength( VALUE self, VALUE rb_vect )
+{
+  int i;
+  double vect[3];
+  for (i=0;i<3;i++) vect[i] = NUM2DBL(rb_ary_entry(rb_vect, i));
+  return rb_float_new(gridVectorLength(vect));
+}
+
 static VALUE grid_vectorNormalize( VALUE self, VALUE rb_vect )
 {
   int i;
@@ -62,5 +70,6 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "subtractVector", grid_subtractVector, 2 );
   rb_define_method( cGridMath, "dotProduct", grid_dotProduct, 2 );
   rb_define_method( cGridMath, "crossProduct", grid_crossProduct, 2 );
+  rb_define_method( cGridMath, "vectorLength", grid_vectorLength, 1 );
   rb_define_method( cGridMath, "vectorNormalize", grid_vectorNormalize, 1 );
 }

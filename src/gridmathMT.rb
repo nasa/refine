@@ -43,6 +43,13 @@ class TestGridMath < Test::Unit::TestCase
   assert_equal [0,0,0], @gm.crossProduct(v2,v2)
  end
 
+ def testVectorLength
+  assert_equal 5, @gm.vectorLength([3,4,0])
+  assert_equal 0, @gm.vectorLength([0,0,0])
+  assert_equal 1, @gm.vectorLength([1,0,0])
+  assert_equal 10, @gm.vectorLength([0,10,0])
+ end
+
  def testNormalizeVector
   assert_equal [1,0,0], @gm.vectorNormalize([5,0,0])
   assert_equal [0,1,0], @gm.vectorNormalize([0,6,0])

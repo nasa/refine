@@ -17,6 +17,7 @@ BEGIN_C_DECLORATION
 void gridSubtractVector(double *v1, double *v2, double *result);
 double gridDotProduct(double *v1, double *v2);
 void gridCrossProduct(double *norm, double *edge1, double *edge2);
+double gridVectorLength(double *norm);
 void gridVectorNormalize(double *norm);
 
 END_C_DECLORATION
