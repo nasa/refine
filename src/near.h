@@ -20,7 +20,7 @@ BEGIN_C_DECLORATION
 typedef struct Near Near;
 
 Near *nearCreate(int index, double x, double y, double z, double radius );
-void adjFree( Near *near );
+void nearFree( Near *near );
 int nearIndex( Near *near );
 int nearRightIndex( Near *near );
 int nearLeftIndex( Near *near );
