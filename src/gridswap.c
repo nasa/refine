@@ -361,6 +361,7 @@ Grid *gridSwap(Grid *grid, double improvementLimit)
   maxcell = gridMaxCell(grid);
 
   for (cellId=0;cellId<maxcell;cellId++){
+    gridRemoveTwoFaceCell(grid, NULL, cellId );
     if ( grid == gridCell( grid, cellId, nodes) && 
 	 gridAR(grid, nodes) < improvementLimit) {
       swap = TRUE;
