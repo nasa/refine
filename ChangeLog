@@ -1,3 +1,9 @@
+2005-02-02 09:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (REQUIRED_IMPROVEMENT) made the value very small,
+	1.0e-12, so that the maximum possible swaps are allowed. The more
+	swaps that take place the better that the edge based scheme does.
+
 2005-02-01 22:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (REQUIRED_IMPROVEMENT) added a #define to require
