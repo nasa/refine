@@ -84,12 +84,17 @@ Grid *gridLoadPart( char *project )
   Grid *grid;
   int vol=1;
   UGridPtr ugrid;
+  CADCurvePtr edge;
   int gridDimensions[3];
-  int nnode, nface, ncell;
-  int maxnode, maxface, maxcell;
-  int i;
+  int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
+  int nedgenode;
+  int nnode, nface, ncell, nedge;
+  int maxnode, maxface, maxcell, maxedge;
+  int i, iedge, inode;
   double *xyz;
   int *c2n, *f2n, *faceId;
+  double trange[2];
+  int edgeEndPoint[2];
 
   printf("calling CADGeom_Start ... \n");
   if ( ! CADGeom_Start( ) ){
@@ -117,14 +122,27 @@ Grid *gridLoadPart( char *project )
   nface = gridDimensions[1];
   ncell = gridDimensions[2];
 
-  printf("ugrid size: %d nodes %d faces %d cells.\n",nnode,nface,ncell);
+  if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) ) {
+    printf("ERROR: CADGeom_GetVolume. \n%s\n",ErrMgr_GetErrStr());
+  }
+
+  nedge =0 ;
+  for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
+    if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) 
+      printf("ERROR: CADGeom_EdgeGrid(%d).\n%s\n",iedge,ErrMgr_GetErrStr());
+    nedge += (CADCURVE_NUMPTS(edge)-1);
+  }
+
+  printf("ugrid size: %d nodes %d faces %d cells %d edge elements.\n",
+	 nnode,nface,ncell,nedge);
 
   maxnode = nnode * 100;
   maxface = nface * 100;
   maxcell = ncell * 100;
+  maxedge = nedge * 100;
 
-  printf("max grid size: %d nodes %d faces %d cells.\n",
-	 maxnode,maxface,maxcell);
+  printf("max grid size: %d nodes %d faces %d cells %d edge elements.\n",
+	 maxnode,maxface,maxcell,maxedge);
 
   c2n    = malloc( maxcell * 4 * sizeof(int) );
   f2n    = malloc( maxface * 3 * sizeof(int) );
@@ -151,8 +169,39 @@ Grid *gridLoadPart( char *project )
     c2n[3+4*i] = UGrid_TetValue(ugrid,i,3);
   }
 
-  return gridImport( maxnode,nnode, maxface, nface, maxcell, ncell,
+  grid = gridImport( maxnode, nnode, maxface, nface, 
+		     maxcell, ncell, maxedge,
 		     xyz, f2n, faceId, c2n );
+
+  inode = nGeomNode;
+
+  for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
+    if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) 
+      printf("ERROR: CADGeom_EdgeGrid(%d).\n%s\n",iedge,ErrMgr_GetErrStr());
+ 
+    nedgenode = CADCURVE_NUMPTS(edge);
+
+    CADGeom_GetEdge( vol, iedge, trange, edgeEndPoint );
+
+    edgeEndPoint[0]--; /* convert from fortran to c numbers */
+    edgeEndPoint[1]--;
+
+    if (nedgenode == 2) {
+      gridAddEdge(grid, edgeEndPoint[0], edgeEndPoint[1], iedge);
+    }else{
+      gridAddEdge(grid, edgeEndPoint[0], inode, iedge);
+      for( i=0 ; i < (nedgenode-3) ; i++ ) {  
+	gridAddEdge(grid, inode, inode+1, iedge);
+	inode++;
+      }
+      gridAddEdge(grid, inode, edgeEndPoint[1], iedge);
+    }
+  }
+
+  if ( nedge != gridNEdge(grid) )
+    printf("ERROR: nedge != gridNEdge(grid)\n");
+
+  return grid;
 }
  
 int gridSavePart( Grid *grid, char *project )
