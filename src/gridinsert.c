@@ -30,6 +30,31 @@ Grid *gridThrash(Grid *grid)
   return grid;
 }
 
+Grid *gridRemoveAllNodes(Grid *grid )
+{
+  AdjIterator it;
+  int n0, i, cell, nodes[4];
+  bool nodeExists;
+
+  for ( n0=0; n0<grid->maxnode; n0++ ) { 
+    if ( gridValidNode(grid, n0) && !gridNodeFrozen(grid, n0) ) {
+      nodeExists = TRUE;
+      for ( it = adjFirst(grid->cellAdj,n0); 
+	    nodeExists && adjValid(it); 
+	    it = adjNext(it) ){
+	cell = adjItem(it);
+	gridCell( grid, cell, nodes);
+	for (i=0;nodeExists && i<4;i++){
+	  if (n0 != nodes[i]) {
+	    nodeExists = (grid == gridCollapseEdge(grid, nodes[i], n0, 1.0));
+	  }
+	}
+      }
+    }
+  }
+  return grid;
+}
+
 Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 {
   AdjIterator it;
