@@ -265,7 +265,8 @@ void gridwritetecplotsurfacezone_( void )
     if (grid==gridCell(grid, cell, nodes)) {
       if ( -0.5 > gridAR(grid,nodes) ) {
 	gridWriteTecplotCellGeom(grid,nodes,filename);
-	printf("cell cost of %f detected in gridwritetecplotsurfacezone_\n");
+	printf("cell cost of %f detected in gridwritetecplotsurfacezone_\n",
+	       gridAR(grid,nodes));
 	printf("proc%4d cell l%12d g%12d\n",
 	       gridPartId(grid),cell,gridCellGlobal(grid,cell));
 	printf("proc%4d cell l%12d local  nodes%10d%10d%10d%10d\n",
