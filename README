@@ -1,5 +1,5 @@
 
-CVS package relase tag $Name$
+CVS package relase tag (version) : $Name$
 
 Refine is a 3D tetrahedral grid adaptation framework. It is
 implemented with an object-oriented flavor in the C language.  Most
@@ -29,4 +29,3 @@ run:
 % export=CVS_RSH ssh  # for sh
 
 % cvs -d :ext:cfdlab.larc.nasa.gov:/ump/fldmd/home/mikepark/cvsroot co -P refine
-
