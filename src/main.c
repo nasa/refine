@@ -12,7 +12,9 @@
 #include <stdio.h>
 #include <values.h>
 #include "grid.h"
+#include "gridmetric.h"
 #include "gridswap.h"
+#include "gridcad.h"
 #include <CADGeom/CADGeom.h>
 
 Grid *gridLoadPart( char *project );
@@ -80,6 +82,14 @@ int main( int argc, char *argv[] )
   gridProject(grid);
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
+
+  printf("edge swapping grid...\n");gridSwap(grid);
+  //printf("node smoothin grid...\n");gridSmooth(grid);
+  printf("edge swapping grid...\n");gridSwap(grid);
+  //  printf("node smoothin grid...\n");gridSmooth(grid);
+  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
+  printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
+
 
   output = "../test/om6_out";
   printf("writing output project %s\n",output);
