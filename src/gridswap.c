@@ -22,6 +22,10 @@ Grid *gridSwapFace(Grid *grid, int n0, int n1, int n2 )
   int i;
   double origcost, bestcost;
 
+  if ( gridNodeFrozen( grid, n0 ) && 
+       gridNodeFrozen( grid, n1 ) && 
+       gridNodeFrozen( grid, n2 ) )return NULL;  
+
   cell0 = gridFindOtherCellWith3Nodes(grid, n0, n1, n2, EMPTY );
   if ( EMPTY == cell0 ) return NULL;
   cell1 = gridFindOtherCellWith3Nodes(grid, n0, n1, n2, cell0 );
