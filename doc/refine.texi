@@ -34,9 +34,9 @@ The refine library overview, version 1.0.
 * Base Objects  :: Base objects for grid.
 * Grid Object   :: The main object: grid.
 * Grid Mix-ins  :: Additional methods for grid object
-* Add Me        :: Documentation Wish List.
 * Running FUN3D :: HOWTO run FUN3D with refine
 * Support       :: Performing support tasts
+* Add Me        :: Documentation Wish List.
 * Index         :: Complete index.
 @end menu
 
@@ -392,26 +392,6 @@ Added functionality for parallel processing.
 
 FORTRAN bindings for FUN3D.
 
-@node Add Me
-@chapter Add Me
-
-Doc wish list
-
-FORTRAN stuff:
-
-parallel scheme (describe refine_interface)
-
-node updates:
-
-
-
-connentivity updates.
-
-
-
-rad_module workflow.
-
-
 @node Running FUN3D
 @chapter Running FUN3D
 @cindex FUN3D, Running
@@ -479,11 +459,11 @@ connnectivites (elements not near ghost nodes) are modified. This
 parallel internal pass is performed by setting the first argument
 (processor) to -1 for gridparallelswap. 
 
-If new elements or nodes are created. They are assigned global
+When new elements or nodes are created, they are assigned global
 numbering by incrementing the total global count of nodes or
 elements. This leads to overlaps in the global numberings of different
-elements on different processors. This overlap is fixed shifting the
-global numbering with the sync_global_numbering subroutine, which
+elements on different processors. This overlap is fixed by shifting
+the global numbering with the sync_global_numbering subroutine, which
 requires the global node and cell count from before the connectitives
 where changed.
 
@@ -498,6 +478,12 @@ processor and then serialized with queueDump. This serialized object
 is broadcast, reinstated, and used to update other processors
 (gridApplyQueue).
 
+Note that the number of global nodes and cells is only incremented in
+this process. Removed global numbering are stored locally on each
+processor for reuse. Therefore, when a processor takes ownership of a
+global numbering is always has it and no other processor can use
+it. These unused global numberings are cleaned up at the end of the
+adaptation process with eliminate_unused_globals.
 
 @section Initial notes on building and executing HEFSS with the rad mesh adapation option.
 
@@ -664,6 +650,15 @@ configured the package.
 
 After you have created a distribution increment the version string at
 the top of configure.ac to the next test release.
+
+@node Add Me
+@chapter Add Me
+
+Put your documentation wish list here.
+
+@enumerate
+@item FORTRAN stuff: rad_module workflow.
+@end enumerate
 
 @node Index
 @unnumbered Index
