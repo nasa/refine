@@ -2,6 +2,14 @@
 
 Works with FUN3D Version(s): **SomeFUN3DVersion**
 
+Tue Jan 18, 2005: Released Refine 1.2.4
+
+** internal release ** 
+To save stable snapshot before merging the -DSURFACE_VALIDITY path
+into the mainline code.
+Continued unit mesh research into edge based adaptation and
+curved boundary Jacobian validity checks.
+
 Mon Oct 18, 2004: Released Refine 1.2.3
 
 ** internal release **
