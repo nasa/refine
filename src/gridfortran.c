@@ -470,8 +470,8 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
     if (nodes[node] > 0) {
       localnode = gridGlobal2Local(grid, nodes[node]-1);
       if (grid != gridNodeXYZ(grid,localnode,xyz)) 
-	printf("ERROR: %s: %d: get xyz from invalid node local %d global %d.\n",
-	       __FILE__, __LINE__, localnode, nodes[node]-1);
+	printf("%d: ERROR: %s: %d: get xyz from invalid node local %d global %d.\n",
+	       gridPartId(grid),__FILE__, __LINE__, localnode, nodes[node]-1);
       data[0+(*ndim)*node] = xyz[0];
       data[1+(*ndim)*node] = xyz[1];
       data[2+(*ndim)*node] = xyz[2];
