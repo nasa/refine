@@ -25,7 +25,7 @@ static VALUE Sort_Heap( VALUE self, VALUE rb_arrayInput )
   return rb_sortedIndex;
 }
 
-static VALUE Sort_Search( VALUE self, VALUE rb_arrayInput, VALUE index )
+static VALUE Sort_Search( VALUE self, VALUE rb_arrayInput, VALUE target )
 {
   int i, length, found;
   int *arrayInput;
@@ -35,7 +35,7 @@ static VALUE Sort_Search( VALUE self, VALUE rb_arrayInput, VALUE index )
   arrayInput = malloc(length*sizeof(int));
   for(i=0;i<length;i++) arrayInput[i]=NUM2INT(rb_ary_entry(rb_arrayInput,i));
 
-  found = sortSearch( length, arrayInput, index );
+  found = sortSearch( length, arrayInput, NUM2INT(target) );
 
   free(arrayInput);
 
