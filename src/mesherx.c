@@ -69,7 +69,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   direction[2] = 0.0;
   layerSetPolynomialMaxHeight(layer, 0.35, 0.0, 1.0, 
 			      origin, direction );
-  layerAssignPolynomialNormalHeight(layer, 1.0e-4, 0.0, 1.0,
+  layerAssignPolynomialNormalHeight(layer, 1.0e-2, 0.0, 1.0,
                                     origin, direction );
   layerScaleNormalHeight(layer,scale);
   layerSaveInitialNormalHeight(layer);
