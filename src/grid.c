@@ -20,16 +20,16 @@ struct Grid {
   long *celllist;
 };
 
-Grid* gridCreate(long nnode, long ncell)
+Grid* gridCreate(long nnode, long ncell, long nlist)
 {
-  long i, nlist;
+  long i;
   Grid *grid;
 
   grid = malloc(sizeof(Grid));
 
   grid->nnode = nnode;
   grid->ncell = ncell;
-  nlist = (grid->ncell*4+grid->nnode)+1;
+  if (nlist < 1) nlist = (grid->ncell*4+grid->nnode)+1;
 
   grid->firstcell = malloc(grid->nnode * sizeof(long));
   for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = nlist-1;

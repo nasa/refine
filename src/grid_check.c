@@ -16,7 +16,7 @@ Grid *grid;
 
 void setup (void)
 {
-  grid = gridCreate(4,1);
+  grid = gridCreate(4,1,0);
 }
 
 void teardown (void)
