@@ -15,6 +15,7 @@
 #include "grid.h"
 
 Grid *gridSwapEdge(Grid *g, int n0, int n1 );
+Grid *gridSwapNearNode(Grid *g, int node );
 Grid *gridSwap(Grid *g );
 
 #endif /* GRIDSWAP_H */
