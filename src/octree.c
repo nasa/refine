@@ -15,6 +15,7 @@
 
 struct Octree {
   double xMin, xMax, yMin, yMax, zMin, zMax;
+  int nOctant;
 };
 
 Octree* octreeCreate( double xMin, double xMax, 
@@ -30,6 +31,7 @@ Octree* octreeCreate( double xMin, double xMax,
   octree->yMax = yMax;
   octree->zMin = zMin;
   octree->zMax = zMax;
+  octree->nOctant=0;
 }
 
 void octreeFree( Octree *octree )
@@ -46,4 +48,9 @@ Octree *octreeBoundingBox( Octree *octree, double *boundingBox )
   boundingBox[4] = octree->zMin;
   boundingBox[5] = octree->zMax;
   return octree;
+}
+
+int octreeNOctant( Octree *octree )
+{
+  return octree->nOctant;
 }

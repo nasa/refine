@@ -35,6 +35,12 @@ VALUE octree_boundingBox( VALUE self )
     rb_ary_store(rb_boundingBox, i, rb_float_new(boundingBox[i]) );
   return rb_boundingBox;
 }
+VALUE octree_nOctant( VALUE self )
+{
+  GET_OCTREE_FROM_SELF;
+  return INT2NUM( octreeNOctant(octree) );
+}
+
 
 VALUE cOctree;
 
@@ -43,4 +49,5 @@ void Init_Octree()
   cOctree = rb_define_class( "Octree", rb_cObject );
   rb_define_singleton_method( cOctree, "new", octree_new, 6 );
   rb_define_method( cOctree, "boundingBox", octree_boundingBox, 0 );
+  rb_define_method( cOctree, "nOctant", octree_nOctant, 0 );
 }

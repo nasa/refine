@@ -24,6 +24,7 @@ Octree *octreeCreate( double xMin, double xMax,
 		      double zMin, double zMax );
 void octreeFree( Octree * );
 Octree *octreeBoundingBox( Octree *, double *boundingBox );
+int octreeNOctant( Octree * );
 
 END_C_DECLORATION
 

@@ -13,9 +13,10 @@ require 'Octree/Octree'
 
 class TestOctree < Test::Unit::TestCase
 
- def testStoreBoundingBox
+ def testInitBoundingBox
   octree = Octree.new(-1,1,4,5,8,9)
   assert_equal [-1,1,4,5,8,9], octree.boundingBox
+  assert_equal 0, octree.nOctant
  end
 
 end
