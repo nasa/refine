@@ -285,7 +285,8 @@ Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
     return NULL;
   }
 
-  /* the new EigTriDiag should be ortho-normal gridEigOrtho3x3( v0, v1, v2 ); */
+  /* the new EigTriDiag should be ortho-normal */
+  gridEigOrtho3x3( v0, v1, v2 );
 
   e0 = sqrt(d[0]);
   e1 = sqrt(d[1]);
