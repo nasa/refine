@@ -130,19 +130,15 @@ VALUE grid_pack( VALUE self )
 
 VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
-#define MAXGEM 200
-  int i, n, ngem;
-  int gem[MAXGEM];
-  VALUE rb_gem, rb_cell;
+  VALUE rb_gem;
+  int i, ngem;
   GET_GRID_FROM_SELF;
-  gridGem( grid, NUM2INT(n0), NUM2INT(n1), MAXGEM/4, &ngem, gem );
-  rb_gem = rb_ary_new();
-  for ( i=0 ; i < ngem ; i++ ) {
-    rb_cell = rb_ary_new2(4);
-    for(n=0;n<4;n++)rb_ary_store(rb_cell,n,INT2NUM(gem[n+4*i]));
-    rb_gem = rb_ary_push( rb_gem, rb_cell );
-  } 
- return rb_gem;
+  gridMakeGem( grid, NUM2INT(n0), NUM2INT(n1) );
+  ngem = gridNGem(grid);
+  rb_gem = rb_ary_new2(ngem);
+  for ( i=0 ; i < ngem ; i++ ) 
+    rb_ary_store( rb_gem, i, INT2NUM(gridGem(grid,i)) );
+  return rb_gem;
 }
 
 VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
