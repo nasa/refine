@@ -959,42 +959,47 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
 
   //test face
   if ( grid->nequ != grid->ngem ){
-    double n0uv[2], n1uv[2], gap0uv[2], gap1uv[2], newnodeuv[2]; 
+    double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
+    double gap0uv[2], gap1uv[2], newId0uv[2], newId1uv[2]; 
     gap0 = grid->equ[0];
     gap1 = grid->equ[grid->ngem];
     face0 = gridFindFace(grid, n0, n1, gap0 );
     face1 = gridFindFace(grid, n0, n1, gap1 );
     faceId0 = gridFaceId(grid, n0, n1, gap0 );
     faceId1 = gridFaceId(grid, n0, n1, gap1 );
-    gridNodeUV(grid,n0,faceId0,n0uv);
-    gridNodeUV(grid,n1,faceId0,n1uv);
+    gridNodeUV(grid,n0,faceId0,n0Id0uv);
+    gridNodeUV(grid,n1,faceId0,n1Id0uv);
+    gridNodeUV(grid,n0,faceId1,n0Id1uv);
+    gridNodeUV(grid,n1,faceId1,n1Id1uv);
     gridNodeUV(grid,gap0,faceId0,gap0uv);
     gridNodeUV(grid,gap1,faceId1,gap1uv);
-    newnodeuv[0] = 0.5 * (n0uv[0]+n1uv[0]);
-    newnodeuv[1] = 0.5 * (n0uv[1]+n1uv[1]);
+    newId0uv[0] = 0.5 * (n0Id0uv[0]+n1Id0uv[0]);
+    newId0uv[1] = 0.5 * (n0Id0uv[1]+n1Id0uv[1]);
+    newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
+    newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
 
     if ( faceId0 == EMPTY || faceId1 == EMPTY ) return NULL;
 
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
     gridAddFaceUV(grid, 
-		  n0, n0uv[0], n0uv[1],
-		  newnode, newnodeuv[0],newnodeuv[1],
+		  n0, n0Id0uv[0], n0Id0uv[1],
+		  newnode, newId0uv[0],newId0uv[1],
 		  gap0, gap0uv[0], gap0uv[1],
 		  faceId0 );
     gridAddFaceUV(grid, 
-		  n1, n1uv[0], n1uv[1], 
+		  n1, n1Id0uv[0], n1Id0uv[1], 
 		  gap0, gap0uv[0], gap0uv[1], 
-		  newnode, newnodeuv[0], newnodeuv[1], 
+		  newnode, newId0uv[0], newId0uv[1], 
 		  faceId0 );
     gridAddFaceUV(grid, 
-		  n0, n0uv[0], n0uv[1], 
+		  n0, n0Id1uv[0], n0Id1uv[1], 
 		  gap1, gap1uv[0], gap1uv[1], 
-		  newnode, newnodeuv[0], newnodeuv[1], 
+		  newnode, newId1uv[0], newId1uv[1], 
 		  faceId1 );
     gridAddFaceUV(grid, 
-		  n1, n1uv[0], n1uv[1], 
-		  newnode, newnodeuv[0], newnodeuv[1], 
+		  n1, n1Id1uv[0], n1Id1uv[1], 
+		  newnode, newId1uv[0], newId1uv[1], 
 		  gap1, gap1uv[0], gap1uv[1], 
 		  faceId1 );
     edge = gridFindEdge(grid,n0,n1);
