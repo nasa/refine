@@ -366,10 +366,17 @@ class TestGrid < Test::Unit::TestCase
   assert_nil         grid.removeFace(1)
   assert_equal 1,    grid.addFace(3, 1, 2, 11)
   assert_equal 2,    grid.nface 
-  assert_equal(-1,   grid.addFace(0, 1, 3, 12) )
-  assert_equal 2,    grid.nface 
   assert_nil         grid.removeFace(3)
+  assert_nil         grid.removeFace(-1)
   assert_equal 2,    grid.nface 
+ end
+
+ def testAddFaceReallocsFaceArray
+  assert_not_nil     grid = Grid.new(4,0,1,0)
+  assert_equal 0,    grid.addFace(0, 1, 2, 10)
+  assert_equal 1,    grid.maxface
+  assert_equal 1,    grid.addFace(3, 1, 2, 11)
+  assert_equal 5001, grid.maxface
  end
 
  def testDeleteFacesWithThawedNodes
