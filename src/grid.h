@@ -81,6 +81,8 @@ struct Grid {
   Quad *quad;
 
   int partId;
+  int globalNNode;
+  int globalNCell;
 
   int nGeomNode;
   int nGeomEdge;
@@ -140,6 +142,10 @@ int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);
 int gridPartId(Grid *g);
 Grid *gridSetPartId(Grid *g, int partId );
+int gridGlobalNNode(Grid *g);
+Grid *gridSetGlobalNNode(Grid *g, int nglobal );
+int gridGlobalNCell(Grid *g);
+Grid *gridSetGlobalNCell(Grid *g, int nglobal );
 int gridCellDegree(Grid *g, int nodeIndex);
 int gridCellGlobal(Grid *g, int cellIndex);
 Grid *gridSetCellGlobal(Grid *g, int cellIndex, int globalIndex );

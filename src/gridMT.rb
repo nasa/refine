@@ -42,12 +42,24 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0, @grid.nprism
   assert_equal 0, @grid.npyramid
   assert_equal 0, @grid.nquad
-  assert_equal 0, @grid.partId  
+  assert_equal 0, @grid.partId
+  assert_equal 0, @grid.globalnnode
+  assert_equal 0, @grid.globalncell
  end
 
  def testSetPartId
   assert_equal @grid, @grid.setPartId(17)
   assert_equal 17,    @grid.partId  
+ end
+
+ def testSetGlobalNNode
+  assert_equal @grid, @grid.setGlobalNNode(293)
+  assert_equal 293,   @grid.globalnnode
+ end
+
+ def testSetGlobalNCell
+  assert_equal @grid, @grid.setGlobalNCell(12567)
+  assert_equal 12567, @grid.globalncell
  end
 
  def testAddCellAndCellDegree

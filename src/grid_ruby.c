@@ -121,6 +121,30 @@ VALUE grid_setPartId( VALUE self, VALUE partId )
   return ( grid == gridSetPartId(grid,NUM2INT(partId))?self:Qnil );
 }
 
+VALUE grid_globalnnode( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridGlobalNNode(grid) );
+}
+
+VALUE grid_setGlobalNNode( VALUE self, VALUE nglobal )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridSetGlobalNNode(grid,NUM2INT(nglobal))?self:Qnil );
+}
+
+VALUE grid_globalncell( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridGlobalNCell(grid) );
+}
+
+VALUE grid_setGlobalNCell( VALUE self, VALUE nglobal )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridSetGlobalNCell(grid,NUM2INT(nglobal))?self:Qnil );
+}
+
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
   GET_GRID_FROM_SELF;
@@ -829,6 +853,10 @@ void Init_Grid()
 
   rb_define_method( cGrid, "partId", grid_partId, 0 );
   rb_define_method( cGrid, "setPartId", grid_setPartId, 1 );
+  rb_define_method( cGrid, "globalnnode", grid_globalnnode, 0 );
+  rb_define_method( cGrid, "setGlobalNNode", grid_setGlobalNNode, 1 );
+  rb_define_method( cGrid, "globalncell", grid_globalncell, 0 );
+  rb_define_method( cGrid, "setGlobalNCell", grid_setGlobalNCell, 1 );
 
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );

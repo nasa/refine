@@ -54,6 +54,8 @@ Grid *gridImport(int maxnode, int nnode,
   grid->maxquad=0;
   grid->quad=NULL;
   grid->partId=0;
+  grid->globalNNode=0;
+  grid->globalNCell=0;
   grid->nGeomNode = 0;
   grid->nGeomEdge = 0;
   grid->nGeomFace = 0;
@@ -973,6 +975,28 @@ int gridPartId(Grid *grid)
 Grid *gridSetPartId(Grid *grid, int partId )
 {
   grid->partId = partId;
+  return grid;
+}
+
+int gridGlobalNNode(Grid *grid)
+{
+  return grid->globalNNode;
+} 
+
+Grid *gridSetGlobalNNode(Grid *grid, int nglobal )
+{
+  grid->globalNNode = nglobal;
+  return grid;
+}
+
+int gridGlobalNCell(Grid *grid)
+{
+  return grid->globalNCell;
+}
+
+Grid *gridSetGlobalNCell(Grid *grid, int nglobal )
+{
+  grid->globalNCell = nglobal;
   return grid;
 }
 
