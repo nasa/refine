@@ -610,6 +610,50 @@ Layer *layerVisibleNormals(Layer *layer)
   return layer;
 }
 
+Layer *layerSmoothNormalDirection(Layer *layer)
+{
+  int normal, iter, triangle, normals[3], total, i;
+  double norm[3], avgdir[3], denom; 
+  AdjIterator it;
+  int minTriangle, lastTriangle;
+
+  if (layerNNormal(layer) == 0 ) return NULL;
+
+  layerProjectNormalsToConstraints(layer);
+
+  for (iter=0;iter<10;iter++){
+    for (normal=0;normal<layerNNormal(layer);normal++){
+      if ( 0 == layerConstrained(layer,normal) ){
+	total = 0;
+	avgdir[0]=0.0;
+	avgdir[1]=0.0;
+	avgdir[2]=0.0;
+	for ( it = adjFirst(layer->adj,normal); 
+	      adjValid(it); 
+	      it = adjNext(it) ){
+	  triangle = adjItem(it);
+	  layerTriangleNormals(layer,triangle,normals);
+	  for (i=0;i<3;i++){
+	    if (normal != normals[i]){
+	      layerNormalDirection(layer,normals[i],norm);
+	      avgdir[0] += norm[0];
+	      avgdir[1] += norm[1];
+	      avgdir[2] += norm[2];
+	      total++;
+	    }
+	  }
+	}
+	denom = 1.0 / (double)total;
+	layer->normal[normal].direction[0] = avgdir[0] * denom;
+	layer->normal[normal].direction[1] = avgdir[1] * denom;
+	layer->normal[normal].direction[2] = avgdir[2] * denom;
+      }
+    }
+  }
+
+  return layer;
+}
+
 Layer *layerProjectNormalsToConstraints(Layer *layer)
 {
   int normal, tipnode, edgeId, faceId;
