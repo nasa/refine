@@ -34,7 +34,10 @@ int main( int argc, char *argv[] )
   int jmax;
   double height;
   char project[256];
-  char adaptfile[256], outputProject[256], outputFAST[256];
+  char adaptfile[256];
+  char linesfile[256];
+  char outputProject[256];
+  char outputFAST[256];
   int i, j, oldSize, newSize;
   int wiggleSteps, wiggle;
   double ratio=1.0;
@@ -50,6 +53,7 @@ int main( int argc, char *argv[] )
   sprintf( project,       "" );
   sprintf( outputProject, "" );
   sprintf( adaptfile,     "" );    
+  sprintf( linesfile,     "" );    
   sprintf( outputFAST,    "" );
 
   i = 1;
@@ -72,6 +76,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-v") == 0 ) {
       i++; minAR = atof(argv[i]);
       printf("-v argument %d: %f\n",i, minAR);
+    } else if( strcmp(argv[i],"-f") == 0 ) {
+      i++; sprintf( linesfile, "%s", argv[i] );
+      printf("-l argument %d: %s\n",i, linesfile);
     } else if( strcmp(argv[i],"-i") == 0 ) {
       debugInsert = TRUE;
       printf("-i argument %d\n",i);
@@ -90,6 +97,7 @@ int main( int argc, char *argv[] )
       printf(" -r initial edge length ratio for adapt\n");
       printf(" -i insert final advancing layer (debug)\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
+      printf(" -f freeze nodes in this .lines file\n");
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
       return(0);
@@ -117,8 +125,16 @@ int main( int argc, char *argv[] )
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
+  if(strcmp(linesfile,"")!=0) {
+    printf("loading lines from file %s\n",linesfile);
+    linesLoad(gridLines(grid), linesfile);
+    printf("freezing line nodes...\n");
+    gridFreezeLinesNodes(grid);
+    printf("nodes frozen %d\n",gridNFrozen(grid));
+  }
+
   if (minAR > 0) {
-    printf("freezing cells wiht AR smaller than %f\n",minAR);
+    printf("freezing cells with AR smaller than %f\n",minAR);
     gridFreezeSmallARCells(grid, minAR);
   }
 
