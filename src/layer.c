@@ -2130,7 +2130,8 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
 {
   int i, node0, node1, n0, n1;
   bool newEdge;
-  int edge, nodes[2], excludeId, edgeId;
+  int blend;
+  int edge, nodes[2], excludeId, edgeId, side;
   AdjIterator it;
   Grid *grid;
   grid=layerGrid(layer);
@@ -2155,32 +2156,34 @@ Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
     if ( ( node0 == n0 && node1 == n1 ) ||
 	 ( node0 == n1 && node1 == n0 ) ){
       newEdge=FALSE;
-      layer->blend[i].normal[2] = normal1;
-      layer->blend[i].normal[3] = normal0;
+      blend = i;
+      layer->blend[blend].normal[2] = normal1;
+      layer->blend[blend].normal[3] = normal0;
     }
   }
-  if (newEdge){
-    layer->blend[layer->nblend].nodes[0] = n0;
-    layer->blend[layer->nblend].nodes[1] = n1;
-    layer->blend[layer->nblend].normal[0] = normal0;
-    layer->blend[layer->nblend].normal[1] = normal1;
-    edge = gridFindEdge(grid,n0,n1);
-    excludeId=0;
-    gridEdge(grid,edge,nodes,&excludeId);
-    layer->blend[layer->nblend].edgeId[0] = EMPTY;
-    for ( it = adjFirst(gridEdgeAdj(grid),n0); adjValid(it); it=adjNext(it) ){
-      edge = adjItem(it);
-      gridEdge(grid,edge,nodes,&edgeId);
-      if (edgeId != excludeId) layer->blend[layer->nblend].edgeId[0] = edgeId;
-    }
-    layer->blend[layer->nblend].edgeId[1] = EMPTY;
-    for ( it = adjFirst(gridEdgeAdj(grid),n1); adjValid(it); it=adjNext(it) ){
-      edge = adjItem(it);
-      gridEdge(grid,edge,nodes,&edgeId);
-      if (edgeId != excludeId) layer->blend[layer->nblend].edgeId[1] = edgeId;
-    }
 
+  if (newEdge){
+    blend = layer->nblend;
+    layer->blend[blend].nodes[0] = n0;
+    layer->blend[blend].nodes[1] = n1;
+    layer->blend[blend].normal[0] = normal0;
+    layer->blend[blend].normal[1] = normal1;
+    layer->blend[blend].edgeId[0] = EMPTY;
+    layer->blend[blend].edgeId[1] = EMPTY;
     layer->nblend++;
+  }
+
+  edge = gridFindEdge(grid,n0,n1);
+  excludeId=0;
+  gridEdge(grid,edge,nodes,&excludeId);
+  
+  side = 1;
+  if (newEdge) side = 0;
+
+  for ( it = adjFirst(gridEdgeAdj(grid),n0); adjValid(it); it=adjNext(it) ){
+    edge = adjItem(it);
+    gridEdge(grid,edge,nodes,&edgeId);
+    if (edgeId != excludeId) layer->blend[blend].edgeId[side] = edgeId;
   }
 
   return layer;
