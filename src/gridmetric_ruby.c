@@ -434,6 +434,24 @@ VALUE grid_cellMeanRatioDerivative( VALUE self, VALUE rb_n0, VALUE rb_n1,
   return rb_mr;
 }
 
+VALUE grid_collapseCost( VALUE self, VALUE node0, VALUE node1 )
+{
+  double currentCost, node0Cost, node1Cost;
+  VALUE rb_cost;
+  Grid *rGrid;
+  GET_GRID_FROM_SELF;
+  if ( grid == gridCollapseCost( grid, NUM2INT(node0), NUM2INT(node1),
+				 &currentCost, &node0Cost, &node1Cost ) ) {
+    rb_cost = rb_ary_new2(3);
+    rb_ary_store( rb_cost, 0, rb_float_new(currentCost) );
+    rb_ary_store( rb_cost, 1, rb_float_new(node0Cost) );
+    rb_ary_store( rb_cost, 2, rb_float_new(node1Cost) );
+  }else{
+    rb_cost = Qnil;
+  }
+  return rb_cost;
+}
+
 VALUE cGridMetric;
 
 void Init_GridMetric() 
@@ -485,4 +503,5 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "nodeFaceMRDerivative", grid_nodeFaceMRDerivative, 1);
   rb_define_method( cGridMetric, "cellMeanRatio", grid_cellMeanRatio, 4 );
   rb_define_method( cGridMetric, "cellMeanRatioDerivative", grid_cellMeanRatioDerivative, 4 );
+  rb_define_method( cGridMetric, "collapseCost", grid_collapseCost, 2 );
 }

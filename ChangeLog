@@ -1,3 +1,11 @@
+
+In process stuff(not working yet):
+
+	* src/gridmetric.c (gridCollapseCost) to compute current cost
+	excluding the target edge and the cost after the edge is 
+	collapsed to node0 and node1.
+	
+
 2004-10-15 10:48 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridCloseTecplotFile) added to allow multiple plots

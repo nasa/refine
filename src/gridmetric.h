@@ -102,6 +102,9 @@ void gridCellMeanRatioDerivative( double *xyz0, double *xyz1,
 				  double *xyz2, double *xyz3,
 				  double *mr, double *dMRdx);
 
+Grid *gridCollapseCost(Grid *g, int node0, int node1, double *currentCost, 
+		       double *node0Cost, double *node1Cost);
+
 END_C_DECLORATION
 
 #endif /* GRIDMETRIC_H */

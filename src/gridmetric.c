@@ -2043,3 +2043,13 @@ void gridCellMeanRatioDerivative( double *xyz0, double *xyz1,
   dMRdx[1] = (d*dndy-n*dddy)*d2;
   dMRdx[2] = (d*dndz-n*dddz)*d2;
 }
+
+Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost, 
+		       double *node0Cost, double *node1Cost)
+{
+  *currentCost = 0.0;
+  *node0Cost = 0.0;
+  *node1Cost = 0.0;
+  return grid;
+}
+

@@ -33,6 +33,18 @@ class TestGridMetric < Test::Unit::TestCase
   grid
  end
 
+ def rightTet2
+  grid = Grid.new(5,2,2,0)
+  grid.addCell( 
+	       grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+  grid.addNode(-1.0,0.0,0.0)
+  grid.addCell(4,0,2,3)
+  grid
+ end
+
  def isoTet
   grid = Grid.new(4,1,0,0)
   grid.addNode( 0.000, 0.000, 0.000 )
@@ -612,8 +624,27 @@ class TestGridMetric < Test::Unit::TestCase
 
   assert_in_delta grid.cellMeanRatio(node0,node1,node2,node3), 
    ans[0], 1.0e-15, "function"
- 
+ end
 
+ def testCostAfterCollapse
+  grid = rightTet2
+
+  tol = 1.0e-10
+
+  ratio = Math::sqrt(2)
+  err = (1.0-ratio)/(1.0+ratio)
+  cost = 1.0/(1.0+err.abs)
+
+  ans = grid.collapseCost(0,1)
+  assert_equal cost, ans[0], tol
+  assert_equal cost, ans[1], tol
+
+  ratio = 2.0
+  err = (1.0-ratio)/(1.0+ratio)
+  cost = 1.0/(1.0+err.abs)
+  tol = 1.0e-10
+
+  assert_equal cost, ans[2], tol
  end
 
 end
