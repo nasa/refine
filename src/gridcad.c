@@ -301,19 +301,37 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 
 Grid *gridSmoothNearNode(Grid *grid, int node )
 {
+#define SMOOTHDEG (500)
   int i, nodes[4];
+  int nlist, look, nodelist[SMOOTHDEG];
+  bool looking;
   AdjIterator it;
 
   if (!gridValidNode(grid,node)) return NULL;
-
+  
+  nlist =0;
   for ( it = adjFirst(grid->cellAdj,node); 
 	adjValid(it); 
 	it = adjNext(it) ){
     gridCell(grid, adjItem(it), nodes);
-    for (i=0;i<4;i++)
-	if (!gridNodeFrozen( grid, nodes[i])) 
-	  gridSmoothNode( grid, nodes[i]);
+    for (i=0;i<4;i++) {
+      if (!gridNodeFrozen( grid, nodes[i])) {
+	looking = (nlist>=SMOOTHDEG);
+	look = 0;
+	for (look=0;look<nlist && looking ; look++){
+	  looking = (nodelist[look] != nodes[i]);
+	}
+	if (looking && nlist<=SMOOTHDEG){
+	  nodelist[nlist] = nodes[i];
+	  nlist++;
+	}
+      }
+    }
   }      
+
+  for (i=0;i<nlist;i++) {
+    gridSmoothNode( grid, nodelist[nlist]);
+  }
 
   return grid;
 }
