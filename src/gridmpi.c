@@ -208,7 +208,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 {
   int transaction;
   int removed, removedcell, removedface;
-  int i, globalnodes[5], globalCellId, nodeParts[4], localnodes[4];
+  int i, globalnodes[4], globalCellId, nodeParts[4], localnodes[4];
   int cell, face;
   int added, addedcell, addedface;
   double xyz[1000], uv[6];
@@ -227,12 +227,18 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   addedface = 0;
   for (transaction=0;transaction<queueTransactions(gq);transaction++){
     for (removed=0;removed<queueRemovedCells(gq,transaction);removed++) {
-      queueRemovedCellNodes( gq, removedcell, globalnodes );
+      queueRemovedCellNodeParts( gq, removedcell, nodeParts );      
+      if ( gridPartId(grid) == nodeParts[0] ||
+	   gridPartId(grid) == nodeParts[1] ||
+	   gridPartId(grid) == nodeParts[2] ||
+	   gridPartId(grid) == nodeParts[3] ) {
+	queueRemovedCellNodes( gq, removedcell, globalnodes );
+	for(i=0;i<4;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
+	cell = gridFindCell(grid,localnodes);
+	if (grid == gridRemoveCellWithOutGlobal(grid,cell)) 
+	  queueRemoveCell(lq,localnodes,nodeParts);
+      }
       removedcell++;
-      for(i=0;i<4;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
-      cell = gridFindCell(grid,localnodes);
-      if (grid == gridRemoveCellWithOutGlobal(grid,cell)) 
-	queueRemoveCell(lq,localnodes);
     }
     for (removed=0;removed<queueRemovedFaces(gq,transaction);removed++) {
       queueRemovedFaceNodes( gq, removedface, globalnodes );

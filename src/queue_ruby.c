@@ -44,12 +44,13 @@ VALUE queue_newTransaction( VALUE self )
 
 /* ****************************** cells ****************************** */
 
-VALUE queue_removeCell( VALUE self, VALUE rb_nodes )
+VALUE queue_removeCell( VALUE self, VALUE rb_nodes, VALUE rb_nodeParts )
 {
-  int i, nodes[4];
+  int i, nodes[4], nodeParts[4];
   GET_QUEUE_FROM_SELF;
   for (i=0;i<4;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
-  return (queue==queueRemoveCell(queue,nodes)?self:Qnil);
+  for (i=0;i<4;i++) nodeParts[i]=NUM2INT(rb_ary_entry(rb_nodeParts,i));
+  return (queue==queueRemoveCell(queue,nodes,nodeParts)?self:Qnil);
 }
 
 VALUE queue_removedCells( VALUE self, VALUE transaction )
@@ -67,6 +68,18 @@ VALUE queue_removedCellNodes( VALUE self, VALUE index )
   rb_nodes = rb_ary_new2(4);
   for (i=0;i<4;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
   return rb_nodes;
+}
+
+VALUE queue_removedCellNodeParts( VALUE self, VALUE index )
+{
+  int i, nodeParts[4];
+  VALUE rb_nodeParts;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueRemovedCellNodeParts(queue,NUM2INT(index),nodeParts)) 
+    return Qnil;
+  rb_nodeParts = rb_ary_new2(4);
+  for (i=0;i<4;i++) rb_ary_store(rb_nodeParts,i,INT2NUM(nodeParts[i]));
+  return rb_nodeParts;
 }
 
 VALUE queue_addCell( VALUE self, VALUE rb_nodes, VALUE rb_cellId, 
@@ -324,9 +337,10 @@ void Init_Queue()
   rb_define_method( cQueue, "transactions", queue_transactions, 0 );
   rb_define_method( cQueue, "newTransaction", queue_newTransaction, 0 );
 
-  rb_define_method( cQueue, "removeCell", queue_removeCell, 1 );
+  rb_define_method( cQueue, "removeCell", queue_removeCell, 2 );
   rb_define_method( cQueue, "removedCells", queue_removedCells, 1 );
   rb_define_method( cQueue, "removedCellNodes", queue_removedCellNodes, 1 );
+  rb_define_method( cQueue, "removedCellNodeParts", queue_removedCellNodeParts, 1 );
   rb_define_method( cQueue, "addCell", queue_addCell, 4 );
   rb_define_method( cQueue, "addedCells", queue_addedCells, 1 );
   rb_define_method( cQueue, "addedCellNodes", queue_addedCellNodes, 1 );
