@@ -67,8 +67,26 @@ class TestSort < Test::Unit::TestCase
   (n-1).times { |index| assert(input[output[index]]<=input[output[index+1]])}
  end
 
- def testLotsOfDuplicateRandomNumbers
+ def testLotsOfDuplicateRandomNumbers1
+  srand 12098245
+  n=5000
+  input = []
+  n.times { |index| input.push rand(n/2) }
+  output = Sort.Heap input
+  (n-1).times { |index| assert(input[output[index]]<=input[output[index+1]])}
+ end
+
+ def testLotsOfDuplicateRandomNumbers2
   srand 24589879
+  n=5000
+  input = []
+  n.times { |index| input.push rand(n/2) }
+  output = Sort.Heap input
+  (n-1).times { |index| assert(input[output[index]]<=input[output[index+1]])}
+ end
+
+ def testLotsOfDuplicateRandomNumbers3
+  srand 339040234
   n=5000
   input = []
   n.times { |index| input.push rand(n/2) }
