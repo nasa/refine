@@ -1860,6 +1860,7 @@ Layer *layerAdvanceBlends(Layer *layer)
   int normal, faceId;
   int tet[4], n[6];
   double xyz[3];
+  double minVolume0, minVolume1;
   GridBool negVolume = FALSE;
   Grid *grid = layer->grid;
   if (!layerTetrahedraOnly(layer)) {
@@ -1923,14 +1924,53 @@ Layer *layerAdvanceBlends(Layer *layer)
       n[4] = layer->normal[blendnormals[2]].tip;
       n[5] = layer->normal[blendnormals[3]].tip;
 
+      minVolume0 = DBL_MAX;
       if (n[4]!=n[5]) {
-	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
+	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; 
+	minVolume0=MIN(minVolume0,gridVolume(grid, tet ));
       }
       if (n[4]!=n[5]) {
-	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5]; addTet;
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5];
+	minVolume0=MIN(minVolume0,gridVolume(grid, tet ));
       }
       if (n[1]!=n[2]) {
-	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4];
+	minVolume0=MIN(minVolume0,gridVolume(grid, tet ));
+      }
+      minVolume1 = DBL_MAX;
+      if (n[4]!=n[5]) {
+	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3];
+	minVolume1=MIN(minVolume1,gridVolume(grid, tet ));
+      }
+      if (n[4]!=n[5]) {
+	tet[0] = n[0]; tet[1] = n[1]; tet[2] = n[5]; tet[3] = n[4];
+	minVolume1=MIN(minVolume1,gridVolume(grid, tet ));
+      }
+      if (n[1]!=n[2]) {
+	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[5];
+	minVolume1=MIN(minVolume1,gridVolume(grid, tet ));
+      }
+
+      if (minVolume0>minVolume1) {
+	if (n[4]!=n[5]) {
+	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
+	}
+	if (n[4]!=n[5]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5]; addTet;
+	}
+	if (n[1]!=n[2]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
+	}
+      }else{
+	if (n[4]!=n[5]) {
+	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
+	}
+	if (n[4]!=n[5]) {
+	  tet[0] = n[0]; tet[1] = n[1]; tet[2] = n[5]; tet[3] = n[4]; addTet;
+	}
+	if (n[1]!=n[2]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[5]; addTet;
+	}
       }
     }
   }
