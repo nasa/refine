@@ -11,8 +11,9 @@ static void layer_mark( void *voidLayer )
   rb_gc_mark(layer->gridRubyVALUEusedForGC);
 }
 
-static void layer_free( void *layer )
+static void layer_free( void *voidLayer )
 {
+  Layer *layer = (Layer *)voidLayer;
   layerFree( layer );
 }
 
