@@ -624,6 +624,8 @@ Layer *layerInsertPhantomFront(Layer *layer)
 {
   Grid *grid = layer->grid;
   int normal, faceId, edgeId, newnode;
+  int front, normals[3], line, *lines;
+  int nline, mate, temp0, temp1, i;
   double xyz[3];
 
   layerVisibleNormals(layer);
@@ -631,6 +633,7 @@ Layer *layerInsertPhantomFront(Layer *layer)
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid,layer->normal[normal].root,xyz);
     layer->normal[normal].root = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
+    layer->normal[normal].tip = EMPTY;
   }
 
   layerWiggle(layer, 0.22 );
@@ -650,9 +653,85 @@ Layer *layerInsertPhantomFront(Layer *layer)
       printf("insert node %10d x %10.5f y %10.5f z %10.5f\n",
 	     newnode,xyz[0], xyz[1], xyz[2]);
       if (EMPTY == newnode) printf("Could not insert node %d\n",normal);
+      layer->normal[normal].tip = newnode;
       gridFreezeNode( grid, newnode );
     }
   }
+
+  nline =0;
+  for(front=0;front<layerNFront(layer);front++){
+    layerFrontNormals(layer, front, normals );
+    if ( layer->normal[normals[0]].tip != EMPTY &&
+	 layer->normal[normals[1]].tip != EMPTY ) nline++;
+    if ( layer->normal[normals[1]].tip != EMPTY &&
+	 layer->normal[normals[2]].tip != EMPTY ) nline++;
+    if ( layer->normal[normals[2]].tip != EMPTY &&
+	 layer->normal[normals[0]].tip != EMPTY ) nline++;
+  }
+
+  lines = malloc(nline*2*sizeof(int));
+
+  nline =0;
+  for(front=0;front<layerNFront(layer);front++){
+    layerFrontNormals(layer, front, normals );
+    if ( layer->normal[normals[0]].tip != EMPTY &&
+	 layer->normal[normals[1]].tip != EMPTY ) {
+      lines[0+2*nline] = layer->normal[normals[0]].tip;
+      lines[1+2*nline] = layer->normal[normals[1]].tip;
+      nline++;
+    }
+    if ( layer->normal[normals[1]].tip != EMPTY &&
+	 layer->normal[normals[2]].tip != EMPTY ) {
+      lines[0+2*nline] = layer->normal[normals[1]].tip;
+      lines[1+2*nline] = layer->normal[normals[2]].tip;
+      nline++;
+    }
+    if ( layer->normal[normals[2]].tip != EMPTY &&
+	 layer->normal[normals[0]].tip != EMPTY ) {
+      lines[0+2*nline] = layer->normal[normals[2]].tip;
+      lines[1+2*nline] = layer->normal[normals[0]].tip;
+      nline++;
+    }
+  }
+
+  for (line=0;line<nline;line++){
+    printf("line %2d n0 %4d n1 %4d\n",line,lines[0+2*line],lines[1+2*line]);
+  }
+
+  for (line=1;line<nline;line++){
+    for(mate=line;mate<nline;mate++){
+      if(lines[0+2*mate] == lines[1+2*(line-1)]){
+	temp0 = lines[0+2*line];
+	temp1 = lines[1+2*line];
+	lines[0+2*line] = lines[0+2*mate];
+	lines[1+2*line] = lines[1+2*mate];
+	lines[0+2*mate] = temp0;
+	lines[1+2*mate] = temp1;
+	mate=nline;
+      }else
+      if(lines[1+2*mate] == lines[1+2*(line-1)]){
+	temp0 = lines[0+2*line];
+	temp1 = lines[1+2*line];
+	lines[1+2*line] = lines[0+2*mate];
+	lines[0+2*line] = lines[1+2*mate];
+	lines[0+2*mate] = temp0;
+	lines[1+2*mate] = temp1;
+ 	mate=nline;
+     }
+    }
+  }
+  
+  for (line=0;line<nline;line++){
+    printf("line %2d n0 %4d n1 %4d\n",line,lines[0+2*line],lines[1+2*line]);
+  }
+
+  for (i=0;i<nline;i++)lines[i+1]=lines[1+2*i];
+
+  for (i=0;i<=nline;i++){
+    printf("line %2d node %4d\n",i,lines[i]);
+  }
+
+  gridInsertLine(grid,nline,lines);
  
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridRemoveNode(grid,layer->normal[normal].root);
