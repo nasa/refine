@@ -111,23 +111,19 @@ int main( int argc, char *argv[] )
       gridFreezeAll(grid);
       printf("thaw bc 1.\n");
       gridThawNearBC(grid,0.5,1);
+      printf("thaw bc 2.\n");
+      gridThawNearBC(grid,0.5,2);
       gridFreezeBCFace(grid,1);
+      gridFreezeBCFace(grid,2);
       printf("make advancing layer object.\n");
       layer = layerCreate(grid);
       bcs[0]=1;
       bcs[1]=2;
       printf("make advancing layer front.\n");
-      layerMakeFront(layer,1,bcs);
+      layerMakeFront(layer,2,bcs);
       printf("make advancing layer front normals.\n");
       layerMakeNormal(layer);
-      layerConstrainNormal(layer,-9);
-      layerConstrainNormal(layer,-10);
-      layerConstrainNormal(layer,-11);
-      layerConstrainNormal(layer,-12);
-      layerConstrainNormal(layer,3);
-      layerConstrainNormal(layer,4);
       layerConstrainNormal(layer,5);
-      layerConstrainNormal(layer,6);
       printf("make advancing layer front normals visible to front.\n");
       layerVisibleNormals(layer);
     }else{
@@ -162,8 +158,8 @@ int main( int argc, char *argv[] )
 	j++){
 
     if (boundaryLayerGrid) {
-      height = 0.005*pow(1.2,j);
-      layerTerminateNormalWithSpacing(layer,height*3.);
+      height = 0.00001*pow(1.2,j);
+      layerTerminateNormalWithSpacing(layer,height*5.);
       if (layerNActiveNormal(layer) == 0 ) jmax=0;
       printf("insert layer height = %f\n",height);
       wiggleSteps = MIN(5,(int)(height/0.001)+1);
