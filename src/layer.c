@@ -2612,9 +2612,7 @@ Layer *layerBlend(Layer *layer, double angleLimit )
   layerBuildNormalTriangleAdjacency(layer);
   layerInitializeTriangleNormalDirection(layer);
   layerFeasibleNormals(layer, -1.0, -1.0 );
-  layerVisibleNormals(layer , 
-		      sin(ConvertDegreeToRadian(angleLimit*0.333)), 
-		      1.0e-8 );
+  layerVisibleNormals(layer, 0.3, 1.0e-8 );
   return layer;
 }
 
