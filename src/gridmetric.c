@@ -1244,8 +1244,13 @@ void FaceMRDerivative(double x1, double y1, double z1,
   double ny_dx,ny_dz;
   double nz_dx,nz_dy;
   double l1, l2, l3;
+  double l1_dx, l1_dy, l1_dz;
+  double l3_dx, l3_dy, l3_dz;
   double a,d;
-
+  double a_dx, a_dy, a_dz;
+  double d_dx, d_dy, d_dz;
+  double r;
+  double r_dx, r_dy, r_dz;
 
   ex1 = x2-x1;
   ey1 = y2-y1;
@@ -1268,40 +1273,53 @@ void FaceMRDerivative(double x1, double y1, double z1,
   ez3_dz = 1.0;
 
   nx = ey1*ez2 - ez1*ey2; 
+  nx_dy =  ey1_dy * ez2;
+  nx_dz = -ez1_dz*ey2; 
+
   ny = ez1*ex2 - ex1*ez2; 
+  ny_dx = -ex1_dx*ez2; 
+  ny_dz =  ez1_dz*ex2; 
+
   nz = ex1*ey2 - ey1*ex2; 
-
-  nx_dy = ey1_dy * ez2;
-  nx_dz = - ez1_dz*ey2; 
-
-  ny_dx = - ex1_dx*ez2; 
-  ny_dz = ez1_dz*ex2; 
-
-  nz_dx = ex1_dx*ey2; 
-  nz_dy = - ey1_dy*ex2; 
-
-  *mr = nz;
-  
-  dMRdx[0] =nz_dx;
-  dMRdx[1] =nz_dy;
-  dMRdx[2] =0.0;
-
-  return;
-
+  nz_dx =  ex1_dx*ey2; 
+  nz_dy = -ey1_dy*ex2; 
 
   l1 = ex1*ex1 + ey1*ey1 + ez1*ez1;
+  l1_dx = 2*ex1_dx*ex1;
+  l1_dy = 2*ey1_dy*ey1;
+  l1_dz = 2*ez1_dz*ez1;
+
   l2 = ex2*ex2 + ey2*ey2 + ez2*ez2;
+
   l3 = ex3*ex3 + ey3*ey3 + ez3*ez3;
+  l3_dx = 2*ex3_dx*ex3;
+  l3_dy = 2*ey3_dy*ey3;
+  l3_dz = 2*ez3_dz*ez3;
 
   a = sqrt(nx*nx + ny*ny + nz*nz);
+  a_dx = (ny*ny_dx + nz*nz_dx)/a;
+  a_dy = (nx*nx_dy + nz*nz_dy)/a;
+  a_dz = (nx*nx_dz + ny*ny_dz)/a; 
+
   a = 0.5*a;
+  a_dx = 0.5*a_dx;
+  a_dy = 0.5*a_dy;
+  a_dz = 0.5*a_dz;
 
-  d= l1+l2+l3;
+  d = l1+l2+l3;
+  d_dx = l1_dx + l3_dx;
+  d_dy = l1_dy + l3_dy;
+  d_dz = l1_dz + l3_dz;
 
-  *mr = a/d;
-  *mr = 4*SQRT3*(*mr);
-  
-  dMRdx[0] =0.0;
-  dMRdx[1] =0.0;
-  dMRdx[2] =0.0;
+  r = a/d;
+  r_dx = ( d * a_dx - a * d_dx ) / d / d;
+  r_dy = ( d * a_dy - a * d_dy ) / d / d;
+  r_dz = ( d * a_dz - a * d_dz ) / d / d;
+
+  *mr = 4*SQRT3*r;
+
+  dMRdx[0] = 4*SQRT3*r_dx;
+  dMRdx[1] = 4*SQRT3*r_dy;
+  dMRdx[2] = 4*SQRT3*r_dz;
+
 }

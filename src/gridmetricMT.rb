@@ -203,7 +203,7 @@ class TestGridMetric < Test::Unit::TestCase
  end
  
 
- def testDiff
+ def testFaceMRDerivative
   x1 =0.061
   y1 =0.045
   z1 =0.077
@@ -226,17 +226,17 @@ class TestGridMetric < Test::Unit::TestCase
 
   dx = grid.FaceMRDerivative(x1+delta,y1,z1,x2,y2,z2,x3,y3,z3)
   dx = (dx[0]-ans[0])/delta
-  assert_in_delta dx, ans[1], delta, "dx"
+  assert_in_delta dx, ans[1], 10.0*delta, "dx"
 
   dy = grid.FaceMRDerivative(x1,y1+delta,z1,x2,y2,z2,x3,y3,z3)
   dy = (dy[0]-ans[0])/delta
-  assert_in_delta dy, ans[2], delta, "dy"
+  assert_in_delta dy, ans[2], 10.0*delta, "dy"
 
   dz = grid.FaceMRDerivative(x1,y1,z1+delta,x2,y2,z2,x3,y3,z3)
   dz = (dz[0]-ans[0])/delta
-  assert_in_delta dz, ans[3], delta, "dz"
+  assert_in_delta dz, ans[3], 10.0*delta, "dz"
 
-# assert_in_delta grid.faceMR(0,1,2),ans[0],1e-14
+  assert_in_delta grid.faceMR(0,1,2),ans[0],1e-14
  end
 
 end
