@@ -78,6 +78,7 @@ double gridMinAR(Grid *g);
 
 int gridFindCellWithFace(Grid *g, int face );
 bool gridRightHandedFace(Grid *g, int face );
+bool gridRightHandedBoundary(Grid *g );
 
 END_C_DECLORATION
 
