@@ -1179,7 +1179,9 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
       dir = layer->normal[normal].direction;
       radian = 0.01;
       layerNormalMinDot(layer, normal, &mindot, mindir );
-      for (iter=0;iter<1000 && radian>radianLimit && mindot<dotLimit;iter++){
+      for (iter=0;
+	   iter<1000 && (radian>radianLimit || mindot<0.05) && mindot<dotLimit;
+	   iter++){
 	lastdir[0] = dir[0]; lastdir[1] = dir[1]; lastdir[2] = dir[2];
 	dir[0] += radian*mindir[0];
 	dir[1] += radian*mindir[1];
@@ -1216,6 +1218,7 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
   int normal, iter, triangle, normals[3], total, i;
   double norm[3], avgdir[3], denom, relaxm1; 
   double visibility = 0.5;
+  double visTol = 1.0e-10;
   AdjIterator it;
 
   if (layerNNormal(layer) == 0 ) return NULL;
@@ -1261,7 +1264,7 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 	layerProjectNormalToConstraints(layer,normal);
       }
     }
-    layerVisibleNormals(layer,visibility,1.0e-5);
+    layerVisibleNormals(layer,visTol,1.0e-5);
     for (normal=0;normal<layerNNormal(layer);normal++){
       if ( 0 == layerConstrained(layer,normal) ){
 	total = 0;
@@ -1296,7 +1299,7 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 	gridVectorNormalize(layer->normal[normal].direction);
       }
     }
-    layerVisibleNormals(layer,visibility,1.0e-5);
+    layerVisibleNormals(layer,visibility,visTol);
   }
 
   return layer;
