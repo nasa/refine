@@ -472,6 +472,8 @@ communication pattern to update ghost node displacements.
 
 @section Parallelized Connectivity Changes
 
+The swap, node insertion, and edge collapse routines.
+
 @section Initial notes on building and executing HEFSS with the rad mesh adapation option.
 
 @verbatim
