@@ -455,7 +455,48 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 
 int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 {
+  int cell, maxcell, nodes[4], foundCell, newnode;
+  bool edgeSplit;
+
+  foundCell = EMPTY;
+  edgeSplit = FALSE;
+  cell = 0;
+  maxcell = gridMaxCell(grid);
+  while ( EMPTY == foundCell && !edgeSplit && cell < maxcell ) {
+    if (grid == gridCell(grid, cell, nodes) ){
+      /* first try putting it on an edge */
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[2],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[3],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[2],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[3],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+      if (!edgeSplit){
+	newnode = gridSplitEdgeIfNear(grid,nodes[2],nodes[3],newX,newY,newZ);
+	edgeSplit = (EMPTY != newnode);
+      }
+    }
+    cell++;
+  }
+
+  if ( edgeSplit ) return newnode;
+
   return EMPTY;
+
 }
 
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
