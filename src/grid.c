@@ -468,6 +468,7 @@ Grid *gridPack(Grid *grid)
   double t0, t1, u[3], v[3];
   bool emptyFace;
   int *o2n;
+  int prismIndex, pyramidIndex, quadIndex;
 
   o2n = malloc(grid->maxnode*sizeof(int));
   if (o2n == NULL) {
@@ -658,6 +659,22 @@ Grid *gridPack(Grid *grid)
   }else{
     grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
     grid->blanke2n = grid->nedge;
+  }
+
+  for (prismIndex=0;prismIndex<gridNPrism(grid);prismIndex++){
+    for (i=0;i<6;i++) grid->prism[prismIndex].nodes[i] =
+			o2n[grid->prism[prismIndex].nodes[i]];
+  }
+
+  for (pyramidIndex=0;pyramidIndex<gridNPyramid(grid);pyramidIndex++){
+    for (i=0;i<5;i++) grid->pyramid[pyramidIndex].nodes[i] =
+			o2n[grid->pyramid[pyramidIndex].nodes[i]];
+  }
+
+  // note, these should be counted as boundaries
+  for (quadIndex=0;quadIndex<gridNQuad(grid);quadIndex++){
+    for (i=0;i<4;i++) grid->quad[quadIndex].nodes[i] =
+			o2n[grid->quad[quadIndex].nodes[i]];
   }
 
   if ( NULL != grid->renumberFunc ) 
