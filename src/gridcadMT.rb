@@ -5,8 +5,8 @@
 # Mobility test for grid c lib
 
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridStruct.h master_header.h'
 
 require 'test/unit'
 require 'Grid/Grid'
@@ -108,7 +108,10 @@ class TestSampleUnit < Test::Unit::TestCase
   grid.addNode( 0.500, 0.866, 0.000 )
   grid.addNode( 0.500, 0.289, 0.823 ) 
   grid.addCell(0,1,2,3)
-  grid.addFace(0,1,2,10)
+  grid.addFaceUV(0,10.0+pert,20.0,
+		 1,11.0,20.0,
+		 2,10.5,20.866,
+		 10)
  end
 
  def testIsotropicTet
@@ -116,10 +119,23 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_in_delta 0.975, isoTet(-0.2).minAR, 1.0e-4
  end
 
+ def testOptimizeUVDispacement
+  assert_not_nil grid = isoTet(-0.2)
+  assert_equal grid, grid.optimizeUV(0,[1.0,0.0])
+  assert_in_delta 0.999, grid.minAR, 1.0e-3
+  assert_in_delta 0.999, grid.ar([0,1,2,3]), 1.0e-3
+ end
+
  def testSmoothSurf
   assert_not_nil grid = isoTet(-0.2)
   assert_equal grid, grid.smoothNode(0)
-# assert_in_delta 1.000, grid.minAR, 1.0e-4
+  assert_in_delta 0.999, grid.minAR, 1.0e-3
+ end
+
+ def testSmooth
+  assert_not_nil grid = isoTet(-0.2)
+  assert_equal grid, grid.smooth
+  assert_in_delta 0.999, grid.minAR, 1.0e-3
  end
 
 end

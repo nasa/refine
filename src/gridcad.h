@@ -23,7 +23,9 @@ Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId );
 Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridProject(Grid *g);
 
-Grid *gridsmoothNode(Grid *g, int node );
+Grid *gridSmooth(Grid *g );
+Grid *gridSmoothNode(Grid *g, int node );
+Grid *gridOptimizeUV(Grid *g, int node, double *dudv );
 
 END_C_DECLORATION
 
