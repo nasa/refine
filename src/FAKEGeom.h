@@ -51,6 +51,7 @@ typedef struct _UGridPtr {
 #define UGrid_ALGORITHM(ugp)     ((ugp)->algorithm)
 
 #define UG_UNKNOWN   0
+#define UG_REFINE   6
 
 GridBool UGrid_FromArrays(UGridPtr *,int,double *,int,int *,int,int *);
 
@@ -82,7 +83,7 @@ typedef struct _UGPatchPtr {
 void UGPatch_GetDims(UGPatchPtr upp, int *dims);
 int UGPatch_GlobalIndex(UGPatchPtr upp, int ndx);
 #define UGPatch_Parameter(upp,i,l) (DBL_MAX)
-#define UGPatch_Parent(upp) (NULL)
+#define UGPatch_Parent(upp) ((UGridPtr)malloc(sizeof(UGrid)))
 
 GridBool UGPatch_InitSurfacePatches(UGridPtr ugp);
 
@@ -104,7 +105,7 @@ GridBool CADTopo_VolEdgePts(int vol, int *count);
 GridBool CADTopo_ShellStats(int vol, int *nc, int *tPts, int *tTri, int *maxF);
 UGridPtr CADTopo_AssembleTShell(int vol,int tPts, int tTri, int maxFace);
 
-#define GeoMesh_UseDefaultIOCallbacks (FALSE)
+GridBool GeoMesh_UseDefaultIOCallbacks( void );
 
 END_C_DECLORATION
 

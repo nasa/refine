@@ -1,3 +1,9 @@
+2004-07-01 11:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeomExtras.c added mock UG_REFINE. 
+	fixed UGPatch_Parent to allocate ugrid. 
+	made GeoMesh_UseDefaultIOCallbacks a function.
+
 2004-07-01 10:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridgeom.c (gridCreateShellFromFaces) added to call 

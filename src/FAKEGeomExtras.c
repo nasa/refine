@@ -95,6 +95,11 @@ GridBool GeoMesh_LoadPart( char *project )
   return FALSE;
 }
 
+GridBool GeoMesh_UseDefaultIOCallbacks( void )
+{
+  return FALSE;
+}
+
 GridBool GeoMesh_SavePart( int vol, char *project )
 {
   return FALSE;
