@@ -32,7 +32,7 @@ class TestGridMPI < Test::Unit::TestCase
  EMPTY = -1
 
  def rightTet
-  grid = Grid.new(4,2,4,0)
+  grid = Grid.new(4,2,4,2)
   grid.addCell( 
 	       grid.addNode(0,0,0), 
 	       grid.addNode(1,0,0), 
@@ -46,6 +46,7 @@ class TestGridMPI < Test::Unit::TestCase
 		 2,1,0,
 		 3,0,1,
 		 11)
+  grid.addEdge(0,3,20,100.0,200.0)
   grid.identityNodeGlobal(100).identityCellGlobal(200)
   grid.setGlobalNNode(104).setGlobalNCell(201)
   grid
@@ -111,6 +112,7 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 4, p1.parallelEdgeSplit(q,0,3)
   assert_equal 2, p1.ncell
   assert_equal 4, p1.nface
+  assert_equal 2, p1.nedge
   assert_equal 105, p1.globalnnode
   assert_equal 202, p1.globalncell
   assert_equal p1.partId, p1.nodePart(4)
@@ -142,6 +144,15 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 11, q.addedFaceId(1)
   assert_equal [2,1,1], q.addedFaceNodeParts(0)
   assert_equal [2,1,1], q.addedFaceNodeParts(1)
+
+  assert_equal 1, q.removedEdges(1)
+  assert_equal [1,2], q.removedEdgeNodeParts(0)
+  assert_equal [100,103], q.removedEdgeNodes(0)
+  assert_equal 1, q.addedEdges(1)
+  assert_equal [2,1], q.addedEdgeNodeParts(0)
+  assert_equal [103,104], q.addedEdgeNodes(0)
+  assert_equal 20, q.addedEdgeId(0)
+  assert_equal [200.0,150.0], q.addedEdgeTs(0)
  end
 
  def testUnPackQueue

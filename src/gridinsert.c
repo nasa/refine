@@ -315,9 +315,9 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     gridNodeT(grid,n0,edgeId,&t0);
     gridNodeT(grid,n1,edgeId,&t1);
     newT = 0.5 * (t0+t1);
-    gridRemoveEdge(grid,edge);
-    gridAddEdge(grid,n0,newnode,edgeId,t0,newT);
-    gridAddEdge(grid,n1,newnode,edgeId,t1,newT);
+    gridRemoveEdgeAndQueue(grid,queue,edge);
+    gridAddEdgeAndQueue(grid,queue,n0,newnode,edgeId,t0,newT);
+    gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
   }
   
   if ( gridNegCellAroundNode(grid, newnode) ) {
