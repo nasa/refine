@@ -82,4 +82,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal true,  @adj.exists(1,199)
  end
 
+ def testDegree
+  assert_equal    0, @adj.degree(0)
+  assert_equal @adj, @adj.register( 0, 299 )
+  assert_equal    1, @adj.degree(0)
+ end
+
 end
