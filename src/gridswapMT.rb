@@ -4,6 +4,7 @@
 #
 # Mobility test for grid c lib
 
+exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridSwap adj.c grid.c gridStruct.h'
 
 require 'test/unit'
@@ -20,7 +21,6 @@ class Grid
 end
 
 class TestSampleUnit < Test::Unit::TestCase
-
 
  def testSwapEdgeNotBeter
   assert_not_nil grid=gemGrid(3, 2.0, 0)
