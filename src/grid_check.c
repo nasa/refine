@@ -79,7 +79,7 @@ START_TEST(testAddedAndRemoveCell)
   for ( i =0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 1,
 	       "expected one neighbor of node");
 
-  fail_unless ( gridRegisterNodeCell(grid,i,0) == NULL, 
+  fail_unless ( gridRegisterNodeCell(grid,0,99) == NULL, 
 		"ran out of memory");
 
   for ( i =0; i<4 ; i++ ) gridRemoveNodeCell(grid,i,0);
@@ -91,16 +91,38 @@ START_TEST(testAddedAndRemoveCell)
 }
 END_TEST
 
+START_TEST(testUnderAlloc)
+{
+  Grid *grid;
+
+  grid = gridCreate(1,1,1);
+  fail_unless ( gridRegisterNodeCell(grid,0,0) == NULL, 
+		"ran out of memory - one elem");
+  gridFree(grid);
+  grid = gridCreate(1,1,2);
+  fail_unless ( gridRegisterNodeCell(grid,0,0) == NULL, 
+		"ran out of memory - two elem");
+  gridFree(grid);
+  grid = gridCreate(1,1,3);
+  fail_unless ( gridRegisterNodeCell(grid,0,0) == NULL, 
+		"ran out of memory - three elem");
+  gridFree(grid);
+}
+END_TEST
+
 /* test run out of memory - anything null(0) in celllist durring register */
 /* allocating a new chunk of celllist */
 /* packing */
 /* non-contiguos cellist for access and registering */
+/* allocate n1 then n2 then n1 again */
+
 
 Suite *grid_suite (void) 
 { 
   Suite *s = suite_create ("Grid"); 
   TCase *tCreate = tcase_create ("Create");
   TCase *tNeighbors = tcase_create ("Neighbors");
+  TCase *tMemory = tcase_create ("Memory");
  
   suite_add_tcase (s, tCreate);
   tcase_add_checked_fixture (tCreate, setup, teardown); 
@@ -111,6 +133,9 @@ Suite *grid_suite (void)
   tcase_add_test (tNeighbors, testNodeDeg); 
   tcase_add_test (tNeighbors, testCellIterator); 
   tcase_add_test (tNeighbors, testAddedAndRemoveCell); 
+
+  suite_add_tcase (s, tMemory);
+  tcase_add_test (tMemory, testUnderAlloc); 
 
   return s; 
 }

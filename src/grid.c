@@ -20,6 +20,8 @@ struct Grid {
   long *celllist;
 };
 
+//#define EBUG
+
 Grid* gridCreate(long nnode, long ncell, long nlist)
 {
   long i;
@@ -29,7 +31,8 @@ Grid* gridCreate(long nnode, long ncell, long nlist)
 
   grid->nnode = nnode;
   grid->ncell = ncell;
-  if (nlist < 1) nlist = (grid->ncell*4+grid->nnode)+1;
+  /* pad one for [0] and one to terminate */
+  if (nlist < 1) nlist = (grid->ncell*4+grid->nnode)+2;
 
   grid->firstcell = malloc(grid->nnode * sizeof(long));
   for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = nlist-1;
@@ -39,6 +42,12 @@ Grid* gridCreate(long nnode, long ncell, long nlist)
   grid->celllist[nlist-1] =0;
   grid->currentcell=nlist-1;
  
+#ifdef EBUG
+  printf("\n Cre n %d c %d l %d\n", 
+  nnode,ncell,nlist);
+  fflush(stdout);
+#endif
+
   return  grid;
 }
 
@@ -68,12 +77,17 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
 
   entry = -grid->celllist[0];
   if (entry == 0 ) return NULL;
-  terminator = -grid->celllist[entry];
+  if ( grid->celllist[entry] == 0 ) return NULL;
+  terminator = entry+1;
+  //  terminator = -grid->celllist[entry]; make sure this is same as ^
+  if ( grid->celllist[terminator] == 0 ) return NULL;
   nextOpen = -grid->celllist[terminator];
  
-  // printf("\n Reg n %d c %3d e %d t %d n %d", 
-  // nodeId, cellId, entry, terminator, nextOpen);
-  // fflush(stdout);
+#ifdef EBUG
+  printf("\n Reg n %d c %3d e %d t %d n %d", 
+  nodeId, cellId, entry, terminator, nextOpen);
+  fflush(stdout);
+#endif
 
   grid->firstcell[nodeId]=entry;
   grid->celllist[entry]=cellId+1;
