@@ -34,8 +34,14 @@ class TestGridMPI < Test::Unit::TestCase
 	       grid.addNode(1,0,0), 
 	       grid.addNode(0,1,0), 
 	       grid.addNode(0,0,1) )
-  grid.addFace(0,3,1,10)
-  grid.addFace(0,2,3,11)
+  grid.addFaceUV(0,0,0,
+		 3,0,1,
+		 1,1,0,
+		 10)
+  grid.addFaceUV(0,0,0,
+		 2,1,0,
+		 3,0,1,
+		 11)
   grid.identityNodeGlobal(100).identityCellGlobal(200)
   grid.setGlobalNNode(104).setGlobalNCell(201)
   grid
