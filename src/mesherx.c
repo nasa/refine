@@ -90,6 +90,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   if (blendElement) {
     printf("inserting blends...\n");
     layerBlend(layer); 
+    printf("split blends...\n");
     layerSplitBlend(layer); 
   }
 
