@@ -94,6 +94,7 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
                           int ntri, int *tri, int nsid, int *sid, int *npo,
                           int *nel, int **iel, double **xyz)
 {
+  char *outputProject;
   int vol=1;
   Grid *grid;
   Layer *layer;
@@ -124,6 +125,10 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
     printf("ERROR: Allocation of Phantom Faces\n");
     return 1;
   }
+  outputProject = "../test/MesherX";
+  printf("writing DEBUG output project %s\n",outputProject);
+  gridSavePart( grid, outputProject );
+
 
   return 1;
 }
