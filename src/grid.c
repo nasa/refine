@@ -204,6 +204,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nconn = 0;
   grid->cell2conn = NULL;
   grid->conn2node = NULL;
+  grid->connError = NULL;
 
   grid->degAR = 0;
 
@@ -531,6 +532,7 @@ void gridFree(Grid *grid)
 
   if (NULL != grid->tecplotFile) fclose(grid->tecplotFile);
 
+  if (NULL != grid->connError) free(grid->connError);
   if (NULL != grid->conn2node) free(grid->conn2node);
   if (NULL != grid->cell2conn) free(grid->cell2conn);
 
@@ -1811,13 +1813,15 @@ static void gridAddConnToCell2Conn(Grid *grid, int conn, int node0, int node1)
   }
 }
 
-static void gridCreateConn(Grid *grid) 
+Grid *gridCreateConn(Grid *grid) 
 {
   int cell, conn;
   int nodes[4];
   int node0, node1;
   int conn2node0[6] = {0, 0, 0, 1, 1, 2};
   int conn2node1[6] = {1, 2, 3, 2, 3, 3};
+
+  if (NULL != grid->cell2conn || NULL != grid->conn2node) return NULL; 
 
   grid->cell2conn = (int*)malloc(6*gridMaxCell(grid)*sizeof(int));
   for(cell=0;cell<6*gridMaxCell(grid);cell++) grid->cell2conn[cell] = EMPTY;
@@ -1867,8 +1871,8 @@ int gridCell2Conn(Grid *grid, int cell, int index )
 
 Grid *gridConn2Node(Grid *grid, int conn, int *nodes )
 {
-  if (conn<0||conn>gridNConn(grid)) return NULL;
   if (NULL==grid->conn2node) gridCreateConn(grid);
+  if (conn<0||conn>=gridNConn(grid)) return NULL;
   nodes[0] = grid->conn2node[0+2*conn];
   nodes[1] = grid->conn2node[1+2*conn];
   return grid;
@@ -1881,6 +1885,27 @@ Grid *gridEraseConn(Grid* grid)
   grid->cell2conn = NULL;
   if (NULL != grid->conn2node) free(grid->conn2node);
   grid->conn2node = NULL;
+  if (NULL != grid->connError) free(grid->connError);
+  grid->connError = NULL;
+  return grid;
+}
+
+double gridConnError(Grid *grid, int conn)
+{
+  if (NULL==grid->connError) return 0.0;
+  if (conn<0||conn>=gridNConn(grid)) return 0.0;
+  return grid->connError[conn];
+}
+
+Grid *gridSetConnError(Grid *grid, int conn, double error )
+{
+  int i;
+  if (conn<0||conn>=gridNConn(grid)) return NULL;
+  if (NULL==grid->connError) {
+    grid->connError = (double *)malloc( gridNConn(grid)*sizeof(double));
+    for(i=0;i<gridNConn(grid);i++) grid->connError[i] = 0.0;
+  }
+  grid->connError[conn] = error;
   return grid;
 }
 

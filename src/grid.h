@@ -108,6 +108,7 @@ struct Grid {
   int nconn;
   int *cell2conn;
   int *conn2node;
+  double *connError;
 
   int degAR;
   double AR[MAXDEG];
@@ -273,7 +274,10 @@ Grid *gridDeleteThawedCells(Grid *g);
 #define gridNConn(grid) (grid->nconn)
 int gridCell2Conn(Grid *g, int cell, int index );
 Grid *gridConn2Node(Grid *g, int conn, int *nodes );
+Grid *gridCreateConn(Grid *g );
 Grid *gridEraseConn(Grid *g );
+double gridConnError(Grid *g, int conn);
+Grid *gridSetConnError(Grid *g, int conn, double error);
 
 int gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
 int gridAddFaceUV(Grid *g, 

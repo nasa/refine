@@ -349,18 +349,36 @@ VALUE grid_conn2Node( VALUE self, VALUE conn )
   int nodes[2];
   VALUE rb_nodes;
   GET_GRID_FROM_SELF;
-  if (grid != gridConn2Node(grid,conn,nodes) ) return Qnil;
+  if (grid != gridConn2Node(grid,NUM2INT(conn),nodes) ) return Qnil;
   rb_nodes = rb_ary_new2(2);
   rb_ary_store( rb_nodes, 0, INT2NUM(nodes[0]) );
   rb_ary_store( rb_nodes, 1, INT2NUM(nodes[1]) );
   return rb_nodes;
 }
 
+VALUE grid_createConn( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (gridCreateConn(grid )==NULL?Qnil:self);
+}  
+
 VALUE grid_eraseConn( VALUE self )
 {
   GET_GRID_FROM_SELF;
   return (gridEraseConn(grid )==NULL?Qnil:self);
 }  
+
+VALUE grid_connError( VALUE self, VALUE conn )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new(gridConnError(grid,NUM2INT(conn)));
+}
+
+VALUE grid_setConnError( VALUE self, VALUE conn, VALUE error )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSetConnError(grid,NUM2INT(conn),NUM2DBL(error))==NULL?Qnil:self);
+}
 
 VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
 {
@@ -1105,7 +1123,10 @@ void Init_Grid()
   rb_define_method( cGrid, "nconn", grid_nconn, 0 );
   rb_define_method( cGrid, "cell2Conn", grid_cell2Conn, 2 );
   rb_define_method( cGrid, "conn2Node", grid_conn2Node, 1 );
+  rb_define_method( cGrid, "createConn", grid_createConn, 0 );
   rb_define_method( cGrid, "eraseConn", grid_eraseConn, 0 );
+  rb_define_method( cGrid, "connError", grid_connError, 1 );
+  rb_define_method( cGrid, "setConnError", grid_setConnError, 2 );
 
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
   rb_define_method( cGrid, "addFaceUV", grid_addFaceUV, 10 );

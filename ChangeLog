@@ -1,3 +1,10 @@
+2004-09-29 23:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridConn2Node) Fixed. gridCreateConn called under hood.
+	* src/grid.c (gridCreateConn) Exposed. Error if called when conn exits
+	* src/grid.c (gridConnError,gridSetConnError) created to store
+	edge length errors for adaptation.
+
 2004-10-03 01:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.* (gridCollapseEdge) added an extra check to make

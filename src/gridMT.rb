@@ -523,28 +523,51 @@ class TestGrid < Test::Unit::TestCase
   5.times { grid.addNode(0.0,0.0,0.0) }
   assert_nil grid.conn2Node(EMPTY)
   assert_nil grid.conn2Node(0)
+  assert_equal grid, grid.eraseConn
   grid.addCell(0,1,2,3)
-  assert [0,1], grid.conn2Node(0)
-  assert [0,2], grid.conn2Node(1)
-  assert [0,3], grid.conn2Node(2)
-  assert [1,1], grid.conn2Node(3)
-  assert [1,3], grid.conn2Node(4)
-  assert [2,3], grid.conn2Node(5)
+  assert_equal [0,1], grid.conn2Node(0)
+  assert_equal [0,2], grid.conn2Node(1)
+  assert_equal [0,3], grid.conn2Node(2)
+  assert_equal [1,2], grid.conn2Node(3)
+  assert_equal [1,3], grid.conn2Node(4)
+  assert_equal [2,3], grid.conn2Node(5)
 
   assert_equal grid, grid.eraseConn
   grid.addCell(1,0,2,4)
-  assert [0,1], grid.conn2Node(0)
-  assert [0,2], grid.conn2Node(1)
-  assert [0,3], grid.conn2Node(2)
-  assert [1,1], grid.conn2Node(3)
-  assert [1,3], grid.conn2Node(4)
-  assert [2,3], grid.conn2Node(5)
+  assert_equal [0,1], grid.conn2Node(0)
+  assert_equal [0,2], grid.conn2Node(1)
+  assert_equal [0,3], grid.conn2Node(2)
+  assert_equal [1,2], grid.conn2Node(3)
+  assert_equal [1,3], grid.conn2Node(4)
+  assert_equal [2,3], grid.conn2Node(5)
 
-  assert [1,4], grid.conn2Node(6)
-  assert [0,4], grid.conn2Node(7)
-  assert [2,4], grid.conn2Node(8)
+  assert_equal [1,4], grid.conn2Node(6)
+  assert_equal [0,4], grid.conn2Node(7)
+  assert_equal [2,4], grid.conn2Node(8)
  end
 
+ def testNodeConnectionCreatetion
+  grid = Grid.new(4,1,0,0)
+  4.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  assert_equal grid, grid.createConn
+  assert_nil grid.createConn
+ end
+
+ def testNodeConnectionErrors
+  grid = Grid.new(4,1,0,0)
+  4.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  grid.createConn
+  assert_equal 0.0,  grid.connError(0)
+  assert_nil grid.setConnError(-1,1.0)
+  assert_nil grid.setConnError(100,1.0)
+  assert_equal grid, grid.setConnError(0,1.0)
+  assert_equal 1.0,  grid.connError(0)
+  assert_equal grid, grid.eraseConn
+  assert_equal 0.0,  grid.connError(0)
+ end
+ 
  def testAddNode
   assert_not_nil              grid = Grid.new(1,0,0,0)
   assert_nil                  grid.nodeXYZ(0)
