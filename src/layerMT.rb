@@ -1606,6 +1606,45 @@ class TestLayer < Test::Unit::TestCase
 #layer.writeTecplotFrontGeometry
 #grid.writeTecplotSurfaceZone
 
+ def XtestForCollidingNormalsBetweenBlendAndConcaveNeighborSharp
+  grid = Grid.new(100,100,100,100)
+  assert_equal 0, grid.addNode(0,0,0)
+  assert_equal 1, grid.addNode(0.1,1,0)
+  assert_equal 2, grid.addNode(0,0,1)
+  assert_equal 3, grid.addNode(0,1,0)
+  grid.addFace(0,1,2,1)
+  grid.addFace(0,2,3,1)
+  assert_equal 4, grid.addNode(0,1,1)
+  assert_equal 5, grid.addNode(-0.707,0.293,0)
+  grid.addFace(3,4,5,1)
+  grid.addFace(1,0,3,11)
+  grid.addFace(1,0,3,11)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.constrainNormal(11)
+  grid.removeFace(3)
+  grid.removeFace(4)
+  layer.blend(200.0)
+  layer.preventBlendNormalDirectionFromPointingAtNeighbors(0.4)
+
+  layer.writeTecplotFrontGeometry
+
+  assert_equal [0,1,7], layer.triangleNormals(0)
+  assert_equal [6,2,3], layer.triangleNormals(1)
+  assert_equal [3,4,5], layer.triangleNormals(2)
+
+  #      5
+  #      |\
+  # Y    3-4
+  # |    |\
+  # +--Z 6-2
+  # +--Z 0-7
+  # |    |/
+  # X    1
+
+ end
+#layer.writeTecplotFrontGeometry
+#grid.writeTecplotSurfaceZone
+
  def testBlendTriplePoint
   grid = Grid.new(20,20,10,0)
   top = 0.8
