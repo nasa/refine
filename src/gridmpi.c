@@ -15,6 +15,7 @@
 #include "gridmetric.h"
 #include "gridinsert.h"
 #include "gridswap.h"
+#include "gridcad.h"
 #include "gridmpi.h"
 
 Grid *gridIdentityNodeGlobal(Grid *grid, int offset )

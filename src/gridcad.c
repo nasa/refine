@@ -202,7 +202,6 @@ Grid *gridFaceNormalAtUV(Grid *grid, int faceId,
 
 Grid *gridFaceNormalAtXYZ(Grid *grid, int faceId, double *xyz, double *normal )
 {
-  int vol =1;
   double uv[2], newxyz[3];
 
   uv[0] = DBL_MAX;

@@ -10,8 +10,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "gridmove.h"
 #include "gridmath.h"
+#include "gridcad.h"
+#include "gridmove.h"
 
 GridMove *gridmoveCreate( Grid *grid )
 {
@@ -209,13 +210,9 @@ GridMove *gridmoveSpringConstant(GridMove *gm, double *xyz, int nsprings,
   Grid *grid = gridmoveGrid(gm);
   int s, n0, n1;
   double dxyz[3];
-  int cell, edge, face;
+  int cell, edge;
   int nodes[4];
-  double e[6][3], n[4][3];
-  int edge2node0[6] = {0, 0, 0, 1, 1, 2};
-  int edge2node1[6] = {1, 2, 3, 2, 3, 3};
-  int face2edge0[6] = {0, 2, 4, 1};
-  int face2edge1[6] = {1, 0, 3, 2};
+  double n[4][3];
   int edge2face0[6] = {2, 1, 0, 1, 0, 0}; /* end points */
   int edge2face1[6] = {3, 2, 2, 3, 3, 1};
   double angle, invsinangle;
@@ -532,6 +529,8 @@ GridMove *gridmoveLoadFortranNodeData( GridMove *gm, int nnode,
 				     int *nodes, double *data)
 {
   int node, localnode, i, ids, face;
+  localnode = 0;
+  node = 0;
   while (node<nnode) {
     if (nodes[node] > 0) {
       localnode = nodes[node]-1;
@@ -552,6 +551,8 @@ GridMove *gridmoveSetFortranNodeData( GridMove *gm, int nnode,
 				    int *nodes, double *data)
 {
   int node, localnode, i, ids, face;
+  localnode = 0;
+  node = 0;
   while (node<nnode) {
     if (nodes[node] > 0) {
       localnode = nodes[node]-1;
