@@ -25,6 +25,8 @@ Octree *octreeCreate( double xMin, double xMax,
 void octreeFree( Octree * );
 Octree *octreeBoundingBox( Octree *, double *boundingBox );
 int octreeNOctant( Octree * );
+Octree *octreeInsert( Octree *, double *location, double *data );
+Octree *octreeQuery( Octree *, double *location, double *data );
 
 END_C_DECLORATION
 
