@@ -4,7 +4,7 @@
 
 AUTOMAKE_OPTIONS = 1.7
 
-lib_LIBRARIES = libMesherX.a
+lib_LIBRARIES = libMesherX.a libOctree_Stub.a
 libMesherX_a_CFLAGS = -I../src @SDKheader@
 libMesherX_a_SOURCES = \
 	../src/adj.c \
@@ -21,11 +21,14 @@ libMesherX_a_SOURCES = \
 	../src/layer.c \
 	../src/mesherxInit.c \
 	../src/mesherxRebuild.c \
-	../src/mesherx.c 
+	../src/mesherx.c
+
+libOctree_Stub_a_CFLAGS = -I../src @SDKheader@
+libOctree_Stub_a_SOURCES = ../src/Octree_Stub.c
 
 all_CFLAGS = -I../src @SDKheader@
 refineLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache -lMeat
-MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache @FELISAlibrary@ -ldl -lMeat
+MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache libOctree_Stub.a @FELISAlibrary@ -ldl -lMeat
 all_LDFLAGS = @dynamicFlag@
 
 LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
