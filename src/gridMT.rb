@@ -197,6 +197,12 @@ end
   assert_equal 2, grid.nodeDeg(3)
  end
 
+ def testAddNode
+  grid = Grid.new(1,1)
+  assert_equal 0, grid.addNode(1.0,0.0,0.0)
+  assert_equal -1, grid.addNode(1.0,0.0,0.0)
+ end
+
  def XtestMaxSize
   nnode = 6000000
   grid = Grid.new(nnode,nnode*6)
