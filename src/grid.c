@@ -51,11 +51,6 @@ long gridNCell(Grid *grid)
   return grid->ncell;
 }
 
-long* gridDEBUGcelllist(Grid *grid)
-{
-  return grid->celllist;
-}
-
 long gridNodeDeg(Grid *grid, long id)
 {
   int n;

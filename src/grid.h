@@ -21,7 +21,6 @@ typedef struct Grid Grid;
 Grid *gridCreate(long nnode, long ncell);
 long gridNNode(Grid *g);
 long gridNCell(Grid *g);
-long *gridDEBUGcelllist(Grid *g);
 long gridNodeDeg(Grid *g, long nodeIndex);
 Grid *gridRegisterNodeCell(Grid *g, long nodeIndex, long cellIndex);
 void gridFirstNodeCell(Grid *g, long nodeIndex);

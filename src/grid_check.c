@@ -30,8 +30,6 @@ START_TEST(testGridCreate)
 	       "expected 4 node mesh");
   fail_unless( gridNCell(grid) == 1,
 	       "expected 1 cell mesh");
-  fail_unless( (gridDEBUGcelllist(grid))[0] == -1, "celllist init error");
-  fail_unless( (gridDEBUGcelllist(grid))[1] == -2, "celllist init error");
 }
 END_TEST
 
