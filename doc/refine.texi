@@ -137,7 +137,7 @@ executable (R).
 @section Unit Testing
 @cindex test, unit
 
-Each of the objects listed in the previous Architecture section is composed of four files:
+Each of the objects listed in the previous ``Architecture'' section is composed of four files:
 
 @enumerate
 @item @code{anobjectMT.rb} - Ruby unit test script, This contains the object's Mobility Test (MT).
@@ -151,13 +151,25 @@ When the @code{anobjectMT.rb} script is envoked, it first calls
 script handles any dependencies by making any ruby extensions that the
 @code{anobjectMT.rb} script requires to run. Each object is created
 with the @code{makeRubyExtension.rb} script. The
-@code{makeRubyExtension.rb} script C\creates a subdirectory named
+@code{makeRubyExtension.rb} script C creates a subdirectory named
 AnObject. Inside this directory the standard Ruby @code{mkmf.rb}
 module is envoked to create a makefile, which is used to create a
-shared object. The shared object is loading into the
+shared object. The shared object is loaded into the
 @code{anobjectMT.rb} script with
 @verbatim
   require 'AnObject/AnObject'
+@end verbatim
+
+Any other objects that are required by AnObject will also need to be
+added to the top of @code{AnObject.rb}. If the object is a mixin, you
+will need to add is methods to a base object after it has been
+require'd. This following example from @code{gridmetricMT.rb} adds the
+gridmetic mix-in methods to the grid object.
+
+@verbatim
+class Grid
+ include GridMetric
+end
 @end verbatim
 
 @node Base Objects
