@@ -1124,15 +1124,6 @@ int gridNQuad(Grid *grid)
   return grid->nquad;
 }
 
-int gridNBoundNode(Grid *grid)
-{
-  int node, nnode;
-  nnode = 0;
-  for(node=0;node<gridMaxNode(grid);node++) 
-    if (gridGeometryFace(grid,node)) nnode++;
-  return nnode;
-}
-
 int gridPartId(Grid *grid)
 {
   return grid->partId;

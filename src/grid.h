@@ -199,7 +199,6 @@ Grid *gridWriteTecplotCellZone(Grid *g, int *nodes, char *filename );
 int gridNPrism(Grid *g);
 int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);
-int gridNBoundNode(Grid *g);
 int gridNAux(Grid *g);
 Grid *gridSetNAux(Grid *g, int naux);
 double gridAux(Grid *g, int node, int aux);
