@@ -87,6 +87,65 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
   return  grid;
 }
 
+Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
+		 double *xyz, int *f2n, int *faceId, int *c2n )
+{
+  int i;
+  Grid *grid;
+
+  grid = malloc(sizeof(Grid));
+
+  grid->maxnode = nnode;
+  grid->nnode   = nnode;
+  grid->maxcell = maxcell;
+  grid->ncell   = ncell;
+  grid->maxface = nface;
+  grid->nface   = nface;
+
+  printf("gridImport: %d nodes %d faces %d cells\n",
+	 grid->nnode,grid->nface,grid->ncell);
+
+  grid->xyz = xyz;
+
+  // cells
+  grid->c2n = c2n;
+  for ( i=grid->ncell ; i < grid->maxcell ; i++ ) {
+    grid->c2n[0+4*i] = EMPTY; 
+    grid->c2n[1+4*i] = i+1; 
+  }
+  if (grid->maxcell != grid->ncell) grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
+  grid->blankc2n = grid->ncell;
+
+  grid->cellAdj = adjCreate(grid->maxnode,4);
+
+  for ( i=0 ; i < grid->ncell ; i++ ) {
+    adjRegister(grid->cellAdj,grid->c2n[0+4*i],i);
+    adjRegister(grid->cellAdj,grid->c2n[1+4*i],i);
+    adjRegister(grid->cellAdj,grid->c2n[2+4*i],i);
+    adjRegister(grid->cellAdj,grid->c2n[3+4*i],i);
+  }
+
+  grid->f2n    = f2n;
+  grid->faceId = faceId;
+  grid->blankf2n = EMPTY;
+
+  grid->faceAdj = adjCreate(grid->maxnode,3);
+
+  //addface
+
+  for ( i=0 ; i < grid->nface ; i++ ) {
+    adjRegister(grid->faceAdj,grid->f2n[0+3*i],i);
+    adjRegister(grid->faceAdj,grid->f2n[1+3*i],i);
+    adjRegister(grid->faceAdj,grid->f2n[2+3*i],i);
+  }
+
+  grid->ngem = 0;
+
+  printf("gridImport: minimum Volume %f\n",gridMinVolume(grid));
+
+  return  grid;
+}
+
 void gridFree(Grid *grid)
 {
   adjFree(grid->faceAdj);
