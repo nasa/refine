@@ -119,3 +119,8 @@ GridMove *gridmoveMove(GridMove *gm)
 {
   return gm;
 }
+
+GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
+{
+  return NULL;
+}

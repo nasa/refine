@@ -61,6 +61,22 @@ VALUE gridmove_move( VALUE self )
   return ( gm == gridmoveMove( gm )?self:Qnil );
 }
 
+VALUE gridmove_springs( VALUE self )
+{
+  VALUE rb_springs;
+  int i, nsprings, *springs;
+  GET_GM_FROM_SELF;
+  if ( gm == gridmoveSprings( gm, &nsprings, &springs ) ) {
+    rb_springs = rb_ary_new2(nsprings*2);
+    for ( i=0 ; i < nsprings*2 ; i++ ) 
+      rb_ary_store( rb_springs, i, INT2NUM(springs[i]) );
+    free(springs);
+  }else{
+    rb_springs = Qnil;
+  }
+  return rb_springs;
+}
+
 VALUE cGridMove;
 
 void Init_GridMove() 
@@ -70,4 +86,5 @@ void Init_GridMove()
   rb_define_method( cGridMove, "displace", gridmove_displace, 2 );
   rb_define_method( cGridMove, "displacement", gridmove_displacement, 1 );
   rb_define_method( cGridMove, "move", gridmove_move, 0 );
+  rb_define_method( cGridMove, "springs", gridmove_springs, 0 );
 }

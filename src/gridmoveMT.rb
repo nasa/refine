@@ -76,6 +76,17 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal d,    gm.displacement(2)
  end
 
+ def testSprings
+  grid = Grid.new(5,2,0,0)
+  gm = GridMove.new(grid)
+  5.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  assert_equal [0,1, 0,2, 0,3, 1,2, 1,3, 2,3], gm.springs  
+  grid.addCell(1,0,2,4)
+  assert_equal [0,1, 0,2, 0,3, 1,2, 1,3, 2,3, 1,4, 0,4, 2,4], gm.springs  
+ end
+
+
  def testMove
   grid = equalTetWithFaceBase
   assert_not_nil gm = GridMove.new(grid)
