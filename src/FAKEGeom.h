@@ -28,6 +28,9 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 int derivativeFlag, double *du, double *dv,
 			 double *dudu, double *dudv, double *dvdv );
 
+GridBool CADGeom_NormalToFace( int vol, int faceId, 
+			       double *uv, double *xyz, double *normal);
+
 END_C_DECLORATION
 
 #endif /* CADGEOM_H */

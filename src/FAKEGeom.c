@@ -88,3 +88,9 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 
   return TRUE;
 }
+
+GridBool CADGeom_NormalToFace( int vol, int faceId, 
+			       double *uv, double *xyz, double *normal)
+{
+  return FALSE;
+}
