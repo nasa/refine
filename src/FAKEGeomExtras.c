@@ -80,7 +80,7 @@ char *ErrMgr_GetErrStr(void)
   return "Non-functional FAKEGeomExtras\n";
 }
 
-GridBool MeshMgr_Initialize( void )
+GridBool UGMgr_LoadLibs( void )
 {
   return FALSE;
 }

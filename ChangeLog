@@ -1,3 +1,8 @@
+2004-07-16 16:45 Mike Park  <mike.park@nasa.gov>
+
+	* Replaced obsolete SDK/Goolache/MeshMgr with SDK/UG_API methods.
+	* src/Octree_Stub.c removed, goes away with SDK/Goolache/MeshMgr.
+
 2004-07-16 15:10 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.1.0 Release. SDK tagged DynLoader_MeshMgr_Used

@@ -14,7 +14,7 @@
 #include <float.h>
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
-#include "Goolache/MeshMgr.h"
+#include "UG_API/UGMgr.h"
 #include "MeatLib/UGPatch.h"
 #include "MeatLib/ErrMgr.h"
 #include "grid.h"
@@ -66,8 +66,8 @@ Layer *layerRebuildEdges(Layer *layer, int vol){
       gridNodeT(grid, edgeEndPoints[1], edgeId, &tRange[1] );
 
       /* WTJ will change this to generic with DSO */
-      if( !MeshMgr_MeshEdge(vol, edgeId, edgexyz, tRange, 
-			    &nedgenode, &newxyz, &newt) ) {
+      if( UG_SUCCESS != UG_MeshEdge(vol, edgeId, edgexyz, tRange, 
+				    &nedgenode, &newxyz, &newt) ) {
 	printf("Could NOT mesh Edge %d\n",edgeId);
 	return NULL;
       }
@@ -310,12 +310,12 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 
       nfacenode = EMPTY;
       nfacetri  = EMPTY;
-      if( !MeshMgr_MeshTriFace(vol, faceId, 
-			       nnode, shellxyz, shelluv,
-			       nshell, shell,
-			       0, NULL,
-			       &nfacenode, &nfacetri, 
-			       &newface, &newxyz, &newuv) ) {
+      if( UG_SUCCESS != UG_MeshTriFace(vol, faceId, 
+				       nnode, shellxyz, shelluv,
+				       nshell, shell,
+				       0, NULL,
+				       &nfacenode, &nfacetri, 
+				       &newface, &newxyz, &newuv) ) {
 	printf("rebuild face %d has FAILED.\n", faceId );
 	layerDumpFaceWire("faceWireOrig", faceId, nshell, shell, shellxyz);
 	return NULL;
@@ -452,12 +452,12 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   if (FALSE)
     layerDumpTecplotShell("debugVolumeShell.t", nnode, nshell, shellxyz, shell);
 
-  if( !MeshMgr_MeshTetVolume(vol, 
-			     nnode, shellxyz,
-			     &nshell, &shell,
-			     0, NULL, 0, NULL,
-			     &nvolnode, &nvolcell, 
-			     &newcell, &newxyz) ) {
+  if( UG_SUCCESS != UG_MeshTetVolume(vol, 
+				     nnode, shellxyz,
+				     &nshell, &shell,
+				     0, NULL, 0, NULL,
+				     &nvolnode, &nvolcell, 
+				     &newcell, &newxyz) ) {
 
     printf("%s\nCould NOT mesh Volume %d\n",ErrMgr_GetErrStr(),vol);
 

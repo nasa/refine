@@ -15,8 +15,7 @@
 #include <values.h>
 #include "mesherx_hla.h"
 #include "CADGeom/CADGeom.h"
-#include "Goolache/CAPrIMesh.h"
-#include "Goolache/MeshMgr.h"
+#include "UG_API/UGMgr.h"
 
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
@@ -93,7 +92,7 @@ int main( int argc, char *argv[] )
       printf("-bil argument %d: activated Bil Kleb's case\n",i);
 
     } else if( strcmp(argv[i],"-vgbg") == 0 ) {
-      MeshMgr_SetMeshSizeType( MESH_MGR_VGRID );
+      UGMgr_SetSizerFromIdentity( UG_VGRID );
       printf("-vgbg argument %d: activated VGRID background spacing\n",i);
 
     } else if( strcmp(argv[i],"-h") == 0 ) {
@@ -124,8 +123,8 @@ int main( int argc, char *argv[] )
   }
 
   printf("calling MeshMgr_Initialize ... \n");
-  if ( ! MeshMgr_Initialize( ) ){
-    printf("ERROR: MeshMgr_Initialize broke.\n%s\n",ErrMgr_GetErrStr());
+  if ( ! UGMgr_LoadLibs( ) ){
+    printf("ERROR: UGMgr_LoadLibs broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
   }  
 
@@ -135,7 +134,7 @@ int main( int argc, char *argv[] )
     return 1;
   }  
 
-  printf("calling CADGeom_Load for project <%s> ... \n",project);
+  printf("calling GeoMesh_Load for project <%s> ... \n",project);
   if ( ! GeoMesh_LoadPart( project ) ){
     printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
@@ -143,7 +142,7 @@ int main( int argc, char *argv[] )
 
 
   if ( scale != 1.0 ) {
-    MeshMgr_SetElementScale( scale );
+    UGMgr_SetSizerScale( scale );
     if ( !CAPrIMesh_CreateTShell( vol )) {
       printf("ERROR: could not create shell\n");
       return 0;

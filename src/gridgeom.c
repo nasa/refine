@@ -14,7 +14,7 @@
 #ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
-#include "UG_API/UG_API.h"
+#include "UG_API/UGMgr.h"
 #else
 #include "FAKEGeom.h"
 #endif
@@ -35,8 +35,8 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
   UGPatchPtr localPatch;
   Iterator patchIterator;
 
-  if ( ! MeshMgr_Initialize( ) ){
-    printf("ERROR: MeshMgr_Initialize broke.\n%s\n",ErrMgr_GetErrStr());
+  if ( ! UGMgr_LoadLibs( ) ){
+    printf("ERROR: UGMgr_LoadLibs broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }  
 

@@ -89,7 +89,7 @@ GridBool UGPatch_InitSurfacePatches(UGridPtr ugp);
 
 char *ErrMgr_GetErrStr(void);
 
-GridBool MeshMgr_Initialize( void );
+GridBool UGMgr_LoadLibs( void );
 GridBool CADGeom_Start( void );
 GridBool GeoMesh_LoadPart( char *project );
 GridBool CADGeom_SavePart(int vol, char *project);

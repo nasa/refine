@@ -48,7 +48,7 @@ libFAKEGeomDPWwbi_a_SOURCES = FAKEGeom.h FAKEGeomDPWwbi.c
 
 if BUILD_SDK_DEPENDENTS
 
-lib_LIBRARIES += libMesherX.a libOctree_Stub.a
+lib_LIBRARIES += libMesherX.a
 
 libMesherX_a_CFLAGS = @SDKheader@
 libMesherX_a_SOURCES = \
@@ -83,10 +83,6 @@ libMesherX_a_include_HEADERS = \
 
 libMesherX_a_includedir = @prefix@/include
 
-
-libOctree_Stub_a_CFLAGS = @SDKheader@
-libOctree_Stub_a_SOURCES = Octree_Stub.c
-
 endif # BUILD_SDK_DEPENDENTS
 
 EXTRA_DIST = mesherx_SyJet.c \
@@ -117,8 +113,8 @@ if BUILD_SDK_DEPENDENTS
 if BUILD_NATIVE_KERNEL
 
 all_CFLAGS = @SDKheader@
-refineLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache -lMeat
-MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache libOctree_Stub.a -lMeat
+refineLib = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
+MesherXLib = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
 all_LDFLAGS = @dynamicFlag@
 hla_sources = \
 	MesherX_HLA.c \

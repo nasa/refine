@@ -20,12 +20,6 @@
 #include "gridfiller.h"
 #include "gridmetric.h"
 #include "gridswap.h"
-#include "CADGeom/CADGeom.h"
-#include "CADGeom/CADTopo.h"
-#include "Goolache/MeshMgr.h"
-#include "MeatLib/UGPatch.h"
-#include "MeatLib/ErrMgr.h"
-#include "MeatLib/GeoBC.h"
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 			      GridBool mixedElement,
