@@ -538,6 +538,7 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
   return grid;
 }
 
+Grid *gridSwapEdge3(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge4(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge5(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge6(Grid *grid, int n0, int n1 );
@@ -568,6 +569,8 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
   }
 
   switch (grid->nequ) {
+  case 3: 
+    swapStatus = gridSwapEdge3(grid, n0, n1); break;
   case 4: 
     swapStatus = gridSwapEdge4(grid, n0, n1); break;
   case 5:
@@ -613,6 +616,42 @@ Grid *gridSwap(Grid *grid)
   return grid;
 }
 
+
+Grid *gridSwapEdge3(Grid *grid, int n0, int n1 )
+{
+  int i, nodes[2][4];
+  double cost, origcost, bestcost;
+
+  origcost = 2.0;
+
+  for ( i = 0 ; i < grid->ngem ; i++ ){
+    cost = gridAR( grid, &grid->c2n[4*grid->gem[i]] );
+    origcost = MIN(origcost,cost);
+  }
+
+  nodes[0][0]=n0;
+  nodes[0][1]=grid->equ[0];
+  nodes[0][2]=grid->equ[1];
+  nodes[0][3]=grid->equ[2];
+  nodes[1][0]=n1;
+  nodes[1][1]=grid->equ[0];
+  nodes[1][2]=grid->equ[2];
+  nodes[1][3]=grid->equ[1];
+
+  bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) );
+
+  if ( bestcost > origcost ) {
+
+    for ( i = 0 ; i < grid->ngem ; i++ ) 
+      gridRemoveCell( grid, grid->gem[i] );
+    
+    for ( i = 0 ; i < 2 ; i++ )
+      gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+
+    return grid;
+  }
+  return NULL;
+}
 
 Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
 {
