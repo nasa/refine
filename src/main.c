@@ -145,7 +145,8 @@ int main( int argc, char *argv[] )
 
     if (boundaryLayerGrid) {
       height = 0.002*pow(1.5,j);
-      if (height > 0.05) jmax=0;
+      layerTerminateNormalWithSpacing(layer,height*3.);
+      if (layerNActiveNormal(layer) == 0 ) jmax=0;
       printf("insert layer height = %f\n",height);
       wiggleSteps = (int)(height/0.01)+1;
       height = height / (double)wiggleSteps;
