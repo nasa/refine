@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include "mesherxInit.h"
+#include "gridfiller.h"
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
 #include "Goolache/UGPatch.h"
