@@ -112,6 +112,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 
   grid->tecplotFileOpen = FALSE;
 
+  grid->nline = EMPTY;
   grid->line = NULL;
 
   return grid;
@@ -241,6 +242,7 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->tecplotFileOpen = FALSE;
 
+  grid->nline = EMPTY;
   grid->line = NULL;
 
   return  grid;
