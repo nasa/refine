@@ -10,7 +10,9 @@ Start Builds!!!!!
 make consistant use of the cost constraint functions.
 
 maintain linear data for split and collapse. 
-(this includes edage and face parameter values)
+(this includes edge and face parameter values)
+
+EdgeSplitAt -> edgeSplitRatio
 Replace projections with evaluations.
 
 Validate a mesh by spliting and projecting offending faces (via Bob)
