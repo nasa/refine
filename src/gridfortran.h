@@ -24,7 +24,7 @@ int gridsetmap_( int *nnode, double* map );
 int gridsetnodelocal2global_( int *partId, int *nnodeg, 
 			      int *nnode, int *nnode0, int *local2global );
 int gridsetnodepart_( int *nnode, int *part );
-int gridsetcelllocal2global_( int *ncell, int *local2global );
+int gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
 int gridswap_( );
 int gridsmoothvolume_( );
 int gridadaptwithoutcad_( double *minLength, double *maxLength );
@@ -45,6 +45,7 @@ int gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 int gridnunusedcellglobal_( int *nunused );
 int gridgetunusedcellglobal_( int *nunused, int *unused );
 int gridjoinunusedcellglobal_( int *nunused, int *unused );
+int grideliminateunusedcellglobal_( );
 
 int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
 		    int *ncell, int *ncellg );

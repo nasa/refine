@@ -99,9 +99,10 @@ int gridsetnodelocal2global_( int *partId, int *nnodeg,
   }
 }
 
-int gridsetcelllocal2global_( int *ncell, int *local2global )
+int gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
 {
   int cell;
+  gridSetGlobalNCell(grid, *ncellg);
   for ( cell=0; cell<*ncell; cell++){ 
     gridSetCellGlobal(grid, cell, local2global[cell]-1);
   }
@@ -194,6 +195,11 @@ int gridjoinunusedcellglobal_( int *nunused, int *unused )
 {
   int i;
   for (i=0;i<*nunused;i++) gridJoinUnusedCellGlobal( grid, unused[i] );
+}
+
+int grideliminateunusedcellglobal_(  )
+{
+  gridEliminateUnusedCellGlobal( grid );
 }
 
 int gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
