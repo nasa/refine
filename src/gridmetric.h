@@ -56,6 +56,8 @@ bool gridNegCellAroundNodeExceptGem(Grid *g, int node );
 double gridMinAR(Grid *g);
 double gridMinThawedAR(Grid *g);
 
+Grid *gridFreezeHighARCells(Grid *g, double maxAR );
+
 bool gridRightHandedFace(Grid *g, int face );
 bool gridRightHandedBoundary(Grid *g );
 

@@ -1429,6 +1429,21 @@ double gridMinThawedAR( Grid *grid )
   return minAR;
 }
 
+Grid *gridFreezeHighARCells(Grid *grid, double maxAR )
+{
+  int cellId, nodes[4];
+
+  for (cellId=0;cellId<gridMaxCell(grid);cellId++)
+    if ( NULL != gridCell( grid, cellId, nodes) &&
+	 gridAR(grid, nodes) >= maxAR ) {
+      gridFreezeNode(grid,nodes[0]);
+      gridFreezeNode(grid,nodes[1]);
+      gridFreezeNode(grid,nodes[2]);
+      gridFreezeNode(grid,nodes[3]);
+    }
+  return grid;
+}
+
 bool gridRightHandedFace(Grid *grid, int face ){
   int cell;
   int faceNodes[4], faceId;
@@ -1836,3 +1851,4 @@ Grid *gridNodeFaceMRDerivative (Grid *grid, int node, double *mr, double *dMRdx 
 
   return grid;
 }
+
