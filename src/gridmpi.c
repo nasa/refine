@@ -120,6 +120,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	  if ( EMPTY == localnodes[i] ) {
 	    localnodes[i]=gridAddNode(grid,xyz[0+3*i],xyz[1+3*i],xyz[2+3*i]);
 	    gridSetNodeGlobal(grid, localnodes[i], globalnodes[i]);
+	    gridSetNodePart(grid, localnodes[i], EMPTY);
 	  }
 	}
 	cell = gridAddCell(grid,
@@ -138,13 +139,12 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	   gridNodeLocal(grid,localnodes[1]) ||
 	   gridNodeLocal(grid,localnodes[2]) ) {
 	for(i=0;i<3;i++)
-	  if ( EMPTY == localnodes[i] ) 
-	    printf("face insert error.");
+	  if ( EMPTY == localnodes[i] ) printf("face insert error.");
 	face = gridAddFaceUV(grid,
 			     localnodes[0],uv[0],uv[1],
 			     localnodes[1],uv[2],uv[3],
 			     localnodes[2],uv[4],uv[5],
-			     localnodes[3]);
+			     globalnodes[3]);
       }
     }
     queueNewTransaction(lq);
