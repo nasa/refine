@@ -1107,7 +1107,8 @@ GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
   double residual;
 
   b = malloc(3*gridMaxNode(grid)*sizeof(double));
-  for(row=0;row<3*gridMaxNode(grid);row++) b[row] = 0.0;
+  for(row=0;row<gridMaxNode(grid);row++) 
+    for(i=0;i<3;i++) b[i+3*row] = 0.0;
  
   for(row=0;row<gridMaxNode(grid);row++) {
     if ( gridValidNode(grid,row) &&
