@@ -45,6 +45,14 @@ class TestGridSwap < Test::Unit::TestCase
  def testSwapEdge3
   assert_not_nil grid=gemGrid(3, 0.1, 0)
   initalVolume = grid.totalVolume
+
+  assert_equal grid, grid.freezeNode(0)
+  assert_equal grid, grid.freezeNode(1)
+  assert_equal nil,  grid.swapEdge(0,1)
+  assert_equal 3, grid.cellDegree(0)
+  assert_equal 3, grid.cellDegree(1)
+  assert_equal grid, grid.thawNode(1)
+
   assert_equal grid, grid.swapEdge(0,1)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
