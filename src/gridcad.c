@@ -125,8 +125,17 @@ Grid *gridSafeProjectNodeToFace(Grid *grid, int node, int faceId )
 Grid *gridProject(Grid *grid)
 {
   int node;
+  int notProjected;
+  notProjected = 0;
 
-  for (node=0;node<grid->nnode;node++) gridSafeProjectNode(grid,node);  
+  for (node=0;node<grid->nnode;node++) 
+    if ( gridSafeProjectNode(grid,node) != grid ) notProjected++;
+
+  if (notProjected > 0){
+    printf("gridProject: %d of %d nodes not projected.\n",
+	   notProjected,grid->nnode);
+    return NULL;
+  }
 
   return grid;
 }
