@@ -259,8 +259,12 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testSplitEdge4onDifferentBC
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal grid, grid.addFace(0,1,2,2)
-  assert_equal grid, grid.addFace(1,0,5,5)
+  assert_equal grid, grid.addFaceUV(0,20.0,120.0,
+				    1,21.0,121.0,
+				    2,22.0,122.0,2)
+  assert_equal grid, grid.addFaceUV(1,51.0,151.0,
+				    0,50.0,150.0,
+				    5,55.0,155.0,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.splitEdge(0,1)
   assert_nil         grid.faceId(0,1,2)
@@ -270,6 +274,14 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 5,    grid.faceId(0,6,5) 
   assert_equal 5,    grid.faceId(6,1,5) 
   assert grid.rightHandedBoundary, "split boundary is not right handed"
+  assert_equal [20.0,120.0], grid.nodeUV(0,2)
+  assert_equal [50.0,150.0], grid.nodeUV(0,5)
+  assert_equal [21.0,121.0], grid.nodeUV(1,2)
+  assert_equal [51.0,151.0], grid.nodeUV(1,5)
+  assert_equal [22.0,122.0], grid.nodeUV(2,2)
+  assert_equal [55.0,155.0], grid.nodeUV(5,5)
+  assert_equal [20.5,120.5], grid.nodeUV(6,2)
+  assert_equal [50.5,150.5], grid.nodeUV(6,5)
  end
 
 #test for not enough mem for swap and split
