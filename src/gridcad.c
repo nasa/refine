@@ -1173,8 +1173,8 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
       }
     }
 
-    printf("evaluations%6d best%20.15f worst%20.15f\n", 
-	   evaluations, volume[best], volume[worst]);
+    /* printf( "evaluations%6d best%20.15f worst%20.15f\n", 
+               evaluations, volume[best], volume[worst]); */
     if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
 
     if (volume[best]-volume[worst] < ABS(1.0e-5*volume[best])) break;

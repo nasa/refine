@@ -26,6 +26,13 @@ class Grid
   ncell.times { |cellId| vol += volume(cell(cellId)) }
   vol
  end
+ def silentMinVolume
+  vol = 999.0
+  ncell.times do |cellId| 
+   vol = volume(cell(cellId)) if volume(cell(cellId))<vol 
+  end
+  vol
+ end
 end
 
 class TestGridCAD < Test::Unit::TestCase
@@ -391,7 +398,6 @@ class TestGridCAD < Test::Unit::TestCase
  def testImproveMinVolumeForConcaveGemWithBadLapacian
   grid = gemGrid 4, 5.0, 0
   avgVol = grid.totalVolume/grid.ncell.to_f
-  puts
   grid.smoothNodeVolume(6)
   assert_in_delta avgVol, grid.minVolume, 1.0e-4
  end
@@ -399,9 +405,8 @@ class TestGridCAD < Test::Unit::TestCase
  def testImproveMinVolumeForInvalidConcaveGem
   grid = gemGrid 4, 5.0, 0, -1.5
   avgVol = grid.totalVolume/grid.ncell.to_f
-  puts
   grid.smoothNodeVolume(6)
-  assert_in_delta avgVol, grid.minVolume, 1.0e-4
+  assert_in_delta avgVol, grid.silentMinVolume, 1.0e-4
  end
 
 end
