@@ -67,8 +67,7 @@ Grid *gridNodeFaceMR(Grid *g, int node, double *mr );
 Grid *gridNodeFaceMRDerivative(Grid *g, int node, double *mr, double *dMRdx );
 
 Grid *gridMapMatrix(Grid *g, int node, double *m);
-void gridMapXYZWithM( double *m, double *x, double *y, double *z );
-void gridMapXYZWithNode( Grid *g, int node, double *x, double *y, double *z );
+void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
 
 END_C_DECLORATION
 

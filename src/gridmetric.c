@@ -6,6 +6,8 @@
 #include "gridmetric.h"
 #include "gridStruct.h"
 
+#define VECTOR_COPY3(a,b) for(i=0;i<3;i++)a[i]=b[i];
+
 Grid *gridMapMatrix(Grid *grid, int node, double *m)
 {
   m[0] = grid->map[0+6*node];
@@ -18,29 +20,18 @@ Grid *gridMapMatrix(Grid *grid, int node, double *m)
   return grid;
 }
 
-void gridMapXYZWithM( double *m,
+void gridMapXYZWithJ( double *j,
 		      double *x, double *y, double *z )
 {
-  /*
   double mapx, mapy, mapz;
   
-  mapx = m[0+3*0] * *x + m[1+3*0] * *y + m[2+3*0] * *z; 
-  mapy = m[0+3*1] * *x + m[1+3*1] * *y + m[2+3*1] * *z; 
-  mapz = m[0+3*2] * *x + m[1+3*2] * *y + m[2+3*2] * *z; 
+  mapx = j[0] * *x + j[1] * *y + j[2] * *z; 
+  mapy = j[3] * *x + j[4] * *y + j[5] * *z; 
+  mapz = j[6] * *x + j[6] * *y + j[8] * *z; 
 
   *x = mapx;
   *y = mapy;
   *z = mapz;
-  */
-}
-
-void gridMapXYZWithNode( Grid *grid, int node, 
-			 double *x, double *y, double *z )
-{
-  double m[9];
-
-  gridMapMatrix(grid, node, m);
-  gridMapXYZWithM(m, x, y, z);
 }
 
 double gridEdgeLength(Grid *grid, int n0, int n1 )
@@ -244,8 +235,12 @@ Grid *gridEigenValues(Grid *grid, double *m, double *eigenValues)
 {
   double t, b, c, d;
   double Q, Rp, Q3, Qr2m, b3;
+  double diagRatio;
 
-  if (ABS(m[1])+ABS(m[2])+ABS(m[4]) < 1e-12) {
+  diagRatio = (ABS(m[1])+ABS(m[2])+ABS(m[4])) 
+    / (ABS(m[0])+ABS(m[3])+ABS(m[5]));
+
+  if (diagRatio < 1.0e-5) {
     eigenValues[0]=m[0];
     eigenValues[1]=m[3];
     eigenValues[2]=m[5];
@@ -259,7 +254,11 @@ Grid *gridEigenValues(Grid *grid, double *m, double *eigenValues)
     Q = (b*b - 3.0*c)/9.0;
     Rp = (2.0*b*b*b - 9.0*b*c + 27.0*d)/54.0;
     Q3 = Q*Q*Q;
-    if ( Rp*Rp > Q3 ) return NULL;
+    if ( Rp*Rp > Q3 ) {
+      printf("%s: %d: gridEigenValues: complex roots\n",
+	     __FILE__,__LINE__);
+      return NULL;
+    }
     
     b3 = b/3.0;
     t = acos(Rp/sqrt(Q3));
@@ -329,8 +328,11 @@ Grid *gridEigenVector(Grid *grid, double *m, double eigenValue,
    }
    else
    {
-     if ( n3 == 0.0 ) return NULL;
-
+     if ( n3 == 0.0 ) {
+       printf("%s: %d: gridEigenVector: all vectors have zero length\n",
+	      __FILE__,__LINE__);
+       return NULL;
+     }
       n3 = sqrt(n3);
       eigenVector[0] = e3[0]/n3;
       eigenVector[1] = e3[1]/n3;
@@ -344,10 +346,13 @@ Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
 		      double *v1, double *v2, double *v3)
 {
   int i;
-  double t, vt[3];
-#define VECTOR_COPY3(a,b) for(i=0;i<3;i++)a[i]=b[i];
+  double t, vt[3], n[3];
+  double diagRatio;
 
-  if (ABS(m[1])+ABS(m[2])+ABS(m[4]) < 1e-12) {
+  diagRatio = (ABS(m[1])+ABS(m[2])+ABS(m[4])) 
+    / (ABS(m[0])+ABS(m[3])+ABS(m[5]));
+
+  if (diagRatio < 1.0e-5) {
     eigenValues[0]=m[0];
     eigenValues[1]=m[3];
     eigenValues[2]=m[5];
@@ -361,10 +366,26 @@ Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
     v3[1] = 0.0;
     v3[2] = 1.0;
   }else{
-    if ( grid != gridEigenValues( grid, m, eigenValues ) ) return NULL;
-    if ( grid != gridEigenVector( grid, m, eigenValues[0], v1 ) ) return NULL;
-    if ( grid != gridEigenVector( grid, m, eigenValues[1], v2 ) ) return NULL;
-    if ( grid != gridEigenVector( grid, m, eigenValues[2], v3 ) ) return NULL;
+    if ( grid != gridEigenValues( grid, m, eigenValues ) ) {
+      printf("%s: %d: gridEigenSystem: gridEigenValues NULL\n",
+	     __FILE__,__LINE__);
+      return NULL;
+    }
+    if ( grid != gridEigenVector( grid, m, eigenValues[0], v1 ) ) {
+      printf("%s: %d: gridEigenSystem: gridEigenVector 0 NULL\n",
+	     __FILE__,__LINE__);
+      return NULL;
+    }
+    if ( grid != gridEigenVector( grid, m, eigenValues[1], v2 ) ) {
+      printf("%s: %d: gridEigenSystem: gridEigenVector 1 NULL\n",
+	     __FILE__,__LINE__);
+      return NULL;
+    }
+    if ( grid != gridEigenVector( grid, m, eigenValues[2], v3 ) ) {
+      printf("%s: %d: gridEigenSystem: gridEigenVector 2 NULL\n",
+	     __FILE__,__LINE__);
+      return NULL;
+    }
   }
 
   if ( eigenValues[1] > eigenValues[0] ) {
@@ -394,13 +415,45 @@ Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
     VECTOR_COPY3(v3,vt);
   }
 
+  if (FALSE) {
+    /* make sure that my eigen system is right-handed*/
+    
+    n[0] = v1[1]*v2[2] - v1[2]*v2[1]; 
+    n[1] = v1[2]*v2[0] - v1[0]*v2[2]; 
+    n[2] = v1[0]*v2[1] - v1[1]*v2[0]; 
+    
+    if (n[0]*v3[0]+n[1]*v3[1]+n[2]*v3[2] < 0.0 ){
+      VECTOR_COPY3(v3,-v3);    
+    }
+  }
+  
   return grid;
 }
 
 Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
 {
-  double eigenValues[3], e1, e2, e3, v1[3], v2[3], v3[3];
-  if ( grid != gridEigenSystem(grid, m, eigenValues, v1, v2, v3 )) return NULL;
+  int i;
+  double eigenValues[3], e1, e2, e3, v1[3], v2[3], v3[3], n[3], vt[3], et;
+  if ( grid != gridEigenSystem(grid, m, eigenValues, v1, v2, v3 )) {
+    printf("%s: %d: gridConvertMetricToJacobian: gridEigenSystem NULL\n",
+	   __FILE__,__LINE__);
+    return NULL;
+  }
+
+  /* make sure that my eigen system is right-handed*/
+    
+  n[0] = v1[1]*v2[2] - v1[2]*v2[1]; 
+  n[1] = v1[2]*v2[0] - v1[0]*v2[2]; 
+  n[2] = v1[0]*v2[1] - v1[1]*v2[0]; 
+  
+  if (n[0]*v3[0]+n[1]*v3[1]+n[2]*v3[2] < 0.0 ){
+    et = eigenValues[1];
+    eigenValues[1] = eigenValues[2];
+    eigenValues[2] = et;
+    VECTOR_COPY3(vt,v2);
+    VECTOR_COPY3(v2,v3);
+    VECTOR_COPY3(v3,vt);
+  }
 
   e1 = sqrt(eigenValues[0]);
   e2 = sqrt(eigenValues[1]);
@@ -474,7 +527,7 @@ double gridAR(Grid *grid, int *nodes )
   double xins;
   double aspect, cost;
   int i;
-  double m[6], m0[6], m1[6], m2[6], m3[6];
+  double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
 
   x1 = grid->xyz[0+3*nodes[0]];
   y1 = grid->xyz[1+3*nodes[0]];
@@ -498,11 +551,15 @@ double gridAR(Grid *grid, int *nodes )
   gridMapMatrix(grid,nodes[3],m3);
 
   for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
-
-  gridMapXYZWithM(m, &x1, &y1, &z1);
-  gridMapXYZWithM(m, &x2, &y2, &z2);
-  gridMapXYZWithM(m, &x3, &y3, &z3);
-  gridMapXYZWithM(m, &x4, &y4, &z4);
+  if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
+    printf("%s: %d: gridAR: gridConvertMetricToJacobian NULL\n",
+	   __FILE__,__LINE__);
+  }
+  
+  gridMapXYZWithJ(j, &x1, &y1, &z1);
+  gridMapXYZWithJ(j, &x2, &y2, &z2);
+  gridMapXYZWithJ(j, &x3, &y3, &z3);
+  gridMapXYZWithJ(j, &x4, &y4, &z4);
 
  /* Compute the aspect ratios */
 
@@ -580,6 +637,12 @@ double gridAR(Grid *grid, int *nodes )
 	  nx1*ny2*nz3*s4)/det;
 
   aspect = xins/circ*3.0;
+
+  if ( aspect < 0.0 ) {
+    printf("nodes %d %d %d %d aspect %f\n",nodes[0],nodes[1],nodes[2],nodes[3],aspect);
+    printf("m \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
+    printf("j \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f\n",j[0],j[1],j[2],j[1],j[3],j[4],j[2],j[4],j[5]);
+  }
 
   if ( gridVolume( grid, nodes ) <= 1.0e-14) aspect = -1.0;
   return aspect;
@@ -666,7 +729,7 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   double xins_dx, xins_dy, xins_dz;
 
   int i;
-  double m[6], m0[6], m1[6], m2[6], m3[6];
+  double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
 
   x1 = grid->xyz[0+3*nodes[0]];
   y1 = grid->xyz[1+3*nodes[0]];
@@ -690,11 +753,15 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   gridMapMatrix(grid,nodes[3],m3);
 
   for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
+  if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
+    printf("%s: %d: gridCellARDerivative: gridConvertMetricToJacobian NULL\n",
+	   __FILE__,__LINE__);
+  }
 
-  gridMapXYZWithM(m, &x1, &y1, &z1);
-  gridMapXYZWithM(m, &x2, &y2, &z2);
-  gridMapXYZWithM(m, &x3, &y3, &z3);
-  gridMapXYZWithM(m, &x4, &y4, &z4);
+  gridMapXYZWithJ(j, &x1, &y1, &z1);
+  gridMapXYZWithJ(j, &x2, &y2, &z2);
+  gridMapXYZWithJ(j, &x3, &y3, &z3);
+  gridMapXYZWithJ(j, &x4, &y4, &z4);
 
   /* Compute the aspect ratios */
 
@@ -1372,7 +1439,7 @@ double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
   double y1, y2, y3; 
   double z1, z2, z3;
   int i;
-  double m[6], m0[6], m1[6], m2[6];
+  double m[6], m0[6], m1[6], m2[6], j[9];
   
   double ex1, ey1, ez1;
   double ex2, ey2, ez2;
@@ -1399,10 +1466,15 @@ double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
   gridMapMatrix(grid,n2,m2);
 
   for (i=0;i<6;i++) m[i]=0.333333333333333*(m0[i]+m1[i]+m2[i]);
+  if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
+    printf("%s: %d: gridFaceMR: gridConvertMetricToJacobian NULL\n",
+	   __FILE__,__LINE__);
+    printf("m \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
+  }
 
-  gridMapXYZWithM(m, &x1, &y1, &z1);
-  gridMapXYZWithM(m, &x2, &y2, &z2);
-  gridMapXYZWithM(m, &x3, &y3, &z3);
+  gridMapXYZWithJ(j, &x1, &y1, &z1);
+  gridMapXYZWithJ(j, &x2, &y2, &z2);
+  gridMapXYZWithJ(j, &x3, &y3, &z3);
 
   ex1 = x2-x1;
   ey1 = y2-y1;
@@ -1446,7 +1518,7 @@ Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
   double y1, y2, y3; 
   double z1, z2, z3;
   int i;
-  double m[6], m0[6], m1[6], m2[6];
+  double m[6], m0[6], m1[6], m2[6], j[9];
   
   x1 = grid->xyz[0+3*nodes[0]];
   y1 = grid->xyz[1+3*nodes[0]];
@@ -1465,15 +1537,19 @@ Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
   gridMapMatrix(grid,nodes[2],m2);
 
   for (i=0;i<6;i++) m[i]=0.333333333333333*(m0[i]+m1[i]+m2[i]);
+  if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
+    printf("%s: %d: griFaceMRDerivative: gridConvertMetricToJacobian NULL\n",
+	   __FILE__,__LINE__);
+  }
+  gridConvertMetricToJacobian( grid, m, j );
 
-  gridMapXYZWithM(m, &x1, &y1, &z1);
-  gridMapXYZWithM(m, &x2, &y2, &z2);
-  gridMapXYZWithM(m, &x3, &y3, &z3);
+  gridMapXYZWithJ(j, &x1, &y1, &z1);
+  gridMapXYZWithJ(j, &x2, &y2, &z2);
+  gridMapXYZWithJ(j, &x3, &y3, &z3);
 
   FaceMRDerivative(x1,y1,z1,x2,y2,z2,x3,y3,z3,mr,dMRdx );
   return grid;
 }
-
 
 void FaceMRDerivative(double x1, double y1, double z1,
 		      double x2, double y2, double z2,
