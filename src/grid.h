@@ -33,6 +33,8 @@ Grid *gridRemoveCell(Grid *g, int cellId );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 
 Grid *gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
+Grid *gridRemoveFace(Grid *g, int face );
+int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
