@@ -689,7 +689,7 @@ Grid *gridSwapEdge5(Grid *grid, int n0, int n1 )
     origcost = MIN(origcost,cost);
   }
 
-  bestcost  =  -1.0;
+  bestcost  =  -2.0;
   bestindex = -1;
 
   for ( currentindex = 0 ; currentindex < 5 ; currentindex++ ) {
