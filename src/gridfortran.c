@@ -465,6 +465,7 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   int node, localnode, face, ids, faceId;
   double uv[2], xyz[3];
 
+  localnode=0;
   node=0;
   while (node<(*nnode)) {
     if (nodes[node] > 0) {
@@ -495,6 +496,7 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   int node, localnode;
   int face, ids, faceId;
 
+  localnode=0;
   node=0;
   while (node<(*nnode)) {
     if (nodes[node] > 0) {
