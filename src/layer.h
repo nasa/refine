@@ -37,7 +37,6 @@ int layerAddNormal(Layer *, int globalNodeId );
 int layerUniqueNormalId(Layer *, int globalNodeId );
 Layer *layerMakeNormal(Layer *);
 Layer *layerInitializeNormal(Layer *, int normal );
-Layer *layerCopyNormal(Layer *, int originalNormal, int newNormal );
 Layer *layerTriangleNormals(Layer *, int triangle, int *normals);
 int layerNormalRoot(Layer *, int normal );
 int layerNormalDeg(Layer *, int normal );

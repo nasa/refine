@@ -377,26 +377,6 @@ Layer *layerInitializeNormal(Layer *layer, int normal)
   return layer;
 }
 
-Layer *layerCopyNormal(Layer *layer, int originalNormal, int newNormal )
-{
-  if (originalNormal < 0 || originalNormal >= layerNNormal(layer) ) return NULL;
-  if (newNormal < 0 || newNormal >= layerNNormal(layer) ) return NULL;
- 
-  layer->normal[newNormal].root = layer->normal[originalNormal].root; 
-  layer->normal[newNormal].tip = layer->normal[originalNormal].tip;
-  layer->normal[newNormal].direction[0] = 
-    layer->normal[originalNormal].direction[0];
-  layer->normal[newNormal].direction[1] = 
-    layer->normal[originalNormal].direction[1];
-  layer->normal[newNormal].direction[2] = 
-    layer->normal[originalNormal].direction[2];
-  layer->normal[newNormal].height = layer->normal[originalNormal].height;
-  layer->normal[newNormal].terminated = 
-    layer->normal[originalNormal].terminated;
-
-  return layer;
-}
-
 int layerAddNormal(Layer *layer, int globalNodeId )
 {
   int i; 
