@@ -227,6 +227,22 @@ VALUE layer_getNormalHeight( VALUE self, VALUE normal )
   return rb_float_new(height);
 }
 
+VALUE layer_assignLinearNormalHeight( VALUE self, VALUE constant, VALUE slope, VALUE rb_origin, VALUE rb_direction )
+{
+  int i;
+  double origin[3], direction[3];
+  GET_LAYER_FROM_SELF;
+  for(i=0;i<3;i++){
+    origin[i]=NUM2DBL(rb_ary_entry(rb_origin,i));
+    direction[i]=NUM2DBL(rb_ary_entry(rb_direction,i));
+  }
+  return ( layer == layerAssignLinearNormalHeight( layer, 
+                                                   NUM2DBL(constant),
+                                                   NUM2DBL(slope),
+                                                   origin,
+                                                   direction)?self:Qnil );
+}
+
 VALUE layer_visibleNormals( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -414,6 +430,8 @@ void Init_Layer()
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );
   rb_define_method( cLayer, "getNormalHeight", layer_getNormalHeight, 1 );
+  rb_define_method( cLayer, "assignLinearNormalHeight",
+                    layer_assignLinearNormalHeight, 4 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "projectNormalsToConstraints", 
 		    layer_projectNormalsToConstraints, 0 );

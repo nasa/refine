@@ -689,6 +689,24 @@ Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
 
   return layer;
 }
+Layer *layerAssignLinearNormalHeight(Layer *layer, 
+                                     double constant, double slope, 
+                                     double *origin, double *direction)
+{
+  int normal;
+  double distance;
+  double distanceVector[3], normalOrigin[3];
+  
+  for(normal=0;normal<layerNNormal(layer);normal++){
+    gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer,normal), normalOrigin);
+    gridSubtractVector(normalOrigin,origin,distanceVector);
+    distance = gridDotProduct(distanceVector,direction);
+    if (distance >= 0.0 ) 
+      layerSetNormalHeight( layer, normal, constant + distance*slope );
+  }
+  return layer;	
+}
+
 
 Layer *layerSetHeightOfAllNormals(Layer *layer, double height )
 {
