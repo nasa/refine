@@ -203,55 +203,38 @@ int nearNearestIndex(Near *root, Near *key)
 Near *nearNearestIndexAndDistance(Near *root, Near *key,
 				  int *index, double *distance)
 {
-  int myIndex, leftIndex, rightIndex;
-  double myDistance, leftDistance=DBL_MAX, rightDistance=DBL_MAX;
+  int leftIndex, rightIndex;
+  double leftDistance=DBL_MAX, rightDistance=DBL_MAX;
   Near *leftNear, *rightNear, *returnNear;
 
   if (NULL==root || NULL==key) return NULL;
 
-  myIndex = nearIndex( root );
-  myDistance = nearDistance( root, key);
+  *index = nearIndex( root );
+  *distance = nearDistance( root, key);
+  returnNear = root;
 
-  if (myDistance <= nearLeftRadius(root) ) {
+  if (root->leftChild == NULL) return returnNear;
+
+  if (*distance <= nearLeftRadius(root) ) {
     leftNear = nearNearestIndexAndDistance(root->leftChild, key,
 					   &leftIndex, &leftDistance);
-    if (NULL == leftNear){
-      *index = myIndex;
-      *distance = myDistance;
-      return root;
+    if (leftDistance<*distance){
+      *index = leftIndex;
+      *distance = leftDistance;
+      returnNear = leftNear;
     }
   }
 
-  if (myDistance <= nearRightRadius(root) ) {
+  if (root->rightChild == NULL) return returnNear;
+
+  if (*distance <= nearRightRadius(root) ) {
     rightNear = nearNearestIndexAndDistance(root->rightChild, key,
 					    &rightIndex, &rightDistance);
-    if (NULL == rightNear){
-      if ( myDistance < leftDistance ){
-	*index = myIndex;
-	*distance = myDistance;
-	return root;
-      }else{
-	*index = leftIndex;
-	*distance = leftDistance;
-	return root->leftChild;
-      }
+    if (rightDistance<*distance){
+      *index = rightIndex;
+      *distance = rightDistance;
+      returnNear = rightNear;
     }
-  }
-
-  if ( leftDistance < rightDistance ){
-    *index = leftIndex;
-    *distance = leftDistance;
-    returnNear = root->leftChild;
-  }else{
-    *index = rightIndex;
-    *distance = rightDistance;
-    returnNear = root->rightChild;
-  }
-  
-  if ( myDistance < *distance ){
-    *index = myIndex;
-    *distance = myDistance;
-    returnNear = root;
   }
   
   return returnNear;
