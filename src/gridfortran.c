@@ -169,7 +169,7 @@ void gridtestcadparameters_( void )
   double dXYZ[3], dist, dT, dUV;
   double xyzTol, uvTol, tTol;
   AdjIterator it;
-  gridBool reportMismatch;
+  GridBool reportMismatch;
 
   reportMismatch = FALSE;
   xyzTol = 1e-7;
