@@ -1001,7 +1001,7 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   return nodeId;
 }
 
-Grid *gridNodeXYZ(Grid *grid, int  node, double *xyz )
+Grid *gridNodeXYZ(Grid *grid, int node, double *xyz )
 {
   if (node >=grid->nnode) return NULL;
   xyz[0] = grid->xyz[0+3*node];
