@@ -143,6 +143,8 @@ class TestNear < Test::Unit::TestCase
   assert_equal 2, near.collisions(target)
   target = Near.new(8,10,0,0,10)
   assert_equal 3, near.collisions(target)
+  target = Near.new(8,5,0,0,1)
+  assert_equal 1, near.collisions(target)
  end
 
 end
