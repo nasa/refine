@@ -414,4 +414,21 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta(     100, eig[2], 1.0e-5 )
  end
 
+ def testLU3x3eye
+  a = [ 1,0,0, 0,1,0, 0,0,1 ]
+  lu = @gm.lu3x3(a)
+  9.times do |n|
+   assert_in_delta( a[n], lu[n], 1.0e-15, n.to_s+" entry bad" )
+  end
+ end
+
+ def testLU3x3full
+  a = [ 3,0,6, 5,8,2, 2,2,8 ]
+  g = [ 3,0,2, 5,8,-1, 2,2,6 ]
+  lu = @gm.lu3x3(a)
+  9.times do |n|
+   assert_in_delta( g[n], lu[n], 1.0e-15, n.to_s+" entry bad" )
+  end
+ end
+
 end

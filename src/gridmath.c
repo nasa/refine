@@ -280,3 +280,30 @@ void gridEigOrtho3x3( double *v0, double *v1, double *v2 )
 
 }
 
+void gridLU3x3( double *a, double *lu )
+{
+  /* 
+     0 1,1
+     1 2,1
+     2 3,1
+     3 1,2
+     4 2,2
+     5 3,2
+     6 1,3
+     7 2,3
+     8 3,3
+  */
+  
+  lu[0] = a[0];
+  lu[1] = a[1]/lu[0];
+  lu[2] = a[2]/lu[0];
+
+  lu[3] = a[3];
+  lu[4] = a[4] - lu[1]*lu[3];
+  lu[5] =(a[5] - lu[2]*lu[3])/lu[4];
+
+  lu[6] = a[6];
+  lu[7] = a[7] - lu[1]*lu[6];
+  lu[8] = a[8] - lu[2]*lu[6] - lu[5]*lu[7];
+
+}

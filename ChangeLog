@@ -1,3 +1,7 @@
+2004-07-14 09:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c added LU 3x3 routine
+
 2004-07-13 16:21 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c added compressed row storage to set up linear

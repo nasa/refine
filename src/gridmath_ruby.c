@@ -226,6 +226,18 @@ static VALUE grid_vectTriDiag2( VALUE self, VALUE rb_d, VALUE rb_e,
   }
 }
 
+static VALUE grid_lu3x3( VALUE self, VALUE rb_a )
+{
+  int i;
+  double a[9], lu[9];
+  VALUE rb_lu;
+  for (i=0;i<9;i++) a[i] = NUM2DBL(rb_ary_entry(rb_a,i));
+  gridLU3x3( a, lu );
+  rb_lu = rb_ary_new2(9);
+  for(i=0;i<9;i++) rb_ary_store( rb_lu, i, rb_float_new(lu[i]) );
+  return rb_lu;
+}
+
 VALUE cGridMath;
 
 void Init_GridMath(  )
@@ -247,4 +259,5 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "vectTriDiag0", grid_vectTriDiag0, 5 );
   rb_define_method( cGridMath, "vectTriDiag1", grid_vectTriDiag1, 5 );
   rb_define_method( cGridMath, "vectTriDiag2", grid_vectTriDiag2, 5 );
+  rb_define_method( cGridMath, "lu3x3", grid_lu3x3, 1 );
 }
