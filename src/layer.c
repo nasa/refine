@@ -30,7 +30,6 @@ struct Normal {
 
 typedef struct Triangle Triangle;
 struct Triangle {
-  int globalNode[3];
   int normal[3];
   int constrainedSide[3];
   int parentGeomEdge[3];
@@ -218,11 +217,6 @@ void layerSortGlobalNodes(void *voidLayer, int *o2n)
   Layer *layer = (Layer *)voidLayer;
   int i, triangle, normal;
 
-  for (triangle = 0 ; triangle < layerNTriangle(layer) ; triangle++ )
-    for (i=0;i<3;i++) if (EMPTY != layer->triangle[triangle].globalNode[i])
-      layer->triangle[triangle].globalNode[i] = 
-	o2n[layer->triangle[triangle].globalNode[i]];
-
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
       layer->normal[normal].root = o2n[layer->normal[normal].root];
@@ -277,13 +271,6 @@ Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
 	  id==bc[ibc] ) {
 	layerAddTriangle(layer,nodes[0],nodes[1],nodes[2]);
       }
-    }
-  }
-  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    for(i=0;i<3;i++){
-      globalNodeId = layer->triangle[triangle].globalNode[i];
-      layer->triangle[triangle].normal[i] = 
-	layerUniqueNormalId(layer,globalNodeId);
     }
   }
 
@@ -355,11 +342,10 @@ Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
     }
   }
 
-  layer->triangle[layer->ntriangle].globalNode[0] = n0;
-  layer->triangle[layer->ntriangle].globalNode[1] = n1;
-  layer->triangle[layer->ntriangle].globalNode[2] = n2;
+  layer->triangle[layer->ntriangle].normal[0] = layerUniqueNormalId(layer,n0);
+  layer->triangle[layer->ntriangle].normal[1] = layerUniqueNormalId(layer,n1);
+  layer->triangle[layer->ntriangle].normal[2] = layerUniqueNormalId(layer,n2);
   for (i=0;i<3;i++){
-    layer->triangle[layer->ntriangle].normal[i] = EMPTY;
     layer->triangle[layer->ntriangle].constrainedSide[i] = 0;
     layer->triangle[layer->ntriangle].parentGeomEdge[i] = 0;
   }
@@ -373,21 +359,20 @@ Layer *layerTriangle(Layer *layer, int triangle, int *nodes )
 {
 
   if (triangle < 0 || triangle >= layerNTriangle(layer)) return NULL;
-  nodes[0] = layer->triangle[triangle].globalNode[0];
-  nodes[1] = layer->triangle[triangle].globalNode[1];
-  nodes[2] = layer->triangle[triangle].globalNode[2];
+  nodes[0] = layerNormalRoot(layer,layer->triangle[triangle].normal[0]);
+  nodes[1] = layerNormalRoot(layer,layer->triangle[triangle].normal[1]);
+  nodes[2] = layerNormalRoot(layer,layer->triangle[triangle].normal[2]);
   
   return layer;
 }
 
 Layer *layerTriangleDirection(Layer *layer, int triangle, double *direction )
 {
-  int i, *nodes;
+  int i, nodes[3];
   double node0[3], node1[3], node2[3];
   double edge1[3], edge2[3], norm[3], length; 
   
-  if (triangle < 0 || triangle >= layerNTriangle(layer) ) return NULL;
-  nodes = layer->triangle[triangle].globalNode;
+  if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
 
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
@@ -743,17 +728,18 @@ int layerNConstrainedSides(Layer *layer, int faceId )
 
 Layer *layerFindParentGeomEdges(Layer *layer)
 {
-  int triangle, side, n0, n1, edgeId;
+  int triangle, nodes[3], side, n0, n1, edgeId;
 
   if (layerNTriangle(layer) == 0 ) return NULL;
   if (layerNNormal(layer) == 0 ) return NULL;
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    layerTriangle(layer,triangle,nodes);
     for(side=0;side<3;side++){
       n0 = side;
       n1 = side+1; if (n1>2) n1 = 0;
-      n0 = layer->triangle[triangle].globalNode[n0];
-      n1 = layer->triangle[triangle].globalNode[n1];
+      n0 = nodes[n0];
+      n1 = nodes[n1];
       edgeId = gridEdgeId(layer->grid,n0,n1);
       if (EMPTY != edgeId) layer->triangle[triangle].parentGeomEdge[side]=edgeId;
     }
@@ -922,8 +908,6 @@ Layer *layerAdvance(Layer *layer)
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     layerTriangleNormals(layer, triangle, normals);
-    for (i=0;i<3;i++) 
-      layer->triangle[triangle].globalNode[i] = layer->normal[normals[i]].tip;
 
     /* note that tip has been set to root on terminated normals */
     /* the if (n[0]!=n[3]) checks are for layer termiantion */

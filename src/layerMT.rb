@@ -52,7 +52,7 @@ class TestLayer < Test::Unit::TestCase
   assert                   layer.maxtriangle>=1
   assert_nil               layer.triangle(-1)
   assert_equal [0,1,2],    layer.triangle(0)
-  assert_equal [-1,-1,-1], layer.triangleNormals(0)
+  assert_equal [0,1,2],    layer.triangleNormals(0)
   assert_equal 0,          layer.constrainedSide(0,0)
   assert_equal 0,          layer.constrainedSide(0,1)
   assert_equal 0,          layer.constrainedSide(0,2)
@@ -306,6 +306,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,         grid.addNode(0,1,0)
   assert_equal grid,      grid.addFace(0,1,2,1)
   assert_not_nil          layer = Layer.new(grid)
+  assert_nil              layer.triangleDirection(-1)
   assert_nil              layer.triangleDirection(0)
   assert_nil              layer.normalDirection(0)
   assert_equal layer,     layer.makeTriangle([1])
