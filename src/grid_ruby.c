@@ -216,6 +216,14 @@ VALUE grid_volume( VALUE self, VALUE cellId )
   return rb_float_new( gridVolume( grid, NUM2INT(cellId) ) );
 }
 
+VALUE grid_ar( VALUE self, VALUE rb_nodes )
+{
+  int i, nodes[4];
+  GET_GRID_FROM_SELF;
+  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
+  return rb_float_new( gridAR( grid, nodes ) );
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -245,4 +253,5 @@ void Init_Grid()
   rb_define_method( cGrid, "swap", grid_swap, 2 );
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );
   rb_define_method( cGrid, "volume", grid_volume, 1 );
+  rb_define_method( cGrid, "ar", grid_ar, 1 );
 }
