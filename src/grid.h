@@ -20,6 +20,8 @@ typedef struct Grid Grid;
 Grid *gridCreate(int maxnode, int maxcell, int maxface);
 Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
 		 double *xyz, int *f2n, int *faceId, int *c2n );
+Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
+		 double **xyz, int **f2n, int **faceId, int **c2n );
 void gridFree(Grid *g);
 
 int gridMaxNode(Grid *g);

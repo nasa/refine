@@ -142,6 +142,59 @@ Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
   return  grid;
 }
 
+Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
+		 double **xyz, int **f2n, int **faceId, int **c2n )
+{
+  int i, origcell, packcell, origface, packface;
+
+  printf("gridExport: %d nodes %d faces %d cells\n",
+	 grid->nnode,grid->nface,grid->ncell);
+
+  *nnode = grid->nnode;
+  *ncell = grid->ncell;
+  *nface = grid->nface;
+
+  *xyz = grid->xyz;
+
+  packcell =0;
+  for ( origcell=0 ; origcell < grid->maxcell ; origcell++ )
+    if ( grid->c2n[0+4*origcell] != EMPTY) {
+      grid->c2n[0+4*packcell] = grid->c2n[0+4*origcell];
+      grid->c2n[1+4*packcell] = grid->c2n[1+4*origcell];
+      grid->c2n[2+4*packcell] = grid->c2n[2+4*origcell];
+      grid->c2n[3+4*packcell] = grid->c2n[3+4*origcell];
+      packcell++;
+    } 
+  
+  if (grid->ncell != packcell) {
+    printf("ERROR: grid->ncell != packcell, file %s line %d \n",
+	   __FILE__, __LINE__ );
+    return NULL;
+  }
+  *c2n = grid->c2n;
+
+  packface=0;
+  for ( origface=0 ; origface < grid->maxface ; origface++ ) 
+    if ( grid->f2n[0+3*origface] != EMPTY) {
+      grid->f2n[0+3*packface] = grid->f2n[0+3*origface];
+      grid->f2n[1+3*packface] = grid->f2n[1+3*origface];
+      grid->f2n[2+3*packface] = grid->f2n[2+3*origface];
+      grid->faceId[packface]  = grid->faceId[origface];
+      packface++;
+    } 
+
+  if (grid->nface != packface) {
+    printf("ERROR: grid->nface %d != packface %d, file %s line %d \n",
+	   grid->nface, packface, __FILE__, __LINE__ );
+    return NULL;
+  }
+
+  *f2n    = grid->f2n;
+  *faceId = grid->faceId;
+
+  return  grid;
+}
+
 void gridFree(Grid *grid)
 {
   adjFree(grid->faceAdj);
@@ -210,7 +263,7 @@ int gridCellDegree(Grid *grid, int id)
 
 Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
-  int cellId,icell;
+  int cellId;
   if ( grid->blankc2n == EMPTY ) return NULL;
   cellId = grid->blankc2n;
   grid->blankc2n = grid->c2n[1+4*cellId];
@@ -266,8 +319,9 @@ Grid *gridCell(Grid *grid, int cellId, int *nodes )
 Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 {
   int face;
-  face = grid->nface;
-  if (grid->nface >= grid->maxface) return NULL;
+  if ( grid->blankf2n == EMPTY ) return NULL;
+  face = grid->blankf2n;
+  grid->blankf2n = grid->f2n[1+3*face];
   grid->nface++;
 
   grid->f2n[0+3*face] = n0;
