@@ -193,6 +193,7 @@ int gridMoreNodeCell(Grid *grid)
 Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
   int cellId,icell;
+  if (grid->ncell >= grid->maxcell) return NULL;
   cellId = grid->ncell;
   grid->ncell++;
   
@@ -201,10 +202,10 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
   grid->c2n[2+4*cellId] = n2;
   grid->c2n[3+4*cellId] = n3;
   
-  gridRegisterNodeCell( grid, n0, cellId );
-  gridRegisterNodeCell( grid, n1, cellId );
-  gridRegisterNodeCell( grid, n2, cellId );
-  gridRegisterNodeCell( grid, n3, cellId );
+  if ( NULL == gridRegisterNodeCell( grid, n0, cellId ) ) return NULL;
+  if ( NULL == gridRegisterNodeCell( grid, n1, cellId ) ) return NULL;
+  if ( NULL == gridRegisterNodeCell( grid, n2, cellId ) ) return NULL;
+  if ( NULL == gridRegisterNodeCell( grid, n3, cellId ) ) return NULL;
   
   return grid;
 }
