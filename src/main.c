@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <values.h>
 #include "grid.h"
 #include <CADGeom/CADGeom.h>
 
@@ -211,7 +212,10 @@ int gridSavePart( Grid *grid, char *project )
   int nnode, nface, ncell;
   double *xyz;
   int *f2n, *faceId, *c2n;
-  int i, iface;
+  int *o2n;
+  int i, ixyz, iface, newnode;
+  int iedge, curveEndPoint[2], nCurveNode, *curve;
+  double trange[2];
   int patchDimensions[4]; // check on 4
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
 
@@ -221,8 +225,50 @@ int gridSavePart( Grid *grid, char *project )
   Iterator    it;        /* DList Iterator */
   UGPatchPtr  patch;     /* UGPatch of Face relative to Volume */
 
+  if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) )
+    printf("ERROR: CADGeom_GetVolume, line %d of %s\n.",__LINE__, __FILE__);
+
   gridExport( grid, &nnode, &nface, &ncell,
 	      &xyz, &f2n, &faceId, &c2n );
+
+  o2n = malloc( nnode * sizeof(int) );
+  for (i=0;i<nnode;i++) o2n[i] = EMPTY;
+
+  // geom nodes
+  for (i=0;i<nGeomNode;i++) o2n[i] = i;
+  newnode = nGeomNode;
+  
+  // edge stuff
+  for (iedge=1; iedge<=nGeomEdge; iedge++){
+
+    CADGeom_GetEdge( vol, iedge, trange, curveEndPoint);
+    curveEndPoint[0]--; curveEndPoint[1]--;// fortran to c numbering
+    
+    nCurveNode = gridGeomCurveSize( grid, iedge, curveEndPoint[0]);
+    curve =    malloc( nCurveNode *     sizeof(int) );
+    temp_xyz = malloc( nCurveNode * 3 * sizeof(double) );
+    temp_tuv = malloc( nCurveNode *     sizeof(double) );
+
+    gridGeomCurve( grid, iedge, curveEndPoint[0], curve );
+
+    for ( i=1; i<(nCurveNode-1); i++){ // skip end points
+      o2n[curve[i]] = newnode;
+      newnode++;
+    }
+
+    for ( i=0; i<nCurveNode; i++){ // include end points
+      for ( ixyz=0; ixyz<3 ; ixyz++)
+	temp_xyz[ixyz+3*i] = xyz[ixyz+3*curve[i]];
+      temp_tuv[i] = DBL_MAX;
+    }
+
+    CADGeom_UpdateEdgeGrid( vol, iedge, nCurveNode, temp_xyz, temp_tuv );
+
+    free(curve);
+  }
+
+  // face stuff goes here
+
 
   if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, ncell, c2n  )) {
     printf(" Could not make UGridPtr, line %d of %s\n", __LINE__, __FILE__);
@@ -250,10 +296,6 @@ int gridSavePart( Grid *grid, char *project )
     printf(" Could not replace CADGeom volume grid, line %d of %s\n",
 	   __LINE__, __FILE__);    
     return(-1);
-  }
-
-  if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) ) {
-    printf("Yo! CADGeom_GetVolume, it broke.\n");
   }
 
   /* Face Stuff */
