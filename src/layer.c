@@ -503,6 +503,34 @@ Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triang
   return layer;
 }
 
+int layerNextTriangle(Layer *layer, int normal, int triangle )
+{
+  int normals[3], nextNormal, nextTriangle;
+  AdjIterator it;
+
+  if (layer != layerTriangleNormals(layer, triangle, normals ) ) return EMPTY;
+
+  nextNormal = EMPTY;
+  if (normal == normals[0]) nextNormal = normals[2];
+  if (normal == normals[1]) nextNormal = normals[0];
+  if (normal == normals[2]) nextNormal = normals[1];
+  if (EMPTY == nextNormal) return EMPTY;
+
+  for ( it = adjFirst(layer->adj,normal); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    nextTriangle = adjItem(it);
+    if ( triangle != nextTriangle ) {
+      layerTriangleNormals(layer, nextTriangle, normals );
+      if ( nextNormal == normals[0] ||
+	   nextNormal == normals[1] ||
+	   nextNormal == normals[2] ) return nextTriangle;
+    }
+  }
+
+  return EMPTY;
+}
+
 Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
 {
   int i;

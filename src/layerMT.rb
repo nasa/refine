@@ -1043,4 +1043,29 @@ grid.addCell(0,1,2,3)
   assert_equal [0,1,2,3,4],   grid.pyramid(0)
  end
 
+ def testTriangleNeighbor
+  # y 2---3
+  # ^ |0\1|
+  # | 0---1 -> x
+  grid = Grid.new(10,10,10,10)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(1,1,0)
+  grid.addFace(0,1,2,1)
+  grid.addFace(2,1,3,1)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+
+  assert_equal(-1, layer.nextTriangle(4,0) )
+  assert_equal(-1, layer.nextTriangle(0,4) )
+
+  assert_equal(-1, layer.nextTriangle(0,0) )
+  assert_equal(-1, layer.nextTriangle(1,0) )
+  assert_equal  1, layer.nextTriangle(2,0)
+
+  assert_equal  0, layer.nextTriangle(1,1)
+  assert_equal(-1, layer.nextTriangle(2,1) )
+  assert_equal(-1, layer.nextTriangle(3,1) )
+ end
+
 end
