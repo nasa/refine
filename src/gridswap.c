@@ -189,6 +189,8 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
 
   if ( gridNodeGhost(grid,topnode) || gridNodeGhost(grid,bottomnode) )
     return NULL; /* not parallelized yet :( */
+  if ( gridNodeFrozen(grid,topnode) && gridNodeFrozen(grid,bottomnode) )
+    return NULL;
 
   //set nodes[0-3] to topnode orientation
   tent[4] = bottomnode;
