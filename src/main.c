@@ -93,14 +93,12 @@ int main( int argc, char *argv[] )
     projected = ( grid == gridRobustProject(grid));
     if (projected) {
       printf("edge swapping grid...\n");gridSwap(grid);
-      STATUS;
       printf("node smoothing grid...\n");gridSmooth(grid);
-      STATUS;
     }else{
       printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
-      STATUS;
     }
   }
+  STATUS;
 
   ratio = 0.30;
   oldSize = 1;
@@ -128,18 +126,17 @@ int main( int argc, char *argv[] )
       projected = ( grid == gridRobustProject(grid));
       if (projected) {
 	printf("edge swapping grid...\n");gridSwap(grid);
-	STATUS;
 	printf("node smoothing grid...\n");gridSmooth(grid);
-	STATUS;
 	if (((double)ABS(newSize-oldSize)/(double)oldSize)<0.3)
 	  ratio = ratio + 0.025;
       }else{
 	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
-	STATUS;
 	ratio = ratio - 0.05;
       }
     }
+    STATUS;
     gridFreezeGoodNodes(grid,0.6,0.4,1.5);
+    printf("nodes frozen %d\n",gridNFrozen(grid));
   }
 
   if (!gridRightHandedBoundary(grid)) 
