@@ -1245,7 +1245,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [4,6,2,7], layer.blendNormals(1)
  end
 
- def testInsertBlendForTwoConvextFaces
+ def fourFaceConvex
   #        2
   #      / y \
   #    /4  ^  0\  
@@ -1266,7 +1266,11 @@ class TestLayer < Test::Unit::TestCase
   grid.addFace(0,3,1,1)
   grid.addFace(0,4,3,1)
   grid.addFace(0,2,4,1)
+  grid
+ end
 
+ def testInsertBlendForTwoConvextFaces
+  grid = fourFaceConvex
   layer = Layer.new(grid).populateAdvancingFront([1])
   assert_equal [0,1,2], layer.triangleNormals(0)
   assert_equal [0,3,1], layer.triangleNormals(1)
