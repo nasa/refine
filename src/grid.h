@@ -48,7 +48,11 @@ int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 
 Grid *gridAddEdge(Grid *g, int n0, int n1, int edgeId );
+Grid *gridRemoveEdge(Grid *g, int edge );
 int gridFindEdge(Grid *g, int n0, int n1 );
+int gridEdgeId(Grid *g, int n0, int n1 );
+
+int gridGeomCurveSize( Grid *g, int edgeId, int startNode );
 
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
