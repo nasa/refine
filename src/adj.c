@@ -80,6 +80,36 @@ Adj *adjRegister( Adj *adj, int node, int item )
   return adj;
 }
 
+Adj* adjRemove(Adj *adj, int node, int item)
+{
+  NODE2ITEM *remove, *previous;
+  remove = NULL;
+
+  for ( adjFirst(adj,node); adjValid(adj); adjNext(adj) ) 
+    if (adjCurrent(adj)==item) 
+      remove = adj->current;
+
+  if (remove == NULL) return NULL;
+ 
+  previous = NULL;
+
+  for ( adjFirst(adj,node); adjValid(adj); adjNext(adj) ) 
+    if (adj->current != NULL && adj->current->next == remove) 
+      previous = adj->current;
+  
+  if ( previous == NULL ) {
+    adj->first[node] = remove->next;
+  }else{
+    previous->next = remove->next;
+  }
+
+  remove->item = EMPTY;
+  remove->next = adj->blank;
+  adj->blank = remove;
+
+  return adj;
+}
+
 bool adjValid( Adj *adj )
 {
   return (adj->current != NULL);
@@ -112,3 +142,13 @@ void adjNext( Adj *adj )
   if ( adj->current != NULL ) adj->current = adj->current->next;
 }
 
+bool adjExists( Adj *adj, int node, int item )
+{
+  bool exist;
+  exist = FALSE;
+  for ( adjFirst(adj,node); 
+	!exist && adjValid(adj); 
+	adjNext(adj)) 
+    exist = (item == adjCurrent(adj));
+  return exist;
+}
