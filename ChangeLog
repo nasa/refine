@@ -1,3 +1,14 @@
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /bootstrap script to create configure script from configure.ac
+	in top level directory
+	* /autogen.sh runs bootstrap, Make archetecture directory, runs
+	../configure --prefine=`pwd` in archetecture directory.
+	* /configure.ac now in standard AutoTools trim. configure is 
+	created in top level directory. No more AutoConfInput. Can
+	be configured in a subdirectory with ../configure.
+	* /Makefile.am now in standard AutoTools trim. No more AutoMakeInput
+	
 2004-04-02 08:00 Harold Atkins <Harold.L.Atkins@nasa.gov>
 
 	* /src/geometricStretch.c functions to evaluate geometric Stretching.
