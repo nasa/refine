@@ -90,6 +90,7 @@ char *ErrMgr_GetErrStr(void);
 GridBool UGMgr_LoadLibs( void );
 GridBool CADGeom_Start( void );
 GridBool GeoMesh_LoadPart( char *project );
+GridBool CADGeom_LoadPart( char *project );
 GridBool CADGeom_SavePart(int vol, char *project);
 GridBool CADGeom_GetVolume(int, int *, int *, int *, int *);
 UGPatchPtr CADGeom_FaceGrid( int, int );
@@ -103,7 +104,8 @@ GridBool CADTopo_VolEdgePts(int vol, int *count);
 GridBool CADTopo_ShellStats(int vol, int *nc, int *tPts, int *tTri, int *maxF);
 UGridPtr CADTopo_AssembleTShell(int vol,int tPts, int tTri, int maxFace);
 
-GridBool GeoMesh_UseDefaultIOCallbacks( void );
+void GeoMesh_UseDefaultIOCallbacks( void );
+void CADGeeom_UseDefaultIOCallbacks( void );
 
 END_C_DECLORATION
 

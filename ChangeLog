@@ -1,3 +1,7 @@
+2004-08-17 12:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeom.h added CADGeom_LoadPart, CADGeom_UseDefaultIOCallbacks.
+
 2004-08-17 08:45 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.1 Release. Interface to FUN3D 3.3.1.

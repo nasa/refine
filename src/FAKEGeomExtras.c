@@ -95,7 +95,17 @@ GridBool GeoMesh_LoadPart( char *project )
   return FALSE;
 }
 
-GridBool GeoMesh_UseDefaultIOCallbacks( void )
+GridBool CADGeom_LoadPart( char *project )
+{
+  return FALSE;
+}
+
+void GeoMesh_UseDefaultIOCallbacks( void )
+{
+  return FALSE;
+}
+
+void CADGeom_UseDefaultIOCallbacks( void )
 {
   return FALSE;
 }
