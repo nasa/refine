@@ -158,17 +158,16 @@ Grid *gridParallelSmooth( Grid *grid, GridBool localOnly )
   for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && 
 	 !gridNodeFrozen( grid, node ) && 
-	 !gridGeometryBetweenFace( grid, node ) &&
 	 gridNodeLocal(grid,node) ) {
       nearGhost = gridNodeNearGhost(grid, node);
       if ( localOnly != nearGhost ) {
 	gridNodeAR(grid,node,&ar);
-	if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
-	  gridSmartLaplacian( grid, node ); 
-	  gridNodeAR(grid,node,&ar);
-	}
 	if (ar < optimizationLimit) {
 	  gridSmoothNode( grid, node );
+	}else{
+	  if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
+	    gridSmartLaplacian( grid, node ); 
+	  }
 	}
       }
     }

@@ -556,6 +556,8 @@ Grid *gridSmoothNode(Grid *grid, int node )
   int maxsmooth;
 
   if ( gridGeometryNode( grid, node ) ) return grid;
+  if ( gridGeometryBetweenFace( grid, node ) &&
+       !gridGeometryEdge( grid, node ) ) return grid;
   if ( gridGeometryEdge( grid, node ) ) {
     edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
     gridEdge(grid,edge,nodes,&edgeId);
