@@ -27,6 +27,7 @@ Plan* planCreate( int max_size, int chunk_size )
 
   plan->item     = (int *)   malloc( planMaxSize(plan)*sizeof(int) );
   plan->priority = (double *)malloc( planMaxSize(plan)*sizeof(double) );
+  plan->ranking  = NULL;
 
   return plan;
 }

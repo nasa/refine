@@ -1,3 +1,8 @@
+2005-03-13 17:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/plan.c (planCreate) initialized plan->ranking to NULL to
+	prevent a uninitialized memory read.
+
 2005-03-13 20:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/adj.c (adjFree) to prevent memory leak, free adj->node2item
