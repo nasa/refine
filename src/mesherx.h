@@ -13,6 +13,7 @@
 
 #include "master_header.h"
 
+#include "grid.h"
 #include "layer.h"
 
 BEGIN_C_DECLORATION
@@ -20,11 +21,13 @@ BEGIN_C_DECLORATION
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project, 
 			      bool mixedElement );
 
-int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio);
+Layer *layerFormAdvancingLayerWithCADGeomBCS( Grid * );
 
-Layer *layerRebuildEdges(Layer *layer, int vol);
-Layer *layerRebuildFaces(Layer *layer, int vol);
-Layer *layerRebuildVolume(Layer *layer, int vol);
+int layerTerminateNormalWithBGSpacing(Layer *, double ratio);
+
+Layer *layerRebuildEdges(Layer *, int vol);
+Layer *layerRebuildFaces(Layer *, int vol);
+Layer *layerRebuildVolume(Layer *, int vol);
 
 END_C_DECLORATION
 

@@ -18,8 +18,11 @@
 #include "grid.h"
 #include "gridfiller.h"
 #include "CADGeom/CADGeom.h"
+#include "CADGeom/CADTopo.h"
 #include "Goolache/MeshMgr.h"
+#include "Goolache/UGPatch.h"
 #include "MeatLib/ErrMgr.h"
+#include "MeatLib/GeoBC.h"
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 			      bool mixedElement )
@@ -33,6 +36,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   double rate;
   int nLayer;
 
+
   nLayer = (int)(10.0/scale);
   nLayer = 15;
   rate = exp(scale*log(1.2));
@@ -43,7 +47,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   MeshMgr_SetElementScale( scale );
   //CAPrIMesh_TetVolume( vol );
 
-  layer = formAdvancingFront( grid, project );
+  layer = layerFormAdvancingLayerWithCADGeomBCS( grid );
   if (mixedElement) layerToggleMixedElementMode(layer);
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
@@ -127,6 +131,73 @@ int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio)
   printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
   return nterm;
 }
+
+Layer *layerFormAdvancingLayerWithCADGeomBCS( Grid *grid )
+{
+  int nFrontFaces, frontFaces[10000];
+  int face;
+  UGPatchPtr upp;
+
+  int vol=1;
+  int    i,loop,edge,current;
+  int    nloop;
+  int    *nedge;
+  int    *edges;
+  double uv[4];
+  int    self,other;
+  int    left,right;
+
+  Layer *layer;
+
+  layer = layerCreate( grid );
+  nFrontFaces =0;
+  for (face=1;face<=gridNGeomFace(grid);face++){
+    upp = CADGeom_FaceGrid(vol,face);
+    if ( BC_NOSLIP == GeoBC_GenericType(UGPatch_BC(upp))){
+      frontFaces[nFrontFaces] = face;
+      nFrontFaces++;
+    }
+  }
+
+  layerPopulateAdvancingFront(layer, nFrontFaces, frontFaces);
+  
+  for (face=1;face<=gridNGeomFace(grid);face++){
+    upp = CADGeom_FaceGrid(vol,face);
+    if ( BC_NOSLIP != GeoBC_GenericType(UGPatch_BC(upp))){
+      
+      if( !CADGeom_GetFace(vol,face,uv,&nloop,&nedge,&edges) ) {  /* Face Info */
+        ErrMgr_Set(__FILE__,__LINE__,"%s\nCould NOT get Volume %d, Face %d Info",ErrMgr_GetErrStr(),vol,face);
+        return( NULL );
+      }
+
+      for( loop=0; loop<nloop; loop++ ) {                         /* Each Loop */
+        for( current=0,i=0; current<nedge[loop]; current++,i+=2 ) { /* Each Edge */
+	  if( edges[i+1] > 0 )
+            CADTopo_EdgeFaces(vol,edges[i],&self,&other);
+          else
+            CADTopo_EdgeFaces(vol,edges[i],&other,&self);
+	  upp = CADGeom_FaceGrid(vol,other);
+	  if ( BC_NOSLIP == GeoBC_GenericType(UGPatch_BC(upp)))
+	    layerConstrainNormal(layer,self);
+	  
+        }
+      }
+    }
+  }
+
+  for (edge=1;edge<=gridNGeomEdge(grid);edge++){
+    CADTopo_EdgeFaces(vol,edge,&left,&right);
+    if ( layerConstrainingGeometry(layer,left) &&
+	 layerConstrainingGeometry(layer,right) ){
+      layerConstrainNormal(layer,-edge);
+    }
+  }
+
+  layerVisibleNormals(layer);
+
+  return layer;
+}
+
 
 Layer *layerRebuildEdges(Layer *layer, int vol){
 

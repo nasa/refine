@@ -551,6 +551,8 @@ Layer *layerVisibleNormals(Layer *layer)
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
+  layerProjectNormalsToConstraints(layer);
+
   for (normal=0;normal<layerNNormal(layer);normal++){
     lastTriangle = EMPTY;
     radian = 0.01;
