@@ -55,6 +55,27 @@ class TestSort < Test::Unit::TestCase
   assert_equal [2,1,0], Sort.Heap([1234,465,2])
  end
 
+ def testLengthThreeHeapSortRepeated220
+  assert_equal [2,1,0], Sort.Heap([1234,1234,2])
+ end
+
+ def testLotsOfReversedNumbers
+  n=5000
+  input = []
+  n.times { |index| input.push n-index }
+  output = Sort.Heap input
+  (n-1).times { |index| assert(input[output[index]]<=input[output[index+1]])}
+ end
+
+ def testLotsOfDuplicateRandomNumbers
+  srand 24589879
+  n=5000
+  input = []
+  n.times { |index| input.push rand(n/2) }
+  output = Sort.Heap input
+  (n-1).times { |index| assert(input[output[index]]<=input[output[index+1]])}
+ end
+
  def XtestLengthZeroBinarySearch
   assert_equal EMPTY, Sort.Search([],-1)
   assert_equal EMPTY, Sort.Search([],0)
