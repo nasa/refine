@@ -38,6 +38,7 @@ int main( int argc, char *argv[] )
   int i, j, oldSize, newSize;
   int wiggleSteps, wiggle;
   double ratio=1.0;
+  double minAR=-1.0;
   double ratioRefine, ratioCollapse;
   bool projected;
   bool boundaryLayerGrid = FALSE;
@@ -67,6 +68,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-r") == 0 ) {
       i++; ratio = atof(argv[i]);
       printf("-r argument %d: %f\n",i, ratio);
+    } else if( strcmp(argv[i],"-v") == 0 ) {
+      i++; minAR = atof(argv[i]);
+      printf("-v argument %d: %f\n",i, minAR);
     } else if( strcmp(argv[i],"-i") == 0 ) {
       debugInsert = TRUE;
       printf("-i argument %d\n",i);
@@ -81,6 +85,7 @@ int main( int argc, char *argv[] )
       printf(" -l make a boundary layer grid -a ignored\n");
       printf(" -r initial edge length ratio for adapt\n");
       printf(" -i insert final advancing layer (debug)\n");
+      printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -n max number of nodes in grid\n");
       return(0);
     } else {
@@ -106,6 +111,11 @@ int main( int argc, char *argv[] )
 
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
+
+  if (minAR > 0) {
+    printf("freezing cells wiht AR smaller than %f\n",minAR);
+    gridFreezeSmallARCells(grid, minAR);
+  }
 
   if(strcmp(adaptfile,"none")==0) {
     printf("adapt parameter >none< selected. Spacing reset.\n");
