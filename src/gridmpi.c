@@ -24,5 +24,8 @@ Grid *gridIdentityGlobal(Grid *grid )
 
 Grid *gridSetAllLocal(Grid *grid )
 {
+  int node;
+  for (node = 0; node < gridNNode(grid) ; node++ )
+    if (grid != gridSetNodePart(grid,node,gridPartId(grid))) return NULL;
   return grid;
 }
