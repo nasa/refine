@@ -48,6 +48,11 @@ double gridFaceAR(Grid *g, int n0, int n1, int n2);
 double gridFaceMR(Grid *g, int n0, int n1, int n2);
 Grid *gridFaceMRDerivative(Grid *g, int* nodes, double *mr, double *dMRdx );
 
+void FaceMRDerivative(double x1, double y1, double z1,
+		      double x2, double y2, double z2,
+		      double x3, double y3, double z3,
+		      double *mr, double *dMRdx  );
+
 Grid *gridMapMatrix(Grid *g, int node, double *m);
 void gridMapXYZWithM( double *m, double *x, double *y, double *z );
 void gridMapXYZWithNode( Grid *g, int node, double *x, double *y, double *z );

@@ -183,21 +183,43 @@ VALUE grid_faceMRDerivative( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[3];
   double mr, dMRdx[3];
-  VALUE rb_ar;
+  VALUE rb_mr;
   Grid *rGrid;
   GET_GRID_FROM_SELF;
   for ( i=0 ; i<3 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
   rGrid = gridFaceMRDerivative( grid, nodes, &mr, dMRdx );
   if ( rGrid == grid ){
-    rb_ar = rb_ary_new2(4);
-    rb_ary_store( rb_ar, 0, rb_float_new(mr) );
-    rb_ary_store( rb_ar, 1, rb_float_new(dMRdx[0]) );
-    rb_ary_store( rb_ar, 2, rb_float_new(dMRdx[1]) );
-    rb_ary_store( rb_ar, 3, rb_float_new(dMRdx[2]) );
+    rb_mr = rb_ary_new2(4);
+    rb_ary_store( rb_mr, 0, rb_float_new(mr) );
+    rb_ary_store( rb_mr, 1, rb_float_new(dMRdx[0]) );
+    rb_ary_store( rb_mr, 2, rb_float_new(dMRdx[1]) );
+    rb_ary_store( rb_mr, 3, rb_float_new(dMRdx[2]) );
   }else{
-    rb_ar = Qnil;
+    rb_mr = Qnil;
   }
-  return rb_ar;
+  return rb_mr;
+}
+
+VALUE grid_FaceMRDerivative( VALUE self, 
+			     VALUE x1, VALUE y1, VALUE z1,
+			     VALUE x2, VALUE y2, VALUE z2,
+			     VALUE x3, VALUE y3, VALUE z3)
+{
+  double mr, dMRdx[3];
+  VALUE rb_mr;
+  GET_GRID_FROM_SELF;
+  
+  FaceMRDerivative(NUM2DBL(x1), NUM2DBL(y1), NUM2DBL(z1),
+		   NUM2DBL(x2), NUM2DBL(y2), NUM2DBL(z2),
+		   NUM2DBL(x3), NUM2DBL(y3), NUM2DBL(z3), 
+		   &mr, dMRdx );
+
+  rb_mr = rb_ary_new2(4);
+  rb_ary_store( rb_mr, 0, rb_float_new(mr) );
+  rb_ary_store( rb_mr, 1, rb_float_new(dMRdx[0]) );
+  rb_ary_store( rb_mr, 2, rb_float_new(dMRdx[1]) );
+  rb_ary_store( rb_mr, 3, rb_float_new(dMRdx[2]) );
+  return rb_mr;
 }
 
 VALUE cGridMetric;
@@ -226,4 +248,5 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "faceAR", grid_faceAR, 3);
   rb_define_method( cGridMetric, "faceMR", grid_faceMR, 3);
   rb_define_method( cGridMetric, "faceMRDerivative", grid_faceMRDerivative, 1);
+  rb_define_method( cGridMetric, "FaceMRDerivative", grid_FaceMRDerivative, 9);
 }

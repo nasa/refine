@@ -1207,16 +1207,7 @@ Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
 {
   double x1, x2, x3; 
   double y1, y2, y3; 
-  double z1, z2, z3; 
-
-  double ex1, ey1, ez1;
-  double ex2, ey2, ez2;
-  double ex3, ey3, ez3;
-
-  double ex1_dx, ey1_dy, ez1_dz;
-  double ex3_dx, ey3_dy, ez3_dz;
-
-  double nx, ny, nz;
+  double z1, z2, z3;
 
   x1 = grid->xyz[0+3*nodes[0]];
   y1 = grid->xyz[1+3*nodes[0]];
@@ -1229,6 +1220,32 @@ Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
   x3 = grid->xyz[0+3*nodes[2]];
   y3 = grid->xyz[1+3*nodes[2]];
   z3 = grid->xyz[2+3*nodes[2]];
+ 
+  FaceMRDerivative(x1,y1,z1,x2,y2,z2,x3,y3,z3,mr,dMRdx );
+  return grid;
+}
+
+
+void FaceMRDerivative(double x1, double y1, double z1,
+		      double x2, double y2, double z2,
+		      double x3, double y3, double z3,
+		      double *mr, double *dMRdx  )
+{
+
+  double ex1, ey1, ez1;
+  double ex2, ey2, ez2;
+  double ex3, ey3, ez3;
+
+  double ex1_dx, ey1_dy, ez1_dz;
+  double ex3_dx, ey3_dy, ez3_dz;
+
+  double nx, ny, nz;
+  double nx_dy,nx_dz;
+  double ny_dx,ny_dz;
+  double nz_dx,nz_dy;
+  double l1, l2, l3;
+  double a,d;
+
 
   ex1 = x2-x1;
   ey1 = y2-y1;
@@ -1254,10 +1271,37 @@ Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
   ny = ez1*ex2 - ex1*ez2; 
   nz = ex1*ey2 - ey1*ex2; 
 
-  *mr = nx;
+  nx_dy = ey1_dy * ez2;
+  nx_dz = - ez1_dz*ey2; 
+
+  ny_dx = - ex1_dx*ez2; 
+  ny_dz = ez1_dz*ex2; 
+
+  nz_dx = ex1_dx*ey2; 
+  nz_dy = - ey1_dy*ex2; 
+
+  *mr = nz;
+  
+  dMRdx[0] =nz_dx;
+  dMRdx[1] =nz_dy;
+  dMRdx[2] =0.0;
+
+  return;
+
+
+  l1 = ex1*ex1 + ey1*ey1 + ez1*ez1;
+  l2 = ex2*ex2 + ey2*ey2 + ez2*ez2;
+  l3 = ex3*ex3 + ey3*ey3 + ez3*ez3;
+
+  a = sqrt(nx*nx + ny*ny + nz*nz);
+  a = 0.5*a;
+
+  d= l1+l2+l3;
+
+  *mr = a/d;
+  *mr = 4*SQRT3*(*mr);
+  
   dMRdx[0] =0.0;
   dMRdx[1] =0.0;
   dMRdx[2] =0.0;
-  return grid;
-
 }
