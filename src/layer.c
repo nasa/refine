@@ -657,13 +657,16 @@ Layer *layerInsertPhantomFront(Layer *layer, double dz )
 {
   Grid *grid = layer->grid;
   int normal, faceId, edgeId, newnode;
-  double xyz[3];
+  double xyz[3], spacing, m;
 
   layerVisibleNormals(layer);
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid,layer->normal[normal].root,xyz);
+    spacing = gridSpacing(grid, layer->normal[normal].root );
     layer->normal[normal].root = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
+    m = 1.0/spacing/spacing;
+    gridSetMap(grid,layer->normal[normal].root,m,0.0,0.0,m,0.0,m); 
     layer->normal[normal].tip = EMPTY;
   }
 
@@ -671,6 +674,7 @@ Layer *layerInsertPhantomFront(Layer *layer, double dz )
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid,layer->normal[normal].root,xyz);
+    spacing = gridSpacing(grid, layer->normal[normal].root );
     if (0 == layerConstrained(layer,normal)){
       newnode = gridInsertInToVolume(grid, xyz[0], xyz[1], xyz[2]);
     }else{
@@ -689,6 +693,8 @@ Layer *layerInsertPhantomFront(Layer *layer, double dz )
 	     normal, xyz[0], xyz[1], xyz[2]);
     layer->normal[normal].tip = newnode;
     gridFreezeNode( grid, newnode );
+    m = 1.0/spacing/spacing;
+    gridSetMap(grid,newnode,m,0.0,0.0,m,0.0,m); 
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
