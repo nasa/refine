@@ -13,6 +13,7 @@
 #include <math.h>
 #include <limits.h>
 #include <values.h>
+#include "sort.h"
 #include "grid.h"
 
 Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
@@ -92,6 +93,8 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->nodeGlobal  = NULL;
   grid->part = NULL;
+  grid->sortedGlobal = NULL;
+  grid->sortedLocal = NULL;
 
   // cells
   if ( NULL == c2n ) {
@@ -461,6 +464,8 @@ void gridFree(Grid *grid)
   adjFree(grid->cellAdj);
   if (NULL != grid->cellGlobal) free(grid->cellGlobal);
   free(grid->c2n);
+  if (NULL != grid->sortedLocal) free(grid->sortedLocal);
+  if (NULL != grid->sortedGlobal) free(grid->sortedGlobal);
   if (NULL != grid->part) free(grid->part);
   if (NULL != grid->nodeGlobal) free(grid->nodeGlobal);
   free(grid->frozen);
@@ -2181,7 +2186,28 @@ int gridNodeGlobal(Grid *grid, int node )
 
 int gridGlobal2Local(Grid *grid, int global )
 {
-  return EMPTY;
+  int local;
+
+  if (NULL == grid->nodeGlobal) return EMPTY;
+
+  if (NULL != grid->sortedLocal)  free(grid->sortedLocal);
+  if (NULL != grid->sortedGlobal) free(grid->sortedGlobal);
+  grid->sortedLocal  = malloc(grid->maxnode * sizeof(int));
+  grid->sortedGlobal = malloc(grid->maxnode * sizeof(int));
+
+  for (local=0;local<grid->maxnode;local++)
+    grid->sortedGlobal[local] = grid->nodeGlobal[local];
+
+  sortHeap(grid->nnode,grid->sortedGlobal,grid->sortedLocal);
+
+  for (local=0;local<grid->maxnode;local++)
+    grid->sortedGlobal[local] = grid->nodeGlobal[grid->sortedLocal[local]];
+
+  local = sortSearch(grid->nnode,grid->sortedGlobal,global);
+
+  if (EMPTY == local) return EMPTY;
+
+  return grid->sortedLocal[local];
 }
 
 Grid *gridSetNodeGlobal(Grid *grid, int node, int global )

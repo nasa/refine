@@ -11,6 +11,7 @@ RubyExtensionBuilder.new('Grid').build
 require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
+require 'Sort/Sort'
 require 'Grid/Grid'
 
 class TestGrid < Test::Unit::TestCase

@@ -11,7 +11,7 @@ class RubyExtensionBuilder
  def buildOnly extension
   extraFiles = Hash.new('')
   extraFiles['Intersect'] = 'gridmath.c'
-  extraFiles['Grid'] = 'adj.h line.h'
+  extraFiles['Grid'] = 'adj.h line.h sort.h'
   extraFiles['GridMetric'] = 'adj.h line.h grid.h gridmath.c'
   extraFiles['GridSwap'] = 'adj.h line.h grid.h gridmath.h gridmetric.h'
   extraFiles['GridCAD'] = 'FAKEGeom adj.h line.h grid.h gridmath.h gridmetric.h queue.h gridinsert.h'
@@ -25,12 +25,12 @@ class RubyExtensionBuilder
 
  def build
   requiredPackages = Hash.new([])
-  requiredPackages['Grid'] = %w{ Adj Line }
+  requiredPackages['Grid'] = %w{ Adj Line Sort}
   requiredPackages['GridMetric'] = %w{ Adj Line Grid }
   requiredPackages['GridSwap'] = %w{ Adj Line Grid GridMetric }
   requiredPackages['GridCAD'] = %w{ Adj Line Grid GridMetric }
   requiredPackages['GridInsert'] = %w{ Adj Line Grid GridMetric GridSwap GridCAD }
-  requiredPackages['GridMPI'] = %w{ Adj Line Queue Grid GridMetric GridInsert }
+  requiredPackages['GridMPI'] = %w{ Adj Line Sort Queue Grid GridMetric GridInsert }
   requiredPackages['Layer'] = %w{ Adj Near Intersect Line Grid GridMetric GridCAD GridInsert }
 
   requiredPackages[@extension].each { |extension| buildOnly extension }

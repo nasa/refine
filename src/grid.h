@@ -49,6 +49,7 @@ struct Grid {
 
   int *nodeGlobal;
   int *part;
+  int *sortedGlobal, *sortedLocal;
 
   int maxcell, ncell;
   int blankc2n;
