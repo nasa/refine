@@ -46,10 +46,13 @@ struct Layer {
   int nConstrainingGeometry, *constrainingGeometry;
   Adj *adj;
   bool mixedElementMode;
+
+  bool *cellInLayer;
 };
 
 Layer *layerCreate( Grid *grid )
 {
+  int i;
   Layer *layer;
   layer = malloc(sizeof(Layer));
   layer->grid = grid;
@@ -68,6 +71,9 @@ Layer *layerCreate( Grid *grid )
   layer->constrainingGeometry=NULL;
   layer->adj=NULL;
   layer->mixedElementMode=FALSE;
+
+  layer->cellInLayer = malloc(gridMaxCell(grid)*sizeof(bool));
+  for (i=0;i<gridMaxCell(grid);i++) layer->cellInLayer[i] = FALSE;
   return layer;
 }
 
@@ -202,6 +208,7 @@ Grid *layerGrid(Layer *layer)
 
 void layerFree(Layer *layer)
 {
+  free(layer->cellInLayer);
   gridDetachNodeSorter( layer->grid );
   if (layer->adj != NULL) adjFree(layer->adj);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
@@ -1029,6 +1036,41 @@ int layerNActiveNormal(Layer *layer )
   return nActive;
 }
 
+bool layerCellInLayer(Layer *layer, int cell)
+{
+  if (cell < 0 || cell >= gridMaxCell(layerGrid(layer)) ) return FALSE;
+  return layer->cellInLayer[cell];
+}
+
+Layer *layerReconnectCellUnlessInLayer(Layer *layer, int oldNode, int newNode )
+{
+  AdjIterator it;
+  int cell, nodes[4], i;
+  Grid *grid;
+
+  if (oldNode < 0 || oldNode >= layerMaxNode(layer) ) return NULL;
+  if (newNode < 0 || newNode >= layerMaxNode(layer) ) return NULL;
+  if (newNode == oldNode) return layer;
+  
+  grid = layerGrid(layer);
+
+  it = adjFirst(gridCellAdj(grid),oldNode);
+  while (adjValid(it)){
+    cell = adjItem(it);
+    if (!layerCellInLayer(layer,cell) ) {
+      gridCell(grid, cell, nodes);
+      gridRemoveCell(grid,cell);
+      for (i=0;i<4;i++) if (oldNode == nodes[i]) nodes[i] = newNode;
+      gridAddCell(grid, nodes[0],  nodes[1],  nodes[2],  nodes[3]);
+      it = adjFirst(gridCellAdj(grid),oldNode);
+    }else{
+      it = adjNext(it);
+    }      
+  }
+  
+  return layer;
+}
+
 Layer *layerAdvanceConstantHeight(Layer *layer, double height )
 {
   layerSetHeightOfAllNormals(layer, height );
@@ -1064,11 +1106,11 @@ Layer *layerAdvance(Layer *layer)
       tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
       if ( EMPTY == tip) return NULL;
       layer->normal[normal].tip = tip;
-      gridReconnectCellUnlessFrozen(grid, root, tip);
+      layerReconnectCellUnlessInLayer(layer, root, tip);
       faceId = layerConstrained(layer,normal);
       if (0 > faceId) {
 	edgeId = -faceId;
-	gridReconnectEdgeUnlessFrozen(grid, edgeId, root, tip);
+	//gridReconnectEdgeUnlessFrozen(grid, edgeId, root, tip);
       }
       gridCopySpacing(grid, root, tip );
       gridFreezeNode( grid, tip );
@@ -1084,12 +1126,14 @@ Layer *layerAdvance(Layer *layer)
 	normal1 = i+1; if (normal1>2) normal1 = 0;
 	normal0 = layer->triangle[triangle].normal[normal0];
 	normal1 = layer->triangle[triangle].normal[normal1];
+	/*
 	gridReconnectFaceUnlessFrozen(grid, faceId, 
 				      layer->normal[normal0].root, 
 				      layer->normal[normal0].tip);
 	gridReconnectFaceUnlessFrozen(grid, faceId, 
 				      layer->normal[normal1].root, 
 				      layer->normal[normal1].tip);
+	*/
       }
     }    
   }

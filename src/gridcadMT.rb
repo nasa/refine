@@ -122,7 +122,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 2, grid.addNode(1.0,0.1,0.1)
   assert_equal 3, grid.addNode(0.0,1.0,0.1)
   assert_equal 4, grid.addNode(0.0,0.0,1.0)
-  assert_equal grid, grid.addCell(1,2,3,4)
+  grid.addCell(1,2,3,4)
   assert_equal grid, grid.addFace(1,2,3,10)
   assert_equal grid, grid.addEdge(1,2,20,0.0,1.0)
   assert_equal grid, grid.setNGeomNode(1)
@@ -147,7 +147,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 1, grid.addNode(1.0,0.0,0.0)
   assert_equal 2, grid.addNode(0.0,1.0,0.0)
   assert_equal 3, grid.addNode(0.0,0.0,-0.1)
-  assert_equal grid, grid.addCell(0,1,2,3)
+  grid.addCell(0,1,2,3)
   assert_equal grid, grid.addFace(0,1,2,10)
   grid
  end

@@ -111,11 +111,10 @@ VALUE grid_nquad( VALUE self )
 
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
-  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
-  returnedGrid = 
-    gridAddCell( grid, NUM2INT(n0),  NUM2INT(n1),  NUM2INT(n2),  NUM2INT(n3) );
-  return (returnedGrid==NULL?Qnil:self);
+  return INT2NUM( gridAddCell( grid, 
+			       NUM2INT(n0),  NUM2INT(n1),  
+			       NUM2INT(n2),  NUM2INT(n3) ) );
 }
 
 VALUE grid_removeCell( VALUE self, VALUE cellId )

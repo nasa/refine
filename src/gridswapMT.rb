@@ -442,15 +442,13 @@ class TestGridSwap < Test::Unit::TestCase
 
  def testSwapFaceArea
   assert_not_nil grid = Grid.new(6,3,4,0)
-  assert_equal grid, grid.addCell( 
-				  grid.addNode(0.0,0.0,0.0), 
-				  grid.addNode(1.0,0.0,0.0), 
-				  grid.addNode(0.0,1.0,0.0), 
-				  grid.addNode(0.0,0.0,1.0) )
-  assert_equal grid, grid.addCell( 1,0,3,
-				  grid.addNode(0.3,-0.5,0.3) )
-  assert_equal grid, grid.addCell( 0,2,3,
-				  grid.addNode(-0.5,0.3,0.3) )
+  grid.addCell( 
+	       grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+  grid.addCell( 1, 0, 3, grid.addNode(0.3,-0.5,0.3) )
+  grid.addCell( 0, 2, 3, grid.addNode(-0.5,0.3,0.3) )
   
   assert_nil         grid.swapCellFaceArea(0), "no faces"
   assert_not_nil     grid.addFace(1,0,3,10), "add x=0 face"

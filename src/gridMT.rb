@@ -45,7 +45,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal nil, @grid.cell(-1)
   assert_equal nil, @grid.cell(0)
   assert_equal nil, @grid.cell(5)
-  assert_equal @grid, @grid.addCell(0,1,2,3)
+  assert_equal 0, @grid.addCell(0,1,2,3)
   assert_equal [0, 1, 2, 3], @grid.cell(0)
   assert_equal 1, @grid.ncell
   (0..3).each { |n| assert_equal 1, @grid.cellDegree(n)}
@@ -53,15 +53,15 @@ class TestGrid < Test::Unit::TestCase
 
  def testAddCellFailure
   assert_not_nil     grid = Grid.new(3,1,0,0)
-  assert_nil         grid.addCell(0,1,2,3)
+  assert_equal(-1,   grid.addCell(0,1,2,3))
   assert_not_nil     grid = Grid.new(4,1,0,0)
-  assert_equal grid, grid.addCell(0,1,2,3)
-  assert_nil         grid.addCell(0,1,2,3)
+  assert_equal 0,    grid.addCell(0,1,2,3)
+  assert_equal(-1,   grid.addCell(0,1,2,3))
  end
  
  def testRemoveCell
   assert_not_nil     grid = Grid.new(4,2,0,0)
-  assert_equal grid, grid.addCell(0,1,2,3)
+  grid.addCell(0,1,2,3)
   assert_nil         grid.removeCell(-1)
   assert_nil         grid.removeCell(1)
   assert_nil         grid.removeCell(25625)
@@ -128,16 +128,18 @@ class TestGrid < Test::Unit::TestCase
 
  def testReplaceCell
   grid = Grid.new(8,2,0,0)
-  assert_equal grid, grid.addCell(0,1,2,3).addCell(4,5,6,7)
+  assert_equal 0, grid.addCell(0,1,2,3)
+  assert_equal 1, grid.addCell(4,5,6,7)
   assert_equal grid, grid.removeCell(0)
-  assert_equal grid, grid.addCell(0,1,2,3)
-  assert_equal [0, 1, 2, 3], grid.cell(0)
+  assert_equal 0, grid.addCell(0,1,3,2)
+  assert_equal [0, 1, 3, 2], grid.cell(0)
   assert_equal [4, 5, 6, 7], grid.cell(1)
  end
 
  def testReconnectCell
   assert_not_nil             grid = Grid.new(8,3,0,0)
-  assert_equal grid,         grid.addCell(0,1,2,3).addCell(3,4,5,6)
+  grid.addCell(0,1,2,3)
+  grid.addCell(3,4,5,6)
   assert_equal [0, 1, 2, 3], grid.cell(0)
   assert_equal [3, 4, 5, 6], grid.cell(1)
   assert_equal 2,            grid.cellDegree(3)
@@ -153,8 +155,8 @@ class TestGrid < Test::Unit::TestCase
 
  def testCellConnectivity
   assert_not_nil      grid = Grid.new(5,2,0,0)
-  assert_equal grid,  grid.addCell(0,1,2,3)
-  assert_equal grid,  grid.addCell(0,1,2,4)
+  grid.addCell(0,1,2,3)
+  grid.addCell(0,1,2,4)
 
   assert_equal true,  grid.cellEdge(0,1)
   assert_equal false, grid.cellEdge(3,4)
@@ -170,7 +172,9 @@ class TestGrid < Test::Unit::TestCase
 
  def testGetGem
   grid = Grid.new(5,3,0,0)
-  assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
+  grid.addCell(3,4,0,1)
+  grid.addCell(3,4,1,2)
+  grid.addCell(3,4,2,0)
   assert_equal [], grid.gem(5,6)
   assert_equal [0], grid.gem(0,1)
   assert_equal [1], grid.gem(1,2)
@@ -201,8 +205,10 @@ class TestGrid < Test::Unit::TestCase
 
  def testEquator
   grid = Grid.new(6,4,0,0)
-  assert_equal grid, grid.
-   addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0).addCell(4,5,0,1)
+  grid.addCell(4,5,1,2)
+  grid.addCell(4,5,2,3)
+  grid.addCell(4,5,3,0)
+  grid.addCell(4,5,0,1)
   assert_equal [3,2,1,0], grid.gem(4,5)
   assert_equal 2, grid.cellDegree(0)
   assert_equal 4, grid.cellDegree(5)
@@ -213,20 +219,23 @@ class TestGrid < Test::Unit::TestCase
 
  def testEquatorGapInMiddle
   grid = Grid.new(6,3,0,0)
-  assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,2,3)
+  grid.addCell(4,5,1,2)
+  grid.addCell(4,5,2,3)
   assert_equal [1,0], grid.gem(4,5)
   assert_equal [1,2,3,1], grid.equator(4,5)
  end
 
  def testEquatorGapInEnd
   assert_not_nil          grid = Grid.new(6,3,0,0)
-  assert_equal grid,      grid.addCell(4,5,1,2).addCell(4,5,3,1)
+  grid.addCell(4,5,1,2)
+  grid.addCell(4,5,3,1)
   assert_equal [3,1,2,3], grid.equator(4,5)
  end
 
  def testEquatorTwoGaps
   assert_not_nil     grid = Grid.new(6,3,0,0)
-  assert_equal grid, grid.addCell(4,5,1,2).addCell(4,5,3,0)
+  grid.addCell(4,5,1,2)
+  grid.addCell(4,5,3,0)
   assert_nil         grid.equator(4,5)
  end
 
@@ -478,12 +487,12 @@ class TestGrid < Test::Unit::TestCase
 
  def testFindCellWithFace
   assert_not_nil     grid = Grid.new(5,2,0,4)
-  assert_equal grid, grid.addCell(0,1,4,3)
+  grid.addCell(0,1,4,3)
   assert_nil         grid.findCellWithFace(34)
   assert_nil         grid.findCellWithFace(0)
   assert_equal grid, grid.addFace(0,1,2,11)
   assert_nil         grid.findCellWithFace(0)
-  assert_equal grid, grid.addCell(0,1,2,3)
+  grid.addCell(0,1,2,3)
   assert_equal 1,    grid.findCellWithFace(0)
  end
 
@@ -535,13 +544,13 @@ class TestGrid < Test::Unit::TestCase
   assert_not_nil grid = Grid.new(5,2,2,2)
   assert_equal 0, grid.addNode(9.0,0.0,9.0)
   assert_equal 1, grid.addNode(0.0,0.0,0.0)
-  assert_equal grid, grid.addCell( 
-				  0, 
-				  grid.addNode(1.0,0.0,0.0), 
-				  grid.addNode(0.0,1.0,0.0), 
-				  grid.addNode(0.0,0.0,1.0) )
+  grid.addCell( 
+	       0, 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
   assert_equal [0,2,3,4], grid.cell(0)
-  assert_equal grid, grid.addCell(1,2,3,4)
+  grid.addCell(1,2,3,4)
   assert_equal [1,2,3,4], grid.cell(1)
   assert_equal [1], grid.gem(1,2)
   assert_equal grid, grid.addFace(2,3,4,1)
@@ -575,7 +584,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 21.0, grid.nodeT(0,1)
   assert_equal 22.0, grid.nodeT(1,1)
   assert_equal 4, grid.addNode(9.0,0.0,9.0)
-  assert_equal grid, grid.addCell(0,2,3,4)
+  grid.addCell(0,2,3,4)
   assert_equal [0,2,3,4], grid.cell(1)
   assert_equal grid, grid.addFace(1,2,3,2)
   assert_equal 1, grid.findFace(1,2,3)
@@ -672,9 +681,9 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 5,         grid.addNode( 1, 0, 0)
   assert_equal [0,0,1],   grid.nodeXYZ(3)
   assert_equal grid,      grid.freezeNode(3)
-  assert_equal grid,      grid.addCell( 1, 4, 2, 3)
-  assert_equal grid,      grid.addCell( 0, 2, 4, 3)
-  assert_equal grid,      grid.addCell( 0, 4, 5, 3)
+  grid.addCell( 1, 4, 2, 3)
+  grid.addCell( 0, 2, 4, 3)
+  grid.addCell( 0, 4, 5, 3)
   assert_equal [0,4,5,3], grid.cell(2)
   assert_equal grid,      grid.addFace( 1, 4, 2, 2)
   assert_equal grid,      grid.addFace( 0, 2, 4, 2)

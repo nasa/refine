@@ -68,6 +68,11 @@ Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
 Layer *layerTerminateFaceNormals(Layer *, int faceId );
 int layerNActiveNormal(Layer *);
+
+bool layerCellInLayer(Layer *, int cell);
+
+Layer *layerReconnectCellUnlessInLayer(Layer *, int oldNode, int newNode );
+
 Layer *layerAdvance(Layer * );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );

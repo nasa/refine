@@ -31,6 +31,7 @@ class TestGridInsert < Test::Unit::TestCase
 	       grid.addNode(1.0,0.0,0.0), 
 	       grid.addNode(0.0,1.0,0.0), 
 	       grid.addNode(0.0,0.0,1.0) )
+  grid
  end
 
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
@@ -198,7 +199,7 @@ class TestGridInsert < Test::Unit::TestCase
 
  def testCollapseEdge
   assert_not_nil      grid = gemGrid
-  assert_equal grid,  grid.addCell(1,2,3,grid.addNode(-0.01,1.0,1.0))
+  grid.addCell(1,2,3,grid.addNode(-0.01,1.0,1.0))
   assert_equal grid,  grid.collapseEdge(0,1,0.5)
   assert_equal 1,     grid.ncell
   assert_equal false, grid.validNode(1)
@@ -207,7 +208,7 @@ class TestGridInsert < Test::Unit::TestCase
 
  def testCollapseEdgeNegVol
   assert_not_nil      grid = gemGrid
-  assert_equal grid,  grid.addCell(1,2,3,grid.addNode(0.01,1.0,1.0))
+  grid.addCell(1,2,3,grid.addNode(0.01,1.0,1.0))
   assert_nil          grid.collapseEdge(0,1,0.5)
   assert_equal 5,     grid.ncell
   assert_equal true,  grid.validNode(1)
@@ -311,7 +312,7 @@ class TestGridInsert < Test::Unit::TestCase
 				    3,3.0,13.0,
 				    2,2.0,12.0,11)
   node = grid.addNode(2.0,0.0,0.0)
-  assert_equal grid, grid.addCell(0,3,2,node)
+  grid.addCell(0,3,2,node)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert grid.rightHandedBoundary, "orig boundary is not right handed"
   assert_nil grid.nodeUV(0,11)
@@ -328,7 +329,7 @@ class TestGridInsert < Test::Unit::TestCase
 				    2,2.0,12.0,
 				    3,3.0,13.0,11)
   node = grid.addNode(-2.0,0.0,0.0)
-  assert_equal grid, grid.addCell(1,2,3,node)
+  grid.addCell(1,2,3,node)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert grid.rightHandedBoundary, "orig boundary is not right handed"
   origXYZ = grid.nodeXYZ(0)
@@ -478,6 +479,7 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addNode(0,1,0)
   grid.addNode(0,0,1)
   grid.addCell(0,1,2,3)
+  grid
  end
 
  def testSplitCellAt
@@ -541,7 +543,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 2, grid.addNode(0,1,0)
   assert_equal 3, grid.addNode(1,1,0)
   assert_equal 4, grid.addNode(0.5,0.5,1)
-  assert_equal grid, grid.addCell(0,1,2,4)
+  grid.addCell(0,1,2,4)
   assert_equal grid, grid.addFace(0,1,2,1)
   assert_equal grid, grid.addFace(0,3,2,1)
   assert_equal( -1, grid.insertInToGeomFace(5,0,0) )
@@ -562,8 +564,8 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 2, grid.addNode(0,1,0)
   assert_equal 3, grid.addNode(1,1,0)
   assert_equal 4, grid.addNode(0.5,0.5,1)
-  assert_equal grid, grid.addCell(0,1,2,4)
-  assert_equal grid, grid.addCell(1,3,2,4)
+  grid.addCell(0,1,2,4)
+  grid.addCell(1,3,2,4)
   assert_equal grid, grid.addFace(0,1,2,1)
   assert_equal grid, grid.addFace(1,3,2,1)
   assert_equal( -1, grid.insertInToGeomFace(0.5,0.5,0.1) )
@@ -581,8 +583,8 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 2, grid.addNode(0,1,0)
   assert_equal 3, grid.addNode(1,1,0)
   assert_equal 4, grid.addNode(0.5,0.5,1)
-  assert_equal grid, grid.addCell(0,1,2,4)
-  assert_equal grid, grid.addCell(1,3,2,4)
+  grid.addCell(0,1,2,4)
+  grid.addCell(1,3,2,4)
   assert_equal grid, grid.addFace(0,1,2,1)
   assert_equal grid, grid.addFace(1,3,2,1)
   assert_equal 0, grid.insertInToGeomFace(0.01,0.01,0.0)

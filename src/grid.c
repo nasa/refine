@@ -1041,10 +1041,10 @@ int gridCellDegree(Grid *grid, int id)
   return adjDegree(grid->cellAdj, id);
 }
 
-Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
+int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
   int cellId;
-  if ( grid->blankc2n == EMPTY ) return NULL;
+  if ( grid->blankc2n == EMPTY ) return EMPTY;
   cellId = grid->blankc2n;
   grid->blankc2n = grid->c2n[1+4*cellId];
   grid->ncell++;
@@ -1054,12 +1054,12 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
   grid->c2n[2+4*cellId] = n2;
   grid->c2n[3+4*cellId] = n3;
   
-  if ( NULL == adjRegister( grid->cellAdj, n0, cellId ) ) return NULL;
-  if ( NULL == adjRegister( grid->cellAdj, n1, cellId ) ) return NULL;
-  if ( NULL == adjRegister( grid->cellAdj, n2, cellId ) ) return NULL;
-  if ( NULL == adjRegister( grid->cellAdj, n3, cellId ) ) return NULL;
+  if ( NULL == adjRegister( grid->cellAdj, n0, cellId ) ) return EMPTY;
+  if ( NULL == adjRegister( grid->cellAdj, n1, cellId ) ) return EMPTY;
+  if ( NULL == adjRegister( grid->cellAdj, n2, cellId ) ) return EMPTY;
+  if ( NULL == adjRegister( grid->cellAdj, n3, cellId ) ) return EMPTY;
   
-  return grid;
+  return cellId;
 }
 
 Grid *gridRemoveCell(Grid *grid, int cellId )
@@ -1358,41 +1358,6 @@ Grid *gridReconnectAllFace(Grid *grid, int oldNode, int newNode )
   return grid;
 }
 
-Grid *gridReconnectFaceUnlessFrozen(Grid *grid, int faceId, 
-				    int oldNode, int newNode )
-{
-  AdjIterator it;
-  int face, i, node;
-  bool frozen;
-
-  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
-  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
-  if (newNode == oldNode) return grid;
-
-  it = adjFirst(grid->faceAdj,oldNode);
-  while (adjValid(it)){
-    face = adjItem(it);
-    frozen = ( gridNodeFrozen(grid, grid->f2n[0+3*face]) &&
-	       gridNodeFrozen(grid, grid->f2n[1+3*face]) &&
-	       gridNodeFrozen(grid, grid->f2n[2+3*face]) );
-    if (faceId == grid->faceId[face] && !frozen ) {
-      for (i=0;i<3;i++){
-	node = grid->f2n[i+3*face];
-	if (oldNode == node) {
-	  grid->f2n[i+3*face]=newNode;
-	  adjRemove( grid->faceAdj, oldNode, face);
-	  adjRegister( grid->faceAdj, newNode, face);
-	}
-      }
-      it = adjFirst(grid->faceAdj,oldNode);
-    }else{
-      it = adjNext(it);
-    }
-  }
-
-  return grid;
-}
-
 Grid *gridFace(Grid *grid, int face, int *nodes, int *id )
 {
   if (face >= grid->maxface || face < 0) return NULL;
@@ -1638,39 +1603,6 @@ Grid *gridReconnectAllEdge(Grid *grid, int oldNode, int newNode )
       }
     }
     it = adjFirst(grid->edgeAdj,oldNode);
-  }
-
-  return grid;
-}
-
-Grid *gridReconnectEdgeUnlessFrozen(Grid *grid, int edgeId, 
-				    int oldNode, int newNode )
-{
-  AdjIterator it;
-  int edge, i, node;
-  bool frozen;
-
-  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
-  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
-
-  it = adjFirst(grid->edgeAdj,oldNode);
-  while (adjValid(it)){
-    edge = adjItem(it);
-    frozen = ( gridNodeFrozen(grid, grid->e2n[0+2*edge]) &&
-	       gridNodeFrozen(grid, grid->e2n[1+2*edge]) );
-    if (edgeId == grid->edgeId[edge] && !frozen ) {
-      for (i=0;i<2;i++){
-	node = grid->e2n[i+2*edge];
-	if (oldNode == node) {
-	  grid->e2n[i+2*edge]=newNode;
-	  adjRemove( grid->edgeAdj, oldNode, edge);
-	  adjRegister( grid->edgeAdj, newNode, edge);
-	}
-      }
-      it = adjFirst(grid->edgeAdj,oldNode);
-    }else{
-      it = adjNext(it);
-    }
   }
 
   return grid;

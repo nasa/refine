@@ -53,11 +53,10 @@ int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);
 int gridCellDegree(Grid *g, int nodeIndex);
 
-Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
+int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
 Adj *gridCellAdj(Grid *g);
 Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
-Grid *gridReconnectCellUnlessFrozen(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 bool gridCellEdge(Grid *g, int node0, int node1 );
 bool gridCellFace(Grid *g, int node0, int node1, int node2 );
@@ -75,8 +74,6 @@ Adj *gridFaceAdj(Grid *g);
 int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 Grid *gridReconnectAllFace(Grid *g, int oldNode, int newNode );
-Grid *gridReconnectFaceUnlessFrozen(Grid *g, int faceId, 
-				    int oldNode, int newNode );
 Grid *gridFace(Grid *g, int face, int *nodes, int *id );
 Grid *gridDeleteThawedFaces(Grid *g, int faceId );
 int gridNThawedFaces(Grid *g, int faceId );
@@ -95,8 +92,6 @@ Adj *gridEdgeAdj(Grid *g);
 int gridFindEdge(Grid *g, int n0, int n1 );
 int gridEdgeId(Grid *g, int n0, int n1 );
 Grid *gridReconnectAllEdge(Grid *g, int oldNode, int newNode );
-Grid *gridReconnectEdgeUnlessFrozen(Grid *g, int edgeId, 
-				    int oldNode, int newNode );
 Grid *gridEdge(Grid *g, int edge, int *nodes, int *edgeId );
 Grid *gridDeleteThawedEdgeSegments(Grid *g, int edgeId );
 int gridNThawedEdgeSegments(Grid *g, int edgeId );

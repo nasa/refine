@@ -25,6 +25,7 @@ class TestGridMetric < Test::Unit::TestCase
 	       grid.addNode(1.0,0.0,0.0), 
 	       grid.addNode(0.0,1.0,0.0), 
 	       grid.addNode(0.0,0.0,1.0) )
+  grid
  end
 
  def isoTet
@@ -34,6 +35,7 @@ class TestGridMetric < Test::Unit::TestCase
   grid.addNode( 0.500, 0.866, 0.000 )
   grid.addNode( 0.500, 0.289, 0.823 ) 
   grid.addCell(0,1,2,3)
+  grid
  end
 
  def testIsotropicTet
@@ -50,10 +52,10 @@ class TestGridMetric < Test::Unit::TestCase
  def testMatrixSpaceMap
   assert_not_nil grid = Grid.new(5,1,0,0)
   assert_equal 0, grid.addNode(-1.0,-1.0,-1.0)
-  assert_equal grid, grid.addCell( grid.addNode(0.0,0.0,0.0), 
-				   grid.addNode(1.0,0.0,0.0), 
-				   grid.addNode(0.0,2.0,0.0), 
-				   grid.addNode(0.0,0.0,5.0) )
+  grid.addCell( grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,2.0,0.0), 
+	       grid.addNode(0.0,0.0,5.0) )
   1.upto(4) do |n| 
    assert_equal grid, grid.setMap(n, 1.00, 0.00, 0.00,
 	 		                   0.25, 0.00,
@@ -306,11 +308,11 @@ class TestGridMetric < Test::Unit::TestCase
  def testARDerivatives
   assert_not_nil grid = Grid.new(4,1,0,0)
 
-  assert_equal grid, grid.addCell( 
-				  grid.addNode(0.0,0.0,0.0), 
-				  grid.addNode(1.0,0.0,0.0), 
-				  grid.addNode(0.0,1.0,0.0), 
-				  grid.addNode(0.0,0.0,1.0) )
+  grid.addCell( 
+	       grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
   nodes = [0,1,2,3]
   ar = 0.732050807568877
   deriv = -2.0/3.0
@@ -353,16 +355,16 @@ class TestGridMetric < Test::Unit::TestCase
 
  def testStoreARDerivative
   assert_not_nil grid = Grid.new(5,2,0,0)
-  assert_equal grid, grid.addCell( 
-				  grid.addNode(0.0,0.0,0.0), 
-				  grid.addNode(1.0,0.0,0.0), 
-				  grid.addNode(0.0,1.0,0.0), 
-				  grid.addNode(0.0,0.0,1.0) )
-  assert_equal grid, grid.addCell( 
-				  1, 
-				  2, 
-				  3, 
-				  grid.addNode(0.7,0.7,0.7) )
+  grid.addCell( 
+	       grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+  grid.addCell( 
+	       1, 
+	       2, 
+	       3, 
+	       grid.addNode(0.7,0.7,0.7) )
   assert_equal 0,        grid.storedARDegree
   assert_nil             grid.storeARDerivative(10)
   assert_equal 1,        grid.cellDegree(0)
@@ -375,9 +377,9 @@ class TestGridMetric < Test::Unit::TestCase
 
  def testRightHandedFaces
   assert_not_nil grid = Grid.new(4,1,2,0)
-  assert_equal grid, grid.
-   addCell( grid.addNode(0.0,0.0,0.0), grid.addNode(1.0,0.0,0.0), 
-	    grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
+
+  grid.addCell( grid.addNode(0.0,0.0,0.0), grid.addNode(1.0,0.0,0.0), 
+	        grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
   assert_equal grid,  grid.addFace(0,1,2,11)
   assert_equal true,  grid.rightHandedFace(0)
   assert_equal grid,  grid.addFace(0,2,3,11)

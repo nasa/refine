@@ -284,6 +284,12 @@ VALUE layer_normalTerminated( VALUE self, VALUE normal )
   return ( layerNormalTerminated(layer,NUM2INT(normal))?Qtrue:Qfalse );
 }
 
+VALUE layer_cellInLayer( VALUE self, VALUE cell )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layerCellInLayer(layer,NUM2INT(cell))?Qtrue:Qfalse );
+}
+
 VALUE layer_advance( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -355,6 +361,9 @@ void Init_Layer()
 
   rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );
   rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );
+
+  rb_define_method( cLayer, "cellInLayer", layer_cellInLayer, 1 );
+
   rb_define_method( cLayer, "advanceConstantHeight", 
 		    layer_advanceConstantHeight, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 0 );

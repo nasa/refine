@@ -342,8 +342,8 @@ int gridSplitFaceAt(Grid *grid, int face,
   for (i=0;i<3;i++){
     for (n=0;n<4;n++) newnodes[n] = nodes[n];
     newnodes[i] = newnode; 
-    if (grid != gridAddCell(grid, newnodes[0], newnodes[1], 
-			    newnodes[2], newnodes[3] ) ) return EMPTY;
+    if (EMPTY == gridAddCell(grid, newnodes[0], newnodes[1], 
+			           newnodes[2], newnodes[3] ) ) return EMPTY;
   }
 
   if ( gridNegCellAroundNode(grid, newnode) ) {
@@ -373,8 +373,8 @@ int gridSplitCellAt(Grid *grid, int cell,
   for (i=0;i<4;i++){
     for (n=0;n<4;n++) newnodes[n] = nodes[n];
     newnodes[i] = newnode; 
-    if (grid != gridAddCell(grid, newnodes[0], newnodes[1], 
-			    newnodes[2], newnodes[3] ) ) return EMPTY;
+    if (EMPTY == gridAddCell(grid, newnodes[0], newnodes[1], 
+		     	           newnodes[2], newnodes[3] ) ) return EMPTY;
   }
 
   if ( gridNegCellAroundNode(grid, newnode) ) {
