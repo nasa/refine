@@ -10,6 +10,7 @@ RubyExtensionBuilder.new('GridCAD').build
 
 require 'test/unit'
 require 'Adj/Adj'
+require 'Line/Line'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
 require 'GridCAD/GridCAD'

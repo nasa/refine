@@ -10,6 +10,7 @@ RubyExtensionBuilder.new('GridMetric').build
 
 require 'test/unit'
 require 'Adj/Adj'
+require 'Line/Line'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
 
@@ -508,9 +509,9 @@ class TestGridMetric < Test::Unit::TestCase
   y0=0.2
   z0=0.3
   node0 = [x0,y0,z0]
-  node1 = [1.12,-.1,-.2]
+  node1 = [1.12,-0.1,-0.2]
   node2 = [0.01,1.05,0.12]
-  node3 = [0.34,0.22,.99]
+  node3 = [0.34,0.22,0.99]
   assert_not_nil grid = Grid.new(4,0,0,0)
   grid.addNode(node0[0],node0[1],node0[2])
   grid.addNode(node1[0],node1[1],node1[2])

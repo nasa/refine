@@ -1765,6 +1765,8 @@ Layer *layerAdvance(Layer *layer)
       gridCopySpacing(grid, root, tip );
       gridFreezeNode( grid, tip );
     }
+    linesAddNode(gridLines(grid),normal,layer->normal[normal].root);
+    linesAddNode(gridLines(grid),normal,layer->normal[normal].tip);
   }
 
   /* reconnect faces for constrained triangleside */

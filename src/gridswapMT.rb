@@ -10,6 +10,7 @@ RubyExtensionBuilder.new('GridSwap').build
 
 require 'test/unit'
 require 'Adj/Adj'
+require 'Line/Line'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
 require 'GridSwap/GridSwap'

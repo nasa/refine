@@ -17,6 +17,7 @@
 #include <values.h>
 #include "master_header.h"
 #include "adj.h"
+#include "line.h"
 
 BEGIN_C_DECLORATION
 
@@ -95,6 +96,8 @@ struct Grid {
 
   void (*renumberFunc)(void *renumberData, int *o2n);
   void *renumberData;
+
+  Lines *lines;
 };
 
 Grid *gridCreate(int maxnode, int maxcell, int maxface, int maxedge );
@@ -134,7 +137,7 @@ int gridCellDegree(Grid *g, int nodeIndex);
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
-Adj *gridCellAdj(Grid *g);
+#define gridCellAdj(grid) (NULL==grid?NULL:grid->cellAdj)
 Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 bool gridCellValid(Grid *g, int cellId );
@@ -152,7 +155,7 @@ int gridAddFaceUV(Grid *g,
 		  int n1, double u1, double v1,
 		  int n2, double u2, double v2, int faceId );
 Grid *gridRemoveFace(Grid *g, int face );
-Adj *gridFaceAdj(Grid *g);
+#define gridFaceAdj(grid) (NULL==grid?NULL:grid->faceAdj)
 int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 Grid *gridReconnectAllFace(Grid *g, int oldNode, int newNode );
@@ -170,7 +173,7 @@ Grid *gridSetNodeT(Grid *g, int node, int edgeId, double t );
 int gridAddEdge(Grid *g, int n0, int n1, 
 		int edgeId, double t0, double t1 );
 Grid *gridRemoveEdge(Grid *g, int edge );
-Adj *gridEdgeAdj(Grid *g);
+#define gridEdgeAdj(grid) (NULL==grid?NULL:grid->edgeAdj)
 int gridFindEdge(Grid *g, int n0, int n1 );
 int gridEdgeId(Grid *g, int n0, int n1 );
 Grid *gridReconnectAllEdge(Grid *g, int oldNode, int newNode );
@@ -258,6 +261,8 @@ Grid *gridClearStoredAR( Grid *g );
 Grid *gridAddStoredAR( Grid *g, double AR, double *dARdX );
 double gridStoredAR( Grid *g, int index );
 Grid *gridStoredARDerivative( Grid *g, int index, double *dARdX );
+
+#define gridLines(grid) (NULL==grid?NULL:grid->lines)
 
 Grid *gridCopyAboutY0(Grid *g);
 

@@ -125,6 +125,8 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->renumberFunc = NULL;
   grid->renumberData = NULL;
 
+  grid->lines = linesCreate();
+
   return grid;
 }
 
@@ -266,6 +268,8 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->renumberFunc = NULL;
   grid->renumberData = NULL;
+
+  grid->lines = linesCreate();
 
   return  grid;
 }
@@ -516,6 +520,8 @@ Grid *gridDetachNodeSorter(Grid *grid )
 
 void gridFree(Grid *grid)
 {
+  if ( NULL != grid->lines ) linesFree(grid->lines);
+
   if ( grid->tecplotFileOpen ) fclose(grid->tecplotFile);
   if ( NULL != grid->geomEdge) free(grid->geomEdge);
 
@@ -765,6 +771,8 @@ Grid *gridPack(Grid *grid)
 
   if ( NULL != grid->renumberFunc ) 
     (*grid->renumberFunc)( grid->renumberData, o2n );
+
+  if ( NULL != gridLines(grid) ) linesRenumber(gridLines(grid),o2n);
 
   free(o2n);
 
@@ -1084,11 +1092,6 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
   return grid;
 }
 
-Adj *gridCellAdj(Grid *grid)
-{
-  return grid->cellAdj;
-}
-
 Grid *gridReconnectAllCell(Grid *grid, int oldNode, int newNode )
 {
   AdjIterator it;
@@ -1304,11 +1307,6 @@ Grid *gridRemoveFace(Grid *grid, int face )
   grid->blankf2n = face;
 
   return grid;
-}
-
-Adj *gridFaceAdj(Grid *grid)
-{
-  return grid->faceAdj;
 }
 
 int gridFindFace(Grid *grid, int n0, int n1, int n2 )
@@ -1557,11 +1555,6 @@ Grid *gridRemoveEdge(Grid *grid, int edge )
   grid->blanke2n = edge;
 
   return grid;
-}
-
-Adj *gridEdgeAdj(Grid *grid)
-{
-  return grid->edgeAdj;
 }
 
 int gridFindEdge(Grid *grid, int n0, int n1 )

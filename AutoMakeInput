@@ -10,6 +10,7 @@ libMesherX_a_SOURCES = \
 	../src/adj.c \
 	../src/near.c \
 	../src/intersect.c \
+	../src/line.c \
 	../src/grid.c \
 	../src/gridmath.c \
 	../src/gridmetric.c \

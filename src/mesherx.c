@@ -35,6 +35,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 			      bool bil )
 {
   char outputProject[256];
+  char linesProject[256];
   int vol=1;
   Grid *grid;
   Layer *layer;
@@ -167,6 +168,12 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     }
   }else{
     printf("skip save grid.\n");
+  }
+
+  if ( project != NULL ) {
+    sprintf(linesProject,"%s_MX.lines",project);
+    printf("saving lines restart %s\n",linesProject);
+    linesSave(gridLines(grid),linesProject);
   }
 
   printf("MesherX Done.\n");
