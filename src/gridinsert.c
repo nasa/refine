@@ -16,6 +16,7 @@
 #include "gridStruct.h"
 #include "gridmetric.h"
 #include "gridinsert.h"
+#include "gridcad.h"
 
 Grid *gridThrash(Grid *grid)
 {
