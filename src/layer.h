@@ -70,6 +70,7 @@ Layer *layerTerminateFaceNormals(Layer *, int faceId );
 int layerNActiveNormal(Layer *);
 
 bool layerCellInLayer(Layer *, int cell);
+bool layerFaceInLayer(Layer *, int face);
 bool layerEdgeInLayer(Layer *, int edge);
 
 Layer *layerReconnectCellUnlessInLayer(Layer *, int oldNode, int newNode );

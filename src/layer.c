@@ -339,6 +339,8 @@ bool layerParentGeomFace(Layer *layer, int faceId )
 Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
 {
   int i;
+  Grid *grid;
+  grid = layerGrid(layer);
 
   if (layer->ntriangle >= layer->maxtriangle) {
     layer->maxtriangle += 5000;
@@ -356,6 +358,9 @@ Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
     layer->triangle[layer->ntriangle].constrainedSide[i] = 0;
     layer->triangle[layer->ntriangle].parentGeomEdge[i] = 0;
   }
+  gridFreezeNode(grid,n0);
+  gridFreezeNode(grid,n1);
+  gridFreezeNode(grid,n2);
 
   layer->ntriangle++;
 
@@ -1040,6 +1045,19 @@ bool layerCellInLayer(Layer *layer, int cell)
 {
   if (cell < 0 || cell >= gridMaxCell(layerGrid(layer)) ) return FALSE;
   return layer->cellInLayer[cell];
+}
+
+bool layerFaceInLayer(Layer *layer, int face)
+{
+  int nodes[3], faceId;
+  Grid *grid;
+  grid = layerGrid(layer);
+
+  if ( grid != gridFace(grid, face, nodes, &faceId) ) return FALSE;
+
+  return ( gridNodeFrozen(grid,nodes[0]) && 
+	   gridNodeFrozen(grid,nodes[1]) && 
+	   gridNodeFrozen(grid,nodes[2]) );
 }
 
 bool layerEdgeInLayer(Layer *layer, int edge)

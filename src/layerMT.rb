@@ -435,7 +435,7 @@ class TestLayer < Test::Unit::TestCase
   assert       0<         grid.minVolume, "negative volumes"
  end
 
- def testAdvanceLayerIntoVolumeWithTwoFrontFacesOfCell
+ def testAdvanceLayerIntoVolumeWithTwoFrontFacesOfVolumeCell
   assert_not_nil          grid = Grid.new(10,10,10,10)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
@@ -479,6 +479,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal [0,3,1,1], grid.face(0)
   assert_equal [0,1,2,2], grid.face(1)
+  assert_equal true,      layer.faceInLayer(0)
+  assert_equal false,     layer.faceInLayer(1)
   assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 7,         grid.nnode
   assert_equal [4,6,2,5], grid.cell(0)
@@ -487,6 +489,10 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [4,6,2,2], grid.face(1)
   assert_equal [0,1,6,2], grid.face(2)
   assert_equal [0,6,4,2], grid.face(3)
+  assert_equal true,      layer.faceInLayer(0)
+  assert_equal false,     layer.faceInLayer(1)
+  assert_equal true,      layer.faceInLayer(2)
+  assert_equal true,      layer.faceInLayer(3)
   assert_equal 4,         grid.nface
   assert_equal true,      grid.rightHandedBoundary
  end
