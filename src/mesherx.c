@@ -95,6 +95,12 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   int nparent;
   int nthaw;
   int orient;
+  int *shell;
+  int nodes[3], front, side;
+  int ncurve, *curve;
+  int i;
+  int n0,n1;
+    
 
   Grid *grid;
   grid = layerGrid(layer);
@@ -127,6 +133,68 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	}
       }
       printf("faceId %4d has %4d segments\n",faceId,nshell);
+      shell = malloc(2*nshell*sizeof(int));
+      nshell =0;
+      for(edge=0;edge<nedge;edge++){
+	edgeId = loopEdge[0+2*edge];
+	orient = loopEdge[1+2*edge];
+	nparent = layerNParentEdgeSegments(layer,edgeId);
+	if (nparent > 0 ) {
+	  for(front=0;front<layerNFront(layer);front++){
+	    for(side=0;side<3;side++){
+	      if (edgeId == layerParentEdge(layer,front,side)){
+		n0 = side;
+		n1 = side+1; if (n1>2) n1 = 0;
+		layerFront(layer,front,nodes);
+		n0 = nodes[n0];
+		n1 = nodes[n1];
+		shell[0+2*nshell] = n1;
+		shell[1+2*nshell] = n0;
+		nshell++;
+	      }
+	    }
+	  }
+	  printf("phantom %4d %4d edge added. nshell %8d\n",edge,edgeId,nshell);
+	} else if ( layerConstrainingGeometry(layer,-edgeId) ) {
+	  ncurve = gridGeomEdgeSize(grid,edgeId);
+	  curve = malloc( ncurve * sizeof(int) );
+	  gridGeomEdge( grid, edgeId, curve );
+	  for(i=1;i<ncurve;i++){
+	    if ( !gridNodeFrozen(grid,curve[i-1]) || 
+		 !gridNodeFrozen(grid,curve[i])   ){
+	      if (orient>0){
+		shell[0+2*nshell] = curve[i-1];
+		shell[1+2*nshell] = curve[i];
+	      }else{
+		shell[0+2*nshell] = curve[i];
+		shell[1+2*nshell] = curve[i-1];
+	      }
+	      nshell++;
+	    }	      
+	  }
+	  free(curve);
+	  printf("rebuild %4d %4d edge added. nshell %8d\n",edge,edgeId,nshell);
+	} else {
+	  ncurve = gridGeomEdgeSize(grid,edgeId);
+	  curve = malloc( ncurve * sizeof(int) );
+	  gridGeomEdge( grid, edgeId, curve );
+	  for(i=1;i<ncurve;i++){
+	    if (orient>0){
+	      shell[0+2*nshell] = curve[i-1];
+	      shell[1+2*nshell] = curve[i];
+	    }else{
+	      shell[0+2*nshell] = curve[i];
+	      shell[1+2*nshell] = curve[i-1];
+	    }
+	    nshell++;	      
+	  }
+	  free(curve);
+	  printf("original%4d %4d edge added. nshell %8d\n",edge,edgeId,nshell);
+	}
+      }
+      for(i=0;i<nshell;i++) 
+	printf("shell %4d: %8d <-> %8d\n",i,shell[0+2*i],shell[1+2*i]);
+      free(shell);
     }
   }
 
