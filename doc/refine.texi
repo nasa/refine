@@ -124,11 +124,11 @@ executable (R).
 
 @heading Others
 @enumerate
-@item main.c - refine main. (R)
-@item MesherX.c - MesherX main. (M)
-@item mesherx.c - MesherX driver routines. (M)
-@item mesherxInit.c - Build layer object from GeoSDK/CAPRI restart. (M)
-@item mesherxRebuild.c - Inviscid mesh rebuild routines for advaning layer meshes. (M)
+@item refine_main - stand-alone refine main. (R)
+@item MesherX - MesherX main. (M)
+@item mesherx - MesherX driver routines. (M)
+@item mesherxInit - Build layer object from GeoSDK/CAPRI restart. (M)
+@item mesherxRebuild - Inviscid mesh rebuild routines for advaning layer meshes. (M)
 @end enumerate
 
 @node Base Objects
