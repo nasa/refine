@@ -135,14 +135,15 @@ Grid* gridRegisterNodeCell(Grid *grid, int nodeId, int cellId)
 
     oldTerminator = grid->currentcell;
 
-    if (grid->firstblankcell == 0 ) return NULL;
     entry = grid->firstblankcell;
-    if (entry == (oldTerminator+1) ) {
+    if ( entry == 0 ) return NULL;
+    
+    if (entry == (oldTerminator+1) ) { // append to current list
       grid->celllist[oldTerminator] = cellId+1;
       grid->firstblankcell = -grid->celllist[entry];
       grid->celllist[entry] = 0;      
     }else{
-      if (grid->celllist[entry] != (-(entry+1)) ) return NULL;
+      if ( grid->celllist[entry] == 0 ) return NULL;
       terminator = entry+1;
       grid->celllist[oldTerminator] = -entry;      
       grid->celllist[entry] = cellId+1;
@@ -234,7 +235,7 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 
 Grid *gridPack(Grid *grid)
 {
-  int nodeId, current, deg;
+  int nodeId, current, deg, i;
   current = 1;
   for ( nodeId=0 ; nodeId<grid->nnode ; nodeId++) {
     deg = gridNodeDeg( grid, nodeId );
@@ -253,8 +254,8 @@ Grid *gridPack(Grid *grid)
     }
   }
   grid->firstblankcell = current;
-  //  for (i=0;i < grid->nlist; i++ ) grid->celllist[i] = -(i+1);
-  // grid->celllist[grid->nlist-1] =0;
+  for (i=current;i < grid->nlist; i++ ) grid->celllist[i] = -(i+1);
+  grid->celllist[grid->nlist-1] =0;
   return grid;
 }
 
