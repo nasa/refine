@@ -85,7 +85,8 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 4, p1.nface
   assert_equal p1.partId, p1.nodePart(4)
   assert_equal 2, q.transactions
- # assert_equal [0,1,2,3]
+  assert_equal 1, q.removedCells(1)
+  assert_equal [0,1,2,3], q.removedCellNodes(0)
  end
 
 end
