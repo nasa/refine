@@ -123,6 +123,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 4,       layer.nnormal
   assert_equal [0,1,2], layer.triangleNormals(0)
   assert_equal [0,1,3], layer.triangleNormals(1)
+  assert_equal(-1,       layer.normalRoot(-1))
+  assert_equal(-1,       layer.normalRoot(100))
   assert_equal 1,       layer.normalRoot(0)
   assert_equal 2,       layer.normalRoot(1)
   assert_equal 3,       layer.normalRoot(2)

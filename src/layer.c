@@ -446,6 +446,28 @@ Layer *layerInitializeNormal(Layer *layer, int normal)
   return layer;
 }
 
+int layerDuplicateNormal(Layer *layer, int normal)
+{
+  int newone, root;
+
+  root = layerNormalRoot(layer,normal);
+  if (EMPTY == root) return EMPTY;
+ 
+  newone = layerAddNormal(layer, root);
+  if (EMPTY == newone) return EMPTY;
+
+  layer->normal[newone].constrained =  layer->normal[normal].constrained;
+  layer->normal[newone].root =         layer->normal[normal].root;
+  layer->normal[newone].tip =          layer->normal[normal].tip;
+  layer->normal[newone].direction[0] = layer->normal[normal].direction[0];
+  layer->normal[newone].direction[1] = layer->normal[normal].direction[1];
+  layer->normal[newone].direction[2] = layer->normal[normal].direction[2];
+  layer->normal[newone].height =       layer->normal[normal].height;
+  layer->normal[newone].terminated =   layer->normal[normal].terminated;
+
+  return newone;
+}
+
 int layerAddNormal(Layer *layer, int globalNodeId )
 {
   int i; 
@@ -493,13 +515,13 @@ Layer *layerTriangleNormals(Layer *layer, int triangle, int *normals )
 
 int layerNormalRoot(Layer *layer, int normal )
 {
-  if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
+  if (normal < 0 || normal >= layerNNormal(layer) ) return EMPTY;
   return layer->normal[normal].root;
 }
 
 int layerNormalDeg(Layer *layer, int normal )
 {
-  if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
+  if (NULL == layer->adj) return 0;
   return adjDegree(layer->adj, normal);
 }
 
@@ -1702,16 +1724,15 @@ Layer *layerToggleMixedElementMode(Layer *layer)
 
 Layer *layerBlend(Layer *layer)
 {
-  int firsttriangle, previous;
-  int normals[3], nodes[3];
-  int i, n0, n1;
-
-
   int normal, originalNormals;
   AdjIterator it;
   int triangle, splitTriangle, nextTriangle;
   double edgeAngle, largestEdgeAngle, angleLimit;
   int commonEdge[2];
+
+  int newNormal, i;
+  bool done;
+
   angleLimit = 250; /* deg */
 
   originalNormals = layerNNormal(layer);
@@ -1735,6 +1756,13 @@ Layer *layerBlend(Layer *layer)
       nextTriangle = layerNextTriangle(layer, normal, splitTriangle);
       layerCommonEdge(layer, splitTriangle, nextTriangle, commonEdge);
       layerAddBlend(layer,commonEdge[0],commonEdge[1]);
+
+      newNormal = layerDuplicateNormal(layer, normal );
+      triangle = nextTriangle;
+      done = FALSE;
+      while (!done) {
+	done = TRUE;
+      }
     }
  
   }
