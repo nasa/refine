@@ -22,6 +22,7 @@ local:
 	./gridswapMT.rb
 	./gridinsertMT.rb
 	./gridmpiMT.rb
+	./gridmoveMT.rb
 	./layerMT.rb
 
 clean:
