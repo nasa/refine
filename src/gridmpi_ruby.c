@@ -16,6 +16,12 @@ VALUE grid_setAllLocal( VALUE self )
   return (gridSetAllLocal(grid)==grid?self:Qnil);
 }
 
+VALUE grid_setGhost( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSetGhost(grid, NUM2INT(node))==grid?self:Qnil);
+}
+
 VALUE cGridMPI;
 
 void Init_GridMPI() 
@@ -23,4 +29,5 @@ void Init_GridMPI()
   cGridMPI = rb_define_module( "GridMPI" );
   rb_define_method( cGridMPI, "setAllLocal", grid_setAllLocal, 0 );
   rb_define_method( cGridMPI, "identityGlobal", grid_identityGlobal, 0 );
+  rb_define_method( cGridMPI, "setGhost", grid_setGhost, 1 );
 }

@@ -20,6 +20,8 @@ end
 
 class TestGridMPI < Test::Unit::TestCase
 
+ EMPTY = -1
+
  def rightTet
   grid = Grid.new(5,2,0,0)
   grid.addCell( 
@@ -46,6 +48,15 @@ class TestGridMPI < Test::Unit::TestCase
   10.times do |node| 
    assert_equal partId, grid.nodePart(node), "node #{node} part failed" 
   end
+ end
+
+ def testSetGhostNode
+  partId = 7
+  grid = Grid.new(1,0,0,0).setPartId(partId)
+  grid.addNode(1,2,3)
+  grid.setAllLocal
+  assert_equal grid, grid.setGhost(0)
+  assert_equal EMPTY, grid.nodePart(0)
  end
 
  def testSplitEdgeAcrossProc

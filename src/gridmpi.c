@@ -29,3 +29,8 @@ Grid *gridSetAllLocal(Grid *grid )
     if (grid != gridSetNodePart(grid,node,gridPartId(grid))) return NULL;
   return grid;
 }
+
+Grid *gridSetGhost(Grid *grid, int node )
+{
+  return gridSetNodePart(grid,node,EMPTY);
+}
