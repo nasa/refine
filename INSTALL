@@ -2,9 +2,10 @@ Note To CVS Users
 =================
 
    Run ./autogen.sh to set the package up to install inside an
-archetecture directory(e.g., Linux, IRIX64). It will run bootstrap to
-create the configure script. Then it will create an arch dir. Finally,
-it will cd to the arch dir and and run ../configure --prefix=`pwd`.
+archetecture directory(e.g., Linux, IRIX64). It will run ./bootstrap
+to create the configure script. Then it will create an arch
+dir. Finally, it will cd to the arch dir and and run: 
+../configure --prefix=`pwd`.
 
 Note To SGI IRIX Users
 ======================
@@ -12,7 +13,7 @@ Note To SGI IRIX Users
    if configure does not find the X libs. add 
       --x-includes=/usr/include 
       --x-libraries=/usr/lib32
-   to the configure or autogen.sh script
+   to the configure or autogen.sh script commnad line options
 
 Basic Installation
 ==================
@@ -101,9 +102,10 @@ Installation Names
 ==================
 
    By default, `make install' will install the package's files in
-`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+`/usr/local/bin', `/usr/local/lib', etc.  You can specify an
 installation prefix other than `/usr/local' by giving `configure' the
-option `--prefix=PATH'.
+option `--prefix=PATH'. (often `--prefix=`pwd`' is used to install
+locally)
 
    You can specify separate installation prefixes for
 architecture-specific files and architecture-independent files.  If you
