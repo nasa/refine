@@ -18,6 +18,30 @@
 #include "gridmath.h"
 #include "gridshape.h"
 
+Grid *gridCurvedEdgeMidpoint(Grid *grid,int node0, int node1, double *e)
+{
+  double n0[3], n1[3];
+  double origxyz[3], tuv[2];
+  int parent;
+
+  gridNodeXYZ(grid,node0,n0);
+  gridNodeXYZ(grid,node1,n1);
+  gridAverageVector(n0,n1,e);
+
+  parent = gridParentGeometry(grid,node0,node1);
+  if (0==parent) return grid;
+
+  gridVectorCopy(origxyz,e);
+  tuv[0] = tuv[1] = DBL_MAX;
+  if (parent<0) {
+    gridProjectToEdge(grid, -parent, origxyz, tuv, e);
+  } else {
+    gridProjectToFace(grid, parent, origxyz, tuv, e);    
+  }
+
+  return grid;
+}
+
 Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
 {
   int node, cell, nodes[4];
@@ -40,12 +64,14 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
       gridNodeXYZ(grid,nodes[1],n1);
       gridNodeXYZ(grid,nodes[2],n2);
       gridNodeXYZ(grid,nodes[3],n3);
-      gridAverageVector(n0,n1,e01);
-      gridAverageVector(n0,n2,e02);
-      gridAverageVector(n0,n3,e03);
-      gridAverageVector(n1,n2,e12);
-      gridAverageVector(n1,n3,e13);
-      gridAverageVector(n2,n3,e23);
+
+      gridCurvedEdgeMidpoint(grid,nodes[0],nodes[1],e01);
+      gridCurvedEdgeMidpoint(grid,nodes[0],nodes[2],e02);
+      gridCurvedEdgeMidpoint(grid,nodes[0],nodes[3],e03);
+
+      gridCurvedEdgeMidpoint(grid,nodes[1],nodes[2],e12);
+      gridCurvedEdgeMidpoint(grid,nodes[1],nodes[3],e13);
+      gridCurvedEdgeMidpoint(grid,nodes[2],nodes[3],e23);
 
       /* project edge nodes here*/
 
