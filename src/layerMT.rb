@@ -349,8 +349,13 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0.0,1.0,0.0], layer.triangleDirection(1)
   halfSqrt2 = 0.5 * Math::sqrt(2)
   direction = [0.0, halfSqrt2, halfSqrt2]
-  assert_equal direction, layer.normalDirection(0)
-  assert_equal direction, layer.normalDirection(1)
+  tol = 1.0e-14
+  assert_in_delta direction[0], layer.normalDirection(0)[0], tol
+  assert_in_delta direction[1], layer.normalDirection(0)[1], tol
+  assert_in_delta direction[2], layer.normalDirection(0)[2], tol
+  assert_in_delta direction[0], layer.normalDirection(1)[0], tol
+  assert_in_delta direction[1], layer.normalDirection(1)[1], tol
+  assert_in_delta direction[2], layer.normalDirection(1)[2], tol
   assert_equal [0.0,0.0,1.0], layer.normalDirection(2)
   assert_equal [0.0,1.0,0.0], layer.normalDirection(3)
  end

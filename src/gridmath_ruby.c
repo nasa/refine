@@ -241,7 +241,7 @@ static VALUE grid_lu3x3( VALUE self, VALUE rb_a )
 static VALUE grid_backsolve3x3( VALUE self, VALUE rb_lu, VALUE rb_b )
 {
   int i;
-  double lu[9], b[3], s[3];
+  double lu[9], b[3];
   VALUE rb_s;
   for (i=0;i<9;i++) lu[i] = NUM2DBL(rb_ary_entry(rb_lu,i));
   for (i=0;i<3;i++)  b[i] = NUM2DBL(rb_ary_entry(rb_b,i));

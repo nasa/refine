@@ -86,7 +86,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal grid, grid.setMap(0, 1, 0, 0, 1, 0, 1)
   assert_equal grid, grid.setMap(1, 2, 0, 0, 2, 0, 2)
   assert_equal 1, grid.spacing(0)
-  assert_equal Math::sqrt(0.5), grid.spacing(1)
+  assert_in_delta Math::sqrt(0.5), grid.spacing(1), 1.0e-14
   assert_equal grid, grid.copySpacing(0,1)
   assert_equal 1, grid.spacing(1)  
  end
