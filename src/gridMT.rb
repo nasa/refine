@@ -147,7 +147,9 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [15,75], grid.getUnusedCellGlobal
   assert_equal grid, grid.joinUnusedCellGlobal(5)
   assert_equal [5,15,75], grid.getUnusedCellGlobal
+  assert_equal grid, grid.joinUnusedCellGlobal(5)
   assert_equal grid, grid.joinUnusedCellGlobal(15)
+  assert_equal grid, grid.joinUnusedCellGlobal(75)
   assert_equal [5,15,75], grid.getUnusedCellGlobal
   grid.addCell(0,1,2,3)
   assert_equal 5, grid.cellGlobal(0)
@@ -201,6 +203,26 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 101, grid.cellGlobal(0)
   assert_equal 100, grid.cellGlobal(2)
   assert_equal  99, grid.cellGlobal(4)  
+ end
+
+ def testEliminateUnusedGlobalCellIdExtrema
+  grid = Grid.new(4,3,0,0)
+  4.times { grid.addNode(1.0,2.0,3.0) }
+  grid.addCell(0,1,2,3)
+  grid.setGlobalNCell(100)
+  grid.setCellGlobal(0,99)
+  2.times { grid.addCell(0,1,2,3) }
+  grid.removeCell(0)
+  grid.removeCell(2)
+  assert_equal [ 99,101], grid.getUnusedCellGlobal
+  assert_equal 102, grid.globalncell 
+  assert_equal 100, grid.cellGlobal(1)
+
+  assert_equal grid, grid.eliminateUnusedCellGlobal
+
+  assert_equal [], grid.getUnusedCellGlobal
+  assert_equal 100, grid.globalncell 
+  assert_equal  99, grid.cellGlobal(1)
  end
 
  def testInitNodeFrozenState
