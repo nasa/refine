@@ -323,8 +323,105 @@ Queue *queueDump( Queue *queue, int *ints, double *doubles )
     }
   }
 
-  
-
   return queue;
 }
 
+Queue *queueLoad( Queue *queue, int *ints, double *doubles )
+{
+  int i, d, node, size, transaction, removed, added;
+
+  queue->transactions  = ints[0];
+  queue->nRemovedCells = ints[1];
+  queue->nAddedCells   = ints[2];
+  queue->nRemovedFaces = ints[3];
+  queue->nAddedFaces   = ints[4];
+  i = 5;
+  d = 0;
+
+  if (queue->transactions > queue->maxTransactions) {
+    queue->maxTransactions = queue->transactions;
+    queue->removedCells = realloc( queue->removedCells, 
+				   queue->maxTransactions * sizeof(int) );
+    queue->addedCells   = realloc( queue->addedCells, 
+				   queue->maxTransactions * sizeof(int) );
+    queue->removedFaces = realloc( queue->removedFaces, 
+				   queue->maxTransactions * sizeof(int) );
+    queue->addedFaces   = realloc( queue->addedFaces, 
+				   queue->maxTransactions * sizeof(int) );
+  }
+  if (queue->nRemovedCells > queue->maxRemovedCells) {
+    queue->maxRemovedCells = queue->maxRemovedCells;
+    queue->removedCellNodes = realloc( queue->removedCellNodes, 
+				       4 * queue->maxRemovedCells* sizeof(int));
+  }
+
+  if (queue->nAddedCells > queue->maxAddedCells) {
+    queue->maxAddedCells = queue->nAddedCells;
+    queue->addedCellNodes = realloc( queue->addedCellNodes, 
+				     5 * queue->maxAddedCells * sizeof(int) );
+    queue->addedCellXYZs  = realloc( queue->addedCellXYZs, 
+				     12 * queue->maxAddedCells* sizeof(double));
+  }
+  if (queue->nRemovedFaces > queue->maxRemovedFaces) {
+    queue->maxRemovedFaces = queue->nRemovedFaces;
+    queue->removedFaceNodes = realloc( queue->removedFaceNodes, 
+				       3 * queue->maxRemovedFaces* sizeof(int));
+  }
+  if (queue->nAddedFaces > queue->maxAddedFaces) {
+    queue->maxAddedFaces = queue->nAddedFaces;
+    queue->addedFaceNodes = realloc( queue->addedFaceNodes, 
+				     4 * queue->maxAddedFaces * sizeof(int) );
+    queue->addedFaceUVs   = realloc( queue->addedFaceUVs, 
+				     6 * queue->maxAddedFaces* sizeof(double));
+  }
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    queue->removedCells[transaction] = ints[i]; i++;
+  }
+  for(removed=0;removed<queue->nRemovedCells;removed++){
+    size = 4;
+    for (node=0;node<size;node++) { 
+      queue->removedCellNodes[node+size*removed] = ints[i]; i++;
+    }
+  }
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    queue->addedCells[transaction] = ints[i]; i++;
+  }
+  for(added=0;added<queue->nAddedCells;added++){
+    size = 5;
+    for (node=0;node<size;node++) { 
+      queue->addedCellNodes[node+size*added] = ints[i]; i++;
+    }
+    size = 12;
+    for (node=0;node<size;node++) { 
+      queue->addedCellXYZs[node+size*added] = doubles[d]; d++;
+    }
+  }
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    queue->removedFaces[transaction] = ints[i]; i++;
+  }
+  for(removed=0;removed<queue->nRemovedFaces;removed++){
+    size = 3;
+    for (node=0;node<size;node++) { 
+      queue->removedFaceNodes[node+size*removed] = ints[i]; i++;
+    }
+  }
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    queue->addedFaces[transaction] = ints[i]; i++;
+  }
+  for(added=0;added<queue->nAddedFaces;added++){
+    size = 4;
+    for (node=0;node<size;node++) { 
+      queue->addedFaceNodes[node+size*added] = ints[i]; i++;
+    }
+    size = 6;
+    for (node=0;node<size;node++) { 
+      queue->addedFaceUVs[node+size*added] = doubles[d]; d++;
+    }
+  }
+
+  return queue;
+}

@@ -71,6 +71,7 @@ Queue *queueAddedFaceUVs( Queue *, int index, double *uvs );
 
 Queue *queueDumpSize( Queue *, int *nInt, int *nDouble );
 Queue *queueDump( Queue *, int *ints, double *doubles );
+Queue *queueLoad( Queue *, int *ints, double *doubles );
 
 END_C_DECLORATION
 

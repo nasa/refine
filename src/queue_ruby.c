@@ -199,6 +199,31 @@ VALUE queue_dump( VALUE self )
   return array;
 }
 
+VALUE queue_load( VALUE self, VALUE rb_ints, VALUE rb_doubles )
+{
+  Queue *result;
+  int i, nInt, nDouble;
+  int *ints;
+  double *doubles;
+  GET_QUEUE_FROM_SELF;
+
+  nInt = RARRAY(rb_ints)->len;
+  nDouble = RARRAY(rb_doubles)->len;
+
+  ints = malloc(nInt * sizeof(int));
+  doubles = malloc(nDouble * sizeof(double));
+
+  for (i=0;i<nInt;i++) ints[i] = NUM2INT(rb_ary_entry(rb_ints,i));
+  for (i=0;i<nDouble;i++) doubles[i] = NUM2DBL(rb_ary_entry(rb_doubles,i));
+
+  result = queueLoad( queue, ints, doubles );
+
+  free(ints);
+  free(doubles);
+
+  return (queue==result?self:Qnil);
+}
+
 VALUE cQueue;
 
 void Init_Queue() 
@@ -227,4 +252,5 @@ void Init_Queue()
   rb_define_method( cQueue, "addedFaceUVs", queue_addedFaceUVs, 1 );
 
   rb_define_method( cQueue, "dump", queue_dump, 0 );  
+  rb_define_method( cQueue, "load", queue_load, 2 );
 }
