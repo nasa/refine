@@ -58,6 +58,7 @@ Grid *gridRemoveCell(Grid *g, int cellId );
 Adj *gridCellAdj(Grid *g);
 Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
+bool gridCellValid(Grid *g, int cellId );
 bool gridCellEdge(Grid *g, int node0, int node1 );
 bool gridCellFace(Grid *g, int node0, int node1, int node2 );
 int gridFindOtherCellWith3Nodes(Grid *g, int node0, int node1, int node2,
@@ -167,6 +168,10 @@ Grid *gridSetMap(Grid *g, int node,
 		                         double m33);
 
 int gridStoredARDegree( Grid *g );
+Grid *gridClearStoredAR( Grid *g );
+Grid *gridAddStoredAR( Grid *g, double AR, double *dARdX );
+double gridStoredAR( Grid *g, int index );
+Grid *gridStoredARDerivative( Grid *g, int index, double *dARdX );
 
 END_C_DECLORATION
 

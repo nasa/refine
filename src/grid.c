@@ -14,9 +14,85 @@
 #include <limits.h>
 #include <values.h>
 #include "grid.h"
-#include "gridStruct.h"
 
 //#define EBUG
+
+#define MAXDEG 200
+
+typedef struct Prism Prism;
+struct Prism {
+  int nodes[6];
+};
+
+typedef struct Pyramid Pyramid;
+struct Pyramid {
+  int nodes[5];
+};
+
+typedef struct Quad Quad;
+struct Quad {
+  int nodes[4];
+  int faceId;
+};
+
+struct Grid {
+  int maxnode, nnode;
+  int blanknode;
+  double *xyz;
+  double *map;
+  bool *frozen;
+
+  int maxcell, ncell;
+  int blankc2n;
+  int *c2n;
+  Adj *cellAdj;
+
+  int maxface, nface;
+  int blankf2n;
+  int *f2n;
+  int *faceId;
+  double *faceU, *faceV;
+  Adj *faceAdj;
+
+  int maxedge, nedge;
+  int blanke2n;
+  int *e2n;
+  int *edgeId;
+  double *edgeT;
+  Adj *edgeAdj;
+
+  int nprism, maxprism;
+  Prism *prism;
+  int *prismDeg;
+
+  int npyramid, maxpyramid;
+  Pyramid *pyramid;
+
+  int nquad, maxquad;
+  Quad *quad;
+
+  int nGeomNode;
+  int nGeomEdge;
+  int nGeomFace;
+  int *geomEdge;
+
+  int ngem;
+  int gem[MAXDEG];
+
+  int nequ;
+  int equ[MAXDEG];
+
+  int degAR;
+  double AR[MAXDEG];
+  double dARdX[3*MAXDEG];
+
+  FILE *tecplotFile;
+  bool tecplotFileOpen;
+
+  void (*renumberFunc)(void *renumberData, int *o2n);
+  void *renumberData;
+
+};
 
 Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 {
@@ -1162,6 +1238,12 @@ Grid *gridCell(Grid *grid, int cellId, int *nodes )
   return grid;
 }
 
+bool gridCellValid(Grid *grid, int cellId )
+{
+  if ( cellId < 0 || cellId >= grid->maxcell ) return FALSE;
+  return (EMPTY != grid->c2n[4*cellId]);
+}
+
 bool gridCellEdge(Grid *grid, int n0, int n1 )
 {
   AdjIterator it;
@@ -2015,6 +2097,9 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
     grid->nequ = grid->ngem;
   }
 
+  for ( iequ = 0; iequ < grid->nequ; iequ++ )
+    grid->equ[iequ+grid->nequ]=grid->equ[iequ];
+
   return grid;
 }
 
@@ -2410,4 +2495,37 @@ int gridStoredARDegree( Grid *grid )
   return grid->degAR;
 }
 
+Grid *gridClearStoredAR( Grid *grid )
+{
+  grid->degAR = 0;
+  return grid;
+}
 
+Grid *gridAddStoredAR( Grid *grid, double AR, double *dARdX )
+{
+  if (grid->degAR == MAXDEG) return NULL;
+
+  grid->AR[grid->degAR] = AR;
+  grid->dARdX[0+3*grid->degAR] = dARdX[0];
+  grid->dARdX[1+3*grid->degAR] = dARdX[1];
+  grid->dARdX[2+3*grid->degAR] = dARdX[2];
+
+  grid->degAR++;
+  return grid;
+}
+
+double gridStoredAR( Grid *grid, int index )
+{
+  if ( index < 0 || index >= gridStoredARDegree( grid ) ) return DBL_MAX;
+  return grid->AR[index];
+}
+
+Grid *gridStoredARDerivative( Grid *grid, int index, double *dARdX )
+{
+  if ( index < 0 || index >= gridStoredARDegree( grid ) ) return NULL;
+  dARdX[0] = grid->dARdX[0+3*index];
+  dARdX[1] = grid->dARdX[1+3*index];
+  dARdX[2] = grid->dARdX[2+3*index];
+  
+  return grid;
+}

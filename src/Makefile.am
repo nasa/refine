@@ -2,7 +2,6 @@ lib_LIBRARIES = libMesherX.a
 libMesherX_a_SOURCES = \
 	master_header.h \
 	adj.h adj.c \
-	gridStruct.h \
 	grid.h grid.c \
 	gridmetric.h gridmetric.c \
 	gridinsert.h gridinsert.c \

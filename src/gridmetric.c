@@ -5,7 +5,6 @@
 #include <values.h>
 #include "grid.h"
 #include "gridmetric.h"
-#include "gridStruct.h"
 
 #define VECTOR_COPY3(a,b) for(i=0;i<3;i++)a[i]=b[i];
 
@@ -752,10 +751,11 @@ Grid *gridStoreARDerivative (Grid *grid, int node )
 {
   AdjIterator it;
   int nodes[4], orientedNodes[4];
+  double AR, dARdX[3];
 
   if ( !gridValidNode( grid, node) ) return NULL;
 
-  grid->degAR = 0;
+  gridClearStoredAR( grid );
   for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     gridCell(grid,adjItem(it),nodes);
     orientedNodes[0] = node;
@@ -765,12 +765,12 @@ Grid *gridStoreARDerivative (Grid *grid, int node )
       orientedNodes[1] = nodes[0];
     }
     gridOrient( grid, nodes, orientedNodes);
-    grid->degAR++;
-    if (grid->degAR > MAXDEG) return NULL;
-    if (grid != gridCellARDerivative(grid, orientedNodes, 
-				     &(grid->AR[grid->degAR-1]), 
-				     &(grid->dARdX[(grid->degAR-1)*3]) ) ) {
-      grid->degAR = 0;
+    if (grid != gridCellARDerivative(grid, orientedNodes, &AR, dARdX ) ) {
+      gridClearStoredAR( grid );
+      return NULL;
+    }
+    if (grid != gridAddStoredAR(grid, AR, dARdX ) ) {
+      gridClearStoredAR( grid );
       return NULL;
     }
   }

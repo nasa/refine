@@ -17,7 +17,6 @@
 #include "gridmetric.h"
 #include "gridcad.h"
 #include "gridinsert.h"
-#include "gridStruct.h"
 
 Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )
 {
@@ -821,11 +820,12 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
 Grid *gridSmoothNodeQP(Grid *grid, int node )
 {
   int i, minCell, nearestCell;
-  double minAR, nearestAR, newAR, searchDirection[3];
+  double minAR, nearestAR, nearestDifference, newAR, searchDirection[3];
   double g00, g01, g11, minRatio, nearestRatio;
   double length, projection;
   double deltaAR, currentAlpha, alpha, lastAlpha;
   double predictedImprovement, actualImprovement, lastImprovement;
+  double minDirection[3], nearestDirection[3], dARdX[3];
   double origXYZ[3], xyz[3];
   bool searchFlag, goodStep;
   int iteration;
@@ -836,78 +836,60 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   minAR =2.1;
   minCell = EMPTY;
   for (i=0;i<gridStoredARDegree(grid);i++){
-    if (grid->AR[i]<minAR){
-      minAR = grid->AR[i];
+    if (gridStoredAR(grid,i)<minAR){
+      minAR = gridStoredAR(grid,i);
       minCell = i;
     }
   }
 
   searchFlag = FALSE;
   if (searchFlag) {
-    for (i=0;i<3;i++) searchDirection[i] = grid->dARdX[i+minCell*3];
+    gridStoredARDerivative(grid, minCell, searchDirection);
   }else{
     nearestCell=EMPTY;
     nearestAR = 2.1;
     for (i=0;i<gridStoredARDegree(grid);i++){
       if ( i != minCell){
-	if (ABS(grid->AR[i]-minAR)<nearestAR) {
+	nearestDifference = ABS(gridStoredAR(grid,i)-minAR);
+	if (nearestDifference<nearestAR) {
 	  nearestCell=i;
-	  nearestAR = ABS(grid->AR[i]-minAR);
+	  nearestAR = nearestDifference;
 	}
       }
     }
     if (nearestCell == EMPTY || nearestAR > 0.001 ){
-      for (i=0;i<3;i++) searchDirection[i] = grid->dARdX[i+minCell*3];
+      gridStoredARDerivative(grid, minCell, searchDirection);
+      gridStoredARDerivative(grid, minCell, minDirection);
     }else{
-      g00 
-	= grid->dARdX[0+minCell*3]*grid->dARdX[0+minCell*3]
-	+ grid->dARdX[1+minCell*3]*grid->dARdX[1+minCell*3]
-	+ grid->dARdX[2+minCell*3]*grid->dARdX[2+minCell*3];
-      g11 
-	= grid->dARdX[0+nearestCell*3]*grid->dARdX[0+nearestCell*3]
-	+ grid->dARdX[1+nearestCell*3]*grid->dARdX[1+nearestCell*3]
-	+ grid->dARdX[2+nearestCell*3]*grid->dARdX[2+nearestCell*3];
-      g01 
-	= grid->dARdX[0+minCell*3]*grid->dARdX[0+nearestCell*3]
-	+ grid->dARdX[1+minCell*3]*grid->dARdX[1+nearestCell*3]
-	+ grid->dARdX[2+minCell*3]*grid->dARdX[2+nearestCell*3];
+      gridStoredARDerivative(grid, minCell, minDirection);
+      gridStoredARDerivative(grid, nearestCell, nearestDirection);
+      g00 = gridDotProduct(minDirection,minDirection);
+      g11 = gridDotProduct(nearestDirection,nearestDirection);
+      g01 = gridDotProduct(minDirection,nearestDirection);
       nearestRatio = (g00-g01)/(g00 + g11 - 2*g01);
       if (nearestRatio > 1.0 || nearestRatio < 0.0 ) nearestRatio = 0.0;
       minRatio = 1.0 - nearestRatio;
       for (i=0;i<3;i++) searchDirection[i] 
-			  = minRatio*grid->dARdX[i+minCell*3]
-			  + nearestRatio*grid->dARdX[i+nearestCell*3];
+			  = minRatio*minDirection[i]
+			  + nearestRatio*nearestDirection[i];
       /* reset length to the projection of min cell to search dir*/
-      length 
-	= searchDirection[0]*searchDirection[0]
-	+ searchDirection[1]*searchDirection[1]
-	+ searchDirection[2]*searchDirection[2];
-      length = sqrt(length);
+      length = sqrt(gridDotProduct(searchDirection,searchDirection));
       for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
-      projection
-	= searchDirection[0]*grid->dARdX[0+minCell*3]
-	+ searchDirection[1]*grid->dARdX[1+minCell*3]
-	+ searchDirection[2]*grid->dARdX[2+minCell*3];
+      projection = gridDotProduct(searchDirection,minDirection);
       for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
       //printf("node %5d min %10.7f near %10.7f\n",node,minRatio,nearestRatio);
     }
   }
 
-  length 
-    = searchDirection[0]*searchDirection[0]
-    + searchDirection[1]*searchDirection[1]
-    + searchDirection[2]*searchDirection[2];
-  length = sqrt(length);
+  length = sqrt(gridDotProduct(searchDirection,searchDirection));
   for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
 
   alpha = 1.0;
   for (i=0;i<gridStoredARDegree(grid);i++){
     if (i != minCell ) {
-      projection
-	= searchDirection[0]*grid->dARdX[0+i*3]
-	+ searchDirection[1]*grid->dARdX[1+i*3]
-	+ searchDirection[2]*grid->dARdX[2+i*3];
-      deltaAR = grid->AR[i] - minAR;
+      gridStoredARDerivative(grid,i,dARdX);
+      projection = gridDotProduct(searchDirection,dARdX);
+      deltaAR = gridStoredAR(grid,i) - minAR;
       if (ABS(length-projection) < 1e-12){
 	currentAlpha=0.0; /* no intersection */
       }else{

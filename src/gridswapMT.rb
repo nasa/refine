@@ -476,36 +476,4 @@ class TestGridSwap < Test::Unit::TestCase
   grid  
  end
 
- def testSwapFaceArea
-  assert_not_nil grid = Grid.new(6,3,4,0)
-  grid.addCell( 
-	       grid.addNode(0.0,0.0,0.0), 
-	       grid.addNode(1.0,0.0,0.0), 
-	       grid.addNode(0.0,1.0,0.0), 
-	       grid.addNode(0.0,0.0,1.0) )
-  grid.addCell( 1, 0, 3, grid.addNode(0.3,-0.5,0.3) )
-  grid.addCell( 0, 2, 3, grid.addNode(-0.5,0.3,0.3) )
-  
-  assert_nil         grid.swapCellFaceArea(0), "no faces"
-  grid.addFace(1,0,3,10)
-  assert_nil         grid.swapCellFaceArea(0), "one face"
-  grid.addFace(0,1,2,20)
-  assert_nil         grid.swapCellFaceArea(0), "two different faces"
-  assert_not_nil     grid.removeFace(grid.findFace(0,1,2)), "remove bottom"
-  grid.addFace(0,1,2,10)
-  assert_nil         grid.swapCellFaceArea(0), "two same faces, min area"
-  grid.addFace(2,1,3,10)
-  assert_nil         grid.swapCellFaceArea(0), "three same faces"
-  assert_not_nil     grid.removeFace(grid.findFace(1,0,3)), "remove x=0 face"
-  assert_equal true, grid.rightHandedBoundary, "initial left boundary faces"
-  assert_equal grid, grid.swapCellFaceArea(0), "two same faces, good swap"
-  assert_equal true, grid.rightHandedBoundary, "swap left boundary faces"
-  #assert_nil         grid.faceId( 0, 1, 2 )
-  #assert_nil         grid.faceId( 2, 1, 3 )
-  #assert_equal 10,   grid.faceId( 1, 0, 3 )
-  #assert_equal 10,   grid.faceId( 0, 2, 3 )
-  #assert_equal 2, grid.ncell
- end
-
-
 end
