@@ -1105,8 +1105,6 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
     }
   }
 
-  layerProjectNormalsToConstraints(layer);
-
   if (worstdot>0.0) {
     return layer;
   } else {
@@ -1157,8 +1155,6 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
       }
     }
   }
-
-  layerProjectNormalsToConstraints(layer);
 
   if (worstdot>0.0) {
     return layer;
