@@ -27,17 +27,9 @@ Grid *gridSetMapWithSpacingVectors(Grid *grid, int node,
   double m11, m12, m13, m22, m23, m33;
   double e1, e2, e3;
 
-  printf("\ns1 %f\ns2 %f\ns3 %f\n",s1,s2,s3);
-  printf("\nv1 %f\nv1 %f\nv1 %f\n",v1[0],v1[1],v1[2]);
-  printf("\nv2 %f\nv2 %f\nv2 %f\n",v2[0],v2[1],v2[2]);
-  printf("\nv3 %f\nv3 %f\nv3 %f\n",v3[0],v3[1],v3[2]);
-
-
   e1 = 1.0/s1/s1;
   e2 = 1.0/s2/s2;
   e3 = 1.0/s3/s3;
-
-  printf("\ne1 %f\ne2 %f\ne3 %f\n",e1,e2,e3);
 
   m11 = v1[0]*v1[0]*e1 + v2[0]*v2[0]*e2 + v3[0]*v3[0]*e3;
   m12 = v1[0]*v1[1]*e1 + v2[0]*v2[1]*e2 + v3[0]*v3[1]*e3;
@@ -45,8 +37,6 @@ Grid *gridSetMapWithSpacingVectors(Grid *grid, int node,
   m22 = v1[1]*v1[1]*e1 + v2[1]*v2[1]*e2 + v3[1]*v3[1]*e3;
   m23 = v1[1]*v1[2]*e1 + v2[1]*v2[2]*e2 + v3[1]*v3[2]*e3;
   m33 = v1[2]*v1[2]*e1 + v2[2]*v2[2]*e2 + v3[2]*v3[2]*e3;
-
-  printf("\n%f\n%f\n%f\n%f\n%f\n%f\n",m11,m12,m13,m22,m23,m33);
 
   return gridSetMap(grid,node,m11,m12,m13,m22,m23,m33);
 }
