@@ -53,7 +53,27 @@ class TestQueue < Test::Unit::TestCase
   assert_equal 0,     q.addedCells(1)
  end
 
- def testRemoveTransaction
+ def XtestTransactionInitializedWithZeroRemovedFaces
+  q = Queue.new
+  assert_equal EMPTY, q.removedFaces(-1)
+  assert_equal 0,     q.removedFaces(0)
+  assert_equal EMPTY, q.removedFaces(1)
+  q.newTransaction
+  assert_equal 0,     q.removedFaces(0)
+  assert_equal 0,     q.removedFaces(1)
+ end
+
+ def XtestTransactionInitializedWithZeroAddedFaces
+  q = Queue.new
+  assert_equal EMPTY, q.addedFaces(-1)
+  assert_equal 0,     q.addedFaces(0)
+  assert_equal EMPTY, q.addedFaces(1)
+  q.newTransaction
+  assert_equal 0,     q.addedFaces(0)
+  assert_equal 0,     q.addedFaces(1)
+ end
+
+ def testRemoveCellTransaction
   nodes = [0,1,2,3]
   q = Queue.new
   assert_equal q,     q.removeCell(nodes)
@@ -61,7 +81,7 @@ class TestQueue < Test::Unit::TestCase
   assert_equal nodes, q.removedCellNodes(0)
  end
 
- def testAddTransaction
+ def testAddCellTransaction
   cellId = 7
   nodes = [0,1,2,3,cellId]
   xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
