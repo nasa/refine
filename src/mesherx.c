@@ -139,6 +139,9 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
 
   layer = formAdvancingFront( grid, "box" );
 
+  /* only needed for formAdvancingFront freeze distant volume nodes */
+  gridThawAll(grid); 
+
   for (i=0;i<5;i++) layerAdvance(layer,0.01);
 
 #ifdef PHANTOM
@@ -172,6 +175,10 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
       edgeEndPoints[1]=gridGeomEdgeEnd(grid,edgeId);
       printf("rebuild edge %d:  %d <-> %d\n",
 	     edgeId,edgeEndPoints[0],edgeEndPoints[1]);
+      edgeEndPoints[0] = gridFrozenEdgeEndPoint(grid,edgeId,edgeEndPoints[0]);
+      edgeEndPoints[1] = gridFrozenEdgeEndPoint(grid,edgeId,edgeEndPoints[1]);
+      printf("rebuild endpoints:  %d <-> %d\n",
+	     edgeEndPoints[0],edgeEndPoints[1]);
       
     }
   }
