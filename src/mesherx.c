@@ -89,8 +89,20 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   if (blendElement) {
     printf("inserting blends...\n");
     layerBlend(layer); 
-    //printf("extend blends...\n");
-    //layerBlendExtend(layer,0.01,0,0); 
+    printf("extrude blends...\n");
+    for (i=0;i<75;i++) layerExtrudeBlend(layer,0.02*scale,0,0); 
+    origin[0] = -0.01;
+    origin[1] = 0.0;
+    origin[2] = 0.0;
+    direction[0] = 1.0;
+    direction[1] = 0.0;
+    direction[2] = 0.0;
+    layerAssignPolynomialNormalHeight(layer, 1.5e-4, 1.0e-3, 1.0, 
+				      origin, direction );
+    origin[0] = 1.0;
+    layerAssignPolynomialNormalHeight(layer, 1.15e-3, 5.0e-3, 1.0, 
+				      origin, direction );
+    layerScaleNormalHeight(layer,scale);
     printf("split blends...\n");
     layerSplitBlend(layer); 
   }
@@ -529,7 +541,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	}
 	fprintf(mfile,"];\n");
 	fprintf(mfile," gset term postscript; gset output 'faceError.ps'; \n");
-	fprintf(mfile,"plot(face(:,1),face(:,2))\n");
+	fprintf(mfile,"gplot [:] [:] face\n");
 	fclose(mfile);
 	return NULL;
       }
