@@ -41,6 +41,16 @@ START_TEST(testNodeDeg)
 	       "expected no neighbors of node 2");
   fail_unless( gridNodeDeg(grid,3) == 0,
 	       "expected no neighbors of node 3");
+  gridRegisterCell(grid,0,1,2,3);
+  fail_unless( gridNodeDeg(grid,0) == 1,
+	       "expected one neighbors of node 0");
+  fail_unless( gridNodeDeg(grid,1) == 1,
+	       "expected one neighbors of node 1");
+  fail_unless( gridNodeDeg(grid,2) == 1,
+	       "expected one neighbors of node 2");
+  fail_unless( gridNodeDeg(grid,3) == 1,
+	       "expected one neighbors of node 3");
+
 }
 END_TEST
 

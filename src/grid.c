@@ -37,6 +37,15 @@ long gridNodeDeg(Grid *grid, long id)
   return grid->firstcell[id];
 }
 
+Grid* gridRegisterCell(Grid *grid, long n0, long n1, long n2, long n3)
+{
+  grid->firstcell[n0]++;
+  grid->firstcell[n1]++;
+  grid->firstcell[n2]++;
+  grid->firstcell[n3]++;
+  return grid;
+}
+
 void gridFree(Grid *grid)
 {
   free(grid->firstcell);
