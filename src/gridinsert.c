@@ -232,7 +232,7 @@ int gridSplitEdge(Grid *grid, int n0, int n1)
 int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 		    double newX, double newY, double newZ )
 {
-  int igem, cell, nodes[4], globalnodes[4], inode, node;
+  int igem, cell, nodes[4], inode, node;
   int newnode, newglobal, newnodes0[4], newnodes1[4];
   int globalnewnodes0[9], globalnewnodes1[9];
   int cell0, cell1;
@@ -266,12 +266,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
     cell = gridGem(grid,igem);
     gridCell(grid, cell, nodes);
-    if (NULL!=queue) {
-      for ( inode = 0 ; inode < 4 ; inode++ ) 
-	globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
-      queueRemoveCell(queue,globalnodes);
-    }
-    gridRemoveCell(grid, cell);
+    gridRemoveCellAndQueue(grid, queue, cell);
     for ( inode = 0 ; inode < 4 ; inode++ ){
       node = nodes[inode];
       newnodes0[inode]=node;

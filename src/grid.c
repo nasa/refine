@@ -1187,6 +1187,21 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
   return result;
 }
 
+Grid *gridRemoveCellAndQueue(Grid *grid, Queue *queue, int cellId )
+{
+  int inode, globalnodes[4];
+
+  if ( !gridCellValid(grid, cellId) ) return NULL;
+
+  if (NULL!=queue) {
+    for ( inode = 0 ; inode < 4 ; inode++ ) 
+      globalnodes[inode] = gridNodeGlobal(grid,grid->c2n[inode+4*cellId]);
+    queueRemoveCell(queue,globalnodes);
+  }
+  
+  return gridRemoveCell( grid, cellId );
+}
+
 Grid *gridRemoveCellWithOutGlobal(Grid *grid, int cellId )
 {
   if ( !gridCellValid(grid, cellId) ) return NULL;
