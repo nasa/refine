@@ -19,6 +19,7 @@
 #include "layer.h"
 #include "CADGeom/CADGeom.h"
 
+#define FRONT_EDGE 211
 
 /******************** Private Functions ******************************/
 
@@ -26,7 +27,7 @@ static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Layer *layer)
 {
   Grid *grid;
   int normal, edgeId, globalNode;
-  double direction[3],edgexyz[3],projectedxyz[3];
+  double direction[3],edgexyz[6],projectedxyz[3];
   double t;
   double tangent[3],curvature;
   double tRange[2];
@@ -82,6 +83,37 @@ static CADCurvePtr *makePhantomEdges(int vol, int nGeomEdge, Layer *layer)
     }
   }
 
+  for( edgeId=1; edgeId<=nGeomEdge; edgeId ) {
+    int npts;
+    double *newxyz;
+    double *newt;
+    if ( phantomEdge[edgeId-1] != NULL ) { /* Discretize the Edge */
+      edgexyz[0] = CADCurve_Coord(phantomEdge[edgeId-1],0,X);
+      edgexyz[1] = CADCurve_Coord(phantomEdge[edgeId-1],0,Y);
+      edgexyz[2] = CADCurve_Coord(phantomEdge[edgeId-1],0,Z);
+      edgexyz[3] = CADCurve_Coord(phantomEdge[edgeId-1],1,X);
+      edgexyz[4] = CADCurve_Coord(phantomEdge[edgeId-1],1,Y);
+      edgexyz[5] = CADCurve_Coord(phantomEdge[edgeId-1],1,Z);
+      tRange[0]  = CADCurve_Param(phantomEdge[edgeId-1],0);
+      tRange[1]  = CADCurve_Param(phantomEdge[edgeId-1],1);
+      /* WTJ will change this to generic with DSO */
+      if( MG_DiscretizeEdge(vol, edgeId, edgexyz, tRange, &npts, &newxyz, &newt) != 0 ) {
+	printf("Could NOT mesh Edge %d\n",edgeId);
+	return NULL;
+      }
+
+      CADCurve_UpdateFromArrays( phantomEdge[edgeId-1], npts, newxyz, newt );
+
+    }      
+  }
+
+  /* Look for edges shared by "viscous" face and "rebuild" face and mark */
+  
+  for( edgeId=1; edgeId<=nGeomEdge; edgeId ) {
+    /* Next to be replaced by call to get Edge BC type */
+    if( edgeId <= 4 ) phantomEdge[edgeId-1] = (CADCurvePtr)FRONT_EDGE;
+  }
+  
   return phantomEdge;
 }
 
@@ -102,6 +134,7 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   CADCurvePtr *phantomEdge;
   UGPatchPtr  *phantomFace;
   int normal, i;
+  int iFace, nphantom;
 
   grid = gridFillFromPart( vol, npts*10 );
 
@@ -125,6 +158,10 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
     printf("ERROR: Allocation of Phantom Faces\n");
     return 1;
   }
+
+  nphantom = layerNConstrainedSides(layer, iFace);
+
+
   outputProject = "../test/MesherX";
   printf("writing DEBUG output project %s\n",outputProject);
   gridSavePart( grid, outputProject );
