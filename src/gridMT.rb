@@ -121,7 +121,7 @@ end
  def testGetGem3
   grid = Grid.new(5,3,0)
   assert_equal grid, grid.addCell(3,4,0,1).addCell(3,4,1,2).addCell(3,4,2,0)
-#  assert_equal [], grid.gem(5,6)
+  assert_equal [], grid.gem(5,6)
   assert_equal [0], grid.gem(0,1)
   assert_equal [1], grid.gem(1,2)
   assert_equal [2], grid.gem(0,2)
