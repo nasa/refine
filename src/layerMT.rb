@@ -1454,19 +1454,67 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0, layer.nActiveNormal
  end
 
- def testDoNotCollideAtSharpTrailingEdge
+ def testDoNotCollideNormalAtSharpTrailingEdge
   wiggle = 1.0e-10
   tol    = 1.0e-8
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0,0,-wiggle])
   layer = Layer.new(grid).populateAdvancingFront([1])
-
   assert_in_delta 360, layer.edgeAngle(0,1), tol
-
   assert_equal 4, layer.nActiveNormal
   layer.terminateCollidingNormals
   assert_equal 4, layer.nActiveNormal
+ end
 
+ def testCollideTriangleFarApart
+  grid  = facingGrid(5)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal 6, layer.nActiveNormal
+  layer.terminateCollidingTriangles
+  assert_equal 6, layer.nActiveNormal
+ end
+
+ def testCollideTriangleClose
+  grid  = facingGrid(0.5)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal 6, layer.nActiveNormal
+  layer.terminateCollidingTriangles
+  assert_equal 0, layer.nActiveNormal
+ end
+
+ def testDoNotCollideTriangleAtSharpTrailingEdge
+  wiggle = 1.0e-10
+  tol    = 1.0e-8
+  grid  = flatTwoFaceGrid
+  grid.setNodeXYZ(3,[0,0,-wiggle])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_in_delta 360, layer.edgeAngle(0,1), tol
+  assert_equal 4, layer.nActiveNormal
+  layer.terminateCollidingTriangles
+  assert_equal 4, layer.nActiveNormal
+ end
+
+ def testDoNotCollideTriangleForFlatFace
+  wiggle = 1.0e-10
+  tol    = 1.0e-8
+  grid  = flatTwoFaceGrid
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_in_delta 180, layer.edgeAngle(0,1), tol
+  assert_equal 4, layer.nActiveNormal
+  layer.terminateCollidingTriangles
+  assert_equal 4, layer.nActiveNormal
+ end
+
+ def testDoNotCollideTriangleFor90degConer
+  wiggle = 1.0e-10
+  tol    = 1.0e-8
+  grid  = flatTwoFaceGrid
+  grid.setNodeXYZ(3,[0.5,0.5,1])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_in_delta 90, layer.edgeAngle(0,1), tol
+  assert_equal 4, layer.nActiveNormal
+  layer.terminateCollidingTriangles
+  assert_equal 4, layer.nActiveNormal
  end
 
 end

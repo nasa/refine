@@ -444,7 +444,7 @@ Layer *layerTriangleFourthNode(Layer *layer, int triangle, double *xyz )
   layerTriangleDirection(layer,triangle,direction);
   layerTriangleMaxEdgeLength(layer,triangle,&h);
   
-  for (i=0;i<3;i++) xyz[i] = center[i] + h*direction[i];
+  for (i=0;i<3;i++) xyz[i] = center[i] + 0.5*h*direction[i];
 
   return layer;
 
@@ -2783,6 +2783,21 @@ Layer *layerTerminateCollidingNormals(Layer *layer)
   return layer;
 }
 
+bool layerTrianglesShareNormal(Layer *layer, int triangle1, int triangle2 )
+{
+  int normals1[3], normals2[3];
+  int i, j;
+  if ( NULL == layerTriangleNormals(layer, triangle1, normals1) ) return FALSE;
+  if ( NULL == layerTriangleNormals(layer, triangle2, normals2) ) return FALSE;
+  
+  for (i=0;i<3;i++)
+    for (j=i;j<3;j++)
+      if (normals1[i] == normals2[j]) return TRUE;
+
+  return FALSE;
+}
+
+
 Layer *layerTerminateCollidingTriangles(Layer *layer)
 {
   int triangle;
@@ -2794,24 +2809,27 @@ Layer *layerTerminateCollidingTriangles(Layer *layer)
 
   if ( 0 < layerNBlend(layer) ) return NULL;
 
-  printf("layerPopulateTriangleNearTree...\n");
+  //printf("layerPopulateTriangleNearTree...\n");
   layerPopulateTriangleNearTree(layer);
 
   maxTouched = layerNTriangle(layer);
   nearTriangles = malloc(maxTouched*sizeof(int));
 
-  printf("inspecting triangle proximity...\n");
+  //printf("inspecting triangle proximity...\n");
   for(triangle=0;triangle<layerNTriangle(layer);triangle++){
     target = &layer->nearTree[triangle];
     touched = 0;
     nearTouched(layer->nearTree, target, &touched, maxTouched, nearTriangles);
+    //printf("triangle %d  touched %d\n",triangle,touched);
     layerTriangleInviscidTet(layer,triangle,a0,a1,a2,a3);
     for(i=0;i<touched;i++){
       nearTriangle = nearTriangles[i];
-      layerTriangleInviscidTet(layer,nearTriangle,b0,b1,b2,b3);
-      if (intersectTetTet(a0,a1,a2,a3,b0,b1,b2,b3)){
-	layerTerminateTriangleNormals(layer,triangle);
-	layerTerminateTriangleNormals(layer,nearTriangle);
+      if (!layerTrianglesShareNormal(layer, nearTriangle, triangle)) {
+	layerTriangleInviscidTet(layer,nearTriangle,b0,b1,b2,b3);
+	if (intersectTetTet(a0,a1,a2,a3,b0,b1,b2,b3)){
+	  layerTerminateTriangleNormals(layer,triangle);
+	  layerTerminateTriangleNormals(layer,nearTriangle);
+	}
       }
     }
   }
