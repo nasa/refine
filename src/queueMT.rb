@@ -44,13 +44,19 @@ class TestQueue < Test::Unit::TestCase
  end
 
  def testAddNodeToTransaction
+  nodes=[23,65,78]
   q = Queue.new
-  assert_equal q, q.addNode(17)
+  assert_equal q, q.addNode(nodes[0])
   q.newTransaction
-  assert_equal q, q.addNode(18)
-  assert_equal q, q.addNode(19)
+  assert_equal q, q.addNode(nodes[1])
+  assert_equal q, q.addNode(nodes[2])
   assert_equal 1, q.transactionNodes(0)
   assert_equal 2, q.transactionNodes(1)
+  q.transactions.times do |t|
+   assert_equal nodes[t], q.addedNode(t)
+  end
+  assert_equal EMPTY, q.addedNode(-1)
+  assert_equal EMPTY, q.addedNode(5)
  end
 
  def XtestResetZerosOutPreviouslyAddedNodes

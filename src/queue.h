@@ -23,6 +23,9 @@ struct Queue {
   int transactions;
   int maxTransactions;
   int *transactionNodes;
+  int addedNodes;
+  int maxAddedNode;
+  int *addedNode;
 };
 
 Queue *queueCreate(  );
@@ -32,6 +35,7 @@ int queueTransactions( Queue * );
 Queue *queueNewTransaction( Queue * );
 int queueTransactionNodes( Queue *, int transaction );
 Queue *queueAddNode( Queue *, int node );
+int queueAddedNode( Queue *, int index );
 
 END_C_DECLORATION
 

@@ -22,6 +22,10 @@ Queue* queueCreate(  )
   queue->maxTransactions = 10;
   queue->transactionNodes = malloc(queue->maxTransactions * sizeof(int) );
   for (i=0;i<queue->maxTransactions;i++) queue->transactionNodes[i]=0;
+  queue->addedNodes = 0;
+  queue->maxAddedNode = 10;
+  queue->addedNode = malloc(queue->maxAddedNode * sizeof(int) );
+  for (i=0;i<queue->maxAddedNode;i++) queue->addedNode[i]=0;
   return queue;
 }
 
@@ -57,5 +61,13 @@ int queueTransactionNodes( Queue *queue, int transaction )
 Queue *queueAddNode( Queue *queue, int node )
 {
   queue->transactionNodes[queue->transactions]++;
+  queue->addedNode[queue->addedNodes] = node;
+  queue->addedNodes++;
   return queue;
+}
+
+int queueAddedNode( Queue *queue, int index )
+{
+  if ( index<0 || index>=queue->addedNodes ) return EMPTY;
+  return queue->addedNode[index];
 }

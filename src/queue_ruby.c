@@ -48,6 +48,12 @@ VALUE queue_addNode( VALUE self, VALUE node )
   return (queue==queueAddNode(queue,NUM2INT(node))?self:Qnil);
 }
 
+VALUE queue_addedNode( VALUE self, VALUE index )
+{
+  GET_QUEUE_FROM_SELF;
+  return INT2NUM(queueAddedNode(queue,NUM2INT(index)));
+}
+
 VALUE cQueue;
 
 void Init_Queue() 
@@ -59,4 +65,5 @@ void Init_Queue()
   rb_define_method( cQueue, "newTransaction", queue_newTransaction, 0 );
   rb_define_method( cQueue, "transactionNodes", queue_transactionNodes, 1 );
   rb_define_method( cQueue, "addNode", queue_addNode, 1 );
+  rb_define_method( cQueue, "addedNode", queue_addedNode, 1 );
 }

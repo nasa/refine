@@ -5,6 +5,7 @@ check:
 	./adjMT.rb
 	./nearMT.rb
 	./lineMT.rb
+	./queueMT.rb
 	./intersectMT.rb
 	./gridMT.rb
 	./gridcadMT.rb
@@ -17,4 +18,4 @@ check:
 	./sampleunitMT.rb
 
 clean:
-	rm -rf Adj Grid* Intersect Layer Line Near SampleUnit grid.t
+	rm -rf Adj Grid* Intersect Layer Queue Line Near SampleUnit grid.t
