@@ -747,6 +747,23 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [0,1,2,3,33], @grid.quad(0)
  end
 
+ def testMapMatrix
+  defaultMap = [1,0,0,1,0,1]
+  assert_nil      @grid.map(0)
+  assert_equal 0, @grid.addNode(0,0,0)
+  assert_equal    defaultMap, @grid.map(0)
+  assert_nil      @grid.setMap(-1, 1,0,0, 1,0, 1)
+  assert_nil      @grid.setMap(@grid.nnode, 1,0,0, 1,0, 1)
+  assert_nil      @grid.map(-1)
+  assert_nil      @grid.map(@grid.nnode)
+  assert_equal    defaultMap, @grid.map(0)
+  assert_equal    @grid, @grid.setMap(0, 1,2,3,4,5,6)
+  assert_equal [1,2,3,4,5,6], @grid.map(0)
+  assert_equal    @grid, @grid.removeNode(0)
+  assert_nil      @grid.map(0)
+  assert_equal 0, @grid.addNode(0,0,0)
+  assert_equal    defaultMap, @grid.map(0) 
+ end
 
  # make register unique
 

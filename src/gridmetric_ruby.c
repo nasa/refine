@@ -390,7 +390,6 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "resetSpacing", grid_resetSpacing, 0 );
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
   rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );
-  rb_define_method( cGridMetric, "setMap", grid_setMap, 7 );
   rb_define_method( cGridMetric, "copySpacing", grid_copySpacing, 2 );
   rb_define_method( cGridMetric, "eigenValues", grid_eigenValues, 1 );
   rb_define_method( cGridMetric, "eigenVector", grid_eigenVector, 2 );

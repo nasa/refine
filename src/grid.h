@@ -159,6 +159,12 @@ Grid *gridPyramid(Grid *g, int pyramidIndex, int *nodes);
 Grid *gridAddQuad(Grid *g, int n0, int n1, int n2, int n3, int faceId );
 Grid *gridQuad(Grid *g, int quadIndex, int *nodes, int *faceId );
 
+Grid *gridMap(Grid *g, int node, double *map);
+Grid *gridSetMap(Grid *g, int node,
+		 double m11, double m12, double m13,
+		             double m22, double m23,
+		                         double m33);
+
 END_C_DECLORATION
 
 #endif /* GRID_H */

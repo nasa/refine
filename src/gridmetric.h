@@ -20,7 +20,6 @@ void gridSubtractVector(double *v1, double *v2, double *result);
 double gridDotProduct(double *v1, double *v2);
 void gridCrossProduct(double *norm, double *edge1, double *edge2);
 
-Grid *gridMapMatrix(Grid *g, int node, double *m);
 Grid *gridSetMapMatrixToAverageOfNodes(Grid *g, int avgNode, int n0, int n1 );
 void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
 
@@ -37,10 +36,6 @@ Grid *gridScaleSpacingSphere(Grid *g, double x, double y, double z, double r,
 Grid *gridScaleSpacingSphereDirection(Grid *g, 
 				 double x, double y, double z, double r,
 				 double scalex, double scaley, double scalez );
-Grid *gridSetMap(Grid *g, int node,
-		 double m11, double m12, double m13,
-		             double m22, double m23,
-		                         double m33);
 Grid *gridCopySpacing(Grid *g, int originalNode, int newNode);
 Grid *gridEigenValues(Grid *g, double *m, double *eigenValues);
 Grid *gridEigenVector(Grid *g, double *m, double eigenValue, 

@@ -28,18 +28,6 @@ void gridCrossProduct(double *edge1, double *edge2, double *norm)
   norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
 }
 
-Grid *gridMapMatrix(Grid *grid, int node, double *m)
-{
-  m[0] = grid->map[0+6*node];
-  m[1] = grid->map[1+6*node];
-  m[2] = grid->map[2+6*node];
-  m[3] = grid->map[3+6*node];
-  m[4] = grid->map[4+6*node];
-  m[5] = grid->map[5+6*node];
-  
-  return grid;
-}
-
 Grid *gridSetMapMatrixToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
 {
   int i;
@@ -82,13 +70,13 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
   dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
   dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
 
-  gridMapMatrix(grid, n0, m);
+  gridMap(grid, n0, m);
   length0 = sqrt (
       dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
     + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
     + dz * ( m[2]*dx + m[4]*dy + m[5]*dz ) );
 
-  gridMapMatrix(grid, n1, m);
+  gridMap(grid, n1, m);
   length1 = sqrt (
       dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
     + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
@@ -238,23 +226,6 @@ Grid *gridScaleSpacingSphereDirection( Grid *grid,
       grid->map[5+6*node] = grid->map[5+6*node] / (scalez*scalez); 
     } 
   }
-
-  return grid;
-}
-
-Grid *gridSetMap(Grid *grid, int node,
-		 double m11, double m12, double m13,
-		             double m22, double m23,
-		                         double m33)
-{
-  if ( !gridValidNode(grid, node) ) return NULL;
-
-  grid->map[0+6*node] = m11;
-  grid->map[1+6*node] = m12;
-  grid->map[2+6*node] = m13;
-  grid->map[3+6*node] = m22;
-  grid->map[4+6*node] = m23;
-  grid->map[5+6*node] = m33;
 
   return grid;
 }
@@ -571,10 +542,10 @@ double gridAR(Grid *grid, int *nodes )
   y4 = grid->xyz[1+3*nodes[3]];
   z4 = grid->xyz[2+3*nodes[3]];
 
-  gridMapMatrix(grid,nodes[0],m0);
-  gridMapMatrix(grid,nodes[1],m1);
-  gridMapMatrix(grid,nodes[2],m2);
-  gridMapMatrix(grid,nodes[3],m3);
+  gridMap(grid,nodes[0],m0);
+  gridMap(grid,nodes[1],m1);
+  gridMap(grid,nodes[2],m2);
+  gridMap(grid,nodes[3],m3);
 
   for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
@@ -806,10 +777,10 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   y4 = grid->xyz[1+3*nodes[3]];
   z4 = grid->xyz[2+3*nodes[3]];
 
-  gridMapMatrix(grid,nodes[0],m0);
-  gridMapMatrix(grid,nodes[1],m1);
-  gridMapMatrix(grid,nodes[2],m2);
-  gridMapMatrix(grid,nodes[3],m3);
+  gridMap(grid,nodes[0],m0);
+  gridMap(grid,nodes[1],m1);
+  gridMap(grid,nodes[2],m2);
+  gridMap(grid,nodes[3],m3);
 
   for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
@@ -1555,9 +1526,9 @@ double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
   y3 = grid->xyz[1+3*n2];
   z3 = grid->xyz[2+3*n2];
  
-  gridMapMatrix(grid,n0,m0);
-  gridMapMatrix(grid,n1,m1);
-  gridMapMatrix(grid,n2,m2);
+  gridMap(grid,n0,m0);
+  gridMap(grid,n1,m1);
+  gridMap(grid,n2,m2);
 
   for (i=0;i<6;i++) m[i]=0.333333333333333*(m0[i]+m1[i]+m2[i]);
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
@@ -1626,9 +1597,9 @@ Grid *gridFaceMRDerivative(Grid *grid, int* nodes, double *mr, double *dMRdx )
   y3 = grid->xyz[1+3*nodes[2]];
   z3 = grid->xyz[2+3*nodes[2]];
  
-  gridMapMatrix(grid,nodes[0],m0);
-  gridMapMatrix(grid,nodes[1],m1);
-  gridMapMatrix(grid,nodes[2],m2);
+  gridMap(grid,nodes[0],m0);
+  gridMap(grid,nodes[1],m1);
+  gridMap(grid,nodes[2],m2);
 
   for (i=0;i<6;i++) m[i]=0.333333333333333*(m0[i]+m1[i]+m2[i]);
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {

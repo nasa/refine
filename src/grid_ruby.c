@@ -724,6 +724,31 @@ VALUE grid_quad( VALUE self, VALUE quadIndex )
   return rb_quad;
 }
 
+VALUE grid_setMap( VALUE self, VALUE node, 
+		   VALUE m11, VALUE m12, VALUE m13,
+		              VALUE m22, VALUE m23,
+		                         VALUE m33)
+{
+  GET_GRID_FROM_SELF;
+  return
+    (gridSetMap(grid, NUM2INT(node), 
+		NUM2DBL(m11), NUM2DBL(m12), NUM2DBL(m13), 
+		              NUM2DBL(m22), NUM2DBL(m23), 
+		                            NUM2DBL(m33) )==grid?self:Qnil);
+}
+
+VALUE grid_map( VALUE self, VALUE node )
+{
+  VALUE rb_map;
+  int i;
+  double map[6];
+  GET_GRID_FROM_SELF;
+  if ( grid != gridMap( grid, NUM2INT(node), map ) ) return Qnil;
+  rb_map = rb_ary_new2(6);
+  for(i=0;i<6;i++) rb_ary_store( rb_map, i, rb_float_new(map[i]) );
+  return rb_map;
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -826,4 +851,7 @@ void Init_Grid()
 
   rb_define_method( cGrid, "addQuad", grid_addQuad, 5 );
   rb_define_method( cGrid, "quad", grid_quad, 1 );
+
+  rb_define_method( cGrid, "setMap", grid_setMap, 7 );
+  rb_define_method( cGrid, "map", grid_map, 1 );
 }
