@@ -2849,7 +2849,39 @@ Layer *layerTerminateCollidingTriangles(Layer *layer)
 
 Layer *layerSmoothLayerWithHeight(Layer *layer)
 {
+  int normal, i;
+  AdjIterator it;
+  int triangle, nextTriangle;
+  int hits;
+  double edgeAngle, averageAngle, correction;
 
+  for ( normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
+    hits = 0;
+    averageAngle = 0;
+    for ( it = adjFirst(layer->adj,normal); 
+	  adjValid(it); 
+	  it = adjNext(it) ){
+      triangle = adjItem(it);
+      nextTriangle = layerNextTriangle(layer, normal, triangle);
+      edgeAngle = layerEdgeAngle(layer,triangle,nextTriangle);
+      averageAngle += edgeAngle;
+      hits++;
+    }
+    if (hits == 0){
+      averageAngle = 180;
+    }else{
+      averageAngle = averageAngle / hits;
+    }
+    correction = 1+(180.0-averageAngle)/10000.0;
+    //if (correction > 1.0) correction = correction * 1.1;
+    printf("%10.5f\n",correction);
+
+    layer->normal[normal].height = 
+      layer->normal[normal].height * correction;
+  }
+
+
+  return layer;
 }
 
 Layer *layerWriteTecplotFrontWithData(Layer *layer, int nn )
