@@ -51,6 +51,7 @@ void gridmovePack(void *voidGridMove,
 {
   GridMove *gm = (GridMove *)voidGridMove;
   int orignode, packnode;
+  int ixyz;
   for ( orignode = 0 ; orignode < maxnode ; orignode++ ){
     packnode = nodeo2n[orignode];
     if (EMPTY!=packnode) {
