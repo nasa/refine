@@ -593,6 +593,23 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_nil         grid.edgeId(6,1)
  end
 
+ def testGetGeomCurve
+  assert_not_nil     grid = Grid.new(4,0,0,4)
+  assert_equal grid, grid.addEdge(0, 1, 10)
+  assert_equal grid, grid.addEdge(1, 2, 11)
+  assert_equal grid, grid.addEdge(2, 3, 11)
+  assert_equal grid, grid.addEdge(3, 1, 12)
+  assert_equal 0,         grid.geomCurveSize(15,0)
+  assert_equal 2,         grid.geomCurveSize(10,0)
+  assert_equal 2,         grid.geomCurveSize(10,1)
+  assert_equal 3,         grid.geomCurveSize(11,1)
+  assert_equal 3,         grid.geomCurveSize(11,3)
+  assert_nil              grid.geomCurve(15,0)
+  assert_equal [0, 1],    grid.geomCurve(10,0)
+  assert_equal [1, 0],    grid.geomCurve(10,1)
+  assert_equal [1, 2, 3], grid.geomCurve(11,1)
+  assert_equal [3, 2, 1], grid.geomCurve(11,3)
+ end
 
  # make register unique
 
