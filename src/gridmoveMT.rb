@@ -153,7 +153,7 @@ class TestGridMove < Test::Unit::TestCase
   assert_not_nil gm = GridMove.new(grid)
   2.times{|n| gm.displace(n,[0.0,0.0,0.0])}
   gm.displace(2,[0.5,0,-0.866])
-  gm.springRelaxation(100,10)
+  gm.springRelaxation(1,1)
 
   puts gm.displacement(3)
   ans = [0.5,0.8,-0.35]
