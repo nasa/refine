@@ -417,4 +417,14 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta avgVol, grid.minVolume, 1.0e-4
  end
 
+ def testRelaxNegativeCellsOnSurface
+  assert_not_nil grid = isoTet(1.1)
+  newNode = grid.addNode(-1.0,0.0,0.0)
+  grid.addCell(newNode,0,2,3)
+  grid.exportFAST
+  assert grid.volume([0,1,2,3])<0.0
+  assert_equal grid, grid.smoothNodeVolumeWithSurf(0)
+  assert grid.volume([0,1,2,3])>0.0
+ end
+
 end
