@@ -131,6 +131,12 @@ VALUE grid_cellDegree( VALUE self, VALUE nodeId )
   return INT2NUM( gridCellDegree(grid, NUM2INT(nodeId) ) );
 }
 
+VALUE grid_cellEdge( VALUE self, VALUE node0, VALUE node1 )
+{
+  GET_GRID_FROM_SELF;
+  return (gridCellEdge(grid, NUM2INT(node0), NUM2INT(node1) )?Qtrue:Qfalse);
+}
+
 VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
 {
   Grid *returnedGrid;
@@ -594,6 +600,7 @@ void Init_Grid()
   rb_define_method( cGrid, "reconnectCell", grid_reconnectCell, 2 );
   rb_define_method( cGrid, "cell", grid_cell, 1 );
   rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
+  rb_define_method( cGrid, "cellEdge", grid_cellEdge, 2 );
 
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
   rb_define_method( cGrid, "addFaceUV", grid_addFaceUV, 10 );

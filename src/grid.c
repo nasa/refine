@@ -963,7 +963,7 @@ Grid *gridReconnectCellUnlessFrozen(Grid *grid, int oldNode, int newNode )
 
 Grid *gridCell(Grid *grid, int cellId, int *nodes )
 {
-  if ( cellId >= grid->maxcell ) return NULL;
+  if ( cellId < 0 || cellId >= grid->maxcell ) return NULL;
   if ( grid->c2n[4*cellId] == EMPTY ) return NULL;
 
   nodes[0] = grid->c2n[0+4*cellId];
@@ -972,6 +972,22 @@ Grid *gridCell(Grid *grid, int cellId, int *nodes )
   nodes[3] = grid->c2n[3+4*cellId];
 
   return grid;
+}
+
+bool gridCellEdge(Grid *grid, int n0, int n1 )
+{
+  AdjIterator it;
+  int i, nodes[4];
+
+  if ( n0 < 0 || n0 >= grid->maxnode ) return FALSE;
+  if ( n1 < 0 || n1 >= grid->maxnode ) return FALSE;
+
+  for ( it = adjFirst(grid->cellAdj,n0); adjValid(it); it = adjNext(it) ) {
+    gridCell( grid, adjItem(it), nodes );
+    for(i=0;i<4;i++) if (n1 == nodes[i]) return TRUE;
+  }
+
+  return FALSE;
 }
 
 Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )

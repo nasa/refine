@@ -36,6 +36,7 @@ class TestGrid < Test::Unit::TestCase
 
  def testAddCellAndCellDegree
   assert_equal 0, @grid.ncell
+  assert_equal nil, @grid.cell(-1)
   assert_equal nil, @grid.cell(0)
   assert_equal nil, @grid.cell(5)
   assert_equal @grid, @grid.addCell(0,1,2,3)
@@ -129,6 +130,16 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [7, 4, 5, 6], grid.cell(1)
   assert_equal 0,            grid.cellDegree(3)
   assert_equal 2,            grid.cellDegree(7)
+ end
+
+ def testCellConnectivity
+  assert_not_nil      grid = Grid.new(5,2,0,0)
+  assert_equal grid,  grid.addCell(0,1,2,3)
+  assert_equal grid,  grid.addCell(0,1,2,4)
+  assert_equal true,  grid.cellEdge(0,1)
+  assert_equal false, grid.cellEdge(3,4)
+  assert_equal false, grid.cellEdge(-1,4)
+  assert_equal false, grid.cellEdge(3,-1)
  end
 
  def testGetGem
