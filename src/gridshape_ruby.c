@@ -4,6 +4,12 @@
  
 #define GET_GRID_FROM_SELF Grid *grid; Data_Get_Struct( self, Grid, grid );
 
+VALUE grid_plotMinDeterminateAtSurface( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (grid==gridPlotMinDeterminateAtSurface(grid)?self:Qnil);
+}
+
 VALUE grid_shapeJacobian1( VALUE self, 
 			   VALUE rb_n0, VALUE rb_n1, VALUE rb_n2, VALUE rb_n3,
 			   VALUE rb_w )
@@ -64,6 +70,8 @@ VALUE cGridShape;
 void Init_GridShape()
 {
    cGridShape = rb_define_module( "GridShape" );
+   rb_define_method( cGridShape, "plotMinDeterminateAtSurface", 
+		     grid_plotMinDeterminateAtSurface, 0 );
    rb_define_method( cGridShape, "shapeJacobian1", grid_shapeJacobian1, 5 );
    rb_define_method( cGridShape, "shapeJacobian2", grid_shapeJacobian2, 11 );
  }

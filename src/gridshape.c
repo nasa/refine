@@ -17,6 +17,26 @@
 #include <values.h>
 #include "gridshape.h"
 
+Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
+{
+  int node;
+  double n0[3], n1[3], n2[3], n3[3];
+  double e01[3], e02[3], e03[3];
+  double e12[3], e13[3], e23[3];
+  double where[3];
+  double jacobian[9];
+  double *scalar;
+  if (grid !=gridSortNodeGridEx(grid)) return NULL;
+  scalar = (double *)malloc(gridNNode(grid)*sizeof(double));
+  for (node=0;node<gridNNode(grid);node++) {
+    gridNodeXYZ(grid,node,n0);
+    scalar[node] = n0[0];
+  }
+  gridWriteTecplotSurfaceScalar(grid,"gridZ.t",scalar);
+  free(scalar);
+  return grid;
+}
+
 Grid* gridShapeJacobian1(Grid *grid, 
 			 double *n0, double *n1,double *n2, double *n3, 
 			 double *where, double *j )

@@ -30,6 +30,14 @@ class TestGridShape < Test::Unit::TestCase
   assert true
  end
 
+ def testPlotting
+  grid=Grid.new(3,0,1,0)
+  grid.addNode(0,0,0)
+  grid.addNode(0.5,0.6,0.7)
+  grid.addNode(-0.8,0.5,-0.9)
+  grid.plotMinDeterminateAtSurface
+ end
+
  def testFirstOrderLagrangeJacobian0111
   n0 = [0, 0, 0]
   n1 = [1, 0, 0]
