@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "gridmetric.h"
 #include "gridinsert.h"
 #include "gridmpi.h"
 
@@ -179,8 +180,9 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
   for ( n0=0; adaptnode<origNNode; n0++ ) { 
     adaptnode++;
     if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
-      printf(" %6d adapt node %8d nnode %8d added %8d removed %8d\n",
-	     gridPartId(grid),adaptnode,gridNNode(grid),nnodeAdd,nnodeRemove);
+      printf(" %6d adapt node %8d nnode %8d added %8d AR %15.10f\n",
+	     gridPartId(grid),
+	     adaptnode,gridNNode(grid),nnodeAdd,gridMinAR(grid));
     if ( gridValidNode( grid, n0) && 
 	 !gridNodeFrozen( grid, n0 ) && 
 	 gridNodeLocal( grid, n0 ) ) {
