@@ -212,7 +212,7 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 
 Grid *gridPack(Grid *grid)
 {
-  printf("\n Dump Not impl.\n");
+  printf("\n Pack Not impl.\n");
   fflush(stdout);
   return grid;
 }
@@ -234,6 +234,19 @@ Grid *gridGetGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
       }
     }
   }
+
+  return grid;
+}
+
+Grid *gridEquator(Grid *grid, int n0, int n1, int maxequ, int *nequ, int *equ )
+{
+#define MAXGEM 200
+  int ngem;
+  int gem[MAXGEM];
+
+  *nequ = 0;
+
+  if ( NULL == gridGetGem( grid, n0, n1, MAXGEM, &ngem, gem ) ) return NULL;
 
   return grid;
 }
