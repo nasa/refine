@@ -23,8 +23,14 @@ BEGIN_C_DECLORATION
 
 #define EMPTY (-1)
 
+END_C_DECLORATION
+
+#ifdef HAVE_SDK
+#include <MeatLib/Common.h>
+#else
 /* lifted defs from the SDK/MeatLib/Common.h */
 
+BEGIN_C_DECLORATION
 #undef TRUE
 #undef FALSE
  
@@ -42,7 +48,7 @@ typedef short   bool;
 #define MIN(a,b) ((a)<(b)?(a):(b)) 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
-
 END_C_DECLORATION
 
+#endif /* HAVE_SDK */
 #endif /* MASTER_HEADER_H */

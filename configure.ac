@@ -31,10 +31,11 @@ then
    AC_PATH_X
    CAPRI=$with_CAPRI
    AC_DEFINE([HAVE_CAPRI])
-   CAPRILib="-L$CAPRI/Native/LINUX -lcapri -lX11"
+   CAPRILib="-L$CAPRI/Native/LINUX -lcapri"
    if test "$x_libraries" != "" ; then
        CAPRILib="$CAPRILib -L$x_libraries -lX11"
    fi
+   CAPRILib="$CAPRILib -lm"
    AC_SUBST([CAPRILib])
 fi 
 
@@ -53,8 +54,12 @@ then
    AC_DEFINE([HAVE_SDK])
    CPPFLAGS="$CPPFLAGS -I$SDK"
    SDK_ARCH=`uname -s`
-   CADGeomLib="-L$SDK/CADGeom -lCADGeom-$SDK_ARCH-CAPrI"
-   AC_SUBST([CADGeomLib])
+   CADGeom="-L$SDK/CADGeom -lCADGeom-$SDK_ARCH-CAPrI"
+   Goolache="-L$SDK/Goolache -lGoolache-$SDK_ARCH"
+   MeatLib="-L$SDK/MeatLib -lMeat-$SDK_ARCH"
+   AC_SUBST([CADGeom])
+   AC_SUBST([Goolache])
+   AC_SUBST([MeatLib])
 fi 
 
 
