@@ -856,23 +856,39 @@ grid.addCell(0,1,2,3)
   grid.addNode(0,1,0)
   grid.addFace(0,1,2,1)
   layer = Layer.new(grid).populateAdvancingFront([1])
-  assert_equal layer, layer.assignLinearNormalHeight(0.1,0.0,[0.5,0,0],[1,0,0])
+  assert_equal layer, layer.assignPolynomialNormalHeight(0.1,0.0,0.0,
+                                                        [0.5,0,0],[1,0,0])
   assert_equal 1.0, layer.getNormalHeight(0)
   assert_equal 0.1, layer.getNormalHeight(1)
   assert_equal 1.0, layer.getNormalHeight(2)
  end
 
- def testSetLinearNormalHeight
+ def testSettingLinearNormalHeightDistribution
   grid = Grid.new(10,10,10,10)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
   grid.addNode(0,1,0)
   grid.addFace(0,1,2,1)
   layer = Layer.new(grid).populateAdvancingFront([1])
-  assert_equal layer, layer.assignLinearNormalHeight(0.1,1.0,[0.0,0,0],[0,1,0])
+  assert_equal layer, layer.assignPolynomialNormalHeight(0.1,1.0,1.0,
+                                                         [0.0,0,0],[0,1,0])
   assert_equal 0.1, layer.getNormalHeight(0)
   assert_equal 0.1, layer.getNormalHeight(1)
   assert_equal 1.1, layer.getNormalHeight(2)
+ end
+
+ def testSetSquareRootNormalHeightDistribution
+  grid = Grid.new(10,10,10,10)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,4,0)
+  grid.addFace(0,1,2,1)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal layer, layer.assignPolynomialNormalHeight(0.2,1.0,0.5,
+                                                         [0.0,0,0],[0,1,0])
+  assert_equal 0.2, layer.getNormalHeight(0)
+  assert_equal 0.2, layer.getNormalHeight(1)
+  assert_equal 2.2, layer.getNormalHeight(2)
  end
 
  def testMixedElementModeToggleSwitch
