@@ -313,6 +313,52 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
   return  grid;
 }
 
+Grid *gridExportFAST( Grid *grid, char *filename, bool gridPacked )
+{
+  FILE *file;
+  int i;
+
+  if (!gridPacked) {
+    printf("gridExportFAST: pack... %s\n");
+    gridPack(grid);
+  }
+
+  printf("gridExportFAST: open file: %s\n",filename);
+  file = fopen(filename,"w");
+
+  fprintf(file,"%10d %10d %10d\n",grid->nnode,grid->nface,grid->ncell);
+
+  printf("gridExportFAST: writing xyz...\n");
+  
+  for( i=0; i<grid->nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[0+3*i]);
+  for( i=0; i<grid->nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[1+3*i]);
+  for( i=0; i<grid->nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[2+3*i]);
+
+  printf("gridExportFAST: writing faces...\n");
+
+  for( i=0; i<grid->nface ; i++ ) {
+    fprintf(file,"%10d %10d %10d\n",
+	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
+  }
+
+  for( i=0; i<grid->nface ; i++ ) {
+    fprintf(file,"%4d",grid->faceId[i]);
+  }
+
+  printf("gridExportFAST: writing cells...\n");
+  
+  for( i=0; i<grid->ncell ; i++ ) {
+    fprintf(file,"%10d %10d %10d %10d\n",
+	    grid->c2n[0+4*i]+1,grid->c2n[1+4*i]+1,
+	    grid->c2n[2+4*i]+1,grid->c2n[3+4*i]+1);
+
+  }
+
+  fclose(file);
+
+  return grid;
+}
+
 void gridFree(Grid *grid)
 {
   adjFree(grid->edgeAdj);

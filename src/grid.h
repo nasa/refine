@@ -24,6 +24,7 @@ Grid *gridImport(int maxnode, int nnode,
 		 int maxedge,
 		 double *xyz, int *f2n, int *faceId, int *c2n );
 Grid *gridImportFAST( char *filename );
+Grid *gridExportFAST(Grid *g, char *filename, bool gridPacked );
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n );
 Grid *gridPack(Grid *g);
