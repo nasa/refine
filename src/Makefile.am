@@ -6,8 +6,9 @@ AUTOMAKE_OPTIONS = 1.7
 
 lib_LIBRARIES = \
 	librefine.a \
-	libFAKEGeomPlate.a \
+	libFAKEGeomExtras.a \
 	libFAKEGeomBox.a \
+	libFAKEGeomPlate.a \
 	libFAKEGeomTrap.a \
 	libFAKEGeomDPWwbi.a
 
@@ -28,17 +29,20 @@ librefine_a_SOURCES = \
 	gridmpi.h gridmpi.c \
 	gridfortran.h gridfortran.c
 
+libFAKEGeomExtras_a_CFLAGS = @SDKheader@
+libFAKEGeomExtras_a_SOURCES = FAKEGeomExtras.h FAKEGeomExtras.c
+
 libFAKEGeomBox_a_CFLAGS = @SDKheader@
 libFAKEGeomBox_a_SOURCES = FAKEGeomBox.h FAKEGeomBox.c
+
+libFAKEGeomPlate_a_CFLAGS = @SDKheader@
+libFAKEGeomPlate_a_SOURCES = FAKEGeomPlate.h FAKEGeomPlate.c
 
 libFAKEGeomTrap_a_CFLAGS = @SDKheader@
 libFAKEGeomTrap_a_SOURCES = FAKEGeomTrap.h FAKEGeomTrap.c
 
 libFAKEGeomDPWwbi_a_CFLAGS = @SDKheader@
 libFAKEGeomDPWwbi_a_SOURCES = FAKEGeomDPWwbi.h FAKEGeomDPWwbi.c
-
-libFAKEGeomPlate_a_CFLAGS = @SDKheader@
-libFAKEGeomPlate_a_SOURCES = FAKEGeomPlate.h FAKEGeomPlate.c
 
 if BUILD_SDK_DEPENDENTS
 
