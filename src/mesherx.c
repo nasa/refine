@@ -99,7 +99,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   int *shell;
   int nodes[3], front, side;
   int ncurve, *curve;
-  int i;
+  int i,j;
   int n0,n1;
   int *l2g, *g2l;
   int node;
@@ -239,6 +239,14 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       for(i=0;i<nshell;i++) 
 	printf("shell %4d: %8d <-> %8d or %8d <-> %8d\n",
 	       i,shell[0+2*i],shell[1+2*i],l2g[shell[0+2*i]],l2g[shell[1+2*i]]);
+
+      for(j=0;j<nshell;j++) {
+        printf("2\n");
+        i = shell[0+2*j];
+	printf("%8.5f %8.5f %8.5f\n",shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i]);
+        i = shell[1+2*j];
+	printf("%8.5f %8.5f %8.5f\n",shellxyz[0+3*i],shellxyz[1+3*i],shellxyz[2+3*i]);
+      }
 
       nfacenode = EMPTY;
       nfacetri  = EMPTY;
