@@ -844,7 +844,7 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
 	gridProjectToFace(layerGrid(layer),faceId,xyz0,uv,newxyz);
 	gridFaceNormalAtUV(layerGrid(layer), faceId,
 			   uv, newxyz, normalDirection);
-	gridCrossProduct(tangent,normalDirection,
+	gridCrossProduct(normalDirection,tangent,
 			 &layer->normalTriangleDirection[3*tri]);
 	gridVectorNormalize(&layer->normalTriangleDirection[3*tri]);
       } else {
