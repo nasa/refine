@@ -543,6 +543,29 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   return grid->faceId[face];
 }
 
+Grid *gridNodeUV(Grid *grid, int  node, int faceId, double *uv )
+{
+  AdjIterator it;
+  int face, i;
+
+  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+    face = adjItem(it);
+    if ( grid->faceId[face] == faceId ) {
+      for ( i=0 ; i<3 ; i++ ) {
+	if (grid->f2n[i+3*face] == node){
+	  uv[0] = grid->faceU[i+3*face];
+	  uv[1] = grid->faceV[i+3*face];
+	  return grid;
+	}
+      }
+    }
+  }
+
+  uv[0] = DBL_MAX;
+  uv[1] = DBL_MAX;
+  return EMPTY;
+}
+
 Grid *gridAddEdge(Grid *grid, int n0, int n1, 
 		  int edgeId, double t0, double t1 )
 {

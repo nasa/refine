@@ -207,6 +207,19 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 11,   grid.faceId( 1, 2, 3 )
  end
 
+ def testNodeUV
+  assert_not_nil     grid = Grid.new(4,1,2,0)
+  assert_equal grid, grid.addFaceUV(0,20.0,120.0,
+				    1,21.0,121.0,
+				    2,22.0,122.0,2)
+  assert_equal grid, grid.addFaceUV(0,30.0,130.0,
+				    1,31.0,131.0,
+				    3,33.0,133.0,3)
+  assert_nil                 grid.nodeUV(2,3)
+  assert_equal [20.0,120.0], grid.nodeUV(0,2)
+  assert_equal [30.0,130.0], grid.nodeUV(0,3)
+ end
+
  def testSplitEdge4
   assert_not_nil grid = gemGrid
   initalVolume = grid.totalVolume
