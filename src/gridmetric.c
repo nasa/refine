@@ -781,6 +781,39 @@ Grid *gridStoreARDerivative (Grid *grid, int node )
 Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 {
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
+  int i;
+  double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
+
+  if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return NULL;
+  if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return NULL;
+  if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return NULL;
+  if (grid != gridNodeXYZ(grid,nodes[3],xyz4) ) return NULL;
+
+  gridMap(grid,nodes[0],m0);
+  gridMap(grid,nodes[1],m1);
+  gridMap(grid,nodes[2],m2);
+  gridMap(grid,nodes[3],m3);
+
+  for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
+  if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
+    printf("%s: %d: gridCellARDerivative: gridConvertMetricToJacobian NULL\n",
+	   __FILE__,__LINE__);
+  }
+
+  gridMapXYZWithJ(j, &xyz1[0], &xyz1[1], &xyz1[2]);
+  gridMapXYZWithJ(j, &xyz2[0], &xyz2[1], &xyz2[2]);
+  gridMapXYZWithJ(j, &xyz3[0], &xyz3[1], &xyz3[2]);
+  gridMapXYZWithJ(j, &xyz4[0], &xyz4[1], &xyz4[2]);
+
+  gridCellAspectRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx);
+
+  return grid;
+}
+
+void gridCellAspectRatioDerivative( double *xyz1, double *xyz2, 
+				    double *xyz3, double *xyz4,
+				    double *ar, double *dARdx)
+{
   double x1, x2, x3, x4; 
   double y1, y2, y3, y4; 
   double z1, z2, z3, z4; 
@@ -819,14 +852,6 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 
   double xins_dx, xins_dy, xins_dz;
 
-  int i;
-  double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
-
-  if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return NULL;
-  if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return NULL;
-  if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return NULL;
-  if (grid != gridNodeXYZ(grid,nodes[3],xyz4) ) return NULL;
-
   x1 = xyz1[0];
   y1 = xyz1[1];
   z1 = xyz1[2];
@@ -842,24 +867,6 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   x4 = xyz4[0];
   y4 = xyz4[1];
   z4 = xyz4[2];
-
-  gridMap(grid,nodes[0],m0);
-  gridMap(grid,nodes[1],m1);
-  gridMap(grid,nodes[2],m2);
-  gridMap(grid,nodes[3],m3);
-
-  for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
-  if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
-    printf("%s: %d: gridCellARDerivative: gridConvertMetricToJacobian NULL\n",
-	   __FILE__,__LINE__);
-  }
-
-  gridMapXYZWithJ(j, &x1, &y1, &z1);
-  gridMapXYZWithJ(j, &x2, &y2, &z2);
-  gridMapXYZWithJ(j, &x3, &y3, &z3);
-  gridMapXYZWithJ(j, &x4, &y4, &z4);
-
-  /* Compute the aspect ratios */
 
         det = (x4-x1)*((y2-y1)*(z3-z1) - (y3-y1)*(z2-z1))
             + (y4-y1)*((x3-x1)*(z2-z1) - (x2-x1)*(z3-z1))
@@ -1362,7 +1369,6 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 
 	 *ar = xins/circ*3.0;
 
-  return grid;
 }
 
 double gridMinVolume( Grid *grid )

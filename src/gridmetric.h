@@ -49,6 +49,11 @@ double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
 Grid *gridNodeAR(Grid *g, int node, double *ar );
 Grid *gridGemAR(Grid *g, double *ar);
 Grid *gridCellARDerivative(Grid *g, int *nodes, double *ar, double *dARdx );
+
+void gridCellAspectRatioDerivative( double *xyz1, double *xyz2, 
+				    double *xyz3, double *xyz4,
+				    double *ar, double *dARdx);
+
 Grid *gridNodeARDerivative(Grid *g, int node, double *ar, double *dARdx );
 Grid *gridStoreARDerivative(Grid *g, int node );
 double gridMinVolume(Grid *g);
