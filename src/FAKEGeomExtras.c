@@ -97,3 +97,8 @@ GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g)
 {
   return FALSE;
 }
+
+GridBool CADTopo_VolEdgePts(int vol, int *count)
+{
+  return FALSE;
+}

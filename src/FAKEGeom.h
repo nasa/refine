@@ -81,6 +81,7 @@ GridBool CADGeom_NormalToFace( int vol, int faceId,
 
 GridBool CADTopo_FaceNumEdgePts(int vol, int faceId, int *count);
 GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g);
+GridBool CADTopo_VolEdgePts(int vol, int *count);
 
 END_C_DECLORATION
 

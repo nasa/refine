@@ -1,3 +1,9 @@
+2004-06-28 16:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c An initializing call to CADTopo_VolEdgePts must 
+	be made before CADTopo_VolFacePts can be called.
+	* src/FAKEGeomExtras.c added mock CADTopo_VolEdgePts.
+
 2004-06-28 14:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridfaceedgecount_,gridfaceedgel2g_) added
@@ -6,6 +12,7 @@
 	and CADTopo_VolFacePts.
 	* src/FAKEGeomExtras.c added mock CADTopo_FaceNumEdgePts and
 	CADTopo_VolFacePts.
+
 
 2004-06-26 16:20 Mike Park  <mike.park@nasa.gov>
 

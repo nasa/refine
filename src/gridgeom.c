@@ -143,6 +143,12 @@ Grid *gridFaceEdgeLocal2Global( Grid *grid, int faceId,
 {
   int vol=1;
   int count;
+
+  if (!CADTopo_VolEdgePts( vol, &count )){
+    printf("%s: %d: CADTopo_VolEdgePts failied.\n",__FILE__, __LINE__);
+    return NULL;
+  }
+
   if (!CADTopo_VolFacePts(vol, faceId, local2global, &count)) {
     printf("%s: %d: CADTopo_VolFacePts failied.\n",__FILE__, __LINE__);
     return NULL;
