@@ -1720,15 +1720,19 @@ int gridAddFaceUVAndQueue(Grid *grid, Queue *queue,
 		  int n2, double u2, double v2, int faceId )
 {
   int g0, g1, g2;
+  int p0, p1, p2;
 
   if ( NULL != queue && gridFaceHasGhostNode(grid,n0,n1,n2) ) {
     g0 = gridNodeGlobal(grid,n0);
     g1 = gridNodeGlobal(grid,n1);
     g2 = gridNodeGlobal(grid,n2);
+    p0 = gridNodePart(grid,n0);
+    p1 = gridNodePart(grid,n1);
+    p2 = gridNodePart(grid,n2);
     queueAddFaceScalar(queue, 
-		       g0, u0, v0,
-		       g1, u1, v1,
-		       g2, u2, v2, faceId );   
+		       g0, p0, u0, v0,
+		       g1, p1, u1, v1,
+		       g2, p2, u2, v2, faceId );   
   }
   
   if ( gridFaceHasLocalNode(grid,n0,n1,n2) )
@@ -1815,15 +1819,16 @@ Grid *gridRemoveFace(Grid *grid, int face )
 
 Grid *gridRemoveFaceAndQueue(Grid *grid, Queue *queue, int face )
 {
-  int inode, globalnodes[3];
+  int inode, globalnodes[3], nodeParts[3];
   if (face >= grid->maxface || face < 0) return NULL;
   if (EMPTY == grid->f2n[3*face]) return NULL;
 
   if (NULL!=queue) {
     for ( inode = 0 ; inode < 3 ; inode++ ) {
       globalnodes[inode] = gridNodeGlobal(grid, grid->f2n[inode+3*face]);
+      nodeParts[inode] = gridNodePart(grid, grid->f2n[inode+3*face]);
     }
-    queueRemoveFace(queue,globalnodes);
+    queueRemoveFace(queue,globalnodes,nodeParts);
   }
   
   return gridRemoveFace(grid, face );

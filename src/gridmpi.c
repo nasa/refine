@@ -209,7 +209,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   int transaction;
   int removed, removedcell, removedface;
   int i, globalnodes[4], globalCellId, nodeParts[4], localnodes[4];
-  int cell, face;
+  int cell, face, faceId;
   int added, addedcell, addedface;
   double xyz[1000], uv[6];
   int dim, aux;
@@ -241,11 +241,16 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
       removedcell++;
     }
     for (removed=0;removed<queueRemovedFaces(gq,transaction);removed++) {
-      queueRemovedFaceNodes( gq, removedface, globalnodes );
+      queueRemovedFaceNodeParts( gq, removedface, nodeParts );
+      if ( gridPartId(grid) == nodeParts[0] ||
+	   gridPartId(grid) == nodeParts[1] ||
+	   gridPartId(grid) == nodeParts[2] ) {
+	queueRemovedFaceNodes( gq, removedface, globalnodes );
+	for(i=0;i<3;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
+	face = gridFindFace(grid,localnodes[0],localnodes[1],localnodes[2]);
+	gridRemoveFace(grid,face);
+      }
       removedface++;
-      for(i=0;i<3;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
-      face = gridFindFace(grid,localnodes[0],localnodes[1],localnodes[2]);
-      gridRemoveFace(grid,face);
     }
 
     for(added=0;added<queueAddedCells(gq,transaction);added++) {
@@ -281,20 +286,21 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
       addedcell++;
     }
     for(added=0;added<queueAddedFaces(gq,transaction);added++) {
-      queueAddedFaceNodes( gq, addedface, globalnodes );
-      queueAddedFaceUVs( gq, addedface, uv );
-      addedface++;
-      for(i=0;i<3;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
-      localnodes[3] = globalnodes[3];
-      if ( gridNodeLocal(grid,localnodes[0]) ||
-	   gridNodeLocal(grid,localnodes[1]) ||
-	   gridNodeLocal(grid,localnodes[2]) ) {
+      queueAddedFaceNodeParts( gq, addedface, nodeParts );
+      if ( gridPartId(grid) == nodeParts[0] ||
+	   gridPartId(grid) == nodeParts[1] ||
+	   gridPartId(grid) == nodeParts[2] ) {
+	queueAddedFaceNodes( gq, addedface, globalnodes );
+	queueAddedFaceId( gq, addedface, &faceId );
+	queueAddedFaceUVs( gq, addedface, uv );
+	for(i=0;i<3;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
 	face = gridAddFaceUV(grid,
 			     localnodes[0],uv[0],uv[1],
 			     localnodes[1],uv[2],uv[3],
 			     localnodes[2],uv[4],uv[5],
-			     globalnodes[3]);
+			     faceId);
       }
+      addedface++;
     }
     queueNewTransaction(lq);
   }

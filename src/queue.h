@@ -64,16 +64,20 @@ Queue *queueAddedCellNodeParts( Queue *, int index, int *nodeParts );
 Queue *queueAddedCellXYZs( Queue *, int index, double *xyzs );
 int queueTotalRemovedCells( Queue * );
 
-Queue *queueRemoveFace( Queue *, int *nodes );
+Queue *queueRemoveFace( Queue *, int *nodes, int *nodeParts );
 int queueRemovedFaces( Queue *, int transaction );
 Queue *queueRemovedFaceNodes( Queue *, int index, int *nodes );
-Queue *queueAddFace( Queue *, int *nodes, double *uvs );
+Queue *queueRemovedFaceNodeParts( Queue *, int index, int *nodeParts );
+Queue *queueAddFace( Queue *, int *nodes, int faceId, int *nodesParts, 
+		     double *uvs );
 Queue *queueAddFaceScalar( Queue *, 
-			   int n0, double u0, double v0,
-			   int n1, double u1, double v1,
-			   int n2, double u2, double v2, int faceId);
+			   int n0, int p0, double u0, double v0,
+			   int n1, int p1, double u1, double v1,
+			   int n2, int p2, double u2, double v2, int faceId);
 int queueAddedFaces( Queue *, int transaction );
 Queue *queueAddedFaceNodes( Queue *, int index, int *nodes );
+Queue *queueAddedFaceId( Queue *, int index, int *faceId );
+Queue *queueAddedFaceNodeParts( Queue *, int index, int *nodes );
 Queue *queueAddedFaceUVs( Queue *, int index, double *uvs );
 
 Queue *queueDumpSize( Queue *, int *nInt, int *nDouble );

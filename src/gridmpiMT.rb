@@ -133,8 +133,12 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal [100,103,101], q.removedFaceNodes(0)
   assert_equal [100,102,103], q.removedFaceNodes(1)
   assert_equal 2, q.addedFaces(1)
-  assert_equal [103,101,104,10], q.addedFaceNodes(0)
-  assert_equal [103,104,102,11], q.addedFaceNodes(1)
+  assert_equal [103,101,104], q.addedFaceNodes(0)
+  assert_equal [103,104,102], q.addedFaceNodes(1)
+  assert_equal 10, q.addedFaceId(0)
+  assert_equal 11, q.addedFaceId(1)
+  assert_equal [2,1,1], q.addedFaceNodeParts(0)
+  assert_equal [2,1,1], q.addedFaceNodeParts(1)
  end
 
  def testUnPackQueue

@@ -164,12 +164,13 @@ VALUE queue_totalRemovedCells( VALUE self )
 
 /* ****************************** faces ****************************** */
 
-VALUE queue_removeFace( VALUE self, VALUE rb_nodes )
+VALUE queue_removeFace( VALUE self, VALUE rb_nodes, VALUE rb_nodeParts )
 {
-  int i, nodes[3];
+  int i, nodes[3], nodeParts[3];
   GET_QUEUE_FROM_SELF;
   for (i=0;i<3;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
-  return (queue==queueRemoveFace(queue,nodes)?self:Qnil);
+  for (i=0;i<3;i++) nodeParts[i]=NUM2INT(rb_ary_entry(rb_nodeParts,i));
+  return (queue==queueRemoveFace(queue,nodes,nodeParts)?self:Qnil);
 }
 
 VALUE queue_removedFaces( VALUE self, VALUE transaction )
@@ -189,14 +190,31 @@ VALUE queue_removedFaceNodes( VALUE self, VALUE index )
   return rb_nodes;
 }
 
-VALUE queue_addFace( VALUE self, VALUE rb_nodes, VALUE rb_uvs )
+VALUE queue_removedFaceNodeParts( VALUE self, VALUE index )
 {
-  int i, nodes[4];
+  int i, nodeParts[3];
+  VALUE rb_nodeParts;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueRemovedFaceNodeParts(queue,NUM2INT(index),nodeParts)) 
+    return Qnil;
+  rb_nodeParts = rb_ary_new2(3);
+  for (i=0;i<3;i++) rb_ary_store(rb_nodeParts,i,INT2NUM(nodeParts[i]));
+  return rb_nodeParts;
+}
+
+VALUE queue_addFace( VALUE self, VALUE rb_nodes, VALUE rb_faceId, 
+		     VALUE rb_nodeParts, VALUE rb_uvs )
+{
+  int i, nodes[3], faceId, nodeParts[3];
   double uvs[6];
   GET_QUEUE_FROM_SELF;
-  for (i=0;i<4;i++) nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
-  for (i=0;i<6;i++) uvs[i] =NUM2DBL(rb_ary_entry(rb_uvs,i));
-  return (queue==queueAddFace(queue,nodes,uvs)?self:Qnil);
+  for (i=0;i< 3;i++) {
+    nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
+    nodeParts[i]=NUM2INT(rb_ary_entry(rb_nodeParts,i));
+  }
+  faceId = NUM2INT(rb_faceId);
+  for (i=0;i<6;i++) uvs[i] = NUM2DBL(rb_ary_entry(rb_uvs,i));
+  return (queue==queueAddFace(queue,nodes,faceId,nodeParts,uvs)?self:Qnil);
 }
 
 VALUE queue_addedFaces( VALUE self, VALUE transaction )
@@ -207,13 +225,32 @@ VALUE queue_addedFaces( VALUE self, VALUE transaction )
 
 VALUE queue_addedFaceNodes( VALUE self, VALUE index )
 {
-  int i, nodes[4];
+  int i, nodes[3];
   VALUE rb_nodes;
   GET_QUEUE_FROM_SELF;
   if (queue != queueAddedFaceNodes(queue,NUM2INT(index),nodes)) return Qnil;
-  rb_nodes = rb_ary_new2(4);
-  for (i=0;i<4;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
+  rb_nodes = rb_ary_new2(3);
+  for (i=0;i<3;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
   return rb_nodes;
+}
+
+VALUE queue_addedFaceId( VALUE self, VALUE index )
+{
+  int faceId;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedFaceId(queue,NUM2INT(index),&faceId)) return Qnil;
+  return INT2NUM(faceId);
+}
+
+VALUE queue_addedFaceNodeParts( VALUE self, VALUE index )
+{
+  int i, nodeParts[3];
+  VALUE rb_nodeParts;
+  GET_QUEUE_FROM_SELF;
+  if (queue != queueAddedFaceNodeParts(queue,NUM2INT(index),nodeParts)) return Qnil;
+  rb_nodeParts = rb_ary_new2(3);
+  for (i=0;i<3;i++) rb_ary_store(rb_nodeParts,i,INT2NUM(nodeParts[i]));
+  return rb_nodeParts;
 }
 
 VALUE queue_addedFaceUVs( VALUE self, VALUE index )
@@ -349,12 +386,15 @@ void Init_Queue()
   rb_define_method( cQueue, "addedCellXYZs", queue_addedCellXYZs, 1 );
   rb_define_method( cQueue, "totalRemovedCells", queue_totalRemovedCells, 0 );
   
-  rb_define_method( cQueue, "removeFace", queue_removeFace, 1 );
+  rb_define_method( cQueue, "removeFace", queue_removeFace, 2 );
   rb_define_method( cQueue, "removedFaces", queue_removedFaces, 1 );
   rb_define_method( cQueue, "removedFaceNodes", queue_removedFaceNodes, 1 );
-  rb_define_method( cQueue, "addFace", queue_addFace, 2 );
+  rb_define_method( cQueue, "removedFaceNodeParts", queue_removedFaceNodeParts, 1 );
+  rb_define_method( cQueue, "addFace", queue_addFace, 4 );
   rb_define_method( cQueue, "addedFaces", queue_addedFaces, 1 );
   rb_define_method( cQueue, "addedFaceNodes", queue_addedFaceNodes, 1 );
+  rb_define_method( cQueue, "addedFaceId", queue_addedFaceId, 1 );
+  rb_define_method( cQueue, "addedFaceNodeParts", queue_addedFaceNodeParts, 1 );
   rb_define_method( cQueue, "addedFaceUVs", queue_addedFaceUVs, 1 );
 
   rb_define_method( cQueue, "dump", queue_dump, 0 );  
