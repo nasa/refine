@@ -117,8 +117,7 @@ Grid *gridParallelGeomSave( Grid *grid, char *project )
 {
   int vol=1;
 
-  CADGeom_UseDefaultIOCallbacks();
-
+  GeoMesh_UseDefaultIOCallbacks();
   if( !CADGeom_SavePart(vol,project) ) {
     printf("%s: %d: Could not save CAPRI part.\n",
 	   __FILE__, __LINE__);    

@@ -267,7 +267,7 @@ int gridSavePart( Grid *grid, char *project )
   }
 
   if ( NULL != project ) {
-    CADGeom_UseDefaultIOCallbacks();
+    GeoMesh_UseDefaultIOCallbacks();
     if( !CADGeom_SavePart(vol,project) ) {
       printf("Yo! Could NOT save \"%s\".\n",project);
     }

@@ -98,8 +98,7 @@ GridBool CADTopo_FaceNumEdgePts(int vol, int faceId, int *count);
 GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g);
 GridBool CADTopo_VolEdgePts(int vol, int *count);
 
-#define CADGeom_UseDefaultIOCallbacks (FALSE)
-
+#define GeoMesh_UseDefaultIOCallbacks (FALSE)
 
 END_C_DECLORATION
 
