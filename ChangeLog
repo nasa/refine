@@ -1,11 +1,11 @@
 
-In process stuff(not working yet):
+2004-10-15 10:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridCollapseCost) to compute current cost
 	excluding the target edge and the cost after the edge is 
 	collapsed to node0 and node1.
 
-2004-10-15 09:00 Mike Park  <mike.park@nasa.gov>
+2004-10-15 09:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridCostFunction,gridSetCostFunction) added
 	methods to allow the cost function metric to change on the fly.

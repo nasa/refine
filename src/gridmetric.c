@@ -2055,9 +2055,29 @@ void gridCellMeanRatioDerivative( double *xyz0, double *xyz1,
 Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost, 
 		       double *node0Cost, double *node1Cost)
 {
+  double xyz0[3], xyz1[3];
   *currentCost = 0.0;
   *node0Cost = 0.0;
   *node1Cost = 0.0;
+
+  if (grid!=gridMakeGem(grid,node0,node1)) return NULL;
+
+  *currentCost = MIN( gridMinARAroundNodeExceptGem(grid,node0),
+		      gridMinARAroundNodeExceptGem(grid,node1) );
+
+  if ( NULL == gridNodeXYZ( grid, node0, xyz0) ) return NULL;
+  if ( NULL == gridNodeXYZ( grid, node1, xyz1) ) return NULL;
+
+  gridSetNodeXYZ( grid, node1, xyz0);
+  *node0Cost = MIN( gridMinARAroundNodeExceptGem(grid,node0),
+		    gridMinARAroundNodeExceptGem(grid,node1) );
+  gridSetNodeXYZ( grid, node1, xyz1);
+
+  gridSetNodeXYZ( grid, node0, xyz1);
+  *node1Cost = MIN( gridMinARAroundNodeExceptGem(grid,node0),
+		    gridMinARAroundNodeExceptGem(grid,node1) );
+  gridSetNodeXYZ( grid, node0, xyz0);
+  
   return grid;
 }
 

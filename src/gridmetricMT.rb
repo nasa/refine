@@ -33,7 +33,7 @@ class TestGridMetric < Test::Unit::TestCase
   grid
  end
 
- def rightTet2
+ def rightTet3
   grid = Grid.new(5,2,2,0)
   grid.addCell( 
 	       grid.addNode(0.0,0.0,0.0), 
@@ -42,6 +42,11 @@ class TestGridMetric < Test::Unit::TestCase
 	       grid.addNode(0.0,0.0,1.0) )
   grid.addNode(-1.0,0.0,0.0)
   grid.addCell(4,0,2,3)
+  grid.addCell( 
+	       1, 
+	       grid.addNode(2.0,0.0,0.0), 
+	       grid.addNode(1.0,1.0,0.0), 
+	       grid.addNode(1.0,0.0,1.0) )
   grid
  end
 
@@ -627,24 +632,26 @@ class TestGridMetric < Test::Unit::TestCase
  end
 
  def testCostAfterCollapse
-  grid = rightTet2
+  grid = rightTet3
   grid.setCostFunction(2)
   tol = 1.0e-10
 
   ratio = Math::sqrt(2)
   err = (1.0-ratio)/(1.0+ratio)
-  cost = 1.0/(1.0+err.abs)
+  origCost = 1.0/(1.0+err.abs)
 
   ans = grid.collapseCost(0,1)
-  assert_equal cost, ans[0], tol
-  assert_equal cost, ans[1], tol
+  assert_equal origCost, ans[0], tol
 
   ratio = 2.0
   err = (1.0-ratio)/(1.0+ratio)
   cost = 1.0/(1.0+err.abs)
-  tol = 1.0e-10
 
+  assert_equal cost, ans[1], tol
   assert_equal cost, ans[2], tol
+
+  ans = grid.collapseCost(0,1)
+  assert_equal origCost, ans[0], tol
  end
 
 end
