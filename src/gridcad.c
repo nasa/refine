@@ -1383,16 +1383,6 @@ Grid *gridRelaxNegativeCells(Grid *grid, GridBool dumpTecplot )
       volume = gridVolume(grid,nodes);
       if (0.0>=volume){
 	if (dumpTecplot) gridWriteTecplotCellZone(grid,nodes,filename);
-	if ( gridGeometryFace(grid, nodes[0]) &&
-	     gridGeometryFace(grid, nodes[1]) &&
-	     gridGeometryFace(grid, nodes[2]) &&
-	     gridGeometryFace(grid, nodes[3]) ) {
-	  printf("all nodes at %f are on boundary\n",volume);
-	  printf("faceId 0 %d\n",gridFaceId(grid,nodes[0],nodes[1],nodes[2]));
-	  printf("faceId 1 %d\n",gridFaceId(grid,nodes[1],nodes[0],nodes[3]));
-	  printf("faceId 2 %d\n",gridFaceId(grid,nodes[1],nodes[3],nodes[2]));
-	  printf("faceId 3 %d\n",gridFaceId(grid,nodes[0],nodes[2],nodes[3]));
-	}
 	for (i=0;i<4;i++) {
 	  node = nodes[i];
 	  gridSmoothVolumeNearNode(grid, node, FALSE);
