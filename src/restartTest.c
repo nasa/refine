@@ -78,6 +78,7 @@ int main( int argc, char *argv[] )
 
   inode = nGeomNode;
   for( iedge=1; iedge<=nGeomEdge; iedge++ ) {
+    printf("edge %3d\n",iedge);
     if( (edge=CADGeom_EdgeGrid(vol,iedge)) == NULL ) 
       printf("ERROR: CADGeom_EdgeGrid(%d).\n%s\n",iedge,ErrMgr_GetErrStr());
  
@@ -88,17 +89,42 @@ int main( int argc, char *argv[] )
     edgeEndPoint[0]--; /* convert from fortran to c numbers */
     edgeEndPoint[1]--;
 
-    printf("e%3d local%6d global%6d\n",iedge,0,edgeEndPoint[0]);
+    printf("e%3d l%6d%10.5f%10.5f%10.5f g%6d%10.5f%10.5f%10.5f\n",iedge,
+	   0, 
+	   CADCurve_Coord(edge,0,0),
+	   CADCurve_Coord(edge,0,1),
+	   CADCurve_Coord(edge,0,2),
+	   edgeEndPoint[0],
+	   UGrid_PtValue(ugrid,edgeEndPoint[0],0),
+	   UGrid_PtValue(ugrid,edgeEndPoint[0],1),
+	   UGrid_PtValue(ugrid,edgeEndPoint[0],2) );
     for( i=1 ; i < (nedgenode-1) ; i++ ) { // skip end segments  
-      printf("e%3d local%6d global%6d\n",iedge,i,inode);
+    printf("e%3d l%6d%10.5f%10.5f%10.5f g%6d%10.5f%10.5f%10.5f\n",iedge,
+	   i,
+	   CADCurve_Coord(edge,i,0),
+	   CADCurve_Coord(edge,i,1),
+	   CADCurve_Coord(edge,i,2),
+	   inode,
+	   UGrid_PtValue(ugrid,inode,0),
+	   UGrid_PtValue(ugrid,inode,1),
+	   UGrid_PtValue(ugrid,inode,2) );
       inode++;
     }
-    printf("e%3d local%6d global%6d\n",iedge,nedgenode-1,edgeEndPoint[1]);
+    printf("e%3d l%6d%10.5f%10.5f%10.5f g%6d%10.5f%10.5f%10.5f\n",iedge,
+	   nedgenode-1,
+	   CADCurve_Coord(edge,nedgenode-1,0),
+	   CADCurve_Coord(edge,nedgenode-1,1),
+	   CADCurve_Coord(edge,nedgenode-1,2),
+	   edgeEndPoint[1],
+	   UGrid_PtValue(ugrid,edgeEndPoint[1],0),
+	   UGrid_PtValue(ugrid,edgeEndPoint[1],1),
+	   UGrid_PtValue(ugrid,edgeEndPoint[1],2) );
   }
 
   globalPatch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&patchIterator);
 
   for( face=1; face<=nGeomFace; face++ ) {
+    printf("face %3d\n",face);
     localPatch = CADGeom_FaceGrid(vol,face);
     UGPatch_GetDims(localPatch,patchDimensions);
     for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {
@@ -110,8 +136,7 @@ int main( int argc, char *argv[] )
       pxyz[1] = UGPatch_PtValue(localPatch,localNode,1);
       pxyz[2] = UGPatch_PtValue(localPatch,localNode,2);
       SubtractVector( pxyz, gxyz, dxyz);
-      printf("f%3d p%6d%10.5f%10.5f%10.5f g%6d%10.5f%10.5f%10.5f\n",
-	     face, 
+      printf("f%3d p%6d%10.5f%10.5f%10.5f g%6d%10.5f%10.5f%10.5f\n",face, 
 	     localNode, pxyz[0], pxyz[1], pxyz[2], 
 	     globalNode, gxyz[0], gxyz[1], gxyz[2]);
     }
