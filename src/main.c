@@ -177,8 +177,8 @@ int main( int argc, char *argv[] )
     }
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
-    ratioCollapse = 0.1*ratio;
-    ratioRefine   = 2.0/ratio;
+    ratioCollapse = 0.3*ratio;
+    ratioRefine   = 1.8/ratio;
     if (boundaryLayerGrid) {
       printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	     ratio, 0.4, 1.5 );
