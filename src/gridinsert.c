@@ -163,7 +163,7 @@ int gridSplitEdgeAt(Grid *grid, int n0, int n1,
   }
 
   //test face
-  if ( gridNEqu(grid) != gridNGem(grid) ){
+  if ( !gridContinuousEquator(grid) ){
     double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
     double gap0uv[2], gap1uv[2], newId0uv[2], newId1uv[2]; 
     gap0 = gridEqu(grid,0);
@@ -596,7 +596,7 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
 
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
 
-  volumeEdge = (grid->nequ == grid->ngem);
+  volumeEdge = gridContinuousEquator(grid);
 
   if ( volumeEdge && gridGeometryFace(grid, n0) && gridGeometryFace(grid, n1))
     return NULL;
@@ -611,29 +611,21 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
     if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) 
       xyzAvg[i] = xyz0[i];
     if ( gridGeometryNode(grid, n0) ) xyzAvg[i] = xyz0[i];
-    grid->xyz[i+3*n0] = xyzAvg[i];
-    grid->xyz[i+3*n1] = xyzAvg[i];
   }
+
+  if ( NULL == gridSetNodeXYZ( grid, n0, xyzAvg) ) return NULL;
+  if ( NULL == gridSetNodeXYZ( grid, n1, xyzAvg) ) return NULL;  
 
   if ( gridNegCellAroundNodeExceptGem( grid, n0 ) || 
        gridNegCellAroundNodeExceptGem( grid, n1 ) ) {
-    for (i=0 ; i<3 ; i++) grid->xyz[i+3*n0] = xyz0[i];
-    for (i=0 ; i<3 ; i++) grid->xyz[i+3*n1] = xyz1[i];
+    gridSetNodeXYZ( grid, n0, xyz0);
+    gridSetNodeXYZ( grid, n1, xyz1);
     return NULL;
   }
 
-  for (i=0 ; i<grid->ngem ; i++) gridRemoveCell( grid, grid->gem[i] );
+  for (i=0 ; i<gridNGem(grid) ; i++) gridRemoveCell( grid, gridGem(grid,i) );
   
-  it = adjFirst(grid->cellAdj, n1);
-  while (adjValid(it)) {
-    cell = adjItem(it);
-    adjRemove( grid->cellAdj, n1, cell );
-    adjRegister( grid->cellAdj, n0, cell );
-    it = adjFirst(grid->cellAdj, n1);
-    for ( i=0 ; i<4 ; i++ ) 
-      if (grid->c2n[i+4*cell] == n1 ) 
-	grid->c2n[i+4*cell] = n0;
-  }
+  gridReconnectAllCell(grid, n1, n0 );
 
   if ( !volumeEdge ) {
     int gap0, gap1, faceId0, faceId1;
@@ -641,8 +633,8 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
     double newId0uv[2], newId1uv[2]; 
     int edge, edgeId;
     double t0, t1, newT;
-    gap0 = grid->equ[0];
-    gap1 = grid->equ[grid->ngem];
+    gap0 = gridEqu(grid,0);
+    gap1 = gridEqu(grid,gridNGem(grid));
     face0 = gridFindFace(grid, n0, n1, gap0 );
     face1 = gridFindFace(grid, n0, n1, gap1 );
     faceId0 = gridFaceId(grid, n0, n1, gap0 );
@@ -668,55 +660,26 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
 
-    it = adjFirst(grid->faceAdj, n1);
-    while (adjValid(it)) {
-      face = adjItem(it);
-      adjRemove( grid->faceAdj, n1, face );
-      adjRegister( grid->faceAdj, n0, face );
-      it = adjFirst(grid->faceAdj, n1);
-      for ( i=0 ; i<3 ; i++ ) 
-	if (grid->f2n[i+3*face] == n1 ) 
-	  grid->f2n[i+3*face] = n0;
-    }
+    gridReconnectAllFace(grid, n1, n0);
     gridSetNodeUV(grid, n0, faceId0, newId0uv[0], newId0uv[1]);
     gridSetNodeUV(grid, n0, faceId1, newId1uv[0], newId1uv[1]);
 
     edge = gridFindEdge(grid,n0,n1);
     if ( edge != EMPTY ) {
       edgeId = gridEdgeId(grid,n0,n1);
-      t0 = grid->edgeT[0+2*edge];
-      t1 = grid->edgeT[1+2*edge];
+      gridNodeT(grid, n0, edgeId, &t0 );
+      gridNodeT(grid, n1, edgeId, &t1 );
       newT =  (1.0-ratio) * t0 + ratio * t1;
       if (gridGeometryNode(grid, n0) ) newT = t0;
       gridRemoveEdge(grid,edge);
 
-      it = adjFirst(grid->edgeAdj, n1);
-      while (adjValid(it)) {
-	edge = adjItem(it);
-	adjRemove( grid->edgeAdj, n1, edge );
-	adjRegister( grid->edgeAdj, n0, edge );
-	it = adjFirst(grid->edgeAdj, n1);
-	for ( i=0 ; i<2 ; i++ ) 
-	  if (grid->e2n[i+2*edge] == n1 ) 
-	    grid->e2n[i+2*edge] = n0;
-      }
+      gridReconnectAllEdge(grid, n1, n0 );
       gridSetNodeT(grid, n0, edgeId, newT);
-
     }
   }
 
-  if ( volumeEdge && gridGeometryFace(grid, n1) ) {
-    it = adjFirst(grid->faceAdj, n1);
-    while (adjValid(it)) {
-      face = adjItem(it);
-      adjRemove( grid->faceAdj, n1, face );
-      adjRegister( grid->faceAdj, n0, face );
-      it = adjFirst(grid->faceAdj, n1);
-      for ( i=0 ; i<3 ; i++ )
-	if (grid->f2n[i+3*face] == n1 )
-	  grid->f2n[i+3*face] = n0;
-    }
-  }
+  if ( volumeEdge && gridGeometryFace(grid, n1) ) 
+    gridReconnectAllFace(grid,n1,n0);
 
   gridRemoveNode(grid, n1);
 
