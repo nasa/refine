@@ -12,31 +12,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "grid.h"
-#include "adj.h"
-
-#define MAXDEG 200
-
-struct Grid {
-  int maxnode, nnode;
-  double *xyz;
-
-  int maxcell, ncell;
-  int blankc2n;
-  int *c2n;
-  Adj *cellAdj;
-
-  int maxface, nface;
-  int blankf2n;
-  int *f2n;
-  int *faceId;
-  Adj *faceAdj;
-
-  int ngem;
-  int gem[MAXDEG];
-
-  int nequ;
-  int equ[MAXDEG];
-};
 
 //#define EBUG
 

@@ -12,10 +12,35 @@
 #define GRID_H
 
 #include "master_header.h"
+#include "adj.h"
 
 BEGIN_C_DECLORATION
 
+#define MAXDEG 200
+
 typedef struct Grid Grid;
+
+struct Grid {
+  int maxnode, nnode;
+  double *xyz;
+
+  int maxcell, ncell;
+  int blankc2n;
+  int *c2n;
+  Adj *cellAdj;
+
+  int maxface, nface;
+  int blankf2n;
+  int *f2n;
+  int *faceId;
+  Adj *faceAdj;
+  
+  int ngem;
+  int gem[MAXDEG];
+  
+  int nequ;
+  int equ[MAXDEG];
+};
 
 Grid *gridCreate(int maxnode, int maxcell, int maxface);
 Grid *gridImport(int maxnode, int nnode, 
