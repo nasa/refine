@@ -27,10 +27,14 @@ int gridSplitFaceAt(Grid *g, int face,
 		    double newX, double newY, double newZ);
 int gridInsertInToGeomEdge(Grid *g, double newX, double newY, double newZ);
 int gridInsertInToGeomFace(Grid *g, double newX, double newY, double newZ);
+
 Grid *gridCollapseEdge(Grid *g, int n0, int n1, double ratio );
 
 Grid *gridFreezeGoodNodes(Grid *g, double goodAR, 
 			  double minLength, double maxLength );
+
+Grid *gridInsertLineOnSymPlane(Grid *g, int nSegments, 
+			       double x0, double x1, double z);
 
 END_C_DECLORATION
 

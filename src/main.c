@@ -130,13 +130,7 @@ int main( int argc, char *argv[] )
     }else{
       if (debugInsert) {
 	printf("Inserting a line of nodes.\n");
-	for(i=0;i<=ninsert;i++){
-       	  newnode = gridInsertInToGeomFace(grid,(1.0/(double)ninsert)*i, 
-					   0.0, 0.33);
-	  printf("newnode %d\n",newnode);
-	  if (EMPTY == newnode) printf("Could not insert node %d\n",i);
-	  gridFreezeNode( grid, newnode );
-	}
+	gridInsertLineOnSymPlane( grid, ninsert, 0.0, 1.0, 0.33);
 	ratio=0.9;
       }else{
 	printf("Scaling spacing to refine a sphere.\n");
