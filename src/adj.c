@@ -171,10 +171,10 @@ Adj *adjSetCurrent( Adj *adj, AdjIterator iterator ){
   return adj;
 }
 
-bool adjExists( Adj *adj, int node, int item )
+GridBool adjExists( Adj *adj, int node, int item )
 {
   AdjIterator it;
-  bool exist;
+  GridBool exist;
   exist = FALSE;
   for ( it = adjFirst(adj,node); 
 	!exist && adjValid(it); 

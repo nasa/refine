@@ -15,15 +15,15 @@
 
 BEGIN_C_DECLORATION
 
-bool CADGeom_NearestOnEdge(int vol, int edgeId, 
+GridBool CADGeom_NearestOnEdge(int vol, int edgeId, 
 			   double *xyz, double *t, double *xyznew);
-bool CADGeom_NearestOnFace(int vol, int faceId, 
+GridBool CADGeom_NearestOnFace(int vol, int faceId, 
 			   double *xyz, double *uv, double *xyznew);
 
-bool CADGeom_PointOnEdge(int vol, int edgeId, 
+GridBool CADGeom_PointOnEdge(int vol, int edgeId, 
 			 double t, double *xyz, 
 			 int derivativeFlag, double *dt, double *dtdt );
-bool CADGeom_PointOnFace(int vol, int faceId, 
+GridBool CADGeom_PointOnFace(int vol, int faceId, 
 			 double *uv, double *xyz, 
 			 int derivativeFlag, double *du, double *dv,
 			 double *dudu, double *dudv, double *dvdv );

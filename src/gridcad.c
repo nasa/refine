@@ -365,7 +365,7 @@ Grid *gridSmoothNearNode1(Grid *grid, int node )
 #define SMOOTHDEG (500)
   int i, nodes[4];
   int nlist, smooth, look, nodelist[SMOOTHDEG];
-  bool looking;
+  GridBool looking;
   AdjIterator it;
 
   if (!gridValidNode(grid,node)) return NULL;
@@ -401,7 +401,7 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
 {
   int i, i0, nodes[4], nodes0[4];
   int nlist, smooth, look, nodelist[SMOOTHDEG];
-  bool looking;
+  GridBool looking;
   AdjIterator it, it0;
 
   if (!gridValidNode(grid,node)) return NULL;
@@ -782,11 +782,11 @@ Grid *gridSmoothVolume( Grid *grid )
   return grid;
 }
 
-Grid *gridSmoothFaceInterior( Grid *grid, bool localOnly )
+Grid *gridSmoothFaceInterior( Grid *grid, GridBool localOnly )
 {
   int node;
   double ar, optimizationLimit, laplacianLimit;
-  bool nearGhost;
+  GridBool nearGhost;
   optimizationLimit =0.30;
   laplacianLimit =0.60;
   for (node=0;node<gridMaxNode(grid);node++) {
@@ -860,7 +860,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   double predictedImprovement, actualImprovement, lastImprovement;
   double minDirection[3], nearestDirection[3], dARdX[3];
   double origXYZ[3], xyz[3];
-  bool searchFlag, goodStep;
+  GridBool searchFlag, goodStep;
   int iteration;
 
   if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;

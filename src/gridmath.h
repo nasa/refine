@@ -40,7 +40,7 @@ void gridTriDiag3x3( double *m, double *d, double *e,
 		     double *q0, double *q1, double *q2 );
 
 #define gridSign(a,b) (b>=0?ABS(a):-ABS(a))
-bool gridEigTriDiag3x3( double *d, double *e,
+GridBool gridEigTriDiag3x3( double *d, double *e,
 		        double *q0, double *q1, double *q2 );
 
 void gridEigSort3x3( double *eigenValues, double *v0, double *v1, double *v2 );

@@ -33,7 +33,7 @@ Grid *gridRemoveAllNodes(Grid *grid )
 {
   AdjIterator it;
   int n0, i, cell, nodes[4];
-  bool nodeExists;
+  GridBool nodeExists;
  
   for ( n0=0; n0<gridMaxNode(grid); n0++ ) { 
     if ( gridValidNode(grid, n0) && !gridNodeFrozen(grid, n0) ) {
@@ -519,7 +519,7 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
   double normLength, unit[3], normDistance;
   int newnode;
 
-  bool edgeSplit;
+  GridBool edgeSplit;
 
   newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
 
@@ -593,7 +593,7 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 {
   int cell, maxcell, nodes[4], foundCell, newnode;
-  bool edgeSplit;
+  GridBool edgeSplit;
   double newxyz[3], xyz0[3], xyz1[3], xyz2[3], xyz3[3];
   double edge0[3], edge1[3];
   double leg0[3], leg1[3];
@@ -689,7 +689,7 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
 {
   int i, face0, face1;
   double xyz0[3], xyz1[3], xyzAvg[3];
-  bool volumeEdge;
+  GridBool volumeEdge;
 
   if ( gridGeometryNode(grid, n1) ) return NULL;
   if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
@@ -815,7 +815,7 @@ Grid *gridFreezeGoodNodes(Grid *grid, double goodAR,
 Grid *gridVerifyEdgeExists(Grid *grid, int n0, int n1 )
 {
   int i0, i1, nodes0[4], nodes1[4];
-  bool gotIt;
+  GridBool gotIt;
   AdjIterator it0, it1;
 
   gotIt=gridCellEdge( grid, n0, n1 );
@@ -849,7 +849,7 @@ Grid *gridVerifyEdgeExists(Grid *grid, int n0, int n1 )
 
 Grid *gridVerifyFaceExists(Grid *grid, int n0, int n1, int n2 )
 {
-  bool gotIt;
+  GridBool gotIt;
 
   gotIt=gridCellFace( grid, n0, n1, n2 );
 

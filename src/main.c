@@ -44,10 +44,10 @@ int main( int argc, char *argv[] )
   double ratio=1.0;
   double minAR=-1.0;
   double ratioRefine, ratioCollapse;
-  bool projected;
-  bool boundaryLayerGrid = FALSE;
-  bool debugInsert = FALSE;
-  bool tecplotOutput = FALSE;
+  GridBool projected;
+  GridBool boundaryLayerGrid = FALSE;
+  GridBool debugInsert = FALSE;
+  GridBool tecplotOutput = FALSE;
   int iview = 0;
   int maxnode = 50000;
 

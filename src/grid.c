@@ -88,7 +88,7 @@ Grid *gridImport(int maxnode, int nnode,
     grid->map[5+6*i] = 1.0;
   }
 
-  grid->frozen = malloc(grid->maxnode * sizeof(bool));
+  grid->frozen = malloc(grid->maxnode * sizeof(GridBool));
   for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
 
   grid->nodeGlobal  = NULL;
@@ -855,7 +855,7 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   int i, edge;
   int ixyz, node, face, cell, inode;
   double *temp_xyz;
-  bool *temp_frozen;
+  GridBool *temp_frozen;
   int *temp_int;
   int prismIndex, pyramidIndex, quadIndex;
 
@@ -886,7 +886,7 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   }
   free(temp_xyz);
 
-  temp_frozen = malloc( grid->nnode * sizeof(bool) );
+  temp_frozen = malloc( grid->nnode * sizeof(GridBool) );
   for ( node = 0 ; node < grid->nnode ; node++ )
     temp_frozen[o2n[node]] = grid->frozen[node];
   for ( node = 0 ; node < grid->nnode ; node++ )
@@ -1528,7 +1528,7 @@ Grid *gridReconnectCellUnlessFrozen(Grid *grid, int oldNode, int newNode )
 {
   AdjIterator it;
   int cell, i, node;
-  bool frozen;
+  GridBool frozen;
 
   if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
   if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
@@ -1572,13 +1572,13 @@ Grid *gridCell(Grid *grid, int cellId, int *nodes )
   return grid;
 }
 
-bool gridCellValid(Grid *grid, int cellId )
+GridBool gridCellValid(Grid *grid, int cellId )
 {
   if ( cellId < 0 || cellId >= grid->maxcell ) return FALSE;
   return (EMPTY != grid->c2n[4*cellId]);
 }
 
-bool gridCellEdge(Grid *grid, int n0, int n1 )
+GridBool gridCellEdge(Grid *grid, int n0, int n1 )
 {
   AdjIterator it;
   int i, nodes[4];
@@ -1594,7 +1594,7 @@ bool gridCellEdge(Grid *grid, int n0, int n1 )
   return FALSE;
 }
 
-bool gridCellFace(Grid *grid, int n0, int n1, int n2 )
+GridBool gridCellFace(Grid *grid, int n0, int n1, int n2 )
 {
   return (EMPTY != gridFindOtherCellWith3Nodes(grid, n0, n1, n2, EMPTY ) );
 }
@@ -1924,7 +1924,7 @@ Grid *gridSetNodeUV(Grid *grid, int  node, int faceId, double u, double v )
 {
   AdjIterator it;
   int face, i;
-  bool found;
+  GridBool found;
   found = FALSE;
 
   for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
@@ -1962,7 +1962,7 @@ int gridNodeFaceIdDegree(Grid *grid, int node)
 {
   int id[MAXFACEIDDEG];
   int face, faceId, search, ids;
-  bool found;
+  GridBool found;
   AdjIterator it;
 
   if (!gridValidNode(grid,node)) return EMPTY;
@@ -1991,7 +1991,7 @@ int gridNodeFaceIdDegree(Grid *grid, int node)
 Grid *gridNodeFaceId(Grid *grid, int node, int maxId, int *ids_arg, int *id )
 {
   int face, faceId, search, insertpoint, index, ids;
-  bool found;
+  GridBool found;
   AdjIterator it;
 
   if (!gridValidNode(grid,node)) return NULL;
@@ -2056,7 +2056,7 @@ Grid *gridSetNodeT(Grid *grid, int  node, int edgeId, double t )
 {
   AdjIterator it;
   int edge;
-  bool found;
+  GridBool found;
   found = FALSE;
 
   for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) ){
@@ -2234,7 +2234,7 @@ int gridGeomCurveSize( Grid *grid, int edgeId, int startNode )
 {
   AdjIterator it;
   int node, lastnode, edge, n1, nedgenode;
-  bool found;
+  GridBool found;
 
   nedgenode=0;
   node = startNode;
@@ -2270,7 +2270,7 @@ Grid *gridGeomCurve( Grid *grid, int edgeId, int startNode, int *curve )
 {
   AdjIterator it;
   int node, lastnode, edge, n1, nedgenode;
-  bool found;
+  GridBool found;
 
   node = startNode;
   nedgenode=0;
@@ -2309,7 +2309,7 @@ Grid *gridGeomCurveT( Grid *grid, int edgeId, int startNode, double *curve )
   AdjIterator it;
   int node, lastnode, edge, n1, nedgenode;
   double t0, t1;
-  bool found;
+  GridBool found;
 
   node = startNode;
   nedgenode=1;
@@ -2356,7 +2356,7 @@ int gridNFrozen( Grid *grid )
   return nfrozen;
 }
 
-bool gridNodeFrozen( Grid *grid, int node )
+GridBool gridNodeFrozen( Grid *grid, int node )
 {
   if ( !gridValidNode( grid, node) ) return TRUE;
   return grid->frozen[node];
@@ -2463,7 +2463,7 @@ Grid *gridMakeGem(Grid *grid, int n0, int n1 )
   return grid;
 }
 
-bool gridGemIsAllLocal(Grid *grid)
+GridBool gridGemIsAllLocal(Grid *grid)
 {
   int gem, cell;
   for ( gem = 0 ; gem < grid->ngem ; gem++ ) {
@@ -2473,7 +2473,7 @@ bool gridGemIsAllLocal(Grid *grid)
   return TRUE;
 }
 
-bool gridNodeNearGhost(Grid *grid, int node )
+GridBool gridNodeNearGhost(Grid *grid, int node )
 {
   AdjIterator it;
 
@@ -2563,7 +2563,7 @@ Grid *gridOrient(Grid *grid, int *c, int *n )
 Grid *gridEquator(Grid *grid, int n0, int n1 )
 {
   int igem, iequ, nodes[4];
-  bool gap, found;
+  GridBool gap, found;
   grid->nequ = 0;
 
   if ( NULL == gridMakeGem( grid, n0, n1) ) return NULL;
@@ -2633,7 +2633,7 @@ int gridEqu(Grid *grid, int index)
   return grid->equ[index];
 }
 
-bool gridContinuousEquator(Grid *grid)
+GridBool gridContinuousEquator(Grid *grid)
 {
   return (gridNEqu(grid) == gridNGem(grid));
 }
@@ -2698,7 +2698,7 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
     grid->map = realloc(grid->map, grid->maxnode * 6 * sizeof(double));
     if ( grid->naux > 0 ) grid->aux = 
       realloc(grid->aux, grid->maxnode * grid->naux * sizeof(double));
-    grid->frozen = realloc(grid->frozen,grid->maxnode * sizeof(bool));
+    grid->frozen = realloc(grid->frozen,grid->maxnode * sizeof(GridBool));
 
     if (NULL != grid->nodeGlobal) 
       grid->nodeGlobal = realloc(grid->nodeGlobal,grid->maxnode * sizeof(int));
@@ -2934,14 +2934,14 @@ Grid *gridSetNodePart(Grid *grid, int node, int part )
   return grid;
 }
 
-bool gridNodeLocal(Grid *grid, int node )
+GridBool gridNodeLocal(Grid *grid, int node )
 {
   if (!gridValidNode(grid,node)) return FALSE;
   if (NULL == grid->part) return TRUE;
   return (grid->partId==grid->part[node]);
 }
 
-bool gridNodeGhost(Grid *grid, int node )
+GridBool gridNodeGhost(Grid *grid, int node )
 {
   if (!gridValidNode(grid,node)) return FALSE;
   if (NULL == grid->part) return FALSE;
@@ -2950,7 +2950,7 @@ bool gridNodeGhost(Grid *grid, int node )
 
 Grid *gridDeleteNodesNotUsed(Grid *grid){
   int node, maxnode;
-  bool prism;
+  GridBool prism;
 
   maxnode = gridMaxNode(grid);
   prism = FALSE;
@@ -3046,7 +3046,7 @@ int gridFrozenEdgeEndPoint( Grid *grid, int edgeId, int startNode )
 {
   AdjIterator it;
   int node, lastnode, edge, n1, degree;
-  bool found;
+  GridBool found;
 
   degree =0;
   node = startNode;
@@ -3080,13 +3080,13 @@ int gridFrozenEdgeEndPoint( Grid *grid, int edgeId, int startNode )
   return node;
 }
 
-bool gridGeometryNode(Grid *grid, int node)
+GridBool gridGeometryNode(Grid *grid, int node)
 {
   if (node < 0 ) return FALSE;
   return (node<grid->nGeomNode);
 }
 
-bool gridGeometryEdge(Grid *grid, int node)
+GridBool gridGeometryEdge(Grid *grid, int node)
 {
   AdjIterator it;
 
@@ -3096,7 +3096,7 @@ bool gridGeometryEdge(Grid *grid, int node)
   return FALSE;
 }
 
-bool gridGeometryFace(Grid *grid, int node)
+GridBool gridGeometryFace(Grid *grid, int node)
 {
   AdjIterator it;
 
@@ -3106,7 +3106,7 @@ bool gridGeometryFace(Grid *grid, int node)
   return FALSE;
 }
 
-bool gridGeometryBetweenFace(Grid *grid, int node)
+GridBool gridGeometryBetweenFace(Grid *grid, int node)
 {
   AdjIterator it;
   int faceId, firstFaceId, nodes[3];

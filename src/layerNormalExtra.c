@@ -48,7 +48,7 @@ Layer *layerSetNormalHeightWithRateAcceleration(Layer *layer, double maxRate)
 }
 
 
-Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
+Layer *layerSmoothRate(Layer *layer, int itMax, double omega, GridBool iprt)
 {
   int normal, iter, triangle, normals[3], total, i;
   double norm[3], avgdir[3], rate, denom;
@@ -148,7 +148,7 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
 // For now, the constraint on length is 1.5 * its initial user specified
 // value which is temporally stored in "normal.initialheight".
 
-Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool iprt)
+Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, GridBool iprt)
 {
   int normal, iter, triangle, normals[3], i, ItMax;
   int totalR, totalH, totalL, totalY;

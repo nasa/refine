@@ -5,8 +5,8 @@
 Layer *layerAssignPolarGrowthHeight(Layer*, double, double, double* );
 Layer *layerSetNormalHeightWithRateAcceleration(Layer*, double );
 
-Layer *layerSmoothRate(Layer*, int, double, bool);
-Layer *layerSmoothNormalProperties(Layer*, int*, double, bool);
+Layer *layerSmoothRate(Layer*, int, double, GridBool);
+Layer *layerSmoothNormalProperties(Layer*, int*, double, GridBool);
 Layer *layerSetNormalMaxLengthConstrained(Layer*, int, double );
 Layer *layerSetNormalMaxDy(Layer*, int, double );
 double layerNormalMaxDy(Layer*, int );

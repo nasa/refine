@@ -28,11 +28,11 @@
 #include "MeatLib/GeoBC.h"
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
-			      bool mixedElement,
-			      bool blendElement,
-			      bool qualityImprovement,
-			      bool copyGridY,
-			      bool bil )
+			      GridBool mixedElement,
+			      GridBool blendElement,
+			      GridBool qualityImprovement,
+			      GridBool copyGridY,
+			      GridBool bil )
 {
   char outputProject[256];
   char linesProject[256];

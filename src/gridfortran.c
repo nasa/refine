@@ -188,7 +188,7 @@ void gridparallelswap_( int *processor, double *ARlimit )
 
 void gridparallelsmoothfaceinterior_( int *processor )
 {
-  bool localOnly;
+  GridBool localOnly;
   localOnly = (-1 == (*processor));
   gridSmoothFaceInterior(grid, localOnly );
 #ifdef PARALLEL_VERBOSE 

@@ -38,10 +38,10 @@ int MesherX_DiscretizeVolumeHLA(int maxNodes,
 				double scalev,
 				char *project,
 				char *outputName,
-				bool mixedElement,
-				bool blendElement,
-				bool qualityImprovement,
-				bool bil )
+				GridBool mixedElement,
+				GridBool blendElement,
+				GridBool qualityImprovement,
+				GridBool bil )
 {
   char outputProject[256];
   int vol=1;

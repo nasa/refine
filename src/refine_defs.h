@@ -31,22 +31,18 @@ END_C_DECLORATION
 
 #ifdef HAVE_SDK
 #include <MeatLib/Common.h>
+typedef GeoBool GridBool;
 #else
 /* lifted defs from the SDK/MeatLib/Common.h */
 
 BEGIN_C_DECLORATION
+
+typedef short   GridBool;
+
 #undef TRUE
 #undef FALSE
- 
-#if defined(__cplusplus)
-typedef short   bool;
-#define TRUE    ((bool)true)
-#define FALSE   ((bool)false)
-#else
-typedef short   bool;
-#define TRUE    ((bool)1)
-#define FALSE   ((bool)0)
-#endif
+#define TRUE    ((GridBool)1)
+#define FALSE   ((GridBool)0)
 
 #if !defined(MIN)
 #define MIN(a,b) ((a)<(b)?(a):(b)) 

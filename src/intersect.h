@@ -17,24 +17,24 @@
 
 BEGIN_C_DECLORATION
 
-bool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
+GridBool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
 		     double *node );
 
-bool intersectTriangleNode(double *vertex0, double *vertex1, double *vertex2,
+GridBool intersectTriangleNode(double *vertex0, double *vertex1, double *vertex2,
 			   double *node );
 
-bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
+GridBool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
 			      double *node0, double *node1 );
 
-bool intersectInsideTet(double *vertex0, double *vertex1, 
+GridBool intersectInsideTet(double *vertex0, double *vertex1, 
 			double *vertex2, double *vertex3,
 			double *node );
 
-bool intersectTetSegment(double *vertex0, double *vertex1, 
+GridBool intersectTetSegment(double *vertex0, double *vertex1, 
 			 double *vertex2, double *vertex3,
 			 double *node0, double *node1 );
 
-bool intersectTetTet(double *vertex0, double *vertex1, 
+GridBool intersectTetTet(double *vertex0, double *vertex1, 
 		     double *vertex2, double *vertex3,
 		     double *node0, double *node1,
 		     double *node2, double *node3 );

@@ -30,8 +30,8 @@ int main( int argc, char *argv[] )
   double *xyz;
   double scale;
   int maxnode;
-  bool mixedElement, blendElement, qualityImprovement, copyGridY;
-  bool bil;
+  GridBool mixedElement, blendElement, qualityImprovement, copyGridY;
+  GridBool bil;
 
   sprintf( project,       "" );
   scale = 1.0;

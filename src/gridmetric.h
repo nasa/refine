@@ -53,15 +53,15 @@ void gridCellAspectRatioDerivative( double *xyz1, double *xyz2,
 Grid *gridNodeARDerivative(Grid *g, int node, double *ar, double *dARdx );
 Grid *gridStoreARDerivative(Grid *g, int node );
 double gridMinVolume(Grid *g);
-bool gridNegCellAroundNode(Grid *g, int node );
-bool gridNegCellAroundNodeExceptGem(Grid *g, int node );
+GridBool gridNegCellAroundNode(Grid *g, int node );
+GridBool gridNegCellAroundNodeExceptGem(Grid *g, int node );
 double gridMinAR(Grid *g);
 double gridMinThawedAR(Grid *g);
 
 Grid *gridFreezeSmallARCells(Grid *g, double minAR );
 
-bool gridRightHandedFace(Grid *g, int face );
-bool gridRightHandedBoundary(Grid *g );
+GridBool gridRightHandedFace(Grid *g, int face );
+GridBool gridRightHandedBoundary(Grid *g );
 
 double gridFaceArea(Grid *g, int n0, int n1, int n2);
 double gridFaceAR(Grid *g, int n0, int n1, int n2);

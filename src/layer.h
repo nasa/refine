@@ -29,7 +29,7 @@ struct Normal {
   double length;
   double maxlength;
   double rate;
-  bool terminated;
+  GridBool terminated;
 };
 
 typedef struct Triangle Triangle;
@@ -69,15 +69,15 @@ struct Layer {
   int *vertexNormal;
   int nConstrainingGeometry, *constrainingGeometry;
   Near *nearTree;
-  bool mixedElementMode;
+  GridBool mixedElementMode;
 
   int normalTriangleHub;
   int normalTriangleDegree;
   double normalTriangleDirection[3*MAXNORMALDEG];
 
-  bool *cellInLayer;
-  bool *faceInLayer;
-  bool *edgeInLayer;
+  GridBool *cellInLayer;
+  GridBool *faceInLayer;
+  GridBool *edgeInLayer;
 
   FILE *tecplotFile;
 };
@@ -99,7 +99,7 @@ Layer *layerPopulateAdvancingFront(Layer *, int nbc, int *bc);
 Layer *layerBuildNormalTriangleAdjacency(Layer *);
 Layer *layerInitializeTriangleNormalDirection(Layer *);
 Layer *layerAddParentGeomFace(Layer *, int faceId);
-bool layerParentGeomFace(Layer *, int faceId);
+GridBool layerParentGeomFace(Layer *, int faceId);
 Layer *layerAddTriangle(Layer *, int n0, int n1, int n2);
 int layerForceTriangle(Layer *, int normal0, int normal1, int nnormal2);
 Layer *layerTriangle(Layer *, int triangle, int *nodes);
@@ -170,7 +170,7 @@ Layer *layerProjectNormalsToConstraints(Layer *);
 Layer *layerAdjustNormalHeightToSmoothFront(Layer *, double maxHeight);
 
 Layer *layerConstrainNormal(Layer *, int edgeface );
-bool layerConstrainingGeometry(Layer *, int edgeface );
+GridBool layerConstrainingGeometry(Layer *, int edgeface );
 int layerConstrained(Layer *, int normal );
 Layer *layerConstrainTriangleSide(Layer *, int normal0, int normal1, int bc );
 int layerConstrainedSide(Layer *, int triangle, int side );
@@ -181,15 +181,15 @@ int layerParentGeomEdge(Layer *, int triangle, int side );
 int layerNParentGeomEdgeSegments(Layer *, int edgeId );
 
 Layer *layerTerminateNormal(Layer *, int normal );
-bool layerNormalTerminated(Layer *, int normal );
+GridBool layerNormalTerminated(Layer *, int normal );
 Layer *layerTerminateFaceNormals(Layer *, int faceId );
 Layer *layerTerminateTriangleNormals(Layer *, int triangle );
 int layerNActiveNormal(Layer *);
-bool layerAnyActiveNormals(Layer *);
+GridBool layerAnyActiveNormals(Layer *);
 
-bool layerCellInLayer(Layer *, int cell);
-bool layerFaceInLayer(Layer *, int face);
-bool layerEdgeInLayer(Layer *, int edge);
+GridBool layerCellInLayer(Layer *, int cell);
+GridBool layerFaceInLayer(Layer *, int face);
+GridBool layerEdgeInLayer(Layer *, int edge);
 int layerNEdgeInLayer(Layer *, int edgeId);
 int layerEdgeEndPoint(Layer *, int edgeId, int startNode);
 
@@ -199,7 +199,7 @@ Layer *layerReconnectEdgeUnlessInLayer(Layer *, int edgeId,
 Layer *layerReconnectFaceUnlessInLayer(Layer *, int faceId, 
 				       int oldNode, int newNode );
 
-Layer *layerAdvance(Layer *, bool reconnect );
+Layer *layerAdvance(Layer *, GridBool reconnect );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
 
@@ -214,7 +214,7 @@ Layer *layerVerifyPhantomFaces(Layer *);
 
 Layer *layerThaw(Layer*);
 
-bool layerTetrahedraOnly(Layer *);
+GridBool layerTetrahedraOnly(Layer *);
 Layer *layerToggleMixedElementMode(Layer *);
 
 Adj *layerBuildNormalBlendAdjacency(Layer *layer);

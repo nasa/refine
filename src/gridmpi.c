@@ -99,7 +99,7 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   double xyz0[3], xyz1[3];
   double newX, newY, newZ;
   int newnode;
-  bool gemLocal;
+  GridBool gemLocal;
 
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return EMPTY;
 
@@ -180,7 +180,7 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
 
 Grid *gridParallelEdgeSwap(Grid *grid, Queue *queue, int node0, int node1 )
 {
-  bool gemLocal;
+  GridBool gemLocal;
   Grid *result;
 
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return NULL;

@@ -56,11 +56,11 @@ Layer *layerCreate( Grid *grid )
   layer->normalTriangleHub = EMPTY;
   layer->normalTriangleDegree = EMPTY;
 
-  layer->cellInLayer = malloc(gridMaxCell(grid)*sizeof(bool));
+  layer->cellInLayer = malloc(gridMaxCell(grid)*sizeof(GridBool));
   for (i=0;i<gridMaxCell(grid);i++) layer->cellInLayer[i] = FALSE;
-  layer->faceInLayer = malloc(gridMaxFace(grid)*sizeof(bool));
+  layer->faceInLayer = malloc(gridMaxFace(grid)*sizeof(GridBool));
   for (i=0;i<gridMaxFace(grid);i++) layer->faceInLayer[i] = FALSE;
-  layer->edgeInLayer = malloc(gridMaxEdge(grid)*sizeof(bool));
+  layer->edgeInLayer = malloc(gridMaxEdge(grid)*sizeof(GridBool));
   for (i=0;i<gridMaxEdge(grid);i++) layer->edgeInLayer[i] = FALSE;
 
   layer->tecplotFile = NULL;
@@ -98,7 +98,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
 {
   Layer *layer;
   int nbc, bc[2];
-  bool box, om6, n12;
+  GridBool box, om6, n12;
   
   box = (NULL != strstr( project, "box"));
   om6 = (NULL != strstr( project, "om6"));
@@ -166,15 +166,15 @@ void layerReallocator(void *voidLayer, int reallocType,
 
   switch (reallocType) {
   case gridREALLOC_EDGE:
-    layer->edgeInLayer = realloc(layer->edgeInLayer, newSize*sizeof(bool));
+    layer->edgeInLayer = realloc(layer->edgeInLayer, newSize*sizeof(GridBool));
     for (i=lastSize;i<newSize;i++) layer->edgeInLayer[i] = FALSE;
     break;
   case gridREALLOC_FACE:
-    layer->faceInLayer = realloc(layer->faceInLayer, newSize*sizeof(bool));
+    layer->faceInLayer = realloc(layer->faceInLayer, newSize*sizeof(GridBool));
     for (i=lastSize;i<newSize;i++) layer->faceInLayer[i] = FALSE;
     break;
   case gridREALLOC_CELL:
-    layer->cellInLayer = realloc(layer->cellInLayer, newSize*sizeof(bool));
+    layer->cellInLayer = realloc(layer->cellInLayer, newSize*sizeof(GridBool));
     for (i=lastSize;i<newSize;i++) layer->cellInLayer[i] = FALSE;
     break;
   }
@@ -306,7 +306,7 @@ Layer *layerAddParentGeomFace(Layer *layer, int faceId )
   return layer;
 }
 
-bool layerParentGeomFace(Layer *layer, int faceId )
+GridBool layerParentGeomFace(Layer *layer, int faceId )
 {
   int i;
 
@@ -1455,7 +1455,7 @@ Layer *layerConstrainNormal(Layer *layer, int edgeface )
   return layer;
 }
 
-bool layerConstrainingGeometry(Layer *layer, int edgeface )
+GridBool layerConstrainingGeometry(Layer *layer, int edgeface )
 {
   int i;
 
@@ -1603,7 +1603,7 @@ Layer *layerTerminateNormal(Layer *layer, int normal )
   return layer;
 }
 
-bool layerNormalTerminated(Layer *layer, int normal )
+GridBool layerNormalTerminated(Layer *layer, int normal )
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return FALSE;
 
@@ -1653,24 +1653,24 @@ int layerNActiveNormal(Layer *layer )
   return nActive;
 }
 
-bool layerAnyActiveNormals(Layer *layer)
+GridBool layerAnyActiveNormals(Layer *layer)
 {
   return (layerNActiveNormal(layer)>0);
 }
 
-bool layerCellInLayer(Layer *layer, int cell)
+GridBool layerCellInLayer(Layer *layer, int cell)
 {
   if (cell < 0 || cell >= gridMaxCell(layerGrid(layer)) ) return FALSE;
   return layer->cellInLayer[cell];
 }
 
-bool layerFaceInLayer(Layer *layer, int face)
+GridBool layerFaceInLayer(Layer *layer, int face)
 {
   if (face < 0 || face >= gridMaxFace(layerGrid(layer)) ) return FALSE;
   return layer->faceInLayer[face];
 }
 
-bool layerEdgeInLayer(Layer *layer, int edge)
+GridBool layerEdgeInLayer(Layer *layer, int edge)
 {
   if (edge < 0 || edge >= gridMaxEdge(layerGrid(layer)) ) return FALSE;
   return layer->edgeInLayer[edge];
@@ -1698,7 +1698,7 @@ int layerEdgeEndPoint(Layer *layer, int edgeId, int startNode)
   AdjIterator it;
   int node, lastnode, edge, n1;
   int nodes[2], currentEdgeId;
-  bool found;
+  GridBool found;
   Grid *grid;
 
   grid = layerGrid(layer);
@@ -1840,7 +1840,7 @@ Layer *layerAdvanceConstantHeight(Layer *layer, double height )
   return layerAdvance(layer, TRUE);
 }
 
-Layer *layerAdvance(Layer *layer, bool reconnect)
+Layer *layerAdvance(Layer *layer, GridBool reconnect)
 {
   Grid *grid = layer->grid;
   int normal, normal0, normal1, root, tip, faceId, edgeId, i;
@@ -1851,7 +1851,7 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
   int nterminated;
   int tet[4];
   int subBlend;
-  bool negVolume = FALSE;
+  GridBool negVolume = FALSE;
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
@@ -2402,7 +2402,7 @@ Layer *layerThaw(Layer *layer)
 }
 
 
-bool layerTetrahedraOnly(Layer *layer)
+GridBool layerTetrahedraOnly(Layer *layer)
 {
   return !layer->mixedElementMode;
 }
@@ -2475,7 +2475,7 @@ Layer *layerBlend(Layer *layer, double angleLimit )
   double edgeAngle;
   int commonEdge[2];
   int nRequiredBlends;
-  bool continuous;
+  GridBool continuous;
 
   int count, i;
   int leftNormal, rightNormal;
@@ -2549,7 +2549,7 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 int layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
 {
   int i, node0, node1, n0, n1;
-  bool newEdge;
+  GridBool newEdge;
   int blend;
   int triangle, edge, nodes[2], excludeId, edgeId, side;
   AdjIterator it;
@@ -3234,7 +3234,7 @@ Layer *layerTerminateCollidingNormals(Layer *layer)
   return layer;
 }
 
-bool layerTrianglesShareNormal(Layer *layer, int triangle1, int triangle2 )
+GridBool layerTrianglesShareNormal(Layer *layer, int triangle1, int triangle2 )
 {
   int normals1[3], normals2[3];
   int i, j;

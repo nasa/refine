@@ -55,7 +55,7 @@ Adj *adjRemove( Adj *adj, int node, int item );
 AdjIterator adjGetCurrent( Adj *adj );
 Adj *adjSetCurrent( Adj *adj, AdjIterator iterator );
 
-bool adjExists( Adj *adj, int node, int item );
+GridBool adjExists( Adj *adj, int node, int item );
 int adjDegree( Adj *adj, int node );
 
 END_C_DECLORATION

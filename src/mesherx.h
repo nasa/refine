@@ -18,11 +18,11 @@
 BEGIN_C_DECLORATION
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project, 
-			      bool mixedElement,
-			      bool blendElement,
-			      bool qualityImprovement,
-			      bool copyGridY,
-			      bool bil );
+			      GridBool mixedElement,
+			      GridBool blendElement,
+			      GridBool qualityImprovement,
+			      GridBool copyGridY,
+			      GridBool bil );
 
 Layer *layerComputeNormalRateWithBGSpacing(Layer *, double finalRatio);
 Layer *layerComputeInitialCellHeightWithBGSpacing(Layer *, double finalRatio);

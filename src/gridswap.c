@@ -243,7 +243,7 @@ Grid *gridSwap(Grid *grid)
 {
   int cellId, maxcell;
   int nodes[4];
-  bool swap;
+  GridBool swap;
 
   maxcell = gridMaxCell(grid);
 

@@ -1227,7 +1227,7 @@ double gridMinVolume( Grid *grid )
   return minVol;
 }
 
-bool gridNegCellAroundNode( Grid *grid, int node )
+GridBool gridNegCellAroundNode( Grid *grid, int node )
 {
   int nodes[4];
   AdjIterator it;
@@ -1242,10 +1242,10 @@ bool gridNegCellAroundNode( Grid *grid, int node )
   return FALSE;
 }
 
-bool gridNegCellAroundNodeExceptGem( Grid *grid, int node )
+GridBool gridNegCellAroundNodeExceptGem( Grid *grid, int node )
 {
   int igem, cellId, nodes[4];
-  bool inGem;
+  GridBool inGem;
   AdjIterator it;
 
   for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ) {
@@ -1303,7 +1303,7 @@ Grid *gridFreezeSmallARCells(Grid *grid, double minAR )
   return grid;
 }
 
-bool gridRightHandedFace(Grid *grid, int face ){
+GridBool gridRightHandedFace(Grid *grid, int face ){
   int cell;
   int faceNodes[4], faceId;
   int cellNodes[4];
@@ -1324,10 +1324,10 @@ bool gridRightHandedFace(Grid *grid, int face ){
   return (gridVolume(grid, faceNodes) > 0.0);
 }
 
-bool gridRightHandedBoundary( Grid *grid )
+GridBool gridRightHandedBoundary( Grid *grid )
 {
   int face, nodes[3], faceId;
-  bool rightHanded;
+  GridBool rightHanded;
   rightHanded = TRUE;
 
   for (face=0;face<gridMaxFace(grid);face++)

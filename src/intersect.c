@@ -13,7 +13,7 @@
 #include "intersect.h"
 #include "gridmath.h"
 
-bool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
+GridBool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
 		     double *node )
 {
   double edge1[3], edge2[3], normal[3], direction[3];
@@ -27,7 +27,7 @@ bool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
   return FALSE;
 }
 
-bool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex2,
+GridBool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex2,
 			    double *node)
 {
   double side[3], otherSide[3], target[3];
@@ -55,14 +55,14 @@ bool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex2,
   return TRUE;
 }
 
-bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
+GridBool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
 			      double *node0, double *node1)
 {
   int i;
   double edge1[3], edge2[3], normal[3];
   double dir0[3], dir1[3];
   double h0, h1;
-  bool coplanar;
+  GridBool coplanar;
   double denom, intersection[3];
 
   gridSubtractVector(vertex1, vertex0, edge1);
@@ -90,7 +90,7 @@ bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
   }
 }
 
-bool intersectInsideTet(double *vertex0, double *vertex1, 
+GridBool intersectInsideTet(double *vertex0, double *vertex1, 
 			double *vertex2, double *vertex3,
 			double *node)
 {
@@ -102,7 +102,7 @@ bool intersectInsideTet(double *vertex0, double *vertex1,
   return TRUE;
 }
 
-bool intersectTetSegment(double *vertex0, double *vertex1, 
+GridBool intersectTetSegment(double *vertex0, double *vertex1, 
 			 double *vertex2, double *vertex3,
 			 double *node0, double *node1)
 {
@@ -124,7 +124,7 @@ bool intersectTetSegment(double *vertex0, double *vertex1,
   return FALSE;
 }
 
-bool intersectTetTet(double *vertex0, double *vertex1, 
+GridBool intersectTetTet(double *vertex0, double *vertex1, 
 		     double *vertex2, double *vertex3,
 		     double *node0, double *node1,
 		     double *node2, double *node3 )

@@ -47,7 +47,7 @@ struct Grid {
   int blanknode;
   double *xyz;
   double *map;
-  bool *frozen;
+  GridBool *frozen;
   int naux;
   double *aux;
 
@@ -222,9 +222,9 @@ Grid *gridRemoveCellWithOutGlobal(Grid *g, int cellId );
 #define gridCellAdj(grid) (NULL==grid?NULL:grid->cellAdj)
 Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
-bool gridCellValid(Grid *g, int cellId );
-bool gridCellEdge(Grid *g, int node0, int node1 );
-bool gridCellFace(Grid *g, int node0, int node1, int node2 );
+GridBool gridCellValid(Grid *g, int cellId );
+GridBool gridCellEdge(Grid *g, int node0, int node1 );
+GridBool gridCellFace(Grid *g, int node0, int node1, int node2 );
 int gridFindOtherCellWith3Nodes(Grid *g, int node0, int node1, int node2,
 				int currentCell );
 int gridFindCellWithFace(Grid *g, int face );
@@ -277,7 +277,7 @@ Grid *gridGeomCurve( Grid *g, int edgeId, int startNode, int *curve );
 Grid *gridGeomCurveT( Grid *g, int edgeId, int startNode, double *curve );
 
 int gridNFrozen( Grid *g );
-bool gridNodeFrozen( Grid *g, int node );
+GridBool gridNodeFrozen( Grid *g, int node );
 Grid *gridFreezeNode( Grid *g, int node );
 Grid *gridThawNode( Grid *g, int node );
 Grid *gridFreezeAll( Grid *g );
@@ -291,14 +291,14 @@ int gridNGem(Grid *g );
 int gridGem(Grid *g, int index );
 Grid *gridRemoveGem(Grid *g);
 Grid *gridRemoveGemAndQueue(Grid *g, Queue*);
-bool gridGemIsAllLocal(Grid *g);
-bool gridNodeNearGhost(Grid *g, int node );
+GridBool gridGemIsAllLocal(Grid *g);
+GridBool gridNodeNearGhost(Grid *g, int node );
 
 Grid *gridOrient(Grid *g, int *cell, int *nodes );
 Grid *gridEquator(Grid *g, int n0, int n1 );
 int gridNEqu(Grid *g );
 int gridEqu(Grid *g, int index );
-bool gridContinuousEquator(Grid *g);
+GridBool gridContinuousEquator(Grid *g);
 Grid *gridCycleEquator( Grid *g );
 
 int gridAddNode(Grid *g, double x, double y, double z );
@@ -323,8 +323,8 @@ Grid *gridGlobalShiftNode(Grid *g, int oldnnodeg, int newnnodeg,
 			  int nodeoffset );
 int gridNodePart(Grid *g, int node );
 Grid *gridSetNodePart(Grid *g, int node, int part );
-bool gridNodeLocal(Grid *g, int node );
-bool gridNodeGhost(Grid *g, int node );
+GridBool gridNodeLocal(Grid *g, int node );
+GridBool gridNodeGhost(Grid *g, int node );
 
 int gridNGeomNode(Grid *g);
 Grid *gridSetNGeomNode(Grid *g, int nGeomNode);
@@ -340,10 +340,10 @@ int gridGeomEdgeSize( Grid *g, int edgeId );
 Grid *gridGeomEdge( Grid *g, int edgeId, int *curve );
 int gridFrozenEdgeEndPoint( Grid *g, int edgeId, int startNode );
 
-bool gridGeometryNode(Grid *g, int node);
-bool gridGeometryEdge(Grid *g, int node);
-bool gridGeometryFace(Grid *g, int node);
-bool gridGeometryBetweenFace(Grid *g, int node);
+GridBool gridGeometryNode(Grid *g, int node);
+GridBool gridGeometryEdge(Grid *g, int node);
+GridBool gridGeometryFace(Grid *g, int node);
+GridBool gridGeometryBetweenFace(Grid *g, int node);
 
 Grid *gridAddPrism(Grid *g, int n0, int n1, int n2, int n3, int n4, int n5);
 Grid *gridPrism(Grid *g, int prismIndex, int *nodes);

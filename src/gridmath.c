@@ -114,7 +114,7 @@ void gridTriDiag3x3(double *m, double *d, double *e,
   }
 }
 
-bool gridEigTriDiag3x3(double *d, double *e,
+GridBool gridEigTriDiag3x3(double *d, double *e,
 		       double *q0, double *q1, double *q2)
 {
   int ierr;
