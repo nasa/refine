@@ -1,3 +1,10 @@
+2005-04-05 00:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/profine_main.c (main) started tp create a driver to profile
+	the speen of the code (especially parallel border regions).
+	Not working yet.
+	* src/Makefile.am (profileNative) added to CAPRI compile.
+
 2005-03-25 10:43 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridparallelswap_) added all ghost two face

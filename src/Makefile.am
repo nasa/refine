@@ -189,6 +189,12 @@ unitNative_SOURCES = unit_main.c
 unitNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 unitNative_LDFLAGS = $(all_LDFLAGS)
 
+bin_PROGRAMS += profileNative
+profileNative_CFLAGS = -pg $(all_CFLAGS)
+profileNative_SOURCES = profile_main.c
+profileNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
+profileNative_LDFLAGS = -pg $(all_LDFLAGS)
+
 if BUILD_PROE_KERNEL
 
 bin_PROGRAMS += librefine-Linux.Pro.dll
