@@ -178,13 +178,11 @@ fi
 if test "$have_PROETool" != 'no' &&  test "$have_PROEDev" != 'no' 
 then
   AM_CONDITIONAL(BUILD_PROE_KERNEL,true)
-  CAPRIPROElibrary="-L$CAPRI/ProE/$CAPRIarch -lcapri $PROE_TOOL $PROE_DEV"
+  CAPRIProElibrary="-L$CAPRI/ProE/$CAPRIarch -lcapri $PROE_TOOL $PROE_DEV"
 else
   AM_CONDITIONAL(BUILD_PROE_KERNEL,false)
   CAPRIProElibrary=
 fi
 AC_SUBST([CAPRIProElibrary])
-
-AC_SUBST([GridExKernels])
 
 AC_OUTPUT(Makefile src/Makefile)
