@@ -14,12 +14,95 @@
 #include <math.h>
 #include <limits.h>         /* Needed in some systems for DBL_MAX definition */
 #include <float.h>
-#include "gridfiller.h"
+#include "mesherx.h"
 #include "grid.h"
-#include "layer.h"
+#include "gridfiller.h"
 #include "CADGeom/CADGeom.h"
 #include "Goolache/MeshMgr.h"
 #include "MeatLib/ErrMgr.h"
+
+int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
+{
+  char *outputProject;
+  int vol=1;
+  Grid *grid;
+  Layer *layer;
+  int i;
+  double h;
+  double rate;
+  int nLayer;
+
+  nLayer = (int)(10.0/scale);
+  rate = exp(scale*log(1.2));
+  printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
+
+  grid = gridFillFromPart( vol, maxNodes );
+
+  MeshMgr_SetElementScale( scale );
+  //CAPrIMesh_TetVolume( vol );
+
+  layer = formAdvancingFront( grid, project );
+
+  /* only needed for formAdvancingFront freeze distant volume nodes */
+  gridThawAll(grid); 
+  layerFindParentEdges(layer);
+  i=0;
+  layerLaminarInitialHeight(layer, 1000.0, 0.005 );
+  layerScaleNormalHeight(layer,scale);
+  while (i<nLayer &&layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer)) {
+    //layerVisibleNormals(layer);
+    layerAdvance(layer);
+    layerScaleNormalHeight(layer,rate);
+    i++;
+  }
+
+  printf(" -- REBUILD EDGES\n");
+  layerRebuildEdges(layer,vol);
+
+  printf(" -- REBUILD FACES\n");
+  layerRebuildFaces(layer,vol);
+
+  printf(" -- REBUILD VOLUME\n");
+  layerRebuildVolume(layer,vol);
+
+  printf(" -- DUMP PART\n");
+  outputProject = "../test/MesherX";
+  printf("writing DEBUG output project %s\n",outputProject);
+  gridSavePart( grid, outputProject );
+
+  printf("writing output FAST file ../test/MesherX.fgrid\n");
+  gridExportFAST( grid, "../test/MesherX.fgrid" );
+
+  return 1;
+}
+
+int layerTerminateNormalWithBGSpacing(Layer *layer)
+{
+  int normal, nterm;
+  int root;
+  double xyz[3];
+  double spacing[3];
+  double direction[9];
+  double height;
+
+  if (layerNNormal(layer) == 0 ) return EMPTY;
+
+  nterm = 0;
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    layerGetNormalHeight(layer,normal,&height);
+
+    root = layerNormalRoot(layer, normal );
+    gridNodeXYZ(layerGrid(layer),root,xyz);
+    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+
+    if (height > 0.5*spacing[0]) {     /* Assume Isotropic for now */
+      nterm++;
+      layerTerminateNormal(layer, normal);
+    }
+  }
+  printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
+  return nterm;
+}
 
 Layer *layerRebuildEdges(Layer *layer, int vol){
 
@@ -439,88 +522,4 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   free(newxyz);
 
   return layer;
-}
-
-int layerTerminateNormalWithBGSpacing(Layer *layer)
-{
-  int normal, nterm;
-  int root;
-  double xyz[3];
-  double spacing[3];
-  double direction[9];
-  double height;
-
-  if (layerNNormal(layer) == 0 ) return EMPTY;
-
-  nterm = 0;
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    layerGetNormalHeight(layer,normal,&height);
-
-    root = layerNormalRoot(layer, normal );
-    gridNodeXYZ(layerGrid(layer),root,xyz);
-    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-
-    if (height > 0.5*spacing[0]) {     /* Assume Isotropic for now */
-      nterm++;
-      layerTerminateNormal(layer, normal);
-    }
-  }
-  printf("normals %d of %d terminated\n",nterm,layerNNormal(layer) );
-  return nterm;
-}
-
-
-int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
-{
-  char *outputProject;
-  int vol=1;
-  Grid *grid;
-  Layer *layer;
-  int i;
-  double h;
-  double rate;
-  int nLayer;
-
-  nLayer = (int)(10.0/scale);
-  rate = exp(scale*log(1.2));
-  printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
-
-  grid = gridFillFromPart( vol, maxNodes );
-
-  MeshMgr_SetElementScale( scale );
-  //CAPrIMesh_TetVolume( vol );
-
-  layer = formAdvancingFront( grid, project );
-
-  /* only needed for formAdvancingFront freeze distant volume nodes */
-  gridThawAll(grid); 
-  layerFindParentEdges(layer);
-  i=0;
-  layerLaminarInitialHeight(layer, 1000.0, 0.005 );
-  layerScaleNormalHeight(layer,scale);
-  while (i<nLayer &&layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer)) {
-    //layerVisibleNormals(layer);
-    layerAdvance(layer);
-    layerScaleNormalHeight(layer,rate);
-    i++;
-  }
-
-  printf(" -- REBUILD EDGES\n");
-  layerRebuildEdges(layer,vol);
-
-  printf(" -- REBUILD FACES\n");
-  layerRebuildFaces(layer,vol);
-
-  printf(" -- REBUILD VOLUME\n");
-  layerRebuildVolume(layer,vol);
-
-  printf(" -- DUMP PART\n");
-  outputProject = "../test/MesherX";
-  printf("writing DEBUG output project %s\n",outputProject);
-  gridSavePart( grid, outputProject );
-
-  printf("writing output FAST file ../test/MesherX.fgrid\n");
-  gridExportFAST( grid, "../test/MesherX.fgrid" );
-
-  return 1;
 }

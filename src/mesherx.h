@@ -13,9 +13,17 @@
 
 #include "master_header.h"
 
+#include "layer.h"
+
 BEGIN_C_DECLORATION
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project );
+
+int layerTerminateNormalWithBGSpacing(Layer *layer);
+
+Layer *layerRebuildEdges(Layer *layer, int vol);
+Layer *layerRebuildFaces(Layer *layer, int vol);
+Layer *layerRebuildVolume(Layer *layer, int vol);
 
 END_C_DECLORATION
 
