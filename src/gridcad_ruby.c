@@ -22,6 +22,15 @@ VALUE grid_evaluateEdgeAtT( VALUE self, VALUE node, VALUE t )
   return (gridEvaluateEdgeAtT(grid, NUM2INT(node), NUM2DBL(t))==grid?self:Qnil);
 }
 
+VALUE grid_evaluateFaceAtUV( VALUE self, VALUE node, VALUE u, VALUE v )
+{
+  double uv[2];
+  GET_GRID_FROM_SELF;
+  uv[0] = NUM2DBL(u);
+  uv[1] = NUM2DBL(v);
+  return (gridEvaluateFaceAtUV(grid, NUM2INT(node), uv )==grid?self:Qnil);
+}
+
 VALUE grid_updateFaceParameter( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -113,6 +122,7 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "projectNodeToFace", grid_projectNodeToFace, 2 );
 
   rb_define_method( cGridCAD, "evaluateEdgeAtT", grid_evaluateEdgeAtT, 2 );
+  rb_define_method( cGridCAD, "evaluateFaceAtUV", grid_evaluateFaceAtUV, 3 );
   rb_define_method( cGridCAD, "updateFaceParameter", 
 		    grid_updateFaceParameter, 1 );
 

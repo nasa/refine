@@ -86,7 +86,7 @@ Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
 Grid *gridEvaluateEdgeAtT(Grid *grid, int node, double t )
 {
   int vol =1;
-  int nodes[3];
+  int nodes[2];
   int edge, edgeId;
   double xyz[3];
 
@@ -104,6 +104,31 @@ Grid *gridEvaluateEdgeAtT(Grid *grid, int node, double t )
     return NULL;
   }
   gridSetNodeT(grid, node, edgeId, t);
+  gridSetNodeXYZ(grid, node, xyz);
+  return grid;
+}
+
+Grid *gridEvaluateFaceAtUV(Grid *grid, int node, double *uv )
+{
+  int vol =1;
+  int nodes[3];
+  int face, faceId;
+  double xyz[3];
+
+  if ( gridGeometryEdge(grid, node) ) return NULL;
+  if ( grid != gridNodeXYZ(grid, node, xyz) ) return NULL;
+
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
+  if (EMPTY == face) return NULL;
+
+  gridFace(grid,face,nodes,&faceId);
+
+  if ( !CADGeom_PointOnFace( vol, faceId, uv, xyz, 
+			     0, NULL, NULL, NULL, NULL, NULL) ){
+    printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+    return NULL;
+  }
+  gridSetNodeUV(grid, node, faceId, uv[0], uv[1]);
   gridSetNodeXYZ(grid, node, xyz);
   return grid;
 }
@@ -638,9 +663,7 @@ Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
   alpha[0] = 0.0;
   uv[0] = uvOrig[0] + alpha[0]*dudv[0];
   uv[1] = uvOrig[1] + alpha[0]*dudv[1];
-  if ( !CADGeom_PointOnFace( vol, faceId, uv, &grid->xyz[3*node], 
-			     0, NULL, NULL, NULL, NULL, NULL) )
-    printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+  
   gridNodeFaceMR( grid, node, &mr[0] );
 
   alpha[1] = 1.0e-10;
