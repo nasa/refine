@@ -32,7 +32,7 @@ void gridRotateDirection(double *v0, double *v1,
   double n0[3], n1[3], n2[3];
   double alpha, a0, a1;
   double dot0, dot1, skew0, skew1, skew;
-  double corrector[3], adjecent;
+  double adjecent;
 
   gridVectorCopy(n0,v0);   gridVectorNormalize(n0);
   gridVectorCopy(n1,v1);   gridVectorNormalize(n1);
@@ -125,6 +125,8 @@ GridBool gridEigTriDiag3x3(double *d, double *e,
   double c, c2, c3, el1, s;
   int mml, ii, k;
   double s2;
+
+  c3 = 0; s2 = 0; /* quiet -Wall used without set compiler warning */
 
   ierr = 0;
 
