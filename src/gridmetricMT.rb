@@ -46,6 +46,13 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 2.0, grid.edgeLength(0,1), 1.0e-15
  end
  
+# test the ratio function and map
+# make a 4 node mesh 
+# ratio the dx=2 dy=3 dz=4
+# remove a node and pack
+# test ratio
+
+# remove this
  def testFindLongestEdge
   grid = Grid.new(4,1,0,0)
   grid.addCell( 
@@ -81,6 +88,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 0, grid.smallestRatioEdge(3)
  end
 
+# need this?
  def testAverageEdgeLength
   assert_not_nil grid = isoTet
   4.times do |i| 
@@ -227,7 +235,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 0.0,   ans[3], 1.0e-15  
  end
  
-
  def testFaceMRDerivative
   x1 =0.061
   y1 =0.045
