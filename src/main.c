@@ -26,7 +26,7 @@ int main( int argc, char *argv[] )
   char *filename;
   char *project;
   char *output;
-  int i, j;
+  int i, j, oldSize, newSize;
 
   filename = "../test/om6_inv08.fgrid";
   printf("running default filename %s\n",filename);
@@ -63,29 +63,31 @@ int main( int argc, char *argv[] )
 
   printf("adapting grid...\n");
   gridResetSpacing(grid);
-  gridScaleSpacingSphere(grid,
-			 0.0,0.0,0.0,0.75,
-			 0.4);
-  gridScaleSpacingSphere(grid,
-			 0.0,0.0,0.0,0.3,
-			 0.4);
-  gridScaleSpacingSphere(grid,
-			 1.0,1.0,0.0,0.4,
-			 3.0);
-  for (j=0;j<6;j++){
+  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.90,0.9);
+  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.85,0.8);
+  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.80,0.7);
+  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.75,0.6);
+  gridScaleSpacingSphere(grid,0.0,0.0,0.0,0.70,0.5);
+  gridScaleSpacingSphere(grid,1.0,1.0,0.0,0.5,3.0);
+  gridScaleSpacingSphere(grid,1.5,0.0,0.0,1.0,3.5);
+  oldSize = 1;
+  newSize = gridNNode(grid) ;
+  for (j=0;(((double)ABS(newSize-oldSize)/(double)oldSize)>0.01)&&(j<15);j++){
+    printf("adapt grid...\n");
     gridAdapt(grid);
+    oldSize = newSize;
+    newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	   gridMinAR(grid),gridMinVolume(grid));
-    gridRobustProject(grid);
-    printf("projected grid minimum Aspect Ratio %12f Volume %12.8e\n",
-	   gridMinAR(grid),gridMinVolume(grid));
-    
+        
     for (i=0;i<2;i++){
-      printf("iteration %3d ...",i);
-      printf("edge swapping grid...");gridSwap(grid);
-      printf("node smoothin grid...\n");gridSmooth(grid);
+      printf("edge swapping grid...\n");gridSwap(grid);
+      if ( NULL != gridRobustProject(grid)) {
+	printf("node smoothin grid...\n");
+	gridSmooth(grid);
+      }
       printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	     gridMinAR(grid),gridMinVolume(grid));
     }
