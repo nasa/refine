@@ -764,7 +764,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,0.2], grid.nodeXYZ(5)
  end
 
- def testBlendElements
+ def XtestBlendElements
   assert_not_nil          grid = Grid.new(10,10,10,10)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)

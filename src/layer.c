@@ -1043,7 +1043,7 @@ Layer *layerBlendGeomEdge(Layer *layer, int edgeId )
     newNormal++;
   }
   for (i=0;i<layer->nblend;i++){
-    for ( it = adjFirst(layer->adj,normal0); 
+    for ( it = adjFirst(layer->adj,n0); 
 	  adjValid(it); 
 	  it = adjNext(it) ){
       front = adjItem(it);
