@@ -23,10 +23,6 @@
 #include "grid.h"
 #include "intersect.h"
 
-#define PI (3.14159265358979)
-#define ConvertRadianToDegree(radian) ((radian)*57.2957795130823)
-#define ConvertDegreeToRadian(degree) ((degree)*0.0174532925199433)
-
 Layer *layerCreate( Grid *grid )
 {
   int i;
@@ -652,7 +648,7 @@ double layerNormalAngle(Layer *layer, int normal0, int normal1)
   double dot;
   if ( layer != layerNormalDirection(layer, normal0, direction0) ) return -1.0;
   if ( layer != layerNormalDirection(layer, normal1, direction1) ) return -1.0;
-  return ConvertRadianToDegree(acos(gridDotProduct(direction0,direction1)));
+  return gridConvertRadianToDegree(acos(gridDotProduct(direction0,direction1)));
 }
 
 Layer *layerNormalMinDot(Layer *layer, int normal,
@@ -838,11 +834,11 @@ double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
   gridCrossProduct( direction0, direction1, cross);
   
   if ( gridDotProduct( edge, cross ) < 0.0 ) {
-    radian += PI;
+    radian += gridPI;
   }else{
-    radian = PI - radian;
+    radian = gridPI - radian;
   }
-  return ConvertRadianToDegree(radian);
+  return gridConvertRadianToDegree(radian);
 }
 
 Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
