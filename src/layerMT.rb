@@ -1293,6 +1293,12 @@ class TestLayer < Test::Unit::TestCase
   #       7 3
   assert_equal [5,0,2,6], layer.blendNormals(0)
   assert_equal [0,5,3,7], layer.blendNormals(1)
+  layer.splitBlend
+  assert_equal 4,         layer.nblend
+  assert_equal [8,0,9,6], layer.blendNormals(0)
+  assert_equal [8,5,10,7],layer.blendNormals(1)
+  assert_equal [5,8,2,9], layer.blendNormals(2)
+  assert_equal [0,8,3,10],layer.blendNormals(3)
  end
 
  def testAdvanceBlendForConvextFace_ConvertBlendToTriangle
