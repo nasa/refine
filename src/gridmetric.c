@@ -40,6 +40,13 @@ Grid *gridMapMatrix(Grid *grid, int node, double *m)
   return grid;
 }
 
+Grid *gridSetMapMatrixToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
+{
+  int i;
+  for (i=0;i<6;i++) grid->map[i+6*avgNode] = 
+		      0.5*(grid->map[i+6*n0]+grid->map[i+6*n1]);
+}
+
 void gridMapXYZWithJ( double *j,
 		      double *x, double *y, double *z )
 {
