@@ -102,7 +102,17 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(0,3,1,2).gem(0,1)
   assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(0,2,3,1).gem(0,1)
 
-  
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(1,0,3,2).gem(0,1)
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(1,2,0,3).gem(0,1)
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(1,3,2,0).gem(0,1)
+
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(2,3,0,1).gem(0,1)
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(2,1,3,0).gem(0,1)
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(2,0,1,3).gem(0,1)
+
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(3,2,1,0).gem(0,1)
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(3,0,2,1).gem(0,1)
+  assert_equal [[0, 1, 2, 3]], Grid.new(4,1,0).addCell(3,1,0,2).gem(0,1)
 end
  
  def XtestGetGem2
