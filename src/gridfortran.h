@@ -93,6 +93,8 @@ void gridmovesetlocalnodedata_( int *ndim, int *nnode,
 
 void gridmovefree_( );
 
+void gridmaxedge_( int *maxedge );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */

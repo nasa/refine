@@ -20,9 +20,9 @@
 #include "queue.h"
 #include "gridmpi.h"
 
-static Grid *grid;
-static GridMove *gm;
-static Queue *queue;
+static Grid *grid = NULL;
+static GridMove *gm = NULL;
+static Queue *queue = NULL;
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 		  int *ncell, int *maxcell, int *c2n )
@@ -46,8 +46,8 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
 
 void gridfree_( )
 {
-  queueFree(queue);
-  gridFree(grid);
+  queueFree(queue); queue = NULL;
+  gridFree(grid); grid = NULL;
 }
 
 void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
@@ -362,7 +362,7 @@ void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
 void gridsetnaux_( int *naux )
 {
   gridSetNAux(grid, *naux);
-  queueFree( queue );
+  if (NULL != queue) queueFree( queue );
   queue = queueCreate( 9 + gridNAux(grid) ); /* 3:xyz + 6:m + naux */
 }
 
@@ -644,5 +644,10 @@ void gridmovesetlocalnodedata_( int *ndim, int *nnode,
 
 void gridmovefree_( )
 {
-  gridmoveFree( gm );
+  gridmoveFree( gm ); gm = NULL;
+}
+
+void gridmaxedge_( int *maxedge )
+{
+  *maxedge = gridMaxEdge( grid );
 }
