@@ -494,15 +494,19 @@ void gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
 
 void gridghostcount_( int *nproc, int *count )
 {
-  int node, faces, edges;
+  int node, part, faces, edges;
   for(node=0;node<(*nproc);node++) count[node] = 0;
   for(node=0;node<gridMaxNode(grid);node++) {
     if (gridNodeGhost(grid,node)) { 
-      count[gridNodePart(grid,node)]++;
+      part = gridNodePart(grid,node);
+      if (part < 0 || part >= (*nproc)) 
+	printf("%s: %d: gridNodePart error, %d part, %d npart\n",
+	       __FILE__, __LINE__, part, (*nproc));
+      count[part]++;
       faces = gridNodeFaceIdDegree(grid,node);
-      if (faces>0) count[gridNodePart(grid,node)] += (faces+1);
+      if (faces>0) count[part] += (faces+1);
       edges = gridNodeEdgeIdDegree(grid,node);
-      if (edges>0) count[gridNodePart(grid,node)] += (edges+1);
+      if (edges>0) count[part] += (edges+1);
       if (faces==0 && edges>0) 
 	printf("%s: %d: gridghostcount error, %d faces, %d edges\n",
 	       __FILE__, __LINE__, faces, edges);
