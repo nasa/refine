@@ -3128,6 +3128,17 @@ Layer *layerSubBlendCount(Layer *layer, double maxNormalAngle)
 	nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
 	layer->blend[blend].nSubNormal1 = nSubNormal;
       }
+      for ( it = adjFirst(layerBlendAdj(layer),normal);
+	    adjValid(it);
+	    it=adjNext(it) ){
+	blend = adjItem(it);
+	layerBlendNormals(layer, blend, blendnormals );
+	if (normal == blendnormals[0] || normal == blendnormals[1] ) {
+	  layer->blend[blend].nSubNormal0 = nSubNormal;
+	}else{
+	  layer->blend[blend].nSubNormal1 = nSubNormal;
+	}
+      }
       break;
     case 3:
       for ( it = adjFirst(layerBlendAdj(layer),normal); 
@@ -3345,12 +3356,6 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   if ( 0.0 >= maxNormalAngle ) maxNormalAngle = 30.0;
   if (layer != layerSubBlendCount(layer,maxNormalAngle)) return NULL;
   /* if (layer != layerSubBlendSmooth(layer)) return NULL; */
-  for (blend=0; blend < layerNBlend(layer); blend++){
-    if (EMPTY != layer->blend[blend].edgeId[0]) 
-      layer->blend[blend].nSubNormal0 = layer->blend[blend].nSubNormal1;
-    if (EMPTY != layer->blend[blend].edgeId[1]) 
-      layer->blend[blend].nSubNormal1 = layer->blend[blend].nSubNormal0;	
-  }
   if (layer != layerSubBlendFill(layer)) return NULL;
   return layer;
 }   
