@@ -16,6 +16,7 @@ class TestGrid < Test::Unit::TestCase
  def set_up
   @grid = Grid.new(4,1,0,0)
  end
+ def setup ; set_up ; end
 
  def testSafeAlloc
   grid = Grid.new(0,0,0,0)

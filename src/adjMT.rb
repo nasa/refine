@@ -15,6 +15,7 @@ class TestAdj < Test::Unit::TestCase
   @adj = Adj.new(4,4)
   @bigNode = 10000
  end
+ def setup ; set_up ; end
 
  def testCreate
   assert_equal 4, @adj.nnode
