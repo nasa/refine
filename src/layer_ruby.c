@@ -8,7 +8,8 @@
 static void layer_mark( void *voidLayer )
 {
   Layer *layer = (Layer *)voidLayer;
-  rb_gc_mark(layer->gridRubyVALUEusedForGC);
+  VALUE grid =(VALUE)(layer->gridRubyVALUEusedForGC); 
+  rb_gc_mark(grid);
 }
 
 static void layer_free( void *voidLayer )

@@ -645,10 +645,11 @@ int layerNormalDeg(Layer *layer, int normal )
 double layerNormalAngle(Layer *layer, int normal0, int normal1)
 {
   double direction0[3], direction1[3];
-  double dot;
+
   if ( layer != layerNormalDirection(layer, normal0, direction0) ) return -1.0;
   if ( layer != layerNormalDirection(layer, normal1, direction1) ) return -1.0;
-  return gridConvertRadianToDegree(acos(gridDotProduct(direction0,direction1)));
+  return 
+    gridConvertRadianToDegree(acos(gridDotProduct(direction0,direction1)));
 }
 
 Layer *layerNormalMinDot(Layer *layer, int normal,
@@ -2114,7 +2115,7 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
 	break;
       default:
 	printf( "ERROR: %s: %d: Cannot handle %d blends. Write more code!\n",
-		layerBlendDegree(layer,normal));
+		__FILE__, __LINE__, layerBlendDegree(layer,normal));
 	break;
       }
     }
@@ -2449,7 +2450,6 @@ int layerNRequiredBlends(Layer *layer, int normal, double angleLimit )
 Layer *layerBlend(Layer *layer, double angleLimit )
 {
   int normal;
-  AdjIterator it;
   int triangle, firstTriangle, nextTriangle;
   double edgeAngle;
   int commonEdge[2];
@@ -2547,7 +2547,8 @@ int layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
   n0 = layerNormalRoot(layer,normal0);
   n1 = otherNode;
 
-  newEdge=TRUE;
+  blend   = EMPTY;
+  newEdge = TRUE;
   for (i=0;i<layerNBlend(layer);i++){
     node0 = layer->blend[i].nodes[0];
     node1 = layer->blend[i].nodes[1];
@@ -2676,12 +2677,13 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 	      layerDuplicateNormal(layer, normal );
 	    layerSubNormalDirection(layer,blendnormals[2],blendnormals[3],
 				    layer->blend[blend].subNormal0[i], i);
+	  }
 	}
       }
       break;
     default:
       printf( "ERROR: %s: %d: Cannot handle %d blends. Write more code!\n",
-	      layerBlendDegree(layer,normal));
+	      __FILE__, __LINE__, layerBlendDegree(layer,normal));
       break;
     }
     
@@ -2692,7 +2694,8 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 int layerNSubBlend(Layer *layer, int blend )
 {
   if (blend < 0 || blend >= layerNBlend(layer)) return EMPTY;
-  return MAX(layer->blend[blend].nSubNormal0,layer->blend[blend].nSubNormal1)+1;
+  return MAX( layer->blend[blend].nSubNormal0,
+	      layer->blend[blend].nSubNormal1 ) + 1;
 }
 
 Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )

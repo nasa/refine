@@ -523,6 +523,7 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 
   newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
 
+  newnode = EMPTY;
   foundFace = EMPTY;
   edgeSplit = FALSE;
   face = 0;
@@ -600,6 +601,7 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 
   newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
 
+  newnode = EMPTY;
   foundCell = EMPTY;
   edgeSplit = FALSE;
   cell = 0;

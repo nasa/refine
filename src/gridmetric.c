@@ -311,7 +311,6 @@ double gridVolume(Grid *grid, int *nodes )
   double *xyz0, *xyz1, *xyz2, *xyz3;
   double edge1[3], edge2[3], edge3[3];
   double norm[3];
-  double volume;
   
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
