@@ -491,7 +491,7 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   int maxface, face;
   int nodes[3];
   int triangle;
-  int i;
+  int i, cell;
   double *shellxyz;
 
   int nvolnode, nvolcell;
@@ -621,7 +621,8 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   }
   printf("rebuild volume has %d nodes %d cells\n",nvolnode,nvolcell);
 
-  gridDeleteThawedCells(grid);
+  for(cell=0;cell<gridMaxCell(grid);cell++) 
+    if ( !layerCellInLayer(layer,cell) ) gridRemoveCell(grid,cell);
   gridDeleteNodesNotUsed(grid);
 
   for(i=nnode;i<nvolnode;i++){
