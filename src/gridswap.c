@@ -14,6 +14,8 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 
+#define COSTLIMIT (-0.5)
+
 Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
 {
   int cell0, cell1;
@@ -65,7 +67,7 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) ); 
   bestcost = MIN( gridAR( grid, nodes[2] ), bestcost ); 
 
-  if ( bestcost > origcost ) {
+  if ( bestcost > origcost && bestcost > COSTLIMIT ) {
     gridRemoveCell(grid,cell0);
     gridRemoveCell(grid,cell1);
     for ( i = 0 ; i < 3 ; i++ )
@@ -293,7 +295,7 @@ Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 )
 
   bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) );
 
-  if ( bestcost > origcost ) {
+  if ( bestcost > origcost && bestcost > COSTLIMIT ) {
 
     gridRemoveGemAndQueue(grid,queue);
 
@@ -369,7 +371,7 @@ Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 )
     bestindex = 1;
   }
 
-  if ( bestcost > origcost ) {
+  if ( bestcost > origcost && bestcost > COSTLIMIT ) {
 
     if (bestindex == 0){
       nodes[0][0]=n0;
@@ -474,7 +476,7 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
   if (bestindex == -1 ) 
     printf("ERROR in bestindex, file %s line %d \n",__FILE__, __LINE__ ); 
 
-  if ( bestcost > origcost ) {
+  if ( bestcost > origcost && bestcost > COSTLIMIT ) {
 
     for ( i = 0 ; i < bestindex ; i++ ) 
       gridCycleEquator( grid );
@@ -532,7 +534,7 @@ Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
   
   gridGetCombo6( grid, nodes, costs, &bestcost, bestcombo );
   
-  if ( bestcost > origcost ) {
+  if ( bestcost > origcost && bestcost > COSTLIMIT ) {
       
     gridRemoveGemAndQueue(grid,queue);
     
@@ -707,7 +709,7 @@ Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
 
   gridGetCombo7( grid, nodes, costs, &bestcost, bestcombo );
   
-  if ( bestcost > origcost ) {
+  if ( bestcost > origcost && bestcost > COSTLIMIT ) {
 
     gridRemoveGemAndQueue(grid,queue);
     
