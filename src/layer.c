@@ -579,7 +579,8 @@ Layer *layerLaminarInitialHeightNegZ(Layer *layer)
 
   for(normal=0;normal<layerNNormal(layer); normal++){
     gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
-    initialHeight = 0.0005 - 1.5e-6 * xyz[3];
+    initialHeight = 0.0004 - 1.2e-6 * xyz[2];
+    if (xyz[0]>20.0) initialHeight += (xyz[0]-20.0)*0.00005;
     layerSetNormalHeight(layer,normal,initialHeight);
   }
 
@@ -995,6 +996,26 @@ bool layerNormalTerminated(Layer *layer, int normal )
 
   return layer->normal[normal].terminated;
 }
+
+Layer *layerTerminateFaceNormals(Layer *layer, int faceId)
+{
+  int face, nodes[3], id;
+  int i, normal;
+
+  Grid *grid; grid = layerGrid(layer);
+
+  for (face=0;face<gridMaxFace(grid);face++){
+    if (grid == gridFace(grid,face,nodes,&id) && id == faceId ){
+      for (i=0;i<3;i++){
+	normal = layer->globalNode2Normal[nodes[i]];
+	layerTerminateNormal( layer, normal );
+      }
+    }
+  }
+
+  return layer;
+}
+
 
 int layerNActiveNormal(Layer *layer )
 {

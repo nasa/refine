@@ -66,6 +66,7 @@ int layerNParentGeomEdgeSegments(Layer *, int edgeId );
 
 Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
+Layer *layerTerminateFaceNormals(Layer *, int faceId );
 int layerNActiveNormal(Layer *);
 Layer *layerAdvance(Layer * );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
