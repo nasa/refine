@@ -204,7 +204,7 @@ int gridgetunusedcellglobal_( int *nunused, int *unused )
 int gridjoinunusedcellglobal_( int *nunused, int *unused )
 {
   int i;
-  for (i=0;i<*nunused;i++) gridJoinUnusedCellGlobal( grid, unused[i] );
+  for (i=0;i<(*nunused);i++) gridJoinUnusedCellGlobal( grid, unused[i] );
 }
 
 int grideliminateunusedcellglobal_(  )
