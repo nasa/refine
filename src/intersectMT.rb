@@ -4,7 +4,9 @@
 #
 # $Id$
 
-exit 1 unless system 'ruby makeRubyExtension.rb Intersect master_header.h'
+require 'RubyExtensionBuilder'
+
+RubyExtensionBuilder.new('Intersect').build
 
 require 'test/unit'
 require 'Intersect/Intersect'
