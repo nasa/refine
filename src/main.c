@@ -196,6 +196,7 @@ Grid *gridLoadPart( char *project )
 	inode++;
       }
       gridAddEdge(grid, inode, edgeEndPoint[1], iedge);
+      inode++;
     }
   }
 
@@ -213,7 +214,7 @@ int gridSavePart( Grid *grid, char *project )
   double *xyz;
   int *f2n, *faceId, *c2n;
   int *o2n;
-  int i, ixyz, iface, newnode;
+  int i, ixyz, iface, newnode, node;
   int iedge, curveEndPoint[2], nCurveNode, *curve;
   double trange[2];
   int patchDimensions[4]; // check on 4
@@ -252,6 +253,7 @@ int gridSavePart( Grid *grid, char *project )
     gridGeomCurve( grid, iedge, curveEndPoint[0], curve );
 
     for ( i=1; i<(nCurveNode-1); i++){ // skip end points
+      if (o2n[curve[i]] != EMPTY) printf("newnode error %d\n",o2n[curve[i]]);
       o2n[curve[i]] = newnode;
       newnode++;
     }
@@ -267,8 +269,28 @@ int gridSavePart( Grid *grid, char *project )
     free(curve);
   }
 
-  // face stuff goes here
+  // face stuff - assuming that the bc faces are sorted.
+  for ( iface=0; iface<nface; iface++ ){
+    for ( i=0; i<3; i++ ){
+      node = f2n[i+3*iface];
+      if ( o2n[node] == EMPTY ) {
+      o2n[node] = newnode;
+      newnode++;
+      }
+    }
+  }
+  
+  // interior nodes
+  for ( node=0; node<nnode; node++ ){
+    if ( o2n[node] == EMPTY ) {
+      o2n[node] = newnode;
+      newnode++;
+    }
+  }
 
+  if (newnode != nnode) 
+    printf("ERROR: gridSavePart, newnode %d nnode %d, line %d of %s\n.",
+	   newnode,nnode,__LINE__, __FILE__);
 
   if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, ncell, c2n  )) {
     printf(" Could not make UGridPtr, line %d of %s\n", __LINE__, __FILE__);
