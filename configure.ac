@@ -106,8 +106,14 @@ then
   CAPRINativelibrary="-L$CAPRI/Native/$CAPRIarch -lcapri"
 else
   CAPRIheader=
-  AM_CONDITIONAL(BUILD_NATIVE_KERNEL,false)
-  CAPRINativelibrary=
+  if test "$with_CAPRI" != 'geomSGIn32'
+  then
+    AM_CONDITIONAL(BUILD_NATIVE_KERNEL,false)
+    CAPRINativelibrary=
+  else
+    AM_CONDITIONAL(BUILD_NATIVE_KERNEL,true)
+    CAPRINativelibrary='-lCADGeom-CAPRINative'
+  fi
 fi
 AC_SUBST([CAPRIheader])
 AC_SUBST([CAPRINativelibrary])
