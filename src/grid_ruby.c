@@ -52,6 +52,14 @@ VALUE grid_registerNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
   return self;
 }
 
+VALUE grid_validNodeCell( VALUE self )
+{
+  Grid *grid;
+  Data_Get_Struct( self, Grid, grid );
+
+  return (gridValidNodeCell(grid)?Qtrue:Qfalse);
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -64,4 +72,5 @@ void Init_Grid()
   rb_define_method( cGrid, "ncell", grid_ncell, 0 );
   rb_define_method( cGrid, "nodeDeg", grid_nodeDeg, 1 );
   rb_define_method( cGrid, "registerNodeCell", grid_registerNodeCell, 2 );
+  rb_define_method( cGrid, "validNodeCell", grid_validNodeCell, 0 );
 }
