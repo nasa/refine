@@ -2032,7 +2032,7 @@ Layer *layerSplitBlend(Layer *layer)
       gridCrossProduct(edge,n0,c0);
       gridCrossProduct(n1,edge,c1);
       for (i=0; i<3; i++) new[i] = 0.5*(c0[i]+c1[i]);
-      length = gridDotProduct(new,new);
+      length = sqrt(gridDotProduct(new,new));
       for (i=0; i<3; i++) 
 	layer->normal[newnormal[node0]].direction[i]=new[i]/length;
     }
@@ -2056,7 +2056,7 @@ Layer *layerSplitBlend(Layer *layer)
       gridCrossProduct(edge,n0,c0);
       gridCrossProduct(n1,edge,c1);
       for (i=0; i<3; i++) new[i] = 0.5*(c0[i]+c1[i]);
-      length = gridDotProduct(new,new);
+      length = sqrt(gridDotProduct(new,new));
       for (i=0; i<3; i++) 
 	layer->normal[newnormal[node0]].direction[i]=new[i]/length;
     }
