@@ -110,7 +110,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     bc[0]=5;
     bc[1]=6;
   }
-  if(quarter) nbc=1;
+  if(quarter) nbc = 1;
   if(spherecone){
     nbc=4;
     bc[0]=1;
@@ -194,6 +194,8 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   if(quarter){
     layerConstrainNormal(layer,2);
     layerConstrainNormal(layer,4);
+    layerConstrainNormal(layer,-5);
+    layerConstrainNormal(layer,-6);
   }
   if(spherecone){
     layerConstrainNormal(layer,2);
