@@ -27,10 +27,12 @@ int main( int argc, char *argv[] )
   double *xyz;
   double scale;
   int maxnode;
+  bool mixedElement;
 
   sprintf( project,       "" );
   scale = 1.0;
   maxnode = 50000;
+  mixedElement = FALSE;
 
   i = 1;
   while( i < argc ) {
@@ -43,11 +45,15 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-n") == 0 ) {
       i++; maxnode = atoi(argv[i]);
       printf("-n argument %d: %d\n",i, maxnode);
+    } else if( strcmp(argv[i],"-m") == 0 ) {
+      mixedElement = TRUE;
+      printf("-m argument %d: activated mixed element layers\n",i);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
       printf(" -s scale background grid\n");
       printf(" -n maximum number of nodes\n");
+      printf(" -m mixed element layers\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -70,7 +76,7 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  MesherX_DiscretizeVolume( maxnode, scale, project );
+  MesherX_DiscretizeVolume( maxnode, scale, project, mixedElement );
 
   return(0);
 }

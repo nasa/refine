@@ -21,7 +21,8 @@
 #include "Goolache/MeshMgr.h"
 #include "MeatLib/ErrMgr.h"
 
-int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
+int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
+			      bool mixedElement )
 {
   char outputProject[256];
   int vol=1;
@@ -43,7 +44,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
   //CAPrIMesh_TetVolume( vol );
 
   layer = formAdvancingFront( grid, project );
-  layerToggleMixedElementMode(layer);
+  if (mixedElement) layerToggleMixedElementMode(layer);
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid); 

@@ -17,7 +17,8 @@
 
 BEGIN_C_DECLORATION
 
-int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project );
+int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project, 
+			      bool mixedElement );
 
 int layerTerminateNormalWithBGSpacing(Layer *layer, double ratio);
 
