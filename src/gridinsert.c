@@ -144,7 +144,8 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
   int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
   double ratios[3];
-  int newnode;
+  double dist, xyz0[3], xyz1[3], xyz[3];
+  int i, newnode;
   
   nnodeAdd = 0;
   nnodeRemove = 0;
@@ -166,7 +167,23 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 	   !gridNodeFrozen(grid, nodes[1]) ) {
 	if (grid == gridEdgeRatio3(grid, nodes[0], nodes[1], ratios ) ) {
 	  if ( ratios[2] > 1.55 ) {
-	    newnode = gridSplitEdge(grid, nodes[0], nodes[1]);
+	    gridNodeXYZ(grid, nodes[0], xyz0);
+	    gridNodeXYZ(grid, nodes[1], xyz1);
+	    if (ratios[0]<ratios[1]) {
+	      dist = 1.0/ratios[0];
+	      for (i=0;i<3;i++) xyz[i] = (1.0-dist)*xyz0[i] + dist*xyz1[i];
+	    }else{
+	      dist = 1.0/ratios[1];
+	      for (i=0;i<3;i++) xyz[i] = dist*xyz0[i] + (1.0-dist)*xyz1[i];
+	    }
+	    /*
+	      printf("xyz0%12.8f%12.8f%12.8f\n",xyz0[0],xyz0[1],xyz0[2]);
+	      printf("xyz1%12.8f%12.8f%12.8f\n",xyz1[0],xyz1[1],xyz1[2]);
+	      printf("xyz %12.8f%12.8f%12.8f\n",xyz[0],xyz[1],xyz[2]);
+	      printf("rat %12.8f%12.8f%12.8f\n",ratios[0],ratios[1],ratios[2]);
+	    */
+	    newnode = gridSplitEdgeAt( grid, NULL, nodes[0], nodes[1],
+				       xyz[0], xyz[1], xyz[2] );
 	    if ( newnode != EMPTY ){
 	      nnodeAdd++;
 	      gridSwapNearNode( grid, newnode, 1.0 );

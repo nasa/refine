@@ -1,3 +1,9 @@
+2005-02-01 22:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) When a new node
+	is added by spliting it is positioned to be the correct distance
+	from the node with the smallest edge requirement.
+
 2005-02-01 18:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwapEdge) does not abort swap if mean ratio
