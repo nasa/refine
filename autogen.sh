@@ -11,4 +11,4 @@ echo "Running autoconf ..."
 autoconf
 
 echo "Running ./configure --prefix=`pwd` ..."
-./configure --prefix=`pwd` $1
+./configure --prefix=`pwd` $*
