@@ -434,25 +434,34 @@ Grid *gridSwap5(Grid *grid, int n0, int n1 );
 
 Grid *gridSwap(Grid *grid, int n0, int n1 )
 {
+  int face0, face1, faceId0, faceId1, newFaceId0, newFaceId1;
   Grid *swapStatus;
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
   //test face
   if ( grid->nequ != grid->ngem ){
-    int faceId0, faceId1, newFaceId0, newFaceId1;
-    faceId0 = gridFaceId(grid,n0,n1,grid->equ[0]);
-    faceId1 = gridFaceId(grid,n0,n1,grid->equ[grid->ngem]);
+    face0 = gridFindFace(grid, n0, n1, grid->equ[0] );
+    face1 = gridFindFace(grid, n0, n1, grid->equ[grid->ngem] );
+    faceId0 = gridFaceId(grid, n0, n1, grid->equ[0] );
+    faceId1 = gridFaceId(grid, n0, n1, grid->equ[grid->ngem] );
     
     if ( faceId0 == EMPTY || faceId1 == EMPTY ) return NULL;
     if ( faceId0 != faceId1 ) return NULL;
 
-    newFaceId0 = gridFaceId(grid,n0,grid->equ[0],grid->equ[grid->ngem]);
-    newFaceId1 = gridFaceId(grid,n1,grid->equ[0],grid->equ[grid->ngem]);
+    newFaceId0 = gridFaceId(grid,n0, grid->equ[0], grid->equ[grid->ngem] );
+    newFaceId1 = gridFaceId(grid,n1, grid->equ[0], grid->equ[grid->ngem] );
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
   }
 
   if (grid->nequ==4) swapStatus = gridSwap4(grid, n0, n1);
   if (grid->nequ==5) swapStatus = gridSwap5(grid, n0, n1);
+
+  if ( grid->nequ != grid->ngem && swapStatus != NULL ) {
+    gridRemoveFace(grid, face0 );
+    gridRemoveFace(grid, face1 );
+    gridAddFace(grid, n0, grid->equ[0], grid->equ[grid->ngem], faceId0 );
+    gridAddFace(grid, n1, grid->equ[0], grid->equ[grid->ngem], faceId0 );
+  }
 
   return swapStatus;
 }
