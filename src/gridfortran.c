@@ -373,7 +373,9 @@ int gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 
   for(node=0;node<(*nnode);node++) {
     localnode = gridGlobal2Local(grid, nodes[node]-1);
-    gridNodeXYZ(grid,localnode,xyz);
+    if (grid != gridNodeXYZ(grid,localnode,xyz)) 
+      printf("ERROR: %s: %d: get xyz from invalid node local %d global &d.\n",
+	     __FILE__, __LINE__, localnode, nodes[node]-1);
     data[0+(*ndim)*node] = xyz[0];
     data[1+(*ndim)*node] = xyz[1];
     data[2+(*ndim)*node] = xyz[2];
@@ -384,9 +386,11 @@ int gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 {
   int node;
 
-  for(node=0;node<(*nnode);node++) 
-    gridSetNodeXYZ(grid,nodes[node]-1,&data[(*ndim)*node]);
-
+  for(node=0;node<(*nnode);node++) { 
+    if (grid != gridSetNodeXYZ(grid,nodes[node]-1,&data[(*ndim)*node]) )
+      printf("ERROR: %s: %d: set invalid node %d .\n",
+	     __FILE__, __LINE__, nodes[node]-1);
+  }
   printf( " %6d update xfer                      %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
