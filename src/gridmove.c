@@ -1074,9 +1074,9 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
       gridLU3x3( &gm->a[9*entry], &gm->lu[9*node] );
     } else {
       for(i=0;i<9;i++) gm->lu[i+9*node] = 0.0;
-      gm->lu[0+9*entry] = 1.0;
-      gm->lu[4+9*entry] = 1.0;
-      gm->lu[8+9*entry] = 1.0;
+      gm->lu[0+9*node] = 1.0;
+      gm->lu[4+9*node] = 1.0;
+      gm->lu[8+9*node] = 1.0;
     }    
   }
 
