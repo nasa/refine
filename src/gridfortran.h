@@ -32,6 +32,7 @@ int gridwritetecplotsurfacezone_( );
 
 int gridparalleladaptwithoutcad_( int *processor, 
 				  double *minLength, double *maxLength );
+int gridparallelswap_( int *processor );
 int queuedumpsize_( int *nInt, int *nDouble );
 int queuedump_( int *nInt, int *nDouble, int *ints, double *doubles );
 int gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles );

@@ -70,7 +70,7 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   if (NULL != queue) queueNewTransaction(queue);
   newnode = gridSplitEdgeAt( grid, queue, node0, node1, newX, newY, newZ );
   if (EMPTY == newnode) {
-    printf("WARNING: %s: %d: global n cel counter may be hosed.\n",
+    printf("WARNING: %s: %d: gridSplitEdgeAt returned EMPTY.\n",
 	   __FILE__,__LINE__);
     return EMPTY;
   }
@@ -85,12 +85,15 @@ Grid *gridParallelEdgeSwap(Grid *grid, Queue *queue, int node0, int node1 )
 
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return NULL;
 
-  gridMakeGem(grid, node0, node1 );
+  if ( grid != gridMakeGem(grid, node0, node1 ) ) {
+    printf("gridParallelEdgeSwap gem error\n");
+    return NULL;
+  }
   gemLocal = gridGemIsAllLocal(grid);
   if ( NULL == queue && !gemLocal) return NULL;
   if ( NULL != queue && gemLocal) return NULL;
 
-  if (NULL != queue) queueNewTransaction(queue);
+  queueNewTransaction(queue);
   result = gridSwapEdge( grid, queue, node0, node1 );
 
   if (NULL != result) {
@@ -229,6 +232,40 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
   } else {
     printf("ghost added%9d nnode%9d AR%14.10f\n",
 	   nnodeAdd,gridNNode(grid),gridMinAR(grid));
+  }
+  return grid;
+}
+
+Grid *gridParallelSwap(Grid *grid, Queue *queue )
+{
+  int cell, maxcell;
+  int nodes[4];
+
+  maxcell = gridMaxCell(grid);
+
+  for (cell=0;cell<maxcell;cell++){
+    if ( grid == gridCell( grid, cell, nodes) && gridAR(grid, nodes) < 0.5) {
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[3] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[2] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[3] ) )
+	   continue;
+      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
+	   continue;
+    }
+  }
+
+  if ( NULL == queue ) {
+    printf("                                    AR%14.10f\n",
+	   gridMinAR(grid));
+  } else {
+    printf("                                    AR%14.10f\n",
+	   gridMinAR(grid));
   }
   return grid;
 }

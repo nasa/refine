@@ -137,8 +137,17 @@ int gridparalleladaptwithoutcad_( int *processor,
     gridParallelAdaptWithOutCAD(grid,NULL,*minLength, *maxLength);
   } else {
     gridParallelAdaptWithOutCAD(grid,queue,*minLength, *maxLength);
-  }
-    
+  } 
+}
+
+int gridparallelswap_( int *processor )
+{
+  printf(" %6d swap  processor %2d ",gridPartId(grid),*processor);
+  if (*processor == -1) {
+    gridParallelSwap(grid,NULL);
+  } else {
+    gridParallelSwap(grid,queue);
+  } 
 }
 
 int queuedumpsize_( int *nInt, int *nDouble )
