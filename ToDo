@@ -7,6 +7,9 @@ Start Builds!!!!!
 
 --Major refactoring
 
+Are global cell indexes really needed or can they be computed after
+adaptation?
+
 refactor to use the plan object in the edge based list
 
 Use the plan object to speed up node smooth of ghost boundary in
