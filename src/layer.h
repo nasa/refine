@@ -30,6 +30,7 @@ struct Normal {
   double maxlength;
   double rate;
   GridBool terminated;
+  GridBool directionFrozen;
 };
 
 typedef struct Triangle Triangle;
@@ -133,6 +134,8 @@ Layer *layerNormalTriangleDirection(Layer *, int index, double *direction);
 Layer *layerCommonEdge(Layer *, int triangle0, int triangle1, int *nodes);
 double layerEdgeAngle(Layer *, int triangle0, int triangle1 );
 Layer *layerNormalDirection(Layer *, int normal, double *direction);
+GridBool layerNormalDirectionFrozen(Layer *, int normal);
+Layer *layerNormalDirectionFreeze(Layer *, int normal);
 Layer *layerAssignPolynomialNormalHeight(Layer *, double constant, double slope, 
                                          double exponent, double *origin,
 					 double *direction);

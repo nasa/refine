@@ -219,6 +219,19 @@ VALUE layer_normalDirection( VALUE self, VALUE normal )
   return rb_direction;
 }
 
+VALUE layer_normalDirectionFrozen( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return (layerNormalDirectionFrozen(layer,NUM2INT(normal))?Qtrue:Qfalse);
+}
+
+VALUE layer_normalDirectionFreeze( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return (layer == layerNormalDirectionFreeze(layer,
+					      NUM2INT(normal))?self:Qnil);
+}
+
 VALUE layer_setNormalHeight( VALUE self, VALUE normal, VALUE height )
 {
   GET_LAYER_FROM_SELF;
@@ -586,6 +599,8 @@ void Init_Layer()
   rb_define_method( cLayer, "nextTriangle", layer_nextTriangle, 2 );
   rb_define_method( cLayer, "edgeAngle", layer_edgeAngle, 2 );
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
+  rb_define_method( cLayer, "normalDirectionFrozen", layer_normalDirectionFrozen, 1 );
+  rb_define_method( cLayer, "normalDirectionFreeze", layer_normalDirectionFreeze, 1 );
   rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );
   rb_define_method( cLayer, "getNormalHeight", layer_getNormalHeight, 1 );
   rb_define_method( cLayer, "assignPolynomialNormalHeight",

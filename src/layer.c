@@ -590,6 +590,7 @@ Layer *layerInitializeNormal(Layer *layer, int normal)
   layer->normal[normal].maxlength = 1.0;
   layer->normal[normal].rate = 1.0;
   layer->normal[normal].terminated = FALSE;
+  layer->normal[normal].directionFrozen = FALSE;
 
   return layer;
 }
@@ -604,18 +605,19 @@ int layerDuplicateNormal(Layer *layer, int normal)
   newone = layerAddNormal(layer, root);
   if (EMPTY == newone) return EMPTY;
 
-  layer->normal[newone].constrained =   layer->normal[normal].constrained;
-  layer->normal[newone].root =          layer->normal[normal].root;
-  layer->normal[newone].tip =           layer->normal[normal].tip;
-  layer->normal[newone].direction[0] =  layer->normal[normal].direction[0];
-  layer->normal[newone].direction[1] =  layer->normal[normal].direction[1];
-  layer->normal[newone].direction[2] =  layer->normal[normal].direction[2];
-  layer->normal[newone].height =        layer->normal[normal].height;
-  layer->normal[newone].initialheight = layer->normal[normal].initialheight;
-  layer->normal[newone].length =        layer->normal[normal].length;
-  layer->normal[newone].maxlength =     layer->normal[normal].maxlength;
-  layer->normal[newone].rate =          layer->normal[normal].rate;
-  layer->normal[newone].terminated =    layer->normal[normal].terminated;
+  layer->normal[newone].constrained =     layer->normal[normal].constrained;
+  layer->normal[newone].root =            layer->normal[normal].root;
+  layer->normal[newone].tip =             layer->normal[normal].tip;
+  layer->normal[newone].direction[0] =    layer->normal[normal].direction[0];
+  layer->normal[newone].direction[1] =    layer->normal[normal].direction[1];
+  layer->normal[newone].direction[2] =    layer->normal[normal].direction[2];
+  layer->normal[newone].height =          layer->normal[normal].height;
+  layer->normal[newone].initialheight =   layer->normal[normal].initialheight;
+  layer->normal[newone].length =          layer->normal[normal].length;
+  layer->normal[newone].maxlength =       layer->normal[normal].maxlength;
+  layer->normal[newone].rate =            layer->normal[normal].rate;
+  layer->normal[newone].terminated =      layer->normal[normal].terminated;
+  layer->normal[newone].directionFrozen = layer->normal[normal].directionFrozen;
 
   return newone;
 }
@@ -897,6 +899,19 @@ Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
 
   for ( i=0;i<3;i++) direction[i] = layer->normal[normal].direction[i];
 
+  return layer;
+}
+
+GridBool layerNormalDirectionFrozen(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return FALSE;
+  return layer->normal[normal].directionFrozen;
+}
+
+Layer *layerNormalDirectionFreeze(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+  layer->normal[normal].directionFrozen = TRUE;
   return layer;
 }
 

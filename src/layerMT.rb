@@ -377,6 +377,26 @@ class TestLayer < Test::Unit::TestCase
   assert_in_delta(  0.000, norm[2], 1e-2)
  end
 
+ def testFreezeNormalDirectionFrozenState
+  grid = Grid.new(3,0,1,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addFace(0,1,2,1)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal false,     layer.normalDirectionFrozen(-1)
+  assert_equal false,     layer.normalDirectionFrozen(0)
+  assert_equal false,     layer.normalDirectionFrozen(1)
+  assert_equal false,     layer.normalDirectionFrozen(5)
+
+  assert_nil              layer.normalDirectionFreeze(-1)
+  assert_equal layer,     layer.normalDirectionFreeze(1)
+  assert_nil              layer.normalDirectionFreeze(5)
+
+  assert_equal false,     layer.normalDirectionFrozen(0)
+  assert_equal true,      layer.normalDirectionFrozen(1)
+ end
+
  def testNormalDirectionFeasible
   assert_not_nil          grid = Grid.new(5,0,3,0)
   assert_equal 0,         grid.addNode( 0, 0, 0)
