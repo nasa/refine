@@ -18,17 +18,18 @@ Adj* adjCreate( int nnode, int nadj )
 
   adj = malloc( sizeof(Adj) );
 
-  adj->nnode   = MAX(nnode,1);
-  nadj         = MAX(nadj,1);
+  adj->nnode     = MAX(nnode,1);
+  adj->nadj      = MAX(nadj,1);
+  adj->chunkSize = adj->nadj;
 
-  adj->node2item = (NodeItem *)malloc( nadj * sizeof(NodeItem));
+  adj->node2item = (NodeItem *)malloc( adj->nadj * sizeof(NodeItem));
 
-  for ( i=0 ; i<nadj-1 ; i++ ) { // pointer majic?
+  for ( i=0 ; i < (adj->nadj-1) ; i++ ) {
     adj->node2item[i].item = EMPTY;
     adj->node2item[i].next = &adj->node2item[i+1];
   }
-  adj->node2item[nadj-1].item = EMPTY;
-  adj->node2item[nadj-1].next = NULL;
+  adj->node2item[adj->nadj-1].item = EMPTY;
+  adj->node2item[adj->nadj-1].next = NULL;
 
   adj->blank = adj->node2item;
 
@@ -52,11 +53,34 @@ int adjNNode( Adj *adj )
   return adj->nnode;
 }
 
+int adjNAdj( Adj *adj )
+{
+  return adj->nadj;
+}
+
+int adjChunkSize( Adj *adj )
+{
+  return adj->chunkSize;
+}
+
 Adj *adjRegister( Adj *adj, int node, int item )
 {
   NodeItem *new;
   if (node>=adj->nnode || node<0) return NULL;
-  if (adj->blank == NULL) return NULL;
+  if (adj->blank == NULL) {
+    int i, currentSize;
+    currentSize = adj->nadj;
+    adj->nadj += adj->chunkSize;
+    adj->node2item = (NodeItem *)realloc( adj->node2item, 
+					  adj->nadj * sizeof(NodeItem) );
+    for ( i = currentSize ; i < (adj->nadj-1) ; i++ ) {
+      adj->node2item[i].item = EMPTY;
+      adj->node2item[i].next = &adj->node2item[i+1];
+    }
+    adj->node2item[adj->nadj-1].item = EMPTY;
+    adj->node2item[adj->nadj-1].next = NULL;
+    adj->blank = &adj->node2item[currentSize];
+  }
   new = adj->blank;
   adj->blank = adj->blank->next;
   new->next = adj->first[node];

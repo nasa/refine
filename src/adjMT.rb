@@ -14,13 +14,21 @@ require 'Adj/Adj'
 class TestAdj < Test::Unit::TestCase
 
  def set_up
-  @adj = Adj.new(4,4)
+  @adj = Adj.new(4,6)
   @bigNode = 10000
  end
  def setup ; set_up ; end
 
  def testCreate
   assert_equal 4, @adj.nnode
+  assert_equal 6, @adj.nadj
+  assert_equal 6, @adj.chunkSize
+ end
+
+ def testCreateZeroSize
+  localAdj = Adj.new(0,0)
+  assert_equal 1, localAdj.nnode
+  assert_equal 1, localAdj.nadj
  end
 
  def testRegister
@@ -30,21 +38,27 @@ class TestAdj < Test::Unit::TestCase
   assert_nil @adj.register(@bigNode,1)
  end
 
- def testRegisterMax
-  4.times {|i| assert_not_nil @adj.register(0,i)}
-  assert_nil @adj.register(1,0)
+ def testRegisterAllocatesNewCunk
+  6.times {|i| assert_not_nil @adj.register(0,i)}
+  assert_equal  6, @adj.nadj
+  assert_not_nil @adj.register(1,0)
+  assert_equal 12, @adj.nadj
  end
 
- def testIterator
+ def testIteratorInitialState
   assert_equal false, @adj.valid
   assert_equal false, @adj.more
   assert_equal( -1, @adj.item)
+ end
   
+ def testIteratorForBigNode
   assert_equal @adj,  @adj.first(@bigNode);
   assert_equal false, @adj.valid;
   assert_equal @adj,  @adj.first(-1);
   assert_equal false, @adj.valid;
-  
+ end
+
+ def testIterator1Element
   assert_equal @adj,  @adj.register( 2, 299 )
   assert_equal @adj,  @adj.first(2)
   assert_equal 299,   @adj.item
@@ -52,17 +66,27 @@ class TestAdj < Test::Unit::TestCase
   assert_equal false, @adj.more
   assert_equal @adj,  @adj.next
   assert_equal false, @adj.valid
-  
+ end
+
+ def testIterator2Elements
   assert_equal @adj,  @adj.register( 3, 398 )
   assert_equal @adj,  @adj.register( 3, 399 )
   assert_equal @adj,  @adj.first(3);
   assert_equal true,  @adj.valid
+  assert_equal 399,   @adj.item
   assert_equal true,  @adj.more
   assert_equal @adj,  @adj.next
   assert_equal true,  @adj.valid
+  assert_equal 398,   @adj.item
   assert_equal false, @adj.more
-  
-  100.times {@adj.next} # abusive use of next
+ end
+ 
+ def testAbusiveUseOfNext
+  100.times {@adj.next}
+  assert_equal @adj,  @adj.register( 1, 498 )
+  assert_equal @adj,  @adj.register( 1, 499 )
+  assert_equal @adj,  @adj.first(3)
+  100.times {@adj.next}
  end
 
  def testAddAndRemove
@@ -95,6 +119,8 @@ class TestAdj < Test::Unit::TestCase
   assert_equal    0, @adj.degree(0)
   assert_equal @adj, @adj.register( 0, 299 )
   assert_equal    1, @adj.degree(0)
+  assert_equal @adj, @adj.register( 0, 298 )
+  assert_equal    2, @adj.degree(0)
  end
 
 end

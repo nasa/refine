@@ -25,7 +25,7 @@ struct NodeItem {
 };
 
 struct Adj {
-  int nnode;
+  int nnode, nadj, chunkSize;
   NodeItem *node2item;
   NodeItem **first;
   NodeItem *current;
@@ -36,6 +36,9 @@ Adj *adjCreate( int nnode, int nadj );
 void adjFree( Adj *adj );
 
 int adjNNode( Adj *adj );
+int adjNAdj( Adj *adj );
+int adjChunkSize( Adj *adj );
+
 Adj *adjRegister( Adj *adj, int node, int item );
 Adj *adjRemove( Adj *adj, int node, int item );
 
