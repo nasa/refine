@@ -13,7 +13,11 @@
 #include <math.h>
 #include <limits.h>
 #include <values.h>
+#ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
+#else
+#include "FAKEGeom.h"
+#endif
 #include "gridmetric.h"
 #include "gridswap.h"
 #include "gridinsert.h"
