@@ -18,7 +18,10 @@
 Grid *gridSwapFace(Grid *grid, int n0, int n1, int n2 )
 {
   int cell0, cell1;
-  int nodes[5], nodes0[4], nodes1[4], topnode, bottomnode;
+  int nodes0[4], nodes1[4], topnode, bottomnode;
+  int tent[5], nodes[3][4];
+  int i;
+  double origcost, bestcost;
 
   cell0 = gridFindOtherCellWith3Nodes(grid, n0, n1, n2, EMPTY );
   if ( EMPTY == cell0 ) return NULL;
@@ -28,29 +31,45 @@ Grid *gridSwapFace(Grid *grid, int n0, int n1, int n2 )
   gridCell(grid, cell0, nodes0);
   topnode = nodes0[0] + nodes0[1] + nodes0[2] + nodes0[3] - n0 - n1 - n2; 
 
-  nodes[0] = topnode;
+  tent[0] = topnode;
   if ( topnode == nodes0[1] ) {
-    nodes[1] = nodes0[0];
+    tent[1] = nodes0[0];
   }else{
-    nodes[1] = nodes0[1];
+    tent[1] = nodes0[1];
   }
-  gridOrient(grid,nodes0,nodes);
+  gridOrient(grid,nodes0,tent);
 
   gridCell(grid, cell1, nodes1);
   bottomnode = nodes1[0] + nodes1[1] + nodes1[2] + nodes1[3] - n0 - n1 - n2; 
 
   //set nodes[0-3] to topnode orientation
-  nodes[4] = bottomnode;
+  tent[4] = bottomnode;
 
-  gridRemoveCell(grid,cell0);
-  gridRemoveCell(grid,cell1);
+  nodes[0][0] = tent[0];
+  nodes[0][1] = tent[1];
+  nodes[0][2] = tent[2];
+  nodes[0][3] = tent[4];
+  nodes[1][0] = tent[0];
+  nodes[1][1] = tent[2];
+  nodes[1][2] = tent[3];
+  nodes[1][3] = tent[4];
+  nodes[2][0] = tent[0];
+  nodes[2][1] = tent[3];
+  nodes[2][2] = tent[1];
+  nodes[2][3] = tent[4];
 
-  gridAddCell(grid,nodes[0],nodes[1],nodes[2],nodes[4]);
-  gridAddCell(grid,nodes[0],nodes[2],nodes[3],nodes[4]);
-  gridAddCell(grid,nodes[0],nodes[3],nodes[1],nodes[4]);
+  origcost = MIN( gridAR( grid, nodes0 ), gridAR( grid, nodes1 ) ); 
+  bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) ); 
+  bestcost = MIN( gridAR( grid, nodes[2] ), bestcost ); 
 
-  return grid;
-
+  if ( bestcost > origcost ) {
+    gridRemoveCell(grid,cell0);
+    gridRemoveCell(grid,cell1);
+    for ( i = 0 ; i < 3 ; i++ )
+      gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+    return grid;
+  }
+  return NULL;
 }
 
 Grid *gridSwapEdge3(Grid *grid, int n0, int n1 );

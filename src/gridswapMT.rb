@@ -53,6 +53,12 @@ class TestGridSwap < Test::Unit::TestCase
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
  end
 
+ def testFaceSwapNotBetter
+  grid = faceSwapGrid(1.0)
+  assert_nil      grid.swapFace(0,1,2)
+  assert_equal 2, grid.ncell
+ end
+
  def testSwapEdgeNotBeter
   assert_not_nil grid=gemGrid(3, 2.0, 0)
   assert_nil grid.swapEdge(0,1)
