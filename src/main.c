@@ -256,11 +256,11 @@ int main( int argc, char *argv[] )
       gridmoveFree(gm);
       STATUS; minVolume = gridMinVolume(grid);
       if (0.0>=minVolume) {
-	printf("relax neg cells...\n");gridRelaxNegativeCells(grid);
+	printf("relax neg cells...\n");gridRelaxNegativeCells(grid,FALSE);
 	printf("edge swapping grid...\n");gridSwap(grid);
 	STATUS; minVolume = gridMinVolume(grid);
 	if (0.0>=minVolume) {
-	  printf("relax neg cells...\n");gridRelaxNegativeCells(grid);
+	  printf("relax neg cells...\n");gridRelaxNegativeCells(grid,FALSE);
 	  printf("edge swapping grid...\n");gridSwap(grid);
 	  STATUS; minVolume = gridMinVolume(grid);
 	}

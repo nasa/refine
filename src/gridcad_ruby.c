@@ -128,7 +128,7 @@ VALUE grid_smoothNodeVolume( VALUE self, VALUE node )
 VALUE grid_relaxNegativeCells( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
-  return (gridRelaxNegativeCells( grid )==grid?self:Qnil);
+  return (gridRelaxNegativeCells( grid, FALSE )==grid?self:Qnil);
 }
 
 VALUE cGridCAD;

@@ -1263,15 +1263,22 @@ static Grid *gridMakeFacesFromSimplex(Grid *grid,
   return grid;
 }
 
-Grid *gridRelaxNegativeCells(Grid *grid)
+Grid *gridRelaxNegativeCells(Grid *grid, GridBool dumpTecplot )
 {
   int cell, nodes[4], i, node;
   double volume;
-  
+  char filename[256];
+
+  if (dumpTecplot) {
+    sprintf(filename,"gridNegativeCell%04d.t",gridPartId(grid));
+    gridWriteTecplotSurfaceZone(grid, filename);
+  }
+
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       volume = gridVolume(grid,nodes);
       if (0.0>=volume){
+	if (dumpTecplot) gridWriteTecplotCellZone(grid,nodes,filename);
 	if ( gridGeometryFace(grid, nodes[0]) &&
 	     gridGeometryFace(grid, nodes[1]) &&
 	     gridGeometryFace(grid, nodes[2]) &&
