@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <values.h>
 #include "grid.h"
@@ -28,11 +29,56 @@ int gridSavePart( Grid *grid, char *project );
 
 #define STATUS DUMP_TEC PRINT_STATUS
 
+Layer *formAdvancingFront( Grid *grid, char *project )
+{
+  Layer *layer;
+  int i, nbc, bc[2];
+  bool box;
+  box = (NULL != strstr( project, "box"));
+
+  if (box) {
+    printf("string %s has box.\n",project);
+  }else{
+    printf("string %s has NO  box.\n",project);
+  }
+
+  bc[0]=1;
+  bc[1]=2;
+  nbc = 2;
+  if(box) nbc = 1;
+  printf("freezing distant volume nodes.\n");
+  gridFreezeAll(grid);
+  for (i=0;i<nbc;i++){  
+    printf("thaw bc %d.\n",bc[i]);
+    gridThawNearBC(grid,0.5,bc[i]);
+    gridFreezeBCFace(grid,bc[i]);
+  }
+  printf("make advancing layer object.\n");
+  layer = layerCreate(grid);
+  printf("make advancing layer front.\n");
+  layerMakeFront(layer,nbc,bc);
+  printf("make advancing layer front normals.\n");
+  layerMakeNormal(layer);
+  if (box) {
+    layerConstrainNormal(layer,-9);
+    layerConstrainNormal(layer,-10);
+    layerConstrainNormal(layer,-11);
+    layerConstrainNormal(layer,-12);
+    layerConstrainNormal(layer,3);
+    layerConstrainNormal(layer,4);
+    layerConstrainNormal(layer,6);
+  }
+  layerConstrainNormal(layer,5);
+  printf("make advancing layer front normals visible to front.\n");
+  layerVisibleNormals(layer);
+  return layer;
+}
+
 int main( int argc, char *argv[] )
 {
   Grid *grid;
   Layer *layer;
-  int bcs[2], jmax;
+  int jmax;
   double height;
   char project[256];
   char adaptfile[256], outputProject[256], outputFAST[256];
@@ -86,7 +132,6 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if(debugInsert)                 sprintf(project,"../test/box1" );
   if(strcmp(project,"")==0)       sprintf(project,"../test/om6" );
   if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
@@ -107,42 +152,10 @@ int main( int argc, char *argv[] )
     printf("adapt parameter >none< selected. Spacing reset.\n");
     gridResetSpacing(grid);
     if (boundaryLayerGrid) {
-      printf("freezing distant volume nodes.\n");
-      gridFreezeAll(grid);
-      printf("thaw bc 1.\n");
-      gridThawNearBC(grid,0.5,1);
-      printf("thaw bc 2.\n");
-      gridThawNearBC(grid,0.5,2);
-      gridFreezeBCFace(grid,1);
-      gridFreezeBCFace(grid,2);
-      printf("make advancing layer object.\n");
-      layer = layerCreate(grid);
-      bcs[0]=1;
-      bcs[1]=2;
-      printf("make advancing layer front.\n");
-      layerMakeFront(layer,2,bcs);
-      printf("make advancing layer front normals.\n");
-      layerMakeNormal(layer);
-      layerConstrainNormal(layer,5);
-      printf("make advancing layer front normals visible to front.\n");
-      layerVisibleNormals(layer);
+      layer = formAdvancingFront(grid,project);
     }else{
       if (debugInsert) {
-	printf("make advancing layer object.\n");
-	layer = layerCreate(grid);
-	bcs[0]=1;
-	printf("make advancing layer front.\n");
-	layerMakeFront(layer,1,bcs);
-	printf("make advancing layer front normals.\n");
-	layerMakeNormal(layer);
-	layerConstrainNormal(layer,-9);
-	layerConstrainNormal(layer,-10);
-	layerConstrainNormal(layer,-11);
-	layerConstrainNormal(layer,-12);
-	layerConstrainNormal(layer,3);
-	layerConstrainNormal(layer,4);
-	layerConstrainNormal(layer,5);
-	layerConstrainNormal(layer,6);
+	layer = formAdvancingFront(grid,project);
 	printf("Inserting a line of nodes.\n");
 	layerInsertPhantomFront( layer );
 	gridVerifyEdgesInLine(grid);
@@ -179,31 +192,37 @@ int main( int argc, char *argv[] )
 	j++){
 
     if (boundaryLayerGrid) {
-      height = 0.00001*pow(1.2,j);
-      layerTerminateNormalWithSpacing(layer,height*5.);
+      height = 0.001*pow(1.2,j);
+      layerTerminateNormalWithSpacing(layer,height*4.);
       if (layerNActiveNormal(layer) == 0 ) jmax=0;
       printf("insert layer height = %f\n",height);
-      wiggleSteps = MIN(5,(int)(height/0.001)+1);
+      wiggleSteps = MIN(3,(int)(height/0.001)+1);
       height = height / (double)wiggleSteps;
       layerVisibleNormals(layer);
       layerAdvance(layer,height);
       for (i=1;i<wiggleSteps;i++) {
 	printf("edge swapping grid...\n");gridSwap(grid);
+	layerSmoothLayerNeighbors(layer );
 	printf("node smoothing grid...\n");gridSmooth(grid);
 	printf("edge swapping grid...\n");gridSwap(grid);
+	layerSmoothLayerNeighbors(layer );
 	printf("node smoothing grid...\n");gridSmooth(grid);
 	gridAdapt(grid,0.4,1.5);
 	printf("edge swapping grid...\n");gridSwap(grid);
+	layerSmoothLayerNeighbors(layer );
 	printf("node smoothing grid...\n");gridSmooth(grid);
 	printf("edge swapping grid...\n");gridSwap(grid);
+	layerSmoothLayerNeighbors(layer );
 	printf("node smoothing grid...\n");gridSmooth(grid);
 	printf("wiggle step %d of %d, minAR %8.5f\n",i+1,wiggleSteps,gridMinThawedAR(grid));
 	layerWiggle(layer,height);
 	//printf("minimum Volume %12.8e\n", gridMinVolume(grid));
       }
       printf("edge swapping grid...\n");gridSwap(grid);
+	layerSmoothLayerNeighbors(layer );
       printf("node smoothing grid...\n");gridSmooth(grid);
       printf("edge swapping grid...\n");gridSwap(grid);
+	layerSmoothLayerNeighbors(layer );
       printf("node smoothing grid...\n");gridSmooth(grid);
       STATUS;
     }
