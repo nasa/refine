@@ -496,6 +496,8 @@ Grid *gridPack(Grid *grid)
       grid->map[4+6*packnode] = grid->map[4+6*orignode];
       grid->map[5+6*packnode] = grid->map[5+6*orignode];
       grid->frozen[packnode]  = grid->frozen[orignode];
+      if (NULL != grid->l2g) grid->l2g[packnode]  = grid->l2g[orignode];
+      if (NULL != grid->part) grid->part[packnode]  = grid->part[orignode];
       packnode++;
     } 
   
@@ -702,6 +704,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
   int *o2n, *curve;
   double *temp_xyz;
   bool *temp_frozen;
+  int *temp_int;
   int prismIndex, pyramidIndex, quadIndex;
 
   if (NULL == gridPack(grid)) {
@@ -763,13 +766,11 @@ Grid *gridSortNodeGridEx(Grid *grid)
 	   newnode,grid->nnode,__LINE__, __FILE__);
 
   temp_xyz = malloc( grid->nnode * sizeof(double) );
-
   if (temp_xyz == NULL) {
     printf("ERROR: gridSortNodeGridEx: %s: %d: could not allocate temp_xyz\n",
 	   __FILE__,__LINE__);
     return NULL;
   }
-
   for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
     for ( node = 0 ; node < grid->nnode ; node++ ){
       temp_xyz[o2n[node]] = grid->xyz[ixyz+3*node];
@@ -786,19 +787,31 @@ Grid *gridSortNodeGridEx(Grid *grid)
       grid->map[ixyz+6*node] = temp_xyz[node];
     }
   }
-
   free(temp_xyz);
 
   temp_frozen = malloc( grid->nnode * sizeof(bool) );
-
-  for ( node = 0 ; node < grid->nnode ; node++ ){
+  for ( node = 0 ; node < grid->nnode ; node++ )
     temp_frozen[o2n[node]] = grid->frozen[node];
-  }
-  for ( node = 0 ; node < grid->nnode ; node++ ){
+  for ( node = 0 ; node < grid->nnode ; node++ )
     grid->frozen[node] = temp_frozen[node];
-  }
-
   free(temp_frozen);
+
+  if ((NULL != grid->l2g) || (NULL != grid->part)) {
+    temp_int = malloc( grid->nnode * sizeof(int) );
+    if (NULL != grid->l2g) {
+      for ( node = 0 ; node < grid->nnode ; node++ )
+	temp_int[o2n[node]] = grid->l2g[node];
+      for ( node = 0 ; node < grid->nnode ; node++ )
+	grid->l2g[node] = temp_int[node];
+    }
+    if (NULL != grid->part) {
+      for ( node = 0 ; node < grid->nnode ; node++ )
+	temp_int[o2n[node]] = grid->part[node];
+      for ( node = 0 ; node < grid->nnode ; node++ )
+	grid->part[node] = temp_int[node];
+    }
+    free(temp_int);
+  }
 
   for ( cell = 0; cell < grid->ncell ; cell++ ){
     for ( inode = 0 ; inode < 4 ; inode++ ){
@@ -2034,11 +2047,16 @@ int gridAddNode(Grid *grid, double x, double y, double z )
     grid->map = realloc(grid->map, grid->maxnode * 6 * sizeof(double));
     grid->frozen = realloc(grid->frozen,grid->maxnode * sizeof(bool));
 
+    if (NULL != grid->l2g) 
+      grid->l2g = realloc(grid->l2g,grid->maxnode * sizeof(int));
+    if (NULL != grid->part) 
+      grid->part = realloc(grid->part,grid->maxnode * sizeof(int));
+
     adjRealloc(grid->cellAdj,grid->maxnode);
     adjRealloc(grid->faceAdj,grid->maxnode);
     adjRealloc(grid->edgeAdj,grid->maxnode);
 
-    if (grid->prismDeg != NULL ) {
+    if (NULL != grid->prismDeg) {
       grid->prismDeg = realloc(grid->prismDeg,grid->maxnode * sizeof(int));
       for (i=origSize;i < grid->maxnode; i++ ) grid->prismDeg[i] = 0;
     }
@@ -2058,6 +2076,8 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   grid->map[3+6*node] = 1.0;
   grid->map[4+6*node] = 0.0;
   grid->map[5+6*node] = 1.0;
+  if (NULL != grid->l2g) grid->l2g[node] = EMPTY;
+  if (NULL != grid->part) grid->part[node] = EMPTY;
 
   return node;
 }
