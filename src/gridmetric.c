@@ -808,7 +808,7 @@ Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
   return grid;
 }
 
-Grid *gridStoreARDerivative (Grid *grid, int node )
+Grid *gridStoreAllARDerivatives (Grid *grid, int node )
 {
   AdjIterator it;
   int nodes[4], orientedNodes[4];
@@ -830,7 +830,7 @@ Grid *gridStoreARDerivative (Grid *grid, int node )
       gridClearStoredAR( grid );
       return NULL;
     }
-    if (grid != gridAddStoredAR(grid, AR, dARdX ) ) {
+    if (grid != gridStoreAR(grid, AR, dARdX ) ) {
       gridClearStoredAR( grid );
       return NULL;
     }

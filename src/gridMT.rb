@@ -1558,6 +1558,26 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 2, @grid.costConstraint
  end
 
+ def testStoredAR_degree_clear_store_retrive
+  ar = 0.7
+  dar = [ 0.1, 0.2, 0.3 ]
+  assert_equal 0,     @grid.storedARDegree
+  assert_nil          @grid.storedAR(-1)
+  assert_nil          @grid.storedAR(0)
+  assert_nil          @grid.storedAR(1)
+  assert_nil          @grid.storedARDerivative(-1)
+  assert_nil          @grid.storedARDerivative(0)
+  assert_nil          @grid.storedARDerivative(1)
+  assert_equal @grid, @grid.storeAR(ar, dar)
+  assert_equal 1,     @grid.storedARDegree
+  assert_equal ar,    @grid.storedAR(0)
+  assert_equal dar,   @grid.storedARDerivative(0)
+  assert_equal @grid, @grid.clearStoredAR
+  assert_equal 0,     @grid.storedARDegree
+  assert_nil          @grid.storedAR(0) 
+  assert_nil          @grid.storedARDerivative(0) 
+ end
+
  # make register unique
 
 end

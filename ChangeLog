@@ -1,3 +1,12 @@
+2005-02-03 13:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridStoreAR) renamed from gridAddStoredAR. Also
+	added a bunch of missing unit tests that I was to lazy to add when
+	this was originally implemented.
+	* src/gridmetric.c (gridStoreAllARDerivatives) renamed from
+	gridStoreARDerivative.
+	* src/gridcad.c (gridSmoothNodeQP) followed rename.
+	
 2005-02-02 09:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (REQUIRED_IMPROVEMENT) made the value very small,

@@ -3952,7 +3952,7 @@ Grid *gridClearStoredAR( Grid *grid )
   return grid;
 }
 
-Grid *gridAddStoredAR( Grid *grid, double AR, double *dARdX )
+Grid *gridStoreAR( Grid *grid, double AR, double *dARdX )
 {
   if (grid->degAR == MAXDEG) return NULL;
 

@@ -1,4 +1,7 @@
 
+#include <math.h>
+#include <limits.h>
+#include <values.h>
 #include "ruby.h"
 #include "grid.h"
 
@@ -1125,6 +1128,52 @@ VALUE grid_setCostConstraint( VALUE self, VALUE costConstraint )
   return ( grid == gridSetCostConstraint(grid,NUM2INT(costConstraint))?self:Qnil );
 }
 
+VALUE grid_storedARDegree( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridStoredARDegree(grid) );
+}
+
+VALUE grid_storedAR( VALUE self, VALUE rb_node )
+{
+  double ar;
+  GET_GRID_FROM_SELF;
+  ar = gridStoredAR(grid, NUM2INT(rb_node));
+  if ( ar == DBL_MAX ) return Qnil;
+  return rb_float_new(ar);
+}
+
+VALUE grid_storedARDerivative( VALUE self, VALUE rb_node )
+{
+  VALUE rb_ar;
+  double dar[3];
+  GET_GRID_FROM_SELF;
+  if (grid != gridStoredARDerivative(grid, NUM2INT(rb_node), dar)) return Qnil;
+  rb_ar = rb_ary_new2(3);
+  rb_ary_store( rb_ar, 0, rb_float_new(dar[0]) );
+  rb_ary_store( rb_ar, 1, rb_float_new(dar[1]) );
+  rb_ary_store( rb_ar, 2, rb_float_new(dar[2]) );
+  return rb_ar;
+}
+
+VALUE grid_storeAR( VALUE self, VALUE rb_ar, VALUE rb_dar )
+{
+  double ar, dar[3];
+  GET_GRID_FROM_SELF;
+  ar = NUM2DBL( rb_ar );
+  dar[0] = NUM2DBL( rb_ary_entry( rb_dar, 0) );
+  dar[1] = NUM2DBL( rb_ary_entry( rb_dar, 1) );
+  dar[2] = NUM2DBL( rb_ary_entry( rb_dar, 2) );
+  return( grid == gridStoreAR( grid, ar, dar )?self:Qnil);
+}
+
+VALUE grid_clearStoredAR( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return( grid == gridClearStoredAR( grid )?self:Qnil);
+}
+
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -1289,4 +1338,11 @@ void Init_Grid()
   rb_define_method( cGrid, "setCostFunction", grid_setCostFunction, 1 );
   rb_define_method( cGrid, "costConstraint", grid_costConstraint, 0 );
   rb_define_method( cGrid, "setCostConstraint", grid_setCostConstraint, 1 );
+
+  rb_define_method( cGrid, "storedARDegree", grid_storedARDegree, 0 );
+  rb_define_method( cGrid, "storedAR", grid_storedAR, 1 );
+  rb_define_method( cGrid, "storedARDerivative", grid_storedARDerivative, 1 );
+  rb_define_method( cGrid, "storeAR", grid_storeAR, 2 );
+  rb_define_method( cGrid, "clearStoredAR", grid_clearStoredAR, 0 );
+
 }

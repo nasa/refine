@@ -446,7 +446,7 @@ Grid *gridSetCostConstraint(Grid *g, int costConstraint);
 
 int gridStoredARDegree( Grid *g );
 Grid *gridClearStoredAR( Grid *g );
-Grid *gridAddStoredAR( Grid *g, double AR, double *dARdX );
+Grid *gridStoreAR( Grid *g, double AR, double *dARdX );
 double gridStoredAR( Grid *g, int index );
 Grid *gridStoredARDerivative( Grid *g, int index, double *dARdX );
 

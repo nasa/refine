@@ -964,7 +964,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   int iteration;
 
   if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;
-  if ( grid != gridStoreARDerivative(grid, node ) ) return NULL;
+  if ( grid != gridStoreAllARDerivatives(grid, node ) ) return NULL;
 
   minAR =2.1;
   minCell = EMPTY;
