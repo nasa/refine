@@ -1,0 +1,162 @@
+\documentclass{article}
+
+\title{Anisotropic Meshing Metrics} 
+
+\author{Michael A. Park
+  \thanks{Research Scientist, Computational Modeling and Simulation Branch,
+          \texttt{m.a.park@larc.nasa.gov}} \\
+  {\itshape NASA Langley Research Center,~Hampton,~VA~23681}\\[5pt]
+}
+
+\begin{document}
+
+\maketitle 
+
+\section{Transformation Matrix}
+
+The Jacobian $\mathbf{J}$ is employed to map physical space
+$\mathbf{x}=\left[x ~y~z\right]^t$ to a transformed space
+$\mathbf{e}=\left[e~f~g\right]^t$ where triangle or tetrahedron
+becomes equilateral.
+\begin{equation}\label{e:x}
+ \mathbf{e}=\mathbf{J}\mathbf{x}
+\end{equation}
+\begin{equation}
+ \mathbf{J}=\left[
+ \begin{array}{ccc}
+   \frac{\partial e}{\partial x}&
+   \frac{\partial e}{\partial y}&
+   \frac{\partial e}{\partial z}\\
+   \frac{\partial d}{\partial x}&
+   \frac{\partial d}{\partial y}&
+   \frac{\partial d}{\partial z}\\
+   \frac{\partial f}{\partial x}&
+   \frac{\partial f}{\partial y}&
+   \frac{\partial f}{\partial z}
+ \end{array}\right]
+\end{equation}
+The $\mathbf{J}$ matrix is not required to be symmetric.
+
+The Metric Tensor $\mathbf{M}$ is defined as 
+\begin{equation}\label{metric:jacobian}
+ \mathbf{M}=\mathbf{J}^t\mathbf{J}
+\end{equation}
+The matrix $\mathbf{M}$ is symmetric and can be decomposed into Eigen
+values $\Lambda$ and Eigen vectors $\mathbf{R}$
+\begin{equation}\label{metric:eigen}
+ \mathbf{M}=\mathbf{R}^t\Lambda\mathbf{R}
+\end{equation}
+where the spacing $h_i$ is given as 
+\begin{equation}
+ \Lambda=\left[
+ \begin{array}{ccc}
+   \frac{1}{h_1^2}&&\\
+   &\frac{1}{h_2^2}&\\
+   &&\frac{1}{h_3^2}\\
+ \end{array}\right]
+\end{equation}
+The $\frac{1}{h^2}$ can be shown by combing Equ.~\ref{metric:jacobian}
+and Equ.~\ref{metric:eigen}
+\begin{equation}
+ \mathbf{M}=\mathbf{R}^t\Lambda^\frac{1}{2}\Lambda^\frac{1}{2}\mathbf{R}
+\end{equation}
+\begin{equation}
+ \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}
+\end{equation}
+
+\section{Transformed Length}
+
+The length $l$ in mapped space is
+\begin{equation}
+ l=\sqrt{\mathbf{e}^t\mathbf{e}}
+\end{equation}
+Employing Equ.~\ref{e:x} this expression becomes
+\begin{equation}
+ l=\sqrt{ \left( \mathbf{J}\mathbf{x}\right)^t \left( \mathbf{J}\mathbf{x} \right) }
+\end{equation}
+\begin{equation}
+ l=\sqrt{ \mathbf{x}^t\mathbf{J}^t\mathbf{J}\mathbf{x}}
+\end{equation}
+\begin{equation}
+ l=\sqrt{ \mathbf{x}^t\mathbf{M}\mathbf{x}}
+\end{equation}
+
+\section{Transformation Example}
+
+Map a sphere of diameter 2 to a unit sphere. 
+The requested spacing is therefore $h=2$.
+Which is the following Eigen values
+\begin{equation}
+ \Lambda^\frac{1}{2}=\left[
+ \begin{array}{ccc}
+   \frac{1}{2}&&\\
+   &\frac{1}{2}&\\
+   &&\frac{1}{2}\\
+ \end{array}\right]
+\end{equation}
+\begin{equation}
+ \Lambda=\left[
+ \begin{array}{ccc}
+   \frac{1}{4}&&\\
+   &\frac{1}{4}&\\
+   &&\frac{1}{4}\\
+ \end{array}\right]
+\end{equation}
+and Eigen Vectors
+\begin{equation}
+ \mathbf{R}=\left[
+ \begin{array}{ccc}
+   1&&\\
+   &1&\\
+   &&1\\
+ \end{array}\right]
+\end{equation}
+The Jacobian of transformation is
+\begin{equation}
+ \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}=\left[
+ \begin{array}{ccc}
+   \frac{1}{2}&&\\
+   &\frac{1}{2}&\\
+   &&\frac{1}{2}\\
+ \end{array}\right]
+\end{equation}
+The Metric Matrix is 
+\begin{equation}
+ \mathbf{M}=
+  \mathbf{J}^t\mathbf{J}=
+  \mathbf{R}^t\Lambda^\frac{1}{2}\Lambda^\frac{1}{2}\mathbf{R}=
+  \mathbf{R}^t\Lambda\mathbf{R}=
+  \left[\begin{array}{ccc}
+   \frac{1}{4}&&\\
+   &\frac{1}{4}&\\
+   &&\frac{1}{4}\\
+ \end{array}\right]
+\end{equation}
+
+Where a radius is given as
+\begin{equation}
+ \mathbf{r}=\left[2~0~0\right]^t
+\end{equation}
+This vector is mapped to the transformed space
+\begin{equation}
+ \mathbf{J}\mathbf{r}=\left[
+ \begin{array}{ccc}
+   \frac{1}{2}&&\\
+   &\frac{1}{2}&\\
+   &&\frac{1}{2}\\
+ \end{array}\right]\left[2~0~0\right]^t=\left[1~0~0\right]^t
+\end{equation}
+And its length is
+\begin{equation}
+ r=\sqrt{\mathbf{r}^t\mathbf{M}\mathbf{r}}
+\end{equation}
+\begin{equation}
+ r=\sqrt{\left[2~0~0\right]\left[
+ \begin{array}{ccc}
+   \frac{1}{2}&&\\
+   &\frac{1}{2}&\\
+   &&\frac{1}{2}\\
+ \end{array}\right]\left[2~0~0\right]^t}=1
+\end{equation}
+
+\end{document}
