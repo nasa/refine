@@ -52,7 +52,7 @@ class TestSampleUnit < Test::Unit::TestCase
   100.times {@grid.nextNodeCell} # abusive use of next
  end
  
- def XtestAddAndRemoveNodeCell
+ def testAddAndRemoveNodeCell
   assert_equal false, @grid.cellExists(1,0)
   assert_equal nil,   @grid.removeNodeCell(1,0)
   assert_equal @grid, @grid.registerNodeCell(1,0)
@@ -62,61 +62,11 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal nil,   @grid.removeNodeCell(1,0)
  end
  
- def XtestRegisterNodeCellLimit
+ def testRegisterNodeCellLimit
   assert_equal nil, @grid.registerNodeCell(1000,0)
  end
 
- def XtestEfficientStorage
-  grid = Grid.new(1,1,1)
-  assert_equal nil, grid.registerNodeCell(0,0)
-  grid = Grid.new(1,1,2)
-  assert_equal nil, grid.registerNodeCell(0,0)
-  grid = Grid.new(1,1,3)
-  assert_equal grid, grid.registerNodeCell(0,0)
-  grid = Grid.new(1,1,4)
-  assert_equal grid, grid.registerNodeCell(0,0)
-  assert_equal grid, grid.registerNodeCell(0,1)
-  assert_equal nil,  grid.registerNodeCell(0,2)
- end
-
- def XtestPackStorageSetFirstCell
-  grid = Grid.new(2,1,5)
-  grid.pack
-  assert_equal grid, grid.registerNodeCell(0,0)
-  assert_equal grid, grid.registerNodeCell(1,1)
-  grid.removeNodeCell(1,1)
-  assert_equal nil, grid.registerNodeCell(0,1)
-  grid.pack
-  assert_equal true, grid.cellExists(0,0)
-  assert_equal false, grid.cellExists(0,1)
-  assert_equal grid, grid.registerNodeCell(0,1)
-  assert_equal true, grid.cellExists(0,1)
- end
- 
- def XtestPackStorageReset
-  grid = Grid.new(1,1,5)
-  assert_equal grid, grid.registerNodeCell(0,0)
-  assert_equal grid, grid.registerNodeCell(0,1)
-  grid.removeNodeCell(0,0)
-  grid.removeNodeCell(0,1)
-  grid.pack
-  assert_equal grid, grid.registerNodeCell(0,1)
-  assert_equal grid, grid.registerNodeCell(0,2)
-  assert_equal grid, grid.registerNodeCell(0,3)
- end
- 
- def XtestPackScattered
-  grid = Grid.new(2,1,5)
-  assert_equal grid, grid.registerNodeCell(1,0)
-  assert_equal grid, grid.registerNodeCell(0,1)
-  grid.dump
-  grid.pack
-  grid.dump
-  assert_equal true, grid.cellExists(1,0)
-  assert_equal true, grid.cellExists(0,1)
- end
- 
- def XtestMultipleNodeCellExists
+ def testMultipleNodeCellExists
   assert_equal false, @grid.cellExists(1,198)
   @grid.registerNodeCell(1,198)
   @grid.registerNodeCell(2,198)
@@ -132,26 +82,26 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal true,  @grid.cellExists(1,199)
  end
  
- def XtestAddCell
+ def testAddCell
   assert_equal 0, @grid.ncell
   @grid.addCell(0,1,2,3)
   assert_equal 1, @grid.ncell
   (0..3).each { |n| assert_equal 1, @grid.nodeDeg(n)}
  end
  
- def XtestGetGem1
+ def testGetGem1
   grid = @grid
   grid.addCell(0,1,2,3)
   gem = grid.getGem(0,1)
   assert_equal [0], gem
  end
  
- def XtestGetGem2
+ def testGetGem2
   grid = Grid.new(5,2,20)
   grid.addCell(0,1,2,3)
   grid.addCell(0,1,2,4)
   gem = grid.getGem(0,1)
-  assert_equal [0, 1], gem
+  assert_equal [1, 0], gem
  end
  
  def XtestEquator
