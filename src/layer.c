@@ -62,6 +62,7 @@ struct Layer {
   int *globalNode2Normal;
   int nConstrainingGeometry, *constrainingGeometry;
   Adj *adj;
+  Near *nearTree;
   bool mixedElementMode;
 
   bool *cellInLayer;
@@ -94,6 +95,7 @@ Layer *layerCreate( Grid *grid )
   layer->nConstrainingGeometry=0;
   layer->constrainingGeometry=NULL;
   layer->adj=NULL;
+  layer->nearTree=NULL;
   layer->mixedElementMode=FALSE;
 
   layer->cellInLayer = malloc(gridMaxCell(grid)*sizeof(bool));
@@ -118,6 +120,7 @@ void layerFree(Layer *layer)
   free(layer->cellInLayer);
   gridDetachNodeSorter( layer->grid );
   if (layer->adj != NULL) adjFree(layer->adj);
+  if (layer->nearTree != NULL) free(layer->nearTree);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
@@ -2596,37 +2599,56 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
   return layer;
 }
 
-Layer *layerTerminateCollidingFronts(Layer *layer)
+Layer *layerPopulateNormalNearTree(Layer *layer)
 {
-  int normal, degree, *triangles;
+  int normal;
   Grid *grid;
-  Near *near, *target;
   double xyz[3], radius;
-  int i, collisions, touched, *nearNormals;
 
   grid = layerGrid(layer);
-  near = malloc(layerNNormal(layer)*sizeof(Near));
+  if (NULL != layer->nearTree) free(layer->nearTree);
+
+  layer->nearTree = malloc(layerNNormal(layer)*sizeof(Near));
 
   for(normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid, layerNormalRoot(layer, normal ), xyz);
     layerNormalMaxEdgeLength(layer, normal, &radius);
-    nearInit(&near[normal], normal, xyz[0], xyz[1], xyz[2], radius);
-    printf("normal %d radius %f\n",normal,radius);
-    if (normal>0) nearInsert(near,&near[normal]);
+    nearInit(&layer->nearTree[normal], normal, xyz[0], xyz[1], xyz[2], radius);
+    if (normal>0) nearInsert(layer->nearTree,&layer->nearTree[normal]);
   }
+
+  return layer;
+}
+
+Layer *layerTerminateCollidingFronts(Layer *layer)
+{
+  int normal;
+  Near *target;
+  double xyz[3], radius;
+  int i, collisions, touched, *nearNormals;
+  double dir1[3], dir2[3], dot;
+
+  layerPopulateNormalNearTree(layer);
 
   for(normal=0;normal<layerNNormal(layer);normal++){
-    target = &near[normal];
-    collisions = nearCollisions(near,target);
-    printf("normal %d near %d\n",normal,collisions );
+    target = &layer->nearTree[normal];
+    collisions = nearCollisions(layer->nearTree,target);
+    // printf("normal %d near %d\n",normal,collisions );
     nearNormals = malloc(collisions*sizeof(int));
     touched = 0;
-    nearTouched(near, target, &touched, collisions, nearNormals);
-    for(i=0;i<collisions;i++)printf("         %d\n", nearNormals[i]);
+    nearTouched(layer->nearTree, target, &touched, collisions, nearNormals);
+    layerNormalDirection(layer, normal, dir1);
+    for(i=0;i<collisions;i++){
+      layerNormalDirection(layer, nearNormals[i], dir2);
+      dot = gridDotProduct( dir1, dir2 );
+      // printf("         %d dot %f\n", nearNormals[i], dot);
+      if (dot < -0.5) {
+	layerTerminateNormal(layer,normal);
+	layerTerminateNormal(layer,nearNormals[i]);
+      }
+    }
     free(nearNormals);
   }
-
-  free(near);
 
   return layer;
 }

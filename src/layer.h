@@ -143,6 +143,7 @@ Layer *layerDuplicateAllBlend(Layer *);
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 
+Layer *layerPopulateNormalNearTree(Layer *);
 Layer *layerTerminateCollidingFronts(Layer *);
 
 Layer *layerWriteTecplotFront(Layer *);
