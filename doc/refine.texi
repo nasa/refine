@@ -251,6 +251,14 @@ for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
 }
 @end verbatim
 
+A gem is the set of cells that surround an edge. It is used for edge
+swapping, node insertion, and edge collapse. A gem is formed with
+@code{gridMakeGem}. An equator is an ordered set of nodes in a geom
+that are not defineig the edge.
+
+The map @code{gridMap} is six entries of a 3x3 symmetric matrix used
+to define an anisotropic grid metric.
+
 @node Index
 @unnumbered Index
 
