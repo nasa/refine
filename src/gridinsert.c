@@ -35,6 +35,7 @@ Grid *gridRemoveAllNodes(Grid *grid )
   AdjIterator it;
   int n0, i, cell, nodes[4];
   bool nodeExists;
+  double ratio;
 
   for ( n0=0; n0<grid->maxnode; n0++ ) { 
     if ( gridValidNode(grid, n0) && !gridNodeFrozen(grid, n0) ) {
@@ -46,6 +47,8 @@ Grid *gridRemoveAllNodes(Grid *grid )
 	gridCell( grid, cell, nodes);
 	for (i=0;nodeExists && i<4;i++){
 	  if (n0 != nodes[i]) {
+	    ratio = 1.0;
+	    if (!gridNodeFrozen(grid, nodes[i]))ratio=0.5;
 	    nodeExists = (grid == gridCollapseEdge(grid, nodes[i], n0, 1.0));
 	  }
 	}
