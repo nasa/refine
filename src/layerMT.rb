@@ -336,6 +336,72 @@ class TestLayer < Test::Unit::TestCase
   assert_equal true,      grid.rightHandedBoundary
  end
 
+ def testAdvanceLayerOnSymPlane0
+  assert_not_nil          grid = Grid.new(17,14,14,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addCell(0,1,2,3)
+  assert_equal 1,         grid.ncell
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_equal grid,      grid.addFace(0,3,1,2)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal layer,     layer.makeNormal
+  assert_equal layer,     layer.constrainNormal(2)
+  assert_equal 2,         layer.constrainedSide(0,0)
+  assert_equal 0,         layer.constrainedSide(0,1)
+  assert_equal 0,         layer.constrainedSide(0,2)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal [1,0,5,2], grid.face(2)
+  assert_equal [5,0,4,2], grid.face(3)
+ end
+
+ def testAdvanceLayerOnSymPlane1
+  assert_not_nil          grid = Grid.new(17,14,14,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addCell(0,1,2,3)
+  assert_equal 1,         grid.ncell
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_equal grid,      grid.addFace(1,3,2,2)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal layer,     layer.makeNormal
+  assert_equal layer,     layer.constrainNormal(2)
+  assert_equal 0,         layer.constrainedSide(0,0)
+  assert_equal 2,         layer.constrainedSide(0,1)
+  assert_equal 0,         layer.constrainedSide(0,2)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal [2,1,6,2], grid.face(2)
+  assert_equal [6,1,5,2], grid.face(3)
+ end
+
+ def testAdvanceLayerOnSymPlane2
+  assert_not_nil          grid = Grid.new(17,14,14,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addCell(0,1,2,3)
+  assert_equal 1,         grid.ncell
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_equal grid,      grid.addFace(2,3,0,2)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal layer,     layer.makeNormal
+  assert_equal layer,     layer.constrainNormal(2)
+  assert_equal 0,         layer.constrainedSide(0,0)
+  assert_equal 0,         layer.constrainedSide(0,1)
+  assert_equal 2,         layer.constrainedSide(0,2)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal [0,2,6,2], grid.face(2)
+  assert_equal [0,6,4,2], grid.face(3)
+ end
+
  def testAdvanceLayerTwiceOnSymPlane
   assert_not_nil          grid = Grid.new(15,17,16,0)
   assert_equal 0,         grid.addNode(0,0,0)
