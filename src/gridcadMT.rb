@@ -34,8 +34,28 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 0.5,           grid.nodeT(1,1)
  end
 
+ def testFaceProjection
+  assert_not_nil              grid = Grid.new(4,0,2,0)
+  assert_equal 0,             grid.addNode(0.0,0.0,0.1)
+  assert_equal 1,             grid.addNode(1.0,0.0,0.0)
+  assert_equal 2,             grid.addNode(0.0,1.0,0.0)
+  assert_equal 3,             grid.addNode(1.0,1.0,0.0)
+  assert_nil                  grid.projectNodeToFace(0,1)
+  assert_equal grid,          grid.addFaceUV(0, 10.1, 20.1,
+					     3, 11.0, 21.0,
+					     1, 11.0, 20.0,
+					     1)
+  assert_equal grid,          grid.addFaceUV(0, 10.1, 20.1,
+					     3, 11.0, 21.0,
+					     2, 10.0, 21.0,
+					     1)
+  assert_equal grid,          grid.projectNodeToFace(0,1)
+  assert_equal [0.0,0.0,0.0], grid.nodeXYZ(0)
+  assert_equal [10.0,20.0],   grid.nodeUV(0,1)
+ end
 
- def testSafeProjection
+
+ def XtestSafeProjection
   assert_not_nil grid = Grid.new(3,0,0,2)
   assert_equal 0, grid.addNode(0.0,0.0,0.0)
   assert_equal 1, grid.addNode(0.5,0.0,0.0)

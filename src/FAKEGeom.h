@@ -15,8 +15,10 @@
 
 BEGIN_C_DECLORATION
 
-bool CADGeom_NearestOnEdge(int vol, int edge, 
+bool CADGeom_NearestOnEdge(int vol, int edgeId, 
 			   double *xyz, double *t, double *xyznew);
+bool CADGeom_NearestOnFace(int vol, int faceId, 
+			   double *xyz, double *uv, double *xyznew);
 
 END_C_DECLORATION
 

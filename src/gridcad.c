@@ -35,6 +35,25 @@ Grid *gridProjectNodeToEdge(Grid *grid, int node, int edgeId )
   return grid;
 }
 
+Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
+{
+  int vol = 1;
+  double uv[2], xyznew[3];
+
+  if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
+
+  if (!CADGeom_NearestOnFace( vol, faceId, &grid->xyz[3*node], uv, xyznew) ) 
+    return NULL;  
+
+  if ( grid != gridSetNodeUV( grid, node, faceId, uv[0], uv[1] ) ) return NULL;
+
+  grid->xyz[0+3*node] = xyznew[0];
+  grid->xyz[1+3*node] = xyznew[1];
+  grid->xyz[2+3*node] = xyznew[2];
+
+  return grid;
+}
+
 Grid *gridSafeProject(Grid *grid, int node )
 {
   return NULL;
