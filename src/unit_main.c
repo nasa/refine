@@ -43,6 +43,7 @@ int main( int argc, char *argv[] )
   char outputProject[256];
   char outputFAST[256];
   char outputlines[256];
+  char filename[256];
   int i, j, oldSize, newSize;
   double ratio=0.6;
   double spacing = 1.0/3.0;
@@ -253,6 +254,8 @@ int main( int argc, char *argv[] )
   STATUS;
 
   if (EdgeBasedOperators) {
+    sprintf(filename,"%s_surface.t",project);
+    gridWriteTecplotSurfaceZone(grid,filename); gridCloseTecplotFile(grid);
     printf("edge swapping grid...\n");gridSwap(grid,0.9);
     STATUS;
     for (j=0;j<6;j++){
@@ -266,6 +269,8 @@ int main( int argc, char *argv[] )
       printf("edge swapping grid...\n");gridSwap(grid,0.9);
       STATUS;
     }
+    sprintf(filename,"%s_surface.t",outputProject);
+    gridWriteTecplotSurfaceZone(grid,filename); gridCloseTecplotFile(grid);
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
     printf("Done.\n");

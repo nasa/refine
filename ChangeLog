@@ -1,3 +1,10 @@
+2004-10-15 10:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCloseTecplotFile) added to allow multiple plots
+	in session.
+	* test/box1_surface.lay added tecplot 10 layout with small
+	multiples for box sides.
+	
 2004-10-15 01:53 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridCellRatioErrorDerivative) added a hacked

@@ -531,7 +531,7 @@ void gridFree(Grid *grid)
     (*grid->freeNotificationFunc)( grid->freeNotificationData );
   if (NULL != grid->lines) linesFree(grid->lines);
 
-  if (NULL != grid->tecplotFile) fclose(grid->tecplotFile);
+  gridCloseTecplotFile(grid);
 
   if (NULL != grid->connRanking) free(grid->connRanking);
   if (NULL != grid->connValue) free(grid->connValue);
@@ -1146,6 +1146,15 @@ Grid *gridWriteTecplotCellZone(Grid *grid, int *nodes, char *filename)
 
   fflush(grid->tecplotFile);
 
+  return grid;
+}
+
+Grid *gridCloseTecplotFile(Grid *grid)
+{
+  if (NULL == grid->tecplotFile) return NULL;
+
+  fclose(grid->tecplotFile);
+  grid->tecplotFile = NULL;
   return grid;
 }
 
