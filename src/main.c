@@ -26,8 +26,10 @@ int main( int argc, char *argv[] )
   char *project;
   char *output;
   int i, j, oldSize, newSize;
+  double ratio;
+  bool projected;
 
-  project = "../test/om6_fine";
+  project = "../test/om6";
   printf("running project %s\n",project);
 
   grid = gridLoadPart( project );
@@ -52,11 +54,19 @@ int main( int argc, char *argv[] )
 	   gridMinAR(grid),gridMinVolume(grid));
   }
 
+  ratio = 0.1;
   oldSize = 1;
   newSize = gridNNode(grid) ;
-  for (j=0;(j<3)||(((double)ABS(newSize-oldSize)/(double)oldSize)>0.01)&&(j<15);j++){
-    printf("adapt grid...\n");
-    gridAdapt(grid);
+  for ( j=0; (j<40) && (
+	(ratio < 0.99) || 
+	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01) &&
+	  !projected );
+	j++){
+
+    if (ratio<0.01) ratio = 0.01;
+    if (ratio>1.0) ratio = 1.0;
+    printf("adapt grid, ratio %4.2f...\n",ratio);
+    gridAdapt(grid,0.4*ratio,2.2/ratio);
     oldSize = newSize;
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
@@ -65,11 +75,14 @@ int main( int argc, char *argv[] )
 	   gridMinAR(grid),gridMinVolume(grid));
         
     for (i=0;i<2;i++){
-      if ( grid == gridRobustProject(grid)) {
+      projected = ( grid == gridRobustProject(grid));
+      if (projected) {
 	printf("edge swapping grid...\n");gridSwap(grid);
 	printf("node smoothing grid...\n");gridSmooth(grid);
+	ratio = ratio + 0.025;
       }else{
 	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
+	ratio = ratio - 0.05;
       }
       printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	     gridMinAR(grid),gridMinVolume(grid));
