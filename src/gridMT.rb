@@ -583,6 +583,10 @@ class TestGrid < Test::Unit::TestCase
   assert_equal   2,          grid.frozenEdgeEndPoint(1,0)
   assert_equal   3,          grid.frozenEdgeEndPoint(1,3)
 
+  assert_equal grid,         grid.freezeNode(3)
+  assert_equal   3,          grid.frozenEdgeEndPoint(1,0)
+  assert_equal   0,          grid.frozenEdgeEndPoint(1,3)
+
  end
 
  def testSortNodesToGridExStandard
