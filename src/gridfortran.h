@@ -35,7 +35,7 @@ void gridexportfast_( );
 
 void gridparalleladaptwithoutcad_( int *processor, 
 				  double *minLength, double *maxLength );
-void gridparallelswap_( int *processor );
+void gridparallelswap_( int *processor, double *ARlimit );
 void queuedumpsize_( int *nInt, int *nDouble );
 void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles );
 void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles );

@@ -28,6 +28,7 @@ Grid *gridApplyQueue(Grid *g, Queue *q );
 
 Grid *gridParallelAdaptWithOutCAD(Grid *g, Queue *q, 
 				  double minLength, double maxLength );
+Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit );
 
 END_C_DECLORATION
 

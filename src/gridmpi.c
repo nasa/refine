@@ -242,7 +242,7 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
   return grid;
 }
 
-Grid *gridParallelSwap(Grid *grid, Queue *queue )
+Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
 {
   int cell, maxcell;
   int nodes[4];
@@ -250,7 +250,7 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue )
   maxcell = gridMaxCell(grid);
 
   for (cell=0;cell<maxcell;cell++){
-    if ( grid == gridCell( grid, cell, nodes) && gridAR(grid, nodes) < 0.5) {
+    if ( grid==gridCell( grid, cell, nodes) && gridAR(grid, nodes)<ARlimit ) {
       if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
 	   continue;
       if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
