@@ -7,58 +7,52 @@ Start Builds!!!!!
 
 --Major refactoring
 
-Add a new method to return whether a geometry face has an underlying
-geometric (CAD) definition.
+correctly add two faced cells to parallel swap plan
 
-correctly add two faced cells to swap plan
+refactor to use the plan object in the edge based list
 
-Make a queue (plan) of boundary mesh operations and use it to speed up
-boundary adapts in parallel.
+Use the plan object to speed up node smooth of ghost boundary in
+parallel.
+
+Check and see if I should only queue a cell for removal if it has a
+ghost node. faces and edges are that way.
+
+
+EdgeSplitAt -> edgeSplitRatio
+Replace projections with evaluations.
 
 Make sure that nodes are in final position in xyx, uv, and t before
 queuing so that off-processors recieve cosistant data.
 
 when splitting or collasping on geomedge update face uv from edgeT
 
-EdgeSplitAt -> edgeSplitRatio
-Replace projections with evaluations.
-
 maintain linear data for split and collapse. this includes edge and
 face parameter values. This will be easier to do with edgeSplitRatio
+
 
 Validate a mesh by spliting offending faces into three and evaluating
 (via Bob)
 
-unit test CADGeom_ReversedSurfaceNormal
 
-Check and see if I should only queue a cell for removal if it has a
-ghost node. faces and edges are that way.
+verify that I am getting all the performance (mesh quality) out the
+the volume smoothing that is possible.  make consistant use of the
+cost constraint functions.
 
-verify that I am geeting all the performance out the the volume
-smoothing that is possible.
-
-make consistant use of the cost constraint functions.
 
 Exact Edge smoothing with invalid backoff
 
+
 get edge metric working for node smoothing
 
-modify face mr when edge based cost switch?
-should there be a mr test in swap?
 
 Finish face swap parallelization. there are only 5 nodes so that means
 32 posiblities. (unit testing could be less if ring, top&bottom are
 treated seperately)
 
-try new metrics/constrints
-- Add a face area in UV constraint to cost to fight clifs.
-- Smooth face in mapped UV space instead of physical space
 
 Parameter values: verify at start and then always evaluate to avoid
 projections.
 
-think about geom edge collapse on a beth grid with no geom edges
-Make a matrix of collapse possilbities for node 0,1 on bound or not
 
 rename grid AR to cost
 
@@ -72,6 +66,13 @@ gridmetric : get rid of
 
 clean up gridSplitEdgeIfNear gridSplitFaceAt gridSplitCellAt
 gridInsertInToGeomEdge gridInsertInToGeomFace gridInsertInToVolume
+
+
+think about geom edge collapse on a beth grid with no geom edges
+Make a matrix of collapse possilbities for node 0,1 on bound or not
+
+Add a new method to return whether a geometry face has an underlying
+geometric (CAD) definition.
 
 --Edge Based
 
