@@ -6,12 +6,13 @@
 
 GC.disable # layer does not mark grid, so bug on GC
 
-exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridmetric.h gridinsert.h gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb Layer layerStruct.h adj.c near.c grid.h gridmetric.h gridcad.h gridinsert.h master_header.h'
+require 'RubyExtensionBuilder'
+
+RubyExtensionBuilder.new('Layer').build
 
 require 'test/unit'
+require 'Adj/Adj'
+require 'Near/Near'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
 require 'GridCAD/GridCAD'

@@ -4,7 +4,9 @@
 #
 # $Id$
 
-exit 1 unless system 'ruby makeRubyExtension.rb Near master_header.h'
+require 'RubyExtensionBuilder'
+
+RubyExtensionBuilder.new('Near').build
 
 require 'test/unit'
 require 'Near/Near'

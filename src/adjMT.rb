@@ -4,7 +4,9 @@
 #
 # Mobility test for adj c lib
 
-exit 1 unless system 'ruby makeRubyExtension.rb Adj master_header.h'
+require 'RubyExtensionBuilder'
+
+RubyExtensionBuilder.new('Adj').build
 
 require 'test/unit'
 require 'Adj/Adj'

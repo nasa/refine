@@ -4,8 +4,9 @@
 #
 # Mobility test for grid c lib
 
-exit 1 unless system 'ruby makeRubyExtension.rb Adj master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.h gridStruct.h master_header.h'
+require 'RubyExtensionBuilder'
+
+RubyExtensionBuilder.new('Grid').build
 
 require 'test/unit'
 require 'Adj/Adj'
