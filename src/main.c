@@ -61,7 +61,8 @@ int main( int argc, char *argv[] )
 	 gridMinAR(grid),gridMinVolume(grid));
 
   printf("adapting grid...\n");
-  gridImportAdapt(grid, "../test/adapt_hess");
+  gridResetSpacing(grid);
+  //  gridImportAdapt(grid, "../test/adapt_hess");
   printf("minimum Aspect Ratio %12f Volume %12.8e\n",
 	 gridMinAR(grid),gridMinVolume(grid));
 
@@ -403,32 +404,10 @@ int gridSavePart( Grid *grid, char *project )
     return(-1);
   }
 
-  /* Face Stuff */
-
-  patch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&it);
-
-  for( iface=1; iface<=nGeomFace; iface++ ) {
-    UGPatch_GetDims(patch,patchDimensions);
-    temp_xyz = malloc( patchDimensions[0] * 3 * sizeof( double ) );
-    temp_tuv = malloc( patchDimensions[0] * 2 * sizeof( double ) );
-    temp_face = malloc( patchDimensions[1] * 3 * sizeof( int ) );
-    for( i=0; i<patchDimensions[0]; i++ ) {
-      temp_xyz[3*i+X] = UGPatch_PtValue(patch,i,X);
-      temp_xyz[3*i+Y] = UGPatch_PtValue(patch,i,Y);
-      temp_xyz[3*i+Z] = UGPatch_PtValue(patch,i,Z);
-    }
-
-    for( i=0; i<patchDimensions[1]; i++ ) {
-      temp_face[3*i+0] =  UGPatch_VertValue(patch,i,0);
-      temp_face[3*i+1] =  UGPatch_VertValue(patch,i,1);
-      temp_face[3*i+2] =  UGPatch_VertValue(patch,i,2);
-    }
-    
-    if( !CADGeom_UpdateFaceGrid(vol, iface, patchDimensions[0], temp_xyz, temp_tuv, patchDimensions[1], temp_face) ) {
-      fprintf(stderr, "%s\nWarning face %d update in %s\n",ErrMgr_GetErrStr(),iface,__FILE__);
-    }
-
-    patch = (UGPatchPtr)DList_GetNextItem(&it);
+  if( !CADTopo_FlushPatches(vol,ugrid) ) {
+    printf(" Could not flush patches CADTopo, line %d of %s\n",
+	   __LINE__, __FILE__);    
+    return(-1);
   }
 
   CADGeom_UseDefaultIOCallbacks();
