@@ -579,7 +579,7 @@ Layer *layerAdvance(Layer *layer, double height )
 Layer *layerWiggle(Layer *layer, double height )
 {
   Grid *grid = layer->grid;
-  int normal, root, faceId, i;
+  int normal, root, faceId, edgeId, i;
   double xyz[3];
 
   if (layerNNormal(layer) == 0 ) return NULL;
@@ -591,8 +591,12 @@ Layer *layerWiggle(Layer *layer, double height )
       for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
       gridSetNodeXYZ(grid, root, xyz);
       faceId = layerConstrained(layer,normal);
-      if (0 != faceId) {
-	gridProjectNodeToFace(grid, root, faceId );
+      if (0 < faceId) {
+	gridProjectNodeToFace(grid, layer->normal[normal].root, faceId );
+      }
+      if (0 > faceId) {
+	edgeId = -faceId;
+	gridProjectNodeToEdge(grid, layer->normal[normal].root, edgeId );
       }
     }
   }
@@ -616,3 +620,29 @@ Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
   return layer;
 }
 
+Layer *layerInsertPhantomFront(Layer *layer)
+{
+  Grid *grid = layer->grid;
+  int normal, faceId, edgeId, newnode;
+  double xyz[3];
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    gridNodeXYZ(grid,layer->normal[normal].root,xyz);
+    layer->normal[normal].root = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
+  }
+
+  layerWiggle(layer, 0.22 );
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    if (0 != layerConstrained(layer,normal)){
+      gridNodeXYZ(grid,layer->normal[normal].root,xyz);
+      newnode = gridInsertInToGeomFace(grid, xyz[0], xyz[1], xyz[2]);
+      printf("insert node %10d x %10.5f y %10.5f z %10.5f\n",
+	     newnode,xyz[0], xyz[1], xyz[2]);
+      if (EMPTY == newnode) printf("Could not insert node %d\n",normal);
+      gridFreezeNode( grid, newnode );
+    }
+  }
+ 
+  return layer;
+}

@@ -42,6 +42,8 @@ Layer *layerAdvance(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
 
+Layer *layerInsertPhantomFront(Layer *);
+
 END_C_DECLORATION
 
 #endif /* LAYER_H */
