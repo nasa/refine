@@ -1197,6 +1197,27 @@ bool gridCellFace(Grid *grid, int n0, int n1, int n2 )
   return FALSE;
 }
 
+int gridFindCellWithFace(Grid *grid, int face ){
+  int n0, n1, n2;
+  AdjIterator it0, it1, it2;
+  Adj *adj=grid->cellAdj;
+
+  if (face >= grid->maxface || face < 0 ) return EMPTY;
+  if (grid->f2n[3*face] == EMPTY )return EMPTY;
+
+  n0 = grid->f2n[0+3*face];
+  n1 = grid->f2n[1+3*face];
+  n2 = grid->f2n[2+3*face];
+
+  for ( it0 = adjFirst(adj,n0); adjValid(it0); it0 = adjNext(it0) )
+    for ( it1 = adjFirst(adj,n1); adjValid(it1); it1 = adjNext(it1) )
+      if ( adjItem(it0) == adjItem(it1) )
+	for ( it2 = adjFirst(adj,n2); adjValid(it2); it2 = adjNext(it2) )
+	  if ( adjItem(it0)==adjItem(it2) ) return adjItem(it2);
+
+  return EMPTY;
+}
+
 Grid *gridDeleteThawedCells(Grid *grid){
   int cell, maxcell, nodes[4];
 
@@ -2159,27 +2180,6 @@ Grid *gridDeleteNodesNotUsed(Grid *grid){
   }
 
   return grid;
-}
-
-int gridFindCellWithFace(Grid *grid, int face ){
-  int n0, n1, n2;
-  AdjIterator it0, it1, it2;
-  Adj *adj=grid->cellAdj;
-
-  if (face >= grid->maxface || face < 0 ) return EMPTY;
-  if (grid->f2n[3*face] == EMPTY )return EMPTY;
-
-  n0 = grid->f2n[0+3*face];
-  n1 = grid->f2n[1+3*face];
-  n2 = grid->f2n[2+3*face];
-
-  for ( it0 = adjFirst(adj,n0); adjValid(it0); it0 = adjNext(it0) )
-    for ( it1 = adjFirst(adj,n1); adjValid(it1); it1 = adjNext(it1) )
-      if ( adjItem(it0) == adjItem(it1) )
-	for ( it2 = adjFirst(adj,n2); adjValid(it2); it2 = adjNext(it2) )
-	  if ( adjItem(it0)==adjItem(it2) ) return adjItem(it2);
-
-  return EMPTY;
 }
 
 int gridNGeomNode(Grid *grid)
