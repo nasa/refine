@@ -7,6 +7,9 @@ Start Builds!!!!!
 
 --Major refactoring
 
+Make sure that nodes are in final position in xyx, uv, and t before
+queuing so that off-processors recieve cosistant data.
+
 when splitting or collasping on geomedge update face uv from edgeT
 
 EdgeSplitAt -> edgeSplitRatio
