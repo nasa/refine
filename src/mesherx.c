@@ -14,7 +14,8 @@
 #include <math.h>
 #include <limits.h>         /* Needed in some systems for DBL_MAX definition */
 #include <float.h>
-
+#include "grid.h"
+#include "layer.h"
 
 /******************** EXTERNAL FUNCTIONS ******************************/
 
@@ -25,6 +26,16 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
                           int *nel, int **iel, double **xyz)
 {
   int vol=1;
+  Grid *grid;
+  Layer *layer;
 
+  grid = gridFillFromPart( vol, npts*10 );
 
+  layer = formAdvancingFront( grid, "box" );
+
+  layerAdvance(layer,0.01);
+
+  /* Make edge and face lists */
+
+  return 1;
 }
