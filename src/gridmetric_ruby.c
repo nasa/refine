@@ -105,6 +105,57 @@ VALUE grid_eigenValues( VALUE self, VALUE rb_m )
   return rb_eigenValues;
 }
 
+VALUE grid_eigenVector( VALUE self, VALUE rb_m, VALUE rb_eigenValue )
+{
+  int i;
+  double m[6], eigenVector[3];
+  VALUE rb_eigenVector;
+  Grid *rGrid;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<6;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
+  rGrid = gridEigenVector( grid, m, NUM2DBL(rb_eigenValue), eigenVector );
+  if ( rGrid == grid ){
+    rb_eigenVector = rb_ary_new2(3);
+    rb_ary_store( rb_eigenVector, 0, rb_float_new(eigenVector[0]) );
+    rb_ary_store( rb_eigenVector, 1, rb_float_new(eigenVector[1]) );
+    rb_ary_store( rb_eigenVector, 2, rb_float_new(eigenVector[2]) );
+  }else{
+    rb_eigenVector = Qnil;
+  }
+  return rb_eigenVector;
+}
+
+VALUE grid_eigenSystem( VALUE self, VALUE rb_m )
+{
+  int i;
+  double m[6], eigenValues[3], v1[3], v2[3], v3[3];
+  VALUE rb_eigenValues, rb_v1, rb_v2, rb_v3, rb_eigenSystem;
+  Grid *rGrid;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<6;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
+  rGrid = gridEigenSystem( grid, m, eigenValues, v1, v2, v3 );
+  if ( rGrid == grid ){
+    rb_eigenValues = rb_ary_new2(3);
+    rb_v1 = rb_ary_new2(3);
+    rb_v2 = rb_ary_new2(3);
+    rb_v3 = rb_ary_new2(3);
+    for(i=0;i<3;i++){
+      rb_ary_store( rb_eigenValues, i, rb_float_new(eigenValues[i]) );
+      rb_ary_store( rb_v1, i, rb_float_new(v1[i]) );
+      rb_ary_store( rb_v2, i, rb_float_new(v2[i]) );
+      rb_ary_store( rb_v3, i, rb_float_new(v3[i]) );
+    }
+    rb_eigenSystem = rb_ary_new2(4);
+    rb_ary_store( rb_eigenSystem, 0, rb_eigenValues );
+    rb_ary_store( rb_eigenSystem, 1, rb_v1 );
+    rb_ary_store( rb_eigenSystem, 2, rb_v2 );
+    rb_ary_store( rb_eigenSystem, 3, rb_v3 );
+  }else{
+    rb_eigenSystem = Qnil;
+  }
+  return rb_eigenSystem;
+}
+
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -303,6 +354,8 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );
   rb_define_method( cGridMetric, "setMap", grid_setMap, 7 );
   rb_define_method( cGridMetric, "eigenValues", grid_eigenValues, 1 );
+  rb_define_method( cGridMetric, "eigenVector", grid_eigenVector, 2 );
+  rb_define_method( cGridMetric, "eigenSystem", grid_eigenSystem, 1 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );

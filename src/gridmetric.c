@@ -290,6 +290,112 @@ Grid *gridEigenValues(Grid *grid, double *m, double *eigenValues)
   return grid;
 }
 
+Grid *gridEigenVector(Grid *grid, double *m, double eigenValue, 
+		      double *eigenVector )
+{
+  double a, d, f, n1, n2, n3;
+  double e1[3], e2[3], e3[3];
+ 
+  a = m[0]-eigenValue;
+  d = m[3]-eigenValue;
+  f = m[5]-eigenValue;
+
+  e1[0] = m[2]*d - m[1]*m[4];
+  e1[1] = a*m[4] - m[1]*m[2];
+  e1[2] = m[1]*m[1] - a*d;
+  n1 = e1[0]*e1[0] + e1[1]*e1[1] + e1[2]*e1[2];
+  e2[0] = d*f - m[4]*m[4];
+  e2[1] = m[2]*m[4] - m[1]*f;
+  e2[2] = m[1]*m[4] - m[2]*d;
+  n2 = e2[0]*e2[0] + e2[1]*e2[1] + e2[2]*e2[2];
+  e3[0] = m[1]*f - m[2]*m[4];
+  e3[1] = m[2]*m[2] - a*f;
+  e3[2] = a*m[4] - m[1]*m[2];
+  n3 = e3[0]*e3[0] + e3[1]*e3[1] + e3[2]*e3[2];
+
+   if ( n1 > n2 && n1 > n3 )
+   {
+      n1 = sqrt(n1);
+      eigenVector[0] = e1[0]/n1;
+      eigenVector[1] = e1[1]/n1;
+      eigenVector[2] = e1[2]/n1;
+   }
+   else if ( n2 > n3 )
+   {
+      n2 = sqrt(n2);
+      eigenVector[0] = e2[0]/n2;
+      eigenVector[1] = e2[1]/n2;
+      eigenVector[2] = e2[2]/n2;
+   }
+   else
+   {
+     if ( n3 == 0.0 ) return NULL;
+
+      n3 = sqrt(n3);
+      eigenVector[0] = e3[0]/n3;
+      eigenVector[1] = e3[1]/n3;
+      eigenVector[2] = e3[2]/n3;
+   }
+  
+  return grid;
+}
+
+Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
+		      double *v1, double *v2, double *v3)
+{
+  int i;
+  double t, vt[3];
+#define VECTOR_COPY3(a,b) for(i=0;i<3;i++)a[i]=b[i];
+
+  if (ABS(m[1])+ABS(m[2])+ABS(m[4]) < 1e-12) {
+    eigenValues[0]=m[0];
+    eigenValues[1]=m[3];
+    eigenValues[2]=m[5];
+    v1[0] = 1.0;
+    v1[1] = 0.0;
+    v1[2] = 0.0;
+    v2[0] = 0.0;
+    v2[1] = 1.0;
+    v2[2] = 0.0;
+    v3[0] = 0.0;
+    v3[1] = 0.0;
+    v3[2] = 1.0;
+  }else{
+    if ( grid != gridEigenValues( grid, m, eigenValues ) ) return NULL;
+    if ( grid != gridEigenVector( grid, m, eigenValues[0], v1 ) ) return NULL;
+    if ( grid != gridEigenVector( grid, m, eigenValues[1], v2 ) ) return NULL;
+    if ( grid != gridEigenVector( grid, m, eigenValues[2], v3 ) ) return NULL;
+  }
+
+  if ( eigenValues[1] > eigenValues[0] ) {
+    t = eigenValues[0];
+    VECTOR_COPY3(vt,v1);
+    eigenValues[0] = eigenValues[1];
+    VECTOR_COPY3(v1,v2);
+    eigenValues[1] = t;
+    VECTOR_COPY3(v2,vt);
+  }
+
+  if ( eigenValues[2] > eigenValues[0] ) {
+    t = eigenValues[0];
+    VECTOR_COPY3(vt,v1);
+    eigenValues[0] = eigenValues[2];
+    VECTOR_COPY3(v1,v3);
+    eigenValues[2] = t;
+    VECTOR_COPY3(v3,vt);
+  }
+
+  if ( eigenValues[2] > eigenValues[1] ) {
+    t = eigenValues[1];
+    VECTOR_COPY3(vt,v2);
+    eigenValues[1] = eigenValues[2];
+    VECTOR_COPY3(v2,v3);
+    eigenValues[2] = t;
+    VECTOR_COPY3(v3,vt);
+  }
+
+  return grid;
+}
 
 double gridVolume(Grid *grid, int *nodes )
 {

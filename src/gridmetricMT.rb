@@ -119,6 +119,68 @@ class TestGridMetric < Test::Unit::TestCase
 
  end
 
+ def testMatrixEigenVector
+  assert_not_nil grid = Grid.new(0,0,0,0)
+  assert_not_nil v1 = grid.eigenVector([ 0.3125, -0.1875,  0.0000,
+                                                  0.3125,  0.0000,
+                                                           1.0000 ], 1.0 )
+
+  assert_in_delta 0.0, v1[0], 1.0e-15
+  assert_in_delta 0.0, v1[1], 1.0e-15
+  assert_in_delta( -1.0, v1[2], 1.0e-15 )
+ end
+
+
+ def testMatrixEigenSystem
+  assert_not_nil grid = Grid.new(1,0,0,0)
+
+  assert_not_nil eigsys = grid.eigenSystem( [ 1.0, 0.0, 0.0, 
+                                                   2.0, 0.0, 
+                                                        3.0 ])
+  assert_not_nil eig = eigsys[0]
+  assert_not_nil v1 = eigsys[1]
+  assert_not_nil v2 = eigsys[2]
+  assert_not_nil v3 = eigsys[3]
+
+  assert_in_delta 3.0, eig[0], 1.0e-15
+  assert_in_delta 2.0, eig[1], 1.0e-15
+  assert_in_delta 1.0, eig[2], 1.0e-15
+
+  assert_in_delta 0.0, v1[0], 1.0e-15
+  assert_in_delta 0.0, v1[1], 1.0e-15
+  assert_in_delta 1.0, v1[2], 1.0e-15
+  assert_in_delta 0.0, v2[0], 1.0e-15
+  assert_in_delta 1.0, v2[1], 1.0e-15
+  assert_in_delta 0.0, v2[2], 1.0e-15
+  assert_in_delta 1.0, v3[0], 1.0e-15
+  assert_in_delta 0.0, v3[1], 1.0e-15
+  assert_in_delta 0.0, v3[2], 1.0e-15
+
+  assert_not_nil eigsys = grid.eigenSystem( [ 0.3125, -0.1875,  0.0000,
+                                                       0.3125,  0.0000,
+                                                                1.0000 ] )
+  assert_not_nil eig = eigsys[0]
+  assert_not_nil v1 = eigsys[1]
+  assert_not_nil v2 = eigsys[2]
+  assert_not_nil v3 = eigsys[3]
+
+  assert_in_delta 1.000, eig[0], 1.0e-15
+  assert_in_delta 0.500, eig[1], 1.0e-15
+  assert_in_delta 0.125, eig[2], 1.0e-15
+
+  os2 = 1.0/Math::sqrt(2.0)
+
+  assert_in_delta 0.0, v1[0], 1.0e-15
+  assert_in_delta 0.0, v1[1], 1.0e-15
+  assert_in_delta( -1.0, v1[2], 1.0e-15)
+  assert_in_delta( -os2, v2[0], 1.0e-15)
+  assert_in_delta os2, v2[1], 1.0e-15
+  assert_in_delta 0.0, v2[2], 1.0e-15
+  assert_in_delta( -os2, v3[0], 1.0e-15)
+  assert_in_delta( -os2, v3[1], 1.0e-15)
+  assert_in_delta 0.0, v3[2], 1.0e-15
+ end
+
  def testFindLargestRatioEdge
   assert_not_nil grid = isoTet.resetSpacing
   grid.scaleSpacing(0,0.50)
