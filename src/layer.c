@@ -1514,6 +1514,7 @@ Layer *layerAdvance(Layer *layer)
     }
   }
 
+  /*
   if (layerNBlend(layer) > 0){
     for (blend=0;blend<layerNBlend(layer);blend++){
       layerBlendNormals(layer, blend, blendnormals );
@@ -1537,6 +1538,7 @@ Layer *layerAdvance(Layer *layer)
     layerBuildNormalTriangleAdjacency(layer);
     layer->nblend=0;
   }
+  */
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     faceId = layerConstrained(layer,normal);
