@@ -318,8 +318,8 @@ GridMove *gridmoveSpringRelaxationSubIteration(GridMove *gm, double *rmsResidual
 
   residual = count = 0.0;
   for(node=0;node<gridMaxNode(grid);node++)
-    if ( gridNodeLocal(grid,node) &&
-	 gridValidNode(grid,node) && 
+    if ( gridValidNode(grid,node) && 
+	 gridNodeLocal(grid,node) &&
 	 !gridmoveSpecified(gm,node)) {
       for(i=0;i<3;i++) {
 	res[i] = gm->xyz[i+3*node] - 
