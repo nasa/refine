@@ -447,6 +447,75 @@ Layer *layerTriangleDirection(Layer *layer, int triangle, double *direction )
   return layer;
 }
 
+Layer *layerTriangleArea(Layer *layer, int triangle, double *area )
+{
+  int i, nodes[3];
+  double node0[3], node1[3], node2[3];
+  double edge1[3], edge2[3], norm[3], length; 
+  
+  if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
+
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[2], node2 )) return NULL;
+
+  for (i = 0 ; i < 3 ; i++ ){
+    edge1[i] = node1[i] - node0[i];
+    edge2[i] = node2[i] - node0[i];
+  }
+
+  norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
+  norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
+  norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
+  length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
+
+  *area = length * 0.5;
+
+  return layer;
+}
+
+Layer *layerTriangleCenter(Layer *layer, int triangle, double *center )
+{
+  int i, nodes[3];
+  double node0[3], node1[3], node2[3];
+  
+  if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
+
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[2], node2 )) return NULL;
+
+  for (i = 0 ; i < 3 ; i++ ) center[i] = (node0[i]+node1[i]+node2[i])/3.0;
+
+  return layer;
+}
+
+Layer *layerTriangleMaxEdgeLength(Layer *layer, int triangle, double *length )
+{
+  int i, nodes[3];
+  double node0[3], node1[3], node2[3];
+  double edge0[3], edge1[3], edge2[3], maxLength; 
+  
+  if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
+
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
+  if (layer->grid != gridNodeXYZ( layer->grid, nodes[2], node2 )) return NULL;
+
+  gridSubtractVector(node1,node0,edge0);
+  gridSubtractVector(node2,node1,edge1);
+  gridSubtractVector(node0,node2,edge2);
+
+  maxLength = -1.0;
+  maxLength = MAX(maxLength,sqrt(gridDotProduct(edge0,edge0)));
+  maxLength = MAX(maxLength,sqrt(gridDotProduct(edge1,edge1)));
+  maxLength = MAX(maxLength,sqrt(gridDotProduct(edge2,edge2)));
+  
+  *length = maxLength;
+
+  return layer;
+}
+
 Layer *layerInitializeNormal(Layer *layer, int normal)
 {
   if (normal < 0 || normal >= layerMaxNormal(layer) ) return NULL;
