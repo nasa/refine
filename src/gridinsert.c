@@ -235,8 +235,9 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 		    double newX, double newY, double newZ )
 {
   int i, igem, cell, nodes[4], globalnodes[4], inode, node;
-  int newnode, newnodes0[4], newnodes1[4];
+  int newnode, newglobal, newnodes0[4], newnodes1[4];
   int globalnewnodes0[5], globalnewnodes1[5];
+  int cell0, cell1, globalCellId0, globalCellId1;
   double dummyXYZs[12];
   int gap0, gap1, face0, face1, faceId0, faceId1;
   int edge, edgeId;
@@ -248,16 +249,22 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   newnode = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
   gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
+  if (NULL!=queue) {
+    newglobal = gridGlobalNNode(grid);
+    gridSetNodeGlobal(grid,newnode,newglobal);
+    gridSetGlobalNNode(grid,newglobal+1);
+  }
 
   for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
     cell = gridGem(grid,igem);
     gridCell(grid, cell, nodes);
-    gridRemoveCell(grid, cell);
     if (NULL!=queue) {
       for ( inode = 0 ; inode < 4 ; inode++ ) 
 	globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
       queueRemoveCell(queue,globalnodes);
+      globalCellId0 = gridCellGlobal(grid,cell);
     }
+    gridRemoveCell(grid, cell);
     for ( inode = 0 ; inode < 4 ; inode++ ){
       node = nodes[inode];
       newnodes0[inode]=node;
@@ -265,15 +272,19 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
       if ( node == n0 ) newnodes0[inode] = newnode;
       if ( node == n1 ) newnodes1[inode] = newnode;
     }
-    gridAddCell(grid, newnodes0[0], newnodes0[1], newnodes0[2], newnodes0[3] );
-    gridAddCell(grid, newnodes1[0], newnodes1[1], newnodes1[2], newnodes1[3] );
+    cell0=gridAddCell(grid,newnodes0[0],newnodes0[1],newnodes0[2],newnodes0[3]);
+    cell1=gridAddCell(grid,newnodes1[0],newnodes1[1],newnodes1[2],newnodes1[3]);
     if (NULL!=queue) {
       for ( inode = 0 ; inode < 4 ; inode++ ) {
 	globalnewnodes0[inode] = gridNodeGlobal(grid,newnodes0[inode]);
 	globalnewnodes1[inode] = gridNodeGlobal(grid,newnodes1[inode]);
       }
-      globalnewnodes0[4] = EMPTY;
-      globalnewnodes1[4] = EMPTY;
+      globalCellId1 = gridGlobalNCell(grid);
+      gridSetGlobalNCell(grid,globalCellId1+1);
+      gridSetCellGlobal(grid,cell0,globalCellId0);
+      gridSetCellGlobal(grid,cell1,globalCellId1);
+      globalnewnodes0[4] = globalCellId0;
+      globalnewnodes1[4] = globalCellId1;
       queueAddCell(queue,globalnewnodes0,dummyXYZs);
       queueAddCell(queue,globalnewnodes1,dummyXYZs);
     }    

@@ -48,7 +48,7 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 {
   double xyz0[3], xyz1[3];
   double newX, newY, newZ;
-  int newnode;
+  int newnode, newglobal;
 
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return EMPTY;
 
@@ -61,7 +61,12 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 
   queueNewTransaction(queue);
   newnode = gridSplitEdgeAt( grid, queue, node0, node1, newX, newY, newZ );
-  if (EMPTY == newnode) return EMPTY;
+  if (EMPTY == newnode) {
+    printf("WARNING: %s: %d: global n cel counter may be hosed.\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
   gridSetNodePart(grid,newnode,gridPartId(grid));
+  
   return newnode;
 }

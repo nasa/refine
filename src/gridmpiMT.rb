@@ -36,7 +36,8 @@ class TestGridMPI < Test::Unit::TestCase
 	       grid.addNode(0,0,1) )
   grid.addFace(0,3,1,10)
   grid.addFace(0,2,3,11)
-  grid.identityNodeGlobal(100)
+  grid.identityNodeGlobal(100).identityCellGlobal(200)
+  grid.setGlobalNNode(104).setGlobalNCell(201)
   grid
  end 
 
@@ -92,13 +93,18 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 4, p1.parallelEdgeSplit(q,0,3)
   assert_equal 2, p1.ncell
   assert_equal 4, p1.nface
+  assert_equal 105, p1.globalnnode
+  assert_equal 202, p1.globalncell
   assert_equal p1.partId, p1.nodePart(4)
+  assert_equal 104, p1.nodeGlobal(4)
+  assert_equal 200, p1.cellGlobal(0)
+  assert_equal 201, p1.cellGlobal(1)
   assert_equal 2, q.transactions
   assert_equal 1, q.removedCells(1)
   assert_equal [100,101,102,103], q.removedCellNodes(0)
   assert_equal 2, q.addedCells(1)
-  assert_equal [EMPTY,101,102,103,EMPTY], q.addedCellNodes(0)
-  assert_equal [100,101,102,EMPTY,EMPTY], q.addedCellNodes(1)
+  assert_equal [104,101,102,103,200], q.addedCellNodes(0)
+  assert_equal [100,101,102,104,201], q.addedCellNodes(1)
  end
 
 end
