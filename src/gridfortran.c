@@ -113,11 +113,11 @@ void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
   }
 }
 
-void gridfreezenode_( int *node )
+void gridfreezenode_( int *nodeFortran )
 {
-  int cNumbering;
-  cNumbering = (*node)-1;
-  gridFreezeNode( grid, cNumbering );
+  int nodeC;
+  nodeC = (*nodeFortran)-1;
+  gridFreezeNode( grid, nodeC );
 }
 
 void gridparallelloadcapri_( char *capriProject )
