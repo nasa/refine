@@ -135,6 +135,11 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   Layer *layer;
   int i, edgeId, edgeEndPoints[2];
 
+  double edgexyz[6],tRange[2];
+  int nedgenode;
+  double *newxyz;
+  double *newt;
+
   grid = gridFillFromPart( vol, npts*10 );
 
   layer = formAdvancingFront( grid, "box" );
@@ -179,7 +184,19 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
       edgeEndPoints[1] = gridFrozenEdgeEndPoint(grid,edgeId,edgeEndPoints[1]);
       printf("rebuild endpoints:  %d <-> %d\n",
 	     edgeEndPoints[0],edgeEndPoints[1]);
-      
+      gridNodeXYZ(grid, edgeEndPoints[0], &edgexyz[0]);
+      gridNodeXYZ(grid, edgeEndPoints[0], &edgexyz[3]);
+      gridNodeT(grid, edgeEndPoints[0], edgeId, &tRange[0]);
+      gridNodeT(grid, edgeEndPoints[1], edgeId, &tRange[1] );
+
+      /* WTJ will change this to generic with DSO */
+      if( !MeshMgr_MeshEdge(vol, edgeId, edgexyz, tRange, &nedgenode, &newxyz, &newt) ) {
+	printf("Could NOT mesh Edge %d\n",edgeId);
+	return NULL;
+      }
+
+      printf("number of rebuild edge points:  %d\n",nedgenode);
+
     }
   }
 
