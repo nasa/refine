@@ -174,6 +174,35 @@ VALUE grid_edgeId( VALUE self, VALUE n0, VALUE n1 )
   return INT2NUM( returnedEdge );
 }
 
+VALUE grid_geomCurveSize( VALUE self, VALUE edgeId, VALUE startNode )
+{
+  GET_GRID_FROM_SELF;
+  return 
+    INT2NUM( gridGeomCurveSize( grid, NUM2INT(edgeId), NUM2INT(startNode) ) );
+}
+
+VALUE grid_geomCurve( VALUE self, VALUE edgeId, VALUE startNode )
+{
+  int ncurvenode, i, *curve;
+  VALUE rb_curve;
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  ncurvenode = gridGeomCurveSize( grid, NUM2INT(edgeId), NUM2INT(startNode) );
+  if (ncurvenode < 2) return Qnil;
+  curve = malloc(ncurvenode*sizeof(int));
+  returnedGrid = 
+    gridGeomCurve( grid, NUM2INT(edgeId), NUM2INT(startNode), curve );
+  if ( returnedGrid == grid ){
+    rb_curve = rb_ary_new2(ncurvenode);
+    for ( i=0 ; i < ncurvenode ; i++ ) 
+      rb_ary_store( rb_curve, i, INT2NUM(curve[i]) );
+  }else{
+    rb_curve = Qnil;
+  }
+  free(curve);
+  return rb_curve;
+}
+
 VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
   VALUE rb_gem;
@@ -312,6 +341,8 @@ void Init_Grid()
   rb_define_method( cGrid, "removeEdge", grid_removeEdge, 1 );
   rb_define_method( cGrid, "findEdge", grid_findEdge, 2 );
   rb_define_method( cGrid, "edgeId", grid_edgeId, 2 );
+  rb_define_method( cGrid, "geomCurveSize", grid_geomCurveSize, 2 );
+  rb_define_method( cGrid, "geomCurve", grid_geomCurve, 2 );
 
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
