@@ -18,7 +18,7 @@ static void gridmove_free( void *voidGridMove )
   gridmoveFree( gm );
 }
 
-VALUE gridmove_new( VALUE class, VALUE rb_grid )
+static VALUE gridmove_new( VALUE class, VALUE rb_grid )
 {
   GridMove *gm;
   Grid *grid;
@@ -30,7 +30,7 @@ VALUE gridmove_new( VALUE class, VALUE rb_grid )
   return obj;
 }
 
-VALUE gridmove_displace( VALUE self, VALUE node, VALUE rb_displace )
+static VALUE gridmove_displace( VALUE self, VALUE node, VALUE rb_displace )
 {
   int i;
   double displace[3];
@@ -39,7 +39,7 @@ VALUE gridmove_displace( VALUE self, VALUE node, VALUE rb_displace )
   return ( gm == gridmoveDisplace( gm, NUM2INT(node), displace)?self:Qnil );
 }
 
-VALUE gridmove_displacement( VALUE self, VALUE node )
+static VALUE gridmove_displacement( VALUE self, VALUE node )
 {
   int i;
   double displacement[3];
@@ -55,20 +55,20 @@ VALUE gridmove_displacement( VALUE self, VALUE node )
   return rb_displacement;
 }
 
-VALUE gridmove_specified( VALUE self, VALUE node )
+static VALUE gridmove_specified( VALUE self, VALUE node )
 {
   GET_GM_FROM_SELF;
   return ( gridmoveSpecified( gm, NUM2INT(node) )?Qtrue:Qfalse );
 }
 
-VALUE gridmove_springRelaxation( VALUE self, VALUE nsteps, VALUE subIterations )
+static VALUE gridmove_springRelaxation( VALUE self, VALUE nsteps, VALUE subIterations )
 {
   GET_GM_FROM_SELF;
   return ( gm == gridmoveSpringRelaxation( gm, NUM2INT(nsteps), 
 					   NUM2INT(subIterations) )?self:Qnil );
 }
 
-VALUE gridmove_springs( VALUE self )
+static VALUE gridmove_springs( VALUE self )
 {
   VALUE rb_springs;
   int i, nsprings, *springs;
@@ -84,7 +84,7 @@ VALUE gridmove_springs( VALUE self )
   return rb_springs;
 }
 
-VALUE gridmove_applyDisplacements( VALUE self )
+static VALUE gridmove_applyDisplacements( VALUE self )
 {
   GET_GM_FROM_SELF;
   return ( gm == gridmoveApplyDisplacements( gm )?self:Qnil );
@@ -95,7 +95,7 @@ static VALUE rb_ary_length(VALUE ary)
   return INT2NUM(RARRAY(ary)->len);
 }
 
-VALUE gridmove_cellFaceNormal( VALUE self, VALUE rb_xyz, VALUE rb_nodes, 
+static VALUE gridmove_cellFaceNormal( VALUE self, VALUE rb_xyz, VALUE rb_nodes, 
 			       VALUE normalIndex )
 {
   int len, i;
@@ -132,7 +132,7 @@ static VALUE gridmove_nnz(VALUE self)
   return INT2NUM(gridmoveNNZ(gm));
 }
 
-VALUE gridmove_rowNodes( VALUE self, VALUE rb_row )
+static VALUE gridmove_rowNodes( VALUE self, VALUE rb_row )
 {
   int row, length, start, end;
   int entry;
@@ -155,6 +155,16 @@ static VALUE gridmove_rowEntry(VALUE self, VALUE row, VALUE node)
   return INT2NUM(gridmoveRowEntry(gm,NUM2INT(row),NUM2INT(node)));
 }
 
+static VALUE gridmove_elasticRelaxationDumpA( VALUE self )
+{
+  GET_GM_FROM_SELF;
+  gridmoveElasticRelaxationStartUp(gm);
+  gridmoveElasticRelaxationStartStep(gm, 1.0);
+  gridmoveElasticRelaxationDumpA(gm);
+  gridmoveElasticRelaxationShutDown(gm);
+  return self;
+}
+
 VALUE cGridMove;
 
 void Init_GridMove() 
@@ -174,4 +184,5 @@ void Init_GridMove()
   rb_define_method( cGridMove, "nnz", gridmove_nnz, 0 );
   rb_define_method( cGridMove, "rowNodes", gridmove_rowNodes, 1 );
   rb_define_method( cGridMove, "rowEntry", gridmove_rowEntry, 2 );
+  rb_define_method( cGridMove, "elasticRelaxationDumpA", gridmove_elasticRelaxationDumpA, 0 );
 }

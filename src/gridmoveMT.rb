@@ -278,4 +278,10 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal  7,    gm.rowEntry(1,3)
  end
 
+ def testElasticityOneCellDumpA
+  grid = isoTet
+  gm = GridMove.new(grid)
+  assert_equal gm, gm.elasticRelaxationDumpA
+ end
+
 end

@@ -697,7 +697,7 @@ int gridmoveRowEntry(GridMove *gm, int row, int node)
   return EMPTY;
 }
 
-GridMove *gridmoveLinearElasticityStartUp(GridMove *gm)
+GridMove *gridmoveElasticRelaxationStartUp(GridMove *gm)
 {
   Grid *grid = gridmoveGrid(gm);
   int node;
@@ -718,7 +718,7 @@ GridMove *gridmoveLinearElasticityStartUp(GridMove *gm)
   return gm;
 }
 
-GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
+GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
 {
   Grid *grid = gridmoveGrid(gm);
   int i;
@@ -749,7 +749,7 @@ GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
 
   double R, onePlusR;
 
-  int node;
+  int node, entry;
 
   for(i=0;i<9*gridmoveNNZ(gm);i++) gm->a[i]=0.0;
 
@@ -1046,3 +1046,34 @@ GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
   return gm;
 }
 
+GridMove *gridmoveElasticRelaxationDumpA(GridMove *gm)
+{
+  Grid *grid = gridmoveGrid(gm);
+  int node, entry, i;
+
+  for(node=0;node<gridMaxNode(grid);node++) {
+    for ( entry = gridmoveRowStart(gm, node) ;
+	  entry < gridmoveRowStart(gm, node+1) ;
+	  entry++ ) {
+      for(i=0;i<9;i++) {
+	printf(" node%6d entry%6d elem%2d %20.15f\n",
+	       node, entry, i, gm->a[i+9*entry]);
+      }
+    }
+  }
+
+  return gm;
+}
+
+GridMove *gridmoveElasticRelaxationShutDown(GridMove *gm)
+{
+  
+  free(gm->rowStart); gm->rowStart=NULL;
+  free(gm->compRow);  gm->compRow=NULL;
+
+  free(gm->a);        gm->a=NULL;
+  free(gm->xyz);      gm->xyz=NULL;
+  free(gm->dxyz);     gm->dxyz=NULL;
+
+  return gm;
+}

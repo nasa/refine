@@ -86,10 +86,10 @@ int gridmoveNNZ(GridMove *);
 int gridmoveRowNode(GridMove *, int entry);
 int gridmoveRowEntry(GridMove *, int row, int node);
 
-GridMove *gridmoveElasticityRelaxationStartUp(GridMove *);
-GridMove *gridmoveElasticityRelaxationStartStep(GridMove *, double position);
-
-
+GridMove *gridmoveElasticRelaxationStartUp(GridMove *);
+GridMove *gridmoveElasticRelaxationStartStep(GridMove *, double position);
+GridMove *gridmoveElasticRelaxationDumpA(GridMove *);
+GridMove *gridmoveElasticRelaxationShutDown(GridMove *);
 
 END_C_DECLORATION
 
