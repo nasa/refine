@@ -2849,37 +2849,48 @@ Layer *layerTerminateCollidingTriangles(Layer *layer)
 
 Layer *layerSmoothLayerWithHeight(Layer *layer)
 {
-  int normal, i;
+  int normal, node;
   AdjIterator it;
-  int triangle, nextTriangle;
-  int hits;
-  double edgeAngle, averageAngle, correction;
+  int triangle, nodes[3];
+  double direction[3], xyz0[3], xyz1[3], edge[3];
+  double avg, correction;
+  int i, hits;
+  Grid *grid;
+
+  grid = layerGrid(layer);
 
   for ( normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
+    node = layerNormalRoot(layer,normal);
+    gridNodeXYZ(grid,node,xyz0);
+    layerNormalDirection(layer,normal,direction);
     hits = 0;
-    averageAngle = 0;
-    for ( it = adjFirst(layer->adj,normal); 
-	  adjValid(it); 
+    avg = 0;
+    for ( it = adjFirst(layer->adj,normal);
+	  adjValid(it);
 	  it = adjNext(it) ){
       triangle = adjItem(it);
-      nextTriangle = layerNextTriangle(layer, normal, triangle);
-      edgeAngle = layerEdgeAngle(layer,triangle,nextTriangle);
-      averageAngle += edgeAngle;
-      hits++;
+      layerTriangle(layer,triangle,nodes);
+      for (i=0;i<3;i++){
+	if (nodes[i]!=node) {
+	  gridNodeXYZ(grid,nodes[i],xyz1);
+	  gridSubtractVector(xyz1,xyz0,edge);
+	  gridVectorNormalize(edge);
+	  avg += gridDotProduct(edge,direction);
+	  hits++;
+	}
+      }
     }
-    if (hits == 0){
-      averageAngle = 180;
+    avg = avg / (double)hits;
+    //printf("%10.6f\n",avg);
+    if (avg <= 0) {
+      correction = 1 + avg;
     }else{
-      averageAngle = averageAngle / hits;
+      correction = 1 + avg;
+      correction = correction * correction ;
     }
-    correction = 1+(180.0-averageAngle)/10000.0;
-    //if (correction > 1.0) correction = correction * 1.1;
-    printf("%10.5f\n",correction);
-
-    layer->normal[normal].height = 
+    layer->normal[normal].height =
       layer->normal[normal].height * correction;
   }
-
 
   return layer;
 }
