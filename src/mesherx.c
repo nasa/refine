@@ -108,7 +108,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     layerSmoothNormalDirection(layer);
     layerSetNormalHeightWithMaxRate(layer,rate);
     layerAdvance(layer);
-    layerWriteTecplotFront(layer);
+    layerWriteTecplotFrontGeometry(layer);
     printf("advance layer %d rate %f\n",i,rate);
     i++;
   }
