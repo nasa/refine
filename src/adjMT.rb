@@ -46,6 +46,15 @@ class TestAdj < Test::Unit::TestCase
   assert_equal 9, @adj.nadj
  end
 
+ def testReallocKeepsOldRegisteredElements
+  degree = 10
+  4.times { |node| degree.times { |i| @adj.register(node,10*i+node) } }
+  assert_equal degree, @adj.degree(0) 
+  assert_equal degree, @adj.degree(1) 
+  assert_equal degree, @adj.degree(2) 
+  assert_equal degree, @adj.degree(3) 
+ end
+
  def testReallocateNNodesUp
   assert_equal 4, @adj.nnode
   assert_not_nil  @adj.realloc(9)
