@@ -452,9 +452,18 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
 
 Grid *gridSwap(Grid *grid, int n0, int n1 )
 {
-  int i, nodes[4][4];
+  int i, nodes[4][4], bestindex;
+  double cost, origcost, currentcost, bestcost;
+
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
+  origcost = 2.0;
+
+  for ( i = 0 ; i < grid->ngem ; i++ ){
+    cost = gridAR( grid, &grid->c2n[4*grid->gem[i]] );
+    origcost = MIN(origcost,cost);
+  }
+
   nodes[0][0]=n0;
   nodes[0][1]=grid->equ[0];
   nodes[0][2]=grid->equ[1];
@@ -472,12 +481,90 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
   nodes[3][2]=grid->equ[0];
   nodes[3][3]=grid->equ[3];
 
-  for ( i = 0 ; i < grid->ngem ; i++ ) 
-    gridRemoveCell( grid, grid->gem[i] );
-     
-  for ( i = 0 ; i < 4 ; i++ )
-    gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+  currentcost = 2.0;
 
+  for ( i = 0 ; i < 4 ; i++ ) {
+    cost = gridAR( grid, nodes[i] );
+    currentcost = MIN(currentcost,cost);
+  }
+
+  bestcost = currentcost;
+  bestindex = 0;
+
+  nodes[0][0]=n0;
+  nodes[0][1]=grid->equ[1];
+  nodes[0][2]=grid->equ[3];
+  nodes[0][3]=grid->equ[0];
+  nodes[1][0]=n0;
+  nodes[1][1]=grid->equ[3];
+  nodes[1][2]=grid->equ[1];
+  nodes[1][3]=grid->equ[2];
+  nodes[2][0]=n1;
+  nodes[2][1]=grid->equ[3];
+  nodes[2][2]=grid->equ[1];
+  nodes[2][3]=grid->equ[0];
+  nodes[3][0]=n1;
+  nodes[3][1]=grid->equ[1];
+  nodes[3][2]=grid->equ[3];
+  nodes[3][3]=grid->equ[2];
+
+  currentcost = 2.0;
+
+  for ( i = 0 ; i < 4 ; i++ ) {
+    cost = gridAR( grid, nodes[i] );
+    currentcost = MIN(currentcost,cost);
+  }
+
+  if ( currentcost > bestcost ) {
+    bestcost = currentcost;
+    bestindex = 1;
+  }
+
+  if ( bestcost > origcost ) {
+
+    if (bestindex == 0){
+      nodes[0][0]=n0;
+      nodes[0][1]=grid->equ[0];
+      nodes[0][2]=grid->equ[1];
+      nodes[0][3]=grid->equ[2];
+      nodes[1][0]=n0;
+      nodes[1][1]=grid->equ[2];
+      nodes[1][2]=grid->equ[3];
+      nodes[1][3]=grid->equ[4];
+      nodes[2][0]=n1;
+      nodes[2][1]=grid->equ[0];
+      nodes[2][2]=grid->equ[2];
+      nodes[2][3]=grid->equ[1];
+      nodes[3][0]=n1;
+      nodes[3][1]=grid->equ[2];
+      nodes[3][2]=grid->equ[0];
+      nodes[3][3]=grid->equ[3];
+    }else{
+      nodes[0][0]=n0;
+      nodes[0][1]=grid->equ[1];
+      nodes[0][2]=grid->equ[3];
+      nodes[0][3]=grid->equ[0];
+      nodes[1][0]=n0;
+      nodes[1][1]=grid->equ[3];
+      nodes[1][2]=grid->equ[1];
+      nodes[1][3]=grid->equ[2];
+      nodes[2][0]=n1;
+      nodes[2][1]=grid->equ[3];
+      nodes[2][2]=grid->equ[1];
+      nodes[2][3]=grid->equ[0];
+      nodes[3][0]=n1;
+      nodes[3][1]=grid->equ[1];
+      nodes[3][2]=grid->equ[3];
+      nodes[3][3]=grid->equ[2];
+    }
+
+    for ( i = 0 ; i < grid->ngem ; i++ ) 
+      gridRemoveCell( grid, grid->gem[i] );
+    
+    for ( i = 0 ; i < 4 ; i++ )
+      gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+  }
+  
   return grid;
 }
 
@@ -629,3 +716,15 @@ double gridAR(Grid *grid, int *nodes )
   return aspect;
 }
 
+double gridMinVolume( Grid *grid )
+{
+  int cellId, nodes[4];
+  double minVol, vol;
+  minVol = 999.0;
+  for (cellId=0;cellId<grid->maxcell;cellId++)
+    if ( NULL != gridCell( grid, cellId, nodes) ){
+      vol = gridVolume(grid, nodes);
+      minVol = MIN(minVol,vol);
+    }
+  return minVol;
+}
