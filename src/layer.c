@@ -2595,6 +2595,8 @@ Layer *layerWriteTecplotFrontWithData(Layer *layer, int nn )
   double xyz[3];
   Grid *grid;
 
+  double height, L, rate, Lmax;
+
   grid = layerGrid(layer);
 
   if ( NULL == layer->tecplotFile) {
@@ -2609,10 +2611,10 @@ Layer *layerWriteTecplotFrontWithData(Layer *layer, int nn )
 
   for ( i=0; i<layerNNormal(layer) ; i++ ){
     gridNodeXYZ(grid,layerNormalRoot(layer,i),xyz);
-    double height = layer->normal[i].height;
-    double L      = layer->normal[i].length;
-    double rate   = layer->normal[i].rate;
-    double Lmax   = layer->normal[i].maxlength;
+    height = layer->normal[i].height;
+    L      = layer->normal[i].length;
+    rate   = layer->normal[i].rate;
+    Lmax   = layer->normal[i].maxlength;
     fprintf(layer->tecplotFile, "%23.15e %23.15e %23.15e %23.15e %23.15e %23.15e %23.15e %d\n",xyz[0],xyz[1],xyz[2],height,L,rate,Lmax,nn);
   }
 
