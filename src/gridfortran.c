@@ -62,6 +62,15 @@ int gridinsertboundary_( int *faceId, int *nnode, int *inode,
 	  gridNFace(grid),gridMinFaceMR(grid));
 }
 
+int gridsetmap_( int *nnode, double* map )
+{
+  int node;
+  for ( node=0; node<*nnode; node++) 
+    gridSetMap( grid, node,
+		map[0+6*node], map[1+6*node], map[2+6*node],
+		map[3+6*node], map[4+6*node], map[5+6*node] );
+}
+
 int gridswap_( )
 {
   gridSwap(grid);

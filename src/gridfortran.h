@@ -20,6 +20,7 @@ int gridcreate_( int *nnode, double *x, double *y, double *z,
 int gridfree_( );
 int gridinsertboundary_( int *faceId, int *nnode, int *inode, 
 			 int *nface, int *ndim, int *f2n );
+int gridsetmap_( int *nnode, double* map );
 int gridswap_( );
 int gridsmoothvolume_( );
 int gridadaptwithoutcad_( double *minLength, double *maxLength );
