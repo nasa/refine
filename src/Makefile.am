@@ -9,6 +9,7 @@ lib_LIBRARIES = \
 	librefine.a \
 	libFAKEGeomPlate.a \
 	libFAKEGeomBox.a \
+	libFAKEGeomTrap.a \
 	libOctree_Stub.a
 
 libMesherX_a_CFLAGS = @SDKheader@
@@ -51,6 +52,9 @@ librefine_a_SOURCES = \
 
 libFAKEGeomBox_a_CFLAGS = @SDKheader@
 libFAKEGeomBox_a_SOURCES = FAKEGeomBox.h FAKEGeomBox.c
+
+libFAKEGeomTrap_a_CFLAGS = @SDKheader@
+libFAKEGeomTrap_a_SOURCES = FAKEGeomTrap.h FAKEGeomTrap.c
 
 libFAKEGeomPlate_a_CFLAGS = @SDKheader@
 libFAKEGeomPlate_a_SOURCES = FAKEGeomPlate.h FAKEGeomPlate.c
