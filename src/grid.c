@@ -198,7 +198,12 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2,5000*2);
 
+  grid->nequ = 0;
   grid->ngem = 0;
+
+  grid->nconn = 0;
+  grid->cell2conn = NULL;
+
   grid->degAR = 0;
 
   grid->tecplotFile = NULL;
@@ -524,6 +529,9 @@ void gridFree(Grid *grid)
   if (NULL != grid->lines) linesFree(grid->lines);
 
   if (NULL != grid->tecplotFile) fclose(grid->tecplotFile);
+
+  if (NULL != grid->cell2conn) free(grid->cell2conn);
+
   if (NULL != grid->geomEdge) free(grid->geomEdge);
   if (NULL != grid->geomNode) free(grid->geomNode);
 
@@ -1776,9 +1784,68 @@ Grid *gridDeleteThawedCells(Grid *grid){
   return grid;
 }
 
-int gridCellConnection(Grid *g, int cell, int index )
+void gridAddConnToCell2Conn(Grid *grid, int conn, int node0, int node1)
 {
-  return index;
+  int iconn;
+  int cell, nodes[4];
+  int conn2node0[6] = {0, 0, 0, 1, 1, 2};
+  int conn2node1[6] = {1, 2, 3, 2, 3, 3};
+  int local0, local1;
+  AdjIterator it;
+
+  for ( it = adjFirst(gridCellAdj(grid),node0); 
+	adjValid(it); 
+	it = adjNext(it) ) {
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes );
+    for(iconn=0;iconn<6;iconn++) {
+      local0 = nodes[conn2node0[iconn]];
+      local1 = nodes[conn2node1[iconn]];
+      if ( MIN(local0, local1) == MIN(node0,node1) &&
+	   MAX(local0, local1) == MAX(node0,node1) ) {
+	grid->cell2conn[iconn+6*cell] = conn;
+      } 
+    }
+  }
+}
+
+int gridCell2Conn(Grid *grid, int cell, int index )
+{
+  int c, conn;
+  int nodes[4];
+  int conn2node0[6] = {0, 0, 0, 1, 1, 2};
+  int conn2node1[6] = {1, 2, 3, 2, 3, 3};
+
+  if (!gridCellValid(grid, cell)) return EMPTY;
+  if (index<0||index>5) return EMPTY;
+  if (NULL==grid->cell2conn){
+    grid->cell2conn = (int*)malloc(6*gridMaxCell(grid)*sizeof(int));
+    for(c=0;c<6*gridMaxCell(grid);c++) grid->cell2conn[c] = EMPTY;
+    grid->nconn = 0;
+    for(c=0;c<gridMaxCell(grid);c++) {
+      if (grid == gridCell(grid,c,nodes)) {
+	for(conn=0;conn<6;conn++) {
+	  if ( EMPTY == grid->cell2conn[conn+6*c] ) {
+	    grid->cell2conn[conn+6*c] = grid->nconn;
+	    gridAddConnToCell2Conn(grid, grid->nconn,
+				   nodes[conn2node0[conn]], 
+				   nodes[conn2node1[conn]]);
+	    grid->nconn++;
+	  }
+	}
+      }
+    }
+    
+  }
+  return grid->cell2conn[index+6*cell];
+}
+
+Grid *gridEraseConn(Grid* grid)
+{
+  grid->nconn=0;
+  if (NULL != grid->cell2conn) free(grid->cell2conn);
+  grid->cell2conn = NULL;
+  return grid;
 }
 
 int gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )

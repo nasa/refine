@@ -105,6 +105,9 @@ struct Grid {
   int nequ;
   int equ[MAXDEG];
 
+  int nconn;
+  int *cell2conn;
+
   int degAR;
   double AR[MAXDEG];
   double dARdX[3*MAXDEG];
@@ -266,7 +269,9 @@ int gridFindCellWithFace(Grid *g, int face );
 int gridFindCell(Grid *g, int *nodes );
 Grid *gridDeleteThawedCells(Grid *g);
 
-int gridCellConnection(Grid *g, int cell, int index );
+#define gridNConn(grid) (grid->nconn)
+int gridCell2Conn(Grid *g, int cell, int index );
+Grid *gridEraseConn(Grid *g );
 
 int gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
 int gridAddFaceUV(Grid *g, 

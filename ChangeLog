@@ -1,3 +1,13 @@
+2004-09-29 23:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCell2Conn,gridNConn,gridEraseConn) Added
+	functions to compute a static snapshot of the current unique
+	connections (edges) in the mesh. I used the word 'conn' and not
+	'edge' because edge currently refers to CAD geometry edge
+	segements. The first call to gridCell2Conn automagically computes
+	all the conns numbered 0 to gridNConn-1. gridEraseConn deallocates
+	conn memory.
+
 2004-09-29 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c added argument -c to allow a cylindrical
