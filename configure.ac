@@ -185,4 +185,17 @@ else
 fi
 AC_SUBST([CAPRIProElibrary])
 
-AC_OUTPUT(Makefile src/Makefile example/Makefile)
+AC_OUTPUT( \
+	   Makefile \
+	   src/Makefile \
+	   example/Makefile \
+	   geomSGIn32/Makefile \
+	   geomSGIn32/Native/Makefile \
+	   geomSGIn32/Native/SGIn32/Makefile \
+	   geomSGIn32/lib/Makefile \
+	   geomSGIn32/include/Makefile \
+	   geomSGIn32/include/CADGeom/Makefile \
+	   geomSGIn32/include/Goolache/Makefile \
+	   geomSGIn32/include/MeatLib/Makefile \
+	   geomSGIn32/include/UG_API/Makefile \
+	   )
