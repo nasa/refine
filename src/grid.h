@@ -410,6 +410,8 @@ GridBool gridGeometryNode(Grid *g, int node);
 GridBool gridGeometryEdge(Grid *g, int node);
 GridBool gridGeometryFace(Grid *g, int node);
 GridBool gridGeometryBetweenFace(Grid *g, int node);
+/* returns -edgeId, faceId, or 0 for no geometry parent */
+int gridParentGeometry(Grid *g, int node0, int node1);
 
 Grid *gridAddPrism(Grid *g, int n0, int n1, int n2, int n3, int n4, int n5);
 Grid *gridPrism(Grid *g, int prismIndex, int *nodes);

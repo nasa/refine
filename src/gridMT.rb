@@ -1271,6 +1271,18 @@ class TestGrid < Test::Unit::TestCase
   assert_equal false, grid.geometryFace(grid.maxnode)
  end
 
+ def testParentGeometry
+  grid = Grid.new(4,1,1,1)
+  4.times {grid.addNode(0,0,0)}
+  grid.addEdge(0,1,5,21.0,22.0)
+  grid.addFace(0,1,2,8)
+  assert_equal( 0, grid.parentGeometry(-1,5) )
+  assert_equal( 0, grid.parentGeometry(0,3) )
+  assert_equal(-5, grid.parentGeometry(0,1) )
+  assert_equal( 8, grid.parentGeometry(1,2) )
+  assert_equal( 8, grid.parentGeometry(0,2) )
+ end
+
  def testPack
   assert_not_nil grid = Grid.new(5,2,2,2)
   assert_equal 0, grid.addNode(9.0,0.0,9.0)

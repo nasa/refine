@@ -3670,6 +3670,25 @@ GridBool gridGeometryBetweenFace(Grid *grid, int node)
   return FALSE;
 }
 
+int gridParentGeometry(Grid *grid, int node0, int node1)
+{
+  int edgeId;
+  int faceId, nodes[3];
+  AdjIterator it0, it1;
+  Adj *adj=grid->faceAdj;
+
+  edgeId = gridEdgeId(grid, node0, node1 );
+  if (edgeId>0) return (-edgeId);
+
+  for ( it0 = adjFirst(adj,node0); adjValid(it0); it0 = adjNext(it0) )
+    for ( it1 = adjFirst(adj,node1); adjValid(it1); it1 = adjNext(it1) )
+      if ( adjItem(it0) == adjItem(it1) ) {
+	if (grid==gridFace(grid, adjItem(it0), nodes, &faceId)) return faceId;
+      }
+
+  return 0;
+}
+
 Grid *gridAddPrism(Grid *grid, int n0, int n1, int n2, int n3, int n4, int n5)
 {
   int i;

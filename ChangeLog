@@ -1,3 +1,9 @@
+2004-10-29 15:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridParentGeometry) added a method for find the
+	parent geometry: returns -edgeId, faceId, or 0 for no geometry
+	parent.
+
 2004-10-29 13:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/Makefile.am added gridshape to libMesherX.a for unit_main.c

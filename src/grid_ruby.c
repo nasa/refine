@@ -996,6 +996,12 @@ VALUE grid_geometryFace( VALUE self, VALUE node )
   return ( gridGeometryFace( grid, NUM2INT( node ) ) ? Qtrue : Qfalse );
 }
 
+VALUE grid_parentGeometry( VALUE self, VALUE node0, VALUE node1 )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridParentGeometry( grid, NUM2INT(node0), NUM2INT(node1) ) );
+}
+
 
 VALUE grid_addPrism( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3,
 		      VALUE n4, VALUE n5 )
@@ -1246,6 +1252,7 @@ void Init_Grid()
   rb_define_method( cGrid, "geometryNode", grid_geometryNode, 1 );
   rb_define_method( cGrid, "geometryEdge", grid_geometryEdge, 1 );
   rb_define_method( cGrid, "geometryFace", grid_geometryFace, 1 );
+  rb_define_method( cGrid, "parentGeometry", grid_parentGeometry, 2 );
 
   rb_define_method( cGrid, "addPrism", grid_addPrism, 6 );
   rb_define_method( cGrid, "prism", grid_prism, 1 );
