@@ -1946,6 +1946,44 @@ Grid *gridGeomEdge( Grid *grid, int edge, int *curve )
   return gridGeomCurve( grid, edge, startNode, curve );
 }
 
+int gridFrozenEdgeEndPoint( Grid *grid, int edgeId, int startNode )
+{
+  AdjIterator it;
+  int node, lastnode, edge, n1, degree;
+  bool found;
+
+  degree =0;
+  node = startNode;
+  lastnode = EMPTY;
+  found = TRUE;
+  while (found) {
+    found = FALSE;
+    for ( it = adjFirst(grid->edgeAdj,node); 
+	  adjValid(it) && !found; 
+	  it = adjNext(it)) {
+      edge = adjItem(it);
+      if (grid->edgeId[edge] == edgeId) {
+	degree++;
+	if ( node == grid->e2n[0+2*edge] ) {
+	  n1 = grid->e2n[1+2*edge];
+	}else{
+	  n1 = grid->e2n[0+2*edge];	  
+	}
+	if ( n1 != lastnode &&
+	     gridNodeFrozen(grid, n1) &&
+	     gridNodeFrozen(grid, node)) { 
+	  found = TRUE;
+	  lastnode = node;
+	  node = n1;
+	}
+      }
+    }
+  }
+
+  if (degree==0)return EMPTY;
+  return node;
+}
+
 bool gridGeometryNode(Grid *grid, int node)
 {
   if (node < 0 ) return FALSE;

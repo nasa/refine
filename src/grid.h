@@ -129,6 +129,7 @@ int gridGeomEdgeStart( Grid *g, int edgeId );
 int gridGeomEdgeEnd( Grid *g, int edgeId );
 int gridGeomEdgeSize( Grid *g, int edgeId );
 Grid *gridGeomEdge( Grid *g, int edgeId, int *curve );
+int gridFrozenEdgeEndPoint( Grid *g, int edgeId, int startNode );
 
 bool gridGeometryNode(Grid *g, int node);
 bool gridGeometryEdge(Grid *g, int node);

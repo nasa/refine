@@ -589,6 +589,14 @@ VALUE grid_geomEdge( VALUE self, VALUE edge )
   return rb_curve;
 }
 
+VALUE grid_frozenEdgeEndPoint( VALUE self, VALUE edge, VALUE startNode )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridFrozenEdgeEndPoint( grid, 
+					  NUM2INT(edge), 
+					  NUM2INT(startNode) ) );
+}
+
 VALUE grid_geometryNode( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -688,6 +696,7 @@ void Init_Grid()
   rb_define_method( cGrid, "geomEdgeEnd", grid_geomEdgeEnd, 1 );
   rb_define_method( cGrid, "geomEdgeSize", grid_geomEdgeSize, 1 );
   rb_define_method( cGrid, "geomEdge", grid_geomEdge, 1 );
+  rb_define_method( cGrid, "frozenEdgeEndPoint", grid_frozenEdgeEndPoint, 2 );
 
   rb_define_method( cGrid, "geometryNode", grid_geometryNode, 1 );
   rb_define_method( cGrid, "geometryEdge", grid_geometryEdge, 1 );

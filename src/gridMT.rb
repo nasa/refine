@@ -528,7 +528,7 @@ class TestGrid < Test::Unit::TestCase
 
  end
 
- def testRetreveGeomEdgeAndStoreEndPoints
+ def testRetreveGeomEdgeAndStoredEndPoints
   assert_not_nil          grid = Grid.new(4,1,1,2)
   assert_nil              grid.addGeomEdge(1,0,1)
   assert_equal grid,      grid.setNGeomEdge(1)
@@ -550,6 +550,39 @@ class TestGrid < Test::Unit::TestCase
   assert_equal(  0,        grid.geomEdgeEnd(1))
   assert_equal( -1,        grid.geomEdgeStart(2))
   assert_equal( -1,        grid.geomEdgeEnd(2))
+ end
+
+ def testFindFrozenEdgeEndPoints
+  assert_not_nil             grid = Grid.new(10,0,0,10)
+  assert_equal 0,            grid.addNode(0,0,0)
+  assert_equal 1,            grid.addNode(1,0,0)
+  assert_equal 2,            grid.addNode(2,0,0)
+  assert_equal 3,            grid.addNode(3,0,0)
+  assert_equal grid,         grid.setNGeomEdge(1)
+  assert_equal grid,         grid.addGeomEdge(1,0,3)
+  assert_equal grid,         grid.addEdge(0,1,1,0.0,1.0)
+  assert_equal grid,         grid.addEdge(2,1,1,2.0,1.0)
+  assert_equal grid,         grid.addEdge(2,3,1,2.0,3.0)
+  assert_equal [0, 1, 2, 3], grid.geomEdge(1)
+
+  assert_equal( -1,          grid.frozenEdgeEndPoint(2,0) )
+  assert_equal( -1,          grid.frozenEdgeEndPoint(1,4) )
+
+  assert_equal   0,          grid.frozenEdgeEndPoint(1,0)
+  assert_equal   3,          grid.frozenEdgeEndPoint(1,3)
+
+  assert_equal grid,         grid.freezeNode(0)
+  assert_equal   0,          grid.frozenEdgeEndPoint(1,0)
+  assert_equal   3,          grid.frozenEdgeEndPoint(1,3)
+
+  assert_equal grid,         grid.freezeNode(1)
+  assert_equal   1,          grid.frozenEdgeEndPoint(1,0)
+  assert_equal   3,          grid.frozenEdgeEndPoint(1,3)
+
+  assert_equal grid,         grid.freezeNode(2)
+  assert_equal   2,          grid.frozenEdgeEndPoint(1,0)
+  assert_equal   3,          grid.frozenEdgeEndPoint(1,3)
+
  end
 
  def testSortNodesToGridExStandard
