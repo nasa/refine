@@ -53,9 +53,10 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
   int nnodeAdd, nnodeRemove;
   double ratio;
 
-  origNNode = gridNNode(grid);
-  adaptnode =0;
-  nnodeAdd = 0;
+  origNNode   = gridNNode(grid);
+  adaptnode   = 0;
+  nnodeAdd    = 0;
+  nnodeRemove = 0;
 
   for ( n0=0; adaptnode<origNNode; n0++ ) { 
     adaptnode++;
