@@ -234,14 +234,11 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 {
   int igem, cell, nodes[4], inode, node;
   int newnode, newglobal, newnodes0[4], newnodes1[4];
-  int globalnewnodes0[9], globalnewnodes1[9];
-  int cell0, cell1;
-  double xyz0[36], xyz1[36];
   int globaln0, globaln1, globalgap0, globalgap1;
   int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
   int globalFaceNodes0[4], globalFaceNodes1[4];
   int edge, edgeId;
-  double t0,t1, newT;
+  double t0, t1, newT;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
 
@@ -274,26 +271,10 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
       if ( node == n0 ) newnodes0[inode] = newnode;
       if ( node == n1 ) newnodes1[inode] = newnode;
     }
-    cell0=gridAddCell(grid,newnodes0[0],newnodes0[1],newnodes0[2],newnodes0[3]);
-    cell1=gridAddCell(grid,newnodes1[0],newnodes1[1],newnodes1[2],newnodes1[3]);
-    if (NULL!=queue) {
-      for ( inode = 0 ; inode < 4 ; inode++ ) {
-	globalnewnodes0[inode] = gridNodeGlobal(grid,newnodes0[inode]);
-	globalnewnodes1[inode] = gridNodeGlobal(grid,newnodes1[inode]);
-	globalnewnodes0[5+inode] = gridNodePart(grid,newnodes0[inode]);
-	globalnewnodes1[5+inode] = gridNodePart(grid,newnodes1[inode]);
-	gridNodeXYZ(grid,newnodes0[inode],&xyz0[9*inode]);
-	gridNodeXYZ(grid,newnodes1[inode],&xyz1[9*inode]);
-	gridMap(grid,newnodes0[inode],&xyz0[3+9*inode]);
-	gridMap(grid,newnodes1[inode],&xyz1[3+9*inode]);
-      }
-      globalnewnodes0[4] = gridCellGlobal(grid, cell0);
-      globalnewnodes1[4] = gridCellGlobal(grid, cell1);
-      if (gridCellHasGhostNode(grid, newnodes0))
-	queueAddCell(queue,globalnewnodes0,xyz0);
-      if (gridCellHasGhostNode(grid, newnodes1))
-	queueAddCell(queue,globalnewnodes1,xyz1);
-    }    
+    gridAddCellAndQueue( grid, queue,
+			 newnodes0[0],newnodes0[1],newnodes0[2],newnodes0[3]);
+    gridAddCellAndQueue( grid, queue,
+			 newnodes1[0],newnodes1[1],newnodes1[2],newnodes1[3]);
   }
 
   //test face

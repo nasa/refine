@@ -174,6 +174,7 @@ gridNodeGhost(grid,n1) || \
 gridNodeGhost(grid,n2) )
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
+int gridAddCellAndQueue(Grid *g, Queue *, int n0, int n1, int n2, int n3 );
 int gridAddCellWithGlobal(Grid *g, int n0, int n1, int n2, int n3, int global );
 Grid *gridRemoveCell(Grid *g, int cellId );
 Grid *gridRemoveCellAndQueue(Grid *g, Queue *, int cellId );

@@ -1137,6 +1137,33 @@ int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
   return gridAddCellWithGlobal(grid,n0,n1,n2,n3,global);
 }
 
+int gridAddCellAndQueue(Grid *grid, Queue *queue, 
+			int n0, int n1, int n2, int n3)
+{
+  int cell;
+  int inode;
+  int nodes[4], globalnodes[9];
+  double xyz[36];
+  
+  cell = gridAddCell(grid, n0, n1, n2, n3);
+
+  if ( NULL != queue && EMPTY != cell ) {
+    nodes[0] = n0; nodes[1] = n1; nodes[2] = n2; nodes[3] = n3;
+    if (gridCellHasGhostNode(grid, nodes)) {
+      for ( inode = 0 ; inode < 4 ; inode++ ) {
+	globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
+	globalnodes[5+inode] = gridNodePart(grid,nodes[inode]);
+	gridNodeXYZ(grid,nodes[inode],&xyz[9*inode]);
+	gridMap(grid,nodes[inode],&xyz[3+9*inode]);
+      }
+      globalnodes[4] = gridCellGlobal(grid, cell);
+      queueAddCell(queue,globalnodes,xyz);
+    }
+  }
+
+  return cell;
+}
+
 int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3, 
 			  int global )
 {
