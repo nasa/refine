@@ -97,8 +97,9 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal nil, grid.addCell(0,1,2,3)
  end
  
-
  def testOrient
+  assert_equal nil, @grid.orient(0,1,2,3,4,5)
+  
   assert_equal [0, 1, 2, 3], @grid.orient(0,1,2,3,0,1)
   assert_equal [0, 1, 2, 3], @grid.orient(0,3,1,2,0,1)
   assert_equal [0, 1, 2, 3], @grid.orient(0,2,3,1,0,1)
