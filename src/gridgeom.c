@@ -13,6 +13,7 @@
 #include "gridgeom.h"
 #ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
+#include "UG_API/UG_API.h"
 #else
 #include "FAKEGeom.h"
 #endif
@@ -31,6 +32,11 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
   int patchDimensions[3];
   UGPatchPtr  localPatch, globalPatch;
   Iterator patchIterator;
+
+  if ( ! MeshMgr_Initialize( ) ){
+    printf("ERROR: MeshMgr_Initialize broke.\n%s\n",ErrMgr_GetErrStr());
+    return NULL;
+  }  
 
   if ( ! CADGeom_Start( ) ){
     printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());
@@ -186,8 +192,6 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
     UGrid_FlagValue(ugrid,iface) = faceId;
   }
 
-  /* UGrid_BuildConnectivity(ugrid); I'm not sure if I need this */
-
   if( !UGPatch_InitSurfacePatches(ugrid) ) {
     printf("%s: %d: Could not make surface patches for new UGridPtr.\n",
 	   __FILE__, __LINE__);    
@@ -197,7 +201,7 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
   printf("WARNING %s: %d: set patch UV param's.\n", __FILE__, __LINE__);
 
   UGrid_TIMESTAMP(ugrid) = time( NULL );	/* Updated time */
-  UGrid_ALGORITHM(ugrid) = UGrid_ALGORITHM(CADGeom_VolumeGrid(vol));
+  UGrid_ALGORITHM(ugrid) = UG_UNKNOWN;
 
   if( !CADGeom_SetFaceGrid(vol,faceId,ugrid) ) {
     printf("%s: %d: Could not set CAPRI face UGridPtr.\n",

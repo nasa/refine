@@ -50,8 +50,9 @@ typedef struct _UGridPtr {
 #define UGrid_TIMESTAMP(ugp)     ((ugp)->updated)
 #define UGrid_ALGORITHM(ugp)     ((ugp)->algorithm)
 
+#define UG_UNKNOWN   0
+
 GridBool UGrid_FromArrays(UGridPtr *,int,double *,int,int *,int,int *);
-int UGrid_BuildConnectivity(UGridPtr);
 
 UGridPtr CADGeom_VolumeGrid( int );
 
@@ -85,6 +86,7 @@ GridBool UGPatch_InitSurfacePatches(UGridPtr ugp);
 
 char *ErrMgr_GetErrStr(void);
 
+GridBool MeshMgr_Initialize( void );
 GridBool CADGeom_Start( void );
 GridBool GeoMesh_LoadPart( char *project );
 GridBool CADGeom_SavePart(int vol, char *project);

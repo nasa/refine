@@ -17,11 +17,6 @@ GridBool UGrid_FromArrays(UGridPtr *ugp,
   return NULL;
 }
 
-int UGrid_BuildConnectivity(UGridPtr ugp)
-{
-  return 0;
-}
-
 UGridPtr CADGeom_VolumeGrid( int vol )
 {
   return NULL;
@@ -76,6 +71,11 @@ GridBool UGPatch_InitSurfacePatches(UGridPtr ugp)
 char *ErrMgr_GetErrStr(void)
 {
   return "Non-functional FAKEGeomExtras\n";
+}
+
+GridBool MeshMgr_Initialize( void )
+{
+  return FALSE;
 }
 
 GridBool CADGeom_Start( void )

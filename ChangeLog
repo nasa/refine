@@ -1,3 +1,11 @@
+2004-06-30 11:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) called MeshMgr_Initialize.
+	This call should be removed after Bill Jones and I remove the
+	need to activate the background source functions.
+	* src/FAKEGeomExtras.c added mock MeshMgr_Initialize UG_UNKNOWN.
+	removed unneeded UGrid_BuildConnectivity.
+
 2004-06-29 14:33 Mike Park  <mike.park@nasa.gov>
 
 	* Made 0.7.5 Release. new GeoSDK UG_API implementation.
