@@ -314,10 +314,10 @@ to define an anisotropic grid metric.
 @item gridmetric - computes element metrics (volume, aspect ratio)
 @item gridswap - edge and face swapping routines
 @item gridcad - node projection and node smoothing for improved element quality
-@item gridgeom - parallel GeoSDK/CAPRI restart routines.
-@item gridinsert - inserts and removes nodes into grid.
+@item gridgeom - parallel GeoSDK/CAPRI restart routines
+@item gridinsert - inserts and removes nodes into grid
 @item gridmpi - parallel grid adaptation helper
-@item gridfortran - fortran bindings for linking to FUN3D.
+@item gridfortran - fortran bindings for linking to FUN3D
 @end enumerate
 
 @section GridMath
@@ -339,10 +339,10 @@ Converts a metric M to a jacobian J
 @code{gridMapXYZWithJ}.
 
 Computes element volume @code{gridVolume} in physical space and aspect
-ratio @code{gridAR} in metric mapped space. This methods call also be
-called on elements around a node @code{gridNodeAR}. The same info is
-available for faces @code{gridFaceArea} @code{gridFaceAR}. These
-routines have also been differentiated.
+ratio @code{gridAR} in metric mapped space. The aspect ration of the
+worst elements around a node is provided by the @code{gridNodeAR}
+function. The same info is available for faces @code{gridFaceArea}
+@code{gridFaceAR}. These routines have also been differentiated.
 
 @section GridSwap
 @cindex gridswap
@@ -354,17 +354,17 @@ special routine that cleans up cells with two faces the surface
 troublesome for projection. The @code{gridSwapEdge} and
 @code{gridRemoveTwoFaceCell} have been parallelized. (The
 @code{gridSwapFace} routine could easily be parallelized, but this has
-not been gotten to yet.) The parallelization is enmabled by populating
-a queue opject, which is broadcast to other processors and applyed to
-keep other processors up to date.
+not been completed.) The parallelization is enabled by populating a
+@code{queue} object, which is broadcast to other processors and
+applyed to keep the connectivities on all  processors consistent.
 
 @section GridCAD
 @cindex gridcad
 
 The gridcad mix-in enables projection of grid nodes to geometry
 objects with CADGeom routines. CADGeom uses CAPRI for CAD acesses and
-storing files. Node smoothing and untangling in also implemented for
-surface nodes and nodes on CAD surfacces.
+storing files. Node smoothing and untangling is implemented for
+interior nodes and nodes on CAD surfacces.
 
 @section GridGeom
 @cindex gridgeom
@@ -376,24 +376,41 @@ CARPI restart files in parallel. It currently is not unit tested.
 @cindex gridinsert
 
 The gridinsert object provides mix-in methods to the grid object to
-facilitate adding and removing nodes from an existing mesh. Nodes most
-often added by splitiing a edge in half. Nodes are removed by
+facilitate adding and removing nodes from an existing mesh. Nodes are
+most often added by splitting a edge in half. Nodes are removed by
 collapsing edges. Nodes insertion by edge splitting has been fully
-parallelized with the queue object. Node removal by egde collapse can
+parallelized with the queue object. Node removal by edge collapse can
 currently be performed for the interior of a parallel partition, but
 not boundary regions between partitions. There are also routines to
-insert nodes on cell faces and the interior of faces, but these
-routines have not been parallelized.
+insert nodes on cell faces and the interior of cells, but these
+routines have not been parallelized and they contain slow searches for
+host elements.
 
 @section GridMPI
 @cindex gridmpi
 
-Added functionality for parallel processing.
+The @code{gridmpi} adds functionality for parallel processing. It
+provides parallel safe versions of various grid modifing routines
+@code{gridParallel*}. It does not perform the MPI communication
+directly. The actual MPI communication must be performed by a host MPI
+application. A @code{queue} object can be used to update a grid's
+connectivities with the @code{gridApplyQueue} method.
 
 @section GridFORTRAN
 @cindex gridfortran
 
-FORTRAN bindings for FUN3D.
+The @code{gridfortran} mixin contins FORTRAN bindings for
+FUN3D. Currently, only FORTRAN binding with one underscore are
+provided. Additional bindings can be added for compatability with more
+FORTRAN compilers. The @code{gridfortran} mixin stores static pointers
+to the @code{grid}, @code{gridmove}, and @code{queue} objects to allow
+FORTRAN routines to use refine. This mixin contains routines to
+convert a C grid object from a FUN3D FORTRAN grid derived type and
+back again.
+
+Much of the low-level MPI interface is provided in this mixin. This
+includes sizing, packing, and unpacking messages to send to and from
+other processors.
 
 @node Running FUN3D
 @chapter Running FUN3D
