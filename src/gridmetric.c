@@ -15,7 +15,7 @@ void gridSubtractVector(double *v1, double *v2, double *result)
   result[2] = v1[2] - v2[2];
 }
 
-double gridDotVector(double *v1, double *v2)
+double gridDotProduct(double *v1, double *v2)
 {
   return ( v1[0]*v2[0] +  v1[1]*v2[1] + v1[2]*v2[2] );
 }
@@ -505,7 +505,7 @@ double gridVolume(Grid *grid, int *nodes )
   gridSubtractVector( &grid->xyz[3*nodes[3]], &grid->xyz[3*nodes[0]], edge3);
   gridCrossProduct( edge1, edge2, norm );
 
-  return gridDotVector(norm,edge3)/6.0;
+  return gridDotProduct(norm,edge3)/6.0;
 }
 
 Grid *gridNodeAR(Grid *grid, int node, double *ar )
