@@ -2155,8 +2155,8 @@ Layer *layerAdvanceBlends(Layer *layer)
 	faceId = layerConstrained(layer,blendnormals[0]);
 	if (faceId>0){
 	  n[0] = layerNormalRoot(layer,blendnormals[0]);
-	  n[1] = layer->normal[blendnormals[0]].tip;
-	  n[2] = layer->normal[blendnormals[1]].tip;
+	  n[1] = layerNormalTip(layer,blendnormals[0]);
+	  n[2] = layerNormalTip(layer,blendnormals[1]);
 	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
 	  layer->triangle[triangle0].constrainedSide[0]=faceId;
 	  layer->triangle[triangle0].parentGeomEdge[0] =
@@ -2167,8 +2167,8 @@ Layer *layerAdvanceBlends(Layer *layer)
 	faceId = layerConstrained(layer,blendnormals[2]);
 	if (faceId>0){
 	  n[0] = layerNormalRoot(layer,blendnormals[2]);
-	  n[1] = layer->normal[blendnormals[3]].tip;
-	  n[2] = layer->normal[blendnormals[2]].tip;
+	  n[1] = layerNormalTip(layer,blendnormals[3]);
+	  n[2] = layerNormalTip(layer,blendnormals[2]);
 	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
 	  layer->triangle[triangle1].constrainedSide[1]=faceId;
 	  layer->triangle[triangle1].parentGeomEdge[1] =
@@ -2187,11 +2187,11 @@ Layer *layerAdvanceBlends(Layer *layer)
       }
 
       n[0] = layerNormalRoot(layer,blendnormals[0]);
-      n[1] = layer->normal[blendnormals[0]].tip;
-      n[2] = layer->normal[blendnormals[1]].tip;
+      n[1] = layerNormalTip(layer,blendnormals[0]);
+      n[2] = layerNormalTip(layer,blendnormals[1]);
       n[3] = layerNormalRoot(layer,blendnormals[2]);
-      n[4] = layer->normal[blendnormals[2]].tip;
-      n[5] = layer->normal[blendnormals[3]].tip;
+      n[4] = layerNormalTip(layer,blendnormals[2]);
+      n[5] = layerNormalTip(layer,blendnormals[3]);
 
       minVolume0 = DBL_MAX;
       if (n[4]!=n[5]) {
@@ -2336,8 +2336,8 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
       gridCopySpacing(grid, root, tip );
       gridFreezeNode( grid, tip );
     }
-    linesAddNode(gridLines(grid),normal,layer->normal[normal].root);
-    linesAddNode(gridLines(grid),normal,layer->normal[normal].tip);
+    linesAddNode(gridLines(grid),normal,layerNormalRoot(layer,normal));
+    linesAddNode(gridLines(grid),normal,layerNormalTip(layer,normal));
   }
 
   /* reconnect faces for constrained triangleside */
@@ -2351,11 +2351,11 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
 	  normal0 = layer->triangle[triangle].normal[normal0];
 	  normal1 = layer->triangle[triangle].normal[normal1];
 	  layerReconnectFaceUnlessInLayer(layer, faceId, 
-					  layer->normal[normal0].root, 
-					  layer->normal[normal0].tip);
+					  layerNormalRoot(layer,normal0),
+					  layerNormalTip(layer,normal0));
 	  layerReconnectFaceUnlessInLayer(layer, faceId, 
-					  layer->normal[normal1].root, 
-					  layer->normal[normal1].tip);
+					  layerNormalRoot(layer,normal1),
+					  layerNormalTip(layer,normal1));
 	}
       }    
     }
@@ -2365,8 +2365,8 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
   for (normal=0;normal<layerNNormal(layer);normal++) {
     edgeId = -layerConstrained(layer,normal);
     if (edgeId > 0) {
-      root = layer->normal[normal].root;
-      tip  = layer->normal[normal].tip;
+      root = layerNormalRoot(layer,normal);
+      tip = layerNormalTip(layer,normal);
       /* note that tip has been set to root on terminated normals */
       if (root != tip) layer->edgeInLayer[gridAddEdge(grid,
 						      root,tip,edgeId,
@@ -2392,10 +2392,10 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
 	sidenormal[1] = normals[side[1]];
 	sidenode[0]   = nodes[side[0]];
 	sidenode[1]   = nodes[side[1]];
-	n[0] = layer->normal[sidenormal[0]].root;
-	n[1] = layer->normal[sidenormal[1]].root;
-	n[2] = layer->normal[sidenormal[0]].tip;
-	n[3] = layer->normal[sidenormal[1]].tip;
+	n[0] = layerNormalRoot(layer,sidenormal[0]);
+	n[1] = layerNormalRoot(layer,sidenormal[1]);
+	n[2] = layerNormalTip(layer,sidenormal[0]);
+	n[3] = layerNormalTip(layer,sidenormal[1]);
 	if (layerTetrahedraOnly(layer) || n[0]==n[2] || n[1]==n[3]){
 	  if (sidenode[0]<sidenode[1]){
 	    if (n[1]!=n[3]) 
@@ -2440,8 +2440,8 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
 
     nterminated = 0;
     for (i=0;i<3;i++){
-      n[i]   = layer->normal[normals[i]].root;
-      n[i+3] = layer->normal[normals[i]].tip;
+      n[i]   = layerNormalRoot(layer,normals[i]);
+      n[i+3] = layerNormalTip(layer,normals[i]);
       if (layerNormalTerminated(layer,normals[i])) nterminated++;
     }
     
@@ -2667,8 +2667,8 @@ Layer *layerVerifyPhantomEdges(Layer *layer)
   ngot  = 0;
   for(triangle=0;triangle<layerNTriangle(layer);triangle++){
     layerTriangleNormals(layer, triangle, normals );
-    n0 = layer->normal[normals[0]].tip;
-    n1 = layer->normal[normals[1]].tip;
+    n0 = layerNormalTip(layer,normals[0]);
+    n1 = layerNormalTip(layer,normals[1]);
     if ( n0 != EMPTY && n1 != EMPTY ) {
       nline++;
       if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
@@ -2677,8 +2677,8 @@ Layer *layerVerifyPhantomEdges(Layer *layer)
 	printf("line %d<->%d is missing.\n",n0,n1);
       }
     }
-    n0 = layer->normal[normals[1]].tip;
-    n1 = layer->normal[normals[2]].tip;
+    n0 = layerNormalTip(layer,normals[1]);
+    n1 = layerNormalTip(layer,normals[2]);
     if ( n0 != EMPTY && n1 != EMPTY ) {
       nline++;
       if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
@@ -2687,8 +2687,8 @@ Layer *layerVerifyPhantomEdges(Layer *layer)
 	printf("line %d<->%d is missing.\n",n0,n1);
       }
     }
-    n0 = layer->normal[normals[2]].tip;
-    n1 = layer->normal[normals[0]].tip;
+    n0 = layerNormalTip(layer,normals[2]);
+    n1 = layerNormalTip(layer,normals[0]);
     if ( n0 != EMPTY && n1 != EMPTY ) {
       nline++;
       if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
@@ -2712,9 +2712,9 @@ Layer *layerVerifyPhantomFaces(Layer *layer)
   ngot  = 0;
   for(triangle=0;triangle<layerNTriangle(layer);triangle++){
     layerTriangleNormals(layer, triangle, normals );
-    n0 = layer->normal[normals[0]].tip;
-    n1 = layer->normal[normals[1]].tip;
-    n2 = layer->normal[normals[2]].tip;
+    n0 = layerNormalTip(layer,normals[0]);
+    n1 = layerNormalTip(layer,normals[1]);
+    n2 = layerNormalTip(layer,normals[2]);
     if ( n0 != EMPTY && n1 != EMPTY && n2 != EMPTY ) {
       nface++;
       if (grid == gridVerifyFaceExists(grid, n0, n1, n2) ){
@@ -3845,8 +3845,8 @@ Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
 
     nterminated = 0;
     for (i=0;i<3;i++){
-      n[i]   = layer->normal[normals[i]].root;
-      n[i+3] = layer->normal[normals[i]].tip;
+      n[i]   = layerNormalRoot(layer,normals[i]);
+      n[i+3] = layerNormalTip(layer,normals[i]);
       if (layerNormalTerminated(layer,normals[i])) nterminated++;
     }
     
