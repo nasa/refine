@@ -1917,7 +1917,7 @@ Layer *layerSplitBlend(Layer *layer)
     for(i=0;i<3;i++){
       normal = layer->triangle[triangle].normal[i];
       if (layer != layerTriangleDirection(layer,triangle,direction))
-	printf("Error: layerPopulateAdvancingFront: %s: %d: %s\n",
+	printf("Error: layerSplitBlend: %s: %d: %s\n",
 	       __FILE__,__LINE__,"triangle direction");
       layer->normal[normal].direction[0] += direction[0];
       layer->normal[normal].direction[1] += direction[1];
