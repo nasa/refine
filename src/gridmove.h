@@ -89,6 +89,7 @@ int gridmoveRowEntry(GridMove *, int row, int node);
 GridMove *gridmoveElasticRelaxationStartUp(GridMove *);
 GridMove *gridmoveElasticRelaxationStartStep(GridMove *, double position);
 GridMove *gridmoveElasticRelaxationDumpA(GridMove *);
+GridMove *gridmoveElasticRelaxationSubIteration(GridMove *, double *residual2);
 GridMove *gridmoveElasticRelaxationShutDown(GridMove *);
 
 END_C_DECLORATION
