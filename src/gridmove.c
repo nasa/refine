@@ -231,16 +231,10 @@ GridMove *gridmoveSpringConstant(GridMove *gm, double *xyz, int nsprings,
   return gm;
 }
 
-GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
+GridMove *gridmoveSpringRelaxationStartUp(GridMove *gm)
 {
   Grid *grid = gridmoveGrid(gm);
-  double xyz0[3], res[3];
-  int s, node;
-  int i, n0, n1;
-  int step, iteration;
-  double stepSize;
-  double residual, count;
-
+  int node;
   gm->c2e = malloc(6*gridMaxCell(grid)*sizeof(int));
   if (gm != gridmoveComputeC2E(gm, &(gm->nsprings), gm->c2e) ) { 
     free(gm->c2e); gm->c2e=NULL;
@@ -260,7 +254,23 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   gm->ksum = malloc(gridMaxNode(grid)*sizeof(double));
   gm->kxyz = malloc(3*gridMaxNode(grid)*sizeof(double));
  
-  for(node=0;node<gridMaxNode(grid);node++) gridNodeXYZ(grid,node,&(gm->xyz[3*node]));
+  for(node=0;node<gridMaxNode(grid);node++)
+    gridNodeXYZ(grid,node,&(gm->xyz[3*node]));
+
+  return gm;
+}
+
+GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
+{
+  Grid *grid = gridmoveGrid(gm);
+  double xyz0[3], res[3];
+  int s, node;
+  int i, n0, n1;
+  int step, iteration;
+  double stepSize;
+  double residual, count;
+
+  if (gm != gridmoveSpringRelaxationStartUp(gm)) return NULL;
 
   stepSize = 1.0 / (double)nsteps;
   for(step=0;step<nsteps;step++) {
