@@ -192,19 +192,6 @@ end
   assert_equal nil, grid.equator(4,5)
  end
 
- def testSwap4for4
-  grid = Grid.new(6,4)
-  assert_equal grid, grid.
-   addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
-  assert_equal grid, grid.swap(4,5)
-  assert_equal 2, grid.nodeDeg(4)
-  assert_equal 2, grid.nodeDeg(5)
-  assert_equal 4, grid.nodeDeg(0)
-  assert_equal 4, grid.nodeDeg(2)
-  assert_equal 2, grid.nodeDeg(1)
-  assert_equal 2, grid.nodeDeg(3)
- end
-
  def testAddNode
   grid = Grid.new(1,1)
   assert_equal 0, grid.addNode(1.0,0.0,0.0)
@@ -216,29 +203,51 @@ end
    addCell( @grid.addNode(0.0,0.0,0.0), @grid.addNode(1.0,0.0,0.0), 
 	    @grid.addNode(0.0,1.0,0.0), @grid.addNode(0.0,0.0,1.0) )
   nodes = [0,1,2,3]
-  assert_equal( 1.0/6.0, @grid.volume(nodes) )
+  assert_in_delta 1.0/6.0, @grid.volume(nodes), 1.0e-15
+  assert_in_delta 1.0/6.0, @grid.minVolume, 1.0e-15
   assert_in_delta 0.732050807568877, @grid.ar(nodes), 1.0e-15
  end
 
- def testGemGrid
-  assert_not_nil grid=gemGrid(nequ=4, a=0.1)
-  assert nequ+2, grid.nnode
-  assert nequ, grid.ncell
-  initalVolume =  grid.totalVolume
-  grid.ncell.times { |cellId| assert grid.volume(grid.cell(cellId))>0.0 }
+ def testSwap4_0
+  assert_not_nil grid=gemGrid(4, 0.1, 0)
+  initalVolume = grid.totalVolume
   grid.swap(0,1)
-  grid.ncell.times { |cellId| assert grid.volume(grid.cell(cellId))>0.0 }
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 2, grid.nodeDeg(0)
+  assert_equal 2, grid.nodeDeg(1)
+  assert_equal 4, grid.nodeDeg(2)
+  assert_equal 2, grid.nodeDeg(3)
+  assert_equal 4, grid.nodeDeg(4)
+  assert_equal 2, grid.nodeDeg(5)
  end
 
- def gemGrid(nequ=4, a=0.1)
+ def testSwap4_1
+  assert_not_nil grid=gemGrid(4, 0.1, 1)
+  initalVolume = grid.totalVolume
+  grid.swap(0,1)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 2, grid.nodeDeg(0)
+  assert_equal 2, grid.nodeDeg(1)
+  assert_equal 2, grid.nodeDeg(2)
+  assert_equal 4, grid.nodeDeg(3)
+  assert_equal 2, grid.nodeDeg(4)
+  assert_equal 4, grid.nodeDeg(5)
+ end
+
+ # dent for both ways and neg cells
+ 
+
+ def gemGrid(nequ=4, a=0.1, dent=-1)
   grid = Grid.new(nequ+2,nequ)
   n = Array.new
   n.push grid.addNode(1.0,0.0,0.0)
   n.push grid.addNode(-1.0,0.0,0.0)
   nequ.times do |i| 
    angle = 2.0*Math::PI*(i-1)/(nequ)
-   n.push grid.addNode(0.0,a*Math.sin(angle),a*Math.cos(angle)) 
+   s = (dent==i)?(0.9):(1.0)
+   n.push grid.addNode(0.0,s*a*Math.sin(angle),s*a*Math.cos(angle)) 
   end
   n.push 2
   nequ.times do |i|
