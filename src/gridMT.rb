@@ -27,28 +27,44 @@ class TestSampleUnit < Test::Unit::TestCase
     assert_equal 1, @grid.nodeDeg(2)
   end
 
+  def assert_false val
+    assert_equal false, val
+  end
+
+  def assert_true val
+    assert_equal true, val
+  end
+
   def testCellIterator
-    assert_equal false, @grid.validNodeCell
-    assert_equal false, @grid.moreNodeCell
+    assert_false @grid.validNodeCell
+    assert_false @grid.moreNodeCell
 
     @grid.firstNodeCell(0);
-    assert_equal false, @grid.validNodeCell
+    assert_false @grid.validNodeCell
 
     @grid.registerNodeCell( 2, 299 )
     @grid.firstNodeCell(2);
     assert_equal 299, @grid.currentNodeCell
-    assert_equal true, @grid.validNodeCell
-    assert_equal false, @grid.moreNodeCell
+    assert_true @grid.validNodeCell
+    assert_false @grid.moreNodeCell
     @grid.nextNodeCell
-    assert_equal false, @grid.validNodeCell
+    assert_false @grid.validNodeCell
 
     @grid.registerNodeCell( 3, 398 )
     @grid.registerNodeCell( 3, 399 )
     @grid.firstNodeCell(3);
-    assert_equal true, @grid.validNodeCell
-    assert_equal true, @grid.moreNodeCell
+    assert_true @grid.validNodeCell
+    assert_true @grid.moreNodeCell
 
     100.times {@grid.nextNodeCell} # abusive use of next
+  end
+
+  def assert_nil val
+    assert_equal nil, val
+  end
+
+  def AddAndRemoveCell
+    assert_nil @grid.removeNodeCell(0,0)
   end
 
 end
