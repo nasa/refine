@@ -89,24 +89,26 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   while (i<nLayer & layerAnyActiveNormals(layer)){
     i++;
 
-    if (i>1) layerSmoothNormalDirection(layer,0.1);
+    if (layerNNormal(layer)==layerNActiveNormal(layer)) 
+      layerSmoothNormalDirection(layer,0.1);
 
     layerSetNormalHeightWithMaxRate(layer,rate);
     //layerSetNormalHeightForLayerNumber(layer,i-1,rate);
     //layerSmoothLayerWithHeight(layer);
 
-    layerTerminateNormalWithLength(layer,1.0);
+    //layerTerminateNormalWithLength(layer,1.0);
     layerTerminateNormalWithBGSpacing(layer, 0.8, 1.9);
 
-    // if (i>8) layerTerminateCollidingTriangles(layer);
+    if (layerNNormal(layer)>layerNActiveNormal(layer)) 
+      layerTerminateCollidingTriangles(layer);
 
     printf("advance layer %d\n",i);
 
     layerAdvance(layer);
 
-    layerWriteTecplotFrontGeometry(layer);
+    if (i/5*5==i) layerWriteTecplotFrontGeometry(layer);
   }
-
+  layerWriteTecplotFrontGeometry(layer);
 /* case dep */
 
   if ( layer != layerRebuildInterior(layer,vol) ) return 0;
