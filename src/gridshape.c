@@ -27,7 +27,6 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
   double where[3];
   double jacobian[9];
   double *scalar;
-
   if (grid !=gridSortNodeGridEx(grid)) return NULL;
 
   scalar = (double *)malloc(gridNNode(grid)*sizeof(double));
@@ -48,32 +47,15 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
       gridAverageVector(n1,n3,e13);
       gridAverageVector(n2,n3,e23);
 
-      /*
-
-      printf("n0  %10.5f%10.5f%10.5f\n",n0[0],n0[1],n0[2]);
-      printf("n1  %10.5f%10.5f%10.5f\n",n1[0],n1[1],n1[2]);
-      printf("n2  %10.5f%10.5f%10.5f\n",n2[0],n2[1],n2[2]);
-      printf("n3  %10.5f%10.5f%10.5f\n",n3[0],n3[1],n3[2]);
-
-      printf("e01 %10.5f%10.5f%10.5f\n",e01[0],e01[1],e01[2]);
-      printf("e02 %10.5f%10.5f%10.5f\n",e02[0],e02[1],e02[2]);
-      printf("e03 %10.5f%10.5f%10.5f\n",e03[0],e03[1],e03[2]);
-
-      printf("e12 %10.5f%10.5f%10.5f\n",e12[0],e12[1],e12[2]);
-      printf("e13 %10.5f%10.5f%10.5f\n",e13[0],e13[1],e13[2]);
-      printf("e23 %10.5f%10.5f%10.5f\n",e23[0],e23[1],e23[2]);
-
-
-      */
-
       /* project edge nodes here*/
+
+      /* 1-st order test gridShapeJacobian1(grid,n0,n1,n2,n3,where,jacobian);*/
 
       where[0]=0.0; where[1]=0.0; where[2]=0.0; 
       gridShapeJacobian2(grid,n0,n1,n2,n3, 
 			 e01, e02, e03, 
 			 e12, e13, e23, 
 			 where,jacobian);
-      //gridShapeJacobian1(grid,n0,n1,n2,n3, where,jacobian);
       scalar[nodes[0]]=MIN(scalar[nodes[0]],gridMatrixDeterminate(jacobian));
 
     
@@ -82,7 +64,6 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
 			 e01, e02, e03, 
 			 e12, e13, e23, 
 			 where,jacobian);
-      //gridShapeJacobian1(grid,n0,n1,n2,n3, where,jacobian);
       scalar[nodes[1]]=MIN(scalar[nodes[1]],gridMatrixDeterminate(jacobian));
 
       where[0]=0.0; where[1]=1.0; where[2]=0.0; 
@@ -90,7 +71,6 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
 			 e01, e02, e03, 
 			 e12, e13, e23, 
 			 where,jacobian);
-      //gridShapeJacobian1(grid,n0,n1,n2,n3, where,jacobian);
       scalar[nodes[2]]=MIN(scalar[nodes[2]],gridMatrixDeterminate(jacobian));
      
       where[0]=0.0; where[1]=0.0; where[2]=1.0; 
@@ -98,7 +78,6 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
 			 e01, e02, e03, 
 			 e12, e13, e23, 
 			 where,jacobian);
-      //gridShapeJacobian1(grid,n0,n1,n2,n3, where,jacobian);
       scalar[nodes[3]]=MIN(scalar[nodes[3]],gridMatrixDeterminate(jacobian));
      
 
