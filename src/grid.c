@@ -987,6 +987,18 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   return grid->faceId[face];
 }
 
+Grid *gridFace(Grid *grid, int face, int *nodes, int *id )
+{
+  if (face >= grid->maxface || face < 0) return NULL;
+  if (EMPTY == grid->f2n[3*face]) return NULL;
+
+  nodes[0] = grid->f2n[0+3*face];
+  nodes[1] = grid->f2n[1+3*face];
+  nodes[2] = grid->f2n[2+3*face];
+  *id = grid->faceId[face];
+  return grid;
+}
+
 Grid *gridNodeUV(Grid *grid, int node, int faceId, double *uv )
 {
   AdjIterator it;

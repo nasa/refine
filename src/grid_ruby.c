@@ -174,6 +174,20 @@ VALUE grid_faceId( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
   return INT2NUM( returnedFace );
 }
 
+VALUE grid_face( VALUE self, VALUE face )
+{
+  int id, nodes[3];
+  VALUE rb_face;
+  GET_GRID_FROM_SELF;
+  if (grid != gridFace(grid, NUM2INT(face), nodes, &id )) return Qnil;
+  rb_face = rb_ary_new2(4);
+  rb_ary_store( rb_face, 0, INT2NUM(nodes[0]) );
+  rb_ary_store( rb_face, 1, INT2NUM(nodes[1]) );
+  rb_ary_store( rb_face, 2, INT2NUM(nodes[2]) );
+  rb_ary_store( rb_face, 3, INT2NUM(id) );
+  return rb_face;
+}
+
 VALUE grid_nodeUV( VALUE self, VALUE node, VALUE faceId )
 {
   VALUE rb_uv;
@@ -548,6 +562,7 @@ void Init_Grid()
   rb_define_method( cGrid, "removeFace", grid_removeFace, 1 );
   rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
+  rb_define_method( cGrid, "face", grid_face, 1 );
 
   rb_define_method( cGrid, "nodeUV", grid_nodeUV, 2 );
   rb_define_method( cGrid, "setNodeUV", grid_setNodeUV, 4 );
