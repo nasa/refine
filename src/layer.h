@@ -251,7 +251,7 @@ int layerNSubBlend(Layer *, int blend );
 
 Layer *layerBlendNormalDirectionFreeze(Layer *);
 
-Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *);
+Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *, double dot);
 
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 

@@ -3378,7 +3378,7 @@ Layer *layerBlendNormalDirectionFreeze(Layer *layer)
   return layer;
 }
 
-Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
+Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer, double dot)
 {
   Adj *adj;
   AdjIterator it;
@@ -3390,7 +3390,6 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
   double normalDot, otherDot;
   int i;
   
-
   adj = adjCreate( layerNNormal(layer), 4*layerNBlend(layer), 100);
   for (blend=0; blend < layerNBlend(layer); blend++){
     layerBlendNormals(layer,blend,normals);
@@ -3412,10 +3411,9 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
 	    gridVectorNormalize(edge);
 	    normalDot = gridDotProduct(edge,layer->normal[normal].direction);
 	    otherDot = gridDotProduct(edge,layer->normal[other].direction);
-	    if (otherDot < normalDot) {
-	      printf("normal %d other %d edge%8.4f%8.4f%8.4f dot0%8.4f dot1%8.4f \n",
-		     normal,other,
-		     edge[0],edge[1],edge[2],
+	    if ( otherDot < normalDot ) {
+	      printf("at %12.4f%12.4f%12.4f dot0%8.4f dot1%8.4f \n",
+		     xyz0[0],xyz0[1],xyz0[2],
 		     normalDot,otherDot);
 	      gridVectorCopy(layer->normal[normal].direction,
 			     layer->normal[other].direction);

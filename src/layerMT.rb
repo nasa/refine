@@ -1573,7 +1573,7 @@ class TestLayer < Test::Unit::TestCase
   grid.removeFace(3)
   grid.removeFace(4)
   layer.blend(200.0)
-  layer.preventBlendNormalDirectionFromPointingAtNeighbors
+  layer.preventBlendNormalDirectionFromPointingAtNeighbors(0.1)
 
   assert_equal [0,1,7], layer.triangleNormals(0)
   assert_equal [6,2,3], layer.triangleNormals(1)
