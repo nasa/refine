@@ -151,7 +151,7 @@ Grid *gridUpdateFaceParameter(Grid *grid, int node ){
 }
 
 Grid *gridProjectToFace(Grid *grid, int faceId, 
-			double *uv, double *xyz, double *newxyz )
+			double *xyz, double *uv, double *newxyz )
 {
   int vol = 1;
 
