@@ -291,20 +291,18 @@ int gridSplitFaceAt(Grid *grid, int face,
 
 int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
 {
-  int i, edge, maxedge, edgeId, nodes[2], insertEdge;
+  int i, edge, maxedge, edgeId, nodes[2], foundEdge;
   int newnode;
   double newXYZ[3], xyz0[3], xyz1[3];
   double edgeXYZ[3], edgeLength, edgeDir[3];
   double newEdge[3], edgePosition, radius, radiusVector[3];
-  bool foundEdge;
 
   newXYZ[0] = newX;  newXYZ[1] = newY;  newXYZ[2] = newZ;
 
-  foundEdge = FALSE;
-  insertEdge = EMPTY;
+  foundEdge = EMPTY;
   edge = 0;
   maxedge = gridMaxEdge(grid);
-  while ( !foundEdge && edge < maxedge ) {
+  while ( EMPTY == foundEdge && edge < maxedge ) {
     if (grid == gridEdge(grid, edge, nodes, &edgeId) ){
       gridNodeXYZ(grid, nodes[0], xyz0);
       gridNodeXYZ(grid, nodes[1], xyz1);
@@ -325,16 +323,15 @@ int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
       
       if ( edgePosition > 0.0 && edgePosition < 1.0 && 
 	   radius < 0.001*edgeLength) {
-	foundEdge = TRUE;
-	insertEdge = edge;
+	foundEdge = edge;
       }
     }
     edge++;
   }
 
-  if (!foundEdge) return EMPTY;
+  if ( EMPTY == foundEdge) return EMPTY;
 
-  if (grid != gridEdge(grid, insertEdge, nodes, &edgeId) ) return EMPTY;
+  if (grid != gridEdge(grid, foundEdge, nodes, &edgeId) ) return EMPTY;
 
   newnode = gridSplitEdgeAt(grid, nodes[0], nodes[1], newX, newY, newZ);
   if (EMPTY == newnode) return EMPTY;
@@ -346,28 +343,63 @@ int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
 
 int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 {
-  bool foundFace;
-  int i, face, maxface, faceId, nodes[3], insertFace;
-  double newXYZ[3], xyz0[3], xyz1[3], xyz2[3];
+  int foundFace;
+  int i, face, maxface, faceId, nodes[3];
+  double newxyz[3], xyz0[3], xyz1[3], xyz2[3];
+  double edge0[3], edge1[3], edge2[3];
+  double leg0[3], leg1[3], leg2[3];
   double norm[3], norm0[3], norm1[3], norm2[3];
-  
-  newXYZ[0] = newX;  newXYZ[1] = newY;  newXYZ[2] = newZ;
+  double normLength, unit[3], normDistance;
+  int newnode;
 
-  foundFace = FALSE;
-  insertFace = EMPTY;
+  newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
+
+  foundFace = EMPTY;
   face = 0;
   maxface = gridMaxFace(grid);
-  while ( !foundFace && face < maxface ) {
+  while ( EMPTY == foundFace && face < maxface ) {
     if (grid == gridFace(grid, face, nodes, &faceId) ){
       gridNodeXYZ(grid, nodes[0], xyz0);
       gridNodeXYZ(grid, nodes[1], xyz1);
       gridNodeXYZ(grid, nodes[2], xyz2);
-      
-      
+      gridSubtractVector(xyz1, xyz0, edge0);
+      gridSubtractVector(xyz2, xyz1, edge1);
+      gridSubtractVector(xyz0, xyz2, edge2);
+      gridSubtractVector(newxyz, xyz0, leg0);
+      gridSubtractVector(newxyz, xyz1, leg1);
+      gridSubtractVector(newxyz, xyz2, leg2);
+      gridCrossProduct(edge0,edge1,norm);
+      gridCrossProduct(edge0,leg0,norm0);
+      gridCrossProduct(edge1,leg1,norm1);
+      gridCrossProduct(edge2,leg2,norm2);
+      normLength = sqrt( gridDotProduct( norm, norm ) );
+      unit[0] = norm[0] / normLength;
+      unit[1] = norm[1] / normLength;
+      unit[2] = norm[2] / normLength;
+      normDistance = gridDotProduct( unit, leg0 );
+      if (FALSE) {
+	printf("f %d X %8.5f Y %8.5f Z %8.5f  %6.3f 0 %6.3f 1 %6.3f 2 %6.3f\n",
+	       face, newX, newY, newZ, normDistance,
+	       gridDotProduct( norm, norm0 ),
+	       gridDotProduct( norm, norm1 ),
+	       gridDotProduct( norm, norm2 ) );
+      }
+      if ( gridDotProduct( norm, norm0 ) > 0.0 &&
+	   gridDotProduct( norm, norm1 ) > 0.0 &&
+	   gridDotProduct( norm, norm2 ) > 0.0 &&
+	   normDistance < 0.01*normLength ){
+	foundFace = face;
+      }
     }
     face++;
   }
-  return EMPTY;
+
+  if ( EMPTY == foundFace ) return EMPTY;
+
+  newnode = gridSplitFaceAt(grid, foundFace, newX, newY, newZ);
+  if (EMPTY == newnode) return EMPTY;
+
+  return newnode;
 }
 
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
