@@ -87,14 +87,16 @@ then
    AC_DEFINE([HAVE_CAPRI])
    CAPRILib="-L$CAPRI/$KERNEL/$CAPRI_ARCH -lcapri"
    if test "$KERNEL" == 'Parasolid' ; then
-   if test `uname` = 'Linux'
+     if test `uname` = 'Linux'
      then  
        FG_LIB=$PARASOLID/fg.lib
+       AC_CHECK_FILE([$FG_LIB],[have_FG_LIB='yes'],[have_FG_LIB='no'])
+       CAPRILib="$CAPRILib $FG_LIB -L$PARASOLID -lpskernel"
      else
        FG_LIB=$CAPRI/$KERNEL/$CAPRI_ARCH/fg.lib
+       AC_CHECK_FILE([$FG_LIB],[have_FG_LIB='yes'],[have_FG_LIB='no'])
+       CAPRILib="$CAPRILib $FG_LIB -L$PARASOLID/uglibs -lpskernel"
      fi
-     AC_CHECK_FILE([$FG_LIB],[have_FG_LIB='yes'],[have_FG_LIB='no'])
-     CAPRILib="$CAPRILib $FG_LIB -L$PARASOLID -lpskernel"
    fi
    if test "$KERNEL" == 'OpenCASCADE' ; then
      CAPRILib="$CAPRILib -L$CASROOT/Linux/lib -lFWOSPlugin -lPTKernel -lTKBool -lTKCDF -lTKernel -lTKFeat -lTKGeomAlgo -lTKMath -lTKOffset -lTKPrim -lTKPShape -lTKService -lTKTopAlgo -lTKBRep -lTKG2d -lTKG3d -lTKGeomBase -lTKShHealing"
