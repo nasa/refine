@@ -52,7 +52,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     rate = exp(scale*log(1.05));
   }else{
     nLayer = (int)(30.0/scale);
-    rate = exp(scale*log(1.20));
+    rate = exp(scale*log(1.15));
   }
 
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
@@ -82,7 +82,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
 				      origin, direction );
   }else{
-    layerLaminarInitialHeight(layer, 5000.0, -0.05 );
+    layerLaminarInitialHeight(layer, 5000.0, -0.01 );
     layerScaleNormalHeight(layer,scale);
   }
 
