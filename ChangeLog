@@ -1,3 +1,9 @@
+2004-05-19 08:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/layer.c (layerTerminateCollidingTriangles) modified to
+	expose a sizing for tets used for collision test. Perform test on
+	triangles after applying the advance displacement.
+
 2004-05-13 17:00 Mike Park  <mike.park@nasa.gov>
 
 	* configure.ac added Linux ProE wildfire dll build for refine and
