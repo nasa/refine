@@ -36,6 +36,8 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->nGeomNode   = 0;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
+  grid->spacing = malloc(grid->maxnode * sizeof(double));
+  for (i=0;i < grid->maxnode; i++ ) grid->spacing[i] = 0.0;
 
   // cells
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
@@ -113,6 +115,8 @@ Grid *gridImport(int maxnode, int nnode,
   grid-> nGeomNode = 0;
 
   grid->xyz = xyz;
+  grid->spacing = malloc(grid->maxnode * sizeof(double));
+  for (i=0;i < grid->maxnode; i++ ) grid->spacing[i] = 0.0;
 
   // cells
   grid->c2n = c2n;
@@ -342,6 +346,7 @@ void gridFree(Grid *grid)
   free(grid->f2n);
   adjFree(grid->cellAdj);
   free(grid->c2n);
+  free(grid->spacing);
   free(grid->xyz);
   free(grid);
 }

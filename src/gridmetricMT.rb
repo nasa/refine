@@ -17,6 +17,28 @@ end
 
 class TestGridMetric < Test::Unit::TestCase
 
+ def rightTet
+  grid = Grid.new(4,1,0,0)
+  grid.addCell( 
+	       grid.addNode(0.0,0.0,0.0), 
+	       grid.addNode(1.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+ end
+
+ def isoTet
+  grid = Grid.new(4,1,0,0)
+  grid.addNode( 0.000, 0.000, 0.000 )
+  grid.addNode( 1.000, 0.000, 0.000 )
+  grid.addNode( 0.500, 0.866, 0.000 )
+  grid.addNode( 0.500, 0.289, 0.823 ) 
+  grid.addCell(0,1,2,3)
+ end
+
+ def testIsotropicTet
+  assert_in_delta 1.000, isoTet.minAR, 1.0e-4
+ end
+
  def testEdgeLength
   assert_not_nil grid = Grid.new(2,0,0,0)
   assert_equal 0, grid.addNode(0.0,0.0,0.0)
@@ -24,14 +46,22 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 2.0, grid.edgeLength(0,1), 1.0e-15
  end
 
- def testMetrics
-  assert_not_nil grid = Grid.new(4,1,0,0)
+ def testAverageEdgeLength
+  assert_not_nil grid = isoTet
+  4.times do |i| 
+   assert_in_delta 1.0, grid.averageEdgeLength(i), 3.0e-3, "node #{i} length"
+  end
+ end
 
-  assert_equal grid, grid.addCell( 
-				  grid.addNode(0.0,0.0,0.0), 
-				  grid.addNode(1.0,0.0,0.0), 
-				  grid.addNode(0.0,1.0,0.0), 
-				  grid.addNode(0.0,0.0,1.0) )
+ def testSpacingFunction
+  assert_not_nil grid = isoTet
+  4.times do |i| 
+   assert_in_delta 0.0, grid.spacing(i), 1.0e-15, "node #{i} spacing"
+  end
+ end
+
+ def testMetrics
+  assert_not_nil grid = rightTet
   nodes = [0,1,2,3]
   ar = 0.732050807568877
   assert_in_delta 1.0/6.0, grid.volume(nodes), 1.0e-15
@@ -54,8 +84,9 @@ class TestGridMetric < Test::Unit::TestCase
 				  grid.addNode(0.0,0.0,1.0) )
   nodes = [0,1,2,3]
   ar = 0.732050807568877
-  ans = grid.cellARDerivative(nodes)
   deriv = -2.0/3.0
+
+  ans = grid.cellARDerivative(nodes)
   assert_in_delta ar,    ans[0], 1.0e-15
   assert_in_delta deriv, ans[1], 1.0e-15
   assert_in_delta deriv, ans[2], 1.0e-15
@@ -67,8 +98,9 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv, ans[2], 1.0e-15
   assert_in_delta deriv, ans[3], 1.0e-15  
 
-  ans = grid.nodeARDerivative(1)
   deriv = 1.0/3.0
+
+  ans = grid.nodeARDerivative(1)
   assert_in_delta ar,    ans[0], 1.0e-15
   assert_in_delta 0.0,   ans[1], 1.0e-15
   assert_in_delta deriv, ans[2], 1.0e-15

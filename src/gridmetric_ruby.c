@@ -10,6 +10,18 @@ VALUE grid_edgeLength( VALUE self, VALUE n0, VALUE n1 )
   return rb_float_new( gridEdgeLength( grid, NUM2INT(n0), NUM2INT(n1) ) );
 }
 
+VALUE grid_averageEdgeLength( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new( gridAverageEdgeLength( grid, NUM2INT(node) ) );
+}
+
+VALUE grid_spacing( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new( gridSpacing( grid, NUM2INT(node) ) );
+}
+
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -104,6 +116,8 @@ void Init_GridMetric()
 {
   cGridMetric = rb_define_module( "GridMetric" );
   rb_define_method( cGridMetric, "edgeLength", grid_edgeLength, 2 );
+  rb_define_method( cGridMetric, "averageEdgeLength", grid_averageEdgeLength, 1 );
+  rb_define_method( cGridMetric, "spacing", grid_spacing, 1 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );

@@ -17,6 +17,35 @@ double gridEdgeLength(Grid *grid, int n0, int n1 )
   return  sqrt(dx*dx+dy*dy+dz*dz);
 }
 
+double gridAverageEdgeLength(Grid *grid, int node )
+{
+  AdjIterator it;
+  int ncell, cell, nodes[4];
+  double length, celllength;
+  ncell = 0;
+  length = 0.0;
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+    ncell++;
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes);
+    celllength 
+      = gridEdgeLength( grid, nodes[0], nodes[1] )
+      + gridEdgeLength( grid, nodes[0], nodes[2] )
+      + gridEdgeLength( grid, nodes[0], nodes[3] )
+      + gridEdgeLength( grid, nodes[1], nodes[2] )
+      + gridEdgeLength( grid, nodes[1], nodes[3] )
+      + gridEdgeLength( grid, nodes[2], nodes[3] ) ;
+    length += celllength/6.0;      
+  }
+
+  return length/(double)ncell;
+}
+
+double gridSpacing(Grid *grid, int node )
+{
+  return grid->spacing[node];
+}
+
 double gridVolume(Grid *grid, int *nodes )
 {
   int ixyz;
