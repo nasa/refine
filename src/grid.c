@@ -422,6 +422,12 @@ Grid *gridPack(Grid *grid)
       grid->xyz[0+3*packnode] = grid->xyz[0+3*orignode];
       grid->xyz[1+3*packnode] = grid->xyz[1+3*orignode];
       grid->xyz[2+3*packnode] = grid->xyz[2+3*orignode];
+      grid->spacing[0+6*packnode] = grid->spacing[0+6*orignode];
+      grid->spacing[1+6*packnode] = grid->spacing[1+6*orignode];
+      grid->spacing[2+6*packnode] = grid->spacing[2+6*orignode];
+      grid->spacing[3+6*packnode] = grid->spacing[3+6*orignode];
+      grid->spacing[4+6*packnode] = grid->spacing[4+6*orignode];
+      grid->spacing[5+6*packnode] = grid->spacing[5+6*orignode];
       packnode++;
     } 
   
@@ -429,6 +435,17 @@ Grid *gridPack(Grid *grid)
     printf("ERROR: Pack: %s: %d: grid->nnode != packnode\n",
 	   __FILE__, __LINE__ );
     return NULL;
+  }
+
+  for (i=grid->nnode ; i < grid->maxnode; i++ ) {
+    grid->xyz[0+3*i] = DBL_MAX;
+    grid->xyz[1+3*i] = (double)(i+1);
+  }
+  if (grid->maxnode == grid->nnode) {
+    grid->blanknode = EMPTY;
+  }else{
+    grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
+    grid->blanknode = grid->nnode;
   }
 
   packcell = 0;
@@ -453,6 +470,17 @@ Grid *gridPack(Grid *grid)
     printf("ERROR: Pack: %s: %d: grid->ncell %d != packcell %d \n",
 	   __FILE__, __LINE__, grid->ncell, packcell);
     return NULL;
+  }
+
+  for ( i=grid->ncell ; i < grid->maxcell ; i++ ) {
+    grid->c2n[0+4*i] = EMPTY; 
+    grid->c2n[1+4*i] = i+1; 
+  }
+  if (grid->maxcell == grid->ncell) {
+    grid->blankc2n = EMPTY;
+  }else{
+    grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
+    grid->blankc2n = grid->ncell;
   }
 
   packface=0;
@@ -482,13 +510,14 @@ Grid *gridPack(Grid *grid)
 	  
 	  for (i=0;i<3;i++) {
 	    grid->f2n[i+3*origface] = grid->f2n[i+3*packface];
-	    if ( grid->f2n[i+3*packface] != EMPTY ) {
+	    if ( grid->f2n[3*packface] != EMPTY ) {
 	      adjRemove( grid->faceAdj, grid->f2n[i+3*packface], packface );
 	      adjRegister( grid->faceAdj, grid->f2n[i+3*origface], origface );
 	    }
 	    grid->faceU[i+3*origface] = grid->faceU[i+3*packface];
 	    grid->faceV[i+3*origface] = grid->faceV[i+3*packface];
 	  }
+
 	  grid->faceId[origface]	= grid->faceId[packface];
 	  
 	  for (i=0;i<3;i++) {
@@ -511,12 +540,29 @@ Grid *gridPack(Grid *grid)
     return NULL;
   }
 
+  for ( i=grid->nface ; i < grid->maxface ; i++ ) {
+    grid->f2n[0+3*i] = EMPTY; 
+    grid->f2n[1+3*i] = i+1; 
+  }
+  if (grid->maxface == grid->nface) {
+    grid->blankf2n = EMPTY;
+  }else{
+    grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
+    grid->blankf2n = grid->nface;
+  }
+
   packedge = 0;
   for (origedge=0;origedge<grid->maxedge;origedge++){
     if (grid->e2n[0+2*origedge] != EMPTY){
 
       n0 = o2n[grid->e2n[0+2*origedge]];
       n1 = o2n[grid->e2n[1+2*origedge]];
+      if (n0==EMPTY || n1==EMPTY) {
+	printf("ERROR: Pack: %s: %d: n0 %d n1 %d: edge orig %d pack %d\n",
+	       __FILE__, __LINE__, n0, n1, origedge, packedge);
+	return NULL;
+      }
+
       id = grid->edgeId[origedge];
       t0 = grid->edgeT[0+2*origedge];
       t1 = grid->edgeT[1+2*origedge];
@@ -539,6 +585,17 @@ Grid *gridPack(Grid *grid)
     printf("ERROR: Pack: %s: %d: grid->nedge %d != packedge %d\n",
 	   __FILE__, __LINE__, grid->nface, packface);
     return NULL;
+  }
+
+  for (i=grid->nedge;i < grid->maxedge; i++ ) {
+    grid->e2n[0+2*i] = EMPTY; 
+    grid->e2n[1+2*i] = i+1; 
+  }
+  if (grid->maxedge == grid->nedge) {
+    grid->blanke2n = EMPTY;
+  }else{
+    grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
+    grid->blanke2n = grid->nedge;
   }
 
   free(o2n);

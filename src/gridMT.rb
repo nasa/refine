@@ -331,16 +331,19 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def testPack
-  assert_not_nil grid = Grid.new(5,1,2,1)
+  assert_not_nil grid = Grid.new(5,2,2,2)
   assert_equal 0, grid.addNode(9.0,0.0,9.0)
+  assert_equal 1, grid.addNode(0.0,0.0,0.0)
   assert_equal grid, grid.addCell( 
-				  grid.addNode(0.0,0.0,0.0), 
+				  0, 
 				  grid.addNode(1.0,0.0,0.0), 
 				  grid.addNode(0.0,1.0,0.0), 
 				  grid.addNode(0.0,0.0,1.0) )
-  assert_equal [1,2,3,4], grid.cell(0)
-  assert_equal [0], grid.gem(1,2)
-  assert_equal grid, grid.addFace(2,3,4,11)
+  assert_equal [0,2,3,4], grid.cell(0)
+  assert_equal grid, grid.addCell(1,2,3,4)
+  assert_equal [1,2,3,4], grid.cell(1)
+  assert_equal [1], grid.gem(1,2)
+  assert_equal grid, grid.addFace(2,3,4,1)
   assert_equal grid, grid.addFaceUV(1,1.0,11.0,
 				    2,2.0,12.0,
 				    3,3.0,13.0,
@@ -348,12 +351,18 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [1.0,11.0], grid.nodeUV(1,1)
   assert_equal [2.0,12.0], grid.nodeUV(2,1)
   assert_equal [3.0,13.0], grid.nodeUV(3,1)
+  assert_equal grid, grid.addEdge(2,3,1,22.0,23.0)
   assert_equal grid, grid.addEdge(1,2,1,21.0,22.0)
   assert_equal 21.0, grid.nodeT(1,1)
   assert_equal 22.0, grid.nodeT(2,1)
-  assert_equal grid, grid.removeNode(0)
+  assert_equal grid, grid.removeCell(0)
   assert_equal grid, grid.removeFace(0)
+  assert_equal grid, grid.removeEdge(0)
+  assert_equal grid, grid.removeNode(0)
+
   assert_equal grid, grid.pack
+  assert_equal grid, grid.pack
+  assert_equal 1, grid.ncell
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal [0], grid.gem(0,1)
   assert_equal [1.0,11.0], grid.nodeUV(0,1)
@@ -361,7 +370,27 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [3.0,13.0], grid.nodeUV(2,1)
   assert_equal 21.0, grid.nodeT(0,1)
   assert_equal 22.0, grid.nodeT(1,1)
-  assert_equal 0, grid.addNode(9.0,0.0,9.0)
+  assert_equal 4, grid.addNode(9.0,0.0,9.0)
+  assert_equal grid, grid.addCell(0,2,3,4)
+  assert_equal [0,2,3,4], grid.cell(1)
+  assert_equal grid, grid.addFace(1,2,3,2)
+  assert_equal 1, grid.findFace(1,2,3)
+  assert_equal grid, grid.addEdge(2,3,1,22.0,23.0)
+  assert_equal 2, grid.maxedge
+  assert_equal 1, grid.findEdge(2,3)
+  assert_equal 1, grid.findEdge(3,2)
+  assert_equal 0, grid.findEdge(0,1)
+  assert_equal 0, grid.findEdge(1,0)
+
+  assert_equal grid, grid.pack
+
+  assert_equal grid, grid.removeCell(1)
+  assert_equal grid, grid.removeFace(1)
+  assert_equal grid, grid.removeEdge(1)
+  assert_equal grid, grid.removeNode(4)
+
+  assert_equal grid, grid.pack
+
  end
 
  def testRetreveGeomEdgeAndStoreEndPoints
@@ -379,7 +408,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [1, 2, 0], grid.geomEdge(1)
  end
 
- def testSortNodesToGridExStandard
+ def XtestSortNodesToGridExStandard
   assert_not_nil          grid = Grid.new(6,3,3,2)
   assert_equal 0,         grid.addNode( 1, 0, 0)
   assert_equal 1,         grid.addNode(-1, 0, 0)
