@@ -183,6 +183,12 @@ VALUE grid_nodeT( VALUE self, VALUE node, VALUE edgeId )
   return Qnil;
 }
 
+VALUE grid_setNodeT( VALUE self, VALUE node, VALUE edgeId, VALUE t )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSetNodeT( grid, NUM2INT(node), NUM2INT(edgeId), NUM2DBL(t) )==grid?self:Qnil);
+}
+
 VALUE grid_addEdge( VALUE self, VALUE n0, VALUE n1, 
 		    VALUE edgeId, VALUE t0, VALUE t1 )
 {
@@ -436,6 +442,7 @@ void Init_Grid()
 
   rb_define_method( cGrid, "nodeUV", grid_nodeUV, 2 );
   rb_define_method( cGrid, "nodeT", grid_nodeT, 2 );
+  rb_define_method( cGrid, "setNodeT", grid_setNodeT, 3 );
 
   rb_define_method( cGrid, "addEdge", grid_addEdge, 5 );
   rb_define_method( cGrid, "removeEdge", grid_removeEdge, 1 );

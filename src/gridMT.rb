@@ -317,12 +317,21 @@ class TestSampleUnit < Test::Unit::TestCase
  def testAddAndFindEdge
   assert_not_nil     grid = Grid.new(4,0,0,2)
   assert_nil         grid.findEdge(0,1)
-  assert_nil         grid.nodeT(0,10)
   assert_equal grid, grid.addEdge(0, 1, 10, 0.0, 1.0)
   assert_equal 1,    grid.nedge
   assert_equal 0,    grid.findEdge(0,1)
+ end
+
+ def testEdgeTValues
+  assert_not_nil     grid = Grid.new(4,0,0,2)
+  assert_nil         grid.nodeT(0,10)
+  assert_nil         grid.setNodeT(1,10,1.5) 
+  assert_equal grid, grid.addEdge(0, 1, 10, 0.0, 1.0)
   assert_equal 0.0,  grid.nodeT(0,10)
   assert_equal 1.0,  grid.nodeT(1,10)
+  assert_equal grid, grid.addEdge(1, 2, 10, 1.0, 2.0)
+  assert_equal grid, grid.setNodeT(1,10,1.5) 
+  assert_equal 1.5,  grid.nodeT(1,10) 
  end
 
  def testAddAndRemoveEdge

@@ -603,6 +603,31 @@ Grid *gridNodeT(Grid *grid, int  node, int edgeId, double *t )
   return NULL;
 }
 
+Grid *gridSetNodeT(Grid *grid, int  node, int edgeId, double t )
+{
+  AdjIterator it;
+  int edge;
+  bool found;
+  found = FALSE;
+
+  for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) ){
+    edge = adjItem(it);
+    if ( grid->edgeId[edge] == edgeId ) {
+      if (grid->e2n[0+2*edge] == node){
+	grid->edgeT[0+2*edge] = t;
+	found = TRUE;
+      }
+      if (grid->e2n[1+2*edge] == node){
+	grid->edgeT[1+2*edge] = t;
+	found = TRUE;
+      }
+    }
+  }
+
+  if (found) return grid;
+  return NULL;
+}
+
 Grid *gridAddEdge(Grid *grid, int n0, int n1, 
 		  int edgeId, double t0, double t1 )
 {

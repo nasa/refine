@@ -55,6 +55,7 @@ Grid *gridNodeUV(Grid *g, int node, int faceId, double *uv );
 double gridNodeU(Grid *grid, int node, int faceId);
 double gridNodeV(Grid *grid, int node, int faceId);
 Grid *gridNodeT(Grid *g, int node, int edgeId, double *t );
+Grid *gridSetNodeT(Grid *g, int node, int edgeId, double t );
 
 Grid *gridAddEdge(Grid *g, int n0, int n1, 
 		  int edgeId, double t0, double t1 );
