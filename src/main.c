@@ -130,9 +130,9 @@ int main( int argc, char *argv[] )
     }else{
       if (debugInsert) {
 	printf("Inserting a line of nodes.\n");
-	gridInsertLineOnSymPlane( grid, ninsert, 0.0, 1.0, 0.33);
+	gridInsertLineOnSymPlane( grid, ninsert, 0.0, 1.0, 0.22);
 	gridVerifyEdgesInLine(grid);
-	ratio=0.9;
+	ratio=0.7;
       }else{
 	printf("Scaling spacing to refine a sphere.\n");
 	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
@@ -228,7 +228,7 @@ int main( int argc, char *argv[] )
     STATUS;
     if (boundaryLayerGrid) {
     }else{
-      gridFreezeGoodNodes(grid,0.6,0.4,1.5);
+      if (!debugInsert) gridFreezeGoodNodes(grid,0.6,0.4,1.5);
       printf("nodes frozen %d\n",gridNFrozen(grid));
     }
   }

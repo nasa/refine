@@ -649,6 +649,9 @@ Grid *gridInsertLineOnSymPlane(Grid *grid, int n,
 Grid *gridVerifyEdgesInLine(Grid *grid)
 {
   int i, n0, n1;
+  bool gotIt;
+  int removeNode;
+  double ratio;
 
   if ( grid->nline <= 0 || grid->line == NULL ) return NULL;
 
@@ -657,6 +660,20 @@ Grid *gridVerifyEdgesInLine(Grid *grid)
     n1 = grid->line[i];
     if( !gridCellEdge( grid, n0, n1 ) ) {
       printf("Segment %3i of line n0 %10d n1 %10d not found\n",i,n0,n1);
+      gotIt = FALSE;
+      if (!gotIt){
+	gridSmallestRatioEdge(grid,n0,&removeNode,&ratio);
+	if ( !gridNodeFrozen( grid, removeNode ) )
+	  gridCollapseEdge(grid, n0, removeNode, 0.0);
+	gotIt = gridCellEdge( grid, n0, n1 );
+      }
+      if (!gotIt){
+	gridSmallestRatioEdge(grid,n1,&removeNode,&ratio);
+	if ( !gridNodeFrozen( grid, removeNode ) )
+	  gridCollapseEdge(grid, n1, removeNode, 0.0);
+	gotIt = gridCellEdge( grid, n0, n1 );
+      }
+      if (gotIt) printf("  gotIt!\n");
     }
   }
   return grid;
