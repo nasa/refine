@@ -18,7 +18,7 @@ class Grid
  include GridInsert
 end
 
-class TestSampleUnit < Test::Unit::TestCase
+class TestGridInsert < Test::Unit::TestCase
 
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1

@@ -23,7 +23,7 @@ class Grid
  end
 end
 
-class TestSampleUnit < Test::Unit::TestCase
+class TestGridSwap < Test::Unit::TestCase
 
  def testSwapEdgeNotBeter
   assert_not_nil grid=gemGrid(3, 2.0, 0)

@@ -9,7 +9,7 @@ exit 1 unless system 'ruby makeRubyExtension.rb Adj master_header.h'
 require 'test/unit'
 require 'Adj/Adj'
 
-class TestSampleUnit < Test::Unit::TestCase
+class TestAdj < Test::Unit::TestCase
 
  def set_up
   @adj = Adj.new(4,4)

@@ -23,7 +23,7 @@ class Grid
  end
 end
 
-class TestSampleUnit < Test::Unit::TestCase
+class TestGridCAD < Test::Unit::TestCase
 
  def testEdgeProjection
   assert_not_nil              grid = Grid.new(3,0,0,2)

@@ -9,7 +9,7 @@ exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_h
 require 'test/unit'
 require 'Grid/Grid'
 
-class TestSampleUnit < Test::Unit::TestCase
+class TestGrid < Test::Unit::TestCase
 
  def set_up
   @grid = Grid.new(4,1,0,0)
