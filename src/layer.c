@@ -380,6 +380,7 @@ Layer *layerInitializeNormal(Layer *layer, int normal)
 {
   if (normal < 0 || normal >= layerMaxNormal(layer) ) return NULL;
  
+  layer->normal[normal].constrained = 0;
   layer->normal[normal].root = EMPTY;
   layer->normal[normal].tip = EMPTY;
   layer->normal[normal].direction[0] = 0.0;
