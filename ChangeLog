@@ -1,3 +1,11 @@
+2004-10-29 01:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridShapeJacobian1,gridShapeJacobian2) Added to
+	try to use to determine if boundary tets are valid in a curved
+	geometry sense.
+	* src/gridmath.h (gridMatrixDeterminate) added a 3x3 matrix
+	determine macro.
+
 2004-10-18 13:50 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.3 Release. ** internal release ** while continuing
