@@ -986,6 +986,7 @@ Layer *layerSmoothNormalDirection(Layer *layer)
   int minTriangle, lastTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
+  if (layerNBlend(layer) != 0 ) return NULL;
 
   layerProjectNormalsToConstraints(layer);
 
