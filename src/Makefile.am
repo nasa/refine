@@ -5,33 +5,10 @@
 AUTOMAKE_OPTIONS = 1.7
 
 lib_LIBRARIES = \
-	libMesherX.a \
 	librefine.a \
 	libFAKEGeomPlate.a \
 	libFAKEGeomBox.a \
-	libFAKEGeomTrap.a \
-	libOctree_Stub.a
-
-libMesherX_a_CFLAGS = @SDKheader@
-libMesherX_a_SOURCES = \
-	master_header.h \
-	adj.h adj.c \
-	near.h near.c \
-	intersect.h intersect.c \
-	line.h line.c \
-	queue.h queue.c \
-	sort.h sort.c \
-	grid.h grid.c \
-	gridmath.h gridmath.c \
-	gridmetric.h gridmetric.c \
-	gridinsert.h gridinsert.c \
-	gridswap.h gridswap.c \
-	gridcad.h gridcad.c \
-	gridfiller.h gridfiller.c \
-	layer.h layer.c \
-	mesherxInit.h mesherxInit.c \
-	mesherxRebuild.h mesherxRebuild.c \
-	mesherx.h mesherx.c
+	libFAKEGeomTrap.a
 
 librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
@@ -59,24 +36,35 @@ libFAKEGeomTrap_a_SOURCES = FAKEGeomTrap.h FAKEGeomTrap.c
 libFAKEGeomPlate_a_CFLAGS = @SDKheader@
 libFAKEGeomPlate_a_SOURCES = FAKEGeomPlate.h FAKEGeomPlate.c
 
+if BUILD_SDK_DEPENDENTS
+
+lib_LIBRARIES += libMesherX.a libOctree_Stub.a
+
+libMesherX_a_CFLAGS = @SDKheader@
+libMesherX_a_SOURCES = \
+	master_header.h \
+	adj.h adj.c \
+	near.h near.c \
+	intersect.h intersect.c \
+	line.h line.c \
+	queue.h queue.c \
+	sort.h sort.c \
+	grid.h grid.c \
+	gridmath.h gridmath.c \
+	gridmetric.h gridmetric.c \
+	gridinsert.h gridinsert.c \
+	gridswap.h gridswap.c \
+	gridcad.h gridcad.c \
+	gridfiller.h gridfiller.c \
+	layer.h layer.c \
+	mesherxInit.h mesherxInit.c \
+	mesherxRebuild.h mesherxRebuild.c \
+	mesherx.h mesherx.c
+
 libOctree_Stub_a_CFLAGS = @SDKheader@
 libOctree_Stub_a_SOURCES = Octree_Stub.c
 
-all_CFLAGS = @SDKheader@
-refineLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache -lMeat
-MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache libOctree_Stub.a -lMeat
-all_LDFLAGS = @dynamicFlag@
-hla_sources = \
-	MesherX_HLA.c \
-	mesherx_hla.h mesherx_hla.c \
-	layerNormalExtra.h layerNormalExtra.c \
-	geometricStretch.h geometricStretch.c \
-	SyJetSpacingControl.c
-
-mesherx_hla.c : mesherx_SyJet.c
-	( cd $(srcdir) && ln -s mesherx_SyJet.c mesherx_hla.c )
-
-LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
+endif # BUILD_SDK_DEPENDENTS
 
 EXTRA_DIST = mesherx_SyJet.c \
 	makeRubyExtension.rb RubyExtensionBuilder.rb \
@@ -101,6 +89,22 @@ TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb queueMT.rb gridMT.
 bin_PROGRAMS =
 
 if BUILD_SDK_DEPENDENTS
+all_CFLAGS = @SDKheader@
+refineLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache -lMeat
+MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom-CAPRI -lGoolache libOctree_Stub.a -lMeat
+all_LDFLAGS = @dynamicFlag@
+hla_sources = \
+	MesherX_HLA.c \
+	mesherx_hla.h mesherx_hla.c \
+	layerNormalExtra.h layerNormalExtra.c \
+	geometricStretch.h geometricStretch.c \
+	SyJetSpacingControl.c
+
+mesherx_hla.c : mesherx_SyJet.c
+	( cd $(srcdir) && ln -s mesherx_SyJet.c mesherx_hla.c )
+
+LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
+
 if BUILD_NATIVE_KERNEL
 bin_PROGRAMS += refineNative MesherXNative MesherX_HLANative
 refineNative_CFLAGS = $(all_CFLAGS)
