@@ -32,7 +32,7 @@ int main( int argc, char *argv[] )
   char project[256];
   char adaptfile[256], outputProject[256], outputFAST[256];
   int i, j, oldSize, newSize;
-  double ratio;
+  double ratio, ratioRefine, ratioCollapse;
   bool projected;
   int iview = 0;
 
@@ -107,8 +107,11 @@ int main( int argc, char *argv[] )
 
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
-    printf("adapt grid, ratio %4.2f...\n",ratio);
-    gridAdapt(grid,0.4*ratio,2.2/ratio);
+    ratioCollapse = 0.4*ratio;
+    ratioRefine   = 1.3/ratio;
+    printf("adapt, ratio %4.2f, collapse limit %10.8f, refine limit %10.8\n",
+	   ratio, ratioCollapse, ratioRefine );
+    gridAdapt(grid,ratioCollapse,ratioRefine);
     oldSize = newSize;
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
