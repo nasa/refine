@@ -414,37 +414,16 @@ int layerUniqueNormalId(Layer *layer, int globalNodeId)
 
 Layer *layerMakeNormal(Layer *layer)
 {
-  int i, triangle, normal, globalNode;
+  int i, triangle, normal, globalNodeId;
   double direction[3], *norm, length;
 
   if (layerNTriangle(layer)==0) return NULL;
-  layer->globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
-  for (i=0;i<layerMaxNode(layer);i++) layer->globalNode2Normal[i]=EMPTY;
-  normal = 0;
+
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
-      globalNode = layer->triangle[triangle].globalNode[i];
-      if (EMPTY == layer->globalNode2Normal[globalNode] ){
-	layer->globalNode2Normal[globalNode]=normal;
-	layer->triangle[triangle].normal[i]=normal;
-	normal++;
-      }else{
-	layer->triangle[triangle].normal[i]=layer->globalNode2Normal[globalNode];
-      }
-    }
-  }
-  layer->nnormal=normal;
-
-  layer->normal = malloc( layer->nnormal * sizeof(Normal));
-  for(normal=0;normal<layer->nnormal;normal++){ 
-    layer->normal[normal].constrained = 0;
-  }
-
-  for(i=0;i<layerMaxNode(layer);i++){
-    normal = layer->globalNode2Normal[i];
-    if (normal!=EMPTY) {
-      layerInitializeNormal(layer,normal);
-      layer->normal[normal].root = i;
+      globalNodeId = layer->triangle[triangle].globalNode[i];
+      layer->triangle[triangle].normal[i] = 
+	layerUniqueNormalId(layer,globalNodeId);
     }
   }
 
