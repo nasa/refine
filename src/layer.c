@@ -15,6 +15,7 @@
 #include "layer.h"
 #include "gridmetric.h"
 #include "gridcad.h"
+#include "gridinsert.h"
 #include "grid.h"
 #include "adj.h"
 
@@ -652,12 +653,10 @@ Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
   return layer;
 }
 
-Layer *layerInsertPhantomFront(Layer *layer)
+Layer *layerInsertPhantomFront(Layer *layer, double dz )
 {
   Grid *grid = layer->grid;
   int normal, faceId, edgeId, newnode;
-  int front, normals[3], line, *lines;
-  int nline, mate, temp0, temp1, i;
   double xyz[3];
 
   layerVisibleNormals(layer);
@@ -668,7 +667,7 @@ Layer *layerInsertPhantomFront(Layer *layer)
     layer->normal[normal].tip = EMPTY;
   }
 
-  layerWiggle(layer, 0.22 );
+  layerWiggle(layer, dz );
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     if (0 != layerConstrained(layer,normal)){
@@ -690,84 +689,55 @@ Layer *layerInsertPhantomFront(Layer *layer)
     }
   }
 
-  nline =0;
-  for(front=0;front<layerNFront(layer);front++){
-    layerFrontNormals(layer, front, normals );
-    if ( layer->normal[normals[0]].tip != EMPTY &&
-	 layer->normal[normals[1]].tip != EMPTY ) nline++;
-    if ( layer->normal[normals[1]].tip != EMPTY &&
-	 layer->normal[normals[2]].tip != EMPTY ) nline++;
-    if ( layer->normal[normals[2]].tip != EMPTY &&
-	 layer->normal[normals[0]].tip != EMPTY ) nline++;
-  }
-
-  lines = malloc(nline*2*sizeof(int));
-
-  nline =0;
-  for(front=0;front<layerNFront(layer);front++){
-    layerFrontNormals(layer, front, normals );
-    if ( layer->normal[normals[0]].tip != EMPTY &&
-	 layer->normal[normals[1]].tip != EMPTY ) {
-      lines[0+2*nline] = layer->normal[normals[0]].tip;
-      lines[1+2*nline] = layer->normal[normals[1]].tip;
-      nline++;
-    }
-    if ( layer->normal[normals[1]].tip != EMPTY &&
-	 layer->normal[normals[2]].tip != EMPTY ) {
-      lines[0+2*nline] = layer->normal[normals[1]].tip;
-      lines[1+2*nline] = layer->normal[normals[2]].tip;
-      nline++;
-    }
-    if ( layer->normal[normals[2]].tip != EMPTY &&
-	 layer->normal[normals[0]].tip != EMPTY ) {
-      lines[0+2*nline] = layer->normal[normals[2]].tip;
-      lines[1+2*nline] = layer->normal[normals[0]].tip;
-      nline++;
-    }
-  }
-
-  for (line=0;line<nline;line++){
-    printf("line %2d n0 %4d n1 %4d\n",line,lines[0+2*line],lines[1+2*line]);
-  }
-
-  for (line=1;line<nline;line++){
-    for(mate=line;mate<nline;mate++){
-      if(lines[0+2*mate] == lines[1+2*(line-1)]){
-	temp0 = lines[0+2*line];
-	temp1 = lines[1+2*line];
-	lines[0+2*line] = lines[0+2*mate];
-	lines[1+2*line] = lines[1+2*mate];
-	lines[0+2*mate] = temp0;
-	lines[1+2*mate] = temp1;
-	mate=nline;
-      }else
-      if(lines[1+2*mate] == lines[1+2*(line-1)]){
-	temp0 = lines[0+2*line];
-	temp1 = lines[1+2*line];
-	lines[1+2*line] = lines[0+2*mate];
-	lines[0+2*line] = lines[1+2*mate];
-	lines[0+2*mate] = temp0;
-	lines[1+2*mate] = temp1;
- 	mate=nline;
-     }
-    }
-  }
-  
-  for (line=0;line<nline;line++){
-    printf("line %2d n0 %4d n1 %4d\n",line,lines[0+2*line],lines[1+2*line]);
-  }
-
-  for (i=0;i<nline;i++)lines[i+1]=lines[1+2*i];
-
-  for (i=0;i<=nline;i++){
-    printf("line %2d node %4d\n",i,lines[i]);
-  }
-
-  gridInsertLine(grid,nline,lines);
- 
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridRemoveNode(grid,layer->normal[normal].root);
+    layer->normal[normal].root = EMPTY;
   }
 
+  return layer;
+}
+
+Layer *layerVerifyPhantomEdges(Layer *layer)
+{
+  Grid *grid = layer->grid;
+  int front, normals[3], nline, ngot, n0, n1;
+
+  nline = 0;
+  ngot  = 0;
+  for(front=0;front<layerNFront(layer);front++){
+    layerFrontNormals(layer, front, normals );
+    n0 = layer->normal[normals[0]].tip;
+    n1 = layer->normal[normals[1]].tip;
+    if ( n0 != EMPTY && n1 != EMPTY ) {
+      nline++;
+      if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
+	ngot++;
+      }else{
+	printf("line %d<->%d is missing.\n");
+      }
+    }
+    n0 = layer->normal[normals[1]].tip;
+    n1 = layer->normal[normals[2]].tip;
+    if ( n0 != EMPTY && n1 != EMPTY ) {
+      nline++;
+      if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
+	ngot++;
+      }else{
+	printf("line %d<->%d is missing.\n");
+      }
+    }
+    n0 = layer->normal[normals[2]].tip;
+    n1 = layer->normal[normals[0]].tip;
+    if ( n0 != EMPTY && n1 != EMPTY ) {
+      nline++;
+      if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
+	ngot++;
+      }else{
+	printf("line %d<->%d is missing.\n");
+      }
+    }
+  }
+  printf("lines %d of %d verified.\n",ngot,nline);
+ 
   return layer;
 }
