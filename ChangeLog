@@ -1,3 +1,11 @@
+2005-02-27 23:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridcreate_) called gridSetCostConstraint to
+	turn on face UV parameter area checks in addition to the default
+	cell volume check. This is to prevent a split, collapse, or swap
+	from inadvertently causing an inverted face for parallel FUN3D
+	adaptation runs.
+
 2005-02-27 22:18 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridCostConstraint,gridSetCostConstraint) added
