@@ -36,21 +36,34 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal @adj, @adj.first(0);
   assert_equal false, @adj.valid;
   
-  assert_equal @adj, @adj.register( 2, 299 )
-  assert_equal @adj, @adj.first(2)
-  assert_equal 299,  @adj.current
+  assert_equal @adj,  @adj.register( 2, 299 )
+  assert_equal @adj,  @adj.first(2)
+  assert_equal 299,   @adj.current
   assert_equal true,  @adj.valid
   assert_equal false, @adj.more
-  assert_equal @adj, @adj.next
+  assert_equal @adj,  @adj.next
   assert_equal false, @adj.valid
   
-  assert_equal @adj, @adj.register( 3, 398 )
-  assert_equal @adj, @adj.register( 3, 399 )
-  @adj.first(3);
+  assert_equal @adj,  @adj.register( 3, 398 )
+  assert_equal @adj,  @adj.register( 3, 399 )
+  assert_equal @adj,  @adj.first(3);
   assert_equal true,  @adj.valid
   assert_equal true,  @adj.more
+  assert_equal @adj,  @adj.next
+  assert_equal true,  @adj.valid
+  assert_equal false, @adj.more
   
   100.times {@adj.next} # abusive use of next
  end
 
+ def testAddAndRemove
+  assert_equal false, @adj.exists(1,0)
+  assert_nil          @adj.remove(1,0)
+  assert_equal @adj,  @adj.register(1,0)
+  assert_equal true,  @adj.exists(1,0)
+  assert_equal @adj,  @adj.remove(1,0)
+  assert_equal false, @adj.exists(1,0)
+  assert_nil          @adj.remove(1,0)
+ end
+ 
 end
