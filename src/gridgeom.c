@@ -46,10 +46,6 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
     printf("ERROR: CADGeom_GetVolume. \n%s\n",ErrMgr_GetErrStr());
   }
 
-  if ( 0==gridPartId(grid) )
-    printf("Geometry: %d nodes %d edges %d faces %d boundaries\n",
-	   nGeomNode,nGeomEdge,nGeomFace,nGeomGroups);
-
   gridSetNGeomNode( grid, nGeomNode );
   gridSetNGeomEdge( grid, nGeomEdge );
   gridSetNGeomFace( grid, nGeomFace );
