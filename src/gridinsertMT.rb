@@ -57,6 +57,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_not_nil grid = gemGrid
   assert_equal grid.nnode, grid.splitEdge(0,1)
   assert_equal 7, grid.nnode
+  assert_equal [0,0,0], grid.nodeXYZ(6)
   assert_equal 8, grid.ncell
  end
 
