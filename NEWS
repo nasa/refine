@@ -1,3 +1,7 @@
+Thu Apr 20, 2003: Released Refine 0.7.2
+
+Tagging before queue refactor and gridmpi:gridApplayQueue speedup.
+
 Thu Apr 15, 2003: Released Refine 0.7.1
 
 Last version to use old pre-GeoBool tag on the SDK. Fixed more bugs in
