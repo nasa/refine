@@ -707,12 +707,11 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
   if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
   
   for (i=0 ; i<3 ; i++) {
+    if ( volumeEdge && gridGeometryFace(grid, n0) ) ratio = 0.0;
+    if ( volumeEdge && gridGeometryFace(grid, n1) ) ratio = 1.0;    
+    if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) ratio=0.0;
+    if ( gridGeometryNode(grid, n0) ) ratio = 0.0;
     xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
-    if ( volumeEdge && gridGeometryFace(grid, n0) ) xyzAvg[i] = xyz0[i];
-    if ( volumeEdge && gridGeometryFace(grid, n1) ) xyzAvg[i] = xyz1[i];
-    if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) 
-      xyzAvg[i] = xyz0[i];
-    if ( gridGeometryNode(grid, n0) ) xyzAvg[i] = xyz0[i];
   }
 
   if ( NULL == gridSetNodeXYZ( grid, n0, xyzAvg) ) return NULL;
@@ -746,18 +745,10 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
     gridNodeUV(grid,n1,faceId0,n1Id0uv);
     gridNodeUV(grid,n0,faceId1,n0Id1uv);
     gridNodeUV(grid,n1,faceId1,n1Id1uv);
-    if ( ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) ||
-	 gridGeometryNode(grid, n0) ) {
-      newId0uv[0] = n0Id0uv[0];
-      newId0uv[1] = n0Id0uv[1];
-      newId1uv[0] = n0Id1uv[0];
-      newId1uv[1] = n0Id1uv[1];
-    }else{
-      newId0uv[0] = (1.0-ratio) * n0Id0uv[0] + ratio * n1Id0uv[0];
-      newId0uv[1] = (1.0-ratio) * n0Id0uv[1] + ratio * n1Id0uv[1];
-      newId1uv[0] = (1.0-ratio) * n0Id1uv[0] + ratio * n1Id1uv[0];
-      newId1uv[1] = (1.0-ratio) * n0Id1uv[1] + ratio * n1Id1uv[1];
-    }
+    newId0uv[0] = (1.0-ratio) * n0Id0uv[0] + ratio * n1Id0uv[0];
+    newId0uv[1] = (1.0-ratio) * n0Id0uv[1] + ratio * n1Id0uv[1];
+    newId1uv[0] = (1.0-ratio) * n0Id1uv[0] + ratio * n1Id1uv[0];
+    newId1uv[1] = (1.0-ratio) * n0Id1uv[1] + ratio * n1Id1uv[1];
 
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
@@ -772,9 +763,7 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
       gridNodeT(grid, n0, edgeId, &t0 );
       gridNodeT(grid, n1, edgeId, &t1 );
       newT =  (1.0-ratio) * t0 + ratio * t1;
-      if (gridGeometryNode(grid, n0) ) newT = t0;
       gridRemoveEdge(grid,edge);
-
       gridReconnectAllEdge(grid, n1, n0 );
       gridSetNodeT(grid, n0, edgeId, newT);
     }
