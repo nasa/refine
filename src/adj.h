@@ -39,6 +39,8 @@ int adjNNode( Adj *adj );
 int adjNAdj( Adj *adj );
 int adjChunkSize( Adj *adj );
 
+Adj *adjRealloc( Adj *adj, int nnode );
+
 Adj *adjRegister( Adj *adj, int node, int item );
 Adj *adjRemove( Adj *adj, int node, int item );
 

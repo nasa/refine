@@ -36,6 +36,12 @@ VALUE adj_chunkSize( VALUE self )
   return INT2NUM( adjChunkSize(adj) );
 }
 
+VALUE adj_realloc( VALUE self, VALUE nnode )
+{
+  GET_ADJ_FROM_SELF;
+  return (adjRealloc( adj, NUM2INT(nnode) )==NULL?Qnil:self);
+}
+
 VALUE adj_register( VALUE self, VALUE node, VALUE item )
 {
   GET_ADJ_FROM_SELF;
@@ -101,6 +107,7 @@ void Init_Adj()
   rb_define_method( cAdj, "nnode", adj_nnode, 0 );
   rb_define_method( cAdj, "nadj", adj_nadj, 0 );
   rb_define_method( cAdj, "chunkSize", adj_chunkSize, 0 );
+  rb_define_method( cAdj, "realloc", adj_realloc, 1 );
   rb_define_method( cAdj, "register", adj_register, 2 );
   rb_define_method( cAdj, "remove", adj_remove, 2 );
   rb_define_method( cAdj, "valid", adj_valid, 0 );

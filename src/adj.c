@@ -63,6 +63,21 @@ int adjChunkSize( Adj *adj )
   return adj->chunkSize;
 }
 
+Adj *adjRealloc( Adj *adj, int nnode )
+{
+  int i, oldSize, newSize;
+  oldSize = adj->nnode;
+  newSize = MAX(nnode,1);
+  if ( oldSize > newSize)
+    for ( i=newSize ; i<oldSize; i++ ) 
+      if (adjDegree(adj, i ) > 0) 
+	printf("%s:%d: memory leak. add mode code.\n",__FILE__,__LINE__);
+  adj->nnode = newSize;
+  adj->first = realloc( adj->first, adj->nnode * sizeof(NodeItem*) );
+  for ( i=oldSize ; i<adj->nnode; i++ ) adj->first[i] = NULL; 
+  return adj;
+}
+
 Adj *adjRegister( Adj *adj, int node, int item )
 {
   NodeItem *new;
