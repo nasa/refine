@@ -6,6 +6,11 @@
 #include "gridmetric.h"
 #include "gridStruct.h"
 
+void gridMapXYZ( Grid *grid, int node, 
+		  double *x, double *y, double *z ){
+
+}
+
 double gridEdgeLength(Grid *grid, int n0, int n1 )
 {
   double dx, dy, dz;
@@ -13,6 +18,8 @@ double gridEdgeLength(Grid *grid, int n0, int n1 )
   dx = grid->xyz[0+3*n1] - grid->xyz[0+3*n0];
   dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
   dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
+
+  gridMapXYZ(grid, n0, &dx, &dy, &dz);
 
   return  sqrt(dx*dx+dy*dy+dz*dz);
 }
@@ -231,7 +238,12 @@ double gridAR(Grid *grid, int *nodes )
   y4 = grid->xyz[1+3*nodes[3]];
   z4 = grid->xyz[2+3*nodes[3]];
 
-  /* Compute the aspect ratios */
+  gridMapXYZ(grid, nodes[0], &x1, &y1, &z1);
+  gridMapXYZ(grid, nodes[1], &x2, &y2, &z2);
+  gridMapXYZ(grid, nodes[2], &x3, &y3, &z3);
+  gridMapXYZ(grid, nodes[3], &x4, &y4, &z4);
+
+ /* Compute the aspect ratios */
 
   det = (x4-x1)*((y2-y1)*(z3-z1) - (y3-y1)*(z2-z1))
       + (y4-y1)*((x3-x1)*(z2-z1) - (x2-x1)*(z3-z1))
@@ -407,6 +419,11 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   x4 = grid->xyz[0+3*nodes[3]];
   y4 = grid->xyz[1+3*nodes[3]];
   z4 = grid->xyz[2+3*nodes[3]];
+
+  gridMapXYZ(grid, nodes[0], &x1, &y1, &z1);
+  gridMapXYZ(grid, nodes[1], &x2, &y2, &z2);
+  gridMapXYZ(grid, nodes[2], &x3, &y3, &z3);
+  gridMapXYZ(grid, nodes[3], &x4, &y4, &z4);
 
   /* Compute the aspect ratios */
 
