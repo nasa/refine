@@ -46,6 +46,7 @@ int main( int argc, char *argv[] )
   double ratio=0.6;
   double spacing = 1.0/3.0;
   double Zcommand = -1.0;
+  double cyl = -1.0;
   int node;
   double Zspacing;
   double xyz[3];
@@ -111,16 +112,22 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-z") == 0 ) {
       i++; Zcommand = atof(argv[i]);
       printf("-z argument %d: %f\n",i, Zcommand);
+    } else if( strcmp(argv[i],"-c") == 0 ) {
+      i++; cyl = atof(argv[i]);
+      printf("-c argument %d: %f\n",i, cyl);
     } else if( strcmp(argv[i],"-v") == 0 ) {
       i++; minAR = atof(argv[i]);
       printf("-v argument %d: %f\n",i, minAR);
     } else if( strcmp(argv[i],"-f") == 0 ) {
       i++; sprintf( linesfile, "%s", argv[i] );
       printf("-l argument %d: %s\n",i, linesfile);
+    } else if( strcmp(argv[i],"-m") == 0 ) {
+      GridMoveProjection = TRUE;
+      printf("-m argument %d\n",i);
     } else if( strcmp(argv[i],"-n") == 0 ) {
       i++; maxnode = atoi(argv[i]);
       printf("-n argument %d: %d\n",i, maxnode);
-     } else if( strcmp(argv[i],"-t") == 0 ) {
+    } else if( strcmp(argv[i],"-t") == 0 ) {
       tecplotOutput = TRUE;
       printf("-t argument %d\n",i);
    } else if( strcmp(argv[i],"-h") == 0 ) {
@@ -140,8 +147,10 @@ int main( int argc, char *argv[] )
       printf(" -r initial edge length ratio for adapt\n");
       printf(" -s uniform grid size\n");
       printf(" -z linearly vary spacing to this in z dir\n");
+      printf(" -c cylinder spacing\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
+      printf(" -m use grid movement for projection\n");
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
       return(0);
@@ -193,6 +202,40 @@ int main( int argc, char *argv[] )
 		 1.0/spacing/spacing, 0.0, 
 		 1.0/Zspacing/Zspacing);
     }
+  if (cyl>0.0) {
+    double radius, theta;
+    double rSpace, tSpace, ySpace;
+    double normal[3], tangent[3], third[3];
+    printf("spacing set to cylinder space %f.\n",cyl);
+    for (node=0;node<gridMaxNode(grid);node++) {
+      if (grid==gridNodeXYZ(grid,node,xyz)) {
+	radius = sqrt(xyz[0]*xyz[0]+xyz[2]*xyz[2]);
+	theta = atan2(xyz[2],xyz[0]);
+	rSpace = 0.01*radius*radius;
+	tSpace = 0.25*radius;
+	ySpace = 0.5;
+	normal[0]=normal[1]=normal[2]=0;
+	tangent[0]=tangent[1]=tangent[2]=0;
+	third[0]=third[1]=third[2]=0;
+	normal[0]=cos(theta);
+	normal[2]=sin(theta);
+	tangent[0]=-sin(theta);
+	tangent[2]=cos(theta);
+	third[1]=1.0;
+#ifdef ECHO_SPACING
+	printf("X%6.2f Y%6.2f Z%6.2f\n",xyz[0],xyz[1],xyz[2]);
+	printf("N%6.2f N%6.2f N%6.2f\n",normal[0],normal[1],normal[2]);
+	printf("T%6.2f T%6.2f T%6.2f\n",tangent[0],tangent[1],tangent[2]);
+	printf("Y%6.2f Y%6.2f Y%6.2f\n",third[0],third[1],third[2]);
+	printf("\n");
+#endif
+	gridSetMapWithSpacingVectors(grid, node,
+				     normal, tangent, third, 
+				     rSpace, tSpace, ySpace);
+      }
+    }    
+  }
+
   STATUS;
 
   for (i=0;i<3;i++){
@@ -227,6 +270,23 @@ int main( int argc, char *argv[] )
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     STATUS;
+
+    if (GridMoveProjection) {
+      GridMove *gm;
+      double minVolume;
+      printf("Calling GridMove to project nodes...\n");
+      gm = gridmoveCreate(grid);
+      gridmoveProjectionDisplacements(gm);
+      gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,100);
+      gridmoveApplyDisplacements(gm);
+      gridmoveFree(gm);
+      STATUS; minVolume = gridMinVolume(grid);
+      while (0.0>=minVolume) {
+	printf("relax neg cells...\n");gridRelaxNegativeCells(grid,FALSE);
+	printf("edge swapping grid...\n");gridSwap(grid, -1.0);
+	STATUS; minVolume = gridMinVolume(grid);
+      }
+    }
 
     for (i=0;i<2;i++){
       projected = ( grid == gridRobustProject(grid));

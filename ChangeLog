@@ -1,3 +1,9 @@
+2004-09-29 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c added argument -c to allow a cylindrical
+	variation in spacing. added -m to turn on gridmovement for
+	projection.
+
 2004-09-29 16:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwap) Added gridRemoveTwoFaceCell to cell
