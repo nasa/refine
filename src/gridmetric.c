@@ -65,7 +65,8 @@ int gridLongestEdge(Grid *grid, int node )
   return longestNode;
 }
 
-Grid *gridLargestRatioEdge(Grid *grid, int node, int *edgeNode, double *ratio )
+Grid *gridLargestRatioEdge(Grid *grid, int node, 
+			   int *edgeNode, double *ratio )
 {
   AdjIterator it;
   int i, cell, nodes[4];
@@ -83,6 +84,35 @@ Grid *gridLargestRatioEdge(Grid *grid, int node, int *edgeNode, double *ratio )
 	if (spacing <= 0.0) return NULL;
 	currentRatio = length/spacing;
 	if ( currentRatio > *ratio ){
+	  *ratio = currentRatio;
+	  *edgeNode = nodes[i];
+	}
+      }
+    }
+  }
+  
+  return grid;
+}
+
+Grid *gridSmallestRatioEdge(Grid *grid, int node, 
+			    int *edgeNode, double *ratio )
+{
+  AdjIterator it;
+  int i, cell, nodes[4];
+  double length, spacing, currentRatio;
+  
+  *edgeNode = EMPTY;
+  *ratio = DBL_MAX;
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes);
+    for (i=0;i<4;i++){
+      if (node != nodes[i]) {
+	length = gridEdgeLength( grid, node, nodes[i] );
+	spacing = 0.5*(gridSpacing( grid, node)+gridSpacing( grid, nodes[i]));
+	if (spacing <= 0.0) return NULL;
+	currentRatio = length/spacing;
+	if ( currentRatio < *ratio ){
 	  *ratio = currentRatio;
 	  *edgeNode = nodes[i];
 	}
