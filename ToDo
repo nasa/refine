@@ -11,6 +11,12 @@ maintain linear data for split and collapse.
 
 Validate a mesh by spliting and projecting offending faces (via Bob)
 
+Exact Edge smoothing with invalid backoff
+
+get edge metric working for node smoothing
+
+modify face mr when edge based cost switch
+
 Finish face swap parallelization. there are only 5 nodes so that means
 32 posiblities. (unit testing could be less if ring, top&bottom are
 treated seperately)
