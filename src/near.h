@@ -19,6 +19,14 @@ BEGIN_C_DECLORATION
 
 typedef struct Near Near;
 
+struct Near {
+  int index;
+  double x, y, z;
+  double radius;
+  Near *rightChild, *leftChild;
+  double farChild;
+};
+
 Near *nearCreate(int index, double x, double y, double z, double radius );
 Near *nearInit(Near *, int index, double x, double y, double z, double radius );
 void nearFree( Near * );

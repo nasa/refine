@@ -14,14 +14,6 @@
 #include <math.h>
 #include "near.h"
 
-struct Near {
-  int index;
-  double x, y, z;
-  double radius;
-  Near *rightChild, *leftChild;
-  double farChild;
-};
-
 Near* nearCreate( int index, double x, double y, double z, double radius )
 {
   Near *near;
