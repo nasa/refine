@@ -419,7 +419,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal layer,     layer.advance(0.1)
   assert_equal 5,         grid.nnode
   assert_equal 2,         grid.ncell
-  assert_equal [0,1,2,4], grid.cell(1)
+  assert_equal [2,0,1,4], grid.cell(1)
  end
 
  def testTerminate12
