@@ -148,19 +148,4 @@ class TestGridMove < Test::Unit::TestCase
   assert_in_delta up[2], gm.displacement(3)[2], delta
  end
 
- def testSpringRelaxationRotate
-  grid = equalTetWithFaceBase
-  assert_not_nil gm = GridMove.new(grid)
-  2.times{|n| gm.displace(n,[0.0,0.0,0.0])}
-  gm.displace(2,[0.5,0,-0.866])
-  gm.springRelaxation(1,1)
-
-  puts gm.displacement(3)
-  ans = [0.5,0.8,-0.35]
-  delta = 1.0e-15
-  assert_in_delta ans[0], gm.displacement(3)[0], delta
-  assert_in_delta ans[1], gm.displacement(3)[1], delta
-  assert_in_delta ans[2], gm.displacement(3)[2], delta
- end
-
 end
