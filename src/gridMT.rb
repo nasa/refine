@@ -355,6 +355,35 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal(-1,   grid.faceId(0,1,6) ) 
  end
 
+ def testSwap4
+  assert_not_nil grid=gemGrid(4, 0.1, 0)
+  initalVolume = grid.totalVolume
+  assert_equal grid, grid.swap
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 2, grid.cellDegree(0)
+  assert_equal 2, grid.cellDegree(1)
+  assert_equal 4, grid.cellDegree(2)
+  assert_equal 2, grid.cellDegree(3)
+  assert_equal 4, grid.cellDegree(4)
+  assert_equal 2, grid.cellDegree(5)
+ end
+
+ def testSwap5
+  assert_not_nil grid=gemGrid(5, 0.1, 0)
+  initalVolume = grid.totalVolume
+  grid.swap
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+  assert_equal 3, grid.cellDegree(0)
+  assert_equal 3, grid.cellDegree(1)
+  assert_equal 6, grid.cellDegree(2)
+  assert_equal 2, grid.cellDegree(3)
+  assert_equal 4, grid.cellDegree(4)
+  assert_equal 4, grid.cellDegree(5)
+  assert_equal 2, grid.cellDegree(6)
+ end
+
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
   x0 = x0 || 1.0
