@@ -42,7 +42,7 @@ int main( int argc, char *argv[] )
       printf("-s argument %d: %f\n",i, scale);
     } else if( strcmp(argv[i],"-n") == 0 ) {
       i++; maxnode = atoi(argv[i]);
-      printf("-n argument %d: %f\n",i, maxnode);
+      printf("-n argument %d: %d\n",i, maxnode);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
