@@ -460,6 +460,16 @@ first modify interior and then wait until it is its turn
 ...refineUpdateGhostXYZ() will block
 @end verbatim
 
+The gridmove module has a slightly different methodology for
+parallelization. I needs to do hundreds of operations similar to
+refineUpdateGhostXYZ to a different vector, the gridmove
+displacements.
+
+A LibF90/refine_interface.F90:refineParallelProjectGridMove starts by
+precomputing and storing the communication pattern that will be
+required. I then calls refineUpdateGridMoveGhost with the stored
+communication pattern to update ghost node displacements.
+
 @section Parallelized Connectivity Changes
 
 @section Initial notes on building and executing HEFSS with the rad mesh adapation option.
