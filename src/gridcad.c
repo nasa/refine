@@ -930,7 +930,7 @@ Grid *gridOptimizeUVForVolume(Grid *grid, int node, double *dudv )
   int nodes[3];
   int face, faceId;
   double gold;
-  double alpha[2], volume[2];
+  double alpha[2], volume[2], area[2];
   int iter;
 
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
@@ -945,27 +945,32 @@ Grid *gridOptimizeUVForVolume(Grid *grid, int node, double *dudv )
   uv[1] = uvOrig[1] + alpha[0]*dudv[1];
   if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
   gridNodeVolume( grid, node, &volume[0] );
+  gridMinFaceAreaUV(grid,node,&area[0]);
 
   alpha[1] = 1.0e-10;
   uv[0] = uvOrig[0] + alpha[1]*dudv[0];
   uv[1] = uvOrig[1] + alpha[1]*dudv[1];
-  if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
+  gridEvaluateFaceAtUV(grid, node, uv );
   gridNodeVolume( grid, node, &volume[1] );
+  gridMinFaceAreaUV(grid,node,&area[1]);
 
   iter = 0;
-  while ( (volume[1]-volume[0])>-1.0e-12 && iter < 200){
+  while ( ( volume[1] > volume[0] ) && 
+	  ( area[1] > 1.0e-12 || area[1] > area[0] ) &&
+	  ( iter < 200 ) ) {
     iter++;
-    alpha[0] = alpha[1]; volume[0] = volume[1];
+    alpha[0] = alpha[1]; volume[0] = volume[1]; area[0] = area[1];
     alpha[1] = alpha[0] * gold;
     uv[0] = uvOrig[0] + alpha[1]*dudv[0];
     uv[1] = uvOrig[1] + alpha[1]*dudv[1];
-    if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
+    gridEvaluateFaceAtUV(grid, node, uv );
     gridNodeVolume( grid, node, &volume[1] );
+    gridMinFaceAreaUV(grid,node,&area[1]);
   }
 
   uv[0] = uvOrig[0] + alpha[0]*dudv[0];
   uv[1] = uvOrig[1] + alpha[0]*dudv[1];
-  if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
+  gridEvaluateFaceAtUV(grid, node, uv );
 
   //printf("node %d alpha %e vol %f uv %e %e\n",node,alpha[0],volume[0],uv[0],uv[1]);
   
@@ -1145,7 +1150,7 @@ Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
     xyz[ixyz] = xyz[ixyz] * oneOverNCell;
   }
   gridSetNodeXYZ(grid,node,xyz);
-  gridNodeAR(grid, node, &newVol);
+  gridNodeVolume(grid, node, &newVol);
   
   if ( origVol > newVol ) {
     gridSetNodeXYZ(grid,node,origXYZ);
@@ -1507,7 +1512,7 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
                evaluations, volume[best], volume[worst]); */
     if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
 
-    if (volume[best]-volume[worst] < ABS(1.0e-8*volume[best])) break;
+    if (volume[best]-volume[worst] < ABS(1.0e-10*volume[best])) break;
 
     evaluations++;
     newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, -1.0 );

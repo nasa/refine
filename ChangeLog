@@ -1,3 +1,15 @@
+2005-02-13 11:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridOptimizeUVForVolume) added face UV area check
+	to prevent face area from dropping below 1.0e-12 while trying yo
+	improve cell volume. It will continue to smooth below this area if
+	area is increasing.
+	* src/gridcad.c (gridSmartVolumeLaplacian) fixed an old copy and
+	paste bug. Now it uses the correct gridNodeVolume cost instead of
+	the copyied gridNodeAR.
+	* src/gridcad.c (gridSmoothNodeVolumeSimplex) decreased its
+	convergence tolerence to 1.0e-10 from 1.0e-8.
+	
 2005-02-12 11:56 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelRelaxNegativeFaceAreaUV) added checks

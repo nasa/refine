@@ -191,8 +191,8 @@ Grid *gridParallelRelaxNegativeCells( Grid *grid,
       nearGhost = gridNodeNearGhost(grid, node);
       if ( localOnly != nearGhost ) {
 	gridNodeVolume(grid,node,&nodeVolume);
-	if (0.0>=nodeVolume) gridSmoothVolumeNearNode( grid, node, 
-						       smoothOnSurface );
+	if (1.0e-14>nodeVolume) gridSmoothVolumeNearNode( grid, node, 
+							  smoothOnSurface );
       }
     }
   }

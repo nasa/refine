@@ -434,7 +434,7 @@ class TestGridCAD < Test::Unit::TestCase
   grid.addFace(0,1,2,realFaceId)
   grid.addFace(0,2,3,realFaceId)
   grid.addFace(0,3,1,realFaceId)
-  grid.projectNodeToFace(0,realFaceId)
+  4.times { |node| grid.projectNodeToFace(node,realFaceId)}
   grid
  end
 
