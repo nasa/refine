@@ -154,6 +154,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_in_delta 1.0/6.0, @grid.volume(nodes), 1.0e-15
   assert_in_delta 1.0/6.0, @grid.minVolume, 1.0e-15
   assert_in_delta 0.732050807568877, @grid.ar(nodes), 1.0e-15
+  assert_in_delta 0.732050807568877, @grid.minAR, 1.0e-15
  end
 
  def testSwapEdge4_0
