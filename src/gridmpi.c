@@ -149,13 +149,12 @@ Grid *gridParallelEdgeCollapse(Grid *grid, Queue *queue, int node0, int node1 )
   return result;
 }
 
-Grid *gridParallelSmooth( Grid *grid, GridBool localOnly )
+Grid *gridParallelSmooth( Grid *grid, GridBool localOnly,
+			  double optimizationLimit, double laplacianLimit )
 {
   int node;
-  double ar, optimizationLimit, laplacianLimit;
+  double ar;
   GridBool nearGhost;
-  optimizationLimit =0.30;
-  laplacianLimit =0.60;
   for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && 
 	 !gridNodeFrozen( grid, node ) && 

@@ -1,3 +1,10 @@
+2004-07-08 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelsmooth_) exposed optimizationLimit 
+	and laplacianLimit.
+	* src/gridmpi.c (gridParallelSmooth) exposed optimizationLimit 
+	and laplacianLimit.
+
 2004-07-06 17:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridgeom.c (gridParallelGeomLoad) changed the global node
