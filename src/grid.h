@@ -52,6 +52,8 @@ int gridEqu(Grid *g, int index );
 Grid *gridSwapEdge(Grid *g, int n0, int n1 );
 Grid *gridSwap(Grid *g );
 
+Grid *gridSplitEdge(Grid *g, int n0, int n1 );
+
 int gridAddNode(Grid *g, double x, double y, double z );
 
 double gridVolume(Grid *g, int *nodes );
