@@ -330,6 +330,7 @@ Layer *layerBuildNormalTriangleAdjacency(Layer *layer)
 {
   int triangle, i, normals[3];
 
+  layer->normalTriangleHub = EMPTY;
   if (NULL != layer->triangleAdj) adjFree(layer->triangleAdj);
   layer->triangleAdj = adjCreate( layerNNormal(layer), 
 				  layerNTriangle(layer)*3, 1000 );
@@ -2870,7 +2871,6 @@ Layer *layerBlend(Layer *layer, double angleLimit )
  
   }
 
-  layer->normalTriangleHub = EMPTY;
   layerBuildNormalTriangleAdjacency(layer);
   layerInitializeTriangleNormalDirection(layer);
   layerFeasibleNormals(layer, -1.0, -1.0 );
