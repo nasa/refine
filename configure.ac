@@ -40,19 +40,20 @@ then
                  [have_SDK='yes'],[have_SDK='no'])
 fi
 
+SDK_ARCH=`uname -s`
+if test "$SDK_ARCH" = 'IRIX64'
+then  
+  ABI='-n32'
+else
+  ABI=''  
+fi
+SDK_ARCH="$SDK_ARCH$ABI"
+
 if test "$have_SDK" != 'no'
 then
    SDK=$with_SDK
    AC_DEFINE([HAVE_SDK])
    CPPFLAGS="$CPPFLAGS -I$SDK"
-   SDK_ARCH=`uname -s`
-   if test "$SDK_ARCH" = 'IRIX64'
-   then  
-     ABI='-n32'
-   else
-     ABI=''  
-   fi
-   SDK_ARCH="$SDK_ARCH$ABI"
    CADGeom="-L$SDK/CADGeom -lCADGeom-$SDK_ARCH-CAPrI"
    Goolache="-L$SDK/Goolache -lGoolache-$SDK_ARCH"
    MeatLib="-L$SDK/MeatLib -lMeat-$SDK_ARCH"
@@ -111,7 +112,7 @@ if test "$have_FELISA" != 'no'
 then
    FELISA=$with_FELISA
    AC_DEFINE([HAVE_FELISA])
-   FELISALib="-L$FELISA -lFELISA-Linux"
+   FELISALib="-L$FELISA -lFELISA-$SDK_ARCH"
    AC_SUBST([FELISALib])
 fi 
 
