@@ -18,7 +18,7 @@ end
 class TestGridMetric < Test::Unit::TestCase
 
  def rightTet
-  grid = Grid.new(4,1,0,0)
+  grid = Grid.new(4,1,2,0)
   grid.addCell( 
 	       grid.addNode(0.0,0.0,0.0), 
 	       grid.addNode(1.0,0.0,0.0), 
@@ -126,7 +126,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta ar, grid.nodeAR(3), 1.0e-15
  end
 
- def testDerivatives
+ def testARDerivatives
   assert_not_nil grid = Grid.new(4,1,0,0)
 
   assert_equal grid, grid.addCell( 
@@ -194,12 +194,18 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 1.0, grid.faceMR(1,2,3), 1.0e-14
   assert_in_delta 0.8660254038, grid.faceMR(0,1,2), 1.0e-8
 
-  #ans = grid.faceMRDerivative([0,1,2])
-  #assert_in_delta 0.8660254038, ans[0], 1.0e-8
-  #assert_in_delta 1.0, ans[1], 1.0e-14
-  #assert_in_delta 1.0, ans[2], 1.0e-14
-  #assert_in_delta 0.0, ans[3], 1.0e-14
-  
+  ans = grid.faceMRDerivative([0,1,2])
+  assert_in_delta 0.8660254038, ans[0], 1.0e-8
+  assert_in_delta -0.433, ans[1], 1.0e-4
+  assert_in_delta -0.433, ans[2], 1.0e-4
+  assert_in_delta 0.0, ans[3], 1.0e-14
+
+  assert_equal grid, grid.addFace(0,1,2,10)
+  assert_equal grid, grid.addFace(1,2,3,10)
+  assert_in_delta 0.8660254038, grid.nodeFaceMR(0), 1.0e-8
+  assert_in_delta 0.8660254038, grid.nodeFaceMR(1), 1.0e-8
+  assert_in_delta 1.0,          grid.nodeFaceMR(3), 1.0e-8
+
  end
  
 

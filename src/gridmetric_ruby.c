@@ -222,6 +222,14 @@ VALUE grid_FaceMRDerivative( VALUE self,
   return rb_mr;
 }
 
+VALUE grid_nodeFaceMR( VALUE self, VALUE node )
+{
+  double ar;
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  return (gridNodeFaceMR( grid, NUM2INT(node), &ar )==grid?rb_float_new(ar):Qnil);
+}
+
 VALUE cGridMetric;
 
 void Init_GridMetric() 
@@ -249,4 +257,5 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "faceMR", grid_faceMR, 3);
   rb_define_method( cGridMetric, "faceMRDerivative", grid_faceMRDerivative, 1);
   rb_define_method( cGridMetric, "FaceMRDerivative", grid_FaceMRDerivative, 9);
+  rb_define_method( cGridMetric, "nodeFaceMR", grid_nodeFaceMR, 1 );
 }

@@ -1323,3 +1323,24 @@ void FaceMRDerivative(double x1, double y1, double z1,
   dMRdx[2] = 4*SQRT3*r_dz;
 
 }
+
+Grid *gridNodeFaceMR(Grid *grid, int node, double *mr )
+{
+  AdjIterator it;
+  int face;
+  double local_mr;
+
+  *mr = 1.0;
+
+  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+    face = adjItem(it);
+    local_mr = gridFaceMR(grid, 
+			  grid->f2n[0+3*face],
+			  grid->f2n[1+3*face],
+			  grid->f2n[2+3*face]);
+    if ( local_mr < *mr ) *mr = local_mr;
+  }
+
+  return grid;
+}
+
