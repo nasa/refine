@@ -76,6 +76,9 @@ bool layerEdgeInLayer(Layer *, int edge);
 Layer *layerReconnectCellUnlessInLayer(Layer *, int oldNode, int newNode );
 Layer *layerReconnectEdgeUnlessInLayer(Layer *, int edgeId, 
 				       int oldNode, int newNode );
+Layer *layerReconnectFaceUnlessInLayer(Layer *, int faceId, 
+				       int oldNode, int newNode );
+
 Layer *layerAdvance(Layer * );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );

@@ -1100,6 +1100,45 @@ Layer *layerReconnectCellUnlessInLayer(Layer *layer, int oldNode, int newNode )
   return layer;
 }
 
+Layer *layerReconnectFaceUnlessInLayer(Layer *layer, int faceId,
+				       int oldNode, int newNode )
+{
+  AdjIterator it;
+  int face, nodes[3], id;
+  int i;
+  double uv[6];
+  Grid *grid;
+
+  if (oldNode < 0 || oldNode >= layerMaxNode(layer) ) return NULL;
+  if (newNode < 0 || newNode >= layerMaxNode(layer) ) return NULL;
+  if (newNode == oldNode) return layer;
+  
+  grid = layerGrid(layer);
+
+  it = adjFirst(gridFaceAdj(grid),oldNode);
+  while (adjValid(it)){
+    face = adjItem(it);
+    gridFace(grid, face, nodes, &id);
+    if (id == faceId && !layerFaceInLayer(layer,face) ) {
+      gridNodeUV(grid,nodes[0],faceId,&uv[0]);
+      gridNodeUV(grid,nodes[1],faceId,&uv[2]);
+      gridNodeUV(grid,nodes[2],faceId,&uv[4]);
+      gridRemoveFace(grid,face);
+      for (i=0;i<3;i++) if (oldNode == nodes[i]) nodes[i] = newNode;
+      gridAddFaceUV( grid, 
+		     nodes[0], uv[0], uv[1],
+		     nodes[1], uv[2], uv[3],
+		     nodes[2], uv[4], uv[5],
+		     faceId );
+      it = adjFirst(gridFaceAdj(grid),oldNode);
+    }else{
+      it = adjNext(it);
+    }      
+  }
+  
+  return layer;
+}
+
 Layer *layerReconnectEdgeUnlessInLayer(Layer *layer, int edgeId,
 				       int oldNode, int newNode )
 {
@@ -1107,7 +1146,6 @@ Layer *layerReconnectEdgeUnlessInLayer(Layer *layer, int edgeId,
   int edge, nodes[2], id;
   int i;
   double t[2];
-  bool inLayer;
   Grid *grid;
 
   if (oldNode < 0 || oldNode >= layerMaxNode(layer) ) return NULL;
@@ -1190,14 +1228,12 @@ Layer *layerAdvance(Layer *layer)
 	normal1 = i+1; if (normal1>2) normal1 = 0;
 	normal0 = layer->triangle[triangle].normal[normal0];
 	normal1 = layer->triangle[triangle].normal[normal1];
-	/*
-	gridReconnectFaceUnlessFrozen(grid, faceId, 
-				      layer->normal[normal0].root, 
-				      layer->normal[normal0].tip);
-	gridReconnectFaceUnlessFrozen(grid, faceId, 
-				      layer->normal[normal1].root, 
-				      layer->normal[normal1].tip);
-	*/
+	layerReconnectFaceUnlessInLayer(layer, faceId, 
+					layer->normal[normal0].root, 
+					layer->normal[normal0].tip);
+	layerReconnectFaceUnlessInLayer(layer, faceId, 
+					layer->normal[normal1].root, 
+					layer->normal[normal1].tip);
       }
     }    
   }
