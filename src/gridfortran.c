@@ -268,7 +268,7 @@ void gridwritetecplotsurfacezone_( void )
 		"cell cost of %f detected in gridwritetecplotsurfacezone_",
 		gridAR(grid,nodes));
 	gridWriteTecplotComment(grid, comment);
-	sprintf(comment, "proc%4d cell l%12d g%12d\n",
+	sprintf(comment, "proc%4d cell l%12d g%12d",
 		gridPartId(grid),cell,gridCellGlobal(grid,cell));
 	gridWriteTecplotComment(grid, comment);
 	sprintf(comment, "proc%4d cell l%12d local  nodes%10d%10d%10d%10d",
