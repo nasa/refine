@@ -85,6 +85,14 @@ VALUE grid_setMap( VALUE self, VALUE node,
 		                            NUM2DBL(m33) )==grid?self:Qnil);
 }
 
+VALUE grid_copySpacing( VALUE self, VALUE originalNode, VALUE newNode ) 
+{
+  GET_GRID_FROM_SELF;
+  return (gridCopySpacing(grid, 
+			  NUM2INT(originalNode), 
+			  NUM2INT(newNode) )==grid?self:Qnil);
+}
+
 VALUE grid_eigenValues( VALUE self, VALUE rb_m )
 {
   int i;
@@ -371,6 +379,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
   rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );
   rb_define_method( cGridMetric, "setMap", grid_setMap, 7 );
+  rb_define_method( cGridMetric, "copySpacing", grid_copySpacing, 2 );
   rb_define_method( cGridMetric, "eigenValues", grid_eigenValues, 1 );
   rb_define_method( cGridMetric, "eigenVector", grid_eigenVector, 2 );
   rb_define_method( cGridMetric, "eigenSystem", grid_eigenSystem, 1 );

@@ -68,6 +68,21 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 5.0, grid.edgeLength(0,3), 1.0e-15
  end
 
+ def testCopySpacing
+  assert_not_nil grid = Grid.new(2,0,0,0)
+  assert_equal 0, grid.nnode
+  assert_nil      grid.copySpacing(0,1)
+  assert_equal 0, grid.addNode(0,0,0)
+  assert_nil      grid.copySpacing(0,1)
+  assert_equal 1, grid.addNode(1,0,0)
+  assert_equal grid, grid.setMap(0, 1, 0, 0, 1, 0, 1)
+  assert_equal grid, grid.setMap(1, 2, 0, 0, 2, 0, 2)
+  assert_equal 1, grid.spacing(0)
+  assert_equal Math::sqrt(0.5), grid.spacing(1)
+  assert_equal grid, grid.copySpacing(0,1)
+  assert_equal 1, grid.spacing(0)  
+ end
+
  def testMatrixSpaceMapRotate
   assert_not_nil grid = Grid.new(3,1,0,0)
   assert_equal 0, grid.addNode( 0.0,0.0,0.0)
