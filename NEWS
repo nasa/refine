@@ -1,7 +1,12 @@
-Thu Jan  9, 2003: Released Refine 0.4
+Thu Jan 30, 2003: Released Refine 0.6
 
-Now have advancing layers with inflation and non-manifold edges on faces
+MesherX makes viscous grids on a box, plate, and om6
 
 Thu Jan 15, 2003: Released Refine 0.5
 
 New MesherX library structure
+
+Thu Jan  9, 2003: Released Refine 0.4
+
+Now have advancing layers with inflation and non-manifold edges on faces
+
