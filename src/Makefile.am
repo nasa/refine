@@ -28,6 +28,7 @@ librefine_a_SOURCES = \
 	gridcad.h gridcad.c \
 	gridgeom.h gridgeom.c \
 	gridmpi.h gridmpi.c \
+	gridmove.h gridmove.c \
 	gridfortran.h gridfortran.c
 
 libFAKEGeomExtras_a_CFLAGS = @SDKheader@
@@ -103,9 +104,10 @@ EXTRA_DIST = mesherx_SyJet.c \
 	gridcadMT.rb gridcad_ruby.c \
 	FAKEGeom.h FAKEGeom.c \
 	gridmpiMT.rb gridmpi_ruby.c \
+	gridmoveMT.rb gridmove_ruby.c \
 	layerMT.rb layer_ruby.c
 
-TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb layerMT.rb
+TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb layerMT.rb
 
 bin_PROGRAMS =
 
