@@ -186,6 +186,7 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
     if ( volumeEdge && gridGeometryFace(grid, n1) ) xyzAvg[i] = xyz1[i];
     if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) 
       xyzAvg[i] = xyz0[i];
+    if ( gridGeometryNode(grid, n0) ) xyzAvg[i] = xyz0[i];
     grid->xyz[i+3*n0] = xyzAvg[i];
     grid->xyz[i+3*n1] = xyzAvg[i];
   }
@@ -227,7 +228,8 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
     gridNodeUV(grid,n1,faceId0,n1Id0uv);
     gridNodeUV(grid,n0,faceId1,n0Id1uv);
     gridNodeUV(grid,n1,faceId1,n1Id1uv);
-    if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) {
+    if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ||
+	 gridGeometryNode(grid, n0) ) {
       newId0uv[0] = n0Id0uv[0];
       newId0uv[1] = n0Id0uv[1];
       newId1uv[0] = n0Id1uv[0];
@@ -261,6 +263,7 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )
       t0 = grid->edgeT[0+2*edge];
       t1 = grid->edgeT[1+2*edge];
       newT = 0.5 * (t0+t1);
+      if (gridGeometryNode(grid, n0) ) newT = t0;
       gridRemoveEdge(grid,edge);
 
       it = adjFirst(grid->edgeAdj, n1);
