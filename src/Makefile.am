@@ -7,40 +7,42 @@ AUTOMAKE_OPTIONS = 1.7
 lib_LIBRARIES = libMesherX.a librefine.a libOctree_Stub.a
 libMesherX_a_CFLAGS = -I../src @SDKheader@
 libMesherX_a_SOURCES = \
-	adj.c \
-	near.c \
-	intersect.c \
-	line.c \
-	queue.c \
-	sort.c \
-	grid.c \
-	gridmath.c \
-	gridmetric.c \
-	gridinsert.c \
-	gridswap.c \
-	gridcad.c \
-	gridfiller.c \
-	layer.c \
-	mesherxInit.c \
-	mesherxRebuild.c \
-	mesherx.c
+	master_header.h \
+	adj.h adj.c \
+	near.h near.c \
+	intersect.h intersect.c \
+	line.h line.c \
+	queue.h queue.c \
+	sort.h sort.c \
+	grid.h grid.c \
+	gridmath.h gridmath.c \
+	gridmetric.h gridmetric.c \
+	gridinsert.h gridinsert.c \
+	gridswap.h gridswap.c \
+	gridcad.h gridcad.c \
+	gridfiller.h gridfiller.c \
+	layer.h layer.c \
+	mesherxInit.h mesherxInit.c \
+	mesherxRebuild.h mesherxRebuild.c \
+	mesherx.h mesherx.c
 
 librefine_a_CFLAGS = -I../src @SDKheader@
 librefine_a_SOURCES = \
-	adj.c \
-	near.c \
-	line.c \
-	queue.c \
-	sort.c \
-	grid.c \
-	gridmath.c \
-	gridmetric.c \
-	gridinsert.c \
-	gridswap.c \
-	gridcad.c \
-	gridmpi.c \
-	gridfortran.c \
-	FAKEGeomBox.c
+	master_header.h \
+	adj.h adj.c \
+	near.h near.c \
+	line.h line.c \
+	queue.h queue.c \
+	sort.h sort.c \
+	grid.h grid.c \
+	gridmath.h gridmath.c \
+	gridmetric.h gridmetric.c \
+	gridinsert.h gridinsert.c \
+	gridswap.h gridswap.c \
+	gridcad.h gridcad.c \
+	gridmpi.h gridmpi.c \
+	gridfortran.h gridfortran.c \
+	FAKEGeomBox.h FAKEGeomBox.c
 
 libOctree_Stub_a_CFLAGS = -I../src @SDKheader@
 libOctree_Stub_a_SOURCES = Octree_Stub.c
