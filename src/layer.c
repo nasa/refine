@@ -382,6 +382,7 @@ Layer *layerAdvance(Layer *layer, double height )
     if (0 != faceId) {
       gridReconnectFaceUnlessFrozen(grid, faceId, root, tip);
     }
+    gridFreezeNode( grid, tip );
   }
 
   for (front=0;front<layerNFront(layer);front++){
