@@ -68,7 +68,7 @@ int adjNNode( Adj *adj )
 Adj *adjRegister( Adj *adj, int node, int item )
 {
   NodeItem *new;
-  if (node>=adj->nnode) return NULL;
+  if (node>=adj->nnode || node<0) return NULL;
   if (adj->blank == NULL) return NULL;
   new = adj->blank;
   adj->blank = adj->blank->next;

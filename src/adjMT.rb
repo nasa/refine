@@ -21,6 +21,7 @@ class TestAdj < Test::Unit::TestCase
  end
 
  def testRegister
+  assert_nil @adj.register(-1,1)
   assert_not_nil @adj.register(0,1)
   assert_nil @adj.register(4,1)
   assert_nil @adj.register(@bigNode,1)
