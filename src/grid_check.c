@@ -55,19 +55,32 @@ START_TEST(testCellIterator)
 {
 
   fail_unless( !gridMoreNodeCell(grid), 
-	       "expected the last node to be reaced if not init");
+	       "expected the last cell to be reached if not init");
 
   gridFirstNodeCell(grid,0);
   fail_unless( !gridMoreNodeCell(grid), 
-	       "expected the last node to be reaced if not registered");
+	       "expected the last cell to be reached if not registered");
  
   gridRegisterNodeCell(grid,2,299);
+  gridRegisterNodeCell(grid,3,399);
+
   gridFirstNodeCell(grid,2);
   fail_unless( gridCurrentNodeCell(grid) == 299, 
 	       "expected cell 299 as neighbor of node 2");
+  gridFirstNodeCell(grid,3);
+  fail_unless( gridCurrentNodeCell(grid) == 399, 
+	       "expected cell 399 as neighbor of node 3");
+  gridNextNodeCell(grid);
+  fail_unless( !gridMoreNodeCell(grid), 
+	       "expected the last cell to be reached for node 3");
 
 }
 END_TEST
+
+/* test run out of memory - anything null(0) in celllist durring register */
+/* packing */
+/* non-contiguos cellist for access and registering */
+/* removal */
 
 Suite *grid_suite (void) 
 { 

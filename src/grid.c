@@ -68,10 +68,16 @@ long gridNodeDeg(Grid *grid, long id)
 
 Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
 {
-  grid->firstcell[nodeId]=1;
-  grid->celllist[1]=cellId+1;
-  grid->celllist[2]=0;
-  grid->celllist[0]=-3;
+  long entry, terminator, nextOpen;
+
+  entry = -grid->celllist[0];
+  terminator = -grid->celllist[entry];
+  nextOpen = -grid->celllist[terminator];
+
+  grid->firstcell[nodeId]=entry;
+  grid->celllist[entry]=cellId+1;
+  grid->celllist[terminator]=0;
+  grid->celllist[0]=-nextOpen;
 
   return grid;
 }
