@@ -23,7 +23,7 @@ int gridSavePart( Grid *grid, char *project );
 
 #define PRINT_STATUS printf("minimum Aspect Ratio %10.8f Mean Ratio %10.8f Volume %12.8e\n", gridMinAR(grid),gridMinFaceMR(grid), gridMinVolume(grid));
 
-#define DUMP_TEC iview++;printf("Frame %d\n",iview);gridWriteTecplotSurfaceZone(grid);
+#define DUMP_TEC if (!boundaryLayerGrid) {iview++;printf("Frame %d\n",iview);gridWriteTecplotSurfaceZone(grid);}
 
 #define STATUS DUMP_TEC PRINT_STATUS
 
