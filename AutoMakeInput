@@ -1,5 +1,9 @@
 # -*- Makefile -*-
 
+# This file is included by the various $ARCH/Makefile.am
+
+AUTOMAKE_OPTIONS = 1.7
+
 lib_LIBRARIES = libMesherX.a
 libMesherX_a_CFLAGS = -I../src @SDKheader@
 libMesherX_a_SOURCES = \
