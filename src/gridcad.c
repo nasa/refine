@@ -15,8 +15,9 @@
 #include <values.h>
 #include "CADGeom/CADGeom.h"
 #include "gridmetric.h"
-#include "gridcad.h"
+#include "gridswap.h"
 #include "gridinsert.h"
+#include "gridcad.h"
 
 Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )
 {
@@ -500,14 +501,13 @@ Grid *gridSmoothNode(Grid *grid, int node )
 
 Grid *gridSmoothNodeFaceMR(Grid *grid, int node )
 {
-  double xyzProj[3], uv[2], t;
+  double xyzProj[3], uv[2];
   double mr, dMRdx[3];
-  double du[3], dv[3], dt[3];
-  double dMRdu[2], dMRdt;
+  double du[3], dv[3];
+  double dMRdu[2];
   int vol =1;
   int nodes[3];
   int face, faceId;
-  int edge, edgeId;
 
   if ( gridGeometryEdge( grid, node ) ) return grid;
   if ( !gridGeometryFace( grid, node ) ) return grid;
@@ -578,7 +578,6 @@ Grid *gridOptimizeT(Grid *grid, int node, double dt )
 
 Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
 {
-  int vol =1;
   double uvOrig[2], uv[2];
   int nodes[3];
   int face, faceId;
@@ -633,7 +632,6 @@ Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
 
 Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
 {
-  int vol =1;
   double uvOrig[2], uv[2];
   int nodes[3];
   int face, faceId;
@@ -784,7 +782,7 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
   double origXYZ[3], xyz[3], nodeXYZ[3];
   double oneOverNCell;
   AdjIterator it;
-  int nodes[4], ncell, inode, ixyz, n;
+  int nodes[4], ncell, inode, ixyz;
   
   gridNodeAR(grid, node, &origAR);
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
@@ -906,6 +904,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   goodStep = FALSE;
   actualImprovement = 0.0;
   lastImprovement = -10.0;
+  lastAlpha = alpha;
   iteration = 0;
   while (alpha > 10.e-10 && !goodStep && iteration < 30 ) {
     iteration++;

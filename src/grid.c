@@ -1214,7 +1214,7 @@ int gridFindOtherCellWith3Nodes(Grid *grid, int n0, int n1, int n2,
 				int currentCell )
 {
   AdjIterator it;
-  int cell, i, j, nodes[4];
+  int cell, nodes[4];
 
   for ( it = adjFirst(grid->cellAdj,n0); adjValid(it); it = adjNext(it) ) {
     cell = adjItem(it);
@@ -1235,6 +1235,23 @@ int gridFindCellWithFace(Grid *grid, int face ){
   if (grid != gridFace(grid,face,nodes,&faceId)) return EMPTY;
 
   return gridFindOtherCellWith3Nodes(grid, nodes[0],nodes[1],nodes[2], EMPTY);
+}
+
+int gridFindCell(Grid *grid, int *nodes )
+{
+  AdjIterator it;
+  int cell, n[4];
+
+  for ( it=adjFirst(grid->cellAdj,nodes[0]); adjValid(it); it=adjNext(it) ) {
+    cell = adjItem(it);
+    gridCell( grid, cell, n );
+    if ( ( n[0]==nodes[1]||n[1]==nodes[1]||n[2]==nodes[1]||n[3]==nodes[1] ) &&
+	 ( n[0]==nodes[2]||n[1]==nodes[2]||n[2]==nodes[2]||n[3]==nodes[2] ) &&
+	 ( n[0]==nodes[3]||n[1]==nodes[3]||n[2]==nodes[3]||n[3]==nodes[3] ) )
+      return cell; 
+  }
+
+  return EMPTY;
 }
 
 Grid *gridCheckCellConnections(Grid *grid){
@@ -2014,7 +2031,7 @@ Grid *gridOrient(Grid *grid, int *c, int *n )
 
 Grid *gridEquator(Grid *grid, int n0, int n1 )
 {
-  int igem, iequ, cell[4], nodes[4];
+  int igem, iequ, nodes[4];
   bool gap, found;
   grid->nequ = 0;
 

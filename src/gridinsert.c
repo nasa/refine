@@ -13,6 +13,7 @@
 #include <math.h>
 #include <values.h>
 #include "gridmetric.h"
+#include "gridswap.h"
 #include "gridinsert.h"
 #include "gridcad.h"
 
@@ -58,8 +59,7 @@ Grid *gridRemoveAllNodes(Grid *grid )
 
 Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 {
-  AdjIterator it;
-  int i, n0, n1, adaptnode, origNNode, newnode;
+  int n0, n1, adaptnode, origNNode, newnode;
   int report, nnodeAdd, nnodeRemove;
   double ratio;
   
@@ -112,8 +112,7 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 
 Grid *gridAdaptSurface(Grid *grid, double minLength, double maxLength )
 {
-  AdjIterator it;
-  int i, n0, n1, adaptnode, origNNode, newnode;
+  int n0, n1, adaptnode, origNNode, newnode;
   int report, nnodeAdd, nnodeRemove;
   double ratio;
   
@@ -170,8 +169,7 @@ Grid *gridAdaptSurface(Grid *grid, double minLength, double maxLength )
 
 Grid *gridAdaptWithOutCAD(Grid *grid, double minLength, double maxLength )
 {
-  AdjIterator it;
-  int i, n0, n1, adaptnode, origNNode, newnode;
+  int n0, n1, adaptnode, origNNode, newnode;
   int report, nnodeAdd, nnodeRemove;
   double ratio;
   
@@ -234,7 +232,7 @@ int gridSplitEdge(Grid *grid, int n0, int n1)
 int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 		    double newX, double newY, double newZ )
 {
-  int i, igem, cell, nodes[4], globalnodes[4], inode, node;
+  int igem, cell, nodes[4], globalnodes[4], inode, node;
   int newnode, newglobal, newnodes0[4], newnodes1[4];
   int globalnewnodes0[5], globalnewnodes1[5];
   int cell0, cell1, globalCellId0, globalCellId1;
@@ -243,7 +241,6 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   int gap0, gap1, face0, face1, faceNodes0[4], faceNodes1[4], faceId0, faceId1;
   int edge, edgeId;
   double t0,t1, newT;
-  double map, map0, map1;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
 
@@ -546,7 +543,7 @@ int gridSplitCellAt(Grid *grid, int cell,
 
 int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
 {
-  int i, edge, maxedge, edgeId, nodes[2];
+  int edge, maxedge, edgeId, nodes[2];
   int newnode;
 
   newnode = EMPTY;
@@ -567,7 +564,7 @@ int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
 int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 {
   int foundFace;
-  int i, face, maxface, faceId, nodes[3];
+  int face, maxface, faceId, nodes[3];
   double newxyz[3], xyz0[3], xyz1[3], xyz2[3];
   double edge0[3], edge1[3], edge2[3];
   double leg0[3], leg1[3], leg2[3];
@@ -652,7 +649,7 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
   double newxyz[3], xyz0[3], xyz1[3], xyz2[3], xyz3[3];
   double edge0[3], edge1[3];
   double leg0[3], leg1[3];
-  double norm[3], norm0[3], norm1[3], norm2[3], norm3[3];
+  double norm0[3], norm1[3], norm2[3], norm3[3];
 
   newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
 
@@ -741,10 +738,8 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
 {
-  int i, cell, face, face0, face1, faceId;
+  int i, face0, face1;
   double xyz0[3], xyz1[3], xyzAvg[3];
-  double uv0[2], uv1[2], uvAvg[2];
-  AdjIterator it;
   bool volumeEdge;
 
   if ( gridGeometryNode(grid, n1) ) return NULL;
@@ -801,7 +796,7 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
     gridNodeUV(grid,n1,faceId0,n1Id0uv);
     gridNodeUV(grid,n0,faceId1,n0Id1uv);
     gridNodeUV(grid,n1,faceId1,n1Id1uv);
-    if ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ||
+    if ( ( gridGeometryEdge(grid, n0) && !gridGeometryEdge(grid, n1) ) ||
 	 gridGeometryNode(grid, n0) ) {
       newId0uv[0] = n0Id0uv[0];
       newId0uv[1] = n0Id0uv[1];
@@ -872,8 +867,6 @@ Grid *gridVerifyEdgeExists(Grid *grid, int n0, int n1 )
 {
   int i0, i1, nodes0[4], nodes1[4];
   bool gotIt;
-  int removeNode;
-  double ratio;
   AdjIterator it0, it1;
 
   gotIt=gridCellEdge( grid, n0, n1 );

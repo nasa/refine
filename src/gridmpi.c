@@ -48,7 +48,7 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 {
   double xyz0[3], xyz1[3];
   double newX, newY, newZ;
-  int newnode, newglobal;
+  int newnode;
 
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return EMPTY;
 
@@ -73,5 +73,33 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 
 Grid *gridApplyQueue(Grid *grid, Queue *queue )
 {
+  int transaction;
+  int removed, removedcell;
+  int i, globalnodes[5], localnodes[4];
+  int cell;
+
+  removedcell = 0;
+  for (transaction=0;transaction<queueTransactions(queue);transaction++){
+    printf( "transaction %d has %d removed cells\n",
+	    transaction,queueRemovedCells(queue,transaction));
+    for (removed=0;removed<queueRemovedCells(queue,transaction);removed++) {
+      queueRemovedCellNodes( queue, removedcell, globalnodes );
+      printf( "global cell %d %d %d %d\n",
+	      globalnodes[0],
+	      globalnodes[1],
+	      globalnodes[2],
+	      globalnodes[3]);
+      removedcell++;
+      for(i=0;i<4;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
+      printf( "local cell %d %d %d %d\n",
+	      localnodes[0],
+	      localnodes[1],
+	      localnodes[2],
+	      localnodes[3]);
+      cell = gridFindCell(grid,localnodes);
+      gridRemoveCell(grid,cell);
+    }
+  }
+
   return grid;
 }

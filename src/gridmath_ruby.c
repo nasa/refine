@@ -55,7 +55,6 @@ static VALUE grid_vectorNormalize( VALUE self, VALUE rb_vect )
 {
   int i;
   double vect[3];
-  VALUE rb_result;
   for (i=0;i<3;i++) vect[i] = NUM2DBL(rb_ary_entry(rb_vect, i));
   gridVectorNormalize(vect);
   for (i=0;i<3;i++) rb_ary_store(rb_vect, i, rb_float_new(vect[i]));

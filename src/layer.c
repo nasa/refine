@@ -89,7 +89,7 @@ void layerFree(Layer *layer)
 Layer *formAdvancingFront( Grid *grid, char *project )
 {
   Layer *layer;
-  int i, nbc, bc[2];
+  int nbc, bc[2];
   bool box, om6, n12;
   
   box = (NULL != strstr( project, "box"));
@@ -102,6 +102,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
 
   bc[0]=1;
   bc[1]=2;
+  nbc=0;
   if(box) nbc = 1;
   if(om6) nbc = 2;
   if(n12){
@@ -138,7 +139,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
 void layerSortGlobalNodes(void *voidLayer, int *o2n)
 {
   Layer *layer = (Layer *)voidLayer;
-  int i, triangle, normal;
+  int normal;
 
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
@@ -439,8 +440,7 @@ Layer *layerTriangleFourthNode(Layer *layer, int triangle, double *xyz )
 {
   int i;
   double center[3], h;
-  int normals[3];
-  double direction[3], direction0[3], direction1[3], direction2[3];
+  double direction[3];
 
   if ( layer != layerTriangleCenter(layer,triangle,center) ) return NULL;
   layerTriangleDirection(layer,triangle,direction);
@@ -471,7 +471,7 @@ Layer *layerTriangleInviscidTet(Layer *layer, int triangle,
 
 Layer *layerTriangleMaxEdgeLength(Layer *layer, int triangle, double *length )
 {
-  int i, nodes[3];
+  int nodes[3];
   double node0[3], node1[3], node2[3];
   double edge0[3], edge1[3], edge2[3], maxLength; 
   
@@ -1070,7 +1070,7 @@ Layer *layerSetNormalHeightForLayerNumber(Layer *layer, int n, double rate)
 Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 {
   int normal, iter, i;
-  double *dir, mindir[3], dot, mindot, radian, length; 
+  double *dir, mindir[3], mindot, radian, length; 
   int minTriangle, lastTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
@@ -1121,7 +1121,6 @@ Layer *layerSmoothNormalDirection(Layer *layer)
   int normal, iter, triangle, normals[3], total, i;
   double norm[3], avgdir[3], denom; 
   AdjIterator it;
-  int minTriangle, lastTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
   if (layerNBlend(layer) != 0 ) return NULL;
@@ -1285,7 +1284,6 @@ Layer *layerConstrainNormal(Layer *layer, int edgeface )
   int edgeId, faceId, face, nodes[3], id, i, normal;
   int n0, n1, normal0, normal1;
   int nCurveNode, *curve;
-  int exist;
 
   if (layerNNormal(layer) == 0 ) return NULL;
   if (edgeface == 0 ) return NULL;
@@ -1729,7 +1727,7 @@ Layer *layerAdvance(Layer *layer)
 {
   Grid *grid = layer->grid;
   int normal, normal0, normal1, root, tip, faceId, edgeId, i;
-  int cell, node;
+  int node;
   int triangle, normals[3], nodes[3], n[6];
   int side[2], sidenode[2], sidenormal[2];
   double xyz[3];
@@ -2355,8 +2353,6 @@ Layer *layerBlend(Layer *layer)
   int newNormal, i;
   bool done;
 
-  int blend, edgeId;
-
   angleLimit = 250; /* deg */
 
   originalNormals = layerNNormal(layer);
@@ -2717,7 +2713,7 @@ Layer *layerPopulateNormalNearTree(Layer *layer)
 
 Layer *layerPopulateTriangleNearTree(Layer *layer)
 {
-  int i, triangle, nodes[3];
+  int i, triangle;
   Grid *grid;
   double node0[3], node1[3], node2[3], node3[3];
   double center[3], dist[3], radius;

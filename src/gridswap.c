@@ -202,24 +202,24 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
   while ( adjValid(it) ){
     gridCell( grid, adjItem(it), nodes);
     if ( gridAR(grid, nodes) < 0.5 ) {
-      if ( !gridGeometryFace(grid, nodes[0]) && 
-	   !gridGeometryFace(grid, nodes[1]) &&
-	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ) ||
-	   !gridGeometryFace(grid, nodes[0]) && 
-	   !gridGeometryFace(grid, nodes[2]) &&
-	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ) ||
-	   !gridGeometryFace(grid, nodes[0]) && 
-	   !gridGeometryFace(grid, nodes[3]) &&
-	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ) ||
-	   !gridGeometryFace(grid, nodes[1]) && 
-	   !gridGeometryFace(grid, nodes[2]) &&
-	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ) ||
-	   !gridGeometryFace(grid, nodes[1]) && 
-	   !gridGeometryFace(grid, nodes[3]) &&
-	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ) ||
-	   !gridGeometryFace(grid, nodes[2]) && 
-	   !gridGeometryFace(grid, nodes[3]) &&
-	   ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ) ) {
+      if ( ( !gridGeometryFace(grid, nodes[0]) && 
+	     !gridGeometryFace(grid, nodes[1]) &&
+	     ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ) ) ||
+	   ( !gridGeometryFace(grid, nodes[0]) && 
+	     !gridGeometryFace(grid, nodes[2]) &&
+	     ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ) ) ||
+	   ( !gridGeometryFace(grid, nodes[0]) && 
+	     !gridGeometryFace(grid, nodes[3]) &&
+	     ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ) ) ||
+	   ( !gridGeometryFace(grid, nodes[1]) && 
+	     !gridGeometryFace(grid, nodes[2]) &&
+	     ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ) ) ||
+	   ( !gridGeometryFace(grid, nodes[1]) && 
+	     !gridGeometryFace(grid, nodes[3]) &&
+	     ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ) ) ||
+	   ( !gridGeometryFace(grid, nodes[2]) && 
+	     !gridGeometryFace(grid, nodes[3]) &&
+	     ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ) ) ) {
 	it = adjFirst(gridCellAdj(grid),node);
 	nswap++;
       }else{
@@ -521,7 +521,7 @@ Grid *gridSwapEdge6( Grid *grid, int n0, int n1 )
   int i;
   int nodes[40][4], bestcombo[4];
 
-  double cost, costs[20], origcost, bestcost;
+  double costs[20], origcost, bestcost;
   
   gridGemAR(grid, &origcost);
 
@@ -696,7 +696,7 @@ Grid *gridSwapEdge7( Grid *grid, int n0, int n1 )
   int i;
   int nodes[70][4], bestcombo[5];
 
-  double cost, costs[35], origcost, bestcost;
+  double costs[35], origcost, bestcost;
   
   gridGemAR(grid, &origcost);
 

@@ -17,11 +17,9 @@ VALUE grid_init( VALUE self ) // not needed but for example
 VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nface, VALUE nedge)
 {
   Grid *grid;
-  VALUE *argv;
   VALUE obj;
   grid = gridCreate( NUM2INT(nnode), NUM2INT(ncell), NUM2INT(nface), NUM2INT(nedge) );
   obj = Data_Wrap_Struct( class, 0, grid_free, grid );
-  rb_obj_call_init( obj, 0, argv ); // not needed but for example
   return obj;
 }
 
@@ -221,6 +219,17 @@ VALUE grid_findOtherCellWith3Nodes( VALUE self, VALUE node0, VALUE node1, VALUE 
 {
   GET_GRID_FROM_SELF;
   return INT2NUM( gridFindOtherCellWith3Nodes(grid, NUM2INT(node0), NUM2INT(node1), NUM2INT(node2), NUM2INT(currentCell) ) );
+}
+
+VALUE grid_findCell( VALUE self, VALUE rb_nodes )
+{
+  int nodes[4];
+  GET_GRID_FROM_SELF;
+  nodes[0] = NUM2INT( rb_ary_entry( rb_nodes, 0) );
+  nodes[1] = NUM2INT( rb_ary_entry( rb_nodes, 1) );
+  nodes[2] = NUM2INT( rb_ary_entry( rb_nodes, 2) );
+  nodes[3] = NUM2INT( rb_ary_entry( rb_nodes, 3) );
+  return INT2NUM( gridFindCell( grid, nodes ) );
 }
 
 VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
@@ -876,6 +885,7 @@ void Init_Grid()
   rb_define_method( cGrid, "findOtherCellWith3Nodes", 
 		    grid_findOtherCellWith3Nodes, 4 );
   rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
+  rb_define_method( cGrid, "findCell", grid_findCell, 1 );
 
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
   rb_define_method( cGrid, "addFaceUV", grid_addFaceUV, 10 );

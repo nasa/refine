@@ -11,6 +11,7 @@
 /* $Id$ */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include <limits.h>
 #include <values.h>

@@ -211,7 +211,6 @@ VALUE grid_ar( VALUE self, VALUE rb_nodes )
 VALUE grid_nodeAR( VALUE self, VALUE node )
 {
   double ar;
-  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
   return (gridNodeAR( grid, NUM2INT(node), &ar )==grid?rb_float_new(ar):Qnil);
 }
@@ -363,7 +362,6 @@ VALUE grid_FaceMRDerivative( VALUE self,
 VALUE grid_nodeFaceMR( VALUE self, VALUE node )
 {
   double ar;
-  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
   return (gridNodeFaceMR( grid, NUM2INT(node), &ar )==grid?rb_float_new(ar):Qnil);
 }

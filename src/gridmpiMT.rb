@@ -12,6 +12,7 @@ require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
 require 'Queue/Queue'
+require 'Sort/Sort'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
 require 'GridInsert/GridInsert'
@@ -124,6 +125,7 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 4, p1.parallelEdgeSplit(q,0,3)
 
   assert_equal p2, p2.applyQueue(q)
+  assert_equal 0, p2.ncell
  end
 
 end

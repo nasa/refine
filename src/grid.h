@@ -163,6 +163,7 @@ bool gridCellFace(Grid *g, int node0, int node1, int node2 );
 int gridFindOtherCellWith3Nodes(Grid *g, int node0, int node1, int node2,
 				int currentCell );
 int gridFindCellWithFace(Grid *g, int face );
+int gridFindCell(Grid *g, int *nodes );
 Grid *gridCheckCellConnections(Grid *g);
 Grid *gridDeleteThawedCells(Grid *g);
 
@@ -243,8 +244,6 @@ int gridNodePart(Grid *g, int node );
 Grid *gridSetNodePart(Grid *g, int node, int part );
 bool gridNodeLocal(Grid *g, int node );
 bool gridNodeGhost(Grid *g, int node );
-
-int gridFindCellWithFace(Grid *g, int face );
 
 int gridNGeomNode(Grid *g);
 Grid *gridSetNGeomNode(Grid *g, int nGeomNode);

@@ -225,6 +225,17 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 1,    grid.findCellWithFace(0)
  end
 
+ def testFindCell
+  assert_not_nil     grid = Grid.new(7,2,0,0)
+  grid.addCell(0,1,2,3)
+  assert_equal EMPTY, grid.findCell([-1,0,10,5])
+  assert_equal 0,     grid.findCell([0,1,2,3])
+  assert_equal 0,     grid.findCell([3,2,0,1])
+  assert_equal EMPTY, grid.findCell([3,4,5,6])
+  grid.addCell(3,4,5,6)
+  assert_equal 1,     grid.findCell([3,4,5,6])
+ end
+
  def testFindOtherCellWithThreeNodes
   assert_not_nil     grid = Grid.new(5,5,5,5)
   assert_equal(-1,   grid.findOtherCellWith3Nodes(0,1,2,0) )

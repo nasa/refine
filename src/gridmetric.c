@@ -185,7 +185,6 @@ Grid *gridResetSpacing(Grid *grid )
 {
   int node;
   double spacingInverse;
-  double map[6];
   for ( node=0; node < gridMaxNode(grid); node++) {
     if ( gridValidNode(grid,node) ) {
       spacingInverse = 1.0/gridAverageEdgeLength( grid, node );
@@ -201,7 +200,6 @@ Grid *gridResetSpacing(Grid *grid )
 
 Grid *gridScaleSpacing(Grid *grid, int node, double scale )
 {
-  int i;
   double map[6];
   double s;
   if (grid != gridMap(grid, node, map)) return NULL;
@@ -395,7 +393,7 @@ Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
 		      double *v1, double *v2, double *v3)
 {
   int i;
-  double t, vt[3], n[3];
+  double t, vt[3];
   double diagRatio;
 
   diagRatio = (ABS(m[1])+ABS(m[2])+ABS(m[4])) 
@@ -469,8 +467,7 @@ Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
 
 Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
 {
-  int i;
-  double eigenValues[3], e1, e2, e3, v1[3], v2[3], v3[3], n[3], vt[3], et;
+  double eigenValues[3], e1, e2, e3, v1[3], v2[3], v3[3];
   double v1dotv2, v2length, v3length;
   if ( grid != gridEigenSystem(grid, m, eigenValues, v1, v2, v3 )) {
     printf("%s: %d: gridConvertMetricToJacobian: gridEigenSystem NULL\n",
@@ -518,7 +515,7 @@ double gridVolume(Grid *grid, int *nodes )
 {
   double *xyz0, *xyz1, *xyz2, *xyz3;
   double edge1[3], edge2[3], edge3[3];
-  double norm[3], volume; 
+  double norm[3];
   
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
@@ -579,7 +576,7 @@ double gridAR(Grid *grid, int *nodes )
   double aspect;
 
   double edge1[3], edge2[3], edge3[3];
-  double norm[3], volume; 
+  double norm[3];
 
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
@@ -655,7 +652,6 @@ double gridCellAspectRatio( double *xyz1, double *xyz2,
   double nx3, ny3, nz3, rmag3;
   double nx4, ny4, nz4, rmag4;
   double xins;
-  double aspect, cost;
 
   x1 = xyz1[0];
   y1 = xyz1[1];
@@ -1872,7 +1868,7 @@ Grid *gridNodeFaceMR(Grid *grid, int node, double *mr )
 Grid *gridNodeFaceMRDerivative (Grid *grid, int node, double *mr, double *dMRdx )
 {
   AdjIterator it;
-  int face, originalNodes[3], orientedNodes[3], faceId, index, inode;
+  int originalNodes[3], orientedNodes[3], faceId, index, inode;
   double local_mr, local_dMRdx[3];
 
   *mr = 1.1;

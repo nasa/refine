@@ -30,7 +30,6 @@ bool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
 bool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex2,
 			    double *node)
 {
-  int i;
   double side[3], otherSide[3], target[3];
   double triangleNormal[3], targetNormal[3];
 
