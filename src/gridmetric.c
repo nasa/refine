@@ -27,7 +27,7 @@ void gridMapXYZWithJ( double *j,
   
   mapx = j[0] * *x + j[1] * *y + j[2] * *z; 
   mapy = j[3] * *x + j[4] * *y + j[5] * *z; 
-  mapz = j[6] * *x + j[6] * *y + j[8] * *z; 
+  mapz = j[6] * *x + j[7] * *y + j[8] * *z; 
 
   *x = mapx;
   *y = mapy;
@@ -415,18 +415,6 @@ Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
     VECTOR_COPY3(v3,vt);
   }
 
-  if (FALSE) {
-    /* make sure that my eigen system is right-handed*/
-    
-    n[0] = v1[1]*v2[2] - v1[2]*v2[1]; 
-    n[1] = v1[2]*v2[0] - v1[0]*v2[2]; 
-    n[2] = v1[0]*v2[1] - v1[1]*v2[0]; 
-    
-    if (n[0]*v3[0]+n[1]*v3[1]+n[2]*v3[2] < 0.0 ){
-      VECTOR_COPY3(v3,-v3);    
-    }
-  }
-  
   return grid;
 }
 
@@ -434,26 +422,30 @@ Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
 {
   int i;
   double eigenValues[3], e1, e2, e3, v1[3], v2[3], v3[3], n[3], vt[3], et;
+  double v1dotv2, v2length, v3length;
   if ( grid != gridEigenSystem(grid, m, eigenValues, v1, v2, v3 )) {
     printf("%s: %d: gridConvertMetricToJacobian: gridEigenSystem NULL\n",
 	   __FILE__,__LINE__);
     return NULL;
   }
 
-  /* make sure that my eigen system is right-handed*/
+  /* make sure that the eigen system is ortho-normal and right-handed*/
     
-  n[0] = v1[1]*v2[2] - v1[2]*v2[1]; 
-  n[1] = v1[2]*v2[0] - v1[0]*v2[2]; 
-  n[2] = v1[0]*v2[1] - v1[1]*v2[0]; 
-  
-  if (n[0]*v3[0]+n[1]*v3[1]+n[2]*v3[2] < 0.0 ){
-    et = eigenValues[1];
-    eigenValues[1] = eigenValues[2];
-    eigenValues[2] = et;
-    VECTOR_COPY3(vt,v2);
-    VECTOR_COPY3(v2,v3);
-    VECTOR_COPY3(v3,vt);
-  }
+  v1dotv2 = v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];
+  v2[0] -= v1[0]*v1dotv2;
+  v2[1] -= v1[1]*v1dotv2;
+  v2[2] -= v1[2]*v1dotv2;
+  v2length = sqrt( v2[0]*v2[0]+v2[1]*v2[1]+v2[2]*v2[2] );
+  v2[0] = v2[0]/v2length;
+  v2[1] = v2[1]/v2length;
+  v2[2] = v2[2]/v2length;
+  v3[0] = v1[1]*v2[2] - v1[2]*v2[1]; 
+  v3[1] = v1[2]*v2[0] - v1[0]*v2[2]; 
+  v3[2] = v1[0]*v2[1] - v1[1]*v2[0]; 
+  v3length = sqrt( v3[0]*v3[0]+v3[1]*v3[1]+v3[2]*v3[2] );
+  v3[0] = v3[0]/v3length;
+  v3[1] = v3[1]/v3length;
+  v3[2] = v3[2]/v3length;
 
   e1 = sqrt(eigenValues[0]);
   e2 = sqrt(eigenValues[1]);
@@ -638,10 +630,10 @@ double gridAR(Grid *grid, int *nodes )
 
   aspect = xins/circ*3.0;
 
-  if ( aspect < 0.0 ) {
+  if ( FALSE ) {
     printf("nodes %d %d %d %d aspect %f\n",nodes[0],nodes[1],nodes[2],nodes[3],aspect);
-    printf("m \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
-    printf("j \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f\n",j[0],j[1],j[2],j[1],j[3],j[4],j[2],j[4],j[5]);
+    printf("m \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
+    printf("j \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",j[0],j[1],j[2],j[3],j[4],j[5],j[6],j[7],j[8]);
   }
 
   if ( gridVolume( grid, nodes ) <= 1.0e-14) aspect = -1.0;
@@ -1469,7 +1461,7 @@ double gridFaceMR(Grid *grid, int n0, int n1, int n2 )
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
     printf("%s: %d: gridFaceMR: gridConvertMetricToJacobian NULL\n",
 	   __FILE__,__LINE__);
-    printf("m \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f \n %25.15f %25.15f %25.15f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
+    printf("m \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
   }
 
   gridMapXYZWithJ(j, &x1, &y1, &z1);
