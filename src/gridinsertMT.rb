@@ -7,12 +7,14 @@
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridSwap adj.c grid.c gridmetric.h gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb GridInsert adj.c grid.h gridmetric.h gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridInsert adj.c grid.h gridmetric.h gridcad.h gridStruct.h master_header.h'
 
 require 'test/unit'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
 require 'GridSwap/GridSwap'
+require 'GridCAD/GridCAD'
 require 'GridInsert/GridInsert'
 
 class Grid
