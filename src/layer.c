@@ -813,8 +813,9 @@ Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triang
 Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
 {
   int tri, triangles[MAXNORMALDEG];
-  int triangle;
-  double savedDirection[3];
+  int triangle, nodes[3], side0, side1, faceId;
+  double xyz0[3], xyz1[3], tangent[3];
+  double newxyz[3], uv[2], normalDirection[3];
   
   if (layer != layerNormalTriangles(layer, normal, MAXNORMALDEG, triangles )) {
     layer->normalTriangleDegree = EMPTY;
@@ -828,14 +829,29 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
       layerTriangleDirection( layer, triangle, 
 			      &layer->normalTriangleDirection[3*tri] );
     }else{
-      layerNormalDirection(layer,normal,savedDirection);
-      layerTriangleDirection( layer, triangle, 
-			      layer->normal[normal].direction );
-      layerProjectNormalToConstraints(layer, normal);
-      layerNormalDirection(layer,normal,&layer->normalTriangleDirection[3*tri]);
-      layer->normal[normal].direction[0] = savedDirection[0];
-      layer->normal[normal].direction[1] = savedDirection[1];
-      layer->normal[normal].direction[2] = savedDirection[2];
+      layerTriangle(layer,triangle,nodes);
+      if (layerConstrainedSide(layer, triangle, 0 )) side0 = 0; 
+      if (layerConstrainedSide(layer, triangle, 1 )) side0 = 1; 
+      if (layerConstrainedSide(layer, triangle, 2 )) side0 = 2;
+      side1 = side0+1; if (side1>2) side1 = 0;
+      gridNodeXYZ(layerGrid(layer),nodes[side0],xyz0);
+      gridNodeXYZ(layerGrid(layer),nodes[side1],xyz1);
+      gridSubtractVector(xyz1,xyz0,tangent);
+      gridVectorNormalize(tangent);
+
+      faceId = layerConstrained(layer,normal);
+      if (faceId>0) {
+	gridProjectToFace(layerGrid(layer),faceId,xyz0,uv,newxyz);
+	gridFaceNormalAtUV(layerGrid(layer),faceId,uv, newxyz, normalDirection);
+	gridCrossProduct(tangent,normalDirection,
+			 &layer->normalTriangleDirection[3*tri]);
+	gridVectorNormalize(&layer->normalTriangleDirection[3*tri]);
+      } else {
+	layerNormalDirection( layer, normal, 
+			      &layer->normalTriangleDirection[3*tri] );
+      }
+
+
     }
   }
   return layer;
