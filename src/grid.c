@@ -33,9 +33,9 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->nface   = 0;
   grid->maxedge = MAX(maxedge,1);
   grid->nedge   = 0;
-  grid->nGeomNode = EMPTY;
-  grid->nGeomEdge = EMPTY;
-  grid->nGeomFace = EMPTY;
+  grid->nGeomNode = 0;
+  grid->nGeomEdge = 0;
+  grid->nGeomFace = 0;
   grid->geomEdge = NULL;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
@@ -138,9 +138,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nface   = nface;
   grid->maxedge = MAX(maxedge,1);
   grid->nedge   = 0;
-  grid->nGeomNode = EMPTY;
-  grid->nGeomEdge = EMPTY;
-  grid->nGeomFace = EMPTY;
+  grid->nGeomNode = 0;
+  grid->nGeomEdge = 0;
+  grid->nGeomFace = 0;
   grid->geomEdge = NULL;
 
   grid->xyz = xyz;
@@ -1937,6 +1937,7 @@ bool gridGeometryEdge(Grid *grid, int node)
 {
   AdjIterator it;
 
+  if ( node < 0 || node >= gridMaxNode(grid) ) return FALSE;
   for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) )
     return TRUE;
   
@@ -1947,6 +1948,7 @@ bool gridGeometryFace(Grid *grid, int node)
 {
   AdjIterator it;
 
+  if ( node < 0 || node >= gridMaxNode(grid) ) return FALSE;
   for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) )
     return TRUE;
   

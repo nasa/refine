@@ -418,9 +418,9 @@ class TestGrid < Test::Unit::TestCase
 
  def testNGeomElements
   assert_not_nil grid = Grid.new(1,1,1,1)
-  assert_equal( -1,  grid.nGeomNode )
-  assert_equal( -1,  grid.nGeomEdge )
-  assert_equal( -1,  grid.nGeomFace )
+  assert_equal 0,  grid.nGeomNode
+  assert_equal 0,  grid.nGeomEdge
+  assert_equal 0,  grid.nGeomFace
   assert_equal grid, grid.setNGeomNode(1)
   assert_equal grid, grid.setNGeomEdge(2)
   assert_equal grid, grid.setNGeomFace(3)
@@ -439,20 +439,25 @@ class TestGrid < Test::Unit::TestCase
   assert_equal true,  grid.geometryNode(0)
   assert_equal true,  grid.geometryNode(1)
   assert_equal false, grid.geometryNode(2)
+  assert_equal false, grid.geometryNode(grid.maxnode)
  end
 
  def testGeometryEdge
   assert_not_nil grid = Grid.new(3,0,0,1)
   assert_equal false, grid.geometryEdge(0)
   assert_equal grid,  grid.addEdge(0,1,10,0.0,1.0)
+  assert_equal false, grid.geometryEdge(-1)
   assert_equal true,  grid.geometryEdge(0)
+  assert_equal false, grid.geometryEdge(grid.maxnode)
  end
 
  def testGeometryFace
   assert_not_nil grid = Grid.new(3,0,0,1)
   assert_equal false, grid.geometryFace(0)
   assert_equal grid,  grid.addFace(0,1,2,10)
+  assert_equal false, grid.geometryFace(-1)
   assert_equal true,  grid.geometryFace(0)
+  assert_equal false, grid.geometryFace(grid.maxnode)
  end
 
  def testPack
