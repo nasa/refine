@@ -731,11 +731,6 @@ Grid *gridSortNodeGridEx(Grid *grid)
   }
 
   o2n = malloc( grid->nnode * sizeof(int) );
-  if (o2n == NULL) {
-    printf("ERROR: gridSortNodeGridEx: %s: %d: could not allocate o2n\n",
-	   __FILE__,__LINE__);
-    return NULL;
-  }
   for (i=0;i<grid->nnode;i++) o2n[i] = EMPTY;
 
   // geom nodes
@@ -781,6 +776,48 @@ Grid *gridSortNodeGridEx(Grid *grid)
 
   if (newnode != grid->nnode) 
     printf("ERROR: gridSortNodeGridEx, newnode %d nnode %d, line %d of %s\n.",
+	   newnode,grid->nnode,__LINE__, __FILE__);
+
+  gridRenumber(grid, o2n);
+
+  free(o2n);
+
+  return grid;
+}
+
+Grid *gridSortNodeFUN3D(Grid *grid, int *nnodes0)
+{
+  int i, newnode, edge, nCurveNode;
+  int node, face, cell;
+  int *o2n, *curve;
+
+  if (NULL == gridPack(grid)) {
+    printf("gridSortNodeFUN3D: gridPack failed.\n");
+    return NULL;
+  }
+
+  o2n = malloc( grid->nnode * sizeof(int) );
+  for (i=0;i<grid->nnode;i++) o2n[i] = EMPTY;
+
+  newnode = 0;
+
+  // local nodes
+  for ( node=0; node<grid->nnode; node++ ){
+    if ( gridNodeLocal(grid,node) ) {
+      o2n[node] = newnode;
+      newnode++;
+    }
+  }
+
+  // interior nodes
+  for ( node=0; node<grid->nnode; node++ ){
+    if ( o2n[node] == EMPTY ) {
+      o2n[node] = newnode;
+      newnode++;
+    }
+  }
+  if (newnode != grid->nnode) 
+    printf("ERROR: gridSortNodeFUN3D, newnode %d nnode %d, line %d of %s\n.",
 	   newnode,grid->nnode,__LINE__, __FILE__);
 
   gridRenumber(grid, o2n);

@@ -129,6 +129,7 @@ Grid *gridAttachNodeSorter(Grid *g,
 Grid *gridDetachNodeSorter(Grid *g );
 Grid *gridPack(Grid *g);
 Grid *gridSortNodeGridEx(Grid *g);
+Grid *gridSortNodeFUN3D(Grid *g, int *nnodes0);
 Grid *gridRenumber(Grid *g, int *o2n);
 void gridFree(Grid *g);
 
