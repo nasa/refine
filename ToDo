@@ -10,12 +10,14 @@ research mapped edge length and fix edge ratio length routines
 fix gridCollapseEdgeToBestConfiguration gridCollapseCost logic
 
 Finish face swap parallelization. there are only 5 nodes so that means
-23 posiblities. (unit testing could be less if ring, top&bottom are
-treated seperatedly)
+32 posiblities. (unit testing could be less if ring, top&bottom are
+treated seperately)
 
-Added a face area in UV constraint to cost.
+Use LQP for face optimizization.
 
-Smooth face in mapped UV space instead of physical space
+try new metrics/constrints
+- Add a face area in UV constraint to cost to fight clifs.
+- Smooth face in mapped UV space instead of physical space
 
 Parameter values: verify at start and then always evaluate to avoid
 projections.
