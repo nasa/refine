@@ -466,6 +466,13 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   return grid->faceId[face];
 }
 
+Grid *gridAddEdge(Grid *grid, int n0, int n1, int faceId )
+{
+  grid->nedge++;
+
+  return grid;
+}
+
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {
   AdjIterator it;

@@ -228,7 +228,6 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testNumberOfFaces
-  assert_equal 0, @grid.nface 
   assert_not_nil  grid = Grid.new(4,1,2,0)
   assert_equal 0, grid.nface 
   assert_equal 2, grid.maxface 
@@ -544,11 +543,18 @@ class TestSampleUnit < Test::Unit::TestCase
   grid  
  end
 
- def XtestMaxSize
-  nnode = 6000000
-  grid = Grid.new(nnode,nnode*6,0,0)
-  1.upto(nnode*6) {grid.addCell(3,4,0,1)}
+ def testNumberOfEdges
+  assert_not_nil  grid = Grid.new(0,0,0,2)
+  assert_equal 0, grid.nedge
+  assert_equal 2, grid.maxedge
  end
+
+ def testAddAndFindFace
+  assert_not_nil     grid = Grid.new(4,0,0,2)
+  assert_equal grid, grid.addEdge(0, 1, 10)
+  assert_equal 1,    grid.nedge
+ end
+
 
  # make register unique
 

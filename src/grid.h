@@ -46,6 +46,8 @@ Grid *gridRemoveFace(Grid *g, int face );
 int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 
+Grid *gridAddEdge(Grid *g, int n0, int n1, int edgeId );
+
 Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
 int gridGem(Grid *g, int index );
