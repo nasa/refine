@@ -73,7 +73,6 @@ struct Layer {
   GridBool mixedElementMode;
 
   int normalTriangleHub;
-  int normalTriangleDegree;
   GridBool normalTriangleExclusive;
   double normalTriangleDirection[3*MAXNORMALDEG];
   GridBool normalTriangleExclude[MAXNORMALDEG];
@@ -138,7 +137,8 @@ int layerPreviousTriangle(Layer *, int normal, int triangle );
 int layerNextTriangle(Layer *, int normal, int triangle );
 Layer *layerNormalMinDot(Layer *, int normal, double *mindot, double *mindir );
 Layer *layerStoreNormalTriangleDirections(Layer *, int normal);
-Layer *layerNormalTriangleDirection(Layer *, int index, double *direction);
+Layer *layerNormalTriangleDirection(Layer *, 
+				    int normal, int index, double *direction);
 Layer *layerCommonEdge(Layer *, int triangle0, int triangle1, int *nodes);
 double layerEdgeAngle(Layer *, int triangle0, int triangle1 );
 Layer *layerNormalDirection(Layer *, int normal, double *direction);

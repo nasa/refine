@@ -53,7 +53,6 @@ Layer *layerCreate( Grid *grid )
   layer->mixedElementMode=FALSE;
 
   layer->normalTriangleHub = EMPTY;
-  layer->normalTriangleDegree = EMPTY;
 
   layer->cellInLayer = malloc(gridMaxCell(grid)*sizeof(GridBool));
   for (i=0;i<gridMaxCell(grid);i++) layer->cellInLayer[i] = FALSE;
@@ -768,17 +767,14 @@ Layer *layerNormalMinDot(Layer *layer, int normal,
 
   if (layer != layerNormalDirection(layer,normal,dir)) return NULL;
 
-  if (normal != layer->normalTriangleHub)
-    layerStoreNormalTriangleDirections(layer, normal);
-
   *mindot = 2.0;
   mindir[0]=0.0;
   mindir[1]=0.0;
   mindir[2]=0.0;
 
-  for ( index =0; index < layer->normalTriangleDegree; index++ ){
+  for ( index =0; index < layerNormalDeg(layer, normal ); index++ ){
+    layerNormalTriangleDirection(layer,normal,index,norm);
     if (!layer->normalTriangleExclusive|| !layer->normalTriangleExclude[index]){
-      layerNormalTriangleDirection(layer,index,norm);
       dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
       if (dot<*mindot) {
 	*mindot = dot;
@@ -816,13 +812,12 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
   double newxyz[3], uv[2], normalDirection[3];
   
   if (layer != layerNormalTriangles(layer, normal, MAXNORMALDEG, triangles )) {
-    layer->normalTriangleDegree = EMPTY;
+    layer->normalTriangleHub = EMPTY;
     return NULL;
   }
   layer->normalTriangleHub = normal;
-  layer->normalTriangleDegree = layerNormalDeg(layer, normal );
   layer->normalTriangleExclusive = FALSE;
-  for (tri=0;tri<layer->normalTriangleDegree;tri++) {
+  for (tri=0;tri<layerNormalDeg(layer, normal );tri++) {
     triangle = triangles[tri];
     if ( 0 == layerConstrained(layer,normal) || 
 	 ( 0 == layerConstrainedSide(layer, triangle, 0 ) &&
@@ -861,9 +856,17 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
   return layer;
 }
 
-Layer *layerNormalTriangleDirection(Layer *layer, int index, double *direction )
+Layer *layerNormalTriangleDirection( Layer *layer, 
+				     int normal, int index, double *direction )
 {
-  if (index<0||index>layer->normalTriangleDegree) return NULL;
+  if (index<0||index>=MIN(MAXNORMALDEG,layerNormalDeg(layer, normal ))) 
+    return NULL;
+
+  if (normal != layer->normalTriangleHub) {
+    if (layer != layerStoreNormalTriangleDirections(layer, normal) ) 
+      return NULL;
+  }
+
   direction[0] = layer->normalTriangleDirection[0+3*index];
   direction[1] = layer->normalTriangleDirection[1+3*index];
   direction[2] = layer->normalTriangleDirection[2+3*index];
