@@ -1,3 +1,10 @@
+2004-09-16 16:05 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/grid.c (throughout) Cast return of malloc(3) and realloc(3) to
+	appropriate type in assignment.  Makes for cleaner code.  Strange
+	that compiler is not complaining about this since default return
+	type is int???  Also, include <malloc.h> on non-Apple platforms.
+
 2004-09-16 08:50 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationStartStep) A check of

@@ -13,6 +13,9 @@
 #include <math.h>
 #include <limits.h>
 #include <values.h>
+#ifndef __APPLE__       /* Not needed on Mac OS X */
+#include <malloc.h>
+#endif
 #include "sort.h"
 #include "grid.h"
 
@@ -34,7 +37,7 @@ Grid *gridImport(int maxnode, int nnode,
   int i;
   Grid *grid;
 
-  grid = malloc(sizeof(Grid));
+  grid = (Grid *)malloc(sizeof(Grid));
 
   grid->maxnode = MAX(maxnode,1);
   grid->nnode   = nnode;
@@ -63,7 +66,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->geomEdge = NULL;
 
   if (NULL == xyz ){
-    grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
+    grid->xyz = (double *)malloc(3 * grid->maxnode * sizeof(double));
   }else{
     grid->xyz = xyz;
   }
@@ -78,7 +81,7 @@ Grid *gridImport(int maxnode, int nnode,
     grid->blanknode = grid->nnode;
   }
 
-  grid->map = malloc(grid->maxnode * 6 * sizeof(double));
+  grid->map = (double *)malloc(grid->maxnode * 6 * sizeof(double));
   for (i=0;i < grid->maxnode; i++ ) {
     grid->map[0+6*i] = 1.0;
     grid->map[1+6*i] = 0.0;
@@ -88,10 +91,10 @@ Grid *gridImport(int maxnode, int nnode,
     grid->map[5+6*i] = 1.0;
   }
 
-  grid->frozen = malloc(grid->maxnode * sizeof(GridBool));
+  grid->frozen = (GridBool *)malloc(grid->maxnode * sizeof(GridBool));
   for (i=0;i < grid->maxnode; i++ ) grid->frozen[i] = FALSE;
 
-  grid->geomNode = malloc(grid->maxnode * sizeof(int));;
+  grid->geomNode = (int *)malloc(grid->maxnode * sizeof(int));
   for (i=0;i < grid->maxnode; i++ ) grid->geomNode[i] = EMPTY;
 
   grid->nodeGlobal  = NULL;
@@ -107,7 +110,7 @@ Grid *gridImport(int maxnode, int nnode,
 
   // cells
   if ( NULL == c2n ) {
-    grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
+    grid->c2n = (int *)malloc(4 * grid->maxcell * sizeof(int));
   } else {
     grid->c2n = c2n;
   }
@@ -136,13 +139,13 @@ Grid *gridImport(int maxnode, int nnode,
   grid->unusedCellGlobal  = NULL;
 
   if (NULL == f2n) {
-    grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
+    grid->f2n    = (int *)malloc(3 * grid->maxface * sizeof(int));
   }else{
     grid->f2n    = f2n;
   }
 
   if (NULL == f2n) {
-    grid->faceId = malloc(1 * grid->maxface * sizeof(int));
+    grid->faceId = (int *)malloc(1 * grid->maxface * sizeof(int));
   }else{
     grid->faceId = faceId;
   }
@@ -158,8 +161,8 @@ Grid *gridImport(int maxnode, int nnode,
     grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
     grid->blankf2n = grid->nface;
   }
-  grid->faceU  = malloc(3 * grid->maxface * sizeof(double));
-  grid->faceV  = malloc(3 * grid->maxface * sizeof(double));
+  grid->faceU  = (double *)malloc(3 * grid->maxface * sizeof(double));
+  grid->faceV  = (double *)malloc(3 * grid->maxface * sizeof(double));
   for (i=0;i < grid->maxface; i++ ) {
     grid->faceU[0+3*i] = DBL_MAX;
     grid->faceU[1+3*i] = DBL_MAX;
@@ -180,9 +183,9 @@ Grid *gridImport(int maxnode, int nnode,
   }
 
   // edge
-  grid->e2n    = malloc(2 * grid->maxedge * sizeof(int));
-  grid->edgeId = malloc(1 * grid->maxedge * sizeof(int));
-  grid->edgeT  = malloc(2 * grid->maxedge * sizeof(double));
+  grid->e2n    = (int *)malloc(2 * grid->maxedge * sizeof(int));
+  grid->edgeId = (int *)malloc(1 * grid->maxedge * sizeof(int));
+  grid->edgeT  = (double *)malloc(2 * grid->maxedge * sizeof(double));
   for (i=0;i < grid->maxedge; i++ ) {
     grid->e2n[0+2*i] = EMPTY; 
     grid->e2n[1+2*i] = i+1; 
@@ -231,7 +234,7 @@ Grid *gridImportFAST( char *filename )
 
   printf("reading xyz...\n");
   
-  xyz = malloc(3*nnode*sizeof(double));
+  xyz = (double *)malloc(3*nnode*sizeof(double));
 
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[0+3*i]);
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[1+3*i]);
@@ -239,7 +242,7 @@ Grid *gridImportFAST( char *filename )
 
   printf("reading faces...\n");
   
-  f2n = malloc(3*nface*sizeof(int));
+  f2n = (int *)malloc(3*nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
     fscanf(file,"%d",&f2n[0+3*i]);
@@ -252,7 +255,7 @@ Grid *gridImportFAST( char *filename )
 
   printf("reading face ID tags...\n");
   
-  faceId = malloc(nface*sizeof(int));
+  faceId = (int *)malloc(nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
     fscanf(file,"%d",&faceId[i]);
@@ -262,7 +265,7 @@ Grid *gridImportFAST( char *filename )
   
   maxcell = ncell*2;
 
-  c2n = malloc(4*maxcell*sizeof(int));
+  c2n = (int *)malloc(4*maxcell*sizeof(int));
 
   for( i=0; i<ncell ; i++ ) {
     fscanf(file,"%d",&c2n[0+4*i]);
@@ -565,13 +568,13 @@ Grid *gridPack(Grid *grid)
   int *nodeo2n, *cello2n, *faceo2n, *edgeo2n;
   int prismIndex, pyramidIndex, quadIndex;
 
-  nodeo2n = malloc(grid->maxnode*sizeof(int));
+  nodeo2n = (int *)malloc(grid->maxnode*sizeof(int));
   for (i=0;i<grid->maxnode;i++) nodeo2n[i] = EMPTY;
-  cello2n = malloc(grid->maxcell*sizeof(int));
+  cello2n = (int *)malloc(grid->maxcell*sizeof(int));
   for (i=0;i<grid->maxcell;i++) cello2n[i] = EMPTY;
-  faceo2n = malloc(grid->maxface*sizeof(int));
+  faceo2n = (int *)malloc(grid->maxface*sizeof(int));
   for (i=0;i<grid->maxface;i++) faceo2n[i] = EMPTY;
-  edgeo2n = malloc(grid->maxedge*sizeof(int));
+  edgeo2n = (int *)malloc(grid->maxedge*sizeof(int));
   for (i=0;i<grid->maxedge;i++) edgeo2n[i] = EMPTY;
 
   packnode = 0;
@@ -818,7 +821,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
     return NULL;
   }
 
-  o2n = malloc( grid->maxnode * sizeof(int) );
+  o2n = (int *)malloc( grid->maxnode * sizeof(int) );
   for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
 
   // geom nodes
@@ -834,7 +837,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
   for (edge=1; edge<=grid->nGeomEdge; edge++){
 
     nCurveNode = gridGeomEdgeSize( grid, edge );
-    curve = malloc( nCurveNode * sizeof(int) );
+    curve = (int *)malloc( nCurveNode * sizeof(int) );
     gridGeomEdge( grid, edge, curve );
 
     for ( i=1; i<(nCurveNode-1); i++){ // skip end points
@@ -889,7 +892,7 @@ Grid *gridSortNodeFUN3D(Grid *grid, int *nnodes0)
     return NULL;
   }
 
-  o2n = malloc( grid->maxnode * sizeof(int) );
+  o2n = (int *)malloc( grid->maxnode * sizeof(int) );
   for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
 
   newnode = 0;
@@ -931,7 +934,7 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   int *temp_int;
   int prismIndex, pyramidIndex, quadIndex;
 
-  temp_xyz = malloc( grid->nnode * sizeof(double) );
+  temp_xyz = (double *)malloc( grid->nnode * sizeof(double) );
   for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
     for ( node = 0 ; node < grid->nnode ; node++ ){
       temp_xyz[o2n[node]] = grid->xyz[ixyz+3*node];
@@ -958,14 +961,14 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   }
   free(temp_xyz);
 
-  temp_frozen = malloc( grid->nnode * sizeof(GridBool) );
+  temp_frozen = (GridBool *)malloc( grid->nnode * sizeof(GridBool) );
   for ( node = 0 ; node < grid->nnode ; node++ )
     temp_frozen[o2n[node]] = grid->frozen[node];
   for ( node = 0 ; node < grid->nnode ; node++ )
     grid->frozen[node] = temp_frozen[node];
   free(temp_frozen);
 
-  temp_int = malloc( grid->nnode * sizeof(int) );
+  temp_int = (int *)malloc( grid->nnode * sizeof(int) );
   for ( node = 0 ; node < grid->nnode ; node++ )
     temp_int[o2n[node]] = grid->geomNode[node];
   for ( node = 0 ; node < grid->nnode ; node++ )
@@ -1143,7 +1146,7 @@ Grid *gridSetNAux(Grid *grid, int naux )
   grid->naux = MAX(0,naux);
   if (NULL != grid->aux) free(grid->aux);
   if (grid->naux>0) 
-    grid->aux = malloc( grid->maxnode * grid->naux * sizeof(double) );
+    grid->aux = (double *)malloc( grid->maxnode * grid->naux * sizeof(double) );
   return grid;
 }
 
@@ -1238,11 +1241,13 @@ Grid *gridJoinUnusedNodeGlobal(Grid *grid, int global )
 
   if (NULL == grid->unusedNodeGlobal) {
     grid->maxUnusedNodeGlobal = 500;
-    grid->unusedNodeGlobal = malloc(grid->maxUnusedNodeGlobal * sizeof(int));
+    grid->unusedNodeGlobal =
+                         (int *)malloc(grid->maxUnusedNodeGlobal * sizeof(int));
   }
   if ((grid->nUnusedNodeGlobal+1) >= grid->maxUnusedNodeGlobal) {
     grid->maxUnusedNodeGlobal += 500;
-    grid->unusedNodeGlobal = realloc( grid->unusedNodeGlobal, 
+    grid->unusedNodeGlobal =
+                         (int *)realloc( grid->unusedNodeGlobal, 
 				      grid->maxUnusedNodeGlobal*sizeof(int));
   }
   
@@ -1274,11 +1279,13 @@ Grid *gridJoinUnusedCellGlobal(Grid *grid, int global )
 
   if (NULL == grid->unusedCellGlobal) {
     grid->maxUnusedCellGlobal = 500;
-    grid->unusedCellGlobal = malloc(grid->maxUnusedCellGlobal * sizeof(int));
+    grid->unusedCellGlobal =
+                         (int *)malloc(grid->maxUnusedCellGlobal * sizeof(int));
   }
   if ((grid->nUnusedCellGlobal+1) >= grid->maxUnusedCellGlobal) {
     grid->maxUnusedCellGlobal += 500;
-    grid->unusedCellGlobal = realloc( grid->unusedCellGlobal, 
+    grid->unusedCellGlobal =
+                         (int *)realloc( grid->unusedCellGlobal, 
 				      grid->maxUnusedCellGlobal*sizeof(int));
   }
   
@@ -1356,9 +1363,9 @@ Grid *gridEliminateUnusedCellGlobal(Grid *grid )
 
   if ( 0 == gridNUnusedCellGlobal(grid) ) return grid;
 
-  pack         = malloc(grid->maxcell * sizeof(int));
-  sortedGlobal = malloc(grid->maxcell * sizeof(int));
-  sortedLocal  = malloc(grid->maxcell * sizeof(int));
+  pack         = (int *)malloc(grid->maxcell * sizeof(int));
+  sortedGlobal = (int *)malloc(grid->maxcell * sizeof(int));
+  sortedLocal  = (int *)malloc(grid->maxcell * sizeof(int));
   
   ncell = 0;
   for (cell=0;cell<grid->maxcell;cell++)
@@ -1433,7 +1440,7 @@ Grid *gridSetCellGlobal(Grid *grid, int cell, int global )
 {
   if ( !gridCellValid(grid, cell) ) return NULL;
   if (NULL == grid->cellGlobal) 
-    grid->cellGlobal = malloc(grid->maxcell*sizeof(int));
+    grid->cellGlobal = (int *)malloc(grid->maxcell*sizeof(int));
   grid->cellGlobal[cell] = global;
   return grid;
 }
@@ -1532,7 +1539,8 @@ int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3,
     grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
     grid->blankc2n = origSize;
     if (NULL != grid->cellGlobal) 
-      grid->cellGlobal = realloc(grid->cellGlobal,grid->maxcell * sizeof(int));
+      grid->cellGlobal =
+                   (int *)realloc(grid->cellGlobal,grid->maxcell * sizeof(int));
     if (NULL != grid->reallocFunc)
       (*grid->reallocFunc)( grid->reallocData, gridREALLOC_CELL, 
 			    origSize, grid->maxcell);
@@ -1830,10 +1838,14 @@ int gridAddFaceUV(Grid *grid,
     origSize = grid->maxface;
     chunkSize = MAX(5000,origSize/6);
     grid->maxface += chunkSize;
-    grid->f2n    = realloc(grid->f2n,    3 * grid->maxface * sizeof(int));
-    grid->faceU  = realloc(grid->faceU,  3 * grid->maxface * sizeof(double));
-    grid->faceV  = realloc(grid->faceV,  3 * grid->maxface * sizeof(double));
-    grid->faceId = realloc(grid->faceId, 1 * grid->maxface * sizeof(int));
+    grid->f2n    =
+                (int    *)realloc(grid->f2n,    3*grid->maxface*sizeof(int));
+    grid->faceU  =
+                (double *)realloc(grid->faceU,  3*grid->maxface*sizeof(double));
+    grid->faceV  =
+                (double *)realloc(grid->faceV,  3*grid->maxface*sizeof(double));
+    grid->faceId =
+                (int    *)realloc(grid->faceId, 1*grid->maxface*sizeof(int));
     for (i=origSize;i < grid->maxface; i++ ) {
       grid->f2n[0+3*i] = EMPTY; 
       grid->f2n[1+3*i] = i+1; 
@@ -2270,9 +2282,12 @@ int gridAddEdge(Grid *grid, int n0, int n1,
     origSize = grid->maxedge;
     chunkSize = MAX(5000,origSize/6);
     grid->maxedge += chunkSize;
-    grid->e2n    = realloc(grid->e2n,    2 * grid->maxedge * sizeof(int));
-    grid->edgeId = realloc(grid->edgeId, 1 * grid->maxedge * sizeof(int));
-    grid->edgeT  = realloc(grid->edgeT,  2 * grid->maxedge * sizeof(double));
+    grid->e2n    =
+                (int    *)realloc(grid->e2n,    2*grid->maxedge*sizeof(int));
+    grid->edgeId =
+                (int    *)realloc(grid->edgeId, 1*grid->maxedge*sizeof(int));
+    grid->edgeT  =
+                (double *)realloc(grid->edgeT,  2*grid->maxedge*sizeof(double));
     for (i=origSize;i < grid->maxedge; i++ ) {
       grid->e2n[0+2*i] = EMPTY; 
       grid->e2n[1+2*i] = i+1; 
@@ -2925,7 +2940,8 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
     origSize = grid->maxnode;
     chunkSize = MAX(5000,origSize/6);
     grid->maxnode += chunkSize;
-    grid->xyz = realloc(grid->xyz, 3 * grid->maxnode * sizeof(double));
+    grid->xyz =
+               (double *)realloc(grid->xyz, 3 * grid->maxnode * sizeof(double));
     for (i=origSize;i < grid->maxnode; i++ ) {
       grid->xyz[0+3*i] = DBL_MAX;
       grid->xyz[1+3*i] = (double)(i+1);
@@ -2933,29 +2949,34 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
     grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
     grid->blanknode = origSize;
 
-    grid->map = realloc(grid->map, grid->maxnode * 6 * sizeof(double));
+    grid->map =
+               (double *)realloc(grid->map, grid->maxnode * 6 * sizeof(double));
     if ( grid->naux > 0 ) grid->aux = 
-      realloc(grid->aux, grid->maxnode * grid->naux * sizeof(double));
-    grid->frozen = realloc(grid->frozen,grid->maxnode * sizeof(GridBool));
+      (double *)realloc(grid->aux, grid->maxnode * grid->naux * sizeof(double));
+    grid->frozen =
+             (GridBool *)realloc(grid->frozen,grid->maxnode * sizeof(GridBool));
 
-    grid->geomNode = realloc(grid->geomNode, grid->maxnode * sizeof(int));;
+    grid->geomNode = (int *)realloc(grid->geomNode, grid->maxnode*sizeof(int));
     for (i=origSize;i < grid->maxnode; i++ ) grid->geomNode[i] = EMPTY;
 
     if (NULL != grid->nodeGlobal) 
-      grid->nodeGlobal = realloc(grid->nodeGlobal,grid->maxnode * sizeof(int));
+      grid->nodeGlobal =
+                   (int *)realloc(grid->nodeGlobal,grid->maxnode * sizeof(int));
     if (NULL != grid->part) 
-      grid->part = realloc(grid->part,grid->maxnode * sizeof(int));
+      grid->part = (int *)realloc(grid->part,grid->maxnode * sizeof(int));
     if (NULL != grid->sortedGlobal) 
-      grid->sortedGlobal=realloc(grid->sortedGlobal,grid->maxnode*sizeof(int));
+      grid->sortedGlobal =
+                   (int *)realloc(grid->sortedGlobal,grid->maxnode*sizeof(int));
     if (NULL != grid->sortedLocal) 
-      grid->sortedLocal=realloc(grid->sortedLocal,grid->maxnode*sizeof(int));
+      grid->sortedLocal =
+                    (int *)realloc(grid->sortedLocal,grid->maxnode*sizeof(int));
 
     adjRealloc(grid->cellAdj,grid->maxnode);
     adjRealloc(grid->faceAdj,grid->maxnode);
     adjRealloc(grid->edgeAdj,grid->maxnode);
 
     if (NULL != grid->prismDeg) {
-      grid->prismDeg = realloc(grid->prismDeg,grid->maxnode * sizeof(int));
+      grid->prismDeg = (int *)realloc(grid->prismDeg,grid->maxnode*sizeof(int));
       for (i=origSize;i < grid->maxnode; i++ ) grid->prismDeg[i] = 0;
     }
     if (NULL != grid->reallocFunc)
@@ -3055,10 +3076,10 @@ Grid *gridCreateSortedGlobal(Grid *grid )
 
   if (NULL != grid->sortedLocal) free(grid->sortedLocal);
   if (NULL != grid->sortedGlobal) free(grid->sortedGlobal);
-  grid->sortedLocal  = malloc(grid->maxnode * sizeof(int));
-  grid->sortedGlobal = malloc(grid->maxnode * sizeof(int));
+  grid->sortedLocal  = (int *)malloc(grid->maxnode * sizeof(int));
+  grid->sortedGlobal = (int *)malloc(grid->maxnode * sizeof(int));
 
-  pack = malloc(grid->maxnode * sizeof(int));
+  pack = (int *)malloc(grid->maxnode * sizeof(int));
 
   nnode = 0;
   for (local=0;local<grid->maxnode;local++)
@@ -3106,7 +3127,7 @@ Grid *gridSetNodeGlobal(Grid *grid, int node, int global )
   int index, insertpoint;
   if (!gridValidNode(grid,node)) return NULL;
   if (NULL == grid->nodeGlobal) 
-    grid->nodeGlobal = malloc(grid->maxnode*sizeof(int));
+    grid->nodeGlobal = (int *)malloc(grid->maxnode*sizeof(int));
   grid->nodeGlobal[node] = global;
 
   if (NULL != grid->sortedLocal) {
@@ -3216,7 +3237,7 @@ int gridNodePart(Grid *grid, int node )
 Grid *gridSetNodePart(Grid *grid, int node, int part )
 {
   if (!gridValidNode(grid,node)) return NULL;
-  if (NULL == grid->part) grid->part = malloc(grid->maxnode*sizeof(int));
+  if (NULL == grid->part) grid->part = (int *)malloc(grid->maxnode*sizeof(int));
   grid->part[node] = part;
   return grid;
 }
@@ -3285,7 +3306,7 @@ Grid *gridSetNGeomEdge(Grid *grid, int nGeomEdge)
   int i;
   grid->nGeomEdge = nGeomEdge;
   if ( NULL != grid->geomEdge) free(grid->geomEdge);
-  grid->geomEdge = malloc(2*nGeomEdge*sizeof(int));
+  grid->geomEdge = (int *)malloc(2*nGeomEdge*sizeof(int));
   for (i=0;i<2*nGeomEdge;i++) grid->geomEdge[i]=EMPTY;
   return grid;
 }
@@ -3429,11 +3450,11 @@ Grid *gridAddPrism(Grid *grid, int n0, int n1, int n2, int n3, int n4, int n5)
     origSize = grid->maxprism;
     grid->maxprism += 5000;
     if (grid->prism == NULL) {
-      grid->prism = malloc(grid->maxprism*sizeof(Prism));
-      grid->prismDeg = malloc(grid->maxnode*sizeof(int));
+      grid->prism = (Prism *)malloc(grid->maxprism*sizeof(Prism));
+      grid->prismDeg = (int *)malloc(grid->maxnode*sizeof(int));
       for(i=0;i<grid->maxnode;i++) grid->prismDeg[i]=0;
     }else{
-      grid->prism = realloc(grid->prism,grid->maxprism*sizeof(Prism));
+      grid->prism = (Prism *)realloc(grid->prism,grid->maxprism*sizeof(Prism));
       if (NULL != grid->reallocFunc)
 	(*grid->reallocFunc)( grid->reallocData, 
 			      gridREALLOC_PRISM, 
@@ -3483,9 +3504,10 @@ Grid *gridAddPyramid(Grid *grid, int n0, int n1, int n2, int n3, int n4)
     origSize = grid->maxpyramid;
     grid->maxpyramid += 5000;
     if (grid->pyramid == NULL) {
-      grid->pyramid = malloc(grid->maxpyramid*sizeof(Pyramid));
+      grid->pyramid = (Pyramid *)malloc(grid->maxpyramid*sizeof(Pyramid));
     }else{
-      grid->pyramid = realloc(grid->pyramid,grid->maxpyramid*sizeof(Pyramid));
+      grid->pyramid =
+             (Pyramid *)realloc(grid->pyramid,grid->maxpyramid*sizeof(Pyramid));
       if (NULL != grid->reallocFunc)
 	(*grid->reallocFunc)( grid->reallocData, 
 			      gridREALLOC_PYRAMID, 
@@ -3524,9 +3546,9 @@ Grid *gridAddQuad(Grid *grid, int n0, int n1, int n2, int n3, int faceId )
     origSize = grid->maxquad;
     grid->maxquad += 5000;
     if (grid->quad == NULL) {
-      grid->quad = malloc(grid->maxquad*sizeof(Quad));
+      grid->quad = (Quad *)malloc(grid->maxquad*sizeof(Quad));
     }else{
-      grid->quad = realloc(grid->quad,grid->maxquad*sizeof(Quad));
+      grid->quad = (Quad *)realloc(grid->quad,grid->maxquad*sizeof(Quad));
       if (NULL != grid->reallocFunc)
 	(*grid->reallocFunc)( grid->reallocData, 
 			      gridREALLOC_QUAD, 
@@ -3711,7 +3733,7 @@ Grid *gridCopyAboutY0(Grid *grid, int symmetryFaceId, int mirrorAux )
   orignode = gridNNode(grid);
   origNodeGlobal = gridGlobalNNode(grid);
 
-  o2n = malloc(sizeof(int) * orignode); 
+  o2n = (int *)malloc(sizeof(int) * orignode); 
 
   printf("gridCopyAboutY0: copy nodes, y = -y\n");
 
