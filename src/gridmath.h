@@ -14,6 +14,10 @@
 
 BEGIN_C_DECLORATION
 
+#define gridPI (3.14159265358979)
+#define gridConvertRadianToDegree(radian) ((radian)*57.2957795130823)
+#define gridConvertDegreeToRadian(degree) ((degree)*0.0174532925199433)
+
 #define gridSubtractVector(v1,v2,result) \
 result[0] = v1[0] - v2[0]; result[1] = v1[1] - v2[1]; result[2] = v1[2] - v2[2];
 

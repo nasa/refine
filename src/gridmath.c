@@ -10,10 +10,6 @@
 #include <math.h>
 #include "gridmath.h"
 
-#define gridPI (3.14159265358979)
-#define gridConvertRadianToDegree(radian) ((radian)*57.2957795130823)
-#define gridConvertDegreeToRadian(degree) ((degree)*0.0174532925199433)
-
 double gridVectorLength(double *v)
 {
   return sqrt( gridDotProduct(v, v) );
