@@ -1362,6 +1362,21 @@ double gridMinAR( Grid *grid )
   return minAR;
 }
 
+double gridMinThawedAR( Grid *grid )
+{
+  int cellId, nodes[4];
+  double minAR;
+  minAR = 999.0;
+  for (cellId=0;cellId<grid->maxcell;cellId++)
+    if ( NULL != gridCell( grid, cellId, nodes) &&
+	 ( !gridNodeFrozen(grid,nodes[0]) ||
+	   !gridNodeFrozen(grid,nodes[1]) ||
+	   !gridNodeFrozen(grid,nodes[2]) ||
+	   !gridNodeFrozen(grid,nodes[3]) )  )
+      minAR = MIN(minAR, gridAR(grid, nodes) );
+  return minAR;
+}
+
 bool gridRightHandedFace(Grid *grid, int face ){
   int cell;
   int nodes[4];
@@ -1459,6 +1474,25 @@ double gridMinFaceMR( Grid *grid )
   minMR = 999.0;
   for (face=0;face<grid->maxface;face++) {
     if ( EMPTY != grid->f2n[3*face]) {
+      minMR = MIN(minMR, gridFaceMR(grid, 
+				    grid->f2n[0+3*face],
+				    grid->f2n[1+3*face],
+				    grid->f2n[2+3*face] ) );
+    }
+  }
+  return minMR;
+}
+
+double gridMinThawedFaceMR( Grid *grid )
+{
+  int face;
+  double minMR;
+  minMR = 999.0;
+  for (face=0;face<grid->maxface;face++) {
+    if ( EMPTY != grid->f2n[3*face] &&
+	 ( !gridNodeFrozen(grid,grid->f2n[0+3*face]) ||
+	   !gridNodeFrozen(grid,grid->f2n[1+3*face]) ||
+	   !gridNodeFrozen(grid,grid->f2n[2+3*face]) ) ) {
       minMR = MIN(minMR, gridFaceMR(grid, 
 				    grid->f2n[0+3*face],
 				    grid->f2n[1+3*face],

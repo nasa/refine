@@ -52,6 +52,7 @@ double gridMinVolume(Grid *g);
 bool gridNegCellAroundNode(Grid *g, int node );
 bool gridNegCellAroundNodeExceptGem(Grid *g, int node );
 double gridMinAR(Grid *g);
+double gridMinThawedAR(Grid *g);
 
 bool gridRightHandedFace(Grid *g, int face );
 bool gridRightHandedBoundary(Grid *g );
@@ -60,6 +61,7 @@ double gridFaceArea(Grid *g, int n0, int n1, int n2);
 double gridFaceAR(Grid *g, int n0, int n1, int n2);
 double gridFaceMR(Grid *g, int n0, int n1, int n2);
 double gridMinFaceMR(Grid *g);
+double gridMinThawedFaceMR(Grid *g);
 Grid *gridFaceMRDerivative(Grid *g, int* nodes, double *mr, double *dMRdx );
 
 void FaceMRDerivative(double x1, double y1, double z1,
