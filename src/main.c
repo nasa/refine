@@ -79,8 +79,14 @@ int main( int argc, char *argv[] )
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-  printf("reading adapt parameter from file %s ...\n",adaptfile);
-  gridImportAdapt(grid, adaptfile); // Do not sort nodes before this call.
+  if(strcmp(adaptfile,"none")==0) {
+    printf("adapt parameter >none< selected.\n");
+    gridResetSpacing(grid);
+    gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
+  }else{
+    printf("reading adapt parameter from file %s ...\n",adaptfile);
+    gridImportAdapt(grid, adaptfile); // Do not sort nodes before this call.
+  }
   STATUS;
 
   for (i=0;i<3;i++){
