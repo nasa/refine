@@ -76,6 +76,11 @@ int main( int argc, char *argv[] )
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
 
+  printf("projecting grid...\n");
+  gridProject(grid);
+  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
+  printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
+
   output = "../test/om6_out";
   printf("writing output project %s\n",output);
 
@@ -179,6 +184,8 @@ Grid *gridLoadPart( char *project )
   grid = gridImport( maxnode, nnode, maxface, nface, 
 		     maxcell, ncell, maxedge,
 		     xyz, f2n, faceId, c2n );
+
+  gridSetNGeomNode( grid, nGeomNode );
 
   inode = nGeomNode;
 
