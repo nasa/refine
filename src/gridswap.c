@@ -31,6 +31,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   int cell2face[4][3] = {{0,1,2},{0,3,1},{1,3,2},{0,2,3}};
 
   if (grid!=gridCell(grid,cell,cellnodes)) return NULL;
+
   if (NULL==queue && gridCellHasGhostNode(grid,cellnodes)) return NULL;
   if (NULL!=queue && !gridCellHasGhostNode(grid,cellnodes)) return NULL;
 
