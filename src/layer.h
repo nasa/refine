@@ -116,6 +116,7 @@ Layer *layerBlend(Layer *);
 Layer *layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
 Layer *layerDuplicateAllBlend(Layer *);
 Layer *layerBlendNormals(Layer *, int blend, int *normals );
+Layer *layerBlendExtend(Layer *, double dx, double dy, double dz );
 
 END_C_DECLORATION
 
