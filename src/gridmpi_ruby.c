@@ -23,13 +23,13 @@ VALUE grid_setGhost( VALUE self, VALUE node )
 }
 
 VALUE grid_parallelEdgeSplit( VALUE self, VALUE rb_queue, 
-			      VALUE node1, VALUE node2 )
+			      VALUE node0, VALUE node1 )
 {
   Queue *queue;
   GET_GRID_FROM_SELF;
   Data_Get_Struct( rb_queue, Queue, queue );
   return INT2NUM( gridParallelEdgeSplit( grid, queue, 
-					 NUM2INT(node1), NUM2INT(node2) ) );
+					 NUM2INT(node0), NUM2INT(node1) ) );
 }
 
 VALUE cGridMPI;

@@ -21,7 +21,7 @@ BEGIN_C_DECLORATION
 Grid *gridIdentityGlobal(Grid *g, int offset );
 Grid *gridSetAllLocal(Grid *g );
 Grid *gridSetGhost(Grid *g, int node );
-int gridParallelEdgeSplit(Grid *g, Queue *q, int node1, int node2 );
+int gridParallelEdgeSplit(Grid *g, Queue *q, int node0, int node1 );
 
 END_C_DECLORATION
 
