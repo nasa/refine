@@ -136,7 +136,6 @@ VALUE cGrid;
 
 void Init_Grid() 
 {
-  printf("in Init_Grid\n");
   cGrid = rb_define_class( "Grid", rb_cObject );
   rb_define_singleton_method( cGrid, "new", grid_new, 3 );
   rb_define_method( cGrid, "initialize", grid_init, 0 );
