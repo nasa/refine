@@ -162,7 +162,7 @@ class TestGridInsert < Test::Unit::TestCase
  def testCollapseEdge
   assert_not_nil      grid = gemGrid
   assert_equal grid,  grid.addCell(1,2,3,grid.addNode(-0.01,1.0,1.0))
-  assert_equal grid,  grid.collapseEdge(0,1)
+  assert_equal grid,  grid.collapseEdge(0,1,0.5)
   assert_equal 1,     grid.ncell
   assert_equal false, grid.validNode(1)
   assert_equal [0,2,3,6], grid.cell(4)
@@ -171,7 +171,7 @@ class TestGridInsert < Test::Unit::TestCase
  def testCollapseEdgeNegVol
   assert_not_nil      grid = gemGrid
   assert_equal grid,  grid.addCell(1,2,3,grid.addNode(0.01,1.0,1.0))
-  assert_nil          grid.collapseEdge(0,1)
+  assert_nil          grid.collapseEdge(0,1,0.5)
   assert_equal 5,     grid.ncell
   assert_equal true,  grid.validNode(1)
  end
@@ -188,9 +188,28 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.addFaceUV(1,1.0,11.0,
 				    node,8.0,18.0,
 				    2,2.0,12.0,11)
-  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal 1,          grid.nface
   assert_equal [0.5,10.5], grid.nodeUV(0,11)
+  assert_equal [0.0,0.0,0.0], grid.nodeXYZ(0)
+ end
+
+ def testCollapseEdgeonSameBCToEndPoint
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal grid, grid.addFaceUV(0,0.0,10.0,
+				    1,1.0,11.0,
+				    2,2.0,12.0,11)
+  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+				    0,0.0,10.0,
+				    5,5.0,15.0,11)
+  node = grid.addNode(-2.0,0.0,1.0)
+  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+				    node,8.0,18.0,
+				    2,2.0,12.0,11)
+  assert_equal grid,       grid.collapseEdge(0,1,0.0)
+  assert_equal 1,          grid.nface
+  assert_equal [0.0,10.0], grid.nodeUV(0,11)
+  assert_equal [1.0,0.0,0.0], grid.nodeXYZ(0)
  end
 
  def testCollapseEdgeonSameBCNearEdge
@@ -206,7 +225,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.addFaceUV(1,1.0,11.0,
 				    node,8.0,18.0,
 				    2,2.0,12.0,11)
-  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal 1,          grid.nface
   assert_equal [1.0,0.0,0.0], grid.nodeXYZ(0)
   assert_equal [0.0,10.0], grid.nodeUV(0,11)
@@ -229,7 +248,7 @@ class TestGridInsert < Test::Unit::TestCase
 				    node,38.0,48.0,
 				    5,35.0,45.0,50)
   assert_equal grid, grid.addEdge(1,node,10,1.0,8.0)
-  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal [10.5,20.5], grid.nodeUV(0,20)
   assert_equal [30.5,40.5], grid.nodeUV(0,50)
   assert_equal 0.5, grid.nodeT(0,10)
@@ -238,7 +257,7 @@ class TestGridInsert < Test::Unit::TestCase
  def testCollapseVolumeEdgeNearGeomEdge0
   assert_not_nil     grid=gemGrid
   assert_equal grid, grid.addEdge(0,2,10,0.0,1.0)
-  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal [1.0,0.0,0.0], grid.nodeXYZ(0)
   assert_equal 0.0, grid.nodeT(0,10)
  end
@@ -246,7 +265,7 @@ class TestGridInsert < Test::Unit::TestCase
  def testCollapseVolumeEdgeNearGeomEdge1
   assert_not_nil     grid=gemGrid
   assert_equal grid, grid.addEdge(1,2,10,0.0,1.0)
-  assert_nil       grid.collapseEdge(0,1)
+  assert_nil       grid.collapseEdge(0,1,0.5)
  end
 
  def testCollapseEdge1NearBC
@@ -260,7 +279,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert grid.rightHandedBoundary, "orig boundary is not right handed"
   assert_nil grid.nodeUV(0,11)
   origXYZ = grid.nodeXYZ(1)
-  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal origXYZ, grid.nodeXYZ(0)
   assert_equal [1.0,11.0], grid.nodeUV(0,11)
   assert grid.rightHandedBoundary, "collapse boundary is not right handed"
@@ -276,7 +295,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert grid.rightHandedBoundary, "orig boundary is not right handed"
   origXYZ = grid.nodeXYZ(0)
-  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal origXYZ, grid.nodeXYZ(0)
   assert grid.rightHandedBoundary, "collapse boundary is not right handed"
  end
@@ -285,10 +304,10 @@ class TestGridInsert < Test::Unit::TestCase
   assert_not_nil     grid=gemGrid
   origXYZ = grid.nodeXYZ(0)
   assert_equal grid, grid.setNGeomNode(2)
-  assert_nil         grid.collapseEdge(0,1)
+  assert_nil         grid.collapseEdge(0,1,0.5)
   assert_equal grid, grid.setNGeomNode(1)
-  assert_nil         grid.collapseEdge(1,0)
-  assert_equal grid, grid.collapseEdge(0,1)
+  assert_nil         grid.collapseEdge(1,0,0.5)
+  assert_equal grid, grid.collapseEdge(0,1,0.5)
   assert_equal origXYZ, grid.nodeXYZ(0)
  end
 
@@ -306,10 +325,10 @@ class TestGridInsert < Test::Unit::TestCase
 				    2,2.0,12.0,11)
   assert_not_nil           origXYZ = grid.nodeXYZ(0)
   assert_equal grid,       grid.setNGeomNode(2)
-  assert_nil               grid.collapseEdge(0,1)
+  assert_nil               grid.collapseEdge(0,1,0.5)
   assert_equal grid,       grid.setNGeomNode(1)
-  assert_nil               grid.collapseEdge(1,0)
-  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_nil               grid.collapseEdge(1,0,0.5)
+  assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal 1,          grid.nface
   assert_equal origXYZ,    grid.nodeXYZ(0)
   assert_equal [0.0,10.0], grid.nodeUV(0,11)
@@ -336,10 +355,10 @@ class TestGridInsert < Test::Unit::TestCase
 
   assert_not_nil           origXYZ = grid.nodeXYZ(0)
   assert_equal grid,       grid.setNGeomNode(2)
-  assert_nil               grid.collapseEdge(0,1)
+  assert_nil               grid.collapseEdge(0,1,0.5)
   assert_equal grid,       grid.setNGeomNode(1)
-  assert_nil               grid.collapseEdge(1,0)
-  assert_equal grid,       grid.collapseEdge(0,1)
+  assert_nil               grid.collapseEdge(1,0,0.5)
+  assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal origXYZ,    grid.nodeXYZ(0)
   assert_equal [10.0,20.0], grid.nodeUV(0,20)
   assert_equal [30.0,40.0], grid.nodeUV(0,50)
@@ -351,7 +370,7 @@ class TestGridInsert < Test::Unit::TestCase
   origXYZ = grid.nodeXYZ(0)
   assert_equal grid, grid.addFace(0,2,5,20)
   assert_equal grid, grid.addFace(1,2,5,50)
-  assert_nil         grid.collapseEdge(0,1)
+  assert_nil         grid.collapseEdge(0,1,0.5)
   assert_equal origXYZ, grid.nodeXYZ(0)
  end
 
