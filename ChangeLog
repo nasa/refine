@@ -1,3 +1,8 @@
+2005-03-19 15:10 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridmetric.c (gridAR) to return -2 and -3 for negative
+	parameter face area or invalid cost constraint resp.
+
 2005-03-13 17:42 Mike Park  <mike.park@nasa.gov>
 
 	* src/plan.c (planCreate) initialized plan->ranking to NULL to

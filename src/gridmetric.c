@@ -595,9 +595,9 @@ double gridAR(Grid *grid, int *nodes )
     if ( nodes_on_surface > 1 ) {
       if ( ( nodes_on_surface > 2 ) &&
 	   (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) &&
-	   ( gridMinCellFaceAreaUV(grid,nodes) <= 1.0e-12 ) ) return -1.0;
+	   ( gridMinCellFaceAreaUV(grid,nodes) <= 1.0e-12 ) ) return -2.0;
       if ( (gridCostConstraint(grid)&gridCOST_CNST_VALID) &&
-	   ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -1.0;
+	   ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -3.0;
     }
   }
 
