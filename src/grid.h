@@ -38,6 +38,11 @@ Grid *gridMakeGem(Grid *g, int n0, int n1 );
 int gridNGem(Grid *g );
 int gridGem(Grid *g, int index );
 
+Grid *gridOrient(Grid *g, int *cell, int *nodes );
+Grid *gridEquator(Grid *g, int n0, int n1 );
+int gridNEqu(Grid *g );
+int gridEqu(Grid *g, int index );
+
 END_C_DECLORATION
 
 #endif /* GRID_H */
