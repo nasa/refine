@@ -2609,21 +2609,21 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
 {
   int normal;
   Near *target;
-  int i, collisions, touched, *nearNormals;
+  int i, touched, maxTouched, *nearNormals;
   double dir1[3], dir2[3], dot;
   double xyz1[3], xyz2[3], view[3], visible;
 
   layerPopulateNormalNearTree(layer);
 
+  maxTouched = layerNNormal(layer);
+  nearNormals = malloc(maxTouched*sizeof(int));
+
   for(normal=0;normal<layerNNormal(layer);normal++){
     target = &layer->nearTree[normal];
-    collisions = nearCollisions(layer->nearTree,target);
-    // printf("normal %d near %d\n",normal,collisions );
-    nearNormals = malloc(collisions*sizeof(int));
     touched = 0;
-    nearTouched(layer->nearTree, target, &touched, collisions, nearNormals);
+    nearTouched(layer->nearTree, target, &touched, maxTouched, nearNormals);
     layerNormalDirection(layer, normal, dir1);
-    for(i=0;i<collisions;i++){
+    for(i=0;i<touched;i++){
       layerNormalDirection(layer, nearNormals[i], dir2);
       dot = gridDotProduct( dir1, dir2 );
       // printf("         %d dot %f\n", nearNormals[i], dot);
@@ -2639,8 +2639,8 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
 	}
       }
     }
-    free(nearNormals);
   }
+  free(nearNormals);
 
   return layer;
 }
