@@ -101,7 +101,7 @@ Grid *gridSwapNearNode(Grid *grid, int node)
   AdjIterator it;
 
   nswap = 0;
-  it = adjFirst(grid->cellAdj,node);
+  it = adjFirst(gridCellAdj(grid),node);
   while ( adjValid(it) ){
     gridCell( grid, adjItem(it), nodes);
     if ( gridAR(grid, nodes) < 0.5 ) {
@@ -111,7 +111,7 @@ Grid *gridSwapNearNode(Grid *grid, int node)
 	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ) ||
 	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ) ||
 	   ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ) ) {
-	it = adjFirst(grid->cellAdj,node);
+	it = adjFirst(gridCellAdj(grid),node);
 	nswap++;
       }else{
 	it = adjNext(it);
@@ -134,7 +134,7 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
   AdjIterator it;
 
   nswap = 0;
-  it = adjFirst(grid->cellAdj,node);
+  it = adjFirst(gridCellAdj(grid),node);
   while ( adjValid(it) ){
     gridCell( grid, adjItem(it), nodes);
     if ( gridAR(grid, nodes) < 0.5 ) {
@@ -176,7 +176,7 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
 Grid *gridSwap(Grid *grid)
 {
   int cellId, nodes[4];
-  for (cellId=0;cellId<grid->maxcell;cellId++){
+  for (cellId=0;cellId<gridMaxCell(grid);cellId++){
     if ( NULL != gridCell( grid, cellId, nodes) )
       if ( gridAR(grid, nodes) < 0.5 ) {
 	if ( NULL != gridCell( grid, cellId, nodes) )
@@ -198,24 +198,25 @@ Grid *gridSwap(Grid *grid)
 
 Grid *gridSwapEdge3(Grid *grid, int n0, int n1 )
 {
-  int i, nodes[2][4];
+  int i, orignodes[4], nodes[2][4];
   double cost, origcost, bestcost;
 
   origcost = 2.0;
 
-  for ( i = 0 ; i < grid->ngem ; i++ ){
-    cost = gridAR( grid, &grid->c2n[4*grid->gem[i]] );
+  for ( i = 0 ; i < gridNGem(grid) ; i++ ){
+    gridCell(grid, gridGem(grid,i), orignodes);
+    cost = gridAR( grid, orignodes );
     origcost = MIN(origcost,cost);
   }
 
   nodes[0][0]=n0;
-  nodes[0][1]=grid->equ[0];
-  nodes[0][2]=grid->equ[1];
-  nodes[0][3]=grid->equ[2];
+  nodes[0][1]=gridEqu(grid,0);
+  nodes[0][2]=gridEqu(grid,1);
+  nodes[0][3]=gridEqu(grid,2);
   nodes[1][0]=n1;
-  nodes[1][1]=grid->equ[0];
-  nodes[1][2]=grid->equ[2];
-  nodes[1][3]=grid->equ[1];
+  nodes[1][1]=gridEqu(grid,0);
+  nodes[1][2]=gridEqu(grid,2);
+  nodes[1][3]=gridEqu(grid,1);
 
   bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) );
 
@@ -245,21 +246,21 @@ Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
   }
 
   nodes[0][0]=n0;
-  nodes[0][1]=grid->equ[0];
-  nodes[0][2]=grid->equ[1];
-  nodes[0][3]=grid->equ[2];
+  nodes[0][1]=gridEqu(grid,0);
+  nodes[0][2]=gridEqu(grid,1);
+  nodes[0][3]=gridEqu(grid,2);
   nodes[1][0]=n0;
-  nodes[1][1]=grid->equ[2];
-  nodes[1][2]=grid->equ[3];
-  nodes[1][3]=grid->equ[4];
+  nodes[1][1]=gridEqu(grid,2);
+  nodes[1][2]=gridEqu(grid,3);
+  nodes[1][3]=gridEqu(grid,4);
   nodes[2][0]=n1;
-  nodes[2][1]=grid->equ[0];
-  nodes[2][2]=grid->equ[2];
-  nodes[2][3]=grid->equ[1];
+  nodes[2][1]=gridEqu(grid,0);
+  nodes[2][2]=gridEqu(grid,2);
+  nodes[2][3]=gridEqu(grid,1);
   nodes[3][0]=n1;
-  nodes[3][1]=grid->equ[2];
-  nodes[3][2]=grid->equ[0];
-  nodes[3][3]=grid->equ[3];
+  nodes[3][1]=gridEqu(grid,2);
+  nodes[3][2]=gridEqu(grid,0);
+  nodes[3][3]=gridEqu(grid,3);
 
   currentcost = 2.0;
 
@@ -272,21 +273,21 @@ Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
   bestindex = 0;
 
   nodes[0][0]=n0;
-  nodes[0][1]=grid->equ[1];
-  nodes[0][2]=grid->equ[3];
-  nodes[0][3]=grid->equ[0];
+  nodes[0][1]=gridEqu(grid,1);
+  nodes[0][2]=gridEqu(grid,3);
+  nodes[0][3]=gridEqu(grid,0);
   nodes[1][0]=n0;
-  nodes[1][1]=grid->equ[3];
-  nodes[1][2]=grid->equ[1];
-  nodes[1][3]=grid->equ[2];
+  nodes[1][1]=gridEqu(grid,3);
+  nodes[1][2]=gridEqu(grid,1);
+  nodes[1][3]=gridEqu(grid,2);
   nodes[2][0]=n1;
-  nodes[2][1]=grid->equ[3];
-  nodes[2][2]=grid->equ[1];
-  nodes[2][3]=grid->equ[0];
+  nodes[2][1]=gridEqu(grid,3);
+  nodes[2][2]=gridEqu(grid,1);
+  nodes[2][3]=gridEqu(grid,0);
   nodes[3][0]=n1;
-  nodes[3][1]=grid->equ[1];
-  nodes[3][2]=grid->equ[3];
-  nodes[3][3]=grid->equ[2];
+  nodes[3][1]=gridEqu(grid,1);
+  nodes[3][2]=gridEqu(grid,3);
+  nodes[3][3]=gridEqu(grid,2);
 
   currentcost = 2.0;
 
@@ -304,38 +305,38 @@ Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
 
     if (bestindex == 0){
       nodes[0][0]=n0;
-      nodes[0][1]=grid->equ[0];
-      nodes[0][2]=grid->equ[1];
-      nodes[0][3]=grid->equ[2];
+      nodes[0][1]=gridEqu(grid,0);
+      nodes[0][2]=gridEqu(grid,1);
+      nodes[0][3]=gridEqu(grid,2);
       nodes[1][0]=n0;
-      nodes[1][1]=grid->equ[2];
-      nodes[1][2]=grid->equ[3];
-      nodes[1][3]=grid->equ[4];
+      nodes[1][1]=gridEqu(grid,2);
+      nodes[1][2]=gridEqu(grid,3);
+      nodes[1][3]=gridEqu(grid,4);
       nodes[2][0]=n1;
-      nodes[2][1]=grid->equ[0];
-      nodes[2][2]=grid->equ[2];
-      nodes[2][3]=grid->equ[1];
+      nodes[2][1]=gridEqu(grid,0);
+      nodes[2][2]=gridEqu(grid,2);
+      nodes[2][3]=gridEqu(grid,1);
       nodes[3][0]=n1;
-      nodes[3][1]=grid->equ[2];
-      nodes[3][2]=grid->equ[0];
-      nodes[3][3]=grid->equ[3];
+      nodes[3][1]=gridEqu(grid,2);
+      nodes[3][2]=gridEqu(grid,0);
+      nodes[3][3]=gridEqu(grid,3);
     }else{
       nodes[0][0]=n0;
-      nodes[0][1]=grid->equ[1];
-      nodes[0][2]=grid->equ[3];
-      nodes[0][3]=grid->equ[0];
+      nodes[0][1]=gridEqu(grid,1);
+      nodes[0][2]=gridEqu(grid,3);
+      nodes[0][3]=gridEqu(grid,0);
       nodes[1][0]=n0;
-      nodes[1][1]=grid->equ[3];
-      nodes[1][2]=grid->equ[1];
-      nodes[1][3]=grid->equ[2];
+      nodes[1][1]=gridEqu(grid,3);
+      nodes[1][2]=gridEqu(grid,1);
+      nodes[1][3]=gridEqu(grid,2);
       nodes[2][0]=n1;
-      nodes[2][1]=grid->equ[3];
-      nodes[2][2]=grid->equ[1];
-      nodes[2][3]=grid->equ[0];
+      nodes[2][1]=gridEqu(grid,3);
+      nodes[2][2]=gridEqu(grid,1);
+      nodes[2][3]=gridEqu(grid,0);
       nodes[3][0]=n1;
-      nodes[3][1]=grid->equ[1];
-      nodes[3][2]=grid->equ[3];
-      nodes[3][3]=grid->equ[2];
+      nodes[3][1]=gridEqu(grid,1);
+      nodes[3][2]=gridEqu(grid,3);
+      nodes[3][3]=gridEqu(grid,2);
     }
 
     for ( i = 0 ; i < grid->ngem ; i++ ) 
@@ -380,29 +381,29 @@ Grid *gridSwapEdge5(Grid *grid, int n0, int n1 )
 
   for ( currentindex = 0 ; currentindex < 5 ; currentindex++ ) {
     nodes[0][0]=n0;
-    nodes[0][1]=grid->equ[0];
-    nodes[0][2]=grid->equ[1];
-    nodes[0][3]=grid->equ[2];
+    nodes[0][1]=gridEqu(grid,0);
+    nodes[0][2]=gridEqu(grid,1);
+    nodes[0][3]=gridEqu(grid,2);
     nodes[1][0]=n0;
-    nodes[1][1]=grid->equ[0];
-    nodes[1][2]=grid->equ[2];
-    nodes[1][3]=grid->equ[3];
+    nodes[1][1]=gridEqu(grid,0);
+    nodes[1][2]=gridEqu(grid,2);
+    nodes[1][3]=gridEqu(grid,3);
     nodes[2][0]=n0;
-    nodes[2][1]=grid->equ[0];
-    nodes[2][2]=grid->equ[3];
-    nodes[2][3]=grid->equ[4];
+    nodes[2][1]=gridEqu(grid,0);
+    nodes[2][2]=gridEqu(grid,3);
+    nodes[2][3]=gridEqu(grid,4);
     nodes[3][0]=n1;
-    nodes[3][1]=grid->equ[0];
-    nodes[3][2]=grid->equ[2];
-    nodes[3][3]=grid->equ[1];
+    nodes[3][1]=gridEqu(grid,0);
+    nodes[3][2]=gridEqu(grid,2);
+    nodes[3][3]=gridEqu(grid,1);
     nodes[4][0]=n1;
-    nodes[4][1]=grid->equ[0];
-    nodes[4][2]=grid->equ[3];
-    nodes[4][3]=grid->equ[2];
+    nodes[4][1]=gridEqu(grid,0);
+    nodes[4][2]=gridEqu(grid,3);
+    nodes[4][3]=gridEqu(grid,2);
     nodes[5][0]=n1;
-    nodes[5][1]=grid->equ[0];
-    nodes[5][2]=grid->equ[4];
-    nodes[5][3]=grid->equ[3];
+    nodes[5][1]=gridEqu(grid,0);
+    nodes[5][2]=gridEqu(grid,4);
+    nodes[5][3]=gridEqu(grid,3);
 
     currentcost = 2.0;
 
@@ -428,29 +429,29 @@ Grid *gridSwapEdge5(Grid *grid, int n0, int n1 )
       gridCycleEquator( grid );
     
     nodes[0][0]=n0;
-    nodes[0][1]=grid->equ[0];
-    nodes[0][2]=grid->equ[1];
-    nodes[0][3]=grid->equ[2];
+    nodes[0][1]=gridEqu(grid,0);
+    nodes[0][2]=gridEqu(grid,1);
+    nodes[0][3]=gridEqu(grid,2);
     nodes[1][0]=n0;
-    nodes[1][1]=grid->equ[0];
-    nodes[1][2]=grid->equ[2];
-    nodes[1][3]=grid->equ[3];
+    nodes[1][1]=gridEqu(grid,0);
+    nodes[1][2]=gridEqu(grid,2);
+    nodes[1][3]=gridEqu(grid,3);
     nodes[2][0]=n0;
-    nodes[2][1]=grid->equ[0];
-    nodes[2][2]=grid->equ[3];
-    nodes[2][3]=grid->equ[4];
+    nodes[2][1]=gridEqu(grid,0);
+    nodes[2][2]=gridEqu(grid,3);
+    nodes[2][3]=gridEqu(grid,4);
     nodes[3][0]=n1;
-    nodes[3][1]=grid->equ[0];
-    nodes[3][2]=grid->equ[2];
-    nodes[3][3]=grid->equ[1];
+    nodes[3][1]=gridEqu(grid,0);
+    nodes[3][2]=gridEqu(grid,2);
+    nodes[3][3]=gridEqu(grid,1);
     nodes[4][0]=n1;
-    nodes[4][1]=grid->equ[0];
-    nodes[4][2]=grid->equ[3];
-    nodes[4][3]=grid->equ[2];
+    nodes[4][1]=gridEqu(grid,0);
+    nodes[4][2]=gridEqu(grid,3);
+    nodes[4][3]=gridEqu(grid,2);
     nodes[5][0]=n1;
-    nodes[5][1]=grid->equ[0];
-    nodes[5][2]=grid->equ[4];
-    nodes[5][3]=grid->equ[3];
+    nodes[5][1]=gridEqu(grid,0);
+    nodes[5][2]=gridEqu(grid,4);
+    nodes[5][3]=gridEqu(grid,3);
 
     for ( i = 0 ; i < grid->ngem ; i++ ) 
       gridRemoveCell( grid, grid->gem[i] );
