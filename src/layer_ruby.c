@@ -21,16 +21,16 @@ VALUE layer_new( VALUE class, VALUE rb_grid )
   return obj;
 }
 
-VALUE layer_nfront( VALUE self )
+VALUE layer_ntriangle( VALUE self )
 {
   GET_LAYER_FROM_SELF;
-  return INT2NUM( layerNFront(layer) );
+  return INT2NUM( layerNTriangle(layer) );
 }
 
-VALUE layer_maxfront( VALUE self )
+VALUE layer_maxtriangle( VALUE self )
 {
   GET_LAYER_FROM_SELF;
-  return INT2NUM( layerMaxFront(layer) );
+  return INT2NUM( layerMaxTriangle(layer) );
 }
 
 VALUE layer_nblend( VALUE self )
@@ -51,13 +51,13 @@ VALUE layer_maxnode( VALUE self )
   return INT2NUM( layerMaxNode(layer) );
 }
 
-VALUE layer_addFront( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
+VALUE layer_addTriangle( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerAddFront(layer,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2))?self:Qnil );
+  return ( layer == layerAddTriangle(layer,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2))?self:Qnil );
 }
 
-VALUE layer_makeFront( VALUE self, VALUE rb_bc )
+VALUE layer_makeTriangle( VALUE self, VALUE rb_bc )
 {
   Layer *rLayer;
   int i, nbc, *bc;
@@ -66,22 +66,22 @@ VALUE layer_makeFront( VALUE self, VALUE rb_bc )
   while ( Qnil != rb_ary_entry(rb_bc,nbc) ) nbc++;
   bc = malloc( nbc*sizeof(int));
   for (i=0;i<nbc;i++) bc[i] = NUM2INT(rb_ary_entry(rb_bc,i));
-  rLayer = layerMakeFront(layer,nbc,bc);
+  rLayer = layerMakeTriangle(layer,nbc,bc);
   free(bc);
   return ( layer == rLayer?self:Qnil );
 }
 
-VALUE layer_front( VALUE self, VALUE front )
+VALUE layer_triangle( VALUE self, VALUE triangle )
 {
   int nodes[3];
-  VALUE rb_front;
+  VALUE rb_triangle;
   GET_LAYER_FROM_SELF;
-  if (layer != layerFront(layer, NUM2INT(front), nodes )) return Qnil;
-  rb_front = rb_ary_new2(3);
-  rb_ary_store( rb_front, 0, INT2NUM(nodes[0]) );
-  rb_ary_store( rb_front, 1, INT2NUM(nodes[1]) );
-  rb_ary_store( rb_front, 2, INT2NUM(nodes[2]) );
-  return rb_front;
+  if (layer != layerTriangle(layer, NUM2INT(triangle), nodes )) return Qnil;
+  rb_triangle = rb_ary_new2(3);
+  rb_ary_store( rb_triangle, 0, INT2NUM(nodes[0]) );
+  rb_ary_store( rb_triangle, 1, INT2NUM(nodes[1]) );
+  rb_ary_store( rb_triangle, 2, INT2NUM(nodes[2]) );
+  return rb_triangle;
 }
 
 VALUE layer_parentFace( VALUE self, VALUE faceId )
@@ -90,13 +90,13 @@ VALUE layer_parentFace( VALUE self, VALUE faceId )
   return ( layerParentFace(layer,NUM2INT(faceId))?Qtrue:Qfalse );
 }
 
-VALUE layer_frontDirection( VALUE self, VALUE front )
+VALUE layer_triangleDirection( VALUE self, VALUE triangle )
 {
   int i;
   double direction[3];
   VALUE rb_direction;
   GET_LAYER_FROM_SELF;
-  if (layer == layerFrontDirection(layer,NUM2INT(front),direction)){
+  if (layer == layerTriangleDirection(layer,NUM2INT(triangle),direction)){
     rb_direction = rb_ary_new2(3);
     for ( i=0 ; i < 3 ; i++ ) 
       rb_ary_store( rb_direction, i, rb_float_new(direction[i]) );
@@ -112,12 +112,12 @@ VALUE layer_makeNormal( VALUE self )
   return ( layer == layerMakeNormal(layer)?self:Qnil );
 }
 
-VALUE layer_frontNormals( VALUE self, VALUE front )
+VALUE layer_triangleNormals( VALUE self, VALUE triangle )
 {
   int normals[3];
   VALUE rb_normals;
   GET_LAYER_FROM_SELF;
-  if (layer != layerFrontNormals(layer, NUM2INT(front), normals )) return Qnil;
+  if (layer != layerTriangleNormals(layer, NUM2INT(triangle), normals )) return Qnil;
   rb_normals = rb_ary_new2(3);
   rb_ary_store( rb_normals, 0, INT2NUM(normals[0]) );
   rb_ary_store( rb_normals, 1, INT2NUM(normals[1]) );
@@ -137,23 +137,23 @@ VALUE layer_normalDeg( VALUE self, VALUE normal )
   return INT2NUM(layerNormalDeg(layer,NUM2INT(normal)));
 }
 
-VALUE layer_normalFronts( VALUE self, VALUE normal )
+VALUE layer_normalTriangles( VALUE self, VALUE normal )
 {
-  int i, nfront, *front;
-  VALUE rb_front;
+  int i, ntriangle, *triangle;
+  VALUE rb_triangle;
   GET_LAYER_FROM_SELF;
-  nfront = layerNormalDeg(layer,NUM2INT(normal));
-  if (nfront<=0) return Qnil;
-  front = malloc(nfront*sizeof(int));
-  if (layer == layerNormalFronts(layer,NUM2INT(normal),nfront,front)){
-    rb_front = rb_ary_new2(nfront);
-    for ( i=0 ; i < nfront ; i++ ) 
-      rb_ary_store( rb_front, i, INT2NUM(front[i]) );
+  ntriangle = layerNormalDeg(layer,NUM2INT(normal));
+  if (ntriangle<=0) return Qnil;
+  triangle = malloc(ntriangle*sizeof(int));
+  if (layer == layerNormalTriangles(layer,NUM2INT(normal),ntriangle,triangle)){
+    rb_triangle = rb_ary_new2(ntriangle);
+    for ( i=0 ; i < ntriangle ; i++ ) 
+      rb_ary_store( rb_triangle, i, INT2NUM(triangle[i]) );
   }else{
-    rb_front = Qnil;
+    rb_triangle = Qnil;
   }
-  free(front);
-  return rb_front;
+  free(triangle);
+  return rb_triangle;
 }
 
 VALUE layer_normalDirection( VALUE self, VALUE normal )
@@ -204,20 +204,20 @@ VALUE layer_constrained( VALUE self, VALUE normal )
   return INT2NUM(layerConstrained(layer,NUM2INT(normal)));
 }
 
-VALUE layer_constrainFrontSide( VALUE self, VALUE normal0, VALUE normal1, 
+VALUE layer_constrainTriangleSide( VALUE self, VALUE normal0, VALUE normal1, 
 				VALUE bc )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerConstrainFrontSide(layer,
+  return ( layer == layerConstrainTriangleSide(layer,
 					    NUM2INT(normal0),
 					    NUM2INT(normal1),
 					    NUM2INT(bc) )?self:Qnil );
 }
 
-VALUE layer_constrainedSide( VALUE self, VALUE front, VALUE side )
+VALUE layer_constrainedSide( VALUE self, VALUE triangle, VALUE side )
 {
   GET_LAYER_FROM_SELF;
-  return INT2NUM(layerConstrainedSide(layer,NUM2INT(front),NUM2INT(side)));
+  return INT2NUM(layerConstrainedSide(layer,NUM2INT(triangle),NUM2INT(side)));
 }
 
 VALUE layer_nConstrainedSides( VALUE self, VALUE faceId )
@@ -242,10 +242,10 @@ VALUE layer_setParentEdge( VALUE self, VALUE normal0, VALUE normal1,
 				       NUM2INT(edgeId) )?self:Qnil );
 }
 
-VALUE layer_parentEdge( VALUE self, VALUE front, VALUE side )
+VALUE layer_parentEdge( VALUE self, VALUE triangle, VALUE side )
 {
   GET_LAYER_FROM_SELF;
-  return INT2NUM(layerParentEdge(layer,NUM2INT(front),NUM2INT(side)));
+  return INT2NUM(layerParentEdge(layer,NUM2INT(triangle),NUM2INT(side)));
 }
 
 VALUE layer_nParentEdgeSegments( VALUE self, VALUE edgeId )
@@ -308,28 +308,28 @@ void Init_Layer()
 {
   cLayer = rb_define_class( "Layer", rb_cObject );
   rb_define_singleton_method( cLayer, "new", layer_new, 1 );
-  rb_define_method( cLayer, "nfront", layer_nfront, 0 );
-  rb_define_method( cLayer, "maxfront", layer_maxfront, 0 );
+  rb_define_method( cLayer, "ntriangle", layer_ntriangle, 0 );
+  rb_define_method( cLayer, "maxtriangle", layer_maxtriangle, 0 );
   rb_define_method( cLayer, "nblend", layer_nblend, 0 );
   rb_define_method( cLayer, "nnormal", layer_nnormal, 0 );
   rb_define_method( cLayer, "maxnode", layer_maxnode, 0 );
-  rb_define_method( cLayer, "addFront", layer_addFront, 3 );
-  rb_define_method( cLayer, "makeFront", layer_makeFront, 1 );
-  rb_define_method( cLayer, "front", layer_front, 1 );
-  rb_define_method( cLayer, "frontDirection", layer_frontDirection, 1 );
+  rb_define_method( cLayer, "addTriangle", layer_addTriangle, 3 );
+  rb_define_method( cLayer, "makeTriangle", layer_makeTriangle, 1 );
+  rb_define_method( cLayer, "triangle", layer_triangle, 1 );
+  rb_define_method( cLayer, "triangleDirection", layer_triangleDirection, 1 );
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
   rb_define_method( cLayer, "parentFace", layer_parentFace, 1 );
-  rb_define_method( cLayer, "frontNormals", layer_frontNormals, 1 );
+  rb_define_method( cLayer, "triangleNormals", layer_triangleNormals, 1 );
   rb_define_method( cLayer, "normalRoot", layer_normalRoot, 1 );
   rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );
-  rb_define_method( cLayer, "normalFronts", layer_normalFronts, 1 );
+  rb_define_method( cLayer, "normalTriangles", layer_normalTriangles, 1 );
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "setNormalHeight", layer_setNormalHeight, 2 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrainingGeometry", layer_constrainingGeometry, 1 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
-  rb_define_method( cLayer, "constrainFrontSide", layer_constrainFrontSide, 3 );
+  rb_define_method( cLayer, "constrainTriangleSide", layer_constrainTriangleSide, 3 );
   rb_define_method( cLayer, "constrainedSide", layer_constrainedSide, 2 );
   rb_define_method( cLayer, "nConstrainedSides", layer_nConstrainedSides, 1 );
   rb_define_method( cLayer, "findParentEdges", layer_findParentEdges, 0 );

@@ -43,10 +43,10 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   MeshMgr_SetElementScale( scale );
   //CAPrIMesh_TetVolume( vol );
 
-  layer = formAdvancingFront( grid, project );
+  layer = formAdvancingTriangle( grid, project );
   if (mixedElement) layerToggleMixedElementMode(layer);
 
-  /* only needed for formAdvancingFront freeze distant volume nodes */
+  /* only needed for formAdvancingTriangle freeze distant volume nodes */
   gridThawAll(grid); 
   layerFindParentEdges(layer);
   i=0;
@@ -207,7 +207,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   int nthaw;
   int orient;
   int *shell;
-  int nodes[3], front, side;
+  int nodes[3], triangle, side;
   int ncurve, *curve;
   int i,j;
   int n0,n1;
@@ -261,12 +261,12 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	orient = loopEdge[1+2*edge];
 	nparent = layerNParentEdgeSegments(layer,edgeId);
 	if (nparent > 0 ) {
-	  for(front=0;front<layerNFront(layer);front++){
+	  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
 	    for(side=0;side<3;side++){
-	      if (edgeId == layerParentEdge(layer,front,side)){
+	      if (edgeId == layerParentEdge(layer,triangle,side)){
 		n0 = side;
 		n1 = side+1; if (n1>2) n1 = 0;
-		layerFront(layer,front,nodes);
+		layerTriangle(layer,triangle,nodes);
 		n0 = nodes[n0];
 		n1 = nodes[n1];
 		shell[0+2*nshell] = n0;
@@ -421,7 +421,7 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   int maxnode, nnode;
   int maxface, face;
   int nodes[3];
-  int front;
+  int triangle;
   int i;
   double *shellxyz;
 
@@ -447,7 +447,7 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
       nshell += gridNThawedFaces(grid,faceId);
     }
   }
-  nshell += layerNFront(layer);
+  nshell += layerNTriangle(layer);
   printf("allocating  %10d faces for shell.\n",nshell);
 
   shell = malloc(3*nshell*sizeof(int));
@@ -466,8 +466,8 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
       }
     }
   }
-  for(front=0;front<layerNFront(layer);front++){
-    layerFront(layer, front, nodes);
+  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
+    layerTriangle(layer, triangle, nodes);
     shell[0+3*nshell] = nodes[0];
     shell[1+3*nshell] = nodes[1];
     shell[2+3*nshell] = nodes[2];

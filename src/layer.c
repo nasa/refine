@@ -28,8 +28,8 @@ struct Normal {
   bool terminated;
 };
 
-typedef struct Front Front;
-struct Front {
+typedef struct Triangle Triangle;
+struct Triangle {
   int globalNode[3];
   int normal[3];
   int constrainedSide[3];
@@ -43,9 +43,9 @@ struct Blend {
 
 struct Layer {
   Grid *grid;
-  int maxfront, nfront;
-  Front *front;
-  int nFrontParent, *frontParent;
+  int maxtriangle, ntriangle;
+  Triangle *triangle;
+  int nTriangleParent, *triangleParent;
   int nblend;
   Blend *blend;
   int nnormal;
@@ -62,11 +62,11 @@ Layer *layerCreate( Grid *grid )
   layer = malloc(sizeof(Layer));
   layer->grid = grid;
   gridAttachNodeSorter( grid, layerSortGlobalNodes, layer );
-  layer->maxfront=0;
-  layer->nfront=0;
-  layer->front=NULL;
-  layer->nFrontParent=0;
-  layer->frontParent=NULL;
+  layer->maxtriangle=0;
+  layer->ntriangle=0;
+  layer->triangle=NULL;
+  layer->nTriangleParent=0;
+  layer->triangleParent=NULL;
   layer->nblend=0;
   layer->blend=NULL;
   layer->nnormal=0;
@@ -79,7 +79,7 @@ Layer *layerCreate( Grid *grid )
   return layer;
 }
 
-Layer *formAdvancingFront( Grid *grid, char *project )
+Layer *formAdvancingTriangle( Grid *grid, char *project )
 {
   Layer *layer;
   int i, nbc, bc[4];
@@ -129,9 +129,9 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   */
   printf("make advancing layer object.\n");
   layer = layerCreate(grid);
-  printf("make advancing layer front.\n");
-  layerMakeFront(layer,nbc,bc);
-  printf("make advancing layer front normals.\n");
+  printf("make advancing layer triangle.\n");
+  layerMakeTriangle(layer,nbc,bc);
+  printf("make advancing layer triangle normals.\n");
   layerMakeNormal(layer);
   if (box) {
     layerConstrainNormal(layer,-9);
@@ -200,7 +200,7 @@ Layer *formAdvancingFront( Grid *grid, char *project )
   if(spherecone){
     layerConstrainNormal(layer,2);
   }
-  printf("make advancing layer front normals visible to front.\n");
+  printf("make advancing layer triangle normals visible to triangle.\n");
   layerVisibleNormals(layer);
   return layer;
 }
@@ -218,20 +218,20 @@ void layerFree(Layer *layer)
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
   if (layer->blend != NULL) free(layer->blend);
-  if (layer->frontParent != NULL) free(layer->frontParent);
-  if (layer->front != NULL) free(layer->front);
+  if (layer->triangleParent != NULL) free(layer->triangleParent);
+  if (layer->triangle != NULL) free(layer->triangle);
   free(layer);
 }
 
 void layerSortGlobalNodes(void *voidLayer, int *o2n)
 {
   Layer *layer = (Layer *)voidLayer;
-  int i, front, normal;
+  int i, triangle, normal;
 
-  for (front = 0 ; front < layerNFront(layer) ; front++ )
-    for (i=0;i<3;i++) if (EMPTY != layer->front[front].globalNode[i])
-      layer->front[front].globalNode[i] = 
-	o2n[layer->front[front].globalNode[i]];
+  for (triangle = 0 ; triangle < layerNTriangle(layer) ; triangle++ )
+    for (i=0;i<3;i++) if (EMPTY != layer->triangle[triangle].globalNode[i])
+      layer->triangle[triangle].globalNode[i] = 
+	o2n[layer->triangle[triangle].globalNode[i]];
 
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
@@ -242,14 +242,14 @@ void layerSortGlobalNodes(void *voidLayer, int *o2n)
 
 }
 
-int layerMaxFront(Layer *layer)
+int layerMaxTriangle(Layer *layer)
 {
-  return layer->nfront;
+  return layer->ntriangle;
 }
 
-int layerNFront(Layer *layer)
+int layerNTriangle(Layer *layer)
 {
-  return layer->nfront;
+  return layer->ntriangle;
 }
 
 int layerNBlend(Layer *layer)
@@ -267,22 +267,22 @@ int layerMaxNode(Layer *layer)
   return gridMaxNode(layer->grid);
 }
 
-Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
+Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
 {
   int i, ibc, face, id, nodes[3];
   Grid *grid;
 
   grid = layerGrid(layer);
 
-  layer->nFrontParent = nbc;
-  layer->frontParent = malloc( layer->nFrontParent * sizeof(int) );
-  for(ibc=0;ibc<layer->nFrontParent;ibc++) layer->frontParent[ibc] = bc[ibc];
+  layer->nTriangleParent = nbc;
+  layer->triangleParent = malloc( layer->nTriangleParent * sizeof(int) );
+  for(ibc=0;ibc<layer->nTriangleParent;ibc++) layer->triangleParent[ibc] = bc[ibc];
 
   for (ibc=0;ibc<nbc;ibc++){
     for(face=0;face<gridMaxFace(layer->grid);face++){
       if (grid == gridFace(grid,face,nodes,&id) &&
 	  id==bc[ibc] ) {
-	layerAddFront(layer,nodes[0],nodes[1],nodes[2]);
+	layerAddTriangle(layer,nodes[0],nodes[1],nodes[2]);
       }
     }
   }
@@ -294,58 +294,58 @@ bool layerParentFace(Layer *layer, int faceId )
 {
   int i;
 
-  for (i=0;i<layer->nFrontParent;i++) 
-    if (faceId == layer->frontParent[i]) return TRUE;
+  for (i=0;i<layer->nTriangleParent;i++) 
+    if (faceId == layer->triangleParent[i]) return TRUE;
 
   return FALSE;
 }
 
-Layer *layerAddFront(Layer *layer, int n0, int n1, int n2 )
+Layer *layerAddTriangle(Layer *layer, int n0, int n1, int n2 )
 {
   int i;
 
-  if (layer->nfront >= layer->maxfront) {
-    layer->maxfront += 5000;
-    if (layer->front == NULL) {
-      layer->front = malloc(layer->maxfront*sizeof(Front));
+  if (layer->ntriangle >= layer->maxtriangle) {
+    layer->maxtriangle += 5000;
+    if (layer->triangle == NULL) {
+      layer->triangle = malloc(layer->maxtriangle*sizeof(Triangle));
     }else{
-      layer->front = realloc(layer->front,layer->maxfront*sizeof(Front));
+      layer->triangle = realloc(layer->triangle,layer->maxtriangle*sizeof(Triangle));
     }
   }
 
-  layer->front[layer->nfront].globalNode[0] = n0;
-  layer->front[layer->nfront].globalNode[1] = n1;
-  layer->front[layer->nfront].globalNode[2] = n2;
+  layer->triangle[layer->ntriangle].globalNode[0] = n0;
+  layer->triangle[layer->ntriangle].globalNode[1] = n1;
+  layer->triangle[layer->ntriangle].globalNode[2] = n2;
   for (i=0;i<3;i++){
-    layer->front[layer->nfront].normal[i] = EMPTY;
-    layer->front[layer->nfront].constrainedSide[i] = 0;
-    layer->front[layer->nfront].parentEdge[i] = 0;
+    layer->triangle[layer->ntriangle].normal[i] = EMPTY;
+    layer->triangle[layer->ntriangle].constrainedSide[i] = 0;
+    layer->triangle[layer->ntriangle].parentEdge[i] = 0;
   }
 
-  layer->nfront++;
+  layer->ntriangle++;
 
   return layer;
 }
 
-Layer *layerFront(Layer *layer, int front, int *nodes )
+Layer *layerTriangle(Layer *layer, int triangle, int *nodes )
 {
 
-  if (front < 0 || front >= layerNFront(layer)) return NULL;
-  nodes[0] = layer->front[front].globalNode[0];
-  nodes[1] = layer->front[front].globalNode[1];
-  nodes[2] = layer->front[front].globalNode[2];
+  if (triangle < 0 || triangle >= layerNTriangle(layer)) return NULL;
+  nodes[0] = layer->triangle[triangle].globalNode[0];
+  nodes[1] = layer->triangle[triangle].globalNode[1];
+  nodes[2] = layer->triangle[triangle].globalNode[2];
   
   return layer;
 }
 
-Layer *layerFrontDirection(Layer *layer, int front, double *direction )
+Layer *layerTriangleDirection(Layer *layer, int triangle, double *direction )
 {
   int i, *nodes;
   double node0[3], node1[3], node2[3];
   double edge1[3], edge2[3], norm[3], length; 
   
-  if (front < 0 || front >= layerNFront(layer) ) return NULL;
-  nodes = layer->front[front].globalNode;
+  if (triangle < 0 || triangle >= layerNTriangle(layer) ) return NULL;
+  nodes = layer->triangle[triangle].globalNode;
 
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[0], node0 )) return NULL;
   if (layer->grid != gridNodeXYZ( layer->grid, nodes[1], node1 )) return NULL;
@@ -407,22 +407,22 @@ Layer *layerCopyNormal(Layer *layer, int originalNormal, int newNormal )
 
 Layer *layerMakeNormal(Layer *layer)
 {
-  int i, front, normal, globalNode;
+  int i, triangle, normal, globalNode;
   double direction[3], *norm, length;
 
-  if (layerNFront(layer)==0) return NULL;
+  if (layerNTriangle(layer)==0) return NULL;
   layer->globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
   for (i=0;i<layerMaxNode(layer);i++) layer->globalNode2Normal[i]=EMPTY;
   normal = 0;
-  for (front=0;front<layerNFront(layer);front++){
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
-      globalNode = layer->front[front].globalNode[i];
+      globalNode = layer->triangle[triangle].globalNode[i];
       if (EMPTY == layer->globalNode2Normal[globalNode] ){
 	layer->globalNode2Normal[globalNode]=normal;
-	layer->front[front].normal[i]=normal;
+	layer->triangle[triangle].normal[i]=normal;
 	normal++;
       }else{
-	layer->front[front].normal[i]=layer->globalNode2Normal[globalNode];
+	layer->triangle[triangle].normal[i]=layer->globalNode2Normal[globalNode];
       }
     }
   }
@@ -441,12 +441,12 @@ Layer *layerMakeNormal(Layer *layer)
     }
   }
 
-  layer->adj = adjCreate( layer->nnormal,layerNFront(layer)*3  );
-  for (front=0;front<layerNFront(layer);front++){
+  layer->adj = adjCreate( layer->nnormal,layerNTriangle(layer)*3  );
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
-      normal = layer->front[front].normal[i];
-      adjRegister( layer->adj, normal, front );
-      layerFrontDirection(layer,front,direction);
+      normal = layer->triangle[triangle].normal[i];
+      adjRegister( layer->adj, normal, triangle );
+      layerTriangleDirection(layer,triangle,direction);
       layer->normal[normal].direction[0] += direction[0];
       layer->normal[normal].direction[1] += direction[1];
       layer->normal[normal].direction[2] += direction[2];
@@ -466,12 +466,12 @@ Layer *layerMakeNormal(Layer *layer)
   return layer;
 }
 
-Layer *layerFrontNormals(Layer *layer, int front, int *normals )
+Layer *layerTriangleNormals(Layer *layer, int triangle, int *normals )
 {
-  if (front < 0 || front >= layerNFront(layer)) return NULL;
-  normals[0] = layer->front[front].normal[0];
-  normals[1] = layer->front[front].normal[1];
-  normals[2] = layer->front[front].normal[2];
+  if (triangle < 0 || triangle >= layerNTriangle(layer)) return NULL;
+  normals[0] = layer->triangle[triangle].normal[0];
+  normals[1] = layer->triangle[triangle].normal[1];
+  normals[2] = layer->triangle[triangle].normal[2];
   
   return layer;
 }
@@ -488,7 +488,7 @@ int layerNormalDeg(Layer *layer, int normal )
   return adjDegree(layer->adj, normal);
 }
 
-Layer *layerNormalFronts(Layer *layer, int normal, int nfront, int *fronts )
+Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triangles )
 {
   int i;
   AdjIterator it;
@@ -497,8 +497,8 @@ Layer *layerNormalFronts(Layer *layer, int normal, int nfront, int *fronts )
   for ( it = adjFirst(layer->adj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
-    if (i>=nfront) return NULL;
-    fronts[i] = adjItem(it);
+    if (i>=ntriangle) return NULL;
+    triangles[i] = adjItem(it);
     i++;
   }
   return layer;
@@ -562,15 +562,15 @@ Layer *layerLaminarInitialHeight(Layer *layer, double Re, double xStart)
 
 Layer *layerVisibleNormals(Layer *layer)
 {
-  int normal, iter, front, i;
+  int normal, iter, triangle, i;
   double *dir, norm[3], mindir[3], dot, mindot, radian, length; 
   AdjIterator it;
-  int minFront, lastFront;
+  int minTriangle, lastTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    lastFront = EMPTY;
+    lastTriangle = EMPTY;
     radian = 0.01;
     for (iter=0;iter<1000 && radian > 1.0e-15;iter++){
       dir = layer->normal[normal].direction;
@@ -578,25 +578,25 @@ Layer *layerVisibleNormals(Layer *layer)
       mindir[0]=dir[0];
       mindir[1]=dir[1];
       mindir[2]=dir[2];
-      minFront = EMPTY;
+      minTriangle = EMPTY;
       for ( it = adjFirst(layer->adj,normal); 
 	    adjValid(it); 
 	    it = adjNext(it) ){
-	front = adjItem(it);
-	layerFrontDirection(layer,front,norm);
+	triangle = adjItem(it);
+	layerTriangleDirection(layer,triangle,norm);
 	dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
 	if (dot<mindot) {
 	  mindot = dot;
 	  mindir[0]=norm[0];
 	  mindir[1]=norm[1];
 	  mindir[2]=norm[2];
-	  minFront = front;
+	  minTriangle = triangle;
 	}
       }
-      if (minFront != lastFront) {
+      if (minTriangle != lastTriangle) {
 	radian = radian * 0.5;
-	lastFront = minFront;
-	//printf("normal %d, dot %f rad %e front %d\n",normal,mindot,radian,minFront);
+	lastTriangle = minTriangle;
+	//printf("normal %d, dot %f rad %e triangle %d\n",normal,mindot,radian,minTriangle);
       }
       dir[0] += radian*mindir[0];
       dir[1] += radian*mindir[1];
@@ -642,7 +642,7 @@ Layer *layerConstrainNormal(Layer *layer, int edgeface )
 	  n1 = n0 + 1; if ( n1 > 2 ) n1 = 0;
 	  normal0 = layer->globalNode2Normal[nodes[n0]];
 	  normal1 = layer->globalNode2Normal[nodes[n1]];
-	  layerConstrainFrontSide( layer, normal0, normal1, faceId );
+	  layerConstrainTriangleSide( layer, normal0, normal1, faceId );
 	}
       }
     }
@@ -694,10 +694,10 @@ int layerConstrained(Layer *layer, int normal )
   return layer->normal[normal].constrained;
 }
 
-Layer *layerConstrainFrontSide(Layer *layer, int normal0, int normal1, int bc )
+Layer *layerConstrainTriangleSide(Layer *layer, int normal0, int normal1, int bc )
 {
   AdjIterator it;
-  int i0, i1, front, side;
+  int i0, i1, triangle, side;
  
   if (normal0 < 0 || normal0 >= layerNNormal(layer) ) return NULL;
   if (normal1 < 0 || normal1 >= layerNNormal(layer) ) return NULL;
@@ -705,14 +705,14 @@ Layer *layerConstrainFrontSide(Layer *layer, int normal0, int normal1, int bc )
   for ( it = adjFirst(layer->adj,normal0); 
 	adjValid(it); 
 	it = adjNext(it) ){
-    front = adjItem(it);
+    triangle = adjItem(it);
     for (i1=0;i1<3;i1++) {
-      if (normal1 == layer->front[front].normal[i1]) {
+      if (normal1 == layer->triangle[triangle].normal[i1]) {
 	for (i0=0;i0<3;i0++) {
-	  if (normal0 == layer->front[front].normal[i0]) {
+	  if (normal0 == layer->triangle[triangle].normal[i0]) {
 	    side = MIN(i0,i1);
 	    if ( side == 0 && 2 == MAX(i0,i1) ) side = 2;
-	    layer->front[front].constrainedSide[side]=bc;
+	    layer->triangle[triangle].constrainedSide[side]=bc;
 	  }
 	}
       }   
@@ -721,24 +721,24 @@ Layer *layerConstrainFrontSide(Layer *layer, int normal0, int normal1, int bc )
   return layer;
 }
 
-int layerConstrainedSide(Layer *layer, int front, int side )
+int layerConstrainedSide(Layer *layer, int triangle, int side )
 {
-  if (front < 0 || front >= layerNFront(layer) ) return 0;
+  if (triangle < 0 || triangle >= layerNTriangle(layer) ) return 0;
 
   if (side < 0 || side > 2 ) return 0;
 
-  return layer->front[front].constrainedSide[side];
+  return layer->triangle[triangle].constrainedSide[side];
 }
 
 int layerNConstrainedSides(Layer *layer, int faceId )
 {
-  int front, i, nside;
+  int triangle, i, nside;
 
   if (faceId==0) return 0;
   nside = 0;
-  for (front=0;front<layerNFront(layer);front++){
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
-      if (layerConstrainedSide(layer,front,i)==faceId) nside++;
+      if (layerConstrainedSide(layer,triangle,i)==faceId) nside++;
     }
   }
   return nside;
@@ -746,19 +746,19 @@ int layerNConstrainedSides(Layer *layer, int faceId )
 
 Layer *layerFindParentEdges(Layer *layer)
 {
-  int front, side, n0, n1, edgeId;
+  int triangle, side, n0, n1, edgeId;
 
-  if (layerNFront(layer) == 0 ) return NULL;
+  if (layerNTriangle(layer) == 0 ) return NULL;
   if (layerNNormal(layer) == 0 ) return NULL;
 
-  for (front=0;front<layerNFront(layer);front++){
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(side=0;side<3;side++){
       n0 = side;
       n1 = side+1; if (n1>2) n1 = 0;
-      n0 = layer->front[front].globalNode[n0];
-      n1 = layer->front[front].globalNode[n1];
+      n0 = layer->triangle[triangle].globalNode[n0];
+      n1 = layer->triangle[triangle].globalNode[n1];
       edgeId = gridEdgeId(layer->grid,n0,n1);
-      if (EMPTY != edgeId) layer->front[front].parentEdge[side]=edgeId;
+      if (EMPTY != edgeId) layer->triangle[triangle].parentEdge[side]=edgeId;
     }
   }
   return layer;
@@ -767,7 +767,7 @@ Layer *layerFindParentEdges(Layer *layer)
 Layer *layerSetParentEdge(Layer *layer, int normal0, int normal1, int edgeId )
 {
   AdjIterator it;
-  int i0, i1, front, side;
+  int i0, i1, triangle, side;
  
   if (normal0 < 0 || normal0 >= layerNNormal(layer) ) return NULL;
   if (normal1 < 0 || normal1 >= layerNNormal(layer) ) return NULL;
@@ -775,14 +775,14 @@ Layer *layerSetParentEdge(Layer *layer, int normal0, int normal1, int edgeId )
   for ( it = adjFirst(layer->adj,normal0); 
 	adjValid(it); 
 	it = adjNext(it) ){
-    front = adjItem(it);
+    triangle = adjItem(it);
     for (i1=0;i1<3;i1++) {
-      if (normal1 == layer->front[front].normal[i1]) {
+      if (normal1 == layer->triangle[triangle].normal[i1]) {
 	for (i0=0;i0<3;i0++) {
-	  if (normal0 == layer->front[front].normal[i0]) {
+	  if (normal0 == layer->triangle[triangle].normal[i0]) {
 	    side = MIN(i0,i1);
 	    if ( side == 0 && 2 == MAX(i0,i1) ) side = 2;
-	    layer->front[front].parentEdge[side]=edgeId;
+	    layer->triangle[triangle].parentEdge[side]=edgeId;
 	  }
 	}
       }   
@@ -791,24 +791,24 @@ Layer *layerSetParentEdge(Layer *layer, int normal0, int normal1, int edgeId )
   return layer;
 }
 
-int layerParentEdge(Layer *layer, int front, int side )
+int layerParentEdge(Layer *layer, int triangle, int side )
 {
-  if (front < 0 || front >= layerNFront(layer) ) return 0;
+  if (triangle < 0 || triangle >= layerNTriangle(layer) ) return 0;
 
   if (side < 0 || side > 2 ) return 0;
 
-  return layer->front[front].parentEdge[side];
+  return layer->triangle[triangle].parentEdge[side];
 }
 
 int layerNParentEdgeSegments(Layer *layer, int edgeId )
 {
-  int front, i, nSegments;
+  int triangle, i, nSegments;
 
   if (edgeId==0) return 0;
   nSegments = 0;
-  for (front=0;front<layerNFront(layer);front++){
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
-      if (layerParentEdge(layer,front,i)==edgeId) nSegments++;
+      if (layerParentEdge(layer,triangle,i)==edgeId) nSegments++;
     }
   }
   return nSegments;
@@ -857,7 +857,7 @@ Layer *layerAdvance(Layer *layer)
   Grid *grid = layer->grid;
   int normal, normal0, normal1, root, tip, faceId, edgeId, i;
   int cell, node;
-  int front, normals[3], n[6], side[2];
+  int triangle, normals[3], n[6], side[2];
   double xyz[3];
   int nterminated;
 
@@ -892,15 +892,15 @@ Layer *layerAdvance(Layer *layer)
     }
   }
 
-  /* reconnect faces for constrained frontside */
-  for (front=0;front<layerNFront(layer);front++){
+  /* reconnect faces for constrained triangleside */
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for (i=0;i<3;i++){
-      faceId = layerConstrainedSide(layer, front, i);
+      faceId = layerConstrainedSide(layer, triangle, i);
       if (faceId > 0) {
 	normal0 = i;
 	normal1 = i+1; if (normal1>2) normal1 = 0;
-	normal0 = layer->front[front].normal[normal0];
-	normal1 = layer->front[front].normal[normal1];
+	normal0 = layer->triangle[triangle].normal[normal0];
+	normal1 = layer->triangle[triangle].normal[normal1];
 	gridReconnectFaceUnlessFrozen(grid, faceId, 
 				      layer->normal[normal0].root, 
 				      layer->normal[normal0].tip);
@@ -923,17 +923,17 @@ Layer *layerAdvance(Layer *layer)
 
   }
 
-  for (front=0;front<layerNFront(layer);front++){
-    layerFrontNormals(layer, front, normals);
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    layerTriangleNormals(layer, triangle, normals);
     for (i=0;i<3;i++) 
-      layer->front[front].globalNode[i] = layer->normal[normals[i]].tip;
+      layer->triangle[triangle].globalNode[i] = layer->normal[normals[i]].tip;
 
     /* note that tip has been set to root on terminated normals */
     /* the if (n[0]!=n[3]) checks are for layer termiantion */
 
     // advance faces
     for (i=0;i<3;i++){
-      faceId = layerConstrainedSide(layer, front, i);
+      faceId = layerConstrainedSide(layer, triangle, i);
       if (faceId > 0) {
 	side[1] = i;
 	side[0] = i+1; if (side[0]>2) side[0] = 0;
@@ -1110,7 +1110,7 @@ Layer *layerTerminateNormalWithX(Layer *layer, int direction, double x)
   return layer;
 }
 
-Layer *layerInsertPhantomFront(Layer *layer, double dz )
+Layer *layerInsertPhantomTriangle(Layer *layer, double dz )
 {
   Grid *grid = layer->grid;
   int normal, faceId, edgeId, newnode;
@@ -1165,12 +1165,12 @@ Layer *layerInsertPhantomFront(Layer *layer, double dz )
 Layer *layerVerifyPhantomEdges(Layer *layer)
 {
   Grid *grid = layer->grid;
-  int front, normals[3], nline, ngot, n0, n1;
+  int triangle, normals[3], nline, ngot, n0, n1;
 
   nline = 0;
   ngot  = 0;
-  for(front=0;front<layerNFront(layer);front++){
-    layerFrontNormals(layer, front, normals );
+  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
+    layerTriangleNormals(layer, triangle, normals );
     n0 = layer->normal[normals[0]].tip;
     n1 = layer->normal[normals[1]].tip;
     if ( n0 != EMPTY && n1 != EMPTY ) {
@@ -1210,12 +1210,12 @@ Layer *layerVerifyPhantomEdges(Layer *layer)
 Layer *layerVerifyPhantomFaces(Layer *layer)
 {
   Grid *grid = layer->grid;
-  int front, normals[3], nface, ngot, n0, n1, n2;
+  int triangle, normals[3], nface, ngot, n0, n1, n2;
 
   nface = 0;
   ngot  = 0;
-  for(front=0;front<layerNFront(layer);front++){
-    layerFrontNormals(layer, front, normals );
+  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
+    layerTriangleNormals(layer, triangle, normals );
     n0 = layer->normal[normals[0]].tip;
     n1 = layer->normal[normals[1]].tip;
     n2 = layer->normal[normals[2]].tip;
