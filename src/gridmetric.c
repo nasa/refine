@@ -765,11 +765,6 @@ Grid *gridStoreARDerivative (Grid *grid, int node )
   return grid;
 }
 
-int gridStoreARDegree( Grid *grid )
-{
-  return grid->degAR;
-}
-
 Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 {
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
@@ -1531,7 +1526,7 @@ double gridMinThawedFaceMR( Grid *grid )
   int face, nodes[3], faceId;
   double minMR;
   minMR = 999.0;
-  for (face=0;face<grid->maxface;face++) {
+  for (face=0;face<gridMaxFace(grid);face++) {
     if ( grid == gridFace(grid,face,nodes,&faceId) &&
 	 ( !gridNodeFrozen(grid,nodes[0]) ||
 	   !gridNodeFrozen(grid,nodes[1]) ||

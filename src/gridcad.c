@@ -835,7 +835,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
 
   minAR =2.1;
   minCell = EMPTY;
-  for (i=0;i<gridStoreARDegree(grid);i++){
+  for (i=0;i<gridStoredARDegree(grid);i++){
     if (grid->AR[i]<minAR){
       minAR = grid->AR[i];
       minCell = i;
@@ -848,7 +848,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   }else{
     nearestCell=EMPTY;
     nearestAR = 2.1;
-    for (i=0;i<gridStoreARDegree(grid);i++){
+    for (i=0;i<gridStoredARDegree(grid);i++){
       if ( i != minCell){
 	if (ABS(grid->AR[i]-minAR)<nearestAR) {
 	  nearestCell=i;
@@ -901,7 +901,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
 
   alpha = 1.0;
-  for (i=0;i<gridStoreARDegree(grid);i++){
+  for (i=0;i<gridStoredARDegree(grid);i++){
     if (i != minCell ) {
       projection
 	= searchDirection[0]*grid->dARdX[0+i*3]
@@ -918,7 +918,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   }
 
   //printf( "node %5d deg %3d active %3d old %12.9f\n",
-  //	  node, gridStoreARDegree(grid), minCell, minAR );
+  //	  node, gridStoredARDegree(grid), minCell, minAR );
   
   goodStep = FALSE;
   actualImprovement = 0.0;
@@ -954,7 +954,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   }
 
   //printf( "node %5d deg %3d active %3d old %8.5f new %8.5f\n",
-  //  node, gridStoreARDegree(grid), minCell, minAR, newAR );
+  //  node, gridStoredARDegree(grid), minCell, minAR, newAR );
 
   if ( actualImprovement <= 0.0  ){
     gridSetNodeXYZ(grid,node,origXYZ);

@@ -165,6 +165,8 @@ Grid *gridSetMap(Grid *g, int node,
 		             double m22, double m23,
 		                         double m33);
 
+int gridStoredARDegree( Grid *g );
+
 END_C_DECLORATION
 
 #endif /* GRID_H */

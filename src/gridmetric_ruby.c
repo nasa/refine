@@ -252,10 +252,10 @@ VALUE grid_storeARDerivative( VALUE self, VALUE node )
   return (grid == gridStoreARDerivative( grid, NUM2INT(node) )?self:Qnil);
 }
 
-VALUE grid_storeARDegree( VALUE self )
+VALUE grid_storedARDegree( VALUE self )
 {
   GET_GRID_FROM_SELF;
-  return INT2NUM(gridStoreARDegree( grid ));
+  return INT2NUM(gridStoredARDegree( grid ));
 }
 
 VALUE grid_minVolume( VALUE self )
@@ -400,7 +400,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
   rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );  rb_define_method( cGridMetric, "nodeARDerivative", grid_nodeARDerivative, 1 );  rb_define_method( cGridMetric, "storeARDerivative", grid_storeARDerivative, 1 );
-  rb_define_method( cGridMetric, "storeARDegree", grid_storeARDegree, 0 );
+  rb_define_method( cGridMetric, "storedARDegree", grid_storedARDegree, 0 );
   rb_define_method( cGridMetric, "minVolume", grid_minVolume, 0 );
   rb_define_method( cGridMetric, "minAR", grid_minAR, 0 );
 

@@ -363,14 +363,14 @@ class TestGridMetric < Test::Unit::TestCase
 				  2, 
 				  3, 
 				  grid.addNode(0.7,0.7,0.7) )
-  assert_equal 0,        grid.storeARDegree
+  assert_equal 0,        grid.storedARDegree
   assert_nil             grid.storeARDerivative(10)
   assert_equal 1,        grid.cellDegree(0)
   assert_equal grid,     grid.storeARDerivative(0)
-  assert_equal 1,        grid.storeARDegree
+  assert_equal 1,        grid.storedARDegree
   assert_equal 2,        grid.cellDegree(1)
   assert_equal grid,     grid.storeARDerivative(1)
-  assert_equal 2,        grid.storeARDegree
+  assert_equal 2,        grid.storedARDegree
  end
 
  def testRightHandedFaces

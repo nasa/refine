@@ -2446,3 +2446,9 @@ Grid *gridSetMap(Grid *grid, int node,
   return grid;
 }
 
+int gridStoredARDegree( Grid *grid )
+{
+  return grid->degAR;
+}
+
+
