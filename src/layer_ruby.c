@@ -244,6 +244,12 @@ VALUE layer_assignPolynomialNormalHeight( VALUE self, VALUE constant, VALUE slop
                                                    direction)?self:Qnil );
 }
 
+VALUE layer_feasibleNormals( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerFeasibleNormals(layer,-1.0,-1.0)?self:Qnil );
+}
+
 VALUE layer_visibleNormals( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -484,6 +490,7 @@ void Init_Layer()
   rb_define_method( cLayer, "getNormalHeight", layer_getNormalHeight, 1 );
   rb_define_method( cLayer, "assignPolynomialNormalHeight",
                     layer_assignPolynomialNormalHeight, 5 );
+  rb_define_method( cLayer, "feasibleNormals", layer_feasibleNormals, 0 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "projectNormalsToConstraints", 
 		    layer_projectNormalsToConstraints, 0 );

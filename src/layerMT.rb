@@ -375,6 +375,29 @@ class TestLayer < Test::Unit::TestCase
   assert_in_delta(  0.000, norm[2], 1e-2)
  end
 
+ def testNormalDirectionFeasible
+  assert_not_nil          grid = Grid.new(5,0,3,0)
+  assert_equal 0,         grid.addNode( 0, 0, 0)
+  assert_equal 1,         grid.addNode( 1, 0, 0)
+  assert_equal 2,         grid.addNode(-1, 0, 0)
+  assert_equal 3,         grid.addNode( 0, 1,-0.1)
+  assert_equal 4,         grid.addNode( 0, 1, 0.1)
+  grid.addFace(0,3,1,1)
+  grid.addFace(0,1,4,1)
+  grid.addFace(0,4,2,1)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.populateAdvancingFront([1])
+  norm = layer.normalDirection(0)
+  assert_in_delta(  0.000, norm[0], 1e-3)
+  assert_in_delta( -0.287, norm[1], 1e-3)
+  assert_in_delta(  0.957, norm[2], 1e-3)
+  assert_equal layer,     layer.feasibleNormals
+  norm = layer.normalDirection(0)
+  assert_in_delta(  0.000, norm[0], 1e-8)
+  assert_in_delta( -1.000, norm[1], 1e-2)
+  assert_in_delta(  0.000, norm[2], 1e-1)
+ end
+
  def testProjectNormalToEdge
   assert_not_nil          grid = Grid.new(9,9,9,9)
   assert_equal 0,         grid.addNode( 0, 0, 0)

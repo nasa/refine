@@ -139,6 +139,7 @@ Layer *layerSetNormalHeightWithRate(Layer *);
 Layer *layerSetNormalHeightWithMaxRate(Layer *, double maxRate);
 Layer *layerSetNormalHeightForLayerNumber(Layer *, int n, double rate);
 
+Layer *layerFeasibleNormals(Layer *, double dotLimit, double relaxation );
 Layer *layerVisibleNormals(Layer *, double dotLimit, double radianLimit );
 Layer *layerSmoothNormalDirection(Layer *);
 Layer *layerProjectNormalsToConstraints(Layer *);

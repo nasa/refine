@@ -1064,10 +1064,57 @@ Layer *layerSetNormalHeightForLayerNumber(Layer *layer, int n, double rate)
   return layer;
 }
 
-Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
+Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
 {
   int normal, iter, i;
   double *dir, mindir[3], mindot, radian, length; 
+  int minTriangle;
+
+  if (dotLimit < 0) dotLimit = 1.0e-14;
+  if (relaxation < 0) relaxation = 1.01;
+
+  layerProjectNormalsToConstraints(layer);
+
+  worstdot =2;
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    if ( 0 != layerNormalDeg(layer, normal ) ) {
+      dir = layer->normal[normal].direction;
+      layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+      for (iter=0;iter<1000 && mindot <= dotLimit; iter++){
+	dir[0] -= mindot*mindir[0];
+	dir[1] -= mindot*mindir[1];
+	dir[2] -= mindot*mindir[2];
+	length = sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
+	if (length > 0.0) {
+	  for ( i=0;i<3;i++) dir[i] = dir[i]/length;
+	}else{
+	  for ( i=0;i<3;i++) dir[i] = 0.0;
+	}
+	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
+      }
+      worstdot = MIN(worstdot,mindot);
+      if (mindot <= 0.0 ) {
+	double xyz[3];
+	gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
+	printf("ERROR: %s, %d, Invisible norm %d dot%9.5f X%9.5f Y%9.5f Z%9.5f\n",
+	       __FILE__, __LINE__, normal, mindot,xyz[0],xyz[1],xyz[2]);
+      }
+    }
+  }
+
+  layerProjectNormalsToConstraints(layer);
+
+  if (worstdot>0.0) {
+    return layer;
+  } else {
+    return NULL;
+  }
+}
+
+Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
+{
+  int normal, iter, i;
+  double *dir, mindir[3], mindot, radian, length, worstdot; 
   int minTriangle, lastTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
@@ -1076,6 +1123,7 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 
   layerProjectNormalsToConstraints(layer);
 
+  worstdot = 2.0;
   for (normal=0;normal<layerNNormal(layer);normal++){
     if ( 0 != layerNormalDeg(layer, normal ) ) {
       dir = layer->normal[normal].direction;
@@ -1099,6 +1147,7 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 	}
 	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
       }
+      worstdot = MIN(worstdot,mindot);
       if (mindot <= 0.0 ) {
 	double xyz[3];
 	gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz);
@@ -1110,7 +1159,11 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 
   layerProjectNormalsToConstraints(layer);
 
-  return layer;
+  if (worstdot>0.0) {
+    return layer;
+  } else {
+    return NULL;
+  }
 }
 
 Layer *layerSmoothNormalDirection(Layer *layer)
