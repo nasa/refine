@@ -279,9 +279,9 @@ int main( int argc, char *argv[] )
     return 0;
   }
 
-  for (i=0;i<3;i++){
-    printf("edge swapping grid...\n");gridSwap(grid,1.0);
-    printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
+  for (i=0;i<1;i++){
+    printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+    printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
   }
   STATUS;
 
@@ -325,12 +325,11 @@ int main( int argc, char *argv[] )
       }
     }
 
-    for (i=0;i<2;i++){
+    for (i=0;i<1;i++){
       projected = ( grid == gridRobustProject(grid));
       if (projected) {
-	printf("edge swapping grid...\n");gridSwap(grid,1.0);
-	printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
-	printf("node smoothing surface grid...\n");gridSmoothFaceMR(grid,1.0);
+	printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+	printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
       }else{
 	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
       }
@@ -338,12 +337,11 @@ int main( int argc, char *argv[] )
     STATUS;
   }
 
-  for (i=0;i<5;i++){
+  for (i=0;i<2;i++){
     projected = ( grid == gridRobustProject(grid));
     if (projected) {
-      printf("edge swapping grid...\n");gridSwap(grid,1.0);
-      printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
-      printf("node smoothing surface grid...\n");gridSmoothFaceMR(grid,1.0);
+      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
     }else{
       printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
     }

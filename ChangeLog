@@ -1,3 +1,9 @@
+2005-01-27 11:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c to speed up the adaptation cycles, I have
+	reduced the number of smooths and swaps and set the limits to
+	the defaults (-1).
+
 2005-01-27 10:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridCollapseEdge) Correctly constructed new
