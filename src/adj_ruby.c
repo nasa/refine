@@ -39,31 +39,34 @@ VALUE adj_remove( VALUE self, VALUE node, VALUE item )
 VALUE adj_valid( VALUE self )
 {
   GET_ADJ_FROM_SELF;
-  return (adjValid(adj)?Qtrue:Qfalse);
+  return (adjValid(adjGetCurrent(adj))?Qtrue:Qfalse);
 }
 
 VALUE adj_more( VALUE self )
 {
   GET_ADJ_FROM_SELF;
-  return (adjMore(adj)?Qtrue:Qfalse);
+  return (adjMore(adjGetCurrent(adj))?Qtrue:Qfalse);
 }
 
 VALUE adj_first( VALUE self, VALUE node )
 {
+  NodeItem *it;
   GET_ADJ_FROM_SELF;
-  return (adjFirst(adj, NUM2INT(node) )==adj?self:Qnil);
+  it = adjFirst(adj, NUM2INT(node) );
+  adjSetCurrent(adj,it);
+  return (it==NULL?Qnil:self);
 }
 
 VALUE adj_item( VALUE self )
 {
   GET_ADJ_FROM_SELF;
-  return INT2NUM( adjItem(adj) );
+  return INT2NUM( adjItem(adjGetCurrent(adj)) );
 }
 
 VALUE adj_next( VALUE self )
 {
   GET_ADJ_FROM_SELF;
-  adjNext(adj);
+  adjSetCurrent(adj,adjNext(adjGetCurrent(adj)));
   return self;
 }
 

@@ -249,14 +249,15 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
 
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {
+  NodeItem *it;
   int cellId;
   grid->ngem = 0;
 
-  for ( adjFirst(grid->cellAdj,n0); 
-	adjValid(grid->cellAdj); 
-	adjNext(grid->cellAdj)) {
+  for ( it = adjFirst(grid->cellAdj,n0); 
+	adjValid(it); 
+	it = adjNext(it)) {
 
-    cellId = adjItem(grid->cellAdj);
+    cellId = adjItem(it);
     if ( n1 == grid->c2n[0+4*cellId] ||
 	 n1 == grid->c2n[1+4*cellId] ||
 	 n1 == grid->c2n[2+4*cellId] ||

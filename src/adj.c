@@ -11,8 +11,6 @@
 #include <stdlib.h>
 #include "adj.h"
 
-typedef struct NodeItem NodeItem;
-
 struct NodeItem {
   int item;
   NodeItem *next;
@@ -82,20 +80,18 @@ Adj *adjRegister( Adj *adj, int node, int item )
 
 Adj* adjRemove(Adj *adj, int node, int item)
 {
-  NodeItem *remove, *previous;
+  NodeItem *it, *remove, *previous;
   remove = NULL;
 
-  for ( adjFirst(adj,node); adjValid(adj); adjNext(adj) ) 
-    if (adjItem(adj)==item) 
-      remove = adj->current;
+  for ( it = adjFirst(adj,node); adjValid(it); it = adjNext(it) ) 
+    if (adjItem(it)==item) remove = it;
 
   if (remove == NULL) return NULL;
  
   previous = NULL;
 
-  for ( adjFirst(adj,node); adjValid(adj); adjNext(adj) ) 
-    if (adj->current != NULL && adj->current->next == remove) 
-      previous = adj->current;
+  for ( it = adjFirst(adj,node); adjValid(it); it = adjNext(it) ) 
+    if (it != NULL && it->next == remove) previous = it;
   
   if ( previous == NULL ) {
     adj->first[node] = remove->next;
@@ -110,53 +106,60 @@ Adj* adjRemove(Adj *adj, int node, int item)
   return adj;
 }
 
-bool adjValid( Adj *adj )
+bool adjValid( NodeItem *iterator )
 {
-  return (adj->current != NULL);
+  return (iterator != NULL);
 }
 
-bool adjMore( Adj *adj )
+bool adjMore( NodeItem *iterator )
 {
-  return ( (adj->current != NULL) && (adj->current->next != NULL) );
+  return ( (iterator != NULL) && (iterator->next != NULL) );
 }
 
-Adj *adjFirst( Adj *adj, int node )
+NodeItem *adjFirst( Adj *adj, int node )
 {
-  if ( node < adj->nnode ) {
-    adj->current = adj->first[node];
-  }else{
-    adj->current = NULL;
-    return NULL;
-  }
+  if ( node < adj->nnode ) return adj->first[node];
+  return NULL;
+}
+
+int adjItem( NodeItem *iterator )
+{
+  if ( iterator == NULL ) return EMPTY;
+  return iterator->item;
+}
+
+NodeItem *adjNext( NodeItem *iterator )
+{
+  if ( iterator != NULL ) return iterator->next;
+  return NULL;
+}
+
+NodeItem *adjGetCurrent( Adj *adj ){
+  return adj->current;
+}
+
+Adj *adjSetCurrent( Adj *adj, NodeItem *iterator ){
+  adj->current = iterator;
   return adj;
-}
-
-int adjItem( Adj *adj )
-{
-  if (adj->current == NULL ) return EMPTY;
-  return adj->current->item;
-}
-
-void adjNext( Adj *adj )
-{
-  if ( adj->current != NULL ) adj->current = adj->current->next;
 }
 
 bool adjExists( Adj *adj, int node, int item )
 {
+  NodeItem *it;
   bool exist;
   exist = FALSE;
-  for ( adjFirst(adj,node); 
-	!exist && adjValid(adj); 
-	adjNext(adj)) 
-    exist = (item == adjItem(adj));
+  for ( it = adjFirst(adj,node); 
+	!exist && adjValid(it); 
+	it = adjNext(it)) 
+    exist = (item == adjItem(it));
   return exist;
 }
 
 int adjDegree(Adj *adj, int node )
 {
+  NodeItem *it;
   int degree;
   degree =0;
-  for ( adjFirst(adj,node) ; adjValid(adj); adjNext(adj)) degree++;
+  for ( it = adjFirst(adj,node) ; adjValid(it); it = adjNext(it)) degree++;
   return degree;
 }

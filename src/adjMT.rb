@@ -33,7 +33,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal( -1, @adj.item)
   
   assert_nil @adj.first(@bigNode);
-  assert_equal @adj, @adj.first(0);
   assert_equal false, @adj.valid;
   
   assert_equal @adj,  @adj.register( 2, 299 )
