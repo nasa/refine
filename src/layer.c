@@ -2208,3 +2208,66 @@ Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
   return layer;
 }
 
+Layer *layerBlendExtend(Layer *layer, double dx, double dy, double dz )
+{
+
+  int blend, i, fix, fixblend, node, newnode, normal, newnormal;
+  int normals[4];
+  double xyz[3];
+  Adj *adj;
+  AdjIterator it;
+  Grid *grid;
+
+  grid = layerGrid(layer);
+  adj = layerBuildNormalBlendAdjacency(layer);
+
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    for(i=0;i<4;i++){
+      layer->blend[blend].oldnormal[i]=layer->blend[blend].normal[i];
+      layer->blend[blend].normal[i]=EMPTY;
+    }
+  }
+
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    for(i=0;i<4;i++){
+      if (layer->blend[blend].normal[i]==EMPTY){
+	normal = layer->blend[blend].oldnormal[i];
+	node = layerNormalRoot(layer,normal);
+	gridNodeXYZ(grid,node,xyz);
+	xyz[0] += dx; xyz[1] += dy; xyz[2] += dz;
+	newnode = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
+	newnormal = layerDuplicateNormal(layer, normal);
+	layer->normal[newnormal].root = newnode;
+	for ( it = adjFirst(adj,normal); adjValid(it); it=adjNext(it) ){
+	  fixblend = adjItem(it);
+	  for (fix=0;fix<4;fix++)
+	    if ( layer->blend[fixblend].oldnormal[fix] == normal )
+	      layer->blend[fixblend].normal[fix] = newnormal;
+	}
+      }
+    }
+  }
+
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    layer->blend[blend].nodes[0] = 
+      layerNormalRoot(layer,layer->blend[blend].normal[0]);
+    layer->blend[blend].nodes[1] = 
+      layerNormalRoot(layer,layer->blend[blend].normal[2]);
+    normals[0] = layer->blend[blend].oldnormal[0];
+    normals[1] = layer->blend[blend].oldnormal[2];
+    normals[2] = layer->blend[blend].normal[0];
+    normals[3] = layer->blend[blend].normal[2];
+    layerForceTriangle(layer,normals[0],normals[1],normals[2]);
+    layerForceTriangle(layer,normals[1],normals[3],normals[2]);
+    normals[0] = layer->blend[blend].oldnormal[3];
+    normals[1] = layer->blend[blend].oldnormal[1];
+    normals[2] = layer->blend[blend].normal[3];
+    normals[3] = layer->blend[blend].normal[1];
+    layerForceTriangle(layer,normals[0],normals[1],normals[2]);
+    layerForceTriangle(layer,normals[1],normals[3],normals[2]);
+  }
+
+  layerBuildNormalTriangleAdjacency(layer);
+
+  return layer;
+}
