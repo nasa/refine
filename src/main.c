@@ -97,7 +97,6 @@ int main( int argc, char *argv[] )
     if (boundaryLayerGrid) {
       gridFreezeAll(grid);
       gridThawNearBC(grid,0.5,1);
-      gridThawNearBC(grid,0.5,2);
       gridFreezeBCFace(grid,1);
       gridFreezeBCFace(grid,2);
       printf("inviscid nodes to remove %d\n",gridNNode(grid)-gridNFrozen(grid));
