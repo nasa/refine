@@ -176,7 +176,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	if (!gridGeometryFace( grid, nodes[i])) 
 	  gridSmoothNode( grid, nodes[i]);
     }      
-    gridSwapNearNode( grid, node);
+    gridSwapNearNodeExceptBoundary( grid, node);
     for ( it = adjFirst(grid->cellAdj,node); 
 	  adjValid(it); 
 	  it = adjNext(it) ){

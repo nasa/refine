@@ -16,6 +16,7 @@
 
 Grid *gridSwapEdge(Grid *g, int n0, int n1 );
 Grid *gridSwapNearNode(Grid *g, int node );
+Grid *gridSwapNearNodeExceptBoundary(Grid *g, int node );
 Grid *gridSwap(Grid *g );
 Grid *gridSwapCellFaceArea(Grid *g, int cell );
 Grid *gridSwapFaceArea(Grid *g );

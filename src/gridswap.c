@@ -120,6 +120,51 @@ Grid *gridSwapNearNode(Grid *grid, int node)
   return grid;
 }
 
+Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
+{
+  int nswap, nodes[4];
+  AdjIterator it;
+
+  nswap = 0;
+  it = adjFirst(grid->cellAdj,node);
+  while ( adjValid(it) ){
+    gridCell( grid, adjItem(it), nodes);
+    if ( gridAR(grid, nodes) < 0.5 ) {
+      if ( !gridGeometryFace(grid, nodes[0]) && 
+	   !gridGeometryFace(grid, nodes[1]) &&
+	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ) ||
+	   !gridGeometryFace(grid, nodes[0]) && 
+	   !gridGeometryFace(grid, nodes[2]) &&
+	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ) ||
+	   !gridGeometryFace(grid, nodes[0]) && 
+	   !gridGeometryFace(grid, nodes[3]) &&
+	   ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ) ||
+	   !gridGeometryFace(grid, nodes[1]) && 
+	   !gridGeometryFace(grid, nodes[2]) &&
+	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ) ||
+	   !gridGeometryFace(grid, nodes[1]) && 
+	   !gridGeometryFace(grid, nodes[3]) &&
+	   ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ) ||
+	   !gridGeometryFace(grid, nodes[2]) && 
+	   !gridGeometryFace(grid, nodes[3]) &&
+	   ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ) ) {
+	it = adjFirst(grid->cellAdj,node);
+	nswap++;
+      }else{
+	it = adjNext(it);
+      } 
+    }else{
+      it = adjNext(it);
+    }
+    if (nswap>100) {
+      printf("node %d swap out.",node);
+      return NULL;
+    }
+  }
+
+  return grid;
+}
+
 Grid *gridSwap(Grid *grid)
 {
   int cellId, nodes[4];
