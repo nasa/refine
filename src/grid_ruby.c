@@ -189,6 +189,12 @@ VALUE grid_swap( VALUE self )
   return (gridSwap( grid )==grid?self:Qnil);
 }
 
+VALUE grid_splitEdge( VALUE self, VALUE n0, VALUE n1 )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSplitEdge( grid, NUM2INT(n0),  NUM2INT(n1) )==grid?self:Qnil);
+}
+
 VALUE grid_addNode( VALUE self, VALUE x, VALUE y, VALUE z )
 {
   GET_GRID_FROM_SELF;
@@ -249,6 +255,7 @@ void Init_Grid()
   rb_define_method( cGrid, "orient", grid_orient, 6 );
   rb_define_method( cGrid, "swapEdge", grid_swapEdge, 2 );
   rb_define_method( cGrid, "swap", grid_swap, 0 );
+  rb_define_method( cGrid, "splitEdge", grid_splitEdge, 2 );
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );
   rb_define_method( cGrid, "volume", grid_volume, 1 );
   rb_define_method( cGrid, "ar", grid_ar, 1 );
