@@ -276,6 +276,11 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 2,        grid.cellDegree(1)
   assert_equal grid,     grid.storeVolumeCostDerivatives(1)
   assert_equal 2,        grid.storedCostDegree
+  tol = 1.0e-8
+  assert_in_delta(  0.874641491151344, grid.storedCost(0), tol )
+  assert_in_delta( -0.224811612176301, grid.storedCostDerivative(0)[0], tol )
+  assert_in_delta( -0.0481739168949215, grid.storedCostDerivative(0)[1], tol )
+  assert_in_delta( -0.0481739168949215, grid.storedCostDerivative(0)[2], tol )
  end
 
  def testStoreFaceMRDerivative
@@ -293,6 +298,11 @@ class TestGridCAD < Test::Unit::TestCase
                  1,11,20, 10)
   assert_equal grid,     grid.storeFaceCostParameterDerivatives(0)
   assert_equal 1,        grid.storedCostDegree
+  tol = 1.0e-8
+  assert_in_delta(  0.86602540378444, grid.storedCost(0), tol )
+  assert_in_delta( -0.43301270189222, grid.storedCostDerivative(0)[0], tol )
+  assert_in_delta( -0.43301270189222, grid.storedCostDerivative(0)[1], tol )
+  assert_in_delta(  0.0,              grid.storedCostDerivative(0)[2], tol )
  end
 
  def gemGrid(nequ=4,disp=0.2,dent=nil, dentratio=-0.5)
