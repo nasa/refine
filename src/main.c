@@ -37,6 +37,7 @@ int main( int argc, char *argv[] )
   char project[256];
   char adaptfile[256], outputProject[256], outputFAST[256];
   int i, j, oldSize, newSize;
+  int wiggleSteps, wiggle;
   double ratio=0.3;
   double ratioRefine, ratioCollapse;
   bool projected;
@@ -143,10 +144,19 @@ int main( int argc, char *argv[] )
 	j++){
 
     if (boundaryLayerGrid) {
-      height = 0.0001*pow(1.2,j);
-      if (height > 0.015) jmax=0;
+      height = 0.002*pow(1.5,j);
+      if (height > 0.05) jmax=0;
       printf("insert layer height = %f\n",height);
+      wiggleSteps = (int)(height/0.005)+1;
+      height = height / (double)wiggleSteps;
       layerAdvance(layer,height);
+      for (i=1;i<wiggleSteps;i++) {
+	printf("wiggle step %d of %d\n",i+1,wiggleSteps);
+	gridSwap(grid);
+	gridSmooth(grid);
+	layerWiggle(layer,height);
+	//printf("minimum Volume %12.8e\n", gridMinVolume(grid));
+      }
     }
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
@@ -158,7 +168,7 @@ int main( int argc, char *argv[] )
       gridAdapt(grid,0.4,1.5);
     }else{
       printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
-	     ratio, ratioCollapse, ratioRefine );
+             ratio, ratioCollapse, ratioRefine );
       gridAdapt(grid,ratioCollapse,ratioRefine);
     }
     oldSize = newSize;
