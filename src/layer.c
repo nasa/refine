@@ -2210,7 +2210,7 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
   }
 
   if (layerNBlend(layer) > 0) {
-    if (layer != layerAdvanceBlends(layer)) return NULL;
+    negVolume = negVolume || (layer != layerAdvanceBlends(layer));
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
