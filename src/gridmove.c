@@ -57,20 +57,31 @@ Grid *gridmoveGrid(GridMove *gm)
 
 GridMove *gridmoveFreeRelaxation(GridMove *gm)
 {
-  if (NULL != gm->c2e)      { free(gm->c2e);      gm->c2e      = NULL; }
-  if (NULL != gm->springs)  { free(gm->springs);  gm->springs  = NULL; }
-  if (NULL != gm->xyz)      { free(gm->xyz);      gm->xyz      = NULL; }
-  if (NULL != gm->k)        { free(gm->k);        gm->k        = NULL; }
-  if (NULL != gm->source)   { free(gm->source);   gm->source   = NULL; }
+  GridBool w;
+  w = FALSE;
 
-  if (NULL != gm->ksum)     { free(gm->ksum);     gm->ksum     = NULL; }
-  if (NULL != gm->kxyz)     { free(gm->kxyz);     gm->kxyz     = NULL; }
+  if (NULL != gm->c2e)      { free(gm->c2e);      gm->c2e      = NULL; w=TRUE; }
+  if (NULL != gm->springs)  { free(gm->springs);  gm->springs  = NULL; w=TRUE; }
+  if (NULL != gm->xyz)      { free(gm->xyz);      gm->xyz      = NULL; w=TRUE; }
+  if (NULL != gm->k)        { free(gm->k);        gm->k        = NULL; w=TRUE; }
+  if (NULL != gm->source)   { free(gm->source);   gm->source   = NULL; w=TRUE; }
 
-  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
-  if (NULL != gm->compRow)  { free(gm->compRow);  gm->compRow  = NULL; }
-  if (NULL != gm->a)        { free(gm->a);        gm->a        = NULL; }
-  if (NULL != gm->lu)       { free(gm->lu);       gm->lu       = NULL; }
-  if (NULL != gm->dxyz)     { free(gm->dxyz);     gm->dxyz     = NULL; }
+  if (NULL != gm->ksum)     { free(gm->ksum);     gm->ksum     = NULL; w=TRUE; }
+  if (NULL != gm->kxyz)     { free(gm->kxyz);     gm->kxyz     = NULL; w=TRUE; }
+
+  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; w=TRUE; }
+  if (NULL != gm->compRow)  { free(gm->compRow);  gm->compRow  = NULL; w=TRUE; }
+  if (NULL != gm->a)        { free(gm->a);        gm->a        = NULL; w=TRUE; }
+  if (NULL != gm->lu)       { free(gm->lu);       gm->lu       = NULL; w=TRUE; }
+  if (NULL != gm->dxyz)     { free(gm->dxyz);     gm->dxyz     = NULL; w=TRUE; }
+
+  if (w) {
+    printf("ERROR: A grid resize or renumber has called in the middle of a \n");
+    printf("       grimove relaxation. You are most likely totally hosed.\n");
+    printf("%s: %d: More code needs to be written.\n",__FILE__,__LINE__);
+    return NULL;
+  }
+
   return gm;
 }
 
