@@ -63,7 +63,7 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   newY = ( xyz0[1] + xyz1[1] ) * 0.5;
   newZ = ( xyz0[2] + xyz1[2] ) * 0.5;
 
-  queueNewTransaction(queue);
+  if (NULL != queue) queueNewTransaction(queue);
   newnode = gridSplitEdgeAt( grid, queue, node0, node1, newX, newY, newZ );
   if (EMPTY == newnode) {
     printf("WARNING: %s: %d: global n cel counter may be hosed.\n",
