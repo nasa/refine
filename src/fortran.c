@@ -17,25 +17,25 @@ static Grid *grid;
 
 int gridcreate( int *maxnode, int *maxcell, int *maxface, int *maxedge )
 {
-  printf("called gridcreate\n")
+  printf("called gridcreate\n");
   grid = gridCreate( *maxnode, *maxcell, *maxface, *maxedge);
 }
 
 int gridcreate_( int *maxnode, int *maxcell, int *maxface, int *maxedge )
 {
-  printf("called gridcreate_\n")
+  printf("called gridcreate_\n");
   grid = gridCreate( *maxnode, *maxcell, *maxface, *maxedge);
 }
 
 int gridcreate__( int *maxnode, int *maxcell, int *maxface, int *maxedge )
 {
-  printf("called gridcreate__\n")
+  printf("called gridcreate__\n");
   grid = gridCreate( *maxnode, *maxcell, *maxface, *maxedge);
 }
 
 int GRIDCREATE( int *maxnode, int *maxcell, int *maxface, int *maxedge )
 {
-  printf("called GRIDCREATE\n")
+  printf("called GRIDCREATE\n");
   grid = gridCreate( *maxnode, *maxcell, *maxface, *maxedge);
 }
 
