@@ -173,7 +173,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	  for(i=1;i<ncurve;i++){
 	    if ( !gridNodeFrozen(grid,curve[i-1]) || 
 		 !gridNodeFrozen(grid,curve[i])   ){
-	      if (orient>0){
+	      if (orient<0){
 		shell[0+2*nshell] = curve[i-1];
 		shell[1+2*nshell] = curve[i];
 	      }else{
@@ -190,7 +190,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 	  curve = malloc( ncurve * sizeof(int) );
 	  gridGeomEdge( grid, edgeId, curve );
 	  for(i=1;i<ncurve;i++){
-	    if (orient>0){
+	    if (orient<0){
 	      shell[0+2*nshell] = curve[i-1];
 	      shell[1+2*nshell] = curve[i];
 	    }else{
