@@ -2088,12 +2088,6 @@ Layer *layerBlend(Layer *layer)
   layerVisibleNormals(layer , 
 		      sin(ConvertDegreeToRadian(largestEdgeAngle*0.333)), 
 		      1.0e-8 );
-  for (blend=0; blend < layerNBlend(layer); blend++){
-    edgeId = layer->blend[blend].edgeId[0];
-    if ( edgeId > 0 ) printf("blend %d edgeId %d\n",blend,edgeId);
-    edgeId = layer->blend[blend].edgeId[1];
-    if ( edgeId > 0 ) printf("blend %d edgeId %d\n",blend,edgeId);
-  }
   return layer;
 }
 
