@@ -84,7 +84,7 @@ int gridsetnodelocal2global_( int *partId, int *nnodeg,
   gridSetPartId(grid, *partId );
   gridSetGlobalNNode(grid, *nnodeg );
   for ( node=0; node<*nnode; node++){ 
-    gridSetNodeGlobal(grid, node, local2global[node]);
+    gridSetNodeGlobal(grid, node, local2global[node]-1);
     if ( node < *nnode0 ) {
       gridSetNodePart(grid, node, *partId );
     }else{
@@ -97,7 +97,7 @@ int gridsetcelllocal2global_( int *ncell, int *local2global )
 {
   int cell;
   for ( cell=0; cell<*ncell; cell++){ 
-    gridSetCellGlobal(grid, cell, local2global[cell]);
+    gridSetCellGlobal(grid, cell, local2global[cell]-1);
   }
 }
 
