@@ -4,6 +4,14 @@ Note To CVS Users
    Run ./autogen.sh to set the package up to install inside it's self
 (e.g. ./configure --prefix=`pwd`).
 
+Note To SGI Users
+=================
+
+   ./configure does not find the X libs. add 
+      --x-includes=/usr/include 
+      --x-libraries=/usr/lib32
+   to the ./configure or ./autogen.sh script
+
 Basic Installation
 ==================
 
