@@ -116,8 +116,8 @@ bin_PROGRAMS =
 if BUILD_SDK_DEPENDENTS
 
 all_CFLAGS = @SDKheader@
-refineLib  = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
-MesherXLib = libMesherX.a @SDKlibrary@ -lUGAPI -lGoolache -lCADGeom-CAPRI -lMeat
+refineLib  = libMesherX.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat
+MesherXLib = libMesherX.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat
 all_LDFLAGS = @dynamicFlag@
 hla_sources = \
 	MesherX_HLA.c \
