@@ -1508,18 +1508,20 @@ Layer *layerSmoothInteriorNormalDirection(Layer *layer,
 	    }
 	  }
 	}
-	denom = 1.0 / (double)total;
-	layer->normal[normal].direction[0] = 
-	  relax*(avgdir[0] * denom) + 
-	  relaxm1*layer->normal[normal].direction[0];
-	layer->normal[normal].direction[1] = 
-	  relax*(avgdir[1] * denom) +
-	  relaxm1*layer->normal[normal].direction[1];
-	layer->normal[normal].direction[2] = 
-	  relax*(avgdir[2] * denom) +
-	  relaxm1*layer->normal[normal].direction[2];
-	gridVectorNormalize(layer->normal[normal].direction);
-	layerProjectNormalToConstraints(layer,normal);
+	if (0<total) {
+	  denom = 1.0 / (double)total;
+	  layer->normal[normal].direction[0] = 
+	    relax*(avgdir[0] * denom) + 
+	    relaxm1*layer->normal[normal].direction[0];
+	  layer->normal[normal].direction[1] = 
+	    relax*(avgdir[1] * denom) +
+	    relaxm1*layer->normal[normal].direction[1];
+	  layer->normal[normal].direction[2] = 
+	    relax*(avgdir[2] * denom) +
+	    relaxm1*layer->normal[normal].direction[2];
+	  gridVectorNormalize(layer->normal[normal].direction);
+	  layerProjectNormalToConstraints(layer,normal);
+	}
       }
     }
     layerVisibleNormals(layer,visibility,visTol);
@@ -1545,17 +1547,19 @@ Layer *layerSmoothInteriorNormalDirection(Layer *layer,
 	    }
 	  }
 	}
-	denom = 1.0 / (double)total;
-	layer->normal[normal].direction[0] = 
-	  relax*(avgdir[0] * denom) + 
-	  relaxm1*layer->normal[normal].direction[0];
-	layer->normal[normal].direction[1] = 
-	  relax*(avgdir[1] * denom) +
-	  relaxm1*layer->normal[normal].direction[1];
-	layer->normal[normal].direction[2] = 
-	  relax*(avgdir[2] * denom) +
-	  relaxm1*layer->normal[normal].direction[2];
-	gridVectorNormalize(layer->normal[normal].direction);
+	if (0<total ) {
+	  denom = 1.0 / (double)total;
+	  layer->normal[normal].direction[0] = 
+	    relax*(avgdir[0] * denom) + 
+	    relaxm1*layer->normal[normal].direction[0];
+	  layer->normal[normal].direction[1] = 
+	    relax*(avgdir[1] * denom) +
+	    relaxm1*layer->normal[normal].direction[1];
+	  layer->normal[normal].direction[2] = 
+	    relax*(avgdir[2] * denom) +
+	    relaxm1*layer->normal[normal].direction[2];
+	  gridVectorNormalize(layer->normal[normal].direction);
+	}
       }
     }
     layerVisibleNormals(layer,visibility,visTol);
