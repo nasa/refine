@@ -1,3 +1,7 @@
+Wed Aug 17, 2004: Released Refine 1.2.2
+
+Fixed FAKEGeom.
+
 Wed Aug 17, 2004: Released Refine 1.2.1
 
 Removed all references to SDK UG_API and Goolache fo the refine lib;
