@@ -337,12 +337,6 @@ VALUE grid_orient( VALUE self, VALUE c0, VALUE c1 , VALUE c2, VALUE c3,
   return rb_result;
 }
 
-VALUE grid_splitEdge( VALUE self, VALUE n0, VALUE n1 )
-{
-  GET_GRID_FROM_SELF;
-  return (gridSplitEdge( grid, NUM2INT(n0),  NUM2INT(n1) )==grid?self:Qnil);
-}
-
 VALUE grid_addNode( VALUE self, VALUE x, VALUE y, VALUE z )
 {
   int returnedNode;
@@ -371,52 +365,6 @@ VALUE grid_nodeXYZ( VALUE self, VALUE node )
   return rb_xyz;
 }
 
-VALUE grid_volume( VALUE self, VALUE rb_nodes )
-{
-  int i, nodes[4];
-  GET_GRID_FROM_SELF;
-  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
-  return rb_float_new( gridVolume( grid, nodes ) );
-}
-
-VALUE grid_ar( VALUE self, VALUE rb_nodes )
-{
-  int i, nodes[4];
-  GET_GRID_FROM_SELF;
-  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
-  return rb_float_new( gridAR( grid, nodes ) );
-}
-VALUE grid_arDerivative( VALUE self, VALUE node )
-{
-  VALUE rb_ar;
-  double ar, dARdx[3];
-  Grid *returnedGrid;
-  GET_GRID_FROM_SELF;
-  returnedGrid = gridARDerivative( grid, NUM2INT(node), &ar, dARdx );
-  if ( returnedGrid == grid ){
-    rb_ar = rb_ary_new2(4);
-    rb_ary_store( rb_ar, 0, rb_float_new(ar) );
-    rb_ary_store( rb_ar, 1, rb_float_new(dARdx[0]) );
-    rb_ary_store( rb_ar, 2, rb_float_new(dARdx[1]) );
-    rb_ary_store( rb_ar, 3, rb_float_new(dARdx[2]) );
-  }else{
-    rb_ar = Qnil;
-  }
-  return rb_ar;
-}
-
-VALUE grid_minVolume( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return rb_float_new( gridMinVolume( grid ) );
-}
-
-VALUE grid_minAR( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return rb_float_new( gridMinAR( grid ) );
-}
-
 VALUE grid_findCellWithFace( VALUE self, VALUE face )
 {
   int returnedCell;
@@ -425,19 +373,6 @@ VALUE grid_findCellWithFace( VALUE self, VALUE face )
   if (returnedCell == EMPTY) return Qnil;
   return INT2NUM( returnedCell );
 }
-
-VALUE grid_rightHandedFace( VALUE self, VALUE face )
-{
-  GET_GRID_FROM_SELF;
-  return (gridRightHandedFace(grid, NUM2INT(face))?Qtrue:Qfalse);
-}
-
-VALUE grid_rightHandedBoundary( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return (gridRightHandedBoundary(grid)?Qtrue:Qfalse);
-}
-
 VALUE grid_nGeomNode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -513,17 +448,10 @@ void Init_Grid()
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );
-  rb_define_method( cGrid, "splitEdge", grid_splitEdge, 2 );
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );
   rb_define_method( cGrid, "nodeXYZ", grid_nodeXYZ, 1 );
-  rb_define_method( cGrid, "volume", grid_volume, 1 );
-  rb_define_method( cGrid, "ar", grid_ar, 1 );
-  rb_define_method( cGrid, "arDerivative", grid_arDerivative, 1 );
-  rb_define_method( cGrid, "minVolume", grid_minVolume, 0 );
-  rb_define_method( cGrid, "minAR", grid_minAR, 0 );
+
   rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
-  rb_define_method( cGrid, "rightHandedFace", grid_rightHandedFace, 1 );
-  rb_define_method( cGrid, "rightHandedBoundary", grid_rightHandedBoundary, 0);
 
   rb_define_method( cGrid, "nGeomNode", grid_nGeomNode, 0 );
   rb_define_method( cGrid, "setNGeomNode", grid_setNGeomNode, 1 );

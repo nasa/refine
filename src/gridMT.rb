@@ -9,14 +9,6 @@ exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_h
 require 'test/unit'
 require 'Grid/Grid'
 
-class Grid
- def totalVolume
-  vol = 0.0
-  ncell.times { |cellId| vol += volume(cell(cellId)) }
-  vol
- end
-end
-
 class TestSampleUnit < Test::Unit::TestCase
 
  def set_up
@@ -153,24 +145,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [1.0,2.0,3.0], grid.nodeXYZ(0)
  end
 
- def testMetrics
-  assert_equal @grid, @grid.
-   addCell( @grid.addNode(0.0,0.0,0.0), @grid.addNode(1.0,0.0,0.0), 
-	    @grid.addNode(0.0,1.0,0.0), @grid.addNode(0.0,0.0,1.0) )
-  nodes = [0,1,2,3]
-  assert_in_delta 1.0/6.0, @grid.volume(nodes), 1.0e-15
-  assert_in_delta 1.0/6.0, @grid.minVolume, 1.0e-15
-  assert_in_delta 0.732050807568877, @grid.ar(nodes), 1.0e-15
-  assert_in_delta 0.732050807568877, @grid.minAR, 1.0e-15
-  ans = @grid.arDerivative(0)
-  deriv = -2.0/3.0
-  assert_in_delta 0.732050807568877, ans[0], 1.0e-15
-  assert_in_delta deriv, ans[1], 1.0e-15
-  assert_in_delta deriv, ans[2], 1.0e-15
-  assert_in_delta deriv, ans[3], 1.0e-15
- 
- end
-
  def testNumberOfFaces
   assert_not_nil  grid = Grid.new(4,1,2,0)
   assert_equal 0, grid.nface 
@@ -235,88 +209,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [8.0,9.0],    grid.nodeUV(0,2)
  end
 
- def testSplitEdge4
-  assert_not_nil grid = gemGrid
-  initalVolume = grid.totalVolume
-  assert_equal grid, grid.splitEdge(0,1)
-  assert_equal 7, grid.nnode
-  assert_equal 8, grid.ncell
-  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
- end
-
- def testSplitEdge4onSameBC
-  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal grid, grid.addFaceUV(0,0.0,10.0,
-				    1,1.0,11.0,
-				    2,2.0,12.0,11)
-  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
-				    0,0.0,10.0,
-				    5,5.0,15.0,11)
-  assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.splitEdge(0,1)
-  assert_nil         grid.faceId(0,1,2)
-  assert_nil         grid.faceId(0,1,5) 
-  assert_equal 11,   grid.faceId(0,6,2)
-  assert_equal 11,   grid.faceId(6,1,2)
-  assert_equal 11,   grid.faceId(0,6,5) 
-  assert_equal 11,   grid.faceId(6,1,5) 
-  assert grid.rightHandedBoundary, "split boundary is not right handed"
-  assert_equal [0.0,10.0], grid.nodeUV(0,11)
-  assert_equal [1.0,11.0], grid.nodeUV(1,11)
-  assert_equal [2.0,12.0], grid.nodeUV(2,11)
-  assert_equal [5.0,15.0], grid.nodeUV(5,11)
-  assert_equal [0.5,10.5], grid.nodeUV(6,11)
- end
-
- def testSplitEdge4onDifferentBC
-  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal grid, grid.addFaceUV(0,20.0,120.0,
-				    1,21.0,121.0,
-				    2,22.0,122.0,2)
-  assert_equal grid, grid.addFaceUV(1,51.0,151.0,
-				    0,50.0,150.0,
-				    5,55.0,155.0,5)
-  assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.splitEdge(0,1)
-  assert_nil         grid.faceId(0,1,2)
-  assert_nil         grid.faceId(0,1,5) 
-  assert_equal 2,    grid.faceId(0,6,2)
-  assert_equal 2,    grid.faceId(6,1,2)
-  assert_equal 5,    grid.faceId(0,6,5) 
-  assert_equal 5,    grid.faceId(6,1,5) 
-  assert grid.rightHandedBoundary, "split boundary is not right handed"
-  assert_equal [20.0,120.0], grid.nodeUV(0,2)
-  assert_equal [50.0,150.0], grid.nodeUV(0,5)
-  assert_equal [21.0,121.0], grid.nodeUV(1,2)
-  assert_equal [51.0,151.0], grid.nodeUV(1,5)
-  assert_equal [22.0,122.0], grid.nodeUV(2,2)
-  assert_equal [55.0,155.0], grid.nodeUV(5,5)
-  assert_equal [20.5,120.5], grid.nodeUV(6,2)
-  assert_equal [50.5,150.5], grid.nodeUV(6,5)
- end
-
-#test for not enough mem for swap and split
-
- def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
-  a  = a  || 0.1
-  x0 = x0 || 1.0
-  grid = Grid.new(nequ+2+1,14,14,14)
-  n = Array.new
-  n.push grid.addNode(  x0,0.0,0.0)
-  n.push grid.addNode(-1.0,0.0,0.0)
-  nequ.times do |i| 
-   angle = 2.0*Math::PI*(i-1)/(nequ)
-   s = if (dent==i) then 0.9 else 1.0 end
-   n.push grid.addNode(0.0,s*a*Math.sin(angle),s*a*Math.cos(angle)) 
-  end
-  n.push 2
-  ngem = (gap)?(nequ-1):(nequ)
-  ngem.times do |i|
-   grid.addCell(n[0],n[1],n[i+2],n[i+3])
-  end
-  grid  
- end
-
  def testNumberOfGeomEdges
   assert_not_nil  grid = Grid.new(0,0,0,2)
   assert_equal 0, grid.nedge
@@ -358,31 +250,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2,    grid.nedge
   assert_nil         grid.addEdge(1, 2, 13, 0.0, 0.0)
  end
-
- def testSplitGeometryEdge4
-  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal grid, grid.addFace(0,1,2,2)
-  assert_equal grid, grid.addFace(1,0,5,5)
-  assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.addEdge(0,1,15, 0.0, 1.0)
-  assert_equal grid, grid.splitEdge(0,1)
-  assert_nil         grid.edgeId(0,1)
-  assert_equal 15,   grid.edgeId(0,6)
-  assert_equal 15,   grid.edgeId(6,1)
-  assert_equal [0.0, 0.5, 1.0], grid.geomCurveT(15,0)
-  assert_equal [1.0, 0.5, 0.0], grid.geomCurveT(15,1)
- end
-
- def testSplitWithoutGeometryEdge4
-  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
-  assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(1,0,5,11)
-  assert grid.rightHandedBoundary, "original boundary is not right handed"
-  assert_equal grid, grid.splitEdge(0,1)
-  assert_nil         grid.edgeId(0,6)
-  assert_nil         grid.edgeId(6,1)
- end
-
  def testGetGeomCurve
   assert_not_nil     grid = Grid.new(4,0,0,4)
   assert_equal grid, grid.addEdge(0, 1, 10, 10.0, 11.0)
@@ -415,21 +282,6 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 1,    grid.findCellWithFace(0)
  end
 
- def testRightHandedFaces
-  assert_not_nil grid = Grid.new(4,1,2,0)
-  assert_equal grid, grid.
-   addCell( grid.addNode(0.0,0.0,0.0), grid.addNode(1.0,0.0,0.0), 
-	    grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
-  assert_equal grid,  grid.addFace(0,1,2,11)
-  assert_equal true,  grid.rightHandedFace(0)
-  assert_equal grid,  grid.addFace(0,2,3,11)
-  assert_equal true,  grid.rightHandedBoundary
-  assert_equal grid,  grid.removeFace(grid.findFace(0,1,2))
-  assert_equal grid,  grid.addFace(0,2,1,11)
-  assert_equal false, grid.rightHandedFace(0)
-  assert_equal false, grid.rightHandedBoundary
- end
- 
  def testGeometryNode
   assert_not_nil grid = Grid.new(3,0,0,0)
   assert_equal 0,     grid.nGeomNode

@@ -76,23 +76,11 @@ Grid *gridOrient(Grid *g, int *cell, int *nodes );
 Grid *gridEquator(Grid *g, int n0, int n1 );
 int gridNEqu(Grid *g );
 int gridEqu(Grid *g, int index );
-Grid *gridThrash(Grid *g );
-
-Grid *gridSplitEdge(Grid *g, int n0, int n1 );
 
 int gridAddNode(Grid *g, double x, double y, double z );
 Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
 
-double gridVolume(Grid *g, int *nodes );
-double gridAR(Grid *g, int *nodes );
-Grid *gridARDervative(Grid *g, int node, double *ar, double *dARdx );
-double gridMinVolume(Grid *g);
-bool gridNegCellAroundNode(Grid *g, int node );
-double gridMinAR(Grid *g);
-
 int gridFindCellWithFace(Grid *g, int face );
-bool gridRightHandedFace(Grid *g, int face );
-bool gridRightHandedBoundary(Grid *g );
 
 int gridNGeomNode(Grid *g);
 Grid *gridSetNGeomNode(Grid *g, int nGeomNode);

@@ -11,9 +11,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "gridswap.h"
 #include "adj.h"
 #include "gridStruct.h"
+#include "gridmetric.h"
+#include "gridswap.h"
 
 Grid *gridSwapEdge3(Grid *grid, int n0, int n1 );
 Grid *gridSwapEdge4(Grid *grid, int n0, int n1 );
