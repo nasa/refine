@@ -162,7 +162,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0.0,1.0,0.0], layer.normalDirection(3)
  end
 
- def testAdvanceLayer
+ def testAdvanceLayerIntoVolume
   assert_not_nil          grid = Grid.new(7,4,1,0)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
@@ -184,6 +184,35 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [4,5,6,3], grid.cell(0)
   assert_equal 4,         grid.ncell
   assert_equal true,      grid.rightHandedFace(0)
+  assert_equal true,      grid.rightHandedBoundary
+  assert       0<         grid.minVolume, "negative volumes"
+ end
+
+ def testAdvanceLayerOnSymPlane
+  assert_not_nil          grid = Grid.new(7,4,3,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addCell(0,1,2,3)
+  assert_equal 1,         grid.ncell
+  assert_equal grid,      grid.addFace(0,3,1,1)
+  assert_equal grid,      grid.addFace(0,1,2,2)
+  assert_equal true,      grid.rightHandedBoundary
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal 1,         layer.nfront
+  assert_equal layer,     layer.makeNormal
+  assert_equal 3,         layer.nnormal
+  assert_equal layer,     layer.constrainNormal(2)
+  assert_equal 2,         layer.constrained(0)
+  assert_equal 0,         layer.constrained(1)
+  assert_equal 2,         layer.constrained(2)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal 7,         grid.nnode
+  assert_equal [4,6,2,5], grid.cell(0)
+  assert_equal 4,         grid.ncell
+  assert_equal 4,         grid.nface
   assert_equal true,      grid.rightHandedBoundary
   assert       0<         grid.minVolume, "negative volumes"
  end
