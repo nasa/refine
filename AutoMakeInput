@@ -1,0 +1,51 @@
+# -*- Makefile -*-
+
+lib_LIBRARIES = libMesherX.a
+libMesherX_a_CFLAGS = -I../src @SDKheader@
+libMesherX_a_SOURCES = \
+	../src/adj.c \
+	../src/near.c \
+	../src/intersect.c \
+	../src/grid.c \
+	../src/gridmath.c \
+	../src/gridmetric.c \
+	../src/gridinsert.c \
+	../src/gridswap.c \
+	../src/gridcad.c \
+	../src/gridfiller.c \
+	../src/layer.c \
+	../src/mesherxInit.c \
+	../src/mesherxRebuild.c \
+	../src/mesherx.c 
+
+all_CFLAGS = -I../src @SDKheader@
+refineLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache -lMeat
+MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache @FELISAlibrary@ -ldl -lMeat
+all_LDFLAGS = @dynamicFlag@
+
+LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
+
+bin_PROGRAMS =
+
+if BUILD_NATIVE_KERNEL
+bin_PROGRAMS += refineNative MesherXNative MesherX_HLANative
+refineNative_CFLAGS = $(all_CFLAGS)
+refineNative_SOURCES = ../src/main.c
+refineNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
+refineNative_LDFLAGS = $(all_LDFLAGS)
+
+MesherXNative_CFLAGS = $(all_CFLAGS)
+MesherXNative_SOURCES = ../src/MesherX.c
+MesherXNative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
+MesherXNative_LDFLAGS = $(all_LDFLAGS)
+
+MesherX_HLANative_CFLAGS = $(all_CFLAGS)
+MesherX_HLANative_SOURCES = \
+	../src/MesherX_HLA.c \
+	../src/mesherx_hla.c \
+	../src/layerNormalExtra.c \
+	../src/geometricStretch.c
+MesherX_HLANative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
+MesherX_HLANative_LDFLAGS = $(all_LDFLAGS)
+
+endif
