@@ -97,6 +97,15 @@ VALUE near_touched( VALUE self, VALUE rb_target )
   return array;
 }
 
+VALUE near_nearestIndex( VALUE rb_root, VALUE rb_key )
+{
+  Near *root, *key;
+  Data_Get_Struct( rb_root, Near, root );
+  Data_Get_Struct( rb_key,  Near, key );
+
+  return INT2NUM(nearNearestIndex(root,key));
+}
+
 VALUE cNear;
 
 void Init_Near() 
@@ -112,4 +121,5 @@ void Init_Near()
   rb_define_method( cNear, "rightRadius", near_rightRadius, 0 );
   rb_define_method( cNear, "collisions", near_collisions, 1 );
   rb_define_method( cNear, "touched", near_touched, 1 );
+  rb_define_method( cNear, "nearestIndex", near_nearestIndex, 1 );
 }

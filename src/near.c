@@ -163,3 +163,38 @@ Near *nearTouched(Near *near, Near *target, int *found, int maxfound, int *list)
 
   return near;
 }
+
+
+int nearNearestIndex(Near *root, Near *key)
+{
+  double distanceToMe, distanceToLeft, distanceToRight;
+
+  if (root->leftChild == NULL) return nearIndex( root );
+
+  distanceToMe   = nearDistance( root, key);
+  
+  distanceToLeft = nearDistance( root->leftChild, key);
+
+  if (root->rightChild == NULL) {
+
+    if (distanceToMe<distanceToLeft){
+      return nearIndex( root );
+    }else{
+      return nearNearestIndex(root->leftChild, key);
+    }
+
+  }
+
+  distanceToRight = nearDistance( root->rightChild, key);
+
+  if (distanceToMe<distanceToLeft && distanceToMe<distanceToRight) 
+    return nearIndex( root );
+
+  if (distanceToLeft<distanceToMe && distanceToLeft<distanceToRight) 
+    return nearNearestIndex(root->leftChild, key);
+
+  if (distanceToRight<distanceToMe && distanceToRight<distanceToLeft) 
+    return nearNearestIndex(root->rightChild, key);
+
+}
+

@@ -167,4 +167,59 @@ class TestNear < Test::Unit::TestCase
   assert_equal [6], near.touched(target)
  end
 
+ def testFindRootNode
+  root = Near.new(5,0,0,0,0)
+  key  = Near.new(8,1,0,0,0)
+  assert_equal 5, root.nearestIndex(key)  
+ end
+
+ def testFindLeftChild
+  root  = Near.new(5,0,0,0,0)
+  child = Near.new(6,4,0,0,0)
+  root.insert(child)
+
+  key   = Near.new(8,3,0,0,0)
+  assert_equal 6, root.nearestIndex(key)  
+ end
+
+ def testFindRightChild
+  root  = Near.new(5,0,0,0,0)
+  child6 = Near.new(6,4,0,0,0)
+  child7 = Near.new(7,8,0,0,0)
+  root.insert(child6)
+  root.insert(child7)
+
+  key   = Near.new(8,7,0,0,0)
+  assert_equal 7, root.nearestIndex(key)  
+ end
+
+ def testFindLeftBuriedChild
+  root  = Near.new(5,0,0,0,0)
+  child6 = Near.new(6,4,0,0,0)
+  child7 = Near.new(7,8,0,0,0)
+  child8 = Near.new(8,5,0,0,0)
+  root.insert(child6)
+  root.insert(child7)
+  root.insert(child8)
+
+  key   = Near.new(8,5,0,0,0)
+  assert_equal 8, root.nearestIndex(key)  
+ end
+
+ def testFindRightBuriedChild
+  root  = Near.new(5,0,0,0,0)
+  child6 = Near.new(6,4,0,0,0)
+  child7 = Near.new(7,8,0,0,0)
+  child8 = Near.new(8,5,0,0,0)
+  child9 = Near.new(9,9,0,0,0)
+  root.insert(child6)
+  root.insert(child7)
+  root.insert(child8)
+  root.insert(child9)
+
+  key   = Near.new(8,10,0,0,0)
+  assert_equal 9, root.nearestIndex(key)  
+ end
+
+
 end

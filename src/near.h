@@ -42,6 +42,8 @@ double nearRightRadius( Near * );
 int nearCollisions(Near *, Near *target);
 Near *nearTouched(Near *, Near *target, int *found, int maxfound, int *list);
 
+int nearNearestIndex(Near *root, Near *key);
+
 END_C_DECLORATION
 
 #endif /* NEAR_H */
