@@ -520,7 +520,7 @@ GridMove *gridmoveLoadFortranNodeData( GridMove *gm, int nnode,
   int index, node, i;
   for (index=0;index<nnode;index++) {
     node = nodes[index]-1;
-    for(i=0;i<3;i++) data[i+3*index] = gm->xyz[i+3*node];
+    if (0<=node) for(i=0;i<3;i++) data[i+3*index] = gm->xyz[i+3*node];
   }
   return gm;
 }
@@ -531,7 +531,7 @@ GridMove *gridmoveSetFortranNodeData( GridMove *gm, int nnode,
   int index, node, i;
   for (index=0;index<nnode;index++) {
     node = nodes[index]-1;
-    for(i=0;i<3;i++) gm->xyz[i+3*node]= data[i+3*index];
+    if (0<=node) for(i=0;i<3;i++) gm->xyz[i+3*node]= data[i+3*index];
   }
   return gm;
 }
