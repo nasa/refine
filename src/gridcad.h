@@ -36,6 +36,8 @@ Grid *gridSafeProjectNode(Grid *g, int node, double ratio );
 Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId, double ratio );
 Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId, double ratio );
 
+Grid *gridNodeProjectionDisplacement(Grid *g, int node, double *displacement );
+
 Grid *gridProject(Grid *g);
 Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);

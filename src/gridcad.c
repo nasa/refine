@@ -304,6 +304,44 @@ Grid *gridProject(Grid *grid)
 
   return grid;
 }
+
+Grid *gridNodeProjectionDisplacement(Grid *grid, int node, double *displacement )
+{
+  int nodes[3];
+  int edge, edgeId;
+  int face, faceId;
+  AdjIterator it;
+  int vol = 1;
+  double t, uv[2], xyz[3], xyznew[3];
+
+  displacement[0] = 0.0;
+  displacement[1] = 0.0;
+  displacement[2] = 0.0;
+
+  if ( gridGeometryNode( grid, node ) ) return grid;
+
+  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
+
+  if ( gridGeometryEdge( grid, node ) ) {
+    edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
+    gridEdge(grid, edge, nodes, &edgeId );
+    if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
+    if (!CADGeom_NearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
+    gridSubtractVector(xyznew,xyz,displacement)
+    return grid;
+  }
+  if ( gridGeometryFace( grid, node ) ) {
+    face = adjItem(adjFirst(gridFaceAdj(grid), node));
+    gridFace(grid, face, nodes, &faceId );
+    if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
+    if (!CADGeom_NearestOnFace( vol, faceId, xyz, uv, xyznew) ) return NULL;  
+    gridSubtractVector(xyznew,xyz,displacement)
+    return grid;
+  }
+
+  return grid;
+}
+
 Grid *gridRobustProject(Grid *grid)
 {
   int  node;
