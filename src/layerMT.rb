@@ -1578,8 +1578,6 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [6,2,3], layer.triangleNormals(1)
   assert_equal [3,4,5], layer.triangleNormals(2)
 
-layer.writeTecplotFrontGeometry
-
   #      5
   #      |\
   # Y    3-4
