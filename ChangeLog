@@ -1,3 +1,8 @@
+2005-02-14 08:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) dump flagged
+	cell info (local and global ids) to stdout.
+
 2005-02-13 11:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridOptimizeUVForVolume) added face UV area check

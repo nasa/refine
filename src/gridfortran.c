@@ -263,8 +263,19 @@ void gridwritetecplotsurfacezone_( void )
 
   for (cell=0;cell<gridMaxCell(grid);cell++)
     if (grid==gridCell(grid, cell, nodes)) {
-      if ( -0.5 > gridAR(grid,nodes) )
+      if ( -0.5 > gridAR(grid,nodes) ) {
 	gridWriteTecplotCellGeom(grid,nodes,filename);
+	printf("cell cost of %f detected in gridwritetecplotsurfacezone_\n");
+	printf("proc%4d cell l%12d g%12d\n",
+	       gridPartId(grid),cell,gridCellGlobal(grid,cell));
+	printf("proc%4d cell l%12d local  nodes%10d%10d%10d%10d\n",
+	       gridPartId(grid),cell,
+	       nodes[0],nodes[1],nodes[2],nodes[3]);
+	printf("proc%4d cell l%12d global nodes%10d%10d%10d%10d\n",
+	       gridPartId(grid),cell,
+	       gridNodeGlobal(grid,nodes[0]),gridNodeGlobal(grid,nodes[1]),
+	       gridNodeGlobal(grid,nodes[2]),gridNodeGlobal(grid,nodes[3]));
+      }
     }
 
 #ifdef PARALLEL_VERBOSE 
