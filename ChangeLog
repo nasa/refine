@@ -1,3 +1,8 @@
+2004-08-02 12:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) now dumps out
+	negative cells after the surface.
+
 2004-08-01 16:21 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelRelaxNegativeCells) started on a
