@@ -162,6 +162,33 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0.0,1.0,0.0], layer.normalDirection(3)
  end
 
+ def testNormalDirectionVisible
+  assert_not_nil          grid = Grid.new(5,0,3,0)
+  assert_equal 0,         grid.addNode( 0, 0, 0)
+  assert_equal 1,         grid.addNode( 1, 0, 0)
+  assert_equal 2,         grid.addNode(-1, 0, 0)
+  assert_equal 3,         grid.addNode( 0, 1,-0.1)
+  assert_equal 4,         grid.addNode( 0, 1, 0.1)
+  assert_equal grid,      grid.addFace(0,3,1,1)
+  assert_equal grid,      grid.addFace(0,1,4,1)
+  assert_equal grid,      grid.addFace(0,4,2,1)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal 3,         layer.nfront
+  assert_equal layer,     layer.makeNormal
+  assert_equal 5,         layer.nnormal
+  norm = layer.normalDirection(0)
+  assert_in_delta(  0.000, norm[0], 1e-3)
+  assert_in_delta( -0.287, norm[1], 1e-3)
+  assert_in_delta(  0.957, norm[2], 1e-3)
+  assert_equal layer,     layer.visibleNormals
+  norm = layer.normalDirection(0)
+  assert_in_delta(  0.000, norm[0], 1e-3)
+  assert_in_delta( -1.000, norm[1], 1e-4)
+  assert_in_delta(  0.000, norm[2], 1e-2)
+
+ end
+
  def testAdvanceLayerIntoVolume
   assert_not_nil          grid = Grid.new(7,4,1,0)
   assert_equal 0,         grid.addNode(0,0,0)

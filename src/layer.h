@@ -32,6 +32,7 @@ int layerNormalRoot(Layer *, int normal );
 int layerNormalDeg(Layer *, int normal );
 Layer *layerNormalFronts(Layer *, int normal, int maxfront, int *fronts);
 Layer *layerNormalDirection(Layer *, int normal, double *direction);
+Layer *layerVisibleNormals(Layer *);
 Layer *layerConstrainNormal(Layer *, int bc );
 int layerConstrained(Layer *, int normal );
 Layer *layerAdvance(Layer *, double height );

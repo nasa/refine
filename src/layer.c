@@ -264,6 +264,48 @@ Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
   return layer;
 }
 
+Layer *layerVisibleNormals(Layer *layer)
+{
+  int normal, iter, front, i;
+  double *dir, norm[3], mindir[3], dot, mindot, radian, length; 
+  AdjIterator it;
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    for (iter=0;iter<1000;iter++){
+      dir = layer->normal[normal].direction;
+      mindot = 2.0;
+      mindir[0]=dir[0];
+      mindir[1]=dir[1];
+      mindir[2]=dir[2];      
+      for ( it = adjFirst(layer->adj,normal); 
+	    adjValid(it); 
+	    it = adjNext(it) ){
+	front = adjItem(it);
+	layerFrontDirection(layer,front,norm);
+	dot = norm[0]*dir[0] + norm[1]*dir[1] + norm[2]*dir[2];
+	if (dot<mindot) {
+	  mindot = dot;
+	  mindir[0]=norm[0];
+	  mindir[1]=norm[1];
+	  mindir[2]=norm[2];
+	}
+      }
+      radian =0.002;
+      dir[0] += radian*mindir[0];
+      dir[1] += radian*mindir[1];
+      dir[2] += radian*mindir[2];
+      length = sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
+      if (length > 0.0) {
+	for ( i=0;i<3;i++) dir[i] = dir[i]/length;
+      }else{
+	for ( i=0;i<3;i++) dir[i] = 0.0;
+      }
+    }
+  }
+
+  return layer;
+}
+
 Layer *layerConstrainNormal(Layer *layer, int bc )
 {
   int face, nodes[3], id, i, normal;  

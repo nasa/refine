@@ -148,6 +148,12 @@ VALUE layer_normalDirection( VALUE self, VALUE normal )
   return rb_direction;
 }
 
+VALUE layer_visibleNormals( VALUE self, VALUE height )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerVisibleNormals(layer)?self:Qnil );
+}
+
 VALUE layer_constrainNormal( VALUE self, VALUE bc )
 {
   GET_LAYER_FROM_SELF;
@@ -184,6 +190,7 @@ void Init_Layer()
   rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );
   rb_define_method( cLayer, "normalFronts", layer_normalFronts, 1 );
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
+  rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 1 );
