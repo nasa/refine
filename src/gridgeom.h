@@ -18,7 +18,6 @@ BEGIN_C_DECLORATION
 
 Grid *gridParallelGeomLoad( Grid *, char *project );
 Grid *gridParallelGeomSave( Grid *, char *project );
-Grid *gridGeomSize( Grid *, int *nGeomNode, int *nGeomEdge, int *nGeomFace );
 
 END_C_DECLORATION
 

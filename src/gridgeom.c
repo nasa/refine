@@ -122,16 +122,3 @@ Grid *gridParallelGeomSave( Grid *grid, char *project )
   printf("DUMMY: gridParallelGeomSave for project %s\n",project);
   return grid;
 }
-
-Grid *gridGeomSize( Grid *grid, int *nGeomNode, int *nGeomEdge, int *nGeomFace )
-{
-  int vol=1;
-  int nGeomGroups;
-  
-  if( !CADGeom_GetVolume(vol,nGeomNode,nGeomEdge,nGeomFace,&nGeomGroups) ) {
-    printf("ERROR: CADGeom_GetVolume. \n%s\n",ErrMgr_GetErrStr());
-    return NULL;
-  }
-
-  return grid;
-}
