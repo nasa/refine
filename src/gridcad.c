@@ -150,6 +150,19 @@ Grid *gridUpdateFaceParameter(Grid *grid, int node ){
   return grid;
 }
 
+Grid *gridFaceNormalAtUV(Grid *grid, int faceId,
+			 double *uv, double *xyz, double *normal )
+
+{
+  int vol =1;
+
+  if ( !CADGeom_NormalToFace( vol, faceId, uv, xyz, normal) ){
+    printf ( "ERROR: CADGeom_NormalToFace, %d: %s\n",__LINE__,__FILE__ );
+    return NULL;
+  }
+  return grid;
+}
+
 Grid *gridSafeProjectNode(Grid *grid, int node, double ratio )
 {
   int nodes[3];
