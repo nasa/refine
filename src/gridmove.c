@@ -43,6 +43,7 @@ GridMove *gridmoveCreate( Grid *grid )
 
   gm->rowStart = NULL;
   gm->compRow = NULL;
+  gm->a = NULL;
 
   return gm;
 }
@@ -52,8 +53,26 @@ Grid *gridmoveGrid(GridMove *gm)
   return gm->grid;
 }
 
+GridMove *gridmoveFreeRelaxation(GridMove *gm)
+{
+  if (NULL != gm->c2e)      { free(gm->c2e);      gm->c2e      = NULL; }
+  if (NULL != gm->springs)  { free(gm->springs);  gm->springs  = NULL; }
+  if (NULL != gm->xyz)      { free(gm->xyz);      gm->xyz      = NULL; }
+  if (NULL != gm->k)        { free(gm->k);        gm->k        = NULL; }
+  if (NULL != gm->source)   { free(gm->source);   gm->source   = NULL; }
+
+  if (NULL != gm->ksum)     { free(gm->ksum);     gm->ksum     = NULL; }
+  if (NULL != gm->kxyz)     { free(gm->kxyz);     gm->kxyz     = NULL; }
+
+  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
+  if (NULL != gm->compRow)  { free(gm->compRow);  gm->compRow  = NULL; }
+  if (NULL != gm->a)        { free(gm->a);        gm->a        = NULL; }
+  return gm;
+}
+
 void gridmoveFree(GridMove *gm)
 {
+  if (NULL != gm->a) free(gm->a);
   if (NULL != gm->compRow) free(gm->compRow);
   if (NULL != gm->rowStart) free(gm->rowStart);
 
@@ -110,8 +129,7 @@ void gridmovePack(void *voidGridMove,
     gm->specified[packnode] = FALSE;
   }
 
-  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
-  if (NULL != gm->compRow) { free(gm->compRow); gm->compRow = NULL; }
+  gridmoveFreeRelaxation(gm);
 }
 
 void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n)
@@ -145,8 +163,7 @@ void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n)
   }
   free(temp_bool);
 
-  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
-  if (NULL != gm->compRow) { free(gm->compRow); gm->compRow = NULL; }
+  gridmoveFreeRelaxation(gm);
 }
 
 void gridmoveReallocator(void *voidGridMove, int reallocType, 
@@ -161,8 +178,7 @@ void gridmoveReallocator(void *voidGridMove, int reallocType,
     for (i=lastSize;i<newSize;i++) gm->specified[i] = FALSE;
   }
 
-  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
-  if (NULL != gm->compRow) { free(gm->compRow); gm->compRow = NULL; }
+  gridmoveFreeRelaxation(gm);
 }
 
 void gridmoveGridHasBeenFreed(void *voidGridMove )
@@ -576,6 +592,10 @@ GridMove *gridmoveInitializeCompRow(GridMove *gm)
   int node0, node1;
   int spring, nsprings, *springs;
   int fix, lowEntry, lowNode, findLower;
+
+  if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
+  if (NULL != gm->compRow) { free(gm->compRow); gm->compRow = NULL; }
+
   gridmoveSprings(gm, &nsprings, &springs);
   nnode = gridMaxNode(gridmoveGrid(gm));
   gm->rowStart = malloc( (1+nnode) *sizeof(int));
@@ -635,6 +655,8 @@ GridMove *gridmoveInitializeCompRow(GridMove *gm)
   }
 
   free(springs);
+
+  return gm;
 }
 
 int gridmoveRowStart(GridMove *gm, int row)
@@ -657,3 +679,19 @@ int gridmoveRowEntry(GridMove *gm, int entry)
   return gm->compRow[entry];
 }
 
+GridMove *gridmoveLinearElasticityStartUp(GridMove *gm)
+{
+  Grid *grid = gridmoveGrid(gm);
+  int node;
+  
+  gridmoveInitializeCompRow(gm);
+
+  gm->a = malloc(9*gridmoveNNZ(gm)*sizeof(double));
+
+  gm->xyz = malloc(3*gridMaxNode(grid)*sizeof(double));
+ 
+  for(node=0;node<gridMaxNode(grid);node++)
+    gridNodeXYZ(grid,node,&(gm->xyz[3*node]));
+
+  return gm;
+}

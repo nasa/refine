@@ -34,6 +34,7 @@ struct GridMove {
 
   int *rowStart;
   int *compRow;
+  double *a;
 };
 
 GridMove *gridmoveCreate(Grid *);
@@ -82,6 +83,10 @@ GridMove *gridmoveInitializeCompRow(GridMove *);
 int gridmoveRowStart(GridMove *, int row);
 int gridmoveNNZ(GridMove *);
 int gridmoveRowEntry(GridMove *, int entry);
+
+GridMove *gridmoveElasticityRelaxationStartUp(GridMove *);
+
+
 
 END_C_DECLORATION
 
