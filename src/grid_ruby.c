@@ -128,17 +128,21 @@ VALUE grid_pack( VALUE self )
   return self;
 }
 
-VALUE grid_getGem( VALUE self, VALUE n0, VALUE n1 )
+VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
 #define MAXGEM 200
-  int i, ngem;
+  int i, n, ngem;
   int gem[MAXGEM];
-  VALUE rb_gem; // bug, what is return if this is cleaned up?
+  VALUE rb_gem, rb_cell;
   GET_GRID_FROM_SELF;
-  gridGetGem( grid, NUM2INT(n0), NUM2INT(n1), MAXGEM, &ngem, gem );
+  gridGem( grid, NUM2INT(n0), NUM2INT(n1), MAXGEM/4, &ngem, gem );
   rb_gem = rb_ary_new();
-  for ( i=0 ; i < ngem ; i++ ) rb_gem = rb_ary_push( rb_gem, INT2NUM(gem[i]) );
-  return rb_gem;
+  for ( i=0 ; i < ngem ; i++ ) {
+    rb_cell = rb_ary_new2(4);
+    for(n=0;n<4;n++)rb_ary_store(rb_cell,n,INT2NUM(gem[n+4*i]));
+    rb_gem = rb_ary_push( rb_gem, rb_cell );
+  } 
+ return rb_gem;
 }
 
 VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
@@ -176,6 +180,6 @@ void Init_Grid()
   rb_define_method( cGrid, "removeNodeCell", grid_removeNodeCell, 2 );
   rb_define_method( cGrid, "cellExists", grid_cellExists, 2 );
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
-  rb_define_method( cGrid, "getGem", grid_getGem, 2 );
+  rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
 }
