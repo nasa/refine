@@ -105,10 +105,9 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal 2, q.addedCells(1)
   assert_equal [104,101,102,103,200], q.addedCellNodes(0)
   assert_equal [100,101,102,104,201], q.addedCellNodes(1)
-  assert_equal [ 0.0,0.0,0.5, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0 ], 
-   q.addedCellXYZs(0)
-  assert_equal [ 0.0,0.0,0.0, 1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,0.5 ], 
-   q.addedCellXYZs(1)
+  h=0.5
+  assert_equal [ 0,0,h, 1,0,0, 0,1,0, 0,0,1 ], q.addedCellXYZs(0)
+  assert_equal [ 0,0,0, 1,0,0, 0,1,0, 0,0,h ], q.addedCellXYZs(1)
  end
 
 end
