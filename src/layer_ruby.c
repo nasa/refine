@@ -524,6 +524,12 @@ VALUE layer_nSubBlend( VALUE self, VALUE blend )
   return INT2NUM(layerNSubBlend(layer,NUM2INT(blend)));
 }
 
+VALUE layer_preventBlendNormalDirectionFromPointingAtNeighbors( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerPreventBlendNormalDirectionFromPointingAtNeighbors(layer)?self:Qnil );
+}
+
 VALUE layer_orderedVertexBlends( VALUE self, VALUE normal )
 {
   int i, *vertexBlends, nVertexBlends;
@@ -668,6 +674,7 @@ void Init_Layer()
 
   rb_define_method( cLayer, "subBlend", layer_subBlend, 1 );
   rb_define_method( cLayer, "nSubBlend", layer_nSubBlend, 1 );
+  rb_define_method( cLayer, "preventBlendNormalDirectionFromPointingAtNeighbors", layer_preventBlendNormalDirectionFromPointingAtNeighbors, 0 );
 
   rb_define_method( cLayer, "orderedVertexBlends", layer_orderedVertexBlends, 1 );
   rb_define_method( cLayer, "orderedVertexNormals", layer_orderedVertexNormals, 1 );

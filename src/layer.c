@@ -2878,7 +2878,6 @@ Layer *layerBlend(Layer *layer, double angleLimit )
   layerInitializeTriangleNormalDirection(layer);
   layerFeasibleNormals(layer, -1.0, -1.0 );
   layerVisibleNormals(layer, 0.3, 1.0e-8 );
-  layerPreventBlendNormalDirectionFromPointingAtNeighbors(layer);
   return layer;
 }
 
@@ -3361,6 +3360,38 @@ int layerNSubBlend(Layer *layer, int blend )
 
 Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
 {
+  Adj *adj;
+  AdjIterator it;
+  int blend;
+  int n, normal, normals[4];
+  int triangle[3];
+  int o, other;
+  
+
+  adj = adjCreate( layerNNormal(layer), 4*layerNBlend(layer), 100);
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    layerBlendNormals(layer,blend,normals);
+    for(normal=0;normal<4;normal++) adjRegister(adj,normals[normal],blend);
+  }
+
+  for( normal = 0; normal < layerNNormal(layer); normal++ ) {
+    if (0 != adjDegree(adj, normal)) {
+      for ( it = adjFirst(layer->triangleAdj,normal); 
+	    adjValid(it); 
+	    it=adjNext(it) ){
+	layerTriangleNormals(layer,adjItem(it),triangle);
+	for (o=0;o<3;o++) {
+	  other = triangle[o];
+	  if (0 == adjDegree(adj, other)) {
+	    printf("\nnormal %d other %d\n",normal,other);
+	  }
+	}
+      }
+    }
+  }
+
+  adjFree(adj);
+
   return layer;
 }
 
