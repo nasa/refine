@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "gridfiller.h"
-#include <CADGeom/CADGeom.h>
+#include "CADGeom/CADGeom.h"
 
 Grid *gridLoadPart( char *project, int maxnode )
 {
