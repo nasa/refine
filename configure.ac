@@ -4,6 +4,10 @@ AC_PREREQ(2.53)
 AC_INIT([src/grid.c])
 AM_INIT_AUTOMAKE([refine],[1.2.1_pre1])
 
+AC_ARG_ENABLE(exec,
+	[  --enable-exec[=ARG]       build stand alone executables [ARG=yes]],
+	[enable_exec=$enableval],    [enable_exec="yes"])
+
 AC_ARG_WITH(SDK,
 	[  --with-SDK[=ARG]          use GEOLAB SDK package [ARG=GEO_SDK]],
 	[with_SDK=$withval],         [with_SDK=$GEO_SDK])
@@ -43,6 +47,15 @@ else
 fi
 AC_SUBST([ARCHlibrary])
 AC_SUBST([dynamicFlag])
+
+dnl Enable stand alone executable build
+
+if test "$enable_exec" != 'no'
+then
+  AM_CONDITIONAL(BUILD_EXECUTABLES,true)
+else
+  AM_CONDITIONAL(BUILD_EXECUTABLES,false)
+fi
 
 dnl Check for SDK
 

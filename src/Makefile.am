@@ -42,6 +42,8 @@ libFAKEGeomTrap_a_SOURCES = FAKEGeom.h FAKEGeomTrap.c
 libFAKEGeomDPWwbi_a_CFLAGS = @SDKheader@
 libFAKEGeomDPWwbi_a_SOURCES = FAKEGeom.h FAKEGeomDPWwbi.c
 
+if BUILD_EXECUTABLES
+
 if BUILD_SDK_DEPENDENTS
 
 lib_LIBRARIES += libMesherX.a
@@ -203,3 +205,6 @@ endif # BUILD_OPENCASCADE_KERNEL
 endif # BUILD_NATIVE_KERNEL
 
 endif # BUILD_SDK_DEPENDENTS
+
+endif # BUILD_EXECUTABLES
+
