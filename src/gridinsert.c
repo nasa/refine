@@ -21,9 +21,9 @@
 Grid *gridThrash(Grid *grid)
 {
   int ncell, nodelimit, cellId, nodes[4];
-  ncell = grid->ncell;
-  nodelimit = grid->nnode*3/2;
-  for (cellId=0;cellId<ncell && grid->nnode<nodelimit;cellId++)
+  ncell = gridNCell(grid);
+  nodelimit = gridNNode(grid)*3/2;
+  for (cellId=0;cellId<ncell && gridNNode(grid)<nodelimit;cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) )
       gridSplitEdge( grid, nodes[0], nodes[1] );
   
@@ -36,11 +36,11 @@ Grid *gridRemoveAllNodes(Grid *grid )
   int n0, i, cell, nodes[4];
   bool nodeExists;
   double ratio;
-
-  for ( n0=0; n0<grid->maxnode; n0++ ) { 
+ 
+  for ( n0=0; n0<gridMaxNode(grid); n0++ ) { 
     if ( gridValidNode(grid, n0) && !gridNodeFrozen(grid, n0) ) {
       nodeExists = TRUE;
-      for ( it = adjFirst(grid->cellAdj,n0); 
+      for ( it = adjFirst(gridCellAdj(grid),n0); 
 	    nodeExists && adjValid(it); 
 	    it = adjNext(it) ){
 	cell = adjItem(it);
@@ -65,19 +65,19 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
   int report, nnodeAdd, nnodeRemove;
   double ratio;
   
-  maxnode = grid->nnode;
+  maxnode = gridMaxNode(grid);
   adaptnode =0;
   nnodeAdd = 0;
   nnodeRemove = 0;
 
-  report = 10; if (grid->nnode > 100) report = grid->nnode/10;
+  report = 10; if (gridNNode(grid) > 100) report = gridNNode(grid)/10;
 
   for ( n0=0; 
-	adaptnode<maxnode && n0<grid->maxnode; 
+	adaptnode<maxnode && n0<gridMaxNode(grid); 
 	n0++ ) { 
     if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
       printf("adapt node %8d nnode %8d added %8d removed %8d\n",
-	     adaptnode,grid->nnode,nnodeAdd,nnodeRemove);
+	     adaptnode,gridNNode(grid),nnodeAdd,nnodeRemove);
     if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
       adaptnode++;
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
