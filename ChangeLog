@@ -1,3 +1,14 @@
+2005-01-27 14:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridEvaluateOnEdge, gridEvaluateOnFace) added
+	evaluation methods.
+	* src/gridshape.c (gridCurvedEdgeMidpoint) replaced projection
+	with evaluation to spped up exectsion and to improve the
+	repeatablity of the vality check.
+	* src/gridinsert.c (gridSplitEdge) implemented local edge
+	midpoint routine because gridCurvedEdgeMidpoint would no pass
+	old unit tests.
+	
 2005-01-27 11:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c to speed up the adaptation cycles, I have

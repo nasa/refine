@@ -167,7 +167,7 @@ Grid *gridUpdateFaceParameter(Grid *grid, int node ){
   for ( it = adjFirst(gridFaceAdj(grid),node); adjValid(it); it = adjNext(it) ){
     face = adjItem(it);
     if ( grid != gridFace(grid, face, nodes, &faceId) )  return NULL;
-    if ( grid != gridSafeProjectNodeToFace( grid, node, faceId, 1.0 ) ) 
+    if ( grid != gridSetUVofFace( grid, node, faceId ) ) 
       return NULL;
   }
 
@@ -194,6 +194,31 @@ Grid *gridProjectToFace(Grid *grid, int faceId,
 
   if (!nearestOnFace( vol, faceId, xyz, uv, newxyz) ) {
     printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
+    return NULL;  
+  }
+
+  return grid;
+}
+
+Grid *gridEvaluateOnEdge(Grid *grid, int edgeId, double t, double *xyz )
+{
+  int vol = 1;
+
+  if (!CADGeom_PointOnEdge( vol, edgeId, t, xyz, 0, NULL, NULL) ) {
+    printf("%s: %d: CADGeom_PointOnEdge( failed.\n",__FILE__,__LINE__);
+    return NULL;  
+  }
+
+  return grid;
+}
+
+Grid *gridEvaluateOnFace(Grid *grid, int faceId, double *uv, double *xyz )
+{
+  int vol = 1;
+
+  if (!CADGeom_PointOnFace( vol, faceId, uv, xyz, 
+			     0, NULL, NULL, NULL, NULL, NULL) ) {
+    printf("%s: %d: CADGeom_PointOnFace failed.\n",__FILE__,__LINE__);
     return NULL;  
   }
 

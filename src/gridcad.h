@@ -30,6 +30,8 @@ Grid *gridProjectToEdge(Grid *g, int edgeId,
 			double *xyz, double *t, double *newxyz );
 Grid *gridProjectToFace(Grid *g, int faceId, 
 			double *xyz, double *uv, double *newxyz );
+Grid *gridEvaluateOnEdge(Grid *g, int edgeId, double t, double *xyz );
+Grid *gridEvaluateOnFace(Grid *g, int faceId, double *uv, double *xyz );
 Grid *gridFaceNormalAtUV(Grid *g, int faceId, 
 			 double *uv, double *xyz, double *normal );
 Grid *gridFaceNormalAtXYZ(Grid *g, int faceId, double *xyz, double *normal );

@@ -13,6 +13,7 @@
 #include <math.h>
 #include <values.h>
 #include "gridshape.h"
+#include "gridmath.h"
 #include "gridmetric.h"
 #include "gridswap.h"
 #include "gridinsert.h"
@@ -165,10 +166,12 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 
 int gridSplitEdge(Grid *grid, int n0, int n1)
 {
-  double newXYZ[3];
+  double xyz0[3], xyz1[3], newXYZ[3];
 
-  if (grid != gridCurvedEdgeMidpoint(grid, n0, n1, newXYZ)) return EMPTY;
-
+  if (grid != gridNodeXYZ(grid, n0, xyz0) ) return EMPTY;
+  if (grid != gridNodeXYZ(grid, n1, xyz1) ) return EMPTY;
+  gridAverageVector(xyz0, xyz1, newXYZ);
+  
   return gridSplitEdgeAt(grid, NULL, n0, n1,
 			 newXYZ[0], newXYZ[1], newXYZ[2] );
 

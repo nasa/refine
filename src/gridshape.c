@@ -22,8 +22,8 @@
 Grid *gridCurvedEdgeMidpoint(Grid *grid,int node0, int node1, double *e)
 {
   double n0[3], n1[3];
-  double origxyz[3];
-  double tuv0[2], tuv1[2], tuv[2];
+  double t0, t1, t;
+  double uv0[2], uv1[2], uv[2];
   int parent;
 
   e[0]=e[1]=e[2]=DBL_MAX;
@@ -35,19 +35,17 @@ Grid *gridCurvedEdgeMidpoint(Grid *grid,int node0, int node1, double *e)
   parent = gridParentGeometry(grid,node0,node1);
   if (0==parent) return grid;
 
-  gridVectorCopy(origxyz,e);
-  tuv[0] = tuv[1] = DBL_MAX;
   if (parent<0) {
-    gridNodeT(grid,node0,-parent, tuv0);
-    gridNodeT(grid,node1,-parent, tuv1);
-    tuv[0] = 0.5 * ( tuv0[0] + tuv1[0] );
-    gridProjectToEdge(grid, -parent, origxyz, tuv, e);
+    gridNodeT(grid,node0,-parent, &t0);
+    gridNodeT(grid,node1,-parent, &t1);
+    t = 0.5 * ( t0 + t1 );
+    gridEvaluateOnEdge(grid, -parent, t, e);
   } else {
-    gridNodeUV(grid,node0,parent, tuv0);
-    gridNodeUV(grid,node1,parent, tuv1);
-    tuv[0] = 0.5 * ( tuv0[0] + tuv1[0] );
-    tuv[1] = 0.5 * ( tuv0[1] + tuv1[1] );
-    gridProjectToFace(grid, parent, origxyz, tuv, e);    
+    gridNodeUV(grid,node0,parent, uv0);
+    gridNodeUV(grid,node1,parent, uv1);
+    uv[0] = 0.5 * ( uv0[0] + uv1[0] );
+    uv[1] = 0.5 * ( uv0[1] + uv1[1] );
+    gridEvaluateOnFace(grid, parent, uv, e);    
   }
 
   return grid;
