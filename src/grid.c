@@ -52,6 +52,7 @@ Grid* gridCreate(int nnode, int maxcell, int nlist)
   grid->celllist[grid->nlist-1] =0;
   grid->celllist[0] =0;
   grid->firstblankcell = 1;
+  if (grid->nlist <= 1) grid->firstblankcell = 0;
   grid->currentcell=grid->nlist-1;
  
   return  grid;
