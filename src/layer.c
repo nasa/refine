@@ -639,7 +639,35 @@ Layer *layerSmoothNormalDirection(Layer *layer)
 
   layerProjectNormalsToConstraints(layer);
 
-  for (iter=0;iter<10;iter++){
+  for (iter=0;iter<1;iter++){
+    for (normal=0;normal<layerNNormal(layer);normal++){
+      if ( 0 < layerConstrained(layer,normal) ){
+	total = 0;
+	avgdir[0]=0.0;
+	avgdir[1]=0.0;
+	avgdir[2]=0.0;
+	for ( it = adjFirst(layer->adj,normal); 
+	      adjValid(it); 
+	      it = adjNext(it) ){
+	  triangle = adjItem(it);
+	  layerTriangleNormals(layer,triangle,normals);
+	  for (i=0;i<3;i++){
+	    if (normal != normals[i] && 0 != layerConstrained(layer,normal) ){
+	      layerNormalDirection(layer,normals[i],norm);
+	      avgdir[0] += norm[0];
+	      avgdir[1] += norm[1];
+	      avgdir[2] += norm[2];
+	      total++;
+	    }
+	  }
+	}
+	denom = 1.0 / (double)total;
+	layer->normal[normal].direction[0] = avgdir[0] * denom;
+	layer->normal[normal].direction[1] = avgdir[1] * denom;
+	layer->normal[normal].direction[2] = avgdir[2] * denom;
+      }
+    }
+    layerVisibleNormals(layer,0.5,1.0e-5);
     for (normal=0;normal<layerNNormal(layer);normal++){
       if ( 0 == layerConstrained(layer,normal) ){
 	total = 0;
@@ -667,6 +695,7 @@ Layer *layerSmoothNormalDirection(Layer *layer)
 	layer->normal[normal].direction[2] = avgdir[2] * denom;
       }
     }
+    layerVisibleNormals(layer,0.5,1.0e-5);
   }
 
   return layer;
