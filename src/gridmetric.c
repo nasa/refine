@@ -16,6 +16,9 @@
 #include <limits.h>
 #include <values.h>
 #include "gridmath.h"
+#ifdef SURFACE_VALIDITY
+#include "gridshape.h"
+#endif
 #include "gridmetric.h"
 
 Grid *gridSetMapWithSpacingVectors(Grid *grid, int node,
@@ -526,6 +529,15 @@ double gridAR(Grid *grid, int *nodes )
        !gridValidNode(grid, nodes[2]) ||
        !gridValidNode(grid, nodes[3]) ) return -1.0;
 
+#ifdef SURFACE_VALIDITY
+  if ( gridGeometryFace(grid, nodes[0]) || 
+       gridGeometryFace(grid, nodes[1]) ||
+       gridGeometryFace(grid, nodes[2]) ||
+       gridGeometryFace(grid, nodes[3]) ) {
+    if (gridMinCellJacDet2(grid,nodes)  <= 6.0e-14) return -1.0;
+  }
+#endif
+  
   p1 = gridNodeXYZPointer(grid,nodes[0]);
   p2 = gridNodeXYZPointer(grid,nodes[1]);
   p3 = gridNodeXYZPointer(grid,nodes[2]);

@@ -47,7 +47,7 @@ if BUILD_SDK_DEPENDENTS
 
 lib_LIBRARIES += libMesherX.a
 
-libMesherX_a_CFLAGS = @SDKheader@
+libMesherX_a_CFLAGS = @SDKheader@ -DSURFACE_VALIDITY
 libMesherX_a_SOURCES = \
 	adj.h adj.c \
 	near.h near.c \

@@ -1,3 +1,11 @@
+2004-11-01 23:09 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridAR) When -DSURFACE_VALIDITY is defined,
+	will return -1.0 if a jacobian <= 6.0e-16 is found.
+	* src/Makefile.am define -DSURFACE_VALIDITY when compiling 
+	libMesherX. This will only be used by the stand alone codes.
+	the parallel librefine.a used by FUN3D is not affected.
+
 2004-11-01 16:47 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridshape.c (gridPlotMinDeterminateAtSurface) Call
