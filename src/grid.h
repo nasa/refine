@@ -117,6 +117,8 @@ struct Grid {
 
   FILE *tecplotFile;
 
+  int costFunction;
+
   void (*packFunc)(void *packData, 
 		   int nnode, int maxnode, int *nodeo2n,
 		   int ncell, int maxcell, int *cello2n,
@@ -420,6 +422,13 @@ Grid *gridSetMap(Grid *g, int node,
 		 double m11, double m12, double m13,
 		             double m22, double m23,
 		                         double m33);
+
+
+#define gridCostFunction(grid) (grid->costFunction)
+Grid *gridSetCostFunction(Grid *g, int costFunction);
+#define gridCOST_FCN_MEAN_RATIO   (0)
+#define gridCOST_FCN_ASPECT_RATIO (1)
+#define gridCOST_FCN_EDGE_LENGTH  (2)
 
 int gridStoredARDegree( Grid *g );
 Grid *gridClearStoredAR( Grid *g );

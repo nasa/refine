@@ -18,8 +18,6 @@
 #include "gridmath.h"
 #include "gridmetric.h"
 
-#define GRIDUSEMEANRATIO
-
 Grid *gridSetMapWithSpacingVectors(Grid *grid, int node,
 				   double *v1, double *v2, double *v3,
                                    double s1, double s2, double s3)
@@ -520,9 +518,8 @@ double gridAR(Grid *grid, int *nodes )
   double edge1[3], edge2[3], edge3[3];
   double norm[3];
 
-#ifdef EDGE_BASED_OPERATORS
-  return gridEdgeRatioCost(grid, nodes);
-#endif  
+  if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
+    return gridEdgeRatioCost(grid, nodes);
 
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
@@ -568,11 +565,17 @@ double gridAR(Grid *grid, int *nodes )
   xyz4[1] = j[3] * p4[0] + j[4] * p4[1] + j[5] * p4[2]; 
   xyz4[2] = j[6] * p4[0] + j[7] * p4[1] + j[8] * p4[2]; 
 
-#ifdef GRIDUSEMEANRATIO
-  aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 );
-#else
-  aspect = gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 );
-#endif
+  switch ( gridCostFunction(grid) ) {
+  case gridCOST_FCN_MEAN_RATIO:
+    aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 ); break;
+  case gridCOST_FCN_ASPECT_RATIO:
+    aspect = gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 ); break;
+  default:
+    printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
+	   gridCostFunction(grid));
+    return -1.0;
+  }
+
 
   if ( FALSE ) {
     printf("nodes %d %d %d %d aspect %f\n",nodes[0],nodes[1],nodes[2],nodes[3],aspect);
@@ -790,9 +793,9 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   double *m0, *m1, *m2, *m3; 
   double m[6], j[9];
 
-#ifdef EDGE_BASED_OPERATORS
-  return gridCellRatioErrorDerivative(grid, nodes, ar, dARdx );
-#endif
+
+  if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
+    return gridCellRatioErrorDerivative(grid, nodes, ar, dARdx );
 
   if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return NULL;
   if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return NULL;
@@ -815,11 +818,16 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   gridMapXYZWithJ(j, &xyz3[0], &xyz3[1], &xyz3[2]);
   gridMapXYZWithJ(j, &xyz4[0], &xyz4[1], &xyz4[2]);
 
-#ifdef GRIDUSEMEANRATIO
-  gridCellMeanRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx);
-#else
-  gridCellAspectRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx);
-#endif
+  switch ( gridCostFunction(grid) ) {
+  case gridCOST_FCN_MEAN_RATIO:
+    gridCellMeanRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx); break;
+  case gridCOST_FCN_ASPECT_RATIO:
+    gridCellAspectRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx); break;
+  default:
+    printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
+	   gridCostFunction(grid));
+    return NULL;
+  }
 
   return grid;
 }

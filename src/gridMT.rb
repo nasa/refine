@@ -1509,8 +1509,15 @@ class TestGrid < Test::Unit::TestCase
   assert_equal    defaultMap, @grid.map(0) 
  end
 
- # make register unique
+ def testCostFunctionSetting
+  assert_equal 0, @grid.costFunction
+  assert_equal @grid, @grid.setCostFunction(1)
+  assert_equal 1, @grid.costFunction
+  assert_nil @grid.setCostFunction(-1)
+  assert_nil @grid.setCostFunction(24634)
+  assert_equal 1, @grid.costFunction
+ end
 
- # allocating a new chunk of nodes, faces, cells
+ # make register unique
 
 end

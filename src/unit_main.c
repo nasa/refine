@@ -254,6 +254,7 @@ int main( int argc, char *argv[] )
   STATUS;
 
   if (EdgeBasedOperators) {
+    gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
     sprintf(filename,"%s_surface.t",project);
     gridWriteTecplotSurfaceZone(grid,filename); gridCloseTecplotFile(grid);
     printf("edge swapping grid...\n");gridSwap(grid,0.9);

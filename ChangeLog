@@ -4,7 +4,17 @@ In process stuff(not working yet):
 	* src/gridmetric.c (gridCollapseCost) to compute current cost
 	excluding the target edge and the cost after the edge is 
 	collapsed to node0 and node1.
-	
+
+2004-10-15 09:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCostFunction,gridSetCostFunction) added
+	methods to allow the cost function metric to change on the fly.
+	* src/gridmetric.c (gridAR,gridCellARDerivative) correct cost 
+	indicated by gridCostFunction.
+	* src/gridswap.c (gridSwapEdge) does not abort swap if mean ratio
+	goes down when gridCostFunction is gridCOST_FCN_EDGE_LENGTH
+	* src/Makefile.am unitNative now uses the standard refineLib
+	EDGE_BASED_OPERATORS not needed.
 
 2004-10-15 10:48 Mike Park  <mike.park@nasa.gov>
 
@@ -25,7 +35,7 @@ In process stuff(not working yet):
 
 2004-10-15 00:33 Mike Park  <mike.park@nasa.gov>
 
-	* src/Makefile.am unitNative noew builds it own copy of the 
+	* src/Makefile.am unitNative builds it own copy of the 
 	objects that it can have its own #defines. Added a 
 	EDGE_BASED_OPERATORS #define that affects gridmetric.c and 
 	gridswap.c in the following ways:

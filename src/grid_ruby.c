@@ -1075,6 +1075,18 @@ VALUE grid_map( VALUE self, VALUE node )
   return rb_map;
 }
 
+VALUE grid_costFunction( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridCostFunction(grid) );
+}
+
+VALUE grid_setCostFunction( VALUE self, VALUE costFunction )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridSetCostFunction(grid,NUM2INT(costFunction))?self:Qnil );
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -1231,4 +1243,7 @@ void Init_Grid()
 
   rb_define_method( cGrid, "setMap", grid_setMap, 7 );
   rb_define_method( cGrid, "map", grid_map, 1 );
+
+  rb_define_method( cGrid, "costFunction", grid_costFunction, 0 );
+  rb_define_method( cGrid, "setCostFunction", grid_setCostFunction, 1 );
 }

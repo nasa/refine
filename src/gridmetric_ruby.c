@@ -438,7 +438,6 @@ VALUE grid_collapseCost( VALUE self, VALUE node0, VALUE node1 )
 {
   double currentCost, node0Cost, node1Cost;
   VALUE rb_cost;
-  Grid *rGrid;
   GET_GRID_FROM_SELF;
   if ( grid == gridCollapseCost( grid, NUM2INT(node0), NUM2INT(node1),
 				 &currentCost, &node0Cost, &node1Cost ) ) {

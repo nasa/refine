@@ -578,11 +578,7 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
     if ( !CADGeom_PointOnEdge( vol, edgeId,   
 			       t, xyzProj, 1, dt, NULL) )
       printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
-#ifdef EDGE_BASED_OPERATORS
-    if (TRUE) {
-#else
-    if (ar<mr) {
-#endif
+    if (ar<mr || gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) ) {
       dARdt = dARdx[0]*dt[0] + dARdx[1]*dt[1] + dARdx[2]*dt[2];
     }else{
       dARdt = dMRdx[0]*dt[0] + dMRdx[1]*dt[1] + dMRdx[2]*dt[2];
@@ -600,11 +596,7 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 				 uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
 	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
       
-#ifdef EDGE_BASED_OPERATORS
-    if (TRUE) {
-#else
-    if (ar<mr) {
-#endif
+    if (ar<mr || gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) ) {
 	dARdu[0] = dARdx[0]*du[0] + dARdx[1]*du[1] + dARdx[2]*du[2] ; 
 	dARdu[1] = dARdx[0]*dv[0] + dARdx[1]*dv[1] + dARdx[2]*dv[2] ; 
       }else{

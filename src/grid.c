@@ -209,6 +209,8 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->degAR = 0;
 
+  grid->costFunction = gridCOST_FCN_MEAN_RATIO;
+
   grid->tecplotFile = NULL;
 
   grid->packFunc = NULL;
@@ -3779,6 +3781,14 @@ Grid *gridSetMap(Grid *grid, int node,
   grid->map[4+6*node] = m23;
   grid->map[5+6*node] = m33;
 
+  return grid;
+}
+
+Grid *gridSetCostFunction(Grid *grid, int costFunction)
+{
+  if ( costFunction < gridCOST_FCN_MEAN_RATIO  || 
+       costFunction > gridCOST_FCN_EDGE_LENGTH ) return NULL;
+  grid->costFunction = costFunction;
   return grid;
 }
 

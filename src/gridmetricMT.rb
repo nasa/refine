@@ -628,7 +628,7 @@ class TestGridMetric < Test::Unit::TestCase
 
  def testCostAfterCollapse
   grid = rightTet2
-
+  grid.setCostFunction(2)
   tol = 1.0e-10
 
   ratio = Math::sqrt(2)
