@@ -21,10 +21,19 @@ int gridfree_( );
 int gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
 			 int *nface, int *dim1, int *dim2, int *f2n );
 int gridsetmap_( int *nnode, double* map );
+int gridsetnodelocal2global_( int *partId, int *nnodeg, 
+			      int *nnode, int *nnode0, int *local2global );
+int gridsetcelllocal2global_( int *ncell, int *local2global );
 int gridswap_( );
 int gridsmoothvolume_( );
 int gridadaptwithoutcad_( double *minLength, double *maxLength );
 int gridwritetecplotsurfacezone_( );
+
+int gridparalleladaptwithoutcad_( int *processor, 
+				  double *minLength, double *maxLength );
+int queuedumpsize_( int *nInt, int *nDouble );
+int queuedump_( int *nInt, int *nDouble, int *ints, double *doubles );
+int gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles );
 
 END_C_DECLORATION
 

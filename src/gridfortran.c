@@ -16,8 +16,11 @@
 #include "gridswap.h"
 #include "gridcad.h"
 #include "gridinsert.h"
+#include "queue.h"
+#include "gridmpi.h"
 
 static Grid *grid;
+static Queue *queue;
 
 int gridcreate_( int *nnode, double *x, double *y, double *z ,
 		 int *ncell, int *maxcell, int *c2n )
@@ -26,6 +29,7 @@ int gridcreate_( int *nnode, double *x, double *y, double *z ,
   int nodes[4];
   double xyz[3];
   grid = gridCreate( *nnode, *ncell, 5000, 0);
+  queue = queueCreate( );
   for ( node=0; node<*nnode; node++) gridAddNode(grid,x[node],y[node],z[node]);
   printf("populated grid object with %d nodes\n",gridNNode(grid));
   for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
@@ -39,6 +43,7 @@ int gridcreate_( int *nnode, double *x, double *y, double *z ,
 
 int gridfree_( )
 {
+  queueFree(queue);
   gridFree(grid);
 }
 
@@ -72,6 +77,30 @@ int gridsetmap_( int *nnode, double* map )
   printf(" min AR %17.15f\n",gridMinAR(grid));
 }
 
+int gridsetnodelocal2global_( int *partId, int *nnodeg, 
+			      int *nnode, int *nnode0, int *local2global )
+{
+  int node;
+  gridSetPartId(grid, *partId );
+  gridSetGlobalNNode(grid, *nnodeg );
+  for ( node=0; node<*nnode; node++){ 
+    gridSetNodeGlobal(grid, node, local2global[node]);
+    if ( node < *nnode0 ) {
+      gridSetNodePart(grid, node, *partId );
+    }else{
+      gridSetNodePart(grid, node, EMPTY );
+    }
+  }
+}
+
+int gridsetcelllocal2global_( int *ncell, int *local2global )
+{
+  int cell;
+  for ( cell=0; cell<*ncell; cell++){ 
+    gridSetCellGlobal(grid, cell, local2global[cell]);
+  }
+}
+
 int gridswap_( )
 {
   gridSwap(grid);
@@ -94,3 +123,32 @@ int gridwritetecplotsurfacezone_( )
 {
   gridWriteTecplotSurfaceZone(grid);
 }
+
+int gridparalleladaptwithoutcad_( int *processor, 
+				  double *minLength, double *maxLength )
+{
+  if (*processor == -1) {
+    gridParallelAdaptWithOutCAD(grid,NULL,*minLength, *maxLength);
+  } else {
+    gridParallelAdaptWithOutCAD(grid,queue,*minLength, *maxLength);
+  }
+    
+  printf(" %6d post adapt min AR %17.15f\n",gridPartId(grid),gridMinAR(grid));
+}
+
+int queuedumpsize_( int *nInt, int *nDouble )
+{
+  queueDumpSize(queue, nInt, nDouble);
+}
+
+int queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
+{
+  queueDump(queue, ints, doubles);
+}
+
+int gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
+{
+  queueLoad(queue, ints, doubles);
+  gridApplyQueue(grid,queue);
+}
+
