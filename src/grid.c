@@ -1279,8 +1279,29 @@ int gridAddFaceUV(Grid *grid,
 		  int n1, double u1, double v1,
 		  int n2, double u2, double v2, int faceId )
 {
-  int face;
-  if ( grid->blankf2n == EMPTY ) return EMPTY;
+  int face, i, origSize, chunkSize;
+  if ( grid->blankf2n == EMPTY ) {
+    chunkSize = 5000;
+    origSize = grid->maxface;
+    grid->maxface += chunkSize;
+    grid->f2n    = realloc(grid->f2n,    3 * grid->maxface * sizeof(int));
+    grid->faceU  = realloc(grid->faceU,  3 * grid->maxface * sizeof(double));
+    grid->faceV  = realloc(grid->faceV,  3 * grid->maxface * sizeof(double));
+    grid->faceId = realloc(grid->faceId, 1 * grid->maxface * sizeof(int));
+    for (i=origSize;i < grid->maxface; i++ ) {
+      grid->f2n[0+3*i] = EMPTY; 
+      grid->f2n[1+3*i] = i+1; 
+      grid->faceId[i] = EMPTY; 
+      grid->faceU[0+3*i] = DBL_MAX;
+      grid->faceU[1+3*i] = DBL_MAX;
+      grid->faceU[2+3*i] = DBL_MAX;
+      grid->faceV[0+3*i] = DBL_MAX;
+      grid->faceV[1+3*i] = DBL_MAX;
+      grid->faceV[2+3*i] = DBL_MAX;
+    }
+    grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
+    grid->blankf2n = origSize;
+  }
   face = grid->blankf2n;
   grid->blankf2n = grid->f2n[1+3*face];
   grid->nface++;
@@ -2085,6 +2106,11 @@ int gridAddNode(Grid *grid, double x, double y, double z )
     adjRealloc(grid->cellAdj,grid->maxnode);
     adjRealloc(grid->faceAdj,grid->maxnode);
     adjRealloc(grid->edgeAdj,grid->maxnode);
+
+    if (grid->prismDeg != NULL ) {
+      grid->prismDeg = realloc(grid->prismDeg,grid->maxnode * sizeof(int));
+      for (i=origSize;i < grid->maxnode; i++ ) grid->prismDeg[i] = 0;
+    }
   }
 
   node = grid->blanknode;
