@@ -1841,6 +1841,7 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
   double xyz[3];
   int nterminated;
   int tet[4];
+  int subBlend;
   bool negVolume = FALSE;
 
   if (layerNNormal(layer) == 0 ) return NULL;
@@ -2029,69 +2030,70 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
     }
 
     for (blend=0;blend<layerNBlend(layer);blend++){
-      layerBlendNormals(layer, blend, blendnormals );
+      for(subBlend=0; subBlend< layerNSubBlend(layer,blend); subBlend++){
+	layerSubBlendNormals(layer, blend, subBlend, blendnormals );
       
-      triangle0 = EMPTY;
-      triangle1 = EMPTY;
-      if (blendnormals[0] != blendnormals[1]) 
-	triangle0 = layerForceTriangle(layer,blendnormals[0],
-				       blendnormals[1],blendnormals[2]);
-      if (blendnormals[2] != blendnormals[3]) 
-	triangle1 = layerForceTriangle(layer,blendnormals[1],
-				       blendnormals[3],blendnormals[2]);
+	triangle0 = EMPTY;
+	triangle1 = EMPTY;
+	if (blendnormals[0] != blendnormals[1]) 
+	  triangle0 = layerForceTriangle(layer,blendnormals[0],
+					 blendnormals[1],blendnormals[2]);
+	if (blendnormals[2] != blendnormals[3]) 
+	  triangle1 = layerForceTriangle(layer,blendnormals[1],
+					 blendnormals[3],blendnormals[2]);
 
-      if ( EMPTY != triangle0) {
-	faceId = layerConstrained(layer,blendnormals[0]);
-	if (faceId>0){
-	  n[0] = layerNormalRoot(layer,blendnormals[0]);
-	  n[1] = layer->normal[blendnormals[0]].tip;
-	  n[2] = layer->normal[blendnormals[1]].tip;
-	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
-	  layer->triangle[triangle0].constrainedSide[0]=faceId;
-	  layer->triangle[triangle0].parentGeomEdge[0] =
-	    layer->blend[blend].edgeId[0];
+	if ( EMPTY != triangle0) {
+	  faceId = layerConstrained(layer,blendnormals[0]);
+	  if (faceId>0){
+	    n[0] = layerNormalRoot(layer,blendnormals[0]);
+	    n[1] = layer->normal[blendnormals[0]].tip;
+	    n[2] = layer->normal[blendnormals[1]].tip;
+	    layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	    layer->triangle[triangle0].constrainedSide[0]=faceId;
+	    layer->triangle[triangle0].parentGeomEdge[0] =
+	      layer->blend[blend].edgeId[0];
+	  }
+	}
+	if ( EMPTY != triangle1) {
+	  faceId = layerConstrained(layer,blendnormals[2]);
+	  if (faceId>0){
+	    n[0] = layerNormalRoot(layer,blendnormals[2]);
+	    n[1] = layer->normal[blendnormals[3]].tip;
+	    n[2] = layer->normal[blendnormals[2]].tip;
+	    layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
+	    layer->triangle[triangle1].constrainedSide[1]=faceId;
+	    layer->triangle[triangle1].parentGeomEdge[1] =
+	      layer->blend[blend].edgeId[1];
+	  }
+	}
+
+	if ( layerNormalRoot(layer,blendnormals[0]) > 
+	     layerNormalRoot(layer,blendnormals[2]) ) {
+	  normal = blendnormals[0];
+	  blendnormals[0] = blendnormals[3];
+	  blendnormals[3] = normal;
+	  normal = blendnormals[1];
+	  blendnormals[1] = blendnormals[2];
+	  blendnormals[2] = normal;
+	}
+
+	n[0] = layerNormalRoot(layer,blendnormals[0]);
+	n[1] = layer->normal[blendnormals[0]].tip;
+	n[2] = layer->normal[blendnormals[1]].tip;
+	n[3] = layerNormalRoot(layer,blendnormals[2]);
+	n[4] = layer->normal[blendnormals[2]].tip;
+	n[5] = layer->normal[blendnormals[3]].tip;
+
+	if (n[4]!=n[5]) {
+	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
+	}
+	if (n[4]!=n[5]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5]; addTet;
+	}
+	if (n[1]!=n[2]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
 	}
       }
-      if ( EMPTY != triangle1) {
-	faceId = layerConstrained(layer,blendnormals[2]);
-	if (faceId>0){
-	  n[0] = layerNormalRoot(layer,blendnormals[2]);
-	  n[1] = layer->normal[blendnormals[3]].tip;
-	  n[2] = layer->normal[blendnormals[2]].tip;
-	  layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
-	  layer->triangle[triangle1].constrainedSide[1]=faceId;
-	  layer->triangle[triangle1].parentGeomEdge[1] =
-	    layer->blend[blend].edgeId[1];
-	}
-      }
-
-      if ( layerNormalRoot(layer,blendnormals[0]) > 
-	   layerNormalRoot(layer,blendnormals[2]) ) {
-	normal = blendnormals[0];
-	blendnormals[0] = blendnormals[3];
-	blendnormals[3] = normal;
-	normal = blendnormals[1];
-	blendnormals[1] = blendnormals[2];
-	blendnormals[2] = normal;
-      }
-
-      n[0] = layerNormalRoot(layer,blendnormals[0]);
-      n[1] = layer->normal[blendnormals[0]].tip;
-      n[2] = layer->normal[blendnormals[1]].tip;
-      n[3] = layerNormalRoot(layer,blendnormals[2]);
-      n[4] = layer->normal[blendnormals[2]].tip;
-      n[5] = layer->normal[blendnormals[3]].tip;
-
-      if (n[4]!=n[5]) {
-	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3]; addTet;
-      }
-      if (n[4]!=n[5]) {
-	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5]; addTet;
-      }
-      if (n[1]!=n[2]) {
-	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4]; addTet;
-      }
-
     }
  
     for ( normal = 0 ; normal < adjNNode(layer->blendAdj) ; normal++ ) {
