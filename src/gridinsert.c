@@ -12,9 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
-#ifdef SURFACE_VALIDITY
 #include "gridshape.h"
-#endif
 #include "gridmetric.h"
 #include "gridswap.h"
 #include "gridinsert.h"
@@ -176,19 +174,9 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 
 int gridSplitEdge(Grid *grid, int n0, int n1)
 {
-#ifdef SURFACE_VALIDITY
-#else
-  double xyz0[3], xyz1[3];
-#endif
   double newXYZ[3];
 
-#ifdef SURFACE_VALIDITY
-    if (grid != gridCurvedEdgeMidpoint(grid, n0, n1, newXYZ)) return EMPTY;
-#else
-    if (grid != gridNodeXYZ(grid,n0,xyz0)) return EMPTY;
-    if (grid != gridNodeXYZ(grid,n1,xyz1)) return EMPTY;
-    gridAverageVector(xyz0,xyz1,newXYZ);
-#endif
+  if (grid != gridCurvedEdgeMidpoint(grid, n0, n1, newXYZ)) return EMPTY;
 
   return gridSplitEdgeAt(grid, NULL, n0, n1,
 			 newXYZ[0], newXYZ[1], newXYZ[2] );
@@ -680,10 +668,8 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   double arLimit;
   int iequ, equ0, equ1;
 
-#ifdef SURFACE_VALIDITY
   int parent;
   double origxyz[3], tuv[2], tuv0[2], tuv1[2];
-#endif    
 
   if ( gridGeometryNode(grid, n1) ) return NULL;
   if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
@@ -720,7 +706,6 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 
   for (i=0 ; i<3 ; i++) xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
 
-#ifdef SURFACE_VALIDITY
   parent = gridParentGeometry(grid,n0,n1);
   if (0!=parent) {
     gridVectorCopy(origxyz,xyzAvg);
@@ -738,7 +723,6 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
       gridProjectToFace(grid, parent, origxyz, tuv, xyzAvg);    
     }
   }
-#endif    
 
   if ( NULL == gridSetNodeXYZ( grid, n0, xyzAvg) ) return NULL;
   if ( NULL == gridSetNodeXYZ( grid, n1, xyzAvg) ) return NULL;  

@@ -1,3 +1,13 @@
+2005-01-26 19:55 Mike Park  <mike.park@nasa.gov>
+
+	* WARNING: continuing effort to merge unit mesh research path
+	with production path. I have uncovered a few inconsistancies.
+	It is suggested that you use last release (1.2.4) for production
+	work.
+	* src/gridinsert.c removed the last of SURFACE_VALIDITY #def's
+	* src/Makfile.am removed libUnitMesh.a, unit_main uses standard 
+	libMesherX.a
+
 2005-01-26 19:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridAR) use correct cost constraints indicated
