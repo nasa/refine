@@ -74,6 +74,12 @@ VALUE adj_exists( VALUE self, VALUE node, VALUE item )
   return( adjExists( adj, NUM2INT(node), NUM2INT(item) )?Qtrue:Qfalse );
 }
 
+VALUE adj_degree( VALUE self, VALUE node )
+{
+  GET_ADJ_FROM_SELF;
+  return INT2NUM( adjDegree(adj, NUM2INT(node) ) );
+}
+
 void Init_Adj() 
 {
   cAdj = rb_define_class( "Adj", rb_cObject );
@@ -87,4 +93,5 @@ void Init_Adj()
   rb_define_method( cAdj, "current", adj_current, 0);
   rb_define_method( cAdj, "next", adj_next, 0);
   rb_define_method( cAdj, "exists", adj_exists, 2 );
+  rb_define_method( cAdj, "degree", adj_degree, 1 );
 }
