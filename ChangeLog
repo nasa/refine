@@ -1,3 +1,10 @@
+2004-07-06 17:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) changed the global node
+	id's calcualtion for face patches to use CADTopo_VolFacePts
+	instead of UGPatch_GlobalIndex. This is the correct numbering if
+	UGPatch_InitSurfacePatches is NOT called.
+	
 2004-07-06 13:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/restartTest.c Test program for GeoSDK restarts.

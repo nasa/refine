@@ -23,7 +23,6 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
 {
   int vol=1;
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
-  UGridPtr ugrid;
   int i, iedge, inode;
   int nedgenode;
   double trange[2];
@@ -31,7 +30,9 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
   CADCurvePtr edge;
   int face, localNode, globalNode, partitionNode;
   int patchDimensions[3];
-  UGPatchPtr  localPatch, globalPatch;
+  int volumeEdgeNode, patchEdgeNode;
+  int *patch2global;
+  UGPatchPtr localPatch;
   Iterator patchIterator;
 
   if ( ! MeshMgr_Initialize( ) ){
@@ -90,31 +91,37 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
     }
   }
 
-  /* get uv vals for surface(s) */
-  /* we use globalPatch to track with the localPatch so that we can get global
-   * node numbering relative the volume grid and NOT the face grid as would
-   * be the case of global index of upp
-   */
-
-  if (NULL == (ugrid = CADGeom_VolumeGrid(vol)) ) {
-    printf("ERROR: Can not find grid in restart. \n%s\n",ErrMgr_GetErrStr());
+  if (!CADTopo_VolEdgePts( vol, &volumeEdgeNode )){
+    printf("%s: %d: CADTopo_VolEdgePts failied.\n",__FILE__, __LINE__);
     return NULL;
   }
 
-  globalPatch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&patchIterator);
+  if (inode!=volumeEdgeNode) {
+    printf("%s: %d: Edge node count error %d %d.\n",
+	   __FILE__, __LINE__, inode, volumeEdgeNode);
+    inode = volumeEdgeNode;
+  }
 
   for( face=1; face<=nGeomFace; face++ ) {
     localPatch = CADGeom_FaceGrid(vol,face);
     UGPatch_GetDims(localPatch,patchDimensions);
+    patch2global = malloc(patchDimensions[0]*sizeof(int));
+    if (!CADTopo_VolFacePts(vol, face, patch2global, &patchEdgeNode)) {
+      printf("%s: %d: CADTopo_VolFacePts failied.\n",__FILE__, __LINE__);
+      return NULL;
+    }
+    for( localNode=patchEdgeNode;localNode<patchDimensions[0]; localNode++ ) {
+      patch2global[localNode] = inode; inode++;
+    }
     for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {
-      globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
+      globalNode = patch2global[localNode];
       partitionNode = gridGlobal2Local(grid, globalNode);
       if (partitionNode>EMPTY) 
 	gridSetNodeUV( grid, partitionNode, face,
 		       UGPatch_Parameter(localPatch,localNode,0), 
 		       UGPatch_Parameter(localPatch,localNode,1));
     }
-    globalPatch = DList_GetNextItem(&patchIterator);
+    free(patch2global);
   }
 
   return grid;
