@@ -41,6 +41,11 @@ struct Blend {
   int normal[4];
 };
 
+typedef struct Prism Prism;
+struct Prism {
+  int nodes[6];
+};
+
 struct Layer {
   Grid *grid;
   int nfront;
@@ -53,6 +58,10 @@ struct Layer {
   int *globalNode2Normal;
   int nConstrainingGeometry, *constrainingGeometry;
   Adj *adj;
+  int nprism;
+  Prism *prism;
+  int maxprism;
+  int nquad;
 };
 
 Layer *layerCreate( Grid *grid )
@@ -73,6 +82,10 @@ Layer *layerCreate( Grid *grid )
   layer->nConstrainingGeometry=0;
   layer->constrainingGeometry=NULL;
   layer->adj=NULL;
+  layer->nprism=0;
+  layer->maxprism=0;
+  layer->prism=NULL;
+  layer->nquad=0;
   return layer;
 }
 
@@ -189,6 +202,7 @@ Grid *layerGrid(Layer *layer)
 void layerFree(Layer *layer)
 {
   gridDetachNodeSorter( layer->grid );
+  if (layer->prism!=NULL) free(layer->prism);
   if (layer->adj != NULL) adjFree(layer->adj);
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
@@ -231,6 +245,16 @@ int layerNBlend(Layer *layer)
 int layerNNormal(Layer *layer)
 {
   return layer->nnormal;
+}
+
+int layerNPrism(Layer *layer)
+{
+  return layer->nprism;
+}
+
+int layerNQuad(Layer *layer)
+{
+  return layer->nquad;
 }
 
 int layerMaxNode(Layer *layer)
@@ -1009,6 +1033,42 @@ Layer *layerBlend(Layer *layer)
   if (layerNNormal(layer) == 0 ) return NULL;
 
   grid = layerGrid(layer);
+
+  return layer;
+}
+
+Layer *layerAddPrism(Layer *layer, int n0, int n1, int n2, int n3, int n4, int n5)
+{
+
+  if (layer->nprism >= layer->maxprism) {
+    layer->maxprism += 5000;
+    if (layer->prism == NULL) {
+      layer->prism = malloc(layer->maxprism*sizeof(Prism));
+    }else{
+      layer->prism = realloc(layer->prism,layer->maxprism*sizeof(Prism));
+    }
+  }
+
+  layer->prism[layer->nprism].nodes[0] = n0;
+  layer->prism[layer->nprism].nodes[1] = n1;
+  layer->prism[layer->nprism].nodes[2] = n2;
+  layer->prism[layer->nprism].nodes[3] = n3;
+  layer->prism[layer->nprism].nodes[4] = n4;
+  layer->prism[layer->nprism].nodes[5] = n5;
+
+  layer->nprism++;
+
+  return layer;
+}
+
+Layer *layerPrism(Layer *layer, int prismIndex, int *nodes)
+{
+  int i;
+  if (prismIndex<0 || prismIndex >= layerNPrism(layer) ) return NULL; 
+
+  for (i=0;i<6;i++){
+    nodes[i]=layer->prism[prismIndex].nodes[i];
+  }
 
   return layer;
 }

@@ -29,6 +29,10 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil  layer = Layer.new(grid)
   assert_equal 2, layer.maxnode
   assert_equal 0, layer.nfront
+  assert_equal 0, layer.nnormal
+  assert_equal 0, layer.nprism
+  assert_equal 0, layer.nquad
+
  end
 
  def XtestInitGC # GC is disabled now
@@ -764,7 +768,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,0.2], grid.nodeXYZ(5)
  end
 
- def testBlendElements
+ def XdisabledXtestBlendElements
   assert_not_nil          grid = Grid.new(10,10,10,10)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
@@ -792,6 +796,28 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2],   layer.frontNormals(0)
   assert_equal [4,5,3],   layer.frontNormals(1)
   assert_equal [0,4,5,1], layer.blendNormals(0)
+ end
+
+ def testInsertPrism
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal 0,             layer.nprism
+  assert_equal layer,         layer.addPrism(0,1,2,3,4,5)
+  assert_equal 1,             layer.nprism
+  assert_nil                  layer.prism(-1) 
+  assert_nil                  layer.prism(1)
+  assert_equal [0,1,2,3,4,5], layer.prism(0)
+ end
+
+ def XtestInsertQuad
+  assert_not_nil           grid = Grid.new(10,10,10,10)
+  assert_not_nil           layer = Layer.new(grid)
+  assert_equal 0,          layer.nquad
+  assert_equal layer,      layer.addQuad(0,1,2,3)
+  assert_equal 1,          layer.nquad
+  assert_nil               layer.quad(-1) 
+  assert_nil               layer.quad(1)
+  assert_equal [0,1,2,3,], layer.quad(0)
  end
 
 

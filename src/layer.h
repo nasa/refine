@@ -26,6 +26,8 @@ void layerSortGlobalNodes(void *layer, int *o2n);
 int layerNFront(Layer *);
 int layerNBlend(Layer *);
 int layerNNormal(Layer *);
+int layerNPrism(Layer *);
+int layerNQuad(Layer *);
 int layerMaxNode(Layer *);
 Layer *layerMakeFront(Layer *, int nbc, int *bc);
 bool layerParentFace(Layer *, int faceId);
@@ -63,6 +65,8 @@ Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
 Layer *layerBlend(Layer *);
 
+Layer *layerAddPrism(Layer *, int n0, int n1, int n2, int n3, int n4, int n5);
+Layer *layerPrism(Layer *, int prismIndex, int *nodes);
 
 Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
