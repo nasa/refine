@@ -67,7 +67,7 @@ int main( int argc, char *argv[] )
   GridBool GridMoveProjection = TRUE;
   GridBool tecplotOutput = TRUE;
   int iview = 0;
-  int maxnode = 500000;
+  int maxnode = 100000;
 
   sprintf( project,       "" );
   sprintf( outputProject, "" );
@@ -131,8 +131,8 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if(strcmp(project,"")==0)       sprintf(project,"morphr3" );
-  if(strcmp(outputProject,"")==0) sprintf(outputProject,"morphr4");
+  if(strcmp(project,"")==0)       sprintf(project,"morphr1" );
+  if(strcmp(outputProject,"")==0) sprintf(outputProject,"morphr2");
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"../Adjoint/%s_adapt_hess",project);
   if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
 
