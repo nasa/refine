@@ -61,7 +61,31 @@ void sortHeap( int length, int *arrayInput, int *sortedIndex  )
   } 
 }
 
-int sortSearch( int length, int *arrayInput, int index  )
+int sortSearch( int length, int *sortednodes, int targetnode  )
 {
+  int lower, upper, mid;
+
+  if (length<1) return EMPTY;
+
+  if ( targetnode < sortednodes[0] || targetnode > sortednodes[length-1] ) 
+    return EMPTY;
+
+  lower = 0;
+  upper = length-1;
+  mid = length >> 1;
+
+  if (targetnode==sortednodes[lower]) return lower;
+  if (targetnode==sortednodes[upper]) return upper;
+
+  while ( (lower < mid) && (mid < upper) ) {
+    if ( targetnode >= sortednodes[mid] ) {
+      if ( targetnode == sortednodes[mid] ) return mid;
+      lower = mid;
+    } else {
+      upper = mid;
+    }
+    mid = (lower+upper) >> 1;
+  }
+
   return EMPTY;
 }
