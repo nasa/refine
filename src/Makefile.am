@@ -152,7 +152,7 @@ if BUILD_PROE_KERNEL
 
 bin_PROGRAMS += libGridEx-Linux.Pro.dll
 libGridEx_Linux_Pro_dll_CFLAGS = $(all_CFLAGS) -DPROE_MAIN
-libGridEx_Linux_Pro_dll_SOURCES = main.c
+libGridEx_Linux_Pro_dll_SOURCES = proemain.c
 libGridEx_Linux_Pro_dll_LDADD = $(refineLib) @CAPRIProElibrary@ $(LastLib)
 libGridEx_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
 endif # BUILD_PROE_KERNEL
