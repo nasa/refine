@@ -431,9 +431,11 @@ class TestGrid < Test::Unit::TestCase
 
  def testGeometryNode
   assert_not_nil grid = Grid.new(3,0,0,0)
+  assert_equal false, grid.geometryNode(-1)
   assert_equal false, grid.geometryNode(0)
   assert_equal grid,  grid.setNGeomNode(2)
   assert_equal 2,     grid.nGeomNode
+  assert_equal false, grid.geometryNode(-1)
   assert_equal true,  grid.geometryNode(0)
   assert_equal true,  grid.geometryNode(1)
   assert_equal false, grid.geometryNode(2)
