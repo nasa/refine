@@ -20,6 +20,7 @@ struct Normal {
   int constrained;
   int root, tip;
   double direction[3];
+  bool terminated;
 };
 
 typedef struct Front Front;
@@ -189,6 +190,7 @@ Layer *layerMakeNormal(Layer *layer)
       layer->normal[normal].direction[0] = 0.0;
       layer->normal[normal].direction[1] = 0.0;
       layer->normal[normal].direction[2] = 0.0;
+      layer->normal[normal].terminated = FALSE;
     }
   }
 
@@ -358,6 +360,22 @@ int layerConstrained(Layer *layer, int normal )
   return layer->normal[normal].constrained;
 }
 
+Layer *layerTerminateNormal(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
+  layer->normal[normal].terminated = TRUE;
+
+  return layer;
+}
+
+bool layerNormalTerminated(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return FALSE;
+
+  return layer->normal[normal].terminated;
+}
+
 Layer *layerAdvance(Layer *layer, double height )
 {
   Grid *grid = layer->grid;
@@ -366,7 +384,7 @@ Layer *layerAdvance(Layer *layer, double height )
   int front, normals[3], n[6], side[2];
   double xyz[3];
   AdjIterator it;  
-
+  bool term0, term1, term2;
   if (layerNNormal(layer) == 0 ) return NULL;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
@@ -375,19 +393,23 @@ Layer *layerAdvance(Layer *layer, double height )
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    root = layer->normal[normal].root;
-    gridNodeXYZ(grid,root,xyz);
-    for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
-    tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
-    if ( EMPTY == tip) return NULL;
-    layer->normal[normal].tip = tip;
-    gridReconnectCellUnlessFrozen(grid, root, tip);
-    faceId = layerConstrained(layer,normal);
-    if (0 != faceId) {
-      gridReconnectFaceUnlessFrozen(grid, faceId, root, tip);
+    if (layer->normal[normal].terminated){
+      layer->normal[normal].tip = layer->normal[normal].root;
+    }else{
+      root = layer->normal[normal].root;
+      gridNodeXYZ(grid,root,xyz);
+      for(i=0;i<3;i++)xyz[i]=xyz[i]+height*layer->normal[normal].direction[i];
+      tip = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
+      if ( EMPTY == tip) return NULL;
+      layer->normal[normal].tip = tip;
+      gridReconnectCellUnlessFrozen(grid, root, tip);
+      faceId = layerConstrained(layer,normal);
+      if (0 != faceId) {
+	gridReconnectFaceUnlessFrozen(grid, faceId, root, tip);
+      }
+      gridCopySpacing(grid, root, tip );
+      gridFreezeNode( grid, tip );
     }
-    gridCopySpacing(grid, root, tip );
-    gridFreezeNode( grid, tip );
   }
 
   for (front=0;front<layerNFront(layer);front++){
@@ -411,14 +433,30 @@ Layer *layerAdvance(Layer *layer, double height )
       n[i]   = layer->normal[normals[i]].root;
       n[i+3] = layer->normal[normals[i]].tip;
     }
-    if (normals[2]<normals[1]){
-      gridAddCell(grid, n[0], n[4], n[5], n[3]);
-      gridAddCell(grid, n[2], n[0], n[4], n[5]);
-      gridAddCell(grid, n[2], n[0], n[1], n[4]);
+    term0 = layerNormalTerminated(layer,normals[0]);
+    term1 = layerNormalTerminated(layer,normals[1]);
+    term2 = layerNormalTerminated(layer,normals[2]);
+    if ( term0 || term1 || term2 ) {
+      if ( term0 && term1 && !term2 ) {
+	gridAddCell(grid, n[0], n[1], n[2], n[5]);	
+      }
+      if ( !term0 && term1 && term2 ) {
+	gridAddCell(grid, n[0], n[1], n[2], n[3]);	
+      }
+      if ( term0 && !term1 && term2 ) {
+	gridAddCell(grid, n[0], n[1], n[2], n[4]);	
+      }
     }else{
-      gridAddCell(grid, n[0], n[4], n[5], n[3]);
-      gridAddCell(grid, n[0], n[1], n[5], n[4]);
-      gridAddCell(grid, n[2], n[0], n[1], n[5]);
+      /* add full 3 tet prz */
+      if (normals[2]<normals[1]){
+	gridAddCell(grid, n[0], n[4], n[5], n[3]);
+	gridAddCell(grid, n[2], n[0], n[4], n[5]);
+	gridAddCell(grid, n[2], n[0], n[1], n[4]);
+      }else{
+	gridAddCell(grid, n[0], n[4], n[5], n[3]);
+	gridAddCell(grid, n[0], n[1], n[5], n[4]);
+	gridAddCell(grid, n[2], n[0], n[1], n[5]);
+      }
     }
 
     if (0 < layerConstrained(layer,normals[0]) && 

@@ -358,11 +358,93 @@ class TestLayer < Test::Unit::TestCase
 #edge
  end
 
-# normal visibility
-# mutiple rebuild planes
-# mutiple layer with reconnect bug
+ def testNormalTermination
+  assert_not_nil          grid = Grid.new(7,4,1,0)
+  assert_equal 0,         grid.addNode(0,0,0)
+  assert_equal 1,         grid.addNode(1,0,0)
+  assert_equal 2,         grid.addNode(0,1,0)
+  assert_equal 3,         grid.addNode(0,0,1)
+  assert_equal grid,      grid.addCell(0,1,2,3)
+  assert_equal 1,         grid.ncell
+  assert_equal grid,      grid.addFace(0,1,2,1)
+  assert_not_nil          layer = Layer.new(grid)
+  assert_equal layer,     layer.makeFront([1])
+  assert_equal 1,         layer.nfront  
+  assert_nil              layer.terminateNormal(0)
+  assert_equal false,     layer.normalTerminated(0)
+  assert_equal layer,     layer.makeNormal
+  assert_equal 3,         layer.nnormal
+  assert_equal false,     layer.normalTerminated(0)
+  assert_equal false,     layer.normalTerminated(1)
+  assert_equal false,     layer.normalTerminated(2)
+  assert_equal layer,     layer.terminateNormal(0)
+  assert_equal layer,     layer.terminateNormal(1)
+  assert_equal true,      layer.normalTerminated(0)
+  assert_equal true,      layer.normalTerminated(1)
+  assert_equal false,     layer.normalTerminated(2)
+ end
+ 
+ def volumeGrid
+  grid = Grid.new(7,4,1,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addCell(0,1,2,3)
+  grid.addFace(0,1,2,1)
+ end
+
+ def volumeLayer(grid)
+  layer = Layer.new(grid)
+  layer.makeFront([1])
+  layer.makeNormal
+ end
+
+ def testTerminateAll
+  assert_not_nil grid  = volumeGrid
+  assert_not_nil layer = volumeLayer(grid)
+  assert_equal layer,     layer.terminateNormal(0)
+  assert_equal layer,     layer.terminateNormal(1)
+  assert_equal layer,     layer.terminateNormal(2)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal 4,         grid.nnode
+  assert_equal 1,         grid.ncell
+ end
+
+ def testTerminate01
+  assert_not_nil grid  = volumeGrid
+  assert_not_nil layer = volumeLayer(grid)
+  assert_equal layer,     layer.terminateNormal(0)
+  assert_equal layer,     layer.terminateNormal(1)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal 5,         grid.nnode
+  assert_equal 2,         grid.ncell
+  assert_equal [0,1,2,4], grid.cell(1)
+ end
+
+ def testTerminate12
+  assert_not_nil grid  = volumeGrid
+  assert_not_nil layer = volumeLayer(grid)
+  assert_equal layer,     layer.terminateNormal(1)
+  assert_equal layer,     layer.terminateNormal(2)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal 5,         grid.nnode
+  assert_equal 2,         grid.ncell
+  assert_equal [0,1,2,4], grid.cell(1)
+ end
+
+ def testTerminate20
+  assert_not_nil grid  = volumeGrid
+  assert_not_nil layer = volumeLayer(grid)
+  assert_equal layer,     layer.terminateNormal(2)
+  assert_equal layer,     layer.terminateNormal(0)
+  assert_equal layer,     layer.advance(0.1)
+  assert_equal 5,         grid.nnode
+  assert_equal 2,         grid.ncell
+  assert_equal [0,1,2,4], grid.cell(1)
+ end
+
 # blends?
-# layer termination
-# wiggle front into place 
+
 
 end

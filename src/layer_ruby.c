@@ -166,6 +166,18 @@ VALUE layer_constrained( VALUE self, VALUE normal )
   return INT2NUM(layerConstrained(layer,NUM2INT(normal)));
 }
 
+VALUE layer_terminateNormal( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerTerminateNormal(layer,NUM2INT(normal))?self:Qnil );
+}
+
+VALUE layer_normalTerminated( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layerNormalTerminated(layer,NUM2INT(normal))?Qtrue:Qfalse );
+}
+
 VALUE layer_advance( VALUE self, VALUE height )
 {
   GET_LAYER_FROM_SELF;
@@ -199,6 +211,8 @@ void Init_Layer()
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
+  rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );
+  rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 1 );
   rb_define_method( cLayer, "wiggle", layer_wiggle, 1 );
 }

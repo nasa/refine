@@ -35,6 +35,8 @@ Layer *layerNormalDirection(Layer *, int normal, double *direction);
 Layer *layerVisibleNormals(Layer *);
 Layer *layerConstrainNormal(Layer *, int bc );
 int layerConstrained(Layer *, int normal );
+Layer *layerTerminateNormal(Layer *, int normal );
+bool layerNormalTerminated(Layer *, int normal );
 Layer *layerAdvance(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
 
