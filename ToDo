@@ -7,6 +7,9 @@ Start Builds!!!!!
 
 --Major refactoring
 
+Make a queue (plan) of boundary mesh operations and use it to speed up
+boundary adapts in parallel.
+
 Make sure that nodes are in final position in xyx, uv, and t before
 queuing so that off-processors recieve cosistant data.
 
@@ -15,8 +18,8 @@ when splitting or collasping on geomedge update face uv from edgeT
 EdgeSplitAt -> edgeSplitRatio
 Replace projections with evaluations.
 
-maintain linear data for split and collapse. 
-(this includes edge and face parameter values)
+maintain linear data for split and collapse. this includes edge and
+face parameter values. This will be easier to do with edgeSplitRatio
 
 Validate a mesh by spliting offending faces into three and evaluating
 (via Bob)
