@@ -15,7 +15,7 @@
 #include "gridswap.h"
 
 #define COSTLIMIT (-0.5)
-#define REQUIRED_IMPROVEMENT (0.00001)
+#define REQUIRED_IMPROVEMENT (1.0e-12)
 
 Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 {
