@@ -1,5 +1,5 @@
-TESTS=check_tet
-noinst_PROGRAMS=check_tet
-check_tet_SOURCES=  check_tet.c
-check_tet_INCLUDES= @CHECK_CFLAGS@
-check_tet_LDADD= @CHECK_LIBS@
+TESTS=sampleunit_check
+noinst_PROGRAMS=sampleunit_check
+sampleunit_check_SOURCES=  sampleunit_check.c sampleunit.c sampleunit.h
+sampleunit_check_INCLUDES= @CHECK_CFLAGS@
+sampleunit_check_LDADD= @CHECK_LIBS@
