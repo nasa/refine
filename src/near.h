@@ -39,6 +39,8 @@ Near *nearInsert( Near *, Near *child );
 double nearLeftRadius( Near * );
 double nearRightRadius( Near * );
 
+Near *nearVisualize( Near * );
+
 int nearCollisions(Near *, Near *target);
 Near *nearTouched(Near *, Near *target, int *found, int maxfound, int *list);
 
