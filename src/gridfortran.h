@@ -22,7 +22,7 @@ int gridinsertboundary_( int *faceId, int *nnode, int *inode,
 			 int *nface, int *ndim, int *f2n );
 int gridswap_( );
 int gridsmoothvolume_( );
-int gridadaptwithoutcad_( );
+int gridadaptwithoutcad_( double *minLength, double *maxLength );
 int gridwritetecplotsurfacezone_( );
 
 END_C_DECLORATION
