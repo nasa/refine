@@ -236,17 +236,24 @@ end
   assert_equal 4, grid.nodeDeg(5)
  end
 
+ def testSwap4_invalid
+  assert_not_nil grid=gemGrid(4, 0.1, nil, -0.1)
+  grid.swap(0,1)
+  assert_equal 4, grid.nodeDeg(0)
+  assert_equal 4, grid.nodeDeg(1)
+ end
+
  # dent for both ways and neg cells
  
 
- def gemGrid(nequ=4, a=0.1, dent=-1)
+ def gemGrid(nequ=4, a=0.1, dent=nil, x0 = 1.0)
   grid = Grid.new(nequ+2,nequ)
   n = Array.new
-  n.push grid.addNode(1.0,0.0,0.0)
+  n.push grid.addNode(x0,0.0,0.0)
   n.push grid.addNode(-1.0,0.0,0.0)
   nequ.times do |i| 
    angle = 2.0*Math::PI*(i-1)/(nequ)
-   s = (dent==i)?(0.9):(1.0)
+   s = if (dent==i) then 0.9 else 1.0 end
    n.push grid.addNode(0.0,s*a*Math.sin(angle),s*a*Math.cos(angle)) 
   end
   n.push 2
