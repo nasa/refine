@@ -1539,7 +1539,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [7,1,9,5], layer.subBlendNormals(0,2)
  end
 
- def testsubBlendForTwoConvextFaces
+ def testsubBlendForTwoConvextFaces2
   grid = fourFaceConvex
   layer = Layer.new(grid).populateAdvancingFront([1])
   assert_equal layer, layer.blend(-1.0)
@@ -1562,6 +1562,28 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [8,0,10,7], layer.subBlendNormals(0,1)
   assert_equal [0,8,2,9], layer.subBlendNormals(1,0)
   assert_equal [8,5,9,6], layer.subBlendNormals(1,1)
+ end
+
+ def testsubBlendForTwoConvextFaces3
+  grid = fourFaceConvex
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal layer, layer.blend(-1.0)
+  assert_equal 2,     layer.nblend
+  layer.subBlend(29.0)
+  assert_equal 3, layer.nSubBlend(0)
+  assert_equal 3, layer.nSubBlend(1)
+
+  assert_equal [ 5, 0, 3, 7], layer.blendNormals(0)
+
+  assert_equal [ 5, 9, 3,12], layer.subBlendNormals(0,0)
+  assert_equal [ 9, 8,12,13], layer.subBlendNormals(0,1)
+  assert_equal [ 8, 0,13, 7], layer.subBlendNormals(0,2)
+
+  assert_equal [ 0, 5, 2, 6], layer.blendNormals(1)
+
+  assert_equal [ 0, 8, 2,10], layer.subBlendNormals(1,0)
+  assert_equal [ 8, 9,10,11], layer.subBlendNormals(1,1)
+  assert_equal [ 9, 5,11, 6], layer.subBlendNormals(1,2)
  end
 
  def testExtrudeBlend

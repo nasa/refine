@@ -2673,6 +2673,7 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   int blendnormals[4];
   double angle, rotation;
   int nSubNormal, subNormal, subNormals[MAXSUBNORMAL];
+  int startNormal;
   double axle[3];
   int i;
 
@@ -2687,6 +2688,7 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
       blend = adjItem(adjFirst(layerBlendAdj(layer),normal));
       layerBlendNormals(layer, blend, blendnormals );
       if (normal == blendnormals[0] || normal == blendnormals[1] ) {
+	startNormal = blendnormals[0];
 	angle = layerNormalAngle(layer,blendnormals[0], blendnormals[1]);
 	nSubNormal = (int)(angle/maxNormalAngle)-1;
 	nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
@@ -2701,6 +2703,7 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 			      layer->normal[subNormals[i]].direction);
 	}
       }else{
+	startNormal = blendnormals[2];
 	angle = layerNormalAngle(layer,blendnormals[2], blendnormals[3]);
 	nSubNormal = (int)(angle/maxNormalAngle)-1;
 	nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
@@ -2722,13 +2725,25 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 	layerBlendNormals(layer, blend, blendnormals );
 	if (normal == blendnormals[0] || normal == blendnormals[1] ) {
 	  layer->blend[blend].nSubNormal0 = nSubNormal;
-	  for(i=0;i<nSubNormal;i++){
-	    layer->blend[blend].subNormal0[i] = subNormals[i];
+	  if (startNormal == blendnormals[0]) {
+	    for(i=0;i<nSubNormal;i++){
+	      layer->blend[blend].subNormal0[i] = subNormals[i];
+	    }
+	  }else{
+	    for(i=0;i<nSubNormal;i++){
+	      layer->blend[blend].subNormal0[i] = subNormals[nSubNormal-i-1];
+	    }
 	  }
 	}else{
 	  layer->blend[blend].nSubNormal1 = nSubNormal;
-	  for(i=0;i<nSubNormal;i++){
-	    layer->blend[blend].subNormal1[i] = subNormals[i];
+	  if (startNormal == blendnormals[2]) {
+	    for(i=0;i<nSubNormal;i++){
+	      layer->blend[blend].subNormal1[i] = subNormals[i];
+	    }
+	  }else{
+	    for(i=0;i<nSubNormal;i++){
+	      layer->blend[blend].subNormal1[i] = subNormals[nSubNormal-i-1];
+	    }
 	  }
 	}
       }
