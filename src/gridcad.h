@@ -26,6 +26,8 @@ Grid *gridEvaluateEdgeAtT(Grid *g, int node, double t );
 Grid *gridEvaluateFaceAtUV(Grid *g, int node, double *uv );
 Grid *gridUpdateFaceParameter(Grid *g, int node );
 
+Grid *gridProjectToFace(Grid *g, int faceId, 
+			double *uv, double *xyz, double *newxyz );
 Grid *gridFaceNormalAtUV(Grid *g, int faceId, 
 			 double *uv, double *xyz, double *normal );
 

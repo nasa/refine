@@ -150,6 +150,16 @@ Grid *gridUpdateFaceParameter(Grid *grid, int node ){
   return grid;
 }
 
+Grid *gridProjectToFace(Grid *grid, int faceId, 
+			double *uv, double *xyz, double *newxyz )
+{
+  int vol = 1;
+
+  if (!CADGeom_NearestOnFace( vol, faceId, xyz, uv, newxyz) ) return NULL;  
+
+  return grid;
+}
+
 Grid *gridFaceNormalAtUV(Grid *grid, int faceId,
 			 double *uv, double *xyz, double *normal )
 
