@@ -626,6 +626,8 @@ Layer *layerInsertPhantomFront(Layer *layer)
   int normal, faceId, edgeId, newnode;
   double xyz[3];
 
+  layerVisibleNormals(layer);
+
   for (normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid,layer->normal[normal].root,xyz);
     layer->normal[normal].root = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
@@ -635,6 +637,14 @@ Layer *layerInsertPhantomFront(Layer *layer)
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     if (0 != layerConstrained(layer,normal)){
+      faceId = layerConstrained(layer,normal);
+      if (0 < faceId) {
+	gridForceNodeToFace(grid, layer->normal[normal].root, faceId );
+      }
+      if (0 > faceId) {
+	edgeId = -faceId;
+	gridForceNodeToEdge(grid, layer->normal[normal].root, edgeId );
+      }
       gridNodeXYZ(grid,layer->normal[normal].root,xyz);
       newnode = gridInsertInToGeomFace(grid, xyz[0], xyz[1], xyz[2]);
       printf("insert node %10d x %10.5f y %10.5f z %10.5f\n",
@@ -644,5 +654,9 @@ Layer *layerInsertPhantomFront(Layer *layer)
     }
   }
  
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    gridRemoveNode(grid,layer->normal[normal].root);
+  }
+
   return layer;
 }
