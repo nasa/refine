@@ -218,7 +218,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_not_nil     grid = Grid.new(4,1,2)
   assert_equal grid, grid.addFace(0, 1, 2, 10)
   assert_equal 0,    grid.findFace(0,1,2)
-  assert_equal -1,   grid.findFace(3,1,2)
+  assert_equal(-1,   grid.findFace(3,1,2) )
  end
 
  def testAddAndRemoveFace
@@ -466,13 +466,34 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 4, grid.cellDegree(5)
   assert_equal 2, grid.cellDegree(6)
  end
+ 
+ def testSplitEdge
+  grid = Grid.new(5,2,2)
+  grid.addCell( grid.addNode(0.0,0.0,0.0), grid.addNode(1.0,0.0,0.0), 
+	        grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
+  initalVolume = grid.totalVolume
+  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal 2, grid.ncell
+  assert_equal 5, grid.nnode
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+ end
+
+ def testSplitEdge4
+  grid = gemGrid
+  initalVolume = grid.totalVolume
+  assert_equal 4, grid.ncell
+  assert_equal 6, grid.nnode
+  assert_equal grid, grid.splitEdge(0,1)
+  assert_equal 8, grid.ncell
+  assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
+ end
 
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
   x0 = x0 || 1.0
-  grid = Grid.new(nequ+2,14,14)
+  grid = Grid.new(nequ+2+1,14,14)
   n = Array.new
-  n.push grid.addNode(x0,0.0,0.0)
+  n.push grid.addNode(  x0,0.0,0.0)
   n.push grid.addNode(-1.0,0.0,0.0)
   nequ.times do |i| 
    angle = 2.0*Math::PI*(i-1)/(nequ)
