@@ -23,6 +23,7 @@ void layerFree(Layer *);
 int layerNFront(Layer *);
 int layerMaxNode(Layer *);
 Layer *layerMakeFront(Layer *, int nbc, int *bc);
+Layer *layerFront(Layer *, int front, int *nodes);
 
 END_C_DECLORATION
 

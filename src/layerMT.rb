@@ -30,11 +30,17 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testMakeFront
-  assert_not_nil      grid = Grid.new(4,0,2,0)
-  assert_equal grid,  grid.addFace(0,1,2,1)
-  assert_equal grid,  grid.addFace(0,1,3,2)
-  assert_not_nil      layer = Layer.new(grid)
-  assert_equal layer, layer.makeFront([1,2])
+  assert_not_nil        grid = Grid.new(4,0,2,0)
+  assert_equal grid,    grid.addFace(0,1,2,1)
+  assert_equal grid,    grid.addFace(0,1,3,2)
+  assert_equal 2,       grid.nface
+  assert_not_nil        layer = Layer.new(grid)
+  assert_equal 0,       layer.nfront
+  assert_nil            layer.front(0)
+  assert_equal layer,   layer.makeFront([1,2])
+  assert_equal 2,       layer.nfront
+  assert_equal [0,1,2], layer.front(0)
+  assert_equal [0,1,3], layer.front(1)
  end
 
 end
