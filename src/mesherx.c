@@ -467,10 +467,7 @@ int layerTerminateNormalWithBGSpacing(Layer *layer, double height)
 }
 
 
-int
-MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
-                          int ntri, int *tri, int nsid, int *sid, int *npo,
-                          int *nel, int **iel, double **xyz, char *pj)
+int MesherX_DiscretizeVolume( int maxNodes, char *project )
 {
   char *outputProject;
   int vol=1;
@@ -479,7 +476,7 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   int i;
   double h;
 
-  grid = gridFillFromPart( vol, npts*10 );
+  grid = gridFillFromPart( vol, maxNodes );
 
   layer = formAdvancingFront( grid, pj );
 
@@ -507,6 +504,9 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   outputProject = "../test/MesherX";
   printf("writing DEBUG output project %s\n",outputProject);
   gridSavePart( grid, outputProject );
+
+  printf("writing output FAST file ../test/MesherX.fgrid\n");
+  gridExportFAST( grid, "../test/MesherX.fgrid" );
 
   return 1;
 }
