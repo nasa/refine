@@ -1,3 +1,9 @@
+2005-02-01 18:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge) does not abort swap if mean ratio
+	goes down when gridCostFunction is gridCOST_FCN_EDGE_LENGTH (put
+	back it)
+
 2005-02-01 17:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridCollapseCost) added logic to set the
