@@ -129,6 +129,7 @@ int gridwritetecplotsurfacezone_( )
 int gridparalleladaptwithoutcad_( int *processor, 
 				  double *minLength, double *maxLength )
 {
+  printf(" %6d adapt processor %d\n",gridPartId(grid),*processor);
   if (*processor == -1) {
     gridParallelAdaptWithOutCAD(grid,NULL,*minLength, *maxLength);
   } else {
