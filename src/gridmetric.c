@@ -439,7 +439,11 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
   tst1 = 0.0;
   e[2] = 0.0;
 
+  printf("\n---------------\n00 d %20.15f %20.15f %20.15f\n",d[0],d[1],d[2]);
+
   for( l = 0; l < 3; l++){ /* row_loop  */
+    printf("%2d d %20.15f %20.15f %20.15f\n",l,d[0],d[1],d[2]);
+    printf("%2d e %20.15f %20.15f %20.15f\n",l,e[0],e[1],e[2]);
     j = 0;
     h = ABS(d[l]) + ABS(e[l]);
     if (tst1 < h) tst1 = h;
@@ -452,6 +456,7 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
     if (m != l) { /* l_not_equal_m */
       do {
 	j = j + 1;
+	printf("%2d j %20.15f %20.15f %20.15f\n",j,d[0],d[1],d[2]);
 	/* set error -- no convergence to an eigenvalue after 30 iterations */
 	if (j > 30 ) {
 	  ierr = l;
@@ -464,6 +469,8 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
 	g = d[l];
 	p = (d[l1] - g) / (2.0 * e[l]);
 	r = sqrt(p*p+1.0);
+	printf("%2d g %20.15f %20.15f %20.15f\n",j,g,p,r);
+	
 #define SIGN(a,b) (b>=0?ABS(a):-ABS(a))
 	d[l] = e[l] / (p + SIGN(r,p));
 	d[l1] = e[l] * (p + SIGN(r,p));
@@ -474,6 +481,7 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
 	    d[i] = d[i] - h;
 	  }
 	}
+	printf("%2d s %20.15f %20.15f %20.15f\n",j,d[0],d[1],d[2]);
 	f = f + h;
 	/* ql transformation */
 	p = d[m];
@@ -482,14 +490,17 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
 	el1 = e[l1];
 	s = 0.0;
 	mml = m - l;
+	printf("mml %d\n",mml);
 	for (ii = 0;ii< mml; ii++ ) {
 	  c3 = c2;
 	  c2 = c;
 	  s2 = s;
 	  i = m - ii - 1;
+	  printf("%2d i %20.15f %20.15f %20.15f\n",i,c3,c2,s2);
 	  g = c * e[i];
 	  h = c * p;
 	  r = sqrt(p*p+e[i]*e[i]);
+	  printf("%2d i %20.15f %20.15f %20.15f\n",i,g,h,r);
 	  e[i+1] = s * r;
 	  s = e[i] / r;
 	  c = p / r;
@@ -502,6 +513,10 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
 	    z[i+3*k] = c * z[i+3*k] - s * h;
 	  }
 	}
+	printf("%2d E %20.15f %20.15f %20.15f\n",l,e[0],e[1],e[2]);
+	printf("%2d z %20.15f %20.15f %20.15f\n",l,z[0],z[1],z[2]);
+	printf("%2d z %20.15f %20.15f %20.15f\n",l,z[3],z[4],z[5]);
+	printf("%2d z %20.15f %20.15f %20.15f\n",l,z[6],z[7],z[8]);
 	p = -s * s2 * c3 * el1 * e[l] / dl1;
 	e[l] = s * p;
 	d[l] = c * p;
@@ -512,6 +527,7 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
     d[l] = d[l] + f;
   } /* row_loop */
 
+  printf("%2d d %20.15f %20.15f %20.15f\n",4,d[0],d[1],d[2]);
   for( ii = 1; ii<3;ii++){
     i = ii - 1;
     k = i;
@@ -533,7 +549,13 @@ Grid *gridEigTriDiag3x3(Grid *grid, double *d, double *e, double *z)
     }
   }
 
-  return grid;
+  printf("%2d Z %20.15f %20.15f %20.15f\n",l,z[0],z[1],z[2]);
+  printf("%2d Z %20.15f %20.15f %20.15f\n",l,z[3],z[4],z[5]);
+  printf("%2d Z %20.15f %20.15f %20.15f\n",l,z[6],z[7],z[8]);
+  printf("%2d d %20.15f %20.15f %20.15f\n",5,d[0],d[1],d[2]);
+  printf("%2d e %20.15f %20.15f %20.15f\n",5,e[0],e[1],e[2]);
+ 
+ return grid;
 }
 
 Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
