@@ -72,4 +72,5 @@ AC_SUBST(with_SDK)
 
 dnl output
 AC_OUTPUT(Makefile
-	  src/Makefile)
+	  src/Makefile
+	  test/Makefile)
