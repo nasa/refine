@@ -1,11 +1,10 @@
 Authors:
-  Michael Park <Michael.A.Park@nasa.gov>
+  Mike Park <Mike.Park@nasa.gov>
   Bill Jones <William.T.Jones@nasa.gov> - MesherX and GEOLAB/SDK restarts 
-  Bil Kleb <Bil.Kleb@nasa.gov> - Mixed elements
+  Bil Kleb <Bil.Kleb@nasa.gov> - Mixed elements, Multiple normals
   Bill Wood <Bill.Wood@nasa.gov> - Testing framework
   Harold Atkins <Harold.L.Atkins@nasa.gov> - Synthetic Jet application
 
 Design suggestions:
   Bil Kleb <Bil.Kleb@.nasa.gov> - Ruby extension unit testing 
-                                - Multiple normals
   Bill Jones <William.T.Jones@nasa.gov> - Anisotropic metrics
