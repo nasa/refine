@@ -629,10 +629,10 @@ class TestSampleUnit < Test::Unit::TestCase
 	    grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
   assert_equal grid,  grid.addFace(0,1,2,11)
   assert_equal true,  grid.rightHandedFace(0)
-#  assert_equal true,  grid.rightHandedBoundary
+  assert_equal true,  grid.rightHandedBoundary
   assert_equal grid,  grid.addFace(0,2,1,11)
   assert_equal false, grid.rightHandedFace(1)
-#  assert_equal false, grid.rightHandedBoundary
+  assert_equal false, grid.rightHandedBoundary
  end
  
  # make register unique
