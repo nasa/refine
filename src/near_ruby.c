@@ -80,6 +80,7 @@ VALUE near_collisions( VALUE self, VALUE rb_target )
 
   return INT2NUM(nearCollisions(tree,target));
 }
+
 VALUE cNear;
 
 void Init_Near() 
