@@ -594,8 +594,8 @@ Grid *gridSmooth( Grid *grid )
 {
   int node;
   double ar, optimizationLimit, laplacianLimit;
-  optimizationLimit =0.50;
-  laplacianLimit =0.80;
+  optimizationLimit =0.40;
+  laplacianLimit =0.60;
   for (node=0;node<grid->maxnode;node++) {
     if ( gridValidNode( grid, node ) && !gridNodeFrozen( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
@@ -722,7 +722,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
 	}
       }
     }
-    if (nearestCell == EMPTY || nearestAR > 0.01 ){
+    if (nearestCell == EMPTY || nearestAR > 0.001 ){
       for (i=0;i<3;i++) searchDirection[i] = grid->dARdX[i+minCell*3];
     }else{
       g00 
@@ -776,7 +776,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   
   goodStep = FALSE;
   lastImprovement = -10.0;
-  while (alpha > 10.e-13 && !goodStep) {
+  while (alpha > 10.e-10 && !goodStep) {
 
     predictedImprovement = length*alpha;
   
