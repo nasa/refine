@@ -299,7 +299,7 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testAdvanceLayerOnSymPlane
-  assert_not_nil          grid = Grid.new(7,4,4,0)
+  assert_not_nil          grid = Grid.new(17,14,14,0)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
   assert_equal 2,         grid.addNode(0,1,0)
@@ -318,6 +318,9 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,         layer.constrained(0)
   assert_equal 0,         layer.constrained(1)
   assert_equal 2,         layer.constrained(2)
+  assert_equal 0,         layer.constrainedSide(0,0)
+  assert_equal 0,         layer.constrainedSide(0,1)
+  assert_equal 2,         layer.constrainedSide(0,2)
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal [0,3,1,1], grid.face(0)
   assert_equal [0,1,2,2], grid.face(1)
@@ -334,7 +337,7 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testAdvanceLayerTwiceOnSymPlane
-  assert_not_nil          grid = Grid.new(10,7,6,0)
+  assert_not_nil          grid = Grid.new(15,17,16,0)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
   assert_equal 2,         grid.addNode(0,1,0)
@@ -385,7 +388,7 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testAdvanceLayerOnEdge
-  assert_not_nil          grid = Grid.new(7,4,20,4)
+  assert_not_nil          grid = Grid.new(17,14,20,14)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
   assert_equal 2,         grid.addNode(0,1,0)
