@@ -26,68 +26,53 @@ void teardown (void)
 
 START_TEST(testGridCreate)
 {
-  fail_unless( gridNNode(grid) == 4,
-	       "expected 4 node mesh");
-  fail_unless( gridNCell(grid) == 1,
-	       "expected 1 cell mesh");
+  fail_unless( gridNNode(grid) == 4, "expected a 4 node mesh");
+  fail_unless( gridNCell(grid) == 1, "expected a 1 cell mesh");
 }
 END_TEST
 
 START_TEST(testNodeDeg)
 {
   long i;
-  for ( i =0; i<4 ; i++ )   fail_unless( gridNodeDeg(grid,i) == 0,
-	       "expected no neighbors of node");
+  for ( i=0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 0, "init neigh.");
   gridRegisterNodeCell(grid,2,299);
-  fail_unless( gridNodeDeg(grid,2) == 1,
-	       "expected one neighbor of node 2");
+  fail_unless( gridNodeDeg(grid,2) == 1, "expected one neighbor of node 2");
 }
 END_TEST
 
 START_TEST(testCellIterator)
 {
-  fail_unless( !gridMoreNodeCell(grid), 
-	       "expected the last cell to be reached if not init");
+  fail_unless( !gridMoreNodeCell(grid), "expected last cell - init");
 
   gridFirstNodeCell(grid,0);
-  fail_unless( !gridMoreNodeCell(grid), 
-	       "expected the last cell to be reached if nothing registered");
+  fail_unless( !gridMoreNodeCell(grid), "expected last cell - no register");
  
   gridRegisterNodeCell(grid,2,299);
   gridRegisterNodeCell(grid,3,399);
 
   gridFirstNodeCell(grid,2);
-  fail_unless( gridCurrentNodeCell(grid) == 299, 
-	       "expected cell 299 as neighbor of node 2");
+  fail_unless( gridCurrentNodeCell(grid) == 299, "cell 299 about node 2");
   gridFirstNodeCell(grid,3);
-  fail_unless( gridCurrentNodeCell(grid) == 399, 
-	       "expected cell 399 as neighbor of node 3");
+  fail_unless( gridCurrentNodeCell(grid) == 399, "cell 399 about node 3");
   gridNextNodeCell(grid);
-  fail_unless( !gridMoreNodeCell(grid), 
-	       "expected the last cell to be reached for node 3");
+  fail_unless( !gridMoreNodeCell(grid), "expected last cell - node 3");
 }
 END_TEST
 
 START_TEST(testAddedAndRemoveCell)
 {
   long i;
+  fail_unless( gridRemoveNodeCell(grid,0,0) == NULL, "removed phantom cell");
 
-  fail_unless( gridRemoveNodeCell(grid,0,0) == NULL,
-	       "tried to remove non-existant cell");
+  for ( i=0; i<4 ; i++ ) gridRegisterNodeCell(grid,i,0);
+  for ( i=0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 1,"wrong deg");
 
-  for ( i =0; i<4 ; i++ ) gridRegisterNodeCell(grid,i,0);
-  for ( i =0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 1,
-	       "expected one neighbor of node");
+  fail_unless ( gridRegisterNodeCell(grid,0,99) == NULL, "no memory");
 
-  fail_unless ( gridRegisterNodeCell(grid,0,99) == NULL, 
-		"ran out of memory");
-
-  for ( i =0; i<4 ; i++ ) gridRemoveNodeCell(grid,i,0);
-  for ( i =0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 0,
-	       "expected no neighbors of node");
+  for ( i=0; i<4 ; i++ ) gridRemoveNodeCell(grid,i,0);
+  for ( i=0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 0,"phantomNeigh");
   
-  fail_unless( gridRemoveNodeCell(grid,0,0) == NULL,
-	       "tried to remove non-existant cell");
+  fail_unless( gridRemoveNodeCell(grid,0,0) == NULL, "removed phantom cell-2");
 }
 END_TEST
 
@@ -96,16 +81,13 @@ START_TEST(testUnderAlloc)
   Grid *localGrid;
 
   localGrid = gridCreate(1,1,1);
-  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, 
-		"ran out of memory - one elem");
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, "no memory - 1");
   gridFree(localGrid);
   localGrid = gridCreate(1,1,2);
-  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, 
-		"ran out of memory - two elem");
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, "no memory - 2");
   gridFree(localGrid);
   localGrid = gridCreate(1,1,3);
-  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, 
-		"ran out of memory - three elem");
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, "no memory - 3");
   gridFree(localGrid);
 }
 END_TEST
@@ -117,11 +99,15 @@ START_TEST(testMultipleCellExists)
   gridRegisterNodeCell(grid,1,199);
   fail_unless ( gridCellExists(grid,1,198), "can't find cell 198" );
   fail_unless ( gridCellExists(grid,1,199), "can't find cell 199" );
-
+  gridRemoveNodeCell(grid,1,198);
+  fail_unless ( !gridCellExists(grid,1,198), "found removed cell 198" );
+  fail_unless ( gridCellExists(grid,1,199), "can't find cell 199 - 2" );
+  gridRegisterNodeCell(grid,1,198);
+  fail_unless ( gridCellExists(grid,1,198), "can't re-Reg cell 198" );
+  fail_unless ( gridCellExists(grid,1,199), "can't find cell 199 - 3" );
 }
 END_TEST
 
-/* allocate n1 then n2 then n1 again */
 /* non-contiguos cellist for access and registering */
 /* test that new list terminator is contiguous */
 /* packing */
