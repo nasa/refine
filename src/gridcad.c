@@ -341,14 +341,14 @@ Grid *gridSmooth( Grid *grid )
 {
   int node;
   double ar,limit;
-  limit =0.99;
+  limit =0.50;
   for (node=0;node<grid->nnode;node++) {
     gridNodeAR(grid,node,&ar);
-    if (ar < 0.99) gridSmoothNode( grid, node );
-  }
-  for (node=0;node<grid->nnode;node++) {
-    gridNodeAR(grid,node,&ar);
-    if (ar < 0.99) gridSmoothNode( grid, node );
+    if (ar < limit) {
+      gridSmoothNode( grid, node );
+      gridSmoothNode( grid, node );
+      gridSmoothNode( grid, node );
+    }
   }
   return grid;
 }
