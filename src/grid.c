@@ -344,11 +344,22 @@ Grid *gridEquator(Grid *grid, int n0, int n1, int maxequ, int *nequ, int *equ )
 #define MAXGEM 200
   int ngem;
   int gem[MAXGEM];
-
+  int iequ, igem;
   *nequ = 0;
 
-  if ( NULL == gridGetGem( grid, n0, n1, MAXGEM, &ngem, gem ) ) return NULL;
+  if ( NULL == gridGem( grid, n0, n1, MAXGEM, &ngem, gem ) ) return NULL;
 
+  if (ngem>maxequ) return NULL;
+
+  equ[0]= gem[3];
+
+  for ( iequ=1 ; iequ<ngem ; iequ++ ){
+    for( igem=0 ; igem<ngem ; igem++ ){
+      if (equ[iequ-1] == gem[2+4*(igem)]) equ[iequ] = gem[3+4*(igem)];
+    }
+  }
+  *nequ = ngem;
+  
   return grid;
 }
 
