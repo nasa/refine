@@ -56,6 +56,7 @@ int main( int argc, char *argv[] )
   GridBool tecplotOutput = FALSE;
   int iview = 0;
   int maxnode = 50000;
+  double minVolume;
 
   sprintf( project,       "" );
   sprintf( outputProject, "" );
@@ -164,7 +165,7 @@ int main( int argc, char *argv[] )
 	printf("Scaling spacing to refine a sphere.\n");
 	if (GridMoveProjection) {
 	  gridScaleSpacingSphereDirection(grid, 0.3, 0.5, 0.0, 0.1, 
-					  0.2, 0.5, 0.2 );
+					  0.1, 0.5, 0.1 );
 	}else{
 	  gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
 	}
@@ -250,10 +251,28 @@ int main( int argc, char *argv[] )
       printf("Calling GridMove to project nodes...\n");
       gm = gridmoveCreate(grid);
       gridmoveProjectionDisplacements(gm);
-      gridmoveSpringRelaxation(gm,10,20);
+      gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,100);
       gridmoveApplyDisplacements(gm);
       gridmoveFree(gm);
-      STATUS;
+      STATUS; minVolume = gridMinVolume(grid);
+      if (0.0>=minVolume) {
+	printf("relax neg cells...\n");gridRelaxNegativeCells(grid);
+	printf("edge swapping grid...\n");gridSwap(grid);
+	STATUS; minVolume = gridMinVolume(grid);
+	if (0.0>=minVolume) {
+	  printf("relax neg cells...\n");gridRelaxNegativeCells(grid);
+	  printf("edge swapping grid...\n");gridSwap(grid);
+	  STATUS; minVolume = gridMinVolume(grid);
+	}
+	if (0.0<minVolume) {
+	  printf("edge swapping grid...\n");gridSwap(grid);
+	  printf("node smoothing grid...\n");gridSmooth(grid);
+	  printf("edge swapping grid...\n");gridSwap(grid);
+	  printf("node smoothing grid...\n");gridSmooth(grid);	  
+	  printf("node smoothing grid...\n");gridSmooth(grid);	  
+	}
+	STATUS;
+      }
     }
 
     if (debugInsert) 
