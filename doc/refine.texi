@@ -196,7 +196,7 @@ morph the current grid into a grid that satisfies the mapped metric.
 
 Node optimization can be done with ``smart Lapacian'', line searches
 in steepest desent direction, linear quadratic programming with
-congregate gradient direction, or simplex searches.
+conjugate gradient direction, or simplex searches.
 
 @node Base Objects
 @chapter Base Objects
