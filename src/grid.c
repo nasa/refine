@@ -935,6 +935,7 @@ Grid *gridReconnectCell(Grid *grid, int oldNode, int newNode )
 
   if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
   if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+  if (newNode == oldNode) return grid;
 
   it = adjFirst(grid->cellAdj,oldNode);
   while (adjValid(it)){
@@ -961,6 +962,7 @@ Grid *gridReconnectCellUnlessFrozen(Grid *grid, int oldNode, int newNode )
 
   if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
   if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+  if (newNode == oldNode) return grid;
   
   it = adjFirst(grid->cellAdj,oldNode);
   while (adjValid(it)){
@@ -1120,6 +1122,7 @@ Grid *gridReconnectFace(Grid *grid, int faceId, int oldNode, int newNode )
   int face, i, node;
   if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
   if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+  if (newNode == oldNode) return grid;
 
   it = adjFirst(grid->faceAdj,oldNode);
   while (adjValid(it)){
@@ -1151,6 +1154,7 @@ Grid *gridReconnectFaceUnlessFrozen(Grid *grid, int faceId,
 
   if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
   if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+  if (newNode == oldNode) return grid;
 
   it = adjFirst(grid->faceAdj,oldNode);
   while (adjValid(it)){
