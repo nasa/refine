@@ -131,10 +131,9 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if(strcmp(project,"")==0)       sprintf(project,"morphr1" );
-  if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
-  if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"../Adjoint/%s_adapt_hess");
-  if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
+  if(strcmp(project,"")==0)       sprintf(project,"morphr3" );
+  if(strcmp(outputProject,"")==0) sprintf(outputProject,"morphr4");
+  if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"../Adjoint/%s_adapt_hess",project);
   if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
 
   if(boundaryLayerGrid || debugInsert ) sprintf(adaptfile,"none");
@@ -208,7 +207,7 @@ int main( int argc, char *argv[] )
 
   oldSize = 1;
   newSize = gridNNode(grid);
-  jmax = 40;
+  jmax = 11;
   for ( j=0; (j<jmax) && (
 	(ratio < 0.99) || 
 	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
