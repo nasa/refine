@@ -164,7 +164,8 @@ void layerPack(void *voidLayer,
 
   for (origcell=0; origcell<maxcell; origcell++) {
     packcell = cello2n[origcell];
-    layer->cellInLayer[packcell]=layer->cellInLayer[origcell];
+    if (packcell != EMPTY)
+      layer->cellInLayer[packcell]=layer->cellInLayer[origcell];
   }
   for ( packcell=ncell ; packcell < maxcell ; packcell++ ){ 
     layer->cellInLayer[packcell] = FALSE;
@@ -172,7 +173,8 @@ void layerPack(void *voidLayer,
 
   for (origface=0; origface<maxface; origface++) {
     packface = faceo2n[origface];
-    layer->faceInLayer[packface]=layer->faceInLayer[origface];
+    if (packface != EMPTY)
+      layer->faceInLayer[packface]=layer->faceInLayer[origface];
   }
   for ( packface=nface ; packface < maxface ; packface++ ){ 
     layer->faceInLayer[packface] = FALSE;
@@ -180,7 +182,8 @@ void layerPack(void *voidLayer,
 
   for (origedge=0; origedge<maxedge; origedge++) {
     packedge = edgeo2n[origedge];
-    layer->edgeInLayer[packedge]=layer->edgeInLayer[origedge];
+    if (packedge != EMPTY)
+      layer->edgeInLayer[packedge]=layer->edgeInLayer[origedge];
   }
   for ( packedge=nedge ; packedge < maxedge ; packedge++ ){
     layer->edgeInLayer[packedge] = FALSE;
