@@ -416,4 +416,48 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal origXYZ, grid.nodeXYZ(0)
  end
 
+ def faceGrid
+  grid = Grid.new(5,3,3,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addCell(0,1,2,3)
+  grid.addFace(0,1,2,1)
+ end
+
+ def testSplitFaceAt
+  assert_not_nil grid = faceGrid
+  assert_equal 4, grid.nnode
+  assert_equal 1, grid.ncell
+  assert_equal 1, grid.nface
+  assert_equal grid.nnode, grid.splitFaceAt(0,0.3,0.3,0.0)
+  assert_equal 5, grid.nnode
+  assert_equal 3, grid.ncell
+  assert_equal 3, grid.nface 
+ end
+
+ def testSplitFaceAtNegVolume
+  assert_not_nil grid = faceGrid
+  assert_equal 4, grid.nnode
+  assert_equal 1, grid.ncell
+  assert_equal 1, grid.nface
+  assert_equal( -1, grid.splitFaceAt(0,1.0,1.0,0.0) )
+  assert_equal 4, grid.nnode
+  assert_equal 1, grid.ncell
+  assert_equal 1, grid.nface 
+ end
+
+ def testSplitFaceAtBadFace
+  assert_not_nil grid = faceGrid
+  assert_equal 4, grid.nnode
+  assert_equal 1, grid.ncell
+  assert_equal 1, grid.nface
+  assert_equal( -1, grid.splitFaceAt(-1,1.0,1.0,0.0) )
+  assert_equal( -1, grid.splitFaceAt(1,1.0,1.0,0.0) )
+  assert_equal 4, grid.nnode
+  assert_equal 1, grid.ncell
+  assert_equal 1, grid.nface 
+ end
+
 end
