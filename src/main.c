@@ -85,5 +85,7 @@ int main( int argc, char *argv[] )
   grid = gridImport( nnode, nface, maxcell, ncell,
 		     xyz, f2n, faceId, c2n );
 
+  printf("gridImport: minimum Volume %12.8e\n",gridMinVolume(grid));
+
   return;
 }
