@@ -15,10 +15,11 @@
 int main( int argc, char *argv[] )
 {
   FILE *file;
-  int i, nnode, nface, ncell;
+  int i, nnode, nface, maxcell, ncell;
   double *xyz;
   int *f2n, *faceId;
   int *c2n;
+  Grid *grid;
 
   if (argc == 1) {
     printf("\nUsage: refine project.fgrid\n\n");
@@ -57,15 +58,21 @@ int main( int argc, char *argv[] )
 
   printf("reading cells...\n");
   
-  c2n = malloc(4*ncell*sizeof(int));
+  maxcell = ncell*2;
 
-  for( i=0; i<nface ; i++ ) {
+  c2n = malloc(4*maxcell*sizeof(int));
+
+  for( i=0; i<ncell ; i++ ) {
     fscanf(file,"%d",&c2n[0+4*i]);
     fscanf(file,"%d",&c2n[1+4*i]);
     fscanf(file,"%d",&c2n[2+4*i]);
     fscanf(file,"%d",&c2n[3+4*i]);
   }
+
   fclose(file);
+
+  grid = gridImport( nnode, nface, maxcell, ncell,
+		     xyz, f2n, faceId, c2n );
 
   return;
 }
