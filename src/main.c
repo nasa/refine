@@ -88,7 +88,6 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if(debugInsert)                 sprintf(project,"../test/box1" );
   if(strcmp(project,"")==0)       sprintf(project,"../test/om6" );
   if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
