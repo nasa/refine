@@ -16,6 +16,8 @@
 
 BEGIN_C_DECLORATION
 
+double gridEdgeLength(Grid *g, int n0, int n1);
+
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 Grid *gridNodeAR(Grid *g, int node, double *ar );

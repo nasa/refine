@@ -6,6 +6,17 @@
 #include "gridmetric.h"
 #include "gridStruct.h"
 
+double gridEdgeLength(Grid *grid, int n0, int n1 )
+{
+  double dx, dy, dz;
+
+  dx = grid->xyz[0+3*n1] - grid->xyz[0+3*n0];
+  dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
+  dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
+
+  return  sqrt(dx*dx+dy*dy+dz*dz);
+}
+
 double gridVolume(Grid *grid, int *nodes )
 {
   int ixyz;

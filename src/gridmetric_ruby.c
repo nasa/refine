@@ -4,6 +4,12 @@
 
 #define GET_GRID_FROM_SELF Grid *grid; Data_Get_Struct( self, Grid, grid );
 
+VALUE grid_edgeLength( VALUE self, VALUE n0, VALUE n1 )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new( gridEdgeLength( grid, NUM2INT(n0), NUM2INT(n1) ) );
+}
+
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -80,7 +86,6 @@ VALUE grid_minAR( VALUE self )
   return rb_float_new( gridMinAR( grid ) );
 }
 
-
 VALUE grid_rightHandedFace( VALUE self, VALUE face )
 {
   GET_GRID_FROM_SELF;
@@ -98,6 +103,7 @@ VALUE cGridMetric;
 void Init_GridMetric() 
 {
   cGridMetric = rb_define_module( "GridMetric" );
+  rb_define_method( cGridMetric, "edgeLength", grid_edgeLength, 2 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );

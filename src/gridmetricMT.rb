@@ -15,7 +15,14 @@ class Grid
  include GridMetric
 end
 
-class TestSampleUnit < Test::Unit::TestCase
+class TestGridMetric < Test::Unit::TestCase
+
+ def testEdgeLength
+  assert_not_nil grid = Grid.new(2,0,0,0)
+  assert_equal 0, grid.addNode(0.0,0.0,0.0)
+  assert_equal 1, grid.addNode(0.0,0.0,2.0)
+  assert_in_delta 2.0, grid.edgeLength(0,1), 1.0e-15
+ end
 
  def testMetrics
   assert_not_nil grid = Grid.new(4,1,0,0)
