@@ -31,6 +31,7 @@ int adjCurrent( Adj *adj );
 void adjNext( Adj *adj );
 
 bool adjExists( Adj *adj, int node, int item );
+int adjDegree( Adj *adj, int node );
 
 END_C_DECLORATION
 
