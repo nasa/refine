@@ -1,9 +1,5 @@
 # -*- Makefile -*-
 
-# This file is included by the various $ARCH/Makefile.am
-
-AUTOMAKE_OPTIONS = 1.7
-
 lib_LIBRARIES = \
 	librefine.a \
 	libFAKEGeomExtras.a \
