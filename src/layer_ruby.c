@@ -118,6 +118,12 @@ VALUE layer_addNormal( VALUE self, VALUE globalNodeId )
   return INT2NUM(layerAddNormal(layer,NUM2INT(globalNodeId)));
 }
 
+VALUE layer_uniqueNormalId( VALUE self, VALUE globalNodeId )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerUniqueNormalId(layer,NUM2INT(globalNodeId)));
+}
+
 VALUE layer_makeNormal( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -331,6 +337,7 @@ void Init_Layer()
   rb_define_method( cLayer, "triangle", layer_triangle, 1 );
   rb_define_method( cLayer, "triangleDirection", layer_triangleDirection, 1 );
   rb_define_method( cLayer, "addNormal", layer_addNormal, 1 );
+  rb_define_method( cLayer, "uniqueNormalId", layer_uniqueNormalId, 1 );
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
   rb_define_method( cLayer, "parentFace", layer_parentFace, 1 );
   rb_define_method( cLayer, "triangleNormals", layer_triangleNormals, 1 );

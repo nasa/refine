@@ -413,6 +413,7 @@ Layer *layerCopyNormal(Layer *layer, int originalNormal, int newNormal )
 
 int layerAddNormal(Layer *layer, int globalNodeId )
 {
+  int i; 
 
   if (globalNodeId < 0 || globalNodeId >= layerMaxNode(layer) ) return EMPTY;
 
@@ -420,16 +421,28 @@ int layerAddNormal(Layer *layer, int globalNodeId )
     layer->maxnormal += 5000;
     if (layer->normal == NULL) {
       layer->normal = malloc(layer->maxnormal*sizeof(Normal));
+      layer->globalNode2Normal = malloc(layerMaxNode(layer)*sizeof(int));
+      for (i=0;i<layerMaxNode(layer);i++) layer->globalNode2Normal[i]=EMPTY;
     }else{
       layer->normal = realloc(layer->normal,layer->maxnormal*sizeof(Normal));
     }
   }
 
   if (layer != layerInitializeNormal(layer, layer->nnormal)) return EMPTY;
+  layer->globalNode2Normal[globalNodeId] = layer->nnormal;
 
   layer->nnormal++;
 
   return (layer->nnormal - 1);
+}
+
+int layerUniqueNormalId(Layer *layer, int globalNodeId)
+{
+  if ( layer->globalNode2Normal == NULL || 
+       layer->globalNode2Normal[globalNodeId] == EMPTY ) 
+    return layerAddNormal(layer,globalNodeId);
+
+  return layer->globalNode2Normal[globalNodeId];
 }
 
 Layer *layerMakeNormal(Layer *layer)

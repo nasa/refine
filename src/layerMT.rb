@@ -99,6 +99,14 @@ class TestLayer < Test::Unit::TestCase
   assert                   layer.maxnormal>=layer.nnormal
  end
 
+ def testWeGetUniqueNormals
+  layer = Layer.new(Grid.new(42,0,0,0))
+  assert_equal 0, layer.uniqueNormalId(40)
+  assert_equal 0, layer.uniqueNormalId(40)
+  assert_equal 1, layer.uniqueNormalId(24)
+  assert_equal 0, layer.uniqueNormalId(40)
+ end
+
  def testMakeNormals
   assert_not_nil        grid = Grid.new(5,0,2,0)
   assert_equal grid,    grid.addFace(1,2,3,1)
