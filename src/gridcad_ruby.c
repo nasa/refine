@@ -73,10 +73,10 @@ VALUE grid_smoothNodeFaceMR( VALUE self, VALUE node )
   return (gridSmoothNodeFaceMR( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
-VALUE grid_optimizeT( VALUE self, VALUE node, VALUE rb_dt )
+VALUE grid_lineSearchT( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
-  return (gridOptimizeT( grid, NUM2INT(node), NUM2DBL(rb_dt) )==grid?self:Qnil);
+  return (gridLineSearchT( grid, NUM2INT(node), gridOPTIM_COST_FLOOR )==grid?self:Qnil);
 }
 
 VALUE grid_optimizeUV( VALUE self, VALUE node, VALUE rb_dudv )
@@ -179,7 +179,7 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "smoothNode", grid_smoothNode, 1 );
   rb_define_method( cGridCAD, "smoothNodeFaceMR", grid_smoothNodeFaceMR, 1 );
 
-  rb_define_method( cGridCAD, "optimizeT", grid_optimizeT, 2 );
+  rb_define_method( cGridCAD, "lineSearchT", grid_lineSearchT, 1 );
   rb_define_method( cGridCAD, "optimizeUV", grid_optimizeUV, 2 );
   rb_define_method( cGridCAD, "optimizeFaceUV", grid_optimizeFaceUV, 2 );
   rb_define_method( cGridCAD, "optimizeXYZ", grid_optimizeXYZ, 2 );

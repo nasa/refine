@@ -579,24 +579,12 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
   if ( gridGeometryNode( grid, node ) ) return grid;
   if ( gridGeometryBetweenFace( grid, node ) &&
        !gridGeometryEdge( grid, node ) ) return grid;
+
   if ( gridGeometryEdge( grid, node ) && !smoothOnSurface ) return grid;
   if ( gridGeometryFace( grid, node ) && !smoothOnSurface ) return grid;
 
   if ( gridGeometryEdge( grid, node ) ) {
-    edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
-    gridEdge(grid,edge,nodes,&edgeId);
-    gridNodeARDerivative ( grid, node, &ar, dARdx);
-    gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
-    gridNodeT( grid, node, edgeId, &t);
-    if ( !CADGeom_PointOnEdge( vol, edgeId,   
-			       t, xyzProj, 1, dt, NULL) )
-      printf ( "ERROR: CADGeom_PointOnEdge, %d: %s\n",__LINE__,__FILE__ );
-    if (ar<mr || gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) ) {
-      dARdt = dARdx[0]*dt[0] + dARdx[1]*dt[1] + dARdx[2]*dt[2];
-    }else{
-      dARdt = dMRdx[0]*dt[0] + dMRdx[1]*dt[1] + dMRdx[2]*dt[2];
-    }
-    return gridOptimizeT( grid, node, dARdt );
+    return gridLineSearchT(grid, node, gridOPTIM_COST_FLOOR );
   }
   if ( gridGeometryFace( grid, node ) ) {
     for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
@@ -665,49 +653,87 @@ Grid *gridSmoothNodeFaceMR(Grid *grid, int node )
   return gridOptimizeFaceUV( grid, node, dMRdu );
 }
 
-Grid *gridOptimizeT(Grid *grid, int node, double dt )
+Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
 {
-  double tOrig, t;
+  double dt, t;
   double gold;
-  double alpha[2], ar[2], mr;
+  double alpha[2], ar[2], equality[2];
   int iter;
-  int nodes[2];
-  int edge, edgeId;
+
+  int nodes1[2], nodes2[2];
+  int edge1, edge2, edgeId1, edgeId2;
+  int node1, node2, nodeTemp;
+  double ratio1, ratio2;
+  double tStart, tEnd;
 
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
 
-  edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
-  if (EMPTY == edge) return NULL;
-  if ( grid != gridEdge(grid,edge,nodes,&edgeId) ) return NULL;
-  gridNodeT( grid, node, edgeId, &tOrig);
+  /* do not allow geometry nodes to move */
+  if ( gridGeometryNode( grid, node ) ) return grid;
 
-  alpha[0] = 0.0;
-  t = tOrig + alpha[0]*dt;
-  if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
-  gridNodeAR( grid, node, &ar[0] );
-  gridNodeFaceMR( grid, node, &mr );
-  ar[0] = MIN(mr, ar[0]);
+  /* get the two edges involved (incident to node) */
+  edge1 = adjItem(adjFirst(gridEdgeAdj(grid), node));
+  if (EMPTY == edge1) return NULL;
+  edge2 = adjItem(adjNext(adjFirst(gridEdgeAdj(grid), node)));
+  if (EMPTY == edge2) return NULL;
 
-  alpha[1] = 1.0e-10;
-  t = tOrig + alpha[1]*dt;
-  if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
-  gridNodeAR( grid, node, &ar[1] );
-  gridNodeFaceMR( grid, node, &mr );
-  ar[1] = MIN(mr, ar[1]);
+  /* make sure the we are on a single edge and get the adjacent nodes */
+  if ( grid != gridEdge(grid,edge1,nodes1,&edgeId1) ) return NULL;
+  if ( grid != gridEdge(grid,edge2,nodes2,&edgeId2) ) return NULL;
+  if ( edgeId1 != edgeId2 ) return NULL;
+  node1 = nodes1[0] + nodes1[1] - node; 
+  node2 = nodes2[0] + nodes2[1] - node; 
 
-  iter = 0;
-  while ( ar[1] > ar[0] && ar[1] > 0.0 && iter < 100){
-    iter++;
-    alpha[0] = alpha[1]; ar[0] = ar[1];
-    alpha[1] = alpha[0] * gold;
-    t = tOrig + alpha[1]*dt;
-    if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
-    gridNodeAR( grid, node, &ar[1] );
-    gridNodeFaceMR( grid, node, &mr );
-    ar[1] = MIN(mr, ar[1]);
+  /* get lengths in mapped space */
+  ratio1 = gridEdgeRatio(grid, node, node1);
+  ratio2 = gridEdgeRatio(grid, node, node2);
+
+  /* if necessary, switch node1 and node2 so we are moving toward node1 */
+  if ( ratio2 > ratio1 ) {
+    nodeTemp = node1; node1 = node2; node2 = nodeTemp;
   }
 
-  t = tOrig + alpha[0]*dt;
+  /* calculate dt to point in the parameter direction of `longer' edge */
+  if ( grid != gridNodeT( grid, node, edgeId1, &tStart ) ) return NULL;
+  if ( grid != gridNodeT( grid, node1, edgeId1, &tEnd ) ) return NULL;
+  dt = tEnd - tStart;
+
+  /* initialize the alpha, ar, and equality arrays */
+  alpha[0] = 0.0;
+  t = tStart + alpha[0]*dt;
+  if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
+  gridNodeAR( grid, node, &ar[0] );
+  ratio1 = gridEdgeRatio(grid, node, node1);
+  ratio2 = gridEdgeRatio(grid, node, node2);
+  equality[0] = ratio2/ratio1;
+
+  alpha[1] = 1.0e-8;
+  t = tStart + alpha[1]*dt;
+  if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
+  gridNodeAR( grid, node, &ar[1] );
+  ratio1 = gridEdgeRatio(grid, node, node1);
+  ratio2 = gridEdgeRatio(grid, node, node2);
+  equality[1] = ratio2/ratio1;
+
+  /* try larger alphas if equality is improving and ar is valid */
+  iter = 0;
+  while ( equality[1] > equality[0] && 
+	  equality[1] < 1.0 &&
+	  ar[1] > optimized_cost_limit && 
+	  iter < 100 ) {
+    iter++;
+    alpha[0] = alpha[1]; ar[0] = ar[1]; equality[0] =  equality[1];
+    alpha[1] = alpha[0] * gold;
+    t = tStart + alpha[1]*dt;
+    if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
+    gridNodeAR( grid, node, &ar[1] );
+    ratio1 = gridEdgeRatio(grid, node, node1);
+    ratio2 = gridEdgeRatio(grid, node, node2);
+    equality[1] = ratio2/ratio1;
+  }
+
+  /* use the `best' t and update node xyz, edge t, and face uv */
+  t = tStart + alpha[0]*dt;
   if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
   if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
 

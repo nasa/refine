@@ -223,7 +223,7 @@ class TestGridCAD < Test::Unit::TestCase
  end
 
  def isoTet(xpert = 0.0, zpert = 0.0, edge = nil)
-  grid = Grid.new(4,1,1,1)
+  grid = Grid.new(5,1,1,2)
   grid.addNode( xpert, 0.000, 0.000 )
   grid.addNode( 1.000, 0.000, 0.000 )
   grid.addNode( 0.500, 0.866, 0.000 )
@@ -233,28 +233,34 @@ class TestGridCAD < Test::Unit::TestCase
 		 1,11.0,20.0,
 		 2,10.5,20.866,
 		 10)
-  grid.addEdge(0, 1, 20, 0.0+xpert, 1.0) if edge
+  if edge
+   grid.addNode( -1.000, 0.000, 0.000 )
+   grid.addEdge(0, 1, 20, 0.0+xpert, 1.0)
+   grid.addEdge(4, 0, 20, -1.0, 0.0+xpert)
+  end
   grid
  end
 
- def testIsotropicTet
+ def testIsotropicTetSetup
   assert_in_delta 1.000, isoTet.minAR, 1.0e-4
   assert_in_delta 0.9797, isoTet(-0.2).minAR, 1.0e-4
+  assert_in_delta 1.2, isoTet(-0.2,0.0,true).edgeLength(0,1), 1.0e-15
+  assert_in_delta 0.8, isoTet(-0.2,0.0,true).edgeLength(4,0), 1.0e-15
  end
 
- def testOptimizeTDispacement
-  assert_not_nil grid = isoTet(-0.2,0.0,true)
-  assert_in_delta 0.9797, grid.minAR, 1.0e-3
-  assert_equal grid, grid.optimizeT(0,1.0)
-  assert_in_delta 0.999, grid.minAR, 1.0e-3
+ def testLineSearchTDispacement
+  assert_not_nil grid = isoTet(-0.2,-0.5,true)
+  assert_equal grid, grid.lineSearchT(0)
   assert_in_delta 0.0, grid.nodeT(0,20), 5.0e-2
+  assert_in_delta 1.0, grid.edgeLength(0,1), 0.05
+  assert_in_delta 1.0, grid.edgeLength(4,0), 0.05
  end
 
  def testSmoothEdge
-  assert_not_nil grid = isoTet(-0.2,0.0,true)
-  assert_in_delta 0.9797, grid.minAR, 1.0e-3
+  assert_not_nil grid = isoTet(-0.2,-0.5,true)
   assert_equal grid, grid.smoothNode(0)
-  assert_in_delta 0.999, grid.minAR, 1.0e-3
+  assert_in_delta 1.0, grid.edgeLength(0,1), 0.05
+  assert_in_delta 1.0, grid.edgeLength(4,0), 0.05
  end
 
  def testOptimizeUVDispacement

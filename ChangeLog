@@ -1,3 +1,12 @@
+2005-01-26 10:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSearchT) Renamed from gridOptimizeT to
+	be more specific about the the method of optimization. Rewrote
+	This method to optimize edge `lengths' in mapped space with
+	the constraint of maintaining a minimum gridAR. The old method
+	moved the edge node to improve gridAR directly. This simplified
+	gridSmoothNode.
+
 2005-01-25 21:55 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.4 Release. ** internal release ** to save stable
