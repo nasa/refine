@@ -62,6 +62,7 @@ libMesherX_a_SOURCES = \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
 	gridmove.h gridmove.c \
+	gridmpi.h gridmpi.c \
 	gridfiller.h gridfiller.c \
 	layer.h layer.c \
 	mesherxInit.h mesherxInit.c \
