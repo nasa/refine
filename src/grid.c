@@ -115,7 +115,8 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->nline = EMPTY;
   grid->line = NULL;
 
-  grid->renumber = NULL;
+  grid->renumberFunc = NULL;
+  grid->renumberData = NULL;
 
   return grid;
 }
@@ -248,7 +249,8 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nline = EMPTY;
   grid->line = NULL;
 
-  grid->renumber = NULL;
+  grid->renumberFunc = NULL;
+  grid->renumberData = NULL;
 
   return  grid;
 }
@@ -402,15 +404,19 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
   return grid;
 }
 
-Grid *gridAttachNodeSorter(Grid *grid, void (*renumber) (int *o2n) )
+Grid *gridAttachNodeSorter(Grid *grid, 
+			   void (*renumberFunc)(void *renumberData, int *o2n), 
+			   void *renumberData )
 {
-  grid->renumber = renumber;
+  grid->renumberFunc = renumberFunc;
+  grid->renumberData = renumberData;
   return grid;
 }
 
 Grid *gridDetachNodeSorter(Grid *grid )
 {
-  grid->renumber = NULL;
+  grid->renumberFunc = NULL;
+  grid->renumberData = NULL;
   return grid;
 }
 
@@ -640,7 +646,8 @@ Grid *gridPack(Grid *grid)
   for(i=0;i<grid->nline;i++) 
     if (EMPTY != grid->line[i]) grid->line[i] = o2n[grid->line[i]];
 
-  if ( NULL != grid->renumber ) (*grid->renumber)(o2n);
+  if ( NULL != grid->renumberFunc ) 
+    (*grid->renumberFunc)( grid->renumberData, o2n );
 
   free(o2n);
 
@@ -778,7 +785,8 @@ Grid *gridSortNodeGridEx(Grid *grid)
   for(i=0;i<grid->nline;i++) 
     if (EMPTY != grid->line[i]) grid->line[i] = o2n[grid->line[i]];
 
-  if ( NULL != grid->renumber ) (*grid->renumber)(o2n);
+  if ( NULL != grid->renumberFunc ) 
+    (*grid->renumberFunc)( grid->renumberData, o2n );
 
   free(o2n);
 

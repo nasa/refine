@@ -28,7 +28,9 @@ Grid *gridExportFAST(Grid *g, char *filename );
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n );
 Grid *gridImportAdapt(Grid *g, char *filename );
-Grid *gridAttachNodeSorter(Grid *g, void (*renumber) (int *o2n) );
+Grid *gridAttachNodeSorter(Grid *g, 
+			   void (*renumberFunc)(void *renumberData, int *o2n),
+			   void *renumberData );
 Grid *gridDetachNodeSorter(Grid *g );
 Grid *gridPack(Grid *g);
 Grid *gridSortNodeGridEx(Grid *g);

@@ -63,7 +63,8 @@ struct Grid {
   int nline;
   int *line;
 
-  void (*renumber) (int *o2n);
+  void (*renumberFunc)(void *renumberData, int *o2n);
+  void *renumberData;
 
 };
 
