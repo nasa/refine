@@ -89,6 +89,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   if (blendElement) {
     printf("inserting blends...\n");
     layerBlend(layer); 
+    //printf("extend blends...\n");
+    //layerBlendExtend(layer,0.01,0,0); 
     printf("split blends...\n");
     layerSplitBlend(layer); 
   }
@@ -516,7 +518,19 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       0, NULL,
 			       &nfacenode, &nfacetri, 
 			       &newface, &newxyz, &newuv) ) {
+	FILE *mfile;
 	printf("%s\nCould NOT mesh Face %d\n",ErrMgr_GetErrStr(),faceId);
+	mfile = fopen("faceError.m","w");
+	fprintf(mfile,"face=[\n");
+	for(i=0;i<nshell;i++){
+	  fprintf(mfile,"%20.10f %20.10f\n%20.10f %20.10f\n",
+		  shellxyz[0+3*shell[0+2*i]],shellxyz[1+3*shell[0+2*i]],
+		  shellxyz[0+3*shell[1+2*i]],shellxyz[1+3*shell[1+2*i]]);
+	}
+	fprintf(mfile,"];\n");
+	fprintf(mfile," gset term postscript; gset output 'faceError.ps'; \n");
+	fprintf(mfile,"plot(face(:,1),face(:,2))\n");
+	fclose(mfile);
 	return NULL;
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
