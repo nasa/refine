@@ -28,6 +28,15 @@
 
 	* src/restartTest.c Test program for GeoSDK restarts.
 
+2004-07-06 15:26 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) changed the global node
+	id's calculation for face patches to use CADTopo_VolFacePts
+	instead of UGPatch_GlobalIndex. This is the correct numbering if
+	UGPatch_InitSurfacePatches is NOT called. UGPatch_GlobalIndex
+	SHOULD be used if UGPatch_InitSurfacePatches was called to
+	create restart.
+
 2004-07-06 11:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridtestcadparameters_) added function to
