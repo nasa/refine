@@ -123,6 +123,18 @@ VALUE grid_removeCell( VALUE self, VALUE cellId )
   return (returnedGrid==NULL?Qnil:self);
 }
 
+VALUE grid_cell( VALUE self, VALUE cellId )
+{
+  int i, nodes[4];
+  VALUE rb_nodes;
+  GET_GRID_FROM_SELF;
+  if ( NULL == gridCell( grid, NUM2INT(cellId), nodes ) ) return Qnil;
+  rb_nodes = rb_ary_new2(4);
+  for ( i=0 ; i < 4 ; i++ ) rb_ary_store( rb_nodes, i, INT2NUM(nodes[i]) );
+  return rb_nodes;
+}
+
+
 VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
   VALUE rb_gem;
@@ -202,6 +214,7 @@ void Init_Grid()
   rb_define_method( cGrid, "cellExists", grid_cellExists, 2 );
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
+  rb_define_method( cGrid, "cell", grid_cell, 1 );
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );
