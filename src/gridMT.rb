@@ -72,6 +72,7 @@ class TestSampleUnit < Test::Unit::TestCase
     grid = Grid.new(1,1,4)
     assert_equal grid, grid.registerNodeCell(0,0)
     assert_equal grid, grid.registerNodeCell(0,1)
+    assert_equal nil,  grid.registerNodeCell(0,2)
   end
 
  def testMultipleNodeCellExists
