@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <values.h>
 #include "grid.h"
+#include "gridswap.h"
 #include <CADGeom/CADGeom.h>
 
 Grid *gridLoadPart( char *project );
