@@ -1,3 +1,8 @@
+2004-09-22 17:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSetGlobalMap) added to apply a metric to
+	every node in field.
+
 2004-09-17 17:35 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* Added support for CAPRI 2.0 interface.  Configure with

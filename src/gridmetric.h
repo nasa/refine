@@ -35,6 +35,10 @@ Grid *gridScaleSpacingSphere(Grid *g, double x, double y, double z, double r,
 Grid *gridScaleSpacingSphereDirection(Grid *g, 
 				 double x, double y, double z, double r,
 				 double scalex, double scaley, double scalez );
+Grid *gridSetGlobalMap(Grid *g,
+		       double m11, double m12, double m13,
+                                   double m22, double m23,
+                                               double m33);
 Grid *gridCopySpacing(Grid *g, int originalNode, int newNode);
 
 Grid *gridConvertMetricToJacobian(Grid *g, double *m, double *j);

@@ -262,6 +262,21 @@ Grid *gridScaleSpacingSphereDirection( Grid *grid,
   return grid;
 }
 
+Grid *gridSetGlobalMap(Grid *grid,
+		       double m11, double m12, double m13,
+		                   double m22, double m23,
+		                               double m33)
+{
+  int node;
+  for ( node=0; node<gridMaxNode(grid); node++ )
+    if ( gridValidNode(grid,node) )
+      gridSetMap(grid, node,
+		 m11, m12, m13,
+   		      m22, m23,
+		           m33);
+  return grid;
+}
+
 Grid *gridCopySpacing(Grid *grid, int originalNode, int newNode)
 {
   double map[6];
