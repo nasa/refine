@@ -273,214 +273,34 @@ Grid *gridCopySpacing(Grid *grid, int originalNode, int newNode)
   return grid;
 }
 
-Grid *gridEigenValues(Grid *grid, double *m, double *eigenValues)
-{
-  double t, b, c, d;
-  double Q, Rp, Q3, Qr2m, b3;
-  double diagRatio;
-
-  diagRatio = (ABS(m[1])+ABS(m[2])+ABS(m[4])) 
-    / (ABS(m[0])+ABS(m[3])+ABS(m[5]));
-
-  if (diagRatio < 1.0e-5) {
-    eigenValues[0]=m[0];
-    eigenValues[1]=m[3];
-    eigenValues[2]=m[5];
-  }else{
-    /* http://mathworld.wolfram.com/CubicEquation.html */
-    /* http://gandalf.sourceforge.net/ */
-    b = -(m[0] + m[3] + m[5]);
-    c = m[0]*m[3] + m[3]*m[5] + m[5]*m[0]
-      - m[4]*m[4] - m[2]*m[2] - m[1]*m[1];
-    d = m[0]*m[4]*m[4] + m[3]*m[2]*m[2] + m[5]*m[1]*m[1]
-      - m[0]*m[3]*m[5] - 2.0*m[4]*m[2]*m[1];
-
-    Q = (b*b - 3.0*c)/9.0;
-    Rp = (2.0*b*b*b - 9.0*b*c + 27.0*d)/54.0;
-    Q3 = Q*Q*Q;
-    if ( Rp*Rp > Q3 ) {
-      printf("%s: %d: gridEigenValues: complex roots\n",
-	     __FILE__,__LINE__);
-      return NULL;
-    }
-    
-    b3 = b/3.0;
-    t = acos(Rp/sqrt(Q3));
-    Qr2m = -2.0*sqrt(Q);
-    eigenValues[0] = Qr2m*cos(t/3.0) - b3;
-    eigenValues[1] = Qr2m*cos((t + 2.0*M_PI)/3.0) - b3;
-    eigenValues[2] = Qr2m*cos((t - 2.0*M_PI)/3.0) - b3;
-  }
-
-  if ( eigenValues[1] > eigenValues[0] ) {
-    t = eigenValues[0];
-    eigenValues[0] = eigenValues[1];
-    eigenValues[1] = t;
-  }
-
-  if ( eigenValues[2] > eigenValues[0] ) {
-    t = eigenValues[0];
-    eigenValues[0] = eigenValues[2];
-    eigenValues[2] = t;
-  }
-
-  if ( eigenValues[2] > eigenValues[1] ) {
-    t = eigenValues[1];
-    eigenValues[1] = eigenValues[2];
-    eigenValues[2] = t;
-  }
-
-  return grid;
-}
-
-Grid *gridEigenVector(Grid *grid, double *m, double eigenValue, 
-		      double *eigenVector )
-{
-  double a, d, f, n1, n2, n3;
-  double e1[3], e2[3], e3[3];
- 
-  /* http://gandalf.sourceforge.net/ */
-
-  a = m[0]-eigenValue;
-  d = m[3]-eigenValue;
-  f = m[5]-eigenValue;
-
-  e1[0] = m[2]*d - m[1]*m[4];
-  e1[1] = a*m[4] - m[1]*m[2];
-  e1[2] = m[1]*m[1] - a*d;
-  n1 = e1[0]*e1[0] + e1[1]*e1[1] + e1[2]*e1[2];
-  e2[0] = d*f - m[4]*m[4];
-  e2[1] = m[2]*m[4] - m[1]*f;
-  e2[2] = m[1]*m[4] - m[2]*d;
-  n2 = e2[0]*e2[0] + e2[1]*e2[1] + e2[2]*e2[2];
-  e3[0] = m[1]*f - m[2]*m[4];
-  e3[1] = m[2]*m[2] - a*f;
-  e3[2] = a*m[4] - m[1]*m[2];
-  n3 = e3[0]*e3[0] + e3[1]*e3[1] + e3[2]*e3[2];
-
-   if ( n1 > n2 && n1 > n3 )
-   {
-      n1 = 1.0/sqrt(n1);
-      eigenVector[0] = e1[0]*n1;
-      eigenVector[1] = e1[1]*n1;
-      eigenVector[2] = e1[2]*n1;
-   }
-   else if ( n2 > n3 )
-   {
-      n2 = 1.0/sqrt(n2);
-      eigenVector[0] = e2[0]*n2;
-      eigenVector[1] = e2[1]*n2;
-      eigenVector[2] = e2[2]*n2;
-   }
-   else
-   {
-     if ( n3 == 0.0 ) {
-       printf("%s: %d: gridEigenVector: all vectors have zero length\n",
-	      __FILE__,__LINE__);
-       return NULL;
-     }
-      n3 = 1.0/sqrt(n3);
-      eigenVector[0] = e3[0]*n3;
-      eigenVector[1] = e3[1]*n3;
-      eigenVector[2] = e3[2]*n3;
-   }
-  
-  return grid;
-}
-
-Grid *gridEigenSystem(Grid *grid, double *m, double *eigenValues,
-		      double *v1, double *v2, double *v3)
-{
-  int i;
-  double t, vt[3];
-  double diagRatio;
-
-  diagRatio = (ABS(m[1])+ABS(m[2])+ABS(m[4])) 
-    / (ABS(m[0])+ABS(m[3])+ABS(m[5]));
-
-  if (diagRatio < 1.0e-5) {
-    eigenValues[0]=m[0];
-    eigenValues[1]=m[3];
-    eigenValues[2]=m[5];
-    v1[0] = 1.0;
-    v1[1] = 0.0;
-    v1[2] = 0.0;
-    v2[0] = 0.0;
-    v2[1] = 1.0;
-    v2[2] = 0.0;
-    v3[0] = 0.0;
-    v3[1] = 0.0;
-    v3[2] = 1.0;
-  }else{
-    if ( grid != gridEigenValues( grid, m, eigenValues ) ) {
-      printf("%s: %d: gridEigenSystem: gridEigenValues NULL\n",
-	     __FILE__,__LINE__);
-      return NULL;
-    }
-    if ( grid != gridEigenVector( grid, m, eigenValues[0], v1 ) ) {
-      printf("%s: %d: gridEigenSystem: gridEigenVector 0 NULL\n",
-	     __FILE__,__LINE__);
-      return NULL;
-    }
-    if ( grid != gridEigenVector( grid, m, eigenValues[1], v2 ) ) {
-      printf("%s: %d: gridEigenSystem: gridEigenVector 1 NULL\n",
-	     __FILE__,__LINE__);
-      return NULL;
-    }
-    if ( grid != gridEigenVector( grid, m, eigenValues[2], v3 ) ) {
-      printf("%s: %d: gridEigenSystem: gridEigenVector 2 NULL\n",
-	     __FILE__,__LINE__);
-      return NULL;
-    }
-  }
-
-  gridEigSort3x3( eigenValues, v1, v2, v3 );
-
-  return grid;
-}
-
 Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
 {
-  double eigenValues[3], e1, e2, e3, v1[3], v2[3], v3[3];
-  double v1dotv2, v2length, v3length;
-  if ( grid != gridEigenSystem(grid, m, eigenValues, v1, v2, v3 )) {
-    printf("%s: %d: gridConvertMetricToJacobian: gridEigenSystem NULL\n",
+  double d[3], e[3], v0[3], v1[3], v2[3];
+  double e0, e1, e2;
+
+  gridTriDiag3x3(m, d, e, v0, v1, v2);
+  if ( !gridEigTriDiag3x3(d, e, v0, v1, v2 )) {
+    printf("%s: %d: gridConvertMetricToJacobian: gridEigTriDiag3x3 FAILED.\n",
 	   __FILE__,__LINE__);
     return NULL;
   }
 
-  /* make sure that the eigen system is ortho-normal and right-handed*/
-    
-  v1dotv2 = v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];
-  v2[0] -= v1[0]*v1dotv2;
-  v2[1] -= v1[1]*v1dotv2;
-  v2[2] -= v1[2]*v1dotv2;
-  v2length = sqrt( v2[0]*v2[0]+v2[1]*v2[1]+v2[2]*v2[2] );
-  v2[0] = v2[0]/v2length;
-  v2[1] = v2[1]/v2length;
-  v2[2] = v2[2]/v2length;
-  v3[0] = v1[1]*v2[2] - v1[2]*v2[1]; 
-  v3[1] = v1[2]*v2[0] - v1[0]*v2[2]; 
-  v3[2] = v1[0]*v2[1] - v1[1]*v2[0]; 
-  v3length = sqrt( v3[0]*v3[0]+v3[1]*v3[1]+v3[2]*v3[2] );
-  v3[0] = v3[0]/v3length;
-  v3[1] = v3[1]/v3length;
-  v3[2] = v3[2]/v3length;
+  /* the new EigTriDiag should be ortho-normal gridEigOrtho3x3( v0, v1, v2 ); */
 
-  e1 = sqrt(eigenValues[0]);
-  e2 = sqrt(eigenValues[1]);
-  e3 = sqrt(eigenValues[2]);
+  e0 = sqrt(d[0]);
+  e1 = sqrt(d[1]);
+  e2 = sqrt(d[2]);
 
   /* sqrt(eigenValues) * transpose(eigenVectors) */
-  j[0] = e1*v1[0];
-  j[1] = e1*v1[1];
-  j[2] = e1*v1[2];
-  j[3] = e2*v2[0];
-  j[4] = e2*v2[1];
-  j[5] = e2*v2[2];
-  j[6] = e3*v3[0];
-  j[7] = e3*v3[1];
-  j[8] = e3*v3[2];
+  j[0] = e0*v0[0];
+  j[1] = e0*v0[1];
+  j[2] = e0*v0[2];
+  j[3] = e1*v1[0];
+  j[4] = e1*v1[1];
+  j[5] = e1*v1[2];
+  j[6] = e2*v2[0];
+  j[7] = e2*v2[1];
+  j[8] = e2*v2[2];
 
   return grid;
 }

@@ -37,6 +37,7 @@ bool gridEigTriDiag3x3( double *d, double *e,
 		        double *q0, double *q1, double *q2 );
 
 void gridEigSort3x3( double *eigenValues, double *v0, double *v1, double *v2 );
+void gridEigOrtho3x3( double *v0, double *v1, double *v2 );
 
 END_C_DECLORATION
 

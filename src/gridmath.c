@@ -172,7 +172,7 @@ void gridEigSort3x3( double *eigenValues, double *v0, double *v1, double *v2 )
     eigenValues[0] = eigenValues[1];
     gridVectorCopy(v0,v1);
     eigenValues[1] = t;
-    gridVectorCopy(v1,vt);
+    gridVectorCopy(v1,-vt);
   }
 
   if ( eigenValues[2] > eigenValues[0] ) {
@@ -181,7 +181,7 @@ void gridEigSort3x3( double *eigenValues, double *v0, double *v1, double *v2 )
     eigenValues[0] = eigenValues[2];
     gridVectorCopy(v0,v2);
     eigenValues[2] = t;
-    gridVectorCopy(v2,vt);
+    gridVectorCopy(v2,-vt);
   }
 
   if ( eigenValues[2] > eigenValues[1] ) {
@@ -190,7 +190,27 @@ void gridEigSort3x3( double *eigenValues, double *v0, double *v1, double *v2 )
     eigenValues[1] = eigenValues[2];
     gridVectorCopy(v1,v2);
     eigenValues[2] = t;
-    gridVectorCopy(v2,vt);
+    gridVectorCopy(v2,-vt);
   }
 
 }
+
+void gridEigOrtho3x3( double *v0, double *v1, double *v2 )
+{
+  double v0dotv1;
+
+  gridVectorNormalize(v0);
+
+  v0dotv1 =  gridDotProduct(v0,v1);
+  v1[0] -= v0[0]*v0dotv1;
+  v1[1] -= v0[1]*v0dotv1;
+  v1[2] -= v0[2]*v0dotv1;
+
+  gridVectorNormalize(v1);
+
+  gridCrossProduct(v0,v1,v2);
+
+  gridVectorNormalize(v2);
+
+}
+
