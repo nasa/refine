@@ -1,0 +1,20 @@
+
+List of stuff to work on for refine/MesherX
+
+-MesherX
+
+improved normal visiblity on symm planes.
+check for potential collisions of blend normals with surrounding area
+chekc out frozen normal direction smoothing (VGrid style)
+
+-refine
+
+--Parallel adapt
+
+corsening on partition boundaries 
+swap and smooth durring adaptation
+
+--GridMove
+
+start working on it
+
