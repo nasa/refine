@@ -203,18 +203,19 @@ int gridSplitEdgeAt(Grid *grid, int n0, int n1,
 		  newnode, newId1uv[0], newId1uv[1], 
 		  gap1, gap1uv[0], gap1uv[1], 
 		  faceId1 );
-    edge = gridFindEdge(grid,n0,n1);
-    if ( edge != EMPTY ) {
-      edgeId = gridEdgeId(grid,n0,n1);
-      t0 = grid->edgeT[0+2*edge];
-      t1 = grid->edgeT[1+2*edge];
-      newT = 0.5 * (t0+t1);
-      gridRemoveEdge(grid,edge);
-      gridAddEdge(grid,n0,newnode,edgeId,t0,newT);
-      gridAddEdge(grid,n1,newnode,edgeId,t1,newT);
-    }
   }
 
+  edge = gridFindEdge(grid,n0,n1);
+  if ( edge != EMPTY ) {
+    edgeId = gridEdgeId(grid,n0,n1);
+    gridNodeT(grid,n0,edgeId,&t0);
+    gridNodeT(grid,n1,edgeId,&t1);
+    newT = 0.5 * (t0+t1);
+    gridRemoveEdge(grid,edge);
+    gridAddEdge(grid,n0,newnode,edgeId,t0,newT);
+    gridAddEdge(grid,n1,newnode,edgeId,t1,newT);
+  }
+  
   if ( gridNegCellAroundNode(grid, newnode) ) {
     gridCollapseEdge(grid, n0, newnode, 0.0 );
     return EMPTY;
@@ -290,14 +291,44 @@ int gridSplitFaceAt(Grid *grid, int face,
 
 int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
 {
-  int edge;
-  double newXYZ[3], xyz1[3], xyz2[3], edgeXYZ[3];
+  int i, edge, maxedge, edgeId, nodes[2], insertEdge;
+  double newXYZ[3], xyz0[3], xyz1[3];
+  double edgeXYZ[3], edgeLength, edgeDir[3];
+  double newEdge[3], edgePosition;
+  bool foundEdge;
 
   newXYZ[0] = newX;  newXYZ[1] = newY;  newXYZ[2] = newZ;
-  for (edge=0;edge<gridMaxEdge(grid);edge++){
+
+  foundEdge = FALSE;
+  insertEdge = EMPTY;
+  edge = 0;
+  maxedge = gridMaxEdge(grid);
+  while ( !foundEdge && edge < maxedge ) {
+    if (grid == gridEdge(grid, edge, nodes, &edgeId) ){
+      gridNodeXYZ(grid, nodes[0], xyz0);
+      gridNodeXYZ(grid, nodes[1], xyz1);
+      for (i=0;i<3;i++) edgeXYZ[i] = xyz1[i]   - xyz0[i];
+      edgeLength = sqrt ( edgeXYZ[0]*edgeXYZ[0] + 
+			  edgeXYZ[1]*edgeXYZ[1] +
+			  edgeXYZ[2]*edgeXYZ[2] );
+      for (i=0;i<3;i++) edgeDir[i] = edgeXYZ[i]/edgeLength;
+      for (i=0;i<3;i++) newEdge[i] = newXYZ[i] - xyz0[i];
+      edgePosition = sqrt ( newEdge[0]*edgeDir[0] + 
+			    newEdge[1]*edgeDir[1] + 
+			    newEdge[2]*edgeDir[2] ) / edgeLength;
+      if (edgePosition > 0.0 && edgePosition < 1.0) {
+	foundEdge = TRUE;
+	insertEdge = edge;
+      }
+    }
+    edge++;
   }
 
-  return EMPTY;
+  if (!foundEdge) return EMPTY;
+
+  if (grid != gridEdge(grid, insertEdge, nodes, &edgeId) ) return EMPTY;
+
+  return gridSplitEdgeAt(grid, nodes[0], nodes[1], newX, newY, newZ);
 }
 
 
