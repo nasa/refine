@@ -166,7 +166,7 @@ shared object. The shared object is loaded into the
 @end verbatim
 
 Any other objects that are required by AnObject will also need to be
-added to the top of @code{AnObject.rb}. If the object is a mixin, you
+added to the top of @code{AnObjectMT.rb}. If the object is a mixin, you
 will need to add is methods to a base object after it has been
 require'd. This following example from @code{gridmetricMT.rb} adds the
 gridmetic mix-in methods to the grid object.
@@ -229,7 +229,8 @@ stored then @code{nodeSize} would be 3. Typically it is larger,
 because the spacing metric and the solution is also stored.
 
 A new transaction started with a call to @code{queueNewTransaction}.
-The @code{queueReset} clears all existing tranactions. A transaction
+The current transaction is cleared with @code{queueResetCurrentTransaction}
+and @code{queueReset} clears all existing tranactions. A transaction
 is composed of @code{queueRemoveCell}, @code{queueAddCell},
 @code{queueRemoveFace}, @code{queueAddFace}, @code{queueRemoveEdge},
 @code{queueAddEdge} calls.
@@ -254,8 +255,9 @@ method.
 @section Sort
 @cindex sort
 
-The sort object contains a heap sort routine @code{sortHeap} and a
-binary search routine for sorted elements @code{sortSearch}.
+The sort object contains an integer heap sort routine 
+@code{sortHeap}, a double sort rountine @code{sortDoubleHeap}, 
+and a binary search routine for sorted elements @code{sortSearch}.
 
 @node Grid Object
 @chapter Grid Object
@@ -355,9 +357,8 @@ The gridswap mix-in allows modification of grid connectivites by face
 special routine that removes cells with two faces the on the boundary
 surface @code{gridRemoveTwoFaceCell}. These two face cells are very
 troublesome for projection. The @code{gridSwapEdge} and
-@code{gridRemoveTwoFaceCell} have been parallelized. (The
-@code{gridSwapFace} routine could easily be parallelized, but this has
-not been completed.) The parallelization is enabled by populating a
+@code{gridRemoveTwoFaceCell} have been parallelized. 
+The parallelization is enabled by populating a
 @code{queue} object, which is broadcast to other processors and
 applyed to keep the connectivities on all processors consistent.
 
@@ -365,7 +366,7 @@ applyed to keep the connectivities on all processors consistent.
 @cindex gridcad
 
 The gridcad mix-in enables projection of grid nodes to geometry
-objects with CADGeom routines. CADGeom uses CAPRI for CAD acesses and
+objects with GeoSDK CADGeom routines. CADGeom uses CAPRI for CAD acesses and
 storing files. Node smoothing and untangling is implemented for
 interior nodes and nodes on CAD surfacces.
 
