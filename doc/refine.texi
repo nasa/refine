@@ -34,6 +34,7 @@ The refine library overview, version 1.0.
 * Base Objects  :: Base objects for grid.
 * Grid Object   :: The main object: grid.
 * Grid Mix-ins  :: Additional methods for grid object
+* Add Me        :: Documentation Wish List.
 * Running FUN3D :: HOWTO run FUN3D with refine
 * Index         :: Complete index.
 @end menu
@@ -389,6 +390,32 @@ Added functionality for parallel processing.
 @cindex gridfortran
 
 FORTRAN bindings for FUN3D.
+
+@node Add Me
+@chapter Add Me
+
+Doc wish list
+
+FORTRAN stuff:
+
+parallel scheme (describe refine_interface)
+
+node updates:
+
+processor = 1 allows only partion interior modifications.  the
+interior of the pasrtions does not affect other partionions.  Below
+loop will initially will modify partition interior, and then will
+modify its boundaries.  Note: loop executing on each processor.  Will
+first modify interior and then wait until it is its turn
+...refineUpdateGhostXYZ() will block
+
+
+connentivity updates.
+
+
+
+rad_module workflow.
+
 
 @node Running FUN3D
 @chapter Running FUN3D
