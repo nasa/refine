@@ -29,6 +29,7 @@ int gridswap_( );
 int gridsmoothvolume_( );
 int gridadaptwithoutcad_( double *minLength, double *maxLength );
 int gridwritetecplotsurfacezone_( );
+int gridexportfast_( );
 
 int gridparalleladaptwithoutcad_( int *processor, 
 				  double *minLength, double *maxLength );

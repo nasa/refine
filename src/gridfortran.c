@@ -132,6 +132,14 @@ int gridwritetecplotsurfacezone_( )
   gridWriteTecplotSurfaceZone(grid);
 }
 
+int gridexportfast_( )
+{
+  char filename[256];
+  sprintf(filename, "grid%03d.fgrid");
+  gridExportFAST(grid,filename);
+  
+}
+
 int gridparalleladaptwithoutcad_( int *processor, 
 				  double *minLength, double *maxLength )
 {
