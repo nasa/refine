@@ -1539,6 +1539,31 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [7,1,9,5], layer.subBlendNormals(0,2)
  end
 
+ def testsubBlendForTwoConvextFaces
+  grid = fourFaceConvex
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert_equal layer, layer.blend(-1.0)
+  assert_equal 2,     layer.nblend
+  #       2 6
+  #      / y \
+  #    /4  ^  0\  
+  #  /     |     \
+  # 4 -z<-0 5-> x 1
+  #  \     |     /
+  #    \3  |  1/
+  #      \ | / 
+  #       7 3
+  layer.subBlend(44.0)
+  assert_equal 2, layer.nSubBlend(0)
+  assert_equal 2, layer.nSubBlend(1)
+  assert_equal [5,0,3,7], layer.blendNormals(0)
+  assert_equal [0,5,2,6], layer.blendNormals(1)
+  assert_equal [5,8,3,10], layer.subBlendNormals(0,0)
+  assert_equal [8,0,10,7], layer.subBlendNormals(0,1)
+  assert_equal [0,8,2,9], layer.subBlendNormals(1,0)
+  assert_equal [8,5,9,6], layer.subBlendNormals(1,1)
+ end
+
  def testExtrudeBlend
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])

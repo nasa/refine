@@ -2672,7 +2672,7 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   int blend;
   int blendnormals[4];
   double angle, rotation;
-  int nSubNormal, subNormal;
+  int nSubNormal, subNormal, subNormals[MAXSUBNORMAL];
   double axle[3];
   int i;
 
@@ -2683,7 +2683,57 @@ Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
   for (normal=0;normal<layer->originalnormal;normal++){
     switch (layerBlendDegree(layer,normal)) {
     case 0: break;
-    case 1:
+    case 1: case 2:
+      blend = adjItem(adjFirst(layerBlendAdj(layer),normal));
+      layerBlendNormals(layer, blend, blendnormals );
+      if (normal == blendnormals[0] || normal == blendnormals[1] ) {
+	angle = layerNormalAngle(layer,blendnormals[0], blendnormals[1]);
+	nSubNormal = (int)(angle/maxNormalAngle)-1;
+	nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
+	layer->blend[blend].nSubNormal0 = nSubNormal;
+	for(i=0;i<nSubNormal;i++){
+	  subNormals[i] = layerDuplicateNormal(layer, normal );
+	  rotation = (double)(i+1) / (double)(nSubNormal+1);
+	  layerBlendAxle(layer, blend, axle);
+	  gridRotateDirection(layer->normal[blendnormals[0]].direction,
+			      layer->normal[blendnormals[1]].direction,
+			      axle, rotation,
+			      layer->normal[subNormals[i]].direction);
+	}
+      }else{
+	angle = layerNormalAngle(layer,blendnormals[2], blendnormals[3]);
+	nSubNormal = (int)(angle/maxNormalAngle)-1;
+	nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
+	layer->blend[blend].nSubNormal1 = nSubNormal;
+	for(i=0;i<nSubNormal;i++){
+	  subNormals[i] = layerDuplicateNormal(layer, normal );
+	  rotation = (double)(i+1) / (double)(nSubNormal+1);
+	  layerBlendAxle(layer, blend, axle);
+	  gridRotateDirection(layer->normal[blendnormals[2]].direction,
+			      layer->normal[blendnormals[3]].direction,
+			      axle, rotation,
+			      layer->normal[subNormals[i]].direction);
+	}
+      }
+      for ( it = adjFirst(layerBlendAdj(layer),normal); 
+	    adjValid(it); 
+	    it=adjNext(it) ){
+	blend = adjItem(it);
+	layerBlendNormals(layer, blend, blendnormals );
+	if (normal == blendnormals[0] || normal == blendnormals[1] ) {
+	  layer->blend[blend].nSubNormal0 = nSubNormal;
+	  for(i=0;i<nSubNormal;i++){
+	    layer->blend[blend].subNormal0[i] = subNormals[i];
+	  }
+	}else{
+	  layer->blend[blend].nSubNormal1 = nSubNormal;
+	  for(i=0;i<nSubNormal;i++){
+	    layer->blend[blend].subNormal1[i] = subNormals[i];
+	  }
+	}
+      }
+      break;
+    case 3:
       for ( it = adjFirst(layerBlendAdj(layer),normal); 
 	    adjValid(it); 
 	    it=adjNext(it) ){
