@@ -5,6 +5,8 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 --Major refactoring
  
+make consistant use of the cost constraint functions.
+
 maintain linear data for split and collapse.
 
 Validate a mesh by spliting and projecting offending faces (via Bob)
