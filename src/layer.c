@@ -1140,17 +1140,16 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
   }
 }
 
-Layer *layerSmoothNormalDirection(Layer *layer)
+Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 {
   int normal, iter, triangle, normals[3], total, i;
-  double norm[3], avgdir[3], denom, relax, relaxm1; 
+  double norm[3], avgdir[3], denom, relaxm1; 
   AdjIterator it;
-
-  relax = 1.0;
-  relaxm1 = 1.0-relax;
 
   if (layerNNormal(layer) == 0 ) return NULL;
   if (layerNBlend(layer) != 0 ) return NULL;
+
+  relaxm1 = 1.0-relax;
 
   layerProjectNormalsToConstraints(layer);
 

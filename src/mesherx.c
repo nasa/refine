@@ -89,7 +89,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   while (i<nLayer & layerAnyActiveNormals(layer)){
     i++;
 
-    if (i>8) layerSmoothNormalDirection(layer);
+    if (i>1) layerSmoothNormalDirection(layer,0.1);
 
     layerSetNormalHeightWithMaxRate(layer,rate);
     //layerSetNormalHeightForLayerNumber(layer,i-1,rate);
