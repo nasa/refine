@@ -10,11 +10,13 @@ libMesherX_a_SOURCES = \
 	gridfiller.h gridfiller.c \
 	near.h near.c \
 	layer.h layerStruct.h layer.c \
-	mesherx.c
+	mesherxRebuild.h mesherxRebuild.c \
+	mesher.h mesherx.c 
 
 include_HEADERS = \
 	master_header.h \
 	mesherx.h \
+	mesherxRebuild.h \
 	adj.h \
 	grid.h \
 	near.h \

@@ -13,7 +13,6 @@
 
 #include "master_header.h"
 
-#include "grid.h"
 #include "layer.h"
 
 BEGIN_C_DECLORATION
@@ -35,10 +34,6 @@ Layer *layerCreateWakeWithBGSpacing(Layer *, double *origin, double *direction,
 
 int layerTerminateNormalWithBGSpacing(Layer *, 
 				      double normalRatio, double edgeRatio);
-
-Layer *layerRebuildEdges(Layer *, int vol);
-Layer *layerRebuildFaces(Layer *, int vol);
-Layer *layerRebuildVolume(Layer *, int vol);
 
 END_C_DECLORATION
 
