@@ -9,16 +9,15 @@
 #include <string.h>
 #include "master_header.h"
 #include "layer.h"
-#include "layerStruct.h"
 #include "gridmetric.h"
 #include "gridcad.h"
 #include "gridinsert.h"
 #include "grid.h"
-
+#include "near.h"
 #include "geometricStretch.h"
-
 #include "layerNormalExtra.h"
 
+#include "layerStruct.h"
 
 // Set the desired layer thickness and height of first element
 //
