@@ -152,3 +152,11 @@ bool adjExists( Adj *adj, int node, int item )
     exist = (item == adjCurrent(adj));
   return exist;
 }
+
+int adjDegree(Adj *adj, int node )
+{
+  int degree;
+  degree =0;
+  for ( adjFirst(adj,node) ; adjValid(adj); adjNext(adj)) degree++;
+  return degree;
+}
