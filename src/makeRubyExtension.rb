@@ -27,16 +27,6 @@ ARGV[1..ARGV.size].each { |h| headers.push h if h =~/\.h/ }
 Dir.chdir ext
 (objC+headers).compact.each { |f| `ln -sf ../#{f} .`}
 
-if ARGV.include?("FAKEGeom")
- `ln -sf ../FAKEGeom.c CADGeom.c`
- `mkdir -p CADGeom`
- Dir.chdir "CADGeom"
- `ln -sf ../../FAKEGeom.h CADGeom.h`
- `ln -sf ../../master_header.h .`
- Dir.chdir ".."
- objC.push "CADGeom.c"
-end
-
 $objs = objC.collect{ |c| c.sub(/\.c/, ".o") }
 
 require 'mkmf'
