@@ -284,7 +284,7 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal gm, gm.elasticRelaxationDumpA
  end
 
- def testElasticRelaxationUp
+ def testElasticRelaxationUp3
   grid = isoTet
   gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
@@ -299,6 +299,54 @@ class TestGridMove < Test::Unit::TestCase
   assert_in_delta up[0], gm.displacement(3)[0], delta
   assert_in_delta up[1], gm.displacement(3)[1], delta
   assert_in_delta up[2], gm.displacement(3)[2], delta
+ end
+
+ def testElasticRelaxationUp0
+  grid = isoTet
+  gm = GridMove.new(grid)
+  zero = [0.0,0.0,0.0]
+  up  = [0.0,0.0,1.0]
+  gm.displace(1,up)
+  gm.displace(2,up)
+  gm.displace(3,up)
+  assert_equal gm, gm.elasticRelaxation(1,1)
+  n = 0
+  delta = 1.0e-15
+  assert_in_delta up[0], gm.displacement(n)[0], delta
+  assert_in_delta up[1], gm.displacement(n)[1], delta
+  assert_in_delta up[2], gm.displacement(n)[2], delta
+ end
+
+ def testElasticRelaxationUp1
+  grid = isoTet
+  gm = GridMove.new(grid)
+  zero = [0.0,0.0,0.0]
+  up  = [0.0,0.0,1.0]
+  gm.displace(0,up)
+  gm.displace(2,up)
+  gm.displace(3,up)
+  assert_equal gm, gm.elasticRelaxation(1,1)
+  n = 1
+  delta = 1.0e-15
+  assert_in_delta up[0], gm.displacement(n)[0], delta
+  assert_in_delta up[1], gm.displacement(n)[1], delta
+  assert_in_delta up[2], gm.displacement(n)[2], delta
+ end
+
+ def testElasticRelaxationUp2
+  grid = isoTet
+  gm = GridMove.new(grid)
+  zero = [0.0,0.0,0.0]
+  up  = [0.0,0.0,1.0]
+  gm.displace(0,up)
+  gm.displace(1,up)
+  gm.displace(3,up)
+  assert_equal gm, gm.elasticRelaxation(1,1)
+  n = 2
+  delta = 1.0e-15
+  assert_in_delta up[0], gm.displacement(n)[0], delta
+  assert_in_delta up[1], gm.displacement(n)[1], delta
+  assert_in_delta up[2], gm.displacement(n)[2], delta
  end
 
  def testElasticRelaxationUpSteps
@@ -329,5 +377,25 @@ class TestGridMove < Test::Unit::TestCase
   minVol = grid.minVolume
   assert(1.0e-12<minVol,"negative volume of #{minVol}")
  end
+
+
+ def testElasticRelaxationRotate3
+  grid = isoTet
+  gm = GridMove.new(grid)
+  zero = [0.0,0.0,0.0]
+  up  = [0.0,0.0,0.1]
+  2.times{|n| gm.displace(n,zero)}
+  gm.displace(2,up)
+  assert_equal gm, gm.elasticRelaxation(1,1)
+  ans = [0.0, -0.1, 0.0]
+  ans = [0.0, -0.8000469361, 0.04041570439]
+  delta = 1.0e-8
+  assert_in_delta ans[0], gm.displacement(3)[0], delta
+  assert_in_delta ans[1], gm.displacement(3)[1], delta
+  assert_in_delta ans[2], gm.displacement(3)[2], delta
+ end
+
+
+
 
 end
