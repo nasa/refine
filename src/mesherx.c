@@ -38,7 +38,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 
 
   nLayer = (int)(10.0/scale);
-  nLayer = 15;
+  nLayer = 8;
   rate = exp(scale*log(1.2));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
@@ -58,7 +58,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   layerLaminarInitialHeight(layer, 1000.0, -0.05 );
   layerScaleNormalHeight(layer,scale);
   while (i<nLayer && layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer, 0.5)) {
-    //layerVisibleNormals(layer);
+
+    layerSmoothNormalDirection(layer);
     layerAdvance(layer);
     layerScaleNormalHeight(layer,rate);
     i++;
@@ -198,7 +199,7 @@ Layer *layerFormAdvancingLayerWithCADGeomBCS( int vol, Grid *grid )
     }
   }
 
-  layerVisibleNormals(layer);
+  layerVisibleNormals(layer,-1.0,-1.0);
 
   return layer;
 }
