@@ -162,11 +162,24 @@ GridBool gridmoveSpecified(GridMove *gm, int node)
   return gm->specified[node];
 }
 
+GridMove *gridmoveSpringConstant(GridMove *gm, double *xyz, int nsprings, 
+				 double *k, int *springs, int *c2e) {
+  int s, n0, n1;
+  double dxyz[3];
+  for(s=0;s<nsprings;s++) {
+    n0 = springs[0+2*s];
+    n1 = springs[1+2*s];
+    gridSubtractVector(&xyz[3*n1],&xyz[3*n0],dxyz);
+    k[s]= 1.0/gridVectorLength(dxyz);
+  }
+  return gm;
+}
+
 GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
 {
   Grid *grid = gridmoveGrid(gm);
   int nsprings, *springs;
-  double xyz0[3], dxyz[3], res[3];
+  double xyz0[3], res[3];
   int s, node;
   int i, n0, n1;
   double *k;
@@ -198,12 +211,7 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   stepSize = 1.0 / (double)nsteps;
   for(step=0;step<nsteps;step++) {
 
-    for(s=0;s<nsprings;s++) {
-      n0 = springs[0+2*s];
-      n1 = springs[1+2*s];
-      gridSubtractVector(&xyz[3*n1],&xyz[3*n0],dxyz);
-      k[s]= 1.0/gridDotProduct(dxyz,dxyz);
-    }
+    gridmoveSpringConstant(gm, xyz, nsprings, k, springs, c2e);
 
     for(node=0;node<3*gridMaxNode(grid);node++) source[node]=0.0;
     for(s=0;s<nsprings;s++) {
