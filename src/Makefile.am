@@ -25,6 +25,7 @@ refine_LDADD = libMesherX.a @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@ -lm
 
 MesherX_SOURCES = MesherX.c
 MesherX_LDADD = libMesherX.a @CADGeom@ @Goolache@ @FELISALib@ @MeatLib@ @CAPRILib@ -lm
+MesherX_LDFLAGS = -rdynamic
 
 EXTRA_DIST = makeRubyExtension.rb \
 	adjMT.rb adj_ruby.c \
