@@ -135,7 +135,7 @@ int gridwritetecplotsurfacezone_( )
 int gridexportfast_( )
 {
   char filename[256];
-  sprintf(filename, "grid%03d.fgrid");
+  sprintf(filename, "grid%03d.fgrid", gridPartId(grid)+1 );
   gridExportFAST(grid,filename);
   
 }
