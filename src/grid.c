@@ -403,6 +403,7 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
 }
 
 Grid *gridSwap4(Grid *grid, int n0, int n1 );
+Grid *gridSwap5(Grid *grid, int n0, int n1 );
 
 Grid *gridSwap(Grid *grid, int n0, int n1 )
 {
@@ -422,7 +423,8 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
   }
 
-  return gridSwap4(grid, n0, n1);
+  if (grid->nequ==4) return gridSwap4(grid, n0, n1);
+  if (grid->nequ==5) return gridSwap5(grid, n0, n1);
 }
 
 Grid *gridSwap4(Grid *grid, int n0, int n1 )
@@ -539,6 +541,126 @@ Grid *gridSwap4(Grid *grid, int n0, int n1 )
   }
   
   return grid;
+}
+
+Grid *gridCycleEquator( Grid *grid )
+{
+  int i;
+
+  for ( i = grid->nequ ; i > 0 ; i-- )
+    grid->equ[i] = grid->equ[i-1];
+
+  grid->equ[0] = grid->equ[grid->nequ];
+
+  return grid;
+}
+
+Grid *gridSwap5(Grid *grid, int n0, int n1 )
+{
+  int i;
+  int currentindex, bestindex, nodes[6][4];
+
+  double cost, origcost, currentcost, bestcost;
+
+  origcost = 2.0;
+
+  for ( i = 0 ; i < grid->ngem ; i++ ){
+    cost = gridAR( grid, &grid->c2n[4*grid->gem[i]] );
+    origcost = MIN(origcost,cost);
+  }
+
+  printf("orig %f \n",origcost);
+
+  bestcost  =  -1.0;
+  bestindex = -1;
+
+  for ( currentindex = 0 ; currentindex < 5 ; currentindex++ ) {
+    nodes[0][0]=n0;
+    nodes[0][1]=grid->equ[0];
+    nodes[0][2]=grid->equ[1];
+    nodes[0][3]=grid->equ[2];
+    nodes[1][0]=n0;
+    nodes[1][1]=grid->equ[0];
+    nodes[1][2]=grid->equ[2];
+    nodes[1][3]=grid->equ[3];
+    nodes[2][0]=n0;
+    nodes[2][1]=grid->equ[0];
+    nodes[2][2]=grid->equ[3];
+    nodes[2][3]=grid->equ[4];
+    nodes[3][0]=n1;
+    nodes[3][1]=grid->equ[0];
+    nodes[3][2]=grid->equ[2];
+    nodes[3][3]=grid->equ[1];
+    nodes[4][0]=n1;
+    nodes[4][1]=grid->equ[0];
+    nodes[4][2]=grid->equ[3];
+    nodes[4][3]=grid->equ[2];
+    nodes[5][0]=n1;
+    nodes[5][1]=grid->equ[0];
+    nodes[5][2]=grid->equ[4];
+    nodes[5][3]=grid->equ[3];
+
+    currentcost = 2.0;
+
+    for ( i = 0 ; i < 6 ; i++ ) {
+      cost = gridAR( grid, nodes[i] );
+      printf("cost %d %d %f \n",currentindex,i,cost);
+      currentcost = MIN(currentcost,cost);
+    } 
+
+    printf("curr %d %f \n",currentindex,currentcost);
+
+    if ( currentcost > bestcost ) {
+      bestcost = currentcost;
+      bestindex = currentindex;
+    }
+
+    gridCycleEquator( grid );
+  }
+
+  printf("best %d %f \n",bestindex,bestcost);
+
+  if (bestindex == -1 ) 
+    printf("ERROR in bestindex, file %s line %d \n",__FILE__, __LINE__ ); 
+
+  if ( bestcost > origcost ) {
+
+    for ( i = 0 ; i < bestindex ; i++ ) 
+      gridCycleEquator( grid );
+    
+    nodes[0][0]=n0;
+    nodes[0][1]=grid->equ[0];
+    nodes[0][2]=grid->equ[1];
+    nodes[0][3]=grid->equ[2];
+    nodes[1][0]=n0;
+    nodes[1][1]=grid->equ[0];
+    nodes[1][2]=grid->equ[2];
+    nodes[1][3]=grid->equ[3];
+    nodes[2][0]=n0;
+    nodes[2][1]=grid->equ[0];
+    nodes[2][2]=grid->equ[3];
+    nodes[2][3]=grid->equ[4];
+    nodes[3][0]=n1;
+    nodes[3][1]=grid->equ[0];
+    nodes[3][2]=grid->equ[2];
+    nodes[3][3]=grid->equ[1];
+    nodes[4][0]=n1;
+    nodes[4][1]=grid->equ[0];
+    nodes[4][2]=grid->equ[3];
+    nodes[4][3]=grid->equ[2];
+    nodes[5][0]=n1;
+    nodes[5][1]=grid->equ[0];
+    nodes[5][2]=grid->equ[4];
+    nodes[5][3]=grid->equ[3];
+
+    for ( i = 0 ; i < grid->ngem ; i++ ) 
+      gridRemoveCell( grid, grid->gem[i] );
+    
+    for ( i = 0 ; i < 6 ; i++ )
+      gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+  }
+  
+  return( grid );
 }
 
 int gridAddNode(Grid *grid, double x, double y, double z )
