@@ -314,6 +314,21 @@ VALUE grid_faceArea( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
 				    NUM2INT(n0), NUM2INT(n1), NUM2INT(n2) ) );
 }
 
+VALUE grid_faceAreaUV( VALUE self, VALUE face )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new(gridFaceAreaUV( grid, NUM2INT(face) ) );
+}
+
+VALUE grid_minFaceAreaUV( VALUE self, VALUE node )
+{
+  double area;
+  GET_GRID_FROM_SELF;
+  return (grid==gridMinFaceAreaUV( grid, NUM2INT(node), &area ) ? 
+	  rb_float_new(area) :
+	  Qnil );
+}
+
 VALUE grid_faceAR( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
 {
   GET_GRID_FROM_SELF;
@@ -494,6 +509,8 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "rightHandedFace", grid_rightHandedFace, 1 );
   rb_define_method( cGridMetric, "rightHandedBoundary", grid_rightHandedBoundary, 0);
   rb_define_method( cGridMetric, "faceArea", grid_faceArea, 3);
+  rb_define_method( cGridMetric, "faceAreaUV", grid_faceAreaUV, 1 );
+  rb_define_method( cGridMetric, "minFaceAreaUV", grid_minFaceAreaUV, 1 );
   rb_define_method( cGridMetric, "faceAR", grid_faceAR, 3);
   rb_define_method( cGridMetric, "faceMR", grid_faceMR, 3);
   rb_define_method( cGridMetric, "minFaceMR", grid_minFaceMR, 0);

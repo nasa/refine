@@ -1726,58 +1726,6 @@ GridBool nearestOnFace(int vol, int faceId, double *xyz, double *uv,
   return TRUE;
 }
 
-double gridFaceAreaUV(Grid *grid, int face)
-{
-  int faceId, nodes[3];
-  double uv0[3], uv1[3], uv2[3];
-  double edge0[3], edge1[3], norm[3];
-  int vol = 1;
-  double area;
-
-  /* Using 3D Vector math to save typing */
-  uv0[2] = uv1[2] = uv2[2] = 0.0;
-
-  if (grid != gridFace(grid,face,nodes,&faceId)) {
-    printf("%s: %d: Invalid Face number %d\n",__FILE__,__LINE__,face);
-    return DBL_MAX;  
-  }
-  gridNodeUV( grid, nodes[0], faceId, uv0);
-  gridNodeUV( grid, nodes[1], faceId, uv1);
-  gridNodeUV( grid, nodes[2], faceId, uv2);
-
-  gridSubtractVector(uv1,uv0,edge0);
-  gridSubtractVector(uv2,uv0,edge1);
-
-  gridCrossProduct(edge0,edge1,norm);
-
-  /* CAPrI Normal points outside, triangles oriented inside wrt Face */
-  if( !CADGeom_ReversedSurfaceNormal(vol,faceId) )
-    area = (-0.5*norm[2]);
-  else
-    area = (0.5*norm[2]);
-
-  return area;
-}
-
-Grid *gridMinFaceAreaUV(Grid *grid, int node, double *min_area)
-{
-  AdjIterator it;
-  int face;
-  double local_area;
-
-  *min_area = DBL_MAX;
-
-  for ( it = adjFirst(gridFaceAdj(grid),node);
-	adjValid(it); 
-	it = adjNext(it) ){
-    face = adjItem(it);
-    local_area = gridFaceAreaUV(grid, face);
-    if ( local_area < *min_area ) *min_area = local_area;
-  }
-
-  return grid;
-}
-
 Grid *gridSmoothNodeFaceAreaUV(Grid *grid, int node )
 {
   if (!gridGeometryFace(grid,node)) return NULL;

@@ -499,6 +499,54 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal false, grid.rightHandedBoundary
  end
 
+ def testComputeFaceAreaInParameterSpacePositiveHalf
+  grid = Grid.new(3,0,1,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  # FAKEGeom: U = X+10; V = Y+20;
+  grid.addFaceUV(0,10.0,20.0,
+		 1,11.0,20.0,
+		 2,10.0,21.0,
+		 55)
+  tol = 1.0e-15
+  area = 0.5
+  assert_in_delta area, grid.faceAreaUV(0), tol
+  assert_in_delta area, grid.minFaceAreaUV(0), tol
+ end
+
+ def testComputeFaceAreaInParameterSpaceNegativeHalf
+  grid = Grid.new(3,0,1,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  # FAKEGeom: U = X+10; V = Y+20;
+  grid.addFaceUV(0,10.0,20.0,
+		 2,10.0,21.0,
+		 1,11.0,20.0,
+		 55)
+  tol = 1.0e-15
+  area = -0.5
+  assert_in_delta area, grid.faceAreaUV(0), tol
+  assert_in_delta area, grid.minFaceAreaUV(0), tol
+ end
+
+ def testComputeFaceAreaInParameterSpaceTwo
+  grid = Grid.new(3,0,1,0)
+  grid.addNode(0,0,0)
+  grid.addNode(2,0,0)
+  grid.addNode(0,2,0)
+  # FAKEGeom: U = X+10; V = Y+20;
+  grid.addFaceUV(0,10.0,20.0,
+		 1,12.0,20.0,
+		 2,10.0,22.0,
+		 55)
+  tol = 1.0e-15
+  area = 2.0
+  assert_in_delta area, grid.faceAreaUV(0), tol
+  assert_in_delta area, grid.minFaceAreaUV(0), tol
+ end
+
  def testFaceMetrics
   assert_not_nil grid = rightTet
   assert_in_delta 0.5, grid.faceArea(0,1,2), 1.0e-15
