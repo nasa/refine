@@ -407,6 +407,7 @@ Grid *gridSwap5(Grid *grid, int n0, int n1 );
 
 Grid *gridSwap(Grid *grid, int n0, int n1 )
 {
+  Grid *swapStatus;
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
   //test face
@@ -423,8 +424,10 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
   }
 
-  if (grid->nequ==4) return gridSwap4(grid, n0, n1);
-  if (grid->nequ==5) return gridSwap5(grid, n0, n1);
+  if (grid->nequ==4) swapStatus = gridSwap4(grid, n0, n1);
+  if (grid->nequ==5) swapStatus = gridSwap5(grid, n0, n1);
+
+  return swapStatus;
 }
 
 Grid *gridSwap4(Grid *grid, int n0, int n1 )
