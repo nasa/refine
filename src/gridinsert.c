@@ -215,8 +215,66 @@ int gridSplitEdgeAt(Grid *grid, int n0, int n1,
     }
   }
 
-  if ( gridNegCellAroundNode(grid, node) ) {
+  if ( gridNegCellAroundNode(grid, newnode) ) {
     gridCollapseEdge(grid, n0, newnode, 0.0 );
+    return EMPTY;
+  }else{
+    return newnode;
+  }
+}
+
+int gridSplitFaceAt(Grid *grid, int face,
+		    double newX, double newY, double newZ )
+{
+  int newnode;
+  int nodes[4], newnodes[4], faceId, cell;
+  double U[3], V[3], avgU, avgV, newU[3], newV[3];
+  int n, i;
+
+  cell = gridFindCellWithFace(grid, face );
+  if ( EMPTY == cell ) return EMPTY;
+  
+  /* set up nodes so that nodes[0]-nodes[2] is face 
+     and nodes[0]-nodes[3] is the cell */
+
+  if (grid != gridCell(grid, cell, nodes) ) return EMPTY;
+  nodes[3] = nodes[0] + nodes[1] + nodes[2] + nodes[3];
+  if (grid != gridFace(grid, face, nodes, &faceId ) ) return EMPTY;
+  nodes[3] = nodes[3] -  nodes[0] - nodes[1] - nodes[2];
+
+  //if (0.0>=gridVolume(grid, nodes ) ) return EMPTY;
+
+  for (i=0;i<3;i++) {
+    U[i] = gridNodeU(grid, nodes[i], faceId);
+    V[i] = gridNodeV(grid, nodes[i], faceId);
+  }
+  avgU = (U[0] + U[1] + U[2]) / 3;
+  avgV = (V[0] + V[1] + V[2]) / 3;
+
+  newnode = gridAddNode(grid, newX, newY, newZ );
+  if ( newnode == EMPTY ) return EMPTY;
+
+  if ( grid != gridRemoveCell(grid, cell ) ) return EMPTY;
+  if ( grid != gridRemoveFace(grid, face ) ) return EMPTY;
+
+  for (i=0;i<3;i++){
+    for (n=0;n<4;n++) newnodes[n] = nodes[n];
+    for (n=0;n<3;n++) newU[n] = U[n];
+    for (n=0;n<3;n++) newV[n] = V[n];
+    newnodes[i] = newnode; 
+    newU[i] = avgU;
+    newV[i] = avgV;
+    if (grid != gridAddCell(grid, newnodes[0], newnodes[1], 
+			    newnodes[2], newnodes[3] ) ) return EMPTY;
+    if (grid != gridAddFaceUV(grid, 
+			      newnodes[0], newU[0], newV[0], 
+			      newnodes[1], newU[1], newV[1],  
+			      newnodes[2], newU[2], newV[2],  
+			      faceId ) ) return EMPTY;
+  }
+
+  if ( gridNegCellAroundNode(grid, newnode) ) {
+    gridCollapseEdge(grid, nodes[0], newnode, 0.0 );
     return EMPTY;
   }else{
     return newnode;
