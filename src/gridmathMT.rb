@@ -302,4 +302,17 @@ class TestGridMath < Test::Unit::TestCase
   v2 = @gm.vectTriDiag2(d,e,q0,q1,q2)
  end
 
+ def testEigTriDiag100to1
+  m = [ 100,  1.0e-5, 1.0e-6,
+             1000000, 1.0e-6,
+                         100]
+
+  d = @gm.triDiag(m)
+  e = @gm.triOffDiag(m)
+  eig = @gm.eigTriDiag(d,e)
+  assert_in_delta( 1000000, eig[0], 1.0e-5 )
+  assert_in_delta(     100, eig[1], 1.0e-5 )
+  assert_in_delta(     100, eig[2], 1.0e-5 )
+ end
+
 end
