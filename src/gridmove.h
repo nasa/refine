@@ -53,6 +53,8 @@ GridBool gridmoveSpecified(GridMove *, int node);
 GridMove *gridmoveSpringRelaxationStartUp(GridMove *);
 GridMove *gridmoveSpringRelaxationStartStep(GridMove *, double position);
 GridMove *gridmoveSpringRelaxationSubIteration(GridMove *, double *rmsResidual);
+GridMove *gridmoveSpringRelaxationShutDown(GridMove *);
+
 GridMove *gridmoveSpringRelaxation(GridMove *, int nsteps, int subIterations);
 
 GridMove *gridmoveComputeC2E(GridMove *, int *nedge, int *c2e);

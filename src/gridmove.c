@@ -333,25 +333,12 @@ GridMove *gridmoveSpringRelaxationSubIteration(GridMove *gm, double *rmsResidual
   return gm;
 }
 
-GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
+GridMove *gridmoveSpringRelaxationShutDown(GridMove *gm)
 {
   Grid *grid = gridmoveGrid(gm);
-  int step, iteration;
-  double position;
-  double rmsResidual;
   int node, i;
   double xyz0[3];
 
-  if (gm != gridmoveSpringRelaxationStartUp(gm)) return NULL;
-  for(step=0;step<nsteps;step++) {
-    position = (double)(step+1)/(double)nsteps;
-    gridmoveSpringRelaxationStartStep(gm, position);    
-    for(iteration=0;iteration<subIterations;iteration++) {
-      gridmoveSpringRelaxationSubIteration(gm, &rmsResidual);
-      /* printf("Iteration %4d Residual %23.15e\n",iteration,rmsResidual); */ 
-    }
-  }
-  
   for(node=0;node<gridMaxNode(grid);node++) {
     if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node)) {
       gridNodeXYZ(grid,node,xyz0);
@@ -367,6 +354,26 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   free(gm->xyz);     gm->xyz=NULL;
   free(gm->k);       gm->k=NULL;
   free(gm->source);  gm->source=NULL;
+
+  return gm;
+}
+
+GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
+{
+  int step, iteration;
+  double position;
+  double rmsResidual;
+
+  if (gm != gridmoveSpringRelaxationStartUp(gm)) return NULL;
+  for(step=0;step<nsteps;step++) {
+    position = (double)(step+1)/(double)nsteps;
+    gridmoveSpringRelaxationStartStep(gm, position);    
+    for(iteration=0;iteration<subIterations;iteration++) {
+      gridmoveSpringRelaxationSubIteration(gm, &rmsResidual);
+      /* printf("Iteration %4d Residual %23.15e\n",iteration,rmsResidual); */ 
+    }
+  }
+  gridmoveSpringRelaxationShutDown(gm);
 
   return gm;
 }
