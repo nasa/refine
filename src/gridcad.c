@@ -64,14 +64,14 @@ Grid *gridSafeProjectNode(Grid *grid, int node )
   if ( gridGeometryEdge( grid, node ) ) {
     edge = adjItem(adjFirst(grid->edgeAdj, node));
     edgeId = grid->edgeId[edge];
-    if ( grid != gridProjectNodeToEdge( grid, node, edgeId ) ) return NULL;
+    if ( grid != gridSafeProjectNodeToEdge( grid, node, edgeId ) ) return NULL;
     for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
       face = adjItem(it);
       faceId = grid->faceId[face];
       if ( grid != gridSafeProjectNodeToFace( grid, node, faceId ) ) 
 	return NULL;
     }
-    if ( grid != gridProjectNodeToEdge( grid, node, edgeId ) ) return NULL;    
+    if ( grid != gridSafeProjectNodeToEdge( grid, node, edgeId ) ) return NULL;
     return grid;
   }
   if ( gridGeometryFace( grid, node ) ) {
@@ -81,6 +81,25 @@ Grid *gridSafeProjectNode(Grid *grid, int node )
     return grid;
   }
 
+  return grid;
+}
+
+Grid *gridSafeProjectNodeToEdge(Grid *grid, int node, int edgeId )
+{
+  double xyz[3], t;
+
+  xyz[0] = grid->xyz[0+3*node];
+  xyz[1] = grid->xyz[1+3*node];
+  xyz[2] = grid->xyz[2+3*node];
+  if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL; 
+  if ( grid != gridProjectNodeToEdge( grid, node, edgeId ) ) return NULL;
+  if ( gridNegCellAroundNode( grid, node ) ) {
+    grid->xyz[0+3*node] = xyz[0];
+    grid->xyz[1+3*node] = xyz[1];
+    grid->xyz[2+3*node] = xyz[2];
+    gridSetNodeT( grid, node, edgeId, t );
+    return NULL;
+  }
   return grid;
 }
 

@@ -81,7 +81,7 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testSafeProjectionAndPositiveVolume
-  assert_not_nil grid = Grid.new(4,1,1,0)
+  assert_not_nil grid = Grid.new(4,1,1,1)
   assert_equal 0, grid.addNode(0.0,0.0,-0.5)
   assert_equal 1, grid.addNode(1.0,0.0,0.0)
   assert_equal 2, grid.addNode(0.0,1.0,0.0)
@@ -89,6 +89,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal grid, grid.addCell(0,1,2,3)
   assert_equal grid, grid.addFace(0,1,2,10)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s  
+  assert_nil   grid.safeProjectNode(0)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
+  assert_equal grid, grid.addEdge(0,1,20,0.0,1.0)
   assert_nil   grid.safeProjectNode(0)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)

@@ -20,6 +20,7 @@ Grid *gridProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridProjectNodeToFace(Grid *g, int node, int faceId );
 Grid *gridSafeProjectNode(Grid *g, int node );
 Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId );
+Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridProject(Grid *g);
 
 END_C_DECLORATION
