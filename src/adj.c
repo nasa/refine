@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include "adj.h"
 
-Adj* adjCreate( int nnode, int nadj )
+Adj* adjCreate( int nnode, int nadj, int chunkSize )
 {
   int i;
   Adj *adj;
@@ -20,7 +20,7 @@ Adj* adjCreate( int nnode, int nadj )
 
   adj->nnode     = MAX(nnode,1);
   adj->nadj      = MAX(nadj,1);
-  adj->chunkSize = adj->nadj;
+  adj->chunkSize = MAX(chunkSize,1);
 
   adj->node2item = (NodeItem *)malloc( adj->nadj * sizeof(NodeItem));
 

@@ -32,7 +32,7 @@ struct Adj {
   NodeItem *blank;
 };
 
-Adj *adjCreate( int nnode, int nadj );
+Adj *adjCreate( int nnode, int nadj, int chunkSize );
 void adjFree( Adj *adj );
 
 int adjNNode( Adj *adj );

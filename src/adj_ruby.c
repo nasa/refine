@@ -9,11 +9,11 @@ static void adj_free( void *adj )
   adjFree( adj );
 }
 
-VALUE adj_new( VALUE class, VALUE nnode, VALUE perNode )
+VALUE adj_new( VALUE class, VALUE nnode, VALUE nadj, VALUE chunkSize )
 {
   Adj *adj;
   VALUE obj;
-  adj = adjCreate( NUM2INT(nnode), NUM2INT(perNode) );
+  adj = adjCreate( NUM2INT(nnode), NUM2INT(nadj), NUM2INT(chunkSize) );
   obj = Data_Wrap_Struct( class, 0, adj_free, adj );
   return obj;
 }
@@ -103,7 +103,7 @@ VALUE cAdj;
 void Init_Adj() 
 {
   cAdj = rb_define_class( "Adj", rb_cObject );
-  rb_define_singleton_method( cAdj, "new", adj_new, 2 );
+  rb_define_singleton_method( cAdj, "new", adj_new, 3 );
   rb_define_method( cAdj, "nnode", adj_nnode, 0 );
   rb_define_method( cAdj, "nadj", adj_nadj, 0 );
   rb_define_method( cAdj, "chunkSize", adj_chunkSize, 0 );

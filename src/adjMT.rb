@@ -14,7 +14,7 @@ require 'Adj/Adj'
 class TestAdj < Test::Unit::TestCase
 
  def set_up
-  @adj = Adj.new(4,6)
+  @adj = Adj.new(4,6,3)
   @bigNode = 10000
  end
  def setup ; set_up ; end
@@ -22,13 +22,14 @@ class TestAdj < Test::Unit::TestCase
  def testCreate
   assert_equal 4, @adj.nnode
   assert_equal 6, @adj.nadj
-  assert_equal 6, @adj.chunkSize
+  assert_equal 3, @adj.chunkSize
  end
 
  def testCreateZeroSize
-  localAdj = Adj.new(0,0)
+  localAdj = Adj.new(0,0,0)
   assert_equal 1, localAdj.nnode
   assert_equal 1, localAdj.nadj
+  assert_equal 1, localAdj.chunkSize
  end
 
  def testRegister
@@ -40,9 +41,9 @@ class TestAdj < Test::Unit::TestCase
 
  def testRegisterAllocatesNewCunk
   6.times {|i| assert_not_nil @adj.register(0,i)}
-  assert_equal  6, @adj.nadj
-  assert_not_nil @adj.register(1,0)
-  assert_equal 12, @adj.nadj
+  assert_equal 6, @adj.nadj
+  assert_not_nil  @adj.register(1,0)
+  assert_equal 9, @adj.nadj
  end
 
  def testReallocateNNodesUp
