@@ -4,6 +4,8 @@
 #
 # $Id$
 
+require 'mkmf'
+
 unless ext = ARGV[0] 
  puts "ERROR: usage: ruby #{__FILE__} rubyExtensionName [extraFiles.(c|h)]"
  exit 1
@@ -25,12 +27,9 @@ ARGV[1..ARGV.size].each { |h| headers.push h if h =~/\.h/ }
 
 `mkdir -p #{ext}`
 Dir.chdir ext
-(objC+headers).compact.each { |f| `ln -sf ../#{f} .`}
 
 $objs = objC.collect{ |c| c.sub(/\.c/, ".o") }
 
-require 'mkmf'
-
-create_makefile(ext)
+create_makefile(ext,'..')
 
 exit 1 unless system "make --quiet --no-print-directory"
