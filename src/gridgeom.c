@@ -121,7 +121,7 @@ Grid *gridParallelGeomSave( Grid *grid, char *project )
 
   if( !CADGeom_SavePart(vol,project) ) {
     printf("%s: %d: Could not save CAPRI part.\n",
-	   __LINE__, __FILE__);    
+	   __FILE__, __LINE__);    
     return NULL;
   }
 
@@ -179,7 +179,7 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
   int iface;
   
   if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, 0, NULL  )) {
-    printf("%s: %d: Could not make UGrid_FromArrays.\n", __LINE__, __FILE__);
+    printf("%s: %d: Could not make UGrid_FromArrays.\n", __FILE__, __LINE__);
     return NULL;
   }
 
@@ -191,18 +191,18 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
 
   if( !UGPatch_InitSurfacePatches(ugrid) ) {
     printf("%s: %d: Could not make surface patches for new UGridPtr.\n",
-	   __LINE__, __FILE__);    
+	   __FILE__, __LINE__);    
     return NULL;
   }
 
-  printf("WARNING %s: %d: set patch UV param's.\n",__LINE__, __FILE__);
+  printf("WARNING %s: %d: set patch UV param's.\n", __FILE__, __LINE__);
 
   UGrid_TIMESTAMP(ugrid) = time( NULL );	/* Updated time */
   UGrid_ALGORITHM(ugrid) = UGrid_ALGORITHM(CADGeom_VolumeGrid(vol));
 
   if( !CADGeom_SetFaceGrid(vol,faceId,ugrid) ) {
     printf("%s: %d: Could not set CAPRI face UGridPtr.\n",
-	   __LINE__, __FILE__);    
+	   __FILE__, __LINE__);    
     return NULL;
   }
 
