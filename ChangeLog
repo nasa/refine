@@ -1,3 +1,8 @@
+2004-09-02 17:05 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridMinFaceAreaUV) added to compute min face area
+	in UV space around a node.
+x	
 2004-09-02 16:35 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridcad.c (gridFaceAreaUV) added to compute face area in UV

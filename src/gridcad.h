@@ -74,6 +74,7 @@ GridBool nearestOnFace(int vol, int face, double *xyz, double *uv,
                        double *xyznew);
 
 double gridFaceAreaUV(Grid *g, int face);
+Grid *gridMinFaceAreaUV(Grid *g, int node, double *min_area);
 
 END_C_DECLORATION
 

@@ -1511,6 +1511,24 @@ double gridFaceAreaUV(Grid *grid, int face)
   gridSubtractVector(uv2,uv0,edge1);
 
   gridCrossProduct(edge0,edge1,norm);
-  return (0.5*gridVectorLength(norm));
+  return (0.5*norm[2]);
 }
 
+Grid *gridMinFaceAreaUV(Grid *grid, int node, double *min_area)
+{
+  AdjIterator it;
+  int face;
+  double local_area;
+
+  *min_area = DBL_MAX;
+
+  for ( it = adjFirst(gridFaceAdj(grid),node);
+	adjValid(it); 
+	it = adjNext(it) ){
+    face = adjItem(it);
+    local_area = gridFaceAreaUV(grid, face);
+    if ( local_area < *min_area ) *min_area = local_area;
+  }
+
+  return grid;
+}
