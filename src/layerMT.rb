@@ -1268,6 +1268,9 @@ class TestLayer < Test::Unit::TestCase
 
  def testInsertBlendForConvextFace
   grid  = flatTwoFaceGrid
+  # y 2---3
+  # ^ |0\1|
+  # | 0---1 -> x
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   layer = Layer.new(grid).populateAdvancingFront([1])
   assert_equal [0,1,2], layer.triangleNormals(0)
@@ -1286,9 +1289,9 @@ class TestLayer < Test::Unit::TestCase
   # | 0--41 -> x
   assert_equal [0,1,2], layer.triangle(0)
   assert_equal [2,1,3], layer.triangle(1)
+  assert_equal [4,1,2,5], layer.blendNormals(0)
   assert_equal [0,4,2], layer.triangleNormals(0)
   assert_equal [5,1,3], layer.triangleNormals(1)
-  assert_equal [4,1,2,5], layer.blendNormals(0)
  end
 
  def testSplitBlend
@@ -1345,8 +1348,63 @@ class TestLayer < Test::Unit::TestCase
   grid
  end
 
+ def testBlendTerminatedWithCommonNormal01
+  grid = Grid.new(20,20,10,0)
+  top = 0.8
+  grid.addNode(0.5,0.5,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(1,1,0)
+  grid.addNode(0,1,0)
+  grid.addNode(-0.5,0.5,top)
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,2,3,10)
+  grid.addFace(0,3,4,10)
+  grid.addFace(0,4,5,10)
+  grid.addFace(0,5,1,10)
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  assert_equal 6, layer.nnormal
+  layer.blend(275.0)
+  assert_equal 7, layer.nnormal  
+  assert_equal 1, layer.nblend 
+  assert_equal [0,0,5,6], layer.blendNormals(0)
+  layer.advanceConstantHeight(0.1)
+  assert_equal 17, grid.ncell
+ end
+
+ def testBlendTerminatedWithCommonNormal10
+  grid = Grid.new(20,20,10,0)
+  top = 0.8
+  grid.addNode(-0.5,0.5,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(1,1,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0.5,0.5,top)
+  grid.addFace(5,1,2,10)
+  grid.addFace(5,2,3,10)
+  grid.addFace(5,3,4,10)
+  grid.addFace(5,4,0,10)
+  grid.addFace(5,0,1,10)
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  layer.blend(275.0)
+  assert_equal 7, layer.nnormal  
+  assert_equal [0,0,5,6], layer.blendNormals(0)
+  layer.advanceConstantHeight(0.1)
+  assert_equal 16, grid.ncell
+ end
+
  def testInsertBlendForTwoConvextFaces
   grid = fourFaceConvex
+  #        2
+  #      / y \
+  #    /4  ^  0\  
+  #  /     |     \
+  # 4 -z<- 0 -> x 1
+  #  \     |     /
+  #    \3  |  1/
+  #      \ | / 
+  #        3
   layer = Layer.new(grid).populateAdvancingFront([1])
   assert_equal [0,1,2], layer.triangleNormals(0)
   assert_equal [0,3,1], layer.triangleNormals(1)
@@ -1355,27 +1413,33 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,     layer.nRequiredBlends(0,-1.0)
   assert_equal layer, layer.blend(-1.0)
   assert_equal 2,     layer.nblend
-  assert_equal [0,1,6], layer.triangleNormals(0)
-  assert_equal [0,3,1], layer.triangleNormals(1)
-  assert_equal [5,4,7], layer.triangleNormals(2)
-  assert_equal [5,2,4], layer.triangleNormals(3)
+  assert_equal [5,1,6], layer.triangleNormals(0)
+  assert_equal [5,3,1], layer.triangleNormals(1)
+  assert_equal [0,4,7], layer.triangleNormals(2)
+  assert_equal [0,2,4], layer.triangleNormals(3)
   #       2 6
   #      / y \
   #    /4  ^  0\  
   #  /     |     \
-  # 4 -z<-5 0-> x 1
+  # 4 -z<-0 5-> x 1
   #  \     |     /
   #    \3  |  1/
   #      \ | / 
   #       7 3
-  assert_equal [5,0,2,6], layer.blendNormals(0)
-  assert_equal [0,5,3,7], layer.blendNormals(1)
+  assert_equal [0,5,2,6], layer.blendNormals(1)
+  assert_equal [5,0,3,7], layer.blendNormals(0)
+ end
+
+ def testSplitBlendForTwoConvextFaces
+  grid = fourFaceConvex
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.blend(-1.0)
   layer.splitBlend
   assert_equal 4,         layer.nblend
-  assert_equal [8,0,9,6], layer.blendNormals(0)
-  assert_equal [8,5,10,7],layer.blendNormals(1)
-  assert_equal [5,8,2,9], layer.blendNormals(2)
-  assert_equal [0,8,3,10],layer.blendNormals(3)
+  assert_equal [8,0,9,7], layer.blendNormals(0)
+  assert_equal [8,5,10,6],layer.blendNormals(1)
+  assert_equal [5,8,3,9], layer.blendNormals(2)
+  assert_equal [0,8,2,10],layer.blendNormals(3)
  end
 
  def testAdvanceBlendForConvextFace_ConvertBlendToTriangle
@@ -1468,54 +1532,6 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [5,7,1], layer.triangleNormals(5)
  end
 
- def testBlendTerminatedWithCommonNormal01
-  grid = Grid.new(20,20,10,0)
-  top = 0.8
-  grid.addNode(0.5,0.5,top)
-  grid.addNode(0,0,0)
-  grid.addNode(1,0,0)
-  grid.addNode(1,1,0)
-  grid.addNode(0,1,0)
-  grid.addNode(-0.5,0.5,top)
-  grid.addFace(0,1,2,10)
-  grid.addFace(0,2,3,10)
-  grid.addFace(0,3,4,10)
-  grid.addFace(0,4,5,10)
-  grid.addFace(0,5,1,10)
-  layer = Layer.new(grid).populateAdvancingFront([10])
-  assert_equal 6, layer.nnormal
-  layer.blend(275.0)
-  assert_equal 7, layer.nnormal  
-  assert_equal 1, layer.nblend 
-  assert_equal [0,0,5,6], layer.blendNormals(0)
-  layer.advanceConstantHeight(0.1)
-  assert_equal 17, grid.ncell
- end
-
- def testBlendTerminatedWithCommonNormal10
-  grid = Grid.new(20,20,10,0)
-  top = 0.8
-  grid.addNode(-0.5,0.5,top)
-  grid.addNode(0,0,0)
-  grid.addNode(1,0,0)
-  grid.addNode(1,1,0)
-  grid.addNode(0,1,0)
-  grid.addNode(0.5,0.5,top)
-  grid.addFace(5,1,2,10)
-  grid.addFace(5,2,3,10)
-  grid.addFace(5,3,4,10)
-  grid.addFace(5,4,0,10)
-  grid.addFace(5,0,1,10)
-  layer = Layer.new(grid).populateAdvancingFront([10])
-  layer.blend(275.0)
-  assert_equal 7, layer.nnormal  
-  assert_equal [0,0,5,6], layer.blendNormals(0)
-  layer.advanceConstantHeight(0.1)
-  assert_equal 16, grid.ncell
- end
-
-#  layer.writeTecplotFrontGeometry
-
  def testBlendTriplePoint
   grid = Grid.new(20,20,10,0)
   top = 0.8
@@ -1530,12 +1546,13 @@ class TestLayer < Test::Unit::TestCase
 
   layer = Layer.new(grid).populateAdvancingFront([10])
   assert_equal 3,     layer.nRequiredBlends(0,270.0)
-  #layer.blend(270.0)
-  #assert_equal 9, layer.nnormal  
-  #assert_equal 3, layer.nblend 
+  layer.blend(270.0)
+  assert_equal 9, layer.nnormal  
+  assert_equal 3, layer.nblend 
 
-  #layer.advanceConstantHeight(0.1)
+  layer.advanceConstantHeight(0.1)
 
+  layer.writeTecplotFrontGeometry
  end
 
  def facingGrid(z)

@@ -2505,80 +2505,61 @@ Layer *layerBlend(Layer *layer, double angleLimit )
 {
   int normal, originalNormals;
   AdjIterator it;
-  int triangle, splitTriangle, nextTriangle;
-  double edgeAngle, largestEdgeAngle;
+  int triangle, firstTriangle, nextTriangle;
+  double edgeAngle;
   int commonEdge[2];
-  int numberOfEdges;
-  bool contiguous;
+  int nRequiredBlends;
+  bool continuous;
 
-  int newNormal, i;
-  bool done;
+  int count, i;
+  int leftNormal, rightNormal;
+  int edge;
 
   if (angleLimit < 0.0) angleLimit = 250; /* deg */
 
   originalNormals = layerNNormal(layer);
   for ( normal = 0 ; normal < originalNormals ; normal++ ) {
-    
-    contiguous = TRUE;
-    numberOfEdges = 0;
-    largestEdgeAngle = 0;
-    splitTriangle = EMPTY;
-    for ( it = adjFirst(layer->adj,normal); 
-	  adjValid(it); 
-	  it = adjNext(it) ){
-      triangle = adjItem(it);
+    nRequiredBlends = layerNRequiredBlends(layer, normal, angleLimit );
+    if ( nRequiredBlends > 0 ) {
+      firstTriangle = layerFirstTriangleAfterGap(layer,normal);
+      continuous = ( EMPTY != 
+		     layerPreviousTriangle(layer, normal, firstTriangle) );
+      leftNormal = normal;
+      rightNormal = leftNormal;
+      triangle = firstTriangle;
       nextTriangle = layerNextTriangle(layer, normal, triangle);
-      if (EMPTY == nextTriangle) {
-	contiguous = FALSE;
-      }else{
-	edgeAngle = layerEdgeAngle(layer,triangle,nextTriangle);
-	if (largestEdgeAngle <= edgeAngle){
-	  largestEdgeAngle = edgeAngle;
-	  splitTriangle = triangle;
-	}
-	if (edgeAngle > angleLimit) numberOfEdges++;
-      }
-    }
-   
-    if (contiguous && 1==numberOfEdges) {
-      nextTriangle = layerNextTriangle(layer, normal, splitTriangle);
-      layerCommonEdge(layer, splitTriangle, nextTriangle, commonEdge);
-      if (layerNormalRoot(layer,normal) == commonEdge[0] ) {
-	layerAddBlend(layer,normal,normal,commonEdge[1]);
-      }else{
-	layerAddBlend(layer,normal,normal,commonEdge[0]);
-      }
-    } else {
-
-      if (splitTriangle != EMPTY && largestEdgeAngle > angleLimit){
-	newNormal = layerDuplicateNormal(layer, normal );
-	nextTriangle = layerNextTriangle(layer, normal, splitTriangle);
-	layerCommonEdge(layer, splitTriangle, nextTriangle, commonEdge);
-	if (layerNormalRoot(layer,normal) == commonEdge[0] ) {
-	  layerAddBlend(layer,newNormal,normal,commonEdge[1]);
-	}else{
-	  layerAddBlend(layer,newNormal,normal,commonEdge[0]);
-	}
-	triangle = nextTriangle;
-	done = FALSE;
-	while (!done) {
-	  for (i=0;i<3;i++)
-	    if (layer->triangle[triangle].normal[i] == normal) 
-	      layer->triangle[triangle].normal[i] = newNormal;
-	  nextTriangle = layerNextTriangle(layer, normal, triangle);
-	  done = (EMPTY == nextTriangle);
-	  if (!done && angleLimit<layerEdgeAngle(layer,triangle,nextTriangle)){
+      edge = 0;
+      for ( count = 0; count < layerNormalDeg(layer,normal); count++ ){
+	//printf("normal %d count %d triangle %d nextTriangle %d\n", normal, count, triangle, nextTriangle);
+	if (EMPTY != nextTriangle) {
+	  edgeAngle = layerEdgeAngle(layer,triangle,nextTriangle);
+	  if (edgeAngle > angleLimit) {
+	    edge = edge +1;
+	    if (continuous && 1 == nRequiredBlends) {
+	    }else{
+	      if (continuous && edge == nRequiredBlends) {
+		leftNormal = normal;
+	      }else{
+		leftNormal = layerDuplicateNormal(layer, normal );
+	      }
+	    }
 	    layerCommonEdge(layer, triangle, nextTriangle, commonEdge);
 	    if (layerNormalRoot(layer,normal) == commonEdge[0] ) {
-	      layerAddBlend(layer,normal,newNormal,commonEdge[1]);
+	      layerAddBlend(layer,leftNormal,rightNormal,commonEdge[1]);
 	    }else{
-	      layerAddBlend(layer,normal,newNormal,commonEdge[0]);
+	      layerAddBlend(layer,leftNormal,rightNormal,commonEdge[0]);
 	    }
-	    done = TRUE;
 	  }
-	  triangle = nextTriangle;
 	}
+	//printf("normal %d triangle %d leftNormal %d rightNormal %d\n", normal, triangle, leftNormal, rightNormal);
+	for (i=0;i<3;i++)
+	  if (layer->triangle[nextTriangle].normal[i] == normal) 
+	    layer->triangle[nextTriangle].normal[i] = leftNormal;
+	triangle = nextTriangle;
+	nextTriangle = layerNextTriangle(layer, normal, triangle);      
+	rightNormal = leftNormal;
       }
+      
     }
  
   }
@@ -2587,7 +2568,7 @@ Layer *layerBlend(Layer *layer, double angleLimit )
   layerInitializeTriangleNormalDirection(layer);
   layerFeasibleNormals(layer, -1.0, -1.0 );
   layerVisibleNormals(layer , 
-		      sin(ConvertDegreeToRadian(largestEdgeAngle*0.333)), 
+		      sin(ConvertDegreeToRadian(angleLimit*0.333)), 
 		      1.0e-8 );
   return layer;
 }
