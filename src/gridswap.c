@@ -24,6 +24,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   int face0, face1;
   int faceId0, faceId1;
   int node;
+  int degree[4];
   double uv[8];
   int newface0, newface1;
 
@@ -54,6 +55,15 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     faceId0 = faceIds[face0];
     faceId1 = faceIds[face1];
     if (faceId0==faceId1) {
+
+      /* make sure I'm not missing a face off proc */
+      for(node=0;node<4;node++) degree[node]=0;
+      for(face=0;face<4;face++)
+	if (EMPTY!=faces[face])
+	  for(node=0;node<3;node++) degree[cell2face[face][node]]++;
+      for(node=0;node<4;node++) 
+	if (2==degree[node] && gridNodeGhost(grid,cellnodes[node]))
+	  return NULL;
 
       gridRemoveCellAndQueue(grid,queue,cell);
       for(node=0;node<4;node++) 
@@ -97,7 +107,13 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 			    uv[0+2*facenodes[2]],
 			    uv[1+2*facenodes[2]],
 			    faceId1 );
-     return grid;
+
+      /* for safety, I don't think I need this */
+      for(node=0;node<4;node++)
+	if (0==gridCellDegree(grid,cellnode[node]))
+	  gridRemoveNodeWithOutGlobal(grid,cellnode[node]);
+
+      return grid;
     }
   }
   return NULL;
