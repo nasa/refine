@@ -48,4 +48,48 @@ MesherX_HLANative_SOURCES = \
 MesherX_HLANative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
 MesherX_HLANative_LDFLAGS = $(all_LDFLAGS)
 
+if BUILD_PARASOLID_KERNEL
+bin_PROGRAMS += refineParasolid MesherXParasolid MesherX_HLAParasolid
+refineParasolid_CFLAGS = $(all_CFLAGS)
+refineParasolid_SOURCES = ../src/main.c
+refineParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
+refineParasolid_LDFLAGS = $(all_LDFLAGS)
+
+MesherXParasolid_CFLAGS = $(all_CFLAGS)
+MesherXParasolid_SOURCES = ../src/MesherX.c
+MesherXParasolid_LDADD = $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
+MesherXParasolid_LDFLAGS = $(all_LDFLAGS)
+
+MesherX_HLAParasolid_CFLAGS = $(all_CFLAGS)
+MesherX_HLAParasolid_SOURCES = \
+	../src/MesherX_HLA.c \
+	../src/mesherx_hla.c \
+	../src/layerNormalExtra.c \
+	../src/geometricStretch.c
+MesherX_HLAParasolid_LDADD = $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
+MesherX_HLAParasolid_LDFLAGS = $(all_LDFLAGS)
+endif
+
+if BUILD_OPENCASCADE_KERNEL
+bin_PROGRAMS += refineOpenCASCADE MesherXOpenCASCADE MesherX_HLAOpenCASCADE
+refineOpenCASCADE_CFLAGS = $(all_CFLAGS)
+refineOpenCASCADE_SOURCES = ../src/main.c
+refineOpenCASCADE_LDADD = $(refineLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
+refineOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
+
+MesherXOpenCASCADE_CFLAGS = $(all_CFLAGS)
+MesherXOpenCASCADE_SOURCES = ../src/MesherX.c
+MesherXOpenCASCADE_LDADD = $(MesherXLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
+MesherXOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
+
+MesherX_HLAOpenCASCADE_CFLAGS = $(all_CFLAGS)
+MesherX_HLAOpenCASCADE_SOURCES = \
+	../src/MesherX_HLA.c \
+	../src/mesherx_hla.c \
+	../src/layerNormalExtra.c \
+	../src/geometricStretch.c
+MesherX_HLAOpenCASCADE_LDADD = $(MesherXLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
+MesherX_HLAOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
+endif
+
 endif
