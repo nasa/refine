@@ -346,6 +346,27 @@ int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
 
 int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 {
+  bool foundFace;
+  int i, face, maxface, faceId, nodes[3], insertFace;
+  double newXYZ[3], xyz0[3], xyz1[3], xyz2[3];
+  double norm[3], norm0[3], norm1[3], norm2[3];
+  
+  newXYZ[0] = newX;  newXYZ[1] = newY;  newXYZ[2] = newZ;
+
+  foundFace = FALSE;
+  insertFace = EMPTY;
+  face = 0;
+  maxface = gridMaxFace(grid);
+  while ( !foundFace && face < maxface ) {
+    if (grid == gridFace(grid, face, nodes, &faceId) ){
+      gridNodeXYZ(grid, nodes[0], xyz0);
+      gridNodeXYZ(grid, nodes[1], xyz1);
+      gridNodeXYZ(grid, nodes[2], xyz2);
+      
+      
+    }
+    face++;
+  }
   return EMPTY;
 }
 
