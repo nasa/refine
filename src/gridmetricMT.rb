@@ -200,7 +200,7 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 0.0, jacob[3], 1.0e-15
   assert_in_delta 2.0, jacob[4], 1.0e-15
   assert_in_delta 0.0, jacob[5], 1.0e-15
-  assert_in_delta 1.0, jacob[6], 1.0e-15
+  assert_in_delta(-1.0, jacob[6], 1.0e-15)
   assert_in_delta 0.0, jacob[7], 1.0e-15
   assert_in_delta 0.0, jacob[8], 1.0e-15
 
@@ -213,8 +213,34 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta(-0.5, jacob[3], 1.0e-15)
   assert_in_delta 0.5, jacob[4], 1.0e-15
   assert_in_delta 0.0, jacob[5], 1.0e-15
-  assert_in_delta(-0.25, jacob[6], 1.0e-15)
-  assert_in_delta(-0.25, jacob[7], 1.0e-15)
+  assert_in_delta 0.25, jacob[6], 1.0e-15
+  assert_in_delta 0.25, jacob[7], 1.0e-15
+  assert_in_delta 0.0, jacob[8], 1.0e-15
+
+  assert_not_nil jacob = grid.convertMetricToJacobian([1.0, 0.0,  0.0,
+                                                            1.00000000001,  0.0,
+                                                                  1.0000000002])
+  assert_in_delta 0.0, jacob[0], 1.0e-15
+  assert_in_delta 0.0, jacob[1], 1.0e-15
+  assert_equal 1, jacob[2].to_i, 1.0e-15
+  assert_in_delta 0.0, jacob[3], 1.0e-15
+  assert_equal 1, jacob[4].to_i, 1.0e-15
+  assert_in_delta 0.0, jacob[5], 1.0e-15
+  assert_in_delta(-1.0, jacob[6], 1.0e-15)
+  assert_in_delta 0.0, jacob[7], 1.0e-15
+  assert_in_delta 0.0, jacob[8], 1.0e-15
+
+  assert_not_nil jacob = grid.convertMetricToJacobian([1.0000000003, 0.0,  0.0,
+                                                            1.00000000001,  0.0,
+                                                                  1.0000000002])
+  assert_equal 1, jacob[0].to_i, 1.0e-15
+  assert_in_delta 0.0, jacob[1], 1.0e-15
+  assert_in_delta 0.0, jacob[2], 1.0e-15
+  assert_in_delta 0.0, jacob[3], 1.0e-15
+  assert_in_delta 0.0, jacob[4], 1.0e-15
+  assert_equal 1, jacob[5].to_i, 1.0e-15
+  assert_in_delta 0.0, jacob[6], 1.0e-15
+  assert_equal -1, jacob[7].to_i
   assert_in_delta 0.0, jacob[8], 1.0e-15
 
  end
