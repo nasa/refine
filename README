@@ -8,6 +8,9 @@ functionality is wrapped into Ruby scripting language extensions
 testing. See the README.EXT file in the Ruby distribution for details
 on ruby extensions. 
 
+The refine library can be called by FUN3D <http://fun3d.larc.nasa.gov/>
+to perform adaptation with a parallel execution scheme.
+
 CAD geometry access is facilitated with the NASA Langley Geomerty
 Labratory SDK <http://geolab.larc.nasa.gov/>, which assess CAD
 information with the CAPRI API
