@@ -50,11 +50,9 @@ VALUE adj_more( VALUE self )
 
 VALUE adj_first( VALUE self, VALUE node )
 {
-  NodeItem *it;
   GET_ADJ_FROM_SELF;
-  it = adjFirst(adj, NUM2INT(node) );
-  adjSetCurrent(adj,it);
-  return (it==NULL?Qnil:self);
+  adjSetCurrent( adj, adjFirst(adj, NUM2INT(node)) );
+  return self;
 }
 
 VALUE adj_item( VALUE self )

@@ -228,7 +228,7 @@ Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 
 int gridFaceId(Grid *grid, int n0, int n1, int n2 )
 {
-  NodeItem *it0, *it1, *it2;
+  AdjIterator it0, it1, it2;
   Adj *adj=grid->faceAdj;
 
   for ( it0 = adjFirst(adj,n0); adjValid(it0); it0 = adjNext(it0) )
@@ -243,7 +243,7 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
 
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
 {
-  NodeItem *it;
+  AdjIterator it;
   int cellId;
   grid->ngem = 0;
 

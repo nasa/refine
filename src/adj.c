@@ -80,7 +80,8 @@ Adj *adjRegister( Adj *adj, int node, int item )
 
 Adj* adjRemove(Adj *adj, int node, int item)
 {
-  NodeItem *it, *remove, *previous;
+  AdjIterator it;
+  NodeItem  *remove, *previous;
   remove = NULL;
 
   for ( it = adjFirst(adj,node); adjValid(it); it = adjNext(it) ) 
@@ -106,46 +107,46 @@ Adj* adjRemove(Adj *adj, int node, int item)
   return adj;
 }
 
-bool adjValid( NodeItem *iterator )
+bool adjValid( AdjIterator iterator )
 {
   return (iterator != NULL);
 }
 
-bool adjMore( NodeItem *iterator )
+bool adjMore( AdjIterator iterator )
 {
   return ( (iterator != NULL) && (iterator->next != NULL) );
 }
 
-NodeItem *adjFirst( Adj *adj, int node )
+AdjIterator adjFirst( Adj *adj, int node )
 {
   if ( node < adj->nnode ) return adj->first[node];
   return NULL;
 }
 
-int adjItem( NodeItem *iterator )
+int adjItem( AdjIterator iterator )
 {
   if ( iterator == NULL ) return EMPTY;
   return iterator->item;
 }
 
-NodeItem *adjNext( NodeItem *iterator )
+AdjIterator adjNext( AdjIterator iterator )
 {
   if ( iterator != NULL ) return iterator->next;
   return NULL;
 }
 
-NodeItem *adjGetCurrent( Adj *adj ){
+AdjIterator adjGetCurrent( Adj *adj ){
   return adj->current;
 }
 
-Adj *adjSetCurrent( Adj *adj, NodeItem *iterator ){
+Adj *adjSetCurrent( Adj *adj, AdjIterator iterator ){
   adj->current = iterator;
   return adj;
 }
 
 bool adjExists( Adj *adj, int node, int item )
 {
-  NodeItem *it;
+  AdjIterator it;
   bool exist;
   exist = FALSE;
   for ( it = adjFirst(adj,node); 
@@ -157,7 +158,7 @@ bool adjExists( Adj *adj, int node, int item )
 
 int adjDegree(Adj *adj, int node )
 {
-  NodeItem *it;
+  AdjIterator it;
   int degree;
   degree =0;
   for ( it = adjFirst(adj,node) ; adjValid(it); it = adjNext(it)) degree++;
