@@ -195,11 +195,11 @@ void gridparallelswap_( int *processor, double *ARlimit )
   } 
 }
 
-void gridparallelsmoothfaceinterior_( int *processor )
+void gridparallelsmooth_( int *processor )
 {
   GridBool localOnly;
   localOnly = (-1 == (*processor));
-  gridSmoothFaceInterior(grid, localOnly );
+  gridParallelSmooth(grid, localOnly );
 #ifdef PARALLEL_VERBOSE 
   if (localOnly) {
     printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",

@@ -148,6 +148,34 @@ Grid *gridParallelEdgeCollapse(Grid *grid, Queue *queue, int node0, int node1 )
   return result;
 }
 
+Grid *gridParallelSmooth( Grid *grid, GridBool localOnly )
+{
+  int node;
+  double ar, optimizationLimit, laplacianLimit;
+  GridBool nearGhost;
+  optimizationLimit =0.30;
+  laplacianLimit =0.60;
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if ( gridValidNode( grid, node ) && 
+	 !gridNodeFrozen( grid, node ) && 
+	 !gridGeometryBetweenFace( grid, node ) &&
+	 gridNodeLocal(grid,node) ) {
+      nearGhost = gridNodeNearGhost(grid, node);
+      if ( localOnly != nearGhost ) {
+	gridNodeAR(grid,node,&ar);
+	if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
+	  gridSmartLaplacian( grid, node ); 
+	  gridNodeAR(grid,node,&ar);
+	}
+	if (ar < optimizationLimit) {
+	  gridSmoothNode( grid, node );
+	}
+      }
+    }
+  }
+  return grid;
+}
+
 Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
 {
   int cell, maxcell;

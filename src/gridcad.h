@@ -45,7 +45,6 @@ Grid *gridRobustProject(Grid *g);
 Grid *gridSmooth(Grid *g );
 Grid *gridSmoothFaceMR(Grid *g, double optimizationLimit );
 Grid *gridSmoothVolume(Grid *g );
-Grid *gridSmoothFaceInterior(Grid *g, GridBool localOnly );
 Grid *gridSmoothNearNode1(Grid *g, int node );
 Grid *gridSmoothNearNode(Grid *g, int node );
 Grid *gridSmoothNode(Grid *g, int node );

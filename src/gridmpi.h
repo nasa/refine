@@ -28,10 +28,11 @@ Grid *gridParallelAdapt(Grid *g, Queue *q,
 int gridParallelEdgeSplit(Grid *g, Queue *q, int node0, int node1 );
 Grid *gridParallelEdgeCollapse(Grid *g, Queue *q, int node0, int node1 );
 
+Grid *gridParallelSmooth(Grid *grid, GridBool localOnly );
+
 Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit );
 Grid *gridParallelEdgeSwap(Grid *g, Queue *q, int node0, int node1 );
 Grid *gridApplyQueue(Grid *g, Queue *q );
-
 
 END_C_DECLORATION
 
