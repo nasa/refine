@@ -76,11 +76,11 @@ class TestGridMPI < Test::Unit::TestCase
   p2.setGhost(2)
   p1.setGhost(3)
 
-  assert_nil p2.parallelEdgeSplit(q,0,1), "split a ghost edge"
+  assert_equal EMPTY, p2.parallelEdgeSplit(q,0,1), "split a ghost edge"
   assert_equal 1, p1.ncell
   assert_equal 1, q.transactions
 
-  assert_equal p1, p1.parallelEdgeSplit(q,0,3)
+  assert_equal 4, p1.parallelEdgeSplit(q,0,3)
   assert_equal 2, p1.ncell
   assert_equal 4, p1.nface
   assert_equal p1.partId, p1.nodePart(4)

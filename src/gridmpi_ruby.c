@@ -28,7 +28,8 @@ VALUE grid_parallelEdgeSplit( VALUE self, VALUE rb_queue,
   Queue *queue;
   GET_GRID_FROM_SELF;
   Data_Get_Struct( rb_queue, Queue, queue );
-  return (gridParallelEdgeSplit(grid, queue, NUM2INT(node1), NUM2INT(node2))==grid?self:Qnil);
+  return INT2NUM( gridParallelEdgeSplit( grid, queue, 
+					 NUM2INT(node1), NUM2INT(node2) ) );
 }
 
 VALUE cGridMPI;

@@ -36,13 +36,13 @@ Grid *gridSetGhost(Grid *grid, int node )
   return gridSetNodePart(grid,node,EMPTY);
 }
 
-Grid *gridParallelEdgeSplit(Grid *grid, Queue *queue, int node1, int node2 )
+int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node1, int node2 )
 {
   int newnode;
-  if ( gridNodeGhost(grid,node1) && gridNodeGhost(grid,node2) ) return NULL;
+  if ( gridNodeGhost(grid,node1) && gridNodeGhost(grid,node2) ) return EMPTY;
   queueNewTransaction(queue);
   newnode = gridSplitEdge(grid,node1, node2);
-  if (EMPTY == newnode) return NULL;
+  if (EMPTY == newnode) return EMPTY;
   gridSetNodePart(grid,newnode,gridPartId(grid));
-  return grid;
+  return newnode;
 }
