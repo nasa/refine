@@ -50,7 +50,7 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
     if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
       printf("adapt node %8d nnode %8d added %8d removed %8d\n",
 	     adaptnode,grid->nnode,nnodeAdd,nnodeRemove);
-    if ( gridValidNode( grid, n0) ) {
+    if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
       adaptnode++;
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
       if ( ratio > maxLength ) {
