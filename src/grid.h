@@ -229,6 +229,8 @@ int gridNodeGlobal(Grid *g, int node );
 Grid *gridSetNodeGlobal(Grid *g, int node, int global );
 int gridNodePart(Grid *g, int node );
 Grid *gridSetNodePart(Grid *g, int node, int part );
+bool gridNodeLocal(Grid *g, int node );
+bool gridNodeGhost(Grid *g, int node );
 
 int gridFindCellWithFace(Grid *g, int face );
 

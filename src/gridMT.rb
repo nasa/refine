@@ -349,6 +349,31 @@ class TestGrid < Test::Unit::TestCase
   assert_equal EMPTY, grid.nodePart(1)
  end
 
+ def testInitializeMeshWithOnlyLocalNodes
+  assert_not_nil grid = Grid.new(1,0,0,0)
+  assert_equal false, grid.nodeLocal(0)
+  assert_equal false, grid.nodeGhost(0)
+  grid.addNode(1,2,3)
+  assert_equal true,  grid.nodeLocal(0)
+  assert_equal false, grid.nodeGhost(0)
+  assert_equal false, grid.nodeLocal(1)
+  assert_equal false, grid.nodeGhost(1)
+ end
+
+ def testLocalAndGhostNodes
+  assert_not_nil grid = Grid.new(2,0,0,0)
+  grid.addNode(1,2,3)
+  grid.addNode(1,2,3)
+  grid.setNodePart(0,2)
+  grid.setNodePart(1,5)
+  grid.setPartId(2)
+  assert_equal true,  grid.nodeLocal(0)
+  assert_equal false, grid.nodeGhost(0)
+  grid.setPartId(5)
+  assert_equal false, grid.nodeLocal(0)
+  assert_equal true,  grid.nodeGhost(0)
+ end
+
  def testAddAndRemoveNode
   assert_nil          @grid.removeNode(5)
   assert_nil          @grid.removeNode(2)

@@ -578,6 +578,18 @@ VALUE grid_setNodePart( VALUE self, VALUE node, VALUE part )
   return( grid == gridSetNodePart( grid, NUM2INT(node), NUM2INT(part) )?self:Qnil);
 }
 
+VALUE grid_nodeLocal( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return ( gridNodeLocal( grid, NUM2INT(node) )?Qtrue:Qfalse );
+}
+
+VALUE grid_nodeGhost( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return ( gridNodeGhost( grid, NUM2INT(node) )?Qtrue:Qfalse );
+}
+
 VALUE grid_nGeomNode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -865,6 +877,8 @@ void Init_Grid()
   rb_define_method( cGrid, "setNodeGlobal", grid_setNodeGlobal, 2 );
   rb_define_method( cGrid, "nodePart", grid_nodePart, 1 );
   rb_define_method( cGrid, "setNodePart", grid_setNodePart, 2 );
+  rb_define_method( cGrid, "nodeLocal", grid_nodeLocal, 1 );
+  rb_define_method( cGrid, "nodeGhost", grid_nodeGhost, 1 );
 
   rb_define_method( cGrid, "nGeomNode", grid_nGeomNode, 0 );
   rb_define_method( cGrid, "setNGeomNode", grid_setNGeomNode, 1 );

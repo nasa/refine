@@ -2153,6 +2153,20 @@ Grid *gridSetNodePart(Grid *grid, int node, int part )
   return grid;
 }
 
+bool gridNodeLocal(Grid *grid, int node )
+{
+  if (!gridValidNode(grid,node)) return FALSE;
+  if (NULL == grid->part) return TRUE;
+  return (grid->partId==grid->part[node]);
+}
+
+bool gridNodeGhost(Grid *grid, int node )
+{
+  if (!gridValidNode(grid,node)) return FALSE;
+  if (NULL == grid->part) return FALSE;
+  return (grid->partId!=grid->part[node]);
+}
+
 Grid *gridDeleteNodesNotUsed(Grid *grid){
   int node, maxnode;
   bool prism;
