@@ -75,17 +75,16 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testRememberTriangleParentGeomFaces
-  assert_not_nil        grid = Grid.new(0,0,0,0)
-  assert_not_nil        layer = Layer.new(grid)
-  assert_equal false,   layer.parentGeomFace(-1)
-  assert_equal false,   layer.parentGeomFace(0)
-  assert_equal false,   layer.parentGeomFace(1)
-  assert_equal layer,   layer.makeTriangle([1])
-  assert_equal 0,       layer.ntriangle  
-  assert_equal false,   layer.parentGeomFace(-1)
-  assert_equal false,   layer.parentGeomFace(0)
-  assert_equal true,    layer.parentGeomFace(1)
-  assert_equal false,   layer.parentGeomFace(2)
+  layer = Layer.new(Grid.new(0,0,0,0))
+  assert_equal false,   layer.parentGeomFace(5)
+  assert_equal false,   layer.parentGeomFace(12)
+  assert_equal layer,   layer.addParentGeomFace(12)
+  assert_equal false,   layer.parentGeomFace(5)
+  assert_equal true,    layer.parentGeomFace(12)
+  assert_equal layer,   layer.addParentGeomFace(5)
+  assert_equal true,    layer.parentGeomFace(5)
+  assert_equal true,    layer.parentGeomFace(12)
+  assert_nil            layer.addParentGeomFace(5)
  end
 
  def testAddNormalDynamicAllocates

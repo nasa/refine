@@ -40,7 +40,7 @@ struct Layer {
   Grid *grid;
   int maxtriangle, ntriangle;
   Triangle *triangle;
-  int nTriangleParent, *triangleParent;
+  int maxParentGeomFace, nParentGeomFace, *ParentGeomFace;
   int maxnormal, nnormal;
   Normal *normal;
   int *globalNode2Normal;
@@ -58,8 +58,9 @@ Layer *layerCreate( Grid *grid )
   layer->maxtriangle=0;
   layer->ntriangle=0;
   layer->triangle=NULL;
-  layer->nTriangleParent=0;
-  layer->triangleParent=NULL;
+  layer->maxParentGeomFace=0;
+  layer->nParentGeomFace=0;
+  layer->ParentGeomFace=NULL;
   layer->maxnormal=0;
   layer->nnormal=0;
   layer->normal=NULL;
@@ -209,7 +210,7 @@ void layerFree(Layer *layer)
   if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
-  if (layer->triangleParent != NULL) free(layer->triangleParent);
+  if (layer->ParentGeomFace != NULL) free(layer->ParentGeomFace);
   if (layer->triangle != NULL) free(layer->triangle);
   free(layer);
 }
@@ -265,9 +266,7 @@ Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
 
   grid = layerGrid(layer);
 
-  layer->nTriangleParent = nbc;
-  layer->triangleParent = malloc( layer->nTriangleParent * sizeof(int) );
-  for(ibc=0;ibc<layer->nTriangleParent;ibc++) layer->triangleParent[ibc] = bc[ibc];
+  for(ibc=0;ibc<nbc;ibc++) layerAddParentGeomFace(layer,bc[ibc]);
 
   for (ibc=0;ibc<nbc;ibc++){
     for(face=0;face<gridMaxFace(layer->grid);face++){
@@ -281,12 +280,32 @@ Layer *layerMakeTriangle(Layer *layer, int nbc, int *bc)
   return layer;
 }
 
+Layer *layerAddParentGeomFace(Layer *layer, int faceId )
+{
+  if (layerParentGeomFace(layer, faceId )) return NULL;
+
+  if (layer->nParentGeomFace >= layer->maxParentGeomFace) {
+    layer->maxParentGeomFace += 100;
+    if (layer->ParentGeomFace == NULL) {
+      layer->ParentGeomFace = malloc(layer->maxParentGeomFace*sizeof(int));
+    }else{
+      layer->ParentGeomFace = realloc(layer->ParentGeomFace,
+				      layer->maxParentGeomFace*sizeof(int));
+    }
+  }
+
+  layer->ParentGeomFace[layer->nParentGeomFace] = faceId;
+  layer->nParentGeomFace++;
+
+  return layer;
+}
+
 bool layerParentGeomFace(Layer *layer, int faceId )
 {
   int i;
 
-  for (i=0;i<layer->nTriangleParent;i++) 
-    if (faceId == layer->triangleParent[i]) return TRUE;
+  for (i=0;i<layer->nParentGeomFace;i++) 
+    if (faceId == layer->ParentGeomFace[i]) return TRUE;
 
   return FALSE;
 }
