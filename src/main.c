@@ -88,6 +88,7 @@ int main( int argc, char *argv[] )
     i++;
   }
   
+  if(debugInsert)                 sprintf(project,"../test/box1" );
   if(strcmp(project,"")==0)       sprintf(project,"../test/om6" );
   if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
@@ -129,10 +130,25 @@ int main( int argc, char *argv[] )
       layerVisibleNormals(layer);
     }else{
       if (debugInsert) {
+	printf("make advancing layer object.\n");
+	layer = layerCreate(grid);
+	bcs[0]=1;
+	printf("make advancing layer front.\n");
+	layerMakeFront(layer,1,bcs);
+	printf("make advancing layer front normals.\n");
+	layerMakeNormal(layer);
+	layerConstrainNormal(layer,-9);
+	layerConstrainNormal(layer,-10);
+	layerConstrainNormal(layer,-11);
+	layerConstrainNormal(layer,-12);
+	layerConstrainNormal(layer,3);
+	layerConstrainNormal(layer,4);
+	layerConstrainNormal(layer,5);
+	layerConstrainNormal(layer,6);
 	printf("Inserting a line of nodes.\n");
-	gridInsertLineOnSymPlane( grid, ninsert, 0.0, 1.0, 0.22);
+	layerInsertPhantomFront( layer );
 	gridVerifyEdgesInLine(grid);
-	ratio=0.7;
+	ratio=0.9;
       }else{
 	printf("Scaling spacing to refine a sphere.\n");
 	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
