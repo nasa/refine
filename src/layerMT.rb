@@ -1462,8 +1462,13 @@ class TestLayer < Test::Unit::TestCase
   grid.addFace(0,5,1,10)
   layer = Layer.new(grid).populateAdvancingFront([10])
   assert_equal 6, layer.nnormal
+  layer.writeTecplotFrontGeometry
   layer.blend(270.0)
   assert_equal 7, layer.nnormal  
+  assert_equal 1, layer.nblend 
+  assert_equal [0,0,5,6], layer.blendNormals(0)
+  layer.advanceConstantHeight(0.1)
+  layer.writeTecplotFrontGeometry
  end
 
  def facingGrid(z)
