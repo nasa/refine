@@ -1,16 +1,15 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename refine.info
-@settitle Refine Manual 1.0
+@settitle Refine Library Manual
 @c %**end of header
 
 @copying
 The refine library overview, version 1.0.
 @end copying
 
-
 @titlepage
-@title Refine Title
+@title Refine Library Manual
 
 @c The following two commands start the copyright page.
 @page
@@ -23,33 +22,93 @@ The refine library overview, version 1.0.
 
 @ifnottex
 @node Top
-@top Short Sample
+@top Refine Library Manual
 
 @insertcopying
 @end ifnottex
 
 @menu
-* First Chapter::    The first chapter is the
-                       only chapter in this sample.
-* Index::            Complete index.
+* Introduction :: Short description.
+* Overview ::     Basic architecture
+* Index ::        Complete index.
 @end menu
 
-@node First Chapter
-@chapter First Chapter
+@node Introduction
+@chapter Introduction
 
-@cindex chapter, first
+@cindex introduction
 
-This is the first chapter.
-@cindex index entry, another
+This is a copy of refine/README file from the distribution.
 
-Here is a numbered list.
+Refine is a 3D tetrahedral grid adaptation framework. It is
+implemented with an object-oriented flavor in the C language.  Most
+functionality is wrapped into Ruby scripting language extensions
+@code{http://www.ruby-lang.org/} for use in test first programing and unit
+testing. See the README.EXT file in the Ruby distribution for details
+on ruby extensions.
+ 
+The refine library can be called by FUN3D @code{http://fun3d.larc.nasa.gov/}
+to perform adaptation with a parallel execution scheme.
+ 
+CAD geometry access is facilitated with the NASA Langley Geomerty
+Labratory SDK @code{http://geolab.larc.nasa.gov/}, which assess CAD
+information with the CAPRI API
+@code{http://raphael.mit.edu/capri/docs.html}.
+ 
+@node Overview
+@chapter Overview
 
+@cindex overview
+
+The refine library is composed of base objects, the grid object, grid
+mix-ins, and child objects
+
+Base objects:
 @enumerate
 @item
-This is the first item.
-
+adj - element node adjacency
 @item
-This is the second item.
+queue - transaction queue for parallel connectivity modifcations.
+@item
+sort - list sorting and searching routines.
+@item
+line - stores arrays of nodes (advancing layer growth curves).
+@item
+near - near tree for finding nearby things
+@item
+intersect - computes if elements intersect. 
+@end enumerate
+
+Grid Object:
+@enumerate
+@item
+grid - stores majority of grid data and low-level methods.
+@end enumerate
+
+Grid Mix-ins
+@enumerate
+@item
+gridmath - basic vector and matrix meth routines
+@item
+gridmetric - computes element metrics (volume, aspect ratio)
+@item
+gridswap - edge and face swapping routines
+@item
+gridcad - node projection and node smoothing for improved element quality
+@item
+gridgeom - parallel GeoSDK/CAPRI restart routines.
+@item
+gridinsert - inserts and removes nodes into grid.
+@item
+gridmpi - parallel grid adaptation helper
+@item
+gridfortran - fortran bindings for linking to FUN3D.
+@end enumerate
+
+Grid Mix-ins
+@enumerate
+@item
+gridmove - grid movement by linear elasticity or springs (inherts form grid)
 @end enumerate
 
 @node Index
