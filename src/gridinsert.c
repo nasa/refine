@@ -689,11 +689,6 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, double ratio )
   double xyz0[3], xyz1[3], xyzAvg[3];
   bool volumeEdge;
 
-  if ( NULL != queue ) return NULL;
-  if (gridNodeNearGhost(grid,n0)||gridNodeNearGhost(grid,n1))return NULL;
-  if (!gridGeometryEdge(grid,n0)&&gridNodeFaceIdDegree(grid,n0)>1)return NULL;
-  if (!gridGeometryEdge(grid,n1)&&gridNodeFaceIdDegree(grid,n1)>1)return NULL;
-
   if ( gridGeometryNode(grid, n1) ) return NULL;
   if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
     return NULL;
