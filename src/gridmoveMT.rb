@@ -18,7 +18,7 @@ class TestGridMove < Test::Unit::TestCase
 
  EMPTY = (-1)
  
- def equalTetWithFaceBase
+ def isoTet
   grid = Grid.new(4,1,4,0)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
@@ -33,7 +33,7 @@ class TestGridMove < Test::Unit::TestCase
  end
 
  def testSpecifiedDisplacement
-  grid = equalTetWithFaceBase
+  grid = isoTet
   assert_not_nil gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
   up   = [0.0,0.0,1.0]
@@ -49,7 +49,7 @@ class TestGridMove < Test::Unit::TestCase
  end
 
  def testInitGC
-  grid = equalTetWithFaceBase
+  grid = isoTet
   gm = GridMove.new(grid)
 
   assert_not_nil  grid = String.new("hello")
@@ -98,7 +98,7 @@ class TestGridMove < Test::Unit::TestCase
  end
 
  def testSpringRelaxationUp
-  grid = equalTetWithFaceBase
+  grid = isoTet
   assert_not_nil gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
   up  = [0.0,0.0,1.0]
@@ -115,7 +115,7 @@ class TestGridMove < Test::Unit::TestCase
  end
 
  def testSpringRelaxationUpSteps
-  grid = equalTetWithFaceBase
+  grid = isoTet
   assert_not_nil gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
   up  = [0.0,0.0,1.0]
@@ -132,7 +132,7 @@ class TestGridMove < Test::Unit::TestCase
  end
 
  def testSpringRelaxationUpSubiters
-  grid = equalTetWithFaceBase
+  grid = isoTet
   assert_not_nil gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
   up  = [0.0,0.0,1.0]
@@ -146,6 +146,40 @@ class TestGridMove < Test::Unit::TestCase
   assert_in_delta up[0], gm.displacement(3)[0], delta
   assert_in_delta up[1], gm.displacement(3)[1], delta
   assert_in_delta up[2], gm.displacement(3)[2], delta
+ end
+
+ def isoTet4 h 
+  grid = Grid.new(5,4,4,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0.5,0.866,0)
+  grid.addNode(0.5,0.35,0.8)
+  grid.addNode(0.5,0.35,0.8*h)
+
+  grid.addCell(0,1,2,4)
+  grid.addCell(0,3,1,4)
+  grid.addCell(1,3,2,4)
+  grid.addCell(0,2,3,4)
+
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,3,1,10)
+  grid.addFace(1,3,2,10)
+  grid.addFace(0,2,3,10)
+  grid
+ end
+
+ def testSpringRelaxationSqwish
+  h = 0.5
+  grid = isoTet4 h
+  assert_not_nil gm = GridMove.new(grid)
+  3.times{|n| gm.displace(n,[0.0,0.0,0.0])}
+  gm.displace(3,[0.0,0.0,-0.4])
+  gm.springRelaxation(1,1)
+  ans = [0.0,0.0,-0.202398]
+  delta = 1.0e-5
+  assert_in_delta ans[0], gm.displacement(4)[0], delta
+  assert_in_delta ans[1], gm.displacement(4)[1], delta
+  assert_in_delta ans[2], gm.displacement(4)[2], delta
  end
 
 end
