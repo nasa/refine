@@ -26,7 +26,7 @@ int main( int argc, char *argv[] )
   char *filename;
   char *project;
   char *output;
-  int i;
+  int i, j;
 
   filename = "../test/om6_inv08.fgrid";
   printf("running default filename %s\n",filename);
@@ -61,24 +61,31 @@ int main( int argc, char *argv[] )
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));
 
-  printf("thrashing grid...\n");
-  gridThrash(grid);
-  printf("new size: %d nodes %d faces %d cells %d edge elements.\n",
-	 gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
-  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
-  printf("minimum Volume %12.8e\n",gridMinVolume(grid));
-
-  printf("projecting grid...\n");
-  gridProject(grid);
-  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
-  printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
-
-  for (i=0;i<2;i++){
-    printf("iteration %3d ...\n",i);
-    printf("edge swapping grid...\n");gridSwap(grid);
-    printf("node smoothin grid...\n");gridSmooth(grid);
-    printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
-    printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
+  printf("adapting grid...\n");
+  gridResetSpacing(grid);
+  gridScaleSpacingSphere(grid,
+			 0.0,0.0,0.0,0.75,
+			 0.5);
+  gridScaleSpacingSphere(grid,
+			 0.0,0.0,0.0,0.4,
+			 0.5);
+  for (j=0;j<4;j++){
+    gridAdapt(grid);
+    printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
+	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
+    printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	   gridMinAR(grid),gridMinVolume(grid));
+    gridRobustProject(grid);
+    printf("projected grid minimum Aspect Ratio %12f Volume %12.8e\n",
+	   gridMinAR(grid),gridMinVolume(grid));
+    
+    for (i=0;i<2;i++){
+      printf("iteration %3d ...",i);
+      printf("edge swapping grid...");gridSwap(grid);
+      printf("node smoothin grid...\n");gridSmooth(grid);
+      printf("minimum Aspect Ratio %12f Volume %12.8e\n",
+	     gridMinAR(grid),gridMinVolume(grid));
+    }
   }
 
   if (!gridRightHandedBoundary(grid)) 
