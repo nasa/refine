@@ -155,12 +155,12 @@ end
  def testEquator
   grid = Grid.new(6,4,0)
   assert_equal grid, grid.
-   addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
+   addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0).addCell(4,5,0,1)
   assert_equal 2, grid.nodeDeg(0)
   assert_equal 4, grid.nodeDeg(5)
   assert_equal [], grid.equator(0,2)
   assert_equal [], grid.equator(6,7)
-  assert_equal [0,1,2,3], grid.equator(4,5)
+  assert_equal [1,2,3,0,1], grid.equator(4,5)
  end
 
  def testSwap4for4
@@ -170,6 +170,10 @@ end
   assert_equal grid, grid.swap(4,5)
   assert_equal 2, grid.nodeDeg(4)
   assert_equal 2, grid.nodeDeg(5)
+  assert_equal 4, grid.nodeDeg(0)
+  assert_equal 4, grid.nodeDeg(2)
+  assert_equal 2, grid.nodeDeg(1)
+  assert_equal 2, grid.nodeDeg(3)
  end
 
  def XtestMaxSize
@@ -178,8 +182,6 @@ end
   1.upto(nnode*6) {grid.addCell(3,4,0,1)}
 
  end
-
- # add a cell to a blank spot
 
  # check the cell nodes on a swap
 
