@@ -22,9 +22,9 @@ class TestSampleUnit < Test::Unit::TestCase
   end
 
   def testNodeDeg
-    0.upto(@grid.nnode-1) { |i| assert_equal 0, @grid.nodeDeg(i) }
-    @grid.registerNodeCell( 2, 299 )
-    assert_equal 1, @grid.nodeDeg(2)
+    assert_equal 0, @grid.nodeDeg(0)
+    @grid.registerNodeCell( 0, 299 )
+    assert_equal 1, @grid.nodeDeg(0)
   end
 
   def testCellIterator
@@ -59,6 +59,18 @@ class TestSampleUnit < Test::Unit::TestCase
     assert_equal @grid, @grid.removeNodeCell(1,0)
     assert_equal false, @grid.cellExists(1,0)
     assert_equal nil,   @grid.removeNodeCell(1,0)
+  end
+
+  def testEfficientStorage
+    localGrid = Grid.new(1,1,1)
+    assert_equal nil, localGrid.registerNodeCell(0,0)
+    localGrid = Grid.new(1,1,2)
+    assert_equal nil, localGrid.registerNodeCell(0,0)
+    localGrid = Grid.new(1,1,3)
+    assert_equal localGrid, localGrid.registerNodeCell(0,0)
+    localGrid = Grid.new(1,1,4)
+    assert_equal localGrid, localGrid.registerNodeCell(0,0)
+    assert_equal localGrid, localGrid.registerNodeCell(0,1)
   end
 
 end
