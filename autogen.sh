@@ -1,9 +1,6 @@
 #!/bin/sh
 # Run this to generate all the initial makefiles, etc.
 
-echo "linking configure.ac to configure.in..."
-ln -s configure.ac configure.in
-
 echo "Running aclocal..."
 aclocal
 
