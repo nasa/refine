@@ -567,10 +567,18 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
   }
 
-  if (grid->nequ==4) swapStatus = gridSwapEdge4(grid, n0, n1);
-  if (grid->nequ==5) swapStatus = gridSwapEdge5(grid, n0, n1);
-  if (grid->nequ==6) swapStatus = gridSwapEdge6(grid, n0, n1);
-  if (grid->nequ==7) swapStatus = gridSwapEdge7(grid, n0, n1);
+  switch (grid->nequ) {
+  case 4: 
+    swapStatus = gridSwapEdge4(grid, n0, n1); break;
+  case 5:
+    swapStatus = gridSwapEdge5(grid, n0, n1); break;
+  case 6:
+    swapStatus = gridSwapEdge6(grid, n0, n1); break;
+  case 7:
+    swapStatus = gridSwapEdge7(grid, n0, n1); break;
+  default:
+    swapStatus = NULL; break;
+  }
 
   if ( grid->nequ != grid->ngem && swapStatus != NULL ) {
     gridRemoveFace(grid, face0 );

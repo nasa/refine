@@ -166,6 +166,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_nil grid.swapEdge(0,1)
   assert_not_nil grid=gemGrid(7, 2.0, 0)
   assert_nil grid.swapEdge(0,1)
+  assert_not_nil grid=gemGrid(8, 2.0, 0)
+  assert_nil grid.swapEdge(0,1)
+  assert_not_nil grid=gemGrid(9, 2.0, 0)
+  assert_nil grid.swapEdge(0,1)
  end
 
  def testSwapEdge4_0
