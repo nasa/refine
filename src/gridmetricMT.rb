@@ -45,6 +45,19 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 1, grid.addNode(0.0,0.0,2.0)
   assert_in_delta 2.0, grid.edgeLength(0,1), 1.0e-15
  end
+ 
+ def testFindLongestEdge
+  grid = Grid.new(4,1,0,0)
+  grid.addCell( 
+	       grid.addNode(-1.0,0.0,0.0), 
+	       grid.addNode(2.0,0.0,0.0), 
+	       grid.addNode(0.0,1.0,0.0), 
+	       grid.addNode(0.0,0.0,1.0) )
+  assert_equal 1, grid.longestEdge(0)
+  assert_equal 0, grid.longestEdge(1)
+  assert_equal 1, grid.longestEdge(2)
+  assert_equal 1, grid.longestEdge(3)
+ end
 
  def testAverageEdgeLength
   assert_not_nil grid = isoTet

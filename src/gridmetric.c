@@ -41,6 +41,30 @@ double gridAverageEdgeLength(Grid *grid, int node )
   return length/(double)ncell;
 }
 
+int gridLongestEdge(Grid *grid, int node )
+{
+  AdjIterator it;
+  int i, cell, nodes[4], longestNode;
+  double length, longestLength;
+  longestNode = EMPTY;
+  longestLength = -1.0;
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes);
+    for (i=0;i<4;i++){
+      if (node != nodes[i]) {
+	length = gridEdgeLength( grid, node, nodes[i] );
+	if ( length > longestLength ){
+	  longestLength = length;
+	  longestNode = nodes[i];
+	}
+      }
+    }
+  }
+
+  return longestNode;
+}
+
 double gridSpacing(Grid *grid, int node )
 {
   return grid->spacing[node];
