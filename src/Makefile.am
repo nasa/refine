@@ -8,7 +8,9 @@ libMesherX_a_SOURCES = \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
-	layer.h layer.c
+	gridfiller.h gridfiller.c \
+	layer.h layer.c \
+	mesherx.c
 
 include_HEADERS = \
 	master_header.h \
