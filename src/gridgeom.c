@@ -195,6 +195,8 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
     return NULL;
   }
 
+  printf("WARNING %s: %d: set patch UV param's.\n",__LINE__, __FILE__);
+
   UGrid_TIMESTAMP(ugrid) = time( NULL );	/* Updated time */
   UGrid_ALGORITHM(ugrid) = UGrid_ALGORITHM(CADGeom_VolumeGrid(vol));
 
