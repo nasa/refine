@@ -54,7 +54,7 @@ int main( int argc, char *argv[] )
       qualityImprovement = TRUE;
       printf("-q argument %d: activated grid quality improvement\n",i);
     } else if( strcmp(argv[i],"-b") == 0 ) {
-      qualityImprovement = TRUE;
+      blendElement = TRUE;
       printf("-b argument %d: activated blend elements\n",i);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
