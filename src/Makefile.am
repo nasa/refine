@@ -50,13 +50,13 @@ lib_LIBRARIES += libMesherX.a
 
 libMesherX_a_CFLAGS = @SDKheader@
 libMesherX_a_SOURCES = \
-	adj.c \
-	near.c \
+	adj.h adj.c \
+	near.h near.c \
 	intersect.h intersect.c \
-	line.c \
-	queue.c \
+	line.h line.c \
+	queue.h queue.c \
 	sort.h sort.c \
-	grid.c \
+	grid.h grid.c \
 	gridmath.h gridmath.c \
 	gridmetric.h gridmetric.c \
 	gridinsert.h gridinsert.c \
@@ -64,10 +64,10 @@ libMesherX_a_SOURCES = \
 	gridcad.h gridcad.c \
 	gridmove.h gridmove.c \
 	gridfiller.h gridfiller.c \
-	layer.c \
+	layer.h layer.c \
 	mesherxInit.h mesherxInit.c \
 	mesherxRebuild.h mesherxRebuild.c \
-	mesherx.c
+	mesherx.h mesherx.c
 
 libMesherX_a_include_HEADERS = \
 	refine_defs.h \
