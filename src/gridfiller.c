@@ -271,19 +271,14 @@ int gridSavePart( Grid *grid, char *project )
     return(-1);
   }
 
-  CADGeom_UseDefaultIOCallbacks();
-
-  if( !CADGeom_SavePart(vol,project) ) {
-    printf("Yo! Could NOT save \"%s\".\n",project);
+  if ( NULL != project ) {
+    CADGeom_UseDefaultIOCallbacks();
+    if( !CADGeom_SavePart(vol,project) ) {
+      printf("Yo! Could NOT save \"%s\".\n",project);
+    }
   }
 
-  printf("WARNING: skipping CADGeom_Stop ... \n");
-  /*
-  if ( ! CADGeom_Stop( ) ){
-    printf("ERROR: CADGeom_Stop broke.\n%s\n",ErrMgr_GetErrStr());
-    return NULL;
-  }  
-  */
+  return 0;
 }
 
  
