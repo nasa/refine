@@ -1098,6 +1098,7 @@ Layer *layerFeasibleNormals(Layer *layer, double dotLimit, double relaxation )
 	dir[1] -= relaxation*mindot*mindir[1];
 	dir[2] -= relaxation*mindot*mindir[2];
 	gridVectorNormalize(dir);
+	layerProjectNormalToConstraints(layer,normal);
 	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
       }
       worstdot = MIN(worstdot,mindot);
@@ -1137,6 +1138,7 @@ Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 	dir[0] += radian*mindir[0];
 	dir[1] += radian*mindir[1];
 	dir[2] += radian*mindir[2];
+	layerProjectNormalToConstraints(layer,normal);
 	gridVectorNormalize(dir);
 	lastdot = mindot;
 	layerNormalMinDot(layer, normal, &mindot, mindir, &minTriangle );
@@ -1256,44 +1258,49 @@ Layer *layerSmoothNormalDirection(Layer *layer, double relax )
 
 Layer *layerProjectNormalsToConstraints(Layer *layer)
 {
-  int normal, tipnode, edgeId, faceId;
+  int normal;
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    if (layer!=layerProjectNormalToConstraints(layer, normal)) return NULL;
+  }
+  return layer;
+}
+
+Layer *layerProjectNormalToConstraints(Layer *layer, int normal)
+{
+  int tipnode, edgeId, faceId;
   double xyzroot[3], xyztip[3], direction[3], height;
   Grid *grid;
+
+  faceId = layerConstrained(layer,normal);
+  if (faceId==0) return layer;
 
   grid = layerGrid(layer);
 
   tipnode = gridAddNode(grid,0,0,0);
-
   if (EMPTY == tipnode) return NULL;
 
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    faceId = layerConstrained(layer,normal);
-    if (faceId != 0 ) {
-      gridNodeXYZ(grid, layerNormalRoot(layer,normal), xyzroot );
-      layerNormalDirection(layer,normal,direction);
-      layerGetNormalHeight(layer,normal,&height);
-      direction[0] *= height;
-      direction[1] *= height;
-      direction[2] *= height;
-      xyztip[0] = xyzroot[0] + direction[0];
-      xyztip[1] = xyzroot[1] + direction[1];
-      xyztip[2] = xyzroot[2] + direction[2];
-      gridSetNodeXYZ(grid,tipnode,xyztip);
-      if (faceId >0) {
-	gridForceNodeToFace(grid, tipnode, faceId );
-      }else{
-	edgeId = -faceId;
-	gridForceNodeToEdge(grid, tipnode, edgeId );
-      }
-      gridNodeXYZ(grid, tipnode, xyztip);
-      gridSubtractVector(xyztip,xyzroot,direction);
-      height = sqrt(gridDotProduct(direction,direction));
-      layer->normal[normal].direction[0] = direction[0] / height;
-      layer->normal[normal].direction[1] = direction[1] / height;
-      layer->normal[normal].direction[2] = direction[2] / height;
-    }
-    
+  gridNodeXYZ(grid, layerNormalRoot(layer,normal), xyzroot );
+  layerNormalDirection(layer,normal,direction);
+  layerGetNormalHeight(layer,normal,&height);
+  direction[0] *= height;
+  direction[1] *= height;
+  direction[2] *= height;
+  xyztip[0] = xyzroot[0] + direction[0];
+  xyztip[1] = xyzroot[1] + direction[1];
+  xyztip[2] = xyzroot[2] + direction[2];
+  gridSetNodeXYZ(grid,tipnode,xyztip);
+  if (faceId >0) {
+    gridForceNodeToFace(grid, tipnode, faceId );
+  }else{
+    edgeId = -faceId;
+    gridForceNodeToEdge(grid, tipnode, edgeId );
   }
+  gridNodeXYZ(grid, tipnode, xyztip);
+  gridSubtractVector(xyztip,xyzroot,direction);
+  height = sqrt(gridDotProduct(direction,direction));
+  layer->normal[normal].direction[0] = direction[0] / height;
+  layer->normal[normal].direction[1] = direction[1] / height;
+  layer->normal[normal].direction[2] = direction[2] / height;
 
   gridRemoveNode(grid,tipnode);
 
