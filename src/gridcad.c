@@ -765,5 +765,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
     return NULL;
   }
 
+  if ( newAR > 0.5) return NULL;
+
   return grid;
 }
