@@ -239,7 +239,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   int globalnewnodes0[5], globalnewnodes1[5];
   int cell0, cell1, globalCellId0, globalCellId1;
   double xyz0[12], xyz1[12];
-  int gap0, gap1, face0, face1, faceId0, faceId1;
+  int gap0, gap1, face0, face1, faceNodes0[4], faceNodes1[4], faceId0, faceId1;
   int edge, edgeId;
   double t0,t1, newT;
   double map, map0, map1;
@@ -300,8 +300,9 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     gap1 = gridEqu(grid,gridNGem(grid));
     face0 = gridFindFace(grid, n0, n1, gap0 );
     face1 = gridFindFace(grid, n0, n1, gap1 );
-    faceId0 = gridFaceId(grid, n0, n1, gap0 );
-    faceId1 = gridFaceId(grid, n0, n1, gap1 );
+    if ( face0 == EMPTY || face1 == EMPTY ) return EMPTY;
+    gridFace(grid,face0,faceNodes0,&faceId0);
+    gridFace(grid,face1,faceNodes1,&faceId1);
     gridNodeUV(grid,n0,faceId0,n0Id0uv);
     gridNodeUV(grid,n1,faceId0,n1Id0uv);
     gridNodeUV(grid,n0,faceId1,n0Id1uv);
