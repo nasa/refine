@@ -11,12 +11,91 @@
 #ifndef GRID_H
 #define GRID_H
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+#include <values.h>
 #include "master_header.h"
 #include "adj.h"
 
 BEGIN_C_DECLORATION
 
+#define MAXDEG 200
+
+typedef struct Prism Prism;
+struct Prism {
+  int nodes[6];
+};
+
+typedef struct Pyramid Pyramid;
+struct Pyramid {
+  int nodes[5];
+};
+
+typedef struct Quad Quad;
+struct Quad {
+  int nodes[4];
+  int faceId;
+};
+
 typedef struct Grid Grid;
+struct Grid {
+  int maxnode, nnode;
+  int blanknode;
+  double *xyz;
+  double *map;
+  bool *frozen;
+
+  int maxcell, ncell;
+  int blankc2n;
+  int *c2n;
+  Adj *cellAdj;
+
+  int maxface, nface;
+  int blankf2n;
+  int *f2n;
+  int *faceId;
+  double *faceU, *faceV;
+  Adj *faceAdj;
+
+  int maxedge, nedge;
+  int blanke2n;
+  int *e2n;
+  int *edgeId;
+  double *edgeT;
+  Adj *edgeAdj;
+
+  int nprism, maxprism;
+  Prism *prism;
+  int *prismDeg;
+
+  int npyramid, maxpyramid;
+  Pyramid *pyramid;
+
+  int nquad, maxquad;
+  Quad *quad;
+
+  int nGeomNode;
+  int nGeomEdge;
+  int nGeomFace;
+  int *geomEdge;
+
+  int ngem;
+  int gem[MAXDEG];
+
+  int nequ;
+  int equ[MAXDEG];
+
+  int degAR;
+  double AR[MAXDEG];
+  double dARdX[3*MAXDEG];
+
+  FILE *tecplotFile;
+  bool tecplotFileOpen;
+
+  void (*renumberFunc)(void *renumberData, int *o2n);
+  void *renumberData;
+};
 
 Grid *gridCreate(int maxnode, int maxcell, int maxface, int maxedge );
 Grid *gridImport(int maxnode, int nnode, 
@@ -127,7 +206,9 @@ Grid *gridCycleEquator( Grid *g );
 
 int gridAddNode(Grid *g, double x, double y, double z );
 Grid *gridRemoveNode(Grid *g, int node );
-bool gridValidNode(Grid *g, int node );
+#define gridValidNode(grid,node) \
+(node>-1 && node<grid->maxnode && DBL_MAX!=grid->xyz[0+3*node])
+
 Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
 Grid *gridSetNodeXYZ(Grid *g, int node, double *xyz );
 Grid *gridDeleteNodesNotUsed(Grid *);
