@@ -17,9 +17,6 @@
 
 BEGIN_C_DECLORATION
 
-int intersectSide( double *vertex0, double *vertex1, double *vertex2, 
-		   double *node );
-
 bool intersectTriangleNode(double *vertex0, double *vertex1, double *vertex2,
 			   double *node );
 
