@@ -1,4 +1,9 @@
-Thu Jan 30, 2003: Released Refine 0.7.0
+Thu Apr 15, 2003: Released Refine 0.7.1
+
+Last version to use old pre-GeoBool tag on the SDK. Fixed more bugs in
+mulitple normals for BWB case.
+
+Thu Apr 11, 2003: Released Refine 0.7.0
 
 refine now has parallel fortran bindings for FUN3D(HEFSS) see
 HEFSS.rps/LibF90/refine_interface.f90 and refine/src/gridfortran.c.

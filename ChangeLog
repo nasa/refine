@@ -1,3 +1,9 @@
+2004-04-15 08:45 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.1 Release.
+	* /src/layer.c fixed multiple normal vertex ordering. Improved
+	subblend axle in corners.
+
 2004-04-11 11:10 Mike Park  <mike.park@nasa.gov>
 
 	* Made 0.7.0 Release.
