@@ -194,9 +194,14 @@ counts of the element changes. Running totals of cells, faces, and
 edges are used the acesses the actual data in the rest of the
 @code{queueRemoved*} and @code{queueAdded*} routines.
 
-All the internal data stturctures of a queue can be dumped to a single
-array of @code{int}s and a single array of @code{double}s.
-
+A queue object can be message passed to other processors by extracting
+two arrays, sending them, and using these arrays to recreate the queue
+object. All the internal data sturctures of a queue can be dumped to a
+single array of @code{int}s and a single array of @code{double}s. The
+sizes of these arrays are given by @code{queueDumpSize}. The arrays
+are filled by the @code{queueDump} method. The arrays can be used to
+fill the queue object's data structures with the @code{queueLoad}
+method.
 
 @section Sort
 @cindex sort
