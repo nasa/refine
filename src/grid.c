@@ -410,12 +410,13 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
   //test face
-  if (grid->nequ !=grid->ngem){
+  if ( grid->nequ != grid->ngem ){
     int faceId0, faceId1;
     faceId0 = gridFaceId(grid,n0,n1,grid->equ[0]);
     faceId1 = gridFaceId(grid,n0,n1,grid->equ[grid->ngem]);
     
-    printf(" - %d %d %d - ",grid->ngem,faceId0, faceId1);
+    if ( faceId0 == EMPTY || faceId1 == EMPTY ) return NULL;
+    if ( faceId0 != faceId1 ) return NULL;
   }
 
   origcost = 2.0;
