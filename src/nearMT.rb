@@ -90,4 +90,11 @@ class TestNear < Test::Unit::TestCase
   assert_equal 8, child7.leftIndex
  end
  
+ def testInitializeChildDistance
+  near  = Near.new(5,0,0,0,0)
+  assert_equal 0, near.farChild
+  assert_equal 0, near.rightDistance
+  assert_equal 0, near.leftDistance
+ end
+
 end
