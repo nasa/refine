@@ -224,8 +224,8 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
   for ( n0=0; adaptnode<origNNode; n0++ ) { 
     adaptnode++;
     if (adaptnode > 100 &&adaptnode/report*report == adaptnode )
-      printf("adapt node %8d nnode %8d added %8d removed %8d\n",
-	     adaptnode,gridNNode(grid),nnodeAdd,nnodeRemove);
+      printf(" %6d adapt node %8d nnode %8d added %8d removed %8d\n",
+	     gridPartId(grid),adaptnode,gridNNode(grid),nnodeAdd,nnodeRemove);
     if ( gridValidNode( grid, n0) && 
 	 !gridNodeFrozen( grid, n0 ) && 
 	 gridNodeLocal( grid, n0 ) ) {
