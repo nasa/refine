@@ -464,6 +464,8 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     origcost = MIN(origcost,cost);
   }
 
+  printf("orig %f\n",origcost);
+
   nodes[0][0]=n0;
   nodes[0][1]=grid->equ[0];
   nodes[0][2]=grid->equ[1];
@@ -519,6 +521,8 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     bestcost = currentcost;
     bestindex = 1;
   }
+
+  printf("best %f\n",bestcost);
 
   if ( bestcost > origcost ) {
 
@@ -713,6 +717,8 @@ double gridAR(Grid *grid, int *nodes )
 	  nx1*ny2*nz3*s4)/det;
 
   aspect = xins/circ*3.0;
+
+  if ( gridVolume( grid, nodes ) <= 1.0e-14) aspect = -1.0;
   return aspect;
 }
 
