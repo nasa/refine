@@ -20,6 +20,7 @@ class RubyExtensionBuilder
   requiredPackages['Intersect'] = %w{ GridMath }
   requiredPackages['Grid'] = %w{ Adj Line Sort}
   requiredPackages['GridMetric'] = %w{ Adj Line Grid GridMath }
+  requiredPackages['GridShape'] = %w{ Adj Line Grid }
   requiredPackages['GridSwap'] = %w{ Adj Line Grid GridMath GridMetric }
   requiredPackages['GridCAD'] = %w{ Adj Line Grid GridMath GridMetric }
   requiredPackages['GridInsert'] = %w{ Adj Line Grid GridMath GridMetric GridSwap GridCAD }
