@@ -17,7 +17,8 @@
 
 BEGIN_C_DECLORATION
 
-int intersectSide( double *tri0, double *tri1, double *tri2, double *node  );
+int intersectSide( double *vertex0, double *vertex1, double *vertex2, 
+		   double *node );
 
 END_C_DECLORATION
 
