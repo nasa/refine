@@ -3822,6 +3822,7 @@ Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
   double xyz[3];
   int savedNodes[3];
   double volumeLimit = 1.0e-14;
+  int new_terminated, termination_pass;
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
@@ -3829,93 +3830,111 @@ Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
     savedNodes[norm] = gridAddNode(grid,0.0,0.0,0.0);
     if (EMPTY == savedNodes[norm]) return NULL;
   }
+
+  do {
+    new_terminated = 0;
   
-  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    layerTriangleNormals(layer, triangle, normals);
-    layerTriangle(layer, triangle, nodes);
+    for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+      layerTriangleNormals(layer, triangle, normals);
+      layerTriangle(layer, triangle, nodes);
     
-    for (norm=0;norm<3;norm++){
-      normal = normals[norm];
-      if (layerNormalTerminated(layer,normal)){
-	layer->normal[normal].tip = layer->normal[normal].root;
+      for (norm=0;norm<3;norm++){
+	normal = normals[norm];
+	if (layerNormalTerminated(layer,normal)){
+	  layer->normal[normal].tip = layer->normal[normal].root;
+	}else{
+	  root = layer->normal[normal].root;
+	  gridNodeXYZ(grid,root,xyz);
+	  for(i=0;i<3;i++)
+	    xyz[i] = xyz[i] 
+	      + layer->normal[normal].height
+	      * layer->normal[normal].direction[i];
+	  tip = savedNodes[norm];
+	  gridSetNodeXYZ(grid,tip,xyz);
+	  layer->normal[normal].tip = tip;
+	}
+      }
+
+      if (nodes[1]<nodes[0] && nodes[1]<nodes[2]){
+	node = nodes[1];
+	nodes[1] = nodes[2];
+	nodes[2] = nodes[0];
+	nodes[0] = node;
+	normal = normals[1];
+	normals[1] = normals[2];
+	normals[2] = normals[0];
+	normals[0] = normal;
+      }
+      if (nodes[2]<nodes[0] && nodes[2]<nodes[1]){
+	node = nodes[2];
+	nodes[2] = nodes[1];
+	nodes[1] = nodes[0];
+	nodes[0] = node;
+	normal = normals[2];
+	normals[2] = normals[1];
+	normals[1] = normals[0];
+	normals[0] = normal;
+      }
+
+      nterminated = 0;
+      for (i=0;i<3;i++){
+	n[i]   = layerNormalRoot(layer,normals[i]);
+	n[i+3] = layerNormalTip(layer,normals[i]);
+	if (layerNormalTerminated(layer,normals[i])) nterminated++;
+      }
+      
+      if (nodes[2]<nodes[1]){
+	if (n[0]!=n[3]) {
+	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3];
+	  if ( volumeLimit > gridVolume(grid, tet ) ) {
+	    layerTerminateNormal( layer, normals[0] );
+	    new_terminated++;
+	  }
+	}
+	if (n[2]!=n[5]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5];
+	  if ( volumeLimit > gridVolume(grid, tet ) ) {
+	    layerTerminateNormal( layer, normals[2] );
+	    new_terminated++;
+	  }
+	}
+	if (n[1]!=n[4]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4];
+	  if ( volumeLimit > gridVolume(grid, tet ) ) {
+	    layerTerminateNormal( layer, normals[1] );
+	    new_terminated++;
+	  }
+	}
       }else{
-	root = layer->normal[normal].root;
-	gridNodeXYZ(grid,root,xyz);
-	for(i=0;i<3;i++)
-	  xyz[i] = xyz[i] 
-	    + layer->normal[normal].height
-	    * layer->normal[normal].direction[i];
-	tip = savedNodes[norm];
-	gridSetNodeXYZ(grid,tip,xyz);
-	layer->normal[normal].tip = tip;
+	if (n[0]!=n[3]) {
+	  tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3];
+	  if ( volumeLimit > gridVolume(grid, tet ) ) {
+	    layerTerminateNormal( layer, normals[0] );
+	    new_terminated++;
+	  }
+	}
+	if (n[1]!=n[4]) {
+	  tet[0] = n[0]; tet[1] = n[1]; tet[2] = n[5]; tet[3] = n[4];
+	  if ( volumeLimit > gridVolume(grid, tet ) ) {
+	    layerTerminateNormal( layer, normals[1] );
+	    new_terminated++;
+	  }
+	}
+	if (n[2]!=n[5]) {
+	  tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[5];
+	  if ( volumeLimit > gridVolume(grid, tet ) ) {
+	    layerTerminateNormal( layer, normals[2] );
+	    new_terminated++;
+	  }
+	}
+      }
+      for (norm=0;norm<3;norm++){
+	layer->normal[normals[norm]].tip = EMPTY;
       }
     }
-
-    if (nodes[1]<nodes[0] && nodes[1]<nodes[2]){
-      node = nodes[1];
-      nodes[1] = nodes[2];
-      nodes[2] = nodes[0];
-      nodes[0] = node;
-      normal = normals[1];
-      normals[1] = normals[2];
-      normals[2] = normals[0];
-      normals[0] = normal;
-    }
-    if (nodes[2]<nodes[0] && nodes[2]<nodes[1]){
-      node = nodes[2];
-      nodes[2] = nodes[1];
-      nodes[1] = nodes[0];
-      nodes[0] = node;
-      normal = normals[2];
-      normals[2] = normals[1];
-      normals[1] = normals[0];
-      normals[0] = normal;
-    }
-
-    nterminated = 0;
-    for (i=0;i<3;i++){
-      n[i]   = layerNormalRoot(layer,normals[i]);
-      n[i+3] = layerNormalTip(layer,normals[i]);
-      if (layerNormalTerminated(layer,normals[i])) nterminated++;
-    }
-    
-    if (nodes[2]<nodes[1]){
-      if (n[0]!=n[3]) {
-	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3];
-	if ( volumeLimit > gridVolume(grid, tet ) ) 
-	  layerTerminateNormal( layer, normals[0] );
-      }
-      if (n[2]!=n[5]) {
-	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[4]; tet[3] = n[5];
-	if ( volumeLimit > gridVolume(grid, tet ) ) 
-	  layerTerminateNormal( layer, normals[1] );
-      }
-      if (n[1]!=n[4]) {
-	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[4];
-	if ( volumeLimit > gridVolume(grid, tet ) ) 
-	  layerTerminateNormal( layer, normals[2] );
-      }
-    }else{
-      if (n[0]!=n[3]) {
-	tet[0] = n[0]; tet[1] = n[4]; tet[2] = n[5]; tet[3] = n[3];
-	if ( volumeLimit > gridVolume(grid, tet ) ) 
-	  layerTerminateNormal( layer, normals[0] );
-      }
-      if (n[1]!=n[4]) {
-	tet[0] = n[0]; tet[1] = n[1]; tet[2] = n[5]; tet[3] = n[4];
-	if ( volumeLimit > gridVolume(grid, tet ) ) 
-	  layerTerminateNormal( layer, normals[1] );
-      }
-      if (n[2]!=n[5]) {
-	tet[0] = n[2]; tet[1] = n[0]; tet[2] = n[1]; tet[3] = n[5];
-	if ( volumeLimit > gridVolume(grid, tet ) ) 
-	  layerTerminateNormal( layer, normals[2] );
-      }
-    }
-    for (norm=0;norm<3;norm++){
-      layer->normal[normals[norm]].tip = EMPTY;
-    }
-  }
+    if (new_terminated>0) printf("FutureNegativeCellNormals %d Terminated.\n",
+				 new_terminated);
+  } while ( new_terminated > 0 ) ;
   
   for (norm=0;norm<3;norm++) gridRemoveNode(grid,savedNodes[norm]);
 

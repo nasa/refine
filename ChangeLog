@@ -1,3 +1,13 @@
+2005-03-22 13:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/layer.c (layerTerminateFutureNegativeCellNormals)
+	1) Fixed a bug that terminated the wrong normal. This
+	fixed the BWB case.
+	2) Made the call repeat the negative cell tests until it
+	gets through a complete sweep with no terminations. this
+	to to catch a negative cell that is created by another
+	termintaion.
+
 2005-03-21 15:56 Beth Lee-Rausch  <e.m.lee-rausch@larc.nasa.gov>
 
 	* src/gridfortran.c (gridcreate_) Removed the uv check from
