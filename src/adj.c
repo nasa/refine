@@ -69,18 +69,21 @@ Adj* adjRemove(Adj *adj, int node, int item)
 {
   AdjIterator it;
   NodeItem  *remove, *previous;
-  remove = NULL;
 
-  for ( it = adjFirst(adj,node); adjValid(it); it = adjNext(it) ) 
-    if (adjItem(it)==item) remove = it;
+  remove = NULL;
+  previous = NULL;
+
+  for ( it = adjFirst(adj,node); adjValid(it); it = adjNext(it) ) {
+    if (adjItem(it)==item) {
+      remove = it;
+      break;
+    }else{
+      previous = it;
+    }
+  }
 
   if (remove == NULL) return NULL;
  
-  previous = NULL;
-
-  for ( it = adjFirst(adj,node); adjValid(it); it = adjNext(it) ) 
-    if (it != NULL && it->next == remove) previous = it;
-  
   if ( previous == NULL ) {
     adj->first[node] = remove->next;
   }else{
