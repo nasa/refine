@@ -506,6 +506,25 @@ Layer *layerSetHeightOfAllNormals(Layer *layer, double height )
   return layer;
 }
 
+Layer *layerSetNormalHeightOfFace(Layer *layer, int faceId, double height )
+{
+  int face, nodes[3], id;
+  int i, normal;
+
+  Grid *grid; grid = layerGrid(layer);
+
+  for (face=0;face<gridMaxFace(grid);face++){
+    if (grid == gridFace(grid,face,nodes,&id) && id == faceId ){
+      for (i=0;i<3;i++){
+	normal = layer->globalNode2Normal[nodes[i]];
+	layerSetNormalHeight( layer, normal, height );
+      }
+    }
+  }
+
+  return layer;
+}
+
 Layer *layerSetNormalHeight(Layer *layer, int normal, double height)
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
