@@ -2617,6 +2617,11 @@ Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
   return layer;
 }
 
+Layer *layerSubBlendNormals(Layer *layer, int blend, int subBlend, int *normals)
+{
+  return layerBlendNormals(layer, blend, normals );
+}
+
 int layerBlendDegree(Layer *layer, int normal)
 {
   if (NULL == layerBlendAdj(layer)) return 0;
@@ -2667,7 +2672,6 @@ int layerNSubBlend(Layer *layer, int blend )
   if (blend < 0 || blend >= layerNBlend(layer)) return EMPTY;
   return MAX(layer->blend[blend].nSubNormal0,layer->blend[blend].nSubNormal1)+1;
 }
-
 
 Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 {

@@ -461,6 +461,18 @@ VALUE layer_blendNormals( VALUE self, VALUE blend )
   return rb_normals;
 }
 
+VALUE layer_subBlendNormals( VALUE self, VALUE blend, VALUE subBlend )
+{
+  int i, normals[4];
+  VALUE rb_normals;
+  GET_LAYER_FROM_SELF;
+  if (layer != layerSubBlendNormals( layer, NUM2INT(blend), NUM2INT(subBlend), 
+				     normals )) return Qnil;
+  rb_normals = rb_ary_new2(4);
+  for(i=0;i<4;i++) rb_ary_store( rb_normals, i, INT2NUM(normals[i]) );
+  return rb_normals;
+}
+
 VALUE layer_blendDegree( VALUE self, VALUE normal )
 {
   GET_LAYER_FROM_SELF;
@@ -591,6 +603,7 @@ void Init_Layer()
   rb_define_method( cLayer, "blend", layer_blend, 1 );
   rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
+  rb_define_method( cLayer, "subBlendNormals", layer_subBlendNormals, 2 );
   rb_define_method( cLayer, "blendDegree", layer_blendDegree, 1 );
 
   rb_define_method( cLayer, "subBlend", layer_subBlend, 1 );
