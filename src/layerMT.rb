@@ -254,4 +254,11 @@ class TestLayer < Test::Unit::TestCase
   assert_equal true,      grid.rightHandedBoundary
  end
 
+# normal visibility
+# mutiple rebuild planes
+# mutiple layer with reconnect bug
+# blends?
+# layer termination
+# wiggle front into place 
+
 end
