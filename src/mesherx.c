@@ -533,6 +533,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       &newface, &newxyz, &newuv) ) {
 	FILE *mfile;
 	printf("%s\nCould NOT mesh Face %d\n",ErrMgr_GetErrStr(),faceId);
+	printf("Dumping face wire shell to faceError.m\n");
 	mfile = fopen("faceError.m","w");
 	fprintf(mfile,"face=[\n");
 	for(i=0;i<nshell;i++){
