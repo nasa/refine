@@ -3128,11 +3128,8 @@ Layer *layerSubBlendCount(Layer *layer, double maxNormalAngle)
 	nSubNormal = MIN(nSubNormal,MAXSUBNORMAL);
 	layer->blend[blend].nSubNormal1 = nSubNormal;
       }
-      for ( it = adjFirst(layerBlendAdj(layer),normal);
-	    adjValid(it);
-	    it=adjNext(it) ){
-	blend = adjItem(it);
-	layerBlendNormals(layer, blend, blendnormals );
+      blend = adjItem(adjNext(adjFirst(layerBlendAdj(layer),normal)));
+      if (layer==layerBlendNormals(layer, blend, blendnormals ) ){
 	if (normal == blendnormals[0] || normal == blendnormals[1] ) {
 	  layer->blend[blend].nSubNormal0 = nSubNormal;
 	}else{
