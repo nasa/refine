@@ -1456,8 +1456,8 @@ class TestLayer < Test::Unit::TestCase
   layer.advance
   assert_equal 0,       layer.nblend
   assert_equal 4,       layer.ntriangle
-  assert_equal [1,4,5], layer.triangleNormals(2)
-  assert_equal [2,5,4], layer.triangleNormals(3)
+  assert_equal [4,1,5], layer.triangleNormals(2)
+  assert_equal [5,2,4], layer.triangleNormals(3)
  end
 
  def testCheckAfterBlendForConvextWithConstrainingFace
