@@ -18,15 +18,24 @@
 Grid *gridSwapFace(Grid *grid, int n0, int n1, int n2 )
 {
   int cell0, cell1;
-  int nodes[5], nodes1[4], topnode, bottomnode;
+  int nodes[5], nodes0[4], nodes1[4], topnode, bottomnode;
 
   cell0 = gridFindOtherCellWith3Nodes(grid, n0, n1, n2, EMPTY );
   if ( EMPTY == cell0 ) return NULL;
   cell1 = gridFindOtherCellWith3Nodes(grid, n0, n1, n2, cell0 );
   if ( EMPTY == cell1 ) return NULL;
 
-  gridCell(grid, cell0, nodes);
-  topnode = nodes[0] + nodes[1] + nodes[2] + nodes[3] - n0 - n1 - n2; 
+  gridCell(grid, cell0, nodes0);
+  topnode = nodes0[0] + nodes0[1] + nodes0[2] + nodes0[3] - n0 - n1 - n2; 
+
+  nodes[0] = topnode;
+  if ( topnode == nodes0[1] ) {
+    nodes[1] = nodes0[0];
+  }else{
+    nodes[1] = nodes0[1];
+  }
+  gridOrient(grid,nodes0,nodes);
+
   gridCell(grid, cell1, nodes1);
   bottomnode = nodes1[0] + nodes1[1] + nodes1[2] + nodes1[3] - n0 - n1 - n2; 
 
@@ -36,9 +45,9 @@ Grid *gridSwapFace(Grid *grid, int n0, int n1, int n2 )
   gridRemoveCell(grid,cell0);
   gridRemoveCell(grid,cell1);
 
-  gridAddCell(grid,nodes[0],nodes[2],nodes[1],nodes[4]);
-  gridAddCell(grid,nodes[0],nodes[3],nodes[2],nodes[4]);
-  gridAddCell(grid,nodes[0],nodes[1],nodes[3],nodes[4]);
+  gridAddCell(grid,nodes[0],nodes[1],nodes[2],nodes[4]);
+  gridAddCell(grid,nodes[0],nodes[2],nodes[3],nodes[4]);
+  gridAddCell(grid,nodes[0],nodes[3],nodes[1],nodes[4]);
 
   return grid;
 
