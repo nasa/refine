@@ -549,9 +549,16 @@ int gridFindEdge(Grid *grid, int n0, int n1 )
   return EMPTY;
 }
 
+int gridEdgeId(Grid *grid, int n0, int n1 )
+{
+  int edge = gridFindEdge(grid, n0, n1 );
+  if ( edge == EMPTY ) return EMPTY;
+  return grid->edgeId[edge];
+}
+
 int gridGeomCurveSize( Grid *grid, int edgeId, int startNode ){
   AdjIterator it;
-  int node, lastnode, edge, n0, n1, nedgenode;
+  int node, lastnode, edge, n1, nedgenode;
   bool found;
 
   nedgenode=0;
@@ -571,9 +578,9 @@ int gridGeomCurveSize( Grid *grid, int edgeId, int startNode ){
 	  n1 = grid->e2n[0+2*edge];	  
 	}
 	if ( n1 != lastnode ) { 
+	  found = TRUE;
 	  lastnode = node;
 	  node = n1;
-	  found = TRUE;
 	  nedgenode++;
 	}
       }
@@ -583,11 +590,41 @@ int gridGeomCurveSize( Grid *grid, int edgeId, int startNode ){
   return nedgenode;
 }
 
-int gridEdgeId(Grid *grid, int n0, int n1 )
-{
-  int edge = gridFindEdge(grid, n0, n1 );
-  if ( edge == EMPTY ) return EMPTY;
-  return grid->edgeId[edge];
+Grid *gridGeomCurve( Grid *grid, int edgeId, int startNode, int *curve ){
+  AdjIterator it;
+  int node, lastnode, edge, n1, nedgenode;
+  bool found;
+
+
+  node = startNode;
+  nedgenode=0;
+  curve[nedgenode]=node;
+  nedgenode++;
+  lastnode = EMPTY;
+  found = TRUE;
+  while (found) {
+    found = FALSE;
+    for ( it = adjFirst(grid->edgeAdj,node); 
+	  adjValid(it) && !found; 
+	  it = adjNext(it)) {
+      edge = adjItem(it);
+      if (grid->edgeId[edge] == edgeId) {
+	if ( node == grid->e2n[0+2*edge] ) {
+	  n1 = grid->e2n[1+2*edge];
+	}else{
+	  n1 = grid->e2n[0+2*edge];	  
+	}
+	if ( n1 != lastnode ) { 
+	  found = TRUE;
+	  lastnode = node;
+	  node = n1;
+	  curve[nedgenode]=node;
+	  nedgenode++;
+	}
+      }
+    }
+  }
+  return grid;
 }
 
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
