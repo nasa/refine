@@ -1,3 +1,21 @@
+2005-03-09 18:52 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridResolveTofEdge, gridResolveUVofFace)
+	These functions now utilize the CADGeom_ResolveOn* functions to
+	limit movement of nodes that are assumed to lie on the entity and
+	for whom only parameter values are to be resolved.  In particular,
+	CADGeom_ResolveOnFace() is needed to handle Parasolid degeneracies
+	where a node may project to a parameter outside of the valid
+	range for the Face (but still maintain the same physical coords).
+	Case in point is the BoomCones example run as a 9 degree slice.
+	Also note that the *WCS versions are used to assume that the
+	points are referenced to the global coordinate system not the
+	local system of the entity.
+
+	* src/FAKEGeomExtras.c (new functions) added stubs for
+	CADGeom_ResolveOnEdgeWCS() and CADGeom_ResolveOnFaceWCS() that
+	simply fallback to simple FAKEGeom projections.
+
 2005-02-28 10:02 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridfortran.c (gridtestcadparameters_) added extra diagnostics

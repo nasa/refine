@@ -209,3 +209,15 @@ GridBool CADGeom_ReversedSurfaceNormal(int vol, int face)
 
   return( FALSE );
 }
+
+GridBool CADGeom_ResolveOnEdgeWCS(int vol, int edge, double *coor, double *t,
+                                  double *point)
+{
+  return CADGeom_NearestOnEdge(vol,edge,coor,t,point);
+}
+
+GridBool CADGeom_ResolveOnFaceWCS(int vol, int face, double *coor, double *uv,
+                                  double *point)
+{
+  return CADGeom_NearestOnFace(vol,face,coor,uv,point);
+}

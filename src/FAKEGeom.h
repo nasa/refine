@@ -114,6 +114,10 @@ GridBool CADGeom_UnMapPoint(int vol, double *xyz, double *pt);
 GridBool CADGeom_MapPoint(int vol, double *xyz, double *pt);
 
 GridBool CADGeom_ReversedSurfaceNormal(int vol, int face);
+GridBool CADGeom_ResolveOnEdgeWCS(int vol, int edge, double *coor, double *t,
+                                  double *point);
+GridBool CADGeom_ResolveOnFaceWCS(int vol, int face, double *coor, double *uv,
+                                  double *point);
 
 void GeoMesh_UseDefaultIOCallbacks( void );
 void CADGeeom_UseDefaultIOCallbacks( void );

@@ -149,8 +149,8 @@ Grid *gridResolveTofEdge(Grid *grid, int node, int edgeId )
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
   if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
 
-  if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) {
-    printf("%s: %d: nearestOnedge failed.\n",__FILE__,__LINE__);
+  if (!CADGeom_ResolveOnEdgeWCS( vol, edgeId, xyz, &t, xyznew) ) {
+    printf("%s: %d: CADGeom_ResolveOnEdgeWCS failed.\n",__FILE__,__LINE__);
     return NULL;
   }
 
@@ -167,8 +167,8 @@ Grid *gridResolveUVofFace(Grid *grid, int node, int faceId )
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
   if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
 
-  if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
-    printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
+  if (!CADGeom_ResolveOnFaceWCS( vol, faceId, xyz, uv, xyznew) ) {
+    printf("%s: %d: CADGeom_ResolveOnFaceWCS failed.\n",__FILE__,__LINE__);
     return NULL;
   }
 
