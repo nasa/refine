@@ -282,7 +282,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     newedge1 = gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
   }
 
-  gridSafeProjectNode(grid, newnode, 0.0 );
+  gridProjectNode(grid, newnode );
 
   /* find the worst cell */
   minAR = 2.0; 
@@ -517,7 +517,7 @@ int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
     edge++;
   }
 
-  if ( newnode != EMPTY ) gridSafeProjectNode(grid, newnode, 1.0);
+  if ( newnode != EMPTY ) gridProjectNode(grid, newnode );
 
   return newnode;
 }
@@ -798,7 +798,7 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 
   /* project and match node locations and parmeters */
   gridSetNodeXYZ( grid, n0, xyzAvg);
-  gridSafeProjectNode(grid, n0, 1.0);
+  gridProjectNode(grid, n0 );
   gridNodeXYZ( grid, n0, xyzAvg);
   gridSetNodeXYZ( grid, n1, xyzAvg); 
  
@@ -879,7 +879,7 @@ Grid *gridFreezeGoodNodes(Grid *grid, double goodAR,
 	  return NULL;
 	if ( ratio > minLength ) { 
 	  gridNodeAR(grid,n0,&ar);
-	  if ( grid == gridSafeProjectNode(grid, n0, 1.0 ) &&
+	  if ( grid == gridProjectNode(grid, n0 ) &&
 	       ar > goodAR ) gridFreezeNode(grid,n0);
 	}
       }

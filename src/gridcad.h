@@ -24,7 +24,9 @@ Grid *gridProjectNodeToFace(Grid *g, int node, int faceId );
 
 Grid *gridEvaluateEdgeAtT(Grid *g, int node, double t );
 Grid *gridEvaluateFaceAtUV(Grid *g, int node, double *uv );
-Grid *gridUpdateFaceParameter(Grid *g, int node );
+
+Grid *gridUpdateParameters(Grid *g, int node );
+Grid *gridUpdateFaceParameters(Grid *g, int node );
 
 Grid *gridProjectToEdge(Grid *g, int edgeId, 
 			double *xyz, double *t, double *newxyz );
@@ -36,13 +38,10 @@ Grid *gridFaceNormalAtUV(Grid *g, int faceId,
 			 double *uv, double *xyz, double *normal );
 Grid *gridFaceNormalAtXYZ(Grid *g, int faceId, double *xyz, double *normal );
 
-Grid *gridSafeProjectNode(Grid *g, int node, double ratio );
-Grid *gridSafeProjectNodeToFace(Grid *g, int node, int faceId, double ratio );
-Grid *gridSafeProjectNodeToEdge(Grid *g, int node, int edgeId, double ratio );
+Grid *gridProjectNode(Grid *g, int node );
 
 Grid *gridNodeProjectionDisplacement(Grid *g, int node, double *displacement );
 
-Grid *gridProject(Grid *g);
 Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);
 

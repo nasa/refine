@@ -70,7 +70,7 @@ Grid *gridProjectNodeToEdge(Grid *grid, int node, int edgeId )
   if ( grid != gridSetNodeXYZ( grid, node, xyznew ) ) return NULL;
   if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
 
-  return grid;
+  return gridUpdateFaceParameters(grid,node);
 }
 
 Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
@@ -89,25 +89,7 @@ Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
   if ( grid != gridSetNodeXYZ( grid, node, xyznew ) ) return NULL;
   if ( grid != gridSetNodeUV( grid, node, faceId, uv[0], uv[1] ) ) return NULL;
 
-  return grid;
-}
-
-Grid *gridSetUVofFace(Grid *grid, int node, int faceId )
-{
-  int vol = 1;
-  double uv[2], xyz[3], xyznew[3];
-
-  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
-  if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
-
-  if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
-    printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
-    return NULL;
-  }
-
-  if ( grid != gridSetNodeUV( grid, node, faceId, uv[0], uv[1] ) ) return NULL;
-
-  return grid;
+  return gridUpdateFaceParameters(grid,node); /* only needed for FAKEGeom */
 }
 
 Grid *gridEvaluateEdgeAtT(Grid *grid, int node, double t )
@@ -130,7 +112,8 @@ Grid *gridEvaluateEdgeAtT(Grid *grid, int node, double t )
   }
   gridSetNodeT(grid, node, edgeId, t);
   gridSetNodeXYZ(grid, node, xyz);
-  return grid;
+
+  return gridUpdateFaceParameters(grid,node);
 }
 
 Grid *gridEvaluateFaceAtUV(Grid *grid, int node, double *uv )
@@ -158,6 +141,42 @@ Grid *gridEvaluateFaceAtUV(Grid *grid, int node, double *uv )
   return grid;
 }
 
+Grid *gridResolveTofEdge(Grid *grid, int node, int edgeId )
+{
+  int vol = 1;
+  double t, xyz[3], xyznew[3];
+
+  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
+  if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
+
+  if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) {
+    printf("%s: %d: nearestOnedge failed.\n",__FILE__,__LINE__);
+    return NULL;
+  }
+
+  if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
+
+  return grid;
+}
+
+Grid *gridResolveUVofFace(Grid *grid, int node, int faceId )
+{
+  int vol = 1;
+  double uv[2], xyz[3], xyznew[3];
+
+  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
+  if ( grid != gridNodeUV( grid, node, faceId, uv ) ) return NULL;
+
+  if (!nearestOnFace( vol, faceId, xyz, uv, xyznew) ) {
+    printf("%s: %d: nearestOnFace failed.\n",__FILE__,__LINE__);
+    return NULL;
+  }
+
+  if ( grid != gridSetNodeUV( grid, node, faceId, uv[0], uv[1] ) ) return NULL;
+
+  return grid;
+}
+
 Grid *gridUpdateParameters(Grid *grid, int node ){
 
   AdjIterator it;
@@ -169,22 +188,23 @@ Grid *gridUpdateParameters(Grid *grid, int node ){
 	it = adjNext(it) ){
     edge = adjItem(it);
     if ( grid != gridEdge(grid, edge, nodes, &edgeId) ) return NULL;
-    if ( grid != gridProjectNodeToEdge(grid, node, edgeId) ) return NULL;
+    if ( grid != gridResolveTofEdge(grid, node, edgeId) ) return NULL;
   }
-  return gridUpdateFaceParameter(grid, node );
+  return gridUpdateFaceParameters(grid, node );
 }
 
-Grid *gridUpdateFaceParameter(Grid *grid, int node ){
+Grid *gridUpdateFaceParameters(Grid *grid, int node ){
 
   AdjIterator it;
   int nodes[3];
   int face, faceId;
 
-  for ( it = adjFirst(gridFaceAdj(grid),node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridFaceAdj(grid),node);
+	adjValid(it);
+	it = adjNext(it) ){
     face = adjItem(it);
     if ( grid != gridFace(grid, face, nodes, &faceId) )  return NULL;
-    if ( grid != gridSetUVofFace( grid, node, faceId ) ) 
-      return NULL;
+    if ( grid != gridResolveUVofFace( grid, node, faceId ) ) return NULL;
   }
 
   return grid;
@@ -266,7 +286,7 @@ Grid *gridFaceNormalAtXYZ(Grid *grid, int faceId, double *xyz, double *normal )
   return grid;
 }
 
-Grid *gridSafeProjectNode(Grid *grid, int node, double ratio )
+Grid *gridProjectNode(Grid *grid, int node )
 {
   int nodes[3];
   int edge, edgeId;
@@ -279,115 +299,19 @@ Grid *gridSafeProjectNode(Grid *grid, int node, double ratio )
   if ( gridGeometryEdge( grid, node ) ) {
     edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
     gridEdge(grid, edge, nodes, &edgeId );
-    if ( grid != gridSafeProjectNodeToEdge( grid, node, edgeId, ratio ) ) 
-      return NULL;
-    for ( it = adjFirst(gridFaceAdj(grid),node); adjValid(it); it = adjNext(it) ){
-      face = adjItem(it);
-      gridFace(grid, face, nodes, &faceId );
-      if ( grid != gridSetUVofFace( grid, node, faceId ) ) 
-	return NULL;
-    }
-    if ( grid != gridSafeProjectNodeToEdge( grid, node, edgeId, 1.0 ) ) return NULL;
-    return gridUpdateParameters(grid,node);
+    return gridProjectNodeToEdge( grid, node, edgeId );
   }
   if ( gridGeometryFace( grid, node ) ) {
     face = adjItem(adjFirst(gridFaceAdj(grid), node));
     gridFace(grid, face, nodes, &faceId );
-    if ( grid != gridSafeProjectNodeToFace( grid, node, faceId, ratio ) ) 
-      return NULL;
-    return gridUpdateParameters(grid,node);
+    return gridProjectNodeToFace( grid, node, faceId );
   }
 
   return grid;
 }
 
-Grid *gridSafeProjectNodeToEdge(Grid *grid, int node, int edgeId, double ratio )
-{
-  double origxyz[3], origt;
-  double projxyz[3];
-  double xyz[3];
-  int attempts;
-
-  if ( grid != gridNodeXYZ( grid, node, origxyz ) ) return NULL; 
-  if ( grid != gridNodeT( grid, node, edgeId, &origt ) ) return NULL; 
-
-  if ( grid != gridProjectNodeToEdge( grid, node, edgeId ) ) return NULL;
-
-  if (!gridNegCellAroundNode( grid, node )) return grid;
-
-  gridSetNodeT( grid, node, edgeId, origt );
-
-  if ( grid != gridNodeXYZ( grid, node, projxyz ) ) return NULL; 
-  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
-
-  attempts = 0;
-  while ( attempts < 10 && gridNegCellAroundNode( grid, node ) ) {
-    attempts++;
-    xyz[0] = (1.0-ratio)*xyz[0] + ratio*origxyz[0];
-    xyz[1] = (1.0-ratio)*xyz[1] + ratio*origxyz[1];
-    xyz[2] = (1.0-ratio)*xyz[2] + ratio*origxyz[2];
-    gridSetNodeXYZ( grid, node, xyz );
-  }
-
-  if (gridNegCellAroundNode( grid, node )) 
-    gridSetNodeXYZ( grid, node, origxyz );
-
-  return NULL;
-}
-
-Grid *gridSafeProjectNodeToFace(Grid *grid, int node, int faceId, double ratio )
-{
-  double origxyz[3], origuv[2];
-  double projxyz[3];
-  double xyz[3];
-  int attempts;
-
-  if ( grid != gridNodeXYZ( grid, node, origxyz ) ) return NULL; 
-  if ( grid != gridNodeUV( grid, node, faceId, origuv ) ) return NULL; 
-
-  if ( grid != gridProjectNodeToFace( grid, node, faceId ) ) return NULL;
-
-  if (!gridNegCellAroundNode( grid, node )) return grid;
-
-  gridSetNodeUV( grid, node, faceId, origuv[0], origuv[1] );
-
-  if ( grid != gridNodeXYZ( grid, node, projxyz ) ) return NULL; 
-  if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
-
-  attempts = 0;
-  while ( attempts < 10 && gridNegCellAroundNode( grid, node ) ) {
-    attempts++;
-    xyz[0] = (1.0-ratio)*xyz[0] + ratio*origxyz[0];
-    xyz[1] = (1.0-ratio)*xyz[1] + ratio*origxyz[1];
-    xyz[2] = (1.0-ratio)*xyz[2] + ratio*origxyz[2];
-    gridSetNodeXYZ( grid, node, xyz );
-  }
-
-  if (gridNegCellAroundNode( grid, node )) 
-    gridSetNodeXYZ( grid, node, origxyz );
-
-  return NULL;
-}
-
-Grid *gridProject(Grid *grid)
-{
-  int node;
-  int notProjected;
-  notProjected = 0;
-
-  for (node=0;node<gridMaxNode(grid);node++)
-    if ( gridValidNode( grid, node ) )
-      if ( gridSafeProjectNode(grid,node,1.0) != grid ) notProjected++;
-
-  if (notProjected > 0){
-    // printf("gridProject: %d of %d nodes not projected.\n", notProjected,gridNNode(grid));
-    return NULL;
-  }
-
-  return grid;
-}
-
-Grid *gridNodeProjectionDisplacement(Grid *grid, int node, double *displacement )
+Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
+				     double *displacement )
 {
   int nodes[3];
   int edge, edgeId;
@@ -406,15 +330,12 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node, double *displacement 
     edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
     gridEdge(grid, edge, nodes, &edgeId );
     if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
-    if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
-    if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
-    for ( it = adjFirst(gridFaceAdj(grid),node); 
-	  adjValid(it); 
-	  it = adjNext(it) ){
-      face = adjItem(it);
-      gridFace(grid, face, nodes, &faceId );
-      if ( grid != gridSetUVofFace( grid, node, faceId ) ) return NULL;
+    if (!nearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) {
+      printf("%s: %d: nearestOnEdge failed.\n",__FILE__,__LINE__);
+      return NULL;
     }
+    if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
+    if ( grid != gridUpdateFaceParameters(grid, node) ) return NULL;
     gridSubtractVector(xyznew,xyz,displacement);
     return grid;
   }
@@ -441,7 +362,7 @@ Grid *gridRobustProject(Grid *grid)
   notProjected = 0;
   for (node=0;node<gridMaxNode(grid);node++)
     if ( gridValidNode( grid, node ) && !gridNodeFrozen(grid, node) ) 
-      if (gridRobustProjectNode( grid, node)!= grid ) 
+      if (grid != gridProjectNode( grid, node) ) 
 	notProjected++;
 
   if (notProjected > 0){
@@ -451,79 +372,6 @@ Grid *gridRobustProject(Grid *grid)
   }
 
   return grid;
-}
-
-Grid *gridRobustProjectNode(Grid *grid, int node)
-{
-  int i, j, goodnode, nodes[4], level2nodes[4];
-  AdjIterator it, level2;
-  double xyz[3];
-
-  if ( !gridValidNode( grid, node ) ) return NULL;
-  
-  if ( gridSafeProjectNode(grid,node,0.95) == grid ) return grid;
-
-  for ( it = adjFirst(gridCellAdj(grid),node); 
-	adjValid(it); 
-	it = adjNext(it) ){
-    gridCell(grid, adjItem(it), nodes);
-    for (i=0;i<4;i++)
-      if (!gridGeometryFace( grid, nodes[i])) 
-	gridSmoothNode( grid, nodes[i], TRUE);
-  }      
-  gridSwapNearNodeExceptBoundary( grid, node);
-  for ( it = adjFirst(gridCellAdj(grid),node); 
-	adjValid(it); 
-	it = adjNext(it) ){
-    gridCell(grid, adjItem(it), nodes);
-    for (i=0;i<4;i++)
-      if (!gridGeometryFace( grid, nodes[i])) 
-	gridSmoothNode( grid, nodes[i], TRUE);
-  }
-      
-  if ( gridSafeProjectNode(grid,node,0.95) == grid ) return grid;
-
-  for ( it = adjFirst(gridCellAdj(grid),node); 
-	adjValid(it); 
-	it = adjNext(it) ){
-    gridCell(grid, adjItem(it), nodes);
-    for (i=0;i<4;i++) {
-      for ( level2 = adjFirst(gridCellAdj(grid),nodes[i]); 
-	    adjValid(level2); 
-	    level2 = adjNext(level2) ){
-	gridCell(grid, adjItem(level2), level2nodes);
-	for (j=0;j<4;j++) {
-	  if (!gridGeometryFace( grid, level2nodes[j])) 
-	    gridSmoothNode( grid, level2nodes[j], TRUE);
-	}
-      }
-    }
-  }
-
-  if ( gridSafeProjectNode(grid,node,1.0) == grid ) return grid;
-  
-  gridNodeXYZ(grid,node,xyz);
-  printf(" try to c-p %d X %10.5f Y %10.5f Z %10.5f ...",
-	 node,xyz[0],xyz[1],xyz[2]);
-  for ( it = adjFirst(gridCellAdj(grid),node); 
-	adjValid(it); 
-	it = adjNext(it) ){
-    gridCell(grid, adjItem(it), nodes);
-    for (i=0;i<4;i++) {
-      goodnode = nodes[i];
-      if ( node != goodnode && 
-	   gridGeometryFace( grid, goodnode) &&
-	   grid == gridSafeProjectNode( grid, goodnode, 1.0 ) ) { 
-	if ( grid == gridCollapseEdge(grid, NULL, goodnode, node, 0.0 ) ){
-	  printf(" got it ! %d\n",goodnode);
-	  return grid;
-	}
-      }
-    }
-  }
-  printf("\n");
-
-  return NULL;
 }
 
 Grid *gridSmoothNearNode1(Grid *grid, int node )
@@ -733,7 +581,6 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
   alpha[0] = 0.0;
   t = tStart + alpha[0]*dt;
   if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
-  if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
   gridNodeAR( grid, node, &ar[0] );
   ratio1 = gridEdgeRatio(grid, node, node1);
   ratio2 = gridEdgeRatio(grid, node, node2);
@@ -742,7 +589,6 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
   alpha[1] = 1.0e-10;
   t = tStart + alpha[1]*dt;
   if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
-  if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
   gridNodeAR( grid, node, &ar[1] );
   ratio1 = gridEdgeRatio(grid, node, node1);
   ratio2 = gridEdgeRatio(grid, node, node2);
@@ -759,7 +605,6 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
     alpha[1] = alpha[0] * gold;
     t = tStart + alpha[1]*dt;
     if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
-    if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
     gridNodeAR( grid, node, &ar[1] );
     ratio1 = gridEdgeRatio(grid, node, node1);
     ratio2 = gridEdgeRatio(grid, node, node2);
@@ -769,7 +614,6 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
   /* use the `best' t and update node xyz, edge t, and face uv */
   t = tStart + alpha[0]*dt;
   if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
-  if (grid != gridUpdateFaceParameter(grid, node )) return NULL;
 
   return grid;
 }

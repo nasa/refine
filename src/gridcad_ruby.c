@@ -31,22 +31,16 @@ VALUE grid_evaluateFaceAtUV( VALUE self, VALUE node, VALUE u, VALUE v )
   return (gridEvaluateFaceAtUV(grid, NUM2INT(node), uv )==grid?self:Qnil);
 }
 
-VALUE grid_updateFaceParameter( VALUE self, VALUE node )
+VALUE grid_updateFaceParameters( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
-  return (gridUpdateFaceParameter( grid, NUM2INT(node) )==grid?self:Qnil);
+  return (gridUpdateFaceParameters( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
-VALUE grid_safeProjectNode( VALUE self, VALUE node, VALUE ratio )
+VALUE grid_projectNode( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
-  return (gridSafeProjectNode( grid, NUM2INT(node), NUM2DBL(ratio) )==grid?self:Qnil);
-}
-
-VALUE grid_project( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return (gridProject( grid )==grid?self:Qnil);
+  return (gridProjectNode( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
 VALUE grid_smooth( VALUE self )
@@ -169,11 +163,10 @@ void Init_GridCAD()
 
   rb_define_method( cGridCAD, "evaluateEdgeAtT", grid_evaluateEdgeAtT, 2 );
   rb_define_method( cGridCAD, "evaluateFaceAtUV", grid_evaluateFaceAtUV, 3 );
-  rb_define_method( cGridCAD, "updateFaceParameter", 
-		    grid_updateFaceParameter, 1 );
+  rb_define_method( cGridCAD, "updateFaceParameters", 
+		    grid_updateFaceParameters, 1 );
 
-  rb_define_method( cGridCAD, "safeProjectNode", grid_safeProjectNode, 2 );
-  rb_define_method( cGridCAD, "project", grid_project, 0 );
+  rb_define_method( cGridCAD, "projectNode", grid_projectNode, 1 );
 
   rb_define_method( cGridCAD, "smooth", grid_smooth, 0 );
   rb_define_method( cGridCAD, "smoothFaceMR", grid_smoothFaceMR, 1 );
