@@ -84,6 +84,7 @@ GridMove *gridmoveInitializeCompRow(GridMove *);
 int gridmoveRowStart(GridMove *, int row);
 int gridmoveNNZ(GridMove *);
 int gridmoveRowEntry(GridMove *, int entry);
+int gridmoveRowDiagonal(GridMove *, int row);
 
 GridMove *gridmoveElasticityRelaxationStartUp(GridMove *);
 GridMove *gridmoveElasticityRelaxationStartStep(GridMove *, double position);

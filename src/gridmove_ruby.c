@@ -149,6 +149,12 @@ VALUE gridmove_rowEntries( VALUE self, VALUE rb_row )
   return rb_entries;
 }
 
+static VALUE gridmove_rowDiagonal(VALUE self, VALUE row)
+{
+  GET_GM_FROM_SELF;
+  return INT2NUM(gridmoveRowDiagonal(gm,NUM2INT(row)));
+}
+
 VALUE cGridMove;
 
 void Init_GridMove() 
@@ -167,4 +173,5 @@ void Init_GridMove()
   rb_define_method( cGridMove, "rowStart", gridmove_rowStart, 1 );
   rb_define_method( cGridMove, "nnz", gridmove_nnz, 0 );
   rb_define_method( cGridMove, "rowEntries", gridmove_rowEntries, 1 );
+  rb_define_method( cGridMove, "rowDiagonal", gridmove_rowDiagonal, 1 );
 }
