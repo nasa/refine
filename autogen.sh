@@ -9,6 +9,8 @@ cd $srcdir
 PROJECT="refine: unstructed grid adaptation"
 TEST_TYPE=-f
 
+ACLOCAL_FLAGS="-I /usr/local/share/aclocal"
+
 DIE=0
 
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
