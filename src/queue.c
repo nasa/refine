@@ -253,26 +253,44 @@ Queue *queueAddedFaceUVs( Queue *queue, int index, double *xyzs )
 
 Queue *queueDumpSize( Queue *queue, int *nInt, double *nDouble )
 {
-  *nInt = 5+4*queue->nRemovedCells;
+  *nInt 
+    = 5
+    + 4 * queue->transactions
+    + 4 * queue->nRemovedCells;
   *nDouble = 0;
   return queue;
 }
 
 Queue *queueDump( Queue *queue, int *ints, double *doubles )
 {
-  int i,removed;
+  int i, transaction, removed;
   ints[0] = queue->transactions;
   ints[1] = queue->nRemovedCells;
   ints[2] = queue->nAddedCells;
   ints[3] = queue->nRemovedFaces;
   ints[4] = queue->nAddedFaces;
   i = 5;
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    ints[i] = queue->removedCells[transaction]; i++;
+  }
   for(removed=0;removed<queue->nRemovedCells;removed++){
     ints[i] = queue->removedCellNodes[0+4*removed]; i++;
     ints[i] = queue->removedCellNodes[1+4*removed]; i++;
     ints[i] = queue->removedCellNodes[2+4*removed]; i++;
     ints[i] = queue->removedCellNodes[3+4*removed]; i++;
   }
+
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    ints[i] = queue->addedCells[transaction]; i++;
+  }
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    ints[i] = queue->removedFaces[transaction]; i++;
+  }
+  for(transaction=0;transaction<queue->transactions;transaction++){
+    ints[i] = queue->removedFaces[transaction]; i++;
+  }
+
   
 
   return queue;
