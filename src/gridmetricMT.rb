@@ -345,6 +345,9 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv, ans[1], 1.0e-15
   assert_in_delta deriv, ans[2], 1.0e-15
   assert_in_delta 0.0,   ans[3], 1.0e-15  
+
+  assert_nil             grid.storeARDerivative(10)
+  assert_equal grid,     grid.storeARDerivative(0)
  end
 
  def testRightHandedFaces

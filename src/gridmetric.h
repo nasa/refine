@@ -46,6 +46,7 @@ double gridAR(Grid *g, int *nodes );
 Grid *gridNodeAR(Grid *g, int node, double *ar );
 Grid *gridCellARDerivative(Grid *g, int *nodes, double *ar, double *dARdx );
 Grid *gridNodeARDerivative(Grid *g, int node, double *ar, double *dARdx );
+Grid *gridStoreARDerivative(Grid *g, int node );
 double gridMinVolume(Grid *g);
 bool gridNegCellAroundNode(Grid *g, int node );
 bool gridNegCellAroundNodeExceptGem(Grid *g, int node );

@@ -691,6 +691,34 @@ Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
   return grid;
 }
 
+Grid *gridStoreARDerivative (Grid *grid, int node )
+{
+  AdjIterator it;
+  int cell, nodes[4];
+
+  if ( !gridValidNode( grid, node) ) return NULL;
+
+  grid->degAR = 0;
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+    grid->degAR++;
+    cell = adjItem(it);
+    nodes[0] = node;
+    if (node == grid->c2n[0+4*cell]){
+      nodes[1] = grid->c2n[1+4*cell];
+    }else{
+      nodes[1] = grid->c2n[0+4*cell];
+    }
+    gridOrient( grid, &grid->c2n[4*cell], nodes);
+    if (grid->degAR > MAXDEG) return NULL;
+    if (grid != gridCellARDerivative(grid, nodes, 
+				     &(grid->AR[grid->degAR-1]), 
+				     &(grid->dARdX[(grid->degAR-1)*3]) ) ) 
+      return NULL;
+  }
+
+  return grid;
+}
+
 Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 {
 

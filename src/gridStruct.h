@@ -53,6 +53,10 @@ struct Grid {
   int nequ;
   int equ[MAXDEG];
 
+  int degAR;
+  double AR[MAXDEG];
+  double dARdX[3*MAXDEG];
+
   FILE *tecplotFile;
   bool tecplotFileOpen;
 
