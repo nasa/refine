@@ -214,6 +214,9 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 4,    grid.ncell
   assert_equal 2,    grid.cellDegree(0)
   assert_equal 2,    grid.cellDegree(1)
+# new bcfaces
+#  assert_equal 11,   grid.faceId(0,2,5)
+#  assert_equal 11,   grid.faceId(1,2,5)  
  end
 
  def testSwap4_gapWithDifferentFaces
@@ -225,6 +228,8 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
   assert_equal 3,    grid.cellDegree(1)
+  assert_equal 2,    grid.faceId(0,1,2)
+  assert_equal 5,    grid.faceId(0,1,5)  
  end
 
  def testSwap4_gapWithSameAndExistingFace0
@@ -237,6 +242,8 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
   assert_equal 3,    grid.cellDegree(1)
+  assert_equal 11,   grid.faceId(0,1,2)
+  assert_equal 11,   grid.faceId(0,1,5)  
  end
 
  def testSwap4_gapWithSameAndExistingFace1
