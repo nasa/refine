@@ -1113,7 +1113,7 @@ static double reflect( Grid *grid,
 
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
-  int iteration;
+  int evaluations;
   int s, i;
   double origXYZ[3], avgXYZ[3];
   double simplex[4][3];
@@ -1147,9 +1147,10 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   for(s=0;s<4;s++)
     for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
 
-  for (iteration = 0 ; iteration < 100 ; iteration++ ) {
+  evaluations = 4;
+  while (evaluations < 200 ) {
 
-    printf("interation %d\n", iteration );
+    printf("evaluations %d\n", evaluations );
 
     best = 0;
     if ( volume[0] > volume[1] ) {
@@ -1172,14 +1173,17 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
     printf("the best is %d the secondworst is %d and the worst is %d\n",
 	   best,secondworst,worst);
 
-    if (volume[best]-volume[worst] < 1.0e-5) break;
+    if (volume[best]-volume[worst] < 1.0e-5*volume[best]) break;
 
+    evaluations++;
     newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, -1.0 );
     if ( newVolume >= volume[best] ) {
+      evaluations++;
       newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, 2.0 );
     } else {
       if (newVolume <= volume[secondworst]) {
 	savedVolume = volume[worst];
+	evaluations++;
 	newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, 0.5 );
 	if (newVolume <= savedVolume) {
 	  for(s=0;s<4;s++) {
@@ -1197,7 +1201,11 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
     }
   }    
 
+  best = 0;
+  for(s=1;s<4;s++) if (volume[s]>=volume[best]) best = s;
+
   gridSetNodeXYZ(grid, node, simplex[best]);
+
   return grid;
 }
 
