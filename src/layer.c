@@ -1049,7 +1049,7 @@ Layer *layerBlendGeomEdge(Layer *layer, int edgeId )
       front = adjItem(it);
       n0 = layerNormalRoot(layer,layer->blend[i].normal[0]);
       n1 = layerNormalRoot(layer,layer->blend[i].normal[3]);
-      layerFrontNodes(layer, front, nodes);
+      layerFront(layer, front, nodes);
       if (n0 == nodes[0] && n1 == nodes[1]){
 
       }
