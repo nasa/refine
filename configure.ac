@@ -29,11 +29,11 @@ fi
 if test "$have_CAPRI" != 'no'
 then
    AC_PATH_X
-   CAPRI=$with_CARPI
+   CAPRI=$with_CAPRI
    AC_DEFINE([HAVE_CAPRI])
    CAPRILib="-L$CAPRI/Native/LINUX -lcapri -lX11"
    if test "$x_libraries" != "" ; then
-       CAPRILibs="$CAPRILib -L$x_libraries -lX11"
+       CAPRILib="$CAPRILib -L$x_libraries -lX11"
    fi
    AC_SUBST([CAPRILib])
 fi 
@@ -53,7 +53,7 @@ then
    AC_DEFINE([HAVE_SDK])
    CPPFLAGS="$CPPFLAGS -I$SDK"
    SDK_ARCH=`uname -s`
-   CADGeomLib="-L$SDK/CADGeom -lCADGeom-$SDK_ARCH"
+   CADGeomLib="-L$SDK/CADGeom -lCADGeom-$SDK_ARCH-CAPrI"
    AC_SUBST([CADGeomLib])
 fi 
 
