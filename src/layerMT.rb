@@ -96,7 +96,7 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testConstrainNormalForEdge
-  assert_not_nil        grid = Grid.new(6,0,3,0)
+  assert_not_nil        grid = Grid.new(6,0,3,1)
   assert_equal grid,    grid.addFace(1,2,3,1)
   assert_equal grid,    grid.addFace(1,2,0,2)
   assert_equal grid,    grid.setNGeomNode(2)
@@ -114,6 +114,55 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,       layer.constrained(1)
   assert_equal 0,       layer.constrained(2)
  end
+
+ def testConstrainFrontSide
+  assert_not_nil        grid = Grid.new(6,0,3,0)
+  assert_equal grid,    grid.addFace(0,1,2,1)
+  assert_not_nil        layer = Layer.new(grid)
+  assert_equal 0,       layer.constrainedSide(0,0)
+  assert_equal layer,   layer.makeFront([1])
+  assert_equal 1,       layer.nfront
+  assert_equal 0,       layer.constrainedSide(0,0)
+  assert_equal layer,   layer.makeNormal
+  assert_equal 3,       layer.nnormal
+  assert_equal 0,       layer.constrainedSide(0,0)
+  assert_equal 0,       layer.constrainedSide(0,1)
+  assert_equal 0,       layer.constrainedSide(0,2)
+  assert_equal 0,       layer.constrainedSide(0,3)
+  assert_equal 0,       layer.constrainedSide(1,0)
+  assert_nil   layer.constrainFrontSide(-1,0,0)
+  assert_nil   layer.constrainFrontSide(layer.nnormal,0,0)
+  assert_nil   layer.constrainFrontSide(0,-1,0)
+  assert_nil   layer.constrainFrontSide(0,layer.nnormal,0)
+  assert_equal 0,       layer.constrainedSide(0,0)
+  assert_equal 0,       layer.constrainedSide(0,1)
+  assert_equal 0,       layer.constrainedSide(0,2)
+  assert_equal layer,   layer.constrainFrontSide(0,1,1)
+  assert_equal layer,   layer.constrainFrontSide(1,2,2)
+  assert_equal layer,   layer.constrainFrontSide(0,2,3)
+  assert_equal 1,       layer.constrainedSide(0,0)
+  assert_equal 2,       layer.constrainedSide(0,1)
+  assert_equal 3,       layer.constrainedSide(0,2)
+ end
+
+ def testConstrainFrontSideWithBCFace
+  assert_not_nil        grid = Grid.new(6,0,3,0)
+  assert_equal grid,    grid.addFace(0,1,2,1)
+  assert_equal grid,    grid.addFace(1,2,3,2)
+  assert_not_nil        layer = Layer.new(grid)
+  assert_equal layer,   layer.makeFront([1])
+  assert_equal 1,       layer.nfront
+  assert_equal layer,   layer.makeNormal
+  assert_equal 3,       layer.nnormal
+  assert_equal 0,       layer.constrainedSide(0,0)
+  assert_equal 0,       layer.constrainedSide(0,1)
+  assert_equal 0,       layer.constrainedSide(0,2)
+  assert_equal layer,   layer.constrainNormal(2)
+  assert_equal 0,       layer.constrainedSide(0,0)
+  assert_equal 2,       layer.constrainedSide(0,1)
+  assert_equal 0,       layer.constrainedSide(0,2)
+ end
+
 
  def testNormalFrontNeighbors
   assert_not_nil        grid = Grid.new(4,0,3,0)

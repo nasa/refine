@@ -22,7 +22,6 @@
 typedef struct Normal Normal;
 struct Normal {
   int constrained;
-  int faceId1, faceId2;
   int root, tip;
   double direction[3];
   bool terminated;
@@ -32,6 +31,7 @@ typedef struct Front Front;
 struct Front {
   int globalNode[3];
   int normal[3];
+  int constrainedSide[3];
 };
 
 struct Layer {
@@ -105,7 +105,7 @@ int layerMaxNode(Layer *layer)
 
 Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
 {
-  int ibc, face, nface, id, nodes[3], ifront;
+  int i, ibc, face, nface, id, nodes[3], ifront;
 
   layer->nfront=0;
 
@@ -130,6 +130,10 @@ Layer *layerMakeFront(Layer *layer, int nbc, int *bc)
 	layer->front[ifront].globalNode[0] = nodes[0];
 	layer->front[ifront].globalNode[1] = nodes[1];
 	layer->front[ifront].globalNode[2] = nodes[2];
+	for (i=0;i<3;i++){
+	  layer->front[ifront].normal[i] = EMPTY;
+	  layer->front[ifront].constrainedSide[i] = 0;
+	}
 	ifront++;
       }
     }
@@ -207,8 +211,6 @@ Layer *layerMakeNormal(Layer *layer)
   layer->normal = malloc( layer->nnormal * sizeof(Normal));
   for(normal=0;normal<layer->nnormal;normal++){ 
     layer->normal[normal].constrained = 0;
-    layer->normal[normal].faceId1 = EMPTY;
-    layer->normal[normal].faceId2 = EMPTY;
   }
 
   for(i=0;i<layerMaxNode(layer);i++){
@@ -356,28 +358,27 @@ Layer *layerVisibleNormals(Layer *layer)
 Layer *layerConstrainNormal(Layer *layer, int bc )
 {
   int face, nodes[3], id, i, normal;
+  int n0, n1, normal0, normal1;
   int edge, nCurveNode, *curve;
   int exist;
   if (layerNNormal(layer) == 0 ) return NULL;
   
   if (bc > 0) {
     for(face=0;face<gridMaxFace(layer->grid);face++){
-      if (layer->grid == gridFace(layer->grid,face,nodes,&id) &&
-	  id==bc ) {
+      if (layer->grid == gridFace(layer->grid,face,nodes,&id) && id==bc ) {
 	for(i=0;i<3;i++){
 	  normal = layer->globalNode2Normal[nodes[i]];
 	  if (normal != EMPTY) {
 	    if ( layer->normal[normal].constrained >= 0) {
 	      layer->normal[normal].constrained=bc;
-	    }else{
-	      if (layer->normal[normal].faceId1 == EMPTY ||
-		  layer->normal[normal].faceId1 == bc ) {
-		layer->normal[normal].faceId1 = bc;
-	      }else{
-		layer->normal[normal].faceId2 = bc;
-	      }
 	    }
 	  }
+	}
+	for(n0=0;n0<3;n0++){
+	  n1 = n0 + 1; n1 = MIN( n1, 2 );
+	  normal0 = layer->globalNode2Normal[nodes[n0]];
+	  normal1 = layer->globalNode2Normal[nodes[n1]];
+	  layerConstrainFrontSide( layer, normal0, normal1, bc );
 	}
       }
     }
@@ -396,10 +397,46 @@ Layer *layerConstrainNormal(Layer *layer, int bc )
   return layer;
 }
 
+Layer *layerConstrainFrontSide(Layer *layer, int normal0, int normal1, int bc )
+{
+  AdjIterator it;
+  int i0, i1, front, side;
+ 
+  if (normal0 < 0 || normal0 >= layerNNormal(layer) ) return NULL;
+  if (normal1 < 0 || normal1 >= layerNNormal(layer) ) return NULL;
+
+  for ( it = adjFirst(layer->adj,normal0); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    front = adjItem(it);
+    for (i1=0;i1<3;i1++) {
+      if (normal1 == layer->front[front].normal[i1]) {
+	for (i0=0;i0<3;i0++) {
+	  if (normal0 == layer->front[front].normal[i0]) {
+	    side = MIN(i0,i1);
+	    if ( side == 0 && 2 == MAX(i0,i1) ) side = 2;
+	    layer->front[front].constrainedSide[side]=bc;
+	  }
+	}
+      }   
+    }
+  }
+  return layer;
+}
+
 int layerConstrained(Layer *layer, int normal )
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
   return layer->normal[normal].constrained;
+}
+
+int layerConstrainedSide(Layer *layer, int front, int side )
+{
+  if (front < 0 || front >= layerNFront(layer) ) return 0;
+
+  if (side < 0 || side > 2 ) return 0;
+
+  return layer->front[front].constrainedSide[side];
 }
 
 Layer *layerTerminateNormal(Layer *layer, int normal )
@@ -437,7 +474,6 @@ Layer *layerAdvance(Layer *layer, double height )
   int cell, node;
   int front, normals[3], n[6], side[2];
   double xyz[3];
-  AdjIterator it;  
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
@@ -458,19 +494,19 @@ Layer *layerAdvance(Layer *layer, double height )
       layer->normal[normal].tip = tip;
       gridReconnectCellUnlessFrozen(grid, root, tip);
       faceId = layerConstrained(layer,normal);
-      if (0 < faceId) {
-	gridReconnectFaceUnlessFrozen(grid, faceId, root, tip);
-      }
       if (0 > faceId) {
 	edgeId = -faceId;
 	gridReconnectEdgeUnlessFrozen(grid, edgeId, root, tip);
-	gridReconnectFaceUnlessFrozen(grid, layer->normal[normal].faceId1, root, tip);
-	gridReconnectFaceUnlessFrozen(grid, layer->normal[normal].faceId2, root, tip);
       }
       gridCopySpacing(grid, root, tip );
       gridFreezeNode( grid, tip );
     }
   }
+
+  // reconnect faces for constrained frontside
+  // if (0 < faceId) {
+  //   gridReconnectFaceUnlessFrozen(grid, faceId, root, tip);
+  // }
 
   for (front=0;front<layerNFront(layer);front++){
     for (i=0;i<3;i++) layer->front[front].globalNode[i] = 

@@ -160,10 +160,26 @@ VALUE layer_constrainNormal( VALUE self, VALUE bc )
   return ( layer == layerConstrainNormal(layer,NUM2INT(bc))?self:Qnil );
 }
 
+VALUE layer_constrainFrontSide( VALUE self, VALUE normal0, VALUE normal1, 
+				VALUE bc )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerConstrainFrontSide(layer,
+					    NUM2INT(normal0),
+					    NUM2INT(normal1),
+					    NUM2INT(bc) )?self:Qnil );
+}
+
 VALUE layer_constrained( VALUE self, VALUE normal )
 {
   GET_LAYER_FROM_SELF;
   return INT2NUM(layerConstrained(layer,NUM2INT(normal)));
+}
+
+VALUE layer_constrainedSide( VALUE self, VALUE front, VALUE side )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerConstrainedSide(layer,NUM2INT(front),NUM2INT(side)));
 }
 
 VALUE layer_terminateNormal( VALUE self, VALUE normal )
@@ -210,7 +226,9 @@ void Init_Layer()
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
+  rb_define_method( cLayer, "constrainFrontSide", layer_constrainFrontSide, 3 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
+  rb_define_method( cLayer, "constrainedSide", layer_constrainedSide, 2 );
   rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );
   rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 1 );
