@@ -396,6 +396,15 @@ VALUE layer_splitBlend( VALUE self )
   return ( layer == layerSplitBlend(layer)?self:Qnil );
 }
 
+VALUE layer_extrudeBlend( VALUE self, VALUE dx, VALUE dy, VALUE dz )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerExtrudeBlend(layer,
+				      NUM2DBL(dx),
+				      NUM2DBL(dy),
+				      NUM2DBL(dz))?self:Qnil );
+}
+
 VALUE layer_blendNormals( VALUE self, VALUE blend )
 {
   int i, normals[4];
@@ -470,6 +479,7 @@ void Init_Layer()
 
   rb_define_method( cLayer, "blend", layer_blend, 0 );
   rb_define_method( cLayer, "splitBlend", layer_splitBlend, 0 );
+  rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
 
 }
