@@ -16,7 +16,7 @@
 #include "near.h"
 #include "geometricStretch.h"
 #include "layerNormalExtra.h"
-
+#include "UG_API/UG_API.h"
 
 // adjust the height (and rate) between each layer.
 
@@ -51,11 +51,10 @@ Layer *layerSetNormalHeightWithRateAcceleration(Layer *layer, double maxRate)
 Layer *layerSmoothRate(Layer *layer, int itMax, double omega, GridBool iprt)
 {
   int normal, iter, triangle, normals[3], total, i;
-  double norm[3], avgdir[3], rate, denom;
   AdjIterator it;
-  int minTriangle, lastTriangle;
 
-  FILE *tecPlot, *tecPlot2;
+  FILE *tecPlot = NULL;
+  FILE *tecPlot2 = NULL;
   if( iprt ) {
     tecPlot = fopen("SmooRt.plt","w");
     tecPlot2 = fopen("SmooRt2.plt","w");
@@ -152,11 +151,12 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, GridB
 {
   int normal, iter, triangle, normals[3], i, ItMax;
   int totalR, totalH, totalL, totalY;
-  double norm[3], avgdir[3], rate, length, height, denom;
+  double rate, length, height;
   AdjIterator it;
-  int minTriangle, lastTriangle;
 
-  FILE *tecPlot, *tecPlot2;
+  FILE *tecPlot = NULL;
+  FILE *tecPlot2 = NULL;
+
   if( iprt ) {
     tecPlot = fopen("SmooNp.plt","w");
     tecPlot2 = fopen("SmooNp2.plt","w");
@@ -174,7 +174,6 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, GridB
       double aveRate   = 0.0;
       double aveHeight = 0.0;
       double aveLength = 0.0;
-      double aveDyMax  = 0.0;
 
 // temporally store a gross upper bound on length in the "initialHeight"
 
@@ -261,14 +260,17 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, GridB
          npts = NptsOfGeometricStretch( length, height, rate );
 	 layerSetNormalInitialHeight( layer, normal, height );
 
-         if( z >= -1.0e-5 && r > 3.17501 )
-            fprintf(tecPlot, " %d  %f  %f  %f  %f  %f  %f  %f  %f  %d \n",
-               normal, xyz[0], xyz[1], z, r, length, height,
-               sp1, rate, npts);
-         else
-            fprintf(tecPlot2, " %d  %f  %f  %f  %f  %f  %f  %f  %f  %d \n",
-               normal, xyz[0], xyz[1], z, r, length, height,
-               sp1, rate, npts);
+         if( z >= -1.0e-5 && r > 3.17501 ) {
+	   if (NULL != tecPlot)
+	     fprintf(tecPlot, " %d  %f  %f  %f  %f  %f  %f  %f  %f  %d \n",
+		     normal, xyz[0], xyz[1], z, r, length, height,
+		     sp1, rate, npts);
+         }else{
+	   if (NULL != tecPlot2)
+	     fprintf(tecPlot2, " %d  %f  %f  %f  %f  %f  %f  %f  %f  %d \n",
+		     normal, xyz[0], xyz[1], z, r, length, height,
+		     sp1, rate, npts);
+	 }
       }
     }
   }
@@ -313,7 +315,7 @@ Layer *layerSetNormalMaxLengthConstrained( Layer *layer, int normal, double leng
 void WriteTerminationMessage(Layer* layer, int normal, char *message ) {
   double z, r;
      int root = layerNormalRoot(layer, normal );
-     double xyz[3], spacing[3], direction[9];
+     double xyz[3];
      gridNodeXYZ(layerGrid(layer),root,xyz);
      z = xyz[2];
      r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
@@ -327,7 +329,6 @@ Layer *layerRelaxNormalDirection(Layer *layer, int itMax, double omega )
   int normal, iter, triangle, normals[3], total, i;
   double norm[3], avgdir[3], denom;
   AdjIterator it;
-  int minTriangle, lastTriangle;
 
   if (layerNNormal(layer) == 0 ) return NULL;
   if (layerNBlend(layer) != 0 ) return NULL;
