@@ -243,7 +243,7 @@ Grid* gridShapeJacobian2(Grid *grid,
 
   gphi[0] = 0.0;
   gphi[1] = 0.0;
-  gphi[2] = -1.0+4.0*y;
+  gphi[2] = -1.0+4.0*z;
   j[0] += n3[0] * gphi[0];
   j[1] += n3[0] * gphi[1];
   j[2] += n3[0] * gphi[2];
