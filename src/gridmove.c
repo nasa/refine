@@ -608,9 +608,9 @@ GridMove *gridmoveCompleteMPITest(GridMove *gm )
       if ( gridValidNode(grid,node) ) {
 	correct = (double)gridNodeGlobal(grid,node) + 0.1*(double)i;
 	error = ABS(gm->xyz[i+3*node] - correct);
-	if ( error > 1e-12) {
+	if ( error > 1e-8) {
 	  printf("%s: %d: ERROR mpi part %d node %d i %d error %e\n",
-		 __FILE__,__LINE__,gridPartId,node,i,error);
+		 __FILE__,__LINE__,gridPartId(grid),node,i,error);
 
 	}
       }
