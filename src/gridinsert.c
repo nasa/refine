@@ -115,11 +115,15 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 
 int gridSplitEdge(Grid *grid, int n0, int n1)
 {
+  double xyz0[3], xyz1[3];
   double newX, newY, newZ;
 
-  newX = ( grid->xyz[0+3*n0] + grid->xyz[0+3*n1] ) * 0.5;
-  newY = ( grid->xyz[1+3*n0] + grid->xyz[1+3*n1] ) * 0.5;
-  newZ = ( grid->xyz[2+3*n0] + grid->xyz[2+3*n1] ) * 0.5;
+  if (grid != gridNodeXYZ(grid,n0,xyz0)) return EMPTY;
+  if (grid != gridNodeXYZ(grid,n1,xyz1)) return EMPTY;
+
+  newX = ( xyz0[0] + xyz1[0] ) * 0.5;
+  newY = ( xyz0[1] + xyz1[1] ) * 0.5;
+  newZ = ( xyz0[2] + xyz1[2] ) * 0.5;
   
   return gridSplitEdgeAt(grid, n0, n1,
 			 newX, newY, newZ );
@@ -134,16 +138,16 @@ int gridSplitEdgeAt(Grid *grid, int n0, int n1,
   int gap0, gap1, face0, face1, faceId0, faceId1;
   int edge, edgeId;
   double t0,t1, newT;
+  double map, map0, map1;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
 
   newnode = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
-  for (i=0;i<6;i++) grid->map[i+6*newnode] = 
-		      0.5*(grid->map[i+6*n0]+grid->map[i+6*n1]);
+  gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
 
-  for ( igem=0 ; igem<grid->ngem ; igem++ ){
-    cell = grid->gem[igem];
+  for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
+    cell = gridGem(grid,igem);
     gridCell(grid, cell, nodes);
     gridRemoveCell(grid, cell);
     for ( inode = 0 ; inode < 4 ; inode++ ){
@@ -159,11 +163,11 @@ int gridSplitEdgeAt(Grid *grid, int n0, int n1,
   }
 
   //test face
-  if ( grid->nequ != grid->ngem ){
+  if ( gridNEqu(grid) != gridNGem(grid) ){
     double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
     double gap0uv[2], gap1uv[2], newId0uv[2], newId1uv[2]; 
-    gap0 = grid->equ[0];
-    gap1 = grid->equ[grid->ngem];
+    gap0 = gridEqu(grid,0);
+    gap1 = gridEqu(grid,gridNGem(grid));
     face0 = gridFindFace(grid, n0, n1, gap0 );
     face1 = gridFindFace(grid, n0, n1, gap1 );
     faceId0 = gridFaceId(grid, n0, n1, gap0 );
