@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include "layer.h"
+#include "adj.h"
 
 typedef struct Normal Normal;
 struct Normal {
@@ -30,6 +31,7 @@ struct Layer {
   int nnormal;
   Normal *normal;
   int *globalNode2Normal;
+  Adj *adj;
 };
 
 Layer *layerCreate( Grid *grid )
@@ -42,11 +44,13 @@ Layer *layerCreate( Grid *grid )
   layer->nnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
+  layer->adj=NULL;
   return layer;
 }
 
 void layerFree(Layer *layer)
 {
+  if (layer->adj != NULL) adjFree(layer->adj);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
   if (layer->front != NULL) free(layer->front);
@@ -144,6 +148,13 @@ Layer *layerMakeNormal(Layer *layer)
     if (normal!=EMPTY) layer->normal[normal].root = i;
   }
 
+  layer->adj = adjCreate( layer->nnormal,layerNFront(layer)*3  );
+  for (front=0;front<layerNFront(layer);front++){
+    for(i=0;i<3;i++){
+      adjRegister( layer->adj, layer->front[front].normal[i], front );
+    }
+  }
+
   return layer;
 }
 
@@ -162,6 +173,28 @@ int layerNormalRoot(Layer *layer, int normal )
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
   return layer->normal[normal].root;
+}
+
+int layerNormalDeg(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
+  return adjDegree(layer->adj, normal);
+}
+
+Layer *layerNormalFronts(Layer *layer, int normal, int nfront, int *fronts )
+{
+  int i;
+  AdjIterator it;
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+  i=0;
+  for ( it = adjFirst(layer->adj,normal); 
+	adjValid(it); 
+	it = adjNext(it) ){
+    if (i>=nfront) return NULL;
+    fronts[i] = adjItem(it);
+    i++;
+  }
+  return layer;
 }
 
 Layer *layerConstrainNormal(Layer *layer, int bc )

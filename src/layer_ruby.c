@@ -91,6 +91,31 @@ VALUE layer_normalRoot( VALUE self, VALUE normal )
   return INT2NUM(layerNormalRoot(layer,NUM2INT(normal)));
 }
 
+VALUE layer_normalDeg( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerNormalDeg(layer,NUM2INT(normal)));
+}
+
+VALUE layer_normalFronts( VALUE self, VALUE normal )
+{
+  int i, nfront, *front;
+  VALUE rb_front;
+  GET_LAYER_FROM_SELF;
+  nfront = layerNormalDeg(layer,NUM2INT(normal));
+  if (nfront<=0) return Qnil;
+  front = malloc(nfront*sizeof(int));
+  if (layer == layerNormalFronts(layer,NUM2INT(normal),nfront,front)){
+    rb_front = rb_ary_new2(nfront);
+    for ( i=0 ; i < nfront ; i++ ) 
+      rb_ary_store( rb_front, i, INT2NUM(front[i]) );
+  }else{
+    rb_front = Qnil;
+  }
+  free(front);
+  return rb_front;
+}
+
 VALUE layer_constrainNormal( VALUE self, VALUE bc )
 {
   GET_LAYER_FROM_SELF;
@@ -117,6 +142,8 @@ void Init_Layer()
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
   rb_define_method( cLayer, "frontNormal", layer_frontNormal, 1 );
   rb_define_method( cLayer, "normalRoot", layer_normalRoot, 1 );
+  rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );
+  rb_define_method( cLayer, "normalFronts", layer_normalFronts, 1 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
 }

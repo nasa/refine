@@ -28,6 +28,8 @@ Layer *layerFront(Layer *, int front, int *nodes);
 Layer *layerMakeNormal(Layer *);
 Layer *layerFrontNormal(Layer *, int front, int *normals);
 int layerNormalRoot(Layer *, int normal );
+int layerNormalDeg(Layer *, int normal );
+Layer *layerNormalFronts(Layer *, int normal, int maxfront, int *fronts);
 Layer *layerConstrainNormal(Layer *, int bc );
 int layerConstrained(Layer *, int normal );
 
