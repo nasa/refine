@@ -847,6 +847,17 @@ Layer *layerStoreNormalTriangleDirections(Layer *layer, int normal)
 	gridCrossProduct(normalDirection,tangent,
 			 &layer->normalTriangleDirection[3*tri]);
 	gridVectorNormalize(&layer->normalTriangleDirection[3*tri]);
+
+	printf("\n n %d i %d t %d tan %5.2f%5.2f%5.2f cn %5.2f%5.2f%5.2f res %5.2f%5.2f%5.2f",
+	       normal,tri,triangle,
+	       tangent[0],tangent[1],tangent[2],
+	       normalDirection[0],normalDirection[1],normalDirection[2],
+	       (&layer->normalTriangleDirection[3*tri])[0],
+	       (&layer->normalTriangleDirection[3*tri])[1],
+	       (&layer->normalTriangleDirection[3*tri])[2]);
+
+
+
       } else {
 	layerNormalDirection( layer, normal, 
 			      &layer->normalTriangleDirection[3*tri] );
