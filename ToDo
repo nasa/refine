@@ -7,6 +7,9 @@ Start Builds!!!!!
 
 --Major refactoring
 
+Add a new method to return whether a geometry face has an underlying
+geometric (CAD) definition.
+
 correctly add two faced cells to swap plan
 
 Make a queue (plan) of boundary mesh operations and use it to speed up
