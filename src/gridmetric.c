@@ -1708,6 +1708,37 @@ Grid *gridMinFaceAreaUV(Grid *grid, int node, double *min_area)
   return grid;
 }
 
+double gridMinCellFaceAreaUV(Grid *grid, int *nodes)
+{
+  int face;
+  double local_area, min_area;
+
+  min_area = DBL_MAX;
+
+  face = gridFindFace( grid, nodes[1], nodes[3], nodes[2] );
+  if (EMPTY != face){
+    local_area = gridFaceAreaUV(grid, face);
+    if ( local_area < min_area ) min_area = local_area;
+  }
+  face = gridFindFace( grid, nodes[0], nodes[2], nodes[3] );
+  if (EMPTY != face){
+    local_area = gridFaceAreaUV(grid, face);
+    if ( local_area < min_area ) min_area = local_area;
+  }
+  face = gridFindFace( grid, nodes[0], nodes[3], nodes[1] );
+  if (EMPTY != face){
+    local_area = gridFaceAreaUV(grid, face);
+    if ( local_area < min_area ) min_area = local_area;
+  }
+  face = gridFindFace( grid, nodes[0], nodes[1], nodes[2] );
+  if (EMPTY != face){
+    local_area = gridFaceAreaUV(grid, face);
+    if ( local_area < min_area ) min_area = local_area;
+  }
+
+  return min_area;
+}
+
 double gridFaceAR(Grid *grid, int n0, int n1, int n2 )
 {
   double xyz0[3], xyz1[3], xyz2[3];

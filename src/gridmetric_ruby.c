@@ -329,6 +329,14 @@ VALUE grid_minFaceAreaUV( VALUE self, VALUE node )
 	  Qnil );
 }
 
+VALUE grid_minCellFaceAreaUV( VALUE self, VALUE rb_nodes )
+{
+  int i, nodes[4];
+  GET_GRID_FROM_SELF;
+  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
+  return rb_float_new( gridMinCellFaceAreaUV( grid, nodes ) );
+}
+
 VALUE grid_faceAR( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
 {
   GET_GRID_FROM_SELF;
@@ -511,6 +519,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "faceArea", grid_faceArea, 3);
   rb_define_method( cGridMetric, "faceAreaUV", grid_faceAreaUV, 1 );
   rb_define_method( cGridMetric, "minFaceAreaUV", grid_minFaceAreaUV, 1 );
+  rb_define_method( cGridMetric, "minCellFaceAreaUV", grid_minCellFaceAreaUV, 1 );
   rb_define_method( cGridMetric, "faceAR", grid_faceAR, 3);
   rb_define_method( cGridMetric, "faceMR", grid_faceMR, 3);
   rb_define_method( cGridMetric, "minFaceMR", grid_minFaceMR, 0);

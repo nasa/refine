@@ -1,3 +1,8 @@
+2005-02-27 22:01 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (minCellFaceAreaUV) created to find the
+	smallest UV area of a cell face. to be used for cost constraint.
+
 2005-02-27 21:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (faceAreaUV,minFaceAreaUV) inserted methods
