@@ -1039,12 +1039,30 @@ Layer *layerSetNormalHeightWithRate(Layer *layer)
 
     length = layer->normal[normal].length;
 
-    layer->normal[normal].height = 
-      layer->normal[normal].initialheight 
+    layer->normal[normal].height =
+      layer->normal[normal].initialheight
       + layer->normal[normal].rate*length;
 
   }
 
+  return layer;
+}
+
+Layer *layerSetNormalHeightWithMaxRate(Layer *layer, double maxRate)
+{
+  int normal;
+  double length, height, old;
+
+  for(normal=0;normal<layerNNormal(layer);normal++){
+
+    length = layer->normal[normal].length;
+    
+    height = layer->normal[normal].initialheight 
+           + layer->normal[normal].rate*length;
+    old = layer->normal[normal].height;
+    layer->normal[normal].height = MIN(height, maxRate*old);
+  }
+  
   return layer;
 }
 
