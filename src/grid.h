@@ -78,6 +78,7 @@ Grid *gridThrash(Grid *g );
 Grid *gridSplitEdge(Grid *g, int n0, int n1 );
 
 int gridAddNode(Grid *g, double x, double y, double z );
+Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
 
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );

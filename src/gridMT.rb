@@ -146,9 +146,11 @@ class TestSampleUnit < Test::Unit::TestCase
  end
 
  def testAddNode
-  grid = Grid.new(1,1,0,0)
-  assert_equal 0, grid.addNode(1.0,0.0,0.0)
+  grid = Grid.new(1,0,0,0)
+  assert_nil      grid.nodeXYZ(0)
+  assert_equal 0, grid.addNode(1.0,2.0,3.0)
   assert_nil      grid.addNode(1.0,0.0,0.0)
+  assert_equal [1.0,2.0,3.0], grid.nodeXYZ(0)
  end
 
  def testMetrics

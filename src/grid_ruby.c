@@ -329,6 +329,25 @@ VALUE grid_addNode( VALUE self, VALUE x, VALUE y, VALUE z )
   return INT2NUM( returnedNode );
 }
 
+VALUE grid_nodeXYZ( VALUE self, VALUE node )
+{
+  VALUE rb_xyz;
+  double xyz[3];
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  returnedGrid = 
+    gridNodeXYZ( grid, NUM2INT(node), xyz );
+  if ( returnedGrid == grid ){
+    rb_xyz = rb_ary_new2(3);
+    rb_ary_store( rb_xyz, 0, rb_float_new(xyz[0]) );
+    rb_ary_store( rb_xyz, 1, rb_float_new(xyz[1]) );
+    rb_ary_store( rb_xyz, 2, rb_float_new(xyz[2]) );
+  }else{
+    rb_xyz = Qnil;
+  }
+  return rb_xyz;
+}
+
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -421,6 +440,7 @@ void Init_Grid()
   rb_define_method( cGrid, "orient", grid_orient, 6 );
   rb_define_method( cGrid, "splitEdge", grid_splitEdge, 2 );
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );
+  rb_define_method( cGrid, "nodeXYZ", grid_nodeXYZ, 1 );
   rb_define_method( cGrid, "volume", grid_volume, 1 );
   rb_define_method( cGrid, "ar", grid_ar, 1 );
   rb_define_method( cGrid, "minVolume", grid_minVolume, 0 );

@@ -1031,6 +1031,15 @@ int gridAddNode(Grid *grid, double x, double y, double z )
   return nodeId;
 }
 
+Grid *gridNodeXYZ(Grid *grid, int  node, double *xyz )
+{
+  if (node >=grid->nnode) return NULL;
+  xyz[0] = grid->xyz[0+3*node];
+  xyz[1] = grid->xyz[1+3*node];
+  xyz[2] = grid->xyz[2+3*node];
+  return grid;
+}
+
 double gridVolume(Grid *grid, int *nodes )
 {
   int ixyz;
