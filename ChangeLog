@@ -1,3 +1,10 @@
+2005-02-01  16:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio) to better estimate the length
+	of an edge in mapped space with a linearly varying metric the
+	matric is averaged instead of the edge lengths computed at each
+	node.
+
 2005-02-01  14:33 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridwritetecplotsurfacezone_) the logic that
