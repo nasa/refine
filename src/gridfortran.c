@@ -38,14 +38,12 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
   printf(" %6d populated                nnode%9d ncell%9d AR%14.10f\n",
 	 gridPartId(grid),gridNNode(grid),gridNCell(grid),gridMinAR(grid));
   fflush(stdout);
-  return;
 }
 
 void gridfree_( )
 {
   queueFree(queue);
   gridFree(grid);
-  return;
 }
 
 void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
@@ -67,7 +65,6 @@ void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode,
       gridAddFace(grid, node0, node1, node2, *faceId);
     }
   }
-  return;
 }
 
 void gridsetmap_( int *nnode, double* map )
@@ -79,14 +76,12 @@ void gridsetmap_( int *nnode, double* map )
 		map[3+6*node], map[4+6*node], map[5+6*node] );
   printf(" %6d applied metric                                         AR%14.10f\n",
 	 gridPartId(grid),gridMinAR(grid));
-  return;
 }
 
 void gridsetnodepart_( int *nnode, int *part )
 {
   int node;
   for ( node=0; node<*nnode; node++) gridSetNodePart(grid, node, part[node]-1);
-  return;
 }
 
 void gridsetnodelocal2global_( int *partId, int *nnodeg, 
@@ -105,7 +100,6 @@ void gridsetnodelocal2global_( int *partId, int *nnodeg,
     /*printf("%d l2g node %d global %d part %d\n", gridPartId(grid),node,
       gridNodeGlobal(grid,node),gridNodePart(grid, node)); */
   }
-  return;
 }
 
 void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
@@ -115,7 +109,6 @@ void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
   for ( cell=0; cell<*ncell; cell++){ 
     gridSetCellGlobal(grid, cell, local2global[cell]-1);
   }
-  return;
 }
 
 void gridprojectallfaces_( )
@@ -128,14 +121,12 @@ void gridprojectallfaces_( )
       gridProjectNodeToFace(grid, nodes[2], faceId );
     }
   }
-  return;
 }
 
 void gridswap_( )
 {
   gridSwap(grid);
   printf(" post swap min AR %17.15f\n",gridMinAR(grid));
-  return;
 }
 
 void gridsmoothvolume_( )
@@ -144,7 +135,6 @@ void gridsmoothvolume_( )
   printf( " %6d smooth volume                    %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
-  return;
 }
 
 void gridsmoothfaceinterior_( int *processor )
@@ -160,13 +150,11 @@ void gridsmoothfaceinterior_( int *processor )
 	    gridPartId(grid),"near ghost only   ",gridMinAR(grid) );
   }
   fflush(stdout);
-  return;
 }
 
 void gridadaptwithoutcad_( double *minLength, double *maxLength )
 {
   gridAdaptWithOutCAD(grid,*minLength, *maxLength);
-  return;
 }
 
 void gridwritetecplotsurfacezone_( )
@@ -174,7 +162,6 @@ void gridwritetecplotsurfacezone_( )
   char filename[256];
   sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
   gridWriteTecplotSurfaceZone(grid,filename);
-  return;
 }
 
 void gridexportfast_( )
@@ -182,7 +169,6 @@ void gridexportfast_( )
   char filename[256];
   sprintf(filename, "grid%03d.fgrid", gridPartId(grid)+1 );
   gridExportFAST(grid,filename);
-  return;  
 }
 
 void gridparalleladaptwithoutcad_( int *processor, 
@@ -194,7 +180,6 @@ void gridparalleladaptwithoutcad_( int *processor,
   } else {
     gridParallelAdaptWithOutCAD(grid,queue,*minLength, *maxLength);
   } 
-  return;
 }
 
 void gridparallelswap_( int *processor )
@@ -205,19 +190,16 @@ void gridparallelswap_( int *processor )
   } else {
     gridParallelSwap(grid,queue);
   } 
-  return;
 }
 
 void queuedumpsize_( int *nInt, int *nDouble )
 {
   queueDumpSize(queue, nInt, nDouble);
-  return;
 }
 
 void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   queueDump(queue, ints, doubles);
-  return;
 }
 
 void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
@@ -225,14 +207,12 @@ void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
   queueLoad(queue, ints, doubles);
   gridApplyQueue(grid,queue);
   queueReset(queue);
-  return;
 }
 
 void gridsize_( int *nnodeg, int *ncellg )
 {
   *nnodeg = gridGlobalNNode(grid);
   *ncellg = gridGlobalNCell(grid);
-  return;
 }
 
 void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
@@ -240,32 +220,27 @@ void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 {
   gridGlobalShiftNode( grid, *oldnnodeg, *newnnodeg, *nodeoffset);
   gridGlobalShiftCell( grid, *oldncellg, *newncellg, *celloffset);
-  return;
 }
 
 void gridnunusedcellglobal_( int *nunused )
 {
   *nunused = gridNUnusedCellGlobal( grid );
-  return;
 }
 
 void gridgetunusedcellglobal_( int *nunused, int *unused )
 {
   gridGetUnusedCellGlobal( grid, unused );
-  return;
 }
 
 void gridjoinunusedcellglobal_( int *nunused, int *unused )
 {
   int i;
   for (i=0;i<(*nunused);i++) gridJoinUnusedCellGlobal( grid, unused[i] );
-  return;
 }
 
 void grideliminateunusedcellglobal_(  )
 {
   gridEliminateUnusedCellGlobal( grid );
-  return;
 }
 
 void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
@@ -276,7 +251,6 @@ void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg,
   *nnodesg = gridGlobalNNode(grid);
   *ncell = gridNCell(grid);
   *ncellg = gridGlobalNCell(grid);
-  return;
 }
 
 void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
@@ -290,7 +264,6 @@ void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
     y[node] = xyz[1];
     z[node] = xyz[2];
   }
-  return;
 }
 
 void gridgetcell_( int *cell, int *nodes, int *global )
@@ -301,7 +274,6 @@ void gridgetcell_( int *cell, int *nodes, int *global )
   nodes[2]++;
   nodes[3]++;
   *global = gridCellGlobal(grid,(*cell)-1)+1;
-  return;
 }
 
 void gridgetbcsize_( int *ibound, int *nface )
@@ -314,7 +286,6 @@ void gridgetbcsize_( int *ibound, int *nface )
       if ( *ibound == id ) (*nface)++;
     }
   }
-  return;
 }
 
 void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
@@ -332,7 +303,6 @@ void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
       }
     }
   }
-  return;
 }
 
 void gridsetnaux_( int *naux )
@@ -340,7 +310,6 @@ void gridsetnaux_( int *naux )
   gridSetNAux(grid, *naux);
   queueFree( queue );
   queue = queueCreate( 9 + gridNAux(grid) ); /* 3:xyz + 6:m + naux */
-  return;
 }
 
 void gridsetauxvector_( int *nnode, int *offset, double *x )
@@ -349,7 +318,6 @@ void gridsetauxvector_( int *nnode, int *offset, double *x )
   for (node=0;node<(*nnode);node++) {
     gridSetAux(grid,node,(*offset),x[node]);
   }
-  return;
 }
 
 void gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
@@ -360,7 +328,6 @@ void gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
       gridSetAux(grid,node,(*offset)+dim,x[dim+(*ndim)*node]);
     }
   }
-  return;
 }
 
 void gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
@@ -371,7 +338,6 @@ void gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
       gridSetAux(grid,node,(*offset)+dim,x[dim+(*ndim)*node]);
     }
   }
-  return;
 }
 
 void gridgetauxvector_( int *nnode, int *offset, double *x )
@@ -380,7 +346,6 @@ void gridgetauxvector_( int *nnode, int *offset, double *x )
   for (node=0;node<(*nnode);node++) {
     x[node] = gridAux(grid,node,(*offset));
   }
-  return;
 }
 
 void gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
@@ -391,7 +356,6 @@ void gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
       x[dim+(*ndim)*node] = gridAux(grid,node,(*offset)+dim);
     }
   }
-  return;
 }
 
 void gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
@@ -402,7 +366,6 @@ void gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
       x[dim+(*ndim)*node] = gridAux(grid,node,(*offset)+dim);
     }
   }
-  return;
 }
 
 void gridghostcount_( int *nproc, int *count )
@@ -418,7 +381,6 @@ void gridghostcount_( int *nproc, int *count )
       }
     }
   }
-  return;
 }
 
 void gridloadghostnodes_( int *nproc, int *clientindex,
@@ -451,7 +413,6 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
     }
   }
   free(count);
-  return;
 }
 
 void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
@@ -482,7 +443,6 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
       }
     } 
   }
-  return;
 }
 
 void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
@@ -513,5 +473,4 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   printf( " %6d update xfer                      %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
-  return;
 }
