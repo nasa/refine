@@ -183,6 +183,25 @@ VALUE layer_normalTriangles( VALUE self, VALUE normal )
   return rb_triangle;
 }
 
+VALUE layer_normalTriangleDirection( VALUE self, VALUE normal, VALUE index )
+{
+  int i;
+  double direction[3];
+  VALUE rb_direction;
+  GET_LAYER_FROM_SELF;
+  if (layer == layerNormalTriangleDirection(layer,
+					    NUM2INT(normal),
+					    NUM2INT(index),
+					    direction)){
+    rb_direction = rb_ary_new2(3);
+    for ( i=0 ; i < 3 ; i++ ) 
+      rb_ary_store( rb_direction, i, rb_float_new(direction[i]) );
+  }else{
+    rb_direction = Qnil;
+  }
+  return rb_direction;
+}
+
 VALUE layer_previousTriangle( VALUE self, VALUE normal, VALUE triangle )
 {
   GET_LAYER_FROM_SELF;
@@ -595,6 +614,7 @@ void Init_Layer()
   rb_define_method( cLayer, "normalRoot", layer_normalRoot, 1 );
   rb_define_method( cLayer, "normalDeg", layer_normalDeg, 1 );
   rb_define_method( cLayer, "normalTriangles", layer_normalTriangles, 1 );
+  rb_define_method( cLayer, "normalTriangleDirection", layer_normalTriangleDirection, 2 );
   rb_define_method( cLayer, "previousTriangle", layer_previousTriangle, 2 );
   rb_define_method( cLayer, "nextTriangle", layer_nextTriangle, 2 );
   rb_define_method( cLayer, "edgeAngle", layer_edgeAngle, 2 );
