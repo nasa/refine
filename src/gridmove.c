@@ -191,8 +191,10 @@ GridMove *gridmoveMove(GridMove *gm)
   for(s=0;s<nsprings;s++) {
     n0 = springs[0+2*s];
     n1 = springs[1+2*s];
+    gridNodeXYZ(grid,n0,xyz0);
+    gridNodeXYZ(grid,n1,xyz1);
     for(i=0;i<3;i++) {
-      res[i] = k[s] * ( gm->displacement[i+3*n0] - gm->displacement[i+3*n1] );
+      res[i] = k[s] * ( xyz0[i] - xyz1[i] );
       source[i+3*n0] += res[i];
       source[i+3*n1] -= res[i];
     }
@@ -205,16 +207,20 @@ GridMove *gridmoveMove(GridMove *gm)
     n1 = springs[1+2*s];
     ksum[n0] += k[s];
     ksum[n1] += k[s];
+    gridNodeXYZ(grid,n0,xyz0);
+    gridNodeXYZ(grid,n1,xyz1);
     for(i=0;i<3;i++) {
-      kxyz[i+3*n0] += k[s]*gm->displacement[i+3*n1];
-      kxyz[i+3*n1] += k[s]*gm->displacement[i+3*n0];
+      kxyz[i+3*n0] += k[s]*(xyz1[i]+gm->displacement[i+3*n1]);
+      kxyz[i+3*n1] += k[s]*(xyz0[i]+gm->displacement[i+3*n0]);
     }
   }
+
   for(node=0;node<gridMaxNode(grid);node++) {
     if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node)) {
+    gridNodeXYZ(grid,node,xyz0);
       for(i=0;i<3;i++) {
 	gm->displacement[i+3*node] = 
-	  (  kxyz[i+3*node] + source[i+3*node] ) / ksum[node];
+	  (  kxyz[i+3*node] + source[i+3*node] ) / ksum[node] - xyz0[i];
       }
     }
   }
