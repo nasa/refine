@@ -116,7 +116,15 @@ int main( int argc, char *argv[] )
       printf("ERROR: could not create shell\n");
       return 0;
     }
+  }else{
+    if (NULL == CADGeom_VolumeGrid(vol) ) {
+      if ( !CAPrIMesh_CreateTShell( vol )) {
+	printf("ERROR: could not create shell\n");
+	return 0;
+      }   
+    }
   }
+
 
   MesherX_DiscretizeVolume( maxnode, scale, project, 
 			    mixedElement, blendElement, qualityImprovement,
