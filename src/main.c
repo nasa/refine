@@ -98,5 +98,7 @@ int main( int argc, char *argv[] )
   printf("gridImport: minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("gridImport: minimum Volume %12.8e\n",gridMinVolume(grid));
 
+  grid = gridExport( grid, &nnode, &nface, &ncell,
+		     &xyz, &f2n, &faceId, &c2n );
   return;
 }
