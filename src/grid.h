@@ -167,6 +167,10 @@ gridNodeGhost(grid,(nodes)[0]) || \
 gridNodeGhost(grid,(nodes)[1]) || \
 gridNodeGhost(grid,(nodes)[2]) || \
 gridNodeGhost(grid,(nodes)[3]) )
+#define gridFaceHasGhostNode(grid,n0,n1,n2) ( \
+gridNodeGhost(grid,n0) || \
+gridNodeGhost(grid,n1) || \
+gridNodeGhost(grid,n2) )
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 int gridAddCellWithGlobal(Grid *g, int n0, int n1, int n2, int n3, int global );
