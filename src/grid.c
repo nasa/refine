@@ -2536,11 +2536,12 @@ Grid *gridStoredARDerivative( Grid *grid, int index, double *dARdX )
 
 Grid *gridCopyAboutY0(Grid *grid)
 {
-  int node, orignode;
+  int node, orignode, origface, origcell;
   int *o2n;
   double xyz[3];
   int nodes[4];
   int face, i, faceid;
+  int cell;
 
   printf("gridCopyAboutY0: pack\n");
   if (NULL == gridPack(grid)) {
@@ -2552,16 +2553,19 @@ Grid *gridCopyAboutY0(Grid *grid)
 
   o2n = malloc(sizeof(int) * orignode); 
 
-  printf("gridCopyAboutY0: copy nodes\n");
+  printf("gridCopyAboutY0: copy nodes, y = -y\n");
 
   for ( node = 0 ; node < orignode ; node++){
     gridNodeXYZ(grid,node,xyz);
     o2n[node] = gridAddNode(grid,xyz[0],-xyz[1],xyz[2]);
   }
 
-  for ( face = 0 ; face < gridMaxFace(grid) ; face++ ){
-    if ( (grid==gridFace(grid,face,nodes,&faceid)) &&
-	 (faceid ==3) ) {
+  printf("gridCopyAboutY0: remove duplicate nodes.\n");
+
+  origface = gridNFace(grid);
+  for ( face = 0 ; face < origface ; face++ ){
+    gridFace(grid,face,nodes,&faceid);
+    if ( faceid == 3 ) {
       for (i=0;i<3;i++){
 	node = nodes[i];
 	if (o2n[node] >= orignode){
@@ -2569,9 +2573,29 @@ Grid *gridCopyAboutY0(Grid *grid)
 	  o2n[node] = node;
 	}
       }
-      gridRemoveFace(grid,face);
     }
   }
+
+  printf("gridCopyAboutY0: copy faces, swap node 0 and 1\n");
+
+  for ( face = 0 ; face < origface ; face++ ){
+    gridFace(grid,face,nodes,&faceid);
+    gridAddFace(grid,o2n[nodes[1]],o2n[nodes[0]],o2n[nodes[2]],faceid);
+  }
+
+
+  printf("gridCopyAboutY0: copy cells, swap node 0 and 1\n");
+
+  origcell = gridNCell(grid);
+  for ( cell = 0 ; cell < origcell ; cell++ ){
+    gridCell(grid,cell,nodes);
+    gridAddCell(grid,o2n[nodes[1]],o2n[nodes[0]],o2n[nodes[2]],o2n[nodes[3]]);
+  }
+
+  printf("gridCopyAboutY0: remove sym face\n");
+
+  gridThawAll(grid);
+  gridDeleteThawedFaces(grid,3);
 
   free(o2n);
     
