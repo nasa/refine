@@ -176,6 +176,28 @@ class Grid
 end
 @end verbatim
 
+@section Adaptation Driver
+@cindex driver, adaptation
+
+This is the basic work flow of an adaptation cycle. The aspect ratio
+is defined in the mapped metric. This cycle is repeated to iteratively
+morph the current grid into a grid that satisfies the mapped metric.
+
+@enumerate
+@item edge and face swapping to improve cell aspect ratio 
+@item node optimization to improve adjacent cell aspect ratio
+@item node insertion and removal by edge splitting or edge collapse
+@item grid movement by linear elasticity or springs
+@item untangle faces (increase area) in UV space with node optimization (if negative area faces detected)
+@item untangle cells (increase volume) with node optimization (if negative cells detected)
+@item edge and face swapping to improve cell aspect ratio 
+@item node smoothing to improve cell aspect ratio
+@end enumerate
+
+Node optimization can be done with ``smart Lapacian'', line searches
+in steepest desent direction, linear quadratic programming with
+congregate gradient direction, or simplex searches.
+
 @node Base Objects
 @chapter Base Objects
 @cindex object, base
