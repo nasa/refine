@@ -114,9 +114,11 @@ VALUE grid_cellExists( VALUE self, VALUE nodeId, VALUE cellId )
 
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
+  Grid *returnedGrid;
   GET_GRID_FROM_SELF;
-  gridAddCell( grid, NUM2INT(n0),  NUM2INT(n1),  NUM2INT(n2),  NUM2INT(n3) );
-  return self;
+  returnedGrid = 
+    gridAddCell( grid, NUM2INT(n0),  NUM2INT(n1),  NUM2INT(n2),  NUM2INT(n3) );
+  return (returnedGrid==NULL?Qnil:self);
 }
 
 VALUE grid_pack( VALUE self )
