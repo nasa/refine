@@ -182,7 +182,7 @@ class TestGridMove < Test::Unit::TestCase
   gm.springRelaxation(1,1)
   gm.applyDisplacements
   minVol = grid.minVolume
-  assert(1.0e-12<minVol,"negative volule of #{minVol}")
+  assert(1.0e-12<minVol,"negative volume of #{minVol}")
  end
 
  def testApplyDisplacement
