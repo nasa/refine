@@ -350,4 +350,31 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta 0.0, grid.nodeXYZ(ngem+2)[2], 1.0e-15
  end
 
+ def isoTet4 h=0.1
+  grid = Grid.new(5,4,4,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0.5,0.866,0)
+  grid.addNode(0.5,0.35,0.8)
+  grid.addNode(0.5,0.35,0.8*h)
+
+  grid.addCell(0,1,2,4)
+  grid.addCell(0,3,1,4)
+  grid.addCell(1,3,2,4)
+  grid.addCell(0,2,3,4)
+
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,3,1,10)
+  grid.addFace(1,3,2,10)
+  grid.addFace(0,2,3,10)
+  grid
+ end
+
+ def testVolumeImprovement
+  grid = isoTet4 -1.0
+  grid.smartVolumeLaplacian(4)
+  avgVol = grid.totalVolume/grid.ncell.to_f
+  assert_in_delta avgVol, grid.minVolume, 1.0e-8 
+ end
+
 end

@@ -934,6 +934,46 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
   return grid;
 }
 
+Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
+{
+  double origVol, newVol;
+  double origXYZ[3], xyz[3], nodeXYZ[3];
+  double oneOverNCell;
+  AdjIterator it;
+  int nodes[4], ncell, inode, ixyz;
+  
+  gridNodeVolume(grid, node, &origVol);
+  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
+
+  xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
+  ncell =0;
+
+  for ( it = adjFirst(gridCellAdj(grid),node); 
+	adjValid(it) ; 
+	it = adjNext(it) ){
+    ncell++;
+    gridCell(grid,adjItem(it),nodes);
+    for ( inode = 0 ; inode < 4 ; inode++ ){
+      gridNodeXYZ(grid,nodes[inode],nodeXYZ);
+      for (ixyz = 0 ; ixyz < 3 ; ixyz++ ) xyz[ixyz] += nodeXYZ[ixyz];
+    }
+  }
+  oneOverNCell = 1.0/(double)(ncell*3);
+  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){  
+    xyz[ixyz] -= origXYZ[ixyz] * (double)ncell ;
+    xyz[ixyz] = xyz[ixyz] * oneOverNCell;
+  }
+  gridSetNodeXYZ(grid,node,xyz);
+  gridNodeAR(grid, node, &newVol);
+  
+  if ( origVol > newVol ) {
+    gridSetNodeXYZ(grid,node,origXYZ);
+    return NULL;
+  }
+
+  return grid;
+}
+
 Grid *gridSmoothNodeQP(Grid *grid, int node )
 {
   int i, minCell, nearestCell;
@@ -1065,4 +1105,11 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   if ( actualImprovement <= 0.000001 ) return NULL;
 
   return grid;
+}
+
+Grid *gridSmoothNodeVolume( Grid *grid, int node )
+{
+
+  return gridSmartVolumeLaplacian( grid, node );
+
 }

@@ -113,6 +113,18 @@ VALUE grid_smartLaplacian( VALUE self, VALUE node )
   return (gridSmartLaplacian( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
+VALUE grid_smartVolumeLaplacian( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSmartVolumeLaplacian( grid, NUM2INT(node) )==grid?self:Qnil);
+}
+
+VALUE grid_smoothNodeVolume( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSmoothNodeVolume( grid, NUM2INT(node) )==grid?self:Qnil);
+}
+
 VALUE cGridCAD;
 
 void Init_GridCAD() 
@@ -140,4 +152,7 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "optimizeXYZ", grid_optimizeXYZ, 2 );
 
   rb_define_method( cGridCAD, "smartLaplacian", grid_smartLaplacian, 1 );
+  rb_define_method( cGridCAD, "smartVolumeLaplacian", grid_smartVolumeLaplacian, 1 );
+
+  rb_define_method( cGridCAD, "smoothNodeVolume", grid_smoothNodeVolume, 1 );
 }

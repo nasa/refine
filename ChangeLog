@@ -1,6 +1,7 @@
-2004-07-29 08:17 Mike Park  <mike.park@nasa.gov>
+2004-07-29 08:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridNodeVolume) added for volume optimzation.
+	* src/gridcad.c (gridSmartVolumeLaplacian) SL for volume optimzation
 	
 2004-07-27 17:05 Mike Park  <mike.park@nasa.gov>
 
