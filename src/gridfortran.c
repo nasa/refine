@@ -118,6 +118,10 @@ void gridfreezenode_( int *node )
   gridFreezeNode( grid, *node );
 }
 
+void gridparallelloadcapri_( char *capriProject )
+{
+}
+
 void gridprojectallfaces_( )
 {
   int face, node, nodes[3], faceId;

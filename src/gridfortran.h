@@ -26,6 +26,7 @@ void gridsetnodelocal2global_( int *partId, int *nnodeg,
 void gridsetnodepart_( int *nnode, int *part );
 void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
 void gridfreezenode_( int *node );
+void gridparallelloadcapri_( char *capriProject );
 void gridprojectallfaces_( );
 void gridminar_( double *aspectratio );
 void gridwritetecplotsurfacezone_( );
