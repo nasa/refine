@@ -42,6 +42,7 @@ int main( int argc, char *argv[] )
   double ratioRefine, ratioCollapse;
   bool projected;
   bool boundaryLayerGrid = FALSE;
+  bool debugInsert = FALSE;
   int iview = 0;
 
   sprintf( project,       "" );
@@ -66,6 +67,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-r") == 0 ) {
       i++; ratio = atof(argv[i]);
       printf("-r argument %d: %f\n",i, ratio);
+    } else if( strcmp(argv[i],"-i") == 0 ) {
+      debugInsert = TRUE;
+      printf("-i argument %d\n",i);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
@@ -73,6 +77,7 @@ int main( int argc, char *argv[] )
       printf(" -a party project_adapt_hess file name\n");
       printf(" -l make a boundary layer grid -a ignored\n");
       printf(" -r initial edge length ratio for adapt\n");
+      printf(" -i debug general insert nodes\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -80,13 +85,14 @@ int main( int argc, char *argv[] )
     }
     i++;
   }
-
+  
+  if(debugInsert)                 sprintf(project,"../test/box1" );
   if(strcmp(project,"")==0)       sprintf(project,"../test/om6" );
   if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
   if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
 
-  if(boundaryLayerGrid) sprintf(adaptfile,"none");
+  if(boundaryLayerGrid || debugInsert ) sprintf(adaptfile,"none");
 
   printf("running project %s\n",project);
   grid = gridLoadPart( project, 500000 );
@@ -121,7 +127,8 @@ int main( int argc, char *argv[] )
       printf("make advancing layer front normals visible to front.\n");
       layerVisibleNormals(layer);
     }else{
-      gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
+      if (!debugInsert)
+	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
     }
   }else{
     printf("reading adapt parameter from file %s ...\n",adaptfile);
@@ -143,6 +150,7 @@ int main( int argc, char *argv[] )
   oldSize = 1;
   newSize = gridNNode(grid);
   jmax = 40;
+  if (debugInsert) jmax = -1;
   for ( j=0; (j<jmax) && (
 	(ratio < 0.99) || 
 	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
@@ -215,6 +223,10 @@ int main( int argc, char *argv[] )
       gridFreezeGoodNodes(grid,0.6,0.4,1.5);
       printf("nodes frozen %d\n",gridNFrozen(grid));
     }
+  }
+
+  if (debugInsert) {
+
   }
 
   if (!gridRightHandedBoundary(grid)) 
