@@ -54,6 +54,24 @@ VALUE near_insert( VALUE rb_self, VALUE rb_child )
   return (self==nearInsert(self,child)?rb_self:Qnil);
 }
 
+VALUE near_farChild( VALUE self )
+{
+  GET_NEAR_FROM_SELF;
+  return rb_float_new(nearFarChild(near));
+}
+
+VALUE near_rightDistance( VALUE self )
+{
+  GET_NEAR_FROM_SELF;
+  return rb_float_new(nearRightDistance(near));
+}
+
+VALUE near_leftDistance( VALUE self )
+{
+  GET_NEAR_FROM_SELF;
+  return rb_float_new(nearLeftDistance(near));
+}
+
 VALUE cNear;
 
 void Init_Near() 
@@ -65,4 +83,7 @@ void Init_Near()
   rb_define_method( cNear, "rightIndex", near_rightIndex, 0 );
   rb_define_method( cNear, "leftIndex", near_leftIndex, 0 );
   rb_define_method( cNear, "insert", near_insert, 1 );
+  rb_define_method( cNear, "farChild", near_farChild, 0 );
+  rb_define_method( cNear, "rightDistance", near_rightDistance, 0 );
+  rb_define_method( cNear, "leftDistance", near_leftDistance, 0 );
 }
