@@ -34,6 +34,9 @@ struct Grid {
 
   int ngem;
   int gem[MAXDEG];
+
+  int nequ;
+  int equ[MAXDEG];
 };
 
 //#define EBUG
@@ -101,6 +104,16 @@ int gridNGem(Grid *grid)
 int gridGem(Grid *grid, int index)
 {
   return grid->gem[index];
+}
+
+int gridNEqu(Grid *grid)
+{
+  return grid->nequ;
+}
+
+int gridEqu(Grid *grid, int index)
+{
+  return grid->equ[index];
 }
 
 int gridNodeDeg(Grid *grid, int id)
@@ -320,26 +333,39 @@ Grid *gridOrient(Grid *grid, int *c, int *n )
   return NULL;
 }
 
-Grid *gridEquator(Grid *grid, int n0, int n1, int maxequ, int *nequ, int *equ )
+Grid *gridEquator(Grid *grid, int n0, int n1 )
 {
-#define MAXGEM 200
-  int ngem;
-  int gem[MAXGEM];
-  int iequ, igem;
-  *nequ = 0;
+  int igem, iequ, cell[4], nodes[4];
+  grid->nequ = 0;
 
   if ( NULL == gridMakeGem( grid, n0, n1) ) return NULL;
 
-  if (ngem>maxequ) return NULL;
+  // test this  if ( grid->ngem == 0 ) return grid;
 
-  equ[0]= gem[3];
+  nodes[0] = n0;
+  nodes[1] = n1;
 
-  for ( iequ=1 ; iequ<ngem ; iequ++ ){
-    for( igem=0 ; igem<ngem ; igem++ ){
-      if (equ[iequ-1] == gem[2+4*(igem)]) equ[iequ] = gem[3+4*(igem)];
+  cell[0] = grid->c2n[0+4*grid->gem[0]];
+  cell[1] = grid->c2n[1+4*grid->gem[0]];
+  cell[2] = grid->c2n[2+4*grid->gem[0]];
+  cell[3] = grid->c2n[3+4*grid->gem[0]];
+
+  if ( NULL == gridOrient( grid, cell, nodes ) ) { grid->nequ = 0; return NULL;
+  }
+
+  grid->equ[0]= nodes[3];
+
+  for ( iequ=1 ; iequ<grid->ngem ; iequ++ ){
+    for( igem=0 ; igem<grid->ngem ; igem++ ){
+      cell[0] = grid->c2n[0+4*grid->gem[igem]];
+      cell[1] = grid->c2n[1+4*grid->gem[igem]];
+      cell[2] = grid->c2n[2+4*grid->gem[igem]];
+      cell[3] = grid->c2n[3+4*grid->gem[igem]];
+      gridOrient( grid, cell, nodes );
+      if ( grid->equ[iequ-1] == nodes[2] ) grid->equ[iequ] = nodes[3];
     }
   }
-  *nequ = ngem;
+  grid->nequ = grid->ngem;
   
   return grid;
 }
