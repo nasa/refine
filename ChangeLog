@@ -1,3 +1,11 @@
+2005-02-07 14:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) Put in constraint checks that
+	will not allow the optimization to reduce gridNodeAR below
+	gridOPTIM_COST_FLOOR.
+	* src/gridcad.c (gridSmoothNode) changed if-then constant to turn
+	on gridLinearProgramUV for face node smoothing.
+
 2005-02-07 10:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLinearProgramUV) Put in a divide by zero

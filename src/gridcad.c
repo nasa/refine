@@ -479,7 +479,7 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 
   /* face smooth */
   if ( gridGeometryFace( grid, node ) ) {
-    if (TRUE) {
+    if (FALSE) {
       for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
 	face = adjItem(adjFirst(gridFaceAdj(grid), node));
 	gridFace(grid,face,nodes,&faceId);
@@ -762,6 +762,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
   double denom;
   GridBool searchFlag, goodStep;
   int iteration;
+  double constraint;
 
   if ( !gridValidNode(grid, node) ) return NULL; 
   if ( !gridGeometryFace(grid, node) || 
@@ -878,19 +879,23 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
     for (i=0;i<2;i++) uv[i] = origUV[i] + alpha*searchDirection[i];
     gridEvaluateFaceAtUV(grid, node, uv );
     gridNodeFaceMR(grid,node,&newCost);
+    gridNodeAR(grid,node,&constraint);
     actualImprovement = newCost-minCost;
     /* printf(" alpha %12.5e predicted %12.9f actual %12.9f new %12.9f\n",
        alpha, predictedImprovement, actualImprovement, newCost); */
 
-    if ( actualImprovement > 0.0 && actualImprovement < lastImprovement) {
+    if ( actualImprovement < lastImprovement &&
+	 constraint > gridOPTIM_COST_FLOOR ) {
       for (i=0;i<2;i++) uv[i] = origUV[i] + lastAlpha*searchDirection[i];
       gridEvaluateFaceAtUV(grid,node,uv);
       gridNodeFaceMR(grid,node,&newCost);
+      gridNodeAR(grid,node,&constraint);
       actualImprovement = newCost-minCost;
-      goodStep = TRUE;
+      break;
     }
     
-    if ( actualImprovement > 0.9*predictedImprovement  ){
+    if ( actualImprovement > 0.9*predictedImprovement &&
+	 constraint > gridOPTIM_COST_FLOOR ) {
       goodStep = TRUE;
     }else{
       lastImprovement = actualImprovement;
@@ -902,7 +907,8 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
   /* printf( "node %5d deg %3d active %3d old %8.5f new %8.5f\n",
      node, gridStoredCostDegree(grid), minFace, minCost, newCost ); */
 
-  if ( actualImprovement <= 0.0  ){
+  if ( actualImprovement <= 0.0 ||
+       constraint < gridOPTIM_COST_FLOOR ) {
     gridEvaluateFaceAtUV(grid,node,origUV);
     return NULL;
   }
