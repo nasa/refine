@@ -129,6 +129,21 @@ double nearRightRadius( Near *near )
   return near->rightRadius;
 }
 
+Near *nearVisualize( Near *near )
+{
+  if (NULL == near) return NULL;
+
+  printf("index %d (%f,%f,%f) radius %f\n",
+	 nearIndex(near), near->x, near->y, near->z, near->radius);
+  printf("  left index %d (%f) right index %d (%f)\n",
+	 nearLeftIndex(near),nearLeftRadius(near),
+	 nearRightIndex(near),nearRightRadius(near));
+  nearVisualize(near->leftChild);
+  nearVisualize(near->rightChild);
+
+  return near;
+}
+
 int nearCollisions(Near *near, Near *target)
 {
   int collisions = 0;
