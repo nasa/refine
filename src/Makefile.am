@@ -14,12 +14,16 @@ libMesherX_a_SOURCES = \
 
 include_HEADERS = \
 	master_header.h \
+	mesherx.h \
 	grid.h \
 	layer.h
 
-bin_PROGRAMS = refine
+bin_PROGRAMS = refine MesherX
 refine_SOURCES = main.c
 refine_LDADD = libMesherX.a @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@
+
+MesherX_SOURCES = MesherX.c
+MesherX_LDADD = libMesherX.a @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@
 
 EXTRA_DIST = makeRubyExtension.rb \
 	adjMT.rb adj_ruby.c \
