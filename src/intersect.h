@@ -1,0 +1,24 @@
+
+/* Compute the intersection of geometry elements
+ *
+ * Michael A. Park
+ * Computational Modeling & Simulation Branch
+ * NASA Langley Research Center
+ * Phone:(757)864-6604
+ * Email:m.a.park@larc.nasa.gov 
+ */
+  
+/* $Id$ */
+
+#ifndef INTERSECT_H
+#define INTERSECT_H
+
+#include "master_header.h"
+
+BEGIN_C_DECLORATION
+
+int intersectSide( double *tri0, double *tri1, double *tri2, double *node  );
+
+END_C_DECLORATION
+
+#endif /* INTERSECT_H */
