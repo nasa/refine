@@ -1009,6 +1009,9 @@ Layer *layerBlendGeomEdge(Layer *layer, int edgeId )
   int newNormals;
   int origNormal, newNormal;
   int i;
+  AdjIterator it;
+  int front;
+  int n0, n1, nodes[3];
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
@@ -1040,7 +1043,17 @@ Layer *layerBlendGeomEdge(Layer *layer, int edgeId )
     newNormal++;
   }
   for (i=0;i<layer->nblend;i++){
-    
+    for ( it = adjFirst(layer->adj,normal0); 
+	  adjValid(it); 
+	  it = adjNext(it) ){
+      front = adjItem(it);
+      n0 = layerNormalRoot(layer,layer->blend[i].normal[0]);
+      n1 = layerNormalRoot(layer,layer->blend[i].normal[3]);
+      layerFrontNodes(layer, front, nodes);
+      if (n0 == nodes[0] && n1 == nodes[1]){
+
+      }
+    }
   }
 
   return layer;
