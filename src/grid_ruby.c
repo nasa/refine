@@ -37,6 +37,21 @@ VALUE grid_ncell( VALUE self )
   return INT2NUM( gridNCell(grid) );
 }
 
+VALUE grid_nodeDeg( VALUE self, VALUE nodeId )
+{
+  Grid *grid;
+  Data_Get_Struct( self, Grid, grid );
+  return INT2NUM( gridNodeDeg(grid, NUM2INT(nodeId) ) );
+}
+
+VALUE grid_registerNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
+{
+  Grid *grid;
+  Data_Get_Struct( self, Grid, grid );
+  gridRegisterNodeCell(grid, NUM2INT(nodeId), NUM2INT(cellId) );
+  return self;
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -47,4 +62,6 @@ void Init_Grid()
   rb_define_method( cGrid, "initialize", grid_init, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
   rb_define_method( cGrid, "ncell", grid_ncell, 0 );
+  rb_define_method( cGrid, "nodeDeg", grid_nodeDeg, 1 );
+  rb_define_method( cGrid, "registerNodeCell", grid_registerNodeCell, 2 );
 }
