@@ -304,6 +304,8 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
   int i, nodes[4];
   AdjIterator it;
 
+  if (!gridValidNode(grid,node)) return NULL;
+
   for ( it = adjFirst(grid->cellAdj,node); 
 	adjValid(it); 
 	it = adjNext(it) ){
