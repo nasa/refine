@@ -75,9 +75,10 @@ NOTE: although the C strut of the objects is often exposed for macro
 acess to increasing efficiency, please DO NOT acess them directly, use
 the available methods or macros.
 
-Methods generally return @code{NULL} or @code{EMPTY} (-1) when they
-fail. They will return a C struct pointer (object) or the result if
-they are sucessful.
+A pointer to a C struct is passed as the first argument to `object'
+methods. These methods generally return @code{NULL} or @code{EMPTY
+(-1)} when they fail. They return a C struct pointer (often the first
+argument) or the result if they are sucessful.
 
 @section Architecture
 @cindex architecture
