@@ -1,3 +1,9 @@
+2004-08-03 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelSwap) added a call to
+	gridRemoveTwoFaceCell. Added an extra gridCellHasGhostNode check
+	for local only (queue==NULL) runs.
+
 2004-08-03 15:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell) will remove a cell with

@@ -208,19 +208,23 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
   maxcell = gridMaxCell(grid);
 
   for (cell=0;cell<maxcell;cell++){
-    if ( grid==gridCell( grid, cell, nodes) && gridAR(grid, nodes)<ARlimit ) {
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[3] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[2] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[3] ) )
-	   continue;
-      if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
-	   continue;
+    if ( grid==gridCell( grid, cell, nodes) ) {
+      if ( NULL == queue && gridCellHasGhostNode(grid,nodes) ) continue;
+      if ( grid == gridRemoveTwoFaceCell(grid, queue, cell) ) continue;
+      if ( gridAR(grid, nodes)<ARlimit ) {
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[3] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[2] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[3] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
+	  continue;
+      }
     }
   }
 
