@@ -475,7 +475,7 @@ void layerDumpFaceWire(int faceId, int nshell, int *shell, double *shellxyz){
   printf("Dumping face wire shell.\n");
   sprintf(filename,"face%dwire.plt",faceId);
   mfile = fopen(filename,"w");
-  fprintf(mfile,"Varibles = \"x\" \"y\" \"z\"\n");
+  fprintf(mfile,"Variables = \"x\",\"y\",\"z\"\n");
   for(i=0;i<nshell;i++){
     fprintf(mfile,"Zone\n%20.10f %20.10f %20.10f\n%20.10f %20.10f %20.10f\n",
 	    shellxyz[0+3*shell[0+2*i]],
