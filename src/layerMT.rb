@@ -95,6 +95,26 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 3,       layer.constrained(3)
  end
 
+ def testConstrainNormalForEdge
+  assert_not_nil        grid = Grid.new(6,0,3,0)
+  assert_equal grid,    grid.addFace(1,2,3,1)
+  assert_equal grid,    grid.addFace(1,2,0,2)
+  assert_equal grid,    grid.setNGeomNode(2)
+  assert_equal grid,    grid.setNGeomEdge(1)
+  assert_equal grid,    grid.addGeomEdge(1,0,2)
+  assert_equal grid,    grid.addEdge(0,1,1,0.0,1.0)
+  assert_not_nil        layer = Layer.new(grid)
+  assert_equal layer,   layer.makeFront([1])
+  assert_equal 1,       layer.nfront
+  assert_equal layer,   layer.makeNormal
+  assert_equal 3,       layer.nnormal
+  assert_equal layer,   layer.constrainNormal(-1)
+  assert_equal layer,   layer.constrainNormal(2)
+  assert_equal(-1,       layer.constrained(0))
+  assert_equal 2,       layer.constrained(1)
+  assert_equal 0,       layer.constrained(2)
+ end
+
  def testNormalFrontNeighbors
   assert_not_nil        grid = Grid.new(4,0,3,0)
   assert_equal grid,    grid.addFace(0,1,2,1)
@@ -316,7 +336,7 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testAdvanceLayerOnEdge
-  assert_not_nil          grid = Grid.new(7,4,7,2)
+  assert_not_nil          grid = Grid.new(7,4,20,4)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
   assert_equal 2,         grid.addNode(0,1,0)
