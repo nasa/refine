@@ -33,7 +33,7 @@ END_TEST
 
 START_TEST(testNodeDeg)
 {
-  long i;
+  int i;
   for ( i=0; i<4 ; i++ ) fail_unless( gridNodeDeg(grid,i) == 0, "init neigh.");
   gridRegisterNodeCell(grid,2,299);
   fail_unless( gridNodeDeg(grid,2) == 1, "expected one neighbor of node 2");
@@ -68,7 +68,7 @@ END_TEST
 
 START_TEST(testAddedAndRemoveCell)
 {
-  long i;
+  int i;
   fail_unless( gridRemoveNodeCell(grid,0,0) == NULL, "removed phantom cell");
 
   for ( i=0; i<4 ; i++ ) gridRegisterNodeCell(grid,i,0);

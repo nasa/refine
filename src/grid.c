@@ -13,22 +13,22 @@
 #include "grid.h"
 
 struct Grid {
-  long nnode;
-  long maxcell;
-  long ncell;
-  long nlist;
-  long *firstcell;
-  long currentcell;
-  long firstblankcell;
-  long *celllist;
-  long *c2n;
+  int nnode;
+  int maxcell;
+  int ncell;
+  int nlist;
+  int *firstcell;
+  int currentcell;
+  int firstblankcell;
+  int *celllist;
+  int *c2n;
 };
 
 //#define EBUG
 
-Grid* gridCreate(long nnode, long maxcell, long nlist)
+Grid* gridCreate(int nnode, int maxcell, int nlist)
 {
-  long i;
+  int i;
   Grid *grid;
 
   grid = malloc(sizeof(Grid));
@@ -36,18 +36,18 @@ Grid* gridCreate(long nnode, long maxcell, long nlist)
   grid->nnode = nnode;
   grid->maxcell = maxcell;
   grid->ncell = 0;
-  grid->c2n = malloc(4 * grid->maxcell * sizeof(long));
+  grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
 
   grid->nlist = nlist;
 
   /* pad one for [0] and one to terminate */
   if (grid->nlist < 1) grid->nlist = (grid->maxcell*4+grid->nnode)+2;
 
-  grid->firstcell = malloc(grid->nnode * sizeof(long));
+  grid->firstcell = malloc(grid->nnode * sizeof(int));
   /* I could set first cell to zero to terminate when realloc used */
   for (i=0;i < grid->nnode; i++ ) grid->firstcell[i] = 0; 
 
-  grid->celllist = malloc( grid->nlist * sizeof(long));
+  grid->celllist = malloc( grid->nlist * sizeof(int));
   for (i=0;i < grid->nlist; i++ ) grid->celllist[i] = -(i+1);
   grid->celllist[grid->nlist-1] =0;
   grid->celllist[0] =0;
@@ -74,22 +74,22 @@ Grid *gridDump(Grid *grid)
   return grid;
 }
 
-long gridNNode(Grid *grid)
+int gridNNode(Grid *grid)
 {
   return grid->nnode;
 }
 
-long gridMaxCell(Grid *grid)
+int gridMaxCell(Grid *grid)
 {
   return grid->maxcell;
 }
 
-long gridNCell(Grid *grid)
+int gridNCell(Grid *grid)
 {
   return grid->ncell;
 }
 
-long gridNodeDeg(Grid *grid, long id)
+int gridNodeDeg(Grid *grid, int id)
 {
   int n;
   n =0;
@@ -99,7 +99,7 @@ long gridNodeDeg(Grid *grid, long id)
   return n;
 }
 
-int gridCellExists(Grid *grid, long nodeId, long cellId)
+int gridCellExists(Grid *grid, int nodeId, int cellId)
 {
   int exist;
   exist = (0==1);
@@ -110,9 +110,9 @@ int gridCellExists(Grid *grid, long nodeId, long cellId)
   return exist;
 }
 
-Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
+Grid* gridRegisterNodeCell(Grid *grid, int nodeId, int cellId)
 {
-  long firstAvailable, oldTerminator, entry, terminator, nextOpen;
+  int firstAvailable, oldTerminator, entry, terminator, nextOpen;
 
   if ( grid->firstcell[nodeId] == 0 ) {
     entry = grid->firstblankcell;
@@ -152,9 +152,9 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
   return grid;
 }
 
-Grid* gridRemoveNodeCell(Grid *grid, long nodeId, long cellId)
+Grid* gridRemoveNodeCell(Grid *grid, int nodeId, int cellId)
 {
-  long cellIndex;
+  int cellIndex;
   cellIndex = EMPTY;
 
   for ( gridFirstNodeCell(grid,nodeId); 
@@ -171,7 +171,7 @@ Grid* gridRemoveNodeCell(Grid *grid, long nodeId, long cellId)
   return grid;
 }
 
-void gridFirstNodeCell(Grid *grid, long nodeId)
+void gridFirstNodeCell(Grid *grid, int nodeId)
 {
   grid->currentcell = grid->firstcell[nodeId];
   while (grid->celllist[grid->currentcell] < 0){
@@ -188,7 +188,7 @@ void gridNextNodeCell(Grid *grid)
   }
 }
 
-long gridCurrentNodeCell(Grid *grid)
+int gridCurrentNodeCell(Grid *grid)
 {
   return grid->celllist[grid->currentcell]-1;
 }
@@ -200,7 +200,7 @@ int gridValidNodeCell(Grid *grid)
 
 int gridMoreNodeCell(Grid *grid)
 {
-  long next;
+  int next;
 
   if ( !gridValidNodeCell(grid) ) return 0;
   next = grid->currentcell + 1;
@@ -210,9 +210,9 @@ int gridMoreNodeCell(Grid *grid)
   return (grid->celllist[next] != 0);
 }
 
-Grid *gridAddCell(Grid *grid, long n0, long n1, long n2, long n3)
+Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
-  long cellId,icell;
+  int cellId,icell;
   cellId = grid->ncell;
   grid->ncell++;
   
@@ -229,7 +229,7 @@ Grid *gridAddCell(Grid *grid, long n0, long n1, long n2, long n3)
   return grid;
 }
 
-Grid *gridGetGem(Grid *grid, long n0, long n1, int maxgem, int *ngem, int *gem )
+Grid *gridGetGem(Grid *grid, int n0, int n1, int maxgem, int *ngem, int *gem )
 {
   int cellId, inode;
   *ngem = 0;

@@ -18,21 +18,21 @@ BEGIN_C_DECLORATION
 typedef struct Grid Grid;
 
 
-Grid *gridCreate(long nnode, long ncell, long nlist);
-long gridNNode(Grid *g);
-long gridNCell(Grid *g);
-long gridNodeDeg(Grid *g, long nodeIndex);
-int gridCellExists(Grid *g, long nodeIndex, long cellIndex);
-Grid *gridRegisterNodeCell(Grid *g, long nodeIndex, long cellIndex);
-Grid *gridRemoveNodeCell(Grid *g, long nodeIndex, long cellIndex);
-void gridFirstNodeCell(Grid *g, long nodeIndex);
+Grid *gridCreate(int nnode, int ncell, int nlist);
+int gridNNode(Grid *g);
+int gridNCell(Grid *g);
+int gridNodeDeg(Grid *g, int nodeIndex);
+int gridCellExists(Grid *g, int nodeIndex, int cellIndex);
+Grid *gridRegisterNodeCell(Grid *g, int nodeIndex, int cellIndex);
+Grid *gridRemoveNodeCell(Grid *g, int nodeIndex, int cellIndex);
+void gridFirstNodeCell(Grid *g, int nodeIndex);
 void gridNextNodeCell(Grid *g);
-long gridCurrentNodeCell(Grid *g);
+int gridCurrentNodeCell(Grid *g);
 int gridValidNodeCell(Grid *g);
 int gridMoreNodeCell(Grid *g);
 
-Grid *gridAddCell(Grid *g, long n0, long n1, long n2, long n3 );
-Grid *gridGetGem(Grid *g, long n0,long n1, int maxgem,int *ngem, int *gem );
+Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
+Grid *gridGetGem(Grid *g, int n0, int n1, int maxgem,int *ngem, int *gem );
 
 Grid *gridDump(Grid *g);
 
