@@ -1,3 +1,9 @@
+Wed Jun  2, 2004: Released Refine 0.7.4
+
+gridmove and CAPRI(CADGeom) read work in parallel. Parallel node
+smoothing works for CAD and fake geometry. Fixed off-by-one numbering
+bug in fortran interface gridfreezenode.
+
 Mon May  3, 2004: Released Refine 0.7.3
 
 Tagging before gridmpi:gridParallelEdgeCollapse extension.

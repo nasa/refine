@@ -1,3 +1,7 @@
+2004-06-02 08:29 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.4 Release. gridmove and CAPRI(CADGeom) work in parallel.
+
 2004-06-01 08:32 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c included edge t in ghost update xfer load and
