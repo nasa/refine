@@ -62,6 +62,8 @@ class TestGridMetric < Test::Unit::TestCase
   4.times do |i| 
    assert_in_delta grid.averageEdgeLength(i), grid.spacing(i), 1.0e-15, "n#{i}"
   end
+  assert_equal grid, grid.scaleSpacing(0,0.5)
+  assert_in_delta grid.averageEdgeLength(0)*0.5, grid.spacing(0), 1.0e-15
  end
 
  def testMetrics

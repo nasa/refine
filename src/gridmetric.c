@@ -54,6 +54,12 @@ Grid *gridResetSpacing(Grid *grid )
   return grid;
 }
 
+Grid *gridScaleSpacing(Grid *grid, int node, double scale )
+{
+  grid->spacing[node] = grid->spacing[node]*scale;
+  return grid;
+}
+
 double gridVolume(Grid *grid, int *nodes )
 {
   int ixyz;

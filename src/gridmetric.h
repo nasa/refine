@@ -20,6 +20,7 @@ double gridEdgeLength(Grid *g, int n0, int n1 );
 double gridAverageEdgeLength(Grid *g, int node );
 double gridSpacing(Grid *g, int node );
 Grid *gridResetSpacing(Grid *g );
+Grid *gridScaleSpacing(Grid *g, int node, double scale );
 
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
