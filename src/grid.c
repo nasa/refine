@@ -82,7 +82,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
 
   grid->ngem = 0;
 
-  return  grid;
+  return grid;
 }
 
 Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
@@ -1269,8 +1269,9 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
 {
   int  igem, cell, nodes[4], inode, node, newnode, newnodes0[4], newnodes1[4];
   double newX, newY, newZ;
+  int gap0, gap1, face0, face1, faceId0, faceId1;
 
-  if ( NULL == gridMakeGem( grid, n0, n1) ) return NULL;
+  if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
 
   newX = ( grid->xyz[0+3*n0] + grid->xyz[0+3*n1] ) * 0.5;
   newY = ( grid->xyz[1+3*n0] + grid->xyz[1+3*n1] ) * 0.5;
@@ -1292,7 +1293,26 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
     gridAddCell(grid, newnodes0[0], newnodes0[1], newnodes0[2], newnodes0[3] );
     gridAddCell(grid, newnodes1[0], newnodes1[1], newnodes1[2], newnodes1[3] );
   }
-  printf("return grid..\n");
+
+  //test face
+  if ( grid->nequ != grid->ngem ){
+    gap0 = grid->equ[0];
+    gap1 = grid->equ[grid->ngem];
+    face0 = gridFindFace(grid, n0, n1, gap0 );
+    face1 = gridFindFace(grid, n0, n1, gap1 );
+    faceId0 = gridFaceId(grid, n0, n1, gap0 );
+    faceId1 = gridFaceId(grid, n0, n1, gap1 );
+    
+    if ( faceId0 == EMPTY || faceId1 == EMPTY ) return NULL;
+
+    gridRemoveFace(grid, face0 );
+    gridRemoveFace(grid, face1 );
+    gridAddFace(grid, n0, gap0, newnode, faceId0 );
+    gridAddFace(grid, n1, gap0, newnode, faceId0 );
+    gridAddFace(grid, n0, gap1, newnode, faceId1 );
+    gridAddFace(grid, n1, gap1, newnode, faceId1 );
+  }
+
   return grid;
 }
 
