@@ -88,12 +88,22 @@ GridBool GeoMesh_LoadPart( char *project )
   return FALSE;
 }
 
+GridBool GeoMesh_SavePart( int vol, char *project )
+{
+  return FALSE;
+}
+
 GridBool CADGeom_GetVolume(int a, int *b, int *c, int *d, int *e)
 {
   return FALSE;
 }
 
 UGPatchPtr CADGeom_FaceGrid( int vol, int face )
+{
+  return NULL;
+}
+
+GridBool CADGeom_SetFaceGrid( int vol, int faceId, UGPatchPtr ugrid)
 {
   return FALSE;
 }

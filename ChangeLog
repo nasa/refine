@@ -1,3 +1,10 @@
+2004-06-29 12:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridUpdateGeometryFace) set the face UGrid
+	* src/gridgeom.c (gridParallelGeomSave) calls CADGeom_SavePart now.
+	* src/FAKEGeomExtras.c added mock CADGeom_SetFaceGrid
+	CADGeom_UseDefaultIOCallbacks CADGeom_SavePart
+
 2004-06-29 11:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridupdategeometryface_) gridUpdateGeometryFace

@@ -87,14 +87,19 @@ char *ErrMgr_GetErrStr(void);
 
 GridBool CADGeom_Start( void );
 GridBool GeoMesh_LoadPart( char *project );
+GridBool CADGeom_SavePart(int vol, char *project);
 GridBool CADGeom_GetVolume(int, int *, int *, int *, int *);
 UGPatchPtr CADGeom_FaceGrid( int, int );
+GridBool CADGeom_SetFaceGrid( int vol, int faceId, UGPatchPtr ugrid);
 GridBool CADGeom_NormalToFace( int vol, int faceId, 
 			       double *uv, double *xyz, double *normal);
 
 GridBool CADTopo_FaceNumEdgePts(int vol, int faceId, int *count);
 GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g);
 GridBool CADTopo_VolEdgePts(int vol, int *count);
+
+#define CADGeom_UseDefaultIOCallbacks (FALSE)
+
 
 END_C_DECLORATION
 
