@@ -75,6 +75,9 @@ Grid *gridAddEdge(Grid *g, int n0, int n1,
 Grid *gridRemoveEdge(Grid *g, int edge );
 int gridFindEdge(Grid *g, int n0, int n1 );
 int gridEdgeId(Grid *g, int n0, int n1 );
+Grid *gridReconnectEdge(Grid *g, int edgeId, int oldNode, int newNode );
+Grid *gridReconnectEdgeUnlessFrozen(Grid *g, int edgeId, 
+				    int oldNode, int newNode );
 Grid *gridEdge(Grid *g, int edge, int *nodes, int *edgeId );
 
 int gridGeomCurveSize( Grid *g, int edgeId, int startNode );

@@ -1290,6 +1290,67 @@ int gridEdgeId(Grid *grid, int n0, int n1 )
   return grid->edgeId[edge];
 }
 
+Grid *gridReconnectEdge(Grid *grid, int edgeId, int oldNode, int newNode )
+{
+  AdjIterator it;
+  int edge, i, node;
+  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
+  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+
+  it = adjFirst(grid->edgeAdj,oldNode);
+  while (adjValid(it)){
+    edge = adjItem(it);
+    if (edgeId == grid->edgeId[edge]) {
+      for (i=0;i<2;i++){
+	node = grid->e2n[i+2*edge];
+	if (oldNode == node) {
+	  grid->e2n[i+2*edge]=newNode;
+	  adjRemove( grid->edgeAdj, oldNode, edge);
+	  adjRegister( grid->edgeAdj, newNode, edge);
+	}
+      }
+      it = adjFirst(grid->edgeAdj,oldNode);
+    }else{
+      it = adjNext(it);
+    }
+  }
+
+  return grid;
+}
+
+Grid *gridReconnectEdgeUnlessFrozen(Grid *grid, int edgeId, 
+				    int oldNode, int newNode )
+{
+  AdjIterator it;
+  int edge, i, node;
+  bool frozen;
+
+  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
+  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+
+  it = adjFirst(grid->edgeAdj,oldNode);
+  while (adjValid(it)){
+    edge = adjItem(it);
+    frozen = ( gridNodeFrozen(grid, grid->e2n[0+2*edge]) &&
+	       gridNodeFrozen(grid, grid->e2n[1+2*edge]) );
+    if (edgeId == grid->edgeId[edge] && !frozen ) {
+      for (i=0;i<2;i++){
+	node = grid->e2n[i+2*edge];
+	if (oldNode == node) {
+	  grid->e2n[i+2*edge]=newNode;
+	  adjRemove( grid->edgeAdj, oldNode, edge);
+	  adjRegister( grid->edgeAdj, newNode, edge);
+	}
+      }
+      it = adjFirst(grid->edgeAdj,oldNode);
+    }else{
+      it = adjNext(it);
+    }
+  }
+
+  return grid;
+}
+
 Grid *gridEdge(Grid *grid, int edge, int *nodes, int *id )
 {
   if (edge >= grid->maxedge || edge < 0) return NULL;
