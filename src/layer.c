@@ -2224,7 +2224,7 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 
   int blend, i, fix, fixblend, node, newnode, normal, newnormal;
   int normals[4];
-  int edgeId;
+  int edgeId, faceId;
   double xyz[3];
   Adj *adj;
   AdjIterator it;
@@ -2305,14 +2305,14 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
     normals[1] = layer->blend[blend].oldnormal[2];
     normals[2] = layer->blend[blend].normal[0];
     normals[3] = layer->blend[blend].normal[2];
-    printf("blend %d norm %d %d %d %d\n",blend,normals[0],normals[1],normals[2],normals[3]);
+
     layerForceTriangle(layer,normals[0],normals[2],normals[1]);
     layerForceTriangle(layer,normals[1],normals[2],normals[3]);
     normals[0] = layer->blend[blend].oldnormal[3];
     normals[1] = layer->blend[blend].oldnormal[1];
     normals[2] = layer->blend[blend].normal[3];
     normals[3] = layer->blend[blend].normal[1];
-    printf("blend %d norm %d %d %d %d\n",blend,normals[0],normals[1],normals[2],normals[3]);
+
     layerForceTriangle(layer,normals[0],normals[2],normals[3]);
     layerForceTriangle(layer,normals[0],normals[3],normals[1]);
   }
@@ -2322,7 +2322,6 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
   for (blend=0; blend < layerNBlend(layer); blend++){
     edgeId = layer->blend[blend].edgeId[0];
     if ( edgeId > 0 ) {
-      printf("%d %d\n",blend,edgeId);
       layerSetParentGeomEdge(layer,
 			     layer->blend[blend].normal[0],
 			     layer->blend[blend].oldnormal[0],
@@ -2334,7 +2333,6 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
     }
     edgeId = layer->blend[blend].edgeId[1];
     if ( edgeId > 0 ) {
-      printf("%d %d\n",blend,edgeId);
       layerSetParentGeomEdge(layer,
 			     layer->blend[blend].normal[2],
 			     layer->blend[blend].oldnormal[2],
@@ -2343,6 +2341,31 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 			     layer->blend[blend].normal[3],
 			     layer->blend[blend].oldnormal[3],
 			     edgeId);
+    }
+  }
+
+  for (blend=0; blend < layerNBlend(layer); blend++){
+    faceId = layerConstrained(layer, layer->blend[blend].normal[0]);
+    if (faceId > 0 ) {
+      layerConstrainTriangleSide(layer,
+				 layer->blend[blend].normal[0],
+				 layer->blend[blend].oldnormal[0],
+				 faceId);
+      layerConstrainTriangleSide(layer,
+				 layer->blend[blend].normal[1],
+				 layer->blend[blend].oldnormal[1],
+				 faceId);
+    }
+    faceId = layerConstrained(layer, layer->blend[blend].normal[2]);
+    if (faceId > 0 ) {
+      layerConstrainTriangleSide(layer,
+				 layer->blend[blend].normal[2],
+				 layer->blend[blend].oldnormal[2],
+				 faceId);
+      layerConstrainTriangleSide(layer,
+				 layer->blend[blend].normal[3],
+				 layer->blend[blend].oldnormal[3],
+				 faceId);
     }
   }
 
