@@ -1043,7 +1043,7 @@ grid.addCell(0,1,2,3)
   assert_equal [0,1,2,3,4],   grid.pyramid(0)
  end
 
- def testTriangleNeighbor
+ def flatTwoFaceGrid
   # y 2---3
   # ^ |0\1|
   # | 0---1 -> x
@@ -1054,6 +1054,11 @@ grid.addCell(0,1,2,3)
   grid.addNode(1,1,0)
   grid.addFace(0,1,2,1)
   grid.addFace(2,1,3,1)
+  grid
+ end
+
+ def testTriangleNeighbor
+  grid  = flatTwoFaceGrid
   layer = Layer.new(grid).populateAdvancingFront([1])
 
   assert_equal(-1, layer.nextTriangle(4,0) )
