@@ -1,3 +1,11 @@
+2004-11-03 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdge,gridCollapseEdge) the inserted
+	or collapsed to node is projected to CAD when
+	-DSURFACE_VALIDITY is defined. This will disrupt the behavior of
+	the standalone sequential refine executable (not parallel
+	librefine.a), and make gridmove projection unnecessary.
+
 2004-11-01 23:09 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridAR) When -DSURFACE_VALIDITY is defined,

@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
+#ifdef SURFACE_VALIDITY
+#include "gridshape.h"
+#endif
 #include "gridmetric.h"
 #include "gridswap.h"
 #include "gridinsert.h"
@@ -173,18 +176,22 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 
 int gridSplitEdge(Grid *grid, int n0, int n1)
 {
+#ifdef SURFACE_VALIDITY
+#else
   double xyz0[3], xyz1[3];
-  double newX, newY, newZ;
+#endif
+  double newXYZ[3];
 
-  if (grid != gridNodeXYZ(grid,n0,xyz0)) return EMPTY;
-  if (grid != gridNodeXYZ(grid,n1,xyz1)) return EMPTY;
+#ifdef SURFACE_VALIDITY
+    if (grid != gridCurvedEdgeMidpoint(grid, n0, n1, newXYZ)) return EMPTY;
+#else
+    if (grid != gridNodeXYZ(grid,n0,xyz0)) return EMPTY;
+    if (grid != gridNodeXYZ(grid,n1,xyz1)) return EMPTY;
+    gridAverageVector(xyz0,xyz1,newXYZ);
+#endif
 
-  newX = ( xyz0[0] + xyz1[0] ) * 0.5;
-  newY = ( xyz0[1] + xyz1[1] ) * 0.5;
-  newZ = ( xyz0[2] + xyz1[2] ) * 0.5;
-  
   return gridSplitEdgeAt(grid, NULL, n0, n1,
-			 newX, newY, newZ );
+			 newXYZ[0], newXYZ[1], newXYZ[2] );
 
 }
 
@@ -673,6 +680,11 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   double arLimit;
   int iequ, equ0, equ1;
 
+#ifdef SURFACE_VALIDITY
+  int parent;
+  double origxyz[3], tuv[2], tuv0[2], tuv1[2];
+#endif    
+
   if ( gridGeometryNode(grid, n1) ) return NULL;
   if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
     return NULL;
@@ -707,6 +719,26 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   if (1 == requiredRatio) { if (0.01 > ratio) return NULL; ratio = 1.0; }
 
   for (i=0 ; i<3 ; i++) xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
+
+#ifdef SURFACE_VALIDITY
+  parent = gridParentGeometry(grid,n0,n1);
+  if (0!=parent) {
+    gridVectorCopy(origxyz,xyzAvg);
+    tuv[0] = tuv[1] = DBL_MAX;
+    if (parent<0) {
+      gridNodeT(grid,n0,-parent, tuv0);
+      gridNodeT(grid,n1,-parent, tuv1);
+      tuv[0] = 0.5 * ( tuv0[0] + tuv1[0] );
+      gridProjectToEdge(grid, -parent, origxyz, tuv, xyzAvg);
+    } else {
+      gridNodeUV(grid,n0,parent, tuv0);
+      gridNodeUV(grid,n1,parent, tuv1);
+      tuv[0] = 0.5 * ( tuv0[0] + tuv1[0] );
+      tuv[1] = 0.5 * ( tuv0[1] + tuv1[1] );
+      gridProjectToFace(grid, parent, origxyz, tuv, xyzAvg);    
+    }
+  }
+#endif    
 
   if ( NULL == gridSetNodeXYZ( grid, n0, xyzAvg) ) return NULL;
   if ( NULL == gridSetNodeXYZ( grid, n1, xyzAvg) ) return NULL;  
