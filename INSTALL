@@ -1,16 +1,18 @@
 Note To CVS Users
 =================
 
-   Run ./autogen.sh to set the package up to install inside it's self
-(e.g. ./configure --prefix=`pwd`).
+   Run ./autogen.sh to set the package up to install inside an
+archetecture directory(e.g., Linux, IRIX64). It will run bootstrap to
+create the configure script. Then it will create an arch dir. Finally,
+it will cd to the arch dir and and run ../configure --prefix=`pwd`.
 
-Note To SGI Users
-=================
+Note To SGI IRIX Users
+======================
 
-   ./configure does not find the X libs. add 
+   if configure does not find the X libs. add 
       --x-includes=/usr/include 
       --x-libraries=/usr/lib32
-   to the ./configure or ./autogen.sh script
+   to the configure or autogen.sh script
 
 Basic Installation
 ==================
