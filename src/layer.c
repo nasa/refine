@@ -3443,7 +3443,7 @@ Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
 {
   Grid *grid = layer->grid;
   int triangle, normals[3], nodes[3], n[6], tet[4];
-  int i, normal;
+  int i, norm, normal;
   int  root, tip, node, nterminated;
   double xyz[3];
   int savedNodes[3];
@@ -3451,17 +3451,17 @@ Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
-  for (i=0;i<3;i++){
-    savedNodes[i] = gridAddNode(grid,0.0,0.0,0.0);
-    if (EMPTY == savedNodes[i]) return NULL;
+  for (norm=0;norm<3;norm++){
+    savedNodes[norm] = gridAddNode(grid,0.0,0.0,0.0);
+    if (EMPTY == savedNodes[norm]) return NULL;
   }
   
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     layerTriangleNormals(layer, triangle, normals);
     layerTriangle(layer, triangle, nodes);
     
-    for (i=0;i<3;i++){
-      normal = normals[i];
+    for (norm=0;norm<3;norm++){
+      normal = normals[norm];
       if (layerNormalTerminated(layer,normal)){
 	layer->normal[normal].tip = layer->normal[normal].root;
       }else{
@@ -3471,7 +3471,7 @@ Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
 	  xyz[i] = xyz[i] 
 	    + layer->normal[normal].height
 	    * layer->normal[normal].direction[i];
-	tip = savedNodes[i];
+	tip = savedNodes[norm];
 	gridSetNodeXYZ(grid,tip,xyz);
 	layer->normal[normal].tip = tip;
       }
@@ -3538,12 +3538,12 @@ Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
 	  layerTerminateNormal( layer, normals[2] );
       }
     }
-    for (i=0;i<3;i++){
-      layer->normal[normals[i]].tip = EMPTY;
+    for (norm=0;norm<3;norm++){
+      layer->normal[normals[norm]].tip = EMPTY;
     }
   }
   
-  for (i=0;i<3;i++) gridRemoveNode(grid,savedNodes[i]);
+  for (norm=0;norm<3;norm++) gridRemoveNode(grid,savedNodes[norm]);
 
   return layer;
 }
