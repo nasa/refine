@@ -20,5 +20,6 @@ Grid *gridSwapEdge(Grid *g, Queue *q, int n0, int n1 );
 Grid *gridSwapNearNode(Grid *g, int node );
 Grid *gridSwapNearNodeExceptBoundary(Grid *g, int node );
 Grid *gridSwap(Grid *g );
+Grid *gridRemoveTwoFaceCell(Grid *g, Queue *q, int cell );
 
 #endif /* GRIDSWAP_H */

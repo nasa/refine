@@ -1,3 +1,8 @@
+2004-08-02 15:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) will remove a cell with
+	two faces with the same face Id and swap the face diagonal.
+
 2004-08-02 14:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridwritetecplotsurfacezone_) now dumps out

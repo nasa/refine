@@ -16,6 +16,96 @@
 
 #define COSTLIMIT (-0.5)
 
+Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
+{
+  int cellnodes[4], facenodes[3];
+  int face, faces[4], faceIds[4];
+  int facecount;
+  int face0, face1;
+  int faceId0, faceId1;
+  int node;
+  double uv[8];
+  int newface0, newface1;
+
+  int cell2face[4][3] = {{0,1,2},{0,3,1},{1,3,2},{0,2,3}};
+
+  if (grid!=gridCell(grid,cell,cellnodes)) return NULL;
+
+  facecount = 0;
+  face0 = face1 = EMPTY;
+  for(face=0;face<4;face++) {
+    faces[face] = gridFindFace( grid,
+				cellnodes[cell2face[face][0]],
+				cellnodes[cell2face[face][1]],
+				cellnodes[cell2face[face][2]]);
+    if (EMPTY==faces[face]) {
+      faceIds[face]=EMPTY;
+    }else{
+      gridFace(grid,faces[face],facenodes,&faceIds[face]);      
+    }
+    if (faces[face]!=EMPTY) {
+      facecount++;
+      if (face0!=EMPTY) face1 = face;
+      if (face0==EMPTY) face0 = face;
+    }
+
+    printf("cell%8d%2d face%6d faceId%4d\n",cell,face,faces[face],faceIds[face]);
+  }
+  if (2==facecount) {
+    faceId0 = faceIds[face0];
+    faceId1 = faceIds[face1];
+    printf("cell%8d%2d%2d faceId%4d%4d\n",cell,face0,face1,faceId0,faceId1);
+    if (faceId0==faceId1) {
+
+      gridRemoveCellAndQueue(grid,queue,cell);
+      for(node=0;node<4;node++) 
+	gridNodeUV(grid, cellnodes[node], faceId0, &uv[2*node]);
+      
+      gridRemoveFaceAndQueue(grid, queue, faces[face0] );
+      gridRemoveFaceAndQueue(grid, queue, faces[face1] );
+
+      newface0 = newface1 = EMPTY;
+      for(face=0;face<4;face++) {
+	if (faces[face]==EMPTY) {
+	  if (newface0!=EMPTY) newface1 = face;
+	  if (newface0==EMPTY) newface0 = face;
+	}
+      }
+      printf("same%2d%2d\n",newface0,newface1);
+
+      for(node=0;node<3;node++) facenodes[node] = cell2face[newface0][node];
+
+      gridAddFaceUVAndQueue(grid, queue, 
+			    cellnodes[facenodes[0]], 
+			    uv[0+2*facenodes[0]],
+			    uv[1+2*facenodes[0]],
+			    cellnodes[facenodes[1]], 
+			    uv[0+2*facenodes[1]],
+			    uv[1+2*facenodes[1]],
+			    cellnodes[facenodes[2]], 
+			    uv[0+2*facenodes[2]],
+			    uv[1+2*facenodes[2]],
+			    faceId0 );
+
+      for(node=0;node<3;node++) facenodes[node] = cell2face[newface1][node];
+
+      gridAddFaceUVAndQueue(grid, queue, 
+			    cellnodes[facenodes[0]], 
+			    uv[0+2*facenodes[0]],
+			    uv[1+2*facenodes[0]],
+			    cellnodes[facenodes[1]], 
+			    uv[0+2*facenodes[1]],
+			    uv[1+2*facenodes[1]],
+			    cellnodes[facenodes[2]], 
+			    uv[0+2*facenodes[2]],
+			    uv[1+2*facenodes[2]],
+			    faceId1 );
+     return grid;
+    }
+  }
+  return NULL;
+}
+
 Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
 {
   int cell0, cell1;
