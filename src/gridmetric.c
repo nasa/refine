@@ -221,7 +221,8 @@ Grid *gridScaleSpacingSphere( Grid *grid,
 {
   int node;
   double xyz[3];
-  double dx, dy, dz, distanceSquared, radiusSquared;
+  double dx, dy, dz;
+  double distanceSquared, radiusSquared;
   radiusSquared = r*r;
   
   for ( node=0; node<gridMaxNode(grid); node++ ) {
@@ -242,19 +243,26 @@ Grid *gridScaleSpacingSphereDirection( Grid *grid,
 			      double scalex, double scaley, double scalez )
 {
   int node;
-  double dx, dy, dz, distanceSquared, radiusSquared;
+  double xyz[3];
+  double dx, dy, dz;
+  double distanceSquared, radiusSquared;
+  double map[6];
   radiusSquared = r*r;
   
-  for ( node=0; node<grid->nnode; node++ ) {
-    dx = grid->xyz[0+3*node] - x;
-    dy = grid->xyz[1+3*node] - y;
-    dz = grid->xyz[2+3*node] - z;
-    distanceSquared = dx*dx + dy*dy + dz*dz;
-    if (radiusSquared >= distanceSquared){
-      grid->map[0+6*node] = grid->map[0+6*node] / (scalex*scalex); 
-      grid->map[3+6*node] = grid->map[3+6*node] / (scaley*scaley); 
-      grid->map[5+6*node] = grid->map[5+6*node] / (scalez*scalez); 
-    } 
+  for ( node=0; node<gridMaxNode(grid); node++ ) {
+    if (grid == gridNodeXYZ(grid,node,xyz)) {
+      dx = xyz[0] - x;
+      dy = xyz[1] - y;
+      dz = xyz[2] - z;
+      distanceSquared = dx*dx + dy*dy + dz*dz;
+      if (radiusSquared >= distanceSquared){
+	gridMap(grid, node, map);
+	gridSetMap(grid, node, 
+		   map[0] / (scalex*scalex), map[1], map[2], 
+		   map[3] / (scaley*scaley), map[4], 
+		   map[5] / (scalez*scalez));
+      } 
+    }
   }
 
   return grid;
@@ -262,11 +270,11 @@ Grid *gridScaleSpacingSphereDirection( Grid *grid,
 
 Grid *gridCopySpacing(Grid *grid, int originalNode, int newNode)
 {
-  int i;
-  if ( !gridValidNode(grid, originalNode) ) return NULL;
-  if ( !gridValidNode(grid, newNode) ) return NULL;
-
-  for( i=0 ; i<6 ; i++ ) grid->map[i+6*newNode] = grid->map[i+6*originalNode];
+  double map[6];
+  if (grid != gridMap(grid, originalNode, map)) return NULL;
+  if (grid != gridSetMap( grid, newNode, 
+			  map[0], map[1], map[2], 
+			  map[3], map[4], map[5] ) ) return NULL;
 
   return grid;
 }
@@ -511,11 +519,18 @@ Grid *gridConvertMetricToJacobian(Grid *grid, double *m, double *j)
 
 double gridVolume(Grid *grid, int *nodes )
 {
-  double edge1[3], edge2[3], edge3[3], norm[3], volume; 
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double edge1[3], edge2[3], edge3[3];
+  double norm[3], volume; 
   
-  gridSubtractVector( &grid->xyz[3*nodes[1]], &grid->xyz[3*nodes[0]], edge1);
-  gridSubtractVector( &grid->xyz[3*nodes[2]], &grid->xyz[3*nodes[0]], edge2);
-  gridSubtractVector( &grid->xyz[3*nodes[3]], &grid->xyz[3*nodes[0]], edge3);
+  if (grid != gridNodeXYZ(grid,nodes[0],xyz0) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[1],xyz1) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[2],xyz2) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[3],xyz3) ) return -1.0;
+
+  gridSubtractVector( xyz1, xyz0, edge1);
+  gridSubtractVector( xyz2, xyz0, edge2);
+  gridSubtractVector( xyz3, xyz0, edge3);
   gridCrossProduct( edge1, edge2, norm );
 
   return gridDotProduct(norm,edge3)/6.0;
@@ -541,6 +556,7 @@ Grid *gridNodeAR(Grid *grid, int node, double *ar )
 
 double gridAR(Grid *grid, int *nodes )
 {
+  double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
   double x1, x2, x3, x4; 
   double y1, y2, y3, y4; 
   double z1, z2, z3, z4; 
@@ -556,21 +572,26 @@ double gridAR(Grid *grid, int *nodes )
   int i;
   double m[6], m0[6], m1[6], m2[6], m3[6], j[9];
 
-  x1 = grid->xyz[0+3*nodes[0]];
-  y1 = grid->xyz[1+3*nodes[0]];
-  z1 = grid->xyz[2+3*nodes[0]];
+  if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return -1.0;
+  if (grid != gridNodeXYZ(grid,nodes[3],xyz4) ) return -1.0;
 
-  x2 = grid->xyz[0+3*nodes[1]];
-  y2 = grid->xyz[1+3*nodes[1]];
-  z2 = grid->xyz[2+3*nodes[1]];
+  x1 = xyz1[0];
+  y1 = xyz1[1];
+  z1 = xyz1[2];
 
-  x3 = grid->xyz[0+3*nodes[2]];
-  y3 = grid->xyz[1+3*nodes[2]];
-  z3 = grid->xyz[2+3*nodes[2]];
+  x2 = xyz2[0];
+  y2 = xyz2[1];
+  z2 = xyz2[2];
 
-  x4 = grid->xyz[0+3*nodes[3]];
-  y4 = grid->xyz[1+3*nodes[3]];
-  z4 = grid->xyz[2+3*nodes[3]];
+  x3 = xyz3[0];
+  y3 = xyz3[1];
+  z3 = xyz3[2];
+
+  x4 = xyz4[0];
+  y4 = xyz4[1];
+  z4 = xyz4[2];
 
   gridMap(grid,nodes[0],m0);
   gridMap(grid,nodes[1],m1);
