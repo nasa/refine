@@ -499,7 +499,7 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
       maxsmooth = 40;
       lastCost = -2.0;
       gridNodeFaceMR(grid,node,&cost);
-      while ( maxsmooth > 0 && (cost-lastCost) > 1.0e-8 ) {
+      while ( maxsmooth > 0 && (cost-lastCost) > 1.0e-6*cost ) {
 	maxsmooth--;
 	if (grid != gridLinearProgramUV(grid,node) ) {
 	  return NULL;
@@ -507,7 +507,6 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 	lastCost = cost;
 	gridNodeFaceMR(grid,node,&cost);
       }
-      gridNodeAR(grid,node,&cost);
       return grid;
     }
   }
