@@ -841,7 +841,44 @@ Grid *gridStoreVolumeCostDerivatives (Grid *grid, int node )
 
 Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
 {
+  AdjIterator it;
+  int face, faceId, nodes[3];
+  int swapnode;
+  double cost, costDerivative[3];
+
   if ( !gridValidNode( grid, node) ) return NULL;
+
+  gridClearStoredCost( grid );
+  for ( it = adjFirst(gridFaceAdj(grid),node);
+	adjValid(it);
+	it = adjNext(it) ){
+    face = adjItem(it);
+    if ( grid != gridFace(grid,face,nodes,&faceId) ) {
+      gridClearStoredCost( grid );
+      return NULL;
+    }
+    /* orient face so that nodes[0] is node for differentiation */
+    if (node == nodes[1]) {
+      swapnode = nodes[0];
+      nodes[0] = nodes[1];
+      nodes[1] = nodes[2];
+      nodes[2] = swapnode;
+    }
+    if (node == nodes[2]) {
+      swapnode = nodes[2];
+      nodes[2] = nodes[1];
+      nodes[1] = nodes[0];
+      nodes[0] = swapnode;
+    }
+    if (grid != gridFaceMRDerivative(grid, nodes, &cost, costDerivative ) ) {
+      gridClearStoredCost( grid );
+      return NULL;
+    }
+    if (grid != gridStoreCost(grid, cost, costDerivative ) ) {
+      gridClearStoredCost( grid );
+      return NULL;
+    }
+  }
   return grid;
 }
 

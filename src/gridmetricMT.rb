@@ -508,10 +508,9 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 2,        grid.storedCostDegree
  end
 
-def testStoreFaceMRDerivative
+ def testStoreFaceMRDerivative
   assert_not_nil grid = Grid.new(5,2,2,0)
-  grid.addCell( 
-	       grid.addNode(0.0,0.0,0.0), 
+  grid.addCell(grid.addNode(0.0,0.0,0.0), 
 	       grid.addNode(1.0,0.0,0.0), 
 	       grid.addNode(0.0,1.0,0.0), 
 	       grid.addNode(0.0,0.0,1.0) )
@@ -519,6 +518,11 @@ def testStoreFaceMRDerivative
   assert_nil             grid.storeFaceCostParameterDerivatives(10)
   assert_equal grid,     grid.storeFaceCostParameterDerivatives(0)
   assert_equal 0,        grid.storedCostDegree
+  grid.addFaceUV(2,10,21,
+                 0,10,20,
+                 1,11,20, 10)
+  assert_equal grid,     grid.storeFaceCostParameterDerivatives(0)
+  assert_equal 1,        grid.storedCostDegree
  end
 
  def testRightHandedFaces
