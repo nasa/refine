@@ -19,7 +19,6 @@ headers = objC.collect do
  h if File.exist? h
 end
 ARGV[1..ARGV.size].each { |h| headers.push h if h =~/\.h/ }
-headers.push "master_header.h"
 
 `rm -rf #{ext}`
 `mkdir #{ext}`
