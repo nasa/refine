@@ -254,7 +254,7 @@ void gridtestcadparameters_( void )
 
 void gridminar_( double *aspectratio )
 {
-  *aspectratio = gridMinAR( grid );
+  *aspectratio = gridMinThawedAR( grid );
 #ifdef PARALLEL_VERBOSE 
   printf( " %6d Minimum Aspect Ratio %g\n", gridPartId(grid), *aspectratio );
   fflush(stdout);

@@ -1,3 +1,10 @@
+2005-03-21 11:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridminar_) now calls gridMinThawedAR instead
+	of gridMinAR. This will skip the cells with four frozen nodes to
+	correctly report the validity during frozen boundary layer
+	adaptation.
+
 2005-03-19 15:10 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridmetric.c (gridAR) to return -2 and -3 for negative
