@@ -1246,6 +1246,8 @@ Layer *layerAdjustNormalHeightToSmoothFront(Layer *layer, double maxHeight)
   int i,n;
   Grid *grid;
 
+  if (layerNBlend(layer) != 0 ) return NULL;  
+
   grid = layerGrid(layer);
 
   for ( normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
