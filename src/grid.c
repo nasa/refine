@@ -108,6 +108,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2);
 
   grid->ngem = 0;
+  grid->degAR = 0;
 
   grid->tecplotFileOpen = FALSE;
 
@@ -234,6 +235,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2);
 
   grid->ngem = 0;
+  grid->degAR = 0;
 
   grid->tecplotFileOpen = FALSE;
 

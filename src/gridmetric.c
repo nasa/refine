@@ -694,7 +694,7 @@ Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
 Grid *gridStoreARDerivative (Grid *grid, int node )
 {
   AdjIterator it;
-  int cell, nodes[4];
+  int icell, cell, nodes[4];
 
   if ( !gridValidNode( grid, node) ) return NULL;
 
@@ -717,6 +717,11 @@ Grid *gridStoreARDerivative (Grid *grid, int node )
   }
 
   return grid;
+}
+
+int gridStoreARDegree( Grid *grid )
+{
+  return grid->degAR;
 }
 
 Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
