@@ -1,3 +1,7 @@
+2004-07-27 17:05 Mike Park  <mike.park@nasa.gov>
+
+	* example/Makefile.am added om6p01 testcase to dist.
+	
 2004-07-26 17:36 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R =

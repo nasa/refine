@@ -185,4 +185,4 @@ else
 fi
 AC_SUBST([CAPRIProElibrary])
 
-AC_OUTPUT(Makefile src/Makefile)
+AC_OUTPUT(Makefile src/Makefile example/Makefile)
