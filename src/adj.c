@@ -11,17 +11,9 @@
 #include <stdlib.h>
 #include "adj.h"
 
-Adj* adjCreate( int nnode, int nadj, int chunkSize )
+static void adjAllocateAndInitNode2Item(Adj *adj)
 {
   int i;
-  Adj *adj;
-
-  adj = malloc( sizeof(Adj) );
-
-  adj->nnode     = MAX(nnode,1);
-  adj->nadj      = MAX(nadj,1);
-  adj->chunkSize = MAX(chunkSize,1);
-
   adj->node2item = (NodeItem *)malloc( adj->nadj * sizeof(NodeItem));
 
   for ( i=0 ; i < (adj->nadj-1) ; i++ ) {
@@ -32,12 +24,26 @@ Adj* adjCreate( int nnode, int nadj, int chunkSize )
   adj->node2item[adj->nadj-1].next = NULL;
 
   adj->blank = adj->node2item;
+}
+
+Adj* adjCreate( int nnode, int nadj, int chunkSize )
+{
+  int node;
+  Adj *adj;
+
+  adj = malloc( sizeof(Adj) );
+
+  adj->nnode     = MAX(nnode,1);
+  adj->nadj      = MAX(nadj,1);
+  adj->chunkSize = MAX(chunkSize,1);
+
+  adjAllocateAndInitNode2Item(adj);
 
   adj->current = NULL;
 
   adj->first = malloc( adj->nnode * sizeof(NodeItem*) );
 
-  for ( i=0 ; i<adj->nnode; i++ ) adj->first[i] = NULL; 
+  for ( node=0 ; node<adj->nnode; node++ ) adj->first[node] = NULL; 
 
   return adj;
 }
@@ -91,21 +97,14 @@ Adj *adjRegister( Adj *adj, int node, int item )
   NodeItem *oldnode2item;
   NodeItem *oldfirst;
   NodeItem *new;
-  int i, copynode;
+  int copynode;
 
   if (node>=adj->nnode || node<0) return NULL;
 
   if (NULL == adj->blank) {
     adj->nadj += adj->chunkSize;
     oldnode2item = adj->node2item;
-    adj->node2item = (NodeItem *)malloc( adj->nadj * sizeof(NodeItem) );
-    for ( i = 0 ; i < (adj->nadj-1) ; i++ ) {
-      adj->node2item[i].item = EMPTY;
-      adj->node2item[i].next = &adj->node2item[i+1];
-    }
-    adj->node2item[adj->nadj-1].item = EMPTY;
-    adj->node2item[adj->nadj-1].next = NULL;
-    adj->blank = adj->node2item;
+    adjAllocateAndInitNode2Item(adj);
     for ( copynode = 0 ; copynode < adj->nnode ; copynode++ ) {
       oldfirst = adj->first[copynode];
       adj->first[copynode] = NULL;
