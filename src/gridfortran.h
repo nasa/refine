@@ -15,10 +15,7 @@
 
 BEGIN_C_DECLORATION
 
-int gridcreate_( int *maxnode, int *maxcell, int *maxface, int *maxedge );
-int gridcreate__( int *maxnode, int *maxcell, int *maxface, int *maxedge );
-int gridcreate( int *maxnode, int *maxcell, int *maxface, int *maxedge );
-int GRIDCREATE( int *maxnode, int *maxcell, int *maxface, int *maxedge );
+int gridcreate_( int *nnode, double *x, double *y, double *z );
 
 END_C_DECLORATION
 
