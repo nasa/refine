@@ -176,35 +176,7 @@ Grid *gridRobustProjectNode(Grid *grid, int node)
 	if (!gridGeometryFace( grid, nodes[i])) 
 	  gridSmoothNode( grid, nodes[i]);
     }      
-    for ( it = adjFirst(grid->cellAdj,node); 
-	  adjValid(it); 
-	  it = adjNext(it) ){
-      gridCell( grid, adjItem(it), nodes);
-      if ( NULL != gridSwapEdge( grid, nodes[0], nodes[1] ) ){
-	it = adjFirst(grid->cellAdj,node);
-	gridCell( grid, adjItem(it), nodes);
-      }
-      if ( NULL != gridSwapEdge( grid, nodes[0], nodes[2] ) ){
-	it = adjFirst(grid->cellAdj,node);
-	gridCell( grid, adjItem(it), nodes);
-      }
-      if ( NULL != gridSwapEdge( grid, nodes[0], nodes[3] ) ){
-	it = adjFirst(grid->cellAdj,node);
-	gridCell( grid, adjItem(it), nodes);
-	  }
-      if ( NULL != gridSwapEdge( grid, nodes[1], nodes[2] ) ){
-	it = adjFirst(grid->cellAdj,node);
-	gridCell( grid, adjItem(it), nodes);
-      }
-      if ( NULL != gridSwapEdge( grid, nodes[1], nodes[3] ) ){
-	    it = adjFirst(grid->cellAdj,node);
-	    gridCell( grid, adjItem(it), nodes);
-      }
-      if ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ){
-	it = adjFirst(grid->cellAdj,node);
-	gridCell( grid, adjItem(it), nodes);
-      }
-    }
+    gridSwapNearNode( grid, node);
     for ( it = adjFirst(grid->cellAdj,node); 
 	  adjValid(it); 
 	  it = adjNext(it) ){
