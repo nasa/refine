@@ -1,7 +1,7 @@
 # -*- Autoconf -*-
 
 AC_PREREQ(2.53)
-AC_INIT([../src/grid.c])
+AC_INIT([src/grid.c])
 AM_INIT_AUTOMAKE([refine],[0.6])
 
 AC_ARG_WITH(SDK,
