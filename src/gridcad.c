@@ -301,23 +301,25 @@ Grid *gridSmoothNode(Grid *grid, int node )
     return gridOptimizeT( grid, node, dARdt );
   }
   if ( gridGeometryFace( grid, node ) ) {
-    face = adjItem(adjFirst(grid->faceAdj, node));
-    faceId = grid->faceId[face];
-    gridNodeARDerivative ( grid, node, &ar, dARdx);
-    gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
-    gridNodeUV( grid, node, faceId, uv);
-    if ( !CADGeom_PointOnFace( vol, faceId,   
-			       uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
-      printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
-
-    if (ar<mr) {
-      dARdu[0] = dARdx[0]*du[0] + dARdx[1]*du[1] + dARdx[2]*du[2] ; 
-      dARdu[1] = dARdx[0]*dv[0] + dARdx[1]*dv[1] + dARdx[2]*dv[2] ; 
-    }else{
-      dARdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
-      dARdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
+    for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
+      face = adjItem(adjFirst(grid->faceAdj, node));
+      faceId = grid->faceId[face];
+      gridNodeARDerivative ( grid, node, &ar, dARdx);
+      gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
+      gridNodeUV( grid, node, faceId, uv);
+      if ( !CADGeom_PointOnFace( vol, faceId,   
+				 uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
+	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+      
+      if (ar<mr) {
+	dARdu[0] = dARdx[0]*du[0] + dARdx[1]*du[1] + dARdx[2]*du[2] ; 
+	dARdu[1] = dARdx[0]*dv[0] + dARdx[1]*dv[1] + dARdx[2]*dv[2] ; 
+      }else{
+	dARdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
+	dARdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
+      }
+      if (grid != gridOptimizeUV( grid, node, dARdu ) ) return NULL;
     }
-    return gridOptimizeUV( grid, node, dARdu );
   }
   if (FALSE) {
     gridNodeARDerivative ( grid, node, &ar, dARdx);
@@ -591,14 +593,12 @@ Grid *gridSmooth( Grid *grid )
 {
   int node;
   double ar, optimizationLimit, laplacianLimit;
-  optimizationLimit =0.30;
-  laplacianLimit =0.60;
+  optimizationLimit =0.50;
+  laplacianLimit =0.80;
   for (node=0;node<grid->maxnode;node++) {
     if ( gridValidNode( grid, node ) && !gridNodeFrozen( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
       if (ar < optimizationLimit) {
-	gridSmoothNode( grid, node );
-	gridSmoothNode( grid, node );
 	gridSmoothNode( grid, node );
       }else{
 	if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
@@ -691,7 +691,9 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
   int i, minCell;
   double minAR, newAR, searchDirection[3], length, projection;
   double deltaAR, currentAlpha, alpha;
+  double predictedImprovement, actualImprovement, lastImprovement;
   double origXYZ[3], xyz[3];
+  bool goodStep;
 
   if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;
   if ( grid != gridStoreARDerivative(grid, node ) ) return NULL;
@@ -710,6 +712,7 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
     = searchDirection[0]*searchDirection[0]
     + searchDirection[1]*searchDirection[1]
     + searchDirection[2]*searchDirection[2];
+  length = sqrt(length);
   for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
 
   alpha = 1.0;
@@ -723,17 +726,41 @@ Grid *gridSmoothNodeQP(Grid *grid, int node )
       if (ABS(length-projection) < 1e-12){
 	currentAlpha=0.0; /* no intersection */
       }else{
-	currentAlpha = deltaAR / ( length / projection);
+	currentAlpha = deltaAR / ( length + projection);
       }
       if (currentAlpha > 0 && currentAlpha < alpha ) alpha = currentAlpha;
     }
   }
 
-  for (i=0;i<3;i++) xyz[i] = origXYZ[i] + alpha*searchDirection[i];
-  gridSetNodeXYZ(grid,node,xyz);
-  gridNodeAR(grid,node,&newAR);
+  //printf( "node %5d deg %3d active %3d old %12.9f\n",
+  //	  node, gridStoreARDegree(grid), minCell, minAR );
   
-  if ( newAR < minAR ){
+  goodStep = FALSE;
+  lastImprovement = -10.0;
+  while (alpha > 10.e-13 && !goodStep) {
+
+    predictedImprovement = length*alpha;
+  
+    for (i=0;i<3;i++) xyz[i] = origXYZ[i] + alpha*searchDirection[i];
+    gridSetNodeXYZ(grid,node,xyz);
+    gridNodeAR(grid,node,&newAR);
+    actualImprovement = newAR-minAR;
+    //printf(" alpha %12.5e predicted %12.9f actual %12.9f new %12.9f\n",
+    //	   alpha, predictedImprovement, actualImprovement, newAR);
+    if ( actualImprovement > 0.9*predictedImprovement || 
+	 ( actualImprovement > 0.0 && actualImprovement < lastImprovement) ){
+      goodStep = TRUE;
+    }else{
+      lastImprovement = actualImprovement;
+      alpha =alpha*0.5;
+    }
+
+  }
+
+  //printf( "node %5d deg %3d active %3d old %8.5f new %8.5f\n",
+  //  node, gridStoreARDegree(grid), minCell, minAR, newAR );
+
+  if ( actualImprovement <= 0.0  ){
     gridSetNodeXYZ(grid,node,origXYZ);
     return NULL;
   }
