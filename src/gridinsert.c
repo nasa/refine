@@ -113,20 +113,30 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
   return grid;
 }
 
-int gridSplitEdge(Grid *grid, int n0, int n1 )
+int gridSplitEdge(Grid *grid, int n0, int n1)
+{
+  double newX, newY, newZ;
+
+  newX = ( grid->xyz[0+3*n0] + grid->xyz[0+3*n1] ) * 0.5;
+  newY = ( grid->xyz[1+3*n0] + grid->xyz[1+3*n1] ) * 0.5;
+  newZ = ( grid->xyz[2+3*n0] + grid->xyz[2+3*n1] ) * 0.5;
+  
+  return gridSplitEdgeAt(grid, n0, n1,
+			 newX, newY, newZ );
+
+}
+
+int gridSplitEdgeAt(Grid *grid, int n0, int n1,
+		    double newX, double newY, double newZ )
 {
   int i, igem, cell, nodes[4], inode, node;
   int newnode, newnodes0[4], newnodes1[4];
-  double newX, newY, newZ;
   int gap0, gap1, face0, face1, faceId0, faceId1;
   int edge, edgeId;
   double t0,t1, newT;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
 
-  newX = ( grid->xyz[0+3*n0] + grid->xyz[0+3*n1] ) * 0.5;
-  newY = ( grid->xyz[1+3*n0] + grid->xyz[1+3*n1] ) * 0.5;
-  newZ = ( grid->xyz[2+3*n0] + grid->xyz[2+3*n1] ) * 0.5;
   newnode = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
   for (i=0;i<6;i++) grid->map[i+6*newnode] = 
@@ -205,7 +215,12 @@ int gridSplitEdge(Grid *grid, int n0, int n1 )
     }
   }
 
-  return newnode;
+  if ( gridNegCellAroundNode(grid, node) ) {
+    gridCollapseEdge(grid, n0, newnode, 0.0 );
+    return EMPTY;
+  }else{
+    return newnode;
+  }
 }
 
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
