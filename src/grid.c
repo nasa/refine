@@ -71,6 +71,17 @@ long gridNodeDeg(Grid *grid, long id)
   return n;
 }
 
+int gridCellExists(Grid *grid, long nodeId, long cellId)
+{
+  int exist;
+  exist = (0==1);
+  for ( gridFirstNodeCell(grid,nodeId); 
+	!exist && gridMoreNodeCell(grid); 
+	gridNextNodeCell(grid)) 
+    exist = (cellId == gridCurrentNodeCell(grid));
+  return exist;
+}
+
 Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
 {
   long entry, terminator, nextOpen;

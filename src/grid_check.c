@@ -93,20 +93,31 @@ END_TEST
 
 START_TEST(testUnderAlloc)
 {
-  Grid *grid;
+  Grid *localGrid;
 
-  grid = gridCreate(1,1,1);
-  fail_unless ( gridRegisterNodeCell(grid,0,0) == NULL, 
+  localGrid = gridCreate(1,1,1);
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, 
 		"ran out of memory - one elem");
-  gridFree(grid);
-  grid = gridCreate(1,1,2);
-  fail_unless ( gridRegisterNodeCell(grid,0,0) == NULL, 
+  gridFree(localGrid);
+  localGrid = gridCreate(1,1,2);
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, 
 		"ran out of memory - two elem");
-  gridFree(grid);
-  grid = gridCreate(1,1,3);
-  fail_unless ( gridRegisterNodeCell(grid,0,0) == NULL, 
+  gridFree(localGrid);
+  localGrid = gridCreate(1,1,3);
+  fail_unless ( gridRegisterNodeCell(localGrid,0,0) == NULL, 
 		"ran out of memory - three elem");
-  gridFree(grid);
+  gridFree(localGrid);
+}
+END_TEST
+
+START_TEST(testMultipleCellExists)
+{
+  fail_unless ( !gridCellExists(grid,1,198), "found non-existing cell 198" );
+  gridRegisterNodeCell(grid,1,198);
+  //  gridRegisterNodeCell(grid,1,199);
+  fail_unless ( gridCellExists(grid,1,198), "can't find cell 198" );
+  //  fail_unless ( gridCellExists(grid,1,199), "can't find cell 199" );
+
 }
 END_TEST
 
@@ -132,6 +143,7 @@ Suite *grid_suite (void)
   tcase_add_test (tNeighbors, testNodeDeg); 
   tcase_add_test (tNeighbors, testCellIterator); 
   tcase_add_test (tNeighbors, testAddedAndRemoveCell); 
+  tcase_add_test (tNeighbors, testMultipleCellExists); 
 
   suite_add_tcase (s, tMemory);
   tcase_add_test (tMemory, testUnderAlloc); 
