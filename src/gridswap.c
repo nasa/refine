@@ -193,41 +193,57 @@ Grid *gridSwapEdge7(Grid *grid, Queue *queue, int n0, int n1 );
 
 Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
 {
-  int gap0, gap1, face0, face1, faceId0, faceId1, newFaceId0, newFaceId1;
+  int gap0, gap1;
+  int oldFace0, oldFace1, oldFaceId0, oldFaceId1;
+  int newFace0, newFace1, newFaceId0, newFaceId1;
+  double n0uv[2], n1uv[2], gap0uv[2], gap1uv[2]; 
   double origMR, newMR;
   Grid *swapStatus;
 
   if ( gridNodeFrozen( grid, n0 ) && gridNodeFrozen( grid, n1 ) )return NULL;  
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
-  //test face
-  gap0 = gap1 = EMPTY;
-  face0 = face1 = EMPTY;
-  faceId0 = EMPTY;
+  oldFace0 = oldFace1 = EMPTY;
+  newFace0 = newFace1 = EMPTY;
   if ( !gridContinuousEquator(grid) ){
     gap0 = gridEqu(grid,0);
     gap1 = gridEqu(grid,gridNGem(grid));
-    face0 = gridFindFace(grid, n0, n1, gap0 );
-    face1 = gridFindFace(grid, n0, n1, gap1 );
-    faceId0 = gridFaceId(grid, n0, n1, gap0 );
-    faceId1 = gridFaceId(grid, n0, n1, gap1 );
+    oldFace0 = gridFindFace(grid, n0, n1, gap0 );
+    oldFace1 = gridFindFace(grid, n0, n1, gap1 );
+    oldFaceId0 = gridFaceId(grid, n0, n1, gap0 );
+    oldFaceId1 = gridFaceId(grid, n0, n1, gap1 );
     
-    if ( faceId0 == EMPTY || faceId1 == EMPTY ) return NULL;
-    if ( faceId0 != faceId1 ) return NULL;
+    if ( oldFaceId0 == EMPTY || oldFaceId1 == EMPTY ) return NULL;
+    if ( oldFaceId0 != oldFaceId1 ) return NULL;
 
     newFaceId0 = gridFaceId(grid, n0, gap0, gap1 );
     newFaceId1 = gridFaceId(grid, n1, gap0, gap1 );
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
 
-    if (gridCOST_FCN_EDGE_LENGTH != gridCostFunction(grid)) {
-      // make sure that face MR can improve
-      origMR = MIN( gridFaceMR(grid, n0, n1, gap0 ), 
-		    gridFaceMR(grid, n0, n1, gap1 ) );
-      newMR  = MIN( gridFaceMR(grid, n0, gap0, gap1 ),
-		    gridFaceMR(grid, n1, gap0, gap1 ) );
-      if ( origMR > newMR ) return NULL;
-    }
-  }
+    /* make sure that face MR improves */
+    origMR = MIN( gridFaceMR(grid, n0, n1, gap0 ), 
+		  gridFaceMR(grid, n0, n1, gap1 ) );
+    newMR  = MIN( gridFaceMR(grid, n0, gap0, gap1 ),
+		  gridFaceMR(grid, n1, gap0, gap1 ) );
+    if ( origMR > newMR ) return NULL;
+ 
+    /* add new faces in to test validity, will be removed for a no swap */
+    gridNodeUV(grid, n0,   oldFaceId0, n0uv);
+    gridNodeUV(grid, n1,   oldFaceId0, n1uv);
+    gridNodeUV(grid, gap0, oldFaceId0, gap0uv);
+    gridNodeUV(grid, gap1, oldFaceId0, gap1uv);
+
+    newFace0 = gridAddFaceUVAndQueue(grid, queue, 
+				     n0,   n0uv[0],   n0uv[1], 
+				     gap1, gap1uv[0], gap1uv[1], 
+				     gap0, gap0uv[0], gap0uv[1], 
+				     oldFaceId0 );
+    newFace1 = gridAddFaceUVAndQueue(grid, queue, 
+				     n1,   n1uv[0],   n1uv[1], 
+				     gap0, gap0uv[0], gap0uv[1], 
+				     gap1, gap1uv[0], gap1uv[1], 
+				     oldFaceId0 );
+   }
 
   switch (gridNEqu(grid)) {
   case 3: 
@@ -244,27 +260,13 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
     swapStatus = NULL; break;
   }
 
-  if ( !gridContinuousEquator(grid) && swapStatus != NULL ) {
-    double n0uv[2], n1uv[2], gap0uv[2], gap1uv[2]; 
-
-    gridNodeUV(grid, n0,   faceId0, n0uv);
-    gridNodeUV(grid, n1,   faceId0, n1uv);
-    gridNodeUV(grid, gap0, faceId0, gap0uv);
-    gridNodeUV(grid, gap1, faceId0, gap1uv);
-
-    gridRemoveFaceAndQueue(grid, queue, face0 );
-    gridRemoveFaceAndQueue(grid, queue, face1 );
-
-    gridAddFaceUVAndQueue(grid, queue, 
-			  n0,   n0uv[0],   n0uv[1], 
-			  gap1, gap1uv[0], gap1uv[1], 
-			  gap0, gap0uv[0], gap0uv[1], 
-			  faceId0 );
-    gridAddFaceUVAndQueue(grid, queue, 
-			  n1,   n1uv[0],   n1uv[1], 
-			  gap0, gap0uv[0], gap0uv[1], 
-			  gap1, gap1uv[0], gap1uv[1], 
-			  faceId0 );
+  /* remove the set of faces that are no longer needed, remove checks EMPTY */
+  if ( swapStatus == NULL ) {
+    if (EMPTY!=newFace0) gridRemoveFaceAndQueue(grid, queue, newFace0 );
+    if (EMPTY!=newFace1) gridRemoveFaceAndQueue(grid, queue, newFace1 );
+  } else {
+    if (EMPTY!=oldFace0) gridRemoveFaceAndQueue(grid, queue, oldFace0 );
+    if (EMPTY!=oldFace1) gridRemoveFaceAndQueue(grid, queue, oldFace1 );
   }
 
   return swapStatus;

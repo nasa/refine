@@ -5,6 +5,8 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 --Major refactoring
 
+** fix removed two face cell to test grid ar before removing
+
 Parameter values: verify at start and then always evaluate to avoid
 projections.
 
