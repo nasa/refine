@@ -498,4 +498,24 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 1.05, grid.nodeT(1,1)
  end
 
+ def testInsertNodeInToGeomFaceNewPoint
+  assert_not_nil grid = Grid.new(5,3,4,0)
+  assert_equal 0, grid.addNode(0,0,0)
+  assert_equal 1, grid.addNode(1,0,0)
+  assert_equal 2, grid.addNode(0,1,0)
+  assert_equal 3, grid.addNode(1,1,0)
+  assert_equal 4, grid.addNode(0.5,0.5,1)
+  assert_equal grid, grid.addCell(0,1,2,4)
+  assert_equal grid, grid.addFace(0,1,2,1)
+  assert_equal grid, grid.addFace(0,3,2,1)
+  assert_equal( -1, grid.insertInToGeomFace(5,0,0) )
+  assert_equal( -1, grid.insertInToGeomFace(0.3,0.3,0.1) )
+  assert_equal 5, grid.nnode
+  assert_equal 5, grid.insertInToGeomEdge(0.3,0.3,0.00001)
+  assert_equal 6, grid.nnode
+  assert_equal 4, grid.nface
+  assert_equal 4, grid.ncell
+  assert_equal [0.3,0.3,0], grid.nodeXYZ(5)
+ end
+
 end
