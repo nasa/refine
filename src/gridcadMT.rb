@@ -382,7 +382,7 @@ class TestGridCAD < Test::Unit::TestCase
  end
 
  def testSmartLaplacianVolumeImprovement4
-  grid = isoTet4 -1.0
+  grid = isoTet4( -1.0)
   assert_equal grid, grid.smartVolumeLaplacian(4)
   avgVol = grid.totalVolume/grid.ncell.to_f
   assert_in_delta avgVol, grid.minVolume, 1.0e-8 
@@ -500,7 +500,7 @@ class TestGridCAD < Test::Unit::TestCase
   grid.addFace(2,0,3,faceId)
   4.times { |node| grid.projectNodeToFace(node,faceId) }
   grid.addCell(0,1,2,3) # needed for gridAverageEdgeLength in Simplex
-  grid # note ruby retruns result of last line if return is missing
+  grid # note ruby returns result of last line if return is missing
  end
 
  def testComputeMinFaceAreaInParameterSpaceForNode
@@ -512,6 +512,14 @@ class TestGridCAD < Test::Unit::TestCase
 
  def testSmoothFaceAreaInParameterSpaceForNode
   grid = threeSurfaceTriangles
+  tol = 1.0e-7
+  optimalArea = 0.5/3.0
+  assert grid, grid.smoothNodeFaceAreaUV(3)
+  assert_in_delta optimalArea, grid.minFaceAreaUV(3), tol
+ end
+
+ def testSmoothFaceAreaInParameterSpaceForNodeWith2BadFaces
+  grid = threeSurfaceTriangles(-0.9,-1.1)
   tol = 1.0e-7
   optimalArea = 0.5/3.0
   assert grid, grid.smoothNodeFaceAreaUV(3)
