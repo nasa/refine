@@ -45,10 +45,13 @@ int main( int argc, char *argv[] )
   while( i < argc ) {
     if( strcmp(argv[i],"-p") == 0 ) {
       i++; sprintf( project, "%s", argv[i] );
+      printf("-p argument %d: %s\n",i, project);
     } else if( strcmp(argv[i],"-o") == 0 ) {
       i++; sprintf( outputProject, "%s", argv[i] );
+      printf("-o argument %d: %s\n",i, outputProject);
     } else if( strcmp(argv[i],"-a") == 0 ) {
       i++; sprintf( adaptfile,"%s",argv[i]  );
+      printf("-a argument %d: %s\n",i, adaptfile);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
@@ -76,7 +79,6 @@ int main( int argc, char *argv[] )
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-  sprintf(adaptfile, "%s_adapt_hess",project);
   printf("reading adapt parameter from file %s ...\n",adaptfile);
   gridImportAdapt(grid, adaptfile); // Do not sort nodes before this call.
   STATUS;
