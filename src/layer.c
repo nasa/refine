@@ -1648,11 +1648,6 @@ Layer *layerAdvance(Layer *layer)
     for (blend=0;blend<layerNBlend(layer);blend++){
       layerBlendNormals(layer, blend, blendnormals );
       
-      triangle0 = layerForceTriangle(layer,blendnormals[0],
-				     blendnormals[1],blendnormals[2]);
-      triangle1 = layerForceTriangle(layer,blendnormals[1],
-				     blendnormals[3],blendnormals[2]);
-
       faceId = layerConstrained(layer,blendnormals[0]);
       if (faceId>0){
 	n[0] = layerNormalRoot(layer,blendnormals[0]);
@@ -1673,6 +1668,33 @@ Layer *layerAdvance(Layer *layer)
 	layer->triangle[triangle1].parentGeomEdge[1] =
 	  layer->blend[blend].edgeId[1];
       }
+
+      if ( layerNormalRoot(layer,blendnormals[0]) > 
+	   layerNormalRoot(layer,blendnormals[2]) ) {
+	normal = blendnormals[0];
+	blendnormals[0] = blendnormals[3];
+	blendnormals[3] = normal;
+	normal = blendnormals[1];
+	blendnormals[1] = blendnormals[2];
+	blendnormals[2] = normal;
+      }
+
+      n[0] = layerNormalRoot(layer,blendnormals[0]);
+      n[1] = layer->normal[blendnormals[0]].tip;
+      n[2] = layer->normal[blendnormals[1]].tip;
+      n[3] = layerNormalRoot(layer,blendnormals[2]);
+      n[4] = layer->normal[blendnormals[2]].tip;
+      n[5] = layer->normal[blendnormals[3]].tip;
+
+      layer->cellInLayer[gridAddCell(grid, n[0], n[4], n[5], n[3])]=TRUE;
+      layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[4], n[5])]=TRUE;
+      layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[1], n[4])]=TRUE;
+
+      triangle0 = layerForceTriangle(layer,blendnormals[0],
+				     blendnormals[1],blendnormals[2]);
+      triangle1 = layerForceTriangle(layer,blendnormals[1],
+				     blendnormals[3],blendnormals[2]);
+
     }
     layerBuildNormalTriangleAdjacency(layer);
     layer->nblend=0;
