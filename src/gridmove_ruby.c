@@ -132,6 +132,23 @@ static VALUE gridmove_nnz(VALUE self)
   return INT2NUM(gridmoveNNZ(gm));
 }
 
+VALUE gridmove_rowEntries( VALUE self, VALUE rb_row )
+{
+  int row, length, start, end;
+  int entry;
+  VALUE rb_entries;
+  GET_GM_FROM_SELF;
+  row = NUM2INT(rb_row);
+  start = gridmoveRowStart(gm,row);
+  end = gridmoveRowStart(gm,row+1);
+  if ( EMPTY == start || EMPTY == end ) return Qnil;
+  length = end - start;  
+  rb_entries = rb_ary_new2(length);
+  for (entry = 0 ; entry < length ; entry++)
+    rb_ary_store( rb_entries, entry, INT2NUM(gridmoveRowEntry(gm,start+entry)));
+  return rb_entries;
+}
+
 VALUE cGridMove;
 
 void Init_GridMove() 
@@ -149,4 +166,5 @@ void Init_GridMove()
   
   rb_define_method( cGridMove, "rowStart", gridmove_rowStart, 1 );
   rb_define_method( cGridMove, "nnz", gridmove_nnz, 0 );
+  rb_define_method( cGridMove, "rowEntries", gridmove_rowEntries, 1 );
 }

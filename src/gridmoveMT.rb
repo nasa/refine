@@ -207,7 +207,7 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal [0,0,1], gm.cellFaceNormal(xyz,[2,3,0,1],3)
  end
 
- def testCompRow
+ def testCompRowOneCell
   grid = Grid.new(5,2,0,0)
   gm = GridMove.new(grid)
   5.times { grid.addNode(0.0,0.0,0.0) }
@@ -221,6 +221,37 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal 16,    gm.rowStart(5)
   assert_equal EMPTY, gm.rowStart(6)
   assert_equal 16, gm.nnz
+  assert_nil              gm.rowEntries(EMPTY)
+  assert_equal [0,1,2,3], gm.rowEntries(0)
+  assert_equal [0,1,2,3], gm.rowEntries(1)
+  assert_equal [0,1,2,3], gm.rowEntries(2)
+  assert_equal [0,1,2,3], gm.rowEntries(3)
+  assert_equal [],        gm.rowEntries(4)
+ end
+
+ def testCompRowTwoCells
+  grid = Grid.new(6,2,0,0)
+  gm = GridMove.new(grid)
+  6.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  grid.addCell(1,0,2,4)
+  assert_equal EMPTY, gm.rowStart(EMPTY)
+  assert_equal  0,    gm.rowStart(0)
+  assert_equal  5,    gm.rowStart(1)
+  assert_equal 10,    gm.rowStart(2)
+  assert_equal 15,    gm.rowStart(3)
+  assert_equal 19,    gm.rowStart(4)
+  assert_equal 23,    gm.rowStart(5)
+  assert_equal 23,    gm.rowStart(6)
+  assert_equal EMPTY, gm.rowStart(7)
+  assert_equal 23, gm.nnz
+  assert_nil              gm.rowEntries(EMPTY)
+  assert_equal [0,1,2,3,4], gm.rowEntries(0)
+  assert_equal [0,1,2,3,4], gm.rowEntries(1)
+  assert_equal [0,1,2,3,4], gm.rowEntries(2)
+  assert_equal [0,1,2,3], gm.rowEntries(3)
+  assert_equal [0,1,2,4], gm.rowEntries(4)
+  assert_equal [],        gm.rowEntries(5)
  end
 
 end

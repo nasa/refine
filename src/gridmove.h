@@ -81,6 +81,7 @@ GridMove *gridmoveSetFortranNodeData(GridMove *, int nnode,
 GridMove *gridmoveInitializeCompRow(GridMove *);
 int gridmoveRowStart(GridMove *, int row);
 int gridmoveNNZ(GridMove *);
+int gridmoveRowEntry(GridMove *, int entry);
 
 END_C_DECLORATION
 

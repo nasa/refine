@@ -575,6 +575,7 @@ GridMove *gridmoveInitializeCompRow(GridMove *gm)
   int node, nnode;
   int node0, node1;
   int spring, nsprings, *springs;
+  int fix, lowEntry, lowNode, findLower;
   gridmoveSprings(gm, &nsprings, &springs);
   nnode = gridMaxNode(gridmoveGrid(gm));
   gm->rowStart = malloc( (1+nnode) *sizeof(int));
@@ -611,6 +612,28 @@ GridMove *gridmoveInitializeCompRow(GridMove *gm)
     gm->compRow[gm->rowStart[node0]] = node1;
   }
 
+  for ( node = 0 ; node < nnode ; node++ ) {
+  
+    for ( fix = gridmoveRowStart(gm, node) ;
+	  fix < gridmoveRowStart(gm, node+1) ;
+	  fix++ ) {
+      lowEntry = fix;
+      lowNode = gridmoveRowEntry(gm, lowEntry);
+      for ( findLower = fix+1 ;
+	    findLower < gridmoveRowStart(gm, node+1) ;
+	    findLower++ ) {
+	if (gridmoveRowEntry(gm, findLower) < lowNode) {
+	  lowEntry = findLower;
+	  lowNode = gridmoveRowEntry(gm, lowEntry);
+	}
+      }
+      if (fix != lowEntry) {
+	gm->compRow[lowEntry] = gm->compRow[fix];
+	gm->compRow[fix] = lowNode;
+      }
+    }
+  }
+
   free(springs);
 }
 
@@ -623,5 +646,14 @@ int gridmoveRowStart(GridMove *gm, int row)
 
 int gridmoveNNZ(GridMove * gm)
 {
-  return 16;
+  if (NULL == gm->rowStart) gridmoveInitializeCompRow(gm);
+  return gm->rowStart[gridMaxNode(gridmoveGrid(gm))];
 }
+
+int gridmoveRowEntry(GridMove *gm, int entry)
+{
+  if (entry<0 || entry>=gridmoveNNZ(gm) ) return EMPTY;
+  if (NULL == gm->rowStart) gridmoveInitializeCompRow(gm);
+  return gm->compRow[entry];
+}
+
