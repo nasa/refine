@@ -1549,6 +1549,15 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 1, @grid.costFunction
  end
 
+ def testCostConstraintSetting
+  assert_equal 1, @grid.costConstraint
+  assert_equal @grid, @grid.setCostConstraint(2)
+  assert_equal 2, @grid.costConstraint
+  assert_nil @grid.setCostConstraint(-1)
+  assert_nil @grid.setCostConstraint(24634)
+  assert_equal 2, @grid.costConstraint
+ end
+
  # make register unique
 
 end

@@ -119,6 +119,7 @@ struct Grid {
   FILE *tecplotScalarFile;
 
   int costFunction;
+  int costConstraint;
 
   void (*packFunc)(void *packData, 
 		   int nnode, int maxnode, int *nodeo2n,
@@ -437,6 +438,11 @@ Grid *gridSetCostFunction(Grid *g, int costFunction);
 #define gridCOST_FCN_MEAN_RATIO   (0)
 #define gridCOST_FCN_ASPECT_RATIO (1)
 #define gridCOST_FCN_EDGE_LENGTH  (2)
+
+#define gridCostConstraint(grid) (grid->costConstraint)
+Grid *gridSetCostConstraint(Grid *g, int costConstraint);
+#define gridCOST_CNST_VOLUME (0x01)
+#define gridCOST_CNST_VALID  (0x02)
 
 int gridStoredARDegree( Grid *g );
 Grid *gridClearStoredAR( Grid *g );

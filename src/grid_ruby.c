@@ -1113,6 +1113,18 @@ VALUE grid_setCostFunction( VALUE self, VALUE costFunction )
   return ( grid == gridSetCostFunction(grid,NUM2INT(costFunction))?self:Qnil );
 }
 
+VALUE grid_costConstraint( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridCostConstraint(grid) );
+}
+
+VALUE grid_setCostConstraint( VALUE self, VALUE costConstraint )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridSetCostConstraint(grid,NUM2INT(costConstraint))?self:Qnil );
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -1275,4 +1287,6 @@ void Init_Grid()
 
   rb_define_method( cGrid, "costFunction", grid_costFunction, 0 );
   rb_define_method( cGrid, "setCostFunction", grid_setCostFunction, 1 );
+  rb_define_method( cGrid, "costConstraint", grid_costConstraint, 0 );
+  rb_define_method( cGrid, "setCostConstraint", grid_setCostConstraint, 1 );
 }
