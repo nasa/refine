@@ -31,6 +31,7 @@ int layerNNormal(Layer *);
 int layerMaxNode(Layer *);
 Layer *layerPopulateAdvancingFront(Layer *, int nbc, int *bc);
 Layer *layerBuildNormalTriangleAdjacency(Layer *);
+Layer *layerInitializeTriangleNormalDirection(Layer *);
 Layer *layerAddParentGeomFace(Layer *, int faceId);
 bool layerParentGeomFace(Layer *, int faceId);
 Layer *layerAddTriangle(Layer *, int n0, int n1, int n2);

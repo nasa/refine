@@ -208,12 +208,7 @@ int layerMaxNode(Layer *layer)
 
 Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
 {
-  int i, ibc, face, id, nodes[3];
-  int triangle;
-  int globalNodeId;
-  int normal;
-  double direction[3], *norm;
-  double length;
+  int ibc, face, id, nodes[3];
   Grid *grid;
 
   grid = layerGrid(layer);
@@ -221,7 +216,7 @@ Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
   for(ibc=0;ibc<nbc;ibc++) layerAddParentGeomFace(layer,bc[ibc]);
 
   for (ibc=0;ibc<nbc;ibc++){
-    for(face=0;face<gridMaxFace(layer->grid);face++){
+    for(face=0;face<gridMaxFace(grid);face++){
       if (grid == gridFace(grid,face,nodes,&id) &&
 	  id==bc[ibc] ) {
 	layerAddTriangle(layer,nodes[0],nodes[1],nodes[2]);
@@ -232,12 +227,33 @@ Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
 
   layerBuildNormalTriangleAdjacency(layer);
 
+  layerInitializeTriangleNormalDirection(layer);
+
+  return layer;
+
+}
+
+Layer *layerInitializeTriangleNormalDirection(Layer *layer)
+{
+  int triangle, normal, i;
+  double direction[3], *normalDirection;
+  double length;
+
+  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
+    for(i=0;i<3;i++){
+      normal = layer->triangle[triangle].normal[i];
+      layer->normal[normal].direction[0]=0.0;
+      layer->normal[normal].direction[1]=0.0;
+      layer->normal[normal].direction[2]=0.0;
+    }
+  }
+
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     for(i=0;i<3;i++){
       normal = layer->triangle[triangle].normal[i];
       if (layer != layerTriangleDirection(layer,triangle,direction))
-	printf("Error: layerPopulateAdvancingFront: %s: %d: %s\n",
-	       __FILE__,__LINE__,"triangle direction");
+	printf("Error: layerInitializeTriangleNormalDirection: %s: %d: %s\n",
+	       __FILE__,__LINE__,"NULL layerTriangleDirection");
       layer->normal[normal].direction[0] += direction[0];
       layer->normal[normal].direction[1] += direction[1];
       layer->normal[normal].direction[2] += direction[2];
@@ -245,12 +261,12 @@ Layer *layerPopulateAdvancingFront(Layer *layer, int nbc, int *bc)
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    norm = layer->normal[normal].direction;
-    length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
+    normalDirection = layer->normal[normal].direction;
+    length = sqrt( gridDotProduct(normalDirection,normalDirection) );
     if (length > 0.0) {
-      for ( i=0;i<3;i++) norm[i] = norm[i]/length;
+      for ( i=0;i<3;i++) normalDirection[i] = normalDirection[i]/length;
     }else{
-      for ( i=0;i<3;i++) norm[i] = 0.0;
+      for ( i=0;i<3;i++) normalDirection[i] = 0.0;
     }
   }
   
@@ -1901,42 +1917,9 @@ Layer *layerSplitBlend(Layer *layer)
   double length;
   Grid *grid;
 
-  int triangle;
-  double direction[3],*norm;
+  layerInitializeTriangleNormalDirection(layer);
 
-  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    for(i=0;i<3;i++){
-      normal = layer->triangle[triangle].normal[i];
-      layer->normal[normal].direction[0]=0.0;
-      layer->normal[normal].direction[1]=0.0;
-      layer->normal[normal].direction[2]=0.0;
-    }
-  }
-
-  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    for(i=0;i<3;i++){
-      normal = layer->triangle[triangle].normal[i];
-      if (layer != layerTriangleDirection(layer,triangle,direction))
-	printf("Error: layerSplitBlend: %s: %d: %s\n",
-	       __FILE__,__LINE__,"triangle direction");
-      layer->normal[normal].direction[0] += direction[0];
-      layer->normal[normal].direction[1] += direction[1];
-      layer->normal[normal].direction[2] += direction[2];
-    }
-  }
-
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    norm = layer->normal[normal].direction;
-    length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
-    if (length > 0.0) {
-      for ( i=0;i<3;i++) norm[i] = norm[i]/length;
-    }else{
-      printf("zero length normal\n");
-      for ( i=0;i<3;i++) norm[i] = 0.0;
-    }
-  }
-
-  layerVisibleNormals(layer, 0.99, 1.0e-15 );
+  layerVisibleNormals(layer, 0.999, 1.0e-15 );
 
   origblend = layerNBlend(layer);
 
