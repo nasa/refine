@@ -420,3 +420,39 @@ Grid *gridSmooth( Grid *grid )
   return grid;
 }
 
+Grid *gridSmartLaplacian(Grid *grid, int node )
+{
+  double origAR, newAR, origXYZ[3], xyz[3], oneOverNCell;
+  AdjIterator it;
+  int cell, ncell, inode, ixyz, n;
+  
+  gridNodeAR(grid, node, &origAR);
+  gridNodeXYZ(grid, node, origXYZ);
+
+  xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
+  ncell =0;
+
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it) ; it = adjNext(it) ){
+    ncell++;
+    cell = adjItem(it);
+    for ( inode = 0 ; inode < 4 ; inode++ ){
+      n = grid->c2n[inode+4*cell];
+      for (ixyz = 0 ; ixyz < 3 ; ixyz++ ) xyz[ixyz] += grid->xyz[ixyz+3*n];
+    }
+
+  }
+  oneOverNCell = 1.0/(double)(ncell*3);
+  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){  
+    xyz[ixyz] -= grid->xyz[ixyz+3*node] * (double)ncell ;
+    grid->xyz[ixyz+3*node] = xyz[ixyz] * oneOverNCell;
+  }
+
+  gridNodeAR(grid, node, &newAR);
+  
+  if ( origAR > newAR ) {
+    for (ixyz = 0 ; ixyz < 3 ; ixyz++ ) grid->xyz[ixyz+3*node] = origXYZ[ixyz];
+    return NULL;
+  }
+
+  return grid;
+}

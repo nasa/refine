@@ -65,6 +65,12 @@ VALUE grid_optimizeXYZ( VALUE self, VALUE node, VALUE rb_dxdydz )
   return (gridOptimizeXYZ( grid, NUM2INT(node), dxdydz )==grid?self:Qnil);
 }
 
+VALUE grid_smartLaplacian( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSmartLaplacian( grid, NUM2INT(node) )==grid?self:Qnil);
+}
+
 VALUE cGridCAD;
 
 void Init_GridCAD() 
@@ -79,4 +85,5 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "optimizeT", grid_optimizeT, 2 );
   rb_define_method( cGridCAD, "optimizeUV", grid_optimizeUV, 2 );
   rb_define_method( cGridCAD, "optimizeXYZ", grid_optimizeXYZ, 2 );
+  rb_define_method( cGridCAD, "smartLaplacian", grid_smartLaplacian, 1 );
 }

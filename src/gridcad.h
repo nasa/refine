@@ -29,6 +29,7 @@ Grid *gridSmoothNode(Grid *g, int node );
 Grid *gridOptimizeT(Grid *g, int node, double dt );
 Grid *gridOptimizeUV(Grid *g, int node, double *dudv );
 Grid *gridOptimizeXYZ(Grid *g, int node, double *dxdydz );
+Grid *gridSmartLapacian(Grid *g, int node );
 
 END_C_DECLORATION
 
