@@ -121,6 +121,11 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [], grid.equator(4,5)
  end
 
+ def XtestMaxSize
+  nnode = 6000000
+  grid = Grid.new(nnode,nnode*6,0)
+ end
+
  # adding a cell bigger than maxcell
  
  # make register unique
