@@ -796,6 +796,54 @@ Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
   return grid;
 }
 
+Grid *gridOptimizeUVForVolume(Grid *grid, int node, double *dudv )
+{
+  double uvOrig[2], uv[2];
+  int nodes[3];
+  int face, faceId;
+  double gold;
+  double alpha[2], volume[2];
+  int iter;
+
+  gold = ( 1.0 + sqrt(5.0) ) / 2.0;
+
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
+  if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
+
+  gridNodeUV( grid, node, faceId, uvOrig);
+
+  alpha[0] = 0.0;
+  uv[0] = uvOrig[0] + alpha[0]*dudv[0];
+  uv[1] = uvOrig[1] + alpha[0]*dudv[1];
+  if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
+  gridNodeVolume( grid, node, &volume[0] );
+
+  alpha[1] = 1.0e-10;
+  uv[0] = uvOrig[0] + alpha[1]*dudv[0];
+  uv[1] = uvOrig[1] + alpha[1]*dudv[1];
+  if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
+  gridNodeVolume( grid, node, &volume[1] );
+
+  iter = 0;
+  while ( (volume[1]-volume[0])>-1.0e-12 && iter < 200){
+    iter++;
+    alpha[0] = alpha[1]; volume[0] = volume[1];
+    alpha[1] = alpha[0] * gold;
+    uv[0] = uvOrig[0] + alpha[1]*dudv[0];
+    uv[1] = uvOrig[1] + alpha[1]*dudv[1];
+    if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
+    gridNodeVolume( grid, node, &volume[1] );
+  }
+
+  uv[0] = uvOrig[0] + alpha[0]*dudv[0];
+  uv[1] = uvOrig[1] + alpha[0]*dudv[1];
+  if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
+
+  //printf("node %d alpha %e vol %f uv %e %e\n",node,alpha[0],volume[0],uv[0],uv[1]);
+  
+  return grid;
+}
+
 Grid *gridOptimizeXYZ(Grid *grid, int node, double *dxdydz )
 {
   double xyzOrig[3];
@@ -1122,6 +1170,35 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
        gridNodeGhost(grid, node)    ) return NULL;
   gridSmartVolumeLaplacian( grid, node );
   gridSmoothNodeVolumeSimplex( grid, node );
+  return grid;
+}
+
+Grid *gridSmoothNodeVolumeWithSurf( Grid *grid, int node )
+{
+  int face, nodes[3], faceId;
+  double volume, dVoldx[3];
+  double uv[2], xyzProj[3], du[3], dv[3];
+  double dVoldu[2];
+  int vol=1;
+  
+  if ( !gridValidNode(grid, node)   ||
+       gridNodeFrozen(grid, node)   ||
+       gridGeometryEdge(grid, node) ||
+       !gridGeometryFace(grid, node) ||
+       gridNodeGhost(grid, node)    ) return NULL;
+
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
+  gridFace(grid,face,nodes,&faceId);
+  gridNodeVolumeDerivative ( grid, node, &volume, dVoldx);
+  gridNodeUV( grid, node, faceId, uv);
+  if ( !CADGeom_PointOnFace( vol, faceId,   
+			     uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
+    printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+  
+  dVoldu[0] = dVoldx[0]*du[0] + dVoldx[1]*du[1] + dVoldx[2]*du[2] ; 
+  dVoldu[1] = dVoldx[0]*dv[0] + dVoldx[1]*dv[1] + dVoldx[2]*dv[2] ; 
+  if (grid != gridOptimizeUVForVolume( grid, node, dVoldu ) ) return NULL;
+
   return grid;
 }
 

@@ -418,13 +418,35 @@ class TestGridCAD < Test::Unit::TestCase
  end
 
  def testRelaxNegativeCellsOnSurface
-  assert_not_nil grid = isoTet(1.1)
-  newNode = grid.addNode(-1.0,0.0,0.0)
-  grid.addCell(newNode,0,2,3)
-  grid.exportFAST
-  assert grid.volume([0,1,2,3])<0.0
+  grid = Grid.new(5,3,6,0)
+
+  nodeXY = 1.0
+  grid.addNode(nodeXY,nodeXY,0.0)
+  grid.addNode(0.0,0.0,0.0)
+  grid.addNode(1.0,0.0,0.0)
+  grid.addNode(0.0,1.0,0.0)
+  grid.addNode(0.0,0.0,1.0)
+
+  visualizationId = 99
+  grid.addFace(1,4,2,visualizationId)
+  grid.addFace(2,4,3,visualizationId)
+  grid.addFace(1,3,4,visualizationId)
+
+  grid.addCell(1,4,2,0)
+  grid.addCell(2,4,3,0)
+  grid.addCell(1,3,4,0)
+
+  realFaceId = 10
+  grid.addFace(0,1,2,realFaceId)
+  grid.addFace(0,2,3,realFaceId)
+  grid.addFace(0,3,1,realFaceId)
+  grid.projectNodeToFace(0,realFaceId)
+
+  #grid.exportFAST
+
   assert_equal grid, grid.smoothNodeVolumeWithSurf(0)
-  assert grid.volume([0,1,2,3])>0.0
+  assert grid.minVolume>0.0
+
  end
 
 end
