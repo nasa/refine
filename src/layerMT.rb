@@ -1587,7 +1587,7 @@ class TestLayer < Test::Unit::TestCase
 #      4---7
 
   assert_equal 3,         layer.blendDegree(0)
-  assert_equal [0, 1, 5], layerVertexNodes(0)
+  assert_equal [0, 1, 5], layerOrderedVertexNodes(0)
   layer.advanceConstantHeight(0.1)
   layer.writeTecplotFrontGeometry
   assert_equal 10, layer.ntriangle  
