@@ -153,7 +153,7 @@ VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
   int nequ, i;
   VALUE rb_equ; // bug, what is return if this is cleaned up?
   GET_GRID_FROM_SELF;
-  gridEquator( grid, NUM2INT(n0), NUM2INT(n1) );
+  if ( NULL == gridEquator( grid, NUM2INT(n0), NUM2INT(n1) ) ) return Qnil;
   nequ = gridNEqu(grid);
   if (nequ>0) {
     rb_equ = rb_ary_new2(nequ+1);
