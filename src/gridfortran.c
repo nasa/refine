@@ -610,7 +610,7 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 	data[1+(*ndim)*node] = uv[1];
 	node++;
       }
-      if (nodes[node] < 0) {
+      if (node<(*nnode) && nodes[node] < 0) {
 	edgeids = -nodes[node];
 	node++;
 	for(edge=0;edge<edgeids;edge++) {
@@ -648,7 +648,7 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 		      data[0+(*ndim)*node],data[1+(*ndim)*node]);
 	node++;
       }
-      if (nodes[node] < 0) {
+      if (node<(*nnode) && nodes[node] < 0) {
 	edgeids = -nodes[node];
 	node++;
 	for(edge=0;edge<edgeids;edge++) {
