@@ -29,6 +29,9 @@ class TestSampleUnit < Test::Unit::TestCase
 
   def testCellIterator
     assert_equal false, @grid.validNodeCell
+
+    @grid.firstNodeCell(0);
+    assert_equal false, @grid.validNodeCell
   end
 
 end
