@@ -18,6 +18,8 @@
 #include "FAKEGeom.h"
 #endif
 
+#define UG_REFINE (6) /* Lifted from SDK/UG_API/UG_API.h to remove dependency */
+
 Grid *gridParallelGeomLoad( Grid *grid, char *project )
 {
   int vol=1;

@@ -51,9 +51,6 @@ typedef struct _UGridPtr {
 #define UGrid_TIMESTAMP(ugp)     ((ugp)->updated)
 #define UGrid_ALGORITHM(ugp)     ((ugp)->algorithm)
 
-#define UG_UNKNOWN   0
-#define UG_REFINE   6
-
 GridBool UGrid_FromArrays(UGridPtr *,int,double *,int,int *,int,int *);
 
 UGridPtr CADGeom_VolumeGrid( int );
