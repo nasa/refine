@@ -648,6 +648,7 @@ Layer *layerCommonEdge(Layer *layer, int triangle0, int triangle1, int *nodes)
 
 #define PI (3.14159265358979)
 #define ConvertRadianToDegree(radian) ((radian)*57.2957795130823)
+#define ConvertDegreeToRadian(degree) ((degree)*0.0174532925199433)
 
 double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
 {
@@ -1362,6 +1363,8 @@ Layer *layerAdvance(Layer *layer)
   double xyz[3];
   int nterminated;
 
+  int blend, blendnormals[4];
+
   if (layerNNormal(layer) == 0 ) return NULL;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
@@ -1509,6 +1512,30 @@ Layer *layerAdvance(Layer *layer)
 	gridAddPrism(grid,n[0],n[1],n[2],n[3],n[4],n[5]);
       }
     }
+  }
+
+  if (layerNBlend(layer) > 0){
+    for (blend=0;blend<layerNBlend(layer);blend++){
+      layerBlendNormals(layer, blend, blendnormals );
+      faceId = layerConstrained(layer,blendnormals[0]);
+      if (faceId>0){
+	n[0] = layerNormalRoot(layer,blendnormals[0]);
+	n[1] = layer->normal[blendnormals[0]].tip;
+	n[2] = layer->normal[blendnormals[1]].tip;
+	gridAddFace(grid,n[0],n[1],n[2],faceId);
+      }
+      faceId = layerConstrained(layer,blendnormals[2]);
+      if (faceId>0){
+	n[0] = layerNormalRoot(layer,blendnormals[2]);
+	n[1] = layer->normal[blendnormals[3]].tip;
+	n[2] = layer->normal[blendnormals[2]].tip;
+	gridAddFace(grid,n[0],n[1],n[2],faceId);
+      }
+      layerForceTriangle(layer,blendnormals[0],blendnormals[1],blendnormals[2]);
+      layerForceTriangle(layer,blendnormals[1],blendnormals[3],blendnormals[2]);
+    }
+    layerBuildNormalTriangleAdjacency(layer);
+    layer->nblend=0;
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
@@ -1812,6 +1839,9 @@ Layer *layerBlend(Layer *layer)
   }
 
   layerBuildNormalTriangleAdjacency(layer);
+  layerVisibleNormals(layer , 
+		      sin(ConvertDegreeToRadian(largestEdgeAngle*0.333)), 
+		      1.0e-8 );
 
   return layer;
 }
