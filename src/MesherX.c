@@ -61,6 +61,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-bil") == 0 ) {
       bil = TRUE;
       printf("-bil argument %d: activated Bil Kleb's case\n",i);
+    } else if( strcmp(argv[i],"-vgbg") == 0 ) {
+      MeshMgr_SetMeshSizeType( MESH_MGR_VGRID );
+      printf("-vgbg argument %d: activated VGRID background spacing\n",i);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
@@ -69,6 +72,7 @@ int main( int argc, char *argv[] )
       printf(" -m mixed element layers\n");
       printf(" -q use edge swapping to improve grid quality\n");
       printf(" -b use blend elements on first layer\n");
+      printf(" -vgbg set background spacing to VGRID\n");
       printf(" -bil Bil Kleb's case\n");
       return(0);
     } else {
