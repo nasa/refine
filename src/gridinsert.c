@@ -733,7 +733,7 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
     return NULL;
   }
 
-  for (i=0 ; i<gridNGem(grid) ; i++) gridRemoveCell( grid, gridGem(grid,i) );
+  gridRemoveGem( grid );
   
   gridReconnectAllCell(grid, n1, n0 );
 
