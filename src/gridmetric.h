@@ -1,5 +1,7 @@
 
-/* Michael A. Park
+/* Computes metrics from faces and tets 
+ *
+ * Michael A. Park
  * Computational Modeling & Simulation Branch
  * NASA Langley Research Center
  * Phone:(757)864-6604
@@ -13,13 +15,9 @@
 
 #include "master_header.h"
 #include "grid.h"
+#include "gridmath.h"
 
 BEGIN_C_DECLORATION
-
-void gridSubtractVector(double *v1, double *v2, double *result);
-double gridDotProduct(double *v1, double *v2);
-void gridCrossProduct(double *norm, double *edge1, double *edge2);
-void gridVectorNormalize(double *norm);
 
 Grid *gridSetMapMatrixToAverageOfNodes(Grid *g, int avgNode, int n0, int n1 );
 void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
