@@ -1,3 +1,7 @@
 Thu Jan  9, 2003: Released Refine 0.4
 
 Now have advancing layers with inflation and non-manifold edges on faces
+
+Thu Jan 15, 2003: Released Refine 0.5
+
+New MesherX library structure
