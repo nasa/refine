@@ -8,15 +8,17 @@ end
 
 rubyExt = ext.downcase + "_ruby.c"
 
-sourceExt = rubyExt.collect{ |r| r.sub(/_ruby.c/, ".c") }
+sourceExt = rubyExt.collect{ |r| r.sub(/_ruby\.c/, ".c") }
 
 objC = rubyExt.to_a + sourceExt
-objC.push ARGV[1] if ARGV[1]
+
+ARGV[1..ARGV.size].each { |c| objC.push c if c =~/\.c/ }
 
 headers = objC.collect do
- |c| h = c.sub(/.c/, ".h") 
+ |c| h = c.sub(/\.c/, ".h") 
  h if File.exist? h
 end
+ARGV[1..ARGV.size].each { |h| headers.push h if h =~/\.h/ }
 headers.push "master_header.h"
 
 `rm -rf #{ext}`
@@ -24,7 +26,7 @@ headers.push "master_header.h"
 `cp #{(objC+headers).join(' ')} #{ext}`
 Dir.chdir ext
 
-$objs = objC.collect{ |c| c.sub(/.c/, ".o") }
+$objs = objC.collect{ |c| c.sub(/\.c/, ".o") }
 
 require 'mkmf'
 
