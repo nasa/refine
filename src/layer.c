@@ -83,19 +83,21 @@ Layer *formAdvancingFront( Grid *grid, char *project )
 {
   Layer *layer;
   int i, nbc, bc[4];
-  bool box, plate, om6, n12, sphere;
+  bool box, plate, om6, n12, quarter, spherecone;
   
   box = (NULL != strstr( project, "box"));
   plate = (NULL != strstr( project, "plate"));
   om6 = (NULL != strstr( project, "om6"));
   n12 = (NULL != strstr( project, "n12"));
-  sphere = (NULL != strstr( project, "sphere"));
+  quarter = (NULL != strstr( project, "quarter"));
+  spherecone = (NULL != strstr( project, "Mach6sphere"));
 
   if (box) printf("string %s has box.\n",project);
   if (plate) printf("string %s has plate.\n",project);
   if (om6) printf("string %s has om6.\n",project);
   if (n12) printf("string %s has n12.\n",project);
-  if (sphere) printf("string %s has sphere.\n",project);
+  if (quarter) printf("string %s has quarter.\n",project);
+  if (spherecone) printf("string %s has spherecone (Mach6sphere).\n",project);
 
   bc[0]=1;
   bc[1]=2;
@@ -108,7 +110,8 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     bc[0]=5;
     bc[1]=6;
   }
-  if(sphere){
+  if(quarter) nbc=1;
+  if(spherecone){
     nbc=4;
     bc[0]=1;
     bc[1]=3;
@@ -188,7 +191,11 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     layerConstrainNormal(layer,1);
     layerConstrainNormal(layer,2);
   }
-  if(sphere){
+  if(quarter){
+    layerConstrainNormal(layer,2);
+    layerConstrainNormal(layer,4);
+  }
+  if(spherecone){
     layerConstrainNormal(layer,2);
   }
   printf("make advancing layer front normals visible to front.\n");
