@@ -952,6 +952,7 @@ Grid *gridRenumber(Grid *grid, int *o2n)
 {
   int i, edge;
   int ixyz, node, face, cell, inode;
+  int conn;
   double *temp_xyz;
   GridBool *temp_frozen;
   int *temp_int;

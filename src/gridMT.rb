@@ -588,6 +588,25 @@ class TestGrid < Test::Unit::TestCase
   end
  end
 
+ def testRenumberedConnections
+  grid = Grid.new(4,1,1,0)
+  4.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  grid.addFace(1,2,3,15)
+  grid.createConn
+  grid.sortNodeGridEx
+  assert_equal [3,0,1,2], grid.cell(0)
+  assert_equal [3,0], grid.conn2Node(0)
+  assert_equal [3,1], grid.conn2Node(1)
+  assert_equal [3,2], grid.conn2Node(2)
+  assert_equal [0,1], grid.conn2Node(3)
+  assert_equal [0,2], grid.conn2Node(4)
+  assert_equal [1,2], grid.conn2Node(5)
+  6.times do |conn|
+   assert_equal conn, grid.cell2Conn(0,conn)
+  end
+ end
+
  def testAddNode
   assert_not_nil              grid = Grid.new(1,0,0,0)
   assert_nil                  grid.nodeXYZ(0)
