@@ -1037,11 +1037,11 @@ Layer *layerSetNormalHeightWithRate(Layer *layer)
 
   for(normal=0;normal<layerNNormal(layer);normal++){
 
-    length = layer->normal[normal].length / layer->normal[normal].initialheight;
+    length = layer->normal[normal].length;
 
     layer->normal[normal].height = 
-      layer->normal[normal].initialheight * 
-      pow(layer->normal[normal].rate,length);
+      layer->normal[normal].initialheight 
+      + layer->normal[normal].rate*length;
 
   }
 

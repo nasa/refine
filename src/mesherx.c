@@ -127,13 +127,23 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     direction[0] = 1.0;
     direction[1] = 0.0;
     direction[2] = 0.0;
-    layerSetPolynomialMaxHeight(layer, 0.001, 0.149, 1.0, 
+    layerSetPolynomialMaxHeight(layer, 0.005, 0.095, 1.0, 
 				origin, direction );
     origin[0] = 1;
-    layerSetPolynomialMaxHeight(layer, 0.15, 0.15, 1.0, 
+    layerSetPolynomialMaxHeight(layer, 0.10, 0.15, 1.0, 
 				origin, direction );
-    layerSetAllNormalRate(layer, 1.2);
-    layerComputeInitialCellHeightWithBGSpacing(layer,1.0);
+    origin[0] = -0.0001;
+    layerAssignPolynomialNormalHeight(layer, 1.0e-5, 4.0e-5, 1.0,
+                                    origin, direction );
+    origin[0] = 1.0;
+    layerAssignPolynomialNormalHeight(layer, 5.0e-5, 1.5e-3, 2.0,
+                                    origin, direction );
+    origin[0] = 3.0;
+    layerAssignPolynomialNormalHeight(layer, 0.00605, 1.5e-4, 2.0,
+                                    origin, direction );
+    layerScaleNormalHeight(layer,scale);
+    layerSaveInitialNormalHeight(layer);
+    layerComputeNormalRateWithBGSpacing(layer,1.0);
   }
 
   i=0;
@@ -222,9 +232,8 @@ Layer *layerComputeNormalRateWithBGSpacing(Layer *layer, double finalRatio)
     MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
     finalDelta = spacing[0]*finalRatio;
     initialDelta = layerNormalInitialHeight(layer,normal);
-    rate = exp( log(finalDelta / initialDelta) / (length/initialDelta) );
+    rate = (finalDelta - initialDelta) / length;
     gridNodeXYZ(layerGrid(layer),root,xyz);
-    printf(" %15.10f %15.10f %15.10f %15.10f\n", xyz[0], rate, initialDelta, finalDelta);
     layerSetNormalRate(layer, normal, rate);
   }
   return layer;
