@@ -18,17 +18,71 @@
 #include "gridshape.h"
 
 Grid* gridShapeJacobian1(Grid *grid, 
-			 double *n0,double *n1,double *n2, double *n3, 
-			 double *where, double *jacobian )
+			 double *n0, double *n1,double *n2, double *n3, 
+			 double *where, double *j )
 {
-  jacobian[0] = 1.0;
-  jacobian[1] = 0.0;
-  jacobian[2] = 0.0;
-  jacobian[3] = 0.0;
-  jacobian[4] = 1.0;
-  jacobian[5] = 0.0;
-  jacobian[6] = 0.0;
-  jacobian[7] = 0.0;
-  jacobian[8] = 1.0;
+  double gphi[3];
+  j[0] = 0.0;
+  j[1] = 0.0;
+  j[2] = 0.0;
+  j[3] = 0.0;
+  j[4] = 0.0;
+  j[5] = 0.0;
+  j[6] = 0.0;
+  j[7] = 0.0;
+  j[8] = 0.0;
+
+  gphi[0] = -1.0;
+  gphi[1] = -1.0;
+  gphi[2] = -1.0;
+  j[0] += n0[0] * gphi[0];
+  j[1] += n0[0] * gphi[1];
+  j[2] += n0[0] * gphi[2];
+  j[3] += n0[1] * gphi[0];
+  j[4] += n0[1] * gphi[1];
+  j[5] += n0[1] * gphi[2];
+  j[6] += n0[2] * gphi[0];
+  j[7] += n0[2] * gphi[1];
+  j[8] += n0[2] * gphi[2];
+
+  gphi[0] = 1.0;
+  gphi[1] = 0.0;
+  gphi[2] = 0.0;
+  j[0] += n1[0] * gphi[0];
+  j[1] += n1[0] * gphi[1];
+  j[2] += n1[0] * gphi[2];
+  j[3] += n1[1] * gphi[0];
+  j[4] += n1[1] * gphi[1];
+  j[5] += n1[1] * gphi[2];
+  j[6] += n1[2] * gphi[0];
+  j[7] += n1[2] * gphi[1];
+  j[8] += n1[2] * gphi[2];
+
+  gphi[0] = 0.0;
+  gphi[1] = 1.0;
+  gphi[2] = 0.0;
+  j[0] += n2[0] * gphi[0];
+  j[1] += n2[0] * gphi[1];
+  j[2] += n2[0] * gphi[2];
+  j[3] += n2[1] * gphi[0];
+  j[4] += n2[1] * gphi[1];
+  j[5] += n2[1] * gphi[2];
+  j[6] += n2[2] * gphi[0];
+  j[7] += n2[2] * gphi[1];
+  j[8] += n2[2] * gphi[2];
+
+  gphi[0] = 0.0;
+  gphi[1] = 0.0;
+  gphi[2] = 1.0;
+  j[0] += n3[0] * gphi[0];
+  j[1] += n3[0] * gphi[1];
+  j[2] += n3[0] * gphi[2];
+  j[3] += n3[1] * gphi[0];
+  j[4] += n3[1] * gphi[1];
+  j[5] += n3[1] * gphi[2];
+  j[6] += n3[2] * gphi[0];
+  j[7] += n3[2] * gphi[1];
+  j[8] += n3[2] * gphi[2];
+
   return grid;
 }
