@@ -43,6 +43,8 @@ int nearCollisions(Near *, Near *target);
 Near *nearTouched(Near *, Near *target, int *found, int maxfound, int *list);
 
 int nearNearestIndex(Near *root, Near *key);
+Near *nearNearestIndexAndDistance(Near *root, Near *key, 
+				  int *index, double *distance);
 
 END_C_DECLORATION
 

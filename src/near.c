@@ -12,6 +12,8 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
+#include <values.h>
 #include "near.h"
 
 Near* nearCreate( int index, double x, double y, double z, double radius )
@@ -198,3 +200,60 @@ int nearNearestIndex(Near *root, Near *key)
 
 }
 
+Near *nearNearestIndexAndDistance(Near *root, Near *key,
+				  int *index, double *distance)
+{
+  int myIndex, leftIndex, rightIndex;
+  double myDistance, leftDistance=DBL_MAX, rightDistance=DBL_MAX;
+  Near *leftNear, *rightNear, *returnNear;
+
+  if (NULL==root || NULL==key) return NULL;
+
+  myIndex = nearIndex( root );
+  myDistance = nearDistance( root, key);
+
+  if (myDistance <= nearLeftRadius(root) ) {
+    leftNear = nearNearestIndexAndDistance(root->leftChild, key,
+					   &leftIndex, &leftDistance);
+    if (NULL == leftNear){
+      *index = myIndex;
+      *distance = myDistance;
+      return root;
+    }
+  }
+
+  if (myDistance <= nearRightRadius(root) ) {
+    rightNear = nearNearestIndexAndDistance(root->rightChild, key,
+					    &rightIndex, &rightDistance);
+    if (NULL == rightNear){
+      if ( myDistance < leftDistance ){
+	*index = myIndex;
+	*distance = myDistance;
+	return root;
+      }else{
+	*index = leftIndex;
+	*distance = leftDistance;
+	return root->leftChild;
+      }
+    }
+  }
+
+  if ( leftDistance < rightDistance ){
+    *index = leftIndex;
+    *distance = leftDistance;
+    returnNear = root->leftChild;
+  }else{
+    *index = rightIndex;
+    *distance = rightDistance;
+    returnNear = root->rightChild;
+  }
+  
+  if ( myDistance < *distance ){
+    *index = myIndex;
+    *distance = myDistance;
+    returnNear = root;
+  }
+  
+  return returnNear;
+
+}

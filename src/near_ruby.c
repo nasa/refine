@@ -106,6 +106,25 @@ VALUE near_nearestIndex( VALUE rb_root, VALUE rb_key )
   return INT2NUM(nearNearestIndex(root,key));
 }
 
+VALUE near_nearestIndexAndDistance( VALUE rb_root, VALUE rb_key )
+{
+  Near *root, *key;
+  int index;
+  double distance;
+  VALUE answer;
+  Data_Get_Struct( rb_root, Near, root );
+  Data_Get_Struct( rb_key,  Near, key );
+  
+  if (NULL == nearNearestIndexAndDistance(root,key,&index,&distance)) 
+    return Qnil;
+
+  answer = rb_ary_new2(2);
+  rb_ary_store(answer, 0, INT2NUM(index));
+  rb_ary_store(answer, 1, rb_float_new(distance));
+
+  return answer;
+}
+
 VALUE cNear;
 
 void Init_Near() 
@@ -122,4 +141,6 @@ void Init_Near()
   rb_define_method( cNear, "collisions", near_collisions, 1 );
   rb_define_method( cNear, "touched", near_touched, 1 );
   rb_define_method( cNear, "nearestIndex", near_nearestIndex, 1 );
+  rb_define_method( cNear, "nearestIndexAndDistance", 
+		    near_nearestIndexAndDistance, 1 );
 }
