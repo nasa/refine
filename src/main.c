@@ -17,14 +17,13 @@ int main( int argc, char *argv[] )
 {
   Grid *grid;
   char *filename;
+  char *project;
 
-  if (argc == 2) {
-    filename = argv[1];
-  }else{
-    printf("\nUsage: refine project.fgrid\n\n");
-    filename = "../test/om6_inv08.fgrid";
-    printf("running default filename %s\n",filename);
-  }
+
+  filename = "../test/om6_inv08.fgrid";
+  printf("running default filename %s\n",filename);
+  project = "../test/om6";
+  printf("running default project %s\n",project);
   
   grid = gridImportFAST( filename );
   
@@ -48,8 +47,8 @@ int main( int argc, char *argv[] )
     printf("Yo! it broke.\n");
   }  
 
-  printf("calling CADGeom_Load ... \n");
-  if ( ! CADGeom_LoadPart( "../test/om6ff25" ) ){
+  printf("calling CADGeom_Load for project <%s> ... \n",project);
+  if ( ! CADGeom_LoadPart( project ) ){
     printf("Yo! it broke.\n");
   }  
 
