@@ -52,10 +52,15 @@ class TestLayer < Test::Unit::TestCase
   assert_equal layer,   layer.makeFront([1,2])
   assert_equal 0,       layer.nnormal
   assert_nil            layer.frontNormal(0)
+  assert_equal 0,       layer.normalRoot(0)
   assert_equal layer,   layer.makeNormal
   assert_equal 4,       layer.nnormal
   assert_equal [0,1,2], layer.frontNormal(0)
   assert_equal [0,1,3], layer.frontNormal(1)
+  assert_equal 1,       layer.normalRoot(0)
+  assert_equal 2,       layer.normalRoot(1)
+  assert_equal 3,       layer.normalRoot(2)
+  assert_equal 4,       layer.normalRoot(3)
  end
 
  def testConstrainNormals

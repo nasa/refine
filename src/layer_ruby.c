@@ -85,6 +85,12 @@ VALUE layer_frontNormal( VALUE self, VALUE front )
   return rb_normals;
 }
 
+VALUE layer_normalRoot( VALUE self, VALUE normal )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM(layerNormalRoot(layer,NUM2INT(normal)));
+}
+
 VALUE layer_constrainNormal( VALUE self, VALUE bc )
 {
   GET_LAYER_FROM_SELF;
@@ -110,6 +116,7 @@ void Init_Layer()
   rb_define_method( cLayer, "front", layer_front, 1 );
   rb_define_method( cLayer, "makeNormal", layer_makeNormal, 0 );
   rb_define_method( cLayer, "frontNormal", layer_frontNormal, 1 );
+  rb_define_method( cLayer, "normalRoot", layer_normalRoot, 1 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
 }

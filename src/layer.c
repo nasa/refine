@@ -14,6 +14,7 @@
 typedef struct Normal Normal;
 struct Normal {
   int constrained;
+  int root;
 };
 
 typedef struct Front Front;
@@ -138,6 +139,11 @@ Layer *layerMakeNormal(Layer *layer)
   for(normal=0;normal<layer->nnormal;normal++) 
     layer->normal[normal].constrained = 0;
 
+  for(i=0;i<layerMaxNode(layer);i++){
+    normal = layer->globalNode2Normal[i];
+    if (normal!=EMPTY) layer->normal[normal].root = i;
+  }
+
   return layer;
 }
 
@@ -150,6 +156,12 @@ Layer *layerFrontNormal(Layer *layer, int front, int *normals )
   normals[2] = layer->front[front].normal[2];
   
   return layer;
+}
+
+int layerNormalRoot(Layer *layer, int normal )
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return 0;
+  return layer->normal[normal].root;
 }
 
 Layer *layerConstrainNormal(Layer *layer, int bc )
