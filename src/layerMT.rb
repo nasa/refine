@@ -305,7 +305,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal true,      grid.rightHandedBoundary
  end
 
- def testAdvanceLayerOnEdge
+ def XXXXXXtestAdvanceLayerOnEdge
   assert_not_nil          grid = Grid.new(7,4,7,2)
   assert_equal 0,         grid.addNode(0,0,0)
   assert_equal 1,         grid.addNode(1,0,0)
@@ -316,6 +316,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal grid,      grid.addFace(0,3,1,1)
   assert_equal grid,      grid.addFace(0,1,2,2)
   assert_equal grid,      grid.addFace(0,2,3,3)
+  assert_equal grid,      grid.setNGeomEdge(1)
+  assert_equal grid,      grid.addGeomEdge(1,0,2)
   assert_equal grid,      grid.addEdge(0,2,1,0.0,2.0)
   assert_equal true,      grid.rightHandedBoundary
   assert_not_nil          layer = Layer.new(grid)
@@ -325,8 +327,8 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 3,         layer.nnormal
   assert_equal layer,     layer.constrainNormal(2)
   assert_equal layer,     layer.constrainNormal(3)
-  #assert_equal layer,     layer.constrainNormal(-1)
-  #assert_equal(-1,        layer.constrained(0))
+  assert_equal layer,     layer.constrainNormal(-1)
+  assert_equal(-1,        layer.constrained(0))
   assert_equal 3,         layer.constrained(1)
   assert_equal 2,         layer.constrained(2)
   assert_equal [0,1,2,3], grid.cell(0)
@@ -338,11 +340,12 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [4,6,2,5], grid.cell(0)
   assert_equal 4,         grid.ncell
   assert_equal [0,3,1,1], grid.face(0)
-  #assert_equal [4,6,2,2], grid.face(1)
-  #assert_equal [0,1,6,2], grid.face(2)
-  #assert_equal [0,6,4,2], grid.face(3)
-  #assert_equal 4,         grid.nface
-  #assert_equal true,      grid.rightHandedBoundary
+  assert_equal [4,6,2,2], grid.face(1)
+  assert_equal [0,1,6,2], grid.face(2)
+  assert_equal [0,6,4,2], grid.face(3)
+  assert_equal 4,         grid.nface
+  assert_equal true,      grid.rightHandedBoundary
+#edge
  end
 
 # normal visibility

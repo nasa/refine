@@ -322,16 +322,28 @@ Layer *layerVisibleNormals(Layer *layer)
 
 Layer *layerConstrainNormal(Layer *layer, int bc )
 {
-  int face, nodes[3], id, i, normal;  
+  int face, nodes[3], id, i, normal;
+  int edge, nCurveNode, *curve;
   if (layerNNormal(layer) == 0 ) return NULL;
   
-  for(face=0;face<gridMaxFace(layer->grid);face++){
-    if (layer->grid == gridFace(layer->grid,face,nodes,&id) &&
-	id==bc ) {
-      for(i=0;i<3;i++){
-	normal = layer->globalNode2Normal[nodes[i]];
-	if (normal != EMPTY) layer->normal[normal].constrained=bc;
+  if (bc > 0) {
+    for(face=0;face<gridMaxFace(layer->grid);face++){
+      if (layer->grid == gridFace(layer->grid,face,nodes,&id) &&
+	  id==bc ) {
+	for(i=0;i<3;i++){
+	  normal = layer->globalNode2Normal[nodes[i]];
+	  if (normal != EMPTY) layer->normal[normal].constrained=bc;
+	}
       }
+    }
+  }else{
+    edge = -bc;
+    nCurveNode = gridGeomEdgeSize( layer->grid, edge );
+    curve = malloc( nCurveNode * sizeof(int) );
+    gridGeomEdge( layer->grid, edge, curve );
+    for ( i=0; i<nCurveNode; i++){ 
+      normal = layer->globalNode2Normal[curve[i]];
+      if (normal != EMPTY) layer->normal[normal].constrained=bc;
     }
   }
   
