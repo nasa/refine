@@ -122,5 +122,28 @@ GridMove *gridmoveMove(GridMove *gm)
 
 GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
 {
+  Grid *grid = gridmoveGrid(gm);
+  int cell, edge, nedge;
+  int nodes[4];
+  int *c2e;
+
+  c2e = malloc(6*gridMaxCell(grid)*sizeof(int));
+  for(cell=0;cell<6*gridMaxCell(grid);cell++) c2e[cell] = EMPTY;
+
+  nedge = 0;
+  for(cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid == gridCell(grid,cell,nodes)) {
+      for(edge=0;edge<6;edge++) {
+	if ( EMPTY == c2e[edge+6*cell] ) {
+	  c2e[edge+6*cell] = nedge;
+	  fill all neighboring c2e
+	  nedge++;
+	}
+      }
+    }
+  }
+  
+
+  free(c2e);
   return NULL;
 }
