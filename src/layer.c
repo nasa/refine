@@ -1472,6 +1472,45 @@ int layerNEdgeInLayer(Layer *layer, int edgeId)
   return count;
 }
 
+int layerEdgeEndPoint(Layer *layer, int edgeId, int startNode)
+{
+  AdjIterator it;
+  int node, lastnode, edge, n1;
+  int nodes[2], currentEdgeId;
+  bool found;
+  Grid *grid;
+
+  grid = layerGrid(layer);
+
+  node = startNode;
+  lastnode = EMPTY;
+  found = TRUE;
+  while (found) {
+    found = FALSE;
+    for ( it = adjFirst(gridEdgeAdj(grid),node); 
+	  adjValid(it) && !found; 
+	  it = adjNext(it)) {
+      edge = adjItem(it);
+      gridEdge(grid, edge, nodes, &currentEdgeId);
+      if ( ( currentEdgeId == edgeId ) &&
+	   ( layerEdgeInLayer(layer,edge) ) ) {
+	if ( node == nodes[0] ) {
+	  n1 = nodes[1];
+	}else{
+	  n1 = nodes[0];	  
+	}
+	if ( n1 != lastnode ) { 
+	  found = TRUE;
+	  lastnode = node;
+	  node = n1;
+	}
+      }
+    }
+  }
+
+  return node;
+}
+
 Layer *layerReconnectCellUnlessInLayer(Layer *layer, int oldNode, int newNode )
 {
   AdjIterator it;

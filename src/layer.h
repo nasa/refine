@@ -107,6 +107,7 @@ bool layerCellInLayer(Layer *, int cell);
 bool layerFaceInLayer(Layer *, int face);
 bool layerEdgeInLayer(Layer *, int edge);
 int layerNEdgeInLayer(Layer *, int edgeId);
+int layerEdgeEndPoint(Layer *, int edgeId, int startNode);
 
 Layer *layerReconnectCellUnlessInLayer(Layer *, int oldNode, int newNode );
 Layer *layerReconnectEdgeUnlessInLayer(Layer *, int edgeId, 

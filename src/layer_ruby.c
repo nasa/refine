@@ -360,6 +360,12 @@ VALUE layer_nEdgeInLayer( VALUE self, VALUE edgeId )
   return INT2NUM( layerNEdgeInLayer(layer,NUM2INT(edgeId)) );
 }
 
+VALUE layer_edgeEndPoint( VALUE self, VALUE edgeId, VALUE startNode )
+{
+  GET_LAYER_FROM_SELF;
+  return INT2NUM( layerEdgeEndPoint(layer,NUM2INT(edgeId),NUM2INT(startNode)) );
+}
+
 VALUE layer_advance( VALUE self )
 {
   GET_LAYER_FROM_SELF;
@@ -481,7 +487,7 @@ void Init_Layer()
   rb_define_method( cLayer, "faceInLayer", layer_faceInLayer, 1 );
   rb_define_method( cLayer, "edgeInLayer", layer_edgeInLayer, 1 );
   rb_define_method( cLayer, "nEdgeInLayer", layer_nEdgeInLayer, 1 );
-
+  rb_define_method( cLayer, "edgeEndPoint", layer_edgeEndPoint, 2);
   rb_define_method( cLayer, "advanceConstantHeight", 
 		    layer_advanceConstantHeight, 1 );
   rb_define_method( cLayer, "advance", layer_advance, 0 );
