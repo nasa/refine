@@ -3411,7 +3411,7 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer, dou
 	    gridVectorNormalize(edge);
 	    normalDot = gridDotProduct(edge,layer->normal[normal].direction);
 	    otherDot = gridDotProduct(edge,layer->normal[other].direction);
-	    if ( otherDot < normalDot ) {
+	    if ( (normalDot - otherDot) > dot ) {
 	      printf("at %12.4f%12.4f%12.4f dot0%8.4f dot1%8.4f \n",
 		     xyz0[0],xyz0[1],xyz0[2],
 		     normalDot,otherDot);
