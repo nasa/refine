@@ -13,6 +13,7 @@
 
 #include "master_header.h"
 #include "grid.h"
+#include "near.h"
 
 BEGIN_C_DECLORATION
 

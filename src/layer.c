@@ -20,7 +20,6 @@
 #include "gridcad.h"
 #include "gridinsert.h"
 #include "grid.h"
-#include "near.h"
 #include "intersect.h"
 
 Layer *layerCreate( Grid *grid )
