@@ -4,18 +4,27 @@
 #
 # Mobility test for grid c lib
 
-system 'ruby extconf.rb Grid'
-system 'make'
+exit unless system 'ruby extconf.rb Grid'
+exit unless system 'make'
 
 require 'test/unit'
 require 'Grid'
 
 class TestSampleUnit < Test::Unit::TestCase
 
-  def testCreateGrid
+  def set_up
     @grid = Grid.new(4,1,0)
+  end
+
+  def testCreateGrid
     assert_equal 4, @grid.nnode
     assert_equal 1, @grid.ncell
+  end
+
+  def testNodeDeg
+    0.upto(@grid.nnode-1) { |i| assert_equal 0, @grid.nodeDeg(i) }
+    @grid.registerNodeCell( 2, 299 )
+    assert_equal 1, @grid.nodeDeg(2)
   end
 
 end
