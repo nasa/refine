@@ -63,6 +63,8 @@ struct Grid {
   int nline;
   int *line;
 
+  void (*renumber) (int *o2n);
+
 };
 
 END_C_DECLORATION
