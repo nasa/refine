@@ -30,7 +30,7 @@ int main( int argc, char *argv[] )
 
   sprintf( project,       "" );
   scale = 1.0;
-  maxnode = 2000000;
+  maxnode = 50000;
 
   i = 1;
   while( i < argc ) {
