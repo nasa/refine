@@ -38,13 +38,13 @@ void queueFree( Queue * );
 Queue *queueReset( Queue * );
 int queueTransactions( Queue * );
 Queue *queueNewTransaction( Queue * );
-Queue *queueRemove( Queue *, int *nodes );
-int queueRemoved( Queue *, int transaction );
-Queue *queueRemovedNodes( Queue *, int index, int *nodes );
-Queue *queueAdd( Queue *, int *nodes, double *xyzs );
-int queueAdded( Queue *, int transaction );
-Queue *queueAddedNodes( Queue *, int index, int *nodes );
-Queue *queueAddedXYZs( Queue *, int index, double *xyz );
+Queue *queueRemoveCell( Queue *, int *nodes );
+int queueRemovedCells( Queue *, int transaction );
+Queue *queueRemovedCellNodes( Queue *, int index, int *nodes );
+Queue *queueAddCell( Queue *, int *nodes, double *xyzs );
+int queueAddedCells( Queue *, int transaction );
+Queue *queueAddedCellNodes( Queue *, int index, int *nodes );
+Queue *queueAddedCellXYZs( Queue *, int index, double *xyz );
 
 END_C_DECLORATION
 

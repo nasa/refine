@@ -33,32 +33,32 @@ class TestQueue < Test::Unit::TestCase
   assert_equal 1, q.transactions
  end
 
- def testTransactionInitializedWithZeroRemoved
+ def testTransactionInitializedWithZeroRemovedCells
   q = Queue.new
-  assert_equal EMPTY, q.removed(-1)
-  assert_equal 0,     q.removed(0)
-  assert_equal EMPTY, q.removed(1)
+  assert_equal EMPTY, q.removedCells(-1)
+  assert_equal 0,     q.removedCells(0)
+  assert_equal EMPTY, q.removedCells(1)
   q.newTransaction
-  assert_equal 0,     q.removed(0)
-  assert_equal 0,     q.removed(1)
+  assert_equal 0,     q.removedCells(0)
+  assert_equal 0,     q.removedCells(1)
  end
 
- def testTransactionInitializedWithZeroAdded
+ def testTransactionInitializedWithZeroAddedCells
   q = Queue.new
-  assert_equal EMPTY, q.added(-1)
-  assert_equal 0,     q.added(0)
-  assert_equal EMPTY, q.added(1)
+  assert_equal EMPTY, q.addedCells(-1)
+  assert_equal 0,     q.addedCells(0)
+  assert_equal EMPTY, q.addedCells(1)
   q.newTransaction
-  assert_equal 0,     q.added(0)
-  assert_equal 0,     q.added(1)
+  assert_equal 0,     q.addedCells(0)
+  assert_equal 0,     q.addedCells(1)
  end
 
  def testRemoveTransaction
   nodes = [0,1,2,3]
   q = Queue.new
-  assert_equal q,     q.remove(nodes)
-  assert_equal 1,     q.removed(0)
-  assert_equal nodes, q.removedNodes(0)
+  assert_equal q,     q.removeCell(nodes)
+  assert_equal 1,     q.removedCells(0)
+  assert_equal nodes, q.removedCellNodes(0)
  end
 
  def testAddTransaction
@@ -66,23 +66,35 @@ class TestQueue < Test::Unit::TestCase
   nodes = [0,1,2,3,cellId]
   xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
   q = Queue.new
-  assert_equal q,     q.add(nodes,xyzs)
-  assert_equal 1,     q.added(0)
-  assert_equal nodes, q.addedNodes(0)
-  assert_equal xyzs,  q.addedXYZs(0)
+  assert_equal q,     q.addCell(nodes,xyzs)
+  assert_equal 1,     q.addedCells(0)
+  assert_equal nodes, q.addedCellNodes(0)
+  assert_equal xyzs,  q.addedCellXYZs(0)
  end
 
- def testResetZerosOutPreviouslyRemovedNodes
+ def testResetZerosOutPreviouslyRemovedCellNodes
   nodes = [0,1,2,3]
-  q = Queue.new.remove([9,9,9,9]).reset
-  assert_equal 0, q.removed(0)
-  q.remove(nodes)
-  assert_equal nodes, q.removedNodes(0)  
+  q = Queue.new.removeCell([9,9,9,9]).reset
+  assert_equal 0, q.removedCells(0)
+  q.removeCell(nodes)
+  assert_equal nodes, q.removedCellNodes(0)  
+ end
+
+ def testResetZerosOutPreviouslyRemovedAndAddedCellNodes
+  nodesCellId = [0,1,2,3,7]
+  xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
+  q = Queue.new.addCell([9,9,9,9,9],[1,2,3, 1,2,3, 1,2,3, 1,2,3]).reset
+  assert_equal 0, q.addedCells(0)
+  q.addCell(nodesCellId,xyzs)
+  assert_equal nodesCellId, q.addedCellNodes(0)  
+  assert_equal xyzs, q.addedCellXYZs(0)  
  end
 
  def testReallocMemoryForLotsOfTransactions
+  nodes = [0,1,2,3,4]
+  xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
   q = Queue.new
-  10000.times { q.newTransaction.remove([0,1,2,3]) }
+  10000.times { q.newTransaction.removeCell(nodes).addCell(nodes,xyzs) }
  end
 
 end

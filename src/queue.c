@@ -41,6 +41,7 @@ void queueFree( Queue *queue )
 Queue *queueReset( Queue *queue )
 {
   queue->transactions = 1;
+  queue->nAdded = 0;
   queue->nRemoved = 0;
   queue->added[0] = 0;
   queue->removed[0] = 0;
@@ -67,7 +68,7 @@ Queue *queueNewTransaction( Queue *queue )
   return queue;
 }
 
-Queue *queueRemove( Queue *queue, int *nodes )
+Queue *queueRemoveCell( Queue *queue, int *nodes )
 {
   int i;
   queue->removed[queue->transactions-1]++;
@@ -81,13 +82,13 @@ Queue *queueRemove( Queue *queue, int *nodes )
   return queue;
 }
 
-int queueRemoved( Queue *queue, int transaction )
+int queueRemovedCells( Queue *queue, int transaction )
 {
   if ( transaction<0 || transaction>=queueTransactions(queue) ) return EMPTY;
   return queue->removed[transaction];
 }
 
-Queue *queueRemovedNodes( Queue *queue, int index, int *nodes )
+Queue *queueRemovedCellNodes( Queue *queue, int index, int *nodes )
 {
   int i;
   if ( index<0 || index>queue->nRemoved ) return NULL;
@@ -95,7 +96,7 @@ Queue *queueRemovedNodes( Queue *queue, int index, int *nodes )
   return queue;
 }
 
-Queue *queueAdd( Queue *queue, int *nodes, double *xyzs )
+Queue *queueAddCell( Queue *queue, int *nodes, double *xyzs )
 {
   int i;
   queue->added[queue->transactions-1]++;
@@ -112,13 +113,13 @@ Queue *queueAdd( Queue *queue, int *nodes, double *xyzs )
   return queue;
 }
 
-int queueAdded( Queue *queue, int transaction )
+int queueAddedCells( Queue *queue, int transaction )
 {
   if ( transaction<0 || transaction>=queueTransactions(queue) ) return EMPTY;
   return queue->added[transaction];
 }
 
-Queue *queueAddedNodes( Queue *queue, int index, int *nodes )
+Queue *queueAddedCellNodes( Queue *queue, int index, int *nodes )
 {
   int i;
   if ( index<0 || index>queue->nAdded ) return NULL;
@@ -126,7 +127,7 @@ Queue *queueAddedNodes( Queue *queue, int index, int *nodes )
   return queue;
 }
 
-Queue *queueAddedXYZs( Queue *queue, int index, double *xyzs )
+Queue *queueAddedCellXYZs( Queue *queue, int index, double *xyzs )
 {
   int i;
   if ( index<0 || index>queue->nAdded ) return NULL;
