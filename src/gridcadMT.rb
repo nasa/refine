@@ -6,11 +6,13 @@
 
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridinsert.h gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridInsert adj.c grid.h gridmetric.h gridcad.h gridStruct.h master_header.h'
 
 require 'test/unit'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
+require 'GridInsert/GridInsert'
 require 'GridCAD/GridCAD'
 
 class Grid
@@ -236,7 +238,8 @@ class TestGridCAD < Test::Unit::TestCase
  def testSmooth
   assert_not_nil grid = isoTet(-4.0)
   assert_equal grid, grid.smooth
-  assert_in_delta 1.0, grid.minAR, 1.0e-3
+  assert_in_delta 0.997, grid.minAR, 1.0e-3
+  assert_in_delta 0.997, grid.minFaceMR, 1.0e-3
  end
 
  def testSmoothFaceMR
