@@ -151,7 +151,7 @@ int main( int argc, char *argv[] )
       printf("insert layer height = %f\n",height);
       wiggleSteps = MIN(4,(int)(height/0.001)+1);
       height = height / (double)wiggleSteps;
-      layerVisibleNormals(layer);
+      layerVisibleNormals(layer,-1.0,-1.0);
       layerAdvanceConstantHeight(layer,height);
       for (i=1;i<wiggleSteps;i++) {
 	printf("edge swapping grid...\n");gridSwap(grid);
