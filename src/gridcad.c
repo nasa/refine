@@ -1731,6 +1731,8 @@ double gridFaceAreaUV(Grid *grid, int face)
   int faceId, nodes[3];
   double uv0[3], uv1[3], uv2[3];
   double edge0[3], edge1[3], norm[3];
+  int vol = 1;
+  double area;
 
   /* Using 3D Vector math to save typing */
   uv0[2] = uv1[2] = uv2[2] = 0.0;
@@ -1747,7 +1749,14 @@ double gridFaceAreaUV(Grid *grid, int face)
   gridSubtractVector(uv2,uv0,edge1);
 
   gridCrossProduct(edge0,edge1,norm);
-  return (0.5*norm[2]);
+
+  /* CAPrI Normal points outside, triangles oriented inside wrt Face */
+  if( !CADGeom_ReversedSurfaceNormal(vol,faceId) )
+    area = (-0.5*norm[2]);
+  else
+    area = (0.5*norm[2]);
+
+  return area;
 }
 
 Grid *gridMinFaceAreaUV(Grid *grid, int node, double *min_area)

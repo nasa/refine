@@ -1,3 +1,8 @@
+2005-02-16 15:15 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridFaceAreaUV) check orientation of surface to
+	Face and negate area as necessary.
+
 2005-02-14 08:23 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridwritetecplotsurfacezone_) dump flagged
