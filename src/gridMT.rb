@@ -75,6 +75,20 @@ class TestSampleUnit < Test::Unit::TestCase
     assert_equal nil,  grid.registerNodeCell(0,2)
   end
 
+  def testPackStorage
+   grid = Grid.new(2,1,5)
+   grid.pack
+   assert_equal grid, grid.registerNodeCell(0,0)
+   assert_equal grid, grid.registerNodeCell(1,1)
+   grid.removeNodeCell(1,1)
+   assert_equal nil, grid.registerNodeCell(0,1)
+   grid.pack
+   assert_equal true, grid.cellExists(0,0)
+   assert_equal false, grid.cellExists(0,1)
+   assert_equal grid, grid.registerNodeCell(0,1)
+   assert_equal true, grid.cellExists(0,1)
+  end
+
  def testMultipleNodeCellExists
    assert_equal false, @grid.cellExists(1,198)
    @grid.registerNodeCell(1,198)
