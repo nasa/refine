@@ -26,10 +26,13 @@ Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);
 
 Grid *gridSmooth(Grid *g );
+Grid *gridSmoothFaceMR(Grid *g );
 Grid *gridSmoothVolume(Grid *g );
 Grid *gridSmoothNode(Grid *g, int node );
+Grid *gridSmoothNodeFaceMR(Grid *g, int node );
 Grid *gridOptimizeT(Grid *g, int node, double dt );
 Grid *gridOptimizeUV(Grid *g, int node, double *dudv );
+Grid *gridOptimizeFaceUV(Grid *g, int node, double *dudv );
 Grid *gridOptimizeXYZ(Grid *g, int node, double *dxdydz );
 Grid *gridSmartLaplacian(Grid *g, int node );
 

@@ -290,6 +290,35 @@ Grid *gridSmoothNode(Grid *grid, int node )
   return gridOptimizeXYZ( grid, node, dARdx );
 }
 
+
+Grid *gridSmoothNodeFaceMR(Grid *grid, int node )
+{
+  double xyzProj[3], uv[2], t;
+  double mr, dMRdx[3];
+  double du[3], dv[3], dt[3];
+  double dMRdu[2], dMRdt;
+  int vol =1;
+  int face, faceId;
+  int edge, edgeId;
+
+  if ( gridGeometryEdge( grid, node ) ) return grid;
+  if ( !gridGeometryFace( grid, node ) ) return grid;
+
+
+  face = adjItem(adjFirst(grid->faceAdj, node));
+  faceId = grid->faceId[face];
+  gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
+  gridNodeUV( grid, node, faceId, uv);
+  if ( !CADGeom_PointOnFace( vol, faceId,   
+			     uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
+    printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+
+  dMRdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
+  dMRdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
+
+  return gridOptimizeFaceUV( grid, node, dMRdu );
+}
+
 Grid *gridOptimizeT(Grid *grid, int node, double dt )
 {
   int vol =1;
@@ -413,6 +442,65 @@ Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
   return grid;
 }
 
+Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
+{
+  int vol =1;
+  double uvOrig[2], uv[2];
+  int face, faceId;
+  double gold;
+  double alpha[2], mr[2];
+  int iter;
+
+  gold = ( 1.0 + sqrt(5.0) ) / 2.0;
+
+  face = adjItem(adjFirst(grid->faceAdj, node));
+  faceId = grid->faceId[face];
+
+  gridNodeUV( grid, node, faceId, uvOrig);
+
+  alpha[0] = 0.0;
+  uv[0] = uvOrig[0] + alpha[0]*dudv[0];
+  uv[1] = uvOrig[1] + alpha[0]*dudv[1];
+  if ( !CADGeom_PointOnFace( vol, faceId, uv, &grid->xyz[3*node], 
+			     0, NULL, NULL, NULL, NULL, NULL) )
+    printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+  gridNodeFaceMR( grid, node, &mr[0] );
+
+  alpha[1] = 1.0e-10;
+  uv[0] = uvOrig[0] + alpha[1]*dudv[0];
+  uv[1] = uvOrig[1] + alpha[1]*dudv[1];
+  if ( !CADGeom_PointOnFace( vol, faceId, uv, &grid->xyz[3*node], 
+			     0, NULL, NULL, NULL, NULL, NULL) )
+    printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+  gridNodeFaceMR( grid, node, &mr[1] );
+
+  iter = 0;
+  while ( mr[1] > mr[0] && mr[1] > 0.0 && iter < 100){
+    iter++;
+    alpha[0] = alpha[1]; mr[0] = mr[1];
+    alpha[1] = alpha[0] * gold;
+    uv[0] = uvOrig[0] + alpha[1]*dudv[0];
+    uv[1] = uvOrig[1] + alpha[1]*dudv[1];
+
+    if ( !CADGeom_PointOnFace( vol, faceId, uv, &grid->xyz[3*node], 
+			       0, NULL, NULL, NULL, NULL, NULL) )
+      printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+    gridNodeFaceMR( grid, node, &mr[1] );
+  }
+
+  uv[0] = uvOrig[0] + alpha[0]*dudv[0];
+  uv[1] = uvOrig[1] + alpha[0]*dudv[1];
+  
+  if ( !CADGeom_PointOnFace( vol, faceId, uv, &grid->xyz[3*node], 
+			     0, NULL, NULL, NULL, NULL, NULL) )
+    printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+  gridSetNodeUV(grid, node, faceId, uv[0], uv[1]);
+
+//printf("node %d alpha %e mr %f uv %e %e\n",node,alpha[0],mr[0],uv[0],uv[1]);
+  
+  return grid;
+}
+
 Grid *gridOptimizeXYZ(Grid *grid, int node, double *dxdydz )
 {
   double xyzOrig[2];
@@ -463,6 +551,23 @@ Grid *gridSmooth( Grid *grid )
 	gridSmoothNode( grid, node );
 	gridSmoothNode( grid, node );
 	gridSmoothNode( grid, node );
+      }
+    }
+  }
+  return grid;
+}
+
+Grid *gridSmoothFaceMR( Grid *grid )
+{
+  int node;
+  double mr, optimizationLimit;
+  optimizationLimit =0.60;
+  for (node=0;node<grid->maxnode;node++) {
+    if ( gridValidNode( grid, node ) && gridGeometryFace( grid, node )) {
+      gridNodeFaceMR(grid,node,&mr);
+      if (mr < optimizationLimit) {
+	gridSmoothNodeFaceMR( grid, node );
+	gridSmoothNodeFaceMR( grid, node );
       }
     }
   }

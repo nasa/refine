@@ -34,10 +34,22 @@ VALUE grid_smooth( VALUE self )
   return (gridSmooth( grid )==grid?self:Qnil);
 }
 
+VALUE grid_smoothFaceMR( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSmoothFaceMR( grid )==grid?self:Qnil);
+}
+
 VALUE grid_smoothNode( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
   return (gridSmoothNode( grid, NUM2INT(node) )==grid?self:Qnil);
+}
+
+VALUE grid_smoothNodeFaceMR( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSmoothNodeFaceMR( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
 VALUE grid_optimizeT( VALUE self, VALUE node, VALUE rb_dt )
@@ -53,6 +65,15 @@ VALUE grid_optimizeUV( VALUE self, VALUE node, VALUE rb_dudv )
   dudv[0] = NUM2DBL(rb_ary_entry(rb_dudv,0));
   dudv[1] = NUM2DBL(rb_ary_entry(rb_dudv,1));
   return (gridOptimizeUV( grid, NUM2INT(node), dudv )==grid?self:Qnil);
+}
+
+VALUE grid_optimizeFaceUV( VALUE self, VALUE node, VALUE rb_dudv )
+{
+  double dudv[2];
+  GET_GRID_FROM_SELF;
+  dudv[0] = NUM2DBL(rb_ary_entry(rb_dudv,0));
+  dudv[1] = NUM2DBL(rb_ary_entry(rb_dudv,1));
+  return (gridOptimizeFaceUV( grid, NUM2INT(node), dudv )==grid?self:Qnil);
 }
 
 VALUE grid_optimizeXYZ( VALUE self, VALUE node, VALUE rb_dxdydz )
@@ -81,9 +102,12 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "safeProjectNode", grid_safeProjectNode, 2 );
   rb_define_method( cGridCAD, "project", grid_project, 0 );
   rb_define_method( cGridCAD, "smooth", grid_smooth, 0 );
+  rb_define_method( cGridCAD, "smoothFaceMR", grid_smoothFaceMR, 0 );
   rb_define_method( cGridCAD, "smoothNode", grid_smoothNode, 1 );
+  rb_define_method( cGridCAD, "smoothNodeFaceMR", grid_smoothNodeFaceMR, 1 );
   rb_define_method( cGridCAD, "optimizeT", grid_optimizeT, 2 );
   rb_define_method( cGridCAD, "optimizeUV", grid_optimizeUV, 2 );
+  rb_define_method( cGridCAD, "optimizeFaceUV", grid_optimizeFaceUV, 2 );
   rb_define_method( cGridCAD, "optimizeXYZ", grid_optimizeXYZ, 2 );
   rb_define_method( cGridCAD, "smartLaplacian", grid_smartLaplacian, 1 );
 }

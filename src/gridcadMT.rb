@@ -195,9 +195,23 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta 20.0, grid.nodeUV(0,10)[1], 1.0e-15
  end
 
+ def testOptimizeFaceUVDispacement
+  assert_not_nil grid = isoTet(-0.2)
+  assert_equal grid, grid.optimizeFaceUV(0,[1.0,0.0])
+  assert_in_delta 0.999, grid.nodeFaceMR(0), 1.0e-3
+  assert_in_delta 10.0, grid.nodeUV(0,10)[0], 5.0e-2
+  assert_in_delta 20.0, grid.nodeUV(0,10)[1], 1.0e-15
+ end
+
  def testSmoothSurf
   assert_not_nil grid = isoTet(-0.2)
   assert_equal grid, grid.smoothNode(0)
+  assert_in_delta 0.999, grid.minAR, 1.0e-3
+ end
+
+ def testSmoothNodeFaceMR
+  assert_not_nil grid = isoTet(-0.2)
+  assert_equal grid, grid.smoothNodeFaceMR(0)
   assert_in_delta 0.999, grid.minAR, 1.0e-3
  end
 
@@ -223,6 +237,12 @@ class TestGridCAD < Test::Unit::TestCase
   assert_not_nil grid = isoTet(-4.0)
   assert_equal grid, grid.smooth
   assert_in_delta 1.0, grid.minAR, 1.0e-3
+ end
+
+ def testSmoothFaceMR
+  assert_not_nil grid = isoTet(-4.0)
+  assert_equal grid, grid.smoothFaceMR
+  assert_in_delta 0.8885, grid.minAR, 1.0e-3
  end
 
  def gemGrid(nequ=4)
