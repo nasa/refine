@@ -551,10 +551,27 @@ class TestSampleUnit < Test::Unit::TestCase
 
  def testAddAndFindEdge
   assert_not_nil     grid = Grid.new(4,0,0,2)
+  assert_nil         grid.findEdge(0,1)
   assert_equal grid, grid.addEdge(0, 1, 10)
   assert_equal 1,    grid.nedge
+  assert_equal 0,    grid.findEdge(0,1)
  end
 
+ def testAddAndRemoveEdge
+  assert_not_nil     grid = Grid.new(4,0,0,2)
+  assert_nil         grid.removeEdge(-1)
+  assert_nil         grid.removeEdge(0)
+  assert_nil         grid.removeEdge(1)
+  assert_equal grid, grid.addEdge(0, 1, 10)
+  assert_equal 10,   grid.edgeId(1, 0)
+  assert_equal grid, grid.removeEdge(0)
+  assert_nil         grid.edgeId(1, 0)
+  assert_equal grid, grid.addEdge(3, 1, 11)
+  assert_equal grid, grid.addEdge(0, 2, 12)
+  assert_equal 11,   grid.edgeId(3, 1)
+  assert_equal 2,    grid.nedge
+  assert_nil         grid.addEdge(1, 2, 13)
+ end
 
  # make register unique
 

@@ -150,6 +150,30 @@ VALUE grid_addEdge( VALUE self, VALUE n0, VALUE n1, VALUE edgeId )
   return (returnedGrid==NULL?Qnil:self);
 }
 
+VALUE grid_removeEdge( VALUE self, VALUE edge )
+{
+  GET_GRID_FROM_SELF;
+  return (gridRemoveEdge(grid, NUM2INT(edge) )==NULL?Qnil:self);
+}
+
+VALUE grid_findEdge( VALUE self, VALUE n0, VALUE n1 )
+{
+  int returnedEdge;
+  GET_GRID_FROM_SELF;
+  returnedEdge = gridFindEdge(grid, NUM2INT(n0), NUM2INT(n1) );
+  if (returnedEdge == EMPTY) return Qnil;
+  return INT2NUM( returnedEdge );
+}
+
+VALUE grid_edgeId( VALUE self, VALUE n0, VALUE n1 )
+{
+  int returnedEdge;
+  GET_GRID_FROM_SELF;
+  returnedEdge = gridEdgeId( grid, NUM2INT(n0), NUM2INT(n1) );
+  if (returnedEdge == EMPTY) return Qnil;
+  return INT2NUM( returnedEdge );
+}
+
 VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 {
   VALUE rb_gem;
@@ -273,15 +297,22 @@ void Init_Grid()
   rb_define_method( cGrid, "nface", grid_nface, 0 );
   rb_define_method( cGrid, "maxedge", grid_maxedge, 0 );
   rb_define_method( cGrid, "nedge", grid_nedge, 0 );
+
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
   rb_define_method( cGrid, "cell", grid_cell, 1 );
   rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
+
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
   rb_define_method( cGrid, "removeFace", grid_removeFace, 1 );
   rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
+
   rb_define_method( cGrid, "addEdge", grid_addEdge, 3 );
+  rb_define_method( cGrid, "removeEdge", grid_removeEdge, 1 );
+  rb_define_method( cGrid, "findEdge", grid_findEdge, 2 );
+  rb_define_method( cGrid, "edgeId", grid_edgeId, 2 );
+
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );

@@ -32,6 +32,10 @@ struct Grid {
   Adj *faceAdj;
 
   int maxedge, nedge;
+  int blanke2n;
+  int *e2n;
+  int *edgeId;
+  Adj *edgeAdj;
 
   int ngem;
   int gem[MAXDEG];
@@ -83,6 +87,19 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->blankf2n = 0;
 
   grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3);
+
+  // edge
+  grid->e2n    = malloc(2 * grid->maxedge * sizeof(int));
+  grid->edgeId = malloc(1 * grid->maxedge * sizeof(int));
+  for (i=0;i < grid->maxedge; i++ ) {
+    grid->e2n[0+2*i] = EMPTY; 
+    grid->e2n[1+2*i] = i+1; 
+    grid->edgeId[i] = EMPTY; 
+  }
+  grid->e2n[1+2*(grid->maxedge-1)] = EMPTY; 
+  grid->blanke2n = 0;
+
+  grid->edgeAdj = adjCreate(grid->maxnode,grid->maxedge*2);
 
   grid->ngem = 0;
 
@@ -466,11 +483,61 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   return grid->faceId[face];
 }
 
-Grid *gridAddEdge(Grid *grid, int n0, int n1, int faceId )
+Grid *gridAddEdge(Grid *grid, int n0, int n1, int edgeId )
 {
+  int edge;
+  if ( grid->blanke2n == EMPTY ) return NULL;
+  edge = grid->blanke2n;
+  grid->blanke2n = grid->e2n[1+2*edge];
   grid->nedge++;
 
+  grid->e2n[0+2*edge] = n0;
+  grid->e2n[1+2*edge] = n1;
+  grid->edgeId[edge]  = edgeId;
+
+  if ( NULL == adjRegister( grid->edgeAdj, n0, edge ) ) return NULL;
+  if ( NULL == adjRegister( grid->edgeAdj, n1, edge ) ) return NULL;
+
   return grid;
+
+}
+
+Grid *gridRemoveEdge(Grid *grid, int edge )
+{
+  if (edge >= grid->maxedge || edge < 0) return NULL;
+  if (EMPTY == grid->e2n[2*edge]) return NULL;
+  
+  if ( grid->nedge <= 0) return NULL;
+  grid->nedge--;
+
+  if( ( NULL == adjRemove( grid->edgeAdj, grid->e2n[0+3*edge], edge ) ) || 
+      ( NULL == adjRemove( grid->edgeAdj, grid->e2n[1+3*edge], edge ) ) )
+    return NULL;  
+
+  grid->e2n[0+2*edge] = EMPTY;
+  grid->e2n[1+2*edge] = grid->blanke2n;
+  grid->blanke2n = edge;
+
+  return grid;
+}
+
+int gridFindEdge(Grid *grid, int n0, int n1 )
+{
+  AdjIterator it0, it1;
+  Adj *adj=grid->edgeAdj;
+
+  for ( it0 = adjFirst(adj,n0); adjValid(it0); it0 = adjNext(it0) )
+    for ( it1 = adjFirst(adj,n1); adjValid(it1); it1 = adjNext(it1) )
+      if ( adjItem(it0) == adjItem(it1) ) return adjItem(it0);
+
+  return EMPTY;
+}
+
+int gridEdgeId(Grid *grid, int n0, int n1 )
+{
+  int edge = gridFindEdge(grid, n0, n1 );
+  if ( edge == EMPTY ) return EMPTY;
+  return grid->edgeId[edge];
 }
 
 Grid *gridMakeGem(Grid *grid, int n0, int n1 )
