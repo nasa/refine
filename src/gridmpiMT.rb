@@ -28,21 +28,24 @@ class TestGridMPI < Test::Unit::TestCase
  EMPTY = -1
 
  def rightTet
-  grid = Grid.new(5,2,0,0)
+  grid = Grid.new(5,2,4,0)
   grid.addCell( 
 	       grid.addNode(0,0,0), 
 	       grid.addNode(1,0,0), 
 	       grid.addNode(0,1,0), 
 	       grid.addNode(0,0,1) )
-  grid.identityGlobal
+  grid.addFace(0,3,1,10)
+  grid.addFace(0,2,3,11)
+  grid.identityGlobal(100)
   grid
  end 
 
  def testCopyLocalNodeNumberingToGlobalNumbering
+  plus = 544
   grid = Grid.new(10,0,0,0)
   10.times { grid.addNode(1,2,3) }
-  assert_equal grid,grid.identityGlobal
-  10.times { |node| assert_equal node, grid.nodeGlobal(node) }
+  assert_equal grid,grid.identityGlobal(544)
+  10.times { |node| assert_equal node+544, grid.nodeGlobal(node) }
  end
 
  def testMarkAllNodesAsLocal
@@ -66,21 +69,23 @@ class TestGridMPI < Test::Unit::TestCase
 
  def testSplitEdgeAcrossProc
   q = Queue.new
-  p1 = rightTet.setPartId(1).setAllLocal.identityGlobal
-  p2 = rightTet.setPartId(2).setAllLocal.identityGlobal
+  p1 = rightTet.setPartId(1).setAllLocal
+  p2 = rightTet.setPartId(2).setAllLocal
   p2.setGhost(0)
   p2.setGhost(1)
   p2.setGhost(2)
   p1.setGhost(3)
 
-  assert_nil p2.parallelEdgeSplit(q,0,1)
+  assert_nil p2.parallelEdgeSplit(q,0,1), "split a ghost edge"
   assert_equal 1, p1.ncell
   assert_equal 1, q.transactions
 
-  assert_equal p1, p1.parallelEdgeSplit(q,0,3), "no gem for one cell!!"
+  assert_equal p1, p1.parallelEdgeSplit(q,0,3)
   assert_equal 2, p1.ncell
+  assert_equal 4, p1.nface
   assert_equal p1.partId, p1.nodePart(4)
   assert_equal 2, q.transactions
+ # assert_equal [0,1,2,3]
  end
 
 end
