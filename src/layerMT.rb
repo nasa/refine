@@ -1089,4 +1089,13 @@ grid.addCell(0,1,2,3)
   assert_equal(-1, layer.nextTriangle(3,1) )
  end
 
+ def testEdgeAngle
+  grid  = flatTwoFaceGrid
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert            0> layer.edgeAngle(0,0)
+  assert            0> layer.edgeAngle(3,0)
+  assert            0> layer.edgeAngle(0,3)
+  assert_in_delta 180, layer.edgeAngle(0,1), 1.0e-10
+ end
+
 end
