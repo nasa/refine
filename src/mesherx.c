@@ -115,13 +115,6 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   layerRebuildEdges(layer,vol);
 
   printf(" -- REBUILD FACES\n");
-  for (edgeId=1;edgeId<=gridNGeomEdge(grid);edgeId++){
-    if (layerNParentEdgeSegments(layer,edgeId)>0) 
-      printf("edgeId %d has %d parent edge segments\n",
-	     edgeId,layerNParentEdgeSegments(layer,edgeId));
-    if (layerConstrainingGeometry(layer,-edgeId)) 
-      printf("edgeId %d is a rebuilt edge.\n",edgeId);
-  }
   for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
     CADGeom_GetFace(vol, faceId, uv, &nloop, &loopLength, &loopEdge);
     printf("face %d has %d loops\n",faceId,nloop);
@@ -132,6 +125,31 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
 	printf(" edge %d dir %d",loopEdge[0+2*edge],loopEdge[1+2*edge]);
       }
       printf("\n");
+    }
+  }
+
+  for (edgeId=1;edgeId<=gridNGeomEdge(grid);edgeId++){
+    if (layerNParentEdgeSegments(layer,edgeId)>0) 
+      printf("edgeId %d has %d parent (phantom) edge segments\n",
+	     edgeId,layerNParentEdgeSegments(layer,edgeId));
+    if (layerConstrainingGeometry(layer,-edgeId)) 
+      printf("edgeId %d is a rebuild edge.\n",edgeId);
+  }
+
+  for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
+    if (layerConstrainingGeometry(layer,faceId)) {
+      printf("faceId %d is a rebuild face.\n",faceId);    
+      CADGeom_GetFace(vol, faceId, uv, &nloop, &loopLength, &loopEdge);
+      for(edge=0;edge<loopLength[0];edge++){
+	edgeId = loopEdge[0+2*edge];
+	if (layerConstrainingGeometry(layer,-edgeId)) {
+	  printf(" edge %d, edgeId %d is rebuild.\n",edge,edgeId);
+	} else if ( layerNParentEdgeSegments(layer,edgeId)>0 ) {
+	  printf(" edge %d, edgeId %d is phantom.\n",edge,edgeId);	  
+	} else {
+	  printf(" edge %d, edgeId %d is original.\n",edge,edgeId);
+	}
+      }
     }
   }
 
