@@ -543,14 +543,14 @@ Grid *gridSmooth( Grid *grid )
   for (node=0;node<grid->maxnode;node++) {
     if ( gridValidNode( grid, node ) ) {
       gridNodeAR(grid,node,&ar);
-      if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
-	gridSmartLaplacian( grid, node ); 
-	gridNodeAR(grid,node,&ar);
-      }
       if (ar < optimizationLimit) {
 	gridSmoothNode( grid, node );
 	gridSmoothNode( grid, node );
 	gridSmoothNode( grid, node );
+      }else{
+	if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
+	  gridSmartLaplacian( grid, node ); 
+	}
       }
     }
   }
