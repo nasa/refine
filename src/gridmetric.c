@@ -59,21 +59,26 @@ double gridEdgeLength(Grid *grid, int n0, int n1 )
 
 double gridMappedEdgeLength(Grid *grid, int n0, int n1 )
 {
-  int i;
   double dx, dy, dz;
-  double m[9], m0[9], m1[9], lengthSquared;
+  double m0[9], m1[9], length0, length1;
 
   dx = grid->xyz[0+3*n1] - grid->xyz[0+3*n0];
   dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
   dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
 
   gridMapMatrix(grid,n0,m0);
-  gridMapMatrix(grid,n1,m1);
-  for (i=0;i<9;i++) m[i]=0.5*(m0[i]+m1[i]);
+  gridMapXYZWithM(m0,&dx,&dy,&dz);
+  length0 = sqrt(dx*dx+dy*dy+dz*dz);
 
-  gridMapXYZWithM(m,&dx,&dy,&dz);
+  dx = grid->xyz[0+3*n1] - grid->xyz[0+3*n0];
+  dy = grid->xyz[1+3*n1] - grid->xyz[1+3*n0];
+  dz = grid->xyz[2+3*n1] - grid->xyz[2+3*n0];
+
+  gridMapMatrix(grid,n1,m1);
+  gridMapXYZWithM(m1,&dx,&dy,&dz);
+  length1 = sqrt(dx*dx+dy*dy+dz*dz);
   
-  return sqrt(dx*dx+dy*dy+dz*dz);
+  return 0.5*(length0+length1);
 }
 
 double gridAverageEdgeLength(Grid *grid, int node )
