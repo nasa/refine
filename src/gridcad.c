@@ -352,6 +352,14 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node, double *displacement 
     gridEdge(grid, edge, nodes, &edgeId );
     if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
     if (!CADGeom_NearestOnEdge( vol, edgeId, xyz, &t, xyznew) ) return NULL;  
+    if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
+    for ( it = adjFirst(gridFaceAdj(grid),node); 
+	  adjValid(it); 
+	  it = adjNext(it) ){
+      face = adjItem(it);
+      gridFace(grid, face, nodes, &faceId );
+      if ( grid != gridSetUVofFace( grid, node, faceId ) ) return NULL;
+    }
     gridSubtractVector(xyznew,xyz,displacement);
     return grid;
   }
@@ -363,6 +371,7 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node, double *displacement 
       printf("%s: %d: CADGeom_NearestOnFace failed.",__FILE__,__LINE__);
       return NULL;  
     }
+    gridSetNodeUV(grid, node, faceId, uv[0], uv[1]);
     gridSubtractVector(xyznew,xyz,displacement);
     return grid;
   }
