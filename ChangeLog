@@ -1,3 +1,8 @@
+2004-10-29 13:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am added gridshape to libMesherX.a for unit_main.c
+	and refine_main.c.
+
 2004-10-29 09:39 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotSurfaceGeom) renamed from
@@ -5,6 +10,7 @@
 	* src/grid.c (gridWriteTecplotSurfaceScalar) added to dump
 	nodal scalar info to a sperate tecplot file.
 	* aBunchOfFiles implemented the tecplot renaming
+
 2004-10-29 01:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridshape.c (gridShapeJacobian1,gridShapeJacobian2) Added to

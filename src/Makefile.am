@@ -58,6 +58,7 @@ libMesherX_a_SOURCES = \
 	grid.h grid.c \
 	gridmath.h gridmath.c \
 	gridmetric.h gridmetric.c \
+	gridshape.h gridshape.c \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
@@ -94,6 +95,7 @@ EXTRA_DIST = mesherx_SyJet.c \
 	gridMT.rb grid_ruby.c \
 	gridmathMT.rb gridmath_ruby.c \
 	gridmetricMT.rb gridmetric_ruby.c \
+	gridshapeMT.rb gridshape_ruby.c \
 	gridinsertMT.rb gridinsert_ruby.c \
 	gridswapMT.rb gridswap_ruby.c \
 	gridcadMT.rb gridcad_ruby.c \
@@ -102,7 +104,7 @@ EXTRA_DIST = mesherx_SyJet.c \
 	gridmoveMT.rb gridmove_ruby.c \
 	layerMT.rb layer_ruby.c
 
-TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb layerMT.rb
+TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb layerMT.rb
 
 bin_PROGRAMS =
 
