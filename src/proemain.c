@@ -58,7 +58,7 @@ int main( int argc, char *argv[] )
   char outputlines[256];
   int i, j, oldSize, newSize;
   int wiggleSteps, wiggle;
-  double ratio=0.6;
+  double ratio=1.0;
   double minAR=-1.0;
   double ratioRefine, ratioCollapse;
   GridBool projected;
@@ -67,7 +67,7 @@ int main( int argc, char *argv[] )
   GridBool GridMoveProjection = TRUE;
   GridBool tecplotOutput = TRUE;
   int iview = 0;
-  int maxnode = 50000;
+  int maxnode = 500000;
 
   sprintf( project,       "" );
   sprintf( outputProject, "" );
@@ -208,7 +208,7 @@ int main( int argc, char *argv[] )
 
   oldSize = 1;
   newSize = gridNNode(grid);
-  jmax = 1;
+  jmax = 40;
   for ( j=0; (j<jmax) && (
 	(ratio < 0.99) || 
 	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
