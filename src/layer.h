@@ -158,6 +158,11 @@ Layer *layerTerminateCollidingTriangles(Layer *);
 
 Layer *layerSmoothLayerWithHeight(Layer *);
 
+Layer *layerOffsetTriangleMR(Layer *, int triangle, int normal, double offset,
+			     double *MR, double *dMRdX );
+
+Layer *layerOptimizeNormalDirection(Layer *, double offsetRatio );
+
 Layer *layerWriteTecplotFrontGeometry(Layer *);
 Layer *layerWriteTecplotFrontWithData(Layer *, int);
 

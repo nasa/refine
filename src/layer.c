@@ -2898,6 +2898,118 @@ Layer *layerSmoothLayerWithHeight(Layer *layer)
   return layer;
 }
 
+Layer *layerOffsetTriangleMR(Layer *layer, 
+			     int triangle, int normal, double offset,
+			     double *MR, double *dMRdX)
+{
+  double xyz1[3], xyz2[3], xyz3[3];
+  int i, normals[3], temp;
+  double direction[3];
+  Grid *grid;
+
+  grid = layerGrid(layer);
+
+  if ( layer != layerTriangleNormals(layer, triangle, normals) ) return NULL;
+
+  if (normals[0] != normal) {
+    temp = normals[0];
+    normals[0] = normals[1];
+    normals[1] = normals[2];
+    normals[2] = temp;
+  }
+  if (normals[0] != normal) {
+    temp = normals[0];
+    normals[0] = normals[1];
+    normals[1] = normals[2];
+    normals[2] = temp;
+  }
+  if (normals[0] != normal) return NULL;
+
+  gridNodeXYZ(grid,layerNormalRoot(layer,normals[0]),xyz1);
+  layerNormalDirection(layer,normals[0],direction);
+  for(i=0;i<3;i++) xyz1[i] += offset* direction[i];
+
+  gridNodeXYZ(grid,layerNormalRoot(layer,normals[1]),xyz2);
+  layerNormalDirection(layer,normals[1],direction);
+  for(i=0;i<3;i++) xyz2[i] += offset* direction[i];
+
+  gridNodeXYZ(grid,layerNormalRoot(layer,normals[2]),xyz3);
+  layerNormalDirection(layer,normals[2],direction);
+  for(i=0;i<3;i++) xyz3[i] += offset* direction[i];
+
+  FaceMRDerivative( xyz1[0], xyz1[1], xyz1[2],
+		    xyz2[0], xyz2[1], xyz2[2],
+		    xyz3[0], xyz3[1], xyz3[2],
+		    MR, dMRdX );
+
+  return layer;
+
+}
+
+Layer *layerOptimizeNormalDirection(Layer *layer, double offsetRatio)
+{
+  int i, normal, triangle;
+  double worstMR, worstdMRdX[3], MR, dMRdX[3];
+  double projection, relax, offset;
+  AdjIterator it;
+  
+  relax  = 0.01;
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    if ( 0 != layerConstrained(layer,normal) ){
+      layerNormalMaxEdgeLength(layer,normal,&offset);
+      offset *= offsetRatio;
+      worstMR = 2.0;
+      for ( it = adjFirst(layer->adj,normal); 
+	    adjValid(it); 
+	    it = adjNext(it) ){
+	triangle = adjItem(it);
+	layerOffsetTriangleMR(layer, triangle, normal, offset, &MR, dMRdX );
+	if (MR<worstMR) {
+	  worstMR = MR;
+	  for(i=0;i<3;i++) worstdMRdX[i] = dMRdX[i];
+	}
+      }
+      projection = gridDotProduct(layer->normal[normal].direction, worstdMRdX);
+      for(i=0;i<3;i++) worstdMRdX[i] -= projection*layer->normal[normal].direction[i];
+      gridVectorNormalize(worstdMRdX);
+      for(i=0;i<3;i++) layer->normal[normal].direction[i] += relax*worstdMRdX[i];
+
+      gridVectorNormalize(layer->normal[normal].direction);
+    }
+  }
+  
+  layerVisibleNormals(layer,0.25,1.0e-5);
+  
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    if ( 0 == layerConstrained(layer,normal) ){
+      layerNormalMaxEdgeLength(layer,normal,&offset);
+      offset *= offsetRatio;
+      worstMR = 2.0;
+      for ( it = adjFirst(layer->adj,normal); 
+	    adjValid(it); 
+	    it = adjNext(it) ){
+	triangle = adjItem(it);
+	layerOffsetTriangleMR(layer, triangle, normal, offset, &MR, dMRdX );
+	if (MR<worstMR) {
+	  worstMR = MR;
+	  for(i=0;i<3;i++) worstdMRdX[i] = dMRdX[i];
+	}
+      }
+      projection = gridDotProduct(layer->normal[normal].direction, worstdMRdX);
+      for(i=0;i<3;i++) worstdMRdX[i] -= projection*layer->normal[normal].direction[i];
+      gridVectorNormalize(worstdMRdX);
+      for(i=0;i<3;i++) layer->normal[normal].direction[i] += relax*worstdMRdX[i];
+
+      gridVectorNormalize(layer->normal[normal].direction);
+    }
+  }
+  
+  layerVisibleNormals(layer,0.25,1.0e-5);
+  
+  return layer;
+}
+
 Layer *layerWriteTecplotFrontWithData(Layer *layer, int nn )
 {
   int i;
