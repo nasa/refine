@@ -9,10 +9,6 @@ research mapped edge length and fix edge ratio length routines
 
 fix gridCollapseEdgeToBestConfiguration gridCollapseCost logic
 
-Return NULL from edge swap if gap0 and gap1 or n1 or n0 are ghost,
-because the ghost faces will not be installed on local processor so
-that a validity check can take place.
-
 Finish face swap parallelization. there are only 5 nodes so that means
 23 posiblities. (unit testing could be less if ring, top&bottom are
 treated seperatedly)

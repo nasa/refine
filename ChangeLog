@@ -1,3 +1,10 @@
+2005-02-01  9:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge) added local processor checks to
+	the two faces that are required to be added to test validity
+	durring swap evaluations. Swap will abort if niether face belongs
+	to other processor.
+
 2005-01-31 11:40 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.6 Release. ** internal release ** the om6 test case is

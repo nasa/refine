@@ -264,6 +264,9 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
     if ( origMR > newMR ) return NULL;
  
     /* add new faces in to test validity, will be removed for a no swap */
+    /* make sure that faces are local, so they exist for validity checks */
+    if ( gridNodeGhost(grid,gap0) && gridNodeGhost(grid,gap1) &&
+	 ( gridNodeGhost(grid,n0) || gridNodeGhost(grid,n1) ) ) return NULL;
     gridNodeUV(grid, n0,   oldFaceId0, n0uv);
     gridNodeUV(grid, n1,   oldFaceId0, n1uv);
     gridNodeUV(grid, gap0, oldFaceId0, gap0uv);
