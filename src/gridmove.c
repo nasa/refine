@@ -1102,52 +1102,58 @@ GridMove *gridmoveElasticRelaxationDumpA(GridMove *gm)
 GridMove *gridmoveElasticRelaxationSubIteration(GridMove *gm, double *residual2)
 {
   Grid *grid = gridmoveGrid(gm);
+  int color, ncolor;
   int row, entry, col, i;
   double *b;
   double residual;
 
   b = malloc(3*gridMaxNode(grid)*sizeof(double));
-  for(row=0;row<gridMaxNode(grid);row++) 
-    for(i=0;i<3;i++) b[i+3*row] = 0.0;
+
+  residual = 0;
+
+  ncolor = 2;
+  for(color = 0; color < ncolor ; color++) {
+
+    for(row=color;row<gridMaxNode(grid);row+=ncolor) 
+      for(i=0;i<3;i++) b[i+3*row] = 0.0;
  
-  for(row=0;row<gridMaxNode(grid);row++) {
-    if ( gridValidNode(grid,row) &&
-	 !gridmoveSpecified(gm,row) && 
-	 gridNodeLocal(grid,row) ) {
-      for ( entry = gridmoveRowStart(gm, row) ;
-	    entry < gridmoveRowStart(gm, row+1) ;
-	    entry++ ) {
-	col = gridmoveRowNode(gm,entry);
-	if (row != col) {
-	  for(i=0;i<3;i++) {
-	    b[i+3*row] -= 
-	      (   gm->a[i+0*3+9*entry]*gm->xyz[0+3*col]
-		+ gm->a[i+1*3+9*entry]*gm->xyz[1+3*col]
-		+ gm->a[i+2*3+9*entry]*gm->xyz[2+3*col] ) ;
+    for(row=color;row<gridMaxNode(grid);row+=ncolor) {
+      if ( gridValidNode(grid,row) &&
+	   !gridmoveSpecified(gm,row) && 
+	   gridNodeLocal(grid,row) ) {
+	for ( entry = gridmoveRowStart(gm, row) ;
+	      entry < gridmoveRowStart(gm, row+1) ;
+	      entry++ ) {
+	  col = gridmoveRowNode(gm,entry);
+	  if (row != col) {
+	    for(i=0;i<3;i++) {
+	      b[i+3*row] -= 
+		(   gm->a[i+0*3+9*entry]*gm->xyz[0+3*col]
+		    + gm->a[i+1*3+9*entry]*gm->xyz[1+3*col]
+		    + gm->a[i+2*3+9*entry]*gm->xyz[2+3*col] ) ;
+	    }
 	  }
 	}
       }
     }
-  }
 
-  for(row=0;row<gridMaxNode(grid);row++) {
-    if ( gridValidNode(grid,row) &&
-	 !gridmoveSpecified(gm,row) && 
-	 gridNodeLocal(grid,row) ) {
-      gridBackSolve3x3(&gm->lu[9*row], &b[3*row]);
+    for(row=color;row<gridMaxNode(grid);row+=ncolor) {
+      if ( gridValidNode(grid,row) &&
+	   !gridmoveSpecified(gm,row) && 
+	   gridNodeLocal(grid,row) ) {
+	gridBackSolve3x3(&gm->lu[9*row], &b[3*row]);
+      }
     }
-  }
 
-  residual = 0;
-  for(row=0;row<gridMaxNode(grid);row++) {
-    if ( gridValidNode(grid,row) &&
-	 !gridmoveSpecified(gm,row) && 
-	 gridNodeLocal(grid,row) ) {
-      for(i=0;i<3;i++) 
-	residual 
-	  += ( (gm->xyz[i+3*row] - b[i+3*row])
-	  *    (gm->xyz[i+3*row] - b[i+3*row]) );
-      for(i=0;i<3;i++) gm->xyz[i+3*row] = b[i+3*row];
+    for(row=color;row<gridMaxNode(grid);row+=ncolor) {
+      if ( gridValidNode(grid,row) &&
+	   !gridmoveSpecified(gm,row) && 
+	   gridNodeLocal(grid,row) ) {
+	for(i=0;i<3;i++) 
+	  residual += (   (gm->xyz[i+3*row] - b[i+3*row])
+	                * (gm->xyz[i+3*row] - b[i+3*row]) );
+	for(i=0;i<3;i++) gm->xyz[i+3*row] = b[i+3*row];
+      }
     }
   }
 

@@ -1,3 +1,8 @@
+2004-07-16 09:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationSubIteration) put in 
+	two color Gauss-Seidel for linear elasticity.
+
 2004-07-15 10:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveRelaxation*) generalized the grid
