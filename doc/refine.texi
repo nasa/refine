@@ -55,7 +55,10 @@ CAD geometry access is facilitated with the NASA Langley Geomerty
 Labratory SDK @code{http://geolab.larc.nasa.gov/}, which assess CAD
 information with the CAPRI API
 @code{http://raphael.mit.edu/capri/docs.html}.
- 
+
+MesherX is an advancing layer mixed-element mesher that interacts
+with the SDK to rebuild the inviscid portions of the grid. 
+
 @node Overview
 @chapter Overview
 @cindex overview
@@ -80,7 +83,9 @@ they are sucessful.
 @cindex architecture
 
 The refine library is composed of base objects, the grid object, grid
-mix-ins, and child objects
+mix-ins, child objects, and others. Items denoted with (M) or (R) are
+only used with MesherX (M) or the stand-alone sequential refine
+executable (R).
 
 @heading Base objects:
 @enumerate
@@ -88,8 +93,8 @@ mix-ins, and child objects
 @item queue - transaction queue for parallel connectivity modifcations.
 @item sort - list sorting and searching routines.
 @item line - stores arrays of nodes (advancing layer growth curves).
-@item near - near tree for finding nearby things
-@item intersect - computes if elements intersect. 
+@item near - near tree for finding nearby things (M)
+@item intersect - computes if elements intersect. (M)
 @end enumerate
 
 @heading Grid Object:
@@ -99,28 +104,30 @@ mix-ins, and child objects
 
 @heading Grid Mix-ins
 @enumerate
-@item
-gridmath - basic vector and matrix meth routines
-@item
-gridmetric - computes element metrics (volume, aspect ratio)
-@item
-gridswap - edge and face swapping routines
-@item
-gridcad - node projection and node smoothing for improved element quality
-@item
-gridgeom - parallel GeoSDK/CAPRI restart routines.
-@item
-gridinsert - inserts and removes nodes into grid.
-@item
-gridmpi - parallel grid adaptation helper
-@item
-gridfortran - fortran bindings for linking to FUN3D.
+@item gridmath - basic vector and matrix meth routines
+@item gridmetric - computes element metrics (volume, aspect ratio)
+@item gridswap - edge and face swapping routines
+@item gridcad - node projection and node smoothing for improved element quality
+@item gridgeom - parallel GeoSDK/CAPRI restart routines.
+@item gridinsert - inserts and removes nodes into grid.
+@item gridmpi - parallel grid adaptation helper
+@item gridfortran - fortran bindings for linking to FUN3D.
+@item gridfiller - sequental GeoSDK/CAPRI restart routines. (M,R)
 @end enumerate
 
-@heading Grid Mix-ins
+@heading Grid Children
 @enumerate
-@item
-gridmove - grid movement by linear elasticity or springs (inherts form grid)
+@item gridmove - grid movement by linear elasticity or springs (inherts form grid)
+@item layer - advancing layer mesher object. (M)
+@end enumerate
+
+@heading Others
+@enumerate
+@item main.c - refine main. (R)
+@item MesherX.c - MesherX main. (M)
+@item mesherx.c - MesherX driver routines. (M)
+@item mesherxInit.c - Build layer object from GeoSDK/CAPRI restart. (M)
+@item mesherxRebuild.c - Inviscid mesh rebuild routines for advaning layer meshes. (M)
 @end enumerate
 
 @node Base Objects
