@@ -26,7 +26,7 @@ int main( int argc, char *argv[] )
   char *filename;
   char *project;
   char *output;
-
+  int i;
 
   filename = "../test/om6_inv08.fgrid";
   printf("running default filename %s\n",filename);
@@ -83,13 +83,12 @@ int main( int argc, char *argv[] )
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
 
-  printf("edge swapping grid...\n");gridSwap(grid);
-  //printf("node smoothin grid...\n");gridSmooth(grid);
-  printf("edge swapping grid...\n");gridSwap(grid);
-  //  printf("node smoothin grid...\n");gridSmooth(grid);
-  printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
-  printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
-
+  for (i=0;i<0;i++){
+    printf("edge swapping grid...\n");gridSwap(grid);
+    printf("node smoothin grid...\n");gridSmooth(grid);
+    printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
+    printf("minimum Volume %12.8e\n",gridMinVolume(grid));  
+  }
 
   output = "../test/om6_out";
   printf("writing output project %s\n",output);
