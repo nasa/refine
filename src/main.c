@@ -37,7 +37,7 @@ int main( int argc, char *argv[] )
   char adaptfile[256], outputProject[256], outputFAST[256];
   int i, j, oldSize, newSize;
   int wiggleSteps, wiggle;
-  double ratio=0.3;
+  double ratio=1.0;
   double ratioRefine, ratioCollapse;
   bool projected;
   bool boundaryLayerGrid = FALSE;
@@ -120,7 +120,7 @@ int main( int argc, char *argv[] )
 	ratio=0.8;
       }else{
 	printf("Scaling spacing to refine a sphere.\n");
-	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.7 );
+	gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
       }
     }
   }else{
@@ -177,8 +177,8 @@ int main( int argc, char *argv[] )
     }
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
-    ratioCollapse = 0.4*ratio;
-    ratioRefine   = 1.5/ratio;
+    ratioCollapse = 0.1*ratio;
+    ratioRefine   = 2.0/ratio;
     if (boundaryLayerGrid) {
       printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	     ratio, 0.4, 1.5 );
