@@ -78,8 +78,11 @@ then
    fi
    AC_DEFINE([HAVE_CAPRI])
    CAPRILib="-L$CAPRI/$KERNEL/$CAPRI_ARCH -lcapri"
+   if test "$KERNEL" == 'Parasolid' ; then
+     CAPRILib="$CAPRILib $PARASOLID/fg.lib -L$PARASOLID -lparasolid"
+   fi
    if test "$x_libraries" != "" ; then
-       CAPRILib="$CAPRILib -L$x_libraries -lX11"
+     CAPRILib="$CAPRILib -L$x_libraries -lX11"
    fi
    AC_SUBST([CAPRILib])
 fi 
