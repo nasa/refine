@@ -93,6 +93,9 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
   //test face
+  gap0 = gap1 = EMPTY;
+  face0 = face1 = EMPTY;
+  faceId0 = EMPTY;
   if ( !gridContinuousEquator(grid) ){
     gap0 = gridEqu(grid,0);
     gap1 = gridEqu(grid,gridNGem(grid));

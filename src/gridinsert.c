@@ -239,6 +239,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
 
   gap0 = gridEqu(grid,0);
   gap1 = gridEqu(grid,gridNGem(grid));
+  face0 = face1 = EMPTY;
   if ( !gridContinuousEquator(grid) ){
     face0 = gridFindFace(grid, n0, n1, gap0 );
     face1 = gridFindFace(grid, n0, n1, gap1 );
