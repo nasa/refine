@@ -120,7 +120,6 @@ START_TEST(testMultipleCellExists)
 END_TEST
 
 /* make register unique */
-/* iterator more construct? */
 /* non-contiguos cellist for access and registering */
 /* test that new list terminator is contiguous */
 /* packing */
