@@ -931,7 +931,7 @@ Layer *layerAdvance(Layer *layer)
 	n[1] = layer->normal[side[1]].root;
 	n[2] = layer->normal[side[0]].tip;
 	n[3] = layer->normal[side[1]].tip;
-	if (layerTetrahedraOnly(layer)){
+	if (layerTetrahedraOnly(layer) || n[0]==n[2] || n[1]==n[3]){
 	  if (side[0]<side[1]){
 	    if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
 	    if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);

@@ -860,4 +860,45 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 1,              grid.nquad
  end
 
+ def testAdvanceLayerOnSymPlaneWithaTreminatedQuadFace0
+  assert_not_nil               grid = Grid.new(17,14,14,0)
+  assert_equal 0,              grid.addNode(0,0,0)
+  assert_equal 1,              grid.addNode(1,0,0)
+  assert_equal 2,              grid.addNode(0,1,0)
+  assert_equal 3,              grid.addNode(0,0,1)
+  assert_equal grid,           grid.addFace(0,1,2,4000)
+  assert_equal grid,           grid.addFace(0,3,1,6000)
+  assert_not_nil               layer = Layer.new(grid)
+  assert_equal layer,          layer.makeFront([4000])
+  assert_equal layer,          layer.makeNormal
+  assert_equal layer,          layer.constrainNormal(6000)
+  assert_equal layer,          layer.toggleMixedElementMode
+  assert_equal 2,              grid.nface
+  assert_equal layer,          layer.terminateNormal(0)
+  assert_equal layer,          layer.advanceConstantHeight(0.1)
+  assert_equal [1,0,4,6000],   grid.face(2)
+  assert_equal 3,              grid.nface
+ end
+
+ def testAdvanceLayerOnSymPlaneWithaTreminatedQuadFace1
+  assert_not_nil               grid = Grid.new(17,14,14,0)
+  assert_equal 0,              grid.addNode(0,0,0)
+  assert_equal 1,              grid.addNode(1,0,0)
+  assert_equal 2,              grid.addNode(0,1,0)
+  assert_equal 3,              grid.addNode(0,0,1)
+  assert_equal grid,           grid.addFace(0,1,2,4000)
+  assert_equal grid,           grid.addFace(0,3,1,6000)
+  assert_not_nil               layer = Layer.new(grid)
+  assert_equal layer,          layer.makeFront([4000])
+  assert_equal layer,          layer.makeNormal
+  assert_equal layer,          layer.constrainNormal(6000)
+  assert_equal layer,          layer.toggleMixedElementMode
+  assert_equal 2,              grid.nface
+  assert_equal layer,          layer.terminateNormal(1)
+  assert_equal layer,          layer.advanceConstantHeight(0.1)
+  assert_equal [1,0,4,6000],   grid.face(2)
+  assert_equal 3,              grid.nface
+ end
+
+
 end
