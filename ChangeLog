@@ -1,5 +1,11 @@
 2004-07-09 12:25 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridmetric.c (gridMinARAroundNodeExceptGem) added.
+	* src/gridinsert.c (gridCollapseEdge) used 
+	gridMinARAroundNodeExceptGem to not collapse if causes bad AR.
+
+2004-07-09 12:25 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridfortran.c (gridloadglobalnodedata_,gridsetlocalnodedata_)
 	fixed a potential memory write past bounds for the the last node
 	in the passing array having face but no edge connectivity.

@@ -14,6 +14,7 @@ require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
 require 'Grid/Grid'
+require 'GridMath/GridMath'
 require 'GridMetric/GridMetric'
 require 'GridSwap/GridSwap'
 require 'GridCAD/GridCAD'
@@ -201,7 +202,7 @@ class TestGridInsert < Test::Unit::TestCase
 
  def testCollapseEdge
   assert_not_nil      grid = gemGrid
-  grid.addCell(1,2,3,grid.addNode(-0.01,1.0,1.0))
+  grid.addCell(1,2,3,grid.addNode(-0.5,1.0,1.0))
   assert_equal grid,  grid.collapseEdge(0,1,0.5)
   assert_equal 1,     grid.ncell
   assert_equal false, grid.validNode(1)

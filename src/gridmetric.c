@@ -1262,6 +1262,29 @@ GridBool gridNegCellAroundNodeExceptGem( Grid *grid, int node )
   return FALSE;
 }
 
+double gridMinARAroundNodeExceptGem( Grid *grid, int node )
+{
+  int igem, cellId, nodes[4];
+  double minAR;
+  GridBool inGem;
+  AdjIterator it;
+
+  minAR = 2.0;
+
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ) {
+    cellId = adjItem(it);
+    inGem = FALSE;
+    for ( igem =0; !inGem && igem < gridNGem(grid) ; igem++)
+      inGem = inGem || (cellId == gridGem(grid,igem));
+    if ( !inGem ) {
+      gridCell( grid, cellId, nodes );
+      minAR = MIN(minAR,gridAR(grid, nodes));
+    }
+  }
+
+  return minAR;
+}
+
 double gridMinAR( Grid *grid )
 {
   int cellId, nodes[4];

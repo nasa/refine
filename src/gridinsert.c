@@ -593,6 +593,7 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   double ratio;
   double xyz0[3], xyz1[3], xyzAvg[3];
   GridBool volumeEdge;
+  double arLimit;
 
   if ( gridGeometryNode(grid, n1) ) return NULL;
   if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
@@ -625,8 +626,9 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   if ( NULL == gridSetNodeXYZ( grid, n0, xyzAvg) ) return NULL;
   if ( NULL == gridSetNodeXYZ( grid, n1, xyzAvg) ) return NULL;  
 
-  if ( gridNegCellAroundNodeExceptGem( grid, n0 ) || 
-       gridNegCellAroundNodeExceptGem( grid, n1 ) ) {
+  arLimit = 0.02;
+  if ( gridMinARAroundNodeExceptGem( grid, n0 ) < arLimit || 
+       gridMinARAroundNodeExceptGem( grid, n1 ) < arLimit ) {
     gridSetNodeXYZ( grid, n0, xyz0);
     gridSetNodeXYZ( grid, n1, xyz1);
     return NULL;
