@@ -793,8 +793,12 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   }
 
   /* if this is not a valid configuration set everything back */
-  if ( gridMinARAroundNodeExceptGem( grid, n0 ) < gridADAPT_COST_FLOOR || 
-       gridMinARAroundNodeExceptGem( grid, n1 ) < gridADAPT_COST_FLOOR ) {
+  if ( ( gridMinARAroundNodeExceptGem( grid, n0 ) < gridADAPT_COST_FLOOR ) || 
+       ( gridMinARAroundNodeExceptGem( grid, n1 ) < gridADAPT_COST_FLOOR ) ||
+       ( gridMinARAroundNodeExceptGemRecon( grid, n0, n1 ) < 
+	 gridADAPT_COST_FLOOR ) ||
+       ( gridMinARAroundNodeExceptGemRecon( grid, n1, n0 ) < 
+	 gridADAPT_COST_FLOOR )  ) {
     gridSetNodeXYZ( grid, n0, xyz0);
     gridSetNodeXYZ( grid, n1, xyz1);
     if ( EMPTY != faceId0) {
