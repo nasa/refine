@@ -571,6 +571,31 @@ void gridmovesetprojectiondisp_( )
   gridmoveProjectionDisplacements( gm );
 }
 
+void gridmovesprrelaxstartup_( )
+{
+  gridmoveSpringRelaxationStartUp(gm);
+}
+
+void gridmovesprrelaxstartstep_( double *position)
+{
+  gridmoveSpringRelaxationStartStep( gm, *position );
+}
+
+void gridmovesprrelaxsubiter_( double *residual)
+{
+  gridmoveSpringRelaxationSubIteration( gm, residual );
+}
+
+void gridmovesprrelaxshutdown_( )
+{
+  gridmoveSpringRelaxationShutDown(gm);
+}
+
+void gridmoveapplydisplacements_( )
+{
+  gridmoveApplyDisplacements(gm);
+}
+
 void gridmovefree_( )
 {
   gridmoveFree( gm );

@@ -79,6 +79,12 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
 void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux );
 
 void gridmovesetprojectiondisp_( );
+void gridmovesprrelaxstartup_( );
+void gridmovesprrelaxstartstep_( double *position); 
+void gridmovesprrelaxsubiter_( double *residual);
+void gridmovesprrelaxshutdown_( );
+void gridmoveapplydisplacements_( );
+
 void gridmovefree_( );
 
 END_C_DECLORATION
