@@ -152,8 +152,7 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
     tecPlot = fopen("SmooRt.plt","w");
     fprintf( tecPlot, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
     tecPlot2 = fopen("SmooRt2.plt","w");
-    fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\"
-\"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
+    fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
   }
 
 
@@ -254,8 +253,7 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
     tecPlot = fopen("SmooPt.plt","w");
     fprintf( tecPlot, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
     tecPlot2 = fopen("SmooRt2.plt","w");
-    fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\"
-\"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
+    fprintf( tecPlot2, " VARIABLES = \"n\" \"x\" \"y\" \"z\" \"r\" \"L\" \"dY_0\" \"dY_M_a_x\" \"rate\" \"npts\" \n ZONE\n");
   }
 
 
