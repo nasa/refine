@@ -75,11 +75,11 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   return NULL;
 }
 
-Grid *gridSwapEdge3(Grid *grid, int n0, int n1 );
-Grid *gridSwapEdge4(Grid *grid, int n0, int n1 );
-Grid *gridSwapEdge5(Grid *grid, int n0, int n1 );
-Grid *gridSwapEdge6(Grid *grid, int n0, int n1 );
-Grid *gridSwapEdge7(Grid *grid, int n0, int n1 );
+Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 );
+Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 );
+Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 );
+Grid *gridSwapEdge6(Grid *grid, Queue *queue, int n0, int n1 );
+Grid *gridSwapEdge7(Grid *grid, Queue *queue, int n0, int n1 );
 
 Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
 {
@@ -116,15 +116,15 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
 
   switch (gridNEqu(grid)) {
   case 3: 
-    swapStatus = gridSwapEdge3(grid, n0, n1); break;
+    swapStatus = gridSwapEdge3(grid, queue, n0, n1); break;
   case 4: 
-    swapStatus = gridSwapEdge4(grid, n0, n1); break;
+    swapStatus = gridSwapEdge4(grid, queue, n0, n1); break;
   case 5:
-    swapStatus = gridSwapEdge5(grid, n0, n1); break;
+    swapStatus = gridSwapEdge5(grid, queue, n0, n1); break;
   case 6:
-    swapStatus = gridSwapEdge6(grid, n0, n1); break;
+    swapStatus = gridSwapEdge6(grid, queue, n0, n1); break;
   case 7:
-    swapStatus = gridSwapEdge7(grid, n0, n1); break;
+    swapStatus = gridSwapEdge7(grid, queue, n0, n1); break;
   default:
     swapStatus = NULL; break;
   }
@@ -275,7 +275,7 @@ Grid *gridSwap(Grid *grid)
   return grid;
 }
 
-Grid *gridSwapEdge3(Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 )
 {
   int i, nodes[2][4];
   double origcost, bestcost;
@@ -305,7 +305,7 @@ Grid *gridSwapEdge3(Grid *grid, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 )
 {
   int i, nodes[4][4], bestindex;
   double cost, origcost, currentcost, bestcost;
@@ -416,7 +416,7 @@ Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridSwapEdge5(Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
 {
   int i;
   int currentindex, bestindex, nodes[6][4];
@@ -516,7 +516,7 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
 Grid *gridConstructTet6( Grid *grid, int n0, int n1, 
 			 int nodes[40][4], double costs[20] );
 
-Grid *gridSwapEdge6( Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
 {
   int i;
   int nodes[40][4], bestcombo[4];
@@ -691,7 +691,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
 Grid *gridConstructTet7( Grid *grid, int n0, int n1, 
 			 int nodes[70][4], double costs[35] );
 
-Grid *gridSwapEdge7( Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
 {
   int i;
   int nodes[70][4], bestcombo[5];
