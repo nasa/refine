@@ -20,6 +20,14 @@ VALUE grid_ar( VALUE self, VALUE rb_nodes )
   return rb_float_new( gridAR( grid, nodes ) );
 }
 
+VALUE grid_nodeAR( VALUE self, VALUE node )
+{
+  double ar;
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  return (gridNodeAR( grid, NUM2INT(node), &ar )==grid?rb_float_new(ar):Qnil);
+}
+
 VALUE grid_cellARDerivative( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -28,7 +36,7 @@ VALUE grid_cellARDerivative( VALUE self, VALUE rb_nodes )
   Grid *returnedGrid;
   GET_GRID_FROM_SELF;
   for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
-  returnedGrid = gridCellARDervative( grid, nodes, &ar, dARdx );
+  returnedGrid = gridCellARDerivative( grid, nodes, &ar, dARdx );
   if ( returnedGrid == grid ){
     rb_ar = rb_ary_new2(4);
     rb_ary_store( rb_ar, 0, rb_float_new(ar) );
@@ -47,7 +55,7 @@ VALUE grid_nodeARDerivative( VALUE self, VALUE node )
   VALUE rb_ar;
   Grid *returnedGrid;
   GET_GRID_FROM_SELF;
-  returnedGrid = gridNodeARDervative( grid, NUM2INT(node), &ar, dARdx );
+  returnedGrid = gridNodeARDerivative( grid, NUM2INT(node), &ar, dARdx );
   if ( returnedGrid == grid ){
     rb_ar = rb_ary_new2(4);
     rb_ary_store( rb_ar, 0, rb_float_new(ar) );
@@ -92,6 +100,7 @@ void Init_GridMetric()
   cGridMetric = rb_define_module( "GridMetric" );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
+  rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
   rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );  rb_define_method( cGridMetric, "nodeARDerivative", grid_nodeARDerivative, 1 );
   rb_define_method( cGridMetric, "minVolume", grid_minVolume, 0 );
   rb_define_method( cGridMetric, "minAR", grid_minAR, 0 );

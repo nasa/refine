@@ -27,6 +27,24 @@ double gridVolume(Grid *grid, int *nodes )
   return  (norm[0]*edge3[0]+norm[1]*edge3[1]+norm[2]*edge3[2])/6.0;
 }
 
+Grid *gridNodeAR(Grid *grid, int node, double *ar )
+{
+  AdjIterator it;
+  int cell, nodes[4];
+  double local_ar;
+
+  *ar = 1.0;
+
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ){
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes);
+    local_ar = gridAR(grid, nodes);
+    if ( local_ar < *ar ) *ar = local_ar;
+  }
+
+  return grid;
+}
+
 double gridAR(Grid *grid, int *nodes )
 {
   double x1, x2, x3, x4; 
@@ -140,7 +158,7 @@ double gridAR(Grid *grid, int *nodes )
 }
 
 
-Grid *gridNodeARDervative(Grid *grid, int node, double *ar, double *dARdx )
+Grid *gridNodeARDerivative (Grid *grid, int node, double *ar, double *dARdx )
 {
   AdjIterator it;
   int cell, nodes[4];
@@ -160,7 +178,7 @@ Grid *gridNodeARDervative(Grid *grid, int node, double *ar, double *dARdx )
       nodes[1] = grid->c2n[0+4*cell];
     }
     gridOrient( grid, &grid->c2n[4*cell], nodes);
-    if ( grid != gridCellARDervative(grid, nodes, &local_ar, local_dARdx ) ) {
+    if ( grid != gridCellARDerivative(grid, nodes, &local_ar, local_dARdx ) ) {
       *ar = 0.0;
       dARdx[0] = DBL_MAX;
       dARdx[1] = DBL_MAX;
@@ -178,7 +196,7 @@ Grid *gridNodeARDervative(Grid *grid, int node, double *ar, double *dARdx )
   return grid;
 }
 
-Grid *gridCellARDervative(Grid *grid, int *nodes, double *ar, double *dARdx )
+Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 {
 
   double x1, x2, x3, x4; 
