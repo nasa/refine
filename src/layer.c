@@ -1476,7 +1476,8 @@ Layer *layerAdvance(Layer *layer)
   Grid *grid = layer->grid;
   int normal, normal0, normal1, root, tip, faceId, edgeId, i;
   int cell, node;
-  int triangle, normals[3], n[6], side[2];
+  int triangle, normals[3], nodes[3], n[6];
+  int side[2], sidenode[2], sidenormal[2];
   double xyz[3];
   int nterminated;
 
@@ -1544,6 +1545,7 @@ Layer *layerAdvance(Layer *layer)
 
   for (triangle=0;triangle<layerNTriangle(layer);triangle++){
     layerTriangleNormals(layer, triangle, normals);
+    layerTriangle(layer, triangle, nodes);
 
     /* note that tip has been set to root on terminated normals */
     /* the if (n[0]!=n[3]) checks are for layer termiantion */
@@ -1554,14 +1556,16 @@ Layer *layerAdvance(Layer *layer)
       if (faceId > 0) {
 	side[1] = i;
 	side[0] = i+1; if (side[0]>2) side[0] = 0;
-	side[0] = normals[side[0]];
-	side[1] = normals[side[1]];
-	n[0] = layer->normal[side[0]].root;
-	n[1] = layer->normal[side[1]].root;
-	n[2] = layer->normal[side[0]].tip;
-	n[3] = layer->normal[side[1]].tip;
+	sidenormal[0] = normals[side[0]];
+	sidenormal[1] = normals[side[1]];
+	sidenode[0]   = nodes[side[0]];
+	sidenode[1]   = nodes[side[1]];
+	n[0] = layer->normal[sidenormal[0]].root;
+	n[1] = layer->normal[sidenormal[1]].root;
+	n[2] = layer->normal[sidenormal[0]].tip;
+	n[3] = layer->normal[sidenormal[1]].tip;
 	if (layerTetrahedraOnly(layer) || n[0]==n[2] || n[1]==n[3]){
-	  if (side[0]<side[1]){
+	  if (sidenode[0]<sidenode[1]){
 	    if (n[1]!=n[3]) 
 	      layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[3],faceId)]=TRUE;
 	    if (n[0]!=n[2])  
@@ -1581,13 +1585,21 @@ Layer *layerAdvance(Layer *layer)
     // advance cells
     /* pg. 82-85 of Garimella Thesis*/
     /* sort so that normals[0] is the smallest normal id*/
-    if (normals[1]<normals[0] && normals[1]<normals[2]){
+    if (nodes[1]<nodes[0] && nodes[1]<nodes[2]){
+      node = nodes[1];
+      nodes[1] = nodes[2];
+      nodes[2] = nodes[0];
+      nodes[0] = node;
       normal = normals[1];
       normals[1] = normals[2];
       normals[2] = normals[0];
       normals[0] = normal;
     }
-    if (normals[2]<normals[0] && normals[2]<normals[1]){
+    if (nodes[2]<nodes[0] && nodes[2]<nodes[1]){
+      node = nodes[2];
+      nodes[2] = nodes[1];
+      nodes[1] = nodes[0];
+      nodes[0] = node;
       normal = normals[2];
       normals[2] = normals[1];
       normals[1] = normals[0];
@@ -1603,7 +1615,7 @@ Layer *layerAdvance(Layer *layer)
 
     
     if (layerTetrahedraOnly(layer) || nterminated >= 2){
-      if (normals[2]<normals[1]){
+      if (nodes[2]<nodes[1]){
 	if (n[0]!=n[3]) 
 	  layer->cellInLayer[gridAddCell(grid, n[0], n[4], n[5], n[3])]=TRUE;
 	if (n[2]!=n[5]) 
