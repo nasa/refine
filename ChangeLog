@@ -1,3 +1,8 @@
+2004-07-31 16:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/main.c put in calls to gridRelaxNegativeCells and made the
+	gridmove test harder.
+
 2004-07-31 14:38 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveRelaxation) sequential generalized grid
