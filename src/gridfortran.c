@@ -521,3 +521,7 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   fflush(stdout);
 #endif
 }
+void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux )
+{
+  gridCopyAboutY0(grid, *symmetryFaceId, *mirrorAux );
+}

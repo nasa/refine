@@ -74,6 +74,9 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
 void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
 void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
 
+void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux );
+
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */
