@@ -219,7 +219,7 @@ VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
 {
   int nequ, i;
-  VALUE rb_equ; // bug, what is return if this is cleaned up?
+  VALUE rb_equ;
   GET_GRID_FROM_SELF;
   if ( NULL == gridEquator( grid, NUM2INT(n0), NUM2INT(n1) ) ) return Qnil;
   nequ = gridNEqu(grid);
