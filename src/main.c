@@ -108,7 +108,7 @@ int main( int argc, char *argv[] )
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
     ratioCollapse = 0.4*ratio;
-    ratioRefine   = 1.3/ratio;
+    ratioRefine   = 1.5/ratio;
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	   ratio, ratioCollapse, ratioRefine );
     gridAdapt(grid,ratioCollapse,ratioRefine);
