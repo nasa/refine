@@ -44,6 +44,7 @@ GridMove *gridmoveCreate( Grid *grid )
   gm->rowStart = NULL;
   gm->compRow = NULL;
   gm->a = NULL;
+  gm->dxyz = NULL;
 
   return gm;
 }
@@ -67,11 +68,13 @@ GridMove *gridmoveFreeRelaxation(GridMove *gm)
   if (NULL != gm->rowStart) { free(gm->rowStart); gm->rowStart = NULL; }
   if (NULL != gm->compRow)  { free(gm->compRow);  gm->compRow  = NULL; }
   if (NULL != gm->a)        { free(gm->a);        gm->a        = NULL; }
+  if (NULL != gm->dxyz)     { free(gm->dxyz);     gm->dxyz     = NULL; }
   return gm;
 }
 
 void gridmoveFree(GridMove *gm)
 {
+  if (NULL != gm->dxyz) free(gm->dxyz);
   if (NULL != gm->a) free(gm->a);
   if (NULL != gm->compRow) free(gm->compRow);
   if (NULL != gm->rowStart) free(gm->rowStart);
@@ -689,9 +692,92 @@ GridMove *gridmoveLinearElasticityStartUp(GridMove *gm)
   gm->a = malloc(9*gridmoveNNZ(gm)*sizeof(double));
 
   gm->xyz = malloc(3*gridMaxNode(grid)*sizeof(double));
+  gm->dxyz = malloc(3*gridMaxNode(grid)*sizeof(double));
  
   for(node=0;node<gridMaxNode(grid);node++)
     gridNodeXYZ(grid,node,&(gm->xyz[3*node]));
 
+  for(node=0;node<3*gridMaxNode(grid);node++)
+    gm->dxyz[node] = 0.0;
+
   return gm;
 }
+
+GridMove *gridmoveElasticityRelaxationStartStep(GridMove *gm, double position)
+{
+  Grid *grid = gridmoveGrid(gm);
+  int i;
+  int cell, nodes[4];
+  double x1, y1, z1;
+  double x2, y2, z2;
+  double x3, y3, z3;
+  double x4, y4, z4;
+  double nx1, ny1, nz1;
+  double nx2, ny2, nz2;
+  double nx3, ny3, nz3;
+  double nx4, ny4, nz4;
+  double vol;
+  int node;
+
+  for(i=0;i<9*gridmoveNNZ(gm);i++) gm->a[i]=0.0;
+
+  for(node=0;node<3*gridMaxNode(grid);node++)
+    gm->xyz[node] += gm->dxyz[node];
+
+  for(node=0;node<3*gridMaxNode(grid);node++)
+    gm->dxyz[node] = 0.0;
+
+  for(cell=0;cell<gridMaxCell(grid);cell++){
+    if (grid==gridCell(grid,cell,nodes)) {
+
+      x1 = gm->xyz[0+3*nodes[0]];
+      y1 = gm->xyz[1+3*nodes[0]];
+      z1 = gm->xyz[2+3*nodes[0]];
+      x2 = gm->xyz[0+3*nodes[1]];
+      y2 = gm->xyz[1+3*nodes[1]];
+      z2 = gm->xyz[2+3*nodes[1]];
+      x3 = gm->xyz[0+3*nodes[2]];
+      y3 = gm->xyz[1+3*nodes[2]];
+      z3 = gm->xyz[2+3*nodes[2]];
+      x4 = gm->xyz[0+3*nodes[3]];
+      y4 = gm->xyz[1+3*nodes[3]];
+      z4 = gm->xyz[2+3*nodes[3]];
+
+      nx1 = 0.5*((y2 - y4)*(z3 - z4) - (y3 - y4)*(z2 - z4));
+      ny1 = 0.5*((z2 - z4)*(x3 - x4) - (z3 - z4)*(x2 - x4));
+      nz1 = 0.5*((x2 - x4)*(y3 - y4) - (x3 - x4)*(y2 - y4));
+
+      nx2 = 0.5*((y3 - y4)*(z1 - z4) - (y1 - y4)*(z3 - z4));
+      ny2 = 0.5*((z3 - z4)*(x1 - x4) - (z1 - z4)*(x3 - x4));
+      nz2 = 0.5*((x3 - x4)*(y1 - y4) - (x1 - x4)*(y3 - y4));
+
+      nx3 = 0.5*((y1 - y4)*(z2 - z4) - (y2 - y4)*(z1 - z4));
+      ny3 = 0.5*((z1 - z4)*(x2 - x4) - (z2 - z4)*(x1 - x4));
+      nz3 = 0.5*((x1 - x4)*(y2 - y4) - (x2 - x4)*(y1 - y4));
+
+      nx4 = -nx1 -nx2 -nx3;
+      ny4 = -ny1 -ny2 -ny3;
+      nz4 = -nz1 -nz2 -nz3;
+
+      vol = ( ((y2-y1)*(z3-z1) - (y3-y1)*(z2-z1))*(x4-x1) -
+	      ((x2-x1)*(z3-z1) - (x3-x1)*(z2-z1))*(y4-y1) +
+	      ((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))*(z4-z1) ) / 6.0;
+
+      if(vol <= 0.0)printf("%s: %d: Negative Vol %f %f %f\n",
+			   __FILE__,__LINE__,x1,y1,z1);
+
+    }
+  }
+
+  for(node=0;node<gridMaxNode(grid);node++) {
+    if ( gridmoveSpecified(gm,node) && 
+	 gridNodeLocal(grid,node) &&
+	 gridValidNode(grid,node) ) {
+      for(i=0;i<3;i++)
+	gm->dxyz[i+3*node] = position*gm->displacement[i+3*node];
+    }
+  }
+
+  return gm;
+}
+

@@ -35,6 +35,7 @@ struct GridMove {
   int *rowStart;
   int *compRow;
   double *a;
+  double *dxyz;
 };
 
 GridMove *gridmoveCreate(Grid *);
@@ -85,6 +86,7 @@ int gridmoveNNZ(GridMove *);
 int gridmoveRowEntry(GridMove *, int entry);
 
 GridMove *gridmoveElasticityRelaxationStartUp(GridMove *);
+GridMove *gridmoveElasticityRelaxationStartStep(GridMove *, double position);
 
 
 
