@@ -239,6 +239,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   int globalnewnodes0[5], globalnewnodes1[5];
   int cell0, cell1, globalCellId0, globalCellId1;
   double xyz0[12], xyz1[12];
+  int globaln0, globaln1, globalgap0, globalgap1;
   int gap0, gap1, face0, face1, faceNodes0[4], faceNodes1[4], faceId0, faceId1;
   int edge, edgeId;
   double t0,t1, newT;
@@ -317,6 +318,30 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     if (NULL!=queue) {
       queueRemoveFace(queue,faceNodes0);
       queueRemoveFace(queue,faceNodes1);
+      globaln0 = gridNodeGlobal(grid,n0);
+      globaln1 = gridNodeGlobal(grid,n1);
+      globalgap0 = gridNodeGlobal(grid,gap0);
+      globalgap1 = gridNodeGlobal(grid,gap1);
+      queueAddFaceScalar(queue, 
+			 globaln0, n0Id0uv[0], n0Id0uv[1],
+			 newglobal, newId0uv[0],newId0uv[1],
+			 globalgap0, gap0uv[0], gap0uv[1],
+			 faceId0 );
+      queueAddFaceScalar(queue, 
+			 globaln1, n1Id0uv[0], n1Id0uv[1], 
+			 globalgap0, gap0uv[0], gap0uv[1], 
+			 newglobal, newId0uv[0], newId0uv[1], 
+			 faceId0 );
+      queueAddFaceScalar(queue, 
+			 globaln0, n0Id1uv[0], n0Id1uv[1], 
+			 globalgap1, gap1uv[0], gap1uv[1], 
+			 newglobal, newId1uv[0], newId1uv[1], 
+			 faceId1 );
+      queueAddFaceScalar(queue, 
+			 globaln1, n1Id1uv[0], n1Id1uv[1], 
+			 newglobal, newId1uv[0], newId1uv[1], 
+			 globalgap1, gap1uv[0], gap1uv[1], 
+			 faceId1 );
     }
 
     gridRemoveFace(grid, face0 );
