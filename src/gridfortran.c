@@ -503,6 +503,9 @@ void gridghostcount_( int *nproc, int *count )
       if (faces>0) count[gridNodePart(grid,node)] += (faces+1);
       edges = gridNodeEdgeIdDegree(grid,node);
       if (edges>0) count[gridNodePart(grid,node)] += (edges+1);
+      if (faces==0 && edges>0) 
+	printf("%s: %d: gridghostcount error, %d faces, %d edges\n",
+	       __FILE__, __LINE__, faces, edges);
     }
   }
 }
