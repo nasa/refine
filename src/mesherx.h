@@ -24,8 +24,6 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
 			      bool copyGridY,
 			      bool bil );
 
-Layer *layerFormAdvancingLayerWithCADGeomBCS( int volumeId, Grid * );
-
 Layer *layerComputeNormalRateWithBGSpacing(Layer *, double finalRatio);
 Layer *layerComputeInitialCellHeightWithBGSpacing(Layer *, double finalRatio);
 
