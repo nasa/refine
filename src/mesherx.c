@@ -23,7 +23,7 @@
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
 {
-  char *outputProject;
+  char outputProject[256];
   int vol=1;
   Grid *grid;
   Layer *layer;
@@ -32,7 +32,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
   double rate;
   int nLayer;
 
-  nLayer = (int)(12.0/scale);
+  nLayer = (int)(10.0/scale);
+  nLayer = 12;
   rate = exp(scale*log(1.2));
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
 
@@ -42,16 +43,17 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
   //CAPrIMesh_TetVolume( vol );
 
   layer = formAdvancingFront( grid, project );
+  layerToggleMixedElementMode(layer);
 
   /* only needed for formAdvancingFront freeze distant volume nodes */
   gridThawAll(grid); 
   layerFindParentEdges(layer);
   i=0;
-  layerLaminarInitialHeight(layer, 1000.0, 0.0 );
+  //layerLaminarInitialHeight(layer, 1000.0, -0.05 );
   layerScaleNormalHeight(layer,scale);
-  while (i<nLayer &&layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer)) {
+  while (i<nLayer ) {
     //layerVisibleNormals(layer);
-    layerAdvance(layer);
+    layerAdvanceConstantHeight(layer,0.03);
     layerScaleNormalHeight(layer,rate);
     i++;
   }
@@ -66,12 +68,18 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project )
   layerRebuildVolume(layer,vol);
 
   printf(" -- DUMP PART\n");
-  outputProject = "../test/MesherX";
+
+  sprintf(outputProject,"%s_MX.fgrid",project);
+  printf("writing output FAST file %s\n",outputProject);
+  gridExportFAST( grid, outputProject  );
+
+  sprintf(outputProject,"%s_MX.ugrid",project);
+  printf("writing output AFL3R file %s\n",outputProject);
+  gridExportAFLR3( grid, outputProject  );
+
+  sprintf(outputProject,"%s_MX",project);
   printf("writing DEBUG output project %s\n",outputProject);
   gridSavePart( grid, outputProject );
-
-  printf("writing output FAST file ../test/MesherX.fgrid\n");
-  gridExportFAST( grid, "../test/MesherX.fgrid" );
 
   return 1;
 }
