@@ -297,6 +297,8 @@ double gridAR(Grid *grid, int *nodes )
   double nx4, ny4, nz4, rmag4;
   double xins;
   double aspect, cost;
+  int i;
+  double m[9], m0[9], m1[9], m2[9], m3[9];
 
   x1 = grid->xyz[0+3*nodes[0]];
   y1 = grid->xyz[1+3*nodes[0]];
@@ -314,10 +316,17 @@ double gridAR(Grid *grid, int *nodes )
   y4 = grid->xyz[1+3*nodes[3]];
   z4 = grid->xyz[2+3*nodes[3]];
 
-  gridMapXYZWithNode(grid, nodes[0], &x1, &y1, &z1);
-  gridMapXYZWithNode(grid, nodes[0], &x2, &y2, &z2);
-  gridMapXYZWithNode(grid, nodes[0], &x3, &y3, &z3);
-  gridMapXYZWithNode(grid, nodes[0], &x4, &y4, &z4);
+  gridMapMatrix(grid,nodes[0],m0);
+  gridMapMatrix(grid,nodes[1],m1);
+  gridMapMatrix(grid,nodes[2],m2);
+  gridMapMatrix(grid,nodes[3],m3);
+
+  for (i=0;i<9;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
+
+  gridMapXYZWithM(m, &x1, &y1, &z1);
+  gridMapXYZWithM(m, &x2, &y2, &z2);
+  gridMapXYZWithM(m, &x3, &y3, &z3);
+  gridMapXYZWithM(m, &x4, &y4, &z4);
 
  /* Compute the aspect ratios */
 
@@ -480,6 +489,9 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 
   double xins_dx, xins_dy, xins_dz;
 
+  int i;
+  double m[9], m0[9], m1[9], m2[9], m3[9];
+
   x1 = grid->xyz[0+3*nodes[0]];
   y1 = grid->xyz[1+3*nodes[0]];
   z1 = grid->xyz[2+3*nodes[0]];
@@ -496,10 +508,17 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   y4 = grid->xyz[1+3*nodes[3]];
   z4 = grid->xyz[2+3*nodes[3]];
 
-  gridMapXYZWithNode(grid, nodes[0], &x1, &y1, &z1);
-  gridMapXYZWithNode(grid, nodes[0], &x2, &y2, &z2);
-  gridMapXYZWithNode(grid, nodes[0], &x3, &y3, &z3);
-  gridMapXYZWithNode(grid, nodes[0], &x4, &y4, &z4);
+  gridMapMatrix(grid,nodes[0],m0);
+  gridMapMatrix(grid,nodes[1],m1);
+  gridMapMatrix(grid,nodes[2],m2);
+  gridMapMatrix(grid,nodes[3],m3);
+
+  for (i=0;i<9;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
+
+  gridMapXYZWithM(m, &x1, &y1, &z1);
+  gridMapXYZWithM(m, &x2, &y2, &z2);
+  gridMapXYZWithM(m, &x3, &y3, &z3);
+  gridMapXYZWithM(m, &x4, &y4, &z4);
 
   /* Compute the aspect ratios */
 
