@@ -71,7 +71,8 @@ Grid *gridAdapt(Grid *grid)
 
 int gridSplitEdge(Grid *grid, int n0, int n1 )
 {
-  int  igem, cell, nodes[4], inode, node, newnode, newnodes0[4], newnodes1[4];
+  int i, igem, cell, nodes[4], inode, node;
+  int newnode, newnodes0[4], newnodes1[4];
   double newX, newY, newZ;
   int gap0, gap1, face0, face1, faceId0, faceId1;
   int edge, edgeId;
@@ -84,7 +85,8 @@ int gridSplitEdge(Grid *grid, int n0, int n1 )
   newZ = ( grid->xyz[2+3*n0] + grid->xyz[2+3*n1] ) * 0.5;
   newnode = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
-  grid->spacing[newnode] = 0.5*(grid->spacing[n0]+grid->spacing[n1]);
+  for (i=0;i<6;i++) grid->spacing[i+6*newnode] = 
+		      0.5*(grid->spacing[i+6*n0]+grid->spacing[i+6*n1]);
 
   for ( igem=0 ; igem<grid->ngem ; igem++ ){
     cell = grid->gem[igem];
