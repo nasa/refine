@@ -497,13 +497,8 @@ class TestGridSwap < Test::Unit::TestCase
   grid.addFace(0,3,1,10)
   assert_equal grid, grid.removeTwoFaceCell(0)
   assert_equal 0, grid.ncell
-  assert_equal [0,2,3,10], grid.face(0)
-  assert_equal [1,3,2,10], grid.face(1)
-  grid.addCell(0,2,3,1)
-  assert_equal grid, grid.removeTwoFaceCell(0)
-  assert_equal 0, grid.ncell
-  assert_equal [0,3,1,10], grid.face(0)
-  assert_equal [0,1,2,10], grid.face(1)
+  assert_equal [2,0,3,10], grid.face(0)
+  assert_equal [3,1,2,10], grid.face(1)
  end
 
 end

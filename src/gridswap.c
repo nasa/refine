@@ -80,7 +80,12 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 	}
       }
 
-      for(node=0;node<3;node++) facenodes[node] = cell2face[newface0][node];
+      /* add opposite face in left-handed for the removed tet, 
+	 right-handed for rest of grid */
+ 
+      facenodes[0] = cell2face[newface0][1];
+      facenodes[1] = cell2face[newface0][0];
+      facenodes[2] = cell2face[newface0][2];
 
       gridAddFaceUVAndQueue(grid, queue, 
 			    cellnodes[facenodes[0]], 
@@ -94,7 +99,9 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 			    uv[1+2*facenodes[2]],
 			    faceId0 );
 
-      for(node=0;node<3;node++) facenodes[node] = cell2face[newface1][node];
+      facenodes[0] = cell2face[newface1][1];
+      facenodes[1] = cell2face[newface1][0];
+      facenodes[2] = cell2face[newface1][2];
 
       gridAddFaceUVAndQueue(grid, queue, 
 			    cellnodes[facenodes[0]], 

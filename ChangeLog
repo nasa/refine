@@ -1,3 +1,8 @@
+2004-08-04 16:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) fixed a bug that inserted
+	left-handed boundary triangles into the mesh.
+
 2004-08-03 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelSwap) added a call to
