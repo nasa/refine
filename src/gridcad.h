@@ -55,7 +55,8 @@ Grid *gridSmoothNodeFaceMR(Grid *g, int node );
 
 #define gridOPTIM_COST_FLOOR (0.01)
 Grid *gridLineSearchT(Grid *g, int node, double optimized_cost_limit );
-Grid *gridOptimizeUV(Grid *g, int node, double *dudv );
+Grid *gridLineSearchUV(Grid *g, int node, double *dudv, 
+		       double optimized_cost_limit );
 Grid *gridOptimizeFaceUV(Grid *g, int node, double *dudv );
 Grid *gridOptimizeXYZ(Grid *g, int node, double *dxdydz );
 

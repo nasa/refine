@@ -1,3 +1,12 @@
+2005-01-26 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSearchUV) Renamed from gridOptimizeUV to
+	be more specific about the the method of optimization. Rewrote
+	This method to optimize face mean ratio in mapped space with the
+	constraint of maintaining a minimum gridAR. The old method moved
+	the face node to improve gridAR directly. This simplifys
+	gridSmoothNode by removing #defs and extra logic.
+
 2005-01-26 10:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLineSearchT) Renamed from gridOptimizeT to

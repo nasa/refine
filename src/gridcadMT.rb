@@ -244,6 +244,7 @@ class TestGridCAD < Test::Unit::TestCase
  def testIsotropicTetSetup
   assert_in_delta 1.000, isoTet.minAR, 1.0e-4
   assert_in_delta 0.9797, isoTet(-0.2).minAR, 1.0e-4
+  assert_in_delta 0.9782, isoTet(-0.2).minFaceMR, 1.0e-4
   assert_in_delta 1.2, isoTet(-0.2,0.0,true).edgeLength(0,1), 1.0e-15
   assert_in_delta 0.8, isoTet(-0.2,0.0,true).edgeLength(4,0), 1.0e-15
  end
@@ -263,18 +264,10 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta 1.0, grid.edgeLength(4,0), 0.05
  end
 
- def testOptimizeUVDispacement
+ def testLineSearchUVDispacement
   assert_not_nil grid = isoTet(-0.2)
-  assert_equal grid, grid.optimizeUV(0,[1.0,0.0])
-  assert_in_delta 0.999, grid.minAR, 1.0e-3
-  assert_in_delta 10.0, grid.nodeUV(0,10)[0], 5.0e-2
-  assert_in_delta 20.0, grid.nodeUV(0,10)[1], 1.0e-15
- end
-
- def testOptimizeFaceUVDispacement
-  assert_not_nil grid = isoTet(-0.2)
-  assert_equal grid, grid.optimizeFaceUV(0,[1.0,0.0])
-  assert_in_delta 0.999, grid.nodeFaceMR(0), 1.0e-3
+  assert_equal grid, grid.lineSearchUV(0,[1.0,0.0])
+  assert_in_delta 0.999, grid.minFaceMR, 1.0e-3
   assert_in_delta 10.0, grid.nodeUV(0,10)[0], 5.0e-2
   assert_in_delta 20.0, grid.nodeUV(0,10)[1], 1.0e-15
  end
@@ -282,7 +275,7 @@ class TestGridCAD < Test::Unit::TestCase
  def testSmoothSurf
   assert_not_nil grid = isoTet(-0.2)
   assert_equal grid, grid.smoothNode(0)
-  assert_in_delta 0.999, grid.minAR, 1.0e-3
+  assert_in_delta 0.999, grid.minFaceMR, 1.0e-3
  end
 
  def testSmoothNodeFaceMR

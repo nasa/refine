@@ -590,27 +590,16 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
     for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
       face = adjItem(adjFirst(gridFaceAdj(grid), node));
       gridFace(grid,face,nodes,&faceId);
-      gridNodeARDerivative ( grid, node, &ar, dARdx);
       gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
       gridNodeUV( grid, node, faceId, uv);
       if ( !CADGeom_PointOnFace( vol, faceId,   
 				 uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
 	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
       
-#ifdef SURFACE_VALIDITY
       dARdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
       dARdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
-      if (grid != gridOptimizeFaceUV( grid, node, dARdu ) ) return NULL;
-#else
-      if (ar<mr || gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) ) {
-	dARdu[0] = dARdx[0]*du[0] + dARdx[1]*du[1] + dARdx[2]*du[2] ; 
-	dARdu[1] = dARdx[0]*dv[0] + dARdx[1]*dv[1] + dARdx[2]*dv[2] ; 
-      }else{
-	dARdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
-	dARdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
-      }
-      if (grid != gridOptimizeUV( grid, node, dARdu ) ) return NULL;
-#endif
+      if (grid != gridLineSearchUV( grid, node, dARdu, 
+				    gridOPTIM_COST_FLOOR ) ) return NULL;
     }
     return grid;
   }
@@ -707,7 +696,7 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
   ratio2 = gridEdgeRatio(grid, node, node2);
   equality[0] = ratio2/ratio1;
 
-  alpha[1] = 1.0e-8;
+  alpha[1] = 1.0e-10;
   t = tStart + alpha[1]*dt;
   if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
   gridNodeAR( grid, node, &ar[1] );
@@ -740,13 +729,14 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
   return grid;
 }
 
-Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
+Grid *gridLineSearchUV(Grid *grid, int node, double *dudv,
+		       double optimized_cost_limit )
 {
   double uvOrig[2], uv[2];
   int nodes[3];
   int face, faceId;
   double gold;
-  double alpha[2], ar[2], mr;
+  double alpha[2], ar[2], mr[2];
   int iter;
 
   gold = ( 1.0 + sqrt(5.0) ) / 2.0;
@@ -761,28 +751,25 @@ Grid *gridOptimizeUV(Grid *grid, int node, double *dudv )
   uv[1] = uvOrig[1] + alpha[0]*dudv[1];
   if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
   gridNodeAR( grid, node, &ar[0] );
-  gridNodeFaceMR( grid, node, &mr );
-  ar[0] = MIN(mr, ar[0]);
+  gridNodeFaceMR( grid, node, &mr[0] );
 
   alpha[1] = 1.0e-10;
   uv[0] = uvOrig[0] + alpha[1]*dudv[0];
   uv[1] = uvOrig[1] + alpha[1]*dudv[1];
   if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
   gridNodeAR( grid, node, &ar[1] );
-  gridNodeFaceMR( grid, node, &mr );
-  ar[1] = MIN(mr, ar[1]);
+  gridNodeFaceMR( grid, node, &mr[1] );
 
   iter = 0;
-  while ( ar[1] > ar[0] && ar[1] > 0.0 && iter < 100){
+  while ( mr[1] > mr[0] && ar[1] > optimized_cost_limit && iter < 100){
     iter++;
-    alpha[0] = alpha[1]; ar[0] = ar[1];
+    alpha[0] = alpha[1]; ar[0] = ar[1]; mr[0] = mr[1];
     alpha[1] = alpha[0] * gold;
     uv[0] = uvOrig[0] + alpha[1]*dudv[0];
     uv[1] = uvOrig[1] + alpha[1]*dudv[1];
     if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
     gridNodeAR( grid, node, &ar[1] );
-    gridNodeFaceMR( grid, node, &mr );
-    ar[1] = MIN(mr, ar[1]);
+    gridNodeFaceMR( grid, node, &mr[1] );
   }
 
   uv[0] = uvOrig[0] + alpha[0]*dudv[0];
