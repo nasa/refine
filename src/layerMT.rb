@@ -31,7 +31,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0, layer.nfront
  end
 
- def testInitGC
+ def XtestInitGC # GC is disabled now
   assert_not_nil  grid = Grid.new(2,0,0,0)
   assert_not_nil  layer = Layer.new(grid)
   assert_equal 2, layer.maxnode
