@@ -503,6 +503,7 @@ class TestGridSwap < Test::Unit::TestCase
   grid.addCell(0,3,2,5)
   assert_equal grid, grid.removeTwoFaceCell(0), "failed to removed good conf"
   assert_equal 2, grid.ncell
+  assert_equal 2, grid.nface
   assert_equal [3,1,2,10], grid.face(2)
   assert_equal [2,0,3,10], grid.face(3)
  end
