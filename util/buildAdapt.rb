@@ -15,7 +15,8 @@ class Package
 		 puts "repository unknown: "+package
 		 nil
 		end
-  @where=`pwd`
+  @where=`pwd`.chomp
+  @path = File.join(@where,@name)
  end
 
  def kill
@@ -35,9 +36,17 @@ class Package
   check_out
   self
  end
+
+ def bootstrap
+  autogen = File.join(path,"autogen.sh")
+  `(cd #@path && #{autogen} > autogen.out)` if File.executable?(autogen)
+ end
+
 end
 
 capri = Package.new("CAPRI")
 sdk = Package.new("SDK")
 refine = Package.new("refine")
 hefss = Package.new("HEFSS.rps")
+
+sdk.bootstrap
