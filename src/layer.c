@@ -2010,7 +2010,7 @@ Layer *layerAdvance(Layer *layer, bool reconnect)
     }
   }
 
-    /* advance blends */
+  /* advance blends */
   if (layerNBlend(layer) > 0){
     int blend, blendnormals[4];
     int triangle0, triangle1;
