@@ -651,7 +651,6 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 			       0, NULL,
 			       &nfacenode, &nfacetri, 
 			       &newface, &newxyz, &newuv) ) {
-	layerDumpFaceWire(faceId, nshell, shell, shellxyz);
 	return NULL;
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
