@@ -35,7 +35,7 @@ The refine library overview, version 1.0.
 * Grid Object   :: The main object: grid.
 * Grid Mix-ins  :: Additional methods for grid object
 * Running FUN3D :: HOWTO run FUN3D with refine
-* Support       :: Performing support tasts
+* Support       :: Performing support tasks
 * Add Me        :: Documentation Wish List.
 * Index         :: Complete index.
 @end menu
@@ -49,15 +49,15 @@ This is a copy of refine/README file from the distribution.
 Refine is a 3D tetrahedral grid adaptation framework. It is
 implemented with an object-oriented flavor in the C language.  Most
 functionality is wrapped into Ruby scripting language extensions
-@url{http://www.ruby-lang.org/} for use in test first programing and unit
+@url{http://www.ruby-lang.org/} for use in test first programming and unit
 testing. See the README.EXT file in the Ruby distribution for details
 on ruby extensions.
  
 The refine library can be called by FUN3D @url{http://fun3d.larc.nasa.gov/}
 to perform adaptation with a parallel execution scheme.
  
-CAD geometry access is facilitated with the NASA Langley Geomerty
-Labratory SDK @url{http://geolab.larc.nasa.gov/}, which assess CAD
+CAD geometry access is facilitated with the NASA Langley Geometry
+Laboratory SDK @url{http://geolab.larc.nasa.gov/}, which assess CAD
 information with the CAPRI API
 @url{http://raphael.mit.edu/capri/docs.html}.
 
@@ -72,18 +72,19 @@ with the SDK to rebuild the inviscid portions of the grid.
 @cindex conventions
 
 The term `object' will be used loosely in this manual. An object
-defined is a pointer to a C structure with its assoicated methods that
+defined is a pointer to a C structure with its associated methods that
 are generally bundled into a C header and source file. I got this idea
-from the way that the Ruby interpreture is writen in C.
+from the way that the Ruby interpreture is written in C.
 
-NOTE: although the C strut of the objects is often exposed for macro
-acess to increasing efficiency, please DO NOT acess them directly, use
-the available methods or macros.
+NOTE: although the C struct of the objects is often exposed for macro
+access to increase efficiency by reducing the number of function
+calls, please resist the desire to access struct elements directly;
+use the available methods or macros.
 
 A pointer to a C struct is passed as the first argument to `object'
 methods. These methods generally return @code{NULL} or @code{EMPTY
 (-1)} when they fail. They return a C struct pointer (often the first
-argument) or the result if they are sucessful.
+argument) or the result if they are successful.
 
 @section Architecture
 @cindex architecture
@@ -96,7 +97,7 @@ executable (R).
 @heading Base objects:
 @enumerate
 @item adj - element node adjacency
-@item queue - transaction queue for parallel connectivity modifcations.
+@item queue - transaction queue for parallel connectivity modifications.
 @item sort - list sorting and searching routines.
 @item line - stores arrays of nodes (advancing layer growth curves).
 @item near - near tree for finding nearby things (M)
@@ -118,12 +119,12 @@ executable (R).
 @item gridinsert - inserts and removes nodes into grid.
 @item gridmpi - parallel grid adaptation helper
 @item gridfortran - fortran bindings for linking to FUN3D.
-@item gridfiller - sequental GeoSDK/CAPRI restart routines. (M,R)
+@item gridfiller - sequential GeoSDK/CAPRI restart routines. (M,R)
 @end enumerate
 
 @heading Grid Children
 @enumerate
-@item gridmove - grid movement by linear elasticity or springs (inherts form grid)
+@item gridmove - grid movement by linear elasticity or springs (inherits form grid)
 @item layer - advancing layer mesher object. (M)
 @end enumerate
 
@@ -133,7 +134,7 @@ executable (R).
 @item MesherX - MesherX main. (M)
 @item mesherx - MesherX driver routines. (M)
 @item mesherxInit - Build layer object from GeoSDK/CAPRI restart. (M)
-@item mesherxRebuild - Inviscid mesh rebuild routines for advaning layer meshes. (M)
+@item mesherxRebuild - Inviscid mesh rebuild routines for advancing layer meshes. (M)
 @end enumerate
 
 @section Unit Testing
@@ -143,19 +144,19 @@ Each of the objects listed in the previous ``Architecture'' section is composed 
 
 @enumerate
 @item @code{anobjectMT.rb} - Ruby unit test script, This contains the object's Mobility Test (MT).
-@item @code{anobject_ruby.c} - Ruby wrapper code to allow Ruby to load the objecty.
+@item @code{anobject_ruby.c} - Ruby wrapper code to allow Ruby to load the object.
 @item @code{anobject.h} - C header file
 @item @code{anobject.c} - C source file.
 @end enumerate
 
-When the @code{anobjectMT.rb} script is envoked, it first calls
+When the @code{anobjectMT.rb} script is evoked, it first calls
 @code{RubyExtensionBuilder.rb}. The @code{RubyExtensionBuilder.rb}
 script handles any dependencies by making any ruby extensions that the
 @code{anobjectMT.rb} script requires to run. Each object is created
 with the @code{makeRubyExtension.rb} script. The
 @code{makeRubyExtension.rb} script C creates a subdirectory named
 AnObject. Inside this directory the standard Ruby @code{mkmf.rb}
-module is envoked to create a makefile, which is used to create a
+module is evoked to create a makefile, which is used to create a
 shared object. The shared object is loaded into the
 @code{anobjectMT.rb} script with
 @verbatim
@@ -189,7 +190,7 @@ has the ability to be dynamically resized and grown. It is initialized
 size for growing more adjacencies.
 
 A new item adjacency is added with @code{adjRegister} method by
-specifing a node and integer item index. It can also be removed with
+specifying a node and integer item index. It can also be removed with
 @code{adjRemove}. A node's item count is @code{adjDegree}. The
 presence of a item attached to a node is tested with @code{adjExists}.
 
@@ -218,7 +219,7 @@ automatically reallocated in @code{adjChunkSize} blocks.
 @cindex queue
 
 The queue object stores transactions to comminucate connectity changes
-(i.e., edge swaps and node insertion) across processers durring
+(i.e., edge swaps and node insertion) across processors during
 parallel grid adaptation operations. A queue object is created with
 @code{queueCreate}. The @code{nodeSize} argument specifies how many
 doubles will be stored for each node. 
@@ -234,12 +235,12 @@ Existing transactions can be queried with the
 @code{queueRemovedFaces}, @code{queueAddedFaces},
 @code{queueRemovedEdges}, @code{queueAddedEdges} method to obtain
 counts of the element changes. Running totals of cells, faces, and
-edges are used the acesses the actual data in the rest of the
+edges are used the accesses the actual data in the rest of the
 @code{queueRemoved*} and @code{queueAdded*} routines.
 
 A queue object can be message passed to other processors by extracting
 two arrays, sending them, and using these arrays to recreate the queue
-object. All the internal data sturctures of a queue can be dumped to a
+object. All the internal data structures of a queue can be dumped to a
 single array of @code{int}s and a single array of @code{double}s. The
 sizes of these arrays are given by @code{queueDumpSize}. The arrays
 are filled by the @code{queueDump} method. The arrays can be used to
@@ -273,7 +274,7 @@ A grid object can be exported as arrays @code{gridExport}, a FAST file
 @code{gridExportFAST} or AFLR3 file @code{gridExportAFLR3}. The
 surface (faces) can be displayed with
 @code{gridWriteTecplotSurfaceZone}. NOTE: the export routines may
-envoke pack @code{gridPack} and sort routines @code{gridSort*}.
+evoke pack @code{gridPack} and sort routines @code{gridSort*}.
 
 Grid children can register methods to handle packing, reordering,
 reallocation, and deallocation @code{gridAttach*}. These registered
@@ -282,7 +283,7 @@ methods can be unregistered with @code{gridDetach*}.
 Stuff can be added and removed with @code{gridAdd*} and
 @code{gridRemove*}. Remove operations leave empty spaces in arrays. To
 iterate over items, loop out to max array size and test each item to
-see if it is vaild. 
+see if it is valid. 
 
 @verbatim
 int cell;
@@ -295,7 +296,7 @@ for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
 
 A gem is the set of cells that surround an edge. It is used for edge
 swapping, node insertion, and edge collapse. A gem is formed with
-@code{gridMakeGem}. An equator is an ordered set of nodes in a geom
+@code{gridMakeGem}. An equator is an ordered set of nodes in a gem
 that are not defineig the edge.
 
 The map @code{gridMap} is six entries of a 3x3 symmetric matrix used
@@ -337,7 +338,7 @@ Converts a metric M to a jacobian J
 
 Computes element volume @code{gridVolume} in physical space and aspect
 ratio @code{gridAR} in metric mapped space. This methods call also be
-called on elements arround a node @code{gridNodeAR}. The same info is
+called on elements around a node @code{gridNodeAR}. The same info is
 available for faces @code{gridFaceArea} @code{gridFaceAR}. These
 routines have also been differentiated.
 
