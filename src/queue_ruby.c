@@ -199,6 +199,54 @@ VALUE queue_dump( VALUE self )
   return array;
 }
 
+VALUE queue_dumpInt( VALUE self )
+{
+  VALUE array;
+  int i, nInt, nDouble;
+  int *ints;
+  double *doubles;
+  GET_QUEUE_FROM_SELF;
+
+  if (queue != queueDumpSize(queue,&nInt,&nDouble)) return Qnil;
+
+  ints = malloc(nInt * sizeof(int));
+  doubles = malloc(nDouble * sizeof(double));
+
+  if (queue != queueDump(queue,ints,doubles)) {
+    free(ints);
+    free(doubles);
+    return Qnil;
+  }
+
+  array = rb_ary_new2(nInt);
+  for (i=0;i<nInt;i++) rb_ary_store(array,i,INT2NUM(ints[i]));
+  return array;
+}
+
+VALUE queue_dumpFloat( VALUE self )
+{
+  VALUE array;
+  int i, nInt, nDouble;
+  int *ints;
+  double *doubles;
+  GET_QUEUE_FROM_SELF;
+
+  if (queue != queueDumpSize(queue,&nInt,&nDouble)) return Qnil;
+
+  ints = malloc(nInt * sizeof(int));
+  doubles = malloc(nDouble * sizeof(double));
+
+  if (queue != queueDump(queue,ints,doubles)) {
+    free(ints);
+    free(doubles);
+    return Qnil;
+  }
+
+  array = rb_ary_new2(nDouble);
+  for (i=0;i<nDouble;i++) rb_ary_store(array,i,rb_float_new(doubles[i]));
+  return array;
+}
+
 VALUE queue_load( VALUE self, VALUE rb_ints, VALUE rb_doubles )
 {
   Queue *result;
@@ -252,5 +300,7 @@ void Init_Queue()
   rb_define_method( cQueue, "addedFaceUVs", queue_addedFaceUVs, 1 );
 
   rb_define_method( cQueue, "dump", queue_dump, 0 );  
+  rb_define_method( cQueue, "dumpInt", queue_dumpInt, 0 );  
+  rb_define_method( cQueue, "dumpFloat", queue_dumpFloat, 0 );  
   rb_define_method( cQueue, "load", queue_load, 2 );
 }

@@ -280,4 +280,24 @@ class TestQueue < Test::Unit::TestCase
   assert_equal [0.1,0.2,0.3,0.4,0.5,0.6], q.addedFaceUVs(0)
  end
 
+ def testSerialIsStatbleAfterARemalloc
+  nodes = [5,6,7,8,9]
+  xyz = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2]
+  q = Queue.new
+  n=1000
+  n.times { 
+   q.newTransaction
+   q.removeCell(nodes).addCell(nodes,xyz)
+   q.removeCell(nodes).addCell(nodes,xyz)
+   q.removeFace(nodes).addFace(nodes,xyz)
+   q.removeFace(nodes).addFace(nodes,xyz)
+  } 
+  i = q.dumpInt
+  f = q.dumpFloat
+  l = Queue.new.load(i,f)
+  assert_equal n+1, l.transactions
+  assert_equal i, l.dumpInt
+  assert_equal f, l.dumpFloat
+ end
+
 end

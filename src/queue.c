@@ -374,7 +374,7 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
 				   queue->maxTransactions * sizeof(int) );
   }
   if (queue->nRemovedCells > queue->maxRemovedCells) {
-    queue->maxRemovedCells = queue->maxRemovedCells;
+    queue->maxRemovedCells = queue->nRemovedCells;
     queue->removedCellNodes = realloc( queue->removedCellNodes, 
 				       4 * queue->maxRemovedCells* sizeof(int));
   }
