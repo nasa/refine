@@ -12,27 +12,27 @@
 #include "grid.h"
 
 struct Grid {
-  int count;
-  int *firstcell
+  long nnodes;
+  long *firstcell
 };
 
-Grid* grid_create(int n)
+Grid* grid_create(long n)
 {
-  int i;
+  long i;
   Grid *grid;
   grid = malloc(sizeof(Grid));
-  grid->count =n;
-  grid->firstcell = malloc(grid->count * sizeof(int));
-  for (i=1;i < grid->count; i++ ) grid->firstcell[i] = NULL;
+  grid->nnodes =n;
+  grid->firstcell = malloc(grid->nnodes * sizeof(long));
+  for (i=1;i < grid->nnodes; i++ ) grid->firstcell[i] = 0;
   return  grid;
 }
 
-int grid_count(Grid *grid)
+long grid_nnodes(Grid *grid)
 {
-  return grid->count;
+  return grid->nnodes;
 }
 
-int *grid_firstcell(Grid *grid, int id)
+long *grid_firstcell(Grid *grid, long id)
 {
   return grid->firstcell[id];
 }
