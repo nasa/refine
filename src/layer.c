@@ -2575,7 +2575,7 @@ Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
   return layer;
 }
 
-Layer *layerFindNearNormals(Layer *layer)
+Layer *layerTerminateCollidingFronts(Layer *layer)
 {
   int normal;
   Grid *grid;

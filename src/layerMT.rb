@@ -1410,10 +1410,60 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [5,7,1], layer.triangleNormals(5)
  end
 
- def testCollideFront
-  grid  = flatTwoFaceGrid
+ def facingGrid(z)
+  # y 2
+  # ^ |0\
+  # | 0---1 -> x
+  grid = Grid.new(100,100,100,100)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,z)
+  grid.addNode(1,0,z)
+  grid.addNode(0,1,z)
+  grid.addFace(0,1,2,1)
+  grid.addFace(3,5,4,1)
+  grid
+ end
+
+ def testCollideFrontFarApart
+  grid  = facingGrid(4)
   layer = Layer.new(grid).populateAdvancingFront([1])
-  layer.findNearNormals
+  assert !layer.normalTerminated(0)
+  assert !layer.normalTerminated(1)
+  assert !layer.normalTerminated(2)
+  assert !layer.normalTerminated(3)
+  assert !layer.normalTerminated(4)
+  assert !layer.normalTerminated(5)
+
+  layer.terminateCollidingFronts
+
+  assert !layer.normalTerminated(0)
+  assert !layer.normalTerminated(1)
+  assert !layer.normalTerminated(2)
+  assert !layer.normalTerminated(3)
+  assert !layer.normalTerminated(4)
+  assert !layer.normalTerminated(5)
+ end
+
+ def testCollideFrontClose
+  grid  = facingGrid(0.5)
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert !layer.normalTerminated(0)
+  assert !layer.normalTerminated(1)
+  assert !layer.normalTerminated(2)
+  assert !layer.normalTerminated(3)
+  assert !layer.normalTerminated(4)
+  assert !layer.normalTerminated(5)
+
+  layer.terminateCollidingFronts
+
+  assert layer.normalTerminated(0)
+  assert layer.normalTerminated(1)
+  assert layer.normalTerminated(2)
+  assert layer.normalTerminated(3)
+  assert layer.normalTerminated(4)
+  assert layer.normalTerminated(5)
  end
 
 end
