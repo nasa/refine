@@ -483,12 +483,21 @@ class TestGridMetric < Test::Unit::TestCase
 
  def testCellMR
 
+  nodes = [0,1,2,3]
+
+  grid = rightTet
+  node0 = grid.nodeXYZ(0)
+  node1 = grid.nodeXYZ(1)
+  node2 = grid.nodeXYZ(2)
+  node3 = grid.nodeXYZ(3)
+  assert_in_delta 0.840, grid.cellMeanRatio(node0,node1,node2,node3), 1.0e-4
+
   grid = isoTet
   node0 = grid.nodeXYZ(0)
   node1 = grid.nodeXYZ(1)
   node2 = grid.nodeXYZ(2)
   node3 = grid.nodeXYZ(3)
-  assert_in_delta 1.0, grid.cellMeanRatio(node0,node1,node2,node3), 1.0e-3
+  assert_in_delta 1.0, grid.cellMeanRatio(node0,node1,node2,node3), 1.0e-4
 
  end
 
