@@ -1526,6 +1526,19 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [6,1,7,5], layer.subBlendNormals(0,1)
  end
 
+ def testSubBlendNormals3
+  grid  = flatTwoFaceGrid
+  grid.setNodeXYZ(3,[0.5,0.5,-1])
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  layer.blend(180.0)
+  layer.subBlend(29.0)
+  assert_equal [4,1,2,5], layer.blendNormals(0)
+  assert_equal 3, layer.nSubBlend(0)
+  assert_equal [4,6,2,8], layer.subBlendNormals(0,0)
+  assert_equal [6,7,8,9], layer.subBlendNormals(0,1)
+  assert_equal [7,1,9,5], layer.subBlendNormals(0,2)
+ end
+
  def testExtrudeBlend
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
