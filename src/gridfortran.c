@@ -117,7 +117,9 @@ int gridswap_( )
 int gridsmoothvolume_( )
 {
   gridSmoothVolume(grid);
-  printf(" post smooth min AR %17.15f\n",gridMinAR(grid));
+  printf( " %6d smooth                           %s    AR%14.10f\n",
+	  gridPartId(grid),"                   ",gridMinAR(grid) );
+  fflush(stdout);
 }
 
 int gridadaptwithoutcad_( double *minLength, double *maxLength )
