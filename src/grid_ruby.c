@@ -177,13 +177,13 @@ VALUE grid_orient( VALUE self, VALUE c0, VALUE c1 , VALUE c2, VALUE c3,
   return rb_result;
 }
 
-VALUE grid_swap( VALUE self, VALUE n0, VALUE n1 )
+VALUE grid_swapEdge( VALUE self, VALUE n0, VALUE n1 )
 {
   
   Grid *returnedGrid;
   GET_GRID_FROM_SELF;
   returnedGrid = 
-    gridSwap( grid, NUM2INT(n0),  NUM2INT(n1) );
+    gridSwapEdge( grid, NUM2INT(n0),  NUM2INT(n1) );
   return (returnedGrid==NULL?Qnil:self);
 }
 
@@ -239,7 +239,7 @@ void Init_Grid()
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );
-  rb_define_method( cGrid, "swap", grid_swap, 2 );
+  rb_define_method( cGrid, "swapEdge", grid_swapEdge, 2 );
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );
   rb_define_method( cGrid, "volume", grid_volume, 1 );
   rb_define_method( cGrid, "ar", grid_ar, 1 );

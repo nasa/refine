@@ -486,10 +486,10 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
   return grid;
 }
 
-Grid *gridSwap4(Grid *grid, int n0, int n1 );
-Grid *gridSwap5(Grid *grid, int n0, int n1 );
+Grid *gridSwapEdge4(Grid *grid, int n0, int n1 );
+Grid *gridSwapEdge5(Grid *grid, int n0, int n1 );
 
-Grid *gridSwap(Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
 {
   int gap0, gap1, face0, face1, faceId0, faceId1, newFaceId0, newFaceId1;
   Grid *swapStatus;
@@ -512,8 +512,8 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
   }
 
-  if (grid->nequ==4) swapStatus = gridSwap4(grid, n0, n1);
-  if (grid->nequ==5) swapStatus = gridSwap5(grid, n0, n1);
+  if (grid->nequ==4) swapStatus = gridSwapEdge4(grid, n0, n1);
+  if (grid->nequ==5) swapStatus = gridSwapEdge5(grid, n0, n1);
 
   if ( grid->nequ != grid->ngem && swapStatus != NULL ) {
     gridRemoveFace(grid, face0 );
@@ -525,7 +525,7 @@ Grid *gridSwap(Grid *grid, int n0, int n1 )
   return swapStatus;
 }
 
-Grid *gridSwap4(Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge4(Grid *grid, int n0, int n1 )
 {
   int i, nodes[4][4], bestindex;
   double cost, origcost, currentcost, bestcost;
@@ -653,7 +653,7 @@ Grid *gridCycleEquator( Grid *grid )
   return grid;
 }
 
-Grid *gridSwap5(Grid *grid, int n0, int n1 )
+Grid *gridSwapEdge5(Grid *grid, int n0, int n1 )
 {
   int i;
   int currentindex, bestindex, nodes[6][4];

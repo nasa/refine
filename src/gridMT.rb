@@ -156,10 +156,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_in_delta 0.732050807568877, @grid.ar(nodes), 1.0e-15
  end
 
- def testSwap4_0
+ def testSwapEdge4_0
   assert_not_nil grid=gemGrid(4, 0.1, 0)
   initalVolume = grid.totalVolume
-  grid.swap(0,1)
+  assert_equal grid, grid.swapEdge(0,1)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
   assert_equal 2, grid.cellDegree(0)
@@ -170,10 +170,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2, grid.cellDegree(5)
  end
 
- def testSwap4_1
+ def testSwapEdge4_1
   assert_not_nil grid=gemGrid(4, 0.1, 1)
   initalVolume = grid.totalVolume
-  grid.swap(0,1)
+  assert_equal grid, grid.swapEdge(0,1)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
   assert_equal 2, grid.cellDegree(0)
@@ -184,9 +184,9 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 4, grid.cellDegree(5)
  end
 
- def testSwap4_invalid
+ def testSwapEdge4_invalid
   assert_not_nil grid=gemGrid(4, 0.1, nil, -0.1)
-  grid.swap(0,1)
+  grid.swapEdge(0,1)
   assert_equal 4, grid.cellDegree(0)
   assert_equal 4, grid.cellDegree(1)
  end
@@ -237,12 +237,12 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 11,   grid.faceId( 1, 2, 3 )
  end
 
- def testSwap4_gapWithSameFaces
+ def testSwapEdge4_gapWithSameFaces
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
   assert_equal grid, grid.addFace(0,1,2,11)
   assert_equal grid, grid.addFace(0,1,5,11)
-  assert_equal grid, grid.swap(0,1)
+  assert_equal grid, grid.swapEdge(0,1)
   assert_equal 4,    grid.ncell
   assert_equal 2,    grid.cellDegree(0)
   assert_equal 2,    grid.cellDegree(1)
@@ -253,12 +253,12 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal(-1,   grid.faceId(0,1,5) ) 
  end
 
- def testSwap4_gapWithDifferentFaces
+ def testSwapEdge4_gapWithDifferentFaces
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
   assert_equal grid, grid.addFace(0,1,2,2)
   assert_equal grid, grid.addFace(0,1,5,5)
-  assert_nil         grid.swap(0,1)
+  assert_nil         grid.swapEdge(0,1)
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
   assert_equal 3,    grid.cellDegree(1)
@@ -266,13 +266,13 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 5,    grid.faceId(0,1,5)  
  end
 
- def testSwap4_gapWithSameAndExistingFace0
+ def testSwapEdge4_gapWithSameAndExistingFace0
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
   assert_equal grid, grid.addFace(0,1,2,11)
   assert_equal grid, grid.addFace(0,1,5,11)
   assert_equal grid, grid.addFace(0,2,5,20)
-  assert_nil         grid.swap(0,1)
+  assert_nil         grid.swapEdge(0,1)
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
   assert_equal 3,    grid.cellDegree(1)
@@ -280,13 +280,13 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 11,   grid.faceId(0,1,5)  
  end
 
- def testSwap4_gapWithSameAndExistingFace1
+ def testSwapEdge4_gapWithSameAndExistingFace1
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
   assert_equal grid, grid.addFace(0,1,2,11)
   assert_equal grid, grid.addFace(0,1,5,11)
   assert_equal grid, grid.addFace(1,2,5,20)
-  assert_nil         grid.swap(0,1)
+  assert_nil         grid.swapEdge(0,1)
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
   assert_equal 3,    grid.cellDegree(1)
@@ -294,10 +294,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 11,   grid.faceId(0,1,5)  
  end
 
- def testSwap5_0
+ def testSwapEdge5_0
   assert_not_nil grid=gemGrid(5, 0.1, 0)
   initalVolume = grid.totalVolume
-  grid.swap(0,1)
+  grid.swapEdge(0,1)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
   assert_equal 3, grid.cellDegree(0)
@@ -309,10 +309,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2, grid.cellDegree(6)
  end
 
- def testSwap5_1
+ def testSwapEdge5_1
   assert_not_nil grid=gemGrid(5, 0.1, 1)
   initalVolume = grid.totalVolume
-  grid.swap(0,1)
+  grid.swapEdge(0,1)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
   assert_equal 3, grid.cellDegree(0)
@@ -324,10 +324,10 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 4, grid.cellDegree(6)
  end
 
- def testSwap5_3
+ def testSwapEdge5_3
   assert_not_nil grid=gemGrid(5, 0.1, 3)
   initalVolume = grid.totalVolume
-  grid.swap(0,1)
+  grid.swapEdge(0,1)
   assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
   assert_in_delta initalVolume, grid.totalVolume, 1.0e-15
   assert_equal 3, grid.cellDegree(0)
@@ -339,12 +339,12 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2, grid.cellDegree(6)
  end
 
- def testSwap5_gapWithSameFaces
+ def testSwapEdge5_gapWithSameFaces
   assert_not_nil     grid=gemGrid(5, nil, nil, nil, true)
   assert_equal 4,    grid.ncell
   assert_equal grid, grid.addFace(0,1,2,11)
   assert_equal grid, grid.addFace(0,1,6,11)
-  assert_equal grid, grid.swap(0,1)
+  assert_equal grid, grid.swapEdge(0,1)
   assert_equal 6,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
   assert_equal 3,    grid.cellDegree(1)
