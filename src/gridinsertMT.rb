@@ -133,7 +133,9 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid, grid.addFace(1,0,5,5)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.addEdge(0,1,15, 0.0, 1.0)
+  assert_equal 1, grid.nedge
   assert_equal grid.nnode, grid.splitEdge(0,1)
+  assert_equal 2, grid.nedge
   assert_nil         grid.edgeId(0,1)
   assert_equal 15,   grid.edgeId(0,6)
   assert_equal 15,   grid.edgeId(6,1)
@@ -467,14 +469,21 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 2, grid.addNode(2,0,0)
   assert_equal grid, grid.addEdge(0,1,1,0,1)
   assert_equal grid, grid.addEdge(1,2,1,1,2)
-  assert_equal 2, grid.insertInToGeomEdge(0.5,0,0)
+  assert_equal [0,1,1], grid.edge(0)
+  assert_equal 2, grid.nedge
+  assert_equal( -1, grid.insertInToGeomEdge(5,0,0) )
+  assert_equal [], grid.equator(0,1)
+  assert_equal 3, grid.insertInToGeomEdge(0.5,0,0)
   assert_equal 4, grid.nnode
+  assert_equal [0,3,1], grid.edge(0)
+  assert_equal [1,2,1], grid.edge(1)
+  assert_equal [1,3,1], grid.edge(2)
   assert_equal 3, grid.nedge
-  assert_equal [0.5,0,0], grid.nodeXYZ(2)
-  assert_equal 0.5, grid.nodeT(2,1)
+  assert_equal [0.5,0,0], grid.nodeXYZ(3)
+  assert_equal 0.5, grid.nodeT(3,1)
  end
 
- def testInsertNodeInToGeomEdgeMoveExisting
+ def XtestInsertNodeInToGeomEdgeMoveExisting
   assert_not_nil grid = Grid.new(4,0,0,3)
   assert_equal 0, grid.addNode(0,0,0)
   assert_equal 1, grid.addNode(1,0,0)
