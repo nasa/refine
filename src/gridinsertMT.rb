@@ -573,6 +573,9 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 3,    grid.addNode(0,0,1)
   assert_equal grid, grid.addCell(0,1,2,3)
   assert_equal(-1,   grid.insertInToVolume(1,1,1))
+  assert_equal(-1,   grid.insertInToVolume(0.5,0.5,-1))
+  assert_equal(-1,   grid.insertInToVolume(0.5,-1,0.5))
+  assert_equal(-1,   grid.insertInToVolume(-1,0.5,0.5))
   assert_equal 4,    grid.nnode
   assert_equal 1,    grid.ncell
   assert_equal 0,    grid.insertInToVolume(0.01,0.01,0.01)
@@ -591,6 +594,18 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 4,    grid.insertInToVolume(0.5,0,0)
   assert_equal 5,    grid.nnode
   assert_equal 2,    grid.ncell
+ end
+  
+ def testInsertNodeInToVolumeSplitCell
+  assert_not_nil     grid = Grid.new(5,3,0,0)
+  assert_equal 0,    grid.addNode(0,0,0)
+  assert_equal 1,    grid.addNode(1,0,0)
+  assert_equal 2,    grid.addNode(0,1,0)
+  assert_equal 3,    grid.addNode(0,0,1)
+  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_equal 4,    grid.insertInToVolume(0.3,0.3,0.3)
+  assert_equal 5,    grid.nnode
+  assert_equal 4,    grid.ncell
  end
   
 

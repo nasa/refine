@@ -457,6 +457,12 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 {
   int cell, maxcell, nodes[4], foundCell, newnode;
   bool edgeSplit;
+  double newxyz[3], xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double edge0[3], edge1[3];
+  double leg0[3], leg1[3];
+  double norm[3], norm0[3], norm1[3], norm2[3], norm3[3];
+
+  newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
 
   foundCell = EMPTY;
   edgeSplit = FALSE;
@@ -467,27 +473,62 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
       /* first try putting it on an edge */
       if (!edgeSplit){
 	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],newX,newY,newZ);
-	edgeSplit = (EMPTY != newnode);
-      }
+	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
 	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[2],newX,newY,newZ);
-	edgeSplit = (EMPTY != newnode);
-      }
+	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
 	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[3],newX,newY,newZ);
-	edgeSplit = (EMPTY != newnode);
-      }
+	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
 	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[2],newX,newY,newZ);
-	edgeSplit = (EMPTY != newnode);
-      }
+	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
 	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[3],newX,newY,newZ);
-	edgeSplit = (EMPTY != newnode);
-      }
+	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
 	newnode = gridSplitEdgeIfNear(grid,nodes[2],nodes[3],newX,newY,newZ);
-	edgeSplit = (EMPTY != newnode);
+	edgeSplit = (EMPTY != newnode);}
+      if (!edgeSplit) {
+	/* then try putting it in the cell -or splitting faces?-*/
+	gridNodeXYZ(grid, nodes[0], xyz0);
+	gridNodeXYZ(grid, nodes[1], xyz1);
+	gridNodeXYZ(grid, nodes[2], xyz2);
+	gridNodeXYZ(grid, nodes[3], xyz3);
+
+	gridSubtractVector(xyz3, xyz1, edge0);
+	gridSubtractVector(xyz2, xyz1, edge1);
+	gridCrossProduct(edge0,edge1,norm0);
+
+	gridSubtractVector(xyz2, xyz0, edge0);
+	gridSubtractVector(xyz3, xyz0, edge1);
+	gridCrossProduct(edge0,edge1,norm1);
+
+	gridSubtractVector(xyz3, xyz0, edge0);
+	gridSubtractVector(xyz1, xyz0, edge1);
+	gridCrossProduct(edge0,edge1,norm0);
+
+	gridSubtractVector(xyz1, xyz0, edge0);
+	gridSubtractVector(xyz2, xyz0, edge1);
+	gridCrossProduct(edge0,edge1,norm0);
+
+	gridSubtractVector(newxyz, xyz0, leg0);
+	gridSubtractVector(newxyz, xyz1, leg1);
+	
+	  printf("c%d X%8.5f Y%8.5f Z%8.5f 0 %6.3f 1 %6.3f 2 %6.3f 3 %6.3f\n",
+		 cell, newX, newY, newZ, 
+		 gridDotProduct( leg1, norm0 ),
+		 gridDotProduct( leg0, norm1 ),
+		 gridDotProduct( leg0, norm2 ),
+		 gridDotProduct( leg0, norm3 ) );
+
+
+	if ( gridDotProduct( leg1, norm0 ) > 0.00 &&
+	     gridDotProduct( leg0, norm1 ) > 0.00 &&
+	     gridDotProduct( leg0, norm2 ) > 0.00 &&
+	     gridDotProduct( leg0, norm3 ) > 0.00 ){
+	  foundCell = cell;
+	} 
       }
     }
     cell++;
@@ -495,8 +536,9 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 
   if ( edgeSplit ) return newnode;
 
-  return EMPTY;
+  if (EMPTY == foundCell) EMPTY;
 
+  return 10;
 }
 
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
