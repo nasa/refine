@@ -1,6 +1,7 @@
 format long
 
 p7 = 1.0/sqrt(2);
+p7 = 0.5;
 
 eVect1 = [  p7
             p7 ]
@@ -15,13 +16,15 @@ eVal2 = 1.0
 eigenValue  = [ eVal1   0.0
                   0.0 eVal2 ]
 
-map = eigenValue * eigenVector
+map = eigenValue * eigenVector'
 
-v1 = [ 2
+x1 = [ 2
        2 ]
-map*v1
+e1=map*x1
+len1=norm(e1)
 
-v2 = [ -1
+x2 = [ -1
         1 ]
 
-map*v2
+e2=map*x2
+len2=norm(e2)
