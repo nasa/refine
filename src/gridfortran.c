@@ -247,6 +247,10 @@ void gridtestcadparameters_( void )
 void gridminar_( double *aspectratio )
 {
   *aspectratio = gridMinAR( grid );
+#ifdef PARALLEL_VERBOSE 
+  printf( " %6d Minimum Aspect Ratio %g\n", gridPartId(grid), *aspectratio );
+  fflush(stdout);
+#endif
 }
 
 void gridwritetecplotsurfacezone_( void )
@@ -259,7 +263,7 @@ void gridwritetecplotsurfacezone_( void )
 
   for (cell=0;cell<gridMaxCell(grid);cell++)
     if (grid==gridCell(grid, cell, nodes)) {
-      if (0.0>=gridVolume(grid,nodes))
+      if (1.0e-12>=gridVolume(grid,nodes))
 	gridWriteTecplotCellGeom(grid,nodes,filename);
     }
 
