@@ -14,7 +14,6 @@
 #include <limits.h>
 #include <values.h>
 #include "grid.h"
-#include "adj.h"
 #include "gridStruct.h"
 
 //#define EBUG
@@ -1085,6 +1084,11 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
   grid->blankc2n = cellId;
 
   return grid;
+}
+
+Adj *gridCellAdj(Grid *grid)
+{
+  return grid->cellAdj;
 }
 
 Grid *gridReconnectCell(Grid *grid, int oldNode, int newNode )

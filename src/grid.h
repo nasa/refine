@@ -12,6 +12,7 @@
 #define GRID_H
 
 #include "master_header.h"
+#include "adj.h"
 
 BEGIN_C_DECLORATION
 
@@ -54,6 +55,7 @@ int gridCellDegree(Grid *g, int nodeIndex);
 
 Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
+Adj *gridCellAdj(Grid *g);
 Grid *gridReconnectCell(Grid *g, int oldNode, int newNode );
 Grid *gridReconnectCellUnlessFrozen(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
