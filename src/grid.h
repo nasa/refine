@@ -47,13 +47,14 @@ struct Grid {
   double *map;
   bool *frozen;
 
-  int *global;
+  int *nodeGlobal;
   int *part;
 
   int maxcell, ncell;
   int blankc2n;
   int *c2n;
   Adj *cellAdj;
+  int *cellGlobal;
 
   int maxface, nface;
   int blankf2n;
@@ -140,6 +141,8 @@ int gridNQuad(Grid *g);
 int gridPartId(Grid *g);
 Grid *gridSetPartId(Grid *g, int partId );
 int gridCellDegree(Grid *g, int nodeIndex);
+int gridCellGlobal(Grid *g, int cellIndex);
+Grid *gridSetCellGlobal(Grid *g, int cellIndex, int globalIndex );
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );

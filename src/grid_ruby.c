@@ -160,6 +160,18 @@ VALUE grid_cellDegree( VALUE self, VALUE nodeId )
   return INT2NUM( gridCellDegree(grid, NUM2INT(nodeId) ) );
 }
 
+VALUE grid_cellGlobal( VALUE self, VALUE cellId )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridCellGlobal(grid, NUM2INT(cellId) ) );
+}
+
+VALUE grid_setCellGlobal( VALUE self, VALUE cellId, VALUE globalId )
+{
+  GET_GRID_FROM_SELF;
+  return (grid==gridSetCellGlobal(grid, NUM2INT(cellId), NUM2INT(globalId))?self:Qnil);
+}
+
 VALUE grid_cellEdge( VALUE self, VALUE node0, VALUE node1 )
 {
   GET_GRID_FROM_SELF;
@@ -823,6 +835,8 @@ void Init_Grid()
   rb_define_method( cGrid, "reconnectAllCell", grid_reconnectAllCell, 2 );
   rb_define_method( cGrid, "cell", grid_cell, 1 );
   rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
+  rb_define_method( cGrid, "cellGlobal", grid_cellGlobal, 1 );
+  rb_define_method( cGrid, "setCellGlobal", grid_setCellGlobal, 2 );
   rb_define_method( cGrid, "cellEdge", grid_cellEdge, 2 );
   rb_define_method( cGrid, "cellFace", grid_cellFace, 3 );
   rb_define_method( cGrid, "findOtherCellWith3Nodes", 

@@ -87,6 +87,23 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 5001, grid.maxcell # chunk size hard coded to 5000
  end
  
+ def testGetAndSetCellGlobal
+  grid = Grid.new(4,1,0,0)
+  4.times { grid.addNode(1.0,2.0,3.0) }
+  assert_equal EMPTY, grid.cellGlobal(-1)
+  assert_equal EMPTY, grid.cellGlobal(0)
+  assert_equal EMPTY, grid.cellGlobal(1)
+  assert_nil          grid.setCellGlobal(-1,13)
+  assert_nil          grid.setCellGlobal(0,13)
+  assert_nil          grid.setCellGlobal(10,13)
+  assert_equal 0,     grid.addCell(0,1,2,3)
+  assert_equal EMPTY, grid.cellGlobal(0)
+  assert_equal grid,  grid.setCellGlobal(0,15)
+  assert_equal EMPTY, grid.cellGlobal(-1)
+  assert_equal 15,    grid.cellGlobal(0)
+  assert_equal EMPTY, grid.cellGlobal(1)
+ end
+
  def testInitNodeFrozenState
   @grid.addNode(0,0,0)
   @grid.addNode(1,0,0)
