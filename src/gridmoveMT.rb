@@ -371,7 +371,7 @@ class TestGridMove < Test::Unit::TestCase
   grid = isoTet4 h
   gm = GridMove.new(grid)
   3.times{|n| gm.displace(n,[0.0,0.0,0.0])}
-  gm.displace(3,[0.0,0.0,-0.78])
+  gm.displace(3,[0.0,0.0,-0.74])
   gm.elasticRelaxation(3,1)
   gm.applyDisplacements
   minVol = grid.minVolume
@@ -387,6 +387,7 @@ class TestGridMove < Test::Unit::TestCase
   gm.displace(2,up)
   assert_equal gm, gm.elasticRelaxation(1,1)
   ans = [0.0, -0.092378, 0.040415]
+  ans = [0.0, -0.092593, 0.040415]
   delta = 1.0e-5
   assert_in_delta ans[0], gm.displacement(3)[0], delta
   assert_in_delta ans[1], gm.displacement(3)[1], delta

@@ -1,3 +1,9 @@
+2004-07-23 16:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R to be
+	equal to 1/gridCellAspectRatio. This is the same as FUN3D
+	gridmove.
+
 2004-07-23 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt) do not split an edge if it is
