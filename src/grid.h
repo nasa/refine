@@ -54,6 +54,7 @@ Grid *gridReconnectCell(Grid *g, int oldNode, int newNode );
 Grid *gridReconnectCellUnlessFrozen(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 bool gridCellEdge(Grid *g, int node0, int node1 );
+bool gridCellFace(Grid *g, int node0, int node1, int node2 );
 
 Grid *gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
 Grid *gridAddFaceUV(Grid *g, 

@@ -136,10 +136,17 @@ class TestGrid < Test::Unit::TestCase
   assert_not_nil      grid = Grid.new(5,2,0,0)
   assert_equal grid,  grid.addCell(0,1,2,3)
   assert_equal grid,  grid.addCell(0,1,2,4)
+
   assert_equal true,  grid.cellEdge(0,1)
   assert_equal false, grid.cellEdge(3,4)
   assert_equal false, grid.cellEdge(-1,4)
   assert_equal false, grid.cellEdge(3,-1)
+
+  assert_equal true,  grid.cellFace(0,1,2)
+  assert_equal false, grid.cellFace(0,3,4)
+  assert_equal false, grid.cellFace(-1,0,0)
+  assert_equal false, grid.cellFace(0,-1,0)
+  assert_equal false, grid.cellFace(0,0,-1)
  end
 
  def testGetGem

@@ -1016,6 +1016,25 @@ bool gridCellEdge(Grid *grid, int n0, int n1 )
   return FALSE;
 }
 
+bool gridCellFace(Grid *grid, int n0, int n1, int n2 )
+{
+  AdjIterator it;
+  int i, j, nodes[4];
+
+  if ( n0 < 0 || n0 >= grid->maxnode ) return FALSE;
+  if ( n1 < 0 || n1 >= grid->maxnode ) return FALSE;
+  if ( n2 < 0 || n2 >= grid->maxnode ) return FALSE;
+
+  for ( it = adjFirst(grid->cellAdj,n0); adjValid(it); it = adjNext(it) ) {
+    gridCell( grid, adjItem(it), nodes );
+    for(i=0;i<3;i++) if (n0 == nodes[i]) for(j=i;j<3;j++) nodes[i]=nodes[i+1];
+    if ( ( n1 == nodes[0] || n1 == nodes[1] || n1 == nodes[2] ) &&
+	 ( n2 == nodes[0] || n2 == nodes[1] || n2 == nodes[2] ) ) return TRUE;
+  }
+
+  return FALSE;
+}
+
 Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 {
  return gridAddFaceUV(grid, 
