@@ -16,12 +16,14 @@
 #include <limits.h>
 #include <values.h>
 #include "gridmath.h"
+#include "gridcad.h"
 #include "gridshape.h"
 
 Grid *gridCurvedEdgeMidpoint(Grid *grid,int node0, int node1, double *e)
 {
   double n0[3], n1[3];
-  double origxyz[3], tuv[2];
+  double origxyz[3];
+  double tuv0[2], tuv1[2], tuv[2];
   int parent;
 
   gridNodeXYZ(grid,node0,n0);
@@ -34,8 +36,15 @@ Grid *gridCurvedEdgeMidpoint(Grid *grid,int node0, int node1, double *e)
   gridVectorCopy(origxyz,e);
   tuv[0] = tuv[1] = DBL_MAX;
   if (parent<0) {
+    gridNodeT(grid,node0,-parent, tuv0);
+    gridNodeT(grid,node1,-parent, tuv1);
+    tuv[0] = 0.5 * ( tuv0[0] + tuv1[0] );
     gridProjectToEdge(grid, -parent, origxyz, tuv, e);
   } else {
+    gridNodeUV(grid,node0,parent, tuv0);
+    gridNodeUV(grid,node1,parent, tuv1);
+    tuv[0] = 0.5 * ( tuv0[0] + tuv1[0] );
+    tuv[1] = 0.5 * ( tuv0[1] + tuv1[1] );
     gridProjectToFace(grid, parent, origxyz, tuv, e);    
   }
 
