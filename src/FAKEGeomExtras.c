@@ -100,7 +100,7 @@ GridBool GeoMesh_UseDefaultIOCallbacks( void )
   return FALSE;
 }
 
-GridBool GeoMesh_SavePart( int vol, char *project )
+GridBool CADGeom_SavePart( int vol, char *project )
 {
   return FALSE;
 }
