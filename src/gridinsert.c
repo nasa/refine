@@ -108,6 +108,49 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength,
   }
   return grid;
 }
+Grid *gridAdaptBasedOnConnRankings(Grid *grid )
+{
+  int ranking, conn, nodes[2];
+  int report, nnodeAdd, nnodeRemove;
+  double ratio;
+  int newnode;
+  
+  nnodeAdd = 0;
+  nnodeRemove = 0;
+
+  report = 10; if (gridNConn(grid) > 100) report = gridNConn(grid)/10;
+
+  for ( ranking=gridNConn(grid)-1; ranking>=0; ranking-- ) { 
+    conn = gridConnWithThisRanking(grid,ranking);
+    if (ranking/report*report == ranking ) {
+      printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
+	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
+	     gridConnValue(grid,conn));
+    }
+    if (grid == gridConn2Node(grid,conn,nodes)){
+      if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
+	   gridValidNode(grid, nodes[0]) && 
+	   gridValidNode(grid, nodes[1]) && 
+	   !gridNodeFrozen(grid, nodes[0]) &&
+	   !gridNodeFrozen(grid, nodes[1]) ) {
+	ratio = gridEdgeRatio(grid,nodes[0],nodes[1]);
+	if ( ratio > 1.55 ) {
+	  newnode = gridSplitEdge(grid, nodes[0], nodes[1]);
+	  if ( newnode != EMPTY ){
+	    nnodeAdd++;
+	    gridSwapNearNode( grid, newnode );
+	  }
+	}else if (ratio < (1/1.35)) {
+	  if ( grid == gridCollapseEdge(grid, NULL, nodes[0], nodes[1], 0.5) ){
+	    nnodeRemove++;
+	    gridSwapNearNode( grid, nodes[0] );
+	  }
+	}
+      }
+    }
+  }
+  return grid;
+}
 
 int gridSplitEdge(Grid *grid, int n0, int n1)
 {

@@ -1,6 +1,9 @@
-2004-10-04 21:45 Mike Park  <mike.park@nasa.gov>
+2004-10-04 23:08 Mike Park  <mike.park@nasa.gov>
 
-	* src/gridmetric.c (gridSetConnValuesWithMetricErrorMagnatude) added.
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) added as a spike
+	into implementing 'Edge Based Operators'.
+	* src/unit_main.c added commandline option -e to activate edge
+	based operators
 
 2004-10-04 20:26 Mike Park  <mike.park@nasa.gov>
 

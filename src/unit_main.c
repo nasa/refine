@@ -54,6 +54,7 @@ int main( int argc, char *argv[] )
   double minAR=-1.0;
   double ratioSplit, ratioCollapse;
   GridBool projected;
+  GridBool EdgeBasedOperators = FALSE;
   GridBool GridMoveProjection = FALSE;
   GridBool tecplotOutput = FALSE;
   int iview = 0;
@@ -116,6 +117,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-c") == 0 ) {
       i++; cyl = atof(argv[i]);
       printf("-c argument %d: %f\n",i, cyl);
+    } else if( strcmp(argv[i],"-e") == 0 ) {
+      EdgeBasedOperators = TRUE;
+      printf("-e argument %d\n",i);
     } else if( strcmp(argv[i],"-v") == 0 ) {
       i++; minAR = atof(argv[i]);
       printf("-v argument %d: %f\n",i, minAR);
@@ -149,6 +153,7 @@ int main( int argc, char *argv[] )
       printf(" -s uniform grid size\n");
       printf(" -z linearly vary spacing to this in z dir\n");
       printf(" -c cylinder spacing\n");
+      printf(" -e Use Edge Based Operators for Adaptation\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
       printf(" -m use grid movement for projection\n");
@@ -240,15 +245,25 @@ int main( int argc, char *argv[] )
 
   STATUS;
 
+  if (grid!=gridRobustProject(grid)) {
+    printf("could not project grid. stop.\n");
+    return 1;
+  }
+
+  if (EdgeBasedOperators) {
+    gridCreateConn(grid);
+    gridSetConnValuesWithMetricErrorMagnatude(grid);
+    gridSortConnValues(grid);
+    gridAdaptBasedOnConnRankings(grid);
+    printf("writing output project %s\n",outputProject);
+    gridSavePart( grid, outputProject );
+    printf("Done.\n");
+    return 0;
+  }
+
   for (i=0;i<3;i++){
-    projected = ( grid == gridRobustProject(grid));
-    if (projected) {
-      printf("edge swapping grid...\n");gridSwap(grid,1.0);
-      printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
-    }else{
-      printf("could not project grid. stop.\n");
-      return 1;
-    }
+    printf("edge swapping grid...\n");gridSwap(grid,1.0);
+    printf("node smoothing grid...\n");gridSmooth(grid,1.0,1.0);
   }
   STATUS;
 
