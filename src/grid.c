@@ -3167,26 +3167,27 @@ Grid *gridRenumberGlobalNodes(Grid *grid, int nnode, int *n2o)
 
   for (newglobal=0;newglobal<nnode;newglobal++){
     oldglobal = n2o[newglobal];
+    if (newglobal != oldglobal) {
+      newposition = sortSearch(grid->nsorted,grid->sortedGlobal,newglobal);
+      newlocal = EMPTY;
+      if (EMPTY!=newposition) newlocal = grid->sortedLocal[newposition];
 
-    newposition = sortSearch(grid->nsorted,grid->sortedGlobal,newglobal);
-    newlocal = EMPTY;
-    if (EMPTY!=newposition) newlocal = grid->sortedLocal[newposition];
+      oldposition = sortSearch(grid->nsorted,grid->sortedGlobal,oldglobal);
+      oldlocal = EMPTY;
+      if (EMPTY!=oldposition) oldlocal = grid->sortedLocal[oldposition];
 
-    oldposition = sortSearch(grid->nsorted,grid->sortedGlobal,oldglobal);
-    oldlocal = EMPTY;
-    if (EMPTY!=oldposition) oldlocal = grid->sortedLocal[oldposition];
+      if ( EMPTY != oldlocal ) grid->nodeGlobal[oldlocal] = newglobal;
+      if ( EMPTY != newlocal ) grid->nodeGlobal[newlocal] = oldglobal;
 
-    if ( EMPTY != oldlocal ) grid->nodeGlobal[oldlocal] = newglobal;
-    if ( EMPTY != newlocal ) grid->nodeGlobal[newlocal] = oldglobal;
+      gridCreateSortedGlobal(grid);
 
-    gridCreateSortedGlobal(grid);
-
-    /* fix n2o list */
-    n2o[newglobal] = newglobal;
-    for (fix=newglobal+1;fix<nnode;fix++) {
-      if ( newglobal == n2o[fix] ) {
-	n2o[fix] = oldglobal;
-	break;
+      /* fix n2o list */
+      n2o[newglobal] = newglobal;
+      for (fix=newglobal+1;fix<nnode;fix++) {
+	if ( newglobal == n2o[fix] ) {
+	  n2o[fix] = oldglobal;
+	  break;
+	}
       }
     }
   }
