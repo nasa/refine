@@ -11,11 +11,8 @@ require 'mkmf'
 ext = 'SampleUnit'
 `mkdir -p SampleUnit`
 Dir.chdir ext
-`ln -sf ../sampleunit.h .`
-`ln -sf ../sampleunit.c .`
-`ln -sf ../sampleunit_ruby.c .`
 $objs = %w[sampleunit.o sampleunit_ruby.o]
-create_makefile(ext)
+create_makefile(ext,'..')
 exit 1 unless system "make --quiet --no-print-directory"
 Dir.chdir '..'
 
