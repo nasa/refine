@@ -1,3 +1,14 @@
+2005-02-07  9:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramXYZ) renamed from gridSmoothNodeQP.
+	Added some slight perceived numerical robustness improvements.
+	* src/gridcad.c (gridLinearProgramUV) Added some slight perceived
+	numerical robustness improvements, but still gives ocational NaN's
+	and strange valgrind behavior.
+	* src/gridcad.c (gridSmoothNode) added gridLinearProgramUV within
+	a FALSE if-then block. changed the termination criteria of volume
+	node smoothing.
+
 2005-02-03 22:43 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLinearProgramUV) added. This is a copy and

@@ -454,6 +454,7 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
 
 Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 {
+  double cost, lastCost;
   double xyzProj[3], uv[2];
   double ar, dARdx[3];
   double mr, dMRdx[3];
@@ -468,35 +469,65 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
   if ( gridGeometryBetweenFace( grid, node ) &&
        !gridGeometryEdge( grid, node ) ) return grid;
 
-  if ( gridGeometryEdge( grid, node ) && !smoothOnSurface ) return grid;
+  /* skip boundary nodes if we have been asked not to smooth on surface */ 
   if ( gridGeometryFace( grid, node ) && !smoothOnSurface ) return grid;
 
+  /* edge smooth */
   if ( gridGeometryEdge( grid, node ) ) {
     return gridLineSearchT(grid, node, gridOPTIM_COST_FLOOR );
   }
+
+  /* face smooth */
   if ( gridGeometryFace( grid, node ) ) {
-    for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
-      face = adjItem(adjFirst(gridFaceAdj(grid), node));
-      gridFace(grid,face,nodes,&faceId);
-      gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
-      gridNodeUV( grid, node, faceId, uv);
-      if ( !CADGeom_PointOnFace( vol, faceId,   
-				 uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
-	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
-      
-      dMRdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
-      dMRdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
-      if (grid != gridLineSearchUV( grid, node, dMRdu, 
-				    gridOPTIM_COST_FLOOR ) ) return NULL;
+    if (TRUE) {
+      for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
+	face = adjItem(adjFirst(gridFaceAdj(grid), node));
+	gridFace(grid,face,nodes,&faceId);
+	gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
+	gridNodeUV( grid, node, faceId, uv);
+	if ( !CADGeom_PointOnFace( vol, faceId,   
+				   uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
+	  printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+       
+	dMRdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
+	dMRdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
+	if (grid != gridLineSearchUV( grid, node, dMRdu, 
+				      gridOPTIM_COST_FLOOR ) ) return NULL;
+      }
+      return grid;
+    }else{
+      maxsmooth = 40;
+      lastCost = -2.0;
+      gridNodeFaceMR(grid,node,&cost);
+      while ( maxsmooth > 0 && (cost-lastCost) > 1.0e-8 ) {
+	maxsmooth--;
+	if (grid != gridLinearProgramUV(grid,node) ) {
+	  return NULL;
+	}
+	lastCost = cost;
+	gridNodeFaceMR(grid,node,&cost);
+      }
+      gridNodeAR(grid,node,&cost);
+      return grid;
     }
-    return grid;
   }
+
+  /* volume node smooth */
   if (FALSE) {
     gridNodeARDerivative ( grid, node, &ar, dARdx);
     return gridOptimizeXYZ( grid, node, dARdx );
   }else{
     maxsmooth = 40;
-    while ( grid == gridSmoothNodeQP(grid,node) && maxsmooth >0) maxsmooth--;
+    lastCost = -2.0;
+    gridNodeAR(grid,node,&cost);
+    while ( maxsmooth > 0 && (cost-lastCost) > 1.0e-8 ) {
+      maxsmooth--;
+      if (grid != gridLinearProgramXYZ(grid,node) ) {
+	return NULL;
+      }
+      lastCost = cost;
+      gridNodeAR(grid,node,&cost);
+    }  
     return grid;
   }
 }

@@ -68,7 +68,7 @@ Grid *gridSmartVolumeLaplacian(Grid *g, int node );
 Grid *gridStoreVolumeCostDerivatives(Grid *g, int node );
 Grid *gridStoreFaceCostParameterDerivatives(Grid *g, int node );
 
-Grid *gridSmoothNodeQP(Grid *g, int node );
+Grid *gridLinearProgramXYZ(Grid *g, int node );
 
 Grid *gridSmoothNodeVolume(Grid *g, int node );
 Grid *gridSmoothNodeVolumeWithSurf(Grid *g, int node );
