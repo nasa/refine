@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include "layer.h"
+#include "gridcad.h"
+#include "grid.h"
 #include "adj.h"
 
 typedef struct Normal Normal;
@@ -350,7 +352,6 @@ Layer *layerAdvance(Layer *layer, double height )
     faceId = layerConstrained(layer,normal);
     if (0 != faceId) {
       gridReconnectFace(grid, faceId, root, tip);
-      // do projection
     }
   }
 
@@ -437,6 +438,16 @@ Layer *layerAdvance(Layer *layer, double height )
 	gridAddFace(grid,n[2],n[1],n[3],faceId);
       }
     }
+  }
+
+  for (normal=0;normal<layerNNormal(layer);normal++){
+    layer->normal[normal].root = layer->normal[normal].tip;
+    layer->normal[normal].tip = EMPTY;
+    faceId = layerConstrained(layer,normal);
+    if (0 != faceId) {
+      gridProjectNodeToFace(grid, layer->normal[normal].root, faceId );
+    }
+    gridFreezeNode(grid,layer->normal[normal].root);
   }
 
   return layer;

@@ -6,15 +6,18 @@
 
 exit 1 unless system 'ruby makeRubyExtension.rb Grid adj.c gridStruct.h master_header.h'
 exit 1 unless system 'ruby makeRubyExtension.rb GridMetric adj.c grid.c gridStruct.h master_header.h'
-exit 1 unless system 'ruby makeRubyExtension.rb Layer adj.c grid.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb GridCAD FAKEGeom adj.c grid.c gridinsert.h gridStruct.h master_header.h'
+exit 1 unless system 'ruby makeRubyExtension.rb Layer adj.c grid.h gridcad.h master_header.h'
 
 require 'test/unit'
 require 'Grid/Grid'
 require 'GridMetric/GridMetric'
+require 'GridCAD/GridCAD'
 require 'Layer/Layer'
 
 class Grid
  include GridMetric
+ include GridCAD
 end
 
 class TestLayer < Test::Unit::TestCase
