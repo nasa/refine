@@ -191,7 +191,7 @@ Grid *gridLoadPart( char *project )
       gridAddEdge(grid, edgeEndPoint[0], edgeEndPoint[1], iedge);
     }else{
       gridAddEdge(grid, edgeEndPoint[0], inode, iedge);
-      for( i=0 ; i < (nedgenode-3) ; i++ ) {  
+      for( i=1 ; i < (nedgenode-2) ; i++ ) { // skip end segments  
 	gridAddEdge(grid, inode, inode+1, iedge);
 	inode++;
       }
