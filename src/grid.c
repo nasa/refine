@@ -858,7 +858,7 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
   if ( grid->nequ != grid->ngem && swapStatus != NULL ) {
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
-    gridAddFace(grid, n0, gap0, gap1, faceId0 );
+    gridAddFace(grid, n0, gap1, gap0, faceId0 );
     gridAddFace(grid, n1, gap0, gap1, faceId0 );
   }
 
@@ -1631,10 +1631,10 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
 
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
-    gridAddFace(grid, n0, gap0, newnode, faceId0 );
+    gridAddFace(grid, n0, newnode, gap0, faceId0 );
     gridAddFace(grid, n1, gap0, newnode, faceId0 );
     gridAddFace(grid, n0, gap1, newnode, faceId1 );
-    gridAddFace(grid, n1, gap1, newnode, faceId1 );
+    gridAddFace(grid, n1, newnode, gap1, faceId1 );
 
     edge = gridFindEdge(grid,n0,n1);
     if ( edge != EMPTY ) {
