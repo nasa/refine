@@ -63,15 +63,15 @@ class TestSampleUnit < Test::Unit::TestCase
   end
 
   def testEfficientStorage
-    localGrid = Grid.new(1,1,1)
-    assert_equal nil, localGrid.registerNodeCell(0,0)
-    localGrid = Grid.new(1,1,2)
-    assert_equal nil, localGrid.registerNodeCell(0,0)
-    localGrid = Grid.new(1,1,3)
-    assert_equal localGrid, localGrid.registerNodeCell(0,0)
-    localGrid = Grid.new(1,1,4)
-    assert_equal localGrid, localGrid.registerNodeCell(0,0)
-    assert_equal localGrid, localGrid.registerNodeCell(0,1)
+    grid = Grid.new(1,1,1)
+    assert_equal nil, grid.registerNodeCell(0,0)
+    grid = Grid.new(1,1,2)
+    assert_equal nil, grid.registerNodeCell(0,0)
+    grid = Grid.new(1,1,3)
+    assert_equal grid, grid.registerNodeCell(0,0)
+    grid = Grid.new(1,1,4)
+    assert_equal grid, grid.registerNodeCell(0,0)
+    assert_equal grid, grid.registerNodeCell(0,1)
   end
 
  def testMultipleNodeCellExists
@@ -94,8 +94,6 @@ class TestSampleUnit < Test::Unit::TestCase
    assert_equal 1, @grid.ncell
    (0..3).each { |n| assert_equal 1, @grid.nodeDeg(n)}
  end
-
- 
 
 # make register unique
 # non-contiguos cellist for access and registering
