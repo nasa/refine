@@ -3,8 +3,9 @@ libMesherX_a_SOURCES = \
 	master_header.h \
 	adj.h adj.c \
 	near.h near.c \
-	intersect.h instersect.c \
+	intersect.h intersect.c \
 	grid.h grid.c \
+	gridmath.h gridmath.c \
 	gridmetric.h gridmetric.c \
 	gridinsert.h gridinsert.c \
 	gridswap.h gridswap.c \
@@ -44,6 +45,7 @@ EXTRA_DIST = makeRubyExtension.rb RubyExtensionBuilder.rb \
 	nearMT.rb near_ruby.c \
 	intersectMT.rb intersect_ruby.c \
 	gridMT.rb grid_ruby.c \
+	gridmathMT.rb gridmath_ruby.c \
 	gridmetricMT.rb gridmetric_ruby.c \
 	gridinsertMT.rb gridinsert_ruby.c \
 	gridswapMT.rb gridswap_ruby.c \
