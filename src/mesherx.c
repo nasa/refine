@@ -291,7 +291,7 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
 
   int maxnode, nnode;
   int edgeId;
-  int faceId;
+  int faceId, id, face;
   double uv[4];
   int loop, nloop;
   int *loopLength;
@@ -450,7 +450,13 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
       }
       printf("rebuild face has %d nodes %d faces\n",nfacenode,nfacetri);
 
-      gridDeleteThawedFaces(grid, faceId);
+      for(face=0;face<gridMaxFace(grid);face++){
+	if( (grid==gridFace(grid,face,nodes,&id)) && 
+	    (id == faceId) && 
+	    !layerFaceInLayer(layer,face) ){
+	  gridRemoveFace(grid,face);
+	}
+      }
 
       for(i=nnode;i<nfacenode;i++){
 	l2g[i]=gridAddNode(grid,newxyz[0+3*i],newxyz[1+3*i],newxyz[2+3*i]);
