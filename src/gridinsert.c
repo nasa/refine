@@ -231,7 +231,7 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
 {
   int i;
   int newnode;
-  double newXYZ[3], xyz0[3], xyz1[3];
+  double oldXYZ[3], newXYZ[3], xyz0[3], xyz1[3];
   double edgeXYZ[3], edgeLength, edgeDir[3];
   double newEdge[3], edgePosition, radius, radiusVector[3];
 
@@ -254,6 +254,37 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
 		  radiusVector[1]*radiusVector[1] + 
 		  radiusVector[2]*radiusVector[2] );
       
+  if ( edgePosition > 0.0 && edgePosition < 1.0 && 
+       radius < 0.001*edgeLength) {
+    newnode = gridSplitEdgeAt(grid, n0, n1, newX, newY, newZ);
+    
+    return newnode;
+  }
+
+  if ( edgePosition > -0.05 && edgePosition < 0.05 && 
+       radius < 0.05*edgeLength) {
+    newnode = n0;
+    gridNodeXYZ(grid, newnode, oldXYZ );
+    gridSetNodeXYZ(grid, newnode, newXYZ );
+    if ( gridNegCellAroundNode(grid, newnode ) ){
+      gridSetNodeXYZ(grid, newnode, oldXYZ );
+    }else{
+      return newnode;
+    }
+  }
+
+  if ( edgePosition > 0.95 && edgePosition < 1.05 && 
+       radius < 0.05*edgeLength) {
+    newnode = n1;
+    gridNodeXYZ(grid, newnode, oldXYZ );
+    gridSetNodeXYZ(grid, newnode, newXYZ );
+    if ( gridNegCellAroundNode(grid, newnode ) ){
+      gridSetNodeXYZ(grid, newnode, oldXYZ );
+    }else{
+      return newnode;
+    }
+  }
+
   if ( edgePosition > 0.0 && edgePosition < 1.0 && 
        radius < 0.001*edgeLength) {
     newnode = gridSplitEdgeAt(grid, n0, n1, newX, newY, newZ);
