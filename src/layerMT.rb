@@ -1479,6 +1479,13 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,5], layer.triangleNormals(0)
   assert_equal [4,2,3], layer.triangleNormals(1)
 
+  # Y    3
+  # |    |\
+  # +--Z 4-2
+  # +--Z 0-5
+  # |    |/
+  # X    1
+
   assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(0,0)
   assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(1,0)
   assert_equal [0.0,-1.0,0.0], layer.normalTriangleDirection(5,0)
@@ -1491,8 +1498,7 @@ class TestLayer < Test::Unit::TestCase
 #layer.writeTecplotFrontGeometry
 #grid.writeTecplotSurfaceZone
 
-#BROKEN
- def XtestAdvanceBlendForConvextFace_AddConstrainingFace
+ def testAdvanceBlendForConvextFace_AddConstrainingFace
   # Y    3
   # |    |\
   # +--Z 0-2
