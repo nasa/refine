@@ -1648,6 +1648,11 @@ Layer *layerAdvance(Layer *layer)
     for (blend=0;blend<layerNBlend(layer);blend++){
       layerBlendNormals(layer, blend, blendnormals );
       
+      triangle0 = layerForceTriangle(layer,blendnormals[0],
+				     blendnormals[1],blendnormals[2]);
+      triangle1 = layerForceTriangle(layer,blendnormals[1],
+				     blendnormals[3],blendnormals[2]);
+
       faceId = layerConstrained(layer,blendnormals[0]);
       if (faceId>0){
 	n[0] = layerNormalRoot(layer,blendnormals[0]);
@@ -1689,11 +1694,6 @@ Layer *layerAdvance(Layer *layer)
       layer->cellInLayer[gridAddCell(grid, n[0], n[4], n[5], n[3])]=TRUE;
       layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[4], n[5])]=TRUE;
       layer->cellInLayer[gridAddCell(grid, n[2], n[0], n[1], n[4])]=TRUE;
-
-      triangle0 = layerForceTriangle(layer,blendnormals[0],
-				     blendnormals[1],blendnormals[2]);
-      triangle1 = layerForceTriangle(layer,blendnormals[1],
-				     blendnormals[3],blendnormals[2]);
 
     }
     layerBuildNormalTriangleAdjacency(layer);
