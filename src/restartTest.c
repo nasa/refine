@@ -13,7 +13,6 @@
 #include <string.h>
 #include <math.h>
 #include "CADGeom/CADGeom.h"
-#include "Goolache/CAPrI_IO.h"
 
 #define SubtractVector(v1,v2,result) \
 (result)[0] = (v1)[0] - (v2)[0]; \
@@ -66,7 +65,7 @@ int main( int argc, char *argv[] )
   }  
 
   printf("calling CADGeom_Load for project <%s> ... \n",project);
-  if ( ! GeoMesh_LoadPart( project ) ){
+  if ( ! CADGeom_LoadPart( project ) ){
     printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
   }

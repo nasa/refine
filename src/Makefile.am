@@ -141,7 +141,7 @@ MesherX_HLANative_LDFLAGS = $(all_LDFLAGS)
 bin_PROGRAMS += restartTestNative
 restartTestNative_CFLAGS = $(all_CFLAGS)
 restartTestNative_SOURCES = restartTest.c
-restartTestNative_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lGoolache -lMeat \
+restartTestNative_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	@CAPRINativelibrary@ $(LastLib)
 restartTestNative_LDFLAGS = $(all_LDFLAGS)
 
@@ -178,6 +178,14 @@ MesherX_HLAParasolid_CFLAGS = $(all_CFLAGS)
 MesherX_HLAParasolid_SOURCES = $(hla_sources)
 MesherX_HLAParasolid_LDADD = $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
 MesherX_HLAParasolid_LDFLAGS = $(all_LDFLAGS)
+
+bin_PROGRAMS += restartTestParasolid
+restartTestParasolid_CFLAGS = $(all_CFLAGS)
+restartTestParasolid_SOURCES = restartTest.c
+restartTestParasolid_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
+	@CAPRIParasolidlibrary@ $(LastLib)
+restartTestParasolid_LDFLAGS = $(all_LDFLAGS)
+
 endif # BUILD_PARASOLID_KERNEL
 
 if BUILD_OPENCASCADE_KERNEL
