@@ -73,7 +73,7 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
 	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
-	  if ( grid == gridCollapseEdge(grid, queue, n0, n1, 0.5) ) {
+	  if ( grid == gridParallelEdgeCollapse(grid, queue, n0, n1) ) {
 	    nnodeRemove++;
 	  }
 	}
@@ -126,8 +126,7 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 
 Grid *gridParallelEdgeCollapse(Grid *grid, Queue *queue, int node0, int node1 )
 {
-
-  bool gemLocal;
+  Grid *result;
 
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return NULL;
 
@@ -139,7 +138,12 @@ Grid *gridParallelEdgeCollapse(Grid *grid, Queue *queue, int node0, int node1 )
   if ( !gridGeometryEdge(grid,node1) && 
        ( gridNodeFaceIdDegree(grid,node1) > 1) ) return NULL;
 
-  return gridCollapseEdge(grid, queue, node0, node1, 0.5 );
+  result = gridCollapseEdge(grid, queue, node0, node1, 0.5 );
+
+  if (grid==result) {
+  }
+
+  return result;
 }
 
 Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
