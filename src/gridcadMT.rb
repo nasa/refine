@@ -103,7 +103,7 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
  end
 
- def isoTet(xpert = 0.0, zpert = 0.0)
+ def isoTet(xpert = 0.0, zpert = 0.0, edge = nil)
   grid = Grid.new(4,1,1,1)
   grid.addNode( xpert, 0.000, 0.000 )
   grid.addNode( 1.000, 0.000, 0.000 )
@@ -114,6 +114,8 @@ class TestSampleUnit < Test::Unit::TestCase
 		 1,11.0,20.0,
 		 2,10.5,20.866,
 		 10)
+  grid.addEdge(0, 1, 20, 0.0+xpert, 1.0) if edge
+  grid
  end
 
  def testIsotropicTet
@@ -121,11 +123,25 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_in_delta 0.975, isoTet(-0.2).minAR, 1.0e-4
  end
 
+ def testOptimizeTDispacement
+  assert_not_nil grid = isoTet(-0.2,0.0,true)
+  assert_equal grid, grid.optimizeT(0,1.0)
+  assert_in_delta 0.999, grid.minAR, 1.0e-3
+  assert_in_delta 0.0, grid.nodeT(0,20), 5.0e-2
+ end
+
+ def testSmoothEdge
+  assert_not_nil grid = isoTet(-0.2,0.0,true)
+  assert_equal grid, grid.smoothNode(0)
+  assert_in_delta 0.999, grid.minAR, 1.0e-3
+ end
+
  def testOptimizeUVDispacement
   assert_not_nil grid = isoTet(-0.2)
   assert_equal grid, grid.optimizeUV(0,[1.0,0.0])
   assert_in_delta 0.999, grid.minAR, 1.0e-3
-  assert_in_delta 0.999, grid.ar([0,1,2,3]), 1.0e-3
+  assert_in_delta 10.0, grid.nodeUV(0,10)[0], 5.0e-2
+  assert_in_delta 20.0, grid.nodeUV(0,10)[1], 1.0e-15
  end
 
  def testSmoothSurf
