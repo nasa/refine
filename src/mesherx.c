@@ -331,6 +331,7 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   Grid *grid;
   Layer *layer;
   int i;
+  double h;
 
   grid = gridFillFromPart( vol, npts*10 );
 
@@ -340,7 +341,11 @@ MesherX_DiscretizeVolume( int npts, double *points, int ntri_b, int *tri_b,
   gridThawAll(grid); 
   layerFindParentEdges(layer);
 
-  for (i=0;i<5;i++) layerAdvance(layer,0.01);
+  h =0.00002;
+  for (i=0;i<40;i++) {
+    layerAdvance(layer,h);
+    h=h*1.2;
+  }
 
   printf(" -- REBUILD EDGES\n");
   layerRebuildEdges(layer,vol);
