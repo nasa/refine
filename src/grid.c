@@ -25,6 +25,7 @@ struct Grid {
   int nnode;
   int maxcell;
   int ncell;
+  int blankcell;
   int nlist;
   N2C **first;
   N2C *current;
@@ -52,7 +53,12 @@ Grid* gridCreate(int nnode, int maxcell, int nlist)
   grid->maxcell = maxcell;
   grid->ncell = 0;
   grid->c2n = malloc(4 * grid->maxcell * sizeof(int));
-  for (i=0;i < grid->maxcell; i++ ) grid->c2n[4*i] = EMPTY; 
+  for (i=0;i < grid->maxcell; i++ ) {
+    grid->c2n[0+4*i] = EMPTY; 
+    grid->c2n[1+4*i] = i+1; 
+  }
+  grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
+  grid->blankcell = 0;
 
   if (grid->nlist < 1) grid->nlist = grid->maxcell*4;
 
@@ -221,8 +227,9 @@ bool gridMoreNodeCell(Grid *grid)
 Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
   int cellId,icell;
-  cellId = grid->ncell;
-  if ( cellId >= grid->maxcell) return NULL;
+  if ( grid->blankcell == EMPTY ) return NULL;
+  cellId = grid->blankcell;
+  grid->blankcell = grid->c2n[1+4*cellId];
   grid->ncell++;
   
   grid->c2n[0+4*cellId] = n0;
@@ -251,7 +258,9 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
       ( NULL == gridRemoveNodeCell( grid, grid->c2n[3+4*cellId], cellId ) ) ) 
     return NULL;  
 
-  grid->c2n[4*cellId] = EMPTY;
+  grid->c2n[0+4*cellId] = EMPTY;
+  grid->c2n[1+4*cellId] = grid->blankcell;
+  grid->blankcell = cellId;
 
   return grid;
 }
