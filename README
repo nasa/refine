@@ -18,7 +18,7 @@ information with the CAPRI API
 
 MesherX is an advancing layer mixed-element mesher
 <http://www.scorec.rpi.edu/~garimell/thesis/THESIS-FULL.PDF> that
-interacts with the SDK to rebuild the inviscid protions of the grid.
+interacts with the SDK to rebuild the inviscid portions of the grid.
 
 See the INSTALL file for build instructions.
 
