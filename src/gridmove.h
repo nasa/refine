@@ -28,6 +28,9 @@ struct GridMove {
   double *xyz;
   double *k;
   double *source;
+
+  double *ksum;
+  double *kxyz;
 };
 
 GridMove *gridmoveCreate(Grid *);

@@ -37,6 +37,9 @@ GridMove *gridmoveCreate( Grid *grid )
   gm->k = NULL;
   gm->source = NULL;
 
+  gm->ksum = NULL;
+  gm->kxyz = NULL;
+
   return gm;
 }
 
@@ -47,11 +50,15 @@ Grid *gridmoveGrid(GridMove *gm)
 
 void gridmoveFree(GridMove *gm)
 {
+  if (NULL != gm->ksum) free(gm->ksum);
+  if (NULL != gm->kxyz) free(gm->kxyz);
+
   if (NULL != gm->c2e) free(gm->c2e);
   if (NULL != gm->springs) free(gm->springs);
   if (NULL != gm->xyz) free(gm->xyz);
   if (NULL != gm->k) free(gm->k);
   if (NULL != gm->source) free(gm->source);
+
   free(gm->specified);
   free(gm->displacement);
   if (NULL != gm->grid) { 
@@ -230,7 +237,6 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   double xyz0[3], res[3];
   int s, node;
   int i, n0, n1;
-  double *ksum, *kxyz;
   int step, iteration;
   double stepSize;
   double residual, count;
@@ -251,8 +257,8 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   gm->k = malloc(gm->nsprings*sizeof(double));
   gm->source = malloc(3*gridMaxNode(grid)*sizeof(double));
 
-  ksum = malloc(gridMaxNode(grid)*sizeof(double));
-  kxyz = malloc(3*gridMaxNode(grid)*sizeof(double));
+  gm->ksum = malloc(gridMaxNode(grid)*sizeof(double));
+  gm->kxyz = malloc(3*gridMaxNode(grid)*sizeof(double));
  
   for(node=0;node<gridMaxNode(grid);node++) gridNodeXYZ(grid,node,&(gm->xyz[3*node]));
 
@@ -280,16 +286,16 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
 
     for(iteration=0;iteration<subIterations;iteration++) {
 
-      for(node=0;node<gridMaxNode(grid);node++) ksum[node]=0.0;
-      for(node=0;node<3*gridMaxNode(grid);node++) kxyz[node]=0.0;
+      for(node=0;node<gridMaxNode(grid);node++) gm->ksum[node]=0.0;
+      for(node=0;node<3*gridMaxNode(grid);node++) gm->kxyz[node]=0.0;
       for(s=0;s<gm->nsprings;s++) {
 	n0 = gm->springs[0+2*s];
 	n1 = gm->springs[1+2*s];
-	ksum[n0] += gm->k[s];
-	ksum[n1] += gm->k[s];
+	gm->ksum[n0] += gm->k[s];
+	gm->ksum[n1] += gm->k[s];
 	for(i=0;i<3;i++) {
-	  kxyz[i+3*n0] += gm->k[s] * gm->xyz[i+3*n1];
-	  kxyz[i+3*n1] += gm->k[s] * gm->xyz[i+3*n0];
+	  gm->kxyz[i+3*n0] += gm->k[s] * gm->xyz[i+3*n1];
+	  gm->kxyz[i+3*n1] += gm->k[s] * gm->xyz[i+3*n0];
 	}
       }
 
@@ -298,9 +304,9 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
 	if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node)) {
 	  for(i=0;i<3;i++) {
 	    res[i] = gm->xyz[i+3*node] - 
-	      ( kxyz[i+3*node] + gm->source[i+3*node] ) / ksum[node];
-	    gm->xyz[i+3*node] = (  kxyz[i+3*node] + gm->source[i+3*node] ) 
-	                      / ksum[node];
+	      ( gm->kxyz[i+3*node] + gm->source[i+3*node] ) / gm->ksum[node];
+	    gm->xyz[i+3*node] = (  gm->kxyz[i+3*node] + gm->source[i+3*node] ) 
+	                      / gm->ksum[node];
 	  }
 	  residual += gridDotProduct(res,res);
 	  count += 1.0;
@@ -318,9 +324,8 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
     }
   }
 
-
-  free(ksum);
-  free(kxyz);
+  free(gm->ksum);    gm->ksum=NULL;
+  free(gm->kxyz);    gm->kxyz=NULL;
 
   free(gm->c2e);     gm->c2e=NULL;
   free(gm->springs); gm->springs=NULL;
