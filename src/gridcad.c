@@ -1124,7 +1124,7 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   double lengthScale;
   int best, worst, secondworst; 
   double newVolume, savedVolume;
-  GridBool makefaces = TRUE;
+  GridBool makefaces = FALSE;
   int faceId = 1;
 
   gridSmartVolumeLaplacian( grid, node );
@@ -1176,6 +1176,7 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
     printf("evaluations%6d best%20.15f worst%20.15f\n", 
 	   evaluations, volume[best], volume[worst]);
     if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
+
     if (volume[best]-volume[worst] < 1.0e-5*volume[best]) break;
 
     evaluations++;
