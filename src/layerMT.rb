@@ -1352,6 +1352,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,3,1], layer.triangleNormals(1)
   assert_equal [0,4,3], layer.triangleNormals(2)
   assert_equal [0,2,4], layer.triangleNormals(3)
+  assert_equal 2,     layer.nRequiredBlends(0,-1.0)
   assert_equal layer, layer.blend(-1.0)
   assert_equal 2,     layer.nblend
   assert_equal [0,1,6], layer.triangleNormals(0)
@@ -1515,7 +1516,7 @@ class TestLayer < Test::Unit::TestCase
 
 #  layer.writeTecplotFrontGeometry
 
- def XXXtestBlendTriplePoint
+ def testBlendTriplePoint
   grid = Grid.new(20,20,10,0)
   top = 0.8
   grid.addNode(0.5,0.35,top)
@@ -1528,9 +1529,10 @@ class TestLayer < Test::Unit::TestCase
   grid.addFace(0,3,1,10)
 
   layer = Layer.new(grid).populateAdvancingFront([10])
-  layer.blend(270.0)
-  assert_equal 9, layer.nnormal  
-  assert_equal 3, layer.nblend 
+  assert_equal 3,     layer.nRequiredBlends(0,270.0)
+  #layer.blend(270.0)
+  #assert_equal 9, layer.nnormal  
+  #assert_equal 3, layer.nblend 
 
   #layer.advanceConstantHeight(0.1)
 
