@@ -15,6 +15,8 @@ require 'Grid/Grid'
 
 class TestGrid < Test::Unit::TestCase
 
+ EMPTY = -1
+
  def set_up
   @grid = Grid.new(4,1,0,0)
  end
@@ -313,6 +315,32 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [1.0,2.0,3.0],    grid.nodeXYZ(0)
   assert_equal grid,             grid.setNodeXYZ(0,[10.0,20.0,30.0])
   assert_equal [10.0,20.0,30.0], grid.nodeXYZ(0)
+ end
+
+ def testGetAndSetNodeGlobal
+  assert_not_nil      grid = Grid.new(1,0,0,0)
+  assert_equal EMPTY, grid.nodeGlobal(-1)
+  assert_equal EMPTY, grid.nodeGlobal(0)
+  assert_equal EMPTY, grid.nodeGlobal(1)
+  assert_nil          grid.setNodeGlobal(0,3)
+  assert_equal 0,     grid.addNode(1.0,2.0,3.0)
+  assert_equal grid,  grid.setNodeGlobal(0,5)
+  assert_equal EMPTY, grid.nodeGlobal(-1)
+  assert_equal 5,     grid.nodeGlobal(0)
+  assert_equal EMPTY, grid.nodeGlobal(1)
+ end
+
+ def testGetAndSetNodePart
+  assert_not_nil      grid = Grid.new(1,0,0,0)
+  assert_equal EMPTY, grid.nodePart(-1)
+  assert_equal EMPTY, grid.nodePart(0)
+  assert_equal EMPTY, grid.nodePart(1)
+  assert_nil          grid.setNodePart(0,3)
+  assert_equal 0,     grid.addNode(1.0,2.0,3.0)
+  assert_equal grid,  grid.setNodePart(0,5)
+  assert_equal EMPTY, grid.nodePart(-1)
+  assert_equal 5,     grid.nodePart(0)
+  assert_equal EMPTY, grid.nodePart(1)
  end
 
  def testAddAndRemoveNode

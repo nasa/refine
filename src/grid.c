@@ -2111,6 +2111,36 @@ Grid *gridSetNodeXYZ(Grid *grid, int node, double *xyz )
   return grid;
 }
 
+int gridNodeGlobal(Grid *grid, int node )
+{
+  if (!gridValidNode(grid,node)) return EMPTY;
+  if (NULL == grid->l2g) return EMPTY;
+  return grid->l2g[node];
+}
+
+Grid *gridSetNodeGlobal(Grid *grid, int node, int global )
+{
+  if (!gridValidNode(grid,node)) return NULL;
+  if (NULL == grid->l2g) grid->l2g = malloc(grid->maxnode*sizeof(int));
+  grid->l2g[node] = global;
+  return grid;
+}
+
+int gridNodePart(Grid *grid, int node )
+{
+  if (!gridValidNode(grid,node)) return EMPTY;
+  if (NULL == grid->part) return EMPTY;
+  return grid->part[node];
+}
+
+Grid *gridSetNodePart(Grid *grid, int node, int part )
+{
+  if (!gridValidNode(grid,node)) return NULL;
+  if (NULL == grid->part) grid->part = malloc(grid->maxnode*sizeof(int));
+  grid->part[node] = part;
+  return grid;
+}
+
 Grid *gridDeleteNodesNotUsed(Grid *grid){
   int node, maxnode;
   bool prism;

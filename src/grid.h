@@ -221,6 +221,11 @@ Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
 Grid *gridSetNodeXYZ(Grid *g, int node, double *xyz );
 Grid *gridDeleteNodesNotUsed(Grid *);
 
+int gridNodeGlobal(Grid *g, int node );
+Grid *gridSetNodeGlobal(Grid *g, int node, int global );
+int gridNodePart(Grid *g, int node );
+Grid *gridSetNodePart(Grid *g, int node, int part );
+
 int gridFindCellWithFace(Grid *g, int face );
 
 int gridNGeomNode(Grid *g);

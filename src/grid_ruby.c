@@ -542,6 +542,30 @@ VALUE grid_setNodeXYZ( VALUE self, VALUE node, VALUE rb_xyz )
   return( grid == gridSetNodeXYZ( grid, NUM2INT(node), xyz )?self:Qnil);
 }
 
+VALUE grid_nodeGlobal( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNodeGlobal( grid, NUM2INT(node) ) );
+}
+
+VALUE grid_setNodeGlobal( VALUE self, VALUE node, VALUE global )
+{
+  GET_GRID_FROM_SELF;
+  return( grid == gridSetNodeGlobal( grid, NUM2INT(node), NUM2INT(global) )?self:Qnil);
+}
+
+VALUE grid_nodePart( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNodePart( grid, NUM2INT(node) ) );
+}
+
+VALUE grid_setNodePart( VALUE self, VALUE node, VALUE part )
+{
+  GET_GRID_FROM_SELF;
+  return( grid == gridSetNodePart( grid, NUM2INT(node), NUM2INT(part) )?self:Qnil);
+}
+
 VALUE grid_nGeomNode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -584,7 +608,6 @@ VALUE grid_setNGeomFace( VALUE self, VALUE nGeomFace )
 VALUE grid_addGeomEdge( VALUE self, VALUE edge, VALUE n0, VALUE n1 )
 {
   GET_GRID_FROM_SELF;
-  ;
   return (grid==gridAddGeomEdge( grid, NUM2INT(edge),NUM2INT(n0),NUM2INT(n1) )?self:Qnil);
 }
 
@@ -822,6 +845,11 @@ void Init_Grid()
   rb_define_method( cGrid, "validNode", grid_validNode, 1 );
   rb_define_method( cGrid, "nodeXYZ", grid_nodeXYZ, 1 );
   rb_define_method( cGrid, "setNodeXYZ", grid_setNodeXYZ, 2 );
+
+  rb_define_method( cGrid, "nodeGlobal", grid_nodeGlobal, 1 );
+  rb_define_method( cGrid, "setNodeGlobal", grid_setNodeGlobal, 2 );
+  rb_define_method( cGrid, "nodePart", grid_nodePart, 1 );
+  rb_define_method( cGrid, "setNodePart", grid_setNodePart, 2 );
 
   rb_define_method( cGrid, "nGeomNode", grid_nGeomNode, 0 );
   rb_define_method( cGrid, "setNGeomNode", grid_setNGeomNode, 1 );
