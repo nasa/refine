@@ -2588,7 +2588,7 @@ Layer *layerPopulateNormalNearTree(Layer *layer)
 {
   int normal;
   Grid *grid;
-  double xyz[3], radius;
+  double xyz[3], height, edgeLength, radius;
 
   grid = layerGrid(layer);
   if (NULL != layer->nearTree) free(layer->nearTree);
@@ -2597,7 +2597,9 @@ Layer *layerPopulateNormalNearTree(Layer *layer)
 
   for(normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid, layerNormalRoot(layer, normal ), xyz);
-    layerNormalMaxEdgeLength(layer, normal, &radius);
+    layerGetNormalHeight(layer, normal, &height);
+    layerNormalMaxEdgeLength(layer, normal, &edgeLength);
+    radius = MAX(edgeLength, 2*height);
     nearInit(&layer->nearTree[normal], normal, xyz[0], xyz[1], xyz[2], radius);
     if (normal>0) nearInsert(layer->nearTree,&layer->nearTree[normal]);
   }
@@ -2612,7 +2614,7 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
   int i, touched, maxTouched, *nearNormals;
   double dir1[3], dir2[3], dot;
   double xyz1[3], xyz2[3], view[3];
-  double visible, reciprocal;
+  double length, visible, reciprocal;
 
   printf("layerPopulateNormalNearTree...\n");
   layerPopulateNormalNearTree(layer);
@@ -2629,16 +2631,22 @@ Layer *layerTerminateCollidingFronts(Layer *layer)
     for(i=0;i<touched;i++){
       layerNormalDirection(layer, nearNormals[i], dir2);
       dot = gridDotProduct( dir1, dir2 );
-      // printf("         %d dot %f\n", nearNormals[i], dot);
-      if (dot < -0.5) {
+      if ( dot < -0.2 ) {
 	gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer, normal ), xyz1);
 	gridNodeXYZ(layerGrid(layer), layerNormalRoot(layer, nearNormals[i] ), 
 		    xyz2);
 	gridSubtractVector(xyz2, xyz1, view);
+	length = sqrt ( gridDotProduct( view, view ) );
+	view[0]= view[0]/length;
+	view[1]= view[1]/length;
+	view[2]= view[2]/length;
 	visible = gridDotProduct( dir1, view );
 	gridSubtractVector(xyz1, xyz2, view);
+	view[0]= view[0]/length;
+	view[1]= view[1]/length;
+	view[2]= view[2]/length;
 	reciprocal = gridDotProduct( dir2, view );
-	if (visible > 0 && reciprocal > 0) {
+	if (visible > 0.2 && reciprocal > 0.2) {
 	  layerTerminateNormal(layer,normal);
 	  layerTerminateNormal(layer,nearNormals[i]);
 	}
