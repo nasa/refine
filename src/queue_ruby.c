@@ -174,6 +174,31 @@ VALUE queue_addedFaceUVs( VALUE self, VALUE index )
   return rb_uvs;
 }
 
+VALUE queue_dump( VALUE self )
+{
+  VALUE array;
+  int i, nInt, nDouble;
+  int *ints;
+  double *doubles;
+  GET_QUEUE_FROM_SELF;
+
+  if (queue != queueDumpSize(queue,&nInt,&nDouble)) return Qnil;
+
+  ints = malloc(nInt * sizeof(int));
+  doubles = malloc(nDouble * sizeof(double));
+
+  if (queue != queueDump(queue,ints,doubles)) {
+    free(ints);
+    free(doubles);
+    return Qnil;
+  }
+
+  array = rb_ary_new2(nInt+nDouble);
+  for (i=0;i<nInt;i++) rb_ary_store(array,i,INT2NUM(ints[i]));
+  for (i=0;i<nDouble;i++) rb_ary_store(array,nInt+i,rb_float_new(doubles[i]));
+  return array;
+}
+
 VALUE cQueue;
 
 void Init_Queue() 
@@ -200,5 +225,6 @@ void Init_Queue()
   rb_define_method( cQueue, "addedFaces", queue_addedFaces, 1 );
   rb_define_method( cQueue, "addedFaceNodes", queue_addedFaceNodes, 1 );
   rb_define_method( cQueue, "addedFaceUVs", queue_addedFaceUVs, 1 );
-  
+
+  rb_define_method( cQueue, "dump", queue_dump, 0 );  
 }

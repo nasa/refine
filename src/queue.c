@@ -251,3 +251,30 @@ Queue *queueAddedFaceUVs( Queue *queue, int index, double *xyzs )
   return queue;
 }
 
+Queue *queueDumpSize( Queue *queue, int *nInt, double *nDouble )
+{
+  *nInt = 5+4*queue->nRemovedCells;
+  *nDouble = 0;
+  return queue;
+}
+
+Queue *queueDump( Queue *queue, int *ints, double *doubles )
+{
+  int i,removed;
+  ints[0] = queue->transactions;
+  ints[1] = queue->nRemovedCells;
+  ints[2] = queue->nAddedCells;
+  ints[3] = queue->nRemovedFaces;
+  ints[4] = queue->nAddedFaces;
+  i = 5;
+  for(removed=0;removed<queue->nRemovedCells;removed++){
+    ints[i] = queue->removedCellNodes[0+4*removed]; i++;
+    ints[i] = queue->removedCellNodes[1+4*removed]; i++;
+    ints[i] = queue->removedCellNodes[2+4*removed]; i++;
+    ints[i] = queue->removedCellNodes[3+4*removed]; i++;
+  }
+  
+
+  return queue;
+}
+

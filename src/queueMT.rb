@@ -199,4 +199,15 @@ class TestQueue < Test::Unit::TestCase
   assert_equal 2, q.totalRemovedCells
  end
 
+ def testSerialize
+  nodes = [0,1,2,3,4]
+  xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
+  q = Queue.new
+  assert_equal [1,0,0,0,0], q.dump
+  q.newTransaction.newTransaction
+  assert_equal [3,0,0,0,0], q.dump
+  q.removeCell(nodes)
+  assert_equal [3,1,0,0,0,0,1,2,3], q.dump
+  end
+
 end
