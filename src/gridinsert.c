@@ -100,8 +100,8 @@ int gridSplitEdge(Grid *grid, int n0, int n1 )
   newZ = ( grid->xyz[2+3*n0] + grid->xyz[2+3*n1] ) * 0.5;
   newnode = gridAddNode(grid, newX, newY, newZ );
   if ( newnode == EMPTY ) return EMPTY;
-  for (i=0;i<9;i++) grid->map[i+9*newnode] = 
-		      0.5*(grid->map[i+9*n0]+grid->map[i+9*n1]);
+  for (i=0;i<6;i++) grid->map[i+6*newnode] = 
+		      0.5*(grid->map[i+6*n0]+grid->map[i+6*n1]);
 
   for ( igem=0 ; igem<grid->ngem ; igem++ ){
     cell = grid->gem[igem];
