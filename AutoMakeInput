@@ -12,6 +12,7 @@ libMesherX_a_SOURCES = \
 	../src/intersect.c \
 	../src/line.c \
 	../src/queue.c \
+	../src/sort.c \
 	../src/grid.c \
 	../src/gridmath.c \
 	../src/gridmetric.c \
@@ -30,6 +31,7 @@ librefine_a_SOURCES = \
 	../src/near.c \
 	../src/line.c \
 	../src/queue.c \
+	../src/sort.c \
 	../src/grid.c \
 	../src/gridmath.c \
 	../src/gridmetric.c \
