@@ -1,3 +1,11 @@
+2005-03-24 16:17 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridRemoveCellAndQueue) To increase the speed of
+	parallel adaptation runs a removed cell is only queued if it has a
+	ghost node. gridRemoveFaceAndQueue and gridRemoveEdgeAndQueue
+	already do this. Unfortunitly this did not drastically affect the
+	performace of test cases.
+
 2005-03-22 16:00 Mike Park  <mike.park@nasa.gov>
 
 	* src/MesherX.c (main) fixed the -vgbg option

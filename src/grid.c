@@ -1751,14 +1751,15 @@ Grid *gridRemoveCell(Grid *grid, int cellId )
 
 Grid *gridRemoveCellAndQueue(Grid *grid, Queue *queue, int cellId )
 {
-  int inode, globalnodes[4], nodeParts[4];
+  int inode, *nodes, globalnodes[4], nodeParts[4];
 
   if ( !gridCellValid(grid, cellId) ) return NULL;
 
-  if (NULL!=queue) {
+  nodes = &(grid->c2n[4*cellId]);
+  if (NULL!=queue && gridCellHasGhostNode(grid, nodes)) {
     for ( inode = 0 ; inode < 4 ; inode++ ) { 
-      globalnodes[inode] = gridNodeGlobal(grid,grid->c2n[inode+4*cellId]);
-      nodeParts[inode] = gridNodePart(grid,grid->c2n[inode+4*cellId]);
+      globalnodes[inode] = gridNodeGlobal(grid, nodes[inode]);
+      nodeParts[inode] = gridNodePart(grid, nodes[inode]);
     }
     queueRemoveCell(queue,globalnodes,nodeParts);
   }
