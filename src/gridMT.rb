@@ -145,6 +145,23 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [1.0,2.0,3.0], grid.nodeXYZ(0)
  end
 
+ def testAddAndRemoveNode
+  grid = Grid.new(4,0,0,0)
+  assert_nil         grid.removeNode(5)
+  assert_nil         grid.removeNode(2)
+  assert_equal 0, grid.addNode(1.0,2.0,3.0)
+  assert_equal 1, grid.addNode(1.1,2.1,3.1)
+  assert_equal 2, grid.addNode(1.2,2.2,3.2)
+  assert_equal 3, grid.addNode(1.3,2.3,3.3)
+  assert_equal 4, grid.nnode
+  assert_equal grid, grid.removeNode(2)
+  assert_equal 3, grid.nnode
+  assert_nil         grid.removeNode(2)
+  assert_nil         grid.nodeXYZ(2)
+  assert_equal 3, grid.nnode
+  assert_equal 2, grid.addNode(1.2,2.2,3.2)
+ end
+
  def testNumberOfFaces
   assert_not_nil  grid = Grid.new(4,1,2,0)
   assert_equal 0, grid.nface 

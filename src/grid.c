@@ -36,6 +36,13 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->nGeomNode   = 0;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
+  for (i=0;i < grid->maxnode; i++ ) {
+    grid->xyz[0+3*i] = DBL_MAX;
+    grid->xyz[1+3*i] = (double)(i+1);
+  }
+  grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
+  grid->blanknode = 0;
+
   grid->spacing = malloc(grid->maxnode * sizeof(double));
   for (i=0;i < grid->maxnode; i++ ) grid->spacing[i] = 0.0;
 
@@ -115,6 +122,17 @@ Grid *gridImport(int maxnode, int nnode,
   grid-> nGeomNode = 0;
 
   grid->xyz = xyz;
+  for (i=grid->nnode ; i < grid->maxnode; i++ ) {
+    grid->xyz[0+3*i] = DBL_MAX;
+    grid->xyz[1+3*i] = (double)(i+1);
+  }
+  if (grid->maxnode == grid->nnode) {
+    grid->blanknode = EMPTY;
+  }else{
+    grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
+    grid->blanknode = grid->nnode;
+  }
+
   grid->spacing = malloc(grid->maxnode * sizeof(double));
   for (i=0;i < grid->maxnode; i++ ) grid->spacing[i] = 0.0;
 
@@ -994,21 +1012,35 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
 
 int gridAddNode(Grid *grid, double x, double y, double z )
 {
-  int nodeId;
+  int node;
   if (grid->nnode >= grid->maxnode) return EMPTY;
-  nodeId = grid->nnode;
+  node = grid->blanknode;
+  if (EMPTY == node) return EMPTY;
+  grid->blanknode = (int)grid->xyz[1+3*node];
   grid->nnode++;
 
-  grid->xyz[0+3*nodeId] = x;
-  grid->xyz[1+3*nodeId] = y;
-  grid->xyz[2+3*nodeId] = z;
+  grid->xyz[0+3*node] = x;
+  grid->xyz[1+3*node] = y;
+  grid->xyz[2+3*node] = z;
 
-  return nodeId;
+  return node;
+}
+
+Grid *gridRemoveNode(Grid *grid, int node )
+{
+  if (node>grid->maxnode) return NULL;
+  if (DBL_MAX == grid->xyz[0+3*node]) return NULL;
+  grid->nnode--;
+  grid->xyz[0+3*node] = DBL_MAX;
+  grid->xyz[1+3*node] = (double)grid->blanknode;
+  grid->blanknode = node;
+  return grid;
 }
 
 Grid *gridNodeXYZ(Grid *grid, int node, double *xyz )
 {
   if (node >=grid->nnode) return NULL;
+  if (DBL_MAX == grid->xyz[0+3*node]) return NULL;
   xyz[0] = grid->xyz[0+3*node];
   xyz[1] = grid->xyz[1+3*node];
   xyz[2] = grid->xyz[2+3*node];

@@ -19,6 +19,7 @@ BEGIN_C_DECLORATION
 
 struct Grid {
   int maxnode, nnode;
+  int blanknode;
   double *xyz;
   double *spacing;
 

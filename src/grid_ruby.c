@@ -346,6 +346,12 @@ VALUE grid_addNode( VALUE self, VALUE x, VALUE y, VALUE z )
   return INT2NUM( returnedNode );
 }
 
+VALUE grid_removeNode( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridRemoveNode( grid, NUM2INT(node) )==grid?self:Qnil);
+}
+
 VALUE grid_nodeXYZ( VALUE self, VALUE node )
 {
   VALUE rb_xyz;
@@ -448,7 +454,9 @@ void Init_Grid()
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );
+
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );
+  rb_define_method( cGrid, "removeNode", grid_removeNode, 1 );
   rb_define_method( cGrid, "nodeXYZ", grid_nodeXYZ, 1 );
 
   rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
