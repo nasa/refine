@@ -1460,6 +1460,46 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 6,       grid.nface
  end
 
+ def testBlendTriplePoint
+  grid = Grid.new(20,20,10,0)
+  top = 0.8
+  grid.addNode(0.5,0.35,top)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0.5,0.7,0)
+
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,2,3,10)
+  grid.addFace(0,3,1,10)
+
+  layer = Layer.new(grid).populateAdvancingFront([10])
+  assert_equal 3,     layer.nRequiredBlends(0,270.0)
+  layer.blend(270.0)
+  assert_equal 9, layer.nnormal  
+  assert_equal 3, layer.nblend 
+  assert_equal [4,1,7], layer.triangleNormals(0)
+  assert_equal [5,2,8], layer.triangleNormals(1)
+  assert_equal [0,3,6], layer.triangleNormals(2)
+  assert_equal [4,0,1,6], layer.blendNormals(0)
+  assert_equal [5,4,2,7], layer.blendNormals(1)
+  assert_equal [0,5,3,8], layer.blendNormals(2)
+
+#     /3---8\
+#    / |   | \
+#    / 0---5 \
+#   / /     \ \
+#   //   4   \\
+#   6   / \   2
+#      1---7
+
+  assert_equal 3,         layer.blendDegree(0)
+  assert_equal [4, 5, 0], layer.orderedVertexNormals(0)
+  layer.advanceConstantHeight(0.1)
+  layer.writeTecplotFrontGeometry
+  assert_equal 10, layer.ntriangle  
+  assert_equal 19, grid.ncell  
+ end
+
  def testExtrudeBlend
   grid  = flatTwoFaceGrid
   grid.setNodeXYZ(3,[0.5,0.5,-1])
@@ -1514,48 +1554,6 @@ class TestLayer < Test::Unit::TestCase
   # |   1
   assert_equal [5,9,7], layer.triangleNormals(4)
   assert_equal [5,7,1], layer.triangleNormals(5)
- end
-
- def testBlendTriplePoint
-  grid = Grid.new(20,20,10,0)
-  top = 0.8
-  grid.addNode(0.5,0.35,top)
-  grid.addNode(0,0,0)
-  grid.addNode(1,0,0)
-  grid.addNode(0.5,0.7,0)
-
-  grid.addFace(0,1,2,10)
-  grid.addFace(0,2,3,10)
-  grid.addFace(0,3,1,10)
-
-  layer = Layer.new(grid).populateAdvancingFront([10])
-  assert_equal 3,     layer.nRequiredBlends(0,270.0)
-  layer.blend(270.0)
-  assert_equal 9, layer.nnormal  
-  assert_equal 3, layer.nblend 
-  assert_equal [4,1,7], layer.triangleNormals(0)
-  assert_equal [5,2,8], layer.triangleNormals(1)
-  assert_equal [0,3,6], layer.triangleNormals(2)
-  assert_equal [4,0,1,6], layer.blendNormals(0)
-  assert_equal [5,4,2,7], layer.blendNormals(1)
-  assert_equal [0,5,3,8], layer.blendNormals(2)
-
-#     /3---8\
-#    / |   | \
-#    / 0---5 \
-#   / /     \ \
-#   //   4   \\
-#   6   / \   2
-#      1---7
-
-  assert_equal 3,         layer.blendDegree(0)
-  assert_equal [4, 5, 0], layer.orderedVertexNormals(0)
-  layer.advanceConstantHeight(0.1)
-  layer.writeTecplotFrontGeometry
-  assert_equal 10, layer.ntriangle  
-  assert_equal 19, grid.ncell  
-
-
  end
 
  def facingGrid(z)
