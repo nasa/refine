@@ -86,7 +86,7 @@ int main( int argc, char *argv[] )
 	pxyz[1] = UGPatch_PtValue(localPatch,localNode,1);
 	pxyz[2] = UGPatch_PtValue(localPatch,localNode,2);
 	SubtractVector( pxyz, gxyz, dxyz);
-	printf("%2d n%5d%5d%10.2e%10.2e%10.2e\n",
+	printf("face%3d patch%6d vol%6d err%10.2e%10.2e%10.2e\n",
 	       face, localNode, globalNode,
 	       dxyz[0],dxyz[1],dxyz[2]);
     }
