@@ -467,6 +467,34 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
   free(count);
 }
 
+void gridloadlocalnodes_( int *nnode, int *global, int *local )
+{
+  int node, globalnode, localnode;
+  int face, ids, faceId;
+
+  localnode=0;
+  node=0;
+  while (node<(*nnode)) {
+    if (global[node] > 0) {
+      globalnode = global[node]-1;
+      localnode = gridGlobal2Local(grid, globalnode);
+      if (!gridValidNode(grid,localnode)) 
+	printf("%d: ERROR: %s: %d: invalid node local %d global %d.\n",
+	       gridPartId(grid),__FILE__, __LINE__, localnode, globalnode);
+      local[node] = 1+localnode;
+      node++;
+    } else {
+      ids = -global[node];
+      local[node] = global[node];
+      node++;
+      for(face=0;face<ids;face++) {
+	local[node] = global[node];
+	node++;
+      }
+    } 
+  }
+}
+
 void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 {
   int node, localnode, face, ids, faceId;

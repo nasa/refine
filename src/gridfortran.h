@@ -73,6 +73,7 @@ void gridghostcount_( int *nproc, int *count );
 void gridloadghostnodes_( int *nproc, int *clientindex,
 			 int *clientsize, int *localnode, int *globalnode );
 void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
+void gridloadlocalnodes_( int *nnode, int *global, int *local );
 void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
 
 void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux );
