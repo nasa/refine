@@ -38,6 +38,14 @@ VALUE grid_parallelEdgeSplit( VALUE self, VALUE rb_queue,
 					 NUM2INT(node0), NUM2INT(node1) ) );
 }
 
+VALUE grid_applyQueue( VALUE self, VALUE rb_queue )
+{
+  Queue *queue;
+  GET_GRID_FROM_SELF;
+  Data_Get_Struct( rb_queue, Queue, queue );
+  return ( grid==gridApplyQueue( grid, queue )?self:Qnil );
+}
+
 VALUE cGridMPI;
 
 void Init_GridMPI() 
@@ -48,4 +56,5 @@ void Init_GridMPI()
   rb_define_method( cGridMPI, "identityCellGlobal", grid_identityCellGlobal, 1);
   rb_define_method( cGridMPI, "setGhost", grid_setGhost, 1 );
   rb_define_method( cGridMPI, "parallelEdgeSplit", grid_parallelEdgeSplit, 3 );
+  rb_define_method( cGridMPI, "applyQueue", grid_applyQueue, 1 );
 }

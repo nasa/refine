@@ -70,3 +70,8 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   
   return newnode;
 }
+
+Grid *gridApplyQueue(Grid *grid, Queue *queue )
+{
+  return grid;
+}
