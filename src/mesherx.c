@@ -751,11 +751,11 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   g2l = malloc(maxnode*sizeof(int));
 
   nshell =0;
-
-  for (faceId=1;faceId<=gridNGeomFace(grid);faceId++){
-    if (!layerParentGeomFace(layer,faceId)) {
-      // use total faces for origial faces not thawed, but they should be thawed
-      nshell += gridNThawedFaces(grid,faceId);
+  for (face=0;face<maxface;face++){
+    if (grid==gridFace(grid,face,nodes,&faceId)){
+      if (!layerFaceInLayer(layer,face) ){
+	nshell +=1;
+      }
     }
   }
   nshell += layerNTriangle(layer);
@@ -766,10 +766,7 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   nshell =0;
   for (face=0;face<maxface;face++){
     if (grid==gridFace(grid,face,nodes,&faceId)){
-      if (!layerParentGeomFace(layer,faceId) && 
-	  ( !gridNodeFrozen(grid,nodes[0]) ||
-	    !gridNodeFrozen(grid,nodes[1]) ||
-	    !gridNodeFrozen(grid,nodes[2])    ) ){
+      if (!layerFaceInLayer(layer,face) ){
 	shell[0+3*nshell] = nodes[0];
 	shell[1+3*nshell] = nodes[1];
 	shell[2+3*nshell] = nodes[2];
