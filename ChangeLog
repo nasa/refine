@@ -1,3 +1,9 @@
+2004-08-31 19:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolumeWithSurf) added. Note that
+	using this single gradient and line sreach method failed in a
+	number of cases. It needs to be replaced with congigent gradient.
+
 2004-08-31 14:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmath.h added (gridVectorScale).
@@ -7,7 +13,7 @@
 
 	* src/refine_main.c added, was src/main.c.
 	* src/main.c removed, renamed to src/refine_main.c.
-	* src/Makefile.am renamed refine stand-alone main main.c -> refine_main.c
+	* src/Makefile.am renamed refine stand-alone main.c -> refine_main.c
 
 2004-08-30 20:55 Mike Park  <mike.park@nasa.gov>
 
