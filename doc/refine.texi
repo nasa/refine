@@ -715,7 +715,7 @@ list of authors in the distrubution AUTHORS file.
 
 If anything has changed in the GEOLAB SDK up date the static snapshots
 of the libraries in geomSGIn32. Build these on an SGI with the legecy
-SDK Makefiles. MeatLib is created wiht @code{make sgi} and CADGeom is
+SDK Makefiles. MeatLib is created with @code{make sgi} and CADGeom is
 created with @code{make alan}.
 
 In preparation to creating a distribution edit the @code{ChangeLog},
@@ -751,7 +751,7 @@ A distribution is created by typing @code{make dist} where you have
 configured the package.
 
 After you have created a distribution increment the version string at
-the top of configure.ac to the next test release.
+the top of configure.ac to the next test release and commit.
 
 @node Add Me
 @chapter Add Me
