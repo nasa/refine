@@ -1797,7 +1797,7 @@ Grid *gridNodeFaceMR(Grid *grid, int node, double *mr )
 Grid *gridNodeFaceMRDerivative (Grid *grid, int node, double *mr, double *dMRdx )
 {
   AdjIterator it;
-  int face, nodes[3], index, inode;
+  int face, originalNodes[3], orientedNodes[3], faceId, index, inode;
   double local_mr, local_dMRdx[3];
 
   *mr = 1.1;
@@ -1805,18 +1805,21 @@ Grid *gridNodeFaceMRDerivative (Grid *grid, int node, double *mr, double *dMRdx 
   dMRdx[1] = DBL_MAX;
   dMRdx[2] = DBL_MAX;
 
-  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
-    face = adjItem(it);
-    nodes[0] = node;
+  for ( it = adjFirst(gridFaceAdj(grid),node);
+	adjValid(it);
+	it = adjNext(it) ){
+    gridFace(grid,adjItem(it),originalNodes,&faceId);
+    orientedNodes[0] = node;
     index = 1;
     for (inode=0; inode<3;inode++) {
-      if ( node != grid->f2n[inode+3*face]){
-	nodes[index] = grid->f2n[inode+3*face];
+      if ( node != originalNodes[inode]){
+	orientedNodes[index] = originalNodes[inode];
 	index++;
       }
     }
 
-    if ( grid != gridFaceMRDerivative(grid, nodes, &local_mr, local_dMRdx ) ) {
+    if ( grid != gridFaceMRDerivative(grid, orientedNodes, 
+				      &local_mr, local_dMRdx ) ) {
       *mr = 0.0;
       dMRdx[0] = DBL_MAX;
       dMRdx[1] = DBL_MAX;
