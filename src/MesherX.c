@@ -80,6 +80,12 @@ int main( int argc, char *argv[] )
 
   if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
 
+  printf("calling MeshMgr_Initialize ... \n");
+  if ( ! MeshMgr_Initialize( ) ){
+    printf("ERROR: MeshMgr_Initialize broke.\n%s\n",ErrMgr_GetErrStr());
+    return 1;
+  }  
+
   printf("calling CADGeom_Start ... \n");
   if ( ! CADGeom_Start( ) ){
     printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());
