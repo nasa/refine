@@ -27,7 +27,7 @@
 #include "MeatLib/GeoBC.h"
 
 int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
-			      bool mixedElement )
+			      bool mixedElement, bool qualityImprovement )
 {
   char outputProject[256];
   int vol=1;
@@ -104,6 +104,16 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   printf(" -- REBUILD VOLUME\n");
   if ( layer != layerRebuildVolume(layer,vol) ) {
     return 0;
+  }
+
+  if ( qualityImprovement ){
+    printf(" -- QUALITY IMPROVEMENT\n");
+    layerThaw(layer);
+    printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid));
+    for (i=0;i<3;i++){
+      printf("edge swapping grid...\n");gridSwap(grid);
+      printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid));
+    }
   }
 
   printf("total grid size: %d nodes %d faces %d cells.\n",
