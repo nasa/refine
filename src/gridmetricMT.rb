@@ -251,6 +251,15 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv[1], ans[1], tol
   assert_in_delta deriv[2], ans[2], tol
   assert_in_delta deriv[3], ans[3], tol  
+
+  grid.setNodeXYZ(1,[2.0,0.0,0.0]);
+  assert_not_nil (ans = grid.cellVolumeDerivative(nodes))
+  deriv = [2.0*oneSixth,oneSixth,0.0,0.0]
+
+  assert_in_delta deriv[0], ans[0], tol
+  assert_in_delta deriv[1], ans[1], tol
+  assert_in_delta deriv[2], ans[2], tol
+  assert_in_delta deriv[3], ans[3], tol  
  end
 
  def testARDerivatives
