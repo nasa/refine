@@ -53,9 +53,9 @@ MesherXLib = libMesherX.a @SDKlibrary@ -lCADGeom -lGoolache libOctree_Stub.a @FE
 all_LDFLAGS = @dynamicFlag@
 hla_sources = \
 	MesherX_HLA.c \
-	mesherx_hla.c \
-	layerNormalExtra.c \
-	geometricStretch.c \
+	mesherx_hla.h mesherx_hla.c \
+	layerNormalExtra.h layerNormalExtra.c \
+	geometricStretch.h geometricStretch.c \
 	SyJetSpacingControl.c
 
 mesherx_hla.c : mesherx_SyJet.c
@@ -119,3 +119,22 @@ MesherX_HLAOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
 endif
 
 endif
+
+EXTRA_DIST = makeRubyExtension.rb RubyExtensionBuilder.rb \
+	adjMT.rb adj_ruby.c \
+	nearMT.rb near_ruby.c \
+	intersectMT.rb intersect_ruby.c \
+	lineMT.rb line_ruby.c \
+	sortMT.rb sort_ruby.c \
+	queueMT.rb queue_ruby.c \
+	gridMT.rb grid_ruby.c \
+	gridmathMT.rb gridmath_ruby.c \
+	gridmetricMT.rb gridmetric_ruby.c \
+	gridinsertMT.rb gridinsert_ruby.c \
+	gridswapMT.rb gridswap_ruby.c \
+	gridcadMT.rb gridcad_ruby.c \
+	FAKEGeom.h FAKEGeom.c \
+	gridmpiMT.rb gridmpi_ruby.c \
+	layerMT.rb layer_ruby.c
+
+TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb layerMT.rb
