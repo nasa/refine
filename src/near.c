@@ -103,7 +103,6 @@ double nearClearance( Near *near, Near *other)
   double clearance;
 
   clearance = nearDistance(near,other) - near->radius - other->radius;
-  clearance = MAX( 0, clearance );
 
   return clearance;
 }
@@ -121,4 +120,18 @@ double nearRightDistance( Near *near )
 double nearLeftDistance( Near *near )
 {
   return nearFarChild(near->leftChild);
+}
+
+int nearCollisions(Near *near, Near *target)
+{
+  int collisions = 0;
+
+  if (NULL==near || NULL == target) return 0;
+
+  if (nearClearance(near,target) <= 0) collisions++;
+
+  collisions+= nearCollisions(near->rightChild,target);
+  collisions+= nearCollisions(near->leftChild,target);
+
+  return collisions;
 }

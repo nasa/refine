@@ -72,6 +72,14 @@ VALUE near_leftDistance( VALUE self )
   return rb_float_new(nearLeftDistance(near));
 }
 
+VALUE near_collisions( VALUE self, VALUE rb_target )
+{
+  Near *tree, *target;
+  Data_Get_Struct( self,      Near, tree );
+  Data_Get_Struct( rb_target, Near, target );
+
+  return INT2NUM(nearCollisions(tree,target));
+}
 VALUE cNear;
 
 void Init_Near() 
@@ -86,4 +94,5 @@ void Init_Near()
   rb_define_method( cNear, "farChild", near_farChild, 0 );
   rb_define_method( cNear, "rightDistance", near_rightDistance, 0 );
   rb_define_method( cNear, "leftDistance", near_leftDistance, 0 );
+  rb_define_method( cNear, "collisions", near_collisions, 1 );
 }

@@ -34,7 +34,7 @@ class TestNear < Test::Unit::TestCase
  def testNodeClearanceWithSphereRadius
   sphere1 = Near.new(5,0,0,0,1)
   sphere2 = Near.new(5,1,0,0,1)
-  assert_equal 0, sphere1.clearance(sphere2)
+  assert_equal(-1, sphere1.clearance(sphere2))
 
   sphere2 = Near.new(5,3,0,0,1)
   assert_equal 1, sphere1.clearance(sphere2)
@@ -119,6 +119,30 @@ class TestNear < Test::Unit::TestCase
   assert_equal 5, near.farChild
   assert_equal 0, near.rightDistance
   assert_equal 0, near.leftDistance
+ end
+
+ def testSingleCollisions
+  near        = Near.new(5,0,0,0,0)
+  smalltarget = Near.new(6,1,0,0,0)
+  largetarget = Near.new(7,1,0,0,2)
+  assert_equal 0, near.collisions(smalltarget)
+  assert_equal 1, near.collisions(largetarget)
+ end
+
+ def testTreeCollisions
+  near   = Near.new(5,0,0,0,1)
+  child6 = Near.new(6,4,0,0,2)
+  child7 = Near.new(7,8,0,0,1)
+  assert_equal near, near.insert(child6)
+  assert_equal near, near.insert(child7)
+  target = Near.new(8,10,0,0,0)
+  assert_equal 0, near.collisions(target)
+  target = Near.new(8,10,0,0,2)
+  assert_equal 1, near.collisions(target)
+  target = Near.new(8,10,0,0,5)
+  assert_equal 2, near.collisions(target)
+  target = Near.new(8,10,0,0,10)
+  assert_equal 3, near.collisions(target)
  end
 
 end

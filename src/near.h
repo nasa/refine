@@ -31,6 +31,8 @@ double nearFarChild( Near *near );
 double nearRightDistance( Near *near );
 double nearLeftDistance( Near *near );
 
+int nearCollisions(Near *near, Near *target);
+
 END_C_DECLORATION
 
 #endif /* NEAR_H */
