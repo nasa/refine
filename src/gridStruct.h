@@ -30,6 +30,7 @@ struct Grid {
   int blankf2n;
   int *f2n;
   int *faceId;
+  double *faceU, *faceV;
   Adj *faceAdj;
 
   int maxedge, nedge;

@@ -49,11 +49,20 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 
   // face
   grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
+  grid->faceU  = malloc(3 * grid->maxface * sizeof(double));
+  grid->faceV  = malloc(3 * grid->maxface * sizeof(double));
   grid->faceId = malloc(1 * grid->maxface * sizeof(int));
+
   for (i=0;i < grid->maxface; i++ ) {
     grid->f2n[0+3*i] = EMPTY; 
     grid->f2n[1+3*i] = i+1; 
     grid->faceId[i] = EMPTY; 
+    grid->faceU[0+3*i] = DBL_MAX;
+    grid->faceU[1+3*i] = DBL_MAX;
+    grid->faceU[2+3*i] = DBL_MAX;
+    grid->faceV[0+3*i] = DBL_MAX;
+    grid->faceV[1+3*i] = DBL_MAX;
+    grid->faceV[2+3*i] = DBL_MAX;
   }
   grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
   grid->blankf2n = 0;
@@ -135,6 +144,17 @@ Grid *gridImport(int maxnode, int nnode,
     grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
     grid->blankf2n = grid->nface;
   }
+  grid->faceU  = malloc(3 * grid->maxface * sizeof(double));
+  grid->faceV  = malloc(3 * grid->maxface * sizeof(double));
+  for (i=0;i < grid->maxface; i++ ) {
+    grid->faceU[0+3*i] = DBL_MAX;
+    grid->faceU[1+3*i] = DBL_MAX;
+    grid->faceU[2+3*i] = DBL_MAX;
+    grid->faceV[0+3*i] = DBL_MAX;
+    grid->faceV[1+3*i] = DBL_MAX;
+    grid->faceV[2+3*i] = DBL_MAX;
+  }
+
   grid->faceId = faceId;
 
   grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3);
@@ -309,8 +329,14 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
 
 void gridFree(Grid *grid)
 {
+  adjFree(grid->edgeAdj);
+  free(grid->edgeId);
+  free(grid->edgeT);
+  free(grid->e2n);
   adjFree(grid->faceAdj);
   free(grid->faceId);
+  free(grid->faceV);
+  free(grid->faceU);
   free(grid->f2n);
   adjFree(grid->cellAdj);
   free(grid->c2n);
