@@ -32,7 +32,6 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
   UGPatchPtr  localPatch, globalPatch;
   Iterator patchIterator;
 
-
   if ( ! CADGeom_Start( ) ){
     printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
@@ -47,8 +46,9 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
     printf("ERROR: CADGeom_GetVolume. \n%s\n",ErrMgr_GetErrStr());
   }
 
-  printf("Geometry: %d nodes %d edges %d faces %d boundaries\n",
-	 nGeomNode,nGeomEdge,nGeomFace,nGeomGroups);
+  if ( 0==gridPartId(grid) )
+    printf("Geometry: %d nodes %d edges %d faces %d boundaries\n",
+	   nGeomNode,nGeomEdge,nGeomFace,nGeomGroups);
 
   gridSetNGeomNode( grid, nGeomNode );
   gridSetNGeomEdge( grid, nGeomEdge );
