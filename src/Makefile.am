@@ -226,6 +226,12 @@ restartTestParasolid_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	@CAPRIParasolidlibrary@ $(LastLib)
 restartTestParasolid_LDFLAGS = $(all_LDFLAGS)
 
+bin_PROGRAMS += unitParasolid
+unitParasolid_CFLAGS = $(all_CFLAGS)
+unitParasolid_SOURCES = unit_main.c
+unitParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
+unitParasolid_LDFLAGS = $(all_LDFLAGS)
+
 endif # BUILD_PARASOLID_KERNEL
 
 if BUILD_OPENCASCADE_KERNEL
