@@ -545,7 +545,7 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   return grid->faceId[face];
 }
 
-Grid *gridNodeUV(Grid *grid, int  node, int faceId, double *uv )
+Grid *gridNodeUV(Grid *grid, int node, int faceId, double *uv )
 {
   AdjIterator it;
   int face, i;
