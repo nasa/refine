@@ -42,20 +42,27 @@ END_TEST
 
 START_TEST(testCellIterator)
 {
+  int i;
   fail_unless( !gridValidNodeCell(grid), "expected last cell - init");
 
   gridFirstNodeCell(grid,0);
   fail_unless( !gridValidNodeCell(grid), "expected last cell - no register");
  
   gridRegisterNodeCell(grid,2,299);
+  gridRegisterNodeCell(grid,3,398);
   gridRegisterNodeCell(grid,3,399);
 
   gridFirstNodeCell(grid,2);
   fail_unless( gridCurrentNodeCell(grid) == 299, "cell 299 about node 2");
-  gridFirstNodeCell(grid,3);
-  fail_unless( gridCurrentNodeCell(grid) == 399, "cell 399 about node 3");
+  fail_unless( !gridMoreNodeCell(grid), "expected last cell - node 2");
   gridNextNodeCell(grid);
-  fail_unless( !gridValidNodeCell(grid), "expected last cell - node 3");
+  fail_unless( !gridValidNodeCell(grid), "expected invalid cell - node 2");
+
+  gridFirstNodeCell(grid,3);
+  fail_unless( gridMoreNodeCell(grid), "expected more cells - node 3");
+
+/* abusive use of Next */
+  for ( i=0; i<10000 ; i++ ) gridNextNodeCell(grid);
 }
 END_TEST
 

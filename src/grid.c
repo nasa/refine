@@ -139,6 +139,7 @@ void gridFirstNodeCell(Grid *grid, long nodeId)
 }
 void gridNextNodeCell(Grid *grid)
 {
+  if ( !gridValidNodeCell(grid) ) return;
   grid->currentcell++;
   while (grid->celllist[grid->currentcell] < 0){
     grid->currentcell = -grid->celllist[grid->currentcell];
@@ -151,6 +152,17 @@ long gridCurrentNodeCell(Grid *grid)
 int gridValidNodeCell(Grid *grid)
 {
   return (gridCurrentNodeCell(grid) != EMPTY);
+}
+int gridMoreNodeCell(Grid *grid)
+{
+  long next;
+
+  if ( !gridValidNodeCell(grid) ) return 0;
+  next = grid->currentcell + 1;
+  while (grid->celllist[next] < 0){
+    next = -grid->celllist[next];
+  }
+  return (grid->celllist[next] != 0);
 }
 
 void gridFree(Grid *grid)
