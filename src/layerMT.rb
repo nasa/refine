@@ -1390,7 +1390,9 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 7, layer.nnormal  
   assert_equal 1, layer.nblend 
   assert_equal [0,0,5,6], layer.blendNormals(0)
+  assert_equal 5,  layer.ntriangle
   layer.advanceConstantHeight(0.1)
+  assert_equal 6,  layer.ntriangle
   assert_equal 17, grid.ncell
  end
 
@@ -1413,6 +1415,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 7, layer.nnormal  
   assert_equal [0,0,5,6], layer.blendNormals(0)
   layer.advanceConstantHeight(0.1)
+  assert_equal 6,  layer.ntriangle
   assert_equal 16, grid.ncell
  end
 
