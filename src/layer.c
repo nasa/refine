@@ -3366,6 +3366,9 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
   int n, normal, normals[4];
   int triangle[3];
   int o, other;
+  double xyz0[3], xyz1[3], edge[3];
+  double normalDot, otherDot;
+  int i;
   
 
   adj = adjCreate( layerNNormal(layer), 4*layerNBlend(layer), 100);
@@ -3376,6 +3379,7 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
 
   for( normal = 0; normal < layerNNormal(layer); normal++ ) {
     if (0 != adjDegree(adj, normal)) {
+      gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,normal),xyz0);
       for ( it = adjFirst(layer->triangleAdj,normal); 
 	    adjValid(it); 
 	    it=adjNext(it) ){
@@ -3383,7 +3387,19 @@ Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
 	for (o=0;o<3;o++) {
 	  other = triangle[o];
 	  if (0 == adjDegree(adj, other)) {
-	    printf("\nnormal %d other %d\n",normal,other);
+	    gridNodeXYZ(layerGrid(layer),layerNormalRoot(layer,other),xyz1);
+	    gridSubtractVector(xyz1,xyz0,edge);
+	    gridVectorNormalize(edge);
+	    normalDot = gridDotProduct(edge,layer->normal[normal].direction);
+	    otherDot = gridDotProduct(edge,layer->normal[other].direction);
+	    if (otherDot < normalDot) {
+	      printf("normal %d other %d edge%8.4f%8.4f%8.4f dot0%8.4f dot1%8.4f \n",
+		     normal,other,
+		     edge[0],edge[1],edge[2],
+		     normalDot,otherDot);
+	      gridVectorCopy(layer->normal[normal].direction,
+			     layer->normal[other].direction);
+	    }
 	  }
 	}
       }
