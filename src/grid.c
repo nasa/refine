@@ -1223,7 +1223,7 @@ Grid *gridWriteVTK(Grid *grid, char *filename)
   FILE *vtk;
   int i;
   if ( grid !=  gridSortNodeGridEx(grid) ) {
-    printf("gridWriteTecplotSurfaceGeom: gridSortNodeGridEx failed.\n");
+    printf("gridWriteVTK: gridSortNodeGridEx failed.\n");
     return NULL;
   }
 
