@@ -1437,6 +1437,11 @@ int layerNActiveNormal(Layer *layer )
   return nActive;
 }
 
+bool layerAnyActiveNormals(Layer *layer)
+{
+  return (layerNActiveNormal(layer)>0);
+}
+
 bool layerCellInLayer(Layer *layer, int cell)
 {
   if (cell < 0 || cell >= gridMaxCell(layerGrid(layer)) ) return FALSE;

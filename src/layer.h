@@ -102,6 +102,7 @@ Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
 Layer *layerTerminateFaceNormals(Layer *, int faceId );
 int layerNActiveNormal(Layer *);
+bool layerAnyActiveNormals(Layer *);
 
 bool layerCellInLayer(Layer *, int cell);
 bool layerFaceInLayer(Layer *, int face);

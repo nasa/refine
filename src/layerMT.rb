@@ -727,11 +727,15 @@ class TestLayer < Test::Unit::TestCase
   assert_equal false,     layer.normalTerminated(0)
   assert_equal false,     layer.normalTerminated(1)
   assert_equal false,     layer.normalTerminated(2)
+  assert_equal true,      layer.anyActiveNormals
   assert_equal layer,     layer.terminateNormal(0)
   assert_equal layer,     layer.terminateNormal(1)
   assert_equal true,      layer.normalTerminated(0)
   assert_equal true,      layer.normalTerminated(1)
   assert_equal false,     layer.normalTerminated(2)
+  assert_equal true,      layer.anyActiveNormals
+  assert_equal layer,     layer.terminateNormal(2)
+  assert_equal false,     layer.anyActiveNormals
  end
  
  def volumeGrid
@@ -1433,7 +1437,7 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testCollideFrontFarApart
-  grid  = facingGrid(4)
+  grid  = facingGrid(5)
   layer = Layer.new(grid).populateAdvancingFront([1])
   assert !layer.normalTerminated(0)
   assert !layer.normalTerminated(1)
