@@ -330,6 +330,13 @@ class TestGrid < Test::Unit::TestCase
   assert_equal EMPTY, grid.nodeGlobal(1)
  end
 
+ def testCopyLocalNodeNumberingToGlobalNumbering
+  assert_not_nil      grid = Grid.new(10,0,0,0)
+  10.times { grid.addNode(1,2,3) }
+  assert_equal grid,  grid.identityGlobal
+  10.times { |node| assert_equal node, grid.nodeGlobal(node) }
+ end
+
  def testGetAndSetNodePart
   assert_not_nil      grid = Grid.new(1,0,0,0)
   assert_equal EMPTY, grid.nodePart(-1)

@@ -223,6 +223,7 @@ Grid *gridDeleteNodesNotUsed(Grid *);
 
 int gridNodeGlobal(Grid *g, int node );
 Grid *gridSetNodeGlobal(Grid *g, int node, int global );
+Grid *gridIdentityGlobal(Grid *g );
 int gridNodePart(Grid *g, int node );
 Grid *gridSetNodePart(Grid *g, int node, int part );
 

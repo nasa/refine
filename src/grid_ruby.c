@@ -554,6 +554,12 @@ VALUE grid_setNodeGlobal( VALUE self, VALUE node, VALUE global )
   return( grid == gridSetNodeGlobal( grid, NUM2INT(node), NUM2INT(global) )?self:Qnil);
 }
 
+VALUE grid_identityGlobal( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return( grid == gridIdentityGlobal( grid )?self:Qnil);
+}
+
 VALUE grid_nodePart( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -848,6 +854,7 @@ void Init_Grid()
 
   rb_define_method( cGrid, "nodeGlobal", grid_nodeGlobal, 1 );
   rb_define_method( cGrid, "setNodeGlobal", grid_setNodeGlobal, 2 );
+  rb_define_method( cGrid, "identityGlobal", grid_identityGlobal, 0 );
   rb_define_method( cGrid, "nodePart", grid_nodePart, 1 );
   rb_define_method( cGrid, "setNodePart", grid_setNodePart, 2 );
 
