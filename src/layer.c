@@ -42,6 +42,7 @@ struct Layer {
   int nnormal;
   Normal *normal;
   int *globalNode2Normal;
+  int nConstrainingGeometry, *constrainingGeometry;
   Adj *adj;
 };
 
@@ -58,6 +59,8 @@ Layer *layerCreate( Grid *grid )
   layer->nnormal=0;
   layer->normal=NULL;
   layer->globalNode2Normal=NULL;
+  layer->nConstrainingGeometry=0;
+  layer->constrainingGeometry=NULL;
   layer->adj=NULL;
   return layer;
 }
@@ -163,6 +166,7 @@ void layerFree(Layer *layer)
 {
   gridDetachNodeSorter( layer->grid );
   if (layer->adj != NULL) adjFree(layer->adj);
+  if (layer->constrainingGeometry != NULL) free(layer->constrainingGeometry);
   if (layer->globalNode2Normal != NULL) free(layer->globalNode2Normal);
   if (layer->normal != NULL) free(layer->normal);
   if (layer->frontParent != NULL) free(layer->frontParent);
@@ -470,22 +474,25 @@ Layer *layerVisibleNormals(Layer *layer)
   return layer;
 }
 
-Layer *layerConstrainNormal(Layer *layer, int bc )
+Layer *layerConstrainNormal(Layer *layer, int edgeface )
 {
-  int face, nodes[3], id, i, normal;
+  int edgeId, faceId, face, nodes[3], id, i, normal;
   int n0, n1, normal0, normal1;
-  int edge, nCurveNode, *curve;
+  int nCurveNode, *curve;
   int exist;
+
   if (layerNNormal(layer) == 0 ) return NULL;
+  if (edgeface == 0 ) return NULL;
   
-  if (bc > 0) {
+  if (edgeface > 0) {
+    faceId = edgeface;
     for(face=0;face<gridMaxFace(layer->grid);face++){
-      if (layer->grid == gridFace(layer->grid,face,nodes,&id) && id==bc ) {
+      if (layer->grid == gridFace(layer->grid,face,nodes,&id) && id==faceId ){
 	for(i=0;i<3;i++){
 	  normal = layer->globalNode2Normal[nodes[i]];
 	  if (normal != EMPTY) {
 	    if ( layer->normal[normal].constrained >= 0) {
-	      layer->normal[normal].constrained=bc;
+	      layer->normal[normal].constrained=faceId;
 	    }
 	  }
 	}
@@ -493,23 +500,50 @@ Layer *layerConstrainNormal(Layer *layer, int bc )
 	  n1 = n0 + 1; if ( n1 > 2 ) n1 = 0;
 	  normal0 = layer->globalNode2Normal[nodes[n0]];
 	  normal1 = layer->globalNode2Normal[nodes[n1]];
-	  layerConstrainFrontSide( layer, normal0, normal1, bc );
+	  layerConstrainFrontSide( layer, normal0, normal1, faceId );
 	}
       }
     }
   }else{
-    edge = -bc;
-    nCurveNode = gridGeomEdgeSize( layer->grid, edge );
+    edgeId = -edgeface;
+    nCurveNode = gridGeomEdgeSize( layer->grid, edgeId );
     curve = malloc( nCurveNode * sizeof(int) );
-    gridGeomEdge( layer->grid, edge, curve );
+    gridGeomEdge( layer->grid, edgeId, curve );
     for ( i=0; i<nCurveNode; i++){ 
       normal = layer->globalNode2Normal[curve[i]];
-      if (normal != EMPTY) layer->normal[normal].constrained=bc;
+      if (normal != EMPTY) layer->normal[normal].constrained=-edgeId;
     }
     free(curve);
   }
   
+  if ( !layerConstrainingGeometry(layer, edgeface) ) {
+    if ( layer->constrainingGeometry == NULL ) {
+      layer->nConstrainingGeometry = 1;
+      layer->constrainingGeometry = 
+	malloc( layer->nConstrainingGeometry * sizeof(int) );
+      layer->constrainingGeometry[0] = edgeface;
+    }else{
+      layer->nConstrainingGeometry++;
+      layer->constrainingGeometry = 
+	realloc( layer->constrainingGeometry, 
+		 layer->nConstrainingGeometry * sizeof(int) );
+      layer->constrainingGeometry[layer->nConstrainingGeometry-1] = edgeface;
+    }
+  }
+
   return layer;
+}
+
+bool layerConstrainingGeometry(Layer *layer, int edgeface )
+{
+  int i;
+
+  if ( edgeface == 0 ) return FALSE;
+
+  for (i=0;i<layer->nConstrainingGeometry;i++)
+    if (layer->constrainingGeometry[i]==edgeface) return TRUE;
+  
+  return FALSE;
 }
 
 Layer *layerConstrainFrontSide(Layer *layer, int normal0, int normal1, int bc )

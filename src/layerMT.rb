@@ -104,6 +104,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,       layer.constrained(1)
   assert_equal 0,       layer.constrained(2)
   assert_equal 0,       layer.constrained(3)
+  assert_nil            layer.constrainNormal(0)
   assert_equal layer,   layer.constrainNormal(773)
   assert_equal 773,     layer.constrained(0)
   assert_equal 0,       layer.constrained(1)
@@ -112,6 +113,24 @@ class TestLayer < Test::Unit::TestCase
 
   assert_equal 0,       layer.nConstrainedSides(0)
   assert_equal 1,       layer.nConstrainedSides(773)
+ end
+
+ def testRememberConstrainingFacesAndEdges
+  assert_not_nil        grid = Grid.new(3,0,1,0)
+  assert_equal grid,    grid.addFace(0,1,2,1)
+  assert_not_nil        layer = Layer.new(grid)
+  assert_equal layer,   layer.makeFront([1])
+  assert_nil            layer.constrainNormal(3)
+  assert_equal layer,   layer.makeNormal
+  assert_nil            layer.constrainNormal(0)
+  assert_equal layer,   layer.constrainNormal(2)
+  assert_equal layer,   layer.constrainNormal(-1)
+  assert_equal false,   layer.constrainingGeometry(-2)
+  assert_equal true,    layer.constrainingGeometry(-1)
+  assert_equal false,   layer.constrainingGeometry(0)
+  assert_equal false,   layer.constrainingGeometry(1)
+  assert_equal true,    layer.constrainingGeometry(2)
+  assert_equal false,   layer.constrainingGeometry(3)
  end
 
  def testConstrainNormalForEdge

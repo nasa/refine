@@ -160,10 +160,16 @@ VALUE layer_visibleNormals( VALUE self, VALUE height )
   return ( layer == layerVisibleNormals(layer)?self:Qnil );
 }
 
-VALUE layer_constrainNormal( VALUE self, VALUE bc )
+VALUE layer_constrainNormal( VALUE self, VALUE edgeface )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerConstrainNormal(layer,NUM2INT(bc))?self:Qnil );
+  return ( layer == layerConstrainNormal(layer,NUM2INT(edgeface))?self:Qnil );
+}
+
+VALUE layer_constrainingGeometry( VALUE self, VALUE edgeface )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layerConstrainingGeometry(layer,NUM2INT(edgeface))?Qtrue:Qfalse );
 }
 
 VALUE layer_constrainFrontSide( VALUE self, VALUE normal0, VALUE normal1, 
@@ -239,6 +245,7 @@ void Init_Layer()
   rb_define_method( cLayer, "normalDirection", layer_normalDirection, 1 );
   rb_define_method( cLayer, "visibleNormals", layer_visibleNormals, 0 );
   rb_define_method( cLayer, "constrainNormal", layer_constrainNormal, 1 );
+  rb_define_method( cLayer, "constrainingGeometry", layer_constrainingGeometry, 1 );
   rb_define_method( cLayer, "constrainFrontSide", layer_constrainFrontSide, 3 );
   rb_define_method( cLayer, "constrained", layer_constrained, 1 );
   rb_define_method( cLayer, "constrainedSide", layer_constrainedSide, 2 );
