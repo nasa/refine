@@ -17,6 +17,8 @@
 #include "mesherx.h"
 #include "grid.h"
 #include "gridfiller.h"
+#include "gridmetric.h"
+#include "gridswap.h"
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
 #include "Goolache/CAPrIMesh.h"
