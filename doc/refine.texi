@@ -472,7 +472,32 @@ communication pattern to update ghost node displacements.
 
 @section Parallelized Connectivity Changes
 
-The swap, node insertion, and edge collapse routines.
+The swap, node insertion, and edge collapse routines share a the same
+strategy for parallelization. The node insertion, and edge collapse
+routines are combined into refineParallelAdapt. First, internal
+connnectivites (elements not near ghost nodes) are modified. This
+parallel internal pass is performed by setting the first argument
+(processor) to -1 for gridparallelswap. 
+
+If new elements or nodes are created. They are assigned global
+numbering by incrementing the total global count of nodes or
+elements. This leads to overlaps in the global numberings of different
+elements on different processors. This overlap is fixed shifting the
+global numbering with the sync_global_numbering subroutine, which
+requires the global node and cell count from before the connectitives
+where changed.
+
+To change the connectities in the ghost region, a loop over processors
+is performed. Other processors block and wait for the processor who is
+taking its turn are connectivity changes. After the processor makes
+its changes, everyone calls sync_global_numbering to update global
+node and cell counts (offsets do not need to be performed). A
+@code{queue} object is used to communicate ghost region connectivity
+changes to other processors. It is filled by the changes on the active
+processor and then serialized with queueDump. This serialized object
+is broadcast, reinstated, and used to update other processors
+(gridApplyQueue).
+
 
 @section Initial notes on building and executing HEFSS with the rad mesh adapation option.
 
