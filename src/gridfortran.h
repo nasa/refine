@@ -25,8 +25,10 @@ int gridsetnodelocal2global_( int *partId, int *nnodeg,
 			      int *nnode, int *nnode0, int *local2global );
 int gridsetnodepart_( int *nnode, int *part );
 int gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
+int gridprojectallfaces_( );
 int gridswap_( );
 int gridsmoothvolume_( );
+int gridsmoothfaceinterior_( );
 int gridadaptwithoutcad_( double *minLength, double *maxLength );
 int gridwritetecplotsurfacezone_( );
 int gridexportfast_( );

@@ -108,6 +108,18 @@ int gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
   }
 }
 
+int gridprojectallfaces_( )
+{
+  int face, nodes[3], faceId;
+  for(face=0;face<gridMaxFace(grid);face++) {
+    if (grid == gridFace(grid,face,nodes,&faceId) ) {
+      gridProjectNodeToFace(grid, nodes[0], faceId );
+      gridProjectNodeToFace(grid, nodes[1], faceId );
+      gridProjectNodeToFace(grid, nodes[2], faceId );
+    }
+  }
+}
+
 int gridswap_( )
 {
   gridSwap(grid);
@@ -117,7 +129,15 @@ int gridswap_( )
 int gridsmoothvolume_( )
 {
   gridSmoothVolume(grid);
-  printf( " %6d smooth                           %s    AR%14.10f\n",
+  printf( " %6d smooth volume                    %s    AR%14.10f\n",
+	  gridPartId(grid),"                  ",gridMinAR(grid) );
+  fflush(stdout);
+}
+
+int gridsmoothfaceinterior_( )
+{
+  gridSmoothFaceInterior(grid);
+  printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
 	  gridPartId(grid),"                  ",gridMinAR(grid) );
   fflush(stdout);
 }

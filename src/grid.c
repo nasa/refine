@@ -2878,6 +2878,23 @@ bool gridGeometryFace(Grid *grid, int node)
   return FALSE;
 }
 
+bool gridGeometryBetweenFace(Grid *grid, int node)
+{
+  AdjIterator it;
+  int faceId, firstFaceId, nodes[3];
+
+  faceId = EMPTY;
+  firstFaceId = EMPTY;
+  gridFace(grid,adjItem(adjFirst(grid->faceAdj,node)),nodes,&firstFaceId);
+    
+  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ) {
+    gridFace(grid,adjItem(it),nodes,&faceId);
+    if (faceId !=firstFaceId) return TRUE;
+  }
+
+  return FALSE;
+}
+
 Grid *gridAddPrism(Grid *grid, int n0, int n1, int n2, int n3, int n4, int n5)
 {
   int i;
