@@ -51,7 +51,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     nLayer = (int)(20.0/scale);
     rate = exp(scale*log(1.05));
   }else{
-    nLayer = (int)(60.0/scale);
+    nLayer = (int)(100.0/scale);
     rate = exp(scale*log(1.25));
   }
 
@@ -82,18 +82,20 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     layerAssignPolynomialNormalHeight(layer, 0.002, 0.01, 2.0, 
 				      origin, direction );
   }else{
-    origin[0] = 0.0;
-    origin[1] = 0.0;
-    origin[2] = 0.0;
-    direction[0] = 1.0;
-    direction[1] = 0.0;
-    direction[2] = 0.0;
-    layerAssignPolynomialNormalHeight(layer, 0.01, 0.01, 2.0, 
-				      origin, direction );
-    layerSetPolynomialMaxHeight(layer, 0.75, 0.0, 1.0, 
-				origin, direction );
-    layerSaveInitialNormalHeight(layer);
-  layerComputeNormalRateWithBGSpacing(layer);
+    if (!blendElement) {
+      origin[0] = 0.0;
+      origin[1] = 0.0;
+      origin[2] = 0.0;
+      direction[0] = 1.0;
+      direction[1] = 0.0;
+      direction[2] = 0.0;
+      layerAssignPolynomialNormalHeight(layer, 0.01, 0.01, 2.0, 
+					origin, direction );
+      layerSetPolynomialMaxHeight(layer, 0.75, 0.0, 1.0, 
+				  origin, direction );
+      layerSaveInitialNormalHeight(layer);
+      layerComputeNormalRateWithBGSpacing(layer,0.7);
+    }
   }
 
   if (blendElement) {
@@ -107,35 +109,42 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     direction[0] = 1.0;
     direction[1] = 0.0164;
     direction[2] = 0.0;
-    layerCreateWakeWithBGSpacing(layer, origin, direction, 2.0 );
+    layerCreateWakeWithBGSpacing(layer, origin, direction, 10.0 );
 
-    origin[0] = -0.01;
-    origin[1] = 0.0;
-    origin[2] = 0.0;
-    direction[0] = 1.0;
-    direction[1] = 0.0;
-    direction[2] = 0.0;
-    layerAssignPolynomialNormalHeight(layer, 1.0e-5, 4.0e-5, 1.0, 
-				      origin, direction );
-    origin[0] = 1.0;
-    layerAssignPolynomialNormalHeight(layer, 5.0e-5, 2.5e-3, 2.0, 
-				      origin, direction );
-    layerScaleNormalHeight(layer,scale);
+    printf("split blends...\n");
+    layerSplitBlend(layer); 
+    printf("split blends...\n");
+    layerSplitBlend(layer); 
     printf("split blends...\n");
     layerSplitBlend(layer); 
     printf("split blends...\n");
     layerSplitBlend(layer); 
     if (scale < 0.70) layerSplitBlend(layer);
+
+    origin[0] = -0.0001;
+    origin[1] = 0.0;
+    origin[2] = 0.0;
+    direction[0] = 1.0;
+    direction[1] = 0.0;
+    direction[2] = 0.0;
+    layerSetPolynomialMaxHeight(layer, 0.001, 0.149, 1.0, 
+				origin, direction );
+    origin[0] = 1;
+    layerSetPolynomialMaxHeight(layer, 0.15, 0.15, 1.0, 
+				origin, direction );
+    layerSetAllNormalRate(layer, 1.2);
+    layerComputeInitialCellHeightWithBGSpacing(layer,1.0);
   }
 
   i=0;
   while (i<nLayer &&
 	 layerNNormal(layer)>layerTerminateNormalWithLength(layer,1.0)){
 
-    layerSmoothNormalDirection(layer);
-    layerAdvance(layer);
-    printf("advance layer %d rate %f\n",i,rate);
+    if (i < 4 ) layerSmoothNormalDirection(layer);
     layerSetNormalHeightWithRate(layer);
+    layerAdvance(layer);
+    layerWriteTecplotFront(layer);
+    printf("advance layer %d rate %f\n",i,rate);
     i++;
   }
 
@@ -195,7 +204,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   return 1;
 }
 
-Layer *layerComputeNormalRateWithBGSpacing(Layer *layer)
+Layer *layerComputeNormalRateWithBGSpacing(Layer *layer, double finalRatio)
 {
   int normal, root;
   double xyz[3], length, normalDirection[3];
@@ -211,12 +220,37 @@ Layer *layerComputeNormalRateWithBGSpacing(Layer *layer)
     xyz[1] += (length * normalDirection[1]);
     xyz[2] += (length * normalDirection[2]);
     MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-    finalDelta = spacing[0];
+    finalDelta = spacing[0]*finalRatio;
     initialDelta = layerNormalInitialHeight(layer,normal);
-    
-
     rate = exp( log(finalDelta / initialDelta) / (length/initialDelta) );
+    gridNodeXYZ(layerGrid(layer),root,xyz);
+    printf(" %15.10f %15.10f %15.10f %15.10f\n", xyz[0], rate, initialDelta, finalDelta);
     layerSetNormalRate(layer, normal, rate);
+  }
+  return layer;
+}
+
+Layer *layerComputeInitialCellHeightWithBGSpacing(Layer *layer, double finalRatio)
+{
+  int normal, root;
+  double xyz[3], length, normalDirection[3];
+  double initialDelta, finalDelta, rate;
+  double spacing[3], direction[9];
+
+  for(normal=0;normal<layerNNormal(layer);normal++){
+    root = layerNormalRoot(layer, normal );
+    gridNodeXYZ(layerGrid(layer),root,xyz);
+    layerNormalDirection(layer,normal,normalDirection);
+    length = layerNormalMaxLength(layer,normal);
+    xyz[0] += (length * normalDirection[0]);
+    xyz[1] += (length * normalDirection[1]);
+    xyz[2] += (length * normalDirection[2]);
+    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+    finalDelta = spacing[0]*finalRatio;
+    rate = layerNormalRate(layer,normal);
+    initialDelta = finalDelta / pow(rate,length*10);
+    printf("init %15.10f %15.10f %15.10f %15.10f\n",rate, initialDelta,finalDelta,length);
+    layerSetNormalInitialHeight(layer, normal, initialDelta);
   }
   return layer;
 }
