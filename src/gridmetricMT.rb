@@ -54,9 +54,9 @@ class TestGridMetric < Test::Unit::TestCase
 				   grid.addNode(0.0,2.0,0.0), 
 				   grid.addNode(0.0,0.0,5.0) )
   1.upto(4) do |n| 
-   assert_equal grid, grid.setMap(n, 1.0, 0.0, 0.0,
-	 		             0.0, 0.5, 0.0,
-			             0.0, 0.0, 0.2)
+   assert_equal grid, grid.setMap(n, 1.00, 0.00, 0.00,
+	 		                   0.25, 0.00,
+			                         0.04)
   end
   assert_equal grid, grid.removeNode(0)
   assert_equal grid, grid.sortNodeGridEx
@@ -75,9 +75,9 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 2, grid.addNode(-1.0,1.0,0.0)
   sr2  = Math::sqrt(2.0)
   0.upto(2) do |n| 
-   assert_equal grid, grid.setMap(n, 0.25,  0.25,  0.00,
-	 		            -0.50,  0.50,  0.00,
-			             0.00,  0.00,  1.00)
+   assert_equal grid, grid.setMap(n, 0.3125, -0.1875,  0.0000,
+	 		                      0.3125,  0.0000,
+			                               1.0000)
   end
   assert_equal grid, grid.sortNodeGridEx
   assert_in_delta 2*sr2, grid.edgeLength(0,1), 1.0e-15
