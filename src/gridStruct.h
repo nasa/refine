@@ -22,6 +22,11 @@ struct Prism {
   int nodes[6];
 };
 
+typedef struct Pyramid Pyramid;
+struct Pyramid {
+  int nodes[5];
+};
+
 typedef struct Quad Quad;
 struct Quad {
   int nodes[4];
@@ -55,6 +60,9 @@ struct Grid {
 
   int nprism, maxprism;
   Prism *prism;
+
+  int npyramid, maxpyramid;
+  Pyramid *pyramid;
 
   int nquad, maxquad;
   Quad *quad;

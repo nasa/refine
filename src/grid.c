@@ -36,6 +36,9 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->nprism=0;
   grid->maxprism=0;
   grid->prism=NULL;
+  grid->npyramid=0;
+  grid->maxpyramid=0;
+  grid->pyramid=NULL;
   grid->nquad=0;
   grid->maxquad=0;
   grid->quad=NULL;
@@ -147,6 +150,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nprism=0;
   grid->maxprism=0;
   grid->prism=NULL;
+  grid->npyramid=0;
+  grid->maxpyramid=0;
+  grid->pyramid=NULL;
   grid->nquad=0;
   grid->maxquad=0;
   grid->quad=NULL;
@@ -433,6 +439,7 @@ void gridFree(Grid *grid)
   if ( grid->tecplotFileOpen ) fclose(grid->tecplotFile);
   if ( NULL != grid->geomEdge) free(grid->geomEdge);
   if (grid->quad!=NULL) free(grid->quad);
+  if (grid->pyramid!=NULL) free(grid->pyramid);
   if (grid->prism!=NULL) free(grid->prism);
   adjFree(grid->edgeAdj);
   free(grid->edgeId);
@@ -667,7 +674,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
   int *o2n, *curve;
   double *temp_xyz;
   bool *temp_frozen;
-  int quadIndex, prismIndex;
+  int prismIndex, pyramidIndex, quadIndex;
 
   if (NULL == gridPack(grid)) {
     printf("gridSortNodeGridEx: gridPack failed.\n");
@@ -790,8 +797,13 @@ Grid *gridSortNodeGridEx(Grid *grid)
   }
 
   for (prismIndex=0;prismIndex<gridNPrism(grid);prismIndex++){
-    for (i=0;i<6;i++) grid->prism[prismIndex].nodes[i] =
+    for (i=0;i<5;i++) grid->prism[prismIndex].nodes[i] =
 			o2n[grid->prism[prismIndex].nodes[i]];
+  }
+
+  for (pyramidIndex=0;pyramidIndex<gridNPyramid(grid);pyramidIndex++){
+    for (i=0;i<6;i++) grid->pyramid[pyramidIndex].nodes[i] =
+			o2n[grid->pyramid[pyramidIndex].nodes[i]];
   }
 
   // note, these should be counted as boundaries
@@ -892,6 +904,11 @@ int gridNEdge(Grid *grid)
 int gridNPrism(Grid *grid)
 {
   return grid->nprism;
+}
+
+int gridNPyramid(Grid *grid)
+{
+  return grid->npyramid;
 }
 
 int gridNQuad(Grid *grid)
@@ -2191,6 +2208,42 @@ Grid *gridPrism(Grid *grid, int prismIndex, int *nodes)
 
   for (i=0;i<6;i++){
     nodes[i]=grid->prism[prismIndex].nodes[i];
+  }
+
+  return grid;
+}
+
+
+Grid *gridAddPyramid(Grid *grid, int n0, int n1, int n2, int n3, int n4)
+{
+
+  if (grid->npyramid >= grid->maxpyramid) {
+    grid->maxpyramid += 5000;
+    if (grid->pyramid == NULL) {
+      grid->pyramid = malloc(grid->maxpyramid*sizeof(Pyramid));
+    }else{
+      grid->pyramid = realloc(grid->pyramid,grid->maxpyramid*sizeof(Pyramid));
+    }
+  }
+
+  grid->pyramid[grid->npyramid].nodes[0] = n0;
+  grid->pyramid[grid->npyramid].nodes[1] = n1;
+  grid->pyramid[grid->npyramid].nodes[2] = n2;
+  grid->pyramid[grid->npyramid].nodes[3] = n3;
+  grid->pyramid[grid->npyramid].nodes[4] = n4;
+
+  grid->npyramid++;
+
+  return grid;
+}
+
+Grid *gridPyramid(Grid *grid, int pyramidIndex, int *nodes)
+{
+  int i;
+  if (pyramidIndex<0 || pyramidIndex >= gridNPyramid(grid) ) return NULL; 
+
+  for (i=0;i<5;i++){
+    nodes[i]=grid->pyramid[pyramidIndex].nodes[i];
   }
 
   return grid;

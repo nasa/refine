@@ -35,6 +35,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 1, @grid.maxedge
   assert_equal 0, @grid.nedge
   assert_equal 0, @grid.nprism
+  assert_equal 0, @grid.npyramid
   assert_equal 0, @grid.nquad
  end
 
@@ -730,6 +731,15 @@ class TestGrid < Test::Unit::TestCase
   assert_nil                  @grid.prism(-1) 
   assert_nil                  @grid.prism(1)
   assert_equal [0,1,2,3,4,5], @grid.prism(0)
+ end
+
+ def testInsertPyramid
+  assert_equal 0,           @grid.npyramid
+  assert_equal @grid,       @grid.addPyramid(0,1,2,3,4)
+  assert_equal 1,           @grid.npyramid
+  assert_nil                @grid.pyramid(-1) 
+  assert_nil                @grid.pyramid(1)
+  assert_equal [0,1,2,3,4], @grid.pyramid(0)
  end
 
  def testInsertQuad

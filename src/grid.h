@@ -47,6 +47,7 @@ int gridNFace(Grid *g);
 int gridMaxEdge(Grid *g);
 int gridNEdge(Grid *g);
 int gridNPrism(Grid *g);
+int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);
 int gridCellDegree(Grid *g, int nodeIndex);
 
@@ -145,6 +146,9 @@ bool gridGeometryFace(Grid *g, int node);
 
 Grid *gridAddPrism(Grid *g, int n0, int n1, int n2, int n3, int n4, int n5);
 Grid *gridPrism(Grid *g, int prismIndex, int *nodes);
+
+Grid *gridAddPyramid(Grid *g, int n0, int n1, int n2, int n3, int n4);
+Grid *gridPyramid(Grid *g, int pyramidIndex, int *nodes);
 
 Grid *gridAddQuad(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridQuad(Grid *g, int quadIndex, int *nodes);

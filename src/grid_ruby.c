@@ -97,6 +97,12 @@ VALUE grid_nprism( VALUE self )
   return INT2NUM( gridNPrism(grid) );
 }
 
+VALUE grid_npyramid( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridNPyramid(grid) );
+}
+
 VALUE grid_nquad( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -674,6 +680,28 @@ VALUE grid_prism( VALUE self, VALUE prismIndex )
   return rb_prism;
 }
 
+VALUE grid_addPyramid( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3,
+		      VALUE n4 )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridAddPyramid(grid,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2),
+				  NUM2INT(n3),NUM2INT(n4))?self:Qnil );
+}
+
+VALUE grid_pyramid( VALUE self, VALUE pyramidIndex )
+{
+  int i;
+  int nodes[5];
+  VALUE rb_pyramid;
+  GET_GRID_FROM_SELF;
+  if ( grid != gridPyramid(grid,NUM2INT(pyramidIndex),nodes) ) return Qnil;
+  rb_pyramid = rb_ary_new2(5);
+  for (i=0;i<5;i++){
+    rb_ary_store( rb_pyramid, i, INT2NUM(nodes[i]) );
+  }
+  return rb_pyramid;
+}
+
 VALUE grid_addQuad( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
   GET_GRID_FROM_SELF;
@@ -714,6 +742,7 @@ void Init_Grid()
   rb_define_method( cGrid, "maxedge", grid_maxedge, 0 );
   rb_define_method( cGrid, "nedge", grid_nedge, 0 );
   rb_define_method( cGrid, "nprism", grid_nprism, 0 );
+  rb_define_method( cGrid, "npyramid", grid_npyramid, 0 );
   rb_define_method( cGrid, "nquad", grid_nquad, 0 );
 
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
@@ -790,6 +819,9 @@ void Init_Grid()
 
   rb_define_method( cGrid, "addPrism", grid_addPrism, 6 );
   rb_define_method( cGrid, "prism", grid_prism, 1 );
+
+  rb_define_method( cGrid, "addPyramid", grid_addPyramid, 5 );
+  rb_define_method( cGrid, "pyramid", grid_pyramid, 1 );
 
   rb_define_method( cGrid, "addQuad", grid_addQuad, 4 );
   rb_define_method( cGrid, "quad", grid_quad, 1 );
