@@ -79,6 +79,9 @@ char *ErrMgr_GetErrStr(void)
 {
   return "Non-functional FAKEGeomExtras\n";
 }
+void ErrMgr_Append(char *mod,int line,char *fmt,...)
+{
+}
 
 GridBool UGMgr_LoadLibs( void )
 {

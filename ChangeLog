@@ -1,3 +1,9 @@
+2005-02-17 22:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeomExtras.c (ErrMgr_Append) Added for fake
+	CADGeom_ReversedSurfaceNormal call to allow adaptation without the
+	SDK.
+	
 2005-02-16 15:15 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridcad.c (gridFaceAreaUV) check orientation of surface to

@@ -84,6 +84,7 @@ int UGPatch_GlobalIndex(UGPatchPtr upp, int ndx);
 #define UGPatch_Parent(upp) ((UGridPtr)malloc(sizeof(UGrid)))
 
 GridBool UGPatch_InitSurfacePatches(UGridPtr ugp);
+void ErrMgr_Append(char *mod,int line,char *fmt,...);
 
 char *ErrMgr_GetErrStr(void);
 
