@@ -27,6 +27,7 @@ void gridsetnodepart_( int *nnode, int *part );
 void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
 void gridfreezenode_( int *node );
 void gridprojectallfaces_( );
+void gridminar_( double *aspectratio );
 void gridwritetecplotsurfacezone_( );
 void gridexportfast_( );
 

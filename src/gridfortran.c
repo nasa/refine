@@ -145,6 +145,11 @@ void gridprojectallfaces_( )
 #endif
 }
 
+void gridminar_( double *aspectratio )
+{
+  *aspectratio = gridMinAR( grid );
+}
+
 void gridwritetecplotsurfacezone_( )
 {
   char filename[256];
