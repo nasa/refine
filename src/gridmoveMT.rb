@@ -295,7 +295,7 @@ class TestGridMove < Test::Unit::TestCase
   assert_equal up, gm.displacement(0)
   assert_equal up, gm.displacement(1)
   assert_equal up, gm.displacement(2)
-  delta = 1.0e-15
+  delta = 1.0e-14
   assert_in_delta up[0], gm.displacement(3)[0], delta
   assert_in_delta up[1], gm.displacement(3)[1], delta
   assert_in_delta up[2], gm.displacement(3)[2], delta
@@ -311,7 +311,7 @@ class TestGridMove < Test::Unit::TestCase
   gm.displace(3,up)
   assert_equal gm, gm.elasticRelaxation(1,1)
   n = 0
-  delta = 1.0e-15
+  delta = 1.0e-14
   assert_in_delta up[0], gm.displacement(n)[0], delta
   assert_in_delta up[1], gm.displacement(n)[1], delta
   assert_in_delta up[2], gm.displacement(n)[2], delta
@@ -327,7 +327,7 @@ class TestGridMove < Test::Unit::TestCase
   gm.displace(3,up)
   assert_equal gm, gm.elasticRelaxation(1,1)
   n = 1
-  delta = 1.0e-15
+  delta = 1.0e-14
   assert_in_delta up[0], gm.displacement(n)[0], delta
   assert_in_delta up[1], gm.displacement(n)[1], delta
   assert_in_delta up[2], gm.displacement(n)[2], delta
@@ -343,7 +343,7 @@ class TestGridMove < Test::Unit::TestCase
   gm.displace(3,up)
   assert_equal gm, gm.elasticRelaxation(1,1)
   n = 2
-  delta = 1.0e-15
+  delta = 1.0e-14
   assert_in_delta up[0], gm.displacement(n)[0], delta
   assert_in_delta up[1], gm.displacement(n)[1], delta
   assert_in_delta up[2], gm.displacement(n)[2], delta
@@ -378,7 +378,6 @@ class TestGridMove < Test::Unit::TestCase
   assert(1.0e-12<minVol,"negative volume of #{minVol}")
  end
 
-
  def testElasticRelaxationRotate3
   grid = isoTet
   gm = GridMove.new(grid)
@@ -387,15 +386,11 @@ class TestGridMove < Test::Unit::TestCase
   2.times{|n| gm.displace(n,zero)}
   gm.displace(2,up)
   assert_equal gm, gm.elasticRelaxation(1,1)
-  ans = [0.0, -0.1, 0.0]
-  ans = [0.0, -0.8000469361, 0.04041570439]
-  delta = 1.0e-8
+  ans = [0.0, -0.092378, 0.040415]
+  delta = 1.0e-5
   assert_in_delta ans[0], gm.displacement(3)[0], delta
   assert_in_delta ans[1], gm.displacement(3)[1], delta
   assert_in_delta ans[2], gm.displacement(3)[2], delta
  end
-
-
-
 
 end

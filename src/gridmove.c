@@ -913,7 +913,7 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
       c3z = c*(nz4 + nz1 + nz2);
       c4z = c*(nz1 + nz2 + nz3);
 
-      R = 1.0 / vol;
+      R = 1.0;
       onePlusR = 1.0 + R;
 
       /* node1 */
