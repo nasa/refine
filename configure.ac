@@ -196,8 +196,6 @@ AC_OUTPUT( \
 	   src/Makefile \
 	   example/Makefile \
 	   geomSGIn32/Makefile \
-	   geomSGIn32/Native/Makefile \
-	   geomSGIn32/Native/SGIn32/Makefile \
 	   geomSGIn32/lib/Makefile \
 	   geomSGIn32/include/Makefile \
 	   geomSGIn32/include/CADGeom/Makefile \
