@@ -625,7 +625,7 @@ double gridAR(Grid *grid, int *nodes )
 	  nx3*ny1*nz2*s4 - nx1*ny3*nz2*s4 - nx2*ny1*nz3*s4 +
 	  nx1*ny2*nz3*s4)/det;
 
-  aspect = circ/xins/3.0;
+  aspect = xins/circ*3.0;
   return aspect;
 }
 
