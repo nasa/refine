@@ -38,6 +38,7 @@ struct Triangle {
 typedef struct Blend Blend;
 struct Blend {
   int nodes[2];
+  int normal[4];
 };
 
 struct Layer {
@@ -1760,16 +1761,17 @@ Layer *layerBlend(Layer *layer)
 	largestEdgeAngle = edgeAngle;
 	splitTriangle = previousTriangle;
       }
-      printf("normal %d prev %d tri %d next %d\n",
-	     normal,previousTriangle,triangle,nextTriangle);
     }
    
     if (splitTriangle != EMPTY && largestEdgeAngle > angleLimit){
+      newNormal = layerDuplicateNormal(layer, normal );
       nextTriangle = layerNextTriangle(layer, normal, splitTriangle);
       layerCommonEdge(layer, splitTriangle, nextTriangle, commonEdge);
-      layerAddBlend(layer,commonEdge[0],commonEdge[1]);
-      
-      newNormal = layerDuplicateNormal(layer, normal );
+      if (layerNormalRoot(layer,normal) == commonEdge[0] ) {
+	layerAddBlend(layer,normal,newNormal,commonEdge[1]);
+      }else{
+	layerAddBlend(layer,normal,newNormal,commonEdge[0]);
+      }
       triangle = nextTriangle;
       done = FALSE;
       while (!done) {
@@ -1789,9 +1791,9 @@ Layer *layerBlend(Layer *layer)
   return layer;
 }
 
-Layer *layerAddBlend(Layer *layer, int n0, int n1 )
+Layer *layerAddBlend(Layer *layer, int normal0, int normal1, int otherNode )
 {
-  int i;
+  int i, node0, node1, n0, n1;
   bool newEdge;
 
   if (layer->nblend >= layer->maxblend) {
@@ -1803,16 +1805,37 @@ Layer *layerAddBlend(Layer *layer, int n0, int n1 )
     }
   }
   
+  n0 = layerNormalRoot(layer,normal0);
+  n1 = otherNode;
+
   newEdge=TRUE;
   for (i=0;i<layerNBlend(layer);i++){
-    if ( ( layer->blend[i].nodes[0] == n0 && layer->blend[i].nodes[1] == n1 ) ||
-	 ( layer->blend[i].nodes[0] == n1 && layer->blend[i].nodes[1] == n0 ) )
+    node0 = layer->blend[i].nodes[0];
+    node1 = layer->blend[i].nodes[1];
+
+    if ( ( node0 == n0 && node1 == n1 ) ||
+	 ( node0 == n1 && node1 == n0 ) ){
       newEdge=FALSE;
+      layer->blend[i].normal[2] = normal1;
+      layer->blend[i].normal[3] = normal0;
+    }
   }
   if (newEdge){
     layer->blend[layer->nblend].nodes[0] = n0;
     layer->blend[layer->nblend].nodes[1] = n1;
+    layer->blend[layer->nblend].normal[0] = normal0;
+    layer->blend[layer->nblend].normal[1] = normal1;
     layer->nblend++;
   }
+
   return layer;
 }
+
+Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
+{
+  int i;
+  if (blend < 0 || blend >= layerNBlend(layer)) return NULL;
+  for(i=0;i<4;i++) normals[i] = layer->blend[blend].normal[i];
+  return layer;
+}
+

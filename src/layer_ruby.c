@@ -364,6 +364,17 @@ VALUE layer_blend( VALUE self )
   return ( layer == layerBlend(layer)?self:Qnil );
 }
 
+VALUE layer_blendNormals( VALUE self, VALUE blend )
+{
+  int i, normals[4];
+  VALUE rb_normals;
+  GET_LAYER_FROM_SELF;
+  if (layer != layerBlendNormals(layer, NUM2INT(blend), normals )) return Qnil;
+  rb_normals = rb_ary_new2(4);
+  for(i=0;i<4;i++) rb_ary_store( rb_normals, i, INT2NUM(normals[i]) );
+  return rb_normals;
+}
+
 VALUE cLayer;
 
 void Init_Layer() 
@@ -423,5 +434,6 @@ void Init_Layer()
   rb_define_method( cLayer, "toggleMixedElementMode", layer_toggleMixedElementMode, 0 ); 
 
   rb_define_method( cLayer, "blend", layer_blend, 0 );
+  rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
 
 }

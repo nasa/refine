@@ -101,7 +101,8 @@ bool layerTetrahedraOnly(Layer *);
 Layer *layerToggleMixedElementMode(Layer *);
 
 Layer *layerBlend(Layer *);
-Layer *layerAddBlend(Layer *, int n0, int n1);
+Layer *layerAddBlend(Layer *, int normal0, int normal1, int otherNode );
+Layer *layerBlendNormals(Layer *, int blend, int *normals );
 
 END_C_DECLORATION
 
