@@ -26,8 +26,13 @@ struct GridMove {
 GridMove *gridmoveCreate(Grid *);
 Grid *gridmoveGrid(GridMove *);
 void gridmoveFree(GridMove *);
-void gridmoveNodeSorter(void *gridmove, int maxnode, int *o2n);
-void gridmoveReallocator(void *gridmove, int reallocType, 
+void gridmovePack(void *voidGridMove, 
+		  int nnode, int maxnode, int *nodeo2n,
+		  int ncell, int maxcell, int *cello2n,
+		  int nface, int maxface, int *faceo2n,
+		  int nedge, int maxedge, int *edgeo2n);
+void gridmoveSortNodes(void *voidGridMove, int maxnode, int *o2n);
+void gridmoveReallocator(void *voidGridMove, int reallocType, 
 			 int lastSize, int newSize);
 
 GridMove *gridmoveDisplace(GridMove *, int node, double *displace);

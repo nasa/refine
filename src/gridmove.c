@@ -19,7 +19,8 @@ GridMove *gridmoveCreate( Grid *grid )
   gm = malloc(sizeof(GridMove));
   gm->grid = grid;
 
-  gridAttachNodeSorter( grid, gridmoveNodeSorter, gm );
+  gridAttachPacker( grid, gridmovePack, gm );
+  gridAttachNodeSorter( grid, gridmoveSortNode, gm );
   gridAttachReallocator( grid, gridmoveReallocator, gm );
 
   gm->displacement = malloc(3*gridMaxNode(grid)*sizeof(double));
@@ -36,20 +37,46 @@ Grid *gridmoveGrid(GridMove *gm)
 void gridmoveFree(GridMove *gm)
 {
   free(gm->displacement);
+  gridDetachPacker( gm->grid );
   gridDetachNodeSorter( gm->grid );
   gridDetachReallocator( gm->grid );
   free(gm);
 }
 
-void gridmoveNodeSorter(void *voidGridMove, int maxnode, int *o2n)
+void gridmovePack(void *voidGridMove, 
+		  int nnode, int maxnode, int *nodeo2n,
+		  int ncell, int maxcell, int *cello2n,
+		  int nface, int maxface, int *faceo2n,
+		  int nedge, int maxedge, int *edgeo2n)
+{
+  GridMove *gm = (GridMove *)voidGridMove;
+  int orignode, packnode;
+  for ( orignode = 0 ; orignode < maxnode ; orignode++ ){
+    packnode = nodeo2n[orignode];
+    if (EMPTY!=packnode) {
+      for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
+	gm->displacement[ixyz+3*packnode] = gm->displacement[ixyz+3*orignode];
+      }
+    }
+  }
+  for ( packnode=nnode ; packnode < maxnode ; packnode++ ){ 
+    for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
+      gm->displacement[ixyz+3*packnode] = 0.0;
+    }
+  }
+}
+
+void gridmoveSortNode(void *voidGridMove, int maxnode, int *o2n)
 {
   GridMove *gm = (GridMove *)voidGridMove;
   int node, ixyz;
   double *temp_xyz;
   temp_xyz = malloc( maxnode * sizeof(double) );
   for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
+    for ( node = 0 ; node < maxnode ; node++ )temp_xyz[node]=0.0;
     for ( node = 0 ; node < maxnode ; node++ ){
-      temp_xyz[o2n[node]] = gm->displacement[ixyz+3*node];
+      if (EMPTY != o2n[node])
+	temp_xyz[o2n[node]] = gm->displacement[ixyz+3*node];
     }
     for ( node = 0 ; node < maxnode ; node++ ){
       gm->displacement[ixyz+3*node] = temp_xyz[node];
