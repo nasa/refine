@@ -498,7 +498,7 @@ VALUE layer_orderedVertexNormals( VALUE self, VALUE normal )
   VALUE normals;
   GET_LAYER_FROM_SELF;
 
-  nVertexNormals = layerBlendDegree(layer,NUM2INT(normal));
+  nVertexNormals = layerSubNormalDegree(layer,NUM2INT(normal));
 
   if (0 == nVertexNormals) return rb_ary_new();
 

@@ -2667,6 +2667,29 @@ int layerBlendDegree(Layer *layer, int normal)
   return adjDegree(layerBlendAdj(layer),normal);
 }
 
+int layerSubNormalDegree(Layer *layer, int normal)
+{
+  int degree;
+  int blend, blendnormals[4];
+  AdjIterator it;
+  if (NULL == layerBlendAdj(layer)) return 0;
+  degree =0;
+  for ( it = adjFirst(layerBlendAdj(layer),normal); 
+	adjValid(it); 
+	it=adjNext(it) ){
+    blend = adjItem(it);
+    layerBlendNormals(layer, blend, blendnormals );
+    degree++;
+    if ( layerNormalRoot(layer, normal) == 
+	 layerNormalRoot(layer, blendnormals[0]) ) {
+      degree += layer->blend[blend].nSubNormal0;
+    }else{
+      degree += layer->blend[blend].nSubNormal1;      
+    }
+  }
+  return degree;
+}
+
 Layer *layerSubBlend(Layer *layer, double maxNormalAngle)
 {
   int normal;
@@ -2964,7 +2987,7 @@ Layer *layerOrderedVertexNormals(Layer *layer, int normal,
 				 int *nVertexNormals, int *vertexNormals ){
   int node;
   AdjIterator it;
-  int blend;
+  int blend, subNormal, nSubNormal;
   int count;
 
   node = layerNormalRoot(layer,normal);
@@ -2975,10 +2998,22 @@ Layer *layerOrderedVertexNormals(Layer *layer, int normal,
     blend = adjItem(it);
     if (node == layer->blend[blend].nodes[0]) {
       vertexNormals[count] = layer->blend[blend].normal[0];
+      count++;
+      nSubNormal = layer->blend[blend].nSubNormal0;
+      for (subNormal=0;subNormal<nSubNormal;subNormal++){
+	vertexNormals[count] = layer->blend[blend].subNormal0[subNormal];
+	count++;
+      }
     }else{
       vertexNormals[count] = layer->blend[blend].normal[3];
+      count++;
+      nSubNormal = layer->blend[blend].nSubNormal1;
+      for (subNormal=0;subNormal<nSubNormal;subNormal++){
+	vertexNormals[count] = 
+	  layer->blend[blend].subNormal1[nSubNormal-subNormal-1];
+	count++;
+      }
     }
-    count++;
   }
   
   return layer;

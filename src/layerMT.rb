@@ -1632,9 +1632,9 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [ 0,11, 3,14], layer.subBlendNormals(2,0)
   assert_equal [11, 5,14, 8], layer.subBlendNormals(2,1)
 
-  #assert_equal [4, 5, 0], layer.orderedVertexNormals(0)
-  layer.advanceConstantHeight(0.1)
-  layer.writeTecplotFrontGeometry
+  assert_equal [4, 9, 5, 10, 0, 11], layer.orderedVertexNormals(0)
+  #layer.advanceConstantHeight(0.1)
+  #layer.writeTecplotFrontGeometry
  end
 
  def testExtrudeBlend

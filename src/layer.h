@@ -226,6 +226,7 @@ Layer *layerSubBlendNormals(Layer *, int blend, int subBlend, int *normals );
 Layer *layerBlendAxle(Layer *, int blend, double *axle);
 #define layerBlendAdj(layer) (layer->blendAdj)
 int layerBlendDegree(Layer *, int normal);
+int layerSubNormalDegree(Layer *, int normal);
 
 Layer *layerSubBlend(Layer *, double maxNormalAngle);
 int layerNSubBlend(Layer *, int blend );
