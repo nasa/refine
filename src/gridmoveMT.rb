@@ -99,7 +99,7 @@ class TestGridMove < Test::Unit::TestCase
 
  def testSpringRelaxationUp
   grid = isoTet
-  assert_not_nil gm = GridMove.new(grid)
+  gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
   up  = [0.0,0.0,1.0]
   3.times{|n| gm.displace(n,up)}
@@ -116,7 +116,7 @@ class TestGridMove < Test::Unit::TestCase
 
  def testSpringRelaxationUpSteps
   grid = isoTet
-  assert_not_nil gm = GridMove.new(grid)
+  gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
   up  = [0.0,0.0,1.0]
   3.times{|n| gm.displace(n,up)}
@@ -133,7 +133,7 @@ class TestGridMove < Test::Unit::TestCase
 
  def testSpringRelaxationUpSubiters
   grid = isoTet
-  assert_not_nil gm = GridMove.new(grid)
+  gm = GridMove.new(grid)
   zero = [0.0,0.0,0.0]
   up  = [0.0,0.0,1.0]
   3.times{|n| gm.displace(n,up)}
@@ -171,7 +171,7 @@ class TestGridMove < Test::Unit::TestCase
  def testSpringRelaxationSqwish
   h = 0.5
   grid = isoTet4 h
-  assert_not_nil gm = GridMove.new(grid)
+  gm = GridMove.new(grid)
   3.times{|n| gm.displace(n,[0.0,0.0,0.0])}
   gm.displace(3,[0.0,0.0,-0.4])
   gm.springRelaxation(1,1)
@@ -182,4 +182,15 @@ class TestGridMove < Test::Unit::TestCase
   assert_in_delta ans[2], gm.displacement(4)[2], delta
  end
 
+ def testApplyDisplacement
+  grid = Grid.new(2,0,0,0)
+  grid.addNode(0,0,0)
+  grid.addNode(0,1,0)
+  gm = GridMove.new(grid)
+  gm.displace(0,[0,0,1])
+  gm.applyDisplacements
+  assert_equal [0,0,1], grid.nodeXYZ(0)
+  assert_equal [0,1,0], grid.nodeXYZ(1)
+ end
+ 
 end

@@ -84,6 +84,12 @@ VALUE gridmove_springs( VALUE self )
   return rb_springs;
 }
 
+VALUE gridmove_applyDisplacements( VALUE self )
+{
+  GET_GM_FROM_SELF;
+  return ( gm == gridmoveApplyDisplacements( gm )?self:Qnil );
+}
+
 VALUE cGridMove;
 
 void Init_GridMove() 
@@ -95,4 +101,5 @@ void Init_GridMove()
   rb_define_method( cGridMove, "specified", gridmove_specified, 1 );
   rb_define_method( cGridMove, "springRelaxation", gridmove_springRelaxation, 2 );
   rb_define_method( cGridMove, "springs", gridmove_springs, 0 );
+  rb_define_method( cGridMove, "applyDisplacements", gridmove_applyDisplacements, 0 );
 }

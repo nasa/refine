@@ -333,3 +333,20 @@ GridMove *gridmoveSprings(GridMove *gm, int *nsprings, int **springs)
   free(c2e);
   return gm;
 }
+
+GridMove *gridmoveApplyDisplacements(GridMove *gm)
+{
+  Grid *grid = gridmoveGrid(gm);
+  int node;
+  double xyz[3], displacement[3];
+
+  for ( node=0 ; node<gridMaxNode(grid) ; node++ ) {
+    if (grid == gridNodeXYZ(grid,node,xyz)) {
+      gridmoveDisplacement(gm,node,displacement);
+      gridAddToVector(xyz,displacement);
+      gridSetNodeXYZ(grid,node,xyz);
+    }
+  }
+
+  return gm;
+}

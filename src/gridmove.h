@@ -43,6 +43,8 @@ GridBool gridmoveSpecified(GridMove *, int node);
 GridMove *gridmoveSpringRelaxation(GridMove *, int nsteps, int subIterations);
 GridMove *gridmoveSprings(GridMove *, int *nsprings, int **springs);
 
+GridMove *gridmoveApplyDisplacements(GridMove *);
+
 END_C_DECLORATION
 
 #endif /* GRIDMOVE_H */
