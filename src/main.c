@@ -226,7 +226,9 @@ int main( int argc, char *argv[] )
   }
 
   if (debugInsert) {
-
+    gridInsertInToGeomEdge(grid, 0.532, 0.0, 0.0);
+    gridInsertInToGeomEdge(grid, 1.0, 0.567, 0.0);
+    gridInsertInToGeomEdge(grid, 1.0, 0.0, 0.33);
   }
 
   if (!gridRightHandedBoundary(grid)) 
