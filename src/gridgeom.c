@@ -35,10 +35,12 @@ Grid *gridParallelGeomLoad( Grid *grid, char *project )
   UGPatchPtr localPatch;
   Iterator patchIterator;
 
+  /* don't use load libs
   if ( ! UGMgr_LoadLibs( ) ){
     printf("ERROR: UGMgr_LoadLibs broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }  
+  */
 
   if ( ! CADGeom_Start( ) ){
     printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());

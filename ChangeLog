@@ -1,3 +1,10 @@
+2004-08-13 11:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) commented out call to
+	UGMgr_LoadLibs in order to not require UG_Plugins meshers. Note
+	this may need to be added back in if you have a old CAPRI (GridEx)
+	restart
+
 2004-08-10 13:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridtestcadparameters_) silenced reporting of
