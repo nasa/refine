@@ -86,6 +86,7 @@ Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 double gridMinVolume(Grid *g);
+bool gridNegCellAroundNode(Grid *g, int node );
 double gridMinAR(Grid *g);
 
 int gridFindCellWithFace(Grid *g, int face );

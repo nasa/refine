@@ -54,12 +54,45 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal [10.0,20.0],   grid.nodeUV(0,1)
  end
 
- def XtestSafeProjection
-  assert_not_nil grid = Grid.new(3,0,0,2)
-  assert_equal 0, grid.addNode(0.0,0.0,0.0)
-  assert_equal 1, grid.addNode(0.5,0.0,0.0)
-  assert_equal 2, grid.addNode(1.0,0.0,0.0)
-  assert_nil grid.safeProject(0)
+ def testProjectionToGeomerty
+  assert_not_nil grid = Grid.new(5,1,1,1)
+  assert_equal 0, grid.addNode(5.0,5.0,5.0)
+  assert_equal 1, grid.addNode(0.0,0.1,0.1)
+  assert_equal 2, grid.addNode(1.0,0.1,0.1)
+  assert_equal 3, grid.addNode(0.0,1.0,0.1)
+  assert_equal 4, grid.addNode(0.0,0.0,1.0)
+  assert_equal grid, grid.addCell(1,2,3,4)
+  assert_equal grid, grid.addFace(1,2,3,10)
+  assert_equal grid, grid.addEdge(1,2,20,0.0,1.0)
+  assert_equal grid, grid.setNGeomNode(1)
+  5.times do |i| 
+   assert_equal grid, grid.safeProject(i), "could not project node #{i}"
+  end
+  assert_equal [5.0,5.0,5.0], grid.nodeXYZ(0)
+  assert_equal [0.0,0.0,0.0], grid.nodeXYZ(1)
+  assert_equal [1.0,0.0,0.0], grid.nodeXYZ(2)
+  assert_equal [0.0,1.0,0.0], grid.nodeXYZ(3)
+  assert_equal [0.0,0.0,1.0], grid.nodeXYZ(4)
+  assert_equal 0.0,           grid.nodeT(1,20)
+  assert_equal 1.0,           grid.nodeT(2,20)
+  assert_equal [10.0,20.0],   grid.nodeUV(1,10)
+  assert_equal [11.0,20.0],   grid.nodeUV(2,10)
+  assert_equal [10.0,21.0],   grid.nodeUV(3,10)
  end
+
+ def testSafeProjectionAndPositiveVolume
+  assert_not_nil grid = Grid.new(4,1,1,0)
+  assert_equal 0, grid.addNode(0.0,0.0,-0.5)
+  assert_equal 1, grid.addNode(1.0,0.0,0.0)
+  assert_equal 2, grid.addNode(0.0,1.0,0.0)
+  assert_equal 3, grid.addNode(0.0,0.0,-0.1)
+  assert_equal grid, grid.addCell(0,1,2,3)
+  assert_equal grid, grid.addFace(0,1,2,10)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s  
+  assert_nil   grid.safeProject(0)
+  assert grid.minVolume>0.0, "negative volume cell "+grid.minVolume.to_s
+  assert_equal [0.0,0.0,-0.5], grid.nodeXYZ(0)
+ end
+
 
 end

@@ -1261,6 +1261,20 @@ double gridMinVolume( Grid *grid )
   return minVol;
 }
 
+bool gridNegCellAroundNode( Grid *grid, int node )
+{
+  int cellId, nodes[4];
+  AdjIterator it;
+
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ) {
+    cellId = adjItem(it);
+    gridCell( grid, cellId, nodes );
+    if (gridVolume(grid, nodes) <= 0.0) return TRUE;
+  }
+
+  return FALSE;
+}
+
 double gridMinAR( Grid *grid )
 {
   int cellId, nodes[4];

@@ -56,6 +56,41 @@ Grid *gridProjectNodeToFace(Grid *grid, int node, int faceId )
 
 Grid *gridSafeProject(Grid *grid, int node )
 {
-  return NULL;
+  int edge, edgeId;
+  int face, faceId;
+  double xyz[3], tuv[2];
+  AdjIterator it;
+  if ( gridGeometryNode( grid, node ) ) return grid;
+  if ( gridGeometryEdge( grid, node ) ) {
+    edge = adjItem(adjFirst(grid->edgeAdj, node));
+    edgeId = grid->edgeId[edge];
+    if ( grid != gridProjectNodeToEdge( grid, node, edgeId ) ) return NULL;
+    for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
+      face = adjItem(it);
+      faceId = grid->faceId[face];
+      if ( grid != gridProjectNodeToFace( grid, node, faceId ) ) return NULL;
+    }
+    if ( grid != gridProjectNodeToEdge( grid, node, edgeId ) ) return NULL;    
+    return grid;
+  }
+  if ( gridGeometryFace( grid, node ) ) {
+    face = adjItem(adjFirst(grid->faceAdj, node));
+    faceId = grid->faceId[face];
+    xyz[0] = grid->xyz[0+3*node];
+    xyz[1] = grid->xyz[1+3*node];
+    xyz[2] = grid->xyz[2+3*node];
+    if ( grid != gridNodeUV( grid, node, faceId, tuv ) ) return NULL; 
+    if ( grid != gridProjectNodeToFace( grid, node, faceId ) ) return NULL;
+    if ( gridNegCellAroundNode( grid, node ) ) {
+      grid->xyz[0+3*node] = xyz[0];
+      grid->xyz[1+3*node] = xyz[1];
+      grid->xyz[2+3*node] = xyz[2];
+      gridSetNodeUV( grid, node, faceId, tuv[0], tuv[1] );
+      return NULL;
+    }
+    return grid;
+  }
+
+  return grid;
 }
 
