@@ -23,7 +23,7 @@ headers = objC.collect do
 end
 ARGV[1..ARGV.size].each { |h| headers.push h if h =~/\.h/ }
 
-`chmod u+x . && mkdir -p #{ext}`
+`chmod u+w . && mkdir -p #{ext}`
 Dir.chdir ext
  require 'mkmf'
  $objs = objC.collect{ |c| c.sub(/\.c/, ".o") }
