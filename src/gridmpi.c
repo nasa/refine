@@ -142,10 +142,10 @@ Grid *gridParallelEdgeCollapse(Grid *grid, Queue *queue, int node0, int node1 )
   if ( NULL != queue ) return NULL;
   if ( gridNodeNearGhost(grid,node0) ) return NULL;
   if ( gridNodeNearGhost(grid,node1) ) return NULL;
-  if ( !gridGeometryEdge(grid,node0) && 
-       ( gridNodeFaceIdDegree(grid,node0) > 1) ) return NULL;
-  if ( !gridGeometryEdge(grid,node1) && 
-       ( gridNodeFaceIdDegree(grid,node1) > 1) ) return NULL;
+  if ( !gridGeometryEdge(grid,node0) && gridGeometryBetweenFace(grid,node0) ) 
+    return NULL;
+  if ( !gridGeometryEdge(grid,node1) && gridGeometryBetweenFace(grid,node1) ) 
+    return NULL;
 
   result = gridCollapseEdge(grid, queue, node0, node1, 0.5 );
 
