@@ -10,6 +10,11 @@ libMesherX_a_SOURCES = \
 	gridcad.h gridcad.c \
 	layer.h layer.c
 
+include_HEADERS = \
+	master_header.h \
+	grid.h \
+	layer.h
+
 bin_PROGRAMS = refine
 refine_SOURCES = main.c
 refine_LDADD = libMesherX.a @CADGeom@ @Goolache@ @MeatLib@ @CAPRILib@
