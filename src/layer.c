@@ -971,7 +971,14 @@ Layer *layerSetPolynomialMaxHeight(Layer *layer,
   return layer;	
 }
 
-Layer *layerSaveInitalNormalHeight(Layer *layer)
+double layerNormalMaxLength(Layer *layer, int normal)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return -1.0;
+
+  return layer->normal[normal].maxlength;
+}
+
+Layer *layerSaveInitialNormalHeight(Layer *layer)
 {
   int normal;
 
@@ -979,6 +986,13 @@ Layer *layerSaveInitalNormalHeight(Layer *layer)
     layer->normal[normal].initialheight = layer->normal[normal].height;
 
   return layer;
+}
+
+double layerNormalInitialHeight(Layer *layer, int normal)
+{
+  if (normal < 0 || normal >= layerNNormal(layer) ) return -1.0;
+
+  return layer->normal[normal].initialheight;
 }
 
 Layer *layerSetNormalRate(Layer *layer, int normal, double rate)
@@ -997,12 +1011,16 @@ Layer *layerSetNormalHeightWithRate(Layer *layer)
 
   for(normal=0;normal<layerNNormal(layer);normal++){
 
-    length = layer->normal[normal].length / layer->normal[normal].maxlength;
+    length = layer->normal[normal].length / layer->normal[normal].initialheight;
 
     layer->normal[normal].height = 
       layer->normal[normal].initialheight * 
       pow(layer->normal[normal].rate,length);
-    
+    printf("%5d %15.10f %15.10f %15.10f %15.10f\n",normal,
+	   length,
+	   layer->normal[normal].rate,
+	   pow(layer->normal[normal].rate,length),
+	   layer->normal[normal].height );
   }
 
   return layer;

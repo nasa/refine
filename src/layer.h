@@ -73,10 +73,12 @@ Layer *layerScaleNormalHeightWithPolynomial(Layer *,
 				            double exponent, double scale,
 					    double *origin, double *direction);
 Layer *layerSetNormalMaxLength(Layer *, int normal, double maxLength);
+double layerNormalMaxLength(Layer *, int normal);
 Layer *layerSetPolynomialMaxLength(Layer *, double constant, double slope, 
 				            double exponent, double *origin,
 				            double *direction);
-Layer *layerSaveInitalNormalHeight(Layer *);
+Layer *layerSaveInitialNormalHeight(Layer *);
+double layerNormalInitialHeight(Layer *, int normal);
 Layer *layerSetNormalRate(Layer *, int normal, double rate);
 Layer *layerSetNormalHeightWithRate(Layer *);
 Layer *layerVisibleNormals(Layer *, double dotLimit, double radianLimit );
