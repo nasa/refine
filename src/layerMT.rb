@@ -64,6 +64,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testPopulateAdvancingFront
   assert_not_nil        grid = Grid.new(4,0,2,0)
+  0.upto(3) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
   grid.addFace(0,1,3,2)
   assert_equal 2,       grid.nface
@@ -116,6 +117,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testMakeNormals
   assert_not_nil        grid = Grid.new(5,0,2,0)
+  0.upto(4) {grid.addNode(0,0,0)}
   grid.addFace(1,2,3,1)
   grid.addFace(1,2,4,2)
   assert_not_nil        layer = Layer.new(grid)
@@ -133,6 +135,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testConstrainNormals
   assert_not_nil        grid = Grid.new(6,0,3,0)
+  0.upto(3) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
   grid.addFace(0,1,3,2)
   grid.addFace(0,3,4,773)
@@ -159,6 +162,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testRememberConstrainingFacesAndEdges
   assert_not_nil        grid = Grid.new(3,0,1,0)
+  0.upto(2) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
   assert_not_nil        layer = Layer.new(grid)
   assert_equal layer,   layer.populateAdvancingFront([1])
@@ -174,7 +178,8 @@ class TestLayer < Test::Unit::TestCase
  end
 
  def testConstrainNormalForEdge
-  assert_not_nil        grid = Grid.new(6,0,3,1)
+  assert_not_nil        grid = Grid.new(10,10,10,10)
+  0.upto(3) {grid.addNode(0,0,0)}
   grid.addFace(1,2,3,1)
   grid.addFace(1,2,0,2)
   assert_equal grid,    grid.setNGeomNode(2)
@@ -193,6 +198,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testConstrainTriangleSide
   assert_not_nil        grid = Grid.new(6,0,3,0)
+  0.upto(3) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
   assert_not_nil        layer = Layer.new(grid)
   assert_equal 0,       layer.constrainedSide(0,0)
@@ -219,6 +225,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testConstrainTriangleSideWithBCFace
   assert_not_nil        grid = Grid.new(6,0,3,0)
+  0.upto(3) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
   grid.addFace(1,2,3,2)
   assert_not_nil        layer = Layer.new(grid)
@@ -234,6 +241,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testRememberTriangleEdgeParent
   assert_not_nil        grid = Grid.new(6,0,3,0)
+  0.upto(2) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
   assert_not_nil        layer = Layer.new(grid)
   assert_equal 0,       layer.parentGeomEdge(0,0)
@@ -264,6 +272,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testFindParentalEdgesForTriangle
   assert_not_nil        grid = Grid.new(10,10,10,10)
+  0.upto(2) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
   assert_equal grid,    grid.addEdge(0,1,1,0,1)
   assert_equal grid,    grid.addEdge(0,4,1,0,1)
@@ -283,6 +292,7 @@ class TestLayer < Test::Unit::TestCase
 
  def testNormalTriangleNeighbors
   assert_not_nil        grid = Grid.new(4,0,3,0)
+  0.upto(3) {grid.addNode(0,0,0)}
   grid.addFace(0,1,2,1)
   grid.addFace(0,1,3,2)
   grid.addFace(1,2,3,3)
