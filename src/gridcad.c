@@ -502,7 +502,7 @@ Grid *gridSmoothNearNode1(Grid *grid, int node )
 
   for (smooth=0;smooth<5;smooth++)
     for (i=0;i<nlist;i++) 
-      gridSmoothNode( grid, nodelist[nlist]);
+      gridSmoothNode( grid, nodelist[i]);
 
   return grid;
 }
@@ -545,7 +545,7 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
 
   for (smooth=0;smooth<2;smooth++)
     for (i=0;i<nlist;i++) 
-      gridSmoothNode( grid, nodelist[nlist]);
+      gridSmoothNode( grid, nodelist[i]);
 
   return grid;
 }
