@@ -531,6 +531,10 @@ class TestGridMetric < Test::Unit::TestCase
   dz = (dz[0]-ans[0])/delta
   assert_in_delta dz, ans[3], 10.0*delta, "dz"
 
+  assert_in_delta grid.cellMeanRatio(node0,node1,node2,node3), 
+   ans[0], 1.0e-15, "function"
+ 
+
  end
 
 end
