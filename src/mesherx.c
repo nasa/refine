@@ -253,9 +253,12 @@ int layerTerminateNormalWithBGSpacing(Layer *layer,
   double height;
   int triangle, normals[3];
   double edgeLength, center[3];
-  int totalterm;
+  int totalterm, hterm, eterm;
 
   if (layerNNormal(layer) == 0 ) return EMPTY;
+
+  hterm = 0;
+  eterm = 0;
 
   for (normal=0;normal<layerNNormal(layer);normal++){
     layerGetNormalHeight(layer,normal,&height);
@@ -265,6 +268,7 @@ int layerTerminateNormalWithBGSpacing(Layer *layer,
     MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
 
     if (height > normalRatio*spacing[0]) {     /* Assume Isotropic for now */
+      if( !layerNormalTerminated(layer, normal ) ) hterm++;
       layerTerminateNormal(layer, normal);
     }
   }
@@ -278,6 +282,9 @@ int layerTerminateNormalWithBGSpacing(Layer *layer,
 
     if ( edgeLength > edgeRatio*spacing[0]) { /* Assume Isotropic for now */
       layerTriangleNormals(layer, triangle, normals);
+      if( !layerNormalTerminated(layer, normals[0] ) ) eterm++;
+      if( !layerNormalTerminated(layer, normals[1] ) ) eterm++;
+      if( !layerNormalTerminated(layer, normals[2] ) ) eterm++;
       layerTerminateNormal(layer, normals[0]);
       layerTerminateNormal(layer, normals[1]);
       layerTerminateNormal(layer, normals[2]);
@@ -285,8 +292,8 @@ int layerTerminateNormalWithBGSpacing(Layer *layer,
   }
 
   totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
-  printf("%d of %d normals terminted.\n",
-	 totalterm,layerNNormal(layer) );
+  printf("%d and %d terminated by BGS h and edge test; ",
+	 hterm, eterm, totalterm,layerNNormal(layer) );
   return totalterm;
 }
 
