@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <values.h>
 #include "grid.h"
 #include "gridmetric.h"
@@ -32,6 +33,7 @@ int main( int argc, char *argv[] )
   Grid *grid;
   Layer *layer;
   int bcs[2], jmax;
+  double height;
   char project[256];
   char adaptfile[256], outputProject[256], outputFAST[256];
   int i, j, oldSize, newSize;
@@ -134,14 +136,20 @@ int main( int argc, char *argv[] )
   oldSize = 1;
   newSize = gridNNode(grid);
   jmax = 40;
-  if (boundaryLayerGrid) jmax = 1;
+  if (boundaryLayerGrid) jmax = 3;
   for ( j=0; (j<jmax) && (
 	(ratio < 0.99) || 
 	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.001) ||
 	  !projected );
 	j++){
 
-    if (boundaryLayerGrid) layerAdvance(layer,0.01);
+    if (boundaryLayerGrid) {
+      height = 0.00001*pow(1.5,j);
+      height = 0.01;
+      // if (height > 0.0025) jmax=0;
+      printf("insert layer height = %f\n",height);
+      layerAdvance(layer,height);
+    }
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
     ratioCollapse = 0.4*ratio;
