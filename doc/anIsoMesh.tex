@@ -27,12 +27,12 @@ becomes equilateral.
    \frac{\partial e}{\partial x}&
    \frac{\partial e}{\partial y}&
    \frac{\partial e}{\partial z}\\
-   \frac{\partial d}{\partial x}&
-   \frac{\partial d}{\partial y}&
-   \frac{\partial d}{\partial z}\\
    \frac{\partial f}{\partial x}&
    \frac{\partial f}{\partial y}&
-   \frac{\partial f}{\partial z}
+   \frac{\partial f}{\partial z}\\
+   \frac{\partial g}{\partial x}&
+   \frac{\partial g}{\partial y}&
+   \frac{\partial g}{\partial z}
  \end{array}\right]
 \end{equation}
 The $\mathbf{J}$ matrix is not required to be symmetric.
@@ -40,6 +40,20 @@ The $\mathbf{J}$ matrix is not required to be symmetric.
 The Metric Tensor $\mathbf{M}$ is defined as 
 \begin{equation}\label{metric:jacobian}
  \mathbf{M}=\mathbf{J}^t\mathbf{J}
+\end{equation}
+\begin{equation}
+ \mathbf{M}=\left[
+ \begin{array}{ccc}
+   \frac{\partial^2 e}{\partial x^2}&
+   \frac{\partial e \partial f}{\partial y \partial x}&
+   \frac{\partial e \partial g}{\partial z \partial x}\\
+   \frac{\partial f \partial e}{\partial x \partial y}&
+   \frac{\partial^2 f}{\partial y^2}&
+   \frac{\partial f \partial g}{\partial z\partial y}\\
+   \frac{\partial g \partial e}{\partial x\partial z}&
+   \frac{\partial g \partial f}{\partial y\partial z}&
+   \frac{\partial^2 g}{\partial z^2}
+ \end{array}\right]
 \end{equation}
 The matrix $\mathbf{M}$ is symmetric and can be decomposed into Eigen
 values $\Lambda$ and Eigen vectors $\mathbf{R}$
@@ -153,9 +167,9 @@ And its length is
 \begin{equation}
  r=\sqrt{\left[2~0~0\right]\left[
  \begin{array}{ccc}
-   \frac{1}{2}&&\\
-   &\frac{1}{2}&\\
-   &&\frac{1}{2}\\
+   \frac{1}{4}&&\\
+   &\frac{1}{4}&\\
+   &&\frac{1}{4}\\
  \end{array}\right]\left[2~0~0\right]^t}=1
 \end{equation}
 
