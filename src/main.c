@@ -262,6 +262,7 @@ int gridSavePart( Grid *grid, char *project )
     temp_tuv = malloc( nCurveNode *     sizeof(double) );
 
     gridGeomCurve( grid, iedge, curveEndPoint[0], curve );
+    gridGeomCurveT( grid, iedge, curveEndPoint[0], temp_tuv );
 
     for ( i=1; i<(nCurveNode-1); i++){ // skip end points
       if (o2n[curve[i]] != EMPTY) printf("newnode error %d\n",o2n[curve[i]]);
@@ -269,11 +270,9 @@ int gridSavePart( Grid *grid, char *project )
       newnode++;
     }
 
-    for ( i=0; i<nCurveNode; i++){ // include end points
+    for ( i=0; i<nCurveNode; i++) // include end points
       for ( ixyz=0; ixyz<3 ; ixyz++)
 	temp_xyz[ixyz+3*i] = xyz[ixyz+3*curve[i]];
-      temp_tuv[i] = DBL_MAX;
-    }
 
     CADGeom_UpdateEdgeGrid( vol, iedge, nCurveNode, temp_xyz, temp_tuv );
 
