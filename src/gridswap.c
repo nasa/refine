@@ -241,6 +241,7 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
   Grid *swapStatus;
 
   if ( gridNodeFrozen( grid, n0 ) && gridNodeFrozen( grid, n1 ) )return NULL;  
+  if ( gridNodeGhost(  grid, n0 ) && gridNodeGhost(  grid, n1 ) )return NULL;
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
   oldFace0 = oldFace1 = EMPTY;
