@@ -526,7 +526,7 @@ class TestSampleUnit < Test::Unit::TestCase
  def gemGrid(nequ=4, a=nil, dent=nil, x0 = nil, gap = nil)
   a  = a  || 0.1
   x0 = x0 || 1.0
-  grid = Grid.new(nequ+2+1,14,14,0)
+  grid = Grid.new(nequ+2+1,14,14,14)
   n = Array.new
   n.push grid.addNode(  x0,0.0,0.0)
   n.push grid.addNode(-1.0,0.0,0.0)
@@ -572,6 +572,27 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_equal 2,    grid.nedge
   assert_nil         grid.addEdge(1, 2, 13)
  end
+
+ def testSplitGeometryEdge4
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal grid, grid.addFace(0,1,2,2)
+  assert_equal grid, grid.addFace(0,1,5,5)
+  assert_equal grid, grid.addEdge(0,1,15)
+  assert_equal grid, grid.splitEdge(0,1)
+  assert_nil         grid.edgeId(0,1)
+  assert_equal 15,   grid.edgeId(0,6)
+  assert_equal 15,   grid.edgeId(6,1)
+ end
+
+ def testSplitWithoutGeometryEdge4
+  assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
+  assert_equal grid, grid.addFace(0,1,2,11)
+  assert_equal grid, grid.addFace(0,1,5,11)
+  assert_equal grid, grid.splitEdge(0,1)
+  assert_nil         grid.edgeId(0,6)
+  assert_nil         grid.edgeId(6,1)
+ end
+
 
  # make register unique
 
