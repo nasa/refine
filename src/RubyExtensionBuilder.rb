@@ -19,6 +19,7 @@ class RubyExtensionBuilder
  def build
   requiredPackages = Hash.new([])
   requiredPackages['Intersect'] = %w{ GridMath }
+  requiredPackages['Plan'] = %w{ Sort }
   requiredPackages['Grid'] = %w{ Adj Line Sort}
   requiredPackages['GridShape'] = %w{ Adj Line Grid }
   requiredPackages['GridMetric'] = %w{ Adj Line Grid GridShape GridMath }

@@ -36,6 +36,24 @@ VALUE plan_chunk_size( VALUE self )
   return INT2NUM( planChunkSize(plan) );
 }
 
+VALUE plan_add_item_with_priority( VALUE self, VALUE item, VALUE priority )
+{
+  GET_PLAN_FROM_SELF;
+  return (planAddItemWithPriority(plan,NUM2INT(item),NUM2DBL(priority))==NULL?Qnil:self);
+}
+
+VALUE plan_derive_rankings_from_priorities( VALUE self )
+{
+  GET_PLAN_FROM_SELF;
+  return (planDeriveRankingsFromPriorities( plan )==NULL?Qnil:self);  
+}
+
+VALUE plan_item_with_this_ranking( VALUE self, VALUE ranking )
+{
+  GET_PLAN_FROM_SELF;
+  return INT2NUM(planItemWithThisRanking(plan,NUM2INT(ranking)));
+}
+
 VALUE cPlan;
 
 void Init_Plan() 
@@ -45,4 +63,11 @@ void Init_Plan()
   rb_define_method( cPlan, "size", plan_size, 0 );
   rb_define_method( cPlan, "max_size", plan_max_size, 0 );
   rb_define_method( cPlan, "chunk_size", plan_chunk_size, 0 );
+
+  rb_define_method( cPlan, "add_item_with_priority", 
+		    plan_add_item_with_priority, 2 );
+  rb_define_method( cPlan, "derive_rankings_from_priorities", 
+		    plan_derive_rankings_from_priorities, 0 );
+  rb_define_method( cPlan, "item_with_this_ranking", 
+		    plan_item_with_this_ranking, 1 );
 }

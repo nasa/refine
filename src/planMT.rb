@@ -10,6 +10,7 @@ RubyExtensionBuilder.new('Plan').build
 
 require 'test/unit'
 require 'Plan/Plan'
+require 'Sort/Sort'
 
 class TestQueue < Test::Unit::TestCase
 
@@ -53,26 +54,27 @@ class TestQueue < Test::Unit::TestCase
 
  def test_rankings_derived_from_priorities
   plan = Plan.new(6,6)
-  assert_equal EMPTY, plan.itemWithThisRanking(0)
-  assert_nil plan.deriveRankingsFromPriorities
-  assert_equal EMPTY, plan.itemWithThisRanking(0)
-  plan.addItemWithPriority(0,2.0)
-  plan.addItemWithPriority(1,1.0)
-  plan.addItemWithPriority(2,0.0)
-  plan.addItemWithPriority(3,3.0)
-  plan.addItemWithPriority(4,4.0)
-  plan.addItemWithPriority(5,5.0)
-  assert_equal EMPTY, plan.itemWithThisRanking(0)
-  assert_equal grid, plan.deriveRankingsFromPriorities
-  assert_equal 2, plan.itemWithThisRanking(0)
-  assert_equal 1, plan.itemWithThisRanking(1)
-  assert_equal 0, plan.itemWithThisRanking(2)
+  assert_equal EMPTY, plan.item_with_this_ranking(0)
+  assert_nil plan.derive_rankings_from_priorities
+  assert_equal EMPTY, plan.item_with_this_ranking(0)
+  plan.add_item_with_priority(0,2.0)
+  plan.add_item_with_priority(1,1.0)
+  plan.add_item_with_priority(2,0.0)
+  plan.add_item_with_priority(3,3.0)
+  plan.add_item_with_priority(4,4.0)
+  plan.add_item_with_priority(5,5.0)
+  assert_equal EMPTY, plan.item_with_this_ranking(0)
+  assert_equal plan, plan.derive_rankings_from_priorities
+  assert_equal 2, plan.item_with_this_ranking(0)
+  assert_equal 1, plan.item_with_this_ranking(1)
+  assert_equal 0, plan.item_with_this_ranking(2)
   3.upto(5) do |rank|
-   assert_equal rank, plan.itemWithThisRanking(rank)
+   assert_equal rank, plan.item_with_this_ranking(rank)
   end
-  plan.addItemWithPriority(5,-5.0)
-  assert_equal grid, plan.deriveRankingsFromPriorities
-  assert_equal 5, plan.itemWithThisRanking(0)
+  plan.add_item_with_priority(5,-5.0)
+  assert_equal EMPTY, plan.item_with_this_ranking(0)
+  assert_equal plan, plan.derive_rankings_from_priorities
+  assert_equal 5, plan.item_with_this_ranking(0)
  end
 
 

@@ -24,6 +24,9 @@ struct Plan {
   int size;
   int max_size;
   int chunk_size;
+  int *item;
+  double *priority;
+  int *ranking;
 };
 
 Plan *planCreate( int initial_size, int chunk_size );
@@ -32,6 +35,10 @@ void planFree( Plan * );
 int planSize( Plan * );
 int planMaxSize( Plan * );
 int planChunkSize( Plan * );
+
+Plan *planAddItemWithPriority( Plan *, int item, double priority );
+Plan *planDeriveRankingsFromPriorities( Plan * );
+int planItemWithThisRanking( Plan *, int ranking );
 
 END_C_DECLORATION
 
