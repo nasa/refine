@@ -434,14 +434,15 @@ FUN3D driver to the refine library.  This cycle is repeated to
 iteratively morph the current grid into a grid that satisfies the
 mapped metric. The aspect ratio is defined in the mapped metric.
 
-@subsection edge and face swapping to improve cell aspect ratio
+@subsection Edge and Face Swapping
 A loop is performed over cells in the mesh. If a cell's aspect ratio
-in the metric is less than some tolerance all four faces than all six
-edges are examined for a configuration with a larger aspect ratio. The
-loop continues to the next cell once a sucessful swap is made. The
-metric is taken as the average metric from the four nodes of the cell.
+in the metric is less than some tolerance first all four faces then
+all six edges are examined for a configuration with a larger aspect
+ratio. The loop continues to the next cell once a sucessful swap is
+made. The cell metric is the average metric from the four nodes of the
+cell.
 
-@subsection node optimization to improve the worst adjacent cell or boundary face aspect ratio
+@subsection Node Optimization
 A loop is performed over nodes in the mesh. If the aspect ratio of the
 worst cell adjacent to the node is below a tolerance the node is moved
 in order to improve the worst cell. If the node is on the boundary
@@ -450,11 +451,15 @@ of the cells and faces connected to it. The metric is taken as the
 average metric from the four nodes of the cell or three nodes of a
 triangle.
 
-@subsection node insertion and removal by edge splitting or edge collapse (does not project new surface nodes)
+Node optimization can be done with ``smart Laplacian'', line searches
+in steepest descent direction, or linear quadratic programming with
+conjugate gradient direction.
+
+@subsection Node Insertion and Removal by Edge Splitting or Edge Collapse
 A loop is performed over nodes in the mesh. At each node the longest
 edge (in the mapped space) is found. The edge length is calculated
-with a constant average metric from the edge end points. If this edge
-is longer than a tolerence the edge is split. The edge is split by
+with an average metric from the edge end points. If this edge is
+longer than a tolerence the edge is split. The edge is split by
 inserting a node at the edge mid point and averaging all axillery data
 (e.g., xyz, metric, uv, solution). If no edges are found to be too
 long a search is made for the shortest edge (in mapped space) incident
@@ -462,9 +467,10 @@ to the node. I this edge is shorter than a tolerence it is collapsed
 and the two nodes are placed at the mid point of the edge, except when
 one node is on face, edge, or goemetry node and the other is not. The
 edge collapse operation is aborted if a negative volume cell would be
-created.
+created. An edge split or collapse will also be aborted if the
+operation results in a very poor quality element
 
-@subsection grid movement by linear elasticity or springs (to project surface nodes)
+@subsection Grid Movement
 During the node insertion operation the nodes are placed on a
 piecewise linear representation of the surface. To regain surface
 fidelity all the surface nodes are projected to the CAD geometry at
@@ -474,28 +480,25 @@ relaxed with block Gauss-Sidel iterations. If they go unstable then
 block Jacobi iteration are used on modifed springs. The movement may
 result in negative volume cells.
 
-@subsection untangle faces (increase area) in UV space with node optimization (if negative area faces detected)
-If the area of any faces in UV parameters is found to ne negative. The
-nodes of the triangle and its neigbors are moved to optimize the
-minimum incident trangle area in UV. The quality of the volume cells
-is not considered in this step.
+@subsection Untangle Faces (Increase Area) in UV Space
+If the area of any faces in UV parameters is found to be negative. The
+nodes of the triangle and its neigbors are moved using simplex
+searches to optimize the minimum incident trangle area in UV. The
+quality of the volume cells is not considered in this step may worsen.
 
-@subsection untangle cells (increase volume) with node optimization (if negative cells detected)
+@subsection Untangle Cells (Increase Volume)
 If any negative cells exist then they are untangled by node movement
 and connectivivty changes. Nodes that are near negative cells are
-moved to increase the volume of the incident cell with the smallest
-volume. Edge swaping is performed to increase aspect ratio, but ony
-swaps that result in all positve volumes are accepted.
+moved using simplex searches to increase the volume of the incident
+cell with the smallest volume. Edge swaping is performed to increase
+aspect ratio, but ony swaps that result in all positve volumes are
+accepted.
 
-@subsection edge and face swapping to improve cell aspect ratio 
+@subsection Repeat Edge and Face Swapping
 Same as before.
 
-@subsection node smoothing to improve cell aspect ratio
+@subsection Repeat Node Smoothing
 Same as before.
-
-Node optimization can be done with ``smart Laplacian'', line searches
-in steepest descent direction, linear quadratic programming with
-conjugate gradient direction, or simplex searches.
 
 There are two basic parallelization strategies employed in the coupled
 FUN3D and refine library execution. The first allows for the movement
