@@ -12,7 +12,6 @@ librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
 	refine_defs.h \
 	adj.h adj.c \
-	near.h near.c \
 	line.h line.c \
 	queue.h queue.c \
 	sort.h sort.c \
