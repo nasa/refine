@@ -119,7 +119,7 @@ bool adjMore( AdjIterator iterator )
 
 AdjIterator adjFirst( Adj *adj, int node )
 {
-  if ( node < adj->nnode ) return adj->first[node];
+  if ( node >= 0 && node < adj->nnode ) return adj->first[node];
   return NULL;
 }
 

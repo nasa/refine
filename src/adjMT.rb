@@ -39,6 +39,8 @@ class TestAdj < Test::Unit::TestCase
   
   assert_equal @adj,  @adj.first(@bigNode);
   assert_equal false, @adj.valid;
+  assert_equal @adj,  @adj.first(-1);
+  assert_equal false, @adj.valid;
   
   assert_equal @adj,  @adj.register( 2, 299 )
   assert_equal @adj,  @adj.first(2)
