@@ -114,7 +114,7 @@ Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
   if (grid->maxcell != grid->ncell) grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
   grid->blankc2n = grid->ncell;
 
-  grid->cellAdj = adjCreate(grid->maxnode,4);
+  grid->cellAdj = adjCreate(grid->maxnode,grid->maxcell*4);
 
   for ( i=0 ; i < grid->ncell ; i++ ) {
     adjRegister(grid->cellAdj,grid->c2n[0+4*i],i);
@@ -127,7 +127,7 @@ Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
   grid->faceId = faceId;
   grid->blankf2n = EMPTY;
 
-  grid->faceAdj = adjCreate(grid->maxnode,3);
+  grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3);
 
   //addface
 
@@ -492,6 +492,7 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
 {
   int gap0, gap1, face0, face1, faceId0, faceId1, newFaceId0, newFaceId1;
   Grid *swapStatus;
+
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
   //test face
