@@ -221,8 +221,8 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
   int cellId,icell;
   cellId = grid->ncell;
+  if ( cellId >= grid->maxcell) return NULL;
   grid->ncell++;
-  if (grid->ncell > grid->maxcell) return NULL;
   
   grid->c2n[0+4*cellId] = n0;
   grid->c2n[1+4*cellId] = n1;
@@ -234,6 +234,22 @@ Grid *gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
   if ( NULL == gridRegisterNodeCell( grid, n2, cellId ) ) return NULL;
   if ( NULL == gridRegisterNodeCell( grid, n3, cellId ) ) return NULL;
   
+  return grid;
+}
+
+Grid *gridRemoveCell(Grid *grid, int cellId )
+{
+  if (cellId >= grid->maxcell) return NULL;
+  
+  if ( grid->ncell <= 0) return NULL;
+  grid->ncell--;
+
+  if( ( NULL == gridRemoveNodeCell( grid, grid->c2n[0+4*cellId], cellId ) ) || 
+      ( NULL == gridRemoveNodeCell( grid, grid->c2n[1+4*cellId], cellId ) ) ||
+      ( NULL == gridRemoveNodeCell( grid, grid->c2n[2+4*cellId], cellId ) ) || 
+      ( NULL == gridRemoveNodeCell( grid, grid->c2n[3+4*cellId], cellId ) ) ) 
+    return NULL;  
+
   return grid;
 }
 
@@ -361,6 +377,37 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
   }
   grid->nequ = grid->ngem;
   
+  return grid;
+}
+
+Grid *gridSwap(Grid *grid, int n0, int n1 )
+{
+  int i, nodes[4][4];
+  if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
+  
+  nodes[0][0]=n0;
+  nodes[0][1]=grid->equ[0];
+  nodes[0][2]=grid->equ[1];
+  nodes[0][3]=grid->equ[2];
+  nodes[1][0]=n0;
+  nodes[1][1]=grid->equ[2];
+  nodes[1][2]=grid->equ[3];
+  nodes[1][3]=grid->equ[4];
+  nodes[2][0]=n1;
+  nodes[2][1]=grid->equ[0];
+  nodes[2][2]=grid->equ[2];
+  nodes[2][3]=grid->equ[1];
+  nodes[3][0]=n1;
+  nodes[3][1]=grid->equ[2];
+  nodes[3][2]=grid->equ[0];
+  nodes[3][3]=grid->equ[3];
+
+  for ( i = 0 ; i < grid->ngem ; i++ ) 
+    gridRemoveCell( grid, grid->gem[i] );
+     
+  for ( i = 0 ; i < 4 ; i++ )
+    gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
+
   return grid;
 }
 
