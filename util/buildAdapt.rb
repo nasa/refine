@@ -2,6 +2,8 @@
 
 class Package
 
+ attr :path
+
  def initialize name
   @name = name
   @repository = case @name
@@ -86,6 +88,10 @@ class Package
   self
  end
 
+ def adapt hefss_path
+  `(cd #{File.join(@path,'example')} && ./RunAdapt.rb #{hefss_path} )`
+ end
+
 end
 
 capri = Package.new("CAPRI")
@@ -97,7 +103,7 @@ if false
  capri.clean_checkout
  sdk.clean_checkout.bootstrap.configure(capri.with).make_make_install
  refine.clean_checkout.bootstrap.configure(sdk.with,capri.with).make_make_install
- hefss.clean_checkout.configure_env(capri.libs,sdk.libs,refine.libs)
+ hefss.clean_checkout.configure_env(capri.libs,sdk.libs,refine.libs).make_mpi
 end
 
-hefss.configure_env(capri.libs,sdk.libs,refine.libs).make_mpi
+refine.adapt(hefss.path)
