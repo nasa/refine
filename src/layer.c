@@ -670,7 +670,10 @@ Layer *layerInsertPhantomFront(Layer *layer, double dz )
   layerWiggle(layer, dz );
 
   for (normal=0;normal<layerNNormal(layer);normal++){
-    if (0 != layerConstrained(layer,normal)){
+    gridNodeXYZ(grid,layer->normal[normal].root,xyz);
+    if (0 == layerConstrained(layer,normal)){
+      newnode = gridInsertInToVolume(grid, xyz[0], xyz[1], xyz[2]);
+    }else{
       faceId = layerConstrained(layer,normal);
       if (0 < faceId) {
 	gridForceNodeToFace(grid, layer->normal[normal].root, faceId );
@@ -679,14 +682,13 @@ Layer *layerInsertPhantomFront(Layer *layer, double dz )
 	edgeId = -faceId;
 	gridForceNodeToEdge(grid, layer->normal[normal].root, edgeId );
       }
-      gridNodeXYZ(grid,layer->normal[normal].root,xyz);
       newnode = gridInsertInToGeomFace(grid, xyz[0], xyz[1], xyz[2]);
-      printf("insert node %10d x %10.5f y %10.5f z %10.5f\n",
-	     newnode,xyz[0], xyz[1], xyz[2]);
-      if (EMPTY == newnode) printf("Could not insert node %d\n",normal);
-      layer->normal[normal].tip = newnode;
-      gridFreezeNode( grid, newnode );
     }
+    if (EMPTY == newnode) 
+      printf("Could not insert node norm %8d x %10.5f y %10.5f z %10.5f\n",
+	     normal, xyz[0], xyz[1], xyz[2]);
+    layer->normal[normal].tip = newnode;
+    gridFreezeNode( grid, newnode );
   }
 
   for (normal=0;normal<layerNNormal(layer);normal++){
