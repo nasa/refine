@@ -33,6 +33,7 @@ Grid *gridCellARDerivative(Grid *g, int *nodes, double *ar, double *dARdx );
 Grid *gridNodeARDerivative(Grid *g, int node, double *ar, double *dARdx );
 double gridMinVolume(Grid *g);
 bool gridNegCellAroundNode(Grid *g, int node );
+bool gridNegCellAroundNodeExceptGem(Grid *g, int node );
 double gridMinAR(Grid *g);
 
 bool gridRightHandedFace(Grid *g, int face );

@@ -909,6 +909,26 @@ bool gridNegCellAroundNode( Grid *grid, int node )
   return FALSE;
 }
 
+bool gridNegCellAroundNodeExceptGem( Grid *grid, int node )
+{
+  int igem, cellId, nodes[4];
+  bool inGem;
+  AdjIterator it;
+
+  for ( it = adjFirst(grid->cellAdj,node); adjValid(it); it = adjNext(it) ) {
+    cellId = adjItem(it);
+    inGem = FALSE;
+    for ( igem =0; !inGem && igem < grid->ngem ; igem++)
+      inGem = inGem || (cellId == grid->gem[igem]);
+    if ( !inGem ) {
+      gridCell( grid, cellId, nodes );
+      if (gridVolume(grid, nodes) <= 0.0) return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 double gridMinAR( Grid *grid )
 {
   int cellId, nodes[4];
