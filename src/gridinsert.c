@@ -252,6 +252,7 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   if (newglobal>0) {
     gridSetNodeGlobal(grid,newnode,newglobal);
     gridSetGlobalNNode(grid,newglobal+1);
+    gridSetNodePart(grid,newnode,gridPartId(grid));
   }
 
   for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
