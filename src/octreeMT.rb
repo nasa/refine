@@ -43,4 +43,17 @@ class TestOctree < Test::Unit::TestCase
   assert_equal data, octree.query(center)
  end
 
+ def testTwoOctant2
+  octree = Octree.new(UnitBoundingBox)
+  rightData = [0,0,0, 0,0,0, 0,0,0]
+  rightNode = [0.7, 0.5, 0.5]
+  assert_equal octree, octree.insert(rightNode, rightData)
+  leftData = [1,1,1, 1,1,1, 1,1,1]
+  leftNode = [0.2, 0.5, 0.5]
+  assert_equal octree, octree.insert(leftNode, leftData)
+
+  assert_equal leftData, octree.query(leftNode)
+  assert_equal rightData, octree.query(rightNode)
+ end
+
 end
