@@ -175,7 +175,16 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   double stepSize;
   double residual, count;
 
-  if (gm != gridmoveSprings(gm, &nsprings, &springs)) return NULL;
+  int *c2e;
+
+  c2e = malloc(6*gridMaxCell(grid)*sizeof(int));
+  if (gm != gridmoveComputeC2E(gm, &nsprings, c2e) ) { free(c2e); return NULL; }
+  springs = malloc(2*nsprings*sizeof(int));
+  if (gm != gridmoveComputeSpringsWithC2E(gm, c2e, springs)) {
+    free(c2e); 
+    free(springs); 
+    return NULL;
+  }
   
   k = malloc(nsprings*sizeof(double));
 
@@ -257,6 +266,7 @@ GridMove *gridmoveSpringRelaxation(GridMove *gm, int nsteps, int subIterations)
   free(kxyz);
 
   free(springs);
+  free(c2e);
 
   return gm;
 }
