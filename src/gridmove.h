@@ -77,6 +77,8 @@ GridMove *gridmoveApplyDisplacements(GridMove *);
 GridMove *gridmoveProjectionDisplacements(GridMove *);
 
 GridMove *gridmoveDataLeadingDimension(GridMove *, int *ndim );
+GridMove *gridmoveInitializeMPITest(GridMove * );
+GridMove *gridmoveCompleteMPITest(GridMove * );
 GridMove *gridmoveLoadFortranNodeData(GridMove *, int nnode, 
 				     int *nodes, double *data);
 GridMove *gridmoveSetFortranNodeData(GridMove *, int nnode, 

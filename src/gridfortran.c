@@ -707,6 +707,16 @@ void gridmovedataleadingdim_( int *ndim )
   gridmoveDataLeadingDimension( gm, ndim );
 }
 
+void gridmoveinitializempitest_( void )
+{
+  gridmoveInitializeMPITest(gm);
+}
+
+void gridmovecompletempitest_( void )
+{
+  gridmoveCompleteMPITest(gm);
+}
+
 void gridmoveloadlocalnodedata_( int *ndim, int *nnode, 
 				 int *nodes, double *data )
 {

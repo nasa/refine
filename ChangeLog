@@ -1,3 +1,10 @@
+2004-07-22 14:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmove*MPITest) made Initialize and Complete
+	functions to test gridmove mpi load and set routines.
+	* src/gridfortran.c (gridmove*mpitest_) made interfaces for
+	initialize and complete gridmove routines.
+
 2004-07-21 10:22 Mike Park  <mike.park@nasa.gov>
 
 	* fixed bug reported by Alan Arslan compiling on IRIX64 with cc.

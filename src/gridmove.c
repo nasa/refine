@@ -575,6 +575,51 @@ GridMove *gridmoveDataLeadingDimension( GridMove *gm, int *ndim )
   return gm;
 }
 
+GridMove *gridmoveInitializeMPITest(GridMove *gm )
+{
+  int node,i;
+  Grid *grid = gridmoveGrid(gm);
+  
+  gm->xyz = malloc(3*gridMaxNode(grid)*sizeof(double));
+
+  for(node=0;node<gridMaxNode(grid);node++) {
+    for(i=0;i<3;i++) {
+      gm->xyz[i+3*node] = -9.0 - 0.1*(double)i;
+      if ( gridValidNode(grid,node) ) {
+	gm->xyz[i+3*node] = -1.0 - 0.1*(double)i;
+	if ( gridNodeLocal(grid,node) ) {
+	  gm->xyz[i+3*node] = (double)gridNodeGlobal(grid,node) + 0.1*(double)i;
+	}
+      }
+    }
+  }
+
+  return gm;
+}
+
+GridMove *gridmoveCompleteMPITest(GridMove *gm )
+{
+  int node,i;
+  double correct, error;
+  Grid *grid = gridmoveGrid(gm);
+
+  for(node=0;node<gridMaxNode(grid);node++) {
+    for(i=0;i<3;i++) {
+      if ( gridValidNode(grid,node) ) {
+	correct = (double)gridNodeGlobal(grid,node) + 0.1*(double)i;
+	error = ABS(gm->xyz[i+3*node] - correct);
+	if ( error > 1e-12) {
+	  printf("%s: %d: ERROR mpi part %d node %d i %d error %e\n",
+		 __FILE__,__LINE__,gridPartId,node,i,error);
+
+	}
+      }
+    }
+  }
+  free(gm->xyz); gm->xyz = NULL;
+  return gm;
+}
+
 GridMove *gridmoveLoadFortranNodeData( GridMove *gm, int nnode, 
 				     int *nodes, double *data)
 {

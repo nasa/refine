@@ -89,6 +89,8 @@ void gridmoverelaxshutdown_( void );
 void gridmoveapplydisplacements_( void );
 
 void gridmovedataleadingdim_( int *ndim );
+void gridmoveinitializempitest_( void );
+void gridmovecompletempitest_( void );
 void gridmoveloadlocalnodedata_( int *ndim, int *nnode, 
 				 int *nodes, double *data );
 void gridmovesetlocalnodedata_( int *ndim, int *nnode, 
