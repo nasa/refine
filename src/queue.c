@@ -449,3 +449,27 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
 
   return queue;
 }
+
+Queue *queueContents(Queue *queue, FILE *f)
+{
+  int transaction, removed, removedcell;
+  int globalnodes[5];
+
+  if (NULL==queue) return NULL;
+
+  fprintf(f,"transactions %d\n",queue->transactions);
+  fprintf(f,"total removed cells %d\n",queue->nRemovedCells);
+
+  removedcell = 0;
+  for (transaction=0;transaction<queueTransactions(queue);transaction++){
+    fprintf(f,"transaction %d has %d removed cells\n",
+	    transaction,queueRemovedCells(queue,transaction));
+    for (removed=0;removed<queueRemovedCells(queue,transaction);removed++) {
+      queueRemovedCellNodes( queue, removedcell, globalnodes );
+      fprintf(f,"cell %d %d: %d %d %d %d\n",removed, removedcell,
+	      globalnodes[0], globalnodes[1], globalnodes[2], globalnodes[3]);
+      removedcell++;
+    }
+  }
+  return queue;  
+}

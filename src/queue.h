@@ -14,6 +14,7 @@
 #define QUEUE_H
 
 #include "master_header.h"
+#include <stdio.h>
 
 BEGIN_C_DECLORATION
 
@@ -72,6 +73,8 @@ Queue *queueAddedFaceUVs( Queue *, int index, double *uvs );
 Queue *queueDumpSize( Queue *, int *nInt, int *nDouble );
 Queue *queueDump( Queue *, int *ints, double *doubles );
 Queue *queueLoad( Queue *, int *ints, double *doubles );
+
+Queue *queueContents(Queue *queue, FILE *file);
 
 END_C_DECLORATION
 
