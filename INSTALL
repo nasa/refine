@@ -1,5 +1,20 @@
+
+If You Recieved a *.tar.gz file
+===============================
+
+run (replace x_x_x with the current version number):
+
+  gunzip refine_x_x_x.tar.gz
+  tar xvf refine_x_x_x.tar
+  cd refine_x_x_x
+
+Read the `Basic Installation' section.
+
 Note To CVS Users
 =================
+
+(Skip this step and goto `Basic Installation' if you have a *.tar.gz 
+file.)
 
    Run ./autogen.sh to set the package up to install inside an
 archetecture directory(e.g., Linux, IRIX64). It will run ./bootstrap
@@ -10,11 +25,11 @@ dir. Finally, it will cd to the arch dir and and run:
 Note To SGI IRIX Users
 ======================
 
-   if configure does not find the X libs. add 
+If configure does not find the X libs. add 
 
-      --x-includes=/usr/include --x-libraries=/usr/lib32
+  --x-includes=/usr/include --x-libraries=/usr/lib32
 
-   to the configure or autogen.sh script commnad line options
+to the configure or autogen.sh script commnad line options
 
 Basic Installation
 ==================
