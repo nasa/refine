@@ -41,7 +41,7 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   int i;
   double h;
   double rate;
-  int nLayer, nWake;
+  int nLayer;
   int face;
   double gapHeight;
   double origin[3] = {0.0, -1.5, 0.0};
@@ -51,8 +51,8 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
     nLayer = (int)(20.0/scale);
     rate = exp(scale*log(1.05));
   }else{
-    nLayer = (int)(30.0/scale);
-    rate = exp(scale*log(1.15));
+    nLayer = (int)(60.0/scale);
+    rate = exp(scale*log(1.25));
   }
 
   printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
@@ -89,21 +89,32 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   if (blendElement) {
     printf("inserting blends...\n");
     layerBlend(layer); 
+
     printf("extrude blends...\n");
-    nWake = (int)(75.0/scale);
-    for (i=0;i<nWake;i++) layerExtrudeBlend(layer,0.02*scale,0,0); 
+    origin[0] = 1.0;
+    origin[1] = 0.0;
+    origin[2] = 0.0;
+    direction[0] = 1.0;
+    direction[1] = 0.0164;
+    direction[2] = 0.0;
+    layerCreateWakeWithBGSpacing(layer, origin, direction, 1.5 );
+
     origin[0] = -0.01;
     origin[1] = 0.0;
     origin[2] = 0.0;
     direction[0] = 1.0;
     direction[1] = 0.0;
     direction[2] = 0.0;
-    layerAssignPolynomialNormalHeight(layer, 1.5e-4, 1.0e-3, 1.0, 
+    layerAssignPolynomialNormalHeight(layer, 1.0e-5, 4.0e-5, 1.0, 
 				      origin, direction );
     origin[0] = 1.0;
-    layerAssignPolynomialNormalHeight(layer, 1.15e-3, 5.0e-3, 1.0, 
+    layerAssignPolynomialNormalHeight(layer, 5.0e-5, 5.0e-4, 1.0, 
 				      origin, direction );
     layerScaleNormalHeight(layer,scale);
+    printf("split blends...\n");
+    layerSplitBlend(layer); 
+    printf("split blends...\n");
+    layerSplitBlend(layer); 
     printf("split blends...\n");
     layerSplitBlend(layer); 
   }
@@ -173,6 +184,33 @@ int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
   }
 
   return 1;
+}
+
+Layer *layerCreateWakeWithBGSpacing(Layer *layer, 
+				    double *origin, double *direction, 
+				    double length )
+{
+  int i;
+  double xyz[3];
+  double spacing[3], map[9];
+  double extrude[3], extrusion;
+
+  i=0;
+  extrusion = 0.0;
+  xyz[0] = origin[0];  xyz[1] = origin[1];  xyz[2] = origin[2];
+  while (extrusion < length){
+    i++;
+    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,map);
+    printf("wake%5d length%8.3f spacing%10.5f xyz%8.3f%8.3f%8.3f\n",
+	   i,extrusion,spacing[0],xyz[0],xyz[1],xyz[2]);
+    extrude[0] = direction[0]*spacing[0];
+    extrude[1] = direction[1]*spacing[0];
+    extrude[2] = direction[2]*spacing[0];
+    layerExtrudeBlend(layer,extrude[0],extrude[1],extrude[2]); 
+    xyz[0] += extrude[0];  xyz[1] += extrude[1];  xyz[2] += extrude[2];
+    extrusion += spacing[0];
+  }
+
 }
 
 int layerTerminateNormalWithBGSpacing(Layer *layer, 
