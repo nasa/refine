@@ -249,6 +249,8 @@ int layerSubNormalDegree(Layer *, int normal);
 Layer *layerSubBlend(Layer *, double maxNormalAngle);
 int layerNSubBlend(Layer *, int blend );
 
+Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *);
+
 Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 
 Layer *layerOrderedVertexBlends(Layer *, int normal, 

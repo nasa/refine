@@ -2878,6 +2878,7 @@ Layer *layerBlend(Layer *layer, double angleLimit )
   layerInitializeTriangleNormalDirection(layer);
   layerFeasibleNormals(layer, -1.0, -1.0 );
   layerVisibleNormals(layer, 0.3, 1.0e-8 );
+  layerPreventBlendNormalDirectionFromPointingAtNeighbors(layer);
   return layer;
 }
 
@@ -3357,6 +3358,12 @@ int layerNSubBlend(Layer *layer, int blend )
   return MAX( layer->blend[blend].nSubNormal0,
 	      layer->blend[blend].nSubNormal1 ) + 1;
 }
+
+Layer *layerPreventBlendNormalDirectionFromPointingAtNeighbors(Layer *layer)
+{
+  return layer;
+}
+
 
 Layer *layerExtrudeBlend(Layer *layer, double dx, double dy, double dz )
 {
