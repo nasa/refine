@@ -487,7 +487,7 @@ int MesherX_DiscretizeVolume( int maxNodes, char *project )
   h =0.0002;
   while (layerNNormal(layer)>layerTerminateNormalWithBGSpacing(layer,h*2.0)) {
     layerVisibleNormals(layer);
-    layerAdvance(layer,h);
+    layerAdvanceConstantHeight(layer,h);
     h=h*1.5;
   }
 

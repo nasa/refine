@@ -240,10 +240,10 @@ VALUE layer_normalTerminated( VALUE self, VALUE normal )
   return ( layerNormalTerminated(layer,NUM2INT(normal))?Qtrue:Qfalse );
 }
 
-VALUE layer_advance( VALUE self, VALUE height )
+VALUE layer_advanceConstantHeight( VALUE self, VALUE height )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerAdvance(layer,NUM2DBL(height))?self:Qnil );
+  return ( layer == layerAdvanceConstantHeight(layer,NUM2DBL(height))?self:Qnil );
 }
 
 VALUE layer_wiggle( VALUE self, VALUE height )
@@ -285,6 +285,7 @@ void Init_Layer()
 
   rb_define_method( cLayer, "terminateNormal", layer_terminateNormal, 1 );
   rb_define_method( cLayer, "normalTerminated", layer_normalTerminated, 1 );
-  rb_define_method( cLayer, "advance", layer_advance, 1 );
+  rb_define_method( cLayer, "advanceConstantHeight", 
+		    layer_advanceConstantHeight, 1 );
   rb_define_method( cLayer, "wiggle", layer_wiggle, 1 );
 }

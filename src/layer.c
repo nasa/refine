@@ -704,7 +704,7 @@ int layerNActiveNormal(Layer *layer )
   return nActive;
 }
 
-Layer *layerAdvance(Layer *layer, double height )
+Layer *layerAdvanceConstantHeight(Layer *layer, double height )
 {
   Grid *grid = layer->grid;
   int normal, normal0, normal1, root, tip, faceId, edgeId, i;

@@ -51,7 +51,7 @@ int layerNParentEdgeSegments(Layer *, int edgeId );
 Layer *layerTerminateNormal(Layer *, int normal );
 bool layerNormalTerminated(Layer *, int normal );
 int layerNActiveNormal(Layer *);
-Layer *layerAdvance(Layer *, double height );
+Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
 Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);

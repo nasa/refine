@@ -372,12 +372,12 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil          layer = Layer.new(grid)
   assert_equal layer,     layer.makeFront([1])
   assert_equal 1,         layer.nfront
-  assert_nil              layer.advance(0.1)
+  assert_nil              layer.advanceConstantHeight(0.1)
   assert_nil              layer.wiggle(0.1)
   assert_equal layer,     layer.makeNormal
   assert_equal 3,         layer.nnormal
   assert_equal [0,1,2,3], grid.cell(0)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 7,         grid.nnode
   assert_equal [0,0,0.1], grid.nodeXYZ(4)
   assert_equal [1,0,0.1], grid.nodeXYZ(5)
@@ -419,7 +419,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal [0,3,1,1], grid.face(0)
   assert_equal [0,1,2,2], grid.face(1)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 7,         grid.nnode
   assert_equal [4,6,2,5], grid.cell(0)
   assert_equal 4,         grid.ncell
@@ -448,7 +448,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,         layer.constrainedSide(0,0)
   assert_equal 0,         layer.constrainedSide(0,1)
   assert_equal 0,         layer.constrainedSide(0,2)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal [1,0,5,2], grid.face(2)
   assert_equal [5,0,4,2], grid.face(3)
  end
@@ -470,7 +470,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,         layer.constrainedSide(0,0)
   assert_equal 2,         layer.constrainedSide(0,1)
   assert_equal 0,         layer.constrainedSide(0,2)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal [2,1,6,2], grid.face(2)
   assert_equal [6,1,5,2], grid.face(3)
  end
@@ -492,7 +492,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 0,         layer.constrainedSide(0,0)
   assert_equal 0,         layer.constrainedSide(0,1)
   assert_equal 2,         layer.constrainedSide(0,2)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal [0,2,6,2], grid.face(2)
   assert_equal [0,6,4,2], grid.face(3)
  end
@@ -518,7 +518,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal 2,         layer.constrainedSide(1,0)
   assert_equal 0,         layer.constrainedSide(1,1)
   assert_equal 0,         layer.constrainedSide(1,2)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal [1,0,8,2], grid.face(3)
   assert_equal [1,8,5,2], grid.face(4)
  end
@@ -542,7 +542,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal [0,3,1,1], grid.face(0)
   assert_equal [0,1,2,2], grid.face(1)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 7,         grid.nnode
   assert_equal [4,6,2,5], grid.cell(0)
   assert_equal [0,5,6,4], grid.cell(1)
@@ -555,7 +555,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,6,4,2], grid.face(3)
   assert_equal 4,         grid.nface
 
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal [7,9,2,8], grid.cell(0)
   assert_equal [0,5,6,4], grid.cell(1)
   assert_equal [0,3,6,5], grid.cell(2)
@@ -603,7 +603,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,1,2,2], grid.face(1)
   assert_equal [0,3,1,3], grid.face(2)
   assert_equal [0,1,1],   grid.edge(0)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 7,         grid.nnode
   assert_equal 4,         grid.ncell
   assert_equal 7,         grid.nface
@@ -666,7 +666,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal layer,     layer.terminateNormal(0)
   assert_equal layer,     layer.terminateNormal(1)
   assert_equal layer,     layer.terminateNormal(2)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 4,         grid.nnode
   assert_equal 1,         grid.ncell
  end
@@ -676,7 +676,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil layer = volumeLayer(grid)
   assert_equal layer,     layer.terminateNormal(0)
   assert_equal layer,     layer.terminateNormal(1)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 5,         grid.nnode
   assert_equal 2,         grid.ncell
   assert_equal [2,0,1,4], grid.cell(1)
@@ -687,7 +687,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil layer = volumeLayer(grid)
   assert_equal layer,     layer.terminateNormal(1)
   assert_equal layer,     layer.terminateNormal(2)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 5,         grid.nnode
   assert_equal 2,         grid.ncell
   assert_equal [0,1,2,4], grid.cell(1)
@@ -698,7 +698,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil layer = volumeLayer(grid)
   assert_equal layer,     layer.terminateNormal(2)
   assert_equal layer,     layer.terminateNormal(0)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 5,         grid.nnode
   assert_equal 2,         grid.ncell
   assert_equal [0,1,2,4], grid.cell(1)
@@ -708,7 +708,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil grid  = volumeGrid
   assert_not_nil layer = volumeLayer(grid)
   assert_equal layer,     layer.terminateNormal(0)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 6,         grid.nnode
   assert_equal 3,         grid.ncell
   assert_equal [0,1,5,4], grid.cell(1)
@@ -719,7 +719,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil grid  = volumeGrid
   assert_not_nil layer = volumeLayer(grid)
   assert_equal layer,     layer.terminateNormal(1)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 6,         grid.nnode
   assert_equal 3,         grid.ncell
   assert_equal [0,1,5,4], grid.cell(1)
@@ -730,7 +730,7 @@ class TestLayer < Test::Unit::TestCase
   assert_not_nil grid  = volumeGrid
   assert_not_nil layer = volumeLayer(grid)
   assert_equal layer,     layer.terminateNormal(2)
-  assert_equal layer,     layer.advance(0.1)
+  assert_equal layer,     layer.advanceConstantHeight(0.1)
   assert_equal 6,         grid.nnode
   assert_equal 3,         grid.ncell
   assert_equal [0,5,2,4], grid.cell(1)
