@@ -17,6 +17,7 @@
 BEGIN_C_DECLORATION
 
 double gridEdgeLength(Grid *g, int n0, int n1 );
+double gridEdgeRatio(Grid *g, int n0, int n1 );
 double gridAverageEdgeLength(Grid *g, int node );
 int gridLongestEdge(Grid *g, int node );
 Grid *gridLargestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
@@ -29,6 +30,10 @@ Grid *gridScaleSpacingSphere(Grid *g, double x, double y, double z, double r,
 Grid *gridScaleSpacingSphereDirection(Grid *g, 
 				 double x, double y, double z, double r,
 				 double scalex, double scaley, double scalez );
+Grid *gridSetMap(Grid *g, int node,
+		 double m11, double m12, double m13,
+		 double m21, double m22, double m23,
+		 double m31, double m32, double m33);
 
 double gridVolume(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
@@ -59,8 +64,6 @@ Grid *gridNodeFaceMRDerivative(Grid *g, int node, double *mr, double *dMRdx );
 Grid *gridMapMatrix(Grid *g, int node, double *m);
 void gridMapXYZWithM( double *m, double *x, double *y, double *z );
 void gridMapXYZWithNode( Grid *g, int node, double *x, double *y, double *z );
-
-double gridMappedEdgeLength(Grid *g, int n0, int n1 );
 
 END_C_DECLORATION
 

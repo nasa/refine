@@ -45,14 +45,17 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
   grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
   grid->blanknode = 0;
 
-  grid->spacing = malloc(grid->maxnode * 6 * sizeof(double));
+  grid->map = malloc(grid->maxnode * 9 * sizeof(double));
   for (i=0;i < grid->maxnode; i++ ) {
-    grid->spacing[0+6*i] = 1.0;
-    grid->spacing[1+6*i] = 0.0;
-    grid->spacing[2+6*i] = 0.0;
-    grid->spacing[3+6*i] = 1.0;
-    grid->spacing[4+6*i] = 0.0;
-    grid->spacing[5+6*i] = 1.0;
+    grid->map[0+9*i] = 1.0;
+    grid->map[1+9*i] = 0.0;
+    grid->map[2+9*i] = 0.0;
+    grid->map[3+9*i] = 0.0;
+    grid->map[4+9*i] = 1.0;
+    grid->map[5+9*i] = 0.0;
+    grid->map[6+9*i] = 0.0;
+    grid->map[7+9*i] = 0.0;
+    grid->map[8+9*i] = 1.0;
   }
 
   // cells
@@ -146,14 +149,17 @@ Grid *gridImport(int maxnode, int nnode,
     grid->blanknode = grid->nnode;
   }
 
-  grid->spacing = malloc(grid->maxnode * 6 * sizeof(double));
+  grid->map = malloc(grid->maxnode * 9 * sizeof(double));
   for (i=0;i < grid->maxnode; i++ ) {
-    grid->spacing[0+6*i] = 1.0;
-    grid->spacing[1+6*i] = 0.0;
-    grid->spacing[2+6*i] = 0.0;
-    grid->spacing[3+6*i] = 1.0;
-    grid->spacing[4+6*i] = 0.0;
-    grid->spacing[5+6*i] = 1.0;
+    grid->map[0+9*i] = 1.0;
+    grid->map[1+9*i] = 0.0;
+    grid->map[2+9*i] = 0.0;
+    grid->map[3+9*i] = 0.0;
+    grid->map[4+9*i] = 1.0;
+    grid->map[5+9*i] = 0.0;
+    grid->map[6+9*i] = 0.0;
+    grid->map[7+9*i] = 0.0;
+    grid->map[8+9*i] = 1.0;
   }
 
   // cells
@@ -376,9 +382,9 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
 
   for( i=0; i<grid->nnode ; i++ ) 
     fscanf(file,"%lf %lf %lf %lf %lf %lf \n",
-       &grid->spacing[0+6*i], &grid->spacing[1+6*i], &grid->spacing[2+6*i],
-                              &grid->spacing[3+6*i], &grid->spacing[4+6*i],
-                                                     &grid->spacing[5+6*i]);
+       &grid->map[0+6*i], &grid->map[1+6*i], &grid->map[2+6*i],
+       &grid->map[3+6*i], &grid->map[4+6*i], &grid->map[5+6*i],
+       &grid->map[6+6*i], &grid->map[7+6*i], &grid->map[8+6*i]);
   fclose(file);
   return grid;
 }
@@ -398,7 +404,7 @@ void gridFree(Grid *grid)
   free(grid->f2n);
   adjFree(grid->cellAdj);
   free(grid->c2n);
-  free(grid->spacing);
+  free(grid->map);
   free(grid->xyz);
   free(grid);
 }
@@ -427,12 +433,15 @@ Grid *gridPack(Grid *grid)
       grid->xyz[0+3*packnode] = grid->xyz[0+3*orignode];
       grid->xyz[1+3*packnode] = grid->xyz[1+3*orignode];
       grid->xyz[2+3*packnode] = grid->xyz[2+3*orignode];
-      grid->spacing[0+6*packnode] = grid->spacing[0+6*orignode];
-      grid->spacing[1+6*packnode] = grid->spacing[1+6*orignode];
-      grid->spacing[2+6*packnode] = grid->spacing[2+6*orignode];
-      grid->spacing[3+6*packnode] = grid->spacing[3+6*orignode];
-      grid->spacing[4+6*packnode] = grid->spacing[4+6*orignode];
-      grid->spacing[5+6*packnode] = grid->spacing[5+6*orignode];
+      grid->map[0+9*packnode] = grid->map[0+9*orignode];
+      grid->map[1+9*packnode] = grid->map[1+9*orignode];
+      grid->map[2+9*packnode] = grid->map[2+9*orignode];
+      grid->map[3+9*packnode] = grid->map[3+9*orignode];
+      grid->map[4+9*packnode] = grid->map[4+9*orignode];
+      grid->map[5+9*packnode] = grid->map[5+9*orignode];
+      grid->map[6+9*packnode] = grid->map[6+9*orignode];
+      grid->map[7+9*packnode] = grid->map[7+9*orignode];
+      grid->map[8+9*packnode] = grid->map[8+9*orignode];
       packnode++;
     } 
   
@@ -688,12 +697,12 @@ Grid *gridSortNodeGridEx(Grid *grid)
       grid->xyz[ixyz+3*node] = temp_xyz[node];
     }
   }
-  for ( ixyz = 0; ixyz < 6 ; ixyz++ ){
+  for ( ixyz = 0; ixyz < 9 ; ixyz++ ){
     for ( node = 0 ; node < grid->nnode ; node++ ){
-      temp_xyz[o2n[node]] = grid->spacing[ixyz+6*node];
+      temp_xyz[o2n[node]] = grid->map[ixyz+9*node];
     }
     for ( node = 0 ; node < grid->nnode ; node++ ){
-      grid->spacing[ixyz+6*node] = temp_xyz[node];
+      grid->map[ixyz+9*node] = temp_xyz[node];
     }
   }
 

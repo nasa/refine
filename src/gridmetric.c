@@ -8,17 +8,17 @@
 
 Grid *gridMapMatrix(Grid *grid, int node, double *m)
 {
-  m[0+3*0] = grid->spacing[0+6*node];
-  m[1+3*0] = grid->spacing[1+6*node];
-  m[2+3*0] = grid->spacing[2+6*node];
+  m[0+3*0] = grid->map[0+9*node];
+  m[1+3*0] = grid->map[1+9*node];
+  m[2+3*0] = grid->map[2+9*node];
 
-  m[0+3*1] = grid->spacing[1+6*node];
-  m[1+3*1] = grid->spacing[3+6*node];
-  m[2+3*1] = grid->spacing[4+6*node];
+  m[0+3*1] = grid->map[3+9*node];
+  m[1+3*1] = grid->map[4+9*node];
+  m[2+3*1] = grid->map[5+9*node];
   
-  m[0+3*2] = grid->spacing[2+6*node];
-  m[1+3*2] = grid->spacing[4+6*node];
-  m[2+3*2] = grid->spacing[5+6*node];
+  m[0+3*2] = grid->map[6+9*node];
+  m[1+3*2] = grid->map[7+9*node];
+  m[2+3*2] = grid->map[8+9*node];
   
   return grid;
 }
@@ -57,7 +57,7 @@ double gridEdgeLength(Grid *grid, int n0, int n1 )
   return  sqrt(dx*dx+dy*dy+dz*dz);
 }
 
-double gridMappedEdgeLength(Grid *grid, int n0, int n1 )
+double gridEdgeRatio(Grid *grid, int n0, int n1 )
 {
   double dx, dy, dz;
   double m0[9], m1[9], length0, length1;
@@ -143,7 +143,7 @@ Grid *gridLargestRatioEdge(Grid *grid, int node,
     gridCell( grid, cell, nodes);
     for (i=0;i<4;i++){
       if (node != nodes[i]) {
-	currentRatio = gridMappedEdgeLength( grid, node, nodes[i] );;
+	currentRatio = gridEdgeRatio( grid, node, nodes[i] );;
 	if ( currentRatio > *ratio ){
 	  *ratio = currentRatio;
 	  *edgeNode = nodes[i];
@@ -169,7 +169,7 @@ Grid *gridSmallestRatioEdge(Grid *grid, int node,
     gridCell( grid, cell, nodes);
     for (i=0;i<4;i++){
       if (node != nodes[i]) {
-	currentRatio = gridMappedEdgeLength( grid, node, nodes[i] );;
+	currentRatio = gridEdgeRatio( grid, node, nodes[i] );;
 	if ( currentRatio < *ratio ){
 	  *ratio = currentRatio;
 	  *edgeNode = nodes[i];
@@ -183,7 +183,7 @@ Grid *gridSmallestRatioEdge(Grid *grid, int node,
 
 double gridSpacing(Grid *grid, int node )
 {
-  return 1.0/grid->spacing[0+6*node];
+  return 1.0/grid->map[0+9*node];
 }
 
 Grid *gridResetSpacing(Grid *grid )
@@ -192,18 +192,18 @@ Grid *gridResetSpacing(Grid *grid )
   double spacingInverse;
   for ( node=0; node < grid->nnode; node++) { 
     spacingInverse = 1.0/gridAverageEdgeLength( grid, node );
-    grid->spacing[0+6*node] = spacingInverse; 
-    grid->spacing[3+6*node] = spacingInverse; 
-    grid->spacing[5+6*node] = spacingInverse;
+    grid->map[0+9*node] = spacingInverse; 
+    grid->map[4+9*node] = spacingInverse; 
+    grid->map[8+9*node] = spacingInverse;
   } 
   return grid;
 }
 
 Grid *gridScaleSpacing(Grid *grid, int node, double scale )
 {
-  grid->spacing[0+6*node] = grid->spacing[0+6*node]/scale;
-  grid->spacing[3+6*node] = grid->spacing[3+6*node]/scale;
-  grid->spacing[5+6*node] = grid->spacing[5+6*node]/scale;
+  grid->map[0+9*node] = grid->map[0+9*node]/scale;
+  grid->map[4+9*node] = grid->map[4+9*node]/scale;
+  grid->map[8+9*node] = grid->map[8+9*node]/scale;
   return grid;
 }
 
@@ -240,11 +240,30 @@ Grid *gridScaleSpacingSphereDirection( Grid *grid,
     dz = grid->xyz[2+3*node] - z;
     distanceSquared = dx*dx + dy*dy + dz*dz;
     if (radiusSquared >= distanceSquared){
-      grid->spacing[0+6*node] = grid->spacing[0+6*node] / scalex; 
-      grid->spacing[3+6*node] = grid->spacing[3+6*node] / scaley; 
-      grid->spacing[5+6*node] = grid->spacing[5+6*node] / scalez; 
+      grid->map[0+9*node] = grid->map[0+9*node] / scalex; 
+      grid->map[4+9*node] = grid->map[4+9*node] / scaley; 
+      grid->map[8+9*node] = grid->map[8+9*node] / scalez; 
     } 
   }
+
+  return grid;
+}
+Grid *gridSetMap(Grid *grid, int node,
+		 double m11, double m12, double m13,
+		 double m21, double m22, double m23,
+		 double m31, double m32, double m33)
+{
+  if ( !gridValidNode(grid, node) ) return NULL;
+
+  grid->map[0+9*node] = m11;
+  grid->map[1+9*node] = m12;
+  grid->map[2+9*node] = m13;
+  grid->map[3+9*node] = m21;
+  grid->map[4+9*node] = m22;
+  grid->map[5+9*node] = m23;
+  grid->map[6+9*node] = m31;
+  grid->map[7+9*node] = m32;
+  grid->map[8+9*node] = m33;
 
   return grid;
 }

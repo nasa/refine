@@ -21,7 +21,7 @@ struct Grid {
   int maxnode, nnode;
   int blanknode;
   double *xyz;
-  double *spacing;
+  double *map;
 
   int maxcell, ncell;
   int blankc2n;

@@ -10,6 +10,12 @@ VALUE grid_edgeLength( VALUE self, VALUE n0, VALUE n1 )
   return rb_float_new( gridEdgeLength( grid, NUM2INT(n0), NUM2INT(n1) ) );
 }
 
+VALUE grid_edgeRatio( VALUE self, VALUE n0, VALUE n1 )
+{
+  GET_GRID_FROM_SELF;
+  return rb_float_new( gridEdgeRatio( grid, NUM2INT(n0), NUM2INT(n1) ) );
+}
+
 VALUE grid_averageEdgeLength( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -70,6 +76,19 @@ VALUE grid_scaleSpacingSphere( VALUE self,
     (gridScaleSpacingSphere(grid, 
 			    NUM2DBL(x), NUM2DBL(y), NUM2DBL(z), NUM2DBL(r), 
 			    NUM2DBL(scale))==grid?self:Qnil);
+}
+
+VALUE grid_setMap( VALUE self, VALUE node, 
+		   VALUE m11, VALUE m12, VALUE m13,
+		   VALUE m21, VALUE m22, VALUE m23,
+		   VALUE m31, VALUE m32, VALUE m33)
+{
+  GET_GRID_FROM_SELF;
+  return
+    (gridSetMap(grid, NUM2INT(node), 
+		NUM2DBL(m11), NUM2DBL(m12), NUM2DBL(m13), 
+		NUM2DBL(m21), NUM2DBL(m22), NUM2DBL(m23), 
+		NUM2DBL(m31), NUM2DBL(m32), NUM2DBL(m33) )==grid?self:Qnil);
 }
 
 VALUE grid_volume( VALUE self, VALUE rb_nodes )
@@ -261,6 +280,7 @@ void Init_GridMetric()
 {
   cGridMetric = rb_define_module( "GridMetric" );
   rb_define_method( cGridMetric, "edgeLength", grid_edgeLength, 2 );
+  rb_define_method( cGridMetric, "edgeRatio", grid_edgeRatio, 2 );
   rb_define_method( cGridMetric, "averageEdgeLength", grid_averageEdgeLength, 1 );
   rb_define_method( cGridMetric, "longestEdge", grid_longestEdge, 1 );
   rb_define_method( cGridMetric, "largestRatioEdge", grid_largestRatioEdge, 1 );  rb_define_method( cGridMetric, "smallestRatioEdge", grid_smallestRatioEdge, 1 );
@@ -268,6 +288,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "resetSpacing", grid_resetSpacing, 0 );
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
   rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );
+  rb_define_method( cGridMetric, "setMap", grid_setMap, 10 );
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );

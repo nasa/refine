@@ -48,9 +48,26 @@ class TestGridMetric < Test::Unit::TestCase
  
 # test the ratio function and map
 # make a 4 node mesh 
-# ratio the dx=2 dy=3 dz=4
+# ratio the dx=2 dy=3 dz=5
 # remove a node and pack
 # test ratio
+
+ def testMatrixSpaceMap
+  assert_not_nil grid = Grid.new(5,1,0,0)
+  assert_equal 0, grid.addNode(-1.0,-1.0,-1.0)
+  assert_equal grid, grid.addCell( grid.addNode(0.0,0.0,0.0), 
+				   grid.addNode(1.0,0.0,0.0), 
+				   grid.addNode(0.0,2.0,0.0), 
+				   grid.addNode(0.0,0.0,5.0) )
+  1.upto(4) do |n| 
+   assert_equal grid, grid.setMap(n, 1.0, 0.0, 0.0,
+	 		             0.0, 0.5, 0.0,
+			             0.0, 0.0, 0.2)
+  end
+  assert_equal grid, grid.removeNode(0)
+  assert_equal grid, grid.sortNodeGridEx
+  assert_in_delta 1.0, grid.edgeRatio(0,1), 1.0e-15
+ end
 
 # strech sqrt2 in xy to test rotation or principle axes
 
