@@ -43,4 +43,4 @@ require 'mkmf'
 
 create_makefile(ext)
 
-exit 1 unless system "make"
+exit 1 unless system "make --quiet --no-print-directory"
