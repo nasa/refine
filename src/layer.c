@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 #include <values.h>
 #include "master_header.h"
 #include "layer.h"
