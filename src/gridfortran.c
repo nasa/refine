@@ -129,8 +129,9 @@ void gridparallelloadcapri_( char *capriProject, int *status )
     printf( "ERROR: %s: %d: failed to load part %s, partition %d.\n",
 	    __FILE__,__LINE__,capriProject,gridPartId(grid) );
     *status = 0;
+  } else {
+    *status = 1;
   }
-  *status = 1;
 }
 
 void gridparallelsavecapri_( char *capriProject )
