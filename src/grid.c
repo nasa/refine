@@ -1877,7 +1877,7 @@ Grid *gridCreateConn(Grid *grid)
     }
   }
 
-
+  return grid;
 }
 
 int gridCell2Conn(Grid *grid, int cell, int index )
