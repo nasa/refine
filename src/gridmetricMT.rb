@@ -380,12 +380,12 @@ class TestGridMetric < Test::Unit::TestCase
 
   grid.addCell( grid.addNode(0.0,0.0,0.0), grid.addNode(1.0,0.0,0.0), 
 	        grid.addNode(0.0,1.0,0.0), grid.addNode(0.0,0.0,1.0) )
-  assert_equal grid,  grid.addFace(0,1,2,11)
+  grid.addFace(0,1,2,11)
   assert_equal true,  grid.rightHandedFace(0)
-  assert_equal grid,  grid.addFace(0,2,3,11)
+  grid.addFace(0,2,3,11)
   assert_equal true,  grid.rightHandedBoundary
   assert_equal grid,  grid.removeFace(grid.findFace(0,1,2))
-  assert_equal grid,  grid.addFace(0,2,1,11)
+  grid.addFace(0,2,1,11)
   assert_equal false, grid.rightHandedFace(0)
   assert_equal false, grid.rightHandedBoundary
  end
@@ -407,8 +407,8 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv, ans[2], 1.0e-4
   assert_in_delta 0.0,   ans[3], 1.0e-14
 
-  assert_equal grid,   grid.addFace(0,1,2,10)
-  assert_equal grid,   grid.addFace(1,2,3,10)
+  grid.addFace(0,1,2,10)
+  grid.addFace(1,2,3,10)
   assert_in_delta mr,  grid.nodeFaceMR(0), 1.0e-8
   assert_in_delta mr,  grid.nodeFaceMR(1), 1.0e-8
   assert_in_delta 1.0, grid.nodeFaceMR(3), 1.0e-8

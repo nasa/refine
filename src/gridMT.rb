@@ -288,7 +288,7 @@ class TestGrid < Test::Unit::TestCase
  def testAddAndFindFace
   assert_not_nil           grid = Grid.new(4,1,2,0)
   assert_nil               grid.face(0)
-  assert_equal grid,       grid.addFace(0, 1, 2, 10)
+  grid.addFace(0, 1, 2, 10)
   assert_equal 0,          grid.findFace(0,1,2)
   assert_equal [0,1,2,10], grid.face(0)
   assert_nil               grid.findFace(3,1,2)
@@ -298,12 +298,12 @@ class TestGrid < Test::Unit::TestCase
   assert_not_nil     grid = Grid.new(4,1,2,0)
   assert_nil         grid.removeFace(0)
   assert_nil         grid.removeFace(1)
-  assert_equal grid, grid.addFace(0, 1, 2, 10)
+  grid.addFace(0, 1, 2, 10)
   assert_nil         grid.removeFace(-1)
   assert_nil         grid.removeFace(1)
-  assert_equal grid, grid.addFace(3, 1, 2, 11)
+  grid.addFace(3, 1, 2, 11)
   assert_equal 2,    grid.nface 
-  assert_nil         grid.addFace(0, 1, 3, 12)
+  grid.addFace(0, 1, 3, 12)
   assert_equal 2,    grid.nface 
   assert_nil         grid.removeFace(3)
   assert_equal 2,    grid.nface 
@@ -315,9 +315,9 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 1,            grid.addNode(1,0,0)
   assert_equal 2,            grid.addNode(0,1,0)
   assert_equal 3,            grid.addNode(1,1,0)
-  assert_equal grid,         grid.addFace(0,1,2,1)
-  assert_equal grid,         grid.addFace(2,1,3,1)
-  assert_equal grid,         grid.addFace(2,1,3,2)
+  grid.addFace(0,1,2,1)
+  grid.addFace(2,1,3,1)
+  grid.addFace(2,1,3,2)
   assert_equal(-1,           grid.nThawedFaces(-1)) 
   assert_equal(-1,           grid.nThawedFaces(0))
   assert_equal 2,            grid.nThawedFaces(1)
@@ -341,23 +341,23 @@ class TestGrid < Test::Unit::TestCase
 
   assert_nil         grid.faceId( 1, 2, 3 )
 
-  assert_equal grid, grid.addFace(0, 1, 2, 10)
+  grid.addFace(0, 1, 2, 10)
   assert_equal 10,   grid.faceId( 0, 1, 2 )
   assert_equal 10,   grid.faceId( 1, 2, 0 )
   assert_equal 10,   grid.faceId( 2, 0, 1 )
   assert_equal 10,   grid.faceId( 2, 1, 0 )
   assert_nil         grid.faceId( 1, 2, 3 )
 
-  assert_equal grid, grid.addFace(3, 1, 2, 11)
+  grid.addFace(3, 1, 2, 11)
   assert_equal 10,   grid.faceId( 0, 1, 2 )
   assert_equal 11,   grid.faceId( 1, 2, 3 )
  end
 
  def testReconnectFace
   assert_not_nil             grid = Grid.new(6,0,3,0)
-  assert_equal grid,         grid.addFace(0,3,1,1)
-  assert_equal grid,         grid.addFace(0,1,2,2)
-  assert_equal grid,         grid.addFace(2,1,4,2)
+  grid.addFace(0,3,1,1)
+  grid.addFace(0,1,2,2)
+  grid.addFace(2,1,4,2)
 
   assert_equal [0, 3, 1, 1], grid.face(0)
   assert_equal [0, 1, 2, 2], grid.face(1)
@@ -373,10 +373,10 @@ class TestGrid < Test::Unit::TestCase
 
  def testNodeUV
   assert_not_nil     grid = Grid.new(4,1,2,0)
-  assert_equal grid, grid.addFaceUV(0,20.0,120.0,
+  grid.addFaceUV(0,20.0,120.0,
 				    1,21.0,121.0,
 				    2,22.0,122.0,2)
-  assert_equal grid, grid.addFaceUV(0,30.0,130.0,
+  grid.addFaceUV(0,30.0,130.0,
 				    1,31.0,131.0,
 				    3,33.0,133.0,3)
   assert_nil                 grid.nodeUV(2,3)
@@ -490,7 +490,7 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell(0,1,4,3)
   assert_nil         grid.findCellWithFace(34)
   assert_nil         grid.findCellWithFace(0)
-  assert_equal grid, grid.addFace(0,1,2,11)
+  grid.addFace(0,1,2,11)
   assert_nil         grid.findCellWithFace(0)
   grid.addCell(0,1,2,3)
   assert_equal 1,    grid.findCellWithFace(0)
@@ -534,7 +534,7 @@ class TestGrid < Test::Unit::TestCase
  def testGeometryFace
   assert_not_nil grid = Grid.new(3,0,0,1)
   assert_equal false, grid.geometryFace(0)
-  assert_equal grid,  grid.addFace(0,1,2,10)
+  grid.addFace(0,1,2,10)
   assert_equal false, grid.geometryFace(-1)
   assert_equal true,  grid.geometryFace(0)
   assert_equal false, grid.geometryFace(grid.maxnode)
@@ -553,8 +553,8 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell(1,2,3,4)
   assert_equal [1,2,3,4], grid.cell(1)
   assert_equal [1], grid.gem(1,2)
-  assert_equal grid, grid.addFace(2,3,4,1)
-  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
+  grid.addFace(2,3,4,1)
+  grid.addFaceUV(1,1.0,11.0,
 				    2,2.0,12.0,
 				    3,3.0,13.0,
 				    1)
@@ -586,7 +586,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 4, grid.addNode(9.0,0.0,9.0)
   grid.addCell(0,2,3,4)
   assert_equal [0,2,3,4], grid.cell(1)
-  assert_equal grid, grid.addFace(1,2,3,2)
+  grid.addFace(1,2,3,2)
   assert_equal 1, grid.findFace(1,2,3)
   assert_equal grid, grid.addEdge(2,3,1,22.0,23.0)
   assert_equal 2, grid.maxedge
@@ -685,9 +685,9 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell( 0, 2, 4, 3)
   grid.addCell( 0, 4, 5, 3)
   assert_equal [0,4,5,3], grid.cell(2)
-  assert_equal grid,      grid.addFace( 1, 4, 2, 2)
-  assert_equal grid,      grid.addFace( 0, 2, 4, 2)
-  assert_equal grid,      grid.addFace( 0, 4, 5, 1)
+  grid.addFace( 1, 4, 2, 2)
+  grid.addFace( 0, 2, 4, 2)
+  grid.addFace( 0, 4, 5, 1)
   assert_equal 2,         grid.findFace(0, 4, 5)
   assert_equal grid,      grid.addEdge( 0, 4, 1, 0.0, 4.0)
   assert_equal 0,         grid.findEdge(0,4)
@@ -723,7 +723,7 @@ class TestGrid < Test::Unit::TestCase
 
  def testTec
   assert_not_nil     grid = Grid.new(3,0,1,0)
-  assert_equal grid, grid.addFace( grid.addNode(0,0,0),
+  grid.addFace( grid.addNode(0,0,0),
 				   grid.addNode(1,0,0),
 				   grid.addNode(0,1,0),
 				   1)

@@ -103,12 +103,12 @@ class TestGridSwap < Test::Unit::TestCase
  def testSwapEdge4_gapWithSameFaces
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
-  assert_equal grid, grid.addFaceUV(0,0.0,10.0,
-				    1,1.0,11.0,
-				    2,2.0,12.0,11)
-  assert_equal grid, grid.addFaceUV(1,1.0,11.0,
-				    0,0.0,10.0,
-				    5,5.0,15.0,11)
+  grid.addFaceUV(0,0.0,10.0,
+		 1,1.0,11.0,
+		 2,2.0,12.0,11)
+  grid.addFaceUV(1,1.0,11.0,
+		 0,0.0,10.0,
+		 5,5.0,15.0,11)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.swapEdge(0,1)
   assert_equal 4,    grid.ncell
@@ -129,8 +129,8 @@ class TestGridSwap < Test::Unit::TestCase
  def testSwapEdge4_gapWithSameFaceNotBeter
   assert_not_nil     grid=gemGrid(4, 2.0, nil, nil, true)
   assert_equal 3,    grid.ncell
-  assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(0,1,5,11)
+  grid.addFace(0,1,2,11)
+  grid.addFace(0,1,5,11)
   assert_nil         grid.swapEdge(0,1)
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
@@ -142,8 +142,8 @@ class TestGridSwap < Test::Unit::TestCase
  def testSwapEdge4_gapWithDifferentFaces
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
-  assert_equal grid, grid.addFace(0,1,2,2)
-  assert_equal grid, grid.addFace(0,1,5,5)
+  grid.addFace(0,1,2,2)
+  grid.addFace(0,1,5,5)
   assert_nil         grid.swapEdge(0,1)
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
@@ -155,9 +155,9 @@ class TestGridSwap < Test::Unit::TestCase
  def testSwapEdge4_gapWithSameAndExistingFace0
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
-  assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(0,1,5,11)
-  assert_equal grid, grid.addFace(0,2,5,20)
+  grid.addFace(0,1,2,11)
+  grid.addFace(0,1,5,11)
+  grid.addFace(0,2,5,20)
   assert_nil         grid.swapEdge(0,1)
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
@@ -169,9 +169,9 @@ class TestGridSwap < Test::Unit::TestCase
  def testSwapEdge4_gapWithSameAndExistingFace1
   assert_not_nil     grid=gemGrid(4, nil, nil, nil, true)
   assert_equal 3,    grid.ncell
-  assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(0,1,5,11)
-  assert_equal grid, grid.addFace(1,2,5,20)
+  grid.addFace(0,1,2,11)
+  grid.addFace(0,1,5,11)
+  grid.addFace(1,2,5,20)
   assert_nil         grid.swapEdge(0,1)
   assert_equal 3,    grid.ncell
   assert_equal 3,    grid.cellDegree(0)
@@ -258,8 +258,8 @@ class TestGridSwap < Test::Unit::TestCase
  def testSwapEdge5_gapWithSameFaces
   assert_not_nil     grid=gemGrid(5, nil, nil, nil, true)
   assert_equal 4,    grid.ncell
-  assert_equal grid, grid.addFace(0,1,2,11)
-  assert_equal grid, grid.addFace(1,0,6,11)
+  grid.addFace(0,1,2,11)
+  grid.addFace(1,0,6,11)
   assert grid.rightHandedBoundary, "original boundary is not right handed"
   assert_equal grid, grid.swapEdge(0,1)
   assert_equal 6,    grid.ncell
@@ -451,14 +451,14 @@ class TestGridSwap < Test::Unit::TestCase
   grid.addCell( 0, 2, 3, grid.addNode(-0.5,0.3,0.3) )
   
   assert_nil         grid.swapCellFaceArea(0), "no faces"
-  assert_not_nil     grid.addFace(1,0,3,10), "add x=0 face"
+  grid.addFace(1,0,3,10)
   assert_nil         grid.swapCellFaceArea(0), "one face"
-  assert_not_nil     grid.addFace(0,1,2,20), "add bottom face"
+  grid.addFace(0,1,2,20)
   assert_nil         grid.swapCellFaceArea(0), "two different faces"
   assert_not_nil     grid.removeFace(grid.findFace(0,1,2)), "remove bottom"
-  assert_not_nil     grid.addFace(0,1,2,10), "add bottom"
+  grid.addFace(0,1,2,10)
   assert_nil         grid.swapCellFaceArea(0), "two same faces, min area"
-  assert_not_nil     grid.addFace(2,1,3,10), "add slant face"
+  grid.addFace(2,1,3,10)
   assert_nil         grid.swapCellFaceArea(0), "three same faces"
   assert_not_nil     grid.removeFace(grid.findFace(1,0,3)), "remove x=0 face"
   assert_equal true, grid.rightHandedBoundary, "initial left boundary faces"

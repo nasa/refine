@@ -47,11 +47,11 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 2,             grid.addNode(0.0,1.0,0.0)
   assert_equal 3,             grid.addNode(1.0,1.0,0.0)
   assert_nil                  grid.projectNodeToFace(0,1)
-  assert_equal grid,          grid.addFaceUV(0, 10.1, 20.1,
+  grid.addFaceUV(0, 10.1, 20.1,
 					     3, 11.0, 21.0,
 					     1, 11.0, 20.0,
 					     1)
-  assert_equal grid,          grid.addFaceUV(0, 10.1, 20.1,
+  grid.addFaceUV(0, 10.1, 20.1,
 					     3, 11.0, 21.0,
 					     2, 10.0, 21.0,
 					     1)
@@ -66,7 +66,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 1, grid.addNode(1,0,0)
   assert_equal 2, grid.addNode(0,1,0)
   assert_equal 3, grid.addNode(0,0,1)
-  assert_equal grid, grid.addFace(0,1,2,7)
+  grid.addFace(0,1,2,7)
   assert_equal grid, grid.addEdge(0,1,5,-2,-3)
   assert_equal grid, grid.setNGeomNode(1)
   assert_nil         grid.evaluateEdgeAtT(-1,0)
@@ -85,7 +85,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 1, grid.addNode(1,0,0)
   assert_equal 2, grid.addNode(0,1,0)
   assert_equal 3, grid.addNode(0,0,1)
-  assert_equal grid, grid.addFaceUV(0,-2,-3,
+  grid.addFaceUV(0,-2,-3,
 				    1,0,0,
 				    2,0,0,
 				    7)
@@ -109,7 +109,8 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 1,    grid.addNode(1,0,0)
   assert_equal 2,    grid.addNode(0,1,0)
   assert_equal 3,    grid.addNode(1,1,0)
-  assert_equal grid, grid.addFace(0,1,2,7).addFace(1,3,2,8)
+  grid.addFace(0,1,2,7)
+  grid.addFace(1,3,2,8)
   assert_equal grid, grid.updateFaceParameter(1)
   assert_equal [11,20], grid.nodeUV(1,7)
   assert_equal [11,20], grid.nodeUV(1,8)
@@ -123,7 +124,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 3, grid.addNode(0.0,1.0,0.1)
   assert_equal 4, grid.addNode(0.0,0.0,1.0)
   grid.addCell(1,2,3,4)
-  assert_equal grid, grid.addFace(1,2,3,10)
+  grid.addFace(1,2,3,10)
   assert_equal grid, grid.addEdge(1,2,20,0.0,1.0)
   assert_equal grid, grid.setNGeomNode(1)
   5.times do |i| 
@@ -148,7 +149,7 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal 2, grid.addNode(0.0,1.0,0.0)
   assert_equal 3, grid.addNode(0.0,0.0,-0.1)
   grid.addCell(0,1,2,3)
-  assert_equal grid, grid.addFace(0,1,2,10)
+  grid.addFace(0,1,2,10)
   grid
  end
 
