@@ -3,12 +3,12 @@ AC_INIT([src/main.c])
 AM_INIT_AUTOMAKE([refine],[0.3])
 
 AC_ARG_WITH(SDK,
-	[  --with-SDK              enable GEOLAB SDK support],
+	[  --with-SDK[=ARG]        use GEOLAB SDK package [ARG=\$GEO_SDK]],
 	[with_SDK=$withval],
 	[with_SDK=$GEO_SDK])
 
 AC_ARG_WITH(CAPRI,
-	[  --with-CAPRI            enable CAPRI support],
+	[  --with-CAPRI[=ARG]      use CAPRI package [ARG=\$CAPRI_ROOT]],
 	[with_CAPRI=$withval],
 	[with_CAPRI=$CAPRI_ROOT])
 
