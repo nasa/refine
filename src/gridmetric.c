@@ -974,8 +974,12 @@ bool gridRightHandedFace(Grid *grid, int face ){
   int cell;
   int nodes[4];
   cell = gridFindCellWithFace(grid, face );
-  if (cell == EMPTY) return FALSE;
-
+  if (cell == EMPTY) {
+    printf("gridRightHandedFace: %s: %d: no cell for face %d %d %d %d\n",
+	   __FILE__, __LINE__,
+	   face,grid->f2n[0+3*face],grid->f2n[1+3*face],grid->f2n[2+3*face]);
+    return FALSE;
+  }
   nodes[0] = grid->f2n[0+3*face];
   nodes[1] = grid->f2n[1+3*face];
   nodes[2] = grid->f2n[2+3*face];
@@ -994,11 +998,13 @@ bool gridRightHandedFace(Grid *grid, int face ){
 bool gridRightHandedBoundary( Grid *grid )
 {
   int face;
+  bool rightHanded;
+  rightHanded = TRUE;
 
   for (face=0;face<grid->maxface;face++)
     if ( grid->f2n[3*face] != EMPTY )
-      if ( !gridRightHandedFace(grid, face) ) return FALSE;
+      rightHanded = gridRightHandedFace(grid, face) && rightHanded;
 
-  return TRUE;
+  return rightHanded;
 }
 
