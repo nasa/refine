@@ -420,7 +420,7 @@ Layer *layerRebuildVolume(Layer *layer, int vol){
   printf("rebuild volume has %d nodes %d cells\n",nvolnode,nvolcell);
 
   gridDeleteThawedCells(grid);
-  //gridDeleteNodesNotUsed(grid);
+  gridDeleteNodesNotUsed(grid);
 
   free(l2g);
   free(g2l);

@@ -1039,6 +1039,24 @@ bool gridCellFace(Grid *grid, int n0, int n1, int n2 )
   return FALSE;
 }
 
+Grid *gridDeleteThawedCells(Grid *grid){
+  int cell, maxcell, nodes[4];
+
+  maxcell = gridMaxCell(grid);
+  for( cell=0 ; cell < maxcell ; cell++ ) {
+    if (grid == gridCell(grid,cell,nodes)) {
+      if ( !gridNodeFrozen(grid,nodes[0]) || 
+	   !gridNodeFrozen(grid,nodes[1]) || 
+	   !gridNodeFrozen(grid,nodes[2]) ||
+	   !gridNodeFrozen(grid,nodes[3])  ) {
+	gridRemoveCell(grid,cell);
+      }
+    }
+  }
+
+  return grid;
+}
+
 Grid *gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
 {
  return gridAddFaceUV(grid, 
@@ -1928,6 +1946,21 @@ Grid *gridSetNodeXYZ(Grid *grid, int node, double *xyz )
   grid->xyz[0+3*node] = xyz[0];
   grid->xyz[1+3*node] = xyz[1];
   grid->xyz[2+3*node] = xyz[2];
+  return grid;
+}
+
+Grid *gridDeleteNodesNotUsed(Grid *grid){
+  int node, maxnode;
+
+  maxnode = gridMaxNode(grid);
+  for( node=0 ; node < maxnode ; node++ ) {
+    if ( gridValidNode(grid,node) && 
+	 0 == gridCellDegree(grid, node) &&
+	 !gridGeometryFace(grid, node) &&
+	 !gridGeometryEdge(grid, node) )
+      gridRemoveNode(grid,node);
+  }
+
   return grid;
 }
 

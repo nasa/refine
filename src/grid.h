@@ -55,6 +55,7 @@ Grid *gridReconnectCellUnlessFrozen(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 bool gridCellEdge(Grid *g, int node0, int node1 );
 bool gridCellFace(Grid *g, int node0, int node1, int node2 );
+Grid *gridDeleteThawedCells(Grid *g);
 
 Grid *gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
 Grid *gridAddFaceUV(Grid *g, 
@@ -118,6 +119,7 @@ Grid *gridRemoveNode(Grid *g, int node );
 bool gridValidNode(Grid *g, int node );
 Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
 Grid *gridSetNodeXYZ(Grid *g, int node, double *xyz );
+Grid *gridDeleteNodesNotUsed(Grid *);
 
 int gridFindCellWithFace(Grid *g, int face );
 
