@@ -669,7 +669,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
 
   // geom nodes
   for (i=0;i<grid->nGeomNode;i++) o2n[i] = i;
-  newnode = grid->nGeomNode;
+  newnode = MAX(0,grid->nGeomNode);
 
   // edge stuff
   for (edge=1; edge<=grid->nGeomEdge; edge++){
@@ -1928,6 +1928,8 @@ Grid *gridGeomEdge( Grid *grid, int edgeId, int *curve )
 
 bool gridGeometryNode(Grid *grid, int node)
 {
+  if (node == EMPTY) return FALSE;
+  if (grid->nGeomNode == EMPTY) return FALSE;
   return (node<grid->nGeomNode);
 }
 
