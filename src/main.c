@@ -13,13 +13,15 @@
 #include "grid.h"
 #include <CADGeom/CADGeom.h>
 
-Grid *gridLoadPart( char *project);
+Grid *gridLoadPart( char *project );
+int gridSavePart( Grid *grid, char *project );
 
 int main( int argc, char *argv[] )
 {
   Grid *grid;
   char *filename;
   char *project;
+  char *output;
 
 
   filename = "../test/om6_inv08.fgrid";
@@ -64,12 +66,18 @@ int main( int argc, char *argv[] )
   printf("minimum Aspect Ratio %12f\n",gridMinAR(grid));
   printf("minimum Volume %12.8e\n",gridMinVolume(grid));
 
+
+  output = "../test/om6_out";
+  printf("writing output project %s\n",output);
+
+  gridSavePart( grid, output );
+
   printf("Done.\n");
 
   return;
 }
 
-Grid *gridLoadPart( char *project)
+Grid *gridLoadPart( char *project )
 {
   Grid *grid;
   int vol=1;
@@ -141,14 +149,62 @@ Grid *gridLoadPart( char *project)
     c2n[3+4*i] = UGrid_TetValue(ugrid,i,3);
   }
 
+  return gridImport( maxnode,nnode, maxface, nface, maxcell, ncell,
+		     xyz, f2n, faceId, c2n );
+}
+ 
+int gridSavePart( Grid *grid, char *project )
+{
+  int vol=1;
+  UGridPtr ugrid;  
+  int nnode, nface, ncell;
+  double *xyz;
+  int *f2n, *faceId, *c2n;
+  int iface; 
+
+  gridExport( grid, &nnode, &nface, &ncell,
+	      &xyz, &f2n, &faceId, &c2n );
+
+  if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, ncell, c2n  )) {
+    printf(" Could not make UGridPtr, line %d of %s\n", __LINE__, __FILE__);
+    return(-1);
+  }
+  
+  for (iface = 0 ; iface < nface ; iface++ ) {
+    UGrid_FlagValue(ugrid,iface) = faceId[iface];
+  }
+
+  printf("Rebuilding Element Connectivity...");
+  UGrid_BuildConnectivity(ugrid);		/* Build Connectivity */
+  printf("Complete\n");
+
+  if( !UGPatch_InitSurfacePatches(ugrid) ) {
+    printf(" Could not make surface patches for new UGridPtr, line %d of %s\n",
+	   __LINE__, __FILE__);    
+    return(-1);
+  }
+
+  UGrid_TIMESTAMP(ugrid) = time( NULL );	/* Updated time */
+  UGrid_ALGORITHM(ugrid) = UGrid_ALGORITHM(CADGeom_VolumeGrid(vol));
+
+  if( !CADGeom_SetVolumeGrid( vol, ugrid ) ) {
+    printf(" Could not replace CADGeom volume grid, line %d of %s\n",
+	   __LINE__, __FILE__);    
+    return(-1);
+  }
+
+  CADGeom_UseDefaultIOCallbacks();
+
+  if( !CADGeom_SavePart(vol,project) ) {
+    printf("Yo! Could NOT save \"%s\".\n",project);
+  }
+
   printf("calling CADGeom_Stop ... \n");
   if ( ! CADGeom_Stop( ) ){
     printf("ERROR: CADGeom_Stop broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }  
-
-  return gridImport( maxnode,nnode, maxface, nface, maxcell, ncell,
-		     xyz, f2n, faceId, c2n );
+  
 }
 
  
