@@ -202,6 +202,27 @@ Queue *queueAddFace( Queue *queue, int *nodes, double *uvs )
   return queue;
 }
 
+Queue *queueAddFaceScalar( Queue *queue, 
+			   int n0, double u0, double v0,
+			   int n1, double u1, double v1,
+			   int n2, double u2, double v2, int faceId)
+{
+  int nodes[4];
+  double uv[6];
+  nodes[0] = n0;
+  nodes[1] = n1;
+  nodes[2] = n2;
+  nodes[3] = faceId;
+  uv[0] = u0;
+  uv[1] = v0;
+  uv[2] = u1;
+  uv[3] = v1;
+  uv[4] = u2;
+  uv[5] = v2;
+  return queueAddFace( queue, nodes, uv );
+}
+
+
 int queueAddedFaces( Queue *queue, int transaction )
 {
   if ( transaction<0 || transaction>=queueTransactions(queue) ) return EMPTY;
