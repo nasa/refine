@@ -231,7 +231,7 @@ Grid *gridParallelAdaptWithOutCAD(Grid *grid, Queue *queue,
 	 gridNodeLocal( grid, n0 ) ) {
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
       if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
-	newnode = gridParallelSplitEdge(grid, queue, n0, n1);
+	newnode = gridParallelEdgeSplit(grid, queue, n0, n1);
 	if ( newnode != EMPTY ){
 	  nnodeAdd++;
 	}
