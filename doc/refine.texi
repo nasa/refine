@@ -47,17 +47,17 @@ This is a copy of refine/README file from the distribution.
 Refine is a 3D tetrahedral grid adaptation framework. It is
 implemented with an object-oriented flavor in the C language.  Most
 functionality is wrapped into Ruby scripting language extensions
-@code{http://www.ruby-lang.org/} for use in test first programing and unit
+@url{http://www.ruby-lang.org/} for use in test first programing and unit
 testing. See the README.EXT file in the Ruby distribution for details
 on ruby extensions.
  
-The refine library can be called by FUN3D @code{http://fun3d.larc.nasa.gov/}
+The refine library can be called by FUN3D @url{http://fun3d.larc.nasa.gov/}
 to perform adaptation with a parallel execution scheme.
  
 CAD geometry access is facilitated with the NASA Langley Geomerty
-Labratory SDK @code{http://geolab.larc.nasa.gov/}, which assess CAD
+Labratory SDK @url{http://geolab.larc.nasa.gov/}, which assess CAD
 information with the CAPRI API
-@code{http://raphael.mit.edu/capri/docs.html}.
+@url{http://raphael.mit.edu/capri/docs.html}.
 
 MesherX is an advancing layer mixed-element mesher that interacts
 with the SDK to rebuild the inviscid portions of the grid. 
@@ -313,7 +313,6 @@ to define an anisotropic grid metric.
 @item gridinsert - inserts and removes nodes into grid.
 @item gridmpi - parallel grid adaptation helper
 @item gridfortran - fortran bindings for linking to FUN3D.
-@item gridfiller - sequental GeoSDK/CAPRI restart routines. (M,R)
 @end enumerate
 
 @section GridMath
@@ -343,9 +342,9 @@ routines have also been differentiated.
 @section GridSwap
 @cindex gridswap
 
-Allows modification of grid connectivites by face @code{gridSwapFace}
-and edge @code{gridSwapEdge} swapping. There is a special routine that
-cleans up cells with two faces the surface
+The gridswap mix-in allows modification of grid connectivites by face
+@code{gridSwapFace} and edge @code{gridSwapEdge} swapping. There is a
+special routine that cleans up cells with two faces the surface
 @code{gridRemoveTwoFaceCell}. These two face cells are very
 troublesome for projection. The @code{gridSwapEdge} and
 @code{gridRemoveTwoFaceCell} have been parallelized. (The
@@ -354,10 +353,46 @@ not been gotten to yet.) The parallelization is enmabled by populating
 a queue opject, which is broadcast to other processors and applyed to
 keep other processors up to date.
 
+@section GridCAD
+@cindex gridcad
+
+The gridcad mix-in enables projection of grid nodes to geometry
+objects with CADGeom routines. CADGeom uses CAPRI for CAD acesses and
+storing files. Node smoothing and untangling in also implemented for
+surface nodes and nodes on CAD surfacces.
+
+@section GridGeom
+@cindex gridgeom
+
+The gridgeom object provides the methods to read and write GeoSDK
+CARPI restart files in parallel. It currently is not unit tested.
+
+@section GridInsert
+@cindex gridinsert
+
+The gridinsert object provides mix-in methods to the grid object to
+facilitate adding and removing nodes from an existing mesh. Nodes most
+often added by splitiing a edge in half. Nodes are removed by
+collapsing edges. Nodes insertion by edge splitting has been fully
+parallelized with the queue object. Node removal by egde collapse can
+currently be performed for the interior of a parallel partition, but
+not boundary regions between partitions. There are also routines to
+insert nodes on cell faces and the interior of faces, but these
+routines have not been parallelized.
+
+@section GridMPI
+@cindex gridmpi
+
+Added functionality for parallel processing.
+
+@section GridFORTRAN
+@cindex gridfortran
+
+FORTRAN bindings for FUN3D.
+
 @node Running FUN3D
 @chapter Running FUN3D
 @cindex FUN3D, Running
-
 
 @section Initial notes on building and executing HEFSS with the rad mesh adapation option.
 
@@ -388,9 +423,14 @@ Here we will elect to set environment variables up front.
   setenv REFINELib `pwd`/refine/`uname`
 @end verbatim
 
-The autogen.sh script will create AND run the GNU Autotools configure script.  Any arguments that might be needed by configure can be given to autogen.sh (i.e. in lew of using environment variables).  (Ex: ./autogen --with-CAPRI=... instead of setenv CAPRI_ROOT ...)
+The autogen.sh script will create AND run the GNU Autotools configure
+script.  Any arguments that might be needed by configure can be given
+to autogen.sh (i.e. in lew of using environment variables).  (Ex:
+./autogen --with-CAPRI=... instead of setenv CAPRI_ROOT ...)
 
-The SDK is only dependent on CAPRI (no modelers needed) so we will simply configure with no arguments noting that $CAPRI_ROOT was set above.
+The SDK is only dependent on CAPRI (no modelers needed) so we will
+simply configure with no arguments noting that $CAPRI_ROOT was set
+above.
 
 @code{./autogen.sh}
 
@@ -414,7 +454,10 @@ Cranberry/  Goolache/  MeatLib/  bin/        include/        libtool*
 Fruitcake/  GravyLib/  RacerX/   config.log  lib/            translators/
 @end verbatim
 
-Refine will be built against the FELISA Native modeling kernel by default.  To enable other modelers, either set the environment variables above or configure with command line arguments that enable them (configure --help will list the command line args and syntax)
+Refine will be built against the FELISA Native modeling kernel by
+default.  To enable other modelers, either set the environment
+variables above or configure with command line arguments that enable
+them (configure --help will list the command line args and syntax)
 
 @verbatim
 cd ../../refine
@@ -429,9 +472,13 @@ Makefile  config.log  doc/            geomSGIn32/  info/     src/
 
 Now for HEFSS
 
-Must set $GEO_SDK and $REFINElib prior to runing HEFSS ./Configure (see the geowulf host settings for details about building against refine)
-cd HEFSS.rps
-make
+Must set $GEO_SDK and $REFINElib prior to runing HEFSS ./Configure
+(see the geowulf host settings for details about building against
+refine) 
+@verbatim
+  cd HEFSS.rps
+  make
+@end verbatim
 
 @verbatim
 cd refine/example
@@ -444,8 +491,9 @@ Makefile.am        om6p01.bac    om6p01.fgrid   propagateLay.rb*
 mkdir Flow Adjoint
 @end verbatim
 
-edit RunAdapt.rb
-  Change $hefssRoot to the location of your working copy of HEFSS (i.e.$hefssRoot = ' /scratchZZ:q!/HEFSS.rps').  Other variables of interest include
+edit RunAdapt.rb Change $hefssRoot to the location of your working
+copy of HEFSS (i.e.$hefssRoot = ' /scratchZZ:q!/HEFSS.rps').  Other
+variables of interest include
 @verbatim
     projectRoot  -
     do |n|       - number of adaptation cycles (defaults 1-6)
@@ -455,7 +503,8 @@ edit RunAdapt.rb
     maxEdge      - allowed edge length.
 @end verbatim
 
-Edit FlowConditions .rb and make any desired changes as key/value pairs to replace default ginput.faces file of HEFSS installation.
+Edit FlowConditions .rb and make any desired changes as key/value
+pairs to replace default ginput.faces file of HEFSS installation.
 
 @code{./RunAdapt.rb}
   You can monitor progress of rad with `tail -F Adjoint/rad_out`
