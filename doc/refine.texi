@@ -468,7 +468,10 @@ cvs -d :ext:geolab:/usr/local/inhouse/CVS co SDK
 cvs -d :ext:cmb20:/ump/fldmd/home/mikepark/cvsroot co refine
 @end verbatim
 
-User can define locations of components (modeling kernels, libraries, etc) either as command line arguments to configuration scripts or as environment variables that will be used as defaults by the configuration scripts.  The components of interest are:
+User can define locations of components (modeling kernels, libraries,
+etc) either as command line arguments to configuration scripts or as
+environment variables that will be used as defaults by the
+configuration scripts.  The components of interest are:
 
 @verbatim
   Component      (Environment variable)
