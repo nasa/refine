@@ -15,7 +15,7 @@
 
 BEGIN_C_DECLORATION
 
-int sampleunit();
+int sampleunit( const int n1, const int n2 );
 
 END_C_DECLORATION
 

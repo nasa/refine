@@ -14,8 +14,8 @@
 
 START_TEST(sampleunit_test)
 {
-  fail_unless( sampleunit() == -12,
-	       "sample unit not returning the expected value -12");
+  fail_unless( sampleunit(1,2) == 3,
+	       "sample unit not returning the expected 1+2=3");
 }
 END_TEST
 

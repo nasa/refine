@@ -10,7 +10,7 @@
 
 #include "sampleunit.h"
 
-int sampleunit()
+int sampleunit( const int n1, const int n2 )
 {
-  return -12;
+  return n1+n2;
 }
