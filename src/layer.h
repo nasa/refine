@@ -70,9 +70,11 @@ Layer *layerTerminateFaceNormals(Layer *, int faceId );
 int layerNActiveNormal(Layer *);
 
 bool layerCellInLayer(Layer *, int cell);
+bool layerEdgeInLayer(Layer *, int edge);
 
 Layer *layerReconnectCellUnlessInLayer(Layer *, int oldNode, int newNode );
-
+Layer *layerReconnectEdgeUnlessInLayer(Layer *, int edgeId, 
+				       int oldNode, int newNode );
 Layer *layerAdvance(Layer * );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );

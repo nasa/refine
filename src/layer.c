@@ -1042,6 +1042,17 @@ bool layerCellInLayer(Layer *layer, int cell)
   return layer->cellInLayer[cell];
 }
 
+bool layerEdgeInLayer(Layer *layer, int edge)
+{
+  int nodes[2], edgeId;
+  Grid *grid;
+  grid = layerGrid(layer);
+
+  if ( grid != gridEdge(grid, edge, nodes, &edgeId) ) return FALSE;
+
+  return (gridNodeFrozen(grid,nodes[0]) && gridNodeFrozen(grid,nodes[1]) );
+}
+
 Layer *layerReconnectCellUnlessInLayer(Layer *layer, int oldNode, int newNode )
 {
   AdjIterator it;
@@ -1063,6 +1074,41 @@ Layer *layerReconnectCellUnlessInLayer(Layer *layer, int oldNode, int newNode )
       for (i=0;i<4;i++) if (oldNode == nodes[i]) nodes[i] = newNode;
       gridAddCell(grid, nodes[0],  nodes[1],  nodes[2],  nodes[3]);
       it = adjFirst(gridCellAdj(grid),oldNode);
+    }else{
+      it = adjNext(it);
+    }      
+  }
+  
+  return layer;
+}
+
+Layer *layerReconnectEdgeUnlessInLayer(Layer *layer, int edgeId,
+				       int oldNode, int newNode )
+{
+  AdjIterator it;
+  int edge, nodes[2], id;
+  int i;
+  double t[2];
+  bool inLayer;
+  Grid *grid;
+
+  if (oldNode < 0 || oldNode >= layerMaxNode(layer) ) return NULL;
+  if (newNode < 0 || newNode >= layerMaxNode(layer) ) return NULL;
+  if (newNode == oldNode) return layer;
+  
+  grid = layerGrid(layer);
+
+  it = adjFirst(gridEdgeAdj(grid),oldNode);
+  while (adjValid(it)){
+    edge = adjItem(it);
+    gridEdge(grid, edge, nodes, &id);
+    if (id == edgeId && !layerEdgeInLayer(layer,edge) ) {
+      gridNodeT(grid,nodes[0],edgeId,&t[0]);
+      gridNodeT(grid,nodes[1],edgeId,&t[1]);
+      gridRemoveEdge(grid,edge);
+      for (i=0;i<2;i++) if (oldNode == nodes[i]) nodes[i] = newNode;
+      gridAddEdge(grid, nodes[0], nodes[1], edgeId, t[0], t[1]);
+      it = adjFirst(gridEdgeAdj(grid),oldNode);
     }else{
       it = adjNext(it);
     }      
@@ -1110,7 +1156,7 @@ Layer *layerAdvance(Layer *layer)
       faceId = layerConstrained(layer,normal);
       if (0 > faceId) {
 	edgeId = -faceId;
-	//gridReconnectEdgeUnlessFrozen(grid, edgeId, root, tip);
+	layerReconnectEdgeUnlessInLayer(layer, edgeId, root, tip);
       }
       gridCopySpacing(grid, root, tip );
       gridFreezeNode( grid, tip );
