@@ -224,7 +224,7 @@ class TestGridCAD < Test::Unit::TestCase
  def testSmoothVol
   assert_not_nil grid = isoTet(0.0,1.0)
   assert_equal grid, grid.smoothNode(3)
-  assert_in_delta 1.00, grid.minAR, 1.0e-8
+  assert_in_delta 1.00, grid.minAR, 1.0e-4
  end
 
  def testSmooth
@@ -316,9 +316,10 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal [0,0,1], grid.nodeXYZ(3)
   assert_equal grid, grid.linearProgramUV(0)
   tol =1.0e-8
-  assert_in_delta( -0.346482322781409, grid.nodeXYZ(0)[0], tol )
-  assert_in_delta( -0.346482322781409, grid.nodeXYZ(0)[1], tol )
-  assert_in_delta(  0.000000000000000, grid.nodeXYZ(0)[2], tol )
+  assert_in_delta( 1.0, grid.faceMR(0,1,2), 0.003 )
+  assert_in_delta( -0.4242640687, grid.nodeXYZ(0)[0], tol )
+  assert_in_delta( -0.4242640687, grid.nodeXYZ(0)[1], tol )
+  assert_in_delta(  0.0000000000, grid.nodeXYZ(0)[2], tol )
  end
 
  def gemGrid(nequ=4,disp=0.2,dent=nil, dentratio=-0.5)

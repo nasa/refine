@@ -1,3 +1,11 @@
+2005-02-08 11:17 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV,gridLinearProgramXYZ) added a
+	callAgain argument to suggest if a subsequent call would continue
+	to improve the mesh.
+	* src/gridcad.c (gridSmoothNode) keep calling the LinearProgram
+	routines until the callAgain argument ins FALSE.
+
 2005-02-07 15:53 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridNodeProjectionDisplacement) replaced edge and

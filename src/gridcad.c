@@ -471,7 +471,6 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
 
 Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 {
-  double cost, lastCost;
   double xyzProj[3], uv[2];
   double ar, dARdx[3];
   double mr, dMRdx[3];
@@ -480,7 +479,9 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
   int vol =1;
   int nodes[3];
   int face, faceId;
+
   int maxsmooth;
+  GridBool callAgain;
 
   if ( gridGeometryNode( grid, node ) ) return grid;
   if ( gridGeometryBetweenFace( grid, node ) &&
@@ -514,15 +515,12 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
       return grid;
     }else{
       maxsmooth = 40;
-      lastCost = -2.0;
-      gridNodeFaceMR(grid,node,&cost);
-      while ( maxsmooth > 0 && (cost-lastCost) > 1.0e-6*cost ) {
+      callAgain = TRUE;
+      while ( callAgain && maxsmooth > 0 ) {
 	maxsmooth--;
-	if (grid != gridLinearProgramUV(grid,node) ) {
+	if (grid != gridLinearProgramUV( grid, node, &callAgain ) ) {
 	  return NULL;
 	}
-	lastCost = cost;
-	gridNodeFaceMR(grid,node,&cost);
       }
       return grid;
     }
@@ -534,15 +532,12 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
     return gridOptimizeXYZ( grid, node, dARdx );
   }else{
     maxsmooth = 40;
-    lastCost = -2.0;
-    gridNodeAR(grid,node,&cost);
-    while ( maxsmooth > 0 && (cost-lastCost) > 1.0e-6*cost ) {
+    callAgain = TRUE;
+    while ( callAgain && maxsmooth > 0 ) {
       maxsmooth--;
-      if (grid != gridLinearProgramXYZ(grid,node) ) {
+      if (grid != gridLinearProgramXYZ( grid, node, &callAgain ) ) {
 	return NULL;
       }
-      lastCost = cost;
-      gridNodeAR(grid,node,&cost);
     }  
     return grid;
   }
@@ -765,7 +760,7 @@ Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
   return grid;
 }
 
-Grid *gridLinearProgramUV(Grid *grid, int node )
+Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
 {
   int i, minFace, nearestFace;
   double minCost, nearestCost, nearestDifference, newCost, searchDirection[3];
@@ -780,6 +775,8 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
   GridBool searchFlag, goodStep;
   int iteration;
   double constraint;
+
+  *callAgain = FALSE;
 
   if ( !gridValidNode(grid, node) ) return NULL; 
   if ( !gridGeometryFace(grid, node) || 
@@ -871,8 +868,8 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
       gridStoredCostDerivative(grid,i,dCostdX);
       projection = gridDotProduct(searchDirection,dCostdX);
       deltaCost = gridStoredCost(grid,i) - minCost;
-      if (ABS(length-projection) < 1e-8){
-	currentAlpha=0.0; /* no intersection */
+      if (ABS(length-projection) < 1.0e-8){
+	currentAlpha=1.0; /* no intersection */
       }else{
 	currentAlpha = deltaCost / ( length + projection);
       }
@@ -917,7 +914,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
     }else{
       lastImprovement = actualImprovement;
       lastAlpha = alpha;
-      alpha =alpha*0.7;
+      alpha =alpha*0.6;
     }
   }
 
@@ -929,6 +926,8 @@ Grid *gridLinearProgramUV(Grid *grid, int node )
     gridEvaluateFaceAtUV(grid,node,origUV);
     return NULL;
   }
+
+  if ( actualImprovement > 1.0e-10 || goodStep ) *callAgain = TRUE;
 
   return grid;
 }
@@ -1250,7 +1249,7 @@ Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
   return grid;
 }
 
-Grid *gridLinearProgramXYZ(Grid *grid, int node )
+Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
 {
   int i, minCell, nearestCell;
   double minAR, nearestAR, nearestDifference, newAR, searchDirection[3];
@@ -1263,6 +1262,8 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node )
   double denom;
   GridBool searchFlag, goodStep;
   int iteration;
+
+  *callAgain = FALSE;
 
   if ( grid != gridNodeXYZ(grid, node, origXYZ)) return NULL;
   if ( grid != gridStoreVolumeCostDerivatives(grid, node ) ) return NULL;
@@ -1310,26 +1311,31 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node )
        *       would be EMPTY and previous block would execute.
        */
       denom = g00 + g11 - 2*g01;
-      if( denom == 0.0 ) {
+      if( ABS(denom) < 1.0e-12 ) {
         nearestRatio = 0.0;
       } else {
         nearestRatio = (g00-g01)/denom;
-      if (nearestRatio > 1.0 || nearestRatio < 0.0 ) nearestRatio = 0.0;
       }
-      minRatio = 1.0 - nearestRatio;
-      for (i=0;i<3;i++) searchDirection[i] 
-			  = minRatio*minDirection[i]
-			  + nearestRatio*nearestDirection[i];
-      /* reset length to the projection of min cell to search dir*/
-      length = sqrt(gridDotProduct(searchDirection,searchDirection));
-      for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
-      projection = gridDotProduct(searchDirection,minDirection);
-      for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
-      //printf("node %5d min %10.7f near %10.7f\n",node,minRatio,nearestRatio);
+      if (nearestRatio < 1.0 && nearestRatio > 0.0 ) {
+	minRatio = 1.0 - nearestRatio;
+	for (i=0;i<3;i++) searchDirection[i] 
+			    = minRatio*minDirection[i]
+			    + nearestRatio*nearestDirection[i];
+	/* reset length to the projection of min cell to search dir*/
+	length = sqrt(gridDotProduct(searchDirection,searchDirection));
+	for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
+	projection = gridDotProduct(searchDirection,minDirection);
+	for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
+	//printf("node %5d min %10.7f near %10.7f\n",node,minRatio,nearestRatio);
+      }else{
+	gridStoredCostDerivative(grid, minCell, searchDirection);
+	gridStoredCostDerivative(grid, minCell, minDirection);
+      }
     }
   }
 
   length = sqrt(gridDotProduct(searchDirection,searchDirection));
+  if (ABS(length) < 1.0e-12) return NULL;
   for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
 
   alpha = 1.0;
@@ -1338,8 +1344,8 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node )
       gridStoredCostDerivative(grid,i,dARdX);
       projection = gridDotProduct(searchDirection,dARdX);
       deltaAR = gridStoredCost(grid,i) - minAR;
-      if (ABS(length-projection) < 1e-12){
-	currentAlpha=0.0; /* no intersection */
+      if (ABS(length-projection) < 1.0e-12){
+	currentAlpha=1.0; /* no intersection */
       }else{
 	currentAlpha = deltaAR / ( length + projection);
       }
@@ -1355,7 +1361,7 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node )
   lastImprovement = -10.0;
   lastAlpha = alpha;
   iteration = 0;
-  while (alpha > 1.0e-10 && !goodStep && iteration < 30 ) {
+  while (alpha > 1.0e-12 && !goodStep && iteration < 30 ) {
     iteration++;
 
     predictedImprovement = length*alpha;
@@ -1391,6 +1397,9 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node )
     gridSetNodeXYZ(grid,node,origXYZ);
     return NULL;
   }
+
+  if ( (actualImprovement > 1.0e-12 || goodStep) && newAR < 0.999) 
+    *callAgain = TRUE;
 
   return grid;
 }

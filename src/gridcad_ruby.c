@@ -94,8 +94,9 @@ VALUE grid_optimizeFaceUV( VALUE self, VALUE node, VALUE rb_dudv )
 
 VALUE grid_linearProgramUV( VALUE self, VALUE node )
 {
+  GridBool callAgain;
   GET_GRID_FROM_SELF;
-  return (gridLinearProgramUV( grid, NUM2INT(node) )==grid?self:Qnil);
+  return (gridLinearProgramUV( grid, NUM2INT(node), &callAgain )==grid?self:Qnil);
 }
 
 VALUE grid_optimizeXYZ( VALUE self, VALUE node, VALUE rb_dxdydz )
