@@ -129,14 +129,14 @@ VALUE grid_gem( VALUE self, VALUE n0, VALUE n1 )
 
 VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
 {
-#define MAXEQU 200
-  int i, nequ;
-  int equ[MAXEQU];
+  int nequ, i;
   VALUE rb_equ; // bug, what is return if this is cleaned up?
   GET_GRID_FROM_SELF;
-  gridEquator( grid, NUM2INT(n0), NUM2INT(n1), MAXEQU, &nequ, equ );
-  rb_equ = rb_ary_new();
-  for ( i=0 ; i < nequ ; i++ ) rb_equ = rb_ary_push( rb_equ, INT2NUM(equ[i]) );
+  gridEquator( grid, NUM2INT(n0), NUM2INT(n1) );
+  nequ = gridNEqu(grid);
+  rb_equ = rb_ary_new2(nequ);
+  for ( i=0 ; i < nequ ; i++ ) 
+    rb_ary_store( rb_equ, i, INT2NUM( gridEqu(grid,i) ) );
   return rb_equ;
 }
 
