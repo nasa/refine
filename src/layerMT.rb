@@ -1089,14 +1089,15 @@ grid.addCell(0,1,2,3)
   assert_equal(-1, layer.nextTriangle(3,1) )
  end
 
- def testEdgeAngle
+ def testEdgeAngleGross
   grid  = flatTwoFaceGrid
   layer = Layer.new(grid).populateAdvancingFront([1])
   assert            0> layer.edgeAngle(0,0)
   assert            0> layer.edgeAngle(3,0)
   assert            0> layer.edgeAngle(0,3)
-  grid.setNodeXYZ(3,[0,0,1.0e-8])
-  assert_in_delta   0, layer.edgeAngle(0,1), 0.001
+
+  grid.setNodeXYZ(3,[0,0,0.012337])
+  assert_in_delta   1, layer.edgeAngle(0,1), 1.0e-3
   grid.setNodeXYZ(3,[0,0,0.707])
   assert_in_delta  45, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[0.5,0.5,1])
@@ -1105,14 +1106,46 @@ grid.addCell(0,1,2,3)
   assert_in_delta 135, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[1,1,0])
   assert_in_delta 180, layer.edgeAngle(0,1), 1.0e-10
-  grid.setNodeXYZ(3,[0,0,-0.707])
+  grid.setNodeXYZ(3,[1,1,-0.707])
   assert_in_delta 225, layer.edgeAngle(0,1), 0.005
   grid.setNodeXYZ(3,[0.5,0.5,-1])
   assert_in_delta 270, layer.edgeAngle(0,1), 1.0e-10
   grid.setNodeXYZ(3,[0,0,-0.707])
   assert_in_delta 315, layer.edgeAngle(0,1), 0.005
-  grid.setNodeXYZ(3,[0,0,-1.0e-8])
-  assert_in_delta 360, layer.edgeAngle(0,1), 0.001
+  grid.setNodeXYZ(3,[0,0,-0.012337])
+  assert_in_delta 359, layer.edgeAngle(0,1), 1.0e-3
+ end
+
+ def testEdgeAngleFine
+  grid  = flatTwoFaceGrid
+  layer = Layer.new(grid).populateAdvancingFront([1])
+  assert            0> layer.edgeAngle(0,0)
+  assert            0> layer.edgeAngle(3,0)
+  assert            0> layer.edgeAngle(0,3)
+
+  wiggle = 1.0e-10
+  tol    = 1.0e-8
+  
+  grid.setNodeXYZ(3,[0,0,wiggle])
+  assert_in_delta   0, layer.edgeAngle(0,1), tol
+  grid.setNodeXYZ(3,[0,0,-wiggle])
+  assert_in_delta 360, layer.edgeAngle(0,1), tol
+
+  grid.setNodeXYZ(3,[0.5,0.5,1+1.0e-10])
+  assert_in_delta  90, layer.edgeAngle(0,1), tol
+  grid.setNodeXYZ(3,[0.5,0.5,1-1.0e-10])
+  assert_in_delta  90, layer.edgeAngle(0,1), tol
+
+  grid.setNodeXYZ(3,[1,1,wiggle])
+  assert_in_delta 180, layer.edgeAngle(0,1), tol
+  grid.setNodeXYZ(3,[1,1,-wiggle])
+  assert_in_delta 180, layer.edgeAngle(0,1), tol
+
+  grid.setNodeXYZ(3,[0.5,0.5,-1+1.0e-10])
+  assert_in_delta 270, layer.edgeAngle(0,1), tol
+  grid.setNodeXYZ(3,[0.5,0.5,-1-1.0e-10])
+  assert_in_delta 270, layer.edgeAngle(0,1), tol
+
  end
 
 end
