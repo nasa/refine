@@ -285,6 +285,28 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [1.0,2.0,3.0], grid.nodeXYZ(0)
  end
 
+ def testAddingNodeAllocatesMaxNode
+  assert_not_nil     grid = Grid.new(1,0,0,0)
+  assert_equal 1,    grid.maxnode
+  assert_equal 0,    grid.addNode( 1.0, 2.0, 3.0)
+  assert_equal 1,    grid.maxnode
+  assert_equal 1,    grid.addNode(11.0,12.0,13.0)
+  assert_equal 5001, grid.maxnode # chunk size hard coded to 5000
+  assert_equal false,         grid.nodeFrozen(1)
+  assert_equal [1,0,0,1,0,1], grid.map(1)
+ end
+ 
+ def testAddingNodeResizesAdj
+  assert_not_nil     grid = Grid.new(1,0,0,0)
+  assert_equal 0,    grid.addNode( 1.0, 2.0, 3.0)
+  assert_equal 1,    grid.addNode(11.0,12.0,13.0)
+  assert_equal 2,    grid.addNode(21.0,22.0,23.0)
+  assert_equal 3,    grid.addNode(31.0,32.0,33.0)
+  assert_equal 0,    grid.addCell(0,1,2,3)
+  assert_equal 0,    grid.addFace(0,1,2,57)
+  assert_equal 0,    grid.addEdge(0,1,82,40.0,50.0)
+ end
+
  def testSetNodeXYZ
   assert_not_nil                 grid = Grid.new(1,0,0,0)
   assert_equal 0,                grid.addNode(1.0,2.0,3.0)
