@@ -32,20 +32,23 @@ int gridSavePart( Grid *grid, char *project );
 Layer *formAdvancingFront( Grid *grid, char *project )
 {
   Layer *layer;
-  int i, nbc, bc[2];
-  bool box;
+  int i, nbc, bc[3];
+  bool box, plate, om6;
+  
   box = (NULL != strstr( project, "box"));
+  plate = (NULL != strstr( project, "plate"));
+  om6 = (NULL != strstr( project, "om6"));
 
-  if (box) {
-    printf("string %s has box.\n",project);
-  }else{
-    printf("string %s has NO  box.\n",project);
-  }
+  if (box) printf("string %s has box.\n",project);
+  if (plate) printf("string %s has plate.\n",project);
+  if (om6) printf("string %s has om6.\n",project);
 
   bc[0]=1;
   bc[1]=2;
-  nbc = 2;
+  bc[2]=3;
   if(box) nbc = 1;
+  if(om6) nbc = 2;
+  if(plate) nbc = 3;
   printf("freezing distant volume nodes.\n");
   gridFreezeAll(grid);
   for (i=0;i<nbc;i++){  
@@ -68,7 +71,47 @@ Layer *formAdvancingFront( Grid *grid, char *project )
     layerConstrainNormal(layer,4);
     layerConstrainNormal(layer,6);
   }
-  layerConstrainNormal(layer,5);
+  if (plate) {
+    /*
+      face and four edges
+      04 13 12 07 11
+      05 15 11 02 14
+      06 17 14 10 16
+
+      14 20 26 16 08
+
+      07 20 09 19 18
+      08 19 04 22 21
+      09 24 23 22 05
+
+      13 12 28 24 06
+    */
+    layerConstrainNormal(layer,-11);
+    layerConstrainNormal(layer,-14);
+    layerConstrainNormal(layer,-16);
+
+    layerConstrainNormal(layer,-20);
+
+    layerConstrainNormal(layer,-19);
+    layerConstrainNormal(layer,-22);
+    layerConstrainNormal(layer,-24);
+
+    layerConstrainNormal(layer,-12);
+    /* y1 */
+    layerConstrainNormal(layer,4);
+    layerConstrainNormal(layer,5);
+    layerConstrainNormal(layer,6);
+    /* y0 */
+    layerConstrainNormal(layer,7);
+    layerConstrainNormal(layer,8);
+    layerConstrainNormal(layer,9);
+    /* inout */
+    layerConstrainNormal(layer,13);
+    layerConstrainNormal(layer,14);
+  }
+  if (om6) {
+    layerConstrainNormal(layer,5);
+  }
   printf("make advancing layer front normals visible to front.\n");
   layerVisibleNormals(layer);
   return layer;
