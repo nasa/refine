@@ -559,6 +559,17 @@ int layerNextTriangle(Layer *layer, int normal, int triangle )
   return EMPTY;
 }
 
+double layerEdgeAngle(Layer *layer, int triangle0, int triangle1 )
+{
+  int nodes0[3], nodes1[3];
+
+  if ( triangle0 == triangle1 ) return -3.0;
+  if ( layer != layerTriangle( layer, triangle0, nodes0 ) ) return -1.0;
+  if ( layer != layerTriangle( layer, triangle1, nodes1 ) ) return -2.0;
+
+  return 180.0;
+}
+
 Layer *layerNormalDirection(Layer *layer, int normal, double *direction )
 {
   int i;
