@@ -2686,6 +2686,20 @@ Layer *layerNormalBlendAxle(Layer *layer, int normal, double *axle)
 {
   int blend, blend0, blend1;
   double axle0[3], axle1[3];
+  double uv[2], xyz[3];
+  int faceId, node;
+
+  if ( 0 < layerConstrained(layer,normal) ) {
+    Grid *grid = layerGrid(layer);
+    faceId = layerConstrained(layer,normal);
+    node = layerNormalRoot(layer,normal);
+    gridNodeUV(grid, node, faceId, uv);
+    gridFaceNormalAtUV(grid,faceId,uv,xyz,axle);
+    if (node == layer->blend[blend].nodes[1]) {
+      axle[0] = -axle[0]; axle[1] = -axle[1]; axle[2] = -axle[2];
+    }
+    return layer;
+  }
   switch (layerBlendDegree(layer,normal)) {
   case 0: break;
   case 1:
