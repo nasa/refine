@@ -44,7 +44,7 @@ The Metric Tensor $\mathbf{M}$ is defined as
 The matrix $\mathbf{M}$ is symmetric and can be decomposed into Eigen
 values $\Lambda$ and Eigen vectors $\mathbf{R}$
 \begin{equation}\label{metric:eigen}
- \mathbf{M}=\mathbf{R}^t\Lambda\mathbf{R}
+ \mathbf{M}=\mathbf{R}\Lambda\mathbf{R}^t
 \end{equation}
 where the spacing $h_i$ is given as 
 \begin{equation}
@@ -58,10 +58,10 @@ where the spacing $h_i$ is given as
 The $\frac{1}{h^2}$ can be shown by combing Equ.~\ref{metric:jacobian}
 and Equ.~\ref{metric:eigen}
 \begin{equation}
- \mathbf{M}=\mathbf{R}^t\Lambda^\frac{1}{2}\Lambda^\frac{1}{2}\mathbf{R}
+ \mathbf{M}=\mathbf{R}\Lambda^\frac{1}{2}\Lambda^\frac{1}{2}\mathbf{R}^t
 \end{equation}
 \begin{equation}
- \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}
+ \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}^t
 \end{equation}
 
 \section{Transformed Length}
@@ -113,7 +113,7 @@ and Eigen Vectors
 \end{equation}
 The Jacobian of transformation is
 \begin{equation}
- \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}=\left[
+ \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}^t=\left[
  \begin{array}{ccc}
    \frac{1}{2}&&\\
    &\frac{1}{2}&\\
@@ -124,8 +124,8 @@ The Metric Matrix is
 \begin{equation}
  \mathbf{M}=
   \mathbf{J}^t\mathbf{J}=
-  \mathbf{R}^t\Lambda^\frac{1}{2}\Lambda^\frac{1}{2}\mathbf{R}=
-  \mathbf{R}^t\Lambda\mathbf{R}=
+  \mathbf{R}\Lambda^\frac{1}{2}\Lambda^\frac{1}{2}\mathbf{R}^t=
+  \mathbf{R}\Lambda\mathbf{R}^t=
   \left[\begin{array}{ccc}
    \frac{1}{4}&&\\
    &\frac{1}{4}&\\
