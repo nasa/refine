@@ -141,9 +141,16 @@ int gridsmoothvolume_( )
 
 int gridsmoothfaceinterior_( int *processor )
 {
-  gridSmoothFaceInterior(grid, (-1 == (*processor)) );
-  printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
-	  gridPartId(grid),"                  ",gridMinAR(grid) );
+  bool localOnly;
+  localOnly = (-1 == (*processor));
+  gridSmoothFaceInterior(grid, localOnly );
+  if (localOnly) {
+    printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
+	    gridPartId(grid),"local only        ",gridMinAR(grid) );
+  } else {
+    printf( " %6d smooth volume and face interior  %s    AR%14.10f\n",
+	    gridPartId(grid),"near ghost only   ",gridMinAR(grid) );
+  }
   fflush(stdout);
 }
 

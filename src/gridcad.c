@@ -468,15 +468,29 @@ Grid *gridSmoothNode(Grid *grid, int node )
   }
   if ( gridGeometryFace( grid, node ) ) {
     for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
+      double xyz[3];
+      int badPart = 3;
+      int badNode = 122;
       face = adjItem(adjFirst(gridFaceAdj(grid), node));
       gridFace(grid,face,nodes,&faceId);
       gridNodeARDerivative ( grid, node, &ar, dARdx);
       gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
       gridNodeUV( grid, node, faceId, uv);
+      if (badPart == gridPartId(grid) && badNode == node ) {
+	gridNodeXYZ(grid,node,xyz);
+	printf("xyz start %f %f %f\n",xyz[0],xyz[1],xyz[2]);
+	printf("uv  start %f %f %d\n",uv[0],uv[1],faceId);
+      }
+    
       if ( !CADGeom_PointOnFace( vol, faceId,   
 				 uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
 	printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
       
+      if (badPart == gridPartId(grid) && badNode == node ) {
+	gridNodeXYZ(grid,node,xyz);
+	printf("xyz proj  %f %f %f\n",xyzProj[0],xyzProj[1],xyzProj[2]);
+	printf("uv  proj  %f %f %d\n",uv[0],uv[1],faceId);
+      }
       if (ar<mr) {
 	dARdu[0] = dARdx[0]*du[0] + dARdx[1]*du[1] + dARdx[2]*du[2] ; 
 	dARdu[1] = dARdx[0]*dv[0] + dARdx[1]*dv[1] + dARdx[2]*dv[2] ; 
@@ -783,6 +797,8 @@ Grid *gridSmoothFaceInterior( Grid *grid, bool localOnly )
   int node;
   double ar, optimizationLimit, laplacianLimit;
   bool nearGhost;
+  int badPart = 3;
+  int badNode = 122;
   optimizationLimit =0.30;
   laplacianLimit =0.60;
   for (node=0;node<gridMaxNode(grid);node++) {
@@ -792,13 +808,23 @@ Grid *gridSmoothFaceInterior( Grid *grid, bool localOnly )
       nearGhost = gridNodeNearGhost(grid, node);
       if ( localOnly != nearGhost ) {
 	gridNodeAR(grid,node,&ar);
+	if (badPart == gridPartId(grid) && badNode == node && !localOnly )
+	  printf (" %6d %6d AR %23.15e\n",gridPartId(grid),node,ar);
 	if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
 	  gridSmartLaplacian( grid, node ); 
 	  gridNodeAR(grid,node,&ar);
 	}
+	gridNodeAR(grid,node,&ar);
+	if (badPart == gridPartId(grid) && badNode == node && !localOnly )
+	  printf (" %6d %6d AR %23.15e\n",gridPartId(grid),node,ar);
 	if (ar < optimizationLimit) {
 	  gridSmoothNode( grid, node );
 	}
+	gridNodeAR(grid,node,&ar);
+	if (badPart == gridPartId(grid) && badNode == node && !localOnly )
+	  printf (" %6d %6d AR %23.15e\n",gridPartId(grid),node,ar);
+	if (badPart == gridPartId(grid) && badNode == node && !localOnly && gridGeometryFace(grid,node))
+	  printf (" %6d %6d geom face\n",gridPartId(grid),node);
       }
     }
   }
