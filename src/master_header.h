@@ -23,6 +23,10 @@ BEGIN_C_DECLORATION
 
 #define EMPTY (-1)
 
+#if !defined(ABS)
+#define ABS(a)   ((a)>0?(a):-(a))
+#endif
+
 END_C_DECLORATION
 
 #ifdef HAVE_SDK
@@ -44,8 +48,10 @@ typedef short   bool;
 #define FALSE   ((bool)0)
 #endif
 
-#if !defined(MIN) && !defined(MAX)
+#if !defined(MIN)
 #define MIN(a,b) ((a)<(b)?(a):(b)) 
+#endif
+#if !defined(MAX)
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 END_C_DECLORATION
