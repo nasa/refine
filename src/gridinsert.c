@@ -314,8 +314,9 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
     newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
     newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
 
-    if ( faceId0 == EMPTY || faceId1 == EMPTY ) {
-      return EMPTY;
+    if (NULL!=queue) {
+      queueRemoveFace(queue,faceNodes0);
+      queueRemoveFace(queue,faceNodes1);
     }
 
     gridRemoveFace(grid, face0 );
