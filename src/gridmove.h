@@ -22,6 +22,12 @@ struct GridMove {
   void *gridRubyVALUEusedForGC;
   double *displacement;
   GridBool *specified;
+
+  int *c2e;
+  int nsprings, *springs;
+  double *xyz;
+  double *k;
+  double *source;
 };
 
 GridMove *gridmoveCreate(Grid *);
