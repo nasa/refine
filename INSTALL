@@ -11,8 +11,9 @@ Note To SGI IRIX Users
 ======================
 
    if configure does not find the X libs. add 
-      --x-includes=/usr/include 
-      --x-libraries=/usr/lib32
+
+      --x-includes=/usr/include --x-libraries=/usr/lib32
+
    to the configure or autogen.sh script commnad line options
 
 Basic Installation
