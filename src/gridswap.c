@@ -61,10 +61,26 @@ Grid *gridSwapEdge(Grid *grid, int n0, int n1 )
   }
 
   if ( grid->nequ != grid->ngem && swapStatus != NULL ) {
+    double n0uv[2], n1uv[2], gap0uv[2], gap1uv[2]; 
+
+    gridNodeUV(grid, n0,   faceId0, n0uv);
+    gridNodeUV(grid, n1,   faceId0, n1uv);
+    gridNodeUV(grid, gap0, faceId0, gap0uv);
+    gridNodeUV(grid, gap1, faceId0, gap1uv);
+
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
-    gridAddFace(grid, n0, gap1, gap0, faceId0 );
-    gridAddFace(grid, n1, gap0, gap1, faceId0 );
+
+    gridAddFaceUV(grid, 
+		  n0,   n0uv[0],   n0uv[1], 
+		  gap1, gap1uv[0], gap1uv[1], 
+		  gap0, gap0uv[0], gap0uv[1], 
+		  faceId0 );
+    gridAddFaceUV(grid, 
+		  n1,   n1uv[0],   n1uv[1], 
+		  gap0, gap0uv[0], gap0uv[1], 
+		  gap1, gap1uv[0], gap1uv[1], 
+		  faceId0 );
   }
 
   return swapStatus;
