@@ -1,3 +1,10 @@
+2004-04-23 15:45 Mike Park  <mike.park@nasa.gov>
+
+	* /src/layer.c added mechanics to manage a normal direction frozen 
+	state.
+	* /src/layer.c (layerSmoothInteriorNormalDirection) freeze normals
+	with low visiblity and then smooth the remaining normals.
+
 2004-04-22 16:02 Mike Park  <mike.park@nasa.gov>
 
 	* /src/layer.c (layerAdvancedTriangleMaxEdgeLength) calculate
