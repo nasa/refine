@@ -49,7 +49,16 @@ class TestQueue < Test::Unit::TestCase
  end
 
  def test_extra_items_resize_plan_by_chunk
-  assert_equal 0, 1
+  plan = Plan.new(2,3)
+  assert_equal 0, plan.size
+  plan.add_item_with_priority(0,0.0)
+  assert_equal 1, plan.size
+  plan.add_item_with_priority(1,1.0)
+  assert_equal 2, plan.size
+  assert_equal 2, plan.max_size
+  plan.add_item_with_priority(2,2.0)
+  assert_equal 3, plan.size
+  assert_equal 5, plan.max_size
  end
 
  def test_rankings_derived_from_priorities

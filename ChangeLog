@@ -1,5 +1,10 @@
 2005-03-13 17:42 Mike Park  <mike.park@nasa.gov>
 
+	* src/plan.c (planAddItemWithPriority) added a reallocation
+	capability by chunk_size
+
+2005-03-13 17:42 Mike Park  <mike.park@nasa.gov>
+
 	* src/plan.c (planCreate) Created new object to keep a list of
 	planed mesh operations to speed up parallel operation. This list
 	or plan is composed of items each with a priority. These
