@@ -46,12 +46,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 2.0, grid.edgeLength(0,1), 1.0e-15
  end
  
-# test the ratio function and map
-# make a 4 node mesh 
-# ratio the dx=2 dy=3 dz=5
-# remove a node and pack
-# test ratio
-
  def testMatrixSpaceMap
   assert_not_nil grid = Grid.new(5,1,0,0)
   assert_equal 0, grid.addNode(-1.0,-1.0,-1.0)
@@ -72,6 +66,24 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 1.0, grid.edgeLength(0,1), 1.0e-15
   assert_in_delta 2.0, grid.edgeLength(0,2), 1.0e-15
   assert_in_delta 5.0, grid.edgeLength(0,3), 1.0e-15
+ end
+
+ def testMatrixSpaceMapRotate
+  assert_not_nil grid = Grid.new(3,1,0,0)
+  assert_equal 0, grid.addNode( 0.0,0.0,0.0)
+  assert_equal 1, grid.addNode( 2.0,2.0,0.0)
+  assert_equal 2, grid.addNode(-1.0,1.0,0.0)
+  sr2 = Math::sqrt(2.0)
+  0.upto(2) do |n| 
+   assert_equal grid, grid.setMap(n, 1.0, 0.0, 0.0,
+	 		             0.0, 1.0, 0.0,
+			             0.0, 0.0, 1.0)
+  end
+  assert_equal grid, grid.sortNodeGridEx
+  assert_in_delta 2*sr2, grid.edgeLength(0,1), 1.0e-15
+  assert_in_delta sr2,   grid.edgeLength(0,2), 1.0e-15
+  assert_in_delta 1.0, grid.edgeRatio(0,1), 1.0e-15
+  assert_in_delta 1.0, grid.edgeRatio(0,2), 1.0e-15
  end
 
 # strech sqrt2 in xy to test rotation or principle axes
