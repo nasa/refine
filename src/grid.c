@@ -526,8 +526,8 @@ Grid *gridRemoveEdge(Grid *grid, int edge )
   if ( grid->nedge <= 0) return NULL;
   grid->nedge--;
 
-  if( ( NULL == adjRemove( grid->edgeAdj, grid->e2n[0+3*edge], edge ) ) || 
-      ( NULL == adjRemove( grid->edgeAdj, grid->e2n[1+3*edge], edge ) ) )
+  if( ( NULL == adjRemove( grid->edgeAdj, grid->e2n[0+2*edge], edge ) ) || 
+      ( NULL == adjRemove( grid->edgeAdj, grid->e2n[1+2*edge], edge ) ) )
     return NULL;  
 
   grid->e2n[0+2*edge] = EMPTY;
@@ -1499,6 +1499,7 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
   int  igem, cell, nodes[4], inode, node, newnode, newnodes0[4], newnodes1[4];
   double newX, newY, newZ;
   int gap0, gap1, face0, face1, faceId0, faceId1;
+  int edge, edgeId;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
 
@@ -1521,6 +1522,7 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
     }
     gridAddCell(grid, newnodes0[0], newnodes0[1], newnodes0[2], newnodes0[3] );
     gridAddCell(grid, newnodes1[0], newnodes1[1], newnodes1[2], newnodes1[3] );
+    
   }
 
   //test face
@@ -1540,6 +1542,14 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
     gridAddFace(grid, n1, gap0, newnode, faceId0 );
     gridAddFace(grid, n0, gap1, newnode, faceId1 );
     gridAddFace(grid, n1, gap1, newnode, faceId1 );
+
+    edge = gridFindEdge(grid,n0,n1);
+    if ( edge != EMPTY ) {
+      edgeId = gridEdgeId(grid,n0,n1);
+      gridRemoveEdge(grid,edge);
+      gridAddEdge(grid,n0,newnode,edgeId);
+      gridAddEdge(grid,n1,newnode,edgeId);
+    }
   }
 
   return grid;
