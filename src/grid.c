@@ -42,19 +42,17 @@ struct Grid {
 
 Grid* gridCreate(int maxnode, int maxcell, int maxface)
 {
-  int i, nlist, nlistface;
+  int i;
   Grid *grid;
 
   grid = malloc(sizeof(Grid));
 
-  grid->maxnode = maxnode;
+  grid->maxnode = MAX(maxnode,1);
   grid->nnode   = 0;
-  grid->maxcell = maxcell;
+  grid->maxcell = MAX(maxcell,1);
   grid->ncell   = 0;
-  grid->maxface = maxface;
+  grid->maxface = MAX(maxface,1);
   grid->nface   = 0;
-  nlist         = grid->maxcell*4;
-  nlistface     = grid->maxface*3;
 
   grid->xyz = malloc(3 * grid->maxnode * sizeof(double));
 
@@ -67,7 +65,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
   grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
   grid->blankc2n = 0;
 
-  grid->cellAdj = adjCreate(grid->maxnode,4);
+  grid->cellAdj = adjCreate(grid->maxnode,grid->maxcell*4);
 
   // face
   grid->f2n    = malloc(3 * grid->maxface * sizeof(int));
@@ -80,7 +78,7 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
   grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
   grid->blankf2n = 0;
 
-  grid->faceAdj = adjCreate(grid->maxnode,3);
+  grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3);
 
   grid->ngem = 0;
 
