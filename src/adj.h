@@ -19,7 +19,7 @@ typedef struct Adj Adj;
 typedef struct NodeItem NodeItem;
 typedef NodeItem * AdjIterator;
 
-Adj *adjCreate( int nnode, int perNode );
+Adj *adjCreate( int nnode, int nadj );
 void adjFree( Adj *adj );
 
 int adjNNode( Adj *adj );

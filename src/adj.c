@@ -24,30 +24,29 @@ struct Adj {
   NodeItem *blank;
 };
 
-Adj* adjCreate( int nnode, int perNode )
+Adj* adjCreate( int nnode, int nadj )
 {
-  int i, nlist;
+  int i;
   Adj *adj;
 
   adj = malloc( sizeof(Adj) );
 
   adj->nnode   = nnode;
-  nlist = adj->nnode * perNode;
 
-  adj->node2item = (NodeItem *)malloc( nlist * sizeof(NodeItem));
+  adj->node2item = (NodeItem *)malloc( nadj * sizeof(NodeItem));
 
-  for ( i=0 ; i<nlist-1 ; i++ ) { // pointer majic?
+  for ( i=0 ; i<nadj-1 ; i++ ) { // pointer majic?
     adj->node2item[i].item = EMPTY;
     adj->node2item[i].next = &adj->node2item[i+1];
   }
-  adj->node2item[nlist-1].item = EMPTY;
-  adj->node2item[nlist-1].next = NULL;
+  adj->node2item[nadj-1].item = EMPTY;
+  adj->node2item[nadj-1].next = NULL;
 
   adj->blank = adj->node2item;
 
   adj->current = NULL;
 
-  adj->first = malloc( perNode * adj->nnode * sizeof(NodeItem) );
+  adj->first = malloc( adj->nnode * sizeof(NodeItem*) );
 
   for ( i=0 ; i<adj->nnode; i++ ) adj->first[i] = NULL; 
 

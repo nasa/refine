@@ -26,6 +26,11 @@ class TestSampleUnit < Test::Unit::TestCase
   assert_nil @adj.register(@bigNode,1)
  end
 
+ def testRegisterMax
+  4.times {|i| assert_not_nil @adj.register(0,i)}
+  assert_nil @adj.register(1,0)
+ end
+
  def testIterator
   assert_equal false, @adj.valid
   assert_equal false, @adj.more
