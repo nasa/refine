@@ -85,7 +85,9 @@ Grid* gridCreate(int maxnode, int maxcell, int maxface)
   return grid;
 }
 
-Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
+Grid *gridImport(int maxnode, int nnode, 
+		 int maxface, int nface, 
+		 int maxcell, int ncell,
 		 double *xyz, int *f2n, int *faceId, int *c2n )
 {
   int i;
@@ -93,15 +95,12 @@ Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
 
   grid = malloc(sizeof(Grid));
 
-  grid->maxnode = nnode;
+  grid->maxnode = maxnode;
   grid->nnode   = nnode;
   grid->maxcell = maxcell;
   grid->ncell   = ncell;
-  grid->maxface = nface;
+  grid->maxface = maxface;
   grid->nface   = nface;
-
-  printf("gridImport: %d nodes %d faces %d cells\n",
-	 grid->nnode,grid->nface,grid->ncell);
 
   grid->xyz = xyz;
 
@@ -111,9 +110,12 @@ Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
     grid->c2n[0+4*i] = EMPTY; 
     grid->c2n[1+4*i] = i+1; 
   }
-  if (grid->maxcell != grid->ncell) grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
-  grid->blankc2n = grid->ncell;
-
+  if (grid->maxcell == grid->ncell) {
+    grid->blankc2n = EMPTY;
+  }else{
+    grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
+    grid->blankc2n = grid->ncell;
+  }
   grid->cellAdj = adjCreate(grid->maxnode,grid->maxcell*4);
 
   for ( i=0 ; i < grid->ncell ; i++ ) {
@@ -124,8 +126,17 @@ Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
   }
 
   grid->f2n    = f2n;
+  for ( i=grid->nface ; i < grid->maxface ; i++ ) {
+    grid->f2n[0+3*i] = EMPTY; 
+    grid->f2n[1+3*i] = i+1; 
+  }
+  if (grid->maxface == grid->nface) {
+    grid->blankf2n = EMPTY;
+  }else{
+    grid->f2n[1+3*(grid->maxface-1)] = EMPTY; 
+    grid->blankf2n = grid->nface;
+  }
   grid->faceId = faceId;
-  grid->blankf2n = EMPTY;
 
   grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3);
 
@@ -202,7 +213,7 @@ Grid *gridImportFAST( char *filename )
 
   fclose(file);
 
-  return gridImport( nnode, nface, maxcell, ncell,
+  return gridImport( nnode, nnode, nface, nface, maxcell, ncell,
 		     xyz, f2n, faceId, c2n );
 }
 

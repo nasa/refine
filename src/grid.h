@@ -18,7 +18,9 @@ BEGIN_C_DECLORATION
 typedef struct Grid Grid;
 
 Grid *gridCreate(int maxnode, int maxcell, int maxface);
-Grid *gridImport(int nnode, int nface, int maxcell, int ncell,
+Grid *gridImport(int maxnode, int nnode, 
+		 int maxface, int nface, 
+		 int maxcell, int ncell,
 		 double *xyz, int *f2n, int *faceId, int *c2n );
 Grid *gridImportFAST( char *filename );
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
