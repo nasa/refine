@@ -393,7 +393,7 @@ class TestGridCAD < Test::Unit::TestCase
   avgVol = grid.totalVolume/grid.ncell.to_f
   puts
   grid.smoothNodeVolume(6)
-  assert_in_delta avgVol, grid.minVolume, 1.0e-8 
+  assert_in_delta avgVol, grid.minVolume, 1.0e-4
  end
 
 end

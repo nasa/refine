@@ -1113,12 +1113,14 @@ static double reflect( Grid *grid,
 
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
+  int iteration;
   int s, i;
   double origXYZ[3], avgXYZ[3];
   double simplex[4][3];
   double volume[4];
   double lengthScale;
   int best, worst, secondworst; 
+  double newVolume, savedVolume;
 
   gridSmartVolumeLaplacian( grid, node );
 
@@ -1145,28 +1147,55 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   for(s=0;s<4;s++)
     for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
 
-  best = 0;
-  if ( volume[0] > volume[1] ) {
-    secondworst = 0;
-    worst = 1;
-  }else{
-    secondworst = 1;
-    worst = 0;
-  }
+  for (iteration = 0 ; iteration < 100 ; iteration++ ) {
 
-  for(s=0;s<4;s++) {
-    if (volume[s]>=volume[best]) best = s;
-    if (volume[s]<volume[worst]) {
-      secondworst = worst;
-      worst = s;
+    printf("interation %d\n", iteration );
+
+    best = 0;
+    if ( volume[0] > volume[1] ) {
+      secondworst = 0;
+      worst = 1;
     }else{
-      if ( s!=worst && volume[s]<volume[secondworst]) secondworst = s;
+      secondworst = 1;
+      worst = 0;
     }
-  }
-  printf("the best is %d the secondworst is %d and the worst is %d\n",
-	 best,secondworst,worst);
+    
+    for(s=0;s<4;s++) {
+      if (volume[s]>=volume[best]) best = s;
+      if (volume[s]<volume[worst]) {
+	secondworst = worst;
+	worst = s;
+      }else{
+	if ( s!=worst && volume[s]<volume[secondworst]) secondworst = s;
+      }
+    }
+    printf("the best is %d the secondworst is %d and the worst is %d\n",
+	   best,secondworst,worst);
 
-  reflect( grid, simplex, volume, avgXYZ, node, worst, -1.0 );
+    if (volume[best]-volume[worst] < 1.0e-5) break;
+
+    newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, -1.0 );
+    if ( newVolume >= volume[best] ) {
+      newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, 2.0 );
+    } else {
+      if (newVolume <= volume[secondworst]) {
+	savedVolume = volume[worst];
+	newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, 0.5 );
+	if (newVolume <= savedVolume) {
+	  for(s=0;s<4;s++) {
+	    if (s != best) {
+	      for(i=0;i<3;i++) 
+		simplex[s][i]=0.5*(simplex[s][i]+simplex[best][i]);
+	      gridSetNodeXYZ(grid, node, simplex[s]);
+	      gridNodeVolume(grid,node,&volume[s]);
+	      printf("s%1d x%10.6f y%10.6f z%10.6f v%10.6f\n",
+		     s, simplex[s][0], simplex[s][1], simplex[s][2], volume[s]);
+	    }
+	  }
+	}      
+      }
+    }
+  }    
 
   gridSetNodeXYZ(grid, node, simplex[best]);
   return grid;
