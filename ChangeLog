@@ -1,3 +1,15 @@
+2004-05-27 10:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelsmoothfaceinterior_) renamed to
+	gridparallelsmooth_.
+	* src/gridcad.c (gridSmoothFaceInterior) moved to gridmpi
+	* src/gridmpi.c (gridParallelSmooth) moved from gridcad
+
+2004-05-27 09:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) added GeomNodes and
+	GeomEdges to existing GeomFaces.
+	
 2004-05-26 15:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c exposed a series of lower level routines to allow
