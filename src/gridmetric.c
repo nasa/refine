@@ -540,7 +540,7 @@ double gridAR(Grid *grid, int *nodes )
   if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
   if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
   if ( ( nodes_on_surface > 1 ) && 
-       ( gridMinCellJacDet2(grid,nodes) <= 6.0e-14 ) ) return -1.0;
+       ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -1.0;
 #endif
   
   p1 = gridNodeXYZPointer(grid,nodes[0]);
