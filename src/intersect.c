@@ -27,3 +27,35 @@ int intersectSide( double *vertex0, double *vertex1, double *vertex2,
   if ( height > 0 ) return 1;
   return -1;
 }
+
+bool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
+			      double *node0, double *node1)
+{
+  int i;
+  double edge1[3], edge2[3], normal[3];
+  double dir0[3], dir1[3];
+  double h0, h1;
+  bool coplanar;
+  double denom, intersection[3];
+
+  gridSubtractVector(vertex1, vertex0, edge1);
+  gridSubtractVector(vertex2, vertex0, edge2);
+  gridCrossProduct(edge1, edge2, normal);
+  gridSubtractVector(node0, vertex0, dir0);  
+  gridSubtractVector(node1, vertex0, dir1);  
+
+  h0 = gridDotProduct(normal,dir0);
+  h1 = gridDotProduct(normal,dir1);
+
+  if (h0>0 && h1>0) return FALSE;
+  if (h0<0 && h1<0) return FALSE;
+
+  coplanar = (h0==0 && h1==0);
+
+  if (!coplanar) {
+    denom = h0-h1;
+    for(i=0;i<3;i++) intersection[i] = ( h0*dir1[i] + h1*dir0[i] );
+  }
+
+  return TRUE;
+}
