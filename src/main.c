@@ -143,7 +143,7 @@ Grid *gridLoadPart( char *project)
     return NULL;
   }  
 
-  return gridImport(nnode, nface, maxcell, ncell,
+  return gridImport( maxnode,nnode, maxface, nface, maxcell, ncell,
 		     xyz, f2n, faceId, c2n );
 }
 
