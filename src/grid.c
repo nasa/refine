@@ -781,6 +781,18 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
   return grid;
 }
 
+Grid *gridThrash(Grid *grid)
+{
+  int ncell, nodelimit, cellId, nodes[4];
+  ncell = grid->ncell;
+  nodelimit = grid->nnode*3/2;
+  for (cellId=0;cellId<ncell && grid->nnode<nodelimit;cellId++)
+    if ( NULL != gridCell( grid, cellId, nodes) )
+      gridSplitEdge( grid, nodes[0], nodes[1] );
+  
+  return grid;
+}
+
 Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
 {
   int  igem, cell, nodes[4], inode, node, newnode, newnodes0[4], newnodes1[4];
