@@ -1120,3 +1120,24 @@ bool gridRightHandedBoundary( Grid *grid )
   return rightHanded;
 }
 
+double gridFaceArea(Grid *grid, int n0, int n1, int n2 )
+{
+  int ixyz;
+  double edge1[3], edge2[3], norm[3], length; 
+  
+  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){
+    edge1[ixyz] = grid->xyz[ixyz+3*n1]
+                - grid->xyz[ixyz+3*n0];
+    edge2[ixyz] = grid->xyz[ixyz+3*n2]
+                - grid->xyz[ixyz+3*n0];
+  }
+
+  norm[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1]; 
+  norm[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2]; 
+  norm[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0]; 
+
+  length = sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
+
+  return  0.5*length;
+}
+

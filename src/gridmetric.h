@@ -43,6 +43,7 @@ double gridMinAR(Grid *g);
 bool gridRightHandedFace(Grid *g, int face );
 bool gridRightHandedBoundary(Grid *g );
 
+double gridFaceArea(Grid *g, int n0, int n1, int n2);
 
 Grid *gridMapMatrix(Grid *g, int node, double *m);
 void gridMapXYZWithM( double *m, double *x, double *y, double *z );

@@ -185,5 +185,10 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal false, grid.rightHandedFace(0)
   assert_equal false, grid.rightHandedBoundary
  end
+
+ def testFaceArea
+  assert_not_nil grid = rightTet
+  assert_in_delta 0.5, grid.faceArea(0,1,2), 1.0e-15
+ end
  
 end
