@@ -543,26 +543,28 @@ Layer *layerNormalTriangles(Layer *layer, int normal, int ntriangle, int *triang
 
 int layerPreviousTriangle(Layer *layer, int normal, int triangle )
 {
-  int normals[3], previousNormal, previousTriangle;
+  int nodes[3], previousRoot, previousTriangle;
+  int root;
   AdjIterator it;
 
-  if (layer != layerTriangleNormals(layer, triangle, normals ) ) return EMPTY;
+  if (layer != layerTriangle(layer, triangle, nodes ) ) return EMPTY;
+  root = layerNormalRoot(layer,normal);
 
-  previousNormal = EMPTY;
-  if (normal == normals[0]) previousNormal = normals[1];
-  if (normal == normals[1]) previousNormal = normals[2];
-  if (normal == normals[2]) previousNormal = normals[0];
-  if (EMPTY == previousNormal) return EMPTY;
+  previousRoot = EMPTY;
+  if (root == nodes[0]) previousRoot = nodes[1];
+  if (root == nodes[1]) previousRoot = nodes[2];
+  if (root == nodes[2]) previousRoot = nodes[0];
+  if (EMPTY == previousRoot) return EMPTY;
 
   for ( it = adjFirst(layer->adj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
     previousTriangle = adjItem(it);
     if ( triangle != previousTriangle ) {
-      layerTriangleNormals(layer, previousTriangle, normals );
-      if ( previousNormal == normals[0] ||
-	   previousNormal == normals[1] ||
-	   previousNormal == normals[2] ) return previousTriangle;
+      layerTriangle(layer, previousTriangle, nodes );
+      if ( previousRoot == nodes[0] ||
+	   previousRoot == nodes[1] ||
+	   previousRoot == nodes[2] ) return previousTriangle;
     }
   }
 
@@ -571,26 +573,28 @@ int layerPreviousTriangle(Layer *layer, int normal, int triangle )
 
 int layerNextTriangle(Layer *layer, int normal, int triangle )
 {
-  int normals[3], nextNormal, nextTriangle;
+  int nodes[3], nextRoot, nextTriangle;
+  int root;
   AdjIterator it;
 
-  if (layer != layerTriangleNormals(layer, triangle, normals ) ) return EMPTY;
+  if (layer != layerTriangle(layer, triangle, nodes ) ) return EMPTY;
+  root = layerNormalRoot(layer,normal);
 
-  nextNormal = EMPTY;
-  if (normal == normals[0]) nextNormal = normals[2];
-  if (normal == normals[1]) nextNormal = normals[0];
-  if (normal == normals[2]) nextNormal = normals[1];
-  if (EMPTY == nextNormal) return EMPTY;
+  nextRoot = EMPTY;
+  if (root == nodes[0]) nextRoot = nodes[2];
+  if (root == nodes[1]) nextRoot = nodes[0];
+  if (root == nodes[2]) nextRoot = nodes[1];
+  if (EMPTY == nextRoot) return EMPTY;
 
   for ( it = adjFirst(layer->adj,normal); 
 	adjValid(it); 
 	it = adjNext(it) ){
     nextTriangle = adjItem(it);
     if ( triangle != nextTriangle ) {
-      layerTriangleNormals(layer, nextTriangle, normals );
-      if ( nextNormal == normals[0] ||
-	   nextNormal == normals[1] ||
-	   nextNormal == normals[2] ) return nextTriangle;
+      layerTriangle(layer, nextTriangle, nodes );
+      if ( nextRoot == nodes[0] ||
+	   nextRoot == nodes[1] ||
+	   nextRoot == nodes[2] ) return nextTriangle;
     }
   }
 
@@ -1726,7 +1730,7 @@ Layer *layerBlend(Layer *layer)
 {
   int normal, originalNormals;
   AdjIterator it;
-  int triangle, splitTriangle, nextTriangle;
+  int triangle, splitTriangle, nextTriangle, previousTriangle;
   double edgeAngle, largestEdgeAngle, angleLimit;
   int commonEdge[2];
 
@@ -1750,22 +1754,37 @@ Layer *layerBlend(Layer *layer)
 	largestEdgeAngle = edgeAngle;
 	splitTriangle = triangle;
       }
+      previousTriangle = layerPreviousTriangle(layer, normal, triangle);
+      edgeAngle = layerEdgeAngle(layer,previousTriangle,triangle);
+      if (largestEdgeAngle <= edgeAngle){
+	largestEdgeAngle = edgeAngle;
+	splitTriangle = previousTriangle;
+      }
+      printf("normal %d prev %d tri %d next %d\n",
+	     normal,previousTriangle,triangle,nextTriangle);
     }
    
     if (splitTriangle != EMPTY && largestEdgeAngle > angleLimit){
       nextTriangle = layerNextTriangle(layer, normal, splitTriangle);
       layerCommonEdge(layer, splitTriangle, nextTriangle, commonEdge);
       layerAddBlend(layer,commonEdge[0],commonEdge[1]);
-
+      
       newNormal = layerDuplicateNormal(layer, normal );
       triangle = nextTriangle;
       done = FALSE;
       while (!done) {
-	done = TRUE;
+	for (i=0;i<3;i++)
+	  if (layer->triangle[triangle].normal[i] == normal) 
+	    layer->triangle[triangle].normal[i] = newNormal;
+	nextTriangle = layerNextTriangle(layer, normal, triangle);
+	done = done || ( EMPTY == nextTriangle ) ||
+	  angleLimit < layerEdgeAngle(layer,triangle,nextTriangle);
       }
     }
  
   }
+
+  // redo adj for normal-face
 
   return layer;
 }
