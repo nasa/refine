@@ -82,6 +82,15 @@ VALUE grid_nextNodeCell( VALUE self )
   return self;
 }
 
+VALUE grid_removeNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
+{
+  Grid *returnedGrid;
+  GET_GRID_FROM_SELF;
+  returnedGrid = gridRemoveNodeCell( grid, NUM2INT(nodeId), NUM2INT(cellId) );
+  return (returnedGrid==NULL?Qnil:self);
+}
+
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -99,4 +108,5 @@ void Init_Grid()
   rb_define_method( cGrid, "currentNodeCell", grid_currentNodeCell, 0 );
   rb_define_method( cGrid, "moreNodeCell", grid_moreNodeCell, 0 );
   rb_define_method( cGrid, "nextNodeCell", grid_nextNodeCell, 0 );
+  rb_define_method( cGrid, "removeNodeCell", grid_removeNodeCell, 2 );
 }
