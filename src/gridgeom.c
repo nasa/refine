@@ -11,7 +11,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "gridgeom.h"
-#include <CADGeom/CADGeom.h>
+#ifdef HAVE_SDK
+#include "CADGeom/CADGeom.h"
+#else
+#include "FAKEGeomExtras.h"
+#endif
 
 Grid *gridParallelGeomLoad( Grid *grid, char *project )
 {
