@@ -135,14 +135,14 @@ Grid* gridRegisterNodeCell(Grid *grid, long nodeId, long cellId)
     if (grid->firstblankcell == 0 ) return NULL;
     entry = grid->firstblankcell;
     if (entry == (oldTerminator+1) ) {
-      grid->celllist[oldTerminator] = cellId;
+      grid->celllist[oldTerminator] = cellId+1;
       grid->firstblankcell = -grid->celllist[entry];
       grid->celllist[entry] = 0;      
     }else{
       if (grid->celllist[entry] != (-(entry+1)) ) return NULL;
       terminator = entry+1;
       grid->celllist[oldTerminator] = -entry;      
-      grid->celllist[entry] = cellId;      
+      grid->celllist[entry] = cellId+1;
       grid->firstblankcell = -grid->celllist[terminator];      
       grid->celllist[terminator] = 0;
     }
