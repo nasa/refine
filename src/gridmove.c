@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "gridmove.h"
+#include "gridmath.h"
 
 GridMove *gridmoveCreate( Grid *grid )
 {
@@ -152,6 +153,68 @@ GridBool gridmoveSpecified(GridMove *gm, int node)
 
 GridMove *gridmoveMove(GridMove *gm)
 {
+  Grid *grid = gridmoveGrid(gm);
+  int nsprings, *springs;
+  double xyz0[3], xyz1[3], dxyz[3], res[3];
+  int s, node;
+  int i, n0, n1;
+  double *k;
+  double *source, *ksum, *kxyz;
+
+  if (gm != gridmoveSprings(gm, &nsprings, &springs)) return NULL;
+  
+  k = malloc(nsprings*sizeof(double));
+
+  source = malloc(3*gridMaxNode(grid)*sizeof(double));
+  ksum = malloc(gridMaxNode(grid)*sizeof(double));
+  kxyz = malloc(3*gridMaxNode(grid)*sizeof(double));
+ 
+  for(s=0;s<nsprings;s++) {
+    gridNodeXYZ(grid,springs[0+2*s],xyz0);
+    gridNodeXYZ(grid,springs[1+2*s],xyz1);
+    gridSubtractVector(xyz1,xyz0,dxyz);
+    k[s]= gridDotProduct(dxyz,dxyz);
+  }
+
+  for(node=0;node<3*gridMaxNode(grid);node++) source[node]=0.0;
+  for(s=0;s<nsprings;s++) {
+    n0 = springs[0+2*s];
+    n1 = springs[1+2*s];
+    for(i=0;i<3;i++) {
+      res[i] = k[s] * ( gm->displacement[i+3*n0] - gm->displacement[i+3*n1] );
+      source[i+3*n0] += res[i];
+      source[i+3*n1] -= res[i];
+    }
+  }
+
+  for(node=0;node<gridMaxNode(grid);node++) ksum[node]=0.0;
+  for(node=0;node<3*gridMaxNode(grid);node++) kxyz[node]=0.0;
+  for(s=0;s<nsprings;s++) {
+    n0 = springs[0+2*s];
+    n1 = springs[1+2*s];
+    ksum[n0] += k[s];
+    ksum[n1] += k[s];
+    for(i=0;i<3;i++) {
+      kxyz[i+3*n0] += k[s]*gm->displacement[i+3*n1];
+      kxyz[i+3*n1] += k[s]*gm->displacement[i+3*n0];
+    }
+  }
+  for(node=0;node<gridMaxNode(grid);node++) {
+    if (gridValidNode(grid,node) && !gridmoveSpecified(gm,node)) {
+      for(i=0;i<3;i++) {
+	gm->displacement[i+3*node] = 
+	  (  kxyz[i+3*node] + source[i+3*node] ) / ksum[node];
+      }
+    }
+  }
+  
+  free(k);
+
+  free(source);
+  free(ksum);
+  free(kxyz);
+
+  free(springs);
   return gm;
 }
 
