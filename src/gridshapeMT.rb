@@ -118,7 +118,6 @@ class TestGridShape < Test::Unit::TestCase
   where = [0.3, 0.3, 0.3]
   
   jac = @g.shapeJacobian1(n0,n1,n2,n3,where)
-  puts jac
   tol=1.0e-14
   assert_in_delta(-1.0,jac[0],tol)
   assert_in_delta(-1.0,jac[1],tol)
