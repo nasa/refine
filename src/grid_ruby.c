@@ -204,6 +204,12 @@ VALUE grid_swap( VALUE self, VALUE n0, VALUE n1 )
   return (returnedGrid==NULL?Qnil:self);
 }
 
+VALUE grid_addNode( VALUE self, VALUE x, VALUE y, VALUE z )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridAddNode( grid, NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ) );
+}
+
 VALUE cGrid;
 
 void Init_Grid() 
@@ -231,4 +237,5 @@ void Init_Grid()
   rb_define_method( cGrid, "equator", grid_equator, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );
   rb_define_method( cGrid, "swap", grid_swap, 2 );
+  rb_define_method( cGrid, "addNode", grid_addNode, 3 );
 }
