@@ -33,8 +33,14 @@ END_TEST
 
 START_TEST(test_empty_firstcell)
 {
+  fail_unless( grid_firstcell(grid,0) == 0,
+	       "expected the firstcell of node 0 to be null(0)");
   fail_unless( grid_firstcell(grid,1) == 0,
-	       "expected the firstcell of grid to be null");
+	       "expected the firstcell of node 1 to be null0)");
+  fail_unless( grid_firstcell(grid,2) == 0,
+	       "expected the firstcell of node 2 to be null0)");
+  fail_unless( grid_firstcell(grid,3) == 0,
+	       "expected the firstcell of node 3 to be null0)");
 }
 END_TEST
 
