@@ -56,7 +56,7 @@ int gridCellDegree(Grid *g, int nodeIndex);
 Grid *gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 Grid *gridRemoveCell(Grid *g, int cellId );
 Adj *gridCellAdj(Grid *g);
-Grid *gridReconnectCell(Grid *g, int oldNode, int newNode );
+Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
 Grid *gridReconnectCellUnlessFrozen(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 bool gridCellEdge(Grid *g, int node0, int node1 );
@@ -71,7 +71,7 @@ Grid *gridAddFaceUV(Grid *g,
 Grid *gridRemoveFace(Grid *g, int face );
 int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
-Grid *gridReconnectFace(Grid *g, int faceId, int oldNode, int newNode );
+Grid *gridReconnectAllFace(Grid *g, int oldNode, int newNode );
 Grid *gridReconnectFaceUnlessFrozen(Grid *g, int faceId, 
 				    int oldNode, int newNode );
 Grid *gridFace(Grid *g, int face, int *nodes, int *id );
@@ -90,7 +90,7 @@ Grid *gridAddEdge(Grid *g, int n0, int n1,
 Grid *gridRemoveEdge(Grid *g, int edge );
 int gridFindEdge(Grid *g, int n0, int n1 );
 int gridEdgeId(Grid *g, int n0, int n1 );
-Grid *gridReconnectEdge(Grid *g, int edgeId, int oldNode, int newNode );
+Grid *gridReconnectAllEdge(Grid *g, int oldNode, int newNode );
 Grid *gridReconnectEdgeUnlessFrozen(Grid *g, int edgeId, 
 				    int oldNode, int newNode );
 Grid *gridEdge(Grid *g, int edge, int *nodes, int *edgeId );

@@ -1081,7 +1081,7 @@ Adj *gridCellAdj(Grid *grid)
   return grid->cellAdj;
 }
 
-Grid *gridReconnectCell(Grid *grid, int oldNode, int newNode )
+Grid *gridReconnectAllCell(Grid *grid, int oldNode, int newNode )
 {
   AdjIterator it;
   int cell, i, node;
@@ -1287,7 +1287,7 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   return grid->faceId[face];
 }
 
-Grid *gridReconnectFace(Grid *grid, int faceId, int oldNode, int newNode )
+Grid *gridReconnectAllFace(Grid *grid, int oldNode, int newNode )
 {
   AdjIterator it;
   int face, i, node;
@@ -1298,19 +1298,15 @@ Grid *gridReconnectFace(Grid *grid, int faceId, int oldNode, int newNode )
   it = adjFirst(grid->faceAdj,oldNode);
   while (adjValid(it)){
     face = adjItem(it);
-    if (faceId == grid->faceId[face]) {
-      for (i=0;i<3;i++){
-	node = grid->f2n[i+3*face];
-	if (oldNode == node) {
-	  grid->f2n[i+3*face]=newNode;
-	  adjRemove( grid->faceAdj, oldNode, face);
-	  adjRegister( grid->faceAdj, newNode, face);
-	}
+    for (i=0;i<3;i++){
+      node = grid->f2n[i+3*face];
+      if (oldNode == node) {
+	grid->f2n[i+3*face]=newNode;
+	adjRemove( grid->faceAdj, oldNode, face);
+	adjRegister( grid->faceAdj, newNode, face);
       }
-      it = adjFirst(grid->faceAdj,oldNode);
-    }else{
-      it = adjNext(it);
     }
+    it = adjFirst(grid->faceAdj,oldNode);
   }
 
   return grid;
@@ -1572,7 +1568,7 @@ int gridEdgeId(Grid *grid, int n0, int n1 )
   return grid->edgeId[edge];
 }
 
-Grid *gridReconnectEdge(Grid *grid, int edgeId, int oldNode, int newNode )
+Grid *gridReconnectAllEdge(Grid *grid, int oldNode, int newNode )
 {
   AdjIterator it;
   int edge, i, node;
@@ -1582,19 +1578,15 @@ Grid *gridReconnectEdge(Grid *grid, int edgeId, int oldNode, int newNode )
   it = adjFirst(grid->edgeAdj,oldNode);
   while (adjValid(it)){
     edge = adjItem(it);
-    if (edgeId == grid->edgeId[edge]) {
-      for (i=0;i<2;i++){
-	node = grid->e2n[i+2*edge];
-	if (oldNode == node) {
-	  grid->e2n[i+2*edge]=newNode;
-	  adjRemove( grid->edgeAdj, oldNode, edge);
-	  adjRegister( grid->edgeAdj, newNode, edge);
-	}
+    for (i=0;i<2;i++){
+      node = grid->e2n[i+2*edge];
+      if (oldNode == node) {
+	grid->e2n[i+2*edge]=newNode;
+	adjRemove( grid->edgeAdj, oldNode, edge);
+	adjRegister( grid->edgeAdj, newNode, edge);
       }
-      it = adjFirst(grid->edgeAdj,oldNode);
-    }else{
-      it = adjNext(it);
     }
+    it = adjFirst(grid->edgeAdj,oldNode);
   }
 
   return grid;
@@ -2060,7 +2052,7 @@ int gridEqu(Grid *grid, int index)
 
 bool gridContinuousEquator(Grid *grid)
 {
-  return (gridNEqu(grid) == gridNGgem(grid));
+  return (gridNEqu(grid) == gridNGem(grid));
 }
 
 int gridAddNode(Grid *grid, double x, double y, double z )
