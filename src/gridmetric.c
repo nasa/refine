@@ -311,6 +311,7 @@ double gridVolume(Grid *grid, int *nodes )
   double *xyz0, *xyz1, *xyz2, *xyz3;
   double edge1[3], edge2[3], edge3[3];
   double norm[3];
+  double volume;
   
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
@@ -1211,11 +1212,19 @@ void gridCellAspectRatioDerivative( double *xyz1, double *xyz2,
 double gridMinVolume( Grid *grid )
 {
   int cellId, nodes[4];
-  double minVol;
+  double volume, minVol;
+  double xyz[3];
   minVol = 999.0;
   for (cellId=0;cellId<gridMaxCell(grid);cellId++)
-    if ( NULL != gridCell( grid, cellId, nodes) )
-      minVol = MIN(minVol,gridVolume(grid, nodes) );
+    if ( NULL != gridCell( grid, cellId, nodes) ){
+      volume = gridVolume(grid, nodes);
+      if (volume < 1.0e-14) {
+	gridNodeXYZ(grid,nodes[0],xyz);
+	printf("volume%17.10e at %12.6f%12.6f%12.6f\n",
+	       volume,xyz[0],xyz[1],xyz[2]);
+      }
+      minVol = MIN(minVol, volume);
+    }
   return minVol;
 }
 
