@@ -630,19 +630,21 @@ Grid *gridInsertLineOnSymPlane(Grid *grid, int n,
   int i, newnode;
   double x, y, ratio;
 
-  grid->nline = n+1;
-  grid->line = malloc( grid->nline * sizeof(int) );
-  for ( i=0 ; i<=n ; i++ ) {
-    ratio = (double)i / (double)n;
-    x = x0 + (x1-x0)*ratio;
-    y = 0.0;
-    newnode = gridInsertInToGeomFace(grid, x, y, z);
-    printf("insert node %10d x %10.5f y %10.5f z %10.5f\n",newnode,x,y,z);
-    if (EMPTY == newnode) printf("Could not insert node %d\n",i);
-    grid->line[i] = newnode;
-    gridFreezeNode( grid, newnode );
+  if ( n != 0 ) {
+    grid->nline = n+1;
+    grid->line = malloc( grid->nline * sizeof(int) );
+    for ( i=0 ; i<=n ; i++ ) {
+      ratio = (double)i / (double)n;
+      x = x0 + (x1-x0)*ratio;
+      y = 0.0;
+      newnode = gridInsertInToGeomFace(grid, x, y, z);
+      printf("insert node %10d x %10.5f y %10.5f z %10.5f\n",newnode,x,y,z);
+      if (EMPTY == newnode) printf("Could not insert node %d\n",i);
+      grid->line[i] = newnode;
+      gridFreezeNode( grid, newnode );
+    }
   }
-  
+
   return grid;
 }
 
@@ -660,20 +662,22 @@ Grid *gridVerifyEdgesInLine(Grid *grid)
     n1 = grid->line[i];
     if( !gridCellEdge( grid, n0, n1 ) ) {
       printf("Segment %3i of line n0 %10d n1 %10d not found\n",i,n0,n1);
-      gotIt = FALSE;
-      if (!gotIt){
-	gridSmallestRatioEdge(grid,n0,&removeNode,&ratio);
-	if ( !gridNodeFrozen( grid, removeNode ) )
-	  gridCollapseEdge(grid, n0, removeNode, 0.0);
-	gotIt = gridCellEdge( grid, n0, n1 );
+      if ( n0 != EMPTY && n1 != EMPTY ) {
+	gotIt = FALSE;
+	if (!gotIt){
+	  gridSmallestRatioEdge(grid,n0,&removeNode,&ratio);
+	  if ( !gridNodeFrozen( grid, removeNode ) )
+	    gridCollapseEdge(grid, n0, removeNode, 0.0);
+	  gotIt = gridCellEdge( grid, n0, n1 );
+	}
+	if (!gotIt){
+	  gridSmallestRatioEdge(grid,n1,&removeNode,&ratio);
+	  if ( !gridNodeFrozen( grid, removeNode ) )
+	    gridCollapseEdge(grid, n1, removeNode, 0.0);
+	  gotIt = gridCellEdge( grid, n0, n1 );
+	}
+	if (gotIt) printf("  gotIt!\n");
       }
-      if (!gotIt){
-	gridSmallestRatioEdge(grid,n1,&removeNode,&ratio);
-	if ( !gridNodeFrozen( grid, removeNode ) )
-	  gridCollapseEdge(grid, n1, removeNode, 0.0);
-	gotIt = gridCellEdge( grid, n0, n1 );
-      }
-      if (gotIt) printf("  gotIt!\n");
     }
   }
   return grid;
