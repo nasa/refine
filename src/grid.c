@@ -1055,7 +1055,19 @@ int gridCellDegree(Grid *grid, int id)
 int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
   int cellId;
-  if ( grid->blankc2n == EMPTY ) return EMPTY;
+  if ( grid->blankc2n == EMPTY ) {
+    int cell, currentSize, chunkSize;
+    chunkSize = 5000;
+    currentSize = grid->maxcell;
+    grid->maxcell += chunkSize;
+    grid->c2n = (int *)realloc( grid->c2n, 4 * grid->maxcell * sizeof(int) );
+    for (cell=currentSize;cell < grid->maxcell; cell++ ) {
+      grid->c2n[0+4*cell] = EMPTY; 
+      grid->c2n[1+4*cell] = cell+1; 
+    }
+    grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
+    grid->blankc2n = currentSize;
+  }
   cellId = grid->blankc2n;
   grid->blankc2n = grid->c2n[1+4*cellId];
   grid->ncell++;

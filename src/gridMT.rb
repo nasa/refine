@@ -53,12 +53,8 @@ class TestGrid < Test::Unit::TestCase
   (0..3).each { |n| assert_equal 1, @grid.cellDegree(n)}
  end
 
- def testAddCellFailure
-  assert_not_nil     grid = Grid.new(3,1,0,0)
-  assert_equal(-1,   grid.addCell(0,1,2,3))
-  assert_not_nil     grid = Grid.new(4,1,0,0)
-  assert_equal 0,    grid.addCell(0,1,2,3)
-  assert_equal(-1,   grid.addCell(0,1,2,3))
+ def testCellInitializedNotValid
+  assert_nil @grid.cell(0)
  end
  
  def testRemoveCell
@@ -75,6 +71,14 @@ class TestGrid < Test::Unit::TestCase
   (0..3).each { |n| assert_equal 0, grid.cellDegree(n)}
  end
 
+ def testAddingCellAllocatesMaxCell
+  assert_not_nil     grid = Grid.new(5,1,0,0)
+  assert_equal 0,    grid.addCell(0,1,2,3)
+  assert_equal 1,    grid.maxcell
+  assert_equal 1,    grid.addCell(0,1,2,4)
+  assert_equal 5001, grid.maxcell # chunk size hard coded to 5000
+ end
+ 
  def testInitNodeFrozenState
   @grid.addNode(0,0,0)
   @grid.addNode(1,0,0)

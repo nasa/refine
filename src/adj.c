@@ -89,9 +89,11 @@ Adj *adjRealloc( Adj *adj, int nnode )
 Adj *adjRegister( Adj *adj, int node, int item )
 {
   NodeItem *new;
+  int i, currentSize;
+
   if (node>=adj->nnode || node<0) return NULL;
+
   if (adj->blank == NULL) {
-    int i, currentSize;
     currentSize = adj->nadj;
     adj->nadj += adj->chunkSize;
     adj->node2item = (NodeItem *)realloc( adj->node2item, 
@@ -104,6 +106,7 @@ Adj *adjRegister( Adj *adj, int node, int item )
     adj->node2item[adj->nadj-1].next = NULL;
     adj->blank = &adj->node2item[currentSize];
   }
+
   new = adj->blank;
   adj->blank = adj->blank->next;
   new->next = adj->first[node];
