@@ -20,6 +20,10 @@ void gridSubtractVector(double *v1, double *v2, double *result);
 double gridDotProduct(double *v1, double *v2);
 void gridCrossProduct(double *norm, double *edge1, double *edge2);
 
+Grid *gridMapMatrix(Grid *g, int node, double *m);
+Grid *gridSetMapMatrixToAverageOfNodes(Grid *g, int avgNode, int n0, int n1 );
+void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
+
 double gridEdgeLength(Grid *g, int n0, int n1 );
 double gridEdgeRatio(Grid *g, int n0, int n1 );
 double gridAverageEdgeLength(Grid *g, int node );
@@ -74,9 +78,6 @@ void FaceMRDerivative(double x1, double y1, double z1,
 		      double *mr, double *dMRdx  );
 Grid *gridNodeFaceMR(Grid *g, int node, double *mr );
 Grid *gridNodeFaceMRDerivative(Grid *g, int node, double *mr, double *dMRdx );
-
-Grid *gridMapMatrix(Grid *g, int node, double *m);
-void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
 
 END_C_DECLORATION
 
