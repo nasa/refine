@@ -87,6 +87,8 @@ double layerNormalRate(Layer *, int normal);
 Layer *layerSetAllNormalRate(Layer *, double rate);
 Layer *layerSetNormalHeightWithRate(Layer *);
 Layer *layerSetNormalHeightWithMaxRate(Layer *, double maxRate);
+Layer *layerSetNormalHeightForLayerNumber(Layer *, int n, double rate);
+
 Layer *layerVisibleNormals(Layer *, double dotLimit, double radianLimit );
 Layer *layerSmoothNormalDirection(Layer *);
 Layer *layerProjectNormalsToConstraints(Layer *);
@@ -153,6 +155,8 @@ Layer *layerPopulateNormalNearTree(Layer *);
 Layer *layerPopulateTriangleNearTree(Layer *);
 Layer *layerTerminateCollidingNormals(Layer *);
 Layer *layerTerminateCollidingTriangles(Layer *);
+
+Layer *layerSmoothLayerWithHeight(Layer *);
 
 Layer *layerWriteTecplotFrontGeometry(Layer *);
 Layer *layerWriteTecplotFrontWithData(Layer *, int);

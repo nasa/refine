@@ -1055,6 +1055,15 @@ Layer *layerSetNormalHeightWithMaxRate(Layer *layer, double maxRate)
   
   return layer;
 }
+Layer *layerSetNormalHeightForLayerNumber(Layer *layer, int n, double rate)
+{
+  int normal;
+  for(normal=0;normal<layerNNormal(layer);normal++)
+    layer->normal[normal].height = 
+      layer->normal[normal].initialheight * pow(rate,n);
+
+  return layer;
+}
 
 Layer *layerVisibleNormals(Layer *layer, double dotLimit, double radianLimit )
 {
@@ -2836,6 +2845,11 @@ Layer *layerTerminateCollidingTriangles(Layer *layer)
   free(nearTriangles);
 
   return layer;
+}
+
+Layer *layerSmoothLayerWithHeight(Layer *layer)
+{
+
 }
 
 Layer *layerWriteTecplotFrontWithData(Layer *layer, int nn )
