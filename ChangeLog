@@ -3,6 +3,11 @@
 	* src/MesherX.c (main) fixed the -vgbg option
 	* src/MesherX_HLA.c (main) fixed the -vgbg option
 
+2005-03-22 15:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/mesher.c (MesherX_DiscretizeVolume) attempt at non unity
+	spacing growth rates.
+
 2005-03-22 13:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/layer.c (layerTerminateFutureNegativeCellNormals)
