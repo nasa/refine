@@ -15,24 +15,73 @@
 #include <math.h>
 #include <limits.h>
 #include <values.h>
+#include "gridmath.h"
 #include "gridshape.h"
 
 Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
 {
-  int node;
+  int node, cell, nodes[4];
   double n0[3], n1[3], n2[3], n3[3];
   double e01[3], e02[3], e03[3];
   double e12[3], e13[3], e23[3];
   double where[3];
   double jacobian[9];
   double *scalar;
+
   if (grid !=gridSortNodeGridEx(grid)) return NULL;
+
   scalar = (double *)malloc(gridNNode(grid)*sizeof(double));
   for (node=0;node<gridNNode(grid);node++) {
-    gridNodeXYZ(grid,node,n0);
-    scalar[node] = n0[0];
+    scalar[node] = DBL_MAX;
   }
-  gridWriteTecplotSurfaceScalar(grid,"gridX.t",scalar);
+
+  for (cell=0;cell<gridMaxNode(grid);cell++){
+    if (grid==gridCell(grid,cell,nodes)){
+      gridNodeXYZ(grid,nodes[0],n0);
+      gridNodeXYZ(grid,nodes[1],n1);
+      gridNodeXYZ(grid,nodes[2],n2);
+      gridNodeXYZ(grid,nodes[3],n3);
+      gridAverageVector(n0,n1,e01);
+      gridAverageVector(n0,n2,e02);
+      gridAverageVector(n0,n3,e03);
+      gridAverageVector(n1,n2,e12);
+      gridAverageVector(n1,n3,e13);
+      gridAverageVector(n2,n3,e23);
+
+      /* project edge nodes here*/
+
+      where[0]=0.0; where[1]=0.0; where[2]=0.0; 
+      gridShapeJacobian2(grid,n0,n1,n2,n3, 
+			 e01, e02, e03, 
+			 e12, e13, e23, 
+			 where,jacobian);
+      scalar[nodes[0]]=MIN(scalar[nodes[0]],gridMatrixDeterminate(jacobian));
+     
+      where[0]=1.0; where[1]=0.0; where[2]=0.0; 
+      gridShapeJacobian2(grid,n0,n1,n2,n3, 
+			 e01, e02, e03, 
+			 e12, e13, e23, 
+			 where,jacobian);
+      scalar[nodes[1]]=MIN(scalar[nodes[1]],gridMatrixDeterminate(jacobian));
+     
+      where[0]=0.0; where[1]=1.0; where[2]=0.0; 
+      gridShapeJacobian2(grid,n0,n1,n2,n3, 
+			 e01, e02, e03, 
+			 e12, e13, e23, 
+			 where,jacobian);
+      scalar[nodes[2]]=MIN(scalar[nodes[2]],gridMatrixDeterminate(jacobian));
+     
+      where[0]=0.0; where[1]=0.0; where[2]=1.0; 
+      gridShapeJacobian2(grid,n0,n1,n2,n3, 
+			 e01, e02, e03, 
+			 e12, e13, e23, 
+			 where,jacobian);
+      scalar[nodes[3]]=MIN(scalar[nodes[3]],gridMatrixDeterminate(jacobian));
+     
+    }
+  }
+
+  gridWriteTecplotSurfaceScalar(grid,"gridMinJac.t",scalar);
   free(scalar);
   return grid;
 }

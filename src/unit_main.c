@@ -255,6 +255,7 @@ int main( int argc, char *argv[] )
   STATUS;
 
   if (EMPTY!=EdgeBasedCycles) {
+    gridPlotMinDeterminateAtSurface(grid);
     sprintf(filename,"%s_surface.t",project);
     gridWriteTecplotSurfaceGeom(grid,filename); gridCloseTecplotGeomFile(grid);
     printf("edge swapping grid...\n");gridSwap(grid,0.9);
@@ -267,6 +268,7 @@ int main( int argc, char *argv[] )
       gridAdaptBasedOnConnRankings(grid);
       gridEraseConn(grid);
       STATUS;
+      gridPlotMinDeterminateAtSurface(grid);
     }
     printf("edge swapping grid...\n");gridSwap(grid,0.9);
     STATUS;

@@ -23,6 +23,11 @@ BEGIN_C_DECLORATION
 (result)[1] = (v1)[1] - (v2)[1]; \
 (result)[2] = (v1)[2] - (v2)[2];
 
+#define gridAverageVector(v1,v2,result) \
+(result)[0] = 0.5*((v1)[0] + (v2)[0]); \
+(result)[1] = 0.5*((v1)[1] + (v2)[1]); \
+(result)[2] = 0.5*((v1)[2] + (v2)[2]);
+
 #define gridAddToVector(v,add) \
 (v)[0] += (add)[0]; \
 (v)[1] += (add)[1]; \
