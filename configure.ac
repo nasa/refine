@@ -12,6 +12,10 @@ AC_ARG_WITH(CAPRI,
 	[with_CAPRI=$withval],
 	[with_CAPRI=$CAPRI_ROOT])
 
+dnl Define RanLib
+
+AC_PROG_RANLIB
+
 dnl Checks for std C stuff
 AC_PROG_CC
 AC_HEADER_STDC
