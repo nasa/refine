@@ -2,6 +2,8 @@
 #include "ruby.h"
 #include "grid.h"
 
+#define GET_GRID_FROM_SELF Grid *grid; Data_Get_Struct( self, Grid, grid );
+
 static void grid_free( void *grid )
 {
   gridFree( grid );
@@ -25,38 +27,32 @@ VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nlist )
 
 VALUE grid_nnode( VALUE self )
 {
-  Grid *grid;
-  Data_Get_Struct( self, Grid, grid );
+  GET_GRID_FROM_SELF
   return INT2NUM( gridNNode(grid) );
 }
 
 VALUE grid_ncell( VALUE self )
 {
-  Grid *grid;
-  Data_Get_Struct( self, Grid, grid );
+  GET_GRID_FROM_SELF
   return INT2NUM( gridNCell(grid) );
 }
 
 VALUE grid_nodeDeg( VALUE self, VALUE nodeId )
 {
-  Grid *grid;
-  Data_Get_Struct( self, Grid, grid );
+  GET_GRID_FROM_SELF
   return INT2NUM( gridNodeDeg(grid, NUM2INT(nodeId) ) );
 }
 
 VALUE grid_registerNodeCell( VALUE self, VALUE nodeId, VALUE cellId )
 {
-  Grid *grid;
-  Data_Get_Struct( self, Grid, grid );
+  GET_GRID_FROM_SELF
   gridRegisterNodeCell(grid, NUM2INT(nodeId), NUM2INT(cellId) );
   return self;
 }
 
 VALUE grid_validNodeCell( VALUE self )
 {
-  Grid *grid;
-  Data_Get_Struct( self, Grid, grid );
-
+  GET_GRID_FROM_SELF
   return (gridValidNodeCell(grid)?Qtrue:Qfalse);
 }
 
