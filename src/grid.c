@@ -1158,7 +1158,8 @@ Grid *gridJoinUnusedCellGlobal(Grid *grid, int global )
 	break;
       }
     }
-    if (grid->unusedCellGlobal[insertpoint] == global) return grid;
+    if ( grid->nUnusedCellGlobal != insertpoint &&
+	 grid->unusedCellGlobal[insertpoint] == global) return grid;
     for(index=grid->nUnusedCellGlobal;index>insertpoint;index--)
       grid->unusedCellGlobal[index] = grid->unusedCellGlobal[index-1];
   }

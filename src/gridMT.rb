@@ -156,6 +156,26 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [15,75], grid.getUnusedCellGlobal
  end
 
+ def testJoinUnusedGlobalCellIdPreviouslyUsed
+  grid = Grid.new(4,3,0,0)
+  4.times { grid.addNode(1.0,2.0,3.0) }
+  grid.addCell(0,1,2,3)
+  grid.setGlobalNCell(4512)
+  grid.setCellGlobal(0,15)
+  grid.addCell(0,1,2,3)
+  grid.addCell(0,1,2,3)
+  grid.removeCell(1)
+  grid.removeCell(2)
+  assert_equal [4512,4513], grid.getUnusedCellGlobal
+  grid.addCell(0,1,2,3)
+  grid.addCell(0,1,2,3)
+  assert_equal [], grid.getUnusedCellGlobal
+  grid.removeCell(2)
+  assert_equal [4512], grid.getUnusedCellGlobal
+  grid.removeCell(1)
+  assert_equal [4512,4513], grid.getUnusedCellGlobal
+ end
+
  def testEliminateUnusedGlobalCellId
   grid = Grid.new(5,5,0,0)
   5.times { grid.addNode(1.0,2.0,3.0) }
