@@ -32,7 +32,7 @@ Grid *gridThrash(Grid *grid)
 Grid *gridAdapt(Grid *grid)
 {
   AdjIterator it;
-  int i, n0, n1, adaptnode, maxnode;
+  int i, n0, n1, adaptnode, maxnode, newnode;
   double ratio;
   
   maxnode = grid->nnode;
@@ -43,11 +43,14 @@ Grid *gridAdapt(Grid *grid)
       adaptnode++;
       if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
       if ( ratio > 2.2 ) {
-	gridSplitEdge(grid, n0, n1);
+	newnode = gridSplitEdge(grid, n0, n1);
+	if ( newnode != EMPTY && gridGeometryFace( grid, newnode ) )
+	     gridRobustProjectNode(grid, newnode);
       }else{
 	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 	  return NULL;
 	if ( ratio < 0.4 ) gridCollapseEdge(grid, n0, n1);
+	if (  gridGeometryFace( grid, n0 ) ) gridRobustProjectNode(grid, n0);
       }
     }else{
       adaptnode++;
@@ -56,7 +59,7 @@ Grid *gridAdapt(Grid *grid)
   return grid;
 }
 
-Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
+int gridSplitEdge(Grid *grid, int n0, int n1 )
 {
   int  igem, cell, nodes[4], inode, node, newnode, newnodes0[4], newnodes1[4];
   double newX, newY, newZ;
@@ -64,13 +67,13 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
   int edge, edgeId;
   double t0,t1, newT;
 
-  if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
+  if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
 
   newX = ( grid->xyz[0+3*n0] + grid->xyz[0+3*n1] ) * 0.5;
   newY = ( grid->xyz[1+3*n0] + grid->xyz[1+3*n1] ) * 0.5;
   newZ = ( grid->xyz[2+3*n0] + grid->xyz[2+3*n1] ) * 0.5;
   newnode = gridAddNode(grid, newX, newY, newZ );
-  if ( newnode == EMPTY ) return NULL;
+  if ( newnode == EMPTY ) return EMPTY;
   grid->spacing[newnode] = 0.5*(grid->spacing[n0]+grid->spacing[n1]);
 
   for ( igem=0 ; igem<grid->ngem ; igem++ ){
@@ -110,7 +113,7 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
     newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
     newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
 
-    if ( faceId0 == EMPTY || faceId1 == EMPTY ) return NULL;
+    if ( faceId0 == EMPTY || faceId1 == EMPTY ) return EMPTY;
 
     gridRemoveFace(grid, face0 );
     gridRemoveFace(grid, face1 );
@@ -146,7 +149,7 @@ Grid *gridSplitEdge(Grid *grid, int n0, int n1 )
     }
   }
 
-  return grid;
+  return newnode;
 }
 
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1 )

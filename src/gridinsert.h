@@ -17,7 +17,7 @@
 BEGIN_C_DECLORATION
 Grid *gridThrash(Grid *g );
 Grid *gridAdapt(Grid *g );
-Grid *gridSplitEdge(Grid *g, int n0, int n1 );
+int gridSplitEdge(Grid *g, int n0, int n1 );
 Grid *gridCollapseEdge(Grid *g, int n0, int n1 );
 
 END_C_DECLORATION
