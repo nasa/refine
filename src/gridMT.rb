@@ -27,4 +27,8 @@ class TestSampleUnit < Test::Unit::TestCase
     assert_equal 1, @grid.nodeDeg(2)
   end
 
+  def testCellIterator
+    assert_equal false, @grid.validNodeCell
+  end
+
 end
