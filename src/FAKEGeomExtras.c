@@ -14,7 +14,7 @@
 GridBool UGrid_FromArrays(UGridPtr *ugp,
 			  int a,double *b,int c,int *d,int e,int *f)
 {
-  return NULL;
+  return FALSE;
 }
 
 UGridPtr CADGeom_VolumeGrid( int vol )
