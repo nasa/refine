@@ -795,6 +795,32 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [0,4,5,1], layer.blendNormals(0)
  end
 
+ def testMixedElementModeToggleSwitch
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_not_nil              layer = Layer.new(grid)
+  assert_equal true,          layer.tetrahedraOnly
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal false,         layer.tetrahedraOnly
+  assert_equal layer,         layer.toggleMixedElementMode
+  assert_equal true,          layer.tetrahedraOnly
+ end
+
+ def testNotAllowedToTerminateMixedElementNormals
+  assert_not_nil              grid = Grid.new(10,10,10,10)
+  assert_equal 0,             grid.addNode(0,0,0)
+  assert_equal 1,             grid.addNode(1,0,0)
+  assert_equal 2,             grid.addNode(0,1,0)
+  assert_equal grid,          grid.addFace(0,1,2,1)
+  layer = Layer.new(grid).makeFront([1]).makeNormal.toggleMixedElementMode
+  assert_nil                  layer.terminateNormal(0)
+  assert_nil                  layer.terminateNormal(1)
+  assert_nil                  layer.terminateNormal(2)
+  assert_equal false,         layer.normalTerminated(0)
+  assert_equal false,         layer.normalTerminated(1)
+  assert_equal false,         layer.normalTerminated(2)
+ end
+
+ 
  def testAdvanceLayerIntoVolumeWithaPrism
   assert_not_nil              grid = Grid.new(10,10,10,10)
   assert_equal 0,             grid.addNode(0,0,0)
@@ -805,9 +831,7 @@ class TestLayer < Test::Unit::TestCase
   assert_equal layer,         layer.makeFront([1])
   assert_equal 1,             layer.nfront
   assert_equal layer,         layer.makeNormal
-  assert_equal true,          layer.tetrahedraOnly
   assert_equal layer,         layer.toggleMixedElementMode
-  assert_equal false,         layer.tetrahedraOnly
   assert_equal 3,             layer.nnormal
   assert_equal layer,         layer.advanceConstantHeight(0.1)
   assert_equal 6,             grid.nnode
@@ -815,6 +839,25 @@ class TestLayer < Test::Unit::TestCase
   assert_equal [1,0,0.1],     grid.nodeXYZ(4)
   assert_equal [0,1,0.1],     grid.nodeXYZ(5)
   assert_equal [0,1,2,3,4,5], grid.prism(0)
+ end
+
+ def testAdvanceLayerOnSymPlaneWithaQuadFace
+  assert_not_nil               grid = Grid.new(17,14,14,0)
+  assert_equal 0,              grid.addNode(0,0,0)
+  assert_equal 1,              grid.addNode(1,0,0)
+  assert_equal 2,              grid.addNode(0,1,0)
+  assert_equal 3,              grid.addNode(0,0,1)
+  assert_equal grid,           grid.addFace(0,1,2,4000)
+  assert_equal grid,           grid.addFace(0,3,1,6000)
+  assert_not_nil               layer = Layer.new(grid)
+  assert_equal layer,          layer.makeFront([4000])
+  assert_equal layer,          layer.makeNormal
+  assert_equal layer,          layer.constrainNormal(6000)
+  assert_equal layer,          layer.toggleMixedElementMode
+  assert_equal 0,              grid.nquad
+  assert_equal layer,          layer.advanceConstantHeight(0.1)
+  assert_equal [1,0,4,5,6000], grid.quad(0)
+  assert_equal 1,              grid.nquad
  end
 
 end

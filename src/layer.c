@@ -787,6 +787,8 @@ Layer *layerTerminateNormal(Layer *layer, int normal )
 {
   if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
 
+  if (!layerTetrahedraOnly(layer)) return NULL;
+
   layer->normal[normal].terminated = TRUE;
 
   return layer;
@@ -911,12 +913,16 @@ Layer *layerAdvance(Layer *layer)
 	n[1] = layer->normal[side[1]].root;
 	n[2] = layer->normal[side[0]].tip;
 	n[3] = layer->normal[side[1]].tip;
-	if (side[0]<side[1]){
-	  if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
-	  if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
+	if (layerTetrahedraOnly(layer)){
+	  if (side[0]<side[1]){
+	    if (n[1]!=n[3]) gridAddFace(grid,n[0],n[1],n[3],faceId);
+	    if (n[0]!=n[2]) gridAddFace(grid,n[0],n[3],n[2],faceId);
+	  }else{
+	    if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
+	    if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
+	  }
 	}else{
-	  if (n[0]!=n[2]) gridAddFace(grid,n[0],n[1],n[2],faceId);
-	  if (n[1]!=n[3]) gridAddFace(grid,n[2],n[1],n[3],faceId);
+	  gridAddQuad(grid,n[0],n[1],n[3],n[2],faceId);
 	}
       }
     }
