@@ -1177,7 +1177,7 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
 	   evaluations, volume[best], volume[worst]);
     if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
 
-    if (volume[best]-volume[worst] < 1.0e-5*volume[best]) break;
+    if (volume[best]-volume[worst] < ABS(1.0e-5*volume[best])) break;
 
     evaluations++;
     newVolume = reflect( grid, simplex, volume, avgXYZ, node, worst, -1.0 );
