@@ -271,6 +271,28 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 11,   grid.faceId( 1, 2, 3 )
  end
 
+ def testReconnectFace
+  assert_not_nil             grid = Grid.new(6,0,3,0)
+  assert_equal grid,         grid.addFace(0,3,1,1)
+  assert_equal grid,         grid.addFace(0,1,2,2)
+  assert_equal grid,         grid.addFace(2,1,4,2)
+
+  assert_equal [0, 3, 1, 1], grid.face(0)
+  assert_equal [0, 1, 2, 2], grid.face(1)
+  assert_equal [2, 1, 4, 2], grid.face(2)
+  assert_nil                 grid.reconnectFace(2,-1,-1)
+  assert_nil                 grid.reconnectFace(2, 8, 8)
+  assert_equal grid,         grid.reconnectFace(2, 3, 5)
+  assert_equal [0, 3, 1, 1], grid.face(0)
+  assert_equal [0, 1, 2, 2], grid.face(1)
+  assert_equal [2, 1, 4, 2], grid.face(2)
+  assert_equal grid,         grid.reconnectFace(2, 1, 5)
+  assert_equal [0, 3, 1, 1], grid.face(0)
+  assert_equal [0, 5, 2, 2], grid.face(1)
+  assert_equal [2, 5, 4, 2], grid.face(2)
+
+ end
+
  def testNodeUV
   assert_not_nil     grid = Grid.new(4,1,2,0)
   assert_equal grid, grid.addFaceUV(0,20.0,120.0,

@@ -179,6 +179,15 @@ VALUE grid_faceId( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
   return INT2NUM( returnedFace );
 }
 
+VALUE grid_reconnectFace( VALUE self, VALUE faceId, 
+			  VALUE oldNode, VALUE newNode )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridReconnectFace( grid, NUM2INT(faceId), 
+				      NUM2INT(oldNode), 
+				      NUM2INT(newNode) )?self:Qnil);
+}
+
 VALUE grid_face( VALUE self, VALUE face )
 {
   int id, nodes[3];
@@ -568,6 +577,7 @@ void Init_Grid()
   rb_define_method( cGrid, "removeFace", grid_removeFace, 1 );
   rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
+  rb_define_method( cGrid, "reconnectFace", grid_reconnectFace, 3 );
   rb_define_method( cGrid, "face", grid_face, 1 );
 
   rb_define_method( cGrid, "nodeUV", grid_nodeUV, 2 );

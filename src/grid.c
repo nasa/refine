@@ -899,6 +899,7 @@ Grid *gridReconnectCell(Grid *grid, int oldNode, int newNode )
 {
   AdjIterator it;
   int cell, i, node;
+
   if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
   if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
 
@@ -1009,6 +1010,34 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   int face = gridFindFace(grid, n0, n1, n2 );
   if ( face == EMPTY ) return EMPTY;
   return grid->faceId[face];
+}
+
+Grid *gridReconnectFace(Grid *grid, int faceId, int oldNode, int newNode )
+{
+  AdjIterator it;
+  int face, i, node;
+  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
+  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
+
+  it = adjFirst(grid->faceAdj,oldNode);
+  while (adjValid(it)){
+    face = adjItem(it);
+    if (faceId == grid->faceId[face]) {
+      for (i=0;i<3;i++){
+	node = grid->f2n[i+3*face];
+	if (oldNode == node) {
+	  grid->f2n[i+3*face]=newNode;
+	  adjRemove( grid->faceAdj, oldNode, face);
+	  adjRegister( grid->faceAdj, newNode, face);
+	}
+      }
+      it = adjFirst(grid->faceAdj,oldNode);
+    }else{
+      it = adjNext(it);
+    }
+  }
+
+  return grid;
 }
 
 Grid *gridFace(Grid *grid, int face, int *nodes, int *id )
