@@ -401,8 +401,10 @@ Grid *gridPack(Grid *grid)
 	  
 	  for (i=0;i<3;i++) {
 	    grid->f2n[i+3*origface] = grid->f2n[i+3*packface];
-	    adjRemove( grid->faceAdj, grid->f2n[i+3*packface], packface );
-	    adjRegister( grid->faceAdj, grid->f2n[i+3*origface], origface );
+	    if ( grid->f2n[i+3*packface] != EMPTY ) {
+	      adjRemove( grid->faceAdj, grid->f2n[i+3*packface], packface );
+	      adjRegister( grid->faceAdj, grid->f2n[i+3*origface], origface );
+	    }
 	    grid->faceU[i+3*origface] = grid->faceU[i+3*packface];
 	    grid->faceV[i+3*origface] = grid->faceV[i+3*packface];
 	  }

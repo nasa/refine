@@ -331,7 +331,7 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def testPack
-  assert_not_nil grid = Grid.new(5,1,1,1)
+  assert_not_nil grid = Grid.new(5,1,2,1)
   assert_equal 0, grid.addNode(9.0,0.0,9.0)
   assert_equal grid, grid.addCell( 
 				  grid.addNode(0.0,0.0,0.0), 
@@ -340,6 +340,7 @@ class TestGrid < Test::Unit::TestCase
 				  grid.addNode(0.0,0.0,1.0) )
   assert_equal [1,2,3,4], grid.cell(0)
   assert_equal [0], grid.gem(1,2)
+  assert_equal grid, grid.addFace(2,3,4,11)
   assert_equal grid, grid.addFaceUV(1,1.0,11.0,
 				    2,2.0,12.0,
 				    3,3.0,13.0,
@@ -351,6 +352,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 21.0, grid.nodeT(1,1)
   assert_equal 22.0, grid.nodeT(2,1)
   assert_equal grid, grid.removeNode(0)
+  assert_equal grid, grid.removeFace(0)
   assert_equal grid, grid.pack
   assert_equal [0,1,2,3], grid.cell(0)
   assert_equal [0], grid.gem(0,1)
