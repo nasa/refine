@@ -722,7 +722,7 @@ Grid *gridPack(Grid *grid)
 Grid *gridSortNodeGridEx(Grid *grid)
 {
   int i, newnode, edge, nCurveNode;
-  int node, face, cell;
+  int node, face;
   int *o2n, *curve;
 
   if (NULL == gridPack(grid)) {
@@ -787,9 +787,9 @@ Grid *gridSortNodeGridEx(Grid *grid)
 
 Grid *gridSortNodeFUN3D(Grid *grid, int *nnodes0)
 {
-  int i, newnode, edge, nCurveNode;
-  int node, face, cell;
-  int *o2n, *curve;
+  int i, newnode;
+  int node;
+  int *o2n;
 
   if (NULL == gridPack(grid)) {
     printf("gridSortNodeFUN3D: gridPack failed.\n");
@@ -831,7 +831,7 @@ Grid *gridSortNodeFUN3D(Grid *grid, int *nnodes0)
 
 Grid *gridRenumber(Grid *grid, int *o2n)
 {
-  int i, newnode, edge, nCurveNode;
+  int i, edge;
   int ixyz, node, face, cell, inode;
   double *temp_xyz;
   bool *temp_frozen;
@@ -1109,6 +1109,52 @@ Grid *gridJoinUnusedCellGlobal(Grid *grid, int global )
   grid->unusedCellGlobal[insertpoint] = global;
   grid->nUnusedCellGlobal++;
   
+  return grid;
+}
+
+Grid *gridEliminateUnusedCellGlobal(Grid *grid )
+{
+  int ncell, cell;
+  int *pack;
+  int *sortedGlobal, *sortedLocal;
+  int sort, offset;
+
+  if ( 0 == gridNUnusedCellGlobal(grid) ) return grid;
+
+  pack         = malloc(grid->maxcell * sizeof(int));
+  sortedGlobal = malloc(grid->maxcell * sizeof(int));
+  sortedLocal  = malloc(grid->maxcell * sizeof(int));
+  
+  ncell = 0;
+  for (cell=0;cell<grid->maxcell;cell++)
+    if (gridCellValid(grid,cell)) {
+      sortedGlobal[ncell] = grid->cellGlobal[cell];
+      pack[ncell] = cell;
+      ncell++;
+    }
+
+  if (ncell != grid->ncell)
+    printf("%s: %d: gridEliminateUnusedCellGlobal: ncell error %d %d.",
+	   __FILE__,__LINE__,ncell,grid->ncell);
+
+  sortHeap(ncell,sortedGlobal,sortedLocal);
+
+  offset = 0;
+  for (sort=0;sort<ncell;sort++) {
+    cell = pack[sortedLocal[sort]];
+    while ( (offset < grid->nUnusedCellGlobal ) &&
+	    (grid->unusedCellGlobal[offset] < grid->cellGlobal[cell] ) ) {
+      offset++;
+    }
+    grid->cellGlobal[cell] -= offset;
+  }
+  grid->globalNCell -= grid->nUnusedCellGlobal;
+  grid->nUnusedCellGlobal = 0;
+
+  free(pack);
+  free(sortedGlobal);
+  free(sortedLocal);
+
   return grid;
 }
 
@@ -2504,7 +2550,8 @@ int gridGlobal2Local(Grid *grid, int global )
       }
 
     if (nnode != grid->nnode) 
-      printf("%s: %d: gridGlobal2Local: nnode error.",__FILE__,__LINE__);
+      printf("%s: %d: gridGlobal2Local: nnode error %d %d.",
+	     __FILE__,__LINE__,nnode,grid->nnode);
 
     grid->nsorted = grid->nnode;
     sortHeap(grid->nsorted,grid->sortedGlobal,grid->sortedLocal);

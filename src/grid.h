@@ -155,6 +155,7 @@ Grid *gridSetGlobalNCell(Grid *g, int nglobal );
 int gridNUnusedCellGlobal(Grid *g );
 Grid *gridGetUnusedCellGlobal(Grid *g, int *unused );
 Grid *gridJoinUnusedCellGlobal(Grid *g, int global );
+Grid *gridEliminateUnusedCellGlobal(Grid *g );
 int gridCellDegree(Grid *g, int nodeIndex);
 int gridCellGlobal(Grid *g, int cellIndex);
 Grid *gridSetCellGlobal(Grid *g, int cellIndex, int globalIndex );

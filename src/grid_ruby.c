@@ -172,6 +172,12 @@ VALUE grid_joinUnusedCellGlobal( VALUE self, VALUE global )
   return ( grid == gridJoinUnusedCellGlobal(grid,NUM2INT(global))?self:Qnil );
 }
 
+VALUE grid_eliminateUnusedCellGlobal( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridEliminateUnusedCellGlobal(grid)?self:Qnil );
+}
+
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
 {
   GET_GRID_FROM_SELF;
@@ -911,6 +917,7 @@ void Init_Grid()
   rb_define_method( cGrid, "nUnusedCellGlobal", grid_nUnusedCellGlobal, 0 );
   rb_define_method( cGrid, "getUnusedCellGlobal", grid_getUnusedCellGlobal, 0 );
   rb_define_method( cGrid, "joinUnusedCellGlobal", grid_joinUnusedCellGlobal, 1 );
+  rb_define_method( cGrid, "eliminateUnusedCellGlobal", grid_eliminateUnusedCellGlobal, 0 );
 
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
