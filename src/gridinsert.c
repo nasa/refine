@@ -213,7 +213,8 @@ Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
   bool volumeEdge;
 
   if ( gridGeometryNode(grid, n1) ) return NULL;
-  if ( gridGeometryEdge(grid, n1) && !gridGeometryEdge(grid, n0) ) return NULL;
+  if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
+    return NULL;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
 
