@@ -414,10 +414,10 @@ VALUE layer_toggleMixedElementMode( VALUE self )
   return ( layer == layerToggleMixedElementMode(layer)?self:Qnil );
 }
 
-VALUE layer_blend( VALUE self )
+VALUE layer_blend( VALUE self, VALUE angle )
 {
   GET_LAYER_FROM_SELF;
-  return ( layer == layerBlend(layer)?self:Qnil );
+  return ( layer == layerBlend(layer,NUM2DBL(angle))?self:Qnil );
 }
 
 VALUE layer_splitBlend( VALUE self )
@@ -456,6 +456,12 @@ VALUE layer_terminateCollidingTriangles( VALUE self )
 {
   GET_LAYER_FROM_SELF;
   return ( layer == layerTerminateCollidingTriangles(layer)?self:Qnil );
+}
+
+VALUE layer_writeTecplotFrontGeometry( VALUE self )
+{
+  GET_LAYER_FROM_SELF;
+  return ( layer == layerWriteTecplotFrontGeometry(layer)?self:Qnil );
 }
 
 VALUE cLayer;
@@ -523,11 +529,14 @@ void Init_Layer()
   rb_define_method( cLayer, "tetrahedraOnly", layer_tetrahedraOnly, 0 ); 
   rb_define_method( cLayer, "toggleMixedElementMode", layer_toggleMixedElementMode, 0 ); 
 
-  rb_define_method( cLayer, "blend", layer_blend, 0 );
+  rb_define_method( cLayer, "blend", layer_blend, 1 );
   rb_define_method( cLayer, "splitBlend", layer_splitBlend, 0 );
   rb_define_method( cLayer, "extrudeBlend", layer_extrudeBlend, 3 );
   rb_define_method( cLayer, "blendNormals", layer_blendNormals, 1 );
 
   rb_define_method( cLayer, "terminateCollidingNormals", layer_terminateCollidingNormals, 0 );
   rb_define_method( cLayer, "terminateCollidingTriangles", layer_terminateCollidingTriangles, 0 );
+
+  rb_define_method( cLayer, "writeTecplotFrontGeometry", layer_writeTecplotFrontGeometry, 0);
+
 }
