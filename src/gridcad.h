@@ -16,7 +16,7 @@
 
 BEGIN_C_DECLORATION
 
-Grid *gridProjectNodetoEdge(Grid *g, int node, int edge );
+Grid *gridProjectNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridSafeProject(Grid *g, int node );
 
 END_C_DECLORATION

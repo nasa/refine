@@ -16,14 +16,17 @@
 #include "adj.h"
 #include "gridStruct.h"
 
-Grid *gridProjectNodeToEdge(Grid *grid, int node, int edge )
+Grid *gridProjectNodeToEdge(Grid *grid, int node, int edgeId )
 {
   int vol = 1;
   double t, xyznew[3];
 
-  t = DBL_MAX;
-  if (!CADGeom_NearestOnEdge( vol, edge, &grid->xyz[3*node], &t, xyznew) ) 
+  if ( grid != gridNodeT( grid, node, edgeId, &t ) ) return NULL;
+
+  if (!CADGeom_NearestOnEdge( vol, edgeId, &grid->xyz[3*node], &t, xyznew) ) 
     return NULL;  
+
+  if ( grid != gridSetNodeT( grid, node, edgeId, t ) ) return NULL;
 
   grid->xyz[0+3*node] = xyznew[0];
   grid->xyz[1+3*node] = xyznew[1];

@@ -4,10 +4,10 @@
 
 #define GET_GRID_FROM_SELF Grid *grid; Data_Get_Struct( self, Grid, grid );
 
-VALUE grid_projectNodeToEdge( VALUE self, VALUE node, VALUE edge )
+VALUE grid_projectNodeToEdge( VALUE self, VALUE node, VALUE edgeId )
 {
   GET_GRID_FROM_SELF;
-  return (gridProjectNodeToEdge( grid, NUM2INT(node), NUM2INT(edge) )==grid?self:Qnil);
+  return (gridProjectNodeToEdge( grid, NUM2INT(node), NUM2INT(edgeId) )==grid?self:Qnil);
 }
 
 VALUE grid_safeProject( VALUE self, VALUE node )
