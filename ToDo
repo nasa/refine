@@ -1,22 +1,25 @@
 
 List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
+-refine
+
+--Major refactoring
+
+Parameter values: verify at start and then always evaluate.
+
+--Edge Based
+
+parallelize the edge queue
+
+--Parallel adapt
+
+corsening on partition boundaries 
+continue speed testing
+
 -MesherX
 
 improved normal visiblity on symm planes.
 check for potential collisions of blend normals with surrounding area
 check out frozen normal direction smoothing (VGrid style)
-
--refine
-
---Parallel adapt
-
-corsening on partition boundaries 
-swap and smooth durring adaptation
-continue speed testing
-
---GridMove
-
-put in torional springs, elasticity
 
 
