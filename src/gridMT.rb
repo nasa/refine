@@ -122,7 +122,7 @@ end
   assert_equal [[0,1,3,4]], grid.gem(0,1)
  end
  
- def XtestEquator
+ def testEquator
   grid = Grid.new(6,4,0)
   assert_equal grid, grid.addCell(4,5,0,1).addCell(4,5,1,2).addCell(4,5,2,3).addCell(4,5,3,0)
   assert_equal 2, grid.nodeDeg(0)
