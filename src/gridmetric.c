@@ -554,6 +554,19 @@ Grid *gridNodeAR(Grid *grid, int node, double *ar )
   return grid;
 }
 
+Grid *gridGemAR( Grid *grid, double *ar ){
+  int i, nodes[4];
+
+  *ar = 2.0;
+
+  for ( i = 0 ; i < gridNGem(grid) ; i++ ){
+    gridCell(grid, gridGem(grid,i), nodes);
+    *ar = MIN(*ar,gridAR( grid, nodes ));
+  }
+
+  return grid;
+}
+
 double gridAR(Grid *grid, int *nodes )
 {
   double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 

@@ -1029,6 +1029,13 @@ int gridGem(Grid *grid, int index)
   return grid->gem[index];
 }
 
+Grid *gridRemoveGem(Grid *grid) {
+  int i;
+  for ( i = 0 ; i < grid->ngem ; i++ ) 
+    gridRemoveCell( grid, grid->gem[i] );
+  return grid;
+}
+
 int gridCellDegree(Grid *grid, int id)
 {
   return adjDegree(grid->cellAdj, id);

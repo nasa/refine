@@ -156,7 +156,7 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
 	   !gridGeometryFace(grid, nodes[2]) && 
 	   !gridGeometryFace(grid, nodes[3]) &&
 	   ( NULL != gridSwapEdge( grid, nodes[2], nodes[3] ) ) ) {
-	it = adjFirst(grid->cellAdj,node);
+	it = adjFirst(gridCellAdj(grid),node);
 	nswap++;
       }else{
 	it = adjNext(it);
@@ -198,16 +198,10 @@ Grid *gridSwap(Grid *grid)
 
 Grid *gridSwapEdge3(Grid *grid, int n0, int n1 )
 {
-  int i, orignodes[4], nodes[2][4];
-  double cost, origcost, bestcost;
+  int i, nodes[2][4];
+  double origcost, bestcost;
 
-  origcost = 2.0;
-
-  for ( i = 0 ; i < gridNGem(grid) ; i++ ){
-    gridCell(grid, gridGem(grid,i), orignodes);
-    cost = gridAR( grid, orignodes );
-    origcost = MIN(origcost,cost);
-  }
+  gridGemAR(grid, &origcost);
 
   nodes[0][0]=n0;
   nodes[0][1]=gridEqu(grid,0);
@@ -222,9 +216,7 @@ Grid *gridSwapEdge3(Grid *grid, int n0, int n1 )
 
   if ( bestcost > origcost ) {
 
-    for ( i = 0 ; i < grid->ngem ; i++ ) 
-      gridRemoveCell( grid, grid->gem[i] );
-    
+    gridRemoveGem(grid);
     for ( i = 0 ; i < 2 ; i++ )
       gridAddCell( grid, nodes[i][0], nodes[i][1], nodes[i][2], nodes[i][3] );
 
