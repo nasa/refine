@@ -57,7 +57,6 @@ VALUE gridmove_displacement( VALUE self, VALUE node )
 
 VALUE gridmove_specified( VALUE self, VALUE node )
 {
-  int i;
   GET_GM_FROM_SELF;
   return ( gridmoveSpecified( gm, NUM2INT(node) )?Qtrue:Qfalse );
 }
