@@ -205,16 +205,28 @@ Map three vectors to unit length.
 The requested spacing is therefore $h_1=2\sqrt{2}$, $h_2=\sqrt{2}$, .$h_3=1$, 
 Which is the following Eigen values
 \begin{equation}
- \Lambda^\frac{1}{2}=\left[
- \begin{array}{ccc}
+ \Lambda^\frac{1}{2}=
+ \left[\begin{array}{ccc}
+   \frac{1}{h_1}&&\\
+   &\frac{1}{h_2}&\\
+   &&\frac{1}{h_3}\\
+ \end{array}\right]
+ =
+ \left[\begin{array}{ccc}
    \frac{1}{2\sqrt{2}}&&\\
    &\frac{1}{\sqrt{2}}&\\
    &&1\\
  \end{array}\right]
 \end{equation}
 \begin{equation}
- \Lambda=\left[
- \begin{array}{ccc}
+ \Lambda=
+ \left[\begin{array}{ccc}
+   \frac{1}{h_1^2}&&\\
+   &\frac{1}{h_2^2}&\\
+   &&\frac{1}{h_3^2}\\
+ \end{array}\right]
+ =
+ \left[\begin{array}{ccc}
    \frac{1}{8}&&\\
    &\frac{1}{2}&\\
    &&1\\
@@ -224,15 +236,26 @@ and Eigen Vectors
 \begin{equation}
  \mathbf{R}=\left[
  \begin{array}{ccc}
-   \frac{\sqrt{2}}{2}&-\frac{\sqrt{2}}{2}&0\\
-   \frac{\sqrt{2}}{2}&\frac{\sqrt{2}}{2}&0\\
+   \frac{1}{\sqrt{2}}&-\frac{1}{\sqrt{2}}&0\\
+   \frac{1}{\sqrt{2}}&\frac{1}{\sqrt{2}}&0\\
    0&0&1\\
  \end{array}\right]
 \end{equation}
 The Jacobian of transformation is
 \begin{equation}
- \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}^t=\left[
- \begin{array}{ccc}
+ \mathbf{J}=\Lambda^\frac{1}{2}\mathbf{R}^t=
+ \left[\begin{array}{ccc}
+   \frac{1}{2\sqrt{2}}&&\\
+   &\frac{1}{\sqrt{2}}&\\
+   &&1\\
+ \end{array}\right]
+ \left[\begin{array}{ccc}
+   \frac{1}{\sqrt{2}}&\frac{1}{\sqrt{2}}&0\\
+   -\frac{1}{\sqrt{2}}&\frac{1}{\sqrt{2}}&0\\
+   0&0&1\\
+ \end{array}\right]
+ =
+ \left[\begin{array}{ccc}
    \frac{1}{4}&\frac{1}{4}&0\\
    -\frac{1}{2}&\frac{1}{2}&0\\
    0&0&1\\
@@ -243,10 +266,23 @@ The Metric Matrix is
  \mathbf{M}=
   \mathbf{J}^t\mathbf{J}=
   \mathbf{R}\Lambda^\frac{1}{2}\Lambda^\frac{1}{2}\mathbf{R}^t=
-  \mathbf{R}\Lambda\mathbf{R}^t=
+  \mathbf{R}\Lambda\mathbf{R}^t
+\end{equation}
+\begin{equation}
+ \left[\begin{array}{ccc}
+   \frac{1}{4}&-\frac{1}{2}&0\\
+   \frac{1}{4}&\frac{1}{2}&0\\
+   0&0&1\\
+ \end{array}\right]
+ \left[\begin{array}{ccc}
+   \frac{1}{4}&\frac{1}{4}&0\\
+   -\frac{1}{2}&\frac{1}{2}&0\\
+   0&0&1\\
+ \end{array}\right]
+ =  
   \left[\begin{array}{ccc}
-   \frac{1}{16}&-\frac{1}{8}&0\\
-   -\frac{1}{8}&\frac{1}{4}&0\\
+   \frac{5}{16}&-\frac{3}{16}&0\\
+   -\frac{3}{16}&\frac{5}{16}&0\\
    0&0&1\\
  \end{array}\right]
 \end{equation}
@@ -311,5 +347,59 @@ The tranformed vectors are
    1\\
  \end{array}\right]
 \end{equation}
+
+The lengths in the mapped space are
+\begin{equation}
+ \sqrt{
+ \left[\begin{array}{ccc}
+   2&2&0\\
+ \end{array}\right] 
+ \left[\begin{array}{ccc}
+   \frac{5}{16}&-\frac{3}{16}&0\\
+   -\frac{3}{16}&\frac{5}{16}&0\\
+   0&0&1\\
+ \end{array}\right]
+ \left[\begin{array}{c}
+   2\\
+   2\\
+   0\\
+ \end{array}\right]
+ }=1
+\end{equation}
+\begin{equation}
+ \sqrt{
+ \left[\begin{array}{ccc}
+   -1&1&0\\
+ \end{array}\right] 
+ \left[\begin{array}{ccc}
+   \frac{5}{16}&-\frac{3}{16}&0\\
+   -\frac{3}{16}&\frac{5}{16}&0\\
+   0&0&1\\
+ \end{array}\right]
+ \left[\begin{array}{c}
+   -1\\
+   1\\
+   0\\
+ \end{array}\right]
+ }=1
+\end{equation}
+\begin{equation}
+ \sqrt{
+ \left[\begin{array}{ccc}
+   0&0&1\\
+ \end{array}\right] 
+ \left[\begin{array}{ccc}
+   \frac{5}{16}&-\frac{3}{16}&0\\
+   -\frac{3}{16}&\frac{5}{16}&0\\
+   0&0&1\\
+ \end{array}\right]
+ \left[\begin{array}{c}
+   0\\
+   0\\
+   1\\
+ \end{array}\right]
+ }=1
+\end{equation}
+
 
 \end{document}
