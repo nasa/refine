@@ -309,7 +309,7 @@ Layer *layerComputeNormalRateWithBGSpacing2(Layer *layer, double finalRatio)
     double minSpacing, lengthOfMinSpacing;
     root = layerNormalRoot(layer, normal );
     gridNodeXYZ(layerGrid(layer),root,xyz);
-    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
     sp1 = spacing[0];
     z = -xyz[2];
     r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
@@ -318,7 +318,7 @@ Layer *layerComputeNormalRateWithBGSpacing2(Layer *layer, double finalRatio)
     xyz0[0] = xyz[0] + (length * normalDirection[0]);
     xyz0[1] = xyz[1] + (length * normalDirection[1]);
     xyz0[2] = xyz[2] + (length * normalDirection[2]);
-    MeshMgr_GetSpacing(&(xyz0[0]),&(xyz0[1]),&(xyz0[2]),spacing,direction);
+    UG_GetSpacing(&(xyz0[0]),&(xyz0[1]),&(xyz0[2]),spacing,direction);
     sp2 = spacing[0];
     
 
@@ -335,7 +335,7 @@ Layer *layerComputeNormalRateWithBGSpacing2(Layer *layer, double finalRatio)
        xyz0[0] = xyz[0] + (len * normalDirection[0]);
        xyz0[1] = xyz[1] + (len * normalDirection[1]);
        xyz0[2] = xyz[2] + (len * normalDirection[2]);
-       MeshMgr_GetSpacing(&(xyz0[0]),&(xyz0[1]),&(xyz0[2]),spacing,direction);
+       UG_GetSpacing(&(xyz0[0]),&(xyz0[1]),&(xyz0[2]),spacing,direction);
 	if( spacing[0] < minSpacing ) {
 	   minSpacing = spacing[0];
 	   lengthOfMinSpacing = len;

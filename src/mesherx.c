@@ -181,7 +181,7 @@ Layer *layerComputeNormalRateWithBGSpacing(Layer *layer, double finalRatio)
     xyz[0] += (length * normalDirection[0]);
     xyz[1] += (length * normalDirection[1]);
     xyz[2] += (length * normalDirection[2]);
-    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
     finalDelta = spacing[0]*finalRatio;
     initialDelta = layerNormalInitialHeight(layer,normal);
     rate = (finalDelta - initialDelta) / length;
@@ -206,7 +206,7 @@ Layer *layerComputeInitialCellHeightWithBGSpacing(Layer *layer, double finalRati
     xyz[0] += (length * normalDirection[0]);
     xyz[1] += (length * normalDirection[1]);
     xyz[2] += (length * normalDirection[2]);
-    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
     finalDelta = spacing[0]*finalRatio;
     rate = layerNormalRate(layer,normal);
     initialDelta = finalDelta / pow(rate,length*10);
@@ -230,7 +230,7 @@ Layer *layerCreateWakeWithBGSpacing(Layer *layer,
   xyz[0] = origin[0];  xyz[1] = origin[1];  xyz[2] = origin[2];
   while (extrusion < length){
     i++;
-    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,map);
+    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,map);
     printf("wake%5d length%8.3f spacing%10.5f xyz%8.3f%8.3f%8.3f\n",
 	   i,extrusion,spacing[0],xyz[0],xyz[1],xyz[2]);
     extrude[0] = direction[0]*spacing[0];
@@ -265,7 +265,7 @@ int layerTerminateNormalWithBGSpacing(Layer *layer,
 
     root = layerNormalRoot(layer, normal );
     gridNodeXYZ(layerGrid(layer),root,xyz);
-    MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
 
     if (height > normalRatio*spacing[0]) {     /* Assume Isotropic for now */
       if( !layerNormalTerminated(layer, normal ) ) hterm++;
@@ -277,7 +277,7 @@ int layerTerminateNormalWithBGSpacing(Layer *layer,
     layerTriangleMaxEdgeLength(layer,triangle,&edgeLength );
     layerTriangleCenter(layer,triangle,center);
 
-    MeshMgr_GetSpacing(&(center[0]),&(center[1]),&(center[2]),
+    UG_GetSpacing(&(center[0]),&(center[1]),&(center[2]),
 		       spacing,direction);
 
     if ( edgeLength > edgeRatio*spacing[0]) { /* Assume Isotropic for now */

@@ -101,7 +101,7 @@ Layer *layerSmoothRate(Layer *layer, int itMax, double omega, bool iprt)
          int root = layerNormalRoot(layer, normal );
          double xyz[3], spacing[3], direction[9];
          gridNodeXYZ(layerGrid(layer),root,xyz);
-         MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+         UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
          sp1 = spacing[0];
          z = xyz[2];
          r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);
@@ -251,7 +251,7 @@ Layer *layerSmoothNormalProperty(Layer *layer, int itMax[4], double omega, bool 
          int root = layerNormalRoot(layer, normal );
          double xyz[3], spacing[3], direction[9];
          gridNodeXYZ(layerGrid(layer),root,xyz);
-         MeshMgr_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
+         UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
          sp1 = spacing[0];
          z = xyz[2];
          r = sqrt( xyz[0]*xyz[0] + xyz[1]*xyz[1]);

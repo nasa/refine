@@ -104,9 +104,9 @@ int main( int argc, char *argv[] )
     return 1;
   }  
 
-  printf("calling CADGeom_Load for project <%s> ... \n",project);
-  if ( ! CADGeom_LoadPart( project ) ){
-    printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
+  printf("calling GeoMesh_Load for project <%s> ... \n",project);
+  if ( ! GeoMesh_LoadPart( project ) ){
+    printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
   }
 
