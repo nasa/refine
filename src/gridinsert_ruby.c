@@ -55,6 +55,13 @@ VALUE grid_insertInToGeomFace( VALUE self, VALUE x, VALUE y, VALUE z )
 					 NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ));
 }
 
+VALUE grid_insertInToVolume( VALUE self, VALUE x, VALUE y, VALUE z )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM(gridInsertInToVolume( grid, 
+				       NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ));
+}
+
 VALUE grid_collapseEdge( VALUE self, VALUE n0, VALUE n1, VALUE ratio )
 {
   GET_GRID_FROM_SELF;
@@ -74,5 +81,7 @@ void Init_GridInsert()
 		    grid_insertInToGeomEdge, 3 );
   rb_define_method( cGridInsert, "insertInToGeomFace", 
 		    grid_insertInToGeomFace, 3 );
+  rb_define_method( cGridInsert, "insertInToVolume", 
+		    grid_insertInToVolume, 3 );
   rb_define_method( cGridInsert, "collapseEdge", grid_collapseEdge, 3 );
 }

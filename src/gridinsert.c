@@ -453,6 +453,11 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
   return newnode;
 }
 
+int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
+{
+  return EMPTY;
+}
+
 Grid *gridCollapseEdge(Grid *grid, int n0, int n1, double ratio )
 {
   int i, cell, face, face0, face1, faceId;
