@@ -34,7 +34,7 @@ long grid_nnodes(Grid *grid)
 
 long *grid_firstcell(Grid *grid, long id)
 {
-  return grid->firstcell[id];
+  return (grid->firstcell[id]-1);
 }
 
 void grid_free(Grid *grid)
