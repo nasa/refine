@@ -34,4 +34,8 @@ int gridcreate_( int *nnode, double *x, double *y, double *z ,
   printf(" min AR %17.15f\n",gridMinAR(grid));
 }
 
-
+int gridinsertboundary_( int *faceId, double *nnode, double *inode, 
+			 double *nface, double *ndim, int *f2n )
+{
+  printf(" boundary %4d has %6d nodes and %6d faces\n",*faceId,*nnode,*nface);
+}
