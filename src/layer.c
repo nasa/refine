@@ -3822,7 +3822,7 @@ Layer *layerTerminateFutureNegativeCellNormals(Layer *layer)
   double xyz[3];
   int savedNodes[3];
   double volumeLimit = 1.0e-14;
-  int new_terminated, termination_pass;
+  int new_terminated;
 
   if (layerNNormal(layer) == 0 ) return NULL;
 
