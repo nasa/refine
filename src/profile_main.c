@@ -121,9 +121,6 @@ int main( int argc, char *argv[] )
   gridSetPartId(grid, 0 );
   queue = queueCreate( 9 );
 
-  if (!gridRightHandedBoundary(grid)) 
-    printf("ERROR: loaded part does not have right handed boundaries\n");
-
   printf("initial grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
@@ -139,8 +136,15 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  if (!gridRightHandedBoundary(grid)) 
-    printf("ERROR: modifed grid does not have right handed boundaries\n");
+  printf("Swapping.\n");
+  gridSwap(grid,-1);
+  printf("Swapping.\n");
+  gridSwap(grid,-1);
+  printf("Swapping.\n");
+  gridSwap(grid,-1);
+
+  printf("writing output project %s\n",outputProject);
+  gridSavePart( grid, outputProject );
 
   printf("Done.\n");
 
