@@ -1,3 +1,7 @@
+2005-04-09 21:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am (libMesherX_pg.a) added to profile profileNative.
+
 2005-04-05 00:07 Mike Park  <mike.park@nasa.gov>
 
 	* src/profine_main.c (main) started tp create a driver to profile

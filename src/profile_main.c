@@ -111,7 +111,7 @@ int main( int argc, char *argv[] )
   }
   
   if(strcmp(modeler,"")==0)       sprintf(modeler,"FELISA" );
-  if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
+  if(strcmp(project,"")==0)       sprintf(project,"../test/om6" );
   if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
   if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
 

@@ -51,10 +51,7 @@ if BUILD_EXECUTABLES
 
 if BUILD_SDK_DEPENDENTS
 
-lib_LIBRARIES += libMesherX.a
-
-libMesherX_a_CFLAGS = @SDKheader@
-libMesherX_a_SOURCES = \
+mesherx_sources = \
 	adj.h adj.c \
 	near.h near.c \
 	intersect.h intersect.c \
@@ -77,6 +74,10 @@ libMesherX_a_SOURCES = \
 	mesherxRebuild.h mesherxRebuild.c \
 	mesherx.h mesherx.c
 
+lib_LIBRARIES += libMesherX.a
+
+libMesherX_a_CFLAGS = @SDKheader@
+libMesherX_a_SOURCES = $(mesherx_sources)
 libMesherX_a_include_HEADERS = \
 	refine_defs.h \
 	mesherx.h \
@@ -88,6 +89,11 @@ libMesherX_a_include_HEADERS = \
 	queue.h
 
 libMesherX_a_includedir = @prefix@/include
+
+lib_LIBRARIES += libMesherX_pg.a
+
+libMesherX_pg_a_CFLAGS = -pg @SDKheader@
+libMesherX_pg_a_SOURCES = $(mesherx_sources)
 
 endif # BUILD_SDK_DEPENDENTS
 
@@ -192,7 +198,7 @@ unitNative_LDFLAGS = $(all_LDFLAGS)
 bin_PROGRAMS += profileNative
 profileNative_CFLAGS = -pg $(all_CFLAGS)
 profileNative_SOURCES = profile_main.c
-profileNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
+profileNative_LDADD = libMesherX_pg.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat @CAPRINativelibrary@ $(LastLib)
 profileNative_LDFLAGS = -pg $(all_LDFLAGS)
 
 if BUILD_PROE_KERNEL
