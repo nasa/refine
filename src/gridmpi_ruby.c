@@ -68,6 +68,28 @@ VALUE grid_applyQueue( VALUE self, VALUE rb_queue )
   return ( grid==gridApplyQueue( grid, queue )?self:Qnil );
 }
 
+
+VALUE grid_nodeCountByPartition( VALUE self, VALUE total_number_of_partitions )
+{
+  VALUE array;
+  int i, *partition_nodes;
+  GET_GRID_FROM_SELF;
+
+  partition_nodes = malloc(NUM2INT(total_number_of_partitions) * sizeof(int));
+
+  if (grid != gridNodeCountByPartition(grid,
+				       NUM2INT(total_number_of_partitions),
+				       partition_nodes)) {
+    free(partition_nodes);
+    return Qnil;
+  }
+
+  array = rb_ary_new2(NUM2INT(total_number_of_partitions));
+  for (i=0;i<NUM2INT(total_number_of_partitions);i++) 
+    rb_ary_store(array,i,INT2NUM(partition_nodes[i]));
+  return array;
+}
+
 VALUE cGridMPI;
 
 void Init_GridMPI() 
@@ -81,4 +103,6 @@ void Init_GridMPI()
   rb_define_method( cGridMPI, "parallelEdgeCollapse", grid_parallelEdgeCollapse, 3 );
   rb_define_method( cGridMPI, "parallelEdgeSwap", grid_parallelEdgeSwap, 3 );
   rb_define_method( cGridMPI, "applyQueue", grid_applyQueue, 1 );
+
+  rb_define_method( cGridMPI, "nodeCountByPartition", grid_nodeCountByPartition, 1 );
 }

@@ -121,6 +121,9 @@ void gridupdategeometryface_( int *faceId, int *nnode, double *xyz, double *uv,
 
 void gridcreateshellfromfaces_( void );
 
+void gridnodecountbypartition_( int *total_number_of_partitions, 
+				int *partition_nodes );
+
 END_C_DECLORATION
 
 #endif /* GRIDFORTRAN_H */

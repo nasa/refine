@@ -1000,3 +1000,11 @@ void gridcreateshellfromfaces_( void )
 {
   gridCreateShellFromFaces( grid );
 }
+
+void gridnodecountbypartition_( int *total_number_of_partitions, 
+				int *partition_nodes )
+{
+  gridNodeCountByPartition(grid, *total_number_of_partitions, partition_nodes);
+}
+
+

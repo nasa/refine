@@ -433,3 +433,19 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   queueFree(lq);
   return grid;
 }
+
+Grid *gridNodeCountByPartition(Grid *grid, int total_number_of_partitions, 
+			       int *partition_nodes)
+{
+  int node, part;
+
+  for ( part = 0 ; part < total_number_of_partitions ; part++ )
+    partition_nodes[part] = 0;
+
+  for ( node = 0 ; node < gridMaxNode(grid) ; node++ ) {
+    part = gridNodePart(grid, node);
+    if ( part >= 0 && part < total_number_of_partitions )
+      partition_nodes[part]++;
+  }
+  return grid;
+}

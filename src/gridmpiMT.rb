@@ -249,4 +249,23 @@ class TestGridMPI < Test::Unit::TestCase
   assert_equal [100,103], q.removedEdgeNodes(0)
  end
 
+ def test_count_no_nodes_off_partition
+  grid = Grid.new(4,1,1,1)
+  4.times { grid.addNode(0,0,0) }
+  grid.setPartId(0).setAllLocal
+  assert_equal [4,0], grid.nodeCountByPartition(total_number_of_partitions = 2)
+  grid.setPartId(1).setAllLocal
+  assert_equal [0,4], grid.nodeCountByPartition(total_number_of_partitions = 2)
+ end
+
+ def test_count_node_on_each_partition
+  grid = Grid.new(4,1,1,1)
+  4.times do
+   node = grid.addNode(0,0,0)
+   part = node
+   grid.setNodePart(node,part)
+  end
+  assert_equal [1,1,1,1], grid.nodeCountByPartition(total_number_of_partitions = 4)
+ end
+
 end
