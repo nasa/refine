@@ -43,7 +43,7 @@ Grid *gridParallelEdgeSwap(Grid *g, Queue *q, int node0, int node1 );
 Grid *gridApplyQueue(Grid *g, Queue *q );
 
 Grid *gridNodeCountByPartition(Grid *g, int total_number_of_partitions, 
-			     int *neighbors);
+			     int *partition_nodes);
 
 END_C_DECLORATION
 
