@@ -1,3 +1,14 @@
+2005-04-18 09:24 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridNodeCountByPartition) removed
+	* src/gridmpi.c (gridGhostDataCountByPartition) added. This
+	routine supplies low-level unit tested support to 
+	gridfortran.c:gridghostcount_ and gets rid of
+	redundancy between gridnodecountbypartition_ and gridghostcount_.
+	* src/gridfortran.c (gridnodecountbypartition_) removed
+	* src/gridfortran.c (gridghostcount_) exposes 
+	gridmpi.c:gridGhostDataCountByPartition
+
 2005-04-12 00:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridNodeCountByPartition) added method to count

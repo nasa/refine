@@ -434,18 +434,29 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   return grid;
 }
 
-Grid *gridNodeCountByPartition(Grid *grid, int total_number_of_partitions, 
-			       int *partition_nodes)
+Grid *gridGhostDataCountByPartition(Grid *grid, int total_number_of_partitions, 
+				    int *partition_data_count)
 {
-  int node, part;
+  int node, part, faces, edges;
 
-  for ( part = 0 ; part < total_number_of_partitions ; part++ )
-    partition_nodes[part] = 0;
+  for(node=0;node<total_number_of_partitions;node++) 
+    partition_data_count[node] = 0;
 
-  for ( node = 0 ; node < gridMaxNode(grid) ; node++ ) {
-    part = gridNodePart(grid, node);
-    if ( part >= 0 && part < total_number_of_partitions )
-      partition_nodes[part]++;
+  for(node=0;node<gridMaxNode(grid);node++) {
+    if (gridNodeGhost(grid,node)) { 
+      part = gridNodePart(grid,node);
+      if (part < 0 || part >= total_number_of_partitions) 
+	printf("%s: %d: gridNodePart error, %d part, %d npart\n",
+	       __FILE__, __LINE__, part, total_number_of_partitions );
+      partition_data_count[part]++;
+      faces = gridNodeFaceIdDegree(grid,node);
+      if (faces>0) partition_data_count[part] += (faces+1);
+      edges = gridNodeEdgeIdDegree(grid,node);
+      if (edges>0) partition_data_count[part] += (edges+1);
+      if (faces==0 && edges>0) 
+	printf("%s: %d: gridGhostDataCountByPartition error, %d faces, %d edges\n",
+	       __FILE__, __LINE__, faces, edges);
+    }
   }
   return grid;
 }

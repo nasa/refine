@@ -42,8 +42,8 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit );
 Grid *gridParallelEdgeSwap(Grid *g, Queue *q, int node0, int node1 );
 Grid *gridApplyQueue(Grid *g, Queue *q );
 
-Grid *gridNodeCountByPartition(Grid *g, int total_number_of_partitions, 
-			     int *partition_nodes);
+Grid *gridGhostDataCountByPartition(Grid *g, int total_number_of_partitions,
+				    int *partition_data_count);
 
 END_C_DECLORATION
 

@@ -69,7 +69,7 @@ VALUE grid_applyQueue( VALUE self, VALUE rb_queue )
 }
 
 
-VALUE grid_nodeCountByPartition( VALUE self, VALUE total_number_of_partitions )
+VALUE grid_ghostDataCountByPartition( VALUE self, VALUE total_number_of_partitions )
 {
   VALUE array;
   int i, *partition_nodes;
@@ -77,9 +77,9 @@ VALUE grid_nodeCountByPartition( VALUE self, VALUE total_number_of_partitions )
 
   partition_nodes = malloc(NUM2INT(total_number_of_partitions) * sizeof(int));
 
-  if (grid != gridNodeCountByPartition(grid,
-				       NUM2INT(total_number_of_partitions),
-				       partition_nodes)) {
+  if (grid != gridGhostDataCountByPartition(grid,
+					    NUM2INT(total_number_of_partitions),
+					    partition_nodes)) {
     free(partition_nodes);
     return Qnil;
   }
@@ -104,5 +104,5 @@ void Init_GridMPI()
   rb_define_method( cGridMPI, "parallelEdgeSwap", grid_parallelEdgeSwap, 3 );
   rb_define_method( cGridMPI, "applyQueue", grid_applyQueue, 1 );
 
-  rb_define_method( cGridMPI, "nodeCountByPartition", grid_nodeCountByPartition, 1 );
+  rb_define_method( cGridMPI, "ghostDataCountByPartition", grid_ghostDataCountByPartition, 1 );
 }
