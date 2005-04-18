@@ -517,4 +517,24 @@ class TestQueue < Test::Unit::TestCase
   assert_equal f, l.dumpFloat
  end
 
+ def testAddRemoveCellAndShift
+  nodes = [0,1,2,3]
+  nodeParts = [5,5,5,5]
+  xyzs = [ 0, 1, 2, 10,11,12, 20,21,22, 30,31,32 ]
+  q = Queue.new(3)
+  q.addCell(nodes,2,nodeParts,xyzs)
+  q.addCell(nodes,4,nodeParts,xyzs)
+  q.removeCell(nodes,nodeParts)
+
+  assert_equal q, q.globalShiftNode(3,10,2)
+  shiftedNodes = [0,1,2,5]
+  assert_equal shiftedNodes, q.addedCellNodes(0)
+  assert_equal shiftedNodes, q.addedCellNodes(1)
+  assert_equal shiftedNodes, q.removedCellNodes(0)
+
+  assert_equal q, q.globalShiftCell(3,10,4)
+  assert_equal 2, q.addedCellId(0)
+  assert_equal 8, q.addedCellId(1)
+ end
+
 end

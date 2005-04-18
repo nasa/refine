@@ -777,6 +777,60 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
   return queue;
 }
 
+Queue *queueGlobalShiftNode(Queue *queue,
+			    int old_nnode_global,
+			    int new_nnode_global,
+			    int node_offset )
+{
+  int index, i;
+
+  for ( index = 0 ; index < queue->nAddedCells ; index++ )
+    for ( i = 0; i < 4 ; i++ ) 
+      if ( queue->addedCellNodes[i+9*index] >= old_nnode_global )
+	queue->addedCellNodes[i+9*index] += node_offset;
+
+  for ( index = 0 ; index < queue->nRemovedCells ; index++ )
+    for ( i = 0; i < 4 ; i++ ) 
+      if ( queue->removedCellNodes[i+8*index] >= old_nnode_global )
+	queue->removedCellNodes[i+8*index] += node_offset;
+
+  for ( index = 0 ; index < queue->nAddedFaces ; index++ )
+    for ( i = 0; i < 3 ; i++ ) 
+      if ( queue->addedFaceNodes[i+7*index] >= old_nnode_global )
+	queue->addedFaceNodes[i+7*index] += node_offset;
+
+  for ( index = 0 ; index < queue->nRemovedFaces ; index++ )
+    for ( i = 0; i < 3 ; i++ ) 
+      if ( queue->removedFaceNodes[i+6*index] >= old_nnode_global )
+	queue->removedFaceNodes[i+6*index] += node_offset;
+
+  for ( index = 0 ; index < queue->nAddedEdges ; index++ )
+    for ( i = 0; i < 2 ; i++ ) 
+      if ( queue->addedEdgeNodes[i+5*index] >= old_nnode_global )
+	queue->addedEdgeNodes[i+5*index] += node_offset;
+
+  for ( index = 0 ; index < queue->nRemovedEdges ; index++ )
+    for ( i = 0; i < 2 ; i++ ) 
+      if ( queue->removedEdgeNodes[i+4*index] >= old_nnode_global )
+	queue->removedEdgeNodes[i+4*index] += node_offset;
+
+  return queue;
+}
+
+Queue *queueGlobalShiftCell(Queue *queue,
+			    int old_ncell_global,
+			    int new_ncell_global,
+			    int cell_offset )
+{
+  int index;
+
+  for ( index = 0 ; index < queue->nAddedCells ; index++ )
+    if ( queue->addedCellNodes[4+9*index] >= old_ncell_global )
+      queue->addedCellNodes[4+9*index] += cell_offset;
+
+  return queue;
+}
+
 Queue *queueContents(Queue *queue, FILE *f)
 {
   int transaction, removed, removedcell;

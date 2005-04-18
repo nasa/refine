@@ -109,7 +109,19 @@ Queue *queueDumpSize( Queue *, int *nInt, int *nDouble );
 Queue *queueDump( Queue *, int *ints, double *doubles );
 Queue *queueLoad( Queue *, int *ints, double *doubles );
 
+Queue *queueGlobalShiftNode( Queue *, 
+			     int old_nnode_global,
+			     int new_nnode_global, 
+			     int node_offset );
+Queue *queueGlobalShiftCell( Queue *,
+			     int old_ncell_global,
+			     int 
+new_ncell_global, 
+			     int cell_offset );
+
 Queue *queueContents(Queue *queue, FILE *file);
+
+
 
 END_C_DECLORATION
 
