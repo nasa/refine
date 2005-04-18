@@ -455,13 +455,17 @@ void queuedumpsize_( int *nInt, int *nDouble )
 void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   queueDump(queue, ints, doubles);
+  queueReset(queue);
 }
 
 void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
-  queueLoad(queue, ints, doubles);
-  gridApplyQueue(grid,queue);
-  queueReset(queue);
+  Queue *appliedQueue;
+
+  appliedQueue = queueCreate( queueNodeSize( queue ) );
+  queueLoad(appliedQueue, ints, doubles);
+  gridApplyQueue(grid,appliedQueue);
+  queueFree(appliedQueue);
 }
 
 void gridsize_( int *nnodeg, int *ncellg )

@@ -1,3 +1,14 @@
+2005-04-18 15:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridapplyqueue_) create a temperary queue
+	object to handle the apply operation. This will prevent a confict
+	with multiprocessor (colored) border swaps. This elimates reuse
+	of the static queue object and a queueReset(queue) call.
+	* src/gridfortran.c (queuedump_) moved the queueReset(queue)
+	call from gridapplyqueue_, this is to fix a logic bug that
+	existed for a long time but hadd no effect. this needed to be 
+	cleaned up inorder to border swap with colors.
+
 2005-04-18 12:18 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridglobalshift_) also calls
