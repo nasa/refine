@@ -1,3 +1,9 @@
+2005-04-18 12:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridglobalshift_) also calls
+	queueGlobalShiftNode, queueGlobalShiftCell to enable
+	colors durring parallel swap.
+
 2005-04-18 11:33 Mike Park  <mike.park@nasa.gov>
 
 	* src/queue.c (queueGlobalShiftNode) added.

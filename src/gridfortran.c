@@ -475,6 +475,8 @@ void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
 {
   gridGlobalShiftNode( grid, *oldnnodeg, *newnnodeg, *nodeoffset);
   gridGlobalShiftCell( grid, *oldncellg, *newncellg, *celloffset);
+  queueGlobalShiftNode( queue, *oldnnodeg, *newnnodeg, *nodeoffset);
+  queueGlobalShiftCell( queue, *oldncellg, *newncellg, *celloffset);
 }
 
 void gridrenumberglobalnodes_( int *nnode, int *new2old )
