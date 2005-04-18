@@ -1,3 +1,16 @@
+2005-04-18 16:05 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* This revision marks a change to the API to support CAPRI 2
+	* src/gridfortran.c (gridparallelloadcapri_) add "url" argument
+	to support client/server CAPRI 2 use.
+	* src/grid.h (struct Grid) add "model" member to store CAPRI 2
+	model index.
+	* src/gridgeom.c (gridParallelGeomLoad) add "url" argument
+	to support client/server CAPRI 2 use and use CADGeom_LoadModel()
+	if compiled with -DHAVE_CAPRI2
+	* src/gridgeom.c (gridParallelGeomSave) use CADGeom_SaveModel()
+	if compiled with -DHAVE_CAPRI2
+
 2005-04-18 15:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridapplyqueue_) create a temperary queue

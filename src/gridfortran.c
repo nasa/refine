@@ -142,10 +142,11 @@ void gridfreezenode_( int *nodeFortran )
   gridFreezeNode( grid, nodeC );
 }
 
-void gridparallelloadcapri_( char *modeler, char *capriProject, int *status )
+void gridparallelloadcapri_( char *url, char *modeler, char *capriProject,
+                             int *status )
 {
   gridSetCostConstraint(grid, gridCostConstraint(grid)|gridCOST_CNST_AREAUV);
-  if( grid != gridParallelGeomLoad( grid, modeler, capriProject ) ) {
+  if( grid != gridParallelGeomLoad( grid, url, modeler, capriProject ) ) {
     printf( "ERROR: %s: %d: failed to load part %s, partition %d, Modeler %s\n",
 	    __FILE__,__LINE__,capriProject,gridPartId(grid),modeler );
     *status = 0;

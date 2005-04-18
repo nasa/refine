@@ -16,7 +16,7 @@
 
 BEGIN_C_DECLORATION
 
-Grid *gridParallelGeomLoad( Grid *, char *modler, char *project );
+Grid *gridParallelGeomLoad( Grid *, char *url, char *modler, char *project );
 Grid *gridParallelGeomSave( Grid *, char *project );
 
 Grid *gridUpdateEdgeGrid( Grid *, int edgeId, int nCurveNode,

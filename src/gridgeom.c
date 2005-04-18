@@ -20,7 +20,8 @@
 
 #define UG_REFINE (6) /* Lifted from SDK/UG_API/UG_API.h to remove dependency */
 
-Grid *gridParallelGeomLoad( Grid *grid, char *modeler, char *project )
+Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
+                            char *project )
 {
   int vol=1;
   int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
@@ -42,7 +43,7 @@ Grid *gridParallelGeomLoad( Grid *grid, char *modeler, char *project )
   }  
 
 #ifdef HAVE_CAPRI2
-  if ( ! CADGeom_LoadPart( modeler, project ) ){
+  if ( ! CADGeom_LoadModel( url, modeler, project, &(grid->model) ) ){
 #else
   if ( ! CADGeom_LoadPart( project ) ){
 #endif
@@ -137,9 +138,15 @@ Grid *gridParallelGeomSave( Grid *grid, char *project )
   int vol=1;
 
   CADGeom_UseDefaultIOCallbacks();
+#ifdef HAVE_CAPRI2
+  if( !CADGeom_SaveModel(grid->model,project) ) {
+    printf("%s: %d: Could not save CAPRI model.\n",
+	   __FILE__, __LINE__);    
+#else
   if( !CADGeom_SavePart(vol,project) ) {
     printf("%s: %d: Could not save CAPRI part.\n",
 	   __FILE__, __LINE__);    
+#endif
     return NULL;
   }
 
