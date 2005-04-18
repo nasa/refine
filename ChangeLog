@@ -1,3 +1,7 @@
+2005-04-18 16:10 Bill Jones <w.t.jones@larc.nasa.gov>
+	* src/grid.h (struct Grid) "model" member added unconditionally
+	* src/grid.c (gridImport) "model" initialized to -1
+
 2005-04-18 16:05 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* This revision marks a change to the API to support CAPRI 2

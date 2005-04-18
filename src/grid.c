@@ -228,6 +228,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->freeNotificationData = NULL;
 
   grid->lines = linesCreate();
+  grid->model = -1;
 
   return  grid;
 }
@@ -1097,7 +1098,7 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
       grid->tecplotGeomFile = fopen(filename,"w");
     } 
     fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
-    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
   }
 
   nfacenode=0;
@@ -1110,8 +1111,13 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
 	  nfacenode, grid->nface);
 
   for ( i=0; i<nfacenode ; i++ ){
-    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e\n",
-	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i]);
+AdjIterator it;
+int nodes[3], face, faceId;
+it = adjFirst(gridFaceAdj(grid),i);
+face = adjItem(it);
+gridFace(grid, face, nodes, &faceId);
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",
+	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i],faceId);
   }
 
   fprintf(grid->tecplotGeomFile, "\n");
@@ -1154,7 +1160,7 @@ Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, char *filename)
 
   for ( i=0; i<4 ; i++ ){
     gridNodeXYZ(grid,nodes[i],xyz);
-    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",xyz[0],xyz[1],xyz[2],0);
   }
 
   fprintf(grid->tecplotGeomFile, "1 2 3 4\n");

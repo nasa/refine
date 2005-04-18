@@ -139,9 +139,7 @@ struct Grid {
   void *freeNotificationData;
 
   Lines *lines;
-#ifdef HAVE_CAPRI2
   int   model;	/* CAPRI 2 Model Id */
-#endif
 };
 
 Grid *gridCreate(int maxnode, int maxcell, int maxface, int maxedge );
