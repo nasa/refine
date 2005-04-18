@@ -94,7 +94,7 @@ GridBool CADGeom_Start( void )
 }
 
 #ifdef HAVE_CAPRI2
-GridBool GeoMesh_LoadPart( char *modeler, char *project )
+GridBool GeoMesh_LoadModel( char *url, char *modeler, char *project, int *mod )
 #else
 GridBool GeoMesh_LoadPart( char *project )
 #endif
@@ -103,7 +103,7 @@ GridBool GeoMesh_LoadPart( char *project )
 }
 
 #ifdef HAVE_CAPRI2
-GridBool CADGeom_LoadPart( char *modeler, char *project )
+GridBool CADGeom_LoadModel( char *url, char *modeler, char *project, int *mod )
 #else
 GridBool CADGeom_LoadPart( char *project )
 #endif

@@ -1,3 +1,7 @@
+2005-04-18 17:10 Bill Jones <w.t.jones@larc.nasa.gov>
+	* src/FAKEGeom.h updated signature of LoadModel for CAPRI 2 use
+	* src/FAKEGeomExtras.c updated signature of LoadModel for CAPRI 2 use
+
 2005-04-18 16:10 Bill Jones <w.t.jones@larc.nasa.gov>
 	* src/grid.h (struct Grid) "model" member added unconditionally
 	* src/grid.c (gridImport) "model" initialized to -1
