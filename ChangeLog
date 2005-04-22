@@ -1,3 +1,8 @@
+2005-04-22 12:00 Bill Jones <w.t.jones@larc.nasa.gov>
+	* src/gridfortran.c added gridcopyunusednodeGlobal() and
+	gridcopyunusedcellGlobal() functions to support new parallel removal
+	of unused data.
+
 2005-04-18 17:10 Bill Jones <w.t.jones@larc.nasa.gov>
 	* src/FAKEGeom.h updated signature of LoadModel for CAPRI 2 use
 	* src/FAKEGeomExtras.c updated signature of LoadModel for CAPRI 2 use

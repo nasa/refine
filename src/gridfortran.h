@@ -54,10 +54,12 @@ void gridrenumberglobalnodes_( int *nnode, int *new2old );
 void gridnunusednodeglobal_( int *nunused );
 void gridgetunusednodeglobal_( int *nunused, int *unused );
 void gridjoinunusednodeglobal_( int *nunused, int *unused );
+void gridcopyunusednodeglobal_( int *nunused, int *unused );
 void grideliminateunusednodeglobal_( void );
 void gridnunusedcellglobal_( int *nunused );
 void gridgetunusedcellglobal_( int *nunused, int *unused );
 void gridjoinunusedcellglobal_( int *nunused, int *unused );
+void gridcopyunusedcellglobal_( int *nunused, int *unused );
 void grideliminateunusedcellglobal_( void );
 
 void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 

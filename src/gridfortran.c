@@ -508,6 +508,21 @@ void gridjoinunusednodeglobal_( int *nunused, int *unused )
   for (i=0;i<(*nunused);i++) gridJoinUnusedNodeGlobal( grid, unused[i] );
 }
 
+void gridcopyunusednodeglobal_( int *nunused, int *unused )
+{
+  int i;
+
+  if (NULL != grid->unusedNodeGlobal)
+    free(grid->unusedNodeGlobal);
+
+  grid->nUnusedNodeGlobal = grid->maxUnusedNodeGlobal = *nunused;
+  grid->unusedNodeGlobal =
+    (int *)malloc(grid->maxUnusedNodeGlobal * sizeof(int));
+
+  for (i=0;i<(*nunused);i++)
+    grid->unusedNodeGlobal[i] = unused[i];
+}
+
 void grideliminateunusednodeglobal_(  )
 {
   gridEliminateUnusedNodeGlobal( grid );
@@ -527,6 +542,21 @@ void gridjoinunusedcellglobal_( int *nunused, int *unused )
 {
   int i;
   for (i=0;i<(*nunused);i++) gridJoinUnusedCellGlobal( grid, unused[i] );
+}
+
+void gridcopyunusedcellglobal_( int *nunused, int *unused )
+{
+  int i;
+
+  if (NULL != grid->unusedCellGlobal)
+    free(grid->unusedCellGlobal);
+
+  grid->nUnusedCellGlobal = grid->maxUnusedCellGlobal = *nunused;
+  grid->unusedCellGlobal =
+    (int *)malloc(grid->maxUnusedCellGlobal * sizeof(int));
+
+  for (i=0;i<(*nunused);i++)
+    grid->unusedCellGlobal[i] = unused[i];
 }
 
 void grideliminateunusedcellglobal_(  )
