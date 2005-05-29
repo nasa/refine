@@ -1,3 +1,8 @@
+2005-05-29 12:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c Removed -m gridmove projection option.
+	Always use gridmove to project.
+
 2005-04-22 12:00 Bill Jones <w.t.jones@larc.nasa.gov>
 	* src/gridfortran.c added gridcopyunusednodeGlobal() and
 	gridcopyunusedcellGlobal() functions to support new parallel removal
