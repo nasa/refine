@@ -1111,11 +1111,11 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
 	  nfacenode, grid->nface);
 
   for ( i=0; i<nfacenode ; i++ ){
-AdjIterator it;
-int nodes[3], face, faceId;
-it = adjFirst(gridFaceAdj(grid),i);
-face = adjItem(it);
-gridFace(grid, face, nodes, &faceId);
+    AdjIterator it;
+    int nodes[3], face, faceId;
+    it = adjFirst(gridFaceAdj(grid),i);
+    face = adjItem(it);
+    gridFace(grid, face, nodes, &faceId);
     fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",
 	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i],faceId);
   }
