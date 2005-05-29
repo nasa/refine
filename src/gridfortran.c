@@ -267,45 +267,10 @@ void gridminar_( double *aspectratio )
 
 void gridwritetecplotsurfacezone_( void )
 {
-  char filename[256], comment[256];
-  int cell, nodes[4];
+  char filename[256];
 
   sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
-  gridWriteTecplotSurfaceGeom(grid,filename);
-
-  for (cell=0;cell<gridMaxCell(grid);cell++)
-    if (grid==gridCell(grid, cell, nodes)) {
-      if ( -0.5 > gridAR(grid,nodes) ) {
-	sprintf(comment,
-		"cell cost of %f detected in gridwritetecplotsurfacezone_",
-		gridAR(grid,nodes));
-	gridWriteTecplotComment(grid, comment);
-	sprintf(comment, "proc%4d cell l%12d g%12d",
-		gridPartId(grid),cell,gridCellGlobal(grid,cell));
-	gridWriteTecplotComment(grid, comment);
-	sprintf(comment, "proc%4d cell l%12d local  nodes%10d%10d%10d%10d",
-	       gridPartId(grid),cell,
-	       nodes[0],nodes[1],nodes[2],nodes[3]);
-	gridWriteTecplotComment(grid, comment);
-	sprintf(comment, "proc%4d cell l%12d global nodes%10d%10d%10d%10d",
-	       gridPartId(grid),cell,
-	       gridNodeGlobal(grid,nodes[0]),gridNodeGlobal(grid,nodes[1]),
-	       gridNodeGlobal(grid,nodes[2]),gridNodeGlobal(grid,nodes[3]));
-	gridWriteTecplotComment(grid, comment);
-	sprintf(comment, "proc%4d cell l%12d global parts%10d%10d%10d%10d",
-	       gridPartId(grid),cell,
-	       gridNodePart(grid,nodes[0]),gridNodePart(grid,nodes[1]),
-	       gridNodePart(grid,nodes[2]),gridNodePart(grid,nodes[3]));
-	gridWriteTecplotComment(grid, comment);
-	gridWriteTecplotCellGeom(grid,nodes,filename);
-      }
-    }
-
-#ifdef PARALLEL_VERBOSE 
-  printf( " %6d tecplot dump with negative cells                         \n",
-	  gridPartId(grid) );
-  fflush(stdout);
-#endif
+  gridWriteTecplotInvalid(grid,filename);
 }
 
 void gridexportfast_( void )

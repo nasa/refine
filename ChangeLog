@@ -1,14 +1,21 @@
+2005-05-29 13:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotInvalid) added to dump surf
+	and invalid tets.
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) simplified
+	and called gridWriteTecplotInvalid.
+
 2005-05-29 13:20 Mike Park  <mike.park@nasa.gov>
 
-	* src/grindinsert.c (gridSplitEdgeRatio) use ratio to calculate new
+	* src/gridinsert.c (gridSplitEdgeRatio) use ratio to calculate new
 	edge and face parameters.
 
 2005-05-29 13:12 Mike Park  <mike.park@nasa.gov>
 
-	* src/grindinsert.c (gridSplitEdgeRatio,gridSplitEdgeAt) changed 
+	* src/gridinsert.c (gridSplitEdgeRatio,gridSplitEdgeAt) changed 
 	gridSplitEdgeAt into gridSplitEdgeRatio to allow for consistant
 	treatment of CAD edge and face parameters.
-	* src/grindinsert.c (gridParallelEdgeSplit) calls gridSplitEdgeRatio
+	* src/gridinsert.c (gridParallelEdgeSplit) calls gridSplitEdgeRatio
 
 2005-05-29 12:20 Mike Park  <mike.park@nasa.gov>
 
