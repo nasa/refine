@@ -103,9 +103,6 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 
 int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
 {
-  double xyz0[3], xyz1[3];
-  double newX, newY, newZ;
-  int newnode;
   GridBool gemLocal;
 
   if ( gridNodeGhost(grid,node0) && gridNodeGhost(grid,node1) ) return EMPTY;
@@ -115,17 +112,8 @@ int gridParallelEdgeSplit(Grid *grid, Queue *queue, int node0, int node1 )
   if ( NULL == queue && !gemLocal) return EMPTY;
   if ( NULL != queue && gemLocal) return EMPTY;
 
-  if (grid != gridNodeXYZ(grid,node0,xyz0)) return EMPTY;
-  if (grid != gridNodeXYZ(grid,node1,xyz1)) return EMPTY;
-
-  newX = ( xyz0[0] + xyz1[0] ) * 0.5;
-  newY = ( xyz0[1] + xyz1[1] ) * 0.5;
-  newZ = ( xyz0[2] + xyz1[2] ) * 0.5;
-
   if (NULL != queue) queueNewTransaction(queue);
-  newnode = gridSplitEdgeAt( grid, queue, node0, node1, newX, newY, newZ );
-  
-  return newnode;
+  return gridSplitEdgeRatio( grid, queue, node0, node1, 0.5 );
 }
 
 Grid *gridParallelEdgeCollapse(Grid *grid, Queue *queue, int node0, int node1 )

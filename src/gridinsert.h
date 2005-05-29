@@ -20,8 +20,7 @@ Grid *gridThrash(Grid *g );
 Grid *gridRemoveAllNodes(Grid *g );
 Grid *gridAdapt(Grid *g, double minLength, double maxLength );
 int gridSplitEdge(Grid *g, int n0, int n1 );
-int gridSplitEdgeAt(Grid *g, Queue *q, int n0, int n1, 
-		    double newX, double newY, double newZ);
+int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
 int gridSplitEdgeIfNear(Grid *g, int n0, int n1, 
 			double newX, double newY, double newZ);
 int gridSplitFaceAt(Grid *g, int face,  

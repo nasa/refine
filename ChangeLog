@@ -1,3 +1,10 @@
+2005-05-29 13:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/grindinsert.c (gridSplitEdgeRatio,gridSplitEdgeAt) changed 
+	gridSplitEdgeAt into gridSplitEdgeRatio to allow for consistant
+	treatment of CAD edge and face parameters.
+	* src/grindinsert.c (gridParallelEdgeSplit) calls gridSplitEdgeRatio
+
 2005-05-29 12:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c Removed -m gridmove projection option.

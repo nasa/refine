@@ -17,12 +17,11 @@ VALUE grid_splitEdge( VALUE self, VALUE n0, VALUE n1 )
   return INT2NUM(gridSplitEdge( grid, NUM2INT(n0),  NUM2INT(n1) ));
 }
 
-VALUE grid_splitEdgeAt( VALUE self, VALUE n0, VALUE n1,
-			VALUE x, VALUE y, VALUE z )
+VALUE grid_splitEdgeRatio( VALUE self, VALUE n0, VALUE n1, VALUE ratio )
 {
   GET_GRID_FROM_SELF;
-  return INT2NUM(gridSplitEdgeAt( grid, NULL, NUM2INT(n0),  NUM2INT(n1),
-				  NUM2DBL(x), NUM2DBL(y), NUM2DBL(z) ));
+  return INT2NUM(gridSplitEdgeRatio( grid, NULL, NUM2INT(n0), NUM2INT(n1), 
+				     NUM2DBL(ratio) ));
 }
 
 VALUE grid_splitEdgeIfNear( VALUE self, VALUE n0, VALUE n1,
@@ -84,7 +83,7 @@ void Init_GridInsert()
   cGridInsert = rb_define_module( "GridInsert" );
   rb_define_method( cGridInsert, "adapt", grid_adapt, 2 );
   rb_define_method( cGridInsert, "splitEdge", grid_splitEdge, 2 );
-  rb_define_method( cGridInsert, "splitEdgeAt", grid_splitEdgeAt, 5 );
+  rb_define_method( cGridInsert, "splitEdgeRatio", grid_splitEdgeRatio, 3 );
   rb_define_method( cGridInsert, "splitEdgeIfNear", grid_splitEdgeIfNear, 5 );
   rb_define_method( cGridInsert, "splitFaceAt", grid_splitFaceAt, 4 );
   rb_define_method( cGridInsert, "splitCellAt", grid_splitCellAt, 4 );

@@ -148,7 +148,7 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
   int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
   double ratios[3];
-  double dist, xyz0[3], xyz1[3], xyz[3];
+  double dist, ratio;
   int i, newnode;
   
   nnodeAdd = 0;
@@ -171,23 +171,15 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 	   !gridNodeFrozen(grid, nodes[1]) ) {
 	if (grid == gridEdgeRatio3(grid, nodes[0], nodes[1], ratios ) ) {
 	  if ( ratios[2] > 1.55 ) {
-	    gridNodeXYZ(grid, nodes[0], xyz0);
-	    gridNodeXYZ(grid, nodes[1], xyz1);
 	    if (ratios[0]<ratios[1]) {
 	      dist = 1.0/ratios[0];
-	      for (i=0;i<3;i++) xyz[i] = (1.0-dist)*xyz0[i] + dist*xyz1[i];
+              ratio = dist;
 	    }else{
 	      dist = 1.0/ratios[1];
-	      for (i=0;i<3;i++) xyz[i] = dist*xyz0[i] + (1.0-dist)*xyz1[i];
+              ratio = (1.0-dist);
 	    }
-	    /*
-	      printf("xyz0%12.8f%12.8f%12.8f\n",xyz0[0],xyz0[1],xyz0[2]);
-	      printf("xyz1%12.8f%12.8f%12.8f\n",xyz1[0],xyz1[1],xyz1[2]);
-	      printf("xyz %12.8f%12.8f%12.8f\n",xyz[0],xyz[1],xyz[2]);
-	      printf("rat %12.8f%12.8f%12.8f\n",ratios[0],ratios[1],ratios[2]);
-	    */
-	    newnode = gridSplitEdgeAt( grid, NULL, nodes[0], nodes[1],
-				       xyz[0], xyz[1], xyz[2] );
+	    newnode = gridSplitEdgeRatio( grid, NULL,
+                                          nodes[0], nodes[1], ratio );
 	    if ( newnode != EMPTY ){
 	      nnodeAdd++;
 	      gridSwapNearNode( grid, newnode, 1.0 );
@@ -209,21 +201,13 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
 
 int gridSplitEdge(Grid *grid, int n0, int n1)
 {
-  double xyz0[3], xyz1[3], newXYZ[3];
-
-  if (grid != gridNodeXYZ(grid, n0, xyz0) ) return EMPTY;
-  if (grid != gridNodeXYZ(grid, n1, xyz1) ) return EMPTY;
-  gridAverageVector(xyz0, xyz1, newXYZ);
-  
-  return gridSplitEdgeAt(grid, NULL, n0, n1,
-			 newXYZ[0], newXYZ[1], newXYZ[2] );
-
+  return gridSplitEdgeRatio(grid, NULL, n0, n1, 0.5 );
 }
 
-int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
-		    double newX, double newY, double newZ )
+int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
 {
   int igem, cell, nodes[4], inode, node;
+  double xyz0[3], xyz1[3], xyz[3];
   int newnode, newnodes0[4], newnodes1[4];
   int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
   int newface_gap0n0, newface_gap0n1, newface_gap1n0, newface_gap1n1;
@@ -246,7 +230,11 @@ int gridSplitEdgeAt(Grid *grid, Queue *queue, int n0, int n1,
   }
 
   /* create new node and initialize */
-  newnode = gridAddNode(grid, newX, newY, newZ );
+  if (grid != gridNodeXYZ(grid, n0, xyz0) ) return EMPTY;
+  if (grid != gridNodeXYZ(grid, n1, xyz1) ) return EMPTY;
+  for (inode = 0 ; inode < 3 ; inode++) 
+    xyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
+  newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
   gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
   gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
@@ -418,7 +406,7 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
 
   if ( edgePosition > 0.0 && edgePosition < 1.0 && 
        radius < 0.001*edgeLength) {
-    newnode = gridSplitEdgeAt(grid, NULL, n0, n1, newX, newY, newZ);
+    newnode = gridSplitEdgeRatio(grid, NULL, n0, n1, edgePosition);
     return newnode;
   }
 

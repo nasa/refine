@@ -67,11 +67,15 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 8, grid.ncell
  end
 
- def testSplitEdgeAt4
+ def testSplitEdgeRatio4
   assert_not_nil grid = gemGrid
-  assert_equal grid.nnode, grid.splitEdgeAt(0,1,0.1,0,0)
+  assert_equal grid.nnode, grid.splitEdgeRatio(0,1,0.45)
   assert_equal 7, grid.nnode
-  assert_equal [0.1,0,0], grid.nodeXYZ(6)
+  tol = 1.0e-15
+  xyz = [0.1,0,0]
+  assert_in_delta xyz[0], grid.nodeXYZ(6)[0], tol
+  assert_in_delta xyz[1], grid.nodeXYZ(6)[1], tol
+  assert_in_delta xyz[2], grid.nodeXYZ(6)[2], tol
   assert_equal 8, grid.ncell
  end
 
@@ -84,9 +88,9 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 8, grid.ncell
  end
 
- def testSplitEdgeAt4NegVolume
+ def testSplitEdgeRatio4NegVolume
   assert_not_nil grid = gemGrid
-  assert_equal( -1, grid.splitEdgeAt(0,1,2,0,0) )
+  assert_equal( -1, grid.splitEdgeRatio(0,1,1.5) )
   assert_equal 6, grid.nnode
   assert_equal 4, grid.ncell
  end
