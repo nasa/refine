@@ -1,3 +1,8 @@
+2005-05-29 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/grindinsert.c (gridSplitEdgeRatio) use ratio to calculate new
+	edge and face parameters.
+
 2005-05-29 13:12 Mike Park  <mike.park@nasa.gov>
 
 	* src/grindinsert.c (gridSplitEdgeRatio,gridSplitEdgeAt) changed 

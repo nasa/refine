@@ -253,10 +253,10 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
     gridNodeUV(grid,n1,faceId1,n1Id1uv);
     gridNodeUV(grid,gap0,faceId0,gap0uv);
     gridNodeUV(grid,gap1,faceId1,gap1uv);
-    newId0uv[0] = 0.5 * (n0Id0uv[0]+n1Id0uv[0]);
-    newId0uv[1] = 0.5 * (n0Id0uv[1]+n1Id0uv[1]);
-    newId1uv[0] = 0.5 * (n0Id1uv[0]+n1Id1uv[0]);
-    newId1uv[1] = 0.5 * (n0Id1uv[1]+n1Id1uv[1]);
+    newId0uv[0] = (1-ratio)*n0Id0uv[0] + ratio*n1Id0uv[0];
+    newId0uv[1] = (1-ratio)*n0Id0uv[1] + ratio*n1Id0uv[1];
+    newId1uv[0] = (1-ratio)*n0Id1uv[0] + ratio*n1Id1uv[0];
+    newId1uv[1] = (1-ratio)*n0Id1uv[1] + ratio*n1Id1uv[1];
 
     newface_gap0n0 = gridAddFaceUVAndQueue(grid, queue,
 					   n0, n0Id0uv[0], n0Id0uv[1],
@@ -287,7 +287,7 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
     edgeId = gridEdgeId(grid,n0,n1);
     gridNodeT(grid,n0,edgeId,&t0);
     gridNodeT(grid,n1,edgeId,&t1);
-    newT = 0.5 * (t0+t1);
+    newT = (1-ratio)*t0+ratio*t1;
     newedge0 = gridAddEdgeAndQueue(grid,queue,n0,newnode,edgeId,t0,newT);
     newedge1 = gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
   }
