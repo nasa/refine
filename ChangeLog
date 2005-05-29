@@ -1,3 +1,8 @@
+2005-05-29 14:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c started a --validate option to test and validate cost
+	* src/unit_main.c added gridCOST_CNST_AREAUV to gridSetCostConstraint
+
 2005-05-29 13:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotInvalid) added to dump surf

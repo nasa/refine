@@ -63,6 +63,7 @@ int main( int argc, char *argv[] )
   double minAR=-1.0;
   double ratioSplit, ratioCollapse;
   int EdgeBasedCycles = EMPTY;
+  GridBool validate = FALSE;
   GridBool tecplotOutput = FALSE;
   int iview = 0;
   int maxnode = 50000;
@@ -139,6 +140,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-t") == 0 ) {
       tecplotOutput = TRUE;
       printf("-t argument %d\n",i);
+    } else if( strcmp(argv[i],"--validate") == 0 ) {
+      validate = TRUE;
+      printf("--validate argument %d\n",i);
    } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
 #ifdef HAVE_CAPRI2
@@ -162,6 +166,7 @@ int main( int argc, char *argv[] )
       printf(" -f freeze nodes in this .lines file\n");
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
+      printf(" --validate give grid valid cost constraints\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -177,8 +182,13 @@ int main( int argc, char *argv[] )
 
   printf("running project %s\n",project);
   grid = gridLoadPart( modeler, project, maxnode );
-  if (EdgeBasedCycles!=EMPTY) gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
-  gridSetCostConstraint(grid,gridCOST_CNST_VOLUME|gridCOST_CNST_VALID);
+
+  if (EdgeBasedCycles!=EMPTY)gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
+
+  gridSetCostConstraint(grid,
+			gridCOST_CNST_VOLUME | 
+			gridCOST_CNST_VALID  |
+                        gridCOST_CNST_AREAUV );
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: loaded part does not have right handed boundaries\n");
@@ -251,6 +261,13 @@ int main( int argc, char *argv[] )
   if (grid!=gridRobustProject(grid)) {
     printf("could not project grid. stop.\n");
     return 1;
+  }
+
+  if (validate) {
+    printf("cost const %d.\n",gridCostConstraint(grid)),
+    gridWriteTecplotInvalid(grid,"invalid.t");
+    printf("Done.\n");
+    return 0;
   }
 
   if (EMPTY!=EdgeBasedCycles) {
