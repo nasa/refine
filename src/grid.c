@@ -1170,30 +1170,6 @@ Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, char *filename)
   return grid;
 }
 
-Grid *gridWriteTecplotInvalid(Grid *grid, char *filename )
-{
-  char comment[256];
-  int cell, nodes[4];
-
-  gridWriteTecplotSurfaceGeom(grid,filename);
-
-  for (cell=0;cell<gridMaxCell(grid);cell++) {
-    if (grid==gridCell(grid, cell, nodes)) {
-      if ( -0.5 > gridAR(grid,nodes) ) {
-	sprintf(comment,
-		"cell cost of %f detected.",
-		gridAR(grid,nodes));
-	gridWriteTecplotComment(grid, comment);
-	gridWriteTecplotCellGeom(grid,nodes,filename);
-      }
-    }
-  }
-
-  fflush(grid->tecplotGeomFile);
-
-  return grid;
-}
-
 Grid *gridCloseTecplotGeomFile(Grid *grid)
 {
   if (NULL == grid->tecplotGeomFile) return NULL;

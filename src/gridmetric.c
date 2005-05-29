@@ -23,6 +23,28 @@
 #include "gridshape.h"
 #include "gridmetric.h"
 
+Grid *gridWriteTecplotInvalid(Grid *grid, char *filename )
+{
+  char comment[256];
+  int cell, nodes[4];
+
+  gridWriteTecplotSurfaceGeom(grid,filename);
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      if ( -0.5 > gridAR(grid,nodes) ) {
+	sprintf(comment,
+		"cell cost of %f detected.",
+		gridAR(grid,nodes));
+	gridWriteTecplotComment(grid, comment);
+	gridWriteTecplotCellGeom(grid,nodes,filename);
+      }
+    }
+  }
+
+  return grid;
+}
+
 Grid *gridSetMapWithSpacingVectors(Grid *grid, int node,
 				   double *v1, double *v2, double *v3,
                                    double s1, double s2, double s3)

@@ -199,7 +199,6 @@ void gridFree(Grid *g);
 Grid *gridWriteTecplotSurfaceGeom(Grid *g, char *filename );
 Grid *gridWriteTecplotComment(Grid *g, char *comment );
 Grid *gridWriteTecplotCellGeom(Grid *g, int *nodes, char *filename );
-Grid *gridWriteTecplotInvalid(Grid *g, char *filename );
 Grid *gridCloseTecplotGeomFile(Grid *g);
 /* Warning, call gridSortNodeGridEx before calculating scalar 
  * in gridWriteTecplotSurfaceScalar to avoid a renumbering bug. */
