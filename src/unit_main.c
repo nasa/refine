@@ -37,6 +37,22 @@
 
 #define STATUS DUMP_TEC PRINT_STATUS
 
+int gridNumberOfInvalidCells(Grid *grid)
+{
+  int cell, nodes[4];
+  int invalid;
+  invalid = 0;
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      if ( -0.5 > gridAR(grid,nodes) ) {
+	invalid++;
+      }
+    }
+  }
+  return invalid;
+}
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -264,7 +280,13 @@ int main( int argc, char *argv[] )
   }
 
   if (validate) {
-    printf("cost const %d.\n",gridCostConstraint(grid)),
+    int cycle;
+    printf("cost const %d.\n",gridCostConstraint(grid));
+    for (cycle=0;cycle<5;cycle++){
+      printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
+      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+    }
+    printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
     gridWriteTecplotInvalid(grid,"invalid.t");
     printf("Done.\n");
     return 0;

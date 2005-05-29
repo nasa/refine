@@ -1,9 +1,14 @@
-202005-05-29 14:33 Mike Park  <mike.park@nasa.gov>
+2005-05-29 15:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridNumberOfInvalidCells) count invalid cells and
+	swap to fix (about half).
+
+2005-05-29 14:33 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotInvalid) removed to fix gridmetric depend.
 	* src/gridmetric.c (gridWriteTecplotInvalid) added (requires gridAR).
 
-05-05-29 14:25 Mike Park  <mike.park@nasa.gov>
+2005-05-29 14:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c started a --validate option to test and validate cost
 	* src/unit_main.c added gridCOST_CNST_AREAUV to gridSetCostConstraint
