@@ -62,9 +62,7 @@ int main( int argc, char *argv[] )
   double xyz[3];
   double minAR=-1.0;
   double ratioSplit, ratioCollapse;
-  GridBool projected;
   int EdgeBasedCycles = EMPTY;
-  GridBool GridMoveProjection = FALSE;
   GridBool tecplotOutput = FALSE;
   int iview = 0;
   int maxnode = 50000;
@@ -165,7 +163,6 @@ int main( int argc, char *argv[] )
       printf(" -e Number of Edge Based Operators Adaptation Cycles\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
-      printf(" -m use grid movement for projection\n");
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
       return(0);
@@ -295,9 +292,7 @@ int main( int argc, char *argv[] )
   newSize = gridNNode(grid);
   jmax = 40;
   for ( j=0; 
-	(j<jmax) && 
-	  (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01) || 
-	  !projected;
+	(j<jmax) && (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01);
 	j++){
 
     ratioCollapse = 1.0*ratio;
@@ -312,7 +307,7 @@ int main( int argc, char *argv[] )
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     STATUS;
 
-    if (GridMoveProjection) {
+    {
       GridMove *gm;
       double minVolume;
       printf("Calling GridMove to project nodes...\n");
@@ -332,27 +327,17 @@ int main( int argc, char *argv[] )
     }
 
     for (i=0;i<1;i++){
-      projected = ( grid == gridRobustProject(grid));
-      if (projected) {
-	printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-	STATUS;
-	printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-      }else{
-	printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
-      }
+      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      STATUS;
+      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
     }
     STATUS;
   }
 
   for (i=0;i<2;i++){
-    projected = ( grid == gridRobustProject(grid));
-    if (projected) {
-      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-      STATUS;
-      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-    }else{
-      printf("node smoothing volume grid...\n");gridSmoothVolume(grid);
-    }
+    printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+    STATUS;
+    printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
     STATUS;
   }
 
