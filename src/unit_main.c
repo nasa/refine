@@ -133,9 +133,6 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-f") == 0 ) {
       i++; sprintf( linesfile, "%s", argv[i] );
       printf("-l argument %d: %s\n",i, linesfile);
-    } else if( strcmp(argv[i],"-m") == 0 ) {
-      GridMoveProjection = TRUE;
-      printf("-m argument %d\n",i);
     } else if( strcmp(argv[i],"-n") == 0 ) {
       i++; maxnode = atoi(argv[i]);
       printf("-n argument %d: %d\n",i, maxnode);
