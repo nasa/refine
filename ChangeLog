@@ -1,3 +1,7 @@
+2005-05-31 17:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridWriteTecplotCurvedGeom) fleshed out, untested.
+
 2005-05-31 15:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotTriangleZone) fixed f2n int declaration.

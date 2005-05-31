@@ -183,12 +183,85 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
   return grid;
 }
 
+static int side2node0[] = {1, 0, 0};
+static int side2node1[] = {2, 2, 1};
+
+static void gridInsertSideIntoFace2Edge(Grid *grid, int *f2n6, int side,
+					int node0, int node1)
+{
+  int face, nodes[3], faceId;
+  int iside;
+  int local0, local1;
+  AdjIterator it;
+
+  for ( it = adjFirst(gridFaceAdj(grid),node0); 
+	adjValid(it); 
+	it = adjNext(it) ) {
+    face = adjItem(it);
+    gridFace( grid, face, nodes, &faceId );
+    for(iside=0;iside<3;iside++) {
+      local0 = nodes[side2node0[iside]];
+      local1 = nodes[side2node1[iside]];
+      if ( MIN(local0, local1) == MIN(node0,node1) &&
+	   MAX(local0, local1) == MAX(node0,node1) ) {
+	f2n6[3+iside+6*face] = side;
+      } 
+    }
+  }
+}
+
+/* call gridSortNodeGridEx before calling */
+static Grid *gridComputeMidNodeIndex(Grid *grid, int *f2n6,
+				     int *norignode, int *nmidnode)
+{
+  int i, face, nodes[3], faceId;
+  int nface, nfacenode;
+  int side, nside;
+
+  for (face=0;face<nface;face++) {
+    for (i=0;i<6;i++) f2n6[i+6*face] = EMPTY;
+  }
+
+  nface=0;
+  nfacenode=0;
+  for( face=0 ; face<gridMaxFace(grid) ; face++ ) {
+    if ( grid == gridFace(grid, face, nodes, &faceId) ) {
+      for (i=0;i<3;i++) {
+	f2n6[i+6*nface] = nodes[i];
+	nfacenode = MAX(nfacenode, nodes[i]);
+      }
+      nface++;
+    }
+  }
+  nfacenode++;
+
+  nside = nfacenode;
+  for (face=0;face<nface;face++) {
+    for (side=0;side<3;side++) {
+      if ( EMPTY == f2n6[3+side+6*face] ) {
+	gridInsertSideIntoFace2Edge(grid, f2n6, nside,
+				    f2n6[side2node0[side]+6*face], 
+				    f2n6[side2node1[side]+6*face]);
+	nside++;
+      }
+    }
+  }
+
+  *norignode = nfacenode;
+  *nmidnode = nside;
+
+  return grid;
+}
+
 Grid *gridWriteTecplotCurvedGeom(Grid *grid, char *filename )
 {
-  int nnode, nface;
-  int i, face, nodes[3], faceId;
+  int node;
+  int nfacenode, nnode, nface;
+  int face, side;
+  int *f2n6;
   double *xyz;
   int *f2n;
+  Grid *status;
 
   printf("gridWriteTecplotCurvedGeom: method not implemented yet.\n");
   return NULL;
@@ -198,22 +271,50 @@ Grid *gridWriteTecplotCurvedGeom(Grid *grid, char *filename )
     return NULL;
   }
 
-  f2n = (int *)malloc(sizeof(int)*3*gridNFace(grid));
+  f2n6 = (int *)malloc(sizeof(int)*6*gridNFace(grid));
 
-  nnode=0;
-  for(face=0;face<gridNFace(grid);face++){
-    if (grid==gridFace(grid, face, nodes, &faceId )) {
-      for (i=0;i<3;i++) {
-	nnode = MAX(nnode, nodes[i]);
-	f2n[i+3*face] = nodes[i];
-      }
+  gridComputeMidNodeIndex(grid, f2n6, &nfacenode, &nnode);
+
+  xyz = (double *)malloc(sizeof(double)*3*nnode);
+
+  for(node=0;node<nfacenode;node++) gridNodeXYZ(grid,node,&(xyz[3*node]));
+
+  for(face=0;face<gridNFace(grid);face++) {
+    for (side=0;side<3;side++) {
+      gridCurvedEdgeMidpoint(grid,
+			     f2n6[side2node0[side]+6*face], 
+			     f2n6[side2node1[side]+6*face],
+			     &(xyz[3*f2n6[3+side+6*face]]) );
     }
   }
-  nnode++;
 
-  return gridWriteTecplotTriangleZone(grid, filename,
-				      nnode, xyz,
-				      nface, f2n);
+  f2n = (int *)malloc(sizeof(int)*3*4*gridNFace(grid));
+  for(face=0;face<gridNFace(grid);face++) {
+    f2n[0+3*(0+4*face)] = f2n6[0+6*face];
+    f2n[1+3*(0+4*face)] = f2n6[5+6*face];
+    f2n[2+3*(0+4*face)] = f2n6[4+6*face];
+
+    f2n[0+3*(1+4*face)] = f2n6[5+6*face];
+    f2n[1+3*(1+4*face)] = f2n6[1+6*face];
+    f2n[2+3*(1+4*face)] = f2n6[3+6*face];
+
+    f2n[0+3*(2+4*face)] = f2n6[5+6*face];
+    f2n[1+3*(2+4*face)] = f2n6[3+6*face];
+    f2n[2+3*(2+4*face)] = f2n6[4+6*face];
+
+    f2n[0+3*(3+4*face)] = f2n6[4+6*face];
+    f2n[1+3*(3+4*face)] = f2n6[3+6*face];
+    f2n[2+3*(3+4*face)] = f2n6[2+6*face];
+  }
+
+  status = gridWriteTecplotTriangleZone(grid, filename,
+					nnode, xyz,
+					nface, f2n);
+  free(f2n6);
+  free(xyz);
+  free(f2n);
+
+  return status;
 }
 
 Grid* gridShapeJacobian1(Grid *grid, 
