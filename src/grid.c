@@ -1107,7 +1107,8 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
   }
   nfacenode++;
 
-  fprintf(grid->tecplotGeomFile, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+  fprintf(grid->tecplotGeomFile,
+	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
 	  nfacenode, grid->nface);
 
   for ( i=0; i<nfacenode ; i++ ){
@@ -1125,6 +1126,44 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
   for ( i=0; i<grid->nface ; i++ ){
     fprintf(grid->tecplotGeomFile, " %9d %9d %9d\n",
 	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
+  }
+
+  fflush(grid->tecplotGeomFile);
+
+  return grid;
+}
+
+Grid *gridWriteTecplotTriangleZone(Grid *grid, char *filename,
+				   int nnode, double *xyz,
+				   int nface, double *f2n)
+{
+  int i;
+
+  if (NULL == grid->tecplotGeomFile) {
+    if (NULL == filename) {
+      grid->tecplotGeomFile = fopen("gridGeom.t","w");
+    }else{
+      grid->tecplotGeomFile = fopen(filename,"w");
+    } 
+    fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
+  }
+
+
+  fprintf(grid->tecplotGeomFile,
+	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  nnode, nface);
+
+  for ( i=0; i<nnode ; i++ ){
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",
+	    xyz[0+3*i],xyz[1+3*i],xyz[2+3*i],0);
+  }
+
+  fprintf(grid->tecplotGeomFile, "\n");
+
+  for ( i=0; i<grid->nface ; i++ ){
+    fprintf(grid->tecplotGeomFile, " %9d %9d %9d\n",
+	    f2n[0+3*i]+1,f2n[1+3*i]+1,f2n[2+3*i]+1);
   }
 
   fflush(grid->tecplotGeomFile);
