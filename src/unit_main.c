@@ -18,6 +18,7 @@
 #include "gridswap.h"
 #include "gridinsert.h"
 #include "gridcad.h"
+#include "gridshape.h"
 #include "gridmove.h"
 #include "gridmpi.h"
 #include "gridfiller.h"
@@ -287,6 +288,7 @@ int main( int argc, char *argv[] )
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
     }
     printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
+    gridWriteTecplotCurvedGeom(grid,"invalid.t");
     gridWriteTecplotInvalid(grid,"invalid.t");
     printf("Done.\n");
     return 0;
