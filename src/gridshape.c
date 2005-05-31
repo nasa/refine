@@ -263,9 +263,6 @@ Grid *gridWriteTecplotCurvedGeom(Grid *grid, char *filename )
   int *f2n;
   Grid *status;
 
-  printf("gridWriteTecplotCurvedGeom: method not implemented yet.\n");
-  return NULL;
-
   if ( grid !=  gridSortNodeGridEx(grid) ) {
     printf("gridWriteTecplotCurvedGeom: gridSortNodeGridEx failed.\n");
     return NULL;
