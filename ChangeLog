@@ -1,3 +1,8 @@
+2005-05-31 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotTriangleZone) use nface as loop bound.
+	* src/gridshape.c (gridWriteTecplotCurvedGeom) debuged. looks resonable.
+
 2005-05-31 17:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridshape.c (gridWriteTecplotCurvedGeom) fleshed out, untested.

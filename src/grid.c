@@ -1161,7 +1161,7 @@ Grid *gridWriteTecplotTriangleZone(Grid *grid, char *filename,
 
   fprintf(grid->tecplotGeomFile, "\n");
 
-  for ( i=0; i<grid->nface ; i++ ){
+  for ( i=0; i<nface ; i++ ){
     fprintf(grid->tecplotGeomFile, " %9d %9d %9d\n",
 	    f2n[0+3*i]+1,f2n[1+3*i]+1,f2n[2+3*i]+1);
   }

@@ -218,7 +218,7 @@ static Grid *gridComputeMidNodeIndex(Grid *grid, int *f2n6,
   int nface, nfacenode;
   int side, nside;
 
-  for (face=0;face<nface;face++) {
+  for (face=0;face<gridNFace(grid);face++) {
     for (i=0;i<6;i++) f2n6[i+6*face] = EMPTY;
   }
 
@@ -285,7 +285,9 @@ Grid *gridWriteTecplotCurvedGeom(Grid *grid, char *filename )
     }
   }
 
-  f2n = (int *)malloc(sizeof(int)*3*4*gridNFace(grid));
+  nface = 4*gridNFace(grid);
+  f2n = (int *)malloc(sizeof(int)*3*nface);
+
   for(face=0;face<gridNFace(grid);face++) {
     f2n[0+3*(0+4*face)] = f2n6[0+6*face];
     f2n[1+3*(0+4*face)] = f2n6[5+6*face];
