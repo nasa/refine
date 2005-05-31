@@ -1,3 +1,9 @@
+2005-05-31 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotTriangleZone) fixed f2n int declaration.
+	* src/gridshape.c (gridWriteTecplotCurvedGeom) created nonfunctional
+	stub for implementation in progress.
+
 2005-05-31 12:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotTriangleZone) dump arrays to tecplot file.

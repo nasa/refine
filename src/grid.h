@@ -199,7 +199,7 @@ void gridFree(Grid *g);
 Grid *gridWriteTecplotSurfaceGeom(Grid *g, char *filename );
 Grid *gridWriteTecplotTriangleZone(Grid *g, char *filename,
 				   int nnode, double *xyz,
-				   int nface, double *f2n);
+				   int nface, int *f2n);
 Grid *gridWriteTecplotComment(Grid *g, char *comment );
 Grid *gridWriteTecplotCellGeom(Grid *g, int *nodes, char *filename );
 Grid *gridCloseTecplotGeomFile(Grid *g);

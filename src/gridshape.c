@@ -15,6 +15,9 @@
 #include <math.h>
 #include <limits.h>
 #include <values.h>
+#ifndef __APPLE__       /* Not needed on Mac OS X */
+#include <malloc.h>
+#endif
 #include "gridmath.h"
 #include "gridcad.h"
 #include "gridshape.h"
@@ -178,6 +181,39 @@ Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
   gridWriteTecplotSurfaceScalar(grid,"gridMinJac.t",scalar);
   free(scalar);
   return grid;
+}
+
+Grid *gridWriteTecplotCurvedGeom(Grid *grid, char *filename )
+{
+  int nnode, nface;
+  int i, face, nodes[3], faceId;
+  double *xyz;
+  int *f2n;
+
+  printf("gridWriteTecplotCurvedGeom: method not implemented yet.\n");
+  return NULL;
+
+  if ( grid !=  gridSortNodeGridEx(grid) ) {
+    printf("gridWriteTecplotCurvedGeom: gridSortNodeGridEx failed.\n");
+    return NULL;
+  }
+
+  f2n = (int *)malloc(sizeof(int)*3*gridNFace(grid));
+
+  nnode=0;
+  for(face=0;face<gridNFace(grid);face++){
+    if (grid==gridFace(grid, face, nodes, &faceId )) {
+      for (i=0;i<3;i++) {
+	nnode = MAX(nnode, nodes[i]);
+	f2n[i+3*face] = nodes[i];
+      }
+    }
+  }
+  nnode++;
+
+  return gridWriteTecplotTriangleZone(grid, filename,
+				      nnode, xyz,
+				      nface, f2n);
 }
 
 Grid* gridShapeJacobian1(Grid *grid, 

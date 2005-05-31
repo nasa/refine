@@ -1135,7 +1135,7 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
 
 Grid *gridWriteTecplotTriangleZone(Grid *grid, char *filename,
 				   int nnode, double *xyz,
-				   int nface, double *f2n)
+				   int nface, int *f2n)
 {
   int i;
 

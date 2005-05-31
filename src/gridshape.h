@@ -24,6 +24,8 @@ double gridMinCellJacDet2(Grid *, int *nodes);
 
 Grid *gridPlotMinDeterminateAtSurface(Grid *);
 
+Grid *gridWriteTecplotCurvedGeom(Grid *, char *filename );
+
 Grid *gridShapeJacobian1(Grid *,
 			 double *n0, double *n1, double *n2, double *n3,
 			 double *where, double *jacobian );
