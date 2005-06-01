@@ -1,4 +1,10 @@
-2005-06-01 09:55 Mike Park  <mike.park@nasa.gov>
+2005-06-01 14:13 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridCollapseInvalidCells) attempt to collapse
+	cell and neighbors. added stuff to dump out mesh after validation
+	if sucessful.
+
+2005-06-01 09:58 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridSurfaceNodeConstrained) are nodes always
 	constrained to surface?

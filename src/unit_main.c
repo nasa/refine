@@ -59,18 +59,31 @@ static int side2node1[] = {1, 2, 3, 2, 3, 3};
 
 Grid *gridCollapseInvalidCells(Grid *grid)
 {
-  int cell, nodes[4];
-  int side, node0, node1;
+  int cell, invalidnodes[4], nodes[4];
+  int corner, pivot, side, node0, node1;
+  AdjIterator it;
+  GridBool fixed;
 
   for (cell=0;cell<gridMaxCell(grid);cell++) {
-    if (grid==gridCell(grid, cell, nodes)) {
-      if ( -0.5 > gridAR(grid,nodes) ) {
-	node0 = nodes[side2node0[side]];
-	node1 = nodes[side2node1[side]];
-	if ( (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.00)) ||
-	     (grid == gridCollapseEdge(grid, NULL, node0, node1, 1.00)) ||
-	     (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.50)) ) {
-	  break;
+    if (grid==gridCell(grid, cell, invalidnodes)) {
+      if ( -0.5 > gridAR(grid,invalidnodes) ) {
+	fixed = FALSE;
+	for (corner=0;corner<4 && !fixed;corner++) {
+	  pivot = invalidnodes[corner];
+	  for ( it = adjFirst(gridCellAdj(grid),pivot);
+		adjValid(it) && !fixed;
+		it = adjNext(it) ) {
+	    gridCell(grid, adjItem(it), nodes);
+	    for (side=0;side<4 && !fixed;side++) {
+	      node0 = nodes[side2node0[side]];
+	      node1 = nodes[side2node1[side]];
+	      if( (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.00)) ||
+		  (grid == gridCollapseEdge(grid, NULL, node0, node1, 1.00)) ||
+		  (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.50)) ) {
+		fixed = TRUE;
+	      }
+	    }
+	  }
 	}
       }
     }
@@ -219,7 +232,11 @@ int main( int argc, char *argv[] )
   
   if(strcmp(modeler,"")==0)       sprintf(modeler,"FELISA" );
   if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
-  if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
+  if (validate) {
+    if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_val", project );
+  }else{
+    if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
+  }
   if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
 
   printf("running project %s\n",project);
@@ -308,19 +325,31 @@ int main( int argc, char *argv[] )
   }
 
   if (validate) {
-    int cycle;
+    int cycle, invalid;
     printf("cost const %d.\n",gridCostConstraint(grid));
-    for (cycle=0;cycle<5;cycle++){
-      printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
+    invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
+    for (cycle=0;cycle<5&&invalid>0;cycle++){
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
     }
-    for (cycle=0;cycle<5;cycle++){
-      printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
+    for (cycle=0;cycle<5&&invalid>0;cycle++){
       printf("edge collapse...\n");gridCollapseInvalidCells(grid);
+      invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
     }
-    printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
-    gridWriteTecplotCurvedGeom(grid,"invalid.t");
-    gridWriteTecplotInvalid(grid,"invalid.t");
+    if (invalid>0) {
+      gridWriteTecplotCurvedGeom(grid,"invalid.t");
+      gridWriteTecplotInvalid(grid,"invalid.t");
+    }else{
+      STATUS;
+      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      STATUS;
+      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
+      STATUS;
+      printf("writing output project %s\n",outputProject);
+      gridSavePart( grid, outputProject );
+      printf("writing output FAST file %s\n",outputFAST);
+      gridExportFAST( grid, outputFAST );
+    }
     printf("Done.\n");
     return 0;
   }
