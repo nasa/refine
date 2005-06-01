@@ -54,6 +54,31 @@ int gridNumberOfInvalidCells(Grid *grid)
   return invalid;
 }
 
+static int side2node0[] = {0, 0, 0, 1, 1, 2};
+static int side2node1[] = {1, 2, 3, 2, 3, 3};
+
+Grid *gridCollapseInvalidCells(Grid *grid)
+{
+  int cell, nodes[4];
+  int side, node0, node1;
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      if ( -0.5 > gridAR(grid,nodes) ) {
+	node0 = nodes[side2node0[side]];
+	node1 = nodes[side2node1[side]];
+	if ( (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.00)) ||
+	     (grid == gridCollapseEdge(grid, NULL, node0, node1, 1.00)) ||
+	     (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.50)) ) {
+	  break;
+	}
+      }
+    }
+  }
+
+  return grid;
+}
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -286,6 +311,10 @@ int main( int argc, char *argv[] )
     for (cycle=0;cycle<5;cycle++){
       printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+    }
+    for (cycle=0;cycle<5;cycle++){
+      printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
+      printf("edge collapse...\n");gridCollapseInvalidCells(grid);
     }
     printf("invalid cells %d.\n",gridNumberOfInvalidCells(grid));
     gridWriteTecplotCurvedGeom(grid,"invalid.t");

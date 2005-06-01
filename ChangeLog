@@ -1,3 +1,8 @@
+2005-06-01 08:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridCollapseInvalidCells) attempt to remove invalid
+	cells with edge collpase, but not useful for om6.
+
 2005-05-31 15:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotTriangleZone) use nface as loop bound.
