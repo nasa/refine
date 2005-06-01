@@ -232,6 +232,8 @@ int main( int argc, char *argv[] )
 			gridCOST_CNST_VALID  |
                         gridCOST_CNST_AREAUV );
 
+  gridConstrainSurfaceNode(grid);
+
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: loaded part does not have right handed boundaries\n");
 

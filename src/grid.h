@@ -65,6 +65,8 @@ struct Grid {
   int *cellGlobal;
   int maxUnusedCellGlobal, nUnusedCellGlobal, *unusedCellGlobal;
 
+  GridBool constrain_surface_node;
+
   int maxface, nface;
   int blankf2n;
   int *f2n;
@@ -296,6 +298,10 @@ double gridConnValue(Grid *g, int conn);
 Grid *gridSetConnValue(Grid *g, int conn, double value);
 Grid *gridSortConnValues(Grid *g );
 int gridConnWithThisRanking(Grid *g, int ranking );
+
+Grid *gridConstrainSurfaceNode(Grid *g);
+Grid *gridUnconstrainSurfaceNode(Grid *g);
+GridBool gridSurfaceNodeConstrained(Grid *g);
 
 int gridAddFace(Grid *g, int n0, int n1, int n2, int faceId );
 int gridAddFaceUV(Grid *g, 

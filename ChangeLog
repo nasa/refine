@@ -1,3 +1,14 @@
+2005-06-01 09:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSurfaceNodeConstrained) are nodes always
+	constrained to surface?
+	* src/grid.c (gridConstrainSurfaceNode,gridUnconstrainSurfaceNode) 
+	turn node surface constraint on and off.
+	* src/gridinsert.c (gridSplitEdgeRatio, gridCollapseEdge) project
+	surface nodes if gridSurfaceNodeConstrained. Note that this needs
+	to be changed to an evaluation with consistent passed to queue.
+	* src/unit_main.c turn on gridConstrainSurfaceNode.
+	
 2005-06-01 08:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (gridCollapseInvalidCells) attempt to remove invalid

@@ -138,13 +138,15 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nUnusedCellGlobal = 0;
   grid->unusedCellGlobal  = NULL;
 
+  grid->constrain_surface_node = FALSE;
+
   if (NULL == f2n) {
     grid->f2n    = (int *)malloc(3 * grid->maxface * sizeof(int));
   }else{
     grid->f2n    = f2n;
   }
 
-  if (NULL == f2n) {
+  if (NULL == f2n) { /* this should be (NULL == faceId) ? */
     grid->faceId = (int *)malloc(1 * grid->maxface * sizeof(int));
   }else{
     grid->faceId = faceId;
@@ -2135,6 +2137,24 @@ int gridConnWithThisRanking(Grid *grid, int ranking)
   if (NULL==grid->connRanking) return EMPTY;
   if (ranking<0||ranking>=gridNConn(grid)) return EMPTY;
   return grid->connRanking[ranking];
+}
+
+
+Grid *gridConstrainSurfaceNode(Grid *grid)
+{
+  grid->constrain_surface_node = TRUE;
+  return grid;
+}
+
+Grid *gridUnconstrainSurfaceNode(Grid *grid)
+{
+  grid->constrain_surface_node = FALSE;
+  return grid;
+}
+
+GridBool gridSurfaceNodeConstrained(Grid *grid)
+{
+  return grid->constrain_surface_node;
 }
 
 int gridAddFace(Grid *grid, int n0, int n1, int n2, int faceId )
