@@ -349,12 +349,16 @@ int main( int argc, char *argv[] )
     int cycle, invalid;
     printf("cost const %d.\n",gridCostConstraint(grid));
     invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
-    for (cycle=0;cycle<5&&invalid>0;cycle++){
+    for (cycle=0;cycle<3&&invalid>0;cycle++){
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
       invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
     }
     for (cycle=0;cycle<5&&invalid>0;cycle++){
+      STATUS;
       printf("edge collapse...\n");gridCollapseInvalidCells(grid);
+      invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
+      STATUS;
+      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
       invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
     }
     if (invalid>0) {
