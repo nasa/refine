@@ -19,8 +19,6 @@
 #include "FAKEGeom.h"
 #endif
 #include "gridmetric.h"
-#include "gridswap.h"
-#include "gridinsert.h"
 #include "gridcad.h"
 
 Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )
