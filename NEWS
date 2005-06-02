@@ -2,6 +2,28 @@
 
 Works with FUN3D Version(s): **SomeFUN3DVersion**
 
+Thu Jun  2, 2005: Released Refine 1.2.7
+
+** internal release ** 
+Snapshot after Toronto AIAA paper, before `valid' adaptation research.
+Improved the logic involved with smoothing on surface to allow its
+use in parallel.
+Included a check of geometry face parameter orientation of surface
+to fix a bug that scrambled surface nodes durring adaptation.
+Added a Face UV area constraint bit to cost constraints.
+Uses CADGeom_ResolveOnFace and CADGeom_ResolveOnEdge calls to safely update
+CAD parameters on the boundaries of faces and edges.
+Created a plan.c object to store list of entities to adapt.
+The plan list is created in parallel (during FUN3D runs) to
+reduce the time of seqential ghost updates.
+Allow border opertations in colors to speed up large 100+ processor runs.
+CAPRI verson 2 compatability added as #define's
+Reduced execution time of removing unused global nodes
+and cells by replacing order n^2 operation.
+Started work on validating invalid method.
+Changed edge split to use a ratio of two node locations not an explicit
+new node location.
+
 Tue Jan 31, 2005: Released Refine 1.2.6
 
 ** internal release ** 

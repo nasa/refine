@@ -1,3 +1,8 @@
+2005-06-02 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.7 Release. ** internal release ** Snapshot after
+	Toronto paper, before `valid' adaptation research.
+
 2005-06-02 08:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridResolveOnFace) added to expose
