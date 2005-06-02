@@ -207,7 +207,7 @@ int gridSplitEdge(Grid *grid, int n0, int n1)
 int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
 {
   int igem, cell, nodes[4], inode, node;
-  double xyz0[3], xyz1[3], xyz[3];
+  double xyz0[3], xyz1[3], xyz[3], dummy_xyz[3];
   int newnode, newnodes0[4], newnodes1[4];
   int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
   int newface_gap0n0, newface_gap0n1, newface_gap1n0, newface_gap1n1;
@@ -239,6 +239,24 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
   gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
   gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
 
+  /* insert new edges to use for projection and validity check */
+  newedge0 = newedge1 = EMPTY;
+  edge = gridFindEdge(grid,n0,n1);
+  if ( edge != EMPTY ) {
+    edgeId = gridEdgeId(grid,n0,n1);
+    gridNodeT(grid,n0,edgeId,&t0);
+    gridNodeT(grid,n1,edgeId,&t1);
+    newT = (1-ratio)*t0+ratio*t1;
+
+    if ( gridSurfaceNodeConstrained(grid) ) {
+      gridEvaluateOnEdge(grid, edgeId, newT, xyz );
+      gridSetNodeXYZ(grid, newnode, xyz);
+    }
+
+    newedge0 = gridAddEdgeAndQueue(grid,queue,n0,newnode,edgeId,t0,newT);
+    newedge1 = gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
+  }
+
   /* insert new faces to use for projection and validity check */
   newface_gap0n0 = newface_gap0n1 = EMPTY;
   newface_gap1n0 = newface_gap1n1 = EMPTY;
@@ -257,6 +275,18 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
     newId0uv[1] = (1-ratio)*n0Id0uv[1] + ratio*n1Id0uv[1];
     newId1uv[0] = (1-ratio)*n0Id1uv[0] + ratio*n1Id1uv[0];
     newId1uv[1] = (1-ratio)*n0Id1uv[1] + ratio*n1Id1uv[1];
+
+    if ( gridSurfaceNodeConstrained(grid) ) {
+      if ( EMPTY != edge ) {
+	/* update uv parameters only for faces next to geom edge */
+	gridResolveOnFace(grid, faceId0, newId0uv, xyz, dummy_xyz);
+	gridResolveOnFace(grid, faceId1, newId1uv, xyz, dummy_xyz);
+      } else {
+	/* assume id0==id1 or fake geometry */
+	gridEvaluateOnFace(grid, faceId0, newId0uv, xyz);
+	gridSetNodeXYZ(grid, newnode, xyz);
+      }
+    }
 
     newface_gap0n0 = gridAddFaceUVAndQueue(grid, queue,
 					   n0, n0Id0uv[0], n0Id0uv[1],
@@ -279,20 +309,6 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
 					   gap1, gap1uv[0], gap1uv[1], 
 					   faceId1 );
   }
-
-  /* insert new edges to use for projection and validity check */
-  newedge0 = newedge1 = EMPTY;
-  edge = gridFindEdge(grid,n0,n1);
-  if ( edge != EMPTY ) {
-    edgeId = gridEdgeId(grid,n0,n1);
-    gridNodeT(grid,n0,edgeId,&t0);
-    gridNodeT(grid,n1,edgeId,&t1);
-    newT = (1-ratio)*t0+ratio*t1;
-    newedge0 = gridAddEdgeAndQueue(grid,queue,n0,newnode,edgeId,t0,newT);
-    newedge1 = gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
-  }
-
-  if ( gridSurfaceNodeConstrained(grid) ) gridProjectNode(grid, newnode );
 
   /* find the worst cell */
   minAR = 2.0; 
@@ -715,15 +731,16 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   int i, face0, face1;
   int requiredRatio;
   double ratio;
-  double xyz0[3], xyz1[3], xyzAvg[3];
+  double xyz0[3], xyz1[3], xyz[3];
+  double dummy_xyz[3];
   GridBool volumeEdge;
   int iequ, equ0, equ1;
 
   int gap0, gap1, faceId0, faceId1;
-  double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
-  double newId0uv[2], newId1uv[2], uvAvg[2]; 
+  double n0Id0uv[2], n1Id0uv[2], newId0uv[2];
+  double n0Id1uv[2], n1Id1uv[2], newId1uv[2]; 
   int edge, edgeId;
-  double t0, t1, newT, tAvg;
+  double t0, t1, t;
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return NULL; 
 
@@ -759,12 +776,31 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   if (0 == requiredRatio) { if (0.99 < ratio) return NULL; ratio = 0.0; }
   if (1 == requiredRatio) { if (0.01 > ratio) return NULL; ratio = 1.0; }
 
+  /* determine new node location from ratio */
+  if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
+  if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
+  for (i=0 ; i<3 ; i++) xyz[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
+
   /* interpolate parameters */
   face0 = face1 = faceId0 = faceId1 = EMPTY;
   newId0uv[0] = newId0uv[1] = newId1uv[0] = newId1uv[1] = DBL_MAX;
   edge = edgeId = EMPTY;
   t0 = t1 = DBL_MAX;
   if ( !volumeEdge ) {
+
+    edge = gridFindEdge(grid,n0,n1);
+    if ( edge != EMPTY ) {
+      edgeId = gridEdgeId(grid,n0,n1);
+      gridNodeT(grid, n0, edgeId, &t0 );
+      gridNodeT(grid, n1, edgeId, &t1 );
+      t = (1.0-ratio) * t0 + ratio * t1;
+      if ( gridSurfaceNodeConstrained(grid) ) {
+	gridEvaluateOnEdge(grid, edgeId, t, xyz );
+      }
+      gridSetNodeT(grid, n0, edgeId, t);
+      gridSetNodeT(grid, n1, edgeId, t);
+    }
+
     gap0 = gridEqu(grid,0);
     gap1 = gridEqu(grid,gridNGem(grid));
     face0 = gridFindFace(grid, n0, n1, gap0 );
@@ -785,43 +821,27 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
     newId1uv[0] = (1.0-ratio) * n0Id1uv[0] + ratio * n1Id1uv[0];
     newId1uv[1] = (1.0-ratio) * n0Id1uv[1] + ratio * n1Id1uv[1];
 
+    if ( gridSurfaceNodeConstrained(grid) ) {
+      if ( EMPTY != edge ) {
+	/* update uv parameters only for faces next to geom edge */
+	gridResolveOnFace(grid, faceId0, newId0uv, xyz, dummy_xyz);
+	gridResolveOnFace(grid, faceId1, newId1uv, xyz, dummy_xyz);
+      } else {
+	/* assume id0==id1 or fake geometry */
+	gridEvaluateOnFace(grid, faceId0, newId0uv, xyz);
+      }
+    }
+
     gridSetNodeUV(grid, n0, faceId0, newId0uv[0], newId0uv[1]);
     gridSetNodeUV(grid, n0, faceId1, newId1uv[0], newId1uv[1]);
-
-    edge = gridFindEdge(grid,n0,n1);
-    if ( edge != EMPTY ) {
-      edgeId = gridEdgeId(grid,n0,n1);
-      gridNodeT(grid, n0, edgeId, &t0 );
-      gridNodeT(grid, n1, edgeId, &t1 );
-      newT =  (1.0-ratio) * t0 + ratio * t1;
-      gridSetNodeT(grid, n0, edgeId, newT);
-    }
+    gridSetNodeUV(grid, n1, faceId0, newId0uv[0], newId0uv[1]);
+    gridSetNodeUV(grid, n1, faceId1, newId1uv[0], newId1uv[1]);
   }
 
-  /* determine new node location from ratio */
-  if ( NULL == gridNodeXYZ( grid, n0, xyz0) ) return NULL;
-  if ( NULL == gridNodeXYZ( grid, n1, xyz1) ) return NULL;
-  for (i=0 ; i<3 ; i++) xyzAvg[i] = (1.0-ratio) * xyz0[i] + ratio * xyz1[i];
-
-  /* project and match node locations and parmeters */
-  gridSetNodeXYZ( grid, n0, xyzAvg);
-  if ( gridSurfaceNodeConstrained(grid) ) gridProjectNode(grid, n0 );
-  gridNodeXYZ( grid, n0, xyzAvg);
-  gridSetNodeXYZ( grid, n1, xyzAvg); 
+  /* set node location (this will include any surface geometry constraints) */
+  gridSetNodeXYZ( grid, n0, xyz);
+  gridSetNodeXYZ( grid, n1, xyz); 
  
-  if ( EMPTY != faceId0) {
-    gridNodeUV( grid, n0, faceId0, uvAvg);
-    gridSetNodeUV( grid, n1, faceId0, uvAvg[0],  uvAvg[1]);
-  }
-  if ( EMPTY != faceId1) {
-    gridNodeUV( grid, n0, faceId1, uvAvg);
-    gridSetNodeUV( grid, n1, faceId1, uvAvg[0],  uvAvg[1]);
-  }
-  if ( edgeId != EMPTY ) {
-    gridNodeT(grid, n0, edgeId, &tAvg );
-    gridSetNodeT(grid, n1, edgeId, tAvg );
-  }
-
   /* if this is not a valid configuration set everything back */
   if ( ( gridMinARAroundNodeExceptGem( grid, n0 ) < gridADAPT_COST_FLOOR ) || 
        ( gridMinARAroundNodeExceptGem( grid, n1 ) < gridADAPT_COST_FLOOR ) ||
@@ -829,8 +849,10 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 	 gridADAPT_COST_FLOOR ) ||
        ( gridMinARAroundNodeExceptGemRecon( grid, n1, n0 ) < 
 	 gridADAPT_COST_FLOOR )  ) {
-    gridSetNodeXYZ( grid, n0, xyz0);
-    gridSetNodeXYZ( grid, n1, xyz1);
+    if ( edgeId != EMPTY ) {
+      gridSetNodeT(grid, n0, edgeId, t0 );
+      gridSetNodeT(grid, n1, edgeId, t1 );
+    }
     if ( EMPTY != faceId0) {
       gridSetNodeUV( grid, n0, faceId0, n0Id0uv[0], n0Id0uv[1]);
       gridSetNodeUV( grid, n1, faceId0, n1Id0uv[0], n1Id0uv[1]);
@@ -839,10 +861,8 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
       gridSetNodeUV( grid, n0, faceId1, n0Id1uv[0], n0Id1uv[1]);
       gridSetNodeUV( grid, n1, faceId1, n1Id1uv[0], n1Id1uv[1]);
     }
-    if ( edgeId != EMPTY ) {
-      gridSetNodeT(grid, n0, edgeId, t0 );
-      gridSetNodeT(grid, n1, edgeId, t1 );
-    }
+    gridSetNodeXYZ( grid, n0, xyz0);
+    gridSetNodeXYZ( grid, n1, xyz1);
     return NULL;
   }
 
