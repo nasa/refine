@@ -1,5 +1,14 @@
 2005-06-01 11:39 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridshape.c (gridNodeMinCellJacDet2) smallest jacobian determine
+	in an incident tetrahedron.
+	* src/gridcad.c (gridSmoothNodeMinJacDet2Simplex) simplex search
+	to improve the smallest jacobian determinate of incident tetrahedra.
+	* src/unit_main.c (gridSmoothInvalidCellNodes) driver for validating
+	via node movement.
+
+2005-06-01 11:39 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridinsert.c (gridSplitEdgeRatio, gridCollapseEdge) interpolate
 	and evaluate edge t, face uv, and xyz in a consistent manner
 	when gridSurfaceNodeConstrained true.

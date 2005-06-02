@@ -76,6 +76,7 @@ Grid *gridLinearProgramXYZ(Grid *g, int node, GridBool *callAgain );
 Grid *gridSmoothNodeVolume(Grid *g, int node );
 Grid *gridSmoothNodeVolumeWithSurf(Grid *g, int node );
 Grid *gridSmoothNodeVolumeSimplex(Grid *g, int node );
+Grid *gridSmoothNodeMinJac2Simplex(Grid *g, int node );
 
 Grid *gridRelaxNegativeCells(Grid *g, GridBool dumpTecplot );
 Grid *gridSmoothVolumeNearNode(Grid *grid, int node, 

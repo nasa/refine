@@ -54,6 +54,24 @@ int gridNumberOfInvalidCells(Grid *grid)
   return invalid;
 }
 
+Grid *gridSmoothInvalidCellNodes(Grid *grid)
+{
+  int cell, nodes[4], i, node;
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      if ( -0.5 > gridAR(grid,nodes) ) {
+	for (i=0;i<4;i++) {
+	  node = nodes[i];
+	  if (!gridGeometryFace(grid,node))
+	    gridSmoothNodeMinJacDet2Simplex(grid, node);
+	}
+      }
+    }
+  }
+  return grid;
+}
+
 static int side2node0[] = {0, 0, 0, 1, 1, 2};
 static int side2node1[] = {1, 2, 3, 2, 3, 3};
 
@@ -359,6 +377,9 @@ int main( int argc, char *argv[] )
       invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
       STATUS;
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
+      STATUS;
+      printf("simplex node...\n");gridSmoothInvalidCellNodes(grid);
       invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
     }
     if (invalid>0) {

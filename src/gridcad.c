@@ -19,6 +19,7 @@
 #include "FAKEGeom.h"
 #endif
 #include "gridmetric.h"
+#include "gridshape.h"
 #include "gridcad.h"
 
 Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )
@@ -1552,6 +1553,105 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
 
   best = 0;
   for(s=1;s<4;s++) if (volume[s]>=volume[best]) best = s;
+
+  gridSetNodeXYZ(grid, node, simplex[best]);
+
+  return grid;
+}
+
+Grid *gridSmoothNodeMinJacDet2Simplex( Grid *grid, int node )
+{
+  int evaluations;
+  int s, i;
+  double origXYZ[3], avgXYZ[3];
+  double simplex[4][3];
+  double determinate[4];
+  double lengthScale;
+  int best, worst, secondworst; 
+  double newDeterminate, savedDeterminate;
+  GridBool makefaces = FALSE;
+  int faceId = 1;
+
+  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
+
+  lengthScale = 0.1*gridAverageEdgeLength(grid, node );
+
+  for(s=0;s<4;s++)
+    for(i=0;i<3;i++)
+      simplex[s][i] = origXYZ[i];
+
+  simplex[1][0] += lengthScale;
+  simplex[2][1] += lengthScale;
+  simplex[3][2] += lengthScale;
+
+  for(s=0;s<4;s++) {
+    gridSetNodeXYZ(grid, node, simplex[s]);
+    gridNodeMinCellJacDet2(grid,node,&determinate[s]);
+  }
+
+  for(i=0;i<3;i++) avgXYZ[i] = 0.0;
+  for(s=0;s<4;s++)
+    for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
+
+  evaluations = 4;
+  while (evaluations < 1000 ) {
+
+    best = 0;
+    if ( determinate[0] > determinate[1] ) {
+      secondworst = 0;
+      worst = 1;
+    }else{
+      secondworst = 1;
+      worst = 0;
+    }
+    
+    for(s=0;s<4;s++) {
+      if (determinate[s]>=determinate[best]) best = s;
+      if (determinate[s]<determinate[worst]) {
+	secondworst = worst;
+	worst = s;
+      }else{
+	if ( s!=worst && determinate[s] < 
+	     determinate[secondworst]   ) secondworst = s;
+      }
+    }
+
+    /* printf( "evaluations%6d best%20.15f worst%20.15f\n", 
+               evaluations, determinate[best], determinate[worst]); */
+    if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
+
+    if ( determinate[best]-determinate[worst] < 
+	 ABS(1.0e-10*determinate[best])       ) break;
+
+    evaluations++;
+    newDeterminate = reflect( grid, simplex, determinate,
+			      avgXYZ, node, worst, -1.0 );
+    if ( newDeterminate >= determinate[best] ) {
+      evaluations++;
+      newDeterminate = reflect( grid, simplex, determinate,
+				avgXYZ, node, worst, 2.0 );
+    } else {
+      if (newDeterminate <= determinate[secondworst]) {
+	savedDeterminate = determinate[worst];
+	evaluations++;
+	newDeterminate = reflect( grid, simplex, determinate,
+				  avgXYZ, node, worst, 0.5 );
+	if (newDeterminate <= savedDeterminate) {
+	  for(s=0;s<4;s++) {
+	    if (s != best) {
+	      for(i=0;i<3;i++) 
+		simplex[s][i]=0.5*(simplex[s][i]+simplex[best][i]);
+	      gridSetNodeXYZ(grid, node, simplex[s]);
+	      gridNodeMinCellJacDet2(grid,node,&determinate[s]);
+	    }
+	  }
+	}      
+      }
+    }
+  }    
+
+  best = 0;
+  for(s=1;s<4;s++) if (determinate[s]>=determinate[best]) best = s;
 
   gridSetNodeXYZ(grid, node, simplex[best]);
 

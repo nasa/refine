@@ -112,6 +112,24 @@ double gridMinCellJacDet2(Grid *grid, int *nodes)
   return det;
 }
 
+Grid *gridNodeMinCellJacDet2(Grid *grid, int node, double *determinate )
+{
+  AdjIterator it;
+  int cell, nodes[4];
+  double local_determinate;
+
+  *determinate = DBL_MAX;
+
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes);
+    local_determinate = gridMinCellJacDet2(grid, nodes);
+    if ( local_determinate < *determinate ) *determinate = local_determinate;
+  }
+
+  return grid;
+}
+
 Grid *gridPlotMinDeterminateAtSurface(Grid *grid)
 {
   int node, cell, nodes[4];
