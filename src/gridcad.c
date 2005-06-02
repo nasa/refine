@@ -1559,6 +1559,33 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
   return grid;
 }
 
+static double reflectJac( Grid *grid,
+		       double simplex[4][3], double volume[4], double avgXYZ[3],
+		       int node, int worst, double factor)
+{
+  int i;
+  double factor1, factor2;
+  double reflectedXYZ[3];
+  double reflectedVolume;
+
+  factor1 = (1.0-factor) / 3.0;
+  factor2 = factor1 - factor;
+
+  for(i=0;i<3;i++) 
+    reflectedXYZ[i] = factor1*avgXYZ[i] - factor2*simplex[worst][i];
+
+  gridSetNodeXYZ(grid,node,reflectedXYZ );
+  gridNodeMinCellJacDet2(grid,node,&reflectedVolume);
+
+  if ( reflectedVolume > volume[worst] ) {
+    volume[worst] = reflectedVolume;
+    for(i=0;i<3;i++) avgXYZ[i] += ( reflectedXYZ[i] - simplex[worst][i] );
+    for(i=0;i<3;i++) simplex[worst][i] = reflectedXYZ[i];
+  }
+
+  return reflectedVolume;
+}
+
 Grid *gridSmoothNodeMinJacDet2Simplex( Grid *grid, int node )
 {
   int evaluations;
@@ -1616,7 +1643,7 @@ Grid *gridSmoothNodeMinJacDet2Simplex( Grid *grid, int node )
       }
     }
 
-    /* printf( "evaluations%6d best%20.15f worst%20.15f\n", 
+    /* printf( "evaluations%6d best%20.15f worst%20.15f\n",
                evaluations, determinate[best], determinate[worst]); */
     if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
 
@@ -1624,17 +1651,17 @@ Grid *gridSmoothNodeMinJacDet2Simplex( Grid *grid, int node )
 	 ABS(1.0e-10*determinate[best])       ) break;
 
     evaluations++;
-    newDeterminate = reflect( grid, simplex, determinate,
+    newDeterminate = reflectJac( grid, simplex, determinate,
 			      avgXYZ, node, worst, -1.0 );
     if ( newDeterminate >= determinate[best] ) {
       evaluations++;
-      newDeterminate = reflect( grid, simplex, determinate,
+      newDeterminate = reflectJac( grid, simplex, determinate,
 				avgXYZ, node, worst, 2.0 );
     } else {
       if (newDeterminate <= determinate[secondworst]) {
 	savedDeterminate = determinate[worst];
 	evaluations++;
-	newDeterminate = reflect( grid, simplex, determinate,
+	newDeterminate = reflectJac( grid, simplex, determinate,
 				  avgXYZ, node, worst, 0.5 );
 	if (newDeterminate <= savedDeterminate) {
 	  for(s=0;s<4;s++) {
