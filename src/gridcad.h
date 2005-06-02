@@ -34,6 +34,9 @@ Grid *gridProjectToFace(Grid *g, int faceId,
 			double *xyz, double *uv, double *newxyz );
 Grid *gridEvaluateOnEdge(Grid *g, int edgeId, double t, double *xyz );
 Grid *gridEvaluateOnFace(Grid *g, int faceId, double *uv, double *xyz );
+Grid *gridResolveOnFace(Grid *grid, int faceId,
+			double *uv, double *original_xyz, double *resolved_xyz);
+
 Grid *gridFaceNormalAtUV(Grid *g, int faceId, 
 			 double *uv, double *xyz, double *normal );
 Grid *gridFaceNormalAtXYZ(Grid *g, int faceId, double *xyz, double *normal );

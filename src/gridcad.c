@@ -261,6 +261,19 @@ Grid *gridEvaluateOnFace(Grid *grid, int faceId, double *uv, double *xyz )
   return grid;
 }
 
+Grid *gridResolveOnFace(Grid *grid, int faceId,
+			double *uv, double *original_xyz, double *resolved_xyz )
+{
+  int vol = 1;
+
+  if (!CADGeom_ResolveOnFaceWCS(vol, faceId, original_xyz, uv, resolved_xyz) ) {
+    printf("%s: %d: CADGeom_ResolveOnFaceWCS failed.\n",__FILE__,__LINE__);
+    return NULL;  
+  }
+
+  return grid;
+}
+
 Grid *gridFaceNormalAtUV(Grid *grid, int faceId,
 			 double *uv, double *xyz, double *normal )
 

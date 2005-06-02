@@ -1,3 +1,8 @@
+2005-06-02 08:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridResolveOnFace) added to expose
+	CADGeom_ResolveOnFaceWCS to update face parameters during edge splits.
+
 2005-06-01 14:13 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (gridCollapseInvalidCells) attempt to collapse
