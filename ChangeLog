@@ -1,3 +1,9 @@
+2005-06-03 13:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolumeSimplex) uses
+	gridNodeMinCellJacDet2 as the cost function if gridCOST_CNST_VALID
+	bit is set in gridCostConstraint.
+
 2005-06-03 09:05 Mike Park  <mike.park@nasa.gov>
 
 	* This revision marks an addition to the API to support valid adaptation

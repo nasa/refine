@@ -1492,7 +1492,11 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
 
   for(s=0;s<4;s++) {
     gridSetNodeXYZ(grid, node, simplex[s]);
-    gridNodeVolume(grid,node,&volume[s]);
+    if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+      gridNodeMinCellJacDet2(grid,node,&volume[s]);
+    } else {
+      gridNodeVolume(grid,node,&volume[s]);
+    }
   }
 
   for(i=0;i<3;i++) avgXYZ[i] = 0.0;
@@ -1543,7 +1547,11 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
 	      for(i=0;i<3;i++) 
 		simplex[s][i]=0.5*(simplex[s][i]+simplex[best][i]);
 	      gridSetNodeXYZ(grid, node, simplex[s]);
-	      gridNodeVolume(grid,node,&volume[s]);
+	      if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+		gridNodeMinCellJacDet2(grid,node,&volume[s]);
+	      } else {
+		gridNodeVolume(grid,node,&volume[s]);
+	      }
 	    }
 	  }
 	}      
@@ -1701,7 +1709,11 @@ static double reflect( Grid *grid,
     reflectedXYZ[i] = factor1*avgXYZ[i] - factor2*simplex[worst][i];
 
   gridSetNodeXYZ(grid,node,reflectedXYZ );
-  gridNodeVolume(grid,node,&reflectedVolume);
+  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+    gridNodeMinCellJacDet2(grid,node,&reflectedVolume);
+  } else {
+    gridNodeVolume(grid,node,&reflectedVolume);
+  }
 
   if ( reflectedVolume > volume[worst] ) {
     volume[worst] = reflectedVolume;
