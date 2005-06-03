@@ -1,3 +1,9 @@
+2005-06-03 14:16 Mike Park  <mike.park@nasa.gov>
+
+	* This revision marks an addition to the API to support valid adaptation
+	* src/gridfortran.c (gridconstrainsurfacenode_) added to expose 
+	gridConstrainSurfaceNode to adapt on surf without gridmove projection.
+
 2005-06-03 13:58 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmoothNodeMinJacDet2Simplex) removed, use
