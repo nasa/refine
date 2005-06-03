@@ -1,3 +1,13 @@
+2005-06-03 13:58 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeMinJacDet2Simplex) removed, use
+	gridSmoothNodeVolumeSimplex now.
+	* src/gridcad.c (gridSmartVolumeLaplacian) uses
+	gridNodeMinCellJacDet2 as the cost function if gridCOST_CNST_VALID
+	bit is set in gridCostConstraint.
+	* src/unit_main.c (gridSmoothInvalidCellNodes) calls
+	gridSmoothNodeVolumeSimplex and gridSmartVolumeLaplacian now.
+	
 2005-06-03 13:06 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmoothNodeVolumeSimplex) uses

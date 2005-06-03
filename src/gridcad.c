@@ -1142,7 +1142,11 @@ Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
   int nodes[4], ncell, inode, ixyz;
   
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
-  gridNodeVolume(grid, node, &origVol);
+  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+    gridNodeMinCellJacDet2(grid,node,&origVol);
+  } else {
+    gridNodeVolume(grid,node,&origVol);
+  }
 
   xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
   ncell =0;
@@ -1163,7 +1167,11 @@ Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
     xyz[ixyz] = xyz[ixyz] * oneOverNCell;
   }
   gridSetNodeXYZ(grid,node,xyz);
-  gridNodeVolume(grid, node, &newVol);
+  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+    gridNodeMinCellJacDet2(grid,node,&newVol);
+  } else {
+    gridNodeVolume(grid,node,&newVol);
+  }
   
   if ( origVol > newVol ) {
     gridSetNodeXYZ(grid,node,origXYZ);
@@ -1414,13 +1422,6 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
   return grid;
 }
 
-static double reflect( Grid *grid,
-		       double simplex[4][3], double volume[4], double avgXYZ[3],
-		       int node, int worst, double factor );
-
-static Grid *gridMakeFacesFromSimplex(Grid *grid, 
-				      double simplex[4][3], int faceId);
-
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
   if ( !gridValidNode(grid, node)   ||
@@ -1462,6 +1463,54 @@ Grid *gridSmoothNodeVolumeWithSurf( Grid *grid, int node )
   dVoldu[1] = dVoldx[0]*dv[0] + dVoldx[1]*dv[1] + dVoldx[2]*dv[2] ; 
   if (grid != gridOptimizeUVForVolume( grid, node, dVoldu ) ) return NULL;
 
+  return grid;
+}
+
+static double reflect( Grid *grid,
+		       double simplex[4][3], double volume[4], double avgXYZ[3],
+		       int node, int worst, double factor)
+{
+  int i;
+  double factor1, factor2;
+  double reflectedXYZ[3];
+  double reflectedVolume;
+
+  factor1 = (1.0-factor) / 3.0;
+  factor2 = factor1 - factor;
+
+  for(i=0;i<3;i++) 
+    reflectedXYZ[i] = factor1*avgXYZ[i] - factor2*simplex[worst][i];
+
+  gridSetNodeXYZ(grid,node,reflectedXYZ );
+  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+    gridNodeMinCellJacDet2(grid,node,&reflectedVolume);
+  } else {
+    gridNodeVolume(grid,node,&reflectedVolume);
+  }
+
+  if ( reflectedVolume > volume[worst] ) {
+    volume[worst] = reflectedVolume;
+    for(i=0;i<3;i++) avgXYZ[i] += ( reflectedXYZ[i] - simplex[worst][i] );
+    for(i=0;i<3;i++) simplex[worst][i] = reflectedXYZ[i];
+  }
+
+  return reflectedVolume;
+}
+
+static Grid *gridMakeFacesFromSimplex(Grid *grid, 
+				      double simplex[4][3], int faceId)
+{
+  int node;
+  int nodes[4];
+  for(node=0;node<4;node++)
+    nodes[node]=gridAddNode(grid,
+			    simplex[node][0],
+			    simplex[node][1],
+			    simplex[node][2]);
+  gridAddFace(grid,nodes[0],nodes[1],nodes[2],faceId);
+  gridAddFace(grid,nodes[0],nodes[1],nodes[3],faceId);
+  gridAddFace(grid,nodes[1],nodes[2],nodes[3],faceId);
+  gridAddFace(grid,nodes[0],nodes[3],nodes[2],faceId);
   return grid;
 }
 
@@ -1564,180 +1613,6 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
 
   gridSetNodeXYZ(grid, node, simplex[best]);
 
-  return grid;
-}
-
-static double reflectJac( Grid *grid,
-		       double simplex[4][3], double volume[4], double avgXYZ[3],
-		       int node, int worst, double factor)
-{
-  int i;
-  double factor1, factor2;
-  double reflectedXYZ[3];
-  double reflectedVolume;
-
-  factor1 = (1.0-factor) / 3.0;
-  factor2 = factor1 - factor;
-
-  for(i=0;i<3;i++) 
-    reflectedXYZ[i] = factor1*avgXYZ[i] - factor2*simplex[worst][i];
-
-  gridSetNodeXYZ(grid,node,reflectedXYZ );
-  gridNodeMinCellJacDet2(grid,node,&reflectedVolume);
-
-  if ( reflectedVolume > volume[worst] ) {
-    volume[worst] = reflectedVolume;
-    for(i=0;i<3;i++) avgXYZ[i] += ( reflectedXYZ[i] - simplex[worst][i] );
-    for(i=0;i<3;i++) simplex[worst][i] = reflectedXYZ[i];
-  }
-
-  return reflectedVolume;
-}
-
-Grid *gridSmoothNodeMinJacDet2Simplex( Grid *grid, int node )
-{
-  int evaluations;
-  int s, i;
-  double origXYZ[3], avgXYZ[3];
-  double simplex[4][3];
-  double determinate[4];
-  double lengthScale;
-  int best, worst, secondworst; 
-  double newDeterminate, savedDeterminate;
-  GridBool makefaces = FALSE;
-  int faceId = 1;
-
-  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
-
-  lengthScale = 0.1*gridAverageEdgeLength(grid, node );
-
-  for(s=0;s<4;s++)
-    for(i=0;i<3;i++)
-      simplex[s][i] = origXYZ[i];
-
-  simplex[1][0] += lengthScale;
-  simplex[2][1] += lengthScale;
-  simplex[3][2] += lengthScale;
-
-  for(s=0;s<4;s++) {
-    gridSetNodeXYZ(grid, node, simplex[s]);
-    gridNodeMinCellJacDet2(grid,node,&determinate[s]);
-  }
-
-  for(i=0;i<3;i++) avgXYZ[i] = 0.0;
-  for(s=0;s<4;s++)
-    for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
-
-  evaluations = 4;
-  while (evaluations < 1000 ) {
-
-    best = 0;
-    if ( determinate[0] > determinate[1] ) {
-      secondworst = 0;
-      worst = 1;
-    }else{
-      secondworst = 1;
-      worst = 0;
-    }
-    
-    for(s=0;s<4;s++) {
-      if (determinate[s]>=determinate[best]) best = s;
-      if (determinate[s]<determinate[worst]) {
-	secondworst = worst;
-	worst = s;
-      }else{
-	if ( s!=worst && determinate[s] < 
-	     determinate[secondworst]   ) secondworst = s;
-      }
-    }
-
-    /* printf( "evaluations%6d best%20.15f worst%20.15f\n",
-               evaluations, determinate[best], determinate[worst]); */
-    if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
-
-    if ( determinate[best]-determinate[worst] < 
-	 ABS(1.0e-10*determinate[best])       ) break;
-
-    evaluations++;
-    newDeterminate = reflectJac( grid, simplex, determinate,
-			      avgXYZ, node, worst, -1.0 );
-    if ( newDeterminate >= determinate[best] ) {
-      evaluations++;
-      newDeterminate = reflectJac( grid, simplex, determinate,
-				avgXYZ, node, worst, 2.0 );
-    } else {
-      if (newDeterminate <= determinate[secondworst]) {
-	savedDeterminate = determinate[worst];
-	evaluations++;
-	newDeterminate = reflectJac( grid, simplex, determinate,
-				  avgXYZ, node, worst, 0.5 );
-	if (newDeterminate <= savedDeterminate) {
-	  for(s=0;s<4;s++) {
-	    if (s != best) {
-	      for(i=0;i<3;i++) 
-		simplex[s][i]=0.5*(simplex[s][i]+simplex[best][i]);
-	      gridSetNodeXYZ(grid, node, simplex[s]);
-	      gridNodeMinCellJacDet2(grid,node,&determinate[s]);
-	    }
-	  }
-	}      
-      }
-    }
-  }    
-
-  best = 0;
-  for(s=1;s<4;s++) if (determinate[s]>=determinate[best]) best = s;
-
-  gridSetNodeXYZ(grid, node, simplex[best]);
-
-  return grid;
-}
-
-static double reflect( Grid *grid,
-		       double simplex[4][3], double volume[4], double avgXYZ[3],
-		       int node, int worst, double factor)
-{
-  int i;
-  double factor1, factor2;
-  double reflectedXYZ[3];
-  double reflectedVolume;
-
-  factor1 = (1.0-factor) / 3.0;
-  factor2 = factor1 - factor;
-
-  for(i=0;i<3;i++) 
-    reflectedXYZ[i] = factor1*avgXYZ[i] - factor2*simplex[worst][i];
-
-  gridSetNodeXYZ(grid,node,reflectedXYZ );
-  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
-    gridNodeMinCellJacDet2(grid,node,&reflectedVolume);
-  } else {
-    gridNodeVolume(grid,node,&reflectedVolume);
-  }
-
-  if ( reflectedVolume > volume[worst] ) {
-    volume[worst] = reflectedVolume;
-    for(i=0;i<3;i++) avgXYZ[i] += ( reflectedXYZ[i] - simplex[worst][i] );
-    for(i=0;i<3;i++) simplex[worst][i] = reflectedXYZ[i];
-  }
-
-  return reflectedVolume;
-}
-
-static Grid *gridMakeFacesFromSimplex(Grid *grid, 
-				      double simplex[4][3], int faceId)
-{
-  int node;
-  int nodes[4];
-  for(node=0;node<4;node++)
-    nodes[node]=gridAddNode(grid,
-			    simplex[node][0],
-			    simplex[node][1],
-			    simplex[node][2]);
-  gridAddFace(grid,nodes[0],nodes[1],nodes[2],faceId);
-  gridAddFace(grid,nodes[0],nodes[1],nodes[3],faceId);
-  gridAddFace(grid,nodes[1],nodes[2],nodes[3],faceId);
-  gridAddFace(grid,nodes[0],nodes[3],nodes[2],faceId);
   return grid;
 }
 

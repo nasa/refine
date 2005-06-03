@@ -63,8 +63,10 @@ Grid *gridSmoothInvalidCellNodes(Grid *grid)
       if ( -0.5 > gridAR(grid,nodes) ) {
 	for (i=0;i<4;i++) {
 	  node = nodes[i];
-	  if (!gridGeometryFace(grid,node))
-	    gridSmoothNodeMinJacDet2Simplex(grid, node);
+	  if (!gridGeometryFace(grid,node)) {
+	    gridSmartVolumeLaplacian( grid, node );	    
+	    gridSmoothNodeVolumeSimplex(grid, node);
+	  }
 	}
       }
     }
@@ -386,6 +388,10 @@ int main( int argc, char *argv[] )
       gridWriteTecplotCurvedGeom(grid,"invalid.t");
       gridWriteTecplotInvalid(grid,"invalid.t");
     }else{
+      STATUS;
+      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      STATUS;
+      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
       STATUS;
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
       STATUS;
