@@ -1,3 +1,9 @@
+2005-06-03 09:05 Mike Park  <mike.park@nasa.gov>
+
+	* This revision marks an addition to the API to support valid adaptation
+	* src/gridfortran.c (gridsetcostconstraint_) added to directly expose 
+	the cost constraints.
+
 2005-06-01 11:39 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridshape.c (gridNodeMinCellJacDet2) smallest jacobian determine

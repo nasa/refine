@@ -280,6 +280,11 @@ void gridexportfast_( void )
   gridExportFAST(grid,filename);
 }
 
+void gridsetcostconstraint_( int *cost_constraint )
+{
+  gridSetCostConstraint(grid, *cost_constraint);
+}
+
 void gridparallelswap_( int *processor, double *ARlimit )
 {
   GridBool swap_the_fast_new_way;

@@ -34,6 +34,8 @@ void gridminar_( double *aspectratio );
 void gridwritetecplotsurfacezone_( void );
 void gridexportfast_( void );
 
+void gridsetcostconstraint_( int *cost_constraint );
+
 void gridparallelswap_( int *processor, double *ARlimit );
 void gridparallelsmooth_( int *processor,
 			  double *optimizationLimit, double *laplacianLimit,
