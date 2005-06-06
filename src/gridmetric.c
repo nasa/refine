@@ -525,6 +525,24 @@ Grid *gridNodeVolumeDerivative(Grid *grid, int node,
 
 }
 
+Grid *gridNodeCostValid(Grid *grid, int node, double *valid )
+{
+  AdjIterator it;
+  int cell, nodes[4];
+  double local_valid;
+
+  *valid = 0.0;
+
+  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
+    cell = adjItem(it);
+    gridCell( grid, cell, nodes);
+    local_valid = gridCostValid(grid, nodes);
+    if ( local_valid < *valid ) *valid = local_valid;
+  }
+
+  return grid;
+}
+
 Grid *gridNodeAR(Grid *grid, int node, double *ar )
 {
   AdjIterator it;

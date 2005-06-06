@@ -63,6 +63,7 @@ double gridCostValid(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 double gridEdgeRatioCost(Grid *g, int *nodes );
 double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
+Grid *gridNodeValid(Grid *g, int node, double *valid );
 Grid *gridNodeAR(Grid *g, int node, double *ar );
 Grid *gridNodeVolume(Grid *g, int node, double *volume );
 Grid *gridGemAR(Grid *g, double *ar);

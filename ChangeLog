@@ -1,3 +1,9 @@
+2005-06-06 16:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridNodeValid) call gridCostValid on all cells.
+	* src/gridmpi.c (gridParallelRelaxNegativeCells) call gridNodeCostValid
+	to check validity for speed increase.
+
 2005-06-06 16:23 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridCostValid) added to check mesh validity in
@@ -11,7 +17,7 @@
 
 2005-06-06 12:15 Mike Park  <mike.park@nasa.gov>
 
-	* src/gridfortran.c (gridParallelRelaxNegativeCells) replaced the
+	* src/gridmpi.c (gridParallelRelaxNegativeCells) replaced the
 	negative cell around a node test with negative gridNodeAR test
 	to include all cost constriants (including validity).
 	--> will be slower <--, need to make a seperate constraint testing
