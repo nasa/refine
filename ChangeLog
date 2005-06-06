@@ -1,4 +1,9 @@
-2005-06-05 12:15 Mike Park  <mike.park@nasa.gov>
+2005-06-06 12:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridJacVolRatio) added debug routine to see how
+	close the quadratic element corner jacobians are to the volume
+
+2005-06-06 12:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridParallelRelaxNegativeCells) replaced the
 	negative cell around a node test with negative gridNodeAR test

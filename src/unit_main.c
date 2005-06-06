@@ -133,6 +133,22 @@ Grid *gridCollapseInvalidCells(Grid *grid)
   return grid;
 }
 
+Grid *gridJacVolRatio(Grid *grid)
+{
+  int cell, nodes[4];
+  double volume, jacobian, ratio;
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      volume = gridVolume(grid, nodes );
+      jacobian = gridMinCellJacDet2(grid, nodes );
+      ratio = jacobian / volume / 6.0;
+      if (ratio<0.9) printf("%10d %20.12e %10.8f\n",cell,volume,ratio);
+    }
+  }
+  return grid;
+}
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -388,6 +404,7 @@ int main( int argc, char *argv[] )
       gridWriteTecplotCurvedGeom(grid,"invalid.t");
       gridWriteTecplotInvalid(grid,"invalid.t");
     }else{
+      gridJacVolRatio(grid);
       STATUS;
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
       STATUS;
@@ -397,6 +414,7 @@ int main( int argc, char *argv[] )
       STATUS;
       printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
       STATUS;
+      gridJacVolRatio(grid);
       printf("writing output project %s\n",outputProject);
       gridSavePart( grid, outputProject );
       printf("writing output FAST file %s\n",outputFAST);
