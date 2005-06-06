@@ -574,37 +574,16 @@ Grid *gridGemAR( Grid *grid, double *ar ){
   return grid;
 }
 
-double gridAR(Grid *grid, int *nodes )
+double gridCostValid(Grid *grid, int *nodes )
 {
-  double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
-  double *p1, *p2, *p3, *p4; 
-  int i;
-  double *m0, *m1, *m2, *m3; 
-  double m[6], j[9];
-  double aspect;
-
-  double edge1[3], edge2[3], edge3[3];
-  double norm[3];
-
   int nodes_on_surface;
-
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
        !gridValidNode(grid, nodes[2]) ||
        !gridValidNode(grid, nodes[3]) ) return -1.0;
   
-  p1 = gridNodeXYZPointer(grid,nodes[0]);
-  p2 = gridNodeXYZPointer(grid,nodes[1]);
-  p3 = gridNodeXYZPointer(grid,nodes[2]);
-  p4 = gridNodeXYZPointer(grid,nodes[3]);
-
-  gridSubtractVector( p2, p1, edge1);
-  gridSubtractVector( p3, p1, edge2);
-  gridSubtractVector( p4, p1, edge3);
-  gridCrossProduct( edge1, edge2, norm );
-
   if (gridCostConstraint(grid)&gridCOST_CNST_VOLUME) {
-    if ( gridDotProduct(norm,edge3) <= 6.0e-14) return -1.0;
+    if ( gridVolume(grid, nodes ) <= 1.0e-14) return -1.0;
   }
 
   if ( (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) ||
@@ -623,6 +602,23 @@ double gridAR(Grid *grid, int *nodes )
     }
   }
 
+  return 0.0;
+}
+
+double gridAR(Grid *grid, int *nodes )
+{
+  double xyz1[3], xyz2[3], xyz3[3], xyz4[3]; 
+  double *p1, *p2, *p3, *p4; 
+  int i;
+  double *m0, *m1, *m2, *m3; 
+  double m[6], j[9];
+  double aspect;
+
+  double valid;
+
+  valid = gridCostValid(grid, nodes );
+  if ( -0.5 > valid ) return valid;
+  
   if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
     return gridEdgeRatioCost(grid, nodes);
 
@@ -637,6 +633,11 @@ double gridAR(Grid *grid, int *nodes )
 	   __FILE__,__LINE__);
   }
   
+  p1 = gridNodeXYZPointer(grid,nodes[0]);
+  p2 = gridNodeXYZPointer(grid,nodes[1]);
+  p3 = gridNodeXYZPointer(grid,nodes[2]);
+  p4 = gridNodeXYZPointer(grid,nodes[3]);
+
   xyz1[0] = j[0] * p1[0] + j[1] * p1[1] + j[2] * p1[2]; 
   xyz1[1] = j[3] * p1[0] + j[4] * p1[1] + j[5] * p1[2]; 
   xyz1[2] = j[6] * p1[0] + j[7] * p1[1] + j[8] * p1[2]; 

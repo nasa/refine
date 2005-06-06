@@ -1,3 +1,9 @@
+2005-06-06 16:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCostValid) added to check mesh validity in
+	consistant manner.
+	* src/gridmetric.c (gridAR) calls gridCostValid to check validity.
+
 2005-06-06 12:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (gridJacVolRatio) added debug routine to see how

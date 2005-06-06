@@ -59,6 +59,7 @@ Grid *gridCellVolumeDerivative(Grid *g, int *nodes,
 Grid *gridNodeVolumeDerivative(Grid *g, int node, 
 			       double *volume, double *dVoldx );
 
+double gridCostValid(Grid *g, int *nodes );
 double gridAR(Grid *g, int *nodes );
 double gridEdgeRatioCost(Grid *g, int *nodes );
 double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
