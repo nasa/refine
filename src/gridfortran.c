@@ -283,6 +283,8 @@ void gridexportfast_( void )
 void gridsetcostconstraint_( int *cost_constraint )
 {
   gridSetCostConstraint(grid, *cost_constraint);
+  if (gridCostConstraint(grid)&gridCOST_CNST_VALID)
+    gridSetCostFunction(grid, gridCOST_FCN_JAC_SCALED_MEAN_RATIO);
 }
 
 void gridconstrainsurfacenode_( void )

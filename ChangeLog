@@ -1,5 +1,11 @@
 2005-06-07 13:35 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridfortran.c (gridsetcostconstraint_) turns on  
+	gridCOST_FCN_JAC_SCALED_MEAN_RATIO cost when gridCOST_CNST_VALID
+	bit is set.
+
+2005-06-07 13:35 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridmetric.c (gridAR,gridCellARDerivative) added
 	gridCOST_FCN_JAC_SCALED_MEAN_RATIO cost.
 
