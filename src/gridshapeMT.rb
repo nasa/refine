@@ -384,6 +384,55 @@ class TestGridShape < Test::Unit::TestCase
 
  end
 
+ def testSecondOrderLagrangeJacobianDeterminateDerivativeCrazy
+  n0 = [0, 0, 0]
+  n1 = [1, 3, 4]
+  n2 = [7, 1, 5]
+  n3 = [3, 2, 1]
+  e01 = [5, 3, 1]
+  e02 = [68, 6, 67]
+  e03 = [56, 3, 5]
+  e12 = [4, 8, 7]
+  e13 = [11, 23, 3]
+  e23 = [9, 98, 7]
+  
+  where = [0.3, 0.3, 0.3]
+
+  deriv = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  tol=1.0e-2
+  assert_in_delta( 452059.8, deriv[0], tol)
+
+  delta = 1.0e-8
+
+  n0 = [delta, 0, 0]
+  p = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  n0 = [-delta, 0, 0]
+  m = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  fd = (p[0]-m[0])/delta*0.5
+
+  assert_in_delta( fd, deriv[1], tol)
+  assert_in_delta(-1976.472, deriv[1], tol)
+
+  n0 = [0, delta, 0]
+  p = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  n0 = [0, -delta, 0]
+  m = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  fd = (p[0]-m[0])/delta*0.5
+
+  assert_in_delta( fd, deriv[2], tol)
+  assert_in_delta( 490.512, deriv[2], tol)
+
+  n0 = [0, 0, delta]
+  p = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  n0 = [0, 0, -delta]
+  m = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  fd = (p[0]-m[0])/delta*0.5
+
+  assert_in_delta( fd, deriv[3], tol)
+  assert_in_delta( 92.256, deriv[3], tol)
+
+ end
+
  def testSecondOrderLagrangeJacobianDeterminateMin
   @g.addNode(0, 0, 0)
   @g.addNode(1, 0, 0)
