@@ -1,3 +1,8 @@
+2005-06-07 13:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridMinCellJacDetDeriv2) added a differentiated
+	version of gridMinCellJacDet2.
+
 2005-06-07 12:39 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridshape.c (gridShapeJacobianDetDeriv2) added a differentiated

@@ -107,6 +107,78 @@ double gridMinCellJacDet2(Grid *grid, int *nodes)
   return det;
 }
 
+Grid *gridMinCellJacDetDeriv2(Grid *grid, int *nodes,
+			      double *determinate, double *dDetdx)
+{
+  double n0[3], n1[3], n2[3], n3[3];
+  double e01[3], e02[3], e03[3];
+  double e12[3], e13[3], e23[3];
+  double where[3];
+  double det, ddet[3];
+  
+  if ( !gridValidNode(grid, nodes[0]) || 
+       !gridValidNode(grid, nodes[1]) ||
+       !gridValidNode(grid, nodes[2]) ||
+       !gridValidNode(grid, nodes[3]) ) return NULL;
+
+  gridNodeXYZ(grid,nodes[0],n0);
+  gridNodeXYZ(grid,nodes[1],n1);
+  gridNodeXYZ(grid,nodes[2],n2);
+  gridNodeXYZ(grid,nodes[3],n3);
+
+  gridCurvedEdgeMidpoint(grid,nodes[0],nodes[1],e01);
+  gridCurvedEdgeMidpoint(grid,nodes[0],nodes[2],e02);
+  gridCurvedEdgeMidpoint(grid,nodes[0],nodes[3],e03);
+
+  gridCurvedEdgeMidpoint(grid,nodes[1],nodes[2],e12);
+  gridCurvedEdgeMidpoint(grid,nodes[1],nodes[3],e13);
+  gridCurvedEdgeMidpoint(grid,nodes[2],nodes[3],e23);
+
+  where[0]=0.0; where[1]=0.0; where[2]=0.0; 
+  gridShapeJacobianDetDeriv2(grid,n0,n1,n2,n3, 
+			     e01, e02, e03, 
+			     e12, e13, e23, 
+			     where, determinate, dDetdx);
+
+  where[0]=1.0; where[1]=0.0; where[2]=0.0; 
+  gridShapeJacobianDetDeriv2(grid,n0,n1,n2,n3, 
+			     e01, e02, e03, 
+			     e12, e13, e23, 
+			     where, &det, ddet);
+  if (det<(*determinate)) {
+    *determinate = det;
+    dDetdx[0] = ddet[0];
+    dDetdx[1] = ddet[1];
+    dDetdx[2] = ddet[2];
+  }
+
+  where[0]=0.0; where[1]=1.0; where[2]=0.0; 
+  gridShapeJacobianDetDeriv2(grid,n0,n1,n2,n3, 
+			     e01, e02, e03, 
+			     e12, e13, e23, 
+			     where, &det, ddet);
+  if (det<(*determinate)) {
+    *determinate = det;
+    dDetdx[0] = ddet[0];
+    dDetdx[1] = ddet[1];
+    dDetdx[2] = ddet[2];
+  }
+     
+  where[0]=0.0; where[1]=0.0; where[2]=1.0; 
+  gridShapeJacobianDetDeriv2(grid,n0,n1,n2,n3, 
+			     e01, e02, e03, 
+			     e12, e13, e23, 
+			     where, &det, ddet);
+  if (det<(*determinate)) {
+    *determinate = det;
+    dDetdx[0] = ddet[0];
+    dDetdx[1] = ddet[1];
+    dDetdx[2] = ddet[2];
+  }
+
+  return grid;
+}
+
 Grid *gridNodeMinCellJacDet2(Grid *grid, int node, double *determinate )
 {
   AdjIterator it;
