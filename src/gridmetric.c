@@ -681,7 +681,8 @@ double gridAR(Grid *grid, int *nodes )
     aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 );
     determinate = gridMinCellJacDet2(grid, nodes);
     volume = gridVolume(grid, nodes);
-    aspect = aspect * determinate / volume / 6.0;
+    determinate = determinate / volume / 6.0;
+    aspect = aspect * determinate;
     break;
   default:
     printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
@@ -907,20 +908,16 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
     gridMinCellJacDetDeriv2(grid, nodes, &det, dDetdx);
     gridCellVolumeDerivative(grid, nodes, &vol, dVoldx );
 
+    det = det / vol / 6.0;
+    dDetdx[0] = (vol * dDetdx[0] - det * dVoldx[0]) / vol / vol / 6.0;
+    dDetdx[1] = (vol * dDetdx[1] - det * dVoldx[1]) / vol / vol / 6.0;
+    dDetdx[2] = (vol * dDetdx[2] - det * dVoldx[2]) / vol / vol / 6.0;
+
     *ar = (*ar) * det;
-    dARdx[0] = (*ar)*dDetdx[0] + dARdx[0]*det;
-    dARdx[1] = (*ar)*dDetdx[1] + dARdx[1]*det;
-    dARdx[2] = (*ar)*dDetdx[2] + dARdx[2]*det;
+    dARdx[0] = ( (*ar)*dDetdx[0] + dARdx[0]*det );
+    dARdx[1] = ( (*ar)*dDetdx[1] + dARdx[1]*det );
+    dARdx[2] = ( (*ar)*dDetdx[2] + dARdx[2]*det );
 
-    *ar = (*ar) / vol;
-    dARdx[0] = (vol * dARdx[0] - (*ar) * dVoldx[0]) / vol / vol;
-    dARdx[1] = (vol * dARdx[1] - (*ar) * dVoldx[1]) / vol / vol;
-    dARdx[2] = (vol * dARdx[2] - (*ar) * dVoldx[2]) / vol / vol;
-
-    *ar = (*ar) / 6.0;
-    dARdx[0] = dARdx[0] / 6.0;
-    dARdx[1] = dARdx[1] / 6.0;
-    dARdx[2] = dARdx[2] / 6.0;
     break;
   default:
     printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
