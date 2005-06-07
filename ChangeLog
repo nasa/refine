@@ -1,5 +1,10 @@
 2005-06-06 16:40 Mike Park  <mike.park@nasa.gov>
 
+	* src/grid.c (gridSetCostFunction,gridCOST_FCN_JAC_SCALED_MEAN_RATIO) 
+	allowed a new cost to scale mean ratio with jacobian/volume ratio.
+
+2005-06-06 16:40 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridmetric.c (gridNodeValid) call gridCostValid on all cells.
 	* src/gridmpi.c (gridParallelRelaxNegativeCells) call gridNodeCostValid
 	to check validity for speed increase.

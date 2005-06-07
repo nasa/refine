@@ -4001,7 +4001,7 @@ Grid *gridSetMap(Grid *grid, int node,
 Grid *gridSetCostFunction(Grid *grid, int costFunction)
 {
   if ( costFunction < gridCOST_FCN_MEAN_RATIO  || 
-       costFunction > gridCOST_FCN_EDGE_LENGTH ) return NULL;
+       costFunction > gridCOST_FCN_JAC_SCALED_MEAN_RATIO ) return NULL;
   grid->costFunction = costFunction;
   return grid;
 }
