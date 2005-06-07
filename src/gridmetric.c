@@ -630,7 +630,7 @@ double gridAR(Grid *grid, int *nodes )
   int i;
   double *m0, *m1, *m2, *m3; 
   double m[6], j[9];
-  double aspect;
+  double aspect, determinate, volume;
 
   double valid;
 
@@ -677,6 +677,12 @@ double gridAR(Grid *grid, int *nodes )
     aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 ); break;
   case gridCOST_FCN_ASPECT_RATIO:
     aspect = gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 ); break;
+  case gridCOST_FCN_JAC_SCALED_MEAN_RATIO:
+    aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 );
+    determinate = gridMinCellJacDet2(grid, nodes);
+    volume = gridVolume(grid, nodes);
+    aspect = aspect * determinate / volume / 6.0;
+    break;
   default:
     printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
 	   gridCostFunction(grid));
@@ -864,7 +870,8 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   int i;
   double *m0, *m1, *m2, *m3; 
   double m[6], j[9];
-
+  double det, vol;
+  double dDetdx[3], dVoldx[3];
 
   if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
     return gridCellRatioErrorDerivative(grid, nodes, ar, dARdx );
@@ -895,6 +902,26 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
     gridCellMeanRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx); break;
   case gridCOST_FCN_ASPECT_RATIO:
     gridCellAspectRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx); break;
+  case gridCOST_FCN_JAC_SCALED_MEAN_RATIO:
+    gridCellMeanRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx);
+    gridMinCellJacDetDeriv2(grid, nodes, &det, dDetdx);
+    gridCellVolumeDerivative(grid, nodes, &vol, dVoldx );
+
+    *ar = (*ar) * det;
+    dARdx[0] = (*ar)*dDetdx[0] + dARdx[0]*det;
+    dARdx[1] = (*ar)*dDetdx[1] + dARdx[1]*det;
+    dARdx[2] = (*ar)*dDetdx[2] + dARdx[2]*det;
+
+    *ar = (*ar) / vol;
+    dARdx[0] = (vol * dARdx[0] - (*ar) * dVoldx[0]) / vol / vol;
+    dARdx[1] = (vol * dARdx[1] - (*ar) * dVoldx[1]) / vol / vol;
+    dARdx[2] = (vol * dARdx[2] - (*ar) * dVoldx[2]) / vol / vol;
+
+    *ar = (*ar) / 6.0;
+    dARdx[0] = dARdx[0] / 6.0;
+    dARdx[1] = dARdx[1] / 6.0;
+    dARdx[2] = dARdx[2] / 6.0;
+    break;
   default:
     printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
 	   gridCostFunction(grid));
