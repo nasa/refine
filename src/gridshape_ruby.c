@@ -97,6 +97,46 @@ VALUE grid_shapeJacobianDet2( VALUE self,
 					     w) );
 }
 
+VALUE grid_shapeJacobianDetDeriv2( VALUE self, 
+			   VALUE rb_n0, VALUE rb_n1, VALUE rb_n2, VALUE rb_n3,
+			   VALUE rb_e01, VALUE rb_e02, VALUE rb_e03,
+			   VALUE rb_e12, VALUE rb_e13, VALUE rb_e23,
+			   VALUE rb_w )
+{
+  int i;
+  double n0[3], n1[3], n2[3], n3[3];
+  double e01[3], e02[3], e03[3];
+  double e12[3], e13[3], e23[3];
+  double w[3];
+  double determinate, dDetdx[3];
+  VALUE rb_deriv;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<3;i++) n0[i] = NUM2DBL(rb_ary_entry(rb_n0,i));
+  for (i=0;i<3;i++) n1[i] = NUM2DBL(rb_ary_entry(rb_n1,i));
+  for (i=0;i<3;i++) n2[i] = NUM2DBL(rb_ary_entry(rb_n2,i));
+  for (i=0;i<3;i++) n3[i] = NUM2DBL(rb_ary_entry(rb_n3,i));
+
+  for (i=0;i<3;i++) e01[i] = NUM2DBL(rb_ary_entry(rb_e01,i));
+  for (i=0;i<3;i++) e02[i] = NUM2DBL(rb_ary_entry(rb_e02,i));
+  for (i=0;i<3;i++) e03[i] = NUM2DBL(rb_ary_entry(rb_e03,i));
+
+  for (i=0;i<3;i++) e12[i] = NUM2DBL(rb_ary_entry(rb_e12,i));
+  for (i=0;i<3;i++) e13[i] = NUM2DBL(rb_ary_entry(rb_e13,i));
+  for (i=0;i<3;i++) e23[i] = NUM2DBL(rb_ary_entry(rb_e23,i));
+
+  for (i=0;i<3;i++)  w[i] = NUM2DBL(rb_ary_entry(rb_w,i));
+  if (grid!=gridShapeJacobianDetDeriv2(grid,n0,n1,n2,n3, 
+				       e01, e02, e03, 
+				       e12, e13, e23, 
+				       w, &determinate, dDetdx)) return Qnil;
+  rb_deriv = rb_ary_new2(4);
+  rb_ary_store( rb_deriv, 0, rb_float_new(determinate) );
+  rb_ary_store( rb_deriv, 1, rb_float_new(dDetdx[0]) );
+  rb_ary_store( rb_deriv, 2, rb_float_new(dDetdx[1]) );
+  rb_ary_store( rb_deriv, 3, rb_float_new(dDetdx[2]) );
+  return rb_deriv;
+}
+
 VALUE grid_minCellJacDet2( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -115,6 +155,7 @@ void Init_GridShape()
    rb_define_method( cGridShape, "shapeJacobian1", grid_shapeJacobian1, 5 );
    rb_define_method( cGridShape, "shapeJacobian2", grid_shapeJacobian2, 11 );
    rb_define_method( cGridShape, "shapeJacobianDet2", grid_shapeJacobianDet2, 11 );
+   rb_define_method( cGridShape, "shapeJacobianDetDeriv2", grid_shapeJacobianDetDeriv2, 11 );
    rb_define_method( cGridShape, "minCellJacDet2", grid_minCellJacDet2, 1 );
  }
 

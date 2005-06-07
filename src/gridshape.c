@@ -554,6 +554,36 @@ Grid* gridShapeJacobian2(Grid *grid,
   return grid;
 }
 
+Grid *gridShapeJacobianDetDeriv2(Grid *grid,
+				 double *n0, double *n1, double *n2, double *n3,
+				 double *e01, double *e02, double *e03,
+				 double *e12, double *e13, double *e23,
+				 double *where,
+				 double *determinate, double *dDetdx)
+{
+  double x, y, z;
+  double gphi[3];
+  double j[9];
+
+  dDetdx[0] = dDetdx[1] = dDetdx[2] = 0.0;
+
+  gridShapeJacobian2(grid, 
+		     n0, n1, n2, n3,
+		     e01, e02, e03,
+		     e12, e13, e23,
+		     where, j );
+
+  *determinate = 
+    j[0]*j[4]*j[8] +
+    j[1]*j[5]*j[6] + 
+    j[2]*j[3]*j[7] - 
+    j[0]*j[5]*j[7] - 
+    j[1]*j[3]*j[8] - 
+    j[2]*j[4]*j[6]; 
+
+  return grid;
+}
+
 double gridShapeJacobianDet2(Grid *grid,
 			     double *n0, double *n1, double *n2, double *n3,
 			     double *e01, double *e02, double *e03,

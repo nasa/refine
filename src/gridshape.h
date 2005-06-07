@@ -41,6 +41,13 @@ double gridShapeJacobianDet2(Grid *,
 			     double *e12, double *e13, double *e23,
 			     double *where);
 
+Grid *gridShapeJacobianDetDeriv2(Grid *,
+				 double *n0, double *n1, double *n2, double *n3,
+				 double *e01, double *e02, double *e03,
+				 double *e12, double *e13, double *e23,
+				 double *where,
+				 double *determinate, double *dDetdx);
+
 END_C_DECLORATION
 
 #endif /* GRIDSHAPE_H */

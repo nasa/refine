@@ -333,6 +333,31 @@ class TestGridShape < Test::Unit::TestCase
   assert_in_delta(-9.0,det,tol)
  end
 
+ def testSecondOrderLagrangeJacobianDeterminateDerivative
+  n0 = [0, 0, 0]
+  n1 = [1, 0, 0]
+  n2 = [0, 1, 0]
+  n3 = [0, 0, 1]
+  h=0.5
+  e01 = [h, 0, 0]
+  e02 = [0, h, 0]
+  e03 = [0, 0, h]
+  e12 = [h, h, 0]
+  e13 = [h, 0, h]
+  e23 = [0, h, h]
+  
+  where = [0.0, 0.0, 0.0]
+
+  deriv = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
+  tol=1.0e-14
+  ans = [1.0, 1.0, 1.0, 1.0]
+  assert_in_delta( ans[0], deriv[0], tol)
+  assert_in_delta( ans[1], deriv[1], tol)
+  assert_in_delta( ans[2], deriv[2], tol)
+  assert_in_delta( ans[3], deriv[3], tol)
+
+ end
+
  def testSecondOrderLagrangeJacobianDeterminateMin
   @g.addNode(0, 0, 0)
   @g.addNode(1, 0, 0)
@@ -345,5 +370,6 @@ class TestGridShape < Test::Unit::TestCase
   @g.setNodeXYZ(3, [0, 0, 2])
   assert_in_delta(2.0,@g.minCellJacDet2(nodes),tol)
  end
+
 
 end
