@@ -581,6 +581,22 @@ Grid *gridShapeJacobianDetDeriv2(Grid *grid,
     j[1]*j[3]*j[8] - 
     j[2]*j[4]*j[6]; 
 
+  x = where[0];
+  y = where[1];
+  z = where[2];
+
+  gphi[0] = -3.0+4.0*x+4.0*y+4.0*z;
+  gphi[1] = -3.0+4.0*x+4.0*y+4.0*z;
+  gphi[2] = -3.0+4.0*x+4.0*y+4.0*z;
+
+  dDetdx[0] += 
+    gphi[0]*j[4]*j[8] +
+    gphi[1]*j[5]*j[6] + 
+    gphi[2]*j[3]*j[7] - 
+    gphi[0]*j[5]*j[7] - 
+    gphi[1]*j[3]*j[8] - 
+    gphi[2]*j[4]*j[6]; 
+
   return grid;
 }
 
