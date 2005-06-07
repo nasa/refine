@@ -35,6 +35,11 @@ Grid *gridShapeJacobian2(Grid *,
 			 double *e01, double *e02, double *e03,
 			 double *e12, double *e13, double *e23,
 			 double *where, double *jacobian );
+double gridShapeJacobianDet2(Grid *,
+			     double *n0, double *n1, double *n2, double *n3,
+			     double *e01, double *e02, double *e03,
+			     double *e12, double *e13, double *e23,
+			     double *where);
 
 END_C_DECLORATION
 

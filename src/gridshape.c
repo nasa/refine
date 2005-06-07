@@ -60,7 +60,6 @@ double gridMinCellJacDet2(Grid *grid, int *nodes)
   double e01[3], e02[3], e03[3];
   double e12[3], e13[3], e23[3];
   double where[3];
-  double jacobian[9];
   double det;
 
   if ( !gridValidNode(grid, nodes[0]) || 
@@ -82,32 +81,28 @@ double gridMinCellJacDet2(Grid *grid, int *nodes)
   gridCurvedEdgeMidpoint(grid,nodes[2],nodes[3],e23);
 
   where[0]=0.0; where[1]=0.0; where[2]=0.0; 
-  gridShapeJacobian2(grid,n0,n1,n2,n3, 
-		     e01, e02, e03, 
-		     e12, e13, e23, 
-		     where,jacobian);
-  det = gridMatrixDeterminate(jacobian);
+  det = gridShapeJacobianDet2(grid,n0,n1,n2,n3, 
+			      e01, e02, e03, 
+			      e12, e13, e23, 
+			      where);
 
   where[0]=1.0; where[1]=0.0; where[2]=0.0; 
-  gridShapeJacobian2(grid,n0,n1,n2,n3, 
-		     e01, e02, e03, 
-		     e12, e13, e23, 
-		     where,jacobian);
-  det=MIN(det,gridMatrixDeterminate(jacobian));
+  det = MIN( det, gridShapeJacobianDet2(grid,n0,n1,n2,n3, 
+					e01, e02, e03, 
+					e12, e13, e23, 
+					where));
 
   where[0]=0.0; where[1]=1.0; where[2]=0.0; 
-  gridShapeJacobian2(grid,n0,n1,n2,n3, 
-		     e01, e02, e03, 
-		     e12, e13, e23, 
-		     where,jacobian);
-  det=MIN(det,gridMatrixDeterminate(jacobian));
+  det = MIN( det, gridShapeJacobianDet2(grid,n0,n1,n2,n3, 
+					e01, e02, e03, 
+					e12, e13, e23, 
+					where));
      
   where[0]=0.0; where[1]=0.0; where[2]=1.0; 
-  gridShapeJacobian2(grid,n0,n1,n2,n3, 
-		     e01, e02, e03, 
-		     e12, e13, e23, 
-		     where,jacobian);
-  det=MIN(det,gridMatrixDeterminate(jacobian));
+  det = MIN( det, gridShapeJacobianDet2(grid,n0,n1,n2,n3, 
+					e01, e02, e03, 
+					e12, e13, e23, 
+					where));
 
   return det;
 }
@@ -558,3 +553,18 @@ Grid* gridShapeJacobian2(Grid *grid,
 
   return grid;
 }
+
+double gridShapeJacobianDet2(Grid *grid,
+			     double *n0, double *n1, double *n2, double *n3,
+			     double *e01, double *e02, double *e03,
+			     double *e12, double *e13, double *e23,
+			     double *where)
+{
+  double jacobian[9];
+  if (grid !=gridShapeJacobian2(grid,n0,n1,n2,n3, 
+				e01, e02, e03, 
+				e12, e13, e23, 
+				where,jacobian) ) return -999.0;
+  return gridMatrixDeterminate(jacobian);
+}
+
