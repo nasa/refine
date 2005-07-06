@@ -177,6 +177,7 @@ int main( int argc, char *argv[] )
   int EdgeBasedCycles = EMPTY;
   GridBool validate = FALSE;
   GridBool tecplotOutput = FALSE;
+  GridBool LeadingEdgeBG = FALSE;
   int iview = 0;
   int maxnode = 50000;
   char modeler[81];
@@ -255,6 +256,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"--validate") == 0 ) {
       validate = TRUE;
       printf("--validate argument %d\n",i);
+    } else if( strcmp(argv[i],"-le") == 0 ) {
+      LeadingEdgeBG = TRUE;
+      printf("-le argument %d\n",i);
    } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
 #ifdef HAVE_CAPRI2
@@ -303,8 +307,8 @@ int main( int argc, char *argv[] )
 
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
-			gridCOST_CNST_VALID  |
                         gridCOST_CNST_AREAUV );
+			/* gridCOST_CNST_VALID  | */
 
   gridConstrainSurfaceNode(grid);
 
@@ -369,6 +373,34 @@ int main( int argc, char *argv[] )
 	printf("Y%6.2f Y%6.2f Y%6.2f\n",third[0],third[1],third[2]);
 	printf("\n");
 #endif
+	gridSetMapWithSpacingVectors(grid, node,
+				     normal, tangent, third, 
+				     rSpace, tSpace, ySpace);
+      }
+    }    
+  }
+  if (LeadingEdgeBG) {
+    double centerX;
+    double radius, theta;
+    double rSpace, tSpace, ySpace;
+    double normal[3], tangent[3], third[3];
+    printf("spacing set to Leading Edge.\n");
+    for (node=0;node<gridMaxNode(grid);node++) {
+      if (grid==gridNodeXYZ(grid,node,xyz)) {
+	centerX = 0.05;
+	radius = sqrt((xyz[0]-centerX)*(xyz[0]-centerX)+xyz[2]*xyz[2]);
+	theta = atan2(xyz[2],xyz[0]-centerX);
+	rSpace = 0.01+0.1*radius;
+	tSpace = 0.05+0.1*radius;
+	ySpace = 0.25;
+	normal[0]=normal[1]=normal[2]=0;
+	tangent[0]=tangent[1]=tangent[2]=0;
+	third[0]=third[1]=third[2]=0;
+	normal[0]=cos(theta);
+	normal[2]=sin(theta);
+	tangent[0]=-sin(theta);
+	tangent[2]=cos(theta);
+	third[1]=1.0;
 	gridSetMapWithSpacingVectors(grid, node,
 				     normal, tangent, third, 
 				     rSpace, tSpace, ySpace);

@@ -1,3 +1,8 @@
+2005-07-06 10:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) added -le option to setup spacing for
+	leading edge unit problem. turned off gridCOST_CNST_VALID.
+
 2005-06-07 13:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridsetcostconstraint_) turns on  
