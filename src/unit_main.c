@@ -307,8 +307,8 @@ int main( int argc, char *argv[] )
 
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
+			gridCOST_CNST_VALID  |
                         gridCOST_CNST_AREAUV );
-			/* gridCOST_CNST_VALID  | */
 
   gridConstrainSurfaceNode(grid);
 
@@ -436,7 +436,7 @@ int main( int argc, char *argv[] )
       gridWriteTecplotCurvedGeom(grid,"invalid.t");
       gridWriteTecplotInvalid(grid,"invalid.t");
     }else{
-      gridJacVolRatio(grid);
+      // gridJacVolRatio(grid);
       STATUS;
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
       STATUS;
@@ -446,7 +446,7 @@ int main( int argc, char *argv[] )
       STATUS;
       printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
       STATUS;
-      gridJacVolRatio(grid);
+      // gridJacVolRatio(grid);
       printf("writing output project %s\n",outputProject);
       gridSavePart( grid, outputProject );
       printf("writing output FAST file %s\n",outputFAST);
