@@ -507,7 +507,7 @@ int main( int argc, char *argv[] )
 	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     STATUS;
 
-    {
+    if (!gridSurfaceNodeConstrained(grid)){
       GridMove *gm;
       double minVolume;
       printf("Calling GridMove to project nodes...\n");
