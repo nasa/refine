@@ -59,6 +59,8 @@ Make a matrix of collapse possilbities for node 0,1 on bound or not
 Add a new method to return whether a geometry face has an underlying
 geometric (CAD) definition.
 
+Clean up restarts and use a consisant interior face numbering.
+
 --Edge Based
 
 parallelize the edge queue
