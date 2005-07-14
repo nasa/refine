@@ -149,6 +149,32 @@ Grid *gridJacVolRatio(Grid *grid)
   return grid;
 }
 
+Grid *gridUntangleBadFaceParameters(Grid *grid)
+{
+  int face, nodes[3], faceId;
+  int node, *hits;
+  
+  hits = (int *)malloc( gridMaxNode(grid) * sizeof(int) );
+  for (node=0;node<gridMaxNode(grid); node++) hits[node]=0;
+
+  for (face=0;face<gridMaxFace(grid);face++) {
+    if (grid == gridFace(grid,face,nodes,&faceId) ) {
+      if ( 1.0e-14 > gridFaceAreaUV(grid, face) ) {
+	hits[nodes[0]]++; hits[nodes[1]]++; hits[nodes[2]]++;
+      }
+    }
+  }
+
+  for (node=0;node<gridMaxNode(grid); node++) {
+    if (hits[node] > 2) {
+      printf("untangling node%10d with hits%3d\n",node,hits[node]);
+      gridSmoothNodeFaceAreaUV(grid, node );
+    }
+  }  
+  return grid;
+}
+
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -412,7 +438,8 @@ int main( int argc, char *argv[] )
     printf("could not project grid. stop.\n");
     return 1;
   }
-
+  gridUntangleBadFaceParameters(grid);
+  
   if (validate) {
     int cycle, invalid;
     printf("cost const %d.\n",gridCostConstraint(grid));

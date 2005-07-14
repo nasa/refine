@@ -1,3 +1,8 @@
+2005-07-14 09:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridUntangleBadFaceParameters) band-aid to fix
+	a bad projection during save part. should be cleaned up.
+
 2005-07-06 10:47 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) added -le option to setup spacing for
