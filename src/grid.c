@@ -886,7 +886,8 @@ Grid *gridSortNodeGridEx(Grid *grid)
     }
   }
 
-  // face stuff - assuming that the bc faces are sorted.
+  // face stuff
+  //   assuming that the bc faces are sorted for contiguous face node numbering.
   for ( face=0; face<grid->nface; face++ ){
     for ( i=0; i<3; i++ ){
       node = grid->f2n[i+3*face];
