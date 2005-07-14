@@ -1154,7 +1154,7 @@ Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
       }
     }
   }
-  printf("nface %d\n",nface);
+
   f2n = (int *)malloc(sizeof(int)*3*nface);
   nface = 0;
   for (face=0; face<gridMaxFace(grid); face++) {
@@ -1167,7 +1167,7 @@ Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
       }
     }
   }
-  printf("nface %d\n",nface);
+
   g2l = (int *)malloc(sizeof(int)*gridMaxNode(grid));
   for (node=0; node<gridMaxNode(grid); node++) g2l[node]=EMPTY;
   nnode = 0;
@@ -1179,7 +1179,7 @@ Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
       }
     }
   }
-  printf("nnode %d\n",nnode);
+
   xyz = (double *)malloc(sizeof(double)*3*nnode);
   for (node=0; node<3*nnode; node++) xyz[node]=0.0;
   for (face=0; face<nface; face++) {
