@@ -434,7 +434,9 @@ int main( int argc, char *argv[] )
     }    
   }
 
-  if (grid!=gridRobustProject(grid)) {
+  if (grid==gridRobustProject(grid)) {
+    printf("projected grid to test params.\n");
+  }else{
     printf("could not project grid. stop.\n");
     return 1;
   }
