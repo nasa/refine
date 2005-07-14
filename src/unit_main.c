@@ -337,7 +337,10 @@ int main( int argc, char *argv[] )
     return 1;
   }
   if (!gridRightHandedBoundaryUV(grid)) {
+    int faceId;
     printf("ERROR: loaded part does not have right handed UV parameters\n");
+    for(faceId=1;faceId<=gridNGeomFace(grid);faceId++)
+      gridWriteTecplotGeomFaceUV(grid,"faceParameters.t",faceId);
     return 1;
   }
 

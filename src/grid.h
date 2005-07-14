@@ -199,6 +199,7 @@ Grid *gridRenumber(Grid *g, int *o2n);
 void gridFree(Grid *g);
 
 Grid *gridWriteTecplotSurfaceGeom(Grid *g, char *filename );
+Grid *gridWriteTecplotGeomFaceUV(Grid *g, char *filename, int id );
 Grid *gridWriteTecplotTriangleZone(Grid *g, char *filename,
 				   int nnode, double *xyz,
 				   int nface, int *f2n);

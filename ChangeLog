@@ -1,3 +1,8 @@
+2005-07-14 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotGeomFaceUV) write face UV params.
+	* src/unit_main.c (main) call gridWriteTecplotGeomFaceUV if bad params.
+
 2005-07-14 14:16 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridRightHandedBoundaryUV) added to test UV params.
