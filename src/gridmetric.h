@@ -88,6 +88,7 @@ Grid *gridFreezeSmallARCells(Grid *g, double minAR );
 
 GridBool gridRightHandedFace(Grid *g, int face );
 GridBool gridRightHandedBoundary(Grid *g );
+GridBool gridRightHandedBoundaryUV(Grid *g );
 
 double gridFaceArea(Grid *g, int n0, int n1, int n2);
 double gridFaceAreaUV(Grid *g, int face);

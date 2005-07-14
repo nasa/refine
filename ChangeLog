@@ -1,3 +1,9 @@
+2005-07-14 14:16 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridRightHandedBoundaryUV) added to test UV params.
+	* src/unit_main.c (main) test gridRightHandedBoundaryUV, commented 
+	gridRobustProject.
+
 2005-07-14 09:38 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (gridUntangleBadFaceParameters) band-aid to fix

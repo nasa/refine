@@ -1727,6 +1727,20 @@ double gridFaceArea(Grid *grid, int n0, int n1, int n2 )
 
   return  0.5*length;
 }
+
+GridBool gridRightHandedBoundaryUV( Grid *grid )
+{
+  int face, nodes[3], faceId;
+  GridBool rightHanded;
+  rightHanded = TRUE;
+  
+  for (face=0;face<gridMaxFace(grid);face++)
+    if ( grid == gridFace(grid, face, nodes, &faceId ) )
+      rightHanded = (gridFaceAreaUV(grid, face)>1.0e-14) && rightHanded;
+  
+  return rightHanded;
+}
+
 double gridFaceAreaUV(Grid *grid, int face)
 {
   int faceId, nodes[3];

@@ -329,6 +329,18 @@ int main( int argc, char *argv[] )
   printf("running project %s\n",project);
   grid = gridLoadPart( modeler, project, maxnode );
 
+  printf("restart grid size: %d nodes %d faces %d cells.\n",
+	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
+
+  if (!gridRightHandedBoundary(grid)) {
+    printf("ERROR: loaded part does not have right handed boundaries\n");
+    return 1;
+  }
+  if (!gridRightHandedBoundaryUV(grid)) {
+    printf("ERROR: loaded part does not have right handed UV parameters\n");
+    return 1;
+  }
+
   if (EdgeBasedCycles!=EMPTY)gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
 
   gridSetCostConstraint(grid,
@@ -337,12 +349,6 @@ int main( int argc, char *argv[] )
                         gridCOST_CNST_AREAUV );
 
   gridConstrainSurfaceNode(grid);
-
-  if (!gridRightHandedBoundary(grid)) 
-    printf("ERROR: loaded part does not have right handed boundaries\n");
-
-  printf("restart grid size: %d nodes %d faces %d cells.\n",
-	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
   if(strcmp(linesfile,"")!=0) {
     printf("loading lines from file %s\n",linesfile);
@@ -433,14 +439,16 @@ int main( int argc, char *argv[] )
       }
     }    
   }
-
-  if (grid==gridRobustProject(grid)) {
+  
+  /*
+    if (grid==gridRobustProject(grid)) {
     printf("projected grid to test params.\n");
-  }else{
+    }else{
     printf("could not project grid. stop.\n");
     return 1;
-  }
-  gridUntangleBadFaceParameters(grid);
+    }
+    gridUntangleBadFaceParameters(grid);
+  */
   
   if (validate) {
     int cycle, invalid;
