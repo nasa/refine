@@ -519,17 +519,24 @@ int main( int argc, char *argv[] )
 
   oldSize = 1;
   newSize = gridNNode(grid);
-  jmax = 40;
+  jmax = 8;
   for ( j=0; 
-	(j<jmax) && (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01);
+	(j<jmax) ;//&& (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01);
 	j++){
 
     ratioCollapse = 1.0*ratio;
     ratioSplit   = 1.0/sqrt(ratio);
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	   ratio, ratioCollapse, ratioSplit );
-    gridAdapt(grid,ratioCollapse,ratioSplit);
-
+    if (1==1) {
+      gridCreateConn(grid);
+      gridSetConnValuesWithMetricErrorMagnatude(grid);
+      gridSortConnValues(grid);
+      gridAdaptBasedOnConnRankings(grid);
+      gridEraseConn(grid);
+    }else{
+      gridAdapt(grid,ratioCollapse,ratioSplit);
+    }
     oldSize = newSize;
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
