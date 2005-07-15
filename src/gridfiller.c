@@ -181,13 +181,34 @@ Grid *gridFillFromPart( int vol, int maxnode )
   globalPatch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&patchIterator);
 
   for( face=1; face<=nGeomFace; face++ ) {
+    char filename[265];
+    GridBool debug = FALSE;
+
     localPatch = CADGeom_FaceGrid(vol,face);
+    sprintf(filename,"localUGPatch%03d.t",face);
+    if (debug) UGPatch_WriteTecplotWithParameters(localPatch,filename);
+    sprintf(filename,"globalUGPatch%03d.t",face);
+    if (debug) UGPatch_WriteTecplotWithParameters(globalPatch,filename);
     UGPatch_GetDims(localPatch,patchDimensions);
-    for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {
+    for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {	     
       globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
       gridSetNodeUV( grid, globalNode, face,
 		     UGPatch_Parameter(localPatch,localNode,0), 
 		     UGPatch_Parameter(localPatch,localNode,1));
+      if (debug) {
+	printf("node%6d local  patch %22.18f%22.18f%22.18f\n",localNode,
+	       UGPatch_PtValue(localPatch,localNode,0),
+	       UGPatch_PtValue(localPatch,localNode,1),
+	       UGPatch_PtValue(localPatch,localNode,2));
+	printf("node%6d global patch %22.18f%22.18f%22.18f\n",localNode,
+	       UGPatch_PtValue(globalPatch,localNode,0),
+	       UGPatch_PtValue(globalPatch,localNode,1),
+	       UGPatch_PtValue(globalPatch,localNode,2));
+	printf("node%6d ugrid  index %22.18f%22.18f%22.18f\n\n",localNode,
+	       UGrid_PtValue(ugrid,globalNode,0),
+	       UGrid_PtValue(ugrid,globalNode,1),
+	       UGrid_PtValue(ugrid,globalNode,2));
+      }
     }
 
     globalPatch = DList_GetNextItem(&patchIterator);
