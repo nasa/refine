@@ -341,6 +341,7 @@ int main( int argc, char *argv[] )
     printf("ERROR: loaded part does not have right handed UV parameters\n");
     for(faceId=1;faceId<=gridNGeomFace(grid);faceId++)
       gridWriteTecplotGeomFaceUV(grid,"faceParameters.t",faceId);
+    gridCloseTecplotGeomFile(grid);
     return 1;
   }
 
