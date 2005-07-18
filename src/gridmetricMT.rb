@@ -238,43 +238,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_equal 0, grid.smallestRatioEdge(3)
  end
 
- def testSetConnValuesWithMetricErrorMagnatude1
-  tol = 1.0e-15
-  grid = rightTet 
-  assert_nil grid.setConnValuesWithMetricErrorMagnatude
-  grid.createConn
-  assert_equal grid, grid.setConnValuesWithMetricErrorMagnatude
-  ratio = Math::sqrt(2.0)
-  diag = ((1-ratio)/(1+ratio)).abs
-  assert_in_delta 0.0, grid.edgeRatioError(0,1), tol
-  assert_in_delta 0.0, grid.connValue(0), tol
-  assert_in_delta 0.0, grid.connValue(1), tol
-  assert_in_delta 0.0, grid.connValue(2), tol
-  assert_in_delta diag, grid.edgeRatioError(2,3), tol
-  assert_in_delta diag, grid.connValue(3), tol
-  assert_in_delta diag, grid.connValue(4), tol
-  assert_in_delta diag, grid.connValue(5), tol
- end
-
- def testSetConnValuesWithMetricErrorMagnatude2
-  tol = 1.0e-15
-  grid = rightTet 
-  4.times{ |node| d = 0.25; grid.setMap(node,d,0.0,0.0,d,0.0,d)}
-  assert_in_delta 0.5, grid.edgeRatio(0,1), tol
-  grid.createConn
-  grid.setConnValuesWithMetricErrorMagnatude
-  ratio = 0.5
-  side = ((1-ratio)/(1+ratio)).abs
-  assert_in_delta side, grid.connValue(0), tol
-  assert_in_delta side, grid.connValue(1), tol
-  assert_in_delta side, grid.connValue(2), tol
-  ratio = Math::sqrt(2.0)/2.0
-  diag = ((1-ratio)/(1+ratio)).abs
-  assert_in_delta diag, grid.connValue(3), tol
-  assert_in_delta diag, grid.connValue(4), tol
-  assert_in_delta diag, grid.connValue(5), tol
- end
-
 # need this?
  def testAverageEdgeLength
   assert_not_nil grid = isoTet

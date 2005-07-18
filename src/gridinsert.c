@@ -152,7 +152,10 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
   int i, newnode;
   
   gridCreateConn(grid);
-  gridSetConnValuesWithMetricErrorMagnatude(grid);
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    gridSetConnValue(grid,conn,gridEdgeRatioError(grid,nodes[0],nodes[1]));
+  }
   gridSortConnValues(grid);
 
   nnodeAdd = 0;

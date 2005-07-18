@@ -62,12 +62,6 @@ VALUE grid_smallestRatioEdge( VALUE self, VALUE node )
   return INT2NUM(edgeNode);
 }
 
-VALUE grid_setConnValuesWithMetricErrorMagnatude( VALUE self)
-{
-  GET_GRID_FROM_SELF;
-  return (gridSetConnValuesWithMetricErrorMagnatude(grid)==grid?self:Qnil);
-}
-
 VALUE grid_spacing( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -488,8 +482,6 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "averageEdgeLength", grid_averageEdgeLength, 1 );
   rb_define_method( cGridMetric, "largestRatioEdge", grid_largestRatioEdge, 1 );
   rb_define_method( cGridMetric, "smallestRatioEdge", grid_smallestRatioEdge, 1 );
-  rb_define_method( cGridMetric, "setConnValuesWithMetricErrorMagnatude",
-		    grid_setConnValuesWithMetricErrorMagnatude, 0);
 
   rb_define_method( cGridMetric, "spacing", grid_spacing, 1 );
   rb_define_method( cGridMetric, "resetSpacing", grid_resetSpacing, 0 );

@@ -1,3 +1,9 @@
+2005-07-18 12:58 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSetConnValuesWithMetricErrorMagnatude) removed.
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) the removed method
+	gridSetConnValuesWithMetricErrorMagnatude has been inlined.
+
 2005-07-18 08:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdaptBasedOnConnRankings) move the conn setup
