@@ -1,3 +1,8 @@
+2005-07-18 13:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridConnValue,gridSetConnValue) removed.
+	* src/grid.c (gridSortConnValues,gridConnWithThisRanking) removed.
+
 2005-07-18 13:47 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdaptBasedOnConnRankings) replaced grid

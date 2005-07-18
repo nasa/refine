@@ -206,8 +206,6 @@ Grid *gridImport(int maxnode, int nnode,
   grid->nconn = 0;
   grid->cell2conn = NULL;
   grid->conn2node = NULL;
-  grid->connValue = NULL;
-  grid->connRanking = NULL;
 
   grid->costDegree = 0;
 
@@ -541,8 +539,6 @@ void gridFree(Grid *grid)
   gridCloseTecplotGeomFile(grid);
   gridCloseTecplotScalarFile(grid);
 
-  if (NULL != grid->connRanking) free(grid->connRanking);
-  if (NULL != grid->connValue) free(grid->connValue);
   if (NULL != grid->conn2node) free(grid->conn2node);
   if (NULL != grid->cell2conn) free(grid->cell2conn);
 
@@ -2157,51 +2153,8 @@ Grid *gridEraseConn(Grid* grid)
   grid->cell2conn = NULL;
   if (NULL != grid->conn2node) free(grid->conn2node);
   grid->conn2node = NULL;
-  if (NULL != grid->connValue) free(grid->connValue);
-  grid->connValue = NULL;
-  if (NULL != grid->connRanking) free(grid->connRanking);
-  grid->connRanking = NULL;
   return grid;
 }
-
-double gridConnValue(Grid *grid, int conn)
-{
-  if (NULL==grid->connValue) return 0.0;
-  if (conn<0||conn>=gridNConn(grid)) return 0.0;
-  return grid->connValue[conn];
-}
-
-Grid *gridSetConnValue(Grid *grid, int conn, double value )
-{
-  int i;
-  if (conn<0||conn>=gridNConn(grid)) return NULL;
-  if (NULL==grid->connValue) {
-    grid->connValue = (double *)malloc( gridNConn(grid)*sizeof(double));
-    for(i=0;i<gridNConn(grid);i++) grid->connValue[i] = 0.0;
-  }
-  grid->connValue[conn] = value;
-  return grid;
-}
-
-Grid *gridSortConnValues(Grid *grid)
-{
-  int i;
-  if (NULL==grid->connValue) return NULL;
-  if (NULL==grid->connRanking) {
-    grid->connRanking = (int *)malloc( gridNConn(grid)*sizeof(int));
-    for(i=0;i<gridNConn(grid);i++) grid->connRanking[i] = -1.0;
-  }
-  sortDoubleHeap(gridNConn(grid),grid->connValue,grid->connRanking);
-  return grid;
-}
-
-int gridConnWithThisRanking(Grid *grid, int ranking)
-{
-  if (NULL==grid->connRanking) return EMPTY;
-  if (ranking<0||ranking>=gridNConn(grid)) return EMPTY;
-  return grid->connRanking[ranking];
-}
-
 
 Grid *gridConstrainSurfaceNode(Grid *grid)
 {

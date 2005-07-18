@@ -110,8 +110,6 @@ struct Grid {
   int nconn;
   int *cell2conn;
   int *conn2node;
-  double *connValue;
-  int *connRanking;
 
   int costDegree;
   double storedCost[MAXDEG];
@@ -295,10 +293,6 @@ int gridCell2Conn(Grid *g, int cell, int index );
 Grid *gridConn2Node(Grid *g, int conn, int *nodes );
 Grid *gridCreateConn(Grid *g );
 Grid *gridEraseConn(Grid *g );
-double gridConnValue(Grid *g, int conn);
-Grid *gridSetConnValue(Grid *g, int conn, double value);
-Grid *gridSortConnValues(Grid *g );
-int gridConnWithThisRanking(Grid *g, int ranking );
 
 Grid *gridConstrainSurfaceNode(Grid *g);
 Grid *gridUnconstrainSurfaceNode(Grid *g);

@@ -546,54 +546,12 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [2,4], grid.conn2Node(8)
  end
 
- def testNodeConnectionCreatetion
+ def testNodeConnectionCreation
   grid = Grid.new(4,1,0,0)
   4.times { grid.addNode(0.0,0.0,0.0) }
   grid.addCell(0,1,2,3)
   assert_equal grid, grid.createConn
   assert_nil grid.createConn
- end
-
- def testNodeConnectionValues
-  grid = Grid.new(4,1,0,0)
-  4.times { grid.addNode(0.0,0.0,0.0) }
-  grid.addCell(0,1,2,3)
-  assert_nil grid.setConnValue(0,1.0)
-  grid.createConn
-  assert_equal 0.0,  grid.connValue(0)
-  assert_nil grid.setConnValue(-1,1.0)
-  assert_nil grid.setConnValue(100,1.0)
-  assert_equal grid, grid.setConnValue(0,1.0)
-  assert_equal 1.0,  grid.connValue(0)
-  assert_equal grid, grid.eraseConn
-  assert_equal 0.0,  grid.connValue(0)
- end
- 
- def testSortedNodeConnectionValue
-  grid = Grid.new(4,1,0,0)
-  4.times { grid.addNode(0.0,0.0,0.0) }
-  grid.addCell(0,1,2,3)
-  grid.createConn
-  assert_equal EMPTY, grid.connWithThisRanking(0)
-  assert_nil grid.sortConnValues
-  assert_equal EMPTY, grid.connWithThisRanking(0)
-  grid.setConnValue(0,2.0)
-  grid.setConnValue(1,1.0)
-  grid.setConnValue(2,0.0)
-  grid.setConnValue(3,3.0)
-  grid.setConnValue(4,4.0)
-  grid.setConnValue(5,5.0)
-  assert_equal EMPTY, grid.connWithThisRanking(0)
-  assert_equal grid, grid.sortConnValues
-  assert_equal 2, grid.connWithThisRanking(0)
-  assert_equal 1, grid.connWithThisRanking(1)
-  assert_equal 0, grid.connWithThisRanking(2)
-  3.upto(5) do |rank|
-   assert_equal rank, grid.connWithThisRanking(rank)
-  end
-  grid.setConnValue(5,-5.0)
-  assert_equal grid, grid.sortConnValues
-  assert_equal 5, grid.connWithThisRanking(0)
  end
 
  def testPackedConnections
