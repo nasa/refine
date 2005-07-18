@@ -19,6 +19,9 @@ parallel.
 Do all operations in quality order via plan
 
 
+Refactor conn stuff in grid move and grid to unify
+
+
 verify that I am getting all the performance (mesh quality) out the
 the volume smoothing that is possible.  make consistant use of the
 cost constraint functions.
