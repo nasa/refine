@@ -1,3 +1,10 @@
+2005-07-18 08:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) move the conn setup
+	and teardown methods into this function
+	* src/unit_main.c (main) simplfiy for new gridAdaptBasedOnConnRankings.
+	* src/unit_main.c (main) keep going if bad params
+
 2005-07-14 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotGeomFaceUV) write face UV params.

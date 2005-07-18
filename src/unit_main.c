@@ -342,7 +342,10 @@ int main( int argc, char *argv[] )
     for(faceId=1;faceId<=gridNGeomFace(grid);faceId++)
       gridWriteTecplotGeomFaceUV(grid,"faceParameters.t",faceId);
     gridCloseTecplotGeomFile(grid);
-    return 1;
+    gridRobustProject(grid); 
+    gridUntangleBadFaceParameters(grid);
+    gridRobustProject(grid); 
+    // return 1;
   }
 
   if (EdgeBasedCycles!=EMPTY)gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
@@ -505,11 +508,7 @@ int main( int argc, char *argv[] )
     STATUS;
     for (j=0;j<EdgeBasedCycles;j++){
       printf("start edge based cycle %d\n",j);
-      gridCreateConn(grid);
-      gridSetConnValuesWithMetricErrorMagnatude(grid);
-      gridSortConnValues(grid);
       gridAdaptBasedOnConnRankings(grid);
-      gridEraseConn(grid);
       STATUS;
     }
     printf("edge swapping grid...\n");gridSwap(grid,0.9);
@@ -541,11 +540,7 @@ int main( int argc, char *argv[] )
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	   ratio, ratioCollapse, ratioSplit );
     if (1==1) {
-      gridCreateConn(grid);
-      gridSetConnValuesWithMetricErrorMagnatude(grid);
-      gridSortConnValues(grid);
       gridAdaptBasedOnConnRankings(grid);
-      gridEraseConn(grid);
     }else{
       gridAdapt(grid,ratioCollapse,ratioSplit);
     }

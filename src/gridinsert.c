@@ -151,6 +151,10 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
   double dist, ratio;
   int i, newnode;
   
+  gridCreateConn(grid);
+  gridSetConnValuesWithMetricErrorMagnatude(grid);
+  gridSortConnValues(grid);
+
   nnodeAdd = 0;
   nnodeRemove = 0;
 
@@ -196,6 +200,8 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
       }
     }
   }
+  gridEraseConn(grid);
+
   return grid;
 }
 
