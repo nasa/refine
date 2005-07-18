@@ -66,8 +66,8 @@ class TestQueue < Test::Unit::TestCase
   assert_equal EMPTY, plan.item_with_this_ranking(0)
   assert_nil plan.derive_rankings_from_priorities
   assert_equal EMPTY, plan.item_with_this_ranking(0)
-  plan.add_item_with_priority(0,2.0)
-  plan.add_item_with_priority(1,1.0)
+  plan.add_item_with_priority(0,2.2)
+  plan.add_item_with_priority(1,1.1)
   plan.add_item_with_priority(2,0.0)
   plan.add_item_with_priority(3,3.0)
   plan.add_item_with_priority(4,4.0)
@@ -82,8 +82,9 @@ class TestQueue < Test::Unit::TestCase
   end
   tol = 1.0e-15
   assert_in_delta 0.0, plan.priority_with_this_ranking(0), tol
-  assert_in_delta 1.0, plan.priority_with_this_ranking(1), tol
-  assert_in_delta 2.0, plan.priority_with_this_ranking(2), tol
+  assert_in_delta 1.1, plan.priority_with_this_ranking(1), tol
+  assert_in_delta 2.2, plan.priority_with_this_ranking(2), tol
+  assert_in_delta(-999.0, plan.priority_with_this_ranking(15), tol)
 
   plan.add_item_with_priority(5,-5.0)
   assert_equal EMPTY, plan.item_with_this_ranking(0)
