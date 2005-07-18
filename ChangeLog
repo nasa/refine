@@ -1,3 +1,8 @@
+2005-07-18 16:34 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmooth) used plan to smooth nodes of bad cells
+	first, to try and get better meshes.
+
 2005-07-18 15:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwap) used plan to swap really bad cells

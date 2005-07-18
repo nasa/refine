@@ -18,6 +18,7 @@
 #else
 #include "FAKEGeom.h"
 #endif
+#include "plan.h"
 #include "gridmetric.h"
 #include "gridshape.h"
 #include "gridcad.h"
@@ -1030,24 +1031,40 @@ Grid *gridOptimizeXYZ(Grid *grid, int node, double *dxdydz )
 
 Grid *gridSmooth( Grid *grid, double optimizationLimit, double laplacianLimit )
 {
-  int node;
+  int cell, nodes[4];
+  int i, node, ranking;
   double ar;
-
+  Plan *plan;
+  
   if ( optimizationLimit < 0.0 ) optimizationLimit = 0.40;
   if ( laplacianLimit    < 0.0 ) laplacianLimit    = 0.60;
-
-  for (node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode( grid, node ) && !gridNodeFrozen( grid, node ) ) {
-      gridNodeAR(grid,node,&ar);
-      if (ar < optimizationLimit) {
-	gridSmoothNode( grid, node, TRUE );
-      }else{
-	if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
-	  gridSmartLaplacian( grid, node ); 
+  
+  plan = planCreate( gridNNode(grid), MAX(gridNNode(grid)/10,1000) );
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid,cell,nodes)) {
+      ar = gridAR(grid, nodes);
+      if ( ar < laplacianLimit ) {
+	for(i=0;i<4;i++) {
+	  if (!gridNodeFrozen( grid, nodes[i] )) {
+	    planAddItemWithPriority( plan, nodes[i], 1.0 - ar );
+	  }
 	}
       }
     }
   }
+  planDeriveRankingsFromPriorities(plan);
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    node = planItemWithThisRanking(plan,ranking);
+    ar =  1.0-planPriorityWithThisRanking(plan,ranking);
+    if (ar < optimizationLimit) {
+      gridSmoothNode( grid, node, TRUE );
+    }else{
+      if (ar < laplacianLimit && !gridGeometryFace( grid, node )) {
+	gridSmartLaplacian( grid, node ); 
+      }
+    }
+  }
+  planFree(plan);
   return grid;
 }
 
