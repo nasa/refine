@@ -391,30 +391,6 @@ VALUE grid_eraseConn( VALUE self )
   return (gridEraseConn(grid )==NULL?Qnil:self);
 }  
 
-VALUE grid_connValue( VALUE self, VALUE conn )
-{
-  GET_GRID_FROM_SELF;
-  return rb_float_new(gridConnValue(grid,NUM2INT(conn)));
-}
-
-VALUE grid_setConnValue( VALUE self, VALUE conn, VALUE value )
-{
-  GET_GRID_FROM_SELF;
-  return (gridSetConnValue(grid,NUM2INT(conn),NUM2DBL(value))==NULL?Qnil:self);
-}
-
-VALUE grid_sortConnValues( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return (gridSortConnValues(grid )==NULL?Qnil:self);  
-}
-
-VALUE grid_connWithThisRanking( VALUE self, VALUE ranking )
-{
-  GET_GRID_FROM_SELF;
-  return INT2NUM(gridConnWithThisRanking(grid,NUM2INT(ranking)));
-}
-
 VALUE grid_addFace( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE faceId )
 {
   GET_GRID_FROM_SELF;
@@ -1238,10 +1214,6 @@ void Init_Grid()
   rb_define_method( cGrid, "conn2Node", grid_conn2Node, 1 );
   rb_define_method( cGrid, "createConn", grid_createConn, 0 );
   rb_define_method( cGrid, "eraseConn", grid_eraseConn, 0 );
-  rb_define_method( cGrid, "connValue", grid_connValue, 1 );
-  rb_define_method( cGrid, "setConnValue", grid_setConnValue, 2 );
-  rb_define_method( cGrid, "connWithThisRanking", grid_connWithThisRanking, 1 );
-  rb_define_method( cGrid, "sortConnValues", grid_sortConnValues, 0 );
 
   rb_define_method( cGrid, "addFace", grid_addFace, 4 );
   rb_define_method( cGrid, "addFaceUV", grid_addFaceUV, 10 );
