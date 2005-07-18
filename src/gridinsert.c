@@ -172,7 +172,7 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
     if (ranking/report*report == ranking || ranking==gridNConn(grid)-1) {
       printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
 	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
-	     planPriorityWithThisRanking(plan,conn));
+	     planPriorityWithThisRanking(plan,ranking));
     }
     if (grid == gridConn2Node(grid,conn,nodes)){
       if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
