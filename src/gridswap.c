@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "plan.h"
 #include "gridmetric.h"
 #include "gridswap.h"
 
@@ -437,18 +438,30 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *grid, int node)
 
 Grid *gridSwap(Grid *grid, double improvementLimit)
 {
-  int cellId, maxcell;
+  int cellId, ranking;
   int nodes[4];
+  double ar;
   GridBool swap;
+  Plan *plan;
 
   if ( improvementLimit < 0.0 ) improvementLimit = 0.5;
 
-  maxcell = gridMaxCell(grid);
+  plan = planCreate( gridNCell(grid)/2, MAX(gridNCell(grid)/10,1000) );
 
-  for (cellId=0;cellId<maxcell;cellId++){
+  for (cellId=0;cellId<gridMaxCell(grid);cellId++){
     gridRemoveTwoFaceCell(grid, NULL, cellId );
-    if ( grid == gridCell( grid, cellId, nodes) && 
-	 gridAR(grid, nodes) < improvementLimit) {
+    if ( grid == gridCell( grid, cellId, nodes) ) {
+      ar = gridAR(grid, nodes);
+      if ( ar < improvementLimit ) {
+	planAddItemWithPriority( plan, cellId, 1.0 - ar );
+      }
+    }
+  }
+
+  planDeriveRankingsFromPriorities( plan );
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    cellId = planItemWithThisRanking(plan,ranking);
+    if ( grid == gridCell( grid, cellId, nodes) ) {
       swap = TRUE;
       if (swap) swap = (grid != gridSwapFace(grid, NULL,nodes[1],nodes[2],nodes[3]) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
@@ -458,7 +471,7 @@ Grid *gridSwap(Grid *grid, double improvementLimit)
 		  || ( grid == gridCell( grid, cellId, nodes) );
       if (swap) swap = (grid != gridSwapFace(grid, NULL,nodes[0],nodes[1],nodes[2]) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
-
+      
       if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[0], nodes[1] ) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
       if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[0], nodes[2] ) )
@@ -470,9 +483,11 @@ Grid *gridSwap(Grid *grid, double improvementLimit)
       if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[1], nodes[3] ) )
 		  || ( grid == gridCell( grid, cellId, nodes) );
       if (swap) swap = ( grid != gridSwapEdge( grid, NULL, nodes[2], nodes[3] ) )
-		  || ( grid == gridCell( grid, cellId, nodes) );
+		|| ( grid == gridCell( grid, cellId, nodes) );
     }
   }
+
+  planFree( plan );
 
   return grid;
 }
