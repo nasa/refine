@@ -207,6 +207,7 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
       }
     }
   }
+  planFree(plan);
   gridEraseConn(grid);
 
   return grid;
