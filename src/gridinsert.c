@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
+#include "plan.h"
 #include "gridshape.h"
 #include "gridmath.h"
 #include "gridmetric.h"
@@ -150,25 +151,28 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
   double ratios[3];
   double dist, ratio;
   int i, newnode;
-  
+  Plan *plan;
+
   gridCreateConn(grid);
+  plan = planCreate( gridNConn(grid), MAX(gridNConn(grid)/10,1000) );
   for(conn=0;conn<gridNConn(grid);conn++) {
     gridConn2Node(grid,conn,nodes);
-    gridSetConnValue(grid,conn,gridEdgeRatioError(grid,nodes[0],nodes[1]));
+    planAddItemWithPriority( plan,
+			     conn, gridEdgeRatioError(grid,nodes[0],nodes[1]) );
   }
-  gridSortConnValues(grid);
+  planDeriveRankingsFromPriorities( plan );
 
   nnodeAdd = 0;
   nnodeRemove = 0;
 
-  report = 10; if (gridNConn(grid) > 100) report = gridNConn(grid)/10;
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
 
-  for ( ranking=gridNConn(grid)-1; ranking>=0; ranking-- ) { 
-    conn = gridConnWithThisRanking(grid,ranking);
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    conn = planItemWithThisRanking(plan,ranking);
     if (ranking/report*report == ranking || ranking==gridNConn(grid)-1) {
       printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
 	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
-	     gridConnValue(grid,conn));
+	     planPriorityWithThisRanking(plan,conn));
     }
     if (grid == gridConn2Node(grid,conn,nodes)){
       if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
