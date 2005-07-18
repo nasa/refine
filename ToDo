@@ -12,16 +12,12 @@ adaptation?
 
 refactor to use the plan object in the edge based list
 
+
 Use the plan object to speed up node smooth of ghost boundary in
 parallel.
 
-Make sure that nodes are in final position in xyx, uv, and t before
-queuing so that off-processors recieve cosistant data.
+Do all operations in quality order via plan
 
-when splitting or collasping on geomedge update face uv from edgeT
-
-maintain linear data for split and collapse. this includes edge and
-face parameter values. This will be easier to do with edgeSplitRatio
 
 verify that I am getting all the performance (mesh quality) out the
 the volume smoothing that is possible.  make consistant use of the
