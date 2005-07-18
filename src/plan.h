@@ -39,6 +39,7 @@ int planChunkSize( Plan * );
 Plan *planAddItemWithPriority( Plan *, int item, double priority );
 Plan *planDeriveRankingsFromPriorities( Plan * );
 int planItemWithThisRanking( Plan *, int ranking );
+double planPriorityWithThisRanking( Plan *, int ranking );
 
 END_C_DECLORATION
 

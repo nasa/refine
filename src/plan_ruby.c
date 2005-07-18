@@ -54,6 +54,12 @@ VALUE plan_item_with_this_ranking( VALUE self, VALUE ranking )
   return INT2NUM(planItemWithThisRanking(plan,NUM2INT(ranking)));
 }
 
+VALUE plan_priority_with_this_ranking( VALUE self, VALUE ranking )
+{
+  GET_PLAN_FROM_SELF;
+  return rb_float_new(planPriorityWithThisRanking(plan,NUM2INT(ranking)));
+}
+
 VALUE cPlan;
 
 void Init_Plan() 
@@ -70,4 +76,6 @@ void Init_Plan()
 		    plan_derive_rankings_from_priorities, 0 );
   rb_define_method( cPlan, "item_with_this_ranking", 
 		    plan_item_with_this_ranking, 1 );
+  rb_define_method( cPlan, "priority_with_this_ranking", 
+		    plan_priority_with_this_ranking, 1 );
 }

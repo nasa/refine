@@ -80,6 +80,11 @@ class TestQueue < Test::Unit::TestCase
   3.upto(5) do |rank|
    assert_equal rank, plan.item_with_this_ranking(rank)
   end
+  tol = 1.0e-15
+  assert_in_delta 0.0, plan.priority_with_this_ranking(0), tol
+  assert_in_delta 1.0, plan.priority_with_this_ranking(1), tol
+  assert_in_delta 2.0, plan.priority_with_this_ranking(2), tol
+
   plan.add_item_with_priority(5,-5.0)
   assert_equal EMPTY, plan.item_with_this_ranking(0)
   assert_equal plan, plan.derive_rankings_from_priorities

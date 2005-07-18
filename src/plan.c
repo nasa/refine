@@ -96,3 +96,10 @@ int planItemWithThisRanking( Plan *plan, int ranking )
   return plan->item[plan->ranking[ranking]];
 }
 
+double planPriorityWithThisRanking( Plan *plan, int ranking )
+{
+  if (NULL==plan->ranking) return EMPTY;
+  if (ranking<0||ranking>=planSize(plan)) return EMPTY;
+  return plan->priority[plan->ranking[ranking]];
+}
+
