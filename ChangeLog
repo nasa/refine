@@ -1,3 +1,7 @@
+2005-07-19 13:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) add option to -le to control radial spacing.
+
 2005-07-18 16:34 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmooth) used plan to smooth nodes of bad cells
