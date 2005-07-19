@@ -204,6 +204,7 @@ int main( int argc, char *argv[] )
   GridBool validate = FALSE;
   GridBool tecplotOutput = FALSE;
   GridBool LeadingEdgeBG = FALSE;
+  double LeadingEdgeScale = 1.0;
   int iview = 0;
   int maxnode = 50000;
   char modeler[81];
@@ -284,7 +285,8 @@ int main( int argc, char *argv[] )
       printf("--validate argument %d\n",i);
     } else if( strcmp(argv[i],"-le") == 0 ) {
       LeadingEdgeBG = TRUE;
-      printf("-le argument %d\n",i);
+      i++; LeadingEdgeScale = atof(argv[i]);
+      printf("-le argument %d: %f\n",i,LeadingEdgeScale);
    } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
 #ifdef HAVE_CAPRI2
@@ -308,6 +310,7 @@ int main( int argc, char *argv[] )
       printf(" -f freeze nodes in this .lines file\n");
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
+      printf(" -le scale leading edge background grid\n");
       printf(" --validate give grid valid cost constraints\n");
       return(0);
     } else {
@@ -429,7 +432,7 @@ int main( int argc, char *argv[] )
 	centerX = 0.05;
 	radius = sqrt((xyz[0]-centerX)*(xyz[0]-centerX)+xyz[2]*xyz[2]);
 	theta = atan2(xyz[2],xyz[0]-centerX);
-	rSpace = 0.01+0.1*radius;
+	rSpace = (0.01+0.1*radius)*LeadingEdgeScale;
 	tSpace = 0.05+0.1*radius;
 	ySpace = 0.25;
 	normal[0]=normal[1]=normal[2]=0;
