@@ -1055,7 +1055,7 @@ Grid *gridSmooth( Grid *grid, double optimizationLimit, double laplacianLimit )
   planDeriveRankingsFromPriorities(plan);
   for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
     node = planItemWithThisRanking(plan,ranking);
-    ar =  1.0-planPriorityWithThisRanking(plan,ranking);
+    gridNodeAR(grid,node,&ar);
     if (ar < optimizationLimit) {
       gridSmoothNode( grid, node, TRUE );
     }else{
