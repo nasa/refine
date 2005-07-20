@@ -1,3 +1,9 @@
+2005-07-20 15:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) added to do all splits first
+	and then do all the collapses.
+	* src/unit_main.c (main) call gridAdaptLongShort in normal mode.
+
 2005-07-19 13:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) add option to -le to control radial spacing.

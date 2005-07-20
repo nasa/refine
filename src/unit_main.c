@@ -538,15 +538,11 @@ int main( int argc, char *argv[] )
 	(j<jmax) ;//&& (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01);
 	j++){
 
-    ratioCollapse = 1.0*ratio;
-    ratioSplit   = 1.0/sqrt(ratio);
+    ratioCollapse = 0.4;
+    ratioSplit   = 1.0;
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	   ratio, ratioCollapse, ratioSplit );
-    if (1==1) {
-      gridAdaptBasedOnConnRankings(grid);
-    }else{
-      gridAdapt(grid,ratioCollapse,ratioSplit);
-    }
+    gridAdaptLongShort(grid,ratioCollapse,ratioSplit);
     oldSize = newSize;
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
