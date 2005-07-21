@@ -1,3 +1,9 @@
+2005-07-21 13:27 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) added to split an interior
+	edge by optimizing volume (minimum Jacobian).
+	* src/gridinsert.c (gridAdaptLongShort) try gridSplitEdgeForce to split.
+
 2005-07-21 10:11 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdaptLongShort) added debug_split option.

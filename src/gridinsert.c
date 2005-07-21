@@ -279,10 +279,22 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 	      nnodeAdd++;
 	      gridSwapNearNode( grid, newnode, 1.0 );
 	    } else {
-	      if (debug_split) {
-		printf("Edge%10d%10d will not split.\n",nodes[0],nodes[1]);
-		gridWriteTecplotEquator(grid, nodes[0], nodes[1],
-					"edge_split_equator.t");
+	      newnode = gridSplitEdgeForce( grid, NULL, nodes[0], nodes[1] );
+	      if ( newnode != EMPTY ){
+		nnodeAdd++;
+		gridSwapNearNode( grid, newnode, 1.0 );
+	      }else{
+		if (debug_split) {
+		  printf("Edge%10d%10d will not split face%2d%2d edge%2d%2d.\n",
+			 nodes[0],nodes[1],
+			 gridGeometryFace(grid,nodes[0]),
+			 gridGeometryFace(grid,nodes[1]),
+			 gridGeometryEdge(grid,nodes[0]),
+			 gridGeometryEdge(grid,nodes[1]));
+
+		  gridWriteTecplotEquator(grid, nodes[0], nodes[1],
+					  "edge_split_equator.t");
+		}
 	      }
 	    }
 	  }
@@ -504,6 +516,62 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
   gridRemoveFaceAndQueue(grid, queue, face0 );
   gridRemoveFaceAndQueue(grid, queue, face1 );
   gridRemoveEdgeAndQueue(grid,queue,edge);
+
+  return newnode;
+}
+
+int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
+{
+  int igem, cell, nodes[4], inode, node;
+  double xyz0[3], xyz1[3], xyz[3];
+  int newnode, newnodes0[4], newnodes1[4];
+  double ratio, minAR, minJac;
+
+  if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
+  if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
+
+  if ( !gridContinuousEquator(grid) ) return EMPTY;
+
+  /* create new node and initialize */
+  if (grid != gridNodeXYZ(grid, n0, xyz0) ) return EMPTY;
+  if (grid != gridNodeXYZ(grid, n1, xyz1) ) return EMPTY;
+  ratio = 0.5;
+  for (inode = 0 ; inode < 3 ; inode++) 
+    xyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
+  newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
+  if ( newnode == EMPTY ) return EMPTY;
+  gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
+  gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
+
+
+  /* update cell connectivity */
+  for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
+    cell = gridGem(grid,igem);
+    gridCell(grid, cell, nodes);
+    gridRemoveCellAndQueue(grid, queue, cell);
+    for ( inode = 0 ; inode < 4 ; inode++ ){
+      node = nodes[inode];
+      newnodes0[inode]=node;
+      newnodes1[inode]=node;
+      if ( node == n0 ) newnodes0[inode] = newnode;
+      if ( node == n1 ) newnodes1[inode] = newnode;
+    }
+    gridAddCellAndQueue( grid, queue,
+			 newnodes0[0],newnodes0[1],newnodes0[2],newnodes0[3]);
+    gridAddCellAndQueue( grid, queue,
+			 newnodes1[0],newnodes1[1],newnodes1[2],newnodes1[3]);
+  }
+
+  gridSmoothNodeVolumeSimplex( grid, newnode );
+
+  /* if the worst cell is not good enough then undo the split and return */
+  gridNodeMinCellJacDet2(grid, newnode, &minJac );
+  gridNodeAR(grid, newnode, &minAR );
+  //  printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
+  if (minAR < gridADAPT_COST_FLOOR ) {
+    gridCollapseEdge(grid, NULL, nodes[0], newnode, 0.0 );
+    return EMPTY;
+  }
 
   return newnode;
 }
