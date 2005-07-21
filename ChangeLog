@@ -1,3 +1,7 @@
+2005-07-21 16:53 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmooth) only hit nodes once for speed.
+
 2005-07-21 13:27 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeForce) added to split an interior

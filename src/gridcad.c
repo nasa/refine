@@ -1034,21 +1034,28 @@ Grid *gridSmooth( Grid *grid, double optimizationLimit, double laplacianLimit )
   int cell, nodes[4];
   int i, node, ranking;
   double ar;
+  double *cost;
   Plan *plan;
   
   if ( optimizationLimit < 0.0 ) optimizationLimit = 0.40;
   if ( laplacianLimit    < 0.0 ) laplacianLimit    = 0.60;
-  
-  plan = planCreate( gridNNode(grid), MAX(gridNNode(grid)/10,1000) );
+
+  cost = (double *)malloc(gridMaxNode(grid)*sizeof(double));
+  for (node=0;node<gridMaxNode(grid);node++) cost[node]=2.0;
+
+  plan = planCreate( gridNNode(grid)/2, MAX(gridNNode(grid)/10,1000) );
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid,cell,nodes)) {
       ar = gridAR(grid, nodes);
-      if ( ar < laplacianLimit ) {
-	for(i=0;i<4;i++) {
-	  if (!gridNodeFrozen( grid, nodes[i] )) {
-	    planAddItemWithPriority( plan, nodes[i], 1.0 - ar );
-	  }
-	}
+      for(i=0;i<4;i++) {
+	cost[nodes[i]] = MIN(cost[nodes[i]],ar);
+      }
+    }
+  }
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) ) {
+      if ( cost[node] < laplacianLimit ) {
+	planAddItemWithPriority( plan, node, 1.0 - cost[node] );
       }
     }
   }
