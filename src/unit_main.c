@@ -542,7 +542,7 @@ int main( int argc, char *argv[] )
     ratioSplit   = 1.0;
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	   ratio, ratioCollapse, ratioSplit );
-    gridAdaptLongShort(grid,ratioCollapse,ratioSplit);
+    gridAdaptLongShort(grid,ratioCollapse,ratioSplit,TRUE);
     oldSize = newSize;
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",

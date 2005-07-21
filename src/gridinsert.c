@@ -233,7 +233,8 @@ static Grid *gridCollapseEdgeToAnything( Grid *grid,
   return NULL;
 }
 
-Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength )
+Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
+			 GridBool debug_split )
 {
   int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
@@ -277,6 +278,12 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength )
 	    if ( newnode != EMPTY ){
 	      nnodeAdd++;
 	      gridSwapNearNode( grid, newnode, 1.0 );
+	    } else {
+	      if (debug_split) {
+		printf("Edge%10d%10d will not split.\n",nodes[0],nodes[1]);
+		gridWriteTecplotEquator(grid, nodes[0], nodes[1],
+					"edge_split_equator.t");
+	      }
 	    }
 	  }
 	}

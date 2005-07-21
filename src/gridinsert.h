@@ -21,7 +21,8 @@ Grid *gridRemoveAllNodes(Grid *g );
 
 Grid *gridAdapt(Grid *g, double minLength, double maxLength );
 Grid *gridAdaptBasedOnConnRankings(Grid *g );
-Grid *gridAdaptLongShort(Grid *g, double minLength, double maxLength );
+Grid *gridAdaptLongShort(Grid *g, double minLength, double maxLength,
+			 GridBool debug_split );
 
 int gridSplitEdge(Grid *g, int n0, int n1 );
 int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);

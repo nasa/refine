@@ -1,3 +1,7 @@
+2005-07-21 10:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) added debug_split option.
+
 2005-07-21 08:39 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotEquator) added to debug surface edge
