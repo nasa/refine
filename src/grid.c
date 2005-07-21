@@ -1293,14 +1293,14 @@ Grid *gridWriteTecplotEquator(Grid *grid, int n0, int n1, char *filename )
 
   gridNodeXYZ(grid,n0,xyz);
   fprintf(grid->tecplotGeomFile,
-	  "%23.15e%23.15e%23.15e %d\n", xyz[0],xyz[1],xyz[2],0);
+	  "%23.15e%23.15e%23.15e%5.1f\n", xyz[0],xyz[1],xyz[2],0.0);
   gridNodeXYZ(grid,n1,xyz);
   fprintf(grid->tecplotGeomFile,
-	  "%23.15e%23.15e%23.15e %d\n", xyz[0],xyz[1],xyz[2],0);
+	  "%23.15e%23.15e%23.15e%5.1f\n", xyz[0],xyz[1],xyz[2],1.0);
 
   for ( i=0; i<gridNEqu(grid) ; i++ ){
     gridNodeXYZ(grid,gridEqu(grid,i),xyz);
-    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",xyz[0],xyz[1],xyz[2],0);
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e%5.1f\n",xyz[0],xyz[1],xyz[2],0.5);
   }
  
 
