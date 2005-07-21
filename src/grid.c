@@ -1287,8 +1287,6 @@ Grid *gridWriteTecplotEquator(Grid *grid, int n0, int n1, char *filename )
     fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
   }
 
-  printf("\ngem %d equ %d\n",gridNGem(grid),gridNEqu(grid));
-
   fprintf(grid->tecplotGeomFile,
 	  "zone t=equator, n=%d, e=%d, f=fepoint, et=%s\n",
 	  2 + gridNEqu(grid), gridNGem(grid), "tetrahedron");
