@@ -44,6 +44,14 @@ VALUE grid_writeTecplotSurfaceGeom( VALUE self )
   return (gridWriteTecplotSurfaceGeom(grid,NULL)==grid?self:Qnil);
 }
 
+VALUE grid_writeTecplotEquator( VALUE self, VALUE node0, VALUE node1 )
+{
+  GET_GRID_FROM_SELF;
+  return (gridWriteTecplotEquator( grid,
+				   NUM2INT(node0),
+				   NUM2INT(node1),NULL)==grid?self:Qnil);
+}
+
 VALUE grid_writeTecplotSurfaceScalar( VALUE self, VALUE rb_scalar )
 {
   int length, i;
@@ -1160,6 +1168,7 @@ void Init_Grid()
   rb_define_method( cGrid, "pack", grid_pack, 0 );
   rb_define_method( cGrid, "sortNodeGridEx", grid_sortNodeGridEx, 0 );
   rb_define_method( cGrid, "writeTecplotSurfaceGeom", grid_writeTecplotSurfaceGeom, 0 );
+  rb_define_method( cGrid, "writeTecplotEquator", grid_writeTecplotEquator, 2 );
   rb_define_method( cGrid, "writeTecplotSurfaceScalar", grid_writeTecplotSurfaceScalar, 1 );
   rb_define_method( cGrid, "writeVTK", grid_writeVTK, 0 );
   rb_define_method( cGrid, "exportFAST", grid_exportFAST, 0 );

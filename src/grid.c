@@ -1252,7 +1252,7 @@ Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, char *filename)
       grid->tecplotGeomFile = fopen(filename,"w");
     } 
     fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
-    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
   }
 
   fprintf(grid->tecplotGeomFile, "zone t=cell, n=%d, e=%d, f=fepoint, et=%s\n",
@@ -1264,6 +1264,53 @@ Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, char *filename)
   }
 
   fprintf(grid->tecplotGeomFile, "1 2 3 4\n");
+
+  fflush(grid->tecplotGeomFile);
+
+  return grid;
+}
+
+Grid *gridWriteTecplotEquator(Grid *grid, int n0, int n1, char *filename )
+{
+  int i, last;
+  double xyz[3];
+
+  if (grid != gridEquator(grid, n0, n1 )) return NULL;
+
+  if (NULL == grid->tecplotGeomFile) {
+    if (NULL == filename) {
+      grid->tecplotGeomFile = fopen("grid_equator.t","w");
+    }else{
+      grid->tecplotGeomFile = fopen(filename,"w");
+    } 
+    fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
+  }
+
+  printf("\ngem %d equ %d\n",gridNGem(grid),gridNEqu(grid));
+
+  fprintf(grid->tecplotGeomFile,
+	  "zone t=equator, n=%d, e=%d, f=fepoint, et=%s\n",
+	  2 + gridNEqu(grid), gridNGem(grid), "tetrahedron");
+
+  gridNodeXYZ(grid,n0,xyz);
+  fprintf(grid->tecplotGeomFile,
+	  "%23.15e%23.15e%23.15e %d\n", xyz[0],xyz[1],xyz[2],0);
+  gridNodeXYZ(grid,n1,xyz);
+  fprintf(grid->tecplotGeomFile,
+	  "%23.15e%23.15e%23.15e %d\n", xyz[0],xyz[1],xyz[2],0);
+
+  for ( i=0; i<gridNEqu(grid) ; i++ ){
+    gridNodeXYZ(grid,gridEqu(grid,i),xyz);
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",xyz[0],xyz[1],xyz[2],0);
+  }
+ 
+
+  for ( i=0; i<gridNGem(grid) ; i++ ){
+    last = 4+i;
+    if (last>(gridNEqu(grid)+2)) last = 3;
+    fprintf(grid->tecplotGeomFile, "%6d%6d%6d%6d\n", 1, 2, 3+i, last );
+  }
 
   fflush(grid->tecplotGeomFile);
 

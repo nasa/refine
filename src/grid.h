@@ -203,6 +203,7 @@ Grid *gridWriteTecplotTriangleZone(Grid *g, char *filename,
 				   int nface, int *f2n);
 Grid *gridWriteTecplotComment(Grid *g, char *comment );
 Grid *gridWriteTecplotCellGeom(Grid *g, int *nodes, char *filename );
+Grid *gridWriteTecplotEquator(Grid *g, int n0, int n1, char *filename );
 Grid *gridCloseTecplotGeomFile(Grid *g);
 /* Warning, call gridSortNodeGridEx before calculating scalar 
  * in gridWriteTecplotSurfaceScalar to avoid a renumbering bug. */

@@ -1431,6 +1431,33 @@ class TestGrid < Test::Unit::TestCase
   assert_equal grid, grid.writeTecplotSurfaceZone
  end
 
+ def XtestTecEquatorContinuous
+  assert_not_nil     grid = Grid.new(5,3,0,0)
+  grid.addNode(0.3,0.3, 1.0)
+  grid.addNode(0.3,0.3,-1.0)
+  grid.addNode(0.0,0.0, 0.0)
+  grid.addNode(1.0,0.0, 0.0)
+  grid.addNode(0.0,1.0, 0.0)
+  grid.addCell(0,1,2,3)
+  grid.addCell(0,1,3,4)
+  grid.addCell(0,1,4,2)
+  assert_equal grid, grid.writeTecplotEquator(0,1)
+ end
+
+ def XtestTecEquatorDiscontinuous
+  assert_not_nil     grid = Grid.new(5,2,2,0)
+  grid.addNode(0.3,0.3, 1.0)
+  grid.addNode(0.3,0.3,-1.0)
+  grid.addNode(0.0,0.0, 0.0)
+  grid.addNode(1.0,0.0, 0.0)
+  grid.addNode(0.0,1.0, 0.0)
+  grid.addCell(0,1,2,3)
+  grid.addCell(0,1,3,4)
+  grid.addFace(0,1,2,1)
+  grid.addFace(1,0,4,1)
+  assert_equal grid, grid.writeTecplotEquator(0,1)
+ end
+
  def XtestTecScalar
   grid = Grid.new(3,0,1,0)
   grid.addFace(grid.addNode(0,0,0),
