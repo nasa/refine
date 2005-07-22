@@ -285,7 +285,7 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 		gridSwapNearNode( grid, newnode, 1.0 );
 	      }else{
 		if (debug_split) {
-		  printf("Edge%10d%10d will not split face%2d%2d err%6.2f.\n",
+		  printf("Edge%10d%10d will not split face%2d%2d err%6.2f\n",
 			 nodes[0],nodes[1],
 			 gridGeometryFace(grid,nodes[0]),
 			 gridGeometryFace(grid,nodes[1]),
