@@ -526,6 +526,7 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
   double xyz0[3], xyz1[3], xyz[3];
   int newnode, newnodes0[4], newnodes1[4];
   double ratio, minAR, minJac;
+  AdjIterator it;
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
@@ -569,9 +570,19 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
   gridNodeAR(grid, newnode, &minAR );
   //  printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
   if (minAR < gridADAPT_COST_FLOOR ) {
-    if (grid!=gridCollapseEdge(grid, NULL, n1, newnode, 0.0 )) {
-      printf("%s: %d: unable to collapse invalid split\n",__FILE__,__LINE__);
+
+    it = adjFirst(gridCellAdj(grid),newnode);
+    while (adjValid(it)){
+      cell = adjItem(it);
+      gridRemoveCellAndQueue( grid, queue, cell );
+      it = adjFirst(grid->cellAdj,newnode);
     }
+    gridRemoveNode(grid,newnode);    
+    for (cell = 0; cell < gridNEqu(grid); cell++)
+      gridAddCellAndQueue( grid, queue,
+			   n0,n1,gridEqu(grid,cell),gridEqu(grid,cell+1));
+    queueResetCurrentTransaction(queue);
+
     return EMPTY;
   }
 

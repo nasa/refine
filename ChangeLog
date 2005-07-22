@@ -1,3 +1,9 @@
+2005-07-22 15:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) replaced the
+	gridCollapseEdge undo call with direct logic that will not fail if
+	grid is nearly bad.
+
 2005-07-22 13:43 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.h (struct Grid) increased size of grid->equ array to
