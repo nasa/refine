@@ -259,7 +259,7 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 
   for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
     conn = planItemWithThisRanking(plan,ranking);
-    if (ranking/report*report == ranking || ranking==gridNConn(grid)-1) {
+    if (ranking/report*report == ranking || ranking==planSize(plan)-1) {
       printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
 	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
 	     planPriorityWithThisRanking(plan,ranking));
