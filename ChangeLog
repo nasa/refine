@@ -1,3 +1,8 @@
+2005-07-22 13:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.h (struct Grid) increased size of grid->equ array to
+	avoid writing past the end of the array when calling gridEquator.
+
 2005-07-21 16:53 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmooth) only hit nodes once for speed.

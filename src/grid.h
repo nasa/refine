@@ -105,7 +105,7 @@ struct Grid {
   int gem[MAXDEG];
 
   int nequ;
-  int equ[MAXDEG];
+  int equ[2*MAXDEG];
 
   int nconn;
   int *cell2conn;
