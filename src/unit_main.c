@@ -432,7 +432,7 @@ int main( int argc, char *argv[] )
 	centerX = 0.05;
 	radius = sqrt((xyz[0]-centerX)*(xyz[0]-centerX)+xyz[2]*xyz[2]);
 	theta = atan2(xyz[2],xyz[0]-centerX);
-	rSpace = (0.01+0.1*radius)*LeadingEdgeScale;
+	rSpace = 0.1*pow(MIN(radius+0.1,1.0),LeadingEdgeScale);
 	tSpace = 0.05+0.1*radius;
 	ySpace = 0.25;
 	normal[0]=normal[1]=normal[2]=0;
