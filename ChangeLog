@@ -1,3 +1,8 @@
+2005-07-22 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolumeUVSimplex) added to help get
+	surface edges to split.
+
 2005-07-22 15:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeForce) replaced the
