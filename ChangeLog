@@ -1,3 +1,8 @@
+2005-07-25 14:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) added a block that works like
+	gridAdaptLongShort to the gridCOST_CNST_VALID path (sequential only).
+
 2005-07-25 14:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridCollapseEdgeToAnything) made public (non
