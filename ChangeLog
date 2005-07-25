@@ -1,3 +1,9 @@
+2005-07-25 08:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) extended it to split edges
+	on the interior of faces (but not splitting geom edges yet). it
+	calls gridSmoothNodeVolumeUVSimplex to get the new uv value.
+
 2005-07-22 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmoothNodeVolumeUVSimplex) added to help get
