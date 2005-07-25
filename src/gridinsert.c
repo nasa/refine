@@ -215,9 +215,9 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
   return grid;
 }
 
-static Grid *gridCollapseEdgeToAnything( Grid *grid,
-					 Queue *queue, 
-					 int node0, int node1 )
+Grid *gridCollapseEdgeToAnything( Grid *grid,
+				  Queue *queue, 
+				  int node0, int node1 )
 {
   double currentCost, node0Cost, node1Cost;
   double ratio;
