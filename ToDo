@@ -7,16 +7,15 @@ Start Builds!!!!!
 
 --Major refactoring
 
+printf error when face is empty for edge split with !gridContinuousEquator
+
 Are global cell indexes really needed or can they be computed after
 adaptation?
 
-refactor to use the plan object in the edge based list
-
-
-Use the plan object to speed up node smooth of ghost boundary in
-parallel.
 
 Do all operations in quality order via plan
+-Use the plan object to speed up node smooth of ghost boundary in
+parallel.
 
 
 Refactor conn stuff in grid move and grid to unify
