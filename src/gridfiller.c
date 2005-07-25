@@ -231,6 +231,13 @@ int gridSavePart( Grid *grid, char *project )
 
   double *temp_xyz, *temp_tuv;
 
+  UGPatchPtr  localPatch, globalPatch;
+  Iterator patchIterator;
+  int patchDimensions[3];
+  int face, localNode, globalNode;
+
+
+
   if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) )
     printf("ERROR: CADGeom_GetVolume, line %d of %s\n.",__LINE__, __FILE__);
 
@@ -294,6 +301,49 @@ int gridSavePart( Grid *grid, char *project )
     printf(" Could not flush patches CADTopo, line %d of %s\n",
 	   __LINE__, __FILE__);    
     return(-1);
+  }
+
+  /* get uv vals for surface(s) */
+  /* we use globalPatch to track with the localPatch so that we can get global
+   * node numbering relative the volume grid and NOT the face grid as would
+   * be the case of global index of upp
+   */
+
+  globalPatch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&patchIterator);
+
+  for( face=1; face<=nGeomFace; face++ ) {
+    double uv[2];
+    char filename[265];
+    GridBool debug = FALSE;
+
+    localPatch = CADGeom_FaceGrid(vol,face);
+    sprintf(filename,"localUGPatch%03d.t",face);
+    if (debug) UGPatch_WriteTecplotWithParameters(localPatch,filename);
+    sprintf(filename,"globalUGPatch%03d.t",face);
+    if (debug) UGPatch_WriteTecplotWithParameters(globalPatch,filename);
+    UGPatch_GetDims(localPatch,patchDimensions);
+    for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {	     
+      globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
+      gridNodeUV( grid, globalNode, face, uv );
+      UGPatch_Parameter(localPatch,localNode,0) = uv[0];
+      UGPatch_Parameter(localPatch,localNode,1) = uv[1];
+      if (debug) {
+	printf("node%6d local  patch %22.18f%22.18f%22.18f\n",localNode,
+	       UGPatch_PtValue(localPatch,localNode,0),
+	       UGPatch_PtValue(localPatch,localNode,1),
+	       UGPatch_PtValue(localPatch,localNode,2));
+	printf("node%6d global patch %22.18f%22.18f%22.18f\n",localNode,
+	       UGPatch_PtValue(globalPatch,localNode,0),
+	       UGPatch_PtValue(globalPatch,localNode,1),
+	       UGPatch_PtValue(globalPatch,localNode,2));
+	printf("node%6d ugrid  index %22.18f%22.18f%22.18f\n\n",localNode,
+	       UGrid_PtValue(ugrid,globalNode,0),
+	       UGrid_PtValue(ugrid,globalNode,1),
+	       UGrid_PtValue(ugrid,globalNode,2));
+      }
+    }
+
+    globalPatch = DList_GetNextItem(&patchIterator);
   }
 
   if ( NULL != project ) {

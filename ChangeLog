@@ -1,3 +1,11 @@
+2005-07-25 10:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfiller.c (gridSavePart) Reset the uv values of the
+	disjoint patches after call to CADTopo_FlushPatches to avoid
+	renumbering and projection issues. THIS SHOULD BE LOOKED AT
+	AGAIN after Bill Jones finishes with the GeoSDK restart node
+	ordering logic.
+
 2005-07-25 09:02 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridSmooth) called free(cost) to prevent memory leak.
