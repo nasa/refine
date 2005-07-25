@@ -1059,6 +1059,7 @@ Grid *gridSmooth( Grid *grid, double optimizationLimit, double laplacianLimit )
       }
     }
   }
+  free(cost);
   planDeriveRankingsFromPriorities(plan);
   for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
     node = planItemWithThisRanking(plan,ranking);

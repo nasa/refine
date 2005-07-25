@@ -1,3 +1,7 @@
+2005-07-25 09:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmooth) called free(cost) to prevent memory leak.
+
 2005-07-25 08:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeForce) extended it to split edges
