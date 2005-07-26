@@ -1240,7 +1240,8 @@ Grid *gridWriteTecplotComment(Grid *grid, char *comment)
   return grid;
 }
 
-Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, char *filename)
+Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, double *scalar, 
+			       char *filename)
 {
   int i;
   double xyz[3];
@@ -1260,7 +1261,13 @@ Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, char *filename)
 
   for ( i=0; i<4 ; i++ ){
     gridNodeXYZ(grid,nodes[i],xyz);
-    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",xyz[0],xyz[1],xyz[2],0);
+    if ( NULL == scalar ) {
+      fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",
+	      xyz[0],xyz[1],xyz[2],0);
+    }else{
+      fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e%23.15e\n",
+	      xyz[0],xyz[1],xyz[2],scalar[i]);
+    }
   }
 
   fprintf(grid->tecplotGeomFile, "1 2 3 4\n");

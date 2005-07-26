@@ -33,7 +33,7 @@
     for (cell=0;cell<gridMaxCell(grid);cell++) \
       if (grid==gridCell(grid, cell, nodes)) { \
         if ( -0.5 > gridAR(grid,nodes) ) \
-          gridWriteTecplotCellGeom(grid,nodes,NULL); \
+          gridWriteTecplotCellGeom(grid,nodes,NULL,NULL); \
    }}; }
 
 #define STATUS DUMP_TEC PRINT_STATUS

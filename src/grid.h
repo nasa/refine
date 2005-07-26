@@ -202,7 +202,8 @@ Grid *gridWriteTecplotTriangleZone(Grid *g, char *filename,
 				   int nnode, double *xyz,
 				   int nface, int *f2n);
 Grid *gridWriteTecplotComment(Grid *g, char *comment );
-Grid *gridWriteTecplotCellGeom(Grid *g, int *nodes, char *filename );
+Grid *gridWriteTecplotCellGeom(Grid *g, int *nodes, double *scalar,
+			       char *filename );
 Grid *gridWriteTecplotEquator(Grid *g, int n0, int n1, char *filename );
 Grid *gridCloseTecplotGeomFile(Grid *g);
 /* Warning, call gridSortNodeGridEx before calculating scalar 

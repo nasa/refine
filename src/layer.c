@@ -2140,7 +2140,7 @@ Layer *layerAdvanceConstantHeight(Layer *layer, double height )
     gridNodeXYZ(grid,tet[0],xyz); \
     printf("%04d: layer tet vol%14.6e at%14.5f%14.5f%14.5f\n", \
            __LINE__,gridVolume(grid, tet ),xyz[0],xyz[1],xyz[2]); \
-    gridWriteTecplotCellGeom(grid,tet,"layerNegVolCell.t"); \
+    gridWriteTecplotCellGeom(grid,tet,NULL,"layerNegVolCell.t"); \
   } \
 }
 

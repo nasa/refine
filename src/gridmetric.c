@@ -27,17 +27,18 @@ Grid *gridWriteTecplotInvalid(Grid *grid, char *filename )
 {
   char comment[256];
   int cell, nodes[4];
+  double cost, costs[4];
 
   gridWriteTecplotSurfaceGeom(grid,filename);
 
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
-      if ( -0.5 > gridAR(grid,nodes) ) {
-	sprintf(comment,
-		"cell cost of %f detected.",
-		gridAR(grid,nodes));
+      cost = gridAR(grid,nodes);
+      if ( -0.5 > cost ) {
+	sprintf(comment,"cell cost of %f detected.",cost);
 	gridWriteTecplotComment(grid, comment);
-	gridWriteTecplotCellGeom(grid,nodes,filename);
+	costs[0] = costs[1] = costs[2] = costs[3] = cost;
+	gridWriteTecplotCellGeom(grid,nodes,costs,filename);
       }
     }
   }

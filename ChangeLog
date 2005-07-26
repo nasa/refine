@@ -1,5 +1,11 @@
 2005-07-26 11:09 Mike Park  <mike.park@nasa.gov>
 
+	* src/grid.c (gridWriteTecplotCellGeom) added an optional double
+	array argument to set face value. Set to NULL to ignor. propagated
+	through calls.
+
+2005-07-26 11:09 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridinsert.c (gridAdaptLongShort) only die when unable to
 	split surface edges.
 

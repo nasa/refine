@@ -1656,7 +1656,11 @@ Grid *gridRelaxNegativeCells(Grid *grid, GridBool dumpTecplot )
     if (grid==gridCell(grid, cell, nodes)) {
       volume = gridVolume(grid,nodes);
       if (0.0>=volume){
-	if (dumpTecplot) gridWriteTecplotCellGeom(grid,nodes,filename);
+	if (dumpTecplot) {
+	  double costs[4];
+	  costs[0] = costs[1] = costs[2] = costs[3] = volume;
+	  gridWriteTecplotCellGeom(grid,nodes,costs,filename);
+	}
 	for (i=0;i<4;i++) {
 	  node = nodes[i];
 	  gridSmoothVolumeNearNode(grid, node, FALSE);
