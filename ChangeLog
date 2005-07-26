@@ -1,3 +1,12 @@
+2005-07-26 15:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMinInsertCost,gridSetMinInsertCost) added to
+	allow the min insert (split,collapse) cost to be adjusted on the
+	fly to replace gridADAPT_COST_FLOOR.
+	* src/gridinsert.c (gridCollapseEdge,gridSplitEdgeForce,
+	gridSplitEdgeRatio) use gridMinInsertCost to accept action.
+	* src/gridmetric.c (gridADAPT_COST_FLOOR) removed #define
+	
 2005-07-26 14:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeForce) started a little routine

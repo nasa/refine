@@ -485,7 +485,7 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
   }
 
   /* if the worst cell is not good enough then undo the split and return */
-  if (minAR < gridADAPT_COST_FLOOR ) {
+  if (minAR < gridMinInsertCost(grid) ) {
     /* the remove and queue methods test for EMPTY==target */
     gridRemoveFaceAndQueue(grid, queue, newface_gap0n0 );
     gridRemoveFaceAndQueue(grid, queue, newface_gap0n1 );
@@ -637,7 +637,7 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
   gridNodeMinCellJacDet2(grid, newnode, &minJac );
   gridNodeAR(grid, newnode, &minAR );
   //  printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
-  if (minAR >= gridADAPT_COST_FLOOR ) {
+  if (minAR >= gridMinInsertCost(grid) ) {
 
     for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
       cell = gridGem(grid,igem);
@@ -1199,12 +1199,12 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   gridSetNodeXYZ( grid, n1, xyz); 
  
   /* if this is not a valid configuration set everything back */
-  if ( ( gridMinARAroundNodeExceptGem( grid, n0 ) < gridADAPT_COST_FLOOR ) || 
-       ( gridMinARAroundNodeExceptGem( grid, n1 ) < gridADAPT_COST_FLOOR ) ||
-       ( gridMinARAroundNodeExceptGemRecon( grid, n0, n1 ) < 
-	 gridADAPT_COST_FLOOR ) ||
-       ( gridMinARAroundNodeExceptGemRecon( grid, n1, n0 ) < 
-	 gridADAPT_COST_FLOOR )  ) {
+  if (( gridMinARAroundNodeExceptGem( grid, n0 ) < gridMinInsertCost(grid) ) || 
+      ( gridMinARAroundNodeExceptGem( grid, n1 ) < gridMinInsertCost(grid) ) ||
+      ( gridMinARAroundNodeExceptGemRecon( grid, n0, n1 ) < 
+	gridMinInsertCost(grid) ) ||
+      ( gridMinARAroundNodeExceptGemRecon( grid, n1, n0 ) < 
+	gridMinInsertCost(grid) )  ) {
     if ( edgeId != EMPTY ) {
       gridSetNodeT(grid, n0, edgeId, t0 );
       gridSetNodeT(grid, n1, edgeId, t1 );

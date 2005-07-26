@@ -211,6 +211,7 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->costFunction = gridCOST_FCN_MEAN_RATIO;
   grid->costConstraint = gridCOST_CNST_VOLUME;
+  grid->min_allowed_insert_cost = 0.01;
 
   grid->tecplotGeomFile = NULL;
   grid->tecplotScalarFile = NULL;
@@ -4082,6 +4083,17 @@ Grid *gridSetCostConstraint(Grid *grid, int costConstraint)
 			  gridCOST_CNST_AREAUV ) ) return NULL;
   grid->costConstraint = costConstraint;
   return grid;
+}
+
+Grid *gridSetMinInsertCost(Grid *grid, double min_cost )
+{
+  grid->min_allowed_insert_cost = min_cost;
+  return grid;
+}
+
+double gridMinInsertCost(Grid *grid )
+{
+  return grid->min_allowed_insert_cost;
 }
 
 int gridStoredCostDegree( Grid *grid )

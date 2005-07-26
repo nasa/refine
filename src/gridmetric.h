@@ -19,8 +19,6 @@
 
 BEGIN_C_DECLORATION
 
-#define gridADAPT_COST_FLOOR (0.01)
-
 Grid *gridWriteTecplotInvalid(Grid *g, char *filename );
 
 Grid *gridSetMapWithSpacingVectors(Grid *g, int node,

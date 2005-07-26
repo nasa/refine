@@ -120,6 +120,7 @@ struct Grid {
 
   int costFunction;
   int costConstraint;
+  double min_allowed_insert_cost;
 
   void (*packFunc)(void *packData, 
 		   int nnode, int maxnode, int *nodeo2n,
@@ -453,6 +454,9 @@ Grid *gridSetCostConstraint(Grid *g, int costConstraint);
 #define gridCOST_CNST_VOLUME (0x01)
 #define gridCOST_CNST_VALID  (0x02)
 #define gridCOST_CNST_AREAUV (0x04)
+
+Grid *gridSetMinInsertCost(Grid *g, double min_cost );
+double gridMinInsertCost(Grid *g );
 
 int gridStoredCostDegree( Grid *g );
 Grid *gridClearStoredCost( Grid *g );
