@@ -401,6 +401,63 @@ Grid *gridWriteTecplotCurvedGeom(Grid *grid, char *filename )
   return status;
 }
 
+Grid *gridWriteTecplotCellJacDet(Grid *grid, int cell, char *filename )
+{
+  int nodes[4];
+  double n0[3], n1[3], n2[3], n3[3];
+  double e01[3], e02[3], e03[3];
+  double e12[3], e13[3], e23[3];
+  double where[3];
+  double jacobian[9];
+
+  double dets[4];
+
+  if (grid!=gridCell(grid,cell,nodes)) return NULL;
+  gridNodeXYZ(grid,nodes[0],n0);
+  gridNodeXYZ(grid,nodes[1],n1);
+  gridNodeXYZ(grid,nodes[2],n2);
+  gridNodeXYZ(grid,nodes[3],n3);
+
+  gridCurvedEdgeMidpoint(grid,nodes[0],nodes[1],e01);
+  gridCurvedEdgeMidpoint(grid,nodes[0],nodes[2],e02);
+  gridCurvedEdgeMidpoint(grid,nodes[0],nodes[3],e03);
+
+  gridCurvedEdgeMidpoint(grid,nodes[1],nodes[2],e12);
+  gridCurvedEdgeMidpoint(grid,nodes[1],nodes[3],e13);
+  gridCurvedEdgeMidpoint(grid,nodes[2],nodes[3],e23);
+  
+
+  where[0]=0.0; where[1]=0.0; where[2]=0.0; 
+  gridShapeJacobian2(grid,n0,n1,n2,n3, 
+		     e01, e02, e03, 
+		     e12, e13, e23, 
+		     where,jacobian);
+  dets[0] = gridMatrixDeterminate(jacobian);
+    
+  where[0]=1.0; where[1]=0.0; where[2]=0.0; 
+  gridShapeJacobian2(grid,n0,n1,n2,n3, 
+		     e01, e02, e03, 
+		     e12, e13, e23, 
+		     where,jacobian);
+  dets[1] = gridMatrixDeterminate(jacobian);
+
+  where[0]=0.0; where[1]=1.0; where[2]=0.0; 
+  gridShapeJacobian2(grid,n0,n1,n2,n3, 
+		     e01, e02, e03, 
+		     e12, e13, e23, 
+		     where,jacobian);
+  dets[2] = gridMatrixDeterminate(jacobian);
+
+  where[0]=0.0; where[1]=0.0; where[2]=1.0; 
+  gridShapeJacobian2(grid,n0,n1,n2,n3, 
+		     e01, e02, e03, 
+		     e12, e13, e23, 
+		     where,jacobian);
+  dets[3] = gridMatrixDeterminate(jacobian);
+
+  return gridWriteTecplotCellGeom(grid, nodes, dets, filename );
+}
+
 Grid* gridShapeJacobian1(Grid *grid, 
 			 double *n0, double *n1,double *n2, double *n3, 
 			 double *where, double *j )

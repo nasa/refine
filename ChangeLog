@@ -1,3 +1,8 @@
+2005-07-26 13:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridWriteTecplotCellJacDet) added to dump out
+	specified cell with corner values set to jacobians.
+
 2005-07-26 12:26 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotCellGeom) added an optional double
