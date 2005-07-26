@@ -290,10 +290,11 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 			 gridGeometryFace(grid,nodes[0]),
 			 gridGeometryFace(grid,nodes[1]),
 			 ratios[2]);
-
-		  gridWriteTecplotEquator(grid, nodes[0], nodes[1],
-					  "edge_split_equator.t");
-		  return NULL;
+		  if (0 != gridParentGeometry(grid, nodes[0], nodes[1]) ) {
+		    gridWriteTecplotEquator(grid, nodes[0], nodes[1],
+					    "edge_split_equator.t");
+		    return NULL;
+		  }
 		}
 	      }
 	    }
@@ -644,7 +645,9 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
 
     return newnode;
   }else{
-
+     gridNodeXYZ(grid, newnode, xyz);
+     printf("%12.8f%12.8f%12.8f\n",xyz[0],xyz[1],xyz[2]);
+     printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
     it = adjFirst(gridCellAdj(grid),newnode);
     while (adjValid(it)){
       cell = adjItem(it);

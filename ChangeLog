@@ -1,3 +1,8 @@
+2005-07-26 11:09 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) only die when unable to
+	split surface edges.
+
 2005-07-26 08:24 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdaptLongShort) return NULL on first edge
