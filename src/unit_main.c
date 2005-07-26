@@ -543,7 +543,7 @@ int main( int argc, char *argv[] )
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	   ratio, ratioCollapse, ratioSplit );
     if (grid != gridAdaptLongShort(grid,ratioCollapse,ratioSplit,TRUE) ) {
-      DUMP_TEC;
+      gridWriteTecplotCurvedGeom(grid, NULL );;
       return 1;
     }
     oldSize = newSize;
