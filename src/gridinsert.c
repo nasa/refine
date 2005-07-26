@@ -293,6 +293,7 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 
 		  gridWriteTecplotEquator(grid, nodes[0], nodes[1],
 					  "edge_split_equator.t");
+		  return NULL;
 		}
 	      }
 	    }
