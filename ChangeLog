@@ -1,3 +1,8 @@
+2005-07-26 14:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) started a little routine
+	to help put in surface edge splits at any cost.
+
 2005-07-26 13:12 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridshape.c (gridWriteTecplotCellJacDet) added to dump out

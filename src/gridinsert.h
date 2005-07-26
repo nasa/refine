@@ -26,6 +26,7 @@ Grid *gridAdaptLongShort(Grid *g, double minLength, double maxLength,
 
 int gridSplitEdge(Grid *g, int n0, int n1 );
 int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
+int gridSplitEdgeRepeat(Grid *g, Queue *q, int n0, int n1 );
 int gridSplitEdgeForce(Grid *g, Queue *q, int n0, int n1 );
 int gridSplitEdgeIfNear(Grid *g, int n0, int n1, 
 			double newX, double newY, double newZ);

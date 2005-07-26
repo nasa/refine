@@ -279,7 +279,7 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 	      nnodeAdd++;
 	      gridSwapNearNode( grid, newnode, 1.0 );
 	    } else {
-	      newnode = gridSplitEdgeForce( grid, NULL, nodes[0], nodes[1] );
+	      newnode = gridSplitEdgeRepeat( grid, NULL, nodes[0], nodes[1] );
 	      if ( newnode != EMPTY ){
 		nnodeAdd++;
 		gridSwapNearNode( grid, newnode, 1.0 );
@@ -672,6 +672,48 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
     return EMPTY;
   }
 
+}
+
+int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1 )
+{
+  int newnode, newnode0, newnode1;
+  int try;
+  int iequ;
+  int node, nodes;
+  int worstnode;
+  double jacdet, worstjacdet;
+
+  newnode = gridSplitEdgeForce( grid, queue, n0, n1 );
+  if (EMPTY != newnode) return newnode;
+
+  /* punch out if this is not a critical edge */
+  if (0 == gridParentGeometry(grid, n0, n1) ) return EMPTY;
+
+  for (try = 0; try < 1 && EMPTY == newnode ; try++ ) {
+    
+    worstnode = EMPTY;
+    worstjacdet = DBL_MAX;
+    if (grid != gridEquator( grid, n0, n1 )) return EMPTY;
+    for ( iequ=0 ; iequ<gridNEqu(grid) ; iequ++ ) {
+      node = gridEqu(grid,iequ);
+      if (!gridGeometryFace(grid,node) ){
+	gridNodeMinCellJacDet2(grid, node, &jacdet );
+	if (jacdet < worstjacdet) {
+	  worstjacdet = jacdet;
+	  worstnode = node;
+	}
+      }
+    }
+
+    newnode0 = gridSplitEdgeForce( grid, queue, n0, worstnode );
+    newnode1 = gridSplitEdgeForce( grid, queue, n1, worstnode );
+    newnode = gridSplitEdgeForce( grid, queue, n0, n1 );
+    printf("try %d newnode0 %d newnode1 %d newnode %d\n",
+	   try,newnode0,newnode1,newnode);
+    
+  }
+  
+  return newnode;
 }
 
 int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
