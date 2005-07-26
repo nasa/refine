@@ -691,9 +691,16 @@ int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1 )
 
   for (try = 0; try < 1 && EMPTY == newnode ; try++ ) {
     
+    if (grid != gridEquator( grid, n0, n1 )) return EMPTY;
+
+    for ( iequ=0 ; iequ<gridNEqu(grid) ; iequ++ ) {
+      node = gridEqu(grid,iequ);
+      if (!gridGeometryFace(grid,node) ){
+	gridSmoothNodeVolumeSimplex( grid, newnode );
+      }
+    }
     worstnode = EMPTY;
     worstjacdet = DBL_MAX;
-    if (grid != gridEquator( grid, n0, n1 )) return EMPTY;
     for ( iequ=0 ; iequ<gridNEqu(grid) ; iequ++ ) {
       node = gridEqu(grid,iequ);
       if (!gridGeometryFace(grid,node) ){
