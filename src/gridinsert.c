@@ -677,11 +677,13 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
 int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1 )
 {
   int newnode, newnode0, newnode1;
+  double existing_min;
   int try;
-  int iequ;
+  int iequ, nequ;
   int node, nodes;
   int worstnode;
   double jacdet, worstjacdet;
+  
 
   newnode = gridSplitEdgeForce( grid, queue, n0, n1 );
   if (EMPTY != newnode) return newnode;
@@ -689,10 +691,17 @@ int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1 )
   /* punch out if this is not a critical edge */
   if (0 == gridParentGeometry(grid, n0, n1) ) return EMPTY;
 
+  existing_min = gridMinInsertCost(grid);
+  gridSetMinInsertCost(grid,1.0e-4);
+  
+  newnode = gridSplitEdgeForce( grid, queue, n0, n1 );
+
   for (try = 0; try < 1 && EMPTY == newnode ; try++ ) {
     
-    if (grid != gridEquator( grid, n0, n1 )) return EMPTY;
-
+    if (grid != gridEquator( grid, n0, n1 )) {
+      gridSetMinInsertCost(grid,existing_min);
+      return EMPTY;
+    }
     for ( iequ=0 ; iequ<gridNEqu(grid) ; iequ++ ) {
       node = gridEqu(grid,iequ);
       if (!gridGeometryFace(grid,node) ){
@@ -720,6 +729,43 @@ int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1 )
     
   }
   
+  for (try = 0; try < 1 && EMPTY == newnode ; try++ ) {
+    
+    if (grid != gridEquator( grid, n0, n1 )) {
+      gridSetMinInsertCost(grid,existing_min);
+      return EMPTY;
+    }
+    nequ = gridNEqu(grid);
+    for ( iequ=nequ-1 ; iequ>0 ; iequ-- ) {
+      if (grid != gridEquator( grid, n0, n1 )) {
+	gridSetMinInsertCost(grid,existing_min);
+	return EMPTY;
+      }
+      newnode0 = gridSplitEdgeForce( grid, queue,
+				     gridEqu(grid,iequ), gridEqu(grid,iequ-1) );
+      printf("TRY %d  newnode0 %d\n",
+	     try,newnode0);
+    }
+
+    if (grid != gridEquator( grid, n0, n1 )) {
+      gridSetMinInsertCost(grid,existing_min);
+      return EMPTY;
+    }
+    for ( iequ=0 ; iequ<gridNEqu(grid) ; iequ++ ) {
+      node = gridEqu(grid,iequ);
+      if (!gridGeometryFace(grid,node) ){
+	gridNodeMinCellJacDet2(grid, node, &jacdet );
+      }
+    }
+
+    newnode = gridSplitEdgeForce( grid, queue, n0, n1 );
+    printf("TRY %d  newnode %d\n",
+	   try,newnode);
+    
+  }
+  
+  gridSetMinInsertCost(grid,existing_min);
+
   return newnode;
 }
 
