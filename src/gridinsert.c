@@ -662,6 +662,16 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
   //  printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
 
   if (minAR < gridMinInsertCost(grid) ) {
+
+    if (debug_split) {
+      for ( it = adjFirst(gridCellAdj(grid),newnode); 
+	    adjValid(it); 
+	    it = adjNext(it) ) {
+	cell = adjItem(it);
+	gridWriteTecplotCellJacDet(grid,cell,NULL);
+      }
+    }
+
     it = adjFirst(gridCellAdj(grid),newnode);
     while (adjValid(it)){
       cell = adjItem(it);
