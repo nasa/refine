@@ -657,7 +657,8 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
    if ( gridContinuousEquator(grid) ){
      gridSmoothNodeVolumeSimplex( grid, newnode );
    }else{
-     if (EMPTY == edge) gridSmoothNodeVolumeUVSimplex( grid, newnode );
+     /* will not work between faces */
+     gridSmoothNodeVolumeUVSimplex( grid, newnode );
    }
   gridNodeMinCellJacDet2(grid, newnode, &minJac );
   gridNodeAR(grid, newnode, &minAR );
