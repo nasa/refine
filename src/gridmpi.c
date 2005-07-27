@@ -102,7 +102,8 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 		nnodeAdd++;
 		gridSwapNearNode( grid, newnode, 1.0 );
 	      } else {
-		newnode = gridSplitEdgeForce( grid, queue, nodes[0], nodes[1] );
+		newnode = gridSplitEdgeForce( grid, queue, nodes[0], nodes[1],
+					      FALSE);
 		if ( newnode != EMPTY ){
 		  nnodeAdd++;
 		  gridSwapNearNode( grid, newnode, 1.0 );

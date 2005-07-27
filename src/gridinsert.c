@@ -279,7 +279,8 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 	      nnodeAdd++;
 	      gridSwapNearNode( grid, newnode, 1.0 );
 	    } else {
-	      newnode = gridSplitEdgeRepeat( grid, NULL, nodes[0], nodes[1] );
+	      newnode = gridSplitEdgeRepeat( grid, NULL, nodes[0], nodes[1],
+					     debug_split );
 	      if ( newnode != EMPTY ){
 		nnodeAdd++;
 		gridSwapNearNode( grid, newnode, 1.0 );
@@ -525,7 +526,8 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
   return newnode;
 }
 
-int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
+int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
+		       GridBool debug_split )
 {
   int igem, cell, nodes[4], inode, node;
   double xyz0[3], xyz1[3], xyz[3];
@@ -551,7 +553,11 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
     if ( face0 == EMPTY || face1 == EMPTY ) return EMPTY;
     if ( grid != gridFace(grid,face0,faceNodes0,&faceId0) ) return EMPTY;
     if ( grid != gridFace(grid,face1,faceNodes1,&faceId1) ) return EMPTY;
-    if ( faceId0 != faceId1 ) return EMPTY; /* only able to do face interiors */
+    if ( faceId0 != faceId1 ) {
+      printf("ERROR %s: %d: gridSplitEdgeForce inbetween faces\n",
+	     __FILE__,__LINE__);
+      return EMPTY; /* only able to do face interiors */
+    }
   }
 
   /* create new node and initialize */
@@ -649,13 +655,22 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
 
     return newnode;
   }else{
-     gridNodeXYZ(grid, newnode, xyz);
-     printf("%12.8f%12.8f%12.8f\n",xyz[0],xyz[1],xyz[2]);
-     printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
+    if ( debug_split ) {
+      gridNodeXYZ(grid, newnode, xyz);
+      printf("%12.8f%12.8f%12.8f\n",xyz[0],xyz[1],xyz[2]);
+      printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
+      for ( it = adjFirst(gridCellAdj(grid),newnode); 
+	    adjValid(it); 
+	    it = adjNext(it) ){
+	cell = adjItem(it);
+	gridWriteTecplotCellJacDet(grid,cell,NULL);
+      }
+      printf("degree %d ngem %d\n",gridCellDegree(grid,newnode),gridNGem(grid));
+    }
+
     it = adjFirst(gridCellAdj(grid),newnode);
     while (adjValid(it)){
       cell = adjItem(it);
-      // gridWriteTecplotCellJacDet(grid,cell,NULL);
       gridRemoveCellAndQueue( grid, queue, cell );
       it = adjFirst(grid->cellAdj,newnode);
     }
@@ -674,7 +689,8 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1 )
 
 }
 
-int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1 )
+int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1, 
+			GridBool debug_split  )
 {
   int newnode, newnode0, newnode1;
   double existing_min;
@@ -685,7 +701,7 @@ int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1 )
   double jacdet, worstjacdet;
   
 
-  newnode = gridSplitEdgeForce( grid, queue, n0, n1 );
+  newnode = gridSplitEdgeForce( grid, queue, n0, n1, FALSE );
   if (EMPTY != newnode) return newnode;
 
   /* punch out if this is not a critical edge */
@@ -694,8 +710,7 @@ int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1 )
   existing_min = gridMinInsertCost(grid);
   gridSetMinInsertCost(grid,1.0e-4);
   
-  newnode = gridSplitEdgeForce( grid, queue, n0, n1 );
-  
+  newnode = gridSplitEdgeForce( grid, queue, n0, n1, debug_split );
   gridSetMinInsertCost(grid,existing_min);
 
   return newnode;
