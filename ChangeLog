@@ -1,3 +1,12 @@
+2005-07-27 08:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) if gridSplitEdgeRatio is
+	unsucessful call gridSplitEdgeRepeat to debug insertion
+	difficulties.
+	* src/gridinsert.c (gridSplitEdgeRepeat) created to get edges
+	split by trying more complex algorithms and to understand the
+	difficulties. (this version stripped out some hacks I had earlier.)
+
 2005-07-26 15:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridMinInsertCost,gridSetMinInsertCost) added to
