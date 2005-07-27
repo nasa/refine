@@ -530,12 +530,18 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
 		       GridBool debug_split )
 {
   int igem, cell, nodes[4], inode, node;
-  double xyz0[3], xyz1[3], xyz[3];
+  double xyz0[3], xyz1[3], xyz[3], dummy_xyz[3];
   int newnode, newnodes0[4], newnodes1[4];
   int gap0, gap1, face0, face1, faceNodes0[3], faceNodes1[3], faceId0, faceId1;
   int newface_gap0n0, newface_gap0n1, newface_gap1n0, newface_gap1n1;
-  double ratio, minAR, minJac;
+  int edge, edgeId;
+  int newedge0, newedge1;
+  double t0, t1, newT;
+  double minAR, minJac;
+  double ratio;
   AdjIterator it;
+
+  ratio = 0.5;
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
@@ -544,26 +550,15 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
   gap0 = gridEqu(grid,0);
   gap1 = gridEqu(grid,gridNGem(grid));
   face0 = face1 = EMPTY;
-  faceNodes0[0] = faceNodes0[1] = faceNodes0[2] = EMPTY;
-  faceNodes1[0] = faceNodes1[1] = faceNodes1[2] = EMPTY;
-  faceId0 = faceId1 = EMPTY;
   if ( !gridContinuousEquator(grid) ){
     face0 = gridFindFace(grid, n0, n1, gap0 );
     face1 = gridFindFace(grid, n0, n1, gap1 );
     if ( face0 == EMPTY || face1 == EMPTY ) return EMPTY;
-    if ( grid != gridFace(grid,face0,faceNodes0,&faceId0) ) return EMPTY;
-    if ( grid != gridFace(grid,face1,faceNodes1,&faceId1) ) return EMPTY;
-    if ( faceId0 != faceId1 ) {
-      printf("ERROR %s: %d: gridSplitEdgeForce inbetween faces\n",
-	     __FILE__,__LINE__);
-      return EMPTY; /* only able to do face interiors */
-    }
   }
 
   /* create new node and initialize */
   if (grid != gridNodeXYZ(grid, n0, xyz0) ) return EMPTY;
   if (grid != gridNodeXYZ(grid, n1, xyz1) ) return EMPTY;
-  ratio = 0.5;
   for (inode = 0 ; inode < 3 ; inode++) 
     xyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
@@ -571,21 +566,22 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
   gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
   gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
 
-  /* add new cell connectivity */
-  for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
-    cell = gridGem(grid,igem);
-    gridCell(grid, cell, nodes);
-    for ( inode = 0 ; inode < 4 ; inode++ ){
-      node = nodes[inode];
-      newnodes0[inode]=node;
-      newnodes1[inode]=node;
-      if ( node == n0 ) newnodes0[inode] = newnode;
-      if ( node == n1 ) newnodes1[inode] = newnode;
+  /* insert new edges to use for projection and validity check */
+  newedge0 = newedge1 = EMPTY;
+  edge = gridFindEdge(grid,n0,n1);
+  if ( edge != EMPTY ) {
+    edgeId = gridEdgeId(grid,n0,n1);
+    gridNodeT(grid,n0,edgeId,&t0);
+    gridNodeT(grid,n1,edgeId,&t1);
+    newT = (1-ratio)*t0+ratio*t1;
+
+    if ( gridSurfaceNodeConstrained(grid) ) {
+      gridEvaluateOnEdge(grid, edgeId, newT, xyz );
+      gridSetNodeXYZ(grid, newnode, xyz);
     }
-    gridAddCellAndQueue( grid, queue,
-			 newnodes0[0],newnodes0[1],newnodes0[2],newnodes0[3]);
-    gridAddCellAndQueue( grid, queue,
-			 newnodes1[0],newnodes1[1],newnodes1[2],newnodes1[3]);
+
+    newedge0 = gridAddEdgeAndQueue(grid,queue,n0,newnode,edgeId,t0,newT);
+    newedge1 = gridAddEdgeAndQueue(grid,queue,n1,newnode,edgeId,t1,newT);
   }
 
   /* insert new faces to use for projection and validity check */
@@ -594,6 +590,8 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
   if ( !gridContinuousEquator(grid) ){
     double n0Id0uv[2], n1Id0uv[2], n0Id1uv[2], n1Id1uv[2];
     double gap0uv[2], gap1uv[2], newId0uv[2], newId1uv[2]; 
+    gridFace(grid,face0,faceNodes0,&faceId0);
+    gridFace(grid,face1,faceNodes1,&faceId1);
     gridNodeUV(grid,n0,faceId0,n0Id0uv);
     gridNodeUV(grid,n1,faceId0,n1Id0uv);
     gridNodeUV(grid,n0,faceId1,n0Id1uv);
@@ -606,9 +604,15 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
     newId1uv[1] = (1-ratio)*n0Id1uv[1] + ratio*n1Id1uv[1];
 
     if ( gridSurfaceNodeConstrained(grid) ) {
-      /* assume id0==id1 or fake geometry */
-      gridEvaluateOnFace(grid, faceId0, newId0uv, xyz);
-      gridSetNodeXYZ(grid, newnode, xyz);
+      if ( EMPTY != edge ) {
+	/* update uv parameters only for faces next to geom edge */
+	gridResolveOnFace(grid, faceId0, newId0uv, xyz, dummy_xyz);
+	gridResolveOnFace(grid, faceId1, newId1uv, xyz, dummy_xyz);
+      } else {
+	/* assume id0==id1 or fake geometry */
+	gridEvaluateOnFace(grid, faceId0, newId0uv, xyz);
+	gridSetNodeXYZ(grid, newnode, xyz);
+      }
     }
 
     newface_gap0n0 = gridAddFaceUVAndQueue(grid, queue,
@@ -633,60 +637,66 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
 					   faceId1 );
   }
 
-  if ( gridContinuousEquator(grid) ){
-    gridSmoothNodeVolumeSimplex( grid, newnode );
-  }else{
-    gridSmoothNodeVolumeUVSimplex( grid, newnode );
+  /* insert cells */
+  for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
+    cell = gridGem(grid,igem);
+    gridCell(grid, cell, nodes);
+    for ( inode = 0 ; inode < 4 ; inode++ ){
+      node = nodes[inode];
+      newnodes0[inode]=node;
+      newnodes1[inode]=node;
+      if ( node == n0 ) newnodes0[inode] = newnode;
+      if ( node == n1 ) newnodes1[inode] = newnode;
+    }
+    gridAddCellAndQueue( grid, queue,
+			 newnodes0[0],newnodes0[1],newnodes0[2],newnodes0[3]);
+    gridAddCellAndQueue( grid, queue,
+			 newnodes1[0],newnodes1[1],newnodes1[2],newnodes1[3]);
   }
 
-  /* if the worst cell is not good enough then undo the split and return */
+   if ( gridContinuousEquator(grid) ){
+     gridSmoothNodeVolumeSimplex( grid, newnode );
+   }else{
+     if (EMPTY == edge) gridSmoothNodeVolumeUVSimplex( grid, newnode );
+   }
   gridNodeMinCellJacDet2(grid, newnode, &minJac );
   gridNodeAR(grid, newnode, &minAR );
   //  printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
-  if (minAR >= gridMinInsertCost(grid) ) {
 
-    for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
-      cell = gridGem(grid,igem);
-      gridRemoveCellAndQueue(grid, queue, cell);
-    }
-
-    gridRemoveFaceAndQueue(grid, queue, face0);
-    gridRemoveFaceAndQueue(grid, queue, face1);
-
-    return newnode;
-  }else{
-    if ( debug_split ) {
-      gridNodeXYZ(grid, newnode, xyz);
-      printf("%12.8f%12.8f%12.8f\n",xyz[0],xyz[1],xyz[2]);
-      printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
-      for ( it = adjFirst(gridCellAdj(grid),newnode); 
-	    adjValid(it); 
-	    it = adjNext(it) ){
-	cell = adjItem(it);
-	gridWriteTecplotCellJacDet(grid,cell,NULL);
-      }
-      printf("degree %d ngem %d\n",gridCellDegree(grid,newnode),gridNGem(grid));
-    }
-
+  if (minAR < gridMinInsertCost(grid) ) {
     it = adjFirst(gridCellAdj(grid),newnode);
     while (adjValid(it)){
       cell = adjItem(it);
       gridRemoveCellAndQueue( grid, queue, cell );
       it = adjFirst(grid->cellAdj,newnode);
     }
-
-    gridRemoveFaceAndQueue(grid, queue, newface_gap0n0);
-    gridRemoveFaceAndQueue(grid, queue, newface_gap0n1);
-    gridRemoveFaceAndQueue(grid, queue, newface_gap1n0);
-    gridRemoveFaceAndQueue(grid, queue, newface_gap1n1);
-
+    /* the remove and queue methods test for EMPTY==target */
+    gridRemoveFaceAndQueue(grid, queue, newface_gap0n0 );
+    gridRemoveFaceAndQueue(grid, queue, newface_gap0n1 );
+    gridRemoveFaceAndQueue(grid, queue, newface_gap1n0 );
+    gridRemoveFaceAndQueue(grid, queue, newface_gap1n1 );
+    gridRemoveEdgeAndQueue(grid, queue, newedge0 );
+    gridRemoveEdgeAndQueue(grid, queue, newedge1 );
     gridRemoveNode(grid,newnode);
-
     queueResetCurrentTransaction(queue);
 
     return EMPTY;
-  }
+  }else{
 
+    /* remove old cells */
+    for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
+      cell = gridGem(grid,igem);
+      gridCell(grid, cell, nodes);
+      gridRemoveCellAndQueue(grid, queue, cell);
+    }
+
+    /* remove original faces and edge */
+    gridRemoveFaceAndQueue(grid, queue, face0 );
+    gridRemoveFaceAndQueue(grid, queue, face1 );
+    gridRemoveEdgeAndQueue(grid,queue,edge);
+
+    return newnode;
+  }
 }
 
 int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1, 

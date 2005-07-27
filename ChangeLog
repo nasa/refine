@@ -1,3 +1,8 @@
+2005-07-27 16:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) refactored to be more like
+	gridSplitEdgeRatio and allow edge splits.
+
 2005-07-27 10:23 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeForce) produce stdout msg that
