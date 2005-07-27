@@ -238,8 +238,7 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 {
   int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
-  double ratios[3];
-  double dist, ratio;
+  double length, ratio;
   int i, newnode;
   Plan *plan;
 
@@ -247,8 +246,8 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
   plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
   for(conn=0;conn<gridNConn(grid);conn++) {
     gridConn2Node(grid,conn,nodes);
-    ratio = gridEdgeRatio(grid,nodes[0],nodes[1]);
-    if ( ratio >= maxLength ) planAddItemWithPriority( plan, conn, ratio );
+    length = gridEdgeRatio(grid,nodes[0],nodes[1]);
+    if ( length >= maxLength ) planAddItemWithPriority( plan, conn, length );
   }
   planDeriveRankingsFromPriorities( plan );
   
@@ -270,36 +269,35 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 	   gridValidNode(grid, nodes[1]) && 
 	   !gridNodeFrozen(grid, nodes[0]) &&
 	   !gridNodeFrozen(grid, nodes[1]) ) {
-	if (grid == gridEdgeRatio3(grid, nodes[0], nodes[1], ratios ) ) {
-	  if (ratios[2] >= maxLength) {
-	    ratio = 0.5;
-	    newnode = gridSplitEdgeRatio( grid, NULL,
-                                          nodes[0], nodes[1], ratio );
+	length = gridEdgeRatio(grid, nodes[0], nodes[1]);
+	if (length >= maxLength) {
+	  ratio = 0.5;
+	  newnode = gridSplitEdgeRatio( grid, NULL,
+					nodes[0], nodes[1], ratio );
+	  if ( newnode != EMPTY ){
+	    nnodeAdd++;
+	    gridSwapNearNode( grid, newnode, 1.0 );
+	  } else {
+	    newnode = gridSplitEdgeRepeat( grid, NULL, nodes[0], nodes[1],
+					   debug_split );
 	    if ( newnode != EMPTY ){
 	      nnodeAdd++;
 	      gridSwapNearNode( grid, newnode, 1.0 );
-	    } else {
-	      newnode = gridSplitEdgeRepeat( grid, NULL, nodes[0], nodes[1],
-					     debug_split );
-	      if ( newnode != EMPTY ){
-		nnodeAdd++;
-		gridSwapNearNode( grid, newnode, 1.0 );
-	      }else{
-		if (debug_split) {
-		  printf("Edge%10d%10d will not split face%2d%2d err%6.2f\n",
-			 nodes[0],nodes[1],
-			 gridGeometryFace(grid,nodes[0]),
-			 gridGeometryFace(grid,nodes[1]),
-			 ratios[2]);
-		  if (0 != gridParentGeometry(grid, nodes[0], nodes[1]) ) {
-		    int igem;
-		    gridWriteTecplotEquator(grid, nodes[0], nodes[1],
-					    "edge_split_equator.t");
-		    for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
-		      gridWriteTecplotCellJacDet(grid,gridGem(grid,igem),NULL);
-		    }
-		    return NULL;
+	    }else{
+	      if (debug_split) {
+		printf("Edge%10d%10d will not split face%2d%2d err%6.2f\n",
+		       nodes[0],nodes[1],
+		       gridGeometryFace(grid,nodes[0]),
+		       gridGeometryFace(grid,nodes[1]),
+		       length);
+		if (0 != gridParentGeometry(grid, nodes[0], nodes[1]) ) {
+		  int igem;
+		  gridWriteTecplotEquator(grid, nodes[0], nodes[1],
+					  "edge_split_equator.t");
+		  for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
+		    gridWriteTecplotCellJacDet(grid,gridGem(grid,igem),NULL);
 		  }
+		    return NULL;
 		}
 	      }
 	    }
@@ -315,8 +313,8 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
   plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
   for(conn=0;conn<gridNConn(grid);conn++) {
     gridConn2Node(grid,conn,nodes);
-    ratio = gridEdgeRatio(grid,nodes[0],nodes[1]);
-    if ( ratio <= minLength ) planAddItemWithPriority( plan, conn, ratio );
+    length = gridEdgeRatio(grid,nodes[0],nodes[1]);
+    if ( length <= minLength ) planAddItemWithPriority( plan, conn, length );
   }
   planDeriveRankingsFromPriorities( plan );
   
@@ -338,15 +336,14 @@ Grid *gridAdaptLongShort(Grid *grid, double minLength, double maxLength,
 	   gridValidNode(grid, nodes[1]) && 
 	   !gridNodeFrozen(grid, nodes[0]) &&
 	   !gridNodeFrozen(grid, nodes[1]) ) {
-	if (grid == gridEdgeRatio3(grid, nodes[0], nodes[1], ratios ) ) {
-	  if (ratios[2] <= minLength) {
-	    if ( grid == 
-		 gridCollapseEdgeToAnything(grid, NULL, 
-					    nodes[0], 
-					    nodes[1] ) ) {
-	      nnodeRemove++;
-  	      gridSwapNearNode( grid, nodes[0], 1.0 );
-	    }
+	length = gridEdgeRatio(grid, nodes[0], nodes[1] );
+	if (length <= minLength) {
+	  if ( grid == 
+	       gridCollapseEdgeToAnything(grid, NULL, 
+					  nodes[0], 
+					  nodes[1] ) ) {
+	    nnodeRemove++;
+	    gridSwapNearNode( grid, nodes[0], 1.0 );
 	  }
 	}
       }
