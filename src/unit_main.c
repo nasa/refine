@@ -355,8 +355,8 @@ int main( int argc, char *argv[] )
 
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
-			gridCOST_CNST_VALID  |
                         gridCOST_CNST_AREAUV );
+  //			gridCOST_CNST_VALID  |
 
   gridConstrainSurfaceNode(grid);
 
@@ -542,10 +542,18 @@ int main( int argc, char *argv[] )
     ratioSplit   = 1.0;
     printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
 	   ratio, ratioCollapse, ratioSplit );
-    if (grid != gridAdaptLongShort(grid,ratioCollapse,ratioSplit,TRUE) ) {
-      gridWriteTecplotCurvedGeom(grid, NULL );
-      gridWriteTecplotSurfaceGeom(grid,NULL);
-      return 1;
+    if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+      if (grid != gridAdaptLongShortCurved(grid,ratioCollapse,ratioSplit,TRUE)){
+	gridWriteTecplotCurvedGeom(grid, NULL );
+	gridWriteTecplotSurfaceGeom(grid,NULL);
+	return 1;
+      }
+    }else{
+      if (grid != gridAdaptLongShortLinear(grid,ratioCollapse,ratioSplit,TRUE)){
+	gridWriteTecplotCurvedGeom(grid, NULL );
+	gridWriteTecplotSurfaceGeom(grid,NULL);
+	return 1;
+      }
     }
     oldSize = newSize;
     newSize = gridNNode(grid) ;

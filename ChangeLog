@@ -1,7 +1,15 @@
+2005-07-28 09:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShortCurved,gridAdaptLongShortLinear)
+	branched from gridAdaptLongShort to explore linear edge insertion.
+	* src/unit_main.c (main) turn off valid cost constraint
+	gridCOST_CNST_VALID. call gridAdaptLongShortCurved or
+	gridAdaptLongShortLinear with test on gridCOST_CNST_VALID.
+
 2005-07-28 09:00 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.8 Release. ** internal release ** Tagging to test new
-	direction for linear elements..
+	direction for linear elements.
 
 2005-07-27 16:10 Mike Park  <mike.park@nasa.gov>
 
