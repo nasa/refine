@@ -1,3 +1,8 @@
+2005-07-28 13:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFindEnclosingCell) added a hacked version to
+	get started. I will need a more robust version for production.
+
 2005-07-28 11:38 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridReconstructSplitEdgeRatio) addd to start

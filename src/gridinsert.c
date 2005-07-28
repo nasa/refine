@@ -474,8 +474,10 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
 {
   int current_cell;
   int tries;
+  AdjIterator it;
 
-  current_cell = adjItem(adjFirst(gridCellAdj(grid),starting_guess));
+  it = adjFirst(gridCellAdj(grid),starting_guess);
+  current_cell = adjItem(it);
   if (EMPTY == current_cell) return EMPTY;
   for (tries=1;tries<=1000;tries++) {
     int nodes[4];
@@ -487,7 +489,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
     int other_cell;
     
     gridCell( grid, current_cell, nodes );
-    gridWriteTecplotCellGeom( grid, nodes, NULL, NULL);
+    // gridWriteTecplotCellGeom( grid, nodes, NULL, NULL);
 
     gridNodeXYZ(grid, nodes[0], xyz0);
     gridNodeXYZ(grid, nodes[1], xyz1);
@@ -518,8 +520,8 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
     gridSubtractVector(target, xyz0, dir3);
     dot3 = gridDotProduct(dir3,norm3);
 
-    printf("cell%11d dots%23.15e%23.15e%23.15e%23.15e\n",
-	   current_cell, dot0,dot1,dot2,dot3);
+    // printf("cell%11d dots%23.15e%23.15e%23.15e%23.15e\n",
+    //   current_cell, dot0,dot1,dot2,dot3);
 
     if ( dot0 >= 0.0 && dot1 >= 0.0 &&  dot2 >= 0.0 && dot3 >= 0.0 ) {
       return current_cell;
@@ -565,9 +567,12 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
       }
     }
 
-    printf("%s: %d: gridFindEnclosingCell round-off: no next\n",
-	   __FILE__,__LINE__);
-    return EMPTY;
+    it = adjNext(it);
+    current_cell = adjItem(it);
+    if (EMPTY == current_cell) {
+      printf("%s: %d: gridFindEnclosingCell round-off: no more next \n");
+      return EMPTY;
+    }
   }
 
   printf("%s: %d: gridFindEnclosingCell exhausted tries.\n",
