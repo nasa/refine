@@ -609,22 +609,34 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     gridEvaluateOnEdge(grid, -parent, newT, xyz );
   }
 
-  newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
-  if ( newnode == EMPTY ) return EMPTY;
-  gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
-  gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
-
-  printf("new node %d at%23.15e%23.15e%23.15e\n",newnode,xyz[0],xyz[1],xyz[2]);
+  printf("new node at%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
 
   enclosing_cell = gridFindEnclosingCell(grid, n0, xyz );
 
-  if ( EMPTY != enclosing_cell ) {
+  if ( EMPTY == enclosing_cell ) return EMPTY;
+
+  {
     int nodes[4];
     gridCell( grid, enclosing_cell, nodes );
     gridWriteTecplotCellGeom( grid, nodes, NULL, NULL);
   }
 
-  return newnode;
+  newnode = gridSplitCellAt(grid, enclosing_cell, xyz[0], xyz[1], xyz[2]);
+  if ( newnode == EMPTY ) return EMPTY;
+
+  gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
+  gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
+
+  printf("new node %d inserted into cell %d\n",newnode,enclosing_cell);
+  
+  if (!gridCellEdge( grid, n0, newnode )) {
+    printf("do not have edge n0 newnode\n");
+  }
+  if (!gridCellEdge( grid, n1, newnode )) {
+    printf("do not have edge n1 newnode\n");
+  }
+
+ return newnode;
 }
 
 int gridSplitEdge(Grid *grid, int n0, int n1)
