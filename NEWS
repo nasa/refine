@@ -2,6 +2,28 @@
 
 Works with FUN3D Version(s): **SomeFUN3DVersion**
 
+Thu Jul 28, 2005: Released Refine 1.2.8
+
+** internal release ** 
+
+The grid insert methods gridSplitEdgeRatio and gridCollapseEdge
+interpolate and evaluate edge t, face uv, and xyz in a consistent
+manner. Modified gridcad simplex volume searches to use min jacobian
+determinates when gridCOST_CNST_VALID cost constraint active.
+gridCostValid gridmetric method consistantly checks cost constraints.
+Added logic to unit_main to make an invalid curved element mesh valid.
+Modifies the gridSwap, gridSmooth, gridAdaptLongShort to priorities
+operation to do ops on worst thing first.  With an update in the SDK
+(tagged version 1.1.5) modifed gridfiller gridSavePart to set
+consistant uvs to aviod projection issues.  Added tecplot cell and
+equator outputs to debug grid.  Worked on Valid curved quad element
+meshing.
+
+Tagging to test new direction for linear elements.
+
+FUN3D API change: gridsetcostconstraint_ and gridconstrainsurfacenode_
+added for valid meshing with flow solver (not parallelized yet)
+
 Thu Jun  2, 2005: Released Refine 1.2.7
 
 ** internal release ** 
