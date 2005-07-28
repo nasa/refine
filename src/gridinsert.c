@@ -409,6 +409,10 @@ Grid *gridAdaptLongShortLinear(Grid *grid, double minLength, double maxLength,
 		int igem;
 		gridWriteTecplotEquator(grid, nodes[0], nodes[1],
 					"edge_split_equator.t");
+		
+		newnode = gridReconstructSplitEdgeRatio( grid, NULL,
+							 nodes[0], nodes[1],
+							 ratio );
 		return NULL;
 	      }
 	    }
@@ -464,6 +468,43 @@ Grid *gridAdaptLongShortLinear(Grid *grid, double minLength, double maxLength,
   gridEraseConn(grid);
 
   return grid;
+}
+
+int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
+				  int n0, int n1, double ratio )
+{
+  int parent;
+  double xyz[3];
+  double uv0[2], uv1[2], uv[2], newUV[2];
+  double t0, t1, t, newT; 
+  int newnode;
+
+  if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
+
+  parent = gridParentGeometry(grid, n0, n1);
+  if (parent == 0) return EMPTY;
+
+  if (parent > 0) {
+    gridNodeUV(grid,n0,parent,uv0);
+    gridNodeUV(grid,n1,parent,uv1);
+    newUV[0] = (1-ratio)*uv0[0]+ratio*uv1[0];
+    newUV[1] = (1-ratio)*uv0[1]+ratio*uv1[1];
+    gridEvaluateOnFace(grid, parent, newUV, xyz );
+  }else{
+    gridNodeT(grid,n0,-parent,&t0);
+    gridNodeT(grid,n1,-parent,&t1);
+    newT = (1-ratio)*t0+ratio*t1;
+    gridEvaluateOnEdge(grid, -parent, newT, xyz );
+  }
+
+  newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
+  if ( newnode == EMPTY ) return EMPTY;
+  gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
+  gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
+
+  printf("new node %d at%23.15e%23.15e%23.15e\n",newnode,xyz[0],xyz[1],xyz[2]);
+
+  return newnode;
 }
 
 int gridSplitEdge(Grid *grid, int n0, int n1)

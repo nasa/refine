@@ -27,6 +27,8 @@ Grid *gridAdaptLongShortLinear(Grid *g, double minLength, double maxLength,
 			       GridBool debug_split );
 
 int gridSplitEdge(Grid *g, int n0, int n1 );
+int gridReconstructSplitEdgeRatio(Grid *g, Queue *q,
+				  int n0, int n1, double ratio);
 int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
 int gridSplitEdgeRepeat(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );
 int gridSplitEdgeForce(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );

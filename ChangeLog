@@ -1,3 +1,8 @@
+2005-07-28 11:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) addd to start
+	code on getting that edge in.
+
 2005-07-28 09:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdaptLongShortCurved,gridAdaptLongShortLinear)
