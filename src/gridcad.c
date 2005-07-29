@@ -380,9 +380,40 @@ Grid *gridRobustProject(Grid *grid)
   return grid;
 }
 
-Grid *gridCurveIntersectsFace(Grid *g, int *face_nodes, int parent,
+Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
 			      double *tuv0, double *tuv1, double *tuv)
 {
+  double xyz0[3], xyz1[3], xyz2[3];
+  double edge0[3], edge1[3];
+  double norm[3];
+  double curve0[3], curve1[3];
+  double dir0[3], dir1[3];
+  double dot0, dot1;
+
+  if (grid != gridNodeXYZ(grid, face_nodes[0], xyz0) ) return NULL;
+  if (grid != gridNodeXYZ(grid, face_nodes[1], xyz1) ) return NULL;
+  if (grid != gridNodeXYZ(grid, face_nodes[2], xyz2) ) return NULL;
+
+  gridSubtractVector(xyz1, xyz0, edge0);
+  gridSubtractVector(xyz2, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridVectorNormalize(norm);
+
+  if (parent > 0) {
+    gridEvaluateOnFace(grid, parent, tuv0, curve0 );
+    gridEvaluateOnFace(grid, parent, tuv1, curve1 );
+  }else{
+    gridEvaluateOnEdge(grid, -parent, tuv0[0], curve0 );
+    gridEvaluateOnEdge(grid, -parent, tuv1[0], curve1 );
+  }
+
+  gridSubtractVector(curve0, xyz0, dir0);
+  dot0 = gridDotProduct(dir0,norm);
+  gridSubtractVector(curve1, xyz0, dir1);
+  dot1 = gridDotProduct(dir1,norm);
+
+  printf("dots%23.15e%23.15e\n",dot0,dot1);
+
   return NULL;
 }
 
