@@ -586,8 +586,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 {
   int parent;
   double xyz[3];
-  double uv0[2], uv1[2], uv[2], newUV[2];
-  double t0, t1, t, newT; 
+  double tuv0[2], tuv1[2], tuv[2];
   int newnode;
   int enclosing_cell;
 
@@ -596,17 +595,18 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   parent = gridParentGeometry(grid, n0, n1);
   if (parent == 0) return EMPTY;
 
+  tuv0[0] = tuv0[1] = tuv1[0] = tuv1[1] = tuv[0] = tuv[1] = DBL_MAX;
   if (parent > 0) {
-    gridNodeUV(grid,n0,parent,uv0);
-    gridNodeUV(grid,n1,parent,uv1);
-    newUV[0] = (1-ratio)*uv0[0]+ratio*uv1[0];
-    newUV[1] = (1-ratio)*uv0[1]+ratio*uv1[1];
-    gridEvaluateOnFace(grid, parent, newUV, xyz );
+    gridNodeUV(grid,n0,parent,tuv0);
+    gridNodeUV(grid,n1,parent,tuv1);
+    tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
+    tuv[1] = (1-ratio)*tuv0[1]+ratio*tuv1[1];
+    gridEvaluateOnFace(grid, parent, tuv, xyz );
   }else{
-    gridNodeT(grid,n0,-parent,&t0);
-    gridNodeT(grid,n1,-parent,&t1);
-    newT = (1-ratio)*t0+ratio*t1;
-    gridEvaluateOnEdge(grid, -parent, newT, xyz );
+    gridNodeT(grid,n0,-parent,tuv0);
+    gridNodeT(grid,n1,-parent,tuv1);
+    tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
+    gridEvaluateOnEdge(grid, -parent, tuv[0], xyz );
   }
 
   printf("new node at%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
