@@ -613,7 +613,11 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 
   enclosing_cell = gridFindEnclosingCell(grid, n0, xyz );
 
-  if ( EMPTY == enclosing_cell ) return EMPTY;
+  if ( EMPTY == enclosing_cell ) {
+    printf("%s: %d: gridReconstructSplitEdgeRatio could not find cell.\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
 
   {
     int nodes[4];
