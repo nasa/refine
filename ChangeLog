@@ -1,3 +1,9 @@
+2005-07-29 09:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeIfNear, gridSplitFaceAt, 
+	gridSplitCellAt, gridInsertInToGeomEdge, gridInsertInToGeomFace,
+	gridInsertInToVolume) changed x, y, z args to xyz array of 3. 
+	
 2005-07-28 13:48 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridFindEnclosingCell) added a hacked version to

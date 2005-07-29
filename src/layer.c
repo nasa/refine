@@ -2660,7 +2660,7 @@ Layer *layerInsertPhantomTriangle(Layer *layer, double dz )
     gridNodeXYZ(grid,layer->normal[normal].root,xyz);
     spacing = gridSpacing(grid, layer->normal[normal].root );
     if (0 == layerConstrained(layer,normal)){
-      newnode = gridInsertInToVolume(grid, xyz[0], xyz[1], xyz[2]);
+      newnode = gridInsertInToVolume(grid, xyz);
     }else{
       faceId = layerConstrained(layer,normal);
       if (0 < faceId) {
@@ -2670,7 +2670,7 @@ Layer *layerInsertPhantomTriangle(Layer *layer, double dz )
 	edgeId = -faceId;
 	gridForceNodeToEdge(grid, layer->normal[normal].root, edgeId );
       }
-      newnode = gridInsertInToGeomFace(grid, xyz[0], xyz[1], xyz[2]);
+      newnode = gridInsertInToGeomFace(grid, xyz);
     }
     if (EMPTY == newnode) 
       printf("Could not insert node norm %8d x %10.5f y %10.5f z %10.5f\n",

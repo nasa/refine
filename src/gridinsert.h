@@ -32,15 +32,12 @@ int gridReconstructSplitEdgeRatio(Grid *g, Queue *q,
 int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
 int gridSplitEdgeRepeat(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );
 int gridSplitEdgeForce(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );
-int gridSplitEdgeIfNear(Grid *g, int n0, int n1, 
-			double newX, double newY, double newZ);
-int gridSplitFaceAt(Grid *g, int face,  
-		    double newX, double newY, double newZ);
-int gridSplitCellAt(Grid *g, int cell,  
-		    double newX, double newY, double newZ);
-int gridInsertInToGeomEdge(Grid *g, double newX, double newY, double newZ);
-int gridInsertInToGeomFace(Grid *g, double newX, double newY, double newZ);
-int gridInsertInToVolume(Grid *g, double newX, double newY, double newZ);
+int gridSplitEdgeIfNear(Grid *g, int n0, int n1, double *xyz);
+int gridSplitFaceAt(Grid *g, int face, double *xyz);
+int gridSplitCellAt(Grid *g, int cell, double *xyz);
+int gridInsertInToGeomEdge(Grid *g, double *xyz);
+int gridInsertInToGeomFace(Grid *g, double *xyz);
+int gridInsertInToVolume(Grid *g, double *xyz);
 
 Grid *gridCollapseEdgeToAnything(Grid *g, Queue *q, int n0, int n1);
 Grid *gridCollapseEdge(Grid *g, Queue *q, int n0, int n1,

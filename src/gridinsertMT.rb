@@ -81,9 +81,9 @@ class TestGridInsert < Test::Unit::TestCase
 
  def testSplitEdgeIfNear
   assert_not_nil grid = gemGrid
-  assert_equal( -1, grid.splitEdgeIfNear(0,1,0.1,0,0.1))
+  assert_equal( -1, grid.splitEdgeIfNear(0,1,[0.1,0,0.1]))
   assert_equal 6, grid.nnode
-  assert_equal grid.nnode, grid.splitEdgeIfNear(0,1,0.1,0,0.0001)
+  assert_equal grid.nnode, grid.splitEdgeIfNear(0,1,[0.1,0,0.0001])
   assert_equal 7, grid.nnode
   assert_equal 8, grid.ncell
  end
@@ -461,7 +461,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 4, grid.nnode
   assert_equal 1, grid.ncell
   assert_equal 1, grid.nface
-  assert_equal grid.nnode, grid.splitFaceAt(0,0.3,0.3,0.0)
+  assert_equal grid.nnode, grid.splitFaceAt(0,[0.3,0.3,0.0])
   assert_equal 5, grid.nnode
   assert_equal 3, grid.ncell
   assert_equal 3, grid.nface 
@@ -472,7 +472,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 4, grid.nnode
   assert_equal 1, grid.ncell
   assert_equal 1, grid.nface
-  assert_equal( -1, grid.splitFaceAt(0,1.0,1.0,0.0) )
+  assert_equal( -1, grid.splitFaceAt(0,[1.0,1.0,0.0]) )
   assert_equal 4, grid.nnode
   assert_equal 1, grid.ncell
   assert_equal 1, grid.nface 
@@ -483,8 +483,8 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 4, grid.nnode
   assert_equal 1, grid.ncell
   assert_equal 1, grid.nface
-  assert_equal( -1, grid.splitFaceAt(-1,1.0,1.0,0.0) )
-  assert_equal( -1, grid.splitFaceAt(1,1.0,1.0,0.0) )
+  assert_equal( -1, grid.splitFaceAt(-1,[1.0,1.0,0.0]) )
+  assert_equal( -1, grid.splitFaceAt(1,[1.0,1.0,0.0]) )
   assert_equal 4, grid.nnode
   assert_equal 1, grid.ncell
   assert_equal 1, grid.nface 
@@ -506,7 +506,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_not_nil grid = oneCellSplitGrid
   assert_equal 4, grid.nnode
   assert_equal 1, grid.ncell
-  assert_equal grid.nnode, grid.splitCellAt(0,0.3,0.3,0.3)
+  assert_equal grid.nnode, grid.splitCellAt(0,[0.3,0.3,0.3])
   assert_equal 5, grid.nnode
   assert_equal 4, grid.ncell
  end
@@ -515,7 +515,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_not_nil grid = oneCellSplitGrid
   assert_equal 4, grid.nnode
   assert_equal 1, grid.ncell
-  assert_equal(-1, grid.splitCellAt(0,1,1,1))
+  assert_equal(-1, grid.splitCellAt(0,[1,1,1]))
   assert_equal 4, grid.nnode
   assert_equal 1, grid.ncell
  end
@@ -529,10 +529,10 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addEdge(1,2,1,1,2)
   assert_equal [0,1,1], grid.edge(0)
   assert_equal 2, grid.nedge
-  assert_equal( -1, grid.insertInToGeomEdge(5,0,0) )
-  assert_equal( -1, grid.insertInToGeomEdge(0.5,0.1,0) )
+  assert_equal( -1, grid.insertInToGeomEdge([5,0,0]) )
+  assert_equal( -1, grid.insertInToGeomEdge([0.5,0.1,0]) )
   assert_equal 3, grid.nnode
-  assert_equal 3, grid.insertInToGeomEdge(0.5,0.0001,0)
+  assert_equal 3, grid.insertInToGeomEdge([0.5,0.0001,0])
   assert_equal 4, grid.nnode
   assert_nil            grid.edge(0)
   assert_equal [1,2,1], grid.edge(1)
@@ -550,7 +550,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 2, grid.addNode(2,0,0)
   grid.addEdge(0,1,1,0,1)
   grid.addEdge(1,2,1,1,2)
-  assert_equal 1, grid.insertInToGeomEdge(1.01,0,0)
+  assert_equal 1, grid.insertInToGeomEdge([1.01,0,0])
   assert_equal 3, grid.nnode
   assert_equal 2, grid.nedge
   assert_equal [1.01,0,0], grid.nodeXYZ(1)
@@ -567,11 +567,11 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addCell(0,1,2,4)
   grid.addFace(0,1,2,1)
   grid.addFace(0,3,2,1)
-  assert_equal( -1, grid.insertInToGeomFace(5,0,0) )
+  assert_equal( -1, grid.insertInToGeomFace([5,0,0]) )
   assert_equal 5, grid.nnode
-  assert_equal( -1, grid.insertInToGeomFace(0.3,0.3,0.1) )
+  assert_equal( -1, grid.insertInToGeomFace([0.3,0.3,0.1]) )
   assert_equal 5, grid.nnode
-  assert_equal 5, grid.insertInToGeomFace(0.3,0.3,0.00001)
+  assert_equal 5, grid.insertInToGeomFace([0.3,0.3,0.00001])
   assert_equal 6, grid.nnode
   assert_equal 4, grid.nface
   assert_equal 3, grid.ncell
@@ -589,9 +589,9 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addCell(1,3,2,4)
   grid.addFace(0,1,2,1)
   grid.addFace(1,3,2,1)
-  assert_equal( -1, grid.insertInToGeomFace(0.5,0.5,0.1) )
+  assert_equal( -1, grid.insertInToGeomFace([0.5,0.5,0.1]) )
   assert_equal 5, grid.nnode
-  assert_equal 5, grid.insertInToGeomFace(0.5,0.5,0.00001)
+  assert_equal 5, grid.insertInToGeomFace([0.5,0.5,0.00001])
   assert_equal 6, grid.nnode
   assert_equal 4, grid.nface
   assert_equal 4, grid.ncell
@@ -608,7 +608,7 @@ class TestGridInsert < Test::Unit::TestCase
   grid.addCell(1,3,2,4)
   grid.addFace(0,1,2,1)
   grid.addFace(1,3,2,1)
-  assert_equal 0, grid.insertInToGeomFace(0.01,0.01,0.0)
+  assert_equal 0, grid.insertInToGeomFace([0.01,0.01,0.0])
   assert_equal 5, grid.nnode
   assert_equal 2, grid.nface
   assert_equal 2, grid.ncell
@@ -617,13 +617,13 @@ class TestGridInsert < Test::Unit::TestCase
 
  def testInsertNodeInToVolumeMoveNode
   assert_not_nil     grid = oneCellSplitGrid
-  assert_equal(-1,   grid.insertInToVolume(1,1,1))
-  assert_equal(-1,   grid.insertInToVolume(0.5,0.5,-1))
-  assert_equal(-1,   grid.insertInToVolume(0.5,-1,0.5))
-  assert_equal(-1,   grid.insertInToVolume(-1,0.5,0.5))
+  assert_equal(-1,   grid.insertInToVolume([1,1,1]))
+  assert_equal(-1,   grid.insertInToVolume([0.5,0.5,-1]))
+  assert_equal(-1,   grid.insertInToVolume([0.5,-1,0.5]))
+  assert_equal(-1,   grid.insertInToVolume([-1,0.5,0.5]))
   assert_equal 4,    grid.nnode
   assert_equal 1,    grid.ncell
-  assert_equal 0,    grid.insertInToVolume(0.01,0.01,0.01)
+  assert_equal 0,    grid.insertInToVolume([0.01,0.01,0.01])
   assert_equal 4,    grid.nnode
   assert_equal 1,    grid.ncell
   assert_equal [0.01,0.01,0.01], grid.nodeXYZ(0)
@@ -631,14 +631,14 @@ class TestGridInsert < Test::Unit::TestCase
   
  def testInsertNodeInToVolumeSplitEdge
   assert_not_nil     grid = oneCellSplitGrid
-  assert_equal 4,    grid.insertInToVolume(0.5,0,0)
+  assert_equal 4,    grid.insertInToVolume([0.5,0,0])
   assert_equal 5,    grid.nnode
   assert_equal 2,    grid.ncell
  end
   
  def testInsertNodeInToVolumeSplitCell
   assert_not_nil     grid = oneCellSplitGrid
-  assert_equal 4,    grid.insertInToVolume(0.3,0.3,0.3)
+  assert_equal 4,    grid.insertInToVolume([0.3,0.3,0.3])
   assert_equal 5,    grid.nnode
   assert_equal 4,    grid.ncell
  end

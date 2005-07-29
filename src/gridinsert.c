@@ -621,7 +621,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     gridWriteTecplotCellGeom( grid, nodes, NULL, NULL);
   }
 
-  newnode = gridSplitCellAt(grid, enclosing_cell, xyz[0], xyz[1], xyz[2]);
+  newnode = gridSplitCellAt(grid, enclosing_cell, xyz );
   if ( newnode == EMPTY ) return EMPTY;
 
   gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
@@ -1018,16 +1018,13 @@ int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1,
   return newnode;
 }
 
-int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
-			double newX, double newY, double newZ)
+int gridSplitEdgeIfNear(Grid *grid, int n0, int n1, double *xyz)
 {
   int i;
   int newnode;
-  double oldXYZ[3], newXYZ[3], xyz0[3], xyz1[3];
+  double oldXYZ[3], xyz0[3], xyz1[3];
   double edgeXYZ[3], edgeLength, edgeDir[3];
   double newEdge[3], edgePosition, radius, radiusVector[3];
-
-  newXYZ[0] = newX;  newXYZ[1] = newY;  newXYZ[2] = newZ;
 
   gridNodeXYZ(grid, n0, xyz0);
   gridNodeXYZ(grid, n1, xyz1);
@@ -1036,7 +1033,7 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
 		      edgeXYZ[1]*edgeXYZ[1] +
 		      edgeXYZ[2]*edgeXYZ[2] );
   for (i=0;i<3;i++) edgeDir[i] = edgeXYZ[i]/edgeLength;
-  for (i=0;i<3;i++) newEdge[i] = newXYZ[i] - xyz0[i];
+  for (i=0;i<3;i++) newEdge[i] = xyz[i] - xyz0[i];
   edgePosition =  ( newEdge[0]*edgeDir[0] + 
 		    newEdge[1]*edgeDir[1] + 
 		    newEdge[2]*edgeDir[2] ) / edgeLength;
@@ -1050,7 +1047,7 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
        radius < 0.05*edgeLength) {
     newnode = n0;
     gridNodeXYZ(grid, newnode, oldXYZ );
-    gridSetNodeXYZ(grid, newnode, newXYZ );
+    gridSetNodeXYZ(grid, newnode, xyz );
     if ( gridNegCellAroundNode(grid, newnode ) ){
       gridSetNodeXYZ(grid, newnode, oldXYZ );
     }else{
@@ -1062,7 +1059,7 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
        radius < 0.05*edgeLength) {
     newnode = n1;
     gridNodeXYZ(grid, newnode, oldXYZ );
-    gridSetNodeXYZ(grid, newnode, newXYZ );
+    gridSetNodeXYZ(grid, newnode, xyz );
     if ( gridNegCellAroundNode(grid, newnode ) ){
       gridSetNodeXYZ(grid, newnode, oldXYZ );
     }else{
@@ -1079,8 +1076,7 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1,
   return EMPTY;
 }
 
-int gridSplitFaceAt(Grid *grid, int face,
-		    double newX, double newY, double newZ )
+int gridSplitFaceAt(Grid *grid, int face, double *xyz)
 {
   int newnode;
   int nodes[4], newnodes[4], faceId, cell;
@@ -1107,7 +1103,7 @@ int gridSplitFaceAt(Grid *grid, int face,
   avgU = (U[0] + U[1] + U[2]) / 3;
   avgV = (V[0] + V[1] + V[2]) / 3;
 
-  newnode = gridAddNode(grid, newX, newY, newZ );
+  newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
 
   if ( grid != gridRemoveCell(grid, cell ) ) return EMPTY;
@@ -1144,8 +1140,7 @@ int gridSplitFaceAt(Grid *grid, int face,
   }
 }
 
-int gridSplitCellAt(Grid *grid, int cell,
-		    double newX, double newY, double newZ )
+int gridSplitCellAt(Grid *grid, int cell, double *xyz)
 {
   int newnode;
   int nodes[4], newnodes[4];
@@ -1155,7 +1150,7 @@ int gridSplitCellAt(Grid *grid, int cell,
 
   //if (0.0>=gridVolume(grid, nodes ) ) return EMPTY;
 
-  newnode = gridAddNode(grid, newX, newY, newZ );
+  newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
 
   for (i=0;i<4;i++){
@@ -1179,7 +1174,7 @@ int gridSplitCellAt(Grid *grid, int cell,
   return newnode;
 }
 
-int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
+int gridInsertInToGeomEdge(Grid *grid, double *xyz )
 {
   int edge, maxedge, edgeId, nodes[2];
   int newnode;
@@ -1189,7 +1184,7 @@ int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
   maxedge = gridMaxEdge(grid);
   while ( EMPTY == newnode && edge < maxedge ) {
     if (grid == gridEdge(grid, edge, nodes, &edgeId) ){
-      newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],newX,newY,newZ);
+      newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],xyz);
     }
     edge++;
   }
@@ -1199,11 +1194,11 @@ int gridInsertInToGeomEdge(Grid *grid, double newX, double newY, double newZ)
   return newnode;
 }
 
-int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
+int gridInsertInToGeomFace(Grid *grid, double *xyz )
 {
   int foundFace;
   int face, maxface, faceId, nodes[3];
-  double newxyz[3], xyz0[3], xyz1[3], xyz2[3];
+  double xyz0[3], xyz1[3], xyz2[3];
   double edge0[3], edge1[3], edge2[3];
   double leg0[3], leg1[3], leg2[3];
   double norm[3], norm0[3], norm1[3], norm2[3];
@@ -1211,8 +1206,6 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
   int newnode;
 
   GridBool edgeSplit;
-
-  newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
 
   newnode = EMPTY;
   foundFace = EMPTY;
@@ -1223,15 +1216,15 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
     if (grid == gridFace(grid, face, nodes, &faceId) ){
       /* first try putting it on an edge */
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],xyz);
 	edgeSplit = (EMPTY != newnode);
       }
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[2],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[2],xyz);
 	edgeSplit = (EMPTY != newnode);
       }
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[2],nodes[0],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[2],nodes[0],xyz);
 	edgeSplit = (EMPTY != newnode);
       }
       if (!edgeSplit) {
@@ -1242,9 +1235,9 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 	gridSubtractVector(xyz1, xyz0, edge0);
 	gridSubtractVector(xyz2, xyz1, edge1);
 	gridSubtractVector(xyz0, xyz2, edge2);
-	gridSubtractVector(newxyz, xyz0, leg0);
-	gridSubtractVector(newxyz, xyz1, leg1);
-	gridSubtractVector(newxyz, xyz2, leg2);
+	gridSubtractVector(xyz, xyz0, leg0);
+	gridSubtractVector(xyz, xyz1, leg1);
+	gridSubtractVector(xyz, xyz2, leg2);
 	gridCrossProduct(edge0,edge1,norm);
 	gridCrossProduct(edge0,leg0,norm0);
 	gridCrossProduct(edge1,leg1,norm1);
@@ -1256,7 +1249,7 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
 	normDistance = gridDotProduct( unit, leg0 );
 	if (FALSE) {
 	  printf("f%d X%8.5f Y%8.5f Z%8.5f %6.3f 0 %6.3f 1 %6.3f 2 %6.3f\n",
-		 face, newX, newY, newZ, normDistance,
+		 face, xyz[0], xyz[1], xyz[2], normDistance,
 		 gridDotProduct( norm, norm0 ),
 		 gridDotProduct( norm, norm1 ),
 		 gridDotProduct( norm, norm2 ) );
@@ -1275,22 +1268,20 @@ int gridInsertInToGeomFace(Grid *grid, double newX, double newY, double newZ)
   if ( edgeSplit ) return newnode;
   if ( EMPTY == foundFace ) return EMPTY;
 
-  newnode = gridSplitFaceAt(grid, foundFace, newX, newY, newZ);
+  newnode = gridSplitFaceAt(grid, foundFace, xyz);
   if (EMPTY == newnode) return EMPTY;
 
   return newnode;
 }
 
-int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
+int gridInsertInToVolume(Grid *grid, double *xyz)
 {
   int cell, maxcell, nodes[4], foundCell, newnode;
   GridBool edgeSplit;
-  double newxyz[3], xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
   double edge0[3], edge1[3];
   double leg0[3], leg1[3];
   double norm0[3], norm1[3], norm2[3], norm3[3];
-
-  newxyz[0] = newX;  newxyz[1] = newY;  newxyz[2] = newZ;
 
   newnode = EMPTY;
   foundCell = EMPTY;
@@ -1301,22 +1292,22 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
     if (grid == gridCell(grid, cell, nodes) ){
       /* first try putting it on an edge */
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[1],xyz);
 	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[2],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[2],xyz);
 	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[3],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[0],nodes[3],xyz);
 	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[2],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[2],xyz);
 	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[3],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[1],nodes[3],xyz);
 	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit){
-	newnode = gridSplitEdgeIfNear(grid,nodes[2],nodes[3],newX,newY,newZ);
+	newnode = gridSplitEdgeIfNear(grid,nodes[2],nodes[3],xyz);
 	edgeSplit = (EMPTY != newnode);}
       if (!edgeSplit) {
 	/* then try putting it in the cell -or splitting faces?-*/
@@ -1341,12 +1332,12 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 	gridSubtractVector(xyz2, xyz0, edge1);
 	gridCrossProduct(edge0,edge1,norm3);
 
-	gridSubtractVector(newxyz, xyz0, leg0);
-	gridSubtractVector(newxyz, xyz1, leg1);
+	gridSubtractVector(xyz, xyz0, leg0);
+	gridSubtractVector(xyz, xyz1, leg1);
 
 	if (FALSE) {	
 	  printf("c%d X%8.5f Y%8.5f Z%8.5f 0 %6.3f 1 %6.3f 2 %6.3f 3 %6.3f\n",
-		 cell, newX, newY, newZ, 
+		 cell, xyz[0], xyz[1], xyz[2],
 		 gridDotProduct( leg1, norm0 ),
 		 gridDotProduct( leg0, norm1 ),
 		 gridDotProduct( leg0, norm2 ),
@@ -1373,7 +1364,7 @@ int gridInsertInToVolume(Grid *grid, double newX, double newY, double newZ)
 
   if (EMPTY == foundCell) return EMPTY;
 
-  return gridSplitCellAt(grid,foundCell,newX,newY,newZ);
+  return gridSplitCellAt(grid,foundCell,xyz);
 }
 
 Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, 
