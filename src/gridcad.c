@@ -380,6 +380,12 @@ Grid *gridRobustProject(Grid *grid)
   return grid;
 }
 
+Grid *gridCurveIntersectsFace(Grid *g, int *face_nodes, int parent,
+			      double *tuv0, double *tuv1, double *tuv)
+{
+  return NULL;
+}
+
 Grid *gridSmoothNearNode1(Grid *grid, int node )
 {
 #define SMOOTHDEG (500)

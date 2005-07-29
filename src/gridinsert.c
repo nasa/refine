@@ -584,10 +584,12 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
 Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
 				   double *tuv0, double *tuv1 )
 {
+  AdjIterator it;
   int cell;
   int cell_nodes[4];
   int face_nodes[3];
-  AdjIterator it;
+  double tuv[2];
+  int newnode;
 
   if (gridCellEdge( grid, n0, n1)) {
     printf("gridThreadCurveThroughVolume already have %d %d.\n",n0,n1);
@@ -607,14 +609,17 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
     printf("cell %d.\n",cell);
     gridFaceOppositeCellNode(grid, cell_nodes, n0, face_nodes);
 
-    /*
+
     if ( grid == gridCurveIntersectsFace(grid, face_nodes,
 					 parent, tuv0, tuv1, tuv) ) {
+      printf("intersect at %e %e.\n",tuv[0],tuv[1]);
+    /*
       newnode = gridInsertInToVolumeFace(grid, face_nodes
       return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
 					  tuv, tuv1 );
-    }
     */
+    }
+
     it = adjNext(it);
   }
 

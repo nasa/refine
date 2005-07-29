@@ -1,3 +1,9 @@
+2005-07-29 11:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridCurveIntersectsFace) started blank routine to
+	find the curve on the way out of the opposite face orbit of a
+	node.
+
 2005-07-29 10:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFaceOppositeCellNode) returns an right handed
