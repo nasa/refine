@@ -1,3 +1,9 @@
+2005-07-29 09:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridThreadCurveThroughVolume) started.
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) calls
+	gridThreadCurveThroughVolume.
+	
 2005-07-29 09:18 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeIfNear, gridSplitFaceAt, 

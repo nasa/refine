@@ -581,6 +581,36 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
   return EMPTY;
 }
 
+Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
+				   double *tuv0, double *tuv1 )
+{
+  int cell;
+  int nodes[4];
+  AdjIterator it;
+
+  if (gridCellEdge( grid, n0, n1)) {
+    printf("gridThreadCurveThroughVolume alread have %d %d.\n",n0,n1);
+    return grid;
+  }
+
+  if (parent>0){
+    printf("thread face curve %d %d.\n",n0,n1);
+  }else{
+    printf("thread edge curve %d %d.\n",n0,n1);
+  }
+
+  it = adjFirst(gridCellAdj(grid),n0);
+  while (adjValid(it)){
+    cell = adjItem(it);
+    gridCell(grid, cell, nodes);
+    printf("cell %d.\n",cell);
+
+    it = adjNext(it);
+  }
+
+  return NULL;
+}
+
 int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 				  int n0, int n1, double ratio )
 {
@@ -633,11 +663,13 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 
   printf("new node %d inserted into cell %d\n",newnode,enclosing_cell);
   
-  if (!gridCellEdge( grid, n0, newnode )) {
-    printf("do not have edge n0 newnode\n");
+  if (grid == gridThreadCurveThroughVolume(grid, parent, 
+					   newnode, n0, tuv, tuv0 )) {
+    printf("got newnode n0!\n");
   }
-  if (!gridCellEdge( grid, n1, newnode )) {
-    printf("do not have edge n1 newnode\n");
+  if (grid == gridThreadCurveThroughVolume(grid, parent, 
+					   newnode, n1, tuv, tuv1 )) {
+    printf("got newnode n0!\n");
   }
 
  return newnode;
