@@ -402,42 +402,59 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
   gridCrossProduct(edge0,edge1,norm);
   gridVectorNormalize(norm);
 
-  ratio = 0.5;
+
   tuv0[0] = tuv0_start[0]; tuv0[1] = tuv0_start[1]; 
   tuv1[0] = tuv1_start[0]; tuv1[1] = tuv1_start[1]; 
-  tuv[0] = tuv[1] = DBL_MAX;
   if (parent > 0) {
-    tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
-    tuv[1] = (1-ratio)*tuv0[1]+ratio*tuv1[1];
     gridEvaluateOnFace(grid, parent, tuv0, curve0 );
     gridEvaluateOnFace(grid, parent, tuv1, curve1 );
-    gridEvaluateOnFace(grid, parent, tuv, curve );
   }else{
-    tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
     gridEvaluateOnEdge(grid, -parent, tuv0[0], curve0 );
     gridEvaluateOnEdge(grid, -parent, tuv1[0], curve1 );
-    gridEvaluateOnEdge(grid, -parent, tuv[0], curve );
   }
+  gridSubtractVector(curve0, xyz0, dir0);
+  dot0 = gridDotProduct(dir0,norm);
+  gridSubtractVector(curve1, xyz0, dir1);
+  dot1 = gridDotProduct(dir1,norm);
 
+  tuv[0] = tuv[1] = DBL_MAX;
+  ratio = 0.5;
 
   keep_going = TRUE;
   while (keep_going) {
 
-    gridSubtractVector(curve0, xyz0, dir0);
-    dot0 = gridDotProduct(dir0,norm);
-    gridSubtractVector(curve1, xyz0, dir1);
-    dot1 = gridDotProduct(dir1,norm);
+    if (parent > 0) {
+      tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
+      tuv[1] = (1-ratio)*tuv0[1]+ratio*tuv1[1];
+      gridEvaluateOnFace(grid, parent, tuv, curve );
+    }else{
+      tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
+      gridEvaluateOnEdge(grid, -parent, tuv[0], curve );
+    }
     gridSubtractVector(curve, xyz0, dir);
     dot = gridDotProduct(dir,norm);
-
-    printf("dots%23.15e%23.15e%23.15e\n",dot0,dot,dot1);
+    
+    printf("ratio%11.8f dots%23.15e%23.15e%23.15e\n",ratio,dot0,dot,dot1);
 
     if ( dot0 < 0.0 || dot1 > 0.0 ) return NULL;
+    
+    if (dot < 0.0) {
+      dot1 = dot;
+      tuv1[0] = tuv[0]; tuv1[1] = tuv[1];
+    }else{
+      dot0 = dot;
+      tuv0[0] = tuv[0]; tuv0[1] = tuv[1];
+    }
 
+    if (ABS(dot) <=10.e-10 || ABS(dot1-dot0) <= 1.0e-10){
+      ratio = 0.5;
+      keep_going = FALSE;
+    }else{
+      ratio = dot0 / (dot0-dot1);
+    }
 
-    keep_going = FALSE;
   }
-
+  
   return NULL;
 }
 
