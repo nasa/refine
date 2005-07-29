@@ -55,9 +55,14 @@ think about geom edge collapse on a beth grid with no geom edges
 Make a matrix of collapse possilbities for node 0,1 on bound or not
 
 Add a new method to return whether a geometry face has an underlying
-geometric (CAD) definition.
+geometric (CAD) definition. (for beth cases)
 
-Clean up restarts and use a consisant interior face numbering.
+
+Clean up restarts and use same logic in FUN3D and stand alone.
+
+
+unitfy cell face arrays and method
+
 
 --Edge Based
 
