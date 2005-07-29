@@ -585,11 +585,12 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
 				   double *tuv0, double *tuv1 )
 {
   int cell;
-  int nodes[4];
+  int cell_nodes[4];
+  int face_nodes[3];
   AdjIterator it;
 
   if (gridCellEdge( grid, n0, n1)) {
-    printf("gridThreadCurveThroughVolume alread have %d %d.\n",n0,n1);
+    printf("gridThreadCurveThroughVolume already have %d %d.\n",n0,n1);
     return grid;
   }
 
@@ -602,9 +603,18 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
   it = adjFirst(gridCellAdj(grid),n0);
   while (adjValid(it)){
     cell = adjItem(it);
-    gridCell(grid, cell, nodes);
+    gridCell(grid, cell, cell_nodes);
     printf("cell %d.\n",cell);
+    gridFaceOppositeCellNode(grid, cell_nodes, n0, face_nodes);
 
+    /*
+    if ( grid == gridCurveIntersectsFace(grid, face_nodes,
+					 parent, tuv0, tuv1, tuv) ) {
+      newnode = gridInsertInToVolumeFace(grid, face_nodes
+      return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
+					  tuv, tuv1 );
+    }
+    */
     it = adjNext(it);
   }
 
