@@ -381,14 +381,17 @@ Grid *gridRobustProject(Grid *grid)
 }
 
 Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
-			      double *tuv0, double *tuv1, double *tuv)
+			      double *tuv0_start, double *tuv1_start,
+			      double *tuv)
 {
   double xyz0[3], xyz1[3], xyz2[3];
   double edge0[3], edge1[3];
   double norm[3];
-  double curve0[3], curve1[3];
-  double dir0[3], dir1[3];
-  double dot0, dot1;
+  double tuv0[2], tuv1[2], ratio;
+  GridBool keep_going;
+  double curve0[3], curve1[3], curve[3];
+  double dir0[3], dir1[3], dir[3];
+  double dot0, dot1, dot;
 
   if (grid != gridNodeXYZ(grid, face_nodes[0], xyz0) ) return NULL;
   if (grid != gridNodeXYZ(grid, face_nodes[1], xyz1) ) return NULL;
@@ -399,20 +402,41 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
   gridCrossProduct(edge0,edge1,norm);
   gridVectorNormalize(norm);
 
+  ratio = 0.5;
+  tuv0[0] = tuv0_start[0]; tuv0[1] = tuv0_start[1]; 
+  tuv1[0] = tuv1_start[0]; tuv1[1] = tuv1_start[1]; 
+  tuv[0] = tuv[1] = DBL_MAX;
   if (parent > 0) {
+    tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
+    tuv[1] = (1-ratio)*tuv0[1]+ratio*tuv1[1];
     gridEvaluateOnFace(grid, parent, tuv0, curve0 );
     gridEvaluateOnFace(grid, parent, tuv1, curve1 );
+    gridEvaluateOnFace(grid, parent, tuv, curve );
   }else{
+    tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
     gridEvaluateOnEdge(grid, -parent, tuv0[0], curve0 );
     gridEvaluateOnEdge(grid, -parent, tuv1[0], curve1 );
+    gridEvaluateOnEdge(grid, -parent, tuv[0], curve );
   }
 
-  gridSubtractVector(curve0, xyz0, dir0);
-  dot0 = gridDotProduct(dir0,norm);
-  gridSubtractVector(curve1, xyz0, dir1);
-  dot1 = gridDotProduct(dir1,norm);
 
-  printf("dots%23.15e%23.15e\n",dot0,dot1);
+  keep_going = TRUE;
+  while (keep_going) {
+
+    gridSubtractVector(curve0, xyz0, dir0);
+    dot0 = gridDotProduct(dir0,norm);
+    gridSubtractVector(curve1, xyz0, dir1);
+    dot1 = gridDotProduct(dir1,norm);
+    gridSubtractVector(curve, xyz0, dir);
+    dot = gridDotProduct(dir,norm);
+
+    printf("dots%23.15e%23.15e%23.15e\n",dot0,dot,dot1);
+
+    if ( dot0 < 0.0 || dot1 > 0.0 ) return NULL;
+
+
+    keep_going = FALSE;
+  }
 
   return NULL;
 }
