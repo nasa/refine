@@ -425,6 +425,16 @@ class TestGrid < Test::Unit::TestCase
   assert_equal false, grid.gemIsAllLocal
  end
 
+ def testFaceOppositeCellNode
+  cell = [0,1,2,3]
+  assert_equal nil, @grid.faceOppositeCellNode(cell,4)
+  
+  assert_equal [1, 3, 2],  @grid.faceOppositeCellNode(cell,0)
+  assert_equal [0, 2, 3],  @grid.faceOppositeCellNode(cell,1)
+  assert_equal [0, 3, 1],  @grid.faceOppositeCellNode(cell,2)
+  assert_equal [0, 1, 2],  @grid.faceOppositeCellNode(cell,3)
+ end
+
  def testOrient
   assert_equal nil, @grid.orient(0,1,2,3,4,5)
   

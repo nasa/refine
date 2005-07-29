@@ -1,3 +1,8 @@
+2005-07-29 10:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFaceOppositeCellNode) returns an right handed
+	face that pints at a given node of a cell.
+
 2005-07-29 09:41 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridThreadCurveThroughVolume) started.

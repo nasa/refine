@@ -740,6 +740,22 @@ VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
   return rb_equ;
 }
 
+VALUE grid_faceOppositeCellNode( VALUE self, VALUE rb_nodes, VALUE node )
+{
+  VALUE rb_face;
+  int i, nodes[4], face[3];
+  GET_GRID_FROM_SELF;
+
+  for (i=0;i<4;i++) nodes[i] =  NUM2DBL(rb_ary_entry(rb_nodes,i));
+
+  if ( NULL == gridFaceOppositeCellNode( grid, nodes, NUM2INT(node),
+					face ) ) return Qnil;
+
+  rb_face = rb_ary_new2(3);
+  for (i=0;i<3;i++) rb_ary_store( rb_face, i, INT2NUM(face[i]) );
+  return rb_face;
+}
+
 VALUE grid_orient( VALUE self, VALUE c0, VALUE c1 , VALUE c2, VALUE c3,
 		   VALUE n0, VALUE n1 )
 {
@@ -1266,6 +1282,9 @@ void Init_Grid()
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "gemIsAllLocal", grid_gemIsAllLocal, 0 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
+
+  rb_define_method( cGrid, "faceOppositeCellNode",
+		    grid_faceOppositeCellNode, 2 );
   rb_define_method( cGrid, "orient", grid_orient, 6 );
 
   rb_define_method( cGrid, "addNode", grid_addNode, 3 );

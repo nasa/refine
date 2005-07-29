@@ -3177,6 +3177,39 @@ GridBool gridNodeNearGhost(Grid *grid, int node )
   return FALSE;
 }
 
+Grid *gridFaceOppositeCellNode(Grid *grid, int *nodes, int node, int *face )
+{
+  if (nodes[0] == node) {
+    face[0] = nodes[1];
+    face[1] = nodes[3];
+    face[2] = nodes[2];
+    return grid;
+  }
+
+  if (nodes[1] == node) {
+    face[0] = nodes[0];
+    face[1] = nodes[2];
+    face[2] = nodes[3];
+    return grid;
+  }
+
+  if (nodes[2] == node) {
+    face[0] = nodes[0];
+    face[1] = nodes[3];
+    face[2] = nodes[1];
+    return grid;
+  }
+
+  if (nodes[3] == node) {
+    face[0] = nodes[0];
+    face[1] = nodes[1];
+    face[2] = nodes[2];
+    return grid;
+  }
+  
+  return NULL;
+}
+
 Grid *gridOrient(Grid *grid, int *c, int *n )
 {
 

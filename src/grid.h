@@ -370,6 +370,7 @@ Grid *gridRemoveGemAndQueue(Grid *g, Queue*);
 GridBool gridGemIsAllLocal(Grid *g);
 GridBool gridNodeNearGhost(Grid *g, int node );
 
+Grid *gridFaceOppositeCellNode(Grid *g, int *nodes, int node, int *face );
 Grid *gridOrient(Grid *g, int *cell, int *nodes );
 Grid *gridEquator(Grid *g, int n0, int n1 );
 int gridNEqu(Grid *g );
