@@ -19,6 +19,7 @@
 #include "FAKEGeom.h"
 #endif
 #include "plan.h"
+#include "gridmath.h"
 #include "gridmetric.h"
 #include "gridshape.h"
 #include "gridcad.h"
@@ -392,6 +393,7 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
   double curve0[3], curve1[3], curve[3];
   double dir0[3], dir1[3], dir[3];
   double dot0, dot1, dot;
+  double bary[3];
 
   if (grid != gridNodeXYZ(grid, face_nodes[0], xyz0) ) return NULL;
   if (grid != gridNodeXYZ(grid, face_nodes[1], xyz1) ) return NULL;
@@ -434,7 +436,7 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
     gridSubtractVector(curve, xyz0, dir);
     dot = gridDotProduct(dir,norm);
     
-    printf("ratio%11.8f dots%23.15e%23.15e%23.15e\n",ratio,dot0,dot,dot1);
+    //printf("ratio%11.8f dots%23.15e%23.15e%23.15e\n",ratio,dot0,dot,dot1);
 
     if ( dot0 < 0.0 || dot1 > 0.0 ) return NULL;
     
@@ -455,7 +457,15 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
 
   }
   
-  return NULL;
+  gridTriangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,curve,bary);
+
+  //printf("bary %23.15e%23.15e%23.15e\n",bary[0],bary[1],bary[2]);
+
+  if ( bary[0] < 0.0 || bary[1] < 0.0 || bary[2] < 0.0 ) {
+    return NULL;
+  }else{
+    return grid;
+  }
 }
 
 Grid *gridSmoothNearNode1(Grid *grid, int node )
