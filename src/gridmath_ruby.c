@@ -155,8 +155,8 @@ static VALUE grid_eigTriDiag( VALUE self, VALUE rb_d, VALUE rb_e )
   for (i=0;i<3;i++) d[i] = NUM2DBL(rb_ary_entry(rb_d,i));
   for (i=0;i<3;i++) e[i] = NUM2DBL(rb_ary_entry(rb_e,i));
   q0[0] = 1.0; q1[0] = 0.0; q2[0] = 0.0;
-  q0[0] = 0.0; q1[0] = 1.0; q2[0] = 0.0;
-  q0[0] = 0.0; q1[0] = 0.0; q2[0] = 1.0;
+  q0[1] = 0.0; q1[1] = 1.0; q2[1] = 0.0;
+  q0[2] = 0.0; q1[2] = 0.0; q2[2] = 1.0;
   if ( gridEigTriDiag3x3( d, e, q0, q1, q2 ) ) {
     rb_eig = rb_ary_new2(3);
     for(i=0;i<3;i++) rb_ary_store( rb_eig, i, rb_float_new(d[i]) );
