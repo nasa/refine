@@ -505,6 +505,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal grid.nnode, grid.splitFaceAt([1,2,3],[0.5,0.5,0.5])
   assert_equal 6, grid.nnode
   assert_equal 6, grid.ncell
+  assert_equal 6, grid.cellDegree(5)
   assert_equal 0, grid.nface 
  end
 
