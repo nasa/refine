@@ -318,3 +318,34 @@ void gridBackSolve3x3( double *lu, double *b )
   b[0] = (b[0] - lu[3]*b[1] - lu[6]*b[2])/lu[0];
 
 }
+
+void gridTriangularBarycentricCoordinate3D( double *xyz0, double *xyz1,
+					    double *xyz2, double *xyz, 
+					    double *bary )
+{
+  double u[3], v[3], w[3];
+  double uv, wv, wu;
+  double uu, vv;
+  double denom, s, t;
+
+  gridSubtractVector(xyz1,xyz0,u);
+  gridSubtractVector(xyz2,xyz0,v);
+  gridSubtractVector(xyz, xyz0,w);
+  
+  uv = gridDotProduct(u,v);
+  wv = gridDotProduct(w,v);
+  wu = gridDotProduct(w,u);
+
+  uu = gridDotProduct(u,u);
+  vv = gridDotProduct(v,v);
+
+  denom = uv*uv - uu*vv;
+
+  s = (uv*wv-vv*wu)/denom;
+  t = (uv*wu-uu*wv)/denom;
+
+  bary[0] = 1.0 - s - t;
+  bary[1] = s;
+  bary[2] = t;
+
+}

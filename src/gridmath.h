@@ -73,6 +73,9 @@ void gridBackSolve3x3( double *lu, double *b );
 (m)[1]*(m)[3]*(m)[8] - \
 (m)[2]*(m)[4]*(m)[6] ) 
 
+void gridTriangularBarycentricCoordinate3D( double *xyz0, double *xyz1,
+					    double *xyz2, double *xyz, 
+					    double *bary );
 END_C_DECLORATION
 
 #endif /* GRIDMATH_H */

@@ -458,4 +458,79 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta(-9.0, @gm.matrixDeterminate([-1,-2,-2, -4,-3,-4, -4,-4,-3 ]),
                   tol)
  end
+
+ def testFindBaryCornersForRightTriangle
+  tol = 1.0e-15
+  xyz0 = [0,0,0]
+  xyz1 = [1,0,0]
+  xyz2 = [0,1,0]
+
+  xyz = xyz0
+  bary = [1,0,0]
+  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  assert_in_delta(bary[0],ans[0],tol)
+  assert_in_delta(bary[1],ans[1],tol)
+  assert_in_delta(bary[2],ans[2],tol)
+
+  xyz = xyz1
+  bary = [0,1,0]
+  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  assert_in_delta(bary[0],ans[0],tol)
+  assert_in_delta(bary[1],ans[1],tol)
+  assert_in_delta(bary[2],ans[2],tol)
+
+  xyz = xyz2
+  bary = [0,0,1]
+  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  assert_in_delta(bary[0],ans[0],tol)
+  assert_in_delta(bary[1],ans[1],tol)
+  assert_in_delta(bary[2],ans[2],tol)
+ end
+
+ def testBaryInterpolateForRightTriangle
+  tol = 1.0e-15
+  xyz0 = [0,0,0]
+  xyz1 = [1,0,0]
+  xyz2 = [0,1,0]
+
+  xyz = [1.0/2.0,1.0/2.0,0]
+  bary = [0,1.0/2.0,1.0/2.0]
+  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz)
+  assert_in_delta(bary[0],ans[0],tol)
+  assert_in_delta(bary[1],ans[1],tol)
+  assert_in_delta(bary[2],ans[2],tol)
+
+  xyz = [1.0/3.0,1.0/3.0,0]
+  bary = [1.0/3.0,1.0/3.0,1.0/3.0]
+  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  assert_in_delta(bary[0],ans[0],tol)
+  assert_in_delta(bary[1],ans[1],tol)
+  assert_in_delta(bary[2],ans[2],tol)
+ end
+
+ def testBaryInterpolateOutsideRightTriangle
+  tol = 1.0e-15
+  xyz0 = [0,0,0]
+  xyz1 = [1,0,0]
+  xyz2 = [0,1,0]
+
+  xyz = [1.0,1.0,0.0]
+  bary = [-1.0,1.0,1.0]
+  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  assert_in_delta(bary[0],ans[0],tol)
+  assert_in_delta(bary[1],ans[1],tol)
+  assert_in_delta(bary[2],ans[2],tol)
+
+  xyz0 = [0,0,0]
+  xyz1 = [1,0,0]
+  xyz2 = [1,1,0]
+
+  xyz = [0.0,1.0,0.0]
+  bary = [1.0,-1.0,1.0]
+  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  assert_in_delta(bary[0],ans[0],tol)
+  assert_in_delta(bary[1],ans[1],tol)
+  assert_in_delta(bary[2],ans[2],tol)
+ end
+
 end
