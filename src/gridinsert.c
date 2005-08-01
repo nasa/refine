@@ -1127,13 +1127,15 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1, double *xyz)
   return EMPTY;
 }
 
-int gridSplitFaceAt(Grid *grid, int face, double *xyz)
+int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
 {
   int newnode;
-  int nodes[4], newnodes[4], faceId, cell;
+  int nodes[4], newnodes[4], face, faceId, cell;
   double U[3], V[3], avgU, avgV, newU[3], newV[3];
   int n, i;
 
+  face = gridFindFace(grid, face_nodes[0], face_nodes[1], face_nodes[2] );
+  if ( EMPTY == face ) return EMPTY;  
   cell = gridFindCellWithFace(grid, face );
   if ( EMPTY == cell ) return EMPTY;
   
@@ -1319,7 +1321,7 @@ int gridInsertInToGeomFace(Grid *grid, double *xyz )
   if ( edgeSplit ) return newnode;
   if ( EMPTY == foundFace ) return EMPTY;
 
-  newnode = gridSplitFaceAt(grid, foundFace, xyz);
+  newnode = gridSplitFaceAt(grid, nodes, xyz);
   if (EMPTY == newnode) return EMPTY;
 
   return newnode;

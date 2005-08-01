@@ -1,3 +1,9 @@
+2005-08-01 16:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitFaceAt) takes the three nodes of a
+	triangle instead of the boundary face index to allow for extension
+	to interior volume faces.
+
 2005-08-01 14:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmath.c (gridTriangularBarycentricCoordinate3D) finds the

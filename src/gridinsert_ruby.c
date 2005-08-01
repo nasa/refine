@@ -33,13 +33,15 @@ VALUE grid_splitEdgeIfNear( VALUE self, VALUE n0, VALUE n1, VALUE rb_xyz )
   return INT2NUM(gridSplitEdgeIfNear( grid, NUM2INT(n0),  NUM2INT(n1), xyz ));
 }
 
-VALUE grid_splitFaceAt( VALUE self, VALUE face, VALUE rb_xyz )
+VALUE grid_splitFaceAt( VALUE self, VALUE rb_face_nodes, VALUE rb_xyz )
 {
   int i;
+  int face_nodes[3];
   double xyz[3];
   GET_GRID_FROM_SELF;
-  for (i=0;i<3;i++) xyz[i] =  NUM2DBL(rb_ary_entry(rb_xyz,i));
-  return INT2NUM(gridSplitFaceAt( grid, NUM2INT(face), xyz ));
+  for (i=0;i<3;i++) face_nodes[i] = NUM2INT(rb_ary_entry(rb_face_nodes,i));
+  for (i=0;i<3;i++) xyz[i]        = NUM2DBL(rb_ary_entry(rb_xyz,i));
+  return INT2NUM(gridSplitFaceAt( grid, face_nodes, xyz ));
 }
 
 VALUE grid_splitCellAt( VALUE self, VALUE cell, VALUE rb_xyz )

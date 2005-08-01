@@ -33,7 +33,7 @@ int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
 int gridSplitEdgeRepeat(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );
 int gridSplitEdgeForce(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );
 int gridSplitEdgeIfNear(Grid *g, int n0, int n1, double *xyz);
-int gridSplitFaceAt(Grid *g, int face, double *xyz);
+int gridSplitFaceAt(Grid *g, int *face_nodes, double *xyz);
 int gridSplitCellAt(Grid *g, int cell, double *xyz);
 int gridInsertInToGeomEdge(Grid *g, double *xyz);
 int gridInsertInToGeomFace(Grid *g, double *xyz);
