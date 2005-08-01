@@ -488,6 +488,26 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 1, grid.nface 
  end
 
+ def faceGrid2
+  grid = Grid.new(6,6,0,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addNode(1,1,1)
+  grid.addCell(0,1,2,3)
+  grid.addCell(1,2,3,4)
+  grid
+ end
+ 
+ def testSplitVolumeFaceAt
+  assert_not_nil grid = faceGrid2
+  assert_equal grid.nnode, grid.splitFaceAt([1,2,3],[0.5,0.5,0.5])
+  assert_equal 6, grid.nnode
+  assert_equal 6, grid.ncell
+  assert_equal 0, grid.nface 
+ end
+
  def oneCellSplitGrid
   grid = Grid.new(5,4,4,0)
   grid.addNode(0,0,0)

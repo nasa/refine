@@ -1130,36 +1130,49 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1, double *xyz)
 int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
 {
   int newnode;
-  int nodes[4], newnodes[4], face, faceId, cell;
-  double U[3], V[3], avgU, avgV, newU[3], newV[3];
+  int nodes[4], newnodes[4], face, faceId, cell0, cell1;
+  double xyz0[3], xyz1[3], xyz2[3], bary[3];
+  double U[3], V[3], baryU, baryV, newU[3], newV[3];
   int n, i;
 
+  cell0=gridFindOtherCellWith3Nodes(grid,
+				    face_nodes[0],face_nodes[1],face_nodes[2],
+				    EMPTY );
+  if (EMPTY==cell0) return EMPTY;
+
+  cell1=gridFindOtherCellWith3Nodes(grid,
+				    face_nodes[0],face_nodes[1],face_nodes[2],
+				    cell0 );
+
   face = gridFindFace(grid, face_nodes[0], face_nodes[1], face_nodes[2] );
-  if ( EMPTY == face ) return EMPTY;  
-  cell = gridFindCellWithFace(grid, face );
-  if ( EMPTY == cell ) return EMPTY;
+
+  if ( EMPTY == cell1 && EMPTY == face ) return EMPTY;
   
   /* set up nodes so that nodes[0]-nodes[2] is face 
      and nodes[0]-nodes[3] is the cell */
 
-  if (grid != gridCell(grid, cell, nodes) ) return EMPTY;
+  if (grid != gridCell(grid, cell0, nodes) ) return EMPTY;
   nodes[3] = nodes[0] + nodes[1] + nodes[2] + nodes[3];
   if (grid != gridFace(grid, face, nodes, &faceId ) ) return EMPTY;
-  nodes[3] = nodes[3] -  nodes[0] - nodes[1] - nodes[2];
+  nodes[3] = nodes[3] - nodes[0] - nodes[1] - nodes[2];
 
   //if (0.0>=gridVolume(grid, nodes ) ) return EMPTY;
 
+  gridNodeXYZ(grid, face_nodes[0], xyz0);
+  gridNodeXYZ(grid, face_nodes[1], xyz1);
+  gridNodeXYZ(grid, face_nodes[2], xyz2);
+  gridTriangularBarycentricCoordinate3D( xyz0, xyz1, xyz2, xyz, bary );
   for (i=0;i<3;i++) {
     U[i] = gridNodeU(grid, nodes[i], faceId);
     V[i] = gridNodeV(grid, nodes[i], faceId);
   }
-  avgU = (U[0] + U[1] + U[2]) / 3;
-  avgV = (V[0] + V[1] + V[2]) / 3;
+  baryU = gridDotProduct(bary,U);
+  baryV = gridDotProduct(bary,V);
 
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
 
-  if ( grid != gridRemoveCell(grid, cell ) ) return EMPTY;
+  if ( grid != gridRemoveCell(grid, cell0 ) ) return EMPTY;
   if ( grid != gridRemoveFace(grid, face ) ) return EMPTY;
 
   for (i=0;i<3;i++){
@@ -1167,8 +1180,8 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
     newnodes[i] = newnode; 
     for (n=0;n<3;n++) newU[n] = U[n];
     for (n=0;n<3;n++) newV[n] = V[n];
-    newU[i] = avgU;
-    newV[i] = avgV;
+    newU[i] = baryU;
+    newV[i] = baryV;
     if (EMPTY == gridAddFaceUV(grid, 
 			       newnodes[0], newU[0], newV[0], 
 			       newnodes[1], newU[1], newV[1],  
