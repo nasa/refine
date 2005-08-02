@@ -589,7 +589,11 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
   int cell_nodes[4];
   int face_nodes[3];
   double tuv[2], xyz[3], bary[3];
+  double origxyz[3];
   int newnode;
+  int node_index;
+
+  if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return NULL; 
 
   if (gridCellEdge( grid, n0, n1)) {
     printf("gridThreadCurveThroughVolume already have %d %d.\n",n0,n1);
@@ -616,11 +620,41 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
       printf("intersect at tuv %f %f.\n",tuv[0],tuv[1]);
       printf("intersect at xyz %f %f %f.\n",xyz[0],xyz[1],xyz[2]);
 
-      newnode = gridSplitFaceAt(grid, face_nodes, xyz);
-      printf("insert node %d into opposite face.\n",newnode);
-      return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
-					  tuv, tuv1 );
-
+      newnode = EMPTY;
+      for (node_index=0;EMPTY==newnode && node_index<3;node_index++) {
+	if (EMPTY == newnode && bary[node_index] > 0.95) {
+	  double minAR;
+	  gridNodeXYZ(grid, face_nodes[node_index], origxyz);
+	  gridSetNodeXYZ(grid, face_nodes[node_index], xyz);
+	  gridNodeAR(grid, face_nodes[node_index], &minAR );
+	  if (minAR < gridMinInsertCost(grid) ) {
+	  gridSetNodeXYZ(grid, face_nodes[node_index], origxyz);
+	  } else {
+	    newnode = face_nodes[node_index];
+	    printf("move node %d of opposite face.\n",newnode);
+	    return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
+						tuv, tuv1 );
+	  }
+	}
+	if (EMPTY == newnode && bary[node_index] < 0.05) {
+	  int edge0, edge1;
+	  edge0 = node_index + 1; if (edge0>2) edge0 -= 3;
+	  edge1 = node_index + 2; if (edge1>2) edge1 -= 3;
+	  newnode = gridSplitEdgeRatio(grid, NULL,
+				       face_nodes[edge0], face_nodes[edge1],
+				       bary[edge1]);
+	  if (EMPTY != newnode) {
+	    printf("split edge %d of opposite face.\n",newnode);
+	    return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
+						tuv, tuv1 );
+	  }
+	}
+      }
+      if (EMPTY != newnode) {
+	newnode = gridSplitFaceAt(grid, face_nodes, xyz);
+	return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
+					    tuv, tuv1 );
+      }
     }
 
     it = adjNext(it);
@@ -687,7 +721,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   }
   if (grid == gridThreadCurveThroughVolume(grid, parent, 
 					   newnode, n1, tuv, tuv1 )) {
-    printf("got newnode n0!\n");
+    printf("got newnode n1!\n");
   }
 
  return newnode;

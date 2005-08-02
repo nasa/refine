@@ -1,3 +1,8 @@
+2005-08-02 14:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridThreadCurveThroughVolume) tries to move,
+	split edge, split face to get the node in.
+
 2005-08-02 13:53 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridCurveIntersectsFace) also returns the 
