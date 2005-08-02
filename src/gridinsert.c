@@ -588,7 +588,7 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
   int cell;
   int cell_nodes[4];
   int face_nodes[3];
-  double tuv[2], xyz[3];
+  double tuv[2], xyz[3], bary[3];
   int newnode;
 
   if (gridCellEdge( grid, n0, n1)) {
@@ -611,7 +611,8 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
     printf("cell %d.\n",cell);
 
     if ( grid == gridCurveIntersectsFace(grid, face_nodes,
-					 parent, tuv0, tuv1, tuv, xyz ) ) {
+					 parent, tuv0, tuv1,
+					 tuv, xyz, bary ) ) {
       printf("intersect at tuv %f %f.\n",tuv[0],tuv[1]);
       printf("intersect at xyz %f %f %f.\n",xyz[0],xyz[1],xyz[2]);
 

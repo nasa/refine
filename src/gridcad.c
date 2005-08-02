@@ -383,7 +383,7 @@ Grid *gridRobustProject(Grid *grid)
 
 Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
 			      double *tuv0_start, double *tuv1_start,
-			      double *tuv, double *curve)
+			      double *tuv, double *curve, double *bary )
 {
   double xyz0[3], xyz1[3], xyz2[3];
   double edge0[3], edge1[3];
@@ -393,7 +393,6 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
   double curve0[3], curve1[3];
   double dir0[3], dir1[3], dir[3];
   double dot0, dot1, dot;
-  double bary[3];
 
   if (grid != gridNodeXYZ(grid, face_nodes[0], xyz0) ) return NULL;
   if (grid != gridNodeXYZ(grid, face_nodes[1], xyz1) ) return NULL;
