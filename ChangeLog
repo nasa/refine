@@ -1,3 +1,8 @@
+2005-08-02 11:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridCurveIntersectsFace) also returns the xyz of
+	the intersection point.
+
 2005-08-02 11:19 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridSplitFaceAt) exended to allow an interior volume

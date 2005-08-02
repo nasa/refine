@@ -49,7 +49,8 @@ Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);
 
 Grid *gridCurveIntersectsFace(Grid *g, int *face_nodes, int parent,
-			      double *tuv0, double *tuv1, double *tuv);
+			      double *tuv0, double *tuv1,
+			      double *tuv, double *xyz);
 
 /* the {optimzation,lapacian}Limits will be set to a default if < 0.0 */ 
 Grid *gridSmooth(Grid *g, double optimizationLimit, double laplacianLimit );

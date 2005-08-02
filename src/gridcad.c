@@ -383,14 +383,14 @@ Grid *gridRobustProject(Grid *grid)
 
 Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
 			      double *tuv0_start, double *tuv1_start,
-			      double *tuv)
+			      double *tuv, double *curve)
 {
   double xyz0[3], xyz1[3], xyz2[3];
   double edge0[3], edge1[3];
   double norm[3];
   double tuv0[2], tuv1[2], ratio;
   GridBool keep_going;
-  double curve0[3], curve1[3], curve[3];
+  double curve0[3], curve1[3];
   double dir0[3], dir1[3], dir[3];
   double dot0, dot1, dot;
   double bary[3];
