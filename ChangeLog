@@ -1,3 +1,8 @@
+2005-08-02 11:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSplitFaceAt) exended to allow an interior volume
+	face to be split as well as a boundary face.
+
 2005-08-02 09:04 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindOtherCellWith3Nodes) added extra test to

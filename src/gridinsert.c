@@ -1130,7 +1130,8 @@ int gridSplitEdgeIfNear(Grid *grid, int n0, int n1, double *xyz)
 int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
 {
   int newnode;
-  int nodes[4], newnodes[4], face, faceId, cell0, cell1;
+  int face, faceId, cell0, cell1;
+  int nodes[4], nodes0[4], nodes1[4], newnodes[4], nodetemp;
   double xyz0[3], xyz1[3], xyz2[3], bary[3];
   double U[3], V[3], baryU, baryV, newU[3], newV[3];
   int n, i;
@@ -1145,61 +1146,96 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
 				    cell0 );
 
   face = gridFindFace(grid, face_nodes[0], face_nodes[1], face_nodes[2] );
-
   if ( EMPTY == cell1 && EMPTY == face ) return EMPTY;
-  
+  faceId = EMPTY;
+  gridFace(grid, face, nodes, &faceId); // only need to set faceId
+
   /* set up nodes so that nodes[0]-nodes[2] is face 
-     and nodes[0]-nodes[3] is the cell */
+     and nodes[0]-nodes[3] is the cell
+     for the case of nodes0 or nodes0 and nodes1 */
 
   if (grid != gridCell(grid, cell0, nodes) ) return EMPTY;
-  nodes[3] = nodes[0] + nodes[1] + nodes[2] + nodes[3];
-  if (grid != gridFace(grid, face, nodes, &faceId ) ) return EMPTY;
-  nodes[3] = nodes[3] - nodes[0] - nodes[1] - nodes[2];
-
-  //if (0.0>=gridVolume(grid, nodes ) ) return EMPTY;
-
-  gridNodeXYZ(grid, face_nodes[0], xyz0);
-  gridNodeXYZ(grid, face_nodes[1], xyz1);
-  gridNodeXYZ(grid, face_nodes[2], xyz2);
-  gridTriangularBarycentricCoordinate3D( xyz0, xyz1, xyz2, xyz, bary );
-  for (i=0;i<3;i++) {
-    U[i] = gridNodeU(grid, nodes[i], faceId);
-    V[i] = gridNodeV(grid, nodes[i], faceId);
+  nodes0[0] = face_nodes[0]; nodes0[1] = face_nodes[1];
+  if (grid != gridOrient(grid, nodes, nodes0 ) ) return EMPTY;
+  if ( nodes0[2] != face_nodes[2] ) {
+    nodetemp = nodes0[2];
+    nodes0[2] = nodes0[3];
+    nodes0[3] = nodetemp;
+    nodetemp = nodes0[0];
+    nodes0[0] = nodes0[1];
+    nodes0[1] = nodetemp;
   }
-  baryU = gridDotProduct(bary,U);
-  baryV = gridDotProduct(bary,V);
 
+  if (grid == gridCell(grid, cell1, nodes) ) {
+    nodes1[0] = face_nodes[0]; nodes1[1] = face_nodes[1];
+    if (grid != gridOrient(grid, nodes, nodes1 ) ) return EMPTY;
+    if ( nodes1[2] != face_nodes[2] ) {
+      nodetemp = nodes1[2];
+      nodes1[2] = nodes1[3];
+      nodes1[3] = nodetemp;
+      nodetemp = nodes1[0];
+      nodes1[0] = nodes1[1];
+      nodes1[1] = nodetemp;
+    }
+  }
+
+  // if (0.0>=gridVolume(grid, nodes? ) ) return EMPTY;
+  
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
 
-  if ( grid != gridRemoveCell(grid, cell0 ) ) return EMPTY;
-  if ( grid != gridRemoveFace(grid, face ) ) return EMPTY;
+  if ( EMPTY != face ) {
+    gridNodeXYZ(grid, face_nodes[0], xyz0);
+    gridNodeXYZ(grid, face_nodes[1], xyz1);
+    gridNodeXYZ(grid, face_nodes[2], xyz2);
+    gridTriangularBarycentricCoordinate3D( xyz0, xyz1, xyz2, xyz, bary );
+    for (i=0;i<3;i++) {
+      U[i] = gridNodeU(grid, nodes0[i], faceId);
+      V[i] = gridNodeV(grid, nodes0[i], faceId);
+    }
+    baryU = gridDotProduct(bary,U);
+    baryV = gridDotProduct(bary,V);
 
-  for (i=0;i<3;i++){
-    for (n=0;n<4;n++) newnodes[n] = nodes[n];
-    newnodes[i] = newnode; 
-    for (n=0;n<3;n++) newU[n] = U[n];
-    for (n=0;n<3;n++) newV[n] = V[n];
-    newU[i] = baryU;
-    newV[i] = baryV;
-    if (EMPTY == gridAddFaceUV(grid, 
-			       newnodes[0], newU[0], newV[0], 
-			       newnodes[1], newU[1], newV[1],  
-			       newnodes[2], newU[2], newV[2],  
-			       faceId ) ) return EMPTY;
+    if ( grid != gridRemoveFace(grid, face ) ) return EMPTY;
+
+    for (i=0;i<3;i++){
+      for (n=0;n<4;n++) newnodes[n] = nodes0[n];
+      newnodes[i] = newnode; 
+      for (n=0;n<3;n++) newU[n] = U[n];
+      for (n=0;n<3;n++) newV[n] = V[n];
+      newU[i] = baryU;
+      newV[i] = baryV;
+      if (EMPTY == gridAddFaceUV(grid, 
+				 newnodes[0], newU[0], newV[0], 
+				 newnodes[1], newU[1], newV[1],  
+				 newnodes[2], newU[2], newV[2],  
+				 faceId ) ) return EMPTY;
+    }
+
+    if (grid!=gridProjectNodeToFace(grid, newnode, faceId )) return EMPTY;
+
   }
 
-  if (grid!=gridProjectNodeToFace(grid, newnode, faceId )) return EMPTY;
-
+  if ( grid != gridRemoveCell(grid, cell0 ) ) return EMPTY;
   for (i=0;i<3;i++){
-    for (n=0;n<4;n++) newnodes[n] = nodes[n];
+    for (n=0;n<4;n++) newnodes[n] = nodes0[n];
     newnodes[i] = newnode; 
     if (EMPTY == gridAddCell(grid, newnodes[0], newnodes[1], 
-			           newnodes[2], newnodes[3] ) ) return EMPTY;
+			     newnodes[2], newnodes[3] ) ) return EMPTY;
+  }
+
+  if ( EMPTY != cell1 ) {
+    if ( grid != gridRemoveCell(grid, cell1 ) ) return EMPTY;
+    for (i=0;i<3;i++){
+      for (n=0;n<4;n++) newnodes[n] = nodes0[n];
+      newnodes[i] = newnode; 
+      if (EMPTY == gridAddCell(grid, newnodes[0], newnodes[1], 
+			       newnodes[2], newnodes[3] ) ) return EMPTY;
+    }
   }
 
   if ( gridNegCellAroundNode(grid, newnode) ) {
-    gridCollapseEdge(grid, NULL, nodes[0], newnode, 0.0 );
+    gridCollapseEdge(grid, NULL, nodes0[0], newnode, 0.0 );
     return EMPTY;
   }else{
     return newnode;
