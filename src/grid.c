@@ -2053,6 +2053,8 @@ int gridFindOtherCellWith3Nodes(Grid *grid, int n0, int n1, int n2,
   AdjIterator it;
   int cell, nodes[4];
 
+  if (n0==n1 || n0==n2 || n1==n2 ) return EMPTY;
+
   for ( it = adjFirst(grid->cellAdj,n0); adjValid(it); it = adjNext(it) ) {
     cell = adjItem(it);
     if (cell != currentCell) {

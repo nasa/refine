@@ -1,3 +1,8 @@
+2005-08-02 09:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindOtherCellWith3Nodes) added extra test to
+	ensure that the face nodes are not repeated.
+
 2005-08-01 16:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitFaceAt) takes the three nodes of a

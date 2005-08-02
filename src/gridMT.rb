@@ -385,6 +385,7 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell(0,1,2,4)
   assert_equal( 1,   grid.findOtherCellWith3Nodes(0,1,2,0) )
   assert_equal( 0,   grid.findOtherCellWith3Nodes(0,1,2,1) )
+  assert_equal(-1,   grid.findOtherCellWith3Nodes(0,1,1,0) )
  end
 
  def testFindOtherCellWithThreeNodesOutOfRangeInputs
