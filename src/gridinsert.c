@@ -669,6 +669,7 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
 int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 				  int n0, int n1, double ratio )
 {
+  int gap0, gap1, face0, face1;
   int parent;
   double xyz[3];
   double tuv0[2], tuv1[2], newtuv[2];
@@ -679,6 +680,23 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   int curve[MAXDEG];
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
+  if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
+
+  gap0 = gridEqu(grid,0);
+  gap1 = gridEqu(grid,gridNGem(grid));
+  if ( gridContinuousEquator(grid) ) {
+    printf("%s: %d: gridReconstructSplitEdgeRatio has ContinuousEquator?\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }else{
+    face0 = gridFindFace(grid, n0, n1, gap0 );
+    face1 = gridFindFace(grid, n0, n1, gap1 );
+    if ( face0 == EMPTY || face1 == EMPTY ) {
+    printf("%s: %d: gridReconstructSplitEdgeRatio has empty face %d %d\n",
+	   __FILE__,__LINE__,face0,face1);
+      return EMPTY;
+    }
+  }
 
   parent = gridParentGeometry(grid, n0, n1);
   if (parent == 0) return EMPTY;
@@ -762,6 +780,12 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   for (node=0;node<(nnode-1);node++) {
     gridWriteTecplotEquator(grid, curve[node], curve[node+1],
 			    "edge_split_equator.t");
+    printf("face%10d%10d%10d exists? %d\n",
+	   curve[node], curve[node+1], gap0,
+	   gridCellFace(grid, curve[node], curve[node+1], gap0));
+    printf("face%10d%10d%10d exists? %d\n",
+	   curve[node], curve[node+1], gap1,
+	   gridCellFace(grid, curve[node], curve[node+1], gap1));
   }
   return newnode;
 }
