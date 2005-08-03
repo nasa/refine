@@ -792,8 +792,6 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   newnode = gridSplitCellAt(grid, enclosing_cell, xyz );
   if ( newnode == EMPTY ) return EMPTY;
 
-  printf("note that average map needs to happen to every insertion op\n");
-
   printf("new node %d inserted into cell %d\n",newnode,enclosing_cell);
   
   nnode=1;
@@ -1378,6 +1376,11 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
 
+  gridSetMapMatrixToAverageOfNodes3(grid, newnode, 
+				    face_nodes[0],face_nodes[1],face_nodes[2] );
+  gridSetAuxToAverageOfNodes3(grid, newnode,
+			      face_nodes[0], face_nodes[1], face_nodes[2] );
+
   if ( EMPTY != face ) {
     gridNodeXYZ(grid, face_nodes[0], xyz0);
     gridNodeXYZ(grid, face_nodes[1], xyz1);
@@ -1448,6 +1451,11 @@ int gridSplitCellAt(Grid *grid, int cell, double *xyz)
 
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
+
+  gridSetMapMatrixToAverageOfNodes4(grid, newnode, 
+				    nodes[0], nodes[1], nodes[2], nodes[3] );
+  gridSetAuxToAverageOfNodes4(grid, newnode,
+			      nodes[0], nodes[1], nodes[2], nodes[3]);
 
   for (i=0;i<4;i++){
     for (n=0;n<4;n++) newnodes[n] = nodes[n];
