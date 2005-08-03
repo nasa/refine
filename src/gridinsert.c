@@ -399,22 +399,23 @@ Grid *gridAdaptLongShortLinear(Grid *grid, double minLength, double maxLength,
 	    nnodeAdd++;
 	    gridSwapNearNode( grid, newnode, 1.0 );
 	  } else {
-	    if (debug_split) {
+	    newnode = gridReconstructSplitEdgeRatio( grid, NULL,
+						     nodes[0], nodes[1],
+						     ratio );
+	    if (newnode != EMPTY) {
+	      nnodeAdd++;
+	      gridSwapNearNode( grid, newnode, 1.0 );
+	    }else{
 	      printf("Edge%10d%10d will not split face%2d%2d err%6.2f\n",
 		     nodes[0],nodes[1],
 		     gridGeometryFace(grid,nodes[0]),
 		     gridGeometryFace(grid,nodes[1]),
 		     length);
-	      {
-		int igem;
-		gridWriteTecplotEquator(grid, nodes[0], nodes[1],
-					"edge_split_equator.t");
-		
-		newnode = gridReconstructSplitEdgeRatio( grid, NULL,
-							 nodes[0], nodes[1],
-							 ratio );
-		return NULL;
-	      }
+
+	      gridWriteTecplotEquator(grid, nodes[0], nodes[1],
+				      "edge_split_equator.t");
+	      
+	      return NULL;
 	    }
 	  }
 	}
