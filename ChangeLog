@@ -1,3 +1,10 @@
+2005-08-03 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitFaceAt,gridSplitCellAt) added
+	gridSetAuxToAverageOfNodes3,gridSetAuxToAverageOfNodes4,
+	gridSetMapMatrixToAverageOfNodes3,gridSetMapMatrixToAverageOfNodes4
+	calls to have reasonable map value durring adaptation.
+
 2005-08-03 16:06 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridSetAuxToAverageOfNodes2,gridSetAuxToAverageOfNodes3,
