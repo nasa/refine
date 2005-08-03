@@ -1,3 +1,11 @@
+2005-08-03 10:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridThreadCurveThroughVolume) returns the next
+	node along the curve, which is n1 if edge n0 n1 exists or newly
+	inserted node that pierces the next opposite face.	
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) collects a list
+	of nodes and tuvs along the curve.
+
 2005-08-02 14:57 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridThreadCurveThroughVolume) tries to move,

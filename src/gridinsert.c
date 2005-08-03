@@ -581,22 +581,26 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
   return EMPTY;
 }
 
-Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
-				   double *tuv0, double *tuv1 )
+Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, 
+				   int n0, double *tuv0,
+				   int n1, double *tuv1,
+				   int *nextnode, double *nexttuv )
 {
   AdjIterator it;
   int cell;
   int cell_nodes[4];
   int face_nodes[3];
-  double tuv[2], xyz[3], bary[3];
+  double xyz[3], bary[3];
   double origxyz[3];
-  int newnode;
   int node_index;
+
+  (*nextnode) = EMPTY; nexttuv[0] = DBL_MAX; nexttuv[1] = DBL_MAX;
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return NULL; 
 
   if (gridCellEdge( grid, n0, n1)) {
     printf("gridThreadCurveThroughVolume already have %d %d.\n",n0,n1);
+    (*nextnode) = n1; nexttuv[0] = tuv1[0]; nexttuv[1] = tuv1[1];
     return grid;
   }
 
@@ -611,52 +615,51 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, int n0, int n1,
     cell = adjItem(it);
     gridCell(grid, cell, cell_nodes);
     gridFaceOppositeCellNode(grid, cell_nodes, n0, face_nodes);
-
+    
     printf("cell %d.\n",cell);
 
     if ( grid == gridCurveIntersectsFace(grid, face_nodes,
 					 parent, tuv0, tuv1,
-					 tuv, xyz, bary ) ) {
-      printf("intersect at tuv %f %f.\n",tuv[0],tuv[1]);
+					 nexttuv, xyz, bary ) ) {
+      printf("intersect at tuv %f %f.\n",nexttuv[0],nexttuv[1]);
       printf("intersect at xyz %f %f %f.\n",xyz[0],xyz[1],xyz[2]);
 
-      newnode = EMPTY;
-      for (node_index=0;EMPTY==newnode && node_index<3;node_index++) {
-	if (EMPTY == newnode && bary[node_index] > 0.95) {
+      for (node_index=0;EMPTY==(*nextnode) && node_index<3;node_index++) {
+	if (EMPTY == (*nextnode) && bary[node_index] > 0.95) {
 	  double minAR;
 	  gridNodeXYZ(grid, face_nodes[node_index], origxyz);
 	  gridSetNodeXYZ(grid, face_nodes[node_index], xyz);
 	  gridNodeAR(grid, face_nodes[node_index], &minAR );
 	  if (minAR < gridMinInsertCost(grid) ) {
-	  gridSetNodeXYZ(grid, face_nodes[node_index], origxyz);
+	    gridSetNodeXYZ(grid, face_nodes[node_index], origxyz);
 	  } else {
-	    newnode = face_nodes[node_index];
-	    printf("move node %d of opposite face.\n",newnode);
-	    return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
-						tuv, tuv1 );
+	    (*nextnode) = face_nodes[node_index];
+	    printf("move node %d of opposite face.\n",(*nextnode));
+	    return grid;
 	  }
 	}
-	if (EMPTY == newnode && bary[node_index] < 0.05) {
+	if (EMPTY == (*nextnode) && bary[node_index] < 0.05) {
 	  int edge0, edge1;
 	  edge0 = node_index + 1; if (edge0>2) edge0 -= 3;
 	  edge1 = node_index + 2; if (edge1>2) edge1 -= 3;
-	  newnode = gridSplitEdgeRatio(grid, NULL,
+	  (*nextnode) = gridSplitEdgeRatio(grid, NULL,
 				       face_nodes[edge0], face_nodes[edge1],
 				       bary[edge1]);
-	  if (EMPTY != newnode) {
-	    printf("split edge %d of opposite face.\n",newnode);
-	    return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
-						tuv, tuv1 );
+	  if (EMPTY != (*nextnode)) {
+	    printf("split edge %d of opposite face.\n",(*nextnode));
+	    return grid;
 	  }
 	}
       }
-      if (EMPTY != newnode) {
-	newnode = gridSplitFaceAt(grid, face_nodes, xyz);
-	return gridThreadCurveThroughVolume(grid, parent, newnode, n1,
-					    tuv, tuv1 );
+      if (EMPTY != (*nextnode)) {
+	(*nextnode) = gridSplitFaceAt(grid, face_nodes, xyz);
+	if (EMPTY != (*nextnode)) {
+	  printf("split opposite face.\n",(*nextnode));
+	  return grid;
+	}
       }
     }
-
+    
     it = adjNext(it);
   }
 
@@ -668,27 +671,30 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 {
   int parent;
   double xyz[3];
-  double tuv0[2], tuv1[2], tuv[2];
+  double tuv0[2], tuv1[2], newtuv[2];
   int newnode;
   int enclosing_cell;
+  int node, nnode;
+  double tuvs[2*MAXDEG];
+  int curve[MAXDEG];
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
 
   parent = gridParentGeometry(grid, n0, n1);
   if (parent == 0) return EMPTY;
 
-  tuv0[0] = tuv0[1] = tuv1[0] = tuv1[1] = tuv[0] = tuv[1] = DBL_MAX;
+  tuv0[0] = tuv0[1] = tuv1[0] = tuv1[1] = newtuv[0] = newtuv[1] = DBL_MAX;
   if (parent > 0) {
     gridNodeUV(grid,n0,parent,tuv0);
     gridNodeUV(grid,n1,parent,tuv1);
-    tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
-    tuv[1] = (1-ratio)*tuv0[1]+ratio*tuv1[1];
-    gridEvaluateOnFace(grid, parent, tuv, xyz );
+    newtuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
+    newtuv[1] = (1-ratio)*tuv0[1]+ratio*tuv1[1];
+    gridEvaluateOnFace(grid, parent, newtuv, xyz );
   }else{
     gridNodeT(grid,n0,-parent,tuv0);
     gridNodeT(grid,n1,-parent,tuv1);
-    tuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
-    gridEvaluateOnEdge(grid, -parent, tuv[0], xyz );
+    newtuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
+    gridEvaluateOnEdge(grid, -parent, newtuv[0], xyz );
   }
 
   printf("new node at%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
@@ -701,30 +707,63 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     return EMPTY;
   }
 
-  {
-    int nodes[4];
-    gridCell( grid, enclosing_cell, nodes );
-    gridWriteTecplotCellGeom( grid, nodes, NULL, NULL);
-  }
-
   newnode = gridSplitCellAt(grid, enclosing_cell, xyz );
   if ( newnode == EMPTY ) return EMPTY;
 
-  gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
-  gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
+  printf("note that average map needs to happen to every insertion op\n");
 
   printf("new node %d inserted into cell %d\n",newnode,enclosing_cell);
   
-  if (grid == gridThreadCurveThroughVolume(grid, parent, 
-					   newnode, n0, tuv, tuv0 )) {
-    printf("got newnode n0!\n");
+  nnode=1;
+  tuvs[0+2*(nnode-1)] = tuv0[0];
+  tuvs[1+2*(nnode-1)] = tuv0[1];
+  curve[(nnode-1)] = n0;
+  
+  while ( newnode != curve[nnode-1] ) {
+    if (grid != gridThreadCurveThroughVolume(grid, parent, 
+					     curve[(nnode-1)],
+					     &(tuvs[2*(nnode-1)]),
+					     newnode,   newtuv,
+					     &(curve[nnode]),
+					     &(tuvs[2*nnode]) ) ) {
+      printf("%s: %d: gridThreadCurveThroughVolume failed n0\n",
+	     __FILE__,__LINE__);
+      return EMPTY;
+    }
+    nnode++;
+    if (nnode >= MAXDEG ) {
+      printf("%s: %d: gridReconstructSplitEdgeRatio nnode exhasted MAXDEG\n",
+	     __FILE__,__LINE__);
+      return EMPTY;
+    }
   }
-  if (grid == gridThreadCurveThroughVolume(grid, parent, 
-					   newnode, n1, tuv, tuv1 )) {
-    printf("got newnode n1!\n");
+  while ( n1 != curve[nnode-1] ) {
+    if (grid != gridThreadCurveThroughVolume(grid, parent, 
+					     curve[(nnode-1)],
+					     &(tuvs[2*(nnode-1)]),
+					     n1,   tuv1,
+					     &(curve[nnode]),
+					     &(tuvs[2*nnode]) ) ) {
+      printf("%s: %d: gridThreadCurveThroughVolume failed n1\n",
+	     __FILE__,__LINE__);
+      return EMPTY;
+    }
+    nnode++;
+    if (nnode >= MAXDEG ) {
+      printf("%s: %d: gridReconstructSplitEdgeRatio nnode exhasted MAXDEG\n",
+	     __FILE__,__LINE__);
+      return EMPTY;
+    }
   }
 
- return newnode;
+  for (node=0;node<nnode;node++) {
+    printf(" node%10d u %f v %f\n",curve[node],tuvs[0+2*node],tuvs[1+2*node]);
+  }
+  for (node=0;node<(nnode-1);node++) {
+    gridWriteTecplotEquator(grid, curve[node], curve[node+1],
+			    "edge_split_equator.t");
+  }
+  return newnode;
 }
 
 int gridSplitEdge(Grid *grid, int n0, int n1)
