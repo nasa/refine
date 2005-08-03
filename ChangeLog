@@ -1,3 +1,8 @@
+2005-08-03 12:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridRemoveCellsOutsideOfFaces) started method
+	to remove all the cells outside of the current faces.
+
 2005-08-03 10:41 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridReconstructSplitEdgeRatio) reject

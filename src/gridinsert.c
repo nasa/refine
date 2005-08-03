@@ -666,6 +666,11 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
   return NULL;
 }
 
+Grid *gridRemoveCellsOutsideOfFaces( Grid *grid, int n0, int n1, int n2 )
+{
+  return grid;
+}
+
 int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 				  int n0, int n1, double ratio )
 {
@@ -698,9 +703,12 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     return EMPTY;
   }
   gridFace(grid, face0, nodes, &faceId0 );
+  printf("face0 nodes%5d%5d%5d\n",nodes[0], nodes[1], nodes[2]);
   gridFace(grid, face1, nodes, &faceId1 );
+  printf("face1 nodes%5d%5d%5d\n",nodes[0], nodes[1], nodes[2]);
   gridNodeUV(grid,gap0,faceId0,uvgap0);
   gridNodeUV(grid,gap1,faceId1,uvgap1);
+  printf("n0%5d n1%5d g0%5d g1%5d\n",n0,n1,gap0,gap1);
 
   parent = gridParentGeometry(grid, n0, n1);
   if (parent == 0) return EMPTY;
@@ -796,8 +804,8 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 		   faceId0 );
 
     gridAddFaceUV( grid, 
-		   curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
 		   curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
+		   curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
 		   gap1,          uvgap1[0],          uvgap1[1],
 		   faceId1 );
 
@@ -805,8 +813,22 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 			    "edge_split_equator.t");
 
   }
+
   gridRemoveFace(grid,face0);
-  gridRemoveFace(grid,face1);;
+  gridRemoveFace(grid,face1);
+
+  for (node=0;node<(nnode-1);node++) {
+
+    /* remove cells outside of "left-handed" faces */
+
+    gridRemoveCellsOutsideOfFaces( grid, curve[node+1], curve[node], gap0 );
+    gridRemoveCellsOutsideOfFaces( grid, curve[node], curve[node+1], gap1 );
+
+    gridWriteTecplotEquator(grid, curve[node], curve[node+1],
+			    "edge_split_equator.t");
+
+  }
+
   return newnode;
 }
 
