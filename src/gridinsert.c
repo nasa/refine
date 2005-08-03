@@ -669,7 +669,8 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
 int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 				  int n0, int n1, double ratio )
 {
-  int gap0, gap1, face0, face1;
+  int gap0, gap1, face0, face1, nodes[3], faceId0, faceId1;
+  double uvgap0[2], uvgap1[2];
   int parent;
   double xyz[3];
   double tuv0[2], tuv1[2], newtuv[2];
@@ -688,15 +689,18 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     printf("%s: %d: gridReconstructSplitEdgeRatio has ContinuousEquator?\n",
 	   __FILE__,__LINE__);
     return EMPTY;
-  }else{
-    face0 = gridFindFace(grid, n0, n1, gap0 );
-    face1 = gridFindFace(grid, n0, n1, gap1 );
-    if ( face0 == EMPTY || face1 == EMPTY ) {
+  }
+  face0 = gridFindFace(grid, n0, n1, gap0 );
+  face1 = gridFindFace(grid, n0, n1, gap1 );
+  if ( face0 == EMPTY || face1 == EMPTY ) {
     printf("%s: %d: gridReconstructSplitEdgeRatio has empty face %d %d\n",
 	   __FILE__,__LINE__,face0,face1);
-      return EMPTY;
-    }
+    return EMPTY;
   }
+  gridFace(grid, face0, nodes, &faceId0 );
+  gridFace(grid, face1, nodes, &faceId1 );
+  gridNodeUV(grid,gap0,faceId0,uvgap0);
+  gridNodeUV(grid,gap1,faceId1,uvgap1);
 
   parent = gridParentGeometry(grid, n0, n1);
   if (parent == 0) return EMPTY;
@@ -778,15 +782,31 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     printf(" node%10d u %f v %f\n",curve[node],tuvs[0+2*node],tuvs[1+2*node]);
   }
   for (node=0;node<(nnode-1);node++) {
-    gridWriteTecplotEquator(grid, curve[node], curve[node+1],
-			    "edge_split_equator.t");
     printf("face%10d%10d%10d exists? %d\n",
 	   curve[node], curve[node+1], gap0,
 	   gridCellFace(grid, curve[node], curve[node+1], gap0));
     printf("face%10d%10d%10d exists? %d\n",
 	   curve[node], curve[node+1], gap1,
 	   gridCellFace(grid, curve[node], curve[node+1], gap1));
+
+    gridAddFaceUV( grid, 
+		   curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
+		   curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
+		   gap0,          uvgap0[0],          uvgap0[1],
+		   faceId0 );
+
+    gridAddFaceUV( grid, 
+		   curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
+		   curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
+		   gap1,          uvgap1[0],          uvgap1[1],
+		   faceId1 );
+
+    gridWriteTecplotEquator(grid, curve[node], curve[node+1],
+			    "edge_split_equator.t");
+
   }
+  gridRemoveFace(grid,face0);
+  gridRemoveFace(grid,face1);;
   return newnode;
 }
 
