@@ -664,6 +664,12 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
     it = adjNext(it);
   }
 
+  for ( it = adjFirst(gridCellAdj(grid),n0); adjValid(it); it = adjNext(it) ) {
+    cell = adjItem(it);
+    gridCell(grid, cell, cell_nodes);
+    gridWriteTecplotCellGeom(grid, cell_nodes, NULL, "edge_split_equator.t");
+  }
+
   return NULL;
 }
 
@@ -808,6 +814,10 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 					     &(tuvs[2*nnode]) ) ) {
       printf("%s: %d: gridThreadCurveThroughVolume failed n0\n",
 	     __FILE__,__LINE__);
+      for (node=0;node<(nnode-1);node++) {
+	gridWriteTecplotEquator(grid, curve[node], curve[node+1],
+				"edge_split_equator.t");
+      }
       return EMPTY;
     }
     nnode++;
@@ -826,6 +836,10 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 					     &(tuvs[2*nnode]) ) ) {
       printf("%s: %d: gridThreadCurveThroughVolume failed n1\n",
 	     __FILE__,__LINE__);
+      for (node=0;node<(nnode-1);node++) {
+	gridWriteTecplotEquator(grid, curve[node], curve[node+1],
+				"edge_split_equator.t");
+      }
       return EMPTY;
     }
     nnode++;
@@ -858,25 +872,15 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 		   curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
 		   gap1,          uvgap1[0],          uvgap1[1],
 		   faceId1 );
-
-    gridWriteTecplotEquator(grid, curve[node], curve[node+1],
-			    "edge_split_equator.t");
-
   }
 
   gridRemoveFace(grid,face0);
   gridRemoveFace(grid,face1);
 
   for (node=0;node<(nnode-1);node++) {
-
     /* remove cells outside of "left-handed" faces */
-
     gridRemoveCellsOutsideOfFaces( grid, curve[node+1], curve[node], gap0 );
     gridRemoveCellsOutsideOfFaces( grid, curve[node], curve[node+1], gap1 );
-
-    gridWriteTecplotEquator(grid, curve[node], curve[node+1],
-			    "edge_split_equator.t");
-
   }
 
   return newnode;
