@@ -1497,14 +1497,55 @@ Grid *gridSetAux(Grid *grid, int node, int aux, double value )
   return grid;
 }
 
-Grid *gridSetAuxToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
+Grid *gridSetAuxToAverageOfNodes2(Grid *grid, int avgNode,
+				  int n0, int n1 )
 {
   int aux;
-  if (!gridValidNode(grid,n0) || !gridValidNode(grid,n1)) return NULL;
+  if ( !gridValidNode(grid,n0) || 
+       !gridValidNode(grid,n1) ) return NULL;
 
   for (aux=0;aux<gridNAux(grid);aux++) {
     gridSetAux(grid, avgNode, aux, 
-	       0.5*(gridAux(grid, n0, aux)+gridAux(grid, n1, aux)) );
+	       1.0/2.0*( gridAux(grid, n0, aux) +
+			 gridAux(grid, n1, aux) ) );
+  }
+
+  return grid;
+}
+
+Grid *gridSetAuxToAverageOfNodes3(Grid *grid, int avgNode,
+				  int n0, int n1, int n2 )
+{
+  int aux;
+  if ( !gridValidNode(grid,n0) || 
+       !gridValidNode(grid,n1) || 
+       !gridValidNode(grid,n2) ) return NULL;
+
+  for (aux=0;aux<gridNAux(grid);aux++) {
+    gridSetAux(grid, avgNode, aux, 
+	       1.0/3.0*( gridAux(grid, n0, aux) +
+			 gridAux(grid, n1, aux) +
+			 gridAux(grid, n2, aux) ) );
+  }
+
+  return grid;
+}
+
+Grid *gridSetAuxToAverageOfNodes4(Grid *grid, int avgNode,
+				  int n0, int n1, int n2, int n3 )
+{
+  int aux;
+  if ( !gridValidNode(grid,n0) || 
+       !gridValidNode(grid,n1) || 
+       !gridValidNode(grid,n2) || 
+       !gridValidNode(grid,n3) ) return NULL;
+
+  for (aux=0;aux<gridNAux(grid);aux++) {
+    gridSetAux(grid, avgNode, aux, 
+	       1.0/4.0*( gridAux(grid, n0, aux) +
+			 gridAux(grid, n1, aux) +
+			 gridAux(grid, n2, aux) +
+			 gridAux(grid, n3, aux) ) );
   }
 
   return grid;

@@ -1,3 +1,16 @@
+2005-08-03 16:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSetAuxToAverageOfNodes2,gridSetAuxToAverageOfNodes3,
+	gridSetAuxToAverageOfNodes4) created from gridSetAuxToAverageOfNodes
+	* src/gridmetric.c (gridSetMapMatrixToAverageOfNodes2,
+	gridSetMapMatrixToAverageOfNodes3,gridSetMapMatrixToAverageOfNodes4)
+	created from gridSetMapMatrixToAverageOfNodes
+
+2005-08-03 15:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridRemoveCellsOutsideOfFaces) completed, and
+	the grid is complete.
+
 2005-08-03 12:36 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridRemoveCellsOutsideOfFaces) started method

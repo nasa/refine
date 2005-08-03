@@ -24,7 +24,12 @@ Grid *gridWriteTecplotInvalid(Grid *g, char *filename );
 Grid *gridSetMapWithSpacingVectors(Grid *g, int node,
 				   double *v1, double *v2, double *v3,
                                    double s1, double s2, double s3);
-Grid *gridSetMapMatrixToAverageOfNodes(Grid *g, int avgNode, int n0, int n1 );
+Grid *gridSetMapMatrixToAverageOfNodes2(Grid *g, int avgNode,
+					int n0, int n1 );
+Grid *gridSetMapMatrixToAverageOfNodes3(Grid *g, int avgNode,
+					int n0, int n1, int n2 );
+Grid *gridSetMapMatrixToAverageOfNodes4(Grid *g, int avgNode,
+					int n0, int n1, int n2, int n3 );
 void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
 
 double gridEdgeLength(Grid *g, int n0, int n1 );

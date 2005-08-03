@@ -67,16 +67,62 @@ Grid *gridSetMapWithSpacingVectors(Grid *grid, int node,
   return gridSetMap(grid,node,m11,m12,m13,m22,m23,m33);
 }
 
-Grid *gridSetMapMatrixToAverageOfNodes(Grid *grid, int avgNode, int n0, int n1 )
+Grid *gridSetMapMatrixToAverageOfNodes2(Grid *grid, int avgNode,
+					int n0, int n1 )
 {
   int i;
   double map[6];
   double *map0, *map1;
 
-  if (!gridValidNode(grid,n0) || !gridValidNode(grid,n1)) return NULL;
+  if ( !gridValidNode(grid,n0) ||
+       !gridValidNode(grid,n1) ) return NULL;
   map0 = gridMapPointer(grid, n0);
   map1 = gridMapPointer(grid, n1);
-  for (i=0;i<6;i++) map[i] = 0.5*(map0[i]+map1[i]);
+  for (i=0;i<6;i++) map[i] = 1.0/2.0*(map0[i]+map1[i]);
+  if (grid != gridSetMap( grid, avgNode, 
+			  map[0], map[1], map[2], 
+			  map[3], map[4], map[5] ) ) return NULL;
+
+  return grid;
+}
+
+Grid *gridSetMapMatrixToAverageOfNodes3(Grid *grid, int avgNode,
+					int n0, int n1, int n2 )
+{
+  int i;
+  double map[6];
+  double *map0, *map1, *map2;
+
+  if ( !gridValidNode(grid,n0) ||
+       !gridValidNode(grid,n1) ||
+       !gridValidNode(grid,n2) ) return NULL;
+  map0 = gridMapPointer(grid, n0);
+  map1 = gridMapPointer(grid, n1);
+  map2 = gridMapPointer(grid, n2);
+  for (i=0;i<6;i++) map[i] = 1.0/3.0*(map0[i]+map1[i]+map2[i]);
+  if (grid != gridSetMap( grid, avgNode, 
+			  map[0], map[1], map[2], 
+			  map[3], map[4], map[5] ) ) return NULL;
+
+  return grid;
+}
+
+Grid *gridSetMapMatrixToAverageOfNodes4(Grid *grid, int avgNode,
+					int n0, int n1, int n2, int n3 )
+{
+  int i;
+  double map[6];
+  double *map0, *map1, *map2, *map3;
+
+  if ( !gridValidNode(grid,n0) ||
+       !gridValidNode(grid,n1) ||
+       !gridValidNode(grid,n2) ||
+       !gridValidNode(grid,n3) ) return NULL;
+  map0 = gridMapPointer(grid, n0);
+  map1 = gridMapPointer(grid, n1);
+  map2 = gridMapPointer(grid, n2);
+  map3 = gridMapPointer(grid, n3);
+  for (i=0;i<6;i++) map[i] = 1.0/4.0*(map0[i]+map1[i]+map2[i]+map3[i]);
   if (grid != gridSetMap( grid, avgNode, 
 			  map[0], map[1], map[2], 
 			  map[3], map[4], map[5] ) ) return NULL;

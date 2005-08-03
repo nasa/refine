@@ -123,10 +123,10 @@ VALUE grid_setMapMatrixToAverageOfNodes( VALUE self, VALUE avgNode,
 					 VALUE node0, VALUE node1 ) 
 {
   GET_GRID_FROM_SELF;
-  return (gridSetMapMatrixToAverageOfNodes(grid, 
-					   NUM2INT(avgNode), 
-					   NUM2INT(node0), 
-					   NUM2INT(node1) )==grid?self:Qnil);
+  return (gridSetMapMatrixToAverageOfNodes2(grid, 
+					    NUM2INT(avgNode), 
+					    NUM2INT(node0), 
+					    NUM2INT(node1) )==grid?self:Qnil);
 }
 
 VALUE grid_convertMetricToJacobian( VALUE self, VALUE rb_m )

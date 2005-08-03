@@ -921,8 +921,8 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
     xyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
-  gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
-  gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
+  gridSetMapMatrixToAverageOfNodes2(grid, newnode, n0, n1 );
+  gridSetAuxToAverageOfNodes2(grid, newnode, n0, n1 );
 
   /* insert new edges to use for projection and validity check */
   newedge0 = newedge1 = EMPTY;
@@ -1089,8 +1089,8 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
     xyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
-  gridSetMapMatrixToAverageOfNodes(grid, newnode, n0, n1 );
-  gridSetAuxToAverageOfNodes(grid, newnode, n0, n1 );
+  gridSetMapMatrixToAverageOfNodes2(grid, newnode, n0, n1 );
+  gridSetAuxToAverageOfNodes2(grid, newnode, n0, n1 );
 
   /* insert new edges to use for projection and validity check */
   newedge0 = newedge1 = EMPTY;
