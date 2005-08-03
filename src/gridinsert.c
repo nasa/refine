@@ -668,7 +668,58 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
 
 Grid *gridRemoveCellsOutsideOfFaces( Grid *grid, int n0, int n1, int n2 )
 {
+  int cell0, cell1;
+  int original_nodes[4], nodes[4];
+
+  cell0 = gridFindOtherCellWith3Nodes( grid, n0, n1, n2, EMPTY );
+  if (EMPTY == cell0) return grid;
+
+  if (grid != gridCell(grid, cell0, original_nodes) ) return NULL;
+  nodes[0] = n0; nodes[1] = n1;
+
+  if (grid != gridOrient(grid, original_nodes, nodes ) ) return NULL;
+
+  if ( nodes[2] == n2 ) {
+    gridRemoveCell(grid, cell0);
+  }else{
+    cell1 = gridFindOtherCellWith3Nodes( grid, n0, n1, n2, cell0 );
+    if (EMPTY == cell1) return grid;
+
+    if (grid != gridCell(grid, cell1, original_nodes) ) return NULL;
+    nodes[0] = n0; nodes[1] = n1;
+
+    if (grid != gridOrient(grid, original_nodes, nodes ) ) return NULL;
+    gridRemoveCell(grid, cell1);
+  }
+
+  if (EMPTY == gridFindFace(grid, nodes[1], nodes[2], nodes[3] ) ) {
+    if (grid != gridRemoveCellsOutsideOfFaces(grid,
+					      nodes[1],
+					      nodes[2],
+					      nodes[3])) return NULL;
+  }
+  
+  if (EMPTY == gridFindFace(grid, nodes[0], nodes[3], nodes[2] ) ) {
+    if (grid != gridRemoveCellsOutsideOfFaces(grid,
+					      nodes[0],
+					      nodes[3],
+					      nodes[2])) return NULL;
+  }
+  
+  if (EMPTY == gridFindFace(grid, nodes[0], nodes[1], nodes[3] ) ) {
+    if (grid != gridRemoveCellsOutsideOfFaces(grid,
+					      nodes[0],
+					      nodes[1],
+					      nodes[3])) return NULL;
+  }
+  
+  if ( 0 == gridCellDegree(grid, nodes[0]) ) gridRemoveNode(grid, nodes[0]);
+  if ( 0 == gridCellDegree(grid, nodes[1]) ) gridRemoveNode(grid, nodes[1]);
+  if ( 0 == gridCellDegree(grid, nodes[2]) ) gridRemoveNode(grid, nodes[2]);
+  if ( 0 == gridCellDegree(grid, nodes[3]) ) gridRemoveNode(grid, nodes[3]);
+  
   return grid;
+
 }
 
 int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
