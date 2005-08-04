@@ -746,6 +746,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   int node, nnode;
   double tuvs[2*MAXDEG];
   int curve[MAXDEG];
+  GridBool got_all_subfaces0, got_all_subfaces1;
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
@@ -863,25 +864,42 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 	   gridCellFace(grid, curve[node+1], curve[node], gap1));
   }
 
+  got_all_subfaces0 = TRUE;
   for (node=0;node<(nnode-1);node++) {
-    gridAddFaceUV( grid, 
-		   curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
-		   curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
-		   gap0,          uvgap0[0],          uvgap0[1],
-		   faceId0 );
-
-    gridAddFaceUV( grid, 
-		   curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
-		   curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
-		   gap1,          uvgap1[0],          uvgap1[1],
-		   faceId1 );
+    got_all_subfaces0 =( got_all_subfaces0 && 
+			 gridCellFace(grid, curve[node], curve[node+1], gap0) );
   }
-  gridRemoveFace(grid,face0);
-  gridRemoveFace(grid,face1);
+  if (got_all_subfaces0) {
+    for (node=0;node<(nnode-1);node++) {
+      gridAddFaceUV( grid, 
+		     curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
+		     curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
+		     gap0,          uvgap0[0],          uvgap0[1],
+		     faceId0 );
+    }
+    gridRemoveFace(grid,face0);
+  }else{
+    printf("missing face0 subfaces.\n");
+    return EMPTY;
+  }
 
+  got_all_subfaces1 = TRUE;
   for (node=0;node<(nnode-1);node++) {
-    if (!gridCellFace(grid, curve[node], curve[node+1], gap0)) return EMPTY;
-    if (!gridCellFace(grid, curve[node+1], curve[node], gap1)) return EMPTY;
+    got_all_subfaces1 =( got_all_subfaces1 && 
+			 gridCellFace(grid, curve[node+1], curve[node], gap1) );
+  }
+  if (got_all_subfaces1) {
+    for (node=0;node<(nnode-1);node++) {
+      gridAddFaceUV( grid, 
+		     curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
+		     curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
+		     gap1,          uvgap1[0],          uvgap1[1],
+		     faceId1 );
+    }
+    gridRemoveFace(grid,face1);
+  }else{ 
+    printf("missing face1 subfaces.\n");
+    return EMPTY;
   }
 
   for (node=0;node<(nnode-1);node++) {
