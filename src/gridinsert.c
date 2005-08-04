@@ -1350,6 +1350,8 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
   faceId = EMPTY;
   gridFace(grid, face, nodes, &faceId); // only need to set faceId
 
+  printf("gridSplitFaceAt faceId %d\n",faceId);
+
   /* set up nodes so that nodes[0]-nodes[2] is face 
      and nodes[0]-nodes[3] is the cell
      for the case of nodes0 or nodes0 and nodes1 */
@@ -1432,7 +1434,7 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
   if ( EMPTY != cell1 ) {
     if ( grid != gridRemoveCell(grid, cell1 ) ) return EMPTY;
     for (i=0;i<3;i++){
-      for (n=0;n<4;n++) newnodes[n] = nodes0[n];
+      for (n=0;n<4;n++) newnodes[n] = nodes1[n];
       newnodes[i] = newnode; 
       if (EMPTY == gridAddCell(grid, newnodes[0], newnodes[1], 
 			       newnodes[2], newnodes[3] ) ) return EMPTY;

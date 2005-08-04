@@ -1,3 +1,10 @@
+2005-08-04 12:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridThreadCurveThroughVolume) logic bug that
+	prevented an attempt at splitting a face.
+	* src/gridinsert.c (gridSplitCellAt) Fixed bug that put subdivided
+	cell0 in twice instead of cell0 and cell1.
+
 2005-08-03 16:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitFaceAt,gridSplitCellAt) added
