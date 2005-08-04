@@ -617,7 +617,7 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
     gridCell(grid, cell, cell_nodes);
     gridFaceOppositeCellNode(grid, cell_nodes, n0, face_nodes);
     
-    printf("cell %d.\n",cell);
+    //printf("cell %d.\n",cell);
 
     if ( grid == gridCurveIntersectsFace(grid, face_nodes,
 					 parent, tuv0, tuv1,
@@ -765,12 +765,9 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     return EMPTY;
   }
   gridFace(grid, face0, nodes, &faceId0 );
-  printf("face0 nodes%5d%5d%5d\n",nodes[0], nodes[1], nodes[2]);
   gridFace(grid, face1, nodes, &faceId1 );
-  printf("face1 nodes%5d%5d%5d\n",nodes[0], nodes[1], nodes[2]);
   gridNodeUV(grid,gap0,faceId0,uvgap0);
   gridNodeUV(grid,gap1,faceId1,uvgap1);
-  printf("n0%5d n1%5d g0%5d g1%5d\n",n0,n1,gap0,gap1);
 
   parent = gridParentGeometry(grid, n0, n1);
   if (parent == 0) return EMPTY;
@@ -1355,7 +1352,7 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
   faceId = EMPTY;
   gridFace(grid, face, nodes, &faceId); // only need to set faceId
 
-  printf("gridSplitFaceAt faceId %d\n",faceId);
+  //printf("gridSplitFaceAt faceId %d\n",faceId);
 
   /* set up nodes so that nodes[0]-nodes[2] is face 
      and nodes[0]-nodes[3] is the cell
