@@ -861,7 +861,9 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     printf("face%10d%10d%10d exists? %d\n",
 	   curve[node+1], curve[node], gap1,
 	   gridCellFace(grid, curve[node+1], curve[node], gap1));
+  }
 
+  for (node=0;node<(nnode-1);node++) {
     gridAddFaceUV( grid, 
 		   curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
 		   curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
@@ -874,14 +876,13 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 		   gap1,          uvgap1[0],          uvgap1[1],
 		   faceId1 );
   }
+  gridRemoveFace(grid,face0);
+  gridRemoveFace(grid,face1);
 
   for (node=0;node<(nnode-1);node++) {
     if (!gridCellFace(grid, curve[node], curve[node+1], gap0)) return EMPTY;
     if (!gridCellFace(grid, curve[node+1], curve[node], gap1)) return EMPTY;
   }
-
-  gridRemoveFace(grid,face0);
-  gridRemoveFace(grid,face1);
 
   for (node=0;node<(nnode-1);node++) {
     /* remove cells outside of "left-handed" faces */
