@@ -652,10 +652,11 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
 	  }
 	}
       }
-      if (EMPTY != (*nextnode)) {
+      if (EMPTY == (*nextnode)) {
+	printf("try to split opposite face.\n");
 	(*nextnode) = gridSplitFaceAt(grid, face_nodes, xyz);
 	if (EMPTY != (*nextnode)) {
-	  printf("split opposite face.\n",(*nextnode));
+	  printf("split opposite face with %d.\n",(*nextnode));
 	  return grid;
 	}
       }
@@ -663,6 +664,9 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
     
     it = adjNext(it);
   }
+
+  printf("%s: %d: gridThreadCurveThroughVolume couldnt find a candidate face\n",
+	 __FILE__,__LINE__);
 
   for ( it = adjFirst(gridCellAdj(grid),n0); adjValid(it); it = adjNext(it) ) {
     cell = adjItem(it);
