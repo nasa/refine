@@ -1,5 +1,11 @@
 2005-08-04 12:47 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) return EMPTY
+	without calls to gridRemoveCellsOutsideOfFaces if new surface
+	faces do not exist in volume grid (to aid debugging).
+
+2005-08-04 12:47 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridinsert.c (gridThreadCurveThroughVolume) logic bug that
 	prevented an attempt at splitting a face.
 	* src/gridinsert.c (gridSplitCellAt) Fixed bug that put subdivided
