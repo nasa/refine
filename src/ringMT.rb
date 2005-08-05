@@ -80,6 +80,34 @@ class TestRing < Test::Unit::TestCase
   assert_equal 1, @ring.triangles
  end
 
+ def test_adding_triangle_adds_three_sides_as_segments_creating_two
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  @ring.addTriangle(2,4,5,[5.1,5.2])
+  assert_equal 2, @ring.segments
+ end
+
+ def test_adding_triangle_adds_three_sides_as_segments_creating_segment_1_2
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  @ring.addSegment(4,5,[4.1,4.2],[5.1,5.2])
+  @ring.addTriangle(2,4,5,[5.1,5.2])
+  assert_equal 1, @ring.segments
+ end
+
+ def test_adding_triangle_adds_three_sides_as_segments_creating_segment_2_0
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  @ring.addSegment(5,2,[5.1,5.2],[2.1,2.2])
+  @ring.addTriangle(2,4,5,[5.1,5.2])
+  assert_equal 1, @ring.segments
+ end
+
+ def test_adding_triangle_adds_three_sides_as_segments_creating_none
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  @ring.addSegment(4,5,[4.1,4.2],[5.1,5.2])
+  @ring.addSegment(5,2,[5.1,5.2],[2.1,2.2])
+  @ring.addTriangle(2,4,5,[5.1,5.2])
+  assert_equal 0, @ring.segments
+ end
+
  puts 'test_adding_triangle_also_adds_three_sements'
  puts 'adding segment in opposite direction removes it from ring'
 

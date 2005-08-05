@@ -119,9 +119,34 @@ Ring *ringAddTriangle( Ring *ring,
 		       double *uv2 )
 {
   int segment;
+  double uv0[2], uv1[2];
   for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
     if ( ring->segment_nodes[0+2*segment] == node0 &&
 	 ring->segment_nodes[1+2*segment] == node1 ) {
+
+      uv0[0] = ring->segment_uvs[0+4*segment];
+      uv0[1] = ring->segment_uvs[1+4*segment];
+      uv1[0] = ring->segment_uvs[2+4*segment];
+      uv1[1] = ring->segment_uvs[3+4*segment];
+      
+      if ( ring != ringAddSegment(ring,node1,node0,uv1,uv0) ) {
+	printf("%s: %d: ringAddTriangle: ringAddSegment 1 0 returned NULL.\n",
+	       __FILE__,__LINE__);
+	return NULL;
+      }
+
+      if ( ring != ringAddSegment(ring,node2,node1,uv2,uv1) ) {
+	printf("%s: %d: ringAddTriangle: ringAddSegment 2 1 returned NULL.\n",
+	       __FILE__,__LINE__);
+	return NULL;
+      }
+
+      if ( ring != ringAddSegment(ring,node0,node2,uv1,uv2) ) {
+	printf("%s: %d: ringAddTriangle: ringAddSegment 0 2 returned NULL.\n",
+	       __FILE__,__LINE__);
+	return NULL;
+      }
+
       ring->triangles++;
       return ring;
     }
