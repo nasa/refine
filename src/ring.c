@@ -53,6 +53,15 @@ Ring *ringAddSegment( Ring *ring,
 		      int node0, int node1,
 		      double *uv0, double *uv1 )
 {
+  int segment;
+
+  for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
+    if ( ring->segment_nodes[0+2*segment] == node0 &&
+	 ring->segment_nodes[1+2*segment] == node1 ) {
+      return NULL;
+    }
+  }
+
   if ( ring->segments >= ring->malloced_segments ) {
     ring->malloced_segments += ring->malloc_chunk_size;
     
