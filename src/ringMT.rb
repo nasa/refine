@@ -25,7 +25,7 @@ class TestRing < Test::Unit::TestCase
   assert_equal 0, @ring.triangles
  end
 
- # segements
+ # segments
 
  def test_adding_segment_returns_ring
   assert_equal @ring, @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
@@ -58,6 +58,30 @@ class TestRing < Test::Unit::TestCase
   assert_equal 0, @ring.segments
  end
 
+ # retrieving segment
+
+ def test_retreve_segment_out_of_range_empty
+  assert_nil @ring.retrieveSegment(-1)
+  assert_nil @ring.retrieveSegment(0)
+ end
+
+ def test_retreve_segment_out_of_range_one
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  assert_nil @ring.retrieveSegment(1)
+ end
+
+ def test_retreve_segment_0
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  segment = @ring.retrieveSegment(0)
+  assert_equal 2, segment[0]
+  assert_equal 4, segment[1]
+  tol = 1.0e-15
+  assert_in_delta 2.1, segment[2][0], tol
+  assert_in_delta 2.2, segment[2][1], tol
+  assert_in_delta 4.1, segment[3][0], tol
+  assert_in_delta 4.2, segment[3][1], tol
+ end
+
  # triangles
 
  def test_adding_triangle_returns_nil_if_base_is_not_a_segment
@@ -79,6 +103,8 @@ class TestRing < Test::Unit::TestCase
   @ring.addTriangle(2,4,5,[5.1,5.2])
   assert_equal 1, @ring.triangles
  end
+
+ # triangles add segments
 
  def test_adding_triangle_adds_three_sides_as_segments_creating_two
   @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
@@ -108,7 +134,7 @@ class TestRing < Test::Unit::TestCase
   assert_equal 0, @ring.segments
  end
 
- puts 'test_adding_triangle_also_adds_three_sements'
- puts 'adding segment in opposite direction removes it from ring'
+ # retrieving triangles
+
 
 end
