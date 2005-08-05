@@ -1,25 +1,29 @@
+2005-08-05 15:14 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSegment) return segment info.
+
 2005-08-05 13:35 Mike Park  <mike.park@nasa.gov>
 
-	* src/ring.c (addTriangle) addes three triangle sides as opposite
+	* src/ring.c (ringAddTriangle) adds three triangle sides as opposite
 	sense segments
 
 2005-08-05 13:18 Mike Park  <mike.park@nasa.gov>
 
-	* src/ring.c (addSegment) remove existing segment if it is added
+	* src/ring.c (ringAddSegment) remove existing segment if it is added
 	in opposite direction.
 
 2005-08-05 10:15 Mike Park  <mike.park@nasa.gov>
 
-	* src/ring.c (addTriangle) abort traingle add if base segment does
+	* src/ring.c (ringAddTriangle) abort traingle add if base segment does
 	not exist
 
 2005-08-05 09:42 Mike Park  <mike.park@nasa.gov>
 
-	* src/ring.c (addTriangle) add triangle to ring.
+	* src/ring.c (ringAddTriangle) add triangle to ring.
 
 2005-08-05 09:22 Mike Park  <mike.park@nasa.gov>
 
-	* src/ring.c (addSegment) add segment to ring.
+	* src/ring.c (ringAddSegment) add segment to ring.
 
 2005-08-05 09:04 Mike Park  <mike.park@nasa.gov>
 

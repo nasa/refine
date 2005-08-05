@@ -109,6 +109,23 @@ Ring *ringAddSegment( Ring *ring,
   return ring;
 }
 
+Ring *ringSegment( Ring *ring, int segment, int *node0, int *node1,
+		   double *uv0, double *uv1 )
+{
+  if ( segment < 0 || segment >= ringSegments( ring ) ) return NULL;
+
+  (*node0) = ring->segment_nodes[0+2*segment];
+  (*node1) = ring->segment_nodes[1+2*segment];
+
+  uv0[0] = ring->segment_uvs[0+4*segment];
+  uv0[1] = ring->segment_uvs[1+4*segment];
+
+  uv1[0] = ring->segment_uvs[2+4*segment];
+  uv1[1] = ring->segment_uvs[3+4*segment];
+
+  return ring;
+}
+
 int ringTriangles( Ring *ring )
 {
   return ring->triangles;

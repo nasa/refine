@@ -61,18 +61,18 @@ class TestRing < Test::Unit::TestCase
  # retrieving segment
 
  def test_retreve_segment_out_of_range_empty
-  assert_nil @ring.retrieveSegment(-1)
-  assert_nil @ring.retrieveSegment(0)
+  assert_nil @ring.segment(-1)
+  assert_nil @ring.segment(0)
  end
 
  def test_retreve_segment_out_of_range_one
   @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
-  assert_nil @ring.retrieveSegment(1)
+  assert_nil @ring.segment(1)
  end
 
  def test_retreve_segment_0
   @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
-  segment = @ring.retrieveSegment(0)
+  segment = @ring.segment(0)
   assert_equal 2, segment[0]
   assert_equal 4, segment[1]
   tol = 1.0e-15

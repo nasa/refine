@@ -40,6 +40,35 @@ VALUE ring_addSegment( VALUE self,
   return (ringAddSegment(ring,NUM2INT(n0),NUM2INT(n1),uv0,uv1)==ring?self:Qnil);
 }
 
+VALUE ring_segment( VALUE self, VALUE segment )
+{
+  int node0, node1;
+  double uv0[2], uv1[2];
+  VALUE rb;
+  VALUE rb_uv0, rb_uv1;
+  GET_RING_FROM_SELF;
+
+  if ( ring != ringSegment(ring, NUM2INT(segment),
+			   &node0, &node1, uv0, uv1 ) ) return Qnil;
+
+  rb = rb_ary_new2(4);
+
+  rb_ary_store( rb, 0, INT2NUM(node0) );
+  rb_ary_store( rb, 1, INT2NUM(node1) );
+
+  rb_uv0 = rb_ary_new2(2);
+  rb_ary_store( rb_uv0, 0, rb_float_new(uv0[0]) );
+  rb_ary_store( rb_uv0, 1, rb_float_new(uv0[1]) );
+  rb_ary_store( rb, 2, rb_uv0 );
+
+  rb_uv1 = rb_ary_new2(2);
+  rb_ary_store( rb_uv1, 0, rb_float_new(uv1[0]) );
+  rb_ary_store( rb_uv1, 1, rb_float_new(uv1[1]) );
+  rb_ary_store( rb, 3, rb_uv1 );
+
+  return rb;
+}
+
 VALUE ring_triangles( VALUE self )
 {
   GET_RING_FROM_SELF;
@@ -69,6 +98,7 @@ void Init_Ring()
   rb_define_singleton_method( cRing, "new", ring_new, 0 );
   rb_define_method( cRing, "segments", ring_segments, 0 );
   rb_define_method( cRing, "addSegment", ring_addSegment, 4 );
+  rb_define_method( cRing, "segment", ring_segment, 1 );
   rb_define_method( cRing, "triangles", ring_triangles, 0 );
   rb_define_method( cRing, "addTriangle", ring_addTriangle, 4 );
 }
