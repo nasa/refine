@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Mobility test for the plan c lib
+# Mobility test for the ring c lib
 #
 # $Id$
 
