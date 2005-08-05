@@ -12,8 +12,8 @@ class RubyExtensionBuilder
   extraFiles = Hash.new('')
   extraFiles['GridCAD'] = 'FAKEGeom.c FAKEGeomExtras.c'
   extraFiles['GridMetric'] = 'FAKEGeom.c FAKEGeomExtras.c'
-  systemCall = ['ruby makeRubyExtension.rb',extension,extraFiles[extension],'refine_defs.h'].join(' ')
-  exit 1 unless system(systemCall )
+  systemCall = ['ruby makeRubyExtension.rb',extension,extraFiles[extension]].join(' ')
+  exit 1 unless system( systemCall )
  end
 
  def build
