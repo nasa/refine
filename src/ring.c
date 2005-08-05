@@ -54,12 +54,38 @@ Ring *ringAddSegment( Ring *ring,
 		      double *uv0, double *uv1 )
 {
   int segment;
+  int remove_segment;
 
   for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
     if ( ring->segment_nodes[0+2*segment] == node0 &&
 	 ring->segment_nodes[1+2*segment] == node1 ) {
       return NULL;
     }
+  }
+
+  remove_segment = EMPTY;
+  for ( segment = 0 ;
+	EMPTY == remove_segment && segment < ringSegments(ring) ;
+	segment++ ) {
+    if ( ring->segment_nodes[0+2*segment] == node1 &&
+	 ring->segment_nodes[1+2*segment] == node0 ) {
+      remove_segment = segment;
+    }
+  }
+
+  if ( EMPTY != remove_segment ) {
+    for ( segment = remove_segment ; 
+	  segment < ( ringSegments(ring) - 1 ) ; 
+	  segment++ ) {
+      ring->segment_nodes[0+2*segment] = ring->segment_nodes[0+2*(segment+1)];
+      ring->segment_nodes[1+2*segment] = ring->segment_nodes[1+2*(segment+1)];
+      ring->segment_uvs[0+4*segment] = ring->segment_uvs[0+4*(segment+1)]; 
+      ring->segment_uvs[1+4*segment] = ring->segment_uvs[1+4*(segment+1)]; 
+      ring->segment_uvs[2+4*segment] = ring->segment_uvs[2+4*(segment+1)]; 
+      ring->segment_uvs[3+4*segment] = ring->segment_uvs[3+4*(segment+1)]; 
+    }
+    ring->segments--;
+    return ring;
   }
 
   if ( ring->segments >= ring->malloced_segments ) {

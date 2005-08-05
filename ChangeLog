@@ -1,3 +1,8 @@
+2005-08-05 13:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (addSegment) remove existing segment if it is added
+	in opposite direction.
+
 2005-08-05 10:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (addTriangle) abort traingle add if base segment does

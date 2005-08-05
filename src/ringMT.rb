@@ -52,7 +52,7 @@ class TestRing < Test::Unit::TestCase
   assert_equal @ring, @ring.addSegment(4,2,[4.1,4.2],[2.1,2.2])
  end
 
- def test_adding_mirror_segment_removes_it
+ def test_adding_mirror_segment_removes_it_without_add
   @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
   @ring.addSegment(4,2,[4.1,4.2],[2.1,2.2])
   assert_equal 0, @ring.segments
