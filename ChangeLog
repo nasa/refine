@@ -1,3 +1,7 @@
+2005-08-05 09:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (addSegment) add segment to ring.
+
 2005-08-05 09:04 Mike Park  <mike.park@nasa.gov>
 
 	* src/Makefile (local,clean) removed dup Plan, added Ring

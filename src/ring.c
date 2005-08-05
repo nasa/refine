@@ -40,6 +40,14 @@ int ringSegments( Ring *ring )
   return ring->segments;
 }
 
+Ring *ringAddSegment( Ring *ring,
+		      int node0, int node1,
+		      double *uv0, double *uv1 )
+{
+  ring->segments++;
+  return ring;
+}
+
 int ringTriangles( Ring *ring )
 {
   return ring->triangles;

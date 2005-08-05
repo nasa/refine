@@ -30,6 +30,8 @@ Ring *ringCreate( void );
 void ringFree( Ring * );
 
 int ringSegments( Ring * );
+Ring *ringAddSegment( Ring *, int node0, int node1, double *uv0, double *uv1 );
+
 int ringTriangles( Ring * );
 
 END_C_DECLORATION
