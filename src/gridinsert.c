@@ -13,6 +13,7 @@
 #include <math.h>
 #include <values.h>
 #include "plan.h"
+#include "ring.h"
 #include "gridshape.h"
 #include "gridmath.h"
 #include "gridmetric.h"
@@ -733,6 +734,44 @@ Grid *gridRemoveCellsOutsideOfFaces( Grid *grid, int n0, int n1, int n2 )
 
 }
 
+Grid *gridFillRingWithFaces( Grid *grid, Ring *ring, int faceId0 )
+{
+  int segment, curve_segments;
+  int node0, node1, node2;
+  double uv0[2], uv1[2], uv2[2];
+  
+  // to debug find gap node from last segment (node1 is dummy)
+
+  if (ring != ringSegment( ring, ringSegments(ring)-1, 
+			   &node2, &node1,
+			   uv2, uv1 ) ) {
+    printf("%s: %d: gridFillRingWithFaces: ringSegment NULL\n",
+	   __FILE__,__LINE__);    
+    return NULL;
+  }
+
+  // number of segments will decrease with the added faces
+  curve_segments = ringSegments(ring)-2;
+  for ( segment=0 ; segment<curve_segments ; segment++ ) {
+    if (ring != ringSegment( ring, 0, // always grab first segment off stack 
+			     &node0, &node1,
+			     uv0, uv1 ) ) {
+      printf("%s: %d: gridFillRingWithFaces: ringSegment NULL\n",
+	     __FILE__,__LINE__);    
+      return NULL;
+    }
+
+    if (ring != ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
+      printf("%s: %d: gridFillRingWithFaces: ringAddTriangle NULL\n",
+	     __FILE__,__LINE__);    
+      return NULL;
+    }
+
+  }
+  printf("remaining segments %d\n",ringSegments(ring));
+  return grid;
+}
+
 int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 				  int n0, int n1, double ratio )
 {
@@ -746,6 +785,8 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   int node, nnode;
   double tuvs[2*MAXDEG];
   int curve[MAXDEG];
+  Ring *ring0, *ring1;
+
   GridBool got_all_subfaces0, got_all_subfaces1;
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
@@ -863,6 +904,42 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 	   curve[node+1], curve[node], gap1,
 	   gridCellFace(grid, curve[node+1], curve[node], gap1));
   }
+
+
+  ring0 = ringCreate(  );
+  for (node=0;node<(nnode-1);node++) {
+    ringAddSegment( ring0, curve[node], curve[node+1], 
+		    &(tuvs[2*node]), &(tuvs[2*(node+1)]) );
+  }
+  ringAddSegment( ring0, curve[nnode-1], gap0, 
+		  &(tuvs[2*(nnode-1)]), uvgap0 );
+  ringAddSegment( ring0, gap0, curve[0], 
+		  uvgap0, tuvs );
+  
+  if (grid != gridFillRingWithFaces(grid, ring0, faceId0 ) ){
+    printf("%s: %d: gridFillRingWithFaces ring0 returned NULL.\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
+
+  ring1 = ringCreate(  );
+  for (node=(nnode-2);node >= 0;node--) {
+    ringAddSegment( ring1, curve[node+1], curve[node], 
+		    &(tuvs[2*(node+1)]), &(tuvs[2*node]) );
+  }
+  ringAddSegment( ring1, curve[0], gap0, 
+		  tuvs, uvgap0 );
+  ringAddSegment( ring1, gap0, curve[nnode-1], 
+		  uvgap0, &(tuvs[2*(nnode-1)]) );
+  
+  if (grid != gridFillRingWithFaces(grid, ring1, faceId1 ) ) {
+    printf("%s: %d: gridFillRingWithFaces ring1 returned NULL.\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
+  
+  ringFree( ring0 );
+  ringFree( ring1 );
 
   got_all_subfaces0 = TRUE;
   for (node=0;node<(nnode-1);node++) {

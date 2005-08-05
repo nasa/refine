@@ -1,3 +1,10 @@
+2005-08-05 16:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) initialized
+	ring and call gridFillRingWithFaces for test.
+	* src/gridinsert.c (gridFillRingWithFaces) get rid of segments by
+	inserting triangles. Only a test of current face logic so far.
+
 2005-08-05 15:14 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringSegment) return segment info.
