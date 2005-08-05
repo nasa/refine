@@ -1,3 +1,8 @@
+2005-08-05 09:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile (local,clean) removed dup Plan, added Ring
+	* src/Makefile.am added Ring to libs and tests
+
 2005-08-05 09:00 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringCreate,ringFree) created new object to keep

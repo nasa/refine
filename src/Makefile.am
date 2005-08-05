@@ -17,6 +17,7 @@ librefine_a_SOURCES = \
 	queue.h queue.c \
 	sort.h sort.c \
 	plan.h plan.c \
+	ring.h ring.c \
 	grid.h grid.c \
 	gridmath.h gridmath.c \
 	gridshape.h gridshape.c \
@@ -59,6 +60,7 @@ mesherx_sources = \
 	queue.h queue.c \
 	sort.h sort.c \
 	plan.h plan.c \
+	ring.h ring.c \
 	grid.h grid.c \
 	gridmath.h gridmath.c \
 	gridshape.h gridshape.c \
@@ -105,6 +107,7 @@ EXTRA_DIST = mesherx_SyJet.c \
 	lineMT.rb line_ruby.c \
 	sortMT.rb sort_ruby.c \
 	planMT.rb plan_ruby.c \
+	ringMT.rb ring_ruby.c \
 	queueMT.rb queue_ruby.c \
 	gridMT.rb grid_ruby.c \
 	gridmathMT.rb gridmath_ruby.c \
@@ -118,7 +121,7 @@ EXTRA_DIST = mesherx_SyJet.c \
 	gridmoveMT.rb gridmove_ruby.c \
 	layerMT.rb layer_ruby.c
 
-TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb planMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb layerMT.rb
+TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb planMT.rb ringMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb layerMT.rb
 
 bin_PROGRAMS =
 
