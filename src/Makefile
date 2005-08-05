@@ -15,8 +15,8 @@ local:
 	./lineMT.rb
 	./queueMT.rb
 	./sortMT.rb
-	./planMT.rb
 	./intersectMT.rb
+	./ringMT.rb
 	./gridMT.rb
 	./gridcadMT.rb
 	./gridmathMT.rb
@@ -28,4 +28,5 @@ local:
 	./layerMT.rb
 
 clean:
-	rm -rf Adj Grid* Intersect Layer Queue Sort Line Plan Near SampleUnit
+	rm -rf SampleUnit
+	rm -rf Adj Plan Near Line Queue Sort Intersect Ring Grid* Layer  
