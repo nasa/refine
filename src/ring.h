@@ -22,7 +22,14 @@ BEGIN_C_DECLORATION
 typedef struct Ring Ring;
 
 struct Ring {
+
+  int malloc_chunk_size;
+
   int segments;
+  int malloced_segments;
+  int *segment_nodes;
+  double *segment_uvs;
+
   int triangles;
 };
 
