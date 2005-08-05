@@ -52,3 +52,12 @@ int ringTriangles( Ring *ring )
 {
   return ring->triangles;
 }
+
+Ring *ringAddTriangle( Ring *ring,
+		       int node0, int node1, int node2,
+		       double *uv2 )
+{
+  ring->triangles++;
+  return ring;
+}
+

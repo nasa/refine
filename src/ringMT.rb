@@ -26,12 +26,21 @@ class TestRing < Test::Unit::TestCase
  end
 
  def test_adding_segment_returns_ring
-  assert_equal @ring, @ring.addSegment(2,4,[1.1,1.2],[2.1,2.2])
+  assert_equal @ring, @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
  end
 
  def test_adding_segment_increments_total
-  @ring.addSegment(2,4,[1.1,1.2],[2.1,2.2])
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
   assert_equal 1, @ring.segments
+ end
+
+ def test_adding_triangle_returns_ring
+  assert_equal @ring, @ring.addTriangle(2,4,5,[5.1,5.2])
+ end
+
+ def test_adding_triangle_increments_total
+  @ring.addTriangle(2,4,5,[5.1,5.2])
+  assert_equal 1, @ring.triangles
  end
 
 end

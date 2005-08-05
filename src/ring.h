@@ -33,6 +33,7 @@ int ringSegments( Ring * );
 Ring *ringAddSegment( Ring *, int node0, int node1, double *uv0, double *uv1 );
 
 int ringTriangles( Ring * );
+Ring *ringAddTriangle( Ring *, int node0, int node1, int node2, double *uv2 );
 
 END_C_DECLORATION
 

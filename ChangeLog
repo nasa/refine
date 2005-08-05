@@ -1,3 +1,7 @@
+2005-08-05 09:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (addTriangle) add triangle to ring.
+
 2005-08-05 09:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (addSegment) add segment to ring.
