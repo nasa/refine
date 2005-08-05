@@ -11,7 +11,7 @@ RubyExtensionBuilder.new('Line').build
 require 'test/unit'
 require 'Line/Line'
 
-class TestNear < Test::Unit::TestCase
+class TestLine < Test::Unit::TestCase
 
  EMPTY = -1
 

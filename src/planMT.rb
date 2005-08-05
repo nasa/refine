@@ -12,7 +12,7 @@ require 'test/unit'
 require 'Plan/Plan'
 require 'Sort/Sort'
 
-class TestQueue < Test::Unit::TestCase
+class TestPlan < Test::Unit::TestCase
 
  EMPTY = -1
 
