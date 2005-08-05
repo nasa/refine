@@ -21,8 +21,8 @@ class TestQueue < Test::Unit::TestCase
  def setup ; set_up ; end
 
  def test_create_initializes_sizes_to_zero
-  assert_equal 0,        @ring.segments
-  assert_equal 0,        @ring.triangles
+  assert_equal 0, @ring.segments
+  assert_equal 0, @ring.triangles
  end
 
 end
