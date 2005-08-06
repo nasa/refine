@@ -321,7 +321,10 @@ int main( int argc, char *argv[] )
   }
   
   if(strcmp(modeler,"")==0)       sprintf(modeler,"FELISA" );
-  if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
+
+  if(strcmp(project,"")==0)       sprintf(project,"../test/le" );
+  LeadingEdgeBG = TRUE;
+
   if (validate) {
     if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_val", project );
   }else{

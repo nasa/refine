@@ -1,3 +1,7 @@
+2005-08-06 14:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) default project is le and LeadingEdgeBG active
+
 2005-08-05 16:28 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridReconstructSplitEdgeRatio) initialized
