@@ -33,14 +33,20 @@ Ring* ringCreate( void )
     (double *)malloc(ring->malloced_segments*4*sizeof(double));
 
   ring->triangles = 0;
+  ring->malloced_triangles = 100;
+  ring->triangle_nodes = (int *)malloc(ring->malloced_triangles*3*sizeof(int));
+  ring->triangle_uvs = 
+    (double *)malloc(ring->malloced_triangles*6*sizeof(double));
 
   return ring;
 }
 
 void ringFree( Ring *ring )
 {
-  if ( NULL != ring->segment_nodes ) free( ring->segment_nodes );
-  if ( NULL != ring->segment_uvs   ) free( ring->segment_uvs );
+  if ( NULL != ring->segment_nodes  ) free( ring->segment_nodes );
+  if ( NULL != ring->segment_uvs    ) free( ring->segment_uvs );
+  if ( NULL != ring->triangle_nodes ) free( ring->triangle_nodes );
+  if ( NULL != ring->triangle_uvs   ) free( ring->triangle_uvs );
   free( ring );
 }
 
@@ -164,10 +170,53 @@ Ring *ringAddTriangle( Ring *ring,
 	return NULL;
       }
 
+      if ( ring->triangles >= ring->malloced_triangles ) {
+	ring->malloced_triangles += ring->malloc_chunk_size;
+    
+	ring->triangle_nodes = (int *)realloc(ring->triangle_nodes,
+					      ring->malloced_triangles*
+					      3*sizeof(int));
+	ring->triangle_uvs =
+	  (double *)realloc(ring->triangle_uvs,
+			    ring->malloced_triangles*6*sizeof(double));
+      }
+
+      ring->triangle_nodes[0+3*ring->triangles] = node0;
+      ring->triangle_nodes[1+3*ring->triangles] = node1;
+      ring->triangle_nodes[2+3*ring->triangles] = node2;
+      ring->triangle_uvs[0+6*ring->triangles] = uv0[0];
+      ring->triangle_uvs[1+6*ring->triangles] = uv0[1];
+      ring->triangle_uvs[2+6*ring->triangles] = uv1[0];
+      ring->triangle_uvs[3+6*ring->triangles] = uv1[1];
+      ring->triangle_uvs[4+6*ring->triangles] = uv2[0];
+      ring->triangle_uvs[5+6*ring->triangles] = uv2[1];
+      
       ring->triangles++;
       return ring;
     }
   }
   return NULL;
+}
+
+Ring *ringTriangle( Ring *ring, int triangle,
+		    int *node0, int *node1, int *node2,
+		    double *uv0, double *uv1, double *uv2 )
+{
+  if ( triangle < 0 || triangle >= ringTriangles( ring ) ) return NULL;
+
+  (*node0) = ring->triangle_nodes[0+3*triangle];
+  (*node1) = ring->triangle_nodes[1+3*triangle];
+  (*node2) = ring->triangle_nodes[2+3*triangle];
+
+  uv0[0] = ring->triangle_uvs[0+6*triangle];
+  uv0[1] = ring->triangle_uvs[1+6*triangle];
+
+  uv1[0] = ring->triangle_uvs[2+6*triangle];
+  uv1[1] = ring->triangle_uvs[3+6*triangle];
+
+  uv2[0] = ring->triangle_uvs[4+6*triangle];
+  uv2[1] = ring->triangle_uvs[5+6*triangle];
+
+  return ring;
 }
 

@@ -136,5 +136,27 @@ class TestRing < Test::Unit::TestCase
 
  # retrieving triangles
 
+ def test_retreve_triangle_out_of_range_empty
+  assert_nil @ring.triangle(-1)
+  assert_nil @ring.triangle(0)
+ end
+
+ def test_retreive_triangle
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  @ring.addTriangle(2,4,5,[5.1,5.2])
+  assert_nil @ring.triangle(1)
+
+  triangle = @ring.triangle(0)
+  assert_equal 2, triangle[0]
+  assert_equal 4, triangle[1]
+  assert_equal 5, triangle[2]
+  tol = 1.0e-15
+  assert_in_delta 2.1, triangle[3][0], tol
+  assert_in_delta 2.2, triangle[3][1], tol
+  assert_in_delta 4.1, triangle[4][0], tol
+  assert_in_delta 4.2, triangle[4][1], tol
+  assert_in_delta 5.1, triangle[5][0], tol
+  assert_in_delta 5.2, triangle[5][1], tol
+ end
 
 end

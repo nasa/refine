@@ -31,6 +31,9 @@ struct Ring {
   double *segment_uvs;
 
   int triangles;
+  int malloced_triangles;
+  int *triangle_nodes;
+  double *triangle_uvs;
 };
 
 Ring *ringCreate( void );
@@ -43,6 +46,8 @@ Ring *ringSegment( Ring *, int segment, int *node0, int *node1,
 
 int ringTriangles( Ring * );
 Ring *ringAddTriangle( Ring *, int node0, int node1, int node2, double *uv2 );
+Ring *ringTriangle( Ring *, int triangle, int *node0, int *node1, int *node2,
+		    double *uv0, double *uv1, double *uv2 );
 
 END_C_DECLORATION
 
