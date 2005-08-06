@@ -792,8 +792,9 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   double tuvs[2*MAXDEG];
   int curve[MAXDEG];
   Ring *ring0, *ring1;
-
-  GridBool got_all_subfaces0, got_all_subfaces1;
+  int triangle;
+  int tri0, tri1, tri2;
+  double uv0[2], uv1[2], uv2[2];
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
@@ -899,19 +900,6 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     }
   }
 
-  for (node=0;node<nnode;node++) {
-    printf(" node%10d u %f v %f\n",curve[node],tuvs[0+2*node],tuvs[1+2*node]);
-  }
-  for (node=0;node<(nnode-1);node++) {
-    printf("face%10d%10d%10d exists? %d\n",
-	   curve[node], curve[node+1], gap0,
-	   gridCellFace(grid, curve[node], curve[node+1], gap0));
-    printf("face%10d%10d%10d exists? %d\n",
-	   curve[node+1], curve[node], gap1,
-	   gridCellFace(grid, curve[node+1], curve[node], gap1));
-  }
-
-
   ring0 = ringCreate(  );
   for (node=0;node<(nnode-1);node++) {
     ringAddSegment( ring0, curve[node], curve[node+1], 
@@ -944,52 +932,45 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     return EMPTY;
   }
   
+  for ( triangle=0 ; triangle < ringTriangles(ring0) ; triangle++ ) {
+    if ( ring0 != ringTriangle( ring0, triangle,
+				&tri0, &tri1, &tri2,
+				uv0, uv1, uv2 ) ) return EMPTY;
+    gridAddFaceUV( grid, 
+		   tri0, uv0[0], uv0[1],
+		   tri1, uv1[0], uv1[1],
+		   tri2, uv2[0], uv2[1],
+		   faceId0 );
+  }
+  gridRemoveFace(grid,face0);
+
+  for ( triangle=0 ; triangle < ringTriangles(ring1) ; triangle++ ) {
+    if ( ring1 != ringTriangle( ring1, triangle,
+				&tri0, &tri1, &tri2,
+				uv0, uv1, uv2 ) ) return EMPTY;
+    gridAddFaceUV( grid, 
+		   tri0, uv0[0], uv0[1],
+		   tri1, uv1[0], uv1[1],
+		   tri2, uv2[0], uv2[1],
+		   faceId1 );
+  }
+  gridRemoveFace(grid,face1);
+
+  for ( triangle=0 ; triangle < ringTriangles(ring0) ; triangle++ ) {
+    if ( ring0 != ringTriangle( ring0, triangle,
+				&tri0, &tri1, &tri2,
+				uv0, uv1, uv2 ) ) return EMPTY;
+    gridRemoveCellsOutsideOfFaces( grid, tri1, tri0, tri2 );
+  }
+  for ( triangle=0 ; triangle < ringTriangles(ring1) ; triangle++ ) {
+    if ( ring1 != ringTriangle( ring1, triangle,
+				&tri0, &tri1, &tri2,
+				uv0, uv1, uv2 ) ) return EMPTY;
+    gridRemoveCellsOutsideOfFaces( grid, tri1, tri0, tri2 );
+  }
+
   ringFree( ring0 );
   ringFree( ring1 );
-
-  got_all_subfaces0 = TRUE;
-  for (node=0;node<(nnode-1);node++) {
-    got_all_subfaces0 =( got_all_subfaces0 && 
-			 gridCellFace(grid, curve[node], curve[node+1], gap0) );
-  }
-  if (got_all_subfaces0) {
-    for (node=0;node<(nnode-1);node++) {
-      gridAddFaceUV( grid, 
-		     curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
-		     curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
-		     gap0,          uvgap0[0],          uvgap0[1],
-		     faceId0 );
-    }
-    gridRemoveFace(grid,face0);
-  }else{
-    printf("missing face0 subfaces.\n");
-    return EMPTY;
-  }
-
-  got_all_subfaces1 = TRUE;
-  for (node=0;node<(nnode-1);node++) {
-    got_all_subfaces1 =( got_all_subfaces1 && 
-			 gridCellFace(grid, curve[node+1], curve[node], gap1) );
-  }
-  if (got_all_subfaces1) {
-    for (node=0;node<(nnode-1);node++) {
-      gridAddFaceUV( grid, 
-		     curve[node+1], tuvs[0+2*(node+1)], tuvs[1+2*(node+1)],
-		     curve[node],   tuvs[0+2*node],     tuvs[1+2*node],
-		     gap1,          uvgap1[0],          uvgap1[1],
-		     faceId1 );
-    }
-    gridRemoveFace(grid,face1);
-  }else{ 
-    printf("missing face1 subfaces.\n");
-    return EMPTY;
-  }
-
-  for (node=0;node<(nnode-1);node++) {
-    /* remove cells outside of "left-handed" faces */
-    gridRemoveCellsOutsideOfFaces( grid, curve[node+1], curve[node], gap0 );
-    gridRemoveCellsOutsideOfFaces( grid, curve[node], curve[node+1], gap1 );
-  }
 
   return newnode;
 }
