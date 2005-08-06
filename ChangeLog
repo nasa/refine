@@ -1,3 +1,8 @@
+2005-08-06 16:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) cleaned out old
+	stuff and just use ring for managing faces.
+
 2005-08-06 15:56 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringTriangle) return triangle info.
