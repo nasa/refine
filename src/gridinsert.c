@@ -761,6 +761,12 @@ Grid *gridFillRingWithFaces( Grid *grid, Ring *ring, int faceId0 )
       return NULL;
     }
 
+    if ( !gridCellFace(grid, node0, node1, node2 ) ) {
+      printf("%s: %d: gridFillRingWithFaces: missing gridCellFace\n",
+	     __FILE__,__LINE__);    
+      return NULL;
+    }
+
     if (ring != ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
       printf("%s: %d: gridFillRingWithFaces: ringAddTriangle NULL\n",
 	     __FILE__,__LINE__);    
@@ -927,10 +933,10 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     ringAddSegment( ring1, curve[node+1], curve[node], 
 		    &(tuvs[2*(node+1)]), &(tuvs[2*node]) );
   }
-  ringAddSegment( ring1, curve[0], gap0, 
-		  tuvs, uvgap0 );
-  ringAddSegment( ring1, gap0, curve[nnode-1], 
-		  uvgap0, &(tuvs[2*(nnode-1)]) );
+  ringAddSegment( ring1, curve[0], gap1, 
+		  tuvs, uvgap1 );
+  ringAddSegment( ring1, gap1, curve[nnode-1], 
+		  uvgap1, &(tuvs[2*(nnode-1)]) );
   
   if (grid != gridFillRingWithFaces(grid, ring1, faceId1 ) ) {
     printf("%s: %d: gridFillRingWithFaces ring1 returned NULL.\n",

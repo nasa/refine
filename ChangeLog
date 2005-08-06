@@ -1,3 +1,10 @@
+2005-08-06 15:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) fixed the
+	repeat of gap0 instead of gap1 in ring init.
+	* src/gridinsert.c (gridFillRingWithFaces) return NULL if face not
+	in grid.
+
 2005-08-06 14:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) default project is le and LeadingEdgeBG active
