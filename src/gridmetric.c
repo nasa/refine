@@ -1780,13 +1780,7 @@ GridBool gridRightHandedBoundaryUV( Grid *grid )
 double gridFaceAreaUV(Grid *grid, int face)
 {
   int faceId, nodes[3];
-  double uv0[3], uv1[3], uv2[3];
-  double edge0[3], edge1[3], norm[3];
-  int vol = 1;
-  double area;
-
-  /* Using 3D Vector math to save typing */
-  uv0[2] = uv1[2] = uv2[2] = 0.0;
+  double uv0[2], uv1[2], uv2[2];
 
   if (grid != gridFace(grid,face,nodes,&faceId)) {
     printf("%s: %d: Invalid Face number %d\n",__FILE__,__LINE__,face);
@@ -1796,8 +1790,24 @@ double gridFaceAreaUV(Grid *grid, int face)
   gridNodeUV( grid, nodes[1], faceId, uv1);
   gridNodeUV( grid, nodes[2], faceId, uv2);
 
-  gridSubtractVector(uv1,uv0,edge0);
-  gridSubtractVector(uv2,uv0,edge1);
+  return gridFaceAreaUVDirect(grid, uv0, uv1, uv2, faceId);
+}
+
+double gridFaceAreaUVDirect(Grid *grid, double *uv0,  double *uv1,  double *uv2,
+			    int faceId)
+{
+  double edge0[3], edge1[3], norm[3];
+  int vol = 1;
+  double area;
+
+  /* Using 3D Vector math to save typing */
+  edge0[2] = edge1[2] = 0.0;
+
+  edge0[0] = uv1[0]-uv0[0];
+  edge0[1] = uv1[1]-uv0[1];
+
+  edge1[0] = uv2[0]-uv0[0];
+  edge1[1] = uv2[1]-uv0[1];
 
   gridCrossProduct(edge0,edge1,norm);
 

@@ -95,6 +95,8 @@ GridBool gridRightHandedBoundaryUV(Grid *g );
 
 double gridFaceArea(Grid *g, int n0, int n1, int n2);
 double gridFaceAreaUV(Grid *g, int face);
+double gridFaceAreaUVDirect(Grid *g, double *uv0,  double *uv1,  double *uv2, 
+			    int faceId);
 Grid *gridMinFaceAreaUV(Grid *g, int node, double *min_area);
 double gridMinCellFaceAreaUV(Grid *g, int *nodes );
 
