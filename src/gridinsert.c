@@ -803,7 +803,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   int node, nnode;
   double tuvs[2*MAXDEG];
   int curve[MAXDEG];
-  Ring *ring0, *ring1;
+  Ring *ring0[MAXDEG], *ring1[MAXDEG];
   int triangle;
   int tri0, tri1, tri2;
   double uv0[2], uv1[2], uv2[2];
@@ -912,40 +912,40 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     }
   }
 
-  ring0 = ringCreate(  );
+  ring0[0] = ringCreate(  );
   for (node=0;node<(nnode-1);node++) {
-    ringAddSegment( ring0, curve[node], curve[node+1], 
+    ringAddSegment( ring0[0], curve[node], curve[node+1], 
 		    &(tuvs[2*node]), &(tuvs[2*(node+1)]) );
   }
-  ringAddSegment( ring0, curve[nnode-1], gap0, 
+  ringAddSegment( ring0[0], curve[nnode-1], gap0, 
 		  &(tuvs[2*(nnode-1)]), uvgap0 );
-  ringAddSegment( ring0, gap0, curve[0], 
+  ringAddSegment( ring0[0], gap0, curve[0], 
 		  uvgap0, tuvs );
   
-  if (grid != gridFillRingWithFaces(grid, ring0, faceId0 ) ){
-    printf("%s: %d: gridFillRingWithFaces ring0 returned NULL.\n",
+  if (grid != gridFillRingWithFaces(grid, ring0[0], faceId0 ) ){
+    printf("%s: %d: gridFillRingWithFaces ring0[0] returned NULL.\n",
 	   __FILE__,__LINE__);
     return EMPTY;
   }
 
-  ring1 = ringCreate(  );
+  ring1[0] = ringCreate(  );
   for (node=(nnode-2);node >= 0;node--) {
-    ringAddSegment( ring1, curve[node+1], curve[node], 
+    ringAddSegment( ring1[0], curve[node+1], curve[node], 
 		    &(tuvs[2*(node+1)]), &(tuvs[2*node]) );
   }
-  ringAddSegment( ring1, curve[0], gap1, 
+  ringAddSegment( ring1[0], curve[0], gap1, 
 		  tuvs, uvgap1 );
-  ringAddSegment( ring1, gap1, curve[nnode-1], 
+  ringAddSegment( ring1[0], gap1, curve[nnode-1], 
 		  uvgap1, &(tuvs[2*(nnode-1)]) );
   
-  if (grid != gridFillRingWithFaces(grid, ring1, faceId1 ) ) {
-    printf("%s: %d: gridFillRingWithFaces ring1 returned NULL.\n",
+  if (grid != gridFillRingWithFaces(grid, ring1[0], faceId1 ) ) {
+    printf("%s: %d: gridFillRingWithFaces ring1[0] returned NULL.\n",
 	   __FILE__,__LINE__);
     return EMPTY;
   }
   
-  for ( triangle=0 ; triangle < ringTriangles(ring0) ; triangle++ ) {
-    if ( ring0 != ringTriangle( ring0, triangle,
+  for ( triangle=0 ; triangle < ringTriangles(ring0[0]) ; triangle++ ) {
+    if ( ring0[0] != ringTriangle( ring0[0], triangle,
 				&tri0, &tri1, &tri2,
 				uv0, uv1, uv2 ) ) return EMPTY;
     gridAddFaceUV( grid, 
@@ -956,8 +956,8 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   }
   gridRemoveFace(grid,face0);
 
-  for ( triangle=0 ; triangle < ringTriangles(ring1) ; triangle++ ) {
-    if ( ring1 != ringTriangle( ring1, triangle,
+  for ( triangle=0 ; triangle < ringTriangles(ring1[0]) ; triangle++ ) {
+    if ( ring1[0] != ringTriangle( ring1[0], triangle,
 				&tri0, &tri1, &tri2,
 				uv0, uv1, uv2 ) ) return EMPTY;
     gridAddFaceUV( grid, 
@@ -973,21 +973,21 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     return EMPTY;
   }
 
-  for ( triangle=0 ; triangle < ringTriangles(ring0) ; triangle++ ) {
-    if ( ring0 != ringTriangle( ring0, triangle,
+  for ( triangle=0 ; triangle < ringTriangles(ring0[0]) ; triangle++ ) {
+    if ( ring0[0] != ringTriangle( ring0[0], triangle,
 				&tri0, &tri1, &tri2,
 				uv0, uv1, uv2 ) ) return EMPTY;
     gridRemoveCellsOutsideOfFaces( grid, tri1, tri0, tri2 );
   }
-  for ( triangle=0 ; triangle < ringTriangles(ring1) ; triangle++ ) {
-    if ( ring1 != ringTriangle( ring1, triangle,
+  for ( triangle=0 ; triangle < ringTriangles(ring1[0]) ; triangle++ ) {
+    if ( ring1[0] != ringTriangle( ring1[0], triangle,
 				&tri0, &tri1, &tri2,
 				uv0, uv1, uv2 ) ) return EMPTY;
     gridRemoveCellsOutsideOfFaces( grid, tri1, tri0, tri2 );
   }
 
-  ringFree( ring0 );
-  ringFree( ring1 );
+  ringFree( ring0[0] );
+  ringFree( ring1[0] );
 
   return newnode;
 }
