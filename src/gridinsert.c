@@ -761,14 +761,20 @@ Grid *gridFillRingWithFaces( Grid *grid, Ring *ring, int faceId0 )
       return NULL;
     }
 
-    if ( !gridCellFace(grid, node0, node1, node2 ) ) {
-      printf("%s: %d: gridFillRingWithFaces: missing gridCellFace\n",
-	     __FILE__,__LINE__);    
-      return NULL;
-    }
+    if (node0 == node2 || node1 == node2 ) {
+	printf("%s: %d: gridFillRingWithFaces: repeated nodes? %d %d %d\n",
+	       __FILE__,__LINE__,node0,node1,node2);
+	return NULL;
+      }
 
-    if (ring != ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
-      printf("%s: %d: gridFillRingWithFaces: ringAddTriangle NULL\n",
+    if ( gridCellFace(grid, node0, node1, node2 ) ) {
+      if (ring != ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
+	printf("%s: %d: gridFillRingWithFaces: ringAddTriangle NULL\n",
+	       __FILE__,__LINE__);    
+	return NULL;
+      }
+    } else {
+      printf("%s: %d: gridFillRingWithFaces: missing gridCellFace\n",
 	     __FILE__,__LINE__);    
       return NULL;
     }
