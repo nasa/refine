@@ -39,6 +39,8 @@ struct Ring {
 Ring *ringCreate( void );
 void ringFree( Ring * );
 
+Ring *ringInspect( Ring * );
+
 int ringSegments( Ring * );
 Ring *ringAddSegment( Ring *, int node0, int node1, double *uv0, double *uv1 );
 Ring *ringSegment( Ring *, int segment, int *node0, int *node1,
