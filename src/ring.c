@@ -132,7 +132,7 @@ Ring *ringSegment( Ring *ring, int segment, int *node0, int *node1,
   return ring;
 }
 
-Ring *ringSegmentsContainNode( Ring *ring, int node, double *uv )
+GridBool ringSegmentsContainNode( Ring *ring, int node, double *uv )
 {
   int segment;
 
@@ -141,18 +141,18 @@ Ring *ringSegmentsContainNode( Ring *ring, int node, double *uv )
     if ( ring->segment_nodes[0+2*segment] == node ) {
       uv[0] = ring->segment_uvs[0+4*segment];
       uv[1] = ring->segment_uvs[1+4*segment];
-      return ring;
+      return TRUE;
     }
 
     if ( ring->segment_nodes[1+2*segment] == node ) {
       uv[0] = ring->segment_uvs[2+4*segment];
       uv[1] = ring->segment_uvs[3+4*segment];
-      return ring;
+      return TRUE;
     }
 
   }
 
-  return NULL;
+  return FALSE;
 }
 
 int ringTriangles( Ring *ring )

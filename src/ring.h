@@ -43,7 +43,7 @@ int ringSegments( Ring * );
 Ring *ringAddSegment( Ring *, int node0, int node1, double *uv0, double *uv1 );
 Ring *ringSegment( Ring *, int segment, int *node0, int *node1,
 		   double *uv0, double *uv1 );
-Ring *ringSegmentsContainNode( Ring *, int node, double *uv );
+GridBool ringSegmentsContainNode( Ring *, int node, double *uv );
 
 int ringTriangles( Ring * );
 Ring *ringAddTriangle( Ring *, int node0, int node1, int node2, double *uv2 );

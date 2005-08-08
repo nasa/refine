@@ -75,7 +75,7 @@ VALUE ring_segmentsContainNode( VALUE self, VALUE node )
   VALUE rb_uv;
   GET_RING_FROM_SELF;
 
-  if ( ring != ringSegmentsContainNode(ring, NUM2INT(node), uv ) ) return Qnil;
+  if ( !ringSegmentsContainNode(ring, NUM2INT(node), uv ) ) return Qnil;
 
   rb_uv = rb_ary_new2(2);
   rb_ary_store( rb_uv, 0, rb_float_new(uv[0]) );
