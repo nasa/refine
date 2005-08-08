@@ -69,6 +69,21 @@ VALUE ring_segment( VALUE self, VALUE segment )
   return rb;
 }
 
+VALUE ring_segmentsContainNode( VALUE self, VALUE node )
+{
+  double uv[2];
+  VALUE rb_uv;
+  GET_RING_FROM_SELF;
+
+  if ( ring != ringSegmentsContainNode(ring, NUM2INT(node), uv ) ) return Qnil;
+
+  rb_uv = rb_ary_new2(2);
+  rb_ary_store( rb_uv, 0, rb_float_new(uv[0]) );
+  rb_ary_store( rb_uv, 1, rb_float_new(uv[1]) );
+
+  return rb_uv;
+}
+
 VALUE ring_triangles( VALUE self )
 {
   GET_RING_FROM_SELF;
@@ -136,6 +151,7 @@ void Init_Ring()
   rb_define_method( cRing, "segments", ring_segments, 0 );
   rb_define_method( cRing, "addSegment", ring_addSegment, 4 );
   rb_define_method( cRing, "segment", ring_segment, 1 );
+  rb_define_method( cRing, "segmentsContainNode", ring_segmentsContainNode, 1 );
 
   rb_define_method( cRing, "triangles", ring_triangles, 0 );
   rb_define_method( cRing, "addTriangle", ring_addTriangle, 4 );

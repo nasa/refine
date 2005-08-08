@@ -82,6 +82,22 @@ class TestRing < Test::Unit::TestCase
   assert_in_delta 4.2, segment[3][1], tol
  end
 
+ # look for node in segments
+
+ def test_do_not_find_node_that_does_not_exist_in_segements
+  assert_nil @ring.segmentsContainNode(2)
+ end
+
+ def test_find_node_in_segement_returns_nodal_uv
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  tol = 1.0e-15
+  assert_in_delta 2.1, @ring.segmentsContainNode(2)[0], tol
+  assert_in_delta 2.2, @ring.segmentsContainNode(2)[1], tol
+
+  assert_in_delta 4.1, @ring.segmentsContainNode(4)[0], tol
+  assert_in_delta 4.2, @ring.segmentsContainNode(4)[1], tol
+ end
+
  # triangles
 
  def test_adding_triangle_returns_nil_if_base_is_not_a_segment
