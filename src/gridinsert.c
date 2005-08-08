@@ -734,25 +734,16 @@ Grid *gridRemoveCellsOutsideOfFaces( Grid *grid, int n0, int n1, int n2 )
 
 }
 
-Grid *gridFillRingWithFaces( Grid *grid, Ring *ring, int faceId0 )
+Grid *gridFillRingWithFaces( Grid *grid, Ring *ring, int faceId )
 {
-  int segment, curve_segments;
+  int equator;
   int node0, node1, node2;
   double uv0[2], uv1[2], uv2[2];
-  
-  // to debug find gap node from last segment (node1 is dummy)
+  double area;
+  GridBool could_not_complete_triangle;
 
-  if (ring != ringSegment( ring, ringSegments(ring)-1, 
-			   &node2, &node1,
-			   uv2, uv1 ) ) {
-    printf("%s: %d: gridFillRingWithFaces: ringSegment NULL\n",
-	   __FILE__,__LINE__);    
-    return NULL;
-  }
-
-  // number of segments will decrease with the added faces
-  curve_segments = ringSegments(ring)-2;
-  for ( segment=0 ; segment<curve_segments ; segment++ ) {
+  while ( ringSegments(ring) > 0 ) {
+    ringInspect( ring );
     if (ring != ringSegment( ring, 0, // always grab first segment off stack 
 			     &node0, &node1,
 			     uv0, uv1 ) ) {
@@ -761,24 +752,39 @@ Grid *gridFillRingWithFaces( Grid *grid, Ring *ring, int faceId0 )
       return NULL;
     }
 
-    if (node0 == node2 || node1 == node2 ) {
-      printf("%s: %d: gridFillRingWithFaces: repeated nodes? %d %d %d\n",
-	     __FILE__,__LINE__,node0,node1,node2);
-      return NULL;
-    }
-
-    if ( gridCellFace(grid, node0, node1, node2 ) ) {
-      if (ring != ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
-	printf("%s: %d: gridFillRingWithFaces: ringAddTriangle NULL\n",
-	       __FILE__,__LINE__);    
-	return NULL;
-      }
-    } else {
-      printf("%s: %d: gridFillRingWithFaces: missing gridCellFace\n",
+    if (grid != gridEquator(grid, node0, node1)) {
+      printf("%s: %d: gridFillRingWithFaces: gridEquator NULL\n",
 	     __FILE__,__LINE__);    
       return NULL;
     }
+    
+    could_not_complete_triangle = TRUE;
+    for( equator = 0 ; 
+	 could_not_complete_triangle && equator < gridNEqu(grid) ;
+	 equator++ ) {
 
+      node2 = gridEqu( grid, equator );
+      printf("close nodes %6d%6d%6d\n",
+	     node0,node1,node2);
+      if ( ringSegmentsContainNode( ring, node2, uv2) ) {
+	area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
+	printf("area %e\n",area);
+	if (area>1.0e-12 ) {
+	  if (ring == ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
+	    could_not_complete_triangle = FALSE;
+	  }else{
+	    printf("%s: %d: gridFillRingWithFaces: ringAddTriangle NULL\n",
+		   __FILE__,__LINE__);    
+	    return NULL;
+	  }
+	}
+      }
+    }
+    if (could_not_complete_triangle){
+      printf("%s: %d: gridFillRingWithFaces: could_not_complete_triangle\n",
+	     __FILE__,__LINE__);    
+      return NULL;
+    }
   }
   printf("remaining segments %d\n",ringSegments(ring));
   return grid;
@@ -961,6 +967,11 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 		   faceId1 );
   }
   gridRemoveFace(grid,face1);
+
+  printf("n0 %d n1 %d\n",n0,n1);
+  if ( 29==n0 && 207==n1) {
+    return EMPTY;
+  }
 
   for ( triangle=0 ; triangle < ringTriangles(ring0) ; triangle++ ) {
     if ( ring0 != ringTriangle( ring0, triangle,

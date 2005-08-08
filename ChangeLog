@@ -1,3 +1,9 @@
+2005-08-08 17:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) kick out for 29,207
+	* src/gridinsert.c (gridFillRingWithFaces) debug cruff, try for
+	opposite node in equator.
+
 2005-08-08 17:18 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridFaceAreaUVDirect) direct way of getting
