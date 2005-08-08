@@ -762,10 +762,10 @@ Grid *gridFillRingWithFaces( Grid *grid, Ring *ring, int faceId0 )
     }
 
     if (node0 == node2 || node1 == node2 ) {
-	printf("%s: %d: gridFillRingWithFaces: repeated nodes? %d %d %d\n",
-	       __FILE__,__LINE__,node0,node1,node2);
-	return NULL;
-      }
+      printf("%s: %d: gridFillRingWithFaces: repeated nodes? %d %d %d\n",
+	     __FILE__,__LINE__,node0,node1,node2);
+      return NULL;
+    }
 
     if ( gridCellFace(grid, node0, node1, node2 ) ) {
       if (ring != ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
