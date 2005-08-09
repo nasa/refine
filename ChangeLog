@@ -1,3 +1,8 @@
+2005-08-09 19:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) junk from home
+	* src/gridcad.c (gridLineSegmentIntersectsFace) junk from home
+	
 2005-08-09 18:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) started to

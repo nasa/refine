@@ -801,6 +801,7 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
   int node0, node1, node2;
   double uv0[2], uv1[2], uv2[2];
   double xyz2[3], xyz[3], proj[3];
+  double bary;
   double area;
   segment = 0;
 
@@ -808,22 +809,25 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
     printf("%s: %d: ringSegment NULL.\n",__FILE__,__LINE__); return NULL;
   }
 
+  gridNodeUV(grid,node0,faceId,uv0);
+
   if (grid != gridEquator(grid, node0, node1)) {
     printf("%s: %d: gridEquator NULL.\n",__FILE__,__LINE__); return NULL;
   }
  
   for( equator = 0 ; 
-       equator < gridNEqu(grid) ;
+       equator < (gridNEqu(grid)-1) ;
        equator++ ) {
-    node2 = gridEqu( grid, equator );
-    gridNodeXYZ(grid,node2,xyz2);
-    uv2[0] = uv0[0];
-    uv2[1] = uv0[1];
-    gridProjectToFace(grid, faceId, xyz2, uv2, xyz);
-    gridSubtractVector(xyz,xyz2,proj);
+    node0 = gridEqu( grid, equator );
+    node1 = gridEqu( grid, equator+1 );
+    printf(" line segment nodes %d %d\n",node0,node1);
+    
+    gridLineSegmentIntersectsFace(grid, node0, node1,
+				  faceId, uv0,
+				  uv2, xyz, &bary );
+    
     area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
     printf("area %e\n",area);
-    printf("proj %f %f %f\n",proj[0],proj[1],proj[2]);
   }
   return grid;
 }
