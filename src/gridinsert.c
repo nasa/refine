@@ -572,7 +572,8 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
     it = adjNext(it);
     current_cell = adjItem(it);
     if (EMPTY == current_cell) {
-      printf("%s: %d: gridFindEnclosingCell round-off: no more next \n");
+      printf("%s: %d: gridFindEnclosingCell round-off: no more next \n",
+	     __FILE__,__LINE__);
       return EMPTY;
     }
   }
