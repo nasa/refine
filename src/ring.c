@@ -200,7 +200,7 @@ Ring *ringAddTriangle( Ring *ring,
 	return NULL;
       }
 
-      if ( ring != ringAddSegment(ring,node0,node2,uv1,uv2) ) {
+      if ( ring != ringAddSegment(ring,node0,node2,uv0,uv2) ) {
 	printf("%s: %d: ringAddTriangle: ringAddSegment 0 2 returned NULL.\n",
 	       __FILE__,__LINE__);
 	return NULL;

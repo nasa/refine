@@ -150,6 +150,31 @@ class TestRing < Test::Unit::TestCase
   assert_equal 0, @ring.segments
  end
 
+ def test_adding_triangle_adds_segments_with_correct_nodes_and_uvs
+  @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
+  @ring.addTriangle(2,4,5,[5.1,5.2])
+
+  tol = 1.0e-15
+
+  segment = @ring.segment(0)
+  assert_equal 5, segment[0]
+  assert_equal 4, segment[1]
+
+  assert_in_delta 5.1, segment[2][0], tol
+  assert_in_delta 5.2, segment[2][1], tol
+  assert_in_delta 4.1, segment[3][0], tol
+  assert_in_delta 4.2, segment[3][1], tol
+
+  segment = @ring.segment(1)
+  assert_equal 2, segment[0]
+  assert_equal 5, segment[1]
+  tol = 1.0e-15
+  assert_in_delta 2.1, segment[2][0], tol
+  assert_in_delta 2.2, segment[2][1], tol
+  assert_in_delta 5.1, segment[3][0], tol
+  assert_in_delta 5.2, segment[3][1], tol
+ end
+
  # retrieving triangles
 
  def test_retreve_triangle_out_of_range_empty

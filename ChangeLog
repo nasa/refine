@@ -1,3 +1,8 @@
+2005-08-09 12:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddTriangle) to test and fix bug with inconsistent
+	node id's and uv values.
+
 2005-08-09 10:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridReconstructSplitEdgeRatio) to continue
