@@ -864,9 +864,9 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   printf("new node %d inserted into cell %d\n",newnode,enclosing_cell);
   
   nnode=1;
-  tuvs[0+2*(nnode-1)] = tuv0[0];
-  tuvs[1+2*(nnode-1)] = tuv0[1];
-  curve[(nnode-1)] = n0;
+  tuvs[0] = tuv0[0];
+  tuvs[1] = tuv0[1];
+  curve[0] = n0;
   
   while ( newnode != curve[nnode-1] ) {
     if (grid != gridThreadCurveThroughVolume(grid, parent, 
