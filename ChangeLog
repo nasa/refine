@@ -1,3 +1,10 @@
+2005-08-09 18:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) started to
+	explore the ring fill via grid generation.
+	* src/gridcad.c (gridCellSideIntersectsFace) started to find
+	side-CADface intersection.
+	
 2005-08-09 13:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridFillRingWithExisitingCellFaces) renamed from

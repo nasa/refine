@@ -467,6 +467,33 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
   }
 }
 
+Grid *gridCellSideIntersectsFace(Grid *grid, int node0, int node1,
+				 int faceId, double *uv_guess,
+				 double *uv, double *xyz, double *bary )
+{
+  double xyz0[3], xyz1[3];
+  double interp_xyz[3];
+  double edge[3], disp[3], dot;
+
+  if (grid != gridNodeXYZ(grid, node0, xyz0) ) return NULL;
+  if (grid != gridNodeXYZ(grid, node1, xyz1) ) return NULL;
+
+  gridSubtractVector(xyz1, xyz0, edge);
+
+  (*bary) = 0.5;
+
+  interp_xyz[0] = (*bary)*xyz1[0] + (1.0-(*bary))*xyz0[0];
+  interp_xyz[1] = (*bary)*xyz1[1] + (1.0-(*bary))*xyz0[1];
+  interp_xyz[2] = (*bary)*xyz1[2] + (1.0-(*bary))*xyz0[2];
+
+  gridProjectToFace(grid, faceId, interp_xyz, uv, xyz);
+
+  gridSubtractVector(xyz, xyz0, disp);
+
+  return grid;
+
+}
+
 Grid *gridSmoothNearNode1(Grid *grid, int node )
 {
 #define SMOOTHDEG (500)

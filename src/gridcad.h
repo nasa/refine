@@ -52,6 +52,10 @@ Grid *gridCurveIntersectsFace(Grid *g, int *face_nodes, int parent,
 			      double *tuv0, double *tuv1,
 			      double *tuv, double *xyz, double *bary);
 
+Grid *gridCellSideIntersectsFace(Grid *g, int node0, int node1,
+				 int faceId, double *uv_guess,
+				 double *uv, double *xyz, double *bary );
+
 /* the {optimzation,lapacian}Limits will be set to a default if < 0.0 */ 
 Grid *gridSmooth(Grid *g, double optimizationLimit, double laplacianLimit );
 Grid *gridSmoothFaceMR(Grid *g, double optimizationLimit );

@@ -793,6 +793,41 @@ Grid *gridFillRingWithExisitingCellFaces( Grid *grid, Ring *ring, int faceId )
   return grid;
 }
 
+
+Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
+{
+  int segment;
+  int equator;
+  int node0, node1, node2;
+  double uv0[2], uv1[2], uv2[2];
+  double xyz2[3], xyz[3], proj[3];
+  double area;
+  segment = 0;
+
+  if (ring != ringSegment( ring, segment, &node0, &node1, uv0, uv1 ) ) {
+    printf("%s: %d: ringSegment NULL.\n",__FILE__,__LINE__); return NULL;
+  }
+
+  if (grid != gridEquator(grid, node0, node1)) {
+    printf("%s: %d: gridEquator NULL.\n",__FILE__,__LINE__); return NULL;
+  }
+ 
+  for( equator = 0 ; 
+       equator < gridNEqu(grid) ;
+       equator++ ) {
+    node2 = gridEqu( grid, equator );
+    gridNodeXYZ(grid,node2,xyz2);
+    uv2[0] = uv0[0];
+    uv2[1] = uv0[1];
+    gridProjectToFace(grid, faceId, xyz2, uv2, xyz);
+    gridSubtractVector(xyz,xyz2,proj);
+    area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
+    printf("area %e\n",area);
+    printf("proj %f %f %f\n",proj[0],proj[1],proj[2]);
+  }
+  return grid;
+}
+
 int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 				  int n0, int n1, double ratio )
 {
@@ -1000,6 +1035,9 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 						    faceId0 ) ){
       printf("%s: %d: gridFillRingWithExisitingCellFaces ring0[%d] NULL.\n",
 	     __FILE__,__LINE__,node);
+
+      gridFillRingWithCellEdgeSplits( grid, ring0[node], faceId0 );
+								 
       return EMPTY;
     }
     if (grid != gridFillRingWithExisitingCellFaces( grid, ring1[node], 
