@@ -1,3 +1,9 @@
+2005-08-09 10:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) to continue
+	debugging, set the min face uv area to 1.0e-16 and allow 29,207 to
+	continue.
+
 2005-08-09 09:32 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridReconstructSplitEdgeRatio) made an array

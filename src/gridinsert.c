@@ -770,7 +770,7 @@ Grid *gridFillRingWithFaces( Grid *grid, Ring *ring, int faceId )
       if ( ringSegmentsContainNode( ring, node2, uv2) ) {
 	area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
 	printf("area %e\n",area);
-	if (area>1.0e-12 ) {
+	if (area>1.0e-16 ) {
 	  if (ring == ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
 	    could_not_complete_triangle = FALSE;
 	  }else{
@@ -1050,7 +1050,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 
   printf("n0 %d n1 %d\n",n0,n1);
   if ( 29==n0 && 207==n1) {
-    return EMPTY;
+    //return EMPTY;
   }
 
   for (node=0;node<(nnode-1);node++) {
