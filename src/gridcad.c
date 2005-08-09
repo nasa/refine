@@ -467,9 +467,9 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
   }
 }
 
-Grid *gridCellSideIntersectsFace(Grid *grid, int node0, int node1,
-				 int faceId, double *uv_guess,
-				 double *uv, double *xyz, double *bary )
+Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
+				    int faceId, double *uv_guess,
+				    double *uv, double *xyz, double *bary )
 {
   double xyz0[3], xyz1[3];
   double interp_xyz[3];

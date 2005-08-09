@@ -2,7 +2,7 @@
 
 	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) started to
 	explore the ring fill via grid generation.
-	* src/gridcad.c (gridCellSideIntersectsFace) started to find
+	* src/gridcad.c (gridLineSegmentIntersectsFace) started to find
 	side-CADface intersection.
 	
 2005-08-09 13:45 Mike Park  <mike.park@nasa.gov>
