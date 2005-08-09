@@ -1,3 +1,8 @@
+2005-08-09 13:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithExisitingCellFaces) renamed from
+	gridFillRingWithFaces. Try all segments before giving up.
+
 2005-08-09 13:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridReconstructSplitEdgeRatio) fixed duplicate
