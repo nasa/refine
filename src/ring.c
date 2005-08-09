@@ -53,9 +53,9 @@ void ringFree( Ring *ring )
 Ring *ringInspect( Ring *ring )
 {
   int segment;
-  printf("%d segments\n",ringSegments( ring ));
+  printf("ring inspection,%4d segments\n",ringSegments( ring ));
   for ( segment=0 ; segment<ringSegments( ring ) ; segment++ ) {
-    printf("%d: %d %d\n",
+    printf("segment%4d: nodes%10d%10d\n",
 	   segment,
 	   ring->segment_nodes[0+2*segment],ring->segment_nodes[1+2*segment]);
   }
