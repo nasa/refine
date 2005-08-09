@@ -1,3 +1,7 @@
+2005-08-09 09:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) 
+
 2005-08-08 17:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridReconstructSplitEdgeRatio) kick out for 29,207
