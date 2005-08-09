@@ -1,6 +1,8 @@
 2005-08-09 09:32 Mike Park  <mike.park@nasa.gov>
 
-	* src/gridinsert.c (gridReconstructSplitEdgeRatio) 
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) made an array
+	of rings to include the through edge and the gap nodes in the
+	subfaces.
 
 2005-08-08 17:25 Mike Park  <mike.park@nasa.gov>
 
