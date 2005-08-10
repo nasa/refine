@@ -12,6 +12,7 @@
 /* $Id$ */
 
 #include <stdlib.h>
+#include <stdio.h>
 #ifndef __APPLE__       /* Not needed on Mac OS X */
 #include <malloc.h>
 #endif
@@ -62,6 +63,29 @@ Ring *ringInspect( Ring *ring )
   return ring;
 }
 
+Ring *ringTecplot( Ring *ring, char *filename )
+{
+  FILE *file;
+  int triangle;
+  if (NULL == filename) {
+    file = fopen("ring_triangles_in_uv.t","w");
+  }else{
+    file = fopen(filename,"w");
+  } 
+  fprintf(file, "title=\"tecplot ring triangle uv geometry file\"\n");
+  fprintf(file, "variables=\"U\",\"V\"\n");
+  for ( triangle = 0 ; triangle < ringTriangles( ring ) ; triangle++ ) {
+    fprintf(file, "zone t=ring, i=3, j=1, f=fepoint, et=triangle\n");
+    fprintf(file, "%23.15e%23.15e\n",
+	    ring->triangle_uvs[0+6*triangle], ring->triangle_uvs[1+6*triangle]);
+    fprintf(file, "%23.15e%23.15e\n",
+	    ring->triangle_uvs[2+6*triangle], ring->triangle_uvs[3+6*triangle]);
+    fprintf(file, "%23.15e%23.15e\n",
+	    ring->triangle_uvs[4+6*triangle], ring->triangle_uvs[5+6*triangle]);
+    fprintf(file, "1 2 3\n");
+  }
+  fclose(file);
+}
 
 int ringSegments( Ring *ring )
 {

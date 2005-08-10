@@ -1,3 +1,7 @@
+2005-08-10 16:52 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringTecplot) dump triangles to tecplot in uv.
+
 2005-08-10 16:28 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) reuse nodes if

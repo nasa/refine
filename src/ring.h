@@ -40,6 +40,7 @@ Ring *ringCreate( void );
 void ringFree( Ring * );
 
 Ring *ringInspect( Ring * );
+Ring *ringTecplot( Ring *, char *filename );
 
 int ringSegments( Ring * );
 Ring *ringAddSegment( Ring *, int node0, int node1, double *uv0, double *uv1 );

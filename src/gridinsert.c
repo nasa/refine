@@ -844,6 +844,7 @@ Grid *gridFillRingWithExisitingCellFaces( Grid *grid, Ring *ring, int faceId )
 	    if (ring == ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
 	      could_not_complete_triangle = FALSE;
 	    }else{
+	      ringTecplot( ring, NULL );
 	      printf("%s: %d: gridFillRingWithExisitingCellFaces: %s\n",
 		     __FILE__,__LINE__,"ringAddTriangle NULL");    
 	      return NULL;
