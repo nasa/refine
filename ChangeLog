@@ -1,5 +1,10 @@
 2005-08-10  9:35 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) cleaned up to
+	examine ring equators.
+
+2005-08-10  9:35 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridcad.c (gridLineSegmentIntersectsFace) cleaned up
 	
 2005-08-09 19:00 Mike Park  <mike.park@nasa.gov>
