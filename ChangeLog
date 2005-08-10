@@ -1,5 +1,13 @@
 2005-08-10  9:35 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) moved above
+	gridFillRingWithExisitingCellFaces to get interface. now splits edge
+	and keeps going.
+	* src/gridcad.c (gridLineSegmentIntersectsFace) return grid only if 
+	radius < 1.0e-6 and 0<bary<1
+
+2005-08-10  9:35 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) cleaned up to
 	examine ring equators.
 

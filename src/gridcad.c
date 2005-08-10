@@ -516,7 +516,7 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
 
   }
   printf("bary%12.8f diff %e\n",(*bary),radius);
-  if (radius < 1.0e-8) {
+  if (radius < 1.0e-6 && (*bary) <= 1.0 && (*bary) >= 0.0) {
     return grid;
   }else{
     return NULL;

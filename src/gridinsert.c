@@ -735,6 +735,63 @@ Grid *gridRemoveCellsOutsideOfFaces( Grid *grid, int n0, int n1, int n2 )
 
 }
 
+Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
+{
+  int segment;
+  int equator, nequator;
+  int node0, node1, node2;
+  int edge0, edge1;
+  double uv0[2], uv1[2], uv2[2];
+  double xyz2[3], xyz[3], proj[3];
+  double bary;
+  double area;
+
+  for ( segment = 0 ;
+	segment < ringSegments(ring) ;
+	segment++ ) {
+    if (ring != ringSegment( ring, segment, &node0, &node1, uv0, uv1 ) ) {
+      printf("%s: %d: ringSegment NULL.\n",__FILE__,__LINE__); return NULL;
+    }
+
+    if (grid != gridEquator(grid, node0, node1)) {
+      printf("%s: %d: gridEquator NULL.\n",__FILE__,__LINE__); return NULL;
+    }
+    nequator = gridNEqu(grid);
+    if ( !gridContinuousEquator(grid) ) nequator--;
+
+    for( equator = 0 ; 
+	 equator < nequator;
+	 equator++ ) {
+      edge0 = gridEqu( grid, equator );
+      edge1 = gridEqu( grid, equator+1 );
+      
+      if (grid == gridLineSegmentIntersectsFace(grid, edge0, edge1,
+						faceId, uv0,
+						uv2, xyz, &bary ) ) {
+    
+	area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
+	printf("line segment%4d nodes%10d%10d area%14.6e\n",
+	       segment,node0,node1,area);
+
+	if (area > 1.0e-14 && bary < 1.0 &&  bary > 0.0 ) {
+	  node2 = gridSplitEdgeRatio( grid, NULL,
+				      edge0, edge1, bary );
+	  printf("split to create %6d%6d%6d\n",node0, node1, node2);
+	  if (EMPTY != node2 ) {
+	    if (ring == ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
+	      return grid;
+	    }else{
+	      printf("%s: %d: ringAddTriangle NULL\n",__FILE__,__LINE__,"");    
+	      return NULL;
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return NULL;
+}
+
 Grid *gridFillRingWithExisitingCellFaces( Grid *grid, Ring *ring, int faceId )
 {
   int segment;
@@ -787,49 +844,9 @@ Grid *gridFillRingWithExisitingCellFaces( Grid *grid, Ring *ring, int faceId )
       }
     }
     if (could_not_complete_triangle) {
-      return NULL;
-    }
-  }
-  return grid;
-}
-
-
-Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
-{
-  int segment;
-  int equator, nequator;
-  int node0, node1, node2;
-  double uv0[2], uv1[2], uv2[2];
-  double xyz2[3], xyz[3], proj[3];
-  double bary;
-  double area;
-
-  for ( segment = 0 ;
-	segment < ringSegments(ring) ;
-	segment++ ) {
-    if (ring != ringSegment( ring, segment, &node0, &node1, uv0, uv1 ) ) {
-      printf("%s: %d: ringSegment NULL.\n",__FILE__,__LINE__); return NULL;
-    }
-
-    if (grid != gridEquator(grid, node0, node1)) {
-      printf("%s: %d: gridEquator NULL.\n",__FILE__,__LINE__); return NULL;
-    }
-    nequator = gridNEqu(grid);
-    if ( !gridContinuousEquator(grid) ) nequator--;
-
-    for( equator = 0 ; 
-	 equator < nequator;
-	 equator++ ) {
-      node0 = gridEqu( grid, equator );
-      node1 = gridEqu( grid, equator+1 );
-      
-      gridLineSegmentIntersectsFace(grid, node0, node1,
-				    faceId, uv0,
-				    uv2, xyz, &bary );
-    
-      area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
-      printf("line segment%4d nodes%10d%10d area%14.6e\n",
-	     segment,node0,node1,area);
+      if (grid != gridFillRingWithCellEdgeSplits( grid, ring, faceId ) )
+	return NULL;
+      could_not_complete_triangle = FALSE;
     }
   }
   return grid;
@@ -1042,9 +1059,6 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 						    faceId0 ) ){
       printf("%s: %d: gridFillRingWithExisitingCellFaces ring0[%d] NULL.\n",
 	     __FILE__,__LINE__,node);
-
-      gridFillRingWithCellEdgeSplits( grid, ring0[node], faceId0 );
-								 
       return EMPTY;
     }
     if (grid != gridFillRingWithExisitingCellFaces( grid, ring1[node], 
