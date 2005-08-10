@@ -473,40 +473,54 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
 {
   double xyz0[3], xyz1[3];
   double interp_xyz[3];
-  double edge[3], disp[3], diff[3], dot;
+  double edge_direction[3], length;
+  double nearest_point_on_edge[3];
+  double disp[3], dot;
+  double normal_displacement[3], radius;
   double last_bary;
   GridBool keep_going;
 
   if (grid != gridNodeXYZ(grid, node0, xyz0) ) return NULL;
   if (grid != gridNodeXYZ(grid, node1, xyz1) ) return NULL;
 
-  gridSubtractVector(xyz1, xyz0, edge);
-
+  gridSubtractVector(xyz1, xyz0, edge_direction);
+  length = gridVectorLength(edge_direction);
+  gridVectorNormalize(edge_direction);
+  
   (*bary) = 0.5;
   last_bary = DBL_MAX;
+
+  nearest_point_on_edge[0] = (*bary)*xyz1[0] + (1.0-(*bary))*xyz0[0];
+  nearest_point_on_edge[1] = (*bary)*xyz1[1] + (1.0-(*bary))*xyz0[1];
+  nearest_point_on_edge[2] = (*bary)*xyz1[2] + (1.0-(*bary))*xyz0[2];
 
   keep_going = TRUE;
   while (keep_going) {
   
-    interp_xyz[0] = (*bary)*xyz1[0] + (1.0-(*bary))*xyz0[0];
-    interp_xyz[1] = (*bary)*xyz1[1] + (1.0-(*bary))*xyz0[1];
-    interp_xyz[2] = (*bary)*xyz1[2] + (1.0-(*bary))*xyz0[2];
-
-    gridProjectToFace(grid, faceId, interp_xyz, uv, xyz);
+    gridProjectToFace(grid, faceId, nearest_point_on_edge, uv, xyz);
 
     gridSubtractVector(xyz, xyz0, disp);
-    gridSubtractVector(xyz, interp_xyz, diff);
+    (*bary) = gridDotProduct( edge_direction, disp )/length;
 
-    (*bary) = gridDotProduct( edge, disp );
+    nearest_point_on_edge[0] = (*bary)*xyz1[0] + (1.0-(*bary))*xyz0[0];
+    nearest_point_on_edge[1] = (*bary)*xyz1[1] + (1.0-(*bary))*xyz0[1];
+    nearest_point_on_edge[2] = (*bary)*xyz1[2] + (1.0-(*bary))*xyz0[2];
 
-    printf("bary %e diff %e\n",(*bary),sqrt(gridDotProduct( diff, diff )));
+    gridSubtractVector(xyz, nearest_point_on_edge, normal_displacement);
+    radius = sqrt( gridDotProduct( normal_displacement, normal_displacement ) );
+
 
     if ( (*bary) > 1.1 || (*bary) < -0.1 ) keep_going = FALSE;
     if ( ABS((*bary)-last_bary) < 1.0e-8 ) keep_going = FALSE;
     last_bary = (*bary);
 
   }
-  return grid;
+  printf("bary%12.8f diff %e\n",(*bary),radius);
+  if (radius < 1.0e-8) {
+    return grid;
+  }else{
+    return NULL;
+  }
 
 }
 
