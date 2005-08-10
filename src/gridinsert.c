@@ -773,9 +773,18 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
 	printf("line segment%4d nodes%10d%10d area%14.6e\n",
 	       segment,node0,node1,area);
 
-	if (area > 1.0e-14 && bary < 1.0 &&  bary > 0.0 ) {
-	  node2 = gridSplitEdgeRatio( grid, NULL,
-				      edge0, edge1, bary );
+	if (area > 1.0e-14 ) {
+	  node2 = EMPTY;
+	  if ( node2 == EMPTY && bary < 1.001 && bary > 0.999 ) {
+	    node2 = edge1;
+	  }
+	  if ( node2 == EMPTY && bary < 0.001 && bary > -0.001 ) {
+	    node2 = edge1;
+	  }
+	  if ( node2 == EMPTY ) {
+	    node2 = gridSplitEdgeRatio( grid, NULL,
+					edge0, edge1, bary );
+	  }
 	  printf("split to create %6d%6d%6d\n",node0, node1, node2);
 	  if (EMPTY != node2 ) {
 	    if (ring == ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
@@ -894,7 +903,11 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 
   parent = gridParentGeometry(grid, n0, n1);
   if (parent == 0) return EMPTY;
-
+  if (parent < 0) {
+    printf("%s: %d: gridReconstructSplitEdgeRatio edge parent %d not yet implemented\n",
+	   __FILE__,__LINE__,parent);
+    return EMPTY;
+  }
   tuv0[0] = tuv0[1] = tuv1[0] = tuv1[1] = newtuv[0] = newtuv[1] = DBL_MAX;
   if (parent > 0) {
     gridNodeUV(grid,n0,parent,tuv0);

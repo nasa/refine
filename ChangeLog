@@ -1,3 +1,10 @@
+2005-08-10 16:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) reuse nodes if
+	bary is near 0 or 1.
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) edges are not
+	implemented.
+
 2005-08-10  9:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) moved above
