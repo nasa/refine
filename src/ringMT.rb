@@ -200,4 +200,20 @@ class TestRing < Test::Unit::TestCase
   assert_in_delta 5.2, triangle[5][1], tol
  end
 
+ # evaluate canidate segment intersection with ring
+
+ def add_right_ring_segments(n0,n1,n2)
+  @ring.addSegment(0,1,n0,n1)
+  @ring.addSegment(1,2,n1,n2)
+  @ring.addSegment(2,0,n2,n0)
+ end
+
+ def test_ring_surrounds_a_completing_triangle
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert @ring.surroundsTriangle(0,1,2,n2)
+  assert @ring.surroundsTriangle(1,2,0,n0)
+  assert @ring.surroundsTriangle(2,0,1,n1)  
+ end
+
 end
