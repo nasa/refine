@@ -39,6 +39,11 @@ Ring* ringCreate( void )
   ring->triangle_uvs = 
     (double *)malloc(ring->malloced_triangles*6*sizeof(double));
 
+  /* originals are for debugging */
+  ring->originals = 0;
+  ring->original_nodes = NULL;
+  ring->original_uvs   = NULL;
+
   return ring;
 }
 
@@ -48,6 +53,9 @@ void ringFree( Ring *ring )
   if ( NULL != ring->segment_uvs    ) free( ring->segment_uvs );
   if ( NULL != ring->triangle_nodes ) free( ring->triangle_nodes );
   if ( NULL != ring->triangle_uvs   ) free( ring->triangle_uvs );
+  /* originals are for debugging */
+  if ( NULL != ring->original_nodes ) free( ring->original_nodes );
+  if ( NULL != ring->original_uvs   ) free( ring->original_uvs );
   free( ring );
 }
 
@@ -66,7 +74,7 @@ Ring *ringInspect( Ring *ring )
 Ring *ringTecplot( Ring *ring, char *filename )
 {
   FILE *file;
-  int segment, triangle;
+  int original, segment, triangle;
   if (NULL == filename) {
     file = fopen("ring_triangles_in_uv.t","w");
   }else{
@@ -74,6 +82,22 @@ Ring *ringTecplot( Ring *ring, char *filename )
   } 
   fprintf(file, "title=\"tecplot ring triangle uv geometry file\"\n");
   fprintf(file, "variables=\"U\",\"V\",\"Node\"\n");
+
+  /* originals are for debugging */
+  for ( original = 0 ; original < ring->originals ; original++ ) {
+    fprintf(file, "zone t=orig, i=3, j=1, f=fepoint, et=triangle\n");
+    fprintf(file, "%23.15e%23.15e%10d\n",
+	    ring->original_uvs[0+4*original], ring->original_uvs[1+4*original],
+	    ring->original_nodes[0+2*original]);
+    fprintf(file, "%23.15e%23.15e%10d\n",
+	    ring->original_uvs[2+4*original], ring->original_uvs[3+4*original],
+	    ring->original_nodes[1+2*original]);
+    fprintf(file, "%23.15e%23.15e%10d\n",
+	    ring->original_uvs[2+4*original], ring->original_uvs[3+4*original],
+	    ring->original_nodes[1+2*original]);
+    fprintf(file, "1 2 3\n");
+  }
+
   for ( segment = 0 ; segment < ringSegments( ring ) ; segment++ ) {
     fprintf(file, "zone t=seg, i=3, j=1, f=fepoint, et=triangle\n");
     fprintf(file, "%23.15e%23.15e%10d\n",
@@ -87,6 +111,7 @@ Ring *ringTecplot( Ring *ring, char *filename )
 	    ring->segment_nodes[1+2*segment]);
     fprintf(file, "1 2 3\n");
   }
+
   for ( triangle = 0 ; triangle < ringTriangles( ring ) ; triangle++ ) {
     fprintf(file, "zone t=tri, i=3, j=1, f=fepoint, et=triangle\n");
     fprintf(file, "%23.15e%23.15e%10d\n",
@@ -100,6 +125,7 @@ Ring *ringTecplot( Ring *ring, char *filename )
 	    ring->triangle_nodes[2+3*triangle]);
     fprintf(file, "1 2 3\n");
   }
+
   fclose(file);
 }
 
@@ -219,9 +245,24 @@ Ring *ringAddTriangle( Ring *ring,
 {
   int segment;
   double uv0[2], uv1[2];
+
   for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
     if ( ring->segment_nodes[0+2*segment] == node0 &&
 	 ring->segment_nodes[1+2*segment] == node1 ) {
+
+      /* originals are for debugging */
+      if ( 0 == ring->originals ) {
+	int original;
+	ring->originals = ringSegments(ring);
+	ring->original_nodes = (int    *)malloc(ring->originals*2*sizeof(int));
+	ring->original_uvs   = (double *)malloc(ring->originals*4*sizeof(double));
+	for ( original = 0 ; original < (2*ring->originals) ; original++ ) {
+	  ring->original_nodes[original] = ring->segment_nodes[original];
+	}
+	for ( original = 0 ; original < (4*ring->originals) ; original++ ) {
+	  ring->original_uvs[original] = ring->segment_uvs[original];
+	}
+      }
 
       uv0[0] = ring->segment_uvs[0+4*segment];
       uv0[1] = ring->segment_uvs[1+4*segment];

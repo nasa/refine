@@ -34,6 +34,11 @@ struct Ring {
   int malloced_triangles;
   int *triangle_nodes;
   double *triangle_uvs;
+
+  /* originals are for debugging */
+  int originals;
+  int *original_nodes;
+  double *original_uvs;
 };
 
 Ring *ringCreate( void );
