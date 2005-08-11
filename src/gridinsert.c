@@ -1068,14 +1068,18 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 
   
   for (node=0;node<(nnode-1);node++) {
+    printf(" ring0[%d] init-----------------------\n",node);
     if (grid != gridFillRingWithExisitingCellFaces( grid, ring0[node], 
 						    faceId0 ) ){
+      ringTecplot( ring0[node], NULL );
       printf("%s: %d: gridFillRingWithExisitingCellFaces ring0[%d] NULL.\n",
 	     __FILE__,__LINE__,node);
       return EMPTY;
     }
+    printf(" ring1[%d] init-----------------------\n",node);
     if (grid != gridFillRingWithExisitingCellFaces( grid, ring1[node], 
 						    faceId1 ) ){
+      ringTecplot( ring1[node], NULL );
       printf("%s: %d: gridFillRingWithExisitingCellFaces ring1[%d] NULL.\n",
 	     __FILE__,__LINE__,node);
       return EMPTY;
