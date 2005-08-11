@@ -835,12 +835,11 @@ Grid *gridFillRingWithExisitingCellFaces( Grid *grid, Ring *ring, int faceId )
 	   equator++ ) {
 	
 	node2 = gridEqu( grid, equator );
-	printf("close nodes %6d%6d%6d\n",
-	       node0,node1,node2);
 	if ( ringSegmentsContainNode( ring, node2, uv2) ) {
 	  area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
-	  printf("area %e\n",area);
 	  if (area>1.0e-14 ) {
+	    printf("close nodes %6d%6d%6d area %e\n",
+		   node0,node1,node2,area);
 	    if (ring == ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
 	      could_not_complete_triangle = FALSE;
 	    }else{
