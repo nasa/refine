@@ -239,7 +239,14 @@ GridBool ringSurroundsSegment( Ring *ring,
 			      double *uv0, double *uv1 )
 {
   int segment;
-  
+  int node2, node3;
+  double uv2[2], uv3[2];
+  double denom, ratio_a, ratio_b;
+  double tol;
+  GridBool meet00, meet01, meet10, meet11;
+
+  tol = 1.0e-14;
+
   for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
     if ( ring->segment_nodes[0+2*segment] == node0 &&
 	 ring->segment_nodes[1+2*segment] == node1 ) {
@@ -251,6 +258,51 @@ GridBool ringSurroundsSegment( Ring *ring,
     }
   }
 
+  for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
+    ringSegment( ring, segment, &node2, &node3, uv2, uv3 );
+    denom = (uv3[1] - uv2[1])*(uv1[0] - uv0[0])
+          - (uv3[0] - uv2[0])*(uv1[1] - uv0[1]);
+    ratio_a = (uv3[0] - uv2[0])*(uv0[1] - uv2[1])
+            - (uv3[1] - uv2[1])*(uv0[0] - uv2[0]);
+    ratio_b = (uv1[0] - uv0[0])*(uv0[1] - uv2[1])
+            - (uv1[1] - uv0[1])*(uv0[0] - uv2[0]);
+    /* test for 0.0 == denom */
+    ratio_a /= denom;
+    ratio_b /= denom;
+
+    if (FALSE) { 
+      printf("\ndenom %12.9f a %12.9f b %12.9f\n",
+	     denom,ratio_a,ratio_b);
+      printf("node0 %d node1 %d node2 %d node3 %d\n",
+	     node0, node1, node2, node3);
+    }
+
+    meet00 = ( ( ABS( 0.0 - ratio_a ) < tol ) &&
+	       ( ABS( 0.0 - ratio_b ) < tol ) );
+
+    meet01 = ( ( ABS( 0.0 - ratio_a ) < tol ) &&
+	       ( ABS( 1.0 - ratio_b ) < tol ) );
+
+    meet10 = ( ( ABS( 1.0 - ratio_a ) < tol ) &&
+	       ( ABS( 0.0 - ratio_b ) < tol ) );
+
+    meet11 = ( ( ABS( 1.0 - ratio_a ) < tol ) &&
+	       ( ABS( 1.0 - ratio_b ) < tol ) );
+
+    if ( ( meet00 && (node0 != node2) ) ||
+	 ( meet01 && (node0 != node3) ) ||
+	 ( meet10 && (node1 != node2) ) ||
+	 ( meet11 && (node1 != node3) ) ) {
+      return FALSE; /* segment ends meet without matching node ids */
+    }
+    if ( !(meet00 || meet01 || meet10 || meet11) ) {
+      if ( ( 1.0 >= ratio_a && 0.0 <= ratio_a ) &&
+	   ( 1.0 >= ratio_b && 0.0 <= ratio_b ) ) {
+	return FALSE; /* intersection */
+      }
+    }
+
+  }
   return TRUE;
 }
 

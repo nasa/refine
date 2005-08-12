@@ -1,3 +1,7 @@
+2005-08-12 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSurroundsSegment) also tests intersections.
+
 2005-08-12  8:48 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringSurroundsSegment) tests existing segments for being

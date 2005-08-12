@@ -123,6 +123,18 @@ class TestRing < Test::Unit::TestCase
   assert !@ring.surroundsSegment(2,0,n2,n0)  
  end
 
+ def test_ring_surrounds_an_interior_segment
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert @ring.surroundsSegment(0,3,n0,[1.0/3.0,1.0/3.0])
+ end
+
+ def test_ring_does_not_surround_an_intersecting_segment
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert !@ring.surroundsSegment(0,3,n0,[1.0,1.0])
+ end
+
  # triangles
 
  def test_adding_triangle_returns_nil_if_base_is_not_a_segment
