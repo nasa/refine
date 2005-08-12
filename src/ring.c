@@ -234,6 +234,26 @@ GridBool ringSegmentsContainNode( Ring *ring, int node, double *uv )
   return FALSE;
 }
 
+GridBool ringSurroundsSegment( Ring *ring,
+			      int node0, int node1,
+			      double *uv0, double *uv1 )
+{
+  int segment;
+  
+  for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
+    if ( ring->segment_nodes[0+2*segment] == node0 &&
+	 ring->segment_nodes[1+2*segment] == node1 ) {
+      return FALSE;
+    }
+    if ( ring->segment_nodes[0+2*segment] == node1 &&
+	 ring->segment_nodes[1+2*segment] == node0 ) {
+      return TRUE;
+    }
+  }
+
+  return TRUE;
+}
+
 int ringTriangles( Ring *ring )
 {
   return ring->triangles;

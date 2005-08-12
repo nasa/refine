@@ -1,6 +1,11 @@
+2005-08-12  8:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSurroundsSegment) tests existing segments for being
+	topologically correct by node id.
+
 2005-08-11 14:06 Mike Park  <mike.park@nasa.gov>
 
-	* src/ring.c (addTriangle) store original segments when first
+	* src/ring.c (ringAddTriangle) store original segments when first
 	triangle is added.
 	* src/ring.c (ringTecplot) dump original segments.
 
