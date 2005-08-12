@@ -294,7 +294,7 @@ class TestRing < Test::Unit::TestCase
 
  # compute total area of the ring
 
- def test_sqaure_ring_area_with_right_handed_uvs
+ def test_square_ring_area_with_right_handed_uvs
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [1.0,1.0] ; n3 = [0.0,1.0]
   @ring.addSegment(0,1,n0,n1)
   @ring.addSegment(1,2,n1,n2)
@@ -304,7 +304,7 @@ class TestRing < Test::Unit::TestCase
   assert_in_delta(  1.0, @ring.area, tol )
  end
 
- def test_sqaure_ring_area_with_left_handed_uvs
+ def test_square_ring_area_with_left_handed_uvs
   n0 = [0.0,0.0] ; n1 = [-1.0,0.0] ; n2 = [-1.0,1.0] ; n3 = [0.0,1.0]
   @ring.addSegment(0,1,n0,n1)
   @ring.addSegment(1,2,n1,n2)
