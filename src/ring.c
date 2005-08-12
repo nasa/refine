@@ -439,6 +439,9 @@ GridBool ringSurroundsTriangle( Ring *ring,
   int segment;
   double uv0[2], uv1[2];
   double ring_area, area;
+  double tol_area;
+
+  tol_area = 1.0e-14;
 
   ring_area = ringArea( ring );
 
@@ -450,10 +453,19 @@ GridBool ringSurroundsTriangle( Ring *ring,
       uv1[0] = ring->segment_uvs[2+4*segment];
       uv1[1] = ring->segment_uvs[3+4*segment];
       area = ringTriangleArea(ring,uv0,uv1,uv2);
-      if ( (area > 0.0) == (ring_area > 0.0) ) {
-	return TRUE;
-      } else {
-	return FALSE;
+      
+      if ( ring_area > 0.0 ) {
+	if ( area > tol_area ) {
+	  return TRUE;
+	} else {
+	  return FALSE;
+	}
+      }else{
+	if ( area < -tol_area ) {
+	  return TRUE;
+	} else {
+	  return FALSE;
+	}
       }
     }
   }

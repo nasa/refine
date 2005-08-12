@@ -292,6 +292,18 @@ class TestRing < Test::Unit::TestCase
   assert !@ring.surroundsTriangle(0,1,3,[0.0,-1.0])
  end
 
+ def test_reject_zero_area_triangle_right_handed_uvs
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert !@ring.surroundsTriangle(0,1,3,[0.5,0.0])
+ end
+
+ def test_reject_zero_area_triangle_left_handed_uvs
+  n0 = [0.0,0.0] ; n1 = [-1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert !@ring.surroundsTriangle(0,1,3,[-0.5,0.0])
+ end
+
  # compute total area of the ring
 
  def test_triangle_ring_area_with_right_handed_uvs
