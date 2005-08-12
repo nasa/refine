@@ -1,3 +1,9 @@
+2005-08-12 16:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringArea) compute total area of the ring.
+	* src/ring.c (ringSurroundsTriangle) accept triangle if area is the
+	same sign as ring total area.
+
 2005-08-12 12:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringSurroundsTriangle) added to test if a triangle

@@ -266,19 +266,52 @@ class TestRing < Test::Unit::TestCase
   assert_in_delta 5.2, triangle[5][1], tol
  end
 
- # ring contains a potnetial triangle to be added.
+ # ring contains a potential triangle to be added.
 
- def test_ring_surrounds_a_completion_triangle
+ def test_ring_surrounds_a_completion_triangle_right_handed_uvs
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_right_ring_segments(n0,n1,n2)
   assert @ring.surroundsTriangle(0,1,2,n2)
  end
 
- def test_ring_does_not_surrounds_a_negative_area_triangle
+ def test_ring_does_not_surrounds_a_negative_area_triangle_right_handed_uvs
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_right_ring_segments(n0,n1,n2)
   assert !@ring.surroundsTriangle(0,1,3,[0.0,-1.0])
  end
 
+ def test_ring_surrounds_a_completion_triangle_left_handed_uvs
+  n0 = [0.0,0.0] ; n1 = [-1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert @ring.surroundsTriangle(0,1,2,n2)
+ end
+
+ def test_ring_does_not_surrounds_a_negative_area_triangle_left_handed_uvs
+  n0 = [0.0,0.0] ; n1 = [-1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert !@ring.surroundsTriangle(0,1,3,[0.0,-1.0])
+ end
+
+ # compute total area of the ring
+
+ def test_sqaure_ring_area_with_right_handed_uvs
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [1.0,1.0] ; n3 = [0.0,1.0]
+  @ring.addSegment(0,1,n0,n1)
+  @ring.addSegment(1,2,n1,n2)
+  @ring.addSegment(2,3,n2,n3)
+  @ring.addSegment(3,0,n3,n0)
+  tol = 1.0e-15
+  assert_in_delta(  1.0, @ring.area, tol )
+ end
+
+ def test_sqaure_ring_area_with_left_handed_uvs
+  n0 = [0.0,0.0] ; n1 = [-1.0,0.0] ; n2 = [-1.0,1.0] ; n3 = [0.0,1.0]
+  @ring.addSegment(0,1,n0,n1)
+  @ring.addSegment(1,2,n1,n2)
+  @ring.addSegment(2,3,n2,n3)
+  @ring.addSegment(3,0,n3,n0)
+  tol = 1.0e-15
+  assert_in_delta( -1.0, @ring.area, tol )
+ end
 
 end

@@ -172,6 +172,12 @@ VALUE ring_surroundsTriangle( VALUE self,
 	   Qtrue : Qfalse );
 }
 
+VALUE ring_area( VALUE self )
+{
+  GET_RING_FROM_SELF;
+  return rb_float_new( ringArea(ring) );
+}
+
 VALUE cRing;
 
 void Init_Ring() 
@@ -189,4 +195,6 @@ void Init_Ring()
   rb_define_method( cRing, "addTriangle", ring_addTriangle, 4 );
   rb_define_method( cRing, "triangle", ring_triangle, 1 );
   rb_define_method( cRing, "surroundsTriangle", ring_surroundsTriangle, 4 );
+
+  rb_define_method( cRing, "area", ring_area, 0 );
 }

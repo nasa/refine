@@ -62,6 +62,8 @@ Ring *ringTriangle( Ring *, int triangle, int *node0, int *node1, int *node2,
 GridBool ringSurroundsTriangle( Ring *,
 				int node0, int node1, int node2, double *uv2 );
 
+double ringArea( Ring * );
+
 END_C_DECLORATION
 
 #endif /* RING_H */
