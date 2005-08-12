@@ -294,6 +294,13 @@ class TestRing < Test::Unit::TestCase
 
  # compute total area of the ring
 
+ def test_triangle_ring_area_with_right_handed_uvs
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  tol = 1.0e-15
+  assert_in_delta(  0.5, @ring.area, tol )
+ end
+
  def test_square_ring_area_with_right_handed_uvs
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [1.0,1.0] ; n3 = [0.0,1.0]
   @ring.addSegment(0,1,n0,n1)
