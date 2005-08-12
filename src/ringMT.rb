@@ -107,32 +107,32 @@ class TestRing < Test::Unit::TestCase
   @ring.addSegment(2,0,n2,n0)
  end
 
- def test_ring_surrounds_a_completing_segment
+ def test_ring_does_not_intersect_a_completing_segment
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_right_ring_segments(n0,n1,n2)
-  assert @ring.surroundsSegment(1,0,n1,n0)
-  assert @ring.surroundsSegment(2,1,n2,n1)
-  assert @ring.surroundsSegment(0,2,n0,n2)  
+  assert !@ring.intersectsSegment(1,0,n1,n0)
+  assert !@ring.intersectsSegment(2,1,n2,n1)
+  assert !@ring.intersectsSegment(0,2,n0,n2)  
  end
 
- def test_ring_does_not_surrounds_a_duplicate_segment
+ def test_ring_intersects_a_duplicate_segment
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_right_ring_segments(n0,n1,n2)
-  assert !@ring.surroundsSegment(0,1,n0,n1)
-  assert !@ring.surroundsSegment(1,2,n1,n2)
-  assert !@ring.surroundsSegment(2,0,n2,n0)  
+  assert @ring.intersectsSegment(0,1,n0,n1)
+  assert @ring.intersectsSegment(1,2,n1,n2)
+  assert @ring.intersectsSegment(2,0,n2,n0)  
  end
 
- def test_ring_surrounds_an_interior_segment
+ def test_ring_does_not_intersect_an_interior_segment
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_right_ring_segments(n0,n1,n2)
-  assert @ring.surroundsSegment(0,3,n0,[1.0/3.0,1.0/3.0])
+  assert !@ring.intersectsSegment(0,3,n0,[1.0/3.0,1.0/3.0])
  end
 
- def test_ring_does_not_surround_an_intersecting_segment
+ def test_ring_intersects_an_intersecting_segment
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_right_ring_segments(n0,n1,n2)
-  assert !@ring.surroundsSegment(0,3,n0,[1.0,1.0])
+  assert @ring.intersectsSegment(0,3,n0,[1.0,1.0])
  end
 
  # triangles

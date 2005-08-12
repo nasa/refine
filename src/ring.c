@@ -234,9 +234,9 @@ GridBool ringSegmentsContainNode( Ring *ring, int node, double *uv )
   return FALSE;
 }
 
-GridBool ringSurroundsSegment( Ring *ring,
-			      int node0, int node1,
-			      double *uv0, double *uv1 )
+GridBool ringIntersectsSegment( Ring *ring,
+				int node0, int node1,
+				double *uv0, double *uv1 )
 {
   int segment;
   int node2, node3;
@@ -250,11 +250,11 @@ GridBool ringSurroundsSegment( Ring *ring,
   for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
     if ( ring->segment_nodes[0+2*segment] == node0 &&
 	 ring->segment_nodes[1+2*segment] == node1 ) {
-      return FALSE;
+      return TRUE;
     }
     if ( ring->segment_nodes[0+2*segment] == node1 &&
 	 ring->segment_nodes[1+2*segment] == node0 ) {
-      return TRUE;
+      return FALSE;
     }
   }
 
@@ -293,17 +293,17 @@ GridBool ringSurroundsSegment( Ring *ring,
 	 ( meet01 && (node0 != node3) ) ||
 	 ( meet10 && (node1 != node2) ) ||
 	 ( meet11 && (node1 != node3) ) ) {
-      return FALSE; /* segment ends meet without matching node ids */
+      return TRUE; /* segment ends meet without matching node ids */
     }
     if ( !(meet00 || meet01 || meet10 || meet11) ) {
       if ( ( 1.0 >= ratio_a && 0.0 <= ratio_a ) &&
 	   ( 1.0 >= ratio_b && 0.0 <= ratio_b ) ) {
-	return FALSE; /* intersection */
+	return TRUE; /* intersection */
       }
     }
 
   }
-  return TRUE;
+  return FALSE;
 }
 
 int ringTriangles( Ring *ring )

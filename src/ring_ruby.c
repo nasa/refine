@@ -84,7 +84,7 @@ VALUE ring_segmentsContainNode( VALUE self, VALUE node )
   return rb_uv;
 }
 
-VALUE ring_surroundsSegment( VALUE self,
+VALUE ring_intersectsSegment( VALUE self,
 			     VALUE n0, VALUE n1, 
 			     VALUE rb_uv0, VALUE rb_uv1 )
 {
@@ -97,7 +97,7 @@ VALUE ring_surroundsSegment( VALUE self,
   uv1[0] = NUM2DBL(rb_ary_entry(rb_uv1,0));
   uv1[1] = NUM2DBL(rb_ary_entry(rb_uv1,1));
 
-  return ( ringSurroundsSegment(ring,NUM2INT(n0),NUM2INT(n1),uv0,uv1) ?
+  return ( ringIntersectsSegment(ring,NUM2INT(n0),NUM2INT(n1),uv0,uv1) ?
 	   Qtrue:Qfalse);
 }
 
@@ -169,7 +169,7 @@ void Init_Ring()
   rb_define_method( cRing, "addSegment", ring_addSegment, 4 );
   rb_define_method( cRing, "segment", ring_segment, 1 );
   rb_define_method( cRing, "segmentsContainNode", ring_segmentsContainNode, 1 );
-  rb_define_method( cRing, "surroundsSegment", ring_surroundsSegment, 4 );
+  rb_define_method( cRing, "intersectsSegment", ring_intersectsSegment, 4 );
 
   rb_define_method( cRing, "triangles", ring_triangles, 0 );
   rb_define_method( cRing, "addTriangle", ring_addTriangle, 4 );

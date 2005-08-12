@@ -1,3 +1,7 @@
+2005-08-12 10:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringIntersectsSegment) renamed from ringSurroundsSegment.
+
 2005-08-12 10:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringSurroundsSegment) also tests intersections.
