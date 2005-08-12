@@ -123,16 +123,43 @@ class TestRing < Test::Unit::TestCase
   assert @ring.intersectsSegment(2,0,n2,n0)  
  end
 
- def test_ring_does_not_intersect_an_interior_segment
+ def test_ring_does_not_intersect_an_interior_segment_connected_to_ring
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_right_ring_segments(n0,n1,n2)
   assert !@ring.intersectsSegment(0,3,n0,[1.0/3.0,1.0/3.0])
  end
 
- def test_ring_intersects_an_intersecting_segment
+ def test_ring_intersects_an_intersecting_segment_connected_to_ring
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_right_ring_segments(n0,n1,n2)
   assert @ring.intersectsSegment(0,3,n0,[1.0,1.0])
+ end
+
+ def test_parallel_overlapping_segment_with_different_nodes_intersects
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert @ring.intersectsSegment(3,4,[2.0,-1.0],[-1.00,1.00])
+  assert @ring.intersectsSegment(3,4,[0.5, 0.5],[ 0.75,0.25])
+ end
+
+ def test_parallel_non_overlapping_segment_does_not_intersect
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert @ring.intersectsSegment(3,4,[2.0, 0.0],[3.0, 0.0])
+  assert @ring.intersectsSegment(3,4,[2.0,-1.0],[3.0,-2.0])
+ end
+
+ def test_offset_parallel_segment_does_not_intersect
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert !@ring.intersectsSegment(3,4,[1.0,1.0],[0.0,2.0])
+  assert !@ring.intersectsSegment(3,4,[1.0,2.0],[1.0,3.0])
+ end
+
+ def test_intersect_ring_point
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert @ring.intersectsSegment(3,4,[-1.0, 1.0],[1.0, 1.0])
  end
 
  # triangles

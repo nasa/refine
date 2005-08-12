@@ -259,16 +259,26 @@ GridBool ringIntersectsSegment( Ring *ring,
   }
 
   for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
+
     ringSegment( ring, segment, &node2, &node3, uv2, uv3 );
+
     denom = (uv3[1] - uv2[1])*(uv1[0] - uv0[0])
           - (uv3[0] - uv2[0])*(uv1[1] - uv0[1]);
+
     ratio_a = (uv3[0] - uv2[0])*(uv0[1] - uv2[1])
             - (uv3[1] - uv2[1])*(uv0[0] - uv2[0]);
     ratio_b = (uv1[0] - uv0[0])*(uv0[1] - uv2[1])
             - (uv1[1] - uv0[1])*(uv0[0] - uv2[0]);
-    /* test for 0.0 == denom */
-    ratio_a /= denom;
-    ratio_b /= denom;
+
+    if ( ABS( 0.0 - denom ) > tol ) {
+      ratio_a /= denom;
+      ratio_b /= denom;
+    }else{
+      if ( ( ABS( 0.0 - ratio_a ) < tol ) &&
+	   ( ABS( 0.0 - ratio_b ) < tol ) ) {
+	return TRUE;
+      }
+    }
 
     if (FALSE) { 
       printf("\ndenom %12.9f a %12.9f b %12.9f\n",

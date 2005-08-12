@@ -1,3 +1,8 @@
+2005-08-12 12:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringIntersectsSegment) handels parallel segments
+	correctly.
+
 2005-08-12 10:42 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringIntersectsSegment) renamed from ringSurroundsSegment.
