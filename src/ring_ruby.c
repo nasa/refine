@@ -158,6 +158,20 @@ VALUE ring_triangle( VALUE self, VALUE triangle )
   return rb;
 }
 
+VALUE ring_surroundsTriangle( VALUE self,
+			      VALUE n0, VALUE n1, VALUE n2, 
+			      VALUE rb_uv2 )
+{
+  double uv2[2];
+  GET_RING_FROM_SELF;
+
+  uv2[0] = NUM2DBL(rb_ary_entry(rb_uv2,0));
+  uv2[1] = NUM2DBL(rb_ary_entry(rb_uv2,1));
+
+  return ( ringSurroundsTriangle(ring,NUM2INT(n0),NUM2INT(n1),NUM2INT(n2),uv2)? 
+	   Qtrue : Qfalse );
+}
+
 VALUE cRing;
 
 void Init_Ring() 
@@ -174,4 +188,5 @@ void Init_Ring()
   rb_define_method( cRing, "triangles", ring_triangles, 0 );
   rb_define_method( cRing, "addTriangle", ring_addTriangle, 4 );
   rb_define_method( cRing, "triangle", ring_triangle, 1 );
+  rb_define_method( cRing, "surroundsTriangle", ring_surroundsTriangle, 4 );
 }

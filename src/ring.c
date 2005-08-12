@@ -419,3 +419,8 @@ Ring *ringTriangle( Ring *ring, int triangle,
   return ring;
 }
 
+GridBool ringSurroundsTriangle( Ring *ring,
+				int node0, int node1, int node2, double *uv2 )
+{
+  return TRUE;
+}

@@ -59,6 +59,8 @@ int ringTriangles( Ring * );
 Ring *ringAddTriangle( Ring *, int node0, int node1, int node2, double *uv2 );
 Ring *ringTriangle( Ring *, int triangle, int *node0, int *node1, int *node2,
 		    double *uv0, double *uv1, double *uv2 );
+GridBool ringSurroundsTriangle( Ring *,
+				int node0, int node1, int node2, double *uv2 );
 
 END_C_DECLORATION
 

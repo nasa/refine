@@ -1,3 +1,8 @@
+2005-08-12 12:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSurroundsTriangle) added to test if a triangle
+	is acceptable to add in order to eventually complete ring.
+
 2005-08-12 12:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringIntersectsSegment) handels parallel segments

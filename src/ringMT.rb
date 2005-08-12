@@ -20,6 +20,14 @@ class TestRing < Test::Unit::TestCase
  end
  def setup ; set_up ; end
 
+ def add_right_ring_segments(n0,n1,n2)
+  @ring.addSegment(0,1,n0,n1)
+  @ring.addSegment(1,2,n1,n2)
+  @ring.addSegment(2,0,n2,n0)
+ end
+ 
+ # init
+
  def test_create_initializes_sizes_to_zero
   assert_equal 0, @ring.segments
   assert_equal 0, @ring.triangles
@@ -100,12 +108,6 @@ class TestRing < Test::Unit::TestCase
 
  # evaluate canidate segments to detect intersections (or other badness)
  #   with existing ring
-
- def add_right_ring_segments(n0,n1,n2)
-  @ring.addSegment(0,1,n0,n1)
-  @ring.addSegment(1,2,n1,n2)
-  @ring.addSegment(2,0,n2,n0)
- end
 
  def test_ring_does_not_intersect_a_completing_segment
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
@@ -263,5 +265,20 @@ class TestRing < Test::Unit::TestCase
   assert_in_delta 5.1, triangle[5][0], tol
   assert_in_delta 5.2, triangle[5][1], tol
  end
+
+ # ring contains a potnetial triangle to be added.
+
+ def test_ring_surrounds_a_completion_triangle
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert @ring.surroundsTriangle(0,1,2,n2)
+ end
+
+ def test_ring_does_not_surrounds_a_negative_area_triangle
+  n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
+  add_right_ring_segments(n0,n1,n2)
+  assert !@ring.surroundsTriangle(0,1,3,[0.0,-1.0])
+ end
+
 
 end
