@@ -419,8 +419,42 @@ Ring *ringTriangle( Ring *ring, int triangle,
   return ring;
 }
 
+static 
+double ringTriangleArea(Ring *ring, double *uv0,  double *uv1,  double *uv2)
+{
+  double edge0[2], edge1[2];
+
+  edge0[0] = uv1[0]-uv0[0];
+  edge0[1] = uv1[1]-uv0[1];
+
+  edge1[0] = uv2[0]-uv0[0];
+  edge1[1] = uv2[1]-uv0[1];
+
+  return 0.5 * ( edge0[0]*edge1[1] - edge0[1]*edge1[0] );
+}
+
 GridBool ringSurroundsTriangle( Ring *ring,
 				int node0, int node1, int node2, double *uv2 )
 {
-  return TRUE;
+  int segment;
+  double uv0[2], uv1[2];
+  double area;
+
+  for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
+    if ( ring->segment_nodes[0+2*segment] == node0 &&
+	 ring->segment_nodes[1+2*segment] == node1 ) {
+      uv0[0] = ring->segment_uvs[0+4*segment];
+      uv0[1] = ring->segment_uvs[1+4*segment];
+      uv1[0] = ring->segment_uvs[2+4*segment];
+      uv1[1] = ring->segment_uvs[3+4*segment];
+      area = ringTriangleArea(ring,uv0,uv1,uv2);
+      if (area > 1.0e-14 ) {
+	return TRUE;
+      } else {
+	return FALSE;
+      }
+    }
+  }
+
+  return FALSE;
 }
