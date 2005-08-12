@@ -98,7 +98,8 @@ class TestRing < Test::Unit::TestCase
   assert_in_delta 4.2, @ring.segmentsContainNode(4)[1], tol
  end
 
- # evaluate canidate segment intersection with ring
+ # evaluate canidate segments to detect intersections (or other badness)
+ #   with existing ring
 
  def add_right_ring_segments(n0,n1,n2)
   @ring.addSegment(0,1,n0,n1)
