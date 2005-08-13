@@ -15,6 +15,8 @@ class TestRing < Test::Unit::TestCase
 
  EMPTY = -1
 
+ TOL = 1.0e-15
+
  def set_up
   @ring = Ring.new
  end
@@ -90,11 +92,10 @@ class TestRing < Test::Unit::TestCase
   segment = @ring.segment(0)
   assert_equal 2, segment[0]
   assert_equal 4, segment[1]
-  tol = 1.0e-15
-  assert_in_delta 2.1, segment[2][0], tol
-  assert_in_delta 2.2, segment[2][1], tol
-  assert_in_delta 4.1, segment[3][0], tol
-  assert_in_delta 4.2, segment[3][1], tol
+  assert_in_delta 2.1, segment[2][0], TOL
+  assert_in_delta 2.2, segment[2][1], TOL
+  assert_in_delta 4.1, segment[3][0], TOL
+  assert_in_delta 4.2, segment[3][1], TOL
  end
 
  # look for node in segments
@@ -105,12 +106,12 @@ class TestRing < Test::Unit::TestCase
 
  def test_find_node_in_segement_returns_nodal_uv
   @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
-  tol = 1.0e-15
-  assert_in_delta 2.1, @ring.segmentsContainNode(2)[0], tol
-  assert_in_delta 2.2, @ring.segmentsContainNode(2)[1], tol
 
-  assert_in_delta 4.1, @ring.segmentsContainNode(4)[0], tol
-  assert_in_delta 4.2, @ring.segmentsContainNode(4)[1], tol
+  assert_in_delta 2.1, @ring.segmentsContainNode(2)[0], TOL
+  assert_in_delta 2.2, @ring.segmentsContainNode(2)[1], TOL
+
+  assert_in_delta 4.1, @ring.segmentsContainNode(4)[0], TOL
+  assert_in_delta 4.2, @ring.segmentsContainNode(4)[1], TOL
  end
 
  # evaluate canidate segments to detect intersections (or other badness)
@@ -227,25 +228,23 @@ class TestRing < Test::Unit::TestCase
   @ring.addSegment(2,4,[2.1,2.2],[4.1,4.2])
   @ring.addTriangle(2,4,5,[5.1,5.2])
 
-  tol = 1.0e-15
-
   segment = @ring.segment(0)
   assert_equal 5, segment[0]
   assert_equal 4, segment[1]
 
-  assert_in_delta 5.1, segment[2][0], tol
-  assert_in_delta 5.2, segment[2][1], tol
-  assert_in_delta 4.1, segment[3][0], tol
-  assert_in_delta 4.2, segment[3][1], tol
+  assert_in_delta 5.1, segment[2][0], TOL
+  assert_in_delta 5.2, segment[2][1], TOL
+  assert_in_delta 4.1, segment[3][0], TOL
+  assert_in_delta 4.2, segment[3][1], TOL
 
   segment = @ring.segment(1)
   assert_equal 2, segment[0]
   assert_equal 5, segment[1]
-  tol = 1.0e-15
-  assert_in_delta 2.1, segment[2][0], tol
-  assert_in_delta 2.2, segment[2][1], tol
-  assert_in_delta 5.1, segment[3][0], tol
-  assert_in_delta 5.2, segment[3][1], tol
+
+  assert_in_delta 2.1, segment[2][0], TOL
+  assert_in_delta 2.2, segment[2][1], TOL
+  assert_in_delta 5.1, segment[3][0], TOL
+  assert_in_delta 5.2, segment[3][1], TOL
  end
 
  # retrieving triangles
@@ -264,13 +263,13 @@ class TestRing < Test::Unit::TestCase
   assert_equal 2, triangle[0]
   assert_equal 4, triangle[1]
   assert_equal 5, triangle[2]
-  tol = 1.0e-15
-  assert_in_delta 2.1, triangle[3][0], tol
-  assert_in_delta 2.2, triangle[3][1], tol
-  assert_in_delta 4.1, triangle[4][0], tol
-  assert_in_delta 4.2, triangle[4][1], tol
-  assert_in_delta 5.1, triangle[5][0], tol
-  assert_in_delta 5.2, triangle[5][1], tol
+
+  assert_in_delta 2.1, triangle[3][0], TOL
+  assert_in_delta 2.2, triangle[3][1], TOL
+  assert_in_delta 4.1, triangle[4][0], TOL
+  assert_in_delta 4.2, triangle[4][1], TOL
+  assert_in_delta 5.1, triangle[5][0], TOL
+  assert_in_delta 5.2, triangle[5][1], TOL
  end
 
  # ring contains a potential triangle to be added.
@@ -322,22 +321,19 @@ class TestRing < Test::Unit::TestCase
  def test_triangle_ring_area_with_right_handed_uvs
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [0.0,1.0]
   add_triangular_ring_segments(n0,n1,n2)
-  tol = 1.0e-15
-  assert_in_delta(  0.5, @ring.area, tol )
+  assert_in_delta(  0.5, @ring.area, TOL )
  end
 
  def test_square_ring_area_with_right_handed_uvs
   n0 = [0.0,0.0] ; n1 = [1.0,0.0] ; n2 = [1.0,1.0] ; n3 = [0.0,1.0]
   add_square_ring_segments(n0,n1,n2,n3)
-  tol = 1.0e-15
-  assert_in_delta(  1.0, @ring.area, tol )
+  assert_in_delta(  1.0, @ring.area, TOL )
  end
 
  def test_square_ring_area_with_left_handed_uvs
   n0 = [0.0,0.0] ; n1 = [-1.0,0.0] ; n2 = [-1.0,1.0] ; n3 = [0.0,1.0]
   add_square_ring_segments(n0,n1,n2,n3)
-  tol = 1.0e-15
-  assert_in_delta( -1.0, @ring.area, tol )
+  assert_in_delta( -1.0, @ring.area, TOL )
  end
 
 end
