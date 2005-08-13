@@ -457,18 +457,25 @@ GridBool ringSurroundsTriangle( Ring *ring,
       area = ringTriangleArea(ring,uv0,uv1,uv2);
       
       if ( ring_area > 0.0 ) {
-	if ( area > tol_area ) {
-	  return TRUE;
-	} else {
+	if ( area < tol_area ) {
 	  return FALSE;
 	}
       }else{
-	if ( area < -tol_area ) {
-	  return TRUE;
-	} else {
+	if ( area > -tol_area ) {
 	  return FALSE;
 	}
       }
+
+      if (ringIntersectsSegment(ring,node2,node1,uv2,uv1)){
+	return FALSE;
+      }
+
+      if (ringIntersectsSegment(ring,node0,node2,uv0,uv2)){
+	return FALSE;
+      }
+
+      return TRUE;
+
     }
   }
 
