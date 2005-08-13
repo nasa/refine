@@ -1,3 +1,10 @@
+2005-08-13 14:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) use
+	ringSurroundsTriangle instead of area check.
+	* src/gridinsert.c (gridFillRingWithExisitingCellFaces) use
+	ringSurroundsTriangle instead of area check.
+
 2005-08-13 13:58 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringSurroundsTriangle) reject triangle that pierces
