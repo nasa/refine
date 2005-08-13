@@ -127,6 +127,8 @@ Ring *ringTecplot( Ring *ring, char *filename )
   }
 
   fclose(file);
+
+  return ring;
 }
 
 int ringSegments( Ring *ring )

@@ -472,10 +472,9 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
 				    double *uv, double *xyz, double *bary )
 {
   double xyz0[3], xyz1[3];
-  double interp_xyz[3];
   double edge_direction[3], length;
   double nearest_point_on_edge[3];
-  double disp[3], dot;
+  double disp[3];
   double normal_displacement[3], radius;
   double last_bary;
   GridBool keep_going;

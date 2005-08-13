@@ -152,7 +152,7 @@ Grid *gridAdaptBasedOnConnRankings(Grid *grid )
   int report, nnodeAdd, nnodeRemove;
   double ratios[3];
   double dist, ratio;
-  int i, newnode;
+  int newnode;
   Plan *plan;
 
   gridCreateConn(grid);
@@ -240,7 +240,7 @@ Grid *gridAdaptLongShortCurved(Grid *grid, double minLength, double maxLength,
   int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
   double length, ratio;
-  int i, newnode;
+  int newnode;
   Plan *plan;
 
   gridCreateConn(grid);
@@ -361,7 +361,7 @@ Grid *gridAdaptLongShortLinear(Grid *grid, double minLength, double maxLength,
   int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
   double length, ratio;
-  int i, newnode;
+  int newnode;
   Plan *plan;
 
   gridCreateConn(grid);
@@ -483,7 +483,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
   if (EMPTY == current_cell) return EMPTY;
   for (tries=1;tries<=1000;tries++) {
     int nodes[4];
-    double newxyz[3], xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+    double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
     double edge0[3], edge1[3];
     double norm0[3], norm1[3], norm2[3], norm3[3];
     double dir0[3], dir1[3], dir2[3], dir3[3];
@@ -742,7 +742,7 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
   int node0, node1, node2;
   int edge0, edge1;
   double uv0[2], uv1[2], uv2[2];
-  double xyz2[3], xyz[3], proj[3];
+  double xyz[3];
   double bary;
   double area;
 
@@ -790,7 +790,7 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
 	    if (ring == ringAddTriangle( ring, node0, node1, node2, uv2 ) ) {
 	      return grid;
 	    }else{
-	      printf("%s: %d: ringAddTriangle NULL\n",__FILE__,__LINE__,"");    
+	      printf("%s: %d: ringAddTriangle NULL.\n",__FILE__,__LINE__);
 	      return NULL;
 	    }
 	  }
@@ -1496,14 +1496,8 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
 int gridSplitEdgeRepeat(Grid *grid, Queue *queue, int n0, int n1, 
 			GridBool debug_split  )
 {
-  int newnode, newnode0, newnode1;
+  int newnode;
   double existing_min;
-  int try;
-  int iequ, nequ;
-  int node, nodes;
-  int worstnode;
-  double jacdet, worstjacdet;
-  
 
   newnode = gridSplitEdgeForce( grid, queue, n0, n1, FALSE );
   if (EMPTY != newnode) return newnode;
