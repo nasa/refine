@@ -1,3 +1,8 @@
+2005-08-15 15:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotEquatorFaces) added to dump out the
+	equator as faces around the axle instead of outer faces.
+
 2005-08-15 09:28 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringArea) to speed up execution... compute, store,

@@ -1323,6 +1323,49 @@ Grid *gridWriteTecplotEquator(Grid *grid, int n0, int n1, char *filename )
   return grid;
 }
 
+Grid *gridWriteTecplotEquatorFaces(Grid *grid, int n0, int n1, char *filename )
+{
+  int i, last;
+  double xyz[3];
+
+  if (grid != gridEquator(grid, n0, n1 )) return NULL;
+
+  if (NULL == grid->tecplotGeomFile) {
+    if (NULL == filename) {
+      grid->tecplotGeomFile = fopen("grid_equator.t","w");
+    }else{
+      grid->tecplotGeomFile = fopen(filename,"w");
+    } 
+    fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
+  }
+
+  fprintf(grid->tecplotGeomFile,
+	  "zone t=equator, n=%d, e=%d, f=fepoint, et=%s\n",
+	  gridNEqu(grid)+2, gridNEqu(grid), "triangle");
+
+  gridNodeXYZ(grid,n0,xyz);
+  fprintf(grid->tecplotGeomFile,
+	  "%23.15e%23.15e%23.15e%5.1f\n", xyz[0],xyz[1],xyz[2],0.0);
+  gridNodeXYZ(grid,n1,xyz);
+  fprintf(grid->tecplotGeomFile,
+	  "%23.15e%23.15e%23.15e%5.1f\n", xyz[0],xyz[1],xyz[2],1.0);
+
+  for ( i=0; i<gridNEqu(grid) ; i++ ){
+    gridNodeXYZ(grid,gridEqu(grid,i),xyz);
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e%5.1f\n",xyz[0],xyz[1],xyz[2],0.5);
+  }
+  
+
+  for ( i=0; i<gridNEqu(grid) ; i++ ){
+    fprintf(grid->tecplotGeomFile, "%6d%6d%6d\n", 1, 2, 3+i );
+  }
+
+  fflush(grid->tecplotGeomFile);
+
+  return grid;
+}
+
 Grid *gridCloseTecplotGeomFile(Grid *grid)
 {
   if (NULL == grid->tecplotGeomFile) return NULL;
