@@ -468,6 +468,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [], grid.equator(0,2)
   assert_equal [], grid.equator(6,7)
   assert_equal [1,2,3,0,1], grid.equator(4,5)
+  assert_equal 4, grid.nequ
  end
 
  def testEquatorGapInMiddle
@@ -476,6 +477,7 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell(4,5,2,3)
   assert_equal [1,0], grid.gem(4,5)
   assert_equal [1,2,3,1], grid.equator(4,5)
+  assert_equal 3, grid.nequ
  end
 
  def testEquatorGapInEnd
@@ -483,6 +485,7 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell(4,5,1,2)
   grid.addCell(4,5,3,1)
   assert_equal [3,1,2,3], grid.equator(4,5)
+  assert_equal 3, grid.nequ
  end
 
  def testEquatorTwoGaps
@@ -490,6 +493,7 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell(4,5,1,2)
   grid.addCell(4,5,3,0)
   assert_nil         grid.equator(4,5)
+  assert_equal 0, grid.nequ
  end
 
  def testCellNodeConnections

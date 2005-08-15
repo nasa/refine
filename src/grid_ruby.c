@@ -740,6 +740,12 @@ VALUE grid_equator( VALUE self, VALUE n0, VALUE n1 )
   return rb_equ;
 }
 
+VALUE grid_nequ( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM(gridNEqu( grid ));
+}
+
 VALUE grid_faceOppositeCellNode( VALUE self, VALUE rb_nodes, VALUE node )
 {
   VALUE rb_face;
@@ -1282,6 +1288,7 @@ void Init_Grid()
   rb_define_method( cGrid, "gem", grid_gem, 2 );
   rb_define_method( cGrid, "gemIsAllLocal", grid_gemIsAllLocal, 0 );
   rb_define_method( cGrid, "equator", grid_equator, 2 );
+  rb_define_method( cGrid, "nequ", grid_nequ, 0 );
 
   rb_define_method( cGrid, "faceOppositeCellNode",
 		    grid_faceOppositeCellNode, 2 );
