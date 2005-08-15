@@ -770,8 +770,8 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
 						uv2, xyz, &bary ) ) {
     
 	area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
-	printf("line segment%4d nodes%10d%10d area%14.6e\n",
-	       segment,node0,node1,area);
+	printf("line segment%4d nodes%10d%10d area%14.6e u%f v%f\n",
+	       segment,node0,node1,area,uv2[0],uv2[1]);
 
 	if ( ringSurroundsTriangle( ring, node0, node1, EMPTY, uv2) ) {
 	  node2 = EMPTY;
