@@ -878,6 +878,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   int triangle;
   int tri0, tri1, tri2;
   double uv0[2], uv1[2], uv2[2];
+  int segment, node0, node1;
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
@@ -1071,6 +1072,11 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     printf(" ring0[%d] init-----------------------\n",node);
     if (grid != gridFillRingWithExisitingCellFaces( grid, ring0[node], 
 						    faceId0 ) ){
+      for (segment=0;segment<ringSegments(ring0[node]);segment++){
+	ringSegment(ring0[node],segment,&node0,&node1,uv0,uv1);
+	gridWriteTecplotEquatorFaces(grid, node0, node1,
+				     "edge_split_equator.t");	
+      }
       ringTecplot( ring0[node], NULL );
       printf("%s: %d: gridFillRingWithExisitingCellFaces ring0[%d] NULL.\n",
 	     __FILE__,__LINE__,node);
@@ -1079,6 +1085,11 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     printf(" ring1[%d] init-----------------------\n",node);
     if (grid != gridFillRingWithExisitingCellFaces( grid, ring1[node], 
 						    faceId1 ) ){
+      for (segment=0;segment<ringSegments(ring1[node]);segment++){
+	ringSegment(ring1[node],segment,&node0,&node1,uv0,uv1);
+	gridWriteTecplotEquatorFaces(grid, node0, node1,
+				     "edge_split_equator.t");	
+      }
       ringTecplot( ring1[node], NULL );
       printf("%s: %d: gridFillRingWithExisitingCellFaces ring1[%d] NULL.\n",
 	     __FILE__,__LINE__,node);
