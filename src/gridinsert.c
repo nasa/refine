@@ -756,6 +756,7 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
     if (grid != gridEquator(grid, node0, node1)) {
       printf("%s: %d: gridEquator NULL.\n",__FILE__,__LINE__); return NULL;
     }
+
     nequator = gridNEqu(grid);
     if ( !gridContinuousEquator(grid) ) nequator--;
 
