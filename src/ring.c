@@ -39,6 +39,9 @@ Ring* ringCreate( void )
   ring->triangle_uvs = 
     (double *)malloc(ring->malloced_triangles*6*sizeof(double));
 
+  ring->ring_area_computed = FALSE;
+  ring->ring_area = 0.0;
+
   /* originals are for debugging */
   ring->originals = 0;
   ring->original_nodes = NULL;
@@ -489,16 +492,21 @@ double ringArea( Ring *ring )
   double uv0[2], uv1[2];
   double area;
 
-  center[0] = 0.0;
-  center[1] = 0.0;
+  if ( !ring->ring_area_computed ) {
 
-  area = 0.0;
-  for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
-    uv0[0] = ring->segment_uvs[0+4*segment];
-    uv0[1] = ring->segment_uvs[1+4*segment];
-    uv1[0] = ring->segment_uvs[2+4*segment];
-    uv1[1] = ring->segment_uvs[3+4*segment];
-    area += ringTriangleArea(ring, uv0, uv1, center);
+    center[0] = 0.0;
+    center[1] = 0.0;
+
+    area = 0.0;
+    for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
+      uv0[0] = ring->segment_uvs[0+4*segment];
+      uv0[1] = ring->segment_uvs[1+4*segment];
+      uv1[0] = ring->segment_uvs[2+4*segment];
+      uv1[1] = ring->segment_uvs[3+4*segment];
+      area += ringTriangleArea(ring, uv0, uv1, center);
+    }
+    ring->ring_area_computed = TRUE;
+    ring->ring_area = area;
   }
-  return area;
+  return ring->ring_area;
 }

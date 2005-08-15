@@ -35,6 +35,9 @@ struct Ring {
   int *triangle_nodes;
   double *triangle_uvs;
 
+  GridBool ring_area_computed;
+  double ring_area;
+
   /* originals are for debugging */
   int originals;
   int *original_nodes;
