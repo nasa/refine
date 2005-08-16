@@ -1126,11 +1126,6 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   }
   gridRemoveFace(grid,face1);
 
-  printf("n0 %d n1 %d\n",n0,n1);
-  if ( 29==n0 && 207==n1) {
-    //return EMPTY;
-  }
-
   for (node=0;node<(nnode-1);node++) {
     for ( triangle=0 ; triangle < ringTriangles(ring0[node]) ; triangle++ ) {
       if ( ring0[node] != ringTriangle( ring0[node], triangle,
