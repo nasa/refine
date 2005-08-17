@@ -1,3 +1,7 @@
+2005-08-17 16:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) drop gridSetMinInsertCost for linear adapt.
+	
 2005-08-17 15:28 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) added --vaild to turn on gridCOST_CNST_VALID.

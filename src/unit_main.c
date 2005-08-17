@@ -560,6 +560,7 @@ int main( int argc, char *argv[] )
 	return 1;
       }
     }else{
+      gridSetMinInsertCost(grid, 1.0e-3 );
       if (grid != gridAdaptLongShortLinear(grid,ratioCollapse,ratioSplit,TRUE)){
 	gridWriteTecplotCurvedGeom(grid, NULL );
 	gridWriteTecplotSurfaceGeom(grid,NULL);
