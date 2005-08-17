@@ -67,9 +67,11 @@ Ring *ringInspect( Ring *ring )
   int segment;
   printf("ring inspection,%4d segments\n",ringSegments( ring ));
   for ( segment=0 ; segment<ringSegments( ring ) ; segment++ ) {
-    printf("segment%4d: nodes%10d%10d\n",
+    printf("segment%4d: nodes%10d%10d (%9.4f,%9.4f) (%9.4f,%9.4f)\n",
 	   segment,
-	   ring->segment_nodes[0+2*segment],ring->segment_nodes[1+2*segment]);
+	   ring->segment_nodes[0+2*segment],ring->segment_nodes[1+2*segment],
+	   ring->segment_uvs[0+4*segment],ring->segment_uvs[1+4*segment],
+	   ring->segment_uvs[2+4*segment],ring->segment_uvs[3+4*segment]);
   }
   return ring;
 }
