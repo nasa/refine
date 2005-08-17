@@ -497,8 +497,8 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
   iteration = 0;
   keep_going = TRUE;
   while (keep_going) {
-    iteration ++; 
-    if (iteration > 1000) {
+    iteration++; 
+    if (iteration > 10000) {
       printf("iterations %d exhasted bary%12.8f diff %e\n",
 	     iteration,(*bary),radius);
       return NULL;
@@ -520,7 +520,7 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
     last_bary = (*bary);
 
   }
-  printf("bary%12.8f diff %e\n",(*bary),radius);
+  printf("bary%12.8f diff %e iter %d\n",(*bary),radius,iteration);
   if (radius < 1.0e-6 && (*bary) <= 1.0 && (*bary) >= 0.0) {
     return grid;
   }else{
