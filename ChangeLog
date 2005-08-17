@@ -1,9 +1,13 @@
-2005-08-17 18:15 Mike Park  <mike.park@nasa.gov>
+2005-08-17 15:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) added --vaild to turn on gridCOST_CNST_VALID.
+	
+2005-08-17 15:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/ring.c (ringAddSegment) update existing segment uv's from
 	latest segment
 
-2005-08-17 18:07 Mike Park  <mike.park@nasa.gov>
+2005-08-17 15:07 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLineSegmentIntersectsFace) return NULL if
 	iteration count exceeded.

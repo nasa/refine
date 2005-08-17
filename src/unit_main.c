@@ -201,6 +201,7 @@ int main( int argc, char *argv[] )
   double minAR=-1.0;
   double ratioSplit, ratioCollapse;
   int EdgeBasedCycles = EMPTY;
+  GridBool valid = FALSE;
   GridBool validate = FALSE;
   GridBool tecplotOutput = FALSE;
   GridBool LeadingEdgeBG = FALSE;
@@ -283,6 +284,11 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"--validate") == 0 ) {
       validate = TRUE;
       printf("--validate argument %d\n",i);
+      valid = TRUE;
+      printf("--valid also set\n",i);
+    } else if( strcmp(argv[i],"--valid") == 0 ) {
+      valid = TRUE;
+      printf("--valid argument %d\n",i);
     } else if( strcmp(argv[i],"-le") == 0 ) {
       LeadingEdgeBG = TRUE;
       i++; LeadingEdgeScale = atof(argv[i]);
@@ -312,6 +318,7 @@ int main( int argc, char *argv[] )
       printf(" -t write tecplot zones durring adaptation\n");
       printf(" -le scale leading edge background grid\n");
       printf(" --validate give grid valid cost constraints\n");
+      printf(" --valid use valid cost constraints\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -359,7 +366,8 @@ int main( int argc, char *argv[] )
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
-  //			gridCOST_CNST_VALID  |
+  if (valid) gridSetCostConstraint(grid, gridCOST_CNST_VALID |
+				   gridCostConstraint(grid) );
 
   gridConstrainSurfaceNode(grid);
 
