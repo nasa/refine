@@ -198,6 +198,27 @@ Ring *ringAddSegment( Ring *ring,
   ring->segment_uvs[3+4*ring->segments] = uv1[1];
 
   ring->segments++;
+
+  // make sure that uv's match
+  for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
+    if ( ring->segment_nodes[0+2*segment] == node0 ) {
+      ring->segment_uvs[0+4*segment] = uv0[0];
+      ring->segment_uvs[1+4*segment] = uv0[1];
+    }
+    if ( ring->segment_nodes[0+2*segment] == node1 ) {
+      ring->segment_uvs[0+4*segment] = uv1[0];
+      ring->segment_uvs[1+4*segment] = uv1[1];
+    }
+    if ( ring->segment_nodes[1+2*segment] == node0 ) {
+      ring->segment_uvs[2+4*segment] = uv0[0];
+      ring->segment_uvs[3+4*segment] = uv0[1];
+    }
+    if ( ring->segment_nodes[1+2*segment] == node1 ) {
+      ring->segment_uvs[2+4*segment] = uv1[0];
+      ring->segment_uvs[3+4*segment] = uv1[1];
+    }
+  }
+
   return ring;
 }
 
