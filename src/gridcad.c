@@ -477,6 +477,7 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
   double disp[3];
   double normal_displacement[3], radius;
   double last_bary;
+  int iteration;
   GridBool keep_going;
 
   if (grid != gridNodeXYZ(grid, node0, xyz0) ) return NULL;
@@ -493,9 +494,15 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
   nearest_point_on_edge[1] = (*bary)*xyz1[1] + (1.0-(*bary))*xyz0[1];
   nearest_point_on_edge[2] = (*bary)*xyz1[2] + (1.0-(*bary))*xyz0[2];
 
+  iteration = 0;
   keep_going = TRUE;
   while (keep_going) {
-  
+    iteration ++; 
+    if (iteration > 1000) {
+      printf("iterations %d exhasted bary%12.8f diff %e\n",
+	     iteration,(*bary),radius);
+      return NULL;
+    }
     gridProjectToFace(grid, faceId, nearest_point_on_edge, uv, xyz);
 
     gridSubtractVector(xyz, xyz0, disp);
@@ -507,7 +514,6 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
 
     gridSubtractVector(xyz, nearest_point_on_edge, normal_displacement);
     radius = sqrt( gridDotProduct( normal_displacement, normal_displacement ) );
-
 
     if ( (*bary) > 1.1 || (*bary) < -0.1 ) keep_going = FALSE;
     if ( ABS((*bary)-last_bary) < 1.0e-8 ) keep_going = FALSE;
