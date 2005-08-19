@@ -1,3 +1,12 @@
+2005-08-19 14:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) ported
+	Jim Thomas version of HEFSS.rps/LibF90/grid_move.f90:filla_interior
+	from FUN3D. using modulus_of_elasticity = 1/AspectRatio and
+	poisson = 0.05 (Jim choose 0.0).
+	* src/gridmove.c (gridmoveElasticRelax_Old_StartStep) renamed
+	to save original gridmoveElasticRelaxationStartStep routine.
+	
 2005-08-19 11:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelRelaxNegativeFaceAreaUV) increased the
