@@ -312,7 +312,7 @@ Grid *gridParallelRelaxNegativeFaceAreaUV( Grid *grid,
       nearGhost = gridNodeNearGhost(grid, node);
       if ( localOnly != nearGhost ) {
 	gridMinFaceAreaUV(grid,node,&nodeFaceAreaUV);
-	if (1.0e-14 > nodeFaceAreaUV) gridSmoothNodeFaceAreaUV( grid, node );
+	if (1.0e-12 > nodeFaceAreaUV) gridSmoothNodeFaceAreaUV( grid, node );
       }
     }
   }
