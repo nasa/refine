@@ -399,7 +399,7 @@ class TestGridShape < Test::Unit::TestCase
   where = [0.3, 0.3, 0.3]
 
   deriv = @g.shapeJacobianDetDeriv2(n0,n1,n2,n3,e01,e02,e03,e12,e13,e23,where)
-  tol=1.0e-2
+  tol=1.0e-1
   assert_in_delta( 452059.8, deriv[0], tol)
 
   delta = 1.0e-8
