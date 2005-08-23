@@ -213,7 +213,14 @@ class TestGridMetric < Test::Unit::TestCase
   grid = Grid.new(1,0,0,0)
   grid.addNode(0,0,0)
   assert_equal grid, grid.setMapWithSpacingVectors(node,v1,v2,v3,s1,s2,s3)
-  assert_equal [58, 0, 42, 4, 0, 58], grid.map(node)
+  truth = [58.0, 0.0, 42.0, 4.0, 0.0, 58.0]
+  tol = 1.0e-14
+  assert_in_delta truth[0], grid.map(node)[0], tol
+  assert_in_delta truth[1], grid.map(node)[1], tol
+  assert_in_delta truth[2], grid.map(node)[2], tol
+  assert_in_delta truth[3], grid.map(node)[3], tol
+  assert_in_delta truth[4], grid.map(node)[4], tol
+  assert_in_delta truth[5], grid.map(node)[5], tol
  end
 
  def testFindLargestRatioEdge
