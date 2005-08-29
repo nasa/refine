@@ -1327,7 +1327,9 @@ GridMove *gridmoveElasticRelaxationStartStep(GridMove *gm, double position)
 	modulus_of_elasticity = 1.0 / 1.0e-8;
       }
 
-      poisson = 0.05;
+      modulus_of_elasticity = pow(modulus_of_elasticity, 0.2);
+
+      poisson = 0.0;
 
       mu     = modulus_of_elasticity / 2.0 / (1.0 + poisson);
       lambda = 

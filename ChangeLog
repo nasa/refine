@@ -1,3 +1,10 @@
+2005-08-29 10:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) to
+	increase the stability of gauss-sidel iterations, the variation
+	of modulus_of_elasticity is reduced by raising to to the 0.2 power.
+	also set poisson = 0.0, which is what jim had in fun3d gridmove.
+
 2005-08-19 14:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationStartStep) ported
