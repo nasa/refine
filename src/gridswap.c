@@ -52,7 +52,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     if (EMPTY==faces[face]) {
       faceIds[face]=EMPTY;
     }else{
-      gridFace(grid,faces[face],facenodes,&faceIds[face]);      
+      gridFace(grid,faces[face],facenodes,&(faceIds[face]));      
     }
     if (faces[face]!=EMPTY) {
       facecount++;
