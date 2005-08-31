@@ -171,8 +171,41 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     return NULL;
   }
   if ( 1 != gridNGem(grid) ) {
+    int gem, gemcell, gemnodes[4];
     printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
 	   __FILE__,__LINE__, gridNGem(grid) );
+    printf("queue is %d\n",(queue!=NULL));
+    printf("partId %d\n",gridPartId(grid));
+    printf("cell %d\n",cell);
+    printf("cell nodes %d %d %d %d\n",
+	   cellnodes[0],cellnodes[1],cellnodes[2],cellnodes[3]);
+    printf("cell node parts %d %d %d %d\n",
+	   gridNodePart(grid,cellnodes[0]),
+	   gridNodePart(grid,cellnodes[1]),
+	   gridNodePart(grid,cellnodes[2]),
+	   gridNodePart(grid,cellnodes[3]));
+    facenodes[0] = cell2face[newface0][1];
+    facenodes[1] = cell2face[newface0][0];
+    facenodes[2] = cell2face[newface0][2];
+    printf("face0 nodes %d %d %d\n",facenodes[0],facenodes[1],facenodes[2]);
+    facenodes[0] = cell2face[newface1][1];
+    facenodes[1] = cell2face[newface1][0];
+    facenodes[2] = cell2face[newface1][2];
+    printf("face1 nodes %d %d %d\n",facenodes[0],facenodes[1],facenodes[2]);
+    for (gem = 0; gem < gridNGem(grid); gem++) {
+      gemcell = gridGem(grid,gem);
+      printf("gem %d cell %d\n",gem,gemcell);
+      gridCell( grid, gemcell, gemnodes );
+      printf("gem cell nodes %d %d %d %d\n",
+	   gemnodes[0],gemnodes[1],gemnodes[2],gemnodes[3]);
+      printf("gem node parts %d %d %d %d\n",
+	     gridNodePart(grid,gemnodes[0]),
+	     gridNodePart(grid,gemnodes[1]),
+	     gridNodePart(grid,gemnodes[2]),
+	     gridNodePart(grid,gemnodes[3]));
+    }
+    fflush(stdout);
+
     gridRemoveFaceAndQueue(grid, queue, addedFace0 );
     gridRemoveFaceAndQueue(grid, queue, addedFace1 );
     queueResetCurrentTransaction( queue );
