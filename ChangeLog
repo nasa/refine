@@ -1,3 +1,9 @@
+2005-08-31 16:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge) to prevent a non-manifold grid, do
+	do not allow an edge swap to add a face that alread exists in the
+	grid.
+
 2005-08-29 10:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmove.c (gridmoveElasticRelaxationStartStep) to

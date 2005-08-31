@@ -354,6 +354,14 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
     gridNodeUV(grid, gap0, oldFaceId0, gap0uv);
     gridNodeUV(grid, gap1, oldFaceId0, gap1uv);
 
+    /* make sure that faces do not already exist in any orientation */
+    /* before adding (overkill, gridFindFace does not check orientation) */
+    /* dounle check parallel */
+    if ( EMPTY != gridFindFace( grid, n0, gap1, gap0 ) ) return NULL;
+    if ( EMPTY != gridFindFace( grid, n0, gap0, gap1 ) ) return NULL;
+    if ( EMPTY != gridFindFace( grid, n1, gap0, gap1 ) ) return NULL;
+    if ( EMPTY != gridFindFace( grid, n1, gap1, gap0 ) ) return NULL;
+
     newFace0 = gridAddFaceUVAndQueue(grid, queue, 
 				     n0,   n0uv[0],   n0uv[1], 
 				     gap1, gap1uv[0], gap1uv[1], 
