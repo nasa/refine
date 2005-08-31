@@ -162,7 +162,14 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 
   /* form gem on common edge that only contains cell to be removed to
      exclude it from minimum cost test */
-  gridMakeGem(grid, commonNodes[0], commonNodes[1]);
+  if (grid != gridMakeGem(grid, commonNodes[0], commonNodes[1])) {
+    printf("%s: %d: gridRemoveTwoFaceCell: gridMakeGem NULL\n",
+	   __FILE__,__LINE__ );
+    gridRemoveFaceAndQueue(grid, queue, addedFace0 );
+    gridRemoveFaceAndQueue(grid, queue, addedFace1 );
+    queueResetCurrentTransaction( queue );
+    return NULL;
+  }
   if ( 1 != gridNGem(grid) ) {
     printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
 	   __FILE__,__LINE__, gridNGem(grid) );
