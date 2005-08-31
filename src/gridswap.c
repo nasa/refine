@@ -107,7 +107,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   }
   
   for(node=0;node<4;node++) 
-    gridNodeUV(grid, cellnodes[node], faceId0, &uv[2*node]);
+    gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
       
   /* add opposite face in left-handed for the removed tet, 
      right-handed for rest of grid */
