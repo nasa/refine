@@ -294,6 +294,7 @@ class TestGridMath < Test::Unit::TestCase
  end
 
  def testEigTriDiagFull211212
+  tol = 1.0e-7
   m = [2,1,1,
          2,1,
            2]
@@ -310,15 +311,15 @@ class TestGridMath < Test::Unit::TestCase
   v1 = @gm.vectTriDiag1(d,e,q0,q1,q2)
   v2 = @gm.vectTriDiag2(d,e,q0,q1,q2)
   invsqrt2 = 0.707106781186547
-  assert_in_delta( 0.57735027, v0[0],1.0e-7)
-  assert_in_delta( 0.57735027, v0[1],1.0e-7)
-  assert_in_delta( 0.57735027, v0[2],1.0e-7)
-  assert_in_delta(-0.81649658, v1[0],1.0e-7)
-  assert_in_delta( 0.40824829, v1[1],1.0e-7)
-  assert_in_delta( 0.40824829, v1[2],1.0e-7)
-  assert_in_delta( 0.0,        v2[0],1.0e-7)
-  assert_in_delta( invsqrt2,   v2[1],1.0e-7)
-  assert_in_delta(-invsqrt2,   v2[2],1.0e-7)
+  assert_in_delta( 0.57735027, v0[0],tol)
+  assert_in_delta( 0.57735027, v0[1],tol)
+  assert_in_delta( 0.57735027, v0[2],tol)
+  assert_in_delta(-0.81649658, v1[0],tol)
+  assert_in_delta( 0.40824829, v1[1],tol)
+  assert_in_delta( 0.40824829, v1[2],tol)
+  assert_in_delta( 0.0,        v2[0],tol)
+  assert_in_delta( invsqrt2,   v2[1],tol)
+  assert_in_delta(-invsqrt2,   v2[2],tol)
  end
 
  def testEigTriDiag13n471
