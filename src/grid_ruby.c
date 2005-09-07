@@ -451,6 +451,14 @@ VALUE grid_reconnectAllFace( VALUE self, VALUE oldNode, VALUE newNode )
 					 NUM2INT(newNode) )?self:Qnil);
 }
 
+VALUE grid_reconnectionOfAllFacesOK( VALUE self, VALUE oldNode, VALUE newNode )
+{
+  GET_GRID_FROM_SELF;
+  return ( gridReconnectionOfAllFacesOK( grid, 
+					 NUM2INT(oldNode), 
+					 NUM2INT(newNode) )?Qtrue:Qfalse);
+}
+
 VALUE grid_face( VALUE self, VALUE face )
 {
   int id, nodes[3];
@@ -1252,6 +1260,8 @@ void Init_Grid()
   rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
   rb_define_method( cGrid, "reconnectAllFace", grid_reconnectAllFace, 2 );
+  rb_define_method( cGrid, "reconnectionOfAllFacesOK", 
+		    grid_reconnectionOfAllFacesOK, 2 );
   rb_define_method( cGrid, "face", grid_face, 1 );
   rb_define_method( cGrid, "deleteThawedFaces", grid_deleteThawedFaces, 1 );
   rb_define_method( cGrid, "nThawedFaces", grid_nThawedFaces, 1 );
