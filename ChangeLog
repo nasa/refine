@@ -1,4 +1,4 @@
-2005-09-06 09:03 Mike Park  <mike.park@nasa.gov>
+2005-09-06 09:07 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindFace) to prevent a false positive, gridFindFace
 	returns empty for any canidate face with repeated nodes because
