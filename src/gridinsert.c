@@ -2056,7 +2056,8 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
       ( gridMinARAroundNodeExceptGemRecon( grid, n0, n1 ) < 
 	gridMinInsertCost(grid) ) ||
       ( gridMinARAroundNodeExceptGemRecon( grid, n1, n0 ) < 
-	gridMinInsertCost(grid) )  ) {
+	gridMinInsertCost(grid) ) ||
+      !gridReconnectionOfAllFacesOK(grid, n1, n0) ) {
     if ( edgeId != EMPTY ) {
       gridSetNodeT(grid, n0, edgeId, t0 );
       gridSetNodeT(grid, n1, edgeId, t1 );
