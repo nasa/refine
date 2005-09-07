@@ -973,6 +973,21 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 11,   grid.faceId( 1, 2, 3 )
  end
 
+ def testIfReconnectingAFaceIsOK
+  #   2
+  #  /|\
+  # 3-0-1
+  assert_not_nil grid = Grid.new(4,0,3,0)
+  4.times { grid.addNode(0,0,0) }
+
+  grid.addFace(0,1,2,7)
+  grid.addFace(0,2,3,7)
+  assert grid.reconnectionOfAllFacesOK(0,1)
+
+  grid.addFace(1,3,2,9)
+  assert !grid.reconnectionOfAllFacesOK(0,1)
+ end
+
  def testReconnectFace
   assert_not_nil             grid = Grid.new(6,0,3,0)
   grid.addFace(0,3,1,1)
