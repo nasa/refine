@@ -322,6 +322,7 @@ Grid *gridRemoveFaceAndQueue(Grid *g, Queue *, int face );
 int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 Grid *gridReconnectAllFace(Grid *g, int oldNode, int newNode );
+GridBool gridReconnectionOfAllFacesOK(Grid *g, int oldNode, int newNode );
 Grid *gridFace(Grid *g, int face, int *nodes, int *id );
 Grid *gridDeleteThawedFaces(Grid *g, int faceId );
 int gridNThawedFaces(Grid *g, int faceId );

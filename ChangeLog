@@ -1,3 +1,14 @@
+2005-09-06 09:03 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindFace) to prevent a false positive, gridFindFace
+	returns empty for any canidate face with repeated nodes because
+	repeated nodes can trick the current algorithm to find a face that
+	does not actually exist in the mesh.
+	* src/grid.c (gridReconnectionOfAllFacesOK) tests to see if the
+	reconnection of all faces from old to new node with create duplicate
+	faces of right or left handed orientation. This is used to prevent
+	an edge collapse from creating duplicate faces (e.g., at wing tip)
+
 2005-08-31 16:31 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridSwapEdge) to prevent a non-manifold grid, do

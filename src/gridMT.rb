@@ -904,6 +904,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0,          grid.findFace(0,1,2)
   assert_equal [0,1,2,10], grid.face(0)
   assert_nil               grid.findFace(3,1,2)
+  assert_nil               grid.findFace(0,0,1)
  end
 
  def testAddAndRemoveFace

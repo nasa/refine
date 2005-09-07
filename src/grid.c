@@ -2453,6 +2453,8 @@ int gridFindFace(Grid *grid, int n0, int n1, int n2 )
   AdjIterator it0, it1, it2;
   Adj *adj=grid->faceAdj;
 
+  if ( n0 == n1 || n0 == n2 || n1 == n2 ) return EMPTY;
+
   for ( it0 = adjFirst(adj,n0); adjValid(it0); it0 = adjNext(it0) )
     for ( it1 = adjFirst(adj,n1); adjValid(it1); it1 = adjNext(it1) )
       if ( adjItem(it0) == adjItem(it1) )
@@ -2492,6 +2494,31 @@ Grid *gridReconnectAllFace(Grid *grid, int oldNode, int newNode )
   }
 
   return grid;
+}
+
+GridBool gridReconnectionOfAllFacesOK(Grid *grid, int oldNode, int newNode )
+{
+  AdjIterator it;
+  int face, i, nodes[3], faceId;
+  if (oldNode < 0 || oldNode >= grid->maxnode ) return FALSE;
+  if (newNode < 0 || newNode >= grid->maxnode ) return FALSE;
+  if (newNode == oldNode) return TRUE;
+
+  if (!gridGeometryFace(grid, oldNode)) return TRUE;
+  if (!gridGeometryFace(grid, newNode)) return TRUE;
+
+  for (it = adjFirst(grid->faceAdj,oldNode); adjValid(it); it = adjNext(it)) {
+    face = adjItem(it);
+    gridFace(grid, face, nodes, &faceId );
+    for (i=0;i<3;i++){
+      if (oldNode == nodes[i]) nodes[i]=newNode;
+    }
+    /* verify both ways in case gridFindFace ever checks face orientation */
+    if (EMPTY != gridFindFace(grid, nodes[0], nodes[1], nodes[2]))return FALSE;
+    if (EMPTY != gridFindFace(grid, nodes[1], nodes[0], nodes[2]))return FALSE;
+  }
+
+  return TRUE;
 }
 
 Grid *gridFace(Grid *grid, int face, int *nodes, int *id )
