@@ -1,11 +1,17 @@
-2005-09-06 10:15 Mike Park  <mike.park@nasa.gov>
+2005-09-07 15:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) refactored the path (currently
+	disabled) that uses a plan to get all the long edges first and
+	the the short edges second with priorities.
+
+2005-09-07 10:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridCollapseEdge) test
 	gridReconnectionOfAllFacesOK before collapsing edge.  This is used
 	to prevent an edge collapse from creating duplicate faces (e.g.,
 	at OM6 wing tip)
 
-2005-09-06 09:07 Mike Park  <mike.park@nasa.gov>
+2005-09-07 09:07 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindFace) to prevent a false positive, gridFindFace
 	returns empty for any canidate face with repeated nodes because

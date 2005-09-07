@@ -56,16 +56,19 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   double ratio;
   double ar, arLimit;
 
+  GridBool use_a_plan;
+  int conn, ranking;
+  int nodes[2];
+  double length;
+  Plan *plan;
+
   origNNode   = gridNNode(grid);
   adaptnode   = 0;
   nnodeAdd    = 0;
   nnodeRemove = 0;
 
-  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
-    int conn, ranking, report;
-    int nodes[2];
-    double ratios[3];
-    Plan *plan;
+  use_a_plan = FALSE;
+  if (use_a_plan) {
 
     gridCreateConn(grid);
     plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
@@ -76,50 +79,23 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
     }
     planDeriveRankingsFromPriorities( plan );
 
-    report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
-
     for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
       conn = planItemWithThisRanking(plan,ranking);
 
-      if (ranking/report*report == ranking || ranking==planSize(plan)-1) {
-	printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
-	       ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
-	       planPriorityWithThisRanking(plan,ranking));
-	fflush(stdout);
-      }
       if (grid == gridConn2Node(grid,conn,nodes)){
 	if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
 	     gridValidNode(grid, nodes[0]) && 
 	     gridValidNode(grid, nodes[1]) && 
 	     !gridNodeFrozen(grid, nodes[0]) &&
-	     !gridNodeFrozen(grid, nodes[1]) ) {
-	  if (grid == gridEdgeRatio3(grid, nodes[0], nodes[1], ratios ) ) {
-	    if (ratios[2] >= maxLength) {
-	      ratio = 0.5;
-	      newnode = gridSplitEdgeRatio( grid, queue,
-					    nodes[0], nodes[1], ratio );
-	      if ( newnode != EMPTY ){
-		nnodeAdd++;
-		gridSwapNearNode( grid, newnode, 1.0 );
-	      } else {
-		newnode = gridSplitEdgeForce( grid, queue, nodes[0], nodes[1],
-					      FALSE);
-		if ( newnode != EMPTY ){
-		  nnodeAdd++;
-		  gridSwapNearNode( grid, newnode, 1.0 );
-		}else{
-		  if (TRUE) {
-		    printf("Edge%10d%10d will not split face%2d%2d err%6.2f\n",
-			   nodes[0],nodes[1],
-			   gridGeometryFace(grid,nodes[0]),
-			   gridGeometryFace(grid,nodes[1]),
-			   ratios[2]);
-
-		    // gridWriteTecplotEquator(grid, nodes[0], nodes[1],
-		    //		  "edge_split_equator.t");
-		  }
-		}
-	      }
+	     !gridNodeFrozen(grid, nodes[1]) &&
+	     ( gridNodeLocal(grid,nodes[0]) || 
+	       gridNodeLocal(grid,nodes[1]) ) ) {
+	  length = gridEdgeRatio(grid, nodes[0], nodes[1]);
+	  if (length >= maxLength) {
+	    ratio = 0.5;
+	    newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
+	    if ( newnode != EMPTY ){
+	      //gridSwapNearNode( grid, newnode, 1.0 );
 	    }
 	  }
 	}
@@ -137,35 +113,26 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
     }
     planDeriveRankingsFromPriorities( plan );
   
-    report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
-
     for ( ranking=0; ranking<planSize(plan); ranking++ ) { 
       conn = planItemWithThisRanking(plan,ranking);
-      if (ranking/report*report == ranking || ranking==gridNConn(grid)-1) {
-	printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
-	       ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
-	       planPriorityWithThisRanking(plan,ranking));
-      }
       if (grid == gridConn2Node(grid,conn,nodes)){
 	if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
 	     gridValidNode(grid, nodes[0]) && 
 	     gridValidNode(grid, nodes[1]) && 
 	     !gridNodeFrozen(grid, nodes[0]) &&
-	     !gridNodeFrozen(grid, nodes[1]) ) {
-	  if (grid == gridEdgeRatio3(grid, nodes[0], nodes[1], ratios ) ) {
-	    if (ratios[2] <= minLength) {
-	      if ( grid == 
-		   gridCollapseEdgeToAnything(grid, queue, 
-					      nodes[0], 
-					      nodes[1] ) ) {
-		nnodeRemove++;
-		gridSwapNearNode( grid, nodes[0], 1.0 );
-	      }
+	     !gridNodeFrozen(grid, nodes[1]) &&
+	     gridNodeLocal(grid,nodes[0]) &&
+	     gridNodeLocal(grid,nodes[1]) ) {
+	  length = gridEdgeRatio(grid, nodes[0], nodes[1] );
+	  if (length <= minLength) {
+	    if ( grid == 
+		 gridParallelEdgeCollapse(grid, queue, nodes[0], nodes[1]) ) {
+	      // gridSwapNearNode( grid, nodes[0], 1.0 );
 	    }
 	  }
 	}
       }
-    } 
+    }
     planFree(plan);
     gridEraseConn(grid);
 
@@ -177,7 +144,8 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
       if ( gridValidNode( grid, n0) && 
 	   !gridNodeFrozen( grid, n0 ) && 
 	   gridNodeLocal( grid, n0 ) ) {
-	if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
+	if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) )
+	  return NULL;
 	if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
 	  gridNodeAR(grid,n0,&ar);
 	  if (ar > arLimit) {
