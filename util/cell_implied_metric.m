@@ -26,7 +26,7 @@ function row = form_row(edge)
 
 endfunction
 
-function implied_metric(n1,n2,n3,n4)
+function m = implied_metric(n1,n2,n3,n4)
 
   edge1 = n2-n1;
   edge2 = n3-n1;
@@ -35,15 +35,15 @@ function implied_metric(n1,n2,n3,n4)
   edge5 = n4-n2;
   edge6 = n4-n3;
 
-  M = [ form_row(edge1)
+  equ = [ form_row(edge1)
         form_row(edge2)
         form_row(edge3)
         form_row(edge4)
         form_row(edge5)
         form_row(edge6)
-       ]
+  ];
 
-  M \ [1;1;1;1;1;1]
+  m = equ \ [1;1;1;1;1;1];
 endfunction
 
 n1 = [ 0 0 0 ];
@@ -57,5 +57,12 @@ n1 = [ 0.000, 0.000, 0.000 ];
 n2 = [ 1.000, 0.000, 0.000 ];
 n3 = [ 0.500, 0.866, 0.000 ];
 n4 = [ 0.500, 0.289, 0.823 ];
+
+implied_metric(n1,n2,n3,n4)
+
+n1 = 0.5*[ 0.000, 0.000, 0.000 ];
+n2 = 0.5*[ 1.000, 0.000, 0.000 ];
+n3 = 0.5*[ 0.500, 0.866, 0.000 ];
+n4 = 0.5*[ 0.500, 0.289, 0.823 ];
 
 implied_metric(n1,n2,n3,n4)
