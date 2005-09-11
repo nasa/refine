@@ -1325,7 +1325,7 @@ Grid *gridWriteTecplotEquator(Grid *grid, int n0, int n1, char *filename )
 
 Grid *gridWriteTecplotEquatorFaces(Grid *grid, int n0, int n1, char *filename )
 {
-  int i, last;
+  int i;
   double xyz[3];
 
   if (grid != gridEquator(grid, n0, n1 )) return NULL;
