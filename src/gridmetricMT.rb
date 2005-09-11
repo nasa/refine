@@ -53,7 +53,7 @@ class TestGridMetric < Test::Unit::TestCase
  def isoTet
   grid = Grid.new(4,1,0,0)
   grid.addNode( 0.000, 0.000, 0.000 )
-  grid.addNode( 1.000, 0.000, 0000 )
+  grid.addNode( 1.000, 0.000, 0.000 )
   grid.addNode( 0.500, 0.866, 0.000 )
   grid.addNode( 0.500, 0.289, 0.823 ) 
   grid.addCell(0,1,2,3)
