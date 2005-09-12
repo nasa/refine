@@ -2169,3 +2169,57 @@ Grid *gridVerifyFaceExists(Grid *grid, int n0, int n1, int n2 )
   return NULL;
 }
 
+Grid *gridCollapseInvalidCells(Grid *grid)
+{
+#define NEIGHBORDEG (500)
+  int cell, invalidnodes[4], nodes[4];
+  int i, nlist, look, nodelist[NEIGHBORDEG];
+  int corner, pivot, side, node0, node1;
+  AdjIterator it;
+  GridBool fixed, looking;
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, invalidnodes)) {
+      if ( -0.5 > gridAR(grid,invalidnodes) ) {
+	fixed = FALSE;
+	for (corner=0;corner<4 && !fixed;corner++) {
+
+	  pivot = invalidnodes[corner];
+
+	  nlist =0;
+	  for ( it = adjFirst(gridCellAdj(grid),pivot); 
+		adjValid(it); 
+		it = adjNext(it) ){
+	    gridCell(grid, adjItem(it), nodes);
+	    for (i=0;i<4;i++) {
+	      if (pivot != nodes[i]) {
+		looking = (nlist<=NEIGHBORDEG);
+		look = 0;
+		for (look=0;look<nlist && looking ; look++){
+		  looking = (nodelist[look] != nodes[i]);
+		}
+		if (looking && nlist<=NEIGHBORDEG){
+		  nodelist[nlist] = nodes[i];
+		  nlist++;
+		}
+	      }
+	    }
+	  }    
+
+	  for (side=0;side<nlist && !fixed;side++) {
+	    node0 = pivot;
+	    node1 = nodelist[side];
+	    if( (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.00)) ||
+		(grid == gridCollapseEdge(grid, NULL, node0, node1, 1.00)) ||
+		(grid == gridCollapseEdge(grid, NULL, node0, node1, 0.50)) ) {
+	      fixed = TRUE;
+	    }
+	  }
+
+	}
+      }
+    }
+  }
+
+  return grid;
+}

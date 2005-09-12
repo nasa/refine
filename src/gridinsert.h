@@ -49,6 +49,8 @@ Grid *gridFreezeGoodNodes(Grid *g, double goodAR,
 Grid *gridVerifyEdgeExists(Grid *g, int n0, int n1);
 Grid *gridVerifyFaceExists(Grid *g, int n0, int n1, int n2);
 
+Grid *gridCollapseInvalidCells(Grid *g);
+
 END_C_DECLORATION
 
 #endif /* GRIDINSERT_H */

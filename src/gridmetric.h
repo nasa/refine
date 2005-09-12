@@ -63,6 +63,8 @@ Grid *gridNodeVolumeDerivative(Grid *g, int node,
 
 double gridCostValid(Grid *g, int *nodes );
 Grid *gridNodeCostValid(Grid *grid, int node, double *valid );
+int gridNumberOfInvalidCells(Grid *g);
+
 double gridAR(Grid *g, int *nodes );
 double gridEdgeRatioCost(Grid *g, int *nodes );
 double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
@@ -80,6 +82,7 @@ void gridCellAspectRatioDerivative( double *xyz1, double *xyz2,
 
 Grid *gridNodeARDerivative(Grid *g, int node, double *ar, double *dARdx );
 double gridMinVolume(Grid *g);
+Grid *gridJacVolRatio(Grid *g);
 GridBool gridNegCellAroundNode(Grid *g, int node );
 GridBool gridNegCellAroundNodeExceptGem(Grid *g, int node );
 double gridMinARAroundNodeExceptGem(Grid *g, int node );

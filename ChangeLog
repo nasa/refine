@@ -1,3 +1,18 @@
+2005-09-11 21:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridNumberOfInvalidCells) count cells with
+	aspect ratio less than zero.
+	* src/gridmetric.c (gridJacVolRatio) print to screen the ratio of the
+	smallest jacobian to the cell volume for debuging validity.
+	* src/gridinsert.c (gridCollapseInvalidCells) try to elimate
+	invalid calls by collapsing the cells away from the boundary.
+	* src/gridcad.c (gridSmoothInvalidCellNodes) elimate invalid cells
+	by smoothing volume or min jacobian.
+	* src/gridcad.c (gridUntangleBadFaceParameters) untanlge bad face
+	parameters, this was used before the SDK local patch node
+	numbering was corrected to fix the patch to keep going.
+	* src/gridcad.c cleaned out the above routines
+	
 2005-09-07 15:07 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt) refactored the path (currently

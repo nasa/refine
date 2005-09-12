@@ -569,7 +569,9 @@ Grid *gridNodeCostValid(Grid *grid, int node, double *valid )
 
   *valid = 0.0;
 
-  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
+  for ( it = adjFirst(gridCellAdj(grid),node);
+	adjValid(it);
+	it = adjNext(it) ){
     cell = adjItem(it);
     gridCell( grid, cell, nodes);
     local_valid = gridCostValid(grid, nodes);
@@ -577,6 +579,22 @@ Grid *gridNodeCostValid(Grid *grid, int node, double *valid )
   }
 
   return grid;
+}
+
+int gridNumberOfInvalidCells(Grid *grid)
+{
+  int cell, nodes[4];
+  int invalid;
+  invalid = 0;
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      if ( -0.5 > gridAR(grid,nodes) ) {
+	invalid++;
+      }
+    }
+  }
+  return invalid;
 }
 
 Grid *gridNodeAR(Grid *grid, int node, double *ar )
@@ -1582,6 +1600,22 @@ double gridMinVolume( Grid *grid )
       minVol = MIN(minVol, volume);
     }
   return minVol;
+}
+
+Grid *gridJacVolRatio(Grid *grid)
+{
+  int cell, nodes[4];
+  double volume, jacobian, ratio;
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      volume = gridVolume(grid, nodes );
+      jacobian = gridMinCellJacDet2(grid, nodes );
+      ratio = jacobian / volume / 6.0;
+      if (ratio<0.9) printf("%10d %20.12e %10.8f\n",cell,volume,ratio);
+    }
+  }
+  return grid;
 }
 
 GridBool gridNegCellAroundNode( Grid *grid, int node )

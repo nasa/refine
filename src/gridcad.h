@@ -81,6 +81,8 @@ Grid *gridStoreFaceCostParameterDerivatives(Grid *g, int node );
 
 Grid *gridLinearProgramXYZ(Grid *g, int node, GridBool *callAgain );
 
+Grid *gridSmoothInvalidCellNodes(Grid *g);
+
 Grid *gridSmoothNodeVolume(Grid *g, int node );
 Grid *gridSmoothNodeVolumeWithSurf(Grid *g, int node );
 Grid *gridSmoothNodeVolumeSimplex(Grid *g, int node );
@@ -94,6 +96,7 @@ GridBool nearestOnEdge(int vol, int edge, double *xyz, double *t,
 GridBool nearestOnFace(int vol, int face, double *xyz, double *uv,
                        double *xyznew);
 
+Grid *gridUntangleBadFaceParameters(Grid *g);
 Grid *gridSmoothNodeFaceAreaUV(Grid *g, int node );
 Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *g, int node );
 

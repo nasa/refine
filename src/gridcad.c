@@ -1596,6 +1596,26 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
   return grid;
 }
 
+Grid *gridSmoothInvalidCellNodes(Grid *grid)
+{
+  int cell, nodes[4], i, node;
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      if ( -0.5 > gridAR(grid,nodes) ) {
+	for (i=0;i<4;i++) {
+	  node = nodes[i];
+	  if (!gridGeometryFace(grid,node)) {
+	    gridSmartVolumeLaplacian( grid, node );	    
+	    gridSmoothNodeVolumeSimplex(grid, node);
+	  }
+	}
+      }
+    }
+  }
+  return grid;
+}
+
 Grid *gridSmoothNodeVolume( Grid *grid, int node )
 {
   if ( !gridValidNode(grid, node)   ||
@@ -1928,6 +1948,31 @@ GridBool nearestOnFace(int vol, int faceId, double *xyz, double *uv,
   }
 
   return TRUE;
+}
+
+Grid *gridUntangleBadFaceParameters(Grid *grid)
+{
+  int face, nodes[3], faceId;
+  int node, *hits;
+  
+  hits = (int *)malloc( gridMaxNode(grid) * sizeof(int) );
+  for (node=0;node<gridMaxNode(grid); node++) hits[node]=0;
+
+  for (face=0;face<gridMaxFace(grid);face++) {
+    if (grid == gridFace(grid,face,nodes,&faceId) ) {
+      if ( 1.0e-14 > gridFaceAreaUV(grid, face) ) {
+	hits[nodes[0]]++; hits[nodes[1]]++; hits[nodes[2]]++;
+      }
+    }
+  }
+
+  for (node=0;node<gridMaxNode(grid); node++) {
+    if (hits[node] > 2) {
+      printf("untangling node%10d with hits%3d\n",node,hits[node]);
+      gridSmoothNodeFaceAreaUV(grid, node );
+    }
+  }  
+  return grid;
 }
 
 Grid *gridSmoothNodeFaceAreaUV(Grid *grid, int node )
