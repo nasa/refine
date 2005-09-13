@@ -45,40 +45,23 @@ int main( int argc, char *argv[] )
 #endif
 {
   Grid *grid;
-  int jmax;
+  int iteration;
+  int iterations = 8;
   char project[256];
-  char adaptfile[256];
-  char linesfile[256];
   char outputProject[256];
-  char outputFAST[256];
-  char outputlines[256];
   char filename[256];
-  int i, j, oldSize, newSize;
-  double ratio=0.6;
-  double spacing = 1.0/3.0;
-  double Zcommand = -1.0;
-  double cyl = -1.0;
-  int node;
-  double Zspacing;
-  double xyz[3];
-  double minAR=-1.0;
   double ratioSplit, ratioCollapse;
-  int EdgeBasedCycles = EMPTY;
-  GridBool valid = FALSE;
-  GridBool validate = FALSE;
   GridBool tecplotOutput = FALSE;
-  GridBool LeadingEdgeBG = FALSE;
   double LeadingEdgeScale = 1.0;
   int iview = 0;
   int maxnode = 50000;
   char modeler[81];
 
+  int i;
+
   sprintf( modeler,       "" );
   sprintf( project,       "" );
   sprintf( outputProject, "" );
-  sprintf( adaptfile,     "" );    
-  sprintf( linesfile,     "" );    
-  sprintf( outputFAST,    "" );
 
   i = 1;
   while( i < argc ) {
@@ -117,43 +100,13 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-o") == 0 ) {
       i++; sprintf( outputProject, "%s", argv[i] );
       printf("-o argument %d: %s\n",i, outputProject);
-    } else if( strcmp(argv[i],"-r") == 0 ) {
-      i++; ratio = atof(argv[i]);
-      printf("-r argument %d: %f\n",i, ratio);
-    } else if( strcmp(argv[i],"-s") == 0 ) {
-      i++; spacing = atof(argv[i]);
-      printf("-s argument %d: %f\n",i, spacing);
-    } else if( strcmp(argv[i],"-z") == 0 ) {
-      i++; Zcommand = atof(argv[i]);
-      printf("-z argument %d: %f\n",i, Zcommand);
-    } else if( strcmp(argv[i],"-c") == 0 ) {
-      i++; cyl = atof(argv[i]);
-      printf("-c argument %d: %f\n",i, cyl);
-    } else if( strcmp(argv[i],"-e") == 0 ) {
-      i++; EdgeBasedCycles = atoi(argv[i]);
-      printf("-e argument %d: %d\n",i, EdgeBasedCycles);
-    } else if( strcmp(argv[i],"-v") == 0 ) {
-      i++; minAR = atof(argv[i]);
-      printf("-v argument %d: %f\n",i, minAR);
-    } else if( strcmp(argv[i],"-f") == 0 ) {
-      i++; sprintf( linesfile, "%s", argv[i] );
-      printf("-l argument %d: %s\n",i, linesfile);
     } else if( strcmp(argv[i],"-n") == 0 ) {
       i++; maxnode = atoi(argv[i]);
       printf("-n argument %d: %d\n",i, maxnode);
     } else if( strcmp(argv[i],"-t") == 0 ) {
       tecplotOutput = TRUE;
       printf("-t argument %d\n",i);
-    } else if( strcmp(argv[i],"--validate") == 0 ) {
-      validate = TRUE;
-      printf("--validate argument %d\n",i);
-      valid = TRUE;
-      printf("--valid also set\n",i);
-    } else if( strcmp(argv[i],"--valid") == 0 ) {
-      valid = TRUE;
-      printf("--valid argument %d\n",i);
     } else if( strcmp(argv[i],"-le") == 0 ) {
-      LeadingEdgeBG = TRUE;
       i++; LeadingEdgeScale = atof(argv[i]);
       printf("-le argument %d: %f\n",i,LeadingEdgeScale);
    } else if( strcmp(argv[i],"-h") == 0 ) {
@@ -170,18 +123,9 @@ int main( int argc, char *argv[] )
       printf(" -p input project name\n");
 #endif
       printf(" -o output project name\n");
-      printf(" -r initial edge length ratio for adapt\n");
-      printf(" -s uniform grid size\n");
-      printf(" -z linearly vary spacing to this in z dir\n");
-      printf(" -c cylinder spacing\n");
-      printf(" -e Number of Edge Based Operators Adaptation Cycles\n");
-      printf(" -v freeze cells with small aspect ratio (viscous)\n");
-      printf(" -f freeze nodes in this .lines file\n");
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
       printf(" -le scale leading edge background grid\n");
-      printf(" --validate give grid valid cost constraints\n");
-      printf(" --valid use valid cost constraints\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -193,14 +137,8 @@ int main( int argc, char *argv[] )
   if(strcmp(modeler,"")==0)       sprintf(modeler,"FELISA" );
 
   if(strcmp(project,"")==0)       sprintf(project,"../test/le" );
-  LeadingEdgeBG = TRUE;
 
-  if (validate) {
-    if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_val", project );
-  }else{
-    if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
-  }
-  if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
+  if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
 
   printf("running project %s\n",project);
   grid = gridLoadPart( modeler, project, maxnode );
@@ -221,81 +159,20 @@ int main( int argc, char *argv[] )
     gridRobustProject(grid); 
     gridUntangleBadFaceParameters(grid);
     gridRobustProject(grid); 
-    // return 1;
   }
-
-  if (EdgeBasedCycles!=EMPTY)gridSetCostFunction(grid,gridCOST_FCN_EDGE_LENGTH);
 
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
-  if (valid) gridSetCostConstraint(grid, gridCOST_CNST_VALID |
-				   gridCostConstraint(grid) );
 
-  gridConstrainSurfaceNode(grid);
-
-  if(strcmp(linesfile,"")!=0) {
-    printf("loading lines from file %s\n",linesfile);
-    linesLoad(gridLines(grid), linesfile);
-    printf("freezing line nodes...\n");
-    gridFreezeLinesNodes(grid);
-    printf("nodes frozen %d\n",gridNFrozen(grid));
-  }
-
-  if (minAR > 0) {
-    printf("freezing cells with AR smaller than %f\n",minAR);
-    gridFreezeSmallARCells(grid, minAR);
-  }
+  // gridConstrainSurfaceNode(grid);
 
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
-  printf("spacing set to constant %f with %f z variation.\n",spacing,Zcommand);
-  for (node=0;node<gridMaxNode(grid);node++)
-    if (grid==gridNodeXYZ(grid,node,xyz)) {
-      Zspacing = spacing;
-      if (Zcommand>0.0) 
-	Zspacing = ABS(2.0*xyz[2]-1.0)*spacing 
-	  + (1.0-ABS(2.0*xyz[2]-1.0))*Zcommand ;
-      gridSetMap(grid, node,
-		 1.0/spacing/spacing, 0.0, 0.0, 
-		 1.0/spacing/spacing, 0.0, 
-		 1.0/Zspacing/Zspacing);
-    }
-  if (cyl>0.0) {
-    double radius, theta;
-    double rSpace, tSpace, ySpace;
-    double normal[3], tangent[3], third[3];
-    printf("spacing set to cylinder with %f in normal direction.\n",cyl);
-    for (node=0;node<gridMaxNode(grid);node++) {
-      if (grid==gridNodeXYZ(grid,node,xyz)) {
-	radius = sqrt(xyz[0]*xyz[0]+xyz[2]*xyz[2]);
-	if (radius<1.0) radius = 2.0-radius;
-	theta = atan2(xyz[2],xyz[0]);
-	rSpace = cyl*radius*radius*radius;
-	tSpace = 0.25*radius;
-	ySpace = 0.25;
-	normal[0]=normal[1]=normal[2]=0;
-	tangent[0]=tangent[1]=tangent[2]=0;
-	third[0]=third[1]=third[2]=0;
-	normal[0]=cos(theta);
-	normal[2]=sin(theta);
-	tangent[0]=-sin(theta);
-	tangent[2]=cos(theta);
-	third[1]=1.0;
-#ifdef ECHO_SPACING
-	printf("X%6.2f Y%6.2f Z%6.2f\n",xyz[0],xyz[1],xyz[2]);
-	printf("N%6.2f N%6.2f N%6.2f\n",normal[0],normal[1],normal[2]);
-	printf("T%6.2f T%6.2f T%6.2f\n",tangent[0],tangent[1],tangent[2]);
-	printf("Y%6.2f Y%6.2f Y%6.2f\n",third[0],third[1],third[2]);
-	printf("\n");
-#endif
-	gridSetMapWithSpacingVectors(grid, node,
-				     normal, tangent, third, 
-				     rSpace, tSpace, ySpace);
-      }
-    }    
-  }
-  if (LeadingEdgeBG) {
+
+  if (TRUE) {
+    int node;
+    double xyz[3];
     double centerX;
     double radius, theta;
     double rSpace, tSpace, ySpace;
@@ -324,80 +201,6 @@ int main( int argc, char *argv[] )
     }    
   }
   
-  /*
-    if (grid==gridRobustProject(grid)) {
-    printf("projected grid to test params.\n");
-    }else{
-    printf("could not project grid. stop.\n");
-    return 1;
-    }
-    gridUntangleBadFaceParameters(grid);
-  */
-  
-  if (validate) {
-    int cycle, invalid;
-    printf("cost const %d.\n",gridCostConstraint(grid));
-    invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
-    for (cycle=0;cycle<3&&invalid>0;cycle++){
-      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-      invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
-    }
-    for (cycle=0;cycle<5&&invalid>0;cycle++){
-      STATUS;
-      printf("edge collapse...\n");gridCollapseInvalidCells(grid);
-      invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
-      STATUS;
-      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-      invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
-      STATUS;
-      printf("simplex node...\n");gridSmoothInvalidCellNodes(grid);
-      invalid=gridNumberOfInvalidCells(grid);printf("invalid %d.\n",invalid);
-    }
-    if (invalid>0) {
-      gridWriteTecplotCurvedGeom(grid,"invalid.t");
-      gridWriteTecplotInvalid(grid,"invalid.t");
-    }else{
-      // gridJacVolRatio(grid);
-      STATUS;
-      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-      STATUS;
-      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-      STATUS;
-      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-      STATUS;
-      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-      STATUS;
-      // gridJacVolRatio(grid);
-      printf("writing output project %s\n",outputProject);
-      gridSavePart( grid, outputProject );
-      printf("writing output FAST file %s\n",outputFAST);
-      gridExportFAST( grid, outputFAST );
-    }
-    printf("Done.\n");
-    return 0;
-  }
-
-  if (EMPTY!=EdgeBasedCycles) {
-    sprintf(filename,"%s_surface.t",project);
-    gridWriteTecplotSurfaceGeom(grid,filename); gridCloseTecplotGeomFile(grid);
-    STATUS;
-    printf("edge swapping grid...\n");gridSwap(grid,0.9);
-    STATUS;
-    for (j=0;j<EdgeBasedCycles;j++){
-      printf("start edge based cycle %d\n",j);
-      gridAdaptBasedOnConnRankings(grid);
-      STATUS;
-    }
-    printf("edge swapping grid...\n");gridSwap(grid,0.9);
-    STATUS;
-    sprintf(filename,"%s_surface.t",outputProject);
-    gridWriteTecplotSurfaceGeom(grid,filename); gridCloseTecplotGeomFile(grid);
-    printf("writing output project %s\n",outputProject);
-    gridSavePart( grid, outputProject );
-    printf("Done.\n");
-    return 0;
-  }
-
   for (i=0;i<1;i++){
     printf("edge swapping grid...\n");gridSwap(grid,-1.0);
     STATUS;
@@ -405,35 +208,16 @@ int main( int argc, char *argv[] )
   }
   STATUS;
 
-  oldSize = 1;
-  newSize = gridNNode(grid);
-  jmax = 8;
-  for ( j=0; 
-	(j<jmax) ;//&& (((double)ABS(newSize-oldSize)/(double)oldSize)>0.01);
-	j++){
+  for ( iteration=0; (iteration<iterations) ; iteration++){
 
     ratioCollapse = 0.4;
-    ratioSplit   = 1.0;
-    printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
-	   ratio, ratioCollapse, ratioSplit );
-    if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
-      if (grid != gridAdaptLongShortCurved(grid,ratioCollapse,ratioSplit,TRUE)){
-	gridWriteTecplotCurvedGeom(grid, NULL );
-	gridWriteTecplotSurfaceGeom(grid,NULL);
-	return 1;
-      }
-    }else{
-      gridSetMinInsertCost(grid, 1.0e-3 );
-      if (grid != gridAdaptLongShortLinear(grid,ratioCollapse,ratioSplit,TRUE)){
-	gridWriteTecplotCurvedGeom(grid, NULL );
-	gridWriteTecplotSurfaceGeom(grid,NULL);
-	return 1;
-      }
-    }
-    oldSize = newSize;
-    newSize = gridNNode(grid) ;
+    ratioSplit    = 1.0;
+
+    gridAdapt(grid, ratioCollapse, ratioSplit);
+
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
-	   j, gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
+	   iteration,
+	   gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     STATUS;
 
     if (!gridSurfaceNodeConstrained(grid)){
@@ -475,15 +259,6 @@ int main( int argc, char *argv[] )
 
   printf("writing output project %s\n",outputProject);
   gridSavePart( grid, outputProject );
-
-  printf("writing output FAST file %s\n",outputFAST);
-  gridExportFAST( grid, outputFAST );
-
-  if(strcmp(linesfile,"")!=0) {
-    sprintf(outputlines,"%s.lines",outputProject);
-    printf("saving lines restart %s\n",outputlines);
-    linesSave(gridLines(grid),outputlines);
-  }
 
   printf("Done.\n");
 

@@ -1,3 +1,8 @@
+2005-09-13 15:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) cleaned up main to only do the standard form
+	of adaptation to evaluate different techniques more rigorously.
+
 2005-09-13 15:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdapt) to standardize the adaptation
