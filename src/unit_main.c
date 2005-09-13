@@ -223,19 +223,21 @@ int main( int argc, char *argv[] )
     if (!gridSurfaceNodeConstrained(grid)){
       GridMove *gm;
       double minVolume;
+      int untangling_steps;
       printf("Calling GridMove to project nodes...\n");
       gm = gridmoveCreate(grid);
       gridmoveProjectionDisplacements(gm);
-      gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,100);
+      gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,2000);
       gridmoveApplyDisplacements(gm);
       gridmoveFree(gm);
-      STATUS; minVolume = gridMinVolume(grid);
+      STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
       while (0.0>=minVolume) {
 	printf("relax neg faces...\n");
 	gridParallelRelaxNegativeFaceAreaUV(grid,FALSE);
 	printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
 	printf("edge swapping grid...\n");gridSwap(grid,1.0);
-	STATUS; minVolume = gridMinVolume(grid);
+	STATUS; minVolume = gridMinVolume(grid); untangling_steps++;
+	if (untangling_steps >5) return 1;
       }
     }
 
