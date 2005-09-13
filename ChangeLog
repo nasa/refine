@@ -1,3 +1,9 @@
+2005-09-13 15:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdapt) to standardize the adaptation
+	techniques, use a prioritized list (plan) to decide which edges
+	to split or collpase.
+
 2005-09-11 21:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridNumberOfInvalidCells) count cells with

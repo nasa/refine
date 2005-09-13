@@ -60,72 +60,96 @@ Grid *gridRemoveAllNodes(Grid *grid )
 
 Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 {
-  int n0, n1, adaptnode, origNNode, newnode;
+  int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
-  double ratio;
-  double ar;
+  double length, ratio;
+  int newnode;
+  Plan *plan;
+
+  gridCreateConn(grid);
+  plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    length = gridEdgeRatio(grid,nodes[0],nodes[1]);
+    if ( length >= maxLength ) planAddItemWithPriority( plan, conn, length );
+  }
+  planDeriveRankingsFromPriorities( plan );
   
-  origNNode = gridNNode(grid);
-  adaptnode =0;
   nnodeAdd = 0;
   nnodeRemove = 0;
 
-  report = 10; if (gridNNode(grid) > 100) report = gridNNode(grid)/10;
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
 
-  for ( n0=0; 
-	adaptnode<origNNode && n0<gridMaxNode(grid); 
-	n0++ ) { 
-    if (adaptnode > 100 &&adaptnode/report*report == adaptnode ) {
-      printf("adapt node %8d nnode %8d added %8d removed %8d\n",
-	     adaptnode,gridNNode(grid),nnodeAdd,nnodeRemove);
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    conn = planItemWithThisRanking(plan,ranking);
+    if (ranking/report*report == ranking || ranking==planSize(plan)-1) {
+      printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
+	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
+	     planPriorityWithThisRanking(plan,ranking));
     }
-    if ( gridValidNode( grid, n0) && !gridNodeFrozen( grid, n0 ) ) {
-      adaptnode++;
-      if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) ) return NULL;
-      if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
-	newnode = gridSplitEdge(grid, n0, n1);
-	if ( newnode != EMPTY ){
-	  nnodeAdd++;
-	  gridNodeAR(grid,newnode,&ar); 
-	  if (ar<0.0) {
-	    printf("%s: %d: split to node %d has ar %f\n",
-		   __FILE__,__LINE__,newnode,ar);
-	    exit(1);
-	  }   
-	  gridSwapNearNode( grid, newnode, -1.0 );
-	  gridNodeAR(grid,newnode,&ar); 
-	  if (ar<0.0) {
-	    printf("%s: %d: split swap to node %d has ar %f\n",
-		   __FILE__,__LINE__,newnode,ar);
-	    exit(1);
-	  }   
+    if (grid == gridConn2Node(grid,conn,nodes)){
+      if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
+	   gridValidNode(grid, nodes[0]) && 
+	   gridValidNode(grid, nodes[1]) && 
+	   !gridNodeFrozen(grid, nodes[0]) &&
+	   !gridNodeFrozen(grid, nodes[1]) ) {
+	length = gridEdgeRatio(grid, nodes[0], nodes[1]);
+	if (length >= maxLength) {
+	  ratio = 0.5;
+	  newnode = gridSplitEdgeRatio( grid, NULL,
+					nodes[0], nodes[1], ratio );
+	  if ( newnode != EMPTY ){
+	    nnodeAdd++;
+	  } 
 	}
-      }else{
-	if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
-	  return NULL;
-	if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
-	  if ( grid == gridCollapseEdge(grid, NULL, n0, n1, 0.5) ) {
+      }
+    }
+  }
+  planFree(plan);
+  gridEraseConn(grid);
+
+  gridCreateConn(grid);
+  plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    length = gridEdgeRatio(grid,nodes[0],nodes[1]);
+    if ( length <= minLength ) planAddItemWithPriority( plan, conn, length );
+  }
+  planDeriveRankingsFromPriorities( plan );
+  
+  nnodeAdd = 0;
+  nnodeRemove = 0;
+
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+
+  for ( ranking=0; ranking<planSize(plan); ranking++ ) { 
+    conn = planItemWithThisRanking(plan,ranking);
+    if (ranking/report*report == ranking || ranking==gridNConn(grid)-1) {
+      printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
+	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
+	     planPriorityWithThisRanking(plan,ranking));
+    }
+    if (grid == gridConn2Node(grid,conn,nodes)){
+      if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
+	   gridValidNode(grid, nodes[0]) && 
+	   gridValidNode(grid, nodes[1]) && 
+	   !gridNodeFrozen(grid, nodes[0]) &&
+	   !gridNodeFrozen(grid, nodes[1]) ) {
+	length = gridEdgeRatio(grid, nodes[0], nodes[1] );
+	if (length <= minLength) {
+	  if ( grid == 
+	       gridCollapseEdgeToAnything(grid, NULL, 
+					  nodes[0], 
+					  nodes[1] ) ) {
 	    nnodeRemove++;
-	    gridNodeAR(grid,n0,&ar); 
-	    if (ar<0.0) {
-	      printf("%s: %d: collapse to node %d has ar %f\n",
-		     __FILE__,__LINE__,n0,ar);
-	      exit(1);
-	    }   
-	    gridSwapNearNode( grid, n0, -1.0 );
-	    gridNodeAR(grid,n0,&ar); 
-	    if (ar<0.0) {
-	      printf("%s: %d: collapse swap to node %d has ar %f\n",
-		     __FILE__,__LINE__,n0,ar);
-	      exit(1);
-	    }   
 	  }
 	}
       }
-    }else{
-      adaptnode++;
     }
-  }
+  } 
+  planFree(plan);
+  gridEraseConn(grid);
+
   return grid;
 }
 
