@@ -1,3 +1,13 @@
+2005-09-13 19:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMinSurfaceSmoothCost,gridSetMinSurfaceSmoothCost)
+	to expose the minimum (volume) cost allowed durring surface smoothing.
+	* src/gridcad.c (gridSmoothNode,gridLinearProgramUV) uses the
+	gridMinSurfaceSmoothCost function to obtain min cost instead
+	of gridOPTIM_COST_FLOOR #define.
+	* src/unit_main.c (main) try gridSetMinInsertCost and 
+	gridSetMinSurfaceSmoothCost of 0.1.
+
 2005-09-13 15:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) cleaned up main to only do the standard form

@@ -121,6 +121,7 @@ struct Grid {
   int costFunction;
   int costConstraint;
   double min_allowed_insert_cost;
+  double min_allowed_surface_smooth_cost;
 
   void (*packFunc)(void *packData, 
 		   int nnode, int maxnode, int *nodeo2n,
@@ -465,6 +466,9 @@ Grid *gridSetCostConstraint(Grid *g, int costConstraint);
 
 Grid *gridSetMinInsertCost(Grid *g, double min_cost );
 double gridMinInsertCost(Grid *g );
+
+Grid *gridSetMinSurfaceSmoothCost(Grid *g, double min_cost );
+double gridMinSurfaceSmoothCost(Grid *g );
 
 int gridStoredCostDegree( Grid *g );
 Grid *gridClearStoredCost( Grid *g );

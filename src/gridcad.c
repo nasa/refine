@@ -632,7 +632,7 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 
   /* edge smooth */
   if ( gridGeometryEdge( grid, node ) ) {
-    return gridLineSearchT(grid, node, gridOPTIM_COST_FLOOR );
+    return gridLineSearchT(grid, node, gridMinSurfaceSmoothCost(grid) );
   }
 
   /* face smooth */
@@ -650,7 +650,8 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 	dMRdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
 	dMRdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
 	if (grid != gridLineSearchUV( grid, node, dMRdu, 
-				      gridOPTIM_COST_FLOOR ) ) return NULL;
+				      gridMinSurfaceSmoothCost(grid) ) ) 
+	  return NULL;
       }
       return grid;
     }else{
@@ -1047,7 +1048,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
        alpha, predictedImprovement, actualImprovement, newCost); */
 
     if ( actualImprovement < lastImprovement &&
-	 constraint > gridOPTIM_COST_FLOOR ) {
+	 constraint > gridMinSurfaceSmoothCost(grid) ) {
       for (i=0;i<2;i++) uv[i] = origUV[i] + lastAlpha*searchDirection[i];
       gridSetNodeUV(grid,node,faceId,uv[0],uv[1]);
       gridMinFaceAreaUV(grid,node,&parameterArea);
@@ -1063,7 +1064,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
     }
     
     if ( actualImprovement > 0.9*predictedImprovement &&
-	 constraint > gridOPTIM_COST_FLOOR ) {
+	 constraint > gridMinSurfaceSmoothCost(grid) ) {
       goodStep = TRUE;
     }else{
       lastImprovement = actualImprovement;
@@ -1076,7 +1077,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
      node, gridStoredCostDegree(grid), minFace, minCost, newCost ); */
 
   if ( actualImprovement <= 0.0 ||
-       constraint < gridOPTIM_COST_FLOOR ||
+       constraint < gridMinSurfaceSmoothCost(grid) ||
        parameterArea < 1.0e-14 ) {
     gridEvaluateFaceAtUV(grid,node,origUV);
     return NULL;

@@ -70,7 +70,7 @@ VALUE grid_smoothNodeFaceMR( VALUE self, VALUE node )
 VALUE grid_lineSearchT( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
-  return (gridLineSearchT( grid, NUM2INT(node), gridOPTIM_COST_FLOOR )==grid?self:Qnil);
+  return (gridLineSearchT( grid, NUM2INT(node), gridMinSurfaceSmoothCost(grid) )==grid?self:Qnil);
 }
 
 VALUE grid_lineSearchUV( VALUE self, VALUE node, VALUE rb_dudv )
@@ -80,7 +80,8 @@ VALUE grid_lineSearchUV( VALUE self, VALUE node, VALUE rb_dudv )
   dudv[0] = NUM2DBL(rb_ary_entry(rb_dudv,0));
   dudv[1] = NUM2DBL(rb_ary_entry(rb_dudv,1));
   return (gridLineSearchUV( grid, NUM2INT(node), 
-			    dudv, gridOPTIM_COST_FLOOR )==grid?self:Qnil);
+			    dudv,
+			    gridMinSurfaceSmoothCost(grid) )==grid?self:Qnil);
 }
 
 VALUE grid_optimizeFaceUV( VALUE self, VALUE node, VALUE rb_dudv )

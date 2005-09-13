@@ -165,6 +165,9 @@ int main( int argc, char *argv[] )
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
 
+  gridSetMinInsertCost( grid, 0.1 );
+  gridSetMinSurfaceSmoothCost( grid, 0.1 );
+
   // gridConstrainSurfaceNode(grid);
 
   printf("Spacing reset.\n");
