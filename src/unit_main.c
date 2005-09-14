@@ -225,7 +225,7 @@ int main( int argc, char *argv[] )
 
     if (!gridSurfaceNodeConstrained(grid)){
       GridMove *gm;
-      double minVolume;
+      double minArea, minVolume;
       int untangling_steps;
       printf("Calling GridMove to project nodes...\n");
       gm = gridmoveCreate(grid);
@@ -233,14 +233,20 @@ int main( int argc, char *argv[] )
       gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,2000);
       gridmoveApplyDisplacements(gm);
       gridmoveFree(gm);
-      STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
-      while (0.0>=minVolume) {
+      minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
+      while (minArea < 1.0e-12) { // bump this up?
+	printf("min face UV area %e\n",minArea);
 	printf("relax neg faces...\n");
 	gridParallelRelaxNegativeFaceAreaUV(grid,FALSE);
+	minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
+	if (untangling_steps >3) return 1;
+      }
+      STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
+      while (0.0>=minVolume) {
 	printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
 	printf("edge swapping grid...\n");gridSwap(grid,1.0);
 	STATUS; minVolume = gridMinVolume(grid); untangling_steps++;
-	if (untangling_steps >5) return 1;
+	if (untangling_steps >3) return 1;
       }
     }
 

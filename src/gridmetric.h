@@ -102,6 +102,7 @@ double gridFaceAreaUVDirect(Grid *g, double *uv0,  double *uv1,  double *uv2,
 			    int faceId);
 Grid *gridMinFaceAreaUV(Grid *g, int node, double *min_area);
 double gridMinCellFaceAreaUV(Grid *g, int *nodes );
+double gridMinGridFaceAreaUV(Grid *g);
 
 double gridFaceAR(Grid *g, int n0, int n1, int n2);
 double gridFaceMR(Grid *g, int n0, int n1, int n2);

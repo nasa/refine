@@ -1904,6 +1904,22 @@ double gridMinCellFaceAreaUV(Grid *grid, int *nodes)
   return min_area;
 }
 
+double gridMinGridFaceAreaUV(Grid *grid)
+{
+  int face, nodes[3], faceId;
+  double min_area;
+
+  min_area = DBL_MAX;
+
+  for ( face = 0 ; face < gridNFace(grid) ; face++ ) {
+    if (grid == gridFace(grid, face, nodes, &faceId ) ) {
+      min_area = MIN(min_area, gridFaceAreaUV(grid, face) );
+    }
+  }
+
+  return min_area;
+}
+
 double gridFaceAR(Grid *grid, int n0, int n1, int n2 )
 {
   double xyz0[3], xyz1[3], xyz2[3];

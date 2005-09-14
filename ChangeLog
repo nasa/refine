@@ -1,3 +1,10 @@
+2005-09-13 23:03 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridMinGridFaceAreaUV) added to report
+	the minimum face area in uv of the grid.
+	* src/unit_main.c (main) refactored the untangling to do surface
+	UV area first and volume second.
+
 2005-09-13 19:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridMinSurfaceSmoothCost,gridSetMinSurfaceSmoothCost)
