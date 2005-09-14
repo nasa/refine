@@ -165,8 +165,8 @@ int main( int argc, char *argv[] )
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
 
-  gridSetMinInsertCost( grid, 0.1 );
-  gridSetMinSurfaceSmoothCost( grid, 0.1 );
+  gridSetMinInsertCost( grid, 0.01 );
+  gridSetMinSurfaceSmoothCost( grid, 0.01 );
 
   // gridConstrainSurfaceNode(grid);
 
@@ -223,6 +223,33 @@ int main( int argc, char *argv[] )
 	   gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
     STATUS;
 
+    {
+      int conn, nodes[2];
+      int parent, newnode;
+      int split_edges;
+      double min_insert_cost;
+      min_insert_cost = gridMinInsertCost( grid );
+      gridSetMinInsertCost( grid, -100.0 );
+      gridCreateConn(grid);
+      split_edges = 0;
+      for(conn=0;conn<gridNConn(grid);conn++) {
+	gridConn2Node(grid,conn,nodes);
+	parent = gridParentGeometry(grid, nodes[0], nodes[1] );
+	if ( ( gridGeometryFace( grid, nodes[0] ) &&
+	       gridGeometryFace( grid, nodes[1] ) &&
+	       0 == parent  ) ||
+	     ( gridGeometryEdge( grid, nodes[0] ) &&
+	       gridGeometryEdge( grid, nodes[1] ) &&
+	       0 < parent  ) ) {
+	  newnode = gridSplitEdgeRatio( grid, NULL, nodes[0], nodes[1], 0.5);
+	  split_edges++;
+	}
+      }
+      printf("split %d edges\n",split_edges);
+      gridEraseConn(grid);
+      gridSetMinInsertCost( grid, min_insert_cost );
+    }
+
     if (!gridSurfaceNodeConstrained(grid)){
       GridMove *gm;
       double minArea, minVolume;
@@ -233,68 +260,16 @@ int main( int argc, char *argv[] )
       gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,2000);
       gridmoveApplyDisplacements(gm);
       gridmoveFree(gm);
-      minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
+
+     minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
       while (minArea < 1.0e-12) { // bump this up?
 	printf("min face UV area %e\n",minArea);
 	printf("relax neg faces...\n");
-	gridParallelRelaxNegativeFaceAreaUV(grid,FALSE);
-	minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
+	gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
+	STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
 	if (untangling_steps >3) return 1;
       }
-      {
-	int cell, nodes[4];
-	double xyz[3];
-	int side;
-	int sidenode0[6], sidenode1[6];
-	int sides[6];
-	int newnode;
-	gridSetMinInsertCost( grid, -100.0 );
-	for (cell = 0; cell < gridMaxCell(grid) ; cell++ ) {
-	  if ( grid == gridCell( grid, cell, nodes ) ) {
-	    if ( gridGeometryFace( grid, nodes[0] ) &&
-		 gridGeometryFace( grid, nodes[1] ) &&
-		 gridGeometryFace( grid, nodes[2] ) &&
-		 gridGeometryFace( grid, nodes[3] ) ) {
-	      printf("four cell nodes on boundary %d %d %d %d\n",
-		     nodes[0],nodes[1],nodes[2],nodes[3]);
-	      gridNodeXYZ(grid,nodes[0],xyz);
-	      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-	      gridNodeXYZ(grid,nodes[1],xyz);
-	      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-	      gridNodeXYZ(grid,nodes[2],xyz);
-	      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-	      gridNodeXYZ(grid,nodes[3],xyz);
-	      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-	      sidenode0[0] = nodes[0]; sidenode1[0] = nodes[1]; 
-	      sides[0] = gridParentGeometry(grid, nodes[0], nodes[1] );
-	      sidenode0[1] = nodes[0]; sidenode1[1] = nodes[2]; 
-	      sides[1] = gridParentGeometry(grid, nodes[0], nodes[2] );
-	      sidenode0[2] = nodes[0]; sidenode1[2] = nodes[3]; 
-	      sides[2] = gridParentGeometry(grid, nodes[0], nodes[3] );
-	      sidenode0[3] = nodes[1]; sidenode1[3] = nodes[2]; 
-	      sides[3] = gridParentGeometry(grid, nodes[1], nodes[2] );
-	      sidenode0[4] = nodes[1]; sidenode1[4] = nodes[3]; 
-	      sides[4] = gridParentGeometry(grid, nodes[1], nodes[3] );
-	      sidenode0[5] = nodes[2]; sidenode1[5] = nodes[3]; 
-	      sides[5] = gridParentGeometry(grid, nodes[2], nodes[3] );
-	      printf("%4d%4d%4d%4d%4d%4d\n",
-		     sides[0],sides[1],sides[2],sides[3],sides[4],sides[5]);
-	      for (side=0;side<6;side++){
-		if (0 == sides[side]) {
-		  newnode = gridSplitEdgeRatio( grid, NULL, 
-						sidenode0[side],
-						sidenode1[side],
-						0.5);
-		  printf("split side %d nodes %d %d with %d\n",
-			 side, sidenode0[side], sidenode0[side], newnode);
-		  break;
-		}
-	      }
-	    }
-	  }
-	}
-	gridSetMinInsertCost( grid, 0.1 );
-      }
+
       STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
       while (0.0>=minVolume) {
 	untangling_steps++;

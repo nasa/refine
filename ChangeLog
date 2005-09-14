@@ -1,3 +1,9 @@
+2005-09-14 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) added a block of code to split edges that
+	connect two boundary nodes without being on the boundary. These
+	problem edges prevent untangleing from working.
+
 2005-09-13 23:03 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridMinGridFaceAreaUV) added to report
