@@ -1911,7 +1911,7 @@ double gridMinGridFaceAreaUV(Grid *grid)
 
   min_area = DBL_MAX;
 
-  for ( face = 0 ; face < gridNFace(grid) ; face++ ) {
+  for ( face = 0 ; face < gridMaxFace(grid) ; face++ ) {
     if (grid == gridFace(grid, face, nodes, &faceId ) ) {
       min_area = MIN(min_area, gridFaceAreaUV(grid, face) );
     }
