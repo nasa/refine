@@ -213,7 +213,7 @@ int main( int argc, char *argv[] )
 
   for ( iteration=0; (iteration<iterations) ; iteration++){
 
-    ratioCollapse = 0.4;
+    ratioCollapse = 0.3;
     ratioSplit    = 1.0;
 
     gridAdapt(grid, ratioCollapse, ratioSplit);
