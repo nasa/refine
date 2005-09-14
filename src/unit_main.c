@@ -183,7 +183,7 @@ int main( int argc, char *argv[] )
     printf("spacing set to Leading Edge.\n");
     for (node=0;node<gridMaxNode(grid);node++) {
       if (grid==gridNodeXYZ(grid,node,xyz)) {
-	centerX = 0.05;
+	centerX = 0.03;
 	radius = sqrt((xyz[0]-centerX)*(xyz[0]-centerX)+xyz[2]*xyz[2]);
 	theta = atan2(xyz[2],xyz[0]-centerX);
 	rSpace = 0.2*pow(MIN(4.0*radius,1.0),LeadingEdgeScale);
