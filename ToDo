@@ -7,6 +7,8 @@ Start Builds!!!!!
 
 --Major refactoring
 
+make the min allowed face area (and volume) a grid struct var.
+
 printf error when face is empty for edge split with !gridContinuousEquator
 
 Are global cell indexes really needed or can they be computed after
