@@ -172,6 +172,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   }
   if ( 1 != gridNGem(grid) ) {
     int gem, gemcell, gemnodes[4];
+    double xyz[3];
     printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
 	   __FILE__,__LINE__, gridNGem(grid) );
     printf("queue is %d\n",(queue!=NULL));
@@ -198,6 +199,14 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
       gridCell( grid, gemcell, gemnodes );
       printf("gem cell nodes %d %d %d %d\n",
 	   gemnodes[0],gemnodes[1],gemnodes[2],gemnodes[3]);
+      gridNodeXYZ(grid,gemnodes[0],xyz);
+      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
+      gridNodeXYZ(grid,gemnodes[1],xyz);
+      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
+      gridNodeXYZ(grid,gemnodes[2],xyz);
+      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
+      gridNodeXYZ(grid,gemnodes[3],xyz);
+      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
       printf("gem node parts %d %d %d %d\n",
 	     gridNodePart(grid,gemnodes[0]),
 	     gridNodePart(grid,gemnodes[1]),
