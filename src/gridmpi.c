@@ -61,6 +61,9 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   int nodes[2];
   double length;
   Plan *plan;
+  
+  double min_insert_cost;
+  int parent;
 
   origNNode   = gridNNode(grid);
   adaptnode   = 0;
@@ -70,6 +73,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   use_a_plan = FALSE;
   if (use_a_plan) {
 
+    /* split long edges */
     gridCreateConn(grid);
     plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
     for(conn=0;conn<gridNConn(grid);conn++) {
@@ -104,6 +108,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
     planFree(plan);
     gridEraseConn(grid);
 
+    /* collapse sort edges */
     gridCreateConn(grid);
     plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
     for(conn=0;conn<gridNConn(grid);conn++) {
@@ -134,6 +139,29 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
       }
     }
     planFree(plan);
+    gridEraseConn(grid);
+
+    /* ensure mesh is topologically correct for projection... */
+    /*   by spliting any interior edge that has both nodes on boundary. */
+    gridCreateConn(grid);
+    min_insert_cost = gridMinInsertCost( grid ); /* save orig cost */
+    gridSetMinInsertCost( grid, -100.0 ); /* split at any cost (pun intended)*/
+    for(conn=0;conn<gridNConn(grid);conn++) {
+      gridConn2Node(grid,conn,nodes);
+      if ( gridNodeLocal(grid,nodes[0]) || 
+	   gridNodeLocal(grid,nodes[1]) ) {
+	parent = gridParentGeometry(grid, nodes[0], nodes[1] );
+	if ( ( gridGeometryFace( grid, nodes[0] ) &&
+	       gridGeometryFace( grid, nodes[1] ) &&
+	       0 == parent  ) ||
+	     ( gridGeometryEdge( grid, nodes[0] ) &&
+	       gridGeometryEdge( grid, nodes[1] ) &&
+	       0 < parent  ) ) {
+	  newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
+	}
+      }
+    }
+    gridSetMinInsertCost( grid, min_insert_cost );  /* reset to orig cost */
     gridEraseConn(grid);
 
   }else{

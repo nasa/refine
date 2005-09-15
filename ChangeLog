@@ -1,3 +1,10 @@
+2005-09-15 10:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) refactored the path (currently
+	disabled) that uses a plan to make a final sweep after adaptation
+	that splits interior grid edges that have both nodes on a boundary
+	element. This procedure leads to provable boundary projection.
+
 2005-09-14 13:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) added a block of code to split edges that
