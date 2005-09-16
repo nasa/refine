@@ -267,13 +267,13 @@ int main( int argc, char *argv[] )
 	printf("relax neg faces...\n");
 	gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
 	STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
-	if (untangling_steps >3) return 1;
+	if (untangling_steps >10) return 1;
       }
 
       STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
       while (0.0>=minVolume) {
 	untangling_steps++;
-	if (untangling_steps >2) return 1;
+	if (untangling_steps >10) return 1;
 	printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
 	STATUS; minVolume = gridMinVolume(grid); 
       }
