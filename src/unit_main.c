@@ -41,17 +41,22 @@
 void leading_edge_spacing(Grid *grid, double LeadingEdgeScale ) {
   int node;
   double xyz[3];
-  double centerX;
+  double centerX, nose_radius;
   double radius, theta;
+  double rate;
   double rSpace, tSpace, ySpace;
   double normal[3], tangent[3], third[3];
   for (node=0;node<gridMaxNode(grid);node++) {
     if (grid==gridNodeXYZ(grid,node,xyz)) {
       centerX = 0.03;
+      nose_radius = 0.03;
       radius = sqrt((xyz[0]-centerX)*(xyz[0]-centerX)+xyz[2]*xyz[2]);
       theta = atan2(xyz[2],xyz[0]-centerX);
-      rSpace = 0.2*pow(MIN(4.0*radius,1.0),LeadingEdgeScale);
-      tSpace = 0.05+0.1*radius;
+      rate = 1.2;
+      tSpace = 0.10+0.1*radius;
+      rSpace = MIN( tSpace,
+		    LeadingEdgeScale * 
+		    pow(rate,(radius-nose_radius)/LeadingEdgeScale) );
       ySpace = 0.25;
       normal[0]=normal[1]=normal[2]=0;
       tangent[0]=tangent[1]=tangent[2]=0;

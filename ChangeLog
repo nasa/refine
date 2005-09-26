@@ -1,3 +1,9 @@
+2005-09-26 09:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (leading_edge_spacing) modified to add a
+	boundary layer near nose with a geomtric growth rate of 1.2 from
+	-le initial cell hight.
+
 2005-09-25 20:33 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) put old length based adaptation -e again.
