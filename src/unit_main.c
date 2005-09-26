@@ -83,6 +83,7 @@ int main( int argc, char *argv[] )
   char filename[256];
   double ratioSplit, ratioCollapse;
   GridBool tecplotOutput = FALSE;
+  GridBool edge_based = FALSE;
   double LeadingEdgeScale = 1.0;
   int iview = 0;
   int maxnode = 50000;
@@ -140,6 +141,9 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-le") == 0 ) {
       i++; LeadingEdgeScale = atof(argv[i]);
       printf("-le argument %d: %f\n",i,LeadingEdgeScale);
+   } else if( strcmp(argv[i],"-e") == 0 ) {
+      edge_based = TRUE;
+      printf("-e argument %d\n",i);
    } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
 #ifdef HAVE_CAPRI2
@@ -157,6 +161,7 @@ int main( int argc, char *argv[] )
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
       printf(" -le scale leading edge background grid\n");
+      printf(" -e edge length only adaptation\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -199,6 +204,12 @@ int main( int argc, char *argv[] )
   gridSetMinInsertCost( grid, 0.01 );
   gridSetMinSurfaceSmoothCost( grid, 0.01 );
 
+  if (edge_based) {
+    gridSetCostFunction( grid, gridCOST_FCN_EDGE_LENGTH );
+    gridSetMinInsertCost( grid, 1.0e-5 );
+    gridSetMinSurfaceSmoothCost( grid, 1.0e-5 );
+  }
+
   // gridConstrainSurfaceNode(grid);
 
   printf("Spacing reset.\n");
@@ -209,7 +220,9 @@ int main( int argc, char *argv[] )
   for (i=0;i<1;i++){
     printf("edge swapping grid...\n");gridSwap(grid,-1.0);
     STATUS;
-    printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
+    if (!edge_based) {
+      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
+    }
   }
   STATUS;
 
@@ -259,11 +272,11 @@ int main( int argc, char *argv[] )
       printf("Calling GridMove to project nodes...\n");
       gm = gridmoveCreate(grid);
       gridmoveProjectionDisplacements(gm);
-      gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,2000);
+      if (!edge_based) gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,2000);
       gridmoveApplyDisplacements(gm);
       gridmoveFree(gm);
 
-     minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
+      minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
       while (minArea < 1.0e-12) { // bump this up?
 	printf("min face UV area %e\n",minArea);
 	printf("relax neg faces...\n");
@@ -284,7 +297,9 @@ int main( int argc, char *argv[] )
     for (i=0;i<1;i++){
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
       STATUS;
-      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
+      if (!edge_based) {
+	printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
+      }    
     }
     STATUS;
   }
@@ -292,8 +307,10 @@ int main( int argc, char *argv[] )
   for (i=0;i<2;i++){
     printf("edge swapping grid...\n");gridSwap(grid,-1.0);
     STATUS;
-    printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-    STATUS;
+    if (!edge_based) {
+      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
+      STATUS;
+    }
   }
 
   if (!gridRightHandedBoundary(grid)) 

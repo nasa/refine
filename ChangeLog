@@ -1,3 +1,7 @@
+2005-09-25 20:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) put old length based adaptation -e again.
+
 2005-09-25 20:04 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (leading_edge_spacing) extracted the spacing
