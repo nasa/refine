@@ -159,6 +159,25 @@ double gridEdgeLength(Grid *grid, int n0, int n1 )
   return  sqrt(dx*dx+dy*dy+dz*dz);
 }
 
+Grid *gridEdgeRatioRange(Grid *grid, double *longest, double *shortest )
+{
+  int node, edge_node;
+  double ratio;
+
+  *shortest = DBL_MAX;
+  *longest = -DBL_MAX;
+
+  for( node=0 ; node < gridMaxNode(grid) ; node++ ) {
+    if (gridValidNode(grid,node) ) {
+      gridLargestRatioEdge(grid, node, &edge_node, &ratio );
+      *longest = MAX( *longest, ratio);
+      gridSmallestRatioEdge(grid, node, &edge_node, &ratio );
+      *shortest = MIN( *shortest, ratio);
+    }
+  }
+  return grid;
+}
+
 double gridEdgeRatio(Grid *grid, int n0, int n1 )
 {
   double *xyz0, *xyz1;

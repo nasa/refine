@@ -1,3 +1,10 @@
+2005-09-27 19:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatioRange) compute longest and
+	shortest edge in metric to find range.	
+	* src/unit_main.c (STATUS) include edge range in condensed status
+	message.
+
 2005-09-26 09:31 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (leading_edge_spacing) modified to add a
