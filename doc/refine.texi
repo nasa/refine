@@ -542,6 +542,41 @@ starts by precomputing and storing the communication pattern that will
 be required. It then calls @code{refineUpdateGridMoveGhost} with the
 stored communication pattern to update ghost node displacements.
 
+@section Parallelized Node Movement Notes Without Home
+
+@verbatim
+Startup
+
+ Elast
+  lastxyz set with gridNodeXYZ including ghosts, 0 (to maxnode)
+  xyz = 0 (to maxnode)
+
+StartStep
+
+ Elast
+  lastxyz+=xyz (to maxnode)
+  xyz = 0 (to maxnode)
+  xyz = position*displacement + gridNodeXYZ - lastxyz (local, specified)
+  a created with lastxyz
+  a row to identy for local, specified
+
+Ghost update
+
+Subiter
+
+ Elast
+  xyz = b if valid, not specified, and local
+
+Ghost update
+
+Shutdown
+  lastxyz+=xyz (to maxnode)
+  displacement = lastxyz - gridnodeXYZ If valid and not specified
+
+Apply disp
+  all local nodes gridSetNodeXYZ = grudNodeXYZ + displacement
+@end verbatim
+
 @section Parallelized Connectivity Changes
 
 The swap, node insertion, and edge collapse routines share the same
