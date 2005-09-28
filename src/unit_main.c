@@ -72,7 +72,34 @@ void leading_edge_spacing(Grid *grid, double LeadingEdgeScale ) {
     }
   }    
 }
-
+      
+Grid *gridSplitProblemProjectionEdges(Grid *grid) {
+  int conn, nodes[2];
+  int parent, newnode;
+  int split_edges;
+  double min_insert_cost;
+  min_insert_cost = gridMinInsertCost( grid );
+  gridSetMinInsertCost( grid, -100.0 );
+  gridCreateConn(grid);
+  split_edges = 0;
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    parent = gridParentGeometry(grid, nodes[0], nodes[1] );
+    if ( ( gridGeometryFace( grid, nodes[0] ) &&
+	   gridGeometryFace( grid, nodes[1] ) &&
+	   0 == parent  ) ||
+	 ( gridGeometryEdge( grid, nodes[0] ) &&
+	   gridGeometryEdge( grid, nodes[1] ) &&
+	   0 < parent  ) ) {
+      newnode = gridSplitEdgeRatio( grid, NULL, nodes[0], nodes[1], 0.5);
+      split_edges++;
+    }
+  }
+  printf("split %d edges\n",split_edges);
+  gridEraseConn(grid);
+  gridSetMinInsertCost( grid, min_insert_cost );
+  return grid;
+}
 
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
@@ -202,130 +229,146 @@ int main( int argc, char *argv[] )
     gridRobustProject(grid); 
   }
 
-  gridSetCostConstraint(grid,
-			gridCOST_CNST_VOLUME | 
-                        gridCOST_CNST_AREAUV );
-
-  gridSetMinInsertCost( grid, 0.01 );
-  gridSetMinSurfaceSmoothCost( grid, 0.01 );
-
-  if (edge_based) {
-    gridSetCostFunction( grid, gridCOST_FCN_EDGE_LENGTH );
-    gridSetMinInsertCost( grid, 1.0e-5 );
-    gridSetMinSurfaceSmoothCost( grid, 1.0e-5 );
-  }
-
-  // gridConstrainSurfaceNode(grid);
-
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
   printf("spacing set to Leading Edge.\n");
   leading_edge_spacing(grid,LeadingEdgeScale);
   
-  for (i=0;i<1;i++){
-    printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-    STATUS;
-    if (!edge_based) {
-      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-    }
-  }
-  STATUS;
+  gridSetCostConstraint(grid,
+			gridCOST_CNST_VOLUME | 
+                        gridCOST_CNST_AREAUV );
 
-  for ( iteration=0; (iteration<iterations) ; iteration++){
-
-    ratioCollapse = 0.3;
-    ratioSplit    = 1.0;
-
-    gridAdapt(grid, ratioCollapse, ratioSplit);
-
-    printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
-	   iteration,
-	   gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
-    STATUS;
-
-    {
-      int conn, nodes[2];
-      int parent, newnode;
-      int split_edges;
-      double min_insert_cost;
-      min_insert_cost = gridMinInsertCost( grid );
-      gridSetMinInsertCost( grid, -100.0 );
-      gridCreateConn(grid);
-      split_edges = 0;
-      for(conn=0;conn<gridNConn(grid);conn++) {
-	gridConn2Node(grid,conn,nodes);
-	parent = gridParentGeometry(grid, nodes[0], nodes[1] );
-	if ( ( gridGeometryFace( grid, nodes[0] ) &&
-	       gridGeometryFace( grid, nodes[1] ) &&
-	       0 == parent  ) ||
-	     ( gridGeometryEdge( grid, nodes[0] ) &&
-	       gridGeometryEdge( grid, nodes[1] ) &&
-	       0 < parent  ) ) {
-	  newnode = gridSplitEdgeRatio( grid, NULL, nodes[0], nodes[1], 0.5);
-	  split_edges++;
-	}
-      }
-      printf("split %d edges\n",split_edges);
-      gridEraseConn(grid);
-      gridSetMinInsertCost( grid, min_insert_cost );
-    }
-
-    if (!gridSurfaceNodeConstrained(grid)){
-      GridMove *gm;
-      double minArea, minVolume;
-      int untangling_steps;
-      printf("Calling GridMove to project nodes...\n");
-      gm = gridmoveCreate(grid);
-      gridmoveProjectionDisplacements(gm);
-      if (!edge_based) gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,2000);
-      gridmoveApplyDisplacements(gm);
-      gridmoveFree(gm);
-
-      minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
-      while (minArea < 1.0e-12) { // bump this up?
-	printf("min face UV area %e\n",minArea);
-	printf("relax neg faces...\n");
-	gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
-	STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
-	if (untangling_steps >10) return 1;
-      }
-
-      STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
-      while (0.0>=minVolume) {
-	untangling_steps++;
-	if (untangling_steps >10) return 1;
-	printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
-	STATUS; minVolume = gridMinVolume(grid); 
-      }
-    }
+  ratioCollapse = 0.3;
+  ratioSplit    = 1.0;
+      
+  if (edge_based) {
+    gridSetMinInsertCost( grid, 1.0e-5 );
+    gridSetMinSurfaceSmoothCost( grid, 1.0e-5 );
+    
+    gridSetCostFunction( grid, gridCOST_FCN_EDGE_LENGTH );
 
     for (i=0;i<1;i++){
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
       STATUS;
-      if (!edge_based) {
-	printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-      }    
+    }
+    for ( iteration=0; (iteration<iterations) ; iteration++){
+      
+      gridAdapt(grid, ratioCollapse, ratioSplit);
+      gridSplitProblemProjectionEdges( grid );
+      
+      printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
+	     iteration,
+	     gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
+      STATUS;
+      
+      if (!gridSurfaceNodeConstrained(grid)){
+	GridMove *gm;
+	double minArea, minVolume;
+	int untangling_steps;
+	printf("Calling GridMove to project nodes...\n");
+	gm = gridmoveCreate(grid);
+	gridmoveProjectionDisplacements(gm);
+	gridmoveApplyDisplacements(gm);
+	gridmoveFree(gm);
+	
+	minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
+	while (minArea < 1.0e-12) { // bump this up?
+	  printf("min face UV area %e\n",minArea);
+	  printf("relax neg faces...\n");
+	  gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
+	  STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
+	  if (untangling_steps >10) return 1;
+	}
+	
+	STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
+	while (0.0>=minVolume) {
+	  untangling_steps++;
+	  if (untangling_steps >10) return 1;
+	  printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
+	  STATUS; minVolume = gridMinVolume(grid); 
+	}
+      }
+
+      for (i=0;i<1;i++){
+	printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+	STATUS;
+      }
+    }
+
+  }else{ /* !edge_based */
+    gridSetMinInsertCost( grid, 0.01 );
+    gridSetMinSurfaceSmoothCost( grid, 0.01 );
+    
+    for (i=0;i<1;i++){
+      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      STATUS;
+      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
     }
     STATUS;
-  }
+    
+    for ( iteration=0; (iteration<iterations) ; iteration++){
+      
+      gridAdapt(grid, ratioCollapse, ratioSplit);
+      gridSplitProblemProjectionEdges( grid );
+      
+      printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
+	     iteration,
+	     gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
+      STATUS;
+      
+      if (!gridSurfaceNodeConstrained(grid)){
+	GridMove *gm;
+	double minArea, minVolume;
+	int untangling_steps;
+	printf("Calling GridMove to project nodes...\n");
+	gm = gridmoveCreate(grid);
+	gridmoveProjectionDisplacements(gm);
+	gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,2000);
+	gridmoveApplyDisplacements(gm);
+	gridmoveFree(gm);
+	
+	minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
+	while (minArea < 1.0e-12) { // bump this up?
+	  printf("min face UV area %e\n",minArea);
+	  printf("relax neg faces...\n");
+	  gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
+	  STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
+	  if (untangling_steps >10) return 1;
+	}
+	
+	STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
+	while (0.0>=minVolume) {
+	  untangling_steps++;
+	  if (untangling_steps >10) return 1;
+	  printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
+	  STATUS; minVolume = gridMinVolume(grid); 
+	}
+      }
 
-  for (i=0;i<2;i++){
-    printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-    STATUS;
-    if (!edge_based) {
+      for (i=0;i<1;i++){
+	printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+	STATUS;
+	printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
+	STATUS;
+      }
+    }
+    
+    for (i=0;i<2;i++){
+      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      STATUS;
       printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
       STATUS;
     }
   }
-
+  
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
-
+  
   printf("writing output project %s\n",outputProject);
   gridSavePart( grid, outputProject );
-
+  
   printf("Done.\n");
-
+  
   return 0;
 }
 
