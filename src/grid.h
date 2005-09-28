@@ -141,7 +141,10 @@ struct Grid {
   void *freeNotificationData;
 
   Lines *lines;
-  int   model;	/* CAPRI 2 Model Id */
+
+  int phase;
+
+  int model; /* CAPRI 2 Model Id */
 };
 
 Grid *gridCreate(int maxnode, int maxcell, int maxface, int maxedge );
@@ -483,6 +486,14 @@ Grid *gridReportLinesLocation(Grid *g);
 Grid *gridCopyAboutY0(Grid *g, int symmetryFaceId, int mirrorAux );
 
 Grid *gridReportZeroDegreeNodes(Grid *g);
+
+int gridPhase(Grid *g);
+Grid *gridSetPhase(Grid *g, int phase);
+
+#define gridALL_PHASE  (0)
+#define gridEDGE_PHASE (1)
+#define gridFACE_PHASE (2)
+#define gridVOL_PHASE  (3)
 
 END_C_DECLORATION
 

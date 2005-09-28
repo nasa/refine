@@ -230,6 +230,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->freeNotificationData = NULL;
 
   grid->lines = linesCreate();
+
+  grid->phase = gridALL_PHASE;
+
   grid->model = -1;
 
   return  grid;
@@ -4457,5 +4460,14 @@ Grid *gridReportZeroDegreeNodes(Grid *grid)
 						  xyz[0],xyz[1],xyz[2]);
     }
   }
+  return grid;
+}
+
+int gridPhase(Grid *grid){
+  return grid->phase;
+}
+
+Grid *gridSetPhase(Grid *grid, int phase){
+  grid->phase = phase;
   return grid;
 }

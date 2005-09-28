@@ -1,3 +1,9 @@
+2005-09-28 09:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridPhase,gridSetPhase) added to control grid
+	adaptation phases (i.e. all, edge only, faces only, and volume
+	only).
+
 2005-09-27 19:06 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridEdgeRatioRange) compute longest and
