@@ -544,6 +544,9 @@ stored communication pattern to update ghost node displacements.
 
 @section Parallelized Node Movement Notes Without Home
 
+These notes can safely be ignored, I jotted them down to help me
+remember how gridmovement for projection works.
+
 @verbatim
 Startup
 
