@@ -1179,6 +1179,31 @@ Grid *gridOptimizeXYZ(Grid *grid, int node, double *dxdydz )
   return grid;
 }
 
+static GridBool gridThisNodeCanBeModifiedInThisPhase( Grid *grid, int node )
+{
+  if ( gridGeometryNode(grid, node) ) return FALSE;
+
+  switch( gridPhase(grid) ) {
+  case (gridALL_PHASE) :
+    return TRUE;
+    break;
+  case (gridEDGE_PHASE) :
+    return ( gridGeometryEdge(grid, node) );
+    break;
+  case (gridFACE_PHASE) :
+    if ( gridGeometryEdge(grid, node) ) return FALSE;
+    return ( gridGeometryFace(grid, node ) );
+    break;
+  case (gridVOL_PHASE) :
+    return ( !gridGeometryFace(grid, node ) );
+    break;
+  default : 
+    printf("%s: %d: gridThisEdgeCanBeModifiedInThisPhase: phase %d unknown?\n",
+	   __FILE__,__LINE__,gridPhase(grid));
+    return FALSE;
+  }
+}
+
 Grid *gridSmooth( Grid *grid, double optimizationLimit, double laplacianLimit )
 {
   int cell, nodes[4];
@@ -1203,7 +1228,8 @@ Grid *gridSmooth( Grid *grid, double optimizationLimit, double laplacianLimit )
     }
   }
   for (node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) ) {
+    if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) &&
+	 gridThisNodeCanBeModifiedInThisPhase( grid, node ) ) {
       if ( cost[node] < laplacianLimit ) {
 	planAddItemWithPriority( plan, node, 1.0 - cost[node] );
       }

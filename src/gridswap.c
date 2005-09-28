@@ -328,6 +328,9 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
   if ( gridNodeGhost(  grid, n0 ) && gridNodeGhost(  grid, n1 ) )return NULL;
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
   
+  if ( ( gridVOL_PHASE == gridPhase(grid) ) &&
+       ( 0 != gridParentGeometry(grid, n0, n1) ) ) return NULL;
+
   oldFace0 = oldFace1 = EMPTY;
   newFace0 = newFace1 = EMPTY;
   if ( !gridContinuousEquator(grid) ){

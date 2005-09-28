@@ -1,3 +1,16 @@
+2005-09-28 19:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridThisNodeCanBeModifiedInThisPhase) static
+	helper method for gridSmooth to implement phase aspect.
+	* src/gridcad.c (gridSmooth) queries
+	gridThisNodeCanBeModifiedInThisPhase to implement phase aspect.
+	* src/gridinsert.c (gridThisEdgeCanBeModifiedInThisPhase) static
+	helper method for gridAdapt to implement phase aspect.
+	* src/gridinsert.c (gridAdapt) queries
+	gridThisEdgeCanBeModifiedInThisPhase to implement phase aspect.
+	* src/gridswap.c (gridSwapEdge) queries gridPhase to implement
+	volume phase aspect
+
 2005-09-28 09:02 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridPhase,gridSetPhase) added to control grid

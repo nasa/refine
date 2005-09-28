@@ -58,6 +58,29 @@ Grid *gridRemoveAllNodes(Grid *grid )
   return grid;
 }
 
+static GridBool gridThisEdgeCanBeModifiedInThisPhase( Grid *grid, 
+					       int node0, int node1 )
+{
+  switch( gridPhase(grid) ) {
+  case (gridALL_PHASE) :
+    return TRUE;
+    break;
+  case (gridEDGE_PHASE) :
+    return ( 0 > gridParentGeometry(grid, node0, node1) );
+    break;
+  case (gridFACE_PHASE) :
+    return ( 0 < gridParentGeometry(grid, node0, node1) );
+    break;
+  case (gridVOL_PHASE) :
+    return ( 0 == gridParentGeometry(grid, node0, node1) );
+    break;
+  default : 
+    printf("%s: %d: gridThisEdgeCanBeModifiedInThisPhase: phase %d unknown?\n",
+	   __FILE__,__LINE__,gridPhase(grid));
+    return FALSE;
+  }
+}
+
 Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
 {
   int ranking, conn, nodes[2];
@@ -70,8 +93,10 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
   plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
   for(conn=0;conn<gridNConn(grid);conn++) {
     gridConn2Node(grid,conn,nodes);
-    length = gridEdgeRatio(grid,nodes[0],nodes[1]);
-    if ( length >= maxLength ) planAddItemWithPriority( plan, conn, length );
+    if ( gridThisEdgeCanBeModifiedInThisPhase(grid,nodes[0],nodes[1]) ) {
+      length = gridEdgeRatio(grid,nodes[0],nodes[1]);
+      if ( length >= maxLength ) planAddItemWithPriority( plan, conn, length );
+    }
   }
   planDeriveRankingsFromPriorities( plan );
   
@@ -112,8 +137,10 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
   plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
   for(conn=0;conn<gridNConn(grid);conn++) {
     gridConn2Node(grid,conn,nodes);
-    length = gridEdgeRatio(grid,nodes[0],nodes[1]);
-    if ( length <= minLength ) planAddItemWithPriority( plan, conn, length );
+    if ( gridThisEdgeCanBeModifiedInThisPhase(grid,nodes[0],nodes[1]) ) {
+      length = gridEdgeRatio(grid,nodes[0],nodes[1]);
+      if ( length <= minLength ) planAddItemWithPriority( plan, conn, length );
+    }
   }
   planDeriveRankingsFromPriorities( plan );
   
