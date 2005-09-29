@@ -7,6 +7,8 @@ Start Builds!!!!!
 
 --Major refactoring
 
+Make a evaluate node routine (like project)
+
 make the min allowed face area (and volume) a grid struct var.
 
 printf error when face is empty for edge split with !gridContinuousEquator
