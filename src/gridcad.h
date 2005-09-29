@@ -45,7 +45,6 @@ Grid *gridProjectNode(Grid *g, int node );
 
 Grid *gridNodeProjectionDisplacement(Grid *g, int node, double *displacement );
 
-Grid *gridRobustProjectNode(Grid *g, int node);
 Grid *gridRobustProject(Grid *g);
 
 Grid *gridCurveIntersectsFace(Grid *g, int *face_nodes, int parent,
