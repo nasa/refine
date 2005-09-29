@@ -116,6 +116,7 @@ int main( int argc, char *argv[] )
   double ratioSplit, ratioCollapse;
   GridBool tecplotOutput = FALSE;
   GridBool edge_based = FALSE;
+  int phase = 0;
   double LeadingEdgeScale = 1.0;
   int iview = 0;
   int maxnode = 50000;
@@ -176,7 +177,10 @@ int main( int argc, char *argv[] )
    } else if( strcmp(argv[i],"-e") == 0 ) {
       edge_based = TRUE;
       printf("-e argument %d\n",i);
-   } else if( strcmp(argv[i],"-h") == 0 ) {
+   } else if( strcmp(argv[i],"--phase") == 0 ) {
+      i++; phase = atoi(argv[i]);
+      printf("--phase argument %d: %d\n",i, phase);
+    } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
 #ifdef HAVE_CAPRI2
       printf(" -felisa input FELISA project name\n");
@@ -237,6 +241,8 @@ int main( int argc, char *argv[] )
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
+
+  gridSetPhase(grid, phase);
 
   ratioCollapse = 0.3;
   ratioSplit    = 1.0;
@@ -299,13 +305,6 @@ int main( int argc, char *argv[] )
     gridSetMinInsertCost( grid, 0.01 );
     gridSetMinSurfaceSmoothCost( grid, 0.01 );
     
-    for (i=0;i<1;i++){
-      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-      STATUS;
-      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-    }
-    STATUS;
-    
     for ( iteration=0; (iteration<iterations) ; iteration++){
       
       gridAdapt(grid, ratioCollapse, ratioSplit);
@@ -316,7 +315,8 @@ int main( int argc, char *argv[] )
 	     gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
       STATUS;
       
-      if (!gridSurfaceNodeConstrained(grid)){
+      if ( (!gridSurfaceNodeConstrained(grid)) && 
+	   (gridVOL_PHASE!=gridPhase(grid))    ){
 	GridMove *gm;
 	double minArea, minVolume;
 	int untangling_steps;
@@ -353,12 +353,6 @@ int main( int argc, char *argv[] )
       }
     }
     
-    for (i=0;i<2;i++){
-      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-      STATUS;
-      printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
-      STATUS;
-    }
   }
   
   if (!gridRightHandedBoundary(grid)) 
