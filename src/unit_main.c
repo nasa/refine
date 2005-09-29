@@ -247,7 +247,7 @@ int main( int argc, char *argv[] )
   ratioCollapse = 0.3;
   ratioSplit    = 1.0;
       
-  if (edge_based) {
+  if (edge_based) { /* if edge_based */
     gridSetMinInsertCost( grid, 1.0e-5 );
     gridSetMinSurfaceSmoothCost( grid, 1.0e-5 );
     
@@ -301,7 +301,7 @@ int main( int argc, char *argv[] )
       }
     }
 
-  }else{ /* !edge_based */
+  }else{ /* not edge_based */
     gridSetMinInsertCost( grid, 0.01 );
     gridSetMinSurfaceSmoothCost( grid, 0.01 );
     
@@ -314,19 +314,10 @@ int main( int argc, char *argv[] )
 	     iteration,
 	     gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
       STATUS;
-      
-      if ( (!gridSurfaceNodeConstrained(grid)) && 
-	   (gridVOL_PHASE!=gridPhase(grid))    ){
-	GridMove *gm;
-	double minArea, minVolume;
+
+      {
+	double minArea;
 	int untangling_steps;
-	printf("Calling GridMove to project nodes...\n");
-	gm = gridmoveCreate(grid);
-	gridmoveProjectionDisplacements(gm);
-	gridmoveRelaxation(gm,gridmoveELASTIC_SCHEME,1,2000);
-	gridmoveApplyDisplacements(gm);
-	gridmoveFree(gm);
-	
 	minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
 	while (minArea < 1.0e-12) { // bump this up?
 	  printf("min face UV area %e\n",minArea);
@@ -335,25 +326,29 @@ int main( int argc, char *argv[] )
 	  STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
 	  if (untangling_steps >10) return 1;
 	}
-	
-	STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
-	while (0.0>=minVolume) {
-	  untangling_steps++;
-	  if (untangling_steps >10) return 1;
-	  printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
-	  STATUS; minVolume = gridMinVolume(grid); 
-	}
       }
 
+      if (!gridSurfaceNodeConstrained(grid)) {
+	printf("evaluate points on surface...\n");
+	if ( grid != gridSequentialEvaluation(grid) ) {
+	  printf("evaluate points on surface...FAILED\n");
+	  tecplotOutput=TRUE;
+	  DUMP_TEC;
+	  return 1;
+	}
+      }
+      
       for (i=0;i<1;i++){
-	printf("edge swapping grid...\n");gridSwap(grid,-1.0);
-	STATUS;
+	if (gridEDGE_PHASE != gridPhase(grid)) {
+	  printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+	  STATUS;
+	}
 	printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
 	STATUS;
       }
     }
     
-  }
+  } /* end edge_based */
   
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");

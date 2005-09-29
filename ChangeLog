@@ -1,3 +1,8 @@
+2005-09-29 16:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) call gridSequentialEvaluation.
+	* src/gridcad.c (gridSequentialEvaluation) added, but not working.
+
 2005-09-29 15:46 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) incorporated gridPhase as -p #

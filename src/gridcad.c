@@ -381,6 +381,58 @@ Grid *gridRobustProject(Grid *grid)
   return grid;
 }
 
+Grid *gridSequentialEvaluation(Grid *grid)
+{
+  int node;
+
+  double displacement[3];
+  double original_xyz[3],projected_xyz[3];
+  double volume;
+  int fix_node;
+  int active_nodes;
+  int tries;
+
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if ( gridValidNode( grid, node ) && 
+	 !gridNodeFrozen( grid, node) &&
+	 gridGeometryFace(grid,node) ) {
+      gridNodeXYZ(grid,node,original_xyz);
+      gridNodeProjectionDisplacement( grid, node, displacement );
+      projected_xyz[0] = original_xyz[0] + displacement[0];
+      projected_xyz[1] = original_xyz[1] + displacement[1];
+      projected_xyz[2] = original_xyz[2] + displacement[2];
+      if ( displacement[0]*displacement[0] +
+	   displacement[1]*displacement[1] +
+	   displacement[2]*displacement[2] >=0.25) {
+	printf("---> %d %f %f %f.\n",node,
+	       displacement[0], displacement[1], displacement[2]);
+	
+      }
+      gridSetNodeXYZ(grid,node,projected_xyz);
+      tries = 0;
+      while (1.0e-14 > gridMinVolume( grid )) {
+	tries++;
+	if (tries>10) return NULL;
+	active_nodes = 0;
+	for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
+	  if ( gridValidNode( grid, fix_node ) ) {
+	    gridNodeVolume(grid, fix_node, &volume );
+	    if (1.0e-14 > volume) {
+	      active_nodes++;
+	      gridSmoothNodeVolumeUVSimplex( grid, fix_node );
+	    }
+	  }
+	}
+	printf("%d %f %f %f active nodes %d vol %e.\n",node,
+	       displacement[0], displacement[1], displacement[2], 
+	       active_nodes,gridMinVolume( grid ));
+      }
+    }
+  }
+
+  return grid;
+}
+
 Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
 			      double *tuv0_start, double *tuv1_start,
 			      double *tuv, double *curve, double *bary )
