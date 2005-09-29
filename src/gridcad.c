@@ -412,11 +412,7 @@ Grid *gridSequentialEvaluation(Grid *grid)
       tries = 0;
       while (1.0e-14 > gridMinVolume( grid )) {
 	tries++;
-	if (tries>4) return NULL;
-	if (tries>5) {
-	  gridSmoothNodeFaceAreaUV(grid, node );
-	  gridSmoothNodeFaceAreaUV(grid, node );
-	}
+	if (tries>3) return NULL;
 	active_nodes = 0;
 	for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
 	  if ( gridValidNode( grid, fix_node ) ) {
