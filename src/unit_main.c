@@ -124,6 +124,9 @@ int main( int argc, char *argv[] )
 
   int i;
 
+  double minArea, minVolume;
+  int untangling_steps;
+
   sprintf( modeler,       "" );
   sprintf( project,       "" );
   sprintf( outputProject, "" );
@@ -269,8 +272,6 @@ int main( int argc, char *argv[] )
       
       if (!gridSurfaceNodeConstrained(grid)){
 	GridMove *gm;
-	double minArea, minVolume;
-	int untangling_steps;
 	printf("Calling GridMove to project nodes...\n");
 	gm = gridmoveCreate(grid);
 	gridmoveProjectionDisplacements(gm);
@@ -315,18 +316,14 @@ int main( int argc, char *argv[] )
 	     gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
       STATUS;
 
-      {
-	double minArea;
-	int untangling_steps;
-	minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
+      minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
+      printf("min face UV area %e\n",minArea);
+      while (minArea < 1.0e-12) { // bump this up?
 	printf("min face UV area %e\n",minArea);
-	while (minArea < 1.0e-12) { // bump this up?
-	  printf("min face UV area %e\n",minArea);
-	  printf("relax neg faces...\n");
-	  gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
-	  STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
-	  if (untangling_steps >10) return 1;
-	}
+	printf("relax neg faces...\n");
+	gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
+	STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
+	if (untangling_steps >10) return 1;
       }
 
       if (!gridSurfaceNodeConstrained(grid)) {
@@ -340,6 +337,8 @@ int main( int argc, char *argv[] )
 	    for(faceId=1;faceId<=gridNGeomFace(grid);faceId++)
 	      gridWriteTecplotGeomFaceUV(grid,"faceParameters.t",faceId);
 	  }
+	  minArea = gridMinGridFaceAreaUV(grid);
+	  printf("min face UV area %e\n",minArea);
 	  return 1;
 	}
       }
