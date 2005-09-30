@@ -319,6 +319,7 @@ int main( int argc, char *argv[] )
 	double minArea;
 	int untangling_steps;
 	minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
+	printf("min face UV area %e\n",minArea);
 	while (minArea < 1.0e-12) { // bump this up?
 	  printf("min face UV area %e\n",minArea);
 	  printf("relax neg faces...\n");
@@ -334,6 +335,11 @@ int main( int argc, char *argv[] )
 	  printf("evaluate points on surface...FAILED\n");
 	  tecplotOutput=TRUE;
 	  DUMP_TEC;
+	  { 
+	    int faceId;
+	    for(faceId=1;faceId<=gridNGeomFace(grid);faceId++)
+	      gridWriteTecplotGeomFaceUV(grid,"faceParameters.t",faceId);
+	  }
 	  return 1;
 	}
       }
