@@ -1,3 +1,8 @@
+2005-10-05 13:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makfile.am (pxNative,pxParasolid) to compile px_main.c driver
+	* src/px_main.c (main) added to do validatation and midnode projection
+
 2005-09-29 16:57 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) call gridSequentialEvaluation.

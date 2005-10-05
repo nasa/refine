@@ -198,6 +198,12 @@ unitNative_SOURCES = unit_main.c
 unitNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 unitNative_LDFLAGS = $(all_LDFLAGS)
 
+bin_PROGRAMS += pxNative
+pxNative_CFLAGS = $(all_CFLAGS)
+pxNative_SOURCES = px_main.c
+pxNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
+pxNative_LDFLAGS = $(all_LDFLAGS)
+
 bin_PROGRAMS += profileNative
 profileNative_CFLAGS = -pg $(all_CFLAGS)
 profileNative_SOURCES = profile_main.c
@@ -249,6 +255,12 @@ unitParasolid_CFLAGS = $(all_CFLAGS)
 unitParasolid_SOURCES = unit_main.c
 unitParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
 unitParasolid_LDFLAGS = $(all_LDFLAGS)
+
+bin_PROGRAMS += pxParasolid
+pxParasolid_CFLAGS = $(all_CFLAGS)
+pxParasolid_SOURCES = px_main.c
+pxParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
+pxParasolid_LDFLAGS = $(all_LDFLAGS)
 
 endif # BUILD_PARASOLID_KERNEL
 
