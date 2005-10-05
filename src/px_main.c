@@ -38,6 +38,46 @@
 
 #define STATUS DUMP_TEC PRINT_STATUS
 
+Grid *gridDumpBentEdgesForPX(Grid *grid, char *filename)
+{
+  int conn, total;
+  int nodes[2];
+  double xyz[3];
+  FILE *file;
+
+  gridCreateConn(grid);
+  total = 0;
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    if (0 != gridParentGeometry(grid, nodes[0], nodes[1]) ) {
+      total++;
+    }
+  }
+
+  printf("%d edges bent of %d total edges.",total,gridNConn(grid));
+  file = fopen(filename,"w");
+  fprintf(file,"%10d edges in 1-base numbering,\n",total);
+  
+  total = 0;
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    if (0 != gridParentGeometry(grid, nodes[0], nodes[1]) ) {
+      total++;
+      gridCurvedEdgeMidpoint(grid,nodes[0], nodes[1], xyz);
+      fprintf(file,"%10d%10d%24.15e%24.15e%24.15e\n",
+	      nodes[0]+1,nodes[1]+1,xyz[0],xyz[1],xyz[2]);
+    }
+  }
+  fclose(file);
+
+  gridEraseConn(grid);
+  return grid;
+}
+
+
+
+
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -197,10 +237,16 @@ int main( int argc, char *argv[] )
     printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
     STATUS;
     // gridJacVolRatio(grid);
-    sprintf(filename,"%s_px_midnodes.t", project );
+
+    sprintf(filename, "%s_midnodes.t", outputProject );
     gridWriteTecplotCurvedGeom(grid,filename);
+
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
+
+    sprintf(filename,"%s.bent", outputProject );
+    printf("dumping curved Tetrahedral sides to %s\n",filename);
+    gridDumpBentEdgesForPX(grid,filename);
   }
   printf("Done.\n");
   return 0;
