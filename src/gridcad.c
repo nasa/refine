@@ -381,16 +381,41 @@ Grid *gridRobustProject(Grid *grid)
   return grid;
 }
 
+Grid *gridSequentialUntangle(Grid *grid)
+{
+  double volume;
+  int fix_node;
+  int active_nodes;
+  int tries;
+
+  tries = 0;
+  while (1.0e-14 > gridMinVolume( grid )) {
+    tries++;
+    if (tries>8) return NULL;
+    active_nodes = 0;
+    for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
+      if ( gridValidNode( grid, fix_node ) &&
+	   !gridGeometryFace(grid, fix_node) ) {
+	gridNodeVolume(grid, fix_node, &volume );
+	if (1.0e-14 > volume) {
+	  active_nodes++;
+	  gridSmoothNodeVolumeSimplex( grid, fix_node );
+	}
+      }
+    }
+    printf("active nodes %d vol%9.2e area%9.2e.\n",
+	   active_nodes,gridMinVolume( grid ),
+	   gridMinGridFaceAreaUV( grid ));
+  }
+  return grid;
+}
+
 Grid *gridSequentialEvaluation(Grid *grid)
 {
   int node;
 
   double displacement[3];
   double original_xyz[3],projected_xyz[3];
-  double volume;
-  int fix_node;
-  int active_nodes;
-  int tries;
 
   for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) && 
@@ -409,28 +434,10 @@ Grid *gridSequentialEvaluation(Grid *grid)
 	
       }
       gridSetNodeXYZ(grid,node,projected_xyz);
-      tries = 0;
-      while (1.0e-14 > gridMinVolume( grid )) {
-	tries++;
-	if (tries>8) return NULL;
-	active_nodes = 0;
-	for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
-	  if ( gridValidNode( grid, fix_node ) &&
-	       !gridGeometryFace(grid, fix_node) ) {
-	    gridNodeVolume(grid, fix_node, &volume );
-	    if (1.0e-14 > volume) {
-	      active_nodes++;
-	      gridSmoothNodeVolumeSimplex( grid, fix_node );
-	    }
-	  }
-	}
-	printf("%d %f %f %f active nodes %d vol%9.2e area%9.2e.\n",node,
-	       displacement[0], displacement[1], displacement[2], 
-	       active_nodes,gridMinVolume( grid ),
-	       gridMinGridFaceAreaUV( grid ));
-      }
+      if (grid != gridSequentialUntangle(grid)) return NULL;
     }
   }
+
 
   return grid;
 }

@@ -1,6 +1,11 @@
+2005-10-06 13:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSequentialUntangle) extracted from
+	gridSequentialEvaluation
+
 2005-10-06 10:45 Mike Park  <mike.park@nasa.gov>
 
-	* src/gridcad.c (gridSequentialEvaluation) big bug, ment to call
+	* src/gridcad.c (gridSequentialEvaluation) fixed big bug, ment to call
 	gridSmoothNodeVolumeSimplex, not gridSmoothNodeVolumeUVSimplex.
 	Also echo face area uv, which should be constant.
 
