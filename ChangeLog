@@ -1,3 +1,12 @@
+2005-10-06 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSequentialEvaluation) calls gridUntangle for
+	well you know... untangling.
+	* src/gridcad.c (gridWholesaleEvaluation) evaluate all note to
+	true location on geometry before calling gridUntangle.
+	* src/gridcad.c (gridUntangle) to untangle all faces in UV and
+	then untangle all tets in volume.
+
 2005-10-06 16:03 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridCostValid) reordered constraint tests so that

@@ -381,36 +381,93 @@ Grid *gridRobustProject(Grid *grid)
   return grid;
 }
 
-Grid *gridSequentialUntangle(Grid *grid)
+Grid *gridUntangle(Grid *grid)
 {
-  double volume;
+  double allowedVolume, allowedArea;
+  double minVolume, minArea;
+  double volume, area;
   int fix_node;
   int active_nodes;
   int tries;
 
+  allowedArea = 1.0e-12;
+
+  minArea = gridMinGridFaceAreaUV(grid);
   tries = 0;
-  while (1.0e-14 > gridMinVolume( grid )) {
+  while ( minArea <= allowedArea ) {
     tries++;
-    if (tries>8) return NULL;
+    if (tries >10) {
+      printf("anable to fix min face UV area %e\n",minArea);
+      return NULL;
+    }
+    printf("relax neg faces... min face UV area %e\n",minArea);
+    active_nodes = 0;
+    for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
+      if ( gridValidNode( grid, fix_node ) &&
+	   gridGeometryFace(grid, fix_node) &&
+	   !gridGeometryEdge(grid, fix_node) ) {
+	gridMinFaceAreaUV(grid, fix_node, &area);
+	if ( (area <= allowedArea) || (tries>4) ) {
+	  active_nodes++;
+	  gridSmoothNodeFaceAreaUVSimplex( grid, fix_node );
+	}
+      }
+    }
+    minArea = gridMinGridFaceAreaUV(grid);
+  }
+
+  minVolume = gridMinVolume( grid );
+  tries = 0;
+  while ( minVolume <= allowedVolume ) {
+    tries++;
+    if (tries >10) {
+      printf("anable to fix min face UV area %e\n",minArea);
+      return NULL;
+    }
+    printf("relax neg tets... min volume %e\n",minVolume);
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
 	   !gridGeometryFace(grid, fix_node) ) {
 	gridNodeVolume(grid, fix_node, &volume );
-	if (1.0e-14 > volume) {
+	if ( (volume <= allowedVolume) || (tries>4) ) {
 	  active_nodes++;
 	  gridSmoothNodeVolumeSimplex( grid, fix_node );
 	}
       }
     }
-    printf("active nodes %d vol%9.2e area%9.2e.\n",
-	   active_nodes,gridMinVolume( grid ),
-	   gridMinGridFaceAreaUV( grid ));
+    minVolume = gridMinVolume( grid );
   }
   return grid;
 }
 
 Grid *gridSequentialEvaluation(Grid *grid)
+{
+  int node;
+  
+  double displacement[3];
+  double original_xyz[3],projected_xyz[3];
+
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if ( gridValidNode( grid, node ) && 
+	 !gridNodeFrozen( grid, node) &&
+	 gridGeometryFace(grid,node) ) {
+      gridNodeXYZ(grid,node,original_xyz);
+      gridNodeProjectionDisplacement( grid, node, displacement );
+      projected_xyz[0] = original_xyz[0] + displacement[0];
+      projected_xyz[1] = original_xyz[1] + displacement[1];
+      projected_xyz[2] = original_xyz[2] + displacement[2];
+      gridSetNodeXYZ(grid,node,projected_xyz);
+
+      if (grid != gridUntangle(grid)) return NULL;
+    }
+  }
+
+
+  return grid;
+}
+
+Grid *gridWholesaleEvaluation(Grid *grid)
 {
   int node;
 
@@ -426,18 +483,11 @@ Grid *gridSequentialEvaluation(Grid *grid)
       projected_xyz[0] = original_xyz[0] + displacement[0];
       projected_xyz[1] = original_xyz[1] + displacement[1];
       projected_xyz[2] = original_xyz[2] + displacement[2];
-      if ( displacement[0]*displacement[0] +
-	   displacement[1]*displacement[1] +
-	   displacement[2]*displacement[2] >=0.25) {
-	printf("---> %d %f %f %f.\n",node,
-	       displacement[0], displacement[1], displacement[2]);
-	
-      }
       gridSetNodeXYZ(grid,node,projected_xyz);
-      if (grid != gridSequentialUntangle(grid)) return NULL;
     }
   }
 
+  if (grid != gridUntangle(grid)) return NULL;
 
   return grid;
 }
