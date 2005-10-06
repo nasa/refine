@@ -277,23 +277,7 @@ int main( int argc, char *argv[] )
 	gridmoveProjectionDisplacements(gm);
 	gridmoveApplyDisplacements(gm);
 	gridmoveFree(gm);
-	
-	minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
-	while (minArea < 1.0e-12) { // bump this up?
-	  printf("min face UV area %e\n",minArea);
-	  printf("relax neg faces...\n");
-	  gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
-	  STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
-	  if (untangling_steps >10) return 1;
-	}
-	
-	STATUS; minVolume = gridMinVolume(grid); untangling_steps = 0;
-	while (0.0>=minVolume) {
-	  untangling_steps++;
-	  if (untangling_steps >10) return 1;
-	  printf("relax neg cells...\n");gridRelaxNegativeCells(grid,TRUE);
-	  STATUS; minVolume = gridMinVolume(grid); 
-	}
+	if (grid != gridUntangle(grid)) return 1;
       }
 
       for (i=0;i<1;i++){
@@ -303,8 +287,8 @@ int main( int argc, char *argv[] )
     }
 
   }else{ /* not edge_based */
-    gridSetMinInsertCost( grid, 0.01 );
-    gridSetMinSurfaceSmoothCost( grid, 0.01 );
+    gridSetMinInsertCost( grid, -0.5 );
+    gridSetMinSurfaceSmoothCost( grid, -1.5 );
     
     for ( iteration=0; (iteration<iterations) ; iteration++){
       
@@ -316,31 +300,11 @@ int main( int argc, char *argv[] )
 	     gridNNode(grid),gridNFace(grid),gridNCell(grid),gridNEdge(grid));
       STATUS;
 
-      minArea = gridMinGridFaceAreaUV(grid); untangling_steps = 0;
-      printf("min face UV area %e\n",minArea);
-      while (minArea < 1.0e-12) { // bump this up?
-	printf("min face UV area %e\n",minArea);
-	printf("relax neg faces...\n");
-	gridParallelRelaxNegativeFaceAreaUV(grid,TRUE);
-	STATUS; minArea = gridMinGridFaceAreaUV(grid); untangling_steps++;
-	if (untangling_steps >10) return 1;
-      }
-
-      if (!gridSurfaceNodeConstrained(grid)) {
-	printf("evaluate points on surface...\n");
-	if ( grid != gridSequentialEvaluation(grid) ) {
-	  printf("evaluate points on surface...FAILED\n");
-	  tecplotOutput=TRUE;
-	  DUMP_TEC;
-	  { 
-	    int faceId;
-	    for(faceId=1;faceId<=gridNGeomFace(grid);faceId++)
-	      gridWriteTecplotGeomFaceUV(grid,"faceParameters.t",faceId);
-	  }
-	  minArea = gridMinGridFaceAreaUV(grid);
-	  printf("min face UV area %e\n",minArea);
-	  return 1;
-	}
+      if ( grid != gridWholesaleEvaluation(grid) ) {
+	printf("evaluate points on surface...FAILED\n");
+	tecplotOutput=TRUE;
+	DUMP_TEC;
+	return 1;
       }
       
       for (i=0;i<1;i++){
@@ -349,6 +313,8 @@ int main( int argc, char *argv[] )
 	  STATUS;
 	}
 	printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
+	STATUS;
+	if (grid != gridUntangle(grid)) return 1;
 	STATUS;
       }
     }
