@@ -671,12 +671,8 @@ double gridCostValid(Grid *grid, int *nodes )
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
        !gridValidNode(grid, nodes[2]) ||
-       !gridValidNode(grid, nodes[3]) ) return -1.0;
+       !gridValidNode(grid, nodes[3]) ) return -4.0;
   
-  if (gridCostConstraint(grid)&gridCOST_CNST_VOLUME) {
-    if ( gridVolume(grid, nodes ) <= 1.0e-14) return -1.0;
-  }
-
   if ( (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) ||
        (gridCostConstraint(grid)&gridCOST_CNST_VALID)  ) {
     nodes_on_surface = 0;
@@ -685,12 +681,16 @@ double gridCostValid(Grid *grid, int *nodes )
     if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
     if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
     if ( nodes_on_surface > 1 ) {
+      if ( (gridCostConstraint(grid)&gridCOST_CNST_VALID) &&
+	   ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -3.0;
       if ( ( nodes_on_surface > 2 ) &&
 	   (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) &&
 	   ( gridMinCellFaceAreaUV(grid,nodes) <= 1.0e-12 ) ) return -2.0;
-      if ( (gridCostConstraint(grid)&gridCOST_CNST_VALID) &&
-	   ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -3.0;
     }
+  }
+
+  if (gridCostConstraint(grid)&gridCOST_CNST_VOLUME) {
+    if ( gridVolume(grid, nodes ) <= 1.0e-14) return -1.0;
   }
 
   return 0.0;
