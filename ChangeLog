@@ -1,3 +1,9 @@
+2005-10-06 10:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSequentialEvaluation) big bug, ment to call
+	gridSmoothNodeVolumeSimplex, not gridSmoothNodeVolumeUVSimplex.
+	Also echo face area uv, which should be constant.
+
 2005-10-05 15:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/px_main.c (gridDumpBentEdgesForPX) added to dump list of bent

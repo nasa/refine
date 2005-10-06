@@ -415,17 +415,19 @@ Grid *gridSequentialEvaluation(Grid *grid)
 	if (tries>8) return NULL;
 	active_nodes = 0;
 	for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
-	  if ( gridValidNode( grid, fix_node ) ) {
+	  if ( gridValidNode( grid, fix_node ) &&
+	       !gridGeometryFace(grid, fix_node) ) {
 	    gridNodeVolume(grid, fix_node, &volume );
 	    if (1.0e-14 > volume) {
 	      active_nodes++;
-	      gridSmoothNodeVolumeUVSimplex( grid, fix_node );
+	      gridSmoothNodeVolumeSimplex( grid, fix_node );
 	    }
 	  }
 	}
-	printf("%d %f %f %f active nodes %d vol %e.\n",node,
+	printf("%d %f %f %f active nodes %d vol%9.2e area%9.2e.\n",node,
 	       displacement[0], displacement[1], displacement[2], 
-	       active_nodes,gridMinVolume( grid ));
+	       active_nodes,gridMinVolume( grid ),
+	       gridMinGridFaceAreaUV( grid ));
       }
     }
   }
