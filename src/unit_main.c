@@ -36,7 +36,11 @@
           gridWriteTecplotCellGeom(grid,nodes,NULL,NULL); \
    }}; }
 
-#define STATUS leading_edge_spacing(grid, LeadingEdgeScale); DUMP_TEC PRINT_STATUS 
+#define STATUS { \
+  if (LeadingEdgeBG) leading_edge_spacing(grid, LeadingEdgeScale); \
+  DUMP_TEC; \
+  PRINT_STATUS; \
+}
 
 void leading_edge_spacing(Grid *grid, double LeadingEdgeScale ) {
   int node;
@@ -117,7 +121,9 @@ int main( int argc, char *argv[] )
   GridBool tecplotOutput = FALSE;
   GridBool edge_based = FALSE;
   int phase = 0;
+  GridBool LeadingEdgeBG = TRUE;
   double LeadingEdgeScale = 1.0;
+  double global_scale = 1.0;
   int iview = 0;
   int maxnode = 50000;
   char modeler[81];
@@ -177,6 +183,10 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-le") == 0 ) {
       i++; LeadingEdgeScale = atof(argv[i]);
       printf("-le argument %d: %f\n",i,LeadingEdgeScale);
+   } else if( strcmp(argv[i],"-s") == 0 ) {
+      i++; global_scale = atof(argv[i]);
+      LeadingEdgeBG = FALSE;
+      printf("-s argument %d: %f\n",i,global_scale);
    } else if( strcmp(argv[i],"-e") == 0 ) {
       edge_based = TRUE;
       printf("-e argument %d\n",i);
@@ -200,6 +210,7 @@ int main( int argc, char *argv[] )
       printf(" -n max number of nodes in grid\n");
       printf(" -t write tecplot zones durring adaptation\n");
       printf(" -le scale leading edge background grid\n");
+      printf(" -s global scale of current spacing (deactivates LE)\n");
       printf(" -e edge length only adaptation\n");
       return(0);
     } else {
@@ -238,9 +249,10 @@ int main( int argc, char *argv[] )
 
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
-  printf("spacing set to Leading Edge.\n");
-  leading_edge_spacing(grid,LeadingEdgeScale);
-  
+  for( i = 0 ; i < gridMaxNode(grid) ; i++ ) { 
+    gridScaleSpacing( grid, i, global_scale );
+  }
+
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );

@@ -1,3 +1,8 @@
+2005-10-07 15:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) added a -s option that scales estimated
+	isotropic metric and ignores leand edge background.
+
 2005-10-06 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) refactored to use gridWholesaleEvaluation
