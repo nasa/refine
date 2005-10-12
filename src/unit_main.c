@@ -124,6 +124,7 @@ int main( int argc, char *argv[] )
   GridBool LeadingEdgeBG = TRUE;
   double LeadingEdgeScale = 1.0;
   double global_scale = 1.0;
+  GridBool FAST_output = FALSE;
   int iview = 0;
   int maxnode = 50000;
   char modeler[81];
@@ -193,6 +194,9 @@ int main( int argc, char *argv[] )
    } else if( strcmp(argv[i],"--phase") == 0 ) {
       i++; phase = atoi(argv[i]);
       printf("--phase argument %d: %d\n",i, phase);
+    } else if( strcmp(argv[i],"--fast") == 0 ) {
+      i++; FAST_output = TRUE;
+      printf("--fast argument %d\n",i );
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
 #ifdef HAVE_CAPRI2
@@ -212,6 +216,8 @@ int main( int argc, char *argv[] )
       printf(" -le scale leading edge background grid\n");
       printf(" -s global scale of current spacing (deactivates LE)\n");
       printf(" -e edge length only adaptation\n");
+      printf(" --phase phase of adaptation to run\n");
+      printf(" --fast output FAST ASCII file\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -339,6 +345,12 @@ int main( int argc, char *argv[] )
   printf("writing output project %s\n",outputProject);
   gridSavePart( grid, outputProject );
   
+  if (FAST_output) {
+    sprintf(filename,"%s.fgrid", outputProject );
+    printf("dumping FAST file to %s\n",filename);
+    gridExportFAST(grid,filename);
+  }
+
   printf("Done.\n");
   
   return 0;
