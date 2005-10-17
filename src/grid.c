@@ -1198,7 +1198,6 @@ Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
   free(xyz);
 
   return status;
-
 }
 
 Grid *gridWriteTecplotTriangleZone(Grid *grid, char *filename,

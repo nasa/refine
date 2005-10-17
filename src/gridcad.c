@@ -492,6 +492,136 @@ Grid *gridWholesaleEvaluation(Grid *grid)
   return grid;
 }
 
+GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid, 
+					  int node0, int node1, double t )
+{
+  int edge, nodes[2], edgeId;
+  double t0, t1;
+  double dt, ratio;
+  double xyz[3];
+  int face0, face1;
+  int faceId0, faceId1;
+  int nodes0[3], nodes1[3];
+  double uv0[3][2], uv1[3][2];
+  double new_uv0[2], new_uv1[2];
+  double xyz0[3], xyz1[3];
+  double uv[3][2];
+
+  int i;
+
+  /* require a geometry edge (segment) for support */
+  edge = gridFindEdge(grid, node0, node1 );
+  if ( EMPTY == edge ) return FALSE;
+
+  /* ensure monotonicity of edge */
+  gridNodeT( grid, node0, edgeId, &t0);
+  gridNodeT( grid, node1, edgeId, &t1);
+  if ( t < MIN(t0,t1) || MAX(t0,t1) < t ) return FALSE;
+
+  /* test for collapsed edge and compute ratio of end points for new t */
+  dt = t1 - t0;
+  if ( ABS(dt) < 1.0e-12 ) return FALSE;
+  ratio = (t - t0) / ratio; /* t = (1-r)*t0 + r*t1 */
+
+  /* make sure that CAD can sucessfully evaluate at this point */
+  if ( grid != gridEvaluateOnEdge( grid, edgeId, t, xyz ) ) return FALSE;
+
+  /* require a triangle on each side of edge */
+  face0 = gridFindFaceWithNodesUnless( grid, node0, node1, EMPTY );
+  if (EMPTY == face0) return FALSE;
+  face1 = gridFindFaceWithNodesUnless( grid, node0, node1, face0 );
+  if (EMPTY == face1) return FALSE;
+  gridFace( grid, face0, nodes0, &faceId0 );
+  gridFace( grid, face1, nodes1, &faceId1 );
+
+  /* and obtain UV values at triangle nodes */
+  for ( i=0 ; i < 3 ; i++ ) {
+    gridNodeUV( grid, nodes0[i], faceId0, uv0[i] );
+    gridNodeUV( grid, nodes1[i], faceId0, uv1[i] );
+  }
+
+  /* and obtain a linear guess for new UV location uv = (1-r)*uv + r*uv */
+  new_uv0[0] =  new_uv0[1] = 0.0;
+  for ( i=0 ; i < 3 ; i++ ) {
+    if ( nodes0[i] == node0 ) {
+      new_uv0[0] += (1-ratio)*uv0[i][0];
+      new_uv0[1] += (1-ratio)*uv0[i][1];
+    }
+    if ( nodes0[i] == node1 ) {
+      new_uv0[0] += ratio*uv0[i][0];
+      new_uv0[1] += ratio*uv0[i][1];
+    }
+  }
+  new_uv1[0] =  new_uv1[1] = 0.0;
+  for ( i=0 ; i < 3 ; i++ ) {
+    if ( nodes0[i] == node0 ) {
+      new_uv1[0] += (1-ratio)*uv1[i][0];
+      new_uv1[1] += (1-ratio)*uv1[i][1];
+    }
+    if ( nodes0[i] == node1 ) {
+      new_uv1[0] += ratio*uv1[i][0];
+      new_uv1[1] += ratio*uv1[i][1];
+    }
+  }
+
+  /* make sure that the geometry faces can be projected to */
+  if ( grid != gridProjectToFace( grid, faceId0, xyz, new_uv0, xyz0 ) ) 
+    return FALSE;
+  if ( grid != gridProjectToFace( grid, faceId1, xyz, new_uv1, xyz1 ) ) 
+    return FALSE;
+
+  /* make sure that projected uv values produce positve uv area triangles */
+  for ( i=0 ; i < 3 ; i++ ) {
+    if ( nodes0[i] == node0 ) {
+      uv[i][0] = new_uv0[0];
+      uv[i][1] = new_uv0[1];
+    } else {
+      uv[i][0] = uv0[i][0];
+      uv[i][0] = uv0[i][0];
+    }
+  }
+  if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId0 ) < 1.0e-12 )
+    return FALSE;
+
+  for ( i=0 ; i < 3 ; i++ ) {
+    if ( nodes0[i] == node1 ) {
+      uv[i][0] = new_uv0[0];
+      uv[i][1] = new_uv0[1];
+    } else {
+      uv[i][0] = uv0[i][0];
+      uv[i][0] = uv0[i][0];
+    }
+  }
+  if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId0 ) < 1.0e-12 )
+    return FALSE;
+
+  for ( i=0 ; i < 3 ; i++ ) {
+    if ( nodes1[i] == node0 ) {
+      uv[i][0] = new_uv1[0];
+      uv[i][1] = new_uv1[1];
+    } else {
+      uv[i][0] = uv1[i][0];
+      uv[i][0] = uv1[i][0];
+    }
+  }
+  if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId1 ) < 1.0e-12 )
+    return FALSE;
+
+  for ( i=0 ; i < 3 ; i++ ) {
+    if ( nodes1[i] == node1 ) {
+      uv[i][0] = new_uv1[0];
+      uv[i][1] = new_uv1[1];
+    } else {
+      uv[i][0] = uv1[i][0];
+      uv[i][0] = uv1[i][0];
+    }
+  }
+  if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId1 ) < 1.0e-12 )
+    return FALSE;
+
+  return TRUE;
+}
+
 Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
 			      double *tuv0_start, double *tuv1_start,
 			      double *tuv, double *curve, double *bary )

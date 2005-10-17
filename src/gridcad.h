@@ -52,6 +52,9 @@ Grid *gridUntangle(Grid *g);
 Grid *gridSequentialEvaluation(Grid *g);
 Grid *gridWholesaleEvaluation(Grid *g);
 
+GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *g, 
+					  int node0, int node1, double t);
+
 Grid *gridCurveIntersectsFace(Grid *g, int *face_nodes, int parent,
 			      double *tuv0, double *tuv1,
 			      double *tuv, double *xyz, double *bary);

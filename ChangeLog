@@ -1,3 +1,9 @@
+2005-10-17 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNewGeometryEdgeSiteAllowedAt) test underlying
+	geometry evaluation and projection to see if this is an acceptable
+	site for insertion of a node constrained to a geometery edge.
+
 2005-10-17 09:31 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindFaceWithNodesUnless) added to find the two faces
