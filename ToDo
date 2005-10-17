@@ -99,3 +99,10 @@ If going to use validity, parallelize it.
 improved normal visiblity on symm planes.
 check for potential collisions of blend normals with surrounding area
 check out frozen normal direction smoothing (VGrid style)
+
+-Start Over?
+
+- Write in ruby + ruby inline
+- C with swig, ruby inline,  or equivalent
+- better mock of CAD object
+- better logging/exceptions
