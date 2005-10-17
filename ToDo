@@ -106,3 +106,5 @@ check out frozen normal direction smoothing (VGrid style)
 - C with swig, ruby inline,  or equivalent
 - better mock of CAD object
 - better logging/exceptions
+- better face/cell naming/metaphor
+- pair...
