@@ -1,3 +1,8 @@
+2005-10-17 09:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindFaceWithNodesUnless) added to find the two faces
+	that share an edge.
+
 2005-10-07 15:02 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) added a -s option that scales estimated

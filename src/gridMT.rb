@@ -973,6 +973,25 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 11,   grid.faceId( 1, 2, 3 )
  end
 
+ def test_FindFaceWithNodesUnless
+  grid = Grid.new(4,0,2,1)
+  4.times{ grid.addNode(0.0,0.0,0.0) }
+  grid.addEdge(0,1,33,0.0,1.0)
+  assert_equal EMPTY, grid.findFaceWithNodesUnless(0,1,EMPTY)
+
+  grid.addFace(0, 1, 2, 16)
+  assert_equal 0, grid.findFaceWithNodesUnless(0,1,EMPTY)
+  assert_equal EMPTY, grid.findFaceWithNodesUnless(0,1,0)
+
+  grid.addFace(0, 3, 1, 23)
+  assert( (0 == grid.findFaceWithNodesUnless(0,1,EMPTY) ) ||
+          (1 == grid.findFaceWithNodesUnless(0,1,EMPTY) ) )
+  assert_equal 1, grid.findFaceWithNodesUnless(0,1,0)
+  assert_equal 0, grid.findFaceWithNodesUnless(0,1,1)
+
+  assert_equal EMPTY, grid.findFaceWithNodesUnless(0,0,EMPTY)
+ end
+
  def testIfReconnectingAFaceIsOK
   #   2
   #  /|\

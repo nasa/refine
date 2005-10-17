@@ -2475,6 +2475,21 @@ int gridFaceId(Grid *grid, int n0, int n1, int n2 )
   return grid->faceId[face];
 }
 
+int gridFindFaceWithNodesUnless(Grid *grid, int n0, int n1, int unless_face )
+{
+  AdjIterator it0, it1;
+  Adj *adj=grid->faceAdj;
+
+  if ( n0 == n1 ) return EMPTY;
+
+  for ( it0 = adjFirst(adj,n0); adjValid(it0); it0 = adjNext(it0) )
+    for ( it1 = adjFirst(adj,n1); adjValid(it1); it1 = adjNext(it1) )
+      if ( adjItem(it0) == adjItem(it1) )
+	if ( adjItem(it0) != unless_face ) return adjItem(it0);
+
+  return EMPTY;
+}
+
 Grid *gridReconnectAllFace(Grid *grid, int oldNode, int newNode )
 {
   AdjIterator it;

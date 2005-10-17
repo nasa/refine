@@ -443,6 +443,14 @@ VALUE grid_faceId( VALUE self, VALUE n0, VALUE n1, VALUE n2 )
   return INT2NUM( returnedFace );
 }
 
+VALUE grid_findFaceWithNodesUnless( VALUE self, VALUE n0, VALUE n1, 
+				    VALUE unless_face )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridFindFaceWithNodesUnless(grid, NUM2INT(n0), NUM2INT(n1), 
+					      NUM2INT(unless_face) ) );
+}
+
 VALUE grid_reconnectAllFace( VALUE self, VALUE oldNode, VALUE newNode )
 {
   GET_GRID_FROM_SELF;
@@ -1259,6 +1267,8 @@ void Init_Grid()
   rb_define_method( cGrid, "removeFace", grid_removeFace, 1 );
   rb_define_method( cGrid, "findFace", grid_findFace, 3 );
   rb_define_method( cGrid, "faceId", grid_faceId, 3 );
+  rb_define_method( cGrid, "findFaceWithNodesUnless", 
+		       grid_findFaceWithNodesUnless, 3 );
   rb_define_method( cGrid, "reconnectAllFace", grid_reconnectAllFace, 2 );
   rb_define_method( cGrid, "reconnectionOfAllFacesOK", 
 		    grid_reconnectionOfAllFacesOK, 2 );
