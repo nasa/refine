@@ -1,3 +1,8 @@
+2005-10-18 12:27 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSegmentT) linearly interpolate the t
+	value inside a CAD edge segment.
+
 2005-10-18 10:46 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerCreate) requres the edgeId to be specifed.

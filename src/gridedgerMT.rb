@@ -53,6 +53,8 @@ class TestGridEdger < Test::Unit::TestCase
   grid.setNGeomFace(2)
 
   grid.addGeomEdge(edgeId,0,1)
+
+  grid
  end
 
  def test_single_edge_setup
@@ -108,6 +110,8 @@ class TestGridEdger < Test::Unit::TestCase
   grid.setNGeomFace(2)
 
   grid.addGeomEdge(edgeId,0,1)
+
+  grid
  end
 
  def test_two_edge_setup
@@ -131,6 +135,32 @@ class TestGridEdger < Test::Unit::TestCase
   edgeId = 5
   assert_not_nil ge = GridEdger.new(grid,edgeId)
   assert_equal( edgeId, ge.edgeId )
+ end
+
+ def test_get_t_from_segment_single_edge
+  ge = GridEdger.new(one_edge_grid,1)
+
+  assert_nil ge.segmentT(-1.0)
+  assert_nil ge.segmentT(1.1)
+
+  tol = 1.0e-14
+  assert_in_delta( 0.0, ge.segmentT(0.0), tol )
+  assert_in_delta( 0.5, ge.segmentT(0.5), tol )
+  assert_in_delta( 1.0, ge.segmentT(1.0), tol )
+ end
+
+ def test_get_t_from_segment_two_edges
+  ge = GridEdger.new(two_edge_grid,1)
+
+  assert_nil ge.segmentT(-1.0)
+  assert_nil ge.segmentT(2.1)
+
+  tol = 1.0e-14
+  assert_in_delta( 0.0, ge.segmentT(0.0), tol )
+  assert_in_delta( 0.5, ge.segmentT(0.5), tol )
+  assert_in_delta( 1.0, ge.segmentT(1.0), tol )
+  assert_in_delta( 2.0, ge.segmentT(1.5), tol )
+  assert_in_delta( 3.0, ge.segmentT(2.0), tol )
  end
 
 end

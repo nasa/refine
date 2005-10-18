@@ -39,6 +39,8 @@ void gridedgerGridHasBeenFreed(void *voidGridEdger );
 
 int gridedgerEdgeId(GridEdger *);
 
+GridEdger *gridedgerSegmentT(GridEdger *, double segment, double *t );
+
 END_C_DECLORATION
 
 #endif /* GRIDEDGER_H */

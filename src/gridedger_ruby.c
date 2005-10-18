@@ -36,6 +36,14 @@ VALUE gridedger_edgeId( VALUE self )
   return INT2NUM( gridedgerEdgeId( ge ) );
 }
 
+VALUE gridedger_segmentT( VALUE self, VALUE rb_segment )
+{
+  double t, segment;
+  GET_GE_FROM_SELF;
+  segment = NUM2DBL( rb_segment );
+  return (ge == gridedgerSegmentT( ge, segment , &t )?rb_float_new(t):Qnil);
+}
+
 VALUE cGridEdger;
 
 void Init_GridEdger() 
@@ -43,5 +51,5 @@ void Init_GridEdger()
   cGridEdger = rb_define_class( "GridEdger", rb_cObject );
   rb_define_singleton_method( cGridEdger, "new", gridedger_new, 2 );
   rb_define_method( cGridEdger, "edgeId", gridedger_edgeId, 0 );
-
+  rb_define_method( cGridEdger, "segmentT", gridedger_segmentT, 1 );
 }
