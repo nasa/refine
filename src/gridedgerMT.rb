@@ -24,8 +24,11 @@ class TestGridEdger < Test::Unit::TestCase
 
  EMPTY = (-1)
  
- def test_to_make_test_unit_happy
-  assert true
+ def test_initialize
+  grid = Grid.new(0,0,0,0)
+  edgeId = 5
+  assert_not_nil ge = GridEdger.new(grid,edgeId)
+  assert_equal( edgeId, ge.edgeId )
  end
 
 end

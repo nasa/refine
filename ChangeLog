@@ -1,3 +1,8 @@
+2005-10-18 10:46 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerCreate) requres the edgeId to be specifed.
+	* src/gridedger.c (gridedgerEdgeId) returne the edgeId.
+
 2005-10-17 20:11 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerCreate) added a new module modeled

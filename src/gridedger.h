@@ -20,9 +20,11 @@ typedef struct GridEdger GridEdger;
 struct GridEdger {
   Grid *grid;
   void *gridRubyVALUEusedForGC;
+
+  int edgeId;
 };
 
-GridEdger *gridedgerCreate(Grid *);
+GridEdger *gridedgerCreate(Grid *, int edgeId);
 Grid *gridedgerGrid(GridEdger *);
 void gridedgerFree(GridEdger *);
 void gridedgerPack(void *voidGridEdger, 
@@ -34,6 +36,8 @@ void gridedgerSortNode(void *voidGridEdger, int maxnode, int *o2n);
 void gridedgerReallocator(void *voidGridEdger, int reallocType, 
 			 int lastSize, int newSize);
 void gridedgerGridHasBeenFreed(void *voidGridEdger );
+
+int gridedgerEdgeId(GridEdger *);
 
 END_C_DECLORATION
 

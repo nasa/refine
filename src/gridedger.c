@@ -15,12 +15,14 @@
 #include "gridcad.h"
 #include "gridedger.h"
 
-GridEdger *gridedgerCreate( Grid *grid )
+GridEdger *gridedgerCreate( Grid *grid, int edgeId )
 {
   int i;
   GridEdger *gm;
   gm = malloc(sizeof(GridEdger));
   gm->grid = grid;
+
+  gm->edgeId = edgeId;
 
   gridAttachPacker( grid, gridedgerPack, (void *)gm );
   gridAttachNodeSorter( grid, gridedgerSortNode, (void *)gm );
@@ -72,3 +74,7 @@ void gridedgerGridHasBeenFreed(void *voidGridEdger )
   gm->grid = NULL;
 }
 
+int gridedgerEdgeId(GridEdger *gm)
+{
+  return gm->edgeId;
+}
