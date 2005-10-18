@@ -24,11 +24,52 @@ class TestGridEdger < Test::Unit::TestCase
 
  EMPTY = (-1)
  
+ def one_edge_grid
+  grid = Grid.new(4,0,2,1)
+  grid.addNode(0.0,0.0,0.0)
+  grid.addNode(1.0,0.0,0.0)
+  grid.addNode(0.5,0.5,0.0)
+  grid.addNode(0.5,-0.5,0.0)
+
+  edgeId = 1
+  grid.addEdge(0,1,edgeId,0.0,1.0)
+
+  grid.addFaceUV(0, 10.0, 20.0,
+                 2, 10.5, 20.5,
+                 1, 11.0, 20.5,
+                 1)
+
+  grid.addFaceUV(0, 10.0, 20.0,
+                 1, 11.0, 20.5,
+                 3, 10.5, 19.5,
+                 2)
+  grid.setNGeomNode(2)
+  grid.setNGeomEdge(1)
+  grid.setNGeomFace(2)
+
+  grid.addGeomEdge(edgeId,0,1)
+
+ end
+
  def test_initialize
   grid = Grid.new(0,0,0,0)
   edgeId = 5
   assert_not_nil ge = GridEdger.new(grid,edgeId)
   assert_equal( edgeId, ge.edgeId )
+ end
+
+ def test_single_edge_setup
+  grid = one_edge_grid
+
+  assert grid.geometryNode(0)
+  assert grid.geometryNode(1)
+  assert grid.geometryFace(2)
+  assert grid.geometryFace(3)
+
+  assert_equal [0, 1], grid.geomEdge(1)
+
+  assert_equal [0, 1],    grid.geomCurve(1,0)
+  assert_equal [0.0, 1.0], grid.geomCurveT(1,0)
  end
 
 end
