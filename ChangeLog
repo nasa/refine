@@ -1,3 +1,10 @@
+2005-10-20 11:17 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNewGeometryEdgeSiteAllowedAt) if t is near an
+	edge segment endpoint, test to see if the distance between the
+	exsiting face node and the projected face node is larger than
+	tolerence. (testing face areas would always fail, zero area).
+
 2005-10-20 10:52 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerSegmentT) if

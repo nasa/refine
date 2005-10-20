@@ -139,24 +139,35 @@ class TestGridEdger < Test::Unit::TestCase
   assert_equal( edgeId, ge.edgeId )
  end
 
- def test_get_t_from_segment_single_edge
+ def test_get_t_from_segment_single_edge_out_of_range
   ge = GridEdger.new(one_edge_grid,1)
-
   assert_nil ge.segmentT(-1.0)
   assert_nil ge.segmentT(1.1)
+ end
 
+ def test_get_t_from_segment_single_edge
+  ge = GridEdger.new(one_edge_grid,1)
   tol = 1.0e-14
   assert_in_delta( 0.1, ge.segmentT(0.1), tol )
   assert_in_delta( 0.5, ge.segmentT(0.5), tol )
   assert_in_delta( 0.9, ge.segmentT(0.9), tol )
  end
 
- def test_get_t_from_segment_two_edges
-  ge = GridEdger.new(two_edge_grid,1)
+ def test_get_t_from_segment_single_edge_endpoints
+  ge = GridEdger.new(one_edge_grid,1)
+  tol = 1.0e-14
+  assert_in_delta( 0.0, ge.segmentT(0.0), tol )
+  assert_in_delta( 1.0, ge.segmentT(1.0), tol )
+ end
 
+ def test_get_t_from_segment_two_edges_out_of_range
+  ge = GridEdger.new(two_edge_grid,1)
   assert_nil ge.segmentT(-1.0)
   assert_nil ge.segmentT(2.1)
+ end
 
+ def test_get_t_from_segment_two_edges
+  ge = GridEdger.new(two_edge_grid,1)
   tol = 1.0e-14
   assert_in_delta( 0.1, ge.segmentT(0.1), tol )
   assert_in_delta( 0.5, ge.segmentT(0.5), tol )
@@ -164,6 +175,14 @@ class TestGridEdger < Test::Unit::TestCase
   assert_in_delta( 1.2, ge.segmentT(1.1), tol )
   assert_in_delta( 2.0, ge.segmentT(1.5), tol )
   assert_in_delta( 2.8, ge.segmentT(1.9), tol )
+ end
+
+ def test_get_t_from_segment_two_edges_endpoints
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-14
+  assert_in_delta( 0.0, ge.segmentT(0.0), tol )
+  assert_in_delta( 1.0, ge.segmentT(1.0), tol )
+  assert_in_delta( 3.0, ge.segmentT(2.0), tol )
  end
 
 end
