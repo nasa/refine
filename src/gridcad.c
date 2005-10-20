@@ -512,6 +512,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
   /* require a geometry edge (segment) for support */
   edge = gridFindEdge(grid, node0, node1 );
   if ( EMPTY == edge ) return FALSE;
+  gridEdge(grid, edge, nodes, &edgeId );
 
   /* ensure monotonicity of edge */
   gridNodeT( grid, node0, edgeId, &t0);
@@ -521,7 +522,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
   /* test for collapsed edge and compute ratio of end points for new t */
   dt = t1 - t0;
   if ( ABS(dt) < 1.0e-12 ) return FALSE;
-  ratio = (t - t0) / ratio; /* t = (1-r)*t0 + r*t1 */
+  ratio = (t - t0) / (t1 - t0); /* t = r*t1 + (1-r)*t0 */
 
   /* make sure that CAD can sucessfully evaluate at this point */
   if ( grid != gridEvaluateOnEdge( grid, edgeId, t, xyz ) ) return FALSE;
@@ -537,11 +538,11 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
   /* and obtain UV values at triangle nodes */
   for ( i=0 ; i < 3 ; i++ ) {
     gridNodeUV( grid, nodes0[i], faceId0, uv0[i] );
-    gridNodeUV( grid, nodes1[i], faceId0, uv1[i] );
+    gridNodeUV( grid, nodes1[i], faceId1, uv1[i] );
   }
 
   /* and obtain a linear guess for new UV location uv = (1-r)*uv + r*uv */
-  new_uv0[0] =  new_uv0[1] = 0.0;
+  new_uv0[0] = new_uv0[1] = 0.0;
   for ( i=0 ; i < 3 ; i++ ) {
     if ( nodes0[i] == node0 ) {
       new_uv0[0] += (1-ratio)*uv0[i][0];
@@ -552,13 +553,13 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       new_uv0[1] += ratio*uv0[i][1];
     }
   }
-  new_uv1[0] =  new_uv1[1] = 0.0;
+  new_uv1[0] = new_uv1[1] = 0.0;
   for ( i=0 ; i < 3 ; i++ ) {
-    if ( nodes0[i] == node0 ) {
+    if ( nodes1[i] == node0 ) {
       new_uv1[0] += (1-ratio)*uv1[i][0];
       new_uv1[1] += (1-ratio)*uv1[i][1];
     }
-    if ( nodes0[i] == node1 ) {
+    if ( nodes1[i] == node1 ) {
       new_uv1[0] += ratio*uv1[i][0];
       new_uv1[1] += ratio*uv1[i][1];
     }
@@ -577,7 +578,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       uv[i][1] = new_uv0[1];
     } else {
       uv[i][0] = uv0[i][0];
-      uv[i][0] = uv0[i][0];
+      uv[i][1] = uv0[i][1];
     }
   }
   if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId0 ) < 1.0e-12 )
@@ -589,7 +590,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       uv[i][1] = new_uv0[1];
     } else {
       uv[i][0] = uv0[i][0];
-      uv[i][0] = uv0[i][0];
+      uv[i][1] = uv0[i][1];
     }
   }
   if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId0 ) < 1.0e-12 )
@@ -601,7 +602,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       uv[i][1] = new_uv1[1];
     } else {
       uv[i][0] = uv1[i][0];
-      uv[i][0] = uv1[i][0];
+      uv[i][1] = uv1[i][1];
     }
   }
   if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId1 ) < 1.0e-12 )
@@ -613,7 +614,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       uv[i][1] = new_uv1[1];
     } else {
       uv[i][0] = uv1[i][0];
-      uv[i][0] = uv1[i][0];
+      uv[i][1] = uv1[i][1];
     }
   }
   if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId1 ) < 1.0e-12 )
