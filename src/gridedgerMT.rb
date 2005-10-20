@@ -14,10 +14,12 @@ require 'Line/Line'
 require 'Grid/Grid'
 require 'GridMath/GridMath'
 require 'GridMetric/GridMetric'
+require 'GridCAD/GridCAD'
 require 'GridEdger/GridEdger'
 
 class Grid
  include GridMetric
+ include GridCAD
 end
 
 class TestGridEdger < Test::Unit::TestCase
@@ -101,7 +103,7 @@ class TestGridEdger < Test::Unit::TestCase
                  2, 11.0, 20.0,
                  2)
   grid.addFaceUV(2, 11.0, 20.0,
-                 3, 10.5, 19.5,
+                 4, 10.5, 19.5,
                  1, 13.0, 20.0,
                  2)
 
@@ -144,9 +146,9 @@ class TestGridEdger < Test::Unit::TestCase
   assert_nil ge.segmentT(1.1)
 
   tol = 1.0e-14
-  assert_in_delta( 0.0, ge.segmentT(0.0), tol )
+  assert_in_delta( 0.1, ge.segmentT(0.1), tol )
   assert_in_delta( 0.5, ge.segmentT(0.5), tol )
-  assert_in_delta( 1.0, ge.segmentT(1.0), tol )
+  assert_in_delta( 0.9, ge.segmentT(0.9), tol )
  end
 
  def test_get_t_from_segment_two_edges
@@ -156,11 +158,12 @@ class TestGridEdger < Test::Unit::TestCase
   assert_nil ge.segmentT(2.1)
 
   tol = 1.0e-14
-  assert_in_delta( 0.0, ge.segmentT(0.0), tol )
+  assert_in_delta( 0.1, ge.segmentT(0.1), tol )
   assert_in_delta( 0.5, ge.segmentT(0.5), tol )
-  assert_in_delta( 1.0, ge.segmentT(1.0), tol )
+  assert_in_delta( 0.9, ge.segmentT(0.9), tol )
+  assert_in_delta( 1.2, ge.segmentT(1.1), tol )
   assert_in_delta( 2.0, ge.segmentT(1.5), tol )
-  assert_in_delta( 3.0, ge.segmentT(2.0), tol )
+  assert_in_delta( 2.8, ge.segmentT(1.9), tol )
  end
 
 end

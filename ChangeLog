@@ -1,3 +1,9 @@
+2005-10-20 10:52 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSegmentT) if
+	gridNewGeometryEdgeSiteAllowedAt is false return NULL. 
+	(and leave *t value set).
+
 2005-10-20 10:46 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridNewGeometryEdgeSiteAllowedAt) fixed multiple

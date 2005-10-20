@@ -121,11 +121,16 @@ GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
   gridNodeT(grid, curve[segment_index],   gridedgerEdgeId( ge ), &t0 );
   gridNodeT(grid, curve[segment_index+1], gridedgerEdgeId( ge ), &t1 );
 
+  /* allowing a curve memory leak would suck */
+  free(curve);
+
   /* linearally interpolate t in segment */
   *t = ratio*t1 + (1.0-ratio)*t0;
 
-  /* allowing a curve memory leak would be dorky */
-  free(curve);
-
+  /* make sure that this t value is supported by a sucessful cad evaluation */
+  if ( !gridNewGeometryEdgeSiteAllowedAt( grid, 
+					  curve[segment_index], 
+					  curve[segment_index+1],
+					  *t ) ) return NULL;
   return ge;
 }
