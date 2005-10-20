@@ -1,17 +1,19 @@
 
 Thesis
 
-geometry insertion check
++ geometry insertion check
 
-determine desired node locations for each CAD edge
- integration
+- determine desired node locations for each CAD edge
+    - return m for any s.
+    - use n-r to find next s to have l
+    - integration
 
-Pure insertion of desired node locations into triangulation
+- Pure insertion of desired node locations into triangulation
 
-calculate (histogram)
- uv area of adjacent triangles
- xyz volume of adjacent tets
- edge lengths
+ - calculate (histogram)
+    - uv area of adjacent triangles
+    - xyz volume of adjacent tets
+    - edge lengths
 
 
 List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
