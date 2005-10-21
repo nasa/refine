@@ -20,7 +20,6 @@
 
 GridEdger *gridedgerCreate( Grid *grid, int edgeId )
 {
-  int i;
   GridEdger *gm;
   gm = malloc(sizeof(GridEdger));
   gm->grid = grid;
@@ -57,18 +56,18 @@ void gridedgerPack(void *voidGridEdger,
 		  int nface, int maxface, int *faceo2n,
 		  int nedge, int maxedge, int *edgeo2n)
 {
-  GridEdger *gm = (GridEdger *)voidGridEdger;
+  //GridEdger *gm = (GridEdger *)voidGridEdger;
 }
 
 void gridedgerSortNode(void *voidGridEdger, int maxnode, int *o2n)
 {
-  GridEdger *gm = (GridEdger *)voidGridEdger;
+  //GridEdger *gm = (GridEdger *)voidGridEdger;
 }
 
 void gridedgerReallocator(void *voidGridEdger, int reallocType, 
 			 int lastSize, int newSize)
 {
-  GridEdger *gm = (GridEdger *)voidGridEdger;
+  //GridEdger *gm = (GridEdger *)voidGridEdger;
 }
 
 void gridedgerGridHasBeenFreed(void *voidGridEdger )
@@ -132,5 +131,54 @@ GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
 					  curve[segment_index], 
 					  curve[segment_index+1],
 					  *t ) ) return NULL;
+  return ge;
+}
+
+GridEdger *gridedgerSegmentMap( GridEdger *ge, double segment, double *map )
+{
+  int size;
+  int segment_index;
+  double ratio;
+  int *curve;
+  double map0[6], map1[6];
+  Grid *grid = gridedgerGrid( ge );
+  int i;
+
+  for(i=0;i<6;i++) map[i] = DBL_MAX;
+
+  size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
+
+  segment_index = (int)segment;
+  ratio = segment - (double)segment_index;
+
+  /* allow a little slop at the end points */
+  if ( segment_index == -1 && ratio > (1.0-1.0e-12) ) {
+    segment_index = 0;
+    ratio = 0.0;
+  }
+  if ( segment_index == size-1 && ratio < 1.0e-12 ) {
+    segment_index = size-2;
+    ratio = 1.0;
+  }
+
+  if ( segment_index < 0 || segment_index > size-2 ) return NULL;
+
+  /* collect the edge segments into a curve */
+  curve = malloc( size * sizeof(int) );
+  if (grid != gridGeomEdge( grid, gridedgerEdgeId( ge ), curve )) {
+    free(curve);
+    return NULL;
+  }
+
+  /* get the end points in t of the curve segment that we are in */
+  gridMap(grid, curve[segment_index],   map0 );
+  gridMap(grid, curve[segment_index+1], map1 );
+
+  /* allowing a curve memory leak would suck */
+  free(curve);
+
+  /* linearally interpolate map in segment */
+  for(i=0;i<6;i++) map[i] = ratio*map1[i] + (1.0-ratio)*map0[i];
+
   return ge;
 }

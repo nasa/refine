@@ -113,6 +113,9 @@ class TestGridEdger < Test::Unit::TestCase
 
   grid.addGeomEdge(edgeId,0,1)
 
+  grid.scaleSpacing(2,0.5)
+  grid.scaleSpacing(1,0.25)
+
   grid
  end
 
@@ -183,6 +186,37 @@ class TestGridEdger < Test::Unit::TestCase
   assert_in_delta( 0.0, ge.segmentT(0.0), tol )
   assert_in_delta( 1.0, ge.segmentT(1.0), tol )
   assert_in_delta( 3.0, ge.segmentT(2.0), tol )
+ end
+
+
+ def test_get_m_from_two_segment_edge
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-14
+
+  diag =  1.0
+  m = [ diag, 0.0, 0.0, diag, 0.0, diag ];
+  result = ge.segmentMap(0.0)
+  6.times { |i| assert_in_delta( m[i], result[i], tol, "element #{i} error" ) }
+
+  diag =  4.0
+  m = [ diag, 0.0, 0.0, diag, 0.0, diag ];
+  result = ge.segmentMap(1.0)
+  6.times { |i| assert_in_delta( m[i], result[i], tol, "element #{i} error" ) }
+  diag = 16.0
+
+  m = [ diag, 0.0, 0.0, diag, 0.0, diag ];
+  result = ge.segmentMap(2.0)
+  6.times { |i| assert_in_delta( m[i], result[i], tol, "element #{i} error" ) }
+
+  diag =  2.5
+  m = [ diag, 0.0, 0.0, diag, 0.0, diag ];
+  result = ge.segmentMap(0.5)
+  6.times { |i| assert_in_delta( m[i], result[i], tol, "element #{i} error" ) }
+
+  diag =  10.0
+  m = [ diag, 0.0, 0.0, diag, 0.0, diag ];
+  result = ge.segmentMap(1.5)
+  6.times { |i| assert_in_delta( m[i], result[i], tol, "element #{i} error" ) }
  end
 
 end

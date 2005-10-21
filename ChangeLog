@@ -1,3 +1,8 @@
+2005-10-20 11:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSegmentMap) map linearly interpolated
+	from nodes in s.
+
 2005-10-20 11:17 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridNewGeometryEdgeSiteAllowedAt) if t is near an
