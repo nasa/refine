@@ -56,6 +56,9 @@ class TestGridEdger < Test::Unit::TestCase
 
   grid.addGeomEdge(edgeId,0,1)
 
+  grid.scaleSpacing(0,0.5)
+  grid.scaleSpacing(1,0.5)
+
   grid
  end
 
@@ -217,6 +220,17 @@ class TestGridEdger < Test::Unit::TestCase
   m = [ diag, 0.0, 0.0, diag, 0.0, diag ];
   result = ge.segmentMap(1.5)
   6.times { |i| assert_in_delta( m[i], result[i], tol, "element #{i} error" ) }
+ end
+
+ def test_find_next_s_value_for_length_for_one_hlf_length_edge
+  ge = GridEdger.new(one_edge_grid,1)
+  tol = 1.0e-14
+  start = 0.0
+  length = 2.0
+  assert_in_delta( 1.0, ge.lengthToS(start,length), tol )
+  start = 0.0
+  length = 1.0
+  assert_in_delta( 0.5, ge.lengthToS(start,length), tol )
  end
 
 end

@@ -58,6 +58,15 @@ VALUE gridedger_segmentMap( VALUE self, VALUE rb_segment )
   return rb_map;
 }
 
+VALUE gridedger_lengthToS( VALUE self, VALUE rb_segment, VALUE rb_length )
+{
+  double segment, length, s;
+  GET_GE_FROM_SELF;
+  segment = NUM2DBL( rb_segment );
+  length  = NUM2DBL( rb_length );
+  return (ge == gridedgerLengthToS( ge, segment, length, &s )?rb_float_new(s):Qnil);
+}
+
 VALUE cGridEdger;
 
 void Init_GridEdger() 
@@ -67,4 +76,5 @@ void Init_GridEdger()
   rb_define_method( cGridEdger, "edgeId", gridedger_edgeId, 0 );
   rb_define_method( cGridEdger, "segmentT", gridedger_segmentT, 1 );
   rb_define_method( cGridEdger, "segmentMap", gridedger_segmentMap, 1 );
+  rb_define_method( cGridEdger, "lengthToS", gridedger_lengthToS, 2 );
 }

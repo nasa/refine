@@ -182,3 +182,18 @@ GridEdger *gridedgerSegmentMap( GridEdger *ge, double segment, double *map )
 
   return ge;
 }
+
+GridEdger *gridedgerLengthToS(GridEdger *ge, double segment, double length,
+			      double *next_s )
+{
+  *next_s = 1.0;
+  
+  /* bracket search to a single descrete edge segment
+     by finding first segment end point that is too long */
+
+  /* if the last segment end point for CAD curve is too short return it */
+
+  /* do n-r to find the desired s */
+
+  return ge;
+}

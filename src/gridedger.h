@@ -41,6 +41,8 @@ int gridedgerEdgeId(GridEdger *);
 
 GridEdger *gridedgerSegmentT(GridEdger *, double segment, double *t );
 GridEdger *gridedgerSegmentMap(GridEdger *, double segment, double *map );
+GridEdger *gridedgerLengthToS(GridEdger *, double segment, double length, 
+			      double *next_s );
 
 END_C_DECLORATION
 
