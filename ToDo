@@ -1,19 +1,26 @@
 
 Thesis
 
++ complete
+- not completed
+? may not be needed
+
 + geometry insertion check
 
 - determine desired node locations for each CAD edge
-    - return m for any s.
-    - use n-r to find next s to have l
-    - integration
+   + return interpolated metric for any s.
+   + use binary search to find next s to have desired length
+      - Newton-Rapson would be faster
+   ? use integration of edge to guess 
 
 - Pure insertion of desired node locations into triangulation
+   - use existing nodes when posible if in desired location
+      or can be nudged into location.
 
- - calculate (histogram)
-    - uv area of adjacent triangles
-    - xyz volume of adjacent tets
-    - edge lengths
+- calculate (histogram)
+   - uv area of adjacent triangles
+   - xyz volume of adjacent tets
+   - edge lengths
 
 - Make the interpolation of map, aux linear in xyz
 
