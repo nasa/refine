@@ -4,9 +4,9 @@
 #
 # Mobility test for gridedger c lib
 
-#Dir.chdir ENV['srcdir'] if ENV['srcdir']
-#require 'RubyExtensionBuilder'
-#RubyExtensionBuilder.new('GridEdger').build
+Dir.chdir ENV['srcdir'] if ENV['srcdir']
+require 'RubyExtensionBuilder'
+RubyExtensionBuilder.new('GridEdger').build
 
 require 'test/unit'
 require 'Adj/Adj'
