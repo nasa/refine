@@ -1,3 +1,8 @@
+2005-10-26 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretize) now computes target
+	distribution.
+
 2005-10-26 16:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerSegmentT,gridedgerSegmentMap) fixed

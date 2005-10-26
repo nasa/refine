@@ -332,4 +332,45 @@ class TestGridEdger < Test::Unit::TestCase
   assert_in_delta( 1.0, ge.nodeS(1), tol )
  end
 
+ def test_discretize_single_edge_with_three_nodes
+  ge = GridEdger.new(one_edge_grid,1)
+  tol = 1.0e-12
+
+  length = 1.0
+  assert_equal ge, ge.discretize(length)
+  assert_equal 3, ge.nodes
+
+  assert_in_delta( 0.0, ge.nodeS(0), tol )
+  assert_in_delta( 0.5, ge.nodeS(1), tol )
+  assert_in_delta( 1.0, ge.nodeS(2), tol )
+ end
+
+ def test_discretize_single_edge_with_2_plus_nodes
+  ge = GridEdger.new(one_edge_grid,1)
+  tol = 1.0e-12
+
+  length = 1.5
+  assert_equal ge, ge.discretize(length)
+  assert_equal 3, ge.nodes
+
+  assert_in_delta( 0.00, ge.nodeS(0), tol )
+  assert_in_delta( 0.75, ge.nodeS(1), tol )
+  assert_in_delta( 1.00, ge.nodeS(2), tol )
+ end
+
+ def test_discretize_double_edge_with_a_few_nodes
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-12
+
+  length = 2.0
+  assert_equal ge, ge.discretize(length)
+  assert_equal 5, ge.nodes
+
+  assert_in_delta( 0.0000000000000, ge.nodeS(0), tol )
+  assert_in_delta( 1.0795481390678, ge.nodeS(1), tol )
+  assert_in_delta( 1.4524358428491, ge.nodeS(2), tol )
+  assert_in_delta( 1.7509707149822, ge.nodeS(3), tol )
+  assert_in_delta( 2.0000000000000, ge.nodeS(4), tol )
+ end
+
 end

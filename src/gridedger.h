@@ -23,7 +23,7 @@ struct GridEdger {
 
   int edgeId;
   int nodes;
-  int *s;
+  double *s;
 };
 
 GridEdger *gridedgerCreate(Grid *, int edgeId);

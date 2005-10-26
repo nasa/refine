@@ -331,6 +331,45 @@ GridEdger *gridedgerLengthToS(GridEdger *ge, double segment, double length,
 
 GridEdger *gridedgerDiscretize(GridEdger *ge, double length )
 {
+  int max_size, chunk_size;
+  int node;
+  double endpoint;
+
+  int size;
+
+  Grid *grid = gridedgerGrid( ge );
+
+  ge->nodes = 0;
+  if ( NULL != ge->s ) {
+    free( ge->s );
+    ge->s = NULL;
+  }
+  chunk_size = 1000;
+  max_size = 5*chunk_size;
+
+  ge->s = (double *)malloc( max_size * sizeof(double) );
+
+  size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
+  endpoint = (double)(size-1);
+
+  ge->s[0] = 0.0;
+  node = 0;
+  while ( ge->s[node] < (endpoint-1.0e-12) ) {
+    node++;
+    if (node >= max_size) {
+      max_size += chunk_size;
+      ge->s = (double *)realloc( ge->s, max_size * sizeof(double) );
+    }
+    if (ge != gridedgerLengthToS(ge, ge->s[node-1], length, &(ge->s[node]) )){
+      free( ge->s );
+      ge->s = NULL;
+    }
+  }
+
+  ge->nodes = node+1;
+
+  ge->s = (double *)realloc( ge->s, ge->nodes * sizeof(double) );  
+
   return ge;
 }
 
