@@ -52,6 +52,7 @@ GridEdger *gridedgerLengthToS(GridEdger *, double segment, double length,
 			      double *next_s );
 
 GridEdger *gridedgerDiscretize(GridEdger *, double length );
+GridEdger *gridedgerDiscretizeEvenly(GridEdger * );
 
 END_C_DECLORATION
 

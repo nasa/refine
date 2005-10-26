@@ -373,4 +373,11 @@ class TestGridEdger < Test::Unit::TestCase
   assert_in_delta( 2.0000000000000, ge.nodeS(4), tol )
  end
 
+ def test_discretize_double_edge_by_iterating_length
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-12
+
+  assert_equal ge, ge.discretizeEvenly
+ end
+
 end

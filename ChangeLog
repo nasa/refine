@@ -1,3 +1,8 @@
+2005-10-26 17:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeEvenly) does iterations
+	to adjust the desired length to balance edge errors.
+
 2005-10-26 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerDiscretize) now computes target

@@ -107,6 +107,12 @@ VALUE gridedger_discretize( VALUE self, VALUE rb_length )
   return (ge == gridedgerDiscretize( ge, length )?self:Qnil);
 }
 
+VALUE gridedger_discretizeEvenly( VALUE self )
+{
+  GET_GE_FROM_SELF;
+  return (ge == gridedgerDiscretizeEvenly( ge )?self:Qnil);
+}
+
 VALUE cGridEdger;
 
 void Init_GridEdger() 
@@ -122,4 +128,6 @@ void Init_GridEdger()
   rb_define_method( cGridEdger, "segmentMap", gridedger_segmentMap, 1 );
   rb_define_method( cGridEdger, "lengthToS", gridedger_lengthToS, 2 );
   rb_define_method( cGridEdger, "discretize", gridedger_discretize, 1 );
+  rb_define_method( cGridEdger, "discretizeEvenly", 
+		    gridedger_discretizeEvenly, 0 );
 }

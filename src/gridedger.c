@@ -373,3 +373,39 @@ GridEdger *gridedgerDiscretize(GridEdger *ge, double length )
   return ge;
 }
 
+GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
+{
+  double length;
+  int iteration;
+
+  double s0, s1;
+  double first_length;
+  double last_length;
+
+  int size;
+
+  length = 1.0;
+
+  for (iteration = 0; iteration < 5 ; iteration++) {
+    if (ge != gridedgerDiscretize( ge, length ) ) return NULL;
+
+    size = gridedgerNodes( ge );
+
+    gridedgerNodeS( ge, 0, &s0 );
+    gridedgerNodeS( ge, 1, &s1 );
+    gridedgerLengthBetween( ge, s0, s1, &first_length );
+
+    gridedgerNodeS( ge, size-2, &s0 );
+    gridedgerNodeS( ge, size-1, &s1 );
+    gridedgerLengthBetween( ge, s0, s1, &last_length );
+    
+    printf("edge%4d iter%2d nodes%4d len %f %f %f\n",
+	   gridedgerEdgeId( ge ), iteration, size,
+	   length, first_length, last_length);
+    length = length * (double)(size-1) / 
+      ((double)(size-1)+(length-last_length));
+
+  }
+
+  return ge;
+}
