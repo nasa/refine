@@ -20,34 +20,34 @@
 
 GridEdger *gridedgerCreate( Grid *grid, int edgeId )
 {
-  GridEdger *gm;
-  gm = malloc(sizeof(GridEdger));
-  gm->grid = grid;
+  GridEdger *ge;
+  ge = malloc(sizeof(GridEdger));
+  ge->grid = grid;
 
-  gm->edgeId = edgeId;
+  ge->edgeId = edgeId;
 
-  gridAttachPacker( grid, gridedgerPack, (void *)gm );
-  gridAttachNodeSorter( grid, gridedgerSortNode, (void *)gm );
-  gridAttachReallocator( grid, gridedgerReallocator, (void *)gm );
-  gridAttachFreeNotifier( grid, gridedgerGridHasBeenFreed, (void *)gm );
+  gridAttachPacker( grid, gridedgerPack, (void *)ge );
+  gridAttachNodeSorter( grid, gridedgerSortNode, (void *)ge );
+  gridAttachReallocator( grid, gridedgerReallocator, (void *)ge );
+  gridAttachFreeNotifier( grid, gridedgerGridHasBeenFreed, (void *)ge );
 
-  return gm;
+  return ge;
 }
 
-Grid *gridedgerGrid(GridEdger *gm)
+Grid *gridedgerGrid(GridEdger *ge)
 {
-  return gm->grid;
+  return ge->grid;
 }
 
-void gridedgerFree(GridEdger *gm)
+void gridedgerFree(GridEdger *ge)
 {
-  if (NULL != gm->grid) { 
-    gridDetachPacker( gm->grid );
-    gridDetachNodeSorter( gm->grid );
-    gridDetachReallocator( gm->grid );
-    gridDetachFreeNotifier( gm->grid );
+  if (NULL != ge->grid) { 
+    gridDetachPacker( ge->grid );
+    gridDetachNodeSorter( ge->grid );
+    gridDetachReallocator( ge->grid );
+    gridDetachFreeNotifier( ge->grid );
   }
-  free(gm);
+  free(ge);
 }
 
 void gridedgerPack(void *voidGridEdger, 
@@ -56,29 +56,29 @@ void gridedgerPack(void *voidGridEdger,
 		  int nface, int maxface, int *faceo2n,
 		  int nedge, int maxedge, int *edgeo2n)
 {
-  //GridEdger *gm = (GridEdger *)voidGridEdger;
+  //GridEdger *ge = (GridEdger *)voidGridEdger;
 }
 
 void gridedgerSortNode(void *voidGridEdger, int maxnode, int *o2n)
 {
-  //GridEdger *gm = (GridEdger *)voidGridEdger;
+  //GridEdger *ge = (GridEdger *)voidGridEdger;
 }
 
 void gridedgerReallocator(void *voidGridEdger, int reallocType, 
 			 int lastSize, int newSize)
 {
-  //GridEdger *gm = (GridEdger *)voidGridEdger;
+  //GridEdger *ge = (GridEdger *)voidGridEdger;
 }
 
 void gridedgerGridHasBeenFreed(void *voidGridEdger )
 {
-  GridEdger *gm = (GridEdger *)voidGridEdger;
-  gm->grid = NULL;
+  GridEdger *ge = (GridEdger *)voidGridEdger;
+  ge->grid = NULL;
 }
 
-int gridedgerEdgeId(GridEdger *gm)
+int gridedgerEdgeId(GridEdger *ge)
 {
-  return gm->edgeId;
+  return ge->edgeId;
 }
 
 GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *ge, double segment, 
