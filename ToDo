@@ -15,6 +15,7 @@ Thesis
     - xyz volume of adjacent tets
     - edge lengths
 
+- Make the interpolation of map, aux linear in xyz
 
 List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 

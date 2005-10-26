@@ -81,16 +81,16 @@ int gridedgerEdgeId(GridEdger *gm)
   return gm->edgeId;
 }
 
-GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
+GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *ge, double segment, 
+					    int *discrete_segment, 
+					    double *segment_ratio )
 {
   int size;
   int segment_index;
   double ratio;
-  int *curve;
-  double t0, t1;
   Grid *grid = gridedgerGrid( ge );
-
-  *t = DBL_MAX;
+  *discrete_segment = EMPTY;
+  *segment_ratio = DBL_MAX;
 
   size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
 
@@ -109,7 +109,29 @@ GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
 
   if ( segment_index < 0 || segment_index > size-2 ) return NULL;
 
+  *discrete_segment = segment_index;
+  *segment_ratio = ratio;
+
+  return ge;
+}
+
+GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
+{
+  int size;
+  int segment_index;
+  double ratio;
+  int *curve;
+  double t0, t1;
+  Grid *grid = gridedgerGrid( ge );
+
+  *t = DBL_MAX;
+
+  if ( ge != gridedgerDiscreteSegmentAndRatio(ge, segment, 
+					      &segment_index, 
+					      &ratio ) ) return NULL;
+
   /* collect the edge segments into a curve */
+  size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
   curve = malloc( size * sizeof(int) );
   if (grid != gridGeomEdge( grid, gridedgerEdgeId( ge ), curve )) {
     free(curve);
@@ -146,24 +168,12 @@ GridEdger *gridedgerSegmentMap( GridEdger *ge, double segment, double *map )
 
   for(i=0;i<6;i++) map[i] = DBL_MAX;
 
-  size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
-
-  segment_index = (int)segment;
-  ratio = segment - (double)segment_index;
-
-  /* allow a little slop at the end points */
-  if ( segment_index == -1 && ratio > (1.0-1.0e-12) ) {
-    segment_index = 0;
-    ratio = 0.0;
-  }
-  if ( segment_index == size-1 && ratio < 1.0e-12 ) {
-    segment_index = size-2;
-    ratio = 1.0;
-  }
-
-  if ( segment_index < 0 || segment_index > size-2 ) return NULL;
+  if ( ge != gridedgerDiscreteSegmentAndRatio(ge, segment, 
+					      &segment_index, 
+					      &ratio ) ) return NULL;
 
   /* collect the edge segments into a curve */
+  size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
   curve = malloc( size * sizeof(int) );
   if (grid != gridGeomEdge( grid, gridedgerEdgeId( ge ), curve )) {
     free(curve);
@@ -188,7 +198,7 @@ GridEdger *gridedgerLengthToS(GridEdger *ge, double segment, double length,
 {
   *next_s = 1.0;
   
-  /* bracket search to a single descrete edge segment
+  /* bracket search to a single discrete edge segment
      by finding first segment end point that is too long */
 
   /* if the last segment end point for CAD curve is too short return it */

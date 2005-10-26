@@ -40,6 +40,9 @@ void gridedgerGridHasBeenFreed(void *voidGridEdger );
 int gridedgerEdgeId(GridEdger *);
 
 GridEdger *gridedgerSegmentT(GridEdger *, double segment, double *t );
+GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *, double segment, 
+					    int *discrete_segment, 
+					    double *segment_ratio );
 GridEdger *gridedgerSegmentMap(GridEdger *, double segment, double *map );
 GridEdger *gridedgerLengthToS(GridEdger *, double segment, double length, 
 			      double *next_s );

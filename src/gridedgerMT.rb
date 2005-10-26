@@ -145,6 +145,42 @@ class TestGridEdger < Test::Unit::TestCase
   assert_equal( edgeId, ge.edgeId )
  end
 
+ def test_get_discrete_segment_and_ratio_from_s_out_of_range
+  ge = GridEdger.new(two_edge_grid,1)
+  assert_nil ge.discreteSegmentAndRatio(-1.0)
+  assert_nil ge.discreteSegmentAndRatio( 3.0)
+ end
+
+ def test_get_discrete_segment_and_ratio_from_s_in_range
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-14
+
+  result = ge.discreteSegmentAndRatio(0.0)
+  truth = [ 0, 0.0 ]
+  assert_equal( truth[0], result[0] )
+  assert_in_delta( truth[1], result[1], tol )
+
+  result = ge.discreteSegmentAndRatio(0.5)
+  truth = [ 0, 0.5 ]
+  assert_equal( truth[0], result[0] )
+  assert_in_delta( truth[1], result[1], tol )
+
+  result = ge.discreteSegmentAndRatio(1.0)
+  truth = [ 1, 0.0 ]
+  assert_equal( truth[0], result[0] )
+  assert_in_delta( truth[1], result[1], tol )
+
+  result = ge.discreteSegmentAndRatio(1.5)
+  truth = [ 1, 0.5 ]
+  assert_equal( truth[0], result[0] )
+  assert_in_delta( truth[1], result[1], tol )
+
+  result = ge.discreteSegmentAndRatio(2.0)
+  truth = [ 1, 1.0 ]
+  assert_equal( truth[0], result[0] )
+  assert_in_delta( truth[1], result[1], tol )
+ end
+
  def test_get_t_from_segment_single_edge_out_of_range
   ge = GridEdger.new(one_edge_grid,1)
   assert_nil ge.segmentT(-1.0)
@@ -191,7 +227,6 @@ class TestGridEdger < Test::Unit::TestCase
   assert_in_delta( 3.0, ge.segmentT(2.0), tol )
  end
 
-
  def test_get_m_from_two_segment_edge
   ge = GridEdger.new(two_edge_grid,1)
   tol = 1.0e-14
@@ -222,7 +257,7 @@ class TestGridEdger < Test::Unit::TestCase
   6.times { |i| assert_in_delta( m[i], result[i], tol, "element #{i} error" ) }
  end
 
- def test_find_next_s_value_for_length_for_one_hlf_length_edge
+ def test_find_next_s_value_for_length_for_one_half_length_edge
   ge = GridEdger.new(one_edge_grid,1)
   tol = 1.0e-14
   start = 0.0
