@@ -88,7 +88,9 @@ GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *ge, double segment,
   int size;
   int segment_index;
   double ratio;
+
   Grid *grid = gridedgerGrid( ge );
+
   *discrete_segment = EMPTY;
   *segment_ratio = DBL_MAX;
 
@@ -122,6 +124,7 @@ GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
   double ratio;
   int *curve;
   double t0, t1;
+
   Grid *grid = gridedgerGrid( ge );
 
   *t = DBL_MAX;
@@ -163,8 +166,9 @@ GridEdger *gridedgerSegmentMap( GridEdger *ge, double segment, double *map )
   double ratio;
   int *curve;
   double map0[6], map1[6];
-  Grid *grid = gridedgerGrid( ge );
   int i;
+
+  Grid *grid = gridedgerGrid( ge );
 
   for(i=0;i<6;i++) map[i] = DBL_MAX;
 
@@ -193,17 +197,108 @@ GridEdger *gridedgerSegmentMap( GridEdger *ge, double segment, double *map )
   return ge;
 }
 
+GridEdger *gridedgerLengthBetween(GridEdger *ge, 
+				  double segment0, double segment1, 
+				  double *length )
+{
+  double map0[6], map1[6], map[6];
+  double t0, t1;
+  double xyz0[3], xyz1[3];
+  double dx, dy, dz;
+
+  Grid *grid = gridedgerGrid( ge );
+
+  *length = -1.0;
+
+  if ( ge != gridedgerSegmentT( ge, segment0, &t0 ) ) return NULL;
+  if ( ge != gridedgerSegmentT( ge, segment1, &t1 ) ) return NULL;
+
+  if ( grid != gridEvaluateOnEdge( grid, gridedgerEdgeId( ge ), t0, xyz0 ) ) 
+    return NULL;
+  if ( grid != gridEvaluateOnEdge( grid, gridedgerEdgeId( ge ), t1, xyz1 ) ) 
+    return NULL;
+
+  dx = xyz1[0] - xyz0[0];
+  dy = xyz1[1] - xyz0[1];
+  dz = xyz1[2] - xyz0[2];
+
+  if ( ge != gridedgerSegmentMap( ge, segment0, map0 ) ) return NULL;
+  if ( ge != gridedgerSegmentMap( ge, segment1, map1 ) ) return NULL;
+  
+  map[0] = 0.5*(map0[0]+map1[0]);
+  map[1] = 0.5*(map0[1]+map1[1]);
+  map[2] = 0.5*(map0[2]+map1[2]);
+  map[3] = 0.5*(map0[3]+map1[3]);
+  map[4] = 0.5*(map0[4]+map1[4]);
+  map[5] = 0.5*(map0[5]+map1[5]);
+
+  *length =  sqrt ( dx * ( map[0]*dx + map[1]*dy + map[2]*dz ) +
+		    dy * ( map[1]*dx + map[3]*dy + map[4]*dz ) +
+		    dz * ( map[2]*dx + map[4]*dy + map[5]*dz ) );
+  return ge;
+}
+
 GridEdger *gridedgerLengthToS(GridEdger *ge, double segment, double length,
 			      double *next_s )
 {
-  *next_s = 1.0;
+  int size;
+  int segment_index;
+  double ratio;
+  int in_this_segment;
+  int seg;
+  double length_to_end_of_segment;
+  double max, min, mid;
+  int iteration;
+  double mid_length;
+
+  Grid *grid = gridedgerGrid( ge );
+
+  *next_s = -1.0;
   
+  if ( ge != gridedgerDiscreteSegmentAndRatio(ge, segment, 
+					      &segment_index, 
+					      &ratio ) ) return NULL;
+
   /* bracket search to a single discrete edge segment
      by finding first segment end point that is too long */
 
-  /* if the last segment end point for CAD curve is too short return it */
+  size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
 
-  /* do n-r to find the desired s */
+  in_this_segment = EMPTY;
+  for ( seg = segment_index; seg < size-1; seg++ ) {
+    if ( ge != gridedgerLengthBetween( ge, segment, 1.0 + (double)seg,
+				       &length_to_end_of_segment ) ) 
+      return NULL;
+    if ( length_to_end_of_segment >= length ) {
+      in_this_segment = seg; 
+      break;
+    }
+  }
 
+  /* if the last segment end point for CAD curve is too short
+     because we could not find a segment the next point is in return it */
+  if ( EMPTY == in_this_segment ) {
+    *next_s = (double)(size-1);
+    return ge;
+  }
+
+  /* do binary search to find the desired s */
+  /* n-r would be better (quadratic convergence */
+
+  /* 30 iterations gives 0.5^30 = 1e-10 convergence */
+  max = (double)(in_this_segment+1);
+  min = segment;
+  mid = 0.5*(min+max);
+  for ( iteration = 0 ; iteration < 40 ; iteration++ ) {
+    if ( ge != gridedgerLengthBetween( ge, segment, mid, 
+				       &mid_length ) ) return NULL;
+    if ( mid_length > length ) {
+      max = mid;
+    }else{
+      min = mid;
+    }
+    mid = 0.5*(min+max);
+  }
+  *next_s = mid;
   return ge;
 }

@@ -257,15 +257,57 @@ class TestGridEdger < Test::Unit::TestCase
   6.times { |i| assert_in_delta( m[i], result[i], tol, "element #{i} error" ) }
  end
 
+ def test_find_next_s_value_for_length_for_one_half_length_edge_out_of_range
+  ge = GridEdger.new(one_edge_grid,1)
+  start = -1.0
+  assert_nil ge.lengthToS(start,1.0)
+  start = 5.0
+  assert_nil ge.lengthToS(start,1.0)
+ end
+
  def test_find_next_s_value_for_length_for_one_half_length_edge
   ge = GridEdger.new(one_edge_grid,1)
-  tol = 1.0e-14
+  tol = 1.0e-12
+
   start = 0.0
   length = 2.0
   assert_in_delta( 1.0, ge.lengthToS(start,length), tol )
+
   start = 0.0
   length = 1.0
   assert_in_delta( 0.5, ge.lengthToS(start,length), tol )
+
+  start = 0.5
+  length = 0.5
+  assert_in_delta( 0.75, ge.lengthToS(start,length), tol )
+ end
+
+ def test_find_next_s_value_for_length_for_end_point
+  ge = GridEdger.new(one_edge_grid,1)
+  tol = 1.0e-12
+  start = 0.9
+  length = 1.0
+  assert_in_delta( 1.0, ge.lengthToS(start,length), tol )
+ end
+
+ def test_find_next_s_value_for_length_for_two_edge
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-8
+
+  start = 0.0
+  length = 1.0
+  target = 0.69874993561325
+  assert_in_delta( target, ge.lengthToS(start,length), tol )
+
+  start = 0.0
+  length = 3.0
+  target = 1.25
+  assert_in_delta( target, ge.lengthToS(start,length), tol )
+
+  start = 0.75
+  length = 1.0
+  target = 1.11560137232357
+  assert_in_delta( target, ge.lengthToS(start,length), tol )
  end
 
 end

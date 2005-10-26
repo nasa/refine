@@ -1,3 +1,10 @@
+2005-10-26 14:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerLengthBetween) to
+	compute the length of an edge between to s values (needs test).
+	* src/gridedger.c (gridedgerLengthToS) completed with binary
+	search (Newton-Rapson would be better).
+
 2005-10-26 13:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerDiscreteSegmentAndRatio) for DRY,
