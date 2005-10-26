@@ -22,6 +22,8 @@ struct GridEdger {
   void *gridRubyVALUEusedForGC;
 
   int edgeId;
+  int nodes;
+  int *s;
 };
 
 GridEdger *gridedgerCreate(Grid *, int edgeId);
@@ -38,6 +40,8 @@ void gridedgerReallocator(void *voidGridEdger, int reallocType,
 void gridedgerGridHasBeenFreed(void *voidGridEdger );
 
 int gridedgerEdgeId(GridEdger *);
+int gridedgerNodes(GridEdger *);
+GridEdger *gridedgerNodeS(GridEdger *, int node, double *segment );
 
 GridEdger *gridedgerSegmentT(GridEdger *, double segment, double *t );
 GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *, double segment, 
@@ -46,6 +50,8 @@ GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *, double segment,
 GridEdger *gridedgerSegmentMap(GridEdger *, double segment, double *map );
 GridEdger *gridedgerLengthToS(GridEdger *, double segment, double length, 
 			      double *next_s );
+
+GridEdger *gridedgerDiscretize(GridEdger *, double length );
 
 END_C_DECLORATION
 

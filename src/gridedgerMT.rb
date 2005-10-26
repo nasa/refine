@@ -4,9 +4,9 @@
 #
 # Mobility test for gridedger c lib
 
-Dir.chdir ENV['srcdir'] if ENV['srcdir']
-require 'RubyExtensionBuilder'
-RubyExtensionBuilder.new('GridEdger').build
+#Dir.chdir ENV['srcdir'] if ENV['srcdir']
+#require 'RubyExtensionBuilder'
+#RubyExtensionBuilder.new('GridEdger').build
 
 require 'test/unit'
 require 'Adj/Adj'
@@ -143,6 +143,16 @@ class TestGridEdger < Test::Unit::TestCase
   edgeId = 5
   assert_not_nil ge = GridEdger.new(grid,edgeId)
   assert_equal( edgeId, ge.edgeId )
+ end
+
+ def test_initialize_nodes_to_zero
+  ge = GridEdger.new(Grid.new(0,0,0,0),5)
+  assert_equal( 0, ge.nodes )
+ end
+
+ def test_empty_initial_edger_doesnt_return_s
+  ge = GridEdger.new(Grid.new(0,0,0,0),5)
+  assert_nil( ge.nodeS(0) )
  end
 
  def test_get_discrete_segment_and_ratio_from_s_out_of_range
@@ -308,6 +318,18 @@ class TestGridEdger < Test::Unit::TestCase
   length = 1.0
   target = 1.11560137232357
   assert_in_delta( target, ge.lengthToS(start,length), tol )
+ end
+
+ def test_discretize_single_edge_with_two_nodes
+  ge = GridEdger.new(one_edge_grid,1)
+  tol = 1.0e-12
+
+  length = 2.0
+  assert_equal ge, ge.discretize(length)
+  assert_equal 2, ge.nodes
+
+  assert_in_delta( 0.0, ge.nodeS(0), tol )
+  assert_in_delta( 1.0, ge.nodeS(1), tol )
  end
 
 end

@@ -25,6 +25,8 @@ GridEdger *gridedgerCreate( Grid *grid, int edgeId )
   ge->grid = grid;
 
   ge->edgeId = edgeId;
+  ge->nodes = 0;
+  ge->s = NULL;
 
   gridAttachPacker( grid, gridedgerPack, (void *)ge );
   gridAttachNodeSorter( grid, gridedgerSortNode, (void *)ge );
@@ -47,6 +49,7 @@ void gridedgerFree(GridEdger *ge)
     gridDetachReallocator( ge->grid );
     gridDetachFreeNotifier( ge->grid );
   }
+  if ( NULL != ge->s ) free( ge->s );
   free(ge);
 }
 
@@ -79,6 +82,19 @@ void gridedgerGridHasBeenFreed(void *voidGridEdger )
 int gridedgerEdgeId(GridEdger *ge)
 {
   return ge->edgeId;
+}
+
+int gridedgerNodes(GridEdger *ge)
+{
+  return ge->nodes;
+}
+
+GridEdger *gridedgerNodeS(GridEdger *ge, int node, double *segment )
+{
+  if (NULL == ge->s) return NULL;
+  if ( 0 > node || gridedgerNodes(ge) < node ) return NULL;
+  *segment = ge->s[node];
+  return ge;
 }
 
 GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *ge, double segment, 
@@ -123,6 +139,7 @@ GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
   int segment_index;
   double ratio;
   int *curve;
+  int node0, node1;
   double t0, t1;
 
   Grid *grid = gridedgerGrid( ge );
@@ -141,20 +158,24 @@ GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
     return NULL;
   }
 
-  /* get the end points in t of the curve segment that we are in */
-  gridNodeT(grid, curve[segment_index],   gridedgerEdgeId( ge ), &t0 );
-  gridNodeT(grid, curve[segment_index+1], gridedgerEdgeId( ge ), &t1 );
+  /* to get segment end points */
+  node0 = curve[segment_index];
+  node1 = curve[segment_index+1];
 
   /* allowing a curve memory leak would suck */
   free(curve);
+
+  /* get the end points in t of the curve segment that we are in */
+  gridNodeT(grid, node0, gridedgerEdgeId( ge ), &t0 );
+  gridNodeT(grid, node1, gridedgerEdgeId( ge ), &t1 );
 
   /* linearally interpolate t in segment */
   *t = ratio*t1 + (1.0-ratio)*t0;
 
   /* make sure that this t value is supported by a sucessful cad evaluation */
   if ( !gridNewGeometryEdgeSiteAllowedAt( grid, 
-					  curve[segment_index], 
-					  curve[segment_index+1],
+					  node0, 
+					  node1,
 					  *t ) ) return NULL;
   return ge;
 }
@@ -165,6 +186,7 @@ GridEdger *gridedgerSegmentMap( GridEdger *ge, double segment, double *map )
   int segment_index;
   double ratio;
   int *curve;
+  int node0, node1;
   double map0[6], map1[6];
   int i;
 
@@ -184,12 +206,16 @@ GridEdger *gridedgerSegmentMap( GridEdger *ge, double segment, double *map )
     return NULL;
   }
 
-  /* get the end points in t of the curve segment that we are in */
-  gridMap(grid, curve[segment_index],   map0 );
-  gridMap(grid, curve[segment_index+1], map1 );
+  /* to get segment end points */
+  node0 = curve[segment_index];
+  node1 = curve[segment_index+1];
 
   /* allowing a curve memory leak would suck */
   free(curve);
+
+  /* get the end points in t of the curve segment that we are in */
+  gridMap(grid, node0, map0 );
+  gridMap(grid, node1, map1 );
 
   /* linearally interpolate map in segment */
   for(i=0;i<6;i++) map[i] = ratio*map1[i] + (1.0-ratio)*map0[i];
@@ -302,3 +328,9 @@ GridEdger *gridedgerLengthToS(GridEdger *ge, double segment, double length,
   *next_s = mid;
   return ge;
 }
+
+GridEdger *gridedgerDiscretize(GridEdger *ge, double length )
+{
+  return ge;
+}
+

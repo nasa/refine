@@ -1,3 +1,14 @@
+2005-10-26 16:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSegmentT,gridedgerSegmentMap) fixed
+	read of freed memory, thanks valgrind!.
+	* src/gridedger.c (gridedgerNodes) return number of nodes in
+	discretization
+	* src/gridedger.c (gridedgerNodeS) return s values of nodes in
+	discretization
+	* src/gridedger.c (gridedgerDiscretize) create a discretization
+	based on constant length in metric.
+
 2005-10-26 14:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerLengthBetween) to
