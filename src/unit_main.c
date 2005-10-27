@@ -257,6 +257,7 @@ int main( int argc, char *argv[] )
 
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
+  if (LeadingEdgeBG) leading_edge_spacing(grid, LeadingEdgeScale);
   for( i = 0 ; i < gridMaxNode(grid) ; i++ ) { 
     gridScaleSpacing( grid, i, global_scale );
   }
