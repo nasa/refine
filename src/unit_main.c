@@ -106,6 +106,63 @@ Grid *gridSplitProblemProjectionEdges(Grid *grid) {
   return grid;
 }
 
+Grid *gridHistogram( Grid *grid, char *filename ) 
+{
+  int nodes[4];
+  int edge, edgeId;
+  int face, faceId;
+  int cell;
+  double length, area, volume;
+
+  FILE *file;
+
+  if (NULL == filename) {
+    file = fopen( "histogram.m", "w" );
+  }else{
+    file = fopen( filename, "w" );
+  }
+
+  fprintf( file, "edge_length = [\n" );
+  for ( edge = 0 ; edge < gridMaxEdge(grid) ; edge++ ) {
+    if ( grid == gridEdge( grid, edge, nodes, &edgeId ) ) {
+      length = gridEdgeRatio(grid, nodes[0], nodes[1]);
+      fprintf( file, "%e\n", length );
+    }
+  }
+  fprintf( file, "];\n" );
+
+  fprintf( file, "triangle_uv_area = [\n" );
+  for ( face = 0 ; face < gridMaxFace(grid) ; face++ ) {
+    if ( grid == gridFace( grid, face, nodes, &faceId ) ) {
+      if ( gridGeometryEdge( grid, nodes[0] ) ||
+	   gridGeometryEdge( grid, nodes[1] ) ||
+	   gridGeometryEdge( grid, nodes[2] ) ) {
+	area = gridFaceAreaUV(grid, face);
+	fprintf( file, "%e\n", area );
+      }
+    }
+  }
+  fprintf( file, "];\n" );
+
+  fprintf( file, "tet_volume = [\n" );
+  for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
+    if ( grid == gridCell( grid, cell, nodes ) ) {
+      if ( gridGeometryEdge( grid, nodes[0] ) ||
+	   gridGeometryEdge( grid, nodes[1] ) ||
+	   gridGeometryEdge( grid, nodes[2] ) ||
+	   gridGeometryEdge( grid, nodes[3] ) ) {
+	volume = gridVolume(grid, nodes);
+	fprintf( file, "%e\n", volume );
+      }
+    }
+  }
+  fprintf( file, "];\n" );
+
+  fclose(file);
+
+  return grid;
+}
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -275,7 +332,8 @@ int main( int argc, char *argv[] )
       gridedgerDiscretizeEvenly(ge);
       printf("\n");
       gridedgerFree(ge);
-    } 
+    }
+    gridHistogram(grid,NULL);
     printf("Done.\n");
     return 0;
   }
