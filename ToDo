@@ -11,7 +11,7 @@ Thesis
    + return interpolated metric for any s.
    + use binary search to find next s to have desired length
       - Newton-Rapson would be faster
-   + iteratively adjust desired segment length to evenly distrubute error
+   + iteratively adjust desired segment length to evenly distribute error
    ? use integration of edge to guess 
 
 - Pure insertion of desired node locations into triangulation
