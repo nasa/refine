@@ -273,6 +273,7 @@ int main( int argc, char *argv[] )
     for ( edgeId = 1 ; edgeId <= gridNGeomEdge(grid) ; edgeId++ ) {
       ge = gridedgerCreate(grid,edgeId);
       gridedgerDiscretizeEvenly(ge);
+      printf("\n");
       gridedgerFree(ge);
     } 
     printf("Done.\n");
