@@ -1,3 +1,9 @@
+2005-10-26 22:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeEvenly) changed alogorithm
+	to do more iteration but kick out if request and last edge are
+	within a 0.01. Added underrelaxation for stability.
+
 2005-10-26 20:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) a --phase of -1 will test gridedger.

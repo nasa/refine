@@ -313,7 +313,7 @@ GridEdger *gridedgerLengthToS(GridEdger *ge, double segment, double length,
 
   /* 30 iterations gives 0.5^30 = 1e-10 convergence */
   max = (double)(in_this_segment+1);
-  min = segment;
+  min = MAX(segment,((double)in_this_segment));
   mid = 0.5*(min+max);
   for ( iteration = 0 ; iteration < 40 ; iteration++ ) {
     if ( ge != gridedgerLengthBetween( ge, segment, mid, 
@@ -380,27 +380,33 @@ GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
 
   double s0, s1;
   double last_length;
+  double w, next_length;
 
   int size;
+  int last_size;
 
   length = 1.0;
 
-  for (iteration = 1; iteration <= 5 ; iteration++) {
+  for (iteration = 1; iteration <= 20 ; iteration++) {
     if (ge != gridedgerDiscretize( ge, length ) ) return NULL;
 
-    size = gridedgerNodes( ge );
+    if (1==iteration) size = gridedgerNodes( ge );
+    last_size = gridedgerNodes( ge );
 
     gridedgerNodeS( ge, size-2, &s0 );
     gridedgerNodeS( ge, size-1, &s1 );
     gridedgerLengthBetween( ge, s0, s1, &last_length );
     
-    length = length * (double)(size-1) / 
-      ((double)(size-1)+(length-last_length));
+    printf("edge%4d nodes%4d len %f %f\n",
+	   gridedgerEdgeId( ge ), last_size, length, last_length);
+
+    if (ABS(last_length-length) < 0.01) break;
+
+    w = 0.5;
+    next_length = ((double)(last_size-2)*length+last_length)/ (size-1);
+
+    length = w*next_length + (1.0-w)*length;
 
   }
-
-  printf("edge%4d nodes%4d len %f %f\n",
-	 gridedgerEdgeId( ge ), size, length, last_length);
-
   return ge;
 }
