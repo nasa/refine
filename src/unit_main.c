@@ -22,7 +22,7 @@
 #include "gridmove.h"
 #include "gridmpi.h"
 #include "gridfiller.h"
-#include "CADGeom/CADGeom.h"
+#include "gridedger.h"
 
 #define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
 
@@ -37,7 +37,8 @@
    }}; }
 
 #define STATUS { \
-  if (LeadingEdgeBG) leading_edge_spacing(grid, LeadingEdgeScale); \
+  if (LeadingEdgeBG && update_spacing_durring_status) \
+    leading_edge_spacing(grid, LeadingEdgeScale); \
   DUMP_TEC; \
   PRINT_STATUS; \
 }
@@ -124,6 +125,7 @@ int main( int argc, char *argv[] )
   GridBool LeadingEdgeBG = TRUE;
   double LeadingEdgeScale = 1.0;
   double global_scale = 1.0;
+  GridBool update_spacing_durring_status = FALSE;
   GridBool FAST_output = FALSE;
   int iview = 0;
   int maxnode = 50000;
@@ -264,6 +266,17 @@ int main( int argc, char *argv[] )
                         gridCOST_CNST_AREAUV );
 
   gridSetPhase(grid, phase);
+  if ( -1 == phase ) {
+    int edgeId;
+    GridEdger *ge;
+    for ( edgeId = 1 ; edgeId <= gridNGeomEdge(grid) ; edgeId++ ) {
+      ge = gridedgerCreate(grid,edgeId);
+      gridedgerDiscretizeEvenly(ge);
+      gridedgerFree(ge);
+    } 
+    printf("Done.\n");
+    return 0;
+  }
 
   ratioCollapse = 0.3;
   ratioSplit    = 1.0;

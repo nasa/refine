@@ -1,3 +1,8 @@
+2005-10-26 20:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) a --phase of -1 will test gridedger.
+	the spacing is not appiled every status.
+
 2005-10-26 17:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerDiscretizeEvenly) does iterations
