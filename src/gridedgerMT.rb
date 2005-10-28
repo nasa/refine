@@ -27,7 +27,7 @@ class TestGridEdger < Test::Unit::TestCase
  EMPTY = (-1)
  
  def one_edge_grid
-  grid = Grid.new(5,2,2,1)
+  grid = Grid.new(6,4,4,2)
   grid.addNode(0.0,0.0,0.0)
   grid.addNode(1.0,0.0,0.0)
   grid.addNode(0.5,0.5,0.0)
@@ -82,12 +82,13 @@ class TestGridEdger < Test::Unit::TestCase
  end
 
  def two_edge_grid
-  grid = Grid.new(5,0,4,2)
+  grid = Grid.new(20,20,20,10)
   grid.addNode(0.0,0.0,0.0)
   grid.addNode(3.0,0.0,0.0)
   grid.addNode(1.0,0.0,0.0)
   grid.addNode(0.5,0.5,0.0)
   grid.addNode(0.5,-0.5,0.0)
+  grid.addNode(0.5,0.0,0.5)
 
   edgeId = 1
   grid.addEdge(0,2,edgeId,0.0,1.0)
@@ -114,6 +115,10 @@ class TestGridEdger < Test::Unit::TestCase
                  4, 10.5, 19.5,
                  1, 13.0, 20.0,
                  2)
+  grid.addCell( 0, 2, 3, 5)
+  grid.addCell( 2, 1, 3, 5)
+  grid.addCell( 0, 4, 2, 5)
+  grid.addCell( 2, 4, 1, 5)
 
   grid.setNGeomNode(2)
   grid.setNGeomEdge(1)
@@ -123,6 +128,9 @@ class TestGridEdger < Test::Unit::TestCase
 
   grid.scaleSpacing(2,0.5)
   grid.scaleSpacing(1,0.25)
+  grid.scaleSpacing(3,0.375)
+  grid.scaleSpacing(4,0.375)
+  grid.scaleSpacing(5,0.375)
 
   grid
  end
