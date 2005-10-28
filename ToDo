@@ -18,10 +18,10 @@ Thesis
    - use existing nodes when posible if in desired location
       or can be nudged into location.
 
-- calculate (histogram)
-   - uv area of adjacent triangles
-   - xyz volume of adjacent tets
-   - edge lengths
++ calculate (histogram)
+   + uv area of adjacent triangles
+   + xyz volume of adjacent tets
+   + edge lengths
 
 - Make the interpolation of map, aux linear in xyz
 
