@@ -1,3 +1,8 @@
+2005-10-28 17:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSupportingSegment) find the segment
+	value that corrisonds to a CAD edge t.
+
 2005-10-28 16:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerInsert) started, but hastily retreated

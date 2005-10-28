@@ -68,6 +68,14 @@ VALUE gridedger_discreteSegmentAndRatio( VALUE self, VALUE rb_segment )
   return rb_result;
 }
 
+VALUE gridedger_supportingSegment( VALUE self, VALUE rb_t )
+{
+  double t, segment;
+  GET_GE_FROM_SELF;
+  t = NUM2DBL( rb_t );
+  return (ge == gridedgerSupportingSegment( ge, t, &segment )?rb_float_new(segment):Qnil);
+}
+
 VALUE gridedger_segmentT( VALUE self, VALUE rb_segment )
 {
   double t, segment;
@@ -128,6 +136,8 @@ void Init_GridEdger()
   rb_define_method( cGridEdger, "edgeId", gridedger_edgeId, 0 );
   rb_define_method( cGridEdger, "nodes", gridedger_nodes, 0 );
   rb_define_method( cGridEdger, "nodeS", gridedger_nodeS, 1 );
+  rb_define_method( cGridEdger, "supportingSegment", 
+		    gridedger_supportingSegment, 1 );
   rb_define_method( cGridEdger, "discreteSegmentAndRatio", 
 		    gridedger_discreteSegmentAndRatio, 1 );
   rb_define_method( cGridEdger, "segmentT", gridedger_segmentT, 1 );

@@ -43,10 +43,12 @@ int gridedgerEdgeId(GridEdger *);
 int gridedgerNodes(GridEdger *);
 GridEdger *gridedgerNodeS(GridEdger *, int node, double *segment );
 
-GridEdger *gridedgerSegmentT(GridEdger *, double segment, double *t );
+GridEdger *gridedgerSupportingSegment(GridEdger *, double t, double *segment );
+
 GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *, double segment, 
 					    int *discrete_segment, 
 					    double *segment_ratio );
+GridEdger *gridedgerSegmentT(GridEdger *, double segment, double *t );
 GridEdger *gridedgerSegmentMap(GridEdger *, double segment, double *map );
 GridEdger *gridedgerLengthToS(GridEdger *, double segment, double length, 
 			      double *next_s );

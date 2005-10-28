@@ -204,6 +204,27 @@ class TestGridEdger < Test::Unit::TestCase
   assert_in_delta( truth[1], result[1], tol )
  end
 
+ def test_get_supporting_segment_from_two_edges_endpoints_out_of_range
+  ge = GridEdger.new(two_edge_grid,1)
+  assert_nil  ge.supportingSegment(-1.0)
+  assert_nil  ge.supportingSegment(4.0)
+ end
+
+ def test_get_supporting_segment_from_two_edges_endpoints_at_existing_nodes
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-14
+  assert_in_delta( 0.0, ge.supportingSegment(0.0), tol )
+  assert_in_delta( 1.0, ge.supportingSegment(1.0), tol )
+  assert_in_delta( 2.0, ge.supportingSegment(3.0), tol )
+ end
+
+ def test_get_supporting_segment_from_two_edges_endpoints_middle_of_segs
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-14
+  assert_in_delta( 0.5, ge.supportingSegment(0.5), tol )
+  assert_in_delta( 1.5, ge.supportingSegment(2.0), tol )
+ end
+
  def test_get_t_from_segment_single_edge_out_of_range
   ge = GridEdger.new(one_edge_grid,1)
   assert_nil ge.segmentT(-1.0)

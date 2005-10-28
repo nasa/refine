@@ -97,6 +97,71 @@ GridEdger *gridedgerNodeS(GridEdger *ge, int node, double *segment )
   return ge;
 }
 
+GridEdger *gridedgerSupportingSegment(GridEdger *ge, 
+				      double t, double *segment )
+{
+  int size;
+  int *curve;
+  int node0, node1;
+  double t0, t1;
+  int in_this_segment, segment_index;
+  double ratio;
+
+  Grid *grid = gridedgerGrid( ge );
+
+  *segment = DBL_MAX;
+
+  size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
+  curve = malloc( size * sizeof(int) );
+  if (grid != gridGeomEdge( grid, gridedgerEdgeId( ge ), curve )) {
+    free(curve);
+    return NULL;
+  }
+
+  node0 = curve[0];
+  gridNodeT(grid, node0, gridedgerEdgeId( ge ), &t0 );
+  if ( t - t0 < -1.0e-12 ) {
+    free(curve);
+    return NULL;
+  }
+  
+  node1 = curve[size-1];
+  gridNodeT(grid, node1, gridedgerEdgeId( ge ), &t1 );
+  if ( t - t1 > 1.0e-12 ) {
+    free(curve);
+    return NULL;
+  }
+
+  in_this_segment = EMPTY;
+  for ( segment_index = 1; segment_index < size; segment_index++ ) {
+    node0 = curve[segment_index];
+    gridNodeT(grid, node0, gridedgerEdgeId( ge ), &t0 );
+
+    if ( t - t0 < 1.0e-12 ) {
+      in_this_segment = segment_index-1; 
+      break;
+    }
+  }
+  if (EMPTY == in_this_segment) {
+    free(curve);
+    return NULL;
+  }
+
+  node0 = curve[in_this_segment];
+  gridNodeT(grid, node0, gridedgerEdgeId( ge ), &t0 );
+  node1 = curve[in_this_segment+1];
+  gridNodeT(grid, node1, gridedgerEdgeId( ge ), &t1 );
+  /* t = ratio*t1 + (1.0-ratio)*t0 */
+  /* t = ratio*t1 + t0 - ratio*t0 */
+  /* t-t0 = ratio*(t1-t0) */
+  ratio = (t-t0)/(t1-t0);
+
+  *segment = (double)in_this_segment + ratio;
+
+  free(curve);
+  return ge;
+}
+
 GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *ge, double segment, 
 					    int *discrete_segment, 
 					    double *segment_ratio )
@@ -309,7 +374,7 @@ GridEdger *gridedgerLengthToS(GridEdger *ge, double segment, double length,
   }
 
   /* do binary search to find the desired s */
-  /* n-r would be better (quadratic convergence */
+  /* n-r would be better (quadratic convergence instead of linear) */
 
   /* 30 iterations gives 0.5^30 = 1e-10 convergence */
   max = (double)(in_this_segment+1);
