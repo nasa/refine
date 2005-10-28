@@ -113,6 +113,12 @@ VALUE gridedger_discretizeEvenly( VALUE self )
   return (ge == gridedgerDiscretizeEvenly( ge )?self:Qnil);
 }
 
+VALUE gridedger_insert( VALUE self )
+{
+  GET_GE_FROM_SELF;
+  return (ge == gridedgerInsert( ge )?self:Qnil);
+}
+
 VALUE cGridEdger;
 
 void Init_GridEdger() 
@@ -130,4 +136,5 @@ void Init_GridEdger()
   rb_define_method( cGridEdger, "discretize", gridedger_discretize, 1 );
   rb_define_method( cGridEdger, "discretizeEvenly", 
 		    gridedger_discretizeEvenly, 0 );
+  rb_define_method( cGridEdger, "insert", gridedger_insert, 0 );
 }

@@ -1,3 +1,9 @@
+2005-10-28 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerInsert) started, but hastily retreated
+	when I concluded that s will vary when I start inserting nodes,
+	so I should be storing t.
+
 2005-10-26 23:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (gridHistogram) dump hisogram data for octave/MATLAB.

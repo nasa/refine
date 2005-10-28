@@ -410,3 +410,17 @@ GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
   }
   return ge;
 }
+
+GridEdger *gridedgerInsert(GridEdger *ge )
+{
+  int node;
+
+  Grid *grid = gridedgerGrid( ge );
+
+  if ( 1 > gridedgerNodes( ge ) ) return NULL;
+  
+  for ( node = 1 ; node < (gridedgerNodes( ge )-1) ; node++ ) {
+  }
+
+  return ge;
+}

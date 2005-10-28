@@ -27,11 +27,12 @@ class TestGridEdger < Test::Unit::TestCase
  EMPTY = (-1)
  
  def one_edge_grid
-  grid = Grid.new(4,0,2,1)
+  grid = Grid.new(5,2,2,1)
   grid.addNode(0.0,0.0,0.0)
   grid.addNode(1.0,0.0,0.0)
   grid.addNode(0.5,0.5,0.0)
   grid.addNode(0.5,-0.5,0.0)
+  grid.addNode(0.5,0.0,0.5)
 
   edgeId = 1
   grid.addEdge(0,1,edgeId,0.0,1.0)
@@ -50,14 +51,18 @@ class TestGridEdger < Test::Unit::TestCase
                  1, 11.0, 20.0,
                  2)
 
+  grid.addCell( 0, 1, 2, 4)
+  grid.addCell( 1, 0, 3, 4)
+
   grid.setNGeomNode(2)
   grid.setNGeomEdge(1)
   grid.setNGeomFace(2)
 
   grid.addGeomEdge(edgeId,0,1)
 
-  grid.scaleSpacing(0,0.5)
-  grid.scaleSpacing(1,0.5)
+  grid.nnode.times do |node|
+   grid.scaleSpacing(node,0.5)
+  end
 
   grid
  end
@@ -378,6 +383,19 @@ class TestGridEdger < Test::Unit::TestCase
   tol = 1.0e-12
 
   assert_equal ge, ge.discretizeEvenly
+ end
+
+ def test_discretize_single_edge_into_two_edges_via_insert
+  grid = one_edge_grid
+  ge = GridEdger.new(grid,1)
+
+  assert_nil ge.insert
+  length = 1.0
+  ge.discretize(length)
+
+  assert_equal ge, ge.insert
+
+  assert_equal 6, grid.nnode
  end
 
 end
