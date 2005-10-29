@@ -36,19 +36,19 @@ VALUE gridedger_edgeId( VALUE self )
   return INT2NUM( gridedgerEdgeId( ge ) );
 }
 
-VALUE gridedger_nodes( VALUE self )
+VALUE gridedger_idealNodes( VALUE self )
 {
   GET_GE_FROM_SELF;
-  return INT2NUM( gridedgerNodes( ge ) );
+  return INT2NUM( gridedgerIdealNodes( ge ) );
 }
 
-VALUE gridedger_nodeS( VALUE self, VALUE rb_node )
+VALUE gridedger_idealNodeT( VALUE self, VALUE rb_node )
 {
   int node;
   double s;
   GET_GE_FROM_SELF;
   node = NUM2INT( rb_node );
-  return (ge == gridedgerNodeS( ge, node, &s )?rb_float_new(s):Qnil);
+  return (ge == gridedgerIdealNodeT( ge, node, &s )?rb_float_new(s):Qnil);
 }
 
 VALUE gridedger_discreteSegmentAndRatio( VALUE self, VALUE rb_segment )
@@ -134,8 +134,8 @@ void Init_GridEdger()
   cGridEdger = rb_define_class( "GridEdger", rb_cObject );
   rb_define_singleton_method( cGridEdger, "new", gridedger_new, 2 );
   rb_define_method( cGridEdger, "edgeId", gridedger_edgeId, 0 );
-  rb_define_method( cGridEdger, "nodes", gridedger_nodes, 0 );
-  rb_define_method( cGridEdger, "nodeS", gridedger_nodeS, 1 );
+  rb_define_method( cGridEdger, "idealNodes", gridedger_idealNodes, 0 );
+  rb_define_method( cGridEdger, "idealNodeT", gridedger_idealNodeT, 1 );
   rb_define_method( cGridEdger, "supportingSegment", 
 		    gridedger_supportingSegment, 1 );
   rb_define_method( cGridEdger, "discreteSegmentAndRatio", 

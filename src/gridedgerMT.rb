@@ -4,9 +4,12 @@
 #
 # Mobility test for gridedger c lib
 
-Dir.chdir ENV['srcdir'] if ENV['srcdir']
-require 'RubyExtensionBuilder'
-RubyExtensionBuilder.new('GridEdger').build
+rebuild = true
+if rebuild
+ Dir.chdir ENV['srcdir'] if ENV['srcdir']
+ require 'RubyExtensionBuilder'
+ RubyExtensionBuilder.new('GridEdger').build
+end
 
 require 'test/unit'
 require 'Adj/Adj'
@@ -160,12 +163,12 @@ class TestGridEdger < Test::Unit::TestCase
 
  def test_initialize_nodes_to_zero
   ge = GridEdger.new(Grid.new(0,0,0,0),5)
-  assert_equal( 0, ge.nodes )
+  assert_equal( 0, ge.idealNodes )
  end
 
  def test_empty_initial_edger_doesnt_return_s
   ge = GridEdger.new(Grid.new(0,0,0,0),5)
-  assert_nil( ge.nodeS(0) )
+  assert_nil( ge.idealNodeT(0) )
  end
 
  def test_get_discrete_segment_and_ratio_from_s_out_of_range
@@ -360,10 +363,10 @@ class TestGridEdger < Test::Unit::TestCase
 
   length = 2.0
   assert_equal ge, ge.discretize(length)
-  assert_equal 2, ge.nodes
+  assert_equal 2, ge.idealNodes
 
-  assert_in_delta( 0.0, ge.nodeS(0), tol )
-  assert_in_delta( 1.0, ge.nodeS(1), tol )
+  assert_in_delta( 0.0, ge.idealNodeT(0), tol )
+  assert_in_delta( 1.0, ge.idealNodeT(1), tol )
  end
 
  def test_discretize_single_edge_with_three_nodes
@@ -372,11 +375,11 @@ class TestGridEdger < Test::Unit::TestCase
 
   length = 1.0
   assert_equal ge, ge.discretize(length)
-  assert_equal 3, ge.nodes
+  assert_equal 3, ge.idealNodes
 
-  assert_in_delta( 0.0, ge.nodeS(0), tol )
-  assert_in_delta( 0.5, ge.nodeS(1), tol )
-  assert_in_delta( 1.0, ge.nodeS(2), tol )
+  assert_in_delta( 0.0, ge.idealNodeT(0), tol )
+  assert_in_delta( 0.5, ge.idealNodeT(1), tol )
+  assert_in_delta( 1.0, ge.idealNodeT(2), tol )
  end
 
  def test_discretize_single_edge_with_2_plus_nodes
@@ -385,11 +388,11 @@ class TestGridEdger < Test::Unit::TestCase
 
   length = 1.5
   assert_equal ge, ge.discretize(length)
-  assert_equal 3, ge.nodes
+  assert_equal 3, ge.idealNodes
 
-  assert_in_delta( 0.00, ge.nodeS(0), tol )
-  assert_in_delta( 0.75, ge.nodeS(1), tol )
-  assert_in_delta( 1.00, ge.nodeS(2), tol )
+  assert_in_delta( 0.00, ge.idealNodeT(0), tol )
+  assert_in_delta( 0.75, ge.idealNodeT(1), tol )
+  assert_in_delta( 1.00, ge.idealNodeT(2), tol )
  end
 
  def test_discretize_double_edge_with_a_few_nodes
@@ -398,13 +401,13 @@ class TestGridEdger < Test::Unit::TestCase
 
   length = 2.0
   assert_equal ge, ge.discretize(length)
-  assert_equal 5, ge.nodes
+  assert_equal 5, ge.idealNodes
 
-  assert_in_delta( 0.0000000000000, ge.nodeS(0), tol )
-  assert_in_delta( 1.0795481390678, ge.nodeS(1), tol )
-  assert_in_delta( 1.4524358428491, ge.nodeS(2), tol )
-  assert_in_delta( 1.7509707149822, ge.nodeS(3), tol )
-  assert_in_delta( 2.0000000000000, ge.nodeS(4), tol )
+  assert_in_delta( 0.0000000000000, ge.idealNodeT(0), tol )
+  assert_in_delta( 1.1590962781347, ge.idealNodeT(1), tol )
+  assert_in_delta( 1.9048716856976, ge.idealNodeT(2), tol )
+  assert_in_delta( 2.5019414299632, ge.idealNodeT(3), tol )
+  assert_in_delta( 3.0000000000000, ge.idealNodeT(4), tol )
  end
 
  def test_discretize_double_edge_by_iterating_length

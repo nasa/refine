@@ -25,8 +25,8 @@ GridEdger *gridedgerCreate( Grid *grid, int edgeId )
   ge->grid = grid;
 
   ge->edgeId = edgeId;
-  ge->nodes = 0;
-  ge->s = NULL;
+  ge->idealNodes = 0;
+  ge->t = NULL;
 
   gridAttachPacker( grid, gridedgerPack, (void *)ge );
   gridAttachNodeSorter( grid, gridedgerSortNode, (void *)ge );
@@ -49,7 +49,7 @@ void gridedgerFree(GridEdger *ge)
     gridDetachReallocator( ge->grid );
     gridDetachFreeNotifier( ge->grid );
   }
-  if ( NULL != ge->s ) free( ge->s );
+  if ( NULL != ge->t ) free( ge->t );
   free(ge);
 }
 
@@ -84,16 +84,16 @@ int gridedgerEdgeId(GridEdger *ge)
   return ge->edgeId;
 }
 
-int gridedgerNodes(GridEdger *ge)
+int gridedgerIdealNodes(GridEdger *ge)
 {
-  return ge->nodes;
+  return ge->idealNodes;
 }
 
-GridEdger *gridedgerNodeS(GridEdger *ge, int node, double *segment )
+GridEdger *gridedgerIdealNodeT(GridEdger *ge, int node, double *t )
 {
-  if (NULL == ge->s) return NULL;
-  if ( 0 > node || gridedgerNodes(ge) < node ) return NULL;
-  *segment = ge->s[node];
+  if (NULL == ge->t) return NULL;
+  if ( 0 > node || gridedgerIdealNodes(ge) < node ) return NULL;
+  *t = ge->t[node];
   return ge;
 }
 
@@ -399,41 +399,44 @@ GridEdger *gridedgerDiscretize(GridEdger *ge, double length )
   int max_size, chunk_size;
   int node;
   double endpoint;
-
+  double s0, s1;
   int size;
 
   Grid *grid = gridedgerGrid( ge );
 
-  ge->nodes = 0;
-  if ( NULL != ge->s ) {
-    free( ge->s );
-    ge->s = NULL;
+  ge->idealNodes = 0;
+  if ( NULL != ge->t ) {
+    free( ge->t );
+    ge->t = NULL;
   }
   chunk_size = 1000;
   max_size = 5*chunk_size;
 
-  ge->s = (double *)malloc( max_size * sizeof(double) );
+  ge->t = (double *)malloc( max_size * sizeof(double) );
 
   size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
   endpoint = (double)(size-1);
 
-  ge->s[0] = 0.0;
+  gridedgerSegmentT( ge, 0.0, &(ge->t[0]));
+  s0 = 0.0;
   node = 0;
-  while ( ge->s[node] < (endpoint-1.0e-12) ) {
+  while ( s0 < (endpoint-1.0e-12) ) {
     node++;
     if (node >= max_size) {
       max_size += chunk_size;
-      ge->s = (double *)realloc( ge->s, max_size * sizeof(double) );
+      ge->t = (double *)realloc( ge->t, max_size * sizeof(double) );
     }
-    if (ge != gridedgerLengthToS(ge, ge->s[node-1], length, &(ge->s[node]) )){
-      free( ge->s );
-      ge->s = NULL;
+    if (ge != gridedgerLengthToS(ge, s0, length, &s1 )){
+      free( ge->t );
+      ge->t = NULL;
     }
+    gridedgerSegmentT( ge, s1, &(ge->t[node]));
+    s0 = s1;
   }
 
-  ge->nodes = node+1;
+  ge->idealNodes = node+1;
 
-  ge->s = (double *)realloc( ge->s, ge->nodes * sizeof(double) );  
+  ge->t = (double *)realloc( ge->t, ge->idealNodes * sizeof(double) );  
 
   return ge;
 }
@@ -443,28 +446,33 @@ GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
   double length;
   int iteration;
 
-  double s0, s1;
+  double t0, s0, s1;
   double last_length;
   double w, next_length;
 
   int size;
   int last_size;
 
+  Grid *grid = gridedgerGrid( ge );
+
   length = 1.0;
+
+  s1 = (double)(gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) )-1);
 
   for (iteration = 1; iteration <= 20 ; iteration++) {
     if (ge != gridedgerDiscretize( ge, length ) ) return NULL;
 
-    if (1==iteration) size = gridedgerNodes( ge );
-    last_size = gridedgerNodes( ge );
+    if (1==iteration) size = gridedgerIdealNodes( ge );
+    last_size = gridedgerIdealNodes( ge );
 
-    gridedgerNodeS( ge, size-2, &s0 );
-    gridedgerNodeS( ge, size-1, &s1 );
+    gridedgerIdealNodeT( ge, size-2, &t0 );
+    gridedgerSupportingSegment(ge, t0, &s0 );
+
     gridedgerLengthBetween( ge, s0, s1, &last_length );
     
     printf("edge%4d nodes%4d len %f %f\n",
 	   gridedgerEdgeId( ge ), last_size, length, last_length);
-
+ 
     if (ABS(last_length-length) < 0.01) break;
 
     w = 0.5;
@@ -482,9 +490,9 @@ GridEdger *gridedgerInsert(GridEdger *ge )
 
   Grid *grid = gridedgerGrid( ge );
 
-  if ( 1 > gridedgerNodes( ge ) ) return NULL;
+  if ( 1 > gridedgerIdealNodes( ge ) ) return NULL;
   
-  for ( node = 1 ; node < (gridedgerNodes( ge )-1) ; node++ ) {
+  for ( node = 1 ; node < (gridedgerIdealNodes( ge )-1) ; node++ ) {
   }
 
   return ge;

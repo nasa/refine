@@ -1,3 +1,9 @@
+2005-10-28 23:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerIdealNodes,gridedgerIdealNodeT)
+	renamed from gridedgerNodes, gridedgerNodeS to store t's, because
+	they are invariant as nodes are added.
+
 2005-10-28 17:38 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerSupportingSegment) find the segment

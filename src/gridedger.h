@@ -22,8 +22,8 @@ struct GridEdger {
   void *gridRubyVALUEusedForGC;
 
   int edgeId;
-  int nodes;
-  double *s;
+  int idealNodes;
+  double *t;
 };
 
 GridEdger *gridedgerCreate(Grid *, int edgeId);
@@ -40,8 +40,8 @@ void gridedgerReallocator(void *voidGridEdger, int reallocType,
 void gridedgerGridHasBeenFreed(void *voidGridEdger );
 
 int gridedgerEdgeId(GridEdger *);
-int gridedgerNodes(GridEdger *);
-GridEdger *gridedgerNodeS(GridEdger *, int node, double *segment );
+int gridedgerIdealNodes(GridEdger *);
+GridEdger *gridedgerIdealNodeT(GridEdger *, int node, double *t );
 
 GridEdger *gridedgerSupportingSegment(GridEdger *, double t, double *segment );
 
