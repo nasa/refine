@@ -4,7 +4,7 @@
 #
 # Mobility test for gridedger c lib
 
-rebuild = true
+rebuild = false || true
 if rebuild
  Dir.chdir ENV['srcdir'] if ENV['srcdir']
  require 'RubyExtensionBuilder'
