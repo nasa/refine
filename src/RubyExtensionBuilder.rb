@@ -28,7 +28,7 @@ class RubyExtensionBuilder
   requiredPackages['GridInsert'] = %w{ Adj Line Plan Sort Queue Grid GridMath GridShape GridMetric GridSwap GridCAD }
   requiredPackages['GridMPI'] = %w{ Adj Line Sort Queue Grid GridMath GridShape GridMetric GridCAD GridInsert GridSwap }
   requiredPackages['GridMove'] = %w{ Adj Line Grid GridMath GridShape GridMetric }
-  requiredPackages['GridEdger'] = %w{ Adj Line Grid GridMath GridShape GridMetric GridCAD }
+  requiredPackages['GridEdger'] = %w{ Adj Line Grid GridMath GridShape GridMetric GridCAD GridInsert}
   requiredPackages['Layer'] = %w{ Adj Near Intersect Line Grid GridMath GridShape GridMetric GridCAD GridInsert }
 
   requiredPackages[@extension].each { |extension| buildOnly extension }

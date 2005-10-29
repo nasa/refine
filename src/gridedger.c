@@ -13,9 +13,11 @@
 #include <limits.h>
 #include <values.h>
 
+#include "queue.h"
 #include "gridmath.h"
 #include "gridmetric.h"
 #include "gridcad.h"
+#include "gridinsert.h"
 #include "gridedger.h"
 
 GridEdger *gridedgerCreate( Grid *grid, int edgeId )
@@ -487,12 +489,54 @@ GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
 GridEdger *gridedgerInsert(GridEdger *ge )
 {
   int node;
+  double t;
+  double segment;
+  int segment_index;
+  double segment_ratio;
+  int size;
+  int *curve;
+  int node0, node1;
+  int newnode;
 
+  Queue *queue = NULL;
   Grid *grid = gridedgerGrid( ge );
 
   if ( 1 > gridedgerIdealNodes( ge ) ) return NULL;
   
   for ( node = 1 ; node < (gridedgerIdealNodes( ge )-1) ; node++ ) {
+
+    /* the ideal location in t for this next node */
+    if (ge != gridedgerIdealNodeT(ge, node, &t )) return NULL;
+
+    /* find the segment that this t value lies inside  */
+    if (ge != gridedgerSupportingSegment(ge, t, &segment )) return NULL;
+    if (ge != gridedgerDiscreteSegmentAndRatio(ge, segment, 
+					       &segment_index, 
+					       &segment_ratio ) ) return NULL;
+
+    /* collect the edge segments into a curve */
+    size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
+    curve = malloc( size * sizeof(int) );
+    if (grid != gridGeomEdge( grid, gridedgerEdgeId( ge ), curve )) {
+      free(curve);
+      return NULL;
+    }
+
+    /* to get segment end points */
+    node0 = curve[segment_index];
+    node1 = curve[segment_index+1];
+
+    /* actually insert the new node in the ideal location */
+    newnode = gridSplitEdgeRatio( grid, queue, node0, node1, segment_ratio );
+
+    /* allowing a curve memory leak would suck */
+    free(curve);
+
+    /* return NULL if the new node was not added */
+    if (EMPTY == newnode) {
+      return NULL;
+    }
+
   }
 
   return ge;

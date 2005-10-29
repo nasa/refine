@@ -18,11 +18,13 @@ require 'Grid/Grid'
 require 'GridMath/GridMath'
 require 'GridMetric/GridMetric'
 require 'GridCAD/GridCAD'
+require 'GridInsert/GridInsert'
 require 'GridEdger/GridEdger'
 
 class Grid
  include GridMetric
  include GridCAD
+ include GridInsert
 end
 
 class TestGridEdger < Test::Unit::TestCase

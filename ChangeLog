@@ -1,3 +1,8 @@
+2005-10-29 11:09 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerInsert) got it working with stored 
+	ideal t values.
+
 2005-10-28 23:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerIdealNodes,gridedgerIdealNodeT)
