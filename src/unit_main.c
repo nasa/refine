@@ -326,14 +326,25 @@ int main( int argc, char *argv[] )
   gridSetPhase(grid, phase);
   if ( -1 == phase ) {
     int edgeId;
+    gridSetMinInsertCost( grid, -10.0 );
+    gridConstrainSurfaceNode(grid);
     GridEdger *ge;
     for ( edgeId = 1 ; edgeId <= gridNGeomEdge(grid) ; edgeId++ ) {
       ge = gridedgerCreate(grid,edgeId);
-      gridedgerDiscretizeEvenly(ge);
+      if ( ge != gridedgerDiscretizeEvenly(ge) ) {
+	printf("gridedgerDiscretizeEvenly failed for edge %d\n",edgeId);
+	return 1;
+      }
+      if ( ge != gridedgerInsert(ge) ) {
+	printf("gridedgerInsert failed for edge %d\n",edgeId);
+	return 1;
+      }
       printf("\n");
       gridedgerFree(ge);
     }
     gridHistogram(grid,NULL);
+    printf("writing output project %s\n",outputProject);
+    gridSavePart( grid, outputProject );
     printf("Done.\n");
     return 0;
   }
