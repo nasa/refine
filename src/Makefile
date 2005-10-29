@@ -32,4 +32,4 @@ clean:
 	rm -rf Adj Plan Near Line Queue Sort Intersect Ring Grid* Layer  
 
 val:
-	valgrind --tool=memcheck --trace-children=yes --error-limit=no --gen-suppressions=yes --suppressions=ruby_valgrind
+	@echo valgrind --tool=memcheck --trace-children=yes --error-limit=no --suppressions=ruby_valgrind
