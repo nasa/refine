@@ -27,7 +27,7 @@ GridEdger *gridedgerCreate( Grid *grid, int edgeId )
   ge->grid = grid;
 
   ge->edgeId = edgeId;
-  ge->idealNodes = 0;
+  ge->ideal_nodes = 0;
   ge->t = NULL;
 
   gridAttachPacker( grid, gridedgerPack, (void *)ge );
@@ -88,7 +88,7 @@ int gridedgerEdgeId(GridEdger *ge)
 
 int gridedgerIdealNodes(GridEdger *ge)
 {
-  return ge->idealNodes;
+  return ge->ideal_nodes;
 }
 
 GridEdger *gridedgerIdealNodeT(GridEdger *ge, int node, double *t )
@@ -406,7 +406,7 @@ GridEdger *gridedgerDiscretize(GridEdger *ge, double length )
 
   Grid *grid = gridedgerGrid( ge );
 
-  ge->idealNodes = 0;
+  ge->ideal_nodes = 0;
   if ( NULL != ge->t ) {
     free( ge->t );
     ge->t = NULL;
@@ -436,9 +436,9 @@ GridEdger *gridedgerDiscretize(GridEdger *ge, double length )
     s0 = s1;
   }
 
-  ge->idealNodes = node+1;
+  ge->ideal_nodes = node+1;
 
-  ge->t = (double *)realloc( ge->t, ge->idealNodes * sizeof(double) );  
+  ge->t = (double *)realloc( ge->t, ge->ideal_nodes * sizeof(double) );  
 
   return ge;
 }
