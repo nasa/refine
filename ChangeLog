@@ -1,3 +1,9 @@
+2005-10-29 23:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerInsert) no interface to it yet, but
+	existing unused nodes are stored off so that they may be removed
+	later.
+
 2005-10-29 15:42 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) --phase 1 option: added insert, error

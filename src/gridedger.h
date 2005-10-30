@@ -22,8 +22,12 @@ struct GridEdger {
   void *gridRubyVALUEusedForGC;
 
   int edgeId;
+
   int ideal_nodes;
   double *t;
+
+  int total_unused;
+  int *unused;
 };
 
 GridEdger *gridedgerCreate(Grid *, int edgeId);

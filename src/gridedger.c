@@ -30,6 +30,9 @@ GridEdger *gridedgerCreate( Grid *grid, int edgeId )
   ge->ideal_nodes = 0;
   ge->t = NULL;
 
+  ge->total_unused = 0;
+  ge->unused = NULL;
+
   gridAttachPacker( grid, gridedgerPack, (void *)ge );
   gridAttachNodeSorter( grid, gridedgerSortNode, (void *)ge );
   gridAttachReallocator( grid, gridedgerReallocator, (void *)ge );
@@ -52,6 +55,7 @@ void gridedgerFree(GridEdger *ge)
     gridDetachFreeNotifier( ge->grid );
   }
   if ( NULL != ge->t ) free( ge->t );
+  if ( NULL != ge->unused ) free( ge->unused );
   free(ge);
 }
 
@@ -501,23 +505,45 @@ GridEdger *gridedgerInsert(GridEdger *ge )
   Queue *queue = NULL;
   Grid *grid = gridedgerGrid( ge );
 
+  /* save off existing edge interior nodes as unused to mark for removal */
+  size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
+  curve = malloc( size * sizeof(int) );
+  if (grid != gridGeomEdge( grid, gridedgerEdgeId( ge ), curve )) {
+    free(curve);
+    return NULL;
+  }
+  ge->total_unused = size-2;
+  if (NULL==ge->unused) free(ge->unused);
+  ge->unused = (int *)malloc( ge->total_unused * sizeof(int) );
+  for ( node = 1 ; node < (size-1) ; node++ ) ge->unused[node-1] = curve[node];
+  free(curve);  
+
   if ( 1 > gridedgerIdealNodes( ge ) ) return NULL;
   
   for ( node = 1 ; node < (gridedgerIdealNodes( ge )-1) ; node++ ) {
 
     /* the ideal location in t for this next node */
-    if (ge != gridedgerIdealNodeT(ge, node, &t )) return NULL;
-
+    if (ge != gridedgerIdealNodeT(ge, node, &t )) {
+      ge->total_unused = 0; free(ge->unused); ge->unused=NULL;
+      return NULL;
+    }
     /* find the segment that this t value lies inside  */
-    if (ge != gridedgerSupportingSegment(ge, t, &segment )) return NULL;
+    if (ge != gridedgerSupportingSegment(ge, t, &segment )) {
+      ge->total_unused = 0; free(ge->unused); ge->unused=NULL;
+      return NULL;
+    }
     if (ge != gridedgerDiscreteSegmentAndRatio(ge, segment, 
 					       &segment_index, 
-					       &segment_ratio ) ) return NULL;
+					       &segment_ratio ) ) {
+      ge->total_unused = 0; free(ge->unused); ge->unused=NULL;
+      return NULL;
+    }
 
     /* collect the edge segments into a curve */
     size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
     curve = malloc( size * sizeof(int) );
     if (grid != gridGeomEdge( grid, gridedgerEdgeId( ge ), curve )) {
+      ge->total_unused = 0; free(ge->unused); ge->unused=NULL;
       free(curve);
       return NULL;
     }
@@ -534,6 +560,7 @@ GridEdger *gridedgerInsert(GridEdger *ge )
 
     /* return NULL if the new node was not added */
     if (EMPTY == newnode) {
+      ge->total_unused = 0; free(ge->unused); ge->unused=NULL;
       return NULL;
     }
 
