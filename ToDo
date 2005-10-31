@@ -14,7 +14,7 @@ Thesis
    + iteratively adjust desired segment length to evenly distribute error
    ? use integration of edge to guess 
 
-- Pure insertion of desired node locations into triangulation
++ Pure insertion of desired node locations into edge discretization
    - use existing nodes when posible if in desired location
       or can be nudged into location.
 
@@ -23,7 +23,10 @@ Thesis
    + xyz volume of adjacent tets
    + edge lengths
 
-- Make the interpolation of map, aux linear in xyz
+- remove orignal edge nodes after the insertion to leave only desired
+   node locations
+
+- Make the interpolation of map, aux linear in xyz (currently linear in s)
 
 - Expand number of test cases
 
