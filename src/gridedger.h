@@ -61,6 +61,7 @@ GridEdger *gridedgerDiscretize(GridEdger *, double length );
 GridEdger *gridedgerDiscretizeEvenly(GridEdger * );
 
 GridEdger *gridedgerInsert(GridEdger *);
+GridEdger *gridedgerRemoveUnused(GridEdger *);
 
 END_C_DECLORATION
 

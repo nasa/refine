@@ -1,3 +1,9 @@
+2005-11-03 17:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerRemoveUnused) to remove the unused nodes
+	stored off in gridedgerInsert with gridCollapseEdge and leave only
+	nodes int `ideal' locations.
+
 2005-11-03 16:57 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitEdgeRatio) use gridInterpolateMap2

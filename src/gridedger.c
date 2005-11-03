@@ -568,3 +568,48 @@ GridEdger *gridedgerInsert(GridEdger *ge )
 
   return ge;
 }
+
+GridEdger *gridedgerRemoveUnused(GridEdger *ge )
+{
+  int unused;
+  int node0, node1;
+  int size;
+  int *curve;
+  int i, target;
+
+  Queue *queue = NULL;
+  Grid *grid = gridedgerGrid( ge );
+
+  for ( unused = 0 ; unused < ge->total_unused ; unused++ ) {
+    node1 = ge->unused[unused];
+    
+    /* collect the edge segments into a curve */
+    size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
+    curve = malloc( size * sizeof(int) );
+    if (grid != gridGeomEdge( grid, gridedgerEdgeId( ge ), curve )) {
+      free(curve);
+      return NULL;
+    }
+    target = EMPTY;
+    for ( i = 1 ; i < (size-1) ; i++) if (node1 == curve[i]) target = i;
+    if ( EMPTY == target ) {
+      printf( "ERROR: gridedgerRemoveUnused: %s: %d: target not found\n",
+	      __FILE__, __LINE__ );
+      free(curve);
+      return NULL;
+    }
+    /* collapse to pervios node on curve, because is it known to be ideal */
+    node0 = curve[target-1];
+    if ( grid != gridCollapseEdge(grid, queue, node0, node1, 0.0 ) ) {
+      printf( "ERROR: gridedgerRemoveUnused: %s: %d: can not collapse edge\n",
+	      __FILE__, __LINE__ );
+      free(curve);
+      return NULL;
+    }
+   
+  }
+
+  ge->total_unused = 0; free(ge->unused); ge->unused=NULL;
+
+  return ge;
+}

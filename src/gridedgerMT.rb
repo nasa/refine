@@ -432,4 +432,18 @@ class TestGridEdger < Test::Unit::TestCase
   assert_equal 6, grid.nnode
  end
 
+ def test_discretize_double_edge_with_a_few_nodes_and_remove_unused
+  grid = two_edge_grid
+  ge = GridEdger.new(grid,1)
+  tol = 1.0e-12
+
+  length = 3.0
+  ge.discretize(length)
+  ge.insert
+  assert_equal 8,  grid.nnode
+  assert_equal ge, ge.removeUnused
+  assert_equal 7,  grid.nnode
+
+ end
+
 end
