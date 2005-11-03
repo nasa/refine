@@ -26,7 +26,8 @@ Thesis
 - remove orignal edge nodes after the insertion to leave only desired
    node locations
 
-- Make the split and collapse operations linear in s for map, aux
++ Make the split operations linear in s for map, aux
+
 - Make the interpolation of map, aux linear in xyz
 
 - Expand number of test cases

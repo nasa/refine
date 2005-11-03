@@ -1236,8 +1236,8 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
     xyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
-  gridSetMapMatrixToAverageOfNodes2(grid, newnode, n0, n1 );
-  gridSetAuxToAverageOfNodes2(grid, newnode, n0, n1 );
+  gridInterpolateMap2(grid, n0, n1, ratio, newnode );
+  gridInterpolateAux2(grid, n0, n1, ratio, newnode );
 
   /* insert new edges to use for projection and validity check */
   newedge0 = newedge1 = EMPTY;
