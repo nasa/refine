@@ -309,6 +309,24 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0.5, @grid.aux(0,0)
  end
 
+ def test_aux_interpolation
+  assert_nil @grid.interpolateAux2(0,1,0.75,2)
+
+  3.times { @grid.addNode(0,0,0) }
+  @grid.setNAux(2)
+  @grid.setAux(0,0,10.0)
+  @grid.setAux(1,0,20.0)
+  @grid.setAux(0,1, 5.0)
+  @grid.setAux(1,1, 7.0)
+
+  assert_equal @grid, @grid.interpolateAux2(0,1,0.75,2)
+
+  tol = 1.0e-14
+  assert_in_delta( 17.5, @grid.aux(2,0), tol )
+  assert_in_delta(  6.5, @grid.aux(2,1), tol )
+ end
+
+
  def testReplaceCell
   grid = Grid.new(8,2,0,0)
   assert_equal 0, grid.addCell(0,1,2,3)
@@ -1573,6 +1591,16 @@ class TestGrid < Test::Unit::TestCase
   assert_nil      @grid.map(0)
   assert_equal 0, @grid.addNode(0,0,0)
   assert_equal    defaultMap, @grid.map(0) 
+ end
+
+ def test_map_interpolation
+  assert_nil          @grid.interpolateMap2(0,1,0.5,2)
+  3.times { @grid.addNode(0,0,0) }
+  @grid.setMap(0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
+  @grid.setMap(1, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0)
+  assert_equal @grid, @grid.interpolateMap2(0,1,0.7,2)
+  map17 = [1.7, 1.7, 1.7, 1.7, 1.7, 1.7]
+  assert_equal map17, @grid.map(2)
  end
 
  def testCostFunctionSetting

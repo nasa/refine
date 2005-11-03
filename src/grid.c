@@ -1543,6 +1543,27 @@ Grid *gridSetAux(Grid *grid, int node, int aux, double value )
   return grid;
 }
 
+Grid *gridInterpolateAux2(Grid *grid, int node0, int node1, double ratio, 
+			  int target)
+{
+  int i;
+  int n;
+
+  if ( !gridValidNode(grid, node0) ) return NULL;
+  if ( !gridValidNode(grid, node1) ) return NULL;
+  if ( !gridValidNode(grid, target) ) return NULL;
+
+  n = grid->naux;
+
+  for (i=0;i<n;i++) {
+    grid->aux[i+n*target] = 
+      ratio*(grid->aux[i+n*node1]) + (1.0-ratio)*(grid->aux[i+n*node0]); 
+  }
+  return grid;
+}
+
+
+
 Grid *gridSetAuxToAverageOfNodes2(Grid *grid, int avgNode,
 				  int n0, int n1 )
 {
@@ -4228,6 +4249,21 @@ Grid *gridSetMap(Grid *grid, int node,
   grid->map[4+6*node] = m23;
   grid->map[5+6*node] = m33;
 
+  return grid;
+}
+
+Grid *gridInterpolateMap2(Grid *grid, int node0, int node1, double ratio, 
+			  int target)
+{
+  int i;
+  if ( !gridValidNode(grid, node0) ) return NULL;
+  if ( !gridValidNode(grid, node1) ) return NULL;
+  if ( !gridValidNode(grid, target) ) return NULL;
+
+  for (i=0;i<6;i++) {
+    grid->map[i+6*target] = 
+      ratio*(grid->map[i+6*node1]) + (1.0-ratio)*(grid->map[i+6*node0]); 
+  }
   return grid;
 }
 

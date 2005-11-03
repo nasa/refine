@@ -1,3 +1,13 @@
+2005-11-02 23:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridInterpolateAux2) will set a target node aux data
+	to a linear combination of two other nodes (to be used for edge
+	split).
+	* src/grid.c (gridInterpolateMap2) will set a target node map data
+	to a linear combination of two other nodes (to be used for edge
+	split).
+
+
 2005-10-29 23:57 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerInsert) no interface to it yet, but

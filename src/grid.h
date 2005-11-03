@@ -233,6 +233,8 @@ int gridNAux(Grid *g);
 Grid *gridSetNAux(Grid *g, int naux);
 double gridAux(Grid *g, int node, int aux);
 Grid *gridSetAux(Grid *g, int node, int aux, double value);
+Grid *gridInterpolateAux2(Grid *g, int node0, int node1, double ratio,
+			  int target);
 Grid *gridSetAuxToAverageOfNodes2(Grid *g, int avgNode,
 				  int n0, int n1 );
 Grid *gridSetAuxToAverageOfNodes3(Grid *g, int avgNode,
@@ -454,6 +456,8 @@ Grid *gridSetMap(Grid *g, int node,
 		             double m22, double m23,
 		                         double m33);
 
+Grid *gridInterpolateMap2(Grid *g, int node0, int node1, double ratio,
+			  int target);
 
 #define gridCostFunction(grid) (grid->costFunction)
 Grid *gridSetCostFunction(Grid *g, int costFunction);

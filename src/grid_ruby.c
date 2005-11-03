@@ -168,6 +168,18 @@ VALUE grid_setAux( VALUE self, VALUE node, VALUE aux, VALUE value )
   return ( grid == gridSetAux(grid,NUM2INT(node),NUM2INT(aux),NUM2DBL(value))?self:Qnil );
 }
 
+VALUE grid_interpolateAux2( VALUE self, 
+			    VALUE node0, VALUE node1, VALUE ratio, 
+			    VALUE target )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridInterpolateAux2(grid,
+				       NUM2INT(node0),
+				       NUM2INT(node1),
+				       NUM2DBL(ratio),
+				       NUM2INT(target) )?self:Qnil );
+}
+
 VALUE grid_partId( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1126,6 +1138,18 @@ VALUE grid_map( VALUE self, VALUE node )
   return rb_map;
 }
 
+VALUE grid_interpolateMap2( VALUE self, 
+			    VALUE node0, VALUE node1, VALUE ratio, 
+			    VALUE target )
+{
+  GET_GRID_FROM_SELF;
+  return ( grid == gridInterpolateMap2(grid,
+				       NUM2INT(node0),
+				       NUM2INT(node1),
+				       NUM2DBL(ratio),
+				       NUM2INT(target) )?self:Qnil );
+}
+
 VALUE grid_costFunction( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1226,6 +1250,8 @@ void Init_Grid()
   rb_define_method( cGrid, "setNAux", grid_setNAux, 1 );
   rb_define_method( cGrid, "aux", grid_aux, 2 );
   rb_define_method( cGrid, "setAux", grid_setAux, 3 );
+  rb_define_method( cGrid, "interpolateAux2", grid_interpolateAux2, 4 );
+
   rb_define_method( cGrid, "partId", grid_partId, 0 );
   rb_define_method( cGrid, "setPartId", grid_setPartId, 1 );
   rb_define_method( cGrid, "globalnnode", grid_globalnnode, 0 );
@@ -1360,6 +1386,7 @@ void Init_Grid()
 
   rb_define_method( cGrid, "setMap", grid_setMap, 7 );
   rb_define_method( cGrid, "map", grid_map, 1 );
+  rb_define_method( cGrid, "interpolateMap2", grid_interpolateMap2, 4 );
 
   rb_define_method( cGrid, "costFunction", grid_costFunction, 0 );
   rb_define_method( cGrid, "setCostFunction", grid_setCostFunction, 1 );
