@@ -23,7 +23,7 @@ Thesis
    + xyz volume of adjacent tets
    + edge lengths
 
-- remove orignal edge nodes after the insertion to leave only desired
++ remove orignal edge nodes after the insertion to leave only desired
    node locations
 
 + Make the split operations linear in s for map, aux
