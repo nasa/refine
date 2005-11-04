@@ -325,28 +325,55 @@ int main( int argc, char *argv[] )
 
   gridSetPhase(grid, phase);
   if ( -1 == phase ) {
-    int edgeId;
+    int edge, edgeId;
+    GridEdger **ge;
+
+    ge = (GridEdger **)malloc( gridNGeomEdge(grid) * sizeof(GridEdger *) );
     gridSetMinInsertCost( grid, -10.0 );
     gridConstrainSurfaceNode(grid);
-    GridEdger *ge;
-    for ( edgeId = 1 ; edgeId <= gridNGeomEdge(grid) ; edgeId++ ) {
-      ge = gridedgerCreate(grid,edgeId);
-      if ( ge != gridedgerDiscretizeEvenly(ge) ) {
+
+    if (FALSE) {
+      gridWriteTecplotSurfaceGeom(grid,"le_orig.tec");
+      gridHistogram(grid, "histogram.m");
+      printf("Done.\n");
+      return 0;
+    }
+
+    for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
+      edgeId = edge+1;
+      ge[edge] = gridedgerCreate(grid,edgeId);
+      if ( ge[edge] != gridedgerDiscretizeEvenly(ge[edge]) ) {
 	printf("gridedgerDiscretizeEvenly failed for edge %d\n",edgeId);
 	return 1;
       }
-      if ( ge != gridedgerInsert(ge) ) {
+      if ( ge[edge] != gridedgerInsert(ge[edge]) ) {
 	printf("gridedgerInsert failed for edge %d\n",edgeId);
 	return 1;
       }
-      if ( ge != gridedgerRemoveUnused(ge) ) {
+      printf("\n");
+    }
+
+    if (FALSE) {
+      gridWriteTecplotSurfaceGeom(grid,"le_insert.tec");
+      gridHistogram(grid, "histogram.m");
+      printf("Done.\n");
+      return 0;
+    }
+
+    for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
+      edgeId = edge+1;
+      if ( ge[edge] != gridedgerRemoveUnused(ge[edge]) ) {
 	printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
 	return 1;
       }
-      printf("\n");
-      gridedgerFree(ge);
+      gridedgerFree(ge[edge]);
     }
-    gridHistogram(grid,NULL);
+
+    free(ge);
+
+    gridWriteTecplotSurfaceGeom(grid,"le_remove.tec");
+    gridHistogram(grid, "histogram.m");
+
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
     printf("Done.\n");
