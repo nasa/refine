@@ -12,7 +12,7 @@ Thesis
    + use binary search to find next s to have desired length
       - Newton-Rapson would be faster
    + iteratively adjust desired segment length to evenly distribute error
-   ? use integration of edge to guess 
+   ? use integration of edge to guess desired segment length
 
 + Pure insertion of desired node locations into edge discretization
    - use existing nodes when posible if in desired location
