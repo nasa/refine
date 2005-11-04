@@ -339,6 +339,10 @@ int main( int argc, char *argv[] )
 	printf("gridedgerInsert failed for edge %d\n",edgeId);
 	return 1;
       }
+      if ( ge != gridedgerRemoveUnused(ge) ) {
+	printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
+	return 1;
+      }
       printf("\n");
       gridedgerFree(ge);
     }
