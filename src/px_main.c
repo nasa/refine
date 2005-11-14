@@ -38,6 +38,14 @@
 
 #define STATUS DUMP_TEC PRINT_STATUS
 
+/* new format
+ * order
+ * number of edges
+ * edge_n0 edge_n1 x y z x y z ...
+ * number of triangle points
+ * n0 n1 n2 b0 b1 b2 x y z
+ */
+
 Grid *gridDumpBentEdgesForPX(Grid *grid, char *filename)
 {
   int conn, total;
