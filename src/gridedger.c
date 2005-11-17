@@ -476,9 +476,11 @@ GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
 
     gridedgerLengthBetween( ge, s0, s1, &last_length );
     
+    /*
     printf("edge%4d nodes%4d len %f %f\n",
 	   gridedgerEdgeId( ge ), last_size, length, last_length);
- 
+    */
+
     if (ABS(last_length-length) < 0.01) break;
 
     w = 0.5;
@@ -535,9 +537,81 @@ GridEdger *gridedgerDiscretizeOnce(GridEdger *ge )
     gridedgerSupportingSegment(ge, t0, &s0 );
     gridedgerSupportingSegment(ge, t1, &s1 );
     gridedgerLengthBetween( ge, s0, s1, &length );
+
     printf("edge%4d node%4d len %f ratio %f\n",
 	   gridedgerEdgeId( ge ), node, length, ratio);
+
   }
+  return ge;
+}
+
+GridEdger *gridedgerDiscretizeSupport(GridEdger *ge, int subintervals )
+{
+  int segments, subsegments;
+  double *s, *l;
+  int parent;
+  int node;
+  double s0, s1, delta_length;
+  int target_size;
+  double target_delta_length;
+  double target_length;
+  double target_s;
+
+  Grid *grid = gridedgerGrid( ge );
+
+  ge->ideal_nodes = 0;
+  if ( NULL != ge->t ) {
+    free( ge->t );
+    ge->t = NULL;
+  }
+
+  segments = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) ) - 1;
+
+  subsegments = segments * subintervals;
+
+  s = (double *)malloc( (subsegments+1) * sizeof(double) );  
+  l = (double *)malloc( (subsegments+1) * sizeof(double) );
+
+  for ( node = 0 ; node <= subsegments ; node++ ) {
+    parent = node/subintervals;
+    s[node] = ((double)parent) + 
+      ((double)(node-parent*subintervals)) / ((double)subintervals);
+  }
+  l[0] = 0.0;
+  for ( node = 1 ; node <= subsegments ; node++ ) {
+    s0 = s[node-1];
+    s1 = s[node];
+    gridedgerLengthBetween( ge, s0, s1, &delta_length );
+    l[node] = l[node-1] + delta_length;
+  }
+
+  for ( node = 0 ; node <= subsegments ; node++ ) {
+    printf("edge%4d support %f total length %f\n",
+	   gridedgerEdgeId( ge ), s[node], l[node]);
+  }
+
+  target_size = ((int)l[subsegments])+1;
+  target_delta_length = l[subsegments]/((double)target_size) ;
+    printf("target size %f length %f\n",
+	   target_size, target_delta_length);
+
+  ge->t = (double *)malloc( (target_size+1) * sizeof(double) );
+
+  gridedgerSegmentT( ge,              0.0, &(ge->t[0]) );
+  gridedgerSegmentT( ge, (double)segments, &(ge->t[target_size]) );
+
+  s0 = 0.0;
+  for ( node = 1 ; node < target_size ; node++ ) {
+    target_length = target_delta_length * ((double)node);
+    target_s = 0.0;
+    // target_s = f(last_s,target_length);
+    gridedgerSegmentT( ge, target_s, &(ge->t[node]) );
+  }
+
+
+  free(s);
+  free(l);
+
   return ge;
 }
 

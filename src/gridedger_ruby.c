@@ -127,6 +127,12 @@ VALUE gridedger_discretizeOnce( VALUE self )
   return (ge == gridedgerDiscretizeOnce( ge )?self:Qnil);
 }
 
+VALUE gridedger_discretizeSupport( VALUE self, VALUE rb_subintervals )
+{
+  GET_GE_FROM_SELF;
+  return (ge == gridedgerDiscretizeSupport( ge, NUM2INT( rb_subintervals ) )?self:Qnil);
+}
+
 VALUE gridedger_insert( VALUE self )
 {
   GET_GE_FROM_SELF;
@@ -160,6 +166,8 @@ void Init_GridEdger()
 		    gridedger_discretizeEvenly, 0 );
   rb_define_method( cGridEdger, "discretizeOnce", 
 		    gridedger_discretizeOnce, 0 );
+  rb_define_method( cGridEdger, "discretizeSupport", 
+		    gridedger_discretizeSupport, 1 );
   rb_define_method( cGridEdger, "insert", gridedger_insert, 0 );
   rb_define_method( cGridEdger, "removeUnused", gridedger_removeUnused, 0 );
 }

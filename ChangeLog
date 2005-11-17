@@ -1,3 +1,8 @@
+2005-11-17 12:21 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeSupport) to construct
+	aans use a refined support edge durring ideal discretization.
+
 2005-11-16 21:41 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) --phase -1: replace 

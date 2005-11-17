@@ -60,6 +60,7 @@ GridEdger *gridedgerLengthToS(GridEdger *, double segment, double length,
 GridEdger *gridedgerDiscretize(GridEdger *, double length );
 GridEdger *gridedgerDiscretizeEvenly(GridEdger * );
 GridEdger *gridedgerDiscretizeOnce(GridEdger * );
+GridEdger *gridedgerDiscretizeSupport(GridEdger *, int subintervals );
 
 GridEdger *gridedgerInsert(GridEdger *);
 GridEdger *gridedgerRemoveUnused(GridEdger *);
