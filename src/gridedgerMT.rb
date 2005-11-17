@@ -446,4 +446,11 @@ class TestGridEdger < Test::Unit::TestCase
 
  end
 
+ def test_discretize_double_edge_in_one_shot
+  ge = GridEdger.new(two_edge_grid,1)
+  tol = 1.0e-12
+
+  assert_equal ge, ge.discretizeOnce
+ end
+
 end

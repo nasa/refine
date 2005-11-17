@@ -1,3 +1,10 @@
+2005-11-03 17:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeOnce) to create the
+	`ideal' locations locations in one step and avoid iterative
+	shooting. I just found a bug I'm fixing, but I wanted to
+	commit before hacking it apart.
+
 2005-11-04 10:19 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) --phase -1: made an array of GridEdger
