@@ -329,7 +329,7 @@ int main( int argc, char *argv[] )
     GridEdger **ge;
 
     ge = (GridEdger **)malloc( gridNGeomEdge(grid) * sizeof(GridEdger *) );
-    gridSetMinInsertCost( grid, -10.0 );
+    gridSetMinInsertCost( grid, -0.5 );
     gridConstrainSurfaceNode(grid);
 
     if (FALSE) {

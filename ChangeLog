@@ -1,3 +1,11 @@
+2005-11-17 17:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerRemoveUnused) try either node to
+	collapse unused edges. don't return null if unable to collapse.
+	keep remaining unused. should try best?
+	* src/unit_main.c (main) --phase -1: limit cost to prohibit
+	invalid elements.
+
 2005-11-17 12:21 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerDiscretizeSupport) to construct

@@ -705,9 +705,12 @@ GridEdger *gridedgerRemoveUnused(GridEdger *ge )
   Queue *queue = NULL;
   Grid *grid = gridedgerGrid( ge );
 
-  for ( unused = 0 ; unused < ge->total_unused ; unused++ ) {
+  unused = 0;
+  while ( unused < ge->total_unused ) {
     node1 = ge->unused[unused];
     
+    /* I should look at connected edges instead of curve for efficiency */
+
     /* collect the edge segments into a curve */
     size = gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) );
     curve = malloc( size * sizeof(int) );
@@ -723,18 +726,30 @@ GridEdger *gridedgerRemoveUnused(GridEdger *ge )
       free(curve);
       return NULL;
     }
-    /* collapse to pervios node on curve, because is it known to be ideal */
+    /* collapse to previous node on curve */
     node0 = curve[target-1];
     if ( grid != gridCollapseEdge(grid, queue, node0, node1, 0.0 ) ) {
-      printf( "ERROR: gridedgerRemoveUnused: %s: %d: can not collapse edge\n",
-	      __FILE__, __LINE__ );
-      free(curve);
-      return NULL;
+      node0 = curve[target+1];
+      if ( grid != gridCollapseEdge(grid, queue, node0, node1, 0.0 ) ) {
+	unused++;
+	free(curve);
+	continue;
+      }
     }
-   
+    free(curve);
+
+    ge->total_unused--;
+    for ( i = 0 ; i < ge->total_unused ; i++) 
+      ge->unused[i] = ge->unused[i+1];
   }
 
-  ge->total_unused = 0; free(ge->unused); ge->unused=NULL;
+  if ( ge->total_unused == 0 ) {
+    free(ge->unused); ge->unused=NULL;
+  }else{
+    ge->unused = (int *)realloc( ge->unused, ge->total_unused * sizeof(int) );
+    printf("edge%4d unused remaining\n",
+	   gridedgerEdgeId( ge ), ge->total_unused );
+  }
 
   return ge;
 }
