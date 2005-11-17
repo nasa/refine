@@ -342,8 +342,8 @@ int main( int argc, char *argv[] )
     for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
       edgeId = edge+1;
       ge[edge] = gridedgerCreate(grid,edgeId);
-      if ( ge[edge] != gridedgerDiscretizeEvenly(ge[edge]) ) {
-	printf("gridedgerDiscretizeEvenly failed for edge %d\n",edgeId);
+      if ( ge[edge] != gridedgerDiscretizeOnce(ge[edge]) ) {
+	printf("gridedgerDiscretizeOnce failed for edge %d\n",edgeId);
 	return 1;
       }
       if ( ge[edge] != gridedgerInsert(ge[edge]) ) {

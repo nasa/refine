@@ -1,4 +1,9 @@
-2005-11-16 21:23 Mike Park  <mike.park@nasa.gov>
+2005-11-16 21:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: replace 
+	gridedgerDiscretizeEvenly with gridedgerDiscretizeOnce.
+
+2005-11-16 21:32 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerDiscretizeOnce) ready to test.
 
