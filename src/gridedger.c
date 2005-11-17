@@ -515,7 +515,6 @@ GridEdger *gridedgerDiscretizeOnce(GridEdger *ge )
   gridedgerLengthBetween( ge, s0, s1, &last_length );
     
   ratio = (((double)(size-2))*length+last_length) / ((double)(size-1));
-  printf("ratio %f\n", ratio);
 
   orig = (double *)malloc( gridedgerIdealNodes( ge ) * sizeof(double) );  
   for ( node = 0 ; node < gridedgerIdealNodes( ge ) ; node++ )
