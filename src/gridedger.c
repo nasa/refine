@@ -505,8 +505,6 @@ GridEdger *gridedgerDiscretizeOnce(GridEdger *ge )
   Grid *grid = gridedgerGrid( ge );
 
   length = 1.0;
-
-
   if (ge != gridedgerDiscretize( ge, length ) ) return NULL;
 
   size = gridedgerIdealNodes( ge );
@@ -523,34 +521,23 @@ GridEdger *gridedgerDiscretizeOnce(GridEdger *ge )
   for ( node = 0 ; node < gridedgerIdealNodes( ge ) ; node++ )
     gridedgerIdealNodeT( ge, node, &(orig[node]) );
   
-  gridedgerSegmentT(ge, 0.0, &t0 );
-  t1 = orig[0];
-  ge->t[0] = (1.0-ratio)*t0 + ratio*t1;
-  printf("t %f %f %f\n", t0, ge->t[0], t1);
-
   shrink = 1.0-ratio;
-  for ( node = 1 ; node < gridedgerIdealNodes( ge ) ; node++ ) {
+  for ( node = 1 ; node < (gridedgerIdealNodes( ge )-1) ; node++ ) {
     t0 = orig[node-1];
     t1 = orig[node];
-    ratio = 1.0-(shrink*(((double)node)+1.0));
+    ratio = 1.0-(shrink*((double)node));
     ge->t[node] = (1.0-ratio)*t0 + ratio*t1;
   }
   free(orig);
-
-  s0 = 0.0;
-  gridedgerIdealNodeT( ge, 0, &t1 );
-  gridedgerSupportingSegment(ge, t1, &s1 );
-  gridedgerLengthBetween( ge, s0, s1, &length );
-  printf("edge%4d node%4d len %f\n",
-	 gridedgerEdgeId( ge ), 0, length);
+  ratio = 1.0-shrink;
   for ( node = 1 ; node < gridedgerIdealNodes( ge ) ; node++ ) {
     gridedgerIdealNodeT( ge, node-1, &t0 );
     gridedgerIdealNodeT( ge, node, &t1 );
     gridedgerSupportingSegment(ge, t0, &s0 );
     gridedgerSupportingSegment(ge, t1, &s1 );
     gridedgerLengthBetween( ge, s0, s1, &length );
-    printf("edge%4d node%4d len %f\n",
-	   gridedgerEdgeId( ge ), node, length);
+    printf("edge%4d node%4d len %f ratio %f\n",
+	   gridedgerEdgeId( ge ), node, length, ratio);
   }
   return ge;
 }

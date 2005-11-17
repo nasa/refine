@@ -1,4 +1,8 @@
-2005-11-03 17:30 Mike Park  <mike.park@nasa.gov>
+2005-11-16 21:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeOnce) ready to test.
+
+2005-11-16 21:29 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerDiscretizeOnce) to create the
 	`ideal' locations locations in one step and avoid iterative
