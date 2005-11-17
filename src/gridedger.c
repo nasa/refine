@@ -60,23 +60,31 @@ void gridedgerFree(GridEdger *ge)
 }
 
 void gridedgerPack(void *voidGridEdger, 
-		  int nnode, int maxnode, int *nodeo2n,
-		  int ncell, int maxcell, int *cello2n,
-		  int nface, int maxface, int *faceo2n,
-		  int nedge, int maxedge, int *edgeo2n)
+		   int nnode, int maxnode, int *nodeo2n,
+		   int ncell, int maxcell, int *cello2n,
+		   int nface, int maxface, int *faceo2n,
+		   int nedge, int maxedge, int *edgeo2n)
 {
-  //GridEdger *ge = (GridEdger *)voidGridEdger;
+  int i;
+  GridEdger *ge = (GridEdger *)voidGridEdger;
+  for ( i = 0 ; i < gridedgerUnusedNodes(ge) ; i++ ) {
+    ge->unused[i] = nodeo2n[ge->unused[i]];
+  }
 }
 
 void gridedgerSortNode(void *voidGridEdger, int maxnode, int *o2n)
 {
-  //GridEdger *ge = (GridEdger *)voidGridEdger;
+  int i;
+  GridEdger *ge = (GridEdger *)voidGridEdger;
+  for ( i = 0 ; i < gridedgerUnusedNodes(ge) ; i++ ) {
+    ge->unused[i] = o2n[ge->unused[i]];
+  }
 }
 
 void gridedgerReallocator(void *voidGridEdger, int reallocType, 
-			 int lastSize, int newSize)
+			  int lastSize, int newSize)
 {
-  //GridEdger *ge = (GridEdger *)voidGridEdger;
+
 }
 
 void gridedgerGridHasBeenFreed(void *voidGridEdger )
@@ -101,6 +109,18 @@ GridEdger *gridedgerIdealNodeT(GridEdger *ge, int node, double *t )
   if ( 0 > node || gridedgerIdealNodes(ge) <= node ) return NULL;
   *t = ge->t[node];
   return ge;
+}
+
+int gridedgerUnusedNodes(GridEdger *ge)
+{
+  return ge->total_unused;
+}
+
+int gridedgerUnusedNode(GridEdger *ge, int index )
+{
+  if (NULL == ge->unused) return EMPTY;
+  if ( 0 > index || gridedgerUnusedNodes(ge) <= index ) return EMPTY;
+  return ge->unused[index];
 }
 
 GridEdger *gridedgerSupportingSegment(GridEdger *ge, 
@@ -702,6 +722,8 @@ GridEdger *gridedgerRemoveUnused(GridEdger *ge )
   int *curve;
   int i, target;
 
+  GridBool removed;
+
   Queue *queue = NULL;
   Grid *grid = gridedgerGrid( ge );
 
@@ -726,28 +748,34 @@ GridEdger *gridedgerRemoveUnused(GridEdger *ge )
       free(curve);
       return NULL;
     }
-    /* collapse to previous node on curve */
+
+    /* collapse to another node on curve */
+    removed = FALSE;
+
     node0 = curve[target-1];
-    if ( grid != gridCollapseEdge(grid, queue, node0, node1, 0.0 ) ) {
+    removed = ( grid == gridCollapseEdge(grid, queue, node0, node1, 0.0 ) );
+
+    if (!removed) { 
       node0 = curve[target+1];
-      if ( grid != gridCollapseEdge(grid, queue, node0, node1, 0.0 ) ) {
-	unused++;
-	free(curve);
-	continue;
-      }
+      removed = ( grid == gridCollapseEdge(grid, queue, node0, node1, 0.0 ) );
     }
+
     free(curve);
 
-    ge->total_unused--;
-    for ( i = 0 ; i < ge->total_unused ; i++) 
-      ge->unused[i] = ge->unused[i+1];
+    if (removed) { 
+      ge->total_unused--;
+      for ( i = unused ; i < ge->total_unused ; i++) 
+	ge->unused[i] = ge->unused[i+1];
+    }else{
+      unused++;
+    }
   }
 
   if ( ge->total_unused == 0 ) {
     free(ge->unused); ge->unused=NULL;
   }else{
     ge->unused = (int *)realloc( ge->unused, ge->total_unused * sizeof(int) );
-    printf("edge%4d unused remaining\n",
+    printf("edge%4d unused remaining %d\n",
 	   gridedgerEdgeId( ge ), ge->total_unused );
   }
 

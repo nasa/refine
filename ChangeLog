@@ -1,3 +1,12 @@
+2005-11-17 18:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerUnusedNodes,gridedgerUnusedNode) 
+	created to expose remaining unused nodes for post processing.
+	* src/gridedger.c (gridedgerPack,gridedgerSortNode) implemented
+	for unused nodes to allow renumbering (for tecplot, GridEx, etc.)
+	* src/gridedger.c (gridedgerRemoveUnused) fixed bug that saved
+	unused nodes collapsed away instead of only remaining nodes.
+	
 2005-11-17 17:29 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerRemoveUnused) try either node to

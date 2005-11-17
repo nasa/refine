@@ -366,6 +366,12 @@ int main( int argc, char *argv[] )
 	printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
 	return 1;
       }
+      for ( i = 0 ; i < gridedgerUnusedNodes(ge[edge]) ; i++ ) {
+	double xyz[3];
+	gridNodeXYZ(grid, gridedgerUnusedNode(ge[edge],i), xyz);
+	printf("edge%4d xyz %f %f %f\n",
+	       edgeId, xyz[0], xyz[1], xyz[2] );
+      }
       gridedgerFree(ge[edge]);
     }
 

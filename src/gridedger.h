@@ -47,6 +47,9 @@ int gridedgerEdgeId(GridEdger *);
 int gridedgerIdealNodes(GridEdger *);
 GridEdger *gridedgerIdealNodeT(GridEdger *, int node, double *t );
 
+int gridedgerUnusedNodes(GridEdger *);
+int gridedgerUnusedNode(GridEdger *, int index );
+
 GridEdger *gridedgerSupportingSegment(GridEdger *, double t, double *segment );
 
 GridEdger *gridedgerDiscreteSegmentAndRatio(GridEdger *, double segment, 
