@@ -46,9 +46,10 @@
  * n0 n1 n2 b0 b1 b2 x y z
  */
 
-Grid *gridDumpBentEdgesForPX(Grid *grid, char *filename)
+Grid *gridDumpBentEdgesForPX(Grid *grid, int order, char *filename)
 {
   int conn, total;
+  int midnode;
   int nodes[2];
   double xyz[3];
   FILE *file;
@@ -61,6 +62,7 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, char *filename)
       total++;
     }
   }
+  total = total * (order-1);
 
   printf("%d edges bent of %d total edges.",total,gridNConn(grid));
   file = fopen(filename,"w");
@@ -70,10 +72,12 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, char *filename)
   for(conn=0;conn<gridNConn(grid);conn++) {
     gridConn2Node(grid,conn,nodes);
     if (0 != gridParentGeometry(grid, nodes[0], nodes[1]) ) {
-      total++;
-      gridCurvedEdgeMidpoint(grid,nodes[0], nodes[1], xyz);
-      fprintf(file,"%10d%10d%24.15e%24.15e%24.15e\n",
-	      nodes[0]+1,nodes[1]+1,xyz[0],xyz[1],xyz[2]);
+      for (midnode=0;midnode<(order-1);midnode++) {
+	total++;
+	gridCurvedEdgeMidpoint(grid,nodes[0], nodes[1], xyz);
+	fprintf(file,"%10d%10d%24.15e%24.15e%24.15e\n",
+		nodes[0]+1,nodes[1]+1,xyz[0],xyz[1],xyz[2]);
+      }
     }
   }
   fclose(file);
@@ -81,10 +85,6 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, char *filename)
   gridEraseConn(grid);
   return grid;
 }
-
-
-
-
 
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
@@ -254,7 +254,7 @@ int main( int argc, char *argv[] )
 
     sprintf(filename,"%s.bent", outputProject );
     printf("dumping curved Tetrahedral sides to %s\n",filename);
-    gridDumpBentEdgesForPX(grid,filename);
+    gridDumpBentEdgesForPX(grid,2,filename);
   }
   printf("Done.\n");
   return 0;
