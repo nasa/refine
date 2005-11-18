@@ -717,7 +717,8 @@ GridEdger *gridedgerInsert(GridEdger *ge )
 GridEdger *gridedgerRemoveUnused(GridEdger *ge )
 {
   int unused;
-  int node0, node1;
+  int nodeA, nodeB, node1;
+  double current_cost, cost1, costA, costB;
   int size;
   int *curve;
   int i, target;
@@ -748,19 +749,36 @@ GridEdger *gridedgerRemoveUnused(GridEdger *ge )
       free(curve);
       return NULL;
     }
+    nodeA = curve[target-1];
+    nodeB = curve[target+1];
+    free(curve);
 
     /* collapse to another node on curve */
-    removed = FALSE;
-
-    node0 = curve[target-1];
-    removed = ( grid == gridCollapseEdge(grid, queue, node0, node1, 0.0 ) );
-
-    if (!removed) { 
-      node0 = curve[target+1];
-      removed = ( grid == gridCollapseEdge(grid, queue, node0, node1, 0.0 ) );
+    if (grid!=gridCollapseCost(grid, nodeA, node1, 
+			       &current_cost, &costA, &cost1)) {
+      printf( "ERROR: gridedgerRemoveUnused: %s: %d: gridCollapseCost NULL\n",
+	      __FILE__, __LINE__ );
+      return NULL;
+    }
+    if (grid!=gridCollapseCost(grid, nodeB, node1, 
+			       &current_cost, &costB, &cost1)) {
+      printf( "ERROR: gridedgerRemoveUnused: %s: %d: gridCollapseCost NULL\n",
+	      __FILE__, __LINE__ );
+      return NULL;
     }
 
-    free(curve);
+    removed = FALSE;
+    if (costA>costB) {
+      removed = ( grid==gridCollapseEdge(grid, queue, nodeA, node1, 0.0 ) );
+      if (!removed) { 
+	removed = ( grid==gridCollapseEdge(grid, queue, nodeB, node1, 0.0 ) );
+      }
+    }else{
+      removed = ( grid==gridCollapseEdge(grid, queue, nodeB, node1, 0.0 ) );
+      if (!removed) { 
+	removed = ( grid==gridCollapseEdge(grid, queue, nodeA, node1, 0.0 ) );
+      }
+    }
 
     if (removed) { 
       ge->total_unused--;

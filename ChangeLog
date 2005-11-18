@@ -1,3 +1,8 @@
+2005-11-18  9:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerRemoveUnused) choose neighboring
+	node with best cost for collapse selection.
+
 2005-11-17 18:23 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerUnusedNodes,gridedgerUnusedNode) 
