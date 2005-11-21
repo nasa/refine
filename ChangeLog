@@ -1,3 +1,8 @@
+2005-11-20 20:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: added a final sweep to remove
+	unused nodes at any cost and untangle.
+
 2005-11-18  9:04 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridedger.c (gridedgerRemoveUnused) choose neighboring

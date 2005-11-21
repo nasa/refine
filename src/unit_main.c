@@ -372,8 +372,18 @@ int main( int argc, char *argv[] )
 	printf("edge%4d xyz %f %f %f\n",
 	       edgeId, xyz[0], xyz[1], xyz[2] );
       }
-      gridedgerFree(ge[edge]);
     }
+
+    gridSetMinInsertCost( grid, -10.0 );
+    for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
+      edgeId = edge+1;
+      if ( ge[edge] != gridedgerRemoveUnused(ge[edge]) ) {
+	printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
+	return 1;
+      }
+      gridUntangle(grid);
+      gridedgerFree(ge[edge]);
+   }
 
     free(ge);
 
