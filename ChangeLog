@@ -1,3 +1,10 @@
+2005-11-22 10:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/px_main.c (main) Only optimize volume for all orders to have
+	consistant grids for convergence studies.
+	* src/px_main.c (gridDumpBentEdgesForPX) to allow geometry up to
+	and including 5th order.
+
 2005-11-21 19:47 Mike Park  <mike.park@nasa.gov>
 
 	* src/px_main.c (main) added new command line argument -q to set

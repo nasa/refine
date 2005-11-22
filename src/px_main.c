@@ -107,8 +107,16 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, int order, char *filename)
   gridEraseConn(grid);
 
   if (order>2) {
-    tri_points = 1;
-    if (order>4) tri_points = 3;
+    switch (order) {
+    case 3: tri_points = 1; break;
+    case 4: tri_points = 3; break;
+    case 5: tri_points = 6; break;
+    default:
+      printf("ERROR: gridDumpBentEdgesForPX: %s: %d: order %d %s\n",
+	     __FILE__, __LINE__, order, "not implemented yet" );
+      return NULL;
+      break;
+    }
     fprintf(file,"%10d face points in 1-base numbering\n",
 	    tri_points*gridNFace(grid));
     for (face = 0; face < gridMaxFace(grid) ; face++) {
@@ -148,6 +156,63 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, int order, char *filename)
 	  fprintf(file,"\n");
 	  b2 = 0.5;
 	  b0 = b1 = 0.25;
+	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
+	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
+	  gridEvaluateOnFace(grid, parent, uv, xyz );
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
+	  fprintf(file,"\n");
+	  break;
+	case 5:
+	  b0 = 0.6;
+	  b1 = b2 = 0.2;
+	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
+	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
+	  gridEvaluateOnFace(grid, parent, uv, xyz );
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
+	  fprintf(file,"\n");
+	  b1 = 0.6;
+	  b0 = b2 = 0.2;
+	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
+	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
+	  gridEvaluateOnFace(grid, parent, uv, xyz );
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
+	  fprintf(file,"\n");
+	  b2 = 0.6;
+	  b0 = b1 = 0.2;
+	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
+	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
+	  gridEvaluateOnFace(grid, parent, uv, xyz );
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
+	  fprintf(file,"\n");
+
+	  b0 = 0.2;
+	  b1 = b2 = 0.4;
+	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
+	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
+	  gridEvaluateOnFace(grid, parent, uv, xyz );
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
+	  fprintf(file,"\n");
+	  b1 = 0.2;
+	  b0 = b2 = 0.4;
+	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
+	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
+	  gridEvaluateOnFace(grid, parent, uv, xyz );
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
+	  fprintf(file,"\n");
+	  b2 = 0.2;
+	  b0 = b1 = 0.4;
 	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
 	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
 	  gridEvaluateOnFace(grid, parent, uv, xyz );
@@ -325,7 +390,7 @@ int main( int argc, char *argv[] )
   }else{
     // gridJacVolRatio(grid);
     STATUS;
-    if (order < 3) {
+    if (FALSE) {
       printf("edge swapping grid...\n");gridSwap(grid,-1.0);
       STATUS;
       printf("node smoothing grid...\n");gridSmooth(grid,-1.0,-1.0);
