@@ -57,6 +57,7 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, int order, char *filename)
   double t, t0, t1;
   double s, b0, b1, b2;
   int face;
+  int tri_points;
   FILE *file;
 
   gridCreateConn(grid);
@@ -106,10 +107,12 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, int order, char *filename)
   gridEraseConn(grid);
 
   if (order>2) {
-    fprintf(file,"%10d faces in 1-base numbering\n",gridNFace(grid));
+    tri_points = 1;
+    if (order>4) tri_points = 3;
+    fprintf(file,"%10d face points in 1-base numbering\n",
+	    tri_points*gridNFace(grid));
     for (face = 0; face < gridMaxFace(grid) ; face++) {
       if (grid == gridFace(grid, face, nodes, &parent)) {
-	fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
 	gridNodeUV(grid, nodes[0], parent, uv0);
 	gridNodeUV(grid, nodes[1], parent, uv1);
 	gridNodeUV(grid, nodes[2], parent, uv2);
@@ -119,7 +122,9 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, int order, char *filename)
 	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
 	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
 	  gridEvaluateOnFace(grid, parent, uv, xyz );
-	  fprintf(file,"%24.15e%24.15e%24.15e",xyz[0],xyz[1],xyz[2]);
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
 	  fprintf(file,"\n");
 	  break;
 	case 4:
@@ -128,19 +133,27 @@ Grid *gridDumpBentEdgesForPX(Grid *grid, int order, char *filename)
 	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
 	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
 	  gridEvaluateOnFace(grid, parent, uv, xyz );
-	  fprintf(file,"%24.15e%24.15e%24.15e",xyz[0],xyz[1],xyz[2]);
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
+	  fprintf(file,"\n");
 	  b1 = 0.5;
 	  b0 = b2 = 0.25;
 	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
 	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
 	  gridEvaluateOnFace(grid, parent, uv, xyz );
-	  fprintf(file,"%24.15e%24.15e%24.15e",xyz[0],xyz[1],xyz[2]);
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
+	  fprintf(file,"\n");
 	  b2 = 0.5;
 	  b0 = b1 = 0.25;
 	  uv[0] = b0*uv0[0] + b1*uv1[0] + b2*uv2[0];
 	  uv[1] = b0*uv0[1] + b1*uv1[1] + b2*uv2[1];
 	  gridEvaluateOnFace(grid, parent, uv, xyz );
-	  fprintf(file,"%24.15e%24.15e%24.15e",xyz[0],xyz[1],xyz[2]);
+	  fprintf(file,"%10d%10d%10d",nodes[0]+1,nodes[1]+1,nodes[2]+1);
+	  fprintf(file,"%18.15f%18.15f%18.15f%24.15e%24.15e%24.15e",
+		  b0, b1, b2, xyz[0], xyz[1], xyz[2]);
 	  fprintf(file,"\n");
 	  break;
 	default:
