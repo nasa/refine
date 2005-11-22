@@ -1,3 +1,10 @@
+2005-11-21 19:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/px_main.c (main) added new command line argument -q to set
+	the geometry order. Only optimize volume if order > 2.
+	* src/px_main.c (gridDumpBentEdgesForPX) to allow geometry up to
+	and including 4th order.
+
 2005-11-20 20:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) --phase -1: added a final sweep to remove
