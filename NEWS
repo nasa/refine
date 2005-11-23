@@ -2,6 +2,24 @@
 
 Works with FUN3D Version(s): **SomeFUN3DVersion**
 
+Tue Nov 22, 2005: Released Refine 1.2.9
+
+** internal release ** 
+
+Tried inserting boundary surface directly into grid to split domain
+into interior and exterior portions. (The exterior is discarded.) This
+line of resreach was discontuied after complexities with curved
+boundaries overwhelmed attempts.
+
+For curvilinear grids, started a main driver to make quadradic,
+meshes. Work extend to high-order still ongoing.
+
+Added a sorted priority to address worst elements first durring
+adpation (nicknamed a plan).
+
+Started a Phased approch to adaptation, where the first phase is
+modify CAD edges only. A direct approach is tried with gridedger.
+
 Thu Jul 28, 2005: Released Refine 1.2.8
 
 ** internal release ** 
