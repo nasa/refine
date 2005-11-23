@@ -52,6 +52,9 @@ struct Grid {
   int naux;
   double *aux;
 
+  Grid *child;
+  Grid *parent;
+
   int *nodeGlobal;
   int *part;
   int nsorted;
@@ -499,6 +502,8 @@ Grid *gridSetPhase(Grid *g, int phase);
 #define gridEDGE_PHASE (1)
 #define gridFACE_PHASE (2)
 #define gridVOL_PHASE  (3)
+
+Grid *gridCacheCurrentGridAndMap(Grid *g);
 
 END_C_DECLORATION
 

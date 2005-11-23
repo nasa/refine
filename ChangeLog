@@ -1,4 +1,11 @@
-2005-11-22 20:55 Mike Park  <mike.park@nasa.gov>
+2005-11-22 22:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImport,gridFree) initialize parent and child to
+	NULL and free.
+	* src/grid.c (gridCacheCurrentGridAndMap) started (not complete)
+	method to save off current grid and matric.
+
+2005-11-22 22:55 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.9 Release. ** internal release ** Tagging to start
 	work on a keeping original mesh around to interpolate metric.

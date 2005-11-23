@@ -39,6 +39,9 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid = (Grid *)malloc(sizeof(Grid));
 
+  grid->parent = NULL;
+  grid->child  = NULL;
+
   grid->maxnode = MAX(maxnode,1);
   grid->nnode   = nnode;
   grid->maxcell = MAX(maxcell,1);
@@ -577,6 +580,7 @@ void gridFree(Grid *grid)
   free(grid->frozen);
   free(grid->map);
   free(grid->xyz);
+  if (NULL != grid->child) gridFree(grid->child);
   free(grid);
 }
 
@@ -4519,5 +4523,35 @@ int gridPhase(Grid *grid){
 
 Grid *gridSetPhase(Grid *grid, int phase){
   grid->phase = phase;
+  return grid;
+}
+
+Grid *gridCacheCurrentGridAndMap(Grid *grid){
+  Grid *child;
+  int node;
+  double xyz[3];
+  int cell;
+  int nodes[4];
+
+  if (grid != gridPack(grid)) {
+    printf("%s: %d: gridCacheCurrentGridAndMap: gridPack failed.\n",
+	   __FILE__, __LINE__ );
+    return NULL;
+  }
+
+  grid->child = gridCreate( gridNNode(grid), gridNCell(grid),
+			    gridNFace(grid), gridNEdge(grid) );
+  child = grid->child;
+
+  for ( node = 0 ; node < gridNNode(grid) ; node++ ) {
+    gridNodeXYZ( grid,  node, xyz );
+    gridAddNode( child, xyz[0], xyz[1], xyz[2] );
+  }
+
+  for ( cell = 0 ; cell < gridNCell(grid) ; cell++ ) {
+    gridCell( grid,  cell, nodes );
+    gridAddCell( child, nodes[0], nodes[1], nodes[2], nodes[3] );
+  }
+
   return grid;
 }
