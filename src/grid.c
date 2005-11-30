@@ -241,6 +241,71 @@ Grid *gridImport(int maxnode, int nnode,
   return  grid;
 }
 
+Grid *gridDup( Grid *grid )
+{
+  Grid *child;
+  int node;
+  double xyz[3], map[6];
+  int cell;
+  int nodes[4];
+  int face, faceId;
+  double uvs[3][2];
+  int edge, edgeId;
+  double ts[2];
+
+  if (grid != gridSortNodeGridEx(grid)) {
+    printf("%s: %d: gridDup: gridSortNodeGridEx failed.\n",
+	   __FILE__, __LINE__ );
+    return NULL;
+  }
+
+  child = gridCreate( gridNNode(grid), gridNCell(grid),
+		      gridNFace(grid), gridNEdge(grid) );
+
+  for ( node = 0 ; node < gridNNode(grid) ; node++ ) {
+    gridNodeXYZ( grid,  node, xyz );
+    gridAddNode( child, xyz[0], xyz[1], xyz[2] );
+    gridMap( grid, node, map );
+    gridSetMap( child, node, map[0], map[1], map[2], map[3], map[4], map[5] );
+  }
+
+  for ( cell = 0 ; cell < gridNCell(grid) ; cell++ ) {
+    gridCell( grid, cell, nodes );
+    gridAddCell( child, nodes[0], nodes[1], nodes[2], nodes[3] );
+  }
+
+  for ( face = 0 ; face < gridNFace(grid) ; face++ ) {
+    gridFace( grid, face, nodes, &faceId );
+    gridNodeUV( grid, nodes[0], faceId, uvs[0] );
+    gridNodeUV( grid, nodes[1], faceId, uvs[1] );
+    gridNodeUV( grid, nodes[2], faceId, uvs[2] );
+    gridAddFaceUV( child, 
+		   nodes[0], uvs[0][0],  uvs[0][1], 
+		   nodes[1], uvs[1][0],  uvs[1][1], 
+		   nodes[2], uvs[2][0],  uvs[2][1], 
+		   faceId);
+  }
+
+  for ( edge = 0 ; edge < gridNEdge(grid) ; edge++ ) {
+    gridEdge( grid, edge, nodes, &edgeId );
+    gridNodeT( grid, nodes[0], edgeId, &(ts[0]) );
+    gridNodeT( grid, nodes[1], edgeId, &(ts[1]) );
+    gridAddEdge( child, nodes[0], nodes[1], edgeId, ts[0], ts[1] );
+  }
+
+  gridSetNGeomNode( child, gridNGeomNode( grid ) );
+  gridSetNGeomEdge( child, gridNGeomEdge( grid ) );
+  gridSetNGeomFace( child, gridNGeomFace( grid ) );
+
+  for ( edgeId = 1 ; edgeId <= gridNGeomEdge( grid ) ; edgeId++ ) {
+    gridAddGeomEdge( child, edgeId, 
+		     gridGeomEdgeStart( grid, edgeId ), 
+		     gridGeomEdgeEnd(   grid, edgeId ) );
+  }
+
+  return child;
+}
+
 Grid *gridImportFAST( char *filename )
 {
   FILE *file;
@@ -4527,31 +4592,7 @@ Grid *gridSetPhase(Grid *grid, int phase){
 }
 
 Grid *gridCacheCurrentGridAndMap(Grid *grid){
-  Grid *child;
-  int node;
-  double xyz[3];
-  int cell;
-  int nodes[4];
-
-  if (grid != gridPack(grid)) {
-    printf("%s: %d: gridCacheCurrentGridAndMap: gridPack failed.\n",
-	   __FILE__, __LINE__ );
-    return NULL;
-  }
-
-  grid->child = gridCreate( gridNNode(grid), gridNCell(grid),
-			    gridNFace(grid), gridNEdge(grid) );
-  child = grid->child;
-
-  for ( node = 0 ; node < gridNNode(grid) ; node++ ) {
-    gridNodeXYZ( grid,  node, xyz );
-    gridAddNode( child, xyz[0], xyz[1], xyz[2] );
-  }
-
-  for ( cell = 0 ; cell < gridNCell(grid) ; cell++ ) {
-    gridCell( grid,  cell, nodes );
-    gridAddCell( child, nodes[0], nodes[1], nodes[2], nodes[3] );
-  }
-
+  grid->child = gridDup( grid );
   return grid;
 }
+

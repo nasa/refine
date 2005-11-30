@@ -156,6 +156,7 @@ Grid *gridImport(int maxnode, int nnode,
 		 int maxcell, int ncell,
 		 int maxedge,
 		 double *xyz, int *f2n, int *faceId, int *c2n );
+Grid *gridDup(Grid *g);
 Grid *gridImportFAST( char *filename );
 Grid *gridExportFAST(Grid *g, char *filename );
 Grid *gridExportAFLR3(Grid *g, char *filename );

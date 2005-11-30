@@ -1,3 +1,9 @@
+2005-11-29 19:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridDup) constructed from gridCacheCurrentGridAndMap
+	to create a duplicate grid.
+	* src/grid.c (gridCacheCurrentGridAndMap) refactored to call gridDup.
+
 2005-11-22 22:57 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridImport,gridFree) initialize parent and child to
