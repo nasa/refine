@@ -1,3 +1,11 @@
+2005-12-01 11:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridRenumber) to simplfy logic around renumber
+	of nodeGlobal and part, removed nested if-then.
+	* src/grid.c (gridPack,gridRenumber,gridAddNodeWithGlobal) to
+	handle child_reference consistantly with other node based data
+	if allocated ( != NULL ),
+
 2005-12-01 10:33 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridImport,gridFree) added child_reference to grid

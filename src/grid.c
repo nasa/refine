@@ -686,6 +686,8 @@ Grid *gridPack(Grid *grid)
       grid->map[4+6*packnode] = grid->map[4+6*orignode];
       grid->map[5+6*packnode] = grid->map[5+6*orignode];
       grid->frozen[packnode]  = grid->frozen[orignode];
+      if (NULL != grid->child_reference) 
+	grid->child_reference[packnode] = grid->child_reference[orignode];
       if (NULL != grid->nodeGlobal) 
 	grid->nodeGlobal[packnode] = grid->nodeGlobal[orignode];
       if (NULL != grid->part) grid->part[packnode] = grid->part[orignode];
@@ -1082,19 +1084,23 @@ Grid *gridRenumber(Grid *grid, int *o2n)
     temp_int[o2n[node]] = grid->geomNode[node];
   for ( node = 0 ; node < grid->nnode ; node++ )
     grid->geomNode[node] = temp_int[node];
-  if ((NULL != grid->nodeGlobal) || (NULL != grid->part)) {
-    if (NULL != grid->nodeGlobal) {
-      for ( node = 0 ; node < grid->nnode ; node++ )
-	temp_int[o2n[node]] = grid->nodeGlobal[node];
-      for ( node = 0 ; node < grid->nnode ; node++ )
-	grid->nodeGlobal[node] = temp_int[node];
-    }
-    if (NULL != grid->part) {
-      for ( node = 0 ; node < grid->nnode ; node++ )
-	temp_int[o2n[node]] = grid->part[node];
-      for ( node = 0 ; node < grid->nnode ; node++ )
-	grid->part[node] = temp_int[node];
-    }
+  if (NULL != grid->child_reference) {
+    for ( node = 0 ; node < grid->nnode ; node++ )
+      temp_int[o2n[node]] = grid->child_reference[node];
+    for ( node = 0 ; node < grid->nnode ; node++ )
+      grid->child_reference[node] = temp_int[node];
+  }
+  if (NULL != grid->nodeGlobal) {
+    for ( node = 0 ; node < grid->nnode ; node++ )
+      temp_int[o2n[node]] = grid->nodeGlobal[node];
+    for ( node = 0 ; node < grid->nnode ; node++ )
+      grid->nodeGlobal[node] = temp_int[node];
+  }
+  if (NULL != grid->part) {
+    for ( node = 0 ; node < grid->nnode ; node++ )
+      temp_int[o2n[node]] = grid->part[node];
+    for ( node = 0 ; node < grid->nnode ; node++ )
+      grid->part[node] = temp_int[node];
   }
   free(temp_int);
 
@@ -3652,6 +3658,9 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
     grid->geomNode = (int *)realloc(grid->geomNode, grid->maxnode*sizeof(int));
     for (i=origSize;i < grid->maxnode; i++ ) grid->geomNode[i] = EMPTY;
 
+    if (NULL != grid->child_reference) 
+      grid->child_reference =
+                   (int *)realloc(grid->child_reference,grid->maxnode * sizeof(int));
     if (NULL != grid->nodeGlobal) 
       grid->nodeGlobal =
                    (int *)realloc(grid->nodeGlobal,grid->maxnode * sizeof(int));
@@ -3691,6 +3700,7 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
   grid->map[3+6*node] = 1.0;
   grid->map[4+6*node] = 0.0;
   grid->map[5+6*node] = 1.0;
+  if (NULL != grid->child_reference) grid->child_reference[node] = EMPTY;
   if (0 <= global) gridSetNodeGlobal(grid, node, global );
   if (NULL != grid->part) grid->part[node] = gridPartId(grid);
 
