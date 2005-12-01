@@ -100,6 +100,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->geomNode = (int *)malloc(grid->maxnode * sizeof(int));
   for (i=0;i < grid->maxnode; i++ ) grid->geomNode[i] = EMPTY;
 
+  grid->child_reference  = NULL;
   grid->nodeGlobal  = NULL;
   grid->part = NULL;
   grid->sortedGlobal = NULL;
@@ -641,9 +642,10 @@ void gridFree(Grid *grid)
   if (NULL != grid->sortedGlobal) free(grid->sortedGlobal);
   if (NULL != grid->part) free(grid->part);
   if (NULL != grid->nodeGlobal) free(grid->nodeGlobal);
+  if (NULL != grid->child_reference) free(grid->child_reference);
   if (NULL != grid->aux) free(grid->aux);
   free(grid->frozen);
-  free(grid->map);
+  if (NULL != grid->map) free(grid->map);
   free(grid->xyz);
   if (NULL != grid->child) gridFree(grid->child);
   free(grid);
@@ -4592,7 +4594,13 @@ Grid *gridSetPhase(Grid *grid, int phase){
 }
 
 Grid *gridCacheCurrentGridAndMap(Grid *grid){
+  int node, cell;
   grid->child = gridDup( grid );
+  free(grid->map); grid->map = NULL;
+  grid->child_reference = (int *)malloc(gridNNode(grid) * sizeof(int));
+  for (node=0;node<=gridNNode(grid); node++){
+    cell = adjItem(adjFirst(gridCellAdj(grid),node));
+    grid->child_reference[node] = cell;
+  }
   return grid;
 }
-

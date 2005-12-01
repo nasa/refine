@@ -55,6 +55,7 @@ struct Grid {
   Grid *child;
   Grid *parent;
 
+  int *child_reference;
   int *nodeGlobal;
   int *part;
   int nsorted;

@@ -1,3 +1,10 @@
+2005-12-01 10:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImport,gridFree) added child_reference to grid
+	struct. test if map is null before free.
+	* src/grid.c (gridCacheCurrentGridAndMap) free map and setup
+	child_reference to nearby cell.
+
 2005-11-29 19:23 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridDup) constructed from gridCacheCurrentGridAndMap
