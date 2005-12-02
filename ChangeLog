@@ -1,3 +1,14 @@
+2005-12-02  9:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFindEnclosingCell) removed, 
+	moved to src/grid.c.
+	* src/grid.c (gridFindEnclosingCell) added, taken form
+	src/gridinsert.c, to utilize the `least astonishment'
+	principle, starting_guess now refers to a cell instead
+	of a node.
+	src/grid.c now requires src/gridmath.h, changing thier
+	relative dependency.
+
 2005-12-02  8:41 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridMap,gridSetMap) Started to implement logic that

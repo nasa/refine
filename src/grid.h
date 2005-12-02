@@ -306,6 +306,7 @@ int gridFindOtherCellWith3Nodes(Grid *g, int node0, int node1, int node2,
 				int currentCell );
 int gridFindCellWithFace(Grid *g, int face );
 int gridFindCell(Grid *g, int *nodes );
+int gridFindEnclosingCell(Grid *g, int starting_guess, double *target );
 Grid *gridDeleteThawedCells(Grid *g);
 
 #define gridNConn(grid) (grid->nconn)
@@ -506,6 +507,7 @@ Grid *gridSetPhase(Grid *g, int phase);
 #define gridVOL_PHASE  (3)
 
 Grid *gridCacheCurrentGridAndMap(Grid *g);
+
 
 END_C_DECLORATION
 

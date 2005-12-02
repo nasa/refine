@@ -523,118 +523,6 @@ Grid *gridAdaptLongShortLinear(Grid *grid, double minLength, double maxLength,
   return grid;
 }
 
-int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
-{
-  int current_cell;
-  int tries;
-  AdjIterator it;
-
-  it = adjFirst(gridCellAdj(grid),starting_guess);
-  current_cell = adjItem(it);
-  if (EMPTY == current_cell) return EMPTY;
-  for (tries=1;tries<=1000;tries++) {
-    int nodes[4];
-    double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
-    double edge0[3], edge1[3];
-    double norm0[3], norm1[3], norm2[3], norm3[3];
-    double dir0[3], dir1[3], dir2[3], dir3[3];
-    double dot0, dot1, dot2, dot3;
-    int other_cell;
-    
-    gridCell( grid, current_cell, nodes );
-    // gridWriteTecplotCellGeom( grid, nodes, NULL, NULL);
-
-    gridNodeXYZ(grid, nodes[0], xyz0);
-    gridNodeXYZ(grid, nodes[1], xyz1);
-    gridNodeXYZ(grid, nodes[2], xyz2);
-    gridNodeXYZ(grid, nodes[3], xyz3);
-
-    gridSubtractVector(xyz3, xyz1, edge0);
-    gridSubtractVector(xyz2, xyz1, edge1);
-    gridCrossProduct(edge0,edge1,norm0);
-    gridSubtractVector(target, xyz1, dir0);
-    dot0 = gridDotProduct(dir0,norm0);
-
-    gridSubtractVector(xyz2, xyz0, edge0);
-    gridSubtractVector(xyz3, xyz0, edge1);
-    gridCrossProduct(edge0,edge1,norm1);
-    gridSubtractVector(target, xyz0, dir1);
-    dot1 = gridDotProduct(dir1,norm1);
-
-    gridSubtractVector(xyz3, xyz0, edge0);
-    gridSubtractVector(xyz1, xyz0, edge1);
-    gridCrossProduct(edge0,edge1,norm2);
-    gridSubtractVector(target, xyz0, dir2);
-    dot2 = gridDotProduct(dir2,norm2);
-
-    gridSubtractVector(xyz1, xyz0, edge0);
-    gridSubtractVector(xyz2, xyz0, edge1);
-    gridCrossProduct(edge0,edge1,norm3);
-    gridSubtractVector(target, xyz0, dir3);
-    dot3 = gridDotProduct(dir3,norm3);
-
-    // printf("cell%11d dots%23.15e%23.15e%23.15e%23.15e\n",
-    //   current_cell, dot0,dot1,dot2,dot3);
-
-    if ( dot0 >= 0.0 && dot1 >= 0.0 &&  dot2 >= 0.0 && dot3 >= 0.0 ) {
-      return current_cell;
-    }
-
-    if  ( dot0 < 0.0 ) {
-      other_cell = gridFindOtherCellWith3Nodes(grid,
-					       nodes[1], nodes[2], nodes[3],
-					       current_cell );
-      if (EMPTY != other_cell ) {
-	current_cell = other_cell;
-	continue;
-      }
-    }
-
-    if  ( dot1 < 0.0 ) {
-      other_cell = gridFindOtherCellWith3Nodes(grid,
-					       nodes[0], nodes[2], nodes[3],
-					       current_cell );
-      if (EMPTY != other_cell ) {
-	current_cell = other_cell;
-	continue;
-      }
-    }
-
-    if  ( dot2 < 0.0 ) {
-      other_cell = gridFindOtherCellWith3Nodes(grid,
-					       nodes[0], nodes[1], nodes[3],
-					       current_cell );
-      if (EMPTY != other_cell ) {
-	current_cell = other_cell;
-	continue;
-      }
-    }
-
-    if  ( dot3 < 0.0 ) {
-      other_cell = gridFindOtherCellWith3Nodes(grid,
-					       nodes[0], nodes[1], nodes[2],
-					       current_cell );
-      if (EMPTY != other_cell ) {
-	current_cell = other_cell;
-	continue;
-      }
-    }
-
-    it = adjNext(it);
-    current_cell = adjItem(it);
-    if (EMPTY == current_cell) {
-      printf("%s: %d: gridFindEnclosingCell round-off: no more next \n",
-	     __FILE__,__LINE__);
-      return EMPTY;
-    }
-  }
-
-  printf("%s: %d: gridFindEnclosingCell exhausted tries.\n",
-	 __FILE__,__LINE__);
-
-  return EMPTY;
-}
-
 Grid *gridThreadCurveThroughVolume(Grid *grid, int parent, 
 				   int n0, double *tuv0,
 				   int n1, double *tuv1,
@@ -922,7 +810,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   double xyz[3];
   double tuv0[2], tuv1[2], newtuv[2];
   int newnode;
-  int enclosing_cell;
+  int guess_cell, enclosing_cell;
   int node, nnode;
   double tuvs[2*MAXDEG];
   int curve[MAXDEG];
@@ -977,7 +865,8 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
 
   printf("new node at%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
 
-  enclosing_cell = gridFindEnclosingCell(grid, n0, xyz );
+  guess_cell = adjItem(adjFirst(gridCellAdj(grid),n0));
+  enclosing_cell = gridFindEnclosingCell(grid, guess_cell, xyz );
 
   if ( EMPTY == enclosing_cell ) {
     printf("%s: %d: gridReconstructSplitEdgeRatio could not find cell.\n",
