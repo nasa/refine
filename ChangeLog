@@ -1,3 +1,10 @@
+2005-12-02  8:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMap,gridSetMap) Started to implement logic that
+	will ignore grid->map id NULL and interpolate metric in child
+	grid. (I have sketched out how gridMap will look, but not
+	implented.)
+
 2005-12-01 11:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridRenumber) to simplfy logic around renumber

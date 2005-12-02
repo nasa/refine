@@ -4304,14 +4304,35 @@ Grid *gridQuad(Grid *grid, int quadIndex, int *nodes, int *faceId )
 
 Grid *gridMap(Grid *grid, int node, double *map)
 {
+  int starting_guess, enclosing_cell;
+  double xyz[3];
   if ( !gridValidNode(grid, node) ) return NULL;
 
-  map[0] = grid->map[0+6*node];
-  map[1] = grid->map[1+6*node];
-  map[2] = grid->map[2+6*node];
-  map[3] = grid->map[3+6*node];
-  map[4] = grid->map[4+6*node];
-  map[5] = grid->map[5+6*node];
+  if ( NULL != grid->map ) {
+    map[0] = grid->map[0+6*node];
+    map[1] = grid->map[1+6*node];
+    map[2] = grid->map[2+6*node];
+    map[3] = grid->map[3+6*node];
+    map[4] = grid->map[4+6*node];
+    map[5] = grid->map[5+6*node];
+  } else {
+    if ( (NULL == grid->child) || ( NULL == grid->child_reference ) ) {
+      printf("%s: %d: gridMap: everything is NULL?\n", __FILE__, __LINE__ );
+      return NULL;
+    }
+    /*
+    starting_guess = grid->child_reference[node];
+    gridNodeXYZ( grid, node, xyz );
+    if ( grid != gridFindEnclosingCell( grid->child, starting_guess, xyz, 
+					enclosing_cell ) ) {
+      printf("%s: %d: gridMap: can not find enclosing_cell\n", 
+	     __FILE__, __LINE__ );
+      return NULL;
+    }
+    grid->child_reference[node] = enclosing_cell;
+    gridInterpolateMapInCell(grid->child, cell, xyz, map);
+    */
+  }
   
   return grid;
 }
@@ -4323,12 +4344,15 @@ Grid *gridSetMap(Grid *grid, int node,
 {
   if ( !gridValidNode(grid, node) ) return NULL;
 
-  grid->map[0+6*node] = m11;
-  grid->map[1+6*node] = m12;
-  grid->map[2+6*node] = m13;
-  grid->map[3+6*node] = m22;
-  grid->map[4+6*node] = m23;
-  grid->map[5+6*node] = m33;
+  /* this function is a no-op if the map array is NULL */
+  if ( NULL != grid->map ) {
+    grid->map[0+6*node] = m11;
+    grid->map[1+6*node] = m12;
+    grid->map[2+6*node] = m13;
+    grid->map[3+6*node] = m22;
+    grid->map[4+6*node] = m23;
+    grid->map[5+6*node] = m33;
+  }
 
   return grid;
 }
