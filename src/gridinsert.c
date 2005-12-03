@@ -819,6 +819,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   int tri0, tri1, tri2;
   double uv0[2], uv1[2], uv2[2];
   int segment, node0, node1;
+  double bary[4];
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
@@ -866,7 +867,7 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
   printf("new node at%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
 
   guess_cell = adjItem(adjFirst(gridCellAdj(grid),n0));
-  enclosing_cell = gridFindEnclosingCell(grid, guess_cell, xyz );
+  enclosing_cell = gridFindEnclosingCell(grid, guess_cell, xyz, bary );
 
   if ( EMPTY == enclosing_cell ) {
     printf("%s: %d: gridReconstructSplitEdgeRatio could not find cell.\n",

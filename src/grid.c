@@ -2279,11 +2279,53 @@ int gridFindCell(Grid *grid, int *nodes )
   return EMPTY;
 }
 
-int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
+Grid *gridBarycentricCoordinate(Grid *grid, double *xyz0, double *xyz1, 
+				double *xyz2, double *xyz3, 
+				double *target, double *bary )
+{
+  double edge0[3], edge1[3];
+  double norm[3];
+  double dir0[3], dir1[3];
+
+  /* these should be compted with kramers rule for numerical stability
+   * and efficntcy */
+
+  gridSubtractVector(xyz3, xyz1, edge0);
+  gridSubtractVector(xyz2, xyz1, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridSubtractVector(target, xyz1, dir0);
+  gridSubtractVector(xyz0,   xyz1, dir1);
+  bary[0] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
+
+  gridSubtractVector(xyz2, xyz0, edge0);
+  gridSubtractVector(xyz3, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridSubtractVector(target, xyz0, dir0);
+  gridSubtractVector(xyz1,   xyz1, dir1);
+  bary[1] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
+
+  gridSubtractVector(xyz3, xyz0, edge0);
+  gridSubtractVector(xyz1, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridSubtractVector(target, xyz0, dir0);
+  gridSubtractVector(xyz2,   xyz0, dir1);
+  bary[2] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
+
+  gridSubtractVector(xyz1, xyz0, edge0);
+  gridSubtractVector(xyz2, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridSubtractVector(target, xyz0, dir0);
+  gridSubtractVector(xyz3, xyz0, dir0);
+  bary[3] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
+
+  return grid;
+}
+
+int gridFindEnclosingCell(Grid *grid, int starting_guess, 
+			  double *target, double *bary )
 {
   int current_cell;
   int tries;
-  AdjIterator it;
 
   if (EMPTY == starting_guess) return EMPTY;
 
@@ -2291,51 +2333,31 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
   for (tries=1;tries<=1000;tries++) {
     int nodes[4];
     double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
-    double edge0[3], edge1[3];
-    double norm0[3], norm1[3], norm2[3], norm3[3];
-    double dir0[3], dir1[3], dir2[3], dir3[3];
-    double dot0, dot1, dot2, dot3;
     int other_cell;
-    
+    double tol;
     gridCell( grid, current_cell, nodes );
 
     gridNodeXYZ(grid, nodes[0], xyz0);
     gridNodeXYZ(grid, nodes[1], xyz1);
     gridNodeXYZ(grid, nodes[2], xyz2);
     gridNodeXYZ(grid, nodes[3], xyz3);
-
-    gridSubtractVector(xyz3, xyz1, edge0);
-    gridSubtractVector(xyz2, xyz1, edge1);
-    gridCrossProduct(edge0,edge1,norm0);
-    gridSubtractVector(target, xyz1, dir0);
-    dot0 = gridDotProduct(dir0,norm0);
-
-    gridSubtractVector(xyz2, xyz0, edge0);
-    gridSubtractVector(xyz3, xyz0, edge1);
-    gridCrossProduct(edge0,edge1,norm1);
-    gridSubtractVector(target, xyz0, dir1);
-    dot1 = gridDotProduct(dir1,norm1);
-
-    gridSubtractVector(xyz3, xyz0, edge0);
-    gridSubtractVector(xyz1, xyz0, edge1);
-    gridCrossProduct(edge0,edge1,norm2);
-    gridSubtractVector(target, xyz0, dir2);
-    dot2 = gridDotProduct(dir2,norm2);
-
-    gridSubtractVector(xyz1, xyz0, edge0);
-    gridSubtractVector(xyz2, xyz0, edge1);
-    gridCrossProduct(edge0,edge1,norm3);
-    gridSubtractVector(target, xyz0, dir3);
-    dot3 = gridDotProduct(dir3,norm3);
-
-    // printf("cell%11d dots%23.15e%23.15e%23.15e%23.15e\n",
-    //   current_cell, dot0,dot1,dot2,dot3);
-
-    if ( dot0 >= 0.0 && dot1 >= 0.0 &&  dot2 >= 0.0 && dot3 >= 0.0 ) {
-      return current_cell;
+    
+    if (grid != gridBarycentricCoordinate( grid, xyz0, xyz1, xyz2, xyz3, 
+					   target, bary ) ) {
+      printf("%s: %d: gridFindEnclosingCell: gridBarycentricCoordinate NULL\n",
+	     __FILE__,__LINE__);
+      return EMPTY;
     }
 
-    if  ( dot0 < 0.0 ) {
+    tol = -1.0e-13;
+    if ( bary[0] >= tol && bary[1] >= tol &&
+	 bary[2] >= tol && bary[3] >= tol ) {
+      return current_cell;
+    }
+    
+    current_cell = EMPTY;
+
+    if  ( bary[0] < 0.0 ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[1], nodes[2], nodes[3],
 					       current_cell );
@@ -2345,7 +2367,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
       }
     }
 
-    if  ( dot1 < 0.0 ) {
+    if  ( bary[1] < 0.0 ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[2], nodes[3],
 					       current_cell );
@@ -2355,7 +2377,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
       }
     }
 
-    if  ( dot2 < 0.0 ) {
+    if  ( bary[2] < 0.0 ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[3],
 					       current_cell );
@@ -2365,7 +2387,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
       }
     }
 
-    if  ( dot3 < 0.0 ) {
+    if  ( bary[3] < 0.0 ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[2],
 					       current_cell );
@@ -2375,8 +2397,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess, double *target )
       }
     }
 
-    it = adjNext(it);
-    current_cell = adjItem(it);
     if (EMPTY == current_cell) {
       printf("%s: %d: gridFindEnclosingCell round-off: no more next \n",
 	     __FILE__,__LINE__);
@@ -4416,8 +4436,7 @@ Grid *gridQuad(Grid *grid, int quadIndex, int *nodes, int *faceId )
 
 Grid *gridMap(Grid *grid, int node, double *map)
 {
-  int starting_guess, enclosing_cell;
-  double xyz[3];
+
   if ( !gridValidNode(grid, node) ) return NULL;
 
   if ( NULL != grid->map ) {
@@ -4433,6 +4452,8 @@ Grid *gridMap(Grid *grid, int node, double *map)
       return NULL;
     }
     /*
+  int starting_guess, enclosing_cell;
+  double xyz[3];
     starting_guess = grid->child_reference[node];
     gridNodeXYZ( grid, node, xyz );
     if ( grid != gridFindEnclosingCell( grid->child, starting_guess, xyz, 

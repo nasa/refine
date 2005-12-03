@@ -306,7 +306,11 @@ int gridFindOtherCellWith3Nodes(Grid *g, int node0, int node1, int node2,
 				int currentCell );
 int gridFindCellWithFace(Grid *g, int face );
 int gridFindCell(Grid *g, int *nodes );
-int gridFindEnclosingCell(Grid *g, int starting_guess, double *target );
+int gridFindEnclosingCell(Grid *g, int starting_guess, 
+			  double *target, double *bary );
+Grid *gridBarycentricCoordinate(Grid *g, double *xyz0, double *xyz1, 
+				double *xyz2, double *xyz3, 
+				double *target, double *bary );
 Grid *gridDeleteThawedCells(Grid *g);
 
 #define gridNConn(grid) (grid->nconn)
