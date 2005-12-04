@@ -1,3 +1,8 @@
+2005-12-04 12:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMap) spiked in logic to interpolate metric from
+	child grid, this needs to be tested.
+
 2005-12-03 23:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindEnclosingCell) added tests to find
