@@ -2335,7 +2335,10 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
     int other_cell;
     double tol;
-    gridCell( grid, current_cell, nodes );
+
+    if (grid != gridCell( grid, current_cell, nodes )) {
+      return EMPTY;
+    }
 
     gridNodeXYZ(grid, nodes[0], xyz0);
     gridNodeXYZ(grid, nodes[1], xyz1);

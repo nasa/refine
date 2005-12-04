@@ -401,6 +401,25 @@ VALUE grid_barycentricCoordinate( VALUE self, VALUE rb_xyz0, VALUE rb_xyz1,
   }
 }
 
+VALUE grid_findEnclosingCell( VALUE self, VALUE rb_guess, VALUE rb_target )
+{
+  int i, guess, enclosing_cell;
+  double target[3], bary[4];
+  VALUE rb_find;
+  GET_GRID_FROM_SELF;
+  guess = NUM2INT(rb_guess); 
+  for (i=0;i<3;i++) target[i] = NUM2DBL(rb_ary_entry(rb_target, i));
+  enclosing_cell = gridFindEnclosingCell( grid, guess, target, bary );
+  if ( EMPTY == enclosing_cell ) {
+    return Qnil;
+  }else{
+    rb_find = rb_ary_new2(5);
+    rb_ary_store( rb_find, 0, INT2NUM(enclosing_cell) );
+    for(i=0;i<4;i++) rb_ary_store( rb_find, i+1, rb_float_new(bary[i]) );
+    return rb_find;
+  }
+}
+
 VALUE grid_nconn( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1309,6 +1328,8 @@ void Init_Grid()
   rb_define_method( cGrid, "findCell", grid_findCell, 1 );
   rb_define_method( cGrid, "barycentricCoordinate", 
 		    grid_barycentricCoordinate, 5 );
+  rb_define_method( cGrid, "findEnclosingCell", 
+		    grid_findEnclosingCell, 2 );
 
   rb_define_method( cGrid, "nconn", grid_nconn, 0 );
   rb_define_method( cGrid, "cell2Conn", grid_cell2Conn, 2 );

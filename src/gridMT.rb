@@ -441,7 +441,7 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def test_BarycentricCoordinate_of_center1
-  tol =1.0e-14
+  tol = 1.0e-14
   xyz0 = [0,0,0]
   xyz1 = [1,0,0]
   xyz2 = [0,1,0]
@@ -453,7 +453,7 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def test_BarycentricCoordinate_of_center2
-  tol =1.0e-14
+  tol = 1.0e-14
   xyz0 = [0,0,0]
   xyz1 = [4,0,0]
   xyz2 = [0,4,0]
@@ -465,7 +465,7 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def test_BarycentricCoordinate_of_outside_x
-  tol =1.0e-14
+  tol = 1.0e-14
   xyz0 = [0,0,0]
   xyz1 = [1,0,0]
   xyz2 = [0,1,0]
@@ -477,15 +477,54 @@ class TestGrid < Test::Unit::TestCase
  end
 
  def test_BarycentricCoordinate_of_oppsite_0
-  tol =1.0e-14
+  tol = 1.0e-14
   xyz0 = [0,0,0]
   xyz1 = [1,0,0]
   xyz2 = [0,1,0]
   xyz3 = [0,0,1]
   target = [1.0,1.0,1.0]
-  puts bary = @grid.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,target)
+  bary = @grid.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,target)
   ans = [-2.0,1.0,1.0,1.0]
   4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+ end
+
+ def test_gridFindEnclosingCell_fails_for_invalid_guess_cell
+  target = [0.25,0.25,0.25]
+  assert_nil @grid.findEnclosingCell(0,target)
+ end
+
+ def test_gridFindEnclosingCell_here
+  tol = 1.0e-14
+  grid = Grid.new(4,1,0,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addCell(0,1,2,3)
+  target = [0.25,0.25,0.25]
+  ans = [0, 0.25,0.25,0.25,0.25]
+  find = grid.findEnclosingCell(0,target)
+  ans = [0.25,0.25,0.25,0.25]
+  assert_equal( 0, find[0] )
+  4.times { |i| assert_in_delta( ans[i], find[i+1], tol, 'element '+i.to_s ) }
+ end
+
+ def test_gridFindEnclosingCell_for_next_cell
+  tol = 1.0e-14
+  grid = Grid.new(4,2,0,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addNode(1,1,1)
+  grid.addCell(0,1,2,3)
+  grid.addCell(1,2,3,4)
+  target = [1.0,1.0,1.0]
+  ans = [0, 0.25,0.25,0.25,0.25]
+  find = grid.findEnclosingCell(0,target)
+  ans = [0.0,0.0,0.0,1.0]
+  assert_equal( 1, find[0] )
+  4.times { |i| assert_in_delta( ans[i], find[i+1], tol, 'element '+i.to_s ) }
  end
 
  def testGetGem
