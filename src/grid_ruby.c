@@ -375,6 +375,32 @@ VALUE grid_findCell( VALUE self, VALUE rb_nodes )
   return INT2NUM( gridFindCell( grid, nodes ) );
 }
 
+VALUE grid_barycentricCoordinate( VALUE self, VALUE rb_xyz0, VALUE rb_xyz1, 
+				  VALUE rb_xyz2, VALUE rb_xyz3, 
+				  VALUE rb_target )
+{
+  int i;
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double target[3], bary[4];
+  VALUE rb_bary;
+  GET_GRID_FROM_SELF;
+  for (i=0;i<3;i++){
+    xyz0[i] = NUM2DBL(rb_ary_entry(rb_xyz0, i));
+    xyz1[i] = NUM2DBL(rb_ary_entry(rb_xyz1, i));
+    xyz2[i] = NUM2DBL(rb_ary_entry(rb_xyz2, i));
+    xyz3[i] = NUM2DBL(rb_ary_entry(rb_xyz3, i));
+    target[i] = NUM2DBL(rb_ary_entry(rb_target, i));
+  }
+  if ( grid == gridBarycentricCoordinate( grid, xyz0, xyz1, 
+					  xyz2, xyz3, target, bary ) ) {
+    rb_bary = rb_ary_new2(4);
+    for(i=0;i<4;i++) rb_ary_store( rb_bary, i, rb_float_new(bary[i]) );
+    return rb_bary;
+  }else{
+    return Qnil;
+  }
+}
+
 VALUE grid_nconn( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1281,6 +1307,8 @@ void Init_Grid()
 		    grid_findOtherCellWith3Nodes, 4 );
   rb_define_method( cGrid, "findCellWithFace", grid_findCellWithFace, 1 );
   rb_define_method( cGrid, "findCell", grid_findCell, 1 );
+  rb_define_method( cGrid, "barycentricCoordinate", 
+		    grid_barycentricCoordinate, 5 );
 
   rb_define_method( cGrid, "nconn", grid_nconn, 0 );
   rb_define_method( cGrid, "cell2Conn", grid_cell2Conn, 2 );

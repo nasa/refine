@@ -2301,7 +2301,7 @@ Grid *gridBarycentricCoordinate(Grid *grid, double *xyz0, double *xyz1,
   gridSubtractVector(xyz3, xyz0, edge1);
   gridCrossProduct(edge0,edge1,norm);
   gridSubtractVector(target, xyz0, dir0);
-  gridSubtractVector(xyz1,   xyz1, dir1);
+  gridSubtractVector(xyz1,   xyz0, dir1);
   bary[1] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
 
   gridSubtractVector(xyz3, xyz0, edge0);
@@ -2315,7 +2315,7 @@ Grid *gridBarycentricCoordinate(Grid *grid, double *xyz0, double *xyz1,
   gridSubtractVector(xyz2, xyz0, edge1);
   gridCrossProduct(edge0,edge1,norm);
   gridSubtractVector(target, xyz0, dir0);
-  gridSubtractVector(xyz3, xyz0, dir0);
+  gridSubtractVector(xyz3,   xyz0, dir1);
   bary[3] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
 
   return grid;

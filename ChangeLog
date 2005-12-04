@@ -1,3 +1,8 @@
+2005-12-03 21:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridBarycentricCoordinate) added tests to find
+	and correct bugs.
+
 2005-12-03 16:19 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindEnclosingCell) also returns bary.
