@@ -713,12 +713,21 @@ double gridAR(Grid *grid, int *nodes )
   if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
     return gridEdgeRatioCost(grid, nodes);
 
-  m0 = gridMapPointer(grid,nodes[0]);
-  m1 = gridMapPointer(grid,nodes[1]);
-  m2 = gridMapPointer(grid,nodes[2]);
-  m3 = gridMapPointer(grid,nodes[3]);
+  if ( NULL != gridMapPointer(grid,0) ) {
+    m0 = gridMapPointer(grid,nodes[0]);
+    m1 = gridMapPointer(grid,nodes[1]);
+    m2 = gridMapPointer(grid,nodes[2]);
+    m3 = gridMapPointer(grid,nodes[3]);
 
-  for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
+    for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
+  } else {
+    double map0[6], map1[6], map2[6], map3[6];
+    gridMap(grid, nodes[0], map0);
+    gridMap(grid, nodes[1], map1);
+    gridMap(grid, nodes[2], map2);
+    gridMap(grid, nodes[3], map3);
+    for (i=0;i<6;i++) m[i]=0.25*(map0[i]+map1[i]+map2[i]+map3[i]);
+  }
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
     printf("%s: %d: gridAR: gridConvertMetricToJacobian NULL\n",
 	   __FILE__,__LINE__);

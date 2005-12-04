@@ -1,3 +1,17 @@
+2005-12-04 13:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: called gridCacheCurrentGridAndMap
+	to interpolate metric from original grid.
+	* src/gridmetric.c (gridAR) if grid->map is NULL don't use map
+	pointers, call gridMap to do interploation.
+	* src/grid.c (gridCacheCurrentGridAndMap) to correct child_reference
+	array that was not malloc'ed large enough and use a more
+	robust iteration of nodes to populate child_reference
+	* src/grid.c (gridInterpolateMap2) set child_reference instead
+	of map is map is NULL.
+	* src/grid.c (gridAddNodeWithGlobal) only initialize map to
+	identity if it is not NULL.
+
 2005-12-04 12:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridMap) spiked in logic to interpolate metric from

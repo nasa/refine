@@ -331,6 +331,7 @@ int main( int argc, char *argv[] )
     ge = (GridEdger **)malloc( gridNGeomEdge(grid) * sizeof(GridEdger *) );
     gridSetMinInsertCost( grid, -0.5 );
     gridConstrainSurfaceNode(grid);
+    gridCacheCurrentGridAndMap(grid);
 
     if (FALSE) {
       gridWriteTecplotSurfaceGeom(grid,"le_orig.tec");

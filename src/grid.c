@@ -2352,6 +2352,11 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       return EMPTY;
     }
 
+    /*
+    printf("try%5d cell%10d bary%10.6f%10.6f%10.6f%10.6f\n",
+	   tries, current_cell, bary[0], bary[1], bary[2], bary[3] );
+    */
+
     tol = -1.0e-13;
     if ( bary[0] >= tol && bary[1] >= tol &&
 	 bary[2] >= tol && bary[3] >= tol ) {
@@ -3829,12 +3834,14 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
   grid->xyz[1+3*node] = y;
   grid->xyz[2+3*node] = z;
   grid->frozen[node] = FALSE;
-  grid->map[0+6*node] = 1.0;
-  grid->map[1+6*node] = 0.0;
-  grid->map[2+6*node] = 0.0;
-  grid->map[3+6*node] = 1.0;
-  grid->map[4+6*node] = 0.0;
-  grid->map[5+6*node] = 1.0;
+  if (NULL != grid->map) {
+    grid->map[0+6*node] = 1.0;
+    grid->map[1+6*node] = 0.0;
+    grid->map[2+6*node] = 0.0;
+    grid->map[3+6*node] = 1.0;
+    grid->map[4+6*node] = 0.0;
+    grid->map[5+6*node] = 1.0;
+  }
   if (NULL != grid->child_reference) grid->child_reference[node] = EMPTY;
   if (0 <= global) gridSetNodeGlobal(grid, node, global );
   if (NULL != grid->part) grid->part[node] = gridPartId(grid);
@@ -4512,9 +4519,15 @@ Grid *gridInterpolateMap2(Grid *grid, int node0, int node1, double ratio,
   if ( !gridValidNode(grid, node1) ) return NULL;
   if ( !gridValidNode(grid, target) ) return NULL;
 
-  for (i=0;i<6;i++) {
-    grid->map[i+6*target] = 
-      ratio*(grid->map[i+6*node1]) + (1.0-ratio)*(grid->map[i+6*node0]); 
+  if ( NULL != grid->map ) {
+    for (i=0;i<6;i++) {
+      grid->map[i+6*target] = 
+	ratio*(grid->map[i+6*node1]) + (1.0-ratio)*(grid->map[i+6*node0]); 
+    }
+  }else{
+    if ( NULL != grid->child_reference ) {
+      grid->child_reference[target] = grid->child_reference[node0];
+    }
   }
   return grid;
 }
@@ -4778,10 +4791,12 @@ Grid *gridCacheCurrentGridAndMap(Grid *grid){
   int node, cell;
   grid->child = gridDup( grid );
   free(grid->map); grid->map = NULL;
-  grid->child_reference = (int *)malloc(gridNNode(grid) * sizeof(int));
-  for (node=0;node<=gridNNode(grid); node++){
-    cell = adjItem(adjFirst(gridCellAdj(grid),node));
-    grid->child_reference[node] = cell;
+  grid->child_reference = (int *)malloc(gridMaxNode(grid) * sizeof(int));
+  for (node=0;node<=gridMaxNode(grid); node++){
+    if ( gridValidNode(grid,node) ) {
+      cell = adjItem(adjFirst(gridCellAdj(grid),node));
+      grid->child_reference[node] = cell;
+    }
   }
   return grid;
 }
