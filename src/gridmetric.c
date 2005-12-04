@@ -180,6 +180,7 @@ Grid *gridEdgeRatioRange(Grid *grid, double *longest, double *shortest )
 
 double gridEdgeRatio(Grid *grid, int n0, int n1 )
 {
+  int i;
   double *xyz0, *xyz1;
   double dx, dy, dz;
   double *m0, *m1, m[6];
@@ -193,15 +194,18 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
   dy = xyz1[1] - xyz0[1];
   dz = xyz1[2] - xyz0[2];
 
-  m0 = gridMapPointer(grid, n0);
-  m1 = gridMapPointer(grid, n1);
+  if ( NULL != gridMapPointer(grid,0) ) {
+    m0 = gridMapPointer(grid, n0);
+    m1 = gridMapPointer(grid, n1);
 
-  m[0] = 0.5*(m0[0]+m1[0]);
-  m[1] = 0.5*(m0[1]+m1[1]);
-  m[2] = 0.5*(m0[2]+m1[2]);
-  m[3] = 0.5*(m0[3]+m1[3]);
-  m[4] = 0.5*(m0[4]+m1[4]);
-  m[5] = 0.5*(m0[5]+m1[5]);
+    for (i=0;i<6;i++) m[i] = 0.5*(m0[i]+m1[i]);
+  }else{
+    double map0[6], map1[6];
+    gridMap(grid, n0, map0);
+    gridMap(grid, n1, map1);
+
+    for (i=0;i<6;i++) m[i] = 0.5*(map0[i]+map1[i]);
+  }
 
   return sqrt ( dx * ( m[0]*dx + m[1]*dy + m[2]*dz ) +
 		dy * ( m[1]*dx + m[3]*dy + m[4]*dz ) +

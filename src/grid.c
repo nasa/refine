@@ -680,12 +680,14 @@ Grid *gridPack(Grid *grid)
       grid->xyz[0+3*packnode] = grid->xyz[0+3*orignode];
       grid->xyz[1+3*packnode] = grid->xyz[1+3*orignode];
       grid->xyz[2+3*packnode] = grid->xyz[2+3*orignode];
-      grid->map[0+6*packnode] = grid->map[0+6*orignode];
-      grid->map[1+6*packnode] = grid->map[1+6*orignode];
-      grid->map[2+6*packnode] = grid->map[2+6*orignode];
-      grid->map[3+6*packnode] = grid->map[3+6*orignode];
-      grid->map[4+6*packnode] = grid->map[4+6*orignode];
-      grid->map[5+6*packnode] = grid->map[5+6*orignode];
+      if ( NULL != grid->map ) { 
+	grid->map[0+6*packnode] = grid->map[0+6*orignode];
+	grid->map[1+6*packnode] = grid->map[1+6*orignode];
+	grid->map[2+6*packnode] = grid->map[2+6*orignode];
+	grid->map[3+6*packnode] = grid->map[3+6*orignode];
+	grid->map[4+6*packnode] = grid->map[4+6*orignode];
+	grid->map[5+6*packnode] = grid->map[5+6*orignode];
+      }
       grid->frozen[packnode]  = grid->frozen[orignode];
       if (NULL != grid->child_reference) 
 	grid->child_reference[packnode] = grid->child_reference[orignode];
@@ -1055,12 +1057,14 @@ Grid *gridRenumber(Grid *grid, int *o2n)
       grid->xyz[ixyz+3*node] = temp_xyz[node];
     }
   }
-  for ( ixyz = 0; ixyz < 6 ; ixyz++ ){
-    for ( node = 0 ; node < grid->nnode ; node++ ){
-      temp_xyz[o2n[node]] = grid->map[ixyz+6*node];
-    }
-    for ( node = 0 ; node < grid->nnode ; node++ ){
-      grid->map[ixyz+6*node] = temp_xyz[node];
+  if ( NULL != grid->map ) {
+    for ( ixyz = 0; ixyz < 6 ; ixyz++ ){
+      for ( node = 0 ; node < grid->nnode ; node++ ){
+	temp_xyz[o2n[node]] = grid->map[ixyz+6*node];
+      }
+      for ( node = 0 ; node < grid->nnode ; node++ ){
+	grid->map[ixyz+6*node] = temp_xyz[node];
+      }
     }
   }
   for ( ixyz = 0; ixyz < grid->naux ; ixyz++ ){
@@ -2324,7 +2328,7 @@ Grid *gridBarycentricCoordinate(Grid *grid, double *xyz0, double *xyz1,
 int gridFindEnclosingCell(Grid *grid, int starting_guess, 
 			  double *target, double *bary )
 {
-  int current_cell;
+  int current_cell, last_cell;
   int tries;
 
   if (EMPTY == starting_guess) return EMPTY;
@@ -2335,6 +2339,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
     int other_cell;
     double tol;
+    GridBool verb;
 
     if (grid != gridCell( grid, current_cell, nodes )) {
       return EMPTY;
@@ -2352,10 +2357,16 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       return EMPTY;
     }
 
-    /*
-    printf("try%5d cell%10d bary%10.6f%10.6f%10.6f%10.6f\n",
-	   tries, current_cell, bary[0], bary[1], bary[2], bary[3] );
-    */
+    verb = FALSE;
+    if (verb) {
+      printf("try%5d cell%10d bary%10.6f%10.6f%10.6f%10.6f\n",
+	     tries, current_cell, bary[0], bary[1], bary[2], bary[3] );
+      printf("target%10.6f%10.6f%10.6f\n",target[0],target[1],target[2] );
+      printf("xyz%10.6f%10.6f%10.6f\n",xyz0[0],xyz0[1],xyz0[2] );
+      printf("xyz%10.6f%10.6f%10.6f\n",xyz1[0],xyz1[1],xyz1[2] );
+      printf("xyz%10.6f%10.6f%10.6f\n",xyz2[0],xyz2[1],xyz2[2] );
+      printf("xyz%10.6f%10.6f%10.6f\n",xyz3[0],xyz3[1],xyz3[2] );
+    }
 
     tol = -1.0e-13;
     if ( bary[0] >= tol && bary[1] >= tol &&
@@ -2363,12 +2374,14 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       return current_cell;
     }
     
+    last_cell = current_cell;
     current_cell = EMPTY;
 
     if  ( bary[0] < 0.0 ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[1], nodes[2], nodes[3],
-					       current_cell );
+					       last_cell );
+      if (verb) { printf("bary[0] %f %d\n",bary[0],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2378,7 +2391,8 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     if  ( bary[1] < 0.0 ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[2], nodes[3],
-					       current_cell );
+					       last_cell );
+      if (verb) { printf("bary[1] %f %d\n",bary[1],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2388,7 +2402,8 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     if  ( bary[2] < 0.0 ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[3],
-					       current_cell );
+					       last_cell );
+      if (verb) { printf("bary[2] %f %d\n",bary[2],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2398,7 +2413,8 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     if  ( bary[3] < 0.0 ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[2],
-					       current_cell );
+					       last_cell );
+      if (verb) { printf("bary[3] %f %d\n",bary[3],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;

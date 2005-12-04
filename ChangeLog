@@ -1,3 +1,13 @@
+2005-12-04 13:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio) if grid->map is NULL don't use map
+	pointers, call gridMap to do interploation.
+	* src/grid.c (gridFindEnclosingCell) corrected logic in calls
+	to gridFindOtherCellWith3Nodes that allowed the same cell
+	to be selected over and over again. (added debug printf with verb)
+	* src/grid.c (gridPack,gridRenumber) ignore grid->map if it is NULL
+	to prevent segfaults.
+	
 2005-12-04 13:02 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) --phase -1: called gridCacheCurrentGridAndMap
