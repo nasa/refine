@@ -459,6 +459,7 @@ Grid *gridAddQuad(Grid *g, int n0, int n1, int n2, int n3, int faceId );
 Grid *gridQuad(Grid *g, int quadIndex, int *nodes, int *faceId );
 
 Grid *gridMap(Grid *g, int node, double *map);
+#define gridMapPointerAllocated(grid) ((NULL != grid->map))
 #define gridMapPointer(grid, node) (&grid->map[6*node])
 
 Grid *gridSetMap(Grid *g, int node,

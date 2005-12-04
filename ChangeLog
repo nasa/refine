@@ -1,3 +1,17 @@
+2005-12-04 14:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMapPointerAllocated) to unify the use of
+	gridMapPointer for speed and gridMap for interpolation,
+	added this macro to indicate if gridMapPointer is safe to
+	use.
+	* src/gridmetric (gridSetMapMatrixToAverageOfNodes2)
+	call gridInterpolateMap2 with ratio = 0.5 for DRY.
+	* src/gridmetric (gridSetMapMatrixToAverageOfNodes3,
+	gridSetMapMatrixToAverageOfNodes4, gridEdgeRatio, gridEdgeRatio3,
+	gridAR, gridCellARDerivative ) unified gridMapPointer
+	access with gridMapPointerAllocated test and alternate
+	calls to gridMap.
+	
 2005-12-04 13:47 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridEdgeRatio) if grid->map is NULL don't use map
