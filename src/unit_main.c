@@ -374,18 +374,22 @@ int main( int argc, char *argv[] )
 	       edgeId, xyz[0], xyz[1], xyz[2] );
       }
     }
-
-    gridSetMinInsertCost( grid, -10.0 );
-    for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
-      edgeId = edge+1;
-      if ( ge[edge] != gridedgerRemoveUnused(ge[edge]) ) {
-	printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
-	return 1;
+    
+    if (FALSE) {
+      gridSetMinInsertCost( grid, -10.0 );
+      for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
+	edgeId = edge+1;
+	if ( ge[edge] != gridedgerRemoveUnused(ge[edge]) ) {
+	  printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
+	  return 1;
+	}
+	gridUntangle(grid);
       }
-      gridUntangle(grid);
-      gridedgerFree(ge[edge]);
-   }
+    }
 
+    for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
+      gridedgerFree(ge[edge]);
+    }
     free(ge);
 
     gridWriteTecplotSurfaceGeom(grid,"le_remove.tec");
