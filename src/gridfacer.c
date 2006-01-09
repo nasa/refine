@@ -91,12 +91,31 @@ GridFacer *gridfacerExamine(GridFacer *gf)
   int nodes[3];
   int faceId;
 
+  double map[6];
+  double d[3], e[3], v0[3], v1[3], v2[3];
+  double h0, h1, h2;
+
   Grid *grid = gridfacerGrid( gf );
 
   for ( face = 0 ; face < gridMaxFace(grid) ; face++ ) {
     if ( grid == gridFace( grid, face, nodes, &faceId ) ) {
       if ( gridfacerFaceId(gf) == faceId ) {
-	printf("face %d\n",face);
+	
+	gridMap(grid, nodes[0], map);
+	gridTriDiag3x3(map, d, e, v0, v1, v2);
+	if ( !gridEigTriDiag3x3(d, e, v0, v1, v2 )) {
+	  printf("%s: %d: gridfacerExamine: gridEigTriDiag3x3 FAILED.\n",
+		 __FILE__,__LINE__);
+	  return NULL;
+	}
+	/* the new EigTriDiag should be ortho-normal */
+	gridEigOrtho3x3( v0, v1, v2 );
+
+	h0 = 1.0/sqrt(d[0]);
+	h1 = 1.0/sqrt(d[1]);
+	h2 = 1.0/sqrt(d[2]);
+
+	printf("face %d %f %f %f\n",face,h0,h1,h2);
       }
     }
   }
