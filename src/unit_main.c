@@ -23,6 +23,7 @@
 #include "gridmpi.h"
 #include "gridfiller.h"
 #include "gridedger.h"
+#include "gridfacer.h"
 
 #define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
 
@@ -394,6 +395,19 @@ int main( int argc, char *argv[] )
 
     gridWriteTecplotSurfaceGeom(grid,"le_remove.tec");
     gridHistogram(grid, "histogram.m");
+
+    printf("writing output project %s\n",outputProject);
+    gridSavePart( grid, outputProject );
+    printf("Done.\n");
+    return 0;
+  }
+  if ( -2 == phase ) {
+    GridFacer *gf;
+    int faceId;
+
+    faceId = 1;
+    gf = gridfacerCreate(grid,faceId);
+    gridfacerFree(gf);
 
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );

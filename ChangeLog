@@ -1,3 +1,8 @@
+2006-01-09 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerCreate) added a new module modeled
+	after gridedger to adapt faces only.
+
 2006-01-09 12:01 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) --phase -1: stop at bob's favorite:
