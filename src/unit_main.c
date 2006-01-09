@@ -405,8 +405,15 @@ int main( int argc, char *argv[] )
     GridFacer *gf;
     int faceId;
 
+    gridSetMinInsertCost( grid, -0.5 );
+    gridConstrainSurfaceNode(grid);
+    gridCacheCurrentGridAndMap(grid);
+
     faceId = 1;
     gf = gridfacerCreate(grid,faceId);
+
+    gridfacerExamine(gf);
+
     gridfacerFree(gf);
 
     printf("writing output project %s\n",outputProject);

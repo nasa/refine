@@ -39,6 +39,8 @@ void gridfacerGridHasBeenFreed(void *voidGridFacer );
 
 int gridfacerFaceId(GridFacer *);
 
+GridFacer *gridfacerExaine(GridFacer *);
+
 END_C_DECLORATION
 
-#endif /* GRIDEDGER_H */
+#endif /* GRIDFACER_H */

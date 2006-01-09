@@ -22,34 +22,34 @@
 
 GridFacer *gridfacerCreate( Grid *grid, int faceId )
 {
-  GridFacer *ge;
-  ge = malloc(sizeof(GridFacer));
-  ge->grid = grid;
+  GridFacer *gf;
+  gf = malloc(sizeof(GridFacer));
+  gf->grid = grid;
 
-  ge->faceId = faceId;
+  gf->faceId = faceId;
 
-  gridAttachPacker( grid, gridfacerPack, (void *)ge );
-  gridAttachNodeSorter( grid, gridfacerSortNode, (void *)ge );
-  gridAttachReallocator( grid, gridfacerReallocator, (void *)ge );
-  gridAttachFreeNotifier( grid, gridfacerGridHasBeenFreed, (void *)ge );
+  gridAttachPacker( grid, gridfacerPack, (void *)gf );
+  gridAttachNodeSorter( grid, gridfacerSortNode, (void *)gf );
+  gridAttachReallocator( grid, gridfacerReallocator, (void *)gf );
+  gridAttachFreeNotifier( grid, gridfacerGridHasBeenFreed, (void *)gf );
 
-  return ge;
+  return gf;
 }
 
-Grid *gridfacerGrid(GridFacer *ge)
+Grid *gridfacerGrid(GridFacer *gf)
 {
-  return ge->grid;
+  return gf->grid;
 }
 
-void gridfacerFree(GridFacer *ge)
+void gridfacerFree(GridFacer *gf)
 {
-  if (NULL != ge->grid) { 
-    gridDetachPacker( ge->grid );
-    gridDetachNodeSorter( ge->grid );
-    gridDetachReallocator( ge->grid );
-    gridDetachFreeNotifier( ge->grid );
+  if (NULL != gf->grid) { 
+    gridDetachPacker( gf->grid );
+    gridDetachNodeSorter( gf->grid );
+    gridDetachReallocator( gf->grid );
+    gridDetachFreeNotifier( gf->grid );
   }
-  free(ge);
+  free(gf);
 }
 
 void gridfacerPack(void *voidGridFacer, 
@@ -59,13 +59,13 @@ void gridfacerPack(void *voidGridFacer,
 		   int nedge, int maxedge, int *edgeo2n)
 {
   int i;
-  GridFacer *ge = (GridFacer *)voidGridFacer;
+  GridFacer *gf = (GridFacer *)voidGridFacer;
 }
 
 void gridfacerSortNode(void *voidGridFacer, int maxnode, int *o2n)
 {
   int i;
-  GridFacer *ge = (GridFacer *)voidGridFacer;
+  GridFacer *gf = (GridFacer *)voidGridFacer;
 }
 
 void gridfacerReallocator(void *voidGridFacer, int reallocType, 
@@ -76,12 +76,29 @@ void gridfacerReallocator(void *voidGridFacer, int reallocType,
 
 void gridfacerGridHasBeenFreed(void *voidGridFacer )
 {
-  GridFacer *ge = (GridFacer *)voidGridFacer;
-  ge->grid = NULL;
+  GridFacer *gf = (GridFacer *)voidGridFacer;
+  gf->grid = NULL;
 }
 
-int gridfacerFaceId(GridFacer *ge)
+int gridfacerFaceId(GridFacer *gf)
 {
-  return ge->faceId;
+  return gf->faceId;
 }
 
+GridFacer *gridfacerExamine(GridFacer *gf)
+{
+  int face;
+  int nodes[3];
+  int faceId;
+
+  Grid *grid = gridfacerGrid( gf );
+
+  for ( face = 0 ; face < gridMaxFace(grid) ; face++ ) {
+    if ( grid == gridFace( grid, face, nodes, &faceId ) ) {
+      if ( gridfacerFaceId(gf) == faceId ) {
+	printf("face %d\n",face);
+      }
+    }
+  }
+  return gf; 
+}
