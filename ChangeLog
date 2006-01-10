@@ -1,5 +1,11 @@
 2006-01-10 11:15 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridfacer.c (gridfacerRemoveEdge) to remove and edge from
+	current list.
+	* src/gridfacer.c (gridfacerSwap) to swap to improve edge length.
+
+2006-01-10 11:15 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridfacer.c (gridfacerSwap) started swapping routine to
 	reduce edge ratio.
 

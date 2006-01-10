@@ -17,6 +17,7 @@
 #include "gridmath.h"
 #include "gridmetric.h"
 #include "gridcad.h"
+#include "gridswap.h"
 #include "gridinsert.h"
 #include "gridfacer.h"
 
@@ -147,6 +148,35 @@ GridFacer *gridfacerAddUniqueEdge(GridFacer *gf, int nodeA, int nodeB)
   return gf;
 }
 
+GridFacer *gridfacerRemoveEdge(GridFacer *gf, int nodeA, int nodeB)
+{
+  int node0, node1;
+  int edge;
+  int found;
+
+  node0 = MIN(nodeA,nodeB);
+  node1 = MAX(nodeA,nodeB);
+
+  found = EMPTY;
+  for ( edge = 0 ; edge < gridfacerEdges(gf) ; edge++ ) {
+    if ( (node0 == gf->e2n[0+2*edge]) && 
+	 (node1 == gf->e2n[1+2*edge]) ) {
+      found = edge;
+      break;
+    }
+  }
+
+  if ( EMPTY == found ) return NULL;
+
+  gf->nedge--;
+  for ( edge = found ; edge < gridfacerEdges(gf) ; edge++ ) {
+    gf->e2n[0+2*edge] = gf->e2n[0+2*(edge+1)];
+    gf->e2n[1+2*edge] = gf->e2n[1+2*(edge+1)];
+  }
+
+  return gf;
+}
+
 GridFacer *gridfacerExamine(GridFacer *gf)
 {
   int edge;
@@ -201,8 +231,17 @@ GridFacer *gridfacerSwap(GridFacer *gf)
 
     current_ratio = gridEdgeRatio(grid,node0,node1);
     swapped_ratio = gridEdgeRatio(grid,node2,node3);
-    printf("edge%8d current%8.4f swapped%8.4f\n",
-	   edge,current_ratio,swapped_ratio);
+
+    if ( ((swapped_ratio < current_ratio) && (current_ratio > 1.0)) ||
+	 ((swapped_ratio > current_ratio) && (swapped_ratio < 1.0)) ){
+      if ( grid == gridSwapEdge( grid, NULL, node0, node1 ) ) {
+	gridfacerRemoveEdge(gf, node0, node1);
+	gridfacerAddUniqueEdge(gf, node2, node3);
+	printf("edge%8d current%8.4f swapped%8.4f\n",
+	       edge,current_ratio,swapped_ratio);
+	continue;
+      }
+    }
     edge++;
   }
   return gf; 

@@ -413,6 +413,8 @@ int main( int argc, char *argv[] )
     gf = gridfacerCreate(grid,faceId);
 
     gridfacerSwap(gf);
+    gridfacerSwap(gf);
+    gridUntangle(grid);
 
     gridfacerFree(gf);
 
