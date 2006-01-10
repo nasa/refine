@@ -706,6 +706,8 @@ GridEdger *gridedgerInsert(GridEdger *ge )
     /* return NULL if the new node was not added */
     if (EMPTY == newnode) {
       ge->total_unused = 0; free(ge->unused); ge->unused=NULL;
+      printf( "ERROR: gridedgerInsert: %s: %d: new node not added\n",
+	      __FILE__, __LINE__ );
       return NULL;
     }
 
