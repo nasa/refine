@@ -324,7 +324,7 @@ int main( int argc, char *argv[] )
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
 
-  gridSetPhase(grid, phase);
+  gridSetPhase(grid, ABS(phase));
   if ( -1 == phase ) {
     int edge, edgeId;
     GridEdger **ge;
@@ -433,6 +433,24 @@ int main( int argc, char *argv[] )
     printf("Done.\n");
     return 0;
   }
+  if ( -3 == phase ) {
+    gridSetMinInsertCost( grid, 1.0e-5 );
+    gridSetMinSurfaceSmoothCost( grid, 1.0e-5 );
+    gridConstrainSurfaceNode(grid);
+    gridCacheCurrentGridAndMap(grid);
+    gridSetCostFunction( grid, gridCOST_FCN_EDGE_LENGTH );
+    iterations = 8;
+    ratioCollapse = 0.1;
+    ratioSplit    = 1.0;
+    for ( iteration=0; (iteration<iterations) ; iteration++){
+      gridAdapt(grid, ratioCollapse, ratioSplit);
+      STATUS;
+    }
+    printf("writing output project %s\n",outputProject);
+    gridSavePart( grid, outputProject );
+    printf("Done.\n");
+    return 0;
+ }
 
   ratioCollapse = 0.3;
   ratioSplit    = 1.0;
