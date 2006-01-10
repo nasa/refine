@@ -164,3 +164,46 @@ GridFacer *gridfacerExamine(GridFacer *gf)
   }
   return gf; 
 }
+GridFacer *gridfacerSwap(GridFacer *gf)
+{
+  int edge;
+  int node0, node1;
+  int face0, face1;
+  int nodes[3], faceId;
+  int node2, node3;
+  double current_ratio;
+  double swapped_ratio;
+
+  Grid *grid = gridfacerGrid( gf );
+
+  edge = 0;
+  while ( edge < gridfacerEdges(gf) ) {
+    node0 = gf->e2n[0+2*edge];
+    node1 = gf->e2n[1+2*edge];
+    if ( 0 > gridParentGeometry(grid,node0,node1 ) ) {
+      edge++;
+      continue;
+    }
+    face0 = gridFindFaceWithNodesUnless(grid, node0, node1, EMPTY);
+    if (EMPTY == face0) {
+      printf("%s: %d: face0 EMPTY.\n",__FILE__,__LINE__);
+      return NULL;
+    }
+    face1 = gridFindFaceWithNodesUnless(grid, node0, node1, face0);
+    if (EMPTY == face1) {
+      printf("%s: %d: face1 EMPTY for interior face.\n",__FILE__,__LINE__);
+      return NULL;
+    }
+    gridFace(grid,face0,nodes,&faceId);
+    node2 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
+    gridFace(grid,face1,nodes,&faceId);
+    node3 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
+
+    current_ratio = gridEdgeRatio(grid,node0,node1);
+    swapped_ratio = gridEdgeRatio(grid,node2,node3);
+    printf("edge%8d current%8.4f swapped%8.4f\n",
+	   edge,current_ratio,swapped_ratio);
+    edge++;
+  }
+  return gf; 
+}

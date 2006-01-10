@@ -412,7 +412,7 @@ int main( int argc, char *argv[] )
     faceId = 1;
     gf = gridfacerCreate(grid,faceId);
 
-    gridfacerExamine(gf);
+    gridfacerSwap(gf);
 
     gridfacerFree(gf);
 

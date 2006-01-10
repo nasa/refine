@@ -47,6 +47,7 @@ int gridfacerEdges(GridFacer *);
 GridFacer *gridfacerAddUniqueEdge(GridFacer *, int node0, int node1);
 
 GridFacer *gridfacerExaine(GridFacer *);
+GridFacer *gridfacerSwap(GridFacer *);
 
 END_C_DECLORATION
 
