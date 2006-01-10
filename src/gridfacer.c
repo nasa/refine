@@ -263,8 +263,6 @@ GridFacer *gridfacerSwap(GridFacer *gf)
       if ( grid == gridSwapEdge( grid, NULL, node0, node1 ) ) {
 	gridfacerRemoveEdge(gf, node0, node1);
 	gridfacerAddUniqueEdge(gf, node2, node3);
-	printf("edge%8d current%8.4f swapped%8.4f\n",
-	       edge,current_ratio,swapped_ratio);
 	continue;
       }
     }
@@ -335,16 +333,10 @@ GridFacer *gridfacerSplit(GridFacer *gf)
       gridfacerAddUniqueEdge(gf, node1, newnode);
       gridfacerAddUniqueEdge(gf, node2, newnode);
       gridfacerAddUniqueEdge(gf, node3, newnode);
-      printf("rank%8d current%8.4f split%8.4f%8.4f%8.4f%8.4f\n",
-	     rank,
-	     gridEdgeRatio(grid,node0,node1),
-	     gridEdgeRatio(grid,node0,newnode),
-	     gridEdgeRatio(grid,node1,newnode),
-	     gridEdgeRatio(grid,node2,newnode),
-	     gridEdgeRatio(grid,node3,newnode));
     }
   }
   free(local_e2n);
   planFree(plan);
   return gf; 
 }
+
