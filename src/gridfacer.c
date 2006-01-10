@@ -79,7 +79,7 @@ void gridfacerPack(void *voidGridFacer,
 {
   int i;
   GridFacer *gf = (GridFacer *)voidGridFacer;
-  for ( i = 0 ; i < 2*gridfaceEdges(gf) ; i++ ) {
+  for ( i = 0 ; i < 2*gridfacerEdges(gf) ; i++ ) {
     gf->e2n[i] = nodeo2n[gf->e2n[i]];
   }
 }
@@ -88,7 +88,7 @@ void gridfacerSortNode(void *voidGridFacer, int maxnode, int *o2n)
 {
   int i;
   GridFacer *gf = (GridFacer *)voidGridFacer;
-  for ( i = 0 ; i < 2*gridfaceEdges(gf) ; i++ ) {
+  for ( i = 0 ; i < 2*gridfacerEdges(gf) ; i++ ) {
     gf->e2n[i] = o2n[gf->e2n[i]];
   }
 }
