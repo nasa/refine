@@ -22,6 +22,10 @@ struct GridFacer {
   void *gridRubyVALUEusedForGC;
 
   int faceId;
+
+  int nedge;
+  int maxedge;
+  int *e2n;
 };
 
 GridFacer *gridfacerCreate(Grid *, int faceId);
@@ -38,6 +42,9 @@ void gridfacerReallocator(void *voidGridFacer, int reallocType,
 void gridfacerGridHasBeenFreed(void *voidGridFacer );
 
 int gridfacerFaceId(GridFacer *);
+int gridfacerEdges(GridFacer *);
+
+GridFacer *gridfacerAddUniqueEdge(GridFacer *, int node0, int node1);
 
 GridFacer *gridfacerExaine(GridFacer *);
 

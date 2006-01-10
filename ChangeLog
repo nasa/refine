@@ -1,3 +1,10 @@
+2006-01-10 08:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerCreate) forms list of unique
+	triangle sides on startup.
+	* src/gridfacer.c (gridfacerEdges) return the number of unique
+	triangle sides.
+
 2006-01-09 13:36 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerExamine) to list out faces and fix typos.

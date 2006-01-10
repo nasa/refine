@@ -22,6 +22,10 @@
 
 GridFacer *gridfacerCreate( Grid *grid, int faceId )
 {
+  int face;
+  int nodes[3];
+  int id;
+
   GridFacer *gf;
   gf = malloc(sizeof(GridFacer));
   gf->grid = grid;
@@ -33,6 +37,20 @@ GridFacer *gridfacerCreate( Grid *grid, int faceId )
   gridAttachReallocator( grid, gridfacerReallocator, (void *)gf );
   gridAttachFreeNotifier( grid, gridfacerGridHasBeenFreed, (void *)gf );
 
+  gf->nedge = 0;
+  gf->maxedge = 0;
+  gf->e2n = NULL;
+
+  for ( face = 0 ; face < gridMaxFace(grid) ; face++ ) {
+    if ( grid == gridFace( grid, face, nodes, &faceId ) ) {
+      if ( gridfacerFaceId(gf) == faceId ) {
+	gridfacerAddUniqueEdge( gf, nodes[0], nodes[1] );
+	gridfacerAddUniqueEdge( gf, nodes[1], nodes[2] );
+	gridfacerAddUniqueEdge( gf, nodes[2], nodes[0] );
+      }
+    }
+  }
+
   return gf;
 }
 
@@ -43,6 +61,7 @@ Grid *gridfacerGrid(GridFacer *gf)
 
 void gridfacerFree(GridFacer *gf)
 {
+  if (NULL != gf->e2n) free(gf->e2n);
   if (NULL != gf->grid) { 
     gridDetachPacker( gf->grid );
     gridDetachNodeSorter( gf->grid );
@@ -60,12 +79,18 @@ void gridfacerPack(void *voidGridFacer,
 {
   int i;
   GridFacer *gf = (GridFacer *)voidGridFacer;
+  for ( i = 0 ; i < 2*gridfaceEdges(gf) ; i++ ) {
+    gf->e2n[i] = nodeo2n[gf->e2n[i]];
+  }
 }
 
 void gridfacerSortNode(void *voidGridFacer, int maxnode, int *o2n)
 {
   int i;
   GridFacer *gf = (GridFacer *)voidGridFacer;
+  for ( i = 0 ; i < 2*gridfaceEdges(gf) ; i++ ) {
+    gf->e2n[i] = o2n[gf->e2n[i]];
+  }
 }
 
 void gridfacerReallocator(void *voidGridFacer, int reallocType, 
@@ -83,6 +108,43 @@ void gridfacerGridHasBeenFreed(void *voidGridFacer )
 int gridfacerFaceId(GridFacer *gf)
 {
   return gf->faceId;
+}
+
+int gridfacerEdges(GridFacer *gf)
+{
+  return gf->nedge;
+}
+
+GridFacer *gridfacerAddUniqueEdge(GridFacer *gf, int nodeA, int nodeB)
+{
+  int node0, node1;
+  int edge;
+  int chunk;
+
+  node0 = MIN(nodeA,nodeB);
+  node1 = MAX(nodeA,nodeB);
+
+  for ( edge = 0 ; edge < gridfacerEdges(gf) ; edge++ ) {
+    if ( (node0 == gf->e2n[0+2*edge]) && 
+	 (node1 == gf->e2n[1+2*edge]) ) return gf; 
+  }
+
+  gf->nedge++;
+  if ( gf->nedge >= gf->maxedge ) {
+    chunk = 2000;
+    gf->maxedge += chunk;
+    if ( NULL == gf->e2n ) {
+      gf->e2n = (int *)malloc(2 * gf->maxedge * sizeof(int));
+    } else {
+      gf->e2n = (int *)realloc( gf->e2n, 2 * gf->maxedge * sizeof(int));
+    }
+  }
+  edge = gf->nedge - 1;
+
+  gf->e2n[0+2*edge]=node0; 
+  gf->e2n[1+2*edge]=node1;
+
+  return gf;
 }
 
 GridFacer *gridfacerExamine(GridFacer *gf)

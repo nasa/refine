@@ -36,6 +36,12 @@ VALUE gridfacer_faceId( VALUE self )
   return INT2NUM( gridfacerFaceId( gf ) );
 }
 
+VALUE gridfacer_edges( VALUE self )
+{
+  GET_GF_FROM_SELF;
+  return INT2NUM( gridfacerEdges( gf ) );
+}
+
 VALUE cGridFacer;
 
 void Init_GridFacer() 
@@ -43,4 +49,5 @@ void Init_GridFacer()
   cGridFacer = rb_define_class( "GridFacer", rb_cObject );
   rb_define_singleton_method( cGridFacer, "new", gridfacer_new, 2 );
   rb_define_method( cGridFacer, "faceId", gridfacer_faceId, 0 );
+  rb_define_method( cGridFacer, "edges", gridfacer_edges, 0 );
 }
