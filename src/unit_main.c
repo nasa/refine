@@ -416,6 +416,9 @@ int main( int argc, char *argv[] )
     gridfacerSwap(gf);
     gridUntangle(grid);
 
+    gridfacerSplit(gf);
+    gridUntangle(grid);
+
     gridfacerFree(gf);
 
     printf("writing output project %s\n",outputProject);

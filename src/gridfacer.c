@@ -14,6 +14,7 @@
 #include <values.h>
 
 #include "queue.h"
+#include "plan.h"
 #include "gridmath.h"
 #include "gridmetric.h"
 #include "gridcad.h"
@@ -194,6 +195,7 @@ GridFacer *gridfacerExamine(GridFacer *gf)
   }
   return gf; 
 }
+
 GridFacer *gridfacerSwap(GridFacer *gf)
 {
   int edge;
@@ -244,5 +246,80 @@ GridFacer *gridfacerSwap(GridFacer *gf)
     }
     edge++;
   }
+  return gf; 
+}
+
+GridFacer *gridfacerSplit(GridFacer *gf)
+{
+  int edge;
+  int node0, node1;
+  double ratio;
+  int rank;
+  int *local_e2n;
+  int face0, face1;
+  int nodes[3], faceId;
+  int node2, node3;
+  int newnode;
+
+  Plan *plan;
+
+  Grid *grid = gridfacerGrid( gf );
+
+  plan = planCreate( gridfacerEdges(gf), 100 );
+
+  for ( edge = 0 ; edge < gridfacerEdges(gf) ; edge++ ) {
+    node0 = gf->e2n[0+2*edge];
+    node1 = gf->e2n[1+2*edge];
+    if ( 0 < gridParentGeometry(grid,node0,node1 ) ) {
+      ratio = gridEdgeRatio(grid,node0,node1);
+      if ( ratio > 1.0 ) {
+	planAddItemWithPriority( plan, edge, ratio );
+      }
+    }
+  }
+
+  planDeriveRankingsFromPriorities( plan );
+
+  local_e2n = (int *)malloc( 2 * planSize( plan ) * sizeof(int) );
+  for ( rank = planSize( plan )-1 ; rank >=0  ; rank-- ) {
+    edge = planItemWithThisRanking( plan, rank);
+    local_e2n[0+2*rank] = gf->e2n[0+2*edge];
+    local_e2n[1+2*rank] = gf->e2n[1+2*edge];
+  }
+
+  for ( rank = planSize( plan )-1 ; rank >=0  ; rank-- ) {
+    node0 = local_e2n[0+2*rank];
+    node1 = local_e2n[1+2*rank];
+    face0 = gridFindFaceWithNodesUnless(grid, node0, node1, EMPTY);
+    if (EMPTY == face0) {
+      printf("%s: %d: face0 EMPTY.\n",__FILE__,__LINE__);
+      return NULL;
+    }
+    face1 = gridFindFaceWithNodesUnless(grid, node0, node1, face0);
+    if (EMPTY == face1) {
+      printf("%s: %d: face1 EMPTY for interior face.\n",__FILE__,__LINE__);
+      return NULL;
+    }
+    gridFace(grid,face0,nodes,&faceId);
+    node2 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
+    gridFace(grid,face1,nodes,&faceId);
+    node3 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
+    newnode = gridSplitEdgeRatio(grid, NULL, node0, node1, 0.5);
+    if ( EMPTY != newnode ) {
+      gridfacerRemoveEdge(gf, node0, node1);
+      gridfacerAddUniqueEdge(gf, node0, newnode);
+      gridfacerAddUniqueEdge(gf, node1, newnode);
+      gridfacerAddUniqueEdge(gf, node2, newnode);
+      gridfacerAddUniqueEdge(gf, node3, newnode);
+      printf("rank%8d current%8.4f split%8.4f%8.4f%8.4f%8.4f\n",
+	     rank,
+	     gridEdgeRatio(grid,node0,node1),
+	     gridEdgeRatio(grid,node0,newnode),
+	     gridEdgeRatio(grid,node1,newnode),
+	     gridEdgeRatio(grid,node2,newnode),
+	     gridEdgeRatio(grid,node3,newnode));
+    }
+  }
+  free(local_e2n);
   return gf; 
 }
