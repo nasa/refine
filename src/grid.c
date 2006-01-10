@@ -2422,8 +2422,12 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     }
 
     if (EMPTY == current_cell) {
-      printf("%s: %d: gridFindEnclosingCell round-off: no more next \n",
-	     __FILE__,__LINE__);
+      return last_cell;
+    }
+
+    if (EMPTY == current_cell) {
+      printf("%s: %d: gridFindEnclosingCell round-off: no more next%6.2f%6.2f%6.2f%6.2f\n",
+	     __FILE__,__LINE__,bary[0],bary[1],bary[2],bary[3]);
       return EMPTY;
     }
   }

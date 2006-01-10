@@ -1,3 +1,8 @@
+2006-01-10 13:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindEnclosingCell) silently ignore unable to find
+	next cell due to boundary.
+
 2006-01-10 13:29 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerSplit) split long edges.
