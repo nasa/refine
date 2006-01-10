@@ -47,7 +47,9 @@ int gridfacerEdges(GridFacer *);
 GridFacer *gridfacerAddUniqueEdge(GridFacer *, int node0, int node1);
 GridFacer *gridfacerRemoveEdge(GridFacer *, int node0, int node1);
 
-GridFacer *gridfacerExaine(GridFacer *);
+GridFacer *gridfacerExamine(GridFacer *);
+GridFacer *gridfacerRatioRange(GridFacer *, 
+			       double *longest_ratio, double *shortest_ratio);
 
 GridFacer *gridfacerSwap(GridFacer *);
 GridFacer *gridfacerSplit(GridFacer *);

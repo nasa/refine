@@ -1,3 +1,9 @@
+2006-01-10 13:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -2: put together swap and split ops.
+	* src/gridfacer.c (gridfacerRatioRange) longest and shortest
+	interior edges.
+
 2006-01-10 13:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindEnclosingCell) silently ignore unable to find

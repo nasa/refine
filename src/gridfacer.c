@@ -181,20 +181,44 @@ GridFacer *gridfacerRemoveEdge(GridFacer *gf, int nodeA, int nodeB)
 GridFacer *gridfacerExamine(GridFacer *gf)
 {
   int edge;
-  int nodes[2];
+  int node0, node1;
   double ratio;
   Grid *grid = gridfacerGrid( gf );
 
   for ( edge = 0 ; edge < gridfacerEdges(gf) ; edge++ ) {
-    nodes[0] = gf->e2n[0+2*edge];
-    nodes[1] = gf->e2n[1+2*edge];
-    if ( 0 < gridParentGeometry(grid,nodes[0],nodes[1] ) ) {
-      ratio = gridEdgeRatio(grid,nodes[0],nodes[1]);
+    node0 = gf->e2n[0+2*edge];
+    node1 = gf->e2n[1+2*edge];
+    if ( 0 < gridParentGeometry(grid,node0,node1 ) ) {
+      ratio = gridEdgeRatio(grid,node0,node1);
       printf("edge%8d ratio%8.4f\n",edge,ratio);
     }
   }
   return gf; 
 }
+
+GridFacer *gridfacerRatioRange(GridFacer *gf, 
+			       double *longest_ratio, double *shortest_ratio)
+{
+  int edge;
+  int node0, node1;
+  double ratio;
+  Grid *grid = gridfacerGrid( gf );
+
+  *longest_ratio  =   0.0;
+  *shortest_ratio = 999.0;
+
+  for ( edge = 0 ; edge < gridfacerEdges(gf) ; edge++ ) {
+    node0 = gf->e2n[0+2*edge];
+    node1 = gf->e2n[1+2*edge];
+    if ( 0 < gridParentGeometry(grid,node0,node1 ) ) {
+      ratio = gridEdgeRatio(grid,node0,node1);
+      *longest_ratio  = MAX((*longest_ratio),ratio);
+      *shortest_ratio = MIN((*shortest_ratio),ratio);
+    }
+  }
+  return gf;
+}
+
 
 GridFacer *gridfacerSwap(GridFacer *gf)
 {
@@ -321,5 +345,6 @@ GridFacer *gridfacerSplit(GridFacer *gf)
     }
   }
   free(local_e2n);
+  planFree(plan);
   return gf; 
 }

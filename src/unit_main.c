@@ -404,23 +404,30 @@ int main( int argc, char *argv[] )
   if ( -2 == phase ) {
     GridFacer *gf;
     int faceId;
-
+    double ratio0, ratio1;
+    
     gridSetMinInsertCost( grid, -0.5 );
     gridConstrainSurfaceNode(grid);
     gridCacheCurrentGridAndMap(grid);
 
-    faceId = 1;
-    gf = gridfacerCreate(grid,faceId);
+    for (faceId = 1; faceId <= gridNGeomFace(grid); faceId++) {
+      gf = gridfacerCreate(grid,faceId);
 
-    gridfacerSwap(gf);
-    gridfacerSwap(gf);
-    gridUntangle(grid);
-
-    gridfacerSplit(gf);
-    gridUntangle(grid);
-
-    gridfacerFree(gf);
-
+      for ( i = 0 ; i < 20 ; i++ ) {
+	gridfacerSwap(gf);
+	gridSetMinInsertCost( grid, -10.0 );
+	gridfacerSplit(gf);
+	gridUntangle(grid);
+	gridSetMinInsertCost( grid, -0.5 );
+	gridfacerSwap(gf);
+	gridfacerRatioRange(gf,&ratio0,&ratio1);
+	printf("face%6d cycle%3d ratios%8.3f%8.3f\n",faceId,i,ratio0,ratio1);
+	if (1.0 > ratio0) break;
+      }
+      
+      gridfacerFree(gf);
+    }
+    
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
     printf("Done.\n");
