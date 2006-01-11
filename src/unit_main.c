@@ -434,16 +434,12 @@ int main( int argc, char *argv[] )
     return 0;
   }
   if ( -3 == phase ) {
-    gridSetMinInsertCost( grid, 1.0e-5 );
-    gridSetMinSurfaceSmoothCost( grid, 1.0e-5 );
-    gridConstrainSurfaceNode(grid);
+    gridSetMinInsertCost( grid, -0.5 );
     gridCacheCurrentGridAndMap(grid);
     gridSetCostFunction( grid, gridCOST_FCN_EDGE_LENGTH );
-    iterations = 8;
-    ratioCollapse = 0.1;
-    ratioSplit    = 1.0;
+    iterations = 4;
     for ( iteration=0; (iteration<iterations) ; iteration++){
-      gridAdapt(grid, ratioCollapse, ratioSplit);
+      gridAdaptVolumeEdges(grid);
       STATUS;
     }
     printf("writing output project %s\n",outputProject);
