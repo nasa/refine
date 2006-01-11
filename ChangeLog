@@ -1,3 +1,10 @@
+2006-01-11 14:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMinSwapCost,gridMinSwapCostImprovement) store
+	the swap cost limits in the Grid struct.
+	* src/gridswap.c (gridMinSwapCost,gridMinSwapCostImprovement) use
+	instead of COSTLIMIT and REQUIRED_IMPROVEMENT.
+
 2006-01-11 08:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdaptVolumeEdges) only split long volume edges.

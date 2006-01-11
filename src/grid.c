@@ -218,6 +218,8 @@ Grid *gridImport(int maxnode, int nnode,
   grid->costConstraint = gridCOST_CNST_VOLUME;
   grid->min_allowed_insert_cost = 0.01;
   grid->min_allowed_surface_smooth_cost = 0.01;
+  grid->min_allowed_swap_cost = -0.5;
+  grid->min_allowed_swap_cost_improvement = 1.0e-12;
 
   grid->tecplotGeomFile = NULL;
   grid->tecplotScalarFile = NULL;
@@ -4590,6 +4592,28 @@ Grid *gridSetMinSurfaceSmoothCost(Grid *grid, double min_cost )
 double gridMinSurfaceSmoothCost(Grid *grid )
 {
   return grid->min_allowed_surface_smooth_cost;
+}
+
+Grid *gridSetMinSwapCost(Grid *grid, double min_cost )
+{
+  grid->min_allowed_swap_cost = min_cost;
+  return grid;
+}
+
+double gridMinSwapCost(Grid *grid )
+{
+  return grid->min_allowed_swap_cost;
+}
+
+Grid *gridSetMinSwapCostImprovement(Grid *grid, double min_cost )
+{
+  grid->min_allowed_swap_cost_improvement = min_cost;
+  return grid;
+}
+
+double gridMinSwapCostImprovement(Grid *grid )
+{
+  return grid->min_allowed_swap_cost_improvement;
 }
 
 int gridStoredCostDegree( Grid *grid )

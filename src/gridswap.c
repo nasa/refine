@@ -15,9 +15,6 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 
-#define COSTLIMIT (-0.5)
-#define REQUIRED_IMPROVEMENT (1.0e-12)
-
 Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 {
   int cellnodes[4], facenodes[3];
@@ -221,8 +218,10 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     return NULL;
   }
 
-  if ( COSTLIMIT < gridMinARAroundNodeExceptGem(grid, uncommonNodes[0]) &&
-       COSTLIMIT < gridMinARAroundNodeExceptGem(grid, uncommonNodes[1]) ) {
+  if ( gridMinSwapCost(grid) < 
+       gridMinARAroundNodeExceptGem(grid, uncommonNodes[0]) &&
+       gridMinSwapCost(grid) < 
+       gridMinARAroundNodeExceptGem(grid, uncommonNodes[1]) ) {
     gridRemoveCellAndQueue(grid, queue, cell);
     gridRemoveFaceAndQueue(grid, queue, faces[face0] );
     gridRemoveFaceAndQueue(grid, queue, faces[face1] );
@@ -296,8 +295,8 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) ); 
   bestcost = MIN( gridAR( grid, nodes[2] ), bestcost ); 
 
-  if ( ( (bestcost-origcost) > REQUIRED_IMPROVEMENT) && 
-       ( bestcost > COSTLIMIT )  ) {
+  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
+       ( bestcost > gridMinSwapCost(grid) )  ) {
     gridRemoveCellAndQueue(grid, queue, cell0);
     gridRemoveCellAndQueue(grid, queue, cell1);
     for ( i = 0 ; i < 3 ; i++ )
@@ -570,7 +569,7 @@ Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 )
 
   bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) );
 
-  if ( bestcost > origcost && bestcost > COSTLIMIT ) {
+  if ( bestcost > origcost && bestcost > gridMinSwapCost(grid) ) {
 
     gridRemoveGemAndQueue(grid,queue);
 
@@ -646,8 +645,8 @@ Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 )
     bestindex = 1;
   }
 
-  if ( ( (bestcost-origcost) > REQUIRED_IMPROVEMENT) && 
-       ( bestcost > COSTLIMIT )  ) {
+  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
+       ( bestcost > gridMinSwapCost(grid) )  ) {
 
     if (bestindex == 0){
       nodes[0][0]=n0;
@@ -749,8 +748,8 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
     gridCycleEquator( grid );
   }
 
-  if ( ( (bestcost-origcost) > REQUIRED_IMPROVEMENT) && 
-       ( bestcost > COSTLIMIT )  ) {
+  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
+       ( bestcost > gridMinSwapCost(grid) )  ) {
 
     for ( i = 0 ; i < bestindex ; i++ ) 
       gridCycleEquator( grid );
@@ -808,8 +807,8 @@ Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
   
   gridGetCombo6( grid, nodes, costs, &bestcost, bestcombo );
   
-  if ( ( (bestcost-origcost) > REQUIRED_IMPROVEMENT) && 
-       ( bestcost > COSTLIMIT )  ) {
+  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
+       ( bestcost > gridMinSwapCost(grid) )  ) {
       
     gridRemoveGemAndQueue(grid,queue);
     
@@ -984,8 +983,8 @@ Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
 
   gridGetCombo7( grid, nodes, costs, &bestcost, bestcombo );
   
-  if ( ( (bestcost-origcost) > REQUIRED_IMPROVEMENT) && 
-       ( bestcost > COSTLIMIT )  ) {
+  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
+       ( bestcost > gridMinSwapCost(grid) )  ) {
 
     gridRemoveGemAndQueue(grid,queue);
     
