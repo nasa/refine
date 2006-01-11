@@ -502,7 +502,6 @@ class TestGrid < Test::Unit::TestCase
   grid.addNode(0,0,1)
   grid.addCell(0,1,2,3)
   target = [0.25,0.25,0.25]
-  ans = [0, 0.25,0.25,0.25,0.25]
   find = grid.findEnclosingCell(0,target)
   ans = [0.25,0.25,0.25,0.25]
   assert_equal( 0, find[0] )
@@ -520,7 +519,6 @@ class TestGrid < Test::Unit::TestCase
   grid.addCell(0,1,2,3)
   grid.addCell(1,2,3,4)
   target = [1.0,1.0,1.0]
-  ans = [0, 0.25,0.25,0.25,0.25]
   find = grid.findEnclosingCell(0,target)
   ans = [0.0,0.0,0.0,1.0]
   assert_equal( 1, find[0] )
