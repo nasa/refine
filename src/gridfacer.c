@@ -229,8 +229,15 @@ GridFacer *gridfacerSwap(GridFacer *gf)
   int node2, node3;
   double current_ratio;
   double swapped_ratio;
+  double cost, cost_improvement;
 
   Grid *grid = gridfacerGrid( gf );
+
+  cost = gridMinSwapCost(grid);
+  cost_improvement = gridMinSwapCostImprovement(grid);
+
+  gridSetMinSwapCost(grid,-0.5);
+  gridSetMinSwapCostImprovement(grid,-10.0);
 
   edge = 0;
   while ( edge < gridfacerEdges(gf) ) {
@@ -243,11 +250,15 @@ GridFacer *gridfacerSwap(GridFacer *gf)
     face0 = gridFindFaceWithNodesUnless(grid, node0, node1, EMPTY);
     if (EMPTY == face0) {
       printf("%s: %d: face0 EMPTY.\n",__FILE__,__LINE__);
+      gridSetMinSwapCost(grid,cost);
+      gridSetMinSwapCostImprovement(grid,cost_improvement);
       return NULL;
     }
     face1 = gridFindFaceWithNodesUnless(grid, node0, node1, face0);
     if (EMPTY == face1) {
       printf("%s: %d: face1 EMPTY for interior face.\n",__FILE__,__LINE__);
+      gridSetMinSwapCost(grid,cost);
+      gridSetMinSwapCostImprovement(grid,cost_improvement);
       return NULL;
     }
     gridFace(grid,face0,nodes,&faceId);
@@ -268,6 +279,9 @@ GridFacer *gridfacerSwap(GridFacer *gf)
     }
     edge++;
   }
+
+  gridSetMinSwapCost(grid,cost);
+  gridSetMinSwapCostImprovement(grid,cost_improvement);
   return gf; 
 }
 

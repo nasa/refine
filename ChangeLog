@@ -1,3 +1,8 @@
+2006-01-11 14:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSwap) lower gridMinSwapCost and
+	gridMinSwapCostImprovement to get more swaps.
+
 2006-01-11 14:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridMinSwapCost,gridMinSwapCostImprovement) store
