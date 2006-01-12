@@ -1156,6 +1156,7 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
   int newedge0, newedge1;
   double t0, t1, newT;
   double minAR;
+  GridBool undo;
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return EMPTY; 
   if ( NULL == gridEquator( grid, n0, n1) ) return EMPTY;
@@ -1177,8 +1178,6 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
     xyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
-  gridInterpolateMap2(grid, n0, n1, ratio, newnode );
-  gridInterpolateAux2(grid, n0, n1, ratio, newnode );
 
   /* insert new edges to use for projection and validity check */
   newedge0 = newedge1 = EMPTY;
@@ -1251,24 +1250,30 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
 					   faceId1 );
   }
 
-  /* find the worst cell */
-  minAR = 2.0; 
-  for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
-    cell = gridGem(grid,igem);
-    gridCell(grid, cell, nodes);
-    for ( inode = 0 ; inode < 4 ; inode++ ){
-      node = nodes[inode];
-      newnodes0[inode]=node;
-      newnodes1[inode]=node;
-      if ( node == n0 ) newnodes0[inode] = newnode;
-      if ( node == n1 ) newnodes1[inode] = newnode;
+  undo = ( (grid != gridInterpolateMap2(grid, n0, n1, ratio, newnode ) ) ||
+	   (grid != gridInterpolateAux2(grid, n0, n1, ratio, newnode ) ) );
+
+  if (!undo) {
+    /* find the worst cell */
+    minAR = 2.0; 
+    for ( igem=0 ; igem<gridNGem(grid) ; igem++ ){
+      cell = gridGem(grid,igem);
+      gridCell(grid, cell, nodes);
+      for ( inode = 0 ; inode < 4 ; inode++ ){
+	node = nodes[inode];
+	newnodes0[inode]=node;
+	newnodes1[inode]=node;
+	if ( node == n0 ) newnodes0[inode] = newnode;
+	if ( node == n1 ) newnodes1[inode] = newnode;
+      }
+      minAR = MIN(minAR,gridAR(grid,newnodes0));
+      minAR = MIN(minAR,gridAR(grid,newnodes1));
     }
-    minAR = MIN(minAR,gridAR(grid,newnodes0));
-    minAR = MIN(minAR,gridAR(grid,newnodes1));
+    undo = ( minAR < gridMinInsertCost(grid) );
   }
 
   /* if the worst cell is not good enough then undo the split and return */
-  if (minAR < gridMinInsertCost(grid) ) {
+  if ( undo ) {
     /* the remove and queue methods test for EMPTY==target */
     gridRemoveFaceAndQueue(grid, queue, newface_gap0n0 );
     gridRemoveFaceAndQueue(grid, queue, newface_gap0n1 );

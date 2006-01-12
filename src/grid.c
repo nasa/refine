@@ -2473,6 +2473,50 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     last_cell = current_cell;
     current_cell = EMPTY;
 
+    if  ( bary[0] < bary[1] && bary[0] < bary[2] && bary[0] < bary[3] ) {
+      other_cell = gridFindOtherCellWith3Nodes(grid,
+					       nodes[1], nodes[2], nodes[3],
+					       last_cell );
+      if (verb) { printf("bary[0] %f %d\n",bary[0],other_cell); };
+      if (EMPTY != other_cell ) {
+	current_cell = other_cell;
+	continue;
+      }
+    }
+
+    if  ( bary[1] < bary[0] && bary[1] < bary[2] && bary[1] < bary[3] ) {
+      other_cell = gridFindOtherCellWith3Nodes(grid,
+					       nodes[0], nodes[2], nodes[3],
+					       last_cell );
+      if (verb) { printf("bary[1] %f %d\n",bary[1],other_cell); };
+      if (EMPTY != other_cell ) {
+	current_cell = other_cell;
+	continue;
+      }
+    }
+
+    if  ( bary[2] < bary[1] && bary[2] < bary[1] && bary[2] < bary[3] ) {
+      other_cell = gridFindOtherCellWith3Nodes(grid,
+					       nodes[0], nodes[1], nodes[3],
+					       last_cell );
+      if (verb) { printf("bary[2] %f %d\n",bary[2],other_cell); };
+      if (EMPTY != other_cell ) {
+	current_cell = other_cell;
+	continue;
+      }
+    }
+
+    if  ( bary[3] < bary[0] && bary[3] < bary[1] && bary[3] < bary[2] ) {
+      other_cell = gridFindOtherCellWith3Nodes(grid,
+					       nodes[0], nodes[1], nodes[2],
+					       last_cell );
+      if (verb) { printf("bary[3] %f %d\n",bary[3],other_cell); };
+      if (EMPTY != other_cell ) {
+	current_cell = other_cell;
+	continue;
+      }
+    }
+
     if  ( bary[0] < tol ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[1], nodes[2], nodes[3],
@@ -2518,12 +2562,11 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     }
 
     if (EMPTY == current_cell) {
-      other_cell = gridFindClosestBoundaryCell(grid, last_cell, target, bary );
-      if ( EMPTY != other_cell ) return other_cell;
-      printf("%s: %d: gridFindEnclosingCell %s\n",
-	     __FILE__,__LINE__,"gridFindClosestBoundaryCell EMPTY");
-
-      return EMPTY;
+      current_cell = gridFindClosestBoundaryCell(grid, last_cell, target, bary);
+      if ( EMPTY != current_cell ) 
+	printf("%s: %d: gridFindEnclosingCell %s\n",
+	       __FILE__,__LINE__,"gridFindClosestBoundaryCell EMPTY");
+      return current_cell;
     }
   }
 
@@ -4772,8 +4815,8 @@ Grid *gridMap(Grid *grid, int node, double *map)
     gridNodeXYZ( grid, node, xyz );
     enclosing_cell = gridFindEnclosingCell( child, starting_guess, xyz, bary );
     if ( EMPTY == enclosing_cell ) {
-      printf("%s: %d: gridMap: can not find enclosing_cell (EMPTY)\n", 
-	     __FILE__, __LINE__ );
+      printf("%s: %d: gridMap: can not find enclosing_cell (EMPTY) for %d\n", 
+	     __FILE__, __LINE__, node );
       return NULL;
     }
     grid->child_reference[node] = enclosing_cell;
@@ -4826,7 +4869,14 @@ Grid *gridInterpolateMap2(Grid *grid, int node0, int node1, double ratio,
     }
   }else{
     if ( NULL != grid->child_reference ) {
-      grid->child_reference[target] = grid->child_reference[node0];
+      double xyz[3], bary[4];
+      gridNodeXYZ(grid,target,xyz);
+      grid->child_reference[target] = 
+	gridFindEnclosingCell(grid->child,grid->child_reference[node0],xyz,bary);
+      if (EMPTY == grid->child_reference[target])
+	grid->child_reference[target] = 
+	  gridFindEnclosingCell(grid->child,grid->child_reference[node1],xyz,bary);
+      if (EMPTY == grid->child_reference[target]) return NULL;		      
     }
   }
   return grid;

@@ -1,3 +1,13 @@
+2006-01-12 16:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridInterpolateMap2) try node0 and node1 references
+	for parent cell, return NULL if fails.
+	* src/grid.c (gridFindEnclosingCell) try largest bary direction first.
+	for parent cell, return NULL if fails.
+	* src/gridinsert.c (gridSplitEdgeRatio) moved gridInterpolateMap2
+	after node projection, so interpolation parent can be tested.
+	undo edge split if interpolation fails.
+	
 2006-01-12 13:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindEnclosingCell) follow into
