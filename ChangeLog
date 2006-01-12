@@ -1,3 +1,14 @@
+2006-01-12 13:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindEnclosingCell) follow into
+	gridFindClosestBoundaryCell.	
+	* src/grid.c (gridFindClosestBoundaryCell) initialize 
+	gridFindClosestBoundaryFace and translate back into cell.
+	* src/grid.c (gridFindClosestBoundaryFace) navigates boundary faces.
+	* src/grid.c (gridBarycentricCoordinateTri) bary coor for faces
+	* src/grid.c (gridProjectToTriangle) snap point to tri 
+	(should be in grid math)
+
 2006-01-11 14:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerSwap) lower gridMinSwapCost and

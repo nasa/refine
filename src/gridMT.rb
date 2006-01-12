@@ -525,6 +525,45 @@ class TestGrid < Test::Unit::TestCase
   4.times { |i| assert_in_delta( ans[i], find[i+1], tol, 'element '+i.to_s ) }
  end
 
+ def test_gridFindEnclosingCell_outside_domain_1
+  tol = 1.0e-14
+  grid = Grid.new(4,2,2,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addNode(1,1,0)
+  grid.addCell(0,1,2,3)
+  grid.addCell(2,1,4,3)
+  grid.addFace(0,1,2,10)
+  grid.addFace(2,1,4,10)
+  target = [0.5,0.5,-1.0]
+  find = grid.findEnclosingCell(1,target)
+  assert_equal( 0, find[0] )
+  ans = [0.0,0.5,0.5,0.0]
+  4.times { |i| assert_in_delta( ans[i], find[i+1], tol, 'element '+i.to_s ) }
+ end
+
+ def test_gridFindEnclosingCell_outside_domain_2
+  tol = 1.0e-14
+  grid = Grid.new(4,2,3,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addNode(1,1,0)
+  grid.addCell(0,1,2,3)
+  grid.addCell(2,1,4,3)
+  grid.addFace(0,1,2,10)
+  grid.addFace(2,1,4,10)
+  grid.addFace(0,2,3,10)
+  target = [-1.0,0.5,0.5]
+  find = grid.findEnclosingCell(1,target)
+  assert_equal( 0, find[0] )
+  ans = [0.0,0.0,0.5,0.5]
+  4.times { |i| assert_in_delta( ans[i], find[i+1], tol, 'element '+i.to_s ) }
+ end
+
  def testGetGem
   grid = Grid.new(5,3,0,0)
   grid.addCell(3,4,0,1)

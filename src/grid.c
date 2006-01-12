@@ -2293,8 +2293,8 @@ Grid *gridBarycentricCoordinate(Grid *grid, double *xyz0, double *xyz1,
   double norm[3];
   double dir0[3], dir1[3];
 
-  /* these should be compted with kramers rule for numerical stability
-   * and efficntcy */
+  /* these should be computed with kramers rule for numerical stability
+   * and efficiency */
 
   gridSubtractVector(xyz3, xyz1, edge0);
   gridSubtractVector(xyz2, xyz1, edge1);
@@ -2327,11 +2327,105 @@ Grid *gridBarycentricCoordinate(Grid *grid, double *xyz0, double *xyz1,
   return grid;
 }
 
+static Grid *gridProjectToTriangle(Grid * grid, double *projected_target, 
+			    double *xyz0, double *xyz1, double *xyz2 )
+{
+  double edge0[3], edge1[3];
+  double norm[3];
+  double disp[3];
+  double length;
+  gridSubtractVector(xyz1, xyz0, edge0);
+  gridSubtractVector(xyz2, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  { // ugly!!! refacotr to use gridmath method
+    length = sqrt(gridDotProduct(norm,norm));
+    if (length > 0 ) {
+      norm[0] /= length;
+      norm[1] /= length;
+      norm[2] /= length;
+    }
+  }
+  gridSubtractVector(projected_target, xyz0, disp);
+  length = gridDotProduct(disp,norm);
+  projected_target[0] -= length*norm[0];
+  projected_target[1] -= length*norm[1];
+  projected_target[2] -= length*norm[2];
+ 
+  return grid;
+}
+
+Grid *gridBarycentricCoordinateTri(Grid *grid, 
+				   double *xyz0, double *xyz1, double *xyz2,
+				   double *target, double *bary )
+{
+  /* these should be computed with kramers rule for numerical stability
+   * and efficiency */
+
+  double projected_target[3];
+  double edge0[3], edge1[3];
+  double norm[3];
+  double norm0[3];
+  double norm1[3];
+  double norm2[3];
+  double area, area0, area1, area2;
+
+  projected_target[0] = target[0];
+  projected_target[1] = target[1];
+  projected_target[2] = target[2];
+
+  gridProjectToTriangle(grid, projected_target, xyz0, xyz1, xyz2  );
+
+  /* these should be computed with kramers rule for numerical stability
+   * and efficiency */
+
+  gridSubtractVector(xyz1, xyz0, edge0);
+  gridSubtractVector(xyz2, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  area = 0.5 * sqrt(gridDotProduct(norm,norm));
+
+  if ( area < 1.0e-16 ) {
+    printf("%s: %d: gridBarycentricCoordinateTri area too small (divide by %e)\n",
+	   __FILE__,__LINE__,area);
+    return NULL;
+  }
+
+  { // ugly!!! refacotr to use gridmath method
+    if (area > 0 ) {
+      norm[0] /= (2.0*area);
+      norm[1] /= (2.0*area);
+      norm[2] /= (2.0*area);
+    }
+  }
+
+  gridSubtractVector(xyz1, projected_target, edge0);
+  gridSubtractVector(xyz2, projected_target, edge1);
+  gridCrossProduct(edge0,edge1,norm0);
+  area0 = 0.5 * gridDotProduct(norm0,norm);
+
+  gridSubtractVector(projected_target, xyz0, edge0);
+  gridSubtractVector(xyz2, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm1);
+  area1 = 0.5 * gridDotProduct(norm1,norm);
+
+  gridSubtractVector(xyz1, xyz0, edge0);
+  gridSubtractVector(projected_target, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm2);
+  area2 = 0.5 * gridDotProduct(norm2,norm);
+
+  bary[0] = area0/area;
+  bary[1] = area1/area;
+  bary[2] = area2/area;
+
+  return grid;
+}
+
 int gridFindEnclosingCell(Grid *grid, int starting_guess, 
 			  double *target, double *bary )
 {
   int current_cell, last_cell;
   int tries;
+  GridBool verb;
+  verb = FALSE;
 
   if (EMPTY == starting_guess) return EMPTY;
 
@@ -2341,9 +2435,10 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
     int other_cell;
     double tol;
-    GridBool verb;
 
     if (grid != gridCell( grid, current_cell, nodes )) {
+      printf("%s: %d: gridFindClosestBoundaryCell %s %d\n",
+	     __FILE__,__LINE__,"invalid cell",current_cell);
       return EMPTY;
     }
 
@@ -2359,7 +2454,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       return EMPTY;
     }
 
-    verb = FALSE;
     if (verb) {
       printf("try%5d cell%10d bary%10.6f%10.6f%10.6f%10.6f\n",
 	     tries, current_cell, bary[0], bary[1], bary[2], bary[3] );
@@ -2379,7 +2473,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     last_cell = current_cell;
     current_cell = EMPTY;
 
-    if  ( bary[0] < 0.0 ) {
+    if  ( bary[0] < tol ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[1], nodes[2], nodes[3],
 					       last_cell );
@@ -2390,7 +2484,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       }
     }
 
-    if  ( bary[1] < 0.0 ) {
+    if  ( bary[1] < tol ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[2], nodes[3],
 					       last_cell );
@@ -2401,7 +2495,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       }
     }
 
-    if  ( bary[2] < 0.0 ) {
+    if  ( bary[2] < tol ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[3],
 					       last_cell );
@@ -2412,7 +2506,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       }
     }
 
-    if  ( bary[3] < 0.0 ) {
+    if  ( bary[3] < tol ) {
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[2],
 					       last_cell );
@@ -2424,19 +2518,203 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     }
 
     if (EMPTY == current_cell) {
-      return last_cell;
-    }
+      other_cell = gridFindClosestBoundaryCell(grid, last_cell, target, bary );
+      if ( EMPTY != other_cell ) return other_cell;
+      printf("%s: %d: gridFindEnclosingCell %s\n",
+	     __FILE__,__LINE__,"gridFindClosestBoundaryCell EMPTY");
 
-    if (EMPTY == current_cell) {
-      printf("%s: %d: gridFindEnclosingCell round-off: no more next%6.2f%6.2f%6.2f%6.2f\n",
-	     __FILE__,__LINE__,bary[0],bary[1],bary[2],bary[3]);
       return EMPTY;
     }
   }
 
-  printf("%s: %d: gridFindEnclosingCell exhausted tries.\n",
-	 __FILE__,__LINE__);
+  printf("%s: %d: gridFindEnclosingCell exhausted tries at%10.5f%10.5f%10.5f.\n",
+	 __FILE__,__LINE__,target[0],target[1],target[2]);
 
+  return EMPTY;
+}
+
+int gridFindClosestBoundaryCell(Grid *grid, int starting_guess, 
+				double *target, double *bary )
+{
+  int current_face;
+  int current_cell;
+  int faceId;
+  int nodes[4];
+  double trib[3];
+  double projected_target[3];
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3]; 
+
+  if (grid != gridCell( grid, starting_guess, nodes )) {
+    printf("%s: %d: gridFindClosestBoundaryCell bad starting_guess.\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
+
+  current_face = EMPTY;
+
+  if (EMPTY == current_face) {
+    current_face = gridFindFace( grid, nodes[0], nodes[1], nodes[2] );
+  }
+  if (EMPTY == current_face) {
+    current_face = gridFindFace( grid, nodes[0], nodes[1], nodes[3] );
+  }
+  if (EMPTY == current_face) {
+    current_face = gridFindFace( grid, nodes[0], nodes[2], nodes[3] );
+  }
+  if (EMPTY == current_face) {
+    current_face = gridFindFace( grid, nodes[1], nodes[2], nodes[3] );
+  }
+
+  if (EMPTY == current_face) {
+    printf("%s: %d: gridFindClosestBoundaryCell starting_guess has no face.\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
+
+  current_face = gridFindClosestBoundaryFace(grid, current_face, 
+					     target, trib );
+  if (EMPTY == current_face) {
+    printf("%s: %d: gridFindClosestBoundaryCell: can't find closest face.\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
+
+  current_cell = gridFindCellWithFace( grid, current_face );
+
+  if (EMPTY == current_face) {
+    printf("%s: %d: gridFindClosestBoundaryCell: can't find closest cell.\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
+
+  projected_target[0] = target[0];
+  projected_target[1] = target[1];
+  projected_target[2] = target[2];
+  gridFace( grid, current_face, nodes, &faceId );
+  gridNodeXYZ(grid, nodes[0], xyz0);
+  gridNodeXYZ(grid, nodes[1], xyz1);
+  gridNodeXYZ(grid, nodes[2], xyz2);
+  gridProjectToTriangle(grid, projected_target, xyz0, xyz1, xyz2  );
+
+  gridCell( grid, current_cell, nodes );
+  gridNodeXYZ(grid, nodes[0], xyz0);
+  gridNodeXYZ(grid, nodes[1], xyz1);
+  gridNodeXYZ(grid, nodes[2], xyz2);
+  gridNodeXYZ(grid, nodes[3], xyz3);
+
+  if (grid != gridBarycentricCoordinate( grid, xyz0, xyz1, xyz2, xyz3, 
+					 projected_target, bary ) ) {
+    printf("%s: %d: gridFindClosestBoundaryCell: gridBarycentricCoordinate NULL\n",
+	   __FILE__,__LINE__);
+    return EMPTY;
+  }
+
+  return current_cell;
+}
+
+int gridFindClosestBoundaryFace(Grid *grid, int starting_guess, 
+				double *target, double *trib )
+{
+  int current_face;
+  int tries;
+
+  if (EMPTY == starting_guess) return EMPTY;
+
+  current_face = starting_guess;
+  for (tries=1;tries<=100;tries++) {
+    int nodes[3];
+    int faceId;
+    double xyz0[3], xyz1[3], xyz2[3];
+    double projected_target[3];
+    int last_face, other_face;
+    double tol;
+    GridBool verb;
+
+    if (grid != gridFace( grid, current_face, nodes, &faceId )) {
+      printf("%s: %d: gridFindClosestBoundaryFace %s\n",
+	     __FILE__,__LINE__," invalid face");
+      return EMPTY;
+    }
+
+    gridNodeXYZ(grid, nodes[0], xyz0);
+    gridNodeXYZ(grid, nodes[1], xyz1);
+    gridNodeXYZ(grid, nodes[2], xyz2);
+
+    projected_target[0] = target[0];
+    projected_target[1] = target[1];
+    projected_target[2] = target[2];
+
+    gridProjectToTriangle(grid, projected_target, xyz0, xyz1, xyz2  );
+    
+    if (grid != gridBarycentricCoordinateTri( grid, xyz0, xyz1, xyz2, 
+					      projected_target, trib ) ) {
+      printf("%s: %d: gridFindClosestBoundaryFace: %s\n",
+	     __FILE__,__LINE__,"gridBarycentricCoordinateTri NULL");
+      return EMPTY;
+    }
+
+    verb = FALSE;
+    if (verb) {
+      printf("try%5d face%10d trib%10.6f%10.6f%10.6f\n",
+	     tries, current_face, trib[0], trib[1], trib[2] );
+      printf("target%10.6f%10.6f%10.6f\n",target[0],target[1],target[2] );
+      printf("projected%10.6f%10.6f%10.6f\n",
+	     projected_target[0],projected_target[1],projected_target[2] );
+      printf("xyz%10.6f%10.6f%10.6f\n",xyz0[0],xyz0[1],xyz0[2] );
+      printf("xyz%10.6f%10.6f%10.6f\n",xyz1[0],xyz1[1],xyz1[2] );
+      printf("xyz%10.6f%10.6f%10.6f\n",xyz2[0],xyz2[1],xyz2[2] );
+    }
+
+    tol = -1.0e-13;
+    if ( trib[0] >= tol && trib[1] >= tol && trib[2] >= tol ) {
+      return current_face;
+    }
+    
+    last_face = current_face;
+    current_face = EMPTY;
+
+    if  ( trib[0] < tol ) {
+      other_face = gridFindFaceWithNodesUnless(grid,
+					       nodes[1], nodes[2],
+					       last_face );
+      if (verb) { printf("trib[0] %f %d\n",trib[0],other_face); };
+      if (EMPTY != other_face ) {
+	current_face = other_face;
+	continue;
+      }
+    }
+
+    if  ( trib[1] < tol ) {
+      other_face = gridFindFaceWithNodesUnless(grid,
+					       nodes[0], nodes[2],
+					       last_face );
+      if (verb) { printf("trib[0] %f %d\n",trib[1],other_face); };
+      if (EMPTY != other_face ) {
+	current_face = other_face;
+	continue;
+      }
+    }
+
+    if  ( trib[2] < tol ) {
+      other_face = gridFindFaceWithNodesUnless(grid,
+					       nodes[0], nodes[1],
+					       last_face );
+      if (verb) { printf("trib[0] %f %d\n",trib[2],other_face); };
+      if (EMPTY != other_face ) {
+	current_face = other_face;
+	continue;
+      }
+    }
+
+    if (EMPTY == current_face) {
+      printf("%s: %d: gridFindClosestBoundaryFace %s\n",
+	     __FILE__,__LINE__," cant find next face for search");
+      return EMPTY;
+    }
+  }
+
+  printf("%s: %d: gridFindClosestBoundaryFace %s %10.5f%10.5f%10.5f.\n",
+	 __FILE__,__LINE__,"exhausted tries at",target[0],target[1],target[2]);
   return EMPTY;
 }
 
