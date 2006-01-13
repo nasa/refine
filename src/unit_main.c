@@ -164,6 +164,114 @@ Grid *gridHistogram( Grid *grid, char *filename )
   return grid;
 }
 
+Grid *gridPhase1(Grid *grid )
+{
+  int i;
+  int edge, edgeId;
+  GridEdger **ge;
+
+  gridSetPhase(grid, 1);
+  gridSetMinInsertCost( grid, -0.5 );
+  gridConstrainSurfaceNode(grid);
+
+  ge = (GridEdger **)malloc( gridNGeomEdge(grid) * sizeof(GridEdger *) );
+  for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
+    edgeId = edge+1;
+    ge[edge] = gridedgerCreate(grid,edgeId);
+  }
+
+#define FREE_ALL_GE(ge) { \
+for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) { \
+  gridedgerFree(ge[edge]); \
+} \
+free(ge); }
+
+  for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
+    if ( ge[edge] != gridedgerDiscretizeOnce(ge[edge]) ) {
+      printf("gridedgerDiscretizeOnce failed for edge %d\n",edgeId);
+      FREE_ALL_GE(ge);
+      return NULL;
+    }
+    if ( ge[edge] != gridedgerInsert(ge[edge]) ) {
+      printf("gridedgerInsert failed for edge %d\n",edgeId);
+      FREE_ALL_GE(ge);
+      return NULL;
+    }
+    if (grid != gridUntangle(grid) ) {
+      printf("gridUntangle failed for edge %d\n",edgeId);
+      FREE_ALL_GE(ge);
+      return NULL;      
+    }
+  }
+
+  for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
+    edgeId = edge+1;
+    if ( ge[edge] != gridedgerRemoveUnused(ge[edge]) ) {
+      printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
+      FREE_ALL_GE(ge);
+      return NULL;
+    }
+    for ( i = 0 ; i < gridedgerUnusedNodes(ge[edge]) ; i++ ) {
+      double xyz[3];
+      gridNodeXYZ(grid, gridedgerUnusedNode(ge[edge],i), xyz);
+      printf("edge%4d xyz %f %f %f\n",
+	     edgeId, xyz[0], xyz[1], xyz[2] );
+    }
+  }
+    
+  FREE_ALL_GE(ge);
+
+  return grid;
+}
+
+Grid *gridPhase2(Grid *grid )
+{
+  int i;
+  GridFacer *gf;
+  int faceId;
+  double ratio0, ratio1;
+    
+  gridSetPhase(grid, 2);
+  gridSetMinInsertCost( grid, -0.5 );
+  gridConstrainSurfaceNode(grid);
+
+  for (faceId = 1; faceId <= gridNGeomFace(grid); faceId++) {
+    gf = gridfacerCreate(grid,faceId);
+
+    for ( i = 0 ; i < 20 ; i++ ) {
+      gridfacerSwap(gf);
+      gridSetMinInsertCost( grid, -10.0 );
+      gridfacerSplit(gf);
+      gridUntangle(grid);
+      gridSetMinInsertCost( grid, -0.5 );
+      gridfacerSwap(gf);
+      gridfacerRatioRange(gf,&ratio0,&ratio1);
+      printf("face%6d cycle%3d ratios%8.3f%8.3f\n",faceId,i,ratio0,ratio1);
+      if (1.0 > ratio0) break;
+    }
+      
+    gridfacerFree(gf);
+  }
+  return grid;
+}
+
+Grid *gridPhase3(Grid *grid )
+{
+  int iteration;
+  int iterations;
+
+  gridSetPhase(grid, 3);
+
+  gridSetMinInsertCost( grid, -0.5 );
+  gridSetCostFunction( grid, gridCOST_FCN_EDGE_LENGTH );
+  iterations = 4;
+  for ( iteration=0; (iteration<iterations) ; iteration++){
+    gridAdaptVolumeEdges(grid);
+  }
+  return grid;
+}
+
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -324,99 +432,18 @@ int main( int argc, char *argv[] )
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
 
-  gridSetPhase(grid, ABS(phase));
-  if ( -1 == phase ) {
-    int edge, edgeId;
-    GridEdger **ge;
-
-    ge = (GridEdger **)malloc( gridNGeomEdge(grid) * sizeof(GridEdger *) );
-    gridSetMinInsertCost( grid, -0.5 );
-    gridConstrainSurfaceNode(grid);
+  if (4 == phase) {
     gridCacheCurrentGridAndMap(grid);
-
-    for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
-      edgeId = edge+1;
-      ge[edge] = gridedgerCreate(grid,edgeId);
-      if ( ge[edge] != gridedgerDiscretizeOnce(ge[edge]) ) {
-	printf("gridedgerDiscretizeOnce failed for edge %d\n",edgeId);
-	return 1;
-      }
-      if ( ge[edge] != gridedgerInsert(ge[edge]) ) {
-	printf("gridedgerInsert failed for edge %d\n",edgeId);
-	return 1;
-      }
-      gridUntangle(grid);
-    }
-
-    for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
-      edgeId = edge+1;
-      if ( ge[edge] != gridedgerRemoveUnused(ge[edge]) ) {
-	printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
-	return 1;
-      }
-      for ( i = 0 ; i < gridedgerUnusedNodes(ge[edge]) ; i++ ) {
-	double xyz[3];
-	gridNodeXYZ(grid, gridedgerUnusedNode(ge[edge],i), xyz);
-	printf("edge%4d xyz %f %f %f\n",
-	       edgeId, xyz[0], xyz[1], xyz[2] );
-      }
-    }
-    
-    for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
-      gridedgerFree(ge[edge]);
-    }
-    free(ge);
-
+    gridPhase1(grid);
+    gridPhase2(grid);
+    gridPhase3(grid);
+    STATUS;
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
     printf("Done.\n");
     return 0;
-  }
-  if ( -2 == phase ) {
-    GridFacer *gf;
-    int faceId;
-    double ratio0, ratio1;
-    
-    gridSetMinInsertCost( grid, -0.5 );
-    gridConstrainSurfaceNode(grid);
-    gridCacheCurrentGridAndMap(grid);
-
-    for (faceId = 1; faceId <= gridNGeomFace(grid); faceId++) {
-      gf = gridfacerCreate(grid,faceId);
-
-      for ( i = 0 ; i < 20 ; i++ ) {
-	gridfacerSwap(gf);
-	gridSetMinInsertCost( grid, -10.0 );
-	gridfacerSplit(gf);
-	gridUntangle(grid);
-	gridSetMinInsertCost( grid, -0.5 );
-	gridfacerSwap(gf);
-	gridfacerRatioRange(gf,&ratio0,&ratio1);
-	printf("face%6d cycle%3d ratios%8.3f%8.3f\n",faceId,i,ratio0,ratio1);
-	if (1.0 > ratio0) break;
-      }
-      
-      gridfacerFree(gf);
-    }
-    
-    printf("writing output project %s\n",outputProject);
-    gridSavePart( grid, outputProject );
-    printf("Done.\n");
-    return 0;
-  }
-  if ( -3 == phase ) {
-    gridSetMinInsertCost( grid, -0.5 );
-    gridCacheCurrentGridAndMap(grid);
-    gridSetCostFunction( grid, gridCOST_FCN_EDGE_LENGTH );
-    iterations = 4;
-    for ( iteration=0; (iteration<iterations) ; iteration++){
-      gridAdaptVolumeEdges(grid);
-      STATUS;
-    }
-    printf("writing output project %s\n",outputProject);
-    gridSavePart( grid, outputProject );
-    printf("Done.\n");
-    return 0;
+  } else {
+    gridSetPhase(grid, phase);
   }
 
   ratioCollapse = 0.3;

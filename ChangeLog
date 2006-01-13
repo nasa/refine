@@ -1,3 +1,8 @@
+2006-01-13  9:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase 4: call all phases, which are now
+	in functions.
+
 2006-01-13  8:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridUntangle) to fix an uninitalize memeory read,
