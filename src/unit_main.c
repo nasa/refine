@@ -446,6 +446,9 @@ int main( int argc, char *argv[] )
     STATUS;
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
+    sprintf(filename,"%s.fgrid", outputProject );
+    printf("dumping FAST file to %s\n",filename);
+    gridExportFAST(grid,filename);
     printf("Done.\n");
     return 0;
   } else {
