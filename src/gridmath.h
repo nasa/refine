@@ -49,6 +49,9 @@ double gridVectorLength(double *norm);
 void gridVectorNormalize(double *norm);
 void gridVectorOrthogonalize(double *norm, double *axle);
 
+void gridProjectToTriangle(double *projected_target, 
+			   double *xyz0, double *xyz1, double *xyz2 );
+
 void gridRotateDirection(double *v0, double *v1, 
 			 double *axle, double rotation, double *result);
 

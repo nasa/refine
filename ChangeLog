@@ -1,3 +1,9 @@
+2006-01-13 10:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridProjectToTriangle) moved from grid.c to
+	allow gridmath methods to be used (this inverts dependency for
+	grid->gridmath)
+
 2006-01-13  9:23 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (main) --phase 4: call all phases, which are now

@@ -13,6 +13,7 @@ require 'Adj/Adj'
 require 'Line/Line'
 require 'Sort/Sort'
 require 'Grid/Grid'
+require 'GridMath/GridMath'
 
 class TestGrid < Test::Unit::TestCase
 

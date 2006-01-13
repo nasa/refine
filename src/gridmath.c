@@ -38,6 +38,25 @@ void gridVectorOrthogonalize(double *norm, double *axle)
   gridVectorNormalize(norm);
 }
 
+void gridProjectToTriangle(double *projected_target, 
+			   double *xyz0, double *xyz1, double *xyz2 )
+{
+  double edge0[3], edge1[3];
+  double norm[3];
+  double disp[3];
+  double length;
+  gridSubtractVector(xyz1, xyz0, edge0);
+  gridSubtractVector(xyz2, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridVectorNormalize(norm);
+
+  gridSubtractVector(projected_target, xyz0, disp);
+  length = gridDotProduct(disp,norm);
+  projected_target[0] -= length*norm[0];
+  projected_target[1] -= length*norm[1];
+  projected_target[2] -= length*norm[2];
+}
+
 void gridRotateDirection(double *v0, double *v1, 
 			 double *axle, double rotation, double *result)
 {
