@@ -41,6 +41,7 @@ int gridInsertInToGeomFace(Grid *g, double *xyz);
 int gridInsertInToVolume(Grid *g, double *xyz);
 
 Grid *gridCollapseEdgeToAnything(Grid *g, Queue *q, int n0, int n1);
+/* node1 is removed */
 Grid *gridCollapseEdge(Grid *g, Queue *q, int n0, int n1,
 		       double requestedRatio );
 
