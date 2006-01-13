@@ -334,13 +334,6 @@ int main( int argc, char *argv[] )
     gridConstrainSurfaceNode(grid);
     gridCacheCurrentGridAndMap(grid);
 
-    if (FALSE) {
-      gridWriteTecplotSurfaceGeom(grid,"le_orig.tec");
-      gridHistogram(grid, "histogram.m");
-      printf("Done.\n");
-      return 0;
-    }
-
     for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
       edgeId = edge+1;
       ge[edge] = gridedgerCreate(grid,edgeId);
@@ -352,14 +345,7 @@ int main( int argc, char *argv[] )
 	printf("gridedgerInsert failed for edge %d\n",edgeId);
 	return 1;
       }
-      printf("\n");
-    }
-
-    if (FALSE) {
-      gridWriteTecplotSurfaceGeom(grid,"le_insert.tec");
-      gridHistogram(grid, "histogram.m");
-      printf("Done.\n");
-      return 0;
+      gridUntangle(grid);
     }
 
     for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
@@ -376,25 +362,10 @@ int main( int argc, char *argv[] )
       }
     }
     
-    if (FALSE) {
-      gridSetMinInsertCost( grid, -10.0 );
-      for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
-	edgeId = edge+1;
-	if ( ge[edge] != gridedgerRemoveUnused(ge[edge]) ) {
-	  printf("gridedgerRemoveUnused failed for edge %d\n",edgeId);
-	  return 1;
-	}
-	gridUntangle(grid);
-      }
-    }
-
     for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
       gridedgerFree(ge[edge]);
     }
     free(ge);
-
-    gridWriteTecplotSurfaceGeom(grid,"le_remove.tec");
-    gridHistogram(grid, "histogram.m");
 
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
@@ -446,7 +417,7 @@ int main( int argc, char *argv[] )
     gridSavePart( grid, outputProject );
     printf("Done.\n");
     return 0;
- }
+  }
 
   ratioCollapse = 0.3;
   ratioSplit    = 1.0;
