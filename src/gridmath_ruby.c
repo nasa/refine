@@ -72,6 +72,47 @@ static VALUE grid_vectorOrthogonalize( VALUE self, VALUE rb_vect, VALUE rb_axle)
   return rb_vect;
 }
 
+static VALUE grid_barycentricCoordinate( VALUE self, 
+					VALUE rb_xyz0, VALUE rb_xyz1, 
+					VALUE rb_xyz2, VALUE rb_xyz3, 
+					VALUE rb_target )
+{
+  int i;
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double target[3], bary[4];
+  VALUE rb_bary;
+  for (i=0;i<3;i++){
+    xyz0[i] = NUM2DBL(rb_ary_entry(rb_xyz0, i));
+    xyz1[i] = NUM2DBL(rb_ary_entry(rb_xyz1, i));
+    xyz2[i] = NUM2DBL(rb_ary_entry(rb_xyz2, i));
+    xyz3[i] = NUM2DBL(rb_ary_entry(rb_xyz3, i));
+    target[i] = NUM2DBL(rb_ary_entry(rb_target, i));
+  }
+  gridBarycentricCoordinate( xyz0, xyz1,xyz2, xyz3, target, bary );
+  rb_bary = rb_ary_new2(4);
+  for(i=0;i<4;i++) rb_ary_store( rb_bary, i, rb_float_new(bary[i]) );
+  return rb_bary;
+}
+
+static VALUE grid_barycentricCoordinateTri( VALUE self,
+					    VALUE rb_xyz0,
+					    VALUE rb_xyz1,
+					    VALUE rb_xyz2,
+					    VALUE rb_target )
+{
+  int i;
+  double xyz0[3], xyz1[3], xyz2[3], target[3], bary[3];
+  VALUE rb_bary;
+  for (i=0;i<3;i++) xyz0[i] = NUM2DBL(rb_ary_entry(rb_xyz0, i));
+  for (i=0;i<3;i++) xyz1[i] = NUM2DBL(rb_ary_entry(rb_xyz1, i));
+  for (i=0;i<3;i++) xyz2[i] = NUM2DBL(rb_ary_entry(rb_xyz2, i));
+  for (i=0;i<3;i++) target[i]  = NUM2DBL(rb_ary_entry(rb_target,  i));
+  gridBarycentricCoordinateTri( xyz0, xyz1, xyz2, target, bary );
+  rb_bary = rb_ary_new2(3);
+  for (i=0;i<3;i++) rb_ary_store(rb_bary, i, rb_float_new(bary[i]));
+  return rb_bary;
+}
+
 static VALUE grid_rotateDirection( VALUE self, VALUE rb_v0, VALUE rb_v1,
 				VALUE rb_axle, VALUE rotation )
 {
@@ -259,25 +300,6 @@ static VALUE grid_matrixDeterminate( VALUE self, VALUE rb_m )
   return rb_float_new(gridMatrixDeterminate( m ));
 }
 
-static VALUE grid_triangularBarycentricCoordinate3D( VALUE self,
-						     VALUE rb_xyz0,
-						     VALUE rb_xyz1,
-						     VALUE rb_xyz2,
-						     VALUE rb_xyz )
-{
-  int i;
-  double xyz0[3], xyz1[3], xyz2[3], xyz[3], bary[3];
-  VALUE rb_bary;
-  for (i=0;i<3;i++) xyz0[i] = NUM2DBL(rb_ary_entry(rb_xyz0, i));
-  for (i=0;i<3;i++) xyz1[i] = NUM2DBL(rb_ary_entry(rb_xyz1, i));
-  for (i=0;i<3;i++) xyz2[i] = NUM2DBL(rb_ary_entry(rb_xyz2, i));
-  for (i=0;i<3;i++) xyz[i]  = NUM2DBL(rb_ary_entry(rb_xyz,  i));
-  gridTriangularBarycentricCoordinate3D( xyz0, xyz1, xyz2, xyz, bary );
-  rb_bary = rb_ary_new2(3);
-  for (i=0;i<3;i++) rb_ary_store(rb_bary, i, rb_float_new(bary[i]));
-  return rb_bary;
-}
-
 VALUE cGridMath;
 
 void Init_GridMath(  )
@@ -288,7 +310,12 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "crossProduct", grid_crossProduct, 2 );
   rb_define_method( cGridMath, "vectorLength", grid_vectorLength, 1 );
   rb_define_method( cGridMath, "vectorNormalize", grid_vectorNormalize, 1 );
-  rb_define_method( cGridMath, "vectorOrthogonalize", grid_vectorOrthogonalize, 2 );
+  rb_define_method( cGridMath, "vectorOrthogonalize", 
+                                grid_vectorOrthogonalize, 2 );
+  rb_define_method( cGridMath, "barycentricCoordinate", 
+		                grid_barycentricCoordinate, 5 );
+  rb_define_method( cGridMath, "barycentricCoordinateTri",
+		    grid_barycentricCoordinateTri, 4);
   rb_define_method( cGridMath, "rotateDirection", grid_rotateDirection, 4 );
   rb_define_method( cGridMath, "triDiag", grid_triDiag, 1 );
   rb_define_method( cGridMath, "triOffDiag", grid_triOffDiag, 1 );
@@ -302,6 +329,4 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "lu3x3", grid_lu3x3, 1 );
   rb_define_method( cGridMath, "backsolve3x3", grid_backsolve3x3, 2 );
   rb_define_method( cGridMath, "matrixDeterminate", grid_matrixDeterminate, 1);
-  rb_define_method( cGridMath, "triangularBarycentricCoordinate3D",
-		    grid_triangularBarycentricCoordinate3D, 4);
 }

@@ -725,7 +725,7 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
 
   }
   
-  gridTriangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,curve,bary);
+  gridBarycentricCoordinateTri(xyz0,xyz1,xyz2,curve,bary);
 
   //printf("bary %23.15e%23.15e%23.15e\n",bary[0],bary[1],bary[2]);
 

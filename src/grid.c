@@ -2285,113 +2285,6 @@ int gridFindCell(Grid *grid, int *nodes )
   return EMPTY;
 }
 
-Grid *gridBarycentricCoordinate(Grid *grid, double *xyz0, double *xyz1, 
-				double *xyz2, double *xyz3, 
-				double *target, double *bary )
-{
-  double edge0[3], edge1[3];
-  double norm[3];
-  double dir0[3], dir1[3];
-
-  /* these should be computed with kramers rule for numerical stability
-   * and efficiency */
-
-  gridSubtractVector(xyz3, xyz1, edge0);
-  gridSubtractVector(xyz2, xyz1, edge1);
-  gridCrossProduct(edge0,edge1,norm);
-  gridSubtractVector(target, xyz1, dir0);
-  gridSubtractVector(xyz0,   xyz1, dir1);
-  bary[0] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
-
-  gridSubtractVector(xyz2, xyz0, edge0);
-  gridSubtractVector(xyz3, xyz0, edge1);
-  gridCrossProduct(edge0,edge1,norm);
-  gridSubtractVector(target, xyz0, dir0);
-  gridSubtractVector(xyz1,   xyz0, dir1);
-  bary[1] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
-
-  gridSubtractVector(xyz3, xyz0, edge0);
-  gridSubtractVector(xyz1, xyz0, edge1);
-  gridCrossProduct(edge0,edge1,norm);
-  gridSubtractVector(target, xyz0, dir0);
-  gridSubtractVector(xyz2,   xyz0, dir1);
-  bary[2] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
-
-  gridSubtractVector(xyz1, xyz0, edge0);
-  gridSubtractVector(xyz2, xyz0, edge1);
-  gridCrossProduct(edge0,edge1,norm);
-  gridSubtractVector(target, xyz0, dir0);
-  gridSubtractVector(xyz3,   xyz0, dir1);
-  bary[3] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
-
-  return grid;
-}
-
-Grid *gridBarycentricCoordinateTri(Grid *grid, 
-				   double *xyz0, double *xyz1, double *xyz2,
-				   double *target, double *bary )
-{
-  /* these should be computed with kramers rule for numerical stability
-   * and efficiency */
-
-  double projected_target[3];
-  double edge0[3], edge1[3];
-  double norm[3];
-  double norm0[3];
-  double norm1[3];
-  double norm2[3];
-  double area, area0, area1, area2;
-
-  projected_target[0] = target[0];
-  projected_target[1] = target[1];
-  projected_target[2] = target[2];
-
-  gridProjectToTriangle(projected_target, xyz0, xyz1, xyz2  );
-
-  /* these should be computed with kramers rule for numerical stability
-   * and efficiency */
-
-  gridSubtractVector(xyz1, xyz0, edge0);
-  gridSubtractVector(xyz2, xyz0, edge1);
-  gridCrossProduct(edge0,edge1,norm);
-  area = 0.5 * sqrt(gridDotProduct(norm,norm));
-
-  if ( area < 1.0e-16 ) {
-    printf("%s: %d: gridBarycentricCoordinateTri area too small (divide by %e)\n",
-	   __FILE__,__LINE__,area);
-    return NULL;
-  }
-
-  { // ugly!!! refacotr to use gridmath method
-    if (area > 0 ) {
-      norm[0] /= (2.0*area);
-      norm[1] /= (2.0*area);
-      norm[2] /= (2.0*area);
-    }
-  }
-
-  gridSubtractVector(xyz1, projected_target, edge0);
-  gridSubtractVector(xyz2, projected_target, edge1);
-  gridCrossProduct(edge0,edge1,norm0);
-  area0 = 0.5 * gridDotProduct(norm0,norm);
-
-  gridSubtractVector(projected_target, xyz0, edge0);
-  gridSubtractVector(xyz2, xyz0, edge1);
-  gridCrossProduct(edge0,edge1,norm1);
-  area1 = 0.5 * gridDotProduct(norm1,norm);
-
-  gridSubtractVector(xyz1, xyz0, edge0);
-  gridSubtractVector(projected_target, xyz0, edge1);
-  gridCrossProduct(edge0,edge1,norm2);
-  area2 = 0.5 * gridDotProduct(norm2,norm);
-
-  bary[0] = area0/area;
-  bary[1] = area1/area;
-  bary[2] = area2/area;
-
-  return grid;
-}
-
 int gridFindEnclosingCell(Grid *grid, int starting_guess, 
 			  double *target, double *bary )
 {
@@ -2420,12 +2313,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     gridNodeXYZ(grid, nodes[2], xyz2);
     gridNodeXYZ(grid, nodes[3], xyz3);
     
-    if (grid != gridBarycentricCoordinate( grid, xyz0, xyz1, xyz2, xyz3, 
-					   target, bary ) ) {
-      printf("%s: %d: gridFindEnclosingCell: gridBarycentricCoordinate NULL\n",
-	     __FILE__,__LINE__);
-      return EMPTY;
-    }
+    gridBarycentricCoordinate( xyz0, xyz1, xyz2, xyz3, target, bary );
 
     if (verb) {
       printf("try%5d cell%10d bary%10.6f%10.6f%10.6f%10.6f\n",
@@ -2618,12 +2506,7 @@ int gridFindClosestBoundaryCell(Grid *grid, int starting_guess,
   gridNodeXYZ(grid, nodes[2], xyz2);
   gridNodeXYZ(grid, nodes[3], xyz3);
 
-  if (grid != gridBarycentricCoordinate( grid, xyz0, xyz1, xyz2, xyz3, 
-					 projected_target, bary ) ) {
-    printf("%s: %d: gridFindClosestBoundaryCell: gridBarycentricCoordinate NULL\n",
-	   __FILE__,__LINE__);
-    return EMPTY;
-  }
+  gridBarycentricCoordinate( xyz0, xyz1, xyz2, xyz3, projected_target, bary );
 
   return current_cell;
 }
@@ -2662,12 +2545,7 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
 
     gridProjectToTriangle(projected_target, xyz0, xyz1, xyz2  );
     
-    if (grid != gridBarycentricCoordinateTri( grid, xyz0, xyz1, xyz2, 
-					      projected_target, trib ) ) {
-      printf("%s: %d: gridFindClosestBoundaryFace: %s\n",
-	     __FILE__,__LINE__,"gridBarycentricCoordinateTri NULL");
-      return EMPTY;
-    }
+    gridBarycentricCoordinateTri( xyz0, xyz1, xyz2, projected_target, trib );
 
     verb = FALSE;
     if (verb) {

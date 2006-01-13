@@ -314,12 +314,7 @@ int gridFindClosestBoundaryCell(Grid *g, int starting_guess,
 				double *target, double *bary );
 int gridFindClosestBoundaryFace(Grid *g, int starting_guess, 
 				double *target, double *triangle_bary );
-Grid *gridBarycentricCoordinate(Grid *g, double *xyz0, double *xyz1, 
-				double *xyz2, double *xyz3, 
-				double *target, double *bary );
-Grid *gridBarycentricCoordinateTri(Grid *g, 
-				   double *xyz0, double *xyz1,double *xyz2,
-				   double *target, double *bary );
+
 Grid *gridDeleteThawedCells(Grid *g);
 
 #define gridNConn(grid) (grid->nconn)

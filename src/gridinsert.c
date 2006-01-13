@@ -1644,7 +1644,7 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
     gridNodeXYZ(grid, face_nodes[0], xyz0);
     gridNodeXYZ(grid, face_nodes[1], xyz1);
     gridNodeXYZ(grid, face_nodes[2], xyz2);
-    gridTriangularBarycentricCoordinate3D( xyz0, xyz1, xyz2, xyz, bary );
+    gridBarycentricCoordinateTri( xyz0, xyz1, xyz2, xyz, bary );
     for (i=0;i<3;i++) {
       U[i] = gridNodeU(grid, nodes0[i], faceId);
       V[i] = gridNodeV(grid, nodes0[i], faceId);

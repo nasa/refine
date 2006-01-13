@@ -57,6 +57,85 @@ void gridProjectToTriangle(double *projected_target,
   projected_target[2] -= length*norm[2];
 }
 
+void gridBarycentricCoordinate(double *xyz0, double *xyz1, 
+			       double *xyz2, double *xyz3, 
+			       double *target, double *bary )
+{
+  double edge0[3], edge1[3];
+  double norm[3];
+  double dir0[3], dir1[3];
+
+  /* these should be computed with kramers rule for numerical stability
+   * and efficiency */
+
+  gridSubtractVector(xyz3, xyz1, edge0);
+  gridSubtractVector(xyz2, xyz1, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridSubtractVector(target, xyz1, dir0);
+  gridSubtractVector(xyz0,   xyz1, dir1);
+  bary[0] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
+
+  gridSubtractVector(xyz2, xyz0, edge0);
+  gridSubtractVector(xyz3, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridSubtractVector(target, xyz0, dir0);
+  gridSubtractVector(xyz1,   xyz0, dir1);
+  bary[1] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
+
+  gridSubtractVector(xyz3, xyz0, edge0);
+  gridSubtractVector(xyz1, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridSubtractVector(target, xyz0, dir0);
+  gridSubtractVector(xyz2,   xyz0, dir1);
+  bary[2] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
+
+  gridSubtractVector(xyz1, xyz0, edge0);
+  gridSubtractVector(xyz2, xyz0, edge1);
+  gridCrossProduct(edge0,edge1,norm);
+  gridSubtractVector(target, xyz0, dir0);
+  gridSubtractVector(xyz3,   xyz0, dir1);
+  bary[3] = gridDotProduct(dir0,norm) / gridDotProduct(dir1,norm);
+}
+
+void gridBarycentricCoordinateTri(double *xyz0, double *xyz1, double *xyz2,
+				  double *target, double *bary )
+{
+  /* these should be computed with kramers rule for numerical stability
+   * and efficiency */
+
+  double projected_target[3];
+  double u[3], v[3], w[3];
+  double uv, wv, wu;
+  double uu, vv;
+  double denom, s, t;
+
+  projected_target[0] = target[0];
+  projected_target[1] = target[1];
+  projected_target[2] = target[2];
+
+  gridProjectToTriangle(projected_target, xyz0, xyz1, xyz2  );
+
+  gridSubtractVector(xyz1,xyz0,u);
+  gridSubtractVector(xyz2,xyz0,v);
+  gridSubtractVector(projected_target, xyz0,w);
+  
+  uv = gridDotProduct(u,v);
+  wv = gridDotProduct(w,v);
+  wu = gridDotProduct(w,u);
+
+  uu = gridDotProduct(u,u);
+  vv = gridDotProduct(v,v);
+
+  denom = uv*uv - uu*vv;
+
+  s = (uv*wv-vv*wu)/denom;
+  t = (uv*wu-uu*wv)/denom;
+
+  bary[0] = 1.0 - s - t;
+  bary[1] = s;
+  bary[2] = t;
+}
+
 void gridRotateDirection(double *v0, double *v1, 
 			 double *axle, double rotation, double *result)
 {
@@ -338,33 +417,3 @@ void gridBackSolve3x3( double *lu, double *b )
 
 }
 
-void gridTriangularBarycentricCoordinate3D( double *xyz0, double *xyz1,
-					    double *xyz2, double *xyz, 
-					    double *bary )
-{
-  double u[3], v[3], w[3];
-  double uv, wv, wu;
-  double uu, vv;
-  double denom, s, t;
-
-  gridSubtractVector(xyz1,xyz0,u);
-  gridSubtractVector(xyz2,xyz0,v);
-  gridSubtractVector(xyz, xyz0,w);
-  
-  uv = gridDotProduct(u,v);
-  wv = gridDotProduct(w,v);
-  wu = gridDotProduct(w,u);
-
-  uu = gridDotProduct(u,u);
-  vv = gridDotProduct(v,v);
-
-  denom = uv*uv - uu*vv;
-
-  s = (uv*wv-vv*wu)/denom;
-  t = (uv*wu-uu*wv)/denom;
-
-  bary[0] = 1.0 - s - t;
-  bary[1] = s;
-  bary[2] = t;
-
-}

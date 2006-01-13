@@ -71,6 +71,78 @@ class TestGridMath < Test::Unit::TestCase
   assert_equal [0,1,0], @gm.vectorOrthogonalize([0,1,1],axle)
  end
 
+ def test_BarycentricCoordinate_of_vertices
+  tol =1.0e-14
+  xyz0 = [0,0,0]
+  xyz1 = [1,0,0]
+  xyz2 = [0,1,0]
+  xyz3 = [0,0,1]
+
+  bary = @gm.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,xyz0)
+  ans = [1.0,0.0,0.0,0.0]
+  4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+
+  bary = @gm.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,xyz1)
+  ans = [0.0,1.0,0.0,0.0]
+  4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+
+  bary = @gm.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,xyz2)
+  ans = [0.0,0.0,1.0,0.0]
+  4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+
+  bary = @gm.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,xyz3)
+  ans = [0.0,0.0,0.0,1.0]
+  4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+ end
+
+ def test_BarycentricCoordinate_of_center1
+  tol = 1.0e-14
+  xyz0 = [0,0,0]
+  xyz1 = [1,0,0]
+  xyz2 = [0,1,0]
+  xyz3 = [0,0,1]
+  target = [0.25,0.25,0.25]
+  bary = @gm.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,target)
+  ans = [0.25,0.25,0.25,0.25]
+  4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+ end
+
+ def test_BarycentricCoordinate_of_center2
+  tol = 1.0e-14
+  xyz0 = [0,0,0]
+  xyz1 = [4,0,0]
+  xyz2 = [0,4,0]
+  xyz3 = [0,0,4]
+  target = [1.0,1.0,1.0]
+  bary = @gm.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,target)
+  ans = [0.25,0.25,0.25,0.25]
+  4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+ end
+
+ def test_BarycentricCoordinate_of_outside_x
+  tol = 1.0e-14
+  xyz0 = [0,0,0]
+  xyz1 = [1,0,0]
+  xyz2 = [0,1,0]
+  xyz3 = [0,0,1]
+  target = [2.0,0.0,0.0]
+  bary = @gm.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,target)
+  ans = [-1.0,2.0,0.0,0.0]
+  4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+ end
+
+ def test_BarycentricCoordinate_of_oppsite_0
+  tol = 1.0e-14
+  xyz0 = [0,0,0]
+  xyz1 = [1,0,0]
+  xyz2 = [0,1,0]
+  xyz3 = [0,0,1]
+  target = [1.0,1.0,1.0]
+  bary = @gm.barycentricCoordinate(xyz0,xyz1,xyz2,xyz3,target)
+  ans = [-2.0,1.0,1.0,1.0]
+  4.times { |i| assert_in_delta( ans[i], bary[i], tol, 'element '+i.to_s ) }
+ end
+
  def testRotateDirectionEndPoints
   v0 = [1,0,0]
   v1 = [0,1,0]
@@ -468,21 +540,21 @@ class TestGridMath < Test::Unit::TestCase
 
   xyz = xyz0
   bary = [1,0,0]
-  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  ans = @gm.barycentricCoordinateTri(xyz0,xyz1,xyz2,xyz) 
   assert_in_delta(bary[0],ans[0],tol)
   assert_in_delta(bary[1],ans[1],tol)
   assert_in_delta(bary[2],ans[2],tol)
 
   xyz = xyz1
   bary = [0,1,0]
-  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  ans = @gm.barycentricCoordinateTri(xyz0,xyz1,xyz2,xyz) 
   assert_in_delta(bary[0],ans[0],tol)
   assert_in_delta(bary[1],ans[1],tol)
   assert_in_delta(bary[2],ans[2],tol)
 
   xyz = xyz2
   bary = [0,0,1]
-  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  ans = @gm.barycentricCoordinateTri(xyz0,xyz1,xyz2,xyz) 
   assert_in_delta(bary[0],ans[0],tol)
   assert_in_delta(bary[1],ans[1],tol)
   assert_in_delta(bary[2],ans[2],tol)
@@ -496,14 +568,14 @@ class TestGridMath < Test::Unit::TestCase
 
   xyz = [1.0/2.0,1.0/2.0,0]
   bary = [0,1.0/2.0,1.0/2.0]
-  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz)
+  ans = @gm.barycentricCoordinateTri(xyz0,xyz1,xyz2,xyz)
   assert_in_delta(bary[0],ans[0],tol)
   assert_in_delta(bary[1],ans[1],tol)
   assert_in_delta(bary[2],ans[2],tol)
 
   xyz = [1.0/3.0,1.0/3.0,0]
   bary = [1.0/3.0,1.0/3.0,1.0/3.0]
-  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  ans = @gm.barycentricCoordinateTri(xyz0,xyz1,xyz2,xyz) 
   assert_in_delta(bary[0],ans[0],tol)
   assert_in_delta(bary[1],ans[1],tol)
   assert_in_delta(bary[2],ans[2],tol)
@@ -517,7 +589,7 @@ class TestGridMath < Test::Unit::TestCase
 
   xyz = [1.0,1.0,0.0]
   bary = [-1.0,1.0,1.0]
-  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  ans = @gm.barycentricCoordinateTri(xyz0,xyz1,xyz2,xyz) 
   assert_in_delta(bary[0],ans[0],tol)
   assert_in_delta(bary[1],ans[1],tol)
   assert_in_delta(bary[2],ans[2],tol)
@@ -528,7 +600,7 @@ class TestGridMath < Test::Unit::TestCase
 
   xyz = [0.0,1.0,0.0]
   bary = [1.0,-1.0,1.0]
-  ans = @gm.triangularBarycentricCoordinate3D(xyz0,xyz1,xyz2,xyz) 
+  ans = @gm.barycentricCoordinateTri(xyz0,xyz1,xyz2,xyz) 
   assert_in_delta(bary[0],ans[0],tol)
   assert_in_delta(bary[1],ans[1],tol)
   assert_in_delta(bary[2],ans[2],tol)
