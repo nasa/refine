@@ -1930,6 +1930,7 @@ int gridInsertInToVolume(Grid *grid, double *xyz)
   return gridSplitCellAt(grid,foundCell,xyz);
 }
 
+/* node1 is removed */
 Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1, 
 		       double requestedratio )
 {
