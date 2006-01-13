@@ -259,14 +259,20 @@ Grid *gridPhase3(Grid *grid )
 {
   int iteration;
   int iterations;
+  double longest_edge, shortest_edge;
 
   gridSetPhase(grid, 3);
 
   gridSetMinInsertCost( grid, -0.5 );
   gridSetCostFunction( grid, gridCOST_FCN_EDGE_LENGTH );
-  iterations = 4;
-  for ( iteration=0; (iteration<iterations) ; iteration++){
+  iterations = 20;
+  longest_edge = 2.0;
+  for ( iteration=0; 
+	(iteration<iterations) && (longest_edge>1.000001); 
+	iteration++){
     gridAdaptVolumeEdges(grid);
+    gridEdgeRatioRange(grid,&longest_edge,&shortest_edge);
+    printf("Length Range %12.5e %12.5e\n", longest_edge, shortest_edge);
   }
   return grid;
 }
