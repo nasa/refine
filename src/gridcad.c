@@ -397,7 +397,7 @@ Grid *gridUntangle(Grid *grid)
   while ( minArea <= allowedArea ) {
     tries++;
     if (tries >10) {
-      printf("anable to fix min face UV area %e\n",minArea);
+      printf("unable to fix min face UV area %e\n",minArea);
       return NULL;
     }
     printf("relax neg faces... min face UV area %e\n",minArea);
@@ -416,12 +416,14 @@ Grid *gridUntangle(Grid *grid)
     minArea = gridMinGridFaceAreaUV(grid);
   }
 
+  allowedVolume = 1.0e-14;
+
   minVolume = gridMinVolume( grid );
   tries = 0;
   while ( minVolume <= allowedVolume ) {
     tries++;
     if (tries >10) {
-      printf("anable to fix min face UV area %e\n",minArea);
+      printf("unable to fix min volume %e\n",minVolume);
       return NULL;
     }
     printf("relax neg tets... min volume %e\n",minVolume);

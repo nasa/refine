@@ -1,3 +1,9 @@
+2006-01-13  8:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangle) to fix an uninitalize memeory read,
+	set minVolume before use. this repared it so it can be used with
+	phased adaption.
+
 2006-01-12 16:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridInterpolateMap2) try node0 and node1 references
