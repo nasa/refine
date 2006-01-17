@@ -225,9 +225,4 @@ AC_OUTPUT( \
 	   src/Makefile \
 	   doc/Makefile \
 	   example/Makefile \
-	   geomSGIn32/Makefile \
-	   geomSGIn32/lib/Makefile \
-	   geomSGIn32/include/Makefile \
-	   geomSGIn32/include/CADGeom/Makefile \
-	   geomSGIn32/include/MeatLib/Makefile \
 	   )

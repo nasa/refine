@@ -1,3 +1,7 @@
+2006-01-17 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* geomSGIn32 removed the woefully old geoSDK snapshot for Alan.
+
 2006-01-13 11:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridBarycentricCoordinate,gridBarycentricCoordinateTri)
