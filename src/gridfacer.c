@@ -354,3 +354,83 @@ GridFacer *gridfacerSplit(GridFacer *gf)
   return gf; 
 }
 
+GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
+{
+  AdjIterator it;
+  int nodes[3], faceId;
+  double ratio0, ratio1;
+
+  Grid *grid = gridfacerGrid( gf );
+
+  printf("%s: %d: gridfacerCollapseEdge not implemented.\n",
+	 __FILE__,__LINE__);
+  return NULL;
+  
+  for ( it = adjFirst(gridFaceAdj(grid),node1); 
+	adjValid(it); 
+	it = adjNext(it) ) {
+    gridFace(grid, adjItem(it), nodes, &faceId);
+
+    ratio0 = gridEdgeRatio(grid,nodes[0],nodes[1]);
+    ratio1 = ratio0;
+    if ( nodes[0] == node0 ) ratio1 = gridEdgeRatio(grid,node0,nodes[1]);
+    if ( nodes[1] == node0 ) ratio1 = gridEdgeRatio(grid,nodes[0],node0);
+
+  }
+
+  return NULL;
+}
+
+GridFacer *gridfacerCollapse(GridFacer *gf)
+{
+  int edge;
+  int node0, node1;
+  double limit;
+  double ratio;
+  int rank;
+  int *local_e2n;
+  int face0, face1;
+  int nodes[3], faceId;
+  int node2, node3;
+  int newnode;
+
+  Plan *plan;
+
+  Grid *grid = gridfacerGrid( gf );
+
+  plan = planCreate( gridfacerEdges(gf), 100 );
+  limit = 0.2;
+  for ( edge = 0 ; edge < gridfacerEdges(gf) ; edge++ ) {
+    node0 = gf->e2n[0+2*edge];
+    node1 = gf->e2n[1+2*edge];
+    if ( 0 < gridParentGeometry(grid,node0,node1 ) ) {
+      ratio = gridEdgeRatio(grid,node0,node1);
+      if ( ratio < limit ) {
+	planAddItemWithPriority( plan, edge, ratio );
+      }
+    }
+  }
+
+  planDeriveRankingsFromPriorities( plan );
+
+  local_e2n = (int *)malloc( 2 * planSize( plan ) * sizeof(int) );
+  for ( rank = 0 ; rank < planSize( plan ) ; rank++ ) {
+    edge = planItemWithThisRanking( plan, rank);
+    local_e2n[0+2*rank] = gf->e2n[0+2*edge];
+    local_e2n[1+2*rank] = gf->e2n[1+2*edge];
+  }
+
+  for ( rank = 0 ; rank < planSize( plan ) ; rank++ ) {
+    node0 = local_e2n[0+2*rank];
+    node1 = local_e2n[1+2*rank];
+    ratio = gridEdgeRatio(grid,node0,node1);
+    if (ratio >= limit) continue;
+    printf("rank %d len%10.6f\n",rank,ratio);
+    if (gf != gridfacerCollapseEdge( gf, node0, node1) ) 
+      gridfacerCollapseEdge( gf, node1, node0);
+  }
+  free(local_e2n);
+  planFree(plan);
+  return gf; 
+}
+
