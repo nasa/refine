@@ -4727,7 +4727,11 @@ Grid *gridInterpolateMap2(Grid *grid, int node0, int node1, double ratio,
       if (EMPTY == grid->child_reference[target])
 	grid->child_reference[target] = 
 	  gridFindEnclosingCell(grid->child,grid->child_reference[node1],xyz,bary);
-      if (EMPTY == grid->child_reference[target]) return NULL;		      
+      if (EMPTY == grid->child_reference[target]) {
+	printf("%s: %d: gridInterpolateMap2 cannot gridFindEnclosingCell\n",
+	       __FILE__,__LINE__);
+	return NULL;		      
+      }
     }
   }
   return grid;
