@@ -1,3 +1,7 @@
+2006-01-18 16:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerTecplot) working.
+
 2006-01-18 11:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerTecplot) started, not operational yet.

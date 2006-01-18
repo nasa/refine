@@ -34,6 +34,8 @@ GridFacer *gridfacerCreate( Grid *grid, int faceId )
 
   gf->faceId = faceId;
 
+  gf->tecplotFile = NULL;
+
   gridAttachPacker( grid, gridfacerPack, (void *)gf );
   gridAttachNodeSorter( grid, gridfacerSortNode, (void *)gf );
   gridAttachReallocator( grid, gridfacerReallocator, (void *)gf );
@@ -63,6 +65,7 @@ Grid *gridfacerGrid(GridFacer *gf)
 
 void gridfacerFree(GridFacer *gf)
 {
+  if (NULL != gf->tecplotFile) fclose(gf->tecplotFile);
   if (NULL != gf->e2n) free(gf->e2n);
   if (NULL != gf->grid) { 
     gridDetachPacker( gf->grid );
@@ -199,6 +202,10 @@ GridFacer *gridfacerExamine(GridFacer *gf)
 GridFacer *gridfacerTecplot(GridFacer *gf, char *filename)
 {
   int nnode, nface;
+  int *f2n, *o2n, *n2o;
+  int node, face, nodes[3], faceId;
+  double xyz[3], uv[2];
+  Grid *grid = gridfacerGrid( gf );
 
   if (NULL == gf->tecplotFile) {
     if (NULL == filename) {
@@ -214,9 +221,61 @@ GridFacer *gridfacerTecplot(GridFacer *gf, char *filename)
 
   nnode=0;
   nface=0;
+
+  f2n = (int *)malloc( 3 * gridNFace(grid) * sizeof(int) );
+  for (face = 0; face < gridMaxFace(grid) ; face++ ) {
+    if ( grid == gridFace(grid, face, nodes, &faceId) ) {
+      if (gridfacerFaceId(gf) == faceId) {
+	f2n[0+3*nface] = nodes[0];
+	f2n[1+3*nface] = nodes[1];
+	f2n[2+3*nface] = nodes[2];
+	nface++;
+      }
+    }
+  }
+
+  o2n = (int *)malloc( gridMaxNode(grid) * sizeof(int) );
+  for (node = 0 ; node < gridMaxNode(grid); node++ ) o2n[node] = EMPTY;
+  for (face = 0; face < nface ; face++ ) {
+    if ( EMPTY == o2n[f2n[0+3*face]] ) {
+      o2n[f2n[0+3*face]] = nnode; nnode++;
+    }
+    f2n[0+3*face] = o2n[f2n[0+3*face]];
+    if ( EMPTY == o2n[f2n[1+3*face]] ) {
+      o2n[f2n[1+3*face]] = nnode; nnode++;
+    }
+    f2n[1+3*face] = o2n[f2n[1+3*face]];
+    if ( EMPTY == o2n[f2n[2+3*face]] ) {
+      o2n[f2n[2+3*face]] = nnode; nnode++;
+    }
+    f2n[2+3*face] = o2n[f2n[2+3*face]];
+  }
+
+  n2o = (int *)malloc( gridMaxNode(grid) * sizeof(int) );
+  for (node = 0 ; node < gridMaxNode(grid); node++ ) {
+    if (EMPTY != o2n[node]) n2o[o2n[node]] = node;
+  }     
+  free(o2n);
+  
   fprintf(gf->tecplotFile,
 	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
 	  nnode, nface);
+  for (node = 0 ; node < nnode; node++ ) {
+    gridNodeXYZ(grid,n2o[node],xyz);
+    gridNodeUV(grid,n2o[node],gridfacerFaceId(gf),uv);
+    fprintf(gf->tecplotFile, 
+	    "%23.15e%23.15e%23.15e%23.15e%23.15e\n",
+	    xyz[0],xyz[1],xyz[2],uv[0],uv[1]);
+  }
+  free(n2o);
+
+  for ( face=0; face<nface ; face++ ){
+    fprintf(gf->tecplotFile, " %9d %9d %9d\n",
+	    f2n[0+3*face]+1,f2n[1+3*face]+1,f2n[2+3*face]+1);
+  }
+  free(f2n);
+
+  fflush(gf->tecplotFile);
 
   return gf;
 }
