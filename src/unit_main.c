@@ -246,11 +246,17 @@ Grid *gridPhase2(Grid *grid )
       gridSetMinInsertCost( grid, -0.5 );
       gridfacerRatioRange(gf,&ratio0,&ratio1);
       printf("face%6d cycle%3d ratios%8.3f%8.3f\n",faceId,i,ratio0,ratio1);
-      if (1.0 > ratio0) break;
+      if (1.0 >= ratio0) break;
     }
       
     gridfacerFree(gf);
+
+    if (1.0 < ratio0) {
+      printf("Phase 2 failed for face %d\n",faceId);  
+      return NULL;
+    }
   }
+
   return grid;
 }
 
@@ -439,9 +445,9 @@ int main( int argc, char *argv[] )
 
   if (4 == phase) {
     gridCacheCurrentGridAndMap(grid);
-    gridPhase1(grid);
-    gridPhase2(grid);
-    gridPhase3(grid);
+    if (grid!=gridPhase1(grid)) return 1;
+    if (grid!=gridPhase2(grid)) return 1;
+    if (grid!=gridPhase3(grid)) return 1;
     STATUS;
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
