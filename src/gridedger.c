@@ -467,6 +467,28 @@ GridEdger *gridedgerDiscretize(GridEdger *ge, double length )
   return ge;
 }
 
+static GridEdger *gridedgerReport(GridEdger *ge, double ratio )
+{
+  double longest_ratio, shortest_ratio;
+  int node;
+  double length;
+  double t0, s0, t1, s1;
+
+  longest_ratio = -1.0;
+  shortest_ratio = 999.0;
+  for ( node = 1 ; node < gridedgerIdealNodes( ge ) ; node++ ) {
+    gridedgerIdealNodeT( ge, node-1, &t0 );
+    gridedgerIdealNodeT( ge, node, &t1 );
+    gridedgerSupportingSegment(ge, t0, &s0 );
+    gridedgerSupportingSegment(ge, t1, &s1 );
+    gridedgerLengthBetween( ge, s0, s1, &length );
+    longest_ratio = MAX( longest_ratio, length );
+    shortest_ratio = MIN( shortest_ratio, length );
+  }
+  printf("edge%4d longest %f shortest %f desired %f\n",
+	 gridedgerEdgeId( ge ), longest_ratio, shortest_ratio, ratio);
+}
+
 GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
 {
   double length;
@@ -510,6 +532,9 @@ GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
     length = w*next_length + (1.0-w)*length;
 
   }
+
+  gridedgerReport(ge, length);
+
   return ge;
 }
 
@@ -520,7 +545,6 @@ GridEdger *gridedgerDiscretizeOnce(GridEdger *ge )
   double t0, s0, t1, s1;
   double last_length;
   double ratio, shrink;
-  double longest_ratio, shortest_ratio;
 
   double *orig;
   int node;
@@ -551,20 +575,8 @@ GridEdger *gridedgerDiscretizeOnce(GridEdger *ge )
     ge->t[node] = (1.0-ratio)*t0 + ratio*t1;
   }
   free(orig);
-  ratio = 1.0-shrink;
-  longest_ratio = -1.0;
-  shortest_ratio = 999.0;
-  for ( node = 1 ; node < gridedgerIdealNodes( ge ) ; node++ ) {
-    gridedgerIdealNodeT( ge, node-1, &t0 );
-    gridedgerIdealNodeT( ge, node, &t1 );
-    gridedgerSupportingSegment(ge, t0, &s0 );
-    gridedgerSupportingSegment(ge, t1, &s1 );
-    gridedgerLengthBetween( ge, s0, s1, &length );
-    longest_ratio = MAX( longest_ratio, length );
-    shortest_ratio = MIN( shortest_ratio, length );
-  }
-  printf("edge%4d longest %f shortest %f desired %f\n",
-	 gridedgerEdgeId( ge ), longest_ratio, shortest_ratio, ratio);
+
+  gridedgerReport(ge, 1.0-shrink);
 
   return ge;
 }
