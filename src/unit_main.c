@@ -170,6 +170,7 @@ Grid *gridPhase1(Grid *grid )
   int edge, edgeId;
   GridEdger **ge;
 
+  gridSplitProblemProjectionEdges(grid);
   gridSetPhase(grid, 1);
   gridSetMinInsertCost( grid, -0.5 );
   gridConstrainSurfaceNode(grid);
@@ -231,6 +232,7 @@ Grid *gridPhase2(Grid *grid )
   int faceId;
   double ratio0, ratio1;
     
+  gridSplitProblemProjectionEdges(grid);
   gridSetPhase(grid, 2);
   gridSetMinInsertCost( grid, -0.5 );
   gridConstrainSurfaceNode(grid);
