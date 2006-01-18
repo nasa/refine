@@ -11,6 +11,8 @@
 #ifndef GRIDFACER_H
 #define GRIDFACER_H
 
+#include <stdlib.h>
+#include <stdio.h>
 #include "refine_defs.h"
 #include "grid.h"
 
@@ -20,6 +22,8 @@ typedef struct GridFacer GridFacer;
 struct GridFacer {
   Grid *grid;
   void *gridRubyVALUEusedForGC;
+
+  FILE *tecplotFile;
 
   int faceId;
 
@@ -48,6 +52,8 @@ GridFacer *gridfacerAddUniqueEdge(GridFacer *, int node0, int node1);
 GridFacer *gridfacerRemoveEdge(GridFacer *, int node0, int node1);
 
 GridFacer *gridfacerExamine(GridFacer *);
+GridFacer *gridfacerTecplot(GridFacer *, char *filename);
+
 GridFacer *gridfacerRatioRange(GridFacer *, 
 			       double *longest_ratio, double *shortest_ratio);
 

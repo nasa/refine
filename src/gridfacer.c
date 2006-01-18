@@ -196,6 +196,31 @@ GridFacer *gridfacerExamine(GridFacer *gf)
   return gf; 
 }
 
+GridFacer *gridfacerTecplot(GridFacer *gf, char *filename)
+{
+  int nnode, nface;
+
+  if (NULL == gf->tecplotFile) {
+    if (NULL == filename) {
+      char temp_filename[256];
+      sprintf(temp_filename,"gridface%04d.t",gridfacerFaceId(gf));
+      gf->tecplotFile = fopen(temp_filename,"w");
+    }else{
+      gf->tecplotFile = fopen(filename,"w");
+    } 
+    fprintf(gf->tecplotFile, "title=\"tecplot gridfacer\"\n");
+    fprintf(gf->tecplotFile, "variables=\"X\",\"Y\",\"Z\",\"U\",\"V\"\n");
+  }
+
+  nnode=0;
+  nface=0;
+  fprintf(gf->tecplotFile,
+	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	  nnode, nface);
+
+  return gf;
+}
+
 GridFacer *gridfacerRatioRange(GridFacer *gf, 
 			       double *longest_ratio, double *shortest_ratio)
 {
