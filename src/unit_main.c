@@ -242,7 +242,11 @@ Grid *gridPhase2(Grid *grid )
       gridfacerSwap(gf);
       gridSetMinInsertCost( grid, -10.0 );
       gridfacerSplit(gf);
-      gridUntangle(grid);
+      if (grid != gridUntangle(grid) ) {
+	printf("gridUntangle failed for face %d\n",faceId);
+	gridfacerFree(gf);
+	return NULL;      
+      }
       gridSetMinInsertCost( grid, -0.5 );
       gridfacerRatioRange(gf,&ratio0,&ratio1);
       printf("face%6d cycle%3d ratios%8.3f%8.3f\n",faceId,i,ratio0,ratio1);
