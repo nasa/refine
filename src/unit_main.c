@@ -187,8 +187,8 @@ for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) { \
 free(ge); }
 
   for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
-    if ( ge[edge] != gridedgerDiscretizeOnce(ge[edge]) ) {
-      printf("gridedgerDiscretizeOnce failed for edge %d\n",edgeId);
+    if ( ge[edge] != gridedgerDiscretizeEvenly(ge[edge]) ) {
+      printf("gridedgerDiscretizeEvenly failed for edge %d\n",edgeId);
       FREE_ALL_GE(ge);
       return NULL;
     }
