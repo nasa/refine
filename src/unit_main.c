@@ -170,11 +170,12 @@ Grid *gridPhase1(Grid *grid )
   int edge, edgeId;
   GridEdger **ge;
 
-  gridSplitProblemProjectionEdges(grid);
   gridSetPhase(grid, 1);
   gridSetMinInsertCost( grid, -0.5 );
   gridConstrainSurfaceNode(grid);
-
+  gridSplitProblemProjectionEdges(grid);
+  gridUntangle(grid);
+  
   ge = (GridEdger **)malloc( gridNGeomEdge(grid) * sizeof(GridEdger *) );
   for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
     edgeId = edge+1;
