@@ -2424,7 +2424,7 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
 
     if (EMPTY == current_cell) {
       current_cell = gridFindClosestBoundaryCell(grid, last_cell, target, bary);
-      if ( EMPTY != current_cell ) 
+      if ( verb && EMPTY != current_cell ) 
 	printf("%s: %d: gridFindEnclosingCell %s\n",
 	       __FILE__,__LINE__,"gridFindClosestBoundaryCell EMPTY");
       return current_cell;
