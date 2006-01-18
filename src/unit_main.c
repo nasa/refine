@@ -244,7 +244,6 @@ Grid *gridPhase2(Grid *grid )
       gridfacerSplit(gf);
       gridUntangle(grid);
       gridSetMinInsertCost( grid, -0.5 );
-      gridfacerSwap(gf);
       gridfacerRatioRange(gf,&ratio0,&ratio1);
       printf("face%6d cycle%3d ratios%8.3f%8.3f\n",faceId,i,ratio0,ratio1);
       if (1.0 > ratio0) break;
