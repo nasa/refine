@@ -440,11 +440,17 @@ GridFacer *gridfacerSplit(GridFacer *gf)
     node3 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
     newnode = gridSplitEdgeRatio(grid, NULL, node0, node1, 0.5);
     if ( EMPTY != newnode ) {
+      GridBool call_again;
       gridfacerRemoveEdge(gf, node0, node1);
       gridfacerAddUniqueEdge(gf, node0, newnode);
       gridfacerAddUniqueEdge(gf, node1, newnode);
       gridfacerAddUniqueEdge(gf, node2, newnode);
       gridfacerAddUniqueEdge(gf, node3, newnode);
+      gridSetMinSurfaceSmoothCost(grid,-10.0);
+      call_again = TRUE;
+      while (call_again) {
+	gridLinearProgramUV(grid, newnode, &call_again);
+      }
       if (grid!=gridUntangle(grid)) {
 	printf("%s: %d: gridUntangle NULL.\n",__FILE__,__LINE__);
 	return NULL;

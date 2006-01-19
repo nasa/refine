@@ -1,3 +1,8 @@
+2006-01-19 16:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSplit) to improve new node locations,
+	call smoother after insert.
+
 2006-01-19 14:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerSplitProblemProjectionEdges) to
