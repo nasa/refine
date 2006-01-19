@@ -250,6 +250,14 @@ Grid *gridPhase2(Grid *grid )
       if (gf != gridfacerSplit(gf)){
 	printf("gridfacerSplit failed for face %d\n",faceId);
 	gridfacerFree(gf);
+	gridWriteTecplotSurfaceGeom(grid,NULL);
+	{int cell, nodes[4];
+	for (cell=0;cell<gridMaxCell(grid);cell++) 
+	  if (grid==gridCell(grid, cell, nodes)) { 
+	    if ( -0.5 > gridAR(grid,nodes) ) 
+	      gridWriteTecplotCellGeom(grid,nodes,NULL,NULL);
+	  }
+	}
 	return NULL;      
       }
       if (grid != gridUntangle(grid) ) {
