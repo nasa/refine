@@ -23,6 +23,7 @@ struct GridFacer {
   Grid *grid;
   void *gridRubyVALUEusedForGC;
 
+  GridBool camera;
   FILE *tecplotFile;
 
   int faceId;
@@ -52,6 +53,8 @@ GridFacer *gridfacerAddUniqueEdge(GridFacer *, int node0, int node1);
 GridFacer *gridfacerRemoveEdge(GridFacer *, int node0, int node1);
 
 GridFacer *gridfacerExamine(GridFacer *);
+GridBool gridfacerCameraActive(GridFacer *);
+GridFacer *gridfacerTurnCameraOn(GridFacer *);
 GridFacer *gridfacerTecplot(GridFacer *, char *filename);
 
 GridFacer *gridfacerRatioRange(GridFacer *, 

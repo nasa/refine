@@ -34,6 +34,7 @@ GridFacer *gridfacerCreate( Grid *grid, int faceId )
 
   gf->faceId = faceId;
 
+  gf->camera = FALSE;
   gf->tecplotFile = NULL;
 
   gridAttachPacker( grid, gridfacerPack, (void *)gf );
@@ -158,6 +159,8 @@ GridFacer *gridfacerRemoveEdge(GridFacer *gf, int nodeA, int nodeB)
   int edge;
   int found;
 
+  if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
+
   node0 = MIN(nodeA,nodeB);
   node1 = MAX(nodeA,nodeB);
 
@@ -197,6 +200,17 @@ GridFacer *gridfacerExamine(GridFacer *gf)
     }
   }
   return gf; 
+}
+
+GridBool gridfacerCameraActive(GridFacer *gf)
+{
+  return gf->camera;
+}
+
+GridFacer *gridfacerTurnCameraOn(GridFacer *gf)
+{
+  gf->camera = TRUE;
+  return gf;
 }
 
 GridFacer *gridfacerTecplot(GridFacer *gf, char *filename)

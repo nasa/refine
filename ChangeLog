@@ -1,3 +1,8 @@
+2006-01-19  8:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerTurnCameraOn,gridfacerCameraActive) turn
+	tecplot output on, which dumps when each edge is removed.
+
 2006-01-18 16:38 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerTecplot) working.

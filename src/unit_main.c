@@ -241,6 +241,8 @@ Grid *gridPhase2(Grid *grid )
   for (faceId = 1; faceId <= gridNGeomFace(grid); faceId++) {
     gf = gridfacerCreate(grid,faceId);
 
+    gridfacerTurnCameraOn(gf);
+
     for ( i = 0 ; i < 20 ; i++ ) {
       gridfacerSwap(gf);
       gridSetMinInsertCost( grid, -10.0 );
