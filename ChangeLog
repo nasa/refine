@@ -1,3 +1,9 @@
+2006-01-19 14:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSplitProblemProjectionEdges) to
+	split any problematice edges that arise from swapping.
+	* src/gridfacer.c (gridfacerSplit) untangle after each split.
+
 2006-01-19  8:32 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerTurnCameraOn,gridfacerCameraActive) turn

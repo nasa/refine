@@ -445,12 +445,45 @@ GridFacer *gridfacerSplit(GridFacer *gf)
       gridfacerAddUniqueEdge(gf, node1, newnode);
       gridfacerAddUniqueEdge(gf, node2, newnode);
       gridfacerAddUniqueEdge(gf, node3, newnode);
+      if (grid!=gridUntangle(grid)) {
+	printf("%s: %d: gridUntangle NULL.\n",__FILE__,__LINE__);
+	return NULL;
+      }
     }
   }
   free(local_e2n);
   planFree(plan);
   return gf; 
 }
+
+GridFacer *gridfacerSplitProblemProjectionEdges(GridFacer *gf) {
+  int conn, nodes[2];
+  int parent, newnode;
+  int split_edges;
+  double min_insert_cost;
+
+  Grid *grid = gridfacerGrid( gf );
+
+  min_insert_cost = gridMinInsertCost( grid );
+  gridSetMinInsertCost( grid, -100.0 );
+  gridCreateConn(grid);
+  split_edges = 0;
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    parent = gridParentGeometry(grid, nodes[0], nodes[1] );
+    if ( ( gridGeometryFace( grid, nodes[0] ) &&
+	   gridGeometryFace( grid, nodes[1] ) &&
+	   0 == parent  ) ) {
+      newnode = gridSplitEdgeRatio( grid, NULL, nodes[0], nodes[1], 0.5);
+      split_edges++;
+    }
+  }
+  printf("split %d problem edges\n",split_edges);
+  gridEraseConn(grid);
+  gridSetMinInsertCost( grid, min_insert_cost );
+  return gf;
+}
+
 
 GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
 {

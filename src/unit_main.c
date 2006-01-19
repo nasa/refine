@@ -245,8 +245,13 @@ Grid *gridPhase2(Grid *grid )
 
     for ( i = 0 ; i < 20 ; i++ ) {
       gridfacerSwap(gf);
+      gridfacerSplitProblemProjectionEdges(gf);
       gridSetMinInsertCost( grid, -10.0 );
-      gridfacerSplit(gf);
+      if (gf != gridfacerSplit(gf)){
+	printf("gridfacerSplit failed for face %d\n",faceId);
+	gridfacerFree(gf);
+	return NULL;      
+      }
       if (grid != gridUntangle(grid) ) {
 	printf("gridUntangle failed for face %d\n",faceId);
 	gridfacerFree(gf);
