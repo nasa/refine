@@ -1,3 +1,9 @@
+2006-01-20 15:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerEquateLengths) smooth node location to
+	reduce the longest ratio edge. this got 0.005 to work, but more
+	iterations broke it again.
+
 2006-01-20 11:59 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerTecplot) dump all trhee axes of metric
