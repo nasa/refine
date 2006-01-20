@@ -455,17 +455,12 @@ GridFacer *gridfacerSplit(GridFacer *gf)
     node3 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
     newnode = gridSplitEdgeRatio(grid, NULL, node0, node1, 0.5);
     if ( EMPTY != newnode ) {
-      GridBool call_again;
       gridfacerRemoveEdge(gf, node0, node1);
       gridfacerAddUniqueEdge(gf, node0, newnode);
       gridfacerAddUniqueEdge(gf, node1, newnode);
       gridfacerAddUniqueEdge(gf, node2, newnode);
       gridfacerAddUniqueEdge(gf, node3, newnode);
-      gridSetMinSurfaceSmoothCost(grid,-10.0);
-      call_again = TRUE;
-      while (call_again) {
-	gridLinearProgramUV(grid, newnode, &call_again);
-      }
+      gridfacerEquateLengths(gf, newnode, node0, node1, node2, node3 );
       if (grid!=gridUntangle(grid)) {
 	printf("%s: %d: gridUntangle NULL.\n",__FILE__,__LINE__);
 	return NULL;
@@ -475,6 +470,51 @@ GridFacer *gridfacerSplit(GridFacer *gf)
   free(local_e2n);
   planFree(plan);
   return gf; 
+}
+
+GridFacer *gridfacerEquateLengths(GridFacer *gf, int node,
+				  int node0, int node1, int node2, int node3 )
+{
+  double uv[2], furthest_uv[2];
+  double ratio0, ratio1, ratio2, ratio3;
+  double omega;
+  int iteration;
+
+  Grid *grid = gridfacerGrid( gf );
+
+  for (iteration = 0; iteration < 100 ; iteration++) {
+    ratio0 = gridEdgeRatio(grid,node,node0);
+    ratio1 = gridEdgeRatio(grid,node,node1);
+    ratio2 = gridEdgeRatio(grid,node,node2);
+    ratio3 = gridEdgeRatio(grid,node,node3);
+  
+    gridNodeUV(grid, node, gridfacerFaceId(gf), furthest_uv);
+
+    if (ratio0 > ratio1 && ratio0 > ratio2 && ratio0 > ratio3 ) {
+      gridNodeUV(grid, node0, gridfacerFaceId(gf), furthest_uv);
+    }
+    
+    if (ratio1 > ratio0 && ratio1 > ratio2 && ratio1 > ratio3 ) {
+      gridNodeUV(grid, node1, gridfacerFaceId(gf), furthest_uv);
+    }
+    
+    if (ratio2 > ratio0 && ratio2 > ratio1 && ratio2 > ratio3 ) {
+      gridNodeUV(grid, node2, gridfacerFaceId(gf), furthest_uv);
+    }
+    
+    if (ratio3 > ratio0 && ratio3 > ratio1 && ratio3 > ratio2 ) {
+      gridNodeUV(grid, node3, gridfacerFaceId(gf), furthest_uv);
+    }
+    
+    omega = 0.005;
+    gridNodeUV(grid, node, gridfacerFaceId(gf), uv);
+    uv[0] = (1.0-omega)*uv[0]+(omega)*furthest_uv[0];
+    uv[1] = (1.0-omega)*uv[1]+(omega)*furthest_uv[1];
+    
+    gridEvaluateFaceAtUV(grid, node, uv);
+  }
+
+  return gf;
 }
 
 GridFacer *gridfacerSplitProblemProjectionEdges(GridFacer *gf) {
