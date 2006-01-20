@@ -230,7 +230,7 @@ GridFacer *gridfacerTecplot(GridFacer *gf, char *filename)
       gf->tecplotFile = fopen(filename,"w");
     } 
     fprintf(gf->tecplotFile, "title=\"tecplot gridfacer\"\n");
-    fprintf(gf->tecplotFile, "variables=\"X\",\"Y\",\"Z\",\"U\",\"V\"\n");
+    fprintf(gf->tecplotFile, "variables=\"X\",\"Y\",\"Z\",\"U1\",\"V1\",\"W1\",\"U2\",\"V2\",\"W2\",\"U3\",\"V3\",\"W3\"\n");
   }
 
   nnode=0;
@@ -275,11 +275,26 @@ GridFacer *gridfacerTecplot(GridFacer *gf, char *filename)
 	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
 	  nnode, nface);
   for (node = 0 ; node < nnode; node++ ) {
+    double m[6];
+    double d[3], e[3], v0[3], v1[3], v2[3];
+    double h0, h1, h2;
     gridNodeXYZ(grid,n2o[node],xyz);
     gridNodeUV(grid,n2o[node],gridfacerFaceId(gf),uv);
+    gridMap(grid,n2o[node],m);
+    gridTriDiag3x3(m, d, e, v0, v1, v2);
+    if ( !gridEigTriDiag3x3(d, e, v0, v1, v2 )) {
+      printf("%s: %d: gridEigTriDiag3x3 FAILED.\n",__FILE__,__LINE__);
+    }
+    //gridEigOrtho3x3( v0, v1, v2 );
+    h0 = 1.0/sqrt(d[0]);
+    h1 = 1.0/sqrt(d[1]);
+    h2 = 1.0/sqrt(d[2]);
     fprintf(gf->tecplotFile, 
-	    "%23.15e%23.15e%23.15e%23.15e%23.15e\n",
-	    xyz[0],xyz[1],xyz[2],uv[0],uv[1]);
+	    "%23.15e%23.15e%23.15e %23.15e%23.15e%23.15e %23.15e%23.15e%23.15e %23.15e%23.15e%23.15e \n",
+	    xyz[0],xyz[1],xyz[2],
+	    h0*v0[0],h0*v0[1],h0*v0[2],
+	    h1*v1[0],h1*v1[1],h1*v1[2],
+	    h2*v2[0],h2*v2[1],h2*v2[2]);
   }
   free(n2o);
 
