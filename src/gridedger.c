@@ -621,15 +621,8 @@ GridEdger *gridedgerDiscretizeSupport(GridEdger *ge, int subintervals )
     l[node] = l[node-1] + delta_length;
   }
 
-  for ( node = 0 ; node <= subsegments ; node++ ) {
-    printf("edge%4d support %f total length %f\n",
-	   gridedgerEdgeId( ge ), s[node], l[node]);
-  }
-
   target_size = ((int)l[subsegments])+1;
   target_delta_length = l[subsegments]/((double)target_size) ;
-    printf("target size %d length %f\n",
-	   target_size, target_delta_length);
 
   ge->t = (double *)malloc( (target_size+1) * sizeof(double) );
 
