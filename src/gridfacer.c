@@ -159,8 +159,6 @@ GridFacer *gridfacerRemoveEdge(GridFacer *gf, int nodeA, int nodeB)
   int edge;
   int found;
 
-  if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
-
   node0 = MIN(nodeA,nodeB);
   node1 = MAX(nodeA,nodeB);
 
@@ -402,6 +400,7 @@ GridFacer *gridfacerSwap(GridFacer *gf)
       if ( grid == gridSwapEdge( grid, NULL, node0, node1 ) ) {
 	gridfacerRemoveEdge(gf, node0, node1);
 	gridfacerAddUniqueEdge(gf, node2, node3);
+	if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
 	continue;
       }
     }
@@ -475,6 +474,7 @@ GridFacer *gridfacerSplit(GridFacer *gf)
       gridfacerAddUniqueEdge(gf, node1, newnode);
       gridfacerAddUniqueEdge(gf, node2, newnode);
       gridfacerAddUniqueEdge(gf, node3, newnode);
+      if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
       gridfacerEquateLengths(gf, newnode, node0, node1, node2, node3 );
       if (grid!=gridUntangle(grid)) {
 	printf("%s: %d: gridUntangle NULL.\n",__FILE__,__LINE__);
@@ -615,6 +615,7 @@ GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
 	gridfacerAddUniqueEdge(gf, nodes[0], nodes[1] );
 	gridfacerAddUniqueEdge(gf, nodes[1], nodes[2] );
 	gridfacerAddUniqueEdge(gf, nodes[2], nodes[0] );
+	if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
       }
       return gf;
     }
