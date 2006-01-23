@@ -2548,3 +2548,68 @@ Grid *gridSmoothNodeVolumeUVSimplex( Grid *grid, int node )
   return grid;
 }
 
+/* spike never completed
+Grid *gridNSmooth( Grid *grid, int node)
+{
+  double norm[3];
+  double uv[2], xyz[3];
+  int face, nodes[3], faceId;
+  int slanted_face;
+  double slanted_dot;
+  double tri_norm[3];
+  double xyz0[3], xyz1[3], xyz2[3];
+  double edge0[3], edge1[3];
+  int iteration;
+  double dot;
+  int temp;
+
+  AdjIterator it;
+
+  face = adjItem(adjFirst(gridFaceAdj(grid),node));
+  if ( grid != gridFace(grid, face, nodes, &faceId) ) return NULL;
+  gridFaceNormalAtUV(grid, faceId, uv, xyz, norm);
+
+  for (iteration = 0; iteration<2 ; iteration++) {
+    slanted_face = EMPTY;
+    slanted_dot = 2.0;
+    for ( it = adjFirst(gridFaceAdj(grid),node);
+	  adjValid(it);
+	  it = adjNext(it) ){
+      face = adjItem(it);
+      if ( grid != gridFace(grid, face, nodes, &faceId) )  return NULL;
+      gridNodeXYZ(grid,nodes[0],xyz0);
+      gridNodeXYZ(grid,nodes[1],xyz1);
+      gridNodeXYZ(grid,nodes[2],xyz2);
+      gridSubtractVector(xyz1, xyz0, edge0);
+      gridSubtractVector(xyz2, xyz0, edge1);
+      gridCrossProduct(edge0,edge1,tri_norm);
+      gridVectorNormalize(tri_norm);
+      dot = gridDotProduct(norm, tri_norm);
+      if (dot < slanted_dot) {
+	slanted_face = face;
+	slanted_dot = dot;
+      }
+    }
+    if ( slanted_dot < 0.707 ) {
+      printf("dot%10.5f\n",slanted_dot);
+      gridFace(grid, face, nodes, &faceId);
+      if (node == nodes[1]) {
+	temp = nodes[0];
+	nodes[0] = nodes[1];
+	nodes[1] = nodes[2];
+	nodes[2] = temp;
+      }
+      if (node == nodes[2]) {
+	temp = nodes[0];
+	nodes[0] = nodes[2];
+	nodes[2] = nodes[1];
+	nodes[1] = temp;
+      }
+       
+    }
+    
+  }
+
+  return grid;
+}
+*/
