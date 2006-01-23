@@ -551,23 +551,50 @@ GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
   AdjIterator it;
   int nodes[3], faceId;
   double ratio0, ratio1;
+  GridBool acceptable;
 
   Grid *grid = gridfacerGrid( gf );
 
-  printf("%s: %d: gridfacerCollapseEdge not implemented.\n",
-	 __FILE__,__LINE__);
-  return NULL;
-  
+  acceptable = TRUE;
+
   for ( it = adjFirst(gridFaceAdj(grid),node1); 
-	adjValid(it); 
+	acceptable && adjValid(it); 
 	it = adjNext(it) ) {
     gridFace(grid, adjItem(it), nodes, &faceId);
 
-    ratio0 = gridEdgeRatio(grid,nodes[0],nodes[1]);
-    ratio1 = ratio0;
-    if ( nodes[0] == node0 ) ratio1 = gridEdgeRatio(grid,node0,nodes[1]);
-    if ( nodes[1] == node0 ) ratio1 = gridEdgeRatio(grid,nodes[0],node0);
+    if ( nodes[0] == node1 ) {
+      ratio0 = gridEdgeRatio(grid,node1,nodes[1]);
+      ratio1 = gridEdgeRatio(grid,node0,nodes[1]);
+      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+      ratio0 = gridEdgeRatio(grid,node1,nodes[2]);
+      ratio1 = gridEdgeRatio(grid,node0,nodes[2]);
+      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+    }
 
+    if ( nodes[1] == node1 ) {
+      ratio0 = gridEdgeRatio(grid,node1,nodes[0]);
+      ratio1 = gridEdgeRatio(grid,node0,nodes[0]);
+      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+      ratio0 = gridEdgeRatio(grid,node1,nodes[2]);
+      ratio1 = gridEdgeRatio(grid,node0,nodes[2]);
+      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+    }
+
+    if ( nodes[2] == node1 ) {
+      ratio0 = gridEdgeRatio(grid,node1,nodes[0]);
+      ratio1 = gridEdgeRatio(grid,node0,nodes[0]);
+      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+      ratio0 = gridEdgeRatio(grid,node1,nodes[1]);
+      ratio1 = gridEdgeRatio(grid,node0,nodes[1]);
+      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+    }
+  }
+
+  if (acceptable) {
+    if (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.0)){
+      printf("fix edges!!\n");
+      return gf;
+    }
   }
 
   return NULL;
@@ -589,6 +616,8 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
   Plan *plan;
 
   Grid *grid = gridfacerGrid( gf );
+
+  gridSetMinInsertCost(grid,-0.5);
 
   plan = planCreate( gridfacerEdges(gf), 100 );
   limit = 0.2;
@@ -618,8 +647,10 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
     ratio = gridEdgeRatio(grid,node0,node1);
     if (ratio >= limit) continue;
     printf("rank %d len%10.6f\n",rank,ratio);
-    if (gf != gridfacerCollapseEdge( gf, node0, node1) ) 
-      gridfacerCollapseEdge( gf, node1, node0);
+    if ( (gf == gridfacerCollapseEdge( gf, node0, node1) ) || 
+	 (gf == gridfacerCollapseEdge( gf, node1, node0) ) ) {
+      printf("gotit.\n");
+    }
   }
   free(local_e2n);
   planFree(plan);
