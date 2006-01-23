@@ -51,6 +51,7 @@ int gridfacerEdges(GridFacer *);
 
 GridFacer *gridfacerAddUniqueEdge(GridFacer *, int node0, int node1);
 GridFacer *gridfacerRemoveEdge(GridFacer *, int node0, int node1);
+GridFacer *gridfacerRemoveEdgesWithNode(GridFacer *, int node);
 
 GridFacer *gridfacerExamine(GridFacer *);
 GridBool gridfacerCameraActive(GridFacer *);

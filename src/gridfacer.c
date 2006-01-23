@@ -184,6 +184,21 @@ GridFacer *gridfacerRemoveEdge(GridFacer *gf, int nodeA, int nodeB)
   return gf;
 }
 
+GridFacer *gridfacerRemoveEdgesWithNode(GridFacer *gf, int node)
+{
+  int edge;
+  edge = 0;
+  while ( edge < gridfacerEdges(gf) ) {
+    if ( (node == gf->e2n[0+2*edge]) || 
+	 (node == gf->e2n[1+2*edge]) ) {
+      gridfacerRemoveEdge(gf,  gf->e2n[0+2*edge], gf->e2n[1+2*edge]);
+    } else {
+      edge++;
+    }
+  }
+  return gf;
+}
+
 GridFacer *gridfacerExamine(GridFacer *gf)
 {
   int edge;
@@ -592,7 +607,15 @@ GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
 
   if (acceptable) {
     if (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.0)){
-      printf("fix edges!!\n");
+      gridfacerRemoveEdgesWithNode(gf,node1);
+      for ( it = adjFirst(gridFaceAdj(grid),node0); 
+	    acceptable && adjValid(it); 
+	    it = adjNext(it) ) {
+	gridFace(grid, adjItem(it), nodes, &faceId);
+	gridfacerAddUniqueEdge(gf, nodes[0], nodes[1] );
+	gridfacerAddUniqueEdge(gf, nodes[1], nodes[2] );
+	gridfacerAddUniqueEdge(gf, nodes[2], nodes[0] );
+      }
       return gf;
     }
   }

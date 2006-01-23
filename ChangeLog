@@ -1,3 +1,9 @@
+2006-01-23 16:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerRemoveEdgesWithNode) removes edges
+	touching node.  
+	* src/gridfacer.c (gridfacerCollapseEdge) edges are repaired.
+
 2006-01-23 16:12 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerCollapse,gridfacerCollapseEdge) working,
