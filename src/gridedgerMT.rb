@@ -14,6 +14,7 @@ end
 require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
+require 'Queue/Queue'
 require 'Grid/Grid'
 require 'GridMath/GridMath'
 require 'GridMetric/GridMetric'
@@ -161,6 +162,7 @@ class TestGridEdger < Test::Unit::TestCase
   edgeId = 5
   assert_not_nil ge = GridEdger.new(grid,edgeId)
   assert_equal( edgeId, ge.edgeId )
+  assert_equal( 0, ge.unusedNodes )
  end
 
  def test_initialize_nodes_to_zero
@@ -432,6 +434,17 @@ class TestGridEdger < Test::Unit::TestCase
   assert_equal 6, grid.nnode
  end
 
+ def test_discretize_single_edge_into_two_edges_via_insert_twice_with_node_reuse
+  grid = one_edge_grid
+  ge = GridEdger.new(grid,1)
+  length = 1.0
+  ge.discretize(length)
+  ge.insert
+  assert_equal ge, ge.insert  
+  assert_equal 6, grid.nnode
+  assert_equal 0, ge.unusedNodes
+ end
+
  def test_discretize_double_edge_with_a_few_nodes_and_remove_unused
   grid = two_edge_grid
   ge = GridEdger.new(grid,1)
@@ -441,7 +454,9 @@ class TestGridEdger < Test::Unit::TestCase
   ge.discretize(length)
   ge.insert
   assert_equal 8,  grid.nnode
+  assert_equal 1,  ge.unusedNodes
   assert_equal ge, ge.removeUnused
+  assert_equal 0,  ge.unusedNodes
   assert_equal 7,  grid.nnode
 
  end
