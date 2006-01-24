@@ -2607,8 +2607,8 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
     }
   }
 
-  printf("%s: %d: gridFindClosestBoundaryFace %s %10.5f%10.5f%10.5f.\n",
-	 __FILE__,__LINE__,"exhausted tries at",target[0],target[1],target[2]);
+  printf("%s: %d: gridFindClosestBoundaryFace %s %8.5f %8.5f %8.5f.\n",
+	 __FILE__,__LINE__,"cycling at",target[0],target[1],target[2]);
   return EMPTY;
 }
 
