@@ -1,4 +1,8 @@
-2006-01-24 13:48 Mike Park  <mike.park@nasa.gov>
+2006-01-24 13:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridAR) return -999.0 if anything breaks.
+
+2006-01-24 12:48 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerCollapseEdge) refactored to only do
 	edges on face. warning O(nedges^2).

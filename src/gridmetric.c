@@ -746,16 +746,21 @@ double gridAR(Grid *grid, int *nodes )
 
     for (i=0;i<6;i++) m[i]=0.25*(m0[i]+m1[i]+m2[i]+m3[i]);
   } else {
-    gridMap(grid, nodes[0], map0);
-    gridMap(grid, nodes[1], map1);
-    gridMap(grid, nodes[2], map2);
-    gridMap(grid, nodes[3], map3);
+    if ( (grid!=gridMap(grid, nodes[0], map0) ) ||
+	 (grid!=gridMap(grid, nodes[1], map1) ) ||
+	 (grid!=gridMap(grid, nodes[2], map2) ) ||
+	 (grid!=gridMap(grid, nodes[3], map3) ) ) {
+      printf("%s: %d: gridAR: gridMap NULL\n",
+	     __FILE__,__LINE__);
+      return -999.0;
+    }
     for (i=0;i<6;i++) m[i]=0.25*(map0[i]+map1[i]+map2[i]+map3[i]);
   }
 
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
     printf("%s: %d: gridAR: gridConvertMetricToJacobian NULL\n",
 	   __FILE__,__LINE__);
+    return -999.0;
   }
   
   p1 = gridNodeXYZPointer(grid,nodes[0]);
