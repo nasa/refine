@@ -655,6 +655,8 @@ GridEdger *gridedgerInsert(GridEdger *ge )
   int *curve;
   int node0, node1;
   int newnode;
+  int unused;
+  GridBool found;
 
   Queue *queue = NULL;
   Grid *grid = gridedgerGrid( ge );
@@ -706,8 +708,30 @@ GridEdger *gridedgerInsert(GridEdger *ge )
     node0 = curve[segment_index];
     node1 = curve[segment_index+1];
 
-    /* actually insert the new node in the ideal location */
-    newnode = gridSplitEdgeRatio( grid, queue, node0, node1, segment_ratio );
+    if ( segment_ratio < 0.000001 || segment_ratio > 0.999999 ) {
+      /* reuse existing node at the ideal location */
+      newnode = node0;
+      if (segment_ratio > 0.5) newnode = node1;
+
+      /* extract newnode from unused list */
+      found = FALSE;
+      for ( unused = 0 ; unused < ge->total_unused ; unused++ ) {
+	found = found || ( newnode == ge->unused[unused]);
+	if (found && unused < ge->total_unused-1) 
+	  ge->unused[unused] = ge->unused[unused+1];
+      }
+      
+      if (found) {
+	ge->total_unused--;
+      }else{
+	printf( "%s: %d: gridedgerInsert: unable to remove used from unused.\n",
+		__FILE__, __LINE__ );
+	newnode = EMPTY;
+      }
+    }else{
+      /* actually insert the new node in the ideal location */
+      newnode = gridSplitEdgeRatio( grid, queue, node0, node1, segment_ratio );
+    }
 
     /* allowing a curve memory leak would suck */
     free(curve);

@@ -1,3 +1,8 @@
+2006-01-24 16:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerInsert) Reuse a node instead of
+	inserting if it is already in the right place.
+
 2006-01-24 14:00 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (gridPhase2) call gridfacerCollapse.
