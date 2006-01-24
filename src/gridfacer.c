@@ -627,14 +627,16 @@ GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
     if (grid == gridCollapseEdge(grid, NULL, node0, node1, 0.0)){
       gridfacerRemoveEdgesWithNode(gf,node1);
       for ( it = adjFirst(gridFaceAdj(grid),node0); 
-	    acceptable && adjValid(it); 
+	    adjValid(it); 
 	    it = adjNext(it) ) {
 	gridFace(grid, adjItem(it), nodes, &faceId);
-	gridfacerAddUniqueEdge(gf, nodes[0], nodes[1] );
-	gridfacerAddUniqueEdge(gf, nodes[1], nodes[2] );
-	gridfacerAddUniqueEdge(gf, nodes[2], nodes[0] );
-	if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
+	if ( gridfacerFaceId(gf) == faceId) {
+	  gridfacerAddUniqueEdge(gf, nodes[0], nodes[1] );
+	  gridfacerAddUniqueEdge(gf, nodes[1], nodes[2] );
+	  gridfacerAddUniqueEdge(gf, nodes[2], nodes[0] );
+	}
       }
+      if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
       return gf;
     }
   }
@@ -654,13 +656,14 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
   int nodes[3], faceId;
   int node2, node3;
   int newnode;
+  int count;
 
   GridBool changed;
 
   Grid *grid = gridfacerGrid( gf );
 
   limit = 0.4;
-
+  count = 0;
   changed = TRUE;
   while (changed) {
     changed = FALSE;
@@ -672,14 +675,14 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
 	if ( ratio < limit ) {
 	  if ( (gf == gridfacerCollapseEdge( gf, node0, node1) ) || 
 	       (gf == gridfacerCollapseEdge( gf, node1, node0) ) ) {
-	    printf("gotit.\n");
+	    count++;
 	    changed = TRUE;
 	  }
 	}
       }
     }
   }
-
+  printf("collapsed %d long edges\n",count);
   return gf; 
 }
 

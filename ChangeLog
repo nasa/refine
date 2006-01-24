@@ -1,10 +1,16 @@
+2006-01-24 14:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridPhase2) call gridfacerCollapse.
+	* src/gridfacer.c (gridfacerCollapseEdge) fixed bug that added
+	edges from other faces to edge list.
+
 2006-01-24 13:07 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridAR) return -999.0 if anything breaks.
 
 2006-01-24 12:48 Mike Park  <mike.park@nasa.gov>
 
-	* src/gridfacer.c (gridfacerCollapseEdge) refactored to only do
+	* src/gridfacer.c (gridfacerCollapse) refactored to only do
 	edges on face. warning O(nedges^2).
 
 2006-01-24 11:33 Mike Park  <mike.park@nasa.gov>
