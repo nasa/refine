@@ -51,6 +51,12 @@ VALUE gridedger_idealNodeT( VALUE self, VALUE rb_node )
   return (ge == gridedgerIdealNodeT( ge, node, &s )?rb_float_new(s):Qnil);
 }
 
+VALUE gridedger_unusedNodes( VALUE self )
+{
+  GET_GE_FROM_SELF;
+  return INT2NUM( gridedgerUnusedNodes( ge ) );
+}
+
 VALUE gridedger_discreteSegmentAndRatio( VALUE self, VALUE rb_segment )
 {
   double segment;
@@ -154,6 +160,7 @@ void Init_GridEdger()
   rb_define_method( cGridEdger, "edgeId", gridedger_edgeId, 0 );
   rb_define_method( cGridEdger, "idealNodes", gridedger_idealNodes, 0 );
   rb_define_method( cGridEdger, "idealNodeT", gridedger_idealNodeT, 1 );
+  rb_define_method( cGridEdger, "unusedNodes", gridedger_unusedNodes, 0 );
   rb_define_method( cGridEdger, "supportingSegment", 
 		    gridedger_supportingSegment, 1 );
   rb_define_method( cGridEdger, "discreteSegmentAndRatio", 
