@@ -439,6 +439,10 @@ GridFacer *gridfacerSplit(GridFacer *gf)
     node1 = gf->e2n[1+2*edge];
     if ( 0 < gridParentGeometry(grid,node0,node1 ) ) {
       ratio = gridEdgeRatio(grid,node0,node1);
+      if ( ratio < -0.5 ) {
+	printf("%s: %d: gridEdgeRatio returned %f.\n",__FILE__,__LINE__,ratio);	
+	return NULL;
+      }
       if ( ratio > 1.0 ) {
 	planAddItemWithPriority( plan, edge, ratio );
       }
@@ -479,7 +483,10 @@ GridFacer *gridfacerSplit(GridFacer *gf)
       gridfacerAddUniqueEdge(gf, node2, newnode);
       gridfacerAddUniqueEdge(gf, node3, newnode);
       if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
-      gridfacerEquateLengths(gf, newnode, node0, node1, node2, node3 );
+      if (gf!=gridfacerEquateLengths(gf, newnode, node0, node1, node2, node3)){
+	printf("%s: %d: gridfacerEquateLengths NULL.\n",__FILE__,__LINE__);
+	return NULL;
+      }
       if (grid!=gridUntangle(grid)) {
 	printf("%s: %d: gridUntangle NULL.\n",__FILE__,__LINE__);
 	return NULL;
@@ -506,6 +513,12 @@ GridFacer *gridfacerEquateLengths(GridFacer *gf, int node,
     ratio1 = gridEdgeRatio(grid,node,node1);
     ratio2 = gridEdgeRatio(grid,node,node2);
     ratio3 = gridEdgeRatio(grid,node,node3);
+
+    if ( ratio0 < -0.5 || ratio1 < -0.5 || ratio2 < -0.5 || ratio3 < -0.5 ) {
+      printf("%s: %d: gridEdgeRatio returned %f %f %f %f %d.\n",
+	     __FILE__,__LINE__,ratio0,ratio1,ratio2,ratio3,iteration);	
+      return NULL;
+    }
   
     gridNodeUV(grid, node, gridfacerFaceId(gf), furthest_uv);
 
