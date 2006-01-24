@@ -637,51 +637,33 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
   int node2, node3;
   int newnode;
 
-  Plan *plan;
+  GridBool changed;
 
   Grid *grid = gridfacerGrid( gf );
 
   gridSetMinInsertCost(grid,-0.5);
 
-  plan = planCreate( gridfacerEdges(gf), 100 );
-  limit = 0.2;
-  for ( edge = 0 ; edge < gridfacerEdges(gf) ; edge++ ) {
-    node0 = gf->e2n[0+2*edge];
-    node1 = gf->e2n[1+2*edge];
-    if ( gridfacerFaceId(gf) == gridParentGeometry(grid,node0,node1 ) ) {
-      ratio = gridEdgeRatio(grid,node0,node1);
-      if ( ratio < limit ) {
-	planAddItemWithPriority( plan, edge, ratio );
+  limit = 0.4;
+
+  changed = TRUE;
+  while (changed) {
+    changed = FALSE;
+    for ( edge = 0 ; !changed && edge < gridfacerEdges(gf) ; edge++ ) {
+      node0 = gf->e2n[0+2*edge];
+      node1 = gf->e2n[1+2*edge];
+      if ( gridfacerFaceId(gf) == gridParentGeometry(grid,node0,node1 ) ) {
+	ratio = gridEdgeRatio(grid,node0,node1);
+	if ( ratio < limit ) {
+	  if ( (gf == gridfacerCollapseEdge( gf, node0, node1) ) || 
+	       (gf == gridfacerCollapseEdge( gf, node1, node0) ) ) {
+	    printf("gotit.\n");
+	    changed = TRUE;
+	  }
+	}
       }
     }
   }
 
-  planDeriveRankingsFromPriorities( plan );
-
-  local_e2n = (int *)malloc( 2 * planSize( plan ) * sizeof(int) );
-  for ( rank = 0 ; rank < planSize( plan ) ; rank++ ) {
-    edge = planItemWithThisRanking( plan, rank);
-    local_e2n[0+2*rank] = gf->e2n[0+2*edge];
-    local_e2n[1+2*rank] = gf->e2n[1+2*edge];
-  }
-
-  for ( rank = 0 ; rank < planSize( plan ) ; rank++ ) {
-    node0 = local_e2n[0+2*rank];
-    node1 = local_e2n[1+2*rank];
-    if ( gridfacerFaceId(gf) != gridParentGeometry(grid,node0,node1) ) {
-      printf("off face");
-      continue;
-    }
-    ratio = gridEdgeRatio(grid,node0,node1);
-    if (ratio >= limit) continue;
-    printf("rank %d len%10.6f\n",rank,ratio);
-    if ( (gf == gridfacerCollapseEdge( gf, node0, node1) ) || 
-	 (gf == gridfacerCollapseEdge( gf, node1, node0) ) ) {
-      printf("gotit.\n");
-    }
-  }
-  free(local_e2n);
-  planFree(plan);
   return gf; 
 }
 
