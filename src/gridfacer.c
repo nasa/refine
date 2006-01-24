@@ -645,8 +645,6 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
 
   Grid *grid = gridfacerGrid( gf );
 
-  gridSetMinInsertCost(grid,-0.5);
-
   limit = 0.4;
 
   changed = TRUE;
