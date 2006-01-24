@@ -210,8 +210,11 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
 
     for (i=0;i<6;i++) m[i] = 0.5*(m0[i]+m1[i]);
   }else{
-    gridMap(grid, n0, map0);
-    gridMap(grid, n1, map1);
+    if ( ( grid != gridMap(grid, n0, map0) ) ||
+	 ( grid != gridMap(grid, n1, map1) ) ) {
+      printf("%s: %d: gridEdgeRatio: gridMap NULL\n",__FILE__,__LINE__);
+      return -1.0;
+    }
 
     for (i=0;i<6;i++) m[i] = 0.5*(map0[i]+map1[i]);
   }
