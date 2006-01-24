@@ -485,6 +485,7 @@ GridFacer *gridfacerSplit(GridFacer *gf)
       if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
       if (gf!=gridfacerEquateLengths(gf, newnode, node0, node1, node2, node3)){
 	printf("%s: %d: gridfacerEquateLengths NULL.\n",__FILE__,__LINE__);
+	if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
 	return NULL;
       }
       if (grid!=gridUntangle(grid)) {
