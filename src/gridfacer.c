@@ -648,7 +648,7 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
   for ( edge = 0 ; edge < gridfacerEdges(gf) ; edge++ ) {
     node0 = gf->e2n[0+2*edge];
     node1 = gf->e2n[1+2*edge];
-    if ( 0 < gridParentGeometry(grid,node0,node1 ) ) {
+    if ( gridfacerFaceId(gf) == gridParentGeometry(grid,node0,node1 ) ) {
       ratio = gridEdgeRatio(grid,node0,node1);
       if ( ratio < limit ) {
 	planAddItemWithPriority( plan, edge, ratio );
@@ -668,6 +668,10 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
   for ( rank = 0 ; rank < planSize( plan ) ; rank++ ) {
     node0 = local_e2n[0+2*rank];
     node1 = local_e2n[1+2*rank];
+    if ( gridfacerFaceId(gf) != gridParentGeometry(grid,node0,node1) ) {
+      printf("off face");
+      continue;
+    }
     ratio = gridEdgeRatio(grid,node0,node1);
     if (ratio >= limit) continue;
     printf("rank %d len%10.6f\n",rank,ratio);
