@@ -338,6 +338,10 @@ GridFacer *gridfacerRatioRange(GridFacer *gf,
     node1 = gf->e2n[1+2*edge];
     if ( 0 < gridParentGeometry(grid,node0,node1 ) ) {
       ratio = gridEdgeRatio(grid,node0,node1);
+      if ( ratio < -0.5 ) {
+	printf("%s: %d: gridEdgeRatio returned %f.\n",__FILE__,__LINE__,ratio);	
+	return NULL;
+      }
       *longest_ratio  = MAX((*longest_ratio),ratio);
       *shortest_ratio = MIN((*shortest_ratio),ratio);
     }
