@@ -169,18 +169,65 @@ double gridEdgeLength(Grid *grid, int n0, int n1 )
 
 Grid *gridEdgeRatioRange(Grid *grid, double *longest, double *shortest )
 {
-  int node, edge_node;
+  int cell, nodes[4];
   double ratio;
 
   *shortest = DBL_MAX;
   *longest = -DBL_MAX;
 
-  for( node=0 ; node < gridMaxNode(grid) ; node++ ) {
-    if (gridValidNode(grid,node) ) {
-      gridLargestRatioEdge(grid, node, &edge_node, &ratio );
-      *longest = MAX( *longest, ratio);
-      gridSmallestRatioEdge(grid, node, &edge_node, &ratio );
-      *shortest = MIN( *shortest, ratio);
+  for( cell=0 ; cell < gridMaxCell(grid) ; cell++ ) {
+    if ( grid == gridCell( grid, cell, nodes ) ) {
+      ratio = gridEdgeRatio(grid, nodes[0], nodes[1]);
+      *longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      ratio = gridEdgeRatio(grid, nodes[0], nodes[2]);
+      *longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      ratio = gridEdgeRatio(grid, nodes[0], nodes[3]);
+      *longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      ratio = gridEdgeRatio(grid, nodes[1], nodes[2]);
+      *longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      ratio = gridEdgeRatio(grid, nodes[1], nodes[3]);
+      *longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      ratio = gridEdgeRatio(grid, nodes[2], nodes[3]);
+      *longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+    }
+  }
+  return grid;
+}
+
+Grid *gridEdgeRatioRangeInVolume(Grid *grid, double *longest, double *shortest )
+{
+  int cell, nodes[4];
+  double ratio;
+
+  *shortest = DBL_MAX;
+  *longest = -DBL_MAX;
+
+  for( cell=0 ; cell < gridMaxCell(grid) ; cell++ ) {
+    if ( grid == gridCell( grid, cell, nodes ) ) {
+      if ( 0 == gridParentGeometry(grid, nodes[0], nodes[1]) ) {
+	ratio = gridEdgeRatio(grid, nodes[0], nodes[1]);
+	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      }
+      if ( 0 == gridParentGeometry(grid, nodes[0], nodes[2]) ) {
+	ratio = gridEdgeRatio(grid, nodes[0], nodes[2]);
+	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      }
+      if ( 0 == gridParentGeometry(grid, nodes[0], nodes[3]) ) {
+	ratio = gridEdgeRatio(grid, nodes[0], nodes[3]);
+	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      }
+      if ( 0 == gridParentGeometry(grid, nodes[1], nodes[2]) ) {
+	ratio = gridEdgeRatio(grid, nodes[1], nodes[2]);
+	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      }
+      if ( 0 == gridParentGeometry(grid, nodes[1], nodes[3]) ) {
+	ratio = gridEdgeRatio(grid, nodes[1], nodes[3]);
+	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      }
+      if ( 0 == gridParentGeometry(grid, nodes[2], nodes[3]) ) {
+	ratio = gridEdgeRatio(grid, nodes[2], nodes[3]);
+	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
+      }
     }
   }
   return grid;
