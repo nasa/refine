@@ -1,3 +1,9 @@
+2006-01-25  9:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridedgerDiscretizeEvenly) to increase
+	robustness, when gridedgerDiscretize NULL, try a nearby length to
+	keep going.
+
 2006-01-25  8:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridedgerDiscretize) to prevent seg fault,
