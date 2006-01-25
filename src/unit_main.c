@@ -171,7 +171,6 @@ Grid *gridPhase1(Grid *grid )
   GridEdger **ge;
 
   gridSetPhase(grid, 1);
-  gridSetMinInsertCost( grid, -0.5 );
   gridConstrainSurfaceNode(grid);
   gridSplitProblemProjectionEdges(grid);
   gridUntangle(grid);
@@ -188,6 +187,7 @@ for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) { \
 } \
 free(ge); }
 
+  gridSetMinInsertCost( grid, -10.0 );
   for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
     edgeId = edge+1;
     if ( ge[edge] != gridedgerDiscretizeEvenly(ge[edge]) ) {
@@ -207,6 +207,7 @@ free(ge); }
     }
   }
 
+  gridSetMinInsertCost( grid, -0.5 );
   for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
     edgeId = edge+1;
     if ( ge[edge] != gridedgerRemoveUnused(ge[edge]) ) {

@@ -1,5 +1,10 @@
 2006-01-25  9:02 Mike Park  <mike.park@nasa.gov>
 
+	* src/unit_main.c (gridPhase1) allow negative cells and faces on
+	edge node insert, but not on unused removal.
+
+2006-01-25  9:02 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridfacer.c (gridedgerDiscretizeEvenly) to increase
 	robustness, when gridedgerDiscretize NULL, try a nearby length to
 	keep going.
