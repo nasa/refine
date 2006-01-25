@@ -511,7 +511,12 @@ GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
   s1 = (double)(gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) )-1);
 
   for (iteration = 1; iteration <= 20 ; iteration++) {
-    if (ge != gridedgerDiscretize( ge, length ) ) return NULL;
+    if (ge != gridedgerDiscretize( ge, length ) ) {
+      printf( "%s: %d: %s: gridedgerDiscretize NULL on %d for %f\n",
+	      __FILE__, __LINE__, "gridedgerDiscretizeEvenly",
+	      iteration, length );      
+      return NULL;
+    }
 
     if (1==iteration) size = gridedgerIdealNodes( ge );
     last_size = gridedgerIdealNodes( ge );
