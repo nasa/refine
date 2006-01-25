@@ -1,5 +1,10 @@
 2006-01-25 16:40 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridfacer.c (gridfacerSplit) removed gridUntangle, call
+	after cycle is complete.
+
+2006-01-25 16:40 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridmpi.c (gridParallelAdapt) use_a_plan = TRUE as default.
 	This affects "production" path in code.
 
