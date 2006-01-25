@@ -455,6 +455,9 @@ GridEdger *gridedgerDiscretize(GridEdger *ge, double length )
     if (ge != gridedgerLengthToS(ge, s0, length, &s1 )){
       free( ge->t );
       ge->t = NULL;
+      printf( "%s: %d: gridedgerDiscretize: gridedgerLengthToS NULL.\n",
+	      __FILE__, __LINE__ );
+      return NULL;
     }
     gridedgerSegmentT( ge, s1, &(ge->t[node]));
     s0 = s1;
