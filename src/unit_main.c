@@ -300,10 +300,10 @@ Grid *gridPhase3(Grid *grid )
   iterations = 20;
   longest_edge = 2.0;
   for ( iteration=0; 
-	(iteration<iterations) && (longest_edge>1.000001); 
+	(iteration<iterations) && (longest_edge>1.0); 
 	iteration++){
     gridAdaptVolumeEdges(grid);
-    gridEdgeRatioRange(grid,&longest_edge,&shortest_edge);
+    gridEdgeRatioRangeInVolume(grid,&longest_edge,&shortest_edge);
     printf("Length Range %12.5e %12.5e\n", longest_edge, shortest_edge);
   }
   return grid;
