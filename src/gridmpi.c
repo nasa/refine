@@ -70,7 +70,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   nnodeAdd    = 0;
   nnodeRemove = 0;
 
-  use_a_plan = FALSE;
+  use_a_plan = TRUE;
   if (use_a_plan) {
 
     /* split long edges */
