@@ -3982,8 +3982,8 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
     grid->xyz[1+3*(grid->maxnode-1)] = (double)(EMPTY);
     grid->blanknode = origSize;
 
-    grid->map =
-               (double *)realloc(grid->map, grid->maxnode * 6 * sizeof(double));
+    if (NULL != grid->map) grid->map =
+      (double *)realloc(grid->map, grid->maxnode * 6 * sizeof(double));
     if ( grid->naux > 0 ) grid->aux = 
       (double *)realloc(grid->aux, grid->maxnode * grid->naux * sizeof(double));
     grid->frozen =

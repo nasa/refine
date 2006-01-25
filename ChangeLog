@@ -1,3 +1,8 @@
+2006-01-25  9:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridAddNodeWithGlobal) to avoid a zero map after
+	reallocation, do not realloc grid->map if it is NULL.
+
 2006-01-25  9:02 Mike Park  <mike.park@nasa.gov>
 
 	* src/unit_main.c (gridPhase1) allow negative cells and faces on
