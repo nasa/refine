@@ -1,5 +1,12 @@
 2006-01-25 16:40 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridmpi.c (gridParallelAdapt) to fix a subtle
+	parallelization bug. Split problem pojection edges in the interior
+	of the parition while doing boundaries to allow projection and
+	untangling to proceed.
+
+2006-01-25 16:40 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridfacer.c (gridfacerSplit) removed gridUntangle, call
 	after cycle is complete.
 

@@ -158,6 +158,10 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 	       gridGeometryEdge( grid, nodes[1] ) &&
 	       0 < parent  ) ) {
 	  newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
+	  /* in gcase a boundary collapse creates problem */
+	  if ( EMPTY == newnode && NULL != queue ){
+	    newnode = gridParallelEdgeSplit( grid, NULL, nodes[0], nodes[1] );
+	  }
 	}
       }
     }
