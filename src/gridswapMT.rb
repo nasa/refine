@@ -4,9 +4,14 @@
 #
 # Mobility test for grid c lib
 
-Dir.chdir ENV['srcdir'] if ENV['srcdir']
-require 'RubyExtensionBuilder'
-RubyExtensionBuilder.new('GridSwap').build
+rebuild = false || true
+if rebuild
+ Dir.chdir ENV['srcdir'] if ENV['srcdir']
+ require 'RubyExtensionBuilder'
+ RubyExtensionBuilder.new('GridSwap').build
+ else
+ GC.disable
+end
 
 require 'test/unit'
 require 'Adj/Adj'
@@ -518,7 +523,7 @@ class TestGridSwap < Test::Unit::TestCase
   assert_equal [2,0,3,10], grid.face(3)
  end
 
- def testRemoveCellWithThreeFaces
+ def testRemoveCellWithThreeFacesSequential
   grid = Grid.new(6,3,4,0)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
@@ -536,6 +541,25 @@ class TestGridSwap < Test::Unit::TestCase
   grid.addFace(0,1,2,10)
   assert_nil grid.removeThreeFaceCell(0), "removed cell with no cell neighbors"
   assert_equal 1, grid.ncell
+  grid.addNode(1,1,1)
+  grid.addNode(-1,0,0)
+  grid.addCell(3,1,2,4)
+  assert_equal grid, grid.removeThreeFaceCell(0), "failed to removed good conf"
+  assert_equal 1, grid.ncell
+  assert_equal 1, grid.nface
+  assert_equal [3,1,2,10], grid.face(3)
+ end
+
+ def testRemoveCellWithThreeFacesParallel
+  grid = Grid.new(6,3,4,0)
+  grid.addNode(0,0,0)
+  grid.addNode(1,0,0)
+  grid.addNode(0,1,0)
+  grid.addNode(0,0,1)
+  grid.addCell(0,1,2,3)
+  grid.addFace(0,1,2,10)
+  grid.addFace(0,3,1,10)
+  grid.addFace(0,2,3,10)
   grid.addNode(1,1,1)
   grid.addNode(-1,0,0)
   grid.addCell(3,1,2,4)
