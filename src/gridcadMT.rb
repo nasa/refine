@@ -484,6 +484,14 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta optimalArea, grid.minFaceAreaUV(3), tol
  end
 
+ def test_SmartAreaUVLaplacian_for_one_bad_node
+  grid = threeSurfaceTriangles
+  tol = 1.0e-14
+  optimalArea = 0.5/3.0
+  assert grid, grid.smartAreaUVLaplacian(3)
+  assert_in_delta optimalArea, grid.minFaceAreaUV(3), tol
+ end
+
  def testSmoothFaceAreaInParameterSpaceForNodeWith2BadFaces
   grid = threeSurfaceTriangles(-0.9,-1.1)
   tol = 1.0e-7
