@@ -29,6 +29,12 @@ VALUE grid_removeTwoFaceCell( VALUE self, VALUE cell )
   return (gridRemoveTwoFaceCell( grid, NULL, NUM2INT(cell) )==grid?self:Qnil);
 }
 
+VALUE grid_removeThreeFaceCell( VALUE self, VALUE cell )
+{
+  GET_GRID_FROM_SELF;
+  return (gridRemoveThreeFaceCell( grid, NULL, NUM2INT(cell) )==grid?self:Qnil);
+}
+
 VALUE cGridSwap;
 
 void Init_GridSwap() 
@@ -38,4 +44,5 @@ void Init_GridSwap()
   rb_define_method( cGridSwap, "swapEdge", grid_swapEdge, 2 );
   rb_define_method( cGridSwap, "swap", grid_swap, 0 );
   rb_define_method( cGridSwap, "removeTwoFaceCell", grid_removeTwoFaceCell, 1 );
+  rb_define_method( cGridSwap, "removeThreeFaceCell", grid_removeThreeFaceCell, 1 );
 }
