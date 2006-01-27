@@ -225,14 +225,14 @@ Grid *gridWriteTecplotSurfaceScalar(Grid *g, char *filename, double *scalar );
 Grid *gridCloseTecplotScalarFile(Grid *g);
 Grid *gridWriteVTK(Grid *g, char *filename );
 
-#define gridMaxNode(grid) (grid->maxnode)
-#define gridNNode(grid)   (grid->nnode)
-#define gridMaxCell(grid) (grid->maxcell)
-#define gridNCell(grid)   (grid->ncell)
-#define gridMaxFace(grid) (grid->maxface)
-#define gridNFace(grid)   (grid->nface)
-#define gridMaxEdge(grid) (grid->maxedge)
-#define gridNEdge(grid)   (grid->nedge)
+#define gridMaxNode(grid) ((grid)->maxnode)
+#define gridNNode(grid)   ((grid)->nnode)
+#define gridMaxCell(grid) ((grid)->maxcell)
+#define gridNCell(grid)   ((grid)->ncell)
+#define gridMaxFace(grid) ((grid)->maxface)
+#define gridNFace(grid)   ((grid)->nface)
+#define gridMaxEdge(grid) ((grid)->maxedge)
+#define gridNEdge(grid)   ((grid)->nedge)
 int gridNPrism(Grid *g);
 int gridNPyramid(Grid *g);
 int gridNQuad(Grid *g);
@@ -268,29 +268,29 @@ Grid *gridSetCellGlobal(Grid *g, int cellIndex, int globalIndex );
 Grid *gridGlobalShiftCell(Grid *g, int oldncellg, int newncellg, 
 			  int celloffset );
 #define gridCellHasLocalNode(grid,nodes) ( \
-gridNodeLocal(grid,(nodes)[0]) || \
-gridNodeLocal(grid,(nodes)[1]) || \
-gridNodeLocal(grid,(nodes)[2]) || \
-gridNodeLocal(grid,(nodes)[3]) )
+gridNodeLocal((grid),(nodes)[0]) || \
+gridNodeLocal((grid),(nodes)[1]) || \
+gridNodeLocal((grid),(nodes)[2]) || \
+gridNodeLocal((grid),(nodes)[3]) )
 #define gridCellHasGhostNode(grid,nodes) ( \
-gridNodeGhost(grid,(nodes)[0]) || \
-gridNodeGhost(grid,(nodes)[1]) || \
-gridNodeGhost(grid,(nodes)[2]) || \
-gridNodeGhost(grid,(nodes)[3]) )
+gridNodeGhost((grid),(nodes)[0]) || \
+gridNodeGhost((grid),(nodes)[1]) || \
+gridNodeGhost((grid),(nodes)[2]) || \
+gridNodeGhost((grid),(nodes)[3]) )
 #define gridFaceHasLocalNode(grid,n0,n1,n2) ( \
-gridNodeLocal(grid,n0) || \
-gridNodeLocal(grid,n1) || \
-gridNodeLocal(grid,n2) )
+gridNodeLocal((grid),n0) || \
+gridNodeLocal((grid),n1) || \
+gridNodeLocal((grid),n2) )
 #define gridFaceHasGhostNode(grid,n0,n1,n2) ( \
-gridNodeGhost(grid,n0) || \
-gridNodeGhost(grid,n1) || \
-gridNodeGhost(grid,n2) )
+gridNodeGhost((grid),n0) || \
+gridNodeGhost((grid),n1) || \
+gridNodeGhost((grid),n2) )
 #define gridEdgeHasLocalNode(grid,n0,n1) ( \
-gridNodeLocal(grid,n0) || \
-gridNodeLocal(grid,n1) )
+gridNodeLocal((grid),n0) || \
+gridNodeLocal((grid),n1) )
 #define gridEdgeHasGhostNode(grid,n0,n1) ( \
-gridNodeGhost(grid,n0) || \
-gridNodeGhost(grid,n1) )
+gridNodeGhost((grid),n0) || \
+gridNodeGhost((grid),n1) )
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 int gridAddCellAndQueue(Grid *g, Queue *, int n0, int n1, int n2, int n3 );
@@ -298,7 +298,7 @@ int gridAddCellWithGlobal(Grid *g, int n0, int n1, int n2, int n3, int global );
 Grid *gridRemoveCell(Grid *g, int cellId );
 Grid *gridRemoveCellAndQueue(Grid *g, Queue *, int cellId );
 Grid *gridRemoveCellWithOutGlobal(Grid *g, int cellId );
-#define gridCellAdj(grid) (NULL==grid?NULL:grid->cellAdj)
+#define gridCellAdj(grid) (NULL==(grid)?NULL:(grid)->cellAdj)
 Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );
 GridBool gridCellValid(Grid *g, int cellId );
@@ -317,7 +317,7 @@ int gridFindClosestBoundaryFace(Grid *g, int starting_guess,
 
 Grid *gridDeleteThawedCells(Grid *g);
 
-#define gridNConn(grid) (grid->nconn)
+#define gridNConn(grid) ((grid)->nconn)
 int gridCell2Conn(Grid *g, int cell, int index );
 Grid *gridConn2Node(Grid *g, int conn, int *nodes );
 Grid *gridCreateConn(Grid *g );
@@ -338,7 +338,7 @@ int gridAddFaceUVAndQueue(Grid *g, Queue *,
 		  int n2, double u2, double v2, int faceId );
 Grid *gridRemoveFace(Grid *g, int face );
 Grid *gridRemoveFaceAndQueue(Grid *g, Queue *, int face );
-#define gridFaceAdj(grid) (NULL==grid?NULL:grid->faceAdj)
+#define gridFaceAdj(grid) (NULL==(grid)?NULL:(grid)->faceAdj)
 int gridFindFace(Grid *g, int n0, int n1, int n2 );
 int gridFaceId(Grid *g, int n0, int n1, int n2 );
 int gridFindFaceWithNodesUnless(Grid *g, int n0, int n1, int unless_face );
@@ -368,7 +368,7 @@ int gridAddEdgeInGlobal(Grid *g, int g0, int g1,
 			int edgeId, double t0, double t1 );
 Grid *gridRemoveEdge(Grid *g, int edge );
 Grid *gridRemoveEdgeAndQueue(Grid *g, Queue *, int edge );
-#define gridEdgeAdj(grid) (NULL==grid?NULL:grid->edgeAdj)
+#define gridEdgeAdj(grid) (NULL==(grid)?NULL:(grid)->edgeAdj)
 int gridFindEdge(Grid *g, int n0, int n1 );
 int gridEdgeId(Grid *g, int n0, int n1 );
 Grid *gridReconnectAllEdge(Grid *g, int oldNode, int newNode );
@@ -411,12 +411,12 @@ int gridAddNodeWithGlobal(Grid *g, double x, double y, double z, int global );
 Grid *gridRemoveNode(Grid *g, int node );
 Grid *gridRemoveNodeWithOutGlobal(Grid *g, int node );
 #define gridValidNode(grid,node) \
-(node>-1 && node<grid->maxnode && DBL_MAX!=grid->xyz[0+3*node])
+((node)>-1 && (node)<(grid)->maxnode && DBL_MAX!=(grid)->xyz[0+3*(node)])
 
 
 Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
-#define gridNodeXYZPointer(grid, node) (&grid->xyz[3*node])
-#define gridNodeXYZEntry(grid, node, ixyz) (grid->xyz[ixyz+3*node])
+#define gridNodeXYZPointer(grid, node) (&(grid)->xyz[3*(node)])
+#define gridNodeXYZEntry(grid, node, ixyz) ((grid)->xyz[ixyz+3*(node)])
 Grid *gridSetNodeXYZ(Grid *g, int node, double *xyz );
 Grid *gridDeleteNodesNotUsed(Grid *);
 
@@ -463,8 +463,8 @@ Grid *gridAddQuad(Grid *g, int n0, int n1, int n2, int n3, int faceId );
 Grid *gridQuad(Grid *g, int quadIndex, int *nodes, int *faceId );
 
 Grid *gridMap(Grid *g, int node, double *map);
-#define gridMapPointerAllocated(grid) ((NULL != grid->map))
-#define gridMapPointer(grid, node) (&grid->map[6*node])
+#define gridMapPointerAllocated(grid) ((NULL != (grid)->map))
+#define gridMapPointer(grid, node) (&(grid)->map[6*(node)])
 
 Grid *gridSetMap(Grid *g, int node,
 		 double m11, double m12, double m13,
@@ -474,14 +474,14 @@ Grid *gridSetMap(Grid *g, int node,
 Grid *gridInterpolateMap2(Grid *g, int node0, int node1, double ratio,
 			  int target);
 
-#define gridCostFunction(grid) (grid->costFunction)
+#define gridCostFunction(grid) ((grid)->costFunction)
 Grid *gridSetCostFunction(Grid *g, int costFunction);
 #define gridCOST_FCN_MEAN_RATIO            (0)
 #define gridCOST_FCN_ASPECT_RATIO          (1)
 #define gridCOST_FCN_EDGE_LENGTH           (2)
 #define gridCOST_FCN_JAC_SCALED_MEAN_RATIO (3)
 
-#define gridCostConstraint(grid) (grid->costConstraint)
+#define gridCostConstraint(grid) ((grid)->costConstraint)
 Grid *gridSetCostConstraint(Grid *g, int costConstraint);
 #define gridCOST_CNST_VOLUME (0x01)
 #define gridCOST_CNST_VALID  (0x02)
@@ -505,7 +505,7 @@ Grid *gridStoreCost( Grid *g, double cost, double *costDerivative );
 double gridStoredCost( Grid *g, int index );
 Grid *gridStoredCostDerivative( Grid *g, int index, double *costDerivative );
 
-#define gridLines(grid) (NULL==grid?NULL:grid->lines)
+#define gridLines(grid) (NULL==(grid)?NULL:(grid)->lines)
 Grid *gridFreezeLinesNodes(Grid *g);
 Grid *gridReportLinesLocation(Grid *g);
 
