@@ -1651,6 +1651,61 @@ Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
   return grid;
 }
 
+Grid *gridSmartAreaUVLaplacian(Grid *grid, int node )
+{
+
+  double origUV[2], avgUV[2], nodeUV[2];
+
+  double origArea, newArea;
+
+  double oneOverNFace2;
+  AdjIterator it;
+  int face, nodes[3], faceId;
+  int nface, inode;
+  
+  if (!gridGeometryFace(grid,node)) return NULL;
+  if (gridGeometryBetweenFace(grid,node)) return grid;
+
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
+  if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
+
+  if ( NULL == gridNodeUV(grid, node, faceId, origUV)) return NULL;
+
+  gridMinFaceAreaUV(grid,node,&origArea);
+
+  avgUV[0] = 0.0; avgUV[1] = 0.0;
+  nface =0;
+
+  for ( it = adjFirst(gridFaceAdj(grid),node); 
+	adjValid(it) ; 
+	it = adjNext(it) ){
+    nface++;
+    gridFace(grid,adjItem(it),nodes,&faceId);
+    for ( inode = 0 ; inode < 3 ; inode++ ){
+      if (nodes[inode] != node) { /* skip central node */
+	gridNodeUV(grid,nodes[inode],faceId,nodeUV);
+	avgUV[0] += nodeUV[0];
+	avgUV[1] += nodeUV[1];
+      }
+    }
+  }
+
+  /* each surrounding node is added to avgUV twice, so divide by 2*nface */
+  oneOverNFace2 = 1.0/((double)(nface*2));
+  avgUV[0] *= oneOverNFace2;
+  avgUV[1] *= oneOverNFace2;
+
+  gridSetNodeUV(grid,node,faceId,avgUV[0],avgUV[1]);
+  gridMinFaceAreaUV(grid,node,&newArea);
+  
+  if ( origArea > newArea ) {
+    gridSetNodeUV(grid,node,faceId,origUV[0],origUV[1]);
+    return NULL;
+  }
+
+  return grid;
+}
+
 Grid *gridStoreVolumeCostDerivatives (Grid *grid, int node )
 {
   AdjIterator it;
@@ -2275,7 +2330,11 @@ Grid *gridSmoothNodeFaceAreaUV(Grid *grid, int node )
 {
   if (!gridGeometryFace(grid,node)) return NULL;
   if (gridGeometryBetweenFace(grid,node)) return grid;
-  return gridSmoothNodeFaceAreaUVSimplex(grid, node );
+  gridSmartAreaUVLaplacian(grid, node);
+  if (grid != gridSmoothNodeFaceAreaUVSimplex(grid, node )) return NULL;
+  if (grid != gridSmoothNodeFaceAreaUVSimplex(grid, node )) return NULL;
+  if (grid != gridSmoothNodeFaceAreaUVSimplex(grid, node )) return NULL;
+  return grid;
 }
 
 static double reflectFaceAreaUV( Grid *grid,
