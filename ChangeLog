@@ -1,7 +1,14 @@
+2006-01-27  9:37 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelSwap) extracted one complete loop of
+	gridRemoveTwoFaceCell after other types of swapping to make sure
+	that previous swapping passes did not create a new two face cell
+	that was missed.
+
 2006-01-25 16:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt) to fix a subtle
-	parallelization bug. Split problem pojection edges in the interior
+	parallelization bug. Split problem projection edges in the interior
 	of the parition while doing boundaries to allow projection and
 	untangling to proceed.
 
