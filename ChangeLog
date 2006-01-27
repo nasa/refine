@@ -1,3 +1,9 @@
+2006-01-27 13:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) Add to combat the
+	problem of a degree three face with one cell that can not be
+	projected due to topology
+
 2006-01-27 11:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridSmoothNodeFaceAreaUV) added

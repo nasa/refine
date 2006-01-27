@@ -234,6 +234,208 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   }
 }
 
+Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
+{
+  int cellnodes[4], facenodes[3];
+  int face, faces[4], faceIds[4];
+  int facecount;
+  int face0, face1, face2;
+  int faceId0, faceId1, faceId2;
+  int node;
+  int degree[4];
+  double uv[8];
+  int newface;
+  int added_face;
+  int other_cell;
+  int common_node, uncommon_node;
+
+
+  int cell2face[4][3] = {{0,1,2},{0,3,1},{1,3,2},{0,2,3}};
+
+  if ( grid != gridCell( grid, cell, cellnodes ) ) return NULL;
+
+  if ( NULL == queue &&  gridCellHasGhostNode( grid, cellnodes ) ) return NULL;
+  if ( NULL != queue && !gridCellHasGhostNode( grid, cellnodes ) ) return NULL;
+
+  /* map out the faces on this cell */
+  facecount = 0;
+  face0 = face1 = face2 = EMPTY;
+  for(face=0;face<4;face++) {
+    faces[face] = gridFindFace( grid,
+				cellnodes[cell2face[face][0]],
+				cellnodes[cell2face[face][1]],
+				cellnodes[cell2face[face][2]]);
+    if (EMPTY==faces[face]) {
+      faceIds[face]=EMPTY;
+    }else{
+      gridFace(grid,faces[face],facenodes,&(faceIds[face]));      
+    }
+    if (faces[face]!=EMPTY) {
+      facecount++;
+      if (face1!=EMPTY&&face2==EMPTY) face2 = face;
+      if (face0!=EMPTY&&face1==EMPTY) face1 = face;
+      if (              face0==EMPTY) face0 = face;
+    }
+  }
+
+  /* skip this cell if the cell does not have three faces with same id */
+  if (3!=facecount) return NULL;
+  faceId0 = faceIds[face0];
+  faceId1 = faceIds[face1];
+  faceId2 = faceIds[face1];
+  if ( (faceId0!=faceId1) || 
+       (faceId0!=faceId2) || 
+       (faceId1!=faceId2) ) return NULL;
+
+  /* make sure that the node shared by all three faces is local */
+
+  for(node=0;node<4;node++) degree[node]=0;
+  for(face=0;face<4;face++)
+    if (EMPTY!=faces[face])
+      for(node=0;node<3;node++) degree[cell2face[face][node]]++;
+
+  common_node = EMPTY;
+  if (3 == degree[0]) common_node = 0;
+  if (3 == degree[1]) common_node = 1;
+  if (3 == degree[2]) common_node = 2;
+  if (3 == degree[3]) common_node = 3;
+  
+  if (EMPTY == common_node) return NULL;
+
+  if ( gridNodeGhost(grid,cellnodes[common_node]) ) return NULL;
+
+  /* make sure that at least one of the other three is local too, 
+     this ensures a that there is not four? faces on cell */
+
+  if ( ( 2 == degree[0] && gridNodeGhost(grid,cellnodes[0]) ) &&
+       ( 2 == degree[1] && gridNodeGhost(grid,cellnodes[1]) ) &&
+       ( 2 == degree[2] && gridNodeGhost(grid,cellnodes[2]) ) &&
+       ( 2 == degree[3] && gridNodeGhost(grid,cellnodes[3]) ) ) return NULL;
+
+  /* determine the open face of the cell */
+  newface= EMPTY;
+  for(face=0;face<4;face++) {
+    if (faces[face]==EMPTY) {
+      newface = face;
+    }
+  }
+
+  /* add opposite face in left-handed for the removed tet, 
+     right-handed for rest of grid */
+ 
+  facenodes[0] = cell2face[newface][1];
+  facenodes[1] = cell2face[newface][0];
+  facenodes[2] = cell2face[newface][2];
+  other_cell = gridFindOtherCellWith3Nodes(grid, 
+					   cellnodes[facenodes[0]],
+					   cellnodes[facenodes[1]],
+					   cellnodes[facenodes[2]], cell );
+
+
+  if (EMPTY == other_cell) {
+    printf("%s: %d: gridRemoveThreeFaceCell: EMPTY other_cell\n",
+	   __FILE__,__LINE__);
+    return NULL;
+  }
+
+  /* get uv's for new face */
+  for(node=0;node<4;node++) {
+    if (faces[face]==EMPTY) {
+      uv[0+2*node] = DBL_MAX;
+      uv[1+2*node] = DBL_MAX;
+    }else{
+      gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
+    }
+  }
+
+  added_face = gridAddFaceUVAndQueue( grid, queue, 
+				     cellnodes[facenodes[0]], 
+				     uv[0+2*facenodes[0]],
+				     uv[1+2*facenodes[0]],
+				     cellnodes[facenodes[1]], 
+				     uv[0+2*facenodes[1]],
+				     uv[1+2*facenodes[1]],
+				     cellnodes[facenodes[2]], 
+				     uv[0+2*facenodes[2]],
+				     uv[1+2*facenodes[2]],
+				     faceId0 );
+
+
+  if (0 == common_node) {
+    uncommon_node = 1;
+  }else{
+    uncommon_node = 0;
+  }
+
+  /* form gem on common edge that only contains cell to be removed to
+     exclude it from minimum cost test */
+  if (grid != gridMakeGem(grid, common_node, uncommon_node)) {
+    printf("%s: %d: gridRemoveThreeFaceCell: gridMakeGem NULL\n",
+	   __FILE__,__LINE__ );
+    gridRemoveFaceAndQueue(grid, queue, added_face );
+    queueResetCurrentTransaction( queue );
+    return NULL;
+  }
+  if ( 1 != gridNGem(grid) ) {
+    int gem, gemcell, gemnodes[4];
+    double xyz[3];
+    printf("%s: %d: gridRemoveThreeFaceCell: ngem %d expected 1\n",
+	   __FILE__,__LINE__, gridNGem(grid) );
+    printf("queue is %d\n",(queue!=NULL));
+    printf("partId %d\n",gridPartId(grid));
+    printf("cell %d\n",cell);
+    printf("cell nodes %d %d %d %d\n",
+	   cellnodes[0],cellnodes[1],cellnodes[2],cellnodes[3]);
+    printf("cell node parts %d %d %d %d\n",
+	   gridNodePart(grid,cellnodes[0]),
+	   gridNodePart(grid,cellnodes[1]),
+	   gridNodePart(grid,cellnodes[2]),
+	   gridNodePart(grid,cellnodes[3]));
+    facenodes[0] = cell2face[newface][1];
+    facenodes[1] = cell2face[newface][0];
+    facenodes[2] = cell2face[newface][2];
+    printf("newface nodes %d %d %d\n",facenodes[0],facenodes[1],facenodes[2]);
+    for (gem = 0; gem < gridNGem(grid); gem++) {
+      gemcell = gridGem(grid,gem);
+      printf("gem %d cell %d\n",gem,gemcell);
+      gridCell( grid, gemcell, gemnodes );
+      printf("gem cell nodes %d %d %d %d\n",
+	   gemnodes[0],gemnodes[1],gemnodes[2],gemnodes[3]);
+      gridNodeXYZ(grid,gemnodes[0],xyz);
+      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
+      gridNodeXYZ(grid,gemnodes[1],xyz);
+      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
+      gridNodeXYZ(grid,gemnodes[2],xyz);
+      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
+      gridNodeXYZ(grid,gemnodes[3],xyz);
+      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
+      printf("gem node parts %d %d %d %d\n",
+	     gridNodePart(grid,gemnodes[0]),
+	     gridNodePart(grid,gemnodes[1]),
+	     gridNodePart(grid,gemnodes[2]),
+	     gridNodePart(grid,gemnodes[3]));
+    }
+    fflush(stdout);
+
+    gridRemoveFaceAndQueue(grid, queue, added_face );
+    queueResetCurrentTransaction( queue );
+    return NULL;
+  }
+
+  if ( gridMinSwapCost(grid) < 
+       gridMinARAroundNodeExceptGem(grid, uncommon_node) ) {
+    gridRemoveCellAndQueue(grid, queue, cell);
+    gridRemoveFaceAndQueue(grid, queue, faces[face0] );
+    gridRemoveFaceAndQueue(grid, queue, faces[face1] );
+    gridRemoveFaceAndQueue(grid, queue, faces[face2] );
+    return grid;
+  }else{
+    gridRemoveFaceAndQueue(grid, queue, added_face );
+    queueResetCurrentTransaction( queue );
+    return NULL;
+  }
+}
+
 Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
 {
   int cell0, cell1;
