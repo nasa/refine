@@ -340,12 +340,7 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 
   /* get uv's for new face */
   for(node=0;node<4;node++) {
-    if (faces[face]==EMPTY) {
-      uv[0+2*node] = DBL_MAX;
-      uv[1+2*node] = DBL_MAX;
-    }else{
-      gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
-    }
+    gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
   }
 
   added_face = gridAddFaceUVAndQueue( grid, queue, 
