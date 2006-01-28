@@ -550,7 +550,7 @@ class TestGridSwap < Test::Unit::TestCase
   assert_equal [3,1,2,10], grid.face(3)
  end
 
- def testRemoveCellWithThreeFacesParallel
+ def parallel_three_face_setup
   grid = Grid.new(6,3,4,0)
   grid.addNode(0,0,0)
   grid.addNode(1,0,0)
@@ -563,10 +563,21 @@ class TestGridSwap < Test::Unit::TestCase
   grid.addNode(1,1,1)
   grid.addNode(-1,0,0)
   grid.addCell(3,1,2,4)
-  assert_equal grid, grid.removeThreeFaceCell(0), "failed to removed good conf"
-  assert_equal 1, grid.ncell
-  assert_equal 1, grid.nface
-  assert_equal [3,1,2,10], grid.face(3)
+  grid
+ end
+ 
+ def testRemoveCellWithThreeFacesParallelCenterGhost
+  grid = parallel_three_face_setup
+  grid.setNodePart(0,5)
+  assert_nil grid.removeTwoFaceCell(0), "removed cell with ghost 0"
+  assert_equal 2, grid.ncell
+ end
+
+ def testRemoveCellWithThreeFacesParallelNeighborGhosts
+  grid = parallel_three_face_setup
+  grid.setNodePart(4,5)
+  assert_nil grid.removeTwoFaceCell(0), "removed cell with ghost 4"
+  assert_equal 2, grid.ncell
  end
 
 end
