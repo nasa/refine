@@ -26,7 +26,6 @@ GridFacer *gridfacerCreate( Grid *grid, int faceId )
 {
   int face;
   int nodes[3];
-  int id;
 
   GridFacer *gf;
   gf = malloc(sizeof(GridFacer));
@@ -646,12 +645,6 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
   int node0, node1;
   double limit;
   double ratio;
-  int rank;
-  int *local_e2n;
-  int face0, face1;
-  int nodes[3], faceId;
-  int node2, node3;
-  int newnode;
   int count;
 
   GridBool changed;

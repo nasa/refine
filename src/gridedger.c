@@ -490,6 +490,7 @@ static GridEdger *gridedgerReport(GridEdger *ge, double ratio )
   }
   printf("edge%4d longest %f shortest %f desired %f\n",
 	 gridedgerEdgeId( ge ), longest_ratio, shortest_ratio, ratio);
+  return ge;
 }
 
 GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
