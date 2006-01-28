@@ -4275,8 +4275,12 @@ int gridNodePart(Grid *grid, int node )
 
 Grid *gridSetNodePart(Grid *grid, int node, int part )
 {
+  int i;
   if (!gridValidNode(grid,node)) return NULL;
-  if (NULL == grid->part) grid->part = (int *)malloc(grid->maxnode*sizeof(int));
+  if (NULL == grid->part) {
+    grid->part = (int *)malloc(gridMaxNode(grid)*sizeof(int));
+    for (i=0;i<gridMaxNode(grid);i++) grid->part[i] = gridPartId(grid);
+  }
   grid->part[node] = part;
   return grid;
 }
