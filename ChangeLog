@@ -1,3 +1,9 @@
+2006-01-30  9:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelSwap) call gridRemoveThreeFaceCell as
+	well as gridRemoveTwoFaceCell to remove cells that would impeed
+	projection.
+
 2006-01-28 10:21 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridSetNodePart) initialize grid->part to

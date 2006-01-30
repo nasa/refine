@@ -364,6 +364,7 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
 	   gridGeometryFace(grid, nodes[2]) ||
 	   gridGeometryFace(grid, nodes[3]) ){
 	gridRemoveTwoFaceCell(grid, queue, cell);
+	gridRemoveThreeFaceCell(grid, queue, cell);
       }
     }
   }
