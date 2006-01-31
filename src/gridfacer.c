@@ -651,7 +651,7 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
 
   Grid *grid = gridfacerGrid( gf );
 
-  limit = 0.4;
+  limit = 0.8;
   count = 0;
   changed = TRUE;
   while (changed) {
