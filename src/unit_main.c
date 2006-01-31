@@ -247,21 +247,13 @@ Grid *gridPhase2(Grid *grid )
 
     for ( i = 0 ; i < 20 ; i++ ) {
       gridfacerSwap(gf);
-      gridfacerSplitProblemProjectionEdges(gf);
       gridSetMinInsertCost( grid, -10.0 );
       if (gf != gridfacerSplit(gf)){
 	printf("gridfacerSplit failed for face %d\n",faceId);
 	gridfacerFree(gf);
-	gridWriteTecplotSurfaceGeom(grid,NULL);
-	{int cell, nodes[4];
-	for (cell=0;cell<gridMaxCell(grid);cell++) 
-	  if (grid==gridCell(grid, cell, nodes)) { 
-	    if ( -0.5 > gridAR(grid,nodes) ) 
-	      gridWriteTecplotCellGeom(grid,nodes,NULL,NULL);
-	  }
-	}
 	return NULL;      
       }
+      gridfacerSplitProblemProjectionEdges(gf);
       if (grid != gridUntangle(grid) ) {
 	printf("gridUntangle failed for face %d\n",faceId);
 	gridfacerFree(gf);
@@ -473,7 +465,10 @@ int main( int argc, char *argv[] )
   if (4 == phase) {
     gridCacheCurrentGridAndMap(grid);
     if (grid!=gridPhase1(grid)) return 1;
-    if (grid!=gridPhase2(grid)) return 1;
+    if (grid!=gridPhase2(grid)) {
+      { GridBool tecplotOutput = TRUE; int iview = 0;  DUMP_TEC; }
+      return 1;
+    }
     if (grid!=gridPhase3(grid)) return 1;
     STATUS;
     printf("writing output project %s\n",outputProject);
