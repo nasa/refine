@@ -462,14 +462,20 @@ int main( int argc, char *argv[] )
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
 
-  if (4 == phase) {
+  if (-1 >= phase) {
     gridCacheCurrentGridAndMap(grid);
     if (grid!=gridPhase1(grid)) return 1;
+  }
+  if (-2 >= phase) {
     if (grid!=gridPhase2(grid)) {
       { GridBool tecplotOutput = TRUE; int iview = 0;  DUMP_TEC; }
       return 1;
     }
+  }
+  if (-3 >= phase) {
     if (grid!=gridPhase3(grid)) return 1;
+  }
+  if (0 > phase) {
     STATUS;
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
