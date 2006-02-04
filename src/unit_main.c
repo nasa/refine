@@ -24,6 +24,8 @@
 #include "gridfiller.h"
 #include "gridedger.h"
 #include "gridfacer.h"
+#include "gridmove.h"
+#include "layer.h"
 
 #define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
 
@@ -318,6 +320,7 @@ int main( int argc, char *argv[] )
   GridBool tecplotOutput = FALSE;
   GridBool edge_based = FALSE;
   int phase = 0;
+  GridBool inflate = FALSE;
   GridBool LeadingEdgeBG = TRUE;
   double LeadingEdgeScale = 1.0;
   double global_scale = 1.0;
@@ -389,6 +392,9 @@ int main( int argc, char *argv[] )
    } else if( strcmp(argv[i],"-e") == 0 ) {
       edge_based = TRUE;
       printf("-e argument %d\n",i);
+   } else if( strcmp(argv[i],"--inflate") == 0 ) {
+      inflate = TRUE;
+      printf("--inflate argument %d\n",i);
    } else if( strcmp(argv[i],"--phase") == 0 ) {
       i++; phase = atoi(argv[i]);
       printf("--phase argument %d: %d\n",i, phase);
@@ -449,6 +455,32 @@ int main( int argc, char *argv[] )
     gridRobustProject(grid); 
     gridUntangleBadFaceParameters(grid);
     gridRobustProject(grid); 
+  }
+
+  if (inflate) {
+    int nbc, bc[2];
+    double height;
+    Layer *layer = layerCreate( grid );
+    nbc = 2; bc[0]=1; bc[1]=2;
+    layerPopulateAdvancingFront(layer,nbc,bc);
+    layerConstrainNormal(layer,3);
+    layerConstrainNormal(layer,4);
+    layerConstrainNormal(layer,8);
+    layerConstrainNormal(layer,9);
+    layerConstrainNormal(layer,-16);
+    layerConstrainNormal(layer,-12);
+    layerConstrainNormal(layer,-8);
+    layerConstrainNormal(layer,-15);
+    layerVisibleNormals(layer,-1.0,-1.0);
+    height = 0.01;
+    layerAdvanceConstantHeight(layer,height);
+    printf("writing output project %s\n",outputProject);
+    gridSavePart( grid, outputProject );
+    sprintf(filename,"%s.fgrid", outputProject );
+    printf("dumping FAST file to %s\n",filename);
+    gridExportFAST(grid,filename);
+    printf("Done.\n");
+    return 0;
   }
 
   printf("Spacing reset.\n");

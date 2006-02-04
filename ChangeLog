@@ -1,3 +1,8 @@
+2006-02-04 12:46 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (--inflate) added a spike to demonstrate
+	inflating boundary layers.
+
 2006-01-30  9:07 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelSwap) call gridRemoveThreeFaceCell as
