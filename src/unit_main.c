@@ -461,6 +461,7 @@ int main( int argc, char *argv[] )
     int nbc, bc[2];
     double height;
     Layer *layer = layerCreate( grid );
+    layerMakeCADAvailable( layer );
     nbc = 2; bc[0]=1; bc[1]=2;
     layerPopulateAdvancingFront(layer,nbc,bc);
     layerConstrainNormal(layer,3);
@@ -473,7 +474,13 @@ int main( int argc, char *argv[] )
     layerConstrainNormal(layer,-15);
     layerVisibleNormals(layer,-1.0,-1.0);
     height = 0.01;
-    layerAdvanceConstantHeight(layer,height);
+    for (iteration=0;iteration<10;iteration++) {
+      layerAdvanceConstantHeight(layer,height);
+      if (grid != gridUntangle(grid) ) { printf("gridUntangle failed.\n"); }
+      printf("edge swapping grid...\n");gridSwap(grid,0.8);
+      printf("node smoothing grid...\n");gridSmooth(grid,0.6,0.8);
+    }
+    STATUS;
     printf("writing output project %s\n",outputProject);
     gridSavePart( grid, outputProject );
     sprintf(filename,"%s.fgrid", outputProject );

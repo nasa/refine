@@ -1,5 +1,11 @@
 2006-02-04 12:46 Mike Park  <mike.park@nasa.gov>
 
+	* src/layer.c (layerMakeCADAvailable,layerCADAvailable) a toggle
+	to declare when cad is available (for projection);
+	* src/layer.c (layerAdvance) project new faces when layerCADAvailable.
+	
+2006-02-04 12:46 Mike Park  <mike.park@nasa.gov>
+
 	* src/unit_main.c (--inflate) added a spike to demonstrate
 	inflating boundary layers.
 

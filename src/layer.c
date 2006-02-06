@@ -51,6 +51,7 @@ Layer *layerCreate( Grid *grid )
   layer->constrainingGeometry=NULL;
   layer->nearTree=NULL;
   layer->mixedElementMode=FALSE;
+  layer->cad_available=FALSE;
 
   layer->normalTriangleHub = EMPTY;
 
@@ -2429,15 +2430,39 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
 	n[3] = layerNormalTip(layer,sidenormal[1]);
 	if (layerTetrahedraOnly(layer) || n[0]==n[2] || n[1]==n[3]){
 	  if (sidenode[0]<sidenode[1]){
-	    if (n[1]!=n[3]) 
+	    if (n[1]!=n[3]) {
 	      layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[3],faceId)]=TRUE;
-	    if (n[0]!=n[2])  
+	      if (layerCADAvailable(layer)){
+		gridProjectNode(grid,n[0]);
+		gridProjectNode(grid,n[1]);
+		gridProjectNode(grid,n[2]);
+	      }
+	    }
+	    if (n[0]!=n[2]) {
 	      layer->faceInLayer[gridAddFace(grid,n[0],n[3],n[2],faceId)]=TRUE;
+	      if (layerCADAvailable(layer)){
+		gridProjectNode(grid,n[0]);
+		gridProjectNode(grid,n[1]);
+		gridProjectNode(grid,n[2]);
+	      }
+	    }
 	  }else{
-	    if (n[0]!=n[2])  
+	    if (n[0]!=n[2]) {
 	      layer->faceInLayer[gridAddFace(grid,n[0],n[1],n[2],faceId)]=TRUE;
-	    if (n[1]!=n[3])  
+	      if (layerCADAvailable(layer)){
+		gridProjectNode(grid,n[0]);
+		gridProjectNode(grid,n[1]);
+		gridProjectNode(grid,n[2]);
+	      }
+	    }
+	    if (n[1]!=n[3]) {
 	      layer->faceInLayer[gridAddFace(grid,n[2],n[1],n[3],faceId)]=TRUE;
+	      if (layerCADAvailable(layer)){
+		gridProjectNode(grid,n[0]);
+		gridProjectNode(grid,n[1]);
+		gridProjectNode(grid,n[2]);
+	      }
+	    }
 	  }
 	}else{
 	  gridAddQuad(grid,n[0],n[1],n[3],n[2],faceId);
@@ -2769,6 +2794,16 @@ Layer *layerThaw(Layer *layer)
   return layer;
 }
 
+GridBool layerCADAvailable(Layer *layer)
+{
+  return layer->cad_available;
+}
+
+Layer *layerMakeCADAvailable(Layer *layer)
+{
+  layer->cad_available = TRUE;
+  return layer;
+}
 
 GridBool layerTetrahedraOnly(Layer *layer)
 {

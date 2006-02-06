@@ -71,6 +71,7 @@ struct Layer {
   int nConstrainingGeometry, *constrainingGeometry;
   Near *nearTree;
   GridBool mixedElementMode;
+  GridBool cad_available;
 
   int normalTriangleHub;
   GridBool normalTriangleExclusive;
@@ -229,6 +230,9 @@ Layer *layerVerifyPhantomEdges(Layer *);
 Layer *layerVerifyPhantomFaces(Layer *);
 
 Layer *layerThaw(Layer*);
+
+GridBool layerCADAvailable(Layer *);
+Layer *layerMakeCADAvailable(Layer *);
 
 GridBool layerTetrahedraOnly(Layer *);
 Layer *layerToggleMixedElementMode(Layer *);
