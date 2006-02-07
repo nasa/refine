@@ -30,6 +30,24 @@ VALUE tableau_dimension( VALUE self )
   return INT2NUM( tableauDimension(tableau) );
 }
 
+VALUE tableau_basis( VALUE self )
+{
+  VALUE rb_basis;
+  int i, nbasis;
+  int *basis;
+  GET_TABLEAU_FROM_SELF;
+  nbasis = tableauConstraints(tableau);
+  basis = (int *)malloc(nbasis*sizeof(int));
+  if (tableau != tableauBasis(tableau, basis) ) {
+    free(basis);
+    return Qnil;
+  }
+  rb_basis = rb_ary_new2(nbasis);
+  for ( i=0 ; i < nbasis ; i++ ) 
+    rb_ary_store( rb_basis, i, INT2NUM(basis[i]) );
+  return rb_basis;
+}
+
 VALUE cTableau;
 
 void Init_Tableau() 
@@ -39,4 +57,6 @@ void Init_Tableau()
 
   rb_define_method( cTableau, "constraints", tableau_constraints, 0 );
   rb_define_method( cTableau, "dimension", tableau_dimension, 0 );
+
+  rb_define_method( cTableau, "basis", tableau_basis, 0 );
 }

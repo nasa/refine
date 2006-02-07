@@ -20,6 +20,7 @@
 
 Tableau* tableauCreate( int constraints, int dimension )
 {
+  int i;
   Tableau *tableau;
 
   tableau = (Tableau *)malloc( sizeof(Tableau) );
@@ -27,11 +28,16 @@ Tableau* tableauCreate( int constraints, int dimension )
   tableau->constraints = constraints;
   tableau->dimension = dimension;
 
+  tableau->basis = (int *)malloc( tableauConstraints(tableau) * sizeof(int) );
+  for (i=0;i<tableauConstraints(tableau);i++) 
+    tableau->basis[i] = tableauDimension( tableau ) + i ;
+
   return tableau;
 }
 
 void tableauFree( Tableau *tableau )
 {
+  if (NULL != tableau->basis) free(tableau->basis);
   free( tableau );
 }
 
@@ -43,4 +49,11 @@ int tableauConstraints( Tableau *tableau )
 int tableauDimension( Tableau *tableau )
 {
   return tableau->dimension;
+}
+
+Tableau *tableauBasis( Tableau *tableau, int *basis )
+{
+  int i;
+  for (i=0;i<tableauConstraints(tableau);i++) basis[i] = tableau->basis[i];
+  return tableau;
 }

@@ -23,6 +23,7 @@ typedef struct Tableau Tableau;
 struct Tableau {
   int constraints;
   int dimension;
+  int *basis;
 };
 
 Tableau *tableauCreate( int constraints, int dimension );
@@ -30,6 +31,8 @@ void tableauFree( Tableau * );
 
 int tableauConstraints( Tableau * );
 int tableauDimension( Tableau * );
+
+Tableau *tableauBasis( Tableau *, int *basis );
 
 END_C_DECLORATION
 

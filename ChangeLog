@@ -1,6 +1,10 @@
-2006-02-07 10:57Mike Park  <mike.park@nasa.gov>
+2006-02-07 11:30 Mike Park  <mike.park@nasa.gov>
 
-	* src/tableau.c (createTableau) brand new empty object as a place
+	* src/tableau.c (tableauBasis) return the active basis.
+
+2006-02-07 10:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauCreate) brand new empty object as a place
 	holder for a tableau linear programming implementation.
 	* util/tableau.m a Octave (MATLAB) to spike out a tableau
 	implementation
