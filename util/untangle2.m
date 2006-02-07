@@ -63,6 +63,12 @@ end
 %! plot_test = 0;
 %! diff_tol = 1.0e-5;
 
+%! grid_x = [ 0 1 0 ]';
+%! grid_y = [ 0 0 1 ]';
+%! [x,y] = untangle2(grid_x,grid_y,plot_test);
+%! assert_within(1/3,x,diff_tol)
+%! assert_within(1/3,y,diff_tol)
+
 %! grid_x = [ 0 1 1 0 ]';
 %! grid_y = [ 0 0 1 1 ]';
 %! [x,y] = untangle2(grid_x,grid_y,plot_test);
