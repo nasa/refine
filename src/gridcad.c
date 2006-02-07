@@ -2610,7 +2610,8 @@ Grid *gridSmoothNodeVolumeUVSimplex( Grid *grid, int node )
 Grid *gridUntangleAreaUV( Grid *grid, int node )
 {
   int face, nodes[3], faceId;
-  double origUV[2];
+  double orig[2], uv1[2], uv2[2];
+  int degree;
 
   if (!gridGeometryFace(grid,node)) return NULL;
   if (gridGeometryBetweenFace(grid,node)) return NULL;
@@ -2618,7 +2619,10 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   face = adjItem(adjFirst(gridFaceAdj(grid), node));
   if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
 
-  if ( NULL == gridNodeUV(grid, node, faceId, origUV)) return NULL;
+  if ( NULL == gridNodeUV(grid, node, faceId, orig)) return NULL;
+
+  degree = adjDegree( gridFaceAdj(grid), node );
+  printf("degree %d\n",degree);
 
   return grid;
 }
