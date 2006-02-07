@@ -28,10 +28,10 @@ Tableau* tableauCreate( int constraints, int dimension )
   tableau->constraints = constraints;
   tableau->dimension = dimension;
 
-  tableau->constriant_matrix = (double *)malloc( tableauConstraints(tableau) *
+  tableau->constraint_matrix = (double *)malloc( tableauConstraints(tableau) *
 						 tableauDimension( tableau ) * 
 						 sizeof(double) );
-  tableau->constriant        = (double *)malloc( tableauConstraints(tableau) *
+  tableau->constraint        = (double *)malloc( tableauConstraints(tableau) *
 						 sizeof(double) );
   tableau->cost              = (double *)malloc( tableauDimension(tableau) *
 						 sizeof(double) );
@@ -50,27 +50,27 @@ Tableau* tableauCreate( int constraints, int dimension )
 
 void tableauFree( Tableau *tableau )
 {
-  if (NULL != tableau->constriant_matrix) free(tableau->constriant_matrix);
-  if (NULL != tableau->constriant)        free(tableau->constriant);
+  if (NULL != tableau->constraint_matrix) free(tableau->constraint_matrix);
+  if (NULL != tableau->constraint)        free(tableau->constraint);
   if (NULL != tableau->cost)              free(tableau->cost);
   if (NULL != tableau->basis)             free(tableau->basis);
   if (NULL != tableau->t)                 free(tableau->t);
   free( tableau );
 }
 
-Tableau *tableauConstraintMatrix( Tableau *tableau, double *constriant_matrix )
+Tableau *tableauConstraintMatrix( Tableau *tableau, double *constraint_matrix )
 {
   int i, length;
   length = tableauConstraints( tableau ) * tableauDimension( tableau );
-  for (i=0;i<length;i++) tableau->constriant_matrix[i] = constriant_matrix[i];
+  for (i=0;i<length;i++) tableau->constraint_matrix[i] = constraint_matrix[i];
   return tableau;
 }
 
-Tableau *tableauConstraint( Tableau *tableau, double *constriant )
+Tableau *tableauConstraint( Tableau *tableau, double *constraint )
 {
   int i, length;
   length = tableauConstraints( tableau );
-  for (i=0;i<length;i++) tableau->constriant[i] = constriant[i];
+  for (i=0;i<length;i++) tableau->constraint[i] = constraint[i];
   return tableau;
 }
 
@@ -100,22 +100,77 @@ Tableau *tableauBasis( Tableau *tableau, int *basis )
   return tableau;
 }
 
-Tableau *tableauSolve( Tableau *tableau )
+Tableau *tableauInitialize( Tableau *tableau )
 {
 
   int i, j;
   int m, n;
   int t_index, A_index;
+  double M;
 
   m = 1 + tableauConstraints( tableau );
   n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
 
+  /* zero out current entries */
+  for (i=0;i<m*n;i++) tableau->t[i] = 0.0 ;
+
+  /* copy the A constraint matrix into tableu */
   for (i=0;i<tableauConstraints( tableau );i++) {
     for (j=0;j<tableauDimension( tableau );j++) {
       t_index = (1+i)+(1+j)*m;
       A_index = i+j*tableauDimension( tableau );
-      tableau->t[t_index] = tableau->constriant_matrix[A_index];
+      tableau->t[t_index] = tableau->constraint_matrix[A_index];
     }
+  }
+
+  /* add identity slack variables */
+  for (i=0;i<tableauConstraints( tableau );i++) {
+    j = i+tableauDimension( tableau );
+    t_index = (1+i)+(1+j)*m;
+    tableau->t[t_index] = 1.0;
+  }
+
+  /* initial bfs */
+  for (i=0;i<tableauConstraints(tableau);i++) 
+    tableau->basis[i] = tableauDimension( tableau ) + i ;
+
+  for (i=0;i<tableauConstraints( tableau );i++) {
+    t_index = (1+i);
+    tableau->t[t_index] = tableau->constraint[i];
+  }
+  
+  /* find a large M value to start phase 1 */ 
+  M = 0.0;
+  for (j=0;j<tableauDimension( tableau );j++) {
+    M = M + ABS(tableau->cost[j]);
+  }
+  
+  /* intial cost */ 
+  tableau->t[0] = 0.0;
+  for (i=0;i<tableauConstraints( tableau );i++) {
+    t_index = (1+i);
+    tableau->t[0] -= M*tableau->t[t_index];
+  }
+
+  /* Reduced costs */ 
+  for (j=0;j<tableauDimension( tableau );j++) {
+    tableau->t[m*(1+j)] = tableau->cost[j];
+    for (i=0;i<tableauConstraints( tableau );i++) {
+      t_index = (1+i)+m*(1+j);
+      tableau->t[m*(1+j)] -= M*tableau->t[t_index];
+    }
+  }
+
+  return tableau;
+}
+
+Tableau *tableauSolve( Tableau *tableau )
+{
+  
+  if ( tableau != tableauInitialize( tableau ) ) {
+    printf( "%s: %d: %s: tableauInitialize NULL\n",
+	    __FILE__, __LINE__, "tableauSolve");
+    return NULL;
   }
 
   tableauShow(tableau);

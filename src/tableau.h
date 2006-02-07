@@ -24,8 +24,8 @@ struct Tableau {
   int constraints;
   int dimension;
   
-  double *constriant_matrix;
-  double *constriant;
+  double *constraint_matrix;
+  double *constraint;
   double *cost;
 
   double *t;
@@ -36,8 +36,8 @@ struct Tableau {
 Tableau *tableauCreate( int constraints, int dimension );
 void tableauFree( Tableau * );
 
-Tableau *tableauConstraintMatrix( Tableau *, double *constriant_matrix );
-Tableau *tableauConstraint( Tableau *, double *constriant );
+Tableau *tableauConstraintMatrix( Tableau *, double *constraint_matrix );
+Tableau *tableauConstraint( Tableau *, double *constraint );
 Tableau *tableauCost( Tableau *, double *cost );
 
 int tableauConstraints( Tableau * );
