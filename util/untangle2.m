@@ -1,8 +1,9 @@
+
 function [x,y]=untangle2(grid_x,grid_y,plot_mode)
 
 if (nargin<2)
-  grid_x = [ 0 1 1 0 ]';
-  grid_y = [ 0 0 1 1 ]';
+  grid_x = [ 0 1 0 ]';
+  grid_y = [ 0 0 1 ]';
 end
 
 if (nargin<3)
