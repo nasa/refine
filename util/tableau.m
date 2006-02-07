@@ -14,6 +14,8 @@ t = [ -cB'*b  c'-cB'*Binv*A
       Binv*b Binv*A];
 
 basis = [n-m+1:n];
+in_basis = zeros(1,n);
+in_basis(basis) = 1:m;
 
 [min_reducted_cost, pivot_col] = min(t(1,2:n+1));
 min_reducted_cost;
@@ -35,7 +37,9 @@ while (min_reducted_cost<0)
   pivot_row;
   step_length;
 
+  in_basis(basis(pivot_row-1)) = 0;
   basis(pivot_row-1) = pivot_col-1;
+  in_basis(pivot_col-1) = pivot_row-1;
   t(pivot_row,:) = t(pivot_row,:)./t(pivot_row,pivot_col);
 
   for i=1:m+1
