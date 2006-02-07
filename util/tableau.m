@@ -21,6 +21,7 @@ min_reducted_cost = -1.0;
 while (min_reducted_cost<0)
 
   min_reducted_cost = 1.0;
+  best_divisor = 0.0;
   for j = 2:n+1
     if (0==in_basis(j-1))
       if ( t(1,j) < 0 )
@@ -32,19 +33,22 @@ while (min_reducted_cost<0)
 	    if (this_step<step_length)
 	      pivot=i;
 	      step_length = this_step;
+	      divisor = t(i,j);
 	    end
 	  end
 	end
-	if ( 0 != pivot )
+	if ( 0 != pivot && abs(divisor) > abs(best_divisor))
 	  pivot_row = pivot;
 	  pivot_col = j;
 	  min_reducted_cost = t(1,pivot_col);
+	  best_divisor = divisor;
 	end
       end
     end
   end
 
   if (min_reducted_cost < 0)
+    best_divisor;
     in_basis(basis(pivot_row-1)) = 0;
     basis(pivot_row-1) = pivot_col-1;
     in_basis(pivot_col-1) = pivot_row-1;
