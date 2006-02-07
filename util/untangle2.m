@@ -1,14 +1,15 @@
+function [x,y]=untangle2(grid_x,grid_y,plot_mode)
 
-grid_x = [ 0 1 1 0 ]';
-grid_y = [ 0 0 1 1 ]';
-#grid_x = [ 0 1.2 1.3 0 ]';
-#grid_y = [ 0 0 1.4 1.5 ]';
-#grid_x = [ 0 1 0.5 0 ]';
-#grid_y = [ 0 0 0.5 1 ]';
-#grid_x = [    0 1.2 0.3 0.1 ]';
-#grid_y = [ -0.1 0.0 0.2 1.5 ]';
+if (nargin<2)
+  grid_x = [ 0 1 1 0 ]';
+  grid_y = [ 0 0 1 1 ]';
+end
 
-degree = size(grid_x,1)
+if (nargin<3)
+  plot_mode = 0;
+end
+
+degree = size(grid_x,1);
 
 a=[];
 c=[];
@@ -29,14 +30,15 @@ c = [c; [ M; M; M ]];
 
 b=[0;0;1];
 
-a
-c
-b
+a;
+c;
+b;
 
-[optx,zmin,basis] = tableau(c,a,b)
+[optx,zmin,basis] = tableau(c,a,b);
 
-xy = a(:,basis)'\c(basis)
-
+xy = a(:,basis)'\c(basis);
+x = xy(1);
+y = xy(2);
 
 data = [];
 for i = 1:degree
@@ -52,9 +54,35 @@ for i = 1:degree
 	  ];
 end
 
-if (1)
+if (plot_mode)
   plot(data(:,1),data(:,2))
   disp('press key')
   pause
 end
+
+%! diff_tol = 1.0e-5;
+
+%! grid_x = [ 0 1 1 0 ]';
+%! grid_y = [ 0 0 1 1 ]';
+%! [x,y] = untangle2(grid_x,grid_y);
+%! assert_within(0.5,x,diff_tol)
+%! assert_within(0.5,y,diff_tol)
+
+%! grid_x = [ 0 1.2 1.3 0 ]';
+%! grid_y = [ 0 0 1.4 1.5 ]';
+%! [x,y] = untangle2(grid_x,grid_y);
+%! assert_within(0.60465,x,diff_tol)
+%! assert_within(0.75581,y,diff_tol)
+
+%! grid_x = [ 0 1 0.5 0 ]';
+%! grid_y = [ 0 0 0.5 1 ]';
+%! [x,y] = untangle2(grid_x,grid_y);
+%! assert_within(0.25000,x,diff_tol)
+%! assert_within(0.25000,y,diff_tol)
+
+%! grid_x = [    0 1.2 0.3 0.1 ]';
+%! grid_y = [ -0.1 0.0 0.2 1.5 ]';
+%! [x,y] = untangle2(grid_x,grid_y);
+%! assert_within(0.11595,x,diff_tol)
+%! assert_within(0.051622,y,diff_tol)
 
