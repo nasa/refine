@@ -500,4 +500,12 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta optimalArea, grid.minFaceAreaUV(3), tol
  end
 
+ def test_untangleAreaUV_for_one_bad_node
+  grid = threeSurfaceTriangles
+  tol = 1.0e-14
+  optimalArea = 0.5/3.0
+  assert grid, grid.untangleAreaUV(3)
+  assert_in_delta optimalArea, grid.minFaceAreaUV(3), tol
+ end
+
 end

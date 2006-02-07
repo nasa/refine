@@ -2607,6 +2607,22 @@ Grid *gridSmoothNodeVolumeUVSimplex( Grid *grid, int node )
   return grid;
 }
 
+Grid *gridUntangleAreaUV( Grid *grid, int node )
+{
+  int face, nodes[3], faceId;
+  double origUV[2];
+
+  if (!gridGeometryFace(grid,node)) return NULL;
+  if (gridGeometryBetweenFace(grid,node)) return NULL;
+
+  face = adjItem(adjFirst(gridFaceAdj(grid), node));
+  if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
+
+  if ( NULL == gridNodeUV(grid, node, faceId, origUV)) return NULL;
+
+  return grid;
+}
+
 /* spike never completed
 Grid *gridNSmooth( Grid *grid, int node)
 {

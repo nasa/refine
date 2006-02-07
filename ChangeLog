@@ -1,5 +1,9 @@
 2006-02-07 16:43 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridcad.c (gridUntangleAreaUV) started driver for tableau.
+
+2006-02-07 16:43 Mike Park  <mike.park@nasa.gov>
+
 	* src/tableau.c (tableauSolve) working for 3 tri case.
 
 2006-02-07 11:30 Mike Park  <mike.park@nasa.gov>
