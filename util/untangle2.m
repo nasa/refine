@@ -2,8 +2,8 @@
 function [x,y]=untangle2(grid_x,grid_y,plot_mode)
 
 if (nargin<2)
-  grid_x = [ 0 1 0 ]';
-  grid_y = [ 0 0 1 ]';
+  grid_x = [ -0.3 1.1 0.2 ]';
+  grid_y = [ 0.2 -0.1 0.9 ]';
 end
 
 if (nargin<3)
@@ -26,7 +26,7 @@ for i = 1:degree
   c=[c;ci];
 end
 a = [a eye(3) ];
-M=sum(c);
+M=sum(abs(c));
 c = [c; [ M; M; M ]];
 
 b=[0;0;1];
