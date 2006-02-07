@@ -100,7 +100,7 @@ Tableau *tableauBasis( Tableau *tableau, int *basis )
   return tableau;
 }
 
-Tableau *tableauInitialize( Tableau *tableau )
+Tableau *tableauInit( Tableau *tableau )
 {
 
   int i, j;
@@ -167,14 +167,30 @@ Tableau *tableauInitialize( Tableau *tableau )
 Tableau *tableauSolve( Tableau *tableau )
 {
   
-  if ( tableau != tableauInitialize( tableau ) ) {
-    printf( "%s: %d: %s: tableauInitialize NULL\n",
+  if ( tableau != tableauInit( tableau ) ) {
+    printf( "%s: %d: %s: tableauInit NULL\n",
 	    __FILE__, __LINE__, "tableauSolve");
     return NULL;
   }
 
   tableauShow(tableau);
 
+  return tableau;
+}
+
+Tableau *tableauTableau( Tableau *tableau, double *tab )
+{
+  int i;
+  int m, n;
+  int length;
+
+  m = 1 + tableauConstraints( tableau );
+  n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
+  length = m*n;
+
+  for (i=0;i<length;i++) {
+    tab[i] = tableau->t[i];
+  }
   return tableau;
 }
 

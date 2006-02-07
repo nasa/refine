@@ -45,8 +45,11 @@ int tableauDimension( Tableau * );
 
 Tableau *tableauBasis( Tableau *, int *basis );
 
+Tableau *tableauInit( Tableau * );
+
 Tableau *tableauSolve( Tableau * );
 
+Tableau *tableauTableau( Tableau *, double *tableau );
 Tableau *tableauShow( Tableau * );
 
 END_C_DECLORATION

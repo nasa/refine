@@ -90,6 +90,42 @@ VALUE tableau_basis( VALUE self )
   return rb_basis;
 }
 
+VALUE tableau_init( VALUE self )
+{
+  GET_TABLEAU_FROM_SELF;
+  return ( tableau == tableauInit(tableau) ? self : Qnil );
+}
+
+VALUE tableau_tableau( VALUE self )
+{
+  int m, n;
+  int i, j;
+  int length;
+  double *tab;
+  VALUE rb_tab;
+  GET_TABLEAU_FROM_SELF;
+  
+  m = 1 + tableauConstraints( tableau );
+  n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
+
+  length = m*n;
+
+  tab = (double *)malloc(length*sizeof(double));
+  if (tableau != tableauTableau(tableau,tab) ) {
+    rb_tab = Qnil;
+  } else {
+    rb_tab = rb_ary_new2(n);
+    for (j=0;j<n;j++) {
+      rb_ary_store( rb_tab, j, rb_ary_new2(m) );
+      for (i=0;i<m;i++) {
+	rb_ary_store( rb_ary_entry( rb_tab, j), i, rb_float_new(tab[i+m*j]) );
+      }
+    }
+  }
+  free(tab);
+  return rb_tab;
+}
+
 VALUE tableau_solve( VALUE self )
 {
   GET_TABLEAU_FROM_SELF;
@@ -111,6 +147,9 @@ void Init_Tableau()
   rb_define_method( cTableau, "dimension", tableau_dimension, 0 );
 
   rb_define_method( cTableau, "basis", tableau_basis, 0 );
+
+  rb_define_method( cTableau, "init", tableau_init, 0 );
+  rb_define_method( cTableau, "tableau", tableau_tableau, 0 );
 
   rb_define_method( cTableau, "solve", tableau_solve, 0 );
 }
