@@ -28,6 +28,8 @@ struct Tableau {
   double *constriant;
   double *cost;
 
+  double *t;
+
   int *basis;
 };
 
@@ -44,6 +46,8 @@ int tableauDimension( Tableau * );
 Tableau *tableauBasis( Tableau *, int *basis );
 
 Tableau *tableauSolve( Tableau * );
+
+Tableau *tableauShow( Tableau * );
 
 END_C_DECLORATION
 
