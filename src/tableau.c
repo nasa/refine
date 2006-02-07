@@ -51,7 +51,7 @@ Tableau* tableauCreate( int constraints, int dimension )
   tableau->in_basis = (int *)malloc( length * sizeof(int) );
   for (i=0;i<length;i++)  tableau->in_basis[i] = EMPTY;
   for (i=0;i<tableauConstraints(tableau);i++) 
-    tableau->in_basis[tableau->basis[i]] = i;
+    tableau->in_basis[tableau->basis[i]+1] = i;
   
 
   return tableau;
@@ -143,9 +143,9 @@ Tableau *tableauInit( Tableau *tableau )
   /* initial bfs */
   for (i=0;i<tableauConstraints(tableau);i++) 
     tableau->basis[i] = tableauDimension( tableau ) + i ;
-  for (j=0;j<n;j++)  tableau->in_basis[j] = EMPTY;
+  for (j=0;j<n;j++) tableau->in_basis[j] = EMPTY;
   for (i=0;i<tableauConstraints(tableau);i++) 
-    tableau->in_basis[tableau->basis[i]] = i;
+    tableau->in_basis[tableau->basis[i]+1] = i;
 
   for (i=0;i<tableauConstraints( tableau );i++) {
     t_index = (1+i);
@@ -202,7 +202,7 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
   best_divisor = 0.0;
 
   for (j=1;j<n;j++) { /* test all basis, first col is solution */
-    if (EMPTY != tableau->in_basis[j]) { /* skip active basis */
+    if (EMPTY == tableau->in_basis[j]) { /* skip active basis */
       reduced_cost = tableau->t[m*j];
       if ( 0 > reduced_cost ) {  /* try a negative reduced cost */
 	best_row = EMPTY;
@@ -233,14 +233,60 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
 
 Tableau *tableauSolve( Tableau *tableau )
 {
-  
+  int row, column;
   if ( tableau != tableauInit( tableau ) ) {
     printf( "%s: %d: %s: tableauInit NULL\n",
 	    __FILE__, __LINE__, "tableauSolve");
     return NULL;
   }
 
-  tableauShow(tableau);
+  while ( tableau == tableauLargestPivot( tableau, &row, &column ) ) {
+    tableauPivotAbout(tableau, row, column);
+  }
+
+  return tableau;
+}
+
+Tableau *tableauPivotAbout( Tableau *tableau, int row, int column )
+{
+  int m, n;
+  int i, j;
+  double pivot;
+  double factor;
+
+  m = 1 + tableauConstraints( tableau );
+  n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
+
+  if ( row < 1 || row >= m ||  column < 1 || column >= n ) {
+    printf( "%s: %d: %s: requested row %d or column %d is outside %d m %d n\n",
+	    __FILE__, __LINE__, "tableauPivotAbout",row,column,m,n);
+    return NULL;
+  }
+
+  if (EMPTY != tableau->in_basis[column]) {
+    printf( "%s: %d: %s: requested column %d is already active\n",
+	    __FILE__, __LINE__, "tableauPivotAbout",column);
+    return NULL;
+  }
+
+  tableau->in_basis[tableau->basis[row-1]+1] = EMPTY;
+  tableau->basis[row-1] = column-1;
+  tableau->in_basis[tableau->basis[row-1]+1] = row-1;
+
+  /* normalize row */
+  pivot = tableau->t[row+m*column];
+  for (j=0;j<n;j++) {
+    tableau->t[row+m*j] /= pivot;
+  }
+
+  for (i=0;i<m;i++) {
+    if (i!=row) {
+      factor = tableau->t[i+m*column];
+      for (j=0;j<n;j++) {
+	tableau->t[i+m*j] -= tableau->t[row+m*j]*factor;
+      }
+    }
+  }
 
   return tableau;
 }

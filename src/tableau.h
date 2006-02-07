@@ -50,6 +50,7 @@ Tableau *tableauInit( Tableau * );
 Tableau *tableauLargestPivot( Tableau *, int *pivot_row, int *pivot_col );
 
 Tableau *tableauSolve( Tableau * );
+Tableau *tableauPivotAbout( Tableau *, int row, int column );
 
 Tableau *tableauTableau( Tableau *, double *tableau );
 Tableau *tableauShow( Tableau * );
