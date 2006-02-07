@@ -87,6 +87,7 @@ VALUE tableau_basis( VALUE self )
   rb_basis = rb_ary_new2(nbasis);
   for ( i=0 ; i < nbasis ; i++ ) 
     rb_ary_store( rb_basis, i, INT2NUM(basis[i]) );
+  free(basis);
   return rb_basis;
 }
 
