@@ -93,3 +93,8 @@ Tableau *tableauBasis( Tableau *tableau, int *basis )
   for (i=0;i<tableauConstraints(tableau);i++) basis[i] = tableau->basis[i];
   return tableau;
 }
+
+Tableau *tableauSolve( Tableau *tableau )
+{
+  return tableau;
+}

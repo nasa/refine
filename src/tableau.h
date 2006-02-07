@@ -43,6 +43,8 @@ int tableauDimension( Tableau * );
 
 Tableau *tableauBasis( Tableau *, int *basis );
 
+Tableau *tableauSolve( Tableau * );
+
 END_C_DECLORATION
 
 #endif /* RING_H */

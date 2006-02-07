@@ -90,6 +90,12 @@ VALUE tableau_basis( VALUE self )
   return rb_basis;
 }
 
+VALUE tableau_solve( VALUE self )
+{
+  GET_TABLEAU_FROM_SELF;
+  return ( tableau == tableauSolve(tableau) ? self : Qnil );
+}
+
 VALUE cTableau;
 
 void Init_Tableau() 
@@ -105,4 +111,6 @@ void Init_Tableau()
   rb_define_method( cTableau, "dimension", tableau_dimension, 0 );
 
   rb_define_method( cTableau, "basis", tableau_basis, 0 );
+
+  rb_define_method( cTableau, "solve", tableau_solve, 0 );
 }
