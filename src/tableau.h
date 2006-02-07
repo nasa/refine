@@ -23,11 +23,20 @@ typedef struct Tableau Tableau;
 struct Tableau {
   int constraints;
   int dimension;
+  
+  double *constriant_matrix;
+  double *constriant;
+  double *cost;
+
   int *basis;
 };
 
 Tableau *tableauCreate( int constraints, int dimension );
 void tableauFree( Tableau * );
+
+Tableau *tableauConstraintMatrix( Tableau *, double *constriant_matrix );
+Tableau *tableauConstraint( Tableau *, double *constriant );
+Tableau *tableauCost( Tableau *, double *cost );
 
 int tableauConstraints( Tableau * );
 int tableauDimension( Tableau * );

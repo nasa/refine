@@ -18,6 +18,48 @@ VALUE tableau_new( VALUE class, VALUE rb_constraints, VALUE rb_dimension )
   return obj;
 }
 
+VALUE tableau_constraintMatrix( VALUE self, VALUE rb_data )
+{
+  int i, ndata;
+  double *data;
+  VALUE rb_result;
+  GET_TABLEAU_FROM_SELF;
+  ndata = RARRAY(rb_data)->len;
+  data = (double *)malloc(ndata*sizeof(double));
+  for ( i=0 ; i < ndata ; i++ ) data[i] = NUM2DBL( rb_ary_entry( rb_data, i) );
+  rb_result = (tableau == tableauConstraintMatrix(tableau, data)?self:Qnil);
+  free(data);
+  return rb_result;
+}
+
+VALUE tableau_cost( VALUE self, VALUE rb_data )
+{
+  int i, ndata;
+  double *data;
+  VALUE rb_result;
+  GET_TABLEAU_FROM_SELF;
+  ndata = RARRAY(rb_data)->len;
+  data = (double *)malloc(ndata*sizeof(double));
+  for ( i=0 ; i < ndata ; i++ ) data[i] = NUM2DBL( rb_ary_entry( rb_data, i) );
+  rb_result = (tableau == tableauCost(tableau, data)?self:Qnil);
+  free(data);
+  return rb_result;
+}
+
+VALUE tableau_constraint( VALUE self, VALUE rb_data )
+{
+  int i, ndata;
+  double *data;
+  VALUE rb_result;
+  GET_TABLEAU_FROM_SELF;
+  ndata = RARRAY(rb_data)->len;
+  data = (double *)malloc(ndata*sizeof(double));
+  for ( i=0 ; i < ndata ; i++ ) data[i] = NUM2DBL( rb_ary_entry( rb_data, i) );
+  rb_result = (tableau == tableauConstraint(tableau, data)?self:Qnil);
+  free(data);
+  return rb_result;
+}
+
 VALUE tableau_constraints( VALUE self )
 {
   GET_TABLEAU_FROM_SELF;
@@ -54,6 +96,10 @@ void Init_Tableau()
 {
   cTableau = rb_define_class( "Tableau", rb_cObject );
   rb_define_singleton_method( cTableau, "new", tableau_new, 2 );
+
+  rb_define_method( cTableau, "constraintMatrix", tableau_constraintMatrix, 1);
+  rb_define_method( cTableau, "constraint", tableau_constraint, 1);
+  rb_define_method( cTableau, "cost", tableau_cost, 1);
 
   rb_define_method( cTableau, "constraints", tableau_constraints, 0 );
   rb_define_method( cTableau, "dimension", tableau_dimension, 0 );

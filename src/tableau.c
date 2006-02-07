@@ -32,14 +32,50 @@ Tableau* tableauCreate( int constraints, int dimension )
   for (i=0;i<tableauConstraints(tableau);i++) 
     tableau->basis[i] = tableauDimension( tableau ) + i ;
 
+  tableau->constriant_matrix = (double *)malloc( tableauConstraints(tableau) *
+						 tableauDimension( tableau ) * 
+						 sizeof(double) );
+  tableau->constriant        = (double *)malloc( tableauConstraints(tableau) *
+						 sizeof(double) );
+  tableau->cost              = (double *)malloc( tableauDimension(tableau) *
+						 sizeof(double) );
+
   return tableau;
 }
 
 void tableauFree( Tableau *tableau )
 {
+  if (NULL != tableau->constriant_matrix) free(tableau->constriant_matrix);
+  if (NULL != tableau->constriant) free(tableau->constriant);
+  if (NULL != tableau->cost) free(tableau->cost);
   if (NULL != tableau->basis) free(tableau->basis);
   free( tableau );
 }
+
+Tableau *tableauConstraintMatrix( Tableau *tableau, double *constriant_matrix )
+{
+  int i, length;
+  length = tableauConstraints( tableau ) * tableauDimension( tableau );
+  for (i=0;i<length;i++) tableau->constriant_matrix[i] = constriant_matrix[i];
+  return tableau;
+}
+
+Tableau *tableauConstraint( Tableau *tableau, double *constriant )
+{
+  int i, length;
+  length = tableauConstraints( tableau );
+  for (i=0;i<length;i++) tableau->constriant[i] = constriant[i];
+  return tableau;
+}
+
+Tableau *tableauCost( Tableau *tableau, double *cost )
+{
+  int i, length;
+  length = tableauDimension( tableau );
+  for (i=0;i<length;i++) tableau->cost[i] = cost[i];
+  return tableau;
+}
+
 
 int tableauConstraints( Tableau *tableau )
 {

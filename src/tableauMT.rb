@@ -36,4 +36,18 @@ class TestTableau < Test::Unit::TestCase
   assert_equal [5, 6, 7, 8], tableau.basis
  end
 
+ def test_find_right_basis_for_three_triangles
+  tableau = Tableau.new(3,3)
+  const_mat = [ 0.0, -0.5, 1.0,
+                0.5,  0.5, 1.0,
+               -0.5,  0.0, 1.0]
+  assert_equal tableau, tableau.constraintMatrix(const_mat)
+  assert_equal tableau, tableau.constraint([ 0.0, 0.0, 1.0])
+  assert_equal tableau, tableau.cost([ 0.0, 0.5, 0.0])
+  assert_equal tableau, tableau.solve
+  assert_equal [0, 1, 2], tableau.basis
+ end
+
+ 
+
 end
