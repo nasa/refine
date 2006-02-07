@@ -13,6 +13,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+#include <limits.h>
+#include <values.h>
 #ifndef __APPLE__       /* Not needed on Mac OS X */
 #include <malloc.h>
 #endif
@@ -44,6 +47,12 @@ Tableau* tableauCreate( int constraints, int dimension )
   tableau->basis = (int *)malloc( tableauConstraints(tableau) * sizeof(int) );
   for (i=0;i<tableauConstraints(tableau);i++) 
     tableau->basis[i] = tableauDimension( tableau ) + i ;
+  length = 1+tableauDimension( tableau )+tableauConstraints(tableau);
+  tableau->in_basis = (int *)malloc( length * sizeof(int) );
+  for (i=0;i<length;i++)  tableau->in_basis[i] = EMPTY;
+  for (i=0;i<tableauConstraints(tableau);i++) 
+    tableau->in_basis[tableau->basis[i]] = i;
+  
 
   return tableau;
 }
@@ -54,6 +63,7 @@ void tableauFree( Tableau *tableau )
   if (NULL != tableau->constraint)        free(tableau->constraint);
   if (NULL != tableau->cost)              free(tableau->cost);
   if (NULL != tableau->basis)             free(tableau->basis);
+  if (NULL != tableau->in_basis)          free(tableau->in_basis);
   if (NULL != tableau->t)                 free(tableau->t);
   free( tableau );
 }
@@ -133,6 +143,9 @@ Tableau *tableauInit( Tableau *tableau )
   /* initial bfs */
   for (i=0;i<tableauConstraints(tableau);i++) 
     tableau->basis[i] = tableauDimension( tableau ) + i ;
+  for (j=0;j<n;j++)  tableau->in_basis[j] = EMPTY;
+  for (i=0;i<tableauConstraints(tableau);i++) 
+    tableau->in_basis[tableau->basis[i]] = i;
 
   for (i=0;i<tableauConstraints( tableau );i++) {
     t_index = (1+i);
@@ -161,6 +174,60 @@ Tableau *tableauInit( Tableau *tableau )
     }
   }
 
+  return tableau;
+}
+
+Tableau *tableauPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
+{
+  int i,j;
+  int m,n;
+
+  double zero;
+
+  double divisor, best_divisor;
+  double reduced_cost;
+  
+  int best_row;
+  double feasable_step_length, this_step_length;
+  double pivot;
+
+  *pivot_row = EMPTY;
+  *pivot_col = EMPTY;
+
+  zero = 1.0e-14;
+  
+  m = 1 + tableauConstraints( tableau );
+  n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
+  
+  best_divisor = 0.0;
+
+  for (j=1;j<n;j++) { /* test all basis, first col is solution */
+    if (EMPTY != tableau->in_basis[j]) { /* skip active basis */
+      reduced_cost = tableau->t[m*j];
+      if ( 0 > reduced_cost ) {  /* try a negative reduced cost */
+	best_row = EMPTY;
+	feasable_step_length = DBL_MAX;
+	for (i=1;i<m;i++) {
+	  pivot = tableau->t[i+m*j];
+	  if ( pivot > zero ) {
+	    this_step_length = reduced_cost / pivot;
+	    if ( this_step_length < feasable_step_length ) {
+	      best_row = i;
+	      feasable_step_length = this_step_length;
+	      divisor = pivot;
+	    }
+	  }
+	} /* end loop over rows */
+	/* if this column has the best pivot so far, keep it */
+	if ( EMPTY != best_row && ABS(divisor) > ABS(best_divisor) ) {
+	  *pivot_row = best_row;
+	  *pivot_col = j;
+	  best_divisor = divisor;
+	}
+      }
+    }
+  }/* end loop over columns */
+  if ( EMPTY == (*pivot_row) ) return NULL;
   return tableau;
 }
 
