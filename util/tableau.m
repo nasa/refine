@@ -1,4 +1,4 @@
-function [optx,zmin] = tableau(c,A,b)
+function [optx,zmin,basis] = tableau(c,A,b)
 
 [m,n]=size(A)
 

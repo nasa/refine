@@ -33,11 +33,9 @@ a
 c
 b
 
-[optx,zmin] = tableau(c,a,b)
+[optx,zmin,basis] = tableau(c,a,b)
 
-r = find(optx)
-
-xy = a(:,r)'\c(r)
+xy = a(:,basis)'\c(basis)
 
 
 data = [];
