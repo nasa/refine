@@ -30,6 +30,10 @@ class TestTableau < Test::Unit::TestCase
  def test_initial_basis_is_after_given_dimension
   tableau = Tableau.new(2,3)
   assert_equal [3, 4], tableau.basis
+  tableau = Tableau.new(3,3)
+  assert_equal [3, 4, 5], tableau.basis
+  tableau = Tableau.new(4,5)
+  assert_equal [5, 6, 7, 8], tableau.basis
  end
 
 end
