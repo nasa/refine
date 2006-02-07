@@ -36,7 +36,7 @@ class TestTableau < Test::Unit::TestCase
   assert_equal [5, 6, 7, 8], tableau.basis
  end
 
- def test_initial_tableau_for_three_triangles
+ def test_initial_tableau_for_three_right_triangles
   tableau = Tableau.new(3,3)
   const_mat = [ 0.0, -0.5, 1.0,
                 0.5,  0.5, 1.0,
@@ -55,6 +55,34 @@ class TestTableau < Test::Unit::TestCase
   j = 2; truth = [ -0.5,  0.5,  0.5,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
   j = 3; truth = [ -0.25,-0.5,  0.0,  1.0 ]
+  m.times { |i| assert_in_delta truth[i], t[j][i], tol }
+  j = 4; truth = [  0.0,  1.0,  0.0,  0.0 ]
+  m.times { |i| assert_in_delta truth[i], t[j][i], tol }
+  j = 5; truth = [  0.0,  0.0,  1.0,  0.0 ]
+  m.times { |i| assert_in_delta truth[i], t[j][i], tol }
+  j = 6; truth = [  0.0,  0.0,  0.0,  1.0 ]
+  m.times { |i| assert_in_delta truth[i], t[j][i], tol }
+ end
+
+ def test_initial_tableau_for_three_slanted_triangles
+  tableau = Tableau.new(3,3)
+  const_mat = [-0.15, -0.70, 1.0,
+                0.50,  0.45, 1.0,
+               -0.35,  0.25, 1.0]
+  assert_equal tableau, tableau.constraintMatrix(const_mat)
+  assert_equal tableau, tableau.constraint([ 0.0, 0.0, 1.0])
+  assert_equal tableau, tableau.cost([ -0.095, 0.505, 0.155])
+  assert_equal tableau, tableau.init
+  t = tableau.tableau
+  m = 4
+  tol = 1.0e-5
+  j = 0; truth = [ -0.75500,  0.0,  0.0,  1.0 ]
+  m.times { |i| assert_in_delta truth[i], t[j][i], tol }
+  j = 1; truth = [ -0.20825, -0.15, -0.7,  1.0 ]
+  m.times { |i| assert_in_delta truth[i], t[j][i], tol }
+  j = 2; truth = [ -0.96725,  0.5,  0.45,  1.0 ]
+  m.times { |i| assert_in_delta truth[i], t[j][i], tol }
+  j = 3; truth = [ -0.52450,-0.35,  0.25,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
   j = 4; truth = [  0.0,  1.0,  0.0,  0.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }

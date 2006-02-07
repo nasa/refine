@@ -132,6 +132,12 @@ VALUE tableau_solve( VALUE self )
   return ( tableau == tableauSolve(tableau) ? self : Qnil );
 }
 
+VALUE tableau_show( VALUE self )
+{
+  GET_TABLEAU_FROM_SELF;
+  return ( tableau == tableauShow(tableau) ? self : Qnil );
+}
+
 VALUE cTableau;
 
 void Init_Tableau() 
@@ -152,4 +158,5 @@ void Init_Tableau()
   rb_define_method( cTableau, "tableau", tableau_tableau, 0 );
 
   rb_define_method( cTableau, "solve", tableau_solve, 0 );
+  rb_define_method( cTableau, "show", tableau_show, 0 );
 }
