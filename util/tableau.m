@@ -17,41 +17,46 @@ basis = [n-m+1:n];
 in_basis = zeros(1,n);
 in_basis(basis) = 1:m;
 
-[min_reducted_cost, pivot_col] = min(t(1,2:n+1));
-min_reducted_cost;
-pivot_col = pivot_col +1;
-
+min_reducted_cost = -1.0;
 while (min_reducted_cost<0)
 
-  pivot_row = 0;
-  step_length = inf;
-  for i=2:m+1
-    if (t(i,pivot_col)>0)
-      this_step = t(i,1)./t(i,pivot_col);
-      if (this_step<step_length)
-	pivot_row=i;
-	step_length = this_step;
+  min_reducted_cost = 1.0;
+  for j = 2:n+1
+    if (0==in_basis(j-1))
+      if ( t(1,j) < 0 )
+	pivot = 0;
+	step_length = inf;
+	for i=2:m+1
+	  if (t(i,j)>0)
+	    this_step = t(i,1)./t(i,j);
+	    if (this_step<step_length)
+	      pivot=i;
+	      step_length = this_step;
+	    end
+	  end
+	end
+	if ( 0 != pivot )
+	  pivot_row = pivot;
+	  pivot_col = j;
+	  min_reducted_cost = t(1,pivot_col);
+	end
       end
     end
   end
-  pivot_row;
-  step_length;
 
-  in_basis(basis(pivot_row-1)) = 0;
-  basis(pivot_row-1) = pivot_col-1;
-  in_basis(pivot_col-1) = pivot_row-1;
-  t(pivot_row,:) = t(pivot_row,:)./t(pivot_row,pivot_col);
+  if (min_reducted_cost < 0)
+    in_basis(basis(pivot_row-1)) = 0;
+    basis(pivot_row-1) = pivot_col-1;
+    in_basis(pivot_col-1) = pivot_row-1;
 
-  for i=1:m+1
-    if (i!=pivot_row)
-      t(i,:) = t(i,:) - t(pivot_row,:)*t(i,pivot_col);
+    t(pivot_row,:) = t(pivot_row,:)./t(pivot_row,pivot_col);
+    for i=1:m+1
+      if (i!=pivot_row)
+	t(i,:) = t(i,:) - t(pivot_row,:)*t(i,pivot_col);
+      end
     end
+    t;
   end
-  t;
-  [min_reducted_cost, pivot_col] = min(t(1,2:n+1));
-  min_reducted_cost;
-  pivot_col = pivot_col +1;
-
 end
 
 optx = zeros(n,1);
