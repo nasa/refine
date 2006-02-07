@@ -177,7 +177,7 @@ Tableau *tableauInit( Tableau *tableau )
   return tableau;
 }
 
-Tableau *tableauPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
+Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
 {
   int i,j;
   int m,n;

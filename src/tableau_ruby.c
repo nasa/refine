@@ -96,12 +96,13 @@ VALUE tableau_init( VALUE self )
   return ( tableau == tableauInit(tableau) ? self : Qnil );
 }
 
-VALUE tableau_pivot( VALUE self )
+VALUE tableau_largestPivot( VALUE self )
 {
   VALUE rb_pivot;
   int pivot_row, pivot_col;
   GET_TABLEAU_FROM_SELF;
-  if (tableau != tableauPivot(tableau, &pivot_row, &pivot_col) ) return Qnil;
+  if (tableau != tableauLargestPivot(tableau, &pivot_row, &pivot_col) )
+    return Qnil;
   rb_pivot = rb_ary_new2(2);
   rb_ary_store( rb_pivot, 0, INT2NUM(pivot_row) );
   rb_ary_store( rb_pivot, 1, INT2NUM(pivot_col) );
@@ -167,7 +168,7 @@ void Init_Tableau()
   rb_define_method( cTableau, "basis", tableau_basis, 0 );
 
   rb_define_method( cTableau, "init", tableau_init, 0 );
-  rb_define_method( cTableau, "pivot", tableau_pivot, 0 );
+  rb_define_method( cTableau, "largestPivot", tableau_largestPivot, 0 );
   rb_define_method( cTableau, "tableau", tableau_tableau, 0 );
 
   rb_define_method( cTableau, "solve", tableau_solve, 0 );

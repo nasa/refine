@@ -47,7 +47,7 @@ int tableauDimension( Tableau * );
 Tableau *tableauBasis( Tableau *, int *basis );
 
 Tableau *tableauInit( Tableau * );
-Tableau *tableauPivot( Tableau *, int *pivot_row, int *pivot_col );
+Tableau *tableauLargestPivot( Tableau *, int *pivot_row, int *pivot_col );
 
 Tableau *tableauSolve( Tableau * );
 
