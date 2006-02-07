@@ -15,6 +15,7 @@ local:
 	./lineMT.rb
 	./queueMT.rb
 	./sortMT.rb
+	./tableauMT.rb
 	./intersectMT.rb
 	./ringMT.rb
 	./gridMT.rb
@@ -29,7 +30,7 @@ local:
 
 clean:
 	rm -rf SampleUnit
-	rm -rf Adj Plan Near Line Queue Sort Intersect Ring Grid* Layer  
+	rm -rf Adj Plan Near Line Queue Sort Tableau Intersect Ring Grid* Layer
 
 val:
 	@echo valgrind --tool=memcheck --trace-children=yes --error-limit=no --suppressions=ruby_valgrind

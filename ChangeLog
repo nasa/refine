@@ -1,3 +1,11 @@
+2006-02-07 10:57Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (createTableau) brand new empty object as a place
+	holder for a tableau linear programming implementation.
+	* util/tableau.m a Octave (MATLAB) to spike out a tableau
+	implementation
+	* util/untangle2.m a Octave (MATLAB) test tableau.m
+	
 2006-02-04 12:46 Mike Park  <mike.park@nasa.gov>
 
 	* src/layer.c (layerMakeCADAvailable,layerCADAvailable) a toggle
