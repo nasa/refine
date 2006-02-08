@@ -2613,9 +2613,11 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   int face, nodes[3], faceId, temp;
   double orig[2], uv1[2], uv2[2];
   int degree;
-  int m, n, j;
+  int m, n, i, j;
   double b[3]= {0.0, 0.0, 1.0};
   double *a, *c;
+  int basis[3];
+  double at[9], lu[9], xyv[3];
   AdjIterator it;
   Tableau *tableau;
 
@@ -2664,13 +2666,29 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     c[j] = 0.5*(uv1[0]*uv2[1] - uv2[0]*uv1[1]);
   }
   
+  /* solve primal linear program with tableau method */
   tableau = tableauCreate( m, n );
   tableauConstraintMatrix( tableau, a );
   tableauConstraint( tableau, b );
   tableauCost( tableau, c );
-  tableauSolve( tableau );
-  tableauShow( tableau );
+  if ( tableau != tableauSolve( tableau ) ) {
+    printf( "%s: %d: %s: tableauSolve NULL\n",
+	    __FILE__, __LINE__, "gridUntangleAreaUV");
+    return NULL;
+  }
+  tableauBasis( tableau, basis );
   tableauFree( tableau );
+
+  /* form dual linear program and invert basis */
+  for (j = 0; j<3 ; j++) {
+    xyv[j] = c[basis[j]];
+    for (i = 0; i<3 ; i++) {
+      at[j+3*i] = a[i+3*basis[j]];
+    }
+  }
+  gridLU3x3( at, lu );
+  gridBackSolve3x3( lu, xyv );
+  printf( "\nx %f y %f v %f\n",xyv[0],xyv[1],xyv[2]);
 
   return grid;
 }

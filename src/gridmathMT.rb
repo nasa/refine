@@ -606,4 +606,10 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta(bary[2],ans[2],tol)
  end
 
+ def test_solve_with_gauss
+  a = [ 0.0, 0.5, -0.5,  -0.5, 0.5, 0.0,  1.0, 1.0, 1.0 ]
+  b = [ -10.0, -15.5, -5.0 ]
+  x = [10.0+1.0/3.0, 20.0+1.0/3.0, 1.0/6.0]
+ end
+ 
 end
