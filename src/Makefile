@@ -34,3 +34,6 @@ clean:
 
 val:
 	@echo valgrind --tool=memcheck --trace-children=yes --error-limit=no --suppressions=ruby_valgrind
+
+bu:
+	( cd .. && $(MAKE) bu )
