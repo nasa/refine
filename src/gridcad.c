@@ -19,6 +19,7 @@
 #include "FAKEGeom.h"
 #endif
 #include "plan.h"
+#include "tableau.h"
 #include "gridmath.h"
 #include "gridmetric.h"
 #include "gridshape.h"
@@ -2616,6 +2617,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   double b[3]= {0.0, 0.0, 1.0};
   double *a, *c;
   AdjIterator it;
+  Tableau *tableau;
 
   if (!gridGeometryFace(grid,node)) return NULL;
   if (gridGeometryBetweenFace(grid,node)) return NULL;
@@ -2659,8 +2661,17 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     a[0+m*j]=-0.5*(uv1[1]-uv2[1]);
     a[1+m*j]=-0.5*(uv2[0]-uv1[0]);
     a[2+m*j]=1.0;
-    c[j] = 0.5*(uv1[0]*uv2[1] - uv2[1]*uv1[0]);
+    c[j] = 0.5*(uv1[0]*uv2[1] - uv2[0]*uv1[1]);
   }
+  
+  tableau = tableauCreate( m, n );
+  tableauConstraintMatrix( tableau, a );
+  tableauConstraint( tableau, b );
+  tableauCost( tableau, c );
+  tableauSolve( tableau );
+  tableauShow( tableau );
+  tableauFree( tableau );
+
   return grid;
 }
 

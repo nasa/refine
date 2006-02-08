@@ -234,6 +234,7 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
 Tableau *tableauSolve( Tableau *tableau )
 {
   int row, column;
+
   if ( tableau != tableauInit( tableau ) ) {
     printf( "%s: %d: %s: tableauInit NULL\n",
 	    __FILE__, __LINE__, "tableauSolve");
