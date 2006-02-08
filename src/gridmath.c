@@ -426,7 +426,7 @@ GridBool gridGaussianElimination( int m, int n, double *a )
   double temp;
   double factor;
 
-  for (col=0; col<(m-1); col++) {
+  for (col=0; col<m; col++) {
     /* find largest pivot */
     largest_pivot = 0.0;
     pivot_row = EMPTY;
