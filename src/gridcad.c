@@ -2609,9 +2609,13 @@ Grid *gridSmoothNodeVolumeUVSimplex( Grid *grid, int node )
 
 Grid *gridUntangleAreaUV( Grid *grid, int node )
 {
-  int face, nodes[3], faceId;
+  int face, nodes[3], faceId, temp;
   double orig[2], uv1[2], uv2[2];
   int degree;
+  int m, n, j;
+  double b[3]= {0.0, 0.0, 1.0};
+  double *a, *c;
+  AdjIterator it;
 
   if (!gridGeometryFace(grid,node)) return NULL;
   if (gridGeometryBetweenFace(grid,node)) return NULL;
@@ -2622,8 +2626,41 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   if ( NULL == gridNodeUV(grid, node, faceId, orig)) return NULL;
 
   degree = adjDegree( gridFaceAdj(grid), node );
-  printf("degree %d\n",degree);
-
+  m = 3;
+  n = degree;
+  a = (double *)malloc(m*n*sizeof(double));
+  c = (double *)malloc(n*sizeof(double));
+  j = -1;
+  for ( it = adjFirst(gridFaceAdj(grid),node);
+	adjValid(it);
+	it = adjNext(it) ){
+    j++;
+    face = adjItem(it);
+    if ( grid != gridFace(grid, face, nodes, &faceId) ) {
+      free(a);free(c); return NULL;
+    }
+    /* orient nodes so that the central node is in position 0 */
+    if (node == nodes[1]) {
+      temp = nodes[0];
+      nodes[0] = nodes[1];
+      nodes[1] = nodes[2];
+      nodes[2] = temp;
+    }
+    if (node == nodes[2]) {
+      temp = nodes[0];
+      nodes[0] = nodes[2];
+      nodes[2] = nodes[1];
+      nodes[1] = temp;
+    }
+    if ( grid != gridNodeUV(grid, nodes[1], faceId, uv1 ) ||
+	 grid != gridNodeUV(grid, nodes[2], faceId, uv2 ) ) {
+      free(a);free(c); return NULL;
+    }
+    a[0+m*j]=-0.5*(uv1[1]-uv2[1]);
+    a[1+m*j]=-0.5*(uv2[0]-uv1[0]);
+    a[2+m*j]=1.0;
+    c[j] = 0.5*(uv1[0]*uv2[1] - uv2[1]*uv1[0]);
+  }
   return grid;
 }
 
