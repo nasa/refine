@@ -2617,7 +2617,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   double b[3]= {0.0, 0.0, 1.0};
   double *a, *c;
   int basis[3];
-  double at[9], lu[9], xyv[3];
+  double at[12];
   AdjIterator it;
   Tableau *tableau;
 
@@ -2681,14 +2681,25 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
 
   /* form dual linear program and invert basis */
   for (j = 0; j<3 ; j++) {
-    xyv[j] = c[basis[j]];
     for (i = 0; i<3 ; i++) {
       at[j+3*i] = a[i+3*basis[j]];
     }
   }
-  gridLU3x3( at, lu );
-  gridBackSolve3x3( lu, xyv );
-  printf( "\nx %f y %f v %f\n",xyv[0],xyv[1],xyv[2]);
+  for (i = 0; i<3 ; i++) {
+    at[i+3*3] = c[basis[i]];
+  }
+  if ( !gridGaussianElimination( 3, 4, at ) ) {
+    printf( "%s: %d: %s: gridGaussianElimination FALSE\n",
+	    __FILE__, __LINE__, "gridUntangleAreaUV");
+    return NULL;
+  }
+  if ( !gridGaussianBacksolve( 3, 4, at ) ) {
+    printf( "%s: %d: %s: gridGaussianBacksolve FALSE\n",
+	    __FILE__, __LINE__, "gridUntangleAreaUV");
+    return NULL;
+  }
+
+  gridSetNodeUV(grid, node, faceId, at[0+3*3], at[1+3*3]);
 
   return grid;
 }
