@@ -15,10 +15,15 @@ require 'GridMath/GridMath'
 
 class Array
  def mat_show
-  puts
-  printf "%10.5f %10.5f %10.5f %10.5f\n", self[0], self[3], self[6], self[9]
-  printf "%10.5f %10.5f %10.5f %10.5f\n", self[1], self[4], self[7], self[10]
-  printf "%10.5f %10.5f %10.5f %10.5f\n", self[2], self[5], self[8], self[11]
+   puts
+  if self.length==12
+   printf "%10.5f %10.5f %10.5f %10.5f\n", self[0], self[3], self[6], self[9]
+   printf "%10.5f %10.5f %10.5f %10.5f\n", self[1], self[4], self[7], self[10]
+   printf "%10.5f %10.5f %10.5f %10.5f\n", self[2], self[5], self[8], self[11]
+  else
+   printf "%10.5f %10.5f %10.5f\n", self[0], self[2], self[4]
+   printf "%10.5f %10.5f %10.5f\n", self[1], self[3], self[5]
+  end
  end
 end
 
@@ -615,20 +620,40 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta(bary[2],ans[2],tol)
  end
 
- def test_solve_hard_prob_with_gauss
-  a = [ 0.0, 0.5, -0.5,  -0.5, 0.5, 0.0,  1.0, 1.0, 1.0 ]+[ -10.0, -15.5, -5.0 ]
-  a.mat_show
+ def test_gaussianElimination_for_little_2x3
+  a = [ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 ]
+  ans = @gm.gaussianElimination(2,3,a)
+
+  tol = 1.0e-15
+  assert_in_delta(1.0,ans[0],tol)
+  assert_in_delta(0.0,ans[1],tol)
+  assert_in_delta(2.0,ans[2],tol)
+  assert_in_delta(1.0,ans[3],tol)
+  assert_in_delta(3.0,ans[4],tol)
+  assert_in_delta(2.0,ans[5],tol)
+ end
+
+ def test_gaussianElimination_for_3_tri_case
+  a = [ 0.0, 0.5, -0.5,  -0.5, 0.5, 0.0,  1.0, 1.0, 1.0 ]+
+      [ -10.0, -15.5, -5.0 ]
   ans = @gm.gaussianElimination(3,4,a)
-  a.mat_show
+  ans.mat_show
 
   tol = 1.0e-15
   assert_in_delta(0.0,ans[1],tol,'terms not elimated')
   assert_in_delta(0.0,ans[2],tol,'terms not elimated')
-
   assert_in_delta(0.0,ans[5],tol,'terms not elimated')
 
-  x = [10.0+1.0/3.0, 20.0+1.0/3.0, 1.0/6.0]
+  assert_in_delta(0.0,ans[0],tol,'terms eye')
+  assert_in_delta(0.0,ans[4],tol,'terms eye')
 
+  assert_in_delta(1.0,ans[3],tol);
+  assert_in_delta( 2.0,ans[7],tol);
+  assert_in_delta(-2.0,ans[8],tol);
+  assert_in_delta( 3.0,ans[9],tol);
+  assert_in_delta(-31.0,ans[10],tol);
+  assert_in_delta( 20.0,ans[11],tol);
+  assert_in_delta(-30.5,ans[12],tol);
  end
  
 end
