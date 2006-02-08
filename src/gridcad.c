@@ -410,7 +410,7 @@ Grid *gridUntangle(Grid *grid)
 	gridMinFaceAreaUV(grid, fix_node, &area);
 	if ( (area <= allowedArea) || (tries>4) ) {
 	  active_nodes++;
-	  gridSmoothNodeFaceAreaUVSimplex( grid, fix_node );
+	  gridSmoothNodeFaceAreaUV( grid, fix_node );
 	}
       }
     }
