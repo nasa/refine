@@ -468,3 +468,21 @@ GridBool gridGaussianElimination( int m, int n, double *a )
   }
   return TRUE;
 }
+
+GridBool gridGaussianBacksolve( int m, int n, double *a )
+{
+  int row, col;
+  double rhs;
+  int k;
+
+  for (col=m; col<n; col++) {
+    for (row=m-1;row>-1;row--) {
+      rhs = a[row+col*m];
+      for (k = row+1; k<m; k++) {
+	rhs -= a[row+k*m]*a[k+col*m];
+      }
+      a[row+col*m] = rhs/a[row+row*m];
+    }
+  }
+  return TRUE;
+}

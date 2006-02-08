@@ -624,7 +624,7 @@ class TestGridMath < Test::Unit::TestCase
   a = [ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 ]
   ans = @gm.gaussianElimination(2,3,a)
 
-  tol = 1.0e-15
+  tol = 1.0e-14
   assert_in_delta(1.0,ans[0],tol)
   assert_in_delta(0.0,ans[1],tol)
   assert_in_delta(2.0,ans[2],tol)
@@ -638,7 +638,7 @@ class TestGridMath < Test::Unit::TestCase
       [ -10.0, -15.5, -5.0 ]
   ans = @gm.gaussianElimination(3,4,a)
 
-  tol = 1.0e-15
+  tol = 1.0e-14
   assert_in_delta(0.0,ans[1],tol,'terms not elimated')
   assert_in_delta(0.0,ans[2],tol,'terms not elimated')
   assert_in_delta(0.0,ans[5],tol,'terms not elimated')
@@ -655,4 +655,41 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta(-10.0-1.0/6.0,ans[11],tol);
  end
  
+ def test_gaussianBacksolve_little_2x3
+  a = [ 1.0, 0.0, 2.0, 1.0, 3.0, 2.0 ]
+  ans = @gm.gaussianBacksolve(2,3,a)
+
+  tol = 1.0e-14
+
+  assert_in_delta(1.0,ans[0],tol,'matrix was molested')
+  assert_in_delta(0.0,ans[1],tol,'matrix was molested')
+  assert_in_delta(2.0,ans[2],tol,'matrix was molested')
+  assert_in_delta(1.0,ans[3],tol,'matrix was molested')
+
+  assert_in_delta(-1.0,ans[4],tol)
+  assert_in_delta( 2.0,ans[5],tol)
+ end
+
+ def test_gaussianElimination_for_3_tri_case
+  a = [ 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 2.0, -2.0, 1.0, 
+       -31.0, 20.0, -10.0-1.0/6.0 ]
+  ans = @gm.gaussianBacksolve(3,4,a)
+
+  tol = 1.0e-14
+  assert_in_delta(0.0,ans[1],tol,'matrix was molested')
+  assert_in_delta(0.0,ans[2],tol,'matrix was molested')
+  assert_in_delta(0.0,ans[5],tol,'matrix was molested')
+
+  assert_in_delta(1.0,ans[0],tol,'matrix was molested')
+  assert_in_delta(1.0,ans[4],tol,'matrix was molested')
+  assert_in_delta(1.0,ans[8],tol,'matrix was molested')
+
+  assert_in_delta( 2.0,ans[6],tol,'matrix was molested');
+  assert_in_delta(-2.0,ans[7],tol,'matrix was molested');
+
+  assert_in_delta(-10.0-1.0/3.0,ans[9],tol);
+  assert_in_delta(-1.0/3.0,ans[10],tol);
+  assert_in_delta(-10.0-1.0/6.0,ans[11],tol);
+ end
+
 end

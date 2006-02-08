@@ -1,6 +1,12 @@
+2006-02-08 14:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridGaussianBackSolve) added to back solve upper
+	diagonal matrices
+
 2006-02-08 14:12 Mike Park  <mike.park@nasa.gov>
 
-	* src/gridmath.c (gridGaussianElimination) added to invert matrices
+	* src/gridmath.c (gridGaussianElimination) added to transform
+	matrices into upper diagonal form
 
 2006-02-07 16:43 Mike Park  <mike.park@nasa.gov>
 
