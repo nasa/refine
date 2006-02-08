@@ -637,23 +637,22 @@ class TestGridMath < Test::Unit::TestCase
   a = [ 0.0, 0.5, -0.5,  -0.5, 0.5, 0.0,  1.0, 1.0, 1.0 ]+
       [ -10.0, -15.5, -5.0 ]
   ans = @gm.gaussianElimination(3,4,a)
-  ans.mat_show
 
   tol = 1.0e-15
   assert_in_delta(0.0,ans[1],tol,'terms not elimated')
   assert_in_delta(0.0,ans[2],tol,'terms not elimated')
   assert_in_delta(0.0,ans[5],tol,'terms not elimated')
 
-  assert_in_delta(0.0,ans[0],tol,'terms eye')
-  assert_in_delta(0.0,ans[4],tol,'terms eye')
+  assert_in_delta(1.0,ans[0],tol,'terms eye')
+  assert_in_delta(1.0,ans[4],tol,'terms eye')
+  assert_in_delta(1.0,ans[8],tol,'terms eye')
 
-  assert_in_delta(1.0,ans[3],tol);
-  assert_in_delta( 2.0,ans[7],tol);
-  assert_in_delta(-2.0,ans[8],tol);
-  assert_in_delta( 3.0,ans[9],tol);
-  assert_in_delta(-31.0,ans[10],tol);
-  assert_in_delta( 20.0,ans[11],tol);
-  assert_in_delta(-30.5,ans[12],tol);
+  assert_in_delta( 2.0,ans[6],tol);
+  assert_in_delta(-2.0,ans[7],tol);
+
+  assert_in_delta(-31.0,ans[9],tol);
+  assert_in_delta( 20.0,ans[10],tol);
+  assert_in_delta(-10.0-1.0/6.0,ans[11],tol);
  end
  
 end
