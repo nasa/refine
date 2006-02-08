@@ -110,6 +110,7 @@ Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *g, int node );
 Grid *gridSmoothNodeVolumeUVSimplex( Grid *g, int node );
 
 Grid *gridUntangleAreaUV(Grid *g, int node );
+Grid *gridUntangleVolume(Grid *g, int node );
 
 END_C_DECLORATION
 

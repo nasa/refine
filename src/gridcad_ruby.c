@@ -173,6 +173,12 @@ VALUE grid_untangleAreaUV( VALUE self, VALUE node )
   return (gridUntangleAreaUV( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
+VALUE grid_untangleVolume( VALUE self, VALUE node )
+{
+  GET_GRID_FROM_SELF;
+  return (gridUntangleVolume( grid, NUM2INT(node) )==grid?self:Qnil);
+}
+
 VALUE cGridCAD;
 
 void Init_GridCAD() 
@@ -212,4 +218,5 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "relaxNegativeCells", grid_relaxNegativeCells, 0 );
   rb_define_method( cGridCAD, "smoothNodeFaceAreaUV", grid_smoothNodeFaceAreaUV, 1 );
   rb_define_method( cGridCAD, "untangleAreaUV", grid_untangleAreaUV, 1 );
+  rb_define_method( cGridCAD, "untangleVolume", grid_untangleVolume, 1 );
 }

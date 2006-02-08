@@ -2704,6 +2704,11 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   return grid;
 }
 
+Grid *gridUntangleVolume( Grid *grid, int node )
+{
+  return grid;
+}
+
 /* spike never completed
 Grid *gridNSmooth( Grid *grid, int node)
 {

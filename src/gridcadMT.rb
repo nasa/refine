@@ -414,6 +414,13 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta avgVol, grid.minVolume, 1.0e-4
  end
 
+ def test_gridUntangleVolume_improves_an_easy_4_cell
+  grid = isoTet4( -1.0)
+  assert_equal grid, grid.untangleVolume(4)
+  avgVol = grid.totalVolume/grid.ncell.to_f
+  assert_in_delta avgVol, grid.minVolume, 1.0e-15
+ end
+
  def rightTet3
   grid = Grid.new(5,3,6,0)
 
