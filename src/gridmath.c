@@ -417,3 +417,54 @@ void gridBackSolve3x3( double *lu, double *b )
 
 }
 
+GridBool gridGaussianElimination( int m, int n, double *a )
+{
+  int col;
+  int i, j;
+  int pivot_row;
+  double largest_pivot, pivot;
+  double temp;
+  double factor;
+
+  for (col=0; col<(m-1); col++) {
+    /* find largest pivot */
+    largest_pivot = 0.0;
+    pivot_row = EMPTY;
+    for (i=col;i<m;i++) {
+      pivot = ABS(a[i+m*col]);
+      if ( pivot > largest_pivot ) {
+	largest_pivot = pivot;
+	pivot_row = i;
+      }
+    }
+    if ( largest_pivot < 1.0e-14 || EMPTY == pivot_row ) {
+      printf( "%s: %d: %s: pivot[%d] %e is too small.\n",
+	      __FILE__, __LINE__, "gridGaussianElimination", 
+	      col, largest_pivot);
+      return FALSE;
+    }
+    /* exchange rows to get the best pivot on the diagonal, 
+       unless it is already there */
+    if ( pivot_row != col ) {
+      for (j=col;j<n;j++) {
+	temp = a[pivot_row+j*m];
+	a[pivot_row+j*m] = a[col+j*m];
+	a[col+j*m] = temp;
+      }
+    }
+    /* normalize pivot row */
+    pivot = a[col+m*col];
+    for (j=col;j<n;j++) {
+      a[col+j*m] /= pivot;
+    } 
+    /* elimate sub diagonal terms */
+    for (i=col+1;i<m;i++) {
+      factor = a[i+col*m];
+      for (j=col;j<n;j++) {
+	a[i+j*m] -= a[col+j*m]*factor;
+      }
+    } 
+
+  }
+  return TRUE;
+}

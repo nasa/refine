@@ -300,6 +300,24 @@ static VALUE grid_matrixDeterminate( VALUE self, VALUE rb_m )
   return rb_float_new(gridMatrixDeterminate( m ));
 }
 
+static VALUE grid_gaussianElimination( VALUE self, 
+				       VALUE rb_m, VALUE rb_n, VALUE rb_a )
+{
+  int i, m, n;
+  double *a;
+  m = NUM2INT(rb_m);
+  n = NUM2INT(rb_n);
+  a = (double *)malloc( m*n*sizeof(double) );
+  for (i=0;i<m*n;i++) a[i] = NUM2DBL(rb_ary_entry(rb_a,i));
+  if ( !gridGaussianElimination( m, n, a ) ) {
+    free(a);
+    return Qnil;
+  }
+  for (i=0;i<m*n;i++) rb_ary_store( rb_a, i, rb_float_new(a[i]) );
+  free(a);
+  return rb_a;
+}
+
 VALUE cGridMath;
 
 void Init_GridMath(  )
@@ -329,4 +347,5 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "lu3x3", grid_lu3x3, 1 );
   rb_define_method( cGridMath, "backsolve3x3", grid_backsolve3x3, 2 );
   rb_define_method( cGridMath, "matrixDeterminate", grid_matrixDeterminate, 1);
+  rb_define_method( cGridMath, "gaussianElimination", grid_gaussianElimination, 3 );
 }

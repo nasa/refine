@@ -74,6 +74,8 @@ void gridEigOrtho3x3( double *v0, double *v1, double *v2 );
 void gridLU3x3( double *a, double *lu );
 void gridBackSolve3x3( double *lu, double *b );
 
+GridBool gridGaussianElimination( int m, int n, double *a );
+
 #define gridMatrixDeterminate(m) ( \
 (m)[0]*(m)[4]*(m)[8] + \
 (m)[1]*(m)[5]*(m)[6] + \

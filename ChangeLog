@@ -1,3 +1,7 @@
+2006-02-08 14:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridGaussianElimination) added to invert matrices
+
 2006-02-07 16:43 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridUntangleAreaUV) started driver for tableau.
