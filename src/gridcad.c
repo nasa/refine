@@ -2658,7 +2658,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     }
     if ( grid != gridNodeUV(grid, nodes[1], faceId, uv1 ) ||
 	 grid != gridNodeUV(grid, nodes[2], faceId, uv2 ) ) {
-      free(a);free(c); return NULL;
+      free(a); free(c); return NULL;
     }
     a[0+m*j]=-0.5*(uv1[1]-uv2[1]);
     a[1+m*j]=-0.5*(uv2[0]-uv1[0]);
@@ -2674,7 +2674,8 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   if ( tableau != tableauSolve( tableau ) ) {
     printf( "%s: %d: %s: tableauSolve NULL\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
-    return NULL;
+    tableauFree( tableau );
+    free(a); free(c); return NULL;
   }
   tableauBasis( tableau, basis );
   tableauFree( tableau );
@@ -2688,6 +2689,8 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   for (i = 0; i<3 ; i++) {
     at[i+3*3] = c[basis[i]];
   }
+  free(a);
+  free(c); 
   if ( !gridGaussianElimination( 3, 4, at ) ) {
     printf( "%s: %d: %s: gridGaussianElimination FALSE\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");

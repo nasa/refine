@@ -4,11 +4,14 @@
 #
 # Mobility test for grid c lib
 
-Dir.chdir ENV['srcdir'] if ENV['srcdir']
-
-require 'RubyExtensionBuilder'
-
-RubyExtensionBuilder.new('GridCAD').build
+valgrinding = false
+if (valgrinding)
+ GC.disable # for runnig valgridn quietly
+else
+ Dir.chdir ENV['srcdir'] if ENV['srcdir']
+ require 'RubyExtensionBuilder'
+ RubyExtensionBuilder.new('GridCAD').build
+end
 
 require 'test/unit'
 require 'Adj/Adj'
