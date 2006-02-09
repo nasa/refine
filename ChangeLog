@@ -1,3 +1,9 @@
+2006-02-09 15:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauAuxillaryPivot) created to force auxillary
+	varibles out of the basis.
+	* src/tableau.c (tableauSolve) .
+
 2006-02-09 13:41 Mike Park  <mike.park@nasa.gov>
 
 	* src/tableau.c (tableauLargestPivot) corrected bug in step_length,

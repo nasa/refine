@@ -92,7 +92,7 @@ class TestTableau < Test::Unit::TestCase
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
  end
 
- def Xtest_largest_pivot_for_three_skew_triangles
+ def test_largest_pivot_for_three_skew_triangles
   tableau = Tableau.new(3,3)
   const_mat = [-0.15, -0.70, 1.0,
                 0.50,  0.45, 1.0,
@@ -101,7 +101,6 @@ class TestTableau < Test::Unit::TestCase
   assert_equal tableau, tableau.constraint([ 0.0, 0.0, 1.0])
   assert_equal tableau, tableau.cost([ -0.095, 0.505, 0.155])
   assert_equal tableau, tableau.init
-  tableau.show
   assert_equal [3, 1], tableau.largestPivot
  end
 

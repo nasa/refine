@@ -179,6 +179,51 @@ Tableau *tableauInit( Tableau *tableau )
   return tableau;
 }
 
+Tableau *tableauAuxillaryPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
+{
+  double zero;
+  int m, column, t_index;
+  int row;
+  double x, best_divisor, pivot;
+  int best_column;
+ 
+  *pivot_row = EMPTY;
+  *pivot_col = EMPTY;
+
+  zero = 1.0e-14;
+
+  m = 1 + tableauConstraints( tableau );
+
+  for ( row = 0 ; row < tableauConstraints( tableau ) ; row++ ) {
+    /* test if it is an auxillery basis */
+    if ( tableau->basis[row] >= tableauDimension( tableau ) ) {
+      x = tableau->t[1+row];
+      best_column = EMPTY;
+      best_divisor = 0.0;
+      for ( column = 0 ; column < tableauDimension( tableau ) ; column++ ) {
+	t_index = (1+row)+(1+column)*m;
+	pivot = tableau->t[t_index];
+	/* accept negative pivots if x is zero
+	   because we will stay feasable */
+	if ( x < zero ) pivot = ABS(pivot);
+	if ( pivot > best_divisor ) {
+	  best_divisor = pivot;
+	  best_column = column;
+	}
+      }
+      if ( EMPTY != best_column ){
+	*pivot_row = row+1;
+	*pivot_col = best_column+1;
+	return tableau;
+      }
+    }
+  }
+
+  /* if there are no auxillery basis 
+     or none to remove and stay feasable */
+  return NULL;
+}
+
 Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
 {
   int i,j;
@@ -245,6 +290,10 @@ Tableau *tableauSolve( Tableau *tableau )
     printf( "%s: %d: %s: tableauInit NULL\n",
 	    __FILE__, __LINE__, "tableauSolve");
     return NULL;
+  }
+
+  while ( tableau == tableauAuxillaryPivot( tableau, &row, &column ) ) {
+    tableauPivotAbout(tableau, row, column);
   }
 
   max_iterations = tableauDimension( tableau )*tableauDimension( tableau );
