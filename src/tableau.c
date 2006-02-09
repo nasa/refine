@@ -168,11 +168,11 @@ Tableau *tableauInit( Tableau *tableau )
 
   /* Reduced costs */ 
   for (j=0;j<tableauDimension( tableau );j++) {
-    tableau->t[m*(1+j)] = tableau->cost[j];
+    t_index = m*(1+j);
+    tableau->t[t_index] = tableau->cost[j];
     for (i=0;i<tableauConstraints( tableau );i++) {
-      t_index = (1+i)+m*(1+j);
       A_index = i+j*tableauConstraints( tableau );
-      tableau->t[m*(1+j)] -= M*tableau->constraint_matrix[A_index];
+      tableau->t[t_index] -= M*tableau->constraint_matrix[A_index];
     }
   }
 
