@@ -2716,18 +2716,20 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   new_uv[0] = at[0+m*m];
   new_uv[1] = at[1+m*m];
 
-  gridSetNodeUV(grid, node, faceId, new_uv[0], new_uv[1]);
+  gridEvaluateFaceAtUV(grid, node, new_uv);
   gridMinFaceAreaUV(grid, node, &new_area);
   if ( new_area < original_area ) {
-  gridSetNodeXYZ(grid, node, orig_uv);
+    gridEvaluateFaceAtUV(grid, node, orig_uv);
     printf("area decreased %e %e %e\n",original_area,new_area,at[2+m*m]);
     printf("u %20.15f v %20.15f\n",
 	   orig_uv[0],orig_uv[1]);
     printf("u %20.15f v %20.15f\n",
 	   new_uv[0],new_uv[1]);
     return NULL;
+  }else{
+    printf("area inc %e %e %e\n",original_area,new_area,at[2+m*m]);
   }
-
+  
   return grid;
 }
 
@@ -2861,6 +2863,8 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     printf("x %20.15f y %20.15f z %20.15f\n",
 	   new_xyz[0],new_xyz[1],new_xyz[2]);
     return NULL;
+  }else{
+    printf("vol inc %e %e %e\n",original_volume,new_volume,at[3+m*m]);
   }
   return grid;
 }
