@@ -2747,6 +2747,8 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   AdjIterator it;
   Tableau *tableau;
 
+  double d0[9], d1[9], d2[9], d3[9];
+
   if (gridGeometryFace(grid,node)) return NULL;
   if ( NULL == gridNodeXYZ(grid, node, orig_xyz)) return NULL;
 
@@ -2784,11 +2786,27 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     x2 = xyz2[0]; y2 = xyz2[1]; z2 = xyz2[2];
     x3 = xyz3[0]; y3 = xyz3[1]; z3 = xyz3[2];
 
-    a[0+m*j]=-(1.0/6.0)*((y2*z3-z2*y3) - (y1*z3-y3*z1) + (y1*z2-y2*z1));
-    a[1+m*j]=-(1.0/6.0)*(x1*(z3-z2) - x2*(z3-z1)+x3*(z2-z1));
-    a[2+m*j]=-(1.0/6.0)*(x1*(y2-y3) - x2*(y1-y3)+x3*(y1-y2));
+    d0[0] = d1[0] = d2[0] = d3[0] = x1;
+    d0[1] = d1[1] = d2[1] = d3[1] = x2;
+    d0[2] = d1[2] = d2[2] = d3[2] = x3;
+
+    d0[3] = d1[3] = d2[3] = d3[3] = y1;
+    d0[4] = d1[4] = d2[4] = d3[4] = y2;
+    d0[5] = d1[5] = d2[5] = d3[5] = y3;
+
+    d0[6] = d1[6] = d2[6] = d3[6] = z1;
+    d0[7] = d1[7] = d2[7] = d3[7] = z2;
+    d0[8] = d1[8] = d2[8] = d3[8] = z3;
+
+    d0[0] = d0[1] = d0[2] = 1.0;
+    d1[3] = d1[4] = d1[5] = 1.0;
+    d2[6] = d2[7] = d2[8] = 1.0;
+
+    a[0+m*j]=-(1.0/6.0)*gridMatrixDeterminate(d0);
+    a[1+m*j]=-(1.0/6.0)*gridMatrixDeterminate(d1);
+    a[2+m*j]=-(1.0/6.0)*gridMatrixDeterminate(d2);
     a[3+m*j]=1.0;
-    c[j] = -(1.0/6.0)*(x1*(y2*z3-z2*y3) -x2*(y1*z3-y3*z1) +x3*(y1*z2-z1*y2));
+    c[j] = -(1.0/6.0)*gridMatrixDeterminate(d3);
   }
   
   /* solve primal linear program with tableau method */
