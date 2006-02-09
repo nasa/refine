@@ -396,3 +396,22 @@ Tableau *tableauShow( Tableau *tableau )
   }
   return tableau;
 }
+
+Tableau *tableauShowTransposed( Tableau *tableau )
+{
+  int i, j;
+  int m, n;
+
+  m = 1 + tableauConstraints( tableau );
+  n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
+
+  printf("\n");
+  for (j=0;j<n;j++) {
+    printf(" col%4d",j);
+    for (i=0;i<m;i++) {
+      printf(" %12.4e",tableau->t[i+j*m]);
+    }
+    printf("\n");
+  }
+  return tableau;
+}

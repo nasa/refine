@@ -55,7 +55,9 @@ Tableau *tableauSolve( Tableau * );
 Tableau *tableauPivotAbout( Tableau *, int row, int column );
 
 Tableau *tableauTableau( Tableau *, double *tableau );
+
 Tableau *tableauShow( Tableau * );
+Tableau *tableauShowTransposed( Tableau * );
 
 END_C_DECLORATION
 
