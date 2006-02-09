@@ -116,7 +116,6 @@ Tableau *tableauInit( Tableau *tableau )
   int i, j;
   int m, n;
   int t_index, A_index;
-  double M;
 
   m = 1 + tableauConstraints( tableau );
   n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
@@ -152,28 +151,13 @@ Tableau *tableauInit( Tableau *tableau )
     tableau->t[t_index] = tableau->constraint[i];
   }
   
-  /* find a large M value to start phase 1 */ 
-  M = 0.0;
-  for (j=0;j<tableauDimension( tableau );j++) {
-    M = M + ABS(tableau->cost[j]);
-  }
-  M = M * (double)n;
-
   /* intial cost */ 
   tableau->t[0] = 0.0;
-  for (i=0;i<tableauConstraints( tableau );i++) {
-    t_index = (1+i);
-    tableau->t[0] -= M*tableau->t[t_index];
-  }
 
   /* Reduced costs */ 
   for (j=0;j<tableauDimension( tableau );j++) {
     t_index = m*(1+j);
     tableau->t[t_index] = tableau->cost[j];
-    for (i=0;i<tableauConstraints( tableau );i++) {
-      A_index = i+j*tableauConstraints( tableau );
-      tableau->t[t_index] -= M*tableau->constraint_matrix[A_index];
-    }
   }
 
   return tableau;

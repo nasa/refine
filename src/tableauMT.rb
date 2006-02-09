@@ -48,13 +48,13 @@ class TestTableau < Test::Unit::TestCase
   t = tableau.tableau
   m = 4
   tol = TOL
-  j = 0; truth = [ -3.5,  0.0,  0.0,  1.0 ]
+  j = 0; truth = [  0.0,  0.0,  0.0,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
-  j = 1; truth = [ -1.75,  0.0, -0.5,  1.0 ]
+  j = 1; truth = [  0.0,  0.0, -0.5,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
-  j = 2; truth = [ -6.5,  0.5,  0.5,  1.0 ]
+  j = 2; truth = [  0.5,  0.5,  0.5,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
-  j = 3; truth = [ -1.75,-0.5,  0.0,  1.0 ]
+  j = 3; truth = [  0.0,-0.5,  0.0,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
   j = 4; truth = [  0.0,  1.0,  0.0,  0.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
@@ -76,13 +76,13 @@ class TestTableau < Test::Unit::TestCase
   t = tableau.tableau
   m = 4
   tol = 1.0e-5
-  j = 0; truth = [ -5.28500,  0.0,  0.0,  1.0 ]
+  j = 0; truth = [ 0.0,  0.0,  0.0,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
-  j = 1; truth = [ -0.88775, -0.15, -0.7,  1.0 ]
+  j = 1; truth = [ -0.095, -0.15, -0.7,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
-  j = 2; truth = [ -9.80075,  0.5,  0.45,  1.0 ]
+  j = 2; truth = [  0.505,  0.5,  0.45,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
-  j = 3; truth = [ -4.6015,-0.35,  0.25,  1.0 ]
+  j = 3; truth = [ 0.155,  -0.35, 0.25,  1.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }
   j = 4; truth = [  0.0,  1.0,  0.0,  0.0 ]
   m.times { |i| assert_in_delta truth[i], t[j][i], tol }

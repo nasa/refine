@@ -1,3 +1,8 @@
+2006-02-09 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauInit) got rid of big-M cost on auxillary,
+	they are driven out explitly.
+
 2006-02-09 15:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/tableau.c (tableauAuxillaryPivot) created to force auxillary
