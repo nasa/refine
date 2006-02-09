@@ -410,7 +410,11 @@ Grid *gridUntangle(Grid *grid)
 	gridMinFaceAreaUV(grid, fix_node, &area);
 	if ( (area <= allowedArea) || (tries>4) ) {
 	  active_nodes++;
-	  gridSmoothNodeFaceAreaUV( grid, fix_node );
+	  if ( grid != gridUntangleAreaUV( grid, fix_node ) ) {
+	    printf( "%s: %d: %s: gridUntangleAreaUV NULL\n",
+		    __FILE__, __LINE__, "gridUntangle");
+	    return NULL;
+	  }
 	}
       }
     }
@@ -435,7 +439,11 @@ Grid *gridUntangle(Grid *grid)
 	gridNodeVolume(grid, fix_node, &volume );
 	if ( (volume <= allowedVolume) || (tries>4) ) {
 	  active_nodes++;
-	  gridSmoothNodeVolumeSimplex( grid, fix_node );
+	  if ( grid != gridUntangleVolume( grid, fix_node ) ) {
+	    printf( "%s: %d: %s: gridUntangleVolume NULL\n",
+		    __FILE__, __LINE__, "gridUntangle");	    
+	    return NULL;
+	  }
 	}
       }
     }
