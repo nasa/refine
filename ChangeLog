@@ -1,5 +1,14 @@
 2006-02-08 17:08 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridcad.c (gridUntangleVolume) added to lp solve optimal
+	node location by LP tableau.
+	* src/tableau.c (tableauInit) fixed array indexing bug that
+	read past end of array.
+	* src/tableau.c (tableauInit) scaled M by n to make sure that
+	the add columns (to create basic feasable solution) are removed.
+
+2006-02-08 17:08 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridcad.c (gridUntangleAreaUV) passes test for three tri case
 
 2006-02-08 14:48 Mike Park  <mike.park@nasa.gov>

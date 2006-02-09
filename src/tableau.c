@@ -128,7 +128,7 @@ Tableau *tableauInit( Tableau *tableau )
   for (i=0;i<tableauConstraints( tableau );i++) {
     for (j=0;j<tableauDimension( tableau );j++) {
       t_index = (1+i)+(1+j)*m;
-      A_index = i+j*tableauDimension( tableau );
+      A_index = i+j*tableauConstraints( tableau );
       tableau->t[t_index] = tableau->constraint_matrix[A_index];
     }
   }
@@ -157,7 +157,8 @@ Tableau *tableauInit( Tableau *tableau )
   for (j=0;j<tableauDimension( tableau );j++) {
     M = M + ABS(tableau->cost[j]);
   }
-  
+  M = M * (double)n;
+
   /* intial cost */ 
   tableau->t[0] = 0.0;
   for (i=0;i<tableauConstraints( tableau );i++) {
@@ -234,6 +235,7 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
 Tableau *tableauSolve( Tableau *tableau )
 {
   int row, column;
+  int i;
 
   if ( tableau != tableauInit( tableau ) ) {
     printf( "%s: %d: %s: tableauInit NULL\n",
@@ -243,6 +245,14 @@ Tableau *tableauSolve( Tableau *tableau )
 
   while ( tableau == tableauLargestPivot( tableau, &row, &column ) ) {
     tableauPivotAbout(tableau, row, column);
+  }
+
+  for (i=0;i<tableauConstraints(tableau);i++) {
+    if ( tableau->basis[i] > tableauDimension(tableau)){
+      printf( "%s: %d: %s: original basis[%d] %d has not been eliminated\n",
+	      __FILE__, __LINE__, "tableauSolve", i, tableau->basis[i]);
+      return NULL;
+    }
   }
 
   return tableau;

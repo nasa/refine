@@ -421,7 +421,21 @@ class TestGridCAD < Test::Unit::TestCase
   grid = isoTet4( -1.0)
   assert_equal grid, grid.untangleVolume(4)
   avgVol = grid.totalVolume/grid.ncell.to_f
-  assert_in_delta avgVol, grid.minVolume, 1.0e-15
+  assert_in_delta avgVol, grid.minVolume, 1.0e-14
+ end
+
+ def test_gridUntangleVolume_improves_an_easy_8_cell
+  grid = gemGrid 4, 5.0
+  grid.untangleVolume(6)
+  avgVol = grid.totalVolume/grid.ncell.to_f
+  assert_in_delta avgVol, grid.minVolume, 1.0e-14
+ end
+
+ def test_gridUntangleVolume_improves_an_InvalidConcaveGem
+  grid = gemGrid 4, 5.0, 0, -1.5
+  avgVol = grid.totalVolume/grid.ncell.to_f
+  grid.untangleVolume(6)
+  assert_in_delta avgVol, grid.silentMinVolume, 1.0e-4
  end
 
  def rightTet3
