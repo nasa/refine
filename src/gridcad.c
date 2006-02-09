@@ -2619,7 +2619,9 @@ Grid *gridSmoothNodeVolumeUVSimplex( Grid *grid, int node )
 Grid *gridUntangleAreaUV( Grid *grid, int node )
 {
   int face, nodes[3], faceId, temp;
-  double orig[2], uv1[2], uv2[2];
+  double orig_uv[2], new_uv[2];
+  double original_area, new_area;
+  double uv1[2], uv2[2];
   int degree;
   int m, n, i, j;
   double b[3]= {0.0, 0.0, 1.0};
@@ -2635,7 +2637,8 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   face = adjItem(adjFirst(gridFaceAdj(grid), node));
   if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
 
-  if ( NULL == gridNodeUV(grid, node, faceId, orig)) return NULL;
+  if ( NULL == gridNodeUV(grid, node, faceId, orig_uv)) return NULL;
+  gridMinFaceAreaUV(grid, node, &original_area);
 
   degree = adjDegree( gridFaceAdj(grid), node );
   m = 3;
@@ -2710,7 +2713,20 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     return NULL;
   }
 
-  gridSetNodeUV(grid, node, faceId, at[0+3*3], at[1+3*3]);
+  new_uv[0] = at[0+m*m];
+  new_uv[1] = at[1+m*m];
+
+  gridSetNodeUV(grid, node, faceId, new_uv[0], new_uv[1]);
+  gridMinFaceAreaUV(grid, node, &new_area);
+  if ( new_area < original_area ) {
+  gridSetNodeXYZ(grid, node, orig_uv);
+    printf("area decreased %e %e %e\n",original_area,new_area,at[2+m*m]);
+    printf("u %20.15f v %20.15f\n",
+	   orig_uv[0],orig_uv[1]);
+    printf("u %20.15f v %20.15f\n",
+	   new_uv[0],new_uv[1]);
+    return NULL;
+  }
 
   return grid;
 }
@@ -2718,7 +2734,9 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
 Grid *gridUntangleVolume( Grid *grid, int node )
 {
   int cell, unsorted_nodes[4], nodes[4];
-  double orig[3], xyz1[3], xyz2[3], xyz3[3];
+  double orig_xyz[3], new_xyz[3];
+  double original_volume, new_volume;
+  double xyz1[3], xyz2[3], xyz3[3];
   double x1, y1, z1, x2, y2, z2, x3, y3, z3;
   int degree;
   int m, n, i, j;
@@ -2730,7 +2748,9 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   Tableau *tableau;
 
   if (gridGeometryFace(grid,node)) return NULL;
-  if ( NULL == gridNodeXYZ(grid, node, orig)) return NULL;
+  if ( NULL == gridNodeXYZ(grid, node, orig_xyz)) return NULL;
+
+  gridNodeVolume(grid, node, &original_volume );
 
   degree = gridCellDegree( grid, node );
   m = 4;
@@ -2779,7 +2799,7 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   if ( tableau != tableauSolve( tableau ) ) {
     printf( "%s: %d: %s: tableauSolve NULL\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
-    tableauShow( tableau );
+    tableauShowTransposed( tableau );
     tableauFree( tableau );
     free(a); free(c); return NULL;
   }
@@ -2808,8 +2828,22 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     return NULL;
   }
 
-  gridSetNodeXYZ(grid, node,  &(at[m*m]));
+  new_xyz[0] = at[0+m*m];
+  new_xyz[1] = at[1+m*m];
+  new_xyz[2] = at[2+m*m];
 
+  gridSetNodeXYZ(grid, node,  new_xyz);
+
+  gridNodeVolume(grid, node, &new_volume );
+  if ( new_volume < original_volume ) {
+  gridSetNodeXYZ(grid, node,  orig_xyz);
+    printf("vol decreased %e %e %e\n",original_volume,new_volume,at[3+m*m]);
+    printf("x %20.15f y %20.15f z %20.15f\n",
+	   orig_xyz[0],orig_xyz[1],orig_xyz[2]);
+    printf("x %20.15f y %20.15f z %20.15f\n",
+	   new_xyz[0],new_xyz[1],new_xyz[2]);
+    return NULL;
+  }
   return grid;
 }
 
