@@ -235,6 +235,7 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
 Tableau *tableauSolve( Tableau *tableau )
 {
   int row, column;
+  int iteration, max_iterations;
   int i;
 
   if ( tableau != tableauInit( tableau ) ) {
@@ -242,8 +243,15 @@ Tableau *tableauSolve( Tableau *tableau )
 	    __FILE__, __LINE__, "tableauSolve");
     return NULL;
   }
-
+  max_iterations = tableauDimension( tableau )*tableauDimension( tableau );
+  iteration = 0;
   while ( tableau == tableauLargestPivot( tableau, &row, &column ) ) {
+    iteration++;
+    if ( iteration > max_iterations ){
+      printf( "%s: %d: %s: max iterations %d exceeded\n",
+	      __FILE__, __LINE__, "tableauSolve", max_iterations );
+      return NULL;
+    }
     tableauPivotAbout(tableau, row, column);
   }
 
