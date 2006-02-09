@@ -171,7 +171,8 @@ Tableau *tableauInit( Tableau *tableau )
     tableau->t[m*(1+j)] = tableau->cost[j];
     for (i=0;i<tableauConstraints( tableau );i++) {
       t_index = (1+i)+m*(1+j);
-      tableau->t[m*(1+j)] -= M*tableau->t[t_index];
+      A_index = i+j*tableauConstraints( tableau );
+      tableau->t[m*(1+j)] -= M*tableau->constraint_matrix[A_index];
     }
   }
 
@@ -190,7 +191,7 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
   
   int best_row;
   double feasable_step_length, this_step_length;
-  double pivot;
+  double pivot, x;
 
   *pivot_row = EMPTY;
   *pivot_col = EMPTY;
@@ -202,7 +203,8 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
   
   best_divisor = 0.0;
 
-  for (j=1;j<n;j++) { /* test all basis, first col is solution */
+  /* test all basis (except slack), first col is solution */
+  for (j=1;j<1 + tableauDimension( tableau );j++) { 
     if (EMPTY == tableau->in_basis[j]) { /* skip active basis */
       reduced_cost = tableau->t[m*j];
       if ( 0 > reduced_cost ) {  /* try a negative reduced cost */
@@ -210,8 +212,9 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
 	feasable_step_length = DBL_MAX;
 	for (i=1;i<m;i++) {
 	  pivot = tableau->t[i+m*j];
+	  x = tableau->t[i];
 	  if ( pivot > zero ) {
-	    this_step_length = reduced_cost / pivot;
+	    this_step_length =  x / pivot;
 	    if ( this_step_length < feasable_step_length ) {
 	      best_row = i;
 	      feasable_step_length = this_step_length;
@@ -243,6 +246,7 @@ Tableau *tableauSolve( Tableau *tableau )
 	    __FILE__, __LINE__, "tableauSolve");
     return NULL;
   }
+
   max_iterations = tableauDimension( tableau )*tableauDimension( tableau );
   iteration = 0;
   while ( tableau == tableauLargestPivot( tableau, &row, &column ) ) {

@@ -1,3 +1,8 @@
+2006-02-09 13:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauLargestPivot) corrected bug in step_length,
+	it should be  x / pivot.
+
 2006-02-08 17:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridUntangleVolume) added to lp solve optimal
