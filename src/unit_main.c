@@ -193,8 +193,8 @@ free(ge); }
   gridSetMinInsertCost( grid, -10.0 );
   for ( edge = 0 ; edge < gridNGeomEdge(grid) ; edge++ ) {
     edgeId = edge+1;
-    if ( ge[edge] != gridedgerDiscretizeEvenly(ge[edge]) ) {
-      printf("gridedgerDiscretizeEvenly failed for edge %d\n",edgeId);
+    if ( ge[edge] != gridedgerDiscretizeOnce(ge[edge]) ) {
+      printf("gridedgerDiscretizeOnce failed for edge %d\n",edgeId);
       FREE_ALL_GE(ge);
       return NULL;
     }
@@ -462,6 +462,7 @@ int main( int argc, char *argv[] )
     int nbc, bc[2];
     double height;
     Layer *layer;
+    gridConstrainSurfaceNode(grid);
     gridSplitProblemProjectionEdges(grid);
     gridUntangle(grid);
     layer  = layerCreate( grid );
