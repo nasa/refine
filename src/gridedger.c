@@ -267,7 +267,11 @@ GridEdger *gridedgerSegmentT(GridEdger *ge, double segment, double *t )
   if ( !gridNewGeometryEdgeSiteAllowedAt( grid, 
 					  node0, 
 					  node1,
-					  *t ) ) return NULL;
+					  *t ) ) {
+    printf( "WARNING %s: %d: problematic t %e used on %d.\n",
+	      __FILE__, __LINE__, *t, gridedgerEdgeId( ge ) );
+
+  }
   return ge;
 }
 
