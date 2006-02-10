@@ -374,7 +374,7 @@ Tableau *tableauShow( Tableau *tableau )
   printf("\n");
   for (i=0;i<m;i++) {
     for (j=0;j<n;j++) {
-      printf(" %8.4f",tableau->t[i+j*m]);
+      printf(" %10.6f",tableau->t[i+j*m]);
     }
     printf("\n");
   }
