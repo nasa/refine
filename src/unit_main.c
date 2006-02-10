@@ -477,8 +477,8 @@ int main( int argc, char *argv[] )
     layerConstrainNormal(layer,-8);
     layerConstrainNormal(layer,-15);
     layerVisibleNormals(layer,-1.0,-1.0);
-    height = 0.001;
-    for (iteration=0;iteration<16;iteration++) {
+    height = 0.01;
+    for (iteration=0;iteration<6;iteration++) {
       layerAdvanceConstantHeight(layer,height);
       height = height * 1.2;
     }
