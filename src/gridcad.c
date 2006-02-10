@@ -2616,6 +2616,8 @@ Grid *gridSmoothNodeVolumeUVSimplex( Grid *grid, int node )
   return grid;
 }
 
+#define FREE_A_C_TABLEAU(a,c,tableau) free(a);free(c);tableauFree(tableau);
+
 Grid *gridUntangleAreaUV( Grid *grid, int node )
 {
   int face, nodes[3], faceId, temp;
@@ -2645,6 +2647,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   n = degree;
   a = (double *)malloc(m*n*sizeof(double));
   c = (double *)malloc(n*sizeof(double));
+  tableau = tableauCreate( m, n );
   j = -1;
   for ( it = adjFirst(gridFaceAdj(grid),node);
 	adjValid(it);
@@ -2652,7 +2655,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     j++;
     face = adjItem(it);
     if ( grid != gridFace(grid, face, nodes, &faceId) ) {
-      free(a);free(c); return NULL;
+      FREE_A_C_TABLEAU(a,c,tableau); return NULL;
     }
     /* orient nodes so that the central node is in position 0 */
     if (node == nodes[1]) {
@@ -2669,7 +2672,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     }
     if ( grid != gridNodeUV(grid, nodes[1], faceId, uv1 ) ||
 	 grid != gridNodeUV(grid, nodes[2], faceId, uv2 ) ) {
-      free(a); free(c); return NULL;
+      FREE_A_C_TABLEAU(a,c,tableau); return NULL;
     }
     a[0+m*j]=-0.5*(uv1[1]-uv2[1]);
     a[1+m*j]=-0.5*(uv2[0]-uv1[0]);
@@ -2678,7 +2681,6 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   }
   
   /* solve primal linear program with tableau method */
-  tableau = tableauCreate( m, n );
   tableauConstraintMatrix( tableau, a );
   tableauConstraint( tableau, b );
   tableauCost( tableau, c );
@@ -2686,10 +2688,9 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     printf( "%s: %d: %s: tableauSolve NULL\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
     tableauFree( tableau );
-    free(a); free(c); return NULL;
+    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }
   tableauBasis( tableau, basis );
-  tableauFree( tableau );
 
   /* form dual linear program and invert basis */
   for (j = 0; j<m ; j++) {
@@ -2700,17 +2701,15 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   for (i = 0; i<m ; i++) {
     at[i+m*m] = c[basis[i]];
   }
-  free(a);
-  free(c); 
   if ( !gridGaussianElimination( m, m+1, at ) ) {
     printf( "%s: %d: %s: gridGaussianElimination FALSE\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
-    return NULL;
+    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }
   if ( !gridGaussianBacksolve( m, m+1, at ) ) {
     printf( "%s: %d: %s: gridGaussianBacksolve FALSE\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
-    return NULL;
+    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }
 
   new_uv[0] = at[0+m*m];
@@ -2725,12 +2724,12 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
 	   orig_uv[0],orig_uv[1]);
     printf("u %20.15f v %20.15f\n",
 	   new_uv[0],new_uv[1]);
-    return NULL;
+    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }else{
     printf("area inc %e %e %e\n",original_area,new_area,at[2+m*m]);
   }
-  
-  return grid;
+
+  FREE_A_C_TABLEAU(a,c,tableau); return grid;
 }
 
 Grid *gridUntangleVolume( Grid *grid, int node )
@@ -2761,6 +2760,7 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   n = degree;
   a = (double *)malloc(m*n*sizeof(double));
   c = (double *)malloc(n*sizeof(double));
+  tableau = tableauCreate( m, n );
   j = -1;
   for ( it = adjFirst(gridCellAdj(grid),node);
 	adjValid(it);
@@ -2768,7 +2768,7 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     j++;
     cell = adjItem(it);
     if ( grid != gridCell(grid, cell, unsorted_nodes ) ) {
-      free(a);free(c); return NULL;
+      FREE_A_C_TABLEAU(a,c,tableau); return NULL;
     }
     /* orient nodes so that the central node is in position 0 */
     nodes[0] = node;
@@ -2782,7 +2782,7 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     if ( grid != gridNodeXYZ(grid, nodes[1], xyz1 ) ||
 	 grid != gridNodeXYZ(grid, nodes[2], xyz2 ) ||
 	 grid != gridNodeXYZ(grid, nodes[3], xyz3 ) ) {
-      free(a); free(c); return NULL;
+      FREE_A_C_TABLEAU(a,c,tableau);  return NULL;
     }
     x1 = xyz1[0]; y1 = xyz1[1]; z1 = xyz1[2];
     x2 = xyz2[0]; y2 = xyz2[1]; z2 = xyz2[2];
@@ -2812,7 +2812,6 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   }
   
   /* solve primal linear program with tableau method */
-  tableau = tableauCreate( m, n );
   tableauConstraintMatrix( tableau, a );
   tableauConstraint( tableau, b );
   tableauCost( tableau, c );
@@ -2821,10 +2820,9 @@ Grid *gridUntangleVolume( Grid *grid, int node )
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
     tableauShowTransposed( tableau );
     tableauFree( tableau );
-    free(a); free(c); return NULL;
+    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }
   tableauBasis( tableau, basis );
-  tableauFree( tableau );
 
   /* form dual linear program and invert basis */
   for (j = 0; j<m ; j++) {
@@ -2835,17 +2833,16 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   for (i = 0; i<m ; i++) {
     at[i+m*m] = c[basis[i]];
   }
-  free(a);
-  free(c); 
+
   if ( !gridGaussianElimination( m, m+1, at ) ) {
     printf( "%s: %d: %s: gridGaussianElimination FALSE\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
-    return NULL;
+    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }
   if ( !gridGaussianBacksolve( m, m+1, at ) ) {
     printf( "%s: %d: %s: gridGaussianBacksolve FALSE\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
-    return NULL;
+    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }
 
   new_xyz[0] = at[0+m*m];
@@ -2862,10 +2859,11 @@ Grid *gridUntangleVolume( Grid *grid, int node )
 	   orig_xyz[0],orig_xyz[1],orig_xyz[2]);
     printf("x %20.15f y %20.15f z %20.15f\n",
 	   new_xyz[0],new_xyz[1],new_xyz[2]);
-    return NULL;
+    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }else{
     printf("vol inc %e %e %e\n",original_volume,new_volume,at[3+m*m]);
   }
-  return grid;
+
+  FREE_A_C_TABLEAU(a,c,tableau); return grid;
 }
 
