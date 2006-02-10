@@ -405,6 +405,7 @@ Grid *gridUntangle(Grid *grid)
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
+	   !gridNodeFrozen( grid, fix_node) &&
 	   gridGeometryFace(grid, fix_node) &&
 	   !gridGeometryEdge(grid, fix_node) ) {
 	gridMinFaceAreaUV(grid, fix_node, &area);
@@ -435,6 +436,7 @@ Grid *gridUntangle(Grid *grid)
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
+	   !gridNodeFrozen( grid, fix_node) &&
 	   !gridGeometryFace(grid, fix_node) ) {
 	gridNodeVolume(grid, fix_node, &volume );
 	if ( (volume <= allowedVolume) || (tries>4) ) {
