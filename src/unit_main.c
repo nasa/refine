@@ -172,6 +172,7 @@ Grid *gridPhase1(Grid *grid )
   int edge, edgeId;
   GridEdger **ge;
 
+
   gridSetPhase(grid, 1);
   gridConstrainSurfaceNode(grid);
   gridSplitProblemProjectionEdges(grid);
@@ -460,7 +461,10 @@ int main( int argc, char *argv[] )
   if (inflate) {
     int nbc, bc[2];
     double height;
-    Layer *layer = layerCreate( grid );
+    Layer *layer;
+    gridSplitProblemProjectionEdges(grid);
+    gridUntangle(grid);
+    layer  = layerCreate( grid );
     layerMakeCADAvailable( layer );
     nbc = 2; bc[0]=1; bc[1]=2;
     layerPopulateAdvancingFront(layer,nbc,bc);
@@ -483,6 +487,9 @@ int main( int argc, char *argv[] )
     }else{
       printf("edge swapping grid...\n");gridSwap(grid,0.8);
       printf("node smoothing grid...\n");gridSmooth(grid,0.6,0.8);
+      printf("edge swapping grid...\n");gridSwap(grid,0.8);
+      gridSplitProblemProjectionEdges(grid);
+      printf("node smoothing grid...\n");gridSmooth(grid,0.6,0.8);
       STATUS;
     }
     printf("writing output project %s\n",outputProject);
@@ -504,6 +511,8 @@ int main( int argc, char *argv[] )
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
+
+  STATUS;
 
   if (-1 >= phase) {
     gridCacheCurrentGridAndMap(grid);
