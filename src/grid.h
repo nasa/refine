@@ -216,7 +216,7 @@ Grid *gridWriteTecplotTriangleZone(Grid *g, char *filename,
 Grid *gridWriteTecplotComment(Grid *g, char *comment );
 Grid *gridWriteTecplotCellGeom(Grid *g, int *nodes, double *scalar,
 			       char *filename );
-Grid *gridWriteTecplotNodeOribit(Grid *g, int node, char *filename );
+Grid *gridWriteTecplotNodeOrbit(Grid *g, int node, char *filename );
 Grid *gridWriteTecplotEquator(Grid *g, int n0, int n1, char *filename );
 Grid *gridWriteTecplotEquatorFaces(Grid *g, int n0, int n1, char *filename );
 Grid *gridCloseTecplotGeomFile(Grid *g);

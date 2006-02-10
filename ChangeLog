@@ -6,7 +6,7 @@
 
 2006-02-10  8:49 Mike Park  <mike.park@nasa.gov>
 
-	* src/grid.c (gridWriteTecplotNodeOribit) added to dump out cells
+	* src/grid.c (gridWriteTecplotNodeOrbit) added to dump out cells
 	surrounding a node.
 
 2006-02-09 16:20 Mike Park  <mike.park@nasa.gov>
