@@ -397,7 +397,7 @@ Grid *gridUntangle(Grid *grid)
   tries = 0;
   while ( minArea <= allowedArea ) {
     tries++;
-    if (tries >10) {
+    if (tries >20) {
       printf("unable to fix min face UV area %e\n",minArea);
       return NULL;
     }
@@ -409,7 +409,7 @@ Grid *gridUntangle(Grid *grid)
 	   gridGeometryFace(grid, fix_node) &&
 	   !gridGeometryEdge(grid, fix_node) ) {
 	gridMinFaceAreaUV(grid, fix_node, &area);
-	if ( (area <= allowedArea) || (tries>4) ) {
+	if ( (area <= allowedArea) || (tries>10) ) {
 	  active_nodes++;
 	  if ( grid != gridUntangleAreaUV( grid, fix_node ) ) {
 	    printf( "%s: %d: %s: gridUntangleAreaUV NULL\n",
@@ -428,7 +428,7 @@ Grid *gridUntangle(Grid *grid)
   tries = 0;
   while ( minVolume <= allowedVolume ) {
     tries++;
-    if (tries >10) {
+    if (tries >100) {
       printf("unable to fix min volume %e\n",minVolume);
       return NULL;
     }
@@ -439,7 +439,7 @@ Grid *gridUntangle(Grid *grid)
 	   !gridNodeFrozen( grid, fix_node) &&
 	   !gridGeometryFace(grid, fix_node) ) {
 	gridNodeVolume(grid, fix_node, &volume );
-	if ( (volume <= allowedVolume) || (tries>4) ) {
+	if ( (volume <= allowedVolume) || (tries>10) ) {
 	  active_nodes++;
 	  if ( grid != gridUntangleVolume( grid, fix_node ) ) {
 	    printf( "%s: %d: %s: gridUntangleVolume NULL\n",
