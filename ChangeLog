@@ -1,3 +1,7 @@
+2006-02-10 11:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleVolume) expect outward facing normals.
+
 2006-02-10 10:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridUntangleAreaUV) to account for cad models

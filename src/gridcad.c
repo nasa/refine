@@ -2723,15 +2723,10 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   new_uv[1] = at[1+m*m];
 
   gridEvaluateFaceAtUV(grid, node, new_uv);
+
   gridMinFaceAreaUV(grid, node, &new_area);
   if ( new_area < original_area ) {
     gridEvaluateFaceAtUV(grid, node, orig_uv);
-    printf("area decreased %e %e %e\n",original_area,new_area,at[2+m*m]);
-    printf("u %20.15f v %20.15f\n",
-	   orig_uv[0],orig_uv[1]);
-    printf("u %20.15f v %20.15f\n",
-	   new_uv[0],new_uv[1]);
-    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }
 
   FREE_A_C_TABLEAU(a,c,tableau); return grid;
@@ -2739,7 +2734,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
 
 Grid *gridUntangleVolume( Grid *grid, int node )
 {
-  int cell, unsorted_nodes[4], nodes[4];
+  int cell, unsorted_nodes[4], nodes[4], temp_node;
   double orig_xyz[3], new_xyz[3];
   double original_volume, new_volume;
   double xyz1[3], xyz2[3], xyz3[3];
@@ -2775,7 +2770,8 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     if ( grid != gridCell(grid, cell, unsorted_nodes ) ) {
       FREE_A_C_TABLEAU(a,c,tableau); return NULL;
     }
-    /* orient nodes so that the central node is in position 0 */
+
+    /* orient nodes so that the central node is in position 0 */    
     nodes[0] = node;
     if (unsorted_nodes[0] == node) {
       nodes[1] = unsorted_nodes[1];
@@ -2784,6 +2780,10 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     }
     gridOrient( grid, unsorted_nodes, nodes);
 
+    /* need an outward facing normal */
+    temp_node = nodes[1];
+    nodes[1] = nodes[2];
+    nodes[2] = temp_node;
     if ( grid != gridNodeXYZ(grid, nodes[1], xyz1 ) ||
 	 grid != gridNodeXYZ(grid, nodes[2], xyz2 ) ||
 	 grid != gridNodeXYZ(grid, nodes[3], xyz3 ) ) {
@@ -2858,15 +2858,7 @@ Grid *gridUntangleVolume( Grid *grid, int node )
 
   gridNodeVolume(grid, node, &new_volume );
   if ( new_volume < original_volume ) {
-  gridSetNodeXYZ(grid, node,  orig_xyz);
-    printf("vol decreased %e %e %e\n",original_volume,new_volume,at[3+m*m]);
-    printf("x %20.15f y %20.15f z %20.15f\n",
-	   orig_xyz[0],orig_xyz[1],orig_xyz[2]);
-    printf("x %20.15f y %20.15f z %20.15f\n",
-	   new_xyz[0],new_xyz[1],new_xyz[2]);
-    FREE_A_C_TABLEAU(a,c,tableau); return NULL;
-  }else{
-    printf("vol inc %e %e %e\n",original_volume,new_volume,at[3+m*m]);
+    gridSetNodeXYZ(grid, node,  orig_xyz);
   }
 
   FREE_A_C_TABLEAU(a,c,tableau); return grid;
