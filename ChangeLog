@@ -1,3 +1,8 @@
+2006-02-10  8:49 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotNodeOribit) added to dump out cells
+	surrounding a node.
+
 2006-02-09 16:20 Mike Park  <mike.park@nasa.gov>
 
 	* src/tableau.c (tableauInit) got rid of big-M cost on auxillary,

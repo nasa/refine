@@ -1365,6 +1365,53 @@ Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, double *scalar,
   return grid;
 }
 
+Grid *gridWriteTecplotNodeOrbit(Grid *grid, int node, char *filename )
+{
+  AdjIterator it;
+  int i, cell, nodes[4];
+  double xyz[3];
+
+  if ( !gridValidNode(grid, node) ) return NULL;
+
+  if (NULL == grid->tecplotGeomFile) {
+    if (NULL == filename) {
+      grid->tecplotGeomFile = fopen("grid_orbit.t","w");
+    }else{
+      grid->tecplotGeomFile = fopen(filename,"w");
+    } 
+    fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
+  }
+
+  fprintf(grid->tecplotGeomFile,
+	  "zone t=orbit, n=%d, e=%d, f=fepoint, et=%s\n",
+	  4*gridCellDegree(grid,node), gridCellDegree(grid,node), 
+	  "tetrahedron");
+
+  for ( it = adjFirst(gridCellAdj(grid),node);
+	adjValid(it);
+	it = adjNext(it) ){
+    cell = adjItem(it);
+    if ( grid != gridCell(grid, cell, nodes ) ) return NULL;
+    for ( i = 0 ; i < 4 ; i++ ) {
+      gridNodeXYZ(grid,nodes[i],xyz);
+      fprintf(grid->tecplotGeomFile,
+	      "%23.15e%23.15e%23.15e%5.1f\n", xyz[0],xyz[1],xyz[2],0.0);
+    }
+  } 
+
+  i = 1; /* tecplot uses 1-base indexes */
+  for ( it = adjFirst(gridCellAdj(grid),node);
+	adjValid(it);
+	it = adjNext(it) ){
+    fprintf(grid->tecplotGeomFile, "%6d%6d%6d%6d\n", i+0, i+1, i+2, i+3 );
+    i += 4;
+  } 
+
+  fflush(grid->tecplotGeomFile);
+
+  return grid;
+}
 Grid *gridWriteTecplotEquator(Grid *grid, int n0, int n1, char *filename )
 {
   int i, last;
