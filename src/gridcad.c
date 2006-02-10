@@ -2632,6 +2632,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   double at[12];
   AdjIterator it;
   Tableau *tableau;
+  int vol = 1;
 
   if (!gridGeometryFace(grid,node)) return NULL;
   if (gridGeometryBetweenFace(grid,node)) return NULL;
@@ -2674,10 +2675,16 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
 	 grid != gridNodeUV(grid, nodes[2], faceId, uv2 ) ) {
       FREE_A_C_TABLEAU(a,c,tableau); return NULL;
     }
-    a[0+m*j]=-0.5*(uv1[1]-uv2[1]);
-    a[1+m*j]=-0.5*(uv2[0]-uv1[0]);
+    if ( CADGeom_ReversedSurfaceNormal(vol, faceId) ) {
+      a[0+m*j]=-0.5*(uv1[1]-uv2[1]);
+      a[1+m*j]=-0.5*(uv2[0]-uv1[0]);
+      c[j] = 0.5*(uv1[0]*uv2[1] - uv2[0]*uv1[1]);
+    }else{
+      a[0+m*j]= 0.5*(uv1[1]-uv2[1]);
+      a[1+m*j]= 0.5*(uv2[0]-uv1[0]);
+      c[j] = 0.5*(uv2[0]*uv1[1] - uv1[0]*uv2[1]);
+    }
     a[2+m*j]=1.0;
-    c[j] = 0.5*(uv1[0]*uv2[1] - uv2[0]*uv1[1]);
   }
   
   /* solve primal linear program with tableau method */
@@ -2725,8 +2732,6 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     printf("u %20.15f v %20.15f\n",
 	   new_uv[0],new_uv[1]);
     FREE_A_C_TABLEAU(a,c,tableau); return NULL;
-  }else{
-    printf("area inc %e %e %e\n",original_area,new_area,at[2+m*m]);
   }
 
   FREE_A_C_TABLEAU(a,c,tableau); return grid;
