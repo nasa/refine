@@ -2624,6 +2624,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
   double orig_uv[2], new_uv[2];
   double original_area, new_area;
   double uv1[2], uv2[2];
+  double length2;
   int degree;
   int m, n, i, j;
   double b[3]= {0.0, 0.0, 1.0};
@@ -2685,6 +2686,15 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
       c[j] = 0.5*(uv2[0]*uv1[1] - uv1[0]*uv2[1]);
     }
     a[2+m*j]=1.0;
+
+    /* remove triangles that have a very small opposite side */
+    length2 = a[0+m*j]*a[0+m*j] + a[1+m*j]*a[1+m*j];
+    if (length2<1.0e-20) {
+      n--;j--;
+      /* resize tableau */
+      tableauFree( tableau );
+      tableau = tableauCreate( m, n );
+    }
   }
   
   /* solve primal linear program with tableau method */
@@ -2739,6 +2749,7 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   double original_volume, new_volume;
   double xyz1[3], xyz2[3], xyz3[3];
   double x1, y1, z1, x2, y2, z2, x3, y3, z3;
+  double area2;
   int degree;
   int m, n, i, j;
   double b[4]= {0.0, 0.0, 0.0, 1.0};
@@ -2814,6 +2825,16 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     a[2+m*j]=-(1.0/6.0)*gridMatrixDeterminate(d2);
     a[3+m*j]=1.0;
     c[j] = -(1.0/6.0)*gridMatrixDeterminate(d3);
+
+    /* remove tets that have a very small opposite face*/
+    area2 = a[0+m*j]*a[0+m*j] + a[1+m*j]*a[1+m*j] + a[2+m*j]*a[2+m*j];
+    if (area2<1.0e-20) {
+      n--;j--;
+      /* resize tableau */
+      tableauFree( tableau );
+      tableau = tableauCreate( m, n );
+    }
+
   }
   
   /* solve primal linear program with tableau method */
