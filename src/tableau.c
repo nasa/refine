@@ -363,6 +363,11 @@ Tableau *tableauTableau( Tableau *tableau, double *tab )
   return tableau;
 }
 
+double tableauBound( Tableau *tableau )
+{
+  return -tableau->t[0];
+}
+
 Tableau *tableauShow( Tableau *tableau )
 {
   int i, j;
