@@ -448,6 +448,8 @@ int main( int argc, char *argv[] )
     printf("magic project name: %s dropping into debug mode\n",project);
     gridSplitVolumeEdgesIntersectingFacesAround(grid, newnode);
     gridWriteTecplotNodeOrbit(grid,newnode,NULL);
+    gridUntangle(grid);
+    gridWriteTecplotNodeOrbit(grid,newnode,NULL);
     return 1;
   }
 

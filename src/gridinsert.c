@@ -2240,6 +2240,7 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
   double vert0[3], vert1[3], vert2[3];
 
   double ratio;
+  int newnode;
 
   if ( !gridValidNode(grid,node) ) return NULL;
   if ( !gridGeometryFace(grid,node) ) return NULL;
@@ -2247,15 +2248,12 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
   min_insert_cost = gridMinInsertCost(grid);
   gridSetMinInsertCost(grid,-10.0);
 
-  printf("inter %d\n",node);
   nseed = 0;
   for ( face_it = adjFirst(gridFaceAdj(grid),node); 
 	adjValid(face_it); 
 	face_it = adjNext(face_it) ){
     face = adjItem(face_it);
     gridFace(grid, face, face_nodes, &faceId);
-    printf("face %d nodes %d %d %d\n",
-	   face,face_nodes[0],face_nodes[1],face_nodes[2]);
     /* could skip cnetral node... */
     for (i=0; i<3; i++) {
       already_have_seed = FALSE;
@@ -2274,40 +2272,44 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
   }
 
   for (seed=0;seed<nseed;seed++) {
-     printf("seed %d %d\n",seed,seeds[seed]);
-
-     /* examine all cells around seed */
-     for ( cell_it = adjFirst(gridCellAdj(grid),seeds[seed]); 
-	   adjValid(cell_it); 
-	   cell_it = adjNext(cell_it) ){
-       cell = adjItem(cell_it);
-       gridCell(grid, cell, cell_nodes);
-       /* examine all cell edges */
-       for (conn=0;conn<6;conn++) {
-	 node0=MIN(cell_nodes[conn2node0[conn]],cell_nodes[conn2node1[conn]]);
-	 node1=MAX(cell_nodes[conn2node0[conn]],cell_nodes[conn2node1[conn]]);
-	 gridNodeXYZ(grid, node0, xyz0);
-	 gridNodeXYZ(grid, node1, xyz1);
-	 /* examine all faces to find intersection with this edge */
-	 for ( face_it = adjFirst(gridFaceAdj(grid),node); 
-	       adjValid(face_it); 
-	       face_it = adjNext(face_it) ){
-	   face = adjItem(face_it);
-	   gridFace(grid, face, face_nodes, &faceId);
-	   /* examine all faces to find intersection with this edge */
-	   gridNodeXYZ(grid, face_nodes[0], vert0);
-	   gridNodeXYZ(grid, face_nodes[1], vert1);
-	   gridNodeXYZ(grid, face_nodes[2], vert2);
-	   if ( intersectTriangleSegment( vert0, vert1, vert2, 
-					  xyz0, xyz1, &ratio ) ) {
-	     printf("nodes %d %d intersects %d at %f\n",
-		    node0, node1, face, ratio);
-	     /* if in volume and 0.01 < ratio < 0.99, split */
-	   } 
-	 }	 
-       }
-     }
-
+    /* examine all cells around seed */
+    for ( cell_it = adjFirst(gridCellAdj(grid),seeds[seed]); 
+	  adjValid(cell_it); 
+	  cell_it = adjNext(cell_it) ){
+      cell = adjItem(cell_it);
+      gridCell(grid, cell, cell_nodes);
+      /* examine all cell edges */
+      for (conn=0;conn<6;conn++) {
+	node0=MIN(cell_nodes[conn2node0[conn]],cell_nodes[conn2node1[conn]]);
+	node1=MAX(cell_nodes[conn2node0[conn]],cell_nodes[conn2node1[conn]]);
+	if ( 0 == gridParentGeometry(grid, node0, node1) ){
+	  gridNodeXYZ(grid, node0, xyz0);
+	  gridNodeXYZ(grid, node1, xyz1);
+	  /* examine all faces to find intersection with this edge */
+	  for ( face_it = adjFirst(gridFaceAdj(grid),node); 
+		adjValid(face_it); 
+		face_it = adjNext(face_it) ){
+	    face = adjItem(face_it);
+	    gridFace(grid, face, face_nodes, &faceId);
+	    /* examine all faces to find intersection with this edge */
+	    gridNodeXYZ(grid, face_nodes[0], vert0);
+	    gridNodeXYZ(grid, face_nodes[1], vert1);
+	    gridNodeXYZ(grid, face_nodes[2], vert2);
+	    if ( intersectTriangleSegment( vert0, vert1, vert2, 
+					   xyz0, xyz1, &ratio ) ) {
+	      /* if in volume and 0.01 < ratio < 0.99, split */
+	      if ( 0.01 < ratio && ratio < 0.99 ) {
+		newnode = gridSplitEdgeRatio( grid, NULL, 
+					      node0, node1, ratio );
+		if (EMPTY != newnode) {
+		  cell_it = adjFirst(gridCellAdj(grid),seeds[seed]); 
+		}
+	      }
+	    } 
+	  }	 
+	}
+      }
+    }
   }
   gridSetMinInsertCost(grid,min_insert_cost);
   return grid;
