@@ -443,7 +443,7 @@ int main( int argc, char *argv[] )
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-  if ( strcmp(project,"le-2") == 0 ) {
+  if ( strcmp(project,"debug") == 0 ) {
     int newnode = 322;
     printf("magic project name: %s dropping into debug mode\n",project);
     gridSplitVolumeEdgesIntersectingFacesAround(grid, newnode);
