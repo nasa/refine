@@ -80,7 +80,7 @@ GridBool intersectTriangleSegment(double *vertex0, double *vertex1, double *vert
   if (h0>0 && h1>0) return FALSE;
   if (h0<0 && h1<0) return FALSE;
 
-  coplanar = (h0==0.0 && h1==0.0);
+  coplanar = (ABS(h0)<1.0e-14 && ABS(h1)<1.0e-14);
 
   if (!coplanar) {
     denom = 1/(h0-h1);
