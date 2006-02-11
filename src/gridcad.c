@@ -2847,7 +2847,6 @@ Grid *gridUntangleVolume( Grid *grid, int node )
     printf( "%s: %d: %s: tableauSolve NULL\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
     tableauShowTransposed( tableau );
-    tableauFree( tableau );
     FREE_A_C_TABLEAU(a,c,tableau); return NULL;
   }
   tableauBasis( tableau, basis );
