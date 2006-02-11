@@ -2699,6 +2699,11 @@ Grid *gridUntangleAreaUV( Grid *grid, int node )
     }
   }
   
+  /* do not contiune if there are less than m usable elements */
+  if (n<m) {
+    FREE_A_C_TABLEAU(a,c,tableau); return grid;
+  }
+
   /* solve primal linear program with tableau method */
   tableauConstraintMatrix( tableau, a );
   tableauConstraint( tableau, b );
@@ -2839,6 +2844,11 @@ Grid *gridUntangleVolume( Grid *grid, int node )
 
   }
   
+  /* do not contiune if there are less than m usable elements */
+  if (n<m) {
+    FREE_A_C_TABLEAU(a,c,tableau); return grid;
+  }
+
   /* solve primal linear program with tableau method */
   tableauConstraintMatrix( tableau, a );
   tableauConstraint( tableau, b );
