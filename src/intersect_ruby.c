@@ -37,6 +37,7 @@ static VALUE intersect_triangleSegment( VALUE self,
 {
   int i;
   double t0[3], t1[3], t2[3], n0[3], n1[3];
+  double ratio;
   for (i=0;i<3;i++){
     t0[i] = NUM2DBL(rb_ary_entry(tri0, i));
     t1[i] = NUM2DBL(rb_ary_entry(tri1, i));
@@ -44,7 +45,7 @@ static VALUE intersect_triangleSegment( VALUE self,
     n0[i] = NUM2DBL(rb_ary_entry(node0, i));
     n1[i] = NUM2DBL(rb_ary_entry(node1, i));
   }
-  return (intersectTriangleSegment(t0,t1,t2,n0,n1)?Qtrue:Qfalse);
+  return (intersectTriangleSegment(t0,t1,t2,n0,n1,&ratio)?Qtrue:Qfalse);
 }
 
 static VALUE intersect_insideTet( VALUE self, 

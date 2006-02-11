@@ -24,7 +24,7 @@ GridBool intersectTriangleNode(double *vertex0, double *vertex1, double *vertex2
 			   double *node );
 
 GridBool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
-			      double *node0, double *node1 );
+			      double *node0, double *node1, double *ratio );
 
 GridBool intersectInsideTet(double *vertex0, double *vertex1, 
 			double *vertex2, double *vertex3,

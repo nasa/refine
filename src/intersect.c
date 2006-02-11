@@ -56,7 +56,7 @@ GridBool intersectTriangleNode( double *vertex0, double *vertex1, double *vertex
 }
 
 GridBool intersectTriangleSegment(double *vertex0, double *vertex1, double *vertex2,
-			      double *node0, double *node1)
+			      double *node0, double *node1, double *ratio )
 {
   int i;
   double edge1[3], edge2[3], normal[3];
@@ -65,9 +65,12 @@ GridBool intersectTriangleSegment(double *vertex0, double *vertex1, double *vert
   GridBool coplanar;
   double denom, intersection[3];
 
+  *ratio = -1.0;
+
   gridSubtractVector(vertex1, vertex0, edge1);
   gridSubtractVector(vertex2, vertex0, edge2);
   gridCrossProduct(edge1, edge2, normal);
+  gridVectorNormalize( normal );
   gridSubtractVector(node0, vertex0, dir0);  
   gridSubtractVector(node1, vertex0, dir1);  
 
@@ -77,15 +80,26 @@ GridBool intersectTriangleSegment(double *vertex0, double *vertex1, double *vert
   if (h0>0 && h1>0) return FALSE;
   if (h0<0 && h1<0) return FALSE;
 
-  coplanar = (h0==0 && h1==0);
+  coplanar = (h0==0.0 && h1==0.0);
 
   if (!coplanar) {
     denom = 1/(h0-h1);
     for(i=0;i<3;i++) intersection[i] = ( h0*node1[i] - h1*node0[i] )*denom;
-    return intersectTriangleNode(vertex0, vertex1, vertex2, intersection);
+    if ( intersectTriangleNode(vertex0, vertex1, vertex2, intersection) ) {
+      *ratio = h0*denom;
+      return TRUE;
+    } else {
+      return FALSE;
+    }
   }else{
-    if (intersectTriangleNode(vertex0, vertex1, vertex2, node0) ) return TRUE;
-    if (intersectTriangleNode(vertex0, vertex1, vertex2, node1) ) return TRUE;
+    if (intersectTriangleNode(vertex0, vertex1, vertex2, node0) ) {
+      *ratio = 0.0;
+      return TRUE;
+    }
+    if (intersectTriangleNode(vertex0, vertex1, vertex2, node1) ) {
+      *ratio = 1.0;
+      return TRUE;
+    }
     return FALSE;
   }
 }
@@ -106,19 +120,20 @@ GridBool intersectTetSegment(double *vertex0, double *vertex1,
 			 double *vertex2, double *vertex3,
 			 double *node0, double *node1)
 {
+  double ratio;
   if (intersectInsideTet( vertex0, vertex1, vertex2, vertex3, node0 )) 
     return TRUE;
 
   if (intersectInsideTet( vertex0, vertex1, vertex2, vertex3, node1 )) 
     return TRUE;
 
-  if (intersectTriangleSegment( vertex1, vertex3, vertex2, node0, node1)) 
+  if (intersectTriangleSegment( vertex1, vertex3, vertex2, node0, node1, &ratio)) 
     return TRUE;
-  if (intersectTriangleSegment( vertex2, vertex3, vertex0, node0, node1)) 
+  if (intersectTriangleSegment( vertex2, vertex3, vertex0, node0, node1, &ratio)) 
     return TRUE;
-  if (intersectTriangleSegment( vertex3, vertex1, vertex0, node0, node1)) 
+  if (intersectTriangleSegment( vertex3, vertex1, vertex0, node0, node1, &ratio)) 
     return TRUE;
-  if (intersectTriangleSegment( vertex0, vertex1, vertex2, node0, node1)) 
+  if (intersectTriangleSegment( vertex0, vertex1, vertex2, node0, node1, &ratio)) 
     return TRUE;
 
   return FALSE;
