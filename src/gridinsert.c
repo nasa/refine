@@ -2221,3 +2221,64 @@ Grid *gridCollapseInvalidCells(Grid *grid)
 
   return grid;
 }
+
+Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
+{
+  double min_insert_cost;
+  int seed, nseed, seeds[10];
+  int face, faceId, cell;
+  int nodes[4];
+  int i;
+  GridBool already_have_seed;
+  AdjIterator cell_it, face_it;
+  int conn2node0[6] = {0, 0, 0, 1, 1, 2};
+  int conn2node1[6] = {1, 2, 3, 2, 3, 3};
+  int conn, node0, node1;
+
+  if ( !gridValidNode(grid,node) ) return NULL;
+  if ( !gridGeometryFace(grid,node) ) return NULL;
+
+  min_insert_cost = gridMinInsertCost(grid);
+  gridSetMinInsertCost(grid,-10.0);
+
+  printf("inter %d\n",node);
+  nseed = 0;
+  for ( face_it = adjFirst(gridFaceAdj(grid),node); 
+	adjValid(face_it); 
+	face_it = adjNext(face_it) ){
+    face = adjItem(face_it);
+    gridFace(grid, face, nodes, &faceId);
+    printf("face %d nodes %d %d %d\n",face,nodes[0],nodes[1],nodes[2]);
+    /* could skip cnetral node... */
+    for (i=0; i<3; i++) {
+      already_have_seed = FALSE;
+      for (seed=0;seed<nseed;seed++) {
+	if ( nodes[i] == seeds[seed] ) already_have_seed = TRUE;
+      }
+      if (!already_have_seed){
+	seeds[nseed]=nodes[i];
+	nseed++;
+      }
+    }
+  }
+
+  for (seed=0;seed<nseed;seed++) {
+     printf("seed %d %d\n",seed,seeds[seed]);
+
+     for ( cell_it = adjFirst(gridCellAdj(grid),seeds[seed]); 
+	   adjValid(cell_it); 
+	   cell_it = adjNext(cell_it) ){
+       cell = adjItem(cell_it);
+       gridCell(grid, cell, nodes);
+       for (conn=0;conn<6;conn++) {
+	 node0 = conn2node0[conn];
+	 node1 = conn2node1[conn];
+	 printf("cell %d conn %d nodes %d %d\n",cell,conn,node0,node1);
+	 
+       }
+     }
+
+  }
+  gridSetMinInsertCost(grid,min_insert_cost);
+  return grid;
+}

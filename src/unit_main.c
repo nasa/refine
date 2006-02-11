@@ -443,6 +443,14 @@ int main( int argc, char *argv[] )
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
+  if ( strcmp(project,"le-2") == 0 ) {
+    int newnode = 322;
+    printf("magic project name: %s dropping into debug mode\n",project);
+    gridSplitVolumeEdgesIntersectingFacesAround(grid, newnode);
+    gridWriteTecplotNodeOrbit(grid,newnode,NULL);
+    return 1;
+  }
+
   if (!gridRightHandedBoundary(grid)) {
     printf("ERROR: loaded part does not have right handed boundaries\n");
     return 1;
@@ -457,6 +465,8 @@ int main( int argc, char *argv[] )
     gridUntangleBadFaceParameters(grid);
     gridRobustProject(grid); 
   }
+
+
 
   if (inflate) {
     int nbc, bc[2];
@@ -521,7 +531,10 @@ int main( int argc, char *argv[] )
   }
   if (-2 >= phase) {
     if (grid!=gridPhase2(grid)) {
-      { GridBool tecplotOutput = TRUE; int iview = 0;  DUMP_TEC; }
+      { GridBool tecplotOutput = TRUE; int iview = 0;  DUMP_TEC; 
+    printf("writing output project %s\n",outputProject);
+    gridSavePart( grid, outputProject );
+      }
       return 1;
     }
   }
