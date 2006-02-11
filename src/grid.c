@@ -1396,7 +1396,8 @@ Grid *gridWriteTecplotNodeOrbit(Grid *grid, int node, char *filename )
     for ( i = 0 ; i < 4 ; i++ ) {
       gridNodeXYZ(grid,nodes[i],xyz);
       fprintf(grid->tecplotGeomFile,
-	      "%23.15e%23.15e%23.15e%5.1f\n", xyz[0],xyz[1],xyz[2],0.0);
+	      "%23.15e%23.15e%23.15e%5.1f\n", 
+	      xyz[0],xyz[1],xyz[2],(double)gridGeometryFace(grid,nodes[i]));
     }
   } 
 
