@@ -487,6 +487,11 @@ GridFacer *gridfacerSplit(GridFacer *gf)
 	if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
 	return NULL;
       }
+      if (grid != gridUntangle( grid ) ) {
+	printf("newnode %d rank %d\n",newnode,rank);
+	printf("%s: %d: gridUntangle NULL.\n",__FILE__,__LINE__);
+	return NULL;
+      }
     }
   }
   free(local_e2n);
