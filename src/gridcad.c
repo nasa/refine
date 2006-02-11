@@ -454,7 +454,7 @@ Grid *gridUntangle(Grid *grid)
     last_volume = minVolume;
     gridMinVolumeAndCount( grid, &minVolume, &count );
     if (!(last_volume < minVolume)) {
-      printf("unable to make additional headway\n",minVolume);
+      printf("unable to make additional headway\n");
       return NULL;
     }
   }
@@ -1626,10 +1626,7 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
 Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
 {
   double origVol, newVol;
-  double origXYZ[3], xyz[3], nodeXYZ[3];
-  double oneOverNCell;
-  AdjIterator it;
-  int nodes[4], ncell, inode, ixyz;
+  double origXYZ[3];
   
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
   if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
@@ -1637,6 +1634,33 @@ Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
   } else {
     gridNodeVolume(grid,node,&origVol);
   }
+
+  if (grid != gridNodeLaplacian( grid, node )) {
+    gridSetNodeXYZ(grid,node,origXYZ);
+    return NULL;
+  }
+
+  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
+    gridNodeMinCellJacDet2(grid,node,&newVol);
+  } else {
+    gridNodeVolume(grid,node,&newVol);
+  }
+  if ( origVol > newVol ) {
+    gridSetNodeXYZ(grid,node,origXYZ);
+    return NULL;
+  }
+
+  return grid;
+}
+
+Grid *gridNodeLaplacian(Grid *grid, int node )
+{
+  double origXYZ[3], xyz[3], nodeXYZ[3];
+  double oneOverNCell;
+  AdjIterator it;
+  int nodes[4], ncell, inode, ixyz;
+  
+  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
 
   xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
   ncell =0;
@@ -1657,16 +1681,6 @@ Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
     xyz[ixyz] = xyz[ixyz] * oneOverNCell;
   }
   gridSetNodeXYZ(grid,node,xyz);
-  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
-    gridNodeMinCellJacDet2(grid,node,&newVol);
-  } else {
-    gridNodeVolume(grid,node,&newVol);
-  }
-  
-  if ( origVol > newVol ) {
-    gridSetNodeXYZ(grid,node,origXYZ);
-    return NULL;
-  }
 
   return grid;
 }
