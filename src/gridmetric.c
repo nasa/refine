@@ -1700,22 +1700,37 @@ void gridCellAspectRatioDerivative( double *xyz1, double *xyz2,
 
 double gridMinVolume( Grid *grid )
 {
+  double min_volume;
+  int total_count;
+  gridMinVolumeAndCount( grid, &min_volume, &total_count );
+  return min_volume;
+}
+
+Grid *gridMinVolumeAndCount( Grid *grid, double *min_volume, int *total_count )
+{
   int cellId, nodes[4];
   double volume, minVol;
   double xyz[3];
+  int count;
   GridBool report_negative_volumes = FALSE;
   minVol = 999.0;
+  count = 0;
   for (cellId=0;cellId<gridMaxCell(grid);cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) ){
       volume = gridVolume(grid, nodes);
-      if (report_negative_volumes && (volume < 1.0e-14) ) {
-	gridNodeXYZ(grid,nodes[0],xyz);
-	printf("volume%17.10e at %12.6f%12.6f%12.6f\n",
-	       volume,xyz[0],xyz[1],xyz[2]);
+      if (volume < 1.0e-14) {
+	count++;
+	if (report_negative_volumes) {
+	  gridNodeXYZ(grid,nodes[0],xyz);
+	  printf("volume%17.10e at %12.6f%12.6f%12.6f\n",
+		 volume,xyz[0],xyz[1],xyz[2]);
+	}
       }
       minVol = MIN(minVol, volume);
     }
-  return minVol;
+  *min_volume = minVol;
+  *total_count = count;
+  return grid;
 }
 
 Grid *gridJacVolRatio(Grid *grid)
