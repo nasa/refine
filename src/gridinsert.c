@@ -2240,6 +2240,11 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
   double vert0[3], vert1[3], vert2[3];
 
   double ratio;
+
+  int split, nsplit;
+  int splits[MAX_SEEDS][2];
+  double ratios[MAX_SEEDS];
+
   int newnode;
   int added;
 
@@ -2272,7 +2277,7 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
     }
   }
 
-  added = 0;
+  nsplit = 0;
   for (seed=0;seed<nseed;seed++) {
     /* examine all cells around seed */
     for ( cell_it = adjFirst(gridCellAdj(grid),seeds[seed]); 
@@ -2301,12 +2306,12 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
 					   xyz0, xyz1, &ratio ) ) {
 	      /* if in volume and 0.01 < ratio < 0.99, split */
 	      if ( 0.01 < ratio && ratio < 0.99 ) {
-		newnode = gridSplitEdgeRatio( grid, NULL, 
-					      node0, node1, ratio );
-		if (EMPTY != newnode) {
-		  added++;
-		  cell_it = adjFirst(gridCellAdj(grid),seeds[seed]); 
-		}
+		if ( MAX_SEEDS > nsplit ) {
+		  splits[nsplit][0] = node0;
+		  splits[nsplit][1] = node1;
+		  ratios[nsplit] = ratio;
+		  nsplit++;
+		} 
 	      }
 	    } 
 	  }	 
@@ -2314,6 +2319,17 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
       }
     }
   }
+
+  added = 0;
+  for (split=0;split<nsplit;split++) {
+    newnode = gridSplitEdgeRatio( grid, NULL,
+				  splits[split][0], splits[split][1], 
+				  ratios[split]);
+    if (EMPTY != newnode) {
+      added++;
+    }
+  }
+
   if (added>0) printf("added%3d\n",added);
   gridSetMinInsertCost(grid,min_insert_cost);
   return grid;
