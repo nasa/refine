@@ -2225,9 +2225,10 @@ Grid *gridCollapseInvalidCells(Grid *grid)
 Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
 {
   double min_insert_cost;
-  int seed, nseed, seeds[10];
+#define MAX_SEEDS (100)
+  int seed, nseed, seeds[MAX_SEEDS];
   int face, faceId, cell;
-  int nodes[4];
+  int face_nodes[3], cell_nodes[4];
   int i;
   GridBool already_have_seed;
   AdjIterator cell_it, face_it;
@@ -2247,16 +2248,21 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
 	adjValid(face_it); 
 	face_it = adjNext(face_it) ){
     face = adjItem(face_it);
-    gridFace(grid, face, nodes, &faceId);
-    printf("face %d nodes %d %d %d\n",face,nodes[0],nodes[1],nodes[2]);
+    gridFace(grid, face, face_nodes, &faceId);
+    printf("face %d nodes %d %d %d\n",
+	   face,face_nodes[0],face_nodes[1],face_nodes[2]);
     /* could skip cnetral node... */
     for (i=0; i<3; i++) {
       already_have_seed = FALSE;
       for (seed=0;seed<nseed;seed++) {
-	if ( nodes[i] == seeds[seed] ) already_have_seed = TRUE;
+	if ( face_nodes[i] == seeds[seed] ) already_have_seed = TRUE;
       }
       if (!already_have_seed){
-	seeds[nseed]=nodes[i];
+	if ( MAX_SEEDS <= nseed ) {
+	  printf("%s: %d: exhasted seeds %d\n",__FILE__,__LINE__,MAX_SEEDS);
+	  return NULL;
+	}
+	seeds[nseed]=face_nodes[i];
 	nseed++;
       }
     }
@@ -2269,10 +2275,10 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
 	   adjValid(cell_it); 
 	   cell_it = adjNext(cell_it) ){
        cell = adjItem(cell_it);
-       gridCell(grid, cell, nodes);
+       gridCell(grid, cell, cell_nodes);
        for (conn=0;conn<6;conn++) {
-	 node0 = conn2node0[conn];
-	 node1 = conn2node1[conn];
+	 node0 = cell_nodes[conn2node0[conn]];
+	 node1 = cell_nodes[conn2node1[conn]];
 	 printf("cell %d conn %d nodes %d %d\n",cell,conn,node0,node1);
 	 
        }
