@@ -451,6 +451,7 @@ Grid *gridUntangle(Grid *grid)
     }
     minVolume = gridMinVolume( grid );
   }
+  if (tries >0) printf("relax neg tets... min volume %e\n",minVolume);
   return grid;
 }
 
