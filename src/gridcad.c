@@ -386,6 +386,8 @@ Grid *gridUntangle(Grid *grid)
 {
   double allowedVolume, allowedArea;
   double minVolume, minArea;
+  double last_volume;
+  int count;
   double volume, area;
   int fix_node;
   int active_nodes;
@@ -424,7 +426,7 @@ Grid *gridUntangle(Grid *grid)
 
   allowedVolume = 1.0e-14;
 
-  minVolume = gridMinVolume( grid );
+  gridMinVolumeAndCount( grid, &minVolume, &count );
   tries = 0;
   while ( minVolume <= allowedVolume ) {
     tries++;
@@ -432,7 +434,7 @@ Grid *gridUntangle(Grid *grid)
       printf("unable to fix min volume %e\n",minVolume);
       return NULL;
     }
-    printf("relax neg tets... min volume %e\n",minVolume);
+    printf("relax neg tets... min volume %25.15e of %d\n",minVolume,count);
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
@@ -449,9 +451,15 @@ Grid *gridUntangle(Grid *grid)
 	}
       }
     }
-    minVolume = gridMinVolume( grid );
+    last_volume = minVolume;
+    gridMinVolumeAndCount( grid, &minVolume, &count );
+    if (!(last_volume < minVolume)) {
+      printf("unable to make additional headway\n",minVolume);
+      return NULL;
+    }
   }
-  if (tries >0) printf("relax neg tets... min volume %e\n",minVolume);
+  if (tries >0)
+    printf("relax neg tets... min volume %25.15e of %d\n",minVolume,count);
   return grid;
 }
 
