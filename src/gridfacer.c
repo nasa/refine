@@ -487,7 +487,7 @@ GridFacer *gridfacerSplit(GridFacer *gf)
 	if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
 	return NULL;
       }
-      gridSplitVolumeEdgesIntersectingFacesAround(grid,newnode);
+      //gridSplitVolumeEdgesIntersectingFacesAround(grid,newnode);
       if (grid != gridUntangle( grid ) ) {
 	printf("newnode %d rank %d\n",newnode,rank);
 	printf("%s: %d: gridUntangle NULL.\n",__FILE__,__LINE__);
