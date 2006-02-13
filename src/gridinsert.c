@@ -2334,3 +2334,44 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
   gridSetMinInsertCost(grid,min_insert_cost);
   return grid;
 }
+
+Grid *gridCollapseSlivers(Grid *grid) 
+{
+  double min_insert_cost;
+  int cell, nodes[4];
+  double volume;
+
+  int conn2node0[6] = {0, 0, 0, 1, 1, 2};
+  int conn2node1[6] = {1, 2, 3, 2, 3, 3};
+  int conn, node0, node1;
+  double xyz0[3], xyz1[3];
+  double dx, dy, dz;
+  double length2;
+  min_insert_cost = gridMinInsertCost(grid);
+  gridSetMinInsertCost(grid,-10.0);
+
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if ( NULL != gridCell( grid, cell, nodes) ){
+      volume = gridVolume(grid, nodes);
+      if (ABS(volume) < 1.0e-14) {
+	for (conn=0;conn<6;conn++) {
+	  node0=MIN(nodes[conn2node0[conn]],nodes[conn2node1[conn]]);
+	  node1=MAX(nodes[conn2node0[conn]],nodes[conn2node1[conn]]);
+	  if ( 0 == gridParentGeometry(grid, node0, node1) ){
+	    gridNodeXYZ(grid, node0, xyz0);
+	    gridNodeXYZ(grid, node1, xyz1);
+	    dx = xyz1[0]-xyz0[0]; dy = xyz1[1]-xyz0[1]; dz = xyz1[2]-xyz0[2];
+	    length2 = dx*dx + dy*dy + dz*dz;
+	    if (length2 < 1.0e-15) {
+	      printf("collapse %d %d vol %e len2 %e\n",node0,node1,volume,length2);
+	      gridCollapseEdge(grid, NULL, node0, node1, 0.50);
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+  }
+  gridSetMinInsertCost(grid,min_insert_cost);
+  return grid;
+}

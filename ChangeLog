@@ -3,6 +3,14 @@
 	* src/intersect.c (intersectTriangleSegment) exposed the ratio of
 	intersection.
 
+2006-02-13 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitVolumeEdgesIntersectingFacesAround)
+	split volume cells with faces near node to help localize
+	projection.
+	* src/gridinsert.c (gridCollapseSlivers) remove slivers with
+	collapse to aid untangling.
+
 2006-02-10 13:21 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridUntangleAreaUV,gridUntangleVolume) exclude
