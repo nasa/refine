@@ -2917,7 +2917,6 @@ Grid *gridUntangleVolume( Grid *grid, int node )
 
   gridNodeVolume(grid, node, &new_volume );
   if ( new_volume < original_volume ) {
-    gridSetNodeXYZ(grid, node,  orig_xyz);
     printf("node %6d not improved %25.15e %25.15e\n",
 	   node,original_volume,new_volume);
   }
