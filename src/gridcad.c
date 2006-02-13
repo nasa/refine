@@ -428,20 +428,22 @@ Grid *gridUntangle(Grid *grid)
 
   gridMinVolumeAndCount( grid, &minVolume, &count );
   tries = 0;
+  active_nodes=0;
   while ( minVolume <= allowedVolume ) {
     tries++;
     if (tries >100) {
       printf("unable to fix min volume %e\n",minVolume);
       return NULL;
     }
-    printf("relax neg tets... min volume %25.15e of %d\n",minVolume,count);
+    printf("relax neg tets... min volume %25.15e of %4d %4d\n",
+	   minVolume,count,active_nodes);
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
 	   !gridNodeFrozen( grid, fix_node) &&
 	   !gridGeometryFace(grid, fix_node) ) {
 	gridNodeVolume(grid, fix_node, &volume );
-	if ( (volume <= allowedVolume) || (tries>10) ) {
+	if ( (volume <= allowedVolume) ) {
 	  active_nodes++;
 	  if ( grid != gridUntangleVolume( grid, fix_node ) ) {
 	    printf( "%s: %d: %s: gridUntangleVolume NULL\n",
@@ -459,7 +461,8 @@ Grid *gridUntangle(Grid *grid)
     }
   }
   if (tries >0)
-    printf("relax neg tets... min volume %25.15e of %d\n",minVolume,count);
+    printf("relax neg tets... min volume %25.15e of %4d %4d\n",
+	   minVolume,count,active_nodes);
   return grid;
 }
 
@@ -2869,6 +2872,7 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   
   /* do not contiune if there are less than m usable elements */
   if (n<m) {
+    printf("node %6d too small %25.15e\n",node,original_volume);
     FREE_A_C_TABLEAU(a,c,tableau); return grid;
   }
 
@@ -2914,6 +2918,8 @@ Grid *gridUntangleVolume( Grid *grid, int node )
   gridNodeVolume(grid, node, &new_volume );
   if ( new_volume < original_volume ) {
     gridSetNodeXYZ(grid, node,  orig_xyz);
+    printf("node %6d not improved %25.15e %25.15e\n",
+	   node,original_volume,new_volume);
   }
 
   FREE_A_C_TABLEAU(a,c,tableau); return grid;
