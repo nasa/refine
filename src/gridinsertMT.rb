@@ -4,11 +4,12 @@
 #
 # Mobility test for grid c lib
 
-Dir.chdir ENV['srcdir'] if ENV['srcdir']
-
-require 'RubyExtensionBuilder'
-
-RubyExtensionBuilder.new('GridInsert').build
+rebuild = false || true
+if rebuild
+ Dir.chdir ENV['srcdir'] if ENV['srcdir']
+ require 'RubyExtensionBuilder'
+ RubyExtensionBuilder.new('GridInsert').build
+end
 
 require 'test/unit'
 require 'Adj/Adj'
