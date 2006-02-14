@@ -2782,7 +2782,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node, int recursive_depth )
 
   gridMinFaceAreaUV(grid, node, &new_area);
   if ( new_area < original_area ) {
-    gridEvaluateFaceAtUV(grid, node, orig_uv);
+    //gridEvaluateFaceAtUV(grid, node, orig_uv);
   }
 
   if ( recursive_depth > 0 ) {
@@ -2946,8 +2946,8 @@ Grid *gridUntangleVolume( Grid *grid, int node, int recursive_depth )
 
   gridNodeVolume(grid, node, &new_volume );
   if ( new_volume < original_volume ) {
-    printf("node %6d not improved %25.15e %25.15e\n",
-	   node,original_volume,new_volume);
+    /* printf("node %6d not improved %25.15e %25.15e\n",
+       node,original_volume,new_volume); */
   }
 
   if ( recursive_depth > 0 ) {
