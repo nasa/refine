@@ -2376,3 +2376,12 @@ Grid *gridCollapseSlivers(Grid *grid)
   gridSetMinInsertCost(grid,min_insert_cost);
   return grid;
 }
+
+Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int sliver_cell)
+{
+  if (NULL != queue) {
+    printf("%s: %d: %s: not parallelized for queue.\n",
+	   __FILE__,__LINE__,"gridSplitSliverCell");
+  }
+  return grid;
+}

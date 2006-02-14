@@ -87,6 +87,14 @@ VALUE grid_collapseEdge( VALUE self, VALUE n0, VALUE n1, VALUE ratio )
 			    NUM2INT(n0), NUM2INT(n1), 
 			    NUM2DBL(ratio) )==grid?self:Qnil);
 }
+
+VALUE grid_splitSliverCell( VALUE self, VALUE sliver_cell )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSplitSliverCell( grid, NULL, 
+			       NUM2INT(sliver_cell))==grid?self:Qnil);
+}
+
 VALUE cGridInsert;
 
 void Init_GridInsert() 
@@ -105,4 +113,5 @@ void Init_GridInsert()
   rb_define_method( cGridInsert, "insertInToVolume", 
 		    grid_insertInToVolume, 1 );
   rb_define_method( cGridInsert, "collapseEdge", grid_collapseEdge, 3 );
+  rb_define_method( cGridInsert, "splitSliverCell", grid_splitSliverCell, 1 );
 }

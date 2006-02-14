@@ -57,6 +57,8 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *g, int node);
 
 Grid *gridCollapseSlivers(Grid *g);
 
+Grid *gridSplitSliverCell(Grid *g, Queue *q, int sliver_cell);
+
 END_C_DECLORATION
 
 #endif /* GRIDINSERT_H */

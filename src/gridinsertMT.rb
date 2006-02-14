@@ -702,6 +702,7 @@ class TestGridInsert < Test::Unit::TestCase
 
  def test_export_fast
   grid = sliver_cell
+  assert_equal grid, grid.splitSliverCell(4)
   assert_equal 12, grid.ncell
   grid.exportFAST
  end
