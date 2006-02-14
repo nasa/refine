@@ -2357,7 +2357,8 @@ Grid *gridCollapseSlivers(Grid *grid)
 	for (conn=0;conn<6;conn++) {
 	  node0=MIN(nodes[conn2node0[conn]],nodes[conn2node1[conn]]);
 	  node1=MAX(nodes[conn2node0[conn]],nodes[conn2node1[conn]]);
-	  if ( 0 == gridParentGeometry(grid, node0, node1) ){
+	  if ( 0 == gridParentGeometry(grid, node0, node1) &&
+	       !gridGeometryFace(grid,node0) && !gridGeometryFace(grid,node0)){
 	    gridNodeXYZ(grid, node0, xyz0);
 	    gridNodeXYZ(grid, node1, xyz1);
 	    dx = xyz1[0]-xyz0[0]; dy = xyz1[1]-xyz0[1]; dz = xyz1[2]-xyz0[2];
