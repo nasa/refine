@@ -348,7 +348,6 @@ GridFacer *gridfacerRatioRange(GridFacer *gf,
   return gf;
 }
 
-
 GridFacer *gridfacerSwap(GridFacer *gf)
 {
   int edge;
@@ -587,7 +586,6 @@ GridFacer *gridfacerSplitProblemProjectionEdges(GridFacer *gf) {
   return gf;
 }
 
-
 GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
 {
   AdjIterator it;
@@ -604,7 +602,7 @@ GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
 	it = adjNext(it) ) {
     gridFace(grid, adjItem(it), nodes, &faceId);
 
-#define IS_ACCEPTABLE(acceptable,ratio0,ratio1) acceptable = ( acceptable && ( ratio1 <= 1.0 || ( ratio0 > 1.0 && ratio0*1.5 > ratio1 ) ) )
+#define IS_ACCEPTABLE(acceptable,ratio0,ratio1) acceptable = ( acceptable && ( ratio1 <= 1.0 || ( ratio0 >= ratio1 ) ) )
 
     if ( nodes[0] == node1 ) {
       ratio0 = gridEdgeRatio(grid,node1,nodes[1]);
