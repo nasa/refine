@@ -2340,7 +2340,6 @@ Grid *gridCollapseWedgeCells(Grid *grid)
 {
   double min_insert_cost;
   int cell, nodes[4];
-  double volume;
 
   int conn2node0[6] = {0, 0, 0, 1, 1, 2};
   int conn2node1[6] = {1, 2, 3, 2, 3, 3};
@@ -2363,7 +2362,7 @@ Grid *gridCollapseWedgeCells(Grid *grid)
 	  dx = xyz1[0]-xyz0[0]; dy = xyz1[1]-xyz0[1]; dz = xyz1[2]-xyz0[2];
 	  length2 = dx*dx + dy*dy + dz*dz;
 	  if (length2 < 1.0e-15) {
-	    printf("collapse %d %d vol %e len2 %e\n",node0,node1,volume,length2);
+	    printf("gridCollapseWedgeCells length2 %e\n",length2);
 	    gridCollapseEdge(grid, NULL, node0, node1, 0.50);
 	    break;
 	  }
