@@ -393,14 +393,14 @@ Grid *gridUntangle(Grid *grid)
   int active_nodes;
   int tries;
   int stalled;
-
+  int cell;
   allowedArea = 1.0e-12;
 
   minArea = gridMinGridFaceAreaUV(grid);
   tries = 0;
   while ( minArea <= allowedArea ) {
     tries++;
-    if (tries >50) {
+    if (tries >20) {
       printf("unable to fix min face UV area %e\n",minArea);
       return NULL;
     }
@@ -434,17 +434,17 @@ Grid *gridUntangle(Grid *grid)
   active_nodes=0;
   while ( minVolume <= allowedVolume ) {
     tries++;
-    if (tries >20) {
+    if (tries >100) {
       printf("unable to fix min volume %e\n",minVolume);
       return NULL;
+    }
+    if (tries >25) {
+      gridCollapseWedgeCells(grid);
+      gridMinVolumeAndCount( grid, &minVolume, &count );
     }
     if (tries >4)
       printf("untangle tets %3d, min volume %25.15e of %4d %4d\n",
 	     tries,minVolume,count,active_nodes);
-    if (tries >3) { 
-      gridCollapseWedgeCells(grid);
-      gridMinVolumeAndCount( grid, &minVolume, &count );
-    }
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
@@ -468,7 +468,7 @@ Grid *gridUntangle(Grid *grid)
     }else{
       stalled=0;
     }
-    if (stalled >= 5) {
+    if (stalled >= 25) {
       printf("unable to make additional headway\n");
       return NULL;
     }
