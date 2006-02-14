@@ -19,6 +19,30 @@ class TestIntersect < Test::Unit::TestCase
  end
  def setup ; set_up ; end
 
+ def test_cross_segement_segment_intersection
+  s0_n0 = [0,0,0]
+  s0_n1 = [1,1,0]
+  s1_n0 = [0,1,0]
+  s1_n1 = [1,0,0]
+  ans = @intersect.segmentSegment(s0_n0,s0_n1,s1_n0,s1_n1)
+  tol = 1.0e-14
+  assert_in_delta( 0.5, ans[0], tol)
+  assert_in_delta( 0.5, ans[1], tol)
+  assert_equal true, ans[2]
+ end
+
+ def test_missed_segement_segment_intersection
+  s0_n0 = [2,0,0]
+  s0_n1 = [1,0,0]
+  s1_n0 = [0,2,0]
+  s1_n1 = [0,3,0]
+  ans = @intersect.segmentSegment(s0_n0,s0_n1,s1_n0,s1_n1)
+  tol = 1.0e-14
+  assert_in_delta(  1.0, ans[0], tol)
+  assert_in_delta( -2.0, ans[1], tol)
+  assert_equal false, ans[2]
+ end
+
  def testNodeAboveTrianglePlane
   v0 = [0,0,0]
   v1 = [1,0,0]

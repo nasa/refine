@@ -13,6 +13,40 @@
 #include "intersect.h"
 #include "gridmath.h"
 
+/* TRUE if 0.0 < segment0,segment1 < 1.0 unless colinear */
+GridBool intersectSegmentSegment(double *segment0_node0,double *segment0_node1,
+				 double *segment1_node0,double *segment1_node1,
+				 double *segment0, double *segment1 )
+{
+  double u[3], v[3], w[3];
+  double uu, uv, vv, uw, vw;
+  double denom;
+
+  gridSubtractVector(segment0_node1,segment0_node0,u);
+  gridSubtractVector(segment1_node1,segment1_node0,v);
+  gridSubtractVector(segment0_node0,segment1_node0,w);
+
+  uu = gridDotProduct(u,u);
+  uv = gridDotProduct(u,v);
+  vv = gridDotProduct(v,v);
+  uw = gridDotProduct(u,w);
+  vw = gridDotProduct(v,w);
+
+  denom = uu*vv - uv*uv;
+
+  if (denom < 1.0e-12) {
+    *segment0 = 0.0;
+    *segment1 = uw/uu;
+    return FALSE;
+  }else{
+    *segment0 = (uv*vw - vv*uw) / denom;
+    *segment1 = (uu*vw - uv*uw) / denom;
+  }
+  
+  return ( ( 0.0 <= *segment0 && *segment0 <= 1.0 ) &&
+	   ( 0.0 <= *segment1 && *segment1 <= 1.0 ) );
+}
+
 GridBool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
 		     double *node )
 {

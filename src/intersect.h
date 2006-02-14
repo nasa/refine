@@ -17,6 +17,11 @@
 
 BEGIN_C_DECLORATION
 
+/* TRUE if 0.0 < segment0,segment1 < 1.0 unless colinear */
+GridBool intersectSegmentSegment(double *segment0_node0,double *segment0_node1,
+				 double *segment1_node0,double *segment1_node1,
+				 double *segment0, double *segment1 );
+
 GridBool intersectAbove( double *vertex0, double *vertex1, double *vertex2,
 		     double *node );
 

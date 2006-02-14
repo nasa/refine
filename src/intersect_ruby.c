@@ -2,6 +2,29 @@
 #include "ruby.h"
 #include "intersect.h"
 
+static VALUE intersect_segmentSegment( VALUE self, 
+				       VALUE rb_s0_n0, VALUE rb_s0_n1, 
+				       VALUE rb_s1_n0, VALUE rb_s1_n1 )
+{
+  int i;
+  double s0_n0[3], s0_n1[3], s1_n0[3], s1_n1[3];
+  double s0, s1;
+  VALUE rb_segment;
+  for (i=0;i<3;i++){
+    s0_n0[i] = NUM2DBL(rb_ary_entry(rb_s0_n0, i));
+    s0_n1[i] = NUM2DBL(rb_ary_entry(rb_s0_n1, i));
+    s1_n0[i] = NUM2DBL(rb_ary_entry(rb_s1_n0, i));
+    s1_n1[i] = NUM2DBL(rb_ary_entry(rb_s1_n1, i));
+  }
+  rb_segment = rb_ary_new2(3);
+  rb_ary_store( rb_segment, 2, 
+		(intersectSegmentSegment(s0_n0,s0_n1,s1_n0,s1_n1,
+					 &s0,&s1) )?Qtrue:Qfalse );
+  rb_ary_store( rb_segment, 0, rb_float_new(s0) );
+  rb_ary_store( rb_segment, 1, rb_float_new(s1) );
+  return rb_segment;
+}
+
 static VALUE intersect_above( VALUE self,
 			      VALUE tri0, VALUE tri1, VALUE tri2, VALUE node )
 {
@@ -110,6 +133,7 @@ VALUE cIntersect;
 void Init_Intersect(  )
 {
   cIntersect = rb_define_class( "Intersect", rb_cObject );
+  rb_define_method( cIntersect, "segmentSegment", intersect_segmentSegment, 4 );
   rb_define_method( cIntersect, "above", intersect_above, 4 );
   rb_define_method( cIntersect, "triangleNode", intersect_triangleNode, 4 );
   rb_define_method( cIntersect, "triangleSegment", intersect_triangleSegment, 5 );
