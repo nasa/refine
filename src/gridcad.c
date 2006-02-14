@@ -400,7 +400,7 @@ Grid *gridUntangle(Grid *grid)
   tries = 0;
   while ( minArea <= allowedArea ) {
     tries++;
-    if (tries >20) {
+    if (tries >50) {
       printf("unable to fix min face UV area %e\n",minArea);
       return NULL;
     }
