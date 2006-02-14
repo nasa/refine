@@ -359,6 +359,7 @@ GridFacer *gridfacerSwap(GridFacer *gf)
   double current_ratio;
   double swapped_ratio;
   double cost, cost_improvement;
+  int swap_count;
 
   Grid *grid = gridfacerGrid( gf );
 
@@ -368,6 +369,7 @@ GridFacer *gridfacerSwap(GridFacer *gf)
   gridSetMinSwapCost(grid,-0.5);
   gridSetMinSwapCostImprovement(grid,-10.0);
 
+  swap_count = 0;
   edge = 0;
   while ( edge < gridfacerEdges(gf) ) {
     node0 = gf->e2n[0+2*edge];
@@ -401,6 +403,7 @@ GridFacer *gridfacerSwap(GridFacer *gf)
     if ( ((swapped_ratio < current_ratio) && (current_ratio > 1.0)) ||
 	 ((swapped_ratio > current_ratio) && (swapped_ratio < 1.0)) ){
       if ( grid == gridSwapEdge( grid, NULL, node0, node1 ) ) {
+	swap_count++;
 	gridfacerRemoveEdge(gf, node0, node1);
 	gridfacerAddUniqueEdge(gf, node2, node3);
 	if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
@@ -409,7 +412,7 @@ GridFacer *gridfacerSwap(GridFacer *gf)
     }
     edge++;
   }
-
+  printf("gridfacerSwap     %6d edges\n",swap_count);
   gridSetMinSwapCost(grid,cost);
   gridSetMinSwapCostImprovement(grid,cost_improvement);
   return gf; 
@@ -499,6 +502,7 @@ GridFacer *gridfacerSplit(GridFacer *gf)
     }
   }
   free(local_e2n);
+  printf("gridfacerSplit    %6d edges\n",planSize( plan ));
   planFree(plan);
   return gf; 
 }
@@ -576,7 +580,8 @@ GridFacer *gridfacerSplitProblemProjectionEdges(GridFacer *gf) {
       split_edges++;
     }
   }
-  printf("split %d problem edges\n",split_edges);
+  printf("gridfacerSpltProb %6d edges\n",split_edges);
+
   gridEraseConn(grid);
   gridSetMinInsertCost( grid, min_insert_cost );
   return gf;
@@ -599,31 +604,33 @@ GridFacer *gridfacerCollapseEdge( GridFacer *gf, int node0, int node1 )
 	it = adjNext(it) ) {
     gridFace(grid, adjItem(it), nodes, &faceId);
 
+#define IS_ACCEPTABLE(acceptable,ratio0,ratio1) acceptable = ( acceptable && ( ratio1 <= 1.0 || ( ratio0 > 1.0 && ratio0*1.5 > ratio1 ) ) )
+
     if ( nodes[0] == node1 ) {
       ratio0 = gridEdgeRatio(grid,node1,nodes[1]);
       ratio1 = gridEdgeRatio(grid,node0,nodes[1]);
-      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+      IS_ACCEPTABLE(acceptable, ratio0, ratio1);
       ratio0 = gridEdgeRatio(grid,node1,nodes[2]);
       ratio1 = gridEdgeRatio(grid,node0,nodes[2]);
-      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+      IS_ACCEPTABLE(acceptable, ratio0, ratio1);
     }
 
     if ( nodes[1] == node1 ) {
       ratio0 = gridEdgeRatio(grid,node1,nodes[0]);
       ratio1 = gridEdgeRatio(grid,node0,nodes[0]);
-      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+      IS_ACCEPTABLE(acceptable, ratio0, ratio1);
       ratio0 = gridEdgeRatio(grid,node1,nodes[2]);
       ratio1 = gridEdgeRatio(grid,node0,nodes[2]);
-      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
-    }
+      IS_ACCEPTABLE(acceptable, ratio0, ratio1);
+     }
 
     if ( nodes[2] == node1 ) {
       ratio0 = gridEdgeRatio(grid,node1,nodes[0]);
       ratio1 = gridEdgeRatio(grid,node0,nodes[0]);
-      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+      IS_ACCEPTABLE(acceptable, ratio0, ratio1);
       ratio0 = gridEdgeRatio(grid,node1,nodes[1]);
       ratio1 = gridEdgeRatio(grid,node0,nodes[1]);
-      acceptable = acceptable && ( ratio1 <= 1.0 || ratio0 > 1.0 );
+      IS_ACCEPTABLE(acceptable, ratio0, ratio1);
     }
   }
 
@@ -680,7 +687,7 @@ GridFacer *gridfacerCollapse(GridFacer *gf)
       }
     }
   }
-  printf("collapsed %d long edges\n",count);
+  printf("gridfacerCollapse %6d edges\n",count);
   return gf; 
 }
 
