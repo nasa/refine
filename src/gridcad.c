@@ -439,7 +439,7 @@ Grid *gridUntangle(Grid *grid)
       return NULL;
     }
     if (tries >4)
-      printf("untangle tets %d, min volume %25.15e of %4d %4d\n",
+      printf("untangle tets %3d, min volume %25.15e of %4d %4d\n",
 	     tries,minVolume,count,active_nodes);
     if (tries >3) { 
       gridCollapseSlivers(grid);
@@ -474,7 +474,7 @@ Grid *gridUntangle(Grid *grid)
     }
   }
   if (tries >4)
-    printf("untangle tets %d, min volume %25.15e of %4d %4d\n",
+    printf("untangle tets %3d, min volume %25.15e of %4d %4d\n",
 	   tries,minVolume,count,active_nodes);
   return grid;
 }
