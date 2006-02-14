@@ -438,7 +438,7 @@ Grid *gridUntangle(Grid *grid)
       printf("unable to fix min volume %e\n",minVolume);
       return NULL;
     }
-    if (tries >25) {
+    if (((tries/5)*5) == tries) {
       gridCollapseWedgeCells(grid);
       gridMinVolumeAndCount( grid, &minVolume, &count );
     }
