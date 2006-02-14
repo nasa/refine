@@ -441,6 +441,10 @@ Grid *gridUntangle(Grid *grid)
     if (tries >4)
       printf("untangle tets %d, min volume %25.15e of %4d %4d\n",
 	     tries,minVolume,count,active_nodes);
+    if (tries >3) { 
+      gridCollapseSlivers(grid);
+      gridMinVolumeAndCount( grid, &minVolume, &count );
+    }
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
