@@ -404,7 +404,8 @@ Grid *gridUntangle(Grid *grid)
       printf("unable to fix min face UV area %e\n",minArea);
       return NULL;
     }
-    printf("relax neg faces... min face UV area %e\n",minArea);
+    if (tries >3) 
+      printf("untangle faces %2d, min face UV area %e\n",tries,minArea);
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
@@ -437,8 +438,9 @@ Grid *gridUntangle(Grid *grid)
       printf("unable to fix min volume %e\n",minVolume);
       return NULL;
     }
-    printf("relax neg tets... min volume %25.15e of %4d %4d\n",
-	   minVolume,count,active_nodes);
+    if (tries >4)
+      printf("untangle tets %d, min volume %25.15e of %4d %4d\n",
+	     tries,minVolume,count,active_nodes);
     active_nodes = 0;
     for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
       if ( gridValidNode( grid, fix_node ) &&
@@ -467,9 +469,9 @@ Grid *gridUntangle(Grid *grid)
       return NULL;
     }
   }
-  if (tries >0)
-    printf("relax neg tets... min volume %25.15e of %4d %4d\n",
-	   minVolume,count,active_nodes);
+  if (tries >4)
+    printf("untangle tets %d, min volume %25.15e of %4d %4d\n",
+	   tries,minVolume,count,active_nodes);
   return grid;
 }
 
