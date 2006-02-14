@@ -666,7 +666,7 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 4,    grid.ncell
  end
 
- def sliver_cell(eps=1.0e-4)
+ def sliver_cell(eps=1.0e-10)
   grid = Grid.new(8,12,8,0)
 
   grid.addNode(0,0,eps)
@@ -704,7 +704,7 @@ class TestGridInsert < Test::Unit::TestCase
  def test_export_fast
   grid = sliver_cell
   assert_equal grid, grid.splitSliverCell(4)
-  assert_equal 12, grid.ncell
+  assert_equal 8, grid.ncell
   grid.exportFAST
  end
 

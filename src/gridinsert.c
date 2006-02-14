@@ -2393,6 +2393,7 @@ Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int cell)
   int i;
   double scale, tolerence, pull_back;
   GridBool intersection;
+  int newnode0, newnode1;
 
   if (NULL != queue) {
     printf("%s: %d: %s: not parallelized for queue.\n",
@@ -2441,7 +2442,7 @@ Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int cell)
     }
     gridSubtractVector(newxyz1,newxyz0,gap);
     distance = gridVectorLength(gap);
-    tolerence = 1.0e-3;
+    tolerence = 1.0e-6;
     scale = distance/shortest_edge_length;
     pull_back = 0.05;
     if ( (scale < tolerence) && 
@@ -2451,8 +2452,10 @@ Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int cell)
 	 (0 == gridParentGeometry(grid, node2, node3))  ) {
       printf("desliver s %f t %f dist ratio %e\n",
 	     s,t,scale);
-      gridSplitEdgeRatio(grid, queue, node0, node1, s);
-      gridSplitEdgeRatio(grid, queue, node2, node3, t);
+      newnode0 = gridSplitEdgeRatio(grid, queue, node0, node1, s);
+      newnode1 = gridSplitEdgeRatio(grid, queue, node2, node3, t);
+      if ( (EMPTY != newnode0) && (EMPTY != newnode1) )
+	gridCollapseEdge(grid, queue, newnode0, newnode1, 0.50);
       return grid;
     }
   }
