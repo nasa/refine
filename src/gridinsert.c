@@ -2377,11 +2377,45 @@ Grid *gridCollapseWedgeCells(Grid *grid)
   return grid;
 }
 
-Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int sliver_cell)
+Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int cell)
 {
+  double min_insert_cost;
+  int nodes[4];
+  int opposites;
+  int node0, node1, node2, node3;
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+
   if (NULL != queue) {
     printf("%s: %d: %s: not parallelized for queue.\n",
 	   __FILE__,__LINE__,"gridSplitSliverCell");
   }
+
+  if ( NULL == gridCell( grid, cell, nodes) ) return NULL;
+
+
+  min_insert_cost = gridMinInsertCost(grid);
+  gridSetMinInsertCost(grid,-10.0);
+
+  for (opposites=0;opposites<3;opposites++) {
+    switch (opposites) {
+    case 0: 
+      node0 = nodes[0]; node1 = nodes[1];
+      node2 = nodes[2]; node3 = nodes[3]; break;
+    case 1: 
+      node0 = nodes[0]; node1 = nodes[2];
+      node2 = nodes[1]; node3 = nodes[3]; break;
+    case 2: 
+      node0 = nodes[0]; node1 = nodes[3];
+      node2 = nodes[1]; node3 = nodes[2]; break;
+    }
+    gridNodeXYZ(grid, node0, xyz0);
+    gridNodeXYZ(grid, node1, xyz1);
+    gridNodeXYZ(grid, node2, xyz2);
+    gridNodeXYZ(grid, node3, xyz3);
+    
+
+  }
+  
+  gridSetMinInsertCost(grid,min_insert_cost);
   return grid;
 }
