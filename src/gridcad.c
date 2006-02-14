@@ -442,7 +442,7 @@ Grid *gridUntangle(Grid *grid)
       printf("untangle tets %3d, min volume %25.15e of %4d %4d\n",
 	     tries,minVolume,count,active_nodes);
     if (tries >3) { 
-      gridCollapseSlivers(grid);
+      gridCollapseWedgeCells(grid);
       gridMinVolumeAndCount( grid, &minVolume, &count );
     }
     active_nodes = 0;

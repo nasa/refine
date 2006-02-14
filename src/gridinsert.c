@@ -2335,7 +2335,7 @@ Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *grid, int node)
   return grid;
 }
 
-Grid *gridCollapseSlivers(Grid *grid) 
+Grid *gridCollapseWedgeCells(Grid *grid) 
 {
   double min_insert_cost;
   int cell, nodes[4];

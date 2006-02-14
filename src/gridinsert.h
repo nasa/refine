@@ -55,7 +55,7 @@ Grid *gridCollapseInvalidCells(Grid *g);
 
 Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *g, int node);
 
-Grid *gridCollapseSlivers(Grid *g);
+Grid *gridCollapseWedgeCells(Grid *g);
 
 Grid *gridSplitSliverCell(Grid *g, Queue *q, int sliver_cell);
 
