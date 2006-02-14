@@ -34,9 +34,13 @@ GridBool intersectSegmentSegment(double *segment0_node0,double *segment0_node1,
 
   denom = uu*vv - uv*uv;
 
-  if (denom < 1.0e-12) {
+  if (denom < 1.0e-12) { /* colinear */
     *segment0 = 0.0;
-    *segment1 = uw/uu;
+    if ( vv > abs(uv) ) {
+      *segment1 = vw/vv;
+    } else {
+      *segment1 = uw/uv;
+    }
     return FALSE;
   }else{
     *segment0 = (uv*vw - vv*uw) / denom;
