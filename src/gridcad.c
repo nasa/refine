@@ -462,7 +462,7 @@ Grid *gridUntangle(Grid *grid)
     }else{
       stalled=0;
     }
-    if (stalled>2) {
+    if (stalled >= 5) {
       printf("unable to make additional headway\n");
       return NULL;
     }
