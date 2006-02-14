@@ -665,4 +665,45 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 4,    grid.ncell
  end
 
+ def sliver_cell
+  grid = Grid.new(8,12,8,0)
+
+  grid.addNode(0,0,0.1)
+  grid.addNode(1,0,0)
+  grid.addNode(1,1,0.1)
+  grid.addNode(0,1,0)
+
+  grid.addNode(0.5,0.5,1)
+  grid.addNode(0.5,0.5,-1)
+
+  grid.addCell(0,1,2,4)
+  grid.addCell(0,2,3,4)
+
+  grid.addCell(0,3,1,5)
+  grid.addCell(1,3,2,5)
+
+  grid.addCell(0,2,1,3) # the evil sliver tet
+
+  need_faces_for_visualization = true
+  if (need_faces_for_visualization)
+   grid.addFace(0,3,4,1)
+   grid.addFace(3,2,4,1)
+   grid.addFace(2,1,4,1)
+   grid.addFace(1,0,4,1)
+
+   grid.addFace(0,1,5,1)
+   grid.addFace(1,2,5,1)
+   grid.addFace(2,3,5,1)
+   grid.addFace(3,0,5,1)
+  end
+
+  grid
+ end
+
+ def test_export_fast
+  grid = sliver_cell
+  assert_equal 12, grid.ncell
+  grid.exportFAST
+ end
+
 end
