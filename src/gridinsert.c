@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
+#include "intersect.h"
 #include "plan.h"
 #include "ring.h"
 #include "gridshape.h"
@@ -2384,6 +2385,14 @@ Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int cell)
   int opposites;
   int node0, node1, node2, node3;
   double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double edge0[3], edge1[3], gap[3];
+  double newxyz0[3], newxyz1[3];
+  double s, t;
+  double distance;
+  double shortest_edge_length;
+  int i;
+  double scale, tolerence, pull_back;
+  GridBool intersection;
 
   if (NULL != queue) {
     printf("%s: %d: %s: not parallelized for queue.\n",
@@ -2392,9 +2401,20 @@ Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int cell)
 
   if ( NULL == gridCell( grid, cell, nodes) ) return NULL;
 
-
   min_insert_cost = gridMinInsertCost(grid);
   gridSetMinInsertCost(grid,-10.0);
+
+  shortest_edge_length = gridEdgeLength(grid, nodes[0], nodes[1]);
+  shortest_edge_length = MIN(gridEdgeLength(grid, nodes[0], nodes[2]),
+			     shortest_edge_length);
+  shortest_edge_length = MIN(gridEdgeLength(grid, nodes[0], nodes[3]),
+			     shortest_edge_length);
+  shortest_edge_length = MIN(gridEdgeLength(grid, nodes[1], nodes[2]),
+			     shortest_edge_length);
+  shortest_edge_length = MIN(gridEdgeLength(grid, nodes[1], nodes[3]),
+			     shortest_edge_length);
+  shortest_edge_length = MIN(gridEdgeLength(grid, nodes[2], nodes[3]),
+			     shortest_edge_length);
 
   for (opposites=0;opposites<3;opposites++) {
     switch (opposites) {
@@ -2412,10 +2432,31 @@ Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int cell)
     gridNodeXYZ(grid, node1, xyz1);
     gridNodeXYZ(grid, node2, xyz2);
     gridNodeXYZ(grid, node3, xyz3);
-    
-
+    intersection = intersectSegmentSegment( xyz0, xyz1, xyz2, xyz3, &s, &t );
+    gridSubtractVector(xyz1,xyz0,edge0);
+    gridSubtractVector(xyz3,xyz2,edge1);
+    for (i=0;i<3;i++){
+      newxyz0[i] = s*edge0[i] + xyz0[i];
+      newxyz1[i] = t*edge1[i] + xyz2[i];
+    }
+    gridSubtractVector(newxyz1,newxyz0,gap);
+    distance = gridVectorLength(gap);
+    tolerence = 1.0e-3;
+    scale = distance/shortest_edge_length;
+    pull_back = 0.05;
+    if ( (scale < tolerence) && 
+	 (pull_back < s && s < 1.0-pull_back) &&
+	 (pull_back < t && t < 1.0-pull_back) &&
+	 (0 == gridParentGeometry(grid, node0, node1)) &&
+	 (0 == gridParentGeometry(grid, node2, node3))  ) {
+      printf("desliver s %f t %f dist ratio %e\n",
+	     s,t,scale);
+      gridSplitEdgeRatio(grid, queue, node0, node1, s);
+      gridSplitEdgeRatio(grid, queue, node2, node3, t);
+      return grid;
+    }
   }
   
   gridSetMinInsertCost(grid,min_insert_cost);
-  return grid;
+  return NULL;
 }

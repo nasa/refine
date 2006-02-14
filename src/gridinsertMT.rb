@@ -14,6 +14,7 @@ end
 require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
+require 'Intersect/Intersect'
 require 'Plan/Plan'
 require 'Sort/Sort'
 require 'Queue/Queue'
@@ -665,12 +666,12 @@ class TestGridInsert < Test::Unit::TestCase
   assert_equal 4,    grid.ncell
  end
 
- def sliver_cell
+ def sliver_cell(eps=1.0e-4)
   grid = Grid.new(8,12,8,0)
 
-  grid.addNode(0,0,0.1)
+  grid.addNode(0,0,eps)
   grid.addNode(1,0,0)
-  grid.addNode(1,1,0.1)
+  grid.addNode(1,1,eps)
   grid.addNode(0,1,0)
 
   grid.addNode(0.5,0.5,1)
