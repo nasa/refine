@@ -1,9 +1,15 @@
+2006-02-13 19:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleAreaUV,gridUntangleVolume) added a
+	recursive_depth arg to allow allow untangling to relax faces that
+	are currently tight constraints.
+
 2006-02-11 12:37 Mike Park  <mike.park@nasa.gov>
 
 	* src/intersect.c (intersectTriangleSegment) exposed the ratio of
 	intersection.
 
-2006-02-13 13:35 Mike Park  <mike.park@nasa.gov>
+2006-02-10 13:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitVolumeEdgesIntersectingFacesAround)
 	split volume cells with faces near node to help localize

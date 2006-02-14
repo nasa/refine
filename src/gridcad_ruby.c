@@ -169,14 +169,16 @@ VALUE grid_smoothNodeFaceAreaUV( VALUE self, VALUE node )
 
 VALUE grid_untangleAreaUV( VALUE self, VALUE node )
 {
+  int recursive_depth = 0;
   GET_GRID_FROM_SELF;
-  return (gridUntangleAreaUV( grid, NUM2INT(node) )==grid?self:Qnil);
+  return (gridUntangleAreaUV( grid, NUM2INT(node), recursive_depth )==grid?self:Qnil);
 }
 
 VALUE grid_untangleVolume( VALUE self, VALUE node )
 {
+  int recursive_depth = 0;
   GET_GRID_FROM_SELF;
-  return (gridUntangleVolume( grid, NUM2INT(node) )==grid?self:Qnil);
+  return (gridUntangleVolume( grid, NUM2INT(node), recursive_depth )==grid?self:Qnil);
 }
 
 VALUE cGridCAD;
