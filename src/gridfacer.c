@@ -493,6 +493,9 @@ GridFacer *gridfacerSplit(GridFacer *gf)
 	printf("%s: %d: gridUntangle NULL.\n",__FILE__,__LINE__);
 	return NULL;
       }
+    } else {
+      printf("%s: %d: %s: gridSplitEdgeRatio EMPTY.\n",
+	     __FILE__,__LINE__,"gridfacerSplit");	      
     }
   }
   free(local_e2n);
