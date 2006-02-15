@@ -453,7 +453,7 @@ Grid *gridUntangle(Grid *grid)
 	gridNodeVolume(grid, fix_node, &volume );
 	if ( (volume <= allowedVolume) ) {
 	  active_nodes++;
-	  if ( grid != gridUntangleVolume( grid, fix_node, 2 ) ) {
+	  if ( grid != gridUntangleVolume( grid, fix_node, 3 ) ) {
 	    printf( "%s: %d: %s: gridUntangleVolume NULL\n",
 		    __FILE__, __LINE__, "gridUntangle");	    
 	    return NULL;
