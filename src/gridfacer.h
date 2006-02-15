@@ -63,8 +63,8 @@ GridFacer *gridfacerRatioRange(GridFacer *,
 
 GridFacer *gridfacerSwap(GridFacer *);
 GridFacer *gridfacerSplit(GridFacer *);
-GridFacer *gridfacerEquateLengths(GridFacer *, int node,
-				  int node0, int node1, int node2, int node3 );
+int gridfacerSplitEdge(GridFacer *, int node0, int node1);
+GridFacer *gridfacerEquateLengths(GridFacer *, int node );
 GridFacer *gridfacerSplitProblemProjectionEdges(GridFacer *);
 GridFacer *gridfacerCollapseEdge(GridFacer *, int node0, int node1 );
 GridFacer *gridfacerCollapse(GridFacer *);

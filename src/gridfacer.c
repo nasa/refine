@@ -462,29 +462,9 @@ GridFacer *gridfacerSplit(GridFacer *gf)
   for ( rank = planSize( plan )-1 ; rank >=0  ; rank-- ) {
     node0 = local_e2n[0+2*rank];
     node1 = local_e2n[1+2*rank];
-    face0 = gridFindFaceWithNodesUnless(grid, node0, node1, EMPTY);
-    if (EMPTY == face0) {
-      printf("%s: %d: face0 EMPTY.\n",__FILE__,__LINE__);
-      return NULL;
-    }
-    face1 = gridFindFaceWithNodesUnless(grid, node0, node1, face0);
-    if (EMPTY == face1) {
-      printf("%s: %d: face1 EMPTY for interior face.\n",__FILE__,__LINE__);
-      return NULL;
-    }
-    gridFace(grid,face0,nodes,&faceId);
-    node2 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
-    gridFace(grid,face1,nodes,&faceId);
-    node3 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
-    newnode = gridSplitEdgeRatio(grid, NULL, node0, node1, 0.5);
+    newnode = gridfacerSplitEdge( gf, node0, node1 );
     if ( EMPTY != newnode ) {
-      gridfacerRemoveEdge(gf, node0, node1);
-      gridfacerAddUniqueEdge(gf, node0, newnode);
-      gridfacerAddUniqueEdge(gf, node1, newnode);
-      gridfacerAddUniqueEdge(gf, node2, newnode);
-      gridfacerAddUniqueEdge(gf, node3, newnode);
-      if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
-      if (gf!=gridfacerEquateLengths(gf, newnode, node0, node1, node2, node3)){
+      if (gf!=gridfacerEquateLengths(gf, newnode)){
 	printf("%s: %d: gridfacerEquateLengths NULL.\n",__FILE__,__LINE__);
 	if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
 	return NULL;
@@ -506,46 +486,87 @@ GridFacer *gridfacerSplit(GridFacer *gf)
   return gf; 
 }
 
-GridFacer *gridfacerEquateLengths(GridFacer *gf, int node,
-				  int node0, int node1, int node2, int node3 )
+int gridfacerSplitEdge(GridFacer *gf, int node0, int node1)
 {
-  double uv[2], furthest_uv[2];
-  double ratio0, ratio1, ratio2, ratio3;
-  double omega;
-  int iteration;
+  int face0, face1;
+  int nodes[3], faceId;
+  int node2, node3;
+  int newnode;
 
   Grid *grid = gridfacerGrid( gf );
 
-  for (iteration = 0; iteration < 100 ; iteration++) {
-    ratio0 = gridEdgeRatio(grid,node,node0);
-    ratio1 = gridEdgeRatio(grid,node,node1);
-    ratio2 = gridEdgeRatio(grid,node,node2);
-    ratio3 = gridEdgeRatio(grid,node,node3);
+  face0 = gridFindFaceWithNodesUnless(grid, node0, node1, EMPTY);
+  if (EMPTY == face0) {
+    printf("%s: %d: face0 EMPTY.\n",__FILE__,__LINE__);
+    return EMPTY;
+  }
+  face1 = gridFindFaceWithNodesUnless(grid, node0, node1, face0);
+  if (EMPTY == face1) {
+    printf("%s: %d: face1 EMPTY for interior face.\n",__FILE__,__LINE__);
+    return EMPTY;
+  }
+  gridFace(grid,face0,nodes,&faceId);
+  node2 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
+  gridFace(grid,face1,nodes,&faceId);
+  node3 = nodes[0] + nodes[1] + nodes[2] - node0 - node1;
+  newnode = gridSplitEdgeRatio(grid, NULL, node0, node1, 0.5);
+  if ( EMPTY != newnode ) {
+      gridfacerRemoveEdge(gf, node0, node1);
+      gridfacerAddUniqueEdge(gf, node0, newnode);
+      gridfacerAddUniqueEdge(gf, node1, newnode);
+      gridfacerAddUniqueEdge(gf, node2, newnode);
+      gridfacerAddUniqueEdge(gf, node3, newnode);
+      if (gridfacerCameraActive(gf)) gridfacerTecplot(gf,NULL);
+  } else {
+    printf("%s: %d: %s: gridSplitEdgeRatio EMPTY.\n",
+	   __FILE__,__LINE__,"gridfacerSplitEdge");	      
+    return EMPTY; 
+  }
+  return newnode; 
+}
 
-    if ( ratio0 < -0.5 || ratio1 < -0.5 || ratio2 < -0.5 || ratio3 < -0.5 ) {
-      printf("%s: %d: gridEdgeRatio returned %f %f %f %f %d.\n",
-	     __FILE__,__LINE__,ratio0,ratio1,ratio2,ratio3,iteration);	
-      return NULL;
-    }
-  
+GridFacer *gridfacerEquateLengths(GridFacer *gf, int node )
+{
+  double uv[2];
+  int i, nodes[3], faceId;
+  double ratio, longest_ratio, furthest_uv[2];
+  double omega;
+  int iteration;
+
+  AdjIterator it;
+
+  Grid *grid = gridfacerGrid( gf );
+  for (iteration = 0; iteration < 100 ; iteration++) {
+
+    longest_ratio = 0.0;
     gridNodeUV(grid, node, gridfacerFaceId(gf), furthest_uv);
 
-    if (ratio0 > ratio1 && ratio0 > ratio2 && ratio0 > ratio3 ) {
-      gridNodeUV(grid, node0, gridfacerFaceId(gf), furthest_uv);
+    for ( it = adjFirst(gridFaceAdj(grid),node); 
+	  adjValid(it); 
+	  it = adjNext(it) ) {
+      gridFace(grid, adjItem(it), nodes, &faceId);
+      for ( i=0; i<3 ; i++ ) {
+	if ( node != nodes[i] ) {
+	  ratio = gridEdgeRatio(grid,node,nodes[i]);
+	  if ( ratio < -0.5 ) {
+	    printf("%s: %d: %s: gridEdgeRatio returned %f  %d.\n",
+		   __FILE__,__LINE__,"gridfacerEquateLengths",ratio,iteration);
+	    return NULL;
+	  }
+	  if ( ratio > longest_ratio ) {
+	    longest_ratio = ratio;
+	    gridNodeUV(grid,  nodes[i], gridfacerFaceId(gf), furthest_uv);
+	  }
+	}
+      }
     }
-    
-    if (ratio1 > ratio0 && ratio1 > ratio2 && ratio1 > ratio3 ) {
-      gridNodeUV(grid, node1, gridfacerFaceId(gf), furthest_uv);
+    if ( longest_ratio < 1.0e-14 ) {
+      printf("%s: %d: %s: longest edge is %e %d.\n",
+	     __FILE__,__LINE__,"gridfacerEquateLengths",
+	     longest_ratio,iteration);
+      return NULL;
     }
-    
-    if (ratio2 > ratio0 && ratio2 > ratio1 && ratio2 > ratio3 ) {
-      gridNodeUV(grid, node2, gridfacerFaceId(gf), furthest_uv);
-    }
-    
-    if (ratio3 > ratio0 && ratio3 > ratio1 && ratio3 > ratio2 ) {
-      gridNodeUV(grid, node3, gridfacerFaceId(gf), furthest_uv);
-    }
-    
+   
     omega = 0.005;
     gridNodeUV(grid, node, gridfacerFaceId(gf), uv);
     uv[0] = (1.0-omega)*uv[0]+(omega)*furthest_uv[0];

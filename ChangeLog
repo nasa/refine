@@ -1,3 +1,10 @@
+2006-02-15  8:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerEquateLengths) refactored to be more
+	general, it can have an degree of faces (not just four).
+	* src/gridfacer.c (gridfacerSplitEdge) extracted low-level
+	mechanics from higher-level gridfacerSplit.
+	
 2006-02-14 15:49 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridSplitSliverCell) destroy sliver cells by
