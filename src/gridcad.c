@@ -418,7 +418,6 @@ Grid *gridUntangle(Grid *grid)
 	  if ( grid != gridUntangleAreaUV( grid, fix_node, 1 ) ) {
 	    printf( "%s: %d: %s: gridUntangleAreaUV NULL\n",
 		    __FILE__, __LINE__, "gridUntangle");
-	    return NULL;
 	  }
 	}
       }
@@ -456,7 +455,6 @@ Grid *gridUntangle(Grid *grid)
 	  if ( grid != gridUntangleVolume( grid, fix_node, 3 ) ) {
 	    printf( "%s: %d: %s: gridUntangleVolume NULL\n",
 		    __FILE__, __LINE__, "gridUntangle");	    
-	    return NULL;
 	  }
 	}
       }
@@ -2746,7 +2744,9 @@ Grid *gridUntangleAreaUV( Grid *grid, int node, int recursive_depth )
   
   /* do not contiune if there are less than m usable elements */
   if (n<m) {
-    FREE_A_C_TABLEAU(a,c,f,tableau); return grid;
+    printf( "%s: %d: %s: not enough columns %e\n",
+	    __FILE__, __LINE__, "gridUntangleAreaUV",original_area);
+    FREE_A_C_TABLEAU(a,c,f,tableau); return NULL;
   }
 
   /* solve primal linear program with tableau method */
@@ -2756,7 +2756,6 @@ Grid *gridUntangleAreaUV( Grid *grid, int node, int recursive_depth )
   if ( tableau != tableauSolve( tableau ) ) {
     printf( "%s: %d: %s: tableauSolve NULL\n",
 	    __FILE__, __LINE__, "gridUntangleAreaUV");
-    tableauFree( tableau );
     FREE_A_C_TABLEAU(a,c,f,tableau); return NULL;
   }
   tableauBasis( tableau, basis );
@@ -2907,8 +2906,9 @@ Grid *gridUntangleVolume( Grid *grid, int node, int recursive_depth )
   
   /* do not contiune if there are less than m usable elements */
   if (n<m) {
-    printf("node %6d too small %25.15e\n",node,original_volume);
-    FREE_A_C_TABLEAU(a,c,f,tableau); return grid;
+    printf( "%s: %d: %s: not enough columns %e\n",
+	    __FILE__, __LINE__, "gridUntangleVolume",original_volume);
+    FREE_A_C_TABLEAU(a,c,f,tableau); return NULL;
   }
 
   /* solve primal linear program with tableau method */
@@ -2917,7 +2917,7 @@ Grid *gridUntangleVolume( Grid *grid, int node, int recursive_depth )
   tableauCost( tableau, c );
   if ( tableau != tableauSolve( tableau ) ) {
     printf( "%s: %d: %s: tableauSolve NULL\n",
-	    __FILE__, __LINE__, "gridUntangleAreaUV");
+	    __FILE__, __LINE__, "gridUntangleVolume");
     tableauShowTransposed( tableau );
     FREE_A_C_TABLEAU(a,c,f,tableau); return NULL;
   }
@@ -2935,12 +2935,12 @@ Grid *gridUntangleVolume( Grid *grid, int node, int recursive_depth )
 
   if ( !gridGaussianElimination( m, m+1, at ) ) {
     printf( "%s: %d: %s: gridGaussianElimination FALSE\n",
-	    __FILE__, __LINE__, "gridUntangleAreaUV");
+	    __FILE__, __LINE__, "gridUntangleVolume");
     FREE_A_C_TABLEAU(a,c,f,tableau); return NULL;
   }
   if ( !gridGaussianBacksolve( m, m+1, at ) ) {
     printf( "%s: %d: %s: gridGaussianBacksolve FALSE\n",
-	    __FILE__, __LINE__, "gridUntangleAreaUV");
+	    __FILE__, __LINE__, "gridUntangleVolume");
     FREE_A_C_TABLEAU(a,c,f,tableau); return NULL;
   }
 
