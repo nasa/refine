@@ -1,3 +1,8 @@
+2005-02-16 16:30 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.10 Release. Tagging before folding simplex (tableau)
+	untangling into production parallel version.
+
 2006-02-15  8:57 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfacer.c (gridfacerEquateLengths) refactored to be more

@@ -1,8 +1,5 @@
-**SomeFutureDate**: Released Refine **NextRelase**
 
-Works with FUN3D Version(s): **SomeFUN3DVersion**
-
-future(2/15/2006): will Released Refine 1.2.10_rc
+Thu Feb 16, 2006: Released Refine 1.2.10
 
 Can now cache the current grid and map for linear interpolation of
 original map function. Continued with a Phased approach to
@@ -11,7 +8,9 @@ approach is tried with gridfacer. Made the production parallel
 adaptation use a plan to attack ever edge longer than one in metric
 (longest edge first) Created a tableau implementation of simplex
 method for linear programming to untangle mesh via Freitag untangling.
-Added methods to eradicate wedge and sliver cells.
+Added methods to eradicate wedge and sliver cells. 
+Able to run le case 0.01 easily, 0.002 harder, 0.001 (250:1) with
+difficulty.
 
 Tue Nov 22, 2005: Released Refine 1.2.9
 
