@@ -2,9 +2,18 @@
 
 Works with FUN3D Version(s): **SomeFUN3DVersion**
 
-Tue Nov 22, 2005: Released Refine 1.2.9
+future(2/15/2006): will Released Refine 1.2.10_rc
 
-** internal release ** 
+Can now cache the current grid and map for linear interpolation of
+original map function. Continued with a Phased approach to
+adaptation, where the second phase is modify CAD faces only. A direct
+approach is tried with gridfacer. Made the production parallel
+adaptation use a plan to attack ever edge longer than one in metric
+(longest edge first) Created a tableau implementation of simplex
+method for linear programming to untangle mesh via Freitag untangling.
+Added methods to eradicate wedge and sliver cells.
+
+Tue Nov 22, 2005: Released Refine 1.2.9
 
 Tried inserting boundary surface directly into grid to split domain
 into interior and exterior portions. (The exterior is discarded.) This
@@ -21,8 +30,6 @@ Started a Phased approch to adaptation, where the first phase is
 modify CAD edges only. A direct approach is tried with gridedger.
 
 Thu Jul 28, 2005: Released Refine 1.2.8
-
-** internal release ** 
 
 The grid insert methods gridSplitEdgeRatio and gridCollapseEdge
 interpolate and evaluate edge t, face uv, and xyz in a consistent
@@ -44,7 +51,6 @@ added for valid meshing with flow solver (not parallelized yet)
 
 Thu Jun  2, 2005: Released Refine 1.2.7
 
-** internal release ** 
 Snapshot after Toronto AIAA paper, before `valid' adaptation research.
 Improved the logic involved with smoothing on surface to allow its
 use in parallel.
@@ -66,14 +72,12 @@ new node location.
 
 Tue Jan 31, 2005: Released Refine 1.2.6
 
-** internal release ** 
 Split and collapse only project when the validity cost constraint is
 activated. Face swapping was added to parallel partition interiors.
 The OM6 example case runs.
 
 Tue Jan 31, 2005: Released Refine 1.2.5
 
-** internal release ** 
 The -DSURFACE_VALIDITY path has been merged into the mainline code.
 Node smoothing hierarchy: edge nodes move to improve geometry edge
 lengths, surface nodes more to increase face mean ratio, and volume
@@ -86,7 +90,6 @@ generates surface grid cliffs due to projection durring adaptation.
 
 Tue Jan 25, 2005: Released Refine 1.2.4
 
-** internal release ** 
 To save stable snapshot before merging the -DSURFACE_VALIDITY path
 into the mainline code.
 Continued unit mesh research into edge based adaptation and
@@ -94,7 +97,6 @@ curved boundary Jacobian validity checks.
 
 Mon Oct 18, 2004: Released Refine 1.2.3
 
-** internal release **
 Added a texinfo refine manual, refine/doc/refine.texi.
 Added extra check on collapse edge to prevent invalid connectivities.
 Added CAPRI2 compatibility to current CAPRI (CADGeom) routines (run
