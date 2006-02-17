@@ -276,6 +276,8 @@ Grid *gridParallelSmooth( Grid *grid, GridBool localOnly,
   return grid;
 }
 
+#define USE_LINEAR_PROGRAMMING_FOR_UNTANGLING (FALSE)
+
 Grid *gridParallelRelaxNegativeCells( Grid *grid, 
 				      GridBool localOnly,
 				      GridBool smoothOnSurface )
@@ -290,8 +292,14 @@ Grid *gridParallelRelaxNegativeCells( Grid *grid,
       nearGhost = gridNodeNearGhost(grid, node);
       if ( localOnly != nearGhost ) {
 	gridNodeCostValid(grid,node,&nodeCostValid);
-	if ( -0.5 > nodeCostValid) gridSmoothVolumeNearNode( grid, node, 
-							     smoothOnSurface );
+	if ( -0.5 > nodeCostValid ) {
+	  if (USE_LINEAR_PROGRAMMING_FOR_UNTANGLING) {
+	    gridUntangleVolume( grid, node, 3, !localOnly );
+	  } else {
+	    gridSmoothVolumeNearNode( grid, node, 
+				      smoothOnSurface );
+	  }
+	}
       }
     }
   }
@@ -302,7 +310,7 @@ Grid *gridParallelRelaxNegativeFaceAreaUV( Grid *grid,
 					   GridBool localOnly )
 {
   int node;
-  double nodeFaceAreaUV;
+  double nodeCostValid;
   GridBool nearGhost;
   for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode( grid, node ) &&
@@ -311,8 +319,14 @@ Grid *gridParallelRelaxNegativeFaceAreaUV( Grid *grid,
 	 gridNodeLocal(grid,node) ) {
       nearGhost = gridNodeNearGhost(grid, node);
       if ( localOnly != nearGhost ) {
-	gridMinFaceAreaUV(grid,node,&nodeFaceAreaUV);
-	if (1.0e-12 > nodeFaceAreaUV) gridSmoothNodeFaceAreaUV( grid, node );
+	gridNodeCostValid(grid,node,&nodeCostValid);
+	if ( -1.5 > nodeCostValid ) {
+	  if (USE_LINEAR_PROGRAMMING_FOR_UNTANGLING) {
+	    gridUntangleAreaUV( grid, node, 1, !localOnly );
+	  } else {
+	    gridSmoothNodeFaceAreaUV( grid, node );
+	  }
+	}
       }
     }
   }

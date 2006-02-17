@@ -1,3 +1,9 @@
+2006-02-17  9:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelRelaxNegativeCells,
+	gridParallelRelaxNegativeFaceAreaUV) they will use LP if
+	#define USE_LINEAR_PROGRAMMING_FOR_UNTANGLING (TRUE).
+
 2006-02-17  9:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridUntangleAreaUV,gridUntangleVolume) to permit
