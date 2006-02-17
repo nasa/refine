@@ -1,3 +1,8 @@
+2006-02-17  9:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleAreaUV,gridUntangleVolume) to permit
+	use in parallel, added a allow_movement_near_ghost_nodes argment.
+
 2005-02-16 16:30 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.10 Release. Tagging before folding simplex (tableau)

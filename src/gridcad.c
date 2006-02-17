@@ -415,7 +415,7 @@ Grid *gridUntangle(Grid *grid)
 	gridMinFaceAreaUV(grid, fix_node, &area);
 	if ( (area <= allowedArea) || (tries>10) ) {
 	  active_nodes++;
-	  if ( grid != gridUntangleAreaUV( grid, fix_node, 1 ) ) {
+	  if ( grid != gridUntangleAreaUV( grid, fix_node, 1, FALSE ) ) {
 	    printf( "%s: %d: %s: gridUntangleAreaUV NULL\n",
 		    __FILE__, __LINE__, "gridUntangle");
 	  }
@@ -452,7 +452,7 @@ Grid *gridUntangle(Grid *grid)
 	gridNodeVolume(grid, fix_node, &volume );
 	if ( (volume <= allowedVolume) ) {
 	  active_nodes++;
-	  if ( grid != gridUntangleVolume( grid, fix_node, 3 ) ) {
+	  if ( grid != gridUntangleVolume( grid, fix_node, 3, FALSE ) ) {
 	    printf( "%s: %d: %s: gridUntangleVolume NULL\n",
 		    __FILE__, __LINE__, "gridUntangle");	    
 	  }
@@ -2657,7 +2657,8 @@ Grid *gridSmoothNodeVolumeUVSimplex( Grid *grid, int node )
 
 #define FREE_A_C_TABLEAU(a,c,f,tableau) free(a);free(c);free(f);tableauFree(tableau);
 
-Grid *gridUntangleAreaUV( Grid *grid, int node, int recursive_depth )
+Grid *gridUntangleAreaUV( Grid *grid, int node, int recursive_depth, 
+			  GridBool allow_movement_near_ghost_nodes )
 {
   int face, nodes[3], faceId, temp;
   double orig_uv[2], new_uv[2];
@@ -2675,8 +2676,14 @@ Grid *gridUntangleAreaUV( Grid *grid, int node, int recursive_depth )
   Tableau *tableau;
   int vol = 1;
 
-  if (!gridGeometryFace(grid,node)) return NULL;
-  if (gridGeometryBetweenFace(grid,node)) return NULL;
+  /* only allow surface nodes on the interor of faces to move */ 
+  if ( !gridGeometryFace(grid,node) ) return NULL;
+  if ( gridGeometryBetweenFace(grid,node) ) return NULL;
+
+  /* perform parallel checks */ 
+  if ( gridNodeGhost(grid,node)) return NULL;
+  if ( !allow_movement_near_ghost_nodes && 
+       gridNodeNearGhost(grid, node ) ) return NULL;
 
   face = adjItem(adjFirst(gridFaceAdj(grid), node));
   if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
@@ -2793,16 +2800,19 @@ Grid *gridUntangleAreaUV( Grid *grid, int node, int recursive_depth )
   if ( recursive_depth > 0 ) {
     for (j = 0; j<m ; j++) {
       for (i = 0; i<m-1 ; i++) {
-	gridUntangleAreaUV(grid, f[i+m*basis[j]], recursive_depth-1 );
+	gridUntangleAreaUV(grid, f[i+m*basis[j]], recursive_depth-1,
+			   allow_movement_near_ghost_nodes );
       }
     }
-    gridUntangleAreaUV(grid, node, 0 );
+    gridUntangleAreaUV(grid, node, 0,
+		       allow_movement_near_ghost_nodes );
   }
 
   FREE_A_C_TABLEAU(a,c,f,tableau); return grid;
 }
 
-Grid *gridUntangleVolume( Grid *grid, int node, int recursive_depth )
+Grid *gridUntangleVolume( Grid *grid, int node, int recursive_depth, 
+			  GridBool allow_movement_near_ghost_nodes )
 {
   int cell, unsorted_nodes[4], nodes[4], temp_node;
   double orig_xyz[3], new_xyz[3];
@@ -2822,7 +2832,14 @@ Grid *gridUntangleVolume( Grid *grid, int node, int recursive_depth )
 
   double d0[9], d1[9], d2[9], d3[9];
 
+  /* only allow movement of nodes in volume (off-surface) */ 
   if (gridGeometryFace(grid,node)) return NULL;
+
+    /* perform parallel checks */ 
+  if ( gridNodeGhost(grid,node)) return NULL;
+  if ( !allow_movement_near_ghost_nodes && 
+       gridNodeNearGhost(grid, node ) ) return NULL;
+ 
   if ( NULL == gridNodeXYZ(grid, node, orig_xyz)) return NULL;
 
   gridNodeVolume(grid, node, &original_volume );
@@ -2959,10 +2976,12 @@ Grid *gridUntangleVolume( Grid *grid, int node, int recursive_depth )
   if ( recursive_depth > 0 ) {
     for (j = 0; j<m ; j++) {
       for (i = 0; i<m-1 ; i++) {
-	gridUntangleVolume(grid, f[i+m*basis[j]], recursive_depth-1 );
+	gridUntangleVolume(grid, f[i+m*basis[j]], recursive_depth-1,
+			   allow_movement_near_ghost_nodes );
       }
     }
-    gridUntangleVolume(grid, node, 0 );
+    gridUntangleVolume(grid, node, 0,
+		       allow_movement_near_ghost_nodes );
   }
 
   FREE_A_C_TABLEAU(a,c,f,tableau); return grid;

@@ -110,8 +110,10 @@ Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *g, int node );
 
 Grid *gridSmoothNodeVolumeUVSimplex( Grid *g, int node );
 
-Grid *gridUntangleAreaUV(Grid *g, int node, int recursive_depth );
-Grid *gridUntangleVolume(Grid *g, int node, int recursive_depth );
+Grid *gridUntangleAreaUV(Grid *g, int node, int recursive_depth, 
+			 GridBool allow_movement_near_ghost_nodes );
+Grid *gridUntangleVolume(Grid *g, int node, int recursive_depth, 
+			 GridBool allow_movement_near_ghost_nodes  );
 
 END_C_DECLORATION
 
