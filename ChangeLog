@@ -1,3 +1,9 @@
+2006-04-24 11:00 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) use_a_plan defaults to FALSE
+	because the plan is too aggressive for sonicboom cases.  Can be
+	controlled with env $REFINE_WITH_PLAN = "Yes"
+
 2006-02-17  9:38 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelRelaxNegativeCells,

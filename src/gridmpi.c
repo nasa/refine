@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "plan.h"
 #include "gridmetric.h"
 #include "gridinsert.h"
@@ -61,6 +62,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   int nodes[2];
   double length;
   Plan *plan;
+  char *env;
   
   double min_insert_cost;
   int parent;
@@ -70,7 +72,13 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   nnodeAdd    = 0;
   nnodeRemove = 0;
 
-  use_a_plan = TRUE;
+  use_a_plan = FALSE;
+  env = getenv("REFINE_WITH_PLAN");
+  if (env != NULL) {
+    if (strcasecmp(env,"NO") == 0) use_a_plan = FALSE;
+    else                           use_a_plan = TRUE;
+  }
+
   if (use_a_plan) {
 
     /* split long edges */
