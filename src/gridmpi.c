@@ -149,33 +149,6 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
     planFree(plan);
     gridEraseConn(grid);
 
-    /* ensure mesh is topologically correct for projection... */
-    /*   by spliting any interior edge that has both nodes on boundary. */
-    gridCreateConn(grid);
-    min_insert_cost = gridMinInsertCost( grid ); /* save orig cost */
-    gridSetMinInsertCost( grid, -100.0 ); /* split at any cost (pun intended)*/
-    for(conn=0;conn<gridNConn(grid);conn++) {
-      gridConn2Node(grid,conn,nodes);
-      if ( gridNodeLocal(grid,nodes[0]) || 
-	   gridNodeLocal(grid,nodes[1]) ) {
-	parent = gridParentGeometry(grid, nodes[0], nodes[1] );
-	if ( ( gridGeometryFace( grid, nodes[0] ) &&
-	       gridGeometryFace( grid, nodes[1] ) &&
-	       0 == parent  ) ||
-	     ( gridGeometryEdge( grid, nodes[0] ) &&
-	       gridGeometryEdge( grid, nodes[1] ) &&
-	       0 < parent  ) ) {
-	  newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
-	  /* in gcase a boundary collapse creates problem */
-	  if ( EMPTY == newnode && NULL != queue ){
-	    newnode = gridParallelEdgeSplit( grid, NULL, nodes[0], nodes[1] );
-	  }
-	}
-      }
-    }
-    gridSetMinInsertCost( grid, min_insert_cost );  /* reset to orig cost */
-    gridEraseConn(grid);
-
   }else{
     arLimit = 0.05;
 
@@ -208,6 +181,34 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
       }
     }
   }
+
+  /* ensure mesh is topologically correct for projection... */
+  /*   by spliting any interior edge that has both nodes on boundary. */
+  gridCreateConn(grid);
+  min_insert_cost = gridMinInsertCost( grid ); /* save orig cost */
+  gridSetMinInsertCost( grid, -100.0 ); /* split at any cost (pun intended)*/
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    if ( gridNodeLocal(grid,nodes[0]) || 
+	 gridNodeLocal(grid,nodes[1]) ) {
+      parent = gridParentGeometry(grid, nodes[0], nodes[1] );
+      if ( ( gridGeometryFace( grid, nodes[0] ) &&
+	     gridGeometryFace( grid, nodes[1] ) &&
+	     0 == parent  ) ||
+	   ( gridGeometryEdge( grid, nodes[0] ) &&
+	     gridGeometryEdge( grid, nodes[1] ) &&
+	     0 < parent  ) ) {
+	newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
+	/* in gcase a boundary collapse creates problem */
+	if ( EMPTY == newnode && NULL != queue ){
+	  newnode = gridParallelEdgeSplit( grid, NULL, nodes[0], nodes[1] );
+	}
+      }
+    }
+  }
+  gridSetMinInsertCost( grid, min_insert_cost );  /* reset to orig cost */
+  gridEraseConn(grid);
+
 #ifdef PARALLEL_VERBOSE 
   if ( NULL == queue ) {
     printf("local added%9d remov%9d AR%14.10f\n",

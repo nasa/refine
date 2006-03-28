@@ -1,3 +1,8 @@
+2006-04-28 13:35 Mike Park <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) Always split edges that are a
+	potential problem for projection, regardless of the use of a plan.
+
 2006-04-24 11:00 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt) use_a_plan defaults to FALSE
