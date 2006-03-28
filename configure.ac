@@ -124,20 +124,10 @@ then
   CAPRIheader=-I$CAPRIinclude
   CAPRI=$with_CAPRI
   AM_CONDITIONAL(BUILD_NATIVE_KERNEL,true)
-  CAPRINativelibrary="-L$CAPRI/Native/$CAPRI_ARCH -lcapri"
-else
-  CAPRIheader=
-  if test "$with_CAPRI" != 'geomSGIn32'
-  then
-    AM_CONDITIONAL(BUILD_NATIVE_KERNEL,false)
-    CAPRINativelibrary=
-  else
-    AM_CONDITIONAL(BUILD_NATIVE_KERNEL,true)
-    CAPRINativelibrary='-lCADGeom-CAPRINative'
-  fi
+  CAPRINativelibrary="-L$have_CAPRI/Native/$CAPRI_ARCH -lcapri"
+  AC_SUBST([CAPRIheader])
+  AC_SUBST([CAPRINativelibrary])
 fi
-AC_SUBST([CAPRIheader])
-AC_SUBST([CAPRINativelibrary])
 
 dnl Check for Parasolid
 
