@@ -124,7 +124,7 @@ then
   CAPRIheader=-I$CAPRIinclude
   CAPRI=$with_CAPRI
   AM_CONDITIONAL(BUILD_NATIVE_KERNEL,true)
-  CAPRINativelibrary="-L$have_CAPRI/Native/$CAPRI_ARCH -lcapri"
+  CAPRINativelibrary="-L$with_CAPRI/Native/$CAPRI_ARCH -lcapri"
   AC_SUBST([CAPRIheader])
   AC_SUBST([CAPRINativelibrary])
 fi
@@ -151,7 +151,7 @@ else
     else
       AC_CHECK_FILE([$with_PARASOLID/uglibs/libpskernel.so],
                     [have_PARASOLID='yes'],[have_PARASOLID='no'])
-      FG_LIB=$CAPRI/Parasolid/$CAPRI_ARCH/fg.lib
+      FG_LIB=$with_CAPRI/Parasolid/$CAPRI_ARCH/fg.lib
       AC_CHECK_FILE([$FG_LIB],[have_FG_LIB='yes'],[have_FG_LIB='no'])
     fi
   fi
@@ -161,9 +161,9 @@ else
     AM_CONDITIONAL(BUILD_PARASOLID_KERNEL,true)
     if test "$arch" == 'Linux'
     then  
-      CAPRIParasolidlibrary="-L$CAPRI/Parasolid/$CAPRI_ARCH -lcapri $FG_LIB -L$with_PARASOLID -lpskernel"
+      CAPRIParasolidlibrary="-L$with_CAPRI/Parasolid/$CAPRI_ARCH -lcapri $FG_LIB -L$with_PARASOLID -lpskernel"
     else
-      CAPRIParasolidlibrary="-L$CAPRI/Parasolid/$CAPRI_ARCH -lcapri $FG_LIB -L$with_PARASOLID/uglibs -lpskernel"
+      CAPRIParasolidlibrary="-L$with_CAPRI/Parasolid/$CAPRI_ARCH -lcapri $FG_LIB -L$with_PARASOLID/uglibs -lpskernel"
     fi
   else
     AM_CONDITIONAL(BUILD_PARASOLID_KERNEL,false)
@@ -181,7 +181,7 @@ else
   if test "$have_CAS" != 'no'
   then
     AM_CONDITIONAL(BUILD_OPENCASCADE_KERNEL,true)
-    CAPRIOpenCASCADElibrary="-L$CAPRI/OpenCASCADE/$CAPRI_ARCH -lcapri -L$CAS_LIB -lFWOSPlugin -lPTKernel -lTKBool -lTKCDF -lTKernel -lTKFeat -lTKGeomAlgo -lTKMath -lTKOffset -lTKPrim -lTKPShape -lTKService -lTKTopAlgo -lTKBRep -lTKG2d -lTKG3d -lTKGeomBase -lTKShHealing"
+    CAPRIOpenCASCADElibrary="-L$with_CAPRI/OpenCASCADE/$CAPRI_ARCH -lcapri -L$CAS_LIB -lFWOSPlugin -lPTKernel -lTKBool -lTKCDF -lTKernel -lTKFeat -lTKGeomAlgo -lTKMath -lTKOffset -lTKPrim -lTKPShape -lTKService -lTKTopAlgo -lTKBRep -lTKG2d -lTKG3d -lTKGeomBase -lTKShHealing"
   else
     AM_CONDITIONAL(BUILD_OPENCASCADE_KERNEL,false)
     CAPRIOpenCASCADElibrary=
@@ -202,7 +202,7 @@ else
   if test "$have_PROETool" != 'no' &&  test "$have_PROEDev" != 'no' 
   then
     AM_CONDITIONAL(BUILD_PROE_KERNEL,true)
-    CAPRIProElibrary="-L$CAPRI/ProE/$CAPRI_ARCH -lcapri $PROE_TOOL $PROE_DEV"
+    CAPRIProElibrary="-L$with_CAPRI/ProE/$CAPRI_ARCH -lcapri $PROE_TOOL $PROE_DEV"
   else
     AM_CONDITIONAL(BUILD_PROE_KERNEL,false)
     CAPRIProElibrary=
