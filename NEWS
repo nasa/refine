@@ -3,10 +3,10 @@ Tue Mar 28, 2006: Released Refine 1.2.11
 
 FUN3D interface change: provides new gridparallelpreproject_
 to extract the distributed pre projection topology checks to
-a single function call to be called juct before projection
+a single function call to be called just before projection
 
-Rewound the agreesive adaptation to the old methopd that would only
-change one edge incident to a node per adaptation sweep. The agressive
+Rewound the aggressive adaptation to the old method that would only
+change one edge incident to a node per adaptation sweep. The aggressive
 method (use_a_plan) caused trouble for the sle case.
 
 Thu Feb 16, 2006: Released Refine 1.2.10
