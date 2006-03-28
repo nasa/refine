@@ -1,3 +1,10 @@
+2005-04-28 16:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell,gridRemoveThreeFaceCell)
+	removed regardless of cost.
+	* src/gridswap.c (gridRemoveThreeFaceCell) fixed logic that made
+	sure all three faces are on same faceId.
+
 2005-04-28 15:25 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.11 Release. Tagging at FUN3D interface change to

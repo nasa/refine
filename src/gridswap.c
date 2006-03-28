@@ -218,10 +218,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     return NULL;
   }
 
-  if ( gridMinSwapCost(grid) < 
-       gridMinARAroundNodeExceptGem(grid, uncommonNodes[0]) &&
-       gridMinSwapCost(grid) < 
-       gridMinARAroundNodeExceptGem(grid, uncommonNodes[1]) ) {
+  if ( TRUE ) { /* don't check if causes problems */
     gridRemoveCellAndQueue(grid, queue, cell);
     gridRemoveFaceAndQueue(grid, queue, faces[face0] );
     gridRemoveFaceAndQueue(grid, queue, faces[face1] );
@@ -282,7 +279,7 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
   if (3!=facecount) return NULL;
   faceId0 = faceIds[face0];
   faceId1 = faceIds[face1];
-  faceId2 = faceIds[face1];
+  faceId2 = faceIds[face2];
   if ( (faceId0!=faceId1) || 
        (faceId0!=faceId2) || 
        (faceId1!=faceId2) ) return NULL;
@@ -417,8 +414,7 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     return NULL;
   }
 
-  if ( gridMinSwapCost(grid) < 
-       gridMinARAroundNodeExceptGem(grid, uncommon_node) ) {
+  if ( TRUE ) { /* don't check if causes problems */
     gridRemoveCellAndQueue(grid, queue, cell);
     gridRemoveFaceAndQueue(grid, queue, faces[face0] );
     gridRemoveFaceAndQueue(grid, queue, faces[face1] );
