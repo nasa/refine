@@ -64,9 +64,6 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   Plan *plan;
   char *env;
   
-  double min_insert_cost;
-  int parent;
-
   origNNode   = gridNNode(grid);
   adaptnode   = 0;
   nnodeAdd    = 0;
@@ -182,33 +179,6 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
     }
   }
 
-  /* ensure mesh is topologically correct for projection... */
-  /*   by spliting any interior edge that has both nodes on boundary. */
-  gridCreateConn(grid);
-  min_insert_cost = gridMinInsertCost( grid ); /* save orig cost */
-  gridSetMinInsertCost( grid, -100.0 ); /* split at any cost (pun intended)*/
-  for(conn=0;conn<gridNConn(grid);conn++) {
-    gridConn2Node(grid,conn,nodes);
-    if ( gridNodeLocal(grid,nodes[0]) || 
-	 gridNodeLocal(grid,nodes[1]) ) {
-      parent = gridParentGeometry(grid, nodes[0], nodes[1] );
-      if ( ( gridGeometryFace( grid, nodes[0] ) &&
-	     gridGeometryFace( grid, nodes[1] ) &&
-	     0 == parent  ) ||
-	   ( gridGeometryEdge( grid, nodes[0] ) &&
-	     gridGeometryEdge( grid, nodes[1] ) &&
-	     0 < parent  ) ) {
-	newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
-	/* in gcase a boundary collapse creates problem */
-	if ( EMPTY == newnode && NULL != queue ){
-	  newnode = gridParallelEdgeSplit( grid, NULL, nodes[0], nodes[1] );
-	}
-      }
-    }
-  }
-  gridSetMinInsertCost( grid, min_insert_cost );  /* reset to orig cost */
-  gridEraseConn(grid);
-
 #ifdef PARALLEL_VERBOSE 
   if ( NULL == queue ) {
     printf("local added%9d remov%9d AR%14.10f\n",
@@ -218,6 +188,57 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 	   nnodeAdd,nnodeRemove,gridMinAR(grid));
   }
 #endif
+  return grid;
+}
+
+Grid *gridParallelPreProject(Grid *grid, Queue *queue )
+{
+  int cell, conn, newnode;
+  int nodes[4];
+  int parent;
+  double min_insert_cost;
+
+  /* remove all tets with two or three faces on the boundary */
+  /* these two- or three- face tets cause projection problems */
+  for (cell=0;cell<gridMaxCell(grid);cell++){
+    if ( grid==gridCell( grid, cell, nodes) ) {
+      if ( NULL == queue && gridCellHasGhostNode(grid,nodes) ) continue;
+      if ( gridGeometryFace(grid, nodes[0]) ||
+	   gridGeometryFace(grid, nodes[1]) ||
+	   gridGeometryFace(grid, nodes[2]) ||
+	   gridGeometryFace(grid, nodes[3]) ){
+	gridRemoveTwoFaceCell(grid, queue, cell);
+	gridRemoveThreeFaceCell(grid, queue, cell);
+      }
+    }
+  }
+
+  /* ensure mesh is topologically correct for projection... */
+  /*   by spliting any interior edge that has both nodes on boundary. */
+  gridCreateConn(grid);
+  min_insert_cost = gridMinInsertCost( grid ); /* save orig cost */
+  gridSetMinInsertCost( grid, -100.0 ); /* split at any cost (pun intended)*/
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    if ( gridNodeLocal(grid,nodes[0]) || gridNodeLocal(grid,nodes[1]) ) {
+      parent = gridParentGeometry(grid, nodes[0], nodes[1] );
+      if ( ( gridGeometryFace( grid, nodes[0] ) &&
+	     gridGeometryFace( grid, nodes[1] ) &&
+	     0 == parent  ) ||
+	   ( gridGeometryEdge( grid, nodes[0] ) &&
+	     gridGeometryEdge( grid, nodes[1] ) &&
+	     0 < parent  ) ) {
+	newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
+	/* to allow second pass at interior */
+	if ( EMPTY == newnode && NULL != queue ){
+	  newnode = gridParallelEdgeSplit( grid, NULL, nodes[0], nodes[1] );
+	}
+      }
+    }
+  }
+  gridSetMinInsertCost( grid, min_insert_cost );  /* reset to orig cost */
+  gridEraseConn(grid);
+
   return grid;
 }
 
@@ -375,19 +396,6 @@ Grid *gridParallelSwap(Grid *grid, Queue *queue, double ARlimit )
 	  continue;
 	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
 	  continue;
-      }
-    }
-  }
-
-  for (cell=0;cell<maxcell;cell++){
-    if ( grid==gridCell( grid, cell, nodes) ) {
-      if ( NULL == queue && gridCellHasGhostNode(grid,nodes) ) continue;
-      if ( gridGeometryFace(grid, nodes[0]) ||
-	   gridGeometryFace(grid, nodes[1]) ||
-	   gridGeometryFace(grid, nodes[2]) ||
-	   gridGeometryFace(grid, nodes[3]) ){
-	gridRemoveTwoFaceCell(grid, queue, cell);
-	gridRemoveThreeFaceCell(grid, queue, cell);
       }
     }
   }

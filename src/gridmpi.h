@@ -25,6 +25,7 @@ Grid *gridSetGhost(Grid *g, int node );
 
 Grid *gridParallelAdapt(Grid *g, Queue *q, 
 		       double minLength, double maxLength );
+Grid *gridParallelPreProject(Grid *g, Queue *q );
 int gridParallelEdgeSplit(Grid *g, Queue *q, int node0, int node1 );
 Grid *gridParallelEdgeCollapse(Grid *g, Queue *q, int node0, int node1 );
 

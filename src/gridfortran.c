@@ -425,6 +425,18 @@ void gridparalleladapt_( int *processor,
   } 
 }
 
+void gridparallelpreproject_( int *processor )
+{
+#ifdef PARALLEL_VERBOSE 
+  printf(" %6d prepj processor %2d ",gridPartId(grid),*processor);
+#endif
+  if (*processor == -1) {
+    gridParallelPreProject(grid,NULL);
+  } else {
+    gridParallelPreProject(grid,queue);
+  } 
+}
+
 void queuedumpsize_( int *nInt, int *nDouble )
 {
   queueDumpSize(queue, nInt, nDouble);

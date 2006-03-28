@@ -1,3 +1,12 @@
+2006-04-28 15:00 Mike Park <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt,gridParallelSwap) extracted the
+	pre projection check to gridParallelPreProject.
+	* src/gridmpi.c (gridParallelPreProject) added to run all the
+	checks before projection.
+	* src/gridfortran.c (gridparallelpreproject_) added to allow
+	FUN3D to call the preprojection checks cleanly.
+	
 2006-04-28 13:35 Mike Park <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt) Always split edges that are a

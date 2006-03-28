@@ -45,6 +45,7 @@ void gridparallelrelaxneg_( int *processor, int *geometryAllowed );
 void gridparallelrelaxsurf_( int *processor );
 void gridparalleladapt_( int *processor, 
 			 double *minLength, double *maxLength );
+void gridparallelpreproject_( int *processor );
 void queuedumpsize_( int *nInt, int *nDouble );
 void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles );
 void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles );
