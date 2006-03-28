@@ -1,3 +1,8 @@
+2005-04-28 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.11 Release. Tagging at FUN3D interface change to
+	add gridparallelpreproject_.
+
 2006-04-28 15:00 Mike Park <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt,gridParallelSwap) extracted the
