@@ -23,6 +23,7 @@
 #include "gridmath.h"
 #include "gridmetric.h"
 #include "gridshape.h"
+#include "gridinsert.h"
 #include "gridcad.h"
 
 Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )
@@ -393,7 +394,6 @@ Grid *gridUntangle(Grid *grid)
   int active_nodes;
   int tries;
   int stalled;
-  int cell;
   allowedArea = 1.0e-12;
 
   minArea = gridMinGridFaceAreaUV(grid);
