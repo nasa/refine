@@ -246,7 +246,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
   int other_cell;
   int common_node, uncommon_node;
 
-
   int cell2face[4][3] = {{0,1,2},{0,3,1},{1,3,2},{0,2,3}};
 
   if ( grid != gridCell( grid, cell, cellnodes ) ) return NULL;
@@ -297,24 +296,26 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
   if (3 == degree[2]) common_node = 2;
   if (3 == degree[3]) common_node = 3;
   
-  if (EMPTY == common_node) return NULL;
+  if (EMPTY == common_node) {
+    printf("%s: %d: gridRemoveThreeFaceCell: common_node EMPTY\n",
+	   __FILE__,__LINE__ );
+    return NULL;
+  }
 
   if ( gridNodeGhost(grid,cellnodes[common_node]) ) return NULL;
 
-  /* make sure that at least one of the other three is local too, 
-     this ensures a that there is not four? faces on cell */
-
-  if ( ( 2 == degree[0] && gridNodeGhost(grid,cellnodes[0]) ) &&
-       ( 2 == degree[1] && gridNodeGhost(grid,cellnodes[1]) ) &&
-       ( 2 == degree[2] && gridNodeGhost(grid,cellnodes[2]) ) &&
-       ( 2 == degree[3] && gridNodeGhost(grid,cellnodes[3]) ) ) return NULL;
-
   /* determine the open face of the cell */
-  newface= EMPTY;
+  newface = EMPTY;
   for(face=0;face<4;face++) {
-    if (faces[face]==EMPTY) {
+    if (EMPTY == faces[face]) {
       newface = face;
     }
+  }
+
+  if (EMPTY == newface) {
+    printf("%s: %d: gridRemoveThreeFaceCell: EMPTY newface\n",
+	   __FILE__,__LINE__);
+    return NULL;
   }
 
   /* add opposite face in left-handed for the removed tet, 
@@ -361,7 +362,8 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 
   /* form gem on common edge that only contains cell to be removed to
      exclude it from minimum cost test */
-  if (grid != gridMakeGem(grid, common_node, uncommon_node)) {
+  if (grid != gridMakeGem(grid, 
+			  cellnodes[common_node], cellnodes[uncommon_node])) {
     printf("%s: %d: gridRemoveThreeFaceCell: gridMakeGem NULL\n",
 	   __FILE__,__LINE__ );
     gridRemoveFaceAndQueue(grid, queue, added_face );

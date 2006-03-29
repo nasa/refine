@@ -1,9 +1,15 @@
+2005-04-29 10:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) fixed the gem checks,
+	reporting, and extraneous parallel checks.
+
 2005-04-28 16:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell,gridRemoveThreeFaceCell)
 	removed regardless of cost.
 	* src/gridswap.c (gridRemoveThreeFaceCell) fixed logic that made
 	sure all three faces are on same faceId.
+
 
 2005-04-28 15:25 Mike Park  <mike.park@nasa.gov>
 
