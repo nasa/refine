@@ -94,6 +94,15 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   if ( gridNodeGhost(grid,uncommonNodes[0]) ) return NULL;
   if ( gridNodeGhost(grid,uncommonNodes[1]) ) return NULL;
 
+  /* determine the two new faces of the cell */
+  newface0 = newface1 = EMPTY;
+  for(face=0;face<4;face++) {
+    if (faces[face]==EMPTY) {
+      if (newface0!=EMPTY) newface1 = face;
+      if (newface0==EMPTY) newface0 = face;
+    }
+  }
+  
   facenodes[0] = cell2face[newface0][1];
   facenodes[1] = cell2face[newface0][0];
   facenodes[2] = cell2face[newface0][2];
@@ -115,8 +124,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 				      cellnodes[facenodes[2]], cell );
   if (EMPTY == cell1) {
     printf("%s: %d: gridRemoveTwoFaceCell: EMPTY cell1\n",__FILE__,__LINE__);
-    gridRemoveFaceAndQueue(grid, queue, addedFace0 );
-    queueResetCurrentTransaction( queue );
     return NULL;
   }
 
@@ -125,12 +132,9 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   if (grid != gridMakeGem(grid, commonNodes[0], commonNodes[1])) {
     printf("%s: %d: gridRemoveTwoFaceCell: gridMakeGem NULL\n",
 	   __FILE__,__LINE__ );
-    gridRemoveFaceAndQueue(grid, queue, addedFace0 );
-    gridRemoveFaceAndQueue(grid, queue, addedFace1 );
-    queueResetCurrentTransaction( queue );
     return NULL;
   }
-  if ( 1 != gridNGem(grid) ) {
+  if ( TRUE ) {
     int gem, gemcell, gemnodes[4];
     double xyz[3];
     printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
@@ -175,18 +179,8 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     }
     fflush(stdout);
 
-    return NULL;
   }
 
-  /* determine the two new faces of the cell */
-  newface0 = newface1 = EMPTY;
-  for(face=0;face<4;face++) {
-    if (faces[face]==EMPTY) {
-      if (newface0!=EMPTY) newface1 = face;
-      if (newface0==EMPTY) newface0 = face;
-    }
-  }
-  
   for(node=0;node<4;node++) 
     gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
       
@@ -355,7 +349,7 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 	   __FILE__,__LINE__ );
     return NULL;
   }
-  if ( 1 != gridNGem(grid) ) {
+  if ( TRUE ) {
     int gem, gemcell, gemnodes[4];
     double xyz[3];
     printf("%s: %d: gridRemoveThreeFaceCell: ngem %d expected 1\n",
@@ -396,7 +390,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     }
     fflush(stdout);
 
-    return NULL;
   }
 
   /* get uv's for new face */
