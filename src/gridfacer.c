@@ -424,9 +424,6 @@ GridFacer *gridfacerSplit(GridFacer *gf)
   double ratio;
   int rank;
   int *local_e2n;
-  int face0, face1;
-  int nodes[3], faceId;
-  int node2, node3;
   int newnode;
 
   Plan *plan;
