@@ -94,21 +94,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   if ( gridNodeGhost(grid,uncommonNodes[0]) ) return NULL;
   if ( gridNodeGhost(grid,uncommonNodes[1]) ) return NULL;
 
-  /* determine the two new faces of the cell */
-  newface0 = newface1 = EMPTY;
-  for(face=0;face<4;face++) {
-    if (faces[face]==EMPTY) {
-      if (newface0!=EMPTY) newface1 = face;
-      if (newface0==EMPTY) newface0 = face;
-    }
-  }
-  
-  for(node=0;node<4;node++) 
-    gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
-      
-  /* add opposite face in left-handed for the removed tet, 
-     right-handed for rest of grid */
- 
   facenodes[0] = cell2face[newface0][1];
   facenodes[1] = cell2face[newface0][0];
   facenodes[2] = cell2face[newface0][2];
@@ -120,17 +105,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     printf("%s: %d: gridRemoveTwoFaceCell: EMPTY cell0\n",__FILE__,__LINE__);
     return NULL;
   }
-  addedFace0 = gridAddFaceUVAndQueue(grid, queue, 
-				     cellnodes[facenodes[0]], 
-				     uv[0+2*facenodes[0]],
-				     uv[1+2*facenodes[0]],
-				     cellnodes[facenodes[1]], 
-				     uv[0+2*facenodes[1]],
-				     uv[1+2*facenodes[1]],
-				     cellnodes[facenodes[2]], 
-				     uv[0+2*facenodes[2]],
-				     uv[1+2*facenodes[2]],
-				     faceId0 );
 
   facenodes[0] = cell2face[newface1][1];
   facenodes[1] = cell2face[newface1][0];
@@ -145,17 +119,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     queueResetCurrentTransaction( queue );
     return NULL;
   }
-  addedFace1 = gridAddFaceUVAndQueue(grid, queue, 
-				     cellnodes[facenodes[0]], 
-				     uv[0+2*facenodes[0]],
-				     uv[1+2*facenodes[0]],
-				     cellnodes[facenodes[1]], 
-				     uv[0+2*facenodes[1]],
-				     uv[1+2*facenodes[1]],
-				     cellnodes[facenodes[2]], 
-				     uv[0+2*facenodes[2]],
-				     uv[1+2*facenodes[2]],
-				     faceId1 );
 
   /* form gem on common edge that only contains cell to be removed to
      exclude it from minimum cost test */
@@ -212,11 +175,53 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     }
     fflush(stdout);
 
-    gridRemoveFaceAndQueue(grid, queue, addedFace0 );
-    gridRemoveFaceAndQueue(grid, queue, addedFace1 );
-    queueResetCurrentTransaction( queue );
     return NULL;
   }
+
+  /* determine the two new faces of the cell */
+  newface0 = newface1 = EMPTY;
+  for(face=0;face<4;face++) {
+    if (faces[face]==EMPTY) {
+      if (newface0!=EMPTY) newface1 = face;
+      if (newface0==EMPTY) newface0 = face;
+    }
+  }
+  
+  for(node=0;node<4;node++) 
+    gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
+      
+  /* add opposite face in left-handed for the removed tet, 
+     right-handed for rest of grid */
+ 
+  facenodes[0] = cell2face[newface0][1];
+  facenodes[1] = cell2face[newface0][0];
+  facenodes[2] = cell2face[newface0][2];
+  addedFace0 = gridAddFaceUVAndQueue(grid, queue, 
+				     cellnodes[facenodes[0]], 
+				     uv[0+2*facenodes[0]],
+				     uv[1+2*facenodes[0]],
+				     cellnodes[facenodes[1]], 
+				     uv[0+2*facenodes[1]],
+				     uv[1+2*facenodes[1]],
+				     cellnodes[facenodes[2]], 
+				     uv[0+2*facenodes[2]],
+				     uv[1+2*facenodes[2]],
+				     faceId0 );
+
+  facenodes[0] = cell2face[newface1][1];
+  facenodes[1] = cell2face[newface1][0];
+  facenodes[2] = cell2face[newface1][2];
+  addedFace1 = gridAddFaceUVAndQueue(grid, queue, 
+				     cellnodes[facenodes[0]], 
+				     uv[0+2*facenodes[0]],
+				     uv[1+2*facenodes[0]],
+				     cellnodes[facenodes[1]], 
+				     uv[0+2*facenodes[1]],
+				     uv[1+2*facenodes[1]],
+				     cellnodes[facenodes[2]], 
+				     uv[0+2*facenodes[2]],
+				     uv[1+2*facenodes[2]],
+				     faceId1 );
 
   if ( TRUE ) { /* don't check if causes problems */
     gridRemoveCellAndQueue(grid, queue, cell);
