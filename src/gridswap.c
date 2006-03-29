@@ -336,24 +336,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     return NULL;
   }
 
-  /* get uv's for new face */
-  for(node=0;node<4;node++) {
-    gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
-  }
-
-  added_face = gridAddFaceUVAndQueue( grid, queue, 
-				     cellnodes[facenodes[0]], 
-				     uv[0+2*facenodes[0]],
-				     uv[1+2*facenodes[0]],
-				     cellnodes[facenodes[1]], 
-				     uv[0+2*facenodes[1]],
-				     uv[1+2*facenodes[1]],
-				     cellnodes[facenodes[2]], 
-				     uv[0+2*facenodes[2]],
-				     uv[1+2*facenodes[2]],
-				     faceId0 );
-
-
   if (0 == common_node) {
     uncommon_node = 1;
   }else{
@@ -366,8 +348,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 			  cellnodes[common_node], cellnodes[uncommon_node])) {
     printf("%s: %d: gridRemoveThreeFaceCell: gridMakeGem NULL\n",
 	   __FILE__,__LINE__ );
-    gridRemoveFaceAndQueue(grid, queue, added_face );
-    queueResetCurrentTransaction( queue );
     return NULL;
   }
   if ( 1 != gridNGem(grid) ) {
@@ -411,12 +391,28 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     }
     fflush(stdout);
 
-    gridRemoveFaceAndQueue(grid, queue, added_face );
-    queueResetCurrentTransaction( queue );
     return NULL;
   }
 
-  if ( TRUE ) { /* don't check if causes problems */
+  /* get uv's for new face */
+  for(node=0;node<4;node++) {
+    gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
+  }
+
+  added_face = gridAddFaceUVAndQueue( grid, queue, 
+				      cellnodes[facenodes[0]], 
+				      uv[0+2*facenodes[0]],
+				      uv[1+2*facenodes[0]],
+				      cellnodes[facenodes[1]], 
+				      uv[0+2*facenodes[1]],
+				      uv[1+2*facenodes[1]],
+				      cellnodes[facenodes[2]], 
+				      uv[0+2*facenodes[2]],
+				      uv[1+2*facenodes[2]],
+				      faceId0 );
+
+
+  if ( TRUE ) { /* don't check if causes problems with validity */
     gridRemoveCellAndQueue(grid, queue, cell);
     gridRemoveFaceAndQueue(grid, queue, faces[face0] );
     gridRemoveFaceAndQueue(grid, queue, faces[face1] );
