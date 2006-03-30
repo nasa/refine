@@ -1,3 +1,8 @@
+2005-04-30  8:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) made the parallel checks
+	more precise. improved comments
+
 2005-04-29 10:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveThreeFaceCell) fixed the gem checks,

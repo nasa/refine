@@ -91,8 +91,11 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     return NULL;
   }
 
-  if ( gridNodeGhost(grid,uncommonNodes[0]) ) return NULL;
-  if ( gridNodeGhost(grid,uncommonNodes[1]) ) return NULL;
+  /* parallel checks:
+   * 1) need to have two faces on this processor (already checked)
+   * 2) make sure that the two new face locations have at least one
+   *    local node to ensure that this is not a three face cell
+   *    in disguise by with the third face off processor */
 
   /* determine the two new faces of the cell */
   newface0 = newface1 = EMPTY;
@@ -106,6 +109,13 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   facenodes[0] = cell2face[newface0][1];
   facenodes[1] = cell2face[newface0][0];
   facenodes[2] = cell2face[newface0][2];
+  
+  /* parallel check to make sure it is not a three face cell on other proc */
+  if ( gridNodeGhost(grid,facenodes[0]) &&
+       gridNodeGhost(grid,facenodes[1]) &&
+       gridNodeGhost(grid,facenodes[2]) ) return NULL;
+
+  /* unnecessary sanity check */
   cell0 = gridFindOtherCellWith3Nodes(grid, 
 				      cellnodes[facenodes[0]],
 				      cellnodes[facenodes[1]],
@@ -118,6 +128,13 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   facenodes[0] = cell2face[newface1][1];
   facenodes[1] = cell2face[newface1][0];
   facenodes[2] = cell2face[newface1][2];
+
+  /* parallel check to make sure it is not a three face cell on other proc */
+  if ( gridNodeGhost(grid,facenodes[0]) &&
+       gridNodeGhost(grid,facenodes[1]) &&
+       gridNodeGhost(grid,facenodes[2]) ) return NULL;
+
+  /* unnecessary sanity check */
   cell1 = gridFindOtherCellWith3Nodes(grid, 
 				      cellnodes[facenodes[0]],
 				      cellnodes[facenodes[1]],
@@ -128,13 +145,14 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   }
 
   /* form gem on common edge that only contains cell to be removed to
-     exclude it from minimum cost test */
+     exclude it from minimum cost test, if preformed */
   if (grid != gridMakeGem(grid, commonNodes[0], commonNodes[1])) {
     printf("%s: %d: gridRemoveTwoFaceCell: gridMakeGem NULL\n",
 	   __FILE__,__LINE__ );
     return NULL;
   }
-  if ( TRUE ) {
+  /* sanity check */
+  if ( 1 != gridNGem(grid) ) {
     int gem, gemcell, gemnodes[4];
     double xyz[3];
     printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
@@ -179,6 +197,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     }
     fflush(stdout);
 
+    return NULL;
   }
 
   for(node=0;node<4;node++) 
@@ -217,7 +236,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 				     uv[1+2*facenodes[2]],
 				     faceId1 );
 
-  if ( TRUE ) { /* don't check if causes problems */
+  if ( TRUE ) { /* don't check if minimum cost is satisfied */
     gridRemoveCellAndQueue(grid, queue, cell);
     gridRemoveFaceAndQueue(grid, queue, faces[face0] );
     gridRemoveFaceAndQueue(grid, queue, faces[face1] );
