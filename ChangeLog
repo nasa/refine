@@ -1,3 +1,8 @@
+2005-04-30  9:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) to correctly reset
+	facenodes before creating new face.
+
 2005-04-30  8:43 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveThreeFaceCell) fixed the creatation of

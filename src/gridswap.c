@@ -405,6 +405,9 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 
   /* add opposite face in left-handed for the removed tet, 
      right-handed for rest of grid */
+  facenodes[0] = cell2face[newface][1];
+  facenodes[1] = cell2face[newface][0];
+  facenodes[2] = cell2face[newface][2];
   added_face = gridAddFaceUVAndQueue( grid, queue, 
 				      cellnodes[facenodes[0]], 
 				      uv[0+2*facenodes[0]],

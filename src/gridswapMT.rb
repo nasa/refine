@@ -539,15 +539,14 @@ class TestGridSwap < Test::Unit::TestCase
   assert_equal 1, grid.ncell
   grid.removeFace(0)
   grid.addFace(0,1,2,10)
-  assert_nil grid.removeThreeFaceCell(0), "removed cell with no cell neighbors"
-  assert_equal 1, grid.ncell
-  grid.addNode(1,1,1)
-  grid.addNode(-1,0,0)
-  grid.addCell(3,1,2,4)
   assert_equal grid, grid.removeThreeFaceCell(0), "failed to removed good conf"
-  assert_equal 1, grid.ncell
+  assert_equal 0, grid.ncell
   assert_equal 1, grid.nface
+  assert_nil  grid.face(0)
+  assert_nil  grid.face(1)
+  assert_nil  grid.face(2)
   assert_equal [3,1,2,10], grid.face(3)
+  assert_nil  grid.face(4)
  end
 
  def parallel_three_face_setup
