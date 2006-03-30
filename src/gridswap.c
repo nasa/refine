@@ -115,7 +115,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
        gridNodeGhost(grid,facenodes[1]) &&
        gridNodeGhost(grid,facenodes[2]) ) return NULL;
 
-  /* unnecessary sanity check */
+  /* unnecessary sanity check, should exist because one node on face is local */
   cell0 = gridFindOtherCellWith3Nodes(grid, 
 				      cellnodes[facenodes[0]],
 				      cellnodes[facenodes[1]],
@@ -134,7 +134,7 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
        gridNodeGhost(grid,facenodes[1]) &&
        gridNodeGhost(grid,facenodes[2]) ) return NULL;
 
-  /* unnecessary sanity check */
+  /* unnecessary sanity check, should exist because one node on face is local */
   cell1 = gridFindOtherCellWith3Nodes(grid, 
 				      cellnodes[facenodes[0]],
 				      cellnodes[facenodes[1]],
