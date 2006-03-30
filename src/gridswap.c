@@ -320,6 +320,9 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     return NULL;
   }
 
+  /* parallel check: assumes that this is not a four face cells,
+   * which is thought to be impossible? */
+
   if ( gridNodeGhost(grid,cellnodes[common_node]) ) return NULL;
 
   /* determine the open face of the cell */
@@ -336,24 +339,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     return NULL;
   }
 
-  /* add opposite face in left-handed for the removed tet, 
-     right-handed for rest of grid */
- 
-  facenodes[0] = cell2face[newface][1];
-  facenodes[1] = cell2face[newface][0];
-  facenodes[2] = cell2face[newface][2];
-  other_cell = gridFindOtherCellWith3Nodes(grid, 
-					   cellnodes[facenodes[0]],
-					   cellnodes[facenodes[1]],
-					   cellnodes[facenodes[2]], cell );
-
-
-  if (EMPTY == other_cell) {
-    printf("%s: %d: gridRemoveThreeFaceCell: EMPTY other_cell\n",
-	   __FILE__,__LINE__);
-    return NULL;
-  }
-
   if (0 == common_node) {
     uncommon_node = 1;
   }else{
@@ -361,14 +346,15 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
   }
 
   /* form gem on common edge that only contains cell to be removed to
-     exclude it from minimum cost test */
+     exclude it from minimum cost test, if preformed */
   if (grid != gridMakeGem(grid, 
 			  cellnodes[common_node], cellnodes[uncommon_node])) {
     printf("%s: %d: gridRemoveThreeFaceCell: gridMakeGem NULL\n",
 	   __FILE__,__LINE__ );
     return NULL;
   }
-  if ( TRUE ) {
+  /* sanity check */
+  if ( 1 != gridNGem(grid) ) {
     int gem, gemcell, gemnodes[4];
     double xyz[3];
     printf("%s: %d: gridRemoveThreeFaceCell: ngem %d expected 1\n",
@@ -409,6 +395,7 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     }
     fflush(stdout);
 
+    return NULL;
   }
 
   /* get uv's for new face */
@@ -416,6 +403,8 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
   }
 
+  /* add opposite face in left-handed for the removed tet, 
+     right-handed for rest of grid */
   added_face = gridAddFaceUVAndQueue( grid, queue, 
 				      cellnodes[facenodes[0]], 
 				      uv[0+2*facenodes[0]],
@@ -429,11 +418,12 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 				      faceId0 );
 
 
-  if ( TRUE ) { /* don't check if causes problems with validity */
+  if ( TRUE ) { /* don't check if minimum cost is satisfied */
     gridRemoveCellAndQueue(grid, queue, cell);
     gridRemoveFaceAndQueue(grid, queue, faces[face0] );
     gridRemoveFaceAndQueue(grid, queue, faces[face1] );
     gridRemoveFaceAndQueue(grid, queue, faces[face2] );
+    gridRemoveNode(grid, cellnodes[common_node] );
     return grid;
   }else{
     gridRemoveFaceAndQueue(grid, queue, added_face );

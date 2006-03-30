@@ -1,3 +1,11 @@
+2005-04-30  8:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) fixed the creatation of
+	hanging nodes (nodes not connected to any cells) by removing
+	common node after removing cell. The hanging node caused the
+	adjoint to NaN on the second iteration and was detected by
+	repartying the grid with seq party.
+
 2005-04-30  8:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell) made the parallel checks
