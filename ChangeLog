@@ -1,16 +1,16 @@
-2005-04-31 10:15 Mike Park  <mike.park@nasa.gov>
+2006-03-31 10:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell) to fix a parallelization
 	check and to increase simularity between gridRemoveTwoFaceCell and
 	gridRemoveThreeFaceCell commonNodes and uncommonNodes are now
 	local cell indexes and facenodes are correctly mapped to node ids.
 
-2005-04-30  9:00 Mike Park  <mike.park@nasa.gov>
+2006-03-30  9:00 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveThreeFaceCell) to correctly reset
 	facenodes before creating new face.
 
-2005-04-30  8:43 Mike Park  <mike.park@nasa.gov>
+2006-03-30  8:43 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveThreeFaceCell) fixed the creatation of
 	hanging nodes (nodes not connected to any cells) by removing
@@ -18,17 +18,17 @@
 	adjoint to NaN on the second iteration and was detected by
 	repartying the grid with seq party.
 
-2005-04-30  8:30 Mike Park  <mike.park@nasa.gov>
+2006-03-30  8:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell) made the parallel checks
 	more precise. improved comments
 
-2005-04-29 10:22 Mike Park  <mike.park@nasa.gov>
+2006-03-29 10:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveThreeFaceCell) fixed the gem checks,
 	reporting, and extraneous parallel checks.
 
-2005-04-28 16:10 Mike Park  <mike.park@nasa.gov>
+2006-03-28 16:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell,gridRemoveThreeFaceCell)
 	removed regardless of cost.
@@ -36,12 +36,12 @@
 	sure all three faces are on same faceId.
 
 
-2005-04-28 15:25 Mike Park  <mike.park@nasa.gov>
+2006-03-28 15:25 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.2.11 Release. Tagging at FUN3D interface change to
 	add gridparallelpreproject_.
 
-2006-04-28 15:00 Mike Park <mike.park@nasa.gov>
+2006-03-28 15:00 Mike Park <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt,gridParallelSwap) extracted the
 	pre projection check to gridParallelPreProject.
@@ -50,12 +50,12 @@
 	* src/gridfortran.c (gridparallelpreproject_) added to allow
 	FUN3D to call the preprojection checks cleanly.
 	
-2006-04-28 13:35 Mike Park <mike.park@nasa.gov>
+2006-03-28 13:35 Mike Park <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt) Always split edges that are a
 	potential problem for projection, regardless of the use of a plan.
 
-2006-04-24 11:00 Bill Jones <w.t.jones@larc.nasa.gov>
+2006-03-24 11:00 Bill Jones <w.t.jones@larc.nasa.gov>
 
 	* src/gridmpi.c (gridParallelAdapt) use_a_plan defaults to FALSE
 	because the plan is too aggressive for sonicboom cases.  Can be
