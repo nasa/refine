@@ -256,6 +256,7 @@ Grid *gridCreateShellFromFaces( Grid *grid )
 
   if( (ugp=CADTopo_AssembleTShell(vol,tPts,tTri,maxFace)) == NULL ) {
     printf("%s: %d: Failed to create Shell from faces\n",__FILE__,__LINE__);
+    return NULL;
   }
 
   UGrid_TIMESTAMP(ugp) = time( NULL );
