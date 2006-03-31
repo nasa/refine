@@ -15,6 +15,8 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 
+#define DEBUG_REMOVE_FACE_CELL (0)
+
 Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 {
   int cellnodes[4], facenodes[3];
@@ -155,6 +157,11 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   }
   /* sanity check */
   if ( 1 != gridNGem(grid) ) {
+    printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
+	   __FILE__,__LINE__, gridNGem(grid) );
+    return NULL;
+  }
+  if ( 1 != gridNGem(grid) || DEBUG_REMOVE_FACE_CELL ) {
     int gem, gemcell, gemnodes[4];
     double xyz[3];
     printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
@@ -198,8 +205,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 	     gridNodePart(grid,gemnodes[3]));
     }
     fflush(stdout);
-
-    return NULL;
   }
 
   for(node=0;node<4;node++) 
@@ -358,6 +363,11 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
   }
   /* sanity check */
   if ( 1 != gridNGem(grid) ) {
+    printf("%s: %d: gridRemoveThreeFaceCell: ngem %d expected 1\n",
+	   __FILE__,__LINE__, gridNGem(grid) );
+    return NULL;
+  }
+  if ( 1 != gridNGem(grid) || DEBUG_REMOVE_FACE_CELL ) {
     int gem, gemcell, gemnodes[4];
     double xyz[3];
     printf("%s: %d: gridRemoveThreeFaceCell: ngem %d expected 1\n",
@@ -397,8 +407,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 	     gridNodePart(grid,gemnodes[3]));
     }
     fflush(stdout);
-
-    return NULL;
   }
 
   /* get uv's for new face */
