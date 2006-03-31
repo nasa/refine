@@ -1,3 +1,10 @@
+2005-04-31 10:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) to fix a parallelization
+	check and to increase simularity between gridRemoveTwoFaceCell and
+	gridRemoveThreeFaceCell commonNodes and uncommonNodes are now
+	local cell indexes and facenodes are correctly mapped to node ids.
+
 2005-04-30  9:00 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveThreeFaceCell) to correctly reset
