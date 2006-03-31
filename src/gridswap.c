@@ -438,6 +438,11 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     gridRemoveFaceAndQueue(grid, queue, faces[face1] );
     gridRemoveFaceAndQueue(grid, queue, faces[face2] );
     gridRemoveNode(grid, cellnodes[common_node] );
+    
+    for(node=0;node<4;node++) 
+      if (0==gridCellDegree(grid,cellnodes[node])) 
+	gridRemoveNodeWithOutGlobal(grid,cellnodes[node]);
+   
     return grid;
   }else{
     gridRemoveFaceAndQueue(grid, queue, added_face );
