@@ -1,3 +1,11 @@
+2006-03-31 20:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell,gridRemoveThreeFaceCell)
+	to prevent two nearby removals from iterfering, call
+	queueNewTrasaction before changing concectivities. other swap and
+	insert ops use gridmpi to call queueNewTransaction for them, but
+	this call shouldb emoved down to alower level.
+
 2006-03-31 15:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveThreeFaceCell) to remove hanging ghost

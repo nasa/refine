@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "plan.h"
+#include "queue.h"
 #include "gridmetric.h"
 #include "gridswap.h"
 
@@ -206,6 +207,8 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
     }
     fflush(stdout);
   }
+
+  queueNewTransaction(queue);
 
   for(node=0;node<4;node++) 
     gridNodeUV(grid, cellnodes[node], faceId0, &(uv[2*node]));
@@ -408,6 +411,8 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
     }
     fflush(stdout);
   }
+
+  queueNewTransaction(queue);
 
   /* get uv's for new face */
   for(node=0;node<4;node++) {
