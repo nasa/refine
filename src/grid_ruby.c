@@ -26,6 +26,15 @@ VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nface, VALUE nedge)
   return obj;
 }
 
+VALUE grid_from_FAST( VALUE class, VALUE rb_filename)
+{
+  Grid *grid;
+  VALUE obj;
+  grid = gridImportFAST( RSTRING(rb_filename)->ptr );
+  obj = Data_Wrap_Struct( class, 0, grid_free, grid );
+  return obj;
+}
+
 VALUE grid_pack( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1245,6 +1254,7 @@ void Init_Grid()
 {
   cGrid = rb_define_class( "Grid", rb_cObject );
   rb_define_singleton_method( cGrid, "new", grid_new, 4 );
+  rb_define_singleton_method( cGrid, "from_FAST", grid_from_FAST, 1 );
   rb_define_method( cGrid, "initialize", grid_init, 0 );
   rb_define_method( cGrid, "pack", grid_pack, 0 );
   rb_define_method( cGrid, "sortNodeGridEx", grid_sortNodeGridEx, 0 );
