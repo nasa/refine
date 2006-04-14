@@ -94,7 +94,7 @@ VALUE near_touched( VALUE self, VALUE rb_target )
 
   maxfound = collisions;
   found = 0;
-  if (near != nearTouched(tree,target,&found,maxfound,list)) {
+  if (tree != nearTouched(tree,target,&found,maxfound,list)) {
     free(list);
     return Qnil;
   }
