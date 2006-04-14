@@ -94,7 +94,10 @@ VALUE near_touched( VALUE self, VALUE rb_target )
 
   maxfound = collisions;
   found = 0;
-  nearTouched(tree,target,&found,maxfound,list);
+  if (near != nearTouched(tree,target,&found,maxfound,list)) {
+    free(list);
+    return Qnil;
+  }
 
   array = rb_ary_new2(collisions);
   for(i=0;i<collisions;i++) rb_ary_store(array, i, INT2NUM(list[i]));
