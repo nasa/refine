@@ -127,6 +127,8 @@ then
   CAPRINativelibrary="-L$with_CAPRI/Native/$CAPRI_ARCH -lcapri"
   AC_SUBST([CAPRIheader])
   AC_SUBST([CAPRINativelibrary])
+else
+  AM_CONDITIONAL(BUILD_NATIVE_KERNEL,false)
 fi
 
 dnl Check for Parasolid
