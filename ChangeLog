@@ -1,3 +1,9 @@
+2006-06-27 15:45 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.12 Release. For Pawel MSL RCS work on Columbia. 
+	To include gridRemoveTwoFaceCell,gridRemoveThreeFaceCell 
+	parallel bug fixes.
+
 2006-03-31 20:31 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridswap.c (gridRemoveTwoFaceCell,gridRemoveThreeFaceCell)
@@ -47,7 +53,6 @@
 	removed regardless of cost.
 	* src/gridswap.c (gridRemoveThreeFaceCell) fixed logic that made
 	sure all three faces are on same faceId.
-
 
 2006-03-28 15:25 Mike Park  <mike.park@nasa.gov>
 

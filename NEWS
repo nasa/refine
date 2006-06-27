@@ -1,4 +1,10 @@
 
+Tue Jun 27, 2006: Released Refine 1.2.12
+
+For Pawel MSL RCS work on Columbia.  To include parallel bug fixes
+(prevent hanging nodes) while removing cells that can cause projection
+failures.
+
 Tue Mar 28, 2006: Released Refine 1.2.11
 
 FUN3D interface change: provides new gridparallelpreproject_
