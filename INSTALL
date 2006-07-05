@@ -13,6 +13,16 @@ run (replace `x_x_x' with the current version number):
 
 Read the `Basic Installation' section for more detailed instructions.
 
+Note To FUN3D Users
+======================
+
+Please add the following lines to your FUN3D/Makefile.env
+to run without CAD
+
+REFINELIBS = -L[path to refine]/lib -lrefine -lFAKEGeomExtras -lFAKEGeom
+
+replace [path to refine] with the path to the refine package
+
 Note To SGI IRIX Users
 ======================
 
@@ -27,21 +37,6 @@ these two arguements
  --x-includes=/usr/include --x-libraries=/usr/lib32
 
 to the configure or autogen.sh script command line options
-
-Snapshots of SDK and CAPRI routines compiled -n32 -mips4 are
-included for the CAPRI Native Geom, configure as such to obtain
-only the refine libs for linking to FUN3D:
-
-./configure --prefix=`pwd` --disable-exec --with-SDK=`pwd`/geomSGIn32
-
-To link with FUN3D <http://fun3d.larc.nasa.gov>:
-Make sure to comple FUN3D with -n32 instead of the default -64.
-Add these lines to the FUN3D Makefile.env file:
-
-REFINELIBS = -L[refine]/lib -lrefine
-CAPRILIBS = -L[refine]/geomSGIn32/lib -lCADGeomNative -lMeat -lX11
-
-replace [refine] with the path to the refine package
 
 Note To CVS Users ONLY!
 =======================
