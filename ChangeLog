@@ -1,3 +1,9 @@
+2006-07-05 14:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeomNULL.c for volume opts.
+	* INSTALL to reccomend FAKEGeomNULL
+	* src/FAKEGeomPlate.c, src/FAKEGeomBox.c removed.
+
 2006-07-05 12:32 Mike Park  <mike.park@nasa.gov>
 
 	* src/FAKEGeom.c rewound to previous version, needed for unit tests

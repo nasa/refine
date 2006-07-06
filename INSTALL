@@ -19,7 +19,7 @@ Note To FUN3D Users
 Please add the following lines to your FUN3D/Makefile.env
 to run without CAD
 
-REFINELIBS = -L[path to refine]/lib -lrefine -lFAKEGeomExtras -lFAKEGeom
+REFINELIBS = -L[path to refine]/lib -lrefine -lFAKEGeomExtras -lFAKEGeomNULL
 
 replace [path to refine] with the path to the refine package
 

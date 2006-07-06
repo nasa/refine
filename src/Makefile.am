@@ -3,8 +3,7 @@
 lib_LIBRARIES = \
 	librefine.a \
 	libFAKEGeomExtras.a \
-	libFAKEGeomBox.a \
-	libFAKEGeomPlate.a \
+	libFAKEGeomNULL.a \
 	libFAKEGeomTrap.a \
 	libFAKEGeomDPWwbi.a \
 	libFAKEGeomOM6v.a \
@@ -40,11 +39,8 @@ librefine_a_SOURCES = \
 libFAKEGeomExtras_a_CFLAGS = @SDKheader@
 libFAKEGeomExtras_a_SOURCES = FAKEGeom.h FAKEGeomExtras.c
 
-libFAKEGeomBox_a_CFLAGS = @SDKheader@
-libFAKEGeomBox_a_SOURCES = FAKEGeom.h FAKEGeomBox.c
-
-libFAKEGeomPlate_a_CFLAGS = @SDKheader@
-libFAKEGeomPlate_a_SOURCES = FAKEGeom.h FAKEGeomPlate.c
+libFAKEGeomNULL_a_CFLAGS = @SDKheader@
+libFAKEGeomNULL_a_SOURCES = FAKEGeom.h FAKEGeomNULL.c
 
 libFAKEGeomTrap_a_CFLAGS = @SDKheader@
 libFAKEGeomTrap_a_SOURCES = FAKEGeom.h FAKEGeomTrap.c
