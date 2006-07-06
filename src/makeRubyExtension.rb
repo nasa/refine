@@ -25,8 +25,10 @@ ARGV[1..ARGV.size].each { |h| headers.push h if h =~/\.h/ }
 
 `chmod u+w . && mkdir -p #{ext}`
 Dir.chdir ext
- require 'mkmf'
- $objs = objC.collect{ |c| c.sub(/\.c/, ".o") }
- create_makefile(ext,'..')
+ unless FileTest.exists?('Makefile')
+  require 'mkmf'
+  $objs = objC.collect{ |c| c.sub(/\.c/, ".o") }
+  create_makefile(ext,'..')
+ end
  exit 1 unless system "make --quiet --no-print-directory"
 Dir.chdir '..'
