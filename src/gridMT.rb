@@ -1178,6 +1178,21 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [1,2,3,4,5,7,8], grid.nodeFaceId(0)
  end
 
+ def testTrianglesOnFaceId
+  grid = Grid.new(10,10,10,10)
+  grid.addFace( 0, 1, 2,1)
+  grid.addFace( 3, 4, 5,1)
+  grid.addFace( 6, 7, 8,2)
+  grid.addFace( 9,10,11,2)
+  grid.removeFace(0)
+  assert_equal 0, grid.trianglesOnFaceId(0)
+  assert_equal 1, grid.trianglesOnFaceId(1)
+  assert_equal 2, grid.trianglesOnFaceId(2)
+  assert_equal 0, grid.trianglesOnFaceId(3)
+ end
+
+
+
  def testNumberOfGeomEdges
   assert_not_nil  grid = Grid.new(0,0,0,2)
   assert_equal 0, grid.nedge

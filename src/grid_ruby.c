@@ -578,6 +578,12 @@ VALUE grid_nodeFaceId( VALUE self, VALUE node )
   }
 }
 
+VALUE grid_trianglesOnFaceId( VALUE self, VALUE id )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridTrianglesOnFaceId( grid, NUM2INT(id) ) );
+}
+
 VALUE grid_nodeT( VALUE self, VALUE node, VALUE edgeId )
 {
   double t;
@@ -1337,6 +1343,7 @@ void Init_Grid()
   rb_define_method( cGrid, "setNodeUV", grid_setNodeUV, 4 );
   rb_define_method( cGrid, "nodeFaceIdDegree", grid_nodeFaceIdDegree, 1 );
   rb_define_method( cGrid, "nodeFaceId", grid_nodeFaceId, 1 );
+  rb_define_method( cGrid, "trianglesOnFaceId", grid_trianglesOnFaceId, 1 );
 
   rb_define_method( cGrid, "nodeT", grid_nodeT, 2 );
   rb_define_method( cGrid, "setNodeT", grid_setNodeT, 3 );

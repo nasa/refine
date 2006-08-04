@@ -3203,6 +3203,21 @@ Grid *gridNodeFaceId(Grid *grid, int node, int maxId, int *ids_arg, int *id )
   return grid;
 }
 
+int gridTrianglesOnFaceId(Grid *grid, int id )
+{
+  int face, count;
+  int nodes[3];
+  int faceId;
+
+  count = 0;
+  for(face=0;face<gridMaxFace(grid);face++) {
+    if (grid == gridFace( grid, face, nodes, &faceId )) {
+      if (faceId==id) count++;
+    }
+  }
+  return count;
+}
+
 
 Grid *gridNodeT(Grid *grid, int  node, int edgeId, double *t )
 {

@@ -1,3 +1,7 @@
+2006-08-04 12:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridTrianglesOnFaceId) to count triangles in a CAD face.
+
 2006-07-05 14:22 Mike Park  <mike.park@nasa.gov>
 
 	* src/FAKEGeomNULL.c for volume opts.

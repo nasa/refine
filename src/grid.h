@@ -353,6 +353,7 @@ Grid *gridNodeUV(Grid *g, int node, int faceId, double *uv );
 Grid *gridSetNodeUV(Grid *g, int node, int faceId, double u, double v );
 int gridNodeFaceIdDegree(Grid *g, int node);
 Grid *gridNodeFaceId(Grid *g, int node, int maxId, int *ids, int *id );
+int gridTrianglesOnFaceId(Grid *g, int id );
 
 double gridNodeU(Grid *grid, int node, int faceId);
 double gridNodeV(Grid *grid, int node, int faceId);
