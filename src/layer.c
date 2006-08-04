@@ -2135,7 +2135,14 @@ Layer *layerAdvanceConstantHeight(Layer *layer, double height )
 
 #define addTet \
 { \
-  layer->cellInLayer[gridAddCell(grid, tet[0], tet[1], tet[2], tet[3])]=TRUE; \
+  int new_cell; \
+  new_cell = gridAddCell(grid, tet[0], tet[1], tet[2], tet[3]); \
+  if (!gridCellValid(grid,new_cell)) { \
+    printf("%s:%d: invalid cell created %d\n", \
+           __FILE__,__LINE__,new_cell); \
+    return NULL; \
+  } \
+  layer->cellInLayer[new_cell]=TRUE; \
   if ( 1.0e-14 > gridVolume(grid, tet ) ) { \
     negVolume = TRUE; \
     gridNodeXYZ(grid,tet[0],xyz); \
