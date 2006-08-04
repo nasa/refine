@@ -28,12 +28,16 @@ Grid *gridWriteTecplotInvalid(Grid *grid, char *filename )
   char comment[256];
   int cell, nodes[4];
   double cost, costs[4];
+  double min_cost;
+  int faceid;
 
   gridWriteTecplotSurfaceGeom(grid,filename);
 
+  min_cost = 999.0;
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
+      min_cost = MIN(min_cost,cost);
       if ( -0.5 > cost ) {
 	sprintf(comment,"cell cost of %f detected.",cost);
 	gridWriteTecplotComment(grid, comment);
@@ -43,6 +47,14 @@ Grid *gridWriteTecplotInvalid(Grid *grid, char *filename )
     }
   }
 
+  if (min_cost < -1.5) {
+    for (faceid=1;faceid<=gridNGeomFace(grid);faceid++) {
+      if (0 < gridTrianglesOnFaceId(grid, faceid )) {
+	gridWriteTecplotGeomFaceUV(grid,filename,faceid);
+      }
+    }
+  }
+  
   return grid;
 }
 

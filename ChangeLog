@@ -1,3 +1,8 @@
+2006-08-04 12:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotInvalid) calls gridWriteTecplotGeomFaceUV
+	to dump tecplot if min cost is less than -1.5.
+
 2006-08-04 12:42 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridTrianglesOnFaceId) to count triangles in a CAD face.
