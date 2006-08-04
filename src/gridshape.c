@@ -391,7 +391,7 @@ Grid *gridWriteTecplotCurvedGeom(Grid *grid, char *filename )
     f2n[2+3*(3+4*face)] = f2n6[2+6*face];
   }
 
-  status = gridWriteTecplotTriangleZone(grid, filename,
+  status = gridWriteTecplotTriangleZone(grid, filename, "curved",
 					nnode, xyz,
 					nface, f2n);
   free(f2n6);

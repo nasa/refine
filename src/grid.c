@@ -1230,15 +1230,10 @@ Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
   int *f2n;
   int *g2l;
   Grid *status;
+  char zone[256];
 
-  nface = 0;
-  for (face=0; face<gridMaxFace(grid); face++) {
-    if (grid == gridFace(grid,face,nodes,&faceId) ) {
-      if (id == faceId) {
-	nface++;
-      }
-    }
-  }
+  nface = gridTrianglesOnFaceId(grid,id);
+  if (0==nface) return NULL;
 
   f2n = (int *)malloc(sizeof(int)*3*nface);
   nface = 0;
@@ -1275,7 +1270,9 @@ Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
   }
   free(g2l);
 
-  status = gridWriteTecplotTriangleZone(grid, filename,
+  sprintf(zone, "face_%04d", id);
+
+  status = gridWriteTecplotTriangleZone(grid, filename, zone,
 					nnode, xyz,
 					nface, f2n);
   free(f2n);
@@ -1284,7 +1281,7 @@ Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
   return status;
 }
 
-Grid *gridWriteTecplotTriangleZone(Grid *grid, char *filename,
+Grid *gridWriteTecplotTriangleZone(Grid *grid, char *filename, char *zone,
 				   int nnode, double *xyz,
 				   int nface, int *f2n)
 {
@@ -1300,10 +1297,15 @@ Grid *gridWriteTecplotTriangleZone(Grid *grid, char *filename,
     fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
   }
 
-
-  fprintf(grid->tecplotGeomFile,
-	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
-	  nnode, nface);
+  if ( NULL == zone ) {
+    fprintf(grid->tecplotGeomFile,
+	    "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	    nnode, nface);
+  }else{
+    fprintf(grid->tecplotGeomFile,
+	    "zone t=%s, i=%d, j=%d, f=fepoint, et=triangle\n",
+	    zone, nnode, nface);
+  }
 
   for ( i=0; i<nnode ; i++ ){
     fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",

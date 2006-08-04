@@ -1,3 +1,8 @@
+2006-08-04 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotTriangleZone) added zone title argument.
+	* src/grid.c (gridWriteTecplotGeomFaceUV) name zone with face id.
+
 2006-08-04 12:50 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotInvalid) calls gridWriteTecplotGeomFaceUV
