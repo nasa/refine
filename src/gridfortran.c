@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "gridfortran.h"
 #include "plan.h"
 #include "grid.h"
