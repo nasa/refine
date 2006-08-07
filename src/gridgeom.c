@@ -218,7 +218,7 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
   int i;
   double *xyzCopy, *uvCopy;
   int *f2nCopy;
-  
+
   xyzCopy = malloc(3*nnode*sizeof(double));
   for(i=0;i<3*nnode;i++) xyzCopy[i] = xyz[i];
 
@@ -236,6 +236,34 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
 
   UGrid_TIMESTAMP(UGPatch_Parent(CADGeom_FaceGrid(vol,faceId))) = time( NULL );
   UGrid_ALGORITHM(UGPatch_Parent(CADGeom_FaceGrid(vol,faceId))) = UG_REFINE;
+
+  if (FALSE) {
+    FILE *ds;
+    char ds_filename[256];
+    sprintf(ds_filename,"face_save_%04d",faceId);
+    ds = fopen(ds_filename,"w");
+    fprintf(ds,"faceid = %d;\n",faceId);
+    fprintf(ds,"nnode = %d;\n",nnode);
+    fprintf(ds,"nface = %d;\n",nface);
+    fprintf(ds,"xyz = [\n");
+    for (i=0;i<nnode;i++) {
+      fprintf(ds,"%25.15e%25.15e%25.15e\n",
+	      xyz[0+3*i],xyz[1+3*i],xyz[2+3*i]);
+    }
+    fprintf(ds,"];\n");
+    fprintf(ds,"uv = [\n");
+    for (i=0;i<nnode;i++) {
+      fprintf(ds,"%25.15e%25.15e\n",
+	      uv[0+2*i],uv[1+2*i]);
+    }
+    fprintf(ds,"];\n");
+    fprintf(ds,"f2n = [\n");
+    for (i=0;i<nface;i++) {
+      fprintf(ds," %9d %9d %9d\n",
+	      f2n[0+3*i],f2n[1+3*i],f2n[2+3*i]);
+    }
+    fprintf(ds,"];\n");
+  }
 
   return grid;
 }
