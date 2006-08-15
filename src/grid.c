@@ -2772,6 +2772,22 @@ Grid *gridConn2Node(Grid *grid, int conn, int *nodes )
 
 int gridFindConn(Grid *grid, int node0, int node1 )
 {
+  AdjIterator it;
+  int cell, index, conn, conn0, conn1;
+  if (NULL==grid->conn2node) return EMPTY;
+  if (!gridValidNode(grid,node0) || !gridValidNode(grid,node1) ) return EMPTY;
+  for ( it = adjFirst(gridCellAdj(grid),node0);
+	adjValid(it);
+	it = adjNext(it) ){
+    cell = adjItem(it);
+    for ( index=0 ; index < 6 ; index++ ) {
+      conn = grid->cell2conn[index+6*cell];
+      conn0 = grid->conn2node[0+2*conn];
+      conn1 = grid->conn2node[1+2*conn];
+      if ( node0==conn0 && node1==conn1 ) return conn;
+      if ( node0==conn1 && node1==conn0 ) return conn;
+    }
+  }
   return EMPTY;
 }
 
