@@ -656,6 +656,22 @@ class TestGrid < Test::Unit::TestCase
   assert_equal [2,4], grid.conn2Node(8)
  end
 
+ def testFindConnections
+  grid = Grid.new(4,1,0,0)
+  4.times { grid.addNode(0.0,0.0,0.0) }
+  grid.addCell(0,1,2,3)
+  assert_nil grid.findConn(0,1)
+  grid.createConn
+  assert_nil grid.findConn(-1,1)
+  assert_nil grid.findConn(0,-1)
+  assert_equal 0, grid.findConn(0,1)
+  assert_equal 1, grid.findConn(0,2)
+  assert_equal 2, grid.findConn(0,3)
+  assert_equal 3, grid.findConn(1,2)
+  assert_equal 4, grid.findConn(1,3)
+  assert_equal 5, grid.findConn(2,3)
+ end
+
  def testNodeConnectionCreation
   grid = Grid.new(4,1,0,0)
   4.times { grid.addNode(0.0,0.0,0.0) }
