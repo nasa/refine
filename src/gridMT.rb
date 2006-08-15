@@ -660,10 +660,10 @@ class TestGrid < Test::Unit::TestCase
   grid = Grid.new(4,1,0,0)
   4.times { grid.addNode(0.0,0.0,0.0) }
   grid.addCell(0,1,2,3)
-  assert_nil grid.findConn(0,1)
+  assert_equal EMPTY, grid.findConn(0,1)
   grid.createConn
-  assert_nil grid.findConn(-1,1)
-  assert_nil grid.findConn(0,-1)
+  assert_equal EMPTY, grid.findConn(-1,1)
+  assert_equal EMPTY, grid.findConn(0,-1)
   assert_equal 0, grid.findConn(0,1)
   assert_equal 1, grid.findConn(0,2)
   assert_equal 2, grid.findConn(0,3)

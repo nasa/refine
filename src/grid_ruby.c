@@ -427,6 +427,12 @@ VALUE grid_conn2Node( VALUE self, VALUE conn )
   return rb_nodes;
 }
 
+VALUE grid_findConn( VALUE self, VALUE node0, VALUE node1 )
+{
+  GET_GRID_FROM_SELF;
+  return INT2NUM( gridFindConn( grid, NUM2INT(node0), NUM2INT(node1) ) );
+}
+
 VALUE grid_createConn( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1322,6 +1328,7 @@ void Init_Grid()
   rb_define_method( cGrid, "nconn", grid_nconn, 0 );
   rb_define_method( cGrid, "cell2Conn", grid_cell2Conn, 2 );
   rb_define_method( cGrid, "conn2Node", grid_conn2Node, 1 );
+  rb_define_method( cGrid, "findConn", grid_findConn, 2 );
   rb_define_method( cGrid, "createConn", grid_createConn, 0 );
   rb_define_method( cGrid, "eraseConn", grid_eraseConn, 0 );
 

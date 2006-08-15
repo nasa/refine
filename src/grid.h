@@ -321,6 +321,7 @@ Grid *gridDeleteThawedCells(Grid *g);
 #define gridNConn(grid) ((grid)->nconn)
 int gridCell2Conn(Grid *g, int cell, int index );
 Grid *gridConn2Node(Grid *g, int conn, int *nodes );
+int gridFindConn(Grid *g, int node0, int node1 );
 Grid *gridCreateConn(Grid *g );
 Grid *gridEraseConn(Grid *g );
 

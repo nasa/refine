@@ -2770,6 +2770,11 @@ Grid *gridConn2Node(Grid *grid, int conn, int *nodes )
   return grid;
 }
 
+int gridFindConn(Grid *grid, int node0, int node1 )
+{
+  return EMPTY;
+}
+
 Grid *gridEraseConn(Grid* grid)
 {
   grid->nconn=0;
