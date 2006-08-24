@@ -9,7 +9,8 @@ lib_LIBRARIES = \
 	libFAKEGeomOM6v.a \
 	libFAKEGeomApollo_1.a \
 	libFAKEGeomApollo_ab2n.a \
-	libFAKEGeomApolloHalf.a
+	libFAKEGeomApolloHalf.a \
+	libFAKEGeomCLV_3.a
 
 librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
@@ -59,6 +60,9 @@ libFAKEGeomApolloHalf_a_SOURCES = FAKEGeom.h FAKEGeomApolloHalf.c
 
 libFAKEGeomApollo_ab2n_a_CFLAGS = @SDKheader@
 libFAKEGeomApollo_ab2n_a_SOURCES = FAKEGeom.h FAKEGeomApollo_ab2n.c
+
+libFAKEGeomCLV_3_a_CFLAGS = @SDKheader@
+libFAKEGeomCLV_3_a_SOURCES = FAKEGeom.h FAKEGeomCLV_3.c
 
 if BUILD_EXECUTABLES
 
