@@ -317,12 +317,15 @@ Grid *gridImportFAST( char *filename )
   double *xyz;
   int *f2n, *faceId;
   int *c2n;
+  GridBool verbose;
+
+  verbose = FALSE;
 
   file = fopen(filename,"r");
   fscanf(file,"%d %d %d",&nnode,&nface,&ncell);
   printf("fast size: %d nodes %d faces %d cells.\n",nnode,nface,ncell);
 
-  printf("reading xyz...\n");
+  if (verbose) printf("reading xyz...\n");
   
   xyz = (double *)malloc(3*nnode*sizeof(double));
 
@@ -330,7 +333,7 @@ Grid *gridImportFAST( char *filename )
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[1+3*i]);
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[2+3*i]);
 
-  printf("reading faces...\n");
+  if (verbose) printf("reading faces...\n");
   
   f2n = (int *)malloc(3*nface*sizeof(int));
 
@@ -343,7 +346,7 @@ Grid *gridImportFAST( char *filename )
     f2n[2+3*i]--;
   }
 
-  printf("reading face ID tags...\n");
+  if (verbose) printf("reading face ID tags...\n");
   
   faceId = (int *)malloc(nface*sizeof(int));
 
@@ -351,7 +354,7 @@ Grid *gridImportFAST( char *filename )
     fscanf(file,"%d",&faceId[i]);
   }
 
-  printf("reading cells...\n");
+  if (verbose) printf("reading cells...\n");
   
   maxcell = ncell*2;
 
