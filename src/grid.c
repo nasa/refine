@@ -1284,6 +1284,66 @@ Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
   return status;
 }
 
+Grid *gridWriteTecplotGeomFaceXYZ(Grid *grid, char *filename, int id )
+{
+  int face, nodes[3], faceId;
+  int nface, nnode;
+  int i, node;
+  double *xyz;
+  int *f2n;
+  int *g2l;
+  Grid *status;
+  char zone[256];
+
+  nface = gridTrianglesOnFaceId(grid,id);
+  if (0==nface) return NULL;
+
+  f2n = (int *)malloc(sizeof(int)*3*nface);
+  nface = 0;
+  for (face=0; face<gridMaxFace(grid); face++) {
+    if (grid == gridFace(grid,face,nodes,&faceId) ) {
+      if (id == faceId) {
+	f2n[0+3*nface] = nodes[0];
+	f2n[1+3*nface] = nodes[1];
+	f2n[2+3*nface] = nodes[2];
+	nface++;
+      }
+    }
+  }
+
+  g2l = (int *)malloc(sizeof(int)*gridMaxNode(grid));
+  for (node=0; node<gridMaxNode(grid); node++) g2l[node]=EMPTY;
+  nnode = 0;
+  for (face=0; face<nface; face++) {
+    for (i=0;i<3;i++) {
+      if (EMPTY == g2l[f2n[i+3*face]]) {
+	g2l[f2n[i+3*face]] = nnode;
+	nnode++;
+      }
+    }
+  }
+
+  xyz = (double *)malloc(sizeof(double)*3*nnode);
+  for (node=0; node<3*nnode; node++) xyz[node]=0.0;
+  for (face=0; face<nface; face++) {
+    for (i=0;i<3;i++) {
+      gridNodeXYZ(grid,f2n[i+3*face],&(xyz[3*g2l[f2n[i+3*face]]]));
+      f2n[i+3*face] = g2l[f2n[i+3*face]];
+    }
+  }
+  free(g2l);
+
+  sprintf(zone, "face_%04d", id);
+
+  status = gridWriteTecplotTriangleZone(grid, filename, zone,
+					nnode, xyz,
+					nface, f2n);
+  free(f2n);
+  free(xyz);
+
+  return status;
+}
+
 Grid *gridWriteTecplotTriangleZone(Grid *grid, char *filename, char *zone,
 				   int nnode, double *xyz,
 				   int nface, int *f2n)

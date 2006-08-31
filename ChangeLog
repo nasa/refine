@@ -1,3 +1,7 @@
+2006-08-31 11:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotGeomFaceXYZ) single face tecplot geometry.
+
 2006-08-15 18:12 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridFindConn) added to find a conn with two nodes.
