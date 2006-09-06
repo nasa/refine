@@ -892,6 +892,14 @@ VALUE grid_validNode( VALUE self, VALUE node )
   return ( gridValidNode( grid, NUM2INT( node ) ) ? Qtrue : Qfalse );
 }
 
+VALUE grid_translate( VALUE self, VALUE dx, VALUE dy, VALUE dz )
+{
+  GET_GRID_FROM_SELF;
+  return (gridTranslate( grid, NUM2DBL(dx), 
+			 NUM2DBL(dy), NUM2DBL(dz) )==grid?self:Qnil);
+}
+
+
 VALUE grid_nodeXYZ( VALUE self, VALUE node )
 {
   VALUE rb_xyz;
@@ -1397,6 +1405,7 @@ void Init_Grid()
   rb_define_method( cGrid, "addNodeWithGlobal", grid_addNodeWithGlobal, 4 );
   rb_define_method( cGrid, "removeNode", grid_removeNode, 1 );
   rb_define_method( cGrid, "validNode", grid_validNode, 1 );
+  rb_define_method( cGrid, "translate", grid_translate, 3 );
   rb_define_method( cGrid, "nodeXYZ", grid_nodeXYZ, 1 );
   rb_define_method( cGrid, "setNodeXYZ", grid_setNodeXYZ, 2 );
 

@@ -4230,6 +4230,19 @@ Grid *gridRemoveNodeWithOutGlobal(Grid *grid, int node )
   return grid;
 }
 
+Grid *gridTranslate(Grid *grid, double dx, double dy, double dz)
+{
+  int node;
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if (gridValidNode(grid,node)) {
+      grid->xyz[0+3*node] += dx;
+      grid->xyz[1+3*node] += dy;
+      grid->xyz[2+3*node] += dz;
+    }
+  }
+  return grid;
+}
+
 Grid *gridNodeXYZ(Grid *grid, int node, double *xyz )
 {
   if (!gridValidNode(grid,node)) return NULL;

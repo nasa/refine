@@ -1,3 +1,7 @@
+2006-09-06 11:53 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridTranslate) to uniformly shift all nodes
+
 2006-08-31 11:18 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridWriteTecplotGeomFaceXYZ) single face tecplot geometry.

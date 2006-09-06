@@ -417,7 +417,7 @@ Grid *gridRemoveNodeWithOutGlobal(Grid *g, int node );
 #define gridValidNode(grid,node) \
 ((node)>-1 && (node)<(grid)->maxnode && DBL_MAX!=(grid)->xyz[0+3*(node)])
 
-
+Grid *gridTranslate(Grid *g, double dx, double dy, double dz);
 Grid *gridNodeXYZ(Grid *g, int node, double *xyz );
 #define gridNodeXYZPointer(grid, node) (&(grid)->xyz[3*(node)])
 #define gridNodeXYZEntry(grid, node, ixyz) ((grid)->xyz[ixyz+3*(node)])

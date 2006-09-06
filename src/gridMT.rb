@@ -748,6 +748,13 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0,    grid.addEdge(0,1,82,40.0,50.0)
  end
 
+ def testTranslate
+  grid = Grid.new(1,0,0,0)
+  grid.addNode(1.0,2.0,3.0)
+  grid.translate(0.1,0.2,0.3)
+  assert_equal [1.1,2.2,3.3],    grid.nodeXYZ(0)
+ end
+
  def testSetNodeXYZ
   assert_not_nil                 grid = Grid.new(1,0,0,0)
   assert_equal 0,                grid.addNode(1.0,2.0,3.0)
