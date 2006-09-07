@@ -323,7 +323,9 @@ Grid *gridImportFAST( char *filename )
 
   file = fopen(filename,"r");
   fscanf(file,"%d %d %d",&nnode,&nface,&ncell);
-  printf("fast size: %d nodes %d faces %d cells.\n",nnode,nface,ncell);
+
+  if (verbose) printf("fast size: %d nodes %d faces %d cells.\n",
+		      nnode,nface,ncell);
 
   if (verbose) printf("reading xyz...\n");
   
@@ -518,6 +520,58 @@ Grid *gridExportAFLR3( Grid *grid, char *filename )
   /* ain't got no hexes */
 
   fclose(file);
+
+  return grid;
+}
+
+Grid *gridExportGRI( Grid *grid, char *filename )
+{
+  FILE *file;
+  int i;
+  int face, nFaceId, faceId, nface;
+
+  if (NULL == gridPack(grid)) {
+    printf("gridExportFAST: gridPack failed.\n");
+    return NULL;
+  }
+
+  if (NULL != filename) {
+    file = fopen(filename,"w");
+  }else{
+    file = fopen("grid.gri","w");
+  }
+
+  fprintf(file,"%10d %10d\n",grid->nnode,grid->ncell);
+
+  for( i=0; i<grid->nnode ; i++ ) 
+    fprintf(file,"%25.15e %25.15e %25.15e\n",
+	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i]);
+
+  nFaceId = 0;
+  for ( face=0 ; face < grid->nface ; face++ ) 
+    nFaceId = MAX(nFaceId, grid->faceId[face]);
+
+  fprintf(file,"%10d\n",nFaceId);
+
+  for (faceId=1;faceId<=nFaceId;faceId++) {
+    nface = 0;
+    for ( face=0 ; face < grid->nface ; face++ ) 
+      if (faceId == grid->faceId[face]) nface++;
+    fprintf(file,"%10d\n",nface);
+    for ( face=0 ; face < grid->nface ; face++ ) 
+      if (faceId == grid->faceId[face]) 
+	fprintf(file,"%10d %10d %10d\n",
+		grid->f2n[0+3*face]+1,
+		grid->f2n[1+3*face]+1,
+		grid->f2n[2+3*face]+1);
+  }
+
+  fprintf(file,"%10d %10d\n",grid->ncell,1);
+
+  for( i=0; i<grid->ncell ; i++ )
+    fprintf(file,"%10d %10d %10d %10d\n",
+	    grid->c2n[0+4*i]+1,grid->c2n[1+4*i]+1,
+	    grid->c2n[2+4*i]+1,grid->c2n[3+4*i]+1);
 
   return grid;
 }

@@ -1,3 +1,7 @@
+2006-09-07 16:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridExportGRI) to provide path to PX grid format
+
 2006-09-06 11:53 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridTranslate) to uniformly shift all nodes
