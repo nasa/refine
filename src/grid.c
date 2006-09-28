@@ -1278,6 +1278,52 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
   return grid;
 }
 
+Grid *gridWriteTecplotVolumeGeom(Grid *grid, char *filename)
+{
+  int i, nfacenode;
+  if ( grid !=  gridSortNodeGridEx(grid) ) {
+    printf("gridWriteTecplotVolumeGeom: gridSortNodeGridEx failed.\n");
+    return NULL;
+  }
+
+  if (NULL == grid->tecplotGeomFile) {
+    if (NULL == filename) {
+      grid->tecplotGeomFile = fopen("gridGeom.t","w");
+    }else{
+      grid->tecplotGeomFile = fopen(filename,"w");
+    } 
+    fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
+    fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
+  }
+
+  nfacenode=0;
+  for(i=0;i<3*grid->nface;i++){
+    nfacenode = MAX(nfacenode, grid->f2n[i]);
+  }
+  nfacenode++;
+
+  fprintf(grid->tecplotGeomFile,
+	  "zone t=volume, i=%d, j=%d, f=fepoint, et=tetrahedron\n",
+	  grid->nnode, grid->ncell);
+
+  for ( i=0; i<grid->nnode ; i++ ){
+    fprintf(grid->tecplotGeomFile, "%23.15e%23.15e%23.15e %d\n",
+	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i],0);
+  }
+
+  fprintf(grid->tecplotGeomFile, "\n");
+
+  for ( i=0; i<grid->ncell ; i++ ){
+    fprintf(grid->tecplotGeomFile, " %9d %9d %9d %9d\n",
+	    grid->c2n[0+4*i]+1,grid->c2n[1+4*i]+1,
+	    grid->c2n[2+4*i]+1,grid->c2n[3+4*i]+1);
+  }
+
+  fflush(grid->tecplotGeomFile);
+
+  return grid;
+}
+
 Grid *gridWriteTecplotGeomFaceUV(Grid *grid, char *filename, int id )
 {
   int face, nodes[3], faceId;
