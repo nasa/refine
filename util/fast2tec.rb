@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 
 refine_path = File.expand_path("~/GRIDEX/refine/src")
 
