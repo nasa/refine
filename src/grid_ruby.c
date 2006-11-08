@@ -100,6 +100,12 @@ VALUE grid_exportFAST( VALUE self )
   return (gridExportFAST(grid,NULL)==grid?self:Qnil);
 }
 
+VALUE grid_exportFASTSurface( VALUE self )
+{
+  GET_GRID_FROM_SELF;
+  return (gridExportFASTSurface(grid,NULL)==grid?self:Qnil);
+}
+
 VALUE grid_exportGRI( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1304,6 +1310,7 @@ void Init_Grid()
   rb_define_method( cGrid, "writeTecplotSurfaceScalar", grid_writeTecplotSurfaceScalar, 1 );
   rb_define_method( cGrid, "writeVTK", grid_writeVTK, 0 );
   rb_define_method( cGrid, "exportFAST", grid_exportFAST, 0 );
+  rb_define_method( cGrid, "exportFASTSurface", grid_exportFASTSurface, 0 );
   rb_define_method( cGrid, "exportGRI", grid_exportGRI, 0 );
   rb_define_method( cGrid, "maxnode", grid_maxnode, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );

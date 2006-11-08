@@ -162,6 +162,7 @@ Grid *gridImport(int maxnode, int nnode,
 Grid *gridDup(Grid *g);
 Grid *gridImportFAST( char *filename );
 Grid *gridExportFAST(Grid *g, char *filename );
+Grid *gridExportFASTSurface(Grid *g, char *filename );
 Grid *gridExportAFLR3(Grid *g, char *filename );
 Grid *gridExportGRI(Grid *g, char *filename );
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,

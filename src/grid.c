@@ -445,6 +445,51 @@ Grid *gridExportFAST( Grid *grid, char *filename )
   return grid;
 }
 
+Grid *gridExportFASTSurface( Grid *grid, char *filename )
+{
+  FILE *file;
+  int i;
+  int nnode;
+
+  if (NULL == gridSortNodeGridEx(grid)) {
+    printf("gridExportFAST: gridSortNodeGridEx failed.\n");
+    return NULL;
+  }
+
+  if (NULL != filename) {
+    file = fopen(filename,"w");
+  }else{
+    file = fopen("grid_surface.fgrid","w");
+  }
+
+  nnode = 0;
+  for( i=0; i<grid->nface ; i++ ) {
+    nnode = MAX(nnode,grid->f2n[0+3*i]);
+    nnode = MAX(nnode,grid->f2n[1+3*i]);
+    nnode = MAX(nnode,grid->f2n[2+3*i]);
+  }
+  nnode++;
+
+  fprintf(file,"%10d %10d %10d\n",nnode,grid->nface,0);
+
+  for( i=0; i<nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[0+3*i]);
+  for( i=0; i<nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[1+3*i]);
+  for( i=0; i<nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[2+3*i]);
+
+  for( i=0; i<grid->nface ; i++ ) {
+    fprintf(file,"%10d %10d %10d\n",
+	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
+  }
+
+  for( i=0; i<grid->nface ; i++ ) {
+    fprintf(file,"%4d\n",grid->faceId[i]);
+  }
+
+  fclose(file);
+
+  return grid;
+}
+
 Grid *gridExportAFLR3( Grid *grid, char *filename )
 {
   FILE *file;
