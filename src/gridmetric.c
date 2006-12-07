@@ -819,6 +819,8 @@ double gridAR(Grid *grid, int *nodes )
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {
     printf("%s: %d: gridAR: gridConvertMetricToJacobian NULL\n",
 	   __FILE__,__LINE__);
+    printf("nodes %d %d %d %d\n",nodes[0],nodes[1],nodes[2],nodes[3]);
+    printf("map %e %e %e %e %e %e\n",m[0],m[1],m[2],m[3],m[4],m[5]);
     return -999.0;
   }
   
