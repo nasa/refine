@@ -37,6 +37,9 @@ librefine_a_SOURCES = \
 	gridfacer.h gridfacer.c \
 	gridfortran.h gridfortran.c
 
+libFAUXGeom_a_CFLAGS = @SDKheader@
+libFAUXGeom_a_SOURCES = FAKEGeom.h FAUXGeom.c FAKEGeomExtras.c
+
 libFAKEGeomExtras_a_CFLAGS = @SDKheader@
 libFAKEGeomExtras_a_SOURCES = FAKEGeom.h FAKEGeomExtras.c
 

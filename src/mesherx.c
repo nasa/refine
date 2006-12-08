@@ -8,299 +8,187 @@
 
 /* $Id$ */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
-#include <limits.h>         /* Needed in some systems for DBL_MAX definition */
-#include <float.h>
-#include "mesherx.h"
-#include "mesherxInit.h"
-#include "mesherxRebuild.h"
-#include "grid.h"
-#include "gridfiller.h"
-#include "gridmetric.h"
-#include "gridswap.h"
+#include <values.h>
+#include "mesherx.c"
+#include "Goolache/CAPrI_IO.h"
+#include "CADGeom/CADGeom.h"
+#include "UG_API/UGMgr.h"
 
-int MesherX_DiscretizeVolume( int maxNodes, double scale, char *project,
-			      GridBool mixedElement,
-			      GridBool blendElement,
-			      GridBool qualityImprovement,
-			      GridBool copyGridY,
-			      GridBool bil )
+#ifdef PROE_MAIN
+int GridEx_Main( int argc, char *argv[] )
+#else
+int main( int argc, char *argv[] )
+#endif
 {
-  char outputProject[256];
-  char linesProject[256];
-  int vol=1;
-  Grid *grid;
-  Layer *layer;
-  int i;
-  double h;
-  double rate;
-  int nLayer;
-  int face;
-  double gapHeight;
-  double origin[3] = {0.0, 0.0, 0.0};
-  double direction[3] = {0, 1, 0};
 
-  layer = mesherxInit(vol, maxNodes);
-  if (NULL == layer) return 0; 
-  grid = layerGrid(layer);
+  char   project[256];
+  int    vol=1;
+  int    i;
+  int    npo;
+  int    nel;
+  int    *iel;
+  double *xyz;
+  double scale;
+  int maxnode;
+  GridBool mixedElement, blendElement, qualityImprovement, copyGridY;
+  GridBool bil;
+  char     modeler[81];
+  int sizer_identity = UG_FELISA;
 
-  /* case dependant */
+  sprintf( modeler,       "" );
+  sprintf( project,       "" );
+  scale = 1.0;
+  maxnode = 50000;
+  mixedElement = FALSE;
+  blendElement = FALSE;
+  qualityImprovement = FALSE;
+  copyGridY = FALSE;
+  bil = FALSE;
 
-  nLayer = (int)(60.0/scale);
-  rate = exp(scale*log(1.20));
-
-  printf("rate is set to %10.5f for %d layers\n",rate,nLayer);
-
-  if (mixedElement) layerToggleMixedElementMode(layer);
-
-  origin[0] = -10000;
-  origin[1] = 0.0;
-  origin[2] = 0.0;
-  direction[0] = 1.0;
-  direction[1] = 0.0;
-  direction[2] = 0.0;
-  layerSetPolynomialMaxHeight(layer, 0.5, 0.0, 1.0, 
-			      origin, direction );
-  layerAssignPolynomialNormalHeight(layer, 1.0e-4, 0.0, 1.0,
-                                    origin, direction );
-  layerScaleNormalHeight(layer,scale);
-  layerSaveInitialNormalHeight(layer);
-
-  if (blendElement){
-    printf("inserting blends...\n");
-    layerBlend(layer, 250.0 );
-    printf("prevent blend normal collision...TURNED OFF\n");
-    //layerPreventBlendNormalDirectionFromPointingAtNeighbors(layer,0.8);
-    printf("inserting sub blends...\n");
-    layerSubBlend(layer, 30.0 );
+  i = 1;
+  while( i < argc ) {
+    if( strcmp(argv[i],"-p") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-p argument %d: %s\n",i, project);
+    } else if( strcmp(argv[i],"-felisa") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-felisa argument %d: %s\n",i, project);
+      sprintf( modeler, "FELISA" );
+    } else if( strcmp(argv[i],"-open") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-open argument %d: %s\n",i, project);
+      sprintf( modeler, "OpenCASCADE" );
+    } else if( strcmp(argv[i],"-proe") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-proe argument %d: %s\n",i, project);
+      sprintf( modeler, "Pro/ENGINEER" );
+    } else if( strcmp(argv[i],"-parasolid") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-parasolid argument %d: %s\n",i, project);
+      sprintf( modeler, "Parasolid" );
+    } else if( strcmp(argv[i],"-catia") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-catia argument %d: %s\n",i, project);
+      sprintf( modeler, "CatiaV5" );
+    } else if( strcmp(argv[i],"-ug") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-ug argument %d: %s\n",i, project);
+      sprintf( modeler, "UniGraphics" );
+    } else if( strcmp(argv[i],"-sw") == 0 ) {
+      i++; sprintf( project, "%s", argv[i] );
+      printf("-sw argument %d: %s\n",i, project);
+      sprintf( modeler, "SolidWorks" );
+    } else if( strcmp(argv[i],"-s") == 0 ) {
+      i++; scale = atof(argv[i]);
+      printf("-s argument %d: %f\n",i, scale);
+    } else if( strcmp(argv[i],"-n") == 0 ) {
+      i++; maxnode = atoi(argv[i]);
+      printf("-n argument %d: %d\n",i, maxnode);
+    } else if( strcmp(argv[i],"-m") == 0 ) {
+      mixedElement = TRUE;
+      printf("-m argument %d: activated mixed element layers\n",i);
+    } else if( strcmp(argv[i],"-q") == 0 ) {
+      qualityImprovement = TRUE;
+      printf("-q argument %d: activated grid quality improvement\n",i);
+    } else if( strcmp(argv[i],"-b") == 0 ) {
+      blendElement = TRUE;
+      printf("-b argument %d: activated blend elements\n",i);
+    } else if( strcmp(argv[i],"-cy") == 0 ) {
+      copyGridY = TRUE;
+      printf("-cy argument %d: activated grid copy about y=0 elements\n",i);
+    } else if( strcmp(argv[i],"-bil") == 0 ) {
+      bil = TRUE;
+      printf("-bil argument %d: activated Bil Kleb's case\n",i);
+    } else if( strcmp(argv[i],"-vgbg") == 0 ) {
+      sizer_identity = UG_VGRID;
+      printf("-vgbg argument %d: activated VGRID background spacing\n",i);
+    } else if( strcmp(argv[i],"-h") == 0 ) {
+      printf("Usage: flag value pairs:\n");
+#ifdef HAVE_CAPRI2
+      printf(" -felisa input FELISA project name\n");
+      printf(" -open input OpenCASCADE project name\n");
+      printf(" -proe input Pro/E project name\n");
+      printf(" -parasolid input Parasolid project name\n");
+      printf(" -catia input Catia V5 project name\n");
+      printf(" -ug input Unigraphics project name\n");
+      printf(" -sw input SolidWorks project name\n");
+#else
+      printf(" -p input project name\n");
+#endif
+      printf(" -s scale background grid\n");
+      printf(" -n maximum number of nodes\n");
+      printf(" -m mixed element layers\n");
+      printf(" -q use edge swapping to improve grid quality\n");
+      printf(" -b use blend elements on first layer\n");
+      printf(" -cy copy grid about the y=0 plane\n");
+      printf(" -vgbg set background spacing to VGRID\n");
+      printf(" -bil Bil Kleb's case\n");
+      return(0);
+    } else {
+      fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
+      i++;
+    }
+    i++;
   }
 
-  layerWriteTecplotFrontGeometry(layer);
+  if(strcmp(modeler,"")==0)       sprintf(modeler,"FELISA" );
+  if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
 
-  layerComputeNormalRateWithBGSpacing(layer,1.0);
+  printf("calling UGMgr_LoadLibs ... \n");
+  if ( UGMgr_LoadLibs( ) != UG_TRUE ){
+    printf("ERROR: UGMgr_LoadLibs broke.\n%s\n",ErrMgr_GetErrStr());
+    return 1;
+  }  
 
-  layerSmoothInteriorNormalDirection(layer,-1.0,-1,-1.0);
+  printf("calling CADGeom_Start ... \n");
+  if ( ! CADGeom_Start( ) ){
+    printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());
+    return 1;
+  }  
 
-  i=0;
-  while (i<nLayer & layerAnyActiveNormals(layer)){
-    i++;
+  printf("calling GeoMesh_Load for project <%s> ... \n",project);
+#ifdef HAVE_CAPRI2
+  if ( ! GeoMesh_LoadPart( modeler, project ) ){
+#else
+  if ( ! GeoMesh_LoadPart( project ) ){
+#endif
+    printf("ERROR: GeoMesh_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
+    return 1;
+  }
 
-    if (i>(int)(10.0/scale)) rate += exp(scale*log(0.01));
-    if (rate>exp(scale*log(1.3))) rate=exp(scale*log(1.3));
-    if (i>(int)(25.0/scale)) rate += exp(scale*log(0.01));
-    if (rate>exp(scale*log(1.4))) rate=exp(scale*log(1.4));
-    if (i>1) layerScaleNormalHeight(layer,rate);
-    //layerSetNormalHeightWithMaxRate(layer,rate);
-    //layerSetNormalHeightForLayerNumber(layer,i-1,rate);
-    //layerSmoothLayerWithHeight(layer);
+  if (sizer_identity != UG_FELISA ) {
+    printf("calling UGMgr_SetSizerFromIdentity( %d ) ... \n",sizer_identity);
+    if ( UGMgr_SetSizerFromIdentity( sizer_identity ) != UG_TRUE ) {
+      printf("ERROR: UGMgr_SetSizerFromIdentity( %d ) broke.\n%s\n",
+	     sizer_identity, ErrMgr_GetErrStr());
+      return 1;
+    }
+  }
 
-    layerTerminateNormalWithLength(layer,1.0);
-    layerTerminateNormalWithBGSpacing(layer, 0.8, 1.6);
-
-    if (i>10) layerTerminateCollidingTriangles(layer,1.1);
-
-    printf("advance layer %d\n",i);
-    layerTerminateFutureNegativeCellNormals(layer);
-    if (layer != layerAdvance(layer, FALSE)) {
-      printf("Error, layer advancement failed.\n");
-      layerWriteTecplotFrontGeometry(layer);
+  if ( scale != 1.0 ) {
+    UGMgr_SetSizerScale( scale );
+    if ( !CAPrIMesh_CreateTShell( vol )) {
+      printf("ERROR: could not create shell\n");
       return 0;
     }
-    if (i/5*5==i) layerWriteTecplotFrontGeometry(layer);
-  }
-  layerWriteTecplotFrontGeometry(layer);
-/* case dep */
-
-  if ( layer != layerRebuildInterior(layer,vol) ) return 0;
-
-  if ( qualityImprovement ){
-    printf(" -- QUALITY IMPROVEMENT\n");
-    layerThaw(layer);
-    printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid));
-    for (i=0;i<3;i++){
-      printf("edge swapping grid...\n");gridSwap(grid, -1.0);
-      printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid));
-    }
-  }
-
-  printf("total grid size: %d nodes %d faces %d cells.\n",
-	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
-
-  printf(" -- DUMP PART\n");
-
-  if ( copyGridY ) {
-    printf("copy grid about y=0.\n");
-    gridCopyAboutY0(grid,EMPTY,EMPTY);
-    printf("total grid size: %d nodes %d faces %d cells.\n",
-	   gridNNode(grid),gridNFace(grid),gridNCell(grid));
-  }
-
-  if ( NULL != project ) {
-
-    if (mixedElement) {
-      sprintf(outputProject,"%s_mx.ugrid",project);
-      printf("writing output AFL3R file %s\n",outputProject);
-      gridExportAFLR3( grid, outputProject  );
-    }else{
-      sprintf(outputProject,"%s_mx.fgrid",project);
-      printf("writing output FAST file %s\n",outputProject);
-      gridExportFAST( grid, outputProject  );
-    }
-  }
-
-  if (!bil && !copyGridY ) {
-    if ( project == NULL ) {
-      gridSavePart( grid, NULL );
-    }else{
-      sprintf(outputProject,"%s_mx",project);
-      printf("writing output GridEx/CADGeom/CAPRI project %s\n",outputProject);
-      gridSavePart( grid, outputProject );
-    }
   }else{
-    printf("skip save grid.\n");
-  }
-
-  if ( project != NULL ) {
-    sprintf(linesProject,"%s_mx.lines",project);
-    printf("saving lines restart %s\n",linesProject);
-    linesSave(gridLines(grid),linesProject);
-  }
-
-  printf("MesherX Done.\n");
-  return 1;
-}
-
-Layer *layerComputeNormalRateWithBGSpacing(Layer *layer, double finalRatio)
-{
-  int normal, root;
-  double xyz[3], length, normalDirection[3];
-  double initialDelta, finalDelta, rate;
-  double spacing[3], direction[9];
-
-  for(normal=0;normal<layerNNormal(layer);normal++){
-    root = layerNormalRoot(layer, normal );
-    gridNodeXYZ(layerGrid(layer),root,xyz);
-    layerNormalDirection(layer,normal,normalDirection);
-    length = layerNormalMaxLength(layer,normal);
-    xyz[0] += (length * normalDirection[0]);
-    xyz[1] += (length * normalDirection[1]);
-    xyz[2] += (length * normalDirection[2]);
-    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-    finalDelta = spacing[0]*finalRatio;
-    initialDelta = layerNormalInitialHeight(layer,normal);
-    rate = (finalDelta - initialDelta) / length;
-    gridNodeXYZ(layerGrid(layer),root,xyz);
-    layerSetNormalRate(layer, normal, rate);
-  }
-  return layer;
-}
-
-Layer *layerComputeInitialCellHeightWithBGSpacing(Layer *layer, double finalRatio)
-{
-  int normal, root;
-  double xyz[3], length, normalDirection[3];
-  double initialDelta, finalDelta, rate;
-  double spacing[3], direction[9];
-
-  for(normal=0;normal<layerNNormal(layer);normal++){
-    root = layerNormalRoot(layer, normal );
-    gridNodeXYZ(layerGrid(layer),root,xyz);
-    layerNormalDirection(layer,normal,normalDirection);
-    length = layerNormalMaxLength(layer,normal);
-    xyz[0] += (length * normalDirection[0]);
-    xyz[1] += (length * normalDirection[1]);
-    xyz[2] += (length * normalDirection[2]);
-    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-    finalDelta = spacing[0]*finalRatio;
-    rate = layerNormalRate(layer,normal);
-    initialDelta = finalDelta / pow(rate,length*10);
-    printf("init %15.10f %15.10f %15.10f %15.10f\n",rate, initialDelta,finalDelta,length);
-    layerSetNormalInitialHeight(layer, normal, initialDelta);
-  }
-  return layer;
-}
-
-Layer *layerCreateWakeWithBGSpacing(Layer *layer, 
-				    double *origin, double *direction, 
-				    double length )
-{
-  int i;
-  double xyz[3];
-  double spacing[3], map[9];
-  double extrude[3], extrusion;
-
-  i=0;
-  extrusion = 0.0;
-  xyz[0] = origin[0];  xyz[1] = origin[1];  xyz[2] = origin[2];
-  while (extrusion < length){
-    i++;
-    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,map);
-    printf("wake%5d length%8.3f spacing%10.5f xyz%8.3f%8.3f%8.3f\n",
-	   i,extrusion,spacing[0],xyz[0],xyz[1],xyz[2]);
-    extrude[0] = direction[0]*spacing[0];
-    extrude[1] = direction[1]*spacing[0];
-    extrude[2] = direction[2]*spacing[0];
-    layerExtrudeBlend(layer,extrude[0],extrude[1],extrude[2]); 
-    xyz[0] += extrude[0];  xyz[1] += extrude[1];  xyz[2] += extrude[2];
-    extrusion += spacing[0];
-  }
-
-}
-
-int layerTerminateNormalWithBGSpacing(Layer *layer, 
-				      double normalRatio, double edgeRatio)
-{
-  int normal, root;
-  double xyz[3];
-  double spacing[3];
-  double direction[9];
-  double height;
-  int triangle, normals[3];
-  double edgeLength, center[3];
-  int totalterm, hterm, eterm;
-
-  if (layerNNormal(layer) == 0 ) return EMPTY;
-
-  hterm = 0;
-  eterm = 0;
-
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    layerGetNormalHeight(layer,normal,&height);
-
-    root = layerNormalRoot(layer, normal );
-    gridNodeXYZ(layerGrid(layer),root,xyz);
-    UG_GetSpacing(&(xyz[0]),&(xyz[1]),&(xyz[2]),spacing,direction);
-
-    if (height > normalRatio*spacing[0]) {     /* Assume Isotropic for now */
-      if( !layerNormalTerminated(layer, normal ) ) hterm++;
-      layerTerminateNormal(layer, normal);
+    if (NULL == CADGeom_VolumeGrid(vol) ) {
+      if ( !CAPrIMesh_CreateTShell( vol )) {
+	printf("ERROR: could not create shell\n");
+	return 0;
+      }   
     }
   }
 
-  for (triangle=0;triangle<layerNTriangle(layer);triangle++){
-    layerAdvancedTriangleMaxEdgeLength(layer,triangle,&edgeLength );
-    layerTriangleCenter(layer,triangle,center);
 
-    UG_GetSpacing(&(center[0]),&(center[1]),&(center[2]),
-		       spacing,direction);
+  MesherX_DiscretizeVolume( maxnode, scale, project, 
+			    mixedElement, blendElement, qualityImprovement,
+			    copyGridY, bil );
 
-    if ( edgeLength > edgeRatio*spacing[0]) { /* Assume Isotropic for now */
-      layerTriangleNormals(layer, triangle, normals);
-      if( !layerNormalTerminated(layer, normals[0] ) ) eterm++;
-      if( !layerNormalTerminated(layer, normals[1] ) ) eterm++;
-      if( !layerNormalTerminated(layer, normals[2] ) ) eterm++;
-      layerTerminateNormal(layer, normals[0]);
-      layerTerminateNormal(layer, normals[1]);
-      layerTerminateNormal(layer, normals[2]);
-    }
-  }
-
-  totalterm = layerNNormal(layer)-layerNActiveNormal(layer);
-  printf("%d and %d terminated by BGS h and edge test; ",
-	 hterm, eterm, totalterm,layerNNormal(layer) );
-  return totalterm;
+  return(0);
 }
-
-
+    

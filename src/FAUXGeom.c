@@ -4,9 +4,17 @@
  * NASA Langley Research Center
  * Phone:(757)864-8005
  * Email:k.l.bibb@larc.nasa.gov 
- * 
- * FAKEGeom for Apollo, ab2n geometry series.  
- *    full scale, half body.
+ */
+
+/* Michael A. Park
+ * Computational Modeling & Simulation Branch
+ * NASA Langley Research Center
+ * Phone:(757)864-6604
+ * Email:m.a.park@larc.nasa.gov 
+ */
+  
+/* a more general FAKEGeom
+ * requires file faux_input
  */
   
 /* $Id$ */
@@ -42,11 +50,14 @@ int nfaux = 0;
 
 struct face {
   int faceid;
+  char faceType[10];
   double normal(3);
   double offset;
 };
 
 face *faux_faces = NULL;
+
+int *faceId2Index = NULL;
 
 static void initialize_faux(void)
 {
@@ -64,12 +75,18 @@ static void initialize_faux(void)
     faux_faces[i].normal[1] = 0.0;
     faux_faces[i].normal[2] = 0.0;
     fscanf("%d %s %ld",&(faux_faces[i].faceid),flavor,&(faux_faces[i].offset));
-    if( strcmp(flavor,"xmin") == 0 ) faux_faces[i].normal[0] = 1.0;
-    if( strcmp(flavor,"xmax") == 0 ) faux_faces[i].normal[0] = -1.0;
-    if( strcmp(flavor,"ymin") == 0 ) faux_faces[i].normal[1] = 1.0;
-    if( strcmp(flavor,"ymax") == 0 ) faux_faces[i].normal[1] = -1.0;
-    if( strcmp(flavor,"zmin") == 0 ) faux_faces[i].normal[2] = 1.0;
-    if( strcmp(flavor,"zmax") == 0 ) faux_faces[i].normal[2] = -1.0;
+    if( strcmp(flavor,"xmin") == 0 ) { faux_faces[i].normal[0] = 1.0;
+      faux_faces[i].faceType = "xplane"};
+    if( strcmp(flavor,"xmax") == 0 ) { faux_faces[i].normal[0] = -1.0;
+      faux_faces[i].faceType = "xplane"};
+    if( strcmp(flavor,"ymin") == 0 ) { faux_faces[i].normal[1] = 1.0;
+      faux_faces[i].faceType = "yplane"};
+    if( strcmp(flavor,"ymax") == 0 ) { faux_faces[i].normal[1] = -1.0;
+      faux_faces[i].faceType = "yplane"};
+    if( strcmp(flavor,"zmin") == 0 ) { faux_faces[i].normal[2] = 1.0;
+      faux_faces[i].faceType = "zplane"};
+    if( strcmp(flavor,"zmax") == 0 ) { faux_faces[i].normal[2] = -1.0;
+      faux_faces[i].faceType = "zplane"};
   }
 }
 
@@ -90,48 +107,27 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
 
   if (0 == nfaux) initialize_faux( );
 
-  switch (faceId) {
-  case facex0: 
+  switch (faux_faces[i].faceType) {
+  case "xplane":
     uv[0] = xyz[1];
     uv[1] = xyz[2];
-    xyznew[0] = x0;
+    xyznew[0] = faux_faces[i].offset;
     xyznew[1] = xyz[1];
     xyznew[2] = xyz[2];
     break;
-  case facex1: 
-    uv[0] = xyz[1];
-    uv[1] = xyz[2];
-    xyznew[0] = x1;
-    xyznew[1] = xyz[1];
-    xyznew[2] = xyz[2];
-    break;
-  case facey0: 
+  case "yplane":
     uv[0] = xyz[0];
     uv[1] = xyz[2];
     xyznew[0] = xyz[0];
-    xyznew[1] = y0;
+    xyznew[1] = faux_faces[i].offset;
     xyznew[2] = xyz[2];
     break;
-  case facey1: 
-    uv[0] = xyz[0];
-    uv[1] = xyz[2];
-    xyznew[0] = xyz[0];
-    xyznew[1] = y1;
-    xyznew[2] = xyz[2];
-    break;
-  case facez0: 
+  case "zplane":
     uv[0] = xyz[0];
     uv[1] = xyz[1];
     xyznew[0] = xyz[0];
     xyznew[1] = xyz[1];
-    xyznew[2] = z0;
-    break;
-  case facez1: 
-    uv[0] = xyz[0];
-    uv[1] = xyz[1];
-    xyznew[0] = xyz[0];
-    xyznew[1] = xyz[1];
-    xyznew[2] = z1;
+    xyznew[2] = faux_faces[i].offset;
     break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
@@ -170,36 +166,22 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 int derivativeFlag, double *du, double *dv,
 			 double *dudu, double *dudv, double *dvdv )
 {
-  switch (faceId) {
-  case facex0: 
-    xyz[0] = x0;
+  switch (faux_faces[i].faceType) {
+  case "xplane":
+    xyz[0] = faux_faces[i].offset;
     xyz[1] = uv[0];
     xyz[2] = uv[1];
     break;
-  case facex1: 
-    xyz[0] = x1;
-    xyz[1] = uv[0];
-    xyz[2] = uv[1];
-    break;
-  case facey0: 
+  case "yplane":
     xyz[0] = uv[0];
-    xyz[1] = y0;
+    xyz[1] = faux_faces[i].offset;
     xyz[2] = uv[1];
     break;
-  case facey1: 
-    xyz[0] = uv[0];
-    xyz[1] = y1;
-    xyz[2] = uv[1];
-    break;
-  case facez0: 
+  case "zplane":
     xyz[0] = uv[0];
     xyz[1] = uv[1];
-    xyz[2] = z0;
+    xyz[2] = faux_faces[i].offset;
     break;
-  case facez1: 
-    xyz[0] = uv[0];
-    xyz[1] = uv[1];
-    xyz[2] = z1;
     break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
@@ -207,16 +189,16 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
   }
 
   if (derivativeFlag > 0){
-    switch (faceId) {
-    case facex0: case facex1:
+    switch (faux_faces[i].faceType) {
+    case "xplane":
       du[0] = 0.0; du[1] = 1.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;
       break;
-    case facey0: case facey1: 
+    case "yplane":
       du[0] = 1.0; du[1] = 0.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;
       break;
-    case facez0: case facez1:
+    case "zplane":
       du[0] = 1.0; du[1] = 0.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 1.0; dv[2] = 0.0;
       break;
@@ -245,54 +227,26 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 GridBool CADGeom_NormalToFace(int vol, int faceId, 
 			 double *uv, double *xyz, double *normal )
 {
-  switch (faceId) {
-  case facex0:
-    xyz[0] = x0;
+  /* NOTE:  negative on normal, used to match existing FAKEGeom to normals assigned at beginning.
+   *        Initialization seems to be correct, but this is the direction that has been working...
+   */
+  normal[0] = -faux_faces[i].normal[0];
+  normal[1] = -faux_faces[i].normal[2];
+  normal[2] = -faux_faces[i].normal[2];
+  
+  switch (faux_faces[i].faceType) {
+  case "xplane":
+    xyz[0] = faux_faces[i].offset;
     xyz[1] = uv[0];
     xyz[2] = uv[1];
-    normal[0] = -1.0;
-    normal[1] = 0.0;
-    normal[2] = 0.0;
-    break;
-  case facex1:
-    xyz[0] = x1;
-    xyz[1] = uv[0];
-    xyz[2] = uv[1];
-    normal[0] = 1.0;
-    normal[1] = 0.0;
-    normal[2] = 0.0;
-    break;
-  case facey0: 
+  case "yplane":
     xyz[0] = uv[0];
-    xyz[1] = y0;
+    xyz[1] = faux_faces[i].offset;
     xyz[2] = uv[1];
-    normal[0] = 0.0;
-    normal[1] = -1.0;
-    normal[2] = 0.0;
-    break;
-  case facey1:
-    xyz[0] = uv[0];
-    xyz[1] = y1;
-    xyz[2] = uv[1];
-    normal[0] = 0.0;
-    normal[1] = 1.0;
-    normal[2] = 0.0;
-    break;
-  case facez0:
+  case "zplane":
     xyz[0] = uv[0];
     xyz[1] = uv[1];
-    xyz[2] = z0;
-    normal[0] = 0.0;
-    normal[1] = 0.0;
-    normal[2] = -1.0;
-    break;
-  case facez1:
-    xyz[0] = uv[0];
-    xyz[1] = uv[1];
-    xyz[2] = z1;
-    normal[0] = 0.0;
-    normal[1] = 0.0;
-    normal[2] = 1.0;
+    xyz[2] = faux_faces[i].offset;
     break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
