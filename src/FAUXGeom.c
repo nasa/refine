@@ -1,15 +1,19 @@
 
-/* Michael A. Park
- * Computational Modeling & Simulation Branch
+/* Karen Bibb
+ * Aerothermodynamics Branch
  * NASA Langley Research Center
- * Phone:(757)864-6604
- * Email:m.a.park@larc.nasa.gov 
+ * Phone:(757)864-8005
+ * Email:k.l.bibb@larc.nasa.gov 
+ * 
+ * FAKEGeom for Apollo, ab2n geometry series.  
+ *    full scale, half body.
  */
   
 /* $Id$ */
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "FAKEGeom.h"
 
 #ifdef __APPLE__       /* Not needed on Mac OS X */
 #else
@@ -18,6 +22,22 @@
 
 #include "FAKEGeom.h"
 
+/*  original definitions, using general face definition.
+    
+static double x0 = -135.02;
+static double x1 =  405.61;
+static double y0 =    0.00;
+static double y1 =  231.00;
+static double z0 = -231.00;
+static double z1 =  231.00;
+
+#define facex0 (3)
+#define facex1 (4)
+#define facey0 (2)
+#define facey1 (1)
+#define facez0 (6)
+#define facez1 (5)
+*/
 int nfaux = 0;
 
 struct face {
@@ -53,8 +73,8 @@ static void initialize_faux(void)
   }
 }
 
-GridBool CADGeom_NearestOnEdge(int vol, int edgeId,
-			       double *xyz, double *t, double *xyznew)
+GridBool CADGeom_NearestOnEdge(int vol, int edgeId, 
+			   double *xyz, double *t, double *xyznew)
 {
   *t = 0;
   xyznew[0] = xyz[0];
@@ -68,46 +88,45 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
 			   double *xyz, double *uv, double *xyznew)
 {
 
-
   if (0 == nfaux) initialize_faux( );
-  
+
   switch (faceId) {
-  case 3:
+  case facex0: 
     uv[0] = xyz[1];
     uv[1] = xyz[2];
     xyznew[0] = x0;
     xyznew[1] = xyz[1];
     xyznew[2] = xyz[2];
     break;
-  case 4:
+  case facex1: 
     uv[0] = xyz[1];
     uv[1] = xyz[2];
     xyznew[0] = x1;
     xyznew[1] = xyz[1];
     xyznew[2] = xyz[2];
     break;
-  case 28:
+  case facey0: 
     uv[0] = xyz[0];
     uv[1] = xyz[2];
     xyznew[0] = xyz[0];
     xyznew[1] = y0;
     xyznew[2] = xyz[2];
     break;
-  case 2:
+  case facey1: 
     uv[0] = xyz[0];
     uv[1] = xyz[2];
     xyznew[0] = xyz[0];
     xyznew[1] = y1;
     xyznew[2] = xyz[2];
     break;
-  case 29: 
+  case facez0: 
     uv[0] = xyz[0];
     uv[1] = xyz[1];
     xyznew[0] = xyz[0];
     xyznew[1] = xyz[1];
     xyznew[2] = z0;
     break;
-  case 1: 
+  case facez1: 
     uv[0] = xyz[0];
     uv[1] = xyz[1];
     xyznew[0] = xyz[0];
@@ -152,32 +171,32 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 double *dudu, double *dudv, double *dvdv )
 {
   switch (faceId) {
-  case 3:
+  case facex0: 
     xyz[0] = x0;
     xyz[1] = uv[0];
     xyz[2] = uv[1];
     break;
-  case 4:
+  case facex1: 
     xyz[0] = x1;
     xyz[1] = uv[0];
     xyz[2] = uv[1];
     break;
-  case 28:
+  case facey0: 
     xyz[0] = uv[0];
     xyz[1] = y0;
     xyz[2] = uv[1];
     break;
-  case 2:
+  case facey1: 
     xyz[0] = uv[0];
     xyz[1] = y1;
     xyz[2] = uv[1];
     break;
-  case 29: 
+  case facez0: 
     xyz[0] = uv[0];
     xyz[1] = uv[1];
     xyz[2] = z0;
     break;
-  case 1: 
+  case facez1: 
     xyz[0] = uv[0];
     xyz[1] = uv[1];
     xyz[2] = z1;
@@ -189,15 +208,15 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 
   if (derivativeFlag > 0){
     switch (faceId) {
-    case 3: case 4:
+    case facex0: case facex1:
       du[0] = 0.0; du[1] = 1.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;
       break;
-    case 2: case 28:
+    case facey0: case facey1: 
       du[0] = 1.0; du[1] = 0.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;
       break;
-    case 1: case 29:
+    case facez0: case facez1:
       du[0] = 1.0; du[1] = 0.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 1.0; dv[2] = 0.0;
       break;
@@ -227,7 +246,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
 			 double *uv, double *xyz, double *normal )
 {
   switch (faceId) {
-  case 3:
+  case facex0:
     xyz[0] = x0;
     xyz[1] = uv[0];
     xyz[2] = uv[1];
@@ -235,7 +254,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     normal[1] = 0.0;
     normal[2] = 0.0;
     break;
-  case 4:
+  case facex1:
     xyz[0] = x1;
     xyz[1] = uv[0];
     xyz[2] = uv[1];
@@ -243,7 +262,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     normal[1] = 0.0;
     normal[2] = 0.0;
     break;
-  case 28:
+  case facey0: 
     xyz[0] = uv[0];
     xyz[1] = y0;
     xyz[2] = uv[1];
@@ -251,7 +270,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     normal[1] = -1.0;
     normal[2] = 0.0;
     break;
-  case 2:
+  case facey1:
     xyz[0] = uv[0];
     xyz[1] = y1;
     xyz[2] = uv[1];
@@ -259,7 +278,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     normal[1] = 1.0;
     normal[2] = 0.0;
     break;
-  case 29: 
+  case facez0:
     xyz[0] = uv[0];
     xyz[1] = uv[1];
     xyz[2] = z0;
@@ -267,7 +286,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     normal[1] = 0.0;
     normal[2] = -1.0;
     break;
-  case 1: 
+  case facez1:
     xyz[0] = uv[0];
     xyz[1] = uv[1];
     xyz[2] = z1;
