@@ -1,3 +1,7 @@
+2006-12-08  13:30 Mike Park  <mike.park@nasa.gov>
+
+	* added conditional to headers for Mac OSX.4, need float.h, not value.h
+
 2006-11-08  8:08 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridExportFASTSurface) export surface grid to FAST.

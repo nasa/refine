@@ -2,6 +2,7 @@
 
 lib_LIBRARIES = \
 	librefine.a \
+	libFAUXGeom.a \
 	libFAKEGeomExtras.a \
 	libFAKEGeomNULL.a \
 	libFAKEGeomTrap.a \
