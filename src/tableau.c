@@ -15,9 +15,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
-#include <values.h>
-#ifndef __APPLE__       /* Not needed on Mac OS X */
+#ifdef __APPLE__       /* Not needed on Mac OS X */
+#include <float.h>
+#else
 #include <malloc.h>
+#include <values.h>
 #endif
 #include "tableau.h"
 

@@ -11,7 +11,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
+#ifdef __APPLE__       /* Not needed on Mac OS X */
+#include <float.h>
+#else
 #include <values.h>
+#endif
 
 #include "queue.h"
 #include "gridmath.h"
