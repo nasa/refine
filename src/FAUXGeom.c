@@ -48,11 +48,14 @@ static double z1 =  231.00;
 */
 int nfaux = 0;
 
+#define xplane (0)
+#define yplane (1)
+#define zplane (2)
 
 typedef struct face face;
 struct face {
-  char faceType[10];
   int faceid;
+  int faceType;
   double normal[3];
   double offset;
 };
@@ -78,17 +81,17 @@ static void initialize_faux(void)
     faux_faces[i].normal[2] = 0.0;
     fscanf(f,"%d %s %ld",&(faux_faces[i].faceid),flavor,&(faux_faces[i].offset));
     if( strcmp(flavor,"xmin") == 0 ) { faux_faces[i].normal[0] = 1.0;
-      sprintf( faux_faces[i].faceType, "xplane"); };
+      faux_faces[i].faceType = xplane; };
     if( strcmp(flavor,"xmax") == 0 ) { faux_faces[i].normal[0] = -1.0;
-      sprintf( faux_faces[i].faceType, "xplane"); };
+      faux_faces[i].faceType = xplane; };
     if( strcmp(flavor,"ymin") == 0 ) { faux_faces[i].normal[1] = 1.0;
-      sprintf( faux_faces[i].faceType, "yplane"); };
+      faux_faces[i].faceType = yplane; };
     if( strcmp(flavor,"ymax") == 0 ) { faux_faces[i].normal[1] = -1.0;
-      sprintf( faux_faces[i].faceType, "yplane"); };
+      faux_faces[i].faceType = yplane; };
     if( strcmp(flavor,"zmin") == 0 ) { faux_faces[i].normal[2] = 1.0;
-      sprintf( faux_faces[i].faceType, "zplane"); };
+      faux_faces[i].faceType = zplane; };
     if( strcmp(flavor,"zmax") == 0 ) { faux_faces[i].normal[2] = -1.0;
-      sprintf( faux_faces[i].faceType, "zplane"); };
+      faux_faces[i].faceType = zplane; };
   }
 }
 
@@ -99,7 +102,7 @@ static int faux_faceId( int faceId )
     if( faux_faces[i].faceid == faceId ){
       return i;
     } else {
-      printf("faceId not found in FAUXGeom, %d",faceId);
+      printf("ERROR: %s: %d: face %d unknown in FAUXGeom.\n",__FILE__,__LINE__,faceId);
       return -1;
     }
   }
@@ -127,21 +130,21 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
   id = faux_faceId(faceId);
     
   switch (faux_faces[id].faceType) {
-  case "xplane":
+  case xplane:
     uv[0] = xyz[1];
     uv[1] = xyz[2];
     xyznew[0] = faux_faces[id].offset;
     xyznew[1] = xyz[1];
     xyznew[2] = xyz[2];
     break;
-  case "yplane":
+  case yplane:
     uv[0] = xyz[0];
     uv[1] = xyz[2];
     xyznew[0] = xyz[0];
     xyznew[1] = faux_faces[id].offset;
     xyznew[2] = xyz[2];
     break;
-  case "zplane":
+  case zplane:
     uv[0] = xyz[0];
     uv[1] = xyz[1];
     xyznew[0] = xyz[0];
@@ -189,17 +192,17 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
   id = faux_faceId(faceId);
 
   switch (faux_faces[id].faceType) {
-  case "xplane":
+  case xplane:
     xyz[0] = faux_faces[id].offset;
     xyz[1] = uv[0];
     xyz[2] = uv[1];
     break;
-  case "yplane":
+  case yplane:
     xyz[0] = uv[0];
     xyz[1] = faux_faces[id].offset;
     xyz[2] = uv[1];
     break;
-  case "zplane":
+  case zplane:
     xyz[0] = uv[0];
     xyz[1] = uv[1];
     xyz[2] = faux_faces[id].offset;
@@ -212,15 +215,15 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 
   if (derivativeFlag > 0){
     switch (faux_faces[i].faceType) {
-    case "xplane":
+    case xplane:
       du[0] = 0.0; du[1] = 1.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;
       break;
-    case "yplane":
+    case yplane:
       du[0] = 1.0; du[1] = 0.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;
       break;
-    case "zplane":
+    case zplane:
       du[0] = 1.0; du[1] = 0.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 1.0; dv[2] = 0.0;
       break;
@@ -252,23 +255,23 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
   /* NOTE:  negative on normal, used to match existing FAKEGeom to normals assigned at beginning.
    *        Initialization seems to be correct, but this is the direction that has been working...
    */
-  int id, i;
-  id = faux_faceId(faceId)
+  int id;
+  id = faux_faceId(faceId);
 
-  normal[0] = -faux_faces[i].normal[0];
-  normal[1] = -faux_faces[i].normal[2];
-  normal[2] = -faux_faces[i].normal[2];
+  normal[0] = -faux_faces[id].normal[0];
+  normal[1] = -faux_faces[id].normal[2];
+  normal[2] = -faux_faces[id].normal[2];
   
   switch (faux_faces[id].faceType) {
-  case "xplane":
+  case xplane:
     xyz[0] = faux_faces[id].offset;
     xyz[1] = uv[0];
     xyz[2] = uv[1];
-  case "yplane":
+  case yplane:
     xyz[0] = uv[0];
     xyz[1] = faux_faces[id].offset;
     xyz[2] = uv[1];
-  case "zplane":
+  case zplane:
     xyz[0] = uv[0];
     xyz[1] = uv[1];
     xyz[2] = faux_faces[id].offset;

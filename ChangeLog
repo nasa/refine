@@ -1,3 +1,9 @@
+2006-12-08  5:00 Mike Park & Karen Bibb  <mike.park@nasa.gov> <karen.l.bibb@nasa.gov>
+	
+	* src/FAUXGeom.c, created a first cut at a generalized FAKEGeom, such
+	  that the user only has to provide an input file with basic info
+	  about the surfaces to be refined with fake geometry.
+
 2006-12-08  13:30 Mike Park  <mike.park@nasa.gov>
 
 	* added conditional to headers for Mac OSX.4, need float.h, not value.h
