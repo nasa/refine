@@ -48,6 +48,8 @@ static double z1 =  231.00;
 */
 int nfaux = 0;
 
+
+typedef struct face face;
 struct face {
   char faceType[10];
   int faceid;
@@ -59,8 +61,8 @@ static struct face *faux_faces = NULL;
 
 static void initialize_faux(void)
 {
+  char flavor[1025];
   int i;
-  char flavor[10];
  
   FILE *f;
   f= fopen("faux_input","r");
@@ -69,24 +71,24 @@ static void initialize_faux(void)
     return;
   }
   fscanf(f,"%d",&nfaux);
-  faux_faces = (struct face *) malloc( nfaux * sizeof(struct face) );
+  faux_faces = (face *) malloc( nfaux * sizeof(face) );
   for (i=0;i<nfaux;i++){
     faux_faces[i].normal[0] = 0.0;
     faux_faces[i].normal[1] = 0.0;
     faux_faces[i].normal[2] = 0.0;
     fscanf(f,"%d %s %ld",&(faux_faces[i].faceid),flavor,&(faux_faces[i].offset));
     if( strcmp(flavor,"xmin") == 0 ) { faux_faces[i].normal[0] = 1.0;
-      faux_faces[i].faceType = "xplane"};
+      sprintf( faux_faces[i].faceType, "xplane"); };
     if( strcmp(flavor,"xmax") == 0 ) { faux_faces[i].normal[0] = -1.0;
-      faux_faces[i].faceType = "xplane"};
+      sprintf( faux_faces[i].faceType, "xplane"); };
     if( strcmp(flavor,"ymin") == 0 ) { faux_faces[i].normal[1] = 1.0;
-      faux_faces[i].faceType = "yplane"};
+      sprintf( faux_faces[i].faceType, "yplane"); };
     if( strcmp(flavor,"ymax") == 0 ) { faux_faces[i].normal[1] = -1.0;
-      faux_faces[i].faceType = "yplane"};
+      sprintf( faux_faces[i].faceType, "yplane"); };
     if( strcmp(flavor,"zmin") == 0 ) { faux_faces[i].normal[2] = 1.0;
-      faux_faces[i].faceType = "zplane"};
+      sprintf( faux_faces[i].faceType, "zplane"); };
     if( strcmp(flavor,"zmax") == 0 ) { faux_faces[i].normal[2] = -1.0;
-      faux_faces[i].faceType = "zplane"};
+      sprintf( faux_faces[i].faceType, "zplane"); };
   }
 }
 
@@ -122,7 +124,7 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
 
   if (0 == nfaux) initialize_faux( );
 
-  id = faux_faceId(faceId)
+  id = faux_faceId(faceId);
     
   switch (faux_faces[id].faceType) {
   case "xplane":
@@ -183,8 +185,8 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 int derivativeFlag, double *du, double *dv,
 			 double *dudu, double *dudv, double *dvdv )
 {
-  int id;
-  id = faux_faceId(faceId)
+  int i, id;
+  id = faux_faceId(faceId);
 
   switch (faux_faces[id].faceType) {
   case "xplane":
@@ -250,7 +252,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
   /* NOTE:  negative on normal, used to match existing FAKEGeom to normals assigned at beginning.
    *        Initialization seems to be correct, but this is the direction that has been working...
    */
-  int id;
+  int id, i;
   id = faux_faceId(faceId)
 
   normal[0] = -faux_faces[i].normal[0];
