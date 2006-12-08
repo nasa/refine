@@ -174,7 +174,7 @@ refine_LDADD = $(refineLib) @CAPRIlibrary@ $(LastLib)
 refine_LDFLAGS = $(all_LDFLAGS)
 
 MesherX_CFLAGS = $(all_CFLAGS)
-MesherX_SOURCES = MesherX.c
+MesherX_SOURCES = mesherx_main.c
 MesherX_LDADD = $(MesherXLib) @CAPRIlibrary@ $(LastLib)
 MesherX_LDFLAGS = $(all_LDFLAGS)
 
@@ -201,7 +201,7 @@ refineNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 refineNative_LDFLAGS = $(all_LDFLAGS)
 
 MesherXNative_CFLAGS = $(all_CFLAGS)
-MesherXNative_SOURCES = MesherX.c
+MesherXNative_SOURCES = mesherx_main.c
 MesherXNative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
 MesherXNative_LDFLAGS = $(all_LDFLAGS)
 
@@ -245,7 +245,7 @@ librefine_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
 
 bin_PROGRAMS += libMesherX-Linux.Pro.dll
 libMesherX_Linux_Pro_dll_CFLAGS = $(all_CFLAGS) -DPROE_MAIN
-libMesherX_Linux_Pro_dll_SOURCES = MesherX.c
+libMesherX_Linux_Pro_dll_SOURCES = mesherx_main.c
 libMesherX_Linux_Pro_dll_LDADD = $(MesherXLib) @CAPRIProElibrary@ $(LastLib)
 libMesherX_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
 
@@ -259,7 +259,7 @@ refineParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
 refineParasolid_LDFLAGS = $(all_LDFLAGS)
 
 MesherXParasolid_CFLAGS = $(all_CFLAGS)
-MesherXParasolid_SOURCES = MesherX.c
+MesherXParasolid_SOURCES = mesherx_main.c
 MesherXParasolid_LDADD = $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
 MesherXParasolid_LDFLAGS = $(all_LDFLAGS)
 
@@ -297,7 +297,7 @@ refineOpenCASCADE_LDADD = $(refineLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
 refineOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
 
 MesherXOpenCASCADE_CFLAGS = $(all_CFLAGS)
-MesherXOpenCASCADE_SOURCES = MesherX.c
+MesherXOpenCASCADE_SOURCES = mesherx_main.c
 MesherXOpenCASCADE_LDADD = $(MesherXLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
 MesherXOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
 
