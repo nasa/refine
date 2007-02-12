@@ -341,7 +341,7 @@ void gridparallelswap_( int *processor, double *ARlimit )
       for (ranking = 0 ; ranking < planSize(plan) ; ranking++) {
 	cell = planItemWithThisRanking(plan, ranking);
 	if ( grid==gridCell( grid, cell, nodes) ) {
-	  if ( grid == gridRemoveTwoFaceCell(grid, queue, cell) ) continue;
+	  /* if ( grid == gridRemoveTwoFaceCell(grid, queue, cell) ) continue;*/
 	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
 	    continue;
 	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
