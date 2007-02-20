@@ -215,7 +215,7 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 int derivativeFlag, double *du, double *dv,
 			 double *dudu, double *dudv, double *dvdv )
 {
-  int i, id;
+  int id;
 
   if (0 == nfaux) { 
     if ( !initialize_faux( ) )
@@ -250,7 +250,7 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
   }
 
   if (derivativeFlag > 0){
-    switch (faux_faces[i].faceType) {
+    switch (faux_faces[id].faceType) {
     case xplane:
       du[0] = 0.0; du[1] = 1.0; du[2] = 0.0;
       dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;

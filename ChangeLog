@@ -1,3 +1,8 @@
+2007-02-20  16:52 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (CADGeom_PointOnFace) to prevent unitialized
+	memory read and seg fault, get rid of unused variable i.
+
 2007-02-20  16:15 Mike Park  <mike.park@nasa.gov>
 	
 	* src/FAUXGeom.c (initialize_faux) improved error handling.
