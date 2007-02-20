@@ -5,6 +5,7 @@ Authors:
   Bil Kleb <Bil.Kleb@nasa.gov> - MesherX mixed elements and multiple normals
   Bill Wood <Bill.Wood@nasa.gov> - Testing framework
   Harold Atkins <Harold.L.Atkins@nasa.gov> - MesherX enhancements
+  Karen Bibb <Karen.L.Bibb@NASA.gov> - FAUXGeom
 
 Design suggestions:
   Bil Kleb <Bil.Kleb@.nasa.gov> - Ruby extension unit testing 
@@ -16,3 +17,4 @@ Applications:
     in Fun3D
   Bill Jones <William.T.Jones@nasa.gov> - Parallel adaptation in Fun3D
   Dana Hammond <Dana.P.Hammond@nasa.gov> - Parallel adaptation in Fun3D
+  Karen Bibb <Karen.L.Bibb@NASA.gov> - Parallel adaptation in Fun3D for reentry
