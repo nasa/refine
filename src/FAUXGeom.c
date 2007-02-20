@@ -57,19 +57,27 @@ static GridBool initialize_faux(void)
     printf("could not open faux_input file\n");
     return FALSE;
   }
-  fscanf(f,"%d",&nfaux);
+  if ( 1 != fscanf(f,"%d",&nfaux) ) 
+    {
+      printf("error parsing line 1 of faux_input file\n");
+      nfaux = 0;
+      return FALSE;      
+    }
   faux_faces = (face *) malloc( nfaux * sizeof(face) );
   for (i=0;i<nfaux;i++){
     faux_faces[i].normal[0] = 0.0;
     faux_faces[i].normal[1] = 0.0;
     faux_faces[i].normal[2] = 0.0;
-    if ( 3 != fscanf(f,"%d %s %ld",
+    if ( 3 != fscanf(f,"%d %s %lf",
 		     &(faux_faces[i].faceid),
 		     flavor,
 		     &(faux_faces[i].offset) ) )
       {
 	printf("error parsing line %d of faux_input file\n",i+2);
-	return FALSE;	   
+	nfaux = 0;
+	free( faux_faces );
+	faux_faces = NULL;
+	return FALSE;
       }
 
     if(      strcmp(flavor,"xplane") == 0 ) 
@@ -91,8 +99,15 @@ static GridBool initialize_faux(void)
       {
 	printf("error parsing flavor %s on line %d of faux_input file\n",
 	       flavor,i+2);
+	nfaux = 0;
+	free( faux_faces );
+	faux_faces = NULL;
 	return FALSE;	   
       }
+
+    printf("%4d: %4d of %4d type %3d offset %30.15f\n",
+	   i, faux_faces[i].faceid, nfaux, 
+	   faux_faces[i].faceType, faux_faces[i].offset);
    
   }
 
@@ -103,14 +118,16 @@ static GridBool initialize_faux(void)
 static int faux_faceId( int faceId )
 {
   int i;
+
   for (i=0;i<nfaux;i++){
     if( faux_faces[i].faceid == faceId ){
       return i;
-    } else {
-      printf("ERROR: %s: %d: face %d unknown in FAUXGeom.\n",__FILE__,__LINE__,faceId);
-      return -1;
     }
   }
+
+  printf("ERROR: %s: %d: face %d unknown in FAUXGeom.\n",
+	 __FILE__,__LINE__,faceId);
+  return -1;
 
 }
   

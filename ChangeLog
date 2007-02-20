@@ -1,6 +1,12 @@
 2007-02-20  16:15 Mike Park  <mike.park@nasa.gov>
 	
 	* src/FAUXGeom.c (initialize_faux) improved error handling.
+	* src/FAUXGeom.c (faux_faceId) corrected error that prevented
+	finding face.
+
+2007-02-20  16:15 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (initialize_faux) improved error handling.
 
 2007-02-20 15:08 Mike Park  <mike.park@nasa.gov>
 
