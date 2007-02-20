@@ -30,22 +30,6 @@
 
 #include "FAKEGeom.h"
 
-/*  original definitions, using general face definition.
-    
-static double x0 = -135.02;
-static double x1 =  405.61;
-static double y0 =    0.00;
-static double y1 =  231.00;
-static double z0 = -231.00;
-static double z1 =  231.00;
-
-#define facex0 (3)
-#define facex1 (4)
-#define facey0 (2)
-#define facey1 (1)
-#define facez0 (6)
-#define facez1 (5)
-*/
 int nfaux = 0;
 
 #define xplane (0)
