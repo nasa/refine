@@ -62,16 +62,16 @@ struct face {
 
 static struct face *faux_faces = NULL;
 
-static void initialize_faux(void)
+static GridBool initialize_faux(void)
 {
   char flavor[1025];
   int i;
  
   FILE *f;
-  f= fopen("faux_input","r");
+  f = fopen("faux_input","r");
   if (NULL==f){
     printf("could not open faux_input file\n");
-    return;
+    return FALSE;
   }
   fscanf(f,"%d",&nfaux);
   faux_faces = (face *) malloc( nfaux * sizeof(face) );
@@ -79,20 +79,41 @@ static void initialize_faux(void)
     faux_faces[i].normal[0] = 0.0;
     faux_faces[i].normal[1] = 0.0;
     faux_faces[i].normal[2] = 0.0;
-    fscanf(f,"%d %s %ld",&(faux_faces[i].faceid),flavor,&(faux_faces[i].offset));
-    if( strcmp(flavor,"xmin") == 0 ) { faux_faces[i].normal[0] = 1.0;
-      faux_faces[i].faceType = xplane; };
-    if( strcmp(flavor,"xmax") == 0 ) { faux_faces[i].normal[0] = -1.0;
-      faux_faces[i].faceType = xplane; };
-    if( strcmp(flavor,"ymin") == 0 ) { faux_faces[i].normal[1] = 1.0;
-      faux_faces[i].faceType = yplane; };
-    if( strcmp(flavor,"ymax") == 0 ) { faux_faces[i].normal[1] = -1.0;
-      faux_faces[i].faceType = yplane; };
-    if( strcmp(flavor,"zmin") == 0 ) { faux_faces[i].normal[2] = 1.0;
-      faux_faces[i].faceType = zplane; };
-    if( strcmp(flavor,"zmax") == 0 ) { faux_faces[i].normal[2] = -1.0;
-      faux_faces[i].faceType = zplane; };
+    if ( 3 != fscanf(f,"%d %s %ld",
+		     &(faux_faces[i].faceid),
+		     flavor,
+		     &(faux_faces[i].offset) ) )
+      {
+	printf("error parsing line %d of faux_input file\n",i+2);
+	return FALSE;	   
+      }
+
+    if(      strcmp(flavor,"xplane") == 0 ) 
+      { 
+	faux_faces[i].normal[0] = 1.0;
+	faux_faces[i].faceType = xplane; 
+      }
+    else if( strcmp(flavor,"yplane") == 0 ) 
+      { 
+	faux_faces[i].normal[1] = 1.0;
+	faux_faces[i].faceType = yplane; 
+      }
+    else if( strcmp(flavor,"zplane") == 0 ) 
+      { 
+	faux_faces[i].normal[2] = 1.0;
+	faux_faces[i].faceType = zplane; 
+      }
+    else
+      {
+	printf("error parsing flavor %s on line %d of faux_input file\n",
+	       flavor,i+2);
+	return FALSE;	   
+      }
+   
   }
+
+  fclose(f);
+  return TRUE;
 }
 
 static int faux_faceId( int faceId )
@@ -125,9 +146,15 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
 {
   int id;
 
-  if (0 == nfaux) initialize_faux( );
+  if (0 == nfaux) { 
+    if ( !initialize_faux( ) )
+      {
+	return FALSE;	
+      }
+  }
 
   id = faux_faceId(faceId);
+  if ( id < 0  ) return FALSE;	
     
   switch (faux_faces[id].faceType) {
   case xplane:
@@ -155,7 +182,6 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
     return FALSE;
   }
-
 
   return TRUE;
 }
@@ -189,7 +215,16 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 double *dudu, double *dudv, double *dvdv )
 {
   int i, id;
+
+  if (0 == nfaux) { 
+    if ( !initialize_faux( ) )
+      {
+	return FALSE;	
+      }
+  }
+
   id = faux_faceId(faceId);
+  if ( id < 0 ) return FALSE;	
 
   switch (faux_faces[id].faceType) {
   case xplane:
@@ -252,15 +287,21 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 GridBool CADGeom_NormalToFace(int vol, int faceId, 
 			 double *uv, double *xyz, double *normal )
 {
-  /* NOTE:  negative on normal, used to match existing FAKEGeom to normals assigned at beginning.
-   *        Initialization seems to be correct, but this is the direction that has been working...
-   */
   int id;
-  id = faux_faceId(faceId);
 
-  normal[0] = -faux_faces[id].normal[0];
-  normal[1] = -faux_faces[id].normal[2];
-  normal[2] = -faux_faces[id].normal[2];
+  if (0 == nfaux) { 
+    if ( !initialize_faux( ) )
+      {
+	return FALSE;	
+      }
+  }
+
+  id = faux_faceId(faceId);
+  if ( id < 0 ) return FALSE;	
+
+  normal[0] = faux_faces[id].normal[0];
+  normal[1] = faux_faces[id].normal[2];
+  normal[2] = faux_faces[id].normal[2];
   
   switch (faux_faces[id].faceType) {
   case xplane:
