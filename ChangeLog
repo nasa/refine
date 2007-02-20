@@ -1,3 +1,7 @@
+2007-02-20 15:08 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.14 Release. Tag before FAKEGeom reimplementation.
+
 2007-02-12 10:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridparallelswap_) skip gridRemoveTwoFaceCell for
