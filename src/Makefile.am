@@ -153,10 +153,10 @@ bin_PROGRAMS =
 
 if BUILD_SDK_DEPENDENTS
 
-all_CFLAGS = @SDKheader@
+all_cflags = @SDKheader@
 refineLib  = libMesherX.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat
 MesherXLib = libMesherX.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat
-all_LDFLAGS = @dynamicFlag@
+all_ldflags = @dynamicFlag@
 hla_sources = \
 	MesherX_HLA.c \
 	mesherx_hla.h mesherx_SyJet.c \
@@ -169,143 +169,143 @@ LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
 if BUILD_CAPRI2
 
 bin_PROGRAMS += refine MesherX MesherX_HLA
-refine_CFLAGS = $(all_CFLAGS)
+refine_CFLAGS = $(all_cflags)
 refine_SOURCES = refine_main.c
 refine_LDADD = $(refineLib) @CAPRIlibrary@ $(LastLib)
-refine_LDFLAGS = $(all_LDFLAGS)
+refine_LDFLAGS = $(all_ldflags)
 
-MesherX_CFLAGS = $(all_CFLAGS)
+MesherX_CFLAGS = $(all_cflags)
 MesherX_SOURCES = mesherx_main.c
 MesherX_LDADD = $(MesherXLib) @CAPRIlibrary@ $(LastLib)
-MesherX_LDFLAGS = $(all_LDFLAGS)
+MesherX_LDFLAGS = $(all_ldflags)
 
-MesherX_HLA_CFLAGS = $(all_CFLAGS)
+MesherX_HLA_CFLAGS = $(all_cflags)
 MesherX_HLA_SOURCES = $(hla_sources)
 MesherX_HLA_LDADD = $(MesherXLib) @CAPRIlibrary@ $(LastLib)
-MesherX_HLA_LDFLAGS = $(all_LDFLAGS)
+MesherX_HLA_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += restartTest
-restartTest_CFLAGS = $(all_CFLAGS)
+restartTest_CFLAGS = $(all_cflags)
 restartTest_SOURCES = restartTest.c
 restartTest_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	 @CAPRIlibrary@ $(LastLib)
-restartTest_LDFLAGS = $(all_LDFLAGS)
+restartTest_LDFLAGS = $(all_ldflags)
 
 endif # BUILD_CAPRI2
 
 if BUILD_NATIVE_KERNEL
 
 bin_PROGRAMS += refineNative MesherXNative MesherX_HLANative
-refineNative_CFLAGS = $(all_CFLAGS)
+refineNative_CFLAGS = $(all_cflags)
 refineNative_SOURCES = refine_main.c
 refineNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
-refineNative_LDFLAGS = $(all_LDFLAGS)
+refineNative_LDFLAGS = $(all_ldflags)
 
-MesherXNative_CFLAGS = $(all_CFLAGS)
+MesherXNative_CFLAGS = $(all_cflags)
 MesherXNative_SOURCES = mesherx_main.c
 MesherXNative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
-MesherXNative_LDFLAGS = $(all_LDFLAGS)
+MesherXNative_LDFLAGS = $(all_ldflags)
 
-MesherX_HLANative_CFLAGS = $(all_CFLAGS)
+MesherX_HLANative_CFLAGS = $(all_cflags)
 MesherX_HLANative_SOURCES = $(hla_sources)
 MesherX_HLANative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
-MesherX_HLANative_LDFLAGS = $(all_LDFLAGS)
+MesherX_HLANative_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += restartTestNative
-restartTestNative_CFLAGS = $(all_CFLAGS)
+restartTestNative_CFLAGS = $(all_cflags)
 restartTestNative_SOURCES = restartTest.c
 restartTestNative_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	@CAPRINativelibrary@ $(LastLib)
-restartTestNative_LDFLAGS = $(all_LDFLAGS)
+restartTestNative_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += unitNative
-unitNative_CFLAGS = $(all_CFLAGS)
+unitNative_CFLAGS = $(all_cflags)
 unitNative_SOURCES = unit_main.c
 unitNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
-unitNative_LDFLAGS = $(all_LDFLAGS)
+unitNative_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += pxNative
-pxNative_CFLAGS = $(all_CFLAGS)
+pxNative_CFLAGS = $(all_cflags)
 pxNative_SOURCES = px_main.c
 pxNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
-pxNative_LDFLAGS = $(all_LDFLAGS)
+pxNative_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += profileNative
-profileNative_CFLAGS = -pg $(all_CFLAGS)
+profileNative_CFLAGS = -pg $(all_cflags)
 profileNative_SOURCES = profile_main.c
 profileNative_LDADD = libMesherX_pg.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat @CAPRINativelibrary@ $(LastLib)
-profileNative_LDFLAGS = -pg $(all_LDFLAGS)
+profileNative_LDFLAGS = -pg $(all_ldflags)
 
 if BUILD_PROE_KERNEL
 
 bin_PROGRAMS += librefine-Linux.Pro.dll
-librefine_Linux_Pro_dll_CFLAGS = $(all_CFLAGS) -DPROE_MAIN
+librefine_Linux_Pro_dll_CFLAGS = $(all_cflags) -DPROE_MAIN
 librefine_Linux_Pro_dll_SOURCES = proemain.c
 librefine_Linux_Pro_dll_LDADD = $(refineLib) @CAPRIProElibrary@ $(LastLib)
-librefine_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
+librefine_Linux_Pro_dll_LDFLAGS = $(all_ldflags) -shared
 
 bin_PROGRAMS += libMesherX-Linux.Pro.dll
-libMesherX_Linux_Pro_dll_CFLAGS = $(all_CFLAGS) -DPROE_MAIN
+libMesherX_Linux_Pro_dll_CFLAGS = $(all_cflags) -DPROE_MAIN
 libMesherX_Linux_Pro_dll_SOURCES = mesherx_main.c
 libMesherX_Linux_Pro_dll_LDADD = $(MesherXLib) @CAPRIProElibrary@ $(LastLib)
-libMesherX_Linux_Pro_dll_LDFLAGS = $(all_LDFLAGS) -shared
+libMesherX_Linux_Pro_dll_LDFLAGS = $(all_ldflags) -shared
 
 endif # BUILD_PROE_KERNEL
 
 if BUILD_PARASOLID_KERNEL
 bin_PROGRAMS += refineParasolid MesherXParasolid MesherX_HLAParasolid
-refineParasolid_CFLAGS = $(all_CFLAGS)
+refineParasolid_CFLAGS = $(all_cflags)
 refineParasolid_SOURCES = refine_main.c
 refineParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
-refineParasolid_LDFLAGS = $(all_LDFLAGS)
+refineParasolid_LDFLAGS = $(all_ldflags)
 
-MesherXParasolid_CFLAGS = $(all_CFLAGS)
+MesherXParasolid_CFLAGS = $(all_cflags)
 MesherXParasolid_SOURCES = mesherx_main.c
 MesherXParasolid_LDADD = $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
-MesherXParasolid_LDFLAGS = $(all_LDFLAGS)
+MesherXParasolid_LDFLAGS = $(all_ldflags)
 
-MesherX_HLAParasolid_CFLAGS = $(all_CFLAGS)
+MesherX_HLAParasolid_CFLAGS = $(all_cflags)
 MesherX_HLAParasolid_SOURCES = $(hla_sources)
 MesherX_HLAParasolid_LDADD = $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
-MesherX_HLAParasolid_LDFLAGS = $(all_LDFLAGS)
+MesherX_HLAParasolid_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += restartTestParasolid
-restartTestParasolid_CFLAGS = $(all_CFLAGS)
+restartTestParasolid_CFLAGS = $(all_cflags)
 restartTestParasolid_SOURCES = restartTest.c
 restartTestParasolid_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	@CAPRIParasolidlibrary@ $(LastLib)
-restartTestParasolid_LDFLAGS = $(all_LDFLAGS)
+restartTestParasolid_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += unitParasolid
-unitParasolid_CFLAGS = $(all_CFLAGS)
+unitParasolid_CFLAGS = $(all_cflags)
 unitParasolid_SOURCES = unit_main.c
 unitParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
-unitParasolid_LDFLAGS = $(all_LDFLAGS)
+unitParasolid_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += pxParasolid
-pxParasolid_CFLAGS = $(all_CFLAGS)
+pxParasolid_CFLAGS = $(all_cflags)
 pxParasolid_SOURCES = px_main.c
 pxParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
-pxParasolid_LDFLAGS = $(all_LDFLAGS)
+pxParasolid_LDFLAGS = $(all_ldflags)
 
 endif # BUILD_PARASOLID_KERNEL
 
 if BUILD_OPENCASCADE_KERNEL
 bin_PROGRAMS += refineOpenCASCADE MesherXOpenCASCADE MesherX_HLAOpenCASCADE
-refineOpenCASCADE_CFLAGS = $(all_CFLAGS)
+refineOpenCASCADE_CFLAGS = $(all_cflags)
 refineOpenCASCADE_SOURCES = refine_main.c
 refineOpenCASCADE_LDADD = $(refineLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
-refineOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
+refineOpenCASCADE_LDFLAGS = $(all_ldflags)
 
-MesherXOpenCASCADE_CFLAGS = $(all_CFLAGS)
+MesherXOpenCASCADE_CFLAGS = $(all_cflags)
 MesherXOpenCASCADE_SOURCES = mesherx_main.c
 MesherXOpenCASCADE_LDADD = $(MesherXLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
-MesherXOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
+MesherXOpenCASCADE_LDFLAGS = $(all_ldflags)
 
-MesherX_HLAOpenCASCADE_CFLAGS = $(all_CFLAGS)
+MesherX_HLAOpenCASCADE_CFLAGS = $(all_cflags)
 MesherX_HLAOpenCASCADE_SOURCES = $(hla_sources)
 MesherX_HLAOpenCASCADE_LDADD = $(MesherXLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
-MesherX_HLAOpenCASCADE_LDFLAGS = $(all_LDFLAGS)
+MesherX_HLAOpenCASCADE_LDFLAGS = $(all_ldflags)
 endif # BUILD_OPENCASCADE_KERNEL
 
 endif # BUILD_NATIVE_KERNEL
