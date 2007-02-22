@@ -104,11 +104,11 @@ static GridBool initialize_faux(void)
 	faux_faces = NULL;
 	return FALSE;	   
       }
-
+    /* uncomment this region to echo geometry information
     printf("%4d: %4d of %4d type %3d offset %30.15f\n",
 	   i, faux_faces[i].faceid, nfaux, 
 	   faux_faces[i].faceType, faux_faces[i].offset);
-   
+    */
   }
 
   fclose(f);
