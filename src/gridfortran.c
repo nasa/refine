@@ -35,7 +35,7 @@ static Queue *queue = NULL;
 static Plan *plan = NULL;
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
-		  int *ncell, int *maxcell, int *c2n )
+		  int *ncell, int *c2n )
 {
   int node, cell;
 
@@ -54,10 +54,10 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
   queue = queueCreate( 9 ); /* 3:xyz + 6:m */
   for ( node=0; node<*nnode; node++) gridAddNode(grid,x[node],y[node],z[node]);
   for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
-						  c2n[cell+0*(*maxcell)] - 1,
-						  c2n[cell+1*(*maxcell)] - 1,
-						  c2n[cell+2*(*maxcell)] - 1,
-						  c2n[cell+3*(*maxcell)] - 1 );
+						  c2n[0+4*cell] - 1,
+						  c2n[1+4*cell] - 1,
+						  c2n[2+4*cell] - 1,
+						  c2n[3+4*cell] - 1 );
 #ifdef PARALLEL_VERBOSE 
   printf(" %6d populated                nnode%9d ncell%9d AR%14.10f\n",
 	 gridPartId(grid),gridNNode(grid),gridNCell(grid),gridMinAR(grid));

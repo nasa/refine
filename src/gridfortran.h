@@ -16,7 +16,7 @@
 BEGIN_C_DECLORATION
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z,
-		 int *ncell, int *maxcell, int *c2n );
+		  int *ncell, int *c2n );
 void gridfree_( void );
 void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
 			 int *nface, int *dim1, int *dim2, int *f2n );
