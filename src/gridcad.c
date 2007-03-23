@@ -364,6 +364,15 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
   }
   gridNodeXYZ( grid, node, xyznew );
   gridSubtractVector(xyznew,xyz,displacement);
+  /*
+    {
+    double ar;
+    gridNodeAR(grid, node, &ar );
+    printf("%e %e %e - %f %f %f - %f\n",
+    displacement[0],displacement[1],displacement[2],
+    xyz[0],xyz[1],xyz[2],ar);
+    }
+  */
   gridSetNodeXYZ( grid, node, xyz );
   return grid;
 }
