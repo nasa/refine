@@ -1,5 +1,10 @@
 2007-03-29 11:52 Mike Park  <mike.park@nasa.gov>
 
+	* src/gridmpi.c (gridApplyQueue) set face uv and edge t
+	consistently with neighboring elements after a parallel operation.
+
+2007-03-29 11:52 Mike Park  <mike.park@nasa.gov>
+
 	* src/gridinsert.c (gridSplitEdgeRatio,gridCollapseEdge) to
 	consistantly evaluate uv and xyz for both faces.
 

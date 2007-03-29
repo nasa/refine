@@ -540,6 +540,14 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 			     localnodes[1],uv[2],uv[3],
 			     localnodes[2],uv[4],uv[5],
 			     faceId);
+
+	if ( NULL == gridSetNodeUV( grid, localnodes[0], 
+				    faceId, uv[0], uv[1] ) ) return NULL;
+	if ( NULL == gridSetNodeUV( grid, localnodes[1], 
+				    faceId, uv[2], uv[3] ) ) return NULL;
+	if ( NULL == gridSetNodeUV( grid, localnodes[2], 
+				    faceId, uv[4], uv[5] ) ) return NULL;
+
       }
       addedface++;
     }
@@ -552,6 +560,12 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	queueAddedEdgeTs( gq, addededge, ts );
 	for(i=0;i<2;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
 	edge = gridAddEdge(grid,localnodes[0],localnodes[1],edgeId,ts[0],ts[1]);
+
+	if ( NULL == gridSetNodeT(grid, localnodes[0],
+				  edgeId, ts[0] )) return NULL;
+	if ( NULL == gridSetNodeT(grid, localnodes[1],
+				  edgeId, ts[1] )) return NULL;
+
       }
       addededge++;
     }
