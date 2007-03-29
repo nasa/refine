@@ -2050,6 +2050,15 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 	  newId0uv[0] = newId1uv[0];
 	  newId0uv[1] = newId1uv[1];
 	}
+	/* one node on face one node on edge */
+	if ( gridGeometryEdge( grid, n0 ) ) {
+	  int edgenodes[2];
+	  edge = adjItem(adjFirst(gridEdgeAdj(grid),n0));
+	  gridEdge( grid, edge, edgenodes, &edgeId );
+	  gridNodeT(grid, n0, edgeId, &t );
+	  gridEvaluateOnEdge(grid, edgeId, t, xyz );
+	  edge = edgeId = EMPTY;
+	}
       }
     }
 
@@ -2058,6 +2067,9 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
     gridSetNodeUV(grid, n1, faceId0, newId0uv[0], newId0uv[1]);
     gridSetNodeUV(grid, n1, faceId1, newId1uv[0], newId1uv[1]);
   }
+
+  /* do not move gometry nodes */
+  if ( gridGeometryNode( grid, n0 ) ) gridNodeXYZ( grid, n0, xyz);
 
   /* set node location (this will include any surface geometry constraints) */
   gridSetNodeXYZ( grid, n0, xyz);

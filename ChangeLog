@@ -1,3 +1,8 @@
+2007-03-29 14:17 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdge) to correctly evaluate nodes
+	collapsed to lower dimensional gemoetry entities.
+
 2007-03-29 11:52 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridApplyQueue) set face uv and edge t
