@@ -1,3 +1,8 @@
+2007-03-29 11:52 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeRatio,gridCollapseEdge) to
+	consistantly evaluate uv and xyz for both faces.
+
 2007-03-22 13:10 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridcreate_) to account for fun3d-23948 c2n

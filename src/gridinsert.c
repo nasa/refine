@@ -1229,6 +1229,11 @@ int gridSplitEdgeRatio(Grid *grid, Queue *queue, int n0, int n1, double ratio )
       } else {
 	/* assume id0==id1 or fake geometry */
 	gridEvaluateOnFace(grid, faceId0, newId0uv, xyz);
+	gridEvaluateOnFace(grid, faceId1, newId1uv, xyz);
+	if ( faceId0 == faceId1 ) {
+	  newId0uv[0] = newId1uv[0];
+	  newId0uv[1] = newId1uv[1];
+	}
 	gridSetNodeXYZ(grid, newnode, xyz);
       }
     }
@@ -2040,6 +2045,11 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
       } else {
 	/* assume id0==id1 or fake geometry */
 	gridEvaluateOnFace(grid, faceId0, newId0uv, xyz);
+	gridEvaluateOnFace(grid, faceId1, newId1uv, xyz);
+	if ( faceId0 == faceId1 ) {
+	  newId0uv[0] = newId1uv[0];
+	  newId0uv[1] = newId1uv[1];
+	}
       }
     }
 
