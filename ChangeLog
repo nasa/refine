@@ -1,3 +1,9 @@
+2007-03-30  8:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridApplyQueue) set node xyz, map, and aux even
+	for node that already exist to be compatable with existing node
+	movement in future.
+
 2007-03-29 14:17 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridCollapseEdge) to correctly evaluate nodes

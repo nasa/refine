@@ -511,13 +511,14 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 						 xyz[1+dim*i],
 						 xyz[2+dim*i],
 						 globalnodes[i]);
-	    gridSetMap(grid,localnodes[i],
-		       xyz[3+dim*i],xyz[4+dim*i],xyz[5+dim*i],
-		       xyz[6+dim*i],xyz[7+dim*i],xyz[8+dim*i]);
-	    for ( aux = 0 ; aux < gridNAux(grid) ; aux++ )     
-	      gridSetAux(grid, localnodes[i], aux, xyz[aux+9+dim*i]);
-	    gridSetNodePart(grid, localnodes[i], nodeParts[i]);
 	  }
+	  gridSetNodeXYZ(grid,localnodes[i],&(xyz[0+dim*i]));
+	  gridSetMap(grid,localnodes[i], 
+		     xyz[3+dim*i],xyz[4+dim*i],xyz[5+dim*i],
+		     xyz[6+dim*i],xyz[7+dim*i],xyz[8+dim*i]);
+	  for ( aux = 0 ; aux < gridNAux(grid) ; aux++ )     
+	    gridSetAux(grid, localnodes[i], aux, xyz[aux+9+dim*i]);
+	  gridSetNodePart(grid, localnodes[i], nodeParts[i]);
 	}
 	cell = gridAddCellWithGlobal(grid,
 				     localnodes[0],localnodes[1],
