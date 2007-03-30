@@ -1,3 +1,8 @@
+2007-03-30 10:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridsetlocalnodedata_) repaired a bug that
+	prevented ghost node edge t values from being updated.
+
 2007-03-30  8:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmpi.c (gridApplyQueue) set node xyz, map, and aux even

@@ -824,7 +824,7 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 	edgeids = -nodes[node];
 	node++;
 	for(edge=0;edge<edgeids;edge++) {
-	  edgeId = nodes[node];
+	  edgeId = -nodes[node];
 	  gridSetNodeT(grid,localnode,edgeId,data[0+(*ndim)*node]);
 	  node++;
 	}
