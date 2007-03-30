@@ -563,23 +563,6 @@ GridMove *gridmoveProjectionDisplacements(GridMove *gm)
   for ( node=0 ; node<gridMaxNode(grid) ; node++ ) {
     if ( gridNodeLocal(grid,node) && gridGeometryFace( grid, node ) ) {
       gridNodeProjectionDisplacement(grid,node,displacement);
-
-      if (ABS(displacement[0]) +
-	  ABS(displacement[1]) +
-	  ABS(displacement[2]) > 1.0e-2)
-	{
-	  printf("disp %13.6e %13.6e %13.6e %9.5f %9.5f %9.5f %1d %4d %1d\n",
-		 displacement[0],
-		 displacement[1],
-		 displacement[2],
-		 displacement[0]+grid->xyz[0+3*node],
-		 displacement[1]+grid->xyz[1+3*node],
-		 displacement[2]+grid->xyz[2+3*node],
-		 gridPartId(grid),
-		 gridNodeGlobal(grid,node),
-		 gridGeometryEdge(grid,node));
-	}
-
       gridmoveDisplace(gm,node,displacement);
     }
   }
