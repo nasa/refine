@@ -1,7 +1,8 @@
 2007-04-06  8:40 Mike Park  <mike.park@nasa.gov>
 
-	* Made 1.3.0 Release. GTech release. Incudes FAUXGeom. 
-	Fixes edge parameter parallel consistency.
+	* Made 1.3.0 Release. GTech release. Account for fun3d-23948 c2n
+	index flip. Incudes FAUXGeom.  Fixes edge parameter parallel
+	consistency.
 
 2007-03-30 10:00 Mike Park  <mike.park@nasa.gov>
 
