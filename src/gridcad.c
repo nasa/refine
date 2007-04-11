@@ -341,6 +341,7 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
   displacement[0] = displacement[1] = displacement[2] = 0.0;
   
   if (!gridGeometryFace( grid, node ) ) return grid;
+  if ( gridNodeFrozen( grid, node ) ) return grid;
   
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
   

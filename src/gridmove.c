@@ -561,9 +561,15 @@ GridMove *gridmoveProjectionDisplacements(GridMove *gm)
   double displacement[3];
 
   for ( node=0 ; node<gridMaxNode(grid) ; node++ ) {
-    if ( gridNodeLocal(grid,node) && gridGeometryFace( grid, node ) ) {
-      gridNodeProjectionDisplacement(grid,node,displacement);
+    if ( gridNodeFrozen(grid,node) ) {
+      displacement[0] = displacement[1] = displacement[2] = 0.0;
       gridmoveDisplace(gm,node,displacement);
+    } else {
+      if ( gridNodeLocal(grid,node) && 
+	   gridGeometryFace( grid, node ) ) {
+	gridNodeProjectionDisplacement(grid,node,displacement);
+	gridmoveDisplace(gm,node,displacement);
+      }
     }
   }
 
