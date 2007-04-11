@@ -1,10 +1,15 @@
+2007-04-11 15:23 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.3.1 Release. GTech release. Includes quick bug fix for the
+	intersection of projection, gridmove and frozen boundary layer.
+
 2007-04-11 14:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridNodeProjectionDisplacement) skip node projection
-	displacement calculation if node is frozen.
+	displacement calculation if node is frozen. (reported by Karen Bibb)
 	* src/gridmove.c (gridmoveProjectionDisplacements) set frozen
 	node displacements to zero and skip gridNodeProjectionDisplacement
-	call.
+	call. (reported by Karen Bibb)
 
 2007-04-06  8:40 Mike Park  <mike.park@nasa.gov>
 
