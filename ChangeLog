@@ -1,3 +1,9 @@
+2007-04-13 14:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridedge_) fixed transposition of arguments
+	to gridNodeT so that the t values are correct. (They where set to
+	DBL_MAX because requested edgeId was not found at node.) 
+
 2007-04-11 15:23 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.3.1 Release. GTech release. Includes quick bug fix for the

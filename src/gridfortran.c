@@ -944,8 +944,8 @@ void gridedge_( int *edge, int *edgeId,
     globalnodes[1] = 1 + gridNodeGlobal(grid,localnodes[1]);
     nodeparts[0] = gridNodePart(grid,localnodes[0]);
     nodeparts[1] = gridNodePart(grid,localnodes[1]);
-    gridNodeT(grid,*edgeId,localnodes[0],&t[0]);
-    gridNodeT(grid,*edgeId,localnodes[1],&t[1]);
+    gridNodeT(grid,localnodes[0],*edgeId,&t[0]);
+    gridNodeT(grid,localnodes[1],*edgeId,&t[1]);
     gridNodeXYZ(grid,localnodes[0],&xyz[0*3]);
     gridNodeXYZ(grid,localnodes[1],&xyz[1*3]);
   }else{
