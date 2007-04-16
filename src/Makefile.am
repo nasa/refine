@@ -145,7 +145,8 @@ EXTRA_DIST = mesherx_SyJet.c \
 	gridmoveMT.rb gridmove_ruby.c \
 	gridedgerMT.rb gridedger_ruby.c \
 	gridfacerMT.rb gridfacer_ruby.c \
-	layerMT.rb layer_ruby.c
+	layerMT.rb layer_ruby.c \
+	faux_input
 
 TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb tableauMT.rb planMT.rb ringMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb gridedgerMT.rb gridfacerMT.rb layerMT.rb
 

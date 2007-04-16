@@ -1,3 +1,7 @@
+2007-04-16  9:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am (faux_input) added faux_input to EXTRA_DIST.
+
 2007-04-13 14:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridedge_) fixed transposition of arguments
