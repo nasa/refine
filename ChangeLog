@@ -1,3 +1,8 @@
+2007-04-18 08:22 Mike Park <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) use_a_plan by default, now
+	that most adaptation cases are cut-cell or frozen boundary layer.
+
 2007-04-16  9:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/Makefile.am (faux_input) added faux_input to EXTRA_DIST.

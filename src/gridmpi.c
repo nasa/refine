@@ -69,7 +69,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   nnodeAdd    = 0;
   nnodeRemove = 0;
 
-  use_a_plan = FALSE;
+  use_a_plan = TRUE
   env = getenv("REFINE_WITH_PLAN");
   if (env != NULL) {
     if (strcasecmp(env,"NO") == 0) use_a_plan = FALSE;
