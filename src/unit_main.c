@@ -109,7 +109,7 @@ int main( int argc, char *argv[] )
 {
   Grid *grid;
   int iteration;
-  int iterations = 8;
+  int iterations = 1;
   char project[256];
   char modeler[256];
   char outputProject[256];
@@ -166,6 +166,12 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
+  printf("writing output project %s\n",outputProject);
+  gridSavePart( grid, outputProject );
+
+  printf("Done.\n");
+  
+  return 0;
 
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
@@ -179,7 +185,7 @@ int main( int argc, char *argv[] )
   gridCacheCurrentGridAndMap(grid);
 
   ratioCollapse = 0.3;
-  ratioSplit    = 1.0;
+  ratioSplit    = 1.5;
       
   gridSetMinInsertCost( grid, 1.0e-5 );
   gridSetMinSurfaceSmoothCost( grid, 1.0e-5 );
