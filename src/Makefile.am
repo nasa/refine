@@ -2,16 +2,7 @@
 
 lib_LIBRARIES = \
 	librefine.a \
-	libFAUXGeom.a \
-	libFAKEGeomExtras.a \
-	libFAKEGeomNULL.a \
-	libFAKEGeomTrap.a \
-	libFAKEGeomDPWwbi.a \
-	libFAKEGeomOM6v.a \
-	libFAKEGeomApollo_1.a \
-	libFAKEGeomApollo_ab2n.a \
-	libFAKEGeomApolloHalf.a \
-	libFAKEGeomCLV_3.a
+	libFAUXGeom.a
 
 librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
@@ -40,33 +31,6 @@ librefine_a_SOURCES = \
 
 libFAUXGeom_a_CFLAGS = @SDKheader@
 libFAUXGeom_a_SOURCES = FAKEGeom.h FAUXGeom.c FAKEGeomExtras.c
-
-libFAKEGeomExtras_a_CFLAGS = @SDKheader@
-libFAKEGeomExtras_a_SOURCES = FAKEGeom.h FAKEGeomExtras.c
-
-libFAKEGeomNULL_a_CFLAGS = @SDKheader@
-libFAKEGeomNULL_a_SOURCES = FAKEGeom.h FAKEGeomNULL.c
-
-libFAKEGeomTrap_a_CFLAGS = @SDKheader@
-libFAKEGeomTrap_a_SOURCES = FAKEGeom.h FAKEGeomTrap.c
-
-libFAKEGeomDPWwbi_a_CFLAGS = @SDKheader@
-libFAKEGeomDPWwbi_a_SOURCES = FAKEGeom.h FAKEGeomDPWwbi.c
-
-libFAKEGeomOM6v_a_CFLAGS = @SDKheader@
-libFAKEGeomOM6v_a_SOURCES = FAKEGeom.h FAKEGeomOM6v.c
-
-libFAKEGeomApollo_1_a_CFLAGS = @SDKheader@
-libFAKEGeomApollo_1_a_SOURCES = FAKEGeom.h FAKEGeomApollo_1.c
-
-libFAKEGeomApolloHalf_a_CFLAGS = @SDKheader@
-libFAKEGeomApolloHalf_a_SOURCES = FAKEGeom.h FAKEGeomApolloHalf.c
-
-libFAKEGeomApollo_ab2n_a_CFLAGS = @SDKheader@
-libFAKEGeomApollo_ab2n_a_SOURCES = FAKEGeom.h FAKEGeomApollo_ab2n.c
-
-libFAKEGeomCLV_3_a_CFLAGS = @SDKheader@
-libFAKEGeomCLV_3_a_SOURCES = FAKEGeom.h FAKEGeomCLV_3.c
 
 if BUILD_EXECUTABLES
 
@@ -140,7 +104,6 @@ EXTRA_DIST = mesherx_SyJet.c \
 	gridinsertMT.rb gridinsert_ruby.c \
 	gridswapMT.rb gridswap_ruby.c \
 	gridcadMT.rb gridcad_ruby.c \
-	FAKEGeom.h FAKEGeom.c \
 	gridmpiMT.rb gridmpi_ruby.c \
 	gridmoveMT.rb gridmove_ruby.c \
 	gridedgerMT.rb gridedger_ruby.c \
