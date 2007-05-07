@@ -357,3 +357,170 @@ int gridSavePart( Grid *grid, char *project )
 }
 
  
+int gridSavePartExplicitly( Grid *grid, char *project )
+{
+  int vol=1;
+  UGridPtr ugrid;  
+  int nnode, nface, ncell;
+  double *xyz;
+  int *f2n, *faceId, *c2n;
+  int i, ixyz, iface;
+  int iedge, curveEndPoint[2], nCurveNode, *curve;
+  double trange[2];
+  int nGeomNode, nGeomEdge, nGeomFace, nGeomGroups;
+
+  double *temp_xyz, *temp_tuv;
+
+  UGPatchPtr  localPatch, globalPatch;
+  Iterator patchIterator;
+  int patchDimensions[3];
+  int face, localNode, globalNode;
+
+  int nbnode;
+  int *faceg2l, *facel2g;
+  int face_edge_count;
+  int node;
+  int min_face_interior_node, max_face_interior_node;
+
+  if( !CADGeom_GetVolume(vol,&nGeomNode,&nGeomEdge,&nGeomFace,&nGeomGroups) )
+    printf("ERROR: CADGeom_GetVolume, line %d of %s\n.",__LINE__, __FILE__);
+
+  gridSortNodeGridEx( grid );
+
+  gridExport( grid, &nnode, &nface, &ncell,
+	      &xyz, &f2n, &faceId, &c2n );
+  
+  // edge stuff
+  nbnode = nGeomNode;
+  for (iedge=1; iedge<=nGeomEdge; iedge++){
+
+    CADGeom_GetEdge( vol, iedge, trange, curveEndPoint);
+    curveEndPoint[0]--; curveEndPoint[1]--;// fortran to c numbering
+    
+    nCurveNode = gridGeomCurveSize( grid, iedge, curveEndPoint[0]);
+    curve =    malloc( nCurveNode *     sizeof(int) );
+    temp_xyz = malloc( nCurveNode * 3 * sizeof(double) );
+    temp_tuv = malloc( nCurveNode *     sizeof(double) );
+    nbnode += (nCurveNode-2);
+
+    gridGeomCurve( grid, iedge, curveEndPoint[0], curve );
+    gridGeomCurveT( grid, iedge, curveEndPoint[0], temp_tuv );
+
+    for ( i=0; i<nCurveNode; i++) // include end points
+      for ( ixyz=0; ixyz<3 ; ixyz++)
+	temp_xyz[ixyz+3*i] = xyz[ixyz+3*curve[i]];
+
+    CADGeom_UpdateEdgeGrid( vol, iedge, nCurveNode, temp_xyz, temp_tuv );
+
+    free(curve);
+  }
+
+  // face stuff
+  faceg2l = malloc( nnode * sizeof(int) );
+  for( face=1; face<=nGeomFace; face++ ) {
+    //face_edge_count = gridFaceEdgeCount( grid, face );
+    facel2g = malloc( face_edge_count * sizeof(int) );
+    for (node=0;node<face_edge_count;node++) facel2g[node] = EMPTY;
+    //gridFaceEdgeLocal2Global( grid, face, face_edge_count, facel2g );
+    for (node=0;node<nnode;node++) faceg2l[node] = EMPTY;
+    for (node=0;node<face_edge_count;node++) faceg2l[facel2g[node]] = node;
+
+    min_face_interior_node = nnode;
+    max_face_interior_node = -1;
+    for (iface=0;iface<nface;iface++){
+      if ( face == faceId[iface]) {
+	for (node=0;node<3;node++){
+	  if ( faceg2l[f2n[node+3*iface]] < 0 ) {
+	    min_face_interior_node=MIN( min_face_interior_node,
+					f2n[node+3*iface] );
+	    max_face_interior_node=MAX( max_face_interior_node,
+					f2n[node+3*iface] );
+	  }
+	}
+      }
+    }
+    for ( node  = min_face_interior_node ;
+	  node <= max_face_interior_node ; node++ ) {
+      faceg2l[node] = nbnode;
+      nbnode++;
+    }
+
+    free( facel2g );
+  }
+
+  if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, ncell, c2n  )) {
+    printf(" Could not make UGridPtr, line %d of %s\n", __LINE__, __FILE__);
+    return(-1);
+  }
+  
+  for (iface = 0 ; iface < nface ; iface++ ) {
+    UGrid_FlagValue(ugrid,iface) = faceId[iface];
+  }
+
+  printf("Rebuilding Element Connectivity...");
+  UGrid_BuildConnectivity(ugrid);		/* Build Connectivity */
+  printf("Complete\n");
+
+  UGrid_TIMESTAMP(ugrid) = time( NULL );	/* Updated time */
+  UGrid_ALGORITHM(ugrid) = UGrid_ALGORITHM(CADGeom_VolumeGrid(vol));
+
+  if( !CADGeom_SetVolumeGrid( vol, ugrid ) ) {
+    printf(" Could not replace CADGeom volume grid, line %d of %s\n",
+	   __LINE__, __FILE__);    
+    return(-1);
+  }
+
+  /* get uv vals for surface(s) */
+  /* we use globalPatch to track with the localPatch so that we can get global
+   * node numbering relative the volume grid and NOT the face grid as would
+   * be the case of global index of upp
+   */
+
+  globalPatch = DList_SetIteratorToHead(UGrid_PatchList(ugrid),&patchIterator);
+
+  for( face=1; face<=nGeomFace; face++ ) {
+    double uv[2];
+    char filename[265];
+    GridBool debug = FALSE;
+
+    localPatch = CADGeom_FaceGrid(vol,face);
+    sprintf(filename,"localUGPatch%03d.t",face);
+    if (debug) UGPatch_WriteTecplotWithParameters(localPatch,filename);
+    sprintf(filename,"globalUGPatch%03d.t",face);
+    if (debug) UGPatch_WriteTecplotWithParameters(globalPatch,filename);
+    UGPatch_GetDims(localPatch,patchDimensions);
+    for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {	     
+      globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
+      gridNodeUV( grid, globalNode, face, uv );
+      UGPatch_Parameter(localPatch,localNode,0) = uv[0];
+      UGPatch_Parameter(localPatch,localNode,1) = uv[1];
+      if (debug) {
+	printf("node%6d local  patch %22.18f%22.18f%22.18f\n",localNode,
+	       UGPatch_PtValue(localPatch,localNode,0),
+	       UGPatch_PtValue(localPatch,localNode,1),
+	       UGPatch_PtValue(localPatch,localNode,2));
+	printf("node%6d global patch %22.18f%22.18f%22.18f\n",localNode,
+	       UGPatch_PtValue(globalPatch,localNode,0),
+	       UGPatch_PtValue(globalPatch,localNode,1),
+	       UGPatch_PtValue(globalPatch,localNode,2));
+	printf("node%6d ugrid  index %22.18f%22.18f%22.18f\n\n",localNode,
+	       UGrid_PtValue(ugrid,globalNode,0),
+	       UGrid_PtValue(ugrid,globalNode,1),
+	       UGrid_PtValue(ugrid,globalNode,2));
+      }
+    }
+
+    globalPatch = DList_GetNextItem(&patchIterator);
+  }
+
+  if ( NULL != project ) {
+    GeoMesh_UseDefaultIOCallbacks();
+    if( !CADGeom_SavePart(vol,project) ) {
+      printf("Yo! Could NOT save \"%s\".\n",project);
+    }
+  }
+
+  return 0;
+}
+
+ 
