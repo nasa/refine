@@ -169,6 +169,8 @@ Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
 
 Grid *gridImportFAST( char *filename );
 Grid *gridExportFAST(Grid *g, char *filename );
+Grid *gridImportRef( char *filename );
+Grid *gridExportRef(Grid *g, char *filename );
 Grid *gridExportFASTSurface(Grid *g, char *filename );
 Grid *gridExportAFLR3(Grid *g, char *filename );
 Grid *gridExportGRI(Grid *g, char *filename );

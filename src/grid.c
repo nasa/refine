@@ -447,6 +447,168 @@ Grid *gridExportFAST( Grid *grid, char *filename )
   return grid;
 }
 
+Grid *gridImportRef( char *filename )
+{
+  FILE *file;
+  int i, nnode, nface, maxcell, ncell;
+  double *xyz;
+  int *f2n, *faceId;
+  int *c2n;
+  GridBool verbose;
+  Grid *grid;
+  
+  int nGeomNode, nGeomEdge, nGeomFace;
+  int edge_id, edge_nnodes, *edge_nodes;
+  int edge_id_verification;
+  double *t;
+
+  verbose = FALSE;
+
+  file = fopen(filename,"r");
+  fscanf(file,"%d %d %d",&nnode,&nface,&ncell);
+
+  if (verbose) printf("fast size: %d nodes %d faces %d cells.\n",
+		      nnode,nface,ncell);
+
+  if (verbose) printf("reading xyz...\n");
+  
+  xyz = (double *)malloc(3*nnode*sizeof(double));
+
+  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[0+3*i]);
+  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[1+3*i]);
+  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[2+3*i]);
+
+  if (verbose) printf("reading faces...\n");
+  
+  f2n = (int *)malloc(3*nface*sizeof(int));
+
+  for( i=0; i<nface ; i++ ) {
+    fscanf(file,"%d",&f2n[0+3*i]);
+    fscanf(file,"%d",&f2n[1+3*i]);
+    fscanf(file,"%d",&f2n[2+3*i]);
+    f2n[0+3*i]--;
+    f2n[1+3*i]--;
+    f2n[2+3*i]--;
+  }
+
+  if (verbose) printf("reading face ID tags...\n");
+  
+  faceId = (int *)malloc(nface*sizeof(int));
+
+  for( i=0; i<nface ; i++ ) {
+    fscanf(file,"%d",&faceId[i]);
+  }
+
+  if (verbose) printf("reading cells...\n");
+  
+  maxcell = ncell*2;
+
+  c2n = (int *)malloc(4*maxcell*sizeof(int));
+
+  for( i=0; i<ncell ; i++ ) {
+    fscanf(file,"%d",&c2n[0+4*i]);
+    fscanf(file,"%d",&c2n[1+4*i]);
+    fscanf(file,"%d",&c2n[2+4*i]);
+    fscanf(file,"%d",&c2n[3+4*i]);
+    c2n[0+4*i]--;
+    c2n[1+4*i]--;
+    c2n[2+4*i]--;
+    c2n[3+4*i]--;
+  }
+
+  grid =  gridImport( nnode, nnode, nface, nface, maxcell, ncell, 0,
+		      xyz, f2n, faceId, c2n );
+
+  fscanf(file,"%d %d %d",&nGeomNode,&nGeomEdge,&nGeomFace);
+
+  gridSetNGeomNode( grid, nGeomNode );
+  gridSetNGeomEdge( grid, nGeomEdge );
+  gridSetNGeomFace( grid, nGeomFace );
+
+  for( edge_id=1; edge_id<=gridNGeomEdge(grid) ; edge_id++ ) {
+    fscanf( file,"%d %d", &edge_nnodes, &edge_id_verification);
+    edge_nodes = (int *)malloc( edge_nnodes * sizeof(int) );
+    t = (double *)malloc( edge_nnodes * sizeof(double) );
+    for( i=0; i<edge_nnodes ; i++ ) {
+      fscanf( file,"%d %lf", &(edge_nodes[i]), &(t[i]));
+    }
+    gridAddGeomEdge( grid, edge_id, edge_nodes[0], edge_nodes[edge_nnodes-1]);
+    for( i=0; i<(edge_nnodes-1) ; i++ ) {
+      gridAddEdge(grid, edge_nodes[i], edge_nodes[i+1], edge_id,
+		  t[i], t[i+1]);
+    }
+
+    free(edge_nodes);
+    free(t);
+  }
+
+  fclose(file);
+
+  return grid;
+}
+
+Grid *gridExportRef( Grid *grid, char *filename )
+{
+  FILE *file;
+  int i;
+  int edge_id, edge_nnodes, *edge_nodes;
+  double *t;
+
+  if (NULL == gridSortNodeGridEx( grid ) ) {
+    printf("gridExportRef: gridSortNodeGridEx failed.\n");
+    return NULL;
+  }
+
+  if (NULL != filename) {
+    file = fopen(filename,"w");
+  }else{
+    file = fopen("grid.ref","w");
+  }
+
+  fprintf(file,"%10d %10d %10d\n",grid->nnode,grid->nface,grid->ncell);
+
+  for( i=0; i<grid->nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[0+3*i]);
+  for( i=0; i<grid->nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[1+3*i]);
+  for( i=0; i<grid->nnode ; i++ ) fprintf(file,"%25.15e\n",grid->xyz[2+3*i]);
+
+  for( i=0; i<grid->nface ; i++ ) {
+    fprintf(file,"%10d %10d %10d\n",
+	    grid->f2n[0+3*i]+1,grid->f2n[1+3*i]+1,grid->f2n[2+3*i]+1);
+  }
+
+  for( i=0; i<grid->nface ; i++ ) {
+    fprintf(file,"%4d\n",grid->faceId[i]);
+  }
+
+  for( i=0; i<grid->ncell ; i++ ) {
+    fprintf(file,"%10d %10d %10d %10d\n",
+	    grid->c2n[0+4*i]+1,grid->c2n[1+4*i]+1,
+	    grid->c2n[2+4*i]+1,grid->c2n[3+4*i]+1);
+
+  }
+
+  fprintf( file,"%10d %10d %10d\n",
+	   gridNGeomNode(grid),gridNGeomEdge(grid),gridNGeomFace(grid));
+
+  for( edge_id=1; edge_id<=gridNGeomEdge(grid) ; edge_id++ ) {
+    edge_nnodes = gridGeomEdgeSize( grid, edge_id );
+    edge_nodes = (int *)malloc( edge_nnodes * sizeof(int) );
+    t = (double *)malloc( edge_nnodes * sizeof(double) );
+    gridGeomEdge( grid, edge_id, edge_nodes );
+    gridGeomCurveT( grid, edge_id, edge_nodes[0], t );
+    fprintf( file,"%10d %10d\n", edge_nnodes, edge_id);
+    for( i=0; i<edge_nnodes ; i++ ) {
+      fprintf( file,"%10d %24.16e\n", edge_nodes[i], t[i]);
+    }
+    free(edge_nodes);
+    free(t);
+  }
+
+  fclose(file);
+
+  return grid;
+}
+
 Grid *gridExportFASTSurface( Grid *grid, char *filename )
 {
   FILE *file;
