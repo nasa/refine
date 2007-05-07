@@ -877,6 +877,8 @@ Grid *gridPack(Grid *grid)
 
   packface=0;
 
+  // gridSortNodeGridEx needs the faceIds in ascending order
+
   nFaceId = 0;
   for ( origface=0 ; origface < grid->maxface ; origface++ ) 
     if (grid->f2n[0+3*origface] != EMPTY)
@@ -1070,7 +1072,9 @@ Grid *gridSortNodeGridEx(Grid *grid)
   }
 
   // face stuff
-  //   assuming that the bc faces are sorted for contiguous face node numbering.
+  //   assuming that the bc faces are sorted for contiguous
+  //   face node numbering by gridPack.
+
   for ( face=0; face<grid->nface; face++ ){
     for ( i=0; i<3; i++ ){
       node = grid->f2n[i+3*face];
