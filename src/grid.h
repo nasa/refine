@@ -164,13 +164,14 @@ Grid *gridImport(int maxnode, int nnode,
 		 int maxedge,
 		 double *xyz, int *f2n, int *faceId, int *c2n );
 Grid *gridDup(Grid *g);
+Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
+		 double **xyz, int **f2n, int **faceId, int **c2n );
+
 Grid *gridImportFAST( char *filename );
 Grid *gridExportFAST(Grid *g, char *filename );
 Grid *gridExportFASTSurface(Grid *g, char *filename );
 Grid *gridExportAFLR3(Grid *g, char *filename );
 Grid *gridExportGRI(Grid *g, char *filename );
-Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
-		 double **xyz, int **f2n, int **faceId, int **c2n );
 Grid *gridImportAdapt(Grid *g, char *filename );
 
 Grid *gridAttachPacker(Grid *g, 

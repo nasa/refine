@@ -312,6 +312,29 @@ Grid *gridDup( Grid *grid )
   return child;
 }
 
+Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
+		 double **xyz, int **f2n, int **faceId, int **c2n )
+{
+
+  if (NULL == gridPack(grid)) {
+    printf("gridExport, gridPack failed.\n");
+    return NULL;
+  }
+
+  *nnode = grid->nnode;
+  *ncell = grid->ncell;
+  *nface = grid->nface;
+
+  *xyz = grid->xyz;
+
+  *c2n = grid->c2n;
+
+  *f2n    = grid->f2n;
+  *faceId = grid->faceId;
+
+  return  grid;
+}
+
 Grid *gridImportFAST( char *filename )
 {
   FILE *file;
@@ -379,29 +402,6 @@ Grid *gridImportFAST( char *filename )
 
   return gridImport( nnode, nnode, nface, nface, maxcell, ncell, 0,
 		     xyz, f2n, faceId, c2n );
-}
-
-Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
-		 double **xyz, int **f2n, int **faceId, int **c2n )
-{
-
-  if (NULL == gridPack(grid)) {
-    printf("gridExport, gridPack failed.\n");
-    return NULL;
-  }
-
-  *nnode = grid->nnode;
-  *ncell = grid->ncell;
-  *nface = grid->nface;
-
-  *xyz = grid->xyz;
-
-  *c2n = grid->c2n;
-
-  *f2n    = grid->f2n;
-  *faceId = grid->faceId;
-
-  return  grid;
 }
 
 Grid *gridExportFAST( Grid *grid, char *filename )
