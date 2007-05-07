@@ -550,7 +550,7 @@ Grid *gridImportRef( char *filename )
   fscanf( file,"%d\n",&uv_nnodes);
   for( lines=0; lines<uv_nnodes ; lines++ ) {
     fscanf(file,"%d %d %lf %lf\n", 
-	   face_id, node, &u, &v);
+	   &face_id, &node, &u, &v);
     gridSetNodeUV(grid,node, face_id, u, v);
   }
 

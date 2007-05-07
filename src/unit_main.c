@@ -110,38 +110,37 @@ int main( int argc, char *argv[] )
   Grid *grid;
   int iteration;
   int iterations = 1;
-  char project[256];
   char modeler[256];
-  char outputProject[256];
-  char filename[256];
+  char project[256];
+  char ref_input[256];
+  char ref_output[256];
   double ratioSplit, ratioCollapse;
   GridBool tecplotOutput = FALSE;
-  int maxnode = 50000;
 
   int i;
   int iview;
 
-  sprintf( modeler,       "" );
-  sprintf( project,       "" );
-  sprintf( outputProject, "" );
+  sprintf( modeler,    "Unknown" );
+  sprintf( project,    "" );
+  sprintf( ref_input,  "" );
+  sprintf( ref_output, "" );
 
   i = 1;
   while( i < argc ) {
     if( strcmp(argv[i],"-p") == 0 ) {
       i++; sprintf( project, "%s", argv[i] );
       printf("-p argument %d: %s\n",i, project);
-      sprintf( modeler, "Unknown" );
+    } else if( strcmp(argv[i],"-r") == 0 ) {
+      i++; sprintf( ref_input, "%s", argv[i] );
+      printf("-r argument %d: %s\n",i, ref_input);
     } else if( strcmp(argv[i],"-o") == 0 ) {
-      i++; sprintf( outputProject, "%s", argv[i] );
-      printf("-o argument %d: %s\n",i, outputProject);
-    } else if( strcmp(argv[i],"-n") == 0 ) {
-      i++; maxnode = atoi(argv[i]);
-      printf("-n argument %d: %d\n",i, maxnode);
+      i++; sprintf( ref_output, "%s", argv[i] );
+      printf("-o argument %d: %s\n",i, ref_output);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
-      printf(" -o output project name\n");
-      printf(" -n max number of nodes in grid\n");
+      printf(" -r input ref name\n");
+      printf(" -o output ref name\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -150,12 +149,33 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if(strcmp(project,"")==0)       sprintf(project,"../test/box1" );
+  if((strcmp(project,"")==0)&&(strcmp(ref_input,"")==0)){
+    printf("no input specified.\n");
+    printf("Done.\n");  
+    return 0;
+  }
 
-  if(strcmp(outputProject,"")==0) sprintf(outputProject,"%s_out", project );
+  if(!(strcmp(project,"")==0)&&!(strcmp(ref_input,"")==0)){
+    printf("two input specified.\n");
+    printf("Done.\n");  
+    return 0;
+  }
 
-  printf("running project %s\n",project);
-  grid = gridLoadPart( modeler, project, maxnode );
+  if(strcmp(ref_output,"")==0){
+    printf("no output specified.\n");
+    printf("Done.\n");  
+    return 0;
+  }
+
+  if(!(strcmp(project,"")==0)) {
+    printf("running project %s\n",project);
+    grid = gridLoadPart( modeler, project, 50000 );
+  }
+
+  if(!(strcmp(ref_input,"")==0)) {
+    printf("running ref %s\n",ref_input);
+    grid = gridImportRef( ref_input );
+  }
 
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
@@ -166,8 +186,8 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  printf("writing output project %s\n",outputProject);
-  gridSavePart( grid, outputProject );
+  printf("writing output ref %s\n",ref_output);
+  gridExportRef( grid, ref_output );
 
   printf("Done.\n");
   
@@ -207,9 +227,6 @@ int main( int argc, char *argv[] )
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
   
-  printf("writing output project %s\n",outputProject);
-  gridSavePart( grid, outputProject );
-
   printf("Done.\n");
   
   return 0;
