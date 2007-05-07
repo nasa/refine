@@ -376,7 +376,9 @@ int gridSavePartExplicitly( Grid *grid, char *project )
   int patchDimensions[3];
   int face, localNode, globalNode;
 
-  int nbnode;
+  int local_nnode, local_nface;
+  int *local_f2n;
+  double *local_xyz, *local_uv;
   int *faceg2l, *facel2g;
   int face_edge_count;
   int node;
@@ -391,7 +393,6 @@ int gridSavePartExplicitly( Grid *grid, char *project )
 	      &xyz, &f2n, &faceId, &c2n );
   
   // edge stuff
-  nbnode = nGeomNode;
   for (iedge=1; iedge<=nGeomEdge; iedge++){
 
     CADGeom_GetEdge( vol, iedge, trange, curveEndPoint);
@@ -401,7 +402,6 @@ int gridSavePartExplicitly( Grid *grid, char *project )
     curve =    malloc( nCurveNode *     sizeof(int) );
     temp_xyz = malloc( nCurveNode * 3 * sizeof(double) );
     temp_tuv = malloc( nCurveNode *     sizeof(double) );
-    nbnode += (nCurveNode-2);
 
     gridGeomCurve( grid, iedge, curveEndPoint[0], curve );
     gridGeomCurveT( grid, iedge, curveEndPoint[0], temp_tuv );
@@ -427,8 +427,10 @@ int gridSavePartExplicitly( Grid *grid, char *project )
 
     min_face_interior_node = nnode;
     max_face_interior_node = -1;
+    local_nface = 0;
     for (iface=0;iface<nface;iface++){
       if ( face == faceId[iface]) {
+	local_nface++;
 	for (node=0;node<3;node++){
 	  if ( faceg2l[f2n[node+3*iface]] < 0 ) {
 	    min_face_interior_node=MIN( min_face_interior_node,
@@ -439,14 +441,44 @@ int gridSavePartExplicitly( Grid *grid, char *project )
 	}
       }
     }
+    local_nnode = face_edge_count;
     for ( node  = min_face_interior_node ;
 	  node <= max_face_interior_node ; node++ ) {
-      faceg2l[node] = nbnode;
-      nbnode++;
+      faceg2l[node] = local_nnode;
+      local_nnode++;
     }
+
+    local_xyz = malloc( local_nnode * 3 * sizeof(double) );
+    local_uv  = malloc( local_nnode * 2 * sizeof(double) );
+    local_f2n = malloc( local_nface * 3 * sizeof(int) );
+
+    for ( node = 0 ; node < nnode ; node++ ) {
+      if ( EMPTY != faceg2l[node] ) {
+	gridNodeXYZ( grid, node, &(local_xyz[3*faceg2l[node]]) );
+	gridNodeUV( grid, node, face, &(local_uv[2*faceg2l[node]]) );
+      }
+    }
+    local_nface = 0;
+    for (iface=0;iface<nface;iface++){
+      if ( face == faceId[iface]) {
+	for (node=0;node<3;node++){
+	  local_f2n[node+3*local_nface] = f2n[node+3*iface];
+	}
+	local_nface++;
+      }
+    }  
+
+    gridUpdateGeometryFace( grid, face, 
+			    local_nnode, local_xyz, local_uv, 
+			    local_nface, local_f2n );
+
+    free(local_xyz);
+    free(local_uv);
+    free(local_f2n);
 
     free( facel2g );
   }
+  free( faceg2l );
 
   if ( !UGrid_FromArrays( &ugrid, nnode, xyz, nface, f2n, ncell, c2n  )) {
     printf(" Could not make UGridPtr, line %d of %s\n", __LINE__, __FILE__);
