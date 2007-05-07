@@ -461,6 +461,11 @@ Grid *gridImportRef( char *filename )
   int edge_id, edge_nnodes, *edge_nodes;
   int edge_id_verification;
   double *t;
+  int face, node;
+  double uv[2];
+  int lines, uv_nnodes;
+  double u, v;
+  int face_id;
 
   verbose = FALSE;
 
@@ -541,6 +546,13 @@ Grid *gridImportRef( char *filename )
     free(edge_nodes);
     free(t);
   }
+  
+  fscanf( file,"%d\n",&uv_nnodes);
+  for( lines=0; lines<uv_nnodes ; lines++ ) {
+    fscanf(file,"%d %d %lf %lf\n", 
+	   face_id, node, &u, &v);
+    gridSetNodeUV(grid,node, face_id, u, v);
+  }
 
   fclose(file);
 
@@ -553,6 +565,8 @@ Grid *gridExportRef( Grid *grid, char *filename )
   int i;
   int edge_id, edge_nnodes, *edge_nodes;
   double *t;
+  int face, node;
+  double uv[2];
 
   if (NULL == gridSortNodeGridEx( grid ) ) {
     printf("gridExportRef: gridSortNodeGridEx failed.\n");
@@ -602,6 +616,15 @@ Grid *gridExportRef( Grid *grid, char *filename )
     }
     free(edge_nodes);
     free(t);
+  }
+
+  fprintf( file,"%10d\n",3*grid->nface);
+  for( face=0; face<grid->nface ; face++ ) {
+    for( node=0; node<3 ; node++ ) {
+      gridNodeUV(grid,grid->f2n[node+3*face], grid->faceId[face], uv);
+      fprintf(file,"%10d %10d %24.16e %24.16e\n", 
+	      grid->faceId[face], grid->f2n[node+3*face], uv[0], uv[1]);
+    }
   }
 
   fclose(file);
