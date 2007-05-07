@@ -479,21 +479,21 @@ Grid *gridImportRef( char *filename )
   
   xyz = (double *)malloc(3*nnode*sizeof(double));
 
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[0+3*i]);
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[1+3*i]);
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[2+3*i]);
+  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[0+3*i]));
+  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[1+3*i]));
+  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[2+3*i]));
 
   if (verbose) printf("reading faces...\n");
   
   f2n = (int *)malloc(3*nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
-    fscanf(file,"%d",&f2n[0+3*i]);
-    fscanf(file,"%d",&f2n[1+3*i]);
-    fscanf(file,"%d",&f2n[2+3*i]);
-    f2n[0+3*i]--;
-    f2n[1+3*i]--;
-    f2n[2+3*i]--;
+    fscanf(file,"%d",&(f2n[0+3*i]));
+    fscanf(file,"%d",&(f2n[1+3*i]));
+    fscanf(file,"%d",&(f2n[2+3*i]));
+    (f2n[0+3*i])--;
+    (f2n[1+3*i])--;
+    (f2n[2+3*i])--;
   }
 
   if (verbose) printf("reading face ID tags...\n");
@@ -509,14 +509,14 @@ Grid *gridImportRef( char *filename )
   c2n = (int *)malloc(4*ncell*sizeof(int));
 
   for( i=0; i<ncell ; i++ ) {
-    fscanf(file,"%d",&c2n[0+4*i]);
-    fscanf(file,"%d",&c2n[1+4*i]);
-    fscanf(file,"%d",&c2n[2+4*i]);
-    fscanf(file,"%d",&c2n[3+4*i]);
-    c2n[0+4*i]--;
-    c2n[1+4*i]--;
-    c2n[2+4*i]--;
-    c2n[3+4*i]--;
+    fscanf(file,"%d",&(c2n[0+4*i]));
+    fscanf(file,"%d",&(c2n[1+4*i]));
+    fscanf(file,"%d",&(c2n[2+4*i]));
+    fscanf(file,"%d",&(c2n[3+4*i]));
+    (c2n[0+4*i])--;
+    (c2n[1+4*i])--;
+    (c2n[2+4*i])--;
+    (c2n[3+4*i])--;
   }
 
   grid = gridImport( nnode, nnode, nface, nface, ncell, ncell, 0,
@@ -549,7 +549,7 @@ Grid *gridImportRef( char *filename )
   for( lines=0; lines<uv_nnodes ; lines++ ) {
     fscanf(file,"%d %d %lf %lf\n", 
 	   &face_id, &node, &u, &v);
-    gridSetNodeUV(grid,node, face_id, u, v);
+    gridSetNodeUV(grid, node, face_id, u, v);
   }
 
   fclose(file);
