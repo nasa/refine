@@ -450,7 +450,7 @@ Grid *gridExportFAST( Grid *grid, char *filename )
 Grid *gridImportRef( char *filename )
 {
   FILE *file;
-  int i, nnode, nface, maxcell, ncell;
+  int i, nnode, nface, ncell;
   double *xyz;
   int *f2n, *faceId;
   int *c2n;
@@ -506,9 +506,7 @@ Grid *gridImportRef( char *filename )
 
   if (verbose) printf("reading cells...\n");
   
-  maxcell = ncell*2;
-
-  c2n = (int *)malloc(4*maxcell*sizeof(int));
+  c2n = (int *)malloc(4*ncell*sizeof(int));
 
   for( i=0; i<ncell ; i++ ) {
     fscanf(file,"%d",&c2n[0+4*i]);
@@ -521,8 +519,8 @@ Grid *gridImportRef( char *filename )
     c2n[3+4*i]--;
   }
 
-  grid =  gridImport( nnode, nnode, nface, nface, maxcell, ncell, 0,
-		      xyz, f2n, faceId, c2n );
+  grid = gridImport( nnode, nnode, nface, nface, ncell, ncell, 0,
+		     xyz, f2n, faceId, c2n );
 
   fscanf(file,"%d %d %d",&nGeomNode,&nGeomEdge,&nGeomFace);
 
