@@ -115,10 +115,10 @@ int main( int argc, char *argv[] )
   char ref_input[256];
   char ref_output[256];
   double ratioSplit, ratioCollapse;
-  GridBool tecplotOutput = FALSE;
+  GridBool tecplotOutput = TRUE;
 
   int i;
-  int iview;
+  int iview=0;
 
   sprintf( modeler,    "Unknown" );
   sprintf( project,    "" );
@@ -180,27 +180,40 @@ int main( int argc, char *argv[] )
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-
   if (!gridRightHandedBoundary(grid)) {
     printf("ERROR: loaded part does not have right handed boundaries\n");
     return 1;
   }
 
-  printf("writing output ref %s\n",ref_output);
-  gridExportRef( grid, ref_output );
-
-  printf("Done.\n");
-  
-  return 0;
-
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
+
+  if(FALSE) {
+    int node;
+    double xyz[3];
+    double dx[3] = {1.0,0.0,0.0};
+    double dy[3] = {0.0,1.0,0.0};
+    double dz[3] = {0.0,0.0,1.0};
+    double hx,hy,hz;
+    for(node=0;node<gridMaxNode(grid);node++){
+      if (grid==gridNodeXYZ(grid,node,xyz)) {
+	hx=0.1; hy=0.1; hz=0.1;
+	hz = ABS(xyz[2]-0.5)/0.5;
+	hz = 0.1*(0.9*hz+0.1);
+	gridSetMapWithSpacingVectors(grid,node,
+				     dx,dy,dz,hx,hy,hz);
+      }
+    }
+      
+  }
 
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
 
   STATUS;
+
+  gridExportRef( grid, ref_output );return 0;
 
   gridCacheCurrentGridAndMap(grid);
 
@@ -227,6 +240,13 @@ int main( int argc, char *argv[] )
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
   
+  gridExportFAST( grid, NULL );
+
+  printf("writing output ref %s\n",ref_output);
+  gridExportRef( grid, ref_output );
+
+  if (tecplotOutput) gridWriteTecplotSurfaceGeom(grid, NULL );
+
   printf("Done.\n");
   
   return 0;
