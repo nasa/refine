@@ -58,6 +58,7 @@ mesherx_sources = \
 	gridfacer.h gridfacer.c \
 	gridmpi.h gridmpi.c \
 	gridfiller.h gridfiller.c \
+	gridgeom.h gridgeom.c \
 	layer.h layer.c \
 	mesherxInit.h mesherxInit.c \
 	mesherxRebuild.h mesherxRebuild.c \

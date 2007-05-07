@@ -418,10 +418,10 @@ int gridSavePartExplicitly( Grid *grid, char *project )
   // face stuff
   faceg2l = malloc( nnode * sizeof(int) );
   for( face=1; face<=nGeomFace; face++ ) {
-    //face_edge_count = gridFaceEdgeCount( grid, face );
+    face_edge_count = gridFaceEdgeCount( grid, face );
     facel2g = malloc( face_edge_count * sizeof(int) );
     for (node=0;node<face_edge_count;node++) facel2g[node] = EMPTY;
-    //gridFaceEdgeLocal2Global( grid, face, face_edge_count, facel2g );
+    gridFaceEdgeLocal2Global( grid, face, face_edge_count, facel2g );
     for (node=0;node<nnode;node++) faceg2l[node] = EMPTY;
     for (node=0;node<face_edge_count;node++) faceg2l[facel2g[node]] = node;
 
