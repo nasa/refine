@@ -149,36 +149,33 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if((strcmp(project,"")==0)&&(strcmp(ref_input,"")==0)){
-    printf("no input specified.\n");
-    printf("Done.\n");  
-    return 0;
-  }
-
-  if(!(strcmp(project,"")==0)&&!(strcmp(ref_input,"")==0)){
-    printf("two input specified.\n");
-    printf("Done.\n");  
-    return 0;
-  }
-
   if(strcmp(ref_output,"")==0){
     printf("no output specified.\n");
     printf("Done.\n");  
     return 0;
   }
 
-  if(!(strcmp(project,"")==0)) {
-    printf("running project %s\n",project);
-    grid = gridLoadPart( modeler, project, 50000 );
-  }
-
   if(!(strcmp(ref_input,"")==0)) {
     printf("running ref %s\n",ref_input);
     grid = gridImportRef( ref_input );
+    if(strcmp(project,"")==0){
+      printf("no geom specified.\n");
+      printf("Done.\n");  
+      return 0;
+    }
+    printf("loading geometry %s\n",project);
+    gridGeomStartOnly( grid, project );
+  }else{
+    if(!(strcmp(project,"")==0)) {
+      printf("running project %s\n",project);
+      grid = gridLoadPart( modeler, project, 50000 );
+    }
   }
 
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
+
+  gridWriteTecplotGeomFaceUV(grid, NULL, 1 );
 
   if (!gridRightHandedBoundary(grid)) {
     printf("ERROR: loaded part does not have right handed boundaries\n");
@@ -206,6 +203,8 @@ int main( int argc, char *argv[] )
     }
       
   }
+
+  printf("facea %f\n",gridMinGridFaceAreaUV(grid));
 
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
