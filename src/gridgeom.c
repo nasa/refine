@@ -20,6 +20,26 @@
 
 #define UG_REFINE (6) /* Lifted from SDK/UG_API/UG_API.h to remove dependency */
 
+Grid *gridGeomStartOnly( Grid *grid, char *project )
+{
+
+  if ( ! CADGeom_Start( ) ){
+    printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());
+    return NULL;
+  }  
+
+#ifdef HAVE_CAPRI2
+  if ( ! CADGeom_LoadModel( url, modeler, project, &(grid->model) ) ){
+#else
+  if ( ! CADGeom_LoadPart( project ) ){
+#endif
+    printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
+    return NULL;
+  }
+
+  return grid;
+}
+
 Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
                             char *project )
 {

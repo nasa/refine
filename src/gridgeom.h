@@ -16,6 +16,8 @@
 
 BEGIN_C_DECLORATION
 
+Grid *gridGeomStartOnly( Grid *, char *project );
+
 Grid *gridParallelGeomLoad( Grid *, char *url, char *modler, char *project );
 Grid *gridParallelGeomSave( Grid *, char *project );
 
