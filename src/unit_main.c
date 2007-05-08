@@ -27,6 +27,29 @@
 #include "gridmove.h"
 #include "layer.h"
 
+  void bl_metric(Grid *grid, double h0) {
+    int node;
+    double xyz[3];
+    double dx[3] = {1.0,0.0,0.0};
+    double dy[3] = {0.0,1.0,0.0};
+    double dz[3] = {0.0,0.0,1.0};
+    double hx,hy,hz;
+    double y0;
+    for(node=0;node<gridMaxNode(grid);node++){
+      if (grid==gridNodeXYZ(grid,node,xyz)) {
+	hx=0.1; hy=0.1; hz=0.1;
+	y0 = 0.5-ABS(0.5*(xyz[0]-0.5)*(xyz[2]-0.5));
+	y0 = 0.5;
+	hy = ABS(xyz[1]-y0)/0.5;
+	hy = MIN(1.0,hy);
+	hy = 0.1*((1.0-h0)*hy+h0);
+	gridSetMapWithSpacingVectors(grid,node,
+				     dx,dy,dz,hx,hy,hz);
+      }
+    }
+      
+  }
+
 #define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
 
 #define DUMP_TEC if (tecplotOutput) { \
@@ -40,6 +63,7 @@
    }}; }
 
 #define STATUS { \
+  bl_metric(grid,h0); \
   DUMP_TEC; \
   PRINT_STATUS; \
 }
@@ -109,12 +133,13 @@ int main( int argc, char *argv[] )
 {
   Grid *grid;
   int iteration;
-  int iterations = 1;
+  int iterations = 10;
   char modeler[256];
   char project[256];
   char ref_input[256];
   char ref_output[256];
   double ratioSplit, ratioCollapse;
+  double h0 = 1.0;
   GridBool tecplotOutput = TRUE;
 
   int i;
@@ -136,11 +161,15 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-o") == 0 ) {
       i++; sprintf( ref_output, "%s", argv[i] );
       printf("-o argument %d: %s\n",i, ref_output);
+    } else if( strcmp(argv[i],"-s") == 0 ) {
+      i++; h0 = atof(argv[i]);
+      printf("-s argument %d: %f\n",i, h0);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
       printf(" -r input ref name\n");
       printf(" -o output ref name\n");
+      printf(" -s bl height\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -183,41 +212,20 @@ int main( int argc, char *argv[] )
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
 
-  if(TRUE) {
-    int node;
-    double xyz[3];
-    double dx[3] = {1.0,0.0,0.0};
-    double dy[3] = {0.0,1.0,0.0};
-    double dz[3] = {0.0,0.0,1.0};
-    double hx,hy,hz;
-    for(node=0;node<gridMaxNode(grid);node++){
-      if (grid==gridNodeXYZ(grid,node,xyz)) {
-	hx=0.1; hy=0.1; hz=0.1;
-	hz = ABS(xyz[2]-0.5)/0.5;
-	hz = 0.1*(0.9*hz+0.1);
-	gridSetMapWithSpacingVectors(grid,node,
-				     dx,dy,dz,hx,hy,hz);
-      }
-    }
-      
-  }
-
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
 
   STATUS;
 
-  gridCacheCurrentGridAndMap(grid);
-
   ratioCollapse = 0.3;
-  ratioSplit    = 1.5;
+  ratioSplit    = 1.0;
       
   gridSetMinInsertCost( grid, 1.0e-5 );
-  gridSetMinSurfaceSmoothCost( grid, 1.0e-5 );
+  gridSetMinSurfaceSmoothCost( grid, 1.0e-2 );
     
   for (i=0;i<1;i++){
-    printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+    printf("edge swapping grid...\n");gridSwap(grid,0.9);
     STATUS;
   }
   for ( iteration=0; (iteration<iterations) ; iteration++){
@@ -225,11 +233,15 @@ int main( int argc, char *argv[] )
     gridAdapt(grid, ratioCollapse, ratioSplit);
 
     for (i=0;i<1;i++){
-      printf("edge swapping grid...\n");gridSwap(grid,-1.0);
+      printf("edge swapping grid...\n");gridSwap(grid,0.9);
       STATUS;
     }
   }
   
+    for (i=0;i<5;i++){
+      printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
+      STATUS;
+    }
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
   
