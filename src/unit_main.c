@@ -64,7 +64,6 @@
 
 #define STATUS { \
   bl_metric(grid,h0); \
-  DUMP_TEC; \
   PRINT_STATUS; \
 }
 
@@ -125,6 +124,36 @@ Grid *gridHistogram( Grid *grid, char *filename )
   return grid;
 }
 
+
+void relax_grid(Grid *grid, double h0) {
+  int i;
+  int iteration;
+  int iterations = 10;
+  double ratioSplit, ratioCollapse;
+
+  ratioCollapse = 0.3;
+  ratioSplit    = 1.0;      
+
+  for (i=0;i<1;i++){
+    printf("edge swapping grid...\n");gridSwap(grid,0.9);
+    STATUS;
+  }
+
+  for ( iteration=0; (iteration<iterations) ; iteration++){
+      
+    gridAdapt(grid, ratioCollapse, ratioSplit);
+    STATUS;
+    
+    for (i=0;i<1;i++){
+      printf("edge swapping grid...\n");gridSwap(grid,0.9);
+      STATUS;
+      printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
+      STATUS;
+    }
+  }
+  
+}
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -132,13 +161,10 @@ int main( int argc, char *argv[] )
 #endif
 {
   Grid *grid;
-  int iteration;
-  int iterations = 10;
   char modeler[256];
   char project[256];
   char ref_input[256];
   char ref_output[256];
-  double ratioSplit, ratioCollapse;
   double h0 = 1.0;
   GridBool tecplotOutput = TRUE;
 
@@ -218,30 +244,24 @@ int main( int argc, char *argv[] )
 
   STATUS;
 
-  ratioCollapse = 0.3;
-  ratioSplit    = 1.0;
-      
   gridSetMinInsertCost( grid, 1.0e-5 );
   gridSetMinSurfaceSmoothCost( grid, 1.0e-2 );
     
-  for (i=0;i<1;i++){
-    printf("edge swapping grid...\n");gridSwap(grid,0.9);
-    STATUS;
-  }
-  for ( iteration=0; (iteration<iterations) ; iteration++){
-      
-    gridAdapt(grid, ratioCollapse, ratioSplit);
 
-    for (i=0;i<1;i++){
-      printf("edge swapping grid...\n");gridSwap(grid,0.9);
-      STATUS;
-    }
-  }
-  
-    for (i=0;i<5;i++){
-      printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
-      STATUS;
-    }
+  DUMP_TEC;
+  h0 = 1.0;
+  relax_grid(grid,h0);
+  DUMP_TEC;
+  h0 = 0.1;
+  relax_grid(grid,h0);
+  DUMP_TEC;
+  h0 = 0.01;
+  relax_grid(grid,h0);
+  DUMP_TEC;
+  h0 = 0.001;
+  relax_grid(grid,h0);
+  DUMP_TEC;
+
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
   
