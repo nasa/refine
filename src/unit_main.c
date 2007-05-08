@@ -175,8 +175,6 @@ int main( int argc, char *argv[] )
   printf("restart grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-  gridWriteTecplotGeomFaceUV(grid, NULL, 1 );
-
   if (!gridRightHandedBoundary(grid)) {
     printf("ERROR: loaded part does not have right handed boundaries\n");
     return 1;
@@ -185,7 +183,7 @@ int main( int argc, char *argv[] )
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
 
-  if(FALSE) {
+  if(TRUE) {
     int node;
     double xyz[3];
     double dx[3] = {1.0,0.0,0.0};
@@ -204,15 +202,11 @@ int main( int argc, char *argv[] )
       
   }
 
-  printf("facea %f\n",gridMinGridFaceAreaUV(grid));
-
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME | 
                         gridCOST_CNST_AREAUV );
 
   STATUS;
-
-  gridExportRef( grid, ref_output );return 0;
 
   gridCacheCurrentGridAndMap(grid);
 
