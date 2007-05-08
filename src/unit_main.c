@@ -134,22 +134,26 @@ void relax_grid(Grid *grid, double h0) {
   ratioCollapse = 0.3;
   ratioSplit    = 1.0;      
 
-  for (i=0;i<1;i++){
-    printf("edge swapping grid...\n");gridSwap(grid,0.9);
-    STATUS;
-  }
+  STATUS;
 
+  printf("edge swapping grid...\n");gridSwap(grid,0.9);
+  STATUS;
+
+  gridAdapt(grid, ratioCollapse, ratioSplit);
+  STATUS;
+    
   for ( iteration=0; (iteration<iterations) ; iteration++){
       
-    gridAdapt(grid, ratioCollapse, ratioSplit);
-    STATUS;
-    
     for (i=0;i<1;i++){
       printf("edge swapping grid...\n");gridSwap(grid,0.9);
       STATUS;
       printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
       STATUS;
     }
+
+    gridAdapt(grid, ratioCollapse, ratioSplit);
+    STATUS;
+    
   }
   
 }
