@@ -208,7 +208,7 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if(strcmp(project,"")==0) sprintf( ref_output, "box1" );
+  if(strcmp(project,"")==0) sprintf( project, "box1" );
   if(strcmp(ref_output,"")==0) sprintf( ref_output, "box_out" );
 
   if(!(strcmp(ref_input,"")==0)) {
