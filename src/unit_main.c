@@ -38,7 +38,7 @@ void bl_metric_flat(Grid *grid, double h0) {
   for(node=0;node<gridMaxNode(grid);node++){
     if (grid==gridNodeXYZ(grid,node,xyz)) {
       hx=0.1; hy=0.1; hz=0.1;
-      y0 = 0.5-ABS(0.5*(xyz[0]-0.5)*(xyz[2]-0.5));
+      //      y0 = 0.5-ABS(0.5*(xyz[0]-0.5)*(xyz[2]-0.5));
       y0 = 0.5;
       hy = ABS(xyz[1]-y0)/0.5;
       hy = MIN(1.0,hy);
@@ -49,8 +49,47 @@ void bl_metric_flat(Grid *grid, double h0) {
   }   
 }
 
+void bl_metric_sphere(Grid *grid, double h0) {
+  int node;
+  double xyz[3];
+  double x,y,z;
+  double x0=-0.5;
+  double y0=-0.5;
+  double z0=-0.5;
+  double dx[3] = {1.0,0.0,0.0};
+  double dy[3] = {0.0,1.0,0.0};
+  double dz[3] = {0.0,0.0,1.0};
+  double hx,hy,hz;
+  double h1 = 0.1;
+  double r0 = sqrt(3.0);
+  double r, rp;
+  for(node=0;node<gridMaxNode(grid);node++){
+    if (grid==gridNodeXYZ(grid,node,xyz)) {
+      x = xyz[0] - x0;
+      y = xyz[1] - y0;
+      z = xyz[2] - z0;
+      r  = sqrt(x*x+y*y+z*z);
+      dx[0] = x/r;
+      dx[1] = y/r;
+      dx[2] = z/r;
+      rp = sqrt(x*x+y*y);
+      dy[0] = -y/rp;
+      dy[1] = x/rp;
+      dy[2] = 0;
+      gridCrossProduct(dx,dy,dz);
+      gridVectorNormalize(dz);
+      hx=0.1; hy=0.1; hz=0.1;
+      r = ABS(r - r0)/0.5;
+      r = MIN(1.0,r);
+      hx = 0.1*((1.0-h0)*r+h0);
+      gridSetMapWithSpacingVectors(grid,node,
+				   dx,dy,dz,hx,hy,hz);
+    }
+  }   
+}
+
 void bl_metric(Grid *grid, double h0) {
-  bl_metric_flat(grid, h0);
+  bl_metric_sphere(grid, h0);
 }
 
 #define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
