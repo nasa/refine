@@ -27,7 +27,7 @@
 #include "gridmove.h"
 #include "layer.h"
 
-void bl_metric(Grid *grid, double h0) {
+void bl_metric_flat(Grid *grid, double h0) {
   int node;
   double xyz[3];
   double dx[3] = {1.0,0.0,0.0};
@@ -47,6 +47,10 @@ void bl_metric(Grid *grid, double h0) {
 				   dx,dy,dz,hx,hy,hz);
     }
   }   
+}
+
+void bl_metric(Grid *grid, double h0) {
+  bl_metric_flat(grid, h0);
 }
 
 #define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
@@ -246,31 +250,36 @@ int main( int argc, char *argv[] )
 
   gridSetMinInsertCost( grid, 1.0e-5 );
   gridSetMinSurfaceSmoothCost( grid, 1.0e-2 );
-    
 
   DUMP_TEC;
+  gridExportFAST( grid, "grid_orig.fgrid" );
+
   h0 = 1.0;
   relax_grid(grid,h0);
   DUMP_TEC;
+  gridExportFAST( grid, "grid_h1000.fgrid" );
+
   h0 = 0.1;
   relax_grid(grid,h0);
   DUMP_TEC;
+  gridExportFAST( grid, "grid_h0100.fgrid" );
+
   h0 = 0.01;
   relax_grid(grid,h0);
   DUMP_TEC;
+  gridExportFAST( grid, "grid_h0010.fgrid" );
+
   h0 = 0.001;
   relax_grid(grid,h0);
   DUMP_TEC;
+  gridExportFAST( grid, "grid_h0001.fgrid" );
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
   
-  gridExportFAST( grid, NULL );
 
   printf("writing output ref %s\n",ref_output);
   gridExportRef( grid, ref_output );
-
-  if (tecplotOutput) gridWriteTecplotSurfaceGeom(grid, NULL );
 
   printf("Done.\n");
   
