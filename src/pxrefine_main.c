@@ -82,23 +82,63 @@ int main( int argc, char *argv[] )
   printf("grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-  gridWriteTecplotSurfaceGeom(grid,NULL);
-
-  printf("Spacing reset.\n");
-  gridResetSpacing(grid);
+  gridRobustProject(grid);
 
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME );
 
+  if ( !(strcmp(metric_input,"")==0) )
+    {
+      printf("reading metric file %s\n",metric_input);
+      gridImportAdapt(grid,metric_input);
+      STATUS;
+    } else {
+      printf("Spacing reset.\n");
+      gridResetSpacing(grid);
+    }
 
   STATUS;
 
-  gridExportFAST( grid, "grid_orig.fgrid" );
+  gridWriteTecplotSurfaceGeom(grid,NULL);
+  {
+    int iteration;
+    int iterations = 10;
+    double ratioSplit, ratioCollapse;
 
-  if (!gridRightHandedBoundary(grid)) {
-    printf("ERROR: loaded part does not have right handed boundaries\n");
-    return 1;
+    ratioCollapse = 0.3;
+    ratioSplit    = 1.0;      
+
+    STATUS;
+
+    printf("edge swapping grid...\n");gridSwap(grid,0.9);
+    STATUS;
+
+    gridAdapt(grid, ratioCollapse, ratioSplit);
+    STATUS;
+    
+    for ( iteration=0; (iteration<iterations) ; iteration++){
+      
+      for (i=0;i<1;i++){
+	printf("edge swapping grid...\n");gridSwap(grid,0.9);
+	STATUS;
+	printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
+	STATUS;
+      }
+
+      gridAdapt(grid, ratioCollapse, ratioSplit);
+      STATUS;
+    
+      gridWriteTecplotSurfaceGeom(grid,NULL);
+    }
+  
+
   }
+
+
+  gridExportFAST( grid, "grid_orig.fgrid" );
+  if ( !(strcmp(gri_output,"")==0) ) 
+    gridExportGRI( grid, gri_output );
+
 
   printf("Done.\n");
   
