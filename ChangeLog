@@ -1,3 +1,8 @@
+2007-05-24 14:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImportGRI) to ignore optional element type flag
+	that was missing from .gri file.
+
 2007-05-24 10:35 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridImportGRI) added for ProjectX adaptatation.

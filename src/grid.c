@@ -758,7 +758,7 @@ Grid *gridImportGRI( char *filename )
 {
   FILE *file;
   int i, nnode, nface, ncell;
-  int cell_group_size, cell_type;
+  int cell_group_size;
   double *xyz;
   int *f2n, *faceId;
   int nface_groups;
@@ -790,7 +790,7 @@ Grid *gridImportGRI( char *filename )
   face_group_size = (int *)malloc(nface_groups*sizeof(int));
 
   nface = 0;
-  for (group=0;group<=nface_groups;group++) {
+  for (group=0;group<nface_groups;group++) {
 
     if (verbose) printf("reading faces in group %d...\n",group+1);
   
@@ -814,7 +814,7 @@ Grid *gridImportGRI( char *filename )
   faceId = (int *)malloc(nface*sizeof(int));
 
   nface = 0;
-  for (group=0;group<=nface_groups;group++) {
+  for (group=0;group<nface_groups;group++) {
     for( i=0; i<face_group_size[group] ; i++ ) {
       f2n[0+3*nface] = face_group[group][0+3*i];
       f2n[1+3*nface] = face_group[group][1+3*i];
@@ -824,10 +824,23 @@ Grid *gridImportGRI( char *filename )
     }
   }
 
-  fscanf(file,"%d %d",&cell_group_size,&cell_type);
+  /* PXGrid.c logic
+  fgets(line, PX_MAXSTRLEN, fgri);
+  if (fgets(line, PX_MAXSTRLEN, fgri) == NULL)
+    return PXError(PX_FILE_READ_ERROR);
 
-  if (verbose) printf("gri size: %d cells of %d type.\n",
-		      cell_group_size,cell_type);
+  ierr = sscanf(line, "%d %d", &nelem, &ntype);
+  if (ierr != 2){
+    ierr = sscanf(line, "%d", &nelem);
+    if (ierr != 1) return PXError(PX_FILE_READ_ERROR);
+    ntype = 1; // no specified type implies Q1
+  }
+   */
+
+  fscanf(file,"%d",&cell_group_size);
+
+  if (verbose) printf("gri size: %d cells (assume Q1 type).\n",
+		      cell_group_size);
 
   if (verbose) printf("reading cells...\n");
   
