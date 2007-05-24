@@ -1,3 +1,7 @@
+2007-05-24 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImportAdapt) read nnode on first line.
+
 2007-05-24 14:05 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridImportGRI) to ignore optional element type flag

@@ -911,10 +911,14 @@ Grid *gridExportGRI( Grid *grid, char *filename )
 
 Grid *gridImportAdapt( Grid *grid, char *filename )
 {
-  int i;
+  int i, nnode;
   FILE *file;
 
   file = fopen(filename,"r");
+
+  fscanf(file,"%d",&nnode);
+
+  printf("metric nnodes %10d %10d\n",nnode,gridNNode(grid));
 
   for( i=0; i<grid->nnode ; i++ ) 
     fscanf(file,"%lf %lf %lf %lf %lf %lf\n",
