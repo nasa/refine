@@ -1,3 +1,7 @@
+2007-05-24 10:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImportGRI) added for ProjectX adaptatation.
+
 2007-04-16  9:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/Makefile.am (faux_input) added faux_input to EXTRA_DIST.

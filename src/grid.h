@@ -173,6 +173,7 @@ Grid *gridImportRef( char *filename );
 Grid *gridExportRef(Grid *g, char *filename );
 Grid *gridExportFASTSurface(Grid *g, char *filename );
 Grid *gridExportAFLR3(Grid *g, char *filename );
+Grid *gridImportGRI( char *filename );
 Grid *gridExportGRI(Grid *g, char *filename );
 Grid *gridImportAdapt(Grid *g, char *filename );
 

@@ -754,6 +754,96 @@ Grid *gridExportAFLR3( Grid *grid, char *filename )
   return grid;
 }
 
+Grid *gridImportGRI( char *filename )
+{
+  FILE *file;
+  int i, nnode, nface, ncell;
+  int cell_group_size, cell_type;
+  double *xyz;
+  int *f2n, *faceId;
+  int nface_groups;
+  int group;
+  int **face_group;
+  int *face_group_size;
+  int *c2n;
+  GridBool verbose;
+
+  verbose = TRUE;
+
+  file = fopen(filename,"r");
+  fscanf(file,"%d %d",&nnode,&ncell);
+
+  if (verbose) printf("gri size: %d nodes %d cells.\n",nnode,ncell);
+
+  if (verbose) printf("reading xyz...\n");
+  
+  xyz = (double *)malloc(3*nnode*sizeof(double));
+
+  for( i=0; i<nnode ; i++ ) 
+    fscanf(file,"%lf %lf %lf",&xyz[0+3*i],&xyz[1+3*i],&xyz[2+3*i]);
+
+  fscanf(file,"%d",&nface_groups);
+
+  if (verbose) printf("gri size: %d face IDs.\n",nface_groups);
+
+  face_group = (int **)malloc(nface_groups*sizeof(int *));
+  face_group_size = (int *)malloc(nface_groups*sizeof(int));
+
+  nface = 0;
+  for (group=0;group<=nface_groups;group++) {
+
+    if (verbose) printf("reading faces in group %d...\n",group+1);
+  
+    fscanf(file,"%d",&(face_group_size[group]));
+    nface += face_group_size[group];
+
+    if (verbose) printf("gri size: %d group %d faces.\n",
+			group+1,face_group_size[group]);
+
+    f2n = (int *)malloc(3*face_group_size[group]*sizeof(int));
+    face_group[group] = f2n;
+
+    for( i=0; i<face_group_size[group] ; i++ ) {
+      fscanf(file,"%d %d %d",&(f2n[0+3*i]),&(f2n[1+3*i]),&(f2n[2+3*i]));
+      f2n[0+3*i]--; f2n[1+3*i]--; f2n[2+3*i]--;
+    }
+
+  }
+
+  f2n = (int *)malloc(3*nface*sizeof(int));
+  faceId = (int *)malloc(nface*sizeof(int));
+
+  nface = 0;
+  for (group=0;group<=nface_groups;group++) {
+    for( i=0; i<face_group_size[group] ; i++ ) {
+      f2n[0+3*nface] = face_group[group][0+3*i];
+      f2n[1+3*nface] = face_group[group][1+3*i];
+      f2n[2+3*nface] = face_group[group][2+3*i];
+      faceId[nface] = group+1;
+      nface++;
+    }
+  }
+
+  fscanf(file,"%d %d",&cell_group_size,&cell_type);
+
+  if (verbose) printf("gri size: %d cells of %d type.\n",
+		      cell_group_size,cell_type);
+
+  if (verbose) printf("reading cells...\n");
+  
+  c2n = (int *)malloc(4*ncell*sizeof(int));
+
+  for( i=0; i<ncell ; i++ ) {
+    fscanf(file,"%d %d %d %d",&c2n[0+4*i],&c2n[1+4*i],&c2n[2+4*i],&c2n[3+4*i]);
+    c2n[0+4*i]--; c2n[1+4*i]--; c2n[2+4*i]--; c2n[3+4*i]--;
+  }
+
+  fclose(file);
+
+  return gridImport( nnode, nnode, nface, nface, ncell, ncell, 0,
+		     xyz, f2n, faceId, c2n );
+}
+
 Grid *gridExportGRI( Grid *grid, char *filename )
 {
   FILE *file;
