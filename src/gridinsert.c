@@ -1962,7 +1962,8 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 
   /* logic to make sure collapse is valid w.r.t. boundary connectivity */
   if ( gridGeometryNode(grid, n1) ) return NULL;
-  if ( gridGeometryEdge(grid, n1) && EMPTY == gridFindEdge(grid, n0, n1) ) 
+  if ( gridGeometryBetweenFace(grid, n1) && 
+       EMPTY == gridFindEdge(grid, n0, n1) ) 
     return NULL;
 
   if ( NULL == gridEquator( grid, n0, n1) ) return NULL;
