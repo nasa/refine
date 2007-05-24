@@ -195,6 +195,12 @@ pxNative_SOURCES = px_main.c
 pxNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 pxNative_LDFLAGS = $(all_ldflags)
 
+bin_PROGRAMS += PXrefine
+PXrefine_CFLAGS = $(all_cflags)
+PXrefine_SOURCES = pxrefine_main.c
+PXrefine_LDADD = libMesherX.a libFAUXGeom.a -lm
+PXrefine_LDFLAGS = $(all_ldflags)
+
 bin_PROGRAMS += profileNative
 profileNative_CFLAGS = -pg $(all_cflags)
 profileNative_SOURCES = profile_main.c
