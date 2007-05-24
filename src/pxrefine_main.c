@@ -77,29 +77,28 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-
   grid = gridImportGRI( gri_input );
 
   printf("grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
-  if (!gridRightHandedBoundary(grid)) {
-    printf("ERROR: loaded part does not have right handed boundaries\n");
-    return 1;
-  }
+  gridWriteTecplotSurfaceGeom(grid,NULL);
 
   printf("Spacing reset.\n");
   gridResetSpacing(grid);
 
   gridSetCostConstraint(grid,
-			gridCOST_CNST_VOLUME | 
-                        gridCOST_CNST_AREAUV );
+			gridCOST_CNST_VOLUME );
+
 
   STATUS;
 
-  gridWriteTecplotSurfaceGeom(grid,NULL);
-
   gridExportFAST( grid, "grid_orig.fgrid" );
+
+  if (!gridRightHandedBoundary(grid)) {
+    printf("ERROR: loaded part does not have right handed boundaries\n");
+    return 1;
+  }
 
   printf("Done.\n");
   
