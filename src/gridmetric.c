@@ -929,14 +929,16 @@ double gridCellMetricConformity( double *xyz0, double *xyz1,
   rt[4] -= 2.0;
   rt[8] -= 2.0;
 
-  printf("\n");
-  printf(" %15.8f %15.8f %15.8f\n",rt[0], rt[3], rt[6]);
-  printf(" %15.8f %15.8f %15.8f\n",rt[1], rt[4], rt[7]);
-  printf(" %15.8f %15.8f %15.8f\n",rt[2], rt[5], rt[8]);
+  /*
+    printf("\n");
+    printf(" %15.8f %15.8f %15.8f\n",rt[0], rt[3], rt[6]);
+    printf(" %15.8f %15.8f %15.8f\n",rt[1], rt[4], rt[7]);
+    printf(" %15.8f %15.8f %15.8f\n",rt[2], rt[5], rt[8]);
+  */
 
   norm = 0.0;
   for ( i = 0 ; i < 9 ; i++ ) norm += rt[i]*rt[i];
-  norm = sqrt(norm)
+  norm = sqrt(norm);
 
   return 1.0/(1.0+norm);
 }

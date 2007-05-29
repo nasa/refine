@@ -1,3 +1,7 @@
+2007-05-29 14:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCellMetricConformity) metric conformity.
+
 2007-05-29 13:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridSetCostFunction) introduced new cost function
