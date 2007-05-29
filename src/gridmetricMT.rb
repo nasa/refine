@@ -627,7 +627,8 @@ class TestGridMetric < Test::Unit::TestCase
   node2 = grid.nodeXYZ(2)
   node3 = grid.nodeXYZ(3)
   m = [1.0, 0.0, 0.0, 1.0, 0.0, 1.0 ]
-  p  grid.cellMetricConformity(node0,node1,node2,node3,m)
+  assert_in_delta 1.0, 
+        grid.cellMetricConformity(node0,node1,node2,node3,m), 4.0e-4
  end
 
  def testCellMRDerivative
