@@ -336,6 +336,29 @@ static VALUE grid_gaussianBacksolve( VALUE self,
   return rb_a;
 }
 
+static VALUE grid_impliedMetric( VALUE self, 
+				 VALUE rb_xyz0, VALUE rb_xyz1, 
+				 VALUE rb_xyz2, VALUE rb_xyz3 )
+{
+  int i;
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double m[6];
+  VALUE rb_m;
+  for (i=0;i<3;i++){
+    xyz0[i] = NUM2DBL(rb_ary_entry(rb_xyz0, i));
+    xyz1[i] = NUM2DBL(rb_ary_entry(rb_xyz1, i));
+    xyz2[i] = NUM2DBL(rb_ary_entry(rb_xyz2, i));
+    xyz3[i] = NUM2DBL(rb_ary_entry(rb_xyz3, i));
+  }
+  if ( gridImpliedMetric( xyz0, xyz1, xyz2, xyz3, m ) ) {
+    rb_m = rb_ary_new2(6);
+    for(i=0;i<6;i++) rb_ary_store( rb_m, i, rb_float_new(m[i]) );
+    return rb_m;
+  } else {
+    return Qnil;
+  }
+}
+
 VALUE cGridMath;
 
 void Init_GridMath(  )
@@ -367,4 +390,5 @@ void Init_GridMath(  )
   rb_define_method( cGridMath, "matrixDeterminate", grid_matrixDeterminate, 1);
   rb_define_method( cGridMath, "gaussianElimination", grid_gaussianElimination, 3 );
   rb_define_method( cGridMath, "gaussianBacksolve", grid_gaussianBacksolve, 3 );
+  rb_define_method( cGridMath, "impliedMetric", grid_impliedMetric, 4 );
 }

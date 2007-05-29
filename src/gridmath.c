@@ -486,3 +486,10 @@ GridBool gridGaussianBacksolve( int m, int n, double *a )
   }
   return TRUE;
 }
+
+GridBool gridImpliedMetric( double *xyz0, double *xyz1, 
+			    double *xyz2, double *xyz3, 
+			    double *m )
+{
+  return FALSE;
+}
