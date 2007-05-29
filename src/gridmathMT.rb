@@ -711,9 +711,15 @@ class TestGridMath < Test::Unit::TestCase
   xyz0 = [ 0.000, 0.000, 0.000 ]
   xyz1 = [ 1.000, 0.000, 0.000 ]
   xyz2 = [ 0.500, 0.866, 0.000 ]
-  xyz3 = [ 0.500, 0.289, 0.823 ]
+  xyz3 = [ 0.500, 0.289, 0.817 ]
   m = @gm.impliedMetric(xyz0,xyz1,xyz2,xyz3)
-  p m
+  tol = 0.01
+  assert_in_delta(1.0,m[0],tol)
+  assert_in_delta(0.0,m[1],tol)
+  assert_in_delta(0.0,m[2],tol)
+  assert_in_delta(1.0,m[3],tol)
+  assert_in_delta(0.0,m[4],tol)
+  assert_in_delta(1.0,m[5],tol)
  end
 
 end
