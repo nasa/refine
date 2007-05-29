@@ -722,4 +722,27 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta(1.0,m[5],tol)
  end
 
+ def test_inverseM
+  minv = @gm.inverseM([2, 0, 0, 4, 0, 8])
+  tol = 1.0e-15
+  assert_in_delta(0.500,minv[0],tol)
+  assert_in_delta(0.000,minv[1],tol)
+  assert_in_delta(0.000,minv[2],tol)
+  assert_in_delta(0.250,minv[3],tol)
+  assert_in_delta(0.000,minv[4],tol)
+  assert_in_delta(0.125,minv[5],tol)
+  m = [1, 4, 3, 2, 5, 7]
+  minv = @gm.inverseM(m)
+  prod = @gm.matrixMultiplyM(m,minv)
+  assert_in_delta(1.0,prod[0],tol)
+  assert_in_delta(0.0,prod[1],tol)
+  assert_in_delta(0.0,prod[2],tol)
+  assert_in_delta(0.0,prod[3],tol)
+  assert_in_delta(1.0,prod[4],tol)
+  assert_in_delta(0.0,prod[5],tol)
+  assert_in_delta(0.0,prod[6],tol)
+  assert_in_delta(0.0,prod[7],tol)
+  assert_in_delta(1.0,prod[8],tol)
+ end
+
 end

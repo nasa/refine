@@ -592,7 +592,7 @@ GridBool gridInverseM( double *m, double *minv )
   double det;
 
   det = gridMDeterminate(m);
-  if ( det < 1.0e-14 ) return FALSE;
+  if ( ABS(det) < 1.0e-14 ) return FALSE;
 
   minv[0] = (m[3]*m[5]-m[4]*m[4])/det;
   minv[1] = (m[2]*m[4]-m[1]*m[5])/det;

@@ -1,3 +1,8 @@
+2007-05-29 13:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridMatrixMultiplyM) multi two symm matrix.
+	* src/gridmath.c (gridInverseM) invert symm matrix.
+
 2007-05-29 11:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmath.c (gridImpliedMetric) imply metric from tet node xyz.
