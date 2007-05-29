@@ -1,3 +1,7 @@
+2007-05-29 11:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridImpliedMetric) imply metric from tet node xyz.
+
 2007-05-24 15:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/grid.c (gridCollapseEdge) use gridGeometryBetweenFace test
