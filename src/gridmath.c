@@ -568,3 +568,21 @@ GridBool gridImpliedMetric( double *xyz0, double *xyz1,
 
   return TRUE;
 }
+
+void gridMatrixMultiplyM( double *m1, double *m2, double *product )
+{
+  /* first col */
+  product[0] = m1[0]*m2[0] + m1[1]*m2[1] + m1[2]*m2[2];
+  product[1] = m1[1]*m2[0] + m1[3]*m2[1] + m1[4]*m2[2];
+  product[2] = m1[2]*m2[0] + m1[4]*m2[1] + m1[5]*m2[2];
+
+  /* mid col */
+  product[3] = m1[0]*m2[1] + m1[1]*m2[3] + m1[2]*m2[4];
+  product[4] = m1[1]*m2[1] + m1[3]*m2[3] + m1[4]*m2[4];
+  product[5] = m1[2]*m2[1] + m1[4]*m2[3] + m1[5]*m2[4];
+
+  /* last col */
+  product[6] = m1[0]*m2[2] + m1[1]*m2[4] + m1[2]*m2[5];
+  product[7] = m1[1]*m2[2] + m1[3]*m2[4] + m1[4]*m2[5];
+  product[8] = m1[2]*m2[2] + m1[4]*m2[4] + m1[5]*m2[5];
+}

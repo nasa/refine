@@ -96,6 +96,8 @@ GridBool gridImpliedMetric( double *xyz0, double *xyz1,
 			    double *xyz2, double *xyz3, 
 			    double *m );
 
+void gridMatrixMultiplyM( double *m1, double *m2, double *product );
+
 END_C_DECLORATION
 
 #endif /* GRIDMATH_H */
