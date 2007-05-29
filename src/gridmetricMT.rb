@@ -214,7 +214,7 @@ class TestGridMetric < Test::Unit::TestCase
   grid.addNode(0,0,0)
   assert_equal grid, grid.setMapWithSpacingVectors(node,v1,v2,v3,s1,s2,s3)
   truth = [58.0, 0.0, 42.0, 4.0, 0.0, 58.0]
-  tol = 1.0e-14
+  tol = 1.0e-13
   assert_in_delta truth[0], grid.map(node)[0], tol
   assert_in_delta truth[1], grid.map(node)[1], tol
   assert_in_delta truth[2], grid.map(node)[2], tol
