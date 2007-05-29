@@ -98,6 +98,8 @@ GridBool gridImpliedMetric( double *xyz0, double *xyz1,
 
 void gridMatrixMultiplyM( double *m1, double *m2, double *product );
 
+GridBool gridInverseM( double *m, double *minv );
+
 END_C_DECLORATION
 
 #endif /* GRIDMATH_H */
