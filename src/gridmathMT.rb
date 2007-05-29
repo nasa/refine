@@ -698,7 +698,13 @@ class TestGridMath < Test::Unit::TestCase
   xyz2 = [0,1,0]
   xyz3 = [0,0,1]
   m = @gm.impliedMetric(xyz0,xyz1,xyz2,xyz3)
-  p m
+  tol = 1.0e-14
+  assert_in_delta(1.0,m[0],tol)
+  assert_in_delta(0.5,m[1],tol)
+  assert_in_delta(0.5,m[2],tol)
+  assert_in_delta(1.0,m[3],tol)
+  assert_in_delta(0.5,m[4],tol)
+  assert_in_delta(1.0,m[5],tol)
  end
 
  def test_impliedMetric_iso_tet
