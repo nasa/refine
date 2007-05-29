@@ -5347,7 +5347,7 @@ Grid *gridInterpolateMap2(Grid *grid, int node0, int node1, double ratio,
 Grid *gridSetCostFunction(Grid *grid, int costFunction)
 {
   if ( costFunction < gridCOST_FCN_MEAN_RATIO  || 
-       costFunction > gridCOST_FCN_JAC_SCALED_MEAN_RATIO ) return NULL;
+       costFunction > gridCOST_FCN_CONFORMITY ) return NULL;
   grid->costFunction = costFunction;
   return grid;
 }

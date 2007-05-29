@@ -1,3 +1,8 @@
+2007-05-29 13:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSetCostFunction) introduced new cost function
+	gridCOST_FCN_CONFORMITY.
+
 2007-05-29 13:30 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmath.c (gridMatrixMultiplyM) multi two symm matrix.

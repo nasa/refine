@@ -495,6 +495,7 @@ Grid *gridSetCostFunction(Grid *g, int costFunction);
 #define gridCOST_FCN_ASPECT_RATIO          (1)
 #define gridCOST_FCN_EDGE_LENGTH           (2)
 #define gridCOST_FCN_JAC_SCALED_MEAN_RATIO (3)
+#define gridCOST_FCN_CONFORMITY            (4)
 
 #define gridCostConstraint(grid) ((grid)->costConstraint)
 Grid *gridSetCostConstraint(Grid *g, int costConstraint);
