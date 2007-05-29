@@ -85,6 +85,13 @@ GridBool gridGaussianBacksolve( int m, int n, double *a );
 (m)[1]*(m)[3]*(m)[8] - \
 (m)[2]*(m)[4]*(m)[6] ) 
 
+#define gridMDeterminate(m) ( \
+(m)[0]*(m)[3]*(m)[5] + \
+(m)[1]*(m)[4]*(m)[2]*2.0 - \
+(m)[0]*(m)[4]*(m)[4] - \
+(m)[5]*(m)[1]*(m)[1] - \
+(m)[3]*(m)[2]*(m)[2] ) 
+
 GridBool gridImpliedMetric( double *xyz0, double *xyz1, 
 			    double *xyz2, double *xyz3, 
 			    double *m );
