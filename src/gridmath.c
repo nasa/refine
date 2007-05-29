@@ -491,5 +491,80 @@ GridBool gridImpliedMetric( double *xyz0, double *xyz1,
 			    double *xyz2, double *xyz3, 
 			    double *m )
 {
-  return FALSE;
+  double a[42];
+  double edge[3];
+  int row;
+
+  row = 0;
+  gridSubtractVector(xyz1,xyz0,edge);
+  a[row+0*6] =     edge[0]*edge[0];
+  a[row+1*6] = 2.0*edge[0]*edge[1];
+  a[row+2*6] = 2.0*edge[0]*edge[2];
+  a[row+3*6] =     edge[1]*edge[1];
+  a[row+4*6] = 2.0*edge[1]*edge[2];
+  a[row+5*6] =     edge[2]*edge[2];
+
+  row = 1;
+  gridSubtractVector(xyz2,xyz0,edge);
+  a[row+0*6] =     edge[0]*edge[0];
+  a[row+1*6] = 2.0*edge[0]*edge[1];
+  a[row+2*6] = 2.0*edge[0]*edge[2];
+  a[row+3*6] =     edge[1]*edge[1];
+  a[row+4*6] = 2.0*edge[1]*edge[2];
+  a[row+5*6] =     edge[2]*edge[2];
+
+  row = 2;
+  gridSubtractVector(xyz3,xyz0,edge);
+  a[row+0*6] =     edge[0]*edge[0];
+  a[row+1*6] = 2.0*edge[0]*edge[1];
+  a[row+2*6] = 2.0*edge[0]*edge[2];
+  a[row+3*6] =     edge[1]*edge[1];
+  a[row+4*6] = 2.0*edge[1]*edge[2];
+  a[row+5*6] =     edge[2]*edge[2];
+
+  row = 3;
+  gridSubtractVector(xyz2,xyz1,edge);
+  a[row+0*6] =     edge[0]*edge[0];
+  a[row+1*6] = 2.0*edge[0]*edge[1];
+  a[row+2*6] = 2.0*edge[0]*edge[2];
+  a[row+3*6] =     edge[1]*edge[1];
+  a[row+4*6] = 2.0*edge[1]*edge[2];
+  a[row+5*6] =     edge[2]*edge[2];
+
+  row = 4;
+  gridSubtractVector(xyz3,xyz1,edge);
+  a[row+0*6] =     edge[0]*edge[0];
+  a[row+1*6] = 2.0*edge[0]*edge[1];
+  a[row+2*6] = 2.0*edge[0]*edge[2];
+  a[row+3*6] =     edge[1]*edge[1];
+  a[row+4*6] = 2.0*edge[1]*edge[2];
+  a[row+5*6] =     edge[2]*edge[2];
+
+  row = 5;
+  gridSubtractVector(xyz3,xyz2,edge);
+  a[row+0*6] =     edge[0]*edge[0];
+  a[row+1*6] = 2.0*edge[0]*edge[1];
+  a[row+2*6] = 2.0*edge[0]*edge[2];
+  a[row+3*6] =     edge[1]*edge[1];
+  a[row+4*6] = 2.0*edge[1]*edge[2];
+  a[row+5*6] =     edge[2]*edge[2];
+
+  a[0+6*6] = 1.0;
+  a[1+6*6] = 1.0;
+  a[2+6*6] = 1.0;
+  a[3+6*6] = 1.0;
+  a[4+6*6] = 1.0;
+  a[5+6*6] = 1.0;
+
+  if (!gridGaussianElimination( 6, 7, a )) return FALSE;
+  if (!gridGaussianBacksolve( 6, 7, a )) return FALSE;
+  
+  m[0] = a[0+6*6];
+  m[1] = a[1+6*6];
+  m[2] = a[2+6*6];
+  m[3] = a[3+6*6];
+  m[4] = a[4+6*6];
+  m[5] = a[5+6*6];
+
+  return TRUE;
 }

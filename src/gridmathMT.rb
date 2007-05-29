@@ -701,4 +701,13 @@ class TestGridMath < Test::Unit::TestCase
   p m
  end
 
+ def test_impliedMetric_iso_tet
+  xyz0 = [ 0.000, 0.000, 0.000 ]
+  xyz1 = [ 1.000, 0.000, 0.000 ]
+  xyz2 = [ 0.500, 0.866, 0.000 ]
+  xyz3 = [ 0.500, 0.289, 0.823 ]
+  m = @gm.impliedMetric(xyz0,xyz1,xyz2,xyz3)
+  p m
+ end
+
 end
