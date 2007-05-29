@@ -193,6 +193,23 @@ VALUE grid_nodeVolumeDerivative( VALUE self, VALUE node )
   return rb_Vol;
 }
 
+VALUE grid_cellMetricConformity( VALUE self, VALUE rb_n0, VALUE rb_n1,  
+				 VALUE rb_n2, VALUE rb_n3, VALUE rb_m )
+{
+  int i;
+  double n0[3], n1[3], n2[3], n3[3];
+  double m[6];
+  GET_GRID_FROM_SELF;
+  for (i=0;i<3;i++) {
+    n0[i] = NUM2DBL(rb_ary_entry(rb_n0,i));
+    n1[i] = NUM2DBL(rb_ary_entry(rb_n1,i));
+    n2[i] = NUM2DBL(rb_ary_entry(rb_n2,i));
+    n3[i] = NUM2DBL(rb_ary_entry(rb_n3,i));
+  }
+  for (i=0;i<6;i++) m[i] = NUM2DBL(rb_ary_entry(rb_m,i));
+  return rb_float_new(gridCellMetricConformity(n0,n1,n2,n3,m));
+}
+
 VALUE grid_ar( VALUE self, VALUE rb_nodes )
 {
   int i, nodes[4];
@@ -498,6 +515,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "cellVolumeDerivative", grid_cellVolumeDerivative, 1 );
   rb_define_method( cGridMetric, "nodeVolumeDerivative", grid_nodeVolumeDerivative, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
+  rb_define_method( cGridMetric, "cellMetricConformity", grid_cellMetricConformity, 5 );
   rb_define_method( cGridMetric, "edgeRatioCost", grid_edgeRatioCost, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
   rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );

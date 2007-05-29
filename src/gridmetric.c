@@ -833,6 +833,9 @@ double gridAR(Grid *grid, int *nodes )
   p3 = gridNodeXYZPointer(grid,nodes[2]);
   p4 = gridNodeXYZPointer(grid,nodes[3]);
 
+  if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) )
+    return gridCellMetricConformity( xyz1, xyz2, xyz3, xyz4, m );
+
   xyz1[0] = j[0] * p1[0] + j[1] * p1[1] + j[2] * p1[2]; 
   xyz1[1] = j[3] * p1[0] + j[4] * p1[1] + j[5] * p1[2]; 
   xyz1[2] = j[6] * p1[0] + j[7] * p1[1] + j[8] * p1[2]; 
@@ -895,6 +898,42 @@ double gridEdgeRatioCost(Grid *grid, int *nodes )
     worstErr=MAX(worstErr,err[edge]);
   }
   return 1.0/(1.0+worstErr);
+}
+
+double gridCellMetricConformity( double *xyz0, double *xyz1, 
+				 double *xyz2, double *xyz3,
+				 double *requested_metric )
+{
+  double implied_metric[6];
+  double minv[6];
+  double mm1[9], mm2[9];
+  double rt[9];
+  int i;
+
+  if ( !gridImpliedMetric( xyz0, xyz1, xyz2, xyz3, implied_metric ) )
+    return -1.0;
+
+  if ( !gridInverseM( requested_metric, minv ) )
+    return -1.0;
+  
+  gridMatrixMultiplyM( minv, implied_metric, mm1 );
+
+  if ( !gridInverseM( implied_metric, minv ) )
+    return -1.0;
+
+  gridMatrixMultiplyM( minv, requested_metric, mm2 );
+
+  for ( i = 0 ; i < 9 ; i++ ) rt[i] = mm1[i] + mm2[i];
+  rt[0] -= 2.0;
+  rt[4] -= 2.0;
+  rt[8] -= 2.0;
+
+  printf("\n");
+  printf(" %15.8f %15.8f %15.8f\n",rt[0], rt[3], rt[6]);
+  printf(" %15.8f %15.8f %15.8f\n",rt[1], rt[4], rt[7]);
+  printf(" %15.8f %15.8f %15.8f\n",rt[2], rt[5], rt[8]);
+
+  return -1.0;
 }
 
 double gridCellAspectRatio( double *xyz1, double *xyz2, 

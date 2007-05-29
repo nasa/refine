@@ -620,6 +620,16 @@ class TestGridMetric < Test::Unit::TestCase
 
  end
 
+ def testCellMetricConformity
+  grid = isoTet
+  node0 = grid.nodeXYZ(0)
+  node1 = grid.nodeXYZ(1)
+  node2 = grid.nodeXYZ(2)
+  node3 = grid.nodeXYZ(3)
+  m = [1.0, 0.0, 0.0, 1.0, 0.0, 1.0 ]
+  p  grid.cellMetricConformity(node0,node1,node2,node3,m)
+ end
+
  def testCellMRDerivative
 
   x0=0.1
