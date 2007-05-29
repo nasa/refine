@@ -908,6 +908,7 @@ double gridCellMetricConformity( double *xyz0, double *xyz1,
   double minv[6];
   double mm1[9], mm2[9];
   double rt[9];
+  double norm;
   int i;
 
   if ( !gridImpliedMetric( xyz0, xyz1, xyz2, xyz3, implied_metric ) )
@@ -933,7 +934,11 @@ double gridCellMetricConformity( double *xyz0, double *xyz1,
   printf(" %15.8f %15.8f %15.8f\n",rt[1], rt[4], rt[7]);
   printf(" %15.8f %15.8f %15.8f\n",rt[2], rt[5], rt[8]);
 
-  return -1.0;
+  norm = 0.0;
+  for ( i = 0 ; i < 9 ; i++ ) norm += rt[i]*rt[i];
+  norm = sqrt(norm)
+
+  return 1.0/(1.0+norm);
 }
 
 double gridCellAspectRatio( double *xyz1, double *xyz2, 
