@@ -109,6 +109,12 @@ void bl_metric(Grid *grid, double h0) {
   PRINT_STATUS; \
 }
 
+void relax_grid(Grid *grid)
+{
+  gridSwap(grid,1.0);
+}
+
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -196,7 +202,7 @@ int main( int argc, char *argv[] )
   DUMP_TEC;
 
   h0 = 1.0;
-  // relax_grid(grid,h0);
+  relax_grid(grid);
   STATUS;
 
   DUMP_TEC;
