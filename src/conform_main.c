@@ -187,32 +187,21 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  printf("Spacing reset.\n");
-  bl_metric_flat( grid, 1.0 );
-
-
   gridSetCostFunction(grid, gridCOST_FCN_CONFORMITY );
-
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
-
-  STATUS;
-
   gridSetMinInsertCost( grid, 1.0e-16 );
   gridSetMinSurfaceSmoothCost( grid, 1.0e-16 );
 
   STATUS;
-
-  gridExportFAST( grid, "grid_orig.fgrid" );
-
-  STATUS;
+  DUMP_TEC;
 
   h0 = 1.0;
   // relax_grid(grid,h0);
   STATUS;
- DUMP_TEC;
-  return 1;
-  gridExportFAST( grid, "grid_h1000.fgrid" );
 
+  DUMP_TEC;
+
+  gridExportFAST( grid, "grid_h1000.fgrid" );
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
