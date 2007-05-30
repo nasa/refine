@@ -105,6 +105,10 @@ GridBool nearestOnFace(int vol, int face, double *xyz, double *uv,
                        double *xyznew);
 
 Grid *gridUntangleBadFaceParameters(Grid *g);
+
+Grid *gridSmoothNodeARFace(Grid *g, int node );
+Grid *gridSmoothNodeARFaceSimplex( Grid *g, int node );
+
 Grid *gridSmoothNodeFaceAreaUV(Grid *g, int node );
 Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *g, int node );
 
