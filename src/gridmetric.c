@@ -834,7 +834,7 @@ double gridAR(Grid *grid, int *nodes )
   p4 = gridNodeXYZPointer(grid,nodes[3]);
 
   if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) )
-    return gridCellMetricConformity( xyz1, xyz2, xyz3, xyz4, m );
+    return gridCellMetricConformity( p1, p2, p3, p4, m );
 
   xyz1[0] = j[0] * p1[0] + j[1] * p1[1] + j[2] * p1[2]; 
   xyz1[1] = j[3] * p1[0] + j[4] * p1[1] + j[5] * p1[2]; 
