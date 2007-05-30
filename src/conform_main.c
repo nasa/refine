@@ -111,7 +111,23 @@ void bl_metric(Grid *grid, double h0) {
 
 void relax_grid(Grid *grid)
 {
+  int node;
   gridSwap(grid,1.0);
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) ) {
+      if ( gridGeometryNode( grid, node ) ) continue;
+      if ( gridGeometryEdge( grid, node ) ) {
+	gridLineSearchT(grid, node, gridMinSurfaceSmoothCost(grid) );
+	continue;
+      }
+      if ( gridGeometryBetweenFace( grid, node ) ) continue;
+      if ( gridGeometryFace( grid, node ) ) {
+	gridSmoothNodeARFace(grid, node);
+	continue;
+      }
+      gridSmartLaplacian(grid, node );
+    }
+  }
 }
 
 
