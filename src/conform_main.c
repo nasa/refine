@@ -217,10 +217,30 @@ int main( int argc, char *argv[] )
   STATUS;
   DUMP_TEC;
 
-  h0 = 1.0;
+  h0 = 0.1;
   relax_grid(grid);
   STATUS;
 
+  DUMP_TEC;
+
+  STATUS;
+  relax_grid(grid);
+  STATUS;
+  DUMP_TEC;
+  relax_grid(grid);
+  STATUS;
+  DUMP_TEC;
+  relax_grid(grid);
+  STATUS;
+  DUMP_TEC;
+  relax_grid(grid);
+  STATUS;
+  DUMP_TEC;
+  relax_grid(grid);
+  STATUS;
+  DUMP_TEC;
+  relax_grid(grid);
+  STATUS;
   DUMP_TEC;
 
   gridExportFAST( grid, "grid_h1000.fgrid" );
