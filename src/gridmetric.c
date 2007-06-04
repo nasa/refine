@@ -900,6 +900,55 @@ double gridEdgeRatioCost(Grid *grid, int *nodes )
   return 1.0/(1.0+worstErr);
 }
 
+Grid *gridCellMetricConformityFD( Grid *grid,
+				  double *xyz0, double *xyz1, 
+				  double *xyz2, double *xyz3,
+				  double *requested_metric,
+				  double *cost, double *dCostdx )
+{
+  double xyz[3];
+  double delta;
+  
+  delta = 1.0e-7;
+
+  xyz[0] = xyz0[0];
+  xyz[1] = xyz0[1];
+  xyz[2] = xyz0[2];
+
+  (*cost) = gridCellMetricConformity( xyz, xyz1, xyz2, xyz3,
+				      requested_metric );
+  if ( *cost < -0.5 ) return NULL;
+  
+  xyz[0] = xyz0[0] + delta;
+  xyz[1] = xyz0[1];
+  xyz[2] = xyz0[2];
+
+  dCostdx[0] = gridCellMetricConformity( xyz, xyz1, xyz2, xyz3,
+					 requested_metric );
+  if ( dCostdx[0] < -0.5 ) return NULL;
+  dCostdx[0] = (dCostdx[0] - (*cost)) / delta;
+  
+  xyz[0] = xyz0[0];
+  xyz[1] = xyz0[1] + delta;
+  xyz[2] = xyz0[2];
+
+  dCostdx[1] = gridCellMetricConformity( xyz, xyz1, xyz2, xyz3,
+					 requested_metric );
+  if ( dCostdx[1] < -0.5 ) return NULL;
+  dCostdx[1] = (dCostdx[1] - (*cost)) / delta;
+  
+  xyz[0] = xyz0[0];
+  xyz[1] = xyz0[1];
+  xyz[2] = xyz0[2] + delta;
+
+  dCostdx[2] = gridCellMetricConformity( xyz, xyz1, xyz2, xyz3,
+					 requested_metric );
+  if ( dCostdx[2] < -0.5 ) return NULL;
+  dCostdx[2] = (dCostdx[2] - (*cost)) / delta;
+  
+  return grid;
+}
+
 double gridCellMetricConformity( double *xyz0, double *xyz1, 
 				 double *xyz2, double *xyz3,
 				 double *requested_metric )
@@ -1135,6 +1184,12 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
     gridMap(grid, nodes[2], map2);
     gridMap(grid, nodes[3], map3);
     for (i=0;i<6;i++) m[i]=0.25*(map0[i]+map1[i]+map2[i]+map3[i]);
+  }
+
+  if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) ) {
+    if ( grid != gridCellMetricConformityFD( grid, xyz1, xyz2, xyz3, xyz4, 
+					     m, ar, dARdx ) ) return NULL;
+    return grid;
   }
 
   if (grid != gridConvertMetricToJacobian(grid, m, j) ) {

@@ -72,6 +72,11 @@ double gridEdgeRatioCost(Grid *g, int *nodes );
 double gridCellMetricConformity( double *xyz0, double *xyz1, 
 				 double *xyz2, double *xyz3,
 				 double *requested_metric );
+Grid *gridCellMetricConformityFD( Grid *grid,
+				  double *xyz0, double *xyz1, 
+				  double *xyz2, double *xyz3,
+				  double *requested_metric,
+				  double *cost, double *dCostdx );
 double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );
 Grid *gridNodeValid(Grid *g, int node, double *valid );
 Grid *gridNodeAR(Grid *g, int node, double *ar );

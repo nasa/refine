@@ -1,3 +1,8 @@
+2007-06-04 14:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCellMetricConformityFD) finite difference
+	metric conformity derivatives.
+
 2007-06-04  9:15 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridCollapseCost) set map so that cost is
