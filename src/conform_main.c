@@ -89,7 +89,7 @@ void bl_metric_sphere(Grid *grid, double h0) {
 }
 
 void bl_metric(Grid *grid, double h0) {
-  bl_metric_sphere(grid, h0);
+  bl_metric_flat(grid, h0);
   if (FALSE) {
     int node;
     double xyz[3], map[6];
@@ -240,8 +240,9 @@ int main( int argc, char *argv[] )
   gridSetMinInsertCost( grid, 1.0e-16 );
   gridSetMinSurfaceSmoothCost( grid, 1.0e-16 );
 
-  h0 = 1.0;
+  h0 = 0.1;
   bl_metric(grid,h0);
+  gridCacheCurrentGridAndMap(grid);
   STATUS;
   DUMP_TEC;
 
