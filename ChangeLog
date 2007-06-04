@@ -1,3 +1,7 @@
+2007-06-04  9:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdapt2) adapt to improve volume cost.
+
 2007-06-04  8:55 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridSplitCost) compute new cost after edge split.

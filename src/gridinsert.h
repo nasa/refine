@@ -20,6 +20,7 @@ Grid *gridThrash(Grid *g );
 Grid *gridRemoveAllNodes(Grid *g );
 
 Grid *gridAdapt(Grid *g, double minLength, double maxLength );
+Grid *gridAdapt2(Grid *g );
 Grid *gridAdaptBasedOnConnRankings(Grid *g );
 Grid *gridAdaptLongShortCurved(Grid *g, double minLength, double maxLength,
 			       GridBool debug_split );

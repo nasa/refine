@@ -185,6 +185,47 @@ Grid *gridAdapt(Grid *grid, double minLength, double maxLength )
   return grid;
 }
 
+Grid *gridAdapt2(Grid *grid )
+{
+  int conn, nodes[2], newnode;
+  double currentCost, splitCost, node0Cost, node1Cost;
+  Queue *queue = NULL;
+  GridBool verbose = FALSE;
+
+  gridCreateConn(grid);
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    if (!gridCellEdge(grid, nodes[0], nodes[1])) continue;
+    if (grid!=gridSplitCost(grid,nodes[0],nodes[1],&currentCost, 
+			    &splitCost)) continue;
+    if (grid!=gridCollapseCost(grid, nodes[0],nodes[1], &currentCost, 
+			       &node0Cost, &node1Cost )) continue;
+    if (verbose)printf("o %f s %f c0 %f c1 %f\n",
+		       currentCost,splitCost,node0Cost,node1Cost);
+    if ( currentCost > splitCost &&
+	 currentCost > node0Cost && currentCost > node1Cost ) continue;
+    if ( splitCost > node0Cost && splitCost > node1Cost ) {
+      newnode = gridSplitEdgeRatio( grid, queue, nodes[0], nodes[1], 0.5 );
+      if (verbose) { gridNodeAR(grid,newnode,&currentCost);
+      printf("split     %f\n",currentCost);}
+    }else{ 
+      continue;
+      if ( node0Cost > node1Cost ) {
+	gridCollapseEdge(grid, queue, nodes[0], nodes[1], 0.0);
+	if (verbose) { gridNodeAR(grid,nodes[0],&currentCost);
+	printf("collapse0 %f\n",currentCost);}
+      } else {
+	gridCollapseEdge(grid, queue, nodes[0], nodes[1], 1.0);
+	if (verbose) { gridNodeAR(grid,nodes[0],&currentCost);
+	printf("collapse1 %f\n",currentCost);}
+      }
+    }
+  }
+  gridEraseConn(grid);
+
+  return grid;
+}
+
 static Grid *gridCollapseEdgeToBestExistingConfiguration( Grid *grid,
 							  Queue *queue, 
 							  int node0, int node1 )
