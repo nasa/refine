@@ -438,9 +438,9 @@ GridBool gridGaussianElimination( int m, int n, double *a )
       }
     }
     if ( largest_pivot < 1.0e-14 || EMPTY == pivot_row ) {
-      printf( "%s: %d: %s: pivot[%d] %e\n",
-	      __FILE__, __LINE__, "gridGaussianElimination", 
-	      col, largest_pivot);
+      if (FALSE) printf( "%s: %d: %s: pivot[%d] %e\n",
+			 __FILE__, __LINE__, "gridGaussianElimination", 
+			 col, largest_pivot);
       return FALSE;
     }
     /* exchange rows to get the best pivot on the diagonal, 
