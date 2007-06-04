@@ -112,6 +112,7 @@ void bl_metric(Grid *grid, double h0) {
 void relax_grid(Grid *grid)
 {
   int node;
+  gridAdapt2( grid );
   gridSwap(grid,1.0);
   for (node=0;node<gridMaxNode(grid);node++) {
     if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) ) {
@@ -214,34 +215,15 @@ int main( int argc, char *argv[] )
   gridSetMinInsertCost( grid, 1.0e-16 );
   gridSetMinSurfaceSmoothCost( grid, 1.0e-16 );
 
+  h0 = 1.0;
   STATUS;
   DUMP_TEC;
 
-  h0 = 0.1;
-  relax_grid(grid);
-  STATUS;
-
-  DUMP_TEC;
-
-  STATUS;
-  relax_grid(grid);
-  STATUS;
-  DUMP_TEC;
-  relax_grid(grid);
-  STATUS;
-  DUMP_TEC;
-  relax_grid(grid);
-  STATUS;
-  DUMP_TEC;
-  relax_grid(grid);
-  STATUS;
-  DUMP_TEC;
-  relax_grid(grid);
-  STATUS;
-  DUMP_TEC;
-  relax_grid(grid);
-  STATUS;
-  DUMP_TEC;
+  for(i=0;i<5;i++) {
+    relax_grid(grid);
+    STATUS;
+    DUMP_TEC;
+  }
 
   gridExportFAST( grid, "grid_h1000.fgrid" );
 
