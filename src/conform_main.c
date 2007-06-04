@@ -90,6 +90,17 @@ void bl_metric_sphere(Grid *grid, double h0) {
 
 void bl_metric(Grid *grid, double h0) {
   bl_metric_sphere(grid, h0);
+  if (FALSE) {
+    int node;
+    double xyz[3], map[6];
+    for(node=0;node<gridMaxNode(grid);node++){
+      if (grid==gridNodeXYZ(grid,node,xyz)) {
+	gridMap( grid, node, map );
+	printf(" %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f\n",
+	       map[0], map[1], map[2], map[3], map[4], map[5]);
+      }
+    }
+  }
 }
 
 #define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
