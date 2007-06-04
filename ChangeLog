@@ -1,3 +1,8 @@
+2007-06-04  9:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCollapseCost) set map so that cost is
+	right for a spatially varying map.
+
 2007-06-04  9:00 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridinsert.c (gridAdapt2) adapt to improve volume cost.

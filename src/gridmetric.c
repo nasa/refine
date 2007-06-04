@@ -2567,6 +2567,7 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
 		       double *node0Cost, double *node1Cost)
 {
   double xyz0[3], xyz1[3];
+  double map0[6], map1[6];
   int faceId0, faceId1;
   double node0Id0uv[2], node1Id0uv[2];
   double node0Id1uv[2], node1Id1uv[2];
@@ -2581,6 +2582,8 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
 
   if ( NULL == gridNodeXYZ( grid, node0, xyz0) ) return NULL;
   if ( NULL == gridNodeXYZ( grid, node1, xyz1) ) return NULL;
+  if ( NULL == gridMap( grid, node0, map0) ) return NULL;
+  if ( NULL == gridMap( grid, node1, map1) ) return NULL;
 
   if (grid!=gridEquator(grid,node0,node1)) return NULL;
   onBoundary = !gridContinuousEquator(grid);
@@ -2617,6 +2620,7 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
   }
 
   gridSetNodeXYZ( grid, node1, xyz0);
+  gridSetMap( grid, node1, map0[0],map0[1],map0[2],map0[3],map0[4],map0[5]);
   if ( EMPTY != faceId0)
     gridSetNodeUV( grid, node1, faceId0, node0Id0uv[0],  node0Id0uv[1] );
   if ( EMPTY != faceId1)
@@ -2627,6 +2631,7 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
 		    gridMinARAroundNodeExceptGem(grid,node1) );
 
   gridSetNodeXYZ( grid, node1, xyz1);
+  gridSetMap( grid, node1, map1[0],map1[1],map1[2],map1[3],map1[4],map1[5]);
   if ( EMPTY != faceId0)
     gridSetNodeUV( grid, node1, faceId0, node1Id0uv[0],  node1Id0uv[1] );
   if ( EMPTY != faceId1)
@@ -2635,6 +2640,7 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
 
 
   gridSetNodeXYZ( grid, node0, xyz1);
+  gridSetMap( grid, node0, map1[0],map1[1],map1[2],map1[3],map1[4],map1[5]);
   if ( EMPTY != faceId0)
     gridSetNodeUV( grid, node0, faceId0, node1Id0uv[0],  node1Id0uv[1] );
   if ( EMPTY != faceId1)
@@ -2645,6 +2651,7 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
 		    gridMinARAroundNodeExceptGem(grid,node1) );
 
   gridSetNodeXYZ( grid, node0, xyz0);
+  gridSetMap( grid, node0, map0[0],map0[1],map0[2],map0[3],map0[4],map0[5]);
   if ( EMPTY != faceId0)
     gridSetNodeUV( grid, node0, faceId0, node0Id0uv[0],  node0Id0uv[1] );
   if ( EMPTY != faceId1)
