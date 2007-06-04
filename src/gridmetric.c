@@ -2694,6 +2694,8 @@ Grid *gridSplitCost(Grid *grid, int node0, int node1,
     *splitCost = MIN(*splitCost,gridAR( grid, nodes1 ));
   }
 
+  gridRemoveNode(grid,newnode);
+
   return grid;
 }
 
