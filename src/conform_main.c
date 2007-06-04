@@ -119,22 +119,50 @@ void bl_metric(Grid *grid, double h0) {
   PRINT_STATUS; \
 }
 
+Grid *gridHistogram( Grid *grid, char *filename ) 
+{
+  int nodes[4];
+  int cell;
+  double cost;
+
+  FILE *file;
+
+  if (NULL == filename) {
+    file = fopen( "histogram.m", "w" );
+  }else{
+    file = fopen( filename, "w" );
+  }
+
+  fprintf( file, "cost = [\n" );
+  for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
+    if ( grid == gridCell( grid, cell, nodes ) ) {
+      cost = gridAR(grid, nodes);
+      fprintf( file, "%e\n", cost );
+    }
+  }
+  fprintf( file, "];\n" );
+
+  fclose(file);
+
+  return grid;
+}
+
 void relax_grid(Grid *grid)
 {
   int node;
-  if (TRUE) {
+  if (FALSE) {
     STATUS;
     printf("adapt\n");
     gridAdapt2( grid );
     STATUS;
   }
-  if (TRUE) {
+  if (FALSE) {
     STATUS;
     printf("swap\n");
     gridSwap(grid,1.0);
     STATUS;
   }
-  if (TRUE) {
+  if (FALSE) {
     STATUS;
     printf("smooth\n");
     for (node=0;node<gridMaxNode(grid);node++) {
@@ -240,17 +268,20 @@ int main( int argc, char *argv[] )
   gridSetMinInsertCost( grid, 1.0e-16 );
   gridSetMinSurfaceSmoothCost( grid, 1.0e-16 );
 
-  h0 = 0.1;
+  h0 = 1.0;
   bl_metric(grid,h0);
   gridCacheCurrentGridAndMap(grid);
   STATUS;
-  DUMP_TEC;
+
+  gridHistogram(grid,"hist0.m");
 
   for(i=0;i<5;i++) {
     relax_grid(grid);
     STATUS;
     DUMP_TEC;
   }
+
+  gridHistogram(grid,"hist1.m");
 
   gridExportFAST( grid, "grid_h1000.fgrid" );
 
