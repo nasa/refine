@@ -116,29 +116,43 @@ void bl_metric(Grid *grid, double h0) {
    }}; }
 
 #define STATUS { \
-  bl_metric(grid,h0); \
   PRINT_STATUS; \
 }
 
 void relax_grid(Grid *grid)
 {
   int node;
-  gridAdapt2( grid );
-  gridSwap(grid,1.0);
-  for (node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) ) {
-      if ( gridGeometryNode( grid, node ) ) continue;
-      if ( gridGeometryEdge( grid, node ) ) {
-	gridLineSearchT(grid, node, gridMinSurfaceSmoothCost(grid) );
-	continue;
+  if (TRUE) {
+    STATUS;
+    printf("adapt\n");
+    gridAdapt2( grid );
+    STATUS;
+  }
+  if (TRUE) {
+    STATUS;
+    printf("swap\n");
+    gridSwap(grid,1.0);
+    STATUS;
+  }
+  if (TRUE) {
+    STATUS;
+    printf("smooth\n");
+    for (node=0;node<gridMaxNode(grid);node++) {
+      if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) ) {
+	if ( gridGeometryNode( grid, node ) ) continue;
+	if ( gridGeometryEdge( grid, node ) ) {
+	  //gridLineSearchT(grid, node, gridMinSurfaceSmoothCost(grid) );
+	  continue;
+	}
+	if ( gridGeometryBetweenFace( grid, node ) ) continue;
+	if ( gridGeometryFace( grid, node ) ) {
+	  gridSmoothNodeARFace(grid, node);
+	  continue;
+	}
+	gridSmartLaplacian(grid, node );
       }
-      if ( gridGeometryBetweenFace( grid, node ) ) continue;
-      if ( gridGeometryFace( grid, node ) ) {
-	gridSmoothNodeARFace(grid, node);
-	continue;
-      }
-      gridSmartLaplacian(grid, node );
     }
+    STATUS;
   }
 }
 
@@ -227,6 +241,7 @@ int main( int argc, char *argv[] )
   gridSetMinSurfaceSmoothCost( grid, 1.0e-16 );
 
   h0 = 1.0;
+  bl_metric(grid,h0);
   STATUS;
   DUMP_TEC;
 
