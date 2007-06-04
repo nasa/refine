@@ -2654,3 +2654,46 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
   return grid;
 }
 
+Grid *gridSplitCost(Grid *grid, int node0, int node1, 
+		    double *currentCost, double *splitCost )
+{
+  double xyz0[3], xyz1[3], newxyz[3];
+  int newnode, nodes0[4], nodes1[4];
+
+  double ratio = 0.5;
+
+  int inode, i;
+
+  if ( NULL == gridNodeXYZ( grid, node0, xyz0) ) return NULL;
+  if ( NULL == gridNodeXYZ( grid, node1, xyz1) ) return NULL;
+
+  if (grid!=gridMakeGem(grid,node0,node1)) return NULL;
+  if (grid!=gridGemAR(grid,currentCost)) return NULL;
+
+  for (inode = 0 ; inode < 3 ; inode++) 
+    newxyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
+
+  newnode = gridAddNode(grid, newxyz[0], newxyz[1], newxyz[2] );
+  if ( newnode == EMPTY ) return NULL;
+
+  if ( grid != gridInterpolateMap2(grid,node0,node1,ratio,newnode ) ) {
+    gridRemoveNode(grid,newnode);
+    return NULL;
+  }
+
+  (*splitCost) = 10.0;
+
+  for ( i = 0 ; i < gridNGem(grid) ; i++ ){
+    gridCell(grid, gridGem(grid,i), nodes0);
+    gridCell(grid, gridGem(grid,i), nodes1);
+    for (inode = 0 ; inode < 4 ; inode++) {
+      if (nodes0[inode] == node0) nodes0[inode]=newnode;
+      if (nodes1[inode] == node1) nodes1[inode]=newnode;
+    }
+    *splitCost = MIN(*splitCost,gridAR( grid, nodes0 ));
+    *splitCost = MIN(*splitCost,gridAR( grid, nodes1 ));
+  }
+
+  return grid;
+}
+
