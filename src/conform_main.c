@@ -43,6 +43,9 @@ void bl_metric_flat(Grid *grid, double h0) {
       hy = ABS(xyz[1]-y0)/0.5;
       hy = MIN(1.0,hy);
       hy = 0.1*((1.0-h0)*hy+h0);
+
+      hx=0.5; hy=0.5; hz=0.5;
+
       gridSetMapWithSpacingVectors(grid,node,
 				   dx,dy,dz,hx,hy,hz);
     }
@@ -150,19 +153,19 @@ Grid *gridHistogram( Grid *grid, char *filename )
 void relax_grid(Grid *grid)
 {
   int node;
-  if (FALSE) {
+  if (TRUE) {
     STATUS;
     printf("adapt\n");
     gridAdapt2( grid );
     STATUS;
   }
-  if (FALSE) {
+  if (TRUE) {
     STATUS;
     printf("swap\n");
     gridSwap(grid,1.0);
     STATUS;
   }
-  if (FALSE) {
+  if (TRUE) {
     STATUS;
     printf("smooth\n");
     for (node=0;node<gridMaxNode(grid);node++) {
@@ -178,6 +181,7 @@ void relax_grid(Grid *grid)
 	  continue;
 	}
 	gridSmartLaplacian(grid, node );
+	gridSmoothNode(grid,node, FALSE);
       }
     }
     STATUS;
@@ -270,7 +274,7 @@ int main( int argc, char *argv[] )
 
   h0 = 1.0;
   bl_metric(grid,h0);
-  gridCacheCurrentGridAndMap(grid);
+  //gridCacheCurrentGridAndMap(grid);
   STATUS;
 
   gridHistogram(grid,"hist0.m");
