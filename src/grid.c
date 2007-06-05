@@ -2985,8 +2985,8 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     }
   }
 
-  printf("%s: %d: gridFindEnclosingCell exhausted tries at%10.5f%10.5f%10.5f.\n",
-	 __FILE__,__LINE__,target[0],target[1],target[2]);
+  if (FALSE) printf("%s: %d: gridFindEnclosingCell exhausted tries at%10.5f%10.5f%10.5f.\n",
+		    __FILE__,__LINE__,target[0],target[1],target[2]);
 
   return EMPTY;
 }
@@ -3032,8 +3032,8 @@ int gridFindClosestBoundaryCell(Grid *grid, int starting_guess,
   current_face = gridFindClosestBoundaryFace(grid, current_face, 
 					     target, trib );
   if (EMPTY == current_face) {
-    printf("%s: %d: gridFindClosestBoundaryCell: can't find closest face.\n",
-	   __FILE__,__LINE__);
+    if (FALSE) printf("%s: %d: gridFindClosestBoundaryCell: can't find closest face.\n",
+		      __FILE__,__LINE__);
     return EMPTY;
   }
 
@@ -3161,8 +3161,8 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
     }
   }
 
-  printf("%s: %d: gridFindClosestBoundaryFace %s %8.5f %8.5f %8.5f.\n",
-	 __FILE__,__LINE__,"cycling at",target[0],target[1],target[2]);
+  if (FALSE) printf("%s: %d: gridFindClosestBoundaryFace %s %8.5f %8.5f %8.5f.\n",
+		    __FILE__,__LINE__,"cycling at",target[0],target[1],target[2]);
   return EMPTY;
 }
 
@@ -5273,8 +5273,8 @@ Grid *gridMap(Grid *grid, int node, double *map)
     gridNodeXYZ( grid, node, xyz );
     enclosing_cell = gridFindEnclosingCell( child, starting_guess, xyz, bary );
     if ( EMPTY == enclosing_cell ) {
-      printf("%s: %d: gridMap: can not find enclosing_cell (EMPTY) for %d\n", 
-	     __FILE__, __LINE__, node );
+      if (FALSE) printf("%s: %d: gridMap: can not find enclosing_cell (EMPTY) for %d\n", 
+			__FILE__, __LINE__, node );
       return NULL;
     }
     grid->child_reference[node] = enclosing_cell;
