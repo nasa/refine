@@ -1,3 +1,8 @@
+2007-06-05 15:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) modified to optimize volume cost
+	for gridCOST_FCN_CONFORMITY.
+
 2007-06-05 13:25 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridRestrictStoredCostToUV)

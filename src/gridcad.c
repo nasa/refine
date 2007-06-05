@@ -1245,7 +1245,12 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
   if ( grid != gridFace(grid, face, nodes, &faceId)) return NULL;
   if ( grid != gridNodeUV(grid, node, faceId, origUV)) return NULL;    
 
-  if ( grid != gridStoreFaceCostParameterDerivatives(grid, node ) )return NULL;
+  if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) ) {
+    if ( grid != gridStoreVolumeCostDerivatives(grid, node ) ) return NULL;
+  }else{
+    if ( grid != gridStoreFaceCostParameterDerivatives(grid, node ) )
+      return NULL;
+  }
   if ( grid != gridRestrictStoredCostToUV(grid, node ) )return NULL;
 
   minCost =2.1;
@@ -1361,6 +1366,8 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
     gridEvaluateFaceAtUV(grid, node, uv );
     gridNodeFaceMR(grid,node,&newCost);
     gridNodeAR(grid,node,&constraint);
+    if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) )
+      newCost = constraint;
     actualImprovement = newCost-minCost;
     /* printf(" alpha %12.5e predicted %12.9f actual %12.9f new %12.9f\n",
        alpha, predictedImprovement, actualImprovement, newCost); */
@@ -1377,6 +1384,8 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
       gridEvaluateFaceAtUV(grid,node,uv);
       gridNodeFaceMR(grid,node,&newCost);
       gridNodeAR(grid,node,&constraint);
+      if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) )
+	newCost = constraint;
       actualImprovement = newCost-minCost;
       break;
     }
