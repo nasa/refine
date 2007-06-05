@@ -5430,6 +5430,19 @@ Grid *gridStoreCost( Grid *grid, double cost, double *costDerivative )
   return grid;
 }
 
+Grid *gridUpdateStoreCost( Grid *grid, int index, 
+			   double cost, double *costDerivative )
+{
+  if ( index < 0 || index >= grid->costDegree) return NULL;
+
+  grid->storedCost[index] = cost;
+  grid->storedCostDerivative[0+3*index] = costDerivative[0];
+  grid->storedCostDerivative[1+3*index] = costDerivative[1];
+  grid->storedCostDerivative[2+3*index] = costDerivative[2];
+
+  return grid;
+}
+
 double gridStoredCost( Grid *grid, int index )
 {
   if ( index < 0 || index >= gridStoredCostDegree( grid ) ) return DBL_MAX;

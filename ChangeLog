@@ -1,3 +1,8 @@
+2007-06-05 12:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridUpdateStoredCost) To permit update of costs for
+	chain-ruling surface parameterization
+
 2007-06-04 14:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridmetric.c (gridCellMetricConformityFD) finite difference

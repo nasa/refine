@@ -518,6 +518,8 @@ double gridMinSwapCostImprovement(Grid *g );
 int gridStoredCostDegree( Grid *g );
 Grid *gridClearStoredCost( Grid *g );
 Grid *gridStoreCost( Grid *g, double cost, double *costDerivative );
+Grid *gridUpdateStoredCost( Grid *g, int index, 
+			    double cost, double *costDerivative );
 double gridStoredCost( Grid *g, int index );
 Grid *gridStoredCostDerivative( Grid *g, int index, double *costDerivative );
 
