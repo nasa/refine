@@ -43,9 +43,6 @@ void bl_metric_flat(Grid *grid, double h0) {
       hy = ABS(xyz[1]-y0)/0.5;
       hy = MIN(1.0,hy);
       hy = 0.1*((1.0-h0)*hy+h0);
-
-      hx=0.5; hy=0.5; hz=0.5;
-
       gridSetMapWithSpacingVectors(grid,node,
 				   dx,dy,dz,hx,hy,hz);
     }
@@ -153,9 +150,15 @@ Grid *gridHistogram( Grid *grid, char *filename )
 void relax_grid(Grid *grid)
 {
   int node;
-  if (TRUE) {
+  if (FALSE) {
     STATUS;
     printf("adapt\n");
+    gridAdapt( grid, 0.3, 1.5 );
+    STATUS;
+  }
+  if (FALSE) {
+    STATUS;
+    printf("adapt2\n");
     gridAdapt2( grid );
     STATUS;
   }
@@ -272,14 +275,22 @@ int main( int argc, char *argv[] )
   gridSetMinInsertCost( grid, 1.0e-16 );
   gridSetMinSurfaceSmoothCost( grid, 1.0e-16 );
 
-  h0 = 1.0;
+  h0 = 0.1;
   bl_metric(grid,h0);
-  //gridCacheCurrentGridAndMap(grid);
+  gridCacheCurrentGridAndMap(grid);
   STATUS;
 
   gridHistogram(grid,"hist0.m");
 
-  for(i=0;i<5;i++) {
+  DUMP_TEC;
+  for(i=0;i<10;i++) {
+    STATUS;
+    printf("adapt\n");
+    gridAdapt( grid, 0.3, 1.5 );
+    STATUS;
+    DUMP_TEC;
+  }
+  for(i=0;i<2;i++) {
     relax_grid(grid);
     STATUS;
     DUMP_TEC;
