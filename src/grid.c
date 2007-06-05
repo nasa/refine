@@ -5430,8 +5430,8 @@ Grid *gridStoreCost( Grid *grid, double cost, double *costDerivative )
   return grid;
 }
 
-Grid *gridUpdateStoreCost( Grid *grid, int index, 
-			   double cost, double *costDerivative )
+Grid *gridUpdateStoredCost( Grid *grid, int index, 
+			    double cost, double *costDerivative )
 {
   if ( index < 0 || index >= grid->costDegree) return NULL;
 
