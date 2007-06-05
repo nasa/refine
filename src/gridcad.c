@@ -1806,6 +1806,7 @@ Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
   int swapnode;
   double cost, dMRdx[3], costDerivative[3];
   double uv[2], xyzProj[3], du[3], dv[3];
+  int i;
   int vol=1;
 
   if ( !gridValidNode( grid, node) ) return NULL;
@@ -1836,17 +1837,27 @@ Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
       gridClearStoredCost( grid );
       return NULL;
     }
-    gridNodeUV( grid, node, faceId, uv);
-    if ( !CADGeom_PointOnFace( vol, faceId,   
-			       uv, xyzProj, 1, du, dv, NULL, NULL, NULL) ) {
-      printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+    if (grid != gridStoreCost(grid, cost, dMRdx ) ) {
       gridClearStoredCost( grid );
-      return NULL;      
+      return NULL;
     }
+  }
+
+  gridNodeUV( grid, node, faceId, uv);
+  if ( !CADGeom_PointOnFace( vol, faceId,   
+			     uv, xyzProj, 1, du, dv, NULL, NULL, NULL) ) {
+    printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
+    gridClearStoredCost( grid );
+    return NULL;      
+  }
+  for (i=0;i<gridStoredCostDegree(grid);i++){
+    gridStoredCostDerivative(grid,i,dMRdx);
     costDerivative[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
     costDerivative[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
     costDerivative[2] = 0.0;
-    if (grid != gridStoreCost(grid, cost, costDerivative ) ) {
+    if (grid != gridUpdateStoredCost( grid, i,
+				      gridStoredCost(grid,i), 
+				      costDerivative ) ) {
       gridClearStoredCost( grid );
       return NULL;
     }
