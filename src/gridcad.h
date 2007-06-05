@@ -86,6 +86,7 @@ Grid *gridSmartAreaUVLaplacian(Grid *g, int node );
 
 Grid *gridStoreVolumeCostDerivatives(Grid *g, int node );
 Grid *gridStoreFaceCostParameterDerivatives(Grid *g, int node );
+Grid *gridRestrictStoredCostToUV(Grid *g, int node );
 
 Grid *gridLinearProgramXYZ(Grid *g, int node, GridBool *callAgain );
 

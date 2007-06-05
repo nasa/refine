@@ -1246,6 +1246,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
   if ( grid != gridNodeUV(grid, node, faceId, origUV)) return NULL;    
 
   if ( grid != gridStoreFaceCostParameterDerivatives(grid, node ) )return NULL;
+  if ( grid != gridRestrictStoredCostToUV(grid, node ) )return NULL;
 
   minCost =2.1;
   minFace = EMPTY;
@@ -1804,9 +1805,7 @@ Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
   AdjIterator it;
   int face, faceId, nodes[3];
   int swapnode;
-  double cost, dMRdx[3], costDerivative[3];
-  double uv[2], xyzProj[3], du[3], dv[3];
-  int i;
+  double cost, dMRdx[3];
   int vol=1;
 
   if ( !gridValidNode( grid, node) ) return NULL;
@@ -1843,6 +1842,23 @@ Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
     }
   }
 
+  return grid;
+}
+
+Grid *gridRestrictStoredCostToUV( Grid *grid, int node )
+{
+  int face, faceId, nodes[3];
+  double dMRdx[3], costDerivative[3];
+  double uv[2], du[3], dv[3], xyzProj[3];
+  int i;
+  int vol=1;
+
+  face = adjItem(adjFirst(gridFaceAdj(grid),node));
+  if ( grid != gridFace(grid,face,nodes,&faceId) ) {
+    gridClearStoredCost( grid );
+    return NULL;
+  }
+
   gridNodeUV( grid, node, faceId, uv);
   if ( !CADGeom_PointOnFace( vol, faceId,   
 			     uv, xyzProj, 1, du, dv, NULL, NULL, NULL) ) {
@@ -1862,6 +1878,7 @@ Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
       return NULL;
     }
   }
+
   return grid;
 }
 

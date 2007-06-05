@@ -1,6 +1,11 @@
+2007-06-05 13:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridRestrictStoredCostToUV)
+	projection/restriction to uv space of stored derivatives.
+
 2007-06-05 12:55 Mike Park  <mike.park@nasa.gov>
 
-	* src/grid.c (gridStoreFaceCostParameterDerivatives) refactored to
+	* src/gridcad.c (gridStoreFaceCostParameterDerivatives) refactored to
 	split storage and projection/restriction to uv space.
 
 2007-06-05 12:35 Mike Park  <mike.park@nasa.gov>
