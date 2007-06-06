@@ -1121,7 +1121,7 @@ Grid *gridLineSearchTForCost(Grid *grid, int node )
 {
   double dt, t;
   double gold;
-  double alpha[2], ar[2], equality[2];
+  double alpha[2], ar[2];
   int iter;
 
   int nodes1[2], nodes2[2];
@@ -1148,7 +1148,8 @@ Grid *gridLineSearchTForCost(Grid *grid, int node )
   node1 = nodes1[0] + nodes1[1] - node; 
   node2 = nodes2[0] + nodes2[1] - node; 
 
-  /* calculate dt to point in the parameter direction of `longer' edge */
+  /* calculate dt to point in the parameter direction of greater cost */
+  if ( grid != gridNodeT( grid, node,  edgeId1, &t0 ) ) return NULL;
   if ( grid != gridNodeT( grid, node1, edgeId1, &t1 ) ) return NULL;
   if ( grid != gridNodeT( grid, node2, edgeId1, &t2 ) ) return NULL;
   dt = 1.0e-6*(t2-t1);
@@ -1176,7 +1177,7 @@ Grid *gridLineSearchTForCost(Grid *grid, int node )
   while ( ar[1] > ar[0] && 
 	  iter < 100 ) {
     iter++;
-    alpha[0] = alpha[1]; ar[0] = ar[1]; equality[0] =  equality[1];
+    alpha[0] = alpha[1]; ar[0] = ar[1];
     alpha[1] = alpha[0] * gold;
     t = t0 + alpha[1]*dt;
     if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
