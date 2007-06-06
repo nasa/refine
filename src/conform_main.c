@@ -156,13 +156,13 @@ void relax_grid(Grid *grid)
     gridAdapt( grid, 0.3, 1.5 );
     STATUS;
   }
-  if (FALSE) {
+  if (TRUE) {
     STATUS;
     printf("adapt2\n");
     gridAdapt2( grid );
     STATUS;
   }
-  if (FALSE) {
+  if (TRUE) {
     STATUS;
     printf("swap\n");
     gridSwap(grid,1.0);
@@ -175,7 +175,7 @@ void relax_grid(Grid *grid)
       if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) ) {
 	if ( gridGeometryNode( grid, node ) ) continue;
 	if ( gridGeometryEdge( grid, node ) ) {
-	  //gridLineSearchT(grid, node, gridMinSurfaceSmoothCost(grid) );
+	  gridLineSearchTForCost(grid, node );
 	  continue;
 	}
 	if ( gridGeometryBetweenFace( grid, node ) ) continue;
@@ -283,21 +283,8 @@ int main( int argc, char *argv[] )
   gridHistogram(grid,"hist0.m");
 
   DUMP_TEC;
-  for(i=0;i<3;i++) {
-    STATUS;
-    printf("adapt\n");
-    gridAdapt2( grid );
-    STATUS;
-    DUMP_TEC;
-  }
-  for(i=0;i<3;i++) {
-    STATUS;
-    printf("swap\n");
-    gridSwap( grid, 0.7 );
-    STATUS;
-    DUMP_TEC;
-  }
-  for(i=0;i<3;i++) {
+
+  for(i=0;i<10;i++) {
     relax_grid(grid);
     STATUS;
     DUMP_TEC;
