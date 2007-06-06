@@ -105,8 +105,13 @@ void bl_metric(Grid *grid, double h0) {
    }}; }
 
 #define STATUS { \
+  int orig_cost; \
   bl_metric(grid,h0); \
   PRINT_STATUS; \
+  orig_cost = gridCostFunction(grid); \
+  gridSetCostFunction(grid, gridCOST_FCN_CONFORMITY ); \
+   PRINT_STATUS; \
+   gridSetCostFunction(grid, orig_cost ); \
 }
 
 Grid *gridHistogram( Grid *grid, char *filename ) 
