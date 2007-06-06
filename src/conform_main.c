@@ -283,21 +283,21 @@ int main( int argc, char *argv[] )
   gridHistogram(grid,"hist0.m");
 
   DUMP_TEC;
-  for(i=0;i<10;i++) {
+  for(i=0;i<3;i++) {
     STATUS;
     printf("adapt\n");
-    gridAdapt( grid, 0.5, 1.0 );
+    gridAdapt2( grid );
     STATUS;
     DUMP_TEC;
   }
-  for(i=0;i<5;i++) {
+  for(i=0;i<3;i++) {
     STATUS;
     printf("swap\n");
     gridSwap( grid, 0.7 );
     STATUS;
     DUMP_TEC;
   }
-  for(i=0;i<5;i++) {
+  for(i=0;i<3;i++) {
     relax_grid(grid);
     STATUS;
     DUMP_TEC;
