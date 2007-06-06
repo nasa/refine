@@ -162,7 +162,7 @@ void relax_grid(Grid *grid)
     gridAdapt2( grid );
     STATUS;
   }
-  if (TRUE) {
+  if (FALSE) {
     STATUS;
     printf("swap\n");
     gridSwap(grid,1.0);
@@ -180,7 +180,7 @@ void relax_grid(Grid *grid)
 	}
 	if ( gridGeometryBetweenFace( grid, node ) ) continue;
 	if ( gridGeometryFace( grid, node ) ) {
-	  gridSmoothNodeARFace(grid, node);
+	  gridSmoothNode(grid,node, TRUE);
 	  continue;
 	}
 	gridSmartLaplacian(grid, node );
@@ -286,11 +286,18 @@ int main( int argc, char *argv[] )
   for(i=0;i<10;i++) {
     STATUS;
     printf("adapt\n");
-    gridAdapt( grid, 0.3, 1.5 );
+    gridAdapt( grid, 0.5, 1.0 );
     STATUS;
     DUMP_TEC;
   }
-  for(i=0;i<2;i++) {
+  for(i=0;i<5;i++) {
+    STATUS;
+    printf("swap\n");
+    gridSwap( grid, 0.7 );
+    STATUS;
+    DUMP_TEC;
+  }
+  for(i=0;i<5;i++) {
     relax_grid(grid);
     STATUS;
     DUMP_TEC;
