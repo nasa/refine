@@ -760,6 +760,12 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   int edge, edgeids, edgeId;
   double t, uv[2], xyz[3];
 
+  if ( (*ndim) != 4 ) {
+    printf("ERROR: %s: %d: %s: ndim=%d, 4 expected, update FUN3D.\n",
+	   __FILE__, __LINE__, "gridloadglobalnodedata_", (*ndim) );
+    return;
+  }
+
   localnode=0;
   node=0;
   while (node<(*nnode)) {
@@ -771,6 +777,8 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
       data[0+(*ndim)*node] = xyz[0];
       data[1+(*ndim)*node] = xyz[1];
       data[2+(*ndim)*node] = xyz[2];
+      data[3+(*ndim)*node] = 0.0;
+      if (gridNodeFrozen( grid, localnode )) data[3+(*ndim)*node] = 1.0;
       node++;
     } else {
       faceids = -nodes[node];
@@ -802,6 +810,12 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   int face, faceids, faceId;
   int edge, edgeids, edgeId;
 
+  if ( (*ndim) != 4 ) {
+    printf("ERROR: %s: %d: %s: ndim=%d, 4 expected, update FUN3D.\n",
+	   __FILE__, __LINE__, "gridsetlocalnodedata_", (*ndim) );
+    return;
+  }
+
   localnode=0;
   node=0;
   while (node<(*nnode)) {
@@ -810,6 +824,8 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
       if (grid != gridSetNodeXYZ(grid,localnode,&data[(*ndim)*node]) )
 	printf("ERROR: %s: %d: set invalid node %d .\n",
 	       __FILE__, __LINE__, nodes[node]-1);
+      gridThawNode( grid, localnode );
+      if ( data[3+(*ndim)*node] > 0.5 ) gridFreezeNode( grid, node );
       node++;
     } else {
       faceids = -nodes[node];

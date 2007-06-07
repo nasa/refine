@@ -1,3 +1,9 @@
+2007-06-07 13:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridloadglobalnodedata_,gridsetlocalnodedata_)
+	update node frozen state with xyz. (this conuld be added to queue
+	node data too)
+
 2007-06-06 12:45 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridcad.c (gridLineSearchTForCost) line search T for volumr cost.
