@@ -1,3 +1,8 @@
+2007-06-08 12:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridloadglobalnodedata_,gridsetlocalnodedata_)
+	to handle ndim of 3 or 4 for compatability with old fun3d versions.
+
 2007-06-08 10:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridsetlocalnodedata_) fix typo to freeze
