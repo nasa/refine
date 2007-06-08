@@ -825,7 +825,7 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 	printf("ERROR: %s: %d: set invalid node %d .\n",
 	       __FILE__, __LINE__, nodes[node]-1);
       gridThawNode( grid, localnode );
-      if ( data[3+(*ndim)*node] > 0.5 ) gridFreezeNode( grid, node );
+      if ( data[3+(*ndim)*node] > 0.5 ) gridFreezeNode( grid, localnode );
       node++;
     } else {
       faceids = -nodes[node];
