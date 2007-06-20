@@ -150,12 +150,6 @@ Grid *gridHistogram( Grid *grid, char *filename )
 void relax_grid(Grid *grid)
 {
   int node;
-  if (FALSE) {
-    STATUS;
-    printf("adapt\n");
-    gridAdapt( grid, 0.3, 1.5 );
-    STATUS;
-  }
   if (TRUE) {
     STATUS;
     printf("adapt2\n");
@@ -180,6 +174,7 @@ void relax_grid(Grid *grid)
 	}
 	if ( gridGeometryBetweenFace( grid, node ) ) continue;
 	if ( gridGeometryFace( grid, node ) ) {
+	  gridSmoothNodeARFace(grid, node );
 	  //gridSmoothNode(grid,node, TRUE);
 	  continue;
 	}

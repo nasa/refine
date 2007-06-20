@@ -2524,10 +2524,10 @@ static double reflectNodeARFace( Grid *grid,
   for(i=0;i<2;i++) 
     reflectedUV[i] = factor1*avgUV[i] - factor2*simplex[worst][i];
 
-  gridSetNodeUV(grid, node, faceId, reflectedUV[0],  reflectedUV[1] );
+  gridEvaluateFaceAtUV(grid, node, reflectedUV);
   gridNodeAR(grid,node,&reflectedArea);
 
-  if ( reflectedArea > area[worst] ) {
+  if ( reflectedArea < area[worst] ) {
     area[worst] = reflectedArea;
     for(i=0;i<2;i++) avgUV[i] += ( reflectedUV[i] - simplex[worst][i] );
     for(i=0;i<2;i++) simplex[worst][i] = reflectedUV[i];
@@ -2569,8 +2569,9 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *grid, int node )
   simplex[2][1] += lengthScale;
 
   for(s=0;s<3;s++) {
-    gridSetNodeUV(grid, node, faceId, simplex[s][0], simplex[s][1]);
+    gridEvaluateFaceAtUV(grid, node, simplex[s]);
     gridNodeAR(grid,node,&area[s]);
+    //printf("u %10.5f v %10.5f c%15.5f\n",simplex[s][0],simplex[s][1],area[s]);
   }
 
   for(i=0;i<2;i++) avgUV[i] = 0.0;
@@ -2581,7 +2582,7 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *grid, int node )
   while (evaluations < 1000 ) {
 
     best = 0;
-    if ( area[0] > area[1] ) {
+    if ( area[0] < area[1] ) {
       middle = 0;
       worst = 1;
     }else{
@@ -2590,40 +2591,42 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *grid, int node )
     }
     
     for(s=0;s<3;s++) {
-      if (area[s]>=area[best]) best = s;
-      if (area[s]<area[worst]) {
+      if (area[s]<=area[best]) best = s;
+      if (area[s]>area[worst]) {
 	middle = worst;
 	worst = s;
       }else{
-	if ( s!=worst && area[s]<area[middle]) middle = s;
+	if ( s!=worst && area[s]>area[middle]) middle = s;
       }
     }
-
-    /* printf( "evaluations%6d best%20.15f mid%20.15f  worst%20.15f\n", 
-       evaluations, area[best], area[middle], area[worst]);*/
+    /*
+     printf( "evaluations%6d best%15.5f mid%15.5f  worst%15.5f %10.5f %10.5f\n", 
+       evaluations, area[best], area[middle], area[worst], 
+       simplex[best][0], simplex[best][1]);
+    */
     /* if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId); */
 
-    if (area[best]-area[worst] < ABS(1.0e-8*area[best])) break;
+    if (area[worst]-area[best] < ABS(1.0e-8*area[best])) break;
 
     evaluations++;
     newArea = reflectNodeARFace( grid, simplex, area, avgUV, node,
 				 faceId, worst, -1.0 );
-    if ( newArea >= area[best] ) {
+    if ( newArea <= area[best] ) {
       evaluations++;
       newArea = reflectNodeARFace( grid, simplex, area, avgUV, node,
 				   faceId, worst, 2.0 );
     } else {
-      if (newArea <= area[middle]) {
+      if (newArea >= area[middle]) {
 	savedArea = area[worst];
 	evaluations++;
 	newArea = reflectNodeARFace( grid, simplex, area, avgUV, node,
 				     faceId, worst, 0.5 );
-	if (newArea <= savedArea) {
+	if (newArea >= savedArea) {
 	  for(s=0;s<3;s++) {
 	    if (s != best) {
 	      for(i=0;i<2;i++) 
 		simplex[s][i]=0.5*(simplex[s][i]+simplex[best][i]);
-	      gridSetNodeUV(grid, node, faceId, simplex[s][0], simplex[s][1]);
+	      gridEvaluateFaceAtUV(grid, node, simplex[s]);
 	      gridNodeAR(grid,node,&area[s]);
 	    }
 	  }
@@ -2633,13 +2636,13 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *grid, int node )
   }    
 
   best = 0;
-  for(s=1;s<3;s++) if (area[s]>=area[best]) best = s;
+  for(s=1;s<3;s++) if (area[s]<=area[best]) best = s;
 
   gridEvaluateFaceAtUV(grid, node, simplex[best]);
 
   gridNodeAR(grid, node, &newArea);
 
-  if ( ( newArea < origArea ) || ( newArea < -0.5)  ) {
+  if ( ( newArea > origArea )  ) {
     gridEvaluateFaceAtUV(grid, node, origUV);
   }
 
