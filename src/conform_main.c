@@ -137,7 +137,7 @@ Grid *gridHistogram( Grid *grid, char *filename )
   for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
     if ( grid == gridCell( grid, cell, nodes ) ) {
       cost = gridAR(grid, nodes);
-      fprintf( file, "%e\n", cost );
+      fprintf( file, "%e\n", 1.0/(1.0+sqrt(cost)) );
     }
   }
   fprintf( file, "];\n" );
