@@ -168,23 +168,23 @@ void relax_grid(Grid *grid)
     gridSwap(grid,1.0);
     STATUS;
   }
-  if (FALSE) {
+  if (TRUE) {
     STATUS;
     printf("smooth\n");
     for (node=0;node<gridMaxNode(grid);node++) {
       if ( gridValidNode(grid,node) && !gridNodeFrozen( grid, node ) ) {
 	if ( gridGeometryNode( grid, node ) ) continue;
 	if ( gridGeometryEdge( grid, node ) ) {
-	  gridLineSearchTForCost(grid, node );
+	  //gridLineSearchTForCost(grid, node );
 	  continue;
 	}
 	if ( gridGeometryBetweenFace( grid, node ) ) continue;
 	if ( gridGeometryFace( grid, node ) ) {
-	  gridSmoothNode(grid,node, TRUE);
+	  //gridSmoothNode(grid,node, TRUE);
 	  continue;
 	}
 	gridSmartLaplacian(grid, node );
-	gridSmoothNode(grid,node, FALSE);
+	//gridSmoothNode(grid,node, FALSE);
       }
     }
     STATUS;

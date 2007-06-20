@@ -1727,7 +1727,7 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
   gridSetNodeXYZ(grid,node,xyz);
   gridNodeAR(grid, node, &newAR);
   
-  if ( origAR > newAR ) {
+  if ( origAR < newAR ) {
     gridSetNodeXYZ(grid,node,origXYZ);
     return NULL;
   }
