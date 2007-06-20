@@ -2334,6 +2334,130 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
   return grid;
 }
 
+static double reflectNodeAR( Grid *grid,
+			     double simplex[4][3], 
+			     double volume[4], double avgXYZ[3],
+			     int node, int worst, double factor)
+{
+  int i;
+  double factor1, factor2;
+  double reflectedXYZ[3];
+  double reflectedVolume;
+
+  factor1 = (1.0-factor) / 3.0;
+  factor2 = factor1 - factor;
+
+  for(i=0;i<3;i++) 
+    reflectedXYZ[i] = factor1*avgXYZ[i] - factor2*simplex[worst][i];
+
+  gridSetNodeXYZ(grid,node,reflectedXYZ );
+  gridNodeAR(grid,node,&reflectedVolume);
+
+  if ( reflectedVolume < volume[worst] ) {
+    volume[worst] = reflectedVolume;
+    for(i=0;i<3;i++) avgXYZ[i] += ( reflectedXYZ[i] - simplex[worst][i] );
+    for(i=0;i<3;i++) simplex[worst][i] = reflectedXYZ[i];
+  }
+
+  return reflectedVolume;
+}
+
+Grid *gridSmoothNodeARSimplex( Grid *grid, int node )
+{
+  int evaluations;
+  int s, i;
+  double origXYZ[3], avgXYZ[3];
+  double simplex[4][3];
+  double volume[4];
+  double lengthScale;
+  int best, worst, secondworst; 
+  double newVolume, savedVolume;
+  GridBool makefaces = FALSE;
+  int faceId = 1;
+
+  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
+
+  lengthScale = 0.1*gridAverageEdgeLength(grid, node );
+
+  for(s=0;s<4;s++)
+    for(i=0;i<3;i++)
+      simplex[s][i] = origXYZ[i];
+
+  simplex[1][0] += lengthScale;
+  simplex[2][1] += lengthScale;
+  simplex[3][2] += lengthScale;
+
+  for(s=0;s<4;s++) {
+    gridSetNodeXYZ(grid, node, simplex[s]);
+    gridNodeAR(grid,node,&volume[s]);
+  }
+
+  for(i=0;i<3;i++) avgXYZ[i] = 0.0;
+  for(s=0;s<4;s++)
+    for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
+
+  evaluations = 4;
+  while (evaluations < 1000 ) {
+
+    best = 0;
+    if ( volume[0] < volume[1] ) {
+      secondworst = 0;
+      worst = 1;
+    }else{
+      secondworst = 1;
+      worst = 0;
+    }
+    
+    for(s=0;s<4;s++) {
+      if (volume[s]<=volume[best]) best = s;
+      if (volume[s]>volume[worst]) {
+	secondworst = worst;
+	worst = s;
+      }else{
+	if ( s!=worst && volume[s]>volume[secondworst]) secondworst = s;
+      }
+    }
+
+    /*
+    printf( "evaluations%6d best%20.5f worst%20.5f\n", 
+               evaluations, volume[best], volume[worst]);
+    */
+    if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
+
+    if (volume[worst]-volume[best] < ABS(1.0e-6*volume[best])) break;
+
+    evaluations++;
+    newVolume = reflectNodeAR( grid, simplex, volume, avgXYZ, node, worst, -1.0 );
+    if ( newVolume <= volume[best] ) {
+      evaluations++;
+      newVolume = reflectNodeAR( grid, simplex, volume, avgXYZ, node, worst, 2.0 );
+    } else {
+      if (newVolume >= volume[secondworst]) {
+	savedVolume = volume[worst];
+	evaluations++;
+	newVolume = reflectNodeAR( grid, simplex, volume, avgXYZ, node, worst, 0.5 );
+	if (newVolume >= savedVolume) {
+	  for(s=0;s<4;s++) {
+	    if (s != best) {
+	      for(i=0;i<3;i++) 
+		simplex[s][i]=0.5*(simplex[s][i]+simplex[best][i]);
+	      gridSetNodeXYZ(grid, node, simplex[s]);
+	      gridNodeAR(grid,node,&volume[s]);
+	    }
+	  }
+	}      
+      }
+    }
+  }    
+
+  best = 0;
+  for(s=1;s<4;s++) if (volume[s]<=volume[best]) best = s;
+
+  gridSetNodeXYZ(grid, node, simplex[best]);
+
+  return grid;
+}
+
 Grid *gridRelaxNegativeCells(Grid *grid, GridBool dumpTecplot )
 {
   int cell, nodes[4], i, node;

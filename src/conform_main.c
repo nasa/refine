@@ -175,11 +175,10 @@ void relax_grid(Grid *grid)
 	if ( gridGeometryBetweenFace( grid, node ) ) continue;
 	if ( gridGeometryFace( grid, node ) ) {
 	  gridSmoothNodeARFace(grid, node );
-	  //gridSmoothNode(grid,node, TRUE);
 	  continue;
 	}
 	gridSmartLaplacian(grid, node );
-	//gridSmoothNode(grid,node, FALSE);
+	gridSmoothNodeARSimplex(grid, node );
       }
     }
     STATUS;
