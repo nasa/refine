@@ -1922,7 +1922,7 @@ double gridMinARAroundNodeExceptGem( Grid *grid, int node )
   GridBool inGem;
   AdjIterator it;
 
-  minAR = 2.0;
+  minAR = 0.0;
 
   for ( it = adjFirst(gridCellAdj(grid),node);
 	adjValid(it);
@@ -1933,7 +1933,7 @@ double gridMinARAroundNodeExceptGem( Grid *grid, int node )
       inGem = inGem || (cellId == gridGem(grid,igem));
     if ( !inGem ) {
       gridCell( grid, cellId, nodes );
-      minAR = MIN(minAR,gridAR(grid, nodes));
+      minAR += gridAR(grid, nodes);
     }
   }
 
@@ -2655,8 +2655,9 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
   if (grid!=gridEquator(grid,node0,node1)) return NULL;
   onBoundary = !gridContinuousEquator(grid);
 
-  *currentCost = MIN( gridMinARAroundNodeExceptGem(grid,node0),
-		      gridMinARAroundNodeExceptGem(grid,node1) );
+  gridGemAR( grid, currentCost );
+  (*currentCost) += gridMinARAroundNodeExceptGem(grid,node0) +
+                    gridMinARAroundNodeExceptGem(grid,node1);   
 
   faceId0 = faceId1 = EMPTY;
   node0Id0uv[0] = node0Id0uv[1] = DBL_MAX;
@@ -2694,8 +2695,8 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
     gridSetNodeUV( grid, node1, faceId1, node0Id1uv[0],  node0Id1uv[1] );
   if ( edgeId != EMPTY ) gridSetNodeT(grid, node1, edgeId, t0 );
 
-  *node0Cost = MIN( gridMinARAroundNodeExceptGem(grid,node0),
-		    gridMinARAroundNodeExceptGem(grid,node1) );
+  (*node0Cost) = gridMinARAroundNodeExceptGem(grid,node0) +
+		 gridMinARAroundNodeExceptGem(grid,node1);
 
   gridSetNodeXYZ( grid, node1, xyz1);
   gridSetMap( grid, node1, map1[0],map1[1],map1[2],map1[3],map1[4],map1[5]);
@@ -2714,8 +2715,8 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
     gridSetNodeUV( grid, node0, faceId1, node1Id1uv[0],  node1Id1uv[1] );
   if ( edgeId != EMPTY ) gridSetNodeT(grid, node0, edgeId, t1 );
 
-  *node1Cost = MIN( gridMinARAroundNodeExceptGem(grid,node0),
-		    gridMinARAroundNodeExceptGem(grid,node1) );
+  (*node1Cost) = gridMinARAroundNodeExceptGem(grid,node0) +
+		 gridMinARAroundNodeExceptGem(grid,node1);
 
   gridSetNodeXYZ( grid, node0, xyz0);
   gridSetMap( grid, node0, map0[0],map0[1],map0[2],map0[3],map0[4],map0[5]);
@@ -2743,6 +2744,8 @@ Grid *gridSplitCost(Grid *grid, int node0, int node1,
 
   if (grid!=gridMakeGem(grid,node0,node1)) return NULL;
   if (grid!=gridGemAR(grid,currentCost)) return NULL;
+  (*currentCost) += gridMinARAroundNodeExceptGem(grid,node0) +
+                    gridMinARAroundNodeExceptGem(grid,node1);   
 
   for (inode = 0 ; inode < 3 ; inode++) 
     newxyz[inode] = (1-ratio)*xyz0[inode] + ratio*xyz1[inode]; 
@@ -2755,7 +2758,7 @@ Grid *gridSplitCost(Grid *grid, int node0, int node1,
     return NULL;
   }
 
-  (*splitCost) = 10.0;
+  (*splitCost) = 0.0;
 
   for ( i = 0 ; i < gridNGem(grid) ; i++ ){
     gridCell(grid, gridGem(grid,i), nodes0);
@@ -2764,9 +2767,11 @@ Grid *gridSplitCost(Grid *grid, int node0, int node1,
       if (nodes0[inode] == node0) nodes0[inode]=newnode;
       if (nodes1[inode] == node1) nodes1[inode]=newnode;
     }
-    *splitCost = MIN(*splitCost,gridAR( grid, nodes0 ));
-    *splitCost = MIN(*splitCost,gridAR( grid, nodes1 ));
+    (*splitCost) += gridAR( grid, nodes0 );
+    (*splitCost) += gridAR( grid, nodes1 );
   }
+  (*splitCost) += gridMinARAroundNodeExceptGem(grid,node0) +
+                  gridMinARAroundNodeExceptGem(grid,node1);   
 
   gridRemoveNode(grid,newnode);
 

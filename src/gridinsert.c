@@ -202,15 +202,15 @@ Grid *gridAdapt2(Grid *grid )
 			       &node0Cost, &node1Cost )) continue;
     if (verbose)printf("o %f s %f c0 %f c1 %f\n",
 		       currentCost,splitCost,node0Cost,node1Cost);
-    if ( currentCost > splitCost &&
-	 currentCost > node0Cost && currentCost > node1Cost ) continue;
-    if ( splitCost > node0Cost && splitCost > node1Cost ) {
+    if ( currentCost < splitCost &&
+	 currentCost < node0Cost && currentCost < node1Cost ) continue;
+    if ( splitCost < node0Cost && splitCost < node1Cost ) {
       newnode = gridSplitEdgeRatio( grid, queue, nodes[0], nodes[1], 0.5 );
       if (verbose) { gridNodeAR(grid,newnode,&currentCost);
       printf("split     %f\n",currentCost);}
     }else{ 
       continue;
-      if ( node0Cost > node1Cost ) {
+      if ( node0Cost < node1Cost ) {
 	gridCollapseEdge(grid, queue, nodes[0], nodes[1], 0.0);
 	if (verbose) { gridNodeAR(grid,nodes[0],&currentCost);
 	printf("collapse0 %f\n",currentCost);}

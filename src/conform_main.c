@@ -156,7 +156,7 @@ void relax_grid(Grid *grid)
     gridAdapt( grid, 0.3, 1.5 );
     STATUS;
   }
-  if (FALSE) {
+  if (TRUE) {
     STATUS;
     printf("adapt2\n");
     gridAdapt2( grid );
