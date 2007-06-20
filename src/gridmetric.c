@@ -709,13 +709,13 @@ Grid *gridNodeAR(Grid *grid, int node, double *ar )
   int cell, nodes[4];
   double local_ar;
 
-  *ar = 1.0;
+  *ar = 0.0;
 
   for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
     cell = adjItem(it);
     gridCell( grid, cell, nodes);
     local_ar = gridAR(grid, nodes);
-    if ( local_ar < *ar ) *ar = local_ar;
+    (*ar) += local_ar;
   }
 
   return grid;
@@ -742,11 +742,11 @@ Grid *gridNodeVolume(Grid *grid, int node, double *volume )
 Grid *gridGemAR( Grid *grid, double *ar ){
   int i, nodes[4];
 
-  *ar = 2.0;
+  *ar = 0.0;
 
   for ( i = 0 ; i < gridNGem(grid) ; i++ ){
     gridCell(grid, gridGem(grid,i), nodes);
-    *ar = MIN(*ar,gridAR( grid, nodes ));
+    (*ar) += gridAR( grid, nodes );
   }
 
   return grid;
@@ -758,7 +758,7 @@ double gridCostValid(Grid *grid, int *nodes )
   if ( !gridValidNode(grid, nodes[0]) || 
        !gridValidNode(grid, nodes[1]) ||
        !gridValidNode(grid, nodes[2]) ||
-       !gridValidNode(grid, nodes[3]) ) return -4.0;
+       !gridValidNode(grid, nodes[3]) ) return 4.0e100;
   
   if ( (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) ||
        (gridCostConstraint(grid)&gridCOST_CNST_VALID)  ) {
@@ -769,15 +769,15 @@ double gridCostValid(Grid *grid, int *nodes )
     if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
     if ( nodes_on_surface > 1 ) {
       if ( (gridCostConstraint(grid)&gridCOST_CNST_VALID) &&
-	   ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -3.0;
+	   ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return 1.0e100;
       if ( ( nodes_on_surface > 2 ) &&
 	   (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) &&
-	   ( gridMinCellFaceAreaUV(grid,nodes) <= 1.0e-12 ) ) return -2.0;
+	   ( gridMinCellFaceAreaUV(grid,nodes) <= 1.0e-12 ) ) return 2.0e100;
     }
   }
 
   if (gridCostConstraint(grid)&gridCOST_CNST_VOLUME) {
-    if ( gridVolume(grid, nodes ) <= 1.0e-14) return -1.0;
+    if ( gridVolume(grid, nodes ) <= 1.0e-14) return 1.0e100;
   }
 
   return 0.0;
@@ -796,7 +796,7 @@ double gridAR(Grid *grid, int *nodes )
   double valid;
 
   valid = gridCostValid(grid, nodes );
-  if ( -0.5 > valid ) return valid;
+  if ( 0.0 < valid ) return valid;
   
   if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
     return gridEdgeRatioCost(grid, nodes);
@@ -979,7 +979,6 @@ double gridCellMetricConformity( double *xyz0, double *xyz1,
 
   norm = 0.0;
   for ( i = 0 ; i < 9 ; i++ ) norm += rt[i]*rt[i];
-  norm = sqrt(norm);
 
   if (FALSE) {
     printf("req\n");
@@ -1001,8 +1000,6 @@ double gridCellMetricConformity( double *xyz0, double *xyz1,
     printf(" %15.8f %15.8f %15.8f\n",rt[1], rt[4], rt[7]);
     printf(" %15.8f %15.8f %15.8f\n",rt[2], rt[5], rt[8]);
   }
-
-  norm = 1.0/(1.0+norm);
 
   return norm;
 }
@@ -1973,10 +1970,10 @@ double gridMinAR( Grid *grid )
 {
   int cellId, nodes[4];
   double minAR;
-  minAR = 999.0;
+  minAR = 0.0;
   for (cellId=0;cellId<gridMaxCell(grid);cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) )
-      minAR = MIN(minAR, gridAR(grid, nodes) );
+      minAR += gridAR(grid, nodes);
   return minAR;
 }
 
@@ -1984,14 +1981,14 @@ double gridMinThawedAR( Grid *grid )
 {
   int cellId, nodes[4];
   double minAR;
-  minAR = 999.0;
+  minAR = 0.0;
   for (cellId=0;cellId<gridMaxCell(grid);cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) &&
 	 ( !gridNodeFrozen(grid,nodes[0]) ||
 	   !gridNodeFrozen(grid,nodes[1]) ||
 	   !gridNodeFrozen(grid,nodes[2]) ||
 	   !gridNodeFrozen(grid,nodes[3]) )  )
-      minAR = MIN(minAR, gridAR(grid, nodes) );
+      minAR += gridAR(grid, nodes);
   return minAR;
 }
 

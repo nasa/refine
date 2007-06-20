@@ -156,7 +156,7 @@ void relax_grid(Grid *grid)
     gridAdapt( grid, 0.3, 1.5 );
     STATUS;
   }
-  if (TRUE) {
+  if (FALSE) {
     STATUS;
     printf("adapt2\n");
     gridAdapt2( grid );
@@ -168,7 +168,7 @@ void relax_grid(Grid *grid)
     gridSwap(grid,1.0);
     STATUS;
   }
-  if (TRUE) {
+  if (FALSE) {
     STATUS;
     printf("smooth\n");
     for (node=0;node<gridMaxNode(grid);node++) {
@@ -272,8 +272,6 @@ int main( int argc, char *argv[] )
 
   gridSetCostFunction(grid, gridCOST_FCN_CONFORMITY );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
-  gridSetMinInsertCost( grid, 1.0e-16 );
-  gridSetMinSurfaceSmoothCost( grid, 1.0e-16 );
 
   h0 = 0.1;
   bl_metric(grid,h0);

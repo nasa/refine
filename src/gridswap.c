@@ -513,12 +513,13 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   nodes[2][2] = tent[1];
   nodes[2][3] = tent[4];
 
-  origcost = MIN( gridAR( grid, nodes0 ), gridAR( grid, nodes1 ) ); 
-  bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) ); 
-  bestcost = MIN( gridAR( grid, nodes[2] ), bestcost ); 
+  origcost = gridAR( grid, nodes0 )+gridAR( grid, nodes1 ); 
+  bestcost = 
+    gridAR( grid, nodes[0] ) +
+    gridAR( grid, nodes[1] ) + 
+    gridAR( grid, nodes[2] ); 
 
-  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
-       ( bestcost > gridMinSwapCost(grid) )  ) {
+  if ( ( bestcost < origcost )  ) {
     gridRemoveCellAndQueue(grid, queue, cell0);
     gridRemoveCellAndQueue(grid, queue, cell1);
     for ( i = 0 ; i < 3 ; i++ )
@@ -725,7 +726,7 @@ Grid *gridSwap(Grid *grid, double improvementLimit)
   GridBool swap;
   Plan *plan;
 
-  if ( improvementLimit < 0.0 ) improvementLimit = 0.5;
+  if ( improvementLimit < 0.0 ) improvementLimit = 1.0;
 
   plan = planCreate( gridNCell(grid)/2, MAX(gridNCell(grid)/10,1000) );
 
@@ -733,8 +734,8 @@ Grid *gridSwap(Grid *grid, double improvementLimit)
     gridRemoveTwoFaceCell(grid, NULL, cellId );
     if ( grid == gridCell( grid, cellId, nodes) ) {
       ar = gridAR(grid, nodes);
-      if ( ar < improvementLimit ) {
-	planAddItemWithPriority( plan, cellId, 1.0 - ar );
+      if ( ar > improvementLimit ) {
+	planAddItemWithPriority( plan, cellId, ar );
       }
     }
   }
@@ -789,9 +790,9 @@ Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 )
   nodes[1][2]=gridEqu(grid,2);
   nodes[1][3]=gridEqu(grid,1);
 
-  bestcost = MIN( gridAR( grid, nodes[0] ), gridAR( grid, nodes[1] ) );
-
-  if ( bestcost > origcost && bestcost > gridMinSwapCost(grid) ) {
+  bestcost = gridAR( grid, nodes[0] ) + gridAR( grid, nodes[1] );
+ 
+  if ( bestcost < origcost ) {
 
     gridRemoveGemAndQueue(grid,queue);
 
@@ -828,11 +829,11 @@ Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 )
   nodes[3][2]=gridEqu(grid,0);
   nodes[3][3]=gridEqu(grid,3);
 
-  currentcost = 2.0;
+  currentcost = 0.0;
 
   for ( i = 0 ; i < 4 ; i++ ) {
     cost = gridAR( grid, nodes[i] );
-    currentcost = MIN(currentcost,cost);
+    currentcost += cost;
   }
 
   bestcost = currentcost;
@@ -855,20 +856,19 @@ Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 )
   nodes[3][2]=gridEqu(grid,3);
   nodes[3][3]=gridEqu(grid,2);
 
-  currentcost = 2.0;
+  currentcost = 0.0;
 
   for ( i = 0 ; i < 4 ; i++ ) {
     cost = gridAR( grid, nodes[i] );
-    currentcost = MIN(currentcost,cost);
+    currentcost += cost;
   }
 
-  if ( currentcost > bestcost ) {
+  if ( currentcost < bestcost ) {
     bestcost = currentcost;
     bestindex = 1;
   }
 
-  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
-       ( bestcost > gridMinSwapCost(grid) )  ) {
+  if ( bestcost < origcost ) {
 
     if (bestindex == 0){
       nodes[0][0]=n0;
@@ -955,11 +955,11 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
     nodes[5][2]=gridEqu(grid,4);
     nodes[5][3]=gridEqu(grid,3);
 
-    currentcost = 2.0;
+    currentcost = 0.0;
 
     for ( i = 0 ; i < 6 ; i++ ) {
       cost = gridAR( grid, nodes[i] );
-      currentcost = MIN(currentcost,cost);
+      currentcost += cost;
     } 
 
     if ( currentcost > bestcost ) {
@@ -970,8 +970,7 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
     gridCycleEquator( grid );
   }
 
-  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
-       ( bestcost > gridMinSwapCost(grid) )  ) {
+  if ( bestcost < origcost  ) {
 
     for ( i = 0 ; i < bestindex ; i++ ) 
       gridCycleEquator( grid );
@@ -1027,10 +1026,11 @@ Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
 
   gridConstructTet6( grid, n0, n1, nodes, costs );
   
+  bestcost = origcost;
+  bestcombo[0] = EMPTY;
   gridGetCombo6( grid, nodes, costs, &bestcost, bestcombo );
   
-  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
-       ( bestcost > gridMinSwapCost(grid) )  ) {
+  if ( (EMPTY != bestcombo[0]) && (bestcost < origcost) ) {
       
     gridRemoveGemAndQueue(grid,queue);
     
@@ -1056,16 +1056,14 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
 {  
   int i, j, tet[4];
   double cost;
-  *bestcost = -2.0;
 
   for ( i = 0 ; i < 6 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0]+6;
     tet[2] = i+4; if ( tet[2] > 5 ) tet[2] -= 6;
     tet[3] = tet[2] + 12;
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], costs[tet[3]] ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]] + costs[tet[3]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
     }
@@ -1080,9 +1078,8 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
     tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
     tet[3] = tet[2] + 12;
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], costs[tet[3]] ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]] + costs[tet[3]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
     }
@@ -1097,9 +1094,8 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
     tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
     tet[3] = tet[2] + 6;
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], costs[tet[3]] ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]] + costs[tet[3]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
     }
@@ -1115,9 +1111,8 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
     tet[2] = i+4;
     tet[3] = tet[0] + 18;
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], costs[tet[3]] ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]] + costs[tet[3]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
     }
@@ -1182,7 +1177,7 @@ Grid *gridConstructTet6( Grid *grid, int n0, int n1,
   }
 
   for ( i = 0; i < 20; i++ )
-    costs[i] = MIN( gridAR(grid, nodes[i]), gridAR(grid, nodes[i+20]) );
+    costs[i] = gridAR(grid, nodes[i]) + gridAR(grid, nodes[i+20]);
   
   return grid;
 }
@@ -1203,10 +1198,11 @@ Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
 
   gridConstructTet7( grid, n0, n1, nodes, costs );
 
+  bestcost = origcost;  
+  bestcombo[0]= EMPTY;
   gridGetCombo7( grid, nodes, costs, &bestcost, bestcombo );
   
-  if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
-       ( bestcost > gridMinSwapCost(grid) )  ) {
+  if ( (EMPTY != bestcombo[0]) && (bestcost < origcost) ) {
 
     gridRemoveGemAndQueue(grid,queue);
     
@@ -1232,7 +1228,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
 {  
   int i, j, tet[5];
   double cost;
-  *bestcost = -2.0;
+
   //case1
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
@@ -1241,9 +1237,9 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+5; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = tet[3] + 14;
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], MIN( costs[tet[3]], costs[tet[4]] ) ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
+      + costs[tet[3]]  + costs[tet[4]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
 #ifdef DEBUGSWAP
@@ -1259,9 +1255,9 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+4; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = tet[3] + 14;
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], MIN( costs[tet[3]], costs[tet[4]] ) ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
+      + costs[tet[3]]  + costs[tet[4]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
     }
@@ -1277,9 +1273,9 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+4; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = tet[3] + 14;
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], MIN( costs[tet[3]], costs[tet[4]] ) ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
+      + costs[tet[3]]  + costs[tet[4]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
     }
@@ -1295,9 +1291,9 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+4; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = tet[3] + 7;
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], MIN( costs[tet[3]], costs[tet[4]] ) ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
+      + costs[tet[3]]  + costs[tet[4]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
     }
@@ -1313,9 +1309,9 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+3; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = i+5; if ( tet[4] > 6 ) tet[4] -= 7; 
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], MIN( costs[tet[3]], costs[tet[4]] ) ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
+      + costs[tet[3]]  + costs[tet[4]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
     }
@@ -1331,9 +1327,9 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+2; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = i+4; if ( tet[4] > 6 ) tet[4] -= 7; 
 
-    cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
-		MIN( costs[tet[2]], MIN( costs[tet[3]], costs[tet[4]] ) ) );
-    if ( cost > *bestcost ) {
+    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
+      + costs[tet[3]]  + costs[tet[4]];
+    if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
     }
@@ -1411,7 +1407,7 @@ Grid *gridConstructTet7( Grid *grid, int n0, int n1,
   }
 
   for ( i = 0; i < 35; i++ )
-    costs[i] = MIN( gridAR( grid, nodes[i] ) , gridAR( grid, nodes[i+35]) ); 
+    costs[i] = gridAR( grid, nodes[i] ) + gridAR( grid, nodes[i+35]); 
   
   return grid;
 }
