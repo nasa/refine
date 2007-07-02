@@ -37,3 +37,11 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
   (*func) = xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2];
   return TRUE;
 }
+
+GridBool interpError( Interp *interp,
+		      double *xyz0, double *xyz1, double *xyz2, double *xyz3, 
+		      double *error )
+{
+  (*error) = 1.0;
+  return TRUE;
+}
