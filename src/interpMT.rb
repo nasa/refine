@@ -46,7 +46,7 @@ class TestInterp < Test::Unit::TestCase
  def test_metric
   tol = 1.0e-14
   res = @i0.metric([0.0,0.0,0.0])
-  ans = [16.0, 0.0, 0.0, 64.0, 0.0, 128.0]
+  ans = [16.0, 0.0, 0.0, 64.0, 0.0, 256.0]
   6.times { |i| assert_in_delta( ans[i], res[i], tol, 'element '+i.to_s ) }
  end
 

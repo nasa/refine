@@ -38,6 +38,17 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
   return TRUE;
 }
 
+GridBool interpMetric( Interp *interp, double *xyz, double *m )
+{
+  m[0] =  16.0;
+  m[1] =   0.0;
+  m[2] =   0.0;
+  m[3] =  64.0;
+  m[4] =   0.0;
+  m[5] = 256.0;
+  return TRUE;
+}
+
 static double tet_volume6( double *a, double *b, double *c, double *d )
 {
   double m11, m12, m13;

@@ -32,6 +32,7 @@ void interpFree( Interp * );
 #define interpOrder(interp) ((interp)->order)
 
 GridBool interpFunction( Interp *, double *xyz, double *func );
+GridBool interpMetric( Interp *, double *xyz, double *m );
 GridBool interpError( Interp *, 
 		      double *xyz0, double *xyz1, double *xyz2, double *xyz3, 
 		      double *error );

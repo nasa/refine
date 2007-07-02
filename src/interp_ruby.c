@@ -44,6 +44,23 @@ static VALUE interp_function( VALUE self, VALUE rb_xyz )
   }
 }
 
+static VALUE interp_metric( VALUE self, VALUE rb_xyz )
+{
+  int i;
+  double xyz[3];
+  double m[6];
+  VALUE rb_m;
+  GET_INTERP_FROM_SELF;
+  for (i=0;i<3;i++) xyz[i] = NUM2DBL(rb_ary_entry(rb_xyz,i));
+  if ( interpMetric( interp, xyz, m ) ) {
+    rb_m = rb_ary_new2(6);
+    for(i=0;i<6;i++) rb_ary_store( rb_m, i, rb_float_new(m[i]) );
+    return rb_m;
+  }else{
+    return Qnil;
+  }
+}
+
 static VALUE interp_error( VALUE self, VALUE rb_xyz0, VALUE rb_xyz1, VALUE rb_xyz2, VALUE rb_xyz3 )
 {
   int i;
@@ -70,5 +87,6 @@ void Init_Interp()
   rb_define_method( cInterp, "functionId", interp_functionId, 0 );
   rb_define_method( cInterp, "order", interp_order, 0 );
   rb_define_method( cInterp, "function", interp_function, 1 );
+  rb_define_method( cInterp, "metric", interp_metric, 1 );
   rb_define_method( cInterp, "error", interp_error, 4 );
 }
