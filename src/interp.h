@@ -22,10 +22,14 @@ typedef struct Interp Interp;
 
 struct Interp {
   int function_id;
+  int order;
 };
 
-Interp *interpCreate( int function_id );
+Interp *interpCreate( int function_id, int order );
 void interpFree( Interp * );
+
+#define interpFunctionId(interp) ((interp)->function_id)
+#define interpOrder(interp) ((interp)->order)
 
 GridBool interpFunction( Interp *, double *xyz, double *func );
 

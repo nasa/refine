@@ -9,13 +9,25 @@ static void interp_free( void *interp )
   interpFree( interp );
 }
 
-static VALUE interp_new( VALUE class, VALUE function_id )
+static VALUE interp_new( VALUE class, VALUE function_id, VALUE order )
 {
   Interp *interp;
   VALUE obj;
-  interp = interpCreate( NUM2INT(function_id) );
+  interp = interpCreate( NUM2INT(function_id), NUM2INT(order) );
   obj = Data_Wrap_Struct( class, 0, interp_free, interp );
   return obj;
+}
+
+VALUE interp_functionId( VALUE self )
+{
+  GET_INTERP_FROM_SELF;
+  return INT2NUM( interpFunctionId(interp) );
+}
+
+VALUE interp_order( VALUE self )
+{
+  GET_INTERP_FROM_SELF;
+  return INT2NUM( interpOrder(interp) );
 }
 
 static VALUE interp_function( VALUE self, VALUE rb_xyz )
@@ -37,6 +49,8 @@ VALUE cInterp;
 void Init_Interp() 
 {
   cInterp = rb_define_class( "Interp", rb_cObject );
-  rb_define_singleton_method( cInterp, "new", interp_new, 1 );
+  rb_define_singleton_method( cInterp, "new", interp_new, 2 );
+  rb_define_method( cInterp, "functionId", interp_functionId, 0 );
+  rb_define_method( cInterp, "order", interp_order, 0 );
   rb_define_method( cInterp, "function", interp_function, 1 );
 }

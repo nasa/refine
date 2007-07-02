@@ -15,13 +15,14 @@
 #include "interp.h"
 #include "sort.h"
 
-Interp* interpCreate( int function_id )
+Interp* interpCreate( int function_id, int order )
 {
   Interp *interp;
 
   interp = (Interp *)malloc( sizeof(Interp) );
 
   interp->function_id = function_id;
+  interp->order = order;
 
   return interp;
 }
