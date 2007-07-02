@@ -25,8 +25,25 @@
 #include "gridedger.h"
 #include "gridfacer.h"
 #include "gridmove.h"
-#include "layer.h"
+#include "interp.h"
 
+void interp_metric(Grid *grid) {
+  int node;
+  double xyz[3];
+  double m[6];
+  Interp *interp;
+  interp = interpCreate(0,1);
+  for(node=0;node<gridMaxNode(grid);node++){
+    if (grid==gridNodeXYZ(grid,node,xyz)) {
+      interpMetric(interp,xyz,m);
+      gridSetMap(grid,node,
+		 m[0], m[1], m[2],
+		 m[3], m[4],
+		 m[5]);
+    }
+  }
+  interpFree(interp);
+}
 void bl_metric_flat(Grid *grid, double h0) {
   int node;
   double xyz[3];
@@ -268,7 +285,7 @@ int main( int argc, char *argv[] )
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
 
   h0 = 0.1;
-  bl_metric(grid,h0);
+  interp_metric(grid);
   gridCacheCurrentGridAndMap(grid);
   STATUS;
 
