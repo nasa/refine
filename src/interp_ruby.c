@@ -54,7 +54,7 @@ static VALUE interp_error( VALUE self, VALUE rb_xyz0, VALUE rb_xyz1, VALUE rb_xy
   for (i=0;i<3;i++) xyz1[i] = NUM2DBL(rb_ary_entry(rb_xyz1,i));
   for (i=0;i<3;i++) xyz2[i] = NUM2DBL(rb_ary_entry(rb_xyz2,i));
   for (i=0;i<3;i++) xyz3[i] = NUM2DBL(rb_ary_entry(rb_xyz3,i));
-  if ( interpError( interp, xyz0, &error ) ) {
+  if ( interpError( interp, xyz0, xyz1, xyz2, xyz3, &error ) ) {
     return rb_float_new(error);
   }else{
     return Qnil;
