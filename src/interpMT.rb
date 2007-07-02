@@ -30,7 +30,7 @@ class TestInterp < Test::Unit::TestCase
 
  def test_error
   tol = 1.0e-12
-  truth = 0.0357142857142858
+  truth = 121.6
   xyz0 = [0.0,0.0,0.0]
   xyz1 = [1.0,0.0,0.0]
   xyz2 = [0.0,1.0,0.0]
@@ -41,6 +41,13 @@ class TestInterp < Test::Unit::TestCase
   xyz2 = [1.0,1.0,0.0]
   xyz3 = [1.0,0.0,1.0]
   assert_in_delta( truth, @i0.error(xyz0,xyz1,xyz2,xyz3), tol )
+ end
+
+ def test_metric
+  tol = 1.0e-14
+#  res = @i0.metric([0.0,0.0,0.0])
+  ans = 
+  assert_in_delta( 0.0, 0.0, tol )
  end
 
 end

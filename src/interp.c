@@ -34,7 +34,7 @@ void interpFree( Interp *interp )
 
 GridBool interpFunction( Interp *interp, double *xyz, double *func )
 {
-  (*func) = xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2];
+  (*func) = 8.0*xyz[0]*xyz[0] + 32.0*xyz[1]*xyz[1] + 128.0*xyz[2]*xyz[2];
   return TRUE;
 }
 
