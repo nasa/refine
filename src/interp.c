@@ -38,7 +38,7 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
   return TRUE;
 }
 
-static double tet_volume( double *a, double *b, double *c, double *d )
+static double tet_volume6( double *a, double *b, double *c, double *d )
 {
   double m11, m12, m13;
   double det;
@@ -48,7 +48,7 @@ static double tet_volume( double *a, double *b, double *c, double *d )
   m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
   det = ( m11 - m12 + m13 );
 
-  return(-det/6.0);
+  return(-det);
 }
 
 GridBool interpError( Interp *interp,
@@ -60,7 +60,7 @@ GridBool interpError( Interp *interp,
   double b0,b1,b2,b3;
   double linear, func;
   double f0,f1,f2,f3;
-  double diff,volume;
+  double diff,volume6;
 
   /* Rule 4 Solin, Segeth and Dolezel (SSD): order 6 */
   int n = 24;
@@ -97,7 +97,7 @@ GridBool interpError( Interp *interp,
 		  0.064285714285714, 0.064285714285714, 0.064285714285714,
 		  0.064285714285714, 0.064285714285714, 0.064285714285714 };
 
-  volume = tet_volume(xyz0,xyz1,xyz2,xyz3);
+  volume6 = tet_volume6(xyz0,xyz1,xyz2,xyz3);
   interpFunction( interp, xyz0, &f0 );
   interpFunction( interp, xyz1, &f1 );
   interpFunction( interp, xyz2, &f2 );
@@ -115,7 +115,7 @@ GridBool interpError( Interp *interp,
       interpFunction( interp, xyz, &func );
       linear = b0*f0 + b1*f1 + b2*f2 + b3*f3;
       diff = linear-func;
-      (*error) += volume * ( 3.0/4.0 ) * wq[i] * diff * diff;
+      (*error) += 0.125 * volume6 * wq[i] * diff * diff;
     }
 
   return TRUE;
