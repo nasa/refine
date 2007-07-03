@@ -26,6 +26,7 @@
 #include "gridfacer.h"
 #include "gridmove.h"
 #include "interp.h"
+#include "plan.h"
 
 void interp_metric(Grid *grid) {
   int node;
@@ -164,6 +165,142 @@ Grid *gridHistogram( Grid *grid, char *filename )
   return grid;
 }
 
+void adapt3smooth(Grid *grid)
+{
+  Plan *plan;
+  int cell, nodes[4], ranking;
+  double cost,cost1;
+
+  plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      planAddItemWithPriority( plan, cell, cost );
+    }
+  }
+  planDeriveRankingsFromPriorities( plan );
+  for ( ranking=planSize(plan)-1; ranking>=planSize(plan)/10*9; ranking-- ) { 
+    cell = planItemWithThisRanking(plan,ranking);
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      gridSmoothNode(grid, nodes[0], TRUE );
+      gridSmoothNode(grid, nodes[1], TRUE );
+      gridSmoothNode(grid, nodes[2], TRUE );
+      gridSmoothNode(grid, nodes[3], TRUE );
+      cost1 = gridAR(grid,nodes);
+      if ( ranking/100*100==ranking )
+	printf("rank %d cost %f %f\n",ranking,cost,cost1);
+    }
+  }
+  planFree(plan);
+}
+
+void adapt3swap(Grid *grid)
+{
+  Plan *plan;
+  int cell, nodes[4], ranking;
+  double cost,cost1;
+
+  plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      planAddItemWithPriority( plan, cell, cost );
+    }
+  }
+  planDeriveRankingsFromPriorities( plan );
+  for ( ranking=planSize(plan)-1; ranking>=planSize(plan)/10*9; ranking-- ) { 
+    cell = planItemWithThisRanking(plan,ranking);
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+    if ( ( NULL != gridSwapFace( grid, NULL, nodes[1],nodes[2],nodes[3]) ) ||
+	 ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[2],nodes[3]) ) ||
+	 ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[3]) ) ||
+	 ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[2]) ) ||
+	 ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[1] ) ) ||
+	 ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[2] ) ) ||
+	 ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[3] ) ) ||
+	 ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[2] ) ) ||
+	 ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[3] ) ) ||
+	 ( NULL != gridSwapEdge( grid, NULL, nodes[2], nodes[3] ) ) ) {
+    }
+      if ( ranking/100*100==ranking )
+	printf("rank %d cost %f \n",ranking,cost);
+    }
+  }
+  planFree(plan);
+}
+
+void adapt3(Grid *grid)
+{
+  Plan *plan;
+  int conn, nodes[2], ranking;
+  double length,maxLength;
+  int nnodeAdd, nnodeRemove;
+  int report;
+  double ratio;
+  int newnode;
+  double cost0, cost1;
+
+  int i;
+
+  maxLength = 1.0;
+
+  gridCreateConn(grid);
+  plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    length = gridEdgeRatio(grid,nodes[0],nodes[1]);
+    if ( length >= maxLength ) planAddItemWithPriority( plan, conn, length );
+  }
+  planDeriveRankingsFromPriorities( plan );
+  
+  nnodeAdd = 0;
+  nnodeRemove = 0;
+
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    conn = planItemWithThisRanking(plan,ranking);
+    if (ranking/report*report == ranking || ranking==planSize(plan)-1) {
+      printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
+	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
+	     planPriorityWithThisRanking(plan,ranking));
+    }
+    if (grid == gridConn2Node(grid,conn,nodes)){
+      if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
+	   gridValidNode(grid, nodes[0]) && 
+	   gridValidNode(grid, nodes[1]) && 
+	   !gridNodeFrozen(grid, nodes[0]) &&
+	   !gridNodeFrozen(grid, nodes[1]) ) {
+	length = gridEdgeRatio(grid, nodes[0], nodes[1]);
+	if ( ranking/100*100==ranking )
+	  printf("rank %d len %f \n",ranking,length);
+	fflush(stdout);
+	if (length >= maxLength) {
+	  if (grid!=gridMakeGem(grid,nodes[0], nodes[1])) continue;
+	  if (grid!=gridGemAR(grid,&cost0)) continue;
+	  ratio = 0.5;
+	  newnode = gridSplitEdgeRatio( grid, NULL,
+					nodes[0], nodes[1], ratio );
+	  if ( newnode != EMPTY ){
+	    gridSmoothNode(grid, newnode, TRUE );
+	    gridNodeAR(grid, newnode, &cost1 );
+	    //printf("cost %15.7e %f %f \n",cost1-cost0,cost0,cost1);
+	    if ( cost1 > cost0 ) {
+	      gridCollapseEdge(grid, NULL, nodes[0], newnode, 0.0);
+	    }else{
+	      nnodeAdd++;
+	    }
+	  } 
+	}
+      }
+    }
+  }
+  planFree(plan);
+  gridEraseConn(grid);
+}
+
 void relax_grid(Grid *grid)
 {
   int node;
@@ -286,6 +423,7 @@ int main( int argc, char *argv[] )
 
   h0 = 0.1;
   interp_metric(grid);
+  bl_metric_flat(grid, 0.1);
   gridCacheCurrentGridAndMap(grid);
   STATUS;
 
@@ -294,7 +432,7 @@ int main( int argc, char *argv[] )
   DUMP_TEC;
 
   for(i=0;i<10;i++) {
-    relax_grid(grid);
+    adapt3(grid);
     STATUS;
     DUMP_TEC;
   }
