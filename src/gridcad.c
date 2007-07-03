@@ -940,65 +940,31 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
   int maxsmooth;
   GridBool callAgain;
 
+  if ( !gridValidNode(grid,node) ) return NULL;
+  if ( gridNodeFrozen( grid, node ) ) return grid;
+
   if ( gridGeometryNode( grid, node ) ) return grid;
   if ( gridGeometryBetweenFace( grid, node ) &&
        !gridGeometryEdge( grid, node ) ) return grid;
 
-  /* skip boundary nodes if we have been asked not to smooth on surface */ 
-  if ( gridGeometryFace( grid, node ) && !smoothOnSurface ) return grid;
-
   /* edge smooth */
   if ( gridGeometryEdge( grid, node ) ) {
-    return gridLineSearchT(grid, node, gridMinSurfaceSmoothCost(grid) );
+    for (maxsmooth=0;maxsmooth<1;maxsmooth++)
+      gridLineSearchTForCost(grid, node);
+    return grid;
   }
 
   /* face smooth */
   if ( gridGeometryFace( grid, node ) ) {
-    if (FALSE) {
-      for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
-	face = adjItem(adjFirst(gridFaceAdj(grid), node));
-	gridFace(grid,face,nodes,&faceId);
-	gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
-	gridNodeUV( grid, node, faceId, uv);
-	if ( !CADGeom_PointOnFace( vol, faceId,   
-				   uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
-	  printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
-       
-	dMRdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
-	dMRdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
-	if (grid != gridLineSearchUV( grid, node, dMRdu, 
-				      gridMinSurfaceSmoothCost(grid) ) ) 
-	  return NULL;
-      }
-      return grid;
-    }else{
-      maxsmooth = 40;
-      callAgain = TRUE;
-      while ( callAgain && maxsmooth > 0 ) {
-	maxsmooth--;
-	if (grid != gridLinearProgramUV( grid, node, &callAgain ) ) {
-	  return NULL;
-	}
-      }
-      return grid;
-    }
-  }
-
-  /* volume node smooth */
-  if (FALSE) {
-    gridNodeARDerivative ( grid, node, &ar, dARdx);
-    return gridOptimizeXYZ( grid, node, dARdx );
-  }else{
-    maxsmooth = 40;
-    callAgain = TRUE;
-    while ( callAgain && maxsmooth > 0 ) {
-      maxsmooth--;
-      if (grid != gridLinearProgramXYZ( grid, node, &callAgain ) ) {
-	return NULL;
-      }
-    }  
+    for (maxsmooth=0;maxsmooth<1;maxsmooth++) 
+      gridSmoothNodeARFace(grid, node );
     return grid;
   }
+  
+  gridSmartLaplacian(grid, node );
+  for (maxsmooth=0;maxsmooth<1;maxsmooth++)
+    gridSmoothNodeARSimplex(grid, node );
+  return grid;
 }
 
 
@@ -1159,7 +1125,7 @@ Grid *gridLineSearchTForCost(Grid *grid, int node )
   if (grid != gridEvaluateEdgeAtT(grid, node, t ) ) return NULL;
   gridNodeAR( grid, node, &ar[1] );
   
-  if ( ar[1] < ar[0] ) dt = -dt;
+  if ( ar[1] > ar[0] ) dt = -dt;
 
   /* initialize the alpha, ar, and equality arrays */
   alpha[0] = 0.0;
@@ -1174,7 +1140,7 @@ Grid *gridLineSearchTForCost(Grid *grid, int node )
 
   /* try larger alphas if equality is improving and ar is valid */
   iter = 0;
-  while ( ar[1] > ar[0] && 
+  while ( ar[1] < ar[0] && 
 	  iter < 100 ) {
     iter++;
     alpha[0] = alpha[1]; ar[0] = ar[1];
