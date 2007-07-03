@@ -28,6 +28,9 @@
 #include "interp.h"
 #include "plan.h"
 
+static  GridBool tecplotOutput = TRUE;
+static  int iview=0;
+
 void interp_metric(Grid *grid) {
   int node;
   double xyz[3];
@@ -231,7 +234,7 @@ void adapt3swap(Grid *grid)
   planFree(plan);
 }
 
-void adapt3(Grid *grid)
+void adapt3insert(Grid *grid)
 {
   Plan *plan;
   int conn, nodes[2], ranking;
@@ -266,6 +269,7 @@ void adapt3(Grid *grid)
       printf("adapt ranking%9d nnode%9d added%9d removed%9d err%6.2f\n",
 	     ranking,gridNNode(grid),nnodeAdd,nnodeRemove,
 	     planPriorityWithThisRanking(plan,ranking));
+      fflush(stdout);
     }
     if (grid == gridConn2Node(grid,conn,nodes)){
       if ( gridCellEdge(grid, nodes[0], nodes[1]) &&
@@ -274,9 +278,6 @@ void adapt3(Grid *grid)
 	   !gridNodeFrozen(grid, nodes[0]) &&
 	   !gridNodeFrozen(grid, nodes[1]) ) {
 	length = gridEdgeRatio(grid, nodes[0], nodes[1]);
-	if ( ranking/100*100==ranking )
-	  printf("rank %d len %f \n",ranking,length);
-	fflush(stdout);
 	if (length >= maxLength) {
 	  if (grid!=gridMakeGem(grid,nodes[0], nodes[1])) continue;
 	  if (grid!=gridGemAR(grid,&cost0)) continue;
@@ -299,6 +300,17 @@ void adapt3(Grid *grid)
   }
   planFree(plan);
   gridEraseConn(grid);
+}
+
+void adapt3(Grid *grid)
+{
+  adapt3insert(grid);
+  STATUS;
+  adapt3swap(grid);
+  STATUS;
+  adapt3smooth(grid);
+  STATUS;
+  DUMP_TEC;
 }
 
 void relax_grid(Grid *grid)
@@ -352,10 +364,8 @@ int main( int argc, char *argv[] )
   char ref_input[256];
   char ref_output[256];
   double h0 = 1.0;
-  GridBool tecplotOutput = TRUE;
 
   int i;
-  int iview=0;
 
   sprintf( modeler,    "Unknown" );
   sprintf( project,    "" );
@@ -433,8 +443,6 @@ int main( int argc, char *argv[] )
 
   for(i=0;i<10;i++) {
     adapt3(grid);
-    STATUS;
-    DUMP_TEC;
   }
 
   gridHistogram(grid,"hist1.m");
