@@ -173,26 +173,32 @@ void adapt3smooth(Grid *grid)
   Plan *plan;
   int cell, nodes[4], ranking;
   double cost,cost1;
+  int report;
 
   plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      planAddItemWithPriority( plan, cell, cost );
+      if ( cost > 10.0 ) planAddItemWithPriority( plan, cell, cost );
     }
   }
   planDeriveRankingsFromPriorities( plan );
-  for ( ranking=planSize(plan)-1; ranking>=planSize(plan)/10*9; ranking-- ) { 
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
     cell = planItemWithThisRanking(plan,ranking);
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      gridSmoothNode(grid, nodes[0], TRUE );
-      gridSmoothNode(grid, nodes[1], TRUE );
-      gridSmoothNode(grid, nodes[2], TRUE );
-      gridSmoothNode(grid, nodes[3], TRUE );
-      cost1 = gridAR(grid,nodes);
-      if ( ranking/100*100==ranking )
+      if ( cost > 10.0 ) {
+	gridSmoothNode(grid, nodes[0], TRUE );
+	gridSmoothNode(grid, nodes[1], TRUE );
+	gridSmoothNode(grid, nodes[2], TRUE );
+	gridSmoothNode(grid, nodes[3], TRUE );
+	cost1 = gridAR(grid,nodes);
+      }
+      if ( ranking/report*report==ranking ){
 	printf("rank %d cost %f %f\n",ranking,cost,cost1);
+	fflush(stdout);
+      }
     }
   }
   planFree(plan);
@@ -203,32 +209,38 @@ void adapt3swap(Grid *grid)
   Plan *plan;
   int cell, nodes[4], ranking;
   double cost,cost1;
+  int report;
 
   plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      planAddItemWithPriority( plan, cell, cost );
+      if ( cost > 10.0 ) planAddItemWithPriority( plan, cell, cost );
     }
   }
   planDeriveRankingsFromPriorities( plan );
-  for ( ranking=planSize(plan)-1; ranking>=planSize(plan)/10*9; ranking-- ) { 
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
     cell = planItemWithThisRanking(plan,ranking);
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-    if ( ( NULL != gridSwapFace( grid, NULL, nodes[1],nodes[2],nodes[3]) ) ||
-	 ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[2],nodes[3]) ) ||
-	 ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[3]) ) ||
-	 ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[2]) ) ||
-	 ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[1] ) ) ||
-	 ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[2] ) ) ||
-	 ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[3] ) ) ||
-	 ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[2] ) ) ||
-	 ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[3] ) ) ||
-	 ( NULL != gridSwapEdge( grid, NULL, nodes[2], nodes[3] ) ) ) {
-    }
-      if ( ranking/100*100==ranking )
+      if ( cost > 10.0 ) {
+      if ( ( NULL != gridSwapFace( grid, NULL, nodes[1],nodes[2],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[2],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[2]) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[1] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[2] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[3] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[2] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[3] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[2], nodes[3] ) ) ) {
+      }
+      }
+      if ( ranking/report*report==ranking ){
 	printf("rank %d cost %f \n",ranking,cost);
+	fflush(stdout);
+      }
     }
   }
   planFree(plan);
@@ -247,7 +259,7 @@ void adapt3insert(Grid *grid)
 
   int i;
 
-  maxLength = 1.0;
+  maxLength = 1.5;
 
   gridCreateConn(grid);
   plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
