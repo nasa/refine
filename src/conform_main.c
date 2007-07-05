@@ -36,7 +36,7 @@ void interp_metric(Grid *grid) {
   double xyz[3];
   double m[6];
   Interp *interp;
-  interp = interpCreate(0,1);
+  interp = interpCreate(1,1);
   for(node=0;node<gridMaxNode(grid);node++){
     if (grid==gridNodeXYZ(grid,node,xyz)) {
       interpMetric(interp,xyz,m);
