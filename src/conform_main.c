@@ -30,7 +30,7 @@
 
 static  GridBool tecplotOutput = TRUE;
 static  int iview=0;
-static  int function_id=0;
+static  int function_id=1;
 
 double grid_interp_error(Grid *grid) {
   int cell, nodes[4];
@@ -200,12 +200,15 @@ void adapt3smooth(Grid *grid)
   int cell, nodes[4], ranking;
   double cost,cost1;
   int report;
+  double min_cost;
+
+  min_cost = 100;
 
   plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      if ( cost > 10.0 ) planAddItemWithPriority( plan, cell, cost );
+      if ( cost > min_cost ) planAddItemWithPriority( plan, cell, cost );
     }
   }
   planDeriveRankingsFromPriorities( plan );
@@ -214,7 +217,7 @@ void adapt3smooth(Grid *grid)
     cell = planItemWithThisRanking(plan,ranking);
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      if ( cost > 10.0 ) {
+      if ( cost > min_cost ) {
 	gridSmoothNode(grid, nodes[0], TRUE );
 	gridSmoothNode(grid, nodes[1], TRUE );
 	gridSmoothNode(grid, nodes[2], TRUE );
@@ -471,7 +474,6 @@ int main( int argc, char *argv[] )
 
   h0 = 0.1;
   interp_metric(grid);
-  bl_metric_flat(grid, 0.1);
   gridCacheCurrentGridAndMap(grid);
   STATUS;
 
@@ -479,7 +481,7 @@ int main( int argc, char *argv[] )
 
   DUMP_TEC;
 
-  for(i=0;i<10;i++) {
+  for(i=0;i<1;i++) {
     adapt3(grid);
   }
 
