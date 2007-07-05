@@ -197,37 +197,29 @@ Grid *gridHistogram( Grid *grid, char *filename )
 void adapt3smooth(Grid *grid)
 {
   Plan *plan;
-  int cell, nodes[4], ranking;
-  double cost,cost1;
+  int node, ranking;
+  double cost;
   int report;
   double min_cost;
 
   min_cost = 100;
 
-  plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
-  for (cell=0;cell<gridMaxCell(grid);cell++) {
-    if (grid==gridCell(grid, cell, nodes)) {
-      cost = gridAR(grid,nodes);
-      if ( cost > min_cost ) planAddItemWithPriority( plan, cell, cost );
+  plan = planCreate( gridNNode(grid), MAX(gridNNode(grid)/10,1000) );
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if (gridValidNode(grid, node)) {
+      gridNodeAR(grid,node,&cost);
+      if ( cost > min_cost ) planAddItemWithPriority( plan, node, cost );
     }
   }
   planDeriveRankingsFromPriorities( plan );
   report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
   for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
-    cell = planItemWithThisRanking(plan,ranking);
-    if (grid==gridCell(grid, cell, nodes)) {
-      cost = gridAR(grid,nodes);
-      if ( cost > min_cost ) {
-	gridSmoothNode(grid, nodes[0], TRUE );
-	gridSmoothNode(grid, nodes[1], TRUE );
-	gridSmoothNode(grid, nodes[2], TRUE );
-	gridSmoothNode(grid, nodes[3], TRUE );
-	cost1 = gridAR(grid,nodes);
-      }
-      if ( ranking/report*report==ranking ){
-	printf("rank %d cost %f %f\n",ranking,cost,cost1);
-	fflush(stdout);
-      }
+    node = planItemWithThisRanking(plan,ranking);
+    gridSmoothNode(grid, node, TRUE );
+    if ( ranking/report*report==ranking ){
+      gridNodeAR(grid,node,&cost);
+      printf("rank %d cost %f\n",ranking,cost);
+      fflush(stdout);
     }
   }
   planFree(plan);
