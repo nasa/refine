@@ -40,8 +40,8 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
     (*func) = 8.0*xyz[0]*xyz[0] + 32.0*xyz[1]*xyz[1] + 128.0*xyz[2]*xyz[2];
     break;
   case 1:
-    a = 5.0;
-    c = 100.0;
+    a = 10.0;
+    c = 1000.0;
     (*func) = 8.0*xyz[0]*xyz[0] + 32.0*xyz[1]*xyz[1] +
       c*tanh(a*(xyz[2]-0.5));
     break;
@@ -62,8 +62,8 @@ GridBool interpMetric( Interp *interp, double *xyz, double *m )
     m[5] = 256.0;
     break;
   case 1:
-    a = 5.0;
-    c = 100.0;
+    a = 10.0;
+    c = 1000.0;
     m[0] =  16.0;
     m[1] =   0.0;
     m[2] =   0.0;
