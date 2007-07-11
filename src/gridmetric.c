@@ -26,6 +26,7 @@
 #endif
 #include "gridshape.h"
 #include "gridmetric.h"
+#include "interp.h"
 
 Grid *gridWriteTecplotInvalid(Grid *grid, char *filename )
 {
@@ -835,6 +836,9 @@ double gridAR(Grid *grid, int *nodes )
   if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) )
     return gridCellMetricConformity( p1, p2, p3, p4, m );
 
+  if ( gridCOST_FCN_INTERPOLATION == gridCostFunction(grid) )
+    return gridCellInterpolationError( p1, p2, p3, p4 );
+
   xyz1[0] = j[0] * p1[0] + j[1] * p1[1] + j[2] * p1[2]; 
   xyz1[1] = j[3] * p1[0] + j[4] * p1[1] + j[5] * p1[2]; 
   xyz1[2] = j[6] * p1[0] + j[7] * p1[1] + j[8] * p1[2]; 
@@ -999,6 +1003,87 @@ double gridCellMetricConformity( double *xyz0, double *xyz1,
     printf(" %15.8f %15.8f %15.8f\n",rt[0], rt[3], rt[6]);
     printf(" %15.8f %15.8f %15.8f\n",rt[1], rt[4], rt[7]);
     printf(" %15.8f %15.8f %15.8f\n",rt[2], rt[5], rt[8]);
+  }
+
+  return norm;
+}
+
+Grid *gridCellInterpolationErrorFD( Grid *grid,
+				    double *xyz0, double *xyz1, 
+				    double *xyz2, double *xyz3,
+				    double *cost, double *dCostdx )
+{
+  double xyz[3];
+  double delta;
+  
+  delta = 1.0e-7;
+
+  xyz[0] = xyz0[0];
+  xyz[1] = xyz0[1];
+  xyz[2] = xyz0[2];
+
+  (*cost) = gridCellInterpolationError( xyz, xyz1, xyz2, xyz3 );
+  if ( *cost < -0.5 ) return NULL;
+  
+  xyz[0] = xyz0[0] + delta;
+  xyz[1] = xyz0[1];
+  xyz[2] = xyz0[2];
+
+  dCostdx[0] = gridCellInterpolationError( xyz, xyz1, xyz2, xyz3 );
+  if ( dCostdx[0] < -0.5 ) return NULL;
+  dCostdx[0] = (dCostdx[0] - (*cost)) / delta;
+  
+  xyz[0] = xyz0[0];
+  xyz[1] = xyz0[1] + delta;
+  xyz[2] = xyz0[2];
+
+  dCostdx[1] = gridCellInterpolationError( xyz, xyz1, xyz2, xyz3 );
+  if ( dCostdx[1] < -0.5 ) return NULL;
+  dCostdx[1] = (dCostdx[1] - (*cost)) / delta;
+  
+  xyz[0] = xyz0[0];
+  xyz[1] = xyz0[1];
+  xyz[2] = xyz0[2] + delta;
+
+  dCostdx[2] = gridCellInterpolationError( xyz, xyz1, xyz2, xyz3 );
+  if ( dCostdx[2] < -0.5 ) return NULL;
+  dCostdx[2] = (dCostdx[2] - (*cost)) / delta;
+  
+
+  return grid;
+}
+
+static double tet_volume6( double *a, double *b, double *c, double *d )
+{
+  double m11, m12, m13;
+  double det;
+
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  det = ( m11 - m12 + m13 );
+
+  return(-det);
+}
+
+double gridCellInterpolationError( double *xyz0, double *xyz1, 
+				   double *xyz2, double *xyz3 )
+{
+  double volume6;
+  double norm, cell_error, target;;
+  int function_id=1;
+  Interp *interp;
+  interp = interpCreate(function_id,1);
+
+  interpError( interp,
+	       xyz0,xyz1,xyz2,xyz3, 
+	       &cell_error );
+
+  volume6 = ABS(tet_volume6(xyz0,xyz1,xyz2,xyz3));
+  norm = cell_error/volume6;
+
+  if (FALSE) {
+    printf("cost %15.5e%15.5e%15.5e%15.5e\n",xyz0[0],xyz0[1],xyz0[2],norm);
   }
 
   return norm;
@@ -1185,6 +1270,12 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) ) {
     if ( grid != gridCellMetricConformityFD( grid, xyz1, xyz2, xyz3, xyz4, 
 					     m, ar, dARdx ) ) return NULL;
+    return grid;
+  }
+
+  if ( gridCOST_FCN_INTERPOLATION == gridCostFunction(grid) ) {
+    if ( grid != gridCellInterpolationErrorFD( grid, xyz1, xyz2, xyz3, xyz4, 
+					       ar, dARdx ) ) return NULL;
     return grid;
   }
 
