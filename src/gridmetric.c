@@ -1080,7 +1080,7 @@ double gridCellInterpolationError( double *xyz0, double *xyz1,
 	       &cell_error );
 
   volume6 = ABS(tet_volume6(xyz0,xyz1,xyz2,xyz3));
-  norm = cell_error/volume6;
+  norm = cell_error/volume6/volume6;
 
   if (FALSE) {
     printf("cost %15.5e%15.5e%15.5e%15.5e\n",xyz0[0],xyz0[1],xyz0[2],norm);
