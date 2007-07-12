@@ -149,7 +149,8 @@ void bl_metric(Grid *grid, double h0) {
   }
 }
 
-#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %9.2e %9.2e AR %12.5e err %12.5e Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),grid_interp_error(grid), gridMinVolume(grid)); fflush(stdout);}
+//#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %9.2e %9.2e AR %12.5e err %12.5e Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),grid_interp_error(grid), gridMinVolume(grid)); fflush(stdout);}
+#define PRINT_STATUS {printf("AR %12.5e err %12.5e Vol %10.6e\n", gridMinThawedAR(grid),grid_interp_error(grid), gridMinVolume(grid)); fflush(stdout);}
 
 #define DUMP_TEC if (tecplotOutput) { \
  iview++;printf("Frame %d\n",iview);\
@@ -202,7 +203,7 @@ void adapt3smooth(Grid *grid)
   int report;
   double min_cost;
 
-  min_cost = 100;
+  min_cost = 10;
 
   plan = planCreate( gridNNode(grid), MAX(gridNNode(grid)/10,1000) );
   for (node=0;node<gridMaxNode(grid);node++) {
@@ -231,12 +232,15 @@ void adapt3swap(Grid *grid)
   int cell, nodes[4], ranking;
   double cost,cost1;
   int report;
+  double min_cost;
+
+  min_cost = 10;
 
   plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      if ( cost > 10.0 ) planAddItemWithPriority( plan, cell, cost );
+      if ( cost > min_cost ) planAddItemWithPriority( plan, cell, cost );
     }
   }
   planDeriveRankingsFromPriorities( plan );
@@ -245,7 +249,7 @@ void adapt3swap(Grid *grid)
     cell = planItemWithThisRanking(plan,ranking);
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      if ( cost > 10.0 ) {
+      if ( cost > min_cost ) {
       if ( ( NULL != gridSwapFace( grid, NULL, nodes[1],nodes[2],nodes[3]) ) ||
 	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[2],nodes[3]) ) ||
 	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[3]) ) ||
@@ -335,12 +339,84 @@ void adapt3insert(Grid *grid)
   gridEraseConn(grid);
 }
 
+GridBool splitit(Grid *grid, int en[2])
+{
+  double cost0,cost1;
+  double ratio;
+  int newnode;
+  ratio = 0.5;
+  if (grid!=gridMakeGem(grid,en[0], en[1])) return FALSE;
+  if (grid!=gridGemAR(grid,&cost0)) return FALSE;
+  newnode = gridSplitEdgeRatio( grid, NULL, en[0], en[1], ratio );
+  if ( newnode != EMPTY ){
+    gridSmoothNode(grid, newnode, TRUE );
+    gridNodeAR(grid, newnode, &cost1 );
+    if ( cost1 > cost0 ) {
+      if (grid != gridCollapseEdge(grid, NULL, en[0], newnode, 0.0))
+	printf("collapse failed\n");
+      return FALSE;
+    }else{
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+void adapt4insert(Grid *grid)
+{
+  Plan *plan;
+  int cell, nodes[4], ranking, en[2];
+  double cost;
+  int report;
+  double min_cost;
+  int nnodeAdd, nnodeRemove;
+
+  min_cost = 10;
+
+  plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      if ( cost > min_cost ) planAddItemWithPriority( plan, cell, cost );
+    }
+  }
+  planDeriveRankingsFromPriorities( plan );
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    cell = planItemWithThisRanking(plan,ranking);
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      if ( ranking/report*report==ranking ){
+	printf("rank %d cost %f add %d\n",ranking,cost,nnodeAdd);
+	fflush(stdout);
+      }
+      if ( cost > min_cost ) {
+	en[0]=nodes[0];	en[1]=nodes[1];
+	if ( splitit(grid, en)){nnodeAdd++; continue;}
+	en[0]=nodes[0];	en[1]=nodes[2];
+	if ( splitit(grid, en)){nnodeAdd++; continue;}
+	en[0]=nodes[0];	en[1]=nodes[3];
+	if ( splitit(grid, en)){nnodeAdd++; continue;}
+	en[0]=nodes[1];	en[1]=nodes[2];
+	if ( splitit(grid, en)){nnodeAdd++; continue;}
+	en[0]=nodes[1];	en[1]=nodes[3];
+	if ( splitit(grid, en)){nnodeAdd++; continue;}
+	en[0]=nodes[2];	en[1]=nodes[3];
+	if ( splitit(grid, en)){nnodeAdd++; continue;}
+      }
+    }
+  }
+  planFree(plan);
+}
+
 void adapt3(Grid *grid)
 {
-  adapt3insert(grid);
+  adapt4insert(grid);
   STATUS;
+  DUMP_TEC;
   adapt3swap(grid);
   STATUS;
+  DUMP_TEC;
   adapt3smooth(grid);
   STATUS;
   DUMP_TEC;
@@ -461,8 +537,9 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  gridSetCostFunction(grid, gridCOST_FCN_CONFORMITY );
+  gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
+  gridSetMinInsertCost(grid, 1.0e99 );
 
   h0 = 0.1;
   interp_metric(grid);
