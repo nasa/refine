@@ -12,6 +12,11 @@
 #ifndef __APPLE__       /* Not needed on Mac OS X */
 #include <malloc.h>
 #endif
+#ifdef __APPLE__       /* Not needed on Mac OS X */
+#include <float.h>
+#else
+#include <values.h>
+#endif
 #include "interp.h"
 #include "sort.h"
 
@@ -138,6 +143,11 @@ GridBool interpError( Interp *interp,
 		  0.064285714285714, 0.064285714285714, 0.064285714285714 };
 
   volume6 = tet_volume6(xyz0,xyz1,xyz2,xyz3);
+  if ( volume6 <= 6.0e-12 ) {
+    if (ABS(volume6)< 1.0e-15) volume6 = 1.0e-15;
+    (*error) = 1.0/ABS(volume6);
+    return TRUE; 
+  }
   interpFunction( interp, xyz0, &f0 );
   interpFunction( interp, xyz1, &f1 );
   interpFunction( interp, xyz2, &f2 );
