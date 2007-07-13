@@ -184,23 +184,23 @@ GridBool interpError( Interp *interp,
 	  phi = 1.0-3.0*b3-3.0*b2-3.0*b1+2.0*b3*b3+4.0*b2*b3+4.0*b1*b3+2.0*b2*b2+4.0*b1*b2+2.0*b1*b1;
 	  pinterp += phi*n0;
 	  phi = 4.0*b1-4.0*b1*b3-4.0*b1*b2-4.0*b1*b1;
-	  pinterp += phi*n1;
-	  phi = -b1+2.0*b1*b1;
-	  pinterp += phi*n2;
-	  phi = 4.0*b2-4.0*b2*b3-4.0*b2*b2-4.0*b1*b2;
-	  pinterp += phi*n3;
-	  phi = 4.0*b1*b2;
 	  pinterp += phi*e01;
-	  phi = -b2+2.0*b2*b2;
+	  phi = -b1+2.0*b1*b1;
+	  pinterp += phi*n1;
+	  phi = 4.0*b2-4.0*b2*b3-4.0*b2*b2-4.0*b1*b2;
 	  pinterp += phi*e02;
+	  phi = 4.0*b1*b2;
+	  pinterp += phi*e12;
+	  phi = -b2+2.0*b2*b2;
+	  pinterp += phi*n2;
 	  phi = 4.0*b3-4.0*b3*b3-4.0*b2*b3-4.0*b1*b3;
 	  pinterp += phi*e03;
 	  phi = 4.0*b1*b3;
-	  pinterp += phi*e12;
-	  phi = 4.0*b2*b3;
 	  pinterp += phi*e13;
-	  phi = -b3+2.0*b3*b3;
+	  phi = 4.0*b2*b3;
 	  pinterp += phi*e23;
+	  phi = -b3+2.0*b3*b3;
+	  pinterp += phi*n3;
 	  break;
 	default:
 	  printf("%s: %d: interpError: order %d?\n",
