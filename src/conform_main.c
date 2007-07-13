@@ -38,7 +38,7 @@ double grid_interp_error(Grid *grid) {
   double total_error, cell_error;
   total_error = 0.0;
   Interp *interp;
-  interp = interpCreate(function_id,1);
+  interp = interpCreate(function_id,gridOrder(grid));
   for (cell=0;cell<gridMaxCell(grid);cell++){ 
     if (grid==gridCell(grid, cell, nodes)) { 
       gridNodeXYZ(grid,nodes[0],xyz0);
@@ -60,7 +60,7 @@ void interp_metric(Grid *grid) {
   double xyz[3];
   double m[6];
   Interp *interp;
-  interp = interpCreate(function_id,1);
+  interp = interpCreate(function_id,gridOrder(grid));
   for(node=0;node<gridMaxNode(grid);node++){
     if (grid==gridNodeXYZ(grid,node,xyz)) {
       interpMetric(interp,xyz,m);

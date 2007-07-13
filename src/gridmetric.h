@@ -83,7 +83,8 @@ Grid *gridCellInterpolationErrorFD( Grid *grid,
 				    double *xyz0, double *xyz1, 
 				    double *xyz2, double *xyz3,
 				    double *cost, double *dCostdx );
-double gridCellInterpolationError( double *xyz0, double *xyz1, 
+double gridCellInterpolationError( Grid *grid,
+				   double *xyz0, double *xyz1, 
 				   double *xyz2, double *xyz3 );
 
 double gridCellAspectRatio( double *n0, double *n1, double *n2, double *n3 );

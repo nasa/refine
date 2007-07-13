@@ -837,7 +837,7 @@ double gridAR(Grid *grid, int *nodes )
     return gridCellMetricConformity( p1, p2, p3, p4, m );
 
   if ( gridCOST_FCN_INTERPOLATION == gridCostFunction(grid) )
-    return gridCellInterpolationError( p1, p2, p3, p4 );
+    return gridCellInterpolationError( grid, p1, p2, p3, p4 );
 
   xyz1[0] = j[0] * p1[0] + j[1] * p1[1] + j[2] * p1[2]; 
   xyz1[1] = j[3] * p1[0] + j[4] * p1[1] + j[5] * p1[2]; 
@@ -1022,14 +1022,14 @@ Grid *gridCellInterpolationErrorFD( Grid *grid,
   xyz[1] = xyz0[1];
   xyz[2] = xyz0[2];
 
-  (*cost) = gridCellInterpolationError( xyz, xyz1, xyz2, xyz3 );
+  (*cost) = gridCellInterpolationError( grid, xyz, xyz1, xyz2, xyz3 );
   if ( *cost < -0.5 ) return NULL;
   
   xyz[0] = xyz0[0] + delta;
   xyz[1] = xyz0[1];
   xyz[2] = xyz0[2];
 
-  dCostdx[0] = gridCellInterpolationError( xyz, xyz1, xyz2, xyz3 );
+  dCostdx[0] = gridCellInterpolationError( grid, xyz, xyz1, xyz2, xyz3 );
   if ( dCostdx[0] < -0.5 ) return NULL;
   dCostdx[0] = (dCostdx[0] - (*cost)) / delta;
   
@@ -1037,7 +1037,7 @@ Grid *gridCellInterpolationErrorFD( Grid *grid,
   xyz[1] = xyz0[1] + delta;
   xyz[2] = xyz0[2];
 
-  dCostdx[1] = gridCellInterpolationError( xyz, xyz1, xyz2, xyz3 );
+  dCostdx[1] = gridCellInterpolationError( grid, xyz, xyz1, xyz2, xyz3 );
   if ( dCostdx[1] < -0.5 ) return NULL;
   dCostdx[1] = (dCostdx[1] - (*cost)) / delta;
   
@@ -1045,7 +1045,7 @@ Grid *gridCellInterpolationErrorFD( Grid *grid,
   xyz[1] = xyz0[1];
   xyz[2] = xyz0[2] + delta;
 
-  dCostdx[2] = gridCellInterpolationError( xyz, xyz1, xyz2, xyz3 );
+  dCostdx[2] = gridCellInterpolationError( grid, xyz, xyz1, xyz2, xyz3 );
   if ( dCostdx[2] < -0.5 ) return NULL;
   dCostdx[2] = (dCostdx[2] - (*cost)) / delta;
   
@@ -1066,14 +1066,15 @@ static double tet_volume6( double *a, double *b, double *c, double *d )
   return(-det);
 }
 
-double gridCellInterpolationError( double *xyz0, double *xyz1, 
+double gridCellInterpolationError( Grid *grid,
+				   double *xyz0, double *xyz1, 
 				   double *xyz2, double *xyz3 )
 {
   double volume6;
   double norm, cell_error, target;;
   int function_id=1;
   Interp *interp;
-  interp = interpCreate(function_id,1);
+  interp = interpCreate(function_id,gridOrder(grid));
 
   interpError( interp,
 	       xyz0,xyz1,xyz2,xyz3, 
