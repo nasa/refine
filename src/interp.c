@@ -201,6 +201,7 @@ GridBool interpError( Interp *interp,
 	  pinterp += phi*e13;
 	  phi = -b3+2.0*b3*b3;
 	  pinterp += phi*e23;
+	  break;
 	default:
 	  printf("%s: %d: interpError: order %d?\n",
 		 __FILE__,__LINE__,interpOrder(interp));
