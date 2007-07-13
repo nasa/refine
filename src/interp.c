@@ -103,8 +103,8 @@ GridBool interpError( Interp *interp,
   int i,j;
   double xyz[3];
   double b0,b1,b2,b3;
-  double linear, func;
-  double f0,f1,f2,f3;
+  double pinterp, func;
+  double n0,n1,n2,n3;
   double diff,volume6;
 
   /* Rule 4 Solin, Segeth and Dolezel (SSD): order 6 */
@@ -148,12 +148,13 @@ GridBool interpError( Interp *interp,
     (*error) = 1.0/ABS(volume6);
     return TRUE; 
   }
-  interpFunction( interp, xyz0, &f0 );
-  interpFunction( interp, xyz1, &f1 );
-  interpFunction( interp, xyz2, &f2 );
-  interpFunction( interp, xyz3, &f3 );
 
   (*error) = 0.0;
+  interpFunction( interp, xyz0, &n0 );
+  interpFunction( interp, xyz1, &n1 );
+  interpFunction( interp, xyz2, &n2 );
+  interpFunction( interp, xyz3, &n3 );
+
   for(i=0;i<n;i++)
     {
       b1 = 0.5*(1.0+xq[i]); 
@@ -163,8 +164,15 @@ GridBool interpError( Interp *interp,
       for(j=0;j<3;j++)
 	xyz[j] = b0*xyz0[j] + b1*xyz1[j] + b2*xyz2[j] + b3*xyz3[j];
       interpFunction( interp, xyz, &func );
-      linear = b0*f0 + b1*f1 + b2*f2 + b3*f3;
-      diff = linear-func;
+      switch ( interpOrder(interp) ) {
+      case 1:
+	pinterp = b0*n0 + b1*n1 + b2*n2 + b3*n3; break;
+      default:
+	printf("%s: %d: interpError: order %d?\n",
+	       __FILE__,__LINE__,interpOrder(interp));
+	return FALSE;
+      }
+      diff = pinterp-func;
       (*error) += 0.125 * volume6 * wq[i] * diff * diff;
     }
 
