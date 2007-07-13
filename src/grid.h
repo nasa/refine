@@ -154,6 +154,8 @@ struct Grid {
 
   int phase;
 
+  int order;
+
   int model; /* CAPRI 2 Model Id */
 };
 
@@ -540,6 +542,9 @@ Grid *gridSetPhase(Grid *g, int phase);
 #define gridEDGE_PHASE (1)
 #define gridFACE_PHASE (2)
 #define gridVOL_PHASE  (3)
+
+#define gridOrder(grid) ((grid)->order)
+Grid *gridSetOrder(Grid *g, int order);
 
 Grid *gridCacheCurrentGridAndMap(Grid *g);
 

@@ -241,6 +241,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->lines = linesCreate();
 
   grid->phase = gridALL_PHASE;
+  grid->order = 1;
 
   grid->model = -1;
 
@@ -5631,6 +5632,11 @@ int gridPhase(Grid *grid){
 
 Grid *gridSetPhase(Grid *grid, int phase){
   grid->phase = phase;
+  return grid;
+}
+
+Grid *gridSetOrder(Grid *grid, int order){
+  grid->order = order;
   return grid;
 }
 
