@@ -537,6 +537,7 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
+  gridSetOrder(grid, 1);
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
   gridSetMinInsertCost(grid, 1.0e99 );
