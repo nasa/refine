@@ -18,7 +18,7 @@
 #include <values.h>
 #endif
 #include "interp.h"
-#include "sort.h"
+#include "gridmath.h"
 
 Interp* interpCreate( int function_id, int order )
 {
@@ -104,7 +104,9 @@ GridBool interpError( Interp *interp,
   double xyz[3];
   double b0,b1,b2,b3;
   double pinterp, func;
+  double phi;
   double n0,n1,n2,n3;
+  double e01,e02,e03,e12,e13,e23;
   double diff,volume6;
 
   /* Rule 4 Solin, Segeth and Dolezel (SSD): order 6 */
@@ -154,6 +156,15 @@ GridBool interpError( Interp *interp,
   interpFunction( interp, xyz1, &n1 );
   interpFunction( interp, xyz2, &n2 );
   interpFunction( interp, xyz3, &n3 );
+  if ( 2 == interpOrder(interp) )
+    {
+      gridAverageVector(xyz0,xyz1,xyz); interpFunction( interp, xyz, &e01 );
+      gridAverageVector(xyz0,xyz2,xyz); interpFunction( interp, xyz, &e02 );
+      gridAverageVector(xyz0,xyz3,xyz); interpFunction( interp, xyz, &e03 );
+      gridAverageVector(xyz1,xyz2,xyz); interpFunction( interp, xyz, &e12 );
+      gridAverageVector(xyz1,xyz3,xyz); interpFunction( interp, xyz, &e13 );
+      gridAverageVector(xyz2,xyz3,xyz); interpFunction( interp, xyz, &e23 );
+    }
 
   for(i=0;i<n;i++)
     {
@@ -164,14 +175,37 @@ GridBool interpError( Interp *interp,
       for(j=0;j<3;j++)
 	xyz[j] = b0*xyz0[j] + b1*xyz1[j] + b2*xyz2[j] + b3*xyz3[j];
       interpFunction( interp, xyz, &func );
-      switch ( interpOrder(interp) ) {
-      case 1:
-	pinterp = b0*n0 + b1*n1 + b2*n2 + b3*n3; break;
-      default:
-	printf("%s: %d: interpError: order %d?\n",
-	       __FILE__,__LINE__,interpOrder(interp));
-	return FALSE;
-      }
+      switch ( interpOrder(interp) ) 
+	{
+	case 1:
+	  pinterp = b0*n0 + b1*n1 + b2*n2 + b3*n3; break;
+	case 2:
+	  pinterp = 0.0;
+	  phi = 1.0-3.0*b3-3.0*b2-3.0*b1+2.0*b3*b3+4.0*b2*b3+4.0*b1*b3+2.0*b2*b2+4.0*b1*b2+2.0*b1*b1;
+	  pinterp += phi*n0;
+	  phi = 4.0*b1-4.0*b1*b3-4.0*b1*b2-4.0*b1*b1;
+	  pinterp += phi*n1;
+	  phi = -b1+2.0*b1*b1;
+	  pinterp += phi*n2;
+	  phi = 4.0*b2-4.0*b2*b3-4.0*b2*b2-4.0*b1*b2;
+	  pinterp += phi*n3;
+	  phi = 4.0*b1*b2;
+	  pinterp += phi*e01;
+	  phi = -b2+2.0*b2*b2;
+	  pinterp += phi*e02;
+	  phi = 4.0*b3-4.0*b3*b3-4.0*b2*b3-4.0*b1*b3;
+	  pinterp += phi*e03;
+	  phi = 4.0*b1*b3;
+	  pinterp += phi*e12;
+	  phi = 4.0*b2*b3;
+	  pinterp += phi*e13;
+	  phi = -b3+2.0*b3*b3;
+	  pinterp += phi*e23;
+	default:
+	  printf("%s: %d: interpError: order %d?\n",
+		 __FILE__,__LINE__,interpOrder(interp));
+	  return FALSE;
+	}
       diff = pinterp-func;
       (*error) += 0.125 * volume6 * wq[i] * diff * diff;
     }
