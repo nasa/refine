@@ -29,7 +29,7 @@ Interp *interpCreate( int function_id, int order );
 void interpFree( Interp * );
 
 #define interpFunctionId(interp) ((interp)->function_id)
-#define interpOrder(interp) ((interp)->order)
+#define interpOrder(interp) (ABS((interp)->order))
 
 GridBool interpFunction( Interp *, double *xyz, double *func );
 GridBool interpMetric( Interp *, double *xyz, double *m );
