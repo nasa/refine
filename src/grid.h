@@ -23,7 +23,6 @@
 #include "adj.h"
 #include "line.h"
 #include "queue.h"
-#include "interp.h"
 
 BEGIN_C_DECLORATION
 
@@ -48,6 +47,9 @@ struct Quad {
 };
 
 typedef struct Grid Grid;
+
+#include "interp.h"
+
 struct Grid {
   int maxnode, nnode;
   int blanknode;

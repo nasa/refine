@@ -20,12 +20,13 @@
 #include "interp.h"
 #include "gridmath.h"
 
-Interp* interpCreate( int function_id, int order )
+Interp* interpCreate( Grid *grid, int function_id, int order )
 {
   Interp *interp;
 
   interp = (Interp *)malloc( sizeof(Interp) );
 
+  interp->grid = gridDup(grid);
   interp->function_id = function_id;
   interp->order = order;
 
@@ -34,6 +35,7 @@ Interp* interpCreate( int function_id, int order )
 
 void interpFree( Interp *interp )
 {
+  if ( NULL != interp->grid ) gridFree(interp->grid);
   free( interp );
 }
 

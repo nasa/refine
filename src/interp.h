@@ -13,19 +13,22 @@
 #ifndef INTERP_H
 #define INTERP_H
 
-#include "refine_defs.h"
 #include <stdio.h>
+#include "refine_defs.h"
 
 BEGIN_C_DECLORATION
 
 typedef struct Interp Interp;
 
+#include "grid.h"
+
 struct Interp {
   int function_id;
   int order;
+  Grid *grid;
 };
 
-Interp *interpCreate( int function_id, int order );
+Interp *interpCreate( Grid *grid, int function_id, int order );
 void interpFree( Interp * );
 
 #define interpFunctionId(interp) ((interp)->function_id)
