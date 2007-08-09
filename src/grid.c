@@ -241,7 +241,8 @@ Grid *gridImport(int maxnode, int nnode,
   grid->lines = linesCreate();
 
   grid->phase = gridALL_PHASE;
-  grid->order = 1;
+
+  grid->interp = NULL;
 
   grid->model = -1;
 
@@ -1006,6 +1007,7 @@ void gridFree(Grid *grid)
 {
   if (NULL != grid->freeNotificationFunc) 
     (*grid->freeNotificationFunc)( grid->freeNotificationData );
+  if (NULL != grid->interp) interpFree(grid->interp);
   if (NULL != grid->lines) linesFree(grid->lines);
 
   gridCloseTecplotGeomFile(grid);
@@ -5632,11 +5634,6 @@ int gridPhase(Grid *grid){
 
 Grid *gridSetPhase(Grid *grid, int phase){
   grid->phase = phase;
-  return grid;
-}
-
-Grid *gridSetOrder(Grid *grid, int order){
-  grid->order = order;
   return grid;
 }
 

@@ -1072,9 +1072,7 @@ double gridCellInterpolationError( Grid *grid,
 {
   double volume6;
   double norm, cell_error, target;;
-  int function_id=1;
-  Interp *interp;
-  interp = interpCreate(function_id,gridOrder(grid));
+  Interp *interp = gridInterp(grid);
 
   interpError( interp,
 	       xyz0,xyz1,xyz2,xyz3, 

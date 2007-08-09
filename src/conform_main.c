@@ -31,14 +31,14 @@
 static  GridBool tecplotOutput = TRUE;
 static  int iview=0;
 static  int function_id=1;
+static  int order=2;
 
 double grid_interp_error(Grid *grid) {
   int cell, nodes[4];
   double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
   double total_error, cell_error;
   total_error = 0.0;
-  Interp *interp;
-  interp = interpCreate(function_id,gridOrder(grid));
+  Interp *interp= gridInterp(grid);
   for (cell=0;cell<gridMaxCell(grid);cell++){ 
     if (grid==gridCell(grid, cell, nodes)) { 
       gridNodeXYZ(grid,nodes[0],xyz0);
@@ -51,7 +51,6 @@ double grid_interp_error(Grid *grid) {
       total_error += cell_error;
     }
   }
-  interpFree(interp);
   return sqrt(total_error);
 }
 
@@ -59,8 +58,7 @@ void interp_metric(Grid *grid) {
   int node;
   double xyz[3];
   double m[6];
-  Interp *interp;
-  interp = interpCreate(function_id,gridOrder(grid));
+  Interp *interp = gridInterp(grid);
   for(node=0;node<gridMaxNode(grid);node++){
     if (grid==gridNodeXYZ(grid,node,xyz)) {
       interpMetric(interp,xyz,m);
@@ -70,7 +68,6 @@ void interp_metric(Grid *grid) {
 		 m[5]);
     }
   }
-  interpFree(interp);
 }
 
 void bl_metric_flat(Grid *grid, double h0) {
@@ -537,7 +534,7 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  gridSetOrder(grid, 1);
+  gridInterp(grid) = interpCreate( function_id, order );
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
   gridSetMinInsertCost(grid, 1.0e99 );
