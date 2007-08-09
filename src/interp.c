@@ -42,17 +42,24 @@ void interpFree( Interp *interp )
 GridBool interpFunction( Interp *interp, double *xyz, double *func )
 {
   double a, c, tanhaz;
-  switch (interpFunctionId(interp)) {
-  case 0:
-    (*func) = 8.0*xyz[0]*xyz[0] + 32.0*xyz[1]*xyz[1] + 128.0*xyz[2]*xyz[2];
-    break;
-  case 1:
-    a = 10.0;
-    c = 1000.0;
-    (*func) = 8.0*xyz[0]*xyz[0] + 32.0*xyz[1]*xyz[1] +
-      c*tanh(a*(xyz[2]-0.5));
-    break;
+  double bary[4];
+  if ( interpOrder(interp) < 0 ) {
+    if ( EMPTY == gridFindEnclosingCell(interpGrid(interp), 0, xyz, bary) )
+      printf("%s: %d: gridFindEnclosingCell failed\n",__FILE__,__LINE__);
+  } else {
+    switch (interpFunctionId(interp)) {
+    case 0:
+      (*func) = 8.0*xyz[0]*xyz[0] + 32.0*xyz[1]*xyz[1] + 128.0*xyz[2]*xyz[2];
+      break;
+    case 1:
+      a = 10.0;
+      c = 1000.0;
+      (*func) = 8.0*xyz[0]*xyz[0] + 32.0*xyz[1]*xyz[1] +
+	c*tanh(a*(xyz[2]-0.5));
+      break;
+    }
   }
+
   return TRUE;
 }
 

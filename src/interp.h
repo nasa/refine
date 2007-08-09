@@ -33,6 +33,7 @@ void interpFree( Interp * );
 
 #define interpFunctionId(interp) ((interp)->function_id)
 #define interpOrder(interp) (ABS((interp)->order))
+#define interpGrid(interp) ((interp)->grid)
 
 GridBool interpFunction( Interp *, double *xyz, double *func );
 GridBool interpMetric( Interp *, double *xyz, double *m );
