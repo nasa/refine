@@ -1,6 +1,9 @@
-The Not So Distant Future: Released Refine 1.4.0
+The Not So Distant Future: Released Refine 1.4.1
 
-API change to update ghost frozen state, requires >= FUN3D-25331
+Thu Sep 27, 2007: Released Refine 1.4.0
+
+API change to update ghost frozen state, requires >= FUN3D-25331 (10.4.0).
+Fixed calls to correctly obtain GridEx SDK edge parameters.
 
 Wed Apr 11, 2007: Released Refine 1.3.1
 

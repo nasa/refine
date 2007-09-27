@@ -1,3 +1,7 @@
+2007-09-27  8:15 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.4.0 Release. For FUN3D offical relase 10.4.0 (r26514).
+	
 2007-06-08 12:40 Mike Park  <mike.park@nasa.gov>
 
 	* src/gridfortran.c (gridloadglobalnodedata_,gridsetlocalnodedata_)
