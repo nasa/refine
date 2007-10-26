@@ -16,6 +16,9 @@ Read the `Basic Installation' section for more detailed instructions.
 Note To FUN3D Users
 ===================
 
+Please see the `Adaptation and Error Estimation' section of
+http://fun3d.larc.nasa.gov/
+
 You will need to run/rerun the FUN3D ./configure script. Add this argument
 
   --with-refine=/my/path/to/refine_x_x_x
