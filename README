@@ -1,6 +1,4 @@
 
-CVS package release tag (version) : $Name$
-
 Refine is a 3D tetrahedral grid adaptation framework. It is
 implemented with an object-oriented flavor in the C language.  Most
 functionality is wrapped into Ruby scripting language extensions
@@ -16,20 +14,11 @@ Laboratory SDK <http://geolab.larc.nasa.gov/>, which assess CAD
 information with the CAPRI API
 <http://raphael.mit.edu/capri/docs.html>.
 
-MesherX is an advancing layer mixed-element mesher
-<http://www.scorec.rpi.edu/~garimell/thesis/THESIS-FULL.PDF> that
-interacts with the SDK to rebuild the inviscid portions of the grid.
+MesherX is an advancing layer mixed-element mesher that interacts with
+the SDK to rebuild the inviscid portions of the grid.
 
 See the INSTALL file for build instructions.
 
 Contact Mike Park <Mike.Park@NASA.Gov> (757) 864-6604 or anyone listed
 in the AUTHORS file for help or more information.
-
-To gain cvs access, you will need a NASA Langley CFDLAB account. Then
-run:
-
-% setenv CVS_RSH ssh  # for csh
-% export=CVS_RSH ssh  # for sh
-
-% cvs -d :ext:cfdlab.larc.nasa.gov:/ump/fldmd/home/mikepark/cvsroot co -P refine
 

@@ -1,51 +1,54 @@
 
-(Quick Start) If You Recieved a *.tar.gz File
-=============================================
+(Quick Start) If You Recieved a *.tar.gz File to run with FUN3D
+===============================================================
 
 run (replace `x_x_x' with the current version number):
 
  % gunzip refine_x_x_x.tar.gz
  % tar xvf refine_x_x_x.tar
  % cd refine_x_x_x
- % ./configure --prefix=`pwd`
+ % ./configure --disable-exec --prefix=`pwd`
  % make
  % make install
 
 Read the `Basic Installation' section for more detailed instructions.
 
 Note To FUN3D Users
-======================
+===================
 
-Please add the following lines to your FUN3D/Makefile.env
-to run without CAD
+You will need to run/rerun the FUN3D ./configure script. Add this argument
 
-REFINELIBS = -L[path to refine]/lib -lrefine -lFAKEGeomExtras -lFAKEGeomNULL
+  --with-refine=/my/path/to/refine_x_x_x
 
-replace [path to refine] with the path to the refine package
+To use FAUXGeom geometry, specify
 
-Note To SGI IRIX Users
-======================
+  --with-refineFAKEGeom=-lFAUXGeom
 
-If configure does not find the X libs you will see a line that
-looks like
+To use the full-blown CAPRI-GridEx CAD geometry contact 
+FUN_Support@LaRC.NASA.gov, it is _not_ trivial to set up.
+
+32 and 64 bit X Libraries
+=========================
+
+If configure does not find the X libs you will see a line that looks like
 
 checking for X... libraries , headers
 
 If this happens please rerun the configure script with 
 these two arguements  
 
- --x-includes=/usr/include --x-libraries=/usr/lib32
+ --x-includes=/usr/include --x-libraries=/usr/lib[32|64]
 
 to the configure or autogen.sh script command line options
 
-Note To CVS Users ONLY!
+Note To SVN Users ONLY!
 =======================
 
 (Skip this step and goto `Basic Installation' if you have a *.tar.gz 
 file.)
 
    Run ./autogen.sh to set the package up to install inside an
-archetecture directory(e.g., Linux, IRIX64). It will run ./bootstrap
+archetecture directory(e.g., Linux). It will run ./bootstrap
 to create the configure script. Then it will create an arch
 dir. Finally, it will cd to the arch dir and and run: 
 ../configure --prefix=`pwd`.
