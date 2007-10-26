@@ -1292,6 +1292,12 @@ VALUE grid_clearStoredCost( VALUE self )
   return( grid == gridClearStoredCost( grid )?self:Qnil);
 }
 
+VALUE grid_copyAboutY0( VALUE self, VALUE rb_faceId, VALUE rb_aux )
+{
+  GET_GRID_FROM_SELF;
+  return( grid == gridCopyAboutY0( grid, NUM2INT(rb_faceId), NUM2INT(rb_aux) )?self:Qnil);
+}
+
 
 VALUE cGrid;
 
@@ -1481,5 +1487,6 @@ void Init_Grid()
   rb_define_method( cGrid, "storedCostDerivative", grid_storedCostDerivative, 1 );
   rb_define_method( cGrid, "storeCost", grid_storeCost, 2 );
   rb_define_method( cGrid, "clearStoredCost", grid_clearStoredCost, 0 );
+  rb_define_method( cGrid, "copyAboutY0", grid_copyAboutY0, 2 );
 
 }
