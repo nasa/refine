@@ -537,7 +537,9 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  temp_interp = interpCreate( grid, function_id, -order );
+  temp_interp = interpCreate( grid, function_id, order );
+
+  interpTecplot( temp_interp, NULL );
 
   return 0;
 

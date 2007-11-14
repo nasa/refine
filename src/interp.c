@@ -9,6 +9,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #ifndef __APPLE__       /* Not needed on Mac OS X */
 #include <malloc.h>
 #endif
@@ -221,4 +222,70 @@ GridBool interpError( Interp *interp,
     }
 
   return TRUE;
+}
+
+GridBool interpTecplot( Interp *interp, char *filename )
+{
+
+  FILE *f;
+  int nodes[3], face, faceId;
+  double xyz0[3],xyz1[3],xyz2[3],xyz[3];
+  double val;
+  Grid *grid = interpGrid(interp);
+
+  if (NULL == filename)
+    {
+      f = fopen( "interp.t", "w" );
+    } else {
+      f = fopen( filename, "w" );
+    }
+
+  if ( NULL == f ) return FALSE;
+
+  fprintf( f, "title=\"tecplot interp file\"\n" );
+  fprintf( f, "variables=\"x\",\"y\",\"z\",\"s\"\n" );
+
+  fprintf( f, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
+	   6*gridNFace(grid), 4*gridNFace(grid));
+
+  for (face=0;face<gridMaxFace(grid);face++)
+    if ( gridFace(grid, face, nodes, &faceId) )
+    {
+      gridNodeXYZ(grid, nodes[0], xyz0 );
+      interpFunction( interp, xyz0, &val );
+      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+	       xyz0[0], xyz0[1], xyz0[2], val );
+      gridNodeXYZ(grid, nodes[1], xyz1 );
+      interpFunction( interp, xyz1, &val );
+      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+	       xyz1[0], xyz1[1], xyz1[2], val );
+      gridNodeXYZ(grid, nodes[2], xyz2 );
+      interpFunction( interp, xyz2, &val );
+      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+	       xyz2[0], xyz2[1], xyz2[2], val );
+      gridAverageVector(xyz1,xyz2,xyz)
+      interpFunction( interp, xyz, &val );
+      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+	       xyz[0], xyz[1], xyz[2], val );
+      gridAverageVector(xyz0,xyz2,xyz)
+      interpFunction( interp, xyz, &val );
+      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+	       xyz[0], xyz[1], xyz[2], val );
+      gridAverageVector(xyz0,xyz1,xyz)
+      interpFunction( interp, xyz, &val );
+      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+	       xyz[0], xyz[1], xyz[2], val );
+    }
+
+  for (face=0;face<gridNFace(grid);face++)
+    {
+      fprintf( f, "%d %d %d\n",6*face+1,6*face+6,6*face+5);
+      fprintf( f, "%d %d %d\n",6*face+2,6*face+4,6*face+6);
+      fprintf( f, "%d %d %d\n",6*face+3,6*face+5,6*face+4);
+      fprintf( f, "%d %d %d\n",6*face+4,6*face+5,6*face+6);
+    }
+    
+  fclose(f);
+
+  return TRUE;  
 }
