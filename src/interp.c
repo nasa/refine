@@ -81,6 +81,43 @@ Interp* interpCreate( Grid *grid, int function_id, int order )
 	    gridNodeXYZ(grid, nodes[node], xyz );
 	    interpFunction( interp, xyz, &(interp->f[node+4*cell]) );
 	  }
+	if (TRUE) {
+	  double a[20];
+	  int row, col;
+	  int iq,j;
+	  double xyz0[3];
+	  double xyz1[3];
+	  double xyz2[3];
+	  double xyz3[3];
+	  double bary[4];
+	  double func;
+	  gridNodeXYZ(grid, nodes[0], xyz0 );
+	  gridNodeXYZ(grid, nodes[1], xyz1 );
+	  gridNodeXYZ(grid, nodes[2], xyz2 );
+	  gridNodeXYZ(grid, nodes[3], xyz3 );
+	  for(row=0;row<20;row++)a[row]=0.0;
+	  for(iq=0;iq<nq;iq++)
+	    {
+	      bary[1] = 0.5*(1.0+xq[iq]); 
+	      bary[2] = 0.5*(1.0+yq[iq]); 
+	      bary[3] = 0.5*(1.0+zq[iq]); 
+	      bary[0] = 1.0-bary[1]-bary[2]-bary[3];
+	      for(j=0;j<3;j++)
+		xyz[j] = bary[0]*xyz0[j] + bary[1]*xyz1[j] + 
+		  bary[2]*xyz2[j] + bary[3]*xyz3[j];
+	      interpFunction( interp, xyz, &func );
+	      for(row=0;row<4;row++)
+		{
+		  for(col=0;col<4;col++)
+		    a[row+col*4] += bary[row]*bary[col];
+		  a[row+4*4] += bary[row]*func;
+		}
+	    }
+	  gridGaussianElimination( 4, 5, a );
+	  gridGaussianBacksolve( 4, 5, a );
+	  for(row=0;row<4;row++)interp->f[row+4*cell] = a[row+4*4];
+	  
+	}
       }
   }
   interp->order = order;
