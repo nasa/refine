@@ -30,8 +30,6 @@
 
 static  GridBool tecplotOutput = TRUE;
 static  int iview=0;
-static  int function_id=1;
-static  int order=2;
 
 double grid_interp_error(Grid *grid) {
   int cell, nodes[4];
@@ -471,6 +469,11 @@ int main( int argc, char *argv[] )
   char ref_output[256];
   double h0 = 1.0;
 
+  int function_id=1;
+  int order=1;
+
+  Interp *temp_interp;
+
   int i;
 
   sprintf( modeler,    "Unknown" );
@@ -533,6 +536,10 @@ int main( int argc, char *argv[] )
     printf("ERROR: loaded part does not have right handed boundaries\n");
     return 1;
   }
+
+  temp_interp = interpCreate( grid, function_id, -order );
+
+  return 0;
 
   gridInterp(grid) = interpCreate( grid, function_id, order );
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
