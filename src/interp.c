@@ -24,18 +24,37 @@
 Interp* interpCreate( Grid *grid, int function_id, int order )
 {
   Interp *interp;
+  int cell;
+  int nodes[4];
+  int node;
+  double xyz[3];
 
   interp = (Interp *)malloc( sizeof(Interp) );
 
   interp->grid = gridDup(grid);
   interp->function_id = function_id;
+  if ( order > 0 ) {
+    interp->f = NULL;
+  }else{
+    interp->order = ABS(order);	
+    interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
+    for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+      {
+	gridCell(interpGrid(interp),cell,nodes);
+	for(node=0;node<4;node++)
+	  {
+	    gridNodeXYZ(grid, nodes[node], xyz );
+	    interpFunction( interp, xyz, &(interp->f[node+4*cell]) );
+	  }
+      }
+  }
   interp->order = order;
-
   return interp;
 }
 
 void interpFree( Interp *interp )
 {
+  if ( NULL != interp->f ) free(interp->f);
   if ( NULL != interp->grid ) gridFree(interp->grid);
   free( interp );
 }
@@ -44,9 +63,15 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
 {
   double a, c, tanhaz;
   double bary[4];
+  int cell;
   if ( interpOrder(interp) < 0 ) {
-    if ( EMPTY == gridFindEnclosingCell(interpGrid(interp), 0, xyz, bary) )
-      printf("%s: %d: gridFindEnclosingCell failed\n",__FILE__,__LINE__);
+    cell = gridFindEnclosingCell(interpGrid(interp), 0, xyz, bary);
+    if ( EMPTY == cell )
+      {
+	printf("%s: %d: gridFindEnclosingCell failed\n",__FILE__,__LINE__);
+	return FALSE;
+      }
+    return interpFunctionInCell( interp, cell, bary, func );
   } else {
     switch (interpFunctionId(interp)) {
     case 0:
@@ -61,6 +86,16 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
     }
   }
 
+  return TRUE;
+}
+
+GridBool interpFunctionInCell( Interp *interp, 
+			       int cell, double *bary, double *func )
+{
+  int i;
+  (*func) = 0.0;
+  for (i=0;i<4;i++)
+    (*func) += interp->f[i+4*cell]*bary[i];
   return TRUE;
 }
 

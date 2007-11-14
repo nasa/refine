@@ -25,6 +25,7 @@ typedef struct Interp Interp;
 struct Interp {
   int function_id;
   int order;
+  double *f;
   Grid *grid;
 };
 
@@ -32,10 +33,11 @@ Interp *interpCreate( Grid *grid, int function_id, int order );
 void interpFree( Interp * );
 
 #define interpFunctionId(interp) ((interp)->function_id)
-#define interpOrder(interp) (ABS((interp)->order))
+#define interpOrder(interp) ((interp)->order)
 #define interpGrid(interp) ((interp)->grid)
 
 GridBool interpFunction( Interp *, double *xyz, double *func );
+GridBool interpFunctionInCell( Interp *, int cell, double *bary, double *func );
 GridBool interpMetric( Interp *, double *xyz, double *m );
 GridBool interpError( Interp *, 
 		      double *xyz0, double *xyz1, double *xyz2, double *xyz3, 
