@@ -293,6 +293,8 @@ GridBool interpError( Interp *interp,
       (*error) += 0.125 * volume6 * wq[i] * diff * diff;
     }
 
+  (*error) = sqrt(*error);
+
   return TRUE;
 }
 
@@ -401,4 +403,26 @@ GridBool interpTecplot( Interp *interp, char *filename )
   fclose(f);
 
   return TRUE;  
+}
+
+double interpTotalError(Grid *grid) 
+{
+  int cell, nodes[4];
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double total_error, cell_error;
+  total_error = 0.0;
+  Interp *interp= gridInterp(grid);
+  for (cell=0;cell<gridMaxCell(grid);cell++){ 
+    if (grid==gridCell(grid, cell, nodes)) { 
+      gridNodeXYZ(grid,nodes[0],xyz0);
+      gridNodeXYZ(grid,nodes[1],xyz1);
+      gridNodeXYZ(grid,nodes[2],xyz2);
+      gridNodeXYZ(grid,nodes[3],xyz3);
+      interpError( interp,
+		   xyz0,xyz1,xyz2,xyz3, 
+		   &cell_error );
+      total_error += cell_error;
+    }
+  }
+  return total_error;
 }

@@ -31,27 +31,6 @@
 static  GridBool tecplotOutput = TRUE;
 static  int iview=0;
 
-double grid_interp_error(Grid *grid) {
-  int cell, nodes[4];
-  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
-  double total_error, cell_error;
-  total_error = 0.0;
-  Interp *interp= gridInterp(grid);
-  for (cell=0;cell<gridMaxCell(grid);cell++){ 
-    if (grid==gridCell(grid, cell, nodes)) { 
-      gridNodeXYZ(grid,nodes[0],xyz0);
-      gridNodeXYZ(grid,nodes[1],xyz1);
-      gridNodeXYZ(grid,nodes[2],xyz2);
-      gridNodeXYZ(grid,nodes[3],xyz3);
-      interpError( interp,
-		   xyz0,xyz1,xyz2,xyz3, 
-		   &cell_error );
-      total_error += cell_error;
-    }
-  }
-  return sqrt(total_error);
-}
-
 void interp_metric(Grid *grid) {
   int node;
   double xyz[3];
@@ -144,8 +123,8 @@ void bl_metric(Grid *grid, double h0) {
   }
 }
 
-//#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %9.2e %9.2e AR %12.5e err %12.5e Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),grid_interp_error(grid), gridMinVolume(grid)); fflush(stdout);}
-#define PRINT_STATUS {printf("AR %12.5e err %12.5e Vol %10.6e\n", gridMinThawedAR(grid),grid_interp_error(grid), gridMinVolume(grid)); fflush(stdout);}
+//#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %9.2e %9.2e AR %12.5e err %12.5e Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),interpTotalError(grid), gridMinVolume(grid)); fflush(stdout);}
+#define PRINT_STATUS {printf("AR %12.5e err %12.5e Vol %10.6e\n", gridMinThawedAR(grid),interpTotalError(grid), gridMinVolume(grid)); fflush(stdout);}
 
 #define DUMP_TEC if (tecplotOutput) { \
  iview++;printf("Frame %d\n",iview);\
@@ -159,7 +138,7 @@ void bl_metric(Grid *grid, double h0) {
 
 #define STATUS { \
   PRINT_STATUS; \
-  printf("%10d %12.5e %12.5e %%oct\n",gridNNode(grid),sqrt(gridMinThawedAR(grid)),grid_interp_error(grid)); \
+  printf("%10d %12.5e %12.5e %%oct\n",gridNNode(grid),sqrt(gridMinThawedAR(grid)),interpTotalError(grid)); \
 }
 
 Grid *gridHistogram( Grid *grid, char *filename ) 

@@ -45,6 +45,8 @@ GridBool interpError( Interp *,
 
 GridBool interpTecplot( Interp *, char *filename );
 
+double interpTotalError( Grid *grid );
+
 END_C_DECLORATION
 
 #endif /* INTERP_H */
