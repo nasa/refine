@@ -541,6 +541,9 @@ int main( int argc, char *argv[] )
 
   interpTecplot( temp_interp, NULL );
 
+  gridInterp(grid) = temp_interp;
+  STATUS;
+
   return 0;
 
   gridInterp(grid) = interpCreate( grid, function_id, order );

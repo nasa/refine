@@ -257,7 +257,7 @@ GridBool interpError( Interp *interp,
       for(j=0;j<3;j++)
 	xyz[j] = b0*xyz0[j] + b1*xyz1[j] + b2*xyz2[j] + b3*xyz3[j];
       interpFunction( interp, xyz, &func );
-      switch ( interpOrder(interp) ) 
+      switch ( ABS(interpOrder(interp)) ) 
 	{
 	case 1:
 	  pinterp = b0*n0 + b1*n1 + b2*n2 + b3*n3; break;
