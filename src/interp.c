@@ -301,7 +301,10 @@ GridBool interpTecplot( Interp *interp, char *filename )
 
   FILE *f;
   int nodes[3], face, faceId;
+  int cell, cellnodes[4];
   double xyz0[3],xyz1[3],xyz2[3],xyz[3];
+  double cell0[3],cell1[3],cell2[3],cell3[3];
+  double bary[4];
   double val;
   Grid *grid = interpGrid(interp);
 
@@ -322,32 +325,70 @@ GridBool interpTecplot( Interp *interp, char *filename )
 
   for (face=0;face<gridMaxFace(grid);face++)
     if ( gridFace(grid, face, nodes, &faceId) )
-    {
-      gridNodeXYZ(grid, nodes[0], xyz0 );
-      interpFunction( interp, xyz0, &val );
-      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
-	       xyz0[0], xyz0[1], xyz0[2], val );
-      gridNodeXYZ(grid, nodes[1], xyz1 );
-      interpFunction( interp, xyz1, &val );
-      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
-	       xyz1[0], xyz1[1], xyz1[2], val );
-      gridNodeXYZ(grid, nodes[2], xyz2 );
-      interpFunction( interp, xyz2, &val );
-      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
-	       xyz2[0], xyz2[1], xyz2[2], val );
-      gridAverageVector(xyz1,xyz2,xyz)
-      interpFunction( interp, xyz, &val );
-      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
-	       xyz[0], xyz[1], xyz[2], val );
-      gridAverageVector(xyz0,xyz2,xyz)
-      interpFunction( interp, xyz, &val );
-      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
-	       xyz[0], xyz[1], xyz[2], val );
-      gridAverageVector(xyz0,xyz1,xyz)
-      interpFunction( interp, xyz, &val );
-      fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
-	       xyz[0], xyz[1], xyz[2], val );
-    }
+      if ( interpOrder(interp) < 0 ) {
+	cell = gridFindCellWithFace(grid, face );
+	if ( EMPTY == cell ) return FALSE;
+	gridCell(grid,cell,cellnodes);
+	gridNodeXYZ(grid, cellnodes[0], cell0 );
+	gridNodeXYZ(grid, cellnodes[1], cell1 );
+	gridNodeXYZ(grid, cellnodes[2], cell2 );
+	gridNodeXYZ(grid, cellnodes[3], cell3 );
+	gridNodeXYZ(grid, nodes[0], xyz0 );
+	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz0, bary );
+	interpFunctionInCell( interp, cell, bary, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz0[0], xyz0[1], xyz0[2], val );	
+	gridNodeXYZ(grid, nodes[1], xyz1 );
+	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz1, bary );
+	interpFunctionInCell( interp, cell, bary, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz1[0], xyz1[1], xyz1[2], val );
+	gridNodeXYZ(grid, nodes[2], xyz2 );
+	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz2, bary );
+	interpFunctionInCell( interp, cell, bary, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz2[0], xyz2[1], xyz2[2], val );
+	gridAverageVector(xyz1,xyz2,xyz)
+	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
+	interpFunctionInCell( interp, cell, bary, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz[0], xyz[1], xyz[2], val );
+	gridAverageVector(xyz0,xyz2,xyz)
+	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
+	interpFunctionInCell( interp, cell, bary, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz[0], xyz[1], xyz[2], val );
+	gridAverageVector(xyz0,xyz1,xyz)
+	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
+	interpFunctionInCell( interp, cell, bary, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz[0], xyz[1], xyz[2], val );
+      }else{
+	gridNodeXYZ(grid, nodes[0], xyz0 );
+	interpFunction( interp, xyz0, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz0[0], xyz0[1], xyz0[2], val );
+	gridNodeXYZ(grid, nodes[1], xyz1 );
+	interpFunction( interp, xyz1, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz1[0], xyz1[1], xyz1[2], val );
+	gridNodeXYZ(grid, nodes[2], xyz2 );
+	interpFunction( interp, xyz2, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz2[0], xyz2[1], xyz2[2], val );
+	gridAverageVector(xyz1,xyz2,xyz);
+	interpFunction( interp, xyz, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz[0], xyz[1], xyz[2], val );
+	gridAverageVector(xyz0,xyz2,xyz);
+	interpFunction( interp, xyz, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz[0], xyz[1], xyz[2], val );
+	gridAverageVector(xyz0,xyz1,xyz);
+	interpFunction( interp, xyz, &val );
+	fprintf( f, "%25.17e %25.17e %25.17e %25.17e\n",
+		 xyz[0], xyz[1], xyz[2], val );
+      }
 
   for (face=0;face<gridNFace(grid);face++)
     {
