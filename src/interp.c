@@ -68,10 +68,10 @@ Interp* interpCreate( Grid *grid, int function_id, int order )
 
   interp->grid = gridDup(grid);
   interp->function_id = function_id;
-  if ( order > 0 ) {
+  if ( order < 0 ) {
     interp->f = NULL;
   }else{
-    interp->order = ABS(order);	
+    interp->order = order;	
     interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
     for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
       {
@@ -131,12 +131,49 @@ void interpFree( Interp *interp )
   free( interp );
 }
 
+Interp* interpReconstruct( Interp *orig, int order )
+{
+  Interp *interp;
+  int cell;
+  int nodes[4];
+  int node;
+  double xyz[3];
+  double *x;
+
+  interp = (Interp *)malloc( sizeof(Interp) );
+
+  interp->grid = gridDup(interpGrid(orig));
+  interp->function_id = orig->function_id;
+  if ( order < 0 ) { 
+    printf("interpReconstruct %d order not positive\n",order);
+    return NULL;
+  }
+
+  interp->order = order;	
+  interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
+  x = (double *)malloc( gridNNode(interp->grid)*sizeof(double) );
+  
+  for(node=0;node<gridNNode(interp->grid);node++) x[node] = 0.0;
+  
+
+  for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+    {
+      gridCell(interpGrid(interp),cell,nodes);
+      for(node=0;node<4;node++)
+	{
+	  interp->f[node+4*cell] = x[nodes[node]];
+	}
+    }
+  interp->order = order;
+  return interp;
+}
+
 GridBool interpFunction( Interp *interp, double *xyz, double *func )
 {
   double a, c, tanhaz;
   double bary[4];
   int cell;
-  if ( interpOrder(interp) < 0 ) {
+  if ( interpOrder(interp) > 0 ) {
     cell = gridFindEnclosingCell(interpGrid(interp), 0, xyz, bary);
     if ( EMPTY == cell )
       {
@@ -327,7 +364,7 @@ GridBool interpTecplot( Interp *interp, char *filename )
 
   for (face=0;face<gridMaxFace(grid);face++)
     if ( gridFace(grid, face, nodes, &faceId) )
-      if ( interpOrder(interp) < 0 ) {
+      if ( interpOrder(interp) > 0 ) {
 	cell = gridFindCellWithFace(grid, face );
 	if ( EMPTY == cell ) return FALSE;
 	gridCell(grid,cell,cellnodes);

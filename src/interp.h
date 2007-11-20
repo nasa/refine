@@ -32,6 +32,8 @@ struct Interp {
 Interp *interpCreate( Grid *grid, int function_id, int order );
 void interpFree( Interp * );
 
+Interp *interpReconstruct( Interp *, int order );
+
 #define interpFunctionId(interp) ((interp)->function_id)
 #define interpOrder(interp) ((interp)->order)
 #define interpGrid(interp) ((interp)->grid)
