@@ -192,8 +192,9 @@ GridBool interpReconstructB( Interp *interp, int order, double *b )
 	             bary[2]*xyz2[j] + bary[3]*xyz3[j];
 	  interpFunction( interp, xyz, &func );
 	  for(j=0;j<4;j++) phi[j] = bary[j];
+	  /*	  for(j=0;j<4;j++) phi[j] *= 0.125 * volume6 * wq[iq]; */
 	  for(row=0;row<4;row++)
-	    b[nodes[row]] += 0.125 * volume6 * wq[iq] * func * phi[row];
+	    b[nodes[row]] += func * phi[row];
 	}
     }
 
@@ -237,11 +238,10 @@ GridBool interpReconstructAx( Interp *interp, int order, double *x, double *ax )
 	             bary[2]*xyz2[j] + bary[3]*xyz3[j];
 	  interpFunction( interp, xyz, &func );
 	  for(j=0;j<4;j++) phi[j] = bary[j];
+	  /*	  for(j=0;j<4;j++) phi[j] *= 0.125 * volume6 * wq[iq]; */
 	  for(row=0;row<4;row++)
 	    for(col=0;col<4;col++)
-	      ax[nodes[row]] += 0.125 * volume6 * wq[iq] * phi[row] * 
-		                0.125 * volume6 * wq[iq] * phi[col] *
-		                x[nodes[col]];
+	      ax[nodes[row]] += phi[row] * phi[col] * x[nodes[col]];
 	}
     }
 
@@ -258,7 +258,7 @@ Interp* interpReconstruct( Interp *orig, int order )
   double *x, *p, *r, *b, *ap;
   int nrow;
   int iteration;
-  double resid,last_resid,pap,alpha;
+  double resid0,resid,last_resid,pap,alpha;
 
   interp = (Interp *)malloc( sizeof(Interp) );
 
@@ -285,7 +285,8 @@ Interp* interpReconstruct( Interp *orig, int order )
 
   resid = interpVectProduct( nrow, r, r );
   printf("resid %3d %e\n",0,resid);
-  for (iteration =0; ((iteration<100)&&(resid>1.0e-5)); iteration++)
+  resid0 = resid;
+  for (iteration =0; ((iteration<100)&&((resid/resid0)>1.0e-8)); iteration++)
     {
       interpReconstructAx( orig, order, p, ap );
       pap = interpVectProduct( nrow, p, ap );
@@ -297,6 +298,12 @@ Interp* interpReconstruct( Interp *orig, int order )
       printf("resid %3d %e\n",iteration+1,resid);
       for(node=0;node<nrow;node++) p[node] = r[node] + resid/last_resid*p[node];
     }
+
+  interpReconstructAx( orig, order, x, ap );
+  for(node=0;node<nrow;node++) r[node] = b[node] - ap[node];
+  resid = interpVectProduct( nrow, r, r );
+  printf("resid fin %e\n",resid);
+
 
   free(p);
   free(r);
