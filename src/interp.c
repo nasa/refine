@@ -144,6 +144,17 @@ void interpFree( Interp *interp )
   free( interp );
 }
 
+double interpVectProduct( int nrow, double *v1, double *v2 )
+{
+  double norm;
+  int i;
+
+  norm = 0.0;
+  for (i=0;i<nrow;i++) norm += v1[i]*v2[i];
+
+  return norm;
+}
+
 GridBool interpReconstructB( Interp *interp, int order, double *b )
 {
   int cell, nodes[4];
@@ -160,7 +171,9 @@ GridBool interpReconstructB( Interp *interp, int order, double *b )
 
   Grid *grid = interpGrid(interp);
 
-  for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+  for(row=0;row<gridNNode(grid);row++) b[row] = 0.0;
+
+  for(cell=0;cell<gridNCell(grid);cell++)
     {
       gridCell(interpGrid(interp),cell,nodes);
       gridNodeXYZ(grid, nodes[0], xyz0 );
@@ -187,6 +200,54 @@ GridBool interpReconstructB( Interp *interp, int order, double *b )
   return TRUE;  
 }
 
+GridBool interpReconstructAx( Interp *interp, int order, double *x, double *ax )
+{
+  int cell, nodes[4];
+  int iq,j,row, col;
+  double xyz0[3];
+  double xyz1[3];
+  double xyz2[3];
+  double xyz3[3];
+  double xyz[3];
+  double volume6;
+  double bary[4];
+  double phi[4];
+  double func;
+
+  Grid *grid = interpGrid(interp);
+
+  for(row=0;row<gridNNode(grid);row++) ax[row] = 0.0;
+
+  for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+    {
+      gridCell(interpGrid(interp),cell,nodes);
+      gridNodeXYZ(grid, nodes[0], xyz0 );
+      gridNodeXYZ(grid, nodes[1], xyz1 );
+      gridNodeXYZ(grid, nodes[2], xyz2 );
+      gridNodeXYZ(grid, nodes[3], xyz3 );
+      volume6 = tet_volume6(xyz0,xyz1,xyz2,xyz3);
+      for(iq=0;iq<nq;iq++)
+	{
+	  bary[1] = 0.5*(1.0+xq[iq]); 
+	  bary[2] = 0.5*(1.0+yq[iq]); 
+	  bary[3] = 0.5*(1.0+zq[iq]); 
+	  bary[0] = 1.0-bary[1]-bary[2]-bary[3];
+	  for(j=0;j<3;j++)
+	    xyz[j] = bary[0]*xyz0[j] + bary[1]*xyz1[j] + 
+	             bary[2]*xyz2[j] + bary[3]*xyz3[j];
+	  interpFunction( interp, xyz, &func );
+	  for(j=0;j<4;j++) phi[j] = bary[j];
+	  for(row=0;row<4;row++)
+	    for(col=0;col<4;col++)
+	      ax[nodes[row]] += 0.125 * volume6 * wq[iq] * phi[row] * 
+		                0.125 * volume6 * wq[iq] * phi[col] *
+		                x[nodes[col]];
+	}
+    }
+
+  return TRUE;  
+}
+
 Interp* interpReconstruct( Interp *orig, int order )
 {
   Interp *interp;
@@ -196,6 +257,8 @@ Interp* interpReconstruct( Interp *orig, int order )
   double xyz[3];
   double *x, *p, *r, *b, *ap;
   int nrow;
+  int iteration;
+  double resid,last_resid,pap,alpha;
 
   interp = (Interp *)malloc( sizeof(Interp) );
 
@@ -209,14 +272,36 @@ Interp* interpReconstruct( Interp *orig, int order )
   interp->order = order;
   nrow = gridNNode(interp->grid);
   x  = (double *)malloc( nrow*sizeof(double) );
-  for(node=0;node<nrow;node++) x[node] = 0.0;
   p  = (double *)malloc( nrow*sizeof(double) );
   r  = (double *)malloc( nrow*sizeof(double) );
   b  = (double *)malloc( nrow*sizeof(double) );
   ap = (double *)malloc( nrow*sizeof(double) );
   
-  for(node=0;node<nrow;node++) b[node] = 0.0;
   interpReconstructB( orig, order, b );
+  for(node=0;node<nrow;node++) x[node] = 0.0;
+  for(node=0;node<nrow;node++) r[node] = b[node];
+  for(node=0;node<nrow;node++) p[node] = r[node];
+
+
+  resid = interpVectProduct( nrow, r, r );
+  printf("resid %3d %e\n",0,resid);
+  for (iteration =0; ((iteration<100)&&(resid>1.0e-5)); iteration++)
+    {
+      interpReconstructAx( orig, order, p, ap );
+      pap = interpVectProduct( nrow, p, ap );
+      alpha = resid/pap;
+      for(node=0;node<nrow;node++) x[node] += alpha*p[node];
+      for(node=0;node<nrow;node++) r[node] -= alpha*ap[node];
+      last_resid = resid;
+      resid = interpVectProduct( nrow, r, r );
+      printf("resid %3d %e\n",iteration+1,resid);
+      for(node=0;node<nrow;node++) p[node] = r[node] + resid/last_resid*p[node];
+    }
+
+  free(p);
+  free(r);
+  free(b);
+  free(ap);
 
   interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
   for(cell=0;cell<gridNCell(interpGrid(interp));cell++)

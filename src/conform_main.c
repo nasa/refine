@@ -525,6 +525,8 @@ int main( int argc, char *argv[] )
 
   temp_interp = interpReconstruct( temp_interp, order+1  );
 
+  interpTecplot( temp_interp, "p_rec.t" );
+
   return 0;
 
   gridInterp(grid) = interpCreate( grid, function_id, order );
