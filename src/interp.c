@@ -56,6 +56,19 @@ static double wq[] = { 0.053230333677557, 0.053230333677557, 0.053230333677557,
 		  0.064285714285714, 0.064285714285714, 0.064285714285714,
 		  0.064285714285714, 0.064285714285714, 0.064285714285714 };
 
+static double tet_volume6( double *a, double *b, double *c, double *d )
+{
+  double m11, m12, m13;
+  double det;
+
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  det = ( m11 - m12 + m13 );
+
+  return(-det);
+}
+
 Interp* interpCreate( Grid *grid, int function_id, int order )
 {
   Interp *interp;
@@ -71,7 +84,7 @@ Interp* interpCreate( Grid *grid, int function_id, int order )
   if ( order < 0 ) {
     interp->f = NULL;
   }else{
-    interp->order = order;	
+    interp->order = -order;	
     interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
     for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
       {
@@ -131,6 +144,49 @@ void interpFree( Interp *interp )
   free( interp );
 }
 
+GridBool interpReconstructB( Interp *interp, int order, double *b )
+{
+  int cell, nodes[4];
+  int iq,j,row;
+  double xyz0[3];
+  double xyz1[3];
+  double xyz2[3];
+  double xyz3[3];
+  double xyz[3];
+  double volume6;
+  double bary[4];
+  double phi[4];
+  double func;
+
+  Grid *grid = interpGrid(interp);
+
+  for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+    {
+      gridCell(interpGrid(interp),cell,nodes);
+      gridNodeXYZ(grid, nodes[0], xyz0 );
+      gridNodeXYZ(grid, nodes[1], xyz1 );
+      gridNodeXYZ(grid, nodes[2], xyz2 );
+      gridNodeXYZ(grid, nodes[3], xyz3 );
+      volume6 = tet_volume6(xyz0,xyz1,xyz2,xyz3);
+      for(iq=0;iq<nq;iq++)
+	{
+	  bary[1] = 0.5*(1.0+xq[iq]); 
+	  bary[2] = 0.5*(1.0+yq[iq]); 
+	  bary[3] = 0.5*(1.0+zq[iq]); 
+	  bary[0] = 1.0-bary[1]-bary[2]-bary[3];
+	  for(j=0;j<3;j++)
+	    xyz[j] = bary[0]*xyz0[j] + bary[1]*xyz1[j] + 
+	             bary[2]*xyz2[j] + bary[3]*xyz3[j];
+	  interpFunction( interp, xyz, &func );
+	  for(j=0;j<4;j++) phi[j] = bary[j];
+	  for(row=0;row<4;row++)
+	    b[nodes[row]] += 0.125 * volume6 * wq[iq] * func * phi[row];
+	}
+    }
+
+  return TRUE;  
+}
+
 Interp* interpReconstruct( Interp *orig, int order )
 {
   Interp *interp;
@@ -138,7 +194,8 @@ Interp* interpReconstruct( Interp *orig, int order )
   int nodes[4];
   int node;
   double xyz[3];
-  double *x;
+  double *x, *p, *r, *b, *ap;
+  int nrow;
 
   interp = (Interp *)malloc( sizeof(Interp) );
 
@@ -149,13 +206,19 @@ Interp* interpReconstruct( Interp *orig, int order )
     return NULL;
   }
 
-  interp->order = order;	
-  interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
-  x = (double *)malloc( gridNNode(interp->grid)*sizeof(double) );
+  interp->order = order;
+  nrow = gridNNode(interp->grid);
+  x  = (double *)malloc( nrow*sizeof(double) );
+  for(node=0;node<nrow;node++) x[node] = 0.0;
+  p  = (double *)malloc( nrow*sizeof(double) );
+  r  = (double *)malloc( nrow*sizeof(double) );
+  b  = (double *)malloc( nrow*sizeof(double) );
+  ap = (double *)malloc( nrow*sizeof(double) );
   
-  for(node=0;node<gridNNode(interp->grid);node++) x[node] = 0.0;
-  
+  for(node=0;node<nrow;node++) b[node] = 0.0;
+  interpReconstructB( orig, order, b );
 
+  interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
   for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
     {
       gridCell(interpGrid(interp),cell,nodes);
@@ -164,6 +227,7 @@ Interp* interpReconstruct( Interp *orig, int order )
 	  interp->f[node+4*cell] = x[nodes[node]];
 	}
     }
+  free(x);
   interp->order = order;
   return interp;
 }
@@ -235,19 +299,6 @@ GridBool interpMetric( Interp *interp, double *xyz, double *m )
   }
     
   return TRUE;
-}
-
-static double tet_volume6( double *a, double *b, double *c, double *d )
-{
-  double m11, m12, m13;
-  double det;
-
-  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
-  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
-  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
-  det = ( m11 - m12 + m13 );
-
-  return(-det);
 }
 
 GridBool interpError( Interp *interp,
