@@ -387,7 +387,7 @@ Interp* interpReconstruct( Interp *orig, int order )
   resid = interpVectProduct( nrow, r, r );
   printf("resid %3d %e\n",0,resid);
   resid0 = resid;
-  for (iteration =0; ((iteration<100)&&((resid/resid0)>1.0e-8)); iteration++)
+  for (iteration =0; ((iteration<100)&&((resid/resid0)>1.0e-15)); iteration++)
     {
       interpReconstructAx( orig, order, nrow, p, ap );
       pap = interpVectProduct( nrow, p, ap );
