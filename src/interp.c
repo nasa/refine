@@ -163,12 +163,28 @@ int interpNB(Interp *interp)
 GridBool interpPhi( Interp *interp, double *bary, double *phi )
 {
   int j;
+  double x, y, z;
+  x = bary[1];
+  y = bary[2];
+  z = bary[3];
   switch ( ABS(interpOrder(interp)) ) 
     {
     case 1:
       for(j=0;j<4;j++) phi[j] = bary[j];
       break;
     default:
+      phi[0] = 1.0-3.0*z-3.0*y-3.0*x+2.0*z*z+4.0*y*z+4.0*x*z+2.0*y*y+4.0*x*y+2.0*x*x;
+      phi[1] = -x+2.0*x*x;
+      phi[2] = -y+2.0*y*y;
+      phi[3] = -z+2.0*z*z;
+
+      phi[4] = 4.0*x-4.0*x*z-4.0*x*y-4.0*x*x;
+      phi[5] = 4.0*y-4.0*y*z-4.0*y*y-4.0*x*y;
+      phi[6] = 4.0*z-4.0*z*z-4.0*y*z-4.0*x*z;
+
+      phi[7] = 4.0*x*y;
+      phi[8] = 4.0*x*z;
+      phi[9] = 4.0*y*z;
       printf("interpPhi %d order has no phi\n",interpOrder(interp));
       return FALSE;
     }
@@ -423,10 +439,14 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
 GridBool interpFunctionInCell( Interp *interp, 
 			       int cell, double *bary, double *func )
 {
-  int i;
+  int nb, node;
+  double phi[10];
   (*func) = 0.0;
-  for (i=0;i<4;i++)
-    (*func) += interp->f[i+4*cell]*bary[i];
+  nb = interpNB(interp);
+  if (EMPTY == nb) return FALSE;
+  if (!interpPhi( interp, bary, phi ) ) return FALSE;
+  for(node=0;node<nb;node++)
+    (*func) += interp->f[node+nb*cell]*phi[node];
   return TRUE;
 }
 
