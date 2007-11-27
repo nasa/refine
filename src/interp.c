@@ -144,9 +144,9 @@ void interpFree( Interp *interp )
   free( interp );
 }
 
-int interpNB(Interp *interp)
+int interpNB_order( int order)
 {
-  switch ( ABS(interpOrder(interp)) ) 
+  switch ( order ) 
     {
     case 1:
       return 4;
@@ -155,19 +155,23 @@ int interpNB(Interp *interp)
       return 10;
       break;
     default:
-      printf("interpNB %d order not translated to nb\n",interpOrder(interp));
+      printf("interpNB %d order not translated to nb\n",order);
       return EMPTY;
     }
 }
+int interpNB(Interp *interp)
+{
+  return interpNB_order( interpOrder(interp) );
+}
 
-GridBool interpPhi( Interp *interp, double *bary, double *phi )
+GridBool interpPhi_order( int order, double *bary, double *phi )
 {
   int j;
   double x, y, z;
   x = bary[1];
   y = bary[2];
   z = bary[3];
-  switch ( ABS(interpOrder(interp)) ) 
+  switch ( order ) 
     {
     case 1:
       for(j=0;j<4;j++) phi[j] = bary[j];
@@ -185,26 +189,41 @@ GridBool interpPhi( Interp *interp, double *bary, double *phi )
       phi[7] = 4.0*x*y;
       phi[8] = 4.0*x*z;
       phi[9] = 4.0*y*z;
+      break;
     default:
-      printf("interpPhi %d order has no phi\n",interpOrder(interp));
+      printf("interpPhi %d order has no phi\n",order);
       return FALSE;
     }
   return TRUE;
 }
-
-GridBool interpLoc2Row( Interp *interp, int cell, int *loc2row )
+GridBool interpPhi( Interp *interp, double *bary, double *phi )
 {
-  switch ( ABS(interpOrder(interp)) ) 
+  return interpPhi_order( interpOrder(interp), bary, phi );
+}
+
+GridBool interpLoc2Row_order( Grid *grid, int order, int cell, int *loc2row )
+{
+  int edge;
+  switch ( order ) 
     {
     case 1:
-      if ( interpGrid(interp) != 
-	   gridCell(interpGrid(interp),cell,loc2row)) return FALSE;
+      if ( grid != gridCell(grid,cell,loc2row)) return FALSE;
+      break;
+    case 2:
+      if ( grid != gridCell(grid,cell,loc2row)) return FALSE;
+      for(edge=0;edge<6;edge++)
+	loc2row[4+edge] = gridNNode(grid) + gridCell2Conn(grid, cell, edge );
       break;
     default:
-      printf("interpPhi %d order has no phi\n",interpOrder(interp));
+      printf("interpLoc2Row %d order has no phi\n",order);
       return FALSE;
     }
   return TRUE;
+}
+GridBool interpLoc2Row( Interp *interp, int cell, int *loc2row )
+{
+  return interpLoc2Row_order( interpGrid(interp), interpOrder(interp), cell, 
+			      loc2row );
 }
 
 double interpVectProduct( int nrow, double *v1, double *v2 )
@@ -218,7 +237,7 @@ double interpVectProduct( int nrow, double *v1, double *v2 )
   return norm;
 }
 
-GridBool interpReconstructB( Interp *interp, int order, double *b )
+GridBool interpReconstructB( Interp *interp, int order, int nrow, double *b )
 {
   int cell, nodes[4];
   int iq,j,row;
@@ -236,7 +255,7 @@ GridBool interpReconstructB( Interp *interp, int order, double *b )
 
   Grid *grid = interpGrid(interp);
 
-  for(row=0;row<gridNNode(grid);row++) b[row] = 0.0;
+  for(row=0;row<nrow;row++) b[row] = 0.0;
 
   for(cell=0;cell<gridNCell(grid);cell++)
     {
@@ -256,10 +275,11 @@ GridBool interpReconstructB( Interp *interp, int order, double *b )
 	    xyz[j] = bary[0]*xyz0[j] + bary[1]*xyz1[j] + 
 	             bary[2]*xyz2[j] + bary[3]*xyz3[j];
 	  interpFunction( interp, xyz, &func );
-	  nb = interpNB(interp);
-	  interpPhi( interp, bary, phi );
+	  nb = interpNB_order(order);
+	  interpPhi_order( order, bary, phi );
 	  /*	  for(j=0;j<nb;j++) phi[j] *= 0.125 * volume6 * wq[iq]; */
-	  if ( !interpLoc2Row( interp, cell, loc2row )) return FALSE;
+	  if ( !interpLoc2Row_order( grid, order, cell, loc2row )) 
+	    return FALSE;
 	  for(row=0;row<nb;row++)
 	    b[loc2row[row]] += func * phi[row];
 	}
@@ -268,7 +288,8 @@ GridBool interpReconstructB( Interp *interp, int order, double *b )
   return TRUE;  
 }
 
-GridBool interpReconstructAx( Interp *interp, int order, double *x, double *ax )
+GridBool interpReconstructAx( Interp *interp, int order, int nrow, double *x,
+			      double *ax )
 {
   int cell, nodes[4];
   int iq,j,row, col;
@@ -276,17 +297,15 @@ GridBool interpReconstructAx( Interp *interp, int order, double *x, double *ax )
   double xyz1[3];
   double xyz2[3];
   double xyz3[3];
-  double xyz[3];
   double volume6;
   double bary[4];
-  double func;
   int nb;
   int loc2row[10];
   double phi[10];
 
   Grid *grid = interpGrid(interp);
 
-  for(row=0;row<gridNNode(grid);row++) ax[row] = 0.0;
+  for(row=0;row<nrow;row++) ax[row] = 0.0;
 
   for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
     {
@@ -302,14 +321,11 @@ GridBool interpReconstructAx( Interp *interp, int order, double *x, double *ax )
 	  bary[2] = 0.5*(1.0+yq[iq]); 
 	  bary[3] = 0.5*(1.0+zq[iq]); 
 	  bary[0] = 1.0-bary[1]-bary[2]-bary[3];
-	  for(j=0;j<3;j++)
-	    xyz[j] = bary[0]*xyz0[j] + bary[1]*xyz1[j] + 
-	             bary[2]*xyz2[j] + bary[3]*xyz3[j];
-	  interpFunction( interp, xyz, &func );
-	  nb = interpNB(interp);
-	  interpPhi( interp, bary, phi );
+	  nb = interpNB_order(order);
+	  interpPhi_order( order, bary, phi );
 	  /*	  for(j=0;j<nb;j++) phi[j] *= 0.125 * volume6 * wq[iq]; */
-	  if ( !interpLoc2Row( interp, cell, loc2row )) return FALSE;
+	  if ( !interpLoc2Row_order( grid, order, cell, loc2row ))
+	    return FALSE;
 	  for(row=0;row<nb;row++)
 	    for(col=0;col<nb;col++)
 	      ax[loc2row[row]] += phi[row] * phi[col] * x[loc2row[col]];
@@ -363,7 +379,7 @@ Interp* interpReconstruct( Interp *orig, int order )
   b  = (double *)malloc( nrow*sizeof(double) );
   ap = (double *)malloc( nrow*sizeof(double) );
   
-  interpReconstructB( orig, order, b );
+  interpReconstructB( orig, order, nrow, b );
   for(node=0;node<nrow;node++) x[node] = 0.0;
   for(node=0;node<nrow;node++) r[node] = b[node];
   for(node=0;node<nrow;node++) p[node] = r[node];
@@ -373,7 +389,7 @@ Interp* interpReconstruct( Interp *orig, int order )
   resid0 = resid;
   for (iteration =0; ((iteration<100)&&((resid/resid0)>1.0e-8)); iteration++)
     {
-      interpReconstructAx( orig, order, p, ap );
+      interpReconstructAx( orig, order, nrow, p, ap );
       pap = interpVectProduct( nrow, p, ap );
       alpha = resid/pap;
       for(node=0;node<nrow;node++) x[node] += alpha*p[node];
@@ -384,7 +400,7 @@ Interp* interpReconstruct( Interp *orig, int order )
       for(node=0;node<nrow;node++) p[node] = r[node] + resid/last_resid*p[node];
     }
 
-  interpReconstructAx( orig, order, x, ap );
+  interpReconstructAx( orig, order, nrow, x, ap );
   for(node=0;node<nrow;node++) r[node] = b[node] - ap[node];
   resid = interpVectProduct( nrow, r, r );
   printf("resid fin %e\n",resid);
