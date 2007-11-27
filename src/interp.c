@@ -256,7 +256,7 @@ Interp* interpReconstruct( Interp *orig, int order )
   int node;
   double xyz[3];
   double *x, *p, *r, *b, *ap;
-  int nrow;
+  int nrow, nb;
   int iteration;
   double resid0,resid,last_resid,pap,alpha;
 
@@ -270,7 +270,21 @@ Interp* interpReconstruct( Interp *orig, int order )
   }
 
   interp->order = order;
-  nrow = gridNNode(interp->grid);
+  switch ( ABS(interpOrder(interp)) ) 
+    {
+    case 1:
+      nb = 4;
+      nrow = gridNNode(interpGrid(interp));
+      break;
+    case 2:
+      nb = 10;
+      gridCreateConn(interpGrid(interp));
+      nrow = gridNNode(interpGrid(interp)) + gridNConn(interpGrid(interp));
+      break;
+    case default:
+      printf("interpReconstruct %d order not implemented\n",order);
+      return NULL;
+    }
   x  = (double *)malloc( nrow*sizeof(double) );
   p  = (double *)malloc( nrow*sizeof(double) );
   r  = (double *)malloc( nrow*sizeof(double) );
@@ -281,7 +295,6 @@ Interp* interpReconstruct( Interp *orig, int order )
   for(node=0;node<nrow;node++) x[node] = 0.0;
   for(node=0;node<nrow;node++) r[node] = b[node];
   for(node=0;node<nrow;node++) p[node] = r[node];
-
 
   resid = interpVectProduct( nrow, r, r );
   printf("resid %3d %e\n",0,resid);
@@ -304,19 +317,21 @@ Interp* interpReconstruct( Interp *orig, int order )
   resid = interpVectProduct( nrow, r, r );
   printf("resid fin %e\n",resid);
 
-
   free(p);
   free(r);
   free(b);
   free(ap);
 
-  interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
+  interp->f = (double *)malloc( nb*gridNCell(interp->grid)*sizeof(double) );
   for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
     {
       gridCell(interpGrid(interp),cell,nodes);
       for(node=0;node<4;node++)
 	{
-	  interp->f[node+4*cell] = x[nodes[node]];
+	  interp->f[node+nb*cell] = x[nodes[node]];
+	}
+      if ( 2 == ABS(interpOrder(interp)) )
+	{
 	}
     }
   free(x);
