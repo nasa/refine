@@ -69,7 +69,7 @@ static double tet_volume6( double *a, double *b, double *c, double *d )
   return(-det);
 }
 
-Interp* interpCreate( Grid *grid, int function_id, int order )
+Interp* interpCreate( Grid *grid, int function_id, int order, int error_order )
 {
   Interp *interp;
   int cell;
@@ -81,10 +81,16 @@ Interp* interpCreate( Grid *grid, int function_id, int order )
 
   interp->grid = gridDup(grid);
   interp->function_id = function_id;
+  interp->error_order = error_order;	
   if ( order < 0 ) {
     interp->f = NULL;
   }else{
-    interp->order = -order;	
+    if ( 1 != order ) 
+      {
+	printf("interpCreate %d order not implemented\n",order);
+	return NULL;
+      }
+    interp->order = EMPTY; /* for temporary exact interp */	
     interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
     for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
       {
@@ -335,7 +341,8 @@ GridBool interpReconstructAx( Interp *interp, int order, int nrow, double *x,
   return TRUE;  
 }
 
-Interp* interpReconstruct( Interp *orig, int order )
+Interp *interpContinuousReconstruction( Interp *orig, 
+					int order, int error_order )
 {
   Interp *interp;
   int cell;
@@ -352,14 +359,11 @@ Interp* interpReconstruct( Interp *orig, int order )
 
   interp->grid = gridDup(interpGrid(orig));
   interp->function_id = orig->function_id;
-  if ( order < 0 ) { 
-    printf("interpReconstruct %d order not positive\n",order);
-    return NULL;
-  }
-
+  interp->error_order = error_order;
   interp->order = order;
+
   nb = interpNB(interp);
-  switch ( ABS(interpOrder(interp)) ) 
+  switch ( order ) 
     {
     case 1:
       nrow = gridNNode(interpGrid(interp));
@@ -370,7 +374,8 @@ Interp* interpReconstruct( Interp *orig, int order )
       nrow = gridNNode(interpGrid(interp)) + gridNConn(interpGrid(interp));
       break;
     default:
-      printf("interpReconstruct %d order not implemented\n",order);
+      printf("interpContinuousReconstruction %d order not implemented\n",
+	     order);
       return NULL;
     }
   x  = (double *)malloc( nrow*sizeof(double) );
@@ -397,7 +402,8 @@ Interp* interpReconstruct( Interp *orig, int order )
       last_resid = resid;
       resid = interpVectProduct( nrow, r, r );
       printf("resid %3d %e\n",iteration+1,resid);
-      for(node=0;node<nrow;node++) p[node] = r[node] + resid/last_resid*p[node];
+      for(node=0;node<nrow;node++) 
+	p[node] = r[node] + resid/last_resid*p[node];
     }
 
   interpReconstructAx( orig, order, nrow, x, ap );
@@ -419,7 +425,6 @@ Interp* interpReconstruct( Interp *orig, int order )
 	  interp->f[node+nb*cell] = x[loc2row[node]];
     }
   free(x);
-  interp->order = order;
   return interp;
 }
 
@@ -460,7 +465,10 @@ GridBool interpFunctionInCell( Interp *interp,
   double phi[10];
   (*func) = 0.0;
   nb = interpNB(interp);
-  if (EMPTY == nb) return FALSE;
+  if (EMPTY == nb) {
+    printf(" nb %d in interpFunctionInCell\n",nb);
+    return FALSE;
+  }
   if (!interpPhi( interp, bary, phi ) ) return FALSE;
   for(node=0;node<nb;node++)
     (*func) += interp->f[node+nb*cell]*phi[node];
@@ -521,7 +529,7 @@ GridBool interpError( Interp *interp,
   interpFunction( interp, xyz1, &n1 );
   interpFunction( interp, xyz2, &n2 );
   interpFunction( interp, xyz3, &n3 );
-  if ( 2 == interpOrder(interp) )
+  if ( 2 == interpErrorOrder(interp) )
     {
       gridAverageVector(xyz0,xyz1,xyz); interpFunction( interp, xyz, &e01 );
       gridAverageVector(xyz0,xyz2,xyz); interpFunction( interp, xyz, &e02 );
@@ -540,7 +548,7 @@ GridBool interpError( Interp *interp,
       for(j=0;j<3;j++)
 	xyz[j] = b0*xyz0[j] + b1*xyz1[j] + b2*xyz2[j] + b3*xyz3[j];
       interpFunction( interp, xyz, &func );
-      switch ( ABS(interpOrder(interp)) ) 
+      switch ( interpErrorOrder(interp) ) 
 	{
 	case 1:
 	  pinterp = b0*n0 + b1*n1 + b2*n2 + b3*n3; break;
@@ -568,8 +576,8 @@ GridBool interpError( Interp *interp,
 	  pinterp += phi*n3;
 	  break;
 	default:
-	  printf("%s: %d: interpError: order %d?\n",
-		 __FILE__,__LINE__,interpOrder(interp));
+	  printf("%s: %d: interpError: error_order %d not implemented\n",
+		 __FILE__,__LINE__,interpErrorOrder(interp));
 	  return FALSE;
 	}
       diff = pinterp-func;

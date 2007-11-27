@@ -24,17 +24,19 @@ typedef struct Interp Interp;
 
 struct Interp {
   int function_id;
+  int error_order;
   int order;
   double *f;
   Grid *grid;
 };
 
-Interp *interpCreate( Grid *grid, int function_id, int order );
+Interp *interpCreate( Grid *grid, int function_id, int order, int error_order );
 void interpFree( Interp * );
 
-Interp *interpReconstruct( Interp *, int order );
+Interp *interpContinuousReconstruction( Interp *, int order, int error_order );
 
 #define interpFunctionId(interp) ((interp)->function_id)
+#define interpErrorOrder(interp) ((interp)->error_order)
 #define interpOrder(interp) ((interp)->order)
 #define interpGrid(interp) ((interp)->grid)
 

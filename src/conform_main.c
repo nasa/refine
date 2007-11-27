@@ -516,20 +516,15 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  temp_interp = interpCreate( grid, function_id, order );
-
+  temp_interp = interpCreate( grid, function_id, order, order );
   interpTecplot( temp_interp, "p_fit.t" );
 
-  gridInterp(grid) = temp_interp;
-  //  STATUS;
-
-  temp_interp = interpReconstruct( temp_interp, order+1 );
-
-  interpTecplot( temp_interp, "p_rec.t" );
+  gridInterp(grid) = interpContinuousReconstruction( temp_interp, 
+						     order+1, order );
+  interpTecplot( gridInterp(grid), "p_rec.t" );
 
   return 0;
 
-  gridInterp(grid) = interpCreate( grid, function_id, order );
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
   gridSetMinInsertCost(grid, 1.0e99 );
