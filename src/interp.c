@@ -172,7 +172,7 @@ GridBool interpPhi( Interp *interp, double *bary, double *phi )
     case 1:
       for(j=0;j<4;j++) phi[j] = bary[j];
       break;
-    default:
+    case 2:
       phi[0] = 1.0-3.0*z-3.0*y-3.0*x+2.0*z*z+4.0*y*z+4.0*x*z+2.0*y*y+4.0*x*y+2.0*x*x;
       phi[1] = -x+2.0*x*x;
       phi[2] = -y+2.0*y*y;
@@ -185,6 +185,7 @@ GridBool interpPhi( Interp *interp, double *bary, double *phi )
       phi[7] = 4.0*x*y;
       phi[8] = 4.0*x*z;
       phi[9] = 4.0*y*z;
+    default:
       printf("interpPhi %d order has no phi\n",interpOrder(interp));
       return FALSE;
     }
