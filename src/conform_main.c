@@ -523,7 +523,7 @@ int main( int argc, char *argv[] )
   gridInterp(grid) = temp_interp;
   //  STATUS;
 
-  temp_interp = interpReconstruct( temp_interp, order+1  );
+  temp_interp = interpReconstruct( temp_interp, order  );
 
   interpTecplot( temp_interp, "p_rec.t" );
 
