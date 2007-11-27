@@ -332,7 +332,14 @@ Interp* interpReconstruct( Interp *orig, int order )
 	}
       if ( 2 == ABS(interpOrder(interp)) )
 	{
+	  for(edge=0;edge<6;edge++)
+	    {
+	      interp->f[4+edge+nb*cell] = 
+		x[gridNNode(interpGrid(interp))+
+		  gridCell2Conn(interpGrid(interp), cell, edge )];
+	    }
 	}
+       
     }
   free(x);
   interp->order = order;
