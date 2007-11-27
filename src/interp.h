@@ -38,6 +38,10 @@ Interp *interpReconstruct( Interp *, int order );
 #define interpOrder(interp) ((interp)->order)
 #define interpGrid(interp) ((interp)->grid)
 
+int interpNB(Interp *);
+GridBool interpPhi( Interp *, double *bary, double *phi );
+GridBool interpLoc2Row( Interp *, int cell, int *loc2row );
+
 GridBool interpFunction( Interp *, double *xyz, double *func );
 GridBool interpFunctionInCell( Interp *, int cell, double *bary, double *func );
 GridBool interpMetric( Interp *, double *xyz, double *m );
