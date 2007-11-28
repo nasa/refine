@@ -513,8 +513,7 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-
-  if (TRUE) {
+  if (FALSE) {
     temp_interp = interpCreate( grid, function_id, order, order );
     interpTecplot( temp_interp, "p_fit.t" );
     gridInterp(grid) = interpContinuousReconstruction( temp_interp, 
