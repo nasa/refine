@@ -51,6 +51,14 @@ GridBool interpError( Interp *,
 		      double *xyz0, double *xyz1, double *xyz2, double *xyz3, 
 		      double *error );
 
+GridBool interpError1D( Interp *interp,
+			double *xyz0, double *xyz1, 
+			double *error );
+
+GridBool interpSplitImprovement( Interp *, 
+				 double *xyz0, double *xyz1,
+				 double *error_before, double *error_after );
+
 GridBool interpTecplot( Interp *, char *filename );
 
 double interpTotalError( Grid *grid );

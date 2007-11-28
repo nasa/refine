@@ -571,6 +571,79 @@ GridBool interpError( Interp *interp,
   return TRUE;
 }
 
+static int nq1 = 6;
+static double tq1[] = {
+  0.0337652428984240,
+  0.1693953067668678,
+  0.3806904069584016,
+  0.6193095930415985,
+  0.8306046932331322,
+  0.9662347571015760 };
+static double wq1[] = {
+  0.0856622461895852,
+  0.1803807865240693,
+  0.2339569672863455,
+  0.2339569672863455,
+  0.1803807865240693,
+  0.0856622461895852 };
+
+GridBool interpError1D( Interp *interp,
+			double *xyz0, double *xyz1, 
+			double *error )
+{
+  double n0, n1;
+  double xyz[3];
+  double length;
+  int iq, j;
+  double t;
+  double pinterp, func;
+  double diff;
+
+  if ( 1 != interpErrorOrder(interp) )
+    {
+      printf("%s: %d: interpErroriD: error_order %d not implemented\n",
+	     __FILE__,__LINE__,interpErrorOrder(interp));
+    }
+
+  (*error) = 0.0;
+  interpFunction( interp, xyz0, &n0 );
+  interpFunction( interp, xyz1, &n1 );
+  gridSubtractVector(xyz1,xyz0,xyz);
+  length = gridVectorLength(xyz);
+  for(iq=0;iq<nq1;iq++)
+    {
+      t = tq1[iq];
+      for(j=0;j<3;j++)
+	xyz[j] = t*xyz1[j] + (1.0-t)*xyz0[j];
+      pinterp = t*n1 + (1.0-t)*n0;
+      interpFunction( interp, xyz, &func );
+      diff = pinterp-func;
+      (*error) += length * wq1[iq] * diff * diff;
+    }
+
+  (*error) = sqrt(*error);
+
+  return TRUE;
+}
+
+GridBool interpSplitImprovement( Interp *interp, 
+				 double *xyz0, double *xyz1,
+				 double *error_before, double *error_after )
+{
+  double mid[3];
+  double error;
+
+  if ( !interpError1D( interp,xyz0,xyz1,error_before ) ) return FALSE;
+  gridAverageVector(xyz0,xyz1,mid);
+
+  if ( !interpError1D( interp,xyz0,mid,&error ) ) return FALSE;
+  (*error_after) = error;
+  if ( !interpError1D( interp,mid,xyz1,&error ) ) return FALSE;
+  (*error_after) += error;
+
+  return TRUE;
+}
+
 GridBool interpTecplot( Interp *interp, char *filename )
 {
 
