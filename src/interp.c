@@ -419,7 +419,8 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
     cell = gridFindEnclosingCell(interpGrid(interp), 0, xyz, bary);
     if ( EMPTY == cell )
       {
-	printf("%s: %d: gridFindEnclosingCell failed\n",__FILE__,__LINE__);
+	printf("%s: %d: gridFindEnclosingCell failed in %s\n",
+	       __FILE__,__LINE__,__func__);
 	return FALSE;
       }
     return interpFunctionInCell( interp, cell, bary, func );
