@@ -334,6 +334,7 @@ void adapt_equal(Grid *grid, double error_tol )
   
   target_error = error_tol / ((double) gridNCell(grid) );
 
+  printf("form plan\n");
   plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
@@ -344,17 +345,18 @@ void adapt_equal(Grid *grid, double error_tol )
   }
   planDeriveRankingsFromPriorities( plan );
 
+  printf("split edges\n");
   nnodeAdd = 0;
-  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/100;
   for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
     cell = planItemWithThisRanking(plan,ranking);
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      if ( cost < target_error ) continue;
       if ( ranking/report*report==ranking ){
 	printf("rank %d cost %f add %d\n",ranking,cost/target_error,nnodeAdd);
 	fflush(stdout);
       }
+      if ( cost < target_error ) continue;
       conn = 0;
       gridNodeXYZ(grid,nodes[conn2node0[conn]],xyz0);
       gridNodeXYZ(grid,nodes[conn2node1[conn]],xyz1);
@@ -380,7 +382,7 @@ void adapt_equal(Grid *grid, double error_tol )
 				    ratio );
       if ( EMPTY != newnode ) {
 	nnodeAdd++;
-	gridSmoothNode(grid, newnode, TRUE );
+	//	gridSmoothNode(grid, newnode, TRUE );
       }
     }
   }
