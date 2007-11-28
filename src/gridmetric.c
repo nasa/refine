@@ -1070,22 +1070,14 @@ double gridCellInterpolationError( Grid *grid,
 				   double *xyz0, double *xyz1, 
 				   double *xyz2, double *xyz3 )
 {
-  double volume6;
-  double norm, cell_error, target;;
+  double cell_error;
   Interp *interp = gridInterp(grid);
 
   interpError( interp,
 	       xyz0,xyz1,xyz2,xyz3, 
 	       &cell_error );
 
-  volume6 = ABS(tet_volume6(xyz0,xyz1,xyz2,xyz3));
-  norm = cell_error/volume6/volume6;
-
-  if (FALSE) {
-    printf("cost %15.5e%15.5e%15.5e%15.5e\n",xyz0[0],xyz0[1],xyz0[2],norm);
-  }
-
-  return norm;
+  return cell_error;
 }
 
 double gridCellAspectRatio( double *xyz1, double *xyz2, 
