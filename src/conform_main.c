@@ -31,99 +31,7 @@
 static  GridBool tecplotOutput = TRUE;
 static  int iview=0;
 
-void interp_metric(Grid *grid) {
-  int node;
-  double xyz[3];
-  double m[6];
-  Interp *interp = gridInterp(grid);
-  for(node=0;node<gridMaxNode(grid);node++){
-    if (grid==gridNodeXYZ(grid,node,xyz)) {
-      interpMetric(interp,xyz,m);
-      gridSetMap(grid,node,
-		 m[0], m[1], m[2],
-		 m[3], m[4],
-		 m[5]);
-    }
-  }
-}
 
-void bl_metric_flat(Grid *grid, double h0) {
-  int node;
-  double xyz[3];
-  double dx[3] = {1.0,0.0,0.0};
-  double dy[3] = {0.0,1.0,0.0};
-  double dz[3] = {0.0,0.0,1.0};
-  double hx,hy,hz;
-  double y0;
-  for(node=0;node<gridMaxNode(grid);node++){
-    if (grid==gridNodeXYZ(grid,node,xyz)) {
-      hx=0.1; hy=0.1; hz=0.1;
-      //      y0 = 0.5-ABS(0.5*(xyz[0]-0.5)*(xyz[2]-0.5));
-      y0 = 0.5;
-      hy = ABS(xyz[1]-y0)/0.5;
-      hy = MIN(1.0,hy);
-      hy = 0.1*((1.0-h0)*hy+h0);
-      gridSetMapWithSpacingVectors(grid,node,
-				   dx,dy,dz,hx,hy,hz);
-    }
-  }   
-}
-
-void bl_metric_sphere(Grid *grid, double h0) {
-  int node;
-  double xyz[3];
-  double x,y,z;
-  double x0=-0.5;
-  double y0=-0.5;
-  double z0=-0.5;
-  double dx[3] = {1.0,0.0,0.0};
-  double dy[3] = {0.0,1.0,0.0};
-  double dz[3] = {0.0,0.0,1.0};
-  double hx,hy,hz;
-  double h1 = 0.1;
-  double r0 = sqrt(3.0);
-  double r, rp;
-  for(node=0;node<gridMaxNode(grid);node++){
-    if (grid==gridNodeXYZ(grid,node,xyz)) {
-      x = xyz[0] - x0;
-      y = xyz[1] - y0;
-      z = xyz[2] - z0;
-      r  = sqrt(x*x+y*y+z*z);
-      dx[0] = x/r;
-      dx[1] = y/r;
-      dx[2] = z/r;
-      rp = sqrt(x*x+y*y);
-      dy[0] = -y/rp;
-      dy[1] = x/rp;
-      dy[2] = 0;
-      gridCrossProduct(dx,dy,dz);
-      gridVectorNormalize(dz);
-      hx=0.1; hy=0.1; hz=0.1;
-      r = ABS(r - r0)/0.5;
-      r = MIN(1.0,r);
-      hx = 0.1*((1.0-h0)*r+h0);
-      gridSetMapWithSpacingVectors(grid,node,
-				   dx,dy,dz,hx,hy,hz);
-    }
-  }   
-}
-
-void bl_metric(Grid *grid, double h0) {
-  bl_metric_flat(grid, h0);
-  if (FALSE) {
-    int node;
-    double xyz[3], map[6];
-    for(node=0;node<gridMaxNode(grid);node++){
-      if (grid==gridNodeXYZ(grid,node,xyz)) {
-	gridMap( grid, node, map );
-	printf(" %10.5f %10.5f %10.5f %10.5f %10.5f %10.5f\n",
-	       map[0], map[1], map[2], map[3], map[4], map[5]);
-      }
-    }
-  }
-}
-
-//#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %9.2e %9.2e AR %12.5e err %12.5e Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),interpTotalError(grid), gridMinVolume(grid)); fflush(stdout);}
 #define PRINT_STATUS {printf("AR %12.5e err %12.5e Vol %10.6e\n", gridMinThawedAR(grid),interpTotalError(grid), gridMinVolume(grid)); fflush(stdout);}
 
 #define DUMP_TEC if (tecplotOutput) { \
@@ -138,36 +46,9 @@ void bl_metric(Grid *grid, double h0) {
 
 #define STATUS { \
   PRINT_STATUS; \
-  printf("%10d %12.5e %12.5e %%oct\n",gridNNode(grid),sqrt(gridMinThawedAR(grid)),interpTotalError(grid)); \
+  printf("%10d %12.5e %%oct\n",gridNNode(grid),interpTotalError(grid)); \
 }
 
-Grid *gridHistogram( Grid *grid, char *filename ) 
-{
-  int nodes[4];
-  int cell;
-  double cost;
-
-  FILE *file;
-
-  if (NULL == filename) {
-    file = fopen( "histogram.m", "w" );
-  }else{
-    file = fopen( filename, "w" );
-  }
-
-  fprintf( file, "cost = [\n" );
-  for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
-    if ( grid == gridCell( grid, cell, nodes ) ) {
-      cost = gridAR(grid, nodes);
-      fprintf( file, "%e\n", 1.0/(1.0+sqrt(cost)) );
-    }
-  }
-  fprintf( file, "];\n" );
-
-  fclose(file);
-
-  return grid;
-}
 
 void adapt3smooth(Grid *grid)
 {
@@ -434,6 +315,78 @@ void relax_grid(Grid *grid)
   }
 }
 
+void adapt_equal(Grid *grid, double error_tol )
+{
+  Plan *plan;
+  double target_error;
+  int conn2node0[] = {0, 0, 0, 1, 1, 2};
+  int conn2node1[] = {1, 2, 3, 2, 3, 3};
+  int cell, nodes[4];
+  int conn;
+  int report, ranking, nnodeAdd;
+  double cost;
+  double xyz0[3], xyz1[3];
+  double error_before, error_after;
+  int best_conn;
+  double best_cost;
+  double ratio;
+  int newnode;
+  
+  target_error = error_tol / ((double) gridNCell(grid) );
+
+  plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      if ( cost > target_error ) planAddItemWithPriority( plan, cell, 
+							  cost/target_error );
+    }
+  }
+  planDeriveRankingsFromPriorities( plan );
+
+  nnodeAdd = 0;
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    cell = planItemWithThisRanking(plan,ranking);
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      if ( cost < target_error ) continue;
+      if ( ranking/report*report==ranking ){
+	printf("rank %d cost %f add %d\n",ranking,cost/target_error,nnodeAdd);
+	fflush(stdout);
+      }
+      conn = 0;
+      gridNodeXYZ(grid,nodes[conn2node0[conn]],xyz0);
+      gridNodeXYZ(grid,nodes[conn2node1[conn]],xyz1);
+      interpSplitImprovement( gridInterp(grid), xyz0, xyz1,
+			      &error_before, &error_after );
+      best_conn = conn;
+      best_cost = error_after/error_before;
+      for(conn=1;conn<6;conn++) {
+	gridNodeXYZ(grid,nodes[conn2node0[conn]],xyz0);
+	gridNodeXYZ(grid,nodes[conn2node1[conn]],xyz1);
+	interpSplitImprovement( gridInterp(grid), xyz0, xyz1,
+				&error_before, &error_after );
+	if ( error_after/error_before < best_cost )
+	  {
+	    best_conn = conn;      
+	    best_cost = error_after/error_before;
+	  }
+      }
+      ratio = 0.5;
+      newnode = gridSplitEdgeRatio( grid, NULL, 
+				    nodes[conn2node0[best_conn]], 
+				    nodes[conn2node1[best_conn]], 
+				    ratio );
+      if ( EMPTY != newnode ) {
+	nnodeAdd++;
+	gridSmoothNode(grid, newnode, TRUE );
+      }
+    }
+  }
+  planFree(plan);
+}
+
 
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
@@ -523,31 +476,23 @@ int main( int argc, char *argv[] )
 						     order+1, order );
   interpTecplot( gridInterp(grid), "p_rec.t" );
 
-  return 0;
-
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
   gridSetMinInsertCost(grid, 1.0e99 );
 
-  h0 = 0.1;
-  interp_metric(grid);
-  gridCacheCurrentGridAndMap(grid);
   STATUS;
-
-  gridHistogram(grid,"hist0.m");
-
   DUMP_TEC;
 
-  for(i=0;i<1;i++) {
-    adapt3(grid);
+  for(i=0;i<3;i++) {
+    adapt_equal(grid,10.0);
+    STATUS;
+    DUMP_TEC;
   }
-
-  gridHistogram(grid,"hist1.m");
-
-  gridExportFAST( grid, "grid_h1000.fgrid" );
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
+
+  gridExportFAST( grid, "grid_h1000.fgrid" );
   
   printf("writing output ref %s\n",ref_output);
   gridExportRef( grid, ref_output );
