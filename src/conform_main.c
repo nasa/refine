@@ -315,7 +315,52 @@ void relax_grid(Grid *grid)
   }
 }
 
-void adapt_equal(Grid *grid, double error_tol )
+void adapt_equal_swap(Grid *grid, double error_tol)
+{
+  Plan *plan;
+  double target_cost;
+  int cell, nodes[4], ranking;
+  double cost,cost1;
+  int report;
+
+  target_cost = error_tol / ((double) gridNCell(grid) );
+
+  plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      if ( cost > target_cost ) planAddItemWithPriority( plan, cell, cost );
+    }
+  }
+  planDeriveRankingsFromPriorities( plan );
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    cell = planItemWithThisRanking(plan,ranking);
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      if ( cost > target_cost ) {
+      if ( ( NULL != gridSwapFace( grid, NULL, nodes[1],nodes[2],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[2],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[3]) ) ||
+	   ( NULL != gridSwapFace( grid, NULL, nodes[0],nodes[1],nodes[2]) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[1] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[2] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[0], nodes[3] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[2] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[1], nodes[3] ) ) ||
+	   ( NULL != gridSwapEdge( grid, NULL, nodes[2], nodes[3] ) ) ) {
+      }
+      }
+      if ( ranking/report*report==ranking ){
+	printf("rank %d cost %f \n",ranking,cost/target_cost);
+	fflush(stdout);
+      }
+    }
+  }
+  planFree(plan);
+}
+
+void adapt_equal_insert(Grid *grid, double error_tol )
 {
   Plan *plan;
   double target_error;
@@ -339,6 +384,7 @@ void adapt_equal(Grid *grid, double error_tol )
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
+      //	printf("cost %f %f\n",target_error,cost);
       if ( cost > target_error ) planAddItemWithPriority( plan, cell, 
 							  cost/target_error );
     }
@@ -347,7 +393,7 @@ void adapt_equal(Grid *grid, double error_tol )
 
   printf("split edges\n");
   nnodeAdd = 0;
-  report = 10; if (planSize(plan) > 100) report = planSize(plan)/100;
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/20;
   for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
     cell = planItemWithThisRanking(plan,ranking);
     if (grid==gridCell(grid, cell, nodes)) {
@@ -363,16 +409,16 @@ void adapt_equal(Grid *grid, double error_tol )
       interpSplitImprovement( gridInterp(grid), xyz0, xyz1,
 			      &error_before, &error_after );
       best_conn = conn;
-      best_cost = error_after/error_before;
+      best_cost = error_before;
       for(conn=1;conn<6;conn++) {
 	gridNodeXYZ(grid,nodes[conn2node0[conn]],xyz0);
 	gridNodeXYZ(grid,nodes[conn2node1[conn]],xyz1);
 	interpSplitImprovement( gridInterp(grid), xyz0, xyz1,
 				&error_before, &error_after );
-	if ( error_after/error_before < best_cost )
+	if ( error_before > best_cost )
 	  {
 	    best_conn = conn;      
-	    best_cost = error_after/error_before;
+	    best_cost = error_before;
 	  }
       }
       ratio = 0.5;
@@ -401,7 +447,7 @@ int main( int argc, char *argv[] )
   char project[256];
   char ref_input[256];
   char ref_output[256];
-  double h0 = 1.0;
+  double error_tol;
 
   int function_id=1;
   int order=1;
@@ -426,15 +472,11 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-o") == 0 ) {
       i++; sprintf( ref_output, "%s", argv[i] );
       printf("-o argument %d: %s\n",i, ref_output);
-    } else if( strcmp(argv[i],"-s") == 0 ) {
-      i++; h0 = atof(argv[i]);
-      printf("-s argument %d: %f\n",i, h0);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
       printf(" -p input project name\n");
       printf(" -r input ref name\n");
       printf(" -o output ref name\n");
-      printf(" -s bl height\n");
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -471,12 +513,16 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  temp_interp = interpCreate( grid, function_id, order, order );
-  interpTecplot( temp_interp, "p_fit.t" );
 
-  gridInterp(grid) = interpContinuousReconstruction( temp_interp, 
-						     order+1, order );
-  interpTecplot( gridInterp(grid), "p_rec.t" );
+  if (TRUE) {
+    temp_interp = interpCreate( grid, function_id, order, order );
+    interpTecplot( temp_interp, "p_fit.t" );
+    gridInterp(grid) = interpContinuousReconstruction( temp_interp, 
+						       order+1, order );
+    interpTecplot( gridInterp(grid), "p_rec.t" );
+  }else{
+    gridInterp(grid) = interpCreate( grid, function_id, EMPTY, order );
+  }
 
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
@@ -485,8 +531,10 @@ int main( int argc, char *argv[] )
   STATUS;
   DUMP_TEC;
 
-  for(i=0;i<3;i++) {
-    adapt_equal(grid,10.0);
+  error_tol = 1000.0;
+  for(i=0;i<10;i++) {
+    adapt_equal_swap (grid,500.0);
+    adapt_equal_insert(grid,500.0);
     STATUS;
     DUMP_TEC;
   }
