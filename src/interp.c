@@ -627,9 +627,9 @@ GridBool interpError1D( Interp *interp,
   return TRUE;
 }
 
-GridBool interpSplitImprovement( Interp *interp, 
-				 double *xyz0, double *xyz1,
-				 double *error_before, double *error_after )
+GridBool interpSplitImprovement1D( Interp *interp, 
+				   double *xyz0, double *xyz1,
+				   double *error_before, double *error_after )
 {
   double mid[3];
   double error;
@@ -640,6 +640,27 @@ GridBool interpSplitImprovement( Interp *interp,
   if ( !interpError1D( interp,xyz0,mid,&error ) ) return FALSE;
   (*error_after) = error*error;
   if ( !interpError1D( interp,mid,xyz1,&error ) ) return FALSE;
+  (*error_after) += error*error;
+
+  (*error_after) = sqrt(*error_after);
+
+  return TRUE;
+}
+
+GridBool interpSplitImprovement( Interp *interp, 
+				   double *xyz0, double *xyz1,
+				   double *xyz2, double *xyz3,
+				   double *error_before, double *error_after )
+{
+  double mid[3];
+  double error;
+
+  if ( !interpError( interp,xyz0,xyz1,xyz2,xyz3,error_before ) ) return FALSE;
+  gridAverageVector(xyz0,xyz1,mid);
+
+  if ( !interpError( interp,mid,xyz1,xyz2,xyz3,&error ) ) return FALSE;
+  (*error_after) = error*error;
+  if ( !interpError( interp,xyz0,mid,xyz2,xyz3,&error ) ) return FALSE;
   (*error_after) += error*error;
 
   (*error_after) = sqrt(*error_after);

@@ -366,11 +366,11 @@ void adapt_equal_insert(Grid *grid, double error_tol )
   double target_error;
   int conn2node0[] = {0, 0, 0, 1, 1, 2};
   int conn2node1[] = {1, 2, 3, 2, 3, 3};
-  int cell, nodes[4];
+  int cell, nodes[4], oriented[4];
   int conn;
   int report, ranking, nnodeAdd;
   double cost;
-  double xyz0[3], xyz1[3];
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
   double error_before, error_after;
   int best_conn;
   double best_cost;
@@ -403,23 +403,37 @@ void adapt_equal_insert(Grid *grid, double error_tol )
 	fflush(stdout);
       }
       if ( cost < target_error ) continue;
-      conn = 0;
-      gridNodeXYZ(grid,nodes[conn2node0[conn]],xyz0);
-      gridNodeXYZ(grid,nodes[conn2node1[conn]],xyz1);
-      interpSplitImprovement( gridInterp(grid), xyz0, xyz1,
+      conn = 0;    
+      oriented[0]=nodes[conn2node0[conn]];
+      oriented[1]=nodes[conn2node1[conn]];
+      gridOrient(grid, nodes, oriented );
+      gridNodeXYZ(grid,oriented[0],xyz0);
+      gridNodeXYZ(grid,oriented[1],xyz1);
+      gridNodeXYZ(grid,oriented[2],xyz2);
+      gridNodeXYZ(grid,oriented[3],xyz3);
+      interpSplitImprovement( gridInterp(grid), xyz0, xyz1, xyz2, xyz3,
 			      &error_before, &error_after );
       best_conn = conn;
-      best_cost = error_before;
+      best_cost = error_after;
       for(conn=1;conn<6;conn++) {
-	gridNodeXYZ(grid,nodes[conn2node0[conn]],xyz0);
-	gridNodeXYZ(grid,nodes[conn2node1[conn]],xyz1);
-	interpSplitImprovement( gridInterp(grid), xyz0, xyz1,
+	oriented[0]=nodes[conn2node0[conn]];
+	oriented[1]=nodes[conn2node1[conn]];
+	gridOrient(grid, nodes, oriented );
+	gridNodeXYZ(grid,oriented[0],xyz0);
+	gridNodeXYZ(grid,oriented[1],xyz1);
+	gridNodeXYZ(grid,oriented[2],xyz2);
+	gridNodeXYZ(grid,oriented[3],xyz3);
+	interpSplitImprovement( gridInterp(grid), xyz0, xyz1, xyz2, xyz3,
 				&error_before, &error_after );
-	if ( error_before > best_cost )
+	if ( error_after < best_cost )
 	  {
 	    best_conn = conn;      
-	    best_cost = error_before;
+	    best_cost = error_after;
 	  }
+      }
+      if ( best_cost > error_before ) {
+	printf("increase %f %f\n",best_cost > error_before);
+	continue;
       }
       ratio = 0.5;
       newnode = gridSplitEdgeRatio( grid, NULL, 
