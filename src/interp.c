@@ -638,9 +638,11 @@ GridBool interpSplitImprovement( Interp *interp,
   gridAverageVector(xyz0,xyz1,mid);
 
   if ( !interpError1D( interp,xyz0,mid,&error ) ) return FALSE;
-  (*error_after) = error;
+  (*error_after) = error*error;
   if ( !interpError1D( interp,mid,xyz1,&error ) ) return FALSE;
-  (*error_after) += error;
+  (*error_after) += error*error;
+
+  (*error_after) = sqrt(*error_after);
 
   return TRUE;
 }
@@ -768,8 +770,8 @@ double interpTotalError(Grid *grid)
       interpError( interp,
 		   xyz0,xyz1,xyz2,xyz3, 
 		   &cell_error );
-      total_error += cell_error;
+      total_error += cell_error*cell_error;
     }
   }
-  return total_error;
+  return sqrt(total_error);
 }

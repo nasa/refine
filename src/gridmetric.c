@@ -747,8 +747,9 @@ Grid *gridGemAR( Grid *grid, double *ar ){
 
   for ( i = 0 ; i < gridNGem(grid) ; i++ ){
     gridCell(grid, gridGem(grid,i), nodes);
-    (*ar) += gridAR( grid, nodes );
+    (*ar) += pow(gridAR( grid, nodes ),2);
   }
+  (*ar) = sqrt((*ar));
 
   return grid;
 }

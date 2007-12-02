@@ -523,6 +523,8 @@ int main( int argc, char *argv[] )
     gridInterp(grid) = interpCreate( grid, function_id, EMPTY, order );
   }
 
+  interpTecplot( interpCreate( grid, function_id, order, order ), "f0.t" );
+
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
   gridSetMinInsertCost(grid, 1.0e99 );
@@ -537,6 +539,8 @@ int main( int argc, char *argv[] )
     STATUS;
     DUMP_TEC;
   }
+
+  interpTecplot( interpCreate( grid, function_id, order, order ), "f1.t" );
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");

@@ -513,11 +513,13 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   nodes[2][2] = tent[1];
   nodes[2][3] = tent[4];
 
-  origcost = gridAR( grid, nodes0 )+gridAR( grid, nodes1 ); 
+  origcost = pow(gridAR( grid, nodes0 ),2)+pow(gridAR( grid, nodes1 ),2); 
+  origcost = sqrt(origcost);
   bestcost = 
-    gridAR( grid, nodes[0] ) +
-    gridAR( grid, nodes[1] ) + 
-    gridAR( grid, nodes[2] ); 
+    pow(gridAR( grid, nodes[0] ),2) +
+    pow(gridAR( grid, nodes[1] ),2) + 
+    pow(gridAR( grid, nodes[2] ),2); 
+  bestcost = sqrt(bestcost);
 
   if ( ( bestcost < origcost )  ) {
     gridRemoveCellAndQueue(grid, queue, cell0);
@@ -790,8 +792,9 @@ Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 )
   nodes[1][2]=gridEqu(grid,2);
   nodes[1][3]=gridEqu(grid,1);
 
-  bestcost = gridAR( grid, nodes[0] ) + gridAR( grid, nodes[1] );
- 
+  bestcost = pow(gridAR( grid, nodes[0] ),2) + pow(gridAR( grid, nodes[1] ),2);
+  bestcost = sqrt(bestcost);
+
   if ( bestcost < origcost ) {
 
     gridRemoveGemAndQueue(grid,queue);
@@ -833,8 +836,9 @@ Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 )
 
   for ( i = 0 ; i < 4 ; i++ ) {
     cost = gridAR( grid, nodes[i] );
-    currentcost += cost;
+    currentcost += cost*cost;
   }
+  currentcost = sqrt(currentcost);
 
   bestcost = currentcost;
   bestindex = 0;
@@ -860,8 +864,9 @@ Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 )
 
   for ( i = 0 ; i < 4 ; i++ ) {
     cost = gridAR( grid, nodes[i] );
-    currentcost += cost;
+    currentcost += cost*cost;
   }
+  currentcost = sqrt(currentcost);
 
   if ( currentcost < bestcost ) {
     bestcost = currentcost;
@@ -959,8 +964,9 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
 
     for ( i = 0 ; i < 6 ; i++ ) {
       cost = gridAR( grid, nodes[i] );
-      currentcost += cost;
+      currentcost += cost*cost;
     } 
+    currentcost = sqrt(currentcost);
 
     if ( currentcost > bestcost ) {
       bestcost = currentcost;
@@ -1062,7 +1068,7 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
     tet[1] = tet[0]+6;
     tet[2] = i+4; if ( tet[2] > 5 ) tet[2] -= 6;
     tet[3] = tet[2] + 12;
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]] + costs[tet[3]];
+    cost = sqrt( costs[tet[0]]+costs[tet[1]]+costs[tet[2]]+costs[tet[3]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
@@ -1078,7 +1084,7 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
     tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
     tet[3] = tet[2] + 12;
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]] + costs[tet[3]];
+    cost = sqrt( costs[tet[0]]+costs[tet[1]]+costs[tet[2]]+costs[tet[3]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
@@ -1094,7 +1100,7 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
     tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
     tet[3] = tet[2] + 6;
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]] + costs[tet[3]];
+    cost = sqrt( costs[tet[0]]+costs[tet[1]]+costs[tet[2]]+costs[tet[3]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
@@ -1111,7 +1117,7 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
     tet[2] = i+4;
     tet[3] = tet[0] + 18;
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]] + costs[tet[3]];
+    cost = sqrt( costs[tet[0]]+costs[tet[1]]+costs[tet[2]]+costs[tet[3]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 4 ; j++ ) best[j] = tet[j]; 
@@ -1177,7 +1183,7 @@ Grid *gridConstructTet6( Grid *grid, int n0, int n1,
   }
 
   for ( i = 0; i < 20; i++ )
-    costs[i] = gridAR(grid, nodes[i]) + gridAR(grid, nodes[i+20]);
+    costs[i] = pow(gridAR(grid, nodes[i]),2) + pow(gridAR(grid, nodes[i+20]),2);
   
   return grid;
 }
@@ -1237,8 +1243,8 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+5; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = tet[3] + 14;
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
-      + costs[tet[3]]  + costs[tet[4]];
+    cost = sqrt( costs[tet[0]] + costs[tet[1]] + costs[tet[2]] +
+		 costs[tet[3]] + costs[tet[4]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
@@ -1255,8 +1261,8 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+4; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = tet[3] + 14;
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
-      + costs[tet[3]]  + costs[tet[4]];
+    cost = sqrt( costs[tet[0]] + costs[tet[1]] + costs[tet[2]] +
+		 costs[tet[3]] + costs[tet[4]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
@@ -1273,8 +1279,8 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+4; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = tet[3] + 14;
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
-      + costs[tet[3]]  + costs[tet[4]];
+    cost = sqrt( costs[tet[0]] + costs[tet[1]] + costs[tet[2]] +
+		 costs[tet[3]] + costs[tet[4]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
@@ -1291,8 +1297,8 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+4; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = tet[3] + 7;
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
-      + costs[tet[3]]  + costs[tet[4]];
+    cost = sqrt( costs[tet[0]] + costs[tet[1]] + costs[tet[2]] +
+		 costs[tet[3]] + costs[tet[4]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
@@ -1309,8 +1315,8 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+3; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = i+5; if ( tet[4] > 6 ) tet[4] -= 7; 
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
-      + costs[tet[3]]  + costs[tet[4]];
+    cost = sqrt( costs[tet[0]] + costs[tet[1]] + costs[tet[2]] +
+		 costs[tet[3]] + costs[tet[4]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
@@ -1327,8 +1333,8 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
     tet[3] = i+2; if ( tet[3] > 6 ) tet[3] -= 7; 
     tet[4] = i+4; if ( tet[4] > 6 ) tet[4] -= 7; 
 
-    cost = costs[tet[0]] + costs[tet[1]] + costs[tet[2]]
-      + costs[tet[3]]  + costs[tet[4]];
+    cost = sqrt( costs[tet[0]] + costs[tet[1]] + costs[tet[2]] +
+		 costs[tet[3]] + costs[tet[4]] );
     if ( cost < *bestcost ) {
       *bestcost = cost;
       for ( j = 0 ; j < 5 ; j++ ) best[j] = tet[j]; 
@@ -1407,7 +1413,8 @@ Grid *gridConstructTet7( Grid *grid, int n0, int n1,
   }
 
   for ( i = 0; i < 35; i++ )
-    costs[i] = gridAR( grid, nodes[i] ) + gridAR( grid, nodes[i+35]); 
+    costs[i] = pow(gridAR( grid, nodes[i] ),2) + 
+               pow(gridAR( grid, nodes[i+35]),2); 
   
   return grid;
 }
