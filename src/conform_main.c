@@ -323,7 +323,7 @@ void adapt_equal_swap(Grid *grid, double error_tol)
   double cost,cost1;
   int report;
 
-  target_cost = error_tol / ((double) gridNCell(grid) );
+  target_cost = sqrt(error_tol*error_tol / ((double) gridNCell(grid) ));
 
   plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
   for (cell=0;cell<gridMaxCell(grid);cell++) {
@@ -363,7 +363,7 @@ void adapt_equal_swap(Grid *grid, double error_tol)
 void adapt_equal_insert(Grid *grid, double error_tol )
 {
   Plan *plan;
-  double target_error;
+  double target_cost;
   int conn2node0[] = {0, 0, 0, 1, 1, 2};
   int conn2node1[] = {1, 2, 3, 2, 3, 3};
   int cell, nodes[4], oriented[4];
@@ -377,16 +377,16 @@ void adapt_equal_insert(Grid *grid, double error_tol )
   double ratio;
   int newnode;
   
-  target_error = error_tol / ((double) gridNCell(grid) );
+  target_cost = sqrt(error_tol*error_tol / ((double) gridNCell(grid) ));
 
   printf("form plan\n");
   plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
   for (cell=0;cell<gridMaxCell(grid);cell++) {
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
-      //	printf("cost %f %f\n",target_error,cost);
-      if ( cost > target_error ) planAddItemWithPriority( plan, cell, 
-							  cost/target_error );
+      //	printf("cost %f %f\n",target_cost,cost);
+      if ( cost > target_cost ) planAddItemWithPriority( plan, cell, 
+							  cost/target_cost );
     }
   }
   planDeriveRankingsFromPriorities( plan );
@@ -399,10 +399,10 @@ void adapt_equal_insert(Grid *grid, double error_tol )
     if (grid==gridCell(grid, cell, nodes)) {
       cost = gridAR(grid,nodes);
       if ( ranking/report*report==ranking ){
-	printf("rank %d cost %f add %d\n",ranking,cost/target_error,nnodeAdd);
+	printf("rank %d cost %f add %d\n",ranking,cost/target_cost,nnodeAdd);
 	fflush(stdout);
       }
-      if ( cost < target_error ) continue;
+      if ( cost < target_cost ) continue;
       conn = 0;    
       oriented[0]=nodes[conn2node0[conn]];
       oriented[1]=nodes[conn2node1[conn]];
@@ -548,8 +548,8 @@ int main( int argc, char *argv[] )
 
   error_tol = 1000.0;
   for(i=0;i<10;i++) {
-    adapt_equal_swap (grid,500.0);
-    adapt_equal_insert(grid,500.0);
+    adapt_equal_swap (grid,1.0);
+    adapt_equal_insert(grid,1.0);
     STATUS;
     DUMP_TEC;
   }
