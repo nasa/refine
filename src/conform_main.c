@@ -360,6 +360,42 @@ void adapt_equal_swap(Grid *grid, double error_tol)
   planFree(plan);
 }
 
+void adapt_equal_smooth(Grid *grid, double error_tol)
+{
+  Plan *plan;
+  int node, ranking;
+  double cost, cost0;
+  int report;
+  double target_cost;
+
+  target_cost = sqrt(error_tol*error_tol / ((double) gridNCell(grid) ));  
+
+  printf("target %f\n",target_cost);
+
+  plan = planCreate( gridNNode(grid), MAX(gridNNode(grid)/10,1000) );
+  for (node=0;node<gridMaxNode(grid);node++) {
+    if (gridValidNode(grid, node)) {
+      gridNodeAR(grid,node,&cost);
+      if ( cost > target_cost ) planAddItemWithPriority( plan, node, cost );
+    }
+  }
+  planDeriveRankingsFromPriorities( plan );
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+    node = planItemWithThisRanking(plan,ranking);
+    gridNodeAR(grid,node,&cost0);
+    gridSmoothNode(grid, node, TRUE );
+    gridNodeAR(grid,node,&cost);
+    if ( cost > cost0 )
+      printf("rank %d %f smooth %f\n",ranking,cost0,cost/cost0);
+    if ( ranking/report*report==ranking ){
+      gridNodeAR(grid,node,&cost);
+      printf("rank %d smooth %f\n",ranking,cost/target_cost);
+      fflush(stdout);
+    }
+  }
+  planFree(plan);
+}
 void adapt_equal_insert(Grid *grid, double error_tol )
 {
   Plan *plan;
@@ -604,7 +640,13 @@ int main( int argc, char *argv[] )
   error_tol = 1.0;
   for(i=0;i<10;i++) {
     adapt_equal_swap (grid,error_tol);
+    STATUS;
+    if (FALSE) {
+      adapt_equal_smooth(grid,error_tol);
+      STATUS;
+    }
     adapt_equal_remove(grid,error_tol);
+    STATUS;
     adapt_equal_insert(grid,error_tol);
     STATUS;
     DUMP_TEC;

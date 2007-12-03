@@ -716,9 +716,9 @@ Grid *gridNodeAR(Grid *grid, int node, double *ar )
     cell = adjItem(it);
     gridCell( grid, cell, nodes);
     local_ar = gridAR(grid, nodes);
-    (*ar) += local_ar;
+    (*ar) += local_ar*local_ar;
   }
-
+  (*ar) = sqrt((*ar));
   return grid;
 }
 
