@@ -546,10 +546,10 @@ int main( int argc, char *argv[] )
   STATUS;
   DUMP_TEC;
 
-  error_tol = 1000.0;
+  error_tol = 1.0;
   for(i=0;i<10;i++) {
-    adapt_equal_swap (grid,1.0);
-    adapt_equal_insert(grid,1.0);
+    adapt_equal_swap (grid,error_tol.0);
+    adapt_equal_insert(grid,error_tol.0);
     STATUS;
     DUMP_TEC;
   }
