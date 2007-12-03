@@ -469,7 +469,7 @@ void adapt_equal_remove(Grid *grid, double error_tol )
     gridConn2Node(grid,conn,nodes);
     if (grid!=gridEquator(grid,nodes[0],nodes[1])) return;
     if (grid !=  gridGemMaxAR( grid, &cost )) return;
-    if ( cost < target_cost ) planAddItemWithPriority( plan, conn, 
+    if ( cost < 0.5*target_cost ) planAddItemWithPriority( plan, conn, 
 						       cost/target_cost );
   }
   planDeriveRankingsFromPriorities( plan );
