@@ -92,6 +92,7 @@ Grid *gridNodeValid(Grid *g, int node, double *valid );
 Grid *gridNodeAR(Grid *g, int node, double *ar );
 Grid *gridNodeVolume(Grid *g, int node, double *volume );
 Grid *gridGemAR(Grid *g, double *ar);
+Grid *gridGemMaxAR(Grid *g, double *ar);
 Grid *gridCellARDerivative(Grid *g, int *nodes, double *ar, double *dARdx );
 Grid *gridCellRatioErrorDerivative(Grid *g, int *nodes, 
 				   double *cost, double *dCostdx );
@@ -146,6 +147,8 @@ void gridCellMeanRatioDerivative( double *xyz0, double *xyz1,
 
 Grid *gridCollapseCost(Grid *g, int node0, int node1, double *currentCost, 
 		       double *node0Cost, double *node1Cost);
+Grid *gridCollapseMaxCost(Grid *g, int node0, int node1, double *currentCost, 
+			  double *node0Cost, double *node1Cost);
 
 Grid *gridSplitCost(Grid *g, int node0, int node1, 
 		    double *currentCost, double *splitCost );

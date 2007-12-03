@@ -453,30 +453,24 @@ void adapt_equal_remove(Grid *grid, double error_tol )
 {
   Plan *plan;
   double target_cost;
-  int conn2node0[] = {0, 0, 0, 1, 1, 2};
-  int conn2node1[] = {1, 2, 3, 2, 3, 3};
-  int cell, nodes[4], oriented[4];
+  int nodes[2];
   int conn;
   int report, ranking, nnodeRemove;
   double cost;
-  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
-  double error_before, error_after;
-  int best_conn;
-  double best_cost;
+  double currentCost, node0Cost, node1Cost;
   double ratio;
-  int newnode;
   
   target_cost = sqrt(error_tol*error_tol / ((double) gridNCell(grid) ));
 
   printf("form plan\n");
-  plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
-  for (cell=0;cell<gridMaxCell(grid);cell++) {
-    if (grid==gridCell(grid, cell, nodes)) {
-      cost = gridAR(grid,nodes);
-      //	printf("cost %f %f\n",target_cost,cost);
-      if ( cost < target_cost ) planAddItemWithPriority( plan, cell, 
-							 cost/target_cost );
-    }
+  gridCreateConn(grid);
+  plan = planCreate( gridNConn(grid)/2, MAX(gridNConn(grid)/10,1000) );
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    if (grid!=gridEquator(grid,nodes[0],nodes[1])) return;
+    if (grid !=  gridGemMaxAR( grid, &cost )) return;
+    if ( cost < target_cost ) planAddItemWithPriority( plan, conn, 
+						       cost/target_cost );
   }
   planDeriveRankingsFromPriorities( plan );
 
@@ -484,17 +478,30 @@ void adapt_equal_remove(Grid *grid, double error_tol )
   nnodeRemove = 0;
   report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
   for ( ranking=0; ranking<planSize(plan); ranking++ ) { 
-    cell = planItemWithThisRanking(plan,ranking);
-    if (grid==gridCell(grid, cell, nodes)) {
-      cost = gridAR(grid,nodes);
-      if ( ranking/report*report==ranking ){
-	printf("rank %d cost %f remove %d\n",
-	       ranking,cost/target_cost,nnodeRemove);
-	fflush(stdout);
-      }
+    conn = planItemWithThisRanking(plan,ranking);
+    gridConn2Node(grid,conn,nodes);
+    if (!gridValidNode(grid,nodes[0])) continue;
+    if (!gridValidNode(grid,nodes[1])) continue;
+    if (grid!=gridEquator(grid,nodes[0],nodes[1])) continue;
+    if (grid !=  gridGemMaxAR( grid, &cost )) continue;
+    if ( ranking/report*report==ranking ){
+      printf("rank %d cost %f remove %d\n",
+	     ranking,cost/target_cost,nnodeRemove);
+      fflush(stdout);
     }
+    if ( cost > target_cost ) continue;    
+    if (grid != gridCollapseMaxCost(grid, nodes[0], nodes[1], 
+				    &currentCost, &node0Cost, &node1Cost) )
+	printf("%s: %d: %s: gridCollapseMaxCost not grid\n",
+	       __FILE__, __LINE__, __func__ );
+    if ( node0Cost > target_cost && node1Cost > target_cost ) continue;
+    ratio = 1.0;
+    if ( node0Cost < node1Cost ) ratio = 0.0;
+    if ( grid == gridCollapseEdge(grid, NULL, nodes[0], nodes[1], ratio))
+      nnodeRemove++;
   }
   planFree(plan);
+  gridEraseConn(grid);
 }
 
 

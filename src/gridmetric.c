@@ -754,6 +754,19 @@ Grid *gridGemAR( Grid *grid, double *ar ){
   return grid;
 }
 
+Grid *gridGemMaxAR( Grid *grid, double *ar ){
+  int i, nodes[4];
+
+  *ar = 0.0;
+
+  for ( i = 0 ; i < gridNGem(grid) ; i++ ){
+    gridCell(grid, gridGem(grid,i), nodes);
+    (*ar) = MAX((*ar),gridAR( grid, nodes ));
+  }
+
+  return grid;
+}
+
 double gridCostValid(Grid *grid, int *nodes )
 {
   int nodes_on_surface;
@@ -803,6 +816,14 @@ double gridAR(Grid *grid, int *nodes )
   if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
     return gridEdgeRatioCost(grid, nodes);
 
+  p1 = gridNodeXYZPointer(grid,nodes[0]);
+  p2 = gridNodeXYZPointer(grid,nodes[1]);
+  p3 = gridNodeXYZPointer(grid,nodes[2]);
+  p4 = gridNodeXYZPointer(grid,nodes[3]);
+
+  if ( gridCOST_FCN_INTERPOLATION == gridCostFunction(grid) )
+    return gridCellInterpolationError( grid, p1, p2, p3, p4 );
+
   if ( gridMapPointerAllocated(grid) ) {
     m0 = gridMapPointer(grid,nodes[0]);
     m1 = gridMapPointer(grid,nodes[1]);
@@ -829,16 +850,8 @@ double gridAR(Grid *grid, int *nodes )
     return -999.0;
   }
   
-  p1 = gridNodeXYZPointer(grid,nodes[0]);
-  p2 = gridNodeXYZPointer(grid,nodes[1]);
-  p3 = gridNodeXYZPointer(grid,nodes[2]);
-  p4 = gridNodeXYZPointer(grid,nodes[3]);
-
   if ( gridCOST_FCN_CONFORMITY == gridCostFunction(grid) )
     return gridCellMetricConformity( p1, p2, p3, p4, m );
-
-  if ( gridCOST_FCN_INTERPOLATION == gridCostFunction(grid) )
-    return gridCellInterpolationError( grid, p1, p2, p3, p4 );
 
   xyz1[0] = j[0] * p1[0] + j[1] * p1[1] + j[2] * p1[2]; 
   xyz1[1] = j[3] * p1[0] + j[4] * p1[1] + j[5] * p1[2]; 
@@ -2016,7 +2029,7 @@ double gridMinARAroundNodeExceptGem( Grid *grid, int node )
       inGem = inGem || (cellId == gridGem(grid,igem));
     if ( !inGem ) {
       gridCell( grid, cellId, nodes );
-      minAR += gridAR(grid, nodes);
+      minAR = MAX(minAR, gridAR(grid, nodes));
     }
   }
 
@@ -2739,8 +2752,8 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
   onBoundary = !gridContinuousEquator(grid);
 
   gridGemAR( grid, currentCost );
-  (*currentCost) += gridMinARAroundNodeExceptGem(grid,node0) +
-                    gridMinARAroundNodeExceptGem(grid,node1);   
+  (*currentCost) = sqrt(pow(gridMinARAroundNodeExceptGem(grid,node0),2) +
+			pow(gridMinARAroundNodeExceptGem(grid,node1),2));
 
   faceId0 = faceId1 = EMPTY;
   node0Id0uv[0] = node0Id0uv[1] = DBL_MAX;
@@ -2778,8 +2791,8 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
     gridSetNodeUV( grid, node1, faceId1, node0Id1uv[0],  node0Id1uv[1] );
   if ( edgeId != EMPTY ) gridSetNodeT(grid, node1, edgeId, t0 );
 
-  (*node0Cost) = gridMinARAroundNodeExceptGem(grid,node0) +
-		 gridMinARAroundNodeExceptGem(grid,node1);
+  (*node0Cost) = sqrt(pow(gridMinARAroundNodeExceptGem(grid,node0),2) +
+		      pow(gridMinARAroundNodeExceptGem(grid,node1),2) );
 
   gridSetNodeXYZ( grid, node1, xyz1);
   gridSetMap( grid, node1, map1[0],map1[1],map1[2],map1[3],map1[4],map1[5]);
@@ -2798,8 +2811,121 @@ Grid *gridCollapseCost(Grid *grid, int node0, int node1, double *currentCost,
     gridSetNodeUV( grid, node0, faceId1, node1Id1uv[0],  node1Id1uv[1] );
   if ( edgeId != EMPTY ) gridSetNodeT(grid, node0, edgeId, t1 );
 
-  (*node1Cost) = gridMinARAroundNodeExceptGem(grid,node0) +
-		 gridMinARAroundNodeExceptGem(grid,node1);
+  (*node1Cost) = sqrt(pow(gridMinARAroundNodeExceptGem(grid,node0),2) +
+		      pow(gridMinARAroundNodeExceptGem(grid,node1),2) );
+  gridSetNodeXYZ( grid, node0, xyz0);
+  gridSetMap( grid, node0, map0[0],map0[1],map0[2],map0[3],map0[4],map0[5]);
+  if ( EMPTY != faceId0)
+    gridSetNodeUV( grid, node0, faceId0, node0Id0uv[0],  node0Id0uv[1] );
+  if ( EMPTY != faceId1)
+    gridSetNodeUV( grid, node0, faceId1, node0Id1uv[0],  node0Id1uv[1] );
+  if ( edgeId != EMPTY ) gridSetNodeT(grid, node0, edgeId, t0 );
+
+  return grid;
+}
+
+Grid *gridCollapseMaxCost(Grid *grid, int node0, int node1, 
+			  double *currentCost, 
+			  double *node0Cost, double *node1Cost)
+{
+  double xyz0[3], xyz1[3];
+  double map0[6], map1[6];
+  int faceId0, faceId1;
+  double node0Id0uv[2], node1Id0uv[2];
+  double node0Id1uv[2], node1Id1uv[2];
+  int edge, edgeId;
+  double t0, t1;
+  int gap0, gap1;
+  GridBool onBoundary;
+
+  *currentCost = 0.0;
+  *node0Cost = 0.0;
+  *node1Cost = 0.0;
+
+  if ( NULL == gridNodeXYZ( grid, node0, xyz0) ) {
+    printf("bad node0\n");
+    return NULL;
+  }
+  if ( NULL == gridNodeXYZ( grid, node1, xyz1) ) {
+    printf("bad node1\n");
+    return NULL;
+  }
+  if (grid!=gridEquator(grid,node0,node1)) {
+    printf("bad equator\n");
+    return NULL;
+  }
+  onBoundary = !gridContinuousEquator(grid);
+
+  gridGemMaxAR( grid, currentCost );
+  (*currentCost) = MAX( (*currentCost), 
+			gridMinARAroundNodeExceptGem(grid,node0) );
+  (*currentCost) = MAX( (*currentCost), 
+			gridMinARAroundNodeExceptGem(grid,node1) );
+
+  faceId0 = faceId1 = EMPTY;
+  node0Id0uv[0] = node0Id0uv[1] = DBL_MAX;
+  node1Id0uv[0] = node1Id0uv[1] = DBL_MAX;
+  node0Id1uv[0] = node0Id1uv[1] = DBL_MAX;
+  node1Id1uv[0] = node1Id1uv[1] = DBL_MAX;
+  edge = edgeId = EMPTY;
+  t0 = t1 = DBL_MAX;
+  if ( onBoundary ) {
+    gap0 = gridEqu(grid,0);
+    gap1 = gridEqu(grid,gridNGem(grid));
+    faceId0 = gridFaceId(grid, node0, node1, gap0 );
+    faceId1 = gridFaceId(grid, node0, node1, gap1 );
+    if ( faceId0 == EMPTY || faceId1 == EMPTY ) {
+      printf("%s: %d:empty gap faces\n",__FILE__,__LINE__);
+      return NULL;
+    }
+    gridNodeUV(grid,node0,faceId0,node0Id0uv);
+    gridNodeUV(grid,node1,faceId0,node1Id0uv);
+    gridNodeUV(grid,node0,faceId1,node0Id1uv);
+    gridNodeUV(grid,node1,faceId1,node1Id1uv);
+    edge = gridFindEdge(grid,node0,node1);
+    if ( edge != EMPTY ) {
+      edgeId = gridEdgeId(grid,node0,node1);
+      gridNodeT(grid, node0, edgeId, &t0 );
+      gridNodeT(grid, node1, edgeId, &t1 );
+    }
+  }
+
+  gridSetNodeXYZ( grid, node1, xyz0);
+  gridSetMap( grid, node1, map0[0],map0[1],map0[2],map0[3],map0[4],map0[5]);
+  if ( EMPTY != faceId0)
+    gridSetNodeUV( grid, node1, faceId0, node0Id0uv[0],  node0Id0uv[1] );
+  if ( EMPTY != faceId1)
+    gridSetNodeUV( grid, node1, faceId1, node0Id1uv[0],  node0Id1uv[1] );
+  if ( edgeId != EMPTY ) gridSetNodeT(grid, node1, edgeId, t0 );
+
+  (*node0Cost) = 0.0;
+  (*node0Cost) = MAX( (*node0Cost), 
+		      gridMinARAroundNodeExceptGem(grid,node0) );
+  (*node0Cost) = MAX( (*node0Cost), 
+		      gridMinARAroundNodeExceptGem(grid,node1) );
+
+  gridSetNodeXYZ( grid, node1, xyz1);
+  gridSetMap( grid, node1, map1[0],map1[1],map1[2],map1[3],map1[4],map1[5]);
+  if ( EMPTY != faceId0)
+    gridSetNodeUV( grid, node1, faceId0, node1Id0uv[0],  node1Id0uv[1] );
+  if ( EMPTY != faceId1)
+    gridSetNodeUV( grid, node1, faceId1, node1Id1uv[0],  node1Id1uv[1] );
+  if ( edgeId != EMPTY ) gridSetNodeT(grid, node1, edgeId, t1 );
+
+
+  gridSetNodeXYZ( grid, node0, xyz1);
+  gridSetMap( grid, node0, map1[0],map1[1],map1[2],map1[3],map1[4],map1[5]);
+  if ( EMPTY != faceId0)
+    gridSetNodeUV( grid, node0, faceId0, node1Id0uv[0],  node1Id0uv[1] );
+  if ( EMPTY != faceId1)
+    gridSetNodeUV( grid, node0, faceId1, node1Id1uv[0],  node1Id1uv[1] );
+  if ( edgeId != EMPTY ) gridSetNodeT(grid, node0, edgeId, t1 );
+
+  (*node1Cost) = 0.0;
+  (*node1Cost) = MAX( (*node1Cost), 
+		      gridMinARAroundNodeExceptGem(grid,node0) );
+  (*node1Cost) = MAX( (*node1Cost), 
+		      gridMinARAroundNodeExceptGem(grid,node1) );
 
   gridSetNodeXYZ( grid, node0, xyz0);
   gridSetMap( grid, node0, map0[0],map0[1],map0[2],map0[3],map0[4],map0[5]);
