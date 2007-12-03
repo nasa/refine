@@ -641,7 +641,7 @@ int main( int argc, char *argv[] )
   for(i=0;i<10;i++) {
     adapt_equal_swap (grid,error_tol);
     STATUS;
-    if (FALSE) {
+    if (TRUE) {
       adapt_equal_smooth(grid,error_tol);
       STATUS;
     }

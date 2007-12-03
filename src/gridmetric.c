@@ -709,6 +709,7 @@ Grid *gridNodeAR(Grid *grid, int node, double *ar )
   AdjIterator it;
   int cell, nodes[4];
   double local_ar;
+  double local_volume;
 
   *ar = 0.0;
 
@@ -716,7 +717,9 @@ Grid *gridNodeAR(Grid *grid, int node, double *ar )
     cell = adjItem(it);
     gridCell( grid, cell, nodes);
     local_ar = gridAR(grid, nodes);
-    (*ar) += local_ar*local_ar;
+    local_volume = gridVolume(grid, nodes);
+    local_volume = MAX(local_volume,1.0e-15);
+    (*ar) += local_ar*local_ar/local_volume/local_volume;
   }
   (*ar) = sqrt((*ar));
   return grid;
