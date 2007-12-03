@@ -449,6 +449,54 @@ void adapt_equal_insert(Grid *grid, double error_tol )
   planFree(plan);
 }
 
+void adapt_equal_remove(Grid *grid, double error_tol )
+{
+  Plan *plan;
+  double target_cost;
+  int conn2node0[] = {0, 0, 0, 1, 1, 2};
+  int conn2node1[] = {1, 2, 3, 2, 3, 3};
+  int cell, nodes[4], oriented[4];
+  int conn;
+  int report, ranking, nnodeRemove;
+  double cost;
+  double xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  double error_before, error_after;
+  int best_conn;
+  double best_cost;
+  double ratio;
+  int newnode;
+  
+  target_cost = sqrt(error_tol*error_tol / ((double) gridNCell(grid) ));
+
+  printf("form plan\n");
+  plan = planCreate( gridNCell(grid), MAX(gridNCell(grid)/10,1000) );
+  for (cell=0;cell<gridMaxCell(grid);cell++) {
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      //	printf("cost %f %f\n",target_cost,cost);
+      if ( cost < target_cost ) planAddItemWithPriority( plan, cell, 
+							 cost/target_cost );
+    }
+  }
+  planDeriveRankingsFromPriorities( plan );
+
+  printf("collapse edges %d\n",planSize(plan));
+  nnodeRemove = 0;
+  report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
+  for ( ranking=0; ranking<planSize(plan); ranking++ ) { 
+    cell = planItemWithThisRanking(plan,ranking);
+    if (grid==gridCell(grid, cell, nodes)) {
+      cost = gridAR(grid,nodes);
+      if ( ranking/report*report==ranking ){
+	printf("rank %d cost %f remove %d\n",
+	       ranking,cost/target_cost,nnodeRemove);
+	fflush(stdout);
+      }
+    }
+  }
+  planFree(plan);
+}
+
 
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
@@ -549,6 +597,7 @@ int main( int argc, char *argv[] )
   error_tol = 1.0;
   for(i=0;i<10;i++) {
     adapt_equal_swap (grid,error_tol);
+    adapt_equal_remove(grid,error_tol);
     adapt_equal_insert(grid,error_tol);
     STATUS;
     DUMP_TEC;
