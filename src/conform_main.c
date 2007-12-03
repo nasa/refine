@@ -115,7 +115,7 @@ void adapt_equal_smooth(Grid *grid, double error_tol)
   }
   planDeriveRankingsFromPriorities( plan );
   report = 10; if (planSize(plan) > 100) report = planSize(plan)/10;
-  for ( ranking=planSize(plan)-1; ranking>=0; ranking-- ) { 
+  for ( ranking=planSize(plan)-1; ranking>=planSize(plan)/2; ranking-- ) { 
     node = planItemWithThisRanking(plan,ranking);
     gridNodeAR(grid,node,&cost0);
     gridSmoothNode(grid, node, TRUE );
