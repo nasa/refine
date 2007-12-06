@@ -27,6 +27,9 @@
 #include "gridshape.h"
 #include "gridmetric.h"
 
+#define GRID_VOLUME_TOL (1.0e-40)
+#define GRID_AREA_TOL (1.0e-40)
+
 Grid *gridWriteTecplotInvalid(Grid *grid, char *filename )
 {
   char comment[256];
@@ -769,15 +772,15 @@ double gridCostValid(Grid *grid, int *nodes )
     if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
     if ( nodes_on_surface > 1 ) {
       if ( (gridCostConstraint(grid)&gridCOST_CNST_VALID) &&
-	   ( gridMinCellJacDet2(grid,nodes) <= 1.0e-12 ) ) return -3.0;
+	   ( gridMinCellJacDet2(grid,nodes) <= GRID_VOLUME_TOL ) ) return -3.0;
       if ( ( nodes_on_surface > 2 ) &&
 	   (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) &&
-	   ( gridMinCellFaceAreaUV(grid,nodes) <= 1.0e-12 ) ) return -2.0;
+	   ( gridMinCellFaceAreaUV(grid,nodes) <= GRID_AREA_TOL ) ) return -2.0;
     }
   }
 
   if (gridCostConstraint(grid)&gridCOST_CNST_VOLUME) {
-    if ( gridVolume(grid, nodes ) <= 1.0e-14) return -1.0;
+    if ( gridVolume(grid, nodes ) <= GRID_VOLUME_TOL ) return -1.0;
   }
 
   return 0.0;
@@ -1852,7 +1855,7 @@ Grid *gridMinVolumeAndCount( Grid *grid, double *min_volume, int *total_count )
   for (cellId=0;cellId<gridMaxCell(grid);cellId++)
     if ( NULL != gridCell( grid, cellId, nodes) ){
       volume = gridVolume(grid, nodes);
-      if (volume < 1.0e-14) {
+      if (volume < GRID_VOLUME_TOL ) {
 	count++;
 	if (report_negative_volumes) {
 	  gridNodeXYZ(grid,nodes[0],xyz);
@@ -2071,7 +2074,7 @@ GridBool gridRightHandedBoundaryUV( Grid *grid )
   
   for (face=0;face<gridMaxFace(grid);face++)
     if ( grid == gridFace(grid, face, nodes, &faceId ) )
-      rightHanded = (gridFaceAreaUV(grid, face)>1.0e-14) && rightHanded;
+      rightHanded = (gridFaceAreaUV(grid, face)>GRID_AREA_TOL) && rightHanded;
   
   return rightHanded;
 }
@@ -2557,7 +2560,7 @@ double gridCellMeanRatio( double *xyz0, double *xyz1, double *xyz2, double *xyz3
 
   volume = -gridDotProduct(norm,edge1)/6.0;
 
-  if ( volume < 1.0e-14 ) return -1.0;
+  if ( volume < GRID_VOLUME_TOL ) return -1.0;
 
   mr = 12.0 * pow(9.0*volume*volume,1.0/3.0) /
     ( gridDotProduct(edge1,edge1) +
