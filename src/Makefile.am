@@ -198,6 +198,12 @@ conformNative_SOURCES = conform_main.c
 conformNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 conformNative_LDFLAGS = $(all_ldflags)
 
+bin_PROGRAMS += interpNative
+interpNative_CFLAGS = $(all_cflags)
+interpNative_SOURCES = interp_main.c
+interpNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
+interpNative_LDFLAGS = $(all_ldflags)
+
 bin_PROGRAMS += pxNative
 pxNative_CFLAGS = $(all_cflags)
 pxNative_SOURCES = px_main.c
