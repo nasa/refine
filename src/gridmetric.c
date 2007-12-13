@@ -1022,7 +1022,7 @@ double gridCellMetricConformity( double *xyz0, double *xyz1,
     printf(" %15.8f %15.8f %15.8f\n",rt[2], rt[5], rt[8]);
   }
 
-  return norm;
+  return sqrt(norm);
 }
 
 Grid *gridCellInterpolationErrorFD( Grid *grid,
