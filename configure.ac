@@ -115,6 +115,8 @@ then
     AM_CONDITIONAL(BUILD_CAPRI2,false)
     CAPRIlibrary=
   fi
+else
+  AM_CONDITIONAL(BUILD_CAPRI2,false)
 fi
 AC_SUBST([CAPRIlibrary])
 
