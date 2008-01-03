@@ -1,4 +1,8 @@
-The Not So Distant Future: Released Refine 1.4.1
+
+Thu Jan 3, 2008: Released Refine 1.4.1 (requires >= FUN3D-25331 (10.4.0)).
+
+Improved INSTALL. lowered GRID_VOLUME_TOL and GRID_AREA_TOL to 1.0e-40 for
+very small domains.
 
 Thu Sep 27, 2007: Released Refine 1.4.0
 
