@@ -5,7 +5,8 @@ check:
 	( cd `uname` && $(MAKE) check )
 
 install:
-	( cd `uname` && $(MAKE) install )
+	if [ -d `uname` ]; then ( cd `uname` && $(MAKE) install ) ; fi
+	if [ -d `uname`64 ]; then ( cd `uname`64 && $(MAKE) install ) ; fi
 
 clean:
 	( cd src && $(MAKE) clean )
