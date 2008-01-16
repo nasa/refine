@@ -261,11 +261,13 @@ Grid *gridDup( Grid *grid )
   int edge, edgeId;
   double ts[2];
 
+  /*
   if (grid != gridSortNodeGridEx(grid)) {
     printf("%s: %d: gridDup: gridSortNodeGridEx failed.\n",
 	   __FILE__, __LINE__ );
     return NULL;
   }
+  */
 
   child = gridCreate( gridNNode(grid), gridNCell(grid),
 		      gridNFace(grid), gridNEdge(grid) );

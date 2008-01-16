@@ -360,8 +360,6 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  DUMP_TEC;
-
   temp_interp = interpDirect( grid );
   interpTecplot( temp_interp, "rho_orig.t" );
 
@@ -376,8 +374,8 @@ int main( int argc, char *argv[] )
   STATUS;
   DUMP_TEC;
 
-  error_tol = 1.0e-7;
-  for(i=0;i<10;i++) {
+  for(i=0;i<1;i++) {
+    error_tol = interpTotalError(grid);
     adapt_equal_swap (grid,error_tol);
     STATUS;
     adapt_equal_smooth(grid,error_tol);
