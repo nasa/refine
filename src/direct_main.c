@@ -324,8 +324,8 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if(strcmp(project,"")==0) sprintf( project, "box1" );
-  if(strcmp(ref_output,"")==0) sprintf( ref_output, "box_out" );
+  if(strcmp(project,"")==0) sprintf( project, "../domain01.fgrid" );
+  if(strcmp(ref_output,"")==0) sprintf( ref_output, "domain01_out" );
 
   if(!(strcmp(ref_input,"")==0)) {
     printf("running ref %s\n",ref_input);
@@ -351,6 +351,18 @@ int main( int argc, char *argv[] )
     printf("ERROR: loaded part does not have right handed boundaries\n");
     return 1;
   }
+
+  printf("project all.\n");
+  gridRobustProject(grid);
+
+  if (!gridRightHandedBoundary(grid)) {
+    printf("ERROR: projected part does not have right handed boundaries\n");
+    return 1;
+  }
+
+  DUMP_TEC;
+
+  return 0;
 
   if (FALSE) {
     temp_interp = interpCreate( grid, function_id, order, order );
