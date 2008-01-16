@@ -369,8 +369,6 @@ int main( int argc, char *argv[] )
 						     order+1, order );
   interpTecplot( gridInterp(grid), "rho_fit.t" );
 
-  return 0;
-
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
   gridSetMinInsertCost(grid, 1.0e99 );
@@ -378,8 +376,7 @@ int main( int argc, char *argv[] )
   STATUS;
   DUMP_TEC;
 
-  error_tol = 1.0;
-  if (2==order) error_tol = 0.1;
+  error_tol = 1.0e-7;
   for(i=0;i<10;i++) {
     adapt_equal_swap (grid,error_tol);
     STATUS;
@@ -392,13 +389,10 @@ int main( int argc, char *argv[] )
     DUMP_TEC;
   }
 
-  if (1==order)
-    interpTecplot( interpCreate( grid, function_id, order, order ), "f1.t" );
-
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");
 
-  gridExportFAST( grid, "grid_h1000.fgrid" );
+  gridExportFAST( grid, "output.fgrid" );
   
   printf("writing output ref %s\n",ref_output);
   gridExportRef( grid, ref_output );
