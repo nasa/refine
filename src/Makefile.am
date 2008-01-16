@@ -204,6 +204,12 @@ interpNative_SOURCES = interp_main.c
 interpNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 interpNative_LDFLAGS = $(all_ldflags)
 
+bin_PROGRAMS += directFAUX
+directFAUX_CFLAGS = $(all_cflags)
+directFAUX_SOURCES = direct_main.c
+directFAUX_LDADD = libMesherX.a libFAUXGeom.a -lm
+directFAUX_LDFLAGS = $(all_ldflags)
+
 bin_PROGRAMS += pxNative
 pxNative_CFLAGS = $(all_cflags)
 pxNative_SOURCES = px_main.c
