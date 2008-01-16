@@ -165,6 +165,7 @@ Interp* interpDirect( Grid *grid )
   file = fopen("direct_rho","r");
   for(node=0;node<gridNNode(interpGrid(interp));node++)
     fscanf(file,"%lf",&(f[node]));
+  fclose(file);
 
   for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
     {
