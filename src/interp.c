@@ -143,6 +143,42 @@ Interp* interpCreate( Grid *grid, int function_id, int order, int error_order )
   return interp;
 }
 
+Interp* interpDirect( Grid *grid )
+{
+  Interp *interp;
+  int cell;
+  int nodes[4];
+  int node;
+  double *f;
+  FILE *file;
+
+  interp = (Interp *)malloc( sizeof(Interp) );
+
+  interp->grid = gridDup(grid);
+  interp->function_id = EMPTY;
+  interp->error_order = 1;	
+  interp->order = 1;	
+  interp->f = (double *)malloc( 4*gridNCell(interp->grid)*sizeof(double) );
+
+  f = (double *)malloc( gridNNode(interp->grid)*sizeof(double) );
+
+  file = fopen("direct_rho","r");
+  for(node=0;node<gridNNode(interpGrid(interp));node++)
+    fscanf(file,"%lf",&(f[node]));
+
+  for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+    {
+      gridCell(interpGrid(interp),cell,nodes);
+      for(node=0;node<4;node++)
+	{
+	  interp->f[node+4*cell] = f[nodes[node]];
+	}
+    }
+
+  free(f);
+  return interp;
+}
+
 void interpFree( Interp *interp )
 {
   if ( NULL != interp->f ) free(interp->f);

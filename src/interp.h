@@ -31,6 +31,8 @@ struct Interp {
 };
 
 Interp *interpCreate( Grid *grid, int function_id, int order, int error_order );
+Interp *interpDirect( Grid *grid );
+
 void interpFree( Interp * );
 
 Interp *interpContinuousReconstruction( Interp *, int order, int error_order );

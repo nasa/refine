@@ -362,20 +362,14 @@ int main( int argc, char *argv[] )
 
   DUMP_TEC;
 
+  temp_interp = interpDirect( grid );
+  interpTecplot( temp_interp, "rho_orig.t" );
+
+  gridInterp(grid) = interpContinuousReconstruction( temp_interp, 
+						     order+1, order );
+  interpTecplot( gridInterp(grid), "rho_fit.t" );
+
   return 0;
-
-  if (FALSE) {
-    temp_interp = interpCreate( grid, function_id, order, order );
-    interpTecplot( temp_interp, "p_fit.t" );
-    gridInterp(grid) = interpContinuousReconstruction( temp_interp, 
-						       order+1, order );
-    interpTecplot( gridInterp(grid), "p_rec.t" );
-  }else{
-    gridInterp(grid) = interpCreate( grid, function_id, EMPTY, order );
-  }
-
-  if (1==order)
-    interpTecplot( interpCreate( grid, function_id, order, order ), "f0.t" );
 
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
