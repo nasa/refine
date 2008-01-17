@@ -166,7 +166,7 @@ Interp* interpDirect( Grid *grid )
   interp->function_id = EMPTY;
   interp->error_order = 1;	
   interp->order = 2;	
-  interp->dim = 5;
+  interp->dim = 10;
 
   gridCreateConn(interpGrid(interp));
 
@@ -220,6 +220,49 @@ Interp* interpDirect( Grid *grid )
 	    f[i+interpDim(interp)*loc2row[node]];
     }
 
+  file = fopen("direct_sadj","r");
+  for(node=0;node<gridNNode(interpGrid(interp));node++)
+    fscanf(file,"%lf %lf %lf %lf %lf",
+	   &(f[0+interpDim(interp)*node]),
+	   &(f[1+interpDim(interp)*node]),
+	   &(f[2+interpDim(interp)*node]),
+	   &(f[3+interpDim(interp)*node]),
+	   &(f[4+interpDim(interp)*node]) );
+  for(line=0;line<gridNConn(interpGrid(interp));line++)
+    {
+      fscanf(file,"%d %d %lf %lf %lf %lf %lf",&node0,&node1,
+	     &(func[0]),
+	     &(func[1]),
+	     &(func[2]),
+	     &(func[3]),
+	     &(func[4]) );
+      node0--;
+      node1--;
+      conn = gridFindConn(interpGrid(interp), node0, node1 );
+      if ( EMPTY == conn )
+	{
+	  printf("%s: %d: EMPTY conn %d %d.\n",__FILE__,__LINE__,node0,node1);
+	  return NULL;
+	}
+      for(i=0;i<5;i++)
+	f[i+interpDim(interp)*(gridNNode(interpGrid(interp))+conn)] = func[i];
+    }
+  fclose(file);
+
+  for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+    {
+      gridCell(interpGrid(interp),cell,nodes);
+      if ( !interpLoc2Row( interp, cell, loc2row )) 
+	{
+	  printf("%s: %d: interpLoc2Row false.\n",__FILE__,__LINE__);
+	  return NULL;
+	}
+      for(node=0;node<nb;node++)
+	for(i=0;i<5;i++)
+	  interp->f[5+i+interpDim(interp)*(node+nb*cell)] = 
+	    f[i+interpDim(interp)*loc2row[node]];
+    }
+
   interp->w = (double *)malloc( interpDim(interp)*nb*gridNCell(interp->grid)*
 				sizeof(double) );
 
@@ -265,6 +308,50 @@ Interp* interpDirect( Grid *grid )
 	  interp->w[i+interpDim(interp)*(node+nb*cell)] = 
 	    f[i+interpDim(interp)*loc2row[node]];
     }
+
+  file = fopen("direct_fres","r");
+  for(node=0;node<gridNNode(interpGrid(interp));node++)
+    fscanf(file,"%lf %lf %lf %lf %lf",
+	   &(f[0+interpDim(interp)*node]),
+	   &(f[1+interpDim(interp)*node]),
+	   &(f[2+interpDim(interp)*node]),
+	   &(f[3+interpDim(interp)*node]),
+	   &(f[4+interpDim(interp)*node]) );
+  for(line=0;line<gridNConn(interpGrid(interp));line++)
+    {
+      fscanf(file,"%d %d %lf %lf %lf %lf %lf",&node0,&node1,
+	     &(func[0]),
+	     &(func[1]),
+	     &(func[2]),
+	     &(func[3]),
+	     &(func[4]) );
+      node0--;
+      node1--;
+      conn = gridFindConn(interpGrid(interp), node0, node1 );
+      if ( EMPTY == conn )
+	{
+	  printf("%s: %d: EMPTY conn %d %d.\n",__FILE__,__LINE__,node0,node1);
+	  return NULL;
+	}
+      for(i=0;i<5;i++)
+	f[i+interpDim(interp)*(gridNNode(interpGrid(interp))+conn)] = func[i];
+    }
+  fclose(file);
+
+  for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+    {
+      gridCell(interpGrid(interp),cell,nodes);
+      if ( !interpLoc2Row( interp, cell, loc2row )) 
+	{
+	  printf("%s: %d: interpLoc2Row false.\n",__FILE__,__LINE__);
+	  return NULL;
+	}
+      for(node=0;node<nb;node++)
+	for(i=0;i<5;i++)
+	  interp->w[5+i+interpDim(interp)*(node+nb*cell)] = 
+	    f[i+interpDim(interp)*loc2row[node]];
+    }
+
   free(f);
 
   return interp;
