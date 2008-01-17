@@ -374,8 +374,8 @@ int main( int argc, char *argv[] )
     STATUS;
     //    adapt_equal_smooth(grid,error_tol);
     //    STATUS;
-    //    adapt_equal_remove(grid,error_tol);
-    //    STATUS;
+    adapt_equal_remove(grid,error_tol);
+    STATUS;
     adapt_equal_insert(grid,error_tol);
     STATUS;
     DUMP_TEC;
