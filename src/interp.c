@@ -82,6 +82,7 @@ Interp* interpCreate( Grid *grid, int function_id, int order, int error_order )
   interp->grid = gridDup(grid);
   interp->function_id = function_id;
   interp->error_order = error_order;	
+  interp->dim = 1;
   interp->w = NULL;
   if ( order < 0 ) {
     interp->f = NULL;
@@ -163,6 +164,7 @@ Interp* interpDirect( Grid *grid )
   interp->function_id = EMPTY;
   interp->error_order = 1;	
   interp->order = 2;	
+  interp->dim = 1;
   interp->w = NULL;
 
   gridCreateConn(interpGrid(interp));

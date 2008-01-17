@@ -26,6 +26,7 @@ struct Interp {
   int function_id;
   int error_order;
   int order;
+  int dim;
   double *w;
   double *f;
   Grid *grid;
@@ -41,6 +42,7 @@ Interp *interpContinuousReconstruction( Interp *, int order, int error_order );
 #define interpFunctionId(interp) ((interp)->function_id)
 #define interpErrorOrder(interp) ((interp)->error_order)
 #define interpOrder(interp) ((interp)->order)
+#define interpDim(interp) ((interp)->dim)
 #define interpGrid(interp) ((interp)->grid)
 
 int interpNB(Interp *);
