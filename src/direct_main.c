@@ -288,10 +288,8 @@ int main( int argc, char *argv[] )
   char ref_output[256];
   double error_tol;
 
-  int function_id=1;
-  int order=1;
-
-  Interp *temp_interp;
+  int function_id=EMPTY;
+  int order=2;
 
   int i;
 
@@ -360,12 +358,8 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  temp_interp = interpDirect( grid );
-  interpTecplot( temp_interp, "rho_orig.t" );
-
-  gridInterp(grid) = interpContinuousReconstruction( temp_interp, 
-						     order+1, order );
-  interpTecplot( gridInterp(grid), "rho_fit.t" );
+  gridInterp(grid) = interpDirect( grid );
+  interpTecplot( gridInterp(grid), "rho.t" );
 
   gridSetCostFunction(grid, gridCOST_FCN_INTERPOLATION );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME );
