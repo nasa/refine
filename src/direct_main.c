@@ -368,14 +368,14 @@ int main( int argc, char *argv[] )
   STATUS;
   DUMP_TEC;
 
-  for(i=0;i<1;i++) {
+  for(i=0;i<3;i++) {
     error_tol = interpTotalError(grid);
     adapt_equal_swap (grid,error_tol);
     STATUS;
-    adapt_equal_smooth(grid,error_tol);
-    STATUS;
-    adapt_equal_remove(grid,error_tol);
-    STATUS;
+    //    adapt_equal_smooth(grid,error_tol);
+    //    STATUS;
+    //    adapt_equal_remove(grid,error_tol);
+    //    STATUS;
     adapt_equal_insert(grid,error_tol);
     STATUS;
     DUMP_TEC;
