@@ -76,6 +76,7 @@ Interp* interpCreate( Grid *grid, int function_id, int order, int error_order )
   int nodes[4];
   int node;
   double xyz[3];
+  double weight;
 
   interp = (Interp *)malloc( sizeof(Interp) );
 
@@ -100,7 +101,7 @@ Interp* interpCreate( Grid *grid, int function_id, int order, int error_order )
 	for(node=0;node<4;node++)
 	  {
 	    gridNodeXYZ(grid, nodes[node], xyz );
-	    interpFunction( interp, xyz, &(interp->f[node+4*cell]) );
+	    interpFunction( interp, xyz, &(interp->f[node+4*cell]), &weight );
 	  }
 	if (TRUE) {
 	  double a[20];
@@ -126,7 +127,7 @@ Interp* interpCreate( Grid *grid, int function_id, int order, int error_order )
 	      for(j=0;j<3;j++)
 		xyz[j] = bary[0]*xyz0[j] + bary[1]*xyz1[j] + 
 		  bary[2]*xyz2[j] + bary[3]*xyz3[j];
-	      interpFunction( interp, xyz, &func );
+	      interpFunction( interp, xyz, &func, &weight );
 	      for(row=0;row<4;row++)
 		{
 		  for(col=0;col<4;col++)
@@ -175,8 +176,6 @@ Interp* interpDirect( Grid *grid )
 
   interp->f = (double *)malloc( interpDim(interp)*nb*gridNCell(interp->grid)*
 				sizeof(double) );
-  interp->w = (double *)malloc( interpDim(interp)*nb*gridNCell(interp->grid)*
-				sizeof(double) );
 
   file = fopen("direct_flow","r");
   for(node=0;node<gridNNode(interpGrid(interp));node++)
@@ -220,7 +219,54 @@ Interp* interpDirect( Grid *grid )
 	  interp->f[i+interpDim(interp)*(node+nb*cell)] = 
 	    f[i+interpDim(interp)*loc2row[node]];
     }
+
+  interp->w = (double *)malloc( interpDim(interp)*nb*gridNCell(interp->grid)*
+				sizeof(double) );
+
+  file = fopen("direct_sres","r");
+  for(node=0;node<gridNNode(interpGrid(interp));node++)
+    fscanf(file,"%lf %lf %lf %lf %lf",
+	   &(f[0+interpDim(interp)*node]),
+	   &(f[1+interpDim(interp)*node]),
+	   &(f[2+interpDim(interp)*node]),
+	   &(f[3+interpDim(interp)*node]),
+	   &(f[4+interpDim(interp)*node]) );
+  for(line=0;line<gridNConn(interpGrid(interp));line++)
+    {
+      fscanf(file,"%d %d %lf %lf %lf %lf %lf",&node0,&node1,
+	     &(func[0]),
+	     &(func[1]),
+	     &(func[2]),
+	     &(func[3]),
+	     &(func[4]) );
+      node0--;
+      node1--;
+      conn = gridFindConn(interpGrid(interp), node0, node1 );
+      if ( EMPTY == conn )
+	{
+	  printf("%s: %d: EMPTY conn %d %d.\n",__FILE__,__LINE__,node0,node1);
+	  return NULL;
+	}
+      for(i=0;i<5;i++)
+	f[i+interpDim(interp)*(gridNNode(interpGrid(interp))+conn)] = func[i];
+    }
+  fclose(file);
+
+  for(cell=0;cell<gridNCell(interpGrid(interp));cell++)
+    {
+      gridCell(interpGrid(interp),cell,nodes);
+      if ( !interpLoc2Row( interp, cell, loc2row )) 
+	{
+	  printf("%s: %d: interpLoc2Row false.\n",__FILE__,__LINE__);
+	  return NULL;
+	}
+      for(node=0;node<nb;node++)
+	for(i=0;i<5;i++)
+	  interp->w[i+interpDim(interp)*(node+nb*cell)] = 
+	    f[i+interpDim(interp)*loc2row[node]];
+    }
   free(f);
+
   return interp;
 }
 
@@ -328,6 +374,7 @@ GridBool interpReconstructB( Interp *orig, Interp *interp, int nrow, double *b )
   int nb;
   int loc2row[10];
   double phi[10];
+  double weight;
 
   Grid *grid = interpGrid(interp);
 
@@ -350,7 +397,7 @@ GridBool interpReconstructB( Interp *orig, Interp *interp, int nrow, double *b )
 	  for(j=0;j<3;j++)
 	    xyz[j] = bary[0]*xyz0[j] + bary[1]*xyz1[j] + 
 	             bary[2]*xyz2[j] + bary[3]*xyz3[j];
-	  interpFunction( orig, xyz, &func );
+	  interpFunction( orig, xyz, &func, &weight );
 	  nb = interpNB(interp);
 	  interpPhi( interp, bary, phi );
 	  /*	  for(j=0;j<nb;j++) phi[j] *= 0.125 * volume6 * wq[iq]; */
@@ -492,7 +539,8 @@ Interp *interpContinuousReconstruction( Interp *orig,
   return interp;
 }
 
-GridBool interpFunction( Interp *interp, double *xyz, double *func )
+GridBool interpFunction( Interp *interp, double *xyz, 
+			 double *func, double *weight )
 {
   double a, c, tanhaz;
   double bary[4];
@@ -505,8 +553,9 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
 	       __FILE__,__LINE__,__func__);
 	return FALSE;
       }
-    return interpFunctionInCell( interp, cell, bary, func );
+    return interpFunctionInCell( interp, cell, bary, func, weight );
   } else {
+    (*weight) = 1.0;
     switch (interpFunctionId(interp)) {
     case 0:
       (*func) = 8.0*xyz[0]*xyz[0] + 32.0*xyz[1]*xyz[1] + 128.0*xyz[2]*xyz[2];
@@ -524,7 +573,8 @@ GridBool interpFunction( Interp *interp, double *xyz, double *func )
 }
 
 GridBool interpFunctionInCell( Interp *interp, 
-			       int cell, double *bary, double *func )
+			       int cell, double *bary, 
+			       double *func, double *weight )
 {
   int nb, node, i;
   double phi[10];
@@ -543,6 +593,20 @@ GridBool interpFunctionInCell( Interp *interp,
   for(node=0;node<nb;node++)
     for(i=0;i<interpDim(interp);i++)
       func[i] += interp->f[i+interpDim(interp)*(node+nb*cell)]*phi[node];
+
+  if ( NULL == interp->w )
+    {
+      for(i=0;i<interpDim(interp);i++)
+	weight[i] = 1.0;
+    }
+  else
+    {
+      for(i=0;i<interpDim(interp);i++)
+	weight[i] = 0.0;
+      for(node=0;node<nb;node++)
+	for(i=0;i<interpDim(interp);i++)
+	  weight[i] += interp->w[i+interpDim(interp)*(node+nb*cell)]*phi[node];
+    }
 
   return TRUE;
 }
@@ -583,7 +647,7 @@ GridBool interpError( Interp *interp,
   int i,j,k;
   double xyz[3];
   double b0,b1,b2,b3;
-  double pinterp[10], func[10];
+  double pinterp[10], func[10], weight[10];
   double phi;
   double n0[10],n1[10],n2[10],n3[10];
   double e01[10],e02[10],e03[10],e12[10],e13[10],e23[10];
@@ -597,18 +661,18 @@ GridBool interpError( Interp *interp,
   }
 
   (*error) = 0.0;
-  interpFunction( interp, xyz0, n0 );
-  interpFunction( interp, xyz1, n1 );
-  interpFunction( interp, xyz2, n2 );
-  interpFunction( interp, xyz3, n3 );
+  interpFunction( interp, xyz0, n0, weight );
+  interpFunction( interp, xyz1, n1, weight );
+  interpFunction( interp, xyz2, n2, weight );
+  interpFunction( interp, xyz3, n3, weight );
   if ( 2 == interpErrorOrder(interp) )
     {
-      gridAverageVector(xyz0,xyz1,xyz); interpFunction( interp, xyz, e01 );
-      gridAverageVector(xyz0,xyz2,xyz); interpFunction( interp, xyz, e02 );
-      gridAverageVector(xyz0,xyz3,xyz); interpFunction( interp, xyz, e03 );
-      gridAverageVector(xyz1,xyz2,xyz); interpFunction( interp, xyz, e12 );
-      gridAverageVector(xyz1,xyz3,xyz); interpFunction( interp, xyz, e13 );
-      gridAverageVector(xyz2,xyz3,xyz); interpFunction( interp, xyz, e23 );
+      gridAverageVector(xyz0,xyz1,xyz); interpFunction( interp, xyz, e01, weight );
+      gridAverageVector(xyz0,xyz2,xyz); interpFunction( interp, xyz, e02, weight );
+      gridAverageVector(xyz0,xyz3,xyz); interpFunction( interp, xyz, e03, weight );
+      gridAverageVector(xyz1,xyz2,xyz); interpFunction( interp, xyz, e12, weight );
+      gridAverageVector(xyz1,xyz3,xyz); interpFunction( interp, xyz, e13, weight );
+      gridAverageVector(xyz2,xyz3,xyz); interpFunction( interp, xyz, e23, weight );
     }
 
   for(i=0;i<nq;i++)
@@ -620,7 +684,7 @@ GridBool interpError( Interp *interp,
       b0 = 1.0-b1-b2-b3;
       for(j=0;j<3;j++)
 	xyz[j] = b0*xyz0[j] + b1*xyz1[j] + b2*xyz2[j] + b3*xyz3[j];
-      interpFunction( interp, xyz, func );
+      interpFunction( interp, xyz, func, weight );
       switch ( interpErrorOrder(interp) ) 
 	{
 	case 1:
@@ -653,7 +717,7 @@ GridBool interpError( Interp *interp,
 		 __FILE__,__LINE__,interpErrorOrder(interp));
 	  return FALSE;
 	}
-      diff = pinterp[k]-func[k];
+      diff = weight[k]*(pinterp[k]-func[k]);
       (*error) += 0.125 * volume6 * wq[i] * diff * diff;
     }
 
@@ -689,6 +753,7 @@ GridBool interpError1D( Interp *interp,
   double t;
   double pinterp, func;
   double diff;
+  double weight;
 
   if ( 1 != interpErrorOrder(interp) )
     {
@@ -697,8 +762,8 @@ GridBool interpError1D( Interp *interp,
     }
 
   (*error) = 0.0;
-  interpFunction( interp, xyz0, &n0 );
-  interpFunction( interp, xyz1, &n1 );
+  interpFunction( interp, xyz0, &n0, &weight );
+  interpFunction( interp, xyz1, &n1, &weight );
   gridSubtractVector(xyz1,xyz0,xyz);
   length = gridVectorLength(xyz);
   for(iq=0;iq<nq1;iq++)
@@ -707,7 +772,7 @@ GridBool interpError1D( Interp *interp,
       for(j=0;j<3;j++)
 	xyz[j] = t*xyz1[j] + (1.0-t)*xyz0[j];
       pinterp = t*n1 + (1.0-t)*n0;
-      interpFunction( interp, xyz, &func );
+      interpFunction( interp, xyz, &func, &weight );
       diff = pinterp-func;
       (*error) += length * wq1[iq] * diff * diff;
     }
@@ -738,9 +803,9 @@ GridBool interpSplitImprovement1D( Interp *interp,
 }
 
 GridBool interpSplitImprovement( Interp *interp, 
-				   double *xyz0, double *xyz1,
-				   double *xyz2, double *xyz3,
-				   double *error_before, double *error_after )
+				 double *xyz0, double *xyz1,
+				 double *xyz2, double *xyz3,
+				 double *error_before, double *error_after )
 {
   double mid[3];
   double error;
@@ -778,6 +843,7 @@ GridBool interpTecplot( Interp *interp, char *filename )
   double cell0[3],cell1[3],cell2[3],cell3[3];
   double bary[4];
   double val[10];
+  double weight[10];
   Grid *grid = interpGrid(interp);
 
   if (NULL == filename)
@@ -811,58 +877,58 @@ GridBool interpTecplot( Interp *interp, char *filename )
 
 	gridNodeXYZ(grid, nodes[0], xyz0 );
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz0, bary );
-	interpFunctionInCell( interp, cell, bary, val );
+	interpFunctionInCell( interp, cell, bary, val, weight );
 	interpTecLine( interp, f, xyz0, val );
 
 	gridNodeXYZ(grid, nodes[1], xyz1 );
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz1, bary );
-	interpFunctionInCell( interp, cell, bary, val );
+	interpFunctionInCell( interp, cell, bary, val, weight );
 	interpTecLine( interp, f, xyz1, val );
 
 	gridNodeXYZ(grid, nodes[2], xyz2 );
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz2, bary );
-	interpFunctionInCell( interp, cell, bary, val );
+	interpFunctionInCell( interp, cell, bary, val, weight );
 	interpTecLine( interp, f, xyz2, val );
 
 	gridAverageVector(xyz1,xyz2,xyz)
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
-	interpFunctionInCell( interp, cell, bary, val );
+	interpFunctionInCell( interp, cell, bary, val, weight );
 	interpTecLine( interp, f, xyz, val );
 
 	gridAverageVector(xyz0,xyz2,xyz)
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
-	interpFunctionInCell( interp, cell, bary, val );
+	interpFunctionInCell( interp, cell, bary, val, weight );
 	interpTecLine( interp, f, xyz, val );
 
 	gridAverageVector(xyz0,xyz1,xyz)
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
-	interpFunctionInCell( interp, cell, bary, val );
+	interpFunctionInCell( interp, cell, bary, val, weight );
 	interpTecLine( interp, f, xyz, val );
 
       }else{
 
 	gridNodeXYZ(grid, nodes[0], xyz0 );
-	interpFunction( interp, xyz0, val );
+	interpFunction( interp, xyz0, val, weight );
 	interpTecLine( interp, f, xyz0, val );
 
 	gridNodeXYZ(grid, nodes[1], xyz1 );
-	interpFunction( interp, xyz1, val );
+	interpFunction( interp, xyz1, val, weight );
 	interpTecLine( interp, f, xyz1, val );
 
 	gridNodeXYZ(grid, nodes[2], xyz2 );
-	interpFunction( interp, xyz2, val );
+	interpFunction( interp, xyz2, val, weight );
 	interpTecLine( interp, f, xyz2, val );
 
 	gridAverageVector(xyz1,xyz2,xyz);
-	interpFunction( interp, xyz, val );
+	interpFunction( interp, xyz, val, weight );
 	interpTecLine( interp, f, xyz, val );
 
 	gridAverageVector(xyz0,xyz2,xyz);
-	interpFunction( interp, xyz, val );
+	interpFunction( interp, xyz, val, weight );
 	interpTecLine( interp, f, xyz, val );
 
 	gridAverageVector(xyz0,xyz1,xyz);
-	interpFunction( interp, xyz, val );
+	interpFunction( interp, xyz, val, weight );
 	interpTecLine( interp, f, xyz, val );
 
       }

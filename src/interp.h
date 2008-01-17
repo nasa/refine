@@ -49,8 +49,10 @@ int interpNB(Interp *);
 GridBool interpPhi( Interp *, double *bary, double *phi );
 GridBool interpLoc2Row( Interp *, int cell, int *loc2row );
 
-GridBool interpFunction( Interp *, double *xyz, double *func );
-GridBool interpFunctionInCell( Interp *, int cell, double *bary, double *func );
+GridBool interpFunction( Interp *, double *xyz, 
+			 double *func, double *weight );
+GridBool interpFunctionInCell( Interp *, int cell, double *bary, 
+			       double *func, double *weight );
 GridBool interpMetric( Interp *, double *xyz, double *m );
 GridBool interpError( Interp *, 
 		      double *xyz0, double *xyz1, double *xyz2, double *xyz3, 
