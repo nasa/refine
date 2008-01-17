@@ -528,13 +528,18 @@ GridBool interpFunctionInCell( Interp *interp,
 {
   int nb, node, i;
   double phi[10];
-  (*func) = 0.0;
+
+  for(i=0;i<interpDim(interp);i++)
+    func[i] = 0.0;
+
   nb = interpNB(interp);
   if (EMPTY == nb) {
     printf(" nb %d in interpFunctionInCell\n",nb);
     return FALSE;
   }
+
   if (!interpPhi( interp, bary, phi ) ) return FALSE;
+
   for(node=0;node<nb;node++)
     for(i=0;i<interpDim(interp);i++)
       func[i] += interp->f[i+interpDim(interp)*(node+nb*cell)]*phi[node];
