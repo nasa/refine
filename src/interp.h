@@ -26,6 +26,7 @@ struct Interp {
   int function_id;
   int error_order;
   int order;
+  double *w;
   double *f;
   Grid *grid;
 };

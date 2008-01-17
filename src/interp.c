@@ -82,6 +82,7 @@ Interp* interpCreate( Grid *grid, int function_id, int order, int error_order )
   interp->grid = gridDup(grid);
   interp->function_id = function_id;
   interp->error_order = error_order;	
+  interp->w = NULL;
   if ( order < 0 ) {
     interp->f = NULL;
   }else{
@@ -162,6 +163,7 @@ Interp* interpDirect( Grid *grid )
   interp->function_id = EMPTY;
   interp->error_order = 1;	
   interp->order = 2;	
+  interp->w = NULL;
 
   gridCreateConn(interpGrid(interp));
 
@@ -206,6 +208,7 @@ Interp* interpDirect( Grid *grid )
 
 void interpFree( Interp *interp )
 {
+  if ( NULL != interp->w ) free(interp->w);
   if ( NULL != interp->f ) free(interp->f);
   if ( NULL != interp->grid ) gridFree(interp->grid);
   free( interp );
