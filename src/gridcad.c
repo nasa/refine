@@ -2363,7 +2363,7 @@ Grid *gridSmoothNodeARSimplex( Grid *grid, int node )
     for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
 
   evaluations = 4;
-  while (evaluations < 1000 ) {
+  while (evaluations < 100 ) {
 
     best = 0;
     if ( volume[0] < volume[1] ) {
@@ -2390,7 +2390,7 @@ Grid *gridSmoothNodeARSimplex( Grid *grid, int node )
 
     if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
 
-    if (volume[worst]-volume[best] < ABS(1.0e-6*volume[best])) break;
+    if (volume[worst]-volume[best] < ABS(1.0e-4*volume[best])) break;
 
     evaluations++;
     newVolume = reflectNodeAR( grid, simplex, volume, avgXYZ, node, worst, -1.0 );
@@ -2594,8 +2594,6 @@ Grid *gridSmoothNodeARFace(Grid *grid, int node )
   if (!gridGeometryFace(grid,node)) return NULL;
   if (gridGeometryBetweenFace(grid,node)) return grid;
   if (grid != gridSmoothNodeARFaceSimplex(grid, node )) return NULL;
-  if (grid != gridSmoothNodeARFaceSimplex(grid, node )) return NULL;
-  if (grid != gridSmoothNodeARFaceSimplex(grid, node )) return NULL;
   return grid;
 }
 
@@ -2669,7 +2667,7 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *grid, int node )
     for(i=0;i<2;i++) avgUV[i] += simplex[s][i];
 
   evaluations = 3;
-  while (evaluations < 1000 ) {
+  while (evaluations < 100 ) {
 
     best = 0;
     if ( area[0] < area[1] ) {
@@ -2696,7 +2694,7 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *grid, int node )
     */
     /* if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId); */
 
-    if (area[worst]-area[best] < ABS(1.0e-8*area[best])) break;
+    if (area[worst]-area[best] < ABS(1.0e-4*area[best])) break;
 
     evaluations++;
     newArea = reflectNodeARFace( grid, simplex, area, avgUV, node,
