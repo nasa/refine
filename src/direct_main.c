@@ -368,7 +368,7 @@ int main( int argc, char *argv[] )
   STATUS;
   DUMP_TEC;
 
-  error_tol = interpTotalError(grid);
+  error_tol = 0.8*interpTotalError(grid);
 
   for(i=0;i<3;i++) {
     adapt_equal_swap (grid,error_tol);
