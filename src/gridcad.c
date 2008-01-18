@@ -2343,7 +2343,7 @@ Grid *gridSmoothNodeARSimplex( Grid *grid, int node )
 
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
 
-  lengthScale = 0.1*gridAverageEdgeLength(grid, node );
+  lengthScale = 0.01*gridAverageEdgeLength(grid, node );
 
   for(s=0;s<4;s++)
     for(i=0;i<3;i++)
@@ -2363,7 +2363,7 @@ Grid *gridSmoothNodeARSimplex( Grid *grid, int node )
     for(i=0;i<3;i++) avgXYZ[i] += simplex[s][i];
 
   evaluations = 4;
-  while (evaluations < 100 ) {
+  while (evaluations < 20 ) {
 
     best = 0;
     if ( volume[0] < volume[1] ) {
@@ -2647,7 +2647,7 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *grid, int node )
   if ( NULL == gridNodeUV(grid, node, faceId, origUV) ) return NULL;
   if ( NULL == gridNodeAR(grid, node, &origArea) ) return NULL;
 
-  lengthScale = 0.1*gridAverageEdgeLength(grid, node );/* FAILED??? */
+  lengthScale = 0.01*gridAverageEdgeLength(grid, node );/* FAILED??? */
 
   for(s=0;s<3;s++)
     for(i=0;i<2;i++)
@@ -2667,7 +2667,7 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *grid, int node )
     for(i=0;i<2;i++) avgUV[i] += simplex[s][i];
 
   evaluations = 3;
-  while (evaluations < 100 ) {
+  while (evaluations < 20 ) {
 
     best = 0;
     if ( area[0] < area[1] ) {
