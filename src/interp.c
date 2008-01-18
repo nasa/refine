@@ -632,14 +632,26 @@ GridBool interpFunction( Interp *interp, double *xyz,
   double a, c, tanhaz;
   double bary[4];
   int cell;
+  int i;
+  static int last_cell = 0;
+
   if ( interpOrder(interp) > 0 ) {
-    cell = gridFindEnclosingCell(interpGrid(interp), 0, xyz, bary);
+    if ( !gridCellValid( interpGrid(interp), last_cell ) )
+      for (last_cell = 0; 
+	   last_cell < gridMaxCell(interpGrid(interp)); 
+	   last_cell++ )
+	if ( gridCellValid( interpGrid(interp), last_cell ) ) break;
+    cell = gridFindEnclosingCell(interpGrid(interp), last_cell, xyz, bary);
     if ( EMPTY == cell )
       {
-	printf("%s: %d: gridFindEnclosingCell failed in %s\n",
-	       __FILE__,__LINE__,__func__);
+	for(i=0;i<interpDim(interp);i++)
+	  { 
+	    func[i] = 0.0; 
+	    if ( NULL != interp->w ) weight[i] = 0.0;
+	}
 	return FALSE;
       }
+    last_cell = cell;
     return interpFunctionInCell( interp, cell, bary, func, weight );
   } else {
     (*weight) = 1.0;
@@ -665,6 +677,18 @@ GridBool interpFunctionInCell( Interp *interp,
 {
   int nb, node, i;
   double phi[10];
+
+  if ( !gridCellValid( interpGrid(interp), cell ) )
+    {
+      printf("%s: %d: interpFunctionInCell: %s %d\n",
+	     __FILE__,__LINE__,"invalid cell",cell);
+      for(i=0;i<interpDim(interp);i++)
+	{ 
+	  func[i] = 0.0; 
+	  if ( NULL != interp->w ) weight[i] = 0.0;
+	}
+      return FALSE;      
+    }
 
   for(i=0;i<interpDim(interp);i++)
     func[i] = 0.0;
@@ -727,6 +751,8 @@ GridBool interpMetric( Interp *interp, double *xyz, double *m )
   return TRUE;
 }
 
+#define TRYIF(worked) {if (!(worked)){ (*error) = DBL_MAX; return TRUE;} } 
+
 GridBool interpError( Interp *interp,
 		      double *xyz0, double *xyz1, double *xyz2, double *xyz3, 
 		      double *error )
@@ -743,23 +769,34 @@ GridBool interpError( Interp *interp,
   volume6 = tet_volume6(xyz0,xyz1,xyz2,xyz3);
   if ( volume6 <= 6.0e-12 ) {
     if (ABS(volume6)< 1.0e-15) volume6 = 1.0e-15;
-    (*error) = 1.0/ABS(volume6);
+    if ( ABS(volume6) > 0.0 )
+      {
+	(*error) = 1.0/ABS(volume6);
+      }else{
+	(*error) = 1.0e40;
+      }
     return TRUE; 
   }
 
   (*error) = 0.0;
-  interpFunction( interp, xyz0, n0, weight );
-  interpFunction( interp, xyz1, n1, weight );
-  interpFunction( interp, xyz2, n2, weight );
-  interpFunction( interp, xyz3, n3, weight );
+  TRYIF( interpFunction( interp, xyz0, n0, weight ) );
+  TRYIF( interpFunction( interp, xyz1, n1, weight ) );
+  TRYIF( interpFunction( interp, xyz2, n2, weight ) );
+  TRYIF( interpFunction( interp, xyz3, n3, weight ) );
   if ( 2 == interpErrorOrder(interp) )
     {
-      gridAverageVector(xyz0,xyz1,xyz); interpFunction( interp, xyz, e01, weight );
-      gridAverageVector(xyz0,xyz2,xyz); interpFunction( interp, xyz, e02, weight );
-      gridAverageVector(xyz0,xyz3,xyz); interpFunction( interp, xyz, e03, weight );
-      gridAverageVector(xyz1,xyz2,xyz); interpFunction( interp, xyz, e12, weight );
-      gridAverageVector(xyz1,xyz3,xyz); interpFunction( interp, xyz, e13, weight );
-      gridAverageVector(xyz2,xyz3,xyz); interpFunction( interp, xyz, e23, weight );
+      gridAverageVector(xyz0,xyz1,xyz); 
+      TRYIF( interpFunction( interp, xyz, e01, weight ) );
+      gridAverageVector(xyz0,xyz2,xyz); 
+      TRYIF( interpFunction( interp, xyz, e02, weight ) );
+      gridAverageVector(xyz0,xyz3,xyz); 
+      TRYIF( interpFunction( interp, xyz, e03, weight ) );
+      gridAverageVector(xyz1,xyz2,xyz); 
+      TRYIF( interpFunction( interp, xyz, e12, weight ) );
+      gridAverageVector(xyz1,xyz3,xyz); 
+      TRYIF( interpFunction( interp, xyz, e13, weight ) );
+      gridAverageVector(xyz2,xyz3,xyz); 
+      TRYIF( interpFunction( interp, xyz, e23, weight ) );
     }
 
   for(i=0;i<nq;i++)
@@ -771,7 +808,7 @@ GridBool interpError( Interp *interp,
       b0 = 1.0-b1-b2-b3;
       for(j=0;j<3;j++)
 	xyz[j] = b0*xyz0[j] + b1*xyz1[j] + b2*xyz2[j] + b3*xyz3[j];
-      interpFunction( interp, xyz, func, weight );
+      TRYIF( interpFunction( interp, xyz, func, weight ) );
       switch ( interpErrorOrder(interp) ) 
 	{
 	case 1:

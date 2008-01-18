@@ -202,7 +202,7 @@ void adapt_equal_insert(Grid *grid, double error_tol )
 	  }
       }
       if ( best_cost > error_before ) {
-	printf("increase %f %f\n",best_cost > error_before);
+	printf("increase %f %f\n",best_cost, error_before);
 	continue;
       }
       ratio = 0.5;
@@ -370,11 +370,11 @@ int main( int argc, char *argv[] )
 
   error_tol = 0.8*interpTotalError(grid);
 
-  for(i=0;i<3;i++) {
+  for(i=0;i<1;i++) {
     adapt_equal_swap (grid,error_tol);
     STATUS;
-    //    adapt_equal_smooth(grid,error_tol);
-    //    STATUS;
+    adapt_equal_smooth(grid,error_tol);
+    STATUS;
     adapt_equal_remove(grid,error_tol);
     STATUS;
     adapt_equal_insert(grid,error_tol);
