@@ -947,12 +947,15 @@ GridBool interpSplitImprovement( Interp *interp,
   return TRUE;
 }
 
-void interpTecLine( Interp *interp,  FILE *f, double *xyz, double *val )
+void interpTecLine( Interp *interp,  FILE *f, 
+		    double *xyz, double *val, double *weight )
 {
   int i;
   fprintf( f, "%25.17e %25.17e %25.17e", xyz[0], xyz[1], xyz[2] );
   for(i=0;i<interpDim(interp);i++)
     fprintf( f, " %25.17e", val[i] );
+  for(i=0;i<interpDim(interp);i++)
+    fprintf( f, " %25.17e", weight[i] );
   fprintf( f, "\n" );
 }
 
@@ -983,6 +986,8 @@ GridBool interpTecplot( Interp *interp, char *filename )
   fprintf( f, "variables=\"x\",\"y\",\"z\"" );
   for(i=0;i<interpDim(interp);i++)
     fprintf( f, ",\"s%d\"", i );
+  for(i=0;i<interpDim(interp);i++)
+    fprintf( f, ",\"w%d\"", i );
   fprintf( f, "\n" );
 
   fprintf( f, "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
@@ -1002,58 +1007,58 @@ GridBool interpTecplot( Interp *interp, char *filename )
 	gridNodeXYZ(grid, nodes[0], xyz0 );
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz0, bary );
 	interpFunctionInCell( interp, cell, bary, val, weight );
-	interpTecLine( interp, f, xyz0, val );
+	interpTecLine( interp, f, xyz0, val, weight );
 
 	gridNodeXYZ(grid, nodes[1], xyz1 );
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz1, bary );
 	interpFunctionInCell( interp, cell, bary, val, weight );
-	interpTecLine( interp, f, xyz1, val );
+	interpTecLine( interp, f, xyz1, val, weight );
 
 	gridNodeXYZ(grid, nodes[2], xyz2 );
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz2, bary );
 	interpFunctionInCell( interp, cell, bary, val, weight );
-	interpTecLine( interp, f, xyz2, val );
+	interpTecLine( interp, f, xyz2, val, weight );
 
 	gridAverageVector(xyz1,xyz2,xyz)
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
 	interpFunctionInCell( interp, cell, bary, val, weight );
-	interpTecLine( interp, f, xyz, val );
+	interpTecLine( interp, f, xyz, val, weight );
 
 	gridAverageVector(xyz0,xyz2,xyz)
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
 	interpFunctionInCell( interp, cell, bary, val, weight );
-	interpTecLine( interp, f, xyz, val );
+	interpTecLine( interp, f, xyz, val, weight );
 
 	gridAverageVector(xyz0,xyz1,xyz)
 	gridBarycentricCoordinate(cell0, cell1, cell2, cell3, xyz, bary );
 	interpFunctionInCell( interp, cell, bary, val, weight );
-	interpTecLine( interp, f, xyz, val );
+	interpTecLine( interp, f, xyz, val, weight );
 
       }else{
 
 	gridNodeXYZ(grid, nodes[0], xyz0 );
 	interpFunction( interp, xyz0, val, weight );
-	interpTecLine( interp, f, xyz0, val );
+	interpTecLine( interp, f, xyz0, val, weight );
 
 	gridNodeXYZ(grid, nodes[1], xyz1 );
 	interpFunction( interp, xyz1, val, weight );
-	interpTecLine( interp, f, xyz1, val );
+	interpTecLine( interp, f, xyz1, val, weight );
 
 	gridNodeXYZ(grid, nodes[2], xyz2 );
 	interpFunction( interp, xyz2, val, weight );
-	interpTecLine( interp, f, xyz2, val );
+	interpTecLine( interp, f, xyz2, val, weight );
 
 	gridAverageVector(xyz1,xyz2,xyz);
 	interpFunction( interp, xyz, val, weight );
-	interpTecLine( interp, f, xyz, val );
+	interpTecLine( interp, f, xyz, val, weight );
 
 	gridAverageVector(xyz0,xyz2,xyz);
 	interpFunction( interp, xyz, val, weight );
-	interpTecLine( interp, f, xyz, val );
+	interpTecLine( interp, f, xyz, val, weight );
 
 	gridAverageVector(xyz0,xyz1,xyz);
 	interpFunction( interp, xyz, val, weight );
-	interpTecLine( interp, f, xyz, val );
+	interpTecLine( interp, f, xyz, val, weight );
 
       }
 
