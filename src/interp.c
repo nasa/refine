@@ -678,20 +678,17 @@ GridBool interpFunctionInCell( Interp *interp,
   int nb, node, i;
   double phi[10];
 
+  for(i=0;i<interpDim(interp);i++)
+    func[i] = 0.0;
+  for(i=0;i<interpDim(interp);i++)
+    weight[i] = 1.0;
+
   if ( !gridCellValid( interpGrid(interp), cell ) )
     {
       printf("%s: %d: interpFunctionInCell: %s %d\n",
 	     __FILE__,__LINE__,"invalid cell",cell);
-      for(i=0;i<interpDim(interp);i++)
-	{ 
-	  func[i] = 0.0; 
-	  if ( NULL != interp->w ) weight[i] = 0.0;
-	}
       return FALSE;      
     }
-
-  for(i=0;i<interpDim(interp);i++)
-    func[i] = 0.0;
 
   nb = interpNB(interp);
   if (EMPTY == nb) {
@@ -705,12 +702,7 @@ GridBool interpFunctionInCell( Interp *interp,
     for(i=0;i<interpDim(interp);i++)
       func[i] += interp->f[i+interpDim(interp)*(node+nb*cell)]*phi[node];
 
-  if ( NULL == interp->w )
-    {
-      for(i=0;i<interpDim(interp);i++)
-	weight[i] = 1.0;
-    }
-  else
+  if ( NULL != interp->w )
     {
       for(i=0;i<interpDim(interp);i++)
 	weight[i] = 0.0;
