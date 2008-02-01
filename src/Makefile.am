@@ -87,6 +87,11 @@ lib_LIBRARIES += libMesherX_pg.a
 libMesherX_pg_a_CFLAGS = -pg @SDKheader@
 libMesherX_pg_a_SOURCES = $(mesherx_sources)
 
+lib_LIBRARIES += libFAUXGeom_pg.a
+
+libFAUXGeom_pg_a_CFLAGS = -pg @SDKheader@
+libFAUXGeom_pg_a_SOURCES =  FAKEGeom.h FAUXGeom.c FAKEGeomExtras.c
+
 endif # BUILD_SDK_DEPENDENTS
 
 EXTRA_DIST = mesherx_SyJet.c \
@@ -233,6 +238,12 @@ profileNative_CFLAGS = -pg $(all_cflags)
 profileNative_SOURCES = profile_main.c
 profileNative_LDADD = libMesherX_pg.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat @CAPRINativelibrary@ $(LastLib)
 profileNative_LDFLAGS = -pg $(all_ldflags)
+
+bin_PROGRAMS += profile_directFAUX
+profile_directFAUX_CFLAGS = -pg $(all_cflags)
+profile_directFAUX_SOURCES = direct_main.c
+profile_directFAUX_LDADD = libMesherX_pg.a libFAUXGeom_pg.a -lm
+profile_directFAUX_LDFLAGS = -pg $(all_ldflags)
 
 if BUILD_PROE_KERNEL
 
