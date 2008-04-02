@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-./autogen.sh --without-SDK 
+./autogen.sh
 
-( cd `uname` && make distcheck )
+( cd `uname` && make distcheck GEO_SDK=none )
 
