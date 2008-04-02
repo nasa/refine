@@ -2,5 +2,5 @@
 
 ./autogen.sh
 
-make distcheck
+( cd `uname` && make distcheck )
 
