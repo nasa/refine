@@ -2,5 +2,5 @@
 
 ./autogen.sh --without-SDK
 
-( cd `uname` && make distcheck GEO_SDK=none )
+( cd `uname` && make check GEO_SDK=none )
 
