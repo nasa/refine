@@ -2,5 +2,5 @@
 
 ./autogen.sh
 
-make dist_check
+make distcheck
 
