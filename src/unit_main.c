@@ -89,7 +89,7 @@ void bl_metric_sphere(Grid *grid, double h0) {
 }
 
 void bl_metric(Grid *grid, double h0) {
-  bl_metric_sphere(grid, h0);
+  bl_metric_flat(grid, h0);
 }
 
 #define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
