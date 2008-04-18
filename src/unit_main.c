@@ -190,6 +190,7 @@ void relax_grid(Grid *grid, double h0) {
   int iteration;
   int iterations = 10;
   double ratioSplit, ratioCollapse;
+  double len0,len1;
 
   ratioCollapse = 0.3;
   ratioSplit    = 1.0;      
@@ -202,7 +203,10 @@ void relax_grid(Grid *grid, double h0) {
   gridAdapt(grid, ratioCollapse, ratioSplit);
   STATUS;
     
-  for ( iteration=0; (iteration<iterations) ; iteration++){
+  gridEdgeRatioRange(grid,&len0,&len1);
+  for ( iteration=0; 
+	(iteration<iterations) && len0 > 1.000001 ; 
+	iteration++){
       
     for (i=0;i<1;i++){
       printf("edge swapping grid...\n");gridSwap(grid,0.9);
@@ -213,6 +217,8 @@ void relax_grid(Grid *grid, double h0) {
 
     gridAdapt(grid, ratioCollapse, ratioSplit);
     STATUS;
+    
+    gridEdgeRatioRange(grid,&len0,&len1);
     
   }
   
