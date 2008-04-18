@@ -198,36 +198,36 @@ void relax_grid(Grid *grid, double h0) {
   STATUS;
 
   gridHistogram( grid, NULL );
+
   printf("edge swapping grid...\n");gridSwap(grid,0.9);
   STATUS;
 
-  gridHistogram( grid, NULL );
   gridAdapt(grid, ratioCollapse, ratioSplit);
   STATUS;
     
+  gridHistogram( grid, NULL );
+
   gridEdgeRatioRange(grid,&len0,&len1);
   for ( iteration=0; 
 	(iteration<iterations) && len0 > 1.000001 ; 
 	iteration++){
       
-    for (i=0;i<1;i++){
-      gridHistogram( grid, NULL );
+   for (i=0;i<1;i++){
       printf("edge swapping grid...\n");gridSwap(grid,0.9);
       STATUS;
-      gridHistogram( grid, NULL );
       printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
       STATUS;
     }
 
-    gridHistogram( grid, NULL );
     gridAdapt(grid, ratioCollapse, ratioSplit);
     STATUS;
     
     gridEdgeRatioRange(grid,&len0,&len1);
     
+    gridHistogram( grid, NULL );
+
   }
   
-  gridHistogram( grid, NULL );
 }
 
 #ifdef PROE_MAIN
