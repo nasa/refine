@@ -112,7 +112,6 @@ void bl_metric(Grid *grid, double h0) {
   gridSetCostFunction(grid, gridCOST_FCN_CONFORMITY ); \
    PRINT_STATUS; \
    gridSetCostFunction(grid, orig_cost ); \
-  gridHistogram( grid,NULL);\
 }
 
 static int hist_index = 0;
@@ -197,9 +196,11 @@ void relax_grid(Grid *grid, double h0) {
 
   STATUS;
 
+  gridHistogram( grid, NULL );
   printf("edge swapping grid...\n");gridSwap(grid,0.9);
   STATUS;
 
+  gridHistogram( grid, NULL );
   gridAdapt(grid, ratioCollapse, ratioSplit);
   STATUS;
     
@@ -209,12 +210,15 @@ void relax_grid(Grid *grid, double h0) {
 	iteration++){
       
     for (i=0;i<1;i++){
+      gridHistogram( grid, NULL );
       printf("edge swapping grid...\n");gridSwap(grid,0.9);
       STATUS;
+      gridHistogram( grid, NULL );
       printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
       STATUS;
     }
 
+    gridHistogram( grid, NULL );
     gridAdapt(grid, ratioCollapse, ratioSplit);
     STATUS;
     
@@ -222,6 +226,7 @@ void relax_grid(Grid *grid, double h0) {
     
   }
   
+  gridHistogram( grid, NULL );
 }
 
 #ifdef PROE_MAIN
