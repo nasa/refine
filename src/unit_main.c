@@ -171,7 +171,8 @@ Grid *gridHistogram( Grid *grid, char *filename )
     fprintf( file, "%f %d\n", -(((double)bin))/10.0, bins[bin] );
   fprintf( file, "];\n" );
 
-  fprintf( file, "[x,y]=bar(edge_length(:,1), edge_length(:,2));plot(x,y,';Edge Length;');\n" );
+  fprintf( file, "[x,y]=bar(edge_length(:,1), edge_length(:,2));plot(x,y,';;');\n" );
+  fprintf( file, "xlabel('log_{10}(L)')\n" );
   fprintf( file, "print -deps histogram_edge.eps\n" );
   fprintf( file, "closeplot\n" );
   fprintf( file, "[x,y]=bar(tet_volume(:,1), tet_volume(:,2));plot(x,y,';Tetrahedral Volume;');\n" );
