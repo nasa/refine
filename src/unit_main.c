@@ -92,7 +92,7 @@ void bl_metric(Grid *grid, double h0) {
   bl_metric_flat(grid, h0);
 }
 
-#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
+#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);gridHistogram( grid,NULL);}
 
 #define DUMP_TEC if (tecplotOutput) { \
  iview++;printf("Frame %d\n",iview);\
@@ -114,57 +114,66 @@ void bl_metric(Grid *grid, double h0) {
    gridSetCostFunction(grid, orig_cost ); \
 }
 
+static int hist_index = 0;
+
 Grid *gridHistogram( Grid *grid, char *filename ) 
 {
   int nodes[4];
   int edge, edgeId;
   int face, faceId;
   int cell;
-  double length, area, volume;
+  double length, volume;
 
+  int bins[400];
+  int bin;
+
+  char fn[1024];
   FILE *file;
-
+  
   if (NULL == filename) {
-    file = fopen( "histogram.m", "w" );
+    hist_index++;
+    sprintf( fn, "histogram%04d.m", hist_index );
+    file = fopen( fn, "w" );
   }else{
     file = fopen( filename, "w" );
   }
 
-  fprintf( file, "edge_length = [\n" );
+  for (bin=0;bin<400;bin++) bins[bin] = 0;
   for ( edge = 0 ; edge < gridMaxEdge(grid) ; edge++ ) {
     if ( grid == gridEdge( grid, edge, nodes, &edgeId ) ) {
       length = gridEdgeRatio(grid, nodes[0], nodes[1]);
-      fprintf( file, "%e\n", length );
+      bin = (int)(log10(length)*100.0)+200;
+      bin = MAX(0,bin);
+      bin = MIN(bin,399);
+      bins[bin]++;
     }
   }
+  fprintf( file, "edge_length = [\n" );
+  for (bin=0;bin<400;bin++) 
+    fprintf( file, "%f %d\n", (((double)bin)-200.0)/100.0, bins[bin] );
   fprintf( file, "];\n" );
 
-  fprintf( file, "triangle_uv_area = [\n" );
-  for ( face = 0 ; face < gridMaxFace(grid) ; face++ ) {
-    if ( grid == gridFace( grid, face, nodes, &faceId ) ) {
-      if ( gridGeometryEdge( grid, nodes[0] ) ||
-	   gridGeometryEdge( grid, nodes[1] ) ||
-	   gridGeometryEdge( grid, nodes[2] ) ) {
-	area = gridFaceAreaUV(grid, face);
-	fprintf( file, "%e\n", area );
-      }
-    }
-  }
-  fprintf( file, "];\n" );
-
-  fprintf( file, "tet_volume = [\n" );
+  for (bin=0;bin<400;bin++) bins[bin] = 0;
   for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
     if ( grid == gridCell( grid, cell, nodes ) ) {
-      if ( gridGeometryEdge( grid, nodes[0] ) ||
-	   gridGeometryEdge( grid, nodes[1] ) ||
-	   gridGeometryEdge( grid, nodes[2] ) ||
-	   gridGeometryEdge( grid, nodes[3] ) ) {
-	volume = gridVolume(grid, nodes);
-	fprintf( file, "%e\n", volume );
-      }
+      volume = gridVolume(grid, nodes);
+      bin = (int)(-log10(volume)*10.0);
+      bin = MAX(0,bin);
+      bin = MIN(bin,399);
+      bins[bin]++;
     }
   }
+  fprintf( file, "tet_volume = [\n" );
+  for (bin=399;bin>=0;bin--) 
+    fprintf( file, "%f %d\n", -(((double)bin))/10.0, bins[bin] );
   fprintf( file, "];\n" );
+
+  fprintf( file, "[x,y]=bar(edge_length(:,1), edge_length(:,2));bar(x,y);\n" );
+  fprintf( file, "print -deps histogram_edge.eps\n" );
+  fprintf( file, "closeplot\n" );
+  fprintf( file, "[x,y]=bar(tet_volume(:,1), tet_volume(:,2));bar(x,y);\n" );
+  fprintf( file, "print -deps histogram_vol.eps\n" );
+  fprintf( file, "closeplot\n" );
 
   fclose(file);
 
