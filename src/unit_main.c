@@ -92,7 +92,7 @@ void bl_metric(Grid *grid, double h0) {
   bl_metric_flat(grid, h0);
 }
 
-#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);gridHistogram( grid,NULL);}
+#define PRINT_STATUS {double l0,l1;gridEdgeRatioRange(grid,&l0,&l1);printf("Len %12.5e %12.5e AR %8.6f MR %8.6f Vol %10.6e\n", l0,l1, gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);}
 
 #define DUMP_TEC if (tecplotOutput) { \
  iview++;printf("Frame %d\n",iview);\
@@ -112,6 +112,7 @@ void bl_metric(Grid *grid, double h0) {
   gridSetCostFunction(grid, gridCOST_FCN_CONFORMITY ); \
    PRINT_STATUS; \
    gridSetCostFunction(grid, orig_cost ); \
+  gridHistogram( grid,NULL);\
 }
 
 static int hist_index = 0;
@@ -124,7 +125,7 @@ Grid *gridHistogram( Grid *grid, char *filename )
   int cell;
   double length, volume;
 
-  int bins[400];
+  int bins[200];
   int bin;
 
   char fn[1024];
@@ -133,45 +134,48 @@ Grid *gridHistogram( Grid *grid, char *filename )
   if (NULL == filename) {
     hist_index++;
     sprintf( fn, "histogram%04d.m", hist_index );
+    printf("dump %s\n",fn);
     file = fopen( fn, "w" );
   }else{
     file = fopen( filename, "w" );
   }
 
-  for (bin=0;bin<400;bin++) bins[bin] = 0;
-  for ( edge = 0 ; edge < gridMaxEdge(grid) ; edge++ ) {
-    if ( grid == gridEdge( grid, edge, nodes, &edgeId ) ) {
-      length = gridEdgeRatio(grid, nodes[0], nodes[1]);
-      bin = (int)(log10(length)*100.0)+200;
-      bin = MAX(0,bin);
-      bin = MIN(bin,399);
-      bins[bin]++;
-    }
+  for (bin=0;bin<200;bin++) bins[bin] = 0;
+  gridCreateConn(grid);
+  for ( edge = 0 ; edge < gridNConn(grid) ; edge++ ) {
+    gridConn2Node( grid, edge, nodes );
+    length = gridEdgeRatio(grid, nodes[0], nodes[1]);
+    bin = (int)(log10(length)*100.0)+100;
+    bin = MAX(0,bin);
+    bin = MIN(bin,199);
+    bins[bin]++;
   }
+  gridEraseConn(grid);
+
   fprintf( file, "edge_length = [\n" );
-  for (bin=0;bin<400;bin++) 
-    fprintf( file, "%f %d\n", (((double)bin)-200.0)/100.0, bins[bin] );
+  for (bin=0;bin<200;bin++) 
+    fprintf( file, "%f %d\n", (((double)bin)-100.0)/100.0, bins[bin] );
   fprintf( file, "];\n" );
 
-  for (bin=0;bin<400;bin++) bins[bin] = 0;
+  for (bin=0;bin<200;bin++) bins[bin] = 0;
   for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ ) {
     if ( grid == gridCell( grid, cell, nodes ) ) {
       volume = gridVolume(grid, nodes);
       bin = (int)(-log10(volume)*10.0);
       bin = MAX(0,bin);
-      bin = MIN(bin,399);
+      bin = MIN(bin,199);
       bins[bin]++;
     }
   }
   fprintf( file, "tet_volume = [\n" );
-  for (bin=399;bin>=0;bin--) 
+  for (bin=199;bin>=0;bin--) 
     fprintf( file, "%f %d\n", -(((double)bin))/10.0, bins[bin] );
   fprintf( file, "];\n" );
 
-  fprintf( file, "[x,y]=bar(edge_length(:,1), edge_length(:,2));bar(x,y);\n" );
+  fprintf( file, "[x,y]=bar(edge_length(:,1), edge_length(:,2));plot(x,y,';Edge Length;');\n" );
   fprintf( file, "print -deps histogram_edge.eps\n" );
   fprintf( file, "closeplot\n" );
-  fprintf( file, "[x,y]=bar(tet_volume(:,1), tet_volume(:,2));bar(x,y);\n" );
+  fprintf( file, "[x,y]=bar(tet_volume(:,1), tet_volume(:,2));plot(x,y,';Tetrahedral Volume;');\n" );
   fprintf( file, "print -deps histogram_vol.eps\n" );
   fprintf( file, "closeplot\n" );
 
