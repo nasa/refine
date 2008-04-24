@@ -136,6 +136,7 @@ Grid *gridHistogram( Grid *grid, char *filename )
     printf("dump %s\n",fn);
     file = fopen( fn, "w" );
   }else{
+    printf("dump %s\n",filename);
     file = fopen( filename, "w" );
   }
 
@@ -192,19 +193,13 @@ void relax_grid(Grid *grid, double h0) {
   double ratioSplit, ratioCollapse;
   double len0,len1;
 
+  char fname[1024];
+
   ratioCollapse = 0.3;
   ratioSplit    = 1.0;      
 
   STATUS;
 
-  gridHistogram( grid, NULL );
-
-  printf("edge swapping grid...\n");gridSwap(grid,0.9);
-  STATUS;
-
-  gridAdapt(grid, ratioCollapse, ratioSplit);
-  STATUS;
-    
   gridHistogram( grid, NULL );
 
   gridEdgeRatioRange(grid,&len0,&len1);
@@ -215,11 +210,17 @@ void relax_grid(Grid *grid, double h0) {
    for (i=0;i<1;i++){
       printf("edge swapping grid...\n");gridSwap(grid,0.9);
       STATUS;
+      sprintf(fname, "histograms1%04d.m", (int)(1000.0*h0));
+      if (0==iteration) gridHistogram( grid, fname );
       printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
+      sprintf(fname, "histograms2%04d.m", (int)(1000.0*h0));
+      if (0==iteration) gridHistogram( grid, fname );
       STATUS;
     }
 
     gridAdapt(grid, ratioCollapse, ratioSplit);
+    sprintf(fname, "histograms3%04d.m", (int)(1000.0*h0));
+    if (0==iteration) gridHistogram( grid, fname );
     STATUS;
     
     gridEdgeRatioRange(grid,&len0,&len1);
