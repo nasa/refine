@@ -1,5 +1,5 @@
 
-(Quick Start) If You Recieved a *.tar.gz File to run with FUN3D
+(Quick Start) If You Received a *.tar.gz File to run with FUN3D
 ===============================================================
 
 run (replace `x_x_x' with the current version number):
@@ -38,7 +38,7 @@ If configure does not find the X libs you will see a line that looks like
 checking for X... libraries , headers
 
 If this happens please rerun the configure script with 
-these two arguements  
+these two arguments  
 
  --x-includes=/usr/include --x-libraries=/usr/lib[32|64]
 
@@ -51,9 +51,9 @@ Note To SVN Users ONLY!
 file.)
 
    Run ./autogen.sh to set the package up to install inside an
-archetecture directory(e.g., Linux). It will run ./bootstrap
+architecture directory(e.g., Linux). It will run ./bootstrap
 to create the configure script. Then it will create an arch
-dir. Finally, it will cd to the arch dir and and run: 
+directory. Finally, it will cd to the arch dir and and run: 
 ../configure --prefix=`pwd`.
 
 Basic Installation
