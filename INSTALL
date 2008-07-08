@@ -11,6 +11,8 @@ run (replace `x_x_x' with the current version number):
  % make
  % make install
 
+This will place two libraries, librefine.a and libFAUXGeom.a, in lib 
+
 Read the `Basic Installation' section for more detailed instructions.
 
 Note To FUN3D Users
