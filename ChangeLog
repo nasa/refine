@@ -1,3 +1,7 @@
+2008-09-23  16:40 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (initialize_faux) allow 0 nfaux cleanly.
+
 2008-09-23  16:10 Mike Park  <mike.park@nasa.gov>
 	
 	* src/FAUXGeom.c (initialize_faux) extended to understand 

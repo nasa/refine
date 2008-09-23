@@ -31,13 +31,6 @@
 
 #include "FAKEGeom.h"
 
-int nfaux = 0;
-
-#define xplane (0)
-#define yplane (1)
-#define zplane (2)
-#define general_plane  (3)
-
 typedef struct face face;
 struct face {
   int faceid;
@@ -48,7 +41,15 @@ struct face {
   double v_dir[3];
 };
 
+#define nfaux_is_uninitialized (-1)
+
+static int nfaux = nfaux_is_uninitialized;
 static struct face *faux_faces = NULL;
+
+#define xplane (0)
+#define yplane (1)
+#define zplane (2)
+#define general_plane  (3)
 
 static GridBool initialize_faux(void)
 {
@@ -68,6 +69,16 @@ static GridBool initialize_faux(void)
       nfaux = 0;
       return FALSE;      
     }
+
+  if ( nfaux < 0 )
+    {
+      printf("line 1 of faux_input file negative %d, ignoring\n",nfaux);
+      nfaux = 0;
+      return FALSE;      
+    }
+
+  if ( 0 == nfaux ) return TRUE;
+
   faux_faces = (face *) malloc( nfaux * sizeof(face) );
   for (i=0;i<nfaux;i++){
     faux_faces[i].normal[0] = 0.0;
@@ -203,7 +214,7 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
 {
   int id;
 
-  if (0 == nfaux) { 
+  if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
       {
 	return FALSE;	
@@ -290,7 +301,7 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 {
   int id;
 
-  if (0 == nfaux) { 
+  if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
       {
 	return FALSE;	
@@ -363,7 +374,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
 {
   int id;
 
-  if (0 == nfaux) { 
+  if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
       {
 	return FALSE;	
