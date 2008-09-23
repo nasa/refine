@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "FAKEGeom.h"
+#include "gridmath.h"
 
 #ifdef __APPLE__       /* Not needed on Mac OS X */
 #else
@@ -35,6 +36,7 @@ int nfaux = 0;
 #define xplane (0)
 #define yplane (1)
 #define zplane (2)
+#define general_plane  (3)
 
 typedef struct face face;
 struct face {
@@ -42,6 +44,8 @@ struct face {
   int faceType;
   double normal[3];
   double offset;
+  double u_dir[3];
+  double v_dir[3];
 };
 
 static struct face *faux_faces = NULL;
@@ -50,6 +54,7 @@ static GridBool initialize_faux(void)
 {
   char flavor[1025];
   int i;
+  int smallest_dir;
  
   FILE *f;
   f = fopen("faux_input","r");
@@ -95,6 +100,22 @@ static GridBool initialize_faux(void)
 	faux_faces[i].normal[2] = 1.0;
 	faux_faces[i].faceType = zplane; 
       }
+    else if( strcmp(flavor,"general_plane") == 0 ) 
+      { 
+	faux_faces[i].faceType = general_plane; 
+	if ( 3 != fscanf(f,"%lf %lf %lf",
+			 &(faux_faces[i].normal[0]),
+			 &(faux_faces[i].normal[1]),
+			 &(faux_faces[i].normal[2]) ) )
+	  {
+	    printf("error parsing line %d of faux_input file\n",i+2);
+	    printf("missing general_plane normal\n");
+	    nfaux = 0;
+	    free( faux_faces );
+	    faux_faces = NULL;
+	    return FALSE;
+	  }
+      }
     else
       {
 	printf("error parsing flavor %s on line %d of faux_input file\n",
@@ -104,10 +125,45 @@ static GridBool initialize_faux(void)
 	faux_faces = NULL;
 	return FALSE;	   
       }
-    /* uncomment this region to echo geometry information
-    printf("%4d: %4d of %4d type %3d offset %30.15f\n",
+
+    /* make sure normal is normal */
+    gridVectorNormalize(faux_faces[i].normal);
+
+    /* find the smallest normal componet */
+    smallest_dir = 0;
+    if (ABS(faux_faces[i].normal[1]) < 
+	ABS(faux_faces[i].normal[smallest_dir])) smallest_dir = 1;
+    if (ABS(faux_faces[i].normal[2]) < 
+	ABS(faux_faces[i].normal[smallest_dir])) smallest_dir = 2;
+    /* choose u direction in the smallest normal componet */
+    faux_faces[i].u_dir[0] = 0.0;
+    faux_faces[i].u_dir[1] = 0.0;
+    faux_faces[i].u_dir[2] = 0.0;
+    faux_faces[i].u_dir[smallest_dir] = 1.0;
+    /* orthogonalize u_dir to normal */
+    gridVectorOrthogonalize(faux_faces[i].u_dir, faux_faces[i].normal);
+    /* v_dir is orthogonal to u_dir and normal */
+    gridCrossProduct(faux_faces[i].normal,faux_faces[i].u_dir,
+		     faux_faces[i].v_dir);
+    /* make sure v_dir is normal */
+    gridVectorNormalize(faux_faces[i].normal);
+
+    /*
+    printf("%4d: %4d of %4d type %3d offset %15.8f\n",
 	   i, faux_faces[i].faceid, nfaux, 
 	   faux_faces[i].faceType, faux_faces[i].offset);
+    printf("%4d: normal %15.8f %15.8f %15.8f\n", i, 
+	   faux_faces[i].normal[0],
+	   faux_faces[i].normal[1],
+	   faux_faces[i].normal[2]);
+    printf("%4d: u_dir  %15.8f %15.8f %15.8f\n", i, 
+	   faux_faces[i].u_dir[0],
+	   faux_faces[i].u_dir[1],
+	   faux_faces[i].u_dir[2]);
+    printf("%4d: v_dir  %15.8f %15.8f %15.8f\n", i, 
+	   faux_faces[i].v_dir[0],
+	   faux_faces[i].v_dir[1],
+	   faux_faces[i].v_dir[2]);
     */
   }
 
@@ -178,6 +234,23 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
     xyznew[0] = xyz[0];
     xyznew[1] = xyz[1];
     xyznew[2] = faux_faces[id].offset;
+    break;
+  case general_plane:
+    uv[0] = faux_faces[id].u_dir[0]*xyz[0]
+          + faux_faces[id].u_dir[1]*xyz[1]
+          + faux_faces[id].u_dir[2]*xyz[2];
+    uv[1] = faux_faces[id].v_dir[0]*xyz[0]
+          + faux_faces[id].v_dir[1]*xyz[1]
+          + faux_faces[id].v_dir[2]*xyz[2];
+    xyznew[0] = faux_faces[id].offset * faux_faces[id].normal[0];
+    xyznew[1] = faux_faces[id].offset * faux_faces[id].normal[1];
+    xyznew[2] = faux_faces[id].offset * faux_faces[id].normal[2];
+    xyznew[0] += uv[0] * faux_faces[id].u_dir[0];
+    xyznew[1] += uv[0] * faux_faces[id].u_dir[1];
+    xyznew[2] += uv[0] * faux_faces[id].u_dir[2];
+    xyznew[0] += uv[1] * faux_faces[id].v_dir[0];
+    xyznew[1] += uv[1] * faux_faces[id].v_dir[1];
+    xyznew[2] += uv[1] * faux_faces[id].v_dir[2];
     break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
