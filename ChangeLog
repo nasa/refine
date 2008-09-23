@@ -1,3 +1,9 @@
+2008-09-23  16:10 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (initialize_faux) extended to understand 
+	general_plane geometry type, which require a normal.
+	(merged from branches/l2norm)
+
 2008-01-03 14:30 Mike Park  <mike.park@nasa.gov>
 
 	* Made 1.4.1 Release. For FUN3D offical relase 10.4.0 (r26514).
