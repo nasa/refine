@@ -115,7 +115,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->aux = NULL;
   grid->naux = 0;
 
-  // cells
+  /* cells */
   if ( NULL == c2n ) {
     grid->c2n = (int *)malloc(4 * grid->maxcell * sizeof(int));
   } else {
@@ -183,7 +183,7 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid->faceAdj = adjCreate(grid->maxnode,grid->maxface*3,5000*3);
 
-  //addface
+  /* addface */
 
   for ( i=0 ; i < grid->nface ; i++ ) {
     adjRegister(grid->faceAdj,grid->f2n[0+3*i],i);
@@ -191,7 +191,7 @@ Grid *gridImport(int maxnode, int nnode,
     adjRegister(grid->faceAdj,grid->f2n[2+3*i],i);
   }
 
-  // edge
+  /*  edge */
   grid->e2n    = (int *)malloc(2 * grid->maxedge * sizeof(int));
   grid->edgeId = (int *)malloc(1 * grid->maxedge * sizeof(int));
   grid->edgeT  = (double *)malloc(2 * grid->maxedge * sizeof(double));
@@ -1166,7 +1166,7 @@ Grid *gridPack(Grid *grid)
 
   packface=0;
 
-  // gridSortNodeGridEx needs the faceIds in ascending order
+  /* gridSortNodeGridEx needs the faceIds in ascending order */
 
   nFaceId = 0;
   for ( origface=0 ; origface < grid->maxface ; origface++ ) 
@@ -1217,7 +1217,6 @@ Grid *gridPack(Grid *grid)
       } 
     }
   }
-  //iface--; printf("gridPack: %d geometry faces detected.\n",iface);
 
   if (grid->nface != packface) {
     printf("ERROR: Pack: %s: %d: grid->nface %d != packface %d \n",
@@ -1293,7 +1292,7 @@ Grid *gridPack(Grid *grid)
 			nodeo2n[grid->pyramid[pyramidIndex].nodes[i]];
   }
 
-  // note, these should be counted as boundaries
+  /* note, these should be counted as boundaries */
   for (quadIndex=0;quadIndex<gridNQuad(grid);quadIndex++){
     for (i=0;i<4;i++) grid->quad[quadIndex].nodes[i] =
 			nodeo2n[grid->quad[quadIndex].nodes[i]];
@@ -1331,7 +1330,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
   o2n = (int *)malloc( grid->maxnode * sizeof(int) );
   for (i=0;i<grid->maxnode;i++) o2n[i] = EMPTY;
 
-  // geom nodes
+  /* geom nodes */
   newnode = 0;
   for (node=0;node<grid->nnode;node++) {
     if ( EMPTY != grid->geomNode[node] ) {
@@ -1340,7 +1339,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
     }
   }
 
-  // edge stuff
+  /* edge stuff */
   for (edge=1; edge<=grid->nGeomEdge; edge++){
 
     nCurveNode = gridGeomEdgeSize( grid, edge );
@@ -1348,7 +1347,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
       curve = (int *)malloc( nCurveNode * sizeof(int) );
       gridGeomEdge( grid, edge, curve );
 
-      for ( i=1; i<(nCurveNode-1); i++){ // skip end points
+      for ( i=1; i<(nCurveNode-1); i++){ /* skip end points */
 	if (o2n[curve[i]] != EMPTY) 
 	  printf("gridSortNodeGridEx: %s: %d: newnode error %d\n",
 		 __FILE__, __LINE__, o2n[curve[i]] );
@@ -1360,9 +1359,9 @@ Grid *gridSortNodeGridEx(Grid *grid)
     }
   }
 
-  // face stuff
-  //   assuming that the bc faces are sorted for contiguous
-  //   face node numbering by gridPack.
+  /* face stuff
+   *   assuming that the bc faces are sorted for contiguous
+   *   face node numbering by gridPack. */
 
   for ( face=0; face<grid->nface; face++ ){
     for ( i=0; i<3; i++ ){
@@ -1374,7 +1373,7 @@ Grid *gridSortNodeGridEx(Grid *grid)
     }
   }
 
-  // interior nodes
+  /* interior nodes */
   for ( node=0; node<grid->nnode; node++ ){
     if ( o2n[node] == EMPTY ) {
       o2n[node] = newnode;
@@ -1409,7 +1408,7 @@ Grid *gridSortNodeFUN3D(Grid *grid, int *nnodes0)
 
   newnode = 0;
 
-  // local nodes
+  /* local nodes */
   for ( node=0; node<grid->nnode; node++ ){
     if ( gridNodeLocal(grid,node) ) {
       o2n[node] = newnode;
@@ -1419,7 +1418,7 @@ Grid *gridSortNodeFUN3D(Grid *grid, int *nnodes0)
 
   *nnodes0 = newnode;
 
-  // interior nodes
+  /* interior nodes */
   for ( node=0; node<grid->nnode; node++ ){
     if ( o2n[node] == EMPTY ) {
       o2n[node] = newnode;
@@ -1554,7 +1553,7 @@ Grid *gridRenumber(Grid *grid, int *o2n)
 			o2n[grid->pyramid[pyramidIndex].nodes[i]];
   }
 
-  // note, these should be counted as boundaries
+  /* note, these should be counted as boundaries */
   for (quadIndex=0;quadIndex<gridNQuad(grid);quadIndex++){
     for (i=0;i<4;i++) grid->quad[quadIndex].nodes[i] =
 			o2n[grid->quad[quadIndex].nodes[i]];
@@ -4455,8 +4454,6 @@ Grid *gridEquator(Grid *grid, int n0, int n1 )
   gridOrient( grid, &grid->c2n[4*grid->gem[0]], nodes );
 
   grid->equ[0]= nodes[3];
-
-  // put and not found in loops
 
   for ( iequ=1 ; iequ <= grid->ngem && !gap ; iequ++ ){
     found = FALSE;
