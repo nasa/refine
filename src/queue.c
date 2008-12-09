@@ -779,7 +779,6 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
 
 Queue *queueGlobalShiftNode(Queue *queue,
 			    int old_nnode_global,
-			    int new_nnode_global,
 			    int node_offset )
 {
   int index, i;
@@ -819,7 +818,6 @@ Queue *queueGlobalShiftNode(Queue *queue,
 
 Queue *queueGlobalShiftCell(Queue *queue,
 			    int old_ncell_global,
-			    int new_ncell_global,
 			    int cell_offset )
 {
   int index;
