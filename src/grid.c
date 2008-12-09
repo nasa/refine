@@ -342,26 +342,16 @@ Grid *gridImportFAST( char *filename )
   double *xyz;
   int *f2n, *faceId;
   int *c2n;
-  GridBool verbose;
-
-  verbose = FALSE;
 
   file = fopen(filename,"r");
   fscanf(file,"%d %d %d",&nnode,&nface,&ncell);
 
-  if (verbose) printf("fast size: %d nodes %d faces %d cells.\n",
-		      nnode,nface,ncell);
-
-  if (verbose) printf("reading xyz...\n");
-  
   xyz = (double *)malloc(3*nnode*sizeof(double));
 
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[0+3*i]);
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[1+3*i]);
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[2+3*i]);
 
-  if (verbose) printf("reading faces...\n");
-  
   f2n = (int *)malloc(3*nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
@@ -373,16 +363,12 @@ Grid *gridImportFAST( char *filename )
     f2n[2+3*i]--;
   }
 
-  if (verbose) printf("reading face ID tags...\n");
-  
   faceId = (int *)malloc(nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
     fscanf(file,"%d",&faceId[i]);
   }
 
-  if (verbose) printf("reading cells...\n");
-  
   maxcell = ncell*2;
 
   c2n = (int *)malloc(4*maxcell*sizeof(int));
@@ -454,7 +440,6 @@ Grid *gridImportRef( char *filename )
   double *xyz;
   int *f2n, *faceId;
   int *c2n;
-  GridBool verbose;
   Grid *grid;
   
   int nGeomNode, nGeomEdge, nGeomFace;
@@ -466,24 +451,15 @@ Grid *gridImportRef( char *filename )
   double u, v;
   int face_id;
 
-  verbose = FALSE;
-
   file = fopen(filename,"r");
   fscanf(file,"%d %d %d",&nnode,&nface,&ncell);
 
-  if (verbose) printf("fast size: %d nodes %d faces %d cells.\n",
-		      nnode,nface,ncell);
-
-  if (verbose) printf("reading xyz...\n");
-  
   xyz = (double *)malloc(3*nnode*sizeof(double));
 
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[0+3*i]));
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[1+3*i]));
   for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[2+3*i]));
 
-  if (verbose) printf("reading faces...\n");
-  
   f2n = (int *)malloc(3*nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
@@ -495,16 +471,12 @@ Grid *gridImportRef( char *filename )
     (f2n[2+3*i])--;
   }
 
-  if (verbose) printf("reading face ID tags...\n");
-  
   faceId = (int *)malloc(nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
     fscanf(file,"%d",&faceId[i]);
   }
 
-  if (verbose) printf("reading cells...\n");
-  
   c2n = (int *)malloc(4*ncell*sizeof(int));
 
   for( i=0; i<ncell ; i++ ) {
@@ -2842,8 +2814,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
 {
   int current_cell, last_cell;
   int tries;
-  GridBool verb;
-  verb = FALSE;
 
   if (EMPTY == starting_guess) return EMPTY;
 
@@ -2867,16 +2837,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
     
     gridBarycentricCoordinate( xyz0, xyz1, xyz2, xyz3, target, bary );
 
-    if (verb) {
-      printf("try%5d cell%10d bary%10.6f%10.6f%10.6f%10.6f\n",
-	     tries, current_cell, bary[0], bary[1], bary[2], bary[3] );
-      printf("target%10.6f%10.6f%10.6f\n",target[0],target[1],target[2] );
-      printf("xyz%10.6f%10.6f%10.6f\n",xyz0[0],xyz0[1],xyz0[2] );
-      printf("xyz%10.6f%10.6f%10.6f\n",xyz1[0],xyz1[1],xyz1[2] );
-      printf("xyz%10.6f%10.6f%10.6f\n",xyz2[0],xyz2[1],xyz2[2] );
-      printf("xyz%10.6f%10.6f%10.6f\n",xyz3[0],xyz3[1],xyz3[2] );
-    }
-
     tol = -1.0e-13;
     if ( bary[0] >= tol && bary[1] >= tol &&
 	 bary[2] >= tol && bary[3] >= tol ) {
@@ -2890,7 +2850,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[1], nodes[2], nodes[3],
 					       last_cell );
-      if (verb) { printf("bary[0] %f %d\n",bary[0],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2901,7 +2860,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[2], nodes[3],
 					       last_cell );
-      if (verb) { printf("bary[1] %f %d\n",bary[1],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2912,7 +2870,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[3],
 					       last_cell );
-      if (verb) { printf("bary[2] %f %d\n",bary[2],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2923,7 +2880,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[2],
 					       last_cell );
-      if (verb) { printf("bary[3] %f %d\n",bary[3],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2934,7 +2890,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[1], nodes[2], nodes[3],
 					       last_cell );
-      if (verb) { printf("bary[0] %f %d\n",bary[0],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2945,7 +2900,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[2], nodes[3],
 					       last_cell );
-      if (verb) { printf("bary[1] %f %d\n",bary[1],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2956,7 +2910,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[3],
 					       last_cell );
-      if (verb) { printf("bary[2] %f %d\n",bary[2],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2967,7 +2920,6 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
       other_cell = gridFindOtherCellWith3Nodes(grid,
 					       nodes[0], nodes[1], nodes[2],
 					       last_cell );
-      if (verb) { printf("bary[3] %f %d\n",bary[3],other_cell); };
       if (EMPTY != other_cell ) {
 	current_cell = other_cell;
 	continue;
@@ -2976,15 +2928,9 @@ int gridFindEnclosingCell(Grid *grid, int starting_guess,
 
     if (EMPTY == current_cell) {
       current_cell = gridFindClosestBoundaryCell(grid, last_cell, target, bary);
-      if ( verb && EMPTY != current_cell ) 
-	printf("%s: %d: gridFindEnclosingCell %s\n",
-	       __FILE__,__LINE__,"gridFindClosestBoundaryCell EMPTY");
       return current_cell;
     }
   }
-
-  if (FALSE) printf("%s: %d: gridFindEnclosingCell exhausted tries at%10.5f%10.5f%10.5f.\n",
-		    __FILE__,__LINE__,target[0],target[1],target[2]);
 
   return EMPTY;
 }
@@ -3030,14 +2976,12 @@ int gridFindClosestBoundaryCell(Grid *grid, int starting_guess,
   current_face = gridFindClosestBoundaryFace(grid, current_face, 
 					     target, trib );
   if (EMPTY == current_face) {
-    if (FALSE) printf("%s: %d: gridFindClosestBoundaryCell: can't find closest face.\n",
-		      __FILE__,__LINE__);
     return EMPTY;
   }
 
   current_cell = gridFindCellWithFace( grid, current_face );
 
-  if (EMPTY == current_face) {
+  if (EMPTY == current_cell) {
     printf("%s: %d: gridFindClosestBoundaryCell: can't find closest cell.\n",
 	   __FILE__,__LINE__);
     return EMPTY;
@@ -3079,7 +3023,6 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
     double projected_target[3];
     int last_face, other_face;
     double tol;
-    GridBool verb;
 
     if (grid != gridFace( grid, current_face, nodes, &faceId )) {
       printf("%s: %d: gridFindClosestBoundaryFace %s\n",
@@ -3099,18 +3042,6 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
     
     gridBarycentricCoordinateTri( xyz0, xyz1, xyz2, projected_target, trib );
 
-    verb = FALSE;
-    if (verb) {
-      printf("try%5d face%10d trib%10.6f%10.6f%10.6f\n",
-	     tries, current_face, trib[0], trib[1], trib[2] );
-      printf("target%10.6f%10.6f%10.6f\n",target[0],target[1],target[2] );
-      printf("projected%10.6f%10.6f%10.6f\n",
-	     projected_target[0],projected_target[1],projected_target[2] );
-      printf("xyz%10.6f%10.6f%10.6f\n",xyz0[0],xyz0[1],xyz0[2] );
-      printf("xyz%10.6f%10.6f%10.6f\n",xyz1[0],xyz1[1],xyz1[2] );
-      printf("xyz%10.6f%10.6f%10.6f\n",xyz2[0],xyz2[1],xyz2[2] );
-    }
-
     tol = -1.0e-13;
     if ( trib[0] >= tol && trib[1] >= tol && trib[2] >= tol ) {
       return current_face;
@@ -3123,7 +3054,6 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
       other_face = gridFindFaceWithNodesUnless(grid,
 					       nodes[1], nodes[2],
 					       last_face );
-      if (verb) { printf("trib[0] %f %d\n",trib[0],other_face); };
       if (EMPTY != other_face ) {
 	current_face = other_face;
 	continue;
@@ -3134,7 +3064,6 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
       other_face = gridFindFaceWithNodesUnless(grid,
 					       nodes[0], nodes[2],
 					       last_face );
-      if (verb) { printf("trib[0] %f %d\n",trib[1],other_face); };
       if (EMPTY != other_face ) {
 	current_face = other_face;
 	continue;
@@ -3145,7 +3074,6 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
       other_face = gridFindFaceWithNodesUnless(grid,
 					       nodes[0], nodes[1],
 					       last_face );
-      if (verb) { printf("trib[0] %f %d\n",trib[2],other_face); };
       if (EMPTY != other_face ) {
 	current_face = other_face;
 	continue;
@@ -3159,8 +3087,6 @@ int gridFindClosestBoundaryFace(Grid *grid, int starting_guess,
     }
   }
 
-  if (FALSE) printf("%s: %d: gridFindClosestBoundaryFace %s %8.5f %8.5f %8.5f.\n",
-		    __FILE__,__LINE__,"cycling at",target[0],target[1],target[2]);
   return EMPTY;
 }
 
@@ -5048,9 +4974,8 @@ GridBool gridGeometryNode(Grid *grid, int node)
 
 GridBool gridGeometryEdge(Grid *grid, int node)
 {
-  AdjIterator it;
 
-  for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) )
+  if ( adjValid( adjFirst(grid->edgeAdj,node) ) ) 
     return TRUE;
   
   return FALSE;
@@ -5058,9 +4983,8 @@ GridBool gridGeometryEdge(Grid *grid, int node)
 
 GridBool gridGeometryFace(Grid *grid, int node)
 {
-  AdjIterator it;
 
-  for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) )
+  if ( adjValid( adjFirst(grid->faceAdj,node) ) )
     return TRUE;
   
   return FALSE;
@@ -5269,8 +5193,10 @@ Grid *gridMap(Grid *grid, int node, double *map)
     gridNodeXYZ( grid, node, xyz );
     enclosing_cell = gridFindEnclosingCell( child, starting_guess, xyz, bary );
     if ( EMPTY == enclosing_cell ) {
-      if (FALSE) printf("%s: %d: gridMap: can not find enclosing_cell (EMPTY) for %d\n", 
-			__FILE__, __LINE__, node );
+      /*
+      printf("%s: %d: gridMap: can not find enclosing_cell (EMPTY) for %d\n", 
+	     __FILE__, __LINE__, node );
+      */
       return NULL;
     }
     grid->child_reference[node] = enclosing_cell;
