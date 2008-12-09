@@ -164,7 +164,9 @@ void gridparallelsavecapri_( char *capriProject )
 void gridprojectallfaces_( void )
 {
   int face, node, nodes[3], faceId;
+#ifdef PARALLEL_VERBOSE 
   double ar0, ar1;
+#endif
 
 #ifdef PARALLEL_VERBOSE 
   ar0 = gridMinThawedAR(grid);
@@ -733,7 +735,6 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
 void gridloadlocalnodes_( int *nnode, int *global, int *local )
 {
   int node, globalnode, localnode;
-  int face, ids, faceId;
 
   localnode=0;
   node=0;

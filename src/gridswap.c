@@ -271,7 +271,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
   double uv[8];
   int newface;
   int added_face;
-  int other_cell;
   int common_node, uncommon_node;
 
   int cell2face[4][3] = {{0,1,2},{0,3,1},{1,3,2},{0,2,3}};

@@ -55,7 +55,6 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
   int volumeEdgeNode, patchEdgeNode;
   int *patch2global;
   UGPatchPtr localPatch;
-  Iterator patchIterator;
 
   if ( ! CADGeom_Start( ) ){
     printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());

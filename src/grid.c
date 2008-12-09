@@ -461,8 +461,7 @@ Grid *gridImportRef( char *filename )
   int edge_id, edge_nnodes, *edge_nodes;
   int edge_id_verification;
   double *t;
-  int face, node;
-  double uv[2];
+  int node;
   int lines, uv_nnodes;
   double u, v;
   int face_id;

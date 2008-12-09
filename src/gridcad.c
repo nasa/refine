@@ -1889,7 +1889,6 @@ Grid *gridStoreFaceCostParameterDerivatives (Grid *grid, int node )
   int face, faceId, nodes[3];
   int swapnode;
   double cost, dMRdx[3];
-  int vol=1;
 
   if ( !gridValidNode( grid, node) ) return NULL;
 
