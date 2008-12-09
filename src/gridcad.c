@@ -656,7 +656,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       uv[i][1] = uv0[i][1];
     }
   }
-  if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId0 ) < 1.0e-12 )
+  if ( gridFaceAreaUVDirect(uv[0], uv[1], uv[2], faceId0 ) < 1.0e-12 )
     return FALSE;
 
   for ( i=0 ; i < 3 ; i++ ) {
@@ -668,7 +668,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       uv[i][1] = uv0[i][1];
     }
   }
-  if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId0 ) < 1.0e-12 )
+  if ( gridFaceAreaUVDirect(uv[0], uv[1], uv[2], faceId0 ) < 1.0e-12 )
     return FALSE;
 
   for ( i=0 ; i < 3 ; i++ ) {
@@ -680,7 +680,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       uv[i][1] = uv1[i][1];
     }
   }
-  if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId1 ) < 1.0e-12 )
+  if ( gridFaceAreaUVDirect(uv[0], uv[1], uv[2], faceId1 ) < 1.0e-12 )
     return FALSE;
 
   for ( i=0 ; i < 3 ; i++ ) {
@@ -692,7 +692,7 @@ GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *grid,
       uv[i][1] = uv1[i][1];
     }
   }
-  if ( gridFaceAreaUVDirect(grid, uv[0], uv[1], uv[2], faceId1 ) < 1.0e-12 )
+  if ( gridFaceAreaUVDirect(uv[0], uv[1], uv[2], faceId1 ) < 1.0e-12 )
     return FALSE;
 
   return TRUE;

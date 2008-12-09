@@ -190,7 +190,6 @@ Grid *gridAdapt2(Grid *grid )
   int conn, nodes[2], newnode;
   double currentCost, splitCost, node0Cost, node1Cost;
   Queue *queue = NULL;
-  GridBool verbose = FALSE;
 
   gridCreateConn(grid);
   for(conn=0;conn<gridNConn(grid);conn++) {
@@ -200,25 +199,12 @@ Grid *gridAdapt2(Grid *grid )
 			    &splitCost)) continue;
     if (grid!=gridCollapseCost(grid, nodes[0],nodes[1], &currentCost, 
 			       &node0Cost, &node1Cost )) continue;
-    if (verbose)printf("o %f s %f c0 %f c1 %f\n",
-		       currentCost,splitCost,node0Cost,node1Cost);
     if ( currentCost > splitCost &&
 	 currentCost > node0Cost && currentCost > node1Cost ) continue;
     if ( splitCost > node0Cost && splitCost > node1Cost ) {
       newnode = gridSplitEdgeRatio( grid, queue, nodes[0], nodes[1], 0.5 );
-      if (verbose) { gridNodeAR(grid,newnode,&currentCost);
-      printf("split     %f\n",currentCost);}
     }else{ 
       continue;
-      if ( node0Cost > node1Cost ) {
-	gridCollapseEdge(grid, queue, nodes[0], nodes[1], 0.0);
-	if (verbose) { gridNodeAR(grid,nodes[0],&currentCost);
-	printf("collapse0 %f\n",currentCost);}
-      } else {
-	gridCollapseEdge(grid, queue, nodes[0], nodes[1], 1.0);
-	if (verbose) { gridNodeAR(grid,nodes[0],&currentCost);
-	printf("collapse1 %f\n",currentCost);}
-      }
     }
   }
   gridEraseConn(grid);
@@ -452,8 +438,8 @@ Grid *gridAdaptLongShortCurved(Grid *grid, double minLength, double maxLength,
 
   return grid;
 }
-Grid *gridAdaptLongShortLinear(Grid *grid, double minLength, double maxLength,
-			       GridBool debug_split )
+
+Grid *gridAdaptLongShortLinear(Grid *grid, double minLength, double maxLength )
 {
   int ranking, conn, nodes[2];
   int report, nnodeAdd, nnodeRemove;
@@ -497,7 +483,7 @@ Grid *gridAdaptLongShortLinear(Grid *grid, double minLength, double maxLength,
 	    nnodeAdd++;
 	    gridSwapNearNode( grid, newnode, 1.0 );
 	  } else {
-	    newnode = gridReconstructSplitEdgeRatio( grid, NULL,
+	    newnode = gridReconstructSplitEdgeRatio( grid,
 						     nodes[0], nodes[1],
 						     ratio );
 	    if (newnode != EMPTY) {
@@ -604,8 +590,6 @@ Grid *gridThreadCurveThroughVolume(Grid *grid, int parent,
     gridCell(grid, cell, cell_nodes);
     gridFaceOppositeCellNode(grid, cell_nodes, n0, face_nodes);
     
-    //printf("cell %d.\n",cell);
-
     if ( grid == gridCurveIntersectsFace(grid, face_nodes,
 					 parent, tuv0, tuv1,
 					 nexttuv, xyz, bary ) ) {
@@ -755,7 +739,7 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
 						faceId, uv0,
 						uv2, xyz, &bary ) ) {
     
-	area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
+	area = gridFaceAreaUVDirect(uv0,uv1,uv2,faceId);
 	printf("line segment%4d nodes%10d%10d area%14.6e u%f v%f\n",
 	       segment,node0,node1,area,uv2[0],uv2[1]);
 
@@ -822,7 +806,7 @@ Grid *gridFillRingWithExisitingCellFaces( Grid *grid, Ring *ring, int faceId )
 	
 	node2 = gridEqu( grid, equator );
 	if ( ringSegmentsContainNode( ring, node2, uv2) ) {
-	  area = gridFaceAreaUVDirect(grid,uv0,uv1,uv2,faceId);
+	  area = gridFaceAreaUVDirect(uv0,uv1,uv2,faceId);
 	  if ( ringSurroundsTriangle( ring, node0, node1, node2, uv2) ) {
 	    printf("close nodes %6d%6d%6d area %e\n",
 		   node0,node1,node2,area);
@@ -847,7 +831,7 @@ Grid *gridFillRingWithExisitingCellFaces( Grid *grid, Ring *ring, int faceId )
   return grid;
 }
 
-int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
+int gridReconstructSplitEdgeRatio(Grid *grid, 
 				  int n0, int n1, double ratio )
 {
   int gap0, gap1, face0, face1, nodes[3], faceId0, faceId1;
@@ -903,11 +887,6 @@ int gridReconstructSplitEdgeRatio(Grid *grid, Queue *queue,
     newtuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
     newtuv[1] = (1-ratio)*tuv0[1]+ratio*tuv1[1];
     gridEvaluateOnFace(grid, parent, newtuv, xyz );
-  }else{
-    gridNodeT(grid,n0,-parent,tuv0);
-    gridNodeT(grid,n1,-parent,tuv1);
-    newtuv[0] = (1-ratio)*tuv0[0]+ratio*tuv1[0];
-    gridEvaluateOnEdge(grid, -parent, newtuv[0], xyz );
   }
 
   printf("new node at%23.15e%23.15e%23.15e\n",xyz[0],xyz[1],xyz[2]);
@@ -1500,7 +1479,6 @@ int gridSplitEdgeForce(Grid *grid, Queue *queue, int n0, int n1,
    }
   gridNodeMinCellJacDet2(grid, newnode, &minJac );
   gridNodeAR(grid, newnode, &minAR );
-  //  printf("min AR%20.15f Jac%20.15f\n",minAR, minJac);
 
   if (minAR < gridMinInsertCost(grid) ) {
 
@@ -1648,9 +1626,7 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
   face = gridFindFace(grid, face_nodes[0], face_nodes[1], face_nodes[2] );
   if ( EMPTY == cell1 && EMPTY == face ) return EMPTY;
   faceId = EMPTY;
-  gridFace(grid, face, nodes, &faceId); // only need to set faceId
-
-  //printf("gridSplitFaceAt faceId %d\n",faceId);
+  gridFace(grid, face, nodes, &faceId); /* only need to set faceId */
 
   /* set up nodes so that nodes[0]-nodes[2] is face 
      and nodes[0]-nodes[3] is the cell
@@ -1681,8 +1657,6 @@ int gridSplitFaceAt(Grid *grid, int *face_nodes, double *xyz)
     }
   }
 
-  // if (0.0>=gridVolume(grid, nodes? ) ) return EMPTY;
-  
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
 
@@ -1756,8 +1730,6 @@ int gridSplitCellAt(Grid *grid, int cell, double *xyz)
   int n, i;
 
   if (grid != gridCell(grid, cell, nodes) ) return EMPTY;
-
-  //if (0.0>=gridVolume(grid, nodes ) ) return EMPTY;
 
   newnode = gridAddNode(grid, xyz[0], xyz[1], xyz[2] );
   if ( newnode == EMPTY ) return EMPTY;
@@ -1861,13 +1833,6 @@ int gridInsertInToGeomFace(Grid *grid, double *xyz )
 	unit[1] = norm[1] / normLength;
 	unit[2] = norm[2] / normLength;
 	normDistance = gridDotProduct( unit, leg0 );
-	if (FALSE) {
-	  printf("f%d X%8.5f Y%8.5f Z%8.5f %6.3f 0 %6.3f 1 %6.3f 2 %6.3f\n",
-		 face, xyz[0], xyz[1], xyz[2], normDistance,
-		 gridDotProduct( norm, norm0 ),
-		 gridDotProduct( norm, norm1 ),
-		 gridDotProduct( norm, norm2 ) );
-	}
 	if ( gridDotProduct( norm, norm0 ) > 0.00 &&
 	     gridDotProduct( norm, norm1 ) > 0.00 &&
 	     gridDotProduct( norm, norm2 ) > 0.00 &&
@@ -1949,20 +1914,6 @@ int gridInsertInToVolume(Grid *grid, double *xyz)
 	gridSubtractVector(xyz, xyz0, leg0);
 	gridSubtractVector(xyz, xyz1, leg1);
 
-	if (FALSE) {	
-	  printf("c%d X%8.5f Y%8.5f Z%8.5f 0 %6.3f 1 %6.3f 2 %6.3f 3 %6.3f\n",
-		 cell, xyz[0], xyz[1], xyz[2],
-		 gridDotProduct( leg1, norm0 ),
-		 gridDotProduct( leg0, norm1 ),
-		 gridDotProduct( leg0, norm2 ),
-		 gridDotProduct( leg0, norm3 ) );
-	  printf("xyz0 X%8.5f Y%8.5f Z%8.5f\n",xyz0[0],xyz0[1],xyz0[2]);
-	  printf("xyz1 X%8.5f Y%8.5f Z%8.5f\n",xyz1[0],xyz1[1],xyz1[2]);
-	  printf("xyz2 X%8.5f Y%8.5f Z%8.5f\n",xyz2[0],xyz2[1],xyz2[2]);
-	  printf("xyz3 X%8.5f Y%8.5f Z%8.5f\n",xyz3[0],xyz3[1],xyz3[2]);
-	  printf("norm0 X%8.5f Y%8.5f Z%8.5f\n",norm0[0],norm0[1],norm0[2]);
-	}
-
 	if ( gridDotProduct( leg1, norm0 ) > 0.00 &&
 	     gridDotProduct( leg0, norm1 ) > 0.00 &&
 	     gridDotProduct( leg0, norm2 ) > 0.00 &&
@@ -1998,6 +1949,9 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   double n0Id1uv[2], n1Id1uv[2], newId1uv[2]; 
   int edge, edgeId;
   double t0, t1, t;
+
+  /* no-op for NULL queue, to suppress compiler warnings */
+  queueResetCurrentTransaction(queue);
 
   if ( !gridValidNode(grid, n0) || !gridValidNode(grid, n1) ) return NULL; 
 
@@ -2481,6 +2435,7 @@ Grid *gridSplitSliverCell(Grid *grid, Queue *queue, int cell)
   shortest_edge_length = MIN(gridEdgeLength(grid, nodes[2], nodes[3]),
 			     shortest_edge_length);
 
+  node0 = node1 = node2 = node3 = EMPTY; /* to suppress used uninitialized */
   for (opposites=0;opposites<3;opposites++) {
     switch (opposites) {
     case 0: 

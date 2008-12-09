@@ -24,13 +24,11 @@ Grid *gridAdapt2(Grid *g );
 Grid *gridAdaptBasedOnConnRankings(Grid *g );
 Grid *gridAdaptLongShortCurved(Grid *g, double minLength, double maxLength,
 			       GridBool debug_split );
-Grid *gridAdaptLongShortLinear(Grid *g, double minLength, double maxLength,
-			       GridBool debug_split );
+Grid *gridAdaptLongShortLinear(Grid *g, double minLength, double maxLength );
 Grid *gridAdaptVolumeEdges(Grid *g);
 
 int gridSplitEdge(Grid *g, int n0, int n1 );
-int gridReconstructSplitEdgeRatio(Grid *g, Queue *q,
-				  int n0, int n1, double ratio);
+int gridReconstructSplitEdgeRatio(Grid *g, int n0, int n1, double ratio);
 int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
 int gridSplitEdgeRepeat(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );
 int gridSplitEdgeForce(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );

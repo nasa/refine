@@ -816,7 +816,6 @@ double gridAR(Grid *grid, int *nodes )
 	 (grid!=gridMap(grid, nodes[1], map1) ) ||
 	 (grid!=gridMap(grid, nodes[2], map2) ) ||
 	 (grid!=gridMap(grid, nodes[3], map3) ) ) {
-      if (FALSE) printf("%s: %d: gridAR: gridMap NULL\n", __FILE__,__LINE__);
       return -999.0;
     }
     for (i=0;i<6;i++) m[i]=0.25*(map0[i]+map1[i]+map2[i]+map3[i]);
@@ -870,12 +869,6 @@ double gridAR(Grid *grid, int *nodes )
     printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
 	   gridCostFunction(grid));
     return -1.0;
-  }
-
-  if ( FALSE ) {
-    printf("nodes %d %d %d %d aspect %f\n",nodes[0],nodes[1],nodes[2],nodes[3],aspect);
-    printf("m \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",m[0],m[1],m[2],m[1],m[3],m[4],m[2],m[4],m[5]);
-    printf("j \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f \n %25.18f %25.18f %25.18f\n",j[0],j[1],j[2],j[3],j[4],j[5],j[6],j[7],j[8]);
   }
 
   return aspect;
@@ -983,27 +976,6 @@ double gridCellMetricConformity( double *xyz0, double *xyz1,
   norm = 0.0;
   for ( i = 0 ; i < 9 ; i++ ) norm += rt[i]*rt[i];
   norm = sqrt(norm);
-
-  if (FALSE) {
-    printf("req\n");
-    printf(" %15.8f %15.8f %15.8f\n",
-	   requested_metric[0], requested_metric[1], requested_metric[2]);
-    printf(" %15.8f %15.8f %15.8f\n",
-	   requested_metric[1], requested_metric[3], requested_metric[4]);
-    printf(" %15.8f %15.8f %15.8f\n",
-	   requested_metric[2], requested_metric[4], requested_metric[5]);
-    printf("imp\n");
-    printf(" %15.8f %15.8f %15.8f\n",
-	   implied_metric[0], implied_metric[1], implied_metric[2]);
-    printf(" %15.8f %15.8f %15.8f\n",
-	   implied_metric[1], implied_metric[3], implied_metric[4]);
-    printf(" %15.8f %15.8f %15.8f\n",
-	   implied_metric[2], implied_metric[4], implied_metric[5]);
-    printf("res %15.8f %15.8f\n",norm,1.0/(1.0+norm));
-    printf(" %15.8f %15.8f %15.8f\n",rt[0], rt[3], rt[6]);
-    printf(" %15.8f %15.8f %15.8f\n",rt[1], rt[4], rt[7]);
-    printf(" %15.8f %15.8f %15.8f\n",rt[2], rt[5], rt[8]);
-  }
 
   norm = 1.0/(1.0+norm);
 
@@ -1847,9 +1819,8 @@ Grid *gridMinVolumeAndCount( Grid *grid, double *min_volume, int *total_count )
 {
   int cellId, nodes[4];
   double volume, minVol;
-  double xyz[3];
   int count;
-  GridBool report_negative_volumes = FALSE;
+
   minVol = 999.0;
   count = 0;
   for (cellId=0;cellId<gridMaxCell(grid);cellId++)
@@ -1857,11 +1828,6 @@ Grid *gridMinVolumeAndCount( Grid *grid, double *min_volume, int *total_count )
       volume = gridVolume(grid, nodes);
       if (volume < GRID_VOLUME_TOL ) {
 	count++;
-	if (report_negative_volumes) {
-	  gridNodeXYZ(grid,nodes[0],xyz);
-	  printf("volume%17.10e at %12.6f%12.6f%12.6f\n",
-		 volume,xyz[0],xyz[1],xyz[2]);
-	}
       }
       minVol = MIN(minVol, volume);
     }
@@ -2092,10 +2058,10 @@ double gridFaceAreaUV(Grid *grid, int face)
   gridNodeUV( grid, nodes[1], faceId, uv1);
   gridNodeUV( grid, nodes[2], faceId, uv2);
 
-  return gridFaceAreaUVDirect(grid, uv0, uv1, uv2, faceId);
+  return gridFaceAreaUVDirect(uv0, uv1, uv2, faceId);
 }
 
-double gridFaceAreaUVDirect(Grid *grid, double *uv0,  double *uv1,  double *uv2,
+double gridFaceAreaUVDirect(double *uv0,  double *uv1,  double *uv2,
 			    int faceId)
 {
   double edge0[3], edge1[3], norm[3];
