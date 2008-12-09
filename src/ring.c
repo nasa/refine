@@ -199,7 +199,7 @@ Ring *ringAddSegment( Ring *ring,
 
   ring->segments++;
 
-  // make sure that uv's match
+  /* make sure that uv's match */
   for ( segment = 0 ; segment < ringSegments(ring) ; segment++ ) {
     if ( ring->segment_nodes[0+2*segment] == node0 ) {
       ring->segment_uvs[0+4*segment] = uv0[0];
@@ -306,13 +306,6 @@ GridBool ringIntersectsSegment( Ring *ring,
 	   ( ABS( 0.0 - ratio_b ) < tol ) ) {
 	return TRUE;
       }
-    }
-
-    if (FALSE) { 
-      printf("\ndenom %12.9f a %12.9f b %12.9f\n",
-	     denom,ratio_a,ratio_b);
-      printf("node0 %d node1 %d node2 %d node3 %d\n",
-	     node0, node1, node2, node3);
     }
 
     meet00 = ( ( ABS( 0.0 - ratio_a ) < tol ) &&
@@ -448,7 +441,7 @@ Ring *ringTriangle( Ring *ring, int triangle,
 }
 
 static 
-double ringTriangleArea(Ring *ring, double *uv0,  double *uv1,  double *uv2)
+double ringTriangleArea( double *uv0,  double *uv1,  double *uv2)
 {
   double edge0[2], edge1[2];
 
@@ -480,7 +473,7 @@ GridBool ringSurroundsTriangle( Ring *ring,
       uv0[1] = ring->segment_uvs[1+4*segment];
       uv1[0] = ring->segment_uvs[2+4*segment];
       uv1[1] = ring->segment_uvs[3+4*segment];
-      area = ringTriangleArea(ring,uv0,uv1,uv2);
+      area = ringTriangleArea(uv0,uv1,uv2);
       
       if ( ring_area > 0.0 ) {
 	if ( area < tol_area ) {
@@ -526,7 +519,7 @@ double ringArea( Ring *ring )
       uv0[1] = ring->segment_uvs[1+4*segment];
       uv1[0] = ring->segment_uvs[2+4*segment];
       uv1[1] = ring->segment_uvs[3+4*segment];
-      area += ringTriangleArea(ring, uv0, uv1, center);
+      area += ringTriangleArea(uv0, uv1, center);
     }
     ring->ring_area_computed = TRUE;
     ring->ring_area = area;
