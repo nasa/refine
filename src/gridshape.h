@@ -32,7 +32,7 @@ Grid *gridWriteTecplotCellJacDet(Grid *, int cell, char *filename );
 
 Grid *gridShapeJacobian1(Grid *,
 			 double *n0, double *n1, double *n2, double *n3,
-			 double *where, double *jacobian );
+			 double *jacobian );
 Grid *gridShapeJacobian2(Grid *,
 			 double *n0, double *n1, double *n2, double *n3,
 			 double *e01, double *e02, double *e03,

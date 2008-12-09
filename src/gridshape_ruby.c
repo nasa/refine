@@ -11,19 +11,17 @@ VALUE grid_plotMinDeterminateAtSurface( VALUE self )
 }
 
 VALUE grid_shapeJacobian1( VALUE self, 
-			   VALUE rb_n0, VALUE rb_n1, VALUE rb_n2, VALUE rb_n3,
-			   VALUE rb_w )
+			   VALUE rb_n0, VALUE rb_n1, VALUE rb_n2, VALUE rb_n3 )
 {
   int i;
-  double n0[3], n1[3], n2[3], n3[3], w[3], j[9];
+  double n0[3], n1[3], n2[3], n3[3], j[9];
   VALUE rb_j;
   GET_GRID_FROM_SELF;
   for (i=0;i<3;i++) n0[i] = NUM2DBL(rb_ary_entry(rb_n0,i));
   for (i=0;i<3;i++) n1[i] = NUM2DBL(rb_ary_entry(rb_n1,i));
   for (i=0;i<3;i++) n2[i] = NUM2DBL(rb_ary_entry(rb_n2,i));
   for (i=0;i<3;i++) n3[i] = NUM2DBL(rb_ary_entry(rb_n3,i));
-  for (i=0;i<3;i++)  w[i] = NUM2DBL(rb_ary_entry(rb_w,i));
-  if (grid!=gridShapeJacobian1(grid,n0,n1,n2,n3,w,j)) return Qnil;
+  if (grid!=gridShapeJacobian1(grid,n0,n1,n2,n3,j)) return Qnil;
   rb_j = rb_ary_new2(9);
   for(i=0;i<9;i++) rb_ary_store( rb_j, i, rb_float_new(j[i]) );
   return rb_j;
@@ -152,7 +150,7 @@ void Init_GridShape()
    cGridShape = rb_define_module( "GridShape" );
    rb_define_method( cGridShape, "plotMinDeterminateAtSurface", 
 		     grid_plotMinDeterminateAtSurface, 0 );
-   rb_define_method( cGridShape, "shapeJacobian1", grid_shapeJacobian1, 5 );
+   rb_define_method( cGridShape, "shapeJacobian1", grid_shapeJacobian1, 4 );
    rb_define_method( cGridShape, "shapeJacobian2", grid_shapeJacobian2, 11 );
    rb_define_method( cGridShape, "shapeJacobianDet2", grid_shapeJacobianDet2, 11 );
    rb_define_method( cGridShape, "shapeJacobianDetDeriv2", grid_shapeJacobianDetDeriv2, 11 );

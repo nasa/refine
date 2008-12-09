@@ -44,9 +44,8 @@ class TestGridShape < Test::Unit::TestCase
   n1 = [1, 0, 0]
   n2 = [0, 1, 0]
   n3 = [0, 0, 1]
-  where = [0.3, 0.3, 0.3]
   
-  jac = @g.shapeJacobian1(n0,n1,n2,n3,where)
+  jac = @g.shapeJacobian1(n0,n1,n2,n3)
   tol=1.0e-14
   assert_in_delta(1.0,jac[0],tol)
   assert_in_delta(0.0,jac[1],tol)
@@ -64,9 +63,8 @@ class TestGridShape < Test::Unit::TestCase
   n1 = [2, 0, 0]
   n2 = [1, 1, 0]
   n3 = [1, 0, 1]
-  where = [0.3, 0.3, 0.3]
   
-  jac = @g.shapeJacobian1(n0,n1,n2,n3,where)
+  jac = @g.shapeJacobian1(n0,n1,n2,n3)
   tol=1.0e-14
   assert_in_delta(1.0,jac[0],tol)
   assert_in_delta(0.0,jac[1],tol)
@@ -84,9 +82,8 @@ class TestGridShape < Test::Unit::TestCase
   n1 = [1, 0, 0]
   n2 = [0, 1, 0]
   n3 = [0, 0, 2]
-  where = [0.3, 0.3, 0.3]
   
-  jac = @g.shapeJacobian1(n0,n1,n2,n3,where)
+  jac = @g.shapeJacobian1(n0,n1,n2,n3)
   tol=1.0e-14
   assert_in_delta(1.0,jac[0],tol)
   assert_in_delta(0.0,jac[1],tol)
@@ -104,9 +101,8 @@ class TestGridShape < Test::Unit::TestCase
   n1 = [0, 0, 0]
   n2 = [0, 1, 0]
   n3 = [0, 0, 1]
-  where = [0.3, 0.3, 0.3]
   
-  jac = @g.shapeJacobian1(n0,n1,n2,n3,where)
+  jac = @g.shapeJacobian1(n0,n1,n2,n3)
   tol=1.0e-14
   assert_in_delta(-1.0,jac[0],tol)
   assert_in_delta(-1.0,jac[1],tol)
@@ -124,9 +120,8 @@ class TestGridShape < Test::Unit::TestCase
   n1 = [0, 0, 0]
   n2 = [0, 0, 1]
   n3 = [0, 1, 0]
-  where = [0.3, 0.3, 0.3]
   
-  jac = @g.shapeJacobian1(n0,n1,n2,n3,where)
+  jac = @g.shapeJacobian1(n0,n1,n2,n3)
   tol=1.0e-14
   assert_in_delta(-1.0,jac[0],tol)
   assert_in_delta(-1.0,jac[1],tol)

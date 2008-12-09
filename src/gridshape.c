@@ -462,7 +462,7 @@ Grid *gridWriteTecplotCellJacDet(Grid *grid, int cell, char *filename )
 
 Grid* gridShapeJacobian1(Grid *grid, 
 			 double *n0, double *n1,double *n2, double *n3, 
-			 double *where, double *j )
+			 double *j )
 {
   double gphi[3];
   j[0] = 0.0;
