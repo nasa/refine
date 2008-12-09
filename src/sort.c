@@ -17,7 +17,7 @@
 void sortHeap( int length, int *arrayInput, int *sortedIndex  )
 {
   int i, l, ir, indxt, q;
-  unsigned int n, j;
+  int n, j;
 
   for(i=0;i<length;i++) sortedIndex[i] = i;
 
@@ -65,7 +65,7 @@ void sortDoubleHeap( int length, double *arrayInput, int *sortedIndex  )
 {
   int i, l, ir, indxt;
   double q;
-  unsigned int n, j;
+  int n, j;
 
   for(i=0;i<length;i++) sortedIndex[i] = i;
 
