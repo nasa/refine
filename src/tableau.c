@@ -232,6 +232,7 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
   m = 1 + tableauConstraints( tableau );
   n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
   
+  divisor = 0.0; /* to suppress uninitialized compiler warning */
   best_divisor = 0.0;
 
   /* test all basis (except slack), first col is solution */
