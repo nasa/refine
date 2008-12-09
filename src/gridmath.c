@@ -180,11 +180,6 @@ void gridRotateDirection(double *v0, double *v1,
 
   gridVectorNormalize(result);
 
-  if (FALSE) {
-    printf("\nv0 %f %f %f v1 %f %f %f",v0[0],v0[1],v0[2],v1[0],v1[1],v1[2]);
-    printf("\nskew %f %f %f %f",skew0, skew1, rotation, skew);
-    printf("\nresult %f %f %f",result[0],result[1],result[2]);
-  }
 }
 
 void gridTriDiag3x3(double *m, double *d, double *e, 
@@ -438,9 +433,6 @@ GridBool gridGaussianElimination( int m, int n, double *a )
       }
     }
     if ( largest_pivot < 1.0e-14 || EMPTY == pivot_row ) {
-      if (FALSE) printf( "%s: %d: %s: pivot[%d] %e\n",
-			 __FILE__, __LINE__, "gridGaussianElimination", 
-			 col, largest_pivot);
       return FALSE;
     }
     /* exchange rows to get the best pivot on the diagonal, 
