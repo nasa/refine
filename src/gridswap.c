@@ -1010,7 +1010,7 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20], 
+Grid *gridGetCombo6( Grid *grid, double costs[20], 
 		     double *bestcost, int best[4] );
 Grid *gridConstructTet6( Grid *grid, int n0, int n1, 
 			 int nodes[40][4], double costs[20] );
@@ -1026,7 +1026,7 @@ Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
 
   gridConstructTet6( grid, n0, n1, nodes, costs );
   
-  gridGetCombo6( grid, nodes, costs, &bestcost, bestcombo );
+  gridGetCombo6( grid, costs, &bestcost, bestcombo );
   
   if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
        ( bestcost > gridMinSwapCost(grid) )  ) {
@@ -1050,7 +1050,7 @@ Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20], 
+Grid *gridGetCombo6( Grid *grid, double costs[20], 
 		     double *bestcost, int best[4] )
 {  
   int i, j, tet[4];
@@ -1186,7 +1186,7 @@ Grid *gridConstructTet6( Grid *grid, int n0, int n1,
   return grid;
 }
 
-Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35], 
+Grid *gridGetCombo7( Grid *grid, double costs[35], 
 		     double *bestcost, int best[4] );
 Grid *gridConstructTet7( Grid *grid, int n0, int n1, 
 			 int nodes[70][4], double costs[35] );
@@ -1202,7 +1202,7 @@ Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
 
   gridConstructTet7( grid, n0, n1, nodes, costs );
 
-  gridGetCombo7( grid, nodes, costs, &bestcost, bestcombo );
+  gridGetCombo7( grid, costs, &bestcost, bestcombo );
   
   if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
        ( bestcost > gridMinSwapCost(grid) )  ) {
@@ -1226,7 +1226,7 @@ Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35], 
+Grid *gridGetCombo7( Grid *grid, double costs[35], 
 		     double *bestcost, int best[5] )
 {  
   int i, j, tet[5];
