@@ -1,4 +1,3 @@
-
 Refine is a 3D tetrahedral grid adaptation framework. It is
 implemented with an object-oriented flavor in the C language.  Most
 functionality is wrapped into Ruby scripting language extensions
