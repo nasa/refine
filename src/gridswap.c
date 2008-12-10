@@ -496,7 +496,7 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   if ( gridNodeFrozen(grid,topnode) && gridNodeFrozen(grid,bottomnode) )
     return NULL;
 
-  //set nodes[0-3] to topnode orientation
+  /* set nodes[0-3] to topnode orientation */
   tent[4] = bottomnode;
 
   nodes[0][0] = tent[0];
@@ -1232,7 +1232,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
   int i, j, tet[5];
   double cost;
   *bestcost = -2.0;
-  //case1
+  /* case1 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0]+7;
@@ -1250,7 +1250,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
 #endif
     }
   }
-  //case2
+  /* case2 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0]+7;
@@ -1268,7 +1268,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
         printf("swap7 %d currentcost %f\n",i,cost);
 #endif
   }
-  //case3
+  /* case3 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 14;
@@ -1286,7 +1286,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
         printf("swap7 %d currentcost %f\n",i,cost);
 #endif
   }
-  //case4  
+  /* case4  */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 7;
@@ -1304,7 +1304,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
         printf("swap7 %d currentcost %f\n",i,cost);
 #endif
   }
-  //case5
+  /* case5 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 7;
@@ -1322,7 +1322,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
         printf("swap7 %d currentcost %f\n",i,cost);
 #endif
   }
-  //case6 
+  /* case6 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 14;
