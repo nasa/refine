@@ -1,0 +1,13 @@
+
+Makefile.in
+
+/autom4te.cache
+/aclocal.m4
+/compile
+/configure
+/depcomp
+/doc/refine.info
+/doc/texinfo.tex
+/install-sh
+/missing
+
