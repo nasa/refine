@@ -11,3 +11,17 @@ Makefile.in
 /install-sh
 /missing
 
+# unit tests
+
+/src/Adj
+/src/Grid*
+/src/Intersect
+/src/Layer
+/src/Line
+/src/Near
+/src/Plan
+/src/Queue
+/src/Ring
+/src/Sort
+/src/Tableau
+
