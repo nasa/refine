@@ -1067,7 +1067,7 @@ Grid *gridGetCombo6( Grid *grid, double costs[20],
   for ( i = 0 ; i < 3 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 12;
-    tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
+    tet[2] = i+3; /* if ( tet[2] > 5 ) tet[2] -= 6; */
     tet[3] = tet[2] + 12;
 
     cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
@@ -1084,7 +1084,7 @@ Grid *gridGetCombo6( Grid *grid, double costs[20],
   for ( i = 0 ; i < 3 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 6;
-    tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
+    tet[2] = i+3; /* if ( tet[2] > 5 ) tet[2] -= 6; */
     tet[3] = tet[2] + 6;
 
     cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
