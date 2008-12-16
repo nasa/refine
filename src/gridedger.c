@@ -129,7 +129,7 @@ int gridedgerIdealNodes(GridEdger *ge)
 GridEdger *gridedgerIdealNodeT(GridEdger *ge, int node, double *t )
 {
   if (NULL == ge->t) return NULL;
-  if ( 0 > node || gridedgerIdealNodes(ge) <= node ) return NULL;
+  if ( 0 > node || gridedgerIdealNodes(ge) >= node ) return NULL;
   *t = ge->t[node];
   return ge;
 }
