@@ -76,6 +76,12 @@ void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode,
 {
   int face;
   int node0, node1, node2;
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+  SUPRESS_UNUSED_COMPILER_WARNING(nodedim);
+  SUPRESS_UNUSED_COMPILER_WARNING(dim2);
+
   for(face=0;face<*nface;face++){
     node0 = f2n[face+0*(*dim1)] - 1;
     node1 = f2n[face+1*(*dim1)] - 1;
@@ -447,6 +453,10 @@ void queuedumpsize_( int *nInt, int *nDouble )
 
 void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nInt);
+  SUPRESS_UNUSED_COMPILER_WARNING(nDouble);
+
   queueDump(queue, ints, doubles);
   queueReset(queue);
 }
@@ -454,6 +464,10 @@ void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
 void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   Queue *appliedQueue;
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nInt);
+  SUPRESS_UNUSED_COMPILER_WARNING(nDouble);
 
   appliedQueue = queueCreate( queueNodeSize( queue ) );
   queueLoad(appliedQueue, ints, doubles);
@@ -491,6 +505,9 @@ void gridnunusednodeglobal_( int *nunused )
 
 void gridgetunusednodeglobal_( int *nunused, int *unused )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nunused);
+
   gridGetUnusedNodeGlobal( grid, unused );
 }
 
@@ -527,6 +544,9 @@ void gridnunusedcellglobal_( int *nunused )
 
 void gridgetunusedcellglobal_( int *nunused, int *unused )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nunused);
+
   gridGetUnusedCellGlobal( grid, unused );
 }
 
@@ -570,6 +590,10 @@ void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
 {
   int node;
   double xyz[3];
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+
   for (node=0;node<gridNNode(grid);node++) {
     l2g[node] = gridNodeGlobal(grid,node)+1;
     gridNodeXYZ(grid,node,xyz);
@@ -605,6 +629,9 @@ void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
 {
   int face, n, nodes[3], id;
   
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(ndim);
+
   n = 0;
   for (face=0;face<gridMaxFace(grid);face++) {
     if ( grid == gridFace(grid,face,nodes,&id) ) {
@@ -695,6 +722,9 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
   int *count;
   int face, faceids, faceid[MAXFACEIDDEG];
   int edge, edgeids, edgeid[MAXEDGEIDDEG];
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(clientsize);
 
   count = malloc( (*nproc) * sizeof(int) );
 
@@ -901,12 +931,18 @@ void gridmovecompletempitest_( void )
 void gridmoveloadlocalnodedata_( int *ndim, int *nnode, 
 				 int *nodes, double *data )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(ndim);
+
   gridmoveLoadFortranNodeData( gm, *nnode, nodes, data);
 }
 
 void gridmovesetlocalnodedata_( int *ndim, int *nnode, 
 				 int *nodes, double *data )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(ndim);
+
   gridmoveSetFortranNodeData( gm, *nnode, nodes, data);
 }
 
