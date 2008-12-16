@@ -104,7 +104,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 	    ratio = 0.5;
 	    newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
 	    if ( newnode != EMPTY ){
-	      //gridSwapNearNode( grid, newnode, 1.0 );
+	      /* gridSwapNearNode( grid, newnode, 1.0 ); */
 	    }
 	  }
 	}
@@ -137,7 +137,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 	  if (length <= minLength) {
 	    if ( grid == 
 		 gridParallelEdgeCollapse(grid, queue, nodes[0], nodes[1]) ) {
-	      // gridSwapNearNode( grid, nodes[0], 1.0 );
+	      /* gridSwapNearNode( grid, nodes[0], 1.0 ); */
 	    }
 	  }
 	}
