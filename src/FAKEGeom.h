@@ -62,7 +62,8 @@ typedef struct {
  
 GridBool CADGeom_GetEdge(int, int, double *, int *);
 CADCurvePtr CADGeom_EdgeGrid( int, int );
-#define CADCURVE_NUMPTS(edge) (NULL==(edge)?-1:2) /* to suppress unused warn */
+/* to suppress unused warn */
+#define CADCURVE_NUMPTS(edge) (0==(edge)->magic?-1:(edge)->magic)
 
 GridBool CADGeom_UpdateEdgeGrid(int, int, int, double *, double *);
 GridBool CADGeom_UpdateFaceGrid(int, int, int, double *, double *, int, int *);
