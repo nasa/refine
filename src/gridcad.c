@@ -785,7 +785,7 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
 }
 
 Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
-				    int faceId, double *uv_guess,
+				    int faceId, 
 				    double *uv, double *xyz, double *bary )
 {
   double xyz0[3], xyz1[3];

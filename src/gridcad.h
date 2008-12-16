@@ -60,7 +60,7 @@ Grid *gridCurveIntersectsFace(Grid *g, int *face_nodes, int parent,
 			      double *tuv, double *xyz, double *bary);
 
 Grid *gridLineSegmentIntersectsFace(Grid *g, int node0, int node1,
-				    int faceId, double *uv_guess,
+				    int faceId, 
 				    double *uv, double *xyz, double *bary );
 
 /* the {optimzation,laplacian}Limits will be set to a default if < 0.0 */ 
