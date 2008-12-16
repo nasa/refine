@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "FAKEGeom.h"
 #include "gridmath.h"
 
@@ -96,22 +97,22 @@ static GridBool initialize_faux(void)
 	return FALSE;
       }
 
-    if(      strcmp(flavor,"xplane") == 0 ) 
+    if(      strncmp(flavor,"xplane",6) == 0 ) 
       { 
 	faux_faces[i].normal[0] = 1.0;
 	faux_faces[i].faceType = xplane; 
       }
-    else if( strcmp(flavor,"yplane") == 0 ) 
+    else if( strncmp(flavor,"yplane",6) == 0 ) 
       { 
 	faux_faces[i].normal[1] = 1.0;
 	faux_faces[i].faceType = yplane; 
       }
-    else if( strcmp(flavor,"zplane") == 0 ) 
+    else if( strncmp(flavor,"zplane",6) == 0 ) 
       { 
 	faux_faces[i].normal[2] = 1.0;
 	faux_faces[i].faceType = zplane; 
       }
-    else if( strcmp(flavor,"general_plane") == 0 ) 
+    else if( strncmp(flavor,"general_plane",13) == 0 ) 
       { 
 	faux_faces[i].faceType = general_plane; 
 	if ( 3 != fscanf(f,"%lf %lf %lf",
