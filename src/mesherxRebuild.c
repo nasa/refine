@@ -12,11 +12,15 @@
 #include <stdlib.h>
 #include <limits.h>         /* Needed in some systems for DBL_MAX definition */
 #include <float.h>
+#ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
 #include "UG_API/UGMgr.h"
 #include "MeatLib/UGPatch.h"
 #include "MeatLib/ErrMgr.h"
+#else
+#include "FAKEGeom.h"
+#endif
 #include "grid.h"
 #include "mesherxRebuild.h"
 

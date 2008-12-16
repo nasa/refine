@@ -1,8 +1,35 @@
 # -*- Makefile -*-
 
-lib_LIBRARIES = \
-	librefine.a \
-	libFAUXGeom.a
+EXTRA_DIST = \
+	makeRubyExtension.rb RubyExtensionBuilder.rb \
+	adjMT.rb adj_ruby.c \
+	nearMT.rb near_ruby.c \
+	intersectMT.rb intersect_ruby.c \
+	lineMT.rb line_ruby.c \
+	sortMT.rb sort_ruby.c \
+	tableauMT.rb tableau_ruby.c \
+	planMT.rb plan_ruby.c \
+	ringMT.rb ring_ruby.c \
+	queueMT.rb queue_ruby.c \
+	gridMT.rb grid_ruby.c \
+	gridmathMT.rb gridmath_ruby.c \
+	gridmetricMT.rb gridmetric_ruby.c \
+	gridshapeMT.rb gridshape_ruby.c \
+	gridinsertMT.rb gridinsert_ruby.c \
+	gridswapMT.rb gridswap_ruby.c \
+	gridcadMT.rb gridcad_ruby.c \
+	gridmpiMT.rb gridmpi_ruby.c \
+	gridmoveMT.rb gridmove_ruby.c \
+	gridedgerMT.rb gridedger_ruby.c \
+	gridfacerMT.rb gridfacer_ruby.c \
+	layerMT.rb layer_ruby.c \
+	faux_input
+
+TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb tableauMT.rb planMT.rb ringMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb gridedgerMT.rb gridfacerMT.rb layerMT.rb
+
+lib_LIBRARIES =
+
+lib_LIBRARIES += librefine.a
 
 librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
@@ -29,12 +56,12 @@ librefine_a_SOURCES = \
 	gridfacer.h gridfacer.c \
 	gridfortran.h gridfortran.c
 
+lib_LIBRARIES += libFAUXGeom.a
+
 libFAUXGeom_a_CFLAGS = @SDKheader@
 libFAUXGeom_a_SOURCES = FAKEGeom.h FAUXGeom.c FAKEGeomExtras.c
 
-if BUILD_EXECUTABLES
-
-if BUILD_SDK_DEPENDENTS
+lib_LIBRARIES += libMesherX.a
 
 mesherx_sources = \
 	adj.h adj.c \
@@ -64,8 +91,6 @@ mesherx_sources = \
 	mesherxRebuild.h mesherxRebuild.c \
 	mesherx.h mesherx.c
 
-lib_LIBRARIES += libMesherX.a
-
 libMesherX_a_CFLAGS = @SDKheader@
 libMesherX_a_SOURCES = $(mesherx_sources)
 libMesherX_a_include_HEADERS = \
@@ -85,36 +110,15 @@ lib_LIBRARIES += libMesherX_pg.a
 libMesherX_pg_a_CFLAGS = -pg @SDKheader@
 libMesherX_pg_a_SOURCES = $(mesherx_sources)
 
-endif # BUILD_SDK_DEPENDENTS
-
-EXTRA_DIST = mesherx_SyJet.c \
-	makeRubyExtension.rb RubyExtensionBuilder.rb \
-	adjMT.rb adj_ruby.c \
-	nearMT.rb near_ruby.c \
-	intersectMT.rb intersect_ruby.c \
-	lineMT.rb line_ruby.c \
-	sortMT.rb sort_ruby.c \
-	tableauMT.rb tableau_ruby.c \
-	planMT.rb plan_ruby.c \
-	ringMT.rb ring_ruby.c \
-	queueMT.rb queue_ruby.c \
-	gridMT.rb grid_ruby.c \
-	gridmathMT.rb gridmath_ruby.c \
-	gridmetricMT.rb gridmetric_ruby.c \
-	gridshapeMT.rb gridshape_ruby.c \
-	gridinsertMT.rb gridinsert_ruby.c \
-	gridswapMT.rb gridswap_ruby.c \
-	gridcadMT.rb gridcad_ruby.c \
-	gridmpiMT.rb gridmpi_ruby.c \
-	gridmoveMT.rb gridmove_ruby.c \
-	gridedgerMT.rb gridedger_ruby.c \
-	gridfacerMT.rb gridfacer_ruby.c \
-	layerMT.rb layer_ruby.c \
-	faux_input
-
-TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb tableauMT.rb planMT.rb ringMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb gridedgerMT.rb gridfacerMT.rb layerMT.rb
-
 bin_PROGRAMS =
+
+if BUILD_EXECUTABLES
+
+bin_PROGRAMS += PXrefineFAUX
+PXrefineFAUX_CFLAGS = $(all_cflags)
+PXrefineFAUX_SOURCES = pxrefine_main.c
+PXrefineFAUX_LDADD = libMesherX.a libFAUXGeom.a -lm
+PXrefineFAUX_LDFLAGS = $(all_ldflags)
 
 if BUILD_SDK_DEPENDENTS
 
@@ -186,12 +190,6 @@ pxNative_CFLAGS = $(all_cflags)
 pxNative_SOURCES = px_main.c
 pxNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 pxNative_LDFLAGS = $(all_ldflags)
-
-bin_PROGRAMS += PXrefineFAUX
-PXrefineFAUX_CFLAGS = $(all_cflags)
-PXrefineFAUX_SOURCES = pxrefine_main.c
-PXrefineFAUX_LDADD = libMesherX.a libFAUXGeom.a -lm
-PXrefineFAUX_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += PXrefineNative
 PXrefineNative_CFLAGS = $(all_cflags)

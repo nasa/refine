@@ -108,9 +108,9 @@ Grid *gridFillFromPart( int vol, int maxnode )
   xyz    = malloc( maxnode * 3 * sizeof(double) );
 
   for( i=0; i<nnode; i++ ) {
-    xyz[0+3*i] = UGrid_PtValue(ugrid,i,X);
-    xyz[1+3*i] = UGrid_PtValue(ugrid,i,Y);
-    xyz[2+3*i] = UGrid_PtValue(ugrid,i,Z);
+    xyz[0+3*i] = UGrid_PtValue(ugrid,i,0);
+    xyz[1+3*i] = UGrid_PtValue(ugrid,i,1);
+    xyz[2+3*i] = UGrid_PtValue(ugrid,i,2);
   }
 
   for( i=0; i<nface; i++ ) {

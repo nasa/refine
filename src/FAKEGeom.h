@@ -77,11 +77,14 @@ void *DList_GetNextItem(Iterator *dli);
 
 typedef struct _UGPatchPtr {
    magic_t    magic;    /* Magic Number */
+   double *param;
 } UGPatch, *UGPatchPtr;
+
+#define BC_NOSLIP     0	
 
 void UGPatch_GetDims(UGPatchPtr upp, int *dims);
 int UGPatch_GlobalIndex(UGPatchPtr upp, int ndx);
-#define UGPatch_Parameter(upp,i,l) (DBL_MAX)
+#define UGPatch_Parameter(upp,i,l) ((upp)->param[i*l])
 #define UGPatch_Parent(upp) ((UGridPtr)malloc(sizeof(UGrid)))
 
 GridBool UGPatch_InitSurfacePatches(UGridPtr ugp);
@@ -122,6 +125,9 @@ GridBool CADGeom_ResolveOnFaceWCS(int vol, int face, double *coor, double *uv,
 
 void GeoMesh_UseDefaultIOCallbacks( void );
 void CADGeom_UseDefaultIOCallbacks( void );
+
+#define UG_SUCCESS           0
+
 
 END_C_DECLORATION
 
