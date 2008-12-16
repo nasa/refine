@@ -40,9 +40,6 @@ Grid *gridGeomStartOnly( Grid *grid, char *project )
   return grid;
 }
 
-#define SUPRESS_UNUSED_COMPILER_WARNING(ptr)			\
-  {if (NULL == &(ptr)) printf("unused macro failed\n");}
-
 Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
                             char *project )
 {

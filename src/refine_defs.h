@@ -50,6 +50,10 @@ typedef short   GridBool;
 #if !defined(MAX)
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
+
+#define SUPRESS_UNUSED_COMPILER_WARNING(ptr)			\
+  {if (NULL == &(ptr)) printf("unused macro failed\n");}
+
 END_C_DECLORATION
 
 #endif /* HAVE_SDK */
