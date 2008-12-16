@@ -910,15 +910,6 @@ Grid *gridSmoothNearNode(Grid *grid, int node )
 
 Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 {
-  double xyzProj[3], uv[2];
-  double ar, dARdx[3];
-  double mr, dMRdx[3];
-  double du[3], dv[3];
-  double dMRdu[2];
-  int vol =1;
-  int nodes[3];
-  int face, faceId;
-
   int maxsmooth;
   GridBool callAgain;
 
@@ -936,51 +927,28 @@ Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 
   /* face smooth */
   if ( gridGeometryFace( grid, node ) ) {
-    if (FALSE) {
-      for (maxsmooth=0;maxsmooth<3;maxsmooth++) {
-	face = adjItem(adjFirst(gridFaceAdj(grid), node));
-	gridFace(grid,face,nodes,&faceId);
-	gridNodeFaceMRDerivative ( grid, node, &mr, dMRdx);
-	gridNodeUV( grid, node, faceId, uv);
-	if ( !CADGeom_PointOnFace( vol, faceId,   
-				   uv, xyzProj, 1, du, dv, NULL, NULL, NULL) )
-	  printf ( "ERROR: CADGeom_PointOnFace, %d: %s\n",__LINE__,__FILE__ );
-       
-	dMRdu[0] = dMRdx[0]*du[0] + dMRdx[1]*du[1] + dMRdx[2]*du[2] ; 
-	dMRdu[1] = dMRdx[0]*dv[0] + dMRdx[1]*dv[1] + dMRdx[2]*dv[2] ; 
-	if (grid != gridLineSearchUV( grid, node, dMRdu, 
-				      gridMinSurfaceSmoothCost(grid) ) ) 
-	  return NULL;
-      }
-      return grid;
-    }else{
-      maxsmooth = 40;
-      callAgain = TRUE;
-      while ( callAgain && maxsmooth > 0 ) {
-	maxsmooth--;
-	if (grid != gridLinearProgramUV( grid, node, &callAgain ) ) {
-	  return NULL;
-	}
-      }
-      return grid;
-    }
-  }
-
-  /* volume node smooth */
-  if (FALSE) {
-    gridNodeARDerivative ( grid, node, &ar, dARdx);
-    return gridOptimizeXYZ( grid, node, dARdx );
-  }else{
     maxsmooth = 40;
     callAgain = TRUE;
     while ( callAgain && maxsmooth > 0 ) {
       maxsmooth--;
-      if (grid != gridLinearProgramXYZ( grid, node, &callAgain ) ) {
+      if (grid != gridLinearProgramUV( grid, node, &callAgain ) ) {
 	return NULL;
       }
-    }  
+    }
     return grid;
   }
+
+  /* volume node smooth */
+  maxsmooth = 40;
+  callAgain = TRUE;
+  while ( callAgain && maxsmooth > 0 ) {
+    maxsmooth--;
+    if (grid != gridLinearProgramXYZ( grid, node, &callAgain ) ) {
+      return NULL;
+    }
+  }  
+
+  return grid;
 }
 
 
@@ -1283,7 +1251,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
   int face, faceId, nodes[3];
   double origUV[2], uv[2];
   double denom;
-  GridBool searchFlag, goodStep;
+  GridBool goodStep;
   int iteration;
   double constraint, parameterArea;
 
@@ -1314,64 +1282,59 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
     }
   }
 
-  searchFlag = FALSE;
-  if (searchFlag) {
-    gridStoredCostDerivative(grid, minFace, searchDirection);
-  }else{
-    nearestFace=EMPTY;
-    nearestCost = 2.1;
-    for (i=0;i<gridStoredCostDegree(grid);i++){
-      if ( i != minFace){
-	nearestDifference = ABS(gridStoredCost(grid,i)-minCost);
-	if (nearestDifference<nearestCost) {
-	  nearestFace=i;
-	  nearestCost = nearestDifference;
-	}
+  nearestFace=EMPTY;
+  nearestCost = 2.1;
+  for (i=0;i<gridStoredCostDegree(grid);i++){
+    if ( i != minFace){
+      nearestDifference = ABS(gridStoredCost(grid,i)-minCost);
+      if (nearestDifference<nearestCost) {
+	nearestFace=i;
+	nearestCost = nearestDifference;
       }
     }
-    if (nearestFace == EMPTY || nearestCost > 0.001 ){
-      gridStoredCostDerivative(grid, minFace, searchDirection);
-      gridStoredCostDerivative(grid, minFace, minDirection);
-    }else{
-      gridStoredCostDerivative(grid, minFace, minDirection);
-      gridStoredCostDerivative(grid, nearestFace, nearestDirection);
-      g00 = gridDotProduct(minDirection,minDirection);
-      g11 = gridDotProduct(nearestDirection,nearestDirection);
-      g01 = gridDotProduct(minDirection,nearestDirection);
-      /*
-       * Note: If two incedent cells have the same Cost (more specifically
-       *       CostDerivative), then nearestDirection == minDirection
-       *       which will result in 0/0 for nearestRatio (g00 == g11).
-       *       Could have check nearestDifference != 0.0 in above loop
-       *       before setting nearestFace.  Would then have same result
-       *       (e.g. searchDirection == minDirection) since nearestFace
-       *       would be EMPTY and previous block would execute.
-       */
-      denom = g00 + g11 - 2*g01;
-      if( abs(denom) < 1.0e-12 ) {
-        nearestRatio = 0.0;
-      } else {
-        nearestRatio = (g00-g01)/denom;
-      }
-      if (nearestRatio < 1.0 && nearestRatio > 0.0 ) {
-	minRatio = 1.0 - nearestRatio;
-	for (i=0;i<3;i++) searchDirection[i] 
-			    = minRatio*minDirection[i]
-			    + nearestRatio*nearestDirection[i];
-	/* reset length to the projection of min cell to search dir*/
-	length = sqrt(gridDotProduct(searchDirection,searchDirection));
-	if (ABS(length) > 1.0e-12) {
-	  for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
-	  projection = gridDotProduct(searchDirection,minDirection);
-	  for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
-	}else{
-	  gridStoredCostDerivative(grid, minFace, searchDirection);
-	  gridStoredCostDerivative(grid, minFace, minDirection);
-	}
+  }
+  if (nearestFace == EMPTY || nearestCost > 0.001 ){
+    gridStoredCostDerivative(grid, minFace, searchDirection);
+    gridStoredCostDerivative(grid, minFace, minDirection);
+  }else{
+    gridStoredCostDerivative(grid, minFace, minDirection);
+    gridStoredCostDerivative(grid, nearestFace, nearestDirection);
+    g00 = gridDotProduct(minDirection,minDirection);
+    g11 = gridDotProduct(nearestDirection,nearestDirection);
+    g01 = gridDotProduct(minDirection,nearestDirection);
+    /*
+     * Note: If two incedent cells have the same Cost (more specifically
+     *       CostDerivative), then nearestDirection == minDirection
+     *       which will result in 0/0 for nearestRatio (g00 == g11).
+     *       Could have check nearestDifference != 0.0 in above loop
+     *       before setting nearestFace.  Would then have same result
+     *       (e.g. searchDirection == minDirection) since nearestFace
+     *       would be EMPTY and previous block would execute.
+     */
+    denom = g00 + g11 - 2*g01;
+    if( abs(denom) < 1.0e-12 ) {
+      nearestRatio = 0.0;
+    } else {
+      nearestRatio = (g00-g01)/denom;
+    }
+    if (nearestRatio < 1.0 && nearestRatio > 0.0 ) {
+      minRatio = 1.0 - nearestRatio;
+      for (i=0;i<3;i++) searchDirection[i] 
+			  = minRatio*minDirection[i]
+			  + nearestRatio*nearestDirection[i];
+      /* reset length to the projection of min cell to search dir*/
+      length = sqrt(gridDotProduct(searchDirection,searchDirection));
+      if (ABS(length) > 1.0e-12) {
+	for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
+	projection = gridDotProduct(searchDirection,minDirection);
+	for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
       }else{
 	gridStoredCostDerivative(grid, minFace, searchDirection);
 	gridStoredCostDerivative(grid, minFace, minDirection);
       }
+    }else{
+      gridStoredCostDerivative(grid, minFace, searchDirection);
+      gridStoredCostDerivative(grid, minFace, minDirection);
     }
   }
 
@@ -1951,7 +1914,7 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
   double minDirection[3], nearestDirection[3], dARdX[3];
   double origXYZ[3], xyz[3];
   double denom;
-  GridBool searchFlag, goodStep;
+  GridBool goodStep;
   int iteration;
 
   *callAgain = FALSE;
@@ -1968,59 +1931,54 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
     }
   }
 
-  searchFlag = FALSE;
-  if (searchFlag) {
-    gridStoredCostDerivative(grid, minCell, searchDirection);
-  }else{
-    nearestCell=EMPTY;
-    nearestAR = 2.1;
-    for (i=0;i<gridStoredCostDegree(grid);i++){
-      if ( i != minCell){
-	nearestDifference = ABS(gridStoredCost(grid,i)-minAR);
-	if (nearestDifference<nearestAR) {
-	  nearestCell=i;
+  nearestCell=EMPTY;
+  nearestAR = 2.1;
+  for (i=0;i<gridStoredCostDegree(grid);i++){
+    if ( i != minCell){
+      nearestDifference = ABS(gridStoredCost(grid,i)-minAR);
+      if (nearestDifference<nearestAR) {
+	nearestCell=i;
 	  nearestAR = nearestDifference;
-	}
       }
     }
-    if (nearestCell == EMPTY || nearestAR > 0.001 ){
+  }
+  if (nearestCell == EMPTY || nearestAR > 0.001 ){
+    gridStoredCostDerivative(grid, minCell, searchDirection);
+    gridStoredCostDerivative(grid, minCell, minDirection);
+  }else{
+    gridStoredCostDerivative(grid, minCell, minDirection);
+    gridStoredCostDerivative(grid, nearestCell, nearestDirection);
+    g00 = gridDotProduct(minDirection,minDirection);
+    g11 = gridDotProduct(nearestDirection,nearestDirection);
+    g01 = gridDotProduct(minDirection,nearestDirection);
+    /*
+     * Note: If two incedent cells have the same AR (more specifically
+     *       ARDerivative), then nearestDirection == minDirection
+     *       which will result in 0/0 for nearestRatio (g00 == g11).
+     *       Could have check nearestDifference != 0.0 in above loop
+     *       before setting nearestCell.  Would then have same result
+     *       (e.g. searchDirection == minDirection) since nearestCell
+     *       would be EMPTY and previous block would execute.
+     */
+    denom = g00 + g11 - 2*g01;
+    if( ABS(denom) < 1.0e-12 ) {
+      nearestRatio = 0.0;
+    } else {
+      nearestRatio = (g00-g01)/denom;
+    }
+    if (nearestRatio < 1.0 && nearestRatio > 0.0 ) {
+      minRatio = 1.0 - nearestRatio;
+      for (i=0;i<3;i++) searchDirection[i] 
+			  = minRatio*minDirection[i]
+			  + nearestRatio*nearestDirection[i];
+      /* reset length to the projection of min cell to search dir*/
+      length = sqrt(gridDotProduct(searchDirection,searchDirection));
+      for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
+      projection = gridDotProduct(searchDirection,minDirection);
+      for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
+    }else{
       gridStoredCostDerivative(grid, minCell, searchDirection);
       gridStoredCostDerivative(grid, minCell, minDirection);
-    }else{
-      gridStoredCostDerivative(grid, minCell, minDirection);
-      gridStoredCostDerivative(grid, nearestCell, nearestDirection);
-      g00 = gridDotProduct(minDirection,minDirection);
-      g11 = gridDotProduct(nearestDirection,nearestDirection);
-      g01 = gridDotProduct(minDirection,nearestDirection);
-      /*
-       * Note: If two incedent cells have the same AR (more specifically
-       *       ARDerivative), then nearestDirection == minDirection
-       *       which will result in 0/0 for nearestRatio (g00 == g11).
-       *       Could have check nearestDifference != 0.0 in above loop
-       *       before setting nearestCell.  Would then have same result
-       *       (e.g. searchDirection == minDirection) since nearestCell
-       *       would be EMPTY and previous block would execute.
-       */
-      denom = g00 + g11 - 2*g01;
-      if( ABS(denom) < 1.0e-12 ) {
-        nearestRatio = 0.0;
-      } else {
-        nearestRatio = (g00-g01)/denom;
-      }
-      if (nearestRatio < 1.0 && nearestRatio > 0.0 ) {
-	minRatio = 1.0 - nearestRatio;
-	for (i=0;i<3;i++) searchDirection[i] 
-			    = minRatio*minDirection[i]
-			    + nearestRatio*nearestDirection[i];
-	/* reset length to the projection of min cell to search dir*/
-	length = sqrt(gridDotProduct(searchDirection,searchDirection));
-	for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
-	projection = gridDotProduct(searchDirection,minDirection);
-	for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
-      }else{
-	gridStoredCostDerivative(grid, minCell, searchDirection);
-	gridStoredCostDerivative(grid, minCell, minDirection);
-      }
     }
   }
 
@@ -2181,6 +2139,7 @@ static double reflect( Grid *grid,
   return reflectedVolume;
 }
 
+/*
 static Grid *gridMakeFacesFromSimplex(Grid *grid, 
 				      double simplex[4][3], int faceId)
 {
@@ -2197,6 +2156,7 @@ static Grid *gridMakeFacesFromSimplex(Grid *grid,
   gridAddFace(grid,nodes[0],nodes[3],nodes[2],faceId);
   return grid;
 }
+*/
 
 Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
 {
@@ -2208,8 +2168,6 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
   double lengthScale;
   int best, worst, secondworst; 
   double newVolume, savedVolume;
-  GridBool makefaces = FALSE;
-  int faceId = 1;
 
   if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
 
@@ -2260,7 +2218,7 @@ Grid *gridSmoothNodeVolumeSimplex( Grid *grid, int node )
 
     /* printf( "evaluations%6d best%20.15f worst%20.15f\n", 
                evaluations, volume[best], volume[worst]); */
-    if (makefaces) gridMakeFacesFromSimplex(grid, simplex, ++faceId);
+    /* gridMakeFacesFromSimplex(grid, simplex, ++faceId); */
 
     if (volume[best]-volume[worst] < ABS(1.0e-10*volume[best])) break;
 
