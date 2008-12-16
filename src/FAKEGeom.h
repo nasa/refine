@@ -120,7 +120,7 @@ GridBool CADGeom_ResolveOnFaceWCS(int vol, int face, double *coor, double *uv,
                                   double *point);
 
 void GeoMesh_UseDefaultIOCallbacks( void );
-void CADGeeom_UseDefaultIOCallbacks( void );
+void CADGeom_UseDefaultIOCallbacks( void );
 
 END_C_DECLORATION
 
