@@ -336,7 +336,6 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
   int edge, edgeId;
   int face, faceId;
   double t, uv[2], xyz[3], xyznew[3];
-  GridBool evaluate = TRUE;
 
   displacement[0] = displacement[1] = displacement[2] = 0.0;
   
@@ -345,35 +344,22 @@ Grid *gridNodeProjectionDisplacement(Grid *grid, int node,
   
   if ( grid != gridNodeXYZ( grid, node, xyz ) ) return NULL;
   
-  if (evaluate) {
-    if ( gridGeometryNode( grid, node ) ) { 
+  if ( gridGeometryNode( grid, node ) ) { 
+  } else {
+    if ( gridGeometryEdge( grid, node ) ) {
+      edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
+      gridEdge(grid, edge, nodes, &edgeId );
+      gridNodeT(grid, node, edgeId, &t);
+      gridEvaluateEdgeAtT(grid, node, t );
     } else {
-      if ( gridGeometryEdge( grid, node ) ) {
-	edge = adjItem(adjFirst(gridEdgeAdj(grid), node));
-	gridEdge(grid, edge, nodes, &edgeId );
-	gridNodeT(grid, node, edgeId, &t);
-	gridEvaluateEdgeAtT(grid, node, t );
-      } else {
-	face = adjItem(adjFirst(gridFaceAdj(grid), node));
-	gridFace(grid, face, nodes, &faceId );
+      face = adjItem(adjFirst(gridFaceAdj(grid), node));
+      gridFace(grid, face, nodes, &faceId );
 	gridNodeUV(grid, node, faceId, uv);
 	gridEvaluateFaceAtUV(grid, node, uv );
-      }
     }
-  }else{
-    gridProjectNode(grid, node);
   }
   gridNodeXYZ( grid, node, xyznew );
   gridSubtractVector(xyznew,xyz,displacement);
-  /*
-    {
-    double ar;
-    gridNodeAR(grid, node, &ar );
-    printf("%e %e %e - %f %f %f - %f\n",
-    displacement[0],displacement[1],displacement[2],
-    xyz[0],xyz[1],xyz[2],ar);
-    }
-  */
   gridSetNodeXYZ( grid, node, xyz );
   return grid;
 }
