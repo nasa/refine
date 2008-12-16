@@ -129,7 +129,13 @@ int gridedgerIdealNodes(GridEdger *ge)
 GridEdger *gridedgerIdealNodeT(GridEdger *ge, int node, double *t )
 {
   if (NULL == ge->t) return NULL;
-  if ( 0 > node || gridedgerIdealNodes(ge) >= node ) return NULL;
+
+  if ( 0 > node ) return NULL;
+  /* if ( gridedgerIdealNodes(ge) <= node ) return NULL; */
+  printf("%s: %d: %s: fix compiler warning\n",
+	 __FILE__,__LINE__,__func__);
+
+
   *t = ge->t[node];
   return ge;
 }
