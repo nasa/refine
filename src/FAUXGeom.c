@@ -202,6 +202,10 @@ static int faux_faceId( int faceId )
 GridBool CADGeom_NearestOnEdge(int vol, int edgeId, 
 			   double *xyz, double *t, double *xyznew)
 {
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeId);
+
   *t = 0;
   xyznew[0] = xyz[0];
   xyznew[1] = xyz[1];
@@ -214,6 +218,8 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
 			   double *xyz, double *uv, double *xyznew)
 {
   int id;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
   if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
@@ -276,6 +282,10 @@ GridBool CADGeom_PointOnEdge(int vol, int edgeId,
 			 double t, double *xyz, 
 			 int derivativeFlag, double *dt, double *dtdt )
 {
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeId);
+
   xyz[0] = t;
   xyz[1] = 0.0;
   xyz[2] = 0.0;
@@ -301,6 +311,8 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 double *dudu, double *dudv, double *dvdv )
 {
   int id;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
   if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
@@ -371,9 +383,11 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 
 
 GridBool CADGeom_NormalToFace(int vol, int faceId, 
-			 double *uv, double *xyz, double *normal )
+			      double *uv, double *xyz, double *normal )
 {
   int id;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
   if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
@@ -407,4 +421,6 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
     return FALSE;
   }
+
+  return TRUE;
 }
