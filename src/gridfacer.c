@@ -88,6 +88,19 @@ void gridfacerPack(void *voidGridFacer,
 {
   int i;
   GridFacer *gf = (GridFacer *)voidGridFacer;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxnode);
+  SUPRESS_UNUSED_COMPILER_WARNING(ncell);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxcell);
+  SUPRESS_UNUSED_COMPILER_WARNING(cello2n);
+  SUPRESS_UNUSED_COMPILER_WARNING(nface);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxface);
+  SUPRESS_UNUSED_COMPILER_WARNING(faceo2n);
+  SUPRESS_UNUSED_COMPILER_WARNING(nedge);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxedge);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeo2n);
+
   for ( i = 0 ; i < 2*gridfacerEdges(gf) ; i++ ) {
     gf->e2n[i] = nodeo2n[gf->e2n[i]];
   }
@@ -97,6 +110,9 @@ void gridfacerSortNode(void *voidGridFacer, int maxnode, int *o2n)
 {
   int i;
   GridFacer *gf = (GridFacer *)voidGridFacer;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(maxnode);
+
   for ( i = 0 ; i < 2*gridfacerEdges(gf) ; i++ ) {
     gf->e2n[i] = o2n[gf->e2n[i]];
   }
@@ -105,7 +121,10 @@ void gridfacerSortNode(void *voidGridFacer, int maxnode, int *o2n)
 void gridfacerReallocator(void *voidGridFacer, int reallocType, 
 			  int lastSize, int newSize)
 {
-
+  SUPRESS_UNUSED_COMPILER_WARNING(voidGridFacer);
+  SUPRESS_UNUSED_COMPILER_WARNING(reallocType);
+  SUPRESS_UNUSED_COMPILER_WARNING(lastSize);
+  SUPRESS_UNUSED_COMPILER_WARNING(newSize);
 }
 
 void gridfacerGridHasBeenFreed(void *voidGridFacer )
