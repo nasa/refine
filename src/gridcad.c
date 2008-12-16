@@ -795,6 +795,7 @@ Grid *gridLineSegmentIntersectsFace(Grid *grid, int node0, int node1,
 
   iteration = 0;
   keep_going = TRUE;
+  radius = 0.0;
   while (keep_going) {
     iteration++; 
     if (iteration > 10000) {
