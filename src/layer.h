@@ -262,7 +262,7 @@ Layer *layerExtrudeBlend(Layer *, double dx, double dy, double dz );
 Layer *layerOrderedVertexBlends(Layer *, int normal, 
 				 int *nVertexBlends, int *vertexBlends );
 Layer *layerOrderedVertexNormals(Layer *, int normal, 
-				 int *nVertexNormals, int *vertexNormals );
+				 int *vertexNormals );
 
 Layer *layerPopulateNormalNearTree(Layer *);
 Layer *layerPopulateTriangleNearTree(Layer *, double scale);

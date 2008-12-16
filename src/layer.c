@@ -2297,7 +2297,7 @@ Layer *layerAdvanceBlends(Layer *layer)
       nVertexNormals = layerSubNormalDegree(layer,normal);
       allVertexNormals = malloc(nVertexNormals*sizeof(int));
       layerOrderedVertexNormals( layer, normal, 
-				 &nVertexNormals, allVertexNormals);
+				 allVertexNormals);
       for(sweep=0;sweep<nVertexNormals;sweep++) {
 	vertexNormals[0] = layer->vertexNormal[normal];
 	vertexNormals[1] = allVertexNormals[sweep];
@@ -3709,7 +3709,7 @@ Layer *layerOrderedVertexBlends(Layer *layer, int normal,
 }
 
 Layer *layerOrderedVertexNormals(Layer *layer, int normal, 
-				 int *nVertexNormals, int *vertexNormals ){
+				 int *vertexNormals ){
   int node;
   int i, blend, subNormal, nSubNormal;
   int count;
