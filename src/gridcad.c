@@ -752,8 +752,6 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
     gridSubtractVector(curve, xyz0, dir);
     dot = gridDotProduct(dir,norm);
     
-    //printf("ratio%11.8f dots%23.15e%23.15e%23.15e\n",ratio,dot0,dot,dot1);
-
     if ( dot0 < 0.0 || dot1 > 0.0 ) return NULL;
     
     if (dot < 0.0) {
@@ -774,8 +772,6 @@ Grid *gridCurveIntersectsFace(Grid *grid, int *face_nodes, int parent,
   }
   
   gridBarycentricCoordinateTri(xyz0,xyz1,xyz2,curve,bary);
-
-  //printf("bary %23.15e%23.15e%23.15e\n",bary[0],bary[1],bary[2]);
 
   if ( bary[0] < 0.0 || bary[1] < 0.0 || bary[2] < 0.0 ) {
     return NULL;
@@ -1238,8 +1234,6 @@ Grid *gridLineSearchUV(Grid *grid, int node, double *dudv,
   uv[1] = uvOrig[1] + alpha[0]*dudv[1];
   if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
 
-//printf("node %d alpha %e ar %f uv %e %e\n",node,alpha[0],ar[0],uv[0],uv[1]);
-  
   return grid;
 }
 
@@ -1288,8 +1282,6 @@ Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
   uv[1] = uvOrig[1] + alpha[0]*dudv[1];
   if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
 
-//printf("node %d alpha %e mr %f uv %e %e\n",node,alpha[0],mr[0],uv[0],uv[1]);
-  
   return grid;
 }
 
@@ -1537,8 +1529,6 @@ Grid *gridOptimizeUVForVolume(Grid *grid, int node, double *dudv )
   uv[1] = uvOrig[1] + alpha[0]*dudv[1];
   gridEvaluateFaceAtUV(grid, node, uv );
 
-  //printf("node %d alpha %e vol %f uv %e %e\n",node,alpha[0],volume[0],uv[0],uv[1]);
-  
   return grid;
 }
 
@@ -2041,7 +2031,6 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
 	for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
 	projection = gridDotProduct(searchDirection,minDirection);
 	for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
-	//printf("node %5d min %10.7f near %10.7f\n",node,minRatio,nearestRatio);
       }else{
 	gridStoredCostDerivative(grid, minCell, searchDirection);
 	gridStoredCostDerivative(grid, minCell, minDirection);
@@ -2068,9 +2057,6 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
     }
   }
 
-  //printf( "node %5d deg %3d active %3d old %12.9f\n",
-  //	  node, gridStoredCostDegree(grid), minCell, minAR );
-  
   goodStep = FALSE;
   actualImprovement = 0.0;
   lastImprovement = -10.0;
@@ -2085,8 +2071,6 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
     gridSetNodeXYZ(grid,node,xyz);
     gridNodeAR(grid,node,&newAR);
     actualImprovement = newAR-minAR;
-    //printf(" alpha %12.5e predicted %12.9f actual %12.9f new %12.9f\n",
-    //	   alpha, predictedImprovement, actualImprovement, newAR);
 
     if ( actualImprovement > 0.0 && actualImprovement < lastImprovement) {
       for (i=0;i<3;i++) xyz[i] = origXYZ[i] + lastAlpha*searchDirection[i];
@@ -2104,9 +2088,6 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
       alpha =alpha*0.5;
     }
   }
-
-  //printf( "node %5d deg %3d active %3d old %8.5f new %8.5f\n",
-  //  node, gridStoredCostDegree(grid), minCell, minAR, newAR );
 
   if ( actualImprovement <= 0.0  ){
     gridSetNodeXYZ(grid,node,origXYZ);
@@ -3065,7 +3046,7 @@ Grid *gridUntangleAreaUV( Grid *grid, int node, int recursive_depth,
 
   gridMinFaceAreaUV(grid, node, &new_area);
   if ( new_area < original_area ) {
-    //gridEvaluateFaceAtUV(grid, node, orig_uv);
+    /* gridEvaluateFaceAtUV(grid, node, orig_uv); */
   }
 
   if ( recursive_depth > 0 ) {
