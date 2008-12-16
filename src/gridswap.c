@@ -246,17 +246,12 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 				     uv[1+2*facenodes[2]],
 				     faceId1 );
 
-  if ( TRUE ) { /* don't check if minimum cost is satisfied */
-    gridRemoveCellAndQueue(grid, queue, cell);
-    gridRemoveFaceAndQueue(grid, queue, faces[face0] );
-    gridRemoveFaceAndQueue(grid, queue, faces[face1] );
-    return grid;
-  }else{
-    gridRemoveFaceAndQueue(grid, queue, addedFace0 );
-    gridRemoveFaceAndQueue(grid, queue, addedFace1 );
-    queueResetCurrentTransaction( queue );
-    return NULL;
-  }
+  /* don't check if minimum cost is satisfied */
+  gridRemoveCellAndQueue(grid, queue, cell);
+  gridRemoveFaceAndQueue(grid, queue, faces[face0] );
+  gridRemoveFaceAndQueue(grid, queue, faces[face1] );
+
+  return grid;
 }
 
 Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
@@ -436,23 +431,19 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 				      faceId0 );
 
 
-  if ( TRUE ) { /* don't check if minimum cost is satisfied */
-    gridRemoveCellAndQueue(grid, queue, cell);
-    gridRemoveFaceAndQueue(grid, queue, faces[face0] );
-    gridRemoveFaceAndQueue(grid, queue, faces[face1] );
-    gridRemoveFaceAndQueue(grid, queue, faces[face2] );
-    gridRemoveNode(grid, cellnodes[common_node] );
+  /* don't check if minimum cost is satisfied */
+  gridRemoveCellAndQueue(grid, queue, cell);
+  gridRemoveFaceAndQueue(grid, queue, faces[face0] );
+  gridRemoveFaceAndQueue(grid, queue, faces[face1] );
+  gridRemoveFaceAndQueue(grid, queue, faces[face2] );
+  gridRemoveNode(grid, cellnodes[common_node] );
     
-    for(node=0;node<4;node++) 
-      if (0==gridCellDegree(grid,cellnodes[node])) 
-	gridRemoveNodeWithOutGlobal(grid,cellnodes[node]);
+  for(node=0;node<4;node++) 
+    if (0==gridCellDegree(grid,cellnodes[node])) 
+      gridRemoveNodeWithOutGlobal(grid,cellnodes[node]);
    
-    return grid;
-  }else{
-    gridRemoveFaceAndQueue(grid, queue, added_face );
-    queueResetCurrentTransaction( queue );
-    return NULL;
-  }
+  return grid;
+
 }
 
 Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
