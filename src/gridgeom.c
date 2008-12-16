@@ -40,6 +40,9 @@ Grid *gridGeomStartOnly( Grid *grid, char *project )
   return grid;
 }
 
+#define SUPRESS_UNUSED_COMPILER_WARNING(ptr)			\
+  {if (NULL == &(ptr)) printf("unused macro failed\n");}
+
 Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
                             char *project )
 {
@@ -55,6 +58,8 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
   int volumeEdgeNode, patchEdgeNode;
   int *patch2global;
   UGPatchPtr localPatch;
+  url = url;
+  modeler = modeler;
 
   if ( ! CADGeom_Start( ) ){
     printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());
@@ -64,6 +69,8 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
 #ifdef HAVE_CAPRI2
   if ( ! CADGeom_LoadModel( url, modeler, project, &(grid->model) ) ){
 #else
+  SUPRESS_UNUSED_COMPILER_WARNING(url);
+  SUPRESS_UNUSED_COMPILER_WARNING(modeler);
   if ( ! CADGeom_LoadPart( project ) ){
 #endif
     printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
