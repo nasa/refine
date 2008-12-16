@@ -102,7 +102,7 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
     }else{
       gridAddEdgeInGlobal(grid, edgeEndPoint[0], inode, iedge,
 			  edge->param[0], edge->param[1]);
-      for( i=1 ; i < (nedgenode-2) ; i++ ) { // skip end segments  
+      for( i=1 ; i < (nedgenode-2) ; i++ ) { /* skip end segments */
 	gridAddEdgeInGlobal(grid, inode, inode+1, iedge,
 			    edge->param[i], edge->param[i+1]);
 	inode++;
