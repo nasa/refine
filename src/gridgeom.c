@@ -202,7 +202,7 @@ Grid *gridUpdateEdgeGrid( Grid *grid, int edgeId, int nCurveNode,
   return grid;
 }
 
-int gridFaceEdgeCount( Grid *grid, int faceId )
+int gridFaceEdgeCount( int faceId )
 {
   int vol=1;
   int count;

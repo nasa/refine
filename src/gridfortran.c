@@ -997,7 +997,7 @@ void gridface_( int *face, int *faceId,
 
 void gridfaceedgecount_( int *faceId, int *faceEdgeCount )
 {
-  *faceEdgeCount = gridFaceEdgeCount( grid, *faceId );
+  *faceEdgeCount = gridFaceEdgeCount( *faceId );
 }
 
 void gridfaceedgel2g_( int *faceId, int *faceEdgeCount, int *local2global )
