@@ -45,6 +45,7 @@ typedef struct _UGridPtr {
    int flags;
    time_t     updated;		/* Last Updated Timestamp */
    algo_t     algorithm;	/* Algorithm used to compute grid */
+  double *param;
 } UGrid, *UGridPtr;
 #define UGrid_FlagValue(ugp,i)   ((ugp)->flags)
 #define UGrid_PatchList(ugp)     (NULL)
@@ -54,6 +55,13 @@ typedef struct _UGridPtr {
 GridBool UGrid_FromArrays(UGridPtr *,int,double *,int,int *,int,int *);
 
 UGridPtr CADGeom_VolumeGrid( int );
+
+extern int UGrid_GetDims(UGridPtr ugp, int *dims);
+extern int UGrid_BuildConnectivity(UGridPtr);
+
+#define UGrid_PtValue(ugp,i,l)   (ugp)->param[l]
+#define UGrid_VertValue(ugp,i,l)   (ugp)->param[l]
+#define UGrid_TetValue(ugp,i,l)   (ugp)->param[l]
 
 typedef struct {
   magic_t   magic;
@@ -101,13 +109,18 @@ GridBool CADGeom_LoadModel( char *url, char *modeler, char *project, int *mdl );
 GridBool GeoMesh_LoadPart( char *project );
 GridBool CADGeom_LoadPart( char *project );
 #endif
+
 GridBool CADGeom_SavePart(int vol, char *project);
+
+extern GridBool CADGeom_SetVolumeGrid( int, UGridPtr );
+
 GridBool CADGeom_GetVolume(int, int *, int *, int *, int *);
 UGPatchPtr CADGeom_FaceGrid( int, int );
 GridBool CADGeom_SetFaceGrid( int vol, int faceId, UGPatchPtr ugrid);
 GridBool CADGeom_NormalToFace( int vol, int faceId, 
 			       double *uv, double *xyz, double *normal);
 
+extern GridBool CADTopo_FlushPatches(int, UGridPtr);
 GridBool CADTopo_FaceNumEdgePts(int vol, int faceId, int *count);
 GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g);
 GridBool CADTopo_VolEdgePts(int vol, int *count);
