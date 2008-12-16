@@ -159,6 +159,9 @@ void layerPack(void *voidLayer,
   int packface, origface;
   int packedge, origedge;
 
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxnode);
+
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
       layer->normal[normal].root = nodeo2n[layer->normal[normal].root];
@@ -198,6 +201,8 @@ void layerSortNodes(void *voidLayer, int maxnode, int *o2n)
 {
   Layer *layer = (Layer *)voidLayer;
   int normal;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(maxnode);
 
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
@@ -2421,7 +2426,7 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
     /* note that tip has been set to root on terminated normals */
     /* the if (n[0]!=n[3]) checks are for layer termiantion */
 
-    // advance faces
+    /* advance faces */
     for (i=0;i<3;i++){
       faceId = layerConstrainedSide(layer, triangle, i);
       if (faceId > 0) {
@@ -2550,7 +2555,7 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
     if (0 > faceId) {
       edgeId = -faceId;
       gridProjectNodeToEdge(grid, layer->normal[normal].root, edgeId );
-      // need to do faces to get the UV vals but have xyz.
+      /* need to do faces to get the UV vals but have xyz. */
     }
     layer->normal[normal].root = layer->normal[normal].tip;
     layer->normal[normal].tip = EMPTY;
@@ -2560,7 +2565,7 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
     if (0 > faceId) {
       edgeId = -faceId;
       gridProjectNodeToEdge(grid, layer->normal[normal].root, edgeId );
-      // need to do faces to get the UV vals but have xyz.
+      /* need to do faces to get the UV vals but have xyz. */
     }
     gridFreezeNode(grid,layer->normal[normal].root);
   }
@@ -3813,13 +3818,11 @@ Layer *layerTerminateCollidingNormals(Layer *layer)
 
   if ( 0 < layerNBlend(layer) ) return NULL;
 
-  //printf("layerPopulateNormalNearTree...\n");
   layerPopulateNormalNearTree(layer);
 
   maxTouched = layerNNormal(layer);
   nearNormals = malloc(maxTouched*sizeof(int));
 
-  //printf("inspecting normal proximity...\n");
   for(normal=0;normal<layerNNormal(layer);normal++){
     target = &layer->nearTree[normal];
     touched = 0;
@@ -4009,18 +4012,15 @@ Layer *layerTerminateCollidingTriangles(Layer *layer, double scale)
 
   if ( 0 < layerNBlend(layer) ) return NULL;
 
-  //printf("layerPopulateTriangleNearTree...\n");
   layerPopulateTriangleNearTree(layer, scale);
 
   maxTouched = layerNTriangle(layer);
   nearTriangles = malloc(maxTouched*sizeof(int));
 
-  //printf("inspecting triangle proximity...\n");
   for(triangle=0;triangle<layerNTriangle(layer);triangle++){
     target = &layer->nearTree[triangle];
     touched = 0;
     nearTouched(layer->nearTree, target, &touched, maxTouched, nearTriangles);
-    //printf("triangle %d  touched %d\n",triangle,touched);
     layerTriangleInviscidTet(layer,triangle,scale,a0,a1,a2,a3);
     for(i=0;i<touched;i++){
       nearTriangle = nearTriangles[i];
@@ -4072,7 +4072,6 @@ Layer *layerSmoothLayerWithHeight(Layer *layer)
       }
     }
     avg = avg / (double)hits;
-    //printf("%10.6f\n",avg);
     if (avg <= 0) {
       correction = 1 + avg;
     }else{
