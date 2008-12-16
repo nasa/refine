@@ -506,6 +506,7 @@ static GridEdger *gridedgerReport(GridEdger *ge, double ratio )
 
   longest_ratio = -1.0;
   shortest_ratio = 999.0;
+  t0 = t1 = 0.0;
   for ( node = 1 ; node < gridedgerIdealNodes( ge ) ; node++ ) {
     gridedgerIdealNodeT( ge, node-1, &t0 );
     gridedgerIdealNodeT( ge, node, &t1 );
@@ -540,6 +541,8 @@ GridEdger *gridedgerDiscretizeEvenly(GridEdger *ge )
 
   w = 0.5;
   next_length = 0.9;
+  t0 = 0.0;
+  size =0;
   for (iteration = 1; iteration <= 20 ; iteration++) {
     if (ge != gridedgerDiscretize( ge, length ) ) {
       printf( "%s: %d: %s: on iter %d for len %f try another length\n",
@@ -594,6 +597,7 @@ GridEdger *gridedgerDiscretizeOnce(GridEdger *ge )
 
   size = gridedgerIdealNodes( ge );
 
+  t0 =0.0;
   gridedgerIdealNodeT( ge, size-2, &t0 );
   gridedgerSupportingSegment(ge, t0, &s0 );
   s1 = (double)(gridGeomEdgeSize( grid, gridedgerEdgeId( ge ) )-1);
@@ -671,7 +675,6 @@ GridEdger *gridedgerDiscretizeSupport(GridEdger *ge, int subintervals )
   for ( node = 1 ; node < target_size ; node++ ) {
     target_length = target_delta_length * ((double)node);
     target_s = 0.0;
-    // target_s = f(last_s,target_length);
     gridedgerSegmentT( ge, target_s, &(ge->t[node]) );
   }
 
