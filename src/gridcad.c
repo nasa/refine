@@ -2768,7 +2768,7 @@ Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *grid, int node )
 
 static double reflectVolumeUV( Grid *grid,
 		       double simplex[3][2], double area[3], double avgUV[2],
-		       int node, int faceId, int worst, double factor)
+		       int node, int worst, double factor)
 {
   int i;
   double factor1, factor2;
@@ -2870,17 +2870,17 @@ Grid *gridSmoothNodeVolumeUVSimplex( Grid *grid, int node )
 
     evaluations++;
     newArea = reflectVolumeUV( grid, simplex, area, avgUV, node,
-				 faceId, worst, -1.0 );
+			       worst, -1.0 );
     if ( newArea >= area[best] ) {
       evaluations++;
       newArea = reflectVolumeUV( grid, simplex, area, avgUV, node,
-				   faceId, worst, 2.0 );
+				 worst, 2.0 );
     } else {
       if (newArea <= area[middle]) {
 	savedArea = area[worst];
 	evaluations++;
 	newArea = reflectVolumeUV( grid, simplex, area, avgUV, node,
-				     faceId, worst, 0.5 );
+				   worst, 0.5 );
 	if (newArea <= savedArea) {
 	  for(s=0;s<3;s++) {
 	    if (s != best) {
