@@ -543,6 +543,7 @@ Layer *layerTriangleInviscidTet(Layer *layer, int triangle, double scale,
 
   oneMinusScale = 1.0-scale;
 
+  if ( NULL == layer ) return NULL;
   if ( layer != layerTriangleNormals(layer,triangle,normals) ) return NULL;
   if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
 
@@ -604,6 +605,7 @@ Layer *layerAdvancedTriangleMaxEdgeLength(Layer *layer,
   double node0[3], node1[3], node2[3];
   double edge0[3], edge1[3], edge2[3], maxLength; 
   
+  if ( NULL == layer ) return NULL;
   if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
   if ( layer != layerTriangleNormals(layer,triangle,normals) ) return NULL;
 
