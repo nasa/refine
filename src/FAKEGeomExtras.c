@@ -39,6 +39,16 @@ GridBool CADGeom_GetEdge(int a, int b, double *c, int *d) {
   return FALSE;
 }
 
+GridBool CADGeom_GetFace(int a, int b, double *c, int *d, int **e, int **f) {
+  SUPRESS_UNUSED_COMPILER_WARNING(a);
+  SUPRESS_UNUSED_COMPILER_WARNING(b);
+  c = NULL;
+  d = NULL;
+  *e = NULL;
+  *f = NULL;
+  return FALSE;
+}
+
 CADCurvePtr CADGeom_EdgeGrid( int a, int b)
 {
   SUPRESS_UNUSED_COMPILER_WARNING(a);

@@ -69,6 +69,7 @@ typedef struct {
 } CADCurve, *CADCurvePtr;
  
 GridBool CADGeom_GetEdge(int, int, double *, int *);
+GridBool CADGeom_GetFace(int, int, double *, int *, int **, int **);
 CADCurvePtr CADGeom_EdgeGrid( int, int );
 /* to suppress unused warn */
 #define CADCURVE_NUMPTS(edge) (0==(edge)->magic?-1:(edge)->magic)
@@ -94,9 +95,13 @@ void UGPatch_GetDims(UGPatchPtr upp, int *dims);
 int UGPatch_GlobalIndex(UGPatchPtr upp, int ndx);
 #define UGPatch_Parameter(upp,i,l) ((upp)->param[i*l])
 #define UGPatch_Parent(upp) ((UGridPtr)malloc(sizeof(UGrid)))
+#define UGPatch_BC(upp) (upp+1)
+#define GeoBC_GenericType(bc) (0)
 
 GridBool UGPatch_InitSurfacePatches(UGridPtr ugp);
 void ErrMgr_Append(char *mod,int line,char *fmt,...);
+void ErrMgr_Set(char *file, int line, char *msg, char (*ErrMgr_GetErrStr),
+		int vol, int face );
 
 char *ErrMgr_GetErrStr(void);
 
@@ -126,6 +131,7 @@ GridBool CADTopo_VolFacePts(int vol, int faceId, int *count, int *l2g);
 GridBool CADTopo_VolEdgePts(int vol, int *count);
 GridBool CADTopo_ShellStats(int vol, int *nc, int *tPts, int *tTri, int *maxF);
 UGridPtr CADTopo_AssembleTShell(int vol,int tPts, int tTri, int maxFace);
+void CADTopo_EdgeFaces(int vol,int edge, int *self, int *other);
 GridBool CADGeom_DisplacementIsIdentity(int vol);
 GridBool CADGeom_UnMapPoint(int vol, double *xyz, double *pt);
 GridBool CADGeom_MapPoint(int vol, double *xyz, double *pt);
