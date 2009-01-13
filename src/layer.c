@@ -1614,6 +1614,8 @@ Layer *layerProjectNormalToConstraints(Layer *layer, int normal)
   double xyzroot[3], xyztip[3], direction[3], height;
   Grid *grid;
 
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
   faceId = layerConstrained(layer,normal);
   if (faceId==0) return layer;
 
@@ -3109,6 +3111,8 @@ Layer *layerNormalBlendAxle(Layer *layer, int normal, double *axle)
   double axle0[3], axle1[3];
   double xyz[3];
   int faceId, node;
+
+  if ( normal < 0 || normal >= layerNNormal(layer) ) return NULL;
 
   if ( 0 < layerConstrained(layer,normal) ) {
     Grid *grid = layerGrid(layer);
