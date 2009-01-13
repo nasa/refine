@@ -1686,9 +1686,9 @@ Layer *layerAdjustNormalHeightToSmoothFront(Layer *layer, double maxHeight)
       }
     }
     dn /= (double)n;
-    layerGetNormalHeight(layer, normal, &height);
+    if ( layer != layerGetNormalHeight(layer, normal, &height) ) return NULL;
     height += dn*maxHeight*height;
-    layerSetNormalHeight(layer, normal, height);
+    if ( layer != layerSetNormalHeight(layer, normal, height) ) return NULL;
   }
 
   return layer;
@@ -3768,7 +3768,7 @@ Layer *layerPopulateNormalNearTree(Layer *layer)
 
   for(normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid, layerNormalRoot(layer, normal ), xyz);
-    layerGetNormalHeight(layer, normal, &height);
+    if ( layer != layerGetNormalHeight(layer, normal, &height) ) return NULL;
     layerNormalMaxEdgeLength(layer, normal, &edgeLength);
     radius = MAX(edgeLength, 2*height);
     nearInit(&layer->nearTree[normal], normal, xyz[0], xyz[1], xyz[2], radius);
