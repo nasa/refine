@@ -3061,8 +3061,9 @@ Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
 Layer *layerSubBlendNormals(Layer *layer, int blend, int subBlend, int *normals)
 {
   int subnormal;
-  if (subBlend <0 || subBlend >= layerNSubBlend(layer,blend)) return NULL;
+
   if (layer != layerBlendNormals(layer, blend, normals)) return NULL;
+  if (subBlend <0 || subBlend >= layerNSubBlend(layer,blend)) return NULL;
 
   subnormal = subBlend - 1;
   if (subnormal>=0 && subnormal<layer->blend[blend].nSubNormal0 ) 
