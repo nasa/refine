@@ -1,0 +1,3731 @@
+2008-09-23  16:40 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (initialize_faux) allow 0 nfaux cleanly.
+
+2008-09-23  16:10 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (initialize_faux) extended to understand 
+	general_plane geometry type, which require a normal.
+	(merged from branches/l2norm)
+
+2008-01-03 14:30 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.4.1 Release. For FUN3D offical relase 10.4.0 (r26514).
+	
+2007-12-06 16:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c () make GRID_VOLUME_TOL and GRID_AREA_TOL macros
+	lowered to 1.0e-40.
+
+2007-09-27  8:15 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.4.0 Release. For FUN3D offical relase 10.4.0 (r26514).
+	
+2007-06-08 12:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridloadglobalnodedata_,gridsetlocalnodedata_)
+	to handle ndim of 3 or 4 for compatability with old fun3d versions.
+
+2007-06-08 10:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridsetlocalnodedata_) fix typo to freeze
+	correct ghost node.
+
+2007-06-07 13:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridloadglobalnodedata_,gridsetlocalnodedata_)
+	update node frozen state with xyz. (this could be added to queue
+	node data too)
+
+2007-06-06 12:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSearchTForCost) line search T for volumr cost.
+
+2007-06-05 15:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) modified to optimize volume cost
+	for gridCOST_FCN_CONFORMITY.
+
+2007-06-05 13:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridRestrictStoredCostToUV)
+	projection/restriction to uv space of stored derivatives.
+
+2007-06-05 12:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridStoreFaceCostParameterDerivatives) refactored to
+	split storage and projection/restriction to uv space.
+
+2007-06-05 12:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridUpdateStoredCost) To permit update of costs for
+	chain-ruling surface parameterization
+
+2007-06-04 14:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCellMetricConformityFD) finite difference
+	metric conformity derivatives.
+
+2007-06-04  9:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCollapseCost) set map so that cost is
+	right for a spatially varying map.
+
+2007-06-04  9:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdapt2) adapt to improve volume cost.
+
+2007-06-04  8:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSplitCost) compute new cost after edge split.
+
+2007-05-30 14:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeARFaceSimplex) use simplex method to
+	find the best surface location to improve volume AR.
+
+2007-05-29 14:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCellMetricConformity) metric conformity.
+
+2007-05-29 13:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSetCostFunction) introduced new cost function
+	gridCOST_FCN_CONFORMITY.
+
+2007-05-29 13:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridMatrixMultiplyM) multi two symm matrix.
+	* src/gridmath.c (gridInverseM) invert symm matrix.
+
+2007-05-29 11:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridImpliedMetric) imply metric from tet node xyz.
+
+2007-05-24 15:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCollapseEdge) use gridGeometryBetweenFace test
+	instead of gridGeometryEdge to prevent pulling a node off a
+	faux geom edge.
+
+2007-05-24 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImportAdapt) read nnode on first line.
+
+2007-05-24 14:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImportGRI) to ignore optional element type flag
+	that was missing from .gri file.
+
+2007-05-24 10:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImportGRI) added for ProjectX adaptatation.
+
+2007-04-16  9:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am (faux_input) added faux_input to EXTRA_DIST.
+
+2007-04-13 14:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridedge_) fixed transposition of arguments
+	to gridNodeT so that the t values are correct. (They where set to
+	DBL_MAX because requested edgeId was not found at node.) 
+
+2007-04-11 15:23 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.3.1 Release. GTech release. Includes quick bug fix for the
+	intersection of projection, gridmove and frozen boundary layer.
+
+2007-04-11 14:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNodeProjectionDisplacement) skip node projection
+	displacement calculation if node is frozen. (reported by Karen Bibb)
+	* src/gridmove.c (gridmoveProjectionDisplacements) set frozen
+	node displacements to zero and skip gridNodeProjectionDisplacement
+	call. (reported by Karen Bibb)
+
+2007-04-06  8:40 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.3.0 Release. GTech release. Account for fun3d-23948 c2n
+	index flip. Incudes FAUXGeom.  Fixes edge parameter parallel
+	consistency.
+
+2007-03-30 10:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridsetlocalnodedata_) repaired a bug that
+	prevented ghost node edge t values from being updated.
+
+2007-03-30  8:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridApplyQueue) set node xyz, map, and aux even
+	for node that already exist to be compatable with existing node
+	movement in future.
+
+2007-03-29 14:17 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdge) to correctly evaluate nodes
+	collapsed to lower dimensional gemoetry entities.
+
+2007-03-29 11:52 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridApplyQueue) set face uv and edge t
+	consistently with neighboring elements after a parallel operation.
+
+2007-03-29 11:52 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeRatio,gridCollapseEdge) to
+	consistantly evaluate uv and xyz for both faces.
+
+2007-03-22 13:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridcreate_) to account for fun3d-23948 c2n
+	index flip.
+
+2007-02-20  16:52 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (CADGeom_PointOnFace) to prevent unitialized
+	memory read and seg fault, get rid of unused variable i.
+
+2007-02-20  16:15 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (initialize_faux) improved error handling.
+	* src/FAUXGeom.c (faux_faceId) corrected error that prevented
+	finding face.
+
+2007-02-20  16:15 Mike Park  <mike.park@nasa.gov>
+	
+	* src/FAUXGeom.c (initialize_faux) improved error handling.
+
+2007-02-20 15:08 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.14 Release. Tag before FAKEGeom reimplementation.
+
+2007-02-12 10:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelswap_) skip gridRemoveTwoFaceCell for
+	cut cell and frozen boundary layer cases, to see if it causes parallel
+	global cell mis-counts.
+
+2006-12-08  5:00 Mike Park & Karen Bibb  <mike.park@nasa.gov> <karen.l.bibb@nasa.gov>
+	
+	* src/FAUXGeom.c, created a first cut at a generalized FAKEGeom, such
+	  that the user only has to provide an input file with basic info
+	  about the surfaces to be refined with fake geometry.
+
+2006-12-08  13:30 Mike Park  <mike.park@nasa.gov>
+
+	* added conditional to headers for Mac OSX.4, need float.h, not value.h
+
+2006-11-08  8:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridExportFASTSurface) export surface grid to FAST.
+
+2006-09-28  8:16 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotVolumeGeom) tecplot entire volume.
+
+2006-09-07 16:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridExportGRI) to provide path to PX grid format
+
+2006-09-06 11:53 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridTranslate) to uniformly shift all nodes
+
+2006-08-31 11:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotGeomFaceXYZ) single face tecplot geometry.
+
+2006-08-15 18:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindConn) added to find a conn with two nodes.
+
+2006-08-04 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotTriangleZone) added zone title argument.
+	* src/grid.c (gridWriteTecplotGeomFaceUV) name zone with face id.
+
+2006-08-04 12:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotInvalid) calls gridWriteTecplotGeomFaceUV
+	to dump tecplot if min cost is less than -1.5.
+
+2006-08-04 12:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridTrianglesOnFaceId) to count triangles in a CAD face.
+
+2006-07-05 14:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeomNULL.c for volume opts.
+	* INSTALL to reccomend FAKEGeomNULL
+	* src/FAKEGeomPlate.c, src/FAKEGeomBox.c removed.
+
+2006-07-05 12:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeom.c rewound to previous version, needed for unit tests
+
+2006-07-05 14:40 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.13 Release. For Tin-Chee. Fixed up INSTALL directions.
+
+2006-07-05 14:30 Mike Park  <mike.park@nasa.gov>
+
+	* INSTALL to clearify FUN3D FAKEGeom usage.
+
+2006-07-05 14:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeom.c stripped out all code to be really fake.
+
+2006-06-27 15:45 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.12 Release. For Pawel MSL RCS work on Columbia. 
+	To include gridRemoveTwoFaceCell,gridRemoveThreeFaceCell 
+	parallel bug fixes.
+
+2006-03-31 20:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell,gridRemoveThreeFaceCell)
+	to prevent two nearby removals from iterfering, call
+	queueNewTrasaction before changing concectivities. other swap and
+	insert ops use gridmpi to call queueNewTransaction for them, but
+	this call shouldb emoved down to alower level.
+
+2006-03-31 15:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) to remove hanging ghost
+	nodes in the case that there are only one local node.
+
+2006-03-31 10:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) to fix a parallelization
+	check and to increase simularity between gridRemoveTwoFaceCell and
+	gridRemoveThreeFaceCell commonNodes and uncommonNodes are now
+	local cell indexes and facenodes are correctly mapped to node ids.
+
+2006-03-30  9:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) to correctly reset
+	facenodes before creating new face.
+
+2006-03-30  8:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) fixed the creatation of
+	hanging nodes (nodes not connected to any cells) by removing
+	common node after removing cell. The hanging node caused the
+	adjoint to NaN on the second iteration and was detected by
+	repartying the grid with seq party.
+
+2006-03-30  8:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) made the parallel checks
+	more precise. improved comments
+
+2006-03-29 10:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) fixed the gem checks,
+	reporting, and extraneous parallel checks.
+
+2006-03-28 16:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell,gridRemoveThreeFaceCell)
+	removed regardless of cost.
+	* src/gridswap.c (gridRemoveThreeFaceCell) fixed logic that made
+	sure all three faces are on same faceId.
+
+2006-03-28 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.11 Release. Tagging at FUN3D interface change to
+	add gridparallelpreproject_.
+
+2006-03-28 15:00 Mike Park <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt,gridParallelSwap) extracted the
+	pre projection check to gridParallelPreProject.
+	* src/gridmpi.c (gridParallelPreProject) added to run all the
+	checks before projection.
+	* src/gridfortran.c (gridparallelpreproject_) added to allow
+	FUN3D to call the preprojection checks cleanly.
+	
+2006-03-28 13:35 Mike Park <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) Always split edges that are a
+	potential problem for projection, regardless of the use of a plan.
+
+2006-03-24 11:00 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) use_a_plan defaults to FALSE
+	because the plan is too aggressive for sonicboom cases.  Can be
+	controlled with env $REFINE_WITH_PLAN = "Yes"
+
+2006-02-17  9:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelRelaxNegativeCells,
+	gridParallelRelaxNegativeFaceAreaUV) they will use LP if
+	#define USE_LINEAR_PROGRAMMING_FOR_UNTANGLING (TRUE).
+
+2006-02-17  9:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleAreaUV,gridUntangleVolume) to permit
+	use in parallel, added a allow_movement_near_ghost_nodes argment.
+
+2005-02-16 16:30 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.10 Release. Tagging before folding simplex (tableau)
+	untangling into production parallel version.
+
+2006-02-15  8:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerEquateLengths) refactored to be more
+	general, it can have an degree of faces (not just four).
+	* src/gridfacer.c (gridfacerSplitEdge) extracted low-level
+	mechanics from higher-level gridfacerSplit.
+	
+2006-02-14 15:49 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitSliverCell) destroy sliver cells by
+	splitting then into four.
+
+2006-02-14 14:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/intersect.c (intersectSegmentSegment) test the intersection
+	of two lines.
+
+2006-02-14 11:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseWedgeCells) renamed from
+	gridCollapseSlivers.
+
+2006-02-13 19:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleAreaUV,gridUntangleVolume) added a
+	recursive_depth arg to allow allow untangling to relax faces that
+	are currently tight constraints.
+
+2006-02-11 12:37 Mike Park  <mike.park@nasa.gov>
+
+	* src/intersect.c (intersectTriangleSegment) exposed the ratio of
+	intersection.
+
+2006-02-10 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitVolumeEdgesIntersectingFacesAround)
+	split volume cells with faces near node to help localize
+	projection.
+	* src/gridinsert.c (gridCollapseSlivers) remove slivers with
+	collapse to aid untangling.
+
+2006-02-10 13:21 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleAreaUV,gridUntangleVolume) exclude
+	elements with very small opposite sides, they will be addressed on
+	the next pass.
+
+2006-02-10 11:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleVolume) expect outward facing normals.
+
+2006-02-10 10:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleAreaUV) to account for cad models
+	that have CADGeom_ReversedSurfaceNormal, the uv of the face are
+	not right handed.
+
+2006-02-10  8:49 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotNodeOrbit) added to dump out cells
+	surrounding a node.
+
+2006-02-09 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauInit) got rid of big-M cost on auxillary,
+	they are driven out explitly.
+
+2006-02-09 15:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauAuxillaryPivot) created to force auxillary
+	varibles out of the basis.
+	* src/tableau.c (tableauSolve) .
+
+2006-02-09 13:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauLargestPivot) corrected bug in step_length,
+	it should be  x / pivot.
+
+2006-02-08 17:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleVolume) added to lp solve optimal
+	node location by LP tableau.
+	* src/tableau.c (tableauInit) fixed array indexing bug that
+	read past end of array.
+	* src/tableau.c (tableauInit) scaled M by n to make sure that
+	the add columns (to create basic feasable solution) are removed.
+
+2006-02-08 17:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleAreaUV) passes test for three tri case
+
+2006-02-08 14:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridGaussianBackSolve) added to back solve upper
+	diagonal matrices
+
+2006-02-08 14:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridGaussianElimination) added to transform
+	matrices into upper diagonal form
+
+2006-02-07 16:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangleAreaUV) started driver for tableau.
+
+2006-02-07 16:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauSolve) working for 3 tri case.
+
+2006-02-07 11:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauBasis) return the active basis.
+
+2006-02-07 10:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/tableau.c (tableauCreate) brand new empty object as a place
+	holder for a tableau linear programming implementation.
+	* util/tableau.m a Octave (MATLAB) to spike out a tableau
+	implementation
+	* util/untangle2.m a Octave (MATLAB) test tableau.m
+	
+2006-02-04 12:46 Mike Park  <mike.park@nasa.gov>
+
+	* src/layer.c (layerMakeCADAvailable,layerCADAvailable) a toggle
+	to declare when cad is available (for projection);
+	* src/layer.c (layerAdvance) project new faces when layerCADAvailable.
+	
+2006-02-04 12:46 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (--inflate) added a spike to demonstrate
+	inflating boundary layers.
+
+2006-01-30  9:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelSwap) call gridRemoveThreeFaceCell as
+	well as gridRemoveTwoFaceCell to remove cells that would impeed
+	projection.
+
+2006-01-28 10:21 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSetNodePart) initialize grid->part to
+	grid->partId to prevent uninitialized memory read (detected by
+	valgrind of gridswapMT.rb test).
+
+2006-01-27 13:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveThreeFaceCell) Add to combat the
+	problem of a degree three face with one cell that can not be
+	projected due to topology
+
+2006-01-27 11:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridSmoothNodeFaceAreaUV) added
+	gridSmartAreaUVLaplacian call and mulitple
+	gridSmoothNodeFaceAreaUVSimplex calls.
+	* src/gridmpi.c (gridSmartAreaUVLaplacian) new function to do
+	smart laplacian smooth of face uv area to untangle surface grid.
+
+2006-01-27  9:37 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelSwap) extracted one complete loop of
+	gridRemoveTwoFaceCell after other types of swapping to make sure
+	that previous swapping passes did not create a new two face cell
+	that was missed.
+
+2006-01-25 16:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) to fix a subtle
+	parallelization bug. Split problem projection edges in the interior
+	of the parition while doing boundaries to allow projection and
+	untangling to proceed.
+
+2006-01-25 16:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSplit) removed gridUntangle, call
+	after cycle is complete.
+
+2006-01-25 16:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) use_a_plan = TRUE as default.
+	This affects "production" path in code.
+
+2006-01-25 16:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatioRange) refactored to loop over cells.
+	* src/gridmetric.c (gridEdgeRatioRangeInVolume) exclude surface.
+
+2006-01-25  9:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridAddNodeWithGlobal) to avoid a zero map after
+	reallocation, do not realloc grid->map if it is NULL.
+
+2006-01-25  9:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridPhase1) allow negative cells and faces on
+	edge node insert, but not on unused removal.
+
+2006-01-25  9:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridedgerDiscretizeEvenly) to increase
+	robustness, when gridedgerDiscretize NULL, try a nearby length to
+	keep going.
+
+2006-01-25  8:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridedgerDiscretize) to prevent seg fault,
+	return NULL when ge->t freed due to gridedgerLengthToS failure.
+
+2006-01-24 16:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerInsert) Reuse a node instead of
+	inserting if it is already in the right place.
+
+2006-01-24 14:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridPhase2) call gridfacerCollapse.
+	* src/gridfacer.c (gridfacerCollapseEdge) fixed bug that added
+	edges from other faces to edge list.
+
+2006-01-24 13:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridAR) return -999.0 if anything breaks.
+
+2006-01-24 12:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerCollapse) refactored to only do
+	edges on face. warning O(nedges^2).
+
+2006-01-24 11:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio) report gridMap failure and
+	return -1.0
+
+2006-01-23 16:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerRemoveEdgesWithNode) removes edges
+	touching node.  
+	* src/gridfacer.c (gridfacerCollapseEdge) edges are repaired.
+
+2006-01-23 16:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerCollapse,gridfacerCollapseEdge) working,
+	but edges need to be cleaned up.
+
+2006-01-20 15:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerEquateLengths) smooth node location to
+	reduce the longest ratio edge. this got 0.005 to work, but more
+	iterations broke it again.
+
+2006-01-20 11:59 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerTecplot) dump all trhee axes of metric
+	ellipsoid.
+
+2006-01-19 16:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSplit) to improve new node locations,
+	call smoother after insert.
+
+2006-01-19 14:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSplitProblemProjectionEdges) to
+	split any problematice edges that arise from swapping.
+	* src/gridfacer.c (gridfacerSplit) untangle after each split.
+
+2006-01-19  8:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerTurnCameraOn,gridfacerCameraActive) turn
+	tecplot output on, which dumps when each edge is removed.
+
+2006-01-18 16:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerTecplot) working.
+
+2006-01-18 11:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerTecplot) started, not operational yet.
+
+2006-01-17 14:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerCollapse,gridfacerCollapseEdge) started,
+	not operational yet.
+
+2006-01-17 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* geomSGIn32 removed the woefully old geoSDK snapshot for Alan.
+
+2006-01-13 11:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridBarycentricCoordinate,gridBarycentricCoordinateTri)
+	moved to gridmath.c.
+	* src/gridmove.c (gridBarycentricCoordinate,
+	gridBarycentricCoordinateTri) added from grid.c.
+	* src/gridmath.c (gridTriangularBarycentricCoordinate3D) merged with
+	gridBarycentricCoordinateTri.
+
+2006-01-13 10:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridProjectToTriangle) moved from grid.c to
+	allow gridmath methods to be used (this inverts dependency for
+	grid->gridmath)
+
+2006-01-13  9:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase 4: call all phases, which are now
+	in functions.
+
+2006-01-13  8:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUntangle) to fix an uninitalize memeory read,
+	set minVolume before use. this repared it so it can be used with
+	phased adaption.
+
+2006-01-12 16:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridInterpolateMap2) try node0 and node1 references
+	for parent cell, return NULL if fails.
+	* src/grid.c (gridFindEnclosingCell) try largest bary direction first.
+	for parent cell, return NULL if fails.
+	* src/gridinsert.c (gridSplitEdgeRatio) moved gridInterpolateMap2
+	after node projection, so interpolation parent can be tested.
+	undo edge split if interpolation fails.
+	
+2006-01-12 13:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindEnclosingCell) follow into
+	gridFindClosestBoundaryCell.	
+	* src/grid.c (gridFindClosestBoundaryCell) initialize 
+	gridFindClosestBoundaryFace and translate back into cell.
+	* src/grid.c (gridFindClosestBoundaryFace) navigates boundary faces.
+	* src/grid.c (gridBarycentricCoordinateTri) bary coor for faces
+	* src/grid.c (gridProjectToTriangle) snap point to tri 
+	(should be in grid math)
+
+2006-01-11 14:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSwap) lower gridMinSwapCost and
+	gridMinSwapCostImprovement to get more swaps.
+
+2006-01-11 14:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMinSwapCost,gridMinSwapCostImprovement) store
+	the swap cost limits in the Grid struct.
+	* src/gridswap.c (gridMinSwapCost,gridMinSwapCostImprovement) use
+	instead of COSTLIMIT and REQUIRED_IMPROVEMENT.
+
+2006-01-11 08:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptVolumeEdges) only split long volume edges.
+	* src/unit_main.c (main) --phase -3: call gridAdaptVolumeEdges to 
+	complete test case.
+
+2006-01-10 16:16 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -3: added but not happy yet.
+
+2006-01-10 13:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -2: put together swap and split ops.
+	* src/gridfacer.c (gridfacerRatioRange) longest and shortest
+	interior edges.
+
+2006-01-10 13:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindEnclosingCell) silently ignore unable to find
+	next cell due to boundary.
+
+2006-01-10 13:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSplit) split long edges.
+
+2006-01-10 11:56 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerRemoveEdge) to remove and edge from
+	current list.
+	* src/gridfacer.c (gridfacerSwap) to swap to improve edge length.
+
+2006-01-10 11:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerSwap) started swapping routine to
+	reduce edge ratio.
+
+2006-01-10 08:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerCreate) forms list of unique
+	triangle sides on startup.
+	* src/gridfacer.c (gridfacerEdges) return the number of unique
+	triangle sides.
+
+2006-01-09 13:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerExamine) to list out faces and fix typos.
+
+2006-01-09 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfacer.c (gridfacerCreate) added a new module modeled
+	after gridedger to adapt faces only.
+
+2006-01-09 12:01 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: stop at bob's favorite:
+	minimal dammage.
+
+2005-12-04 14:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMapPointerAllocated) to unify the use of
+	gridMapPointer for speed and gridMap for interpolation,
+	added this macro to indicate if gridMapPointer is safe to
+	use.
+	* src/gridmetric (gridSetMapMatrixToAverageOfNodes2)
+	call gridInterpolateMap2 with ratio = 0.5 for DRY.
+	* src/gridmetric (gridSetMapMatrixToAverageOfNodes3,
+	gridSetMapMatrixToAverageOfNodes4, gridEdgeRatio, gridEdgeRatio3,
+	gridAR, gridCellARDerivative ) unified gridMapPointer
+	access with gridMapPointerAllocated test and alternate
+	calls to gridMap.
+	
+2005-12-04 13:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio) if grid->map is NULL don't use map
+	pointers, call gridMap to do interploation.
+	* src/grid.c (gridFindEnclosingCell) corrected logic in calls
+	to gridFindOtherCellWith3Nodes that allowed the same cell
+	to be selected over and over again. (added debug printf with verb)
+	* src/grid.c (gridPack,gridRenumber) ignore grid->map if it is NULL
+	to prevent segfaults.
+	
+2005-12-04 13:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: called gridCacheCurrentGridAndMap
+	to interpolate metric from original grid.
+	* src/gridmetric.c (gridAR) if grid->map is NULL don't use map
+	pointers, call gridMap to do interploation.
+	* src/grid.c (gridCacheCurrentGridAndMap) to correct child_reference
+	array that was not malloc'ed large enough and use a more
+	robust iteration of nodes to populate child_reference
+	* src/grid.c (gridInterpolateMap2) set child_reference instead
+	of map is map is NULL.
+	* src/grid.c (gridAddNodeWithGlobal) only initialize map to
+	identity if it is not NULL.
+
+2005-12-04 12:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMap) spiked in logic to interpolate metric from
+	child grid, this needs to be tested.
+
+2005-12-03 23:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindEnclosingCell) added tests to find
+	and correct the error handling of invalid cell.
+
+2005-12-03 21:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridBarycentricCoordinate) added tests to find
+	and correct bugs.
+
+2005-12-03 16:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindEnclosingCell) also returns bary.
+	* src/grid.c (gridBarycentricCoordinate) new method to find
+	the barycnetric coordinate, based on a position. (note
+	that this method needs to be tested and could use better
+	numerics to solve for bary).
+
+2005-12-02  9:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFindEnclosingCell) removed, 
+	moved to src/grid.c.
+	* src/grid.c (gridFindEnclosingCell) added, taken form
+	src/gridinsert.c, to utilize the `least astonishment'
+	principle, starting_guess now refers to a cell instead
+	of a node.
+	src/grid.c now requires src/gridmath.h, changing thier
+	relative dependency.
+
+2005-12-02  8:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMap,gridSetMap) Started to implement logic that
+	will ignore grid->map id NULL and interpolate metric in child
+	grid. (I have sketched out how gridMap will look, but not
+	implented.)
+
+2005-12-01 11:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridRenumber) to simplfy logic around renumber
+	of nodeGlobal and part, removed nested if-then.
+	* src/grid.c (gridPack,gridRenumber,gridAddNodeWithGlobal) to
+	handle child_reference consistantly with other node based data
+	if allocated ( != NULL ),
+
+2005-12-01 10:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImport,gridFree) added child_reference to grid
+	struct. test if map is null before free.
+	* src/grid.c (gridCacheCurrentGridAndMap) free map and setup
+	child_reference to nearby cell.
+
+2005-11-29 19:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridDup) constructed from gridCacheCurrentGridAndMap
+	to create a duplicate grid.
+	* src/grid.c (gridCacheCurrentGridAndMap) refactored to call gridDup.
+
+2005-11-22 22:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridImport,gridFree) initialize parent and child to
+	NULL and free.
+	* src/grid.c (gridCacheCurrentGridAndMap) started (not complete)
+	method to save off current grid and matric.
+
+2005-11-22 22:55 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.9 Release. Tagging to start work on a keeping original
+	mesh around to interpolate metric.
+
+2005-11-22 10:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/px_main.c (main) Only optimize volume for all orders to have
+	consistant grids for convergence studies.
+	* src/px_main.c (gridDumpBentEdgesForPX) to allow geometry up to
+	and including 5th order.
+
+2005-11-21 19:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/px_main.c (main) added new command line argument -q to set
+	the geometry order. Only optimize volume if order > 2.
+	* src/px_main.c (gridDumpBentEdgesForPX) to allow geometry up to
+	and including 4th order.
+
+2005-11-20 20:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: added a final sweep to remove
+	unused nodes at any cost and untangle.
+
+2005-11-18  9:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerRemoveUnused) choose neighboring
+	node with best cost for collapse selection.
+
+2005-11-17 18:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerUnusedNodes,gridedgerUnusedNode) 
+	created to expose remaining unused nodes for post processing.
+	* src/gridedger.c (gridedgerPack,gridedgerSortNode) implemented
+	for unused nodes to allow renumbering (for tecplot, GridEx, etc.)
+	* src/gridedger.c (gridedgerRemoveUnused) fixed bug that saved
+	unused nodes collapsed away instead of only remaining nodes.
+	
+2005-11-17 17:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerRemoveUnused) try either node to
+	collapse unused edges. don't return null if unable to collapse.
+	keep remaining unused. should try best?
+	* src/unit_main.c (main) --phase -1: limit cost to prohibit
+	invalid elements.
+
+2005-11-17 12:21 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeSupport) to construct
+	aans use a refined support edge durring ideal discretization.
+
+2005-11-16 21:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: replace 
+	gridedgerDiscretizeEvenly with gridedgerDiscretizeOnce.
+
+2005-11-16 21:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeOnce) ready to test.
+
+2005-11-16 21:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeOnce) to create the
+	`ideal' locations locations in one step and avoid iterative
+	shooting. I just found a bug I'm fixing, but I wanted to
+	commit before hacking it apart.
+
+2005-11-04 10:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: made an array of GridEdger
+	pointers to seperate gridedgerInsert from gridedgerRemoveUnused
+	to make plots inbetween. Note that renum call backs are not
+	implemented, so do renumber (by plotting) and keep calling
+	gridedger routines.
+
+2005-11-03 22:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1: remove unused nodes after
+	ideal insertion
+
+2005-11-03 17:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerRemoveUnused) to remove the unused nodes
+	stored off in gridedgerInsert with gridCollapseEdge and leave only
+	nodes int `ideal' locations.
+
+2005-11-03 16:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeRatio) use gridInterpolateMap2
+	and gridInterpolateAux2 to interpolate newly inserted node
+	data instead of averaging. (they are equivalent for a ratio of
+	0.5, used by the parallel fun3d interface)
+
+2005-11-02 23:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridInterpolateAux2) will set a target node aux data
+	to a linear combination of two other nodes (to be used for edge
+	split).
+	* src/grid.c (gridInterpolateMap2) will set a target node map data
+	to a linear combination of two other nodes (to be used for edge
+	split).
+
+
+2005-10-29 23:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerInsert) no interface to it yet, but
+	existing unused nodes are stored off so that they may be removed
+	later.
+
+2005-10-29 15:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) --phase -1 option: added insert, error
+	handling, and output.
+
+2005-10-29 11:09 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerInsert) got it working with stored 
+	ideal t values.
+
+2005-10-28 23:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerIdealNodes,gridedgerIdealNodeT)
+	renamed from gridedgerNodes, gridedgerNodeS to store t's, because
+	they are invariant as nodes are added.
+
+2005-10-28 17:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSupportingSegment) find the segment
+	value that corrisonds to a CAD edge t.
+
+2005-10-28 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerInsert) started, but hastily retreated
+	when I concluded that s will vary when I start inserting nodes,
+	so I should be storing t.
+
+2005-10-26 23:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridHistogram) dump hisogram data for octave/MATLAB.
+
+2005-10-26 22:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeEvenly) changed alogorithm
+	to do more iteration but kick out if request and last edge are
+	within a 0.01. Added underrelaxation for stability.
+
+2005-10-26 20:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) a --phase of -1 will test gridedger.
+	the spacing is not appiled every status.
+
+2005-10-26 17:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretizeEvenly) does iterations
+	to adjust the desired length to balance edge errors.
+
+2005-10-26 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscretize) now computes target
+	distribution.
+
+2005-10-26 16:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSegmentT,gridedgerSegmentMap) fixed
+	read of freed memory, thanks valgrind!.
+	* src/gridedger.c (gridedgerNodes) return number of nodes in
+	discretization
+	* src/gridedger.c (gridedgerNodeS) return s values of nodes in
+	discretization
+	* src/gridedger.c (gridedgerDiscretize) create a discretization
+	based on constant length in metric.
+
+2005-10-26 14:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerLengthBetween) to
+	compute the length of an edge between to s values (needs test).
+	* src/gridedger.c (gridedgerLengthToS) completed with binary
+	search (Newton-Rapson would be better).
+
+2005-10-26 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerDiscreteSegmentAndRatio) for DRY,
+	extracted repeated code from gridedgerSegmentT and
+	gridedgerSegmentMap to use in gridedgerLengthToS.
+
+2005-10-23 21:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerLengthToS) started routine (blank,
+	except for comments) that will give next s value for certain
+	length edge.
+
+2005-10-20 11:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSegmentMap) map linearly interpolated
+	from nodes in s.
+
+2005-10-20 11:17 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNewGeometryEdgeSiteAllowedAt) if t is near an
+	edge segment endpoint, test to see if the distance between the
+	exsiting face node and the projected face node is larger than
+	tolerence. (testing face areas would always fail, zero area).
+
+2005-10-20 10:52 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSegmentT) if
+	gridNewGeometryEdgeSiteAllowedAt is false return NULL. 
+	(and leave *t value set).
+
+2005-10-20 10:46 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNewGeometryEdgeSiteAllowedAt) fixed multiple
+	bugs relating to use of unitiaized memeory: obtain edgeId, compute
+	ratio, index nodes1 instead of nodes0 twice, set uv[*],[1]. unit
+	tests save the day!
+
+2005-10-18 12:27 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerSegmentT) linearly interpolate the t
+	value inside a CAD edge segment.
+
+2005-10-18 10:46 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerCreate) requres the edgeId to be specifed.
+	* src/gridedger.c (gridedgerEdgeId) returne the edgeId.
+
+2005-10-17 20:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridedger.c (gridedgerCreate) added a new module modeled
+	after gridmove and layer to discretize edges exactly.
+
+2005-10-17 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNewGeometryEdgeSiteAllowedAt) test underlying
+	geometry evaluation and projection to see if this is an acceptable
+	site for insertion of a node constrained to a geometery edge.
+
+2005-10-17 09:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindFaceWithNodesUnless) added to find the two faces
+	that share an edge.
+
+2005-10-07 15:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) added a -s option that scales estimated
+	isotropic metric and ignores leand edge background.
+
+2005-10-06 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) refactored to use gridWholesaleEvaluation
+	and gridUntangle. gridSetMinInsertCost -0.5 to hit neg vol cell tol.
+	gridSetMinSurfaceSmoothCost t0 -1.5 to allow for negative
+	vol on smooth, but not negative faces.
+
+2005-10-06 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSequentialEvaluation) calls gridUntangle for
+	well you know... untangling.
+	* src/gridcad.c (gridWholesaleEvaluation) evaluate all note to
+	true location on geometry before calling gridUntangle.
+	* src/gridcad.c (gridUntangle) to untangle all faces in UV and
+	then untangle all tets in volume.
+
+2005-10-06 16:03 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCostValid) reordered constraint tests so that
+	the largest negative value is returned in the case that multiple
+	constraints are violated. This result is returned by gridAR.
+
+2005-10-06 13:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSequentialUntangle) extracted from
+	gridSequentialEvaluation
+
+2005-10-06 10:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSequentialEvaluation) fixed big bug, ment to call
+	gridSmoothNodeVolumeSimplex, not gridSmoothNodeVolumeUVSimplex.
+	Also echo face area uv, which should be constant.
+
+2005-10-05 15:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/px_main.c (gridDumpBentEdgesForPX) added to dump list of bent
+	edges to input curved elements into MIT ProjectX (PX).
+
+2005-10-05 13:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makfile.am (pxNative,pxParasolid) to compile px_main.c driver
+	* src/px_main.c (main) added to do validatation and midnode projection
+
+2005-09-29 16:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) call gridSequentialEvaluation.
+	* src/gridcad.c (gridSequentialEvaluation) added, but not working.
+
+2005-09-29 15:46 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) incorporated gridPhase as -p #
+
+2005-09-28 19:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridThisNodeCanBeModifiedInThisPhase) static
+	helper method for gridSmooth to implement phase aspect.
+	* src/gridcad.c (gridSmooth) queries
+	gridThisNodeCanBeModifiedInThisPhase to implement phase aspect.
+	* src/gridinsert.c (gridThisEdgeCanBeModifiedInThisPhase) static
+	helper method for gridAdapt to implement phase aspect.
+	* src/gridinsert.c (gridAdapt) queries
+	gridThisEdgeCanBeModifiedInThisPhase to implement phase aspect.
+	* src/gridswap.c (gridSwapEdge) queries gridPhase to implement
+	volume phase aspect
+
+2005-09-28 09:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridPhase,gridSetPhase) added to control grid
+	adaptation phases (i.e. all, edge only, faces only, and volume
+	only).
+
+2005-09-27 19:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatioRange) compute longest and
+	shortest edge in metric to find range.	
+	* src/unit_main.c (STATUS) include edge range in condensed status
+	message.
+
+2005-09-26 09:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (leading_edge_spacing) modified to add a
+	boundary layer near nose with a geomtric growth rate of 1.2 from
+	-le initial cell hight.
+
+2005-09-25 20:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) put old length based adaptation -e again.
+
+2005-09-25 20:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (leading_edge_spacing) extracted the spacing
+	function to apply it often (every STATUS).
+
+2005-09-15 10:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) refactored the path (currently
+	disabled) that uses a plan to make a final sweep after adaptation
+	that splits interior grid edges that have both nodes on a boundary
+	element. This procedure leads to provable boundary projection.
+
+2005-09-14 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) added a block of code to split edges that
+	connect two boundary nodes without being on the boundary. These
+	problem edges prevent untangleing from working.
+
+2005-09-13 23:03 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridMinGridFaceAreaUV) added to report
+	the minimum face area in uv of the grid.
+	* src/unit_main.c (main) refactored the untangling to do surface
+	UV area first and volume second.
+
+2005-09-13 19:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMinSurfaceSmoothCost,gridSetMinSurfaceSmoothCost)
+	to expose the minimum (volume) cost allowed durring surface smoothing.
+	* src/gridcad.c (gridSmoothNode,gridLinearProgramUV) uses the
+	gridMinSurfaceSmoothCost function to obtain min cost instead
+	of gridOPTIM_COST_FLOOR #define.
+	* src/unit_main.c (main) try gridSetMinInsertCost and 
+	gridSetMinSurfaceSmoothCost of 0.1.
+
+2005-09-13 15:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) cleaned up main to only do the standard form
+	of adaptation to evaluate different techniques more rigorously.
+
+2005-09-13 15:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdapt) to standardize the adaptation
+	techniques, use a prioritized list (plan) to decide which edges
+	to split or collpase.
+
+2005-09-11 21:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridNumberOfInvalidCells) count cells with
+	aspect ratio less than zero.
+	* src/gridmetric.c (gridJacVolRatio) print to screen the ratio of the
+	smallest jacobian to the cell volume for debuging validity.
+	* src/gridinsert.c (gridCollapseInvalidCells) try to elimate
+	invalid calls by collapsing the cells away from the boundary.
+	* src/gridcad.c (gridSmoothInvalidCellNodes) elimate invalid cells
+	by smoothing volume or min jacobian.
+	* src/gridcad.c (gridUntangleBadFaceParameters) untanlge bad face
+	parameters, this was used before the SDK local patch node
+	numbering was corrected to fix the patch to keep going.
+	* src/gridcad.c cleaned out the above routines
+	
+2005-09-07 15:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) refactored the path (currently
+	disabled) that uses a plan to get all the long edges first and
+	the the short edges second with priorities.
+
+2005-09-07 10:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdge) test
+	gridReconnectionOfAllFacesOK before collapsing edge.  This is used
+	to prevent an edge collapse from creating duplicate faces (e.g.,
+	at OM6 wing tip)
+
+2005-09-07 09:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindFace) to prevent a false positive, gridFindFace
+	returns empty for any canidate face with repeated nodes because
+	repeated nodes can trick the current algorithm to find a face that
+	does not actually exist in the mesh.
+	* src/grid.c (gridReconnectionOfAllFacesOK) tests to see if the
+	reconnection of all faces from old to new node with create duplicate
+	faces of right or left handed orientation. This is used to prevent
+	an edge collapse from creating duplicate faces (e.g., at OM6 wing tip)
+
+2005-08-31 16:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge) to prevent a non-manifold grid, do
+	do not allow an edge swap to add a face that alread exists in the
+	grid.
+
+2005-08-29 10:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) to
+	increase the stability of gauss-sidel iterations, the variation
+	of modulus_of_elasticity is reduced by raising to to the 0.2 power.
+	also set poisson = 0.0, which is what jim had in fun3d gridmove.
+
+2005-08-19 14:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) ported
+	Jim Thomas version of HEFSS.rps/LibF90/grid_move.f90:filla_interior
+	from FUN3D. using modulus_of_elasticity = 1/AspectRatio and
+	poisson = 0.05 (Jim choose 0.0).
+	* src/gridmove.c (gridmoveElasticRelax_Old_StartStep) renamed
+	to save original gridmoveElasticRelaxationStartStep routine.
+	
+2005-08-19 11:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelRelaxNegativeFaceAreaUV) increased the
+	face area in UV that requires fixing from 1.0e-14 to 1.0e-12 to
+	allow the om6 case to run on cmb20.
+	
+2005-08-17 16:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) drop gridSetMinInsertCost for linear adapt.
+	
+2005-08-17 15:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) added --vaild to turn on gridCOST_CNST_VALID.
+	
+2005-08-17 15:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddSegment) update existing segment uv's from
+	latest segment
+
+2005-08-17 15:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSegmentIntersectsFace) return NULL if
+	iteration count exceeded.
+
+2005-08-15 15:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotEquatorFaces) added to dump out the
+	equator as faces around the axle instead of outer faces.
+
+2005-08-15 09:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringArea) to speed up execution... compute, store,
+	and always reply with result from first invocation.
+
+2005-08-13 14:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) use
+	ringSurroundsTriangle instead of area check.
+	* src/gridinsert.c (gridFillRingWithExisitingCellFaces) use
+	ringSurroundsTriangle instead of area check.
+
+2005-08-13 13:58 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSurroundsTriangle) reject triangle that pierces
+	ring.
+
+2005-08-12 16:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringArea) compute total area of the ring.
+	* src/ring.c (ringSurroundsTriangle) accept triangle if area is the
+	same sign as ring total area.
+
+2005-08-12 12:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSurroundsTriangle) added to test if a triangle
+	is acceptable to add in order to eventually complete ring.
+
+2005-08-12 12:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringIntersectsSegment) handels parallel segments
+	correctly.
+
+2005-08-12 10:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringIntersectsSegment) renamed from ringSurroundsSegment.
+
+2005-08-12 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSurroundsSegment) also tests intersections.
+
+2005-08-12  8:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSurroundsSegment) tests existing segments for being
+	topologically correct by node id.
+
+2005-08-11 14:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddTriangle) store original segments when first
+	triangle is added.
+	* src/ring.c (ringTecplot) dump original segments.
+
+2005-08-11 10:27 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringTecplot) dump segments, triangles, node ids.
+
+2005-08-10 16:52 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringTecplot) dump triangles to tecplot in uv.
+
+2005-08-10 16:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) reuse nodes if
+	bary is near 0 or 1.
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) edges are not
+	implemented.
+
+2005-08-10  9:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) moved above
+	gridFillRingWithExisitingCellFaces to get interface. now splits edge
+	and keeps going.
+	* src/gridcad.c (gridLineSegmentIntersectsFace) return grid only if 
+	radius < 1.0e-6 and 0<bary<1
+
+2005-08-10  9:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) cleaned up to
+	examine ring equators.
+
+2005-08-10  9:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSegmentIntersectsFace) cleaned up
+	
+2005-08-09 19:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) junk from home
+	* src/gridcad.c (gridLineSegmentIntersectsFace) junk from home
+	
+2005-08-09 18:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithCellEdgeSplits) started to
+	explore the ring fill via grid generation.
+	* src/gridcad.c (gridLineSegmentIntersectsFace) started to find
+	side-CADface intersection.
+	
+2005-08-09 13:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFillRingWithExisitingCellFaces) renamed from
+	gridFillRingWithFaces. Try all segments before giving up.
+
+2005-08-09 13:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) fixed duplicate
+	add of new faces to prevent non-watertight boundaries.
+	* src/gridinsert.c (gridFillRingWithFaces) increased the min face
+	uv area to 1.0e-16
+
+2005-08-09 12:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddTriangle) to test and fix bug with inconsistent
+	node id's and uv values.
+
+2005-08-09 10:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) to continue
+	debugging, set the min face uv area to 1.0e-16 and allow 29,207 to
+	continue.
+
+2005-08-09 09:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) made an array
+	of rings to include the through edge and the gap nodes in the
+	subfaces.
+
+2005-08-08 17:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) kick out for 29,207
+	* src/gridinsert.c (gridFillRingWithFaces) debug cruff, try for
+	opposite node in equator.
+
+2005-08-08 17:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridFaceAreaUVDirect) direct way of getting
+	face area in uv space, gridFaceAreaUV calls it.
+
+2005-08-08 11:16 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSegmentsContainNode) return node uv if it is in
+	segment.
+
+2005-08-06 16:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) cleaned out old
+	stuff and just use ring for managing faces.
+
+2005-08-06 15:56 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringTriangle) return triangle info.
+
+2005-08-06 15:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) fixed the
+	repeat of gap0 instead of gap1 in ring init.
+	* src/gridinsert.c (gridFillRingWithFaces) return NULL if face not
+	in grid.
+
+2005-08-06 14:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) default project is le and LeadingEdgeBG active
+
+2005-08-05 16:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) initialized
+	ring and call gridFillRingWithFaces for test.
+	* src/gridinsert.c (gridFillRingWithFaces) get rid of segments by
+	inserting triangles. Only a test of current face logic so far.
+
+2005-08-05 15:14 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringSegment) return segment info.
+
+2005-08-05 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddTriangle) adds three triangle sides as opposite
+	sense segments
+
+2005-08-05 13:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddSegment) remove existing segment if it is added
+	in opposite direction.
+
+2005-08-05 10:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddTriangle) abort traingle add if base segment does
+	not exist
+
+2005-08-05 09:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddTriangle) add triangle to ring.
+
+2005-08-05 09:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringAddSegment) add segment to ring.
+
+2005-08-05 09:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile (local,clean) removed dup Plan, added Ring
+	* src/Makefile.am added Ring to libs and tests
+
+2005-08-05 09:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/ring.c (ringCreate,ringFree) created new object to keep
+	track of a continuous loop of linear segements on a geometry face
+	that is meshed by filling with triangles.
+	* src/ring.c (ringSegments,ringTriangles) return total counts.
+
+2005-08-04 16:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) refactored to
+	test face0 and face1 subfaces independently.
+
+2005-08-04 14:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) return EMPTY
+	without calls to gridRemoveCellsOutsideOfFaces if new surface
+	faces do not exist in volume grid (to aid debugging).
+
+2005-08-04 12:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridThreadCurveThroughVolume) logic bug that
+	prevented an attempt at splitting a face.
+	* src/gridinsert.c (gridSplitCellAt) Fixed bug that put subdivided
+	cell0 in twice instead of cell0 and cell1.
+
+2005-08-03 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitFaceAt,gridSplitCellAt) added
+	gridSetAuxToAverageOfNodes3,gridSetAuxToAverageOfNodes4,
+	gridSetMapMatrixToAverageOfNodes3,gridSetMapMatrixToAverageOfNodes4
+	calls to have reasonable map value durring adaptation.
+
+2005-08-03 16:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSetAuxToAverageOfNodes2,gridSetAuxToAverageOfNodes3,
+	gridSetAuxToAverageOfNodes4) created from gridSetAuxToAverageOfNodes
+	* src/gridmetric.c (gridSetMapMatrixToAverageOfNodes2,
+	gridSetMapMatrixToAverageOfNodes3,gridSetMapMatrixToAverageOfNodes4)
+	created from gridSetMapMatrixToAverageOfNodes
+
+2005-08-03 15:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridRemoveCellsOutsideOfFaces) completed, and
+	the grid is complete.
+
+2005-08-03 12:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridRemoveCellsOutsideOfFaces) started method
+	to remove all the cells outside of the current faces.
+
+2005-08-03 10:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) reject
+	ContinuousEquator or missing faces.
+
+2005-08-03 10:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridThreadCurveThroughVolume) returns the next
+	node along the curve, which is n1 if edge n0 n1 exists or newly
+	inserted node that pierces the next opposite face.	
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) collects a list
+	of nodes and tuvs along the curve.
+
+2005-08-02 14:57 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridThreadCurveThroughVolume) tries to move,
+	split edge, split face to get the node in.
+
+2005-08-02 13:53 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridCurveIntersectsFace) also returns the 
+	barycentric coordinates of the point intersecting the face.
+
+2005-08-02 11:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridCurveIntersectsFace) also returns the xyz of
+	the intersection point.
+
+2005-08-02 11:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSplitFaceAt) exended to allow an interior volume
+	face to be split as well as a boundary face.
+
+2005-08-02 09:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFindOtherCellWith3Nodes) added extra test to
+	ensure that the face nodes are not repeated.
+
+2005-08-01 16:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitFaceAt) takes the three nodes of a
+	triangle instead of the boundary face index to allow for extension
+	to interior volume faces.
+
+2005-08-01 14:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c (gridTriangularBarycentricCoordinate3D) finds the
+	barycentric coordinates of a point in the plane of a triangle.
+
+2005-07-29 11:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridCurveIntersectsFace) started blank routine to
+	find the curve on the way out of the opposite face orbit of a
+	node.
+
+2005-07-29 10:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridFaceOppositeCellNode) returns an right handed
+	face that pints at a given node of a cell.
+
+2005-07-29 09:41 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridThreadCurveThroughVolume) started.
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) calls
+	gridThreadCurveThroughVolume.
+	
+2005-07-29 09:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeIfNear, gridSplitFaceAt, 
+	gridSplitCellAt, gridInsertInToGeomEdge, gridInsertInToGeomFace,
+	gridInsertInToVolume) changed x, y, z args to xyz array of 3. 
+	
+2005-07-28 13:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridFindEnclosingCell) added a hacked version to
+	get started. I will need a more robust version for production.
+
+2005-07-28 11:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridReconstructSplitEdgeRatio) addd to start
+	code on getting that edge in.
+
+2005-07-28 09:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShortCurved,gridAdaptLongShortLinear)
+	branched from gridAdaptLongShort to explore linear edge insertion.
+	* src/unit_main.c (main) turn off valid cost constraint
+	gridCOST_CNST_VALID. call gridAdaptLongShortCurved or
+	gridAdaptLongShortLinear with test on gridCOST_CNST_VALID.
+
+2005-07-28 09:00 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.8 Release. Tagging to test new direction for linear
+	elements.
+
+2005-07-27 16:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) refactored to be more like
+	gridSplitEdgeRatio and allow edge splits.
+
+2005-07-27 10:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) produce stdout msg that
+	can not split inbetween faces
+	* src/gridinsert.c (gridAdaptLongShort,gridSplitEdgeRepeat,
+	gridSplitEdgeForce) propigated debug_split
+
+2005-07-27 08:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) if gridSplitEdgeRatio is
+	unsucessful call gridSplitEdgeRepeat to debug insertion
+	difficulties.
+	* src/gridinsert.c (gridSplitEdgeRepeat) created to get edges
+	split by trying more complex algorithms and to understand the
+	difficulties. (this version stripped out some hacks I had earlier.)
+
+2005-07-26 15:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMinInsertCost,gridSetMinInsertCost) added to
+	allow the min insert (split,collapse) cost to be adjusted on the
+	fly to replace gridADAPT_COST_FLOOR.
+	* src/gridinsert.c (gridCollapseEdge,gridSplitEdgeForce,
+	gridSplitEdgeRatio) use gridMinInsertCost to accept action.
+	* src/gridmetric.c (gridADAPT_COST_FLOOR) removed #define
+	
+2005-07-26 14:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) started a little routine
+	to help put in surface edge splits at any cost.
+
+2005-07-26 13:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridWriteTecplotCellJacDet) added to dump out
+	specified cell with corner values set to jacobians.
+
+2005-07-26 12:26 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotCellGeom) added an optional double
+	array argument to set face value. Set to NULL to ignor. propagated
+	through calls.
+
+2005-07-26 11:09 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) only die when unable to
+	split surface edges.
+
+2005-07-26 08:24 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) return NULL on first edge
+	that will not gridSplitEdgeForce, to debug/improve gridSplitEdgeForce.
+	* src/unit_main.c (main) exit if gridAdaptLongShort NULL.
+
+2005-07-25 14:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) added a block that works like
+	gridAdaptLongShort to the gridCOST_CNST_VALID path (sequential only).
+
+2005-07-25 14:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdgeToAnything) made public (non
+	static) to be called from gridmpi adapt.
+
+2005-07-25 10:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfiller.c (gridSavePart) Reset the uv values of the
+	disjoint patches after call to CADTopo_FlushPatches to avoid
+	renumbering and projection issues. THIS SHOULD BE LOOKED AT
+	AGAIN after Bill Jones finishes with the GeoSDK restart node
+	ordering logic.
+
+2005-07-25 09:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmooth) called free(cost) to prevent memory leak.
+
+2005-07-25 08:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) extended it to split edges
+	on the interior of faces (but not splitting geom edges yet). it
+	calls gridSmoothNodeVolumeUVSimplex to get the new uv value.
+
+2005-07-22 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolumeUVSimplex) added to help get
+	surface edges to split.
+
+2005-07-22 15:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) replaced the
+	gridCollapseEdge undo call with direct logic that will not fail if
+	grid is nearly bad.
+
+2005-07-22 13:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.h (struct Grid) increased size of grid->equ array to
+	avoid writing past the end of the array when calling gridEquator.
+
+2005-07-21 16:53 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmooth) only hit nodes once for speed.
+
+2005-07-21 13:27 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeForce) added to split an interior
+	edge by optimizing volume (minimum Jacobian).
+	* src/gridinsert.c (gridAdaptLongShort) try gridSplitEdgeForce to split.
+
+2005-07-21 10:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) added debug_split option.
+
+2005-07-21 08:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotEquator) added to debug surface edge
+	splitting.
+
+2005-07-20 15:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptLongShort) added to do all splits first
+	and then do all the collapses.
+	* src/unit_main.c (main) call gridAdaptLongShort in normal mode.
+
+2005-07-19 13:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) add option to -le to control radial spacing.
+
+2005-07-18 16:34 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmooth) used plan to smooth nodes of bad cells
+	first, to try and get better meshes.
+
+2005-07-18 15:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwap) used plan to swap really bad cells
+	first, to try and get better meshes.
+
+2005-07-18 13:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridConnValue,gridSetConnValue) removed.
+	* src/grid.c (gridSortConnValues,gridConnWithThisRanking) removed.
+
+2005-07-18 13:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) replaced grid
+	Conn Value logic with a reuse of plan, so that it can removed
+	from grid.
+
+2005-07-18 13:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/plan.c (planriorityWithThisRanking) added to complement
+	planItemWithThisRanking
+
+2005-07-18 12:58 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSetConnValuesWithMetricErrorMagnatude) removed.
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) the removed method
+	gridSetConnValuesWithMetricErrorMagnatude has been inlined.
+
+2005-07-18 08:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) move the conn setup
+	and teardown methods into this function
+	* src/unit_main.c (main) simplfiy for new gridAdaptBasedOnConnRankings.
+	* src/unit_main.c (main) keep going if bad params
+
+2005-07-14 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotGeomFaceUV) write face UV params.
+	* src/unit_main.c (main) call gridWriteTecplotGeomFaceUV if bad params.
+
+2005-07-14 14:16 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridRightHandedBoundaryUV) added to test UV params.
+	* src/unit_main.c (main) test gridRightHandedBoundaryUV, commented 
+	gridRobustProject.
+
+2005-07-14 09:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridUntangleBadFaceParameters) band-aid to fix
+	a bad projection during save part. should be cleaned up.
+
+2005-07-06 10:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (main) added -le option to setup spacing for
+	leading edge unit problem. turned off gridCOST_CNST_VALID.
+
+2005-06-07 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridsetcostconstraint_) turns on  
+	gridCOST_FCN_JAC_SCALED_MEAN_RATIO cost when gridCOST_CNST_VALID
+	bit is set.
+
+2005-06-07 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridAR,gridCellARDerivative) added
+	gridCOST_FCN_JAC_SCALED_MEAN_RATIO cost.
+
+2005-06-07 13:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridMinCellJacDetDeriv2) added a differentiated
+	version of gridMinCellJacDet2.
+
+2005-06-07 12:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridShapeJacobianDetDeriv2) added a differentiated
+	version of gridShapeJacobianDet2
+
+2005-06-07 10:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridShapeJacobianDet2) added as a target for
+	differentiation. added tests.
+
+2005-06-07 09:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridNodeValid) call gridCostValid on all cells.
+	* src/gridmpi.c (gridParallelRelaxNegativeCells) call gridNodeCostValid
+	to check validity for speed increase.
+
+2005-06-06 16:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCostValid) added to check mesh validity in
+	consistant manner.
+	* src/gridmetric.c (gridAR) calls gridCostValid to check validity.
+
+2005-06-06 12:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridJacVolRatio) added debug routine to see how
+	close the quadratic element corner jacobians are to the volume
+
+2005-06-06 12:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelRelaxNegativeCells) replaced the
+	negative cell around a node test with negative gridNodeAR test
+	to include all cost constriants (including validity).
+	--> will be slower <--, need to make a seperate constraint testing
+	function.
+
+2005-06-03 14:16 Mike Park  <mike.park@nasa.gov>
+
+	* This revision marks an addition to the API to support valid adaptation
+	* src/gridfortran.c (gridconstrainsurfacenode_) added to expose 
+	gridConstrainSurfaceNode to adapt on surf without gridmove projection.
+
+2005-06-03 13:58 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeMinJacDet2Simplex) removed, use
+	gridSmoothNodeVolumeSimplex now.
+	* src/gridcad.c (gridSmartVolumeLaplacian) uses
+	gridNodeMinCellJacDet2 as the cost function if gridCOST_CNST_VALID
+	bit is set in gridCostConstraint.
+	* src/unit_main.c (gridSmoothInvalidCellNodes) calls
+	gridSmoothNodeVolumeSimplex and gridSmartVolumeLaplacian now.
+	
+2005-06-03 13:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolumeSimplex) uses
+	gridNodeMinCellJacDet2 as the cost function if gridCOST_CNST_VALID
+	bit is set in gridCostConstraint.
+
+2005-06-03 09:05 Mike Park  <mike.park@nasa.gov>
+
+	* This revision marks an addition to the API to support valid adaptation
+	* src/gridfortran.c (gridsetcostconstraint_) added to directly expose 
+	the cost constraints.
+
+2005-06-01 11:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridNodeMinCellJacDet2) smallest jacobian determine
+	in an incident tetrahedron.
+	* src/gridcad.c (gridSmoothNodeMinJacDet2Simplex) simplex search
+	to improve the smallest jacobian determinate of incident tetrahedra.
+	* src/unit_main.c (gridSmoothInvalidCellNodes) driver for validating
+	via node movement.
+
+2005-06-01 11:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeRatio, gridCollapseEdge) interpolate
+	and evaluate edge t, face uv, and xyz in a consistent manner
+	when gridSurfaceNodeConstrained true.
+
+2005-06-02 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.7 Release. Snapshot after Toronto paper, before `valid'
+	adaptation research.
+
+2005-06-02 08:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridResolveOnFace) added to expose
+	CADGeom_ResolveOnFaceWCS to update face parameters during edge splits.
+
+2005-06-01 14:13 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridCollapseInvalidCells) attempt to collapse
+	cell and neighbors. added stuff to dump out mesh after validation
+	if sucessful.
+
+2005-06-01 09:58 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSurfaceNodeConstrained) are nodes always
+	constrained to surface?
+	* src/grid.c (gridConstrainSurfaceNode,gridUnconstrainSurfaceNode) 
+	turn node surface constraint on and off.
+	* src/gridinsert.c (gridSplitEdgeRatio, gridCollapseEdge) project
+	surface nodes if gridSurfaceNodeConstrained. Note that this needs
+	to be changed to an evaluation with consistent passed to queue.
+	* src/unit_main.c turn on gridConstrainSurfaceNode.
+	
+2005-06-01 08:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridCollapseInvalidCells) attempt to remove invalid
+	cells with edge collpase, but not useful for om6.
+
+2005-05-31 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotTriangleZone) use nface as loop bound.
+	* src/gridshape.c (gridWriteTecplotCurvedGeom) debuged. looks resonable.
+
+2005-05-31 17:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridWriteTecplotCurvedGeom) fleshed out, untested.
+
+2005-05-31 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotTriangleZone) fixed f2n int declaration.
+	* src/gridshape.c (gridWriteTecplotCurvedGeom) created nonfunctional
+	stub for implementation in progress.
+
+2005-05-31 12:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotTriangleZone) dump arrays to tecplot file.
+
+2005-05-29 15:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c (gridNumberOfInvalidCells) count invalid cells and
+	swap to fix (about half).
+
+2005-05-29 14:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotInvalid) removed to fix gridmetric depend.
+	* src/gridmetric.c (gridWriteTecplotInvalid) added (requires gridAR).
+
+2005-05-29 14:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c started a --validate option to test and validate cost
+	* src/unit_main.c added gridCOST_CNST_AREAUV to gridSetCostConstraint
+
+2005-05-29 13:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotInvalid) added to dump surf
+	and invalid tets.
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) simplified
+	and called gridWriteTecplotInvalid.
+
+2005-05-29 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeRatio) use ratio to calculate new
+	edge and face parameters.
+
+2005-05-29 13:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeRatio,gridSplitEdgeAt) changed 
+	gridSplitEdgeAt into gridSplitEdgeRatio to allow for consistant
+	treatment of CAD edge and face parameters.
+	* src/gridinsert.c (gridParallelEdgeSplit) calls gridSplitEdgeRatio
+
+2005-05-29 12:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c Removed -m gridmove projection option.
+	Always use gridmove to project.
+
+2005-04-22 12:00 Bill Jones <w.t.jones@larc.nasa.gov>
+	* src/gridfortran.c added gridcopyunusednodeGlobal() and
+	gridcopyunusedcellGlobal() functions to support new parallel removal
+	of unused data.
+
+2005-04-18 17:10 Bill Jones <w.t.jones@larc.nasa.gov>
+	* src/FAKEGeom.h updated signature of LoadModel for CAPRI 2 use
+	* src/FAKEGeomExtras.c updated signature of LoadModel for CAPRI 2 use
+
+2005-04-18 16:10 Bill Jones <w.t.jones@larc.nasa.gov>
+	* src/grid.h (struct Grid) "model" member added unconditionally
+	* src/grid.c (gridImport) "model" initialized to -1
+
+2005-04-18 16:05 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* This revision marks a change to the API to support CAPRI 2
+	* src/gridfortran.c (gridparallelloadcapri_) add "url" argument
+	to support client/server CAPRI 2 use.
+	* src/grid.h (struct Grid) add "model" member to store CAPRI 2
+	model index.
+	* src/gridgeom.c (gridParallelGeomLoad) add "url" argument
+	to support client/server CAPRI 2 use and use CADGeom_LoadModel()
+	if compiled with -DHAVE_CAPRI2
+	* src/gridgeom.c (gridParallelGeomSave) use CADGeom_SaveModel()
+	if compiled with -DHAVE_CAPRI2
+
+2005-04-18 15:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridapplyqueue_) create a temperary queue
+	object to handle the apply operation. This will prevent a confict
+	with multiprocessor (colored) border swaps. This elimates reuse
+	of the static queue object and a queueReset(queue) call.
+	* src/gridfortran.c (queuedump_) moved the queueReset(queue)
+	call from gridapplyqueue_, this is to fix a logic bug that
+	existed for a long time but hadd no effect. this needed to be 
+	cleaned up inorder to border swap with colors.
+
+2005-04-18 12:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridglobalshift_) also calls
+	queueGlobalShiftNode, queueGlobalShiftCell to enable
+	colors durring parallel swap.
+
+2005-04-18 11:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/queue.c (queueGlobalShiftNode) added.
+	* src/queue.c (queueGlobalShiftCell) added.
+	
+2005-04-18 09:24 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridNodeCountByPartition) removed
+	* src/gridmpi.c (gridGhostDataCountByPartition) added. This
+	routine supplies low-level unit tested support to 
+	gridfortran.c:gridghostcount_ and gets rid of
+	redundancy between gridnodecountbypartition_ and gridghostcount_.
+	* src/gridfortran.c (gridnodecountbypartition_) removed
+	* src/gridfortran.c (gridghostcount_) exposes 
+	gridmpi.c:gridGhostDataCountByPartition
+
+2005-04-12 00:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridNodeCountByPartition) added method to count
+	the number of nodes assigned to each partition on the current
+	partition. this is intended to allow for coloring of partitions
+	to allow for concurrent boundary cell swapping.
+	* src/gridfortran.c (gridnodecountbypartition_) exposed
+	gridmpi:gridNodeCountByPartition.
+
+2005-04-09 21:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am (libMesherX_pg.a) added to profile profileNative.
+
+2005-04-05 00:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/profine_main.c (main) started tp create a driver to profile
+	the speen of the code (especially parallel border regions).
+	Not working yet.
+	* src/Makefile.am (profileNative) added to CAPRI compile.
+
+2005-03-25 10:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelswap_) added all ghost two face
+	cells to plan. Activated ghost plan be default.
+	Revert by setting `swap_the_fast_new_way' to FALSE.
+
+2005-03-25 08:51 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridMirrorNodeAboutY0) Fixed calculation of new node
+	Y location when Y0 is non zero. This is to fix the BWB mirror
+	case.
+
+2005-03-24 16:24 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCopyAboutY0, gridMirrorNodeAboutY0) Generalized
+	routine to work for cases that have global node and cell ID's as
+	well as cases that do not have global ID's.
+
+2005-03-24 16:17 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridRemoveCellAndQueue) To increase the speed of
+	parallel adaptation runs a removed cell is only queued if it has a
+	ghost node. gridRemoveFaceAndQueue and gridRemoveEdgeAndQueue
+	already do this. Unfortunitly this did not drastically affect the
+	performace of test cases.
+
+2005-03-22 16:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/MesherX.c (main) fixed the -vgbg option
+	* src/MesherX_HLA.c (main) fixed the -vgbg option
+
+2005-03-22 15:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/mesher.c (MesherX_DiscretizeVolume) attempt at non unity
+	spacing growth rates.
+
+2005-03-22 13:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/layer.c (layerTerminateFutureNegativeCellNormals)
+	1) Fixed a bug that terminated the wrong normal. This
+	fixed the BWB case.
+	2) Made the call repeat the negative cell tests until it
+	gets through a complete sweep with no terminations. this
+	to to catch a negative cell that is created by another
+	termintaion.
+
+2005-03-21 15:56 Beth Lee-Rausch  <e.m.lee-rausch@larc.nasa.gov>
+
+	* src/gridfortran.c (gridcreate_) Removed the uv check from
+	the default cost constraint. To allow the fake geometry cases
+	to run with out accessing frozen surface faces.
+	* src/gridfortran.c (gridparallelloadcapri_) Turned on uv checks
+	when using cad based geometry where all the surface face have 
+	a valid geometry.
+
+2005-03-21 11:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridprojectallfaces_) now calls
+	gridMinThawedAR instead of gridMinAR inside of PARALLEL_VERBOSE
+	pound-defs. This will skip the cells with four frozen nodes to
+	correctly report the validity during frozen boundary layer
+	adaptation.
+
+2005-03-21 11:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridminar_) now calls gridMinThawedAR instead
+	of gridMinAR. This will skip the cells with four frozen nodes to
+	correctly report the validity during frozen boundary layer
+	adaptation.
+
+2005-03-19 15:10 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridmetric.c (gridAR) to return -2 and -3 for negative
+	parameter face area or invalid cost constraint resp.
+
+2005-03-13 17:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/plan.c (planCreate) initialized plan->ranking to NULL to
+	prevent a uninitialized memory read.
+
+2005-03-13 20:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/adj.c (adjFree) to prevent memory leak, free adj->node2item
+	during the adjFree call.
+
+2005-03-13 20:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelswap_) added a disabled block of
+	code to speed up parallel swapping by formulating a plan in
+	parallel and executing this plan during the blocking ghost swaps.
+	Activate by setting `swap_the_safe_old_way' to FALSE.
+
+2005-03-13 19:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am added plan.c to librefine.a and lbMesherX.a
+	* src/plan.c (planFree) to prevent a memory leak, free non-NULL
+	array pointers.
+
+2005-03-13 18:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/plan.c (planAddItemWithPriority) added a reallocation
+	capability by chunk_size.
+
+2005-03-13 17:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/plan.c (planCreate) Created new object to keep a list of
+	planed mesh operations to speed up parallel operation. This list
+	or plan is composed of items each with a priority. These
+	priorities are sorted to create a ranking.
+
+2005-03-09 18:52 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridResolveTofEdge, gridResolveUVofFace)
+	These functions now utilize the CADGeom_ResolveOn* functions to
+	limit movement of nodes that are assumed to lie on the entity and
+	for whom only parameter values are to be resolved.  In particular,
+	CADGeom_ResolveOnFace() is needed to handle Parasolid degeneracies
+	where a node may project to a parameter outside of the valid
+	range for the Face (but still maintain the same physical coords).
+	Case in point is the BoomCones example run as a 9 degree slice.
+	Also note that the *WCS versions are used to assume that the
+	points are referenced to the global coordinate system not the
+	local system of the entity.
+
+	* src/FAKEGeomExtras.c (new functions) added stubs for
+	CADGeom_ResolveOnEdgeWCS() and CADGeom_ResolveOnFaceWCS() that
+	simply fallback to simple FAKEGeom projections.
+
+2005-02-28 10:02 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridfortran.c (gridtestcadparameters_) added extra diagnostics
+	if mismatch is detected from parameter recovery.  Only impacts if
+        reportMismatch = TRUE.
+
+2005-02-28 09:02 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSearchT) added parallel check
+	to return NULL if envoked for a ghost node.
+
+2005-02-27 23:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridcreate_) called gridSetCostConstraint to
+	turn on face UV parameter area checks in addition to the default
+	cell volume check. This is to prevent a split, collapse, or swap
+	from inadvertently causing an inverted face for parallel FUN3D
+	adaptation runs.
+
+2005-02-27 22:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCostConstraint,gridSetCostConstraint) added
+	new gridCOST_CNST_AREAUV.
+	* src/gridmetric.c (gridAR) added gridCOST_CNST_AREAUV
+	gridCostConstraint to check gridMinCellFaceAreaUV.
+
+2005-02-27 22:01 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (minCellFaceAreaUV) created to find the
+	smallest UV area of a cell face. to be used for cost constraint.
+
+2005-02-27 21:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (faceAreaUV,minFaceAreaUV) inserted methods
+	from gridcad. This introduces a dependency on CADGeom for
+	CADGeom_ReversedSurfaceNormal. To allow for the construction
+	of a grid cost constraint on face surface area.
+	* src/gridcad.c (faceAreaUV,minFaceAreaUV) moved methods to
+	gridmetric.
+
+2005-02-21 00:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotComment) To allow the insertion of
+	comments into tecplot files I added this function.
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) dump flagged
+	cell info to tecplot file as comments instead of stdout. This is
+	to make it easier to investigate negative cells by having full
+	info on hte cell next to its geometry.
+	
+2005-02-17 22:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeomExtras.c (ErrMgr_Append) Added for fake
+	CADGeom_ReversedSurfaceNormal call to allow adaptation without the
+	SDK.
+	
+2005-02-16 15:15 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridFaceAreaUV) check orientation of surface to
+	Face and negate area as necessary.
+
+2005-02-14 08:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) dump flagged
+	cell info (local and global ids) to stdout.
+
+2005-02-13 11:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridOptimizeUVForVolume) added face UV area check
+	to prevent face area from dropping below 1.0e-12 while trying yo
+	improve cell volume. It will continue to smooth below this area if
+	area is increasing.
+	* src/gridcad.c (gridSmartVolumeLaplacian) fixed an old copy and
+	paste bug. Now it uses the correct gridNodeVolume cost instead of
+	the copyied gridNodeAR.
+	* src/gridcad.c (gridSmoothNodeVolumeSimplex) decreased its
+	convergence tolerence to 1.0e-10 from 1.0e-8.
+	
+2005-02-12 11:56 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelRelaxNegativeFaceAreaUV) added checks
+	to make sure that only allow boundary nodes can be selected to fix
+	negative face areas with gridSmoothNodeFaceAreaUV. Increased the
+	face area seletion from smaller than 0.0 to smaller then 1.0e-14.
+	* src/gridcad.c (gridSmoothNodeFaceAreaUV) return immediately with
+	NULL if it was not called with a boundary node.
+	* src/gridcad.c (gridSmoothNodeFaceAreaUVSimplex) return
+	immediately with NULL if the it was called for a node that it
+	cannot handle. Return NULL if it cannot find a valid face
+	associated with this node.
+
+2005-02-12 10:19 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNodeProjectionDisplacement) cleaned up how
+	the displacements for the evaluated/projected surface are
+	calculated. Made sure that all the CAD parameters are also
+	updated.
+
+2005-02-08 00:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) verify positive face areas
+	in parameter space before evaluating CAD parameters. This should
+	fix two issues: prevent surface `cliffs' while smoothing and
+	evaluating parameters that are outside of the face, which causing
+	CAD warnings.
+
+2005-02-10 00:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) refactored the parallel
+	ghost node checks to make sure that faces will be present for
+	manipuations (add and delete) and cost validity checks. improved
+	error messages.
+
+2005-02-08 22:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge) added gridNodeGhost checks on edge
+	nodes. Note that these checks are redundant with
+	gridmpi:gridParallelEdgeSwap, I added them to help me think
+	parallel.
+
+2005-02-08 21:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapFace) abort face swap if top and bottom
+	nodes are frozen to protect frozen mesh edges.
+
+2005-02-08 20:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeFaceAreaUVSimplex) bug fix to
+	prevent a subsequent smoothing operation from creating negative
+	elements. (smoothing requires consistant node VU and XYZ). Added a
+	CAD parameter evalutation at the completion of the simplex search
+	to update the node XYZ and make it consistant with final simplex
+	UV value.
+
+2005-02-08 11:17 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV,gridLinearProgramXYZ) added a
+	callAgain argument to suggest if a subsequent call would continue
+	to improve the mesh.
+	* src/gridcad.c (gridSmoothNode) keep calling the LinearProgram
+	routines until the callAgain argument ins FALSE.
+
+2005-02-07 15:53 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridNodeProjectionDisplacement) replaced edge and
+	face projections with evaluations to fix the om6 test case. For
+	some reason two neighboring nodes where projected to the same xyz
+	location (to 8 digits). This needs to be cleaned up and renamed.
+
+2005-02-07 14:07 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) Put in constraint checks that
+	will not allow the optimization to reduce gridNodeAR below
+	gridOPTIM_COST_FLOOR.
+	* src/gridcad.c (gridSmoothNode) changed if-then constant to turn
+	on gridLinearProgramUV for face node smoothing.
+
+2005-02-07 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) Put in a divide by zero
+	check to avoid NaN. The lowest and next lowest gradients pointed
+	in exactly opposite directions, which gave me a zero length
+	congigate direction. This resulted in a divide by zero when it was
+	normalized to unity length.
+
+2005-02-07 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNode) to speed up volume smoothing, the
+	required improvement for smoothing to continue has been raised and
+	made porportional to current cost.
+
+2005-02-07  9:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramXYZ) renamed from gridSmoothNodeQP.
+	Added some slight perceived numerical robustness improvements.
+	* src/gridcad.c (gridLinearProgramUV) Added some slight perceived
+	numerical robustness improvements, but still gives ocational NaN's
+	and strange valgrind behavior.
+	* src/gridcad.c (gridSmoothNode) added gridLinearProgramUV within
+	a FALSE if-then block. changed the termination criteria of volume
+	node smoothing.
+
+2005-02-03 22:43 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLinearProgramUV) added. This is a copy and
+	edit of gridSmoothNodeQP to smooth faces using quadratic
+	programing.
+	
+2005-02-03 17:37 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridStoreAllARDerivatives) moved to gridcad
+	and renamed.
+	* src/gridcad.c (gridStoreVolumeCostDerivatives) moved from
+	gridmetric and renamed.
+	* src/gridcad.c (gridStoreFaceCostParameterDerivatives) created
+	to allow quadradic programming optimization of face nodes.
+	
+2005-02-03 13:44 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c,src/gridmetric.c,src/gridcad.c renamed the stored AR
+	routines to stored cost.
+	
+2005-02-03 13:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridStoreAR) renamed from gridAddStoredAR. Also
+	added a bunch of missing unit tests that I was to lazy to add when
+	this was originally implemented.
+	* src/gridmetric.c (gridStoreAllARDerivatives) renamed from
+	gridStoreARDerivative.
+	* src/gridcad.c (gridSmoothNodeQP) followed rename.
+	
+2005-02-02 09:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (REQUIRED_IMPROVEMENT) made the value very small,
+	1.0e-12, so that the maximum possible swaps are allowed. The more
+	swaps that take place the better that the edge based scheme does.
+
+2005-02-01 22:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (REQUIRED_IMPROVEMENT) added a #define to require
+	this minimum improvement to accept swap.
+
+2005-02-01 22:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) When a new node
+	is added by spliting it is positioned to be the correct distance
+	from the node with the smallest edge length requirement.
+
+2005-02-01 18:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge) does not abort swap if mean ratio
+	goes down when gridCostFunction is gridCOST_FCN_EDGE_LENGTH (put
+	back it)
+
+2005-02-01 17:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCollapseCost) added logic to set the
+	boundary face and edge parameters while evaluating new
+	configurations. NOTE: Disabled Unit Test!!!
+
+2005-02-01 16:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio) to better estimate the length
+	of an edge in mapped space with a linearly varying metric the
+	matric is averaged instead of the edge lengths computed at each
+	node.
+
+2005-02-01 14:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) the logic that
+	chooses which cells are bad and need to be written now uses gridAR
+	to be consistant with all other contraint tests.
+
+2005-02-01  9:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge) added local processor checks to
+	the two faces that are required to be added to test validity
+	durring swap evaluations. Swap will abort if niether face belongs
+	to other processor.
+
+2005-01-31 11:40 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.6 Release. The om6 test case is working.
+
+2005-01-31 22:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelSwap) called gridSwapFace when queue
+	in NULL to allow face swapping on partition interiors.
+	* src/gridswap.c (gridSwapFace) added protectection so that it
+	will not face swap on partition boundaries, so it can be used on
+	the interior of partitions.
+
+2005-01-31 21:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeAt,gridCollapseEdge) only perform
+	projection when gridCostConstraint contains gridCOST_CNST_VALID.
+
+2005-01-31 17:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridProjectNode) Major refactoring to clean out
+	gridSafeProjectNode. Now the face parameters are updated durring
+	projection of edges.
+
+2005-01-31 15:22 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.5 Release. the -DSURFACE_VALIDITY path has been
+	removed. om6 test case runs, but generates surface grid cliffs due
+	to projection durring adaptation.
+
+2005-01-31 14:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeAt) call
+	queueResetCurrentTransaction if split aborted due to validity.
+	* src/gridswap.c (gridRemoveTwoFaceCell,gridSwapEdge) call
+	queueResetCurrentTransaction if swap aborted due to validity.
+
+2005-01-31 13:44 Mike Park  <mike.park@nasa.gov>
+
+	* src/queue.c (queueResetCurrentTransaction) added new method to
+	cancel the current transaction. This new menthod is intented to be
+	used when a primative operation undos an invalid
+	configuration. This should speed up parallel ops and fix a bug
+	resulting from faces floating around without nodes.
+
+2005-01-31  9:42 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridSortNodeGridEx) Fixed parallel memory bug that
+	wrote to uninitialized pointer, This fixes an error reported by
+	valgrind when an adaptation_surface_movie is produced.
+
+2005-01-30 19:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) added in new faces to
+	allow for validity checks durring two face cell removal.
+
+2005-01-28 11:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge) added in new faces to allow for
+	validity checks durring swap combo evaluations.
+	
+2005-01-28 11:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdapt,gridCollapseEdge) moved the check
+	for negative gridAR into gridAdapt. If it is found, exit 1.
+
+2005-01-28 14:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdge) added
+	gridMinARAroundNodeExceptGemRecon checks.
+	
+2005-01-28 14:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridMinARAroundNodeExceptGemRecon) operates
+	like gridMinARAroundNodeExceptGem, except it reconnects cells as
+	is works.
+
+2005-01-28 11:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdge) added a check for negative
+	gridAR after collapse. If it is found, exit 1.
+
+2005-01-27 16:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSearchT) called gridUpdateFaceParameter
+	after each gridEvaluateEdgeAtT call to make sure that face
+	parameters are correct for performing validity checks.
+
+2005-01-27 14:56 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridUpdateParameters) added as hack. It projects
+	node to every edge and face it can find to update parameters.
+	I need to spend time and clean up all these cad routines
+	to minimize raw projection.
+
+2005-01-27 14:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridEvaluateOnEdge, gridEvaluateOnFace) added
+	evaluation methods.
+	* src/gridshape.c (gridCurvedEdgeMidpoint) replaced projection
+	with evaluation to spped up exectsion and to improve the
+	repeatablity of the vality check.
+	* src/gridinsert.c (gridSplitEdge) implemented local edge
+	midpoint routine because gridCurvedEdgeMidpoint would no pass
+	old unit tests.
+	
+2005-01-27 11:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c to speed up the adaptation cycles, I have
+	reduced the number of smooths and swaps and set the limits to
+	the defaults (-1).
+
+2005-01-27 10:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridCollapseEdge) Correctly constructed new
+	surface topology (edges and faces) to use to project common
+	node. This is required for the validity checks.
+
+2005-01-27 09:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeAt) Correctly constructed new
+	surface topology (edges and faces) to use to project node as it is
+	created. This is required for the validity checks.
+	* src/gridmpi.c (gridParallelEdgeSplit) removed the gridSplitEdgeAt
+	returned EMPTY warning. A split `undo' is correctly parallelized.
+
+2005-01-26 20:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdapt) removed the project argument from
+	adapt. Nodes will always be projected from now on.
+
+2005-01-26 19:55 Mike Park  <mike.park@nasa.gov>
+
+	* WARNING: continuing effort to merge unit mesh research path
+	with production path. I have uncovered a few inconsistancies.
+	It is suggested that you use last release (1.2.4) for production
+	work.
+	* src/gridinsert.c removed the last of SURFACE_VALIDITY #def's
+	* src/Makfile.am removed libUnitMesh.a, unit_main uses standard 
+	libMesherX.a
+
+2005-01-26 19:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridAR) use correct cost constraints indicated
+	by gridCostConstraint.
+
+2005-01-26 17:26 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCostConstraint,gridSetCostConstraint) added
+	methods to allow the cost metric constraints to changed on the fly.
+
+2005-01-26 13:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSearchUV) Renamed from gridOptimizeUV to
+	be more specific about the the method of optimization. Rewrote
+	This method to optimize face mean ratio in mapped space with the
+	constraint of maintaining a minimum gridAR. The old method moved
+	the face node to improve gridAR directly. This simplifys
+	gridSmoothNode by removing #defs and extra logic.
+
+2005-01-26 10:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridLineSearchT) Renamed from gridOptimizeT to
+	be more specific about the the method of optimization. Rewrote
+	This method to optimize edge `lengths' in mapped space with
+	the constraint of maintaining a minimum gridAR. The old method
+	moved the edge node to improve gridAR directly. This simplified
+	gridSmoothNode.
+
+2005-01-25 21:55 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.4 Release. To save stable snapshot before merging the
+	-DSURFACE_VALIDITY path into the mainline code.
+
+2004-11-23 10:56 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio3) The `integrated average' is
+	really the average metric over the edge.
+
+2004-11-16 09:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridEdgeRatio3) Computes the ratio of unity to
+	the legth of an edge in the metric map. Returns the ratio with
+	respect to the meric at node 0, node 1, and an integrated average.
+
+2004-11-09 00:14 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNode) if -DSURFACE_VALIDITY defined, 
+	optimizeFaceUV is called instead of optimizedUV, so that the volume
+	quality is ignored.
+
+2004-11-03 16:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am created a new library libUnitMesh.a so that
+	-DSURFACE_VALIDITY can be defined for unit_mesh.c and it will not
+	interfere with the standalone sequential refine executable
+
+2004-11-03 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdge,gridCollapseEdge) the inserted
+	or collapsed to node is projected to CAD when
+	-DSURFACE_VALIDITY is defined. This will disrupt the behavior of
+	the standalone sequential refine executable (not parallel
+	librefine.a), and make gridmove projection unnecessary.
+
+2004-11-01 23:09 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridAR) When -DSURFACE_VALIDITY is defined,
+	will return -1.0 if a jacobian <= 6.0e-16 is found.
+	* src/Makefile.am define -DSURFACE_VALIDITY when compiling 
+	libMesherX. This will only be used by the stand alone codes.
+	the parallel librefine.a used by FUN3D is not affected.
+
+2004-11-01 16:47 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridPlotMinDeterminateAtSurface) Call
+	tecplot scalar to display the min Jacobian determinate for
+	a node.
+	* src/gridshape.c (gridMinCellJacDet2) gives the minimum nodal
+	Jacobian determinate for a cell.
+
+2004-10-29 15:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridParentGeometry) added a method for find the
+	parent geometry: returns -edgeId, faceId, or 0 for no geometry
+	parent.
+
+2004-10-29 13:45 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am added gridshape to libMesherX.a for unit_main.c
+	and refine_main.c.
+
+2004-10-29 09:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridWriteTecplotSurfaceGeom) renamed from
+	gridWriteTecplotSurfaceZone, same with gridCloseTecplotGeomFile.
+	* src/grid.c (gridWriteTecplotSurfaceScalar) added to dump
+	nodal scalar info to a sperate tecplot file.
+	* aBunchOfFiles implemented the tecplot renaming
+
+2004-10-29 01:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridshape.c (gridShapeJacobian1,gridShapeJacobian2) Added to
+	try to use to determine if boundary tets are valid in a curved
+	geometry sense.
+	* src/gridmath.h (gridMatrixDeterminate) added a 3x3 matrix
+	determine macro.
+
+2004-10-18 13:50 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.3 Release. While continuing edge-based operator
+	research.
+	
+2004-10-18 13:18 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c number of edge-based cycles is a -e argument.
+
+2004-10-15 23:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapNearNode) exposed limit. Will be set to
+	default 0.7 if less than 0.
+
+2004-10-15 23:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) calls
+	gridCollapseEdgeToBestConfiguration to remove edge.
+	* src/gridinsert.c (gridCollapseEdgeToBestConfiguration) 
+	collapses edge to the best site for metric, 
+	either node0 or node1.
+
+2004-10-15 10:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCollapseCost) to compute current cost
+	excluding the target edge and the cost after the edge is 
+	collapsed to node0 and node1.
+
+2004-10-15 09:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCostFunction,gridSetCostFunction) added
+	methods to allow the cost function metric to change on the fly.
+	* src/gridmetric.c (gridAR,gridCellARDerivative) correct cost 
+	indicated by gridCostFunction.
+	* src/gridswap.c (gridSwapEdge) does not abort swap if mean ratio
+	goes down when gridCostFunction is gridCOST_FCN_EDGE_LENGTH
+	* src/Makefile.am unitNative now uses the standard refineLib
+	EDGE_BASED_OPERATORS not needed.
+
+2004-10-15 10:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCloseTecplotFile) added to allow multiple plots
+	in session.
+	* test/box1_surface.lay added tecplot 10 layout with small
+	multiples for box sides.
+	
+2004-10-15 01:53 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridCellRatioErrorDerivative) added a hacked
+	derivative routine to try and hook up smoothing with edge
+	based operators. I think I may need a new smoothing strategy.
+
+2004-10-15 01:53 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwapEdge5) removed debug bestindex report.
+
+2004-10-15 00:33 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am unitNative builds it own copy of the 
+	objects that it can have its own #defines. Added a 
+	EDGE_BASED_OPERATORS #define that affects gridmetric.c and 
+	gridswap.c in the following ways:
+	* src/gridmetric.c (gridAR) gridAR returns gridEdgeRatioCost
+	when EDGE_BASED_OPERATORS is defined.
+	* src/gridswap.c (gridSwapEdge) does not abort swap if mean ratio
+	goes down when EDGE_BASED_OPERATORS is defined, this was fighting
+	the edge length err.
+	* src/unit_main.c set up a loop of six cycles with swaps with -e
+
+2004-10-14 23:48 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSetConnValuesWithMetricErrorMagnatude) added.
+	* src/gridmetric.c (gridEdgeRatioCost) analog to gridAR for edge
+	based operators uses.
+	* src/gridmetric.c (gridEdgeRatioError) created ina refactoring
+	for the above two functions to use.
+
+2004-10-04 23:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridAdaptBasedOnConnRankings) added as a spike
+	into implementing 'Edge Based Operators'.
+	* src/unit_main.c added commandline option -e to activate edge
+	based operators
+
+2004-10-04 20:26 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridConnValue,gridSetConnValue) renamed from
+	(gridConnError,gridSetConnError)
+	* src/grid.c (gridSortConnValues,gridConnWithThisRanking) added to
+	sort the conn values low to high.	
+
+2004-10-04 16:37 Mike Park  <mike.park@nasa.gov>
+
+	* src/sort.c (sortDoubleHeap) added to sort array of doubles.
+
+2004-10-04 16:08 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridPack) conn structures are now packed.
+	* src/grid.c (gridRenumber) conn structures are now renumbered.
+
+2004-10-04 15:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridConn2Node) Fixed. gridCreateConn called under hood.
+	* src/grid.c (gridCreateConn) Exposed. Error if called when conn exits
+	* src/grid.c (gridConnError,gridSetConnError) created to store
+	edge length errors for adaptation.
+
+2004-10-03 01:15 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.* (gridCollapseEdge) added an extra check to make
+	sure that an edge collapse does not cause faces on the top and
+	bottom of the gem to have the same connectivity after
+	collapse. This showed up as a pathological case, which I have
+	never seen before.
+
+2004-10-01 09:07 Mike Park  <mike.park@nasa.gov>
+
+	* test/cyl.* Added a unit cylander test case with 5 unit outer
+	boundary. Created Plot3D surfaces with cyl.m, patched up with
+	GridTool (cyl.rst), and dumped Native cyl.dat and cyl.capri.
+
+2004-09-29 23:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridConn2Node) Added. returns the nodes at each end
+	of the connection(conn).
+
+2004-09-29 23:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridCell2Conn,gridNConn,gridEraseConn) Added
+	functions to compute a static snapshot of the current unique
+	connections (edges) in the mesh. I used the word 'conn' and not
+	'edge' because edge currently refers to CAD geometry edge
+	segements. The first call to gridCell2Conn automagically computes
+	all the conns numbered 0 to gridNConn-1. gridEraseConn deallocates
+	conn memory.
+
+2004-09-29 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c added argument -c to allow a cylindrical
+	variation in spacing. added -m to turn on gridmovement for
+	projection.
+
+2004-09-29 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwap) Added gridRemoveTwoFaceCell to cell
+	loop. Note gridSwap is only for the sequential driver.
+
+2004-09-29 15:29 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSetMapWithSpacingVectors) added function
+	to compute the spacing metric at a node with three principle axis
+	and three spacing values. (Note the principle axis must be
+	orthogonal and length one)
+
+2004-09-22 20:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c added argument -z to allow a linear variation in
+	Z spacing from the middle of the box to the top and bottom.
+	Increased the kick out tolerence to a 1 percent change in number
+	of nodes.
+
+2004-09-22 20:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridSwap) Exposed the improvementLimit as a
+	calling argument. Note it will be reset to default values if it is
+	less than 0.0. Modified all the drivers that call gridSwap
+
+2004-09-22 20:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c extensively modifed to: expose a constant ratio,
+	expose a constant spacing, add a final improvement sweep.
+
+2004-09-22 20:12 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmooth,gridSmoothFaceMR) Exposed the
+	optimizationLimit and laplacianLimit parameters as calling
+	arguments. Note they will be reset to default values if they are
+	less than 0.0. Modified all the drivers that call gridSmooth
+
+2004-09-22 18:28 Mike Park  <mike.park@nasa.gov>
+
+	* src/unit_main.c new driver to start looking at unit adaptation
+	problems
+
+2004-09-22 17:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridSetGlobalMap) added to apply a metric to
+	every node in field.
+
+2004-09-17 17:35 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* Added support for CAPRI 2.0 interface.  Configure with
+	--enable_CAPRI2.  The primary changes result from a change to the
+	*_LoadPart() interfaces of the SDK which require a modeler name
+	when built against CAPRI 2.0 (selects the backend).  Refine API
+	changed to pass new modeler argument
+
+	* src/gridfiller.c (gridLoadPart) API Changed
+	* src/gridfortran.c (gridparallelcapri_) API Changed
+	* src/gridgeom.c (gridParallelGeomLoad) API Changed
+
+	* src/FAKEGeom.h (CADGeom_LoadPart, GeoMesh_LoadPart) Added
+	modeler argument if emulating CAPRI 2.0
+	* src/FAKEGeomExtras.c (CADGeom_LoadPart, GeoMesh_LoadPart)
+	Added modeler argument if emulating CAPRI 2.0
+
+	* src/Makefile.am If CAPRI2 is enabled build kernel independent
+	binaries
+
+	* src/MesherX.c Alter command line args to acquire modeler
+	* src/MesherX_HLA.c Alter command line args to acquire modeler
+	* src/proemain.c Alter command line args to acquire modeler
+	* src/refine_main.c Alter command line args to acquire modeler
+	* src/restartTest.c Alter command line args to acquire modeler
+
+2004-09-16 16:05 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/grid.c (throughout) Cast return of malloc(3) and realloc(3) to
+	appropriate type in assignment.  Makes for cleaner code.  Strange
+	that compiler is not complaining about this since default return
+	type is int???  Also, include <malloc.h> on non-Apple platforms.
+
+2004-09-16 08:50 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) A check of
+	AR was added to prevent the generation of NaN from negative sqrt()
+	in the event that the mesh has negative volumes.  Note, this
+	should "never" happen as we don't move bad meshes...right...
+
+2004-09-16 08:26 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* Function signature to gridSmoothNode() changed to add GridBool
+	arg that allows caller conditional smoothing of nodes on geometry.
+	Argument FALSE prevents any nodes on geometry from being modified
+	in an attempt to optimize the corresponding Tet.  Modules affected
+	include src/gridcad.c, src/gridcad_ruby.c, src/gridfortran.c, and
+	src/gridmpi.c.	This change propagates from gridparallelsmooth_()
+	in src/gridfortran.c to gridParallelSmooth() of src/gridmpi.c
+	and finally to gridSmoothNode() of src/gridcad.c.  Unit test of
+	gridSmoothNode() was also changed in gridcad_ruby.c.
+
+	* Added conditional compilation of GNU gcc Floating Point Exception
+	trapping (SIGFPE) to gridcreate_() of src/gridfortran.c.  If TRAPFPE
+	is defined, FE_INVALID, FE_DIVBYZERO, and FE_OVERFLOW will be trapped
+	and will cause segfault on occurance.  Used mainly for debugging.
+
+2004-09-15 10:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridinsert.c (gridSplitEdgeAt) The new cell configuration
+	with the inserted node is tested for its minimum aspect ratio. A
+	node will not be inserted if causes the aspect ratio to drop below
+	0.01. Note that negative cells have an aspect ratio of -1.0, so
+	the creation of negative cells will also be avoided. This replaces
+	the logic that would "undo" a split with an edge collapse, which
+	was not correctly paralleized.
+
+2004-09-10 17:36 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeQP) added check to avoid 0/0 if two
+	incedent cells have same ARDerivative resulting in same
+	minDirection as nearestDirection where ???covariant metric
+	terms??? are all equal, therefore 0/0 => NaN.
+
+2004-09-03 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelrelaxsurf_) added. API changed.
+	* src/gridmpi.c (gridParallelRelaxNegativeFaceAreaUV) added.
+	* src/gridcad.c (gridSmoothNodeFaceAreaUV) kick out if on edge node.
+	
+2004-09-03 13:36 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeFaceAreaUV) general routine for
+	modifying node location for improving small (negative) face area
+	in UV parameters. (only calls gridSmoothNodeFaceAreaUVSimplex now)
+	* src/gridcad.c (gridSmoothNodeFaceAreaUVSimplex) Simplex optimization
+	for improving small (negative) face area in UV parameters.
+	
+2004-09-02 17:05 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridMinFaceAreaUV) added to compute min face area
+	in UV space around a node.
+	
+2004-09-02 16:35 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (gridFaceAreaUV) added to compute face area in UV
+	space
+	
+2004-09-02 15:55 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridcad.c (nearestOnFace,nearestOnEdge) added to apply
+	CAPRI displacement matrix prior to projection.
+	* src/FAKEGeomExtras.c added mock CADGeom_DisplacementIsIdentity,
+	CADGeom_UnMapPoint, CADGeom_MapPoint
+
+2004-08-31 22:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelrelaxneg_) API change to add an
+	argument to control if surface nodes are moved.
+	* src/gridmpi.c (gridParallelRelaxNegativeCells) added 
+	smoothOnSurface argument.
+	* src/gridcad.c (gridSmoothVolumeNearNode) added smoothOnSurface
+	argument.
+
+2004-08-31 20:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolume) added
+	gridSmoothNodeVolumeWithSurf. To allow volume improvement of
+	invalid surface meshes to make them vaild.
+
+2004-08-31 19:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolumeWithSurf) added. Note that
+	using this single gradient and line sreach method failed in a
+	number of cases. It needs to be replaced with congigent gradient.
+
+2004-08-31 14:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.h added (gridVectorScale).
+	* src/gridmetric.h added (gridCellVolumeDerivative).
+
+2004-08-30 21:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/refine_main.c added, was src/main.c.
+	* src/main.c removed, renamed to src/refine_main.c.
+	* src/Makefile.am renamed refine stand-alone main.c -> refine_main.c
+
+2004-08-30 20:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/Makefile.am removed unused near object from librefine.a.
+
+2004-08-30 09:21 Bill Jones <w.t.jones@larc.nasa.gov>
+
+	* src/gridfortran.c, src/gridfortran.h (gridparallelloadcapri_) API
+	change to add return code.
+	* src/gridgeom.c (gridParallelGeomLoad) return NULL on failures.
+
+2004-08-29 22:10 Mike Park  <mike.park@nasa.gov>
+
+	* doc/refine.texi added texinfo file.
+
+2004-08-29 12:20 Mike Park  <mike.park@nasa.gov>
+
+	* doc/anisotropicMetric.tex renamed from doc/anIsoMesh.tex.
+	* configure.ac added doc/Makefile to build.
+	* Makefile.am add doc and doc/anisotropicMetric.tex to build.
+
+2004-08-27 17:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) now only dumps
+	out negative cells (cells with four nodes on boundary are not
+	written).
+
+2004-08-17 12:55 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.2 Release. Interface to FUN3D 3.3.1. Fix FAKEGeom.
+	
+2004-08-17 12:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeom.h added CADGeom_LoadPart, CADGeom_UseDefaultIOCallbacks.
+
+2004-08-17 08:45 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.1 Release. Interface to FUN3D 3.3.1.
+	
+2004-08-16 15:00 Mike Park  <mike.park@nasa.gov>
+
+	* geomSGIn32 added static SDK routines and headers (CVS tag sdk1_1_4)
+
+2004-08-16 14:20 Mike Park  <mike.park@nasa.gov>
+
+	* configure.ac added a --enable-exec argument that controls
+	whether the refine and MesherX executables are built. The refine
+	lib is always built.
+	* src/Makefile.am added BUILD_EXECUTABLES if block.
+
+2004-08-16 13:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c removed all references to SDK UG_API and Goolache.
+
+2004-08-13 11:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) commented out call to
+	UGMgr_LoadLibs in order to not require UG_Plugins meshers. Note
+	this may need to be added back in if you have a old CAPRI (GridEx)
+	restart
+
+2004-08-10 13:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridtestcadparameters_) silenced reporting of
+	CAD parameter mismatches on restart. Note that there is a bug in
+	the recreation of CAPRI restarts that still needs to be fixed.
+
+2004-08-09 16:50 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R =
+	MIN(sqrt(AR),2.5). Previous value of MIN(sqrt(AR),5.0) went
+	unstable for double cone boom case.
+
+2004-08-09 08:05 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.2.0 Release.
+	
+2004-08-04 16:04 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) fixed a bug that inserted
+	left-handed boundary triangles into the mesh.
+
+2004-08-03 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelSwap) added a call to
+	gridRemoveTwoFaceCell. Added an extra gridCellHasGhostNode check
+	for local only (queue==NULL) runs.
+
+2004-08-03 15:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridswap.c (gridRemoveTwoFaceCell) will remove a cell with
+	two faces with the same face Id and swap the face diagonal.
+
+2004-08-03 14:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridwritetecplotsurfacezone_) now dumps out
+	negative cells or cells with four nodes on boundary after the
+	surface.
+
+2004-08-02 16:21 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelRelaxNegativeCells) started on a
+	parallel version of gridRelaxNegativeCells, but
+	gridSmoothVolumeNearNode needs to also be parallelized to
+	be consistant. The extra ghost passes should not hurt that bad.
+	* src/gridfortran.c (gridparallelrelaxneg_) now calls
+	gridParallelRelaxNegativeCells.
+
+2004-08-02 16:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridtestcadparameters_) increased node and
+	parameter tolerences. Project to face first to get the edge xyz.
+
+2004-08-02 15:39 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridRelaxNegativeCells) added a bool argument to
+	optionally dump out tecplot surface and negative volume plots.
+
+2004-07-31 16:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelrelaxneg_) exposed
+	gridRelaxNegativeCells.
+
+2004-07-31 16:05 Mike Park  <mike.park@nasa.gov>
+
+	* src/main.c put in calls to gridRelaxNegativeCells and made the
+	gridmove test harder.
+
+2004-07-31 15:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridRelaxNegativeCells) finds negative cells and
+	calls gridSmoothVolumeNearNode in vicinity.
+	* src/gridcad.c (gridSmoothVolumeNearNode) calls
+	gridSmoothNodeVolume up to two cells out.
+	
+2004-07-31 14:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveRelaxation) sequential generalized grid
+	relaxation driver with residual screen echo.
+
+2004-07-31 13:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridcad.c (gridSmoothNodeVolume) general routine for
+	modifying node location for improving small (negative) cell
+	volume.
+	* src/gridcad.c (gridSmoothNodeVolumeSimplex) Simplex optimization
+	for improving small (negative) cell volume.
+	
+2004-07-29 08:22 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridNodeVolume) added for volume optimzation.
+	* src/gridcad.c (gridSmartVolumeLaplacian) SL for volume optimzation
+	
+2004-07-27 17:05 Mike Park  <mike.park@nasa.gov>
+
+	* example/Makefile.am added om6p01 testcase to dist.
+	
+2004-07-26 17:36 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R =
+	MIN(sqrt(AR),5.0). Varible R seems to reduce the number of
+	negative volumes. Setting the Max R at 10 caused the Ax=B system
+	to go unstable.
+
+2004-07-26 14:38 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R to be
+	a constant 1.25 for all elements. This value is similar to
+	concrete. The G-S Ax=B linear elasticity solve appears more stable.
+
+2004-07-26 14:06 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationSubIteration) now does
+	Gauss-Seidel. The old Even-Odd was renamed to
+	gridmoveElasticRelaxationEvenOdd.
+
+2004-07-23 16:31 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R to be
+	equal to 1/gridCellAspectRatio. This is the same as FUN3D
+	gridmove.
+
+2004-07-23 16:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmpi.c (gridParallelAdapt) do not split an edge if it is
+	near a cell with small aspect ratio to prevent really bad cells.
+
+2004-07-23 13:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationStartStep) Set R to be
+	a constant 1.0 for all elements. This value did the best at
+	rotating an isotropic tet. Previously it was 1.0/volume which
+	could be less than one for large tets.
+
+2004-07-22 14:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmove*MPITest) made Initialize and Complete
+	functions to test gridmove mpi load and set routines.
+	* src/gridfortran.c (gridmove*mpitest_) made interfaces for
+	initialize and complete gridmove routines.
+
+2004-07-21 10:22 Mike Park  <mike.park@nasa.gov>
+
+	* fixed bug reported by Alan Arslan compiling on IRIX64 with cc.
+	* src/FAKEGeom.h added #include <time.h> to compile on IRIX64.
+	* src/gridfiller.c added #ifdef HAVE_SDK to include FAKEGeom.h.
+
+2004-07-16 16:45 Mike Park  <mike.park@nasa.gov>
+
+	* Replaced obsolete SDK/Goolache/MeshMgr with SDK/UG_API methods.
+	* src/Octree_Stub.c removed, goes away with SDK/Goolache/MeshMgr.
+
+2004-07-16 15:10 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.1.0 Release. SDK tagged DynLoader_MeshMgr_Used
+	
+2004-07-16 09:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveElasticRelaxationSubIteration) put in 
+	two color Even-Odd for linear elasticity.
+
+2004-07-15 10:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c (gridmoveRelaxation*) generalized the grid
+	relaxation methods. Now the relaxation scheme is controled is an
+	argument to gridmoveRelaxationStartUp.
+	* src/gridmove.h added relaxationScheme macros gridmove*_SCHEME
+	to select relaxation method for gridmoveRelaxationStartUp.
+	* src/gridfortran.c (gridmoverelax*_) generalized the grimove
+	relax functions to call the general src/gridmove.c methods. 
+	Now the relaxation scheme is controled is an argument to startup.
+
+2004-07-14 12:56 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c now has ElasticRelaxation that should work like 
+	the springs do (move in steps and parallel). Point Jacobi solve.
+
+2004-07-14 11:34 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmath.c added LU and BackSolve 3x3 routines
+
+2004-07-13 16:21 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c added compressed row storage to set up linear
+	elasticity.
+
+2004-07-13 15:12 Mike Park  <mike.park@nasa.gov>
+
+	* Made 1.0.0 Release. First public release. 
+	Use with FUN3D version 3.3.0
+
+2004-07-09 12:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmetric.c (gridMinARAroundNodeExceptGem) added.
+	* src/gridinsert.c (gridCollapseEdge) used 
+	gridMinARAroundNodeExceptGem to not collapse if causes bad AR.
+
+2004-07-09 12:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridloadglobalnodedata_,gridsetlocalnodedata_)
+	fixed a potential memory write past bounds for the the last node
+	in the passing array having face but no edge connectivity.
+
+2004-07-08 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelsmooth_) exposed optimizationLimit 
+	and laplacianLimit.
+	* src/gridmpi.c (gridParallelSmooth) exposed optimizationLimit 
+	and laplacianLimit.
+
+2004-07-06 17:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) changed the global node
+	id's calcualtion for face patches to use CADTopo_VolFacePts
+	instead of UGPatch_GlobalIndex. This is the correct numbering if
+	UGPatch_InitSurfacePatches is NOT called.
+	
+2004-07-06 13:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/restartTest.c Test program for GeoSDK restarts.
+
+2004-07-06 15:26 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) changed the global node
+	id's calculation for face patches to use CADTopo_VolFacePts
+	instead of UGPatch_GlobalIndex. This is the correct numbering if
+	UGPatch_InitSurfacePatches is NOT called. UGPatch_GlobalIndex
+	SHOULD be used if UGPatch_InitSurfacePatches was called to
+	create restart.
+
+2004-07-06 11:10 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridtestcadparameters_) added function to
+	test CAD Parameters and projection XYS's.
+
+2004-07-01 11:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/FAKEGeomExtras.c added mock UG_REFINE. 
+	fixed UGPatch_Parent to allocate ugrid. 
+	made GeoMesh_UseDefaultIOCallbacks a function.
+	renamed GeoMesh_SavePart to CADGeom_SavePart.
+	
+2004-07-01 10:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridCreateShellFromFaces) added to call 
+	CADTopo_AssembleTShell to create shell of volume ugrid.
+	* src/gridfortran.c (gridcreateshellfromfaces_) gridCreateShellFromFaces
+	* src/FAKEGeomExtras.c added mock CADGeom_UpdateFaceGrid 
+	UGPatch_Parent CADTopo_ShellStats CADTopo_AssembleTShell.
+
+2004-06-30 11:23 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) called MeshMgr_Initialize.
+	This call should be removed after Bill Jones and I remove the
+	need to activate the background source functions.
+	* src/FAKEGeomExtras.c added mock MeshMgr_Initialize UG_UNKNOWN.
+	removed unneeded UGrid_BuildConnectivity.
+
+2004-06-29 14:33 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.5 Release. new GeoSDK UG_API implementation.
+
+2004-06-29 12:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridUpdateGeometryFace) set the face UGrid
+	* src/gridgeom.c (gridParallelGeomSave) calls CADGeom_SavePart now.
+	* src/FAKEGeomExtras.c added mock CADGeom_SetFaceGrid
+	CADGeom_UseDefaultIOCallbacks CADGeom_SavePart
+
+2004-06-29 11:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridupdategeometryface_) gridUpdateGeometryFace
+	* src/gridgeom.c (gridUpdateGeometryFace) for updating GeoSDK faces.
+	* src/FAKEGeomExtras.c added mock UGrid_FromArrays UGrid_FlagValue
+	UGrid_BuildConnectivity UGPatch_InitSurfacePatches UGrid_TIMESTAMP
+	UGrid_ALGORITHM
+
+2004-06-28 16:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c An initializing call to CADTopo_VolEdgePts must 
+	be made before CADTopo_VolFacePts can be called.
+	* src/FAKEGeomExtras.c added mock CADTopo_VolEdgePts.
+
+2004-06-28 14:40 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridfaceedgecount_,gridfaceedgel2g_) added
+	routines to get the number of nodes on the outer edge of a face.
+	* src/gridgeom.c added new calls to CADGeom CADTopo_FaceNumEdgePts 
+	and CADTopo_VolFacePts.
+	* src/FAKEGeomExtras.c added mock CADTopo_FaceNumEdgePts and
+	CADTopo_VolFacePts.
+
+
+2004-06-26 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* src/grid.c (gridRenumberGlobalNodes) added
+	* src/gridfortran.c exposed gridRenumberGlobalNodes
+
+2004-06-21 11:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c exposed gridedge and gridface.
+
+2004-06-10 20:00 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c exposed CADGeom_UpdateEdgeGrid to enable 
+	an CAPRI update and save of post-adaptation edge geometry. 
+	* src/FAKEGeomExtras.c added mock CADGeom_UpdateEdgeGrid.
+
+2004-06-02 08:29 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.4 Release. gridmove and CAPRI(CADGeom) work in parallel.
+
+2004-06-01 08:32 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c included edge t in ghost update xfer load and
+	set. Face and edge id's and thier counts are now negative to make
+	it easier for other objects (gridmove) to load and set arrays.
+	* src/gridmove.c excluded negative node id's (faces and edges) in
+	load and set.
+	* src/grid.c (gridNodeEdgeIdDegree) added for xfer edge. 
+
+2004-05-28 16:11 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c fixed a bug in the load and set routines for
+	gm->xyz to fix a parallelization bug. The OM6 adapts!
+
+2004-05-27 11:35 Mike Park  <mike.park@nasa.gov>
+
+	* /src/FAKEGeomExtras.c added CADGeom_GetEdge and CADGeom_EdgeGrid.
+
+2004-05-27 10:55 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridfortran.c (gridparallelsmoothfaceinterior_) renamed to
+	gridparallelsmooth_.
+	* src/gridcad.c (gridSmoothFaceInterior) moved to gridmpi
+	* src/gridmpi.c (gridParallelSmooth) moved from gridcad
+
+2004-05-27 09:30 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridgeom.c (gridParallelGeomLoad) added GeomNodes and
+	GeomEdges to existing GeomFaces.
+	
+2004-05-26 15:25 Mike Park  <mike.park@nasa.gov>
+
+	* src/gridmove.c exposed a series of lower level routines to allow
+	parallel gridmove projection when called from Fun3D.
+
+2004-05-19 08:35 Mike Park  <mike.park@nasa.gov>
+
+	* src/layer.c (layerTerminateCollidingTriangles) modified to
+	expose a sizing for tets used for collision test. Perform test on
+	triangles after applying the advance displacement.
+
+2004-05-13 17:00 Mike Park  <mike.park@nasa.gov>
+
+	* configure.ac added Linux ProE wildfire dll build for refine and
+	synced up AutoTools with GridEx.
+	* src/proemain.c copied a one-off refine main to avoid
+	command-line arguments.
+	
+2004-05-11 11:19 Mike Park  <mike.park@nasa.gov>
+
+	* /src/main.c GridMove object can be used to do projection. envoke
+	refine with -m to try it. It may or may not be any more robust
+	than the existing method.
+
+2004-05-06 12:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/gridmove.c made a new grid child object to test grid
+	movement. Has methods to calculate edges (gridmoveSprings) and
+	(gridmoveSpringRelaxation).
+
+2004-05-05 16:20 Mike Park  <mike.park@nasa.gov>
+
+	* /src/grid.c (gridPack) made pack register method for child objects.
+	* /src/grid.c added a method to register for grid free notification.
+
+2004-05-04 10:35 Mike Park  <mike.park@nasa.gov>
+
+	* /src/gridfortan.c (gridfreezenode_) correctly converted Fortran
+	to C numbering.
+
+2004-05-03 11:15 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.3 Release. (Tagging before 
+	gridmpi:gridParallelEdgeCollapse extension.)
+	* /src/gridmpi.c (gridApplyQueue) added edges.
+	* /src/queue.c added edges.
+
+2004-04-28 12:54 Mike Park  <mike.park@nasa.gov>
+
+	* /src/FAKEGeomExtras.c extracted reused null functions from
+	FAKEGeom[Projects] in order to reuse them. Add -lFAKEGeomExtras to
+	HEFSS.rps/Makefile.env REFINELIBS variable.
+
+2004-04-28 11:28 Mike Park  <mike.park@nasa.gov>
+
+	* /src/queue.c (addFace,removeFace) provides the node parts.
+	* /src/gridmpi.c (gridApplyQueue) only decode global nodes if
+	adding or removing the face.
+
+2004-04-23 15:45 Mike Park  <mike.park@nasa.gov>
+
+	* /src/layer.c added mechanics to manage a normal direction frozen 
+	state.
+	* /src/layer.c (layerSmoothInteriorNormalDirection) freeze normals
+	with low visiblity and then smooth the remaining normals.
+
+2004-04-22 16:02 Mike Park  <mike.park@nasa.gov>
+
+	* /src/layer.c (layerAdvancedTriangleMaxEdgeLength) calculate
+	the max edge length of a triangle after it is advanced next.
+	* /src/mesherx.c used Advanced Triangle Edge Length in terminating
+	trangles that will cause headaces for FELISA boundary reconstruction.
+
+2004-04-20 16:58 Mike Park  <mike.park@nasa.gov>
+
+	* /src/queue.c (addCell) provides the nodes, cellId, and partIds
+	seperately
+	* /src/gridmpi.c (gridApplyQueue) only decode global nodes if
+	adding the cell
+
+2004-04-20 16:49 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.2 Release. (tagging before queue refactor and
+	gridmpi:gridApplayQueue speedup)
+
+2004-04-17 15:42 Mike Park  <mike.park@nasa.gov>
+
+	* /src/layer.c Choose the best configuration for blend tets based
+	on min volume
+
+2004-04-15 08:45 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.1 Release.
+	* /src/layer.c fixed multiple normal vertex ordering. Improved
+	subblend axle in corners.
+
+2004-04-11 11:10 Mike Park  <mike.park@nasa.gov>
+
+	* Made 0.7.0 Release.
+
+2004-04-11 11:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/layer.c made the layer blends slightly more general. They
+	can handle triple points and termination to a single normal.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /bootstrap script to create configure script from configure.ac
+	in top level directory
+	* /autogen.sh runs bootstrap, Make archetecture directory, runs
+	../configure --prefix=`pwd` in architecture directory.
+	* /configure.ac now in standard AutoTools trim. configure is 
+	created in top level directory. No more AutoConfInput. Can
+	be configured in a subdirectory with ../configure.
+	* /Makefile.am now in standard AutoTools trim. No more AutoMakeInput
+	
+2004-04-02 08:00 Harold Atkins <Harold.L.Atkins@nasa.gov>
+
+	* /src/geometricStretch.c functions to evaluate geometric Stretching.
+	* /src/layerNormalExtra.c smoother for normal parameters
+	* /src/SyJetSpacingControl.c spacing controls for Syntetic Jet case.
+	* /src/mesherx_bl1.c driver for Flat Plate case.
+	* /src/mesherx_bl2.c  driver for Flat Plate case
+	* /src/mesherx_SyJet.c driver for Syntetic Jet case
+	* /src/MesherX_HLA.c main driver for batch jobs.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/adj.h Grid struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/grid.h Grid struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/layer.h Layer struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/line.h Line struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/near.h Near struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+	* /src/queue.h Queue struct is exposed to increase speed. PLEASE
+	use macros or functions to access elements.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/Octree_Stub.c put in a stub to compile with gridex.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/FAKEGeomBox.c added fake analitic geom for OM6 Box.
+	* /src/FAKEGeomPlate.c added fake analitic geom for Flat Plate.
+	* /src/FAKEGeomTrap.c added fake analitic geom for Trap Wing. 
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/gridfortran.c added fortran interface for parallelized
+	adaptation.
+	* /src/gridmpi.c low-level feeder routines for parallel adapt.
+	* /src/sort.c heap sort routine for looking up global index.
+	* /src/queue.c forms a transcript of grid modifications to
+	be played for off-processors
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* /src/near.c put in a neartree search for layer colliding fronts.
+	* /src/intersect.c put in intersection calculation for layer 
+	colliding fronts.
+	* /src/line.c added opject to recoard advancing normal lines.
+	This is intented to be used for partitioning and adaptation
+	in the future.
+
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* makeRubyExtension.rb builds a C ruby extension using mkmf.
+	* RubyExtensionBuilder.rb Builds a ruby extension and its dependants.
+	
+2004-04-02 08:00 Mike Park  <mike.park@nasa.gov>
+
+	* I have been lazy and I have not been updating ChangeLog entries. 
+	
+2003-03-28 10:39 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* /src/layer.c (layerBlend) multiple normals are handled with
+	blend elements. The number of normals is increased with
+	layerSplitBlend. Blends are not entirely general yet.
+
+	* /src/layer.c (layerExtrudeBlend) wakes are created by extruding
+	blend elements
+
+2003-02-05 17:00 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* gridinsert no longer needs gridStruct.h.
+
+2003-02-04 17:00 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* MesherX can create prisms with the layer object.
+	* grid can write out AFLR3 ugrid.
+
+2003-01-30 14:00 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* MesherX can rebuild edges, faces, and volume with 
+	SDK/Goolache/MeshMgr to make valid viscous grid.
+	* Made 0.6 Release.
+
+2003-01-15 11:12 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* New MesherX library created and installed with header files 
+	* Made 0.5 Release.
+
+2003-01-14 10:10 Mike Park  <m.a.park@larc.nasa.gov>
+
+	* /src/layer.c (layerAdvance): fixed bug for multiple constrained
+	edges and incorrect constrained faces. Refactored for clarity.
+
+2003-01-09 08:01 Michael Park <m.a.park@larc.nasa.gov>
+
+	* Made 0.4 Release.
