@@ -1,4 +1,13 @@
 
+Fri Jan 16, 2009: Released Refine 1.4.2 (requires >= FUN3D-25331 (10.4.0)).
+
+FAUXGeom improved to allow arbitrary planes or no faces.
+
+A sensitivity to round-off error from Intel compiler optimizations in
+the FUN3D metric construction has been reduced in recent versions of
+FUN3D. If problems are reported in anisotropic_adapt_parameter update
+FUN3D.
+
 Thu Jan 3, 2008: Released Refine 1.4.1 (requires >= FUN3D-25331 (10.4.0)).
 
 Improved INSTALL. lowered GRID_VOLUME_TOL and GRID_AREA_TOL to 1.0e-40 for
