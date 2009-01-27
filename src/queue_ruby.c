@@ -478,25 +478,21 @@ VALUE queue_load( VALUE self, VALUE rb_ints, VALUE rb_doubles )
 
 VALUE queue_globalShiftNode( VALUE self,
 			     VALUE old_nnode_global,
-			     VALUE new_nnode_global,
 			     VALUE node_offset )
 {
   GET_QUEUE_FROM_SELF;
   return (queue==queueGlobalShiftNode(queue,
 				      NUM2INT(old_nnode_global),
-				      NUM2INT(new_nnode_global),
 				      NUM2INT(node_offset))?self:Qnil);
 }
 
 VALUE queue_globalShiftCell( VALUE self,
 			     VALUE old_ncell_global,
-			     VALUE new_ncell_global,
 			     VALUE cell_offset )
 {
   GET_QUEUE_FROM_SELF;
   return (queue==queueGlobalShiftCell(queue,
 				      NUM2INT(old_ncell_global),
-				      NUM2INT(new_ncell_global),
 				      NUM2INT(cell_offset))?self:Qnil);
 }
 
@@ -551,6 +547,6 @@ void Init_Queue()
   rb_define_method( cQueue, "dumpFloat", queue_dumpFloat, 0 );  
   rb_define_method( cQueue, "load", queue_load, 2 );
 
-  rb_define_method( cQueue, "globalShiftNode", queue_globalShiftNode, 3 );
-  rb_define_method( cQueue, "globalShiftCell", queue_globalShiftCell, 3 );
+  rb_define_method( cQueue, "globalShiftNode", queue_globalShiftNode, 2 );
+  rb_define_method( cQueue, "globalShiftCell", queue_globalShiftCell, 2 );
 }
