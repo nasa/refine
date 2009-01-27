@@ -20,12 +20,10 @@ EXTRA_DIST = \
 	gridcadMT.rb gridcad_ruby.c \
 	gridmpiMT.rb gridmpi_ruby.c \
 	gridmoveMT.rb gridmove_ruby.c \
-	gridedgerMT.rb gridedger_ruby.c \
-	gridfacerMT.rb gridfacer_ruby.c \
 	layerMT.rb layer_ruby.c \
 	faux_input
 
-TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb tableauMT.rb planMT.rb ringMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb gridedgerMT.rb gridfacerMT.rb layerMT.rb
+TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb tableauMT.rb planMT.rb ringMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb layerMT.rb
 
 lib_LIBRARIES =
 
@@ -52,8 +50,6 @@ librefine_a_SOURCES = \
 	gridgeom.h gridgeom.c \
 	gridmpi.h gridmpi.c \
 	gridmove.h gridmove.c \
-	gridedger.h gridedger.c \
-	gridfacer.h gridfacer.c \
 	gridfortran.h gridfortran.c
 
 lib_LIBRARIES += libFAUXGeom.a
@@ -81,8 +77,6 @@ mesherx_sources = \
 	gridswap.h gridswap.c \
 	gridcad.h gridcad.c \
 	gridmove.h gridmove.c \
-	gridedger.h gridedger.c \
-	gridfacer.h gridfacer.c \
 	gridmpi.h gridmpi.c \
 	gridfiller.h gridfiller.c \
 	gridgeom.h gridgeom.c \
