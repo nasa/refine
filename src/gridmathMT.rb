@@ -400,12 +400,12 @@ class TestGridMath < Test::Unit::TestCase
   assert_in_delta( 0.57735027, v0[0],tol)
   assert_in_delta( 0.57735027, v0[1],tol)
   assert_in_delta( 0.57735027, v0[2],tol)
-  assert_in_delta( 0.81649658, v2[0],tol)
-  assert_in_delta(-0.40824829, v2[1],tol)
-  assert_in_delta(-0.40824829, v2[2],tol)
-  assert_in_delta( 0.0,        v1[0],tol)
-  assert_in_delta( invsqrt2,   v1[1],tol)
-  assert_in_delta(-invsqrt2,   v1[2],tol)
+  assert_in_delta(-0.81649658, v1[0],tol)
+  assert_in_delta( 0.40824829, v1[1],tol)
+  assert_in_delta( 0.40824829, v1[2],tol)
+  assert_in_delta( 0.0,        v2[0],tol)
+  assert_in_delta( invsqrt2,   v2[1],tol)
+  assert_in_delta(-invsqrt2,   v2[2],tol)
  end
 
  def testEigTriDiag13n471
