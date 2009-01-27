@@ -574,7 +574,7 @@ VALUE layer_orderedVertexNormals( VALUE self, VALUE normal )
   vertexNormals = malloc(nVertexNormals*sizeof(int));
 
   if (layer == layerOrderedVertexNormals( layer, NUM2INT(normal), 
-					  &nVertexNormals, vertexNormals) ) {
+					  vertexNormals) ) {
     normals = rb_ary_new2(nVertexNormals);
     for(i=0;i<nVertexNormals;i++) 
       rb_ary_store( normals, i, INT2NUM(vertexNormals[i]) );
