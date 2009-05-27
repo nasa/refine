@@ -158,7 +158,7 @@ static GridBool initialize_faux(void)
     gridCrossProduct(faux_faces[i].normal,faux_faces[i].u_dir,
 		     faux_faces[i].v_dir);
     /* make sure v_dir is normal */
-    gridVectorNormalize(faux_faces[i].normal);
+    gridVectorNormalize(faux_faces[i].v_dir);
 
     /*
     printf("%4d: %4d of %4d type %3d offset %15.8f\n",
@@ -177,6 +177,7 @@ static GridBool initialize_faux(void)
 	   faux_faces[i].v_dir[1],
 	   faux_faces[i].v_dir[2]);
     */
+
   }
 
   fclose(f);
@@ -340,6 +341,16 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
     xyz[1] = uv[1];
     xyz[2] = faux_faces[id].offset;
     break;
+  case general_plane:
+    xyz[0] = faux_faces[id].offset * faux_faces[id].normal[0];
+    xyz[1] = faux_faces[id].offset * faux_faces[id].normal[1];
+    xyz[2] = faux_faces[id].offset * faux_faces[id].normal[2];
+    xyz[0] += uv[0] * faux_faces[id].u_dir[0];
+    xyz[1] += uv[0] * faux_faces[id].u_dir[1];
+    xyz[2] += uv[0] * faux_faces[id].u_dir[2];
+    xyz[0] += uv[1] * faux_faces[id].v_dir[0];
+    xyz[1] += uv[1] * faux_faces[id].v_dir[1];
+    xyz[2] += uv[1] * faux_faces[id].v_dir[2];    
     break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
