@@ -1,4 +1,10 @@
 
+The Future: Released Refine 1.4.3 (requires >= FUN3D-25331 (10.4.0)).
+
+to repair arbitrary FAUXGeom planes by fixing NaN in 
+gridmath.c(gridVectorOrthogonalize) and completing 
+FAUXGeom.c(CADGeom_PointOnFace).
+
 Fri Jan 16, 2009: Released Refine 1.4.2 (requires >= FUN3D-25331 (10.4.0)).
 
 FAUXGeom improved to allow arbitrary planes or no faces.

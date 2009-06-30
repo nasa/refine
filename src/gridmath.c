@@ -29,7 +29,7 @@ void gridVectorNormalize(double *norm)
 void gridVectorOrthogonalize(double *norm, double *axle)
 {
   double dot;
-  dot = sqrt(gridDotProduct(norm,axle));
+  dot = gridDotProduct(norm,axle);
   if (ABS(dot) < 1e-15) return;
   
   norm[0] -= dot*axle[0];
