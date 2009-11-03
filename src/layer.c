@@ -159,6 +159,9 @@ void layerPack(void *voidLayer,
   int packface, origface;
   int packedge, origedge;
 
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxnode);
+
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
       layer->normal[normal].root = nodeo2n[layer->normal[normal].root];
@@ -198,6 +201,8 @@ void layerSortNodes(void *voidLayer, int maxnode, int *o2n)
 {
   Layer *layer = (Layer *)voidLayer;
   int normal;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(maxnode);
 
   for (normal = 0 ; normal < layerNNormal(layer) ; normal++ ) {
     if (EMPTY != layer->normal[normal].root)
@@ -538,6 +543,7 @@ Layer *layerTriangleInviscidTet(Layer *layer, int triangle, double scale,
 
   oneMinusScale = 1.0-scale;
 
+  if ( NULL == layer ) return NULL;
   if ( layer != layerTriangleNormals(layer,triangle,normals) ) return NULL;
   if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
 
@@ -599,6 +605,7 @@ Layer *layerAdvancedTriangleMaxEdgeLength(Layer *layer,
   double node0[3], node1[3], node2[3];
   double edge0[3], edge1[3], edge2[3], maxLength; 
   
+  if ( NULL == layer ) return NULL;
   if ( layer != layerTriangle(layer,triangle,nodes) ) return NULL;
   if ( layer != layerTriangleNormals(layer,triangle,normals) ) return NULL;
 
@@ -1607,6 +1614,8 @@ Layer *layerProjectNormalToConstraints(Layer *layer, int normal)
   double xyzroot[3], xyztip[3], direction[3], height;
   Grid *grid;
 
+  if (normal < 0 || normal >= layerNNormal(layer) ) return NULL;
+
   faceId = layerConstrained(layer,normal);
   if (faceId==0) return layer;
 
@@ -1679,9 +1688,9 @@ Layer *layerAdjustNormalHeightToSmoothFront(Layer *layer, double maxHeight)
       }
     }
     dn /= (double)n;
-    layerGetNormalHeight(layer, normal, &height);
+    if ( layer != layerGetNormalHeight(layer, normal, &height) ) return NULL;
     height += dn*maxHeight*height;
-    layerSetNormalHeight(layer, normal, height);
+    if ( layer != layerSetNormalHeight(layer, normal, height) ) return NULL;
   }
 
   return layer;
@@ -2292,7 +2301,7 @@ Layer *layerAdvanceBlends(Layer *layer)
       nVertexNormals = layerSubNormalDegree(layer,normal);
       allVertexNormals = malloc(nVertexNormals*sizeof(int));
       layerOrderedVertexNormals( layer, normal, 
-				 &nVertexNormals, allVertexNormals);
+				 allVertexNormals);
       for(sweep=0;sweep<nVertexNormals;sweep++) {
 	vertexNormals[0] = layer->vertexNormal[normal];
 	vertexNormals[1] = allVertexNormals[sweep];
@@ -2421,7 +2430,7 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
     /* note that tip has been set to root on terminated normals */
     /* the if (n[0]!=n[3]) checks are for layer termiantion */
 
-    // advance faces
+    /* advance faces */
     for (i=0;i<3;i++){
       faceId = layerConstrainedSide(layer, triangle, i);
       if (faceId > 0) {
@@ -2550,7 +2559,7 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
     if (0 > faceId) {
       edgeId = -faceId;
       gridProjectNodeToEdge(grid, layer->normal[normal].root, edgeId );
-      // need to do faces to get the UV vals but have xyz.
+      /* need to do faces to get the UV vals but have xyz. */
     }
     layer->normal[normal].root = layer->normal[normal].tip;
     layer->normal[normal].tip = EMPTY;
@@ -2560,7 +2569,7 @@ Layer *layerAdvance(Layer *layer, GridBool reconnect)
     if (0 > faceId) {
       edgeId = -faceId;
       gridProjectNodeToEdge(grid, layer->normal[normal].root, edgeId );
-      // need to do faces to get the UV vals but have xyz.
+      /* need to do faces to get the UV vals but have xyz. */
     }
     gridFreezeNode(grid,layer->normal[normal].root);
   }
@@ -3056,8 +3065,9 @@ Layer *layerBlendNormals(Layer *layer, int blend, int *normals )
 Layer *layerSubBlendNormals(Layer *layer, int blend, int subBlend, int *normals)
 {
   int subnormal;
-  if (subBlend <0 || subBlend >= layerNSubBlend(layer,blend)) return NULL;
+
   if (layer != layerBlendNormals(layer, blend, normals)) return NULL;
+  if (subBlend <0 || subBlend >= layerNSubBlend(layer,blend)) return NULL;
 
   subnormal = subBlend - 1;
   if (subnormal>=0 && subnormal<layer->blend[blend].nSubNormal0 ) 
@@ -3101,6 +3111,8 @@ Layer *layerNormalBlendAxle(Layer *layer, int normal, double *axle)
   double axle0[3], axle1[3];
   double xyz[3];
   int faceId, node;
+
+  if ( normal < 0 || normal >= layerNNormal(layer) ) return NULL;
 
   if ( 0 < layerConstrained(layer,normal) ) {
     Grid *grid = layerGrid(layer);
@@ -3704,7 +3716,7 @@ Layer *layerOrderedVertexBlends(Layer *layer, int normal,
 }
 
 Layer *layerOrderedVertexNormals(Layer *layer, int normal, 
-				 int *nVertexNormals, int *vertexNormals ){
+				 int *vertexNormals ){
   int node;
   int i, blend, subNormal, nSubNormal;
   int count;
@@ -3760,7 +3772,7 @@ Layer *layerPopulateNormalNearTree(Layer *layer)
 
   for(normal=0;normal<layerNNormal(layer);normal++){
     gridNodeXYZ(grid, layerNormalRoot(layer, normal ), xyz);
-    layerGetNormalHeight(layer, normal, &height);
+    if ( layer != layerGetNormalHeight(layer, normal, &height) ) return NULL;
     layerNormalMaxEdgeLength(layer, normal, &edgeLength);
     radius = MAX(edgeLength, 2*height);
     nearInit(&layer->nearTree[normal], normal, xyz[0], xyz[1], xyz[2], radius);
@@ -3813,13 +3825,11 @@ Layer *layerTerminateCollidingNormals(Layer *layer)
 
   if ( 0 < layerNBlend(layer) ) return NULL;
 
-  //printf("layerPopulateNormalNearTree...\n");
   layerPopulateNormalNearTree(layer);
 
   maxTouched = layerNNormal(layer);
   nearNormals = malloc(maxTouched*sizeof(int));
 
-  //printf("inspecting normal proximity...\n");
   for(normal=0;normal<layerNNormal(layer);normal++){
     target = &layer->nearTree[normal];
     touched = 0;
@@ -4009,18 +4019,15 @@ Layer *layerTerminateCollidingTriangles(Layer *layer, double scale)
 
   if ( 0 < layerNBlend(layer) ) return NULL;
 
-  //printf("layerPopulateTriangleNearTree...\n");
   layerPopulateTriangleNearTree(layer, scale);
 
   maxTouched = layerNTriangle(layer);
   nearTriangles = malloc(maxTouched*sizeof(int));
 
-  //printf("inspecting triangle proximity...\n");
   for(triangle=0;triangle<layerNTriangle(layer);triangle++){
     target = &layer->nearTree[triangle];
     touched = 0;
     nearTouched(layer->nearTree, target, &touched, maxTouched, nearTriangles);
-    //printf("triangle %d  touched %d\n",triangle,touched);
     layerTriangleInviscidTet(layer,triangle,scale,a0,a1,a2,a3);
     for(i=0;i<touched;i++){
       nearTriangle = nearTriangles[i];
@@ -4072,7 +4079,6 @@ Layer *layerSmoothLayerWithHeight(Layer *layer)
       }
     }
     avg = avg / (double)hits;
-    //printf("%10.6f\n",avg);
     if (avg <= 0) {
       correction = 1 + avg;
     }else{

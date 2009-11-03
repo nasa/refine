@@ -30,7 +30,7 @@ class TestGridShape < Test::Unit::TestCase
   assert true
  end
 
- def testPlotting
+ def X_testPlotting
   grid=Grid.new(3,0,1,0)
   grid.addNode(0,0,0)
   grid.addNode(0.5,0.6,0.7)

@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "FAKEGeom.h"
 #include "gridmath.h"
 
@@ -96,22 +97,22 @@ static GridBool initialize_faux(void)
 	return FALSE;
       }
 
-    if(      strcmp(flavor,"xplane") == 0 ) 
+    if(      strncmp(flavor,"xplane",6) == 0 ) 
       { 
 	faux_faces[i].normal[0] = 1.0;
 	faux_faces[i].faceType = xplane; 
       }
-    else if( strcmp(flavor,"yplane") == 0 ) 
+    else if( strncmp(flavor,"yplane",6) == 0 ) 
       { 
 	faux_faces[i].normal[1] = 1.0;
 	faux_faces[i].faceType = yplane; 
       }
-    else if( strcmp(flavor,"zplane") == 0 ) 
+    else if( strncmp(flavor,"zplane",6) == 0 ) 
       { 
 	faux_faces[i].normal[2] = 1.0;
 	faux_faces[i].faceType = zplane; 
       }
-    else if( strcmp(flavor,"general_plane") == 0 ) 
+    else if( strncmp(flavor,"general_plane",13) == 0 ) 
       { 
 	faux_faces[i].faceType = general_plane; 
 	if ( 3 != fscanf(f,"%lf %lf %lf",
@@ -157,7 +158,7 @@ static GridBool initialize_faux(void)
     gridCrossProduct(faux_faces[i].normal,faux_faces[i].u_dir,
 		     faux_faces[i].v_dir);
     /* make sure v_dir is normal */
-    gridVectorNormalize(faux_faces[i].normal);
+    gridVectorNormalize(faux_faces[i].v_dir);
 
     /*
     printf("%4d: %4d of %4d type %3d offset %15.8f\n",
@@ -176,6 +177,7 @@ static GridBool initialize_faux(void)
 	   faux_faces[i].v_dir[1],
 	   faux_faces[i].v_dir[2]);
     */
+
   }
 
   fclose(f);
@@ -201,6 +203,10 @@ static int faux_faceId( int faceId )
 GridBool CADGeom_NearestOnEdge(int vol, int edgeId, 
 			   double *xyz, double *t, double *xyznew)
 {
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeId);
+
   *t = 0;
   xyznew[0] = xyz[0];
   xyznew[1] = xyz[1];
@@ -213,6 +219,8 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
 			   double *xyz, double *uv, double *xyznew)
 {
   int id;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
   if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
@@ -275,6 +283,10 @@ GridBool CADGeom_PointOnEdge(int vol, int edgeId,
 			 double t, double *xyz, 
 			 int derivativeFlag, double *dt, double *dtdt )
 {
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeId);
+
   xyz[0] = t;
   xyz[1] = 0.0;
   xyz[2] = 0.0;
@@ -300,6 +312,8 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 double *dudu, double *dudv, double *dvdv )
 {
   int id;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
   if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
@@ -327,6 +341,16 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
     xyz[1] = uv[1];
     xyz[2] = faux_faces[id].offset;
     break;
+  case general_plane:
+    xyz[0] = faux_faces[id].offset * faux_faces[id].normal[0];
+    xyz[1] = faux_faces[id].offset * faux_faces[id].normal[1];
+    xyz[2] = faux_faces[id].offset * faux_faces[id].normal[2];
+    xyz[0] += uv[0] * faux_faces[id].u_dir[0];
+    xyz[1] += uv[0] * faux_faces[id].u_dir[1];
+    xyz[2] += uv[0] * faux_faces[id].u_dir[2];
+    xyz[0] += uv[1] * faux_faces[id].v_dir[0];
+    xyz[1] += uv[1] * faux_faces[id].v_dir[1];
+    xyz[2] += uv[1] * faux_faces[id].v_dir[2];    
     break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
@@ -370,9 +394,11 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 
 
 GridBool CADGeom_NormalToFace(int vol, int faceId, 
-			 double *uv, double *xyz, double *normal )
+			      double *uv, double *xyz, double *normal )
 {
   int id;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
   if (nfaux_is_uninitialized == nfaux) { 
     if ( !initialize_faux( ) )
@@ -406,4 +432,6 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
     return FALSE;
   }
+
+  return TRUE;
 }

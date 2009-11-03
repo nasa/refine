@@ -1,3 +1,4 @@
+
 /* Michael A. Park
  * Computational Modeling & Simulation Branch
  * NASA Langley Research Center
@@ -125,6 +126,17 @@ void gridmovePack(void *voidGridMove,
   GridMove *gm = (GridMove *)voidGridMove;
   int orignode, packnode;
   int ixyz;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(ncell);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxcell);
+  SUPRESS_UNUSED_COMPILER_WARNING(cello2n);
+  SUPRESS_UNUSED_COMPILER_WARNING(nface);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxface);
+  SUPRESS_UNUSED_COMPILER_WARNING(faceo2n);
+  SUPRESS_UNUSED_COMPILER_WARNING(nedge);
+  SUPRESS_UNUSED_COMPILER_WARNING(maxedge);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeo2n);
+
   for ( orignode = 0 ; orignode < maxnode ; orignode++ ){
     packnode = nodeo2n[orignode];
     if (EMPTY!=packnode) {

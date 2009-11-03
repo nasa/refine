@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "gridfiller.h"
+#include "gridgeom.h"
 #ifdef HAVE_SDK
 #include "Goolache/CAPrI_IO.h"
 #include "CADGeom/CADGeom.h"
@@ -108,9 +109,9 @@ Grid *gridFillFromPart( int vol, int maxnode )
   xyz    = malloc( maxnode * 3 * sizeof(double) );
 
   for( i=0; i<nnode; i++ ) {
-    xyz[0+3*i] = UGrid_PtValue(ugrid,i,X);
-    xyz[1+3*i] = UGrid_PtValue(ugrid,i,Y);
-    xyz[2+3*i] = UGrid_PtValue(ugrid,i,Z);
+    xyz[0+3*i] = UGrid_PtValue(ugrid,i,0);
+    xyz[1+3*i] = UGrid_PtValue(ugrid,i,1);
+    xyz[2+3*i] = UGrid_PtValue(ugrid,i,2);
   }
 
   for( i=0; i<nface; i++ ) {
@@ -156,7 +157,7 @@ Grid *gridFillFromPart( int vol, int maxnode )
     }else{
       gridAddEdge(grid, edgeEndPoint[0], inode, iedge,
 		  edge->param[0], edge->param[1]);
-      for( i=1 ; i < (nedgenode-2) ; i++ ) { // skip end segments  
+      for( i=1 ; i < (nedgenode-2) ; i++ ) { /* skip end segments */
 	gridAddEdge(grid, inode, inode+1, iedge,
 		  edge->param[i], edge->param[i+1]);
 	inode++;
@@ -182,33 +183,16 @@ Grid *gridFillFromPart( int vol, int maxnode )
 
   for( face=1; face<=nGeomFace; face++ ) {
     char filename[265];
-    GridBool debug = FALSE;
 
     localPatch = CADGeom_FaceGrid(vol,face);
     sprintf(filename,"localUGPatch%03d.t",face);
-    if (debug) UGPatch_WriteTecplotWithParameters(localPatch,filename);
     sprintf(filename,"globalUGPatch%03d.t",face);
-    if (debug) UGPatch_WriteTecplotWithParameters(globalPatch,filename);
     UGPatch_GetDims(localPatch,patchDimensions);
     for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {	     
       globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
       gridSetNodeUV( grid, globalNode, face,
 		     UGPatch_Parameter(localPatch,localNode,0), 
 		     UGPatch_Parameter(localPatch,localNode,1));
-      if (debug) {
-	printf("node%6d local  patch %22.18f%22.18f%22.18f\n",localNode,
-	       UGPatch_PtValue(localPatch,localNode,0),
-	       UGPatch_PtValue(localPatch,localNode,1),
-	       UGPatch_PtValue(localPatch,localNode,2));
-	printf("node%6d global patch %22.18f%22.18f%22.18f\n",localNode,
-	       UGPatch_PtValue(globalPatch,localNode,0),
-	       UGPatch_PtValue(globalPatch,localNode,1),
-	       UGPatch_PtValue(globalPatch,localNode,2));
-	printf("node%6d ugrid  index %22.18f%22.18f%22.18f\n\n",localNode,
-	       UGrid_PtValue(ugrid,globalNode,0),
-	       UGrid_PtValue(ugrid,globalNode,1),
-	       UGrid_PtValue(ugrid,globalNode,2));
-      }
     }
 
     globalPatch = DList_GetNextItem(&patchIterator);
@@ -246,11 +230,11 @@ int gridSavePart( Grid *grid, char *project )
   gridExport( grid, &nnode, &nface, &ncell,
 	      &xyz, &f2n, &faceId, &c2n );
   
-  // edge stuff
+  /* edge stuff */
   for (iedge=1; iedge<=nGeomEdge; iedge++){
 
     CADGeom_GetEdge( vol, iedge, trange, curveEndPoint);
-    curveEndPoint[0]--; curveEndPoint[1]--;// fortran to c numbering
+    curveEndPoint[0]--; curveEndPoint[1]--;/* fortran to c numbering */
     
     nCurveNode = gridGeomCurveSize( grid, iedge, curveEndPoint[0]);
     curve =    malloc( nCurveNode *     sizeof(int) );
@@ -260,7 +244,7 @@ int gridSavePart( Grid *grid, char *project )
     gridGeomCurve( grid, iedge, curveEndPoint[0], curve );
     gridGeomCurveT( grid, iedge, curveEndPoint[0], temp_tuv );
 
-    for ( i=0; i<nCurveNode; i++) // include end points
+    for ( i=0; i<nCurveNode; i++) /* include end points */
       for ( ixyz=0; ixyz<3 ; ixyz++)
 	temp_xyz[ixyz+3*i] = xyz[ixyz+3*curve[i]];
 
@@ -314,34 +298,17 @@ int gridSavePart( Grid *grid, char *project )
   for( face=1; face<=nGeomFace; face++ ) {
     double uv[2];
     char filename[265];
-    GridBool debug = FALSE;
 
     localPatch = CADGeom_FaceGrid(vol,face);
     sprintf(filename,"localUGPatch%03d.t",face);
-    if (debug) UGPatch_WriteTecplotWithParameters(localPatch,filename);
     sprintf(filename,"globalUGPatch%03d.t",face);
-    if (debug) UGPatch_WriteTecplotWithParameters(globalPatch,filename);
     UGPatch_GetDims(localPatch,patchDimensions);
     for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {	     
       globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
       gridNodeUV( grid, globalNode, face, uv );
       UGPatch_Parameter(localPatch,localNode,0) = uv[0];
       UGPatch_Parameter(localPatch,localNode,1) = uv[1];
-      if (debug) {
-	printf("node%6d local  patch %22.18f%22.18f%22.18f\n",localNode,
-	       UGPatch_PtValue(localPatch,localNode,0),
-	       UGPatch_PtValue(localPatch,localNode,1),
-	       UGPatch_PtValue(localPatch,localNode,2));
-	printf("node%6d global patch %22.18f%22.18f%22.18f\n",localNode,
-	       UGPatch_PtValue(globalPatch,localNode,0),
-	       UGPatch_PtValue(globalPatch,localNode,1),
-	       UGPatch_PtValue(globalPatch,localNode,2));
-	printf("node%6d ugrid  index %22.18f%22.18f%22.18f\n\n",localNode,
-	       UGrid_PtValue(ugrid,globalNode,0),
-	       UGrid_PtValue(ugrid,globalNode,1),
-	       UGrid_PtValue(ugrid,globalNode,2));
-      }
-    }
+   }
 
     globalPatch = DList_GetNextItem(&patchIterator);
   }
@@ -392,11 +359,11 @@ int gridSavePartExplicitly( Grid *grid, char *project )
   gridExport( grid, &nnode, &nface, &ncell,
 	      &xyz, &f2n, &faceId, &c2n );
   
-  // edge stuff
+  /* edge stuff */
   for (iedge=1; iedge<=nGeomEdge; iedge++){
 
     CADGeom_GetEdge( vol, iedge, trange, curveEndPoint);
-    curveEndPoint[0]--; curveEndPoint[1]--;// fortran to c numbering
+    curveEndPoint[0]--; curveEndPoint[1]--;/* fortran to c numbering */
     
     nCurveNode = gridGeomCurveSize( grid, iedge, curveEndPoint[0]);
     curve =    malloc( nCurveNode *     sizeof(int) );
@@ -406,7 +373,7 @@ int gridSavePartExplicitly( Grid *grid, char *project )
     gridGeomCurve( grid, iedge, curveEndPoint[0], curve );
     gridGeomCurveT( grid, iedge, curveEndPoint[0], temp_tuv );
 
-    for ( i=0; i<nCurveNode; i++) // include end points
+    for ( i=0; i<nCurveNode; i++) /* include end points */
       for ( ixyz=0; ixyz<3 ; ixyz++)
 	temp_xyz[ixyz+3*i] = xyz[ixyz+3*curve[i]];
 
@@ -415,10 +382,10 @@ int gridSavePartExplicitly( Grid *grid, char *project )
     free(curve);
   }
 
-  // face stuff
+  /* face stuff */
   faceg2l = malloc( nnode * sizeof(int) );
   for( face=1; face<=nGeomFace; face++ ) {
-    face_edge_count = gridFaceEdgeCount( grid, face );
+    face_edge_count = gridFaceEdgeCount( face );
     facel2g = malloc( face_edge_count * sizeof(int) );
     for (node=0;node<face_edge_count;node++) facel2g[node] = EMPTY;
     gridFaceEdgeLocal2Global( grid, face, face_edge_count, facel2g );
@@ -513,33 +480,16 @@ int gridSavePartExplicitly( Grid *grid, char *project )
   for( face=1; face<=nGeomFace; face++ ) {
     double uv[2];
     char filename[265];
-    GridBool debug = FALSE;
 
     localPatch = CADGeom_FaceGrid(vol,face);
     sprintf(filename,"localUGPatch%03d.t",face);
-    if (debug) UGPatch_WriteTecplotWithParameters(localPatch,filename);
     sprintf(filename,"globalUGPatch%03d.t",face);
-    if (debug) UGPatch_WriteTecplotWithParameters(globalPatch,filename);
     UGPatch_GetDims(localPatch,patchDimensions);
     for( localNode=0; localNode<patchDimensions[0]; localNode++ ) {	     
       globalNode = UGPatch_GlobalIndex(globalPatch,localNode);
       gridNodeUV( grid, globalNode, face, uv );
       UGPatch_Parameter(localPatch,localNode,0) = uv[0];
       UGPatch_Parameter(localPatch,localNode,1) = uv[1];
-      if (debug) {
-	printf("node%6d local  patch %22.18f%22.18f%22.18f\n",localNode,
-	       UGPatch_PtValue(localPatch,localNode,0),
-	       UGPatch_PtValue(localPatch,localNode,1),
-	       UGPatch_PtValue(localPatch,localNode,2));
-	printf("node%6d global patch %22.18f%22.18f%22.18f\n",localNode,
-	       UGPatch_PtValue(globalPatch,localNode,0),
-	       UGPatch_PtValue(globalPatch,localNode,1),
-	       UGPatch_PtValue(globalPatch,localNode,2));
-	printf("node%6d ugrid  index %22.18f%22.18f%22.18f\n\n",localNode,
-	       UGrid_PtValue(ugrid,globalNode,0),
-	       UGrid_PtValue(ugrid,globalNode,1),
-	       UGrid_PtValue(ugrid,globalNode,2));
-      }
     }
 
     globalPatch = DList_GetNextItem(&patchIterator);

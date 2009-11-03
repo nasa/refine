@@ -55,6 +55,8 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
   int volumeEdgeNode, patchEdgeNode;
   int *patch2global;
   UGPatchPtr localPatch;
+  url = url;
+  modeler = modeler;
 
   if ( ! CADGeom_Start( ) ){
     printf("ERROR: CADGeom_Start broke.\n%s\n",ErrMgr_GetErrStr());
@@ -64,6 +66,8 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
 #ifdef HAVE_CAPRI2
   if ( ! CADGeom_LoadModel( url, modeler, project, &(grid->model) ) ){
 #else
+  SUPRESS_UNUSED_COMPILER_WARNING(url);
+  SUPRESS_UNUSED_COMPILER_WARNING(modeler);
   if ( ! CADGeom_LoadPart( project ) ){
 #endif
     printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
@@ -102,7 +106,7 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
     }else{
       gridAddEdgeInGlobal(grid, edgeEndPoint[0], inode, iedge,
 			  edge->param[0], edge->param[1]);
-      for( i=1 ; i < (nedgenode-2) ; i++ ) { // skip end segments  
+      for( i=1 ; i < (nedgenode-2) ; i++ ) { /* skip end segments */
 	gridAddEdgeInGlobal(grid, inode, inode+1, iedge,
 			    edge->param[i], edge->param[i+1]);
 	inode++;
@@ -195,7 +199,7 @@ Grid *gridUpdateEdgeGrid( Grid *grid, int edgeId, int nCurveNode,
   return grid;
 }
 
-int gridFaceEdgeCount( Grid *grid, int faceId )
+int gridFaceEdgeCount( int faceId )
 {
   int vol=1;
   int count;
@@ -255,34 +259,6 @@ Grid *gridUpdateGeometryFace( Grid *grid, int faceId,
 
   UGrid_TIMESTAMP(UGPatch_Parent(CADGeom_FaceGrid(vol,faceId))) = time( NULL );
   UGrid_ALGORITHM(UGPatch_Parent(CADGeom_FaceGrid(vol,faceId))) = UG_REFINE;
-
-  if (FALSE) {
-    FILE *ds;
-    char ds_filename[256];
-    sprintf(ds_filename,"face_save_%04d",faceId);
-    ds = fopen(ds_filename,"w");
-    fprintf(ds,"faceid = %d;\n",faceId);
-    fprintf(ds,"nnode = %d;\n",nnode);
-    fprintf(ds,"nface = %d;\n",nface);
-    fprintf(ds,"xyz = [\n");
-    for (i=0;i<nnode;i++) {
-      fprintf(ds,"%25.15e%25.15e%25.15e\n",
-	      xyz[0+3*i],xyz[1+3*i],xyz[2+3*i]);
-    }
-    fprintf(ds,"];\n");
-    fprintf(ds,"uv = [\n");
-    for (i=0;i<nnode;i++) {
-      fprintf(ds,"%25.15e%25.15e\n",
-	      uv[0+2*i],uv[1+2*i]);
-    }
-    fprintf(ds,"];\n");
-    fprintf(ds,"f2n = [\n");
-    for (i=0;i<nface;i++) {
-      fprintf(ds," %9d %9d %9d\n",
-	      f2n[0+3*i],f2n[1+3*i],f2n[2+3*i]);
-    }
-    fprintf(ds,"];\n");
-  }
 
   return grid;
 }

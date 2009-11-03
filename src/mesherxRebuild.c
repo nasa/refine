@@ -12,11 +12,15 @@
 #include <stdlib.h>
 #include <limits.h>         /* Needed in some systems for DBL_MAX definition */
 #include <float.h>
+#ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
 #include "UG_API/UGMgr.h"
 #include "MeatLib/UGPatch.h"
 #include "MeatLib/ErrMgr.h"
+#else
+#include "FAKEGeom.h"
+#endif
 #include "grid.h"
 #include "mesherxRebuild.h"
 
@@ -169,10 +173,9 @@ Layer *layerRebuildFaces(Layer *layer, int vol){
   int *shell;
   int nodes[3], triangle, side;
   int ncurve, *curve;
-  int i,j;
+  int i;
   int n0,n1;
   int *l2g, *g2l;
-  int node;
   double *shellxyz, *shelluv, resolved[3];
   int nfacenode, nfacetri, *newface;
   double *newxyz, *newuv;

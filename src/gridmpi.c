@@ -104,7 +104,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 	    ratio = 0.5;
 	    newnode = gridParallelEdgeSplit( grid, queue, nodes[0], nodes[1] );
 	    if ( newnode != EMPTY ){
-	      //gridSwapNearNode( grid, newnode, 1.0 );
+	      /* gridSwapNearNode( grid, newnode, 1.0 ); */
 	    }
 	  }
 	}
@@ -137,7 +137,7 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 	  if (length <= minLength) {
 	    if ( grid == 
 		 gridParallelEdgeCollapse(grid, queue, nodes[0], nodes[1]) ) {
-	      // gridSwapNearNode( grid, nodes[0], 1.0 );
+	      /* gridSwapNearNode( grid, nodes[0], 1.0 ); */
 	    }
 	  }
 	}
@@ -306,8 +306,6 @@ Grid *gridParallelSmooth( Grid *grid, GridBool localOnly,
   return grid;
 }
 
-#define USE_LINEAR_PROGRAMMING_FOR_UNTANGLING (FALSE)
-
 Grid *gridParallelRelaxNegativeCells( Grid *grid, 
 				      GridBool localOnly,
 				      GridBool smoothOnSurface )
@@ -323,12 +321,8 @@ Grid *gridParallelRelaxNegativeCells( Grid *grid,
       if ( localOnly != nearGhost ) {
 	gridNodeCostValid(grid,node,&nodeCostValid);
 	if ( -0.5 > nodeCostValid ) {
-	  if (USE_LINEAR_PROGRAMMING_FOR_UNTANGLING) {
-	    gridUntangleVolume( grid, node, 3, !localOnly );
-	  } else {
-	    gridSmoothVolumeNearNode( grid, node, 
-				      smoothOnSurface );
-	  }
+	  gridSmoothVolumeNearNode( grid, node, 
+				    smoothOnSurface );
 	}
       }
     }
@@ -351,11 +345,7 @@ Grid *gridParallelRelaxNegativeFaceAreaUV( Grid *grid,
       if ( localOnly != nearGhost ) {
 	gridNodeCostValid(grid,node,&nodeCostValid);
 	if ( -1.5 > nodeCostValid ) {
-	  if (USE_LINEAR_PROGRAMMING_FOR_UNTANGLING) {
-	    gridUntangleAreaUV( grid, node, 1, !localOnly );
-	  } else {
-	    gridSmoothNodeFaceAreaUV( grid, node );
-	  }
+	  gridSmoothNodeFaceAreaUV( grid, node );
 	}
       }
     }

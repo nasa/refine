@@ -76,6 +76,12 @@ void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode,
 {
   int face;
   int node0, node1, node2;
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+  SUPRESS_UNUSED_COMPILER_WARNING(nodedim);
+  SUPRESS_UNUSED_COMPILER_WARNING(dim2);
+
   for(face=0;face<*nface;face++){
     node0 = f2n[face+0*(*dim1)] - 1;
     node1 = f2n[face+1*(*dim1)] - 1;
@@ -202,9 +208,7 @@ void gridtestcadparameters_( void )
   double dXYZ[3], dist, dT, dUV;
   double xyzTol, uvTol, tTol;
   AdjIterator it;
-  GridBool reportMismatch;
 
-  reportMismatch = FALSE;
   xyzTol = 1e-7;
   uvTol  = 1e-4;
   tTol   = 1e-4;
@@ -226,15 +230,6 @@ void gridtestcadparameters_( void )
 	dist = gridVectorLength(dXYZ);
 	dUV = sqrt( (newUV[0]-oldUV[0])*(newUV[0]-oldUV[0]) +
 		    (newUV[1]-oldUV[1])*(newUV[1]-oldUV[1]) );
-	if (reportMismatch && (dist>xyzTol ||
-            (oldUV[0] != DBL_MAX && dUV > uvTol))) {
-	  printf("%03d global %d local %d face %d dXYZ %e dUV %e\n",
-		 gridPartId(grid), global, local, faceId,
-		 dist, dUV);
-	  printf("    %g %g %g [%g %g %g]\n",newXYZ[0],newXYZ[1],newXYZ[2],
-                 oldXYZ[0],oldXYZ[1],oldXYZ[2]);
-	  printf("    %g %g [%g %g]\n",newUV[0],newUV[1],oldUV[0],oldUV[1]);
-        }
       }
       for ( it = adjFirst(gridEdgeAdj(grid),local); 
 	    adjValid(it); 
@@ -249,10 +244,6 @@ void gridtestcadparameters_( void )
 	gridSubtractVector(newXYZ,oldXYZ,dXYZ);
 	dist = gridVectorLength(dXYZ);
 	dT = ABS(newT-oldT);
-	if (reportMismatch && (dist>xyzTol || dT > tTol))
-	  printf("%03d global %d local %d edge %d dXYZ %e dT %e\n",
-		 gridPartId(grid), global, local, edgeId,
-		 dist, dT);
       }
     }
   }
@@ -297,76 +288,67 @@ void gridconstrainsurfacenode_( void )
 
 void gridparallelswap_( int *processor, double *ARlimit )
 {
-  GridBool swap_the_fast_new_way;
 #ifdef PARALLEL_VERBOSE 
   printf(" %6d swap  processor %2d      initial AR%14.10f",
 	 gridPartId(grid),*processor,gridMinAR(grid));
 #endif
-  swap_the_fast_new_way = TRUE;
-  if (swap_the_fast_new_way) {
-    if (*processor == -1) {
-      int plan_size_guess, plan_chunk_size;
-      int cell, nodes[4];
-      double ar;
-      int nodes_on_surface;
-      gridParallelSwap(grid,NULL,*ARlimit);
-      plan_size_guess = gridNCell(grid)/10;
-      plan_chunk_size = 5000;
-      plan = planCreate(plan_size_guess, plan_chunk_size);
-      for (cell=0;cell<gridMaxCell(grid);cell++){
-	if (grid == gridCell( grid, cell, nodes) ) {
-	  if ( gridCellHasGhostNode(grid,nodes)  ||
-	       gridNodeNearGhost(grid, nodes[0]) ||
-	       gridNodeNearGhost(grid, nodes[1]) ||
-	       gridNodeNearGhost(grid, nodes[2]) ||
-	       gridNodeNearGhost(grid, nodes[3]) ) {
-	    /* if there are four nodes on surface it may be a two face cell */
-	    nodes_on_surface = 0;
-	    if ( gridGeometryFace(grid, nodes[0]) ) nodes_on_surface++;
-	    if ( gridGeometryFace(grid, nodes[1]) ) nodes_on_surface++;
-	    if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
-	    if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
-	    if ( 4 == nodes_on_surface) {
-	      planAddItemWithPriority(plan,cell,0.0); /* highest priority */
-	    } else {
-	      /* add poor quality cells */
-	      ar = gridAR(grid, nodes);
-	      if ( ar < *ARlimit ) planAddItemWithPriority(plan,cell,ar);
-	    }
+  if (*processor == -1) {
+    int plan_size_guess, plan_chunk_size;
+    int cell, nodes[4];
+    double ar;
+    int nodes_on_surface;
+    gridParallelSwap(grid,NULL,*ARlimit);
+    plan_size_guess = gridNCell(grid)/10;
+    plan_chunk_size = 5000;
+    plan = planCreate(plan_size_guess, plan_chunk_size);
+    for (cell=0;cell<gridMaxCell(grid);cell++){
+      if (grid == gridCell( grid, cell, nodes) ) {
+	if ( gridCellHasGhostNode(grid,nodes)  ||
+	     gridNodeNearGhost(grid, nodes[0]) ||
+	     gridNodeNearGhost(grid, nodes[1]) ||
+	     gridNodeNearGhost(grid, nodes[2]) ||
+	     gridNodeNearGhost(grid, nodes[3]) ) {
+	  /* if there are four nodes on surface it may be a two face cell */
+	  nodes_on_surface = 0;
+	  if ( gridGeometryFace(grid, nodes[0]) ) nodes_on_surface++;
+	  if ( gridGeometryFace(grid, nodes[1]) ) nodes_on_surface++;
+	  if ( gridGeometryFace(grid, nodes[2]) ) nodes_on_surface++;
+	  if ( gridGeometryFace(grid, nodes[3]) ) nodes_on_surface++;
+	  if ( 4 == nodes_on_surface) {
+	    planAddItemWithPriority(plan,cell,0.0); /* highest priority */
+	  } else {
+	    /* add poor quality cells */
+	    ar = gridAR(grid, nodes);
+	    if ( ar < *ARlimit ) planAddItemWithPriority(plan,cell,ar);
 	  }
-	} 
-      }
-      planDeriveRankingsFromPriorities(plan);
-    } else {
-      int ranking;
-      int cell, nodes[4];
-      for (ranking = 0 ; ranking < planSize(plan) ; ranking++) {
-	cell = planItemWithThisRanking(plan, ranking);
-	if ( grid==gridCell( grid, cell, nodes) ) {
-	  /* if ( grid == gridRemoveTwoFaceCell(grid, queue, cell) ) continue;*/
-	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
-	    continue;
-	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
-	    continue;
-	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[3] ) )
-	    continue;
-	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[2] ) )
-	    continue;
-	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[3] ) )
-	    continue;
-	  if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
-	    continue;
 	}
+      } 
+    }
+    planDeriveRankingsFromPriorities(plan);
+  } else {
+    int ranking;
+    int cell, nodes[4];
+    for (ranking = 0 ; ranking < planSize(plan) ; ranking++) {
+      cell = planItemWithThisRanking(plan, ranking);
+      if ( grid==gridCell( grid, cell, nodes) ) {
+	/* if ( grid == gridRemoveTwoFaceCell(grid, queue, cell) ) continue;*/
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[1] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[2] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[0], nodes[3] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[2] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[1], nodes[3] ) )
+	  continue;
+	if ( grid == gridParallelEdgeSwap(grid, queue, nodes[2], nodes[3] ) )
+	  continue;
       }
-      planFree(plan); plan = NULL;
-    } 
-  } else { /* start the (swap_the_fast_new_way == FALSE) block */
-    if (*processor == -1) {
-      gridParallelSwap(grid,NULL,*ARlimit);
-    } else {
-      gridParallelSwap(grid,queue,*ARlimit);
-    } 
-  }
+    }
+    planFree(plan); plan = NULL;
+  } 
+
 }
 
 void gridparallelsmooth_( int *processor,
@@ -447,6 +429,10 @@ void queuedumpsize_( int *nInt, int *nDouble )
 
 void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nInt);
+  SUPRESS_UNUSED_COMPILER_WARNING(nDouble);
+
   queueDump(queue, ints, doubles);
   queueReset(queue);
 }
@@ -454,6 +440,10 @@ void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
 void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   Queue *appliedQueue;
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nInt);
+  SUPRESS_UNUSED_COMPILER_WARNING(nDouble);
 
   appliedQueue = queueCreate( queueNodeSize( queue ) );
   queueLoad(appliedQueue, ints, doubles);
@@ -491,6 +481,9 @@ void gridnunusednodeglobal_( int *nunused )
 
 void gridgetunusednodeglobal_( int *nunused, int *unused )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nunused);
+
   gridGetUnusedNodeGlobal( grid, unused );
 }
 
@@ -527,6 +520,9 @@ void gridnunusedcellglobal_( int *nunused )
 
 void gridgetunusedcellglobal_( int *nunused, int *unused )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nunused);
+
   gridGetUnusedCellGlobal( grid, unused );
 }
 
@@ -570,6 +566,10 @@ void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
 {
   int node;
   double xyz[3];
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+
   for (node=0;node<gridNNode(grid);node++) {
     l2g[node] = gridNodeGlobal(grid,node)+1;
     gridNodeXYZ(grid,node,xyz);
@@ -605,6 +605,9 @@ void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
 {
   int face, n, nodes[3], id;
   
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(ndim);
+
   n = 0;
   for (face=0;face<gridMaxFace(grid);face++) {
     if ( grid == gridFace(grid,face,nodes,&id) ) {
@@ -695,6 +698,9 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
   int *count;
   int face, faceids, faceid[MAXFACEIDDEG];
   int edge, edgeids, edgeid[MAXEDGEIDDEG];
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(clientsize);
 
   count = malloc( (*nproc) * sizeof(int) );
 
@@ -901,12 +907,18 @@ void gridmovecompletempitest_( void )
 void gridmoveloadlocalnodedata_( int *ndim, int *nnode, 
 				 int *nodes, double *data )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(ndim);
+
   gridmoveLoadFortranNodeData( gm, *nnode, nodes, data);
 }
 
 void gridmovesetlocalnodedata_( int *ndim, int *nnode, 
 				 int *nodes, double *data )
 {
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(ndim);
+
   gridmoveSetFortranNodeData( gm, *nnode, nodes, data);
 }
 
@@ -997,7 +1009,7 @@ void gridface_( int *face, int *faceId,
 
 void gridfaceedgecount_( int *faceId, int *faceEdgeCount )
 {
-  *faceEdgeCount = gridFaceEdgeCount( grid, *faceId );
+  *faceEdgeCount = gridFaceEdgeCount( *faceId );
 }
 
 void gridfaceedgel2g_( int *faceId, int *faceEdgeCount, int *local2global )

@@ -736,7 +736,7 @@ Grid *gridFillRingWithCellEdgeSplits( Grid *grid, Ring *ring, int faceId )
       edge1 = gridEqu( grid, equator+1 );
       
       if (grid == gridLineSegmentIntersectsFace(grid, edge0, edge1,
-						faceId, uv0,
+						faceId,
 						uv2, xyz, &bary ) ) {
     
 	area = gridFaceAreaUVDirect(uv0,uv1,uv2,faceId);

@@ -1,0 +1,27 @@
+
+Makefile.in
+
+/autom4te.cache
+/aclocal.m4
+/compile
+/configure
+/depcomp
+/doc/refine.info
+/doc/texinfo.tex
+/install-sh
+/missing
+
+# unit tests
+
+/src/Adj
+/src/Grid*
+/src/Intersect
+/src/Layer
+/src/Line
+/src/Near
+/src/Plan
+/src/Queue
+/src/Ring
+/src/Sort
+/src/Tableau
+

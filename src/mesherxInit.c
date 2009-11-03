@@ -12,9 +12,13 @@
 #include <stdlib.h>
 #include "mesherxInit.h"
 #include "gridfiller.h"
+#ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
 #include "CADGeom/CADTopo.h"
 #include "MeatLib/UGPatch.h"
+#else
+#include "FAKEGeom.h"
+#endif
 
 Layer *mesherxInit(int vol, int maxNodes)
 {

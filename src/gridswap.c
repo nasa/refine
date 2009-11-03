@@ -16,8 +16,6 @@
 #include "gridmetric.h"
 #include "gridswap.h"
 
-#define DEBUG_REMOVE_FACE_CELL (0)
-
 Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 {
   int cellnodes[4], facenodes[3];
@@ -162,51 +160,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 	   __FILE__,__LINE__, gridNGem(grid) );
     return NULL;
   }
-  if ( 1 != gridNGem(grid) || DEBUG_REMOVE_FACE_CELL ) {
-    int gem, gemcell, gemnodes[4];
-    double xyz[3];
-    printf("%s: %d: gridRemoveTwoFaceCell: ngem %d expected 1\n",
-	   __FILE__,__LINE__, gridNGem(grid) );
-    printf("queue is %d\n",(queue!=NULL));
-    printf("partId %d\n",gridPartId(grid));
-    printf("cell %d\n",cell);
-    printf("cell nodes %d %d %d %d\n",
-	   cellnodes[0],cellnodes[1],cellnodes[2],cellnodes[3]);
-    printf("cell node parts %d %d %d %d\n",
-	   gridNodePart(grid,cellnodes[0]),
-	   gridNodePart(grid,cellnodes[1]),
-	   gridNodePart(grid,cellnodes[2]),
-	   gridNodePart(grid,cellnodes[3]));
-    facenodes[0] = cell2face[newface0][1];
-    facenodes[1] = cell2face[newface0][0];
-    facenodes[2] = cell2face[newface0][2];
-    printf("face0 nodes %d %d %d\n",facenodes[0],facenodes[1],facenodes[2]);
-    facenodes[0] = cell2face[newface1][1];
-    facenodes[1] = cell2face[newface1][0];
-    facenodes[2] = cell2face[newface1][2];
-    printf("face1 nodes %d %d %d\n",facenodes[0],facenodes[1],facenodes[2]);
-    for (gem = 0; gem < gridNGem(grid); gem++) {
-      gemcell = gridGem(grid,gem);
-      printf("gem %d cell %d\n",gem,gemcell);
-      gridCell( grid, gemcell, gemnodes );
-      printf("gem cell nodes %d %d %d %d\n",
-	   gemnodes[0],gemnodes[1],gemnodes[2],gemnodes[3]);
-      gridNodeXYZ(grid,gemnodes[0],xyz);
-      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-      gridNodeXYZ(grid,gemnodes[1],xyz);
-      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-      gridNodeXYZ(grid,gemnodes[2],xyz);
-      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-      gridNodeXYZ(grid,gemnodes[3],xyz);
-      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-      printf("gem node parts %d %d %d %d\n",
-	     gridNodePart(grid,gemnodes[0]),
-	     gridNodePart(grid,gemnodes[1]),
-	     gridNodePart(grid,gemnodes[2]),
-	     gridNodePart(grid,gemnodes[3]));
-    }
-    fflush(stdout);
-  }
 
   queueNewTransaction(queue);
 
@@ -246,17 +199,12 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
 				     uv[1+2*facenodes[2]],
 				     faceId1 );
 
-  if ( TRUE ) { /* don't check if minimum cost is satisfied */
-    gridRemoveCellAndQueue(grid, queue, cell);
-    gridRemoveFaceAndQueue(grid, queue, faces[face0] );
-    gridRemoveFaceAndQueue(grid, queue, faces[face1] );
-    return grid;
-  }else{
-    gridRemoveFaceAndQueue(grid, queue, addedFace0 );
-    gridRemoveFaceAndQueue(grid, queue, addedFace1 );
-    queueResetCurrentTransaction( queue );
-    return NULL;
-  }
+  /* don't check if minimum cost is satisfied */
+  gridRemoveCellAndQueue(grid, queue, cell);
+  gridRemoveFaceAndQueue(grid, queue, faces[face0] );
+  gridRemoveFaceAndQueue(grid, queue, faces[face1] );
+
+  return grid;
 }
 
 Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
@@ -369,47 +317,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 	   __FILE__,__LINE__, gridNGem(grid) );
     return NULL;
   }
-  if ( 1 != gridNGem(grid) || DEBUG_REMOVE_FACE_CELL ) {
-    int gem, gemcell, gemnodes[4];
-    double xyz[3];
-    printf("%s: %d: gridRemoveThreeFaceCell: ngem %d expected 1\n",
-	   __FILE__,__LINE__, gridNGem(grid) );
-    printf("queue is %d\n",(queue!=NULL));
-    printf("partId %d\n",gridPartId(grid));
-    printf("cell %d\n",cell);
-    printf("cell nodes %d %d %d %d\n",
-	   cellnodes[0],cellnodes[1],cellnodes[2],cellnodes[3]);
-    printf("cell node parts %d %d %d %d\n",
-	   gridNodePart(grid,cellnodes[0]),
-	   gridNodePart(grid,cellnodes[1]),
-	   gridNodePart(grid,cellnodes[2]),
-	   gridNodePart(grid,cellnodes[3]));
-    facenodes[0] = cell2face[newface][1];
-    facenodes[1] = cell2face[newface][0];
-    facenodes[2] = cell2face[newface][2];
-    printf("newface nodes %d %d %d\n",facenodes[0],facenodes[1],facenodes[2]);
-    for (gem = 0; gem < gridNGem(grid); gem++) {
-      gemcell = gridGem(grid,gem);
-      printf("gem %d cell %d\n",gem,gemcell);
-      gridCell( grid, gemcell, gemnodes );
-      printf("gem cell nodes %d %d %d %d\n",
-	   gemnodes[0],gemnodes[1],gemnodes[2],gemnodes[3]);
-      gridNodeXYZ(grid,gemnodes[0],xyz);
-      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-      gridNodeXYZ(grid,gemnodes[1],xyz);
-      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-      gridNodeXYZ(grid,gemnodes[2],xyz);
-      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-      gridNodeXYZ(grid,gemnodes[3],xyz);
-      printf("%25.15f%25.15f%25.15f\n",xyz[0],xyz[1],xyz[2]);
-      printf("gem node parts %d %d %d %d\n",
-	     gridNodePart(grid,gemnodes[0]),
-	     gridNodePart(grid,gemnodes[1]),
-	     gridNodePart(grid,gemnodes[2]),
-	     gridNodePart(grid,gemnodes[3]));
-    }
-    fflush(stdout);
-  }
 
   queueNewTransaction(queue);
 
@@ -436,23 +343,19 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
 				      faceId0 );
 
 
-  if ( TRUE ) { /* don't check if minimum cost is satisfied */
-    gridRemoveCellAndQueue(grid, queue, cell);
-    gridRemoveFaceAndQueue(grid, queue, faces[face0] );
-    gridRemoveFaceAndQueue(grid, queue, faces[face1] );
-    gridRemoveFaceAndQueue(grid, queue, faces[face2] );
-    gridRemoveNode(grid, cellnodes[common_node] );
+  /* don't check if minimum cost is satisfied */
+  gridRemoveCellAndQueue(grid, queue, cell);
+  gridRemoveFaceAndQueue(grid, queue, faces[face0] );
+  gridRemoveFaceAndQueue(grid, queue, faces[face1] );
+  gridRemoveFaceAndQueue(grid, queue, faces[face2] );
+  gridRemoveNode(grid, cellnodes[common_node] );
     
-    for(node=0;node<4;node++) 
-      if (0==gridCellDegree(grid,cellnodes[node])) 
-	gridRemoveNodeWithOutGlobal(grid,cellnodes[node]);
+  for(node=0;node<4;node++) 
+    if (0==gridCellDegree(grid,cellnodes[node])) 
+      gridRemoveNodeWithOutGlobal(grid,cellnodes[node]);
    
-    return grid;
-  }else{
-    gridRemoveFaceAndQueue(grid, queue, added_face );
-    queueResetCurrentTransaction( queue );
-    return NULL;
-  }
+  return grid;
+
 }
 
 Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
@@ -496,7 +399,7 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   if ( gridNodeFrozen(grid,topnode) && gridNodeFrozen(grid,bottomnode) )
     return NULL;
 
-  //set nodes[0-3] to topnode orientation
+  /* set nodes[0-3] to topnode orientation */
   tent[4] = bottomnode;
 
   nodes[0][0] = tent[0];
@@ -1010,7 +913,7 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20], 
+Grid *gridGetCombo6( Grid *grid, double costs[20], 
 		     double *bestcost, int best[4] );
 Grid *gridConstructTet6( Grid *grid, int n0, int n1, 
 			 int nodes[40][4], double costs[20] );
@@ -1026,7 +929,7 @@ Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
 
   gridConstructTet6( grid, n0, n1, nodes, costs );
   
-  gridGetCombo6( grid, nodes, costs, &bestcost, bestcombo );
+  gridGetCombo6( grid, costs, &bestcost, bestcombo );
   
   if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
        ( bestcost > gridMinSwapCost(grid) )  ) {
@@ -1050,7 +953,7 @@ Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20], 
+Grid *gridGetCombo6( Grid *grid, double costs[20], 
 		     double *bestcost, int best[4] )
 {  
   int i, j, tet[4];
@@ -1076,7 +979,7 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
   for ( i = 0 ; i < 3 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 12;
-    tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
+    tet[2] = i+3; /* if ( tet[2] > 5 ) tet[2] -= 6; */
     tet[3] = tet[2] + 12;
 
     cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
@@ -1093,7 +996,7 @@ Grid *gridGetCombo6( Grid *grid, int nodes[40][4], double costs[20],
   for ( i = 0 ; i < 3 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 6;
-    tet[2] = i+3; if ( tet[2] > 5 ) tet[2] -= 6;
+    tet[2] = i+3; /* if ( tet[2] > 5 ) tet[2] -= 6; */
     tet[3] = tet[2] + 6;
 
     cost = MIN( MIN( costs[tet[0]], costs[tet[1]] ), 
@@ -1186,7 +1089,7 @@ Grid *gridConstructTet6( Grid *grid, int n0, int n1,
   return grid;
 }
 
-Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35], 
+Grid *gridGetCombo7( Grid *grid, double costs[35], 
 		     double *bestcost, int best[4] );
 Grid *gridConstructTet7( Grid *grid, int n0, int n1, 
 			 int nodes[70][4], double costs[35] );
@@ -1202,7 +1105,7 @@ Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
 
   gridConstructTet7( grid, n0, n1, nodes, costs );
 
-  gridGetCombo7( grid, nodes, costs, &bestcost, bestcombo );
+  gridGetCombo7( grid, costs, &bestcost, bestcombo );
   
   if ( ( (bestcost-origcost) > gridMinSwapCostImprovement(grid)) && 
        ( bestcost > gridMinSwapCost(grid) )  ) {
@@ -1226,13 +1129,13 @@ Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35], 
+Grid *gridGetCombo7( Grid *grid, double costs[35], 
 		     double *bestcost, int best[5] )
 {  
   int i, j, tet[5];
   double cost;
   *bestcost = -2.0;
-  //case1
+  /* case1 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0]+7;
@@ -1250,7 +1153,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
 #endif
     }
   }
-  //case2
+  /* case2 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0]+7;
@@ -1268,7 +1171,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
         printf("swap7 %d currentcost %f\n",i,cost);
 #endif
   }
-  //case3
+  /* case3 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 14;
@@ -1286,7 +1189,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
         printf("swap7 %d currentcost %f\n",i,cost);
 #endif
   }
-  //case4  
+  /* case4  */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 7;
@@ -1304,7 +1207,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
         printf("swap7 %d currentcost %f\n",i,cost);
 #endif
   }
-  //case5
+  /* case5 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 7;
@@ -1322,7 +1225,7 @@ Grid *gridGetCombo7( Grid *grid, int nodes[70][4], double costs[35],
         printf("swap7 %d currentcost %f\n",i,cost);
 #endif
   }
-  //case6 
+  /* case6 */
   for ( i = 0 ; i < 7 ; i++ ) {
     tet[0] = i;
     tet[1] = tet[0] + 14;
