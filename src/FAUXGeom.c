@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "FAKEGeom.h"
 #include "gridmath.h"
 
@@ -37,6 +38,7 @@ struct face {
   int faceid;
   int faceType;
   double normal[3];
+  double center[3];
   double offset;
   double u_dir[3];
   double v_dir[3];
@@ -51,6 +53,7 @@ static struct face *faux_faces = NULL;
 #define yplane (1)
 #define zplane (2)
 #define general_plane  (3)
+#define cylinder  (4)
 
 static GridBool initialize_faux(void)
 {
@@ -90,7 +93,7 @@ static GridBool initialize_faux(void)
 		     flavor,
 		     &(faux_faces[i].offset) ) )
       {
-	printf("error parsing line %d of faux_input file\n",i+2);
+	printf("error parsing item %d of faux_input file\n",i+1);
 	nfaux = 0;
 	free( faux_faces );
 	faux_faces = NULL;
@@ -120,7 +123,7 @@ static GridBool initialize_faux(void)
 			 &(faux_faces[i].normal[1]),
 			 &(faux_faces[i].normal[2]) ) )
 	  {
-	    printf("error parsing line %d of faux_input file\n",i+2);
+	    printf("error parsing item %d of faux_input file\n",i+1);
 	    printf("missing general_plane normal\n");
 	    nfaux = 0;
 	    free( faux_faces );
@@ -128,6 +131,37 @@ static GridBool initialize_faux(void)
 	    return FALSE;
 	  }
       }
+    else if( strncmp(flavor,"cylinder",8) == 0 ) 
+      { 
+	faux_faces[i].faceType = general_plane; 
+	if ( 3 != fscanf(f,"%lf %lf %lf",
+			 &(faux_faces[i].center[0]),
+			 &(faux_faces[i].center[1]),
+			 &(faux_faces[i].center[2]) ) )
+	  {
+	    printf("error parsing line %d of faux_input file\n",i+1);
+	    printf("missing first point of cylinder\n");
+	    nfaux = 0;
+	    free( faux_faces );
+	    faux_faces = NULL;
+	    return FALSE;
+	  }
+	if ( 3 != fscanf(f,"%lf %lf %lf",
+			 &(faux_faces[i].normal[0]),
+			 &(faux_faces[i].normal[1]),
+			 &(faux_faces[i].normal[2]) ) )
+	  {
+	    printf("error parsing line %d of faux_input file\n",i+1);
+	    printf("missing second point of cylinder\n");
+	    nfaux = 0;
+	    free( faux_faces );
+	    faux_faces = NULL;
+	    return FALSE;
+	  }
+	faux_faces[i].normal[0] -= faux_faces[i].center[0];
+	faux_faces[i].normal[1] -= faux_faces[i].center[1];
+	faux_faces[i].normal[2] -= faux_faces[i].center[2];
+      }    
     else
       {
 	printf("error parsing flavor %s on line %d of faux_input file\n",
@@ -219,6 +253,8 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
 			   double *xyz, double *uv, double *xyznew)
 {
   int id;
+  double dxyz[3];
+  double x, y;
 
   SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
@@ -271,6 +307,38 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
     xyznew[1] += uv[1] * faux_faces[id].v_dir[1];
     xyznew[2] += uv[1] * faux_faces[id].v_dir[2];
     break;
+  case cylinder:
+    /* vector to the surface point from center */
+    dxyz[0] = xyz[0] - faux_faces[id].center[0];
+    dxyz[1] = xyz[1] - faux_faces[id].center[1];
+    dxyz[2] = xyz[2] - faux_faces[id].center[2];
+    /* "z" direction along the center axis */
+    uv[0] = dxyz[0]*faux_faces[id].normal[0]
+          + dxyz[1]*faux_faces[id].normal[1]
+          + dxyz[2]*faux_faces[id].normal[2];
+    /* put dxyz in the plane normal to center axis */
+    dxyz[0] -= uv[0]*faux_faces[id].normal[0];
+    dxyz[1] -= uv[0]*faux_faces[id].normal[1];
+    dxyz[2] -= uv[0]*faux_faces[id].normal[2];
+    x = dxyz[0] * faux_faces[id].u_dir[0] 
+      + dxyz[1] * faux_faces[id].u_dir[1] 
+      + dxyz[2] * faux_faces[id].u_dir[2];
+    y = dxyz[0] * faux_faces[id].v_dir[0] 
+      + dxyz[1] * faux_faces[id].v_dir[1] 
+      + dxyz[2] * faux_faces[id].v_dir[2];
+    uv[1] = atan2( y, x );
+    xyznew[0] = faux_faces[id].center[0] + uv[0]*faux_faces[id].normal[0];
+    xyznew[1] = faux_faces[id].center[1] + uv[0]*faux_faces[id].normal[1];
+    xyznew[2] = faux_faces[id].center[2] + uv[0]*faux_faces[id].normal[2];
+    x = faux_faces[id].offset * cos( uv[1] );
+    xyznew[0] += x * faux_faces[id].u_dir[0];
+    xyznew[1] += x * faux_faces[id].u_dir[1];
+    xyznew[2] += x * faux_faces[id].u_dir[2];
+    y = faux_faces[id].offset * sin( uv[1] );
+    xyznew[0] += y * faux_faces[id].v_dir[0];
+    xyznew[1] += y * faux_faces[id].v_dir[1];
+    xyznew[2] += y * faux_faces[id].v_dir[2];
+    break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
     return FALSE;
@@ -312,6 +380,7 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 			 double *dudu, double *dudv, double *dvdv )
 {
   int id;
+  double x, y;
 
   SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
@@ -351,6 +420,19 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
     xyz[0] += uv[1] * faux_faces[id].v_dir[0];
     xyz[1] += uv[1] * faux_faces[id].v_dir[1];
     xyz[2] += uv[1] * faux_faces[id].v_dir[2];    
+    break;
+  case cylinder:
+    xyz[0] = faux_faces[id].center[0] + uv[0]*faux_faces[id].normal[0];
+    xyz[1] = faux_faces[id].center[1] + uv[0]*faux_faces[id].normal[1];
+    xyz[2] = faux_faces[id].center[2] + uv[0]*faux_faces[id].normal[2];
+    x = faux_faces[id].offset * cos( uv[1] );
+    xyz[0] += x * faux_faces[id].u_dir[0];
+    xyz[1] += x * faux_faces[id].u_dir[1];
+    xyz[2] += x * faux_faces[id].u_dir[2];
+    y = faux_faces[id].offset * sin( uv[1] );
+    xyz[0] += y * faux_faces[id].v_dir[0];
+    xyz[1] += y * faux_faces[id].v_dir[1];
+    xyz[2] += y * faux_faces[id].v_dir[2];
     break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
