@@ -172,16 +172,16 @@ static GridBool initialize_faux(void)
 	return FALSE;	   
       }
 
-    /* make sure normal is normal */
+    /* make sure normal is normalized */
     gridVectorNormalize(faux_faces[i].normal);
 
-    /* find the smallest normal componet */
+    /* find the smallest normal component */
     smallest_dir = 0;
     if (ABS(faux_faces[i].normal[1]) < 
 	ABS(faux_faces[i].normal[smallest_dir])) smallest_dir = 1;
     if (ABS(faux_faces[i].normal[2]) < 
 	ABS(faux_faces[i].normal[smallest_dir])) smallest_dir = 2;
-    /* choose u direction in the smallest normal componet */
+    /* choose u direction in the smallest normal component */
     faux_faces[i].u_dir[0] = 0.0;
     faux_faces[i].u_dir[1] = 0.0;
     faux_faces[i].u_dir[2] = 0.0;
