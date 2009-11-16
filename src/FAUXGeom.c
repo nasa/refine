@@ -484,6 +484,7 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
 			      double *uv, double *xyz, double *normal )
 {
   int id;
+  double x, y;
 
   SUPRESS_UNUSED_COMPILER_WARNING(vol);
 
@@ -497,15 +498,16 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
   id = faux_faceId(faceId);
   if ( id < 0 ) return FALSE;	
 
-  normal[0] = faux_faces[id].normal[0];
-  normal[1] = faux_faces[id].normal[2];
-  normal[2] = faux_faces[id].normal[2];
   
   switch (faux_faces[id].faceType) {
   case xplane:
   case yplane:
   case zplane:
   case general_plane:
+    normal[0] = faux_faces[id].normal[0];
+    normal[1] = faux_faces[id].normal[2];
+    normal[2] = faux_faces[id].normal[2];
+
     xyz[0] = faux_faces[id].offset * faux_faces[id].normal[0];
     xyz[1] = faux_faces[id].offset * faux_faces[id].normal[1];
     xyz[2] = faux_faces[id].offset * faux_faces[id].normal[2];
@@ -515,6 +517,31 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     xyz[0] += uv[1] * faux_faces[id].v_dir[0];
     xyz[1] += uv[1] * faux_faces[id].v_dir[1];
     xyz[2] += uv[1] * faux_faces[id].v_dir[2];    
+    break;
+
+  case cylinder:
+
+    normal[0] = 0.0 ; normal[1] = 0.0 ; normal[2] = 0.0 ; 
+    x = cos( uv[1] );
+    normal[0] += x * faux_faces[id].u_dir[0];
+    normal[1] += x * faux_faces[id].u_dir[1];
+    normal[2] += x * faux_faces[id].u_dir[2];
+    y = sin( uv[1] );
+    normal[0] += y * faux_faces[id].v_dir[0];
+    normal[1] += y * faux_faces[id].v_dir[1];
+    normal[2] += y * faux_faces[id].v_dir[2];
+    
+    xyz[0] = faux_faces[id].center[0] + uv[0]*faux_faces[id].normal[0];
+    xyz[1] = faux_faces[id].center[1] + uv[0]*faux_faces[id].normal[1];
+    xyz[2] = faux_faces[id].center[2] + uv[0]*faux_faces[id].normal[2];
+    x = faux_faces[id].offset * cos( uv[1] );
+    xyz[0] += x * faux_faces[id].u_dir[0];
+    xyz[1] += x * faux_faces[id].u_dir[1];
+    xyz[2] += x * faux_faces[id].u_dir[2];
+    y = faux_faces[id].offset * sin( uv[1] );
+    xyz[0] += y * faux_faces[id].v_dir[0];
+    xyz[1] += y * faux_faces[id].v_dir[1];
+    xyz[2] += y * faux_faces[id].v_dir[2];
     break;
   default:
     printf("ERROR: %s: %d: %s implement for %d.\n",
