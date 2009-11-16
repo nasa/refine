@@ -88,6 +88,9 @@ static GridBool initialize_faux(void)
     faux_faces[i].normal[0] = 0.0;
     faux_faces[i].normal[1] = 0.0;
     faux_faces[i].normal[2] = 0.0;
+    faux_faces[i].center[0] = 0.0;
+    faux_faces[i].center[1] = 0.0;
+    faux_faces[i].center[2] = 0.0;
     if ( 3 != fscanf(f,"%d %s %lf",
 		     &(faux_faces[i].faceid),
 		     flavor,
@@ -210,6 +213,10 @@ static GridBool initialize_faux(void)
 	   faux_faces[i].v_dir[0],
 	   faux_faces[i].v_dir[1],
 	   faux_faces[i].v_dir[2]);
+    printf("%4d: center %15.8f %15.8f %15.8f\n", i, 
+	   faux_faces[i].center[0],
+	   faux_faces[i].center[1],
+	   faux_faces[i].center[2]);
     */
 
   }
