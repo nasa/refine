@@ -277,26 +277,8 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
     
   switch (faux_faces[id].faceType) {
   case xplane:
-    uv[0] = xyz[1];
-    uv[1] = xyz[2];
-    xyznew[0] = faux_faces[id].offset;
-    xyznew[1] = xyz[1];
-    xyznew[2] = xyz[2];
-    break;
   case yplane:
-    uv[0] = xyz[0];
-    uv[1] = xyz[2];
-    xyznew[0] = xyz[0];
-    xyznew[1] = faux_faces[id].offset;
-    xyznew[2] = xyz[2];
-    break;
   case zplane:
-    uv[0] = xyz[0];
-    uv[1] = xyz[1];
-    xyznew[0] = xyz[0];
-    xyznew[1] = xyz[1];
-    xyznew[2] = faux_faces[id].offset;
-    break;
   case general_plane:
     uv[0] = faux_faces[id].u_dir[0]*xyz[0]
           + faux_faces[id].u_dir[1]*xyz[1]
@@ -403,20 +385,8 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
 
   switch (faux_faces[id].faceType) {
   case xplane:
-    xyz[0] = faux_faces[id].offset;
-    xyz[1] = uv[0];
-    xyz[2] = uv[1];
-    break;
   case yplane:
-    xyz[0] = uv[0];
-    xyz[1] = faux_faces[id].offset;
-    xyz[2] = uv[1];
-    break;
   case zplane:
-    xyz[0] = uv[0];
-    xyz[1] = uv[1];
-    xyz[2] = faux_faces[id].offset;
-    break;
   case general_plane:
     xyz[0] = faux_faces[id].offset * faux_faces[id].normal[0];
     xyz[1] = faux_faces[id].offset * faux_faces[id].normal[1];
@@ -529,17 +499,18 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
   
   switch (faux_faces[id].faceType) {
   case xplane:
-    xyz[0] = faux_faces[id].offset;
-    xyz[1] = uv[0];
-    xyz[2] = uv[1];
   case yplane:
-    xyz[0] = uv[0];
-    xyz[1] = faux_faces[id].offset;
-    xyz[2] = uv[1];
   case zplane:
-    xyz[0] = uv[0];
-    xyz[1] = uv[1];
-    xyz[2] = faux_faces[id].offset;
+  case general_plane:
+    xyz[0] = faux_faces[id].offset * faux_faces[id].normal[0];
+    xyz[1] = faux_faces[id].offset * faux_faces[id].normal[1];
+    xyz[2] = faux_faces[id].offset * faux_faces[id].normal[2];
+    xyz[0] += uv[0] * faux_faces[id].u_dir[0];
+    xyz[1] += uv[0] * faux_faces[id].u_dir[1];
+    xyz[2] += uv[0] * faux_faces[id].u_dir[2];
+    xyz[0] += uv[1] * faux_faces[id].v_dir[0];
+    xyz[1] += uv[1] * faux_faces[id].v_dir[1];
+    xyz[2] += uv[1] * faux_faces[id].v_dir[2];    
     break;
   default:
     printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
