@@ -459,7 +459,22 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
       dv[1] =  faux_faces[id].v_dir[1];
       dv[2] =  faux_faces[id].v_dir[2];
       break;
-    default:
+   case cylinder:
+      du[0] =  faux_faces[id].normal[0];
+      du[1] =  faux_faces[id].normal[1];
+      du[2] =  faux_faces[id].normal[2];
+
+      dv[0] = 0.0; dv[1] = 0.0; dv[2] = 0.0;
+      /* d(cos(v))/d(v) = -sin( uv[1] ); */
+      dv[0] += -sin( uv[1] ) * faux_faces[id].offset * faux_faces[id].u_dir[0];
+      dv[1] += -sin( uv[1] ) * faux_faces[id].offset * faux_faces[id].u_dir[1];
+      dv[2] += -sin( uv[1] ) * faux_faces[id].offset * faux_faces[id].u_dir[2];
+      /* d(sin(v))/d(v) =  cos( uv[1] ); */
+      dv[0] +=  cos( uv[1] ) * faux_faces[id].offset * faux_faces[id].v_dir[0];
+      dv[1] +=  cos( uv[1] ) * faux_faces[id].offset * faux_faces[id].v_dir[1];
+      dv[2] +=  cos( uv[1] ) * faux_faces[id].offset * faux_faces[id].v_dir[2];
+      break;
+   default:
       printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
       return FALSE;
     }
