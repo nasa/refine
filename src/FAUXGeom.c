@@ -449,16 +449,15 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
   if (derivativeFlag > 0){
     switch (faux_faces[id].faceType) {
     case xplane:
-      du[0] = 0.0; du[1] = 1.0; du[2] = 0.0;
-      dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;
-      break;
     case yplane:
-      du[0] = 1.0; du[1] = 0.0; du[2] = 0.0;
-      dv[0] = 0.0; dv[1] = 0.0; dv[2] = 1.0;
-      break;
     case zplane:
-      du[0] = 1.0; du[1] = 0.0; du[2] = 0.0;
-      dv[0] = 0.0; dv[1] = 1.0; dv[2] = 0.0;
+    case general_plane:
+      du[0] =  faux_faces[id].u_dir[0];
+      du[1] =  faux_faces[id].u_dir[1];
+      du[2] =  faux_faces[id].u_dir[2];
+      dv[0] =  faux_faces[id].v_dir[0];
+      dv[1] =  faux_faces[id].v_dir[1];
+      dv[2] =  faux_faces[id].v_dir[2];
       break;
     default:
       printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
@@ -472,7 +471,7 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
     case yplane:
     case zplane:
     case general_plane:
-      dudu[0] = 0.0;
+      dudu[0] = 0.0; /* planes have no curvature (2nd derivatives) */
       dudu[1] = 0.0;
       dudu[2] = 0.0;
       dudv[0] = 0.0;
