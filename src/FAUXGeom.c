@@ -136,7 +136,7 @@ static GridBool initialize_faux(void)
       }
     else if( strncmp(flavor,"cylinder",8) == 0 ) 
       { 
-	faux_faces[i].faceType = general_plane; 
+	faux_faces[i].faceType = cylinder; 
 	if ( 3 != fscanf(f,"%lf %lf %lf",
 			 &(faux_faces[i].center[0]),
 			 &(faux_faces[i].center[1]),
