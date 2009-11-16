@@ -329,7 +329,8 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
     xyznew[2] += y * faux_faces[id].v_dir[2];
     break;
   default:
-    printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
+    printf("ERROR: %s: %d: %s implement for %d.\n",
+	   __FILE__,__LINE__,__func__,faceId);
     return FALSE;
   }
 
@@ -412,7 +413,8 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
     xyz[2] += y * faux_faces[id].v_dir[2];
     break;
   default:
-    printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
+    printf("ERROR: %s: %d: %s implement for %d.\n",
+	   __FILE__,__LINE__,__func__,faceId);
     return FALSE;
   }
 
@@ -445,7 +447,8 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
       dv[2] +=  cos( uv[1] ) * faux_faces[id].offset * faux_faces[id].v_dir[2];
       break;
    default:
-      printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
+     printf("ERROR: %s: %d: %s implement for %d.\n",
+	    __FILE__,__LINE__,__func__,faceId);
       return FALSE;
     }
   }
@@ -467,7 +470,8 @@ GridBool CADGeom_PointOnFace(int vol, int faceId,
       dvdv[2] = 0.0;
       break;
     default:
-      printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
+      printf("ERROR: %s: %d: %s implement for %d.\n",
+	     __FILE__,__LINE__,__func__,faceId);
       return FALSE;
     }
   }
@@ -513,7 +517,8 @@ GridBool CADGeom_NormalToFace(int vol, int faceId,
     xyz[2] += uv[1] * faux_faces[id].v_dir[2];    
     break;
   default:
-    printf("ERROR: %s: %d: face %d unknown.\n",__FILE__,__LINE__,faceId);
+    printf("ERROR: %s: %d: %s implement for %d.\n",
+	   __FILE__,__LINE__,__func__,faceId);
     return FALSE;
   }
 
