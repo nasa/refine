@@ -1,5 +1,5 @@
 
-The Future: Released Refine 1.4.3 (requires >= FUN3D-25331 (10.4.0)).
+Thu Jan 28, 2010: Released Refine 1.4.3 (requires >= FUN3D-25331 (10.4.0)).
 
 FAUXGeom improved to allow cylindrical surfaces. (still need derivatives)
 
