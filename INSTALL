@@ -25,10 +25,6 @@ You will need to run/rerun the FUN3D ./configure script. Add this argument
 
   --with-refine=/my/path/to/refine_x_x_x
 
-To use FAUXGeom geometry, specify
-
-  --with-refineFAKEGeom=-lFAUXGeom
-
 To use the full-blown CAPRI-GridEx CAD geometry contact 
 FUN_Support@LaRC.NASA.gov, it is _not_ trivial to set up.
 
