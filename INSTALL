@@ -7,7 +7,7 @@ run (replace `x_x_x' with the current version number):
  % gunzip refine_x_x_x.tar.gz
  % tar xvf refine_x_x_x.tar
  % cd refine_x_x_x
- % ./configure --disable-exec --prefix=`pwd`
+ % ./configure --prefix=`pwd`
  % make
  % make install
 

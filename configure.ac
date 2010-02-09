@@ -13,24 +13,24 @@ AC_ARG_ENABLE(CAPRI2,
 	[enable_CAPRI2=$enableval],  [enable_CAPRI2="no"])
 
 AC_ARG_WITH(SDK,
-	[  --with-SDK[=ARG]          use GEOLAB SDK package [ARG=GEO_SDK]],
-	[with_SDK=$withval],         [with_SDK=$GEO_SDK])
+	[  --with-SDK[=ARG]          use GEOLAB SDK package [ARG=no]],
+	[with_SDK=$withval],         [with_SDK="no"])
 
 AC_ARG_WITH(CAPRI,
-	[  --with-CAPRI[=ARG]        use CAPRI package [ARG=CAPRI_ROOT]],
-	[with_CAPRI=$withval],       [with_CAPRI=$CAPRI_ROOT])
+	[  --with-CAPRI[=ARG]        use CAPRI package [ARG=no]],
+	[with_CAPRI=$withval],       [with_CAPRI="no"])
 
 AC_ARG_WITH(PARASOLID,
-	[  --with-PARASOLID[=ARG]    use PARASOLID kernel [ARG=PARASOLID]],
-	[with_PARASOLID=$withval],   [with_PARASOLID=$PARASOLID])
+	[  --with-PARASOLID[=ARG]    use PARASOLID kernel [ARG=no]],
+	[with_PARASOLID=$withval],   [with_PARASOLID="no"])
 
 AC_ARG_WITH(OpenCASCADE,
-	[  --with-OpenCASCADE[=ARG]  use OpenCASCADE kernel [ARG=CASROOT]],
-	[with_OpenCASCADE=$withval], [with_OpenCASCADE=$CASROOT])
+	[  --with-OpenCASCADE[=ARG]  use OpenCASCADE kernel [ARG=no]],
+	[with_OpenCASCADE=$withval], [with_OpenCASCADE="no"])
 
 AC_ARG_WITH(PROE,
-	[  --with-PROE[=ARG]         use Pro-Engineer kernel [ARG=PRODIR]],
-	[with_PROE=$withval],        [with_PROE=$PRODIR])
+	[  --with-PROE[=ARG]         use Pro-Engineer kernel [ARG=no]],
+	[with_PROE=$withval],        [with_PROE="no"])
 
 AC_PROG_RANLIB
 
