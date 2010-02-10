@@ -457,8 +457,8 @@ VALUE queue_load( VALUE self, VALUE rb_ints, VALUE rb_doubles )
   double *doubles;
   GET_QUEUE_FROM_SELF;
 
-  nInt = RARRAY(rb_ints)->len;
-  nDouble = RARRAY(rb_doubles)->len;
+  nInt = RARRAY_LEN(rb_ints);
+  nDouble = RARRAY_LEN(rb_doubles);
 
   ints = malloc(nInt * sizeof(int));
   doubles = malloc(nDouble * sizeof(double));

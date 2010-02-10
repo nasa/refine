@@ -24,7 +24,7 @@ VALUE tableau_constraintMatrix( VALUE self, VALUE rb_data )
   double *data;
   VALUE rb_result;
   GET_TABLEAU_FROM_SELF;
-  ndata = RARRAY(rb_data)->len;
+  ndata = RARRAY_LEN(rb_data);
   data = (double *)malloc(ndata*sizeof(double));
   for ( i=0 ; i < ndata ; i++ ) data[i] = NUM2DBL( rb_ary_entry( rb_data, i) );
   rb_result = (tableau == tableauConstraintMatrix(tableau, data)?self:Qnil);
@@ -38,7 +38,7 @@ VALUE tableau_cost( VALUE self, VALUE rb_data )
   double *data;
   VALUE rb_result;
   GET_TABLEAU_FROM_SELF;
-  ndata = RARRAY(rb_data)->len;
+  ndata = RARRAY_LEN(rb_data);
   data = (double *)malloc(ndata*sizeof(double));
   for ( i=0 ; i < ndata ; i++ ) data[i] = NUM2DBL( rb_ary_entry( rb_data, i) );
   rb_result = (tableau == tableauCost(tableau, data)?self:Qnil);
@@ -52,7 +52,7 @@ VALUE tableau_constraint( VALUE self, VALUE rb_data )
   double *data;
   VALUE rb_result;
   GET_TABLEAU_FROM_SELF;
-  ndata = RARRAY(rb_data)->len;
+  ndata = RARRAY_LEN(rb_data);
   data = (double *)malloc(ndata*sizeof(double));
   for ( i=0 ; i < ndata ; i++ ) data[i] = NUM2DBL( rb_ary_entry( rb_data, i) );
   rb_result = (tableau == tableauConstraint(tableau, data)?self:Qnil);

@@ -92,7 +92,7 @@ static VALUE gridmove_applyDisplacements( VALUE self )
 
 static VALUE rb_ary_length(VALUE ary)
 {
-  return INT2NUM(RARRAY(ary)->len);
+  return INT2NUM(RARRAY_LEN(ary));
 }
 
 static VALUE gridmove_cellFaceNormal( VALUE self, VALUE rb_xyz, VALUE rb_nodes, 

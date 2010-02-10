@@ -8,7 +8,7 @@ static VALUE Sort_Heap( VALUE self, VALUE rb_arrayInput )
   int *arrayInput, *sortedIndex;
   VALUE rb_sortedIndex;
 
-  length = RARRAY(rb_arrayInput)->len;
+  length = RARRAY_LEN(rb_arrayInput);
 
   arrayInput = malloc(length*sizeof(int));
   sortedIndex = malloc(length*sizeof(int));
@@ -32,7 +32,7 @@ static VALUE Sort_DoubleHeap( VALUE self, VALUE rb_arrayInput )
   int *sortedIndex;
   VALUE rb_sortedIndex;
 
-  length = RARRAY(rb_arrayInput)->len;
+  length = RARRAY_LEN(rb_arrayInput);
 
   arrayInput = malloc(length*sizeof(double));
   sortedIndex = malloc(length*sizeof(int));
@@ -54,7 +54,7 @@ static VALUE Sort_Search( VALUE self, VALUE rb_arrayInput, VALUE target )
   int i, length, found;
   int *arrayInput;
 
-  length = RARRAY(rb_arrayInput)->len;
+  length = RARRAY_LEN(rb_arrayInput);
 
   arrayInput = malloc(length*sizeof(int));
   for(i=0;i<length;i++) arrayInput[i]=NUM2INT(rb_ary_entry(rb_arrayInput,i));

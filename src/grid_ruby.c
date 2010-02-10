@@ -30,7 +30,7 @@ VALUE grid_from_FAST( VALUE class, VALUE rb_filename)
 {
   Grid *grid;
   VALUE obj;
-  grid = gridImportFAST( RSTRING(rb_filename)->ptr );
+  grid = gridImportFAST( RSTRING_PTR(rb_filename) );
   obj = Data_Wrap_Struct( class, 0, grid_free, grid );
   return obj;
 }
@@ -80,7 +80,7 @@ VALUE grid_writeTecplotSurfaceScalar( VALUE self, VALUE rb_scalar )
   double *scalar;
   VALUE value;
   GET_GRID_FROM_SELF;
-  length = RARRAY(rb_scalar)->len;
+  length = RARRAY_LEN(rb_scalar);
   scalar = (double *)malloc(length*sizeof(double));
   for(i=0;i<length;i++) scalar[i] = NUM2DBL( rb_ary_entry( rb_scalar, i) );
   value = (grid==gridWriteTecplotSurfaceScalar(grid,NULL,scalar)?self:Qnil);
@@ -970,7 +970,7 @@ VALUE grid_renumberGlobalNodes( VALUE self, VALUE rb_n2o )
   int i, nnode, *n2o;
   VALUE value;
   GET_GRID_FROM_SELF;
-  nnode = RARRAY(rb_n2o)->len;
+  nnode = RARRAY_LEN(rb_n2o);
   n2o = malloc(nnode*sizeof(int));
   for(i=0;i<nnode;i++) n2o[i] = NUM2INT( rb_ary_entry(rb_n2o,i) );
   value = (grid==gridRenumberGlobalNodes(grid,nnode,n2o)?self:Qnil);
