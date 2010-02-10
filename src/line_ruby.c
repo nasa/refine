@@ -89,7 +89,7 @@ VALUE lines_save( VALUE self, VALUE rb_filename )
 {
   char *filename;
   GET_LINES_FROM_SELF;
-  filename = RSTRING(rb_filename)->ptr;
+  filename = RSTRING_PTR(rb_filename);
   return (lines==linesSave(lines,filename)?self:Qnil);
 }
 
@@ -97,7 +97,7 @@ VALUE lines_load( VALUE self, VALUE rb_filename )
 {
   char *filename;
   GET_LINES_FROM_SELF;
-  filename = RSTRING(rb_filename)->ptr;
+  filename = RSTRING_PTR(rb_filename);
   return (lines==linesLoad(lines,filename)?self:Qnil);
 }
 
