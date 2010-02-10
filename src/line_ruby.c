@@ -77,7 +77,7 @@ VALUE lines_renumber( VALUE self, VALUE rb_o2n )
   int i, length, *o2n;
   GET_LINES_FROM_SELF;
   
-  length = RARRAY(rb_o2n)->len;
+  length = RARRAY_LEN(rb_o2n);
   o2n = malloc( length * sizeof(int) );
   for (i=0;i<length;i++) o2n[i] = NUM2INT(rb_ary_entry(rb_o2n,i));
   linesRenumber(lines,o2n);
