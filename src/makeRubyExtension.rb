@@ -11,9 +11,9 @@ end
 
 rubyExt = ext.downcase + "_ruby.c"
 
-sourceExt = rubyExt.collect{ |r| r.sub(/_ruby\.c/, ".c") }
+sourceExt = ext.downcase + ".c"
 
-objC = rubyExt.to_a + sourceExt
+objC = [ rubyExt, sourceExt ]
 
 ARGV[1..ARGV.size].each { |c| objC.push c if c =~/\.c/ }
 
