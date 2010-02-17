@@ -54,7 +54,26 @@ void unravel_thaw_( int *nodeid, int *status )
 
 void unravel_it_( int *status )
 {
-  *status = -1;
+  int node, try;
+  double volume, smallest_volume;
+
+  *status = 1;
+  for ( try = 0 ; try < 100 ; try ++ )
+    {
+      smallest_volume = DBL_MAX;
+      for ( node = 0 ; node < gridMaxNode(grid) ; node++ )
+	{
+	  gridUntangleVolume( grid, node, 2, TRUE );
+	  gridNodeVolume(grid, node, &volume );
+	  smallest_volume = MIN( smallest_volume, volume );
+	}
+      if ( smallest_volume > 1.0e-15 )
+	{
+	  *status = 0;
+	  return;
+	}
+    }
+
 }
 
 void unravel_xyz_( int *nodeid, double *x, double *y, double *z, int *status )
