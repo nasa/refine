@@ -65,7 +65,7 @@ void unravel_xyz_( int *nodeid, double *x, double *y, double *z, int *status )
   *status = 0;
   
   local_node = gridGlobal2Local(grid, (*nodeid)-1 );
-  if ( grid != gridNodeXYZ( grid, node, xyz ) )  
+  if ( grid != gridNodeXYZ( grid, local_node, xyz ) )  
     {
       *status = -1;
       return;

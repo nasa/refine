@@ -14,9 +14,9 @@
 BEGIN_C_DECLORATION
 void unravel_start_( void );
 void unravel_tet_( int *c2n, double *x, double *y, double *z );
-void unravel_thaw_( int *nodeid );
+void unravel_thaw_( int *nodeid, int *status );
 void unravel_it_( int *success );
-void unravel_xyz_( int *nodeid, double *x, double *y, double *z );
+void unravel_xyz_( int *nodeid, double *x, double *y, double *z, int *status );
 void unravel_cleanup_( void );
 END_C_DECLORATION
 

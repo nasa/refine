@@ -50,7 +50,8 @@ librefine_a_SOURCES = \
 	gridgeom.h gridgeom.c \
 	gridmpi.h gridmpi.c \
 	gridmove.h gridmove.c \
-	gridfortran.h gridfortran.c
+	gridfortran.h gridfortran.c \
+	unravel_fortran.h unravel_fortran.c
 
 lib_LIBRARIES += libFAUXGeom.a
 
