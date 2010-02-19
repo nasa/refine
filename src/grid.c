@@ -345,7 +345,7 @@ Grid *gridImportNGP( char *filename )
   int face;
   int lc,rc, bc;
   int *c2n;
-
+  int cell;
   Grid *grid;
  
   file = fopen(filename,"r");\
@@ -460,9 +460,10 @@ Grid *gridImportNGP( char *filename )
 
     }
 
-  free(c2n);
+  for (cell=0;cell<ncell;cell++)
+    gridAddCell(grid, c2n[0+4*cell],c2n[1+4*cell],c2n[2+4*cell],c2n[3+4*cell]);
 
-  
+  free(c2n);
 
   return grid;
 }
