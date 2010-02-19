@@ -404,6 +404,9 @@ Grid *gridImportNGP( char *filename )
 		 __FILE__, __LINE__, (face+1), prefix );
 	  gridFree(grid); return NULL;
 	}
+      nodes[0]--;
+      nodes[1]--;
+      nodes[2]--;
       if (4 != fscanf(file,"%d %d %d %d",
 		      &prefix, &lc, &rc, &bc ) )
 	{
@@ -419,17 +422,19 @@ Grid *gridImportNGP( char *filename )
 	}
       if ( lc > 0 ) 
 	{
-	  if ( EMPTY == c2n[0+4*lc] )
+	  cell = lc-1;
+	  if ( EMPTY == c2n[0+4*cell] )
 	    {
-	      for (node=0;node<3;node++) c2n[node+4*lc]=nodes[node];
+	      for (node=0;node<3;node++) c2n[node+4*cell]=nodes[node];
 	    }
 	  else
 	    {
 	      for (node=0;node<3;node++)
 		{
-		  if ( nodes[node] != c2n[0+4*lc] &&
-		       nodes[node] != c2n[1+4*lc] &&
-		       nodes[node] != c2n[2+4*lc] ) c2n[3+4*lc] = nodes[node];
+		  if ( nodes[node] != c2n[0+4*cell] &&
+		       nodes[node] != c2n[1+4*cell] &&
+		       nodes[node] != c2n[2+4*cell] ) 
+		    c2n[3+4*cell] = nodes[node];
 		}
 	    }
 	}
@@ -439,17 +444,19 @@ Grid *gridImportNGP( char *filename )
 	}
       if ( rc > 0 ) 
 	{
-	  if ( EMPTY == c2n[0+4*rc] )
+	  cell = rc-1;
+	  if ( EMPTY == c2n[0+4*cell] )
 	    {
-	      for (node=0;node<3;node++) c2n[node+4*rc]=nodes[node];
+	      for (node=0;node<3;node++) c2n[node+4*cell]=nodes[node];
 	    }
 	  else
 	    {
 	      for (node=0;node<3;node++)
 		{
-		  if ( nodes[node] != c2n[0+4*rc] &&
-		       nodes[node] != c2n[1+4*rc] &&
-		       nodes[node] != c2n[2+4*rc] ) c2n[3+4*rc] = nodes[node];
+		  if ( nodes[node] != c2n[0+4*cell] &&
+		       nodes[node] != c2n[1+4*cell] &&
+		       nodes[node] != c2n[2+4*cell] ) 
+		    c2n[3+4*cell] = nodes[node];
 		}
 	    }	  
 	}
@@ -461,7 +468,12 @@ Grid *gridImportNGP( char *filename )
     }
 
   for (cell=0;cell<ncell;cell++)
-    gridAddCell(grid, c2n[0+4*cell],c2n[1+4*cell],c2n[2+4*cell],c2n[3+4*cell]);
+    {
+      gridAddCell(grid, 
+		  c2n[0+4*cell],c2n[1+4*cell],c2n[2+4*cell],c2n[3+4*cell]);
+      printf("cell %2d : %2d %2d %2d %2d\n",
+	     cell,c2n[0+4*cell],c2n[1+4*cell],c2n[2+4*cell],c2n[3+4*cell] );
+    }
 
   free(c2n);
 
