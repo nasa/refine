@@ -339,6 +339,10 @@ Grid *gridImportNGP( char *filename )
 {
   FILE *file;
   int nnode, maxface, ncell;
+  int node, prefix;
+  double xyz[3];
+
+  Grid *grid;
  
   file = fopen(filename,"r");\
   if (NULL == file) return NULL;
@@ -351,7 +355,34 @@ Grid *gridImportNGP( char *filename )
     }
 
   printf("nnode %d ncell %d maxface %d\n",nnode,ncell,maxface);
-  return NULL;
+
+  grid = gridCreate(nnode, ncell, maxface, 0);
+  if (NULL == grid) return NULL;
+
+  for ( node = 0; node < nnode ; node++ )
+    {
+      if (4 != fscanf(file,"%d %lf %lf %lf",
+		      &prefix,&(xyz[0]),&(xyz[1]),&(xyz[2]) ) )
+	{
+	  printf("ERROR: gridImportNGP: %s: %d: node %d read\n",
+		 __FILE__, __LINE__, node );
+	  gridFree(grid); return NULL;
+	}
+      if ( (node+1) != prefix )
+	{
+	  printf("ERROR: gridImportNGP: %s: %d: node %d prefix %d mismatch\n",
+		 __FILE__, __LINE__, (node+1), prefix );
+	  gridFree(grid); return NULL;
+	}
+      if ( node != gridAddNode( grid, xyz[0], xyz[1], xyz[2] ) )
+	{
+	  printf("ERROR: gridImportNGP: %s: %d: gridAddNode failed\n",
+		 __FILE__, __LINE__, node, prefix );
+	  gridFree(grid); return NULL;
+	}
+    }
+
+  return grid;
 }
 
 Grid *gridImportFAST( char *filename )
