@@ -16,18 +16,23 @@
 
 static Grid *grid = NULL;
 
-void unravel_start_( void )
+void unravel_start_( int *unravel_api_version, int *status )
 {
+  *status = 0;
+
   if (NULL != grid) gridFree(grid);
 
   grid = gridCreate(200, 200, 0, 0);
 
+  if (NULL == grid) *status = 1;
 }
 
-void unravel_tet_( int *c2n, double *x, double *y, double *z )
+void unravel_tet_( int *c2n, double *x, double *y, double *z, int *status )
 {
   int cell_node;
   int local_nodes[4];
+
+  *status = 0;
 
   for ( cell_node = 0 ; cell_node < 4 ; cell_node++ )
     {
@@ -94,8 +99,11 @@ void unravel_xyz_( int *nodeid, double *x, double *y, double *z, int *status )
   *z = xyz[2];
 }
 
-void unravel_cleanup_( void )
+void unravel_cleanup_( int *status )
 {
+
+  *status = 0;
+  
  gridFree(grid);
  grid = NULL;
 }
