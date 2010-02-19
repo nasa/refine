@@ -376,8 +376,8 @@ Grid *gridImportNGP( char *filename )
 	}
       if ( node != gridAddNode( grid, xyz[0], xyz[1], xyz[2] ) )
 	{
-	  printf("ERROR: gridImportNGP: %s: %d: gridAddNode failed\n",
-		 __FILE__, __LINE__, node, prefix );
+	  printf("ERROR: gridImportNGP: %s: %d: gridAddNode %d failed\n",
+		 __FILE__, __LINE__, node );
 	  gridFree(grid); return NULL;
 	}
     }
@@ -394,20 +394,23 @@ Grid *gridImportFAST( char *filename )
   int *c2n;
 
   file = fopen(filename,"r");
-  fscanf(file,"%d %d %d",&nnode,&nface,&ncell);
+  if ( 3 != fscanf(file,"%d %d %d",&nnode,&nface,&ncell) ) return NULL;
 
   xyz = (double *)malloc(3*nnode*sizeof(double));
 
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[0+3*i]);
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[1+3*i]);
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&xyz[2+3*i]);
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[0+3*i]) ) return NULL;
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[1+3*i]) ) return NULL;
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[2+3*i]) ) return NULL;
 
   f2n = (int *)malloc(3*nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
-    fscanf(file,"%d",&f2n[0+3*i]);
-    fscanf(file,"%d",&f2n[1+3*i]);
-    fscanf(file,"%d",&f2n[2+3*i]);
+    if ( 1 != fscanf(file,"%d",&f2n[0+3*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&f2n[1+3*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&f2n[2+3*i]) ) return NULL;
     f2n[0+3*i]--;
     f2n[1+3*i]--;
     f2n[2+3*i]--;
@@ -416,7 +419,7 @@ Grid *gridImportFAST( char *filename )
   faceId = (int *)malloc(nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
-    fscanf(file,"%d",&faceId[i]);
+    if ( 1 != fscanf(file,"%d",&faceId[i]) ) return NULL;
   }
 
   maxcell = ncell*2;
@@ -424,10 +427,10 @@ Grid *gridImportFAST( char *filename )
   c2n = (int *)malloc(4*maxcell*sizeof(int));
 
   for( i=0; i<ncell ; i++ ) {
-    fscanf(file,"%d",&c2n[0+4*i]);
-    fscanf(file,"%d",&c2n[1+4*i]);
-    fscanf(file,"%d",&c2n[2+4*i]);
-    fscanf(file,"%d",&c2n[3+4*i]);
+    if ( 1 != fscanf(file,"%d",&c2n[0+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[1+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[2+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[3+4*i]) ) return NULL;
     c2n[0+4*i]--;
     c2n[1+4*i]--;
     c2n[2+4*i]--;
@@ -502,20 +505,23 @@ Grid *gridImportRef( char *filename )
   int face_id;
 
   file = fopen(filename,"r");
-  fscanf(file,"%d %d %d",&nnode,&nface,&ncell);
+  if ( 3 != fscanf(file,"%d %d %d",&nnode,&nface,&ncell) ) return NULL;
 
   xyz = (double *)malloc(3*nnode*sizeof(double));
 
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[0+3*i]));
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[1+3*i]));
-  for( i=0; i<nnode ; i++ ) fscanf(file,"%lf",&(xyz[2+3*i]));
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[0+3*i]) ) return NULL;
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[1+3*i]) ) return NULL;
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[2+3*i]) ) return NULL;
 
   f2n = (int *)malloc(3*nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
-    fscanf(file,"%d",&(f2n[0+3*i]));
-    fscanf(file,"%d",&(f2n[1+3*i]));
-    fscanf(file,"%d",&(f2n[2+3*i]));
+    if ( 1 != fscanf(file,"%d",&f2n[0+3*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&f2n[1+3*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&f2n[2+3*i]) ) return NULL;
     (f2n[0+3*i])--;
     (f2n[1+3*i])--;
     (f2n[2+3*i])--;
@@ -524,16 +530,16 @@ Grid *gridImportRef( char *filename )
   faceId = (int *)malloc(nface*sizeof(int));
 
   for( i=0; i<nface ; i++ ) {
-    fscanf(file,"%d",&faceId[i]);
+    if ( 1 != fscanf(file,"%d",&faceId[i]) ) return NULL;
   }
 
   c2n = (int *)malloc(4*ncell*sizeof(int));
 
   for( i=0; i<ncell ; i++ ) {
-    fscanf(file,"%d",&(c2n[0+4*i]));
-    fscanf(file,"%d",&(c2n[1+4*i]));
-    fscanf(file,"%d",&(c2n[2+4*i]));
-    fscanf(file,"%d",&(c2n[3+4*i]));
+    if ( 1 != fscanf(file,"%d",&c2n[0+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[1+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[2+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[3+4*i]) ) return NULL;
     (c2n[0+4*i])--;
     (c2n[1+4*i])--;
     (c2n[2+4*i])--;
@@ -543,18 +549,21 @@ Grid *gridImportRef( char *filename )
   grid = gridImport( nnode, nnode, nface, nface, ncell, ncell, 0,
 		     xyz, f2n, faceId, c2n );
 
-  fscanf(file,"%d %d %d",&nGeomNode,&nGeomEdge,&nGeomFace);
+  if ( 3 != fscanf(file,"%d %d %d",&nGeomNode,&nGeomEdge,&nGeomFace) ) 
+    return NULL;
 
   gridSetNGeomNode( grid, nGeomNode );
   gridSetNGeomEdge( grid, nGeomEdge );
   gridSetNGeomFace( grid, nGeomFace );
 
   for( edge_id=1; edge_id<=gridNGeomEdge(grid) ; edge_id++ ) {
-    fscanf( file,"%d %d", &edge_nnodes, &edge_id_verification);
+    if ( 2 != fscanf( file,"%d %d", &edge_nnodes, &edge_id_verification) ) 
+      return NULL;
     edge_nodes = (int *)malloc( edge_nnodes * sizeof(int) );
     t = (double *)malloc( edge_nnodes * sizeof(double) );
     for( i=0; i<edge_nnodes ; i++ ) {
-      fscanf( file,"%d %lf", &(edge_nodes[i]), &(t[i]));
+      if ( 2 != fscanf( file,"%d %lf", &(edge_nodes[i]), &(t[i])) ) 
+      return NULL;
     }
     gridAddGeomEdge( grid, edge_id, edge_nodes[0], edge_nodes[edge_nnodes-1]);
     for( i=0; i<(edge_nnodes-1) ; i++ ) {
@@ -566,10 +575,10 @@ Grid *gridImportRef( char *filename )
     free(t);
   }
   
-  fscanf( file,"%d\n",&uv_nnodes);
+  if ( 1 != fscanf( file,"%d\n",&uv_nnodes) ) return NULL;
   for( lines=0; lines<uv_nnodes ; lines++ ) {
-    fscanf(file,"%d %d %lf %lf\n", 
-	   &face_id, &node, &u, &v);
+    if ( 4 != fscanf(file,"%d %d %lf %lf\n", 
+	   &face_id, &node, &u, &v) ) return NULL;
     gridSetNodeUV(grid, node, face_id, u, v);
   }
 
@@ -792,7 +801,7 @@ Grid *gridImportGRI( char *filename )
   verbose = TRUE;
 
   file = fopen(filename,"r");
-  fscanf(file,"%d %d",&nnode,&ncell);
+  if ( 2 != fscanf(file,"%d %d",&nnode,&ncell) ) return NULL;
 
   if (verbose) printf("gri size: %d nodes %d cells.\n",nnode,ncell);
 
@@ -801,9 +810,10 @@ Grid *gridImportGRI( char *filename )
   xyz = (double *)malloc(3*nnode*sizeof(double));
 
   for( i=0; i<nnode ; i++ ) 
-    fscanf(file,"%lf %lf %lf",&xyz[0+3*i],&xyz[1+3*i],&xyz[2+3*i]);
+    if ( 3 != fscanf(file,"%lf %lf %lf",&xyz[0+3*i],&xyz[1+3*i],&xyz[2+3*i]) ) 
+      return NULL;
 
-  fscanf(file,"%d",&nface_groups);
+  if ( 1 != fscanf(file,"%d",&nface_groups) ) return NULL;
 
   if (verbose) printf("gri size: %d face IDs.\n",nface_groups);
 
@@ -815,7 +825,7 @@ Grid *gridImportGRI( char *filename )
 
     if (verbose) printf("reading faces in group %d...\n",group+1);
   
-    fscanf(file,"%d",&(face_group_size[group]));
+    if ( 1 != fscanf(file,"%d",&(face_group_size[group])) ) return NULL;
     nface += face_group_size[group];
 
     if (verbose) printf("gri size: %d group %d faces.\n",
@@ -825,7 +835,8 @@ Grid *gridImportGRI( char *filename )
     face_group[group] = f2n;
 
     for( i=0; i<face_group_size[group] ; i++ ) {
-      fscanf(file,"%d %d %d",&(f2n[0+3*i]),&(f2n[1+3*i]),&(f2n[2+3*i]));
+      if ( 3 != fscanf(file,"%d %d %d",
+		       &(f2n[0+3*i]),&(f2n[1+3*i]),&(f2n[2+3*i])) ) return NULL;
       f2n[0+3*i]--; f2n[1+3*i]--; f2n[2+3*i]--;
     }
 
@@ -858,7 +869,7 @@ Grid *gridImportGRI( char *filename )
   }
    */
 
-  fscanf(file,"%d",&cell_group_size);
+  if ( 1 != fscanf(file,"%d",&cell_group_size) ) return NULL;
 
   if (verbose) printf("gri size: %d cells (assume Q1 type).\n",
 		      cell_group_size);
@@ -868,7 +879,9 @@ Grid *gridImportGRI( char *filename )
   c2n = (int *)malloc(4*ncell*sizeof(int));
 
   for( i=0; i<ncell ; i++ ) {
-    fscanf(file,"%d %d %d %d",&c2n[0+4*i],&c2n[1+4*i],&c2n[2+4*i],&c2n[3+4*i]);
+    if ( 4 != fscanf(file,"%d %d %d %d",
+		     &c2n[0+4*i],&c2n[1+4*i],&c2n[2+4*i],&c2n[3+4*i]) ) 
+      return NULL;
     c2n[0+4*i]--; c2n[1+4*i]--; c2n[2+4*i]--; c2n[3+4*i]--;
   }
 
@@ -937,15 +950,15 @@ Grid *gridImportAdapt( Grid *grid, char *filename )
 
   file = fopen(filename,"r");
 
-  fscanf(file,"%d",&nnode);
+  if ( 1 != fscanf(file,"%d",&nnode) ) return NULL;
 
   printf("metric nnodes %10d %10d\n",nnode,gridNNode(grid));
 
   for( i=0; i<grid->nnode ; i++ ) 
-    fscanf(file,"%lf %lf %lf %lf %lf %lf\n",
+    if ( 6 != fscanf(file,"%lf %lf %lf %lf %lf %lf\n",
        &grid->map[0+6*i], &grid->map[1+6*i], &grid->map[2+6*i],
                           &grid->map[3+6*i], &grid->map[4+6*i],
-                                             &grid->map[5+6*i]);
+                                             &grid->map[5+6*i]) ) return NULL;
   fclose(file);
   return grid;
 }
