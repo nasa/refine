@@ -335,6 +335,25 @@ Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
   return  grid;
 }
 
+Grid *gridImportNGP( char *filename )
+{
+  FILE *file;
+  int nnode, maxface, ncell;
+ 
+  file = fopen(filename,"r");\
+  if (NULL == file) return NULL;
+
+  if ( 3 != fscanf(file,"%d %d %d",&nnode,&ncell,&maxface) )
+    {
+      printf("ERROR: gridImportNGP: %s: %d: header read\n",
+	     __FILE__, __LINE__ );
+      return NULL;
+    }
+
+  printf("nnode %d ncell %d maxface %d\n",nnode,ncell,maxface);
+  return NULL;
+}
+
 Grid *gridImportFAST( char *filename )
 {
   FILE *file;
