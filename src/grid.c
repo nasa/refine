@@ -341,6 +341,10 @@ Grid *gridImportNGP( char *filename )
   int nnode, maxface, ncell;
   int node, prefix;
   double xyz[3];
+  int nodes[3];
+  int face;
+  int lc,rc, bc;
+  int *c2n;
 
   Grid *grid;
  
@@ -365,7 +369,7 @@ Grid *gridImportNGP( char *filename )
 		      &prefix,&(xyz[0]),&(xyz[1]),&(xyz[2]) ) )
 	{
 	  printf("ERROR: gridImportNGP: %s: %d: node %d read\n",
-		 __FILE__, __LINE__, node );
+		 __FILE__, __LINE__, (node+1) );
 	  gridFree(grid); return NULL;
 	}
       if ( (node+1) != prefix )
@@ -381,6 +385,84 @@ Grid *gridImportNGP( char *filename )
 	  gridFree(grid); return NULL;
 	}
     }
+
+  c2n = (int *)malloc( 4*ncell*sizeof(int) );
+  for ( node = 0 ; node < 4*ncell ; node++ ) c2n[node] = EMPTY;
+
+  for ( face = 0; face < maxface ; face++ )
+    {
+      if (4 != fscanf(file,"%d %d %d %d",
+		      &prefix,&(nodes[0]),&(nodes[1]),&(nodes[2]) ) )
+	{
+	  printf("ERROR: gridImportNGP: %s: %d: face %d read line 1\n",
+		 __FILE__, __LINE__, face );
+	  gridFree(grid); return NULL;
+	}
+      if ( (face+1) != prefix )
+	{
+	  printf("ERROR: gridImportNGP: %s: %d: face %d prefix %d mismatch\n",
+		 __FILE__, __LINE__, (face+1), prefix );
+	  gridFree(grid); return NULL;
+	}
+      if (4 != fscanf(file,"%d %d %d %d",
+		      &prefix, &lc, &rc, &bc ) )
+	{
+	  printf("ERROR: gridImportNGP: %s: %d: face %d read line 2\n",
+		 __FILE__, __LINE__, face );
+	  gridFree(grid); return NULL;
+	}
+      if ( (face+1) != prefix )
+	{
+	  printf("ERROR: gridImportNGP: %s: %d: face %d prefix %d mismatch\n",
+		 __FILE__, __LINE__, (face+1), prefix );
+	  gridFree(grid); return NULL;
+	}
+      if ( lc > 0 ) 
+	{
+	  if ( EMPTY == c2n[0+4*lc] )
+	    {
+	      for (node=0;node<3;node++) c2n[node+4*lc]=nodes[node];
+	    }
+	  else
+	    {
+	      for (node=0;node<3;node++)
+		{
+		  if ( nodes[node] != c2n[0+4*lc] &&
+		       nodes[node] != c2n[1+4*lc] &&
+		       nodes[node] != c2n[2+4*lc] ) c2n[3+4*lc] = nodes[node];
+		}
+	    }
+	}
+      else
+	{
+	  gridAddFace( grid, nodes[0], nodes[1], nodes[2], ABS(lc) );
+	}
+      if ( rc > 0 ) 
+	{
+	  if ( EMPTY == c2n[0+4*rc] )
+	    {
+	      for (node=0;node<3;node++) c2n[node+4*rc]=nodes[node];
+	    }
+	  else
+	    {
+	      for (node=0;node<3;node++)
+		{
+		  if ( nodes[node] != c2n[0+4*rc] &&
+		       nodes[node] != c2n[1+4*rc] &&
+		       nodes[node] != c2n[2+4*rc] ) c2n[3+4*rc] = nodes[node];
+		}
+	    }	  
+	}
+      else
+	{
+	  gridAddFace( grid, nodes[0], nodes[1], nodes[2], ABS(rc) );
+	}
+
+    }
+
+  free(c2n);
+
+  
 
   return grid;
 }
