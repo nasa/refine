@@ -97,10 +97,10 @@ VALUE grid_writeTecplotSurfaceScalar( VALUE self, VALUE rb_scalar )
   return value;
 }
 
-VALUE grid_writeVTK( VALUE self )
+VALUE grid_writeVTK( VALUE self, VALUE rb_filename )
 {
   GET_GRID_FROM_SELF;
-  return (gridWriteVTK(grid,NULL)==grid?self:Qnil);
+  return (gridWriteVTK(grid,RSTRING_PTR(rb_filename))==grid?self:Qnil);
 }
 
 VALUE grid_exportFAST( VALUE self )
@@ -1324,7 +1324,7 @@ void Init_Grid()
   rb_define_method( cGrid, "writeTecplotGeomFaceXYZ", grid_writeTecplotGeomFaceXYZ, 1 );
   rb_define_method( cGrid, "writeTecplotEquator", grid_writeTecplotEquator, 2 );
   rb_define_method( cGrid, "writeTecplotSurfaceScalar", grid_writeTecplotSurfaceScalar, 1 );
-  rb_define_method( cGrid, "writeVTK", grid_writeVTK, 0 );
+  rb_define_method( cGrid, "writeVTK", grid_writeVTK, 1 );
   rb_define_method( cGrid, "exportFAST", grid_exportFAST, 0 );
   rb_define_method( cGrid, "exportFASTSurface", grid_exportFASTSurface, 0 );
   rb_define_method( cGrid, "exportGRI", grid_exportGRI, 0 );
