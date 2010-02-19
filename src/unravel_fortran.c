@@ -16,8 +16,11 @@
 
 static Grid *grid = NULL;
 
+void unravel_start__( int *unravel_api_version, int *status )
+{unravel_start_( unravel_api_version, status );}
 void unravel_start_( int *unravel_api_version, int *status )
 {
+  *unravel_api_version = 1;
   *status = 0;
 
   if (NULL != grid) gridFree(grid);
@@ -27,6 +30,8 @@ void unravel_start_( int *unravel_api_version, int *status )
   if (NULL == grid) *status = 1;
 }
 
+void unravel_tet__( int *c2n, double *x, double *y, double *z, int *status )
+{unravel_tet_( c2n, x, y, z, status );}
 void unravel_tet_( int *c2n, double *x, double *y, double *z, int *status )
 {
   int cell_node;
@@ -51,12 +56,16 @@ void unravel_tet_( int *c2n, double *x, double *y, double *z, int *status )
 	      local_nodes[2], local_nodes[3] );
 }
 
+void unravel_thaw__( int *nodeid, int *status )
+{unravel_thaw_( nodeid, status ); }
 void unravel_thaw_( int *nodeid, int *status )
 {
   *status = 0;
   if ( grid != gridThawNode( grid, (*nodeid)-1 ) ) *status = 1;
 }
 
+void unravel_it__( int *status )
+{ unravel_it_( status ); }
 void unravel_it_( int *status )
 {
   int node, try;
@@ -81,6 +90,8 @@ void unravel_it_( int *status )
 
 }
 
+void unravel_xyz__( int *nodeid, double *x, double *y, double *z, int *status )
+{ unravel_xyz_( nodeid, x, y, z, status ); }
 void unravel_xyz_( int *nodeid, double *x, double *y, double *z, int *status )
 {
   int local_node;
@@ -99,6 +110,8 @@ void unravel_xyz_( int *nodeid, double *x, double *y, double *z, int *status )
   *z = xyz[2];
 }
 
+void unravel_cleanup__( int *status )
+{ unravel_cleanup_( status ); }
 void unravel_cleanup_( int *status )
 {
 
