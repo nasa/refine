@@ -478,6 +478,48 @@ Grid *gridImportNGP( char *filename )
   return grid;
 }
 
+Grid *gridExportNGP( Grid *grid, char *filename )
+{
+  FILE *file;
+  int *c2f;
+  int face;
+  int nface;
+  int node;
+
+  if (NULL == gridPack(grid)) {
+    printf("gridExportNGP: gridPack failed.\n");
+    return NULL;
+  }
+
+  c2f = (int *)malloc( 4 * gridNCell(grid) * sizeof(int) );
+  for ( face = 0 ; face < 4 * gridNCell(grid) ; face++ )
+    c2f[face] = EMPTY;
+
+  nface = 0;
+
+  if (NULL != filename) {
+    file = fopen(filename,"w");
+  }else{
+    file = fopen("grid.ngp","w");
+  }
+  if (NULL == file) {
+    printf("gridExportNGP: file open failed.\n");
+    return NULL;
+  }
+
+  fprintf(file,"%d %d %d\n",gridNNode(grid),gridNCell(grid), nface);
+
+  for( node=0; node<gridNNode(grid) ; node++ ) 
+    fprintf(file,"%25.15e %25.15e %25.15e\n",
+	    grid->xyz[0+3*node], grid->xyz[1+3*node], grid->xyz[2+3*node]);
+
+  fclose(file);
+
+  free(c2f);
+
+  return grid;
+}
+
 Grid *gridImportFAST( char *filename )
 {
   FILE *file;

@@ -103,6 +103,12 @@ VALUE grid_writeVTK( VALUE self, VALUE rb_filename )
   return (gridWriteVTK(grid,RSTRING_PTR(rb_filename))==grid?self:Qnil);
 }
 
+VALUE grid_exportNGP( VALUE self, VALUE rb_filename)
+{
+  GET_GRID_FROM_SELF;
+  return (gridExportNGP(grid, RSTRING_PTR(rb_filename) )==grid?self:Qnil);
+}
+
 VALUE grid_exportFAST( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1325,6 +1331,7 @@ void Init_Grid()
   rb_define_method( cGrid, "writeTecplotEquator", grid_writeTecplotEquator, 2 );
   rb_define_method( cGrid, "writeTecplotSurfaceScalar", grid_writeTecplotSurfaceScalar, 1 );
   rb_define_method( cGrid, "writeVTK", grid_writeVTK, 1 );
+  rb_define_method( cGrid, "exportNGP", grid_exportNGP, 1 );
   rb_define_method( cGrid, "exportFAST", grid_exportFAST, 0 );
   rb_define_method( cGrid, "exportFASTSurface", grid_exportFASTSurface, 0 );
   rb_define_method( cGrid, "exportGRI", grid_exportGRI, 0 );
