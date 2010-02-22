@@ -485,17 +485,76 @@ Grid *gridExportNGP( Grid *grid, char *filename )
   int face;
   int nface;
   int node;
+  int cell, cell_face;
+  int face_nodes[3];
+  int cell_nodes[4];
+  int other_cell;
+  int other_nodes[4];
+  int other_face;
+  int other_face_nodes[3];
+ 
+  int cellfacenode[4][3] = {{1, 3, 2}, {0,2,3}, {0,3,1}, {0,1,2}};
 
-  if (NULL == gridPack(grid)) {
-    printf("gridExportNGP: gridPack failed.\n");
-    return NULL;
-  }
+  if ( FALSE )
+    {
+      if (NULL == gridPack(grid)) {
+	printf("gridExportNGP: gridPack failed.\n");
+	return NULL;
+      }
+    }
+  else
+    {
+      printf("gridExportNGP grid Pack skipped\n");
+    }
 
   c2f = (int *)malloc( 4 * gridNCell(grid) * sizeof(int) );
   for ( face = 0 ; face < 4 * gridNCell(grid) ; face++ )
     c2f[face] = EMPTY;
 
   nface = 0;
+  for ( cell = 0; cell < gridNCell(grid) ; cell++ )
+    for (cell_face = 0; cell_face < 4; cell_face++)
+      if ( EMPTY == c2f[cell_face+4*cell] )
+      {
+	c2f[cell_face+4*cell] = nface; 
+	if (grid != gridCell(grid,cell,cell_nodes))
+	  { 
+	    printf("ERROR: gridExportNGP: %s: %d: gridCell %d failed\n",
+		   __FILE__, __LINE__, cell );
+	    free(c2f); return NULL;
+	  }
+	face_nodes[0] = cell_nodes[cellfacenode[cell_face][0]];
+	face_nodes[1] = cell_nodes[cellfacenode[cell_face][1]];
+	face_nodes[2] = cell_nodes[cellfacenode[cell_face][2]];
+	other_cell = gridFindOtherCellWith3Nodes(grid,
+						 face_nodes[1],
+						 face_nodes[0],
+						 face_nodes[2],
+						 cell );
+	if ( EMPTY != other_cell )
+	  {
+	    gridCell(grid,other_cell,other_nodes);
+	    for (other_face = 0; other_face < 4; other_face++)
+	      {
+		other_face_nodes[0] = other_nodes[cellfacenode[other_face][0]];
+		other_face_nodes[1] = other_nodes[cellfacenode[other_face][1]];
+		other_face_nodes[2] = other_nodes[cellfacenode[other_face][2]];
+		if ( (face_nodes[0] == other_face_nodes[1]) &&
+		     (face_nodes[1] == other_face_nodes[0]) &&
+		     (face_nodes[2] == other_face_nodes[2]) ) 
+		  c2f[other_face+4*other_cell] = nface;
+		if ( (face_nodes[0] == other_face_nodes[2]) &&
+		     (face_nodes[1] == other_face_nodes[1]) &&
+		     (face_nodes[2] == other_face_nodes[0]) ) 
+		  c2f[other_face+4*other_cell] = nface;
+		if ( (face_nodes[0] == other_face_nodes[0]) &&
+		     (face_nodes[1] == other_face_nodes[2]) &&
+		     (face_nodes[2] == other_face_nodes[1]) ) 
+		  c2f[other_face+4*other_cell] = nface;
+	      }
+	  }
+	nface++;
+      }
 
   if (NULL != filename) {
     file = fopen(filename,"w");
@@ -510,7 +569,7 @@ Grid *gridExportNGP( Grid *grid, char *filename )
   fprintf(file,"%d %d %d\n",gridNNode(grid),gridNCell(grid), nface);
 
   for( node=0; node<gridNNode(grid) ; node++ ) 
-    fprintf(file,"%25.15e %25.15e %25.15e\n",
+    fprintf(file,"%d %25.15e %25.15e %25.15e\n", (node+1),
 	    grid->xyz[0+3*node], grid->xyz[1+3*node], grid->xyz[2+3*node]);
 
   fclose(file);
