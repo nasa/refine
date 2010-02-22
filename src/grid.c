@@ -603,8 +603,9 @@ Grid *gridExportNGP( Grid *grid, char *filename )
 			     faces[0+6*face], faces[1+6*face], faces[2+6*face]);
 	if (grid != gridFace(grid, bc_face, face_nodes, &face_id ))
 	  { 
-	    printf("ERROR: gridExportNGP: %s: %d: gridFace %d failed\n",
-		   __FILE__, __LINE__, bc_face );
+	    printf("ERROR: gridExportNGP: %s: %d: gridFace %d %d failed %d %d %d\n",
+		   __FILE__, __LINE__, bc_face, face,
+		   faces[0+6*face], faces[1+6*face], faces[2+6*face]);
 	    free(c2f); free(faces); return NULL;
 	  }
 	faces[3+6*face] = -(face_id % 8);
