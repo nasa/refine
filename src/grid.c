@@ -440,7 +440,7 @@ Grid *gridImportNGP( char *filename )
 	}
       else
 	{
-	  gridAddFace( grid, nodes[0], nodes[1], nodes[2], ABS(lc) );
+	  gridAddFace( grid, nodes[0], nodes[1], nodes[2], ABS(lc)+8*bc );
 	}
       if ( rc > 0 ) 
 	{
@@ -493,6 +493,9 @@ Grid *gridExportNGP( Grid *grid, char *filename )
   int other_face;
   int other_face_nodes[3];
  
+  int *faces;
+  int bc_face, face_id;
+
   int cellfacenode[4][3] = {{1, 3, 2}, {0,2,3}, {0,3,1}, {0,1,2}};
 
   if ( FALSE )
@@ -556,6 +559,58 @@ Grid *gridExportNGP( Grid *grid, char *filename )
 	nface++;
       }
 
+  faces = (int *)malloc( 6 * nface * sizeof(int) );
+  for ( face = 0 ; face < 6 *nface ; face++ )
+    faces[face] = EMPTY;
+
+  for ( cell = 0; cell < gridNCell(grid) ; cell++ )
+    for (cell_face = 0; cell_face < 4; cell_face++)
+      if ( EMPTY == c2f[cell_face+4*cell] )
+	{
+	    printf("ERROR: gridExportNGP: %s: %d: cell %d face %d missing\n",
+		   __FILE__, __LINE__, cell, cell_face );
+	    free(c2f); free(faces); return NULL;
+	}
+      else
+	{
+	  face = c2f[cell_face+4*cell];
+	  if (grid != gridCell(grid,cell,cell_nodes))
+	    { 
+	      printf("ERROR: gridExportNGP: %s: %d: gridCell %d failed\n",
+		     __FILE__, __LINE__, cell );
+	      free(c2f); free(faces); return NULL;
+	    }
+	  face_nodes[0] = cell_nodes[cellfacenode[cell_face][0]];
+	  face_nodes[1] = cell_nodes[cellfacenode[cell_face][1]];
+	  face_nodes[2] = cell_nodes[cellfacenode[cell_face][2]];
+	  if ( EMPTY == faces[0+6*face] )
+	    {
+	      faces[0+6*face] = face_nodes[0];
+	      faces[1+6*face] = face_nodes[1];
+	      faces[2+6*face] = face_nodes[2];
+	      faces[4+6*face] = cell;
+	    }
+	  else
+	    {
+	      faces[3+6*face] = cell;
+	    }
+	}
+
+  for ( face = 0; face < nface ; face++ )
+    if ( EMPTY == faces[3+6*face] )
+      {
+	bc_face=gridFindFace(grid, 
+			     faces[0+6*face], faces[1+6*face], faces[2+6*face]);
+	if (grid != gridFace(grid, bc_face, face_nodes, &face_id ))
+	  { 
+	    printf("ERROR: gridExportNGP: %s: %d: gridFace %d failed\n",
+		   __FILE__, __LINE__, bc_face );
+	    free(c2f); free(faces); return NULL;
+	  }
+	faces[3+6*face] = -(face_id % 8);
+	faces[5+6*face] =  (face_id / 8);
+      }
+
   if (NULL != filename) {
     file = fopen(filename,"w");
   }else{
@@ -572,9 +627,20 @@ Grid *gridExportNGP( Grid *grid, char *filename )
     fprintf(file,"%d %25.15e %25.15e %25.15e\n", (node+1),
 	    grid->xyz[0+3*node], grid->xyz[1+3*node], grid->xyz[2+3*node]);
 
+  for ( face = 0; face < nface ; face++ )
+    {
+      fprintf(file, "%d %d %d %d\n",
+	      face+1,faces[0+6*face]+1,faces[1+6*face]+1,faces[2+6*face]+1);
+      fprintf(file, "%d %d %d %d\n",
+	      face+1,
+	      (faces[3+6*face]>=0?faces[3+6*face]+1:faces[3+6*face]),
+	      (faces[4+6*face]>=0?faces[4+6*face]+1:faces[4+6*face]),
+	      (EMPTY==faces[5+6*face]?0:faces[5+6*face]));
+    }
+
   fclose(file);
 
-  free(c2f);
+  free(c2f);free(faces);
 
   return grid;
 }
