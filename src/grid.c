@@ -471,8 +471,6 @@ Grid *gridImportNGP( char *filename )
     {
       gridAddCell(grid, 
 		  c2n[0+4*cell],c2n[1+4*cell],c2n[2+4*cell],c2n[3+4*cell]);
-      printf("cell %2d : %2d %2d %2d %2d\n",
-	     cell,c2n[0+4*cell],c2n[1+4*cell],c2n[2+4*cell],c2n[3+4*cell] );
     }
 
   free(c2n);
