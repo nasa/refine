@@ -420,6 +420,12 @@ Grid *gridImportNGP( char *filename )
 		 __FILE__, __LINE__, (face+1), prefix );
 	  gridFree(grid); return NULL;
 	}
+      if ( 3 == lc || 3 == rc )
+	{
+	  printf("%d: %d %d %d\n%d: %d %d %d\n",
+		 face+1,nodes[0]+1,nodes[1]+1,nodes[2]+1,
+		 face+1,lc,rc,bc );
+	}
       if ( lc > 0 ) 
 	{
 	  cell = lc-1;
