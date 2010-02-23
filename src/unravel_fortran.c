@@ -60,8 +60,12 @@ void unravel_thaw__( int *nodeid, int *status )
 {unravel_thaw_( nodeid, status ); }
 void unravel_thaw_( int *nodeid, int *status )
 {
+  int local_node;
   *status = 0;
-  if ( grid != gridThawNode( grid, (*nodeid)-1 ) ) *status = 1;
+
+  local_node = gridGlobal2Local(grid, (*nodeid)-1 );
+
+  if ( grid != gridThawNode( grid, local_node ) ) *status = 1;
 }
 
 void unravel_it__( int *status )
@@ -72,15 +76,16 @@ void unravel_it_( int *status )
   double volume, smallest_volume;
 
   *status = 1;
-  for ( try = 0 ; try < 100 ; try ++ )
+  for ( try = 0 ; try < 2 ; try ++ )
     {
       smallest_volume = DBL_MAX;
       for ( node = 0 ; node < gridMaxNode(grid) ; node++ )
-	{
-	  gridUntangleVolume( grid, node, 2, TRUE );
-	  gridNodeVolume(grid, node, &volume );
-	  smallest_volume = MIN( smallest_volume, volume );
-	}
+	if ( !gridNodeFrozen(grid,node))
+	  {
+	    gridUntangleVolume( grid, node, 0, TRUE );
+	    gridNodeVolume(grid, node, &volume );
+	    smallest_volume = MIN( smallest_volume, volume );
+	  }
       if ( smallest_volume > 1.0e-15 )
 	{
 	  *status = 0;
@@ -95,7 +100,7 @@ void unravel_xyz__( int *nodeid, double *x, double *y, double *z, int *status )
 void unravel_xyz_( int *nodeid, double *x, double *y, double *z, int *status )
 {
   int local_node;
-  double *xyz;
+  double xyz[3];
 
   *status = 0;
   
