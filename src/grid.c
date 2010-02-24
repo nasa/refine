@@ -427,7 +427,9 @@ Grid *gridImportNGP( char *filename )
 	  cell = lc-1;
 	  if ( EMPTY == c2n[0+4*cell] )
 	    {
-	      for (node=0;node<3;node++) c2n[node+4*cell]=nodes[node];
+	      c2n[0+4*cell]=nodes[1];
+	      c2n[1+4*cell]=nodes[0];
+	      c2n[2+4*cell]=nodes[2];
 	    }
 	  else
 	    {
