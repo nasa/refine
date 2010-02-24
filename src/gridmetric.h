@@ -141,6 +141,8 @@ Grid *gridCollapseCost(Grid *g, int node0, int node1, double *currentCost,
 Grid *gridSplitCost(Grid *g, int node0, int node1, 
 		    double *currentCost, double *splitCost );
 
+Grid *gridSpacingFromTecplot(Grid *g, char *filename );
+
 END_C_DECLORATION
 
 #endif /* GRIDMETRIC_H */

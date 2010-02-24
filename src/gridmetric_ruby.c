@@ -495,6 +495,13 @@ VALUE grid_collapseCost( VALUE self, VALUE node0, VALUE node1 )
   return rb_cost;
 }
 
+VALUE grid_spacingFromTecplot( VALUE self, VALUE rb_filename)
+{
+  GET_GRID_FROM_SELF;
+  return (gridSpacingFromTecplot(grid, 
+				 RSTRING_PTR(rb_filename))==grid?self:Qnil);
+}
+
 VALUE cGridMetric;
 
 void Init_GridMetric() 
@@ -549,4 +556,5 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "cellMeanRatio", grid_cellMeanRatio, 4 );
   rb_define_method( cGridMetric, "cellMeanRatioDerivative", grid_cellMeanRatioDerivative, 4 );
   rb_define_method( cGridMetric, "collapseCost", grid_collapseCost, 2 );
+  rb_define_method( cGridMetric, "spacingFromTecplot", grid_spacingFromTecplot, 1 );
 }

@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <limits.h>
 #ifdef __APPLE__       /* Not needed on Mac OS X */
@@ -2754,6 +2755,72 @@ Grid *gridSplitCost(Grid *grid, int node0, int node1,
   }
 
   gridRemoveNode(grid,newnode);
+
+  return grid;
+}
+
+int parse_key_value_pair( char *line, char *key, int *val );
+int parse_key_value_pair( char *line, char *key, int *val )
+{
+  char *token;
+  char *token_start;
+  int length;
+
+  token_start = strstr( line, key );
+  if ( NULL == token_start )
+    {
+      printf("no key found\n");
+      return 1;
+    }
+  token_start += strlen( key );
+  length = strspn( token_start, "1234567890" );
+  if ( 0 == length )
+    {
+      printf("no int value found\n");
+      return 1;
+    }
+  token = (char *)malloc( (length+1)*sizeof(char) );
+  strncpy( token, token_start, length );
+  token[length] = '\0';
+  *val = atoi(token);
+  free( token );
+  return 0;
+}
+
+Grid *gridSpacingFromTecplot(Grid *grid, char *filename )
+{
+  FILE *file;
+#define LINE_SIZE (1025)
+  char line[LINE_SIZE];
+  int nnode, ntet;
+  double x,y,z,spacing;
+
+  file = fopen(filename,"r");
+  if (NULL == file) return NULL;
+
+  while ( !feof(file) )
+    {
+      if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      if ( !strncmp(line,"vari",4) || !strncmp(line,"VARI",4) )
+	{
+	  printf("%s", line);
+	}
+      if ( !strncmp(line,"zone",4) || !strncmp(line,"ZONE",4) )
+	{
+	  printf("%s", line);
+ 	  if( parse_key_value_pair( line, "I=", &nnode ) ) return NULL;
+	  if( parse_key_value_pair( line, "J=", &ntet ) ) return NULL;
+	  printf("%d nodes %d tets\n", nnode, ntet);
+	  if (nnode != gridNNode(grid) || ntet != gridNCell(grid)) 
+	    {
+	      printf("%s: %d: gridSpacingFromTecplot: sizes nodes %d != %d tets %d != %d \n",
+		     __FILE__,__LINE__,
+		     nnode,gridNNode(grid),ntet, gridNCell(grid));
+	      return NULL;
+	    }
+	}
+    }
+
 
   return grid;
 }
