@@ -431,6 +431,19 @@ double gridSpacing(Grid *grid, int node )
   return 1.0/sqrt(map[0]);
 }
 
+Grid *gridSetSpacing(Grid *grid, int node, double spacing )
+{
+  double spacingInverse;
+  spacingInverse = 1.0/spacing;
+  spacingInverse = spacingInverse * spacingInverse;
+  if ( grid != 
+      gridSetMap(grid,node,
+		 spacingInverse,0,0,
+		 spacingInverse,0,
+		 spacingInverse)) retunr NULL;
+  return grid;
+}
+
 Grid *gridResetSpacing(Grid *grid )
 {
   int node;

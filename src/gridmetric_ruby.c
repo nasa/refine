@@ -62,10 +62,18 @@ VALUE grid_smallestRatioEdge( VALUE self, VALUE node )
   return INT2NUM(edgeNode);
 }
 
-VALUE grid_spacing( VALUE self, VALUE node )
+VALUE grid_spacing( VALUE self, VALUE rb_node )
 {
   GET_GRID_FROM_SELF;
-  return rb_float_new( gridSpacing( grid, NUM2INT(node) ) );
+  return rb_float_new( gridSpacing( grid, NUM2INT(rb_node) ) );
+}
+
+VALUE grid_setSpacing( VALUE self, VALUE rb_node, VALUE rb_spacing )
+{
+  GET_GRID_FROM_SELF;
+  return (gridSetSpacing( grid, 
+			  NUM2INT(rb_node), 
+			  NUM2DBL(rb_spacing) )==grid?self:Qnil);
 }
 
 VALUE grid_resetSpacing( VALUE self )
@@ -501,6 +509,7 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "smallestRatioEdge", grid_smallestRatioEdge, 1 );
 
   rb_define_method( cGridMetric, "spacing", grid_spacing, 1 );
+  rb_define_method( cGridMetric, "setSpacing", grid_setSpacing, 2 );
   rb_define_method( cGridMetric, "resetSpacing", grid_resetSpacing, 0 );
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
   rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );

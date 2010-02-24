@@ -42,6 +42,7 @@ double gridAverageEdgeLength(Grid *g, int node );
 Grid *gridLargestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
 Grid *gridSmallestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
 double gridSpacing(Grid *g, int node );
+Grid *gridSetSpacing(Grid *g, int node, double spacing );
 Grid *gridResetSpacing(Grid *g );
 Grid *gridScaleSpacing(Grid *g, int node, double scale );
 Grid *gridScaleSpacingSphere(Grid *g, double x, double y, double z, double r,

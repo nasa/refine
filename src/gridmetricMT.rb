@@ -93,6 +93,15 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 5.0, grid.edgeLength(0,3), 1.0e-15
  end
 
+ def testSetSpacing
+  h = 0.125
+  assert_not_nil grid = Grid.new(2,0,0,0)
+  assert_equal 0, grid.addNode(1,0,0)
+  assert_equal grid, grid.setSpacing(0,0.125)
+  assert_equal h, grid.spacing(0)
+  assert_equal [1.0/h/h,0.0,0.0,1.0/h/h,0.0,1.0/h/h], grid.map(0)
+ end
+
  def testCopySpacing
   assert_not_nil grid = Grid.new(2,0,0,0)
   assert_equal 0, grid.nnode
