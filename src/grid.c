@@ -363,6 +363,7 @@ Grid *gridImportNGP( char *filename )
   grid = gridCreate(nnode, ncell, maxface, 0);
   if (NULL == grid) return NULL;
 
+/* read in the xyz of each node */
   for ( node = 0; node < nnode ; node++ )
     {
       if (4 != fscanf(file,"%d %lf %lf %lf",
@@ -386,6 +387,7 @@ Grid *gridImportNGP( char *filename )
 	}
     }
 
+/* construct the explict connectivity of the cells */
   c2n = (int *)malloc( 4*ncell*sizeof(int) );
   for ( node = 0 ; node < 4*ncell ; node++ ) c2n[node] = EMPTY;
 
@@ -419,12 +421,6 @@ Grid *gridImportNGP( char *filename )
 	  printf("ERROR: gridImportNGP: %s: %d: face %d prefix %d mismatch\n",
 		 __FILE__, __LINE__, (face+1), prefix );
 	  gridFree(grid); return NULL;
-	}
-      if ( 3 == lc || 3 == rc )
-	{
-	  printf("%d: %d %d %d\n%d: %d %d %d\n",
-		 face+1,nodes[0]+1,nodes[1]+1,nodes[2]+1,
-		 face+1,lc,rc,bc );
 	}
       if ( lc > 0 ) 
 	{
