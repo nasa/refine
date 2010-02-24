@@ -348,7 +348,7 @@ Grid *gridImportNGP( char *filename )
   int cell;
   Grid *grid;
  
-  file = fopen(filename,"r");\
+  file = fopen(filename,"r");
   if (NULL == file) return NULL;
 
   if ( 3 != fscanf(file,"%d %d %d",&nnode,&ncell,&maxface) )
@@ -357,8 +357,6 @@ Grid *gridImportNGP( char *filename )
 	     __FILE__, __LINE__ );
       return NULL;
     }
-
-  printf("nnode %d ncell %d maxface %d\n",nnode,ncell,maxface);
 
   grid = gridCreate(nnode, ncell, maxface, 0);
   if (NULL == grid) return NULL;
