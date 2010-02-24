@@ -440,7 +440,7 @@ Grid *gridSetSpacing(Grid *grid, int node, double spacing )
       gridSetMap(grid,node,
 		 spacingInverse,0,0,
 		 spacingInverse,0,
-		 spacingInverse)) retunr NULL;
+		 spacingInverse)) return(NULL);
   return grid;
 }
 
