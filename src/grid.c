@@ -502,17 +502,10 @@ Grid *gridExportNGP( Grid *grid, char *filename )
 
   int cellfacenode[4][3] = {{1, 3, 2}, {0,2,3}, {0,3,1}, {0,1,2}};
 
-  if ( FALSE )
-    {
-      if (NULL == gridPack(grid)) {
-	printf("gridExportNGP: gridPack failed.\n");
-	return NULL;
-      }
-    }
-  else
-    {
-      printf("gridExportNGP grid Pack skipped\n");
-    }
+  if (NULL == gridPack(grid)) {
+    printf("gridExportNGP: gridPack failed.\n");
+    return NULL;
+  }
 
   c2f = (int *)malloc( 4 * gridNCell(grid) * sizeof(int) );
   for ( face = 0 ; face < 4 * gridNCell(grid) ; face++ )
