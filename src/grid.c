@@ -444,7 +444,7 @@ Grid *gridImportNGP( char *filename )
 	}
       else
 	{
-	  gridAddFace( grid, nodes[0], nodes[1], nodes[2], ABS(lc)+8*bc );
+	  gridAddFace( grid, nodes[0], nodes[1], nodes[2], ABS(lc)+10*bc );
 	}
       if ( rc > 0 ) 
 	{
@@ -466,7 +466,7 @@ Grid *gridImportNGP( char *filename )
 	}
       else
 	{
-	  gridAddFace( grid, nodes[0], nodes[1], nodes[2], ABS(rc) );
+	  gridAddFace( grid, nodes[0], nodes[1], nodes[2], ABS(rc)+10*bc );
 	}
 
     }
@@ -612,8 +612,8 @@ Grid *gridExportNGP( Grid *grid, char *filename )
 		   faces[0+6*face], faces[1+6*face], faces[2+6*face]);
 	    free(c2f); free(faces); return NULL;
 	  }
-	faces[3+6*face] = -(face_id % 8);
-	faces[5+6*face] =  (face_id / 8);
+	faces[3+6*face] = -(face_id % 10);
+	faces[5+6*face] =  (face_id / 10);
       }
 
   if (NULL != filename) {
