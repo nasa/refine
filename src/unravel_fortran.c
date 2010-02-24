@@ -13,6 +13,8 @@
 #include "unravel_fortran.h"
 
 #include "grid.h"
+#include "gridcad.h"
+#include "gridmetric.h"
 
 static Grid *grid = NULL;
 
