@@ -2793,8 +2793,9 @@ Grid *gridSpacingFromTecplot(Grid *grid, char *filename )
 #define LINE_SIZE (1025)
   char line[LINE_SIZE];
   int nnode, ntet;
+  int node;
   double x,y,z,spacing;
-
+  double tol;
   file = fopen(filename,"r");
   if (NULL == file) return NULL;
 
@@ -2818,9 +2819,24 @@ Grid *gridSpacingFromTecplot(Grid *grid, char *filename )
 		     nnode,gridNNode(grid),ntet, gridNCell(grid));
 	      return NULL;
 	    }
+	  tol = 1.0e5;
+	  for (node =0 ; node < nnode ; node++)
+	    {
+	      if ( 4 != fscanf(file,"%lf %lf %lf %lf",&x,&y,&z,&spacing) )
+		{
+		  printf("%s: %d: gridSpacingFromTecplot: node %d read failed \n",
+			 __FILE__,__LINE__,node);
+		  return NULL;
+		}
+	      if (grid != gridSetSpacing(grid,node,spacing) )
+		{
+		  printf("%s: %d: gridSpacingFromTecplot: node %d set spc failed \n",
+			 __FILE__,__LINE__,node);
+		  return NULL;
+		}
+	    }
 	}
     }
-
 
   return grid;
 }
