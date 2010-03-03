@@ -167,6 +167,8 @@ Grid *gridDup(Grid *g);
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n );
 
+Grid *gridImportMesh3D( char *filename );
+
 Grid *gridImportNGP( char *filename );
 Grid *gridExportNGP(Grid *g, char *filename );
 

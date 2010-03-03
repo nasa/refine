@@ -480,6 +480,57 @@ Grid *gridImportNGP( char *filename )
   return grid;
 }
 
+Grid *gridImportMesh3D( char *filename )
+{
+  FILE *file;
+  int nnode;
+  int node;
+  double xyz[3];
+  Grid *grid;
+ 
+#define LINE_SIZE (1025)
+  char line[LINE_SIZE];
+
+  file = fopen(filename,"r");
+  if (NULL == file) return NULL;
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+
+  printf("%s",line);
+
+  if ( 1 != fscanf(file,"%s",&nnode) )
+    {
+      printf("ERROR: gridImportMesh3D: %s: %d: header read\n",
+	     __FILE__, __LINE__ );
+      return NULL;
+    }
+
+  printf("%d nodes\n",nnode);
+
+  grid = gridCreate(nnode, 6*nnode, 2*nnode, 0);
+  if (NULL == grid) return NULL;
+
+/* read in the xyz of each node */
+  for ( node = 0; node < nnode ; node++ )
+    {
+      if (3 != fscanf(file,"%lf %lf %lf",
+		      &(xyz[0]),&(xyz[1]),&(xyz[2]) ) )
+	{
+	  printf("ERROR: gridImportMesh3D: %s: %d: node %d read\n",
+		 __FILE__, __LINE__, (node+1) );
+	  gridFree(grid); return NULL;
+	}
+      if ( node != gridAddNode( grid, xyz[0], xyz[1], xyz[2] ) )
+	{
+	  printf("ERROR: gridImportMesh3D: %s: %d: gridAddNode %d failed\n",
+		 __FILE__, __LINE__, node );
+	  gridFree(grid); return NULL;
+	}
+    }
+
+  return grid;
+}
+
 Grid *gridExportNGP( Grid *grid, char *filename )
 {
   FILE *file;
