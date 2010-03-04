@@ -498,7 +498,7 @@ Grid *gridImportMesh3D( char *filename )
 
   printf("%s",line);
 
-  if ( 1 != fscanf(file,"%s",&nnode) )
+  if ( 1 != fscanf(file,"%d",&nnode) )
     {
       printf("ERROR: gridImportMesh3D: %s: %d: header read\n",
 	     __FILE__, __LINE__ );
