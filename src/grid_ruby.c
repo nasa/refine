@@ -22,6 +22,7 @@ VALUE grid_new( VALUE class, VALUE nnode, VALUE ncell, VALUE nface, VALUE nedge)
   Grid *grid;
   VALUE obj;
   grid = gridCreate( NUM2INT(nnode), NUM2INT(ncell), NUM2INT(nface), NUM2INT(nedge) );
+  if ( NULL == grid ) return Qnil;
   obj = Data_Wrap_Struct( class, 0, grid_free, grid );
   return obj;
 }
@@ -31,6 +32,7 @@ VALUE grid_from_mesh3d( VALUE class, VALUE rb_filename)
   Grid *grid;
   VALUE obj;
   grid = gridImportMesh3D( RSTRING_PTR(rb_filename) );
+  if ( NULL == grid ) return Qnil;
   obj = Data_Wrap_Struct( class, 0, grid_free, grid );
   return obj;
 }
@@ -40,6 +42,7 @@ VALUE grid_from_NGP( VALUE class, VALUE rb_filename)
   Grid *grid;
   VALUE obj;
   grid = gridImportNGP( RSTRING_PTR(rb_filename) );
+  if ( NULL == grid ) return Qnil;
   obj = Data_Wrap_Struct( class, 0, grid_free, grid );
   return obj;
 }
@@ -49,6 +52,7 @@ VALUE grid_from_FAST( VALUE class, VALUE rb_filename)
   Grid *grid;
   VALUE obj;
   grid = gridImportFAST( RSTRING_PTR(rb_filename) );
+  if ( NULL == grid ) return Qnil;
   obj = Data_Wrap_Struct( class, 0, grid_free, grid );
   return obj;
 }
