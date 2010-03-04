@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <limits.h>
 #ifdef __APPLE__       /* Not needed on Mac OS X */
@@ -486,6 +487,7 @@ Grid *gridImportMesh3D( char *filename )
   int nnode;
   int node;
   double xyz[3];
+  int ntet, npyramid, nprism, nhex;
   Grid *grid;
  
 #define LINE_SIZE (1025)
@@ -495,16 +497,13 @@ Grid *gridImportMesh3D( char *filename )
   if (NULL == file) return NULL;
 
   if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
-
   printf("%s",line);
-
   if ( 1 != fscanf(file,"%d",&nnode) )
     {
       printf("ERROR: gridImportMesh3D: %s: %d: header read\n",
 	     __FILE__, __LINE__ );
       return NULL;
     }
-
   printf("%d nodes\n",nnode);
 
   grid = gridCreate(nnode, 6*nnode, 2*nnode, 0);
@@ -527,6 +526,22 @@ Grid *gridImportMesh3D( char *filename )
 	  gridFree(grid); return NULL;
 	}
     }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  /* to skip the cr at the end of the last line */
+  if ( 1 >= strnlen( line, LINE_SIZE ) )
+    if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+
+  printf("%s",line);
+  if ( 4 != fscanf(file,"%d %d %d %d",&ntet,&npyramid,&nprism,&nhex) )
+    {
+      printf("ERROR: gridImportMesh3D: %s: %d: no element counts\n",
+	     __FILE__, __LINE__ );
+      return NULL;
+    }
+  printf("%d tets %d pyramid %d prism %d hex\n",ntet,npyramid,nprism,nhex);
+
+  fclose(file);
 
   return grid;
 }
