@@ -488,6 +488,7 @@ Grid *gridImportMesh3D( char *filename )
   int node;
   double xyz[3];
   int ntet, npyramid, nprism, nhex;
+  int cell, nodes[4];
   Grid *grid;
  
 #define LINE_SIZE (1025)
@@ -540,6 +541,36 @@ Grid *gridImportMesh3D( char *filename )
       return NULL;
     }
   printf("%d tets %d pyramid %d prism %d hex\n",ntet,npyramid,nprism,nhex);
+
+  if ( 0 != npyramid || 0 != nprism || 0 != nhex)
+    {
+      printf("ERROR: gridImportMesh3D: %s: %d: no element only tets implemented\n",
+	     __FILE__, __LINE__ );
+      return NULL;
+      
+    }
+
+/* read in each tet */
+  for ( cell = 0; cell < ntet ; cell++ )
+    {
+      if (4 != fscanf(file,"%d %d %d %d",
+		      &(nodes[0]),&(nodes[1]),&(nodes[2]),&(nodes[3]) ) )
+	{
+	  printf("ERROR: gridImportMesh3D: %s: %d: tet %d read\n",
+		 __FILE__, __LINE__, (cell+1) );
+	  gridFree(grid); return NULL;
+	}
+      nodes[0]--;
+      nodes[1]--;
+      nodes[2]--;
+      nodes[3]--;
+      if ( cell != gridAddCell( grid, nodes[0], nodes[1], nodes[2], nodes[3] ) )
+	{
+	  printf("ERROR: gridImportMesh3D: %s: %d: gridAddCell %d failed\n",
+		 __FILE__, __LINE__, cell );
+	  gridFree(grid); return NULL;
+	}
+    }
 
   fclose(file);
 
