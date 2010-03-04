@@ -532,7 +532,6 @@ Grid *gridImportMesh3D( char *filename )
   /* to skip the cr at the end of the last line */
   if ( 1 >= strnlen( line, LINE_SIZE ) )
     if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
-
   printf("%s",line);
   if ( 4 != fscanf(file,"%d %d %d %d",&ntet,&npyramid,&nprism,&nhex) )
     {
@@ -571,6 +570,12 @@ Grid *gridImportMesh3D( char *filename )
 	  gridFree(grid); return NULL;
 	}
     }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  /* to skip the cr at the end of the last line */
+  if ( 1 >= strnlen( line, LINE_SIZE ) )
+    if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
 
   fclose(file);
 
