@@ -219,5 +219,4 @@ AC_OUTPUT( \
 	   Makefile \
 	   src/Makefile \
 	   doc/Makefile \
-	   example/Makefile \
 	   )
