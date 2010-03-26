@@ -701,11 +701,4 @@ class TestGridInsert < Test::Unit::TestCase
   grid
  end
 
- def test_export_fast
-  grid = sliver_cell
-  assert_equal grid, grid.splitSliverCell(4)
-  assert_equal 8, grid.ncell
-  grid.exportFAST
- end
-
 end
