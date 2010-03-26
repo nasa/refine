@@ -1,5 +1,5 @@
 
-Thu Mar 25, 2010: Released Refine 1.5.0 (requires >= FUN3D-45226 (11.0.0)).
+Fri Mar 26, 2010: Released Refine 1.5.0 (requires >= FUN3D-45226 (11.0.0)).
 
 This minor rev bump is an API change to include unravel.
 Added import and export of NGP grids for a DSMC code.
