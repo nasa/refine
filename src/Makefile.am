@@ -18,6 +18,7 @@ EXTRA_DIST = \
 	gridinsertMT.rb gridinsert_ruby.c \
 	gridswapMT.rb gridswap_ruby.c \
 	gridcadMT.rb gridcad_ruby.c \
+	FAKEGeom.c \
 	gridmpiMT.rb gridmpi_ruby.c \
 	gridmoveMT.rb gridmove_ruby.c \
 	layerMT.rb layer_ruby.c \
