@@ -490,7 +490,11 @@ Grid *gridImportMesh3D( char *filename )
   int ntet, npyramid, nprism, nhex;
   int cell, nodes[4];
   Grid *grid;
- 
+  int nbound, eflag;
+  int bound;
+  int ntri, nquad;
+  int tri, total_tri;
+
 #define LINE_SIZE (1025)
   char line[LINE_SIZE];
 
@@ -576,6 +580,77 @@ Grid *gridImportMesh3D( char *filename )
   if ( 1 >= strnlen( line, LINE_SIZE ) )
     if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
   printf("%s",line);
+
+  if ( 2 != fscanf(file,"%d %d %d %d",&nbound,&eflag) )
+    {
+      printf("ERROR: gridImportMesh3D: %s: %d: no bound count\n",
+	     __FILE__, __LINE__ );
+      return NULL;
+    }
+  printf("%d bound %d eflag\n",nbound,eflag);
+
+  total_tri=0;
+  for ( bound = 0; bound < nbound ; bound++ )
+    {
+      printf(" bound %d\n",bound);
+
+      if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      /* to skip the cr at the end of the last line */
+      if ( 1 >= strnlen( line, LINE_SIZE ) )
+	if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      printf("name: %s",line);
+
+      if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      /* to skip the cr at the end of the last line */
+      if ( 1 >= strnlen( line, LINE_SIZE ) )
+	if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      printf("type: %s",line);
+
+      if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      /* to skip the cr at the end of the last line */
+      if ( 1 >= strnlen( line, LINE_SIZE ) )
+	if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      printf("geom: %s",line);
+
+      if ( 2 != fscanf(file,"%d %d",&ntri,&nquad) )
+	{
+	  printf("ERROR: gridImportMesh3D: %s: %d: no bound elem size\n",
+		 __FILE__, __LINE__ );
+	  return NULL;
+	}
+      printf("%d tri %d quad\n",ntri,nquad);
+
+      if ( 0 != nquad)
+	{
+	  printf("ERROR: gridImportMesh3D: %s: %d: no element only tri implemented\n",
+		 __FILE__, __LINE__ );
+	  return NULL;
+	}
+      
+      for ( tri = 0; tri < ntri ; tri++ )
+	{
+	  if (3 != fscanf(file,"%d %d %d",
+			  &(nodes[0]),&(nodes[1]),&(nodes[2]) ) )
+	    {
+	      printf("ERROR: gridImportMesh3D: %s: %d: tri %d read\n",
+		     __FILE__, __LINE__, (tri+1) );
+	      gridFree(grid); return NULL;
+	    }
+	  nodes[0]--;
+	  nodes[1]--;
+	  nodes[2]--;
+	  if ( total_tri != 
+	       gridAddFace( grid, nodes[0], nodes[1], nodes[2], bound+1 ) )
+	    {
+	      printf("ERROR: gridImportMesh3D: %s: %d: gridAddFace %d %d failed\n",
+		     __FILE__, __LINE__, tri, total_tri );
+	      gridFree(grid); return NULL;
+	    }
+	  total_tri++;
+	  
+	}
+
+    }  
 
   fclose(file);
 
