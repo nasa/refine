@@ -29,6 +29,7 @@ grid = Grid.from_mesh3d(root+'.mesh3D')
 
 grid.writeVTK(root+'.vtk')
 grid.writeTecplotVolumeGeom
+grid.exportFAST
 
 __END__
 
