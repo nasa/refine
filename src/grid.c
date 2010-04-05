@@ -581,7 +581,7 @@ Grid *gridImportMesh3D( char *filename )
     if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
   printf("%s",line);
 
-  if ( 2 != fscanf(file,"%d %d %d %d",&nbound,&eflag) )
+  if ( 2 != fscanf(file,"%d %d",&nbound,&eflag) )
     {
       printf("ERROR: gridImportMesh3D: %s: %d: no bound count\n",
 	     __FILE__, __LINE__ );
