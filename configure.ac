@@ -1,8 +1,12 @@
 # -*- Autoconf -*-
 
 AC_PREREQ(2.53)
-AC_INIT([src/grid.c])
-AM_INIT_AUTOMAKE([refine],[1.5.1_rc])
+
+define([git_describe], esyscmd([sh -c "git describe --tag | tr -d '\n'"]))dnl
+
+AC_INIT([refine], [git_describe], [fun3d-support@lists.nasa.gov])
+AC_CONFIG_SRCDIR([src/refine_defs.h])
+AM_INIT_AUTOMAKE
 
 AC_ARG_ENABLE(exec,
 	[  --enable-exec[=ARG]       build stand alone executables [ARG=yes]],
