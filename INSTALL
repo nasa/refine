@@ -1,13 +1,18 @@
+Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002 Free Software
+Foundation, Inc.
+
+   This file is free documentation; the Free Software Foundation gives
+unlimited permission to copy, distribute and modify it.
 
 (Quick Start) If You Received a *.tar.gz File to run with FUN3D
 ===============================================================
 
-run (replace `x_x_x' with the current version number):
+run (replace `x.x.x' with the current version number):
 
- % gunzip refine_x_x_x.tar.gz
- % tar xvf refine_x_x_x.tar
- % cd refine_x_x_x
- % ./configure --prefix=`pwd`
+ % gunzip refine-x.x.x.tar.gz
+ % tar xvf refine-x.x.x.tar
+ % cd refine-x.x.x
+ % ./configure --disable-exec --prefix=`pwd`
  % make
  % make install
 
@@ -21,12 +26,10 @@ Note To FUN3D Users
 Please see the `Adaptation and Error Estimation' section of
 http://fun3d.larc.nasa.gov/
 
-You will need to run/rerun the FUN3D ./configure script. Add this argument
+You will need to run/rerun the FUN3D ./configure script. Add this
+argument
 
-  --with-refine=/my/path/to/refine_x_x_x
-
-To use the full-blown CAPRI-GridEx CAD geometry contact 
-FUN_Support@LaRC.NASA.gov, it is _not_ trivial to set up.
+  --with-refine=/my/path/to/refine-x.x.x
 
 32 and 64 bit X Libraries
 =========================
@@ -42,7 +45,7 @@ these two arguments
 
 to the configure or autogen.sh script command line options
 
-Note To SVN Users ONLY!
+Note To Git Users ONLY!
 =======================
 
 (Skip this step and goto `Basic Installation' if you have a *.tar.gz 
