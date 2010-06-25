@@ -886,7 +886,7 @@ Grid *gridImportFV( char *filename )
   double *xyz;
   int *f2n, *faceId;
   int *c2n;
-  int grids, ntable;
+  int grids, ntable, nodes_per_face;
 
   file = fopen(filename,"r");
   if (NULL == file)
@@ -1010,25 +1010,40 @@ Grid *gridImportFV( char *filename )
   printf("%d\n",nface);
 
   f2n = (int *)malloc(3*nface*sizeof(int));
-
-  for( i=0; i<nface ; i++ ) {
-    if ( 1 != fscanf(file,"%d",&f2n[0+3*i]) ) return NULL;
-    if ( 1 != fscanf(file,"%d",&f2n[1+3*i]) ) return NULL;
-    if ( 1 != fscanf(file,"%d",&f2n[2+3*i]) ) return NULL;
-    f2n[0+3*i]--;
-    f2n[1+3*i]--;
-    f2n[2+3*i]--;
-  }
-
   faceId = (int *)malloc(nface*sizeof(int));
 
-  for( i=0; i<nface ; i++ ) {
-    if ( 1 != fscanf(file,"%d",&faceId[i]) ) return NULL;
-  }
+  for( i=0; i<nface ; i++ ) 
+    {
+      if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      if ( 5 != sscanf( line, "%d %d %d %d %d", 
+			&(faceId[i]),
+			&nodes_per_face,
+			&(f2n[0+3*i]), 
+			&(f2n[1+3*i]), 
+			&(f2n[2+3*i]) ) ) return NULL;
+      if ( 3 != nodes_per_face )
+	{
+	  printf("%s: %d: %s: expected 3 nodes_per_face was %d\n",
+		 __FILE__, __LINE__,__func__,nodes_per_face);
+	  return NULL;
+	}
+    }
 
-  maxcell = ncell*2;
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
 
-  c2n = (int *)malloc(4*maxcell*sizeof(int));
+  if ( 0 != strncmp( "Elements", line, MIN(8,LINE_SIZE) ) )
+    {
+      printf("%s: %d: %s: expected Elements\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+    }
+
+      printf("%s: %d: %s: need to count Elements\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+
+  c2n = (int *)malloc(4*ncell*sizeof(int));
 
   for( i=0; i<ncell ; i++ ) {
     if ( 1 != fscanf(file,"%d",&c2n[0+4*i]) ) return NULL;
