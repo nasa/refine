@@ -47,7 +47,7 @@ int main( int argc, char *argv[] )
 
   if ( NULL == grid )
     {
-      printf("grid inport failed\n");
+      printf("grid import failed\n");
       return 1;
     }
 
