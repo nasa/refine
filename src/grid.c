@@ -886,6 +886,7 @@ Grid *gridImportFV( char *filename )
   double *xyz;
   int *f2n, *faceId;
   int *c2n;
+  int grids, ntable;
 
   file = fopen(filename,"r");
   if (NULL == file)
@@ -894,20 +895,119 @@ Grid *gridImportFV( char *filename )
 	     __FILE__, __LINE__,__func__,filename);
       return NULL;
     }
-  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
 
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
   printf("%s",line);
 
-  if ( 3 != fscanf(file,"%s",&line) ) return NULL;
+  if ( 0 != strncmp( "FIELDVIEW 2 4", line, MIN(13,LINE_SIZE) ) )
+    {
+      printf("%s: %d: %s: can only read FIELDVIEW 2 4\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+    }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
+
+  if ( 0 != strncmp( "CONSTANTS", line, MIN(9,LINE_SIZE) ) )
+    {
+      printf("%s: %d: %s: expected CONSTANTS\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+    }
+
+  for ( i=0 ; i<4 ; i++ )
+    if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
+
+  if ( 0 != strncmp( "GRIDS", line, MIN(5,LINE_SIZE) ) )
+    {
+      printf("%s: %d: %s: expected GRIDS\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+    }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  if ( 1 != sscanf( line, "%d", &grids ) ) return NULL;
+  if ( 1 != grids )
+    {
+      printf("%s: %d: %s: expected only 1 GRIDS, found %d\n",
+	     __FILE__, __LINE__,__func__,grids);
+      return NULL;
+    }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
+
+  if ( 0 != strncmp( "Boundary Table", line, MIN(14,LINE_SIZE) ) )
+    {
+      printf("%s: %d: %s: expected Boundary Table\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+
+    }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  if ( 1 != sscanf( line, "%d", &ntable ) ) return NULL;
+  for ( i=0 ; i<ntable ; i++ )
+    if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
+
+  if ( 0 != strncmp( "Variable Names", line, MIN(14,LINE_SIZE) ) )
+    {
+      printf("%s: %d: %s: expected Variable Names\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+    }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  if ( 1 != sscanf( line, "%d", &ntable ) ) return NULL;
+  for ( i=0 ; i<ntable ; i++ )
+    if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
+
+  if ( 0 != strncmp( "Nodes", line, MIN(5,LINE_SIZE) ) )
+    {
+      printf("%s: %d: %s: expected Nodes\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+    }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  if ( 1 != sscanf( line, "%d", &nnode ) ) return NULL;
+
+  printf("%d\n",nnode);
 
   xyz = (double *)malloc(3*nnode*sizeof(double));
 
   for( i=0; i<nnode ; i++ ) 
-    if ( 1 != fscanf(file,"%lf",&xyz[0+3*i]) ) return NULL;
-  for( i=0; i<nnode ; i++ ) 
-    if ( 1 != fscanf(file,"%lf",&xyz[1+3*i]) ) return NULL;
-  for( i=0; i<nnode ; i++ ) 
-    if ( 1 != fscanf(file,"%lf",&xyz[2+3*i]) ) return NULL;
+    {
+      if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+      if ( 3 != sscanf( line, "%lf %lf %lf", 
+			&(xyz[0+3*i]), 
+			&(xyz[1+3*i]), 
+			&(xyz[2+3*i])  ) ) return NULL;
+    }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
+
+  if ( 0 != strncmp( "Boundary Faces", line, MIN(14,LINE_SIZE) ) )
+    {
+      printf("%s: %d: %s: expected Boundary Faces\n",
+	     __FILE__, __LINE__,__func__);
+      return NULL;
+    }
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  if ( 1 != sscanf( line, "%d", &nface ) ) return NULL;
+  printf("%d\n",nface);
 
   f2n = (int *)malloc(3*nface*sizeof(int));
 
