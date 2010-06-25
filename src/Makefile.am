@@ -110,11 +110,13 @@ bin_PROGRAMS =
 
 if BUILD_EXECUTABLES
 
+bin_PROGRAMS += refine-convert
+refine_convert_SOURCES = refine_convert.c
+refine_convert_LDADD = librefine.a -lm
+
 bin_PROGRAMS += PXrefineFAUX
-PXrefineFAUX_CFLAGS = $(all_cflags)
 PXrefineFAUX_SOURCES = pxrefine_main.c
 PXrefineFAUX_LDADD = libMesherX.a libFAUXGeom.a -lm
-PXrefineFAUX_LDFLAGS = $(all_ldflags)
 
 if BUILD_SDK_DEPENDENTS
 
