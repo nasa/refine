@@ -23,6 +23,8 @@
 #include "gridmath.h"
 #include "grid.h"
 
+#define LINE_SIZE (1024)
+
 Grid* gridCreate(int maxnode, int maxcell, int maxface, int maxedge)
 {
   return gridImport(maxnode, 0, 
@@ -495,7 +497,6 @@ Grid *gridImportMesh3D( char *filename )
   int ntri, nquad;
   int tri, total_tri;
 
-#define LINE_SIZE (1025)
   char line[LINE_SIZE];
 
   file = fopen(filename,"r");
@@ -828,6 +829,76 @@ Grid *gridImportFAST( char *filename )
 
   file = fopen(filename,"r");
   if ( 3 != fscanf(file,"%d %d %d",&nnode,&nface,&ncell) ) return NULL;
+
+  xyz = (double *)malloc(3*nnode*sizeof(double));
+
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[0+3*i]) ) return NULL;
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[1+3*i]) ) return NULL;
+  for( i=0; i<nnode ; i++ ) 
+    if ( 1 != fscanf(file,"%lf",&xyz[2+3*i]) ) return NULL;
+
+  f2n = (int *)malloc(3*nface*sizeof(int));
+
+  for( i=0; i<nface ; i++ ) {
+    if ( 1 != fscanf(file,"%d",&f2n[0+3*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&f2n[1+3*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&f2n[2+3*i]) ) return NULL;
+    f2n[0+3*i]--;
+    f2n[1+3*i]--;
+    f2n[2+3*i]--;
+  }
+
+  faceId = (int *)malloc(nface*sizeof(int));
+
+  for( i=0; i<nface ; i++ ) {
+    if ( 1 != fscanf(file,"%d",&faceId[i]) ) return NULL;
+  }
+
+  maxcell = ncell*2;
+
+  c2n = (int *)malloc(4*maxcell*sizeof(int));
+
+  for( i=0; i<ncell ; i++ ) {
+    if ( 1 != fscanf(file,"%d",&c2n[0+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[1+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[2+4*i]) ) return NULL;
+    if ( 1 != fscanf(file,"%d",&c2n[3+4*i]) ) return NULL;
+    c2n[0+4*i]--;
+    c2n[1+4*i]--;
+    c2n[2+4*i]--;
+    c2n[3+4*i]--;
+  }
+
+  fclose(file);
+
+  return gridImport( nnode, nnode, nface, nface, maxcell, ncell, 0,
+		     xyz, f2n, faceId, c2n );
+}
+
+Grid *gridImportFV( char *filename )
+{
+
+  char line[LINE_SIZE];
+  FILE *file;
+  int i, nnode, nface, maxcell, ncell;
+  double *xyz;
+  int *f2n, *faceId;
+  int *c2n;
+
+  file = fopen(filename,"r");
+  if (NULL == file)
+    {
+      printf("%s: %d: %s:unable to open %s\n",
+	     __FILE__, __LINE__,__func__,filename);
+      return NULL;
+    }
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+
+  printf("%s",line);
+
+  if ( 3 != fscanf(file,"%s",&line) ) return NULL;
 
   xyz = (double *)malloc(3*nnode*sizeof(double));
 

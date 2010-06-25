@@ -31,24 +31,33 @@ int main( int argc, char *argv[] )
   file_name = argv[1];
   end_of_string = strlen(file_name);
  
-  if( strcmp(&file_name[end_of_string-3],"ngp") == 0 ) {
+  grid = NULL;
+  if( strcmp(&file_name[end_of_string-4],".ngp") == 0 ) {
     printf("ngp input file %s\n", file_name);
     grid = gridImportNGP( file_name );
-  } else if( strcmp(&file_name[end_of_string-5],"fgrid") == 0 ) {
+  } else if( strcmp(&file_name[end_of_string-6],".fgrid") == 0 ) {
     printf("fast input file %s\n", file_name);
     grid = gridImportFAST( file_name );
+  } else if( strcmp(&file_name[end_of_string-4],".grd") == 0 ) {
+    printf("fieldview input file %s\n", file_name);
+    grid = gridImportFV( file_name );
   } else {
     printf("input file name extension unknown %s\n", file_name);
-    return 1;
   }
+
+  if ( NULL == grid )
+    {
+      printf("grid inport failed\n");
+      return 1;
+    }
 
   file_name = argv[2];
   end_of_string = strlen(file_name);
  
-  if( strcmp(&file_name[end_of_string-3],"ngp") == 0 ) {
+  if( strcmp(&file_name[end_of_string-4],".ngp") == 0 ) {
     printf("ngp output file %s\n", file_name);
     gridExportNGP( grid, file_name );
-  } else if( strcmp(&file_name[end_of_string-5],"fgrid") == 0 ) {
+  } else if( strcmp(&file_name[end_of_string-6],".fgrid") == 0 ) {
     printf("fast output file %s\n", file_name);
     gridExportFAST( grid, file_name );
   } else {
