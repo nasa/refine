@@ -882,11 +882,15 @@ Grid *gridImportFV( char *filename )
 
   char line[LINE_SIZE];
   FILE *file;
-  int i, nnode, nface, maxcell, ncell;
+  int i, nnode, nface, maxcell;
   double *xyz;
   int *f2n, *faceId;
   int *c2n;
   int grids, ntable, nodes_per_face;
+  int nodes[4];
+  int dummy, cell_type;
+
+  Grid *grid;
 
   file = fopen(filename,"r");
   if (NULL == file)
@@ -1039,27 +1043,38 @@ Grid *gridImportFV( char *filename )
       return NULL;
     }
 
-      printf("%s: %d: %s: need to count Elements\n",
-	     __FILE__, __LINE__,__func__);
-      return NULL;
+  maxcell = 8 * nnode;
+  c2n = (int *)malloc(4*maxcell*sizeof(int));
+  grid = gridImport( nnode, nnode, nface, nface, maxcell, 0, 0,
+		     xyz, f2n, faceId, c2n );
 
-  c2n = (int *)malloc(4*ncell*sizeof(int));
-
-  for( i=0; i<ncell ; i++ ) {
-    if ( 1 != fscanf(file,"%d",&c2n[0+4*i]) ) return NULL;
-    if ( 1 != fscanf(file,"%d",&c2n[1+4*i]) ) return NULL;
-    if ( 1 != fscanf(file,"%d",&c2n[2+4*i]) ) return NULL;
-    if ( 1 != fscanf(file,"%d",&c2n[3+4*i]) ) return NULL;
-    c2n[0+4*i]--;
-    c2n[1+4*i]--;
-    c2n[2+4*i]--;
-    c2n[3+4*i]--;
+  for( i=0; i<10*maxcell ; i++ ) {
+    if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+    if ( 6 != sscanf( line, "%d %d %d %d %d %d", 
+		      &cell_type,
+		      &dummy,
+		      &(nodes[0]), 
+		      &(nodes[1]), 
+		      &(nodes[2]), 
+		      &(nodes[3]) ) ) break;
+    if ( 1 != cell_type )
+      {
+	printf("%s: %d: %s: unexpected cell_type %d\n",
+	       __FILE__, __LINE__,__func__,cell_type);
+	return NULL;
+      }
+    nodes[0]--;
+    nodes[1]--;
+    nodes[2]--;
+    nodes[3]--;
+    gridAddCell( grid, nodes[0], nodes[1], nodes[2], nodes[3] );
   }
+
+  printf("%d\n",gridNCell(grid));
 
   fclose(file);
 
-  return gridImport( nnode, nnode, nface, nface, maxcell, ncell, 0,
-		     xyz, f2n, faceId, c2n );
+  return grid;
 }
 
 Grid *gridExportFAST( Grid *grid, char *filename )
