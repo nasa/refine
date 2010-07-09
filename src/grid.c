@@ -1070,7 +1070,8 @@ Grid *gridImportFV( char *filename )
     nodes[1]--;
     nodes[2]--;
     nodes[3]--;
-    gridAddCell( grid, nodes[0], nodes[1], nodes[2], nodes[3] );
+    /* pointwise (gridgen) writes left-handed tets */
+    gridAddCell( grid, nodes[1], nodes[0], nodes[2], nodes[3] );
   }
 
   printf("%d\n",gridNCell(grid));
