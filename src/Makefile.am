@@ -114,6 +114,10 @@ bin_PROGRAMS += refine-convert
 refine_convert_SOURCES = refine_convert.c
 refine_convert_LDADD = librefine.a libFAUXGeom.a -lm
 
+bin_PROGRAMS += refine-dsmc
+refine_dsmc_SOURCES = refine_dsmc.c
+refine_dsmc_LDADD = librefine.a libFAUXGeom.a -lm
+
 bin_PROGRAMS += PXrefineFAUX
 PXrefineFAUX_SOURCES = pxrefine_main.c
 PXrefineFAUX_LDADD = libMesherX.a libFAUXGeom.a -lm
