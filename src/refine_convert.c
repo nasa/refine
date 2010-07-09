@@ -24,7 +24,7 @@ int main( int argc, char *argv[] )
 
   if ( 3 != argc )
     {
-      printf("usage : %s input.{ngp|fgrid|grd} output.{ngp|fgrid} \n", argv[0] );  
+      printf("usage : %s input.{ngp|fgrid|grd} output.{ngp|fgrid|dat} \n", argv[0] );  
       return 1;
     }
 
@@ -60,6 +60,9 @@ int main( int argc, char *argv[] )
   } else if( strcmp(&file_name[end_of_string-6],".fgrid") == 0 ) {
     printf("fast output file %s\n", file_name);
     gridExportFAST( grid, file_name );
+  } else if( strcmp(&file_name[end_of_string-4],".dat") == 0 ) {
+    printf("tecplot output file %s\n", file_name);
+    gridWriteTecplotSurfaceGeom( grid, file_name );
   } else {
     printf("output file name extension unknown %s\n", file_name);
     return 1;
