@@ -1031,6 +1031,9 @@ Grid *gridImportFV( char *filename )
 		 __FILE__, __LINE__,__func__,nodes_per_face);
 	  return NULL;
 	}
+      f2n[0+3*i]--;
+      f2n[1+3*i]--;
+      f2n[2+3*i]--;
     }
 
   if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
