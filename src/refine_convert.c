@@ -14,6 +14,7 @@
 #include <math.h>
 #include <values.h>
 #include "grid.h"
+#include "gridmetric.h"
 
 int main( int argc, char *argv[] )
 {
@@ -55,7 +56,7 @@ int main( int argc, char *argv[] )
 
   min_vol = gridMinVolume(grid);
   valid_boundary = gridRightHandedBoundary(grid);
-  printf("min volume %e with %d boundary faces",
+  printf("min volume %e with %s boundary faces\n",
 	 min_vol,(valid_boundary?"valid":"invalid"));
 
   file_name = argv[2];
