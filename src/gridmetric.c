@@ -2806,7 +2806,6 @@ Grid *gridSpacingFromTecplot(Grid *grid, char *filename )
   int nnode, ntet;
   int node;
   double x,y,z,spacing;
-  double tol;
   file = fopen(filename,"r");
   if (NULL == file) return NULL;
 
@@ -2830,7 +2829,6 @@ Grid *gridSpacingFromTecplot(Grid *grid, char *filename )
 		     nnode,gridNNode(grid),ntet, gridNCell(grid));
 	      return NULL;
 	    }
-	  tol = 1.0e5;
 	  for (node =0 ; node < nnode ; node++)
 	    {
 	      if ( 4 != fscanf(file,"%lf %lf %lf %lf",&x,&y,&z,&spacing) )
@@ -2846,6 +2844,7 @@ Grid *gridSpacingFromTecplot(Grid *grid, char *filename )
 		  return NULL;
 		}
 	    }
+	  return grid;
 	}
     }
 
