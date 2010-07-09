@@ -112,7 +112,7 @@ if BUILD_EXECUTABLES
 
 bin_PROGRAMS += refine-convert
 refine_convert_SOURCES = refine_convert.c
-refine_convert_LDADD = librefine.a -lm
+refine_convert_LDADD = librefine.a libFAUXGeom.a -lm
 
 bin_PROGRAMS += PXrefineFAUX
 PXrefineFAUX_SOURCES = pxrefine_main.c

@@ -21,6 +21,8 @@ int main( int argc, char *argv[] )
   char *file_name;
   char *output_file;
   int end_of_string;
+  double min_vol;
+  GridBool valid_boundary;
 
   if ( 3 != argc )
     {
@@ -50,6 +52,11 @@ int main( int argc, char *argv[] )
       printf("grid import failed\n");
       return 1;
     }
+
+  min_vol = gridMinVolume(grid);
+  valid_boundary = gridRightHandedBoundary(grid);
+  printf("min volume %e with %d boundary faces",
+	 min_vol,(valid_boundary?"valid":"invalid"));
 
   file_name = argv[2];
   end_of_string = strlen(file_name);
