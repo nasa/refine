@@ -21,6 +21,7 @@
 #endif
 #include "sort.h"
 #include "gridmath.h"
+#include "gridmetric.h"
 #include "grid.h"
 
 #define LINE_SIZE (1024)
@@ -1078,7 +1079,7 @@ Grid *gridImportFV( char *filename )
 
   fclose(file);
 
-  return grid;
+  return gridFlipLeftHandedFaces(grid);
 }
 
 Grid *gridExportFAST( Grid *grid, char *filename )
@@ -4169,6 +4170,20 @@ GridBool gridReconnectionOfAllFacesOK(Grid *grid, int oldNode, int newNode )
   }
 
   return TRUE;
+}
+
+Grid *gridFlipFace(Grid *grid, int face )
+{
+  int node0;
+
+  if (face >= grid->maxface || face < 0) return NULL;
+  if (EMPTY == grid->f2n[3*face]) return NULL;
+
+  node0 = grid->f2n[0+3*face];
+  grid->f2n[0+3*face] = grid->f2n[1+3*face];
+  grid->f2n[1+3*face] = node0;
+
+  return grid;
 }
 
 Grid *gridFace(Grid *grid, int face, int *nodes, int *id )

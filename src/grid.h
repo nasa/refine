@@ -365,6 +365,7 @@ int gridFaceId(Grid *g, int n0, int n1, int n2 );
 int gridFindFaceWithNodesUnless(Grid *g, int n0, int n1, int unless_face );
 Grid *gridReconnectAllFace(Grid *g, int oldNode, int newNode );
 GridBool gridReconnectionOfAllFacesOK(Grid *g, int oldNode, int newNode );
+Grid *gridFlipFace(Grid *g, int face );
 Grid *gridFace(Grid *g, int face, int *nodes, int *id );
 Grid *gridDeleteThawedFaces(Grid *g, int faceId );
 int gridNThawedFaces(Grid *g, int faceId );

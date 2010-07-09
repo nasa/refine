@@ -2027,6 +2027,17 @@ GridBool gridRightHandedBoundary( Grid *grid )
   return rightHanded;
 }
 
+Grid *gridFlipLeftHandedFaces( Grid *grid )
+{
+  int face, nodes[3], faceId;
+
+  for (face=0;face<gridMaxFace(grid);face++)
+    if ( !gridRightHandedFace(grid, face) )
+      gridFlipFace(grid, face );
+
+  return grid;
+}
+
 double gridFaceArea(Grid *grid, int n0, int n1, int n2 )
 {
   double xyz0[3], xyz1[3], xyz2[3];
