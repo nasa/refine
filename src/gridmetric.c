@@ -2029,7 +2029,7 @@ GridBool gridRightHandedBoundary( Grid *grid )
 
 Grid *gridFlipLeftHandedFaces( Grid *grid )
 {
-  int face, nodes[3], faceId;
+  int face;
 
   for (face=0;face<gridMaxFace(grid);face++)
     if ( !gridRightHandedFace(grid, face) )
