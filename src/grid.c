@@ -1436,11 +1436,13 @@ Grid *gridImportGRI( char *filename )
   int *face_group_size;
   int *c2n;
   GridBool verbose;
+  int dim, q;
+  int total_ncell;
 
   verbose = TRUE;
 
   file = fopen(filename,"r");
-  if ( 2 != fscanf(file,"%d %d",&nnode,&ncell) ) return NULL;
+  if ( 3 != fscanf(file,"%d %d %d",&nnode,&ncell,&dim) ) return NULL;
 
   if (verbose) printf("gri size: %d nodes %d cells.\n",nnode,ncell);
 
@@ -1508,21 +1510,28 @@ Grid *gridImportGRI( char *filename )
   }
    */
 
-  if ( 1 != fscanf(file,"%d",&cell_group_size) ) return NULL;
 
-  if (verbose) printf("gri size: %d cells (assume Q1 type).\n",
-		      cell_group_size);
-
-  if (verbose) printf("reading cells...\n");
-  
   c2n = (int *)malloc(4*ncell*sizeof(int));
 
-  for( i=0; i<ncell ; i++ ) {
-    if ( 4 != fscanf(file,"%d %d %d %d",
-		     &c2n[0+4*i],&c2n[1+4*i],&c2n[2+4*i],&c2n[3+4*i]) ) 
-      return NULL;
-    c2n[0+4*i]--; c2n[1+4*i]--; c2n[2+4*i]--; c2n[3+4*i]--;
-  }
+  total_ncell = 0;
+  while ( total_ncell < ncell )
+    {
+      if ( 2 != fscanf(file,"%d %d",&cell_group_size,&q) ) return NULL;
+
+      if (verbose) printf("gri size: %d cells (assume Q1 type).\n",
+			  cell_group_size);
+
+      if (verbose) printf("reading cells...\n");
+      
+      for( i=total_ncell; i<total_ncell+cell_group_size ; i++ ) {
+	if ( 4 != fscanf(file,"%d %d %d %d",
+			 &c2n[0+4*i],&c2n[1+4*i],&c2n[2+4*i],&c2n[3+4*i]) ) 
+	  return NULL;
+	c2n[0+4*i]--; c2n[1+4*i]--; c2n[2+4*i]--; c2n[3+4*i]--;
+	
+      }
+      total_ncell += cell_group_size;
+    }
 
   fclose(file);
 
@@ -1535,6 +1544,7 @@ Grid *gridExportGRI( Grid *grid, char *filename )
   FILE *file;
   int i;
   int face, nFaceId, faceId, nface;
+  int dim, q;
 
   if (NULL == gridPack(grid)) {
     printf("gridExportFAST: gridPack failed.\n");
@@ -1547,7 +1557,8 @@ Grid *gridExportGRI( Grid *grid, char *filename )
     file = fopen("grid.gri","w");
   }
 
-  fprintf(file,"%10d %10d\n",grid->nnode,grid->ncell);
+  dim = 3;
+  fprintf(file,"%10d %10d %10d\n",grid->nnode,grid->ncell,dim);
 
   for( i=0; i<grid->nnode ; i++ ) 
     fprintf(file,"%25.15e %25.15e %25.15e\n",
