@@ -1957,7 +1957,10 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
 
   /* logic to make sure collapse is valid w.r.t. boundary connectivity */
   if ( gridGeometryNode(grid, n1) ) return NULL;
-  if ( gridGeometryEdge(grid, n1) && !gridGeometryEdge(grid, n0)) return NULL;
+
+  if ( gridGeometryBetweenFace(grid, n1) && 
+       !gridGeometryBetweenFace(grid, n0)) return NULL;
+
   if ( gridGeometryBetweenFace(grid, n1) && 
        EMPTY == gridFindEdge(grid, n0, n1) ) 
     return NULL;
@@ -1985,8 +1988,8 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
   requiredRatio = EMPTY;
   if ( volumeEdge && gridGeometryFace(grid, n1) ) requiredRatio = 1;    
   if ( volumeEdge && gridGeometryFace(grid, n0) ) requiredRatio = 0;
-  if ( gridGeometryEdge(grid, n0) && 
-       !gridGeometryEdge(grid, n1) ) requiredRatio = 0;
+  if ( gridGeometryBetweenFace(grid, n0) && 
+       !gridGeometryBetweenFace(grid, n1) ) requiredRatio = 0;
   if ( gridGeometryNode(grid, n0) ) requiredRatio = 0;
   
   if (0 == requiredRatio) { if (0.99 < ratio) return NULL; ratio = 0.0; }
