@@ -79,6 +79,12 @@ int main( int argc, char *argv[] )
 
   grid = gridImportGRI( gri_input );
 
+  if ( NULL == grid ) 
+    {
+      printf("read of %s failed. stop\n",gri_input);
+      return(1);
+    }
+
   printf("grid size: %d nodes %d faces %d cells.\n",
 	 gridNNode(grid),gridNFace(grid),gridNCell(grid));
 
@@ -86,6 +92,8 @@ int main( int argc, char *argv[] )
 
   gridSetCostConstraint(grid,
 			gridCOST_CNST_VOLUME );
+
+  STATUS;
 
   if ( !(strcmp(metric_input,"")==0) )
     {
