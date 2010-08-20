@@ -48,9 +48,9 @@ int main( int argc, char *argv[] )
 
   i = 1;
   while( i < argc ) {
-    if( strcmp(argv[i],"-p") == 0 ) {
+    if( strcmp(argv[i],"-g") == 0 ) {
       i++; sprintf( gri_input, "%s", argv[i] );
-      printf("-p argument %d: %s\n",i, gri_input);
+      printf("-g argument %d: %s\n",i, gri_input);
     } else if( strcmp(argv[i],"-m") == 0 ) {
       i++; sprintf( metric_input, "%s", argv[i] );
       printf("-m argument %d: %s\n",i, metric_input);
@@ -59,7 +59,7 @@ int main( int argc, char *argv[] )
       printf("-o argument %d: %s\n",i, gri_output);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
-      printf(" -p input .gri name\n");
+      printf(" -g input .gri name\n");
       printf(" -m input .metric name\n");
       printf(" -o output .gri name\n");
       return(0);
