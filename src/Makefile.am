@@ -59,29 +59,28 @@ lib_LIBRARIES += libFAUXGeom.a
 libFAUXGeom_a_CFLAGS = @SDKheader@
 libFAUXGeom_a_SOURCES = FAKEGeom.h FAUXGeom.c FAKEGeomExtras.c
 
+bin_PROGRAMS =
+
+if BUILD_EXECUTABLES
+
+bin_PROGRAMS += refine-convert
+refine_convert_SOURCES = refine_convert.c
+refine_convert_LDADD = librefine.a libFAUXGeom.a -lm
+
+bin_PROGRAMS += refine-dsmc
+refine_dsmc_SOURCES = refine_dsmc.c
+refine_dsmc_LDADD = librefine.a libFAUXGeom.a -lm
+
+bin_PROGRAMS += refine-px
+refine_px_SOURCES = refine_px.c
+refine_px_LDADD = libMesherX.a libFAUXGeom.a -lm
+
+if BUILD_SDK_DEPENDENTS
+
 lib_LIBRARIES += libMesherX.a
 
 mesherx_sources = \
-	adj.h adj.c \
-	near.h near.c \
-	intersect.h intersect.c \
-	line.h line.c \
-	queue.h queue.c \
-	sort.h sort.c \
-	tableau.h tableau.c \
-	plan.h plan.c \
-	ring.h ring.c \
-	grid.h grid.c \
-	gridmath.h gridmath.c \
-	gridshape.h gridshape.c \
-	gridmetric.h gridmetric.c \
-	gridinsert.h gridinsert.c \
-	gridswap.h gridswap.c \
-	gridcad.h gridcad.c \
-	gridmove.h gridmove.c \
-	gridmpi.h gridmpi.c \
 	gridfiller.h gridfiller.c \
-	gridgeom.h gridgeom.c \
 	layer.h layer.c \
 	mesherxInit.h mesherxInit.c \
 	mesherxRebuild.h mesherxRebuild.c \
@@ -101,24 +100,6 @@ libMesherX_a_include_HEADERS = \
 
 libMesherX_a_includedir = @prefix@/include
 
-bin_PROGRAMS =
-
-if BUILD_EXECUTABLES
-
-bin_PROGRAMS += refine-convert
-refine_convert_SOURCES = refine_convert.c
-refine_convert_LDADD = librefine.a libFAUXGeom.a -lm
-
-bin_PROGRAMS += refine-dsmc
-refine_dsmc_SOURCES = refine_dsmc.c
-refine_dsmc_LDADD = librefine.a libFAUXGeom.a -lm
-
-bin_PROGRAMS += refine-px
-refine_px_SOURCES = refine_px.c
-refine_px_LDADD = libMesherX.a libFAUXGeom.a -lm
-
-if BUILD_SDK_DEPENDENTS
-
 all_cflags = @SDKheader@
 refineLib  = libMesherX.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat
 MesherXLib = libMesherX.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat
@@ -137,7 +118,7 @@ refine_LDFLAGS = $(all_ldflags)
 bin_PROGRAMS += MesherX
 MesherX_CFLAGS = $(all_cflags)
 MesherX_SOURCES = mesherx_main.c
-MesherX_LDADD = $(MesherXLib) @CAPRIlibrary@ $(LastLib)
+MesherX_LDADD = $(refineLib) $(MesherXLib) @CAPRIlibrary@ $(LastLib)
 MesherX_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += restartTest
@@ -160,7 +141,7 @@ refineNative_LDFLAGS = $(all_ldflags)
 bin_PROGRAMS += MesherXNative
 MesherXNative_CFLAGS = $(all_cflags)
 MesherXNative_SOURCES = mesherx_main.c
-MesherXNative_LDADD = $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
+MesherXNative_LDADD = $(refineLib) $(MesherXLib) @CAPRINativelibrary@ $(LastLib)
 MesherXNative_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += restartTestNative
@@ -181,7 +162,7 @@ librefine_Linux_Pro_dll_LDFLAGS = $(all_ldflags) -shared
 bin_PROGRAMS += libMesherX-Linux.Pro.dll
 libMesherX_Linux_Pro_dll_CFLAGS = $(all_cflags) -DPROE_MAIN
 libMesherX_Linux_Pro_dll_SOURCES = mesherx_main.c
-libMesherX_Linux_Pro_dll_LDADD = $(MesherXLib) @CAPRIProElibrary@ $(LastLib)
+libMesherX_Linux_Pro_dll_LDADD = $(refineLib) $(MesherXLib) @CAPRIProElibrary@ $(LastLib)
 libMesherX_Linux_Pro_dll_LDFLAGS = $(all_ldflags) -shared
 
 endif # BUILD_PROE_KERNEL
@@ -196,7 +177,7 @@ refineParasolid_LDFLAGS = $(all_ldflags)
 bin_PROGRAMS += MesherXParasolid
 MesherXParasolid_CFLAGS = $(all_cflags)
 MesherXParasolid_SOURCES = mesherx_main.c
-MesherXParasolid_LDADD = $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
+MesherXParasolid_LDADD = $(refineLib) $(MesherXLib) @CAPRIParasolidlibrary@ $(LastLib)
 MesherXParasolid_LDFLAGS = $(all_ldflags)
 
 bin_PROGRAMS += restartTestParasolid
@@ -218,7 +199,7 @@ refineOpenCASCADE_LDFLAGS = $(all_ldflags)
 bin_PROGRAMS += MesherXOpenCASCADE
 MesherXOpenCASCADE_CFLAGS = $(all_cflags)
 MesherXOpenCASCADE_SOURCES = mesherx_main.c
-MesherXOpenCASCADE_LDADD = $(MesherXLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
+MesherXOpenCASCADE_LDADD = $(refineLib) $(MesherXLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
 MesherXOpenCASCADE_LDFLAGS = $(all_ldflags)
 
 endif # BUILD_OPENCASCADE_KERNEL
