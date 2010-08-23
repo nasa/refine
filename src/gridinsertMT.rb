@@ -278,8 +278,8 @@ class TestGridInsert < Test::Unit::TestCase
 		 2,2.0,12.0,11)
   assert_equal grid,       grid.collapseEdge(0,1,0.5)
   assert_equal 1,          grid.nface
-  assert_equal [1.0,0.0,0.0], grid.nodeXYZ(0)
-  assert_equal [0.0,10.0], grid.nodeUV(0,11)
+  assert_equal [0.0,0.0,0.0], grid.nodeXYZ(0)
+  assert_equal [0.5,10.5], grid.nodeUV(0,11)
  end
 
  def testCollapseEdgeonGeomEdge
@@ -309,14 +309,14 @@ class TestGridInsert < Test::Unit::TestCase
   assert_not_nil     grid=gemGrid
   grid.addEdge(0,2,10,0.0,1.0)
   assert_equal grid,       grid.collapseEdge(0,1,0.5)
-  assert_equal [1.0,0.0,0.0], grid.nodeXYZ(0)
+  assert_equal [0.0,0.0,0.0], grid.nodeXYZ(0)
   assert_equal 0.0, grid.nodeT(0,10)
  end
 
  def testCollapseVolumeEdgeNearGeomEdge1
   assert_not_nil     grid=gemGrid
   grid.addEdge(1,2,10,0.0,1.0)
-  assert_nil       grid.collapseEdge(0,1,0.5)
+  assert_equal grid, grid.collapseEdge(0,1,0.5)
  end
 
  def testCollapseEdge1NearBC
