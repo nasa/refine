@@ -1,12 +1,12 @@
 
-Future Date: Released Refine *.*.* (requires >= FUN3D-45226 (11.0.0)).
+Future Date: Released Refine 1.5.1 (requires >= FUN3D-45226 (11.0.0)).
 
 - Added refine-convert to convert grid file types.
 - Mesh3D (Karman) and Fieldview import
 - Elimiated intel version 10 compiler warnings.
 - Fixed bug that would 'kink' geometry edges with FAUXGeom.
-- GRI import/exportDimensionality and element order added to support
-    new format
+- GRI import/export dimensionality and element order added to support
+    new file format
 
 Fri Mar 26, 2010: Released Refine 1.5.0 (requires >= FUN3D-45226 (11.0.0)).
 
