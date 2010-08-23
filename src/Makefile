@@ -33,8 +33,5 @@ clean:
 	rm -rf SampleUnit
 	rm -rf Adj Plan Near Line Queue Sort Tableau Intersect Ring Grid* Layer
 
-val:
-	@echo valgrind --tool=memcheck --trace-children=yes --error-limit=no --suppressions=ruby_valgrind
-
 bu:
 	( cd .. && $(MAKE) bu )
