@@ -101,11 +101,6 @@ libMesherX_a_include_HEADERS = \
 
 libMesherX_a_includedir = @prefix@/include
 
-lib_LIBRARIES += libMesherX_pg.a
-
-libMesherX_pg_a_CFLAGS = -pg @SDKheader@
-libMesherX_pg_a_SOURCES = $(mesherx_sources)
-
 bin_PROGRAMS =
 
 if BUILD_EXECUTABLES
@@ -192,12 +187,6 @@ PXrefineNative_CFLAGS = $(all_cflags)
 PXrefineNative_SOURCES = pxrefine_main.c
 PXrefineNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 PXrefineNative_LDFLAGS = $(all_ldflags)
-
-bin_PROGRAMS += profileNative
-profileNative_CFLAGS = -pg $(all_cflags)
-profileNative_SOURCES = profile_main.c
-profileNative_LDADD = libMesherX_pg.a @SDKlibrary@ -lGoolache -lUGAPI -lCADGeom-CAPRI -lMeat @CAPRINativelibrary@ $(LastLib)
-profileNative_LDFLAGS = -pg $(all_ldflags)
 
 if BUILD_PROE_KERNEL
 
