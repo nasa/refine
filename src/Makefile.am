@@ -174,7 +174,7 @@ if BUILD_PROE_KERNEL
 
 bin_PROGRAMS += librefine-Linux.Pro.dll
 librefine_Linux_Pro_dll_CFLAGS = $(all_cflags) -DPROE_MAIN
-librefine_Linux_Pro_dll_SOURCES = proemain.c
+librefine_Linux_Pro_dll_SOURCES = refine_main.c
 librefine_Linux_Pro_dll_LDADD = $(refineLib) @CAPRIProElibrary@ $(LastLib)
 librefine_Linux_Pro_dll_LDFLAGS = $(all_ldflags) -shared
 
