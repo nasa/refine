@@ -181,12 +181,6 @@ unitNative_SOURCES = unit_main.c
 unitNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
 unitNative_LDFLAGS = $(all_ldflags)
 
-bin_PROGRAMS += conformNative
-conformNative_CFLAGS = $(all_cflags)
-conformNative_SOURCES = conform_main.c
-conformNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
-conformNative_LDFLAGS = $(all_ldflags)
-
 bin_PROGRAMS += pxNative
 pxNative_CFLAGS = $(all_cflags)
 pxNative_SOURCES = px_main.c
