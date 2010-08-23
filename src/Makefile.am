@@ -113,9 +113,9 @@ bin_PROGRAMS += refine-dsmc
 refine_dsmc_SOURCES = refine_dsmc.c
 refine_dsmc_LDADD = librefine.a libFAUXGeom.a -lm
 
-bin_PROGRAMS += PXrefineFAUX
-PXrefineFAUX_SOURCES = pxrefine_main.c
-PXrefineFAUX_LDADD = libMesherX.a libFAUXGeom.a -lm
+bin_PROGRAMS += refine-px
+refine_px_SOURCES = refine_px.c
+refine_px_LDADD = libMesherX.a libFAUXGeom.a -lm
 
 if BUILD_SDK_DEPENDENTS
 
@@ -169,12 +169,6 @@ restartTestNative_SOURCES = restartTest.c
 restartTestNative_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	@CAPRINativelibrary@ $(LastLib)
 restartTestNative_LDFLAGS = $(all_ldflags)
-
-bin_PROGRAMS += PXrefineNative
-PXrefineNative_CFLAGS = $(all_cflags)
-PXrefineNative_SOURCES = pxrefine_main.c
-PXrefineNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
-PXrefineNative_LDFLAGS = $(all_ldflags)
 
 if BUILD_PROE_KERNEL
 
