@@ -1,5 +1,5 @@
 # -*- Makefile -*-
 
-SUBDIRS = src doc dsmc
+SUBDIRS = src doc
 
 AUTOMAKE_OPTIONS = 1.7
