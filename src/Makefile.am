@@ -170,12 +170,6 @@ restartTestNative_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	@CAPRINativelibrary@ $(LastLib)
 restartTestNative_LDFLAGS = $(all_ldflags)
 
-bin_PROGRAMS += unitNative
-unitNative_CFLAGS = $(all_cflags)
-unitNative_SOURCES = unit_main.c
-unitNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
-unitNative_LDFLAGS = $(all_ldflags)
-
 bin_PROGRAMS += PXrefineNative
 PXrefineNative_CFLAGS = $(all_cflags)
 PXrefineNative_SOURCES = pxrefine_main.c
@@ -217,12 +211,6 @@ restartTestParasolid_SOURCES = restartTest.c
 restartTestParasolid_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	@CAPRIParasolidlibrary@ $(LastLib)
 restartTestParasolid_LDFLAGS = $(all_ldflags)
-
-bin_PROGRAMS += unitParasolid
-unitParasolid_CFLAGS = $(all_cflags)
-unitParasolid_SOURCES = unit_main.c
-unitParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
-unitParasolid_LDFLAGS = $(all_ldflags)
 
 endif # BUILD_PARASOLID_KERNEL
 
