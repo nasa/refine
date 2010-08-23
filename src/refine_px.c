@@ -33,18 +33,11 @@ int main( int argc, char *argv[] )
 #endif
 {
   Grid *grid;
-  char modeler[256];
-  char gri_input[256];
-  char metric_input[256];
-  char gri_output[256];
+  char gri_input[256] = "";
+  char metric_input[256] = "";
+  char gri_output[256] = "";
 
   int i;
-  int iview=0;
-
-  sprintf( modeler,    "Unknown" );
-  sprintf( gri_input,    "" );
-  sprintf( gri_output,   "" );
-  sprintf( metric_input, "" );
 
   i = 1;
   while( i < argc ) {

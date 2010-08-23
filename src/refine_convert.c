@@ -20,7 +20,6 @@ int main( int argc, char *argv[] )
 {
   Grid *grid;
   char *file_name;
-  char *output_file;
   int end_of_string;
   double min_vol;
   GridBool valid_boundary;

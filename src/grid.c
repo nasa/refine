@@ -1557,7 +1557,7 @@ Grid *gridExportGRI( Grid *grid, char *filename )
     file = fopen("grid.gri","w");
   }
 
-  dim = 3;
+  dim = 3; /* three dimensional */
   fprintf(file,"%10d %10d %10d\n",grid->nnode,grid->ncell,dim);
 
   for( i=0; i<grid->nnode ; i++ ) 
@@ -1583,7 +1583,8 @@ Grid *gridExportGRI( Grid *grid, char *filename )
 		grid->f2n[2+3*face]+1);
   }
 
-  fprintf(file,"%10d %10d\n",grid->ncell,1);
+  q = 1; /* q=1, linear element */
+  fprintf(file,"%10d %10d\n",grid->ncell,q);
 
   for( i=0; i<grid->ncell ; i++ )
     fprintf(file,"%10d %10d %10d %10d\n",

@@ -73,7 +73,7 @@ refine_dsmc_LDADD = librefine.a libFAUXGeom.a -lm
 
 bin_PROGRAMS += refine-px
 refine_px_SOURCES = refine_px.c
-refine_px_LDADD = libMesherX.a libFAUXGeom.a -lm
+refine_px_LDADD = librefine.a libFAUXGeom.a -lm
 
 if BUILD_SDK_DEPENDENTS
 
