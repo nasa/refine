@@ -34,6 +34,7 @@ librefine_a_CFLAGS = @SDKheader@
 librefine_a_SOURCES = \
 	refine_defs.h \
 	adj.h adj.c \
+	near.h near.c \
 	intersect.h intersect.c \
 	line.h line.c \
 	queue.h queue.c \
@@ -52,6 +53,7 @@ librefine_a_SOURCES = \
 	gridmpi.h gridmpi.c \
 	gridmove.h gridmove.c \
 	gridfortran.h gridfortran.c \
+	layer.h layer.c \
 	unravel_fortran.h unravel_fortran.c
 
 lib_LIBRARIES += libFAUXGeom.a
@@ -81,7 +83,6 @@ lib_LIBRARIES += libMesherX.a
 
 mesherx_sources = \
 	gridfiller.h gridfiller.c \
-	layer.h layer.c \
 	mesherxInit.h mesherxInit.c \
 	mesherxRebuild.h mesherxRebuild.c \
 	mesherx.h mesherx.c
