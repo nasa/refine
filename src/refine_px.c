@@ -39,6 +39,8 @@ int main( int argc, char *argv[] )
 
   int i;
 
+  int active_edges, out_of_tolerence_edges;
+
   i = 1;
   while( i < argc ) {
     if( strcmp(argv[i],"-g") == 0 ) {
@@ -125,6 +127,16 @@ int main( int argc, char *argv[] )
 	printf("node smoothin grid...\n");gridSmooth(grid,0.9,0.5);
 	STATUS;
       }
+
+      gridEdgeRatioTolerence(grid, ratioSplit, ratioCollapse,
+			     &active_edges, &out_of_tolerence_edges );
+
+      printf("edges %d of %d (%6.2f%%) out of tol\n",
+	     out_of_tolerence_edges, active_edges, 
+	     100.0*(double)out_of_tolerence_edges/(double)active_edges);
+
+      if ( 0.001 > (double)out_of_tolerence_edges/(double)active_edges)
+	break;
 
       gridAdapt(grid, ratioCollapse, ratioSplit);
       STATUS;

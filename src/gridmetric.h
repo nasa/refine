@@ -33,6 +33,8 @@ Grid *gridSetMapMatrixToAverageOfNodes4(Grid *g, int avgNode,
 void gridMapXYZWithJ( double *j, double *x, double *y, double *z );
 
 double gridEdgeLength(Grid *g, int n0, int n1 );
+Grid *gridEdgeRatioTolerence(Grid *g, double longest, double shortest,
+			     int *active_edges, int *out_of_tolerence_edges );
 Grid *gridEdgeRatioRange(Grid *g, double *longest, double *shortest );
 Grid *gridEdgeRatioRangeInVolume(Grid *g, double *longest, double *shortest );
 double gridEdgeRatio(Grid *g, int n0, int n1 );

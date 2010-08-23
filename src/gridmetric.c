@@ -187,6 +187,34 @@ double gridEdgeLength(Grid *grid, int n0, int n1 )
   return  sqrt(dx*dx+dy*dy+dz*dz);
 }
 
+Grid *gridEdgeRatioTolerence(Grid *grid, double longest, double shortest,
+			     int *active_edges, int *out_of_tolerence_edges )
+{
+  int conn, nodes[2];
+  double ratio;
+
+  gridCreateConn(grid);
+
+  *active_edges = 0;
+  *out_of_tolerence_edges = 0;
+
+  for(conn=0;conn<gridNConn(grid);conn++) {
+    gridConn2Node(grid,conn,nodes);
+    if ( !gridNodeFrozen(grid, nodes[0]) &&
+	 !gridNodeFrozen(grid, nodes[0]) )
+      {
+	(*active_edges) += 1;
+	ratio = gridEdgeRatio(grid, nodes[0], nodes[1]);
+	if ( ratio > longest || shortest > ratio )
+	  (*out_of_tolerence_edges) += 1;
+      }
+  }
+
+  gridEraseConn(grid);
+
+  return grid;
+}
+
 Grid *gridEdgeRatioRange(Grid *grid, double *longest, double *shortest )
 {
   int cell, nodes[4];
