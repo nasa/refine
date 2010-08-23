@@ -2,6 +2,8 @@
 Future Date: Released Refine *.*.* (requires >= FUN3D-45226 (11.0.0)).
 
 Added refine-convert to convert grid file types.
+Mesh3D and Fieldview import
+Reduced intel version 10 compiler warnings.
 
 Fri Mar 26, 2010: Released Refine 1.5.0 (requires >= FUN3D-45226 (11.0.0)).
 
