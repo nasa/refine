@@ -26,6 +26,16 @@
 }
 
 
+static void usage( char *executable );
+static void usage( char *executable )
+{
+  printf("Usage: %s -g input.gri -g projectx.metric -o output.gri\n",
+	 executable );
+  printf(" -g input .gri name\n");
+  printf(" -m input .metric name\n");
+  printf(" -o output .gri name\n");
+}
+
 #ifdef PROE_MAIN
 int GridEx_Main( int argc, char *argv[] )
 #else
@@ -53,10 +63,7 @@ int main( int argc, char *argv[] )
       i++; sprintf( gri_output, "%s", argv[i] );
       printf("-o argument %d: %s\n",i, gri_output);
     } else if( strcmp(argv[i],"-h") == 0 ) {
-      printf("Usage: flag value pairs:\n");
-      printf(" -g input .gri name\n");
-      printf(" -m input .metric name\n");
-      printf(" -o output .gri name\n");
+      usage( argv[0] );
       return(0);
     } else {
       fprintf(stderr,"Argument \"%s %s\" Ignored\n",argv[i],argv[i+1]);
@@ -67,7 +74,8 @@ int main( int argc, char *argv[] )
   
   if ( (strcmp(gri_input,"")==0) ||
        (strcmp(gri_output,"")==0) ) {
-    printf("no input of output specified.\n");
+    printf("no input or output file names specified.\n");
+    usage( argv[0] );
     printf("Done.\n");  
     return 1;
   }
