@@ -223,5 +223,4 @@ AC_OUTPUT( \
 	   Makefile \
 	   src/Makefile \
 	   doc/Makefile \
-	   dsmc/Makefile \
 	   )
