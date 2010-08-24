@@ -1,4 +1,8 @@
 
+Tue Aug 24, 2010: Released Refine 1.5.2 (requires >= FUN3D-45226 (11.0.0)).
+
+- fixed configure
+
 Tue Aug 24, 2010: Released Refine 1.5.1 (requires >= FUN3D-45226 (11.0.0)).
 
 - Changed the parallel node insertion and removal algorithm
