@@ -1,6 +1,9 @@
 
-Future Date: Released Refine 1.5.1 (requires >= FUN3D-45226 (11.0.0)).
+Tue Aug 24, 2010: Released Refine 1.5.1 (requires >= FUN3D-45226 (11.0.0)).
 
+- Changed the parallel node insertion and removal algorithm
+    to be more consistant when sweeping through grid.
+   (thanks to Rajiv Shenoy and James Cook of GA Tech for suggestion)
 - Added refine-convert to convert grid file types.
 - Mesh3D (Karman) and Fieldview import
 - Elimiated intel version 10 compiler warnings.

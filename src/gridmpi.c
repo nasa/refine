@@ -65,7 +65,6 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   char *env;
   
   origNNode   = gridNNode(grid);
-  adaptnode   = 0;
   nnodeAdd    = 0;
   nnodeRemove = 0;
 
@@ -149,33 +148,35 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
   }else{
     arLimit = 0.05;
 
-    for ( n0=0; adaptnode<origNNode && n0<gridMaxNode(grid); n0++ ) { 
-      adaptnode++;
-      if ( gridValidNode( grid, n0) && 
-	   !gridNodeFrozen( grid, n0 ) && 
-	   gridNodeLocal( grid, n0 ) ) {
-	if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) )
-	  return NULL;
-	if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
-	  gridNodeAR(grid,n0,&ar);
-	  if (ar > arLimit) {
-	    newnode = gridParallelEdgeSplit(grid, queue, n0, n1);
-	    if ( newnode != EMPTY ){
-	      nnodeAdd++;
+    for ( n0 = 0, adaptnode = 0; 
+	  adaptnode<origNNode && n0<gridMaxNode(grid); 
+	  n0++ ) { 
+      if ( gridValidNode( grid, n0) )
+	{
+	  adaptnode++;
+	  if( !gridNodeFrozen( grid, n0 ) && 
+	      gridNodeLocal( grid, n0 ) ) {
+	    if ( NULL == gridLargestRatioEdge( grid, n0, &n1, &ratio) )
+	      return NULL;
+	    if ( !gridNodeFrozen( grid, n1 ) && ratio > maxLength ) {
+	      gridNodeAR(grid,n0,&ar);
+	      if (ar > arLimit) {
+		newnode = gridParallelEdgeSplit(grid, queue, n0, n1);
+		if ( newnode != EMPTY ){
+		  nnodeAdd++;
+		}
+	      }
+	    }else{
+	      if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
+		return NULL;
+	      if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
+		if ( grid == gridParallelEdgeCollapse(grid, queue, n0, n1) ) {
+		  nnodeRemove++;
+		}
+	      }
 	    }
 	  }
-	}else{
-	  if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
-	    return NULL;
-	  if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
-	    if ( grid == gridParallelEdgeCollapse(grid, queue, n0, n1) ) {
-	      nnodeRemove++;
-	    }
-	  }
-	}
-      }else{
-	adaptnode++;
-      }
+	} /* valid */
     }
   }
 
