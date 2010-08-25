@@ -301,7 +301,7 @@ GridBool CADGeom_NearestOnFace(int vol, int faceId,
     dxyz[0] = xyz[0] - faux_faces[id].center[0];
     dxyz[1] = xyz[1] - faux_faces[id].center[1];
     dxyz[2] = xyz[2] - faux_faces[id].center[2];
-    /* "z" direction along the center axis */
+    /* "u" direction along the center axis */
     uv[0] = dxyz[0]*faux_faces[id].normal[0]
           + dxyz[1]*faux_faces[id].normal[1]
           + dxyz[2]*faux_faces[id].normal[2];
