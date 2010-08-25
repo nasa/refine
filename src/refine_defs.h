@@ -27,6 +27,10 @@ BEGIN_C_DECLORATION
 #define ABS(a)   ((a)>0?(a):-(a))
 #endif
 
+#if !defined(SIGN)
+#define SIGN(a)   ( (a)==0 ? 0 : ((a)>0?1:-1) )
+#endif
+
 #define SUPRESS_UNUSED_COMPILER_WARNING(ptr)                    \
   if (NULL == &(ptr)) printf("unused macro failed\n");
 
