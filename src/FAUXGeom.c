@@ -189,6 +189,13 @@ static GridBool initialize_faux(void)
     faux_faces[i].u_dir[1] = 0.0;
     faux_faces[i].u_dir[2] = 0.0;
     faux_faces[i].u_dir[smallest_dir] = 1.0;
+
+    if ( cylinder == faux_faces[i].faceType )
+      {
+	faux_faces[i].u_dir[smallest_dir] = SIGN( faux_faces[i].offset );
+	faux_faces[i].offset = ABS( faux_faces[i].offset );
+      }
+
     /* orthogonalize u_dir to normal */
     gridVectorOrthogonalize(faux_faces[i].u_dir, faux_faces[i].normal);
     /* v_dir is orthogonal to u_dir and normal */

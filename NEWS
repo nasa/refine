@@ -1,4 +1,8 @@
 
+The Future: Released Refine 1.5.* (requires >= FUN3D-45226 (11.0.0)).
+
+- FAUXGeom cylinder pole direction can be flipped with sign of radius.
+
 Tue Aug 24, 2010: Released Refine 1.5.2 (requires >= FUN3D-45226 (11.0.0)).
 
 - fixed configure
