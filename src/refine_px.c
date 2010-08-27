@@ -51,6 +51,8 @@ int main( int argc, char *argv[] )
 
   int active_edges, out_of_tolerence_edges;
 
+  printf("refine %s\n",VERSION);
+
   i = 1;
   while( i < argc ) {
     if( strcmp(argv[i],"-g") == 0 ) {

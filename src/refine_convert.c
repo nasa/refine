@@ -24,6 +24,8 @@ int main( int argc, char *argv[] )
   double min_vol;
   GridBool valid_boundary;
 
+  printf("refine %s\n",VERSION);
+
   if ( 3 != argc )
     {
       printf("usage : %s input.{ngp|fgrid|grd} output.{ngp|fgrid|dat} \n", argv[0] );  

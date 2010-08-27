@@ -60,6 +60,8 @@ int main( int argc, char *argv[] )
   double minVolume;
   char   modeler[81];
 
+  printf("refine %s\n",VERSION);
+
   sprintf( modeler,       "" );
   sprintf( project,       "" );
   sprintf( outputProject, "" );
