@@ -1,3 +1,4 @@
+
 /* Michael A. Park
  * Computational Modeling & Simulation Branch
  * NASA Langley Research Center
@@ -1626,6 +1627,7 @@ Layer *layerProjectNormalToConstraints(Layer *layer, int normal)
 
   gridNodeXYZ(grid, layerNormalRoot(layer,normal), xyzroot );
   layerNormalDirection(layer,normal,direction);
+  height = 1.0e-4; /* to prevent uninitialized compiler warning */
   layerGetNormalHeight(layer,normal,&height);
   direction[0] *= height;
   direction[1] *= height;
