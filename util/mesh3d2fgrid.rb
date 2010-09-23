@@ -7,29 +7,20 @@ refine_path = "#{File.dirname $0}/../src"
 $:.push refine_path
 
 Dir.chdir refine_path
-require 'RubyExtensionBuilder'
 
+require 'RubyExtensionBuilder'
 RubyExtensionBuilder.new('Grid').build
 require 'Adj/Adj'
 require 'Line/Line'
-require 'Sort/Sort'
 require 'Grid/Grid'
-require 'GridMath/GridMath'
-
-RubyExtensionBuilder.new('GridMetric').build
-require 'GridMetric/GridMetric'
-class Grid
- include GridMetric
-end
 
 Dir.chdir starting_path
 
-root = ARGV[0] || 'full_rounded' 
-grid = Grid.from_mesh3d(root+'.mesh3D')
+mesh3d_filename = ARGV[0]
+fast_filename = ARGV[1] || mesh3d_filename.sub(/\.mesh3D$/,'.fgrid')
 
-grid.writeVTK(root+'.vtk')
-grid.writeTecplotVolumeGeom
-grid.exportFAST
+grid = Grid.from_mesh3d  File.expand_path(mesh3d_filename)
+grid.exportFAST File.expand_path(grid_filename)
 
 __END__
 
@@ -61,5 +52,4 @@ If the eflag is set to 1 then the lines containing the surface element
 indices will contain the number of the attached volume element.
 Otherwise the triangle connectivity will contain 3 numbers and the
 quadrilaterals will contain 4 numbers.
-
 

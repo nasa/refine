@@ -69,16 +69,16 @@ VALUE grid_sortNodeGridEx( VALUE self )
   return (gridSortNodeGridEx(grid)==grid?self:Qnil);
 }
 
-VALUE grid_writeTecplotSurfaceGeom( VALUE self )
+VALUE grid_writeTecplotSurfaceGeom( VALUE self, VALUE rb_filename )
 {
   GET_GRID_FROM_SELF;
-  return (gridWriteTecplotSurfaceGeom(grid,NULL)==grid?self:Qnil);
+  return (gridWriteTecplotSurfaceGeom(grid,RSTRING_PTR(rb_filename))==grid?self:Qnil);
 }
 
-VALUE grid_writeTecplotVolumeGeom( VALUE self )
+VALUE grid_writeTecplotVolumeGeom( VALUE self, VALUE rb_filename )
 {
   GET_GRID_FROM_SELF;
-  return (gridWriteTecplotVolumeGeom(grid,NULL)==grid?self:Qnil);
+  return (gridWriteTecplotVolumeGeom(grid,RSTRING_PTR(rb_filename))==grid?self:Qnil);
 }
 
 VALUE grid_writeTecplotGeomFaceXYZ( VALUE self, VALUE faceid )
@@ -122,22 +122,22 @@ VALUE grid_exportNGP( VALUE self, VALUE rb_filename)
   return (gridExportNGP(grid, RSTRING_PTR(rb_filename) )==grid?self:Qnil);
 }
 
-VALUE grid_exportFAST( VALUE self )
+VALUE grid_exportFAST( VALUE self, VALUE rb_filename)
 {
   GET_GRID_FROM_SELF;
-  return (gridExportFAST(grid,NULL)==grid?self:Qnil);
+  return (gridExportFAST(grid, RSTRING_PTR(rb_filename))==grid?self:Qnil);
 }
 
-VALUE grid_exportFASTSurface( VALUE self )
+VALUE grid_exportFASTSurface( VALUE self, VALUE rb_filename)
 {
   GET_GRID_FROM_SELF;
-  return (gridExportFASTSurface(grid,NULL)==grid?self:Qnil);
+  return (gridExportFASTSurface(grid,RSTRING_PTR(rb_filename))==grid?self:Qnil);
 }
 
-VALUE grid_exportGRI( VALUE self )
+VALUE grid_exportGRI( VALUE self, VALUE rb_filename )
 {
   GET_GRID_FROM_SELF;
-  return (gridExportGRI(grid,NULL)==grid?self:Qnil);
+  return (gridExportGRI(grid, RSTRING_PTR(rb_filename))==grid?self:Qnil);
 }
 
 VALUE grid_maxnode( VALUE self )
@@ -1339,16 +1339,16 @@ void Init_Grid()
   rb_define_method( cGrid, "initialize", grid_init, 0 );
   rb_define_method( cGrid, "pack", grid_pack, 0 );
   rb_define_method( cGrid, "sortNodeGridEx", grid_sortNodeGridEx, 0 );
-  rb_define_method( cGrid, "writeTecplotSurfaceGeom", grid_writeTecplotSurfaceGeom, 0 );
-  rb_define_method( cGrid, "writeTecplotVolumeGeom", grid_writeTecplotVolumeGeom, 0 );
+  rb_define_method( cGrid, "writeTecplotSurfaceGeom", grid_writeTecplotSurfaceGeom, 1 );
+  rb_define_method( cGrid, "writeTecplotVolumeGeom", grid_writeTecplotVolumeGeom, 1 );
   rb_define_method( cGrid, "writeTecplotGeomFaceXYZ", grid_writeTecplotGeomFaceXYZ, 1 );
   rb_define_method( cGrid, "writeTecplotEquator", grid_writeTecplotEquator, 2 );
   rb_define_method( cGrid, "writeTecplotSurfaceScalar", grid_writeTecplotSurfaceScalar, 1 );
   rb_define_method( cGrid, "writeVTK", grid_writeVTK, 1 );
   rb_define_method( cGrid, "exportNGP", grid_exportNGP, 1 );
-  rb_define_method( cGrid, "exportFAST", grid_exportFAST, 0 );
-  rb_define_method( cGrid, "exportFASTSurface", grid_exportFASTSurface, 0 );
-  rb_define_method( cGrid, "exportGRI", grid_exportGRI, 0 );
+  rb_define_method( cGrid, "exportFAST", grid_exportFAST, 1 );
+  rb_define_method( cGrid, "exportFASTSurface", grid_exportFASTSurface, 1 );
+  rb_define_method( cGrid, "exportGRI", grid_exportGRI, 1 );
   rb_define_method( cGrid, "maxnode", grid_maxnode, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
   rb_define_method( cGrid, "maxcell", grid_maxcell, 0 );
