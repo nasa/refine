@@ -222,5 +222,6 @@ fi
 AC_OUTPUT( \
 	   Makefile \
 	   src/Makefile \
+	   util/Makefile \
 	   doc/Makefile \
 	   )

@@ -1,5 +1,5 @@
 # -*- Makefile -*-
 
-SUBDIRS = src doc
+SUBDIRS = src util doc
 
 AUTOMAKE_OPTIONS = 1.7
