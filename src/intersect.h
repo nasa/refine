@@ -8,7 +8,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef INTERSECT_H
 #define INTERSECT_H

@@ -9,7 +9,7 @@
  * Email: Mike.Park@NASA.Gov
  */
 
-/* $Id$ */
+
 
 #ifndef RING_H
 #define RING_H

@@ -6,7 +6,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef GRIDSWAP_H
 #define GRIDSWAP_H

@@ -6,7 +6,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef GRIDCAD_H
 #define GRIDCAD_H

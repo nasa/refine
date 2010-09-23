@@ -2,7 +2,7 @@
 #
 # Mobility test for the ring c lib
 #
-# $Id$
+
 
 Dir.chdir ENV['srcdir'] if ENV['srcdir']
 require 'RubyExtensionBuilder'

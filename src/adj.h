@@ -6,7 +6,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef ADJ_H
 #define ADJ_H

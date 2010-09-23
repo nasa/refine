@@ -7,7 +7,7 @@
  * Email:m.a.park@larc.nasa.gov
  */
 
-/* $Id$ */
+
 
 #include <stdlib.h>
 #include "mesherxInit.h"

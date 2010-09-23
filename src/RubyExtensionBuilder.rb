@@ -1,6 +1,6 @@
 # Ruby C extension build for refine package
 #
-# $Id$
+
 
 class RubyExtensionBuilder
 

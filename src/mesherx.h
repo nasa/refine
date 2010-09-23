@@ -6,7 +6,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef MESHERX_H
 #define MESHERX_H

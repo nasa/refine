@@ -6,7 +6,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef SAMPLEUNIT_H
 #define SAMPLEUNIT_H

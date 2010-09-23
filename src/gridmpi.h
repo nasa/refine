@@ -8,7 +8,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef GRIDMPI_H
 

@@ -8,7 +8,7 @@
  * Email:Mike.Park@NASA.Gov 
  */
   
-/* $Id$ */
+
 
 #ifndef GRIDSHAPE_H
 #define GRIDSHAPE_H

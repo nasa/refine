@@ -6,7 +6,7 @@
  * Email:mike.park@nasa.gov
  */
 
-/* $Id$ */
+
 
 #include <stdlib.h>
 #include <stdio.h>

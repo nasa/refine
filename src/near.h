@@ -8,7 +8,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef NEAR_H
 #define NEAR_H

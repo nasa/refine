@@ -6,7 +6,7 @@
  * Email:m.a.park@larc.nasa.gov
  */
 
-/* $Id$ */
+
 
 #ifndef GRIDFORTRAN_H
 #define GRIDFORTRAN_H

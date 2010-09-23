@@ -17,7 +17,7 @@
  * requires file faux_input
  */
   
-/* $Id$ */
+
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -5,7 +5,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef GRIDMATH_H
 #define GRIDMATH_H

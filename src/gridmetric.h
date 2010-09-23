@@ -8,7 +8,7 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-/* $Id$ */
+
 
 #ifndef GRIDMETRIC_H
 #define GRIDMETRIC_H

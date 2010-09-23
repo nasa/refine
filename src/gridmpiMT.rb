@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# $Id$
+
 #
 # Mobility test for grid c lib
 

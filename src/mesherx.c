@@ -6,7 +6,7 @@
  * Email:m.a.park@larc.nasa.gov
  */
 
-/* $Id$ */
+
 
 #include <stdio.h>
 #include <stdlib.h>

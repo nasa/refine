@@ -2,7 +2,7 @@
 #
 # Mobility test for the tableau c lib
 #
-# $Id$
+
 
 valgrinding = false
 if (valgrinding)

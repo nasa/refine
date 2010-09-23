@@ -2,7 +2,7 @@
 #
 # Mobility test for sort c lib
 #
-# $Id$
+
 
 Dir.chdir ENV['srcdir'] if ENV['srcdir']
 require 'RubyExtensionBuilder'
