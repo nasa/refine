@@ -47,6 +47,16 @@ VALUE grid_from_NGP( VALUE class, VALUE rb_filename)
   return obj;
 }
 
+VALUE grid_from_aflr3( VALUE class, VALUE rb_filename)
+{
+  Grid *grid;
+  VALUE obj;
+  grid = gridImportAFLR3( RSTRING_PTR(rb_filename) );
+  if ( NULL == grid ) return Qnil;
+  obj = Data_Wrap_Struct( class, 0, grid_free, grid );
+  return obj;
+}
+
 VALUE grid_from_FAST( VALUE class, VALUE rb_filename)
 {
   Grid *grid;
@@ -1333,6 +1343,7 @@ void Init_Grid()
 {
   cGrid = rb_define_class( "Grid", rb_cObject );
   rb_define_singleton_method( cGrid, "new", grid_new, 4 );
+  rb_define_singleton_method( cGrid, "from_AFLR3", grid_from_AFLR3, 1 );
   rb_define_singleton_method( cGrid, "from_FAST", grid_from_FAST, 1 );
   rb_define_singleton_method( cGrid, "from_mesh3d", grid_from_mesh3d, 1 );
   rb_define_singleton_method( cGrid, "from_NGP", grid_from_NGP, 1 );

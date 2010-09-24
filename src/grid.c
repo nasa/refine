@@ -1348,6 +1348,92 @@ Grid *gridExportFASTSurface( Grid *grid, char *filename )
   return grid;
 }
 
+#define TNN(ptr,msg)							\
+  {									\
+    if ( NULL == (ptr)){				                \
+      printf("%s: %d: %s: NULL pointer %s\n",                           \
+             __FILE__,__LINE__,__func__,(msg));                         \
+      return NULL;							\
+    }									\
+  }
+
+#define AEN(thing1,thing2,msg)						\
+  {									\
+    if ((thing1) != (thing2)){						\
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
+      return NULL;						        \
+    }									\
+  }
+
+Grid *gridImportAFLR3( char *filename )
+{
+  Grid *grid;
+  FILE *file;
+  int nnode, nface, nquad, ncell, npyramid, nprism, nhex;
+  int node, face, cell;
+  double xyz[3];
+  int nodes[4], id;
+
+  file = fopen(filename,"r");
+  if (NULL==file) printf("unable to open %s",filename);
+  TNN(file, "unable to open file" );
+
+  AEN( 1, fread( &nnode,    sizeof(int), 1, file), "nnode" );
+  AEN( 1, fread( &nface,    sizeof(int), 1, file), "nface" );
+  AEN( 1, fread( &nquad,    sizeof(int), 1, file), "nquad" );
+  AEN( 1, fread( &ncell,    sizeof(int), 1, file), "ncell" );
+  AEN( 1, fread( &npyramid, sizeof(int), 1, file), "npyramid" );
+  AEN( 1, fread( &nprism,   sizeof(int), 1, file), "nprism" );
+  AEN( 1, fread( &nhex,     sizeof(int), 1, file), "nhex" );
+
+  AEN( 0, nquad, "cannot handle quad" );
+  AEN( 0, npyramid, "cannot handle pyrimid" );
+  AEN( 0, nprism, "cannot handle prism" );
+  AEN( 0, nhex, "cannot handle hex" );
+   
+  grid = gridCreate(nnode, ncell, nface, 0);
+  TNN(file, "unable to creat grid" );
+
+
+  for( node=0; node<grid->nnode ; node++ ) 
+    {
+      AEN( 1, fread( &(xyz[0]), sizeof(double), 1, file), "x" );
+      AEN( 1, fread( &(xyz[1]), sizeof(double), 1, file), "y" );
+      AEN( 1, fread( &(xyz[2]), sizeof(double), 1, file), "z" );
+      AEN( node, gridAddNode( grid, xyz[0], xyz[1], xyz[2] ),"add node" );
+    }
+
+  for( face=0; face<grid->nface ; face++ ) 
+    {
+      AEN( 1, fread( &(nodes[0]), sizeof(int), 1, file), "face node 0" );
+      AEN( 1, fread( &(nodes[1]), sizeof(int), 1, file), "face node 1" );
+      AEN( 1, fread( &(nodes[2]), sizeof(int), 1, file), "face node 2" );
+      nodes[0]--; nodes[1]--; nodes[2]--;
+      AEN(face, gridAddFace( grid, nodes[0], nodes[1], nodes[2], 0),"add face");
+    }
+
+  for( face=0; face<grid->nface ; face++ ) 
+    {
+      AEN( 1, fread( &id, sizeof(int), 1, file), "face id" );
+      grid->faceId[face] = id;
+    }
+
+  for( cell=0; cell<grid->ncell ; cell++ ) 
+    {
+      AEN( 1, fread( &(nodes[0]), sizeof(int), 1, file), "tet node 0" );
+      AEN( 1, fread( &(nodes[1]), sizeof(int), 1, file), "tet node 1" );
+      AEN( 1, fread( &(nodes[2]), sizeof(int), 1, file), "tet node 2" );
+      AEN( 1, fread( &(nodes[2]), sizeof(int), 1, file), "tet node 3" );
+      nodes[0]--; nodes[1]--; nodes[2]--; nodes[2]--;
+      AEN(cell, gridAddCell( grid, nodes[0], nodes[1], nodes[2], nodes[3]),
+	  "add cell");
+    }
+
+  fclose(file);
+
+  return grid;
+}
+
 Grid *gridExportAFLR3( Grid *grid, char *filename )
 {
   FILE *file;
