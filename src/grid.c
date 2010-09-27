@@ -1684,6 +1684,84 @@ Grid *gridExportGRI( Grid *grid, char *filename )
   return grid;
 }
 
+Grid *gridImportFront( char *filename )
+{
+  FILE *file;
+  Grid *grid;
+  int face;
+  int nodes[3];
+  int node;
+  double xyz[3];
+  int prefix;
+
+  int npoit, nelet, npoif, nface, nboun, nfacs, nbouc,
+      nfaci, npoiv, nelev, nbou0;
+
+  char line[LINE_SIZE];
+
+  file = fopen(filename,"r");
+  if (NULL == file) return NULL;
+
+  if (NULL == fgets( line, LINE_SIZE, file ))  return NULL;
+  printf("%s",line);
+  if ( 11 != fscanf(file,"%d %d %d %d %d %d %d %d %d %d %d",
+		    &npoit, &nelet, &npoif, &nface, &nboun, &nfacs, &nbouc,
+		    &nfaci, &npoiv, &nelev, &nbou0) )
+    {
+      printf("ERROR: gridImportFront: %s: %d: header read\n",
+	     __FILE__, __LINE__ );
+      return NULL;
+    }
+  printf("%d npoif %d nface\n",npoif,nface);
+
+  grid = gridCreate(npoif, 0, nface, 0);
+  if (NULL == grid) return NULL;
+
+      
+  for ( face = 0; face < nface ; face++ )
+    {
+      if (4 != fscanf(file,"%d %d %d %d",
+		      &prefix, &(nodes[0]),&(nodes[1]),&(nodes[2]) ) )
+	{
+	  printf("ERROR: gridImportFront: %s: %d: face %d read\n",
+		 __FILE__, __LINE__, (face+1) );
+	  gridFree(grid); return NULL;
+	}
+      nodes[0]--;
+      nodes[1]--;
+      nodes[2]--;
+      if ( (prefix-1) != 
+	   gridAddFace( grid, nodes[0], nodes[1], nodes[2], 1 ) )
+	{
+	  printf("ERROR: gridImportFront: %s: %d: gridAddFace %d failed\n",
+		 __FILE__, __LINE__, face );
+	  gridFree(grid); return NULL;
+	}
+    }  
+
+  /* read in the xyz of each node */
+  for ( node = 0; node < npoif ; node++ )
+    {
+      if (4 != fscanf(file,"%d %lf %lf %lf",
+		      &prefix, &(xyz[0]),&(xyz[1]),&(xyz[2]) ) )
+	{
+	  printf("ERROR: gridImportFront: %s: %d: node %d read\n",
+		 __FILE__, __LINE__, (node+1) );
+	  gridFree(grid); return NULL;
+	}
+      if ( (prefix-1) != gridAddNode( grid, xyz[0], xyz[1], xyz[2] ) )
+	{
+	  printf("ERROR: gridImportFront: %s: %d: gridAddNode %d failed\n",
+		 __FILE__, __LINE__, node );
+	  gridFree(grid); return NULL;
+	}
+    }
+
+  fclose(file);
+
+  return grid;
+}
+
 Grid *gridImportAdapt( Grid *grid, char *filename )
 {
   int i, nnode;
