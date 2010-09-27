@@ -1762,6 +1762,38 @@ Grid *gridImportFront( char *filename )
   return grid;
 }
 
+Grid *gridExportOFF( Grid *grid, char *filename )
+{
+  FILE *file;
+  int nedge, i, face;
+
+  if (NULL == gridPack(grid)) {
+    printf("gridExportOFF: gridPack failed.\n");
+    return NULL;
+  }
+
+  if (NULL != filename) {
+    file = fopen(filename,"w");
+  }else{
+    file = fopen("grid.off","w");
+  }
+
+  nedge = 0;
+  fprintf(file,"OFF\n%10d %10d %10d\n",grid->nnode,grid->nface,nedge);
+
+  for( i=0; i<grid->nnode ; i++ ) 
+    fprintf(file,"%25.15e %25.15e %25.15e\n",
+	    grid->xyz[0+3*i],grid->xyz[1+3*i],grid->xyz[2+3*i]);
+
+  for ( face=0 ; face < grid->nface ; face++ ) 
+    fprintf(file,"3 %10d %10d %10d\n",
+	    grid->f2n[0+3*face],
+	    grid->f2n[1+3*face],
+	    grid->f2n[2+3*face]);
+
+  return grid;
+}
+
 Grid *gridImportAdapt( Grid *grid, char *filename )
 {
   int i, nnode;

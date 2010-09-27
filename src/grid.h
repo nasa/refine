@@ -184,6 +184,8 @@ Grid *gridExportAFLR3(Grid *g, char *filename );
 Grid *gridImportGRI( char *filename );
 Grid *gridExportGRI(Grid *g, char *filename );
 Grid *gridImportFront( char *filename );
+Grid *gridExportOFF(Grid *g, char *filename );
+
 Grid *gridImportAdapt(Grid *g, char *filename );
 
 Grid *gridAttachPacker(Grid *g, 
