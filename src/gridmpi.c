@@ -433,8 +433,10 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
   double xyz[1000], uv[6], ts[2];
   int dim, aux;
   Queue *lq;
+  int imesh_index;
 
-  dim = 3 + 6 + gridNAux(grid);
+  imesh_index = (gridHaveIMesh(grid)?1:0);
+  dim = 3 + 6 + gridNAux(grid) + imesh_index;
   if (dim>250) printf( "ERROR: %s: %d: undersized static xyz.\n", 
 		       __FILE__, __LINE__);
 
@@ -509,6 +511,8 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 		     xyz[6+dim*i],xyz[7+dim*i],xyz[8+dim*i]);
 	  for ( aux = 0 ; aux < gridNAux(grid) ; aux++ )     
 	    gridSetAux(grid, localnodes[i], aux, xyz[aux+9+dim*i]);
+	  if ( gridHaveIMesh(grid) )
+	    gridSetIMesh(grid, localnodes[i], (int)xyz[gridNAux(grid)+9+dim*i]);
 	  gridSetNodePart(grid, localnodes[i], nodeParts[i]);
 	}
 	cell = gridAddCellWithGlobal(grid,

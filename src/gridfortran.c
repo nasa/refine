@@ -111,6 +111,17 @@ void gridsetmap_( int *nnode, double* map )
 #endif
 }
 
+void gridsetimesh_( int *nnode, int *imesh )
+{
+  int node;
+  for ( node=0; node<*nnode; node++)
+    gridSetIMesh( grid, node, imesh[node] );
+
+  if (NULL != queue) queueFree( queue );
+  /* 3:xyz + 6:m + naux + 1:imesh */
+  queue = queueCreate( 9 + 1 + gridNAux(grid) ); 
+}
+
 void gridsetnodepart_( int *nnode, int *part )
 {
   int node;
@@ -579,6 +590,18 @@ void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
   }
 }
 
+void gridgetimesh_( int *nnode, int *imesh)
+{
+  int node;
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+
+  for (node=0;node<gridNNode(grid);node++) {
+    imesh[node] = gridIMesh(grid,node);
+  }
+}
+
 void gridgetcell_( int *cell, int *nodes, int *global )
 {
   gridCell(grid,(*cell)-1,nodes);
@@ -623,9 +646,14 @@ void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
 
 void gridsetnaux_( int *naux )
 {
+  int imesh_index;
+
   gridSetNAux(grid, *naux);
+
+  imesh_index = (gridHaveIMesh(grid)?1:0);
   if (NULL != queue) queueFree( queue );
-  queue = queueCreate( 9 + gridNAux(grid) ); /* 3:xyz + 6:m + naux */
+  /* 3:xyz + 6:m + naux + 1:imesh */
+  queue = queueCreate( 9 + imesh_index + gridNAux(grid) ); 
 }
 
 void gridsetauxvector_( int *nnode, int *offset, double *x )

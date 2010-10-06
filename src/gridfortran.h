@@ -21,6 +21,7 @@ void gridfree_( void );
 void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
 			 int *nface, int *dim1, int *dim2, int *f2n );
 void gridsetmap_( int *nnode, double* map );
+void gridsetimesh_( int *nnode, int* imesh );
 void gridsetnodelocal2global_( int *partId, int *nnodeg, 
 			      int *nnode, int *nnode0, int *local2global );
 void gridsetnodepart_( int *nnode, int *part );
@@ -69,6 +70,7 @@ void grideliminateunusedcellglobal_( void );
 void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
 		    int *ncell, int *ncellg );
 void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z);
+void gridgetimesh_( int *nnode, int *imesh);
 void gridgetcell_( int *cell, int *nodes, int *global );
 void gridgetbcsize_( int *ibound, int *nface );
 void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n );

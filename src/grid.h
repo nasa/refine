@@ -62,6 +62,7 @@ struct Grid {
   int *child_reference;
   int *nodeGlobal;
   int *part;
+  int *imesh;
   int nsorted;
   int *sortedGlobal, *sortedLocal;
   int maxUnusedNodeGlobal, nUnusedNodeGlobal, *unusedNodeGlobal;
@@ -458,6 +459,10 @@ int gridNodePart(Grid *g, int node );
 Grid *gridSetNodePart(Grid *g, int node, int part );
 GridBool gridNodeLocal(Grid *g, int node );
 GridBool gridNodeGhost(Grid *g, int node );
+
+#define gridHaveIMesh(grid) (!(NULL == (grid)->imesh))
+int gridIMesh(Grid *g, int node );
+Grid *gridSetIMesh(Grid *g, int node, int imesh );
 
 int gridNGeomNode(Grid *g);
 Grid *gridSetNGeomNode(Grid *g, int nGeomNode);

@@ -110,6 +110,7 @@ Grid *gridImport(int maxnode, int nnode,
   grid->child_reference  = NULL;
   grid->nodeGlobal  = NULL;
   grid->part = NULL;
+  grid->imesh = NULL;
   grid->sortedGlobal = NULL;
   grid->sortedLocal = NULL;
   grid->maxUnusedNodeGlobal = 0;
@@ -1923,6 +1924,7 @@ void gridFree(Grid *grid)
   if (NULL != grid->sortedLocal) free(grid->sortedLocal);
   if (NULL != grid->sortedGlobal) free(grid->sortedGlobal);
   if (NULL != grid->part) free(grid->part);
+  if (NULL != grid->imesh) free(grid->imesh);
   if (NULL != grid->nodeGlobal) free(grid->nodeGlobal);
   if (NULL != grid->child_reference) free(grid->child_reference);
   if (NULL != grid->aux) free(grid->aux);
@@ -1975,6 +1977,7 @@ Grid *gridPack(Grid *grid)
       if (NULL != grid->nodeGlobal) 
 	grid->nodeGlobal[packnode] = grid->nodeGlobal[orignode];
       if (NULL != grid->part) grid->part[packnode] = grid->part[orignode];
+      if (NULL != grid->imesh) grid->imesh[packnode] = grid->imesh[orignode];
       for ( i=0;i<grid->naux;i++) 
 	grid->aux[i+grid->naux*packnode] = grid->aux[i+grid->naux*orignode];
       grid->geomNode[packnode] = grid->geomNode[orignode];
@@ -2390,6 +2393,12 @@ Grid *gridRenumber(Grid *grid, int *o2n)
       temp_int[o2n[node]] = grid->part[node];
     for ( node = 0 ; node < grid->nnode ; node++ )
       grid->part[node] = temp_int[node];
+  }
+  if (NULL != grid->imesh) {
+    for ( node = 0 ; node < grid->nnode ; node++ )
+      temp_int[o2n[node]] = grid->imesh[node];
+    for ( node = 0 ; node < grid->nnode ; node++ )
+      grid->imesh[node] = temp_int[node];
   }
   free(temp_int);
 
@@ -3084,7 +3093,7 @@ Grid *gridInterpolateAux2(Grid *grid, int node0, int node1, double ratio,
   return grid;
 }
 
-
+/* FIXME should be renamed to generic inherit node properties */ 
 
 Grid *gridSetAuxToAverageOfNodes2(Grid *grid, int avgNode,
 				  int n0, int n1 )
@@ -3098,6 +3107,9 @@ Grid *gridSetAuxToAverageOfNodes2(Grid *grid, int avgNode,
 	       1.0/2.0*( gridAux(grid, n0, aux) +
 			 gridAux(grid, n1, aux) ) );
   }
+
+  if ( gridHaveIMesh(grid) )
+    gridSetIMesh(grid, avgNode, gridIMesh(grid, n0 ) );
 
   return grid;
 }
@@ -3116,6 +3128,9 @@ Grid *gridSetAuxToAverageOfNodes3(Grid *grid, int avgNode,
 			 gridAux(grid, n1, aux) +
 			 gridAux(grid, n2, aux) ) );
   }
+
+  if ( gridHaveIMesh(grid) )
+    gridSetIMesh(grid, avgNode, gridIMesh(grid, n0 ) );
 
   return grid;
 }
@@ -3136,6 +3151,9 @@ Grid *gridSetAuxToAverageOfNodes4(Grid *grid, int avgNode,
 			 gridAux(grid, n2, aux) +
 			 gridAux(grid, n3, aux) ) );
   }
+
+  if ( gridHaveIMesh(grid) )
+    gridSetIMesh(grid, avgNode, gridIMesh(grid, n0 ) );
 
   return grid;
 }
@@ -3458,15 +3476,18 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
   int nodes[4], globalnodes[4], nodeParts[4];
   double xyz[1000];
   int dim, aux;
+  int imesh_index;
   
+  imesh_index = (gridHaveIMesh(grid)?1:0);
+  dim = 3 + 6 + gridNAux(grid) + imesh_index;
+  if (dim>250) printf( "ERROR: %s: %d: undersized static xyz.\n", 
+		       __FILE__, __LINE__);
+
   global = gridGetNextCellGlobal(grid);
 
   nodes[0] = n0; nodes[1] = n1; nodes[2] = n2; nodes[3] = n3;
 
   if ( NULL != queue && gridCellHasGhostNode(grid, nodes) ) {
-    dim = 3 + 6 + gridNAux(grid);
-    if (dim>250) printf( "ERROR: %s: %d: undersized static xyz.\n", 
-			 __FILE__, __LINE__);
     for ( inode = 0 ; inode < 4 ; inode++ ) {
       globalnodes[inode] = gridNodeGlobal(grid,nodes[inode]);
       nodeParts[inode] = gridNodePart(grid,nodes[inode]);
@@ -3474,6 +3495,8 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
       gridMap(grid,nodes[inode],&xyz[3+dim*inode]);
       for ( aux = 0 ; aux < gridNAux(grid) ; aux++ ) 
 	xyz[aux+9+dim*inode] = gridAux(grid, nodes[inode], aux);
+      if ( gridHaveIMesh(grid) )
+	xyz[gridNAux(grid)+9+dim*inode] = (double)gridIMesh(grid,nodes[inode]);
     }
     queueAddCell(queue,globalnodes,global,nodeParts,xyz);
   }
@@ -5440,6 +5463,8 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
                    (int *)realloc(grid->nodeGlobal,grid->maxnode * sizeof(int));
     if (NULL != grid->part) 
       grid->part = (int *)realloc(grid->part,grid->maxnode * sizeof(int));
+    if (NULL != grid->imesh) 
+      grid->imesh = (int *)realloc(grid->imesh,grid->maxnode * sizeof(int));
     if (NULL != grid->sortedGlobal) 
       grid->sortedGlobal =
                    (int *)realloc(grid->sortedGlobal,grid->maxnode*sizeof(int));
@@ -5479,6 +5504,7 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
   if (NULL != grid->child_reference) grid->child_reference[node] = EMPTY;
   if (0 <= global) gridSetNodeGlobal(grid, node, global );
   if (NULL != grid->part) grid->part[node] = gridPartId(grid);
+  if (NULL != grid->imesh) grid->imesh[node] = EMPTY;
 
   return node;
 }
@@ -5750,6 +5776,25 @@ GridBool gridNodeGhost(Grid *grid, int node )
   if (!gridValidNode(grid,node)) return FALSE;
   if (NULL == grid->part) return FALSE;
   return (grid->partId!=grid->part[node]);
+}
+
+int gridIMesh(Grid *grid, int node )
+{
+  if (!gridValidNode(grid,node)) return EMPTY;
+  if (NULL == grid->imesh) return EMPTY;
+  return grid->imesh[node];
+}
+
+Grid *gridSetIMesh(Grid *grid, int node, int imesh )
+{
+  int i;
+  if (!gridValidNode(grid,node)) return NULL;
+  if (NULL == grid->imesh) {
+    grid->imesh = (int *)malloc(gridMaxNode(grid)*sizeof(int));
+    for (i=0;i<gridMaxNode(grid);i++) grid->imesh[i] = EMPTY;
+  }
+  grid->imesh[node] = imesh;
+  return grid;
 }
 
 Grid *gridDeleteNodesNotUsed(Grid *grid){
