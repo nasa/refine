@@ -1,4 +1,8 @@
 
+A Future Date: Released Refine 1.6.1 (requires >= FUN3D-45226 (11.0.0)).
+
+
+
 Wed Oct 6, 2010: Released Refine 1.6.0 (requires >= FUN3D-45226 (11.0.0)).
 
 - This minor rev bump is an API change to include imesh get/set to
