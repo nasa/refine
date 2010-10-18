@@ -2465,10 +2465,20 @@ Grid *gridRenumber(Grid *grid, int *o2n)
 Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
 {
   int i, nfacenode;
+
   if ( grid !=  gridSortNodeGridEx(grid) ) {
     printf("gridWriteTecplotSurfaceGeom: gridSortNodeGridEx failed.\n");
     return NULL;
   }
+
+  nfacenode=0;
+  for(i=0;i<3*grid->nface;i++){
+    nfacenode = MAX(nfacenode, grid->f2n[i]);
+  }
+  nfacenode++;
+
+  /* to prevent empty zones*/
+  if ( 0 == grid->nface || 0 == nfacenode ) return grid;
 
   if (NULL == grid->tecplotGeomFile) {
     if (NULL == filename) {
@@ -2479,12 +2489,6 @@ Grid *gridWriteTecplotSurfaceGeom(Grid *grid, char *filename)
     fprintf(grid->tecplotGeomFile, "title=\"tecplot refine geometry file\"\n");
     fprintf(grid->tecplotGeomFile, "variables=\"X\",\"Y\",\"Z\",\"Face\"\n");
   }
-
-  nfacenode=0;
-  for(i=0;i<3*grid->nface;i++){
-    nfacenode = MAX(nfacenode, grid->f2n[i]);
-  }
-  nfacenode++;
 
   fprintf(grid->tecplotGeomFile,
 	  "zone t=surf, i=%d, j=%d, f=fepoint, et=triangle\n",
