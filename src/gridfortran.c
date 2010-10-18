@@ -274,14 +274,14 @@ void gridwritetecplotsurfacezone_( void )
 {
   char filename[256];
 
-  sprintf(filename, "grid%03d.t", gridPartId(grid)+1 );
+  sprintf(filename, "grid%04d.t", gridPartId(grid)+1 );
   gridWriteTecplotInvalid(grid,filename);
 }
 
 void gridexportfast_( void )
 {
   char filename[256];
-  sprintf(filename, "grid%03d.fgrid", gridPartId(grid)+1 );
+  sprintf(filename, "grid%04d.fgrid", gridPartId(grid)+1 );
   gridExportFAST(grid,filename);
 }
 
