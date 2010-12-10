@@ -3078,6 +3078,8 @@ Grid *gridSetAux(Grid *grid, int node, int aux, double value )
   return grid;
 }
 
+/* FIXME should be renamed to generic inherit node properties */ 
+
 Grid *gridInterpolateAux2(Grid *grid, int node0, int node1, double ratio, 
 			  int target)
 {
@@ -3094,26 +3096,9 @@ Grid *gridInterpolateAux2(Grid *grid, int node0, int node1, double ratio,
     grid->aux[i+n*target] = 
       ratio*(grid->aux[i+n*node1]) + (1.0-ratio)*(grid->aux[i+n*node0]); 
   }
-  return grid;
-}
-
-/* FIXME should be renamed to generic inherit node properties */ 
-
-Grid *gridSetAuxToAverageOfNodes2(Grid *grid, int avgNode,
-				  int n0, int n1 )
-{
-  int aux;
-  if ( !gridValidNode(grid,n0) || 
-       !gridValidNode(grid,n1) ) return NULL;
-
-  for (aux=0;aux<gridNAux(grid);aux++) {
-    gridSetAux(grid, avgNode, aux, 
-	       1.0/2.0*( gridAux(grid, n0, aux) +
-			 gridAux(grid, n1, aux) ) );
-  }
 
   if ( gridHaveIMesh(grid) )
-    gridSetIMesh(grid, avgNode, gridIMesh(grid, n0 ) );
+    gridSetIMesh(grid, target, gridIMesh(grid, node0 ) );
 
   return grid;
 }

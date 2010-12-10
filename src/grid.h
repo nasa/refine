@@ -267,8 +267,6 @@ double gridAux(Grid *g, int node, int aux);
 Grid *gridSetAux(Grid *g, int node, int aux, double value);
 Grid *gridInterpolateAux2(Grid *g, int node0, int node1, double ratio,
 			  int target);
-Grid *gridSetAuxToAverageOfNodes2(Grid *g, int avgNode,
-				  int n0, int n1 );
 Grid *gridSetAuxToAverageOfNodes3(Grid *g, int avgNode,
 				  int n0, int n1, int n2 );
 Grid *gridSetAuxToAverageOfNodes4(Grid *g, int avgNode,
