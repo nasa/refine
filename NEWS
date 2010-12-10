@@ -1,5 +1,5 @@
 
-A Future Date: Released Refine 1.6.1 (requires >= FUN3D-45226 (11.0.0)).
+Fri Dec 10, 2010 : Released Refine 1.6.1 (requires >= FUN3D-45226 (11.0.0)).
 
 - fix bug in setting new node imesh for overset grid systems.
    (reported by Rajiv Shenoy of GA Tech)
