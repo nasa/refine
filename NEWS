@@ -1,7 +1,7 @@
 
-Future Date: Released Refine 1.6.2 (requires >= FUN3D-45226 (11.0.0)).
+Thu Dec 23, 2010 : Released Refine 1.6.2 (requires >= FUN3D-45226 (11.0.0)).
 
-
+- improved map (metric) and aux data interpolation durring edge collapse.
 
 Fri Dec 10, 2010: Released Refine 1.6.1 (requires >= FUN3D-45226 (11.0.0)).
 

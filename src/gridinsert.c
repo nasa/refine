@@ -2122,6 +2122,9 @@ Grid *gridCollapseEdge(Grid *grid, Queue *queue, int n0, int n1,
     /* CHECK ME - do edges need to be reconnected too??? */
   }
 
+  gridInterpolateMap2(grid, n0, n1, ratio, n0);
+  gridInterpolateAux2(grid, n0, n1, ratio, n0);
+
   gridRemoveNode(grid, n1);
 
   return grid;
