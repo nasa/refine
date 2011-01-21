@@ -1,4 +1,8 @@
 
+A Future Date: Released Refine 1.6.4 (requires >= FUN3D-45226 (11.0.0)).
+
+
+
 Fri Jan 21, 2011 : Released Refine 1.6.3 (requires >= FUN3D-45226 (11.0.0)).
 
 - prevent NaN in volume node smoothing when faces are aligned. (was fixed
