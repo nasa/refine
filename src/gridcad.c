@@ -1974,9 +1974,14 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
 			  + nearestRatio*nearestDirection[i];
       /* reset length to the projection of min cell to search dir*/
       length = sqrt(gridDotProduct(searchDirection,searchDirection));
-      for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
-      projection = gridDotProduct(searchDirection,minDirection);
-      for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
+      if (ABS(length) > 1.0e-12) {
+	for (i=0;i<3;i++) searchDirection[i] = searchDirection[i]/length;
+	projection = gridDotProduct(searchDirection,minDirection);
+	for (i=0;i<3;i++) searchDirection[i] = projection*searchDirection[i];
+      }else{
+	gridStoredCostDerivative(grid, minCell, searchDirection);
+	gridStoredCostDerivative(grid, minCell, minDirection);
+      }
     }else{
       gridStoredCostDerivative(grid, minCell, searchDirection);
       gridStoredCostDerivative(grid, minCell, minDirection);
