@@ -6,8 +6,6 @@
  * Email:m.a.park@larc.nasa.gov
  */
 
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,15 +23,14 @@
   PRINT_STATUS; \
 }
 
-
 static void usage( char *executable );
 static void usage( char *executable )
 {
   printf("Usage: %s -g input.gri -g projectx.metric -o output.gri\n",
 	 executable );
-  printf(" -g input .gri name\n");
-  printf(" -m input .metric name\n");
-  printf(" -o output .gri name\n");
+  printf(" -g input.{gri|fgrid}\n");
+  printf(" -m input.metric\n");
+  printf(" -o output.gri\n");
 }
 
 #ifdef PROE_MAIN
@@ -43,7 +40,8 @@ int main( int argc, char *argv[] )
 #endif
 {
   Grid *grid;
-  char gri_input[256] = "";
+  int end_of_string;
+  char file_input[256] = "";
   char metric_input[256] = "";
   char gri_output[256] = "";
 
@@ -56,8 +54,8 @@ int main( int argc, char *argv[] )
   i = 1;
   while( i < argc ) {
     if( strcmp(argv[i],"-g") == 0 ) {
-      i++; sprintf( gri_input, "%s", argv[i] );
-      printf("-g argument %d: %s\n",i, gri_input);
+      i++; sprintf( file_input, "%s", argv[i] );
+      printf("-g argument %d: %s\n",i, file_input);
     } else if( strcmp(argv[i],"-m") == 0 ) {
       i++; sprintf( metric_input, "%s", argv[i] );
       printf("-m argument %d: %s\n",i, metric_input);
@@ -74,7 +72,7 @@ int main( int argc, char *argv[] )
     i++;
   }
   
-  if ( (strcmp(gri_input,"")==0) ||
+  if ( (strcmp(file_input,"")==0) ||
        (strcmp(gri_output,"")==0) ) {
     printf("no input or output file names specified.\n");
     usage( argv[0] );
@@ -82,11 +80,21 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  grid = gridImportGRI( gri_input );
+  end_of_string = strlen(file_input);
+  grid = NULL;
+  if( strcmp(&file_input[end_of_string-4],".gri") == 0 ) {
+    printf("gri input file %s\n", file_input);
+    grid = gridImportGRI( file_input );
+  } else if( strcmp(&file_input[end_of_string-6],".fgrid") == 0 ) {
+    printf("fast input file %s\n", file_input);
+    grid = gridImportFAST( file_input );
+  } else {
+    printf("input file name extension unknown %s\n", file_input);
+  }
 
   if ( NULL == grid ) 
     {
-      printf("read of %s failed. stop\n",gri_input);
+      printf("read of %s failed. stop\n",file_input);
       return(1);
     }
 
