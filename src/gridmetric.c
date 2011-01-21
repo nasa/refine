@@ -2111,6 +2111,13 @@ double gridFaceAreaUV(Grid *grid, int face)
   gridNodeUV( grid, nodes[1], faceId, uv1);
   gridNodeUV( grid, nodes[2], faceId, uv2);
 
+  if ( DBL_MAX == uv0[0] ) return DBL_MAX;
+  if ( DBL_MAX == uv0[1] ) return DBL_MAX;
+  if ( DBL_MAX == uv1[0] ) return DBL_MAX;
+  if ( DBL_MAX == uv1[1] ) return DBL_MAX;
+  if ( DBL_MAX == uv2[0] ) return DBL_MAX;
+  if ( DBL_MAX == uv2[1] ) return DBL_MAX;
+
   return gridFaceAreaUVDirect(uv0, uv1, uv2, faceId);
 }
 
