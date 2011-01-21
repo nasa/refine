@@ -1349,10 +1349,10 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
       gridStoredCostDerivative(grid,i,dCostdX);
       projection = gridDotProduct(searchDirection,dCostdX);
       deltaCost = gridStoredCost(grid,i) - minCost;
-      if (ABS(length-projection) < 1.0e-8){
+      if (ABS(projection) < 1.0e-8){
 	currentAlpha=1.0; /* no intersection */
       }else{
-	currentAlpha = deltaCost / ( length + projection);
+	currentAlpha = deltaCost / projection;
       }
       if (currentAlpha > 0 && currentAlpha < alpha ) alpha = currentAlpha;
     }
@@ -1993,10 +1993,10 @@ Grid *gridLinearProgramXYZ(Grid *grid, int node, GridBool *callAgain )
       gridStoredCostDerivative(grid,i,dARdX);
       projection = gridDotProduct(searchDirection,dARdX);
       deltaAR = gridStoredCost(grid,i) - minAR;
-      if (ABS(length-projection) < 1.0e-12){
+      if (ABS(projection) < 1.0e-12){
 	currentAlpha=1.0; /* no intersection */
       }else{
-	currentAlpha = deltaAR / ( length + projection);
+	currentAlpha = deltaAR / projection;
       }
       if (currentAlpha > 0 && currentAlpha < alpha ) alpha = currentAlpha;
     }
