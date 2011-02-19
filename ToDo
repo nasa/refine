@@ -1,36 +1,8 @@
 
-Thesis
-
 + complete
 - not completed
 ? may not be needed
 
-+ geometry insertion check
-
-+ determine desired node locations for each CAD edge
-   + return interpolated metric for any s.
-   + use binary search to find next s to have desired length
-      - Newton-Rapson would be faster
-   + iteratively adjust desired segment length to evenly distribute error
-   ? use integration of edge to guess desired segment length
-
-+ Pure insertion of desired node locations into edge discretization
-   - use existing nodes when posible if in desired location
-      or can be nudged into location.
-
-+ calculate (histogram)
-   + uv area of adjacent triangles
-   + xyz volume of adjacent tets
-   + edge lengths
-
-+ remove orignal edge nodes after the insertion to leave only desired
-   node locations
-
-+ Make the split operations linear in s for map, aux
-
-- Make the interpolation of map, aux linear in xyz
-
-- Expand number of test cases
 
 List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
@@ -38,43 +10,41 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 Start Builds!!!!!
 
+- Expand number of test cases
+
 --Major refactoring
 
-make the min allowed face area (and volume) a grid struct var.
+- make the min allowed face area (and volume) a grid struct var.
 
+- printf error when face is empty for edge split with !gridContinuousEquator
+- think about geom edge collapse on a beth grid with no geom edges
+  Make a matrix of collapse possilbities for node 0,1 on bound or not
+- Add a new method to return whether a geometry face has an underlying
+  geometric (CAD) definition. (for beth cases)
 
-printf error when face is empty for edge split with !gridContinuousEquator
+- Are global cell indexes really needed or can they be computed after
+  adaptation?
 
+- Do all operations in quality order via plan
 
-Are global cell indexes really needed or can they be computed after
-adaptation?
+- refactor grid move to galerkin?
+- Refactor conn stuff in grid move and grid to unify
 
+- verify that I am getting all the performance (mesh quality) out the
+  the volume smoothing that is possible.  make consistant use of the
+  cost constraint functions.
 
-Do all operations in quality order via plan
--Use the plan object to speed up node smooth of ghost boundary in
-parallel.
+- Exact Edge smoothing with invalid backoff
 
+- get edge metric working for node smoothing
 
-Refactor conn stuff in grid move and grid to unify
+- log euclidean metrics
 
+- Finish face swap parallelization. there are only 5 nodes so that means
+  32 posiblities. (unit testing could be less if ring, top&bottom are
+  treated seperately)
 
-verify that I am getting all the performance (mesh quality) out the
-the volume smoothing that is possible.  make consistant use of the
-cost constraint functions.
-
-
-Exact Edge smoothing with invalid backoff
-
-
-get edge metric working for node smoothing
-
-
-Finish face swap parallelization. there are only 5 nodes so that means
-32 posiblities. (unit testing could be less if ring, top&bottom are
-treated seperately)
-
-
-rename grid AR to cost
+- rename grid AR to cost
 
 gridcad : get rid of 
 -gridOptimizeFaceUV
@@ -87,28 +57,14 @@ gridmetric : get rid of
 clean up gridSplitEdgeIfNear gridSplitFaceAt gridSplitCellAt
 gridInsertInToGeomEdge gridInsertInToGeomFace gridInsertInToVolume
 
-
-think about geom edge collapse on a beth grid with no geom edges
-Make a matrix of collapse possilbities for node 0,1 on bound or not
-
-Add a new method to return whether a geometry face has an underlying
-geometric (CAD) definition. (for beth cases)
-
-
-Clean up restarts and use same logic in FUN3D and stand alone.
-
-
-unitfy cell face arrays and method
-
-
---Edge Based
-
-parallelize the edge queue
+- unitfy cell face arrays and method
 
 --Parallel adapt
 
 corsening on partition boundaries 
 continue speed testing
+
+only interior + load balancing
 
 -MesherX
 
