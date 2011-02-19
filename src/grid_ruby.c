@@ -1,7 +1,14 @@
 
 #include <math.h>
 #include <limits.h>
+
+#ifdef __APPLE__       /* Not needed on Mac OS X */
+#include <float.h>
+#else
+#include <malloc.h>
 #include <values.h>
+#endif
+
 #include "ruby.h"
 #include "grid.h"
 
