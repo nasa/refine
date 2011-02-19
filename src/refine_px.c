@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <values.h>
+
 #include "grid.h"
 #include "gridmetric.h"
 #include "gridswap.h"

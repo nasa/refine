@@ -13,7 +13,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+
+#ifdef __APPLE__       /* Not needed on Mac OS X */
+#include <float.h>
+#else
+#include <malloc.h>
 #include <values.h>
+#endif
+
 #include "near.h"
 
 Near* nearCreate( int index, double x, double y, double z, double radius )

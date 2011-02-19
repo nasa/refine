@@ -6,13 +6,11 @@
  * Email:m.a.park@larc.nasa.gov
  */
 
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <values.h>
+
 #include "grid.h"
 #include "gridmetric.h"
 
