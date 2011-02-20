@@ -26,43 +26,6 @@
 #include "gridinsert.h"
 #include "gridcad.h"
 
-Grid *gridThrash(Grid *grid)
-{
-  int ncell, nodelimit, cellId, nodes[4];
-  ncell = gridNCell(grid);
-  nodelimit = gridNNode(grid)*3/2;
-  for (cellId=0;cellId<ncell && gridNNode(grid)<nodelimit;cellId++)
-    if ( NULL != gridCell( grid, cellId, nodes) )
-      gridSplitEdge( grid, nodes[0], nodes[1] );
-  
-  return grid;
-}
-
-Grid *gridRemoveAllNodes(Grid *grid )
-{
-  AdjIterator it;
-  int n0, i, cell, nodes[4];
-  GridBool nodeExists;
- 
-  for ( n0=0; n0<gridMaxNode(grid); n0++ ) { 
-    if ( gridValidNode(grid, n0) && !gridNodeFrozen(grid, n0) ) {
-      nodeExists = TRUE;
-      for ( it = adjFirst(gridCellAdj(grid),n0); 
-	    nodeExists && adjValid(it); 
-	    it = adjNext(it) ){
-	cell = adjItem(it);
-	gridCell( grid, cell, nodes);
-	for (i=0;nodeExists && i<4;i++){
-	  if (n0 != nodes[i]) {
-	    nodeExists = (grid == gridCollapseEdge(grid,NULL,nodes[i],n0,1.0));
-	  }
-	}
-      }
-    }
-  }
-  return grid;
-}
-
 static GridBool gridThisEdgeCanBeModifiedInThisPhase( Grid *grid, 
 					       int node0, int node1 )
 {

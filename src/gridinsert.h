@@ -16,8 +16,6 @@
 #include "grid.h"
 
 BEGIN_C_DECLORATION
-Grid *gridThrash(Grid *g );
-Grid *gridRemoveAllNodes(Grid *g );
 
 Grid *gridAdapt(Grid *g, double minLength, double maxLength );
 Grid *gridAdapt2(Grid *g );
