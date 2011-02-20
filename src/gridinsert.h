@@ -23,7 +23,6 @@ Grid *gridAdaptBasedOnConnRankings(Grid *g );
 Grid *gridAdaptVolumeEdges(Grid *g);
 
 int gridSplitEdge(Grid *g, int n0, int n1 );
-int gridReconstructSplitEdgeRatio(Grid *g, int n0, int n1, double ratio);
 int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
 int gridSplitEdgeRepeat(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );
 int gridSplitEdgeForce(Grid *g, Queue *q, int n0, int n1, GridBool debug_split );
@@ -44,10 +43,6 @@ Grid *gridFreezeGoodNodes(Grid *g, double goodAR,
 
 Grid *gridVerifyEdgeExists(Grid *g, int n0, int n1);
 Grid *gridVerifyFaceExists(Grid *g, int n0, int n1, int n2);
-
-Grid *gridCollapseInvalidCells(Grid *g);
-
-Grid *gridSplitVolumeEdgesIntersectingFacesAround(Grid *g, int node);
 
 Grid *gridCollapseWedgeCells(Grid *g);
 
