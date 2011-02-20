@@ -18,7 +18,6 @@
 #endif
 #include "intersect.h"
 #include "plan.h"
-#include "ring.h"
 #include "gridshape.h"
 #include "gridmath.h"
 #include "gridmetric.h"

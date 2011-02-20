@@ -9,7 +9,6 @@ EXTRA_DIST = \
 	sortMT.rb sort_ruby.c \
 	tableauMT.rb tableau_ruby.c \
 	planMT.rb plan_ruby.c \
-	ringMT.rb ring_ruby.c \
 	queueMT.rb queue_ruby.c \
 	gridMT.rb grid_ruby.c \
 	gridmathMT.rb gridmath_ruby.c \
@@ -24,7 +23,7 @@ EXTRA_DIST = \
 	layerMT.rb layer_ruby.c \
 	faux_input
 
-TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb tableauMT.rb planMT.rb ringMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb layerMT.rb
+TESTS = adjMT.rb nearMT.rb intersectMT.rb lineMT.rb sortMT.rb tableauMT.rb planMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb layerMT.rb
 
 lib_LIBRARIES =
 
@@ -41,7 +40,6 @@ librefine_a_SOURCES = \
 	sort.h sort.c \
 	tableau.h tableau.c \
 	plan.h plan.c \
-	ring.h ring.c \
 	grid.h grid.c \
 	gridmath.h gridmath.c \
 	gridshape.h gridshape.c \

@@ -18,7 +18,6 @@ local:
 	./sortMT.rb
 	./tableauMT.rb
 	./intersectMT.rb
-	./ringMT.rb
 	./gridMT.rb
 	./gridcadMT.rb
 	./gridmathMT.rb
@@ -31,7 +30,7 @@ local:
 
 clean:
 	rm -rf SampleUnit
-	rm -rf Adj Plan Near Line Queue Sort Tableau Intersect Ring Grid* Layer
+	rm -rf Adj Plan Near Line Queue Sort Tableau Intersect Grid* Layer
 
 bu:
 	( cd .. && $(MAKE) bu )
