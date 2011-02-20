@@ -46,8 +46,6 @@ Grid *gridVerifyFaceExists(Grid *g, int n0, int n1, int n2);
 
 Grid *gridCollapseWedgeCells(Grid *g);
 
-Grid *gridSplitSliverCell(Grid *g, Queue *q, int sliver_cell);
-
 END_C_DECLORATION
 
 #endif /* GRIDINSERT_H */
