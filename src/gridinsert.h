@@ -20,9 +20,6 @@ BEGIN_C_DECLORATION
 Grid *gridAdapt(Grid *g, double minLength, double maxLength );
 Grid *gridAdapt2(Grid *g );
 Grid *gridAdaptBasedOnConnRankings(Grid *g );
-Grid *gridAdaptLongShortCurved(Grid *g, double minLength, double maxLength,
-			       GridBool debug_split );
-Grid *gridAdaptLongShortLinear(Grid *g, double minLength, double maxLength );
 Grid *gridAdaptVolumeEdges(Grid *g);
 
 int gridSplitEdge(Grid *g, int n0, int n1 );
