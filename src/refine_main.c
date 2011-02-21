@@ -6,8 +6,6 @@
  * Email:m.a.park@larc.nasa.gov
  */
 
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,7 +18,6 @@
 #include "gridcad.h"
 #include "gridmove.h"
 #include "gridfiller.h"
-#include "layer.h"
 #include "CADGeom/CADGeom.h"
 
 #define PRINT_STATUS printf("minimum Thawed Aspect Ratio %8.6f Mean Ratio %8.6f Volume %10.6e\n", gridMinThawedAR(grid),gridMinThawedFaceMR(grid), gridMinVolume(grid)); fflush(stdout);
@@ -36,7 +33,6 @@ int main( int argc, char *argv[] )
 #endif
 {
   Grid *grid;
-  Layer *layer;
   int jmax;
   double height;
   char project[256];
@@ -51,8 +47,6 @@ int main( int argc, char *argv[] )
   double minAR=-1.0;
   double ratioRefine, ratioCollapse;
   GridBool projected;
-  GridBool boundaryLayerGrid = FALSE;
-  GridBool debugInsert = FALSE;
   GridBool GridMoveProjection = FALSE;
   GridBool tecplotOutput = FALSE;
   int iview = 0;
@@ -109,9 +103,6 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-a") == 0 ) {
       i++; sprintf( adaptfile,"%s",argv[i]  );
       printf("-a argument %d: %s\n",i, adaptfile);
-    } else if( strcmp(argv[i],"-l") == 0 ) {
-      boundaryLayerGrid = TRUE;
-      printf("-l argument %d, ignoring -a \n",i);
     } else if( strcmp(argv[i],"-r") == 0 ) {
       i++; ratio = atof(argv[i]);
       printf("-r argument %d: %f\n",i, ratio);
@@ -121,9 +112,6 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-f") == 0 ) {
       i++; sprintf( linesfile, "%s", argv[i] );
       printf("-l argument %d: %s\n",i, linesfile);
-    } else if( strcmp(argv[i],"-i") == 0 ) {
-      debugInsert = TRUE;
-      printf("-i argument %d\n",i);
     } else if( strcmp(argv[i],"-m") == 0 ) {
       GridMoveProjection = TRUE;
       printf("-m argument %d\n",i);
@@ -148,9 +136,7 @@ int main( int argc, char *argv[] )
 #endif
       printf(" -o output project name\n");
       printf(" -a party project_adapt_hess file name\n");
-      printf(" -l make a boundary layer grid -a ignored\n");
       printf(" -r initial edge length ratio for adapt\n");
-      printf(" -i insert final advancing layer (debug)\n");
       printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
       printf(" -m use grid movement for projection\n");
@@ -170,8 +156,6 @@ int main( int argc, char *argv[] )
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"none");
   if(strcmp(adaptfile,"")==0)     sprintf(adaptfile,"%s_adapt_hess",project);
   if(strcmp(outputFAST,"")==0)    sprintf(outputFAST,"%s.fgrid",outputProject);
-
-  if(boundaryLayerGrid || debugInsert ) sprintf(adaptfile,"none");
 
   printf("running project %s\n",project);
   grid = gridLoadPart( modeler, project, maxnode );
@@ -198,24 +182,6 @@ int main( int argc, char *argv[] )
   if(strcmp(adaptfile,"none")==0) {
     printf("adapt parameter >none< selected. Spacing reset.\n");
     gridResetSpacing(grid);
-    if (boundaryLayerGrid) {
-      layer = formAdvancingFront(grid,project);
-    }else{
-      if (debugInsert) {
-	layer = formAdvancingFront(grid,project);
-	printf("Inserting Phantom triangle.\n");
-	layerInsertPhantomTriangle( layer, 0.22 );
-	ratio=0.8;
-      }else{
-	printf("Scaling spacing to refine a sphere.\n");
-	if (GridMoveProjection) {
-	  gridScaleSpacingSphereDirection(grid, 0.3, 0.5, 0.0, 0.1, 
-					  0.1, 0.5, 0.1 );
-	}else{
-	  gridScaleSpacingSphere(grid, 0.0, 0.0, 0.0, 1.0, 0.5 );
-	}
-      }
-    }
   } else if(strcmp(adaptfile,"ident")==0) {
     printf("adapt parameter >ident< selected. Spacing set to identity.\n");
     printf("edge swapping grid...\n");gridSwap(grid, -1.0);
@@ -247,45 +213,13 @@ int main( int argc, char *argv[] )
 	  !projected );
 	j++){
 
-    if (boundaryLayerGrid) {
-      height = 0.0016*pow(1.2,j);
-      layerTerminateNormalWithSpacing(layer,height*2.5);
-      if (layerNActiveNormal(layer) == 0 ) jmax=0;
-      printf("insert layer height = %f\n",height);
-      wiggleSteps = MIN(4,(int)(height/0.001)+1);
-      height = height / (double)wiggleSteps;
-      layerVisibleNormals(layer,-1.0,-1.0);
-      layerAdvanceConstantHeight(layer,height);
-      for (i=1;i<wiggleSteps;i++) {
-	printf("edge swapping grid...\n");gridSwap(grid, -1.0);
-	layerSmoothLayerNeighbors(layer );
-	printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
-	gridAdapt(grid,0.6,1.4);
-	printf("edge swapping grid...\n");gridSwap(grid, -1.0);
-	layerSmoothLayerNeighbors(layer );
-	printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
-	printf("wiggle step %d of %d, minAR %8.5f\n",i+1,wiggleSteps,gridMinThawedAR(grid));
-	layerWiggle(layer,height);
-	//printf("minimum Volume %12.8e\n", gridMinVolume(grid));
-      }
-      printf("edge swapping grid...\n");gridSwap(grid, -1.0);
-	layerSmoothLayerNeighbors(layer );
-      printf("node smoothing grid...\n");gridSmooth(grid, -1.0, -1.0);
-      STATUS;
-    }
     if (ratio<0.01) ratio = 0.01;
     if (ratio>1.0) ratio = 1.0;
     ratioCollapse = 0.3*ratio;
     ratioRefine   = 1.8/ratio;
-    if (boundaryLayerGrid) {
-      printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
-	     ratio, 0.4, 1.5 );
-      gridAdapt(grid,0.4,1.5);
-    }else{
-      printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
-             ratio, ratioCollapse, ratioRefine );
-      gridAdapt(grid,ratioCollapse,ratioRefine);
-    }
+    printf("adapt, ratio %4.2f, collapse limit %8.5f, refine limit %10.5f\n",
+	   ratio, ratioCollapse, ratioRefine );
+    gridAdapt(grid,ratioCollapse,ratioRefine);
     oldSize = newSize;
     newSize = gridNNode(grid) ;
     printf("%02d new size: %d nodes %d faces %d cells %d edge elements.\n",
@@ -320,9 +254,6 @@ int main( int argc, char *argv[] )
       }
     }
 
-    if (debugInsert) 
-      { layerVerifyPhantomEdges( layer ); layerVerifyPhantomFaces( layer ); }
-        
     for (i=0;i<2;i++){
       projected = ( grid == gridRobustProject(grid));
       if (projected) {
@@ -336,16 +267,11 @@ int main( int argc, char *argv[] )
       }
     }
     STATUS;
-    if (boundaryLayerGrid) {
-    }else{
-      if (!debugInsert) gridFreezeGoodNodes(grid,0.6,0.4,1.5);
-      printf("nodes frozen %d\n",gridNFrozen(grid));
-    }
+
+    gridFreezeGoodNodes(grid,0.6,0.4,1.5);
+    printf("nodes frozen %d\n",gridNFrozen(grid));
+
   }
-
-  if (debugInsert) 
-    { layerVerifyPhantomEdges( layer ); layerVerifyPhantomFaces( layer ); }
-
 
   if (!gridRightHandedBoundary(grid)) 
     printf("ERROR: modifed grid does not have right handed boundaries\n");

@@ -5,8 +5,6 @@
  * Phone:(757)864-6604
  * Email:m.a.park@larc.nasa.gov 
  */
-  
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -2685,129 +2683,6 @@ int layerTerminateNormalWithLength(Layer *layer, double ratio)
   printf("%d terminated by Length test; %d of %d normals terminted.\n",
 	 nterm, totalterm,layerNNormal(layer) );
   return totalterm;
-}
-
-Layer *layerInsertPhantomTriangle(Layer *layer, double dz )
-{
-  Grid *grid = layer->grid;
-  int normal, faceId, edgeId, newnode;
-  double xyz[3], spacing, m;
-
-  layerVisibleNormals(layer,-1.0,-1.0);
-
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    gridNodeXYZ(grid,layer->normal[normal].root,xyz);
-    spacing = gridSpacing(grid, layer->normal[normal].root );
-    layer->normal[normal].root = gridAddNode(grid,xyz[0],xyz[1],xyz[2]);
-    m = 1.0/spacing/spacing;
-    gridSetMap(grid,layer->normal[normal].root,m,0.0,0.0,m,0.0,m); 
-    layer->normal[normal].tip = EMPTY;
-  }
-
-  layerWiggle(layer, dz );
-
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    gridNodeXYZ(grid,layer->normal[normal].root,xyz);
-    spacing = gridSpacing(grid, layer->normal[normal].root );
-    if (0 == layerConstrained(layer,normal)){
-      newnode = gridInsertInToVolume(grid, xyz);
-    }else{
-      faceId = layerConstrained(layer,normal);
-      if (0 < faceId) {
-	gridForceNodeToFace(grid, layer->normal[normal].root, faceId );
-      }
-      if (0 > faceId) {
-	edgeId = -faceId;
-	gridForceNodeToEdge(grid, layer->normal[normal].root, edgeId );
-      }
-      newnode = gridInsertInToGeomFace(grid, xyz);
-    }
-    if (EMPTY == newnode) 
-      printf("Could not insert node norm %8d x %10.5f y %10.5f z %10.5f\n",
-	     normal, xyz[0], xyz[1], xyz[2]);
-    layer->normal[normal].tip = newnode;
-    gridFreezeNode( grid, newnode );
-    m = 1.0/spacing/spacing;
-    gridSetMap(grid,newnode,m,0.0,0.0,m,0.0,m); 
-  }
-
-  for (normal=0;normal<layerNNormal(layer);normal++){
-    gridRemoveNode(grid,layer->normal[normal].root);
-    layer->normal[normal].root = EMPTY;
-  }
-
-  return layer;
-}
-
-Layer *layerVerifyPhantomEdges(Layer *layer)
-{
-  Grid *grid = layer->grid;
-  int triangle, normals[3], nline, ngot, n0, n1;
-
-  nline = 0;
-  ngot  = 0;
-  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
-    layerTriangleNormals(layer, triangle, normals );
-    n0 = layerNormalTip(layer,normals[0]);
-    n1 = layerNormalTip(layer,normals[1]);
-    if ( n0 != EMPTY && n1 != EMPTY ) {
-      nline++;
-      if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
-	ngot++;
-      }else{
-	printf("line %d<->%d is missing.\n",n0,n1);
-      }
-    }
-    n0 = layerNormalTip(layer,normals[1]);
-    n1 = layerNormalTip(layer,normals[2]);
-    if ( n0 != EMPTY && n1 != EMPTY ) {
-      nline++;
-      if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
-	ngot++;
-      }else{
-	printf("line %d<->%d is missing.\n",n0,n1);
-      }
-    }
-    n0 = layerNormalTip(layer,normals[2]);
-    n1 = layerNormalTip(layer,normals[0]);
-    if ( n0 != EMPTY && n1 != EMPTY ) {
-      nline++;
-      if (grid == gridVerifyEdgeExists(grid, n0, n1) ){
-	ngot++;
-      }else{
-	printf("line %d<->%d is missing.\n",n0,n1);
-      }
-    }
-  }
-  printf("lines %d of %d verified.\n",ngot,nline);
- 
-  return layer;
-}
-
-Layer *layerVerifyPhantomFaces(Layer *layer)
-{
-  Grid *grid = layer->grid;
-  int triangle, normals[3], nface, ngot, n0, n1, n2;
-
-  nface = 0;
-  ngot  = 0;
-  for(triangle=0;triangle<layerNTriangle(layer);triangle++){
-    layerTriangleNormals(layer, triangle, normals );
-    n0 = layerNormalTip(layer,normals[0]);
-    n1 = layerNormalTip(layer,normals[1]);
-    n2 = layerNormalTip(layer,normals[2]);
-    if ( n0 != EMPTY && n1 != EMPTY && n2 != EMPTY ) {
-      nface++;
-      if (grid == gridVerifyFaceExists(grid, n0, n1, n2) ){
-	ngot++;
-      }else{
-	printf("face %d %d %d is missing.\n",n0,n1,n2);
-      }
-    }
-  }
-  printf("faces %d of %d verified.\n",ngot,nface);
- 
-  return layer;
 }
 
 Layer *layerThaw(Layer *layer)

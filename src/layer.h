@@ -5,8 +5,6 @@
  * Phone:(757)864-6604
  * Email:m.a.park@larc.nasa.gov 
  */
-  
-
 
 #ifndef LAYER_H
 #define LAYER_H
@@ -224,10 +222,6 @@ Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
 Layer *layerTerminateNormalWithX(Layer *, int direction, double x);
 int layerTerminateNormalWithLength(Layer *, double ratio);
-
-Layer *layerInsertPhantomTriangle(Layer *, double dz);
-Layer *layerVerifyPhantomEdges(Layer *);
-Layer *layerVerifyPhantomFaces(Layer *);
 
 Layer *layerThaw(Layer*);
 

@@ -1320,51 +1320,6 @@ Grid *gridFreezeGoodNodes(Grid *grid, double goodAR,
   return grid;
 }
 
-Grid *gridVerifyEdgeExists(Grid *grid, int n0, int n1 )
-{
-  int i0, i1, nodes0[4], nodes1[4];
-  GridBool gotIt;
-  AdjIterator it0, it1;
-
-  gotIt=gridCellEdge( grid, n0, n1 );
-
-  if( !gotIt && n0 != EMPTY && n1 != EMPTY ) {
-    for ( it0 = adjFirst(gridCellAdj(grid),n0); 
-	  adjValid(it0) && !gotIt; 
-	  it0 = adjNext(it0) ) {
-      gridCell( grid, adjItem(it0), nodes0 );
-      for(i0=0;i0<4&&!gotIt;i0++){
-	for ( it1 = adjFirst(gridCellAdj(grid),nodes0[i0]); 
-	      adjValid(it1) && !gotIt; 
-	      it1 = adjNext(it1) ) {
-	  gridCell( grid, adjItem(it1), nodes1 );
-	  for(i1=0;i1<4&&!gotIt;i1++){
-	    if (nodes1[i1] == n1 && !gridNodeFrozen( grid, nodes0[i0] )) {
-	      gridCollapseEdge(grid, NULL, n0, nodes0[i0], 0.0);
-	      gotIt = gridCellEdge( grid, n0, n1 );
-	      if (!gotIt) gridCollapseEdge(grid, NULL, n1, nodes0[i0], 0.0);
-	      gotIt = gridCellEdge( grid, n0, n1 );
-	    }	    
-	  }     
-	}
-      }
-    }
-  }
-
-  if (gotIt) return grid;
-  return NULL;
-}
-
-Grid *gridVerifyFaceExists(Grid *grid, int n0, int n1, int n2 )
-{
-  GridBool gotIt;
-
-  gotIt=gridCellFace( grid, n0, n1, n2 );
-
-  if (gotIt) return grid;
-  return NULL;
-}
-
 Grid *gridCollapseWedgeCells(Grid *grid) 
 {
   double min_insert_cost;
