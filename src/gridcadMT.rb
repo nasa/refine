@@ -199,14 +199,6 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta 1.0, grid.edgeLength(4,0), 0.05
  end
 
- def testLineSearchUVDispacement
-  assert_not_nil grid = isoTet(-0.2)
-  assert_equal grid, grid.lineSearchUV(0,[1.0,0.0])
-  assert_in_delta 0.999, grid.minFaceMR, 1.0e-3
-  assert_in_delta 10.0, grid.nodeUV(0,10)[0], 5.0e-2
-  assert_in_delta 20.0, grid.nodeUV(0,10)[1], 1.0e-15
- end
-
  def testSmoothSurf
   assert_not_nil grid = isoTet(-0.2)
   assert_equal grid, grid.smoothNode(0)

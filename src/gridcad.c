@@ -631,56 +631,6 @@ Grid *gridLineSearchT(Grid *grid, int node, double optimized_cost_limit )
   return grid;
 }
 
-Grid *gridLineSearchUV(Grid *grid, int node, double *dudv,
-		       double optimized_cost_limit )
-{
-  double uvOrig[2], uv[2];
-  int nodes[3];
-  int face, faceId;
-  double gold;
-  double alpha[2], ar[2], mr[2];
-  int iter;
-
-  gold = ( 1.0 + sqrt(5.0) ) / 2.0;
-
-  face = adjItem(adjFirst(gridFaceAdj(grid), node));
-  if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
-
-  gridNodeUV( grid, node, faceId, uvOrig);
-
-  alpha[0] = 0.0;
-  uv[0] = uvOrig[0] + alpha[0]*dudv[0];
-  uv[1] = uvOrig[1] + alpha[0]*dudv[1];
-  if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
-  gridNodeAR( grid, node, &ar[0] );
-  gridNodeFaceMR( grid, node, &mr[0] );
-
-  alpha[1] = 1.0e-10;
-  uv[0] = uvOrig[0] + alpha[1]*dudv[0];
-  uv[1] = uvOrig[1] + alpha[1]*dudv[1];
-  if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
-  gridNodeAR( grid, node, &ar[1] );
-  gridNodeFaceMR( grid, node, &mr[1] );
-
-  iter = 0;
-  while ( mr[1] > mr[0] && ar[1] > optimized_cost_limit && iter < 100){
-    iter++;
-    alpha[0] = alpha[1]; ar[0] = ar[1]; mr[0] = mr[1];
-    alpha[1] = alpha[0] * gold;
-    uv[0] = uvOrig[0] + alpha[1]*dudv[0];
-    uv[1] = uvOrig[1] + alpha[1]*dudv[1];
-    if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
-    gridNodeAR( grid, node, &ar[1] );
-    gridNodeFaceMR( grid, node, &mr[1] );
-  }
-
-  uv[0] = uvOrig[0] + alpha[0]*dudv[0];
-  uv[1] = uvOrig[1] + alpha[0]*dudv[1];
-  if (grid != gridEvaluateFaceAtUV(grid, node, uv ) ) return NULL;
-
-  return grid;
-}
-
 Grid *gridOptimizeFaceUV(Grid *grid, int node, double *dudv )
 {
   double uvOrig[2], uv[2];

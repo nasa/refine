@@ -60,8 +60,6 @@ Grid *gridSmoothNode(Grid *g, int node, GridBool smoothOnSurface );
 Grid *gridSmoothNodeFaceMR(Grid *g, int node );
 
 Grid *gridLineSearchT(Grid *g, int node, double optimized_cost_limit );
-Grid *gridLineSearchUV(Grid *g, int node, double *dudv, 
-		       double optimized_cost_limit );
 Grid *gridOptimizeFaceUV(Grid *g, int node, double *dudv );
 Grid *gridLinearProgramUV(Grid *g, int node, GridBool *callAgain );
 Grid *gridOptimizeXYZ(Grid *g, int node, double *dxdydz );
