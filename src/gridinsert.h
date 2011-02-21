@@ -20,12 +20,8 @@ Grid *gridAdapt(Grid *g, double minLength, double maxLength );
 int gridSplitEdge(Grid *g, int n0, int n1 );
 int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
 
-int gridSplitEdgeIfNear(Grid *g, int n0, int n1, double *xyz);
 int gridSplitFaceAt(Grid *g, int *face_nodes, double *xyz);
 int gridSplitCellAt(Grid *g, int cell, double *xyz);
-int gridInsertInToGeomEdge(Grid *g, double *xyz);
-int gridInsertInToGeomFace(Grid *g, double *xyz);
-int gridInsertInToVolume(Grid *g, double *xyz);
 
 Grid *gridCollapseEdgeToAnything(Grid *g, Queue *q, int n0, int n1);
 /* node1 is removed */
