@@ -5,8 +5,6 @@
  * Phone:(757)864-6604
  * Email:m.a.park@larc.nasa.gov 
  */
-  
-
 
 #ifndef GRIDCAD_H
 #define GRIDCAD_H
@@ -15,6 +13,11 @@
 #include "grid.h"
 
 BEGIN_C_DECLORATION
+
+GridBool nearestOnEdge(int vol, int edge, double *xyz, double *t,
+                       double *xyznew);
+GridBool nearestOnFace(int vol, int face, double *xyz, double *uv,
+                       double *xyznew);
 
 Grid *gridForceNodeToEdge(Grid *g, int node, int edgeId );
 Grid *gridForceNodeToFace(Grid *g, int node, int faceId );
@@ -84,11 +87,6 @@ Grid *gridSmoothNodeVolumeSimplex(Grid *g, int node );
 Grid *gridRelaxNegativeCells(Grid *g, GridBool dumpTecplot );
 Grid *gridSmoothVolumeNearNode(Grid *grid, int node, 
 			       GridBool smoothOnSurface );
-
-GridBool nearestOnEdge(int vol, int edge, double *xyz, double *t,
-                       double *xyznew);
-GridBool nearestOnFace(int vol, int face, double *xyz, double *uv,
-                       double *xyznew);
 
 Grid *gridUntangleBadFaceParameters(Grid *g);
 

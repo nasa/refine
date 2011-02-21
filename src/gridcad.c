@@ -5,8 +5,6 @@
  * Phone:(757)864-6604
  * Email:m.a.park@larc.nasa.gov 
  */
-  
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,6 +27,74 @@
 #include "gridshape.h"
 #include "gridinsert.h"
 #include "gridcad.h"
+
+GridBool nearestOnEdge(int vol, int edgeId, double *xyz, double *t,
+                       double *xyznew)
+{
+  double ptLocal[3], pt[3];
+
+  /* Local coordinate system */
+  if( !CADGeom_DisplacementIsIdentity(vol) ) {
+    if( !CADGeom_UnMapPoint(vol,xyz,ptLocal) ) {
+      printf("%s: %d: CADGeom_UnMapPoint failed.\n",__FILE__,__LINE__);
+      return FALSE;
+    }
+  } else {
+    ptLocal[0] = xyz[0]; ptLocal[1] = xyz[1]; ptLocal[2] = xyz[2];
+  }
+
+  /* Project Point */
+  if (!CADGeom_NearestOnEdge( vol, edgeId, ptLocal, t, pt) ) {
+    printf("%s: %d: CADGeom_NearestOnEdge failed.\n",__FILE__,__LINE__);
+    return FALSE;  
+  }
+
+  /* Global coordinate system */
+  if( !CADGeom_DisplacementIsIdentity(vol) ) {
+    if( !CADGeom_MapPoint(vol,pt,xyznew) ) {
+      printf("%s: %d: CADGeom_MapPoint failed.\n",__FILE__,__LINE__);
+      return FALSE;  
+    }
+  } else {
+    xyznew[0] = pt[0]; xyznew[1] = pt[1]; xyznew[2] = pt[2];
+  }
+
+  return TRUE;
+}
+
+GridBool nearestOnFace(int vol, int faceId, double *xyz, double *uv,
+                       double *xyznew)
+{
+  double ptLocal[3], pt[3];
+
+  /* Local coordinate system */
+  if( !CADGeom_DisplacementIsIdentity(vol) ) {
+    if( !CADGeom_UnMapPoint(vol,xyz,ptLocal) ) {
+      printf("%s: %d: CADGeom_UnMapPoint failed.\n",__FILE__,__LINE__);
+      return FALSE;
+    }
+  } else {
+    ptLocal[0] = xyz[0]; ptLocal[1] = xyz[1]; ptLocal[2] = xyz[2];
+  }
+
+  /* Project Point */
+  if (!CADGeom_NearestOnFace( vol, faceId, ptLocal, uv, pt) ) {
+    printf("%s: %d: CADGeom_NearestOnFace failed.\n",__FILE__,__LINE__);
+    return FALSE;  
+  }
+
+  /* Global coordinate system */
+  if( !CADGeom_DisplacementIsIdentity(vol) ) {
+    if( !CADGeom_MapPoint(vol,pt,xyznew) ) {
+      printf("%s: %d: CADGeom_MapPoint failed.\n",__FILE__,__LINE__);
+      return FALSE;  
+    }
+  } else {
+    xyznew[0] = pt[0]; xyznew[1] = pt[1]; xyznew[2] = pt[2];
+  }
+
+  return TRUE;
+}
 
 Grid *gridForceNodeToEdge(Grid *grid, int node, int edgeId )
 {
@@ -1833,74 +1899,6 @@ Grid *gridSmoothVolumeNearNode(Grid *grid, int node, GridBool smoothOnSurface )
       gridSmoothNodeVolume( grid, nodelist[i]);
 
   return grid;
-}
-
-GridBool nearestOnEdge(int vol, int edgeId, double *xyz, double *t,
-                       double *xyznew)
-{
-  double ptLocal[3], pt[3];
-
-  /* Local coordinate system */
-  if( !CADGeom_DisplacementIsIdentity(vol) ) {
-    if( !CADGeom_UnMapPoint(vol,xyz,ptLocal) ) {
-      printf("%s: %d: CADGeom_UnMapPoint failed.\n",__FILE__,__LINE__);
-      return FALSE;
-    }
-  } else {
-    ptLocal[0] = xyz[0]; ptLocal[1] = xyz[1]; ptLocal[2] = xyz[2];
-  }
-
-  /* Project Point */
-  if (!CADGeom_NearestOnEdge( vol, edgeId, ptLocal, t, pt) ) {
-    printf("%s: %d: CADGeom_NearestOnEdge failed.\n",__FILE__,__LINE__);
-    return FALSE;  
-  }
-
-  /* Global coordinate system */
-  if( !CADGeom_DisplacementIsIdentity(vol) ) {
-    if( !CADGeom_MapPoint(vol,pt,xyznew) ) {
-      printf("%s: %d: CADGeom_MapPoint failed.\n",__FILE__,__LINE__);
-      return FALSE;  
-    }
-  } else {
-    xyznew[0] = pt[0]; xyznew[1] = pt[1]; xyznew[2] = pt[2];
-  }
-
-  return TRUE;
-}
-
-GridBool nearestOnFace(int vol, int faceId, double *xyz, double *uv,
-                       double *xyznew)
-{
-  double ptLocal[3], pt[3];
-
-  /* Local coordinate system */
-  if( !CADGeom_DisplacementIsIdentity(vol) ) {
-    if( !CADGeom_UnMapPoint(vol,xyz,ptLocal) ) {
-      printf("%s: %d: CADGeom_UnMapPoint failed.\n",__FILE__,__LINE__);
-      return FALSE;
-    }
-  } else {
-    ptLocal[0] = xyz[0]; ptLocal[1] = xyz[1]; ptLocal[2] = xyz[2];
-  }
-
-  /* Project Point */
-  if (!CADGeom_NearestOnFace( vol, faceId, ptLocal, uv, pt) ) {
-    printf("%s: %d: CADGeom_NearestOnFace failed.\n",__FILE__,__LINE__);
-    return FALSE;  
-  }
-
-  /* Global coordinate system */
-  if( !CADGeom_DisplacementIsIdentity(vol) ) {
-    if( !CADGeom_MapPoint(vol,pt,xyznew) ) {
-      printf("%s: %d: CADGeom_MapPoint failed.\n",__FILE__,__LINE__);
-      return FALSE;  
-    }
-  } else {
-    xyznew[0] = pt[0]; xyznew[1] = pt[1]; xyznew[2] = pt[2];
-  }
-
-  return TRUE;
 }
 
 Grid *gridUntangleBadFaceParameters(Grid *grid)
