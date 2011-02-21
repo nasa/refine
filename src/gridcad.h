@@ -62,7 +62,6 @@ Grid *gridSmoothNodeFaceMR(Grid *g, int node );
 Grid *gridLineSearchT(Grid *g, int node, double optimized_cost_limit );
 Grid *gridOptimizeFaceUV(Grid *g, int node, double *dudv );
 Grid *gridLinearProgramUV(Grid *g, int node, GridBool *callAgain );
-Grid *gridOptimizeXYZ(Grid *g, int node, double *dxdydz );
 
 Grid *gridSmartLaplacian(Grid *g, int node );
 Grid *gridSmartVolumeLaplacian(Grid *g, int node );

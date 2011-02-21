@@ -89,16 +89,6 @@ VALUE grid_linearProgramUV( VALUE self, VALUE node )
   return (gridLinearProgramUV( grid, NUM2INT(node), &callAgain )==grid?self:Qnil);
 }
 
-VALUE grid_optimizeXYZ( VALUE self, VALUE node, VALUE rb_dxdydz )
-{
-  double dxdydz[2];
-  GET_GRID_FROM_SELF;
-  dxdydz[0] = NUM2DBL(rb_ary_entry(rb_dxdydz,0));
-  dxdydz[1] = NUM2DBL(rb_ary_entry(rb_dxdydz,1));
-  dxdydz[2] = NUM2DBL(rb_ary_entry(rb_dxdydz,2));
-  return (gridOptimizeXYZ( grid, NUM2INT(node), dxdydz )==grid?self:Qnil);
-}
-
 VALUE grid_smartLaplacian( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -199,7 +189,6 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "lineSearchT", grid_lineSearchT, 1 );
   rb_define_method( cGridCAD, "optimizeFaceUV", grid_optimizeFaceUV, 2 );
   rb_define_method( cGridCAD, "linearProgramUV", grid_linearProgramUV, 1 );
-  rb_define_method( cGridCAD, "optimizeXYZ", grid_optimizeXYZ, 2 );
 
   rb_define_method( cGridCAD, "smartLaplacian", grid_smartLaplacian, 1 );
   rb_define_method( cGridCAD, "smartVolumeLaplacian", grid_smartVolumeLaplacian, 1 );

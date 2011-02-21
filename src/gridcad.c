@@ -921,44 +921,6 @@ Grid *gridOptimizeUVForVolume(Grid *grid, int node, double *dudv )
   return grid;
 }
 
-Grid *gridOptimizeXYZ(Grid *grid, int node, double *dxdydz )
-{
-  double xyzOrig[3];
-  double xyz[3];
-  double gold;
-  double alpha[2], ar[2];
-  int i, iter;
-
-  gold = ( 1.0 + sqrt(5.0) ) / 2.0;
-
-  if (grid != gridNodeXYZ(grid,node,xyzOrig)) return NULL;
-
-  alpha[0] = 0.0;
-  for(i=0;i<3;i++) xyz[i] = xyzOrig[i] + alpha[0]*dxdydz[i];
-  gridSetNodeXYZ(grid,node,xyz);
-  gridNodeAR( grid, node, &ar[0] );
-
-  alpha[1] = 1.0e-10;
-  for(i=0;i<3;i++) xyz[i] = xyzOrig[i] + alpha[1]*dxdydz[i];
-  gridSetNodeXYZ(grid,node,xyz);
-  gridNodeAR( grid, node, &ar[1] );
-
-  iter = 0;
-  while ( ar[1] > ar[0] && ar[1] > 0.0 && iter < 100){
-    iter++;
-    alpha[0] = alpha[1]; ar[0] = ar[1];
-    alpha[1] = alpha[0] * gold;
-    for(i=0;i<3;i++) xyz[i] = xyzOrig[i] + alpha[1]*dxdydz[i];
-    gridSetNodeXYZ(grid,node,xyz);
-    gridNodeAR( grid, node, &ar[1] );
-  }
-
-  for(i=0;i<3;i++) xyz[i] = xyzOrig[i] + alpha[0]*dxdydz[i];
-  gridSetNodeXYZ(grid,node,xyz);
-  
-  return grid;
-}
-
 static GridBool gridThisNodeCanBeModifiedInThisPhase( Grid *grid, int node )
 {
   if ( gridGeometryNode(grid, node) ) return FALSE;

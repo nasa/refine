@@ -211,14 +211,6 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta 0.999, grid.faceMR(0,1,2), 1.0e-3
  end
 
- def testOptimizeXYZDispacement
-  assert_not_nil grid = isoTet( 0.0, 1.0 )
-  assert_equal grid, grid.optimizeXYZ(3,[0.0,0.0,-1.0])
-  assert_in_delta 1.00, grid.minAR, 1.0e-2
-  assert_equal grid, grid.optimizeXYZ(3,[0.0,0.0,1.0])
-  assert_in_delta 1.00, grid.minAR, 1.0e-4
- end
-
  def testSmoothVol
   assert_not_nil grid = isoTet(0.0,1.0)
   assert_equal grid, grid.smoothNode(3)
