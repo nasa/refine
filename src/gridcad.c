@@ -406,86 +406,6 @@ Grid *gridWholesaleEvaluation(Grid *grid)
   return grid;
 }
 
-Grid *gridSmoothNearNode1(Grid *grid, int node )
-{
-#define SMOOTHDEG (500)
-  int i, nodes[4];
-  int nlist, smooth, look, nodelist[SMOOTHDEG];
-  GridBool looking;
-  AdjIterator it;
-
-  if (!gridValidNode(grid,node)) return NULL;
-  
-  nlist =0;
-  for ( it = adjFirst(gridCellAdj(grid),node); 
-	adjValid(it); 
-	it = adjNext(it) ){
-    gridCell(grid, adjItem(it), nodes);
-    for (i=0;i<4;i++) {
-      if (!gridNodeFrozen( grid, nodes[i])) {
-	looking = (nlist<=SMOOTHDEG);
-	look = 0;
-	for (look=0;look<nlist && looking ; look++){
-	  looking = (nodelist[look] != nodes[i]);
-	}
-	if (looking && nlist<=SMOOTHDEG){
-	  nodelist[nlist] = nodes[i];
-	  nlist++;
-	}
-      }
-    }
-  }      
-
-  for (smooth=0;smooth<5;smooth++)
-    for (i=0;i<nlist;i++) 
-      gridSmoothNode( grid, nodelist[i], TRUE);
-
-  return grid;
-}
-
-Grid *gridSmoothNearNode(Grid *grid, int node )
-{
-  int i, i0, nodes[4], nodes0[4];
-  int nlist, smooth, look, nodelist[SMOOTHDEG];
-  GridBool looking;
-  AdjIterator it, it0;
-
-  if (!gridValidNode(grid,node)) return NULL;
-
-  nlist =0;
-  for ( it0 = adjFirst(gridCellAdj(grid),node); 
-	adjValid(it0); 
-	it0 = adjNext(it0) ){
-    gridCell(grid, adjItem(it0), nodes0);
-    for (i0=0;i0<4;i0++) {
-      for ( it = adjFirst(gridCellAdj(grid),nodes0[i0]); 
-	    adjValid(it); 
-	    it = adjNext(it) ){
-	gridCell(grid, adjItem(it), nodes);
-	for (i=0;i<4;i++) {
-	  if (!gridNodeFrozen( grid, nodes[i])) {
-	    looking = (nlist<=SMOOTHDEG);
-	    look = 0;
-	    for (look=0;look<nlist && looking ; look++){
-	      looking = (nodelist[look] != nodes[i]);
-	    }
-	    if (looking && nlist<=SMOOTHDEG){
-	      nodelist[nlist] = nodes[i];
-	      nlist++;
-	    }
-	  }
-	}
-      }
-    }
-  }      
-
-  for (smooth=0;smooth<2;smooth++)
-    for (i=0;i<nlist;i++) 
-      gridSmoothNode( grid, nodelist[i], TRUE);
-
-  return grid;
-}
-
 Grid *gridSmoothNode(Grid *grid, int node, GridBool smoothOnSurface )
 {
   int maxsmooth;
@@ -1870,6 +1790,8 @@ Grid *gridRelaxNegativeCells(Grid *grid, GridBool dumpTecplot )
   }
   return grid;
 }
+
+#define SMOOTHDEG (500)
 
 Grid *gridSmoothVolumeNearNode(Grid *grid, int node, GridBool smoothOnSurface )
 {

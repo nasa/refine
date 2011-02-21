@@ -218,7 +218,6 @@ Layer *layerAdvance(Layer *, GridBool reconnect );
 Layer *layerAdvanceConstantHeight(Layer *, double height );
 Layer *layerWiggle(Layer *, double height );
 
-Layer *layerSmoothLayerNeighbors(Layer * );
 Layer *layerTerminateNormalWithSpacing(Layer *, double spacing);
 Layer *layerTerminateNormalWithX(Layer *, int direction, double x);
 int layerTerminateNormalWithLength(Layer *, double ratio);

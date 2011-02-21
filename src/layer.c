@@ -2618,16 +2618,6 @@ Layer *layerWiggle(Layer *layer, double height )
   return layer;
 }
 
-Layer *layerSmoothLayerNeighbors(Layer *layer )
-{
-  int normal;
-
-  for (normal=0;normal<layerNNormal(layer);normal++)
-    gridSmoothNearNode(layer->grid,layer->normal[normal].root);
-
-  return layer;
-}
-
 Layer *layerTerminateNormalWithSpacing(Layer *layer, double spacing)
 {
   int normal, nterm;;
