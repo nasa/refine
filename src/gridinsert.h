@@ -32,9 +32,6 @@ Grid *gridCollapseEdgeToAnything(Grid *g, Queue *q, int n0, int n1);
 Grid *gridCollapseEdge(Grid *g, Queue *q, int n0, int n1,
 		       double requestedRatio );
 
-Grid *gridFreezeGoodNodes(Grid *g, double goodAR, 
-			  double minLength, double maxLength );
-
 END_C_DECLORATION
 
 #endif /* GRIDINSERT_H */

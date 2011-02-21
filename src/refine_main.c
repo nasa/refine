@@ -268,9 +268,6 @@ int main( int argc, char *argv[] )
     }
     STATUS;
 
-    gridFreezeGoodNodes(grid,0.6,0.4,1.5);
-    printf("nodes frozen %d\n",gridNFrozen(grid));
-
   }
 
   if (!gridRightHandedBoundary(grid)) 
