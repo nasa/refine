@@ -1076,123 +1076,6 @@ Grid *gridSmartLaplacian(Grid *grid, int node )
   return grid;
 }
 
-Grid *gridSmartVolumeLaplacian(Grid *grid, int node )
-{
-  double origVol, newVol;
-  double origXYZ[3];
-  
-  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
-  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
-    gridNodeMinCellJacDet2(grid,node,&origVol);
-  } else {
-    gridNodeVolume(grid,node,&origVol);
-  }
-
-  if (grid != gridNodeLaplacian( grid, node )) {
-    gridSetNodeXYZ(grid,node,origXYZ);
-    return NULL;
-  }
-
-  if (gridCostConstraint(grid)&gridCOST_CNST_VALID) {
-    gridNodeMinCellJacDet2(grid,node,&newVol);
-  } else {
-    gridNodeVolume(grid,node,&newVol);
-  }
-  if ( origVol > newVol ) {
-    gridSetNodeXYZ(grid,node,origXYZ);
-    return NULL;
-  }
-
-  return grid;
-}
-
-Grid *gridNodeLaplacian(Grid *grid, int node )
-{
-  double origXYZ[3], xyz[3], nodeXYZ[3];
-  double oneOverNCell;
-  AdjIterator it;
-  int nodes[4], ncell, inode, ixyz;
-  
-  if ( NULL == gridNodeXYZ(grid, node, origXYZ)) return NULL;
-
-  xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
-  ncell =0;
-
-  for ( it = adjFirst(gridCellAdj(grid),node); 
-	adjValid(it) ; 
-	it = adjNext(it) ){
-    ncell++;
-    gridCell(grid,adjItem(it),nodes);
-    for ( inode = 0 ; inode < 4 ; inode++ ){
-      gridNodeXYZ(grid,nodes[inode],nodeXYZ);
-      for (ixyz = 0 ; ixyz < 3 ; ixyz++ ) xyz[ixyz] += nodeXYZ[ixyz];
-    }
-  }
-  oneOverNCell = 1.0/(double)(ncell*3);
-  for (ixyz = 0 ; ixyz < 3 ; ixyz++ ){  
-    xyz[ixyz] -= origXYZ[ixyz] * (double)ncell ;
-    xyz[ixyz] = xyz[ixyz] * oneOverNCell;
-  }
-  gridSetNodeXYZ(grid,node,xyz);
-
-  return grid;
-}
-
-Grid *gridSmartAreaUVLaplacian(Grid *grid, int node )
-{
-
-  double origUV[2], avgUV[2], nodeUV[2];
-
-  double origArea, newArea;
-
-  double oneOverNFace2;
-  AdjIterator it;
-  int face, nodes[3], faceId;
-  int nface, inode;
-  
-  if (!gridGeometryFace(grid,node)) return NULL;
-  if (gridGeometryBetweenFace(grid,node)) return grid;
-
-  face = adjItem(adjFirst(gridFaceAdj(grid), node));
-  if ( grid != gridFace(grid,face,nodes,&faceId)) return NULL;
-
-  if ( NULL == gridNodeUV(grid, node, faceId, origUV)) return NULL;
-
-  gridMinFaceAreaUV(grid,node,&origArea);
-
-  avgUV[0] = 0.0; avgUV[1] = 0.0;
-  nface =0;
-
-  for ( it = adjFirst(gridFaceAdj(grid),node); 
-	adjValid(it) ; 
-	it = adjNext(it) ){
-    nface++;
-    gridFace(grid,adjItem(it),nodes,&faceId);
-    for ( inode = 0 ; inode < 3 ; inode++ ){
-      if (nodes[inode] != node) { /* skip central node */
-	gridNodeUV(grid,nodes[inode],faceId,nodeUV);
-	avgUV[0] += nodeUV[0];
-	avgUV[1] += nodeUV[1];
-      }
-    }
-  }
-
-  /* each surrounding node is added to avgUV twice, so divide by 2*nface */
-  oneOverNFace2 = 1.0/((double)(nface*2));
-  avgUV[0] *= oneOverNFace2;
-  avgUV[1] *= oneOverNFace2;
-
-  gridSetNodeUV(grid,node,faceId,avgUV[0],avgUV[1]);
-  gridMinFaceAreaUV(grid,node,&newArea);
-  
-  if ( origArea > newArea ) {
-    gridSetNodeUV(grid,node,faceId,origUV[0],origUV[1]);
-    return NULL;
-  }
-
-  return grid;
-}
-
 Grid *gridStoreVolumeCostDerivatives (Grid *grid, int node )
 {
   AdjIterator it;
@@ -1461,7 +1344,6 @@ Grid *gridSmoothInvalidCellNodes(Grid *grid)
 	for (i=0;i<4;i++) {
 	  node = nodes[i];
 	  if (!gridGeometryFace(grid,node)) {
-	    gridSmartVolumeLaplacian( grid, node );	    
 	    gridSmoothNodeVolumeSimplex(grid, node);
 	  }
 	}
@@ -1480,7 +1362,6 @@ Grid *gridSmoothNodeVolume( Grid *grid, int node )
   if (gridGeometryFace(grid, node)) {
     gridSmoothNodeVolumeWithSurf( grid, node );
   }else{
-    gridSmartVolumeLaplacian( grid, node );
     gridSmoothNodeVolumeSimplex( grid, node );
   }
   return grid;
@@ -1915,7 +1796,6 @@ Grid *gridSmoothNodeFaceAreaUV(Grid *grid, int node )
 {
   if (!gridGeometryFace(grid,node)) return NULL;
   if (gridGeometryBetweenFace(grid,node)) return grid;
-  gridSmartAreaUVLaplacian(grid, node);
   if (grid != gridSmoothNodeFaceAreaUVSimplex(grid, node )) return NULL;
   if (grid != gridSmoothNodeFaceAreaUVSimplex(grid, node )) return NULL;
   if (grid != gridSmoothNodeFaceAreaUVSimplex(grid, node )) return NULL;

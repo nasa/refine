@@ -64,9 +64,6 @@ Grid *gridOptimizeFaceUV(Grid *g, int node, double *dudv );
 Grid *gridLinearProgramUV(Grid *g, int node, GridBool *callAgain );
 
 Grid *gridSmartLaplacian(Grid *g, int node );
-Grid *gridSmartVolumeLaplacian(Grid *g, int node );
-Grid *gridNodeLaplacian(Grid *g, int node );
-Grid *gridSmartAreaUVLaplacian(Grid *g, int node );
 
 Grid *gridStoreVolumeCostDerivatives(Grid *g, int node );
 Grid *gridStoreFaceCostParameterDerivatives(Grid *g, int node );

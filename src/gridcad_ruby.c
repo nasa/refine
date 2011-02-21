@@ -95,18 +95,6 @@ VALUE grid_smartLaplacian( VALUE self, VALUE node )
   return (gridSmartLaplacian( grid, NUM2INT(node) )==grid?self:Qnil);
 }
 
-VALUE grid_smartVolumeLaplacian( VALUE self, VALUE node )
-{
-  GET_GRID_FROM_SELF;
-  return (gridSmartVolumeLaplacian( grid, NUM2INT(node) )==grid?self:Qnil);
-}
-
-VALUE grid_smartAreaUVLaplacian( VALUE self, VALUE node )
-{
-  GET_GRID_FROM_SELF;
-  return (gridSmartAreaUVLaplacian( grid, NUM2INT(node) )==grid?self:Qnil);
-}
-
 VALUE grid_storeVolumeCostDerivatives( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -191,8 +179,7 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "linearProgramUV", grid_linearProgramUV, 1 );
 
   rb_define_method( cGridCAD, "smartLaplacian", grid_smartLaplacian, 1 );
-  rb_define_method( cGridCAD, "smartVolumeLaplacian", grid_smartVolumeLaplacian, 1 );
-  rb_define_method( cGridCAD, "smartAreaUVLaplacian", grid_smartAreaUVLaplacian, 1 );
+
   rb_define_method( cGridCAD, "storeVolumeCostDerivatives",
 		    grid_storeVolumeCostDerivatives, 1 );
   rb_define_method( cGridCAD, "storeFaceCostParameterDerivatives",
