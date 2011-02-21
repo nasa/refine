@@ -18,9 +18,6 @@
 BEGIN_C_DECLORATION
 
 Grid *gridAdapt(Grid *g, double minLength, double maxLength );
-Grid *gridAdapt2(Grid *g );
-Grid *gridAdaptBasedOnConnRankings(Grid *g );
-Grid *gridAdaptVolumeEdges(Grid *g);
 
 int gridSplitEdge(Grid *g, int n0, int n1 );
 int gridSplitEdgeRatio(Grid *g, Queue *q, int n0, int n1, double ratio);
