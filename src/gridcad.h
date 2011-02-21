@@ -47,9 +47,6 @@ Grid *gridNodeProjectionDisplacement(Grid *g, int node, double *displacement );
 
 Grid *gridRobustProject(Grid *g);
 
-Grid *gridUntangle(Grid *g);
-
-Grid *gridSequentialEvaluation(Grid *g);
 Grid *gridWholesaleEvaluation(Grid *g);
 
 GridBool gridNewGeometryEdgeSiteAllowedAt(Grid *g, 

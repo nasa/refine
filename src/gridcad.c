@@ -383,126 +383,6 @@ Grid *gridRobustProject(Grid *grid)
   return grid;
 }
 
-Grid *gridUntangle(Grid *grid)
-{
-  double allowedVolume, allowedArea;
-  double minVolume, minArea;
-  double last_volume;
-  int count;
-  double volume, area;
-  int fix_node;
-  int active_nodes;
-  int tries;
-  int stalled;
-  allowedArea = 1.0e-12;
-
-  minArea = gridMinGridFaceAreaUV(grid);
-  tries = 0;
-  while ( minArea <= allowedArea ) {
-    tries++;
-    if (tries >20) {
-      printf("unable to fix min face UV area %e\n",minArea);
-      return NULL;
-    }
-    if (tries >3) 
-      printf("untangle faces %2d, min face UV area %e\n",tries,minArea);
-    active_nodes = 0;
-    for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
-      if ( gridValidNode( grid, fix_node ) &&
-	   !gridNodeFrozen( grid, fix_node) &&
-	   gridGeometryFace(grid, fix_node) &&
-	   !gridGeometryEdge(grid, fix_node) ) {
-	gridMinFaceAreaUV(grid, fix_node, &area);
-	if ( (area <= allowedArea) || (tries>10) ) {
-	  active_nodes++;
-	  if ( grid != gridUntangleAreaUV( grid, fix_node, 1, FALSE ) ) {
-	    printf( "%s: %d: %s: gridUntangleAreaUV NULL\n",
-		    __FILE__, __LINE__, "gridUntangle");
-	  }
-	}
-      }
-    }
-    minArea = gridMinGridFaceAreaUV(grid);
-  }
-
-  allowedVolume = 1.0e-14;
-
-  gridMinVolumeAndCount( grid, &minVolume, &count );
-  tries = 0;
-  stalled = 0;
-  active_nodes=0;
-  while ( minVolume <= allowedVolume ) {
-    tries++;
-    if (tries >100) {
-      printf("unable to fix min volume %e\n",minVolume);
-      return NULL;
-    }
-    if (((tries/5)*5) == tries) {
-      gridCollapseWedgeCells(grid);
-      gridMinVolumeAndCount( grid, &minVolume, &count );
-    }
-    if (tries >4)
-      printf("untangle tets %3d, min volume %25.15e of %4d %4d\n",
-	     tries,minVolume,count,active_nodes);
-    active_nodes = 0;
-    for( fix_node=0; fix_node < gridMaxNode(grid);fix_node++) {
-      if ( gridValidNode( grid, fix_node ) &&
-	   !gridNodeFrozen( grid, fix_node) &&
-	   !gridGeometryFace(grid, fix_node) ) {
-	gridNodeVolume(grid, fix_node, &volume );
-	if ( (volume <= allowedVolume) ) {
-	  active_nodes++;
-	  if ( grid != gridUntangleVolume( grid, fix_node, 3, FALSE ) ) {
-	    printf( "%s: %d: %s: gridUntangleVolume NULL\n",
-		    __FILE__, __LINE__, "gridUntangle");	    
-	  }
-	}
-      }
-    }
-    last_volume = minVolume;
-    gridMinVolumeAndCount( grid, &minVolume, &count );
-    if (!(last_volume < minVolume)) {
-      stalled++;
-    }else{
-      stalled=0;
-    }
-    if (stalled >= 25) {
-      printf("unable to make additional headway\n");
-      return NULL;
-    }
-  }
-  if (tries >4)
-    printf("untangle tets %3d, min volume %25.15e of %4d %4d\n",
-	   tries,minVolume,count,active_nodes);
-  return grid;
-}
-
-Grid *gridSequentialEvaluation(Grid *grid)
-{
-  int node;
-  
-  double displacement[3];
-  double original_xyz[3],projected_xyz[3];
-
-  for (node=0;node<gridMaxNode(grid);node++) {
-    if ( gridValidNode( grid, node ) && 
-	 !gridNodeFrozen( grid, node) &&
-	 gridGeometryFace(grid,node) ) {
-      gridNodeXYZ(grid,node,original_xyz);
-      gridNodeProjectionDisplacement( grid, node, displacement );
-      projected_xyz[0] = original_xyz[0] + displacement[0];
-      projected_xyz[1] = original_xyz[1] + displacement[1];
-      projected_xyz[2] = original_xyz[2] + displacement[2];
-      gridSetNodeXYZ(grid,node,projected_xyz);
-
-      if (grid != gridUntangle(grid)) return NULL;
-    }
-  }
-
-
-  return grid;
-}
-
 Grid *gridWholesaleEvaluation(Grid *grid)
 {
   int node;
@@ -522,8 +402,6 @@ Grid *gridWholesaleEvaluation(Grid *grid)
       gridSetNodeXYZ(grid,node,projected_xyz);
     }
   }
-
-  if (grid != gridUntangle(grid)) return NULL;
 
   return grid;
 }
