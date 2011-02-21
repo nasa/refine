@@ -6,12 +6,6 @@
 
 List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
--refine
-
-Start Builds!!!!!
-
-- Expand number of test cases
-
 --Major refactoring
 
 - make the min allowed face area (and volume) a grid struct var.
@@ -53,9 +47,6 @@ gridcad : get rid of
 
 gridmetric : get rid of
 -gridCellRatioErrorDerivative
-
-clean up gridSplitEdgeIfNear gridSplitFaceAt gridSplitCellAt
-gridInsertInToGeomEdge gridInsertInToGeomFace gridInsertInToVolume
 
 - unitfy cell face arrays and method
 
