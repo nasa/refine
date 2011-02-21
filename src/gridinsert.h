@@ -5,8 +5,6 @@
  * Phone:(757)864-6604
  * Email:m.a.park@larc.nasa.gov 
  */
-  
-
 
 #ifndef GRIDINSERT_H
 #define GRIDINSERT_H
@@ -36,8 +34,6 @@ Grid *gridCollapseEdge(Grid *g, Queue *q, int n0, int n1,
 
 Grid *gridFreezeGoodNodes(Grid *g, double goodAR, 
 			  double minLength, double maxLength );
-
-Grid *gridCollapseWedgeCells(Grid *g);
 
 END_C_DECLORATION
 
