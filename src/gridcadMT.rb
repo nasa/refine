@@ -346,21 +346,6 @@ class TestGridCAD < Test::Unit::TestCase
   grid
  end
 
- def testImproveMinVolumeForConcaveGemWithBadLapacian
-  grid = gemGrid 4, 5.0, 0
-  avgVol = grid.totalVolume/grid.ncell.to_f
-  assert_nil grid.smoothNodeVolume(0)
-  assert_equal grid, grid.smoothNodeVolume(6)
-  assert_in_delta avgVol, grid.minVolume, 1.0e-4
- end
-
- def testImproveMinVolumeForInvalidConcaveGem
-  grid = gemGrid 4, 5.0, 0, -1.5
-  avgVol = grid.totalVolume/grid.ncell.to_f
-  grid.smoothNodeVolume(6)
-  assert_in_delta avgVol, grid.silentMinVolume, 1.0e-4
- end
-
  def testRelaxNegativeCellsForConcaveGemWithBadLapacian
   grid = gemGrid 4, 5.0, 0
   avgVol = grid.totalVolume/grid.ncell.to_f
@@ -414,20 +399,6 @@ class TestGridCAD < Test::Unit::TestCase
   grid.addFace(0,3,1,realFaceId)
   4.times { |node| grid.projectNodeToFace(node,realFaceId)}
   grid
- end
-
- def testRelaxNegativeCellsOnSurface
-  grid = rightTet3
-  #grid.exportFAST
-  assert_equal grid, grid.smoothNodeVolumeWithSurf(0)
-  assert grid.minVolume>0.0
- end
-
- def testRelaxNegativeCellsOnSurfaceWithGeneralSmooth
-  grid = rightTet3
-  #grid.exportFAST
-  assert_equal grid, grid.smoothNodeVolume(0)
-  assert grid.minVolume>0.0
  end
 
  def threeSurfaceTriangles( x=1, y=1)

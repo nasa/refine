@@ -69,12 +69,6 @@ Grid *gridRestrictStoredCostToUV(Grid *g, int node );
 
 Grid *gridLinearProgramXYZ(Grid *g, int node, GridBool *callAgain );
 
-Grid *gridSmoothInvalidCellNodes(Grid *g);
-
-Grid *gridSmoothNodeVolume(Grid *g, int node );
-Grid *gridSmoothNodeVolumeWithSurf(Grid *g, int node );
-Grid *gridSmoothNodeVolumeSimplex(Grid *g, int node );
-
 Grid *gridRelaxNegativeCells(Grid *g, GridBool dumpTecplot );
 Grid *gridSmoothVolumeNearNode(Grid *grid, int node, 
 			       GridBool smoothOnSurface );
@@ -86,8 +80,6 @@ Grid *gridSmoothNodeARFaceSimplex( Grid *g, int node );
 
 Grid *gridSmoothNodeFaceAreaUV(Grid *g, int node );
 Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *g, int node );
-
-Grid *gridSmoothNodeVolumeUVSimplex( Grid *g, int node );
 
 Grid *gridUntangleAreaUV(Grid *g, int node, int recursive_depth, 
 			 GridBool allow_movement_near_ghost_nodes );

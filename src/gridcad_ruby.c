@@ -89,18 +89,6 @@ VALUE grid_storeFaceCostParameterDerivatives( VALUE self, VALUE node )
 							)?self:Qnil);
 }
 
-VALUE grid_smoothNodeVolume( VALUE self, VALUE node )
-{
-  GET_GRID_FROM_SELF;
-  return (gridSmoothNodeVolume( grid, NUM2INT(node) )==grid?self:Qnil);
-}
-
-VALUE grid_smoothNodeVolumeWithSurf( VALUE self, VALUE node )
-{
-  GET_GRID_FROM_SELF;
-  return (gridSmoothNodeVolumeWithSurf( grid, NUM2INT(node) )==grid?self:Qnil);
-}
-
 VALUE grid_relaxNegativeCells( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -161,8 +149,6 @@ void Init_GridCAD()
   rb_define_method( cGridCAD, "storeFaceCostParameterDerivatives",
 		    grid_storeFaceCostParameterDerivatives, 1 );
 
-  rb_define_method( cGridCAD, "smoothNodeVolume", grid_smoothNodeVolume, 1 );
-  rb_define_method( cGridCAD, "smoothNodeVolumeWithSurf", grid_smoothNodeVolumeWithSurf, 1 );
   rb_define_method( cGridCAD, "relaxNegativeCells", grid_relaxNegativeCells, 0 );
   rb_define_method( cGridCAD, "smoothNodeFaceAreaUV", grid_smoothNodeFaceAreaUV, 1 );
   rb_define_method( cGridCAD, "untangleAreaUV", grid_untangleAreaUV, 1 );
