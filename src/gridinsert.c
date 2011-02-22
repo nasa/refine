@@ -16,7 +16,6 @@
 #else
 #include <values.h>
 #endif
-#include "intersect.h"
 #include "plan.h"
 #include "gridshape.h"
 #include "gridmath.h"
