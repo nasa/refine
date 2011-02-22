@@ -1522,7 +1522,7 @@ Grid *gridSmoothVolumeNearNode(Grid *grid, int node, GridBool smoothOnSurface )
 
   for (smooth=0;smooth<10;smooth++)
     for (i=0;i<nlist;i++) 
-      gridSmoothNodeVolume( grid, nodelist[i]);
+      gridUntangleVolume( grid, nodelist[i], 0, TRUE );
 
   return grid;
 }
