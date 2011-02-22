@@ -54,13 +54,11 @@ Grid *gridWholesaleEvaluation(Grid *g);
 
 /* the {optimzation,laplacian}Limits will be set to a default if < 0.0 */ 
 Grid *gridSmooth(Grid *g, double optimizationLimit, double laplacianLimit );
-Grid *gridSmoothFaceMR(Grid *g, double optimizationLimit );
 Grid *gridSmoothVolume(Grid *g );
 Grid *gridSmoothNode(Grid *g, int node, GridBool smoothOnSurface );
-Grid *gridSmoothNodeFaceMR(Grid *g, int node );
 
 Grid *gridLineSearchT(Grid *g, int node, double optimized_cost_limit );
-Grid *gridOptimizeFaceUV(Grid *g, int node, double *dudv );
+
 Grid *gridLinearProgramUV(Grid *g, int node, GridBool *callAgain );
 
 Grid *gridSmartLaplacian(Grid *g, int node );

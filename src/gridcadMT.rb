@@ -205,12 +205,6 @@ class TestGridCAD < Test::Unit::TestCase
   assert_in_delta 0.999, grid.minFaceMR, 1.0e-3
  end
 
- def testSmoothNodeFaceMR
-  assert_not_nil grid = isoTet(-0.2)
-  assert_equal grid, grid.smoothNodeFaceMR(0)
-  assert_in_delta 0.999, grid.faceMR(0,1,2), 1.0e-3
- end
-
  def testSmoothVol
   assert_not_nil grid = isoTet(0.0,1.0)
   assert_equal grid, grid.smoothNode(3)
@@ -227,19 +221,6 @@ class TestGridCAD < Test::Unit::TestCase
   assert_equal grid, grid.smooth
   assert_in_delta 0.999, grid.minAR, 1.0e-3
   assert_in_delta 0.999, grid.minFaceMR, 1.0e-3
- end
-
- def testSmoothFaceMR
-  assert_not_nil grid = isoTet(-4.0)
-  node3 = grid.nodeXYZ(3)
-  assert_in_delta 0.3191, grid.faceMR(0,1,2), 1.0e-3
-  assert_equal grid, grid.smoothFaceMR(0.1)
-  assert_in_delta 0.3191, grid.faceMR(0,1,2), 1.0e-3
-  assert_equal grid, grid.smoothFaceMR(0.35)
-  assert_in_delta 0.9053, grid.faceMR(0,1,2), 1.0e-3
-  assert_equal grid, grid.smoothFaceMR(0.99)
-  assert_in_delta 0.9999, grid.faceMR(0,1,2), 1.0e-3
-  assert_equal node3, grid.nodeXYZ(3)
  end
 
  def testStoreVolumeARDerivative
