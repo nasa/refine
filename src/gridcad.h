@@ -73,11 +73,6 @@ Grid *gridRelaxNegativeCells(Grid *g, GridBool dumpTecplot );
 Grid *gridSmoothVolumeNearNode(Grid *grid, int node, 
 			       GridBool smoothOnSurface );
 
-Grid *gridUntangleBadFaceParameters(Grid *g);
-
-Grid *gridSmoothNodeARFace(Grid *g, int node );
-Grid *gridSmoothNodeARFaceSimplex( Grid *g, int node );
-
 Grid *gridSmoothNodeFaceAreaUV(Grid *g, int node );
 Grid *gridSmoothNodeFaceAreaUVSimplex( Grid *g, int node );
 
