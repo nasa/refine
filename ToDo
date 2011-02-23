@@ -8,6 +8,8 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 --Major refactoring
 
+- mixed element
+
 - make the min allowed face area (and volume) a grid struct var.
 
 - printf error when face is empty for edge split with !gridContinuousEquator
@@ -40,10 +42,7 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 - rename grid AR to cost
 
-gridcad : get rid of 
--gridOptimizeFaceUV
--gridSmoothFaceMR
--gridOptimizeUVForVolume
+gridAttach* gridDetach* stuff
 
 gridmetric : get rid of
 -gridCellRatioErrorDerivative
