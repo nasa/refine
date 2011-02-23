@@ -64,7 +64,6 @@ double gridVolume(Grid *g, int *nodes );
 
 double gridCostValid(Grid *g, int *nodes );
 Grid *gridNodeCostValid(Grid *grid, int node, double *valid );
-int gridNumberOfInvalidCells(Grid *g);
 
 double gridAR(Grid *g, int *nodes );
 double gridEdgeRatioCost(Grid *g, int *nodes );

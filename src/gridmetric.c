@@ -658,22 +658,6 @@ Grid *gridNodeCostValid(Grid *grid, int node, double *valid )
   return grid;
 }
 
-int gridNumberOfInvalidCells(Grid *grid)
-{
-  int cell, nodes[4];
-  int invalid;
-  invalid = 0;
-
-  for (cell=0;cell<gridMaxCell(grid);cell++) {
-    if (grid==gridCell(grid, cell, nodes)) {
-      if ( -0.5 > gridAR(grid,nodes) ) {
-	invalid++;
-      }
-    }
-  }
-  return invalid;
-}
-
 Grid *gridNodeAR(Grid *grid, int node, double *ar )
 {
   AdjIterator it;
