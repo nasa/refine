@@ -1779,22 +1779,6 @@ Grid *gridMinVolumeAndCount( Grid *grid, double *min_volume, int *total_count )
   return grid;
 }
 
-Grid *gridJacVolRatio(Grid *grid)
-{
-  int cell, nodes[4];
-  double volume, jacobian, ratio;
-
-  for (cell=0;cell<gridMaxCell(grid);cell++) {
-    if (grid==gridCell(grid, cell, nodes)) {
-      volume = gridVolume(grid, nodes );
-      jacobian = gridMinCellJacDet2(grid, nodes );
-      ratio = jacobian / volume / 6.0;
-      if (ratio<0.9) printf("%10d %20.12e %10.8f\n",cell,volume,ratio);
-    }
-  }
-  return grid;
-}
-
 GridBool gridNegCellAroundNode( Grid *grid, int node )
 {
   int nodes[4];
