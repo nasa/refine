@@ -100,8 +100,6 @@ double gridMinARAroundNodeExceptGemRecon(Grid *g, int node, int becomes );
 double gridMinAR(Grid *g);
 double gridMinThawedAR(Grid *g);
 
-Grid *gridFreezeSmallARCells(Grid *g, double minAR );
-
 GridBool gridRightHandedFace(Grid *g, int face );
 GridBool gridRightHandedBoundary(Grid *g );
 Grid *gridFlipLeftHandedFaces(Grid *g );

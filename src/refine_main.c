@@ -44,7 +44,6 @@ int main( int argc, char *argv[] )
   int i, j, oldSize, newSize;
   int wiggleSteps;
   double ratio=1.0;
-  double minAR=-1.0;
   double ratioRefine, ratioCollapse;
   GridBool projected;
   GridBool GridMoveProjection = FALSE;
@@ -106,9 +105,6 @@ int main( int argc, char *argv[] )
     } else if( strcmp(argv[i],"-r") == 0 ) {
       i++; ratio = atof(argv[i]);
       printf("-r argument %d: %f\n",i, ratio);
-    } else if( strcmp(argv[i],"-v") == 0 ) {
-      i++; minAR = atof(argv[i]);
-      printf("-v argument %d: %f\n",i, minAR);
     } else if( strcmp(argv[i],"-f") == 0 ) {
       i++; sprintf( linesfile, "%s", argv[i] );
       printf("-l argument %d: %s\n",i, linesfile);
@@ -137,7 +133,6 @@ int main( int argc, char *argv[] )
       printf(" -o output project name\n");
       printf(" -a party project_adapt_hess file name\n");
       printf(" -r initial edge length ratio for adapt\n");
-      printf(" -v freeze cells with small aspect ratio (viscous)\n");
       printf(" -f freeze nodes in this .lines file\n");
       printf(" -m use grid movement for projection\n");
       printf(" -n max number of nodes in grid\n");
@@ -172,11 +167,6 @@ int main( int argc, char *argv[] )
     printf("freezing line nodes...\n");
     gridFreezeLinesNodes(grid);
     printf("nodes frozen %d\n",gridNFrozen(grid));
-  }
-
-  if (minAR > 0) {
-    printf("freezing cells with AR smaller than %f\n",minAR);
-    gridFreezeSmallARCells(grid, minAR);
   }
 
   if(strcmp(adaptfile,"none")==0) {
