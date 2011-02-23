@@ -61,10 +61,6 @@ Grid *gridCopySpacing(Grid *g, int originalNode, int newNode);
 Grid *gridConvertMetricToJacobian(Grid *g, double *m, double *j);
 
 double gridVolume(Grid *g, int *nodes );
-Grid *gridCellVolumeDerivative(Grid *g, int *nodes, 
-			       double *volume, double *dVoldx );
-Grid *gridNodeVolumeDerivative(Grid *g, int node, 
-			       double *volume, double *dVoldx );
 
 double gridCostValid(Grid *g, int *nodes );
 Grid *gridNodeCostValid(Grid *grid, int node, double *valid );

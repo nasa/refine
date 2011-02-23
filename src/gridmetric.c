@@ -638,80 +638,6 @@ double gridVolume(Grid *grid, int *nodes )
   return gridDotProduct(norm,edge3)/6.0;
 }
 
-Grid *gridCellVolumeDerivative(Grid *grid, int *nodes, 
-			       double *volume, double *dVoldx )
-{
-  double *xyz0, *xyz1, *xyz2, *xyz3;
-  double edge1[3], edge2[3], edge3[3];
-
-  if ( !gridValidNode(grid, nodes[0]) || 
-       !gridValidNode(grid, nodes[1]) ||
-       !gridValidNode(grid, nodes[2]) ||
-       !gridValidNode(grid, nodes[3]) ) {
-    return NULL;
-  }
-
-  xyz0=gridNodeXYZPointer(grid,nodes[0]);
-  xyz1=gridNodeXYZPointer(grid,nodes[1]);
-  xyz2=gridNodeXYZPointer(grid,nodes[2]);
-  xyz3=gridNodeXYZPointer(grid,nodes[3]);
-
-  gridSubtractVector( xyz3, xyz1, edge1);
-  gridSubtractVector( xyz2, xyz1, edge2);
-  gridSubtractVector( xyz0, xyz1, edge3);
-
-  gridCrossProduct( edge1, edge2, dVoldx );
-
-  gridVectorScale(dVoldx,(1.0/6.0));
-
-  *volume = gridDotProduct(dVoldx,edge3);
-
-  return grid;
-}
-
-Grid *gridNodeVolumeDerivative(Grid *grid, int node, 
-			       double *volume, double *dVoldx )
-{
-  AdjIterator it;
-  int nodes[4], orientedNodes[4];
-  double local_vol, local_dVoldx[3];
-
-  *volume = DBL_MAX;
-  dVoldx[0] = DBL_MAX;
-  dVoldx[1] = DBL_MAX;
-  dVoldx[2] = DBL_MAX;
-
-  if ( !gridValidNode(grid, node) ) return NULL;
-
-  for ( it = adjFirst(gridCellAdj(grid),node); adjValid(it); it = adjNext(it) ){
-    gridCell(grid,adjItem(it),nodes);
-    orientedNodes[0] = node;
-    if (node == nodes[0]){
-      orientedNodes[1] = nodes[1];
-    }else{
-      orientedNodes[1] = nodes[0];
-    }
-    gridOrient( grid, nodes, orientedNodes);
-    if ( grid != gridCellVolumeDerivative( grid, orientedNodes, 
-					   &local_vol, local_dVoldx ) ) {
-      *volume = DBL_MAX;
-      dVoldx[0] = DBL_MAX;
-      dVoldx[1] = DBL_MAX;
-      dVoldx[2] = DBL_MAX;
-      return NULL;
-    }
-    if ( local_vol < *volume ) {
-      *volume = local_vol;
-      dVoldx[0] = local_dVoldx[0];
-      dVoldx[1] = local_dVoldx[1];
-      dVoldx[2] = local_dVoldx[2];
-    }
-  }
-
-  return grid;
-
-}
-
 Grid *gridNodeCostValid(Grid *grid, int node, double *valid )
 {
   AdjIterator it;
@@ -836,7 +762,7 @@ double gridAR(Grid *grid, int *nodes )
   double *m0, *m1, *m2, *m3; 
   double map0[6], map1[6], map2[6], map3[6];
   double m[6], j[9];
-  double aspect, determinate, volume;
+  double aspect;
 
   double valid;
 
@@ -900,13 +826,6 @@ double gridAR(Grid *grid, int *nodes )
     aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 ); break;
   case gridCOST_FCN_ASPECT_RATIO:
     aspect = gridCellAspectRatio( xyz1, xyz2, xyz3, xyz4 ); break;
-  case gridCOST_FCN_JAC_SCALED_MEAN_RATIO:
-    aspect = gridCellMeanRatio( xyz1, xyz2, xyz3, xyz4 );
-    determinate = gridMinCellJacDet2(grid, nodes);
-    volume = gridVolume(grid, nodes);
-    determinate = determinate / volume / 6.0;
-    aspect = aspect * determinate;
-    break;
   default:
     printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
 	   gridCostFunction(grid));
@@ -1176,8 +1095,6 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   double *m0, *m1, *m2, *m3; 
   double map0[6], map1[6], map2[6], map3[6];
   double m[6], j[9];
-  double det, vol;
-  double dDetdx[3], dVoldx[3];
 
   if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
     return gridCellRatioErrorDerivative(grid, nodes, ar, dARdx );
@@ -1223,22 +1140,6 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
     gridCellMeanRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx); break;
   case gridCOST_FCN_ASPECT_RATIO:
     gridCellAspectRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx); break;
-  case gridCOST_FCN_JAC_SCALED_MEAN_RATIO:
-    gridCellMeanRatioDerivative( xyz1, xyz2, xyz3, xyz4, ar, dARdx);
-    gridMinCellJacDetDeriv2(grid, nodes, &det, dDetdx);
-    gridCellVolumeDerivative(grid, nodes, &vol, dVoldx );
-
-    det = det / vol / 6.0;
-    dDetdx[0] = (vol * dDetdx[0] - det * dVoldx[0]) / vol / vol / 6.0;
-    dDetdx[1] = (vol * dDetdx[1] - det * dVoldx[1]) / vol / vol / 6.0;
-    dDetdx[2] = (vol * dDetdx[2] - det * dVoldx[2]) / vol / vol / 6.0;
-
-    *ar = (*ar) * det;
-    dARdx[0] = ( (*ar)*dDetdx[0] + dARdx[0]*det );
-    dARdx[1] = ( (*ar)*dDetdx[1] + dARdx[1]*det );
-    dARdx[2] = ( (*ar)*dDetdx[2] + dARdx[2]*det );
-
-    break;
   default:
     printf("%s: %d: error Cost Function %d not supported.\n",__FILE__,__LINE__,
 	   gridCostFunction(grid));
