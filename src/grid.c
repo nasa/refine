@@ -46,9 +46,6 @@ Grid *gridImport(int maxnode, int nnode,
 
   grid = (Grid *)malloc(sizeof(Grid));
 
-  grid->parent = NULL;
-  grid->child  = NULL;
-
   grid->maxnode = MAX(maxnode,1);
   grid->nnode   = nnode;
   grid->maxcell = MAX(maxcell,1);
@@ -107,7 +104,6 @@ Grid *gridImport(int maxnode, int nnode,
   grid->geomNode = (int *)malloc(grid->maxnode * sizeof(int));
   for (i=0;i < grid->maxnode; i++ ) grid->geomNode[i] = EMPTY;
 
-  grid->child_reference  = NULL;
   grid->nodeGlobal  = NULL;
   grid->part = NULL;
   grid->imesh = NULL;
@@ -250,71 +246,6 @@ Grid *gridImport(int maxnode, int nnode,
   grid->model = -1;
 
   return  grid;
-}
-
-Grid *gridDup( Grid *grid )
-{
-  Grid *child;
-  int node;
-  double xyz[3], map[6];
-  int cell;
-  int nodes[4];
-  int face, faceId;
-  double uvs[3][2];
-  int edge, edgeId;
-  double ts[2];
-
-  if (grid != gridSortNodeGridEx(grid)) {
-    printf("%s: %d: gridDup: gridSortNodeGridEx failed.\n",
-	   __FILE__, __LINE__ );
-    return NULL;
-  }
-
-  child = gridCreate( gridNNode(grid), gridNCell(grid),
-		      gridNFace(grid), gridNEdge(grid) );
-
-  for ( node = 0 ; node < gridNNode(grid) ; node++ ) {
-    gridNodeXYZ( grid,  node, xyz );
-    gridAddNode( child, xyz[0], xyz[1], xyz[2] );
-    gridMap( grid, node, map );
-    gridSetMap( child, node, map[0], map[1], map[2], map[3], map[4], map[5] );
-  }
-
-  for ( cell = 0 ; cell < gridNCell(grid) ; cell++ ) {
-    gridCell( grid, cell, nodes );
-    gridAddCell( child, nodes[0], nodes[1], nodes[2], nodes[3] );
-  }
-
-  for ( face = 0 ; face < gridNFace(grid) ; face++ ) {
-    gridFace( grid, face, nodes, &faceId );
-    gridNodeUV( grid, nodes[0], faceId, uvs[0] );
-    gridNodeUV( grid, nodes[1], faceId, uvs[1] );
-    gridNodeUV( grid, nodes[2], faceId, uvs[2] );
-    gridAddFaceUV( child, 
-		   nodes[0], uvs[0][0],  uvs[0][1], 
-		   nodes[1], uvs[1][0],  uvs[1][1], 
-		   nodes[2], uvs[2][0],  uvs[2][1], 
-		   faceId);
-  }
-
-  for ( edge = 0 ; edge < gridNEdge(grid) ; edge++ ) {
-    gridEdge( grid, edge, nodes, &edgeId );
-    gridNodeT( grid, nodes[0], edgeId, &(ts[0]) );
-    gridNodeT( grid, nodes[1], edgeId, &(ts[1]) );
-    gridAddEdge( child, nodes[0], nodes[1], edgeId, ts[0], ts[1] );
-  }
-
-  gridSetNGeomNode( child, gridNGeomNode( grid ) );
-  gridSetNGeomEdge( child, gridNGeomEdge( grid ) );
-  gridSetNGeomFace( child, gridNGeomFace( grid ) );
-
-  for ( edgeId = 1 ; edgeId <= gridNGeomEdge( grid ) ; edgeId++ ) {
-    gridAddGeomEdge( child, edgeId, 
-		     gridGeomEdgeStart( grid, edgeId ), 
-		     gridGeomEdgeEnd(   grid, edgeId ) );
-  }
-
-  return child;
 }
 
 Grid *gridExport(Grid *grid, int *nnode, int *nface, int *ncell,
@@ -1926,12 +1857,10 @@ void gridFree(Grid *grid)
   if (NULL != grid->part) free(grid->part);
   if (NULL != grid->imesh) free(grid->imesh);
   if (NULL != grid->nodeGlobal) free(grid->nodeGlobal);
-  if (NULL != grid->child_reference) free(grid->child_reference);
   if (NULL != grid->aux) free(grid->aux);
   free(grid->frozen);
   if (NULL != grid->map) free(grid->map);
   free(grid->xyz);
-  if (NULL != grid->child) gridFree(grid->child);
   free(grid);
 }
 
@@ -1972,8 +1901,6 @@ Grid *gridPack(Grid *grid)
 	grid->map[5+6*packnode] = grid->map[5+6*orignode];
       }
       grid->frozen[packnode]  = grid->frozen[orignode];
-      if (NULL != grid->child_reference) 
-	grid->child_reference[packnode] = grid->child_reference[orignode];
       if (NULL != grid->nodeGlobal) 
 	grid->nodeGlobal[packnode] = grid->nodeGlobal[orignode];
       if (NULL != grid->part) grid->part[packnode] = grid->part[orignode];
@@ -2376,12 +2303,6 @@ Grid *gridRenumber(Grid *grid, int *o2n)
     temp_int[o2n[node]] = grid->geomNode[node];
   for ( node = 0 ; node < grid->nnode ; node++ )
     grid->geomNode[node] = temp_int[node];
-  if (NULL != grid->child_reference) {
-    for ( node = 0 ; node < grid->nnode ; node++ )
-      temp_int[o2n[node]] = grid->child_reference[node];
-    for ( node = 0 ; node < grid->nnode ; node++ )
-      grid->child_reference[node] = temp_int[node];
-  }
   if (NULL != grid->nodeGlobal) {
     for ( node = 0 ; node < grid->nnode ; node++ )
       temp_int[o2n[node]] = grid->nodeGlobal[node];
@@ -5444,9 +5365,6 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
     grid->geomNode = (int *)realloc(grid->geomNode, grid->maxnode*sizeof(int));
     for (i=origSize;i < grid->maxnode; i++ ) grid->geomNode[i] = EMPTY;
 
-    if (NULL != grid->child_reference) 
-      grid->child_reference =
-                   (int *)realloc(grid->child_reference,grid->maxnode * sizeof(int));
     if (NULL != grid->nodeGlobal) 
       grid->nodeGlobal =
                    (int *)realloc(grid->nodeGlobal,grid->maxnode * sizeof(int));
@@ -5490,7 +5408,6 @@ int gridAddNodeWithGlobal(Grid *grid, double x, double y, double z, int global )
     grid->map[4+6*node] = 0.0;
     grid->map[5+6*node] = 1.0;
   }
-  if (NULL != grid->child_reference) grid->child_reference[node] = EMPTY;
   if (0 <= global) gridSetNodeGlobal(grid, node, global );
   if (NULL != grid->part) grid->part[node] = gridPartId(grid);
   if (NULL != grid->imesh) grid->imesh[node] = EMPTY;
@@ -6129,49 +6046,14 @@ Grid *gridQuad(Grid *grid, int quadIndex, int *nodes, int *faceId )
 
 Grid *gridMap(Grid *grid, int node, double *map)
 {
-  int starting_guess, enclosing_cell;
-  double xyz[3], bary[4];
-  int nodes[4];
-  double map0[6], map1[6], map2[6], map3[6];
-  int i;
-  Grid *child;
-  
   if ( !gridValidNode(grid, node) ) return NULL;
 
-  if ( NULL != grid->map ) {
-    map[0] = grid->map[0+6*node];
-    map[1] = grid->map[1+6*node];
-    map[2] = grid->map[2+6*node];
-    map[3] = grid->map[3+6*node];
-    map[4] = grid->map[4+6*node];
-    map[5] = grid->map[5+6*node];
-  } else {
-    if ( (NULL == grid->child) || ( NULL == grid->child_reference ) ) {
-      printf("%s: %d: gridMap: everything is NULL?\n", __FILE__, __LINE__ );
-      return NULL;
-    }
-    child = grid->child;
-    starting_guess = grid->child_reference[node];
-    gridNodeXYZ( grid, node, xyz );
-    enclosing_cell = gridFindEnclosingCell( child, starting_guess, xyz, bary );
-    if ( EMPTY == enclosing_cell ) {
-      /*
-      printf("%s: %d: gridMap: can not find enclosing_cell (EMPTY) for %d\n", 
-	     __FILE__, __LINE__, node );
-      */
-      return NULL;
-    }
-    grid->child_reference[node] = enclosing_cell;
-    gridCell( child, enclosing_cell, nodes );
-    gridMap( child, nodes[0], map0 );
-    gridMap( child, nodes[1], map1 );
-    gridMap( child, nodes[2], map2 );
-    gridMap( child, nodes[3], map3 );
-    for(i=0;i<6;i++) {
-      map[i] = bary[0]*map0[i] + bary[1]*map1[i] 
-	     + bary[2]*map2[i] + bary[3]*map3[i];
-    }
-  }
+  map[0] = grid->map[0+6*node];
+  map[1] = grid->map[1+6*node];
+  map[2] = grid->map[2+6*node];
+  map[3] = grid->map[3+6*node];
+  map[4] = grid->map[4+6*node];
+  map[5] = grid->map[5+6*node];
   
   return grid;
 }
@@ -6204,27 +6086,11 @@ Grid *gridInterpolateMap2(Grid *grid, int node0, int node1, double ratio,
   if ( !gridValidNode(grid, node1) ) return NULL;
   if ( !gridValidNode(grid, target) ) return NULL;
 
-  if ( NULL != grid->map ) {
-    for (i=0;i<6;i++) {
-      grid->map[i+6*target] = 
-	ratio*(grid->map[i+6*node1]) + (1.0-ratio)*(grid->map[i+6*node0]); 
-    }
-  }else{
-    if ( NULL != grid->child_reference ) {
-      double xyz[3], bary[4];
-      gridNodeXYZ(grid,target,xyz);
-      grid->child_reference[target] = 
-	gridFindEnclosingCell(grid->child,grid->child_reference[node0],xyz,bary);
-      if (EMPTY == grid->child_reference[target])
-	grid->child_reference[target] = 
-	  gridFindEnclosingCell(grid->child,grid->child_reference[node1],xyz,bary);
-      if (EMPTY == grid->child_reference[target]) {
-	printf("%s: %d: gridInterpolateMap2 cannot gridFindEnclosingCell\n",
-	       __FILE__,__LINE__);
-	return NULL;		      
-      }
-    }
+  for (i=0;i<6;i++) {
+    grid->map[i+6*target] = 
+      ratio*(grid->map[i+6*node1]) + (1.0-ratio)*(grid->map[i+6*node0]); 
   }
+
   return grid;
 }
 
@@ -6518,16 +6384,3 @@ Grid *gridSetPhase(Grid *grid, int phase){
   return grid;
 }
 
-Grid *gridCacheCurrentGridAndMap(Grid *grid){
-  int node, cell;
-  grid->child = gridDup( grid );
-  free(grid->map); grid->map = NULL;
-  grid->child_reference = (int *)malloc(gridMaxNode(grid) * sizeof(int));
-  for (node=0;node<=gridMaxNode(grid); node++){
-    if ( gridValidNode(grid,node) ) {
-      cell = adjItem(adjFirst(gridCellAdj(grid),node));
-      grid->child_reference[node] = cell;
-    }
-  }
-  return grid;
-}

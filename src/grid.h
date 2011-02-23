@@ -56,10 +56,6 @@ struct Grid {
   int naux;
   double *aux;
 
-  Grid *child;
-  Grid *parent;
-
-  int *child_reference;
   int *nodeGlobal;
   int *part;
   int *imesh;
@@ -164,7 +160,6 @@ Grid *gridImport(int maxnode, int nnode,
 		 int maxcell, int ncell,
 		 int maxedge,
 		 double *xyz, int *f2n, int *faceId, int *c2n );
-Grid *gridDup(Grid *g);
 Grid *gridExport(Grid *g, int *nnode, int *nface, int *ncell,
 		 double **xyz, int **f2n, int **faceId, int **c2n );
 
@@ -553,9 +548,6 @@ Grid *gridSetPhase(Grid *g, int phase);
 #define gridEDGE_PHASE (1)
 #define gridFACE_PHASE (2)
 #define gridVOL_PHASE  (3)
-
-Grid *gridCacheCurrentGridAndMap(Grid *g);
-
 
 END_C_DECLORATION
 
