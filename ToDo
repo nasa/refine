@@ -43,10 +43,14 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 - rename grid AR to cost
 
+clean up parallel adapt!
+
 gridAttach* gridDetach* stuff
 
 gridmetric : get rid of
 -gridCellRatioErrorDerivative
+-gridLargestRatioEdge
+-gridSmallestRatioEdge
 
 - unitfy cell face arrays and method
 
