@@ -48,7 +48,6 @@ clean up parallel adapt!
 gridAttach* gridDetach* stuff
 
 gridmetric : get rid of
--gridCellRatioErrorDerivative
 -gridLargestRatioEdge
 -gridSmallestRatioEdge
 

@@ -33,10 +33,7 @@ double gridEdgeLength(Grid *g, int n0, int n1 );
 Grid *gridEdgeRatioTolerence(Grid *g, double longest, double shortest,
 			     int *active_edges, int *out_of_tolerence_edges );
 Grid *gridEdgeRatioRange(Grid *g, double *longest, double *shortest );
-Grid *gridEdgeRatioRangeInVolume(Grid *g, double *longest, double *shortest );
 double gridEdgeRatio(Grid *g, int n0, int n1 );
-Grid *gridEdgeRatio3(Grid *g, int n0, int n1, double *ratio );
-double gridEdgeRatioError(Grid *g, int n0, int n1 );
 double gridAverageEdgeLength(Grid *g, int node );
 Grid *gridLargestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
 Grid *gridSmallestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
@@ -56,7 +53,6 @@ double gridCostValid(Grid *g, int *nodes );
 Grid *gridNodeCostValid(Grid *grid, int node, double *valid );
 
 double gridAR(Grid *g, int *nodes );
-double gridEdgeRatioCost(Grid *g, int *nodes );
 double gridCellMetricConformity( double *xyz0, double *xyz1, 
 				 double *xyz2, double *xyz3,
 				 double *requested_metric );
@@ -71,8 +67,6 @@ Grid *gridNodeAR(Grid *g, int node, double *ar );
 Grid *gridNodeVolume(Grid *g, int node, double *volume );
 Grid *gridGemAR(Grid *g, double *ar);
 Grid *gridCellARDerivative(Grid *g, int *nodes, double *ar, double *dARdx );
-Grid *gridCellRatioErrorDerivative(Grid *g, int *nodes, 
-				   double *cost, double *dCostdx );
 
 void gridCellAspectRatioDerivative( double *xyz1, double *xyz2, 
 				    double *xyz3, double *xyz4,

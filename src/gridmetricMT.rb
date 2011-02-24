@@ -251,29 +251,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta length, grid.edgeRatio(3,1), 1.0e-10
  end
 
- def testEdgeLengthRatio3InMetricForUniformRightTet
-  assert_not_nil grid = rightTet
-  nodes = [0,1,2,3]
-  tol = 1.0e-12
-  ratio = grid.edgeRatio3(0,1)
-  assert_in_delta 1.0, ratio[0], tol
-  assert_in_delta 1.0, ratio[1], tol
-  assert_in_delta 1.0, ratio[2], tol
- end
-
- def testEdgeLengthRatio3InMetricFor10t1UniformRightTet
-  assert_not_nil grid = rightTet
-  s = 0.1
-  m = 1.0/(s*s)
-  grid.setMap(0,m,0.0,0.0,m,0.0,m)
-  nodes = [0,1,2,3]
-  tol = 1.0e-12
-  ratio = grid.edgeRatio3(0,1)
-  assert_in_delta 10.0, ratio[0], tol
-  assert_in_delta 1.00, ratio[1], tol
-  assert_in_delta 7.106335, ratio[2], 1.0e-5
- end
-
  def testVolumeMetrics
   assert_not_nil grid = rightTet
   nodes = [0,1,2,3]
@@ -286,15 +263,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta ar, grid.nodeAR(1), 1.0e-10
   assert_in_delta ar, grid.nodeAR(2), 1.0e-10
   assert_in_delta ar, grid.nodeAR(3), 1.0e-10
- end
-
- def testEdgeLengthRatioCostForRightTet
-  assert_not_nil grid = rightTet
-  nodes = [0,1,2,3]
-  ratio = Math::sqrt(2)
-  err = (1.0-ratio)/(1.0+ratio)
-  cost = 1.0/(1.0+err.abs)
-  assert_in_delta cost, grid.edgeRatioCost(nodes), 1.0e-10
  end
 
  def testARDerivatives
@@ -341,28 +309,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta deriv, ans[1], tol
   assert_in_delta deriv, ans[2], tol
   assert_in_delta 0.0,   ans[3], tol  
-
- end
-
- def testEdgeErrorDerivatives
-  assert_not_nil grid = Grid.new(4,1,0,0)
-
-  grid.addCell( 
-	       grid.addNode(0.0,0.0,0.0), 
-	       grid.addNode(1.0,0.0,0.0), 
-	       grid.addNode(0.0,1.0,0.0), 
-	       grid.addNode(0.0,0.0,1.0) )
-  nodes = [0,1,2,3]
-  ratio = Math::sqrt(2)
-  err = (1.0-ratio)/(1.0+ratio)
-  cost = 1.0/(1.0+err.abs)
-  tol   = 1.0e-10
-
-  ans = grid.cellRatioErrorDerivative(nodes)
-  assert_in_delta cost, ans[0], tol
-  assert_in_delta 0,    ans[1], tol
-  assert_in_delta 0,    ans[2], tol
-  assert_in_delta 0,    ans[3], tol  
 
  end
 

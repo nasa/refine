@@ -16,26 +16,6 @@ VALUE grid_edgeRatio( VALUE self, VALUE n0, VALUE n1 )
   return rb_float_new( gridEdgeRatio( grid, NUM2INT(n0), NUM2INT(n1) ) );
 }
 
-VALUE grid_edgeRatio3( VALUE self, VALUE n0, VALUE n1 )
-{
-  int i;
-  double ratio[3];
-  VALUE rb_ratio;
-  GET_GRID_FROM_SELF;
-  if ( grid == gridEdgeRatio3( grid, NUM2INT(n0), NUM2INT(n1), ratio ) ) {
-    rb_ratio = rb_ary_new2(3);
-    for(i=0;i<3;i++) rb_ary_store( rb_ratio, i, rb_float_new(ratio[i]) );
-    return rb_ratio;
-  }
-  return Qnil;
-}
-
-VALUE grid_edgeRatioError( VALUE self, VALUE n0, VALUE n1 )
-{
-  GET_GRID_FROM_SELF;
-  return rb_float_new( gridEdgeRatioError( grid, NUM2INT(n0), NUM2INT(n1) ) );
-}
-
 VALUE grid_averageEdgeLength( VALUE self, VALUE node )
 {
   GET_GRID_FROM_SELF;
@@ -150,14 +130,6 @@ VALUE grid_ar( VALUE self, VALUE rb_nodes )
   return rb_float_new( gridAR( grid, nodes ) );
 }
 
-VALUE grid_edgeRatioCost( VALUE self, VALUE rb_nodes )
-{
-  int i, nodes[4];
-  GET_GRID_FROM_SELF;
-  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
-  return rb_float_new( gridEdgeRatioCost( grid, nodes ) );
-}
-
 VALUE grid_nodeAR( VALUE self, VALUE node )
 {
   double ar;
@@ -184,27 +156,6 @@ VALUE grid_cellARDerivative( VALUE self, VALUE rb_nodes )
     rb_ar = Qnil;
   }
   return rb_ar;
-}
-
-VALUE grid_cellRatioErrorDerivative( VALUE self, VALUE rb_nodes )
-{
-  int i, nodes[4];
-  double cost, dCostdx[3];
-  VALUE rb_cost;
-  Grid *returnedGrid;
-  GET_GRID_FROM_SELF;
-  for ( i=0 ; i<4 ; i++ ) nodes[i] = NUM2INT(rb_ary_entry(rb_nodes,i));
-  returnedGrid = gridCellRatioErrorDerivative( grid, nodes, &cost, dCostdx );
-  if ( returnedGrid == grid ){
-    rb_cost = rb_ary_new2(4);
-    rb_ary_store( rb_cost, 0, rb_float_new(cost) );
-    rb_ary_store( rb_cost, 1, rb_float_new(dCostdx[0]) );
-    rb_ary_store( rb_cost, 2, rb_float_new(dCostdx[1]) );
-    rb_ary_store( rb_cost, 3, rb_float_new(dCostdx[2]) );
-  }else{
-    rb_cost = Qnil;
-  }
-  return rb_cost;
 }
 
 VALUE grid_nodeARDerivative( VALUE self, VALUE node )
@@ -433,8 +384,6 @@ void Init_GridMetric()
   cGridMetric = rb_define_module( "GridMetric" );
   rb_define_method( cGridMetric, "edgeLength", grid_edgeLength, 2 );
   rb_define_method( cGridMetric, "edgeRatio", grid_edgeRatio, 2 );
-  rb_define_method( cGridMetric, "edgeRatio3", grid_edgeRatio3, 2 );
-  rb_define_method( cGridMetric, "edgeRatioError", grid_edgeRatioError, 2 );
   rb_define_method( cGridMetric, "averageEdgeLength", grid_averageEdgeLength, 1 );
   rb_define_method( cGridMetric, "largestRatioEdge", grid_largestRatioEdge, 1 );
   rb_define_method( cGridMetric, "smallestRatioEdge", grid_smallestRatioEdge, 1 );
@@ -451,10 +400,8 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "volume", grid_volume, 1 );
   rb_define_method( cGridMetric, "ar", grid_ar, 1 );
   rb_define_method( cGridMetric, "cellMetricConformity", grid_cellMetricConformity, 5 );
-  rb_define_method( cGridMetric, "edgeRatioCost", grid_edgeRatioCost, 1 );
   rb_define_method( cGridMetric, "nodeAR", grid_nodeAR, 1 );
   rb_define_method( cGridMetric, "cellARDerivative", grid_cellARDerivative, 1 );
-  rb_define_method( cGridMetric, "cellRatioErrorDerivative", grid_cellRatioErrorDerivative, 1 );
   rb_define_method( cGridMetric, "nodeARDerivative", grid_nodeARDerivative, 1 );
   rb_define_method( cGridMetric, "minVolume", grid_minVolume, 0 );
   rb_define_method( cGridMetric, "minAR", grid_minAR, 0 );

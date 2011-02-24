@@ -472,13 +472,11 @@ Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
     if ( newFaceId0 != EMPTY || newFaceId1 != EMPTY ) return NULL;
 
     /* make sure that face MR improves */
-    if ( gridCOST_FCN_EDGE_LENGTH != gridCostFunction(grid) ) {
-      origMR = MIN( gridFaceMR(grid, n0, n1, gap0 ), 
-		    gridFaceMR(grid, n0, n1, gap1 ) );
-      newMR  = MIN( gridFaceMR(grid, n0, gap0, gap1 ),
-		    gridFaceMR(grid, n1, gap0, gap1 ) );
-      if ( origMR > newMR ) return NULL;
-    }
+    origMR = MIN( gridFaceMR(grid, n0, n1, gap0 ), 
+		  gridFaceMR(grid, n0, n1, gap1 ) );
+    newMR  = MIN( gridFaceMR(grid, n0, gap0, gap1 ),
+		  gridFaceMR(grid, n1, gap0, gap1 ) );
+    if ( origMR > newMR ) return NULL;
  
     /* add new faces in to test validity, will be removed for a no swap */
     /* make sure that faces are local, so they exist for validity checks */

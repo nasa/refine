@@ -180,7 +180,7 @@ Grid *gridEdgeRatioTolerence(Grid *grid, double longest, double shortest,
   for(conn=0;conn<gridNConn(grid);conn++) {
     gridConn2Node(grid,conn,nodes);
     if ( !gridNodeFrozen(grid, nodes[0]) &&
-	 !gridNodeFrozen(grid, nodes[0]) )
+	 !gridNodeFrozen(grid, nodes[0]) ) /* FIXME? */
       {
 	(*active_edges) += 1;
 	ratio = gridEdgeRatio(grid, nodes[0], nodes[1]);
@@ -216,45 +216,6 @@ Grid *gridEdgeRatioRange(Grid *grid, double *longest, double *shortest )
       *longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
       ratio = gridEdgeRatio(grid, nodes[2], nodes[3]);
       *longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
-    }
-  }
-  return grid;
-}
-
-Grid *gridEdgeRatioRangeInVolume(Grid *grid, double *longest, double *shortest )
-{
-  int cell, nodes[4];
-  double ratio;
-
-  *shortest = DBL_MAX;
-  *longest = -DBL_MAX;
-
-  for( cell=0 ; cell < gridMaxCell(grid) ; cell++ ) {
-    if ( grid == gridCell( grid, cell, nodes ) ) {
-      if ( 0 == gridParentGeometry(grid, nodes[0], nodes[1]) ) {
-	ratio = gridEdgeRatio(grid, nodes[0], nodes[1]);
-	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
-      }
-      if ( 0 == gridParentGeometry(grid, nodes[0], nodes[2]) ) {
-	ratio = gridEdgeRatio(grid, nodes[0], nodes[2]);
-	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
-      }
-      if ( 0 == gridParentGeometry(grid, nodes[0], nodes[3]) ) {
-	ratio = gridEdgeRatio(grid, nodes[0], nodes[3]);
-	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
-      }
-      if ( 0 == gridParentGeometry(grid, nodes[1], nodes[2]) ) {
-	ratio = gridEdgeRatio(grid, nodes[1], nodes[2]);
-	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
-      }
-      if ( 0 == gridParentGeometry(grid, nodes[1], nodes[3]) ) {
-	ratio = gridEdgeRatio(grid, nodes[1], nodes[3]);
-	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
-      }
-      if ( 0 == gridParentGeometry(grid, nodes[2], nodes[3]) ) {
-	ratio = gridEdgeRatio(grid, nodes[2], nodes[3]);
-	*longest = MAX( *longest, ratio);*shortest = MIN( *shortest, ratio);
-      }
     }
   }
   return grid;
@@ -296,64 +257,6 @@ double gridEdgeRatio(Grid *grid, int n0, int n1 )
   return sqrt ( dx * ( m[0]*dx + m[1]*dy + m[2]*dz ) +
 		dy * ( m[1]*dx + m[3]*dy + m[4]*dz ) +
 	        dz * ( m[2]*dx + m[4]*dy + m[5]*dz ) );
-}
-
-Grid *gridEdgeRatio3(Grid *grid, int n0, int n1, double *ratio )
-{
-  double *xyz0, *xyz1;
-  double dx, dy, dz;
-  double *m0, *m1;
-  double map0[6], map1[6];
-  double m[6];
-
-  if (!gridValidNode(grid, n0) || !gridValidNode(grid, n1)) return NULL;
-
-  xyz0 = gridNodeXYZPointer(grid, n0);
-  xyz1 = gridNodeXYZPointer(grid, n1);
-  
-  dx = xyz1[0] - xyz0[0];
-  dy = xyz1[1] - xyz0[1];
-  dz = xyz1[2] - xyz0[2];
-
-  if ( gridMapPointerAllocated(grid) ) {
-    m0 = gridMapPointer(grid, n0);
-    m1 = gridMapPointer(grid, n1);
-  }else{
-    gridMap(grid,n0,map0); m0 = map0;
-    gridMap(grid,n1,map1); m1 = map1;
-  }
-  
-  ratio[0] = sqrt (
-      dx * ( m0[0]*dx + m0[1]*dy + m0[2]*dz )
-    + dy * ( m0[1]*dx + m0[3]*dy + m0[4]*dz )
-    + dz * ( m0[2]*dx + m0[4]*dy + m0[5]*dz ) );
-
-  ratio[1] = sqrt (
-      dx * ( m1[0]*dx + m1[1]*dy + m1[2]*dz )
-    + dy * ( m1[1]*dx + m1[3]*dy + m1[4]*dz )
-    + dz * ( m1[2]*dx + m1[4]*dy + m1[5]*dz ) );
-  
-  m[0] = 0.5*(m0[0]+m1[0]);
-  m[1] = 0.5*(m0[1]+m1[1]);
-  m[2] = 0.5*(m0[2]+m1[2]);
-  m[3] = 0.5*(m0[3]+m1[3]);
-  m[4] = 0.5*(m0[4]+m1[4]);
-  m[5] = 0.5*(m0[5]+m1[5]);
-
-  ratio[2] = sqrt (
-      dx * ( m[0]*dx + m[1]*dy + m[2]*dz )
-    + dy * ( m[1]*dx + m[3]*dy + m[4]*dz )
-    + dz * ( m[2]*dx + m[4]*dy + m[5]*dz ) );
-  
-  return grid;
-}
-
-double gridEdgeRatioError(Grid *grid, int n0, int n1 )
-{
-  double ratio;
-  ratio = gridEdgeRatio(grid, n0, n1 );
-  if (ratio<0.0) return ratio;
-  return ABS((1.0-ratio)/(1.0+ratio));
 }
 
 double gridAverageEdgeLength(Grid *grid, int node )
@@ -719,9 +622,6 @@ double gridAR(Grid *grid, int *nodes )
   valid = gridCostValid(grid, nodes );
   if ( -0.5 > valid ) return valid;
   
-  if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
-    return gridEdgeRatioCost(grid, nodes);
-
   if ( gridMapPointerAllocated(grid) ) {
     m0 = gridMapPointer(grid,nodes[0]);
     m1 = gridMapPointer(grid,nodes[1]);
@@ -784,26 +684,6 @@ double gridAR(Grid *grid, int *nodes )
 
   return aspect;
 
-}
-
-double gridEdgeRatioCost(Grid *grid, int *nodes )
-{
-  double err[6], worstErr;
-  int edge;
-
-  err[0] = gridEdgeRatioError(grid, nodes[0], nodes[1] );
-  err[1] = gridEdgeRatioError(grid, nodes[0], nodes[2] );
-  err[2] = gridEdgeRatioError(grid, nodes[0], nodes[3] );
-  err[3] = gridEdgeRatioError(grid, nodes[1], nodes[2] );
-  err[4] = gridEdgeRatioError(grid, nodes[1], nodes[3] );
-  err[5] = gridEdgeRatioError(grid, nodes[2], nodes[3] );
-  
-  worstErr = 0.0;
-  for (edge=0;edge<6;edge++) {
-    if (err[edge] < -0.5) return err[edge];
-    worstErr=MAX(worstErr,err[edge]);
-  }
-  return 1.0/(1.0+worstErr);
 }
 
 Grid *gridCellMetricConformityFD( Grid *grid,
@@ -1046,9 +926,6 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
   double map0[6], map1[6], map2[6], map3[6];
   double m[6], j[9];
 
-  if ( gridCOST_FCN_EDGE_LENGTH == gridCostFunction(grid) )
-    return gridCellRatioErrorDerivative(grid, nodes, ar, dARdx );
-
   if (grid != gridNodeXYZ(grid,nodes[0],xyz1) ) return NULL;
   if (grid != gridNodeXYZ(grid,nodes[1],xyz2) ) return NULL;
   if (grid != gridNodeXYZ(grid,nodes[2],xyz3) ) return NULL;
@@ -1095,46 +972,6 @@ Grid *gridCellARDerivative(Grid *grid, int *nodes, double *ar, double *dARdx )
 	   gridCostFunction(grid));
     return NULL;
   }
-
-  return grid;
-}
-
-Grid *gridCellRatioErrorDerivative(Grid *grid, int *nodes, 
-				   double *cost, double *dCostdx )
-{
-  int edge, worstEdge;
-  double err, worstErr;
-  double xyz0[3], xyz1[3], direction[3];
-  double ratio;
-
-  *cost = gridEdgeRatioCost(grid,nodes);
-  dCostdx[0] = 0.0;
-  dCostdx[1] = 0.0;
-  dCostdx[2] = 0.0;
-
-  worstErr = -1.0;
-  worstEdge = EMPTY;
-  for (edge=0;edge<3;edge++){
-    err = gridEdgeRatioError(grid,nodes[0], nodes[edge+1]);
-    if (err >= worstErr) {
-      worstEdge=edge;
-      worstErr =err;
-    }
-  }
-
-  if (worstEdge==EMPTY) return NULL;
-  
-  if (grid!=gridNodeXYZ(grid,nodes[0],xyz0))return NULL;
-  if (grid!=gridNodeXYZ(grid,nodes[worstEdge+1],xyz1))return NULL;
-  gridSubtractVector(xyz1,xyz0,direction);
-  ratio = gridEdgeRatio(grid,nodes[0], nodes[worstEdge+1]);
-  if (ratio>=1.0) {
-    gridVectorScale(direction,ratio-1.0);
-  }else{
-    gridVectorScale(direction,-(1.0-ratio));
-  }    
-  
-  gridVectorCopy(dCostdx,direction);
 
   return grid;
 }
