@@ -66,27 +66,6 @@ Grid *gridWriteTecplotInvalid(Grid *grid, char *filename )
   return grid;
 }
 
-Grid *gridSetMapWithSpacingVectors(Grid *grid, int node,
-				   double *v1, double *v2, double *v3,
-                                   double s1, double s2, double s3)
-{
-  double m11, m12, m13, m22, m23, m33;
-  double e1, e2, e3;
-
-  e1 = 1.0/s1/s1;
-  e2 = 1.0/s2/s2;
-  e3 = 1.0/s3/s3;
-
-  m11 = v1[0]*v1[0]*e1 + v2[0]*v2[0]*e2 + v3[0]*v3[0]*e3;
-  m12 = v1[0]*v1[1]*e1 + v2[0]*v2[1]*e2 + v3[0]*v3[1]*e3;
-  m13 = v1[0]*v1[2]*e1 + v2[0]*v2[2]*e2 + v3[0]*v3[2]*e3;
-  m22 = v1[1]*v1[1]*e1 + v2[1]*v2[1]*e2 + v3[1]*v3[1]*e3;
-  m23 = v1[1]*v1[2]*e1 + v2[1]*v2[2]*e2 + v3[1]*v3[2]*e3;
-  m33 = v1[2]*v1[2]*e1 + v2[2]*v2[2]*e2 + v3[2]*v3[2]*e3;
-
-  return gridSetMap(grid,node,m11,m12,m13,m22,m23,m33);
-}
-
 Grid *gridSetMapMatrixToAverageOfNodes2(Grid *grid, int avgNode,
 					int n0, int n1 )
 {
@@ -458,19 +437,6 @@ double gridSpacing(Grid *grid, int node )
   double map[6];
   if (grid != gridMap(grid, node, map)) return -1.0;
   return 1.0/sqrt(map[0]);
-}
-
-Grid *gridSetSpacing(Grid *grid, int node, double spacing )
-{
-  double spacingInverse;
-  spacingInverse = 1.0/spacing;
-  spacingInverse = spacingInverse * spacingInverse;
-  if ( grid != 
-      gridSetMap(grid,node,
-		 spacingInverse,0,0,
-		 spacingInverse,0,
-		 spacingInverse)) return(NULL);
-  return grid;
 }
 
 Grid *gridResetSpacing(Grid *grid )
@@ -2726,7 +2692,11 @@ Grid *gridSpacingFromTecplot(Grid *grid, char *filename )
 			 __FILE__,__LINE__,node);
 		  return NULL;
 		}
-	      if (grid != gridSetSpacing(grid,node,spacing) )
+	      if (grid != gridSetMap(grid,node,
+				     1.0/spacing/spacing,0,0,
+				     1.0/spacing/spacing,0,
+				     1.0/spacing/spacing
+				     ) )
 		{
 		  printf("%s: %d: gridSpacingFromTecplot: node %d set spc failed \n",
 			 __FILE__,__LINE__,node);

@@ -68,14 +68,6 @@ VALUE grid_spacing( VALUE self, VALUE rb_node )
   return rb_float_new( gridSpacing( grid, NUM2INT(rb_node) ) );
 }
 
-VALUE grid_setSpacing( VALUE self, VALUE rb_node, VALUE rb_spacing )
-{
-  GET_GRID_FROM_SELF;
-  return (gridSetSpacing( grid, 
-			  NUM2INT(rb_node), 
-			  NUM2DBL(rb_spacing) )==grid?self:Qnil);
-}
-
 VALUE grid_resetSpacing( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -87,36 +79,6 @@ VALUE grid_scaleSpacing( VALUE self, VALUE node, VALUE scale )
   GET_GRID_FROM_SELF;
   return 
     (gridScaleSpacing(grid, NUM2INT(node), NUM2DBL(scale))==grid?self:Qnil);
-}
-
-VALUE grid_scaleSpacingSphere( VALUE self, 
-			       VALUE x, VALUE y, VALUE z, VALUE r, 
-			       VALUE scale )
-{
-  GET_GRID_FROM_SELF;
-  return
-    (gridScaleSpacingSphere(grid, 
-			    NUM2DBL(x), NUM2DBL(y), NUM2DBL(z), NUM2DBL(r), 
-			    NUM2DBL(scale))==grid?self:Qnil);
-}
-
-VALUE grid_setMapWithSpacingVectors( VALUE self, VALUE node, 
-		   VALUE rb_v1, VALUE rb_v2, VALUE rb_v3,
-		   VALUE s1, VALUE s2, VALUE s3)
-{
-  int i;
-  double v1[3], v2[3], v3[3];
-  GET_GRID_FROM_SELF;
-  for (i=0;i<3;i++) {
-    v1[i] = NUM2DBL(rb_ary_entry(rb_v1,i));  
-    v2[i] = NUM2DBL(rb_ary_entry(rb_v2,i));  
-    v3[i] = NUM2DBL(rb_ary_entry(rb_v3,i));  
-  }
-  return
-    (gridSetMapWithSpacingVectors(grid, NUM2INT(node), 
-				  v1, v2, v3,
-				  NUM2DBL(s1), NUM2DBL(s2), NUM2DBL(s3) 
-				  )==grid?self:Qnil);
 }
 
 VALUE grid_copySpacing( VALUE self, VALUE originalNode, VALUE newNode ) 
@@ -478,12 +440,9 @@ void Init_GridMetric()
   rb_define_method( cGridMetric, "smallestRatioEdge", grid_smallestRatioEdge, 1 );
 
   rb_define_method( cGridMetric, "spacing", grid_spacing, 1 );
-  rb_define_method( cGridMetric, "setSpacing", grid_setSpacing, 2 );
   rb_define_method( cGridMetric, "resetSpacing", grid_resetSpacing, 0 );
   rb_define_method( cGridMetric, "scaleSpacing", grid_scaleSpacing, 2 );
-  rb_define_method( cGridMetric, "scaleSpacingSphere", grid_scaleSpacingSphere, 5 );
   rb_define_method( cGridMetric, "copySpacing", grid_copySpacing, 2 );
-  rb_define_method( cGridMetric, "setMapWithSpacingVectors", grid_setMapWithSpacingVectors, 7 );
   rb_define_method( cGridMetric, "setMapMatrixToAverageOfNodes", 
 		    grid_setMapMatrixToAverageOfNodes, 3 );
 

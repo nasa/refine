@@ -21,9 +21,6 @@ BEGIN_C_DECLORATION
 
 Grid *gridWriteTecplotInvalid(Grid *g, char *filename );
 
-Grid *gridSetMapWithSpacingVectors(Grid *g, int node,
-				   double *v1, double *v2, double *v3,
-                                   double s1, double s2, double s3);
 Grid *gridSetMapMatrixToAverageOfNodes2(Grid *g, int avgNode,
 					int n0, int n1 );
 Grid *gridSetMapMatrixToAverageOfNodes3(Grid *g, int avgNode,
@@ -43,19 +40,12 @@ double gridEdgeRatioError(Grid *g, int n0, int n1 );
 double gridAverageEdgeLength(Grid *g, int node );
 Grid *gridLargestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
 Grid *gridSmallestRatioEdge(Grid *g, int node, int *edgeNode, double *ratio );
+
 double gridSpacing(Grid *g, int node );
-Grid *gridSetSpacing(Grid *g, int node, double spacing );
 Grid *gridResetSpacing(Grid *g );
 Grid *gridScaleSpacing(Grid *g, int node, double scale );
-Grid *gridScaleSpacingSphere(Grid *g, double x, double y, double z, double r,
-			     double scale );
-Grid *gridScaleSpacingSphereDirection(Grid *g, 
-				 double x, double y, double z, double r,
-				 double scalex, double scaley, double scalez );
-Grid *gridSetGlobalMap(Grid *g,
-		       double m11, double m12, double m13,
-                                   double m22, double m23,
-                                               double m33);
+
+/* rename to gridCopyMap */
 Grid *gridCopySpacing(Grid *g, int originalNode, int newNode);
 
 Grid *gridConvertMetricToJacobian(Grid *g, double *m, double *j);

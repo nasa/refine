@@ -97,9 +97,9 @@ class TestGridMetric < Test::Unit::TestCase
   h = 0.125
   assert_not_nil grid = Grid.new(2,0,0,0)
   assert_equal 0, grid.addNode(1,0,0)
-  assert_equal grid, grid.setSpacing(0,0.125)
-  assert_equal h, grid.spacing(0)
+  assert_equal grid, grid.setMap(0,64,0,0,64,0,64)
   assert_equal [1.0/h/h,0.0,0.0,1.0/h/h,0.0,1.0/h/h], grid.map(0)
+  assert_equal h, grid.spacing(0)
  end
 
  def testCopySpacing
@@ -196,42 +196,6 @@ class TestGridMetric < Test::Unit::TestCase
   assert_in_delta 0.0, jacob[8], 1.0e-15
  end
 
- def testCreateMetricFromOrthVectorsAndSpacings124
-  v1=[1, 0, 0]
-  v2=[0, 1, 0]
-  v3=[0, 0, 1]
-  s1=1
-  s2=2
-  s3=4
-  node = 0
-  grid = Grid.new(1,0,0,0)
-  grid.addNode(0,0,0)
-  assert_equal grid, grid.setMapWithSpacingVectors(node,v1,v2,v3,s1,s2,s3)
-  assert_equal [1, 0, 0, 0.25, 0, 0.0625], grid.map(node)
- end
-
- def testCreateMetricFromOrthVectorsAndSpacingsInv100_16_4
-  sr = Math::sqrt(0.5)
-  v1=[ sr, 0, sr]
-  v2=[-sr, 0, sr]
-  v3=[  0, 1,  0]
-  s1=0.1
-  s2=0.25
-  s3=0.5
-  node = 0
-  grid = Grid.new(1,0,0,0)
-  grid.addNode(0,0,0)
-  assert_equal grid, grid.setMapWithSpacingVectors(node,v1,v2,v3,s1,s2,s3)
-  truth = [58.0, 0.0, 42.0, 4.0, 0.0, 58.0]
-  tol = 1.0e-13
-  assert_in_delta truth[0], grid.map(node)[0], tol
-  assert_in_delta truth[1], grid.map(node)[1], tol
-  assert_in_delta truth[2], grid.map(node)[2], tol
-  assert_in_delta truth[3], grid.map(node)[3], tol
-  assert_in_delta truth[4], grid.map(node)[4], tol
-  assert_in_delta truth[5], grid.map(node)[5], tol
- end
-
  def testFindLargestRatioEdge
   assert_not_nil grid = isoTet.resetSpacing
   grid.scaleSpacing(0,0.50)
@@ -273,17 +237,6 @@ class TestGridMetric < Test::Unit::TestCase
   end
   assert_equal grid, grid.scaleSpacing(0,0.5)
   assert_in_delta grid.averageEdgeLength(0)*0.5, grid.spacing(0), 1.0e-15
- end
-
- def testScaleSpacingFunctionSphere
-  assert_not_nil grid = rightTet
-  spacing = grid.spacing(0)
-  assert_equal grid, grid.scaleSpacingSphere(1.0,0.0,0.0,1.1,0.5)
-  delta = 1.0e-15
-  assert_in_delta spacing*0.5, grid.spacing(0), delta
-  assert_in_delta spacing*0.5, grid.spacing(1), delta
-  assert_in_delta spacing,     grid.spacing(2), delta
-  assert_in_delta spacing,     grid.spacing(3), delta
  end
 
  def testEdgeLengthRatioInMetricForRightTet
