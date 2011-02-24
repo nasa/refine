@@ -3,20 +3,19 @@
 - not completed
 ? may not be needed
 
-
 List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 --Major refactoring
 
 - mixed element
 
-- make the min allowed face area (and volume) a grid struct var.
+- load balancing on the fly
 
 - printf error when face is empty for edge split with !gridContinuousEquator
-- think about geom edge collapse on a beth grid with no geom edges
+- think about geom edge collapse on fauxgeom with no geom edges
   Make a matrix of collapse possilbities for node 0,1 on bound or not
 - Add a new method to return whether a geometry face has an underlying
-  geometric (CAD) definition. (for beth cases)
+  geometric (CAD) definition. (for fauxgeom)
 
 - Are global cell indexes really needed or can they be computed after
   adaptation?
@@ -31,6 +30,8 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
   cost constraint functions.
 
 - Exact Edge smoothing with invalid backoff
+
+- make the min allowed face area (and volume) a grid struct var.
 
 - get edge metric working for node smoothing
 
