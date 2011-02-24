@@ -51,7 +51,6 @@ librefine_a_SOURCES = \
 	gridmpi.h gridmpi.c \
 	gridmove.h gridmove.c \
 	gridfortran.h gridfortran.c \
-	layer.h layer.c \
 	unravel_fortran.h unravel_fortran.c
 
 lib_LIBRARIES += libFAUXGeom.a
@@ -80,6 +79,7 @@ if BUILD_SDK_DEPENDENTS
 lib_LIBRARIES += libMesherX.a
 
 mesherx_sources = \
+	layer.h layer.c \
 	gridfiller.h gridfiller.c \
 	mesherxInit.h mesherxInit.c \
 	mesherxRebuild.h mesherxRebuild.c \
