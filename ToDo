@@ -21,6 +21,9 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
   adaptation?
 
 - Do all operations in quality order via plan
+gridmetric : get rid of
+-gridLargestRatioEdge
+-gridSmallestRatioEdge
 
 - refactor grid move to galerkin?
 - Refactor conn stuff in grid move and grid to unify
@@ -46,10 +49,6 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 clean up parallel adapt!
 
 gridAttach* gridDetach* stuff
-
-gridmetric : get rid of
--gridLargestRatioEdge
--gridSmallestRatioEdge
 
 - unitfy cell face arrays and method
 
