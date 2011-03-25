@@ -46,9 +46,7 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 0, @grid.nquad
   assert_equal 0, @grid.partId
   assert_equal 0, @grid.globalnnode
-  assert_equal 0, @grid.globalncell
   assert_equal 0, @grid.nUnusedNodeGlobal
-  assert_equal 0, @grid.nUnusedCellGlobal
  end
 
  def testSetPartId
@@ -59,11 +57,6 @@ class TestGrid < Test::Unit::TestCase
  def testSetGlobalNNode
   assert_equal @grid, @grid.setGlobalNNode(293)
   assert_equal 293,   @grid.globalnnode
- end
-
- def testSetGlobalNCell
-  assert_equal @grid, @grid.setGlobalNCell(12567)
-  assert_equal 12567, @grid.globalncell
  end
 
  def testAddCellAndCellDegree
@@ -103,150 +96,6 @@ class TestGrid < Test::Unit::TestCase
   assert_equal 5001, grid.maxcell # chunk size hard coded to 5000
  end
  
- def testGetAndSetCellGlobal
-  grid = Grid.new(4,1,0,0)
-  4.times { grid.addNode(1.0,2.0,3.0) }
-  assert_equal EMPTY, grid.cellGlobal(-1)
-  assert_equal EMPTY, grid.cellGlobal(0)
-  assert_equal EMPTY, grid.cellGlobal(1)
-  assert_nil          grid.setCellGlobal(-1,13)
-  assert_nil          grid.setCellGlobal(0,13)
-  assert_nil          grid.setCellGlobal(10,13)
-  assert_equal 0,     grid.addCell(0,1,2,3)
-  assert_equal EMPTY, grid.cellGlobal(0)
-  assert_equal grid,  grid.setCellGlobal(0,15)
-  assert_equal EMPTY, grid.cellGlobal(-1)
-  assert_equal 15,    grid.cellGlobal(0)
-  assert_equal EMPTY, grid.cellGlobal(1)
- end
-
- def testRemoveAndAddTracksGlobalCellId
-  grid = Grid.new(5,2,0,0)
-  5.times { grid.addNode(1.0,2.0,3.0) }
-  grid.addCell(0,1,2,3)
-  grid.setGlobalNCell(3512)
-  grid.setCellGlobal(0,15)
-  grid.removeCell(0)
-  assert_equal [15], grid.getUnusedCellGlobal
-  grid.addCell(0,1,2,3)
-  assert_equal [], grid.getUnusedCellGlobal
-  grid.addCell(0,2,1,4)
-  assert_equal 15,   grid.cellGlobal(0)
-  assert_equal 3512, grid.cellGlobal(1)
-  assert_equal 3513, grid.globalncell
- end
-
- def testJoinUnusedGlobalCellId
-  grid = Grid.new(5,2,0,0)
-  5.times { grid.addNode(1.0,2.0,3.0) }
-  grid.addCell(0,1,2,3)
-  grid.setGlobalNCell(3512)
-  grid.setCellGlobal(0,15)
-  grid.removeCell(0)
-  assert_equal 1, grid.nUnusedCellGlobal
-  assert_equal [15], grid.getUnusedCellGlobal
-  assert_equal grid, grid.joinUnusedCellGlobal(75)
-  assert_equal [15,75], grid.getUnusedCellGlobal
-  assert_equal grid, grid.joinUnusedCellGlobal(5)
-  assert_equal [5,15,75], grid.getUnusedCellGlobal
-  assert_equal grid, grid.joinUnusedCellGlobal(5)
-  assert_equal grid, grid.joinUnusedCellGlobal(15)
-  assert_equal grid, grid.joinUnusedCellGlobal(75)
-  assert_equal [5,15,75], grid.getUnusedCellGlobal
-  grid.addCell(0,1,2,3)
-  assert_equal 5, grid.cellGlobal(0)
-  assert_equal [15,75], grid.getUnusedCellGlobal
- end
-
- def testJoinUnusedGlobalCellIdPreviouslyUsed
-  grid = Grid.new(4,3,0,0)
-  4.times { grid.addNode(1.0,2.0,3.0) }
-  grid.addCell(0,1,2,3)
-  grid.setGlobalNCell(4512)
-  grid.setCellGlobal(0,15)
-  grid.addCell(0,1,2,3)
-  grid.addCell(0,1,2,3)
-  grid.removeCell(1)
-  grid.removeCell(2)
-  assert_equal [4512,4513], grid.getUnusedCellGlobal
-  grid.addCell(0,1,2,3)
-  grid.addCell(0,1,2,3)
-  assert_equal [], grid.getUnusedCellGlobal
-  grid.removeCell(2)
-  assert_equal [4512], grid.getUnusedCellGlobal
-  grid.removeCell(1)
-  assert_equal [4512,4513], grid.getUnusedCellGlobal
- end
-
- def testEliminateUnusedGlobalCellId
-  grid = Grid.new(5,5,0,0)
-  5.times { grid.addNode(1.0,2.0,3.0) }
-  grid.addCell(0,1,2,3)
-  grid.setGlobalNCell(100)
-  grid.setCellGlobal(0,99)
-  4.times { grid.addCell(0,1,2,3) }
-  grid.removeCell(1)
-  grid.removeCell(3)
-  assert_equal [100,102], grid.getUnusedCellGlobal
-  assert_equal 104, grid.globalncell 
-  assert_equal  99, grid.cellGlobal(0)
-  assert_equal 101, grid.cellGlobal(2)
-  assert_equal 103, grid.cellGlobal(4)
-
-  assert_equal grid, grid.eliminateUnusedCellGlobal
-
-  assert_equal [], grid.getUnusedCellGlobal
-  assert_equal 102, grid.globalncell 
-  assert_equal  99, grid.cellGlobal(0)
-  assert_equal 100, grid.cellGlobal(2)
-  assert_equal 101, grid.cellGlobal(4)  
- end
-
- def testEliminateUnusedGlobalCellIdOutOfOrder
-  grid = Grid.new(5,5,0,0)
-  5.times { grid.addNode(1.0,2.0,3.0) }
-  grid.addCell(0,1,2,3)
-  grid.setGlobalNCell(100)
-  grid.setCellGlobal(0,99)
-  4.times { grid.addCell(0,1,2,3) }
-  5.times { |n| grid.setCellGlobal(n,103-n) }
-  grid.removeCell(1)
-  grid.removeCell(3)
-  assert_equal [100,102], grid.getUnusedCellGlobal
-  assert_equal 104, grid.globalncell 
-  assert_equal 103, grid.cellGlobal(0)
-  assert_equal 101, grid.cellGlobal(2)
-  assert_equal  99, grid.cellGlobal(4)
-
-  assert_equal grid, grid.eliminateUnusedCellGlobal
-
-  assert_equal [], grid.getUnusedCellGlobal
-  assert_equal 102, grid.globalncell 
-  assert_equal 101, grid.cellGlobal(0)
-  assert_equal 100, grid.cellGlobal(2)
-  assert_equal  99, grid.cellGlobal(4)  
- end
-
- def testEliminateUnusedGlobalCellIdExtrema
-  grid = Grid.new(4,3,0,0)
-  4.times { grid.addNode(1.0,2.0,3.0) }
-  grid.addCell(0,1,2,3)
-  grid.setGlobalNCell(100)
-  grid.setCellGlobal(0,99)
-  2.times { grid.addCell(0,1,2,3) }
-  grid.removeCell(0)
-  grid.removeCell(2)
-  assert_equal [ 99,101], grid.getUnusedCellGlobal
-  assert_equal 102, grid.globalncell 
-  assert_equal 100, grid.cellGlobal(1)
-
-  assert_equal grid, grid.eliminateUnusedCellGlobal
-
-  assert_equal [], grid.getUnusedCellGlobal
-  assert_equal 100, grid.globalncell 
-  assert_equal  99, grid.cellGlobal(1)
- end
-
  def testInitNodeFrozenState
   @grid.addNode(0,0,0)
   @grid.addNode(1,0,0)

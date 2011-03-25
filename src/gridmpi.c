@@ -7,8 +7,6 @@
  * Phone:(757)864-6604
  * Email:m.a.park@larc.nasa.gov 
  */
-  
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,14 +23,6 @@ Grid *gridIdentityNodeGlobal(Grid *grid, int offset )
   int node;
   for (node = 0; node < gridNNode(grid) ; node++ )
     if (grid != gridSetNodeGlobal(grid,node,node+offset)) return NULL;
-  return grid;
-}
-
-Grid *gridIdentityCellGlobal(Grid *grid, int offset )
-{
-  int cell;
-  for (cell = 0; cell < gridNCell(grid) ; cell++ )
-    if (grid != gridSetCellGlobal(grid,cell,cell+offset)) return NULL;
   return grid;
 }
 
@@ -427,7 +417,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 {
   int transaction;
   int removed, removedcell, removedface, removededge;
-  int i, globalnodes[4], globalCellId, nodeParts[4], localnodes[4];
+  int i, globalnodes[4], nodeParts[4], localnodes[4];
   int cell, face, edge, faceId, edgeId;
   int added, addedcell, addedface, addededge;
   double xyz[1000], uv[6], ts[2];
@@ -458,7 +448,7 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	queueRemovedCellNodes( gq, removedcell, globalnodes );
 	for(i=0;i<4;i++)localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
 	cell = gridFindCell(grid,localnodes);
-	if (grid == gridRemoveCellWithOutGlobal(grid,cell)) 
+	if (grid == gridRemoveCell(grid,cell)) 
 	  queueRemoveCell(lq,localnodes,nodeParts);
       }
       removedcell++;
@@ -494,7 +484,6 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	   gridPartId(grid) == nodeParts[2] ||
 	   gridPartId(grid) == nodeParts[3] ) {
 	queueAddedCellNodes( gq, addedcell, globalnodes );
-	queueAddedCellId( gq, addedcell, &globalCellId );
 	queueAddedCellXYZs( gq, addedcell, xyz );
 	for(i=0;i<4;i++) {
 	  localnodes[i]=gridGlobal2Local(grid,globalnodes[i]);
@@ -515,10 +504,9 @@ Grid *gridApplyQueue(Grid *grid, Queue *gq )
 	    gridSetIMesh(grid, localnodes[i], (int)xyz[gridNAux(grid)+9+dim*i]);
 	  gridSetNodePart(grid, localnodes[i], nodeParts[i]);
 	}
-	cell = gridAddCellWithGlobal(grid,
-				     localnodes[0],localnodes[1],
-				     localnodes[2],localnodes[3],
-				     globalCellId);
+	cell = gridAddCell(grid,
+			   localnodes[0],localnodes[1],
+			   localnodes[2],localnodes[3]);
       }
       addedcell++;
     }

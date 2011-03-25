@@ -15,17 +15,19 @@
 
 BEGIN_C_DECLORATION
 
-void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z,
-		  int *ncell, int *c2n );
+void gridstart_( int *refine_api_version );
+
+void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z );
 void gridfree_( void );
-void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
-			 int *nface, int *dim1, int *dim2, int *f2n );
+
+void gridinsertcell_( int *nodes_per_cell, int *ncell, int *c2n );
+void gridinsertbc_( int *faceId, int *nodes_per_face, int *nface, 
+		    int *f2n );
 void gridsetmap_( int *nnode, double* map );
 void gridsetimesh_( int *nnode, int* imesh );
 void gridsetnodelocal2global_( int *partId, int *nnodeg, 
 			      int *nnode, int *nnode0, int *local2global );
 void gridsetnodepart_( int *nnode, int *part );
-void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global );
 void gridfreezenode_( int *node );
 void gridparallelloadcapri_( char *url, char *modeler, char *capriProject,
                              int *status );
@@ -47,13 +49,13 @@ void gridparallelrelaxsurf_( int *processor );
 void gridparalleladapt_( int *processor, 
 			 double *minLength, double *maxLength );
 void gridparallelpreproject_( int *processor );
+
 void queuedumpsize_( int *nInt, int *nDouble );
 void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles );
 void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles );
 
-void gridsize_( int *nnodeg, int *ncellg );
-void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
-		      int *oldncellg, int *newncellg, int *celloffset );
+void gridglobalnnode_( int *nnodeg );
+void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset );
 void gridrenumberglobalnodes_( int *nnode, int *new2old );
 
 void gridnunusednodeglobal_( int *nunused );
@@ -61,19 +63,15 @@ void gridgetunusednodeglobal_( int *nunused, int *unused );
 void gridjoinunusednodeglobal_( int *nunused, int *unused );
 void gridcopyunusednodeglobal_( int *nunused, int *unused );
 void grideliminateunusednodeglobal_( void );
-void gridnunusedcellglobal_( int *nunused );
-void gridgetunusedcellglobal_( int *nunused, int *unused );
-void gridjoinunusedcellglobal_( int *nunused, int *unused );
-void gridcopyunusedcellglobal_( int *nunused, int *unused );
-void grideliminateunusedcellglobal_( void );
 
-void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
-		    int *ncell, int *ncellg );
+void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg );
+
 void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z);
 void gridgetimesh_( int *nnode, int *imesh);
-void gridgetcell_( int *cell, int *nodes, int *global );
-void gridgetbcsize_( int *ibound, int *nface );
-void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n );
+void gridgetncell_( int *nodes_per_cell, int *ncell );
+void gridgetcell_( int *nodes_per_cell, int *cell, int *nodes );
+void gridgetbcsize_( int *ibound, int *nodes_per_face, int *nface );
+void gridgetbc_( int *ibound, int *nodes_per_face, int *face, int *f2n );
 
 void gridsetnaux_( int *naux );
 void gridsetauxvector_( int *nnode, int *offset, double *x );
@@ -90,8 +88,6 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
 void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
 void gridloadlocalnodes_( int *nnode, int *global, int *local );
 void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data );
-
-void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux );
 
 void gridmovesetprojectiondisp_( void );
 void gridmoverelaxstartup_( int *relaxationScheme );

@@ -299,28 +299,10 @@ VALUE grid_setGlobalNNode( VALUE self, VALUE nglobal )
   return ( grid == gridSetGlobalNNode(grid,NUM2INT(nglobal))?self:Qnil );
 }
 
-VALUE grid_globalncell( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return INT2NUM( gridGlobalNCell(grid) );
-}
-
-VALUE grid_setGlobalNCell( VALUE self, VALUE nglobal )
-{
-  GET_GRID_FROM_SELF;
-  return ( grid == gridSetGlobalNCell(grid,NUM2INT(nglobal))?self:Qnil );
-}
-
 VALUE grid_nUnusedNodeGlobal( VALUE self )
 {
   GET_GRID_FROM_SELF;
   return INT2NUM( gridNUnusedNodeGlobal(grid) );
-}
-
-VALUE grid_nUnusedCellGlobal( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return INT2NUM( gridNUnusedCellGlobal(grid) );
 }
 
 VALUE grid_getUnusedNodeGlobal( VALUE self )
@@ -340,45 +322,16 @@ VALUE grid_getUnusedNodeGlobal( VALUE self )
   }
 }
 
-VALUE grid_getUnusedCellGlobal( VALUE self )
-{
-  int i, n, *unused;
-  VALUE rb_unused;
-  GET_GRID_FROM_SELF;
-  n = gridNUnusedCellGlobal(grid);
-  unused = malloc( n * sizeof(int) );
-  if ( grid != gridGetUnusedCellGlobal(grid,unused) ) {
-    free(unused);
-    return Qnil;
-  } else {
-    rb_unused = rb_ary_new2(n);
-    for (i=0;i<n;i++) rb_ary_store( rb_unused, i, INT2NUM(unused[i]) );
-    return rb_unused;
-  }
-}
-
 VALUE grid_joinUnusedNodeGlobal( VALUE self, VALUE global )
 {
   GET_GRID_FROM_SELF;
   return ( grid == gridJoinUnusedNodeGlobal(grid,NUM2INT(global))?self:Qnil );
 }
 
-VALUE grid_joinUnusedCellGlobal( VALUE self, VALUE global )
-{
-  GET_GRID_FROM_SELF;
-  return ( grid == gridJoinUnusedCellGlobal(grid,NUM2INT(global))?self:Qnil );
-}
-
 VALUE grid_eliminateUnusedNodeGlobal( VALUE self )
 {
   GET_GRID_FROM_SELF;
   return ( grid == gridEliminateUnusedNodeGlobal(grid)?self:Qnil );
-}
-
-VALUE grid_eliminateUnusedCellGlobal( VALUE self )
-{
-  GET_GRID_FROM_SELF;
-  return ( grid == gridEliminateUnusedCellGlobal(grid)?self:Qnil );
 }
 
 VALUE grid_addCell( VALUE self, VALUE n0, VALUE n1, VALUE n2, VALUE n3 )
@@ -418,18 +371,6 @@ VALUE grid_cellDegree( VALUE self, VALUE nodeId )
 {
   GET_GRID_FROM_SELF;
   return INT2NUM( gridCellDegree(grid, NUM2INT(nodeId) ) );
-}
-
-VALUE grid_cellGlobal( VALUE self, VALUE cellId )
-{
-  GET_GRID_FROM_SELF;
-  return INT2NUM( gridCellGlobal(grid, NUM2INT(cellId) ) );
-}
-
-VALUE grid_setCellGlobal( VALUE self, VALUE cellId, VALUE globalId )
-{
-  GET_GRID_FROM_SELF;
-  return (grid==gridSetCellGlobal(grid, NUM2INT(cellId), NUM2INT(globalId))?self:Qnil);
 }
 
 VALUE grid_cellEdge( VALUE self, VALUE node0, VALUE node1 )
@@ -1407,25 +1348,17 @@ void Init_Grid()
   rb_define_method( cGrid, "setPartId", grid_setPartId, 1 );
   rb_define_method( cGrid, "globalnnode", grid_globalnnode, 0 );
   rb_define_method( cGrid, "setGlobalNNode", grid_setGlobalNNode, 1 );
-  rb_define_method( cGrid, "globalncell", grid_globalncell, 0 );
-  rb_define_method( cGrid, "setGlobalNCell", grid_setGlobalNCell, 1 );
 
   rb_define_method( cGrid, "nUnusedNodeGlobal", grid_nUnusedNodeGlobal, 0 );
-  rb_define_method( cGrid, "nUnusedCellGlobal", grid_nUnusedCellGlobal, 0 );
   rb_define_method( cGrid, "getUnusedNodeGlobal", grid_getUnusedNodeGlobal, 0 );
-  rb_define_method( cGrid, "getUnusedCellGlobal", grid_getUnusedCellGlobal, 0 );
   rb_define_method( cGrid, "joinUnusedNodeGlobal", grid_joinUnusedNodeGlobal, 1 );
-  rb_define_method( cGrid, "joinUnusedCellGlobal", grid_joinUnusedCellGlobal, 1 );
   rb_define_method( cGrid, "eliminateUnusedNodeGlobal", grid_eliminateUnusedNodeGlobal, 0 );
-  rb_define_method( cGrid, "eliminateUnusedCellGlobal", grid_eliminateUnusedCellGlobal, 0 );
 
   rb_define_method( cGrid, "addCell", grid_addCell, 4 );
   rb_define_method( cGrid, "removeCell", grid_removeCell, 1 );
   rb_define_method( cGrid, "reconnectAllCell", grid_reconnectAllCell, 2 );
   rb_define_method( cGrid, "cell", grid_cell, 1 );
   rb_define_method( cGrid, "cellDegree", grid_cellDegree, 1 );
-  rb_define_method( cGrid, "cellGlobal", grid_cellGlobal, 1 );
-  rb_define_method( cGrid, "setCellGlobal", grid_setCellGlobal, 2 );
   rb_define_method( cGrid, "cellEdge", grid_cellEdge, 2 );
   rb_define_method( cGrid, "cellFace", grid_cellFace, 3 );
   rb_define_method( cGrid, "findOtherCellWith3Nodes", 

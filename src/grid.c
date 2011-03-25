@@ -66,7 +66,6 @@ Grid *gridImport(int maxnode, int nnode,
   grid->quad=NULL;
   grid->partId=0;
   grid->globalNNode=0;
-  grid->globalNCell=0;
   grid->nGeomNode = 0;
   grid->nGeomEdge = 0;
   grid->nGeomFace = 0;
@@ -140,11 +139,6 @@ Grid *gridImport(int maxnode, int nnode,
     adjRegister(grid->cellAdj,grid->c2n[2+4*i],i);
     adjRegister(grid->cellAdj,grid->c2n[3+4*i],i);
   }
-
-  grid->cellGlobal  = NULL;
-  grid->maxUnusedCellGlobal = 0;
-  grid->nUnusedCellGlobal = 0;
-  grid->unusedCellGlobal  = NULL;
 
   grid->constrain_surface_node = FALSE;
 
@@ -1848,8 +1842,6 @@ void gridFree(Grid *grid)
   free(grid->faceU);
   free(grid->f2n);
   adjFree(grid->cellAdj);
-  if (NULL != grid->unusedCellGlobal) free(grid->unusedCellGlobal);
-  if (NULL != grid->cellGlobal) free(grid->cellGlobal);
   free(grid->c2n);
   if (NULL != grid->unusedNodeGlobal) free(grid->unusedNodeGlobal);
   if (NULL != grid->sortedLocal) free(grid->sortedLocal);
@@ -1944,8 +1936,6 @@ Grid *gridPack(Grid *grid)
       grid->c2n[1+4*packcell] = nodeo2n[grid->c2n[1+4*origcell]];
       grid->c2n[2+4*packcell] = nodeo2n[grid->c2n[2+4*origcell]];
       grid->c2n[3+4*packcell] = nodeo2n[grid->c2n[3+4*origcell]];
-      if (NULL != grid->cellGlobal) 
-	grid->cellGlobal[packcell] = grid->cellGlobal[origcell];
       adjRegister( grid->cellAdj, grid->c2n[0+4*packcell], packcell );
       adjRegister( grid->cellAdj, grid->c2n[1+4*packcell], packcell );
       adjRegister( grid->cellAdj, grid->c2n[2+4*packcell], packcell );
@@ -3085,25 +3075,9 @@ Grid *gridSetGlobalNNode(Grid *grid, int nglobal )
   return grid;
 }
 
-int gridGlobalNCell(Grid *grid)
-{
-  return grid->globalNCell;
-}
-
-Grid *gridSetGlobalNCell(Grid *grid, int nglobal )
-{
-  grid->globalNCell = nglobal;
-  return grid;
-}
-
 int gridNUnusedNodeGlobal(Grid *grid )
 {
   return grid->nUnusedNodeGlobal;
-}
-
-int gridNUnusedCellGlobal(Grid *grid )
-{
-  return grid->nUnusedCellGlobal;
 }
 
 Grid *gridGetUnusedNodeGlobal(Grid *grid, int *unused )
@@ -3111,14 +3085,6 @@ Grid *gridGetUnusedNodeGlobal(Grid *grid, int *unused )
   int i;
   for (i=0;i<grid->nUnusedNodeGlobal;i++) 
     unused[i] = grid->unusedNodeGlobal[i];
-  return grid;
-}
-
-Grid *gridGetUnusedCellGlobal(Grid *grid, int *unused )
-{
-  int i;
-  for (i=0;i<grid->nUnusedCellGlobal;i++) 
-    unused[i] = grid->unusedCellGlobal[i];
   return grid;
 }
 
@@ -3156,44 +3122,6 @@ Grid *gridJoinUnusedNodeGlobal(Grid *grid, int global )
 
   grid->unusedNodeGlobal[insertpoint] = global;
   grid->nUnusedNodeGlobal++;
-  
-  return grid;
-}
-
-Grid *gridJoinUnusedCellGlobal(Grid *grid, int global )
-{
-  int insertpoint, index;
-
-  if (EMPTY == global) return grid;
-
-  if (NULL == grid->unusedCellGlobal) {
-    grid->maxUnusedCellGlobal = 500;
-    grid->unusedCellGlobal =
-                         (int *)malloc(grid->maxUnusedCellGlobal * sizeof(int));
-  }
-  if ((grid->nUnusedCellGlobal+1) >= grid->maxUnusedCellGlobal) {
-    grid->maxUnusedCellGlobal += 500;
-    grid->unusedCellGlobal =
-                         (int *)realloc( grid->unusedCellGlobal, 
-				      grid->maxUnusedCellGlobal*sizeof(int));
-  }
-  
-  insertpoint = 0;
-  if (grid->nUnusedCellGlobal > 0) {
-    for (index=grid->nUnusedCellGlobal-1; index>=0; index--) {
-      if (grid->unusedCellGlobal[index] < global) {
-	insertpoint = index+1;
-	break;
-      }
-    }
-    if ( grid->nUnusedCellGlobal != insertpoint &&
-	 grid->unusedCellGlobal[insertpoint] == global) return grid;
-    for(index=grid->nUnusedCellGlobal;index>insertpoint;index--)
-      grid->unusedCellGlobal[index] = grid->unusedCellGlobal[index-1];
-  }
-
-  grid->unusedCellGlobal[insertpoint] = global;
-  grid->nUnusedCellGlobal++;
   
   return grid;
 }
@@ -3244,52 +3172,6 @@ Grid *gridEliminateUnusedNodeGlobal(Grid *grid )
   return grid;
 }
 
-Grid *gridEliminateUnusedCellGlobal(Grid *grid )
-{
-  int ncell, cell;
-  int *pack;
-  int *sortedGlobal, *sortedLocal;
-  int sort, offset;
-
-  if ( 0 == gridNUnusedCellGlobal(grid) ) return grid;
-
-  pack         = (int *)malloc(grid->maxcell * sizeof(int));
-  sortedGlobal = (int *)malloc(grid->maxcell * sizeof(int));
-  sortedLocal  = (int *)malloc(grid->maxcell * sizeof(int));
-  
-  ncell = 0;
-  for (cell=0;cell<grid->maxcell;cell++)
-    if (gridCellValid(grid,cell)) {
-      sortedGlobal[ncell] = grid->cellGlobal[cell];
-      pack[ncell] = cell;
-      ncell++;
-    }
-
-  if (ncell != grid->ncell)
-    printf("%s: %d: gridEliminateUnusedCellGlobal: ncell error %d %d.",
-	   __FILE__,__LINE__,ncell,grid->ncell);
-
-  sortHeap(ncell,sortedGlobal,sortedLocal);
-
-  offset = 0;
-  for (sort=0;sort<ncell;sort++) {
-    cell = pack[sortedLocal[sort]];
-    while ( (offset < grid->nUnusedCellGlobal ) &&
-	    (grid->unusedCellGlobal[offset] < grid->cellGlobal[cell] ) ) {
-      offset++;
-    }
-    grid->cellGlobal[cell] -= offset;
-  }
-  grid->globalNCell -= grid->nUnusedCellGlobal;
-  grid->nUnusedCellGlobal = 0;
-
-  free(pack);
-  free(sortedGlobal);
-  free(sortedLocal);
-
-  return grid;
-}
-
 int gridNGem(Grid *grid)
 {
   return grid->ngem;
@@ -3319,69 +3201,9 @@ int gridCellDegree(Grid *grid, int id)
   return adjDegree(grid->cellAdj, id);
 }
 
-int gridCellGlobal(Grid *grid, int cell )
-{
-  if ( !gridCellValid(grid, cell) ) return EMPTY;
-  if (NULL == grid->cellGlobal) return EMPTY;
-  return grid->cellGlobal[cell];
-}
-
-Grid *gridSetCellGlobal(Grid *grid, int cell, int global )
-{
-  if ( !gridCellValid(grid, cell) ) return NULL;
-  if (NULL == grid->cellGlobal) 
-    grid->cellGlobal = (int *)malloc(grid->maxcell*sizeof(int));
-  grid->cellGlobal[cell] = global;
-  return grid;
-}
-
-Grid *gridGlobalShiftCell(Grid *grid, int oldncellg, int newncellg, 
-			  int celloffset )
-{
-  int cell;
-  gridSetGlobalNCell(grid,newncellg);
-  if (NULL == grid->cellGlobal) return NULL;  
-  for (cell=0;cell<grid->maxcell;cell++)
-    if ( gridCellValid(grid,cell) && (grid->cellGlobal[cell] >= oldncellg) ) 
-      grid->cellGlobal[cell] += celloffset;
-  for (cell=0;cell<grid->nUnusedCellGlobal;cell++)
-    if ( grid->unusedCellGlobal[cell] >= oldncellg )  
-      grid->unusedCellGlobal[cell] += celloffset;
-  return grid;
-}
-
-int gridGetNextCellGlobal(Grid *grid)
-{
-  int global, i;
-
-  if (NULL == grid->cellGlobal) {
-    global = EMPTY;
-  } else {
-    if (grid->nUnusedCellGlobal > 0) {
-      global = grid->unusedCellGlobal[0];
-      for (i=1;i<grid->nUnusedCellGlobal;i++)
-	grid->unusedCellGlobal[i-1]=grid->unusedCellGlobal[i];
-      grid->nUnusedCellGlobal--;
-    }else{
-      global = grid->globalNCell;
-      grid->globalNCell++;
-    }
-  }
-
-  return global;
-}
-
-int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
-{
-  int global;
-  global = gridGetNextCellGlobal(grid);
-  return gridAddCellWithGlobal(grid,n0,n1,n2,n3,global);
-}
-
 int gridAddCellAndQueue(Grid *grid, Queue *queue, 
 			int n0, int n1, int n2, int n3)
 {
-  int global;
   int inode;
   int nodes[4], globalnodes[4], nodeParts[4];
   double xyz[1000];
@@ -3392,8 +3214,6 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
   dim = 3 + 6 + gridNAux(grid) + imesh_index;
   if (dim>250) printf( "ERROR: %s: %d: undersized static xyz.\n", 
 		       __FILE__, __LINE__);
-
-  global = gridGetNextCellGlobal(grid);
 
   nodes[0] = n0; nodes[1] = n1; nodes[2] = n2; nodes[3] = n3;
 
@@ -3408,17 +3228,16 @@ int gridAddCellAndQueue(Grid *grid, Queue *queue,
       if ( gridHaveIMesh(grid) )
 	xyz[gridNAux(grid)+9+dim*inode] = (double)gridIMesh(grid,nodes[inode]);
     }
-    queueAddCell(queue,globalnodes,global,nodeParts,xyz);
+    queueAddCell(queue,globalnodes,nodeParts,xyz);
   }
   
   if ( gridCellHasLocalNode(grid,nodes) )
-    return gridAddCellWithGlobal(grid, n0, n1, n2, n3, global);
+    return gridAddCell(grid, n0, n1, n2, n3);
 
   return EMPTY;
 }
 
-int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3, 
-			  int global )
+int gridAddCell(Grid *grid, int n0, int n1, int n2, int n3)
 {
   int cell, origSize, chunkSize;
   int cellId;
@@ -3433,9 +3252,6 @@ int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3,
     }
     grid->c2n[1+4*(grid->maxcell-1)] = EMPTY; 
     grid->blankc2n = origSize;
-    if (NULL != grid->cellGlobal) 
-      grid->cellGlobal =
-                   (int *)realloc(grid->cellGlobal,grid->maxcell * sizeof(int));
     if (NULL != grid->reallocFunc)
       (*grid->reallocFunc)( grid->reallocData, gridREALLOC_CELL, 
 			    origSize, grid->maxcell);
@@ -3453,22 +3269,8 @@ int gridAddCellWithGlobal(Grid *grid, int n0, int n1, int n2, int n3,
   if ( NULL == adjRegister( grid->cellAdj, n1, cellId ) ) return EMPTY;
   if ( NULL == adjRegister( grid->cellAdj, n2, cellId ) ) return EMPTY;
   if ( NULL == adjRegister( grid->cellAdj, n3, cellId ) ) return EMPTY;
-  
-  if (NULL != grid->cellGlobal) grid->cellGlobal[cellId] = global;
 
   return cellId;
-}
-
-Grid *gridRemoveCell(Grid *grid, int cellId )
-{
-  Grid *result;
-
-  result = gridRemoveCellWithOutGlobal(grid, cellId );
-
-  if (grid == result && NULL != grid->cellGlobal) 
-    gridJoinUnusedCellGlobal(grid,grid->cellGlobal[cellId]);
-
-  return result;
 }
 
 Grid *gridRemoveCellAndQueue(Grid *grid, Queue *queue, int cellId )
@@ -3489,7 +3291,7 @@ Grid *gridRemoveCellAndQueue(Grid *grid, Queue *queue, int cellId )
   return gridRemoveCell( grid, cellId );
 }
 
-Grid *gridRemoveCellWithOutGlobal(Grid *grid, int cellId )
+Grid *gridRemoveCell(Grid *grid, int cellId )
 {
   if ( !gridCellValid(grid, cellId) ) return NULL;
   
@@ -6282,7 +6084,7 @@ int gridMirrorNodeAboutY0(Grid *grid, int node, int origGlobal, int mirrorAux )
 
 Grid *gridCopyAboutY0(Grid *grid, int symmetryFaceId, int mirrorAux )
 {
-  int node, orignode, origNodeGlobal, origface, origcell, origCellGlobal;
+  int node, orignode, origNodeGlobal, origface, origcell;
   int *o2n;
   int nodes[4];
   int face, i, faceid;
@@ -6332,25 +6134,14 @@ Grid *gridCopyAboutY0(Grid *grid, int symmetryFaceId, int mirrorAux )
   printf("gridCopyAboutY0: copy cells, swap node 0 and 1\n");
 
   origcell = gridNCell(grid);
-  origCellGlobal = gridGlobalNCell(grid);
   for ( cell = 0 ; cell < origcell ; cell++ ){
     gridCell(grid,cell,nodes);
-    if ( origCellGlobal > 0 ) {
-      gridAddCellWithGlobal(grid,
-			    o2n[nodes[1]],
-			    o2n[nodes[0]],
-			    o2n[nodes[2]],
-			    o2n[nodes[3]],
-			    origCellGlobal+gridCellGlobal(grid,cell));
-    } else {
-      gridAddCell(grid,
-		  o2n[nodes[1]],
-		  o2n[nodes[0]],
-		  o2n[nodes[2]],
-		  o2n[nodes[3]]);
-    }
+    gridAddCell(grid,
+		o2n[nodes[1]],
+		o2n[nodes[0]],
+		o2n[nodes[2]],
+		o2n[nodes[3]]);
   }
-  if ( origCellGlobal > 0 ) gridSetGlobalNCell(grid,2*origCellGlobal);
   printf("gridCopyAboutY0: remove sym face\n");
 
   gridThawAll(grid);

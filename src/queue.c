@@ -26,7 +26,7 @@ Queue* queueCreate( int nodeSize )
   queue->maxRemovedCells = 100;
   queue->removedCellNodes = malloc( 8 * queue->maxRemovedCells * sizeof(int) );
   queue->maxAddedCells = 100;
-  queue->addedCellNodes = malloc( 9 * queue->maxAddedCells * sizeof(int) );
+  queue->addedCellNodes = malloc( 8 * queue->maxAddedCells * sizeof(int) );
   queue->addedCellXYZs = malloc( 4*queue->nodeSize * queue->maxAddedCells 
 				 * sizeof(double) );
 
@@ -203,7 +203,7 @@ Queue *queueRemovedCellNodeParts( Queue *queue, int index, int *nodeParts )
   return queue;
 }
 
-Queue *queueAddCell( Queue *queue, int *nodes, int cellId, int *nodeParts,
+Queue *queueAddCell( Queue *queue, int *nodes, int *nodeParts,
 		     double *xyzs )
 {
   int i;
@@ -212,15 +212,14 @@ Queue *queueAddCell( Queue *queue, int *nodes, int cellId, int *nodeParts,
   if (queue->nAddedCells>=queue->maxAddedCells) {
     queue->maxAddedCells += 100;
     queue->addedCellNodes = realloc( queue->addedCellNodes, 
-				     9 * queue->maxAddedCells * sizeof(int) );
+				     8 * queue->maxAddedCells * sizeof(int) );
     queue->addedCellXYZs  = realloc( queue->addedCellXYZs, 
 				     4*queue->nodeSize * queue->maxAddedCells 
 				     * sizeof(double));
   }
-  for (i=0;i<4 ;i++) queue->addedCellNodes[i+9*queue->nAddedCells] = nodes[i];
-  queue->addedCellNodes[4+9*queue->nAddedCells] = cellId;
+  for (i=0;i<4 ;i++) queue->addedCellNodes[i+8*queue->nAddedCells] = nodes[i];
   for (i=0;i<4 ;i++) 
-    queue->addedCellNodes[5+i+9*queue->nAddedCells] = nodeParts[i];
+    queue->addedCellNodes[4+i+8*queue->nAddedCells] = nodeParts[i];
   for (i=0;i<4*queue->nodeSize;i++) 
     queue->addedCellXYZs[i+4*queue->nodeSize*queue->nAddedCells] = xyzs[i];
   queue->nAddedCells++;
@@ -239,15 +238,7 @@ Queue *queueAddedCellNodes( Queue *queue, int index, int *nodes )
   int i;
   if (NULL==queue) return NULL;
   if ( index<0 || index>queue->nAddedCells ) return NULL;
-  for (i=0;i<4;i++) nodes[i] = queue->addedCellNodes[i+9*index];
-  return queue;
-}
-
-Queue *queueAddedCellId( Queue *queue, int index, int *cellId )
-{
-  if (NULL==queue) return NULL;
-  if ( index<0 || index>queue->nAddedCells ) return NULL;
-  *cellId = queue->addedCellNodes[4+9*index];
+  for (i=0;i<4;i++) nodes[i] = queue->addedCellNodes[i+8*index];
   return queue;
 }
 
@@ -256,7 +247,7 @@ Queue *queueAddedCellNodeParts( Queue *queue, int index, int *nodeParts )
   int i;
   if (NULL==queue) return NULL;
   if ( index<0 || index>queue->nAddedCells ) return NULL;
-  for (i=0;i<4;i++) nodeParts[i] = queue->addedCellNodes[5+i+9*index];
+  for (i=0;i<4;i++) nodeParts[i] = queue->addedCellNodes[4+i+8*index];
   return queue;
 }
 
@@ -524,7 +515,7 @@ Queue *queueDumpSize( Queue *queue, int *nInt, int *nDouble )
     = 8
     + 6 * queue->transactions
     + 8 * queue->nRemovedCells
-    + 9 * queue->nAddedCells
+    + 8 * queue->nAddedCells
     + 6 * queue->nRemovedFaces
     + 7 * queue->nAddedFaces
     + 4 * queue->nRemovedEdges
@@ -565,7 +556,7 @@ Queue *queueDump( Queue *queue, int *ints, double *doubles )
     ints[i] = queue->addedCells[transaction]; i++;
   }
   for(added=0;added<queue->nAddedCells;added++){
-    size = 9;
+    size = 8;
     for (node=0;node<size;node++) { 
       ints[i] = queue->addedCellNodes[node+size*added]; i++;
     }
@@ -671,7 +662,7 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
   if (queue->nAddedCells > queue->maxAddedCells) {
     queue->maxAddedCells = queue->nAddedCells;
     queue->addedCellNodes = realloc( queue->addedCellNodes, 
-				     9 * queue->maxAddedCells * sizeof(int) );
+				     8 * queue->maxAddedCells * sizeof(int) );
     queue->addedCellXYZs  = realloc( queue->addedCellXYZs, 
 				     4*queue->nodeSize * queue->maxAddedCells
 				     * sizeof(double));
@@ -716,7 +707,7 @@ Queue *queueLoad( Queue *queue, int *ints, double *doubles )
     queue->addedCells[transaction] = ints[i]; i++;
   }
   for(added=0;added<queue->nAddedCells;added++){
-    size = 9;
+    size = 8;
     for (node=0;node<size;node++) { 
       queue->addedCellNodes[node+size*added] = ints[i]; i++;
     }
@@ -785,8 +776,8 @@ Queue *queueGlobalShiftNode(Queue *queue,
 
   for ( index = 0 ; index < queue->nAddedCells ; index++ )
     for ( i = 0; i < 4 ; i++ ) 
-      if ( queue->addedCellNodes[i+9*index] >= old_nnode_global )
-	queue->addedCellNodes[i+9*index] += node_offset;
+      if ( queue->addedCellNodes[i+8*index] >= old_nnode_global )
+	queue->addedCellNodes[i+8*index] += node_offset;
 
   for ( index = 0 ; index < queue->nRemovedCells ; index++ )
     for ( i = 0; i < 4 ; i++ ) 
@@ -816,23 +807,10 @@ Queue *queueGlobalShiftNode(Queue *queue,
   return queue;
 }
 
-Queue *queueGlobalShiftCell(Queue *queue,
-			    int old_ncell_global,
-			    int cell_offset )
-{
-  int index;
-
-  for ( index = 0 ; index < queue->nAddedCells ; index++ )
-    if ( queue->addedCellNodes[4+9*index] >= old_ncell_global )
-      queue->addedCellNodes[4+9*index] += cell_offset;
-
-  return queue;
-}
-
 Queue *queueContents(Queue *queue, FILE *f)
 {
   int transaction, removed, removedcell;
-  int globalnodes[9];
+  int globalnodes[8];
 
   if (NULL==queue) return NULL;
 

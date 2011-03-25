@@ -68,11 +68,10 @@ Queue *queueRemoveCell( Queue *, int *nodes, int *nodeParts );
 int queueRemovedCells( Queue *, int transaction );
 Queue *queueRemovedCellNodes( Queue *, int index, int *nodes );
 Queue *queueRemovedCellNodeParts( Queue *, int index, int *nodeParts );
-Queue *queueAddCell( Queue *, int *nodes, int cellId, int *nodeParts,
+Queue *queueAddCell( Queue *, int *nodes, int *nodeParts,
 		     double *xyzs );
 int queueAddedCells( Queue *, int transaction );
 Queue *queueAddedCellNodes( Queue *, int index, int *nodes );
-Queue *queueAddedCellId( Queue *, int index, int *cellId );
 Queue *queueAddedCellNodeParts( Queue *, int index, int *nodeParts );
 Queue *queueAddedCellXYZs( Queue *, int index, double *xyzs );
 int queueTotalRemovedCells( Queue * );
@@ -112,9 +111,6 @@ Queue *queueLoad( Queue *, int *ints, double *doubles );
 Queue *queueGlobalShiftNode( Queue *, 
 			     int old_nnode_global,
 			     int node_offset );
-Queue *queueGlobalShiftCell( Queue *,
-			     int old_ncell_global,
-			     int cell_offset );
 
 Queue *queueContents(Queue *queue, FILE *file);
 

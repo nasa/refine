@@ -5,8 +5,6 @@
  * Phone:(757)864-6604
  * Email:m.a.park@larc.nasa.gov 
  */
-  
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,10 +32,14 @@ static GridMove *gm = NULL;
 static Queue *queue = NULL;
 static Plan *plan = NULL;
 
-void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
-		  int *ncell, int *c2n )
+void gridstart_( int *refine_api_version )
 {
-  int node, cell;
+  *refine_api_version = 1;
+}
+
+void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z )
+{
+  int node;
 
 #ifdef TRAPFPE
   /* Enable some exceptions.  At startup all exceptions are masked.  */
@@ -48,16 +50,11 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z ,
   fprintf(stderr,"gridcreate_: Present  Exceptions %x\n\n",fetestexcept(FE_ALL_EXCEPT));
 #endif
 
-  grid = gridCreate( *nnode, *ncell, 5000, 0);
+  grid = gridCreate( *nnode, 50000, 5000, 0);
   gridSetPartId(grid, *partId );
   gridSetCostConstraint(grid, gridCOST_CNST_VOLUME);
   queue = queueCreate( 9 ); /* 3:xyz + 6:m */
   for ( node=0; node<*nnode; node++) gridAddNode(grid,x[node],y[node],z[node]);
-  for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
-						  c2n[0+4*cell] - 1,
-						  c2n[1+4*cell] - 1,
-						  c2n[2+4*cell] - 1,
-						  c2n[3+4*cell] - 1 );
 #ifdef PARALLEL_VERBOSE 
   printf(" %6d populated                nnode%9d ncell%9d AR%14.10f\n",
 	 gridPartId(grid),gridNNode(grid),gridNCell(grid),gridMinAR(grid));
@@ -71,24 +68,26 @@ void gridfree_( void )
   gridFree(grid); grid = NULL;
 }
 
-void gridinsertboundary_( int *faceId, int *nnode, int *nodedim, int *inode, 
-			  int *nface, int *dim1, int *dim2, int *f2n )
+void gridcell_( int *nodes_per_cell, int *ncell, int *c2n )
+{
+  int cell;
+  SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_cell);
+  for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
+						  c2n[0+4*cell] - 1,
+						  c2n[1+4*cell] - 1,
+						  c2n[2+4*cell] - 1,
+						  c2n[3+4*cell] - 1 );
+}
+
+void gridinsertboundary_(int *faceId, int *nodes_per_face, int *nface, int *f2n)
 {
   int face;
   int node0, node1, node2;
 
-  /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
-  SUPRESS_UNUSED_COMPILER_WARNING(nodedim);
-  SUPRESS_UNUSED_COMPILER_WARNING(dim2);
-
   for(face=0;face<*nface;face++){
-    node0 = f2n[face+0*(*dim1)] - 1;
-    node1 = f2n[face+1*(*dim1)] - 1;
-    node2 = f2n[face+2*(*dim1)] - 1;
-    node0 = inode[node0] - 1;
-    node1 = inode[node1] - 1;
-    node2 = inode[node2] - 1;
+    node0 = f2n[0+(*nodes_per_face)*face] - 1;
+    node1 = f2n[1+(*nodes_per_face)*face] - 1;
+    node2 = f2n[2+(*nodes_per_face)*face] - 1;
     if ( gridNodeGhost(grid,node0) && 
 	 gridNodeGhost(grid,node1) && 
 	 gridNodeGhost(grid,node2) ) {
@@ -141,15 +140,6 @@ void gridsetnodelocal2global_( int *partId, int *nnodeg,
     }else{
       gridSetNodePart(grid, node, EMPTY );
     }
-  }
-}
-
-void gridsetcelllocal2global_( int *ncellg, int *ncell, int *local2global )
-{
-  int cell;
-  gridSetGlobalNCell(grid, *ncellg);
-  for ( cell=0; cell<*ncell; cell++){ 
-    gridSetCellGlobal(grid, cell, local2global[cell]-1);
   }
 }
 
@@ -460,19 +450,15 @@ void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
   queueFree(appliedQueue);
 }
 
-void gridsize_( int *nnodeg, int *ncellg )
+void gridglobalnnode_( int *nnodeg )
 {
   *nnodeg = gridGlobalNNode(grid);
-  *ncellg = gridGlobalNCell(grid);
 }
 
-void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset,
-		       int *oldncellg, int *newncellg, int *celloffset )
+void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset )
 {
   gridGlobalShiftNode( grid, *oldnnodeg, *newnnodeg, *nodeoffset);
-  gridGlobalShiftCell( grid, *oldncellg, *newncellg, *celloffset);
   queueGlobalShiftNode( queue, *oldnnodeg, *nodeoffset);
-  queueGlobalShiftCell( queue, *oldncellg, *celloffset);
 }
 
 void gridrenumberglobalnodes_( int *nnode, int *new2old )
@@ -522,53 +508,11 @@ void grideliminateunusednodeglobal_(  )
   gridEliminateUnusedNodeGlobal( grid );
 }
 
-void gridnunusedcellglobal_( int *nunused )
-{
-  *nunused = gridNUnusedCellGlobal( grid );
-}
-
-void gridgetunusedcellglobal_( int *nunused, int *unused )
-{
-  /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(nunused);
-
-  gridGetUnusedCellGlobal( grid, unused );
-}
-
-void gridjoinunusedcellglobal_( int *nunused, int *unused )
-{
-  int i;
-  for (i=0;i<(*nunused);i++) gridJoinUnusedCellGlobal( grid, unused[i] );
-}
-
-void gridcopyunusedcellglobal_( int *nunused, int *unused )
-{
-  int i;
-
-  if (NULL != grid->unusedCellGlobal)
-    free(grid->unusedCellGlobal);
-
-  grid->nUnusedCellGlobal = grid->maxUnusedCellGlobal = *nunused;
-  grid->unusedCellGlobal =
-    (int *)malloc(grid->maxUnusedCellGlobal * sizeof(int));
-
-  for (i=0;i<(*nunused);i++)
-    grid->unusedCellGlobal[i] = unused[i];
-}
-
-void grideliminateunusedcellglobal_(  )
-{
-  gridEliminateUnusedCellGlobal( grid );
-}
-
-void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg, 
-		    int *ncell, int *ncellg )
+void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg )
 {
   gridSortNodeFUN3D( grid, nnodes0 );
   *nnodes01 = gridNNode(grid);
   *nnodesg = gridGlobalNNode(grid);
-  *ncell = gridNCell(grid);
-  *ncellg = gridGlobalNCell(grid);
 }
 
 void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
@@ -600,20 +544,26 @@ void gridgetimesh_( int *nnode, int *imesh)
   }
 }
 
-void gridgetcell_( int *cell, int *nodes, int *global )
+void gridgetcell_( int *nodes_per_cell, int *cell, int *nodes )
 {
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_cell);
+
   gridCell(grid,(*cell)-1,nodes);
   nodes[0]++;
   nodes[1]++;
   nodes[2]++;
   nodes[3]++;
-  *global = gridCellGlobal(grid,(*cell)-1)+1;
 }
 
-void gridgetbcsize_( int *ibound, int *nface )
+void gridgetbcsize_( int *ibound, int *nodes_per_face, int *nface )
 {
   int face, nodes[3], id;
   
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_face);
+
   *nface = 0;
   for (face=0;face<gridMaxFace(grid);face++) {
     if ( grid == gridFace(grid,face,nodes,&id) ) {
@@ -622,20 +572,20 @@ void gridgetbcsize_( int *ibound, int *nface )
   }
 }
 
-void gridgetbc_( int *ibound, int *nface, int *ndim, int *f2n )
+void gridgetbc_( int *ibound, int *nodes_per_face, int *nface, int *f2n )
 {
   int face, n, nodes[3], id;
   
   /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(ndim);
+  SUPRESS_UNUSED_COMPILER_WARNING(nface);
 
   n = 0;
   for (face=0;face<gridMaxFace(grid);face++) {
     if ( grid == gridFace(grid,face,nodes,&id) ) {
       if ( *ibound == id ) {
-	f2n[n+(*nface)*0] = nodes[0]+1;
-	f2n[n+(*nface)*1] = nodes[1]+1;
-	f2n[n+(*nface)*2] = nodes[2]+1;
+	f2n[0+(*nodes_per_face)*n] = nodes[0]+1;
+	f2n[1+(*nodes_per_face)*n] = nodes[1]+1;
+	f2n[2+(*nodes_per_face)*n] = nodes[2]+1;
 	n++;
       }
     }
@@ -879,10 +829,6 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   fflush(stdout);
 #endif
 }
-void gridcopyabouty0_( int *symmetryFaceId, int *mirrorAux )
-{
-  gridCopyAboutY0(grid, *symmetryFaceId, *mirrorAux-1 );
-}
 
 void gridmovesetprojectiondisp_( void )
 {
@@ -1010,7 +956,7 @@ void gridmaxface_( int *maxface )
   *maxface = gridMaxFace( grid );
 }
 
-void gridface_( int *face, int *faceId,
+void gridface_( int *face, int *faceId, 
 		int *globalnodes, int *nodeparts,
 		double *uv, double *xyz)
 {

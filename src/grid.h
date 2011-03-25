@@ -67,8 +67,6 @@ struct Grid {
   int blankc2n;
   int *c2n;
   Adj *cellAdj;
-  int *cellGlobal;
-  int maxUnusedCellGlobal, nUnusedCellGlobal, *unusedCellGlobal;
 
   GridBool constrain_surface_node;
 
@@ -98,7 +96,6 @@ struct Grid {
 
   int partId;
   int globalNNode;
-  int globalNCell;
 
   int nGeomNode;
   int nGeomEdge;
@@ -270,21 +267,11 @@ int gridPartId(Grid *g);
 Grid *gridSetPartId(Grid *g, int partId );
 int gridGlobalNNode(Grid *g);
 Grid *gridSetGlobalNNode(Grid *g, int nglobal );
-int gridGlobalNCell(Grid *g);
-Grid *gridSetGlobalNCell(Grid *g, int nglobal );
 int gridNUnusedNodeGlobal(Grid *g );
-int gridNUnusedCellGlobal(Grid *g );
 Grid *gridGetUnusedNodeGlobal(Grid *g, int *unused );
-Grid *gridGetUnusedCellGlobal(Grid *g, int *unused );
 Grid *gridJoinUnusedNodeGlobal(Grid *g, int global );
-Grid *gridJoinUnusedCellGlobal(Grid *g, int global );
 Grid *gridEliminateUnusedNodeGlobal(Grid *g );
-Grid *gridEliminateUnusedCellGlobal(Grid *g );
 int gridCellDegree(Grid *g, int nodeIndex);
-int gridCellGlobal(Grid *g, int cellIndex);
-Grid *gridSetCellGlobal(Grid *g, int cellIndex, int globalIndex );
-Grid *gridGlobalShiftCell(Grid *g, int oldncellg, int newncellg, 
-			  int celloffset );
 #define gridCellHasLocalNode(grid,nodes) ( \
 gridNodeLocal((grid),(nodes)[0]) || \
 gridNodeLocal((grid),(nodes)[1]) || \
@@ -312,10 +299,8 @@ gridNodeGhost((grid),n1) )
 
 int gridAddCell(Grid *g, int n0, int n1, int n2, int n3 );
 int gridAddCellAndQueue(Grid *g, Queue *, int n0, int n1, int n2, int n3 );
-int gridAddCellWithGlobal(Grid *g, int n0, int n1, int n2, int n3, int global );
 Grid *gridRemoveCell(Grid *g, int cellId );
 Grid *gridRemoveCellAndQueue(Grid *g, Queue *, int cellId );
-Grid *gridRemoveCellWithOutGlobal(Grid *g, int cellId );
 #define gridCellAdj(grid) (NULL==(grid)?NULL:(grid)->cellAdj)
 Grid *gridReconnectAllCell(Grid *g, int oldNode, int newNode );
 Grid *gridCell(Grid *g, int cellId, int *nodes );

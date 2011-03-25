@@ -19,7 +19,6 @@
 BEGIN_C_DECLORATION
 
 Grid *gridIdentityNodeGlobal(Grid *g, int offset );
-Grid *gridIdentityCellGlobal(Grid *g, int offset );
 Grid *gridSetAllLocal(Grid *g );
 Grid *gridSetGhost(Grid *g, int node );
 

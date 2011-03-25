@@ -88,10 +88,10 @@ VALUE queue_removedCellNodeParts( VALUE self, VALUE index )
   return rb_nodeParts;
 }
 
-VALUE queue_addCell( VALUE self, VALUE rb_nodes, VALUE rb_cellId, 
+VALUE queue_addCell( VALUE self, VALUE rb_nodes, 
 		     VALUE rb_nodeParts, VALUE rb_xyzs )
 {
-  int i, nodes[4], cellId, nodeParts[4];
+  int i, nodes[4], nodeParts[4];
   double *xyzs;
   VALUE result;
   GET_QUEUE_FROM_SELF;
@@ -99,11 +99,10 @@ VALUE queue_addCell( VALUE self, VALUE rb_nodes, VALUE rb_cellId,
     nodes[i]=NUM2INT(rb_ary_entry(rb_nodes,i));
     nodeParts[i]=NUM2INT(rb_ary_entry(rb_nodeParts,i));
   }
-  cellId = NUM2INT(rb_cellId);
   xyzs = malloc(4*queueNodeSize(queue)*sizeof(double));
   for (i=0;i<4*queueNodeSize(queue);i++) 
     xyzs[i] = NUM2DBL(rb_ary_entry(rb_xyzs,i));
-  result = (queue==queueAddCell(queue,nodes,cellId,nodeParts,xyzs)?self:Qnil);
+  result = (queue==queueAddCell(queue,nodes,nodeParts,xyzs)?self:Qnil);
   free(xyzs);
   return result;
 }
@@ -123,14 +122,6 @@ VALUE queue_addedCellNodes( VALUE self, VALUE index )
   rb_nodes = rb_ary_new2(4);
   for (i=0;i<4;i++) rb_ary_store(rb_nodes,i,INT2NUM(nodes[i]));
   return rb_nodes;
-}
-
-VALUE queue_addedCellId( VALUE self, VALUE index )
-{
-  int cellId;
-  GET_QUEUE_FROM_SELF;
-  if (queue != queueAddedCellId(queue,NUM2INT(index),&cellId)) return Qnil;
-  return INT2NUM(cellId);
 }
 
 VALUE queue_addedCellNodeParts( VALUE self, VALUE index )
@@ -486,16 +477,6 @@ VALUE queue_globalShiftNode( VALUE self,
 				      NUM2INT(node_offset))?self:Qnil);
 }
 
-VALUE queue_globalShiftCell( VALUE self,
-			     VALUE old_ncell_global,
-			     VALUE cell_offset )
-{
-  GET_QUEUE_FROM_SELF;
-  return (queue==queueGlobalShiftCell(queue,
-				      NUM2INT(old_ncell_global),
-				      NUM2INT(cell_offset))?self:Qnil);
-}
-
 VALUE cQueue;
 
 void Init_Queue() 
@@ -512,10 +493,9 @@ void Init_Queue()
   rb_define_method( cQueue, "removedCells", queue_removedCells, 1 );
   rb_define_method( cQueue, "removedCellNodes", queue_removedCellNodes, 1 );
   rb_define_method( cQueue, "removedCellNodeParts", queue_removedCellNodeParts, 1 );
-  rb_define_method( cQueue, "addCell", queue_addCell, 4 );
+  rb_define_method( cQueue, "addCell", queue_addCell, 3 );
   rb_define_method( cQueue, "addedCells", queue_addedCells, 1 );
   rb_define_method( cQueue, "addedCellNodes", queue_addedCellNodes, 1 );
-  rb_define_method( cQueue, "addedCellId", queue_addedCellId, 1 );
   rb_define_method( cQueue, "addedCellNodeParts", queue_addedCellNodeParts, 1 );
   rb_define_method( cQueue, "addedCellXYZs", queue_addedCellXYZs, 1 );
   rb_define_method( cQueue, "totalRemovedCells", queue_totalRemovedCells, 0 );
@@ -548,5 +528,4 @@ void Init_Queue()
   rb_define_method( cQueue, "load", queue_load, 2 );
 
   rb_define_method( cQueue, "globalShiftNode", queue_globalShiftNode, 2 );
-  rb_define_method( cQueue, "globalShiftCell", queue_globalShiftCell, 2 );
 }
