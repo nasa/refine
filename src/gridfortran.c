@@ -556,27 +556,32 @@ void gridgetncell_( int *nodes_per_cell, int *ncell )
     }
 }
 
-void gridgetcell_( int *nodes_per_cell, int *cell, int *nodes )
+void gridgetcell_( int *nodes_per_cell, int *ncell, int *c2n )
 {
+  int cell, total;
+  int node, nodes[4];
 
-  /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_cell);
+  if ( 4 != (*nodes_per_cell) ) return;
 
-  gridCell(grid,(*cell)-1,nodes);
-  nodes[0]++;
-  nodes[1]++;
-  nodes[2]++;
-  nodes[3]++;
+  total = 0;
+  for ( cell = 0 ; cell < gridMaxCell(grid) ; cell++ )
+    {
+      if ( grid == gridCell(grid,cell,nodes) )
+	{
+	  for ( node = 0 ; node < 4 ; node++ )
+	    c2n[node+4*total] = nodes[node] + 1;
+	  total++;
+	}
+    }
 }
 
 void gridgetbcsize_( int *ibound, int *nodes_per_face, int *nface )
 {
   int face, nodes[3], id;
   
-  /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_face);
-
   *nface = 0;
+  if ( 3 != (*nodes_per_face) ) return;
+
   for (face=0;face<gridMaxFace(grid);face++) {
     if ( grid == gridFace(grid,face,nodes,&id) ) {
       if ( *ibound == id ) (*nface)++;
@@ -588,8 +593,7 @@ void gridgetbc_( int *ibound, int *nodes_per_face, int *nface, int *f2n )
 {
   int face, n, nodes[3], id;
   
-  /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(nface);
+  if ( 3 != (*nodes_per_face) ) return;
 
   n = 0;
   for (face=0;face<gridMaxFace(grid);face++) {
