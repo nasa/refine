@@ -20,9 +20,8 @@ void gridapiversion_( int *refine_api_version );
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z );
 void gridfree_( void );
 
-void gridinsertcell_( int *nodes_per_cell, int *ncell, int *c2n );
-void gridinsertbc_( int *faceId, int *nodes_per_face, int *nface, 
-		    int *f2n );
+void gridinsertcells_( int *nodes_per_cell, int *ncell, int *c2n );
+void gridinsertbc_( int *faceId, int *nodes_per_face, int *nface, int *f2n );
 void gridsetmap_( int *nnode, double* map );
 void gridsetimesh_( int *nnode, int* imesh );
 void gridsetnodelocal2global_( int *partId, int *nnodeg, 

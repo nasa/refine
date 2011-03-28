@@ -68,7 +68,7 @@ void gridfree_( void )
   gridFree(grid); grid = NULL;
 }
 
-void gridcell_( int *nodes_per_cell, int *ncell, int *c2n )
+void gridinsertcells_( int *nodes_per_cell, int *ncell, int *c2n )
 {
   int cell;
   SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_cell);
@@ -79,7 +79,7 @@ void gridcell_( int *nodes_per_cell, int *ncell, int *c2n )
 						  c2n[3+4*cell] - 1 );
 }
 
-void gridinsertboundary_(int *faceId, int *nodes_per_face, int *nface, int *f2n)
+void gridinsertbc_(int *faceId, int *nodes_per_face, int *nface, int *f2n)
 {
   int face;
   int node0, node1, node2;
