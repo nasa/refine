@@ -32,9 +32,9 @@ static GridMove *gm = NULL;
 static Queue *queue = NULL;
 static Plan *plan = NULL;
 
-void gridstart_( int *refine_api_version )
+void gridapiversion_( int *refine_api_version )
 {
-  *refine_api_version = 1;
+  *refine_api_version = 100700000;
 }
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z )

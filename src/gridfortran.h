@@ -15,7 +15,7 @@
 
 BEGIN_C_DECLORATION
 
-void gridstart_( int *refine_api_version );
+void gridapiversion_( int *refine_api_version );
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z );
 void gridfree_( void );
