@@ -544,6 +544,18 @@ void gridgetimesh_( int *nnode, int *imesh)
   }
 }
 
+void gridgetncell_( int *nodes_per_cell, int *ncell )
+{
+  if ( 4 == (*nodes_per_cell) )
+    {
+      *ncell = gridNCell(grid);
+    }
+  else
+    {
+      *ncell = 0;
+    }
+}
+
 void gridgetcell_( int *nodes_per_cell, int *cell, int *nodes )
 {
 
