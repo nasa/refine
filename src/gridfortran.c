@@ -71,30 +71,79 @@ void gridfree_( void )
 void gridinsertcells_( int *nodes_per_cell, int *ncell, int *c2n )
 {
   int cell;
-  SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_cell);
-  for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
-						  c2n[0+4*cell] - 1,
-						  c2n[1+4*cell] - 1,
-						  c2n[2+4*cell] - 1,
-						  c2n[3+4*cell] - 1 );
+ 
+  switch (*nodes_per_cell) {
+  case 4:
+    for ( cell=0; cell<*ncell; cell++) gridAddCell( grid,
+						    c2n[0+4*cell] - 1,
+						    c2n[1+4*cell] - 1,
+						    c2n[2+4*cell] - 1,
+						    c2n[3+4*cell] - 1 );
+    break;
+  case 5:
+    for ( cell=0; cell<*ncell; cell++) gridAddPyramid( grid,
+						       c2n[0+5*cell] - 1,
+						       c2n[1+5*cell] - 1,
+						       c2n[2+5*cell] - 1,
+						       c2n[3+5*cell] - 1,
+						       c2n[4+5*cell] - 1 );
+    break;
+  case 6:
+    for ( cell=0; cell<*ncell; cell++) gridAddPrism( grid,
+						     c2n[0+6*cell] - 1,
+						     c2n[1+6*cell] - 1,
+						     c2n[2+6*cell] - 1,
+						     c2n[3+6*cell] - 1,
+						     c2n[4+6*cell] - 1,
+						     c2n[5+6*cell] - 1 );
+    break;
+  default:
+    printf( "ERROR: %s: %d: Cannot handle %d node elements\n",
+	    __FILE__, __LINE__, (*nodes_per_cell) );
+    break;
+  }
 }
 
 void gridinsertbc_(int *faceId, int *nodes_per_face, int *nface, int *f2n)
 {
   int face;
-  int node0, node1, node2;
+  int node0, node1, node2, node3;
 
-  for(face=0;face<*nface;face++){
-    node0 = f2n[0+(*nodes_per_face)*face] - 1;
-    node1 = f2n[1+(*nodes_per_face)*face] - 1;
-    node2 = f2n[2+(*nodes_per_face)*face] - 1;
-    if ( gridNodeGhost(grid,node0) && 
-	 gridNodeGhost(grid,node1) && 
-	 gridNodeGhost(grid,node2) ) {
-    }else{
-      gridAddFace(grid, node0, node1, node2, *faceId);
+  switch (*nodes_per_face) {
+  case 3:
+    for(face=0;face<*nface;face++){
+      node0 = f2n[0+(*nodes_per_face)*face] - 1;
+      node1 = f2n[1+(*nodes_per_face)*face] - 1;
+      node2 = f2n[2+(*nodes_per_face)*face] - 1;
+      if ( gridNodeGhost(grid,node0) && 
+	   gridNodeGhost(grid,node1) && 
+	   gridNodeGhost(grid,node2) ) {
+      }else{
+	gridAddFace(grid, node0, node1, node2, *faceId);
+      }
     }
+    break;
+  case 4:
+    for(face=0;face<*nface;face++){
+      node0 = f2n[0+(*nodes_per_face)*face] - 1;
+      node1 = f2n[1+(*nodes_per_face)*face] - 1;
+      node2 = f2n[2+(*nodes_per_face)*face] - 1;
+      node3 = f2n[3+(*nodes_per_face)*face] - 1;
+      if ( gridNodeGhost(grid,node0) && 
+	   gridNodeGhost(grid,node1) && 
+	   gridNodeGhost(grid,node2) && 
+	   gridNodeGhost(grid,node3) ) {
+      }else{
+	gridAddQuad(grid, node0, node1, node2, node3, *faceId);
+      }
+    }
+    break;
+  default:
+    printf( "ERROR: %s: %d: Cannot handle %d node faces\n",
+	    __FILE__, __LINE__, (*nodes_per_face) );
+    break;
   }
+
 }
 
 void gridsetmap_( int *nnode, double* map )
@@ -546,62 +595,130 @@ void gridgetimesh_( int *nnode, int *imesh)
 
 void gridgetncell_( int *nodes_per_cell, int *ncell )
 {
-  if ( 4 == (*nodes_per_cell) )
-    {
-      *ncell = gridNCell(grid);
-    }
-  else
-    {
-      *ncell = 0;
-    }
+
+  switch (*nodes_per_cell) {
+  case 4:
+    *ncell = gridNCell(grid);
+    break;
+  case 5:
+    *ncell = gridNPyramid(grid);
+    break;
+  case 6:
+    *ncell = gridNPrism(grid);
+    break;
+  default:
+    *ncell = 0;
+    printf( "ERROR: %s: %d: Cannot handle %d node elements\n",
+	    __FILE__, __LINE__, (*nodes_per_cell) );
+    break;
+  }
+
 }
 
 void gridgetcell_( int *nodes_per_cell, int *cell, int *nodes )
 {
 
-  /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_cell);
+  switch (*nodes_per_cell) {
+  case 4:
+    gridCell(grid,(*cell)-1,nodes);
+    nodes[0]++;
+    nodes[1]++;
+    nodes[2]++;
+    nodes[3]++;
+    break;
+  case 5:
+    gridPyramid(grid,(*cell)-1,nodes);
+    nodes[0]++;
+    nodes[1]++;
+    nodes[2]++;
+    nodes[3]++;
+    nodes[4]++;
+    break;
+  case 6:
+    gridPrism(grid,(*cell)-1,nodes);
+    nodes[0]++;
+    nodes[1]++;
+    nodes[2]++;
+    nodes[3]++;
+    nodes[4]++;
+    nodes[5]++;
+    break;
+  default:
+    printf( "ERROR: %s: %d: Cannot handle %d node elements\n",
+	    __FILE__, __LINE__, (*nodes_per_cell) );
+    break;
+  }
 
-  gridCell(grid,(*cell)-1,nodes);
-  nodes[0]++;
-  nodes[1]++;
-  nodes[2]++;
-  nodes[3]++;
 }
 
 void gridgetbcsize_( int *ibound, int *nodes_per_face, int *nface )
 {
-  int face, nodes[3], id;
+  int face, nodes[4], id;
   
-  /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(nodes_per_face);
-
-  *nface = 0;
-  for (face=0;face<gridMaxFace(grid);face++) {
-    if ( grid == gridFace(grid,face,nodes,&id) ) {
-      if ( *ibound == id ) (*nface)++;
+  switch (*nodes_per_face) {
+  case 3:
+    *nface = 0;
+    for (face=0;face<gridMaxFace(grid);face++) {
+      if ( grid == gridFace(grid,face,nodes,&id) ) {
+	if ( *ibound == id ) (*nface)++;
+      }
     }
+    break;
+  case 4:
+    *nface = 0;
+    for (face=0;face<gridNQuad(grid);face++) {
+      if ( grid == gridQuad(grid,face,nodes,&id) ) {
+	if ( *ibound == id ) (*nface)++;
+      }
+    }
+    break;
+  default:
+    *nface = 0;
+    printf( "ERROR: %s: %d: Cannot handle %d node faces\n",
+	    __FILE__, __LINE__, (*nodes_per_face) );
+    break;
   }
 }
 
 void gridgetbc_( int *ibound, int *nodes_per_face, int *nface, int *f2n )
 {
-  int face, n, nodes[3], id;
-  
-  /* this is for the fortran interface */
-  SUPRESS_UNUSED_COMPILER_WARNING(nface);
+  int face, n, nodes[4], id;
 
-  n = 0;
-  for (face=0;face<gridMaxFace(grid);face++) {
-    if ( grid == gridFace(grid,face,nodes,&id) ) {
-      if ( *ibound == id ) {
-	f2n[0+(*nodes_per_face)*n] = nodes[0]+1;
-	f2n[1+(*nodes_per_face)*n] = nodes[1]+1;
-	f2n[2+(*nodes_per_face)*n] = nodes[2]+1;
-	n++;
+  switch (*nodes_per_face) {
+  case 3:
+    n = 0;
+    for (face=0;face<gridMaxFace(grid);face++) {
+      if ( grid == gridFace(grid,face,nodes,&id) ) {
+	if ( *ibound == id ) {
+	  f2n[0+(*nodes_per_face)*n] = nodes[0]+1;
+	  f2n[1+(*nodes_per_face)*n] = nodes[1]+1;
+	  f2n[2+(*nodes_per_face)*n] = nodes[2]+1;
+	  n++;
+	}
       }
     }
+    break;
+  case 4:
+    n = 0;
+    for (face=0;face<gridNQuad(grid);face++) {
+      if ( grid == gridQuad(grid,face,nodes,&id) ) {
+	if ( *ibound == id ) {
+	  f2n[0+(*nodes_per_face)*n] = nodes[0]+1;
+	  f2n[1+(*nodes_per_face)*n] = nodes[1]+1;
+	  f2n[2+(*nodes_per_face)*n] = nodes[2]+1;
+	  f2n[3+(*nodes_per_face)*n] = nodes[3]+1;
+	  n++;
+	}
+      }
+    }
+    break;
+  default:
+    *nface = 0;
+    printf( "ERROR: %s: %d: Cannot handle %d node faces\n",
+	    __FILE__, __LINE__, (*nodes_per_face) );
+    break;
   }
+
 }
 
 void gridsetnaux_( int *naux )
