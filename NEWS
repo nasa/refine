@@ -1,9 +1,10 @@
 
-A Future Date: Released Refine 1.7.0 (requires >= FUN3D-xxxxx (11.x.0)).
+Mon Apr 4, 2011 : Released Refine 1.7.0 (requires >= FUN3D-52844 (11.x.x)).
 
 - This minor rev bump is an API change to elimiate global cell indexes and
     to restructure cell and face API for future mixed-element capability.
 - compiled under Mac OS X
+- pruned many unused methods
 
 Fri Jan 21, 2011 : Released Refine 1.6.3 (requires >= FUN3D-45226 (11.0.0)).
 
