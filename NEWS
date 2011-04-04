@@ -1,4 +1,8 @@
 
+Some Future Date : Released Refine 1.x.x (requires >= FUN3D-52844 (11.x.x)).
+
+
+
 Mon Apr 4, 2011 : Released Refine 1.7.0 (requires >= FUN3D-52844 (11.x.x)).
 
 - This minor rev bump is an API change to elimiate global cell indexes and
