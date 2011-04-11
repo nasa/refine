@@ -17,9 +17,6 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 - Add a new method to return whether a geometry face has an underlying
   geometric (CAD) definition. (for fauxgeom)
 
-- Are global cell indexes really needed or can they be computed after
-  adaptation?
-
 - Do all operations in quality order via plan
 gridmetric : get rid of
 -gridLargestRatioEdge
@@ -54,7 +51,7 @@ gridAttach* gridDetach* stuff
 
 --Parallel adapt
 
-corsening on partition boundaries 
+coarsening on partition boundaries 
 continue speed testing
 
 only interior + load balancing
@@ -73,3 +70,4 @@ check out frozen normal direction smoothing (VGrid style)
 - better logging/exceptions
 - better face/cell naming/metaphor
 - pair...
+
