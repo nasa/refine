@@ -1,8 +1,3 @@
-Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002 Free Software
-Foundation, Inc.
-
-   This file is free documentation; the Free Software Foundation gives
-unlimited permission to copy, distribute and modify it.
 
 (Quick Start) If You Received a *.tar.gz File to run with FUN3D
 ===============================================================
@@ -12,7 +7,7 @@ run (replace `x.x.x' with the current version number):
  % gunzip refine-x.x.x.tar.gz
  % tar xvf refine-x.x.x.tar
  % cd refine-x.x.x
- % ./configure --disable-exec --prefix=`pwd`
+ % ./configure --prefix=`pwd`
  % make
  % make install
 
@@ -31,20 +26,6 @@ argument
 
   --with-refine=/my/path/to/refine-x.x.x
 
-32 and 64 bit X Libraries
-=========================
-
-If configure does not find the X libs you will see a line that looks like
-
-checking for X... libraries , headers
-
-If this happens please rerun the configure script with 
-these two arguments  
-
- --x-includes=/usr/include --x-libraries=/usr/lib[32|64]
-
-to the configure or autogen.sh script command line options
-
 Note To Git Users ONLY!
 =======================
 
@@ -52,7 +33,7 @@ Note To Git Users ONLY!
 file.)
 
    Run ./autogen.sh to set the package up to install inside an
-architecture directory(e.g., Linux). It will run ./bootstrap
+architecture directory (e.g., Linux). It will run ./bootstrap
 to create the configure script. Then it will create an arch
 directory. Finally, it will cd to the arch dir and and run: 
 ../configure --prefix=`pwd`.
@@ -240,3 +221,5 @@ operates.
      script, and exit.
 
 `configure' also accepts some other, not widely useful, options.
+
+
