@@ -173,6 +173,12 @@ VALUE grid_exportOFF( VALUE self, VALUE rb_filename )
   return (gridExportOFF(grid, RSTRING_PTR(rb_filename))==grid?self:Qnil);
 }
 
+VALUE grid_exportAFLR3( VALUE self, VALUE rb_filename )
+{
+  GET_GRID_FROM_SELF;
+  return (gridExportAFLR3(grid, RSTRING_PTR(rb_filename))==grid?self:Qnil);
+}
+
 VALUE grid_maxnode( VALUE self )
 {
   GET_GRID_FROM_SELF;
@@ -1326,6 +1332,7 @@ void Init_Grid()
   rb_define_method( cGrid, "exportFASTSurface", grid_exportFASTSurface, 1 );
   rb_define_method( cGrid, "exportGRI", grid_exportGRI, 1 );
   rb_define_method( cGrid, "exportOFF", grid_exportOFF, 1 );
+  rb_define_method( cGrid, "exportAFLR3", grid_exportAFLR3, 1 );
   rb_define_method( cGrid, "maxnode", grid_maxnode, 0 );
   rb_define_method( cGrid, "nnode", grid_nnode, 0 );
   rb_define_method( cGrid, "maxcell", grid_maxcell, 0 );
