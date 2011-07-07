@@ -1,7 +1,7 @@
 
 Some Future Date : Released Refine 1.x.x (requires >= FUN3D-52844 (11.x.x)).
 
-
+- gridParallelPreProject only removes two and three face cells
 
 Mon Apr 4, 2011 : Released Refine 1.7.0 (requires >= FUN3D-52844 (11.x.x)).
 
