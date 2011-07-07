@@ -620,6 +620,9 @@ void gridgetcell_( int *nodes_per_cell, int *ncell, int *c2n )
   int cell, total;
   int node, nodes[6];
 
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(ncell);
+
   switch (*nodes_per_cell) {
   case 4:
     total = 0;
