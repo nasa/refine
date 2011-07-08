@@ -34,7 +34,7 @@ static Plan *plan = NULL;
 
 void gridapiversion_( int *refine_api_version )
 {
-  *refine_api_version = 100700000;
+  *refine_api_version = 100800000;
 }
 
 void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z )
@@ -579,6 +579,39 @@ void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
     y[node] = xyz[1];
     z[node] = xyz[2];
   }
+}
+
+void gridgetmap_( int *nnode, double *map)
+{
+  int node;
+  double xyz[3];
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+
+  for (node=0;node<gridNNode(grid);node++) {
+    gridMap(grid,node,&map[6*node]);
+  }
+}
+
+void gridgetfreezestate_( int *nnode, int *state)
+{
+  int node;
+
+  /* this is for the fortran interface */
+  SUPRESS_UNUSED_COMPILER_WARNING(nnode);
+
+  for (node=0;node<gridNNode(grid);node++) 
+    {
+      if ( gridNodeFrozen( grid, node ) )
+	{
+	  state[node] = 1;
+	} 
+      else 
+	{
+	  state[node] = 0;
+	}
+    }
 }
 
 void gridgetimesh_( int *nnode, int *imesh)

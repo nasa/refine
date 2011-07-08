@@ -64,6 +64,8 @@ void grideliminateunusednodeglobal_( void );
 void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg );
 
 void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z);
+void gridgetmap_( int *nnode, double* map );
+void gridgetfreezestate_( int *node, int *state );
 void gridgetimesh_( int *nnode, int *imesh);
 void gridgetncell_( int *nodes_per_cell, int *ncell );
 void gridgetcell_( int *nodes_per_cell, int *cell, int *nodes );
