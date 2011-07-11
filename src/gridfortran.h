@@ -73,6 +73,7 @@ void gridgetbcsize_( int *ibound, int *nodes_per_face, int *nface );
 void gridgetbc_( int *ibound, int *nodes_per_face, int *face, int *f2n );
 
 void gridsetnaux_( int *naux );
+void gridgetnaux_( int *naux );
 void gridsetauxvector_( int *nnode, int *offset, double *x );
 void gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x );
 void gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x );

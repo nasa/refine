@@ -783,6 +783,11 @@ void gridsetnaux_( int *naux )
   queue = queueCreate( 9 + imesh_index + gridNAux(grid) ); 
 }
 
+void gridgetnaux_( int *naux )
+{
+  *naux = gridNAux(grid);
+}
+
 void gridsetauxvector_( int *nnode, int *offset, double *x )
 {
   int node;
