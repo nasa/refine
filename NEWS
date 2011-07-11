@@ -1,7 +1,7 @@
 
 Some Future Date : Released Refine 1.x.x (requires >= FUN3D-52844 (11.x.x)).
 
-
+- fortran bindings extended for load blancing
 
 Thu Jul 7, 2011 : Released Refine 1.7.1 (requires >= FUN3D-52844 (11.x.x)).
 
