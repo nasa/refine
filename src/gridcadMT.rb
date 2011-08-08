@@ -427,7 +427,7 @@ class TestGridCAD < Test::Unit::TestCase
   grid = threeSurfaceTriangles
   tol = 1.0e-7
   optimalArea = 0.5/3.0
-  assert grid, grid.smoothNodeFaceAreaUV(3)
+  assert_equal grid, grid.smoothNodeFaceAreaUV(3)
   assert_in_delta optimalArea, grid.minFaceAreaUV(3), tol
  end
 
@@ -435,7 +435,7 @@ class TestGridCAD < Test::Unit::TestCase
   grid = threeSurfaceTriangles(-0.9,-1.1)
   tol = 1.0e-7
   optimalArea = 0.5/3.0
-  assert grid, grid.smoothNodeFaceAreaUV(3)
+  assert_equal grid, grid.smoothNodeFaceAreaUV(3)
   assert_in_delta optimalArea, grid.minFaceAreaUV(3), tol
  end
 
@@ -443,7 +443,7 @@ class TestGridCAD < Test::Unit::TestCase
   grid = threeSurfaceTriangles
   tol = 1.0e-14
   optimalArea = 0.5/3.0
-  assert grid, grid.untangleAreaUV(3)
+  assert_equal grid, grid.untangleAreaUV(3)
   assert_in_delta optimalArea, grid.minFaceAreaUV(3), tol
  end
 
