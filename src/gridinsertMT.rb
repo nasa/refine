@@ -14,7 +14,6 @@ end
 require 'test/unit'
 require 'Adj/Adj'
 require 'Line/Line'
-require 'Intersect/Intersect'
 require 'Plan/Plan'
 require 'Sort/Sort'
 require 'Queue/Queue'
