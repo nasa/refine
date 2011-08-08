@@ -9,8 +9,6 @@ List of stuff to work on for refine/MesherX (bug fixes, improvements, etc.)
 
 - mixed element
 
-- load balancing on the fly
-
 - printf error when face is empty for edge split with !gridContinuousEquator
 - think about geom edge collapse on fauxgeom with no geom edges
   Make a matrix of collapse possilbities for node 0,1 on bound or not
@@ -51,10 +49,7 @@ gridAttach* gridDetach* stuff
 
 --Parallel adapt
 
-coarsening on partition boundaries 
 continue speed testing
-
-only interior + load balancing
 
 -MesherX
 
