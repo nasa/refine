@@ -57,6 +57,7 @@ void gridrenumberglobalnodes_( int *nnode, int *new2old );
 
 void gridnunusednodeglobal_( int *nunused );
 void gridgetunusednodeglobal_( int *nunused, int *unused );
+void gridjoinunusednodeglobal_( int *nunused, int *unused );
 void gridcopyunusednodeglobal_( int *nunused, int *unused );
 void grideliminateunusednodeglobal_( void );
 

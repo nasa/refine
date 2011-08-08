@@ -3088,6 +3088,44 @@ Grid *gridGetUnusedNodeGlobal(Grid *grid, int *unused )
   return grid;
 }
 
+Grid *gridJoinUnusedNodeGlobal(Grid *grid, int global )
+{
+  int insertpoint, index;
+
+  if (EMPTY == global) return grid;
+
+  if (NULL == grid->unusedNodeGlobal) {
+    grid->maxUnusedNodeGlobal = 500;
+    grid->unusedNodeGlobal =
+                         (int *)malloc(grid->maxUnusedNodeGlobal * sizeof(int));
+  }
+  if ((grid->nUnusedNodeGlobal+1) >= grid->maxUnusedNodeGlobal) {
+    grid->maxUnusedNodeGlobal += 500;
+    grid->unusedNodeGlobal =
+                         (int *)realloc( grid->unusedNodeGlobal, 
+				      grid->maxUnusedNodeGlobal*sizeof(int));
+  }
+  
+  insertpoint = 0;
+  if (grid->nUnusedNodeGlobal > 0) {
+    for (index=grid->nUnusedNodeGlobal-1; index>=0; index--) {
+      if (grid->unusedNodeGlobal[index] < global) {
+	insertpoint = index+1;
+	break;
+      }
+    }
+    if ( grid->nUnusedNodeGlobal != insertpoint &&
+	 grid->unusedNodeGlobal[insertpoint] == global) return grid;
+    for(index=grid->nUnusedNodeGlobal;index>insertpoint;index--)
+      grid->unusedNodeGlobal[index] = grid->unusedNodeGlobal[index-1];
+  }
+
+  grid->unusedNodeGlobal[insertpoint] = global;
+  grid->nUnusedNodeGlobal++;
+  
+  return grid;
+}
+
 Grid *gridEliminateUnusedNodeGlobal(Grid *grid )
 {
   int node;
