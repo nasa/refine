@@ -269,7 +269,6 @@ int gridGlobalNNode(Grid *g);
 Grid *gridSetGlobalNNode(Grid *g, int nglobal );
 int gridNUnusedNodeGlobal(Grid *g );
 Grid *gridGetUnusedNodeGlobal(Grid *g, int *unused );
-Grid *gridJoinUnusedNodeGlobal(Grid *g, int global );
 Grid *gridEliminateUnusedNodeGlobal(Grid *g );
 int gridCellDegree(Grid *g, int nodeIndex);
 #define gridCellHasLocalNode(grid,nodes) ( \

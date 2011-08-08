@@ -531,12 +531,6 @@ void gridgetunusednodeglobal_( int *nunused, int *unused )
   gridGetUnusedNodeGlobal( grid, unused );
 }
 
-void gridjoinunusednodeglobal_( int *nunused, int *unused )
-{
-  int i;
-  for (i=0;i<(*nunused);i++) gridJoinUnusedNodeGlobal( grid, unused[i] );
-}
-
 void gridcopyunusednodeglobal_( int *nunused, int *unused )
 {
   int i;
