@@ -26,11 +26,10 @@ local:
 	./gridinsertMT.rb
 	./gridmpiMT.rb
 	./gridmoveMT.rb
-	./layerMT.rb
 
 clean:
 	rm -rf SampleUnit
-	rm -rf Adj Plan Near Line Queue Sort Tableau Intersect Grid* Layer
+	rm -rf Adj Plan Near Line Queue Sort Tableau Intersect Grid*
 
 bu:
 	( cd .. && $(MAKE) bu )
