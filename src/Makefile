@@ -9,7 +9,6 @@ install:
 	if [ -d ../`uname`64 ]; then ( cd ../`uname`64 && $(MAKE) install ) ; fi
 
 local:
-	./sampleunitMT.rb
 	./adjMT.rb
 	./planMT.rb
 	./nearMT.rb
