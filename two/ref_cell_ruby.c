@@ -24,6 +24,12 @@ VALUE rb_ref_cell_n( VALUE self )
   return INT2NUM( ref_cell_n(ref_cell) );
 }
 
+VALUE rb_ref_cell_max( VALUE self )
+{
+  GET_REF_CELL_FROM_SELF;
+  return INT2NUM( ref_cell_max(ref_cell) );
+}
+
 VALUE rb_ref_cell_add( VALUE self, VALUE rb_nodes )
 {
   REF_INT len, i;
@@ -66,6 +72,7 @@ void Init_ref_cell()
   ref_cell_class = rb_define_class( "Ref_Cell", rb_cObject );
   rb_define_singleton_method( ref_cell_class, "new", ref_cell_new, 1 );
   rb_define_method( ref_cell_class, "n", rb_ref_cell_n, 0 );
+  rb_define_method( ref_cell_class, "max", rb_ref_cell_max, 0 );
   rb_define_method( ref_cell_class, "add", rb_ref_cell_add, 1 );
   rb_define_method( ref_cell_class, "nodes", rb_ref_cell_nodes, 1 );
 }

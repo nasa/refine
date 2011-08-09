@@ -29,6 +29,12 @@ class Test_Ref_Cell < Test::Unit::TestCase
    successful? @ref_cell.add([0,1,2,3])
  end
 
+ def test_add_cell_past_max_reallocs
+   max = @ref_cell.max
+   (max+1).times { successful? @ref_cell.add([0,1,2,3]) }
+   assert( @ref_cell.max > max )
+ end
+
  def test_cell_nodes
    assert_equal nil, @ref_cell.nodes(0)
    assert_equal nil, @ref_cell.nodes(1000000000)
