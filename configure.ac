@@ -224,4 +224,5 @@ AC_OUTPUT( \
 	   src/Makefile \
 	   util/Makefile \
 	   doc/Makefile \
+	   two/Makefile \
 	   )
