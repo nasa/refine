@@ -3,15 +3,20 @@
 #include <stdio.h>
 #include "ref_cell.h"
 
-REF_STATUS ref_cell_create( REF_INT nodes, REF_CELL *ref_cell )
+REF_STATUS ref_cell_create( REF_INT nodes, REF_CELL *ref_cell_ptr )
 {
-  *cell = (REF_CELL)malloc( sizeof(REF_CELL_STRUCT) );
-  RNS(*cell,'malloc NULL');
+  *ref_cell_ptr = (REF_CELL)malloc( sizeof(REF_CELL_STRUCT) );
+  RNS(*ref_cell_ptr,"malloc NULL");
 
-  (*cell)->nodes = nodes;
-  (*cell)->n = 0;
-  (*cell)->max = 0;
-  (*cell)->c2n = NULL;
+  (*ref_cell_ptr)->nodes = nodes;
+  (*ref_cell_ptr)->n = 0;
+  (*ref_cell_ptr)->max = 0;
+  (*ref_cell_ptr)->c2n = NULL;
 
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_free( REF_CELL ref_cell )
+{
+  ref_cond_free( ref_cell->c2n );
 }

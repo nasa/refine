@@ -27,6 +27,8 @@ BEGIN_C_DECLORATION
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
+#define ref_cond_free(ptr) {if ( NULL != (ptr) ) free((ptr));}
+
 typedef int REF_INT;
 
 typedef int REF_STATUS;
@@ -48,7 +50,7 @@ typedef int REF_STATUS;
 #define RNS(ptr,msg)							\
   {									\
     if (NULL == (ptr)){							\
-      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
       return REF_NULL;							\
     }									\
   }
