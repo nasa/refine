@@ -38,6 +38,27 @@ VALUE rb_ref_cell_add( VALUE self, VALUE rb_nodes )
   return INT2NUM(code);
 }
 
+VALUE rb_ref_cell_nodes( VALUE self, VALUE rb_cell )
+{
+  REF_INT len, i;
+  REF_INT *nodes;
+  REF_STATUS code;
+  VALUE rb_nodes;
+  GET_REF_CELL_FROM_SELF;
+  nodes = (REF_INT *)malloc(ref_cell_node_per(ref_cell)*sizeof(REF_INT));
+  code = ref_cell_nodes(ref_cell,NUM2INT(rb_cell),nodes);
+  if ( REF_SUCCESS != code ) 
+    {
+      free(nodes);
+      return Qnil;
+    }
+  rb_nodes= rb_ary_new2(ref_cell_node_per(ref_cell));
+  for (i=0;i<ref_cell_node_per(ref_cell);i++) 
+    rb_ary_store( rb_nodes, i, INT2NUM(nodes[i]) );
+  free(nodes);
+  return rb_nodes;
+}
+
 VALUE ref_cell_class;
 
 void Init_ref_cell()
@@ -46,4 +67,5 @@ void Init_ref_cell()
   rb_define_singleton_method( ref_cell_class, "new", ref_cell_new, 1 );
   rb_define_method( ref_cell_class, "n", rb_ref_cell_n, 0 );
   rb_define_method( ref_cell_class, "add", rb_ref_cell_add, 1 );
+  rb_define_method( ref_cell_class, "nodes", rb_ref_cell_nodes, 1 );
 }

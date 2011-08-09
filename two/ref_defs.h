@@ -13,7 +13,7 @@
 
 BEGIN_C_DECLORATION
 
-#define EMPTY (-1)
+#define REF_EMPTY (-1)
 
 #if !defined(ABS)
 #define ABS(a)   ((a)>0?(a):-(a))
@@ -36,6 +36,8 @@ typedef int REF_STATUS;
 #define REF_SUCCESS       (0)
 #define REF_FAILURE       (1)
 #define REF_NULL          (2)
+#define REF_INVALID       (3)
+#define REF_IMPLEMENT     (4)
 
 #define RSS(fcn,msg)							\
   {									\

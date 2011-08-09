@@ -29,4 +29,11 @@ class Test_Ref_Cell < Test::Unit::TestCase
    successful? @ref_cell.add([0,1,2,3])
  end
 
+ def test_cell_nodes
+   assert_equal nil, @ref_cell.nodes(0)
+   assert_equal nil, @ref_cell.nodes(1000000000)
+   @ref_cell.add([0,1,2,3])
+   assert_equal [0,1,2,3], @ref_cell.nodes(0)
+ end
+
 end
