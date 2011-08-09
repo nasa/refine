@@ -27,18 +27,29 @@ BEGIN_C_DECLORATION
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
+typedef int REF_INT;
+
 typedef int REF_STATUS;
 
 #define REF_SUCCESS       (0)
 #define REF_FAILURE       (1)
+#define REF_NULL          (2)
 
-#define TSS(fcn,msg)							\
+#define RSS(fcn,msg)							\
   {									\
     REF_STATUS code;							\
     code = (fcn);							\
     if (REF_SUCCESS != code){						\
       printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
       return code;							\
+    }									\
+  }
+
+#define RNS(ptr,msg)							\
+  {									\
+    if (NULL == (ptr)){							\
+      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
+      return REF_NULL;							\
     }									\
   }
 
