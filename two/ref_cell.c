@@ -10,8 +10,8 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
 
   (*ref_cell_ptr)->node_per = node_per;
   (*ref_cell_ptr)->n = 0;
-  (*ref_cell_ptr)->max = 0;
-  (*ref_cell_ptr)->c2n = NULL;
+  (*ref_cell_ptr)->max = 1000;
+  (*ref_cell_ptr)->c2n = (REF_INT *)malloc(node_per*1000*sizeof(REF_INT));
 
   return REF_SUCCESS;
 }
