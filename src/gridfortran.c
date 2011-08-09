@@ -584,7 +584,6 @@ void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
 void gridgetmap_( int *nnode, double *map)
 {
   int node;
-  double xyz[3];
 
   /* this is for the fortran interface */
   SUPRESS_UNUSED_COMPILER_WARNING(nnode);
