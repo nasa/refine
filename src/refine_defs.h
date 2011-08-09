@@ -31,6 +31,21 @@ BEGIN_C_DECLORATION
 #define SIGN(a)   ( (a)==0 ? 0 : ((a)>0?1:-1) )
 #endif
 
+typedef int REF_STATUS;
+
+#define REF_SUCCESS       (0)
+#define REF_FAILURE       (1)
+
+#define TSS(fcn,msg)							\
+  {									\
+    REF_STATUS code;							\
+    code = (fcn);							\
+    if (REF_SUCCESS != code){						\
+      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
+      return code;							\
+    }									\
+  }
+
 #define SUPRESS_UNUSED_COMPILER_WARNING(ptr)                    \
   if (NULL == &(ptr)) printf("unused macro failed\n");
 
