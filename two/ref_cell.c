@@ -34,10 +34,12 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes )
+REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 {
   int node, cell;
   int orig, chunk;
+
+  (*new_cell) = REF_EMPTY;
 
   if ( REF_EMPTY == ref_cell_blank(ref_cell) ) 
     {
@@ -62,6 +64,9 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes )
   ref_cell_blank(ref_cell) = ref_cell_c2n(ref_cell,1,cell);
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
     ref_cell_c2n(ref_cell,node,cell) = nodes[node];
+
+  (*new_cell) = cell;
+
   return REF_SUCCESS;
 }
 

@@ -34,14 +34,15 @@ VALUE rb_ref_cell_add( VALUE self, VALUE rb_nodes )
 {
   REF_INT len, i;
   REF_INT *nodes;
+  REF_INT cell;
   REF_STATUS code;
   GET_REF_CELL_FROM_SELF;
   len = RARRAY_LEN(rb_nodes);
   nodes = (REF_INT *)malloc(len*sizeof(REF_INT));
   for(i=0;i<len;i++) nodes[i] = NUM2INT( rb_ary_entry( rb_nodes, i) );
-  code = ref_cell_add(ref_cell,nodes);
+  code = ref_cell_add(ref_cell,nodes,&cell);
   free(nodes);
-  return INT2NUM(code);
+  return INT2NUM(cell);
 }
 
 VALUE rb_ref_cell_nodes( VALUE self, VALUE rb_cell )
