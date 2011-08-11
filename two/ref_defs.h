@@ -1,7 +1,7 @@
 
 
-#ifndef REF_HEADER_H
-#define REF_HEADER_H
+#ifndef REF_DEFS_H
+#define REF_DEFS_H
 
 #ifdef __cplusplus
 #  define BEGIN_C_DECLORATION extern "C" {
@@ -12,6 +12,13 @@
 #endif
 
 BEGIN_C_DECLORATION
+
+#define REF_TRUE (1==1)
+#define REF_FALSE (1==0)
+
+#if !defined(REF_ECHO_ASSERT)
+#define REF_ECHO_ASSERT (REF_FALSE)
+#endif
 
 #define REF_EMPTY (-1)
 
@@ -57,47 +64,29 @@ typedef int REF_STATUS;
     }									\
   }
 
-#define TES(a,b,msg)							\
+#define RES(a,b,msg)							\
   {									\
     if ((a)!=(b)){							\
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
       return REF_FAILURE;						\
-    }else{								\
-      printf("PASS: %s\n",(msg));                                       \
     }									\
   }
 
-#define TSS(fcn,msg)							\
-  {									\
-    REF_STATUS code;							\
-    code = (fcn);							\
-    if (REF_SUCCESS != code){						\
-      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
-      return code;							\
-    }else{								\
-      printf("PASS: %s\n",(msg));                                       \
-    }									\
-  }
-
-#define TAS(a,msg)							\
+#define RAS(a,msg)							\
   {									\
     if (!(a)){								\
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
       return REF_FAILURE;						\
-    }else{								\
-      printf("PASS: %s\n",(msg));                                       \
     }									\
   }
 
-#define TFS(fcn,msg)							\
+#define RFS(fcn,msg)							\
   {									\
     REF_STATUS code;							\
     code = (fcn);							\
     if (REF_SUCCESS == code){						\
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
       return code;							\
-    }else{								\
-      printf("PASS: %s\n",(msg));					\
     }									\
   }
 
@@ -106,5 +95,5 @@ typedef int REF_STATUS;
 
 END_C_DECLORATION
 
-#endif /* REF_HEADER_H */
+#endif /* REF_DEFS_H */
 

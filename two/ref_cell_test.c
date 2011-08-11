@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "ref_cell.h"
+#include "ref_test.h"
 
 int main( int argc, char *argv[] )
 {
