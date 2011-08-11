@@ -57,6 +57,16 @@ typedef int REF_STATUS;
     }									\
   }
 
+#define RES(a,b,msg)							\
+  {									\
+    if ((a) != (b)){							\
+      printf("%s: %d: %s: '(a)' '(b)' %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      return REF_FAILURE;						\
+    }else{								\
+      printf("PASS: %s\n",(msg));                                       \
+    }									\
+  }
+
 #define SUPRESS_UNUSED_COMPILER_WARNING(ptr)                    \
   if (NULL == &(ptr)) printf("unused macro failed\n");
 
