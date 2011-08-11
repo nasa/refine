@@ -13,6 +13,7 @@ BEGIN_C_DECLORATION
 
 struct REF_NODE_STRUCT {
   REF_INT n, max;
+  REF_INT *global;
 };
 
 REF_STATUS ref_node_create( REF_NODE *ref_node );
@@ -20,6 +21,8 @@ REF_STATUS ref_node_free( REF_NODE ref_node );
 
 #define ref_node_n(ref_node) ((ref_node)->n)
 #define ref_node_max(ref_node) ((ref_node)->max)
+
+REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node );
 
 END_C_DECLORATION
 
