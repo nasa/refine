@@ -7,8 +7,9 @@
 
 int main( int argc, char *argv[] )
 {
-  
   REF_CELL ref_cell;
+
+  if (argc>1) {printf("%s ignored\n",argv[0]);}
 
   RSS(ref_cell_create(4,&ref_cell),"create");
   RES(0,ref_cell_n(ref_cell),"should init zero cells");
