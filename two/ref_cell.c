@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "ref_cell.h"
 
 REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
@@ -31,6 +32,7 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
 REF_STATUS ref_cell_free( REF_CELL ref_cell )
 {
   ref_cond_free( ref_cell->c2n );
+  ref_cond_free( ref_cell );
   return REF_SUCCESS;
 }
 
