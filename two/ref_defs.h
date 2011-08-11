@@ -57,13 +57,47 @@ typedef int REF_STATUS;
     }									\
   }
 
-#define RES(a,b,msg)							\
+#define TES(a,b,msg)							\
   {									\
-    if ((a) != (b)){							\
-      printf("%s: %d: %s: '(a)' '(b)' %s\n",__FILE__,__LINE__,__func__,(msg)); \
+    if ((a)!=(b)){							\
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
       return REF_FAILURE;						\
     }else{								\
       printf("PASS: %s\n",(msg));                                       \
+    }									\
+  }
+
+#define TSS(fcn,msg)							\
+  {									\
+    REF_STATUS code;							\
+    code = (fcn);							\
+    if (REF_SUCCESS != code){						\
+      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
+      return code;							\
+    }else{								\
+      printf("PASS: %s\n",(msg));                                       \
+    }									\
+  }
+
+#define TAS(a,msg)							\
+  {									\
+    if (!(a)){								\
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      return REF_FAILURE;						\
+    }else{								\
+      printf("PASS: %s\n",(msg));                                       \
+    }									\
+  }
+
+#define TFS(fcn,msg)							\
+  {									\
+    REF_STATUS code;							\
+    code = (fcn);							\
+    if (REF_SUCCESS == code){						\
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      return code;							\
+    }else{								\
+      printf("PASS: %s\n",(msg));					\
     }									\
   }
 
