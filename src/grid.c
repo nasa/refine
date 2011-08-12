@@ -1350,7 +1350,7 @@ Grid *gridImportAFLR3( char *filename )
       AEN( 1, fread( &(nodes[1]), sizeof(int), 1, file), "tet node 1" );
       AEN( 1, fread( &(nodes[2]), sizeof(int), 1, file), "tet node 2" );
       AEN( 1, fread( &(nodes[2]), sizeof(int), 1, file), "tet node 3" );
-      nodes[0]--; nodes[1]--; nodes[2]--; nodes[2]--;
+      nodes[0]--; nodes[1]--; nodes[2]--; nodes[3]--;
       AEN(cell, gridAddCell( grid, nodes[0], nodes[1], nodes[2], nodes[3]),
 	  "add cell");
     }
