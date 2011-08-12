@@ -74,6 +74,12 @@ int main( int argc, char *argv[] )
 
   /* lookup local from global */
 
+  node = 0;
+  TFS(ref_node_local(ref_node,-1,&node),"returned invalid global");
+  TES(REF_EMPTY,node,"expect node empty for invalid global");
+  TFS(ref_node_local(ref_node,5,&node),"returned invalid global");
+  TFS(ref_node_local(ref_node,200,&node),"returned invalid global");
+
   TSS(ref_node_free(ref_node),"free");
 
   return 0;
