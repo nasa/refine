@@ -10,5 +10,5 @@ do
   root=${test%_test.c}
   echo $root
   compile="${CC} ${CFLAGS} -o ${root}_test ${root}.c ${root}_test.c"
-  eval ${compile} && eval ./${root}_test
+  eval ${compile} && eval valgrind --leak-check=full ./${root}_test
 done

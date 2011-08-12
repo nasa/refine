@@ -16,6 +16,8 @@ int main( int argc, char *argv[] )
 
   if (argc>1) {printf("%s ignored\n",argv[0]);}
 
+  TFS(ref_cell_free(NULL),"dont free NULL");
+
   TSS(ref_cell_create(4,&ref_cell),"create");
   TES(0,ref_cell_n(ref_cell),"init zero cells");
 
@@ -44,6 +46,8 @@ int main( int argc, char *argv[] )
   TES(20,retrieved[1],"node 1");
   TES(30,retrieved[2],"node 2");
   TES(40,retrieved[3],"node 3");
+
+  TSS(ref_cell_free(ref_cell),"free");
 
   return 0;
 }
