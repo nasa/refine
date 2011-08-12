@@ -15,6 +15,7 @@ struct REF_NODE_STRUCT {
   REF_INT n, max;
   REF_INT blank;
   REF_INT *global;
+  REF_DBL *xyz;
 };
 
 REF_STATUS ref_node_create( REF_NODE *ref_node );
@@ -32,6 +33,8 @@ REF_STATUS ref_node_inspect( REF_NODE ref_node );
   ( ( (node) > -1 && (node) < ref_node_max(ref_node) && \
       (ref_node)->global[(node)] > 0) ?			\
            (ref_node)->global[(node)]:REF_EMPTY )
+
+#define ref_node_xyz(ref_node,ixyz,node) ((ref_node)->xyz[(ixyz)*3*(node)])
 
 REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *node );
 

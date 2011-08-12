@@ -18,14 +18,17 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   (*ref_node_ptr)->n = 0;
   (*ref_node_ptr)->max = max;
-  (*ref_node_ptr)->global       = (REF_INT *)malloc(max*sizeof(REF_INT));
+
+  (*ref_node_ptr)->global = (REF_INT *)malloc(max*sizeof(REF_INT));
   RNS((*ref_node_ptr)->global,"malloc global NULL");
 
   for (node=0;node<ref_node_max(*ref_node_ptr);node++)
     (*ref_node_ptr)->global[node] = index2next(node+1);
-
   (*ref_node_ptr)->global[((*ref_node_ptr)->max)-1] = REF_EMPTY;
   (*ref_node_ptr)->blank = index2next(0);
+
+  (*ref_node_ptr)->xyz = (REF_DBL *)malloc(max*3*sizeof(REF_DBL));
+  RNS((*ref_node_ptr)->xyz,"malloc xyz NULL");
 
   return REF_SUCCESS;
 }
@@ -33,6 +36,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 REF_STATUS ref_node_free( REF_NODE ref_node )
 {
   if ( NULL == (void *)ref_node ) return REF_NULL;
+  ref_cond_free( ref_node->xyz );
   ref_cond_free( ref_node->global );
   ref_cond_free( ref_node );
   return REF_SUCCESS;
@@ -70,6 +74,11 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 	  ref_node->global[extra] = index2next(extra+1);
       ref_node->global[ref_node_max(ref_node)-1] = REF_EMPTY; 
       ref_node->blank = index2next(orig);
+
+      ref_node->xyz = (REF_DBL *)realloc( ref_node->xyz,
+					     ref_node_max(ref_node) *
+					     3 * sizeof(REF_DBL) );
+      RNS(ref_node->xyz,"remalloc xyz NULL");
     }
 
   *node = next2index(ref_node->blank);
