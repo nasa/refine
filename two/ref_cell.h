@@ -20,6 +20,8 @@ struct REF_CELL_STRUCT {
 REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell );
 REF_STATUS ref_cell_free( REF_CELL ref_cell );
 
+REF_STATUS ref_cell_inspect( REF_CELL ref_cell );
+
 #define ref_cell_n(ref_cell) ((ref_cell)->n)
 #define ref_cell_max(ref_cell) ((ref_cell)->max)
 #define ref_cell_node_per(ref_cell) ((ref_cell)->node_per)

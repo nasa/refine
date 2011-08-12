@@ -162,6 +162,12 @@ REF_STATUS ref_grid_from_ugrid( char *filename, REF_GRID *ref_grid_ptr )
 	RES( 1, fscanf( file, "%d", &(nodes[node]) ), "pri" );
       nodes[0]--; nodes[1]--; nodes[2]--; nodes[3]--; nodes[4]--; nodes[5]--;
       RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "new pri");
+
+      if ( cell != new_cell)
+	{
+	  printf("cell %d %d\n",cell,new_cell);
+	}
+
       RES( cell, new_cell, "pri index");
     }
 

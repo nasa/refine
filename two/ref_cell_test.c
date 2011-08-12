@@ -23,19 +23,28 @@ int main( int argc, char *argv[] )
 
   TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
   TES(0,cell,"first cell is zero");
+  TES(1,ref_cell_n(ref_cell),"first cell incements n");
   TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
   TES(1,cell,"second cell is one");
+  TES(2,ref_cell_n(ref_cell),"second cell incements n");
 
-  /* force realloc */
+  /* force realloc twice */
 
   TSS(ref_cell_free(ref_cell),"cleanup");
   TSS(ref_cell_create(4,&ref_cell),"create");
-  max = ref_cell_max(ref_cell);
-  for (i = 0; i < max+10; i++ ){
-    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
-    RES(i,cell,"expected ordered new cells");
-  }
 
+  max = ref_cell_max(ref_cell);
+  for (i = 0; i < max+1; i++ ){
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+    RES(i,cell,"expected ordered new cells first block");
+  }
+  TAS(ref_cell_max(ref_cell)>max,"realloc max");
+
+  max = ref_cell_max(ref_cell);
+  for (i = ref_cell_n(ref_cell); i < max+1; i++ ){
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+    RES(i,cell,"expected ordered new cells second block");
+  }
   TAS(ref_cell_max(ref_cell)>max,"realloc max");
 
   /* get nodes */

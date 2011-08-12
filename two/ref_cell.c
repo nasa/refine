@@ -38,6 +38,24 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
+{
+  REF_INT cell, node;
+  printf("ref_cell = %p\n",(void *)ref_cell);
+  printf(" node_per = %d\n",ref_cell_node_per(ref_cell));
+  printf(" n = %d\n",ref_cell_n(ref_cell));
+  printf(" max = %d\n",ref_cell_max(ref_cell));
+  printf(" blank = %d\n",ref_cell->blank);
+  for (cell=0;cell<ref_cell_max(ref_cell);cell++)
+    {
+      printf(" %d:",cell);
+      for (node=0;node<ref_cell_node_per(ref_cell);node++)
+	printf(" %d",ref_cell_c2n(ref_cell,node,cell));
+      printf("\n");
+    }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 {
   int node, cell;
@@ -60,7 +78,7 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 	  ref_cell->c2n[0+ref_cell_node_per(ref_cell)*cell] = REF_EMPTY; 
 	  ref_cell->c2n[1+ref_cell_node_per(ref_cell)*cell] = cell+1; 
 	}
-      ref_cell->c2n[1+4*(ref_cell_max(ref_cell)-1)] = REF_EMPTY; 
+      ref_cell_c2n(ref_cell,1,(ref_cell->max)-1) = REF_EMPTY; 
       ref_cell->blank = orig;
     }
 
@@ -68,6 +86,8 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
   ref_cell_blank(ref_cell) = ref_cell_c2n(ref_cell,1,cell);
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
     ref_cell_c2n(ref_cell,node,cell) = nodes[node];
+
+  ref_cell_n(ref_cell)++;
 
   (*new_cell) = cell;
 
