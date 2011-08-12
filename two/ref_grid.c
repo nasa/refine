@@ -74,7 +74,7 @@ REF_STATUS ref_grid_from_ugrid( char *filename, REF_GRID *ref_grid_ptr )
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
-  ref_node = ref_grid_node(ref_grid);
+  ref_node = ref_grid->nodes;
 
   file = fopen(filename,"r");
   if (NULL == (void *)file) printf("unable to open %s",filename);
