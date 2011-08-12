@@ -17,6 +17,8 @@ int main( int argc, char *argv[] )
   TES(0,ref_node_n(ref_node),"init zero nodes");
   TSS(ref_node_free(ref_node),"free");
 
+  TES(REF_EMPTY,ref_node_global(ref_node,0),"global empty for missing node");
+
   global = 10;
   TSS(ref_node_add(ref_node,global,&node),"add");
   TES(0,node,"first node is zero");
