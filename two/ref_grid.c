@@ -6,6 +6,7 @@
 
 REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
 {
+  (*ref_grid_ptr) = NULL;
   (*ref_grid_ptr) = (REF_GRID)malloc( sizeof(REF_GRID_STRUCT) );
   RNS(*ref_grid_ptr,"malloc ref_grid NULL");
 
@@ -38,5 +39,31 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
   RFS( ref_cell_free( ref_grid->cells[7] ), "cell 7 free");
   RSS( ref_cell_free( ref_grid->cells[8] ), "cell 8 free");
   ref_cond_free( ref_grid );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_grid_from_ugrid( char *filename, REF_GRID *ref_grid_ptr )
+{
+  REF_GRID ref_grid;
+  FILE *file;
+  int nnode, nface, nquad, ncell, npyramid, nprism, nhex;
+
+  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  ref_grid = (*ref_grid_ptr);
+
+  file = fopen(filename,"r");
+  if (NULL == (void *)file) printf("unable to open %s",filename);
+  RNS(file, "unable to open file" );
+
+  RES( 1, fread( &nnode,    sizeof(int), 1, file), "nnode" );
+  RES( 1, fread( &nface,    sizeof(int), 1, file), "nface" );
+  RES( 1, fread( &nquad,    sizeof(int), 1, file), "nquad" );
+  RES( 1, fread( &ncell,    sizeof(int), 1, file), "ncell" );
+  RES( 1, fread( &npyramid, sizeof(int), 1, file), "npyramid" );
+  RES( 1, fread( &nprism,   sizeof(int), 1, file), "nprism" );
+  RES( 1, fread( &nhex,     sizeof(int), 1, file), "nhex" );
+
+  fclose(file);
+
   return REF_SUCCESS;
 }
