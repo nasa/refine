@@ -45,23 +45,38 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
 REF_STATUS ref_grid_from_ugrid( char *filename, REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
+  REF_NODE ref_node;
   FILE *file;
-  int nnode, nface, nquad, ncell, npyramid, nprism, nhex;
+  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+  REF_INT node, new_node;
+  REF_DBL xyz[3];
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid_node(ref_grid);
 
   file = fopen(filename,"r");
   if (NULL == (void *)file) printf("unable to open %s",filename);
   RNS(file, "unable to open file" );
 
-  RES( 1, fread( &nnode,    sizeof(int), 1, file), "nnode" );
-  RES( 1, fread( &nface,    sizeof(int), 1, file), "nface" );
-  RES( 1, fread( &nquad,    sizeof(int), 1, file), "nquad" );
-  RES( 1, fread( &ncell,    sizeof(int), 1, file), "ncell" );
-  RES( 1, fread( &npyramid, sizeof(int), 1, file), "npyramid" );
-  RES( 1, fread( &nprism,   sizeof(int), 1, file), "nprism" );
-  RES( 1, fread( &nhex,     sizeof(int), 1, file), "nhex" );
+  RES( 1, fscanf( file, "%d", &nnode ), "nnode" );
+  RES( 1, fscanf( file, "%d", &ntri ), "ntri" );
+  RES( 1, fscanf( file, "%d", &nqua ), "nqua" );
+  RES( 1, fscanf( file, "%d", &ntet ), "ntet" );
+  RES( 1, fscanf( file, "%d", &npyr ), "npyr" );
+  RES( 1, fscanf( file, "%d", &npri ), "npri" );
+  RES( 1, fscanf( file, "%d", &nhex ), "nhex" );
+
+  for( node=0; node<nnode ; node++ ) 
+    {
+      RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+      RES( 1, fscanf( file, "%lf", &(xyz[0]) ), "x" );
+      RES( 1, fscanf( file, "%lf", &(xyz[1]) ), "y" );
+      RES( 1, fscanf( file, "%lf", &(xyz[2]) ), "z" );
+      ref_node_xyz( ref_node, 0, new_node ) = xyz[0];
+      ref_node_xyz( ref_node, 1, new_node ) = xyz[1];
+      ref_node_xyz( ref_node, 2, new_node ) = xyz[2];
+    }
 
   fclose(file);
 
