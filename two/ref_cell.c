@@ -8,7 +8,8 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
 {
   REF_INT i;
   REF_INT max;
-  *ref_cell_ptr = (REF_CELL)malloc( sizeof(REF_CELL_STRUCT) );
+  (*ref_cell_ptr) = NULL;
+  (*ref_cell_ptr) = (REF_CELL)malloc( sizeof(REF_CELL_STRUCT) );
   RNS(*ref_cell_ptr,"malloc ref_cell NULL");
 
   max = 100;

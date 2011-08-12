@@ -11,7 +11,8 @@
 REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 {
   REF_INT max, node;
-  *ref_node_ptr = (REF_NODE)malloc( sizeof(REF_NODE_STRUCT) );
+  (*ref_node_ptr) = NULL;
+  (*ref_node_ptr) = (REF_NODE)malloc( sizeof(REF_NODE_STRUCT) );
   RNS(*ref_node_ptr,"malloc ref_node NULL");
 
   max = 10;
