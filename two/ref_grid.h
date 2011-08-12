@@ -23,8 +23,6 @@ struct REF_GRID_STRUCT {
 REF_STATUS ref_grid_create( REF_GRID *ref_grid );
 REF_STATUS ref_grid_free( REF_GRID ref_grid );
 
-REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid );
-
 END_C_DECLORATION
 
 #endif /* REF_GRID_H */
