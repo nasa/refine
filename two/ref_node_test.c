@@ -13,6 +13,8 @@ int main( int argc, char *argv[] )
 
   if (argc>1) {printf("%s ignored\n",argv[0]);}
 
+  /* init */
+
   TFS(ref_node_free(NULL),"dont free NULL");
 
   TSS(ref_node_create(&ref_node),"create");
@@ -24,15 +26,44 @@ int main( int argc, char *argv[] )
 
   TES(REF_EMPTY,ref_node_global(ref_node,0),"global empty for missing node");
 
+  /* dont allow neg globals */
+  TFS(ref_node_add(ref_node,-3,&node),"negative global no allowed");
+  TES(0,ref_node_n(ref_node),"count not changed");
+
+  /* first add in order */
+
   global = 10;
-  TSS(ref_node_add(ref_node,global,&node),"firat add");
+  TSS(ref_node_add(ref_node,global,&node),"first add");
   TES(0,node,"first node is zero");
+  TES(1,ref_node_n(ref_node),"count incremented");
   TES(global,ref_node_global(ref_node,0),"global match for first node");
 
   global = 20;
   TSS(ref_node_add(ref_node,global,&node),"second add");
   TES(1,node,"second node is one");
+  TES(2,ref_node_n(ref_node),"count incremented");
   TES(global,ref_node_global(ref_node,1),"global match for second node");
+
+  /* removed node invalid */
+
+  TFS(ref_node_remove(ref_node,-1),"remove invalid node");
+  TFS(ref_node_remove(ref_node,2),"remove invalid node");
+
+  TSS(ref_node_remove(ref_node,0),"remove first node");
+  TES(REF_EMPTY,ref_node_global(ref_node,0),"global empty for removed node");
+  TES(1,ref_node_n(ref_node),"count decremented");
+
+  global = 30;
+  TSS(ref_node_add(ref_node,global,&node),"replace");
+  TES(0,node,"reuse removed node");
+  TES(global,ref_node_global(ref_node,node),"global match for replaced node");
+  TES(2,ref_node_n(ref_node),"count incremented");
+
+  TES(20,ref_node_global(ref_node,1),"global match for second node");
+
+  /* add bunch testing realloc */
+
+  /* lookup local from global */
 
   TSS(ref_node_free(ref_node),"free");
 
