@@ -48,7 +48,7 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
     {
       orig = ref_cell_max(ref_cell);
       chunk = 5000;
-      ref_cell_max(ref_cell) = orig + chunk;
+      ref_cell->max = orig + chunk;
       ref_cell->c2n = (REF_INT *)realloc( ref_cell->c2n,
 					  ref_cell_node_per(ref_cell) *
 					  ref_cell_max(ref_cell) *

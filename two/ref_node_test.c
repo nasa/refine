@@ -9,7 +9,7 @@
 int main( int argc, char *argv[] )
 {
   REF_NODE ref_node;
-  REF_INT global, node;
+  REF_INT global, node, max;
 
   if (argc>1) {printf("%s ignored\n",argv[0]);}
 
@@ -62,6 +62,15 @@ int main( int argc, char *argv[] )
   TES(20,ref_node_global(ref_node,1),"global match for second node");
 
   /* add bunch testing realloc */
+
+  TSS(ref_node_free(ref_node),"free");
+  TSS(ref_node_create(&ref_node),"create");
+
+  max = ref_node_max(ref_node);
+  for ( global = 10; global < 10*(max+2) ; global += 10 )
+    RSS(ref_node_add(ref_node,global,&node),"realloc");
+
+  TAS(max < ref_node_max(ref_node),"grow max");
 
   /* lookup local from global */
 

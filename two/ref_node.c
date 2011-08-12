@@ -25,7 +25,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
     (*ref_node_ptr)->global[node] = index2next(node+1);
 
   (*ref_node_ptr)->global[((*ref_node_ptr)->max)-1] = REF_EMPTY;
-  (*ref_node_ptr)->blank = -2;
+  (*ref_node_ptr)->blank = index2next(0);
 
   return REF_SUCCESS;
 }
@@ -52,7 +52,25 @@ REF_STATUS ref_node_inspect( REF_NODE ref_node )
 
 REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 {
+  int extra;
+  int orig, chunk;
+
   if ( global < 0 ) return REF_INVALID;
+
+  if ( REF_EMPTY == ref_node->blank )
+    {
+      orig = ref_node_max(ref_node);
+      chunk = 5000;
+      ref_node->max = orig + chunk;
+      ref_node->global = (REF_INT *)realloc( ref_node->global,
+					     ref_node_max(ref_node) *
+					     sizeof(REF_INT) );
+      RNS(ref_node->global,"remalloc global NULL");
+      for (extra=orig;extra < ref_node_max(ref_node); extra++ ) 
+	  ref_node->global[extra] = index2next(extra+1);
+      ref_node->global[ref_node_max(ref_node)-1] = REF_EMPTY; 
+      ref_node->blank = index2next(orig);
+    }
 
   *node = next2index(ref_node->blank);
   ref_node->blank = ref_node->global[*node];
