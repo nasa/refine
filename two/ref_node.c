@@ -92,7 +92,6 @@ REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
   return REF_SUCCESS;
 }
 
-
 REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
 {
   REF_INT node;
@@ -105,5 +104,4 @@ REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
 
   if ( (*local) == REF_EMPTY ) return REF_FAILURE;
   return REF_SUCCESS;
-
 }
