@@ -19,7 +19,7 @@ int main( int argc, char *argv[] )
   TSS(ref_grid_create(&ref_grid),"create");
   TSS(ref_grid_free(ref_grid),"free");
 
-  TSS(ref_grid_from_ugrid("/ump/fldmd/home/mikepark/FUN3D/GnuTestCase/Grids/gbumpf_MX.ugrid",&ref_grid),"from ugrid");
+  TSS(ref_grid_import_ugrid("/ump/fldmd/home/mikepark/FUN3D/GnuTestCase/Grids/gbumpf_MX.ugrid",&ref_grid),"from ugrid");
 
   TSS(ref_grid_free(ref_grid),"free");
 

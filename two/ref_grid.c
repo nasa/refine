@@ -57,7 +57,7 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_from_ugrid( char *filename, REF_GRID *ref_grid_ptr )
+REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
