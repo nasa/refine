@@ -17,6 +17,7 @@ BEGIN_C_DECLORATION
 struct REF_GRID_STRUCT {
   REF_NODE nodes;
   REF_CELL cells[9];
+  REF_CELL faces[5];
 };
 
 REF_STATUS ref_grid_create( REF_GRID *ref_grid );
