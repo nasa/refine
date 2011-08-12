@@ -26,11 +26,19 @@ int main( int argc, char *argv[] )
   TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
   TES(1,cell,"second cell is one");
 
+  /* force realloc */
+
+  TSS(ref_cell_free(ref_cell),"cleanup");
+  TSS(ref_cell_create(4,&ref_cell),"create");
   max = ref_cell_max(ref_cell);
-  for (i = 0; i < max; i++ ) RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+  for (i = 0; i < max+10; i++ ){
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+    RES(i,cell,"expected ordered new cells");
+  }
 
   TAS(ref_cell_max(ref_cell)>max,"realloc max");
 
+  /* get nodes */
   TSS(ref_cell_free(ref_cell),"free");
   TSS(ref_cell_create(4,&ref_cell),"create new");
 
