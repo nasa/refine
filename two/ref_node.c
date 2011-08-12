@@ -77,8 +77,8 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
       ref_node->blank = index2next(orig);
 
       ref_node->xyz = (REF_DBL *)realloc( ref_node->xyz,
-					     ref_node_max(ref_node) *
-					     3 * sizeof(REF_DBL) );
+					  ref_node_max(ref_node) *
+					  3 * sizeof(REF_DBL) );
       RNS(ref_node->xyz,"remalloc xyz NULL");
     }
 
