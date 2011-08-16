@@ -115,3 +115,30 @@ REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
   if ( (*local) == REF_EMPTY ) return REF_FAILURE;
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT **o2n_ptr )
+{
+  REF_INT node;
+  REF_INT nnode;
+  REF_INT *o2n;
+  
+  *o2n_ptr = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
+  RNS(*o2n_ptr,"malloc o2n NULL");
+  o2n = *o2n_ptr;
+
+  nnode = 0;
+  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+    if ( ref_node_valid(ref_node,node) )
+      {
+	o2n[node] = nnode;
+	nnode++;
+      }
+    else
+      {
+	o2n[node] = REF_EMPTY;
+      }
+  RES( nnode, ref_node_n(ref_node), "nnode miscount" );
+
+  return REF_SUCCESS;
+}
+

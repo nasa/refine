@@ -10,6 +10,7 @@ int main( int argc, char *argv[] )
 {
   REF_NODE ref_node;
   REF_INT global, node, max;
+  REF_INT *o2n;
 
   if (argc>1) {printf("%s ignored\n",argv[0]);}
 
@@ -79,6 +80,24 @@ int main( int argc, char *argv[] )
   TES(REF_EMPTY,node,"expect node empty for invalid global");
   TFS(ref_node_local(ref_node,5,&node),"returned invalid global");
   TFS(ref_node_local(ref_node,200,&node),"returned invalid global");
+
+  TSS(ref_node_free(ref_node),"free");
+
+  /* compact nodes */
+
+  TSS(ref_node_create(&ref_node),"create");
+
+  TSS(ref_node_add(ref_node,1,&node),"add");
+  TSS(ref_node_add(ref_node,3,&node),"add");
+  TSS(ref_node_add(ref_node,2,&node),"add");
+  TSS(ref_node_remove(ref_node,1),"remove");
+
+  TSS(ref_node_compact(ref_node,&o2n),"compact");
+ 
+  TES(0,o2n[0],"o2n");
+  TES(REF_EMPTY,o2n[1],"o2n");
+  TES(1,o2n[2],"o2n");
+  free(o2n);
 
   TSS(ref_node_free(ref_node),"free");
 
