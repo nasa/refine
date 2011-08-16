@@ -14,7 +14,7 @@ int main( int argc, char *argv[] )
 
   /* aflr3 */
 
-  TSS(ref_grid_import_ugrid("/ump/fldmd/home/mikepark/FUN3D/GnuTestCase/Grids/gbumpf_MX.ugrid",&ref_grid),"from ugrid");
+  TSS(ref_grid_import_ugrid("../test/gbumpf_MX.ugrid",&ref_grid),"from ugrid");
 
   TSS(ref_grid_free(ref_grid),"free");
 
