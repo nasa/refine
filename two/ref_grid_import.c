@@ -24,7 +24,7 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
   ref_node = ref_grid->nodes;
 
   file = fopen(filename,"r");
-  if (NULL == (void *)file) printf("unable to open %s",filename);
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
   RNS(file, "unable to open file" );
 
   RES( 1, fscanf( file, "%d", &nnode ), "nnode" );
