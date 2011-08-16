@@ -3,7 +3,12 @@
 CC=gcc
 CFLAGS="-g -O0 -pedantic-errors -Wall -Wextra -Werror -Wunused"
 
-tests=`ls -1 *_test.c`
+if [ -z "$1" ]
+then
+  tests=`ls -1 *_test.c`
+else
+  tests=$*
+fi
 
 for test in $tests;
 do
