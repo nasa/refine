@@ -57,8 +57,8 @@ REF_STATUS ref_node_inspect( REF_NODE ref_node )
 
 REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 {
-  int extra;
-  int orig, chunk;
+  REF_INT extra;
+  REF_INT orig, chunk;
 
   if ( global < 0 ) return REF_INVALID;
 

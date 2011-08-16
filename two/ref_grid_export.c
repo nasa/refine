@@ -8,7 +8,8 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
   REF_NODE ref_node;
-  int node;
+  REF_INT node;
+
   ref_node = ref_grid->nodes;
 
   file = fopen(filename,"w");

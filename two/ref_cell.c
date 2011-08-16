@@ -58,8 +58,8 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
 
 REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 {
-  int node, cell;
-  int orig, chunk;
+  REF_INT node, cell;
+  REF_INT orig, chunk;
 
   (*new_cell) = REF_EMPTY;
 
