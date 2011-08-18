@@ -10,6 +10,7 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
   REF_NODE ref_node;
   REF_INT node;
   REF_INT *o2n;
+  REF_INT ncell;
 
   ref_node = ref_grid->nodes;
 
@@ -32,6 +33,14 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
 	      ref_node_xyz(ref_node,0,node),
 	      ref_node_xyz(ref_node,1,node),
 	      ref_node_xyz(ref_node,2,node) ) ;
+
+  ncell = 0;
+  ncell += ref_cell_n(ref_grid->cells[4]);
+  ncell += ref_cell_n(ref_grid->cells[5]);
+  ncell += ref_cell_n(ref_grid->cells[6]);
+  ncell += ref_cell_n(ref_grid->cells[8]);
+
+  fprintf(file,"CELLS %d\n",ref_node_n(ref_node));
 
   free(o2n);
 
