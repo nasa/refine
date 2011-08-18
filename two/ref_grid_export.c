@@ -28,7 +28,7 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
 
   for ( node = 0; node < ref_node_max(ref_node); node++ )
     if ( REF_EMPTY != o2n[node] )
-      fprintf(file, " %.16e %16e %16e\n",
+      fprintf(file, " %.16e %.16e %.16e\n",
 	      ref_node_xyz(ref_node,0,node),
 	      ref_node_xyz(ref_node,1,node),
 	      ref_node_xyz(ref_node,2,node) ) ;
