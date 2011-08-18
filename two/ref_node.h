@@ -23,11 +23,11 @@ struct REF_NODE_STRUCT {
 
 #define ref_node_valid(ref_node,node) \
   ( (node) > -1 && (node) < ref_node_max(ref_node) && \
-    (ref_node)->global[(node)] > 0 )
+    (ref_node)->global[(node)] >= 0 )
 
 #define ref_node_global(ref_node,node) \
   ( ( (node) > -1 && (node) < ref_node_max(ref_node) && \
-      (ref_node)->global[(node)] > 0) ?			\
+      (ref_node)->global[(node)] >= 0) ?			\
            (ref_node)->global[(node)]:REF_EMPTY )
 
 #define ref_node_xyz(ref_node,ixyz,node) ((ref_node)->xyz[(ixyz)+3*(node)])

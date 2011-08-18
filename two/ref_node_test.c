@@ -101,5 +101,16 @@ int main( int argc, char *argv[] )
 
   TSS(ref_node_free(ref_node),"free");
 
+  /* valid */
+
+  TSS(ref_node_create(&ref_node),"create");
+
+  TAS(!ref_node_valid(ref_node,0),"empty invalid");
+  TSS(ref_node_add(ref_node,0,&node),"add 0 global");
+  TAS(ref_node_valid(ref_node,0),"zero is valid global");
+  TES(0,ref_node_global(ref_node,0),"zero global");
+
+  TSS(ref_node_free(ref_node),"free");
+
   return 0;
 }
