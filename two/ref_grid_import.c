@@ -38,6 +38,7 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
   for( node=0; node<nnode ; node++ ) 
     {
       RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+      RES( node, new_node, "node index");
       RES( 1, fscanf( file, "%lf", &(xyz[0]) ), "x" );
       RES( 1, fscanf( file, "%lf", &(xyz[1]) ), "y" );
       RES( 1, fscanf( file, "%lf", &(xyz[2]) ), "z" );
@@ -133,3 +134,76 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_import_fgrid( char *filename, REF_GRID *ref_grid_ptr )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  FILE *file;
+  REF_INT nnode, ntri, ntet;
+  REF_INT ixyz, node, new_node;
+  REF_DBL xyz;
+  REF_INT tri, new_tri;
+  REF_INT nodes[4];
+  REF_INT face_id;
+  REF_INT cell, new_cell;
+
+  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid->nodes;
+
+  file = fopen(filename,"r");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  RES( 1, fscanf( file, "%d", &nnode ), "nnode" );
+  RES( 1, fscanf( file, "%d", &ntri ), "ntri" );
+  RES( 1, fscanf( file, "%d", &ntet ), "ntet" );
+
+  for( node=0; node<nnode ; node++ )
+    {
+      RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+      RES( node, new_node, "node index");
+    }
+
+  for( ixyz=0; ixyz<3 ; ixyz++ )
+    for( node=0; node<nnode ; node++ ) 
+      {
+	RES( 1, fscanf( file, "%lf", &xyz ), "xyz" );
+	ref_node_xyz( ref_node, ixyz, node ) = xyz;
+      }
+
+  ref_cell = ref_grid->faces[3];
+  nodes[3] = REF_EMPTY;
+  for( tri = 0; tri < ntri ; tri++ )
+    {
+      for ( node = 0 ; node < 3 ; node++ )  
+	RES( 1, fscanf( file, "%d", &(nodes[node]) ), "tri" );
+      nodes[0]--; nodes[1]--; nodes[2]--;
+      RSS( ref_cell_add(ref_cell, nodes, &new_tri ), "new tri");
+      RES( tri, new_tri, "tri index");
+    }
+
+  ref_cell = ref_grid->faces[3];
+  for( tri = 0; tri < ntri ; tri++ )
+    {
+      RES( 1, fscanf( file, "%d", &face_id ), "tri id" );
+      ref_cell_c2n(ref_cell,4,tri) = face_id;
+    }
+
+  ref_cell = ref_grid->cells[4];
+  for( cell = 0; cell < ntet ; cell++ )
+    {
+      for ( node = 0 ; node < 4 ; node++ )  
+	RES( 1, fscanf( file, "%d", &(nodes[node]) ), "tet" );
+      nodes[0]--; nodes[1]--; nodes[2]--; nodes[3]--;
+      RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "new tet");
+      RES( cell, new_cell, "tet index");
+    }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+

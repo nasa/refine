@@ -9,6 +9,7 @@
 BEGIN_C_DECLORATION
 
 REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid );
+REF_STATUS ref_grid_import_fgrid( char *filename, REF_GRID *ref_grid );
 
 END_C_DECLORATION
 
