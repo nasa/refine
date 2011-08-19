@@ -9,6 +9,33 @@
 #define VTK_WEDGE      (13)
 #define VTK_PYRAMID    (14)
 
+/*
+3-4 UGRID
+| |\ 
+| | 2
+| |/
+0-1
+2-3 VTK
+| |\ 
+| | 4
+| |/
+1-0
+ */
+
+#define VTK_PYRAMID_ORDER(vtk_nodes)			\
+  {							\
+    REF_INT ugrid_nodes[5];				\
+    ugrid_nodes[0] = (vtk_nodes)[0];			\
+    ugrid_nodes[1] = (vtk_nodes)[1];			\
+    ugrid_nodes[2] = (vtk_nodes)[2];			\
+    ugrid_nodes[3] = (vtk_nodes)[3];			\
+    ugrid_nodes[4] = (vtk_nodes)[4];			\
+    (vtk_nodes)[0] = ugrid_nodes[1];			\
+    (vtk_nodes)[1] = ugrid_nodes[0];			\
+    (vtk_nodes)[2] = ugrid_nodes[3];			\
+    (vtk_nodes)[3] = ugrid_nodes[4];			\
+    (vtk_nodes)[4] = ugrid_nodes[2];			\
+  }
 
 REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
 {
@@ -63,7 +90,50 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
     if ( ref_cell_valid( ref_cell, cell ) )
       {
 	fprintf(file," %d",node_per);
-	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes")
+	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
+	for ( node = 0; node < node_per; node++ )
+	  fprintf(file," %d",o2n[nodes[node]]+1);
+	fprintf(file,"\n");
+      }
+  free(nodes);
+
+  node_per = 5;
+  ref_cell = ref_grid->cells[node_per];
+  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
+  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
+    if ( ref_cell_valid( ref_cell, cell ) )
+      {
+	fprintf(file," %d",node_per);
+	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
+	VTK_PYRAMID_ORDER(nodes);
+	for ( node = 0; node < node_per; node++ )
+	  fprintf(file," %d",o2n[nodes[node]]+1);
+	fprintf(file,"\n");
+      }
+  free(nodes);
+
+  node_per = 6;
+  ref_cell = ref_grid->cells[node_per];
+  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
+  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
+    if ( ref_cell_valid( ref_cell, cell ) )
+      {
+	fprintf(file," %d",node_per);
+	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
+	for ( node = 0; node < node_per; node++ )
+	  fprintf(file," %d",o2n[nodes[node]]+1);
+	fprintf(file,"\n");
+      }
+  free(nodes);
+
+  node_per = 8;
+  ref_cell = ref_grid->cells[node_per];
+  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
+  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
+    if ( ref_cell_valid( ref_cell, cell ) )
+      {
+	fprintf(file," %d",node_per);
+	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
 	for ( node = 0; node < node_per; node++ )
 	  fprintf(file," %d",o2n[nodes[node]]+1);
 	fprintf(file,"\n");
@@ -71,11 +141,26 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
   free(nodes);
 
   fprintf(file,"CELL_TYPES %d\n",ncell);
+
   node_per = 4;
   ref_cell = ref_grid->cells[node_per];
   for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
     fprintf(file," %d\n",VTK_TETRA);
 
+  node_per = 5;
+  ref_cell = ref_grid->cells[node_per];
+  for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
+    fprintf(file," %d\n",VTK_PYRAMID);
+
+  node_per = 6;
+  ref_cell = ref_grid->cells[node_per];
+  for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
+    fprintf(file," %d\n",VTK_WEDGE);
+
+  node_per = 8;
+  ref_cell = ref_grid->cells[node_per];
+  for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
+    fprintf(file," %d\n",VTK_HEXAHEDRON);
 
   free(o2n);
 
