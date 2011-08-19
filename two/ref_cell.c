@@ -49,9 +49,19 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
   for (cell=0;cell<ref_cell_max(ref_cell);cell++)
     {
       printf(" %d:",cell);
-      for (node=0;node<ref_cell_node_per(ref_cell);node++)
-	printf(" %d",ref_cell_c2n(ref_cell,node,cell));
+      if ( ref_cell_valid(ref_cell,cell) )
+	{
+	  for (node=0;node<ref_cell_node_per(ref_cell);node++)
+	    printf(" %d",ref_cell_c2n(ref_cell,node,cell));
+	}
+      else
+	{
+	  for (node=0;node<2;node++)
+	    printf(" %d",ref_cell_c2n(ref_cell,node,cell));
+
+	}
       printf("\n");
+
     }
   return REF_SUCCESS;
 }
