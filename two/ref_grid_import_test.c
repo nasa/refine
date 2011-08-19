@@ -25,10 +25,12 @@ int main( int argc, char *argv[] )
 
   TSS(ref_grid_import_fgrid("../test/gbumpn.fgrid",&ref_grid),"from fgrid");
   TSS(ref_grid_export_vtk(ref_grid,"gbumpn.vtk"),"vtk");
+  TSS(ref_grid_export_fgrid(ref_grid,"gbumpn.fgrid"),"fgrid");
   TSS(ref_grid_free(ref_grid),"free");
 
   TSS(ref_grid_import_fgrid("../test/om6_inv08.fgrid",&ref_grid),"from fgrid");
   TSS(ref_grid_export_vtk(ref_grid,"om6_inv08.vtk"),"vtk");
+  TSS(ref_grid_export_fgrid(ref_grid,"om6_inv08.fgrid"),"fgrid");
   TSS(ref_grid_free(ref_grid),"free");
 
   return 0;
