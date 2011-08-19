@@ -63,8 +63,9 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
     if ( ref_cell_valid( ref_cell, cell ) )
       {
 	fprintf(file," %d",node_per);
+	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes")
 	for ( node = 0; node < node_per; node++ )
-	  fprintf(file," %d",o2n[ref_cell_c2n(ref_cell,node,cell)]+1);
+	  fprintf(file," %d",o2n[nodes[node]]+1);
 	fprintf(file,"\n");
       }
   free(nodes);
