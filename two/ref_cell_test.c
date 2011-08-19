@@ -74,9 +74,6 @@ int main( int argc, char *argv[] )
   TAS(!ref_cell_valid(ref_cell,-1),"invlid 0");
   TAS(!ref_cell_valid(ref_cell,-1),"invlid 1");
   RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
-
-  ref_cell_inspect( ref_cell );
-
   TAS(ref_cell_valid(ref_cell,0),"valid 0");
   
   TSS(ref_cell_free(ref_cell),"free");
