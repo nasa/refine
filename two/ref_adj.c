@@ -28,7 +28,7 @@ REF_STATUS ref_adj_create( REF_ADJ *ref_adj_ptr )
   RNS(ref_adj->item,"malloc ref_adj->item NULL");
   for (i = 0; i < ref_adj_nitem(ref_adj) ; i++ )
     {
-      ref_adj->item[i].reference = REF_EMPTY;
+      ref_adj->item[i].ref = REF_EMPTY;
       ref_adj->item[i].next = i+1;
     }
   ref_adj->item[ref_adj_nitem(ref_adj)-1].next = REF_EMPTY;
@@ -52,4 +52,19 @@ REF_STATUS ref_adj_inspect( REF_ADJ ref_adj )
   printf(" blank = %d\n",ref_adj->blank);
 
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_adj_reg( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
+{
+  REF_INT item;
+
+  item = ref_adj->blank;
+  ref_adj->blank = ref_adj->item[item].next;
+
+  ref_adj->item[item].ref = reference;
+  ref_adj->item[item].next = ref_adj->first[node];
+
+  ref_adj->first[node] = item;
+
+  return REF_SUCCESS;  
 }
