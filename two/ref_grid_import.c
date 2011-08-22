@@ -189,7 +189,7 @@ REF_STATUS ref_grid_import_fgrid( char *filename, REF_GRID *ref_grid_ptr )
   for( tri = 0; tri < ntri ; tri++ )
     {
       RES( 1, fscanf( file, "%d", &face_id ), "tri id" );
-      ref_cell_c2n(ref_cell,4,tri) = face_id;
+      ref_cell_c2n(ref_cell,3,tri) = face_id;
     }
 
   ref_cell = ref_grid->cells[4];
