@@ -28,7 +28,10 @@ int main( int argc, char *argv[] )
   for( item = ref_adj_first(ref_adj,0) ;
        ref_adj_valid(item) ;
        ref_adj_next(ref_adj,item) )
-    degree++;
+    {
+      degree++;
+      TES(12,ref_adj_ref(ref_adj,item),"registered ref");        
+    }
   
   TES(1,degree,"registered degree");
        
