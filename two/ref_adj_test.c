@@ -9,7 +9,7 @@
 int main( int argc, char *argv[] )
 {
   REF_ADJ ref_adj;
-  REF_INT degree, item;
+  REF_INT degree, item, ref;
 
   if (argc>1) {printf("%s ignored\n",argv[0]);}
 
@@ -24,17 +24,28 @@ int main( int argc, char *argv[] )
 
   TSS(ref_adj_reg(ref_adj,0,12),"reg");
 
+  item = ref_adj_first(ref_adj,0);
+  TES(12,ref_adj_ref(ref_adj,item),"registered ref");
+
+  TSS(ref_adj_free(ref_adj),"free");
+
+  /* iterate */
+  TSS(ref_adj_create(&ref_adj),"create");
+
   degree = 0;
-  for( item = ref_adj_first(ref_adj,0) ;
-       ref_adj_valid(item) ;
-       ref_adj_next(ref_adj,item) )
+  ref_adj_for_loop(ref_adj,0,item,ref)
+    degree++;
+  TES(0,degree,"empty degree");
+
+  TSS(ref_adj_reg(ref_adj,0,14),"reg");
+
+  degree = 0;
+  ref_adj_for_loop(ref_adj,0,item,ref)
     {
       degree++;
-      TES(12,ref_adj_ref(ref_adj,item),"registered ref");        
-    }
-  
+      TES(14,ref,"registered ref");        
+    }  
   TES(1,degree,"registered degree");
-       
 
   TSS(ref_adj_free(ref_adj),"free");
 
