@@ -48,7 +48,7 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
   REF_INT *nodes;
   REF_INT node_per, cell;
 
-  ref_node = ref_grid->nodes;
+  ref_node = ref_grid_node(ref_grid);
 
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -73,20 +73,20 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
       }
 
   ncell = 0;
-  ncell += ref_cell_n(ref_grid->cells[4]);
-  ncell += ref_cell_n(ref_grid->cells[5]);
-  ncell += ref_cell_n(ref_grid->cells[6]);
-  ncell += ref_cell_n(ref_grid->cells[8]);
+  ncell += ref_cell_n(ref_grid_tet(ref_grid));
+  ncell += ref_cell_n(ref_grid_pyr(ref_grid));
+  ncell += ref_cell_n(ref_grid_pri(ref_grid));
+  ncell += ref_cell_n(ref_grid_hex(ref_grid));
   size = 0;
-  size += 5*ref_cell_n(ref_grid->cells[4]);
-  size += 6*ref_cell_n(ref_grid->cells[5]);
-  size += 7*ref_cell_n(ref_grid->cells[6]);
-  size += 9*ref_cell_n(ref_grid->cells[8]);
+  size += 5*ref_cell_n(ref_grid_tet(ref_grid));
+  size += 6*ref_cell_n(ref_grid_pyr(ref_grid));
+  size += 7*ref_cell_n(ref_grid_pri(ref_grid));
+  size += 9*ref_cell_n(ref_grid_hex(ref_grid));
 
   fprintf(file,"CELLS %d %d\n",ncell,size);
 
-  node_per = 4;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_tet(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
     if ( ref_cell_valid( ref_cell, cell ) )
@@ -99,8 +99,8 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
       }
   free(nodes);
 
-  node_per = 5;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_pyr(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
     if ( ref_cell_valid( ref_cell, cell ) )
@@ -114,8 +114,8 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
       }
   free(nodes);
 
-  node_per = 6;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_pri(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
     if ( ref_cell_valid( ref_cell, cell ) )
@@ -128,8 +128,8 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
       }
   free(nodes);
 
-  node_per = 8;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_hex(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
     if ( ref_cell_valid( ref_cell, cell ) )
@@ -144,23 +144,19 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
 
   fprintf(file,"CELL_TYPES %d\n",ncell);
 
-  node_per = 4;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_tet(ref_grid);
   for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
     fprintf(file," %d\n",VTK_TETRA);
 
-  node_per = 5;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_pyr(ref_grid);
   for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
     fprintf(file," %d\n",VTK_PYRAMID);
 
-  node_per = 6;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_pri(ref_grid);
   for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
     fprintf(file," %d\n",VTK_WEDGE);
 
-  node_per = 8;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_hex(ref_grid);
   for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
     fprintf(file," %d\n",VTK_HEXAHEDRON);
 
@@ -183,7 +179,7 @@ REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
   REF_INT node_per, cell;
   REF_INT ixyz;
 
-  ref_node = ref_grid->nodes;
+  ref_node = ref_grid_node(ref_grid);
 
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -191,11 +187,9 @@ REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
 
   nnode = ref_node_n(ref_node);
 
-  ref_cell = ref_grid->faces[3];
-  ntri = ref_cell_n(ref_cell);
+  ntri = ref_cell_n(ref_grid_tri(ref_grid));
 
-  ref_cell = ref_grid->cells[4];
-  ntet = ref_cell_n(ref_cell);
+  ntet = ref_cell_n(ref_grid_tet(ref_grid));
 
   fprintf(file,"%d %d %d\n",nnode,ntri,ntet);
 
@@ -206,8 +200,8 @@ REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
       if ( REF_EMPTY != o2n[node] )
 	fprintf(file, " %.16e\n", ref_node_xyz(ref_node,ixyz,node) ) ;
 
-  node_per = 4;
-  ref_cell = ref_grid->faces[3];
+  ref_cell = ref_grid_tri(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
     if ( ref_cell_valid( ref_cell, cell ) )
@@ -226,8 +220,8 @@ REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
       }
   free(nodes);
 
-  node_per = 4;
-  ref_cell = ref_grid->cells[node_per];
+  ref_cell = ref_grid_tet(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
     if ( ref_cell_valid( ref_cell, cell ) )

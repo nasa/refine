@@ -6,27 +6,22 @@
 
 REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
 {
+  REF_GRID ref_grid;
   (*ref_grid_ptr) = NULL;
   (*ref_grid_ptr) = (REF_GRID)malloc( sizeof(REF_GRID_STRUCT) );
   RNS(*ref_grid_ptr,"malloc ref_grid NULL");
 
-  RSS( ref_node_create( &(*ref_grid_ptr)->nodes), "node create" );
+  ref_grid = *ref_grid_ptr;
 
-  (*ref_grid_ptr)->cells[0] = NULL;
-  (*ref_grid_ptr)->cells[1] = NULL;
-  (*ref_grid_ptr)->cells[2] = NULL;
-  (*ref_grid_ptr)->cells[3] = NULL;
-  RSS( ref_cell_create( 4, &((*ref_grid_ptr)->cells[4]) ), "tet create" );
-  RSS( ref_cell_create( 5, &((*ref_grid_ptr)->cells[5]) ), "pri create" );
-  RSS( ref_cell_create( 6, &((*ref_grid_ptr)->cells[6]) ), "pyr create" );
-  (*ref_grid_ptr)->cells[7] = NULL;
-  RSS( ref_cell_create( 8, &((*ref_grid_ptr)->cells[8]) ), "hex create" );
+  RSS( ref_node_create( &ref_grid_node(ref_grid) ), "node create" );
 
-  (*ref_grid_ptr)->faces[0] = NULL;
-  (*ref_grid_ptr)->faces[1] = NULL;
-  (*ref_grid_ptr)->faces[2] = NULL;
-  RSS( ref_cell_create( 4, &((*ref_grid_ptr)->faces[3]) ), "tri create" );
-  RSS( ref_cell_create( 5, &((*ref_grid_ptr)->faces[4]) ), "qua create" );
+  RSS( ref_cell_create( 4, &ref_grid_tet(ref_grid) ), "tet create" );
+  RSS( ref_cell_create( 5, &ref_grid_pyr(ref_grid) ), "pyr create" );
+  RSS( ref_cell_create( 6, &ref_grid_pri(ref_grid) ), "pri create" );
+  RSS( ref_cell_create( 8, &ref_grid_hex(ref_grid) ), "hex create" );
+
+  RSS( ref_cell_create( 4, &ref_grid_tri(ref_grid) ), "tri create" );
+  RSS( ref_cell_create( 5, &ref_grid_qua(ref_grid) ), "qua create" );
 
   return REF_SUCCESS;
 }
@@ -35,23 +30,15 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
 {
   if ( NULL == (void *)ref_grid ) return REF_NULL;
 
-  RSS( ref_node_free( ref_grid->nodes ), "node free");
+  RSS( ref_node_free( ref_grid_node(ref_grid) ), "node free");
 
-  RFS( ref_cell_free( ref_grid->cells[0] ), "cell 0 free");
-  RFS( ref_cell_free( ref_grid->cells[1] ), "cell 1 free");
-  RFS( ref_cell_free( ref_grid->cells[2] ), "cell 2 free");
-  RFS( ref_cell_free( ref_grid->cells[3] ), "cell 3 free");
-  RSS( ref_cell_free( ref_grid->cells[4] ), "cell 4 free");
-  RSS( ref_cell_free( ref_grid->cells[5] ), "cell 5 free");
-  RSS( ref_cell_free( ref_grid->cells[6] ), "cell 6 free");
-  RFS( ref_cell_free( ref_grid->cells[7] ), "cell 7 free");
-  RSS( ref_cell_free( ref_grid->cells[8] ), "cell 8 free");
+  RSS( ref_cell_free( ref_grid_tet(ref_grid) ), "tet free");
+  RSS( ref_cell_free( ref_grid_pyr(ref_grid) ), "pyr free");
+  RSS( ref_cell_free( ref_grid_pri(ref_grid) ), "pri free");
+  RSS( ref_cell_free( ref_grid_hex(ref_grid) ), "hex free");
 
-  RFS( ref_cell_free( ref_grid->faces[0] ), "face 0 free");
-  RFS( ref_cell_free( ref_grid->faces[1] ), "face 1 free");
-  RFS( ref_cell_free( ref_grid->faces[2] ), "face 2 free");
-  RSS( ref_cell_free( ref_grid->faces[3] ), "face 3 free");
-  RSS( ref_cell_free( ref_grid->faces[4] ), "face 4 free");
+  RSS( ref_cell_free( ref_grid_tri(ref_grid) ), "tri free");
+  RSS( ref_cell_free( ref_grid_qua(ref_grid) ), "qua free");
 
   ref_cond_free( ref_grid );
   return REF_SUCCESS;

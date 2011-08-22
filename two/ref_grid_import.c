@@ -21,7 +21,7 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
-  ref_node = ref_grid->nodes;
+  ref_node = ref_grid_node(ref_grid);
 
   file = fopen(filename,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -47,7 +47,7 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
       ref_node_xyz( ref_node, 2, new_node ) = xyz[2];
     }
 
-  ref_cell = ref_grid->faces[3];
+  ref_cell = ref_grid_tri(ref_grid);
   nodes[3] = REF_EMPTY;
   for( tri = 0; tri < ntri ; tri++ )
     {
@@ -58,32 +58,32 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
       RES( tri, new_tri, "tri index");
     }
 
-  ref_cell = ref_grid->faces[4];
+  ref_cell = ref_grid_qua(ref_grid);
   nodes[4] = REF_EMPTY;
   for( qua = 0; qua < nqua ; qua++ )
     {
       for ( node = 0 ; node < 4 ; node++ )  
-	RES( 1, fscanf( file, "%d", &(nodes[node]) ), "tri" );
+	RES( 1, fscanf( file, "%d", &(nodes[node]) ), "qua" );
       nodes[0]--; nodes[1]--; nodes[2]--; nodes[3]--;
       RSS( ref_cell_add(ref_cell, nodes, &new_qua ), "new qua");
       RES( qua, new_qua, "qua index");
     }
   
-  ref_cell = ref_grid->faces[3];
+  ref_cell = ref_grid_tri(ref_grid);
   for( tri = 0; tri < ntri ; tri++ )
     {
       RES( 1, fscanf( file, "%d", &face_id ), "tri id" );
       ref_cell_c2n(ref_cell,4,tri) = face_id;
     }
 
-  ref_cell = ref_grid->faces[4];
+  ref_cell = ref_grid_qua(ref_grid);
   for( qua = 0; qua < nqua ; qua++ )
     {
       RES( 1, fscanf( file, "%d", &face_id ), "qua id" );
       ref_cell_c2n(ref_cell,5,qua) = face_id;
     }
 
-  ref_cell = ref_grid->cells[4];
+  ref_cell = ref_grid_tet(ref_grid);
   for( cell = 0; cell < ntet ; cell++ )
     {
       for ( node = 0 ; node < 4 ; node++ )  
@@ -93,7 +93,7 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
       RES( cell, new_cell, "tet index");
     }
 
-  ref_cell = ref_grid->cells[5];
+  ref_cell = ref_grid_pyr(ref_grid);
   for( cell = 0; cell < npyr ; cell++ )
     {
       for ( node = 0 ; node < 5 ; node++ )  
@@ -103,7 +103,7 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
       RES( cell, new_cell, "pyr index");
     }
 
-  ref_cell = ref_grid->cells[6];
+  ref_cell = ref_grid_pri(ref_grid);
   for( cell = 0; cell < npri ; cell++ )
     {
       for ( node = 0 ; node < 6 ; node++ )  
@@ -119,7 +119,7 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
       RES( cell, new_cell, "pri index");
     }
 
-  ref_cell = ref_grid->cells[8];
+  ref_cell = ref_grid_hex(ref_grid);
   for( cell = 0; cell < nhex ; cell++ )
     {
       for ( node = 0 ; node < 8 ; node++ )  
@@ -151,7 +151,7 @@ REF_STATUS ref_grid_import_fgrid( char *filename, REF_GRID *ref_grid_ptr )
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
-  ref_node = ref_grid->nodes;
+  ref_node = ref_grid_node(ref_grid);
 
   file = fopen(filename,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -174,7 +174,7 @@ REF_STATUS ref_grid_import_fgrid( char *filename, REF_GRID *ref_grid_ptr )
 	ref_node_xyz( ref_node, ixyz, node ) = xyz;
       }
 
-  ref_cell = ref_grid->faces[3];
+  ref_cell = ref_grid_tri(ref_grid);
   nodes[3] = REF_EMPTY;
   for( tri = 0; tri < ntri ; tri++ )
     {
@@ -185,14 +185,14 @@ REF_STATUS ref_grid_import_fgrid( char *filename, REF_GRID *ref_grid_ptr )
       RES( tri, new_tri, "tri index");
     }
 
-  ref_cell = ref_grid->faces[3];
+  ref_cell = ref_grid_tri(ref_grid);
   for( tri = 0; tri < ntri ; tri++ )
     {
       RES( 1, fscanf( file, "%d", &face_id ), "tri id" );
       ref_cell_c2n(ref_cell,3,tri) = face_id;
     }
 
-  ref_cell = ref_grid->cells[4];
+  ref_cell = ref_grid_tet(ref_grid);
   for( cell = 0; cell < ntet ; cell++ )
     {
       for ( node = 0 ; node < 4 ; node++ )  
