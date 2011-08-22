@@ -48,8 +48,14 @@ REF_STATUS ref_adj_free( REF_ADJ ref_adj )
 
 REF_STATUS ref_adj_inspect( REF_ADJ ref_adj )
 {
+  REF_INT node, item;
   printf("ref_adj = %p\n",(void *)ref_adj);
   printf(" blank = %d\n",ref_adj->blank);
+  for ( node = 0 ; node < ref_adj_nnode( ref_adj ) ; node++ )
+    printf(" first[%d] = %d\n",node,ref_adj->first[node]);
+  for ( item = 0 ; item < ref_adj_nitem( ref_adj ) ; item++ )
+    printf(" item[%d] = %d : %d\n",item,
+	   ref_adj->item[item].next,ref_adj->item[item].ref);
 
   return REF_SUCCESS;
 }
