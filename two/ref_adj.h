@@ -34,17 +34,20 @@ REF_STATUS ref_adj_free( REF_ADJ ref_adj );
 
 #define ref_adj_first( ref_adj, node ) ( (ref_adj)->first[(node)] )
 #define ref_adj_valid( item ) ( REF_EMPTY != (item) )
-#define ref_adj_next( ref_adj, item_arg ) ( (ref_adj)->item[(item_arg)].next )
-#define ref_adj_item_ref( ref_adj, item_arg ) ( (ref_adj)->item[(item_arg)].ref )
-#define ref_adj_ref( ref_adj, item_arg ) \
+#define ref_adj_item_next( ref_adj, item_arg ) \
+  ( (ref_adj)->item[(item_arg)].next )
+#define ref_adj_item_ref( ref_adj, item_arg ) \
+  ( (ref_adj)->item[(item_arg)].ref )
+
+#define ref_adj_safe_ref( ref_adj, item_arg ) \
   ( ref_adj_valid( item_arg )?(ref_adj)->item[(item_arg)].ref:REF_EMPTY )
 
 #define ref_adj_for( ref_adj, node, item, ref)			\
   for ( (item) = ref_adj_first( ref_adj, node ),		\
-	  (ref) = ref_adj_ref( ref_adj, item ) ;		\
-	ref_adj_valid( item ) ;					\
-	(item) = ref_adj_next( ref_adj, item ),			\
-	  (ref) =  ref_adj_ref( ref_adj, item ) )
+	  (ref) = ref_adj_safe_ref( ref_adj, item ) ;		\
+	ref_adj_valid( item ) ;						\
+	(item) = ref_adj_item_next( ref_adj, item ),			\
+	  (ref) =  ref_adj_safe_ref( ref_adj, item ) )
 
 REF_STATUS ref_adj_inspect( REF_ADJ ref_adj );
 

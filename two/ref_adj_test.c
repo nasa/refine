@@ -25,7 +25,7 @@ int main( int argc, char *argv[] )
   TSS(ref_adj_add(ref_adj,0,12),"add");
 
   item = ref_adj_first(ref_adj,0);
-  TES(12,ref_adj_ref(ref_adj,item),"added ref");
+  TES(12,ref_adj_safe_ref(ref_adj,item),"added ref");
 
   TSS(ref_adj_free(ref_adj),"free");
 
@@ -37,7 +37,7 @@ int main( int argc, char *argv[] )
   TSS(ref_adj_remove(ref_adj,0,12),"remove added");
 
   item = ref_adj_first(ref_adj,0);
-  TES(REF_EMPTY,ref_adj_ref(ref_adj,item),"added ref");
+  TES(REF_EMPTY,ref_adj_safe_ref(ref_adj,item),"added ref");
 
   TSS(ref_adj_free(ref_adj),"free");
 
