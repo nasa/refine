@@ -27,6 +27,12 @@ struct REF_CELL_STRUCT {
   ( (cell) >=0 && (cell) < ((ref_cell)->max) && \
     REF_EMPTY != (ref_cell)->c2n[ref_cell_node_per(ref_cell)*(cell)] )
 
+#define ref_cell_for_nodes( ref_cell, cell, nodes)			\
+  for ( (cell) = 0 ;							\
+	(cell) < ref_cell_max(ref_cell);				\
+	(cell)++ )							\
+    if ( REF_SUCCESS == ref_cell_nodes( ref_cell, cell, nodes ) )
+
 REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell );
 REF_STATUS ref_cell_free( REF_CELL ref_cell );
 
