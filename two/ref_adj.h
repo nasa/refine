@@ -32,7 +32,9 @@ REF_STATUS ref_adj_free( REF_ADJ ref_adj );
 #define ref_adj_nitem( ref_adj ) ((ref_adj)->nitem)
 #define ref_adj_blank( ref_adj ) ((ref_adj)->blank)
 
-#define ref_adj_first( ref_adj, node ) ( (ref_adj)->first[(node)] )
+#define ref_adj_first( ref_adj, node )		 \
+  ( (node)>=0&&(node)<ref_adj_nnode( ref_adj ) ? \
+    (ref_adj)->first[(node)]:REF_EMPTY )
 #define ref_adj_valid( item ) ( REF_EMPTY != (item) )
 #define ref_adj_item_next( ref_adj, item_arg ) \
   ( (ref_adj)->item[(item_arg)].next )

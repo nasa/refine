@@ -63,16 +63,32 @@ REF_STATUS ref_adj_inspect( REF_ADJ ref_adj )
 REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
 {
   REF_INT item;
+  REF_INT orig, chunk, i;
 
-  item = ref_adj->blank;
-  ref_adj->blank = ref_adj->item[item].next;
+  if ( node < 0 ) return REF_INVALID;
 
-  ref_adj->item[item].ref = reference;
-  ref_adj->item[item].next = ref_adj->first[node];
+  if ( node >= ref_adj_nnode(ref_adj) )
+    {
+      orig = ref_adj_nnode( ref_adj );
+      chunk = 100 + MAX( 0, node-orig );
+      ref_adj_nnode(ref_adj) = orig + chunk;
+      ref_adj->first = (REF_INT *)realloc( ref_adj->first,
+					   ref_adj_nnode(ref_adj) * 
+					   sizeof(REF_INT) );
+      RNS(ref_adj->first,"realloc ref_adj->first NULL");
+      for (i = orig; i < ref_adj_nnode(ref_adj) ; i++ )
+	ref_adj->first[i] = REF_EMPTY;
+    }
+
+  item = ref_adj_blank(ref_adj);
+  ref_adj_blank(ref_adj) = ref_adj_item_next(ref_adj,item);
+
+  ref_adj_item_ref(ref_adj,item) = reference;
+  ref_adj_item_next(ref_adj,item) = ref_adj_first(ref_adj,node);
 
   ref_adj->first[node] = item;
 
-  return REF_SUCCESS;  
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
@@ -86,7 +102,7 @@ REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
 
   if ( reference == ref_adj_item_ref( ref_adj, item ) )
     {
-      ref_adj_first( ref_adj, node ) = ref_adj_item_next( ref_adj, item );
+      ref_adj->first[node] = ref_adj_item_next( ref_adj, item );
       ref_adj_item_next( ref_adj, item ) = ref_adj_blank( ref_adj );
       ref_adj_blank( ref_adj ) = item;
       ref_adj_item_ref( ref_adj, item ) = REF_EMPTY;

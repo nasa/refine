@@ -9,7 +9,7 @@
 int main( int argc, char *argv[] )
 {
   REF_ADJ ref_adj;
-  REF_INT degree, item, ref;
+  REF_INT degree, item, ref, node;
 
   if (argc>1) {printf("%s ignored\n",argv[0]);}
 
@@ -60,6 +60,32 @@ int main( int argc, char *argv[] )
   TES(1,degree,"node degree");
 
   TSS(ref_adj_free(ref_adj),"free");
+
+  /* neagtive node */
+
+  TSS(ref_adj_create(&ref_adj),"create");
+  
+  TES(REF_EMPTY,ref_adj_first(ref_adj,-1),"negative first");
+  TFS(ref_adj_add(ref_adj,-1,21),"negative add");
+
+  TSS(ref_adj_free(ref_adj),"free");
+
+  /* reallocate nodes */
+  TSS(ref_adj_create(&ref_adj),"create");
+  node = ref_adj_nnode( ref_adj );
+
+  TSS(ref_adj_add(ref_adj,node,15),"add and realloc nodes");
+
+  TAS( ref_adj_nnode( ref_adj ) > node, "nodes bigger" );
+
+  item = ref_adj_first(ref_adj,node);
+  TES(15,ref_adj_safe_ref(ref_adj,item),"realloc has ref");
+
+  item = ref_adj_first(ref_adj,node+1);
+  TES(REF_EMPTY,ref_adj_safe_ref(ref_adj,item),"realloc init empty");
+
+  TSS(ref_adj_free(ref_adj),"free");
+
 
   return 0;
 }
