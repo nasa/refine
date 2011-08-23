@@ -53,3 +53,83 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 END_C_DECLORATION
 
 #endif /* REF_CELL_H */
+
+/* http://www.simcenter.msstate.edu/docs/solidmesh/ugridconnectivity.html
+in c numbering
+
+                              inode3------5------inode2
+                                 / \              . /
+                                /   \          .   /
+                               /     \      .     /
+                              /       \  .       /
+                             /        .\        /
+                            2      1    4      3
+                           /    .        \    /
+                          /  .            \  /
+                         /.                \/
+                      inode0------0------inode1
+
+                     inode3-------7----inode4
+                         |    .            | \
+                         |       .         |  \
+                         |          .      |   \
+                         |             5   |    6
+                         |                .|     \
+                         |                 | .    \
+                         |                 |    .  \
+                         2                 4       inode2
+                         |                 |      . /
+                         |                 |   .   /
+                         |                 |.     /
+                         |               . |     /
+                         |            .    |    3
+                         |         1       |   /
+                         |      .          |  /
+                         |   .             | /
+                         |.                |/
+                       inode0------0-----inode1
+
+                                                  inode5
+                                                  . /|
+                                               .   / |
+                                            .     /  |
+                                         .       /   |
+                                      .         /    |
+                                   7           8     5
+                                .             /      |
+                             .               /       |
+                          .                 /        |
+                       inode3-----6------inode4    inode2
+                         |                 |      . /
+                         |                 |   .   /
+                         |                 |.     /
+                         |               . |     /
+                         2            .    |    3
+                         |         1       4   /
+                         |      .          |  /
+                         |   .             | /
+                         |.                |/
+                       inode0-----0------inode1
+
+                               inode7-----11-----inode6
+                                 /.                /|
+                                / .               / |
+                               /  .              /  |
+                              /   .             /   |
+                             9    .           10    6
+                            /     7           /     |
+                           /      .          /      |
+                          /       .         /       |
+                       inode4-8----------inode5     |
+                         |      inode3.....|...5..inode2
+                         |       .         |       /
+                         |      .          |      /
+                         |     .           |     /
+                         2    1            4    3
+                         |   .             |   /
+                         |  .              |  /
+                         | .               | /
+                         |.                |/
+                       inode0------0-----inode1
+
+		       /*
