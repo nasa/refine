@@ -132,4 +132,4 @@ in c numbering
                          |.                |/
                        inode0------0-----inode1
 
-		       /*
+*/
