@@ -17,10 +17,7 @@ BEGIN_C_DECLORATION
 struct REF_GRID_STRUCT {
   REF_NODE node;
 
-  REF_CELL tet;
-  REF_CELL pyr;
-  REF_CELL pri;
-  REF_CELL hex;
+  REF_CELL cell[5];
 
   REF_CELL tri;
   REF_CELL qua;
@@ -31,13 +28,20 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid );
 
 #define ref_grid_node(ref_grid) ((ref_grid)->node)
 
-#define ref_grid_tet(ref_grid) ((ref_grid)->tet)
-#define ref_grid_pyr(ref_grid) ((ref_grid)->pyr)
-#define ref_grid_pri(ref_grid) ((ref_grid)->pri)
-#define ref_grid_hex(ref_grid) ((ref_grid)->hex)
+#define ref_grid_tet(ref_grid) ((ref_grid)->cell[0])
+#define ref_grid_pyr(ref_grid) ((ref_grid)->cell[1])
+#define ref_grid_pri(ref_grid) ((ref_grid)->cell[2])
+#define ref_grid_hex(ref_grid) ((ref_grid)->cell[3])
 
 #define ref_grid_tri(ref_grid) ((ref_grid)->tri)
 #define ref_grid_qua(ref_grid) ((ref_grid)->qua)
+
+#define ref_grid_for_cell( ref_grid, group, ref_cell )			\
+  for ( (group) = 0, (ref_cell) = (ref_grid)->cell[(group)] ;		\
+	(group) < 4;							\
+	(group)++  , (ref_cell) = (ref_grid)->cell[(group)] )
+
+REF_STATUS ref_grid_inspect( REF_GRID ref_grid );
 
 END_C_DECLORATION
 

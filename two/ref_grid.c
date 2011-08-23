@@ -20,6 +20,8 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
   RSS( ref_cell_create( 6, &ref_grid_pri(ref_grid) ), "pri create" );
   RSS( ref_cell_create( 8, &ref_grid_hex(ref_grid) ), "hex create" );
 
+  ref_grid->cell[4] = NULL;
+
   RSS( ref_cell_create( 4, &ref_grid_tri(ref_grid) ), "tri create" );
   RSS( ref_cell_create( 5, &ref_grid_qua(ref_grid) ), "qua create" );
 
@@ -41,5 +43,16 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
   RSS( ref_cell_free( ref_grid_qua(ref_grid) ), "qua free");
 
   ref_cond_free( ref_grid );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_grid_inspect( REF_GRID ref_grid )
+{
+  printf("ref_grid = %p\n",(void *)ref_grid);
+  printf(" tet = %p\n",(void *)ref_grid_tet(ref_grid));
+  printf(" pyr = %p\n",(void *)ref_grid_pyr(ref_grid));
+  printf(" pri = %p\n",(void *)ref_grid_pri(ref_grid));
+  printf(" hex = %p\n",(void *)ref_grid_hex(ref_grid));
+
   return REF_SUCCESS;
 }
