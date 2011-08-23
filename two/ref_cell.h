@@ -16,6 +16,7 @@ struct REF_CELL_STRUCT {
   REF_INT n, max;
   REF_INT blank;
   REF_INT *c2n;
+  REF_INT *c2e;
 };
 
 #define ref_cell_node_per(ref_cell) ((ref_cell)->node_per)

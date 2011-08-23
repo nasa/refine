@@ -40,8 +40,15 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
 
   ref_cell_n(ref_cell) = 0;
   ref_cell_max(ref_cell) = max;
-  ref_cell->c2n = (REF_INT *)malloc(node_per*max*sizeof(REF_INT));
+
+  ref_cell->c2n = (REF_INT *)malloc(ref_cell_max(ref_cell) *
+				    ref_cell_node_per(ref_cell) *
+				    sizeof(REF_INT));
   RNS(ref_cell->c2n,"malloc c2n NULL");
+  ref_cell->c2e = (REF_INT *)malloc(ref_cell_max(ref_cell) *
+				    ref_cell_edge_per(ref_cell) *
+				    sizeof(REF_INT));
+  RNS(ref_cell->c2e,"malloc c2e NULL");
   for ( cell = 0 ; cell < max ; cell++ ) 
     {
       ref_cell_c2n(ref_cell,0,cell) = REF_EMPTY;
@@ -57,6 +64,7 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
 {
   if ( NULL == (void *)ref_cell ) return REF_NULL;
   ref_cond_free( ref_cell->c2n );
+  ref_cond_free( ref_cell->c2e );
   ref_cond_free( ref_cell );
   return REF_SUCCESS;
 }
@@ -106,6 +114,11 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 					  ref_cell_max(ref_cell) *
 					  sizeof(REF_INT) );
       RNS(ref_cell->c2n,"remalloc c2n NULL");
+      ref_cell->c2e = (REF_INT *)realloc( ref_cell->c2e,
+					  ref_cell_edge_per(ref_cell) *
+					  ref_cell_max(ref_cell) *
+					  sizeof(REF_INT) );
+      RNS(ref_cell->c2e,"remalloc c2e NULL");
       for (cell=orig;cell < ref_cell_max(ref_cell); cell++ ) 
 	{
 	  ref_cell_c2n(ref_cell,0,cell)= REF_EMPTY; 
