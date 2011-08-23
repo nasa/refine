@@ -17,15 +17,15 @@ int main( int argc, char *argv[] )
   TSS(ref_adj_create(&ref_adj),"create");
   TSS(ref_adj_free(ref_adj),"free");
 
-  /* register and count*/
+  /* add and count*/
   TSS(ref_adj_create(&ref_adj),"create");
 
   TAS(!ref_adj_valid(ref_adj_first(ref_adj,0)),"empty");
 
-  TSS(ref_adj_reg(ref_adj,0,12),"reg");
+  TSS(ref_adj_add(ref_adj,0,12),"add");
 
   item = ref_adj_first(ref_adj,0);
-  TES(12,ref_adj_ref(ref_adj,item),"registered ref");
+  TES(12,ref_adj_ref(ref_adj,item),"added ref");
 
   TSS(ref_adj_free(ref_adj),"free");
 
@@ -37,15 +37,15 @@ int main( int argc, char *argv[] )
     degree++;
   TES(0,degree,"empty degree");
 
-  TSS(ref_adj_reg(ref_adj,0,14),"reg");
+  TSS(ref_adj_add(ref_adj,0,14),"add");
 
   degree = 0;
   ref_adj_for(ref_adj,0,item,ref)
     {
       degree++;
-      TES(14,ref,"registered ref");        
+      TES(14,ref,"check ref");        
     }  
-  TES(1,degree,"registered degree");
+  TES(1,degree,"node degree");
 
   TSS(ref_adj_free(ref_adj),"free");
 
