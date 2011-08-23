@@ -88,76 +88,68 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
   ref_cell = ref_grid_tet(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
-    if ( ref_cell_valid( ref_cell, cell ) )
-      {
-	fprintf(file," %d",node_per);
-	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
-	for ( node = 0; node < node_per; node++ )
-	  fprintf(file," %d",o2n[nodes[node]]);
-	fprintf(file,"\n");
-      }
+  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+    {
+      fprintf(file," %d",node_per);
+      for ( node = 0; node < node_per; node++ )
+	fprintf(file," %d",o2n[nodes[node]]);
+      fprintf(file,"\n");
+    }
   free(nodes);
 
   ref_cell = ref_grid_pyr(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
-    if ( ref_cell_valid( ref_cell, cell ) )
-      {
-	fprintf(file," %d",node_per);
-	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
-	VTK_PYRAMID_ORDER(nodes);
-	for ( node = 0; node < node_per; node++ )
-	  fprintf(file," %d",o2n[nodes[node]]);
-	fprintf(file,"\n");
-      }
+  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+    {
+      fprintf(file," %d",node_per);
+      VTK_PYRAMID_ORDER(nodes);
+      for ( node = 0; node < node_per; node++ )
+	fprintf(file," %d",o2n[nodes[node]]);
+      fprintf(file,"\n");
+    }
   free(nodes);
 
   ref_cell = ref_grid_pri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
-    if ( ref_cell_valid( ref_cell, cell ) )
-      {
-	fprintf(file," %d",node_per);
-	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
-	for ( node = 0; node < node_per; node++ )
-	  fprintf(file," %d",o2n[nodes[node]]);
-	fprintf(file,"\n");
-      }
+  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+    {
+      fprintf(file," %d",node_per);
+      for ( node = 0; node < node_per; node++ )
+	fprintf(file," %d",o2n[nodes[node]]);
+      fprintf(file,"\n");
+    }
   free(nodes);
 
   ref_cell = ref_grid_hex(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
-    if ( ref_cell_valid( ref_cell, cell ) )
-      {
-	fprintf(file," %d",node_per);
-	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
-	for ( node = 0; node < node_per; node++ )
-	  fprintf(file," %d",o2n[nodes[node]]);
-	fprintf(file,"\n");
-      }
+  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+    {
+      fprintf(file," %d",node_per);
+      for ( node = 0; node < node_per; node++ )
+	fprintf(file," %d",o2n[nodes[node]]);
+      fprintf(file,"\n");
+    }
   free(nodes);
 
   fprintf(file,"CELL_TYPES %d\n",ncell);
 
   ref_cell = ref_grid_tet(ref_grid);
-  for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
+  ref_cell_for( ref_cell, cell )
     fprintf(file," %d\n",VTK_TETRA);
 
   ref_cell = ref_grid_pyr(ref_grid);
-  for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
+  ref_cell_for( ref_cell, cell )
     fprintf(file," %d\n",VTK_PYRAMID);
 
   ref_cell = ref_grid_pri(ref_grid);
-  for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
+  ref_cell_for( ref_cell, cell )
     fprintf(file," %d\n",VTK_WEDGE);
 
   ref_cell = ref_grid_hex(ref_grid);
-  for ( cell = 0 ; cell < ref_cell_n(ref_cell) ; cell++ )
+  ref_cell_for( ref_cell, cell )
     fprintf(file," %d\n",VTK_HEXAHEDRON);
 
   free(o2n);
@@ -203,36 +195,29 @@ REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
-    if ( ref_cell_valid( ref_cell, cell ) )
-      {
-	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
-	for ( node = 0; node < 3; node++ )
-	  fprintf(file," %d",o2n[nodes[node]]+1);
-	fprintf(file,"\n");
-      }
-  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
-    if ( ref_cell_valid( ref_cell, cell ) )
-      {
-	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
-	fprintf(file," %d",o2n[nodes[3]]+1);
-	fprintf(file,"\n");
-      }
+  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < 3; node++ )
+	fprintf(file," %d",o2n[nodes[node]]+1);
+      fprintf(file,"\n");
+    }
+  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+    {
+      fprintf(file," %d",nodes[3]);
+      fprintf(file,"\n");
+    }
   free(nodes);
 
   ref_cell = ref_grid_tet(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
-    if ( ref_cell_valid( ref_cell, cell ) )
-      {
-	RSS(ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes");
-	for ( node = 0; node < node_per; node++ )
-	  fprintf(file," %d",o2n[nodes[node]]+1);
-	fprintf(file,"\n");
-      }
+  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < node_per; node++ )
+	fprintf(file," %d",o2n[nodes[node]]+1);
+      fprintf(file,"\n");
+    }
   free(nodes);
-
 
   free(o2n);
 

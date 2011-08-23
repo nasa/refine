@@ -27,7 +27,13 @@ struct REF_CELL_STRUCT {
   ( (cell) >=0 && (cell) < ((ref_cell)->max) && \
     REF_EMPTY != (ref_cell)->c2n[ref_cell_node_per(ref_cell)*(cell)] )
 
-#define ref_cell_for( ref_cell, cell, nodes)				\
+#define ref_cell_for( ref_cell, cell )					\
+  for ( (cell) = 0 ;							\
+	(cell) < ref_cell_max(ref_cell);				\
+	(cell)++ )							\
+    if ( ref_cell_valid( ref_cell, cell ) )
+
+#define ref_cell_for_with_nodes( ref_cell, cell, nodes)			\
   for ( (cell) = 0 ;							\
 	(cell) < ref_cell_max(ref_cell);				\
 	(cell)++ )							\
