@@ -119,5 +119,12 @@ int main( int argc, char *argv[] )
   TES(12,ref_cell_edge_per(ref_cell),"edge_per");
   TSS(ref_cell_free(ref_cell),"cleanup");
 
+  /* empty edges */
+
+  TSS(ref_cell_create(4,&ref_cell),"create");
+  TSS(ref_cell_empty_edges(ref_cell),"empty edges");
+  TES(REF_EMPTY,ref_cell_c2e(ref_cell,0,0),"edge");
+  TSS(ref_cell_free(ref_cell),"cleanup");
+
   return 0;
 }

@@ -150,3 +150,13 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
     nodes[node] = ref_cell_c2n(ref_cell,node,cell);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell)
+{
+  REF_INT cell, edge;
+  for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
+    for ( edge = 0 ; edge < ref_cell_edge_per(ref_cell) ; edge++ )
+      ref_cell_c2e(ref_cell,edge,cell) = REF_EMPTY;
+
+  return REF_SUCCESS;
+}

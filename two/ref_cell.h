@@ -25,11 +25,16 @@ struct REF_CELL_STRUCT {
 #define ref_cell_n(ref_cell) ((ref_cell)->n)
 #define ref_cell_max(ref_cell) ((ref_cell)->max)
 #define ref_cell_blank(ref_cell) ((ref_cell)->blank)
-#define ref_cell_c2n(ref_cell,node,cell) \
-  ((ref_cell)->c2n[(node)+ref_cell_node_per(ref_cell)*(cell)])
+
 #define ref_cell_valid(ref_cell,cell) \
   ( (cell) >=0 && (cell) < ((ref_cell)->max) && \
     REF_EMPTY != (ref_cell)->c2n[ref_cell_node_per(ref_cell)*(cell)] )
+
+#define ref_cell_c2n(ref_cell,node,cell) \
+  ((ref_cell)->c2n[(node)+ref_cell_node_per(ref_cell)*(cell)])
+
+#define ref_cell_c2e(ref_cell,cell_edge,cell) \
+  ((ref_cell)->c2e[(cell_edge)+ref_cell_edge_per(ref_cell)*(cell)])
 
 #define ref_cell_for( ref_cell, cell )					\
   for ( (cell) = 0 ;							\
@@ -50,6 +55,8 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell );
 
 REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
+
+REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell);
 
 END_C_DECLORATION
 
