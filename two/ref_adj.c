@@ -74,3 +74,50 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
 
   return REF_SUCCESS;  
 }
+
+REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
+{
+  REF_INT item, ref;
+  REF_INT target, parent;
+
+  item = ref_adj_first( ref_adj, node );
+
+  if ( !ref_adj_valid( item ) ) return REF_INVALID;
+
+  if ( reference == ref_adj_ref( ref_adj, item ) )
+    {
+      ref_adj_first( ref_adj, node ) = ref_adj_next( ref_adj, item );
+      ref_adj_next( ref_adj, item ) = ref_adj_blank( ref_adj );
+      ref_adj_blank( ref_adj ) = item;
+      ref_adj_item_ref( ref_adj, item ) = REF_EMPTY;
+      return REF_SUCCESS;
+    }
+  
+  target = REF_EMPTY;
+  parent = REF_EMPTY;
+  ref_adj_for( ref_adj, node, item, ref)
+    {
+      if ( ref == reference )
+	{
+	  target = item;
+	  break;
+	}
+      else
+	{
+	  parent = item;
+	}
+    }
+
+  if ( REF_EMPTY == target )
+    return REF_INVALID;
+
+  if ( REF_EMPTY == parent )
+    RSS( REF_FAILURE, "parent empty");
+  
+  ref_adj_next( ref_adj, parent ) = ref_adj_next( ref_adj, item );
+  ref_adj_next( ref_adj, item ) = ref_adj_blank( ref_adj );
+  ref_adj_blank( ref_adj ) = item;
+  ref_adj_item_ref( ref_adj, item ) = REF_EMPTY;
+
+  return REF_SUCCESS;
+}
