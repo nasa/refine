@@ -47,6 +47,7 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
   REF_INT ncell,size;
   REF_INT *nodes;
   REF_INT node_per, cell;
+  REF_INT group;
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -73,66 +74,28 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
       }
 
   ncell = 0;
-  ncell += ref_cell_n(ref_grid_tet(ref_grid));
-  ncell += ref_cell_n(ref_grid_pyr(ref_grid));
-  ncell += ref_cell_n(ref_grid_pri(ref_grid));
-  ncell += ref_cell_n(ref_grid_hex(ref_grid));
+  ref_grid_for_cell( ref_grid, group, ref_cell )
+    ncell += ref_cell_n(ref_cell);
+
   size = 0;
-  size += 5*ref_cell_n(ref_grid_tet(ref_grid));
-  size += 6*ref_cell_n(ref_grid_pyr(ref_grid));
-  size += 7*ref_cell_n(ref_grid_pri(ref_grid));
-  size += 9*ref_cell_n(ref_grid_hex(ref_grid));
+  ref_grid_for_cell( ref_grid, group, ref_cell )
+    size += ref_cell_n(ref_cell)*(1+ref_cell_node_per(ref_cell));
 
   fprintf(file,"CELLS %d %d\n",ncell,size);
 
-  ref_cell = ref_grid_tet(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+  ref_grid_for_cell( ref_grid, group, ref_cell )
     {
-      fprintf(file," %d",node_per);
-      for ( node = 0; node < node_per; node++ )
-	fprintf(file," %d",o2n[nodes[node]]);
-      fprintf(file,"\n");
+      node_per = ref_cell_node_per(ref_cell);
+      nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
+      ref_cell_for_with_nodes( ref_cell, cell, nodes )
+	{
+	  fprintf(file," %d",node_per);
+	  for ( node = 0; node < node_per; node++ )
+	    fprintf(file," %d",o2n[nodes[node]]);
+	  fprintf(file,"\n");
+	}
+      free(nodes);
     }
-  free(nodes);
-
-  ref_cell = ref_grid_pyr(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  ref_cell_for_with_nodes( ref_cell, cell, nodes )
-    {
-      fprintf(file," %d",node_per);
-      VTK_PYRAMID_ORDER(nodes);
-      for ( node = 0; node < node_per; node++ )
-	fprintf(file," %d",o2n[nodes[node]]);
-      fprintf(file,"\n");
-    }
-  free(nodes);
-
-  ref_cell = ref_grid_pri(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  ref_cell_for_with_nodes( ref_cell, cell, nodes )
-    {
-      fprintf(file," %d",node_per);
-      for ( node = 0; node < node_per; node++ )
-	fprintf(file," %d",o2n[nodes[node]]);
-      fprintf(file,"\n");
-    }
-  free(nodes);
-
-  ref_cell = ref_grid_hex(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  ref_cell_for_with_nodes( ref_cell, cell, nodes )
-    {
-      fprintf(file," %d",node_per);
-      for ( node = 0; node < node_per; node++ )
-	fprintf(file," %d",o2n[nodes[node]]);
-      fprintf(file,"\n");
-    }
-  free(nodes);
 
   fprintf(file,"CELL_TYPES %d\n",ncell);
 
