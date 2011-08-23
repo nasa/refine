@@ -80,6 +80,24 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
 	ref_adj->first[i] = REF_EMPTY;
     }
 
+  if ( REF_EMPTY == ref_adj_blank(ref_adj) )
+    {
+      orig = ref_adj_nitem( ref_adj );
+      chunk = 100;
+      ref_adj_nitem( ref_adj ) =  orig + chunk;
+      ref_adj->item = (REF_ADJ_ITEM)realloc( ref_adj->item,
+					     ref_adj_nitem(ref_adj) * 
+					     sizeof(REF_ADJ_ITEM_STRUCT) );
+      RNS(ref_adj->item,"realloc ref_adj->item NULL");
+      for (i = orig; i < ref_adj_nitem(ref_adj) ; i++ )
+	{
+	  ref_adj->item[i].ref = REF_EMPTY;
+	  ref_adj->item[i].next = i+1;
+	}
+      ref_adj->item[ref_adj_nitem(ref_adj)-1].next = REF_EMPTY;
+      ref_adj->blank = orig;
+    }
+
   item = ref_adj_blank(ref_adj);
   ref_adj_blank(ref_adj) = ref_adj_item_next(ref_adj,item);
 

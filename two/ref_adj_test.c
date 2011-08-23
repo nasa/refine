@@ -10,6 +10,7 @@ int main( int argc, char *argv[] )
 {
   REF_ADJ ref_adj;
   REF_INT degree, item, ref, node;
+  REF_INT nitem;
 
   if (argc>1) {printf("%s ignored\n",argv[0]);}
 
@@ -17,7 +18,7 @@ int main( int argc, char *argv[] )
   TSS(ref_adj_create(&ref_adj),"create");
   TSS(ref_adj_free(ref_adj),"free");
 
-  /* add and count*/
+  printf("add and count\n");
   TSS(ref_adj_create(&ref_adj),"create");
 
   TAS(!ref_adj_valid(ref_adj_first(ref_adj,0)),"empty");
@@ -86,6 +87,16 @@ int main( int argc, char *argv[] )
 
   TSS(ref_adj_free(ref_adj),"free");
 
+  printf("reallocate adj\n");
+
+  TSS(ref_adj_create(&ref_adj),"create");
+  nitem =  ref_adj_nitem( ref_adj );
+  for ( item = 0 ; item < nitem+1 ; item++ )
+    RSS(ref_adj_add(ref_adj,0,item),"add requiring item realloc");
+
+  TAS( ref_adj_nitem( ref_adj ) > nitem, "item bigger" );
+
+  TSS(ref_adj_free(ref_adj),"free");
 
   return 0;
 }
