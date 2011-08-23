@@ -19,6 +19,25 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
   max = 100;
 
   ref_cell_node_per(ref_cell) = node_per;
+  switch ( node_per )
+    {
+    case 4:
+      ref_cell_edge_per(ref_cell) = 6;
+      break;
+    case 5:
+      ref_cell_edge_per(ref_cell) = 8;
+      break;
+    case 6:
+      ref_cell_edge_per(ref_cell) = 9;
+      break;
+    case 8:
+      ref_cell_edge_per(ref_cell) = 12;
+      break;
+    default:
+      ref_cell_edge_per(ref_cell) = 0;
+      break;    
+    }
+
   ref_cell_n(ref_cell) = 0;
   ref_cell_max(ref_cell) = max;
   ref_cell->c2n = (REF_INT *)malloc(node_per*max*sizeof(REF_INT));

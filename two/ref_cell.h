@@ -12,14 +12,17 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 struct REF_CELL_STRUCT {
-  REF_INT node_per, n, max;
+  REF_INT node_per, edge_per;
+  REF_INT n, max;
   REF_INT blank;
   REF_INT *c2n;
 };
 
+#define ref_cell_node_per(ref_cell) ((ref_cell)->node_per)
+#define ref_cell_edge_per(ref_cell) ((ref_cell)->edge_per)
+
 #define ref_cell_n(ref_cell) ((ref_cell)->n)
 #define ref_cell_max(ref_cell) ((ref_cell)->max)
-#define ref_cell_node_per(ref_cell) ((ref_cell)->node_per)
 #define ref_cell_blank(ref_cell) ((ref_cell)->blank)
 #define ref_cell_c2n(ref_cell,node,cell) \
   ((ref_cell)->c2n[(node)+ref_cell_node_per(ref_cell)*(cell)])

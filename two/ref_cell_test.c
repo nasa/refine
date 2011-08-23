@@ -100,7 +100,24 @@ int main( int argc, char *argv[] )
   TES(2,nodes[2],"got node 2");
   TES(3,nodes[3],"got node 3");
 
-  TSS(ref_cell_free(ref_cell),"free");
+  TSS(ref_cell_free(ref_cell),"cleanup");
+
+  /* edge_per */
+  TSS(ref_cell_create(4,&ref_cell),"create");
+  TES(6,ref_cell_edge_per(ref_cell),"edge_per");
+  TSS(ref_cell_free(ref_cell),"cleanup");
+
+  TSS(ref_cell_create(5,&ref_cell),"create");
+  TES(8,ref_cell_edge_per(ref_cell),"edge_per");
+  TSS(ref_cell_free(ref_cell),"cleanup");
+
+  TSS(ref_cell_create(6,&ref_cell),"create");
+  TES(9,ref_cell_edge_per(ref_cell),"edge_per");
+  TSS(ref_cell_free(ref_cell),"cleanup");
+
+  TSS(ref_cell_create(8,&ref_cell),"create");
+  TES(12,ref_cell_edge_per(ref_cell),"edge_per");
+  TSS(ref_cell_free(ref_cell),"cleanup");
 
   return 0;
 }
