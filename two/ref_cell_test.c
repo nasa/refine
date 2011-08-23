@@ -80,7 +80,7 @@ int main( int argc, char *argv[] )
   TSS(ref_cell_create(4,&ref_cell),"create new");
 
   ncell = 0;
-  ref_cell_for_nodes( ref_cell, cell, nodes)
+  ref_cell_for( ref_cell, cell, nodes)
     ncell++;
 
   TES(0,ncell,"start zero cells");
@@ -91,7 +91,7 @@ int main( int argc, char *argv[] )
   nodes[0]= -1; nodes[1]= -1; nodes[2]= -1; nodes[3]= -1; 
 
   ncell = 0;
-  ref_cell_for_nodes( ref_cell, cell, nodes)
+  ref_cell_for( ref_cell, cell, nodes)
       ncell++;
 
   TES(1,ncell,"found cell");

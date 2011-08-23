@@ -33,14 +33,14 @@ int main( int argc, char *argv[] )
   TSS(ref_adj_create(&ref_adj),"create");
 
   degree = 0;
-  ref_adj_for_loop(ref_adj,0,item,ref)
+  ref_adj_for(ref_adj,0,item,ref)
     degree++;
   TES(0,degree,"empty degree");
 
   TSS(ref_adj_reg(ref_adj,0,14),"reg");
 
   degree = 0;
-  ref_adj_for_loop(ref_adj,0,item,ref)
+  ref_adj_for(ref_adj,0,item,ref)
     {
       degree++;
       TES(14,ref,"registered ref");        
