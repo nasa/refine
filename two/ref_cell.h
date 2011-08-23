@@ -11,6 +11,8 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
+#define REF_CELL_MAX_NODE_PER (8)
+
 struct REF_CELL_STRUCT {
   REF_INT node_per, edge_per;
   REF_INT n, max;
@@ -57,6 +59,9 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 
 REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell);
+
+REF_STATUS ref_cell_set_edge( REF_CELL ref_cell, 
+			      REF_INT n0, REF_INT n1, REF_INT edge);
 
 END_C_DECLORATION
 

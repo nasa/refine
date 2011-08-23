@@ -11,6 +11,12 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
   REF_CELL ref_cell;
 
   (*ref_cell_ptr) = NULL;
+
+  if ( node_per > REF_CELL_MAX_NODE_PER)
+    {
+      RSS( REF_FAILURE, "node_per limited to REF_CELL_MAX_NODE_PER");
+    }
+
   (*ref_cell_ptr) = (REF_CELL)malloc( sizeof(REF_CELL_STRUCT) );
   RNS(*ref_cell_ptr,"malloc ref_cell NULL");
 
@@ -157,6 +163,27 @@ REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell)
   for ( cell = 0 ; cell < ref_cell_max(ref_cell) ; cell++ )
     for ( edge = 0 ; edge < ref_cell_edge_per(ref_cell) ; edge++ )
       ref_cell_c2e(ref_cell,edge,cell) = REF_EMPTY;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_set_edge( REF_CELL ref_cell, 
+			      REF_INT n0, REF_INT n1, REF_INT edge)
+{
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT e2n0[6] = { 0, 0, 0, 1, 1, 2 };
+  REF_INT e2n1[6] = { 1, 2, 3, 2, 3, 3 };
+  REF_INT cell, cell_edge;
+  REF_INT e0, e1;
+
+  ref_cell_for_with_nodes( ref_cell, cell, nodes)
+    for (cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++)
+      {
+	e0 = nodes[e2n0[cell_edge]];
+	e1 = nodes[e2n1[cell_edge]];
+	if ( MAX(e0,e1) == MAX(n0,n1) && MIN(e0,e1) == MIN(n0,n1) )
+	  ref_cell_c2e(ref_cell,cell_edge,cell) = edge;
+      }
 
   return REF_SUCCESS;
 }
