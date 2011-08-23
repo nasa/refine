@@ -37,11 +37,11 @@ REF_STATUS ref_adj_free( REF_ADJ ref_adj );
 #define ref_adj_ref( ref_adj, item ) ( ref_adj_valid( item )?(ref_adj)->item[(item)].ref:REF_EMPTY )
 
 #define ref_adj_for_loop( ref_adj, node, item, ref) \
-  for ( item = ref_adj_first( ref_adj, node ),	    \
-	  ref = ref_adj_ref( ref_adj, item ) ;	    \
-  ref_adj_valid( item ) ;			    \
-  item = ref_adj_next( ref_adj, item ),		    \
-    ref =  ref_adj_ref( ref_adj, item ) )
+  for ( (item) = ref_adj_first( ref_adj, node ),    \
+	  (ref) = ref_adj_ref( ref_adj, item ) ;    \
+	ref_adj_valid( item ) ;			    \
+	(item) = ref_adj_next( ref_adj, item ),	    \
+	  (ref) =  ref_adj_ref( ref_adj, item ) )
 
 REF_STATUS ref_adj_inspect( REF_ADJ ref_adj );
 
