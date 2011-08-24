@@ -9,6 +9,8 @@ typedef struct REF_CELL_STRUCT REF_CELL_STRUCT;
 typedef REF_CELL_STRUCT * REF_CELL;
 END_C_DECLORATION
 
+#include "ref_adj.h"
+
 BEGIN_C_DECLORATION
 
 #define REF_CELL_MAX_NODE_PER (8)
@@ -19,6 +21,7 @@ struct REF_CELL_STRUCT {
   REF_INT blank;
   REF_INT *c2n;
   REF_INT *c2e;
+  REF_ADJ ref_adj;
 };
 
 #define ref_cell_node_per(ref_cell) ((ref_cell)->node_per)

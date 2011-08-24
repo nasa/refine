@@ -63,12 +63,15 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
   ref_cell_c2n(ref_cell,1,max-1) = REF_EMPTY;
   ref_cell_blank(ref_cell) = 0;
 
+  RSS( ref_adj_create( &(ref_cell->ref_adj) ), "create ref_adj for ref_cell" );
+
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_cell_free( REF_CELL ref_cell )
 {
   if ( NULL == (void *)ref_cell ) return REF_NULL;
+  ref_adj_free( ref_cell->ref_adj );
   ref_cond_free( ref_cell->c2n );
   ref_cond_free( ref_cell->c2e );
   ref_cond_free( ref_cell );
@@ -139,6 +142,9 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
     ref_cell_c2n(ref_cell,node,cell) = nodes[node];
 
+  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+    RSS( ref_adj_add( ref_cell->ref_adj, nodes[node], cell ), "register cell" );
+
   ref_cell_n(ref_cell)++;
 
   (*new_cell) = cell;
@@ -173,17 +179,20 @@ REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
   REF_INT nodes[REF_CELL_MAX_NODE_PER];
   REF_INT e2n0[6] = { 0, 0, 0, 1, 1, 2 };
   REF_INT e2n1[6] = { 1, 2, 3, 2, 3, 3 };
-  REF_INT cell, cell_edge;
+  REF_INT item, cell, cell_edge;
   REF_INT e0, e1;
 
-  ref_cell_for_with_nodes( ref_cell, cell, nodes)
-    for (cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++)
-      {
-	e0 = nodes[e2n0[cell_edge]];
-	e1 = nodes[e2n1[cell_edge]];
-	if ( MAX(e0,e1) == MAX(n0,n1) && MIN(e0,e1) == MIN(n0,n1) )
-	  ref_cell_c2e(ref_cell,cell_edge,cell) = edge;
-      }
+  ref_adj_for( ref_cell->ref_adj, n0, item, cell)
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      for (cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++)
+	{
+	  e0 = nodes[e2n0[cell_edge]];
+	  e1 = nodes[e2n1[cell_edge]];
+	  if ( MAX(e0,e1) == MAX(n0,n1) && MIN(e0,e1) == MIN(n0,n1) )
+	    ref_cell_c2e(ref_cell,cell_edge,cell) = edge;
+	}
+    }
 
   return REF_SUCCESS;
 }
