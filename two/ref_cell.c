@@ -143,7 +143,8 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
     ref_cell_c2n(ref_cell,node,cell) = nodes[node];
 
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
-    RSS( ref_adj_add( ref_cell->ref_adj, nodes[node], cell ), "register cell" );
+    if ( REF_EMPTY != nodes[node] ) /* hack for boundary faces */
+      RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), "register cell" );
 
   ref_cell_n(ref_cell)++;
 
