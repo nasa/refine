@@ -17,7 +17,7 @@ BEGIN_C_DECLORATION
 struct REF_GRID_STRUCT {
   REF_NODE node;
 
-  REF_CELL cell[5];
+  REF_CELL cell[4];
 
   REF_CELL tri;
   REF_CELL qua;
