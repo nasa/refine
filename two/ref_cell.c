@@ -137,6 +137,7 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
 REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
 {
   REF_INT cell, node;
+  REF_INT cell_edge;
   printf("ref_cell = %p\n",(void *)ref_cell);
   printf(" node_per = %d\n",ref_cell_node_per(ref_cell));
   printf(" n = %d\n",ref_cell_n(ref_cell));
@@ -157,8 +158,16 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
 
 	}
       printf("\n");
-
     }
+  
+  ref_cell_for( ref_cell, cell )
+    {
+      printf(" %d:",cell);
+      ref_cell_edge_for( ref_cell, cell_edge )
+	printf(" %d",ref_cell_c2e(ref_cell,cell_edge,cell));
+      printf("\n");
+    }
+
   return REF_SUCCESS;
 }
 
