@@ -129,7 +129,7 @@ REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
   
   target = REF_EMPTY;
   parent = REF_EMPTY;
-  ref_adj_for( ref_adj, node, item, ref)
+  each_ref_adj_node_item_with_ref( ref_adj, node, item, ref)
     {
       if ( ref == reference )
 	{

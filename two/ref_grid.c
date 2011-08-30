@@ -67,19 +67,19 @@ REF_STATUS ref_grid_make_edges( REF_GRID ref_grid )
   REF_INT cell, cell_edge;
   REF_INT n0, n1;
 
-  ref_grid_for_cell( ref_grid, group, ref_cell )
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     ref_cell_empty_edges( ref_cell);
 
   nedge = 0;
 
-  ref_grid_for_cell( ref_grid, group, ref_cell )
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     ref_cell_for( ref_cell, cell )
       ref_cell_edge_for( ref_cell, cell_edge )
         if ( REF_EMPTY == ref_cell_c2e(ref_cell,cell_edge,cell) )
 	    {
 	      n0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
 	      n1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
-	      ref_grid_for_cell( ref_grid, group2, ref_cell2 )
+	      each_ref_grid_ref_cell( ref_grid, group2, ref_cell2 )
 		RSS( ref_cell_set_edge( ref_cell2, n0, n1, nedge ), "set edge");
 	      nedge++;
 	    }

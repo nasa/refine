@@ -41,7 +41,7 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid );
 #define ref_grid_nedge(ref_grid) ((ref_grid)->nedge)
 
 
-#define ref_grid_for_cell( ref_grid, group, ref_cell )			\
+#define each_ref_grid_ref_cell( ref_grid, group, ref_cell )		\
   for ( (group) = 0, (ref_cell) = (ref_grid)->cell[(group)] ;		\
 	(group) < 4;							\
 	(group)++  , (ref_cell) = (ref_grid)->cell[(group)] )

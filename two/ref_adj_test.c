@@ -46,14 +46,14 @@ int main( int argc, char *argv[] )
   TSS(ref_adj_create(&ref_adj),"create");
 
   degree = 0;
-  ref_adj_for(ref_adj,0,item,ref)
+  each_ref_adj_node_item_with_ref(ref_adj,0,item,ref)
     degree++;
   TES(0,degree,"empty degree");
 
   TSS(ref_adj_add(ref_adj,0,14),"add");
 
   degree = 0;
-  ref_adj_for(ref_adj,0,item,ref)
+  each_ref_adj_node_item_with_ref(ref_adj,0,item,ref)
     {
       degree++;
       TES(14,ref,"check ref");        

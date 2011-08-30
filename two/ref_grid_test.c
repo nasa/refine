@@ -31,7 +31,7 @@ int main( int argc, char *argv[] )
   TSS(ref_grid_create(&ref_grid),"create");
 
   node_per = 3;
-  ref_grid_for_cell( ref_grid, group, ref_cell )
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
       node_per += 1;
       if ( 7 == node_per ) node_per = 8;

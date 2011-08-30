@@ -74,16 +74,16 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
       }
 
   ncell = 0;
-  ref_grid_for_cell( ref_grid, group, ref_cell )
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     ncell += ref_cell_n(ref_cell);
 
   size = 0;
-  ref_grid_for_cell( ref_grid, group, ref_cell )
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     size += ref_cell_n(ref_cell)*(1+ref_cell_node_per(ref_cell));
 
   fprintf(file,"CELLS %d %d\n",ncell,size);
 
-  ref_grid_for_cell( ref_grid, group, ref_cell )
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
       node_per = ref_cell_node_per(ref_cell);
       nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );

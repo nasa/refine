@@ -44,9 +44,9 @@ REF_STATUS ref_adj_free( REF_ADJ ref_adj );
 #define ref_adj_safe_ref( ref_adj, item_arg ) \
   ( ref_adj_valid( item_arg )?(ref_adj)->item[(item_arg)].ref:REF_EMPTY )
 
-#define ref_adj_for( ref_adj, node, item, ref)			\
-  for ( (item) = ref_adj_first( ref_adj, node ),		\
-	  (ref) = ref_adj_safe_ref( ref_adj, item ) ;		\
+#define each_ref_adj_node_item_with_ref( ref_adj, node, item, ref)	\
+  for ( (item) = ref_adj_first( ref_adj, node ),			\
+	  (ref) = ref_adj_safe_ref( ref_adj, item ) ;			\
 	ref_adj_valid( item ) ;						\
 	(item) = ref_adj_item_next( ref_adj, item ),			\
 	  (ref) =  ref_adj_safe_ref( ref_adj, item ) )

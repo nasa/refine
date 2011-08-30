@@ -245,7 +245,7 @@ REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
   REF_INT item, cell, cell_edge;
   REF_INT e0, e1;
 
-  ref_adj_for( ref_cell->ref_adj, n0, item, cell)
+  each_ref_adj_node_item_with_ref( ref_cell->ref_adj, n0, item, cell)
     {
       for (cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++)
 	{
