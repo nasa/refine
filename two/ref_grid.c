@@ -73,8 +73,8 @@ REF_STATUS ref_grid_make_edges( REF_GRID ref_grid )
   nedge = 0;
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    ref_cell_for( ref_cell, cell )
-      ref_cell_edge_for( ref_cell, cell_edge )
+    each_ref_cell_valid_cell( ref_cell, cell )
+      each_ref_cell_cell_edge( ref_cell, cell_edge )
         if ( REF_EMPTY == ref_cell_c2e(ref_cell,cell_edge,cell) )
 	    {
 	      n0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);

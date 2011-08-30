@@ -87,7 +87,7 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
     {
       node_per = ref_cell_node_per(ref_cell);
       nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-      ref_cell_for_with_nodes( ref_cell, cell, nodes )
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
 	  fprintf(file," %d",node_per);
 	  for ( node = 0; node < node_per; node++ )
@@ -100,19 +100,19 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
   fprintf(file,"CELL_TYPES %d\n",ncell);
 
   ref_cell = ref_grid_tet(ref_grid);
-  ref_cell_for( ref_cell, cell )
+  each_ref_cell_valid_cell( ref_cell, cell )
     fprintf(file," %d\n",VTK_TETRA);
 
   ref_cell = ref_grid_pyr(ref_grid);
-  ref_cell_for( ref_cell, cell )
+  each_ref_cell_valid_cell( ref_cell, cell )
     fprintf(file," %d\n",VTK_PYRAMID);
 
   ref_cell = ref_grid_pri(ref_grid);
-  ref_cell_for( ref_cell, cell )
+  each_ref_cell_valid_cell( ref_cell, cell )
     fprintf(file," %d\n",VTK_WEDGE);
 
   ref_cell = ref_grid_hex(ref_grid);
-  ref_cell_for( ref_cell, cell )
+  each_ref_cell_valid_cell( ref_cell, cell )
     fprintf(file," %d\n",VTK_HEXAHEDRON);
 
   free(o2n);
@@ -158,13 +158,13 @@ REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       for ( node = 0; node < 3; node++ )
 	fprintf(file," %d",o2n[nodes[node]]+1);
       fprintf(file,"\n");
     }
-  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       fprintf(file," %d",nodes[3]);
       fprintf(file,"\n");
@@ -174,7 +174,7 @@ REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
   ref_cell = ref_grid_tet(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  ref_cell_for_with_nodes( ref_cell, cell, nodes )
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       for ( node = 0; node < node_per; node++ )
 	fprintf(file," %d",o2n[nodes[node]]+1);

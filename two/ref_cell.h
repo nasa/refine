@@ -49,19 +49,19 @@ struct REF_CELL_STRUCT {
   ((ref_cell)->c2n[ (ref_cell)->e2n[(node)+2*(cell_edge)] +		\
 		    ref_cell_node_per(ref_cell)*(cell)])
 
-#define ref_cell_for( ref_cell, cell )					\
+#define each_ref_cell_valid_cell( ref_cell, cell )			\
   for ( (cell) = 0 ;							\
 	(cell) < ref_cell_max(ref_cell);				\
 	(cell)++ )							\
     if ( ref_cell_valid( ref_cell, cell ) )
 
-#define ref_cell_for_with_nodes( ref_cell, cell, nodes)			\
+#define each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)	\
   for ( (cell) = 0 ;							\
 	(cell) < ref_cell_max(ref_cell);				\
 	(cell)++ )							\
     if ( REF_SUCCESS == ref_cell_nodes( ref_cell, cell, nodes ) )
 
-#define ref_cell_edge_for( ref_cell, cell_edge )			\
+#define each_ref_cell_cell_edge( ref_cell, cell_edge )			\
   for ( (cell_edge) = 0 ;						\
 	(cell_edge) < ref_cell_edge_per(ref_cell);			\
 	(cell_edge)++ )

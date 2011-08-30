@@ -160,10 +160,10 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
       printf("\n");
     }
   
-  ref_cell_for( ref_cell, cell )
+  each_ref_cell_valid_cell( ref_cell, cell )
     {
       printf(" %d:",cell);
-      ref_cell_edge_for( ref_cell, cell_edge )
+      each_ref_cell_cell_edge( ref_cell, cell_edge )
 	printf(" %d",ref_cell_c2e(ref_cell,cell_edge,cell));
       printf("\n");
     }
