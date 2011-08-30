@@ -37,6 +37,20 @@ BEGIN_C_DECLORATION
     }									\
   }
 
+#define TEIS(a,b,msg)							\
+  {									\
+    REF_INT ai,bi;							\
+    ai = (a);								\
+    bi = (b);								\
+    if (ai!=bi){							\
+      printf("%s: %d: %s: %s\nexpected %d was %d\n",			\
+	     __FILE__,__LINE__,__func__,(msg),ai,bi);			\
+      return REF_FAILURE;						\
+    }else{								\
+      printf("PASS: %s\n",(msg));					\
+    }									\
+  }
+
 #define TAS(a,msg)							\
   {									\
     if (!(a)){								\
