@@ -45,8 +45,8 @@ struct REF_CELL_STRUCT {
 #define ref_cell_e2n_gen(ref_cell,node,edge)\
   ((ref_cell)->e2n[(node)+2*(edge)])
 
-#define ref_cell_e2n(ref_cell,node,cell,edge)			\
-  ((ref_cell)->c2n[ (ref_cell)->e2n[(node)+2*(edge)] +		\
+#define ref_cell_e2n(ref_cell,node,cell,cell_edge)			\
+  ((ref_cell)->c2n[ (ref_cell)->e2n[(node)+2*(cell_edge)] +		\
 		    ref_cell_node_per(ref_cell)*(cell)])
 
 #define ref_cell_for( ref_cell, cell )					\
@@ -60,6 +60,11 @@ struct REF_CELL_STRUCT {
 	(cell) < ref_cell_max(ref_cell);				\
 	(cell)++ )							\
     if ( REF_SUCCESS == ref_cell_nodes( ref_cell, cell, nodes ) )
+
+#define ref_cell_edge_for( ref_cell, cell_edge )			\
+  for ( (cell_edge) = 0 ;						\
+	(cell_edge) < ref_cell_edge_per(ref_cell);			\
+	(cell_edge)++ )
 
 REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell );
 REF_STATUS ref_cell_free( REF_CELL ref_cell );
