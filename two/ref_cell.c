@@ -25,7 +25,7 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
   max = 100;
 
   ref_cell_node_per(ref_cell) = node_per;
-  switch ( node_per )
+  switch ( ref_cell_node_per(ref_cell) )
     {
     case 4:
       ref_cell_edge_per(ref_cell) = 6;
@@ -42,6 +42,61 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
     default:
       ref_cell_edge_per(ref_cell) = 0;
       break;    
+    }
+
+  ref_cell->e2n = NULL;
+  if ( ref_cell_edge_per(ref_cell) > 0 )
+    {
+      ref_cell->e2n = (REF_INT *)malloc( 2 * ref_cell_edge_per(ref_cell) *
+					 sizeof(REF_INT));
+      RNS(ref_cell->e2n,"malloc e2n NULL");
+    }
+
+  switch ( ref_cell_edge_per(ref_cell) )
+    {
+    case 6:
+      ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
+      ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,2)  = 0; ref_cell_e2n_gen(ref_cell,1,2)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,3)  = 1; ref_cell_e2n_gen(ref_cell,1,3)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,4)  = 1; ref_cell_e2n_gen(ref_cell,1,4)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,5)  = 2; ref_cell_e2n_gen(ref_cell,1,5)  = 3;
+      break;
+    case 8:
+      ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
+      ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,2)  = 0; ref_cell_e2n_gen(ref_cell,1,2)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,3)  = 1; ref_cell_e2n_gen(ref_cell,1,3)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,4)  = 1; ref_cell_e2n_gen(ref_cell,1,4)  = 4;
+      ref_cell_e2n_gen(ref_cell,0,5)  = 2; ref_cell_e2n_gen(ref_cell,1,5)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,6)  = 2; ref_cell_e2n_gen(ref_cell,1,6)  = 4;
+      ref_cell_e2n_gen(ref_cell,0,7)  = 3; ref_cell_e2n_gen(ref_cell,1,7)  = 4;
+      break;
+    case 9:
+      ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
+      ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,2)  = 0; ref_cell_e2n_gen(ref_cell,1,2)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,3)  = 1; ref_cell_e2n_gen(ref_cell,1,3)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,4)  = 1; ref_cell_e2n_gen(ref_cell,1,4)  = 4;
+      ref_cell_e2n_gen(ref_cell,0,5)  = 2; ref_cell_e2n_gen(ref_cell,1,5)  = 5;
+      ref_cell_e2n_gen(ref_cell,0,6)  = 3; ref_cell_e2n_gen(ref_cell,1,6)  = 4;
+      ref_cell_e2n_gen(ref_cell,0,7)  = 3; ref_cell_e2n_gen(ref_cell,1,7)  = 5;
+      ref_cell_e2n_gen(ref_cell,0,8)  = 4; ref_cell_e2n_gen(ref_cell,1,8)  = 5;
+      break;
+    case 12:
+      ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
+      ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,2)  = 0; ref_cell_e2n_gen(ref_cell,1,2)  = 4;
+      ref_cell_e2n_gen(ref_cell,0,3)  = 1; ref_cell_e2n_gen(ref_cell,1,3)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,4)  = 1; ref_cell_e2n_gen(ref_cell,1,4)  = 5;
+      ref_cell_e2n_gen(ref_cell,0,5)  = 2; ref_cell_e2n_gen(ref_cell,1,5)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,6)  = 2; ref_cell_e2n_gen(ref_cell,1,6)  = 6;
+      ref_cell_e2n_gen(ref_cell,0,7)  = 3; ref_cell_e2n_gen(ref_cell,1,7)  = 7;
+      ref_cell_e2n_gen(ref_cell,0,8)  = 4; ref_cell_e2n_gen(ref_cell,1,8)  = 5;
+      ref_cell_e2n_gen(ref_cell,0,9)  = 4; ref_cell_e2n_gen(ref_cell,1,9)  = 7;
+      ref_cell_e2n_gen(ref_cell,0,10) = 5; ref_cell_e2n_gen(ref_cell,1,10) = 6;
+      ref_cell_e2n_gen(ref_cell,0,11) = 6; ref_cell_e2n_gen(ref_cell,1,11) = 7;
+      break;
     }
 
   ref_cell_n(ref_cell) = 0;
@@ -72,6 +127,7 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
 {
   if ( NULL == (void *)ref_cell ) return REF_NULL;
   ref_adj_free( ref_cell->ref_adj );
+  ref_cond_free( ref_cell->e2n );
   ref_cond_free( ref_cell->c2n );
   ref_cond_free( ref_cell->c2e );
   ref_cond_free( ref_cell );
@@ -177,19 +233,15 @@ REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell)
 REF_STATUS ref_cell_set_edge( REF_CELL ref_cell, 
 			      REF_INT n0, REF_INT n1, REF_INT edge)
 {
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT e2n0[6] = { 0, 0, 0, 1, 1, 2 };
-  REF_INT e2n1[6] = { 1, 2, 3, 2, 3, 3 };
   REF_INT item, cell, cell_edge;
   REF_INT e0, e1;
 
   ref_adj_for( ref_cell->ref_adj, n0, item, cell)
     {
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
       for (cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++)
 	{
-	  e0 = nodes[e2n0[cell_edge]];
-	  e1 = nodes[e2n1[cell_edge]];
+	  e0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
+	  e1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
 	  if ( MAX(e0,e1) == MAX(n0,n1) && MIN(e0,e1) == MIN(n0,n1) )
 	    ref_cell_c2e(ref_cell,cell_edge,cell) = edge;
 	}
