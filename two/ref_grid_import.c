@@ -73,14 +73,14 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
   for( tri = 0; tri < ntri ; tri++ )
     {
       RES( 1, fscanf( file, "%d", &face_id ), "tri id" );
-      ref_cell_c2n(ref_cell,4,tri) = face_id;
+      ref_cell_c2n(ref_cell,3,tri) = face_id;
     }
 
   ref_cell = ref_grid_qua(ref_grid);
   for( qua = 0; qua < nqua ; qua++ )
     {
       RES( 1, fscanf( file, "%d", &face_id ), "qua id" );
-      ref_cell_c2n(ref_cell,5,qua) = face_id;
+      ref_cell_c2n(ref_cell,4,qua) = face_id;
     }
 
   ref_cell = ref_grid_tet(ref_grid);
