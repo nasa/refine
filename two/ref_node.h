@@ -13,13 +13,17 @@ BEGIN_C_DECLORATION
 
 struct REF_NODE_STRUCT {
   REF_INT n, max;
+  REF_INT total, partition;
   REF_INT blank;
   REF_INT *global;
+  REF_INT *part;
   REF_DBL *xyz;
 };
 
 #define ref_node_n(ref_node) ((ref_node)->n)
 #define ref_node_max(ref_node) ((ref_node)->max)
+#define ref_node_total(ref_node) ((ref_node)->total)
+#define ref_node_partition(ref_node) ((ref_node)->partition)
 
 #define ref_node_valid(ref_node,node) \
   ( (node) > -1 && (node) < ref_node_max(ref_node) && \
@@ -31,6 +35,8 @@ struct REF_NODE_STRUCT {
            (ref_node)->global[(node)]:REF_EMPTY )
 
 #define ref_node_xyz(ref_node,ixyz,node) ((ref_node)->xyz[(ixyz)+3*(node)])
+
+#define ref_node_part(ref_node,node) ((ref_node)->part[(node)])
 
 REF_STATUS ref_node_create( REF_NODE *ref_node );
 REF_STATUS ref_node_free( REF_NODE ref_node );
