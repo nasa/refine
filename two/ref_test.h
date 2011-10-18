@@ -5,6 +5,8 @@
 
 BEGIN_C_DECLORATION
 
+#define TEST_ECH0(msg) if (0) printf("PASS: %s\n",(msg))
+
 #define TSS(fcn,msg)							\
   {									\
     REF_STATUS code;							\
@@ -13,27 +15,27 @@ BEGIN_C_DECLORATION
       printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
       return code;							\
     }else{								\
-      printf("PASS: %s\n",(msg));					\
+      TEST_ECH0(msg);							\
     }									\
   }
 
 #define TNS(ptr,msg)							\
   {									\
     if (NULL == (ptr)){							\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return REF_NULL;							\
     }else{								\
-      printf("PASS: %s\n",(msg));					\
+      TEST_ECH0(msg);							\
     }									\
   }
 
 #define TES(a,b,msg)							\
   {									\
     if ((a)!=(b)){							\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return REF_FAILURE;						\
     }else{								\
-      printf("PASS: %s\n",(msg));					\
+      TEST_ECH0(msg);							\
     }									\
   }
 
@@ -47,17 +49,17 @@ BEGIN_C_DECLORATION
 	     __FILE__,__LINE__,__func__,(msg),ai,bi);			\
       return REF_FAILURE;						\
     }else{								\
-      printf("PASS: %s\n",(msg));					\
+      TEST_ECH0(msg);							\
     }									\
   }
 
 #define TAS(a,msg)							\
   {									\
     if (!(a)){								\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return REF_FAILURE;						\
     }else{								\
-      printf("PASS: %s\n",(msg));					\
+      TEST_ECH0(msg);							\
     }									\
   }
 
@@ -66,10 +68,10 @@ BEGIN_C_DECLORATION
     REF_STATUS code;							\
     code = (fcn);							\
     if (REF_SUCCESS == code){						\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return code;							\
     }else{								\
-      printf("PASS: %s\n",(msg));					\
+      TEST_ECH0(msg);							\
     }									\
   }
 
