@@ -22,6 +22,9 @@ int main( int argc, char *argv[] )
   TES(0,ref_node_n(ref_node),"init zero nodes");
   TES(10,ref_node_max(ref_node),"init 10 max");
 
+  TES(REF_EMPTY,ref_node_total(ref_node),"init unknown total");
+  TES(REF_EMPTY,ref_node_partition(ref_node),"init unknown partition");
+
   TSS(ref_node_free(ref_node),"free");
   TSS(ref_node_create(&ref_node),"create");
 
