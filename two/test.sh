@@ -16,16 +16,18 @@ do
   echo $root ---------------------
 
   dependencies=''
-  for dep_header in `grep '#include "ref_' ${root}.h`
-  do
-    source_with_leading_quote=${dep_header%.h\"}.c
-    source=${source_with_leading_quote#\"}
-    if [ -a ${source} ]; then
-      if ! echo ${dependencies} | grep -q "${source}" ; then
-        dependencies=${dependencies}' '${source}
+  if [ -a ${root}.h ]; then
+    for dep_header in `grep '#include "ref_' ${root}.h`
+    do
+      source_with_leading_quote=${dep_header%.h\"}.c
+      source=${source_with_leading_quote#\"}
+      if [ -a ${source} ]; then
+        if ! echo ${dependencies} | grep -q "${source}" ; then
+          dependencies=${dependencies}' '${source}
+        fi
       fi
-    fi
-  done
+    done
+  fi
   for dep_header in `grep '#include "ref_' ${root}_test.c`
   do
     source_with_leading_quote=${dep_header%.h\"}.c
