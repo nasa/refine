@@ -11,28 +11,32 @@
 REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 {
   REF_INT max, node;
+  REF_NODE ref_node;
+
   (*ref_node_ptr) = NULL;
   (*ref_node_ptr) = (REF_NODE)malloc( sizeof(REF_NODE_STRUCT) );
   RNS(*ref_node_ptr,"malloc ref_node NULL");
 
+  ref_node = *ref_node_ptr;
+
   max = 10;
 
-  (*ref_node_ptr)->n = 0;
-  (*ref_node_ptr)->max = max;
+  ref_node_n(ref_node) = 0;
+  ref_node_max(ref_node) = max;
 
-  (*ref_node_ptr)->global = (REF_INT *)malloc(max*sizeof(REF_INT));
-  RNS((*ref_node_ptr)->global,"malloc global NULL");
+  ref_node->global = (REF_INT *)malloc(max*sizeof(REF_INT));
+  RNS(ref_node->global,"malloc global NULL");
 
-  for (node=0;node<ref_node_max(*ref_node_ptr);node++)
-    (*ref_node_ptr)->global[node] = index2next(node+1);
-  (*ref_node_ptr)->global[((*ref_node_ptr)->max)-1] = REF_EMPTY;
-  (*ref_node_ptr)->blank = index2next(0);
+  for (node=0;node<ref_node_max(ref_node);node++)
+    ref_node->global[node] = index2next(node+1);
+  ref_node->global[(ref_node->max)-1] = REF_EMPTY;
+  ref_node->blank = index2next(0);
 
-  (*ref_node_ptr)->part = (REF_INT *)malloc(max*sizeof(REF_INT));
-  RNS((*ref_node_ptr)->part,"malloc part NULL");
+  ref_node->part = (REF_INT *)malloc(max*sizeof(REF_INT));
+  RNS(ref_node->part,"malloc part NULL");
 
-  (*ref_node_ptr)->xyz = (REF_DBL *)malloc(max*3*sizeof(REF_DBL));
-  RNS((*ref_node_ptr)->xyz,"malloc xyz NULL");
+  ref_node->xyz = (REF_DBL *)malloc(max*3*sizeof(REF_DBL));
+  RNS(ref_node->xyz,"malloc xyz NULL");
 
 
   return REF_SUCCESS;
