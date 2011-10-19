@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CC=gcc
-CFLAGS="-g -O0 -pedantic-errors -Wall -Wextra -Werror -Wunused"
+CFLAGS="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused"
 
 if [ -z "$1" ]
 then
