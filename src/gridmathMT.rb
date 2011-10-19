@@ -381,7 +381,7 @@ class TestGridMath < Test::Unit::TestCase
 
  def testEigTriDiagFull211212
   tol = 1.0e-7
-  m = [2,1,1,
+  m = [2,1+1.0e-14,1,
          2,1,
            2]
   d = @gm.triDiag(m)
@@ -390,9 +390,9 @@ class TestGridMath < Test::Unit::TestCase
   q1 = @gm.triDiagTransform1(m)
   q2 = @gm.triDiagTransform2(m)
   eig = @gm.eigTriDiag(d,e)
-  assert_in_delta 4, eig[0], 1.0e-15
-  assert_in_delta 1, eig[1], 1.0e-15
-  assert_in_delta 1, eig[2], 1.0e-15
+  assert_in_delta 4, eig[0], 1.0e-14
+  assert_in_delta 1, eig[1], 1.0e-14
+  assert_in_delta 1, eig[2], 1.0e-14
   v0 = @gm.vectTriDiag0(d,e,q0,q1,q2)
   v1 = @gm.vectTriDiag1(d,e,q0,q1,q2)
   v2 = @gm.vectTriDiag2(d,e,q0,q1,q2)
