@@ -7,6 +7,12 @@
 
 static REF_GRID ref_grid = NULL;
 
+REF_STATUS ref_init_node__(REF_INT *nnodes, REF_INT *nnodesg,
+			   REF_INT *l2g, REF_INT *part, REF_INT *partition, 
+			   REF_DBL *x, REF_DBL *y, REF_DBL *z )
+{
+  return ref_init_node_( nnodes, nnodesg, l2g, part, partition, x, y, z );
+}
 REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
 			  REF_INT *l2g, REF_INT *part, REF_INT *partition, 
 			  REF_DBL *x, REF_DBL *y, REF_DBL *z )

@@ -37,9 +37,9 @@ int main( void )
 
   partition = 1;
 
-  TSS(ref_init_node_(&nnodes, &nnodesg,
-		     l2g, part, &partition,
-		     x, y, z),"init node");
+  TSS(ref_init_node__(&nnodes, &nnodesg,
+		      l2g, part, &partition,
+		      x, y, z),"init node");
 
   TSS(ref_free_(),"free");
 

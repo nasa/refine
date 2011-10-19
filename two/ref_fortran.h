@@ -6,6 +6,9 @@
 
 BEGIN_C_DECLORATION
 
+REF_STATUS ref_init_node__( REF_INT *nnodes, REF_INT *nnodesg,
+			    REF_INT *l2g, REF_INT *part, REF_INT *partition, 
+			    REF_DBL *x, REF_DBL *y, REF_DBL *z );
 REF_STATUS ref_init_node_( REF_INT *nnodes, REF_INT *nnodesg,
 			   REF_INT *l2g, REF_INT *part, REF_INT *partition, 
 			   REF_DBL *x, REF_DBL *y, REF_DBL *z );
