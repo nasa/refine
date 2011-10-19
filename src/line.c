@@ -178,14 +178,14 @@ Lines *linesLoad( Lines *lines, char *filename )
 
   file = fopen(filename,"r");
 
-  fscanf(file,"%d\n",&lines->number);
+  if ( 1 != fscanf(file,"%d\n",&lines->number)) return NULL;
   lines->max = lines->number;
   lines->line = malloc(lines->max * sizeof(Line));
   for (line=0;line<lines->number;line++){
     lineInit(&lines->line[line]);
-    fscanf(file,"%d\n",&length);
+    if ( 1 != fscanf(file,"%d\n",&length)) return NULL;
     for (node=0;node<length;node++) {
-      fscanf(file,"%d\n",&index);
+      if ( 1 != fscanf(file,"%d\n",&index)) return NULL;
       linesAddNode(lines,line,index-1);
     }
   }
