@@ -1,8 +1,8 @@
 # -*- Makefile -*-
 
-lib_LIBRARIES = libref.a
+lib_LIBRARIES = libref2.a
 
-libref_a_SOURCES = \
+libref2_a_SOURCES = \
 	ref_defs.h \
 	ref_adj.c ref_adj.h \
 	ref_cell.c ref_cell.h \
