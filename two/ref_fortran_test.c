@@ -6,6 +6,7 @@
 #include "ref_fortran.h"
 #include "ref_test.h"
 #include "ref_grid.h"
+#include "ref_grid_export.h"
 #include "ref_node.h"
 #include "ref_cell.h"
 #include "ref_adj.h"
@@ -20,6 +21,10 @@ int main( void )
   REF_DBL *x;
   REF_DBL *y; 
   REF_DBL *z;
+  REF_INT *c2n;
+
+  REF_INT node_per_cell;
+  REF_INT ncell;
 
   nnodes = 4;
   nnodesg = 4;
@@ -41,8 +46,20 @@ int main( void )
 		      l2g, part, &partition,
 		      x, y, z),"init node");
 
+  node_per_cell = 4;
+  ncell = 1;
+  c2n = (REF_INT *) malloc( sizeof(REF_INT) * node_per_cell * ncell );
+
+  c2n[0] = 1;
+  c2n[1] = 2;
+  c2n[2] = 3;
+  c2n[3] = 4;
+
+  TSS(ref_import_cell__( &node_per_cell, &ncell, c2n ),"import cell");
+
   TSS(ref_free__(),"free");
 
+  free(c2n);
   free(z);
   free(y);
   free(x);

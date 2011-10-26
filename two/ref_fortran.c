@@ -4,6 +4,7 @@
 
 #include "ref_fortran.h"
 #include "ref_grid.h"
+#include "ref_grid_export.h"
 
 static REF_GRID ref_grid = NULL;
 
@@ -34,6 +35,47 @@ REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
       ref_node_xyz(ref_node,2,pos) = z[node];
       ref_node_part(ref_node,pos) = part[node]-1;
     }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_import_cell__(REF_INT *node_per_cell, REF_INT *ncell,
+			     REF_INT *c2n)
+{
+  return ref_import_cell_(node_per_cell, ncell, c2n);
+}
+REF_STATUS ref_import_cell_(REF_INT *node_per_cell, REF_INT *ncell,
+			     REF_INT *c2n)
+{
+  REF_INT *nodes;
+  REF_CELL ref_cell;
+  REF_INT cell, node, new_cell;
+  switch ( *node_per_cell )
+    {
+    case 4:
+      ref_cell = ref_grid_tet(ref_grid);
+      break;
+    case 5:
+      ref_cell = ref_grid_pyr(ref_grid);
+      break;
+    case 6:
+      ref_cell = ref_grid_pri(ref_grid);
+      break;
+    case 8:
+      ref_cell = ref_grid_hex(ref_grid);
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unexpected node_per_cell");
+      break;    
+    }
+  nodes = (REF_INT *)malloc( (*node_per_cell) * sizeof(REF_INT));
+  RNS( nodes,"malloc nodes NULL");
+  for ( cell = 0 ; cell < (*ncell) ; cell++ ) 
+    {
+      for ( node = 0 ; node < (*node_per_cell) ; node++ )
+	nodes[node] = c2n[node+(*node_per_cell)*cell] - 1;
+      RSS( ref_cell_add( ref_cell, nodes, &new_cell ), "add cell");
+    }
+  free(nodes);
   return REF_SUCCESS;
 }
 
