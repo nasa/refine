@@ -37,6 +37,22 @@ REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_viz__( void )
+{
+  return ref_viz_( );
+}
+REF_STATUS ref_viz_( void )
+{
+  char filename[1024];
+  sprintf(filename,"ref_viz%04d.vtk",
+	  ref_node_partition(ref_grid_node(ref_grid)));
+  RSS( ref_grid_export_vtk( ref_grid, filename ), "export vtk");
+  sprintf(filename,"ref_viz%04d.tec",
+	  ref_node_partition(ref_grid_node(ref_grid)));
+  RSS( ref_grid_export_tec( ref_grid, filename ), "export tec");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_free__( void )
 {
   return ref_free_( );

@@ -13,6 +13,9 @@ REF_STATUS ref_init_node_( REF_INT *nnodes, REF_INT *nnodesg,
 			   REF_INT *l2g, REF_INT *part, REF_INT *partition, 
 			   REF_DBL *x, REF_DBL *y, REF_DBL *z );
 
+REF_STATUS ref_viz__( void );
+REF_STATUS ref_viz_( void );
+
 REF_STATUS ref_free__( void );
 REF_STATUS ref_free_( void );
 
