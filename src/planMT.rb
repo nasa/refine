@@ -5,6 +5,7 @@
 
 
 Dir.chdir ENV['srcdir'] if ENV['srcdir']
+$:.push "." # ruby 1.9.2
 require 'RubyExtensionBuilder'
 RubyExtensionBuilder.new('Plan').build
 

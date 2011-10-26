@@ -9,6 +9,7 @@ if (valgrinding)
  GC.disable # for runnig valgridn quietly
 else
  Dir.chdir ENV['srcdir'] if ENV['srcdir']
+$:.push "." # ruby 1.9.2
  require 'RubyExtensionBuilder'
  RubyExtensionBuilder.new('Tableau').build
 end
