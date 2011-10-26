@@ -90,6 +90,7 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
 	  fprintf(file," %d",node_per);
+	  if ( 5 == node_per ) VTK_PYRAMID_ORDER(nodes);
 	  for ( node = 0; node < node_per; node++ )
 	    fprintf(file," %d",o2n[nodes[node]]);
 	  fprintf(file,"\n");
