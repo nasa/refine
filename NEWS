@@ -1,4 +1,6 @@
 
+Wed Oct 26, 2011 : Released Refine 1.8.1 
+
 - removed unused code.
 - MesherX has been moved to a subdirectory and is no longer distributed
 - started refine/two
