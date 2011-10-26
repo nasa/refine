@@ -37,6 +37,10 @@ REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_free__( void )
+{
+  return ref_free_( );
+}
 REF_STATUS ref_free_( void )
 {
   RSS( ref_grid_free( ref_grid ), "free grid");

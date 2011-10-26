@@ -41,7 +41,7 @@ int main( void )
 		      l2g, part, &partition,
 		      x, y, z),"init node");
 
-  TSS(ref_free_(),"free");
+  TSS(ref_free__(),"free");
 
   free(z);
   free(y);
