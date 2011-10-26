@@ -3,6 +3,7 @@
 - MesherX has been moved to a subdirectory and is no longer distributed
 - started refine/two
 - removed doc from distribution to eliminate texi2doc dependency
+- unit tests work with ruby 1.9.2 (added '.' to load path)
 
 Mon Jul 18, 2011 : Released Refine 1.8.0 (requires >= FUN3D-52844 (11.x.x)).
 
