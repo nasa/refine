@@ -28,7 +28,7 @@ REF_STATUS ref_subdiv_free( REF_SUBDIV ref_subdiv )
 {
   if ( NULL == (void *)ref_subdiv ) return REF_NULL;
 
-  free( ref_subdiv->mark);
+  free( ref_subdiv->mark );
 
   ref_cond_free( ref_subdiv );
 
