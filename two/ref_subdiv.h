@@ -15,6 +15,7 @@ BEGIN_C_DECLORATION
 
 struct REF_SUBDIV_STRUCT {
   REF_GRID ref_grid;
+  REF_INT *mark;
 };
 
 #define ref_subdiv_grid(ref_subdiv) ((ref_subdiv)->ref_grid)
