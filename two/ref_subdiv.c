@@ -15,6 +15,8 @@ REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 
   ref_subdiv_grid(ref_subdiv) = ref_grid;
 
+  RSS( ref_grid_make_edges( ref_grid ), "edges");
+
   return REF_SUCCESS;
 }
 
