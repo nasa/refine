@@ -30,7 +30,6 @@ int main( void )
   TSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
 
   TSS(ref_subdiv_mark(ref_subdiv,0,1),"mark edge 0-1");
-  
 
   TSS(ref_subdiv_free(ref_subdiv),"free");
 
