@@ -60,6 +60,9 @@ REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 					* sizeof(REF_INT));
   RNS(ref_subdiv->mark,"malloc global NULL");
 
+  for ( edge=0 ; edge < ref_grid_nedge(ref_grid) ; edge++ )
+    ref_subdiv_mark( ref_subdiv, edge ) = 0;
+
   return REF_SUCCESS;
 }
 
@@ -98,14 +101,16 @@ REF_STATUS ref_subdiv_edge_with( REF_SUBDIV ref_subdiv,
 }
 
 
-REF_STATUS ref_subdiv_mark( REF_SUBDIV ref_subdiv, 
-			    REF_INT node0, REF_INT node1 )
+REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv, 
+				     REF_INT node0, REF_INT node1 )
 {
   REF_INT edge;
 
   RSS( ref_subdiv_edge_with(ref_subdiv,node0, node1, &edge), "missing edge");
 
-  ref_subdiv->mark[edge] = 1;
+  printf("edge %d\n",edge);
+
+  ref_subdiv_mark(ref_subdiv,edge) = 1;
 
   return REF_SUCCESS;
 }
