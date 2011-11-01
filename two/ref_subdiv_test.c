@@ -44,6 +44,17 @@ int main( void )
 
   TSS(ref_subdiv_free(ref_subdiv),"free");
 
+  TSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
+
+  TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
+  TSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 1-2");
+
+  TES(0,ref_subdiv_mark(ref_subdiv,1),"no yet");
+  TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+  TES(1,ref_subdiv_mark(ref_subdiv,1),"yet");
+
+  TSS(ref_subdiv_free(ref_subdiv),"free");
+
   TSS( ref_grid_free(ref_grid),"free" );
 
   return 0;

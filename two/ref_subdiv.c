@@ -79,6 +79,30 @@ REF_STATUS ref_subdiv_free( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_inspect( REF_SUBDIV ref_subdiv )
+{
+  REF_INT group, cell, cell_edge, edge;
+  REF_CELL ref_cell;
+
+  each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+      {
+	printf(" group %d cell %d\n",group,cell);
+	each_ref_cell_cell_edge( ref_cell, cell_edge )
+	  {
+	    edge = ref_cell_c2e(ref_cell,cell_edge,cell);
+	    printf("  edge %d nodes %d %d mark %d\n",
+		   edge,
+		   ref_cell_e2n(ref_cell,0,cell,cell_edge),
+		   ref_cell_e2n(ref_cell,1,cell,cell_edge),
+		   ref_subdiv_mark(ref_subdiv,edge) );
+	  }
+
+      }
+  return REF_SUCCESS;
+}
+
+
 REF_STATUS ref_subdiv_edge_with( REF_SUBDIV ref_subdiv, 
 				 REF_INT node0, REF_INT node1,
 				 REF_INT *edge )
@@ -93,7 +117,7 @@ REF_STATUS ref_subdiv_edge_with( REF_SUBDIV ref_subdiv,
       if ( ( n0==node0 && n1==node1 ) ||
 	   ( n0==node1 && n1==node0 ) )
 	{
-	  *edge=item;
+	  *edge=ref;
 	  return REF_SUCCESS;
 	}
     }
@@ -128,6 +152,24 @@ REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv,
       }\
   }
 
+#define promote_2_3(ce0,ce1,ce2)			\
+  { \
+    REF_INT ge0, ge1, ge2, sum;			\
+    ge0 = ref_cell_c2e( ref_cell, ce0, cell );\
+    ge1 = ref_cell_c2e( ref_cell, ce1, cell );\
+    ge2 = ref_cell_c2e( ref_cell, ce2, cell );\
+    sum = ref_subdiv_mark( ref_subdiv, ge0 ) \
+        + ref_subdiv_mark( ref_subdiv, ge1 ) \
+        + ref_subdiv_mark( ref_subdiv, ge2 );    \
+    if ( 2 == sum ) \
+      {\
+	again = REF_TRUE;\
+	ref_subdiv_mark( ref_subdiv, ge0 ) = 1;\
+	ref_subdiv_mark( ref_subdiv, ge1 ) = 1;\
+	ref_subdiv_mark( ref_subdiv, ge2 ) = 1;\
+      }\
+  }
+
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 {
   REF_INT group, cell;
@@ -150,6 +192,8 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 		edge_or(0,6);
 		edge_or(3,8);
 		edge_or(1,7);
+		promote_2_3(0,1,3);
+		promote_2_3(6,7,8);
 		break;
 	      default:
 		RSS(REF_IMPLEMENT,"implement cell type");
