@@ -52,8 +52,8 @@ REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 			ref_subdiv_e2n( ref_subdiv, edge, 0 ), 
 			edge ), "adj n0");
       RSS( ref_adj_add( ref_subdiv_adj( ref_subdiv ), 
-			ref_subdiv_e2n( ref_subdiv, edge, 0 ), 
-			edge ), "adj n0");
+			ref_subdiv_e2n( ref_subdiv, edge, 1 ), 
+			edge ), "adj n1");
     }
 
   ref_subdiv->mark = (REF_INT *)malloc( ref_grid_nedge(ref_grid) 
@@ -107,8 +107,6 @@ REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv,
   REF_INT edge;
 
   RSS( ref_subdiv_edge_with(ref_subdiv,node0, node1, &edge), "missing edge");
-
-  printf("edge %d\n",edge);
 
   ref_subdiv_mark(ref_subdiv,edge) = 1;
 
