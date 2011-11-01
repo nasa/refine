@@ -15,16 +15,11 @@
 int main( void )
 {
   REF_GRID ref_grid;
-  REF_CELL ref_cell;
   REF_INT nodes[6] = {0,1,2,3,4,5};
   REF_INT cell;
 
-
   TSS(ref_grid_create(&ref_grid),"create");
-
-  ref_cell = ref_grid_pri(ref_grid);
-
-  TSS(ref_cell_add(ref_cell,nodes,&cell),"add prism");
+  TSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
 
   {
     REF_SUBDIV ref_subdiv;
