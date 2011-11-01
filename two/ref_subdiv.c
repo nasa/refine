@@ -114,3 +114,43 @@ REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv,
 }
 
 
+#define edge_or(ce0,ce1) \
+  { \
+    REF_INT ge0, ge1; \
+    ge0 = ref_cell_c2e( ref_cell, ce0, cell );\
+    ge1 = ref_cell_c2e( ref_cell, ce1, cell );\
+    if ( ref_subdiv_mark( ref_subdiv, ge0 ) != \
+	 ref_subdiv_mark( ref_subdiv, ge1 ) ) \
+      {\
+	again = REF_TRUE;\
+	ref_subdiv_mark( ref_subdiv, ge0 ) = 1;\
+	ref_subdiv_mark( ref_subdiv, ge1 ) = 1;\
+      }\
+  }
+
+REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
+{
+  REF_INT group, cell;
+  REF_CELL ref_cell;
+  REF_BOOL again;
+
+  again = REF_FALSE;
+
+  each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+      {
+	switch ( ref_cell_node_per(ref_cell) )
+	  {
+	  case 6:
+	    edge_or(0,6);
+	    edge_or(3,8);
+	    edge_or(1,7);
+	    break;
+	  default:
+	    RSS(REF_IMPLEMENT,"implement cell type");
+	    break;    
+	  }
+      }
+
+  return REF_SUCCESS;
+}

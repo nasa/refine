@@ -41,6 +41,8 @@ REF_STATUS ref_subdiv_edge_with( REF_SUBDIV ref_subdiv,
 REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv, 
 				     REF_INT node0, REF_INT node1 );
 
+REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv );
+
 END_C_DECLORATION
 
 #endif /* REF_SUBDIV_H */

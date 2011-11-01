@@ -30,12 +30,17 @@ int main( void )
   TSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
 
   TES(0,ref_subdiv_mark(ref_subdiv,0),"init mark");
-  TES(0,ref_subdiv_mark(ref_subdiv,1),"init mark");
+  TES(0,ref_subdiv_mark(ref_subdiv,6),"init mark");
 
   TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
 
   TES(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
-  TES(0,ref_subdiv_mark(ref_subdiv,1),"not been marked");
+  TES(0,ref_subdiv_mark(ref_subdiv,6),"not been marked");
+
+  TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+
+  TES(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
+  TES(1,ref_subdiv_mark(ref_subdiv,6),"been relaxed");
 
   TSS(ref_subdiv_free(ref_subdiv),"free");
 

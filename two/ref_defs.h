@@ -13,8 +13,9 @@
 
 BEGIN_C_DECLORATION
 
-#define REF_TRUE (1==1)
-#define REF_FALSE (1==0)
+typedef int REF_BOOL;
+#define REF_TRUE (1)
+#define REF_FALSE (0)
 
 #if !defined(REF_ECHO_ASSERT)
 #define REF_ECHO_ASSERT (REF_FALSE)
