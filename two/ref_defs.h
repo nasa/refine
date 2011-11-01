@@ -73,6 +73,14 @@ typedef int REF_STATUS;
     }									\
   }
 
+#define RUS(a,b,msg)							\
+  {									\
+    if ((a)==(b)){							\
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      return REF_FAILURE;						\
+    }									\
+  }
+
 #define RAS(a,msg)							\
   {									\
     if (!(a)){								\
