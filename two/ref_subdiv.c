@@ -134,23 +134,29 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   REF_CELL ref_cell;
   REF_BOOL again;
 
-  again = REF_FALSE;
+  again = REF_TRUE;
 
-  each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
-    each_ref_cell_valid_cell( ref_cell, cell )
-      {
-	switch ( ref_cell_node_per(ref_cell) )
+  while (again)
+    {
+
+      again = REF_FALSE;
+
+      each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
+	each_ref_cell_valid_cell( ref_cell, cell )
 	  {
-	  case 6:
-	    edge_or(0,6);
-	    edge_or(3,8);
-	    edge_or(1,7);
-	    break;
-	  default:
-	    RSS(REF_IMPLEMENT,"implement cell type");
-	    break;    
+	    switch ( ref_cell_node_per(ref_cell) )
+	      {
+	      case 6:
+		edge_or(0,6);
+		edge_or(3,8);
+		edge_or(1,7);
+		break;
+	      default:
+		RSS(REF_IMPLEMENT,"implement cell type");
+		break;    
+	      }
 	  }
-      }
+    }
 
   return REF_SUCCESS;
 }
