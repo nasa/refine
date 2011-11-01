@@ -162,9 +162,12 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
   
   each_ref_cell_valid_cell( ref_cell, cell )
     {
-      printf(" %d:",cell);
+      printf(" cell %d\n",cell);
       each_ref_cell_cell_edge( ref_cell, cell_edge )
-	printf(" %d",ref_cell_c2e(ref_cell,cell_edge,cell));
+	printf("  edge %d nodes %d %d\n",
+	       ref_cell_c2e(ref_cell,cell_edge,cell),
+	       ref_cell_e2n(ref_cell,0,cell,cell_edge),
+	       ref_cell_e2n(ref_cell,1,cell,cell_edge));
       printf("\n");
     }
 
