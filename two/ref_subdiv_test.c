@@ -55,6 +55,16 @@ int main( void )
     TSS(ref_subdiv_free(ref_subdiv),"free");
   }
 
+  {
+    REF_SUBDIV ref_subdiv;
+    TSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
+
+    TSS(ref_subdiv_split(ref_subdiv),"split");
+    TES(2, ref_cell_n(ref_grid_pri(ref_grid)),"two");
+    TSS(ref_subdiv_free(ref_subdiv),"free");
+  }
+
   TSS( ref_grid_free(ref_grid),"free" );
 
   return 0;
