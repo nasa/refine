@@ -204,3 +204,11 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
+{
+
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_subdiv);
+
+  return REF_IMPLEMENT;
+}
