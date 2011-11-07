@@ -1,4 +1,8 @@
 
+Mon Nov 7, 2011 : Released Refine 1.8.2
+
+- to allow bootstrap outside of git repo
+
 Wed Oct 26, 2011 : Released Refine 1.8.1 
 
 - removed unused code.
