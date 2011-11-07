@@ -10,5 +10,6 @@ libref2_a_SOURCES = \
 	ref_grid.c ref_grid.h \
 	ref_grid_export.c ref_grid_export.h \
 	ref_grid_import.c ref_grid_import.h \
-	ref_node.h ref_node.c
+	ref_node.h ref_node.c \
+	ref_subdiv.h ref_subdiv.c
 
