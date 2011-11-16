@@ -6,8 +6,6 @@ Makefile.in
 /compile
 /configure
 /depcomp
-/doc/refine.info
-/doc/texinfo.tex
 /install-sh
 /missing
 
