@@ -4,6 +4,22 @@
 
 #include "ref_subdiv.h"
 
+static int ref_subdiv_map( REF_SUBDIV ref_subdiv, 
+			   REF_CELL ref_cell, REF_INT cell )
+{
+  REF_INT edge, map, bit;
+
+  map = 0;
+  bit = 1;
+  for ( edge = 1; edge < ref_cell_edge_per(ref_cell) ; edge++ )
+    {
+      map += bit*ref_subdiv_mark(ref_subdiv,ref_cell_c2e(ref_cell, edge, cell));
+      bit *= bit;
+    }
+
+  return map;
+}
+
 REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 {
   REF_SUBDIV ref_subdiv;
@@ -81,13 +97,14 @@ REF_STATUS ref_subdiv_free( REF_SUBDIV ref_subdiv )
 
 REF_STATUS ref_subdiv_inspect( REF_SUBDIV ref_subdiv )
 {
-  REF_INT group, cell, cell_edge, edge;
+  REF_INT group, cell, cell_edge, edge, map;
   REF_CELL ref_cell;
 
   each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
     each_ref_cell_valid_cell( ref_cell, cell )
       {
-	printf(" group %d cell %d\n",group,cell);
+	map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
+	printf(" group %d cell %d map %d\n",group,cell, map);
 	each_ref_cell_cell_edge( ref_cell, cell_edge )
 	  {
 	    edge = ref_cell_c2e(ref_cell,cell_edge,cell);
@@ -207,8 +224,19 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 
 REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 {
+  REF_GRID ref_grid;
+  REF_INT group, cell;
+  REF_CELL ref_cell;
+  REF_INT map;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_subdiv);
+  ref_grid = ref_subdiv_grid(ref_subdiv);
+
+  each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+      {
+	map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
+	printf("cell %d, map %d\n",cell,map);
+      }
 
   return REF_IMPLEMENT;
 }
