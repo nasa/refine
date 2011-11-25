@@ -6,7 +6,7 @@
 #include "ref_cell.h"
 #include "ref_test.h"
 
-int main( int argc, char *argv[] )
+int main( void )
 {
   REF_CELL ref_cell;
   REF_INT nodes[4] = {0,1,2,3};
@@ -14,8 +14,6 @@ int main( int argc, char *argv[] )
   REF_INT cell;
   REF_INT max, i;
   REF_INT ncell;
-
-  if (argc>1) {printf("%s ignored\n",argv[0]);}
 
   TFS(ref_cell_free(NULL),"dont free NULL");
 
