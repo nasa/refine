@@ -17,7 +17,7 @@ int main( void )
 
   TFS(ref_cell_free(NULL),"dont free NULL");
 
-  {
+  { /* add */
     TSS(ref_cell_create(4,&ref_cell),"create");
     TES(0,ref_cell_n(ref_cell),"init zero cells");
 
@@ -27,6 +27,21 @@ int main( void )
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     TES(1,cell,"second cell is one");
     TES(2,ref_cell_n(ref_cell),"second cell incements n");
+
+    TSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
+  { /* remove */
+    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+    TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    TFS(ref_cell_remove(ref_cell,3),"remove cell missing cell");
+    TES(2,ref_cell_n(ref_cell),"still there");
+
+    TSS(ref_cell_remove(ref_cell,0),"remove cell");
+    TES(1,ref_cell_n(ref_cell),"reduced count")
+    TAS(!ref_cell_valid(ref_cell,0),"cell is still here");
 
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
@@ -141,6 +156,7 @@ int main( void )
     TES(REF_EMPTY,ref_cell_c2e(ref_cell,0,0),"edge");
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
+
   {
     /* set tet edges */
 
@@ -165,5 +181,6 @@ int main( void )
 
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
+
   return 0;
 }

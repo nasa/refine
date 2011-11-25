@@ -72,6 +72,8 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell );
 REF_STATUS ref_cell_inspect( REF_CELL ref_cell );
 
 REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
+REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell );
+
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 
 REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell);
