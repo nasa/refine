@@ -34,6 +34,7 @@ int main( void )
   }
 
   { /* remove */
+    REF_INT item;
     TSS(ref_cell_create(4,&ref_cell),"create");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
@@ -49,7 +50,11 @@ int main( void )
     TES(1,ref_cell_n(ref_cell),"reduced count")
     TAS(!ref_cell_valid(ref_cell,0),"cell is still here");
 
-    
+    each_ref_adj_node_item_with_ref( (ref_cell)->ref_adj, 0, item, cell)
+      TAS( !(cell == 0), "removed cell still in adj");
+
+    each_ref_adj_node_item_with_ref( (ref_cell)->ref_adj, 2, item, cell)
+      TAS( !(cell == 0), "removed cell still in adj");
 
     TSS(ref_cell_free(ref_cell),"cleanup");
   }

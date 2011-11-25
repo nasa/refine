@@ -223,8 +223,15 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 
 REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
 {
+  REF_INT node;
   if ( !ref_cell_valid(ref_cell,cell) ) return REF_FAILURE;
   ref_cell_n(ref_cell)--;
+
+  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+    if ( REF_EMPTY != ref_cell_c2n(ref_cell,node,cell) ) /* hack for boundary faces */
+      RSS( ref_adj_remove(ref_cell->ref_adj, 
+			  ref_cell_c2n(ref_cell,node,cell), cell), 
+	   "unregister cell" );
 
   ref_cell_c2n(ref_cell,0,cell) = REF_EMPTY;
   ref_cell_c2n(ref_cell,1,cell) = ref_cell_blank(ref_cell); 
