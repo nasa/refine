@@ -38,6 +38,7 @@ int main( void )
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
     nodes[0]= 0; nodes[1]= 4; nodes[2]= 5; nodes[3]= 6; 
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 

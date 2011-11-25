@@ -55,6 +55,9 @@ struct REF_CELL_STRUCT {
 	(cell)++ )							\
     if ( ref_cell_valid( ref_cell, cell ) )
 
+#define each_ref_cell_having_node( ref_cell, node, item, cell )		\
+  each_ref_adj_node_item_with_ref( (ref_cell)->ref_adj, node, item, cell)
+
 #define each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)	\
   for ( (cell) = 0 ;							\
 	(cell) < ref_cell_max(ref_cell);				\
