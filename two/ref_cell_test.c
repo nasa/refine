@@ -9,7 +9,7 @@
 int main( void )
 {
   REF_CELL ref_cell;
-  REF_INT nodes[4] = {0,1,2,3};
+  REF_INT nodes[4];
   REF_INT retrieved[4];
   REF_INT cell;
   REF_INT max, i;
@@ -21,9 +21,11 @@ int main( void )
     TSS(ref_cell_create(4,&ref_cell),"create");
     TES(0,ref_cell_n(ref_cell),"init zero cells");
 
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     TES(0,cell,"first cell is zero");
     TES(1,ref_cell_n(ref_cell),"first cell incements n");
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     TES(1,cell,"second cell is one");
     TES(2,ref_cell_n(ref_cell),"second cell incements n");
@@ -33,7 +35,10 @@ int main( void )
 
   { /* remove */
     TSS(ref_cell_create(4,&ref_cell),"create");
+
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+    nodes[0]= 0; nodes[1]= 4; nodes[2]= 5; nodes[3]= 6; 
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     TFS(ref_cell_remove(ref_cell,3),"remove cell missing cell");
@@ -42,6 +47,8 @@ int main( void )
     TSS(ref_cell_remove(ref_cell,0),"remove cell");
     TES(1,ref_cell_n(ref_cell),"reduced count")
     TAS(!ref_cell_valid(ref_cell,0),"cell is still here");
+
+    
 
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
@@ -52,6 +59,7 @@ int main( void )
 
     max = ref_cell_max(ref_cell);
     for (i = 0; i < max+1; i++ ){
+      nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
       RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
       RES(i,cell,"expected ordered new cells first block");
     }
@@ -59,6 +67,7 @@ int main( void )
 
     max = ref_cell_max(ref_cell);
     for (i = ref_cell_n(ref_cell); i < max+1; i++ ){
+      nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
       RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
       RES(i,cell,"expected ordered new cells second block");
     }
@@ -71,6 +80,7 @@ int main( void )
     /* get nodes */
     TSS(ref_cell_create(4,&ref_cell),"create new");
 
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
     TFS(ref_cell_nodes(ref_cell,0,nodes),"missing cell should fail");
     TFS(ref_cell_nodes(ref_cell,-1,nodes),"-1 cell should fail");
     TFS(ref_cell_nodes(ref_cell,1000000000,nodes),"large cell should fail");
