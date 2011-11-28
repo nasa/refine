@@ -72,7 +72,7 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
   REF_INT extra;
   REF_INT orig, chunk;
 
-  if ( global < 0 ) return REF_INVALID;
+  if ( global < 0 ) RSS( REF_INVALID, "invalid global node");
 
   if ( REF_EMPTY == ref_node->blank )
     {
