@@ -229,15 +229,24 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   REF_INT group, cell;
   REF_CELL ref_cell;
   REF_INT map;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
 
   ref_grid = ref_subdiv_grid(ref_subdiv);
 
   each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
     each_ref_cell_valid_cell( ref_cell, cell )
-      {
-	map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
-	printf("cell %d, map %d\n",cell,map);
-      }
+    {
+      map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes");
+      printf("cell %d, map %d\n",cell,map);
+      switch ( map )
+	{
+	case 0: /* don't split */
+	  break;
+	default:
+	  return REF_IMPLEMENT;
+	}
+    }
 
-  return REF_IMPLEMENT;
+  return REF_SUCCESS;
 }
