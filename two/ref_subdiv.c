@@ -11,10 +11,11 @@ static int ref_subdiv_map( REF_SUBDIV ref_subdiv,
 
   map = 0;
   bit = 1;
-  for ( edge = 1; edge < ref_cell_edge_per(ref_cell) ; edge++ )
+  for ( edge = 0; edge < ref_cell_edge_per(ref_cell) ; edge++ )
     {
       map += bit*ref_subdiv_mark(ref_subdiv,ref_cell_c2e(ref_cell, edge, cell));
       bit *= bit;
+      if (1 == bit) bit = 2;
     }
 
   return map;
