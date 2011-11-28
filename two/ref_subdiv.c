@@ -75,10 +75,17 @@ REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 
   ref_subdiv->mark = (REF_INT *)malloc( ref_grid_nedge(ref_grid) 
 					* sizeof(REF_INT));
-  RNS(ref_subdiv->mark,"malloc global NULL");
+  RNS(ref_subdiv->mark,"malloc mark NULL");
 
   for ( edge=0 ; edge < ref_grid_nedge(ref_grid) ; edge++ )
     ref_subdiv_mark( ref_subdiv, edge ) = 0;
+
+  ref_subdiv->node = (REF_INT *)malloc( ref_grid_nedge(ref_grid) 
+					* sizeof(REF_INT));
+  RNS(ref_subdiv->node,"malloc node NULL");
+
+  for ( edge=0 ; edge < ref_grid_nedge(ref_grid) ; edge++ )
+    ref_subdiv_node( ref_subdiv, edge ) = REF_EMPTY;
 
   return REF_SUCCESS;
 }
@@ -87,6 +94,7 @@ REF_STATUS ref_subdiv_free( REF_SUBDIV ref_subdiv )
 {
   if ( NULL == (void *)ref_subdiv ) return REF_NULL;
 
+  free( ref_subdiv->node );
   free( ref_subdiv->mark );
   free( ref_subdiv->e2n );
   RSS( ref_adj_free( ref_subdiv_adj( ref_subdiv ) ), "free adj" );
@@ -223,6 +231,28 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
+{
+  REF_GRID ref_grid;
+  REF_INT edge, global, node;
+
+  ref_grid = ref_subdiv_grid(ref_subdiv);
+
+  for ( edge = 0; edge < ref_grid_nedge(ref_grid) ; edge++ )
+    {
+      if ( ref_subdiv_mark( ref_subdiv, edge ) )
+	{
+	  printf("refactor global aspect\n");
+	  global = ref_node_n( ref_grid_node(ref_grid) );
+	  RSS( ref_node_add( ref_grid_node(ref_grid), global, &node), 
+	       "add node");
+	  ref_subdiv_node( ref_subdiv, edge ) = node;
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 {
   REF_GRID ref_grid;
@@ -250,3 +280,4 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 
   return REF_SUCCESS;
 }
+

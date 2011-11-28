@@ -19,6 +19,7 @@ struct REF_SUBDIV_STRUCT {
   REF_ADJ adj;
   REF_INT *e2n;
   REF_INT *mark;
+  REF_INT *node;
 };
 
 #define ref_subdiv_grid(ref_subdiv) ((ref_subdiv)->ref_grid)
@@ -31,6 +32,9 @@ REF_STATUS ref_subdiv_free( REF_SUBDIV ref_subdiv );
 
 #define ref_subdiv_mark( ref_subdiv, edge )	\
   ((ref_subdiv)->mark[edge])
+
+#define ref_subdiv_node( ref_subdiv, edge )	\
+  ((ref_subdiv)->node[edge])
 
 #define ref_subdiv_adj( ref_subdiv ) ((ref_subdiv)->adj)
 
@@ -45,7 +49,10 @@ REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv,
 
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv );
 
+REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv );
+
 REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv );
+
 END_C_DECLORATION
 
 #endif /* REF_SUBDIV_H */
