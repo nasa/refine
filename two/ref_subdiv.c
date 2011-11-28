@@ -242,8 +242,8 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
     {
       if ( ref_subdiv_mark( ref_subdiv, edge ) )
 	{
-	  printf("refactor global aspect\n");
-	  global = ref_node_n( ref_grid_node(ref_grid) );
+	  RSS( ref_node_next_global( ref_grid_node(ref_grid), &global ),
+	       "next global");
 	  RSS( ref_node_add( ref_grid_node(ref_grid), global, &node), 
 	       "add node");
 	  ref_subdiv_node( ref_subdiv, edge ) = node;
