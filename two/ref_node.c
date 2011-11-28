@@ -24,8 +24,9 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   ref_node_n(ref_node) = 0;
   ref_node_max(ref_node) = max;
 
-  ref_node_total(ref_node) = REF_EMPTY;
   ref_node_partition(ref_node) = REF_EMPTY;
+
+  ref_node_n_global(ref_node) = 0;
 
   ref_node->global = (REF_INT *)malloc(max*sizeof(REF_INT));
   RNS(ref_node->global,"malloc global NULL");

@@ -23,8 +23,8 @@ REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
   RSS( ref_grid_create( &ref_grid ), "create grid" );
   ref_node = ref_grid_node(ref_grid);
 
-  ref_node_total(ref_node) = *nnodesg;
   ref_node_partition(ref_node) = *partition;
+  ref_node_n_global(ref_node) = *nnodesg;
 
   for (node=0;node<(*nnodes);node++)
     {

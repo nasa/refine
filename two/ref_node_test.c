@@ -16,11 +16,11 @@ int main( void )
 
   { /* init */
     TSS(ref_node_create(&ref_node),"create");
-    TES(0,ref_node_n(ref_node),"init zero nodes");
-    TES(10,ref_node_max(ref_node),"init 10 max");
+    TEIS(0,ref_node_n(ref_node),"init zero nodes");
+    TEIS(10,ref_node_max(ref_node),"init 10 max");
 
-    TES(REF_EMPTY,ref_node_total(ref_node),"init unknown total");
-    TES(REF_EMPTY,ref_node_partition(ref_node),"init unknown partition");
+    TEIS(0,ref_node_n_global(ref_node),"init zero global");
+    TEIS(REF_EMPTY,ref_node_partition(ref_node),"init unknown partition");
 
     TSS(ref_node_free(ref_node),"free");
   }
