@@ -14,8 +14,7 @@ static int ref_subdiv_map( REF_SUBDIV ref_subdiv,
   for ( edge = 0; edge < ref_cell_edge_per(ref_cell) ; edge++ )
     {
       map += bit*ref_subdiv_mark(ref_subdiv,ref_cell_c2e(ref_cell, edge, cell));
-      bit *= bit;
-      if (1 == bit) bit = 2;
+      bit *= 2;
     }
 
   return map;
@@ -268,13 +267,13 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
     {
       map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes");
-      printf("cell %d, map %d\n",cell,map);
       switch ( map )
 	{
 	case 0: /* don't split */
 	  break;
 	default:
-	  return REF_IMPLEMENT;
+	  printf("cell %d, map %d\n",cell,map);
+	  RSS( REF_IMPLEMENT, "map not implemented yet" )
 	}
     }
 
