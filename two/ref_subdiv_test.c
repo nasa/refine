@@ -103,7 +103,7 @@ int main( void )
     TSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  SKIP_TEST("need supporting data")
+  SKIP_TEST("copy of new cells")
   {
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
@@ -112,8 +112,11 @@ int main( void )
 
     TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
 
+    TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    TSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+
     TSS(ref_subdiv_split(ref_subdiv),"split");
-    TES(2, ref_cell_n(ref_grid_pri(ref_grid)),"two");
+    TEIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"two");
 
     TSS( tear_down( ref_subdiv ), "tear down");
   }
