@@ -120,6 +120,14 @@ REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
+{
+  (*global) = ref_node_n_global(ref_node);
+  ref_node_n_global(ref_node)++;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
 {
   REF_INT node;

@@ -68,6 +68,17 @@ int main( void )
     TSS(ref_node_free(ref_node),"free");
   }
 
+  { /* next global */
+    TSS(ref_node_create(&ref_node),"create");
+
+    TEIS(0,ref_node_n_global(ref_node),"init zero global");
+    TSS( ref_node_next_global(ref_node,&node), "next global");
+    TEIS(0,node,"expected global");
+    TEIS(1,ref_node_n_global(ref_node),"increment global");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
   { /* add bunch testing realloc */
     TSS(ref_node_create(&ref_node),"create");
 
