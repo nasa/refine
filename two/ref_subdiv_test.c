@@ -55,6 +55,7 @@ int main( void )
     TSS(ref_subdiv_free(ref_subdiv),"free");
   }
 
+  SKIP_TEST("need supporting data")
   {
     REF_SUBDIV ref_subdiv;
     TSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
