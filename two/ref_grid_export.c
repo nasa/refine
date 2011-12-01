@@ -215,36 +215,40 @@ REF_STATUS ref_grid_export_tec( REF_GRID ref_grid, char *filename  )
   nface = ref_cell_n(ref_grid_tri(ref_grid)) +
           ref_cell_n(ref_grid_qua(ref_grid)) ;
 
-  fprintf(file,
+  if ( nface > 0 )
+    {
+
+      fprintf(file,
 	  "zone t=surf, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  ref_node_n(ref_node), nface, "point", "fequadrilateral" );
 
-  for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( REF_EMPTY != o2n[node] )
-      {
-	fprintf(file, " %.16e %.16e %.16e\n",
-		ref_node_xyz(ref_node,0,node),
-		ref_node_xyz(ref_node,1,node),
-		ref_node_xyz(ref_node,2,node) ) ;
-      }
+      for ( node = 0; node < ref_node_max(ref_node); node++ )
+	if ( REF_EMPTY != o2n[node] )
+	  {
+	    fprintf(file, " %.16e %.16e %.16e\n",
+		    ref_node_xyz(ref_node,0,node),
+		    ref_node_xyz(ref_node,1,node),
+		    ref_node_xyz(ref_node,2,node) ) ;
+	  }
 
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      nodes[3] = nodes[2];
-      for ( node = 0; node < 4; node++ )
+      ref_cell = ref_grid_tri(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
-	  fprintf(file," %d",o2n[nodes[node]] + 1);
+	  nodes[3] = nodes[2];
+	  for ( node = 0; node < 4; node++ )
+	    {
+	      fprintf(file," %d",o2n[nodes[node]] + 1);
+	    }
+	  fprintf(file,"\n");
 	}
-      fprintf(file,"\n");
-    }
 
-  ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      for ( node = 0; node < 4; node++ )
-	fprintf(file," %d",o2n[nodes[node]] + 1);
-      fprintf(file,"\n");
+      ref_cell = ref_grid_qua(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  for ( node = 0; node < 4; node++ )
+	    fprintf(file," %d",o2n[nodes[node]] + 1);
+	  fprintf(file,"\n");
+	}
     }
 
   free(o2n);
