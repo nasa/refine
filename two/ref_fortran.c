@@ -3,10 +3,12 @@
 #include <stdio.h>
 
 #include "ref_fortran.h"
+#include "ref_dict.h"
 #include "ref_grid.h"
 #include "ref_grid_export.h"
 
 static REF_GRID ref_grid = NULL;
+static REF_DICT ref_bc_flag = NULL;
 
 REF_STATUS ref_init_node__(REF_INT *nnodes, REF_INT *nnodesg,
 			   REF_INT *l2g, REF_INT *part, REF_INT *partition, 
@@ -21,6 +23,7 @@ REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
   REF_NODE ref_node;
   int node, pos;
   RSS( ref_grid_create( &ref_grid ), "create grid" );
+  RSS( ref_dict_create( &ref_bc_flag ), "create bc_flag dict" );
   ref_node = ref_grid_node(ref_grid);
 
   ref_node_partition(ref_node) = *partition;
@@ -35,6 +38,8 @@ REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
       ref_node_xyz(ref_node,2,pos) = z[node];
       ref_node_part(ref_node,pos) = part[node]-1;
     }
+
+
   return REF_SUCCESS;
 }
 
@@ -79,6 +84,18 @@ REF_STATUS ref_import_cell_(REF_INT *node_per_cell, REF_INT *ncell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_import_boundary_flag__(REF_INT *boundary_index, 
+				      REF_INT *boundary_flag)
+{
+  return ref_import_boundary_flag_(boundary_index, 
+				   boundary_flag);
+}
+REF_STATUS ref_import_boundary_flag_(REF_INT *boundary_index, 
+				     REF_INT *boundary_flag)
+{
+  return ref_dict_store( ref_bc_flag, *boundary_index, *boundary_flag );
+}
+
 REF_STATUS ref_viz__( void )
 {
   return ref_viz_( );
@@ -101,6 +118,8 @@ REF_STATUS ref_free__( void )
 }
 REF_STATUS ref_free_( void )
 {
+  RSS( ref_dict_free( ref_bc_flag ), "free bc_flag");
+  ref_bc_flag = NULL;
   RSS( ref_grid_free( ref_grid ), "free grid");
   ref_grid = NULL;
   return REF_SUCCESS;
