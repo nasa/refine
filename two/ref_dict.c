@@ -40,6 +40,19 @@ REF_STATUS ref_dict_store( REF_DICT ref_dict, REF_INT key, REF_INT value )
 {
   REF_INT i, insert_point;
 
+  if ( ref_dict_max(ref_dict) == ref_dict_n(ref_dict) )
+    {
+      ref_dict_max(ref_dict) += 1000;
+      ref_dict->key = (REF_INT *)realloc( (void *)(ref_dict->key),
+					  ref_dict_max(ref_dict) * 
+					  sizeof(REF_INT) );
+      RNS(ref_dict->key,"realloc ref_dict->key NULL");
+      ref_dict->value = (REF_INT *)realloc( (void *)(ref_dict->value),
+					    ref_dict_max(ref_dict) * 
+					    sizeof(REF_INT) );
+      RNS(ref_dict->value,"realloc ref_dict->value NULL");
+    }
+
   insert_point = 0;
   for (i=ref_dict_n( ref_dict )-1; i>=0; i--) 
     if ( ref_dict->key[i] < key) 

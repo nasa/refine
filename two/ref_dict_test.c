@@ -61,7 +61,18 @@ int main( void )
     TSS(ref_dict_free(ref_dict),"free");
   }
 
-  SKIP_TEST("realloc"){};
+  { /* store lots */
+    REF_INT key, value, max;
+    TSS(ref_dict_create(&ref_dict),"create");
+    max = ref_dict_max(ref_dict);
+    for (key=0; key <= max; key++)
+      {
+	value = 10*key;
+	TSS(ref_dict_store(ref_dict,key,value),"store");
+      }
+    TAS(ref_dict_max(ref_dict)>max, "more?");
+    TSS(ref_dict_free(ref_dict),"free");
+  }
 
   return 0;
 }
