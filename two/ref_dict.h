@@ -24,6 +24,9 @@ REF_STATUS ref_dict_free( REF_DICT ref_dict );
 #define ref_dict_max( ref_dict ) ((ref_dict)->max)
 
 REF_STATUS ref_dict_store( REF_DICT ref_dict, REF_INT key, REF_INT value );
+REF_STATUS ref_dict_location( REF_DICT ref_dict, 
+			      REF_INT key, REF_INT *location );
+REF_STATUS ref_dict_remove( REF_DICT ref_dict, REF_INT key );
 REF_STATUS ref_dict_value( REF_DICT ref_dict, REF_INT key, REF_INT *value );
 
 REF_STATUS ref_dict_inspect( REF_DICT ref_dict );

@@ -50,7 +50,17 @@ int main( void )
     TSS(ref_dict_free(ref_dict),"free");
   }
 
-  SKIP_TEST("remove"){};
+  { /* remove */
+    REF_INT key, value;
+    TSS(ref_dict_create(&ref_dict),"create");
+    key = 2; value = 5;
+    TSS(ref_dict_store(ref_dict,key,value),"store");
+    TSS(ref_dict_remove(ref_dict,key),"remove");
+    TEIS(0,ref_dict_n(ref_dict),"back to zero");
+    TFS(ref_dict_value(ref_dict,key,&value),"should not retrieve");
+    TSS(ref_dict_free(ref_dict),"free");
+  }
+
   SKIP_TEST("realloc"){};
 
   return 0;

@@ -60,17 +60,44 @@ REF_STATUS ref_dict_store( REF_DICT ref_dict, REF_INT key, REF_INT value )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_value( REF_DICT ref_dict, REF_INT key, REF_INT *value )
+REF_STATUS ref_dict_location( REF_DICT ref_dict, 
+			      REF_INT key, REF_INT *location )
 {
   REF_INT i;
 
   for (i=0; i<ref_dict_n( ref_dict ); i++) 
     if ( key == ref_dict->key[i] )
       {
-	*value = ref_dict->value[i];
+	*location = i;
 	return REF_SUCCESS;
       }
   return REF_FAILURE;
+}
+
+
+REF_STATUS ref_dict_remove( REF_DICT ref_dict, REF_INT key )
+{
+  REF_INT i, location;
+
+  RAISE( ref_dict_location( ref_dict, key, &location ) );
+
+  ref_dict_n( ref_dict )--;
+
+  for(i=location;i<ref_dict_n( ref_dict );i++)
+    ref_dict->key[i] = ref_dict->key[i+1];
+  for(i=location;i<ref_dict_n( ref_dict );i++)
+    ref_dict->value[i] = ref_dict->value[i+1];
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_dict_value( REF_DICT ref_dict, REF_INT key, REF_INT *value )
+{
+  REF_INT location;
+
+  RAISE( ref_dict_location( ref_dict, key, &location ) );
+  *value = ref_dict->value[location];
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_dict_inspect( REF_DICT ref_dict )

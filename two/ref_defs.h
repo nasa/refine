@@ -90,12 +90,11 @@ typedef int REF_STATUS;
     }									\
   }
 
-#define RFS(fcn,msg)							\
+#define RAISE(fcn)							\
   {									\
     REF_STATUS code;							\
     code = (fcn);							\
-    if (REF_SUCCESS == code){						\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+    if (REF_SUCCESS != code){						\
       return code;							\
     }									\
   }
