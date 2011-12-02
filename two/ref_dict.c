@@ -38,16 +38,39 @@ REF_STATUS ref_dict_free( REF_DICT ref_dict )
 
 REF_STATUS ref_dict_store( REF_DICT ref_dict, REF_INT key, REF_INT value )
 {
-  ref_dict->key[0] = key;
-  ref_dict->value[0] = value;
+  REF_INT i, insert_point;
+
+  insert_point = 0;
+  for (i=ref_dict_n( ref_dict )-1; i>=0; i--) 
+    if ( ref_dict->key[i] < key) 
+      {
+	insert_point = i+1;
+	break;
+      }
+  /* shift to open up insert_point */
+  for(i=ref_dict_n( ref_dict );i>insert_point;i--)
+    ref_dict->key[i] = ref_dict->key[i-1];
+  for(i=ref_dict_n( ref_dict );i>insert_point;i--)
+    ref_dict->value[i] = ref_dict->value[i-1];
+  /* fill insert_point */
+  ref_dict_n( ref_dict )++;
+  ref_dict->key[insert_point] = key;
+  ref_dict->value[insert_point] = value;
+
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_dict_value( REF_DICT ref_dict, REF_INT key, REF_INT *value )
 {
-  if ( key == ref_dict->key[0] )
-    *value = ref_dict->value[0];
-  return REF_SUCCESS;
+  REF_INT i;
+
+  for (i=0; i<ref_dict_n( ref_dict ); i++) 
+    if ( key == ref_dict->key[i] )
+      {
+	*value = ref_dict->value[i];
+	return REF_SUCCESS;
+      }
+  return REF_FAILURE;
 }
 
 REF_STATUS ref_dict_inspect( REF_DICT ref_dict )

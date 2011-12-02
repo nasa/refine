@@ -17,7 +17,16 @@ int main( void )
     TSS(ref_dict_free(ref_dict),"free");
   }
 
-  {
+  { /* missing fails */
+    REF_INT key, value;
+     key = 2; value = 5;
+    TSS(ref_dict_create(&ref_dict),"create");
+    TFS(ref_dict_value(ref_dict,key,&value),"missing");
+    TEIS(5,value,"get value");
+    TSS(ref_dict_free(ref_dict),"free");
+  }
+
+  { /* store one */
     REF_INT key, value;
     TSS(ref_dict_create(&ref_dict),"create");
     key = 2; value = 5;
@@ -26,6 +35,23 @@ int main( void )
     TEIS(5,value,"get value");
     TSS(ref_dict_free(ref_dict),"free");
   }
+
+  { /* store two */
+    REF_INT key, value;
+    TSS(ref_dict_create(&ref_dict),"create");
+    key = 2; value = 5;
+    TSS(ref_dict_store(ref_dict,key,value),"store");
+    key = 1; value = 3;
+    TSS(ref_dict_store(ref_dict,key,value),"store");
+    key = 1; TSS(ref_dict_value(ref_dict,key,&value),"retrieve");
+    TEIS(3,value,"get value");
+    key = 2; TSS(ref_dict_value(ref_dict,key,&value),"retrieve");
+    TEIS(5,value,"get value");
+    TSS(ref_dict_free(ref_dict),"free");
+  }
+
+  SKIP_TEST("remove"){};
+  SKIP_TEST("realloc"){};
 
   return 0;
 }
