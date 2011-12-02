@@ -13,7 +13,7 @@ fi
 for test in $tests;
 do
   root=${test%_test.c}
-  echo $root ---------------------
+  echo \$ $0 $root ---------------------
 
   dependencies=''
   if [ -a ${root}.h ]; then
