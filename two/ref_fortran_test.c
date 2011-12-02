@@ -23,9 +23,12 @@ int main( void )
   REF_DBL *y; 
   REF_DBL *z;
   REF_INT *c2n;
+  REF_INT *f2n;
 
   REF_INT node_per_cell;
   REF_INT ncell;
+  REF_INT node_per_face;
+  REF_INT nface;
   REF_INT ibound, flag;
 
   nnodes = 4;
@@ -38,9 +41,9 @@ int main( void )
   z = (REF_DBL *) malloc( sizeof(REF_DBL) * nnodes );
 
   l2g[0] = 3; part[0] = 1; x[0] = 0; y[0] = 1; z[0] = 0;
-  l2g[1] = 4; part[0] = 1; x[1] = 0; y[1] = 0; z[1] = 1;
-  l2g[2] = 1; part[0] = 2; x[2] = 0; y[2] = 0; z[2] = 0;
-  l2g[3] = 2; part[0] = 2; x[3] = 1; y[3] = 0; z[3] = 0;
+  l2g[1] = 4; part[1] = 1; x[1] = 0; y[1] = 0; z[1] = 1;
+  l2g[2] = 1; part[2] = 2; x[2] = 0; y[2] = 0; z[2] = 0;
+  l2g[3] = 2; part[3] = 2; x[3] = 1; y[3] = 0; z[3] = 0;
 
   partition = 1;
 
@@ -64,8 +67,20 @@ int main( void )
   ibound = 2; flag = 20;
   TSS(ref_import_boundary_flag__(  &ibound, &flag ),"import bc");
 
+  node_per_face = 3;
+  nface = 1;
+  f2n = (REF_INT *) malloc( sizeof(REF_INT) * node_per_face * nface );
+  f2n[0] = 3;
+  f2n[1] = 4;
+  f2n[2] = 1;
+
+  ibound=1;
+  TSS(ref_import_boundary__( &node_per_face, &nface, f2n, &ibound ),
+      "import face");
+
   TSS(ref_free__(),"free");
 
+  free(f2n);
   free(c2n);
   free(z);
   free(y);

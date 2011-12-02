@@ -23,6 +23,11 @@ REF_STATUS ref_import_boundary_flag__(REF_INT *boundary_index,
 REF_STATUS ref_import_boundary_flag_(REF_INT *boundary_index, 
 				     REF_INT *boundary_flag);
 
+REF_STATUS ref_import_boundary__(REF_INT *node_per_face, REF_INT *nface,
+				 REF_INT *f2n, REF_INT *boundary_index);
+REF_STATUS ref_import_boundary_(REF_INT *node_per_face, REF_INT *nface,
+				REF_INT *f2n, REF_INT *boundary_index);
+
 REF_STATUS ref_viz__( void );
 REF_STATUS ref_viz_( void );
 

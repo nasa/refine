@@ -96,6 +96,43 @@ REF_STATUS ref_import_boundary_flag_(REF_INT *boundary_index,
   return ref_dict_store( ref_bc_flag, *boundary_index, *boundary_flag );
 }
 
+REF_STATUS ref_import_boundary__(REF_INT *node_per_face, REF_INT *nface,
+			     REF_INT *f2n, REF_INT *boundary_index )
+{
+  return ref_import_boundary_(node_per_face, nface, f2n, boundary_index);
+}
+REF_STATUS ref_import_boundary_(REF_INT *node_per_face, REF_INT *nface,
+			     REF_INT *f2n, REF_INT *boundary_index )
+{
+  REF_INT *nodes;
+  REF_CELL ref_cell;
+  REF_INT face, node, new_face;
+  switch ( *node_per_face )
+    {
+    case 3:
+      ref_cell = ref_grid_tri(ref_grid);
+      break;
+    case 4:
+      ref_cell = ref_grid_qua(ref_grid);
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unexpected node_per_face");
+      break;    
+    }
+  nodes = (REF_INT *)malloc( ((*node_per_face)+1) * sizeof(REF_INT));
+  nodes[(*node_per_face)] = REF_EMPTY; /* for bc face id */
+  RNS( nodes,"malloc nodes NULL");
+  for ( face = 0 ; face < (*nface) ; face++ ) 
+    {
+      for ( node = 0 ; node < (*node_per_face) ; node++ )
+	nodes[node] = f2n[node+(*node_per_face)*face] - 1;
+      RSS( ref_cell_add( ref_cell, nodes, &new_face ), "add face");
+      ref_cell_c2n(ref_cell,(*node_per_face),new_face) = (*boundary_index);
+    }
+  free(nodes);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_viz__( void )
 {
   return ref_viz_( );
