@@ -10,7 +10,6 @@
 #include "ref_node.h"
 #include "ref_cell.h"
 #include "ref_adj.h"
-#include "ref_dict.h"
 #include "ref_metric.h"
 
 int main( void )
@@ -31,7 +30,7 @@ int main( void )
   REF_INT ncell;
   REF_INT node_per_face;
   REF_INT nface;
-  REF_INT ibound, flag;
+  REF_INT ibound;
 
   REF_INT node;
 
@@ -76,11 +75,6 @@ int main( void )
   c2n[3] = 4;
 
   TSS(ref_import_cell__( &node_per_cell, &ncell, c2n ),"import cell");
-
-  ibound = 1; flag = 10;
-  TSS(ref_import_boundary_flag__( &ibound, &flag ),"import bc");
-  ibound = 2; flag = 20;
-  TSS(ref_import_boundary_flag__(  &ibound, &flag ),"import bc");
 
   node_per_face = 3;
   nface = 1;

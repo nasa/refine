@@ -18,11 +18,6 @@ REF_STATUS ref_import_cell__(REF_INT *node_per_cell, REF_INT *ncell,
 REF_STATUS ref_import_cell_(REF_INT *node_per_cell, REF_INT *ncell,
 			    REF_INT *c2n);
 
-REF_STATUS ref_import_boundary_flag__(REF_INT *boundary_index, 
-				      REF_INT *boundary_flag);
-REF_STATUS ref_import_boundary_flag_(REF_INT *boundary_index, 
-				     REF_INT *boundary_flag);
-
 REF_STATUS ref_import_boundary__(REF_INT *node_per_face, REF_INT *nface,
 				 REF_INT *f2n, REF_INT *boundary_index);
 REF_STATUS ref_import_boundary_(REF_INT *node_per_face, REF_INT *nface,
