@@ -4,6 +4,7 @@
 
 #include "ref_fortran.h"
 #include "ref_dict.h"
+#include "ref_metric.h"
 #include "ref_grid.h"
 #include "ref_grid_export.h"
 
@@ -146,6 +147,23 @@ REF_STATUS ref_viz_( void )
   sprintf(filename,"ref_viz%04d.tec",
 	  ref_node_partition(ref_grid_node(ref_grid)));
   RSS( ref_grid_export_tec( ref_grid, filename ), "export tec");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_import_metric__(REF_INT *nnodes, REF_DBL *m )
+{
+  return ref_import_metric_( nnodes, m );
+}
+REF_STATUS ref_import_metric_(REF_INT *nnodes, REF_DBL *m )
+{
+  int node;
+  REF_METRIC ref_metric;
+
+  ref_metric = ref_grid_metric(ref_grid);
+
+  for (node = 0; node < (*nnodes); node++)
+    RSS(ref_metric_set(ref_metric,node,&(m[6*node])),"set metric");
+
   return REF_SUCCESS;
 }
 

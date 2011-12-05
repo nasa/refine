@@ -28,6 +28,9 @@ REF_STATUS ref_import_boundary__(REF_INT *node_per_face, REF_INT *nface,
 REF_STATUS ref_import_boundary_(REF_INT *node_per_face, REF_INT *nface,
 				REF_INT *f2n, REF_INT *boundary_index);
 
+REF_STATUS ref_import_metric__(REF_INT *nnodes, REF_DBL *metric);
+REF_STATUS ref_import_metric_(REF_INT *nnodes, REF_DBL *metric);
+
 REF_STATUS ref_viz__( void );
 REF_STATUS ref_viz_( void );
 

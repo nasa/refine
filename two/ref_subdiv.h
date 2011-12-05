@@ -11,6 +11,7 @@ END_C_DECLORATION
 
 #include "ref_grid.h"
 #include "ref_adj.h"
+#include "ref_metric.h"
 
 BEGIN_C_DECLORATION
 

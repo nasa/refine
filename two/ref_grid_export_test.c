@@ -6,8 +6,6 @@
 #include "ref_grid_export.h"
 #include "ref_test.h"
 
-#include "ref_adj.h"
-
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
