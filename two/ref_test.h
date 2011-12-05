@@ -53,6 +53,23 @@ BEGIN_C_DECLORATION
     }									\
   }
 
+#define TWDS(a,b,tol,msg)						\
+  {									\
+    REF_DBL ad,bd,del,allowed;						\
+    ad = (a);								\
+    bd = (b);								\
+    del = ABS(ad-bd);							\
+    allowed = (tol);							\
+    if ( tol < 0.0 ) allowed = 1.0E-12;					\
+    if (del>allowed){							\
+      printf("%s: %d: %s: %s\nexpected %e, was %e, %e outside of %e\n",	\
+	     __FILE__,__LINE__,__func__,(msg),ad,bd,del,allowed);	\
+      return REF_FAILURE;						\
+    }else{								\
+      TEST_ECH0(msg);							\
+    }									\
+  }
+
 #define TAS(a,msg)							\
   {									\
     if (!(a)){								\
