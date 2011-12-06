@@ -26,8 +26,6 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
   RSS( ref_cell_create( 4, &ref_grid_tri(ref_grid) ), "tri create" );
   RSS( ref_cell_create( 5, &ref_grid_qua(ref_grid) ), "qua create" );
 
-  ref_grid_nedge(ref_grid) = 0;
-
   return REF_SUCCESS;
 }
 
@@ -57,36 +55,6 @@ REF_STATUS ref_grid_inspect( REF_GRID ref_grid )
   printf(" pyr = %p\n",(void *)ref_grid_pyr(ref_grid));
   printf(" pri = %p\n",(void *)ref_grid_pri(ref_grid));
   printf(" hex = %p\n",(void *)ref_grid_hex(ref_grid));
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_grid_make_edges( REF_GRID ref_grid )
-{
-  REF_CELL ref_cell, ref_cell2;
-  REF_INT group, group2;
-  REF_INT nedge;
-  REF_INT cell, cell_edge;
-  REF_INT n0, n1;
-
-  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    ref_cell_empty_edges( ref_cell);
-
-  nedge = 0;
-
-  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    each_ref_cell_valid_cell( ref_cell, cell )
-      each_ref_cell_cell_edge( ref_cell, cell_edge )
-        if ( REF_EMPTY == ref_cell_c2e(ref_cell,cell_edge,cell) )
-	    {
-	      n0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-	      n1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
-	      each_ref_grid_ref_cell( ref_grid, group2, ref_cell2 )
-		RSS( ref_cell_set_edge( ref_cell2, n0, n1, nedge ), "set edge");
-	      nedge++;
-	    }
-
-  ref_grid_nedge(ref_grid) = nedge;
 
   return REF_SUCCESS;
 }

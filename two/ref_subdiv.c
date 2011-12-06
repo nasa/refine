@@ -24,8 +24,6 @@ REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 {
   REF_SUBDIV ref_subdiv;
   REF_INT edge;
-  REF_INT group, cell, cell_edge;
-  REF_CELL ref_cell;
 
   (*ref_subdiv_ptr) = NULL;
   (*ref_subdiv_ptr) = (REF_SUBDIV)malloc( sizeof(REF_SUBDIV_STRUCT) );
@@ -35,55 +33,21 @@ REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 
   ref_subdiv_grid(ref_subdiv) = ref_grid;
 
-  RSS( ref_grid_make_edges( ref_grid ), "edges");
+  RSS( ref_edge_create( &(ref_subdiv_edge( ref_subdiv )), 
+			ref_subdiv_grid(ref_subdiv) ), "create edge" );
 
-  RSS( ref_adj_create( &(ref_subdiv_adj( ref_subdiv )) ), "create adj" );
-
-  ref_subdiv->e2n = (REF_INT *)malloc( ref_grid_nedge(ref_grid) 
-				       * 2 * sizeof(REF_INT));
-  RNS(ref_subdiv->e2n,"malloc global NULL");
-
-  for ( edge=0 ; edge < ref_grid_nedge(ref_grid) ; edge++ )
-    {
-      ref_subdiv_e2n( ref_subdiv, edge, 0 ) = REF_EMPTY;
-      ref_subdiv_e2n( ref_subdiv, edge, 1 ) = REF_EMPTY;
-    }
-
-  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    each_ref_cell_valid_cell( ref_cell, cell )
-      each_ref_cell_cell_edge( ref_cell, cell_edge )
-        {
-	  edge = ref_cell_c2e(ref_cell,cell_edge,cell);
-	  ref_subdiv_e2n( ref_subdiv, edge, 0 ) = 
-	    ref_cell_e2n(ref_cell,0,cell,cell_edge);
-	  ref_subdiv_e2n( ref_subdiv, edge, 1 ) = 
-	    ref_cell_e2n(ref_cell,1,cell,cell_edge);
-	}
-
-  for ( edge=0 ; edge < ref_grid_nedge(ref_grid) ; edge++ )
-    {
-      RUS(REF_EMPTY,ref_subdiv_e2n( ref_subdiv, edge, 0 ),"edge n0 empty");
-      RUS(REF_EMPTY,ref_subdiv_e2n( ref_subdiv, edge, 1 ),"edge n1 empty");
-      RSS( ref_adj_add( ref_subdiv_adj( ref_subdiv ), 
-			ref_subdiv_e2n( ref_subdiv, edge, 0 ), 
-			edge ), "adj n0");
-      RSS( ref_adj_add( ref_subdiv_adj( ref_subdiv ), 
-			ref_subdiv_e2n( ref_subdiv, edge, 1 ), 
-			edge ), "adj n1");
-    }
-
-  ref_subdiv->mark = (REF_INT *)malloc( ref_grid_nedge(ref_grid) 
+  ref_subdiv->mark = (REF_INT *)malloc( ref_edge_n(ref_subdiv_edge(ref_subdiv)) 
 					* sizeof(REF_INT));
   RNS(ref_subdiv->mark,"malloc mark NULL");
 
-  for ( edge=0 ; edge < ref_grid_nedge(ref_grid) ; edge++ )
+  for ( edge=0 ; edge < ref_edge_n(ref_subdiv_edge(ref_subdiv)) ; edge++ )
     ref_subdiv_mark( ref_subdiv, edge ) = 0;
 
-  ref_subdiv->node = (REF_INT *)malloc( ref_grid_nedge(ref_grid) 
+  ref_subdiv->node = (REF_INT *)malloc( ref_edge_n(ref_subdiv_edge(ref_subdiv))
 					* sizeof(REF_INT));
   RNS(ref_subdiv->node,"malloc node NULL");
 
-  for ( edge=0 ; edge < ref_grid_nedge(ref_grid) ; edge++ )
+  for ( edge=0 ; edge < ref_edge_n(ref_subdiv_edge(ref_subdiv)) ; edge++ )
     ref_subdiv_node( ref_subdiv, edge ) = REF_EMPTY;
 
   return REF_SUCCESS;
@@ -95,8 +59,7 @@ REF_STATUS ref_subdiv_free( REF_SUBDIV ref_subdiv )
 
   free( ref_subdiv->node );
   free( ref_subdiv->mark );
-  free( ref_subdiv->e2n );
-  RSS( ref_adj_free( ref_subdiv_adj( ref_subdiv ) ), "free adj" );
+  RSS( ref_edge_free( ref_subdiv_edge( ref_subdiv ) ), "free edge" );
 
   ref_cond_free( ref_subdiv );
 
@@ -132,21 +95,9 @@ REF_STATUS ref_subdiv_edge_with( REF_SUBDIV ref_subdiv,
 				 REF_INT node0, REF_INT node1,
 				 REF_INT *edge )
 {
-  REF_INT item, ref;
-  REF_INT n0, n1;
-
-  each_ref_adj_node_item_with_ref( ref_subdiv_adj(ref_subdiv), node0, item, ref)
-    {
-      n0 = ref_subdiv_e2n(ref_subdiv,ref,0);
-      n1 = ref_subdiv_e2n(ref_subdiv,ref,1);
-      if ( ( n0==node0 && n1==node1 ) ||
-	   ( n0==node1 && n1==node0 ) )
-	{
-	  *edge=ref;
-	  return REF_SUCCESS;
-	}
-    }
-  return REF_FAILURE;
+  return ref_edge_with(ref_subdiv_edge( ref_subdiv ), 
+			  node0, node1,
+			  edge );
 }
 
 
@@ -237,7 +188,7 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 
   ref_grid = ref_subdiv_grid(ref_subdiv);
 
-  for ( edge = 0; edge < ref_grid_nedge(ref_grid) ; edge++ )
+  for ( edge = 0; edge < ref_edge_n(ref_subdiv_edge(ref_subdiv)) ; edge++ )
     {
       if ( ref_subdiv_mark( ref_subdiv, edge ) )
 	{
@@ -254,7 +205,6 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 
 REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 {
-  REF_GRID ref_grid;
   REF_INT group, cell;
   REF_CELL ref_cell;
   REF_CELL ref_cell_split;
@@ -263,8 +213,6 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   REF_INT new_nodes[REF_CELL_MAX_NODE_PER];
   REF_INT node, edge, new_cell;
   REF_INT *marked_for_removal;
-
-  ref_grid = ref_subdiv_grid(ref_subdiv);
 
   each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
     {
