@@ -16,7 +16,7 @@
 int main( void )
 {
 
-  {  /* make edges */
+  {  /* make edges shared by two elements */
     REF_EDGE ref_edge;
     REF_GRID ref_grid;
     REF_INT nodes[6];
@@ -38,5 +38,6 @@ int main( void )
     TSS(ref_edge_free(ref_edge),"edge");
     TSS(ref_grid_free(ref_grid),"free");
   }
+
   return 0;
 }
