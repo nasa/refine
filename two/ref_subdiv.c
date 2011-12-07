@@ -90,29 +90,36 @@ REF_STATUS ref_subdiv_inspect( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-
-REF_STATUS ref_subdiv_edge_with( REF_SUBDIV ref_subdiv, 
-				 REF_INT node0, REF_INT node1,
-				 REF_INT *edge )
-{
-  return ref_edge_with(ref_subdiv_edge( ref_subdiv ), 
-			  node0, node1,
-			  edge );
-}
-
-
 REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv, 
 				     REF_INT node0, REF_INT node1 )
 {
   REF_INT edge;
 
-  RSS( ref_subdiv_edge_with(ref_subdiv,node0, node1, &edge), "missing edge");
+  RSS( ref_edge_with( ref_subdiv_edge( ref_subdiv ), 
+		      node0, node1,
+		      &edge ), "missing edge");
 
   ref_subdiv_mark(ref_subdiv,edge) = 1;
 
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv, 
+				    REF_INT node0, REF_INT node1,
+				    REF_INT *new_node )
+{
+  REF_INT edge;
+
+  (*new_node) = REF_EMPTY;
+
+  RSS( ref_edge_with( ref_subdiv_edge( ref_subdiv ), 
+		      node0, node1,
+		      &edge ), "missing edge");
+
+  (*new_node) = ref_subdiv_node(ref_subdiv,edge);
+
+  return REF_SUCCESS;
+}
 
 #define edge_or(ce0,ce1) \
   { \
@@ -211,7 +218,7 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   REF_INT map;
   REF_INT nodes[REF_CELL_MAX_NODE_PER];
   REF_INT new_nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT node, edge, new_cell;
+  REF_INT node, new_cell;
   REF_INT *marked_for_removal;
 
   each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
@@ -235,22 +242,18 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 	      
 	      for(node=0;node<ref_cell_node_per(ref_cell);node++)
 		new_nodes[node] = nodes[node];
-	      RSS( ref_subdiv_edge_with(ref_subdiv,nodes[0],nodes[1], &edge),
-		   "mis");
-	      new_nodes[0] = ref_subdiv_node(ref_subdiv,edge);
-	      RSS( ref_subdiv_edge_with(ref_subdiv,nodes[3],nodes[4], &edge),
-		   "mis");
-	      new_nodes[3] = ref_subdiv_node(ref_subdiv,edge);
+	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+					   &(new_nodes[0])), "mis");
+	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+					   &(new_nodes[3])), "mis");
 	      RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	      for(node=0;node<ref_cell_node_per(ref_cell);node++)
 		new_nodes[node] = nodes[node];
-	      RSS( ref_subdiv_edge_with(ref_subdiv,nodes[0],nodes[1], &edge),
-		   "mis");
-	      new_nodes[1] = ref_subdiv_node(ref_subdiv,edge);
-	      RSS( ref_subdiv_edge_with(ref_subdiv,nodes[3],nodes[4], &edge),
-		   "mis");
-	      new_nodes[4] = ref_subdiv_node(ref_subdiv,edge);
+	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+					   &(new_nodes[1])), "mis");
+	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+					   &(new_nodes[4])), "mis");
 	      RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 	      break;
 	    default:
