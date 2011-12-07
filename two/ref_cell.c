@@ -99,6 +99,55 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
       break;
     }
 
+  switch ( ref_cell_node_per(ref_cell) )
+    {
+    case 4:
+      ref_cell_face_per(ref_cell) = 4;
+      break;
+    case 5:
+      ref_cell_face_per(ref_cell) = 5;
+      break;
+    case 6:
+      ref_cell_face_per(ref_cell) = 5;
+      break;
+    case 8:
+      ref_cell_face_per(ref_cell) = 6;
+      break;
+    default:
+      ref_cell_face_per(ref_cell) = 0;
+      break;    
+    }
+
+  ref_cell->f2n = NULL;
+  if ( ref_cell_face_per(ref_cell) > 0 )
+    {
+      ref_cell->f2n = (REF_INT *)malloc( 4 * ref_cell_face_per(ref_cell) *
+					 sizeof(REF_INT));
+      RNS(ref_cell->f2n,"malloc f2n NULL");
+    }
+
+  switch ( ref_cell_edge_per(ref_cell) )
+    {
+    case 6:
+      ref_cell_f2n_gen(ref_cell,0,0) = 1; 
+      ref_cell_f2n_gen(ref_cell,1,0) = 3;
+      ref_cell_f2n_gen(ref_cell,2,0) = 2;
+      ref_cell_f2n_gen(ref_cell,3,0) = ref_cell_f2n_gen(ref_cell,0,0);
+      ref_cell_f2n_gen(ref_cell,0,1) = 0; 
+      ref_cell_f2n_gen(ref_cell,1,1) = 2;
+      ref_cell_f2n_gen(ref_cell,2,1) = 3;
+      ref_cell_f2n_gen(ref_cell,3,1) = ref_cell_f2n_gen(ref_cell,0,1);
+      ref_cell_f2n_gen(ref_cell,0,2) = 0; 
+      ref_cell_f2n_gen(ref_cell,1,2) = 3;
+      ref_cell_f2n_gen(ref_cell,2,2) = 1;
+      ref_cell_f2n_gen(ref_cell,3,2) = ref_cell_f2n_gen(ref_cell,0,2);
+      ref_cell_f2n_gen(ref_cell,0,3) = 0; 
+      ref_cell_f2n_gen(ref_cell,1,3) = 1;
+      ref_cell_f2n_gen(ref_cell,2,3) = 2;
+      ref_cell_f2n_gen(ref_cell,3,3) = ref_cell_f2n_gen(ref_cell,0,3);
+      break;
+    }
+
   ref_cell_n(ref_cell) = 0;
   ref_cell_max(ref_cell) = max;
 
@@ -127,9 +176,10 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
 {
   if ( NULL == (void *)ref_cell ) return REF_NULL;
   ref_adj_free( ref_cell->ref_adj );
-  ref_cond_free( ref_cell->e2n );
   ref_cond_free( ref_cell->c2n );
   ref_cond_free( ref_cell->c2e );
+  ref_cond_free( ref_cell->f2n );
+  ref_cond_free( ref_cell->e2n );
   ref_cond_free( ref_cell );
   return REF_SUCCESS;
 }

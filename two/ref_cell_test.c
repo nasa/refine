@@ -198,5 +198,49 @@ int main( void )
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  {
+    /* face_per */
+    TSS(ref_cell_create(4,&ref_cell),"create");
+    TES(4,ref_cell_face_per(ref_cell),"face_per");
+    TSS(ref_cell_free(ref_cell),"cleanup");
+
+    TSS(ref_cell_create(5,&ref_cell),"create");
+    TES(5,ref_cell_face_per(ref_cell),"face_per");
+    TSS(ref_cell_free(ref_cell),"cleanup");
+
+    TSS(ref_cell_create(6,&ref_cell),"create");
+    TES(5,ref_cell_face_per(ref_cell),"face_per");
+    TSS(ref_cell_free(ref_cell),"cleanup");
+
+    TSS(ref_cell_create(8,&ref_cell),"create");
+    TES(6,ref_cell_face_per(ref_cell),"face_per");
+    TSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
+  { /* tet face */
+    TSS(ref_cell_create(4,&ref_cell),"create");
+    TEIS(1,ref_cell_f2n_gen(ref_cell,0,0),"tri face nodes");
+    TEIS(3,ref_cell_f2n_gen(ref_cell,1,0),"tri face nodes");
+    TEIS(2,ref_cell_f2n_gen(ref_cell,2,0),"tri face nodes");
+    TEIS(ref_cell_f2n_gen(ref_cell,0,0),ref_cell_f2n_gen(ref_cell,3,0),
+	 "not tri");
+    TEIS(0,ref_cell_f2n_gen(ref_cell,0,1),"tri face nodes");
+    TEIS(2,ref_cell_f2n_gen(ref_cell,1,1),"tri face nodes");
+    TEIS(3,ref_cell_f2n_gen(ref_cell,2,1),"tri face nodes");
+    TEIS(ref_cell_f2n_gen(ref_cell,0,1),ref_cell_f2n_gen(ref_cell,3,1),
+	 "not tri");
+    TEIS(0,ref_cell_f2n_gen(ref_cell,0,2),"tri face nodes");
+    TEIS(3,ref_cell_f2n_gen(ref_cell,1,2),"tri face nodes");
+    TEIS(1,ref_cell_f2n_gen(ref_cell,2,2),"tri face nodes");
+    TEIS(ref_cell_f2n_gen(ref_cell,0,2),ref_cell_f2n_gen(ref_cell,3,2),
+	 "not tri");
+    TEIS(0,ref_cell_f2n_gen(ref_cell,0,3),"tri face nodes");
+    TEIS(1,ref_cell_f2n_gen(ref_cell,1,3),"tri face nodes");
+    TEIS(2,ref_cell_f2n_gen(ref_cell,2,3),"tri face nodes");
+    TEIS(ref_cell_f2n_gen(ref_cell,0,3),ref_cell_f2n_gen(ref_cell,3,3),
+	 "not tri");
+    TSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
   return 0;
 }
