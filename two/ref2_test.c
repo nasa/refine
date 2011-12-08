@@ -13,9 +13,13 @@
 #include "ref_metric.h"
 #include "ref_cell.h"
 
+#include "ref_face.h"
+#include "ref_sort.h"
+
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
+  REF_FACE ref_face;
 
   if (argc<2) 
     {
@@ -23,11 +27,19 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+  printf("reading %s\n",argv[1]);
   TSS(ref_grid_import_ugrid( argv[1], &ref_grid ),"from ugrid");
+  printf("complete.\n");
 
+  printf("faces.\n");
+  TSS(ref_face_create( &ref_face, ref_grid ),"from ugrid");
+
+  printf("vtk.\n");
   TSS(ref_grid_export_vtk(ref_grid, "ref2.vtk"),"to vtk");
 
+  printf("free.\n");
   TSS(ref_grid_free(ref_grid),"free");
 
+  printf("done.\n");
   return 0;
 }
