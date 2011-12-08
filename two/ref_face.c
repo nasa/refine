@@ -81,28 +81,20 @@ REF_STATUS ref_face_with( REF_FACE ref_face, REF_INT *nodes, REF_INT *face )
   REF_INT item, ref, node;
   REF_INT target[4], canidate[4], orig[4];
 
-  printf("\n");
-
   (*face) = REF_EMPTY;
 
   RSS( ref_sort_insertion( 4, nodes, target ), "sort" );
-
-  printf("target   : %3d %3d %3d %3d\n",
-	 target[0],target[1],target[2],target[3]);
 
   each_ref_adj_node_item_with_ref( ref_face_adj(ref_face), nodes[0], item, ref)
     {
       for(node=0;node<4;node++)
 	orig[node]=ref_face_f2n(ref_face,node,ref);
       RSS( ref_sort_insertion( 4, orig, canidate ), "sort" );
-  printf("canidate : %3d %3d %3d %3d\n",
-	 canidate[0],canidate[1],canidate[2],canidate[3]);
       if ( target[0] == canidate[0] &&
 	   target[1] == canidate[1] &&
 	   target[2] == canidate[2] &&
 	   target[3] == canidate[3] )
 	{
-	  printf("found\n");
 	  (*face) = ref;
 	  return REF_SUCCESS;
 	}

@@ -34,8 +34,6 @@ int main( void )
 
     TSS(ref_face_create(&ref_face,ref_grid),"create");
 
-    TSS( ref_face_inspect( ref_face ), "inspect");
-
     TEIS( 8, ref_face_n(ref_face), "check total faces");
 
     TSS(ref_face_free(ref_face),"face");
