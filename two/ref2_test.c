@@ -18,6 +18,8 @@
 #include "ref_face.h"
 #include "ref_sort.h"
 
+#include "ref_quality.h"
+
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
@@ -35,10 +37,13 @@ int main( int argc, char *argv[] )
   printf("complete.\n");
 
   printf("edges.\n");
-  TSS(ref_edge_create( &ref_edge, ref_grid ),"from ugrid");
+  TSS(ref_edge_create( &ref_edge, ref_grid ),"edges");
 
   printf("faces.\n");
-  TSS(ref_face_create( &ref_face, ref_grid ),"from ugrid");
+  TSS(ref_face_create( &ref_face, ref_grid ),"faces");
+
+  printf("hex quality.\n");
+  TSS(ref_quality_hex( ref_grid ),"quality");
 
   printf("vtk.\n");
   TSS(ref_grid_export_vtk(ref_grid, "ref2.vtk"),"to vtk");
