@@ -56,7 +56,7 @@ struct REF_CELL_STRUCT {
 
 #define ref_cell_f2n(ref_cell,node,cell,cell_face)			\
   ((ref_cell)->c2n[ (ref_cell)->f2n[(node)+4*(cell_face)] +		\
-		    ref_cell_face_per(ref_cell)*(cell)])
+		    ref_cell_node_per(ref_cell)*(cell)])
 
 #define each_ref_cell_valid_cell( ref_cell, cell )			\
   for ( (cell) = 0 ;							\
