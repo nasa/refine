@@ -78,6 +78,11 @@ struct REF_CELL_STRUCT {
 	(cell_edge) < ref_cell_edge_per(ref_cell);			\
 	(cell_edge)++ )
 
+#define each_ref_cell_cell_face( ref_cell, cell_face )			\
+  for ( (cell_face) = 0 ;						\
+	(cell_face) < ref_cell_face_per(ref_cell);			\
+	(cell_face)++ )
+
 REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell );
 REF_STATUS ref_cell_free( REF_CELL ref_cell );
 
