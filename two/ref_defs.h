@@ -46,7 +46,8 @@ typedef int REF_STATUS;
 #define REF_FAILURE       (1)
 #define REF_NULL          (2)
 #define REF_INVALID       (3)
-#define REF_IMPLEMENT     (4)
+#define REF_NOT_FOUND     (4)
+#define REF_IMPLEMENT     (5)
 
 #define RSS(fcn,msg)							\
   {									\
