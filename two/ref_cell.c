@@ -220,10 +220,10 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
       ref_cell_f2n_gen(ref_cell,2,4) = 2;
       ref_cell_f2n_gen(ref_cell,3,4) = 3;
 
-      ref_cell_f2n_gen(ref_cell,0,5) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,5) = 3;
-      ref_cell_f2n_gen(ref_cell,2,5) = 7;
-      ref_cell_f2n_gen(ref_cell,3,5) = 4;
+      ref_cell_f2n_gen(ref_cell,0,5) = 4; 
+      ref_cell_f2n_gen(ref_cell,1,5) = 7;
+      ref_cell_f2n_gen(ref_cell,2,5) = 6;
+      ref_cell_f2n_gen(ref_cell,3,5) = 5;
 
       break;
     }
@@ -406,6 +406,49 @@ REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
 	    ref_cell_c2e(ref_cell,cell_edge,cell) = edge;
 	}
     }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_gen_edge_face( REF_CELL ref_cell, REF_INT edge, 
+				   REF_INT *face0, REF_INT *face1 )
+{
+  REF_INT face, node0, node1;
+  REF_BOOL have_node0;
+  REF_BOOL have_node1;
+
+  *face0 = REF_EMPTY;
+  *face1 = REF_EMPTY;
+
+  node0 = ref_cell_e2n_gen(ref_cell,0,edge);
+  node1 = ref_cell_e2n_gen(ref_cell,1,edge);
+
+  for(face=0;face<ref_cell_face_per(ref_cell);face++)
+    {
+      have_node0 = ( node0 == ref_cell_f2n_gen(ref_cell,0,face) ||
+		     node0 == ref_cell_f2n_gen(ref_cell,1,face) ||
+		     node0 == ref_cell_f2n_gen(ref_cell,2,face) ||
+		     node0 == ref_cell_f2n_gen(ref_cell,3,face) );
+      have_node1 = ( node1 == ref_cell_f2n_gen(ref_cell,0,face) ||
+		     node1 == ref_cell_f2n_gen(ref_cell,1,face) ||
+		     node1 == ref_cell_f2n_gen(ref_cell,2,face) ||
+		     node1 == ref_cell_f2n_gen(ref_cell,3,face) );
+      if ( have_node0 && have_node1 )
+	{
+	  if ( (*face0) == REF_EMPTY )
+	    {
+	      (*face0) = face;
+	    }
+	  else
+	    {
+	      RAS( REF_EMPTY == (*face1), "face1 set twice" );
+	      (*face1) = face;
+	    }
+	}
+    }
+
+  RAS( REF_EMPTY != (*face0), "face0 not set" );
+  RAS( REF_EMPTY != (*face1), "face1 not set" );
 
   return REF_SUCCESS;
 }

@@ -261,5 +261,37 @@ int main( void )
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* hex edge faces */
+    REF_INT edge, face0, face1;
+    TSS(ref_cell_create(8,&ref_cell),"create");
+
+    edge = 0;
+    TSS(ref_cell_gen_edge_face(ref_cell,edge,&face0,&face1),"edge face");
+    TEIS(0,face0,"face0");
+    TEIS(4,face1,"face1");
+
+    edge = 1;
+    TSS(ref_cell_gen_edge_face(ref_cell,edge,&face0,&face1),"edge face");
+    TEIS(3,face0,"face0");
+    TEIS(4,face1,"face1");
+
+    edge = 2;
+    TSS(ref_cell_gen_edge_face(ref_cell,edge,&face0,&face1),"edge face");
+    TEIS(0,face0,"face0");
+    TEIS(3,face1,"face1");
+
+    edge = 6;
+    TSS(ref_cell_gen_edge_face(ref_cell,edge,&face0,&face1),"edge face");
+    TEIS(1,face0,"face0");
+    TEIS(2,face1,"face1");
+
+    edge = 11;
+    TSS(ref_cell_gen_edge_face(ref_cell,edge,&face0,&face1),"edge face");
+    TEIS(2,face0,"face0");
+    TEIS(5,face1,"face1");
+
+    TSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
   return 0;
 }

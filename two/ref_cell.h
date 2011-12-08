@@ -98,6 +98,9 @@ REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell);
 REF_STATUS ref_cell_set_edge( REF_CELL ref_cell, 
 			      REF_INT n0, REF_INT n1, REF_INT edge);
 
+REF_STATUS ref_cell_gen_edge_face( REF_CELL ref_cell, REF_INT edge, 
+				   REF_INT *face0, REF_INT *face1 );
+
 END_C_DECLORATION
 
 #endif /* REF_CELL_H */
