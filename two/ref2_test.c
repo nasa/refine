@@ -21,7 +21,7 @@
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
-  REF_FACE ref_edge;
+  REF_EDGE ref_edge;
   REF_FACE ref_face;
 
   if (argc<2) 
