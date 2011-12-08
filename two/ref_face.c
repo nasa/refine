@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "ref_face.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_face_create( REF_FACE *ref_face_ptr, REF_GRID ref_grid )
 {
@@ -68,33 +69,10 @@ REF_STATUS ref_face_inspect( REF_FACE ref_face )
     {
       for(node=0;node<4;node++)
 	orig[node]=ref_face_f2n(ref_face,node,face);
-      RSS( ref_insertion_sort( 4, orig, sort ), "sort" );
+      RSS( ref_sort_insertion( 4, orig, sort ), "sort" );
       printf("sort %4d : %4d %4d %4d %4d\n",face,
 	     sort[0],sort[1],sort[2],sort[3]);
     }
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_insertion_sort( REF_INT n, REF_INT *original, REF_INT *sorted )
-{
-  REF_INT i, j, smallest, temp;
-
-  for(i=0;i<n;i++)
-    sorted[i] = original[i];
-
-  for(i=0;i<n;i++)
-    {
-      smallest = i;
-      for(j=i+1;j<n;j++)
-	{
-	  if ( sorted[j] < sorted[smallest] )
-	    smallest = j;
-	}
-      temp = sorted[i];
-      sorted[i] = sorted[smallest];
-      sorted[smallest] = temp;
-    }
-
   return REF_SUCCESS;
 }
 
@@ -107,7 +85,7 @@ REF_STATUS ref_face_with( REF_FACE ref_face, REF_INT *nodes, REF_INT *face )
 
   (*face) = REF_EMPTY;
 
-  RSS( ref_insertion_sort( 4, nodes, target ), "sort" );
+  RSS( ref_sort_insertion( 4, nodes, target ), "sort" );
 
   printf("target   : %3d %3d %3d %3d\n",
 	 target[0],target[1],target[2],target[3]);
@@ -116,7 +94,7 @@ REF_STATUS ref_face_with( REF_FACE ref_face, REF_INT *nodes, REF_INT *face )
     {
       for(node=0;node<4;node++)
 	orig[node]=ref_face_f2n(ref_face,node,ref);
-      RSS( ref_insertion_sort( 4, orig, canidate ), "sort" );
+      RSS( ref_sort_insertion( 4, orig, canidate ), "sort" );
   printf("canidate : %3d %3d %3d %3d\n",
 	 canidate[0],canidate[1],canidate[2],canidate[3]);
       if ( target[0] == canidate[0] &&

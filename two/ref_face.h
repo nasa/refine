@@ -32,8 +32,6 @@ REF_STATUS ref_face_free( REF_FACE ref_face );
 
 REF_STATUS ref_face_inspect( REF_FACE ref_face );
 
-REF_STATUS ref_insertion_sort( REF_INT n, REF_INT *original, REF_INT *sorted );
-
 REF_STATUS ref_face_with( REF_FACE ref_face, REF_INT *nodes, REF_INT *face );
 REF_STATUS ref_face_add_uniquely( REF_FACE ref_face, REF_INT *nodes );
 
