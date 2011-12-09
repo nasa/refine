@@ -32,6 +32,8 @@ REF_STATUS ref_hexdiv_free( REF_HEXDIV ref_hexdiv );
 REF_STATUS ref_hexdiv_mark_to_split( REF_HEXDIV ref_hexdiv, 
 				     REF_INT node0, REF_INT node1 );
 
+REF_STATUS ref_hexdiv_mark_relax( REF_HEXDIV ref_hexdiv );
+
 END_C_DECLORATION
 
 #endif /* REF_HEXDIV_H */

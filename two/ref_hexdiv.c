@@ -68,3 +68,63 @@ REF_STATUS ref_hexdiv_mark_to_split( REF_HEXDIV ref_hexdiv,
   return REF_FAILURE;
 }
 
+REF_STATUS ref_hexdiv_pair( REF_HEXDIV ref_hexdiv, 
+			    REF_CELL ref_cell, REF_INT cell,
+			    REF_INT cell_face0, REF_INT mark0, 
+			    REF_INT cell_face1, REF_INT mark1 )
+{
+  REF_INT face0, face1;
+  REF_INT nodes[4], node;
+  
+  for(node=0;node<4;node++)
+    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face0);
+  RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), nodes, &face0 ), "face0");
+  for(node=0;node<4;node++)
+    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face1);
+  RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), nodes, &face1 ), "face1");
+
+  if ( ref_hexdiv_mark( ref_hexdiv, face0 ) == mark0 &&
+       ref_hexdiv_mark( ref_hexdiv, face1 ) == mark1 )
+    return REF_SUCCESS;
+
+  if ( ref_hexdiv_mark( ref_hexdiv, face0 ) == mark0 )
+    {
+      if ( ref_hexdiv_mark( ref_hexdiv, face1 ) != 0 ) return REF_FAILURE;
+      ref_hexdiv_mark( ref_hexdiv, face1 ) = mark1;  
+      return REF_SUCCESS;
+    }
+
+  if ( ref_hexdiv_mark( ref_hexdiv, face1 ) == mark1 )
+    {
+      if ( ref_hexdiv_mark( ref_hexdiv, face0 ) != 0 ) return REF_FAILURE;
+      ref_hexdiv_mark( ref_hexdiv, face0 ) = mark0;  
+      return REF_SUCCESS;
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_hexdiv_mark_relax( REF_HEXDIV ref_hexdiv )
+{
+  REF_INT group, cell;
+  REF_CELL ref_cell;
+  REF_BOOL again;
+
+  again = REF_TRUE;
+
+  while (again)
+    {
+
+      again = REF_FALSE;
+
+      each_ref_grid_ref_cell( ref_hexdiv_grid(ref_hexdiv), group, ref_cell )
+	each_ref_cell_valid_cell( ref_cell, cell )
+	  {
+	    RSS( ref_hexdiv_pair( ref_hexdiv, ref_cell, cell,
+				  1, 2, 3, 2 ), "not consist");
+	  }
+    }
+
+  return REF_SUCCESS;
+}
+

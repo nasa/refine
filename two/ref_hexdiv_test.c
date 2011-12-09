@@ -53,7 +53,7 @@ static REF_STATUS tear_down( REF_HEXDIV ref_hexdiv )
 int main( void )
 {
 
-  { /* mark and relax */
+  { /* mark */
     REF_HEXDIV ref_hexdiv;
     TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
 
@@ -64,6 +64,48 @@ int main( void )
 
     TEIS(2,ref_hexdiv_mark(ref_hexdiv,1),"split");
     TEIS(0,ref_hexdiv_mark(ref_hexdiv,3),"modified");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
+  { /* mark and relax 1-6 */
+    REF_HEXDIV ref_hexdiv;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+
+    TSS(ref_hexdiv_mark_to_split(ref_hexdiv,1,6),"mark face for 1-6");
+
+    TES(0,ref_hexdiv_mark(ref_hexdiv,3),"no yet");
+    TSS(ref_hexdiv_mark_relax(ref_hexdiv),"relax");
+    TES(2,ref_hexdiv_mark(ref_hexdiv,3),"yet");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
+  { /* mark and relax 0-7 */
+    REF_HEXDIV ref_hexdiv;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+
+    TSS(ref_hexdiv_mark_to_split(ref_hexdiv,0,7),"mark face for 1-6");
+
+    TES(0,ref_hexdiv_mark(ref_hexdiv,1),"no yet");
+    TSS(ref_hexdiv_mark_relax(ref_hexdiv),"relax");
+    TES(2,ref_hexdiv_mark(ref_hexdiv,1),"yet");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
+  { /* relax nothing*/
+    REF_HEXDIV ref_hexdiv;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+
+    TSS(ref_hexdiv_mark_relax(ref_hexdiv),"relax");
+
+    TES(0,ref_hexdiv_mark(ref_hexdiv,0),"marked");
+    TES(0,ref_hexdiv_mark(ref_hexdiv,1),"marked");
+    TES(0,ref_hexdiv_mark(ref_hexdiv,2),"marked");
+    TES(0,ref_hexdiv_mark(ref_hexdiv,3),"marked");
+    TES(0,ref_hexdiv_mark(ref_hexdiv,4),"marked");
+    TES(0,ref_hexdiv_mark(ref_hexdiv,5),"marked");
 
     TSS( tear_down( ref_hexdiv ), "tear down");
   }
