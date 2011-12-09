@@ -7,6 +7,7 @@
 
 #include "ref_cell.h"
 #include "ref_node.h"
+#include "ref_grid_export.h"
 
 REF_STATUS ref_tri_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2, 
 			  REF_DBL *normal )
@@ -77,14 +78,19 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   REF_DBL normal0[3], normal1[3];
   REF_DBL angle;
 
+  REF_GRID viz;
+
   REF_INT marks, new_cell;
   REF_CELL marked_cell;
 
-  RSS( ref_cell_create(8,&marked_cell),"temp cell for marks")
 
   ref_cell = ref_grid_hex(ref_grid);
   ref_node = ref_grid_node(ref_grid);
 
+  RSS( ref_grid_create(&viz),"temp grid for marks");
+  RSS( ref_node_free(ref_grid_node(viz)), "free viz nodes");
+  ref_grid_node(viz) = ref_grid_node(ref_grid);
+  marked_cell =  ref_grid_hex(viz);
   marks = 0;
 
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, cell_nodes)
@@ -121,6 +127,10 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	  }
       }
 
+  RSS(ref_grid_export_vtk(viz, "pole.vtk"),"to vtk");
+
+  ref_grid_node(viz) = NULL;
+  RXS( ref_grid_free(viz),REF_NULL,"free temp grid");
 
   return REF_SUCCESS;
 }

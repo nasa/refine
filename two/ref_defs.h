@@ -60,6 +60,16 @@ typedef int REF_STATUS;
     }									\
   }
 
+#define RXS(fcn,allowed_exception,msg)					\
+  {									\
+    REF_STATUS code;							\
+    code = (fcn);							\
+    if (!( REF_SUCCESS == code || (allowed_exception) == code )){	\
+      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
+      return code;							\
+    }									\
+  }
+
 #define RNS(ptr,msg)							\
   {									\
     if (NULL == (ptr)){							\
