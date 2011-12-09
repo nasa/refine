@@ -97,7 +97,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 			      &ref_node_xyz(ref_node,0,face_nodes[3]),
 			      normal0 ), "normal" );
 	for(node=0;node<4;node++)
-	  face_nodes[node] = ref_cell_f2n(ref_cell,node,cell,face0);
+	  face_nodes[node] = ref_cell_f2n(ref_cell,node,cell,face1);
 	RSS( ref_quad_normal( &ref_node_xyz(ref_node,0,face_nodes[0]),
 			      &ref_node_xyz(ref_node,0,face_nodes[1]),
 			      &ref_node_xyz(ref_node,0,face_nodes[2]),
@@ -110,7 +110,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	if ( ABS(angle) > (1-1.0e-8) ) 
 	  {
 	    count++;
-	    printf("%d: %f\n",count,angle);
+	    printf("angle %d, cell %d, edge %d : %f\n",count,cell,cell_edge,angle);
 	  }
       }
 
