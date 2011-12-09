@@ -29,6 +29,9 @@ REF_STATUS ref_hexdiv_free( REF_HEXDIV ref_hexdiv );
 #define ref_hexdiv_mark( ref_hexdiv, face )	\
   ((ref_hexdiv)->mark[face])
 
+REF_STATUS ref_hexdiv_mark_to_split( REF_HEXDIV ref_hexdiv, 
+				     REF_INT node0, REF_INT node1 );
+
 END_C_DECLORATION
 
 #endif /* REF_HEXDIV_H */

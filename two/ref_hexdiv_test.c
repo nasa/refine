@@ -57,6 +57,14 @@ int main( void )
     REF_HEXDIV ref_hexdiv;
     TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
 
+    TEIS(0,ref_hexdiv_mark(ref_hexdiv,1),"init mark");
+    TEIS(0,ref_hexdiv_mark(ref_hexdiv,3),"init mark");
+
+    TSS(ref_hexdiv_mark_to_split(ref_hexdiv,1,6),"mark face for 1-6");
+
+    TEIS(2,ref_hexdiv_mark(ref_hexdiv,1),"split");
+    TEIS(0,ref_hexdiv_mark(ref_hexdiv,3),"modified");
+
     TSS( tear_down( ref_hexdiv ), "tear down");
   }
 
