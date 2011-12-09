@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ref_quality.h"
 
@@ -51,10 +52,15 @@ REF_STATUS ref_normalize( REF_DBL *normal )
 
   length = ref_dot(normal,normal);
   if (ABS(length) < 1.0e-15) return REF_DIV_ZERO;
+
+  length = sqrt(length);
   
   normal[0] /= length;
   normal[1] /= length;
   normal[2] /= length;
+
+  length = ref_dot(normal,normal);
+  RAS( (ABS(length-1.0) < 1.0e-13), "vector length not unity"); 
 
   return REF_SUCCESS;
 }
@@ -70,8 +76,12 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   REF_DBL normal0[3], normal1[3];
   REF_DBL angle;
 
+  REF_INT count;
+
   ref_cell = ref_grid_hex(ref_grid);
   ref_node = ref_grid_node(ref_grid);
+
+  count = 0;
 
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, cell_nodes)
     each_ref_cell_cell_edge( ref_cell, cell_edge )      
@@ -97,7 +107,11 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	RSS( ref_normalize( normal0 ), "norm0");
 	RSS( ref_normalize( normal1 ), "norm1");
 	angle = ref_dot(normal0,normal1);
-	if ( ABS(angle) < 0.01 ) printf("%f\n",angle);
+	if ( ABS(angle) > (1-1.0e-8) ) 
+	  {
+	    count++;
+	    printf("%d: %f\n",count,angle);
+	  }
       }
 
 
