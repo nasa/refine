@@ -68,6 +68,7 @@ REF_STATUS ref_normalize( REF_DBL *normal )
 REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 {
   REF_CELL ref_cell;
+
   REF_NODE ref_node;
   REF_INT cell, cell_edge;
   REF_INT cell_nodes[8];
@@ -76,12 +77,15 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   REF_DBL normal0[3], normal1[3];
   REF_DBL angle;
 
-  REF_INT count;
+  REF_INT marks, new_cell;
+  REF_CELL marked_cell;
+
+  RSS( ref_cell_create(8,&marked_cell),"temp cell for marks")
 
   ref_cell = ref_grid_hex(ref_grid);
   ref_node = ref_grid_node(ref_grid);
 
-  count = 0;
+  marks = 0;
 
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, cell_nodes)
     each_ref_cell_cell_edge( ref_cell, cell_edge )      
@@ -109,8 +113,11 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	angle = ref_dot(normal0,normal1);
 	if ( ABS(angle) > (1-1.0e-8) ) 
 	  {
-	    count++;
-	    printf("angle %d, cell %d, edge %d : %f\n",count,cell,cell_edge,angle);
+	    marks++;
+	    printf("angle %d, cell %d, edge %d : %f\n",
+		   marks,cell,cell_edge,angle);
+	    RSS( ref_cell_add( marked_cell, cell_nodes, &new_cell ), 
+		 "add marked");
 	  }
       }
 
