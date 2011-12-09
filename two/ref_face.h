@@ -33,6 +33,9 @@ REF_STATUS ref_face_free( REF_FACE ref_face );
 REF_STATUS ref_face_inspect( REF_FACE ref_face );
 
 REF_STATUS ref_face_with( REF_FACE ref_face, REF_INT *nodes, REF_INT *face );
+REF_STATUS ref_face_spanning( REF_FACE ref_face, REF_INT node0, REF_INT node1, 
+			      REF_INT *face );
+
 REF_STATUS ref_face_add_uniquely( REF_FACE ref_face, REF_INT *nodes );
 
 END_C_DECLORATION

@@ -103,6 +103,32 @@ REF_STATUS ref_face_with( REF_FACE ref_face, REF_INT *nodes, REF_INT *face )
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_face_spanning( REF_FACE ref_face, REF_INT node0, REF_INT node1, 
+			      REF_INT *face )
+{
+  REF_INT item, ref;
+
+  (*face) = REF_EMPTY;
+
+  each_ref_adj_node_item_with_ref( ref_face_adj(ref_face), node0, item, ref)
+    {
+      if ( ( node0 == ref_face_f2n(ref_face,0,ref) ||
+	     node0 == ref_face_f2n(ref_face,1,ref) ||
+	     node0 == ref_face_f2n(ref_face,2,ref) ||
+	     node0 == ref_face_f2n(ref_face,3,ref) ) &&
+	   ( node1 == ref_face_f2n(ref_face,0,ref) ||
+	     node1 == ref_face_f2n(ref_face,1,ref) ||
+	     node1 == ref_face_f2n(ref_face,2,ref) ||
+	     node1 == ref_face_f2n(ref_face,3,ref) ) )
+	{
+	  (*face) = ref;
+	  return REF_SUCCESS;
+	}
+    }
+
+  return REF_NOT_FOUND;
+}
+
 REF_STATUS ref_face_add_uniquely( REF_FACE ref_face, REF_INT *nodes )
 {
   REF_INT face, node;

@@ -22,11 +22,13 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT nodes[6];
     REF_INT cell;
+    REF_INT node;
 
     TSS(ref_grid_create(&ref_grid),"create");
 
-    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2;
-    nodes[3] = 3; nodes[4] = 4; nodes[5] = 5;
+    for( node=0; node<6; node++)
+      nodes[node] = node;
+
     TSS(ref_cell_add( ref_grid_pri(ref_grid), nodes, &cell ), "add pri");
 
     nodes[0] = 3; nodes[1] = 4; nodes[2] = 5; nodes[3] = 6;
@@ -35,6 +37,40 @@ int main( void )
     TSS(ref_face_create(&ref_face,ref_grid),"create");
 
     TEIS( 8, ref_face_n(ref_face), "check total faces");
+
+    TSS(ref_face_free(ref_face),"face");
+    TSS(ref_grid_free(ref_grid),"free");
+  }
+
+  {  /* find face spanning two nodes */
+    REF_FACE ref_face;
+    REF_GRID ref_grid;
+    REF_INT nodes[8];
+    REF_INT cell;
+    REF_INT node, node0, node1, face;
+
+    TSS(ref_grid_create(&ref_grid),"create");
+
+    for( node=0; node<8; node++)
+      nodes[node] = node;
+    
+    TSS(ref_cell_add( ref_grid_hex(ref_grid), nodes, &cell ), "add pri");
+
+    TSS(ref_face_create(&ref_face,ref_grid),"create");
+
+    TEIS( 6, ref_face_n(ref_face), "check total faces");
+
+    node0 = 1; node1 = 6;
+    TSS( ref_face_spanning( ref_face, node0, node1, &face ), "span" );
+    TEIS( 1, face, "wrong face");
+
+    node0 = 4; node1 = 3;
+    TSS( ref_face_spanning( ref_face, node0, node1, &face ), "span" );
+    TEIS( 3, face, "wrong face");
+
+    node0 = 0; node1 = 2;
+    TSS( ref_face_spanning( ref_face, node0, node1, &face ), "span" );
+    TEIS( 4, face, "wrong face");
 
     TSS(ref_face_free(ref_face),"face");
     TSS(ref_grid_free(ref_grid),"free");
