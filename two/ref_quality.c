@@ -7,43 +7,8 @@
 
 #include "ref_cell.h"
 #include "ref_node.h"
+#include "ref_face.h"
 #include "ref_grid_export.h"
-
-REF_STATUS ref_tri_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2, 
-			  REF_DBL *normal )
-{
-  REF_DBL edge1[3], edge2[3];
-
-  edge1[0] = xyz1[0] - xyz0[0];
-  edge1[1] = xyz1[1] - xyz0[1];
-  edge1[2] = xyz1[2] - xyz0[2];
-
-  edge2[0] = xyz2[0] - xyz0[0];
-  edge2[1] = xyz2[1] - xyz0[1];
-  edge2[2] = xyz2[2] - xyz0[2];
-
-  normal[0] = edge1[1]*edge2[2] - edge1[2]*edge2[1];
-  normal[1] = edge1[2]*edge2[0] - edge1[0]*edge2[2];
-  normal[2] = edge1[0]*edge2[1] - edge1[1]*edge2[0];
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_quad_normal( REF_DBL *xyz0, REF_DBL *xyz1, 
-			    REF_DBL *xyz2, REF_DBL *xyz3, 
-			    REF_DBL *normal )
-{
-  REF_DBL normal0[3], normal1[3];
-
-  RSS( ref_tri_normal( xyz0, xyz1, xyz2, normal0 ), "normal0" );
-  RSS( ref_tri_normal( xyz2, xyz3, xyz0, normal1 ), "normal1" );
-
-  normal[0] = normal0[0] + normal1[0];
-  normal[1] = normal0[1] + normal1[1];
-  normal[2] = normal0[2] + normal1[2];
-
-  return REF_SUCCESS;
-}
 
 #define ref_dot(a,b) ((a)[0]*(b)[0]+(a)[1]*(b)[1]+(a)[2]*(b)[2])
 
@@ -84,7 +49,6 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   REF_INT marks, new_cell;
   REF_CELL marked_cell;
 
-
   ref_cell = ref_grid_hex(ref_grid);
   ref_node = ref_grid_node(ref_grid);
 
@@ -102,14 +66,14 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	
 	for(node=0;node<4;node++)
 	  face_nodes[node] = ref_cell_f2n(ref_cell,node,cell,face0);
-	RSS( ref_quad_normal( &ref_node_xyz(ref_node,0,face_nodes[0]),
+	RSS( ref_face_normal( &ref_node_xyz(ref_node,0,face_nodes[0]),
 			      &ref_node_xyz(ref_node,0,face_nodes[1]),
 			      &ref_node_xyz(ref_node,0,face_nodes[2]),
 			      &ref_node_xyz(ref_node,0,face_nodes[3]),
 			      normal0 ), "normal" );
 	for(node=0;node<4;node++)
 	  face_nodes[node] = ref_cell_f2n(ref_cell,node,cell,face1);
-	RSS( ref_quad_normal( &ref_node_xyz(ref_node,0,face_nodes[0]),
+	RSS( ref_face_normal( &ref_node_xyz(ref_node,0,face_nodes[0]),
 			      &ref_node_xyz(ref_node,0,face_nodes[1]),
 			      &ref_node_xyz(ref_node,0,face_nodes[2]),
 			      &ref_node_xyz(ref_node,0,face_nodes[3]),
