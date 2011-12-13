@@ -20,6 +20,8 @@
 
 #include "ref_quality.h"
 
+#include "ref_math.h"
+
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
