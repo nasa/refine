@@ -168,3 +168,42 @@ REF_STATUS ref_face_add_uniquely( REF_FACE ref_face, REF_INT *nodes )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_face_normal( REF_DBL *xyz0, REF_DBL *xyz1, 
+			    REF_DBL *xyz2, REF_DBL *xyz3, 
+			    REF_DBL *normal )
+{
+  REF_DBL edge1[3], edge2[3];
+
+  normal[0] = 0.0;
+  normal[1] = 0.0;
+  normal[2] = 0.0;
+
+  edge1[0] = xyz2[0] - xyz1[0];
+  edge1[1] = xyz2[1] - xyz1[1];
+  edge1[2] = xyz2[2] - xyz1[2];
+
+  edge2[0] = xyz0[0] - xyz1[0];
+  edge2[1] = xyz0[1] - xyz1[1];
+  edge2[2] = xyz0[2] - xyz1[2];
+
+  normal[0] += 0.5*(edge1[1]*edge2[2] - edge1[2]*edge2[1]);
+  normal[1] += 0.5*(edge1[2]*edge2[0] - edge1[0]*edge2[2]);
+  normal[2] += 0.5*(edge1[0]*edge2[1] - edge1[1]*edge2[0]);
+
+  edge1[0] = xyz0[0] - xyz3[0];
+  edge1[1] = xyz0[1] - xyz3[1];
+  edge1[2] = xyz0[2] - xyz3[2];
+
+  edge2[0] = xyz2[0] - xyz3[0];
+  edge2[1] = xyz2[1] - xyz3[1];
+  edge2[2] = xyz2[2] - xyz3[2];
+
+  normal[0] += 0.5*(edge1[1]*edge2[2] - edge1[2]*edge2[1]);
+  normal[1] += 0.5*(edge1[2]*edge2[0] - edge1[0]*edge2[2]);
+  normal[2] += 0.5*(edge1[0]*edge2[1] - edge1[1]*edge2[0]);
+
+  return REF_SUCCESS;
+
+}
+

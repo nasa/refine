@@ -38,6 +38,9 @@ REF_STATUS ref_face_spanning( REF_FACE ref_face, REF_INT node0, REF_INT node1,
 
 REF_STATUS ref_face_add_uniquely( REF_FACE ref_face, REF_INT *nodes );
 
+REF_STATUS ref_face_normal( REF_DBL *xyz0, REF_DBL *xyz1, 
+			    REF_DBL *xyz2, REF_DBL *xyz3, 
+			    REF_DBL *normal );
 END_C_DECLORATION
 
 #endif /* REF_FACE_H */

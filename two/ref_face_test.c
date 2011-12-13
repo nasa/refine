@@ -76,7 +76,33 @@ int main( void )
     TSS(ref_grid_free(ref_grid),"free");
   }
 
+  {  /* quad normal */
+    REF_DBL xyz0[3] = {0.0,0.0,0.0};
+    REF_DBL xyz1[3] = {1.0,0.0,0.0};
+    REF_DBL xyz2[3] = {1.0,1.0,0.0};
+    REF_DBL xyz3[3] = {0.0,1.0,0.0};
+    REF_DBL normal[3];
 
+    TSS( ref_face_normal( xyz0, xyz1, xyz2, xyz3, normal ), "norm");
+    
+    TWDS( 0.0, normal[0], -1.0, "x-norm");
+    TWDS( 0.0, normal[1], -1.0, "y-norm");
+    TWDS( 1.0, normal[2], -1.0, "z-norm");
+  }
+
+  {  /* tri normal */
+    REF_DBL xyz0[3] = {0.0,0.0,0.0};
+    REF_DBL xyz1[3] = {1.0,0.0,0.0};
+    REF_DBL xyz2[3] = {1.0,1.0,0.0};
+    REF_DBL xyz3[3] = {0.0,0.0,0.0};
+    REF_DBL normal[3];
+
+    TSS( ref_face_normal( xyz0, xyz1, xyz2, xyz3, normal ), "norm");
+    
+    TWDS( 0.0, normal[0], -1.0, "x-norm");
+    TWDS( 0.0, normal[1], -1.0, "y-norm");
+    TWDS( 0.5, normal[2], -1.0, "z-norm");
+  }
 
   return 0;
 }
