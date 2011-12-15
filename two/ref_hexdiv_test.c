@@ -110,5 +110,53 @@ int main( void )
     TSS( tear_down( ref_hexdiv ), "tear down");
   }
 
+  { /* mark cell edge 0 */
+    REF_HEXDIV ref_hexdiv;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+
+    TSS(ref_hexdiv_mark_cell_edge_split(ref_hexdiv,0,0),"mark edge 0");
+
+    TES(2,ref_hexdiv_mark(ref_hexdiv,1),"face 1");
+    TES(2,ref_hexdiv_mark(ref_hexdiv,3),"face 3");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
+  { /* mark cell edge 11 */
+    REF_HEXDIV ref_hexdiv;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+
+    TSS(ref_hexdiv_mark_cell_edge_split(ref_hexdiv,0,11),"mark edge 11");
+
+    TES(2,ref_hexdiv_mark(ref_hexdiv,1),"face 1");
+    TES(2,ref_hexdiv_mark(ref_hexdiv,3),"face 3");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
+  { /* mark cell edge 5 */
+    REF_HEXDIV ref_hexdiv;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+
+    TSS(ref_hexdiv_mark_cell_edge_split(ref_hexdiv,0,5),"mark edge 5");
+
+    TES(3,ref_hexdiv_mark(ref_hexdiv,1),"face 1");
+    TES(3,ref_hexdiv_mark(ref_hexdiv,3),"face 3");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
+  { /* mark cell edge 8 */
+    REF_HEXDIV ref_hexdiv;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+
+    TSS(ref_hexdiv_mark_cell_edge_split(ref_hexdiv,0,8),"mark edge 8");
+
+    TES(3,ref_hexdiv_mark(ref_hexdiv,1),"face 1");
+    TES(3,ref_hexdiv_mark(ref_hexdiv,3),"face 3");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
   return 0;
 }

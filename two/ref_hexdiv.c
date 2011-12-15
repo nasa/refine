@@ -68,6 +68,34 @@ REF_STATUS ref_hexdiv_mark_to_split( REF_HEXDIV ref_hexdiv,
   return REF_FAILURE;
 }
 
+REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv, 
+					    REF_INT cell, REF_INT cell_edge )
+{
+  REF_CELL ref_cell;
+  REF_INT nodes[8];
+
+  ref_cell = ref_grid_hex( ref_hexdiv_grid(ref_hexdiv) );
+
+  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "" );
+
+  switch ( cell_edge )
+    {
+    case 0:  case 11:
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[1], nodes[6] ), "mark1" );
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[0], nodes[7] ), "mark2" );
+      break;  
+    case 5:  case 8:
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[2], nodes[5] ), "mark1" );
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[3], nodes[4] ), "mark2" );
+      break;
+    default:
+      return REF_IMPLEMENT;
+      break;
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_hexdiv_pair( REF_HEXDIV ref_hexdiv, 
 			    REF_CELL ref_cell, REF_INT cell,
 			    REF_INT cell_face0, REF_INT mark0, 
