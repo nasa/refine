@@ -51,6 +51,9 @@ int main( int argc, char *argv[] )
   printf("vtk.\n");
   TSS(ref_grid_export_vtk(ref_grid, "ref2.vtk"),"to vtk");
 
+  printf("ugrid.\n");
+  TSS(ref_grid_export_ugrid(ref_grid, "ref2.ugrid"),"to ugrid");
+
   printf("free.\n");
   TSS(ref_grid_free(ref_grid),"free");
 
