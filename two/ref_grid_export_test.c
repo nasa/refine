@@ -47,6 +47,9 @@ int main( int argc, char *argv[] )
   TSS( ref_cell_add( ref_cell, nodes, &cell ), "add cell");
 
   TSS(ref_grid_export_vtk( ref_grid, "ref_grid_export_test.vtk" ),"export" );
+
+  TSS(ref_grid_export_ugrid( ref_grid, "ref_grid_export_test.ugrid" ),"export");
+
   TSS(ref_grid_free(ref_grid),"free");
 
   return 0;
