@@ -32,6 +32,21 @@ static REF_STATUS set_up_hex_for_hexdiv( REF_HEXDIV *ref_hexdiv_ptr )
   TSS(ref_node_add( ref_grid_node(ref_grid), 5, &node),"n7");
 
   TSS(ref_cell_add(ref_grid_hex(ref_grid),nodes,&cell),"add hex");
+
+  nodes[0] = 0;
+  nodes[1] = 4;
+  nodes[2] = 5;
+  nodes[3] = 1;
+  nodes[4] = 1;
+  TSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
+
+  nodes[0] = 1;
+  nodes[1] = 5;
+  nodes[2] = 6;
+  nodes[3] = 2;
+  nodes[4] = 2;
+  TSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
+
   TSS(ref_hexdiv_create(ref_hexdiv_ptr,ref_grid),"create");
 
   return REF_SUCCESS;
@@ -172,6 +187,9 @@ int main( void )
     TEIS(0, ref_cell_n(ref_grid_hex(ref_grid)),"remove hex");
     TEIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"add two pri");
 
+    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"add two tri");
+    TEIS(1, ref_cell_n(ref_grid_qua(ref_grid)),"keep one qua");
+
     TSS( tear_down( ref_hexdiv ), "tear down");
   }
 
@@ -188,6 +206,9 @@ int main( void )
 
     TEIS(0, ref_cell_n(ref_grid_hex(ref_grid)),"remove hex");
     TEIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"add two pri");
+
+    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"add two pri");
+    TEIS(1, ref_cell_n(ref_grid_qua(ref_grid)),"keep one qua");
 
     TSS( tear_down( ref_hexdiv ), "tear down");
   }

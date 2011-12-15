@@ -159,14 +159,55 @@ REF_STATUS ref_hexdiv_mark_relax( REF_HEXDIV ref_hexdiv )
 REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 {
   REF_GRID ref_grid;
-  REF_CELL hex, pri;
+  REF_CELL hex, pri, tri, qua;
   REF_INT cell, hex_nodes[8], face_nodes[4];
   REF_INT node, face;
   REF_INT pri_nodes[6], new_cell;
+  REF_INT tri_nodes[4], qua_nodes[5];
 
   ref_grid = ref_hexdiv_grid(ref_hexdiv);
   hex = ref_grid_hex(ref_grid);
   pri = ref_grid_pri(ref_grid);
+  tri = ref_grid_tri(ref_grid);
+  qua = ref_grid_qua(ref_grid);
+
+  each_ref_cell_valid_cell_with_nodes( qua, cell, qua_nodes)
+    {
+      RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), qua_nodes, &face ), 
+	  "face");
+      if ( 2 == ref_hexdiv_mark( ref_hexdiv, face ) )
+	{
+	  RSS( ref_cell_remove( qua, cell ), "remove qua");
+	  tri_nodes[0] = qua_nodes[0];
+	  tri_nodes[1] = qua_nodes[1];
+	  tri_nodes[2] = qua_nodes[2];
+	  tri_nodes[3] = REF_EMPTY;
+	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  ref_cell_c2n(tri,3,new_cell) = qua_nodes[4];
+	  tri_nodes[0] = qua_nodes[0];
+	  tri_nodes[1] = qua_nodes[2];
+	  tri_nodes[2] = qua_nodes[3];
+	  tri_nodes[3] = REF_EMPTY;
+	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  ref_cell_c2n(tri,3,new_cell) = qua_nodes[4];
+	}
+      if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
+	{
+	  RSS( ref_cell_remove( qua, cell ), "remove qua");
+	  tri_nodes[0] = qua_nodes[0];
+	  tri_nodes[1] = qua_nodes[1];
+	  tri_nodes[2] = qua_nodes[3];
+	  tri_nodes[3] = REF_EMPTY;
+	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  ref_cell_c2n(tri,3,new_cell) = qua_nodes[4];
+	  tri_nodes[0] = qua_nodes[1];
+	  tri_nodes[1] = qua_nodes[2];
+	  tri_nodes[2] = qua_nodes[3];
+	  tri_nodes[3] = REF_EMPTY;
+	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  ref_cell_c2n(tri,3,new_cell) = qua_nodes[4];
+	}
+    }
 
   each_ref_cell_valid_cell_with_nodes( hex, cell, hex_nodes)
     {
