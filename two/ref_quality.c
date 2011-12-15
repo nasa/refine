@@ -8,6 +8,7 @@
 #include "ref_cell.h"
 #include "ref_node.h"
 #include "ref_face.h"
+#include "ref_hexdiv.h"
 #include "ref_grid_export.h"
 
 #include "ref_math.h"
@@ -15,6 +16,8 @@
 REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 {
   REF_CELL ref_cell;
+
+  REF_HEXDIV ref_hexdiv;
 
   REF_NODE ref_node;
   REF_INT cell, cell_edge;
@@ -29,6 +32,8 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   REF_INT marks, new_cell;
   REF_CELL marked_cell;
+
+  RSS( ref_hexdiv_create( &ref_hexdiv, ref_grid ), "make hexdiv");
 
   ref_cell = ref_grid_hex(ref_grid);
   ref_node = ref_grid_node(ref_grid);
@@ -70,6 +75,10 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 		   marks,cell,cell_edge,angle);
 	    RSS( ref_cell_add( marked_cell, cell_nodes, &new_cell ), 
 		 "add marked");
+	    RSS( ref_hexdiv_mark_cell_edge_split( ref_hexdiv, 
+						  cell, cell_edge ), 
+		 "mark cell edge");
+
 	  }
       }
 
@@ -77,6 +86,9 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   ref_grid_node(viz) = orig_viz_node;/* replace before free */
   RXS( ref_grid_free(viz),REF_NULL,"free temp grid");
+
+  RSS( ref_hexdiv_mark_relax( ref_hexdiv ), "relax" );
+  RSS( ref_hexdiv_split( ref_hexdiv ), "split hex to prism" );
 
   return REF_SUCCESS;
 }
