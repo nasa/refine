@@ -156,3 +156,81 @@ REF_STATUS ref_hexdiv_mark_relax( REF_HEXDIV ref_hexdiv )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
+{
+  REF_GRID ref_grid;
+  REF_CELL hex, pri;
+  REF_INT cell, hex_nodes[8], face_nodes[4];
+  REF_INT node, face;
+  REF_INT pri_nodes[6], new_cell;
+
+  ref_grid = ref_hexdiv_grid(ref_hexdiv);
+  hex = ref_grid_hex(ref_grid);
+  pri = ref_grid_pri(ref_grid);
+
+  each_ref_cell_valid_cell_with_nodes( hex, cell, hex_nodes)
+    {
+      for(node=0;node<4;node++)
+	face_nodes[node]=ref_cell_f2n(hex,node,cell,0);
+      RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), face_nodes, &face ), 
+	  "face 0");
+      if ( 2 == ref_hexdiv_mark( ref_hexdiv, face ) )
+	return REF_IMPLEMENT;
+      if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
+	return REF_IMPLEMENT;
+
+      for(node=0;node<4;node++)
+	face_nodes[node]=ref_cell_f2n(hex,node,cell,1);
+      RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), face_nodes, &face ), 
+	  "face 1");
+      if ( 2 == ref_hexdiv_mark( ref_hexdiv, face ) )
+	{
+	  RSS( ref_cell_remove( hex, cell ), "remove hex");
+	  pri_nodes[0] = hex_nodes[1];
+	  pri_nodes[1] = hex_nodes[5];
+	  pri_nodes[2] = hex_nodes[6];
+	  pri_nodes[3] = hex_nodes[0];
+	  pri_nodes[4] = hex_nodes[4];
+	  pri_nodes[5] = hex_nodes[7];
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
+	  pri_nodes[0] = hex_nodes[1];
+	  pri_nodes[1] = hex_nodes[6];
+	  pri_nodes[2] = hex_nodes[3];
+	  pri_nodes[3] = hex_nodes[0];
+	  pri_nodes[4] = hex_nodes[7];
+	  pri_nodes[5] = hex_nodes[3];
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
+	  break;
+	}
+      if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
+	{
+	  RSS( ref_cell_remove( hex, cell ), "remove hex");
+	  pri_nodes[0] = hex_nodes[1];
+	  pri_nodes[1] = hex_nodes[5];
+	  pri_nodes[2] = hex_nodes[2];
+	  pri_nodes[3] = hex_nodes[0];
+	  pri_nodes[4] = hex_nodes[4];
+	  pri_nodes[5] = hex_nodes[3];
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
+	  pri_nodes[0] = hex_nodes[2];
+	  pri_nodes[1] = hex_nodes[5];
+	  pri_nodes[2] = hex_nodes[6];
+	  pri_nodes[3] = hex_nodes[3];
+	  pri_nodes[4] = hex_nodes[4];
+	  pri_nodes[5] = hex_nodes[7];
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
+	  break;
+	}
+
+      for(node=0;node<4;node++)
+	face_nodes[node]=ref_cell_f2n(hex,node,cell,4);
+      RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), face_nodes, &face ), 
+	  "face 4");
+      if ( 2 == ref_hexdiv_mark( ref_hexdiv, face ) )
+	return REF_IMPLEMENT;
+      if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
+	return REF_IMPLEMENT;
+    }
+
+  return REF_SUCCESS;
+}

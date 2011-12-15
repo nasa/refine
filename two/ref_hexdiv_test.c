@@ -158,5 +158,39 @@ int main( void )
     TSS( tear_down( ref_hexdiv ), "tear down");
   }
 
+  { /* split on edge 0 */
+    REF_HEXDIV ref_hexdiv;
+    REF_GRID ref_grid;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+    ref_grid = ref_hexdiv_grid(ref_hexdiv);
+
+    TSS(ref_hexdiv_mark_cell_edge_split(ref_hexdiv,0,0),"mark edge 0");
+
+    TSS(ref_hexdiv_mark_relax(ref_hexdiv),"relax");
+    TSS(ref_hexdiv_split(ref_hexdiv),"split");
+
+    TEIS(0, ref_cell_n(ref_grid_hex(ref_grid)),"remove hex");
+    TEIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"add two pri");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
+  { /* split on edge 8 */
+    REF_HEXDIV ref_hexdiv;
+    REF_GRID ref_grid;
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+    ref_grid = ref_hexdiv_grid(ref_hexdiv);
+
+    TSS(ref_hexdiv_mark_cell_edge_split(ref_hexdiv,0,8),"mark edge 0");
+
+    TSS(ref_hexdiv_mark_relax(ref_hexdiv),"relax");
+    TSS(ref_hexdiv_split(ref_hexdiv),"split");
+
+    TEIS(0, ref_cell_n(ref_grid_hex(ref_grid)),"remove hex");
+    TEIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"add two pri");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
   return 0;
 }
