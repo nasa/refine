@@ -47,8 +47,6 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid );
 
 REF_STATUS ref_grid_inspect( REF_GRID ref_grid );
 
-REF_STATUS ref_grid_validate( REF_GRID ref_grid );
-
 END_C_DECLORATION
 
 #endif /* REF_GRID_H */
