@@ -35,6 +35,12 @@ struct REF_NODE_STRUCT {
       (ref_node)->global[(node)] >= 0) ?			\
            (ref_node)->global[(node)]:REF_EMPTY )
 
+#define each_ref_node_valid_node( ref_node, node )			\
+  for ( (node) = 0 ;							\
+	(node) < ref_node_max(ref_node);				\
+	(node)++ )							\
+    if ( ref_node_valid( ref_node, node ) )
+
 #define ref_node_xyz(ref_node,ixyz,node) ((ref_node)->xyz[(ixyz)+3*(node)])
 
 #define ref_node_part(ref_node,node) ((ref_node)->part[(node)])
