@@ -6,7 +6,7 @@
 
 #include "ref_grid.h"
 
-REF_STATUS ref_validation_validate( REF_GRID ref_grid );
+REF_STATUS ref_validation_check( REF_GRID ref_grid );
 
 END_C_DECLORATION
 

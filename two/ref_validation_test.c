@@ -27,7 +27,7 @@ int main( int argc, char *argv[] )
       printf("complete.\n");
       
       printf("validate.\n");
-      TSS( ref_validation_validate( ref_grid ), "invalid grid" );
+      TSS( ref_validation_check( ref_grid ), "invalid grid" );
 
       printf("done.\n");
       return 0;

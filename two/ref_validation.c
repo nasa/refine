@@ -4,7 +4,7 @@
 
 #include "ref_validation.h"
 
-REF_STATUS ref_validation_validate( REF_GRID ref_grid )
+REF_STATUS ref_validation_check( REF_GRID ref_grid )
 {
   REF_INT node;
   REF_BOOL problem;
