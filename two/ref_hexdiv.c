@@ -54,6 +54,8 @@ REF_STATUS ref_hexdiv_mark_to_split( REF_HEXDIV ref_hexdiv,
   if ( node0 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),2,face) ||
        node1 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),2,face) )
     {
+      if ( 3 == ref_hexdiv_mark(ref_hexdiv,face) )
+	RSS( REF_FAILURE, "2-3 mark mismatch");
       ref_hexdiv_mark(ref_hexdiv,face) = 2;
       return REF_SUCCESS;
     }
@@ -61,6 +63,8 @@ REF_STATUS ref_hexdiv_mark_to_split( REF_HEXDIV ref_hexdiv,
   if ( node0 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),3,face) ||
        node1 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),3,face) )
     {
+      if ( 2 == ref_hexdiv_mark(ref_hexdiv,face) )
+	RSS( REF_FAILURE, "3-2 mark mismatch");
       ref_hexdiv_mark(ref_hexdiv,face) = 3;
       return REF_SUCCESS;
     }
