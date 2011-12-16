@@ -72,6 +72,44 @@ REF_STATUS ref_hexdiv_mark_to_split( REF_HEXDIV ref_hexdiv,
   return REF_FAILURE;
 }
 
+REF_STATUS ref_hexdiv_marked( REF_HEXDIV ref_hexdiv, 
+			      REF_INT node0, REF_INT node1,
+			      REF_BOOL *marked )
+{
+  REF_INT face;
+
+  *marked = REF_FALSE;
+
+  RSS( ref_face_spanning( ref_hexdiv_face( ref_hexdiv ), 
+			  node0, node1,
+			  &face ), "missing face");
+
+
+  if ( 0 == ref_hexdiv_mark(ref_hexdiv,face) ) return REF_SUCCESS;
+
+  if ( 2 == ref_hexdiv_mark(ref_hexdiv,face) &&
+       node0 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),2,face) &&
+       node1 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),0,face) ) 
+    *marked = REF_TRUE;
+  
+  if ( 2 == ref_hexdiv_mark(ref_hexdiv,face) &&
+       node1 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),2,face) &&
+       node0 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),0,face) ) 
+    *marked = REF_TRUE;
+
+  if ( 3 == ref_hexdiv_mark(ref_hexdiv,face) &&
+       node0 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),3,face) &&
+       node1 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),1,face) ) 
+    *marked = REF_TRUE;
+  
+  if ( 3 == ref_hexdiv_mark(ref_hexdiv,face) &&
+       node1 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),3,face) &&
+       node0 == ref_face_f2n(ref_hexdiv_face( ref_hexdiv ),1,face) ) 
+    *marked = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv, 
 					    REF_INT cell, REF_INT cell_edge )
 {

@@ -83,6 +83,23 @@ int main( void )
     TSS( tear_down( ref_hexdiv ), "tear down");
   }
 
+  { /* find mark */
+    REF_HEXDIV ref_hexdiv;
+    REF_BOOL marked;
+
+    TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
+
+    TSS(ref_hexdiv_mark_to_split(ref_hexdiv,1,6),"mark face for 1-6");
+
+    TSS(ref_hexdiv_marked(ref_hexdiv,2,5,&marked),"is edge marked?");
+    TAS(!marked,"pair 2-5 not marked");
+
+    TSS(ref_hexdiv_marked(ref_hexdiv,1,6,&marked),"is edge marked?");
+    TAS( marked,"pair 1-6 marked");
+
+    TSS( tear_down( ref_hexdiv ), "tear down");
+  }
+
   { /* mark and relax 1-6 */
     REF_HEXDIV ref_hexdiv;
     TSS(set_up_hex_for_hexdiv(&ref_hexdiv),"set up");
