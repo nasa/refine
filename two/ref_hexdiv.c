@@ -96,7 +96,7 @@ REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_hexdiv_pair( REF_HEXDIV ref_hexdiv, 
+REF_STATUS ref_hexdiv_pair( REF_HEXDIV ref_hexdiv, REF_BOOL *again,
 			    REF_CELL ref_cell, REF_INT cell,
 			    REF_INT cell_face0, REF_INT mark0, 
 			    REF_INT cell_face1, REF_INT mark1 )
@@ -118,13 +118,15 @@ REF_STATUS ref_hexdiv_pair( REF_HEXDIV ref_hexdiv,
   if ( ref_hexdiv_mark( ref_hexdiv, face0 ) == mark0 )
     {
       if ( ref_hexdiv_mark( ref_hexdiv, face1 ) != 0 ) return REF_FAILURE;
-      ref_hexdiv_mark( ref_hexdiv, face1 ) = mark1;  
+      ref_hexdiv_mark( ref_hexdiv, face1 ) = mark1;
+      *again = REF_TRUE;
       return REF_SUCCESS;
     }
 
   if ( ref_hexdiv_mark( ref_hexdiv, face1 ) == mark1 )
     {
       if ( ref_hexdiv_mark( ref_hexdiv, face0 ) != 0 ) return REF_FAILURE;
+      *again = REF_TRUE;
       ref_hexdiv_mark( ref_hexdiv, face0 ) = mark0;  
       return REF_SUCCESS;
     }
@@ -148,8 +150,10 @@ REF_STATUS ref_hexdiv_mark_relax( REF_HEXDIV ref_hexdiv )
       each_ref_grid_ref_cell( ref_hexdiv_grid(ref_hexdiv), group, ref_cell )
 	each_ref_cell_valid_cell( ref_cell, cell )
 	  {
-	    RSS( ref_hexdiv_pair( ref_hexdiv, ref_cell, cell,
+	    RSS( ref_hexdiv_pair( ref_hexdiv, &again, ref_cell, cell,
 				  1, 2, 3, 2 ), "not consist");
+	    RSS( ref_hexdiv_pair( ref_hexdiv,  &again, ref_cell, cell,
+				  1, 3, 3, 3 ), "not consist");
 	  }
     }
 
