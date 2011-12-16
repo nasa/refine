@@ -106,14 +106,13 @@ REF_STATUS ref_import_boundary_(REF_INT *node_per_face, REF_INT *nface,
       break;    
     }
   nodes = (REF_INT *)malloc( ((*node_per_face)+1) * sizeof(REF_INT));
-  nodes[(*node_per_face)] = REF_EMPTY; /* for bc face id */
   RNS( nodes,"malloc nodes NULL");
   for ( face = 0 ; face < (*nface) ; face++ ) 
     {
       for ( node = 0 ; node < (*node_per_face) ; node++ )
 	nodes[node] = f2n[node+(*node_per_face)*face] - 1;
+      nodes[(*node_per_face)] = (*boundary_index);
       RSS( ref_cell_add( ref_cell, nodes, &new_face ), "add face");
-      ref_cell_c2n(ref_cell,(*node_per_face),new_face) = (*boundary_index);
     }
   free(nodes);
   return REF_SUCCESS;

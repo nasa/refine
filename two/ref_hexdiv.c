@@ -181,15 +181,13 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  tri_nodes[0] = qua_nodes[0];
 	  tri_nodes[1] = qua_nodes[1];
 	  tri_nodes[2] = qua_nodes[2];
-	  tri_nodes[3] = REF_EMPTY;
+	  tri_nodes[3] = qua_nodes[4]; /* bound id */
 	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
-	  ref_cell_c2n(tri,3,new_cell) = qua_nodes[4];
 	  tri_nodes[0] = qua_nodes[0];
 	  tri_nodes[1] = qua_nodes[2];
 	  tri_nodes[2] = qua_nodes[3];
-	  tri_nodes[3] = REF_EMPTY;
+	  tri_nodes[3] = qua_nodes[4]; /* bound id */
 	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
-	  ref_cell_c2n(tri,3,new_cell) = qua_nodes[4];
 	}
       if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
 	{
@@ -197,15 +195,13 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  tri_nodes[0] = qua_nodes[0];
 	  tri_nodes[1] = qua_nodes[1];
 	  tri_nodes[2] = qua_nodes[3];
-	  tri_nodes[3] = REF_EMPTY;
+	  tri_nodes[3] = qua_nodes[4]; /* bound id */
 	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
-	  ref_cell_c2n(tri,3,new_cell) = qua_nodes[4];
 	  tri_nodes[0] = qua_nodes[1];
 	  tri_nodes[1] = qua_nodes[2];
 	  tri_nodes[2] = qua_nodes[3];
-	  tri_nodes[3] = REF_EMPTY;
+	  tri_nodes[3] = qua_nodes[4]; /* bound id */
 	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
-	  ref_cell_c2n(tri,3,new_cell) = qua_nodes[4];
 	}
     }
 
