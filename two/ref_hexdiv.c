@@ -190,10 +190,10 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 {
   REF_GRID ref_grid;
   REF_CELL hex, pri, tri, qua;
-  REF_INT cell, hex_nodes[8], face_nodes[4];
-  REF_INT node, face;
+  REF_INT cell, hex_nodes[8];
   REF_INT pri_nodes[6], new_cell;
   REF_INT tri_nodes[4], qua_nodes[5];
+  REF_BOOL marked;
 
   ref_grid = ref_hexdiv_grid(ref_hexdiv);
   hex = ref_grid_hex(ref_grid);
@@ -203,9 +203,9 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 
   each_ref_cell_valid_cell_with_nodes( qua, cell, qua_nodes)
     {
-      RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), qua_nodes, &face ), 
-	  "face");
-      if ( 2 == ref_hexdiv_mark( ref_hexdiv, face ) )
+      RSS( ref_hexdiv_marked( ref_hexdiv, qua_nodes[0], qua_nodes[2], 
+			      &marked ), "0-2"); 
+      if ( marked )
 	{
 	  RSS( ref_cell_remove( qua, cell ), "remove qua");
 	  tri_nodes[0] = qua_nodes[0];
@@ -219,7 +219,9 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  tri_nodes[3] = qua_nodes[4]; /* bound id */
 	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
 	}
-      if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
+      RSS( ref_hexdiv_marked( ref_hexdiv, qua_nodes[1], qua_nodes[3], 
+			      &marked ), "1-3"); 
+      if ( marked )
 	{
 	  RSS( ref_cell_remove( qua, cell ), "remove qua");
 	  tri_nodes[0] = qua_nodes[0];
@@ -237,20 +239,18 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 
   each_ref_cell_valid_cell_with_nodes( hex, cell, hex_nodes)
     {
-      for(node=0;node<4;node++)
-	face_nodes[node]=ref_cell_f2n(hex,node,cell,0);
-      RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), face_nodes, &face ), 
-	  "face 0");
-      if ( 2 == ref_hexdiv_mark( ref_hexdiv, face ) )
+      RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[0], hex_nodes[5], 
+			      &marked ), "0-5"); 
+      if ( marked )
 	return REF_IMPLEMENT;
-      if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
+      RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[1], hex_nodes[4], 
+			      &marked ), "1-4"); 
+      if ( marked )
 	return REF_IMPLEMENT;
 
-      for(node=0;node<4;node++)
-	face_nodes[node]=ref_cell_f2n(hex,node,cell,1);
-      RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), face_nodes, &face ), 
-	  "face 1");
-      if ( 2 == ref_hexdiv_mark( ref_hexdiv, face ) )
+      RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[1], hex_nodes[6], 
+			      &marked ), "1-6"); 
+      if ( marked )
 	{
 	  RSS( ref_cell_remove( hex, cell ), "remove hex");
 	  pri_nodes[0] = hex_nodes[1];
@@ -269,7 +269,9 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
 	  break;
 	}
-      if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
+      RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[2], hex_nodes[5], 
+			      &marked ), "2-5"); 
+      if ( marked )
 	{
 	  RSS( ref_cell_remove( hex, cell ), "remove hex");
 	  pri_nodes[0] = hex_nodes[1];
@@ -289,13 +291,13 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  break;
 	}
 
-      for(node=0;node<4;node++)
-	face_nodes[node]=ref_cell_f2n(hex,node,cell,4);
-      RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), face_nodes, &face ), 
-	  "face 4");
-      if ( 2 == ref_hexdiv_mark( ref_hexdiv, face ) )
+      RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[0], hex_nodes[2], 
+			      &marked ), "0-2"); 
+      if ( marked )
 	return REF_IMPLEMENT;
-      if ( 3 == ref_hexdiv_mark( ref_hexdiv, face ) )
+      RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[1], hex_nodes[3], 
+			      &marked ), "1-3"); 
+      if ( marked )
 	return REF_IMPLEMENT;
     }
 
