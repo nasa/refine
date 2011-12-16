@@ -97,6 +97,9 @@ int main( void )
     TSS(ref_hexdiv_marked(ref_hexdiv,1,6,&marked),"is edge marked?");
     TAS( marked,"pair 1-6 marked");
 
+    TSS(ref_hexdiv_marked(ref_hexdiv,6,1,&marked),"is edge marked?");
+    TAS( marked,"pair 6-1 marked");
+
     TSS( tear_down( ref_hexdiv ), "tear down");
   }
 

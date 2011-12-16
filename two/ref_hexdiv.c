@@ -139,38 +139,18 @@ REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv,
 }
 
 REF_STATUS ref_hexdiv_pair( REF_HEXDIV ref_hexdiv, REF_BOOL *again,
-			    REF_CELL ref_cell, REF_INT cell,
-			    REF_INT cell_face0, REF_INT mark0, 
-			    REF_INT cell_face1, REF_INT mark1 )
+			    REF_INT a0, REF_INT a1, 
+			    REF_INT b0, REF_INT b1 )
 {
-  REF_INT face0, face1;
-  REF_INT nodes[4], node;
+  REF_BOOL a_marked,b_marked;
   
-  for(node=0;node<4;node++)
-    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face0);
-  RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), nodes, &face0 ), "face0");
-  for(node=0;node<4;node++)
-    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face1);
-  RSS(ref_face_with( ref_hexdiv_face(ref_hexdiv), nodes, &face1 ), "face1");
-
-  if ( ref_hexdiv_mark( ref_hexdiv, face0 ) == mark0 &&
-       ref_hexdiv_mark( ref_hexdiv, face1 ) == mark1 )
-    return REF_SUCCESS;
-
-  if ( ref_hexdiv_mark( ref_hexdiv, face0 ) == mark0 )
+  RSS( ref_hexdiv_marked(ref_hexdiv,a0,a1,&a_marked), "marked? a0-a1" );
+  RSS( ref_hexdiv_marked(ref_hexdiv,b0,b1,&b_marked), "marked? b0-b1" );
+  if ( a_marked != b_marked )
     {
-      if ( ref_hexdiv_mark( ref_hexdiv, face1 ) != 0 ) return REF_FAILURE;
-      ref_hexdiv_mark( ref_hexdiv, face1 ) = mark1;
       *again = REF_TRUE;
-      return REF_SUCCESS;
-    }
-
-  if ( ref_hexdiv_mark( ref_hexdiv, face1 ) == mark1 )
-    {
-      if ( ref_hexdiv_mark( ref_hexdiv, face0 ) != 0 ) return REF_FAILURE;
-      *again = REF_TRUE;
-      ref_hexdiv_mark( ref_hexdiv, face0 ) = mark0;  
-      return REF_SUCCESS;
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv,a0,a1), "mark a0-a1" );
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv,b0,b1), "mark b0-b1" );
     }
 
   return REF_SUCCESS;
@@ -178,9 +158,12 @@ REF_STATUS ref_hexdiv_pair( REF_HEXDIV ref_hexdiv, REF_BOOL *again,
 
 REF_STATUS ref_hexdiv_mark_relax( REF_HEXDIV ref_hexdiv )
 {
-  REF_INT group, cell;
   REF_CELL ref_cell;
   REF_BOOL again;
+  REF_INT cell;
+  REF_BOOL nodes[8];
+
+  ref_cell = ref_grid_hex(ref_hexdiv_grid(ref_hexdiv));
 
   again = REF_TRUE;
 
@@ -189,14 +172,15 @@ REF_STATUS ref_hexdiv_mark_relax( REF_HEXDIV ref_hexdiv )
 
       again = REF_FALSE;
 
-      each_ref_grid_ref_cell( ref_hexdiv_grid(ref_hexdiv), group, ref_cell )
-	each_ref_cell_valid_cell( ref_cell, cell )
-	  {
-	    RSS( ref_hexdiv_pair( ref_hexdiv, &again, ref_cell, cell,
-				  1, 2, 3, 2 ), "not consist");
-	    RSS( ref_hexdiv_pair( ref_hexdiv,  &again, ref_cell, cell,
-				  1, 3, 3, 3 ), "not consist");
-	  }
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  RSS( ref_hexdiv_pair( ref_hexdiv, &again, 
+				nodes[1], nodes[6],
+				nodes[0], nodes[7] ), "not consist");
+	  RSS( ref_hexdiv_pair( ref_hexdiv, &again, 
+				nodes[5], nodes[2],
+				nodes[4], nodes[3] ), "not consist");
+	}
     }
 
   return REF_SUCCESS;
