@@ -196,14 +196,16 @@ REF_STATUS ref_grid_export_tec( REF_GRID ref_grid, char *filename  )
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
-  REF_INT *o2n;
+  REF_INT *o2n, *n2o;
   REF_INT nface;
   REF_INT nodes[5];
   REF_INT cell;
+  REF_INT nnode;
 
   ref_node = ref_grid_node(ref_grid);
 
-  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+  o2n = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
+  RNS(o2n,"malloc o2n NULL");
 
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -211,6 +213,28 @@ REF_STATUS ref_grid_export_tec( REF_GRID ref_grid, char *filename  )
 
   fprintf(file, "title=\"tecplot refine geometry file\"\n");
   fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  nnode = 0;
+  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+    o2n[node] = REF_EMPTY;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    for ( node = 0; node < 3; node++ )
+      if ( REF_EMPTY == o2n[nodes[node]] )
+	{ o2n[nodes[node]] = nnode; nnode++; }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    for ( node = 0; node < 4; node++ )
+      if ( REF_EMPTY == o2n[nodes[node]] )
+	{ o2n[nodes[node]] = nnode; nnode++; }
+
+  n2o = (REF_INT *)malloc( nnode * sizeof(REF_INT) );
+  RNS(n2o,"malloc n2o NULL");
+
+  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+    if ( REF_EMPTY != o2n[node] ) n2o[o2n[node]] = node;
 
   nface = ref_cell_n(ref_grid_tri(ref_grid)) +
           ref_cell_n(ref_grid_qua(ref_grid)) ;
@@ -220,16 +244,13 @@ REF_STATUS ref_grid_export_tec( REF_GRID ref_grid, char *filename  )
 
       fprintf(file,
 	  "zone t=surf, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-	  ref_node_n(ref_node), nface, "point", "fequadrilateral" );
+	  nnode, nface, "point", "fequadrilateral" );
 
-      for ( node = 0; node < ref_node_max(ref_node); node++ )
-	if ( REF_EMPTY != o2n[node] )
-	  {
-	    fprintf(file, " %.16e %.16e %.16e\n",
-		    ref_node_xyz(ref_node,0,node),
-		    ref_node_xyz(ref_node,1,node),
-		    ref_node_xyz(ref_node,2,node) ) ;
-	  }
+      for ( node = 0; node < nnode; node++ )
+	fprintf(file, " %.16e %.16e %.16e\n",
+		ref_node_xyz(ref_node,0,n2o[node]),
+		ref_node_xyz(ref_node,1,n2o[node]),
+		ref_node_xyz(ref_node,2,n2o[node]) ) ;
 
       ref_cell = ref_grid_tri(ref_grid);
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
@@ -251,6 +272,7 @@ REF_STATUS ref_grid_export_tec( REF_GRID ref_grid, char *filename  )
 	}
     }
 
+  free(n2o);
   free(o2n);
 
   fclose(file);
