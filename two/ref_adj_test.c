@@ -65,6 +65,16 @@ int main( void )
     TSS(ref_adj_free(ref_adj),"free");
   }
 
+  { /* empty */
+    TSS(ref_adj_create(&ref_adj),"create");
+
+    TAS( ref_adj_empty(ref_adj,0), "starts empty");
+    TSS(ref_adj_add(ref_adj,0,14),"add");
+    TAS( !ref_adj_empty(ref_adj,0), "not empty anymore");
+
+    TSS(ref_adj_free(ref_adj),"free");
+  }
+
   {  /* negative node */
     TSS(ref_adj_create(&ref_adj),"create");
   
