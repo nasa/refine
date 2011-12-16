@@ -6,6 +6,11 @@
 #include "ref_cell.h"
 #include "ref_test.h"
 
+static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr)
+{
+  return ref_cell_create(ref_cell_ptr,4,REF_TRUE);
+}
+
 static REF_STATUS ref_tet(REF_CELL *ref_cell_ptr)
 {
   return ref_cell_create(ref_cell_ptr,4,REF_FALSE);
@@ -76,6 +81,19 @@ int main( void )
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* remove tri*/
+    TSS(ref_tri(&ref_cell),"create");
+
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 1;
+    TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    TSS(ref_cell_remove(ref_cell,cell),"remove cell");
+
+    TAS( ref_adj_empty( ref_cell_adj(ref_cell), 1 ), "id");
+
+    TSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
   {
     /* force realloc twice */
     TSS(ref_tet(&ref_cell),"create");
@@ -121,7 +139,7 @@ int main( void )
   }
 
   {
-    /* get nodes */
+    /* valid? */
     TSS(ref_tet(&ref_cell),"create new");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
@@ -131,6 +149,36 @@ int main( void )
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     TAS(ref_cell_valid(ref_cell,0),"valid 0");
   
+    TSS(ref_cell_free(ref_cell),"free");
+  }
+
+  {
+    /* adj */
+    TSS(ref_tet(&ref_cell),"create new");
+
+    TAS( ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
+    TAS( ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "last node");
+
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
+    TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    TAS( !ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
+    TAS( !ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "last node");
+
+    TSS(ref_cell_free(ref_cell),"free");
+  }
+
+  {
+    /* adj with id */
+    TSS(ref_tri(&ref_cell),"create new");
+
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
+    TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    TAS( !ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
+    TAS( !ref_adj_empty( ref_cell_adj(ref_cell), 2 ), "last node");
+    TAS(  ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "id");
+
     TSS(ref_cell_free(ref_cell),"free");
   }
 

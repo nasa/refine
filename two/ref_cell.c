@@ -343,9 +343,18 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
     ref_cell_c2n(ref_cell,node,cell) = nodes[node];
 
-  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
-    if ( REF_EMPTY != nodes[node] ) /* hack for boundary faces */
-      RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), "register cell" );
+  if ( ref_cell_last_node_is_an_id(ref_cell) )
+    {
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell)-1 ; node++ )
+	RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), 
+	     "register cell with id" );
+    }
+  else
+    {
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+	RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), 
+	     "register vol cell" );
+    }
 
   ref_cell_n(ref_cell)++;
 
@@ -360,11 +369,20 @@ REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
   if ( !ref_cell_valid(ref_cell,cell) ) return REF_FAILURE;
   ref_cell_n(ref_cell)--;
 
-  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
-    if ( REF_EMPTY != ref_cell_c2n(ref_cell,node,cell) ) /* hack for boundary faces */
-      RSS( ref_adj_remove(ref_cell->ref_adj, 
-			  ref_cell_c2n(ref_cell,node,cell), cell), 
-	   "unregister cell" );
+  if ( ref_cell_last_node_is_an_id(ref_cell) )
+    {
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell)-1 ; node++ )
+	RSS( ref_adj_remove(ref_cell->ref_adj, 
+			    ref_cell_c2n(ref_cell,node,cell), cell), 
+	     "unregister cell with id" );
+    }
+  else
+    {
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+	RSS( ref_adj_remove(ref_cell->ref_adj, 
+			    ref_cell_c2n(ref_cell,node,cell), cell), 
+	     "unregister cell" );
+    }
 
   ref_cell_c2n(ref_cell,0,cell) = REF_EMPTY;
   ref_cell_c2n(ref_cell,1,cell) = ref_cell_blank(ref_cell); 

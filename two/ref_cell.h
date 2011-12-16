@@ -36,6 +36,7 @@ struct REF_CELL_STRUCT {
 #define ref_cell_n(ref_cell) ((ref_cell)->n)
 #define ref_cell_max(ref_cell) ((ref_cell)->max)
 #define ref_cell_blank(ref_cell) ((ref_cell)->blank)
+#define ref_cell_adj(ref_cell) ((ref_cell)->ref_adj)
 
 #define ref_cell_valid(ref_cell,cell) \
   ( (cell) >=0 && (cell) < ((ref_cell)->max) && \
