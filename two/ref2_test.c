@@ -57,7 +57,7 @@ int main( int argc, char *argv[] )
   TSS(ref_grid_export_tec(ref_grid, "ref2.tec"),"to tec");
 
   printf("validate.\n");
-  TSS( ref_validation_check( ref_grid ), "invalid grid" );
+  TSS( ref_validation_all( ref_grid ), "invalid grid" );
 
   printf("ugrid.\n");
   TSS(ref_grid_export_ugrid(ref_grid, "ref2.ugrid"),"to ugrid");
