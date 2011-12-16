@@ -279,7 +279,7 @@ REF_STATUS ref_grid_export_ugrid( REF_GRID ref_grid, char *filename  )
   nnode = ref_node_n(ref_node);
 
   ntri = ref_cell_n(ref_grid_tri(ref_grid));
-  nqua = ref_cell_n(ref_grid_tri(ref_grid));
+  nqua = ref_cell_n(ref_grid_qua(ref_grid));
 
   ntet = ref_cell_n(ref_grid_tet(ref_grid));
   npyr = ref_cell_n(ref_grid_pyr(ref_grid));
