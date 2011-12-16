@@ -7,6 +7,7 @@
 
 #include "ref_grid.h"
 #include "ref_grid_import.h"
+#include "ref_grid_export.h"
 #include "ref_validation.h"
 
 #include "ref_adj.h"
@@ -26,6 +27,11 @@ int main( int argc, char *argv[] )
       TSS(ref_grid_import_ugrid( argv[1], &ref_grid ),"from ugrid");
       printf("complete.\n");
       
+      printf("vtk.\n");
+      TSS( ref_grid_export_vtk( ref_grid, "validate.vtk" ), "vtk" );
+      printf("tec.\n");
+      TSS( ref_grid_export_tec( ref_grid, "validate.tec" ), "tec" );
+
       printf("validate.\n");
       TSS( ref_validation_check( ref_grid ), "invalid grid" );
 
