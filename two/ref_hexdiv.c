@@ -236,7 +236,7 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
 	  pri_nodes[0] = hex_nodes[1];
 	  pri_nodes[1] = hex_nodes[6];
-	  pri_nodes[2] = hex_nodes[3];
+	  pri_nodes[2] = hex_nodes[2];
 	  pri_nodes[3] = hex_nodes[0];
 	  pri_nodes[4] = hex_nodes[7];
 	  pri_nodes[5] = hex_nodes[3];
