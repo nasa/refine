@@ -4,7 +4,18 @@
 
 #include "ref_validation.h"
 
-REF_STATUS ref_validation_check( REF_GRID ref_grid )
+#include "ref_face.h"
+
+REF_STATUS ref_validation_all( REF_GRID ref_grid )
+{
+
+  RSS( ref_validation_hanging_node( ref_grid ), "hanging node");
+  RSS( ref_validation_cell_face( ref_grid ), "cell face");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid )
 {
   REF_INT node;
   REF_BOOL problem;
@@ -53,3 +64,67 @@ REF_STATUS ref_validation_check( REF_GRID ref_grid )
   return (problem?REF_FAILURE:REF_SUCCESS);
 }
 
+REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
+{
+  REF_FACE ref_face;
+  REF_CELL ref_cell;
+  REF_INT *hits;
+  REF_INT face;
+  REF_INT group, cell, cell_face;
+  REF_INT node;
+  REF_INT nodes[4];
+  REF_BOOL problem;
+
+  problem = REF_FALSE;
+
+  RSS( ref_face_create( &ref_face, ref_grid ), "face");
+
+  hits = (REF_INT *)malloc( ref_face_n(ref_face) * sizeof(REF_INT) );
+  RNS(hits,"malloc hits NULL");
+
+  for ( face=0; face< ref_face_n(ref_face) ; face++ )
+    hits[face]=0;
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+      each_ref_cell_cell_face( ref_cell, cell_face )
+        {
+	  for(node=0;node<4;node++)
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	  RSS( ref_face_with( ref_face, nodes, &face ), "find face");
+	  hits[face]++;
+	}
+ 
+  ref_cell = ref_grid_tri( ref_grid );
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      for(node=0;node<3;node++)
+	nodes[node]=ref_cell_c2n(ref_cell,node,cell);
+      nodes[3]=nodes[0];
+      RSS( ref_face_with( ref_face, nodes, &face ), "find tri");
+      hits[face]++;
+    }
+ 
+  ref_cell = ref_grid_qua( ref_grid );
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      for(node=0;node<4;node++)
+	nodes[node]=ref_cell_c2n(ref_cell,node,cell);
+      RSS( ref_face_with( ref_face, nodes, &face ), "find qua");
+      hits[face]++;
+    }
+ 
+  for ( face=0; face< ref_face_n(ref_face) ; face++ )
+    if ( 2 != hits[face] )
+      {
+	problem = REF_TRUE;	
+	printf(" hits %d\n",hits[face]);	  
+      }
+
+  free(hits);
+
+  RSS( ref_face_free( ref_face ), "face free");
+
+  return (problem?REF_FAILURE:REF_SUCCESS);
+
+}

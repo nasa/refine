@@ -15,6 +15,9 @@
 #include "ref_metric.h"
 #include "ref_cell.h"
 
+#include "ref_face.h"
+#include "ref_sort.h"
+
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
@@ -33,7 +36,7 @@ int main( int argc, char *argv[] )
       TSS( ref_grid_export_tec( ref_grid, "validate.tec" ), "tec" );
 
       printf("validate.\n");
-      TSS( ref_validation_check( ref_grid ), "invalid grid" );
+      TSS( ref_validation_all( ref_grid ), "invalid grid" );
 
       printf("done.\n");
       return 0;
