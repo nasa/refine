@@ -228,7 +228,10 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
       RNS(marked_for_removal,"malloc failed");
       for(cell=0;cell<ref_cell_max(ref_cell);cell++)
 	marked_for_removal[cell]=0;
-      RSS( ref_cell_create( ref_cell_node_per(ref_cell), &ref_cell_split), "");
+      RSS( ref_cell_create( &ref_cell_split, 
+			    ref_cell_node_per(ref_cell), 
+			    ref_cell_last_node_is_an_id(ref_cell)), 
+	   "temp cell");
       each_ref_cell_valid_cell( ref_cell, cell )
 	{
 	  map = ref_subdiv_map( ref_subdiv, ref_cell, cell );

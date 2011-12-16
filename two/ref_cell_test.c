@@ -6,6 +6,23 @@
 #include "ref_cell.h"
 #include "ref_test.h"
 
+static REF_STATUS ref_tet(REF_CELL *ref_cell_ptr)
+{
+  return ref_cell_create(ref_cell_ptr,4,REF_FALSE);
+}
+static REF_STATUS ref_pyr(REF_CELL *ref_cell_ptr)
+{
+  return ref_cell_create(ref_cell_ptr,5,REF_FALSE);
+}
+static REF_STATUS ref_pri(REF_CELL *ref_cell_ptr)
+{
+  return ref_cell_create(ref_cell_ptr,6,REF_FALSE);
+}
+static REF_STATUS ref_hex(REF_CELL *ref_cell_ptr)
+{
+  return ref_cell_create(ref_cell_ptr,8,REF_FALSE);
+}
+
 int main( void )
 {
   REF_CELL ref_cell;
@@ -18,7 +35,7 @@ int main( void )
   TFS(ref_cell_free(NULL),"dont free NULL");
 
   { /* add */
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
     TES(0,ref_cell_n(ref_cell),"init zero cells");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
@@ -35,7 +52,7 @@ int main( void )
 
   { /* remove */
     REF_INT item;
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
@@ -61,7 +78,7 @@ int main( void )
 
   {
     /* force realloc twice */
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
 
     max = ref_cell_max(ref_cell);
     for (i = 0; i < max+1; i++ ){
@@ -84,7 +101,7 @@ int main( void )
 
   {
     /* get nodes */
-    TSS(ref_cell_create(4,&ref_cell),"create new");
+    TSS(ref_tet(&ref_cell),"create new");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
     TFS(ref_cell_nodes(ref_cell,0,nodes),"missing cell should fail");
@@ -105,7 +122,7 @@ int main( void )
 
   {
     /* get nodes */
-    TSS(ref_cell_create(4,&ref_cell),"create new");
+    TSS(ref_tet(&ref_cell),"create new");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
     TAS(!ref_cell_valid(ref_cell,-1),"invlid -1");
@@ -119,7 +136,7 @@ int main( void )
 
   {
     /* loop cells */
-    TSS(ref_cell_create(4,&ref_cell),"create new");
+    TSS(ref_tet(&ref_cell),"create new");
 
     ncell = 0;
     each_ref_cell_valid_cell( ref_cell, cell )
@@ -147,19 +164,19 @@ int main( void )
 
   {
     /* edge_per */
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
     TES(6,ref_cell_edge_per(ref_cell),"edge_per");
     TSS(ref_cell_free(ref_cell),"cleanup");
 
-    TSS(ref_cell_create(5,&ref_cell),"create");
+    TSS(ref_pyr(&ref_cell),"create");
     TES(8,ref_cell_edge_per(ref_cell),"edge_per");
     TSS(ref_cell_free(ref_cell),"cleanup");
 
-    TSS(ref_cell_create(6,&ref_cell),"create");
+    TSS(ref_pri(&ref_cell),"create");
     TES(9,ref_cell_edge_per(ref_cell),"edge_per");
     TSS(ref_cell_free(ref_cell),"cleanup");
 
-    TSS(ref_cell_create(8,&ref_cell),"create");
+    TSS(ref_hex(&ref_cell),"create");
     TES(12,ref_cell_edge_per(ref_cell),"edge_per");
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
@@ -167,7 +184,7 @@ int main( void )
   {
     /* empty edges */
 
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
     TSS(ref_cell_empty_edges(ref_cell),"empty edges");
     TES(REF_EMPTY,ref_cell_c2e(ref_cell,0,0),"edge");
     TSS(ref_cell_free(ref_cell),"cleanup");
@@ -176,7 +193,7 @@ int main( void )
   {
     /* set tet edges */
 
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     TSS(ref_cell_empty_edges(ref_cell),"empty edges");
@@ -200,25 +217,25 @@ int main( void )
 
   {
     /* face_per */
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
     TES(4,ref_cell_face_per(ref_cell),"face_per");
     TSS(ref_cell_free(ref_cell),"cleanup");
 
-    TSS(ref_cell_create(5,&ref_cell),"create");
+    TSS(ref_pyr(&ref_cell),"create");
     TES(5,ref_cell_face_per(ref_cell),"face_per");
     TSS(ref_cell_free(ref_cell),"cleanup");
 
-    TSS(ref_cell_create(6,&ref_cell),"create");
+    TSS(ref_pri(&ref_cell),"create");
     TES(5,ref_cell_face_per(ref_cell),"face_per");
     TSS(ref_cell_free(ref_cell),"cleanup");
 
-    TSS(ref_cell_create(8,&ref_cell),"create");
+    TSS(ref_hex(&ref_cell),"create");
     TES(6,ref_cell_face_per(ref_cell),"face_per");
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
 
   { /* tet face */
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
     TEIS(1,ref_cell_f2n_gen(ref_cell,0,0),"tri face nodes");
     TEIS(3,ref_cell_f2n_gen(ref_cell,1,0),"tri face nodes");
     TEIS(2,ref_cell_f2n_gen(ref_cell,2,0),"tri face nodes");
@@ -244,7 +261,7 @@ int main( void )
 
   { /* tet face nodes*/
     REF_INT cell, cell_face;
-    TSS(ref_cell_create(4,&ref_cell),"create");
+    TSS(ref_tet(&ref_cell),"create");
 
     nodes[0]= 10; nodes[1]= 20; nodes[2]= 30; nodes[3]= 40; 
     TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
@@ -263,7 +280,7 @@ int main( void )
 
   { /* hex edge faces */
     REF_INT edge, face0, face1;
-    TSS(ref_cell_create(8,&ref_cell),"create");
+    TSS(ref_hex(&ref_cell),"create");
 
     edge = 0;
     TSS(ref_cell_gen_edge_face(ref_cell,edge,&face0,&face1),"edge face");

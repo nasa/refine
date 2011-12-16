@@ -16,6 +16,7 @@ BEGIN_C_DECLORATION
 #define REF_CELL_MAX_NODE_PER (8)
 
 struct REF_CELL_STRUCT {
+  REF_BOOL last_node_is_an_id;
   REF_INT node_per, edge_per, face_per;
   REF_INT *e2n;
   REF_INT *f2n;
@@ -25,6 +26,8 @@ struct REF_CELL_STRUCT {
   REF_INT *c2e;
   REF_ADJ ref_adj;
 };
+
+#define ref_cell_last_node_is_an_id(ref_cell) ((ref_cell)->last_node_is_an_id)
 
 #define ref_cell_node_per(ref_cell) ((ref_cell)->node_per)
 #define ref_cell_edge_per(ref_cell) ((ref_cell)->edge_per)
@@ -83,7 +86,8 @@ struct REF_CELL_STRUCT {
 	(cell_face) < ref_cell_face_per(ref_cell);			\
 	(cell_face)++ )
 
-REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell );
+REF_STATUS ref_cell_create( REF_CELL *ref_cell, 
+			    REF_INT node_per, REF_BOOL last_node_is_an_id );
 REF_STATUS ref_cell_free( REF_CELL ref_cell );
 
 REF_STATUS ref_cell_inspect( REF_CELL ref_cell );

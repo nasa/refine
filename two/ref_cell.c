@@ -4,7 +4,8 @@
 
 #include "ref_cell.h"
 
-REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
+REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr, 
+			    REF_INT node_per, REF_BOOL last_node_is_an_id )
 {
   REF_INT cell;
   REF_INT max;
@@ -22,7 +23,7 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
 
   ref_cell = (*ref_cell_ptr);
 
-  max = 100;
+  ref_cell_last_node_is_an_id(ref_cell) = last_node_is_an_id;
 
   ref_cell_node_per(ref_cell) = node_per;
   switch ( ref_cell_node_per(ref_cell) )
@@ -227,6 +228,8 @@ REF_STATUS ref_cell_create( REF_INT node_per, REF_CELL *ref_cell_ptr )
 
       break;
     }
+
+  max = 100;
 
   ref_cell_n(ref_cell) = 0;
   ref_cell_max(ref_cell) = max;
