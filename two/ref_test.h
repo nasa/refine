@@ -3,6 +3,8 @@
 #ifndef REF_TEST_H
 #define REF_TEST_H
 
+#include "ref_defs.h"
+
 BEGIN_C_DECLORATION
 
 #define TEST_ECH0(msg) if (0) printf("PASS: %s\n",(msg))
