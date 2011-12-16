@@ -53,6 +53,9 @@ int main( int argc, char *argv[] )
   printf("vtk.\n");
   TSS(ref_grid_export_vtk(ref_grid, "ref2.vtk"),"to vtk");
 
+  printf("tec.\n");
+  TSS(ref_grid_export_tec(ref_grid, "ref2.tec"),"to tec");
+
   printf("validate.\n");
   TSS( ref_validation_check( ref_grid ), "invalid grid" );
 
