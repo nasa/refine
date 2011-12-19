@@ -33,6 +33,8 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   REF_INT marks, new_cell;
   REF_CELL marked_cell;
 
+  REF_INT face_marks, hex_marks;
+
   RSS( ref_hexdiv_create( &ref_hexdiv, ref_grid ), "make hexdiv");
 
   ref_cell = ref_grid_hex(ref_grid);
@@ -82,8 +84,8 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   printf("marks %d\n",marks);
 
-  RSS( ref_hexdiv_mark_n( ref_hexdiv, &marks ), "count marks");
-  printf("marked faces %d\n",marks);
+  RSS( ref_hexdiv_mark_n( ref_hexdiv, &face_marks, &hex_marks ), "count marks");
+  printf("marked faces %d hexes %d\n",face_marks,hex_marks);
 
   RSS(ref_export_vtk(viz, "pole.vtk"),"to vtk");
 
@@ -92,8 +94,8 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   RSS( ref_hexdiv_mark_relax( ref_hexdiv ), "relax" );
 
-  RSS( ref_hexdiv_mark_n( ref_hexdiv, &marks ), "count marks");
-  printf("relaxed marked faces %d\n",marks);
+  RSS( ref_hexdiv_mark_n( ref_hexdiv, &face_marks, &hex_marks ), "count marks");
+  printf("relaxed marked faces %d hexes %d\n",face_marks,hex_marks);
 
   RSS( ref_hexdiv_split( ref_hexdiv ), "split hex to prism" );
 

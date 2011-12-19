@@ -110,15 +110,30 @@ REF_STATUS ref_hexdiv_marked( REF_HEXDIV ref_hexdiv,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_hexdiv_mark_n( REF_HEXDIV ref_hexdiv, REF_INT *marks )
+REF_STATUS ref_hexdiv_mark_n( REF_HEXDIV ref_hexdiv, 
+			      REF_INT *face_marks, REF_INT *hex_marks )
 {
   REF_INT face;
+  REF_INT cell, hex_nodes[8];
+  REF_BOOL marked16, marked25;
 
-  (*marks) = 0;
+  (*face_marks) = 0;
 
   for (face=0; face < ref_face_n(ref_hexdiv_face(ref_hexdiv)) ; face++ )
-    if ( 0 != ref_hexdiv_mark( ref_hexdiv, face ) ) (*marks)++;
+    if ( 0 != ref_hexdiv_mark( ref_hexdiv, face ) ) (*face_marks)++;
   
+  (*hex_marks) = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_grid_hex(ref_hexdiv_grid(ref_hexdiv)), 
+				       cell, hex_nodes)
+    {
+      
+      RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[1], hex_nodes[6], 
+			      &marked16 ), "1-6");
+      RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[2], hex_nodes[5], 
+			      &marked25 ), "2-5");
+      if ( marked16 || marked25 ) (*hex_marks)++;
+    }
+
   return REF_SUCCESS;
 }
 
