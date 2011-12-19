@@ -9,7 +9,7 @@
 #include "ref_node.h"
 #include "ref_face.h"
 #include "ref_hexdiv.h"
-#include "ref_grid_export.h"
+#include "ref_export.h"
 
 #include "ref_math.h"
 
@@ -82,7 +82,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	  }
       }
 
-  RSS(ref_grid_export_vtk(viz, "pole.vtk"),"to vtk");
+  RSS(ref_export_vtk(viz, "pole.vtk"),"to vtk");
 
   ref_grid_node(viz) = orig_viz_node;/* replace before free */
   RXS( ref_grid_free(viz),REF_NULL,"free temp grid");

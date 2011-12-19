@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "ref_grid_export.h"
+#include "ref_export.h"
 #include "ref_test.h"
 
 int main( int argc, char *argv[] )
@@ -46,9 +46,9 @@ int main( int argc, char *argv[] )
   ref_cell = ref_grid_tet(ref_grid);
   TSS( ref_cell_add( ref_cell, nodes, &cell ), "add cell");
 
-  TSS(ref_grid_export_vtk( ref_grid, "ref_grid_export_test.vtk" ),"export" );
+  TSS(ref_export_vtk( ref_grid, "ref_export_test.vtk" ),"export" );
 
-  TSS(ref_grid_export_ugrid( ref_grid, "ref_grid_export_test.ugrid" ),"export");
+  TSS(ref_export_ugrid( ref_grid, "ref_export_test.ugrid" ),"export");
 
   TSS(ref_grid_free(ref_grid),"free");
 

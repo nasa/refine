@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "ref_grid_import.h"
-#include "ref_grid_export.h"
+#include "ref_export.h"
 #include "ref_test.h"
 
 #include "ref_adj.h"
@@ -51,16 +51,16 @@ int main( int argc, char *argv[] )
   TSS(ref_quality_hex( ref_grid ),"quality");
 
   printf("vtk.\n");
-  TSS(ref_grid_export_vtk(ref_grid, "ref2.vtk"),"to vtk");
+  TSS(ref_export_vtk(ref_grid, "ref2.vtk"),"to vtk");
 
   printf("tec.\n");
-  TSS(ref_grid_export_tec(ref_grid, "ref2.tec"),"to tec");
+  TSS(ref_export_tec(ref_grid, "ref2.tec"),"to tec");
 
   printf("validate.\n");
   TSS( ref_validation_all( ref_grid ), "invalid grid" );
 
   printf("ugrid.\n");
-  TSS(ref_grid_export_ugrid(ref_grid, "ref2.ugrid"),"to ugrid");
+  TSS(ref_export_ugrid(ref_grid, "ref2.ugrid"),"to ugrid");
 
   printf("free.\n");
   TSS(ref_grid_free(ref_grid),"free");

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ref_grid_import.h"
+#include "ref_export.h"
 
 #define VTK_TETRA      (10)
 #define VTK_HEXAHEDRON (12)
@@ -37,7 +37,7 @@
     (vtk_nodes)[4] = ugrid_nodes[2];			\
   }
 
-REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
   REF_NODE ref_node;
@@ -56,7 +56,7 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
   RNS(file, "unable to open file" );
 
   fprintf(file,"# vtk DataFile Version 2.0\n");
-  fprintf(file,"ref_grid_export_vtk\n");
+  fprintf(file,"ref_export_vtk\n");
   fprintf(file,"ASCII\n");
 
   RSS( ref_node_compact( ref_node, &o2n), "compact" );
@@ -123,7 +123,7 @@ REF_STATUS ref_grid_export_vtk( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
   REF_NODE ref_node;
@@ -190,7 +190,7 @@ REF_STATUS ref_grid_export_fgrid( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_export_tec( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
   REF_NODE ref_node;
@@ -280,7 +280,7 @@ REF_STATUS ref_grid_export_tec( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_export_ugrid( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
   REF_NODE ref_node;
