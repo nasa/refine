@@ -292,7 +292,7 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  pri_nodes[4] = hex_nodes[7];
 	  pri_nodes[5] = hex_nodes[3];
 	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex_pri 2");
-	  break;
+	  continue;
 	}
       RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[2], hex_nodes[5], 
 			      &marked ), "2-5"); 
@@ -313,7 +313,7 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  pri_nodes[4] = hex_nodes[4];
 	  pri_nodes[5] = hex_nodes[7];
 	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex pri 2");
-	  break;
+	  continue;
 	}
 
       RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[0], hex_nodes[2], 
