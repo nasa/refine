@@ -37,6 +37,38 @@
     (vtk_nodes)[4] = ugrid_nodes[2];			\
   }
 
+#define TEC_BRICK_TET(brick,nodes)					\
+  {									\
+    brick[0] = nodes[0]; brick[1] = nodes[1]; brick[2] = nodes[2];	\
+    brick[3] = nodes[2];						\
+    brick[4] = nodes[3]; brick[5] = nodes[3];				\
+    brick[6] = nodes[3]; brick[7] = nodes[3];				\
+  }
+
+#define TEC_BRICK_PYR(brick,nodes)					\
+  {									\
+    brick[0] = nodes[0]; brick[1] = nodes[1];				\
+    brick[2] = nodes[2]; brick[3] = nodes[3];				\
+    brick[4] = nodes[4]; brick[5] = nodes[4];				\
+    brick[6] = nodes[4]; brick[7] = nodes[4];				\
+  }
+
+#define TEC_BRICK_PRI(brick,nodes)					\
+  {									\
+    brick[0] = nodes[0]; brick[1] = nodes[1];				\
+    brick[2] = nodes[2]; brick[3] = nodes[2];				\
+    brick[4] = nodes[3]; brick[5] = nodes[4];				\
+    brick[6] = nodes[5]; brick[7] = nodes[5];				\
+  }
+
+#define TEC_BRICK_HEX(brick,nodes)					\
+  {									\
+    brick[0] = nodes[0]; brick[1] = nodes[1];				\
+    brick[2] = nodes[2]; brick[3] = nodes[3];				\
+    brick[4] = nodes[4]; brick[5] = nodes[5];				\
+    brick[6] = nodes[6]; brick[7] = nodes[7];				\
+  }
+
 REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
@@ -198,14 +230,13 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
   REF_INT node;
   REF_INT *o2n, *n2o;
   REF_INT nface;
-  REF_INT nodes[5];
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT brick[REF_CELL_MAX_NODE_PER];
   REF_INT cell;
   REF_INT nnode;
+  REF_INT group, node_per;
 
   ref_node = ref_grid_node(ref_grid);
-
-  o2n = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
-  RNS(o2n,"malloc o2n NULL");
 
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -213,6 +244,9 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 
   fprintf(file, "title=\"tecplot refine geometry file\"\n");
   fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  o2n = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
+  RNS(o2n,"malloc o2n NULL");
 
   nnode = 0;
   for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
@@ -274,6 +308,72 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 
   free(n2o);
   free(o2n);
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    if ( ref_cell_n(ref_cell) > 0 )
+      {
+	node_per = ref_cell_node_per(ref_cell);
+
+	o2n = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
+	RNS(o2n,"malloc o2n NULL");
+
+	nnode = 0;
+	for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+	  o2n[node] = REF_EMPTY;
+
+	each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	  for ( node = 0; node < node_per; node++ )
+	    if ( REF_EMPTY == o2n[nodes[node]] )
+	      { o2n[nodes[node]] = nnode; nnode++; }
+
+	n2o = (REF_INT *)malloc( nnode * sizeof(REF_INT) );
+	RNS(n2o,"malloc n2o NULL");
+
+	for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+	  if ( REF_EMPTY != o2n[node] ) n2o[o2n[node]] = node;
+
+	fprintf(file,
+		"zone t=e%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+		node_per, nnode, ref_cell_n(ref_cell), "point", "febrick" );
+
+	for ( node = 0; node < nnode; node++ )
+	  fprintf(file, " %.16e %.16e %.16e\n",
+		  ref_node_xyz(ref_node,0,n2o[node]),
+		  ref_node_xyz(ref_node,1,n2o[node]),
+		  ref_node_xyz(ref_node,2,n2o[node]) ) ;
+
+	each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	  {
+	    switch ( ref_cell_node_per(ref_cell) )
+	      {
+	      case 4:
+		TEC_BRICK_TET(brick,nodes);
+		break;
+	      case 5:
+		TEC_BRICK_PYR(brick,nodes);
+		break;
+	      case 6:
+		TEC_BRICK_PRI(brick,nodes);
+		break;
+	      case 8:
+		TEC_BRICK_HEX(brick,nodes);
+		break;
+	      default:
+		RSS( REF_IMPLEMENT, "wrong nodes per cell");
+		break;
+	      }
+
+	    for ( node = 0; node < 8; node++ )
+	      {
+		fprintf(file," %d",o2n[brick[node]] + 1);
+	      }
+	    fprintf(file,"\n");
+	  }
+
+	free(n2o);
+	free(o2n);
+
+      }
 
   fclose(file);
 
