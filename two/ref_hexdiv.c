@@ -170,9 +170,12 @@ REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv,
       */
 
     default:
+      printf("%s: %d: %s: cell edge %d not implemented, skipping.\n",
+	     __FILE__,__LINE__,__func__,cell_edge);
+      /*
       RSB( REF_IMPLEMENT, "can not hadle cell edge",
 	   printf("cell edge %d\n",cell_edge););
-      return REF_IMPLEMENT;
+      */
       break;
     }
 
