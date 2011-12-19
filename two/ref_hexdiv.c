@@ -110,6 +110,18 @@ REF_STATUS ref_hexdiv_marked( REF_HEXDIV ref_hexdiv,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_hexdiv_mark_n( REF_HEXDIV ref_hexdiv, REF_INT *marks )
+{
+  REF_INT face;
+
+  (*marks) = 0;
+
+  for (face=0; face < ref_face_n(ref_hexdiv_face(ref_hexdiv)) ; face++ )
+    if ( 0 != ref_hexdiv_mark( ref_hexdiv, face ) ) (*marks)++;
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv, 
 					    REF_INT cell, REF_INT cell_edge )
 {

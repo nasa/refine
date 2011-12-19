@@ -35,6 +35,8 @@ REF_STATUS ref_hexdiv_marked( REF_HEXDIV ref_hexdiv,
 			      REF_INT node0, REF_INT node1,
 			      REF_BOOL *marked );
 
+REF_STATUS ref_hexdiv_mark_n( REF_HEXDIV ref_hexdiv, REF_INT *marks );
+
 REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv, 
 					    REF_INT cell, REF_INT cell_edge );
 

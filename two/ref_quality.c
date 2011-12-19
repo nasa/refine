@@ -82,12 +82,19 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   printf("marks %d\n",marks);
 
+  RSS( ref_hexdiv_mark_n( ref_hexdiv, &marks ), "count marks");
+  printf("marked faces %d\n",marks);
+
   RSS(ref_export_vtk(viz, "pole.vtk"),"to vtk");
 
   ref_grid_node(viz) = orig_viz_node;/* replace before free */
   RXS( ref_grid_free(viz),REF_NULL,"free temp grid");
 
   RSS( ref_hexdiv_mark_relax( ref_hexdiv ), "relax" );
+
+  RSS( ref_hexdiv_mark_n( ref_hexdiv, &marks ), "count marks");
+  printf("relaxed marked faces %d\n",marks);
+
   RSS( ref_hexdiv_split( ref_hexdiv ), "split hex to prism" );
 
   return REF_SUCCESS;
