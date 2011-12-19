@@ -71,8 +71,6 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	if ( ABS(angle) > (1-1.0e-8) ) 
 	  {
 	    marks++;
-	    printf("angle %d, cell %d, edge %d : %f\n",
-		   marks,cell,cell_edge,angle);
 	    RSS( ref_cell_add( marked_cell, cell_nodes, &new_cell ), 
 		 "add marked");
 	    RSS( ref_hexdiv_mark_cell_edge_split( ref_hexdiv, 
@@ -81,6 +79,8 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
 	  }
       }
+
+  printf("marks %d\n",marks);
 
   RSS(ref_export_vtk(viz, "pole.vtk"),"to vtk");
 

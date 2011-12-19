@@ -28,8 +28,6 @@
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
-  REF_EDGE ref_edge;
-  REF_FACE ref_face;
 
   if (argc<2) 
     {
@@ -41,14 +39,12 @@ int main( int argc, char *argv[] )
   TSS(ref_import_ugrid( argv[1], &ref_grid ),"from ugrid");
   printf("complete.\n");
 
-  printf("edges.\n");
-  TSS(ref_edge_create( &ref_edge, ref_grid ),"edges");
-
-  printf("faces.\n");
-  TSS(ref_face_create( &ref_face, ref_grid ),"faces");
+  RSS(ref_grid_inspect( ref_grid ), "inspection");
 
   printf("hex quality.\n");
   TSS(ref_quality_hex( ref_grid ),"quality");
+
+  RSS(ref_grid_inspect( ref_grid ), "inspection");
 
   printf("vtk.\n");
   TSS(ref_export_vtk(ref_grid, "ref2.vtk"),"to vtk");

@@ -52,10 +52,13 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
 REF_STATUS ref_grid_inspect( REF_GRID ref_grid )
 {
   printf("ref_grid = %p\n",(void *)ref_grid);
-  printf(" tet = %p\n",(void *)ref_grid_tet(ref_grid));
-  printf(" pyr = %p\n",(void *)ref_grid_pyr(ref_grid));
-  printf(" pri = %p\n",(void *)ref_grid_pri(ref_grid));
-  printf(" hex = %p\n",(void *)ref_grid_hex(ref_grid));
+  printf(" %d node\n",ref_node_n(ref_grid_node(ref_grid)));
+  printf(" %d tet\n",ref_cell_n(ref_grid_tet(ref_grid)));
+  printf(" %d pyr\n",ref_cell_n(ref_grid_pyr(ref_grid)));
+  printf(" %d pri\n",ref_cell_n(ref_grid_pri(ref_grid)));
+  printf(" %d hex\n",ref_cell_n(ref_grid_hex(ref_grid)));
+  printf(" %d tri\n",ref_cell_n(ref_grid_tri(ref_grid)));
+  printf(" %d qua\n",ref_cell_n(ref_grid_qua(ref_grid)));
 
   return REF_SUCCESS;
 }
