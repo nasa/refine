@@ -253,12 +253,10 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
     {
       RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[0], hex_nodes[5], 
 			      &marked ), "0-5"); 
-      if ( marked )
-	return REF_IMPLEMENT;
+      if ( marked ) RSS( REF_IMPLEMENT, "add split")
       RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[1], hex_nodes[4], 
 			      &marked ), "1-4"); 
-      if ( marked )
-	return REF_IMPLEMENT;
+      if ( marked ) RSS( REF_IMPLEMENT, "add split")
 
       RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[1], hex_nodes[6], 
 			      &marked ), "1-6"); 
@@ -271,14 +269,14 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  pri_nodes[3] = hex_nodes[0];
 	  pri_nodes[4] = hex_nodes[4];
 	  pri_nodes[5] = hex_nodes[7];
-	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex pri 1");
 	  pri_nodes[0] = hex_nodes[1];
 	  pri_nodes[1] = hex_nodes[6];
 	  pri_nodes[2] = hex_nodes[2];
 	  pri_nodes[3] = hex_nodes[0];
 	  pri_nodes[4] = hex_nodes[7];
 	  pri_nodes[5] = hex_nodes[3];
-	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex_pri 2");
 	  break;
 	}
       RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[2], hex_nodes[5], 
@@ -292,25 +290,23 @@ REF_STATUS ref_hexdiv_split( REF_HEXDIV ref_hexdiv )
 	  pri_nodes[3] = hex_nodes[0];
 	  pri_nodes[4] = hex_nodes[4];
 	  pri_nodes[5] = hex_nodes[3];
-	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex pri 1");
 	  pri_nodes[0] = hex_nodes[2];
 	  pri_nodes[1] = hex_nodes[5];
 	  pri_nodes[2] = hex_nodes[6];
 	  pri_nodes[3] = hex_nodes[3];
 	  pri_nodes[4] = hex_nodes[4];
 	  pri_nodes[5] = hex_nodes[7];
-	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "remove hex");
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex pri 2");
 	  break;
 	}
 
       RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[0], hex_nodes[2], 
 			      &marked ), "0-2"); 
-      if ( marked )
-	return REF_IMPLEMENT;
+      if ( marked ) RSS( REF_IMPLEMENT, "add split")
       RSS( ref_hexdiv_marked( ref_hexdiv, hex_nodes[1], hex_nodes[3], 
 			      &marked ), "1-3"); 
-      if ( marked )
-	return REF_IMPLEMENT;
+      if ( marked ) RSS( REF_IMPLEMENT, "add split")
     }
 
   return REF_SUCCESS;
