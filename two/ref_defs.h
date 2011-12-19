@@ -52,28 +52,31 @@ typedef int REF_STATUS;
 
 #define RSS(fcn,msg)							\
   {									\
-    REF_STATUS code;							\
-    code = (fcn);							\
-    if (REF_SUCCESS != code){						\
-      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
-      return code;							\
+    REF_STATUS ref_private_macro_code;					\
+    ref_private_macro_code = (fcn);					\
+    if (REF_SUCCESS != ref_private_macro_code){				\
+      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,		\
+	     ref_private_macro_code,(msg));				\
+      return ref_private_macro_code;					\
     }									\
   }
 
 #define RXS(fcn,allowed_exception,msg)					\
   {									\
-    REF_STATUS code;							\
-    code = (fcn);							\
-    if (!( REF_SUCCESS == code || (allowed_exception) == code )){	\
-      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,code,(msg)); \
-      return code;							\
+    REF_STATUS ref_private_macro_code;					\
+    ref_private_macro_code = (fcn);					\
+    if (!( REF_SUCCESS == ref_private_macro_code ||			\
+	   (allowed_exception) == ref_private_macro_code )){		\
+      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,		\
+	     ref_private_macro_code,(msg));				\
+      return ref_private_macro_code;					\
     }									\
   }
 
 #define RNS(ptr,msg)							\
   {									\
     if (NULL == (ptr)){							\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return REF_NULL;							\
     }									\
   }
@@ -81,7 +84,7 @@ typedef int REF_STATUS;
 #define RES(a,b,msg)							\
   {									\
     if ((a)!=(b)){							\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return REF_FAILURE;						\
     }									\
   }
@@ -89,7 +92,7 @@ typedef int REF_STATUS;
 #define RUS(a,b,msg)							\
   {									\
     if ((a)==(b)){							\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return REF_FAILURE;						\
     }									\
   }
@@ -97,21 +100,21 @@ typedef int REF_STATUS;
 #define RAS(a,msg)							\
   {									\
     if (!(a)){								\
-      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg)); \
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return REF_FAILURE;						\
     }									\
   }
 
 #define RAISE(fcn)							\
   {									\
-    REF_STATUS code;							\
-    code = (fcn);							\
-    if (REF_SUCCESS != code){						\
-      return code;							\
+    REF_STATUS ref_private_macro_code;					\
+    ref_private_macro_code = (fcn);					\
+    if (REF_SUCCESS != ref_private_macro_code){				\
+      return ref_private_macro_code;					\
     }									\
   }
 
-#define SUPRESS_UNUSED_COMPILER_WARNING(ptr)                    \
+#define SUPRESS_UNUSED_COMPILER_WARNING(ptr)		\
   if (NULL == &(ptr)) printf("unused macro failed\n");
 
 END_C_DECLORATION
