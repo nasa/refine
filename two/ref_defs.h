@@ -61,6 +61,18 @@ typedef int REF_STATUS;
     }									\
   }
 
+#define RSB(fcn,msg,block)						\
+  {									\
+    REF_STATUS ref_private_macro_code;					\
+    ref_private_macro_code = (fcn);					\
+    if (REF_SUCCESS != ref_private_macro_code){				\
+      printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__,		\
+	     ref_private_macro_code,(msg));				\
+      block;								\
+      return ref_private_macro_code;					\
+    }									\
+  }
+
 #define RXS(fcn,allowed_exception,msg)					\
   {									\
     REF_STATUS ref_private_macro_code;					\
