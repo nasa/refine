@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ref_grid_import.h"
+#include "ref_import.h"
 
-REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
+REF_STATUS ref_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -135,7 +135,7 @@ REF_STATUS ref_grid_import_ugrid( char *filename, REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_import_fgrid( char *filename, REF_GRID *ref_grid_ptr )
+REF_STATUS ref_import_fgrid( char *filename, REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
