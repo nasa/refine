@@ -48,6 +48,7 @@ struct REF_NODE_STRUCT {
 REF_STATUS ref_node_create( REF_NODE *ref_node );
 REF_STATUS ref_node_free( REF_NODE ref_node );
 REF_STATUS ref_node_inspect( REF_NODE ref_node );
+REF_STATUS ref_node_location( REF_NODE ref_node, REF_INT node );
 
 REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *node );
 

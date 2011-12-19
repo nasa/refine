@@ -74,6 +74,7 @@ REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
   REF_INT node;
   REF_INT nodes[4];
   REF_BOOL problem;
+  REF_STATUS code;
 
   problem = REF_FALSE;
 
@@ -91,7 +92,7 @@ REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
         {
 	  for(node=0;node<4;node++)
 	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
-	  RSS( ref_face_with( ref_face, nodes, &face ), "find face");
+	  RSS( ref_face_with( ref_face, nodes, &face ), "find cell face");
 	  hits[face]++;
 	}
  
@@ -101,7 +102,15 @@ REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
       for(node=0;node<3;node++)
 	nodes[node]=ref_cell_c2n(ref_cell,node,cell);
       nodes[3]=nodes[0];
-      RSS( ref_face_with( ref_face, nodes, &face ), "find tri");
+      code = ref_face_with( ref_face, nodes, &face );
+      if ( REF_SUCCESS != code)
+	{
+	  ref_node_location( ref_grid_node(ref_grid), nodes[0] );
+	  ref_node_location( ref_grid_node(ref_grid), nodes[1] );
+	  ref_node_location( ref_grid_node(ref_grid), nodes[2] );
+	  ref_node_location( ref_grid_node(ref_grid), nodes[3] );
+	}
+      RSS( code, "find tri");
       hits[face]++;
     }
  
