@@ -157,6 +157,18 @@ REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv,
       RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[2], nodes[5] ), "mark1" );
       RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[3], nodes[4] ), "mark2" );
       break;
+
+      /*
+    case 2:  case 6:
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[4], nodes[6] ), "mark1" );
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[0], nodes[2] ), "mark2" );
+      break;  
+    case 4:  case 7:
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[7], nodes[5] ), "mark1" );
+      RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[3], nodes[1] ), "mark2" );
+      break;
+      */
+
     default:
       RSB( REF_IMPLEMENT, "can not hadle cell edge",
 	   printf("cell edge %d\n",cell_edge););
