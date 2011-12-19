@@ -42,6 +42,37 @@ int main( void )
     TSS(ref_grid_free(ref_grid),"free");
   }
 
+  {  /* find face with rotation */
+    REF_FACE ref_face;
+    REF_GRID ref_grid;
+    REF_INT nodes[4];
+    REF_INT cell;
+    REF_INT node;
+    REF_INT face;
+
+    TSS(ref_grid_create(&ref_grid),"create");
+
+    for( node=0; node<4; node++)
+      nodes[node] = node;
+
+    TSS(ref_cell_add( ref_grid_tet(ref_grid), nodes, &cell ), "add pri");
+
+    TSS(ref_face_create(&ref_face,ref_grid),"create");
+
+    TEIS( 4, ref_face_n(ref_face), "check total faces");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 0;
+    RSS( ref_face_with( ref_face, nodes, &face ), "with");
+    TEIS( 3, face, "missing face");	 
+
+    nodes[0] = 1; nodes[1] = 2; nodes[2] = 0; nodes[3] = 1;
+    RSS( ref_face_with( ref_face, nodes, &face ), "with rotation");
+    TEIS( 3, face, "missing face");	 
+
+    TSS(ref_face_free(ref_face),"face");
+    TSS(ref_grid_free(ref_grid),"free");
+  }
+
   {  /* find face spanning two nodes */
     REF_FACE ref_face;
     REF_GRID ref_grid;
