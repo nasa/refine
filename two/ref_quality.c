@@ -75,9 +75,10 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	    marks++;
 	    RSS( ref_cell_add( marked_cell, cell_nodes, &new_cell ), 
 		 "add marked");
-	    RSS( ref_hexdiv_mark_cell_edge_split( ref_hexdiv, 
+	    RSB( ref_hexdiv_mark_cell_edge_split( ref_hexdiv, 
 						  cell, cell_edge ), 
-		 "mark cell edge");
+		 "mark cell edge",
+		 ref_node_location(ref_node,face_nodes[0]););
 
 	  }
       }

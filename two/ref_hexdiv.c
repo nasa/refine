@@ -145,7 +145,7 @@ REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv,
 
   ref_cell = ref_grid_hex( ref_hexdiv_grid(ref_hexdiv) );
 
-  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "" );
+  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "cell nodes" );
 
   switch ( cell_edge )
     {
@@ -158,6 +158,8 @@ REF_STATUS ref_hexdiv_mark_cell_edge_split( REF_HEXDIV ref_hexdiv,
       RSS( ref_hexdiv_mark_to_split(ref_hexdiv, nodes[3], nodes[4] ), "mark2" );
       break;
     default:
+      RSB( REF_IMPLEMENT, "can not hadle cell edge",
+	   printf("cell edge %d\n",cell_edge););
       return REF_IMPLEMENT;
       break;
     }
