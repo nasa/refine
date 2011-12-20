@@ -27,7 +27,7 @@ int main( int argc, char *argv[] )
       printf("validating\n");
 
       printf("reading %s\n",argv[1]);
-      TSS(ref_import_ugrid( argv[1], &ref_grid ),"from ugrid");
+      TSS(ref_import_ugrid( &ref_grid, argv[1] ),"from ugrid");
       printf("complete.\n");
       
       printf("vtk.\n");
