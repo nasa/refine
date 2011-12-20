@@ -9,21 +9,9 @@
 
 #include "ref_adj.h"
 
-int main( int argc, char *argv[] )
+int main( void )
 {
-  REF_GRID ref_grid;
 
-  if (argc>1) {printf("%s ignored\n",argv[0]);}
-
-  /* AFLR3 ugrid*/
-
-  /*
-  TSS(ref_import_ugrid("../test/gbumpf_MX.ugrid",&ref_grid),"from ugrid");
-  TSS(ref_export_vtk(ref_grid,"gbumpf_MX.vtk"),"vtk");
-  TSS(ref_grid_free(ref_grid),"free");
-  */
-
-  /* FAST fgrid */
 
   TSS(ref_import_fgrid("../test/gbumpn.fgrid",&ref_grid),"from fgrid");
   TSS(ref_export_vtk(ref_grid,"gbumpn.vtk"),"vtk");

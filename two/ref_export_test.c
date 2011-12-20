@@ -20,6 +20,24 @@ int main( void )
     TEIS(0, remove( file ), "test clean up");
   }
 
+  { /* export .tec tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.tec";
+    TSS(ref_fixture_tet_grid( &ref_grid ), "set up tet" );
+    TSS(ref_export_tec( ref_grid, file ),"export" );
+    TSS(ref_grid_free(ref_grid),"free");
+    TEIS(0, remove( file ), "test clean up");
+  }
+
+  { /* export .fgrid tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.fgrid";
+    TSS(ref_fixture_tet_grid( &ref_grid ), "set up tet" );
+    TSS(ref_export_fgrid( ref_grid, file ),"export" );
+    TSS(ref_grid_free(ref_grid),"free");
+    TEIS(0, remove( file ), "test clean up");
+  }
+
   { /* export .ugrid tet */
     REF_GRID ref_grid;
     char file[] = "ref_export_test.ugrid";
