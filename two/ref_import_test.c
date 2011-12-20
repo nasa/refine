@@ -64,5 +64,18 @@ int main( void )
     TEIS(0, remove( file ), "test clean up");
   }
 
+  { /* export import .b8.ugrid tet by extension */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.b8.ugrid";
+    TSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
+    TSS(ref_export_b8_ugrid( export_grid, file ), "export" );
+    TSS(ref_import_by_extension( &import_grid, file ), "import" );
+    TEIS( ref_node_n(ref_grid_node(export_grid)),
+	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    TSS(ref_grid_free(import_grid),"free");
+    TSS(ref_grid_free(export_grid),"free");
+    TEIS(0, remove( file ), "test clean up");
+  }
+
   return 0;
 }
