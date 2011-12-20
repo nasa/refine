@@ -479,3 +479,40 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+  REF_NODE ref_node;
+  REF_INT nnode,ntri,nqua,ntet,npyr,npri,nhex;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  nnode = ref_node_n(ref_node);
+
+  ntri = ref_cell_n(ref_grid_tri(ref_grid));
+  nqua = ref_cell_n(ref_grid_qua(ref_grid));
+
+  ntet = ref_cell_n(ref_grid_tet(ref_grid));
+  npyr = ref_cell_n(ref_grid_pyr(ref_grid));
+  npri = ref_cell_n(ref_grid_pri(ref_grid));
+  nhex = ref_cell_n(ref_grid_hex(ref_grid));
+
+  REIS(1, fwrite(&nnode,sizeof(REF_INT),1,file),"nnode");
+
+  REIS(1, fwrite(&ntri,sizeof(REF_INT),1,file),"nnode");
+  REIS(1, fwrite(&nqua,sizeof(REF_INT),1,file),"nnode");
+
+  REIS(1, fwrite(&ntet,sizeof(REF_INT),1,file),"nnode");
+  REIS(1, fwrite(&npyr,sizeof(REF_INT),1,file),"nnode");
+  REIS(1, fwrite(&npri,sizeof(REF_INT),1,file),"nnode");
+  REIS(1, fwrite(&nhex,sizeof(REF_INT),1,file),"nnode");
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+

@@ -207,3 +207,38 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  FILE *file;
+  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+  REF_INT node, new_node;
+
+  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename,"r");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  RES( 1, fread( &nnode, sizeof(REF_INT), 1, file ), "nnode" );
+  RES( 1, fread( &ntri, sizeof(REF_INT), 1, file ), "ntri" );
+  RES( 1, fread( &nqua, sizeof(REF_INT), 1, file ), "nqua" );
+  RES( 1, fread( &ntet, sizeof(REF_INT), 1, file ), "ntet" );
+  RES( 1, fread( &npyr, sizeof(REF_INT), 1, file ), "npyr" );
+  RES( 1, fread( &npri, sizeof(REF_INT), 1, file ), "npri" );
+  RES( 1, fread( &nhex, sizeof(REF_INT), 1, file ), "nhex" );
+
+  for( node=0; node<nnode ; node++ ) 
+    {
+      RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+      RES( node, new_node, "node index");
+    }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+

@@ -15,6 +15,7 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename );
 
 REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename );
 
 END_C_DECLORATION
 
