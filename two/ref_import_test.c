@@ -11,7 +11,7 @@
 
 int main( void )
 {
-
+  REF_GRID ref_grid;
 
   TSS(ref_import_fgrid("../test/gbumpn.fgrid",&ref_grid),"from fgrid");
   TSS(ref_export_vtk(ref_grid,"gbumpn.vtk"),"vtk");
