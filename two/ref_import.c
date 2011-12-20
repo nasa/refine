@@ -17,12 +17,12 @@ REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr, char *filename )
       RSS( ref_import_b8_ugrid( ref_grid_ptr, filename ), "b8_ugrid failed");
     } 
   else 
-    if( strcmp(&filename[end_of_string-5],".ugrid") == 0 ) 
+    if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
       {
 	RSS( ref_import_ugrid( ref_grid_ptr, filename ), "ugrid failed");
       } 
     else 
-      if( strcmp(&filename[end_of_string-5],".fgrid") == 0 ) 
+      if( strcmp(&filename[end_of_string-6],".fgrid") == 0 ) 
 	{
 	  RSS( ref_import_fgrid( ref_grid_ptr, filename ), "fgrid failed");
 	} 
