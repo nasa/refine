@@ -31,12 +31,12 @@ int main( int argc, char *argv[] )
 
   if (argc<2) 
     {
-      printf("usage: %s filename.ugrid\n",argv[0]);
+      printf("usage: %s filename.extension\n",argv[0]);
       return 0;
     }
 
   printf("reading %s\n",argv[1]);
-  TSS(ref_import_ugrid( &ref_grid, argv[1] ),"from ugrid");
+  TSS(ref_import_by_extension( &ref_grid, argv[1] ),"by extension");
   printf("complete.\n");
 
   RSS(ref_grid_inspect( ref_grid ), "inspection");
@@ -46,17 +46,19 @@ int main( int argc, char *argv[] )
 
   RSS(ref_grid_inspect( ref_grid ), "inspection");
 
+  /*
   printf("vtk.\n");
   TSS(ref_export_vtk(ref_grid, "ref2.vtk"),"to vtk");
 
   printf("tec.\n");
   TSS(ref_export_tec(ref_grid, "ref2.tec"),"to tec");
+  */
 
   printf("validate.\n");
   TSS( ref_validation_all( ref_grid ), "invalid grid" );
 
   printf("ugrid.\n");
-  TSS(ref_export_ugrid(ref_grid, "ref2.ugrid"),"to ugrid");
+  TSS(ref_export_b8_ugrid(ref_grid, "ref2.b8.ugrid"),"to ugrid");
 
   printf("free.\n");
   TSS(ref_grid_free(ref_grid),"free");
