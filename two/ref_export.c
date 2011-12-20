@@ -155,73 +155,6 @@ REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
-{
-  FILE *file;
-  REF_NODE ref_node;
-  REF_CELL ref_cell;
-  REF_INT node;
-  REF_INT *o2n;
-  REF_INT nnode,ntri,ntet;
-  REF_INT *nodes;
-  REF_INT node_per, cell;
-  REF_INT ixyz;
-
-  ref_node = ref_grid_node(ref_grid);
-
-  file = fopen(filename,"w");
-  if (NULL == (void *)file) printf("unable to open %s\n",filename);
-  RNS(file, "unable to open file" );
-
-  nnode = ref_node_n(ref_node);
-
-  ntri = ref_cell_n(ref_grid_tri(ref_grid));
-
-  ntet = ref_cell_n(ref_grid_tet(ref_grid));
-
-  fprintf(file,"%d %d %d\n",nnode,ntri,ntet);
-
-  RSS( ref_node_compact( ref_node, &o2n), "compact" );
-
-  for ( ixyz = 0 ; ixyz< 3; ixyz++)
-    for ( node = 0; node < nnode; node++ )
-      if ( REF_EMPTY != o2n[node] )
-	fprintf(file, " %.16e\n", ref_node_xyz(ref_node,ixyz,node) ) ;
-
-  ref_cell = ref_grid_tri(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      for ( node = 0; node < 3; node++ )
-	fprintf(file," %d",o2n[nodes[node]]+1);
-      fprintf(file,"\n");
-    }
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      fprintf(file," %d",nodes[3]);
-      fprintf(file,"\n");
-    }
-  free(nodes);
-
-  ref_cell = ref_grid_tet(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      for ( node = 0; node < node_per; node++ )
-	fprintf(file," %d",o2n[nodes[node]]+1);
-      fprintf(file,"\n");
-    }
-  free(nodes);
-
-  free(o2n);
-
-  fclose(file);
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
@@ -374,6 +307,73 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 	free(o2n);
 
       }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *o2n;
+  REF_INT nnode,ntri,ntet;
+  REF_INT *nodes;
+  REF_INT node_per, cell;
+  REF_INT ixyz;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  nnode = ref_node_n(ref_node);
+
+  ntri = ref_cell_n(ref_grid_tri(ref_grid));
+
+  ntet = ref_cell_n(ref_grid_tet(ref_grid));
+
+  fprintf(file,"%d %d %d\n",nnode,ntri,ntet);
+
+  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+
+  for ( ixyz = 0 ; ixyz< 3; ixyz++)
+    for ( node = 0; node < nnode; node++ )
+      if ( REF_EMPTY != o2n[node] )
+	fprintf(file, " %.16e\n", ref_node_xyz(ref_node,ixyz,node) ) ;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < 3; node++ )
+	fprintf(file," %d",o2n[nodes[node]]+1);
+      fprintf(file,"\n");
+    }
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      fprintf(file," %d",nodes[3]);
+      fprintf(file,"\n");
+    }
+  free(nodes);
+
+  ref_cell = ref_grid_tet(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < node_per; node++ )
+	fprintf(file," %d",o2n[nodes[node]]+1);
+      fprintf(file,"\n");
+    }
+  free(nodes);
+
+  free(o2n);
 
   fclose(file);
 
