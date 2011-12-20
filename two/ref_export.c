@@ -479,6 +479,17 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
+#define SWAP_INT(x) { \
+    int y; \
+    char *xp = (char *)&(x); \
+    char *yp = (char *)&(y); \
+    *(yp+3) = *(xp+0); \
+    *(yp+2) = *(xp+1); \
+    *(yp+1) = *(xp+2); \
+    *(yp+0) = *(xp+3); \
+    (x) = y; \
+  }
+
 REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
@@ -500,6 +511,14 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   npyr = ref_cell_n(ref_grid_pyr(ref_grid));
   npri = ref_cell_n(ref_grid_pri(ref_grid));
   nhex = ref_cell_n(ref_grid_hex(ref_grid));
+
+  SWAP_INT(nnode);
+  SWAP_INT(ntri);
+  SWAP_INT(nqua);
+  SWAP_INT(ntri);
+  SWAP_INT(npyr);
+  SWAP_INT(npri);
+  SWAP_INT(nhex);
 
   REIS(1, fwrite(&nnode,sizeof(REF_INT),1,file),"nnode");
 

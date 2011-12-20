@@ -207,6 +207,17 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
+#define SWAP_INT(x) { \
+    int y; \
+    char *xp = (char *)&(x); \
+    char *yp = (char *)&(y); \
+    *(yp+3) = *(xp+0); \
+    *(yp+2) = *(xp+1); \
+    *(yp+1) = *(xp+2); \
+    *(yp+0) = *(xp+3); \
+    (x) = y; \
+  }
+
 REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
   REF_GRID ref_grid;
@@ -230,6 +241,14 @@ REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   RES( 1, fread( &npyr, sizeof(REF_INT), 1, file ), "npyr" );
   RES( 1, fread( &npri, sizeof(REF_INT), 1, file ), "npri" );
   RES( 1, fread( &nhex, sizeof(REF_INT), 1, file ), "nhex" );
+
+  SWAP_INT(nnode);
+  SWAP_INT(ntri);
+  SWAP_INT(nqua);
+  SWAP_INT(ntri);
+  SWAP_INT(npyr);
+  SWAP_INT(npri);
+  SWAP_INT(nhex);
 
   for( node=0; node<nnode ; node++ ) 
     {
