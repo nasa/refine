@@ -6,17 +6,16 @@
 #include "ref_export.h"
 #include "ref_test.h"
 
-int main( int argc, char *argv[] )
+static REF_STATUS set_up_tet_grid( REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  REF_CELL ref_cell;
-  REF_INT node, cell;
-  REF_INT nodes[8];
+  REF_INT nodes[4] = {0,1,2,3};
+  REF_INT cell, node;
 
-  if (argc>1) {printf("%s ignored\n",argv[0]);}
+  TSS(ref_grid_create(ref_grid_ptr),"create");
+  ref_grid =  *ref_grid_ptr;
 
-  TSS(ref_grid_create( &ref_grid ), "create" );
   ref_node = ref_grid_node(ref_grid);
 
   TSS(ref_node_add(ref_node,0,&node),"add node");
@@ -39,18 +38,33 @@ int main( int argc, char *argv[] )
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  nodes[0]=0;
-  nodes[1]=1;
-  nodes[2]=2;
-  nodes[3]=3;
-  ref_cell = ref_grid_tet(ref_grid);
-  TSS( ref_cell_add( ref_cell, nodes, &cell ), "add cell");
+  TSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
 
-  TSS(ref_export_vtk( ref_grid, "ref_export_test.vtk" ),"export" );
+  TSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
-  TSS(ref_export_ugrid( ref_grid, "ref_export_test.ugrid" ),"export");
+  return REF_SUCCESS;
+}
 
-  TSS(ref_grid_free(ref_grid),"free");
+int main( void )
+{
+
+  { /* export .vtk tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.vtk";
+    TSS(set_up_tet_grid( &ref_grid ), "set up tet" );
+    TSS(ref_export_vtk( ref_grid, file ),"export" );
+    TSS(ref_grid_free(ref_grid),"free");
+    TEIS(0, remove( file ), "test clean up");
+  }
+
+  { /* export .ugrid tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.ugrid";
+    TSS(set_up_tet_grid( &ref_grid ), "set up tet" );
+    TSS(ref_export_ugrid( ref_grid, file ),"export" );
+    TSS(ref_grid_free(ref_grid),"free");
+    TEIS(0, remove( file ), "test clean up");
+  }
 
   return 0;
 }
