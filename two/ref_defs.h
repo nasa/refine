@@ -93,6 +93,19 @@ typedef int REF_STATUS;
     }									\
   }
 
+#define REIS(a,b,msg)							\
+  {									\
+    REF_INT ref_private_status_ai,ref_private_status_bi;		\
+    ref_private_status_ai = (a);					\
+    ref_private_status_bi = (b);					\
+    if (ref_private_status_ai!=ref_private_status_bi){		\
+      printf("%s: %d: %s: %s\nexpected %d was %d\n",			\
+	     __FILE__,__LINE__,__func__,(msg),				\
+	     ref_private_status_ai,ref_private_status_bi);		\
+      return REF_FAILURE;						\
+    }									\
+  }
+
 #define RES(a,b,msg)							\
   {									\
     if ((a)!=(b)){							\
