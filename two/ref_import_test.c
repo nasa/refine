@@ -6,22 +6,38 @@
 #include "ref_import.h"
 #include "ref_export.h"
 #include "ref_test.h"
+#include "ref_fixture.h"
 
 #include "ref_adj.h"
 
 int main( void )
 {
-  REF_GRID ref_grid;
 
-  TSS(ref_import_fgrid("../test/gbumpn.fgrid",&ref_grid),"from fgrid");
-  TSS(ref_export_vtk(ref_grid,"gbumpn.vtk"),"vtk");
-  TSS(ref_export_fgrid(ref_grid,"gbumpn.fgrid"),"fgrid");
-  TSS(ref_grid_free(ref_grid),"free");
+  { /* export import .fgrid tet */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.fgrid";
+    TSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
+    TSS(ref_export_fgrid( export_grid, file ), "export" );
+    TSS(ref_import_fgrid( file, &import_grid ), "import" );
+    TEIS( ref_node_n(ref_grid_node(export_grid)),
+	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    TSS(ref_grid_free(import_grid),"free");
+    TSS(ref_grid_free(export_grid),"free");
+    TEIS(0, remove( file ), "test clean up");
+  }
 
-  TSS(ref_import_fgrid("../test/om6_inv08.fgrid",&ref_grid),"from fgrid");
-  TSS(ref_export_vtk(ref_grid,"om6_inv08.vtk"),"vtk");
-  TSS(ref_export_fgrid(ref_grid,"om6_inv08.fgrid"),"fgrid");
-  TSS(ref_grid_free(ref_grid),"free");
+  { /* export import .ugrid tet */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.ugrid";
+    TSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
+    TSS(ref_export_ugrid( export_grid, file ), "export" );
+    TSS(ref_import_ugrid( file, &import_grid ), "import" );
+    TEIS( ref_node_n(ref_grid_node(export_grid)),
+	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    TSS(ref_grid_free(import_grid),"free");
+    TSS(ref_grid_free(export_grid),"free");
+    TEIS(0, remove( file ), "test clean up");
+  }
 
   return 0;
 }
