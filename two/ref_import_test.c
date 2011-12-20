@@ -47,6 +47,18 @@ int main( void )
     TSS(ref_import_b8_ugrid( &import_grid, file ), "import" );
     TEIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    TEIS( ref_cell_n(ref_grid_tri(export_grid)),
+	  ref_cell_n(ref_grid_tri(import_grid)), "tri count" );
+    TEIS( ref_cell_n(ref_grid_qua(export_grid)),
+	  ref_cell_n(ref_grid_qua(import_grid)), "qua count" );
+    TEIS( ref_cell_n(ref_grid_tet(export_grid)),
+	  ref_cell_n(ref_grid_tet(import_grid)), "tet count" );
+    TES( ref_node_xyz( ref_grid_node(export_grid),0,1),
+	 ref_node_xyz( ref_grid_node(import_grid),0,1), "x 1" );
+    TEIS( ref_cell_c2n(ref_grid_tet(export_grid),0,0),
+	  ref_cell_c2n(ref_grid_tet(import_grid),0,0), "tet node0" );
+    TEIS( ref_cell_c2n(ref_grid_tet(export_grid),1,0),
+	  ref_cell_c2n(ref_grid_tet(import_grid),1,0), "tet node 1" );
     TSS(ref_grid_free(import_grid),"free");
     TSS(ref_grid_free(export_grid),"free");
     TEIS(0, remove( file ), "test clean up");

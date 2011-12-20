@@ -86,7 +86,7 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT node, new_node;
   REF_DBL xyz[3];
   REF_INT tri, new_tri;
-  REF_INT nodes[8];
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
   REF_INT qua, new_qua;
   REF_INT face_id;
   REF_INT cell, new_cell;
@@ -218,13 +218,34 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
     (x) = y; \
   }
 
+#define SWAP_DBL(x) { \
+    double y; \
+    char *xp = (char *)&(x); \
+    char *yp = (char *)&(y); \
+    *(yp+7) = *(xp+0); \
+    *(yp+6) = *(xp+1); \
+    *(yp+5) = *(xp+2); \
+    *(yp+4) = *(xp+3); \
+    *(yp+3) = *(xp+4); \
+    *(yp+2) = *(xp+5); \
+    *(yp+1) = *(xp+6); \
+    *(yp+0) = *(xp+7); \
+    (x) = y; \
+  }
+
 REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
+  REF_CELL ref_cell;
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT node, new_node;
+  REF_DBL swapped_dbl;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT tri, qua, new_tri, new_qua;
+  REF_INT face_id;
+  REF_INT node_per, cell, new_cell;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -254,6 +275,115 @@ REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
     {
       RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
       RES( node, new_node, "node index");
+      RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "x" );
+      SWAP_DBL(swapped_dbl);
+      ref_node_xyz( ref_node, 0, new_node ) = swapped_dbl;
+      RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "y" );
+      SWAP_DBL(swapped_dbl);
+      ref_node_xyz( ref_node, 1, new_node ) = swapped_dbl;
+      RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "z" );
+      SWAP_DBL(swapped_dbl);
+      ref_node_xyz( ref_node, 2, new_node ) = swapped_dbl;
+    }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  nodes[3] = REF_EMPTY;
+  for( tri = 0; tri < ntri ; tri++ )
+    {
+      for ( node = 0 ; node < 3 ; node++ )
+	{  
+	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "tri" );
+	  SWAP_INT(nodes[node]);
+	  nodes[node]--;
+	}
+      RSS( ref_cell_add(ref_cell, nodes, &new_tri ), "new tri");
+      RES( tri, new_tri, "tri index");
+    }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  nodes[4] = REF_EMPTY;
+  for( qua = 0; qua < nqua ; qua++ )
+    {
+      for ( node = 0 ; node < 4 ; node++ )
+	{  
+	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "qua" );
+	  SWAP_INT(nodes[node]);
+	  nodes[node]--;
+	}
+      RSS( ref_cell_add(ref_cell, nodes, &new_qua ), "new qua");
+      RES( qua, new_qua, "qua index");
+    }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  for( tri = 0; tri < ntri ; tri++ )
+    {
+      RES(1, fread( &face_id, sizeof(REF_INT), 1, file ), "tri" );
+      SWAP_INT(face_id);
+      ref_cell_c2n(ref_cell,3,tri) = face_id;
+    }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  for( qua = 0; qua < nqua ; qua++ )
+    {
+      RES(1, fread( &face_id, sizeof(REF_INT), 1, file ), "qua" );
+      SWAP_INT(face_id);
+      ref_cell_c2n(ref_cell,4,qua) = face_id;
+    }
+
+  ref_cell = ref_grid_tet(ref_grid);
+  for( cell = 0; cell < ntet ; cell++ )
+    {
+      node_per = ref_cell_node_per(ref_cell);
+      for ( node = 0 ; node < node_per ; node++ )  
+	{
+	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "tet" );
+	  SWAP_INT(nodes[node]);
+	  nodes[node]--;
+	}
+      RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "tet cell");
+      RES( cell, new_cell, "tet index");
+    }
+
+  ref_cell = ref_grid_pyr(ref_grid);
+  for( cell = 0; cell < npyr ; cell++ )
+    {
+      node_per = ref_cell_node_per(ref_cell);
+      for ( node = 0 ; node < node_per ; node++ )  
+	{
+	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "pyr" );
+	  SWAP_INT(nodes[node]);
+	  nodes[node]--;
+	}
+      RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "pyr cell");
+      RES( cell, new_cell, "pyr index");
+    }
+
+  ref_cell = ref_grid_pri(ref_grid);
+  for( cell = 0; cell < npri ; cell++ )
+    {
+      node_per = ref_cell_node_per(ref_cell);
+      for ( node = 0 ; node < node_per ; node++ )  
+	{
+	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "pri" );
+	  SWAP_INT(nodes[node]);
+	  nodes[node]--;
+	}
+      RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "pri cell");
+      RES( cell, new_cell, "pri index");
+    }
+
+  ref_cell = ref_grid_hex(ref_grid);
+  for( cell = 0; cell < nhex ; cell++ )
+    {
+      node_per = ref_cell_node_per(ref_cell);
+      for ( node = 0 ; node < node_per ; node++ )  
+	{
+	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "hex" );
+	  SWAP_INT(nodes[node]);
+	  nodes[node]--;
+	}
+      RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "hex cell");
+      RES( cell, new_cell, "hex index");
     }
 
   fclose(file);
