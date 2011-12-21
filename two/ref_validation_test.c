@@ -27,16 +27,16 @@ int main( int argc, char *argv[] )
       printf("validating\n");
 
       printf("reading %s\n",argv[1]);
-      TSS(ref_import_ugrid( &ref_grid, argv[1] ),"from ugrid");
+      TSS(ref_import_by_extension( &ref_grid, argv[1] ),"from ugrid");
       printf("complete.\n");
       
+      printf("validate.\n");
+      TSS( ref_validation_all( ref_grid ), "invalid grid" );
+
       printf("vtk.\n");
       TSS( ref_export_vtk( ref_grid, "validate.vtk" ), "vtk" );
       printf("tec.\n");
       TSS( ref_export_tec( ref_grid, "validate.tec" ), "tec" );
-
-      printf("validate.\n");
-      TSS( ref_validation_all( ref_grid ), "invalid grid" );
 
       printf("done.\n");
       return 0;
