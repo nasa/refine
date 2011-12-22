@@ -10,8 +10,15 @@
 
 #include "ref_adj.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
+
+  if (2 == argc) 
+    {
+      RSS( ref_import_examine_header( argv[1] ), "examine header" );
+      return 0;
+    }
+
 
   { /* export import .fgrid tet */
     REF_GRID export_grid, import_grid;

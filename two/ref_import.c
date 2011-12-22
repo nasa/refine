@@ -6,6 +6,83 @@
 
 #include "ref_import.h"
 
+#define SWAP_INT(x) { \
+    int y; \
+    char *xp = (char *)&(x); \
+    char *yp = (char *)&(y); \
+    *(yp+3) = *(xp+0); \
+    *(yp+2) = *(xp+1); \
+    *(yp+1) = *(xp+2); \
+    *(yp+0) = *(xp+3); \
+    (x) = y; \
+  }
+
+#define SWAP_LONG(x) { \
+    double y; \
+    char *xp = (char *)&(x); \
+    char *yp = (char *)&(y); \
+    *(yp+7) = *(xp+0); \
+    *(yp+6) = *(xp+1); \
+    *(yp+5) = *(xp+2); \
+    *(yp+4) = *(xp+3); \
+    *(yp+3) = *(xp+4); \
+    *(yp+2) = *(xp+5); \
+    *(yp+1) = *(xp+6); \
+    *(yp+0) = *(xp+7); \
+    (x) = y; \
+  }
+
+#define SWAP_DBL(x) { \
+    double y; \
+    char *xp = (char *)&(x); \
+    char *yp = (char *)&(y); \
+    *(yp+7) = *(xp+0); \
+    *(yp+6) = *(xp+1); \
+    *(yp+5) = *(xp+2); \
+    *(yp+4) = *(xp+3); \
+    *(yp+3) = *(xp+4); \
+    *(yp+2) = *(xp+5); \
+    *(yp+1) = *(xp+6); \
+    *(yp+0) = *(xp+7); \
+    (x) = y; \
+  }
+
+REF_STATUS ref_import_examine_header( char *filename )
+{
+  FILE *file;
+  int i4, i4_swapped;
+  long i8, i8_swapped;
+  int i;
+
+  file = fopen(filename,"r");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  for(i=0;i<7;i++)
+    {
+      RES( 1, fread( &i4, sizeof(int), 1, file ), "int" );
+      i4_swapped = i4; SWAP_INT(i4_swapped);
+      printf(" %d: %d (%d swapped) ints\n",i,i4,i4_swapped);
+    }
+
+  rewind(file);
+
+  for(i=0;i<3;i++)
+    {
+      RES( 1, fread( &i4, sizeof(int), 1, file ), "int" );
+    }
+  for(i=3;i<7;i++)
+    {
+      RES( 1, fread( &i8, sizeof(long), 1, file ), "long" );
+      i8_swapped = i8; SWAP_INT(i8_swapped);
+      printf(" %d: %d (%d swapped) long\n",i,i8,i8_swapped);
+    }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr, char *filename )
 {
   size_t end_of_string;
@@ -238,32 +315,6 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   return REF_SUCCESS;
 }
-
-#define SWAP_INT(x) { \
-    int y; \
-    char *xp = (char *)&(x); \
-    char *yp = (char *)&(y); \
-    *(yp+3) = *(xp+0); \
-    *(yp+2) = *(xp+1); \
-    *(yp+1) = *(xp+2); \
-    *(yp+0) = *(xp+3); \
-    (x) = y; \
-  }
-
-#define SWAP_DBL(x) { \
-    double y; \
-    char *xp = (char *)&(x); \
-    char *yp = (char *)&(y); \
-    *(yp+7) = *(xp+0); \
-    *(yp+6) = *(xp+1); \
-    *(yp+5) = *(xp+2); \
-    *(yp+4) = *(xp+3); \
-    *(yp+3) = *(xp+4); \
-    *(yp+2) = *(xp+5); \
-    *(yp+1) = *(xp+6); \
-    *(yp+0) = *(xp+7); \
-    (x) = y; \
-  }
 
 REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
