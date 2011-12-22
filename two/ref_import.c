@@ -75,7 +75,7 @@ REF_STATUS ref_import_examine_header( char *filename )
     {
       RES( 1, fread( &i8, sizeof(long), 1, file ), "long" );
       i8_swapped = i8; SWAP_INT(i8_swapped);
-      printf(" %d: %d (%d swapped) long\n",i,i8,i8_swapped);
+      printf(" %d: %ld (%ld swapped) long\n",i,i8,i8_swapped);
     }
 
   fclose(file);

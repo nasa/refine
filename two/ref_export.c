@@ -544,13 +544,13 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 
   REIS(1, fwrite(&nnode,sizeof(REF_INT),1,file),"nnode");
 
-  REIS(1, fwrite(&ntri,sizeof(REF_INT),1,file),"nnode");
-  REIS(1, fwrite(&nqua,sizeof(REF_INT),1,file),"nnode");
+  REIS(1, fwrite(&ntri,sizeof(REF_INT),1,file),"ntri");
+  REIS(1, fwrite(&nqua,sizeof(REF_INT),1,file),"nqua");
 
-  REIS(1, fwrite(&ntet,sizeof(REF_INT),1,file),"nnode");
-  REIS(1, fwrite(&npyr,sizeof(REF_INT),1,file),"nnode");
-  REIS(1, fwrite(&npri,sizeof(REF_INT),1,file),"nnode");
-  REIS(1, fwrite(&nhex,sizeof(REF_INT),1,file),"nnode");
+  REIS(1, fwrite(&ntet,sizeof(REF_INT),1,file),"ntet");
+  REIS(1, fwrite(&npyr,sizeof(REF_INT),1,file),"npyr");
+  REIS(1, fwrite(&npri,sizeof(REF_INT),1,file),"npri");
+  REIS(1, fwrite(&nhex,sizeof(REF_INT),1,file),"nhex");
 
   RSS( ref_node_compact( ref_node, &o2n), "compact" );
 
