@@ -349,7 +349,7 @@ REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   SWAP_INT(nnode);
   SWAP_INT(ntri);
   SWAP_INT(nqua);
-  SWAP_INT(ntri);
+  SWAP_INT(ntet);
   SWAP_INT(npyr);
   SWAP_INT(npri);
   SWAP_INT(nhex);
