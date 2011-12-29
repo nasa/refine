@@ -607,7 +607,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
-      SWAP_INT(nodes[3]);
+      SWAP_INT(nodes[4]);
       REIS(1, fwrite(&(nodes[4]),sizeof(REF_INT),1,file),"qua id");
     }
   free(nodes);
