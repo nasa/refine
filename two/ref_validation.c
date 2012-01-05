@@ -11,6 +11,7 @@ REF_STATUS ref_validation_all( REF_GRID ref_grid )
 
   RSS( ref_validation_hanging_node( ref_grid ), "hanging node");
   RSS( ref_validation_cell_face( ref_grid ), "cell face");
+  RSS( ref_validation_multiple_face_cell( ref_grid ), "multiple cell face");
 
   return REF_SUCCESS;
 }
@@ -136,4 +137,46 @@ REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
 
   return (problem?REF_FAILURE:REF_SUCCESS);
 
+}
+
+REF_STATUS ref_validation_multiple_face_cell( REF_GRID ref_grid )
+{
+  REF_CELL ref_cell;
+  REF_INT group, cell, cell_face;
+  REF_INT node;
+  REF_INT nodes[4];
+  REF_BOOL problem;
+  REF_INT boundary_faces, found;
+
+  problem = REF_FALSE;
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      boundary_faces = 0;
+      each_ref_cell_cell_face( ref_cell, cell_face )
+        {
+	  for(node=0;node<4;node++)
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	  
+	  if ( nodes[0] == nodes[3] )
+	    {
+	      if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+						 nodes, &found ) )
+		boundary_faces++;
+	    }
+	  else
+	    {
+	      if ( REF_SUCCESS == ref_cell_with( ref_grid_qua( ref_grid ), 
+						 nodes, &found ) )
+		boundary_faces++;
+	    }
+	}
+      if ( boundary_faces > 1 )
+	{
+	  printf("boundary_faces %d\n", boundary_faces);
+	}
+    }
+
+  return (problem?REF_FAILURE:REF_SUCCESS);
 }

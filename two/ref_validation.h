@@ -9,6 +9,7 @@
 REF_STATUS ref_validation_all( REF_GRID ref_grid );
 REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid );
 REF_STATUS ref_validation_cell_face( REF_GRID ref_grid );
+REF_STATUS ref_validation_multiple_face_cell( REF_GRID ref_grid );
 
 END_C_DECLORATION
 
