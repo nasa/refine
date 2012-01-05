@@ -13,6 +13,7 @@
 #include "ref_cell.h"
 #include "ref_node.h"
 #include "ref_metric.h"
+#include "ref_sort.h"
 
 int main( int argc, char *argv[] )
 {

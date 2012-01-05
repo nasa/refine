@@ -11,6 +11,7 @@
 #include "ref_cell.h"
 #include "ref_adj.h"
 #include "ref_metric.h"
+#include "ref_sort.h"
 
 int main( void )
 {

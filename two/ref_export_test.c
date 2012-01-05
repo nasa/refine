@@ -7,6 +7,7 @@
 #include "ref_import.h"
 #include "ref_test.h"
 #include "ref_fixture.h"
+#include "ref_sort.h"
 
 int main( int argc, char *argv[] )
 {

@@ -3,15 +3,16 @@
 #include <string.h>
 #include <math.h>
 
-#include "ref_grid.h"
-#include "ref_cell.h"
-#include "ref_node.h"
-#include "ref_adj.h"
-#include "ref_metric.h"
+#include "ref_test.h"
 
 #include "ref_edge.h"
 
-#include "ref_test.h"
+#include "ref_grid.h"
+#include "ref_cell.h"
+#include "ref_sort.h"
+#include "ref_node.h"
+#include "ref_adj.h"
+#include "ref_metric.h"
 
 int main( void )
 {

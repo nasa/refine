@@ -8,6 +8,7 @@
 #include "ref_node.h"
 #include "ref_adj.h"
 #include "ref_metric.h"
+#include "ref_sort.h"
 
 #include "ref_subdiv.h"
 

@@ -3,8 +3,11 @@
 #include <string.h>
 #include <math.h>
 
-#include "ref_grid.h"
 #include "ref_test.h"
+
+#include "ref_grid.h"
+
+#include "ref_sort.h"
 
 int main( void )
 {

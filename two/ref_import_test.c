@@ -3,12 +3,15 @@
 #include <string.h>
 #include <math.h>
 
+#include "ref_test.h"
+
 #include "ref_import.h"
 #include "ref_export.h"
-#include "ref_test.h"
+
 #include "ref_fixture.h"
 
 #include "ref_adj.h"
+#include "ref_sort.h"
 
 int main( int argc, char *argv[] )
 {
