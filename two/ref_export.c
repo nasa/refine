@@ -37,6 +37,17 @@
     (vtk_nodes)[4] = ugrid_nodes[2];			\
   }
 
+/*
+  tecplot "brick" 
+      7---6
+     /|  /|
+    4-+-5 |
+    | | | |
+    | 3-+-2
+    |/  |/
+    0---1
+ */
+
 #define TEC_BRICK_TET(brick,nodes)					\
   {									\
     brick[0] = nodes[0]; brick[1] = nodes[1]; brick[2] = nodes[2];	\
@@ -48,9 +59,9 @@
 #define TEC_BRICK_PYR(brick,nodes)					\
   {									\
     brick[0] = nodes[0]; brick[1] = nodes[1];				\
-    brick[2] = nodes[2]; brick[3] = nodes[3];				\
-    brick[4] = nodes[4]; brick[5] = nodes[4];				\
-    brick[6] = nodes[4]; brick[7] = nodes[4];				\
+    brick[2] = nodes[2]; brick[3] = nodes[2];				\
+    brick[4] = nodes[3]; brick[5] = nodes[4];				\
+    brick[6] = nodes[2]; brick[7] = nodes[2];				\
   }
 
 #define TEC_BRICK_PRI(brick,nodes)					\
