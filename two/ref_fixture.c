@@ -82,5 +82,20 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
 
   RSS(ref_cell_add(ref_grid_pyr(ref_grid),nodes,&cell),"add tet");
 
+  nodes[0] = 0; nodes[1] = 3; nodes[2] = 4; nodes[3] = 1; nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
+
+  nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 20;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  nodes[0] = 1; nodes[1] = 4; nodes[2] = 2; nodes[3] = 20;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  nodes[0] = 4; nodes[1] = 3; nodes[2] = 2; nodes[3] = 20;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  nodes[0] = 3; nodes[1] = 0; nodes[2] = 2; nodes[3] = 20;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
   return REF_SUCCESS;
 }
