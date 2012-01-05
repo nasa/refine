@@ -97,5 +97,45 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
   nodes[0] = 3; nodes[1] = 0; nodes[2] = 2; nodes[3] = 20;
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
+  RSS(ref_node_add(ref_node,5,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 2.0;
+
+  RSS(ref_node_add(ref_node,6,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 2.0;
+
+  RSS(ref_node_add(ref_node,7,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 2.0;
+
+  RSS(ref_node_add(ref_node,8,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 3.0;
+
+  /*
+  8    
+    7
+  5    6
+  */
+  nodes[0] = 5; nodes[1] = 6; nodes[2] = 7; nodes[3] = 8;
+  RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
+
+  nodes[0] = 6; nodes[1] = 8; nodes[2] = 7; nodes[3] = 30;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  nodes[0] = 5; nodes[1] = 7; nodes[2] = 8; nodes[3] = 30;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  nodes[0] = 5; nodes[1] = 8; nodes[2] = 6; nodes[3] = 30;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  nodes[0] = 5; nodes[1] = 6; nodes[2] = 7; nodes[3] = 30;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
   return REF_SUCCESS;
 }
