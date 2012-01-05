@@ -98,6 +98,8 @@ REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell );
 
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 
+REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
+
 REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell);
 
 REF_STATUS ref_cell_set_edge( REF_CELL ref_cell, 

@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "ref_cell.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr, 
 			    REF_INT node_per, REF_BOOL last_node_is_an_id )
@@ -399,6 +400,43 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
     nodes[node] = ref_cell_c2n(ref_cell,node,cell);
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_make_canonical( REF_INT n, 
+				    REF_INT *original, REF_INT *canonical )
+{
+  RSS( ref_sort_insertion( n, original, canonical ), "sort" );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )
+{
+  REF_INT item, ref, node, same;
+  REF_INT target[REF_CELL_MAX_NODE_PER];
+  REF_INT canidate[REF_CELL_MAX_NODE_PER], orig[REF_CELL_MAX_NODE_PER];
+
+  (*cell) = REF_EMPTY;
+
+  RSS( ref_cell_make_canonical( ref_cell_node_per(ref_cell),
+				nodes, target ), "canonical" );
+
+  each_ref_adj_node_item_with_ref( ref_cell_adj(ref_cell), nodes[0], item, ref)
+    {
+      RSS( ref_cell_nodes( ref_cell, ref, orig ), "get orig");
+      RSS( ref_cell_make_canonical( ref_cell_node_per(ref_cell),
+				    orig, canidate ), "canonical" );
+      same = 0;
+      for (node=0;node<ref_cell_node_per(ref_cell); node++)
+	if ( target[node] == canidate[node]) same++;
+      if ( ref_cell_node_per(ref_cell) == same )
+	{
+	  (*cell) = ref;
+	  return REF_SUCCESS;
+	}
+    }
+  
+  return REF_NOT_FOUND;
 }
 
 REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell)
