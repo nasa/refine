@@ -378,5 +378,27 @@ int main( void )
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* tri with */
+    REF_INT found;
+
+    TSS(ref_tri(&ref_cell),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 10;
+    TSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    TSS(ref_cell_with(ref_cell,nodes,&found),"not found");
+    TEIS(cell,found, "not same");
+
+    nodes[3]=5;
+    TSS(ref_cell_with(ref_cell,nodes,&found),"not found");
+    TEIS(cell,found, "not same");
+
+    nodes[0]=5;
+    TFS(ref_cell_with(ref_cell,nodes,&found),"found");
+    TEIS(REF_EMPTY,found, "not same")
+
+    TSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
   return 0;
 }
