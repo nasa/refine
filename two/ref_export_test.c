@@ -8,8 +8,18 @@
 #include "ref_test.h"
 #include "ref_fixture.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
+
+  if (2 == argc) 
+    {
+      REF_GRID ref_grid;
+      char file[] = "ref_export_test.tec";
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      TSS(ref_export_tec( ref_grid, file ),"export" );
+      RSS(ref_grid_free(ref_grid),"free");
+      return 0;
+    }
 
   { /* export .vtk tet */
     REF_GRID ref_grid;
@@ -53,7 +63,7 @@ int main( void )
     TSS(ref_fixture_tet_grid( &ref_grid ), "set up tet" );
     TSS(ref_export_b8_ugrid( ref_grid, file ),"export" );
     TSS(ref_grid_free(ref_grid),"free");
-    /* TEIS(0, remove( file ), "test clean up"); */
+    TEIS(0, remove( file ), "test clean up");
   }
 
   return 0;
