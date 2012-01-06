@@ -148,8 +148,7 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 
   if ( problem )
     {
-      ref_export_tec( viz, "ref_validation_multiple_face_cell.tec" );
-      return REF_FAILURE;
+      ref_export_tec( viz, "ref_quality_multiple_face_cell.tec" );
     }
 
   RSS( ref_grid_free_cell_clone( viz ), "free viz");
