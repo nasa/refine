@@ -28,7 +28,6 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   REF_DBL angle;
 
   REF_GRID viz;
-  REF_NODE orig_viz_node;
 
   REF_INT marks, new_cell;
   REF_CELL marked_cell;
@@ -40,9 +39,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   ref_cell = ref_grid_hex(ref_grid);
   ref_node = ref_grid_node(ref_grid);
 
-  RSS( ref_grid_create(&viz),"temp grid for marks");
-  orig_viz_node = ref_grid_node(viz); /*save before replacement */
-  ref_grid_node(viz) = ref_grid_node(ref_grid);
+  RSS( ref_grid_empty_cell_clone(&viz,ref_grid),"temp grid for marks");
   marked_cell =  ref_grid_hex(viz);
   marks = 0;
 
@@ -90,8 +87,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   RSS(ref_export_vtk(viz, "pole.vtk"),"to vtk");
 
-  ref_grid_node(viz) = orig_viz_node;/* replace before free */
-  RXS( ref_grid_free(viz),REF_NULL,"free temp grid");
+  RSS( ref_grid_free_cell_clone(viz),"free temp grid");
 
   RSS( ref_hexdiv_mark_relax( ref_hexdiv ), "relax" );
 

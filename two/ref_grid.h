@@ -29,6 +29,9 @@ struct REF_GRID_STRUCT {
 REF_STATUS ref_grid_create( REF_GRID *ref_grid );
 REF_STATUS ref_grid_free( REF_GRID ref_grid );
 
+REF_STATUS ref_grid_empty_cell_clone( REF_GRID *ref_grid, REF_GRID parent );
+REF_STATUS ref_grid_free_cell_clone( REF_GRID ref_grid );
+
 #define ref_grid_node(ref_grid) ((ref_grid)->node)
 #define ref_grid_metric(ref_grid) ((ref_grid)->metric)
 
