@@ -197,20 +197,31 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 {
   REF_GRID ref_grid;
-  REF_INT edge, global, node;
+  REF_NODE ref_node;
+  REF_EDGE ref_edge;
+  REF_INT edge, global, node, node0, node1, ixyz;
 
   ref_grid = ref_subdiv_grid(ref_subdiv);
+  ref_node = ref_grid_node(ref_grid);
+  ref_edge = ref_subdiv_edge(ref_subdiv);
 
-  for ( edge = 0; edge < ref_edge_n(ref_subdiv_edge(ref_subdiv)) ; edge++ )
+  for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
     {
       if ( ref_subdiv_mark( ref_subdiv, edge ) )
 	{
-	  RSS( ref_node_next_global( ref_grid_node(ref_grid), &global ),
+	  RSS( ref_node_next_global( ref_node, &global ),
 	       "next global");
-	  RSS( ref_node_add( ref_grid_node(ref_grid), global, &node), 
+	  RSS( ref_node_add( ref_node, global, &node), 
 	       "add node");
 	  ref_subdiv_node( ref_subdiv, edge ) = node;
-	}
+
+	  node0 = ref_edge_e2n(ref_edge, edge, 0 );
+	  node1 = ref_edge_e2n(ref_edge, edge, 1 );
+	  for (ixyz=0;ixyz<3;ixyz++)
+	    ref_node_xyz(ref_node,ixyz,node) = 
+	      0.5 * ( ref_node_xyz(ref_node,ixyz,node0) +
+		      ref_node_xyz(ref_node,ixyz,node1) );
+  	}
     }
 
   return REF_SUCCESS;

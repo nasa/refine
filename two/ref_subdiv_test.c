@@ -12,6 +12,9 @@
 
 #include "ref_subdiv.h"
 
+#include "ref_fixture.h"
+#include "ref_export.h"
+
 #include "ref_test.h"
 
 static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
@@ -57,28 +60,8 @@ static REF_STATUS set_up_prism_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 static REF_STATUS set_up_prism_with_boundary( REF_SUBDIV *ref_subdiv_ptr )
 {
   REF_GRID ref_grid;
-  REF_INT nodes[6] = {0,1,2,3,4,5};
-  REF_INT cell, node;
 
-  TSS(ref_grid_create(&ref_grid),"create");
-
-  TSS(ref_node_add( ref_grid_node(ref_grid), 0, &node),"n0");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 1, &node),"n1");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 2, &node),"n2");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 3, &node),"n3");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 4, &node),"n4");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 5, &node),"n5");
-
-  TSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
-
-  nodes[0] = 0; nodes[1] = 3; nodes[2] = 4; nodes[3] = 1; nodes[4] = 10;
-  TSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add quad");
-
-  nodes[0] = 3; nodes[1] = 5; nodes[2] = 4; nodes[3] = 100;
-  TSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
-
-  nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 101;
-  TSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+  TSS(ref_fixture_pri_grid( &ref_grid ), "pri");
 
   TSS(ref_subdiv_create(ref_subdiv_ptr,ref_grid),"create");
 
@@ -233,6 +216,8 @@ int main( void )
     TEIS(2, ref_cell_n(ref_grid_qua(ref_grid)),"two qua");
 
     TEIS(8, ref_cell_n(ref_grid_tri(ref_grid)),"four tri");
+
+    ref_export_tec(ref_grid,"pri4.tec");
 
     TSS( tear_down( ref_subdiv ), "tear down");
   }

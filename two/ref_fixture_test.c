@@ -21,8 +21,8 @@ int main( int argc, char *argv[] )
   if (2 == argc) 
     {
       REF_GRID ref_grid;
-      RSS( ref_fixture_pyr_grid( &ref_grid ), "pyr" );
-      RSS( ref_export_b8_ugrid( ref_grid, argv[1] ), "export b8 ugrid" );
+      RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
+      RSS( ref_export_tec( ref_grid, argv[1] ), "export" );
       return 0;
     }
 

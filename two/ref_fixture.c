@@ -80,7 +80,7 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,1,node) = 0.5;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  RSS(ref_cell_add(ref_grid_pyr(ref_grid),nodes,&cell),"add tet");
+  RSS(ref_cell_add(ref_grid_pyr(ref_grid),nodes,&cell),"add pyr");
 
   nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3; nodes[4] = 10;
   RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
@@ -135,6 +135,62 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
   nodes[0] = 5; nodes[1] = 6; nodes[2] = 7; nodes[3] = 30;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT nodes[6] = {0,1,2,3,4,5};
+  REF_INT cell, node;
+
+  RSS(ref_grid_create(ref_grid_ptr),"create");
+  ref_grid =  *ref_grid_ptr;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_node_add(ref_node,0,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,1,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,2,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,3,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+
+  RSS(ref_node_add(ref_node,4,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+
+  RSS(ref_node_add(ref_node,4,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+
+  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+
+  nodes[0] = 0; nodes[1] = 3; nodes[2] = 4; nodes[3] = 1; nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add quad");
+
+  nodes[0] = 3; nodes[1] = 5; nodes[2] = 4; nodes[3] = 100;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 101;
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
   return REF_SUCCESS;
