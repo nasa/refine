@@ -5,12 +5,16 @@
 #include "ref_validation.h"
 
 #include "ref_face.h"
+#include "ref_export.h"
 
 REF_STATUS ref_validation_all( REF_GRID ref_grid )
 {
 
+  printf(" hanging nodes?\n");
   RSS( ref_validation_hanging_node( ref_grid ), "hanging node");
+  printf(" cell faces?\n");
   RSS( ref_validation_cell_face( ref_grid ), "cell face");
+  printf(" muliple boundary faces?\n");
   RSS( ref_validation_multiple_face_cell( ref_grid ), "multiple cell face");
 
   return REF_SUCCESS;
@@ -144,9 +148,14 @@ REF_STATUS ref_validation_multiple_face_cell( REF_GRID ref_grid )
   REF_CELL ref_cell;
   REF_INT group, cell, cell_face;
   REF_INT node;
-  REF_INT nodes[4];
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
   REF_BOOL problem;
   REF_INT boundary_faces, found;
+
+  REF_GRID viz;
+  REF_INT viz_cell;
+
+  RSS( ref_grid_empty_cell_clone( &viz, ref_grid ), "viz grid" );
 
   problem = REF_FALSE;
 
@@ -174,9 +183,20 @@ REF_STATUS ref_validation_multiple_face_cell( REF_GRID ref_grid )
 	}
       if ( boundary_faces > 1 )
 	{
-	  printf("boundary_faces %d\n", boundary_faces);
+	  problem = REF_TRUE;
+	  RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
+	  RSS( ref_cell_add( ref_grid_cell(viz,group), nodes, &viz_cell), 
+	       "add viz cell");
 	}
     }
 
-  return (problem?REF_FAILURE:REF_SUCCESS);
+  if ( problem )
+    {
+      ref_export_tec( viz, "ref_validation_multiple_face_cell.tec" );
+      return REF_FAILURE;
+    }
+
+  RSS( ref_grid_free_cell_clone( viz ), "free viz");
+
+  return REF_SUCCESS;
 }
