@@ -14,6 +14,7 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 #define REF_CELL_MAX_NODE_PER (8)
+#define REF_CELL_MAX_FACE_PER (6)
 
 struct REF_CELL_STRUCT {
   REF_BOOL last_node_is_an_id;
