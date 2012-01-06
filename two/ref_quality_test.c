@@ -18,6 +18,8 @@
 #include "ref_face.h"
 #include "ref_sort.h"
 #include "ref_hexdiv.h"
+#include "ref_subdiv.h"
+#include "ref_edge.h"
 #include "ref_math.h"
 
 int main( int argc, char *argv[] )

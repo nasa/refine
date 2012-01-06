@@ -20,6 +20,7 @@
 
 #include "ref_quality.h"
 #include "ref_hexdiv.h"
+#include "ref_subdiv.h"
 
 #include "ref_validation.h"
 

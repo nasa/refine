@@ -9,6 +9,7 @@
 #include "ref_node.h"
 #include "ref_face.h"
 #include "ref_hexdiv.h"
+#include "ref_subdiv.h"
 #include "ref_export.h"
 
 #include "ref_math.h"
@@ -111,6 +112,11 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
   REF_GRID viz;
   REF_INT viz_cell;
 
+  REF_SUBDIV ref_subdiv;
+
+  RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "make subdiv");
+  
+
   RSS( ref_grid_empty_cell_clone( &viz, ref_grid ), "viz grid" );
 
   problem = REF_FALSE;
@@ -152,6 +158,8 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
     }
 
   RSS( ref_grid_free_cell_clone( viz ), "free viz");
+
+  RSS( ref_subdiv_free( ref_subdiv ), "free subdiv");
 
   return REF_SUCCESS;
 }
