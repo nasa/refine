@@ -210,72 +210,17 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
+REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
 {
-  REF_INT group, cell;
+  REF_INT cell;
   REF_CELL ref_cell;
   REF_CELL ref_cell_split;
-  REF_INT map;
   REF_INT nodes[REF_CELL_MAX_NODE_PER];
   REF_INT new_nodes[REF_CELL_MAX_NODE_PER];
   REF_INT node, new_cell;
   REF_INT *marked_for_removal;
 
-  REF_INT edge01, edge12, edge23, edge30, edge20;
-
-  each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
-    {
-      marked_for_removal = 
-	(REF_INT *)malloc(ref_cell_max(ref_cell)*sizeof(REF_INT));
-      RNS(marked_for_removal,"malloc failed");
-      for(cell=0;cell<ref_cell_max(ref_cell);cell++)
-	marked_for_removal[cell]=0;
-      RSS( ref_cell_create( &ref_cell_split, 
-			    ref_cell_node_per(ref_cell), 
-			    ref_cell_last_node_is_an_id(ref_cell)), 
-	   "temp cell");
-      each_ref_cell_valid_cell( ref_cell, cell )
-	{
-	  map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
-	  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes");
-	  switch ( map )
-	    {
-	    case 0: /* don't split */
-	      break;
-	    case 65: /* prism split */
-	      marked_for_removal[cell]=1;
-	      
-	      for(node=0;node<ref_cell_node_per(ref_cell);node++)
-		new_nodes[node] = nodes[node];
-	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
-					   &(new_nodes[0])), "mis");
-	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
-					   &(new_nodes[3])), "mis");
-	      RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-
-	      for(node=0;node<ref_cell_node_per(ref_cell);node++)
-		new_nodes[node] = nodes[node];
-	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
-					   &(new_nodes[1])), "mis");
-	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
-					   &(new_nodes[4])), "mis");
-	      RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	      break;
-	    default:
-	      printf("cell %d, map %d\n",cell,map);
-	      RSS( REF_IMPLEMENT, "map not implemented yet" )
-	    }
-	}
-      for(cell=0;cell<ref_cell_max(ref_cell);cell++)
-	if ( 1 == marked_for_removal[cell] )
-	  RSS(ref_cell_remove(ref_cell,cell),"remove");
-
-      each_ref_cell_valid_cell_with_nodes( ref_cell_split, cell, nodes)
-	RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
-
-      RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
-      free(marked_for_removal);
-    }
+  REF_INT edge01, edge12, edge23, edge30;
 
   ref_cell = ref_grid_qua(ref_subdiv_grid(ref_subdiv));
   marked_for_removal = 
@@ -359,6 +304,78 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
       
   RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
   free(marked_for_removal);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
+{
+  REF_INT group, cell;
+  REF_CELL ref_cell;
+  REF_CELL ref_cell_split;
+  REF_INT map;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT node, new_cell;
+  REF_INT *marked_for_removal;
+
+  REF_INT edge01, edge12, edge20;
+
+  each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
+    {
+      marked_for_removal = 
+	(REF_INT *)malloc(ref_cell_max(ref_cell)*sizeof(REF_INT));
+      RNS(marked_for_removal,"malloc failed");
+      for(cell=0;cell<ref_cell_max(ref_cell);cell++)
+	marked_for_removal[cell]=0;
+      RSS( ref_cell_create( &ref_cell_split, 
+			    ref_cell_node_per(ref_cell), 
+			    ref_cell_last_node_is_an_id(ref_cell)), 
+	   "temp cell");
+      each_ref_cell_valid_cell( ref_cell, cell )
+	{
+	  map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
+	  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes");
+	  switch ( map )
+	    {
+	    case 0: /* don't split */
+	      break;
+	    case 65: /* prism split */
+	      marked_for_removal[cell]=1;
+	      
+	      for(node=0;node<ref_cell_node_per(ref_cell);node++)
+		new_nodes[node] = nodes[node];
+	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+					   &(new_nodes[0])), "mis");
+	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+					   &(new_nodes[3])), "mis");
+	      RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+
+	      for(node=0;node<ref_cell_node_per(ref_cell);node++)
+		new_nodes[node] = nodes[node];
+	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+					   &(new_nodes[1])), "mis");
+	      RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+					   &(new_nodes[4])), "mis");
+	      RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	      break;
+	    default:
+	      printf("cell %d, map %d\n",cell,map);
+	      RSS( REF_IMPLEMENT, "map not implemented yet" )
+	    }
+	}
+      for(cell=0;cell<ref_cell_max(ref_cell);cell++)
+	if ( 1 == marked_for_removal[cell] )
+	  RSS(ref_cell_remove(ref_cell,cell),"remove");
+
+      each_ref_cell_valid_cell_with_nodes( ref_cell_split, cell, nodes)
+	RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
+
+      RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
+      free(marked_for_removal);
+    }
+
+  RSS( ref_subdiv_split_qua( ref_subdiv ), "split qua" );
 
   ref_cell = ref_grid_tri(ref_subdiv_grid(ref_subdiv));
   marked_for_removal = 
