@@ -98,3 +98,61 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
+{
+  REF_CELL ref_cell;
+  REF_INT group, cell, cell_face;
+  REF_INT node;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_BOOL problem;
+  REF_INT boundary_faces, found;
+
+  REF_GRID viz;
+  REF_INT viz_cell;
+
+  RSS( ref_grid_empty_cell_clone( &viz, ref_grid ), "viz grid" );
+
+  problem = REF_FALSE;
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      boundary_faces = 0;
+      each_ref_cell_cell_face( ref_cell, cell_face )
+        {
+	  for(node=0;node<4;node++)
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	  
+	  if ( nodes[0] == nodes[3] )
+	    {
+	      if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+						 nodes, &found ) )
+		boundary_faces++;
+	    }
+	  else
+	    {
+	      if ( REF_SUCCESS == ref_cell_with( ref_grid_qua( ref_grid ), 
+						 nodes, &found ) )
+		boundary_faces++;
+	    }
+	}
+      if ( boundary_faces > 1 )
+	{
+	  problem = REF_TRUE;
+	  RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
+	  RSS( ref_cell_add( ref_grid_cell(viz,group), nodes, &viz_cell), 
+	       "add viz cell");
+	}
+    }
+
+  if ( problem )
+    {
+      ref_export_tec( viz, "ref_validation_multiple_face_cell.tec" );
+      return REF_FAILURE;
+    }
+
+  RSS( ref_grid_free_cell_clone( viz ), "free viz");
+
+  return REF_SUCCESS;
+}

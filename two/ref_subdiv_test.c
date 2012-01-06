@@ -217,7 +217,7 @@ int main( void )
 
     TEIS(8, ref_cell_n(ref_grid_tri(ref_grid)),"four tri");
 
-    ref_export_tec(ref_grid,"pri4.tec");
+    /*    ref_export_tec(ref_grid,"pri4.tec");  */
 
     TSS( tear_down( ref_subdiv ), "tear down");
   }
