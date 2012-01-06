@@ -106,11 +106,14 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
   REF_INT group, cell, cell_face;
   REF_INT node;
   REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT face_nodes[REF_CELL_MAX_NODE_PER];
   REF_BOOL problem;
   REF_INT boundary_faces, found;
+  REF_INT bcface[REF_CELL_MAX_FACE_PER];
 
   REF_GRID viz;
   REF_INT viz_cell;
+  REF_INT edge, face0, face1;
 
   REF_SUBDIV ref_subdiv;
 
@@ -127,6 +130,7 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
       boundary_faces = 0;
       each_ref_cell_cell_face( ref_cell, cell_face )
         {
+	  bcface[cell_face] = REF_EMPTY;
 	  for(node=0;node<4;node++)
 	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
 	  
@@ -134,13 +138,21 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 	    {
 	      if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
 						 nodes, &found ) )
-		boundary_faces++;
+		{
+		  RSS( ref_cell_nodes( ref_cell, cell, face_nodes), "tri");
+		  bcface[cell_face] = nodes[3];
+		  boundary_faces++;
+		}
 	    }
 	  else
 	    {
 	      if ( REF_SUCCESS == ref_cell_with( ref_grid_qua( ref_grid ), 
 						 nodes, &found ) )
-		boundary_faces++;
+		{
+		  RSS( ref_cell_nodes( ref_cell, cell, face_nodes), "qua");
+		  bcface[cell_face] = nodes[4];
+		  boundary_faces++;
+		}
 	    }
 	}
       if ( boundary_faces > 1 )
@@ -148,7 +160,22 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 	  problem = REF_TRUE;
 	  RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
 	  RSS( ref_cell_add( ref_grid_cell(viz,group), nodes, &viz_cell), 
-	       "add viz cell");
+	       "add viz cell");	  
+	}
+      if ( 4 == ref_cell_node_per(ref_cell) && 2 == boundary_faces )
+	{
+	  for(edge=0;edge<ref_cell_edge_per(ref_cell);edge++)
+	    {
+	      face0 = ref_cell_e2n_gen(ref_cell,0,edge);
+	      face1 = ref_cell_e2n_gen(ref_cell,1,edge);
+	      if ( REF_EMPTY != bcface[face0] &&
+		   REF_EMPTY != bcface[face1] &&
+		   bcface[face0] != bcface[face1] )
+		{
+		  ref_subdiv_mark( ref_subdiv, 
+				   ref_cell_c2e(ref_cell,edge,cell) ) = 1; 
+		}
+	    }
 	}
     }
 
@@ -159,6 +186,9 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 
   RSS( ref_grid_free_cell_clone( viz ), "free viz");
 
+  RSS( ref_subdiv_mark_relax( ref_subdiv ), "relax subdiv");
+  RSS( ref_subdiv_new_node( ref_subdiv ), "new node subdiv");
+  RSS( ref_subdiv_split( ref_subdiv ), "split subdiv");
   RSS( ref_subdiv_free( ref_subdiv ), "free subdiv");
 
   return REF_SUCCESS;

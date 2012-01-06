@@ -35,8 +35,13 @@ int main( int argc, char *argv[] )
       
       RSS(ref_grid_inspect( ref_grid ), "inspection");
 
-      printf("validate.\n");
+      printf("multiple_face_cell.\n");
       RSS( ref_quality_multiple_face_cell( ref_grid ), "invalid grid" );
+
+      RSS(ref_grid_inspect( ref_grid ), "inspection");
+
+      printf("export\n");
+      RSS(ref_export_b8_ugrid( ref_grid, "quality.b8.ugrid" ),"from ugrid");
 
       printf("done.\n");
       return 0;
