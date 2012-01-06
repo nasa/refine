@@ -214,7 +214,6 @@ int main( void )
     TSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  SKIP_TEST("4 split")
   { /* split prism in four with bcs */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
