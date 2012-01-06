@@ -22,7 +22,7 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
   RSS( ref_cell_create( &ref_grid_pri(ref_grid), 6, REF_FALSE ), "pri create" );
   RSS( ref_cell_create( &ref_grid_hex(ref_grid), 8, REF_FALSE ), "hex create" );
 
-  ref_grid->cell[4] = NULL;
+  ref_grid_cell(ref_grid,4) = NULL;
 
   RSS( ref_cell_create( &ref_grid_tri(ref_grid), 4, REF_TRUE ), "tri create" );
   RSS( ref_cell_create( &ref_grid_qua(ref_grid), 5, REF_TRUE ), "qua create" );
@@ -47,7 +47,7 @@ REF_STATUS ref_grid_empty_cell_clone( REF_GRID *ref_grid_ptr, REF_GRID parent )
   RSS( ref_cell_create( &ref_grid_pri(ref_grid), 6, REF_FALSE ), "pri create" );
   RSS( ref_cell_create( &ref_grid_hex(ref_grid), 8, REF_FALSE ), "hex create" );
 
-  ref_grid->cell[4] = NULL;
+  ref_grid_cell(ref_grid,4) = NULL;
 
   RSS( ref_cell_create( &ref_grid_tri(ref_grid), 4, REF_TRUE ), "tri create" );
   RSS( ref_cell_create( &ref_grid_qua(ref_grid), 5, REF_TRUE ), "qua create" );
