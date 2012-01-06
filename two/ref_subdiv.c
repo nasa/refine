@@ -171,6 +171,12 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 	  {
 	    switch ( ref_cell_node_per(ref_cell) )
 	      {
+	      case 4:
+		promote_2_3(3,4,5);
+		promote_2_3(1,2,5);
+		promote_2_3(0,2,4);
+		promote_2_3(0,1,3);
+		break;
 	      case 6:
 		edge_or(0,6);
 		edge_or(3,8);

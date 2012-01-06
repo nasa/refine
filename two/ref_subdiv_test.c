@@ -14,6 +14,25 @@
 
 #include "ref_test.h"
 
+static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
+{
+  REF_GRID ref_grid;
+  REF_INT nodes[4] = {0,1,2,3};
+  REF_INT cell, node;
+
+  TSS(ref_grid_create(&ref_grid),"create");
+
+  TSS(ref_node_add( ref_grid_node(ref_grid), 0, &node),"n0");
+  TSS(ref_node_add( ref_grid_node(ref_grid), 1, &node),"n1");
+  TSS(ref_node_add( ref_grid_node(ref_grid), 2, &node),"n2");
+  TSS(ref_node_add( ref_grid_node(ref_grid), 3, &node),"n3");
+
+  TSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add prism");
+  TSS(ref_subdiv_create(ref_subdiv_ptr,ref_grid),"create");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS set_up_prism_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 {
   REF_GRID ref_grid;
@@ -82,7 +101,7 @@ static REF_STATUS tear_down( REF_SUBDIV ref_subdiv )
 int main( void )
 {
 
-  { /* mark and relax */
+  { /* mark and relax prism*/
     REF_SUBDIV ref_subdiv;
     TSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
 
@@ -102,7 +121,7 @@ int main( void )
     TSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* mark and relax */
+  { /* mark and relax prism*/
     REF_SUBDIV ref_subdiv;
     TSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
 
@@ -112,6 +131,27 @@ int main( void )
     TES(0,ref_subdiv_mark(ref_subdiv,1),"no yet");
     TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
     TES(1,ref_subdiv_mark(ref_subdiv,1),"yet");
+
+    TSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* relax tet */
+    REF_SUBDIV ref_subdiv;
+    TSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 1-2");
+
+    TEIS(1,ref_subdiv_mark(ref_subdiv,0),"yet");
+    TEIS(1,ref_subdiv_mark(ref_subdiv,3),"yet");
+
+    TEIS(0,ref_subdiv_mark(ref_subdiv,1),"no yet");
+    TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    TEIS(1,ref_subdiv_mark(ref_subdiv,1),"yet");
+
+    TEIS(0,ref_subdiv_mark(ref_subdiv,2),"no yet");
+    TEIS(0,ref_subdiv_mark(ref_subdiv,4),"no yet");
+    TEIS(0,ref_subdiv_mark(ref_subdiv,5),"no yet");
 
     TSS( tear_down( ref_subdiv ), "tear down");
   }
