@@ -110,6 +110,7 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
   REF_BOOL problem;
   REF_INT boundary_faces, found;
   REF_INT bcface[REF_CELL_MAX_FACE_PER];
+  REF_INT targeted[5], marks;
 
   REF_GRID viz;
   REF_INT viz_cell;
@@ -118,11 +119,12 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
   REF_SUBDIV ref_subdiv;
 
   RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "make subdiv");
-  
 
   RSS( ref_grid_empty_cell_clone( &viz, ref_grid ), "viz grid" );
-
+  
   problem = REF_FALSE;
+  for ( boundary_faces = 0 ; boundary_faces<= 4; boundary_faces++)
+    targeted[boundary_faces] = 0;
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     each_ref_cell_valid_cell( ref_cell, cell )
@@ -155,6 +157,7 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 		}
 	    }
 	}
+      targeted[boundary_faces]++;
       if ( boundary_faces > 1 )
 	{
 	  problem = REF_TRUE;
@@ -179,6 +182,9 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 	}
     }
 
+  for ( boundary_faces = 0 ; boundary_faces <= 4; boundary_faces++ )
+    printf(" %d : %d\n", boundary_faces, targeted[boundary_faces]);
+
   if ( problem )
     {
       ref_export_tec( viz, "ref_quality_multiple_face_cell.tec" );
@@ -186,7 +192,14 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 
   RSS( ref_grid_free_cell_clone( viz ), "free viz");
 
+  RSS( ref_subdiv_mark_n( ref_subdiv, &marks ), "n mark");
+  printf("original marks %d\n",marks);
+
   RSS( ref_subdiv_mark_relax( ref_subdiv ), "relax subdiv");
+
+  RSS( ref_subdiv_mark_n( ref_subdiv, &marks ), "n mark");
+  printf("relaxed marks %d\n",marks);
+
   RSS( ref_subdiv_new_node( ref_subdiv ), "new node subdiv");
   RSS( ref_subdiv_split( ref_subdiv ), "split subdiv");
   RSS( ref_subdiv_free( ref_subdiv ), "free subdiv");
