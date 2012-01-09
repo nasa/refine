@@ -8,6 +8,7 @@
 #include "ref_test.h"
 #include "ref_fixture.h"
 #include "ref_sort.h"
+#include "ref_dict.h"
 
 int main( int argc, char *argv[] )
 {

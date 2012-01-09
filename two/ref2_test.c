@@ -17,6 +17,7 @@
 
 #include "ref_face.h"
 #include "ref_sort.h"
+#include "ref_dict.h"
 
 #include "ref_quality.h"
 #include "ref_hexdiv.h"

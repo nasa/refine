@@ -4,6 +4,8 @@
 
 #include "ref_export.h"
 
+#include "ref_dict.h"
+
 #define VTK_TETRA      (10)
 #define VTK_HEXAHEDRON (12)
 #define VTK_WEDGE      (13)
@@ -179,6 +181,8 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
   REF_INT cell;
   REF_INT nnode;
   REF_INT group, node_per;
+  REF_DICT ref_dict;
+  REF_INT boundary_tag,boundary_index;
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -192,37 +196,53 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
   o2n = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
   RNS(o2n,"malloc o2n NULL");
 
-  nnode = 0;
-  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
-    o2n[node] = REF_EMPTY;
+  RSS( ref_dict_create( &ref_dict ), "create dict" ); 
 
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    for ( node = 0; node < 3; node++ )
-      if ( REF_EMPTY == o2n[nodes[node]] )
-	{ o2n[nodes[node]] = nnode; nnode++; }
+    RSS( ref_dict_store( ref_dict, nodes[3], REF_EMPTY ), "mark tri" );
 
   ref_cell = ref_grid_qua(ref_grid);
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    for ( node = 0; node < 4; node++ )
-      if ( REF_EMPTY == o2n[nodes[node]] )
-	{ o2n[nodes[node]] = nnode; nnode++; }
+    RSS( ref_dict_store( ref_dict, nodes[4], REF_EMPTY ), "mark qua" );
 
-  n2o = (REF_INT *)malloc( nnode * sizeof(REF_INT) );
-  RNS(n2o,"malloc n2o NULL");
-
-  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
-    if ( REF_EMPTY != o2n[node] ) n2o[o2n[node]] = node;
-
-  nface = ref_cell_n(ref_grid_tri(ref_grid)) +
-          ref_cell_n(ref_grid_qua(ref_grid)) ;
-
-  if ( nface > 0 )
+  each_ref_dict_key( ref_dict, boundary_index, boundary_tag )
     {
+      nnode = 0;
+      for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+	o2n[node] = REF_EMPTY;
+
+      nface = 0;
+
+      ref_cell = ref_grid_tri(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	if ( boundary_tag == nodes[3] )
+	  {
+	    nface++;
+	    for ( node = 0; node < 3; node++ )
+	      if ( REF_EMPTY == o2n[nodes[node]] )
+		{ o2n[nodes[node]] = nnode; nnode++; }
+	  }
+
+      ref_cell = ref_grid_qua(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	if ( boundary_tag == nodes[4] )
+	  {
+	    nface++;
+	    for ( node = 0; node < 4; node++ )
+	      if ( REF_EMPTY == o2n[nodes[node]] )
+		{ o2n[nodes[node]] = nnode; nnode++; }
+	  }
+
+      n2o = (REF_INT *)malloc( nnode * sizeof(REF_INT) );
+      RNS(n2o,"malloc n2o NULL");
+
+      for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+	if ( REF_EMPTY != o2n[node] ) n2o[o2n[node]] = node;
 
       fprintf(file,
-	  "zone t=surf, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-	  nnode, nface, "point", "fequadrilateral" );
+	  "zone t=surf%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	      boundary_tag, nnode, nface, "point", "fequadrilateral" );
 
       for ( node = 0; node < nnode; node++ )
 	fprintf(file, " %.16e %.16e %.16e\n",
@@ -232,25 +252,29 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 
       ref_cell = ref_grid_tri(ref_grid);
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-	{
-	  nodes[3] = nodes[2];
-	  for ( node = 0; node < 4; node++ )
-	    {
-	      fprintf(file," %d",o2n[nodes[node]] + 1);
-	    }
-	  fprintf(file,"\n");
-	}
+	if ( boundary_tag == nodes[3] )
+	  {
+	    nodes[3] = nodes[2];
+	    for ( node = 0; node < 4; node++ )
+	      {
+		fprintf(file," %d",o2n[nodes[node]] + 1);
+	      }
+	    fprintf(file,"\n");
+	  }
 
       ref_cell = ref_grid_qua(ref_grid);
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-	{
-	  for ( node = 0; node < 4; node++ )
-	    fprintf(file," %d",o2n[nodes[node]] + 1);
-	  fprintf(file,"\n");
-	}
+	if ( boundary_tag == nodes[3] )
+	  {
+	    for ( node = 0; node < 4; node++ )
+	      fprintf(file," %d",o2n[nodes[node]] + 1);
+	    fprintf(file,"\n");
+	  }
+
+      free(n2o);
     }
 
-  free(n2o);
+  RSS( ref_dict_free( ref_dict ), "free dict" ); 
   free(o2n);
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )

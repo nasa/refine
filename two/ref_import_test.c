@@ -12,6 +12,7 @@
 
 #include "ref_adj.h"
 #include "ref_sort.h"
+#include "ref_dict.h"
 
 int main( int argc, char *argv[] )
 {

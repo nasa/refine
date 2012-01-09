@@ -21,6 +21,7 @@
 #include "ref_subdiv.h"
 #include "ref_edge.h"
 #include "ref_math.h"
+#include "ref_dict.h"
 
 int main( int argc, char *argv[] )
 {

@@ -14,6 +14,7 @@
 #include "ref_node.h"
 #include "ref_metric.h"
 #include "ref_sort.h"
+#include "ref_dict.h"
 
 int main( int argc, char *argv[] )
 {
