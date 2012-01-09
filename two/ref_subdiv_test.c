@@ -214,7 +214,7 @@ int main( void )
     TSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* split tet in two */
+  { /* split tet in two, map 1 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     TSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
@@ -228,7 +228,26 @@ int main( void )
     TSS(ref_subdiv_split(ref_subdiv),"split");
 
     TEIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"two pri");
-    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"two pri");
+    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"two tri");
+
+    TSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* split tet in two, map 1 */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    TSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,0,3),"mark edge 0-3");
+
+    TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    TSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+
+    TSS(ref_subdiv_split(ref_subdiv),"split");
+
+    TEIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"two pri");
+    TEIS(1, ref_cell_n(ref_grid_tri(ref_grid)),"still one tri");
 
     TSS( tear_down( ref_subdiv ), "tear down");
   }

@@ -633,7 +633,12 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	{
 	case 0: /* don't split */
 	  break;
-	case 1: 
+	case  1: 
+	case  2: 
+	case  4:
+	case  8:
+	case 16:
+	case 32:
 	  split_edge=REF_EMPTY;
 	  for ( edge = 0; edge < ref_cell_edge_per(ref_cell) ; edge++ )
 	    if (ref_subdiv_mark(ref_subdiv,
@@ -646,13 +651,13 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
 	    new_nodes[node] = nodes[node];
 	  new_nodes[ref_cell_e2n_gen(ref_cell,0,split_edge)] = 
-	    ref_subdiv_node(ref_subdiv, split_edge);
+	    ref_subdiv_node(ref_subdiv, global_edge);
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 	  
 	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
 	    new_nodes[node] = nodes[node];
 	  new_nodes[ref_cell_e2n_gen(ref_cell,1,split_edge)] = 
-	    ref_subdiv_node(ref_subdiv, split_edge);
+	    ref_subdiv_node(ref_subdiv, global_edge);
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  break;
