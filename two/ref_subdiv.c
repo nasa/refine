@@ -661,6 +661,51 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  break;
+	case 11:
+	  /* orient cell for other cases */
+
+	  marked_for_removal[cell]=1;
+
+	  /* near node 0 */
+	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
+	    new_nodes[node] = nodes[node];
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+
+	  /* near node 1 */
+	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
+	    new_nodes[node] = nodes[node];
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[0], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+
+	  /* near node 2 */
+	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
+	    new_nodes[node] = nodes[node];
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[1], 
+				       &(new_nodes[1])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+
+
+	  /* center */
+	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
+	    new_nodes[node] = nodes[node];
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
+				       &(new_nodes[2])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  
+	  break;
 	default:
 	  printf("cell %d, map %d\n",cell,map);
 	  RSS( REF_IMPLEMENT, "map not implemented yet" )
