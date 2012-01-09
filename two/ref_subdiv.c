@@ -601,6 +601,9 @@ REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+#define node_swap(nodes,a,b) \
+  {REF_INT nst;nst=(nodes)[(a)];(nodes)[(a)]=(nodes)[(b)];(nodes)[(b)]=nst;}
+
 REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
@@ -662,9 +665,16 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 
 	  break;
 	case 11:
+	case 56:
+	case 38:
+	case 21:
 	  /* orient cell for other cases */
 
 	  marked_for_removal[cell]=1;
+
+	  if ( 56 == map ) { node_swap(nodes,0,3); node_swap(nodes,1,2); }
+	  if ( 38 == map ) { node_swap(nodes,1,3); node_swap(nodes,0,2); }
+	  if ( 21 == map ) { node_swap(nodes,2,3); node_swap(nodes,0,1); }
 
 	  /* near node 0 */
 	  for(node=0;node<ref_cell_node_per(ref_cell);node++)

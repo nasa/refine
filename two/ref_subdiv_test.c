@@ -252,7 +252,7 @@ int main( void )
     TSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* split tet in 3 */
+  { /* split tet in 3 around node 3*/
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     TSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
@@ -268,6 +268,66 @@ int main( void )
 
     TEIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
     TEIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"four tri");
+
+    TSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* split tet in 3 around node 0 */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    TSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,3,2),"mark edge");
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge");
+
+    TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    TSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+
+    TSS(ref_subdiv_split(ref_subdiv),"split");
+
+    TEIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
+    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+
+    TSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* split tet in 3 around node 1 */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    TSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,3,2),"mark edge");
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,0,2),"mark edge");
+
+    TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    TSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+
+    TSS(ref_subdiv_split(ref_subdiv),"split");
+
+    TEIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
+    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+
+    TSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* split tet in 3 around node 2 */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    TSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,3,1),"mark edge");
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge");
+
+    TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    TSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+
+    TSS(ref_subdiv_split(ref_subdiv),"split");
+
+    TEIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
+    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
 
     TSS( tear_down( ref_subdiv ), "tear down");
   }
