@@ -90,6 +90,17 @@ REF_STATUS ref_subdiv_inspect( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_mark_n( REF_SUBDIV ref_subdiv, REF_INT *n )
+{
+  REF_INT edge;
+
+  *n = 0;
+  for ( edge=0 ; edge < ref_edge_n(ref_subdiv_edge(ref_subdiv)) ; edge++ )
+    if ( 0 != ref_subdiv_mark( ref_subdiv, edge ) ) (*n)++;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv, 
 				     REF_INT node0, REF_INT node1 )
 {
