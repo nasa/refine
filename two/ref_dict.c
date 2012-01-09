@@ -54,12 +54,19 @@ REF_STATUS ref_dict_store( REF_DICT ref_dict, REF_INT key, REF_INT value )
     }
 
   insert_point = 0;
-  for (i=ref_dict_n( ref_dict )-1; i>=0; i--) 
-    if ( ref_dict->key[i] < key) 
-      {
-	insert_point = i+1;
-	break;
-      }
+  for (i=ref_dict_n( ref_dict )-1; i>=0; i--)
+    {
+      if ( ref_dict->key[i] == key )
+	{
+	  ref_dict->value[i] = value;
+	  return REF_SUCCESS;
+	}
+      if ( ref_dict->key[i] < key ) 
+	{
+	  insert_point = i+1;
+	  break;
+	}
+    }
   /* shift to open up insert_point */
   for(i=ref_dict_n( ref_dict );i>insert_point;i--)
     ref_dict->key[i] = ref_dict->key[i-1];

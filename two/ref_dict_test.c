@@ -74,5 +74,23 @@ int main( void )
     TSS(ref_dict_free(ref_dict),"free");
   }
 
+  { /* store key only once with latest value */
+    REF_INT key, value;
+    TSS(ref_dict_create(&ref_dict),"create");
+    key = 2; value = 5;
+    TSS(ref_dict_store(ref_dict,key,value),"store");
+    key = 1; value = 3;
+    TSS(ref_dict_store(ref_dict,key,value),"store");
+
+    key = 2; value = 7;
+    TSS(ref_dict_store(ref_dict,key,value),"store");
+    key = 2; TSS(ref_dict_value(ref_dict,key,&value),"retrieve");
+    TEIS(7,value,"get value");
+
+    TEIS(2, ref_dict_n( ref_dict ),"two keys");
+    
+    TSS(ref_dict_free(ref_dict),"free");
+  }
+
   return 0;
 }
