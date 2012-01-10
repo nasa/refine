@@ -21,6 +21,7 @@ libref2_a_SOURCES = \
 	ref_shard.c ref_shard.h \
 	ref_sort.h ref_sort.c \
 	ref_subdiv.h ref_subdiv.c \
+	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
 
 noinst_PROGRAMS =
@@ -115,6 +116,11 @@ TESTS += ref_subdiv_test
 noinst_PROGRAMS += ref_subdiv_test
 ref_subdiv_test_SOURCES = ref_subdiv_test.c
 ref_subdiv_test_LDADD = libref2.a -lm
+
+TESTS += ref_swap_test
+noinst_PROGRAMS += ref_swap_test
+ref_swap_test_SOURCES = ref_swap_test.c
+ref_swap_test_LDADD = libref2.a -lm
 
 TESTS += ref_validation_test
 noinst_PROGRAMS += ref_validation_test
