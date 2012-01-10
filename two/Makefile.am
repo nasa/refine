@@ -13,12 +13,12 @@ libref2_a_SOURCES = \
 	ref_fixture.c ref_fixture.h \
 	ref_fortran.c ref_fortran.h \
 	ref_grid.c ref_grid.h \
-	ref_hexdiv.c ref_hexdiv.h \
 	ref_import.c ref_import.h \
 	ref_math.h ref_math.c \
 	ref_metric.h ref_metric.c \
 	ref_node.h ref_node.c \
 	ref_quality.h ref_quality.c \
+	ref_shard.c ref_shard.h \
 	ref_sort.h ref_sort.c \
 	ref_subdiv.h ref_subdiv.c \
 	ref_validation.h ref_validation.c
@@ -76,11 +76,6 @@ noinst_PROGRAMS += ref_grid_test
 ref_grid_test_SOURCES = ref_grid_test.c
 ref_grid_test_LDADD = libref2.a -lm
 
-TESTS += ref_hexdiv_test
-noinst_PROGRAMS += ref_hexdiv_test
-ref_hexdiv_test_SOURCES = ref_hexdiv_test.c
-ref_hexdiv_test_LDADD = libref2.a -lm
-
 TESTS += ref_import_test
 noinst_PROGRAMS += ref_import_test
 ref_import_test_SOURCES = ref_import_test.c
@@ -105,6 +100,11 @@ TESTS += ref_quality_test
 noinst_PROGRAMS += ref_quality_test
 ref_quality_test_SOURCES = ref_quality_test.c
 ref_quality_test_LDADD = libref2.a -lm
+
+TESTS += ref_shard_test
+noinst_PROGRAMS += ref_shard_test
+ref_shard_test_SOURCES = ref_shard_test.c
+ref_shard_test_LDADD = libref2.a -lm
 
 TESTS += ref_sort_test
 noinst_PROGRAMS += ref_sort_test

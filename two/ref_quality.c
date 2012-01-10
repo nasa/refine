@@ -8,7 +8,7 @@
 #include "ref_cell.h"
 #include "ref_node.h"
 #include "ref_face.h"
-#include "ref_hexdiv.h"
+#include "ref_shard.h"
 #include "ref_subdiv.h"
 #include "ref_export.h"
 
@@ -18,7 +18,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 {
   REF_CELL ref_cell;
 
-  REF_HEXDIV ref_hexdiv;
+  REF_SHARD ref_shard;
 
   REF_NODE ref_node;
   REF_INT cell, cell_edge;
@@ -35,7 +35,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   REF_INT face_marks, hex_marks;
 
-  RSS( ref_hexdiv_create( &ref_hexdiv, ref_grid ), "make hexdiv");
+  RSS( ref_shard_create( &ref_shard, ref_grid ), "make shard");
 
   ref_cell = ref_grid_hex(ref_grid);
   ref_node = ref_grid_node(ref_grid);
@@ -73,7 +73,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	    marks++;
 	    RSS( ref_cell_add( marked_cell, cell_nodes, &new_cell ), 
 		 "add marked");
-	    RSB( ref_hexdiv_mark_cell_edge_split( ref_hexdiv, 
+	    RSB( ref_shard_mark_cell_edge_split( ref_shard, 
 						  cell, cell_edge ), 
 		 "mark cell edge",
 		 ref_node_location(ref_node,face_nodes[0]););
@@ -83,19 +83,19 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   printf("marks %d\n",marks);
 
-  RSS( ref_hexdiv_mark_n( ref_hexdiv, &face_marks, &hex_marks ), "count marks");
+  RSS( ref_shard_mark_n( ref_shard, &face_marks, &hex_marks ), "count marks");
   printf("marked faces %d hexes %d\n",face_marks,hex_marks);
 
   RSS(ref_export_vtk(viz, "pole.vtk"),"to vtk");
 
   RSS( ref_grid_free_cell_clone(viz),"free temp grid");
 
-  RSS( ref_hexdiv_mark_relax( ref_hexdiv ), "relax" );
+  RSS( ref_shard_mark_relax( ref_shard ), "relax" );
 
-  RSS( ref_hexdiv_mark_n( ref_hexdiv, &face_marks, &hex_marks ), "count marks");
+  RSS( ref_shard_mark_n( ref_shard, &face_marks, &hex_marks ), "count marks");
   printf("relaxed marked faces %d hexes %d\n",face_marks,hex_marks);
 
-  RSS( ref_hexdiv_split( ref_hexdiv ), "split hex to prism" );
+  RSS( ref_shard_split( ref_shard ), "split hex to prism" );
 
   return REF_SUCCESS;
 }
