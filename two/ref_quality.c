@@ -141,8 +141,9 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 	      if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
 						 nodes, &found ) )
 		{
-		  RSS( ref_cell_nodes( ref_cell, cell, face_nodes), "tri");
-		  bcface[cell_face] = nodes[3];
+		  RSS( ref_cell_nodes( ref_grid_tri( ref_grid ), 
+				       found, face_nodes), "tri");
+		  bcface[cell_face] = face_nodes[3];
 		  boundary_faces++;
 		}
 	    }
@@ -151,8 +152,9 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 	      if ( REF_SUCCESS == ref_cell_with( ref_grid_qua( ref_grid ), 
 						 nodes, &found ) )
 		{
-		  RSS( ref_cell_nodes( ref_cell, cell, face_nodes), "qua");
-		  bcface[cell_face] = nodes[4];
+		  RSS( ref_cell_nodes( ref_grid_qua( ref_grid ), 
+				       found, face_nodes), "qua");
+		  bcface[cell_face] = face_nodes[4];
 		  boundary_faces++;
 		}
 	    }
@@ -177,6 +179,12 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 		{
 		  ref_subdiv_mark( ref_subdiv, 
 				   ref_cell_c2e(ref_cell,edge,cell) ) = 1; 
+		}
+	      if ( REF_EMPTY != bcface[face0] &&
+		   REF_EMPTY != bcface[face1] &&
+		   bcface[face0] == bcface[face1] )
+		{
+		  printf("same bcs %d %d\n",bcface[face0],bcface[face1]);
 		}
 	    }
 	}
