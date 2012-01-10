@@ -171,20 +171,6 @@ REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
 REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
-  REF_NODE ref_node;
-  REF_CELL ref_cell;
-  REF_INT node;
-  REF_INT *o2n, *n2o;
-  REF_INT nface;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT brick[REF_CELL_MAX_NODE_PER];
-  REF_INT cell;
-  REF_INT nnode;
-  REF_INT group, node_per;
-  REF_DICT ref_dict;
-  REF_INT boundary_tag,boundary_index;
-
-  ref_node = ref_grid_node(ref_grid);
 
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -192,6 +178,45 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 
   fprintf(file, "title=\"tecplot refine geometry file\"\n");
   fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  RSS( ref_export_tec_surf_zone( ref_grid, file  ), "surf" );
+  RSS( ref_export_tec_vol_zone( ref_grid, file  ), "vol" );
+
+  fclose(file);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_surf( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"tecplot refine geometry file\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  RSS( ref_export_tec_surf_zone( ref_grid, file  ), "surf" );
+
+  fclose(file);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
+{
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *o2n, *n2o;
+  REF_INT nface;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT cell;
+  REF_INT nnode;
+  REF_DICT ref_dict;
+  REF_INT boundary_tag,boundary_index;
+
+  ref_node = ref_grid_node(ref_grid);
 
   o2n = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
   RNS(o2n,"malloc o2n NULL");
@@ -277,6 +302,23 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
   RSS( ref_dict_free( ref_dict ), "free dict" ); 
   free(o2n);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_vol_zone( REF_GRID ref_grid, FILE *file  )
+{
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *o2n, *n2o;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT brick[REF_CELL_MAX_NODE_PER];
+  REF_INT cell;
+  REF_INT nnode;
+  REF_INT group, node_per;
+
+  ref_node = ref_grid_node(ref_grid);
+
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     if ( ref_cell_n(ref_cell) > 0 )
       {
@@ -342,8 +384,6 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename  )
 	free(o2n);
 
       }
-
-  fclose(file);
 
   return REF_SUCCESS;
 }

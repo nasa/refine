@@ -12,6 +12,11 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_export_tec_surf( REF_GRID ref_grid, char *filename );
+
+
+REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file );
+REF_STATUS ref_export_tec_vol_zone( REF_GRID ref_grid, FILE *file );
 
 REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename );
