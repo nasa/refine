@@ -43,7 +43,7 @@ int main( void )
     TSS( ref_grid_free( ref_grid ), "free grid");
   }
 
-  { /* same faces alone */
+  { /* remove same faces */
     REF_GRID ref_grid;
     REF_INT nodes[4] = {0,3,1,3}, cell;
 
