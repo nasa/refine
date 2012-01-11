@@ -24,6 +24,8 @@ libref2_a_SOURCES = \
 	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
 
+noinst_HEADERS = ref_test.h
+
 noinst_PROGRAMS =
 TESTS =
 
