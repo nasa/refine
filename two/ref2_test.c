@@ -26,6 +26,7 @@
 #include "ref_validation.h"
 
 #include "ref_math.h"
+#include "ref_swap.h"
 
 int main( int argc, char *argv[] )
 {

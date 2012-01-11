@@ -23,6 +23,8 @@
 #include "ref_math.h"
 #include "ref_dict.h"
 
+#include "ref_swap.h"
+
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
