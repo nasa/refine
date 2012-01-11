@@ -11,6 +11,7 @@
 #include "ref_shard.h"
 #include "ref_subdiv.h"
 #include "ref_export.h"
+#include "ref_swap.h"
 
 #include "ref_math.h"
 
@@ -184,7 +185,8 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 		   REF_EMPTY != bcface[face1] &&
 		   bcface[face0] == bcface[face1] )
 		{
-		  printf("same bcs %d %d\n",bcface[face0],bcface[face1]);
+		  RSS( ref_swap_remove_two_face_cell( ref_grid, cell ),
+		       "rm 2face same id");
 		}
 	    }
 	}
