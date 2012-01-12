@@ -117,7 +117,7 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 	    RSS( REF_FAILURE, "unknown file extension");
 	  }
 
-  return REF_FAILURE;
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
