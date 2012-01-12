@@ -10,6 +10,8 @@
 
 BEGIN_C_DECLORATION
 
+REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename );
+
 REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename );
 
 REF_STATUS ref_export_tec( REF_GRID ref_grid, char *filename );

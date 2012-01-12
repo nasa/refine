@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "ref_export.h"
 
@@ -81,6 +82,43 @@
     brick[4] = nodes[4]; brick[5] = nodes[5];				\
     brick[6] = nodes[6]; brick[7] = nodes[7];				\
   }
+
+REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
+{
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if( strcmp(&filename[end_of_string-4],".vtk") == 0 ) 
+    {
+      RSS( ref_export_vtk( ref_grid, filename ), "vtk export failed");
+    } 
+  else 
+    if( strcmp(&filename[end_of_string-4],".tec") == 0 ) 
+      {
+	RSS( ref_export_tec( ref_grid, filename ), "tec export failed");
+      } 
+    else 
+      if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
+	{
+	  RSS( ref_export_b8_ugrid( ref_grid, filename ), 
+	       "b8.ugrid export failed");
+	} 
+      else 
+	if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
+	  {
+	    RSS( ref_export_ugrid( ref_grid, filename ), 
+		 "ugrid export failed");
+	  } 
+	else 
+	  {
+	    printf("%s: %d: %s %s\n",__FILE__,__LINE__,
+		   "export file name extension unknown", filename);
+	    RSS( REF_FAILURE, "unknown file extension");
+	  }
+
+  return REF_FAILURE;
+}
 
 REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
 {
