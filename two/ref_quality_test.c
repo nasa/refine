@@ -38,10 +38,29 @@ int main( int argc, char *argv[] )
       
       RSS(ref_grid_inspect( ref_grid ), "inspection");
 
-      printf("multiple_face_cell.\n");
-      RSS( ref_quality_multiple_face_cell( ref_grid ), "invalid grid" );
+      printf("tec surf.\n");
+      RSS(ref_export_tec_surf( ref_grid, "qual-surf-orig.tec" ), "tec surf");
 
-      RSS(ref_grid_inspect( ref_grid ), "inspection");
+      printf("check for multiple_face_cell.\n");
+      RSS( ref_quality_report_multiple_face_cell( ref_grid, "qual-orig.tec"), 
+	   "report" );
+
+      printf("try swapping.\n");
+      RSS( ref_quality_swap_multiple_face_cell( ref_grid), "swap" );
+
+      printf("tec surf.\n");
+      RSS(ref_export_tec_surf( ref_grid, "qual-surf-swap.tec" ), "tec surf");
+
+      printf("check for multiple_face_cell.\n");
+      RSS( ref_quality_report_multiple_face_cell( ref_grid, "qual-swap.tec"), 
+	   "report" );
+
+      printf("try split.\n");
+      RSS( ref_quality_split_multiple_face_cell( ref_grid ), "split" );
+
+      printf("check for multiple_face_cell.\n");
+      RSS( ref_quality_report_multiple_face_cell( ref_grid, "qual-split.tec"), 
+	   "report" );
 
       printf("export\n");
       RSS(ref_export_b8_ugrid( ref_grid, "quality.b8.ugrid" ),"from ugrid");

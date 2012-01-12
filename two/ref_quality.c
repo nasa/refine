@@ -101,7 +101,8 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
+REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid, 
+						  char *export_to  )
 {
   REF_CELL ref_cell;
   REF_INT group, cell, cell_face;
@@ -111,15 +112,10 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
   REF_BOOL problem;
   REF_INT boundary_faces, found;
   REF_INT bcface[REF_CELL_MAX_FACE_PER];
-  REF_INT targeted[5], marks;
+  REF_INT targeted[5];
 
   REF_GRID viz;
   REF_INT viz_cell;
-  REF_INT edge, face0, face1;
-
-  REF_SUBDIV ref_subdiv;
-
-  RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "make subdiv");
 
   RSS( ref_grid_empty_cell_clone( &viz, ref_grid ), "viz grid" );
   
@@ -168,19 +164,72 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 	  RSS( ref_cell_add( ref_grid_cell(viz,group), nodes, &viz_cell), 
 	       "add viz cell");	  
 	}
+    }
+
+  for ( boundary_faces = 0 ; boundary_faces <= 4; boundary_faces++ )
+    printf(" %d : %d\n", boundary_faces, targeted[boundary_faces]);
+
+  if ( problem )
+    {
+      RSS(ref_export_by_extension( viz, export_to ), "export");
+    }
+
+  RSS( ref_grid_free_cell_clone( viz ), "free viz");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_quality_swap_multiple_face_cell( REF_GRID ref_grid )
+{
+  REF_CELL ref_cell;
+  REF_INT group, cell, cell_face;
+  REF_INT node;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT face_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT boundary_faces, found;
+  REF_INT bcface[REF_CELL_MAX_FACE_PER];
+
+  REF_INT edge, face0, face1;
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      boundary_faces = 0;
+      each_ref_cell_cell_face( ref_cell, cell_face )
+        {
+	  bcface[cell_face] = REF_EMPTY;
+	  for(node=0;node<4;node++)
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	  
+	  if ( nodes[0] == nodes[3] )
+	    {
+	      if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+						 nodes, &found ) )
+		{
+		  RSS( ref_cell_nodes( ref_grid_tri( ref_grid ), 
+				       found, face_nodes), "tri");
+		  bcface[cell_face] = face_nodes[3];
+		  boundary_faces++;
+		}
+	    }
+	  else
+	    {
+	      if ( REF_SUCCESS == ref_cell_with( ref_grid_qua( ref_grid ), 
+						 nodes, &found ) )
+		{
+		  RSS( ref_cell_nodes( ref_grid_qua( ref_grid ), 
+				       found, face_nodes), "qua");
+		  bcface[cell_face] = face_nodes[4];
+		  boundary_faces++;
+		}
+	    }
+	}
       if ( 4 == ref_cell_node_per(ref_cell) && 2 == boundary_faces )
 	{
 	  for(edge=0;edge<ref_cell_edge_per(ref_cell);edge++)
 	    {
 	      face0 = ref_cell_e2n_gen(ref_cell,0,edge);
 	      face1 = ref_cell_e2n_gen(ref_cell,1,edge);
-	      if ( REF_EMPTY != bcface[face0] &&
-		   REF_EMPTY != bcface[face1] &&
-		   bcface[face0] != bcface[face1] )
-		{
-		  ref_subdiv_mark( ref_subdiv, 
-				   ref_cell_c2e(ref_cell,edge,cell) ) = 1; 
-		}
 	      if ( REF_EMPTY != bcface[face0] &&
 		   REF_EMPTY != bcface[face1] &&
 		   bcface[face0] == bcface[face1] )
@@ -192,27 +241,96 @@ REF_STATUS ref_quality_multiple_face_cell( REF_GRID ref_grid )
 	}
     }
 
-  for ( boundary_faces = 0 ; boundary_faces <= 4; boundary_faces++ )
-    printf(" %d : %d\n", boundary_faces, targeted[boundary_faces]);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_quality_split_multiple_face_cell( REF_GRID ref_grid )
+{
+  REF_CELL ref_cell;
+  REF_INT group, cell, cell_face;
+  REF_INT node;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT face_nodes[REF_CELL_MAX_NODE_PER];
+  REF_BOOL problem;
+  REF_INT boundary_faces, found;
+  REF_INT bcface[REF_CELL_MAX_FACE_PER];
+  REF_INT marks;
+
+  REF_INT edge, face0, face1;
+
+  REF_SUBDIV ref_subdiv;
+
+  RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "make subdiv");
+
+  problem = REF_FALSE;
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      boundary_faces = 0;
+      each_ref_cell_cell_face( ref_cell, cell_face )
+        {
+	  bcface[cell_face] = REF_EMPTY;
+	  for(node=0;node<4;node++)
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	  
+	  if ( nodes[0] == nodes[3] )
+	    {
+	      if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+						 nodes, &found ) )
+		{
+		  RSS( ref_cell_nodes( ref_grid_tri( ref_grid ), 
+				       found, face_nodes), "tri");
+		  bcface[cell_face] = face_nodes[3];
+		  boundary_faces++;
+		}
+	    }
+	  else
+	    {
+	      if ( REF_SUCCESS == ref_cell_with( ref_grid_qua( ref_grid ), 
+						 nodes, &found ) )
+		{
+		  RSS( ref_cell_nodes( ref_grid_qua( ref_grid ), 
+				       found, face_nodes), "qua");
+		  bcface[cell_face] = face_nodes[4];
+		  boundary_faces++;
+		}
+	    }
+	}
+      if ( 4 == ref_cell_node_per(ref_cell) && 2 == boundary_faces )
+	{
+	  for(edge=0;edge<ref_cell_edge_per(ref_cell);edge++)
+	    {
+	      face0 = ref_cell_e2n_gen(ref_cell,0,edge);
+	      face1 = ref_cell_e2n_gen(ref_cell,1,edge);
+	      if ( REF_EMPTY != bcface[face0] &&
+		   REF_EMPTY != bcface[face1] &&
+		   bcface[face0] != bcface[face1] )
+		{
+		  problem = REF_TRUE;
+		  ref_subdiv_mark( ref_subdiv, 
+				   ref_cell_c2e(ref_cell,edge,cell) ) = 1; 
+		}
+	    }
+	}
+    }
+
 
   if ( problem )
     {
-      ref_export_tec( viz, "ref_quality_multiple_face_cell.tec" );
+      RSS( ref_subdiv_mark_n( ref_subdiv, &marks ), "n mark");
+      printf("original marks %d\n",marks);
+
+      RSS( ref_subdiv_mark_relax( ref_subdiv ), "relax subdiv");
+
+      RSS( ref_subdiv_mark_n( ref_subdiv, &marks ), "n mark");
+      printf("relaxed marks %d\n",marks);
+
+      RSS( ref_subdiv_new_node( ref_subdiv ), "new node subdiv");
+      RSS( ref_subdiv_split( ref_subdiv ), "split subdiv");
     }
-
-  RSS( ref_grid_free_cell_clone( viz ), "free viz");
-
-  RSS( ref_subdiv_mark_n( ref_subdiv, &marks ), "n mark");
-  printf("original marks %d\n",marks);
-
-  RSS( ref_subdiv_mark_relax( ref_subdiv ), "relax subdiv");
-
-  RSS( ref_subdiv_mark_n( ref_subdiv, &marks ), "n mark");
-  printf("relaxed marks %d\n",marks);
-
-  RSS( ref_subdiv_new_node( ref_subdiv ), "new node subdiv");
-  RSS( ref_subdiv_split( ref_subdiv ), "split subdiv");
   RSS( ref_subdiv_free( ref_subdiv ), "free subdiv");
 
   return REF_SUCCESS;
 }
+
