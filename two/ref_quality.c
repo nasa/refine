@@ -69,7 +69,10 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 	RSS( ref_math_normalize( normal0 ), "norm0");
 	RSS( ref_math_normalize( normal1 ), "norm1");
 	angle = ref_math_dot(normal0,normal1);
-	if ( ABS(angle) > (1-1.0e-8) ) 
+	angle = MAX( -1.0, angle);
+	angle = MIN(  1.0, angle);
+	angle = ref_math_in_degrees(acos(angle));
+	if ( ABS(angle) < 2.0 ) 
 	  {
 	    marks++;
 	    RSS( ref_cell_add( marked_cell, cell_nodes, &new_cell ), 
@@ -87,7 +90,8 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   RSS( ref_shard_mark_n( ref_shard, &face_marks, &hex_marks ), "count marks");
   printf("marked faces %d hexes %d\n",face_marks,hex_marks);
 
-  RSS(ref_export_vtk(viz, "pole.vtk"),"to vtk");
+  RSS(ref_export_by_extension(viz, "pole.tec"),"to tec");
+  RSS(ref_export_by_extension(viz, "pole.vtk"),"to vtk");
 
   RSS( ref_grid_free_cell_clone(viz),"free temp grid");
 
