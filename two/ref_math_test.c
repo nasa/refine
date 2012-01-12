@@ -52,5 +52,13 @@ int main( void )
     TWDS(0.0,vect[2],-1.0,"same");
   }
 
+  { /* acos */
+    TWDS(0.0,acos( 1.0),-1.0,"acos");
+    TWDS(1.04719755119660,acos( 0.5),-1.0,"acos");
+    TWDS(1.57079632679490,acos( 0.0),-1.0,"acos");
+    TWDS(2.09439510239320,acos(-0.5),-1.0,"acos");
+    TWDS(3.14159265358979,acos(-1.0),-1.0,"acos");
+  }
+
   return 0;
 }

@@ -9,6 +9,7 @@
 BEGIN_C_DECLORATION
 
 #define ref_math_dot(a,b) ((a)[0]*(b)[0]+(a)[1]*(b)[1]+(a)[2]*(b)[2])
+#define ref_math_pi (3.14159265358979)
 
 REF_STATUS ref_math_normalize( REF_DBL *normal );
 
