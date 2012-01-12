@@ -327,7 +327,7 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
 
       ref_cell = ref_grid_qua(ref_grid);
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-	if ( boundary_tag == nodes[3] )
+	if ( boundary_tag == nodes[4] )
 	  {
 	    for ( node = 0; node < 4; node++ )
 	      fprintf(file," %d",o2n[nodes[node]] + 1);
