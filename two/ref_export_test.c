@@ -41,6 +41,15 @@ int main( int argc, char *argv[] )
     TEIS(0, remove( file ), "test clean up");
   }
 
+  { /* export .tec hex */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.tec";
+    TSS(ref_fixture_hex_grid( &ref_grid ), "set up hex" );
+    TSS(ref_export_tec( ref_grid, file ),"export" );
+    TSS(ref_grid_free(ref_grid),"free");
+    TEIS(0, remove( file ), "test clean up");
+  }
+
   { /* export .fgrid tet */
     REF_GRID ref_grid;
     char file[] = "ref_export_test.fgrid";

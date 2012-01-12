@@ -14,6 +14,8 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid );
 
 REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid );
 
+REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid );
+
 END_C_DECLORATION
 
 #endif /* REF_FIXTURE_H */
