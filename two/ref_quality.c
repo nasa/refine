@@ -182,27 +182,33 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
 REF_STATUS ref_quality_swap_multiple_face_cell( REF_GRID ref_grid )
 {
   REF_CELL ref_cell;
-  REF_INT group, cell, cell_face;
+  REF_INT cell, cell_face;
   REF_INT node;
   REF_INT nodes[REF_CELL_MAX_NODE_PER];
   REF_INT face_nodes[REF_CELL_MAX_NODE_PER];
   REF_INT boundary_faces, found;
   REF_INT bcface[REF_CELL_MAX_FACE_PER];
 
-  REF_INT edge, face0, face1;
+  REF_INT edge, face0, face1, pass;
+  REF_BOOL changed;
 
-  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    each_ref_cell_valid_cell( ref_cell, cell )
+  ref_cell = ref_grid_tet(ref_grid);
+
+  pass = 0;
+  changed = REF_TRUE;
+  while (changed)
     {
-      boundary_faces = 0;
-      each_ref_cell_cell_face( ref_cell, cell_face )
-        {
-	  bcface[cell_face] = REF_EMPTY;
-	  for(node=0;node<4;node++)
-	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
-	  
-	  if ( nodes[0] == nodes[3] )
+      pass++;
+      printf("swap pass %d\n",pass);
+      changed = REF_FALSE;
+      each_ref_cell_valid_cell( ref_cell, cell )
+	{
+	  boundary_faces = 0;
+	  each_ref_cell_cell_face( ref_cell, cell_face )
 	    {
+	      bcface[cell_face] = REF_EMPTY;
+	      for(node=0;node<4;node++)
+		nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
 	      if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
 						 nodes, &found ) )
 		{
@@ -212,30 +218,20 @@ REF_STATUS ref_quality_swap_multiple_face_cell( REF_GRID ref_grid )
 		  boundary_faces++;
 		}
 	    }
-	  else
+	  if ( 2 == boundary_faces )
 	    {
-	      if ( REF_SUCCESS == ref_cell_with( ref_grid_qua( ref_grid ), 
-						 nodes, &found ) )
+	      for(edge=0;edge<ref_cell_edge_per(ref_cell);edge++)
 		{
-		  RSS( ref_cell_nodes( ref_grid_qua( ref_grid ), 
-				       found, face_nodes), "qua");
-		  bcface[cell_face] = face_nodes[4];
-		  boundary_faces++;
-		}
-	    }
-	}
-      if ( 4 == ref_cell_node_per(ref_cell) && 2 == boundary_faces )
-	{
-	  for(edge=0;edge<ref_cell_edge_per(ref_cell);edge++)
-	    {
-	      face0 = ref_cell_e2n_gen(ref_cell,0,edge);
-	      face1 = ref_cell_e2n_gen(ref_cell,1,edge);
-	      if ( REF_EMPTY != bcface[face0] &&
-		   REF_EMPTY != bcface[face1] &&
-		   bcface[face0] == bcface[face1] )
-		{
-		  RSS( ref_swap_remove_two_face_cell( ref_grid, cell ),
-		       "rm 2face same id");
+		  face0 = ref_cell_e2n_gen(ref_cell,0,edge);
+		  face1 = ref_cell_e2n_gen(ref_cell,1,edge);
+		  if ( REF_EMPTY != bcface[face0] &&
+		       REF_EMPTY != bcface[face1] &&
+		       bcface[face0] == bcface[face1] )
+		    {
+		      changed = REF_TRUE;
+		      RSS( ref_swap_remove_two_face_cell( ref_grid, cell ),
+			   "rm 2face same id");
+		    }
 		}
 	    }
 	}
