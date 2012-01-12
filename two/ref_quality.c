@@ -191,7 +191,7 @@ REF_STATUS ref_quality_swap_multiple_face_cell( REF_GRID ref_grid )
 
   REF_INT edge, face0, face1, pass;
   REF_BOOL changed;
-
+  REF_STATUS status;
   ref_cell = ref_grid_tet(ref_grid);
 
   pass = 0;
@@ -233,6 +233,15 @@ REF_STATUS ref_quality_swap_multiple_face_cell( REF_GRID ref_grid )
 			   "rm 2face same id");
 		    }
 		}
+	    }
+	  if ( 3 == boundary_faces )
+	    {
+	      status = ref_swap_remove_three_face_cell( ref_grid, cell );
+	      if ( REF_SUCCESS == status)
+		{
+		  changed = REF_TRUE;
+		}
+	      if ( REF_INVALID != status ) RSS( status, "rm 3 face");
 	    }
 	}
     }
