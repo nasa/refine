@@ -28,8 +28,10 @@ int main( int argc, char *argv[] )
 
     TSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
     if ( ref_mpi_master ) 
-      TSS(ref_export_b8_ugrid( export_grid, file ), "export" );
-    
+      {
+	TSS(ref_export_ugrid( export_grid, "ref_import_test.ugrid" ), "export" );
+	TSS(ref_export_b8_ugrid( export_grid, file ), "export" );
+      }
     TSS(ref_part_b8_ugrid( &import_grid, file ), "import" );
 
     TSS(ref_grid_free(import_grid),"free");
