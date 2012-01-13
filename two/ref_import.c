@@ -6,46 +6,7 @@
 
 #include "ref_import.h"
 
-#define SWAP_INT(x) { \
-    int y; \
-    char *xp = (char *)&(x); \
-    char *yp = (char *)&(y); \
-    *(yp+3) = *(xp+0); \
-    *(yp+2) = *(xp+1); \
-    *(yp+1) = *(xp+2); \
-    *(yp+0) = *(xp+3); \
-    (x) = y; \
-  }
-
-#define SWAP_LONG(x) { \
-    double y; \
-    char *xp = (char *)&(x); \
-    char *yp = (char *)&(y); \
-    *(yp+7) = *(xp+0); \
-    *(yp+6) = *(xp+1); \
-    *(yp+5) = *(xp+2); \
-    *(yp+4) = *(xp+3); \
-    *(yp+3) = *(xp+4); \
-    *(yp+2) = *(xp+5); \
-    *(yp+1) = *(xp+6); \
-    *(yp+0) = *(xp+7); \
-    (x) = y; \
-  }
-
-#define SWAP_DBL(x) { \
-    double y; \
-    char *xp = (char *)&(x); \
-    char *yp = (char *)&(y); \
-    *(yp+7) = *(xp+0); \
-    *(yp+6) = *(xp+1); \
-    *(yp+5) = *(xp+2); \
-    *(yp+4) = *(xp+3); \
-    *(yp+3) = *(xp+4); \
-    *(yp+2) = *(xp+5); \
-    *(yp+1) = *(xp+6); \
-    *(yp+0) = *(xp+7); \
-    (x) = y; \
-  }
+#include "ref_endian.h"
 
 REF_STATUS ref_import_examine_header( char *filename )
 {

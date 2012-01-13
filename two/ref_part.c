@@ -4,6 +4,7 @@
 
 #include "ref_part.h"
 #include "ref_mpi.h"
+#include "ref_endian.h"
 
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {

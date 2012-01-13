@@ -3,11 +3,12 @@
 lib_LIBRARIES = libref2.a
 
 libref2_a_SOURCES = \
-	ref_defs.h \
 	ref_adj.c ref_adj.h \
 	ref_cell.c ref_cell.h \
 	ref_dict.c ref_dict.h \
+	ref_defs.h \
 	ref_edge.c ref_edge.h \
+	ref_endian.h \
 	ref_export.c ref_export.h \
 	ref_face.c ref_face.h \
 	ref_fixture.c ref_fixture.h \
