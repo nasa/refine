@@ -11,8 +11,13 @@ extern REF_INT ref_mpi_id;
 
 #define ref_mpi_master (0 == ref_mpi_id)
 
+typedef int REF_TYPE;
+#define REF_INT_TYPE (1)
+
 REF_STATUS ref_mpi_start( int argc, char *argv[] );
 REF_STATUS ref_mpi_stop( );
+
+REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type );
 
 END_C_DECLORATION
 

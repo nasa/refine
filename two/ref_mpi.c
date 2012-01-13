@@ -38,3 +38,24 @@ REF_STATUS ref_mpi_stop( )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
+{
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+
+  switch (type)
+    {
+    case REF_INT_TYPE: datatype = MPI_INT; break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+
+  MPI_Bcast(data, n, datatype, 0, MPI_COMM_WORLD);
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(data);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+#endif
+
+  return REF_SUCCESS;
+}

@@ -24,10 +24,11 @@ int main( int argc, char *argv[] )
 
   { /* part */
     REF_GRID export_grid, import_grid;
-    char file[] = "ref_import_test.fgrid";
+    char file[] = "ref_import_test.b8.ugrid";
 
     TSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
-    if ( ref_mpi_master ) TSS(ref_export_fgrid( export_grid, file ), "export" );
+    if ( ref_mpi_master ) 
+      TSS(ref_export_b8_ugrid( export_grid, file ), "export" );
     
     TSS(ref_part_b8_ugrid( &import_grid, file ), "import" );
 
