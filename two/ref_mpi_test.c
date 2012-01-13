@@ -12,6 +12,8 @@ int main( int argc, char *argv[] )
 
   { /* start */
     TSS( ref_mpi_start( argc, argv ), "start" );
+    TEIS( 1, ref_mpi_n, "n" );
+    TEIS( 0, ref_mpi_id, "n" );
   }
 
   return 0;
