@@ -13,6 +13,7 @@ int main( int argc, char *argv[] )
     TSS( ref_mpi_start( argc, argv ), "start" );
     TEIS( 1, ref_mpi_n, "n" );
     TEIS( 0, ref_mpi_id, "n" );
+    TAS( ref_mpi_master, "master" );
   }
 
   return 0;
