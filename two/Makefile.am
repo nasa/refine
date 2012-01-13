@@ -18,6 +18,7 @@ libref2_a_SOURCES = \
 	ref_metric.h ref_metric.c \
 	ref_mpi.h ref_mpi.c \
 	ref_node.h ref_node.c \
+	ref_part.h ref_part.c \
 	ref_quality.h ref_quality.c \
 	ref_shard.c ref_shard.h \
 	ref_sort.h ref_sort.c \
@@ -104,6 +105,11 @@ TESTS += ref_node_test
 noinst_PROGRAMS += ref_node_test
 ref_node_test_SOURCES = ref_node_test.c
 ref_node_test_LDADD = libref2.a -lm
+
+TESTS += ref_part_test
+noinst_PROGRAMS += ref_part_test
+ref_part_test_SOURCES = ref_part_test.c
+ref_part_test_LDADD = libref2.a -lm
 
 TESTS += ref_quality_test
 noinst_PROGRAMS += ref_quality_test
