@@ -28,3 +28,13 @@ REF_STATUS ref_mpi_start( int argc, char *argv[] )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_mpi_stop( )
+{
+
+#ifdef HAVE_MPI
+  MPI_Finalize( );
+#endif
+
+  return REF_SUCCESS;
+}

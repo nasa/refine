@@ -36,5 +36,7 @@ int main( int argc, char *argv[] )
     if ( ref_mpi_master ) TEIS(0, remove( file ), "test clean up");
   }
 
+  TSS( ref_mpi_stop( ), "stop" );
+
   return 0;
 }
