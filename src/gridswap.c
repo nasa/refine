@@ -27,7 +27,6 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   int degree[4];
   double uv[8];
   int newface0, newface1;
-  int addedFace0, addedFace1;
   int cell0, cell1;
   int commonNodes[4], ncommon;
   int uncommonNodes[4], nuncommon;
@@ -172,32 +171,32 @@ Grid *gridRemoveTwoFaceCell(Grid *grid, Queue *queue, int cell )
   facenodes[0] = cell2face[newface0][1];
   facenodes[1] = cell2face[newface0][0];
   facenodes[2] = cell2face[newface0][2];
-  addedFace0 = gridAddFaceUVAndQueue(grid, queue, 
-				     cellnodes[facenodes[0]], 
-				     uv[0+2*facenodes[0]],
-				     uv[1+2*facenodes[0]],
-				     cellnodes[facenodes[1]], 
-				     uv[0+2*facenodes[1]],
-				     uv[1+2*facenodes[1]],
-				     cellnodes[facenodes[2]], 
-				     uv[0+2*facenodes[2]],
-				     uv[1+2*facenodes[2]],
-				     faceId0 );
+  gridAddFaceUVAndQueue(grid, queue, 
+			cellnodes[facenodes[0]], 
+			uv[0+2*facenodes[0]],
+			uv[1+2*facenodes[0]],
+			cellnodes[facenodes[1]], 
+			uv[0+2*facenodes[1]],
+			uv[1+2*facenodes[1]],
+			cellnodes[facenodes[2]], 
+			uv[0+2*facenodes[2]],
+			uv[1+2*facenodes[2]],
+			faceId0 );
 
   facenodes[0] = cell2face[newface1][1];
   facenodes[1] = cell2face[newface1][0];
   facenodes[2] = cell2face[newface1][2];
-  addedFace1 = gridAddFaceUVAndQueue(grid, queue, 
-				     cellnodes[facenodes[0]], 
-				     uv[0+2*facenodes[0]],
-				     uv[1+2*facenodes[0]],
-				     cellnodes[facenodes[1]], 
-				     uv[0+2*facenodes[1]],
-				     uv[1+2*facenodes[1]],
-				     cellnodes[facenodes[2]], 
-				     uv[0+2*facenodes[2]],
-				     uv[1+2*facenodes[2]],
-				     faceId1 );
+  gridAddFaceUVAndQueue(grid, queue, 
+			cellnodes[facenodes[0]], 
+			uv[0+2*facenodes[0]],
+			uv[1+2*facenodes[0]],
+			cellnodes[facenodes[1]], 
+			uv[0+2*facenodes[1]],
+			uv[1+2*facenodes[1]],
+			cellnodes[facenodes[2]], 
+			uv[0+2*facenodes[2]],
+			uv[1+2*facenodes[2]],
+			faceId1 );
 
   /* don't check if minimum cost is satisfied */
   gridRemoveCellAndQueue(grid, queue, cell);
@@ -218,7 +217,6 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
   int degree[4];
   double uv[8];
   int newface;
-  int added_face;
   int common_node, uncommon_node;
 
   int cell2face[4][3] = {{0,1,2},{0,3,1},{1,3,2},{0,2,3}};
@@ -330,17 +328,17 @@ Grid *gridRemoveThreeFaceCell(Grid *grid, Queue *queue, int cell )
   facenodes[0] = cell2face[newface][1];
   facenodes[1] = cell2face[newface][0];
   facenodes[2] = cell2face[newface][2];
-  added_face = gridAddFaceUVAndQueue( grid, queue, 
-				      cellnodes[facenodes[0]], 
-				      uv[0+2*facenodes[0]],
-				      uv[1+2*facenodes[0]],
-				      cellnodes[facenodes[1]], 
-				      uv[0+2*facenodes[1]],
-				      uv[1+2*facenodes[1]],
-				      cellnodes[facenodes[2]], 
-				      uv[0+2*facenodes[2]],
-				      uv[1+2*facenodes[2]],
-				      faceId0 );
+  gridAddFaceUVAndQueue( grid, queue, 
+			 cellnodes[facenodes[0]], 
+			 uv[0+2*facenodes[0]],
+			 uv[1+2*facenodes[0]],
+			 cellnodes[facenodes[1]], 
+			 uv[0+2*facenodes[1]],
+			 uv[1+2*facenodes[1]],
+			 cellnodes[facenodes[2]], 
+			 uv[0+2*facenodes[2]],
+			 uv[1+2*facenodes[2]],
+			 faceId0 );
 
 
   /* don't check if minimum cost is satisfied */
