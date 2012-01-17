@@ -140,7 +140,7 @@ typedef int REF_STATUS;
   }
 
 #define SUPRESS_UNUSED_COMPILER_WARNING(ptr)		\
-  if (NULL == &(ptr)) printf("unused macro failed\n");
+  if (NULL == (&(ptr)+1)) printf("unused macro failed\n");
 
 END_C_DECLORATION
 
