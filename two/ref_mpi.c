@@ -59,3 +59,56 @@ REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
+{
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+  REF_INT tag;
+
+  switch (type)
+    {
+    case REF_INT_TYPE: datatype = MPI_INT; break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+
+  tag = ref_mpi_n*dest+ref_mpi_id;
+
+  MPI_Send(data, n, datatype, dest, tag, MPI_COMM_WORLD);
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(data);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(dest);
+  return REF_IMPLEMENT;
+#endif
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
+{
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+  REF_INT tag;
+  MPI_Status status;
+
+  switch (type)
+    {
+    case REF_INT_TYPE: datatype = MPI_INT; break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+
+  tag = ref_mpi_n*ref_mpi_id+source;
+
+  MPI_Recv(data, n, datatype, source, tag, MPI_COMM_WORLD, &status);
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(data);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(source);
+  return REF_IMPLEMENT;
+#endif
+
+  return REF_SUCCESS;
+}
