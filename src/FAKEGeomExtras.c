@@ -34,16 +34,16 @@ UGridPtr CADGeom_VolumeGrid( int vol )
 GridBool CADGeom_GetEdge(int a, int b, double *c, int *d) {
   SUPRESS_UNUSED_COMPILER_WARNING(a);
   SUPRESS_UNUSED_COMPILER_WARNING(b);
-  c = NULL;
-  d = NULL;
+  SUPRESS_UNUSED_COMPILER_WARNING(c);
+  SUPRESS_UNUSED_COMPILER_WARNING(d);
   return FALSE;
 }
 
 GridBool CADGeom_GetFace(int a, int b, double *c, int *d, int **e, int **f) {
   SUPRESS_UNUSED_COMPILER_WARNING(a);
   SUPRESS_UNUSED_COMPILER_WARNING(b);
-  c = NULL;
-  d = NULL;
+  SUPRESS_UNUSED_COMPILER_WARNING(c);
+  SUPRESS_UNUSED_COMPILER_WARNING(d);
   *e = NULL;
   *f = NULL;
   return FALSE;
