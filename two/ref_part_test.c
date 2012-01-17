@@ -46,6 +46,12 @@ int main( int argc, char *argv[] )
     TEIS( 7, ref_part_first( 7, 4, 4 ), "first");
   }
 
+  { /* first run out */
+    TEIS( 0, ref_part_first( 4, 2, 0 ), "first");
+    TEIS( 2, ref_part_first( 4, 2, 1 ), "first");
+    TEIS( 4, ref_part_first( 4, 2, 2 ), "first");
+  }
+
   { /* part */
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.b8.ugrid";
