@@ -16,6 +16,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_DBL swapped_dbl;
   REF_INT part;
   REF_INT n;
+  REF_DBL *xyz;
 
   REF_GRID chunk;
   REF_GRID ref_grid;
@@ -82,12 +83,49 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 	  n = ref_part_first( nnode, ref_mpi_n, part+1 )
             - ref_part_first( nnode, ref_mpi_n, part );
 	  RSS( ref_mpi_send( &n, 1, REF_INT_TYPE, part ), "send" );
+	  if ( n > 0 )
+	    {
+	      xyz=(REF_DBL*)malloc(3*n*sizeof(REF_DBL));
+	      RNS(xyz,"malloc xyz on master failed");
+	      for (node=0;node<n; node++)
+		{
+		  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "x" );
+		  SWAP_DBL(swapped_dbl);
+		  xyz[0+3*node] = swapped_dbl;
+		  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "y" );
+		  SWAP_DBL(swapped_dbl);
+		  xyz[1+3*node] = swapped_dbl;
+		  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "z" );
+		  SWAP_DBL(swapped_dbl);
+		  xyz[2+3*node] = swapped_dbl;
+		}
+	      RSS( ref_mpi_send( xyz, 3*n, REF_DBL_TYPE, part ), "send" );
+	      free(xyz);
+	    }
 	}
     }
   else
     {
       RSS( ref_mpi_recv( &n, 1, REF_INT_TYPE, 0 ), "recv" );
-      printf("%d: recv %d nodes\n",ref_mpi_id,n);
+      if ( n > 0 )
+	{
+	  xyz=(REF_DBL*)malloc(3*n*sizeof(REF_DBL));
+	  RNS(xyz,"malloc xyz on worker failed");
+	  RSS( ref_mpi_recv( xyz, 3*n, REF_DBL_TYPE, 0 ), "recv" );
+	  for (node=0;node<n; node++)
+	    {
+	      RSS( ref_node_add(ref_node, 
+				node+ref_part_first( nnode, 
+						     ref_mpi_n, 
+						     ref_mpi_id ),
+				&new_node ), "new_node");
+	      ref_node_xyz( ref_node, 0, new_node ) = xyz[0+3*node];
+	      ref_node_xyz( ref_node, 1, new_node ) = xyz[1+3*node];
+	      ref_node_xyz( ref_node, 2, new_node ) = xyz[2+3*node];
+	    }
+	  free(xyz);
+	}
+
     }
 
   if ( ref_mpi_master )
