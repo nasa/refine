@@ -11,12 +11,22 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT node, cell, new_cell;
+  REF_INT cell, new_cell;
+  REF_INT node, new_node;
+  REF_DBL swapped_dbl;
+  REF_INT part;
+  REF_INT n;
 
   REF_GRID chunk;
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
   REF_CELL ref_cell;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  /* header */
 
   file = NULL;
   if ( ref_mpi_master )
@@ -50,8 +60,39 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   RSS( ref_mpi_bcast( &npri, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_mpi_bcast( &nhex, 1, REF_INT_TYPE ), "bcast" ); 
 
+  /* nodes */
+
   if ( ref_mpi_master )
     {
+      for (node=0;node<ref_part_first( nnode, ref_mpi_n, 1 ); node++)
+	{
+	  RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+	  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "x" );
+	  SWAP_DBL(swapped_dbl);
+	  ref_node_xyz( ref_node, 0, new_node ) = swapped_dbl;
+	  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "y" );
+	  SWAP_DBL(swapped_dbl);
+	  ref_node_xyz( ref_node, 1, new_node ) = swapped_dbl;
+	  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "z" );
+	  SWAP_DBL(swapped_dbl);
+	  ref_node_xyz( ref_node, 2, new_node ) = swapped_dbl;
+	}
+      for ( part = 1; part<ref_mpi_n ; part++ )
+	{
+	  n = ref_part_first( nnode, ref_mpi_n, part+1 )
+            - ref_part_first( nnode, ref_mpi_n, part );
+	  RSS( ref_mpi_send( &n, 1, REF_INT_TYPE, part ), "send" );
+	}
+    }
+  else
+    {
+      RSS( ref_mpi_recv( &n, 1, REF_INT_TYPE, 0 ), "recv" );
+      printf("%d: recv %d nodes\n",ref_mpi_id,n);
+    }
+
+  if ( ref_mpi_master )
+    {
+
       long offset;
       offset = 4*7
 	     + 8*3*nnode
