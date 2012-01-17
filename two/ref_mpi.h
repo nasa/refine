@@ -13,6 +13,7 @@ extern REF_INT ref_mpi_id;
 
 typedef int REF_TYPE;
 #define REF_INT_TYPE (1)
+#define REF_DBL_TYPE (2)
 
 REF_STATUS ref_mpi_start( int argc, char *argv[] );
 REF_STATUS ref_mpi_stop( );

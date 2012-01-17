@@ -47,6 +47,7 @@ REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
   switch (type)
     {
     case REF_INT_TYPE: datatype = MPI_INT; break;
+    case REF_DBL_TYPE: datatype = MPI_DOUBLE; break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
 
@@ -69,6 +70,7 @@ REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
   switch (type)
     {
     case REF_INT_TYPE: datatype = MPI_INT; break;
+    case REF_DBL_TYPE: datatype = MPI_DOUBLE; break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
 
@@ -96,6 +98,7 @@ REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
   switch (type)
     {
     case REF_INT_TYPE: datatype = MPI_INT; break;
+    case REF_DBL_TYPE: datatype = MPI_DOUBLE; break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
 
