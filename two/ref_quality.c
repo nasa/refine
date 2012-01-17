@@ -115,7 +115,6 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
   REF_INT face_nodes[REF_CELL_MAX_NODE_PER];
   REF_BOOL problem;
   REF_INT boundary_faces, found;
-  REF_INT bcface[REF_CELL_MAX_FACE_PER];
   REF_INT targeted[5];
 
   REF_GRID viz;
@@ -133,7 +132,6 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
       boundary_faces = 0;
       each_ref_cell_cell_face( ref_cell, cell_face )
         {
-	  bcface[cell_face] = REF_EMPTY;
 	  for(node=0;node<4;node++)
 	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
 	  
@@ -144,7 +142,6 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
 		{
 		  RSS( ref_cell_nodes( ref_grid_tri( ref_grid ), 
 				       found, face_nodes), "tri");
-		  bcface[cell_face] = face_nodes[3];
 		  boundary_faces++;
 		}
 	    }
@@ -155,7 +152,6 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
 		{
 		  RSS( ref_cell_nodes( ref_grid_qua( ref_grid ), 
 				       found, face_nodes), "qua");
-		  bcface[cell_face] = face_nodes[4];
 		  boundary_faces++;
 		}
 	    }
