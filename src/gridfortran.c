@@ -255,13 +255,7 @@ void gridtestcadparameters_( void )
   int nodes[3], edge, edgeId, face, faceId;
   double oldXYZ[3], oldT, oldUV[2];
   double newXYZ[3], newT, newUV[2];
-  double dXYZ[3], dist, dT, dUV;
-  double xyzTol, uvTol, tTol;
   AdjIterator it;
-
-  xyzTol = 1e-7;
-  uvTol  = 1e-4;
-  tTol   = 1e-4;
 
   for(global=0;global<gridGlobalNNode(grid);global++) {
     local = gridGlobal2Local(grid,global);
@@ -276,10 +270,6 @@ void gridtestcadparameters_( void )
 	gridProjectNodeToFace(grid, local, faceId );
 	gridNodeXYZ(grid,local,newXYZ);
 	gridNodeUV(grid,local,faceId,newUV);
-	gridSubtractVector(newXYZ,oldXYZ,dXYZ);
-	dist = gridVectorLength(dXYZ);
-	dUV = sqrt( (newUV[0]-oldUV[0])*(newUV[0]-oldUV[0]) +
-		    (newUV[1]-oldUV[1])*(newUV[1]-oldUV[1]) );
       }
       for ( it = adjFirst(gridEdgeAdj(grid),local); 
 	    adjValid(it); 
@@ -291,9 +281,6 @@ void gridtestcadparameters_( void )
 	gridProjectNodeToEdge(grid, local, edgeId );
 	gridNodeXYZ(grid,local,newXYZ);
 	gridNodeT(grid,local,edgeId,&newT);
-	gridSubtractVector(newXYZ,oldXYZ,dXYZ);
-	dist = gridVectorLength(dXYZ);
-	dT = ABS(newT-oldT);
       }
     }
   }
