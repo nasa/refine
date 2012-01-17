@@ -22,6 +22,30 @@ int main( int argc, char *argv[] )
 
   TSS( ref_mpi_start( argc, argv ), "start" );
 
+  { /* first even */
+    TEIS( 0, ref_part_first( 4, 4, 0 ), "first");
+    TEIS( 1, ref_part_first( 4, 4, 1 ), "first");
+    TEIS( 2, ref_part_first( 4, 4, 2 ), "first");
+    TEIS( 3, ref_part_first( 4, 4, 3 ), "first");
+    TEIS( 4, ref_part_first( 4, 4, 4 ), "first");
+  }
+
+  { /* first run out */
+    TEIS( 0, ref_part_first( 2, 4, 0 ), "first");
+    TEIS( 1, ref_part_first( 2, 4, 1 ), "first");
+    TEIS( 2, ref_part_first( 2, 4, 2 ), "first");
+    TEIS( 2, ref_part_first( 2, 4, 3 ), "first");
+    TEIS( 2, ref_part_first( 2, 4, 4 ), "first");
+  }
+
+  { /* first run out */
+    TEIS( 0, ref_part_first( 7, 4, 0 ), "first");
+    TEIS( 2, ref_part_first( 7, 4, 1 ), "first");
+    TEIS( 4, ref_part_first( 7, 4, 2 ), "first");
+    TEIS( 6, ref_part_first( 7, 4, 3 ), "first");
+    TEIS( 7, ref_part_first( 7, 4, 4 ), "first");
+  }
+
   { /* part */
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.b8.ugrid";
