@@ -34,6 +34,8 @@ int main( int argc, char *argv[] )
       }
     TSS(ref_part_b8_ugrid( &import_grid, file ), "import" );
 
+    if ( ref_mpi_n > 1 ) ref_grid_inspect( import_grid );  
+
     TSS(ref_grid_free(import_grid),"free");
     TSS(ref_grid_free(export_grid),"free");
     if ( ref_mpi_master ) TEIS(0, remove( file ), "test clean up");
