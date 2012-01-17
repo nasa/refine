@@ -213,7 +213,7 @@ Tableau *tableauAuxillaryPivot( Tableau *tableau, int *pivot_row, int *pivot_col
 Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
 {
   int i,j;
-  int m,n;
+  int m;
 
   double zero;
 
@@ -230,7 +230,6 @@ Tableau *tableauLargestPivot( Tableau *tableau, int *pivot_row, int *pivot_col )
   zero = 1.0e-14;
   
   m = 1 + tableauConstraints( tableau );
-  n = 1 + tableauDimension( tableau ) + tableauConstraints( tableau );
   
   divisor = 0.0; /* to suppress uninitialized compiler warning */
   best_divisor = 0.0;
