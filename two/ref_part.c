@@ -9,7 +9,6 @@
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
   FILE *file;
-  REF_GRID ref_grid;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT nodes[REF_CELL_MAX_NODE_PER];
   REF_INT node, cell, new_cell;
@@ -18,7 +17,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_CELL ref_cell;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
-  ref_grid = (*ref_grid_ptr);
 
   file = NULL;
   if ( ref_mpi_master )
