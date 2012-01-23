@@ -91,7 +91,6 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
   printf("marked faces %d hexes %d\n",face_marks,hex_marks);
 
   RSS(ref_export_by_extension(viz, "pole.tec"),"to tec");
-  RSS(ref_export_by_extension(viz, "pole.vtk"),"to vtk");
 
   RSS( ref_grid_free_cell_clone(viz),"free temp grid");
 
