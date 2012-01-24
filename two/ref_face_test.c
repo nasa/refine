@@ -135,5 +135,29 @@ int main( void )
     TWDS( 0.5, normal[2], -1.0, "z-norm");
   }
 
+  {  /* quad open node 1 */
+    REF_DBL xyz0[3] = {0.0,0.0,0.0};
+    REF_DBL xyz1[3] = {0.5,0.0,0.0};
+    REF_DBL xyz2[3] = {1.0,0.0,0.0};
+    REF_DBL xyz3[3] = {0.0,1.0,0.0};
+    REF_INT open_node;
+
+    TSS( ref_face_open_node( xyz0, xyz1, xyz2, xyz3, &open_node ), "open node");
+    
+    TEIS( 1, open_node, "expect 180 deg node");
+  }
+
+  {  /* quad open node 2 */
+    REF_DBL xyz0[3] = {0.0,0.0,0.0};
+    REF_DBL xyz1[3] = {0.1,0.0,0.0};
+    REF_DBL xyz2[3] = {0.5,0.5,0.0};
+    REF_DBL xyz3[3] = {0.0,1.0,0.0};
+    REF_INT open_node;
+
+    TSS( ref_face_open_node( xyz0, xyz1, xyz2, xyz3, &open_node ), "open node");
+    
+    TEIS( 2, open_node, "expect 180 deg node");
+  }
+
   return 0;
 }
