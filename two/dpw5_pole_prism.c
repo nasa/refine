@@ -5,7 +5,6 @@
 
 #include "ref_import.h"
 #include "ref_export.h"
-#include "ref_test.h"
 
 #include "ref_adj.h"
 #include "ref_grid.h"
@@ -39,21 +38,21 @@ int main( int argc, char *argv[] )
     }
 
   printf("reading %s\n",argv[1]);
-  TSS(ref_import_by_extension( &ref_grid, argv[1] ),"by extension");
+  RSS(ref_import_by_extension( &ref_grid, argv[1] ),"by extension");
   printf("complete.\n");
 
   RSS(ref_grid_inspect( ref_grid ), "inspection");
 
   printf("hex quality.\n");
-  TSS(ref_quality_hex( ref_grid ),"quality");
+  RSS(ref_quality_hex( ref_grid ),"quality");
 
   RSS(ref_grid_inspect( ref_grid ), "inspection");
 
   printf("ugrid.\n");
-  TSS(ref_export_b8_ugrid(ref_grid, "ref2.b8.ugrid"),"to ugrid");
+  RSS(ref_export_b8_ugrid(ref_grid, "ref2.b8.ugrid"),"to ugrid");
 
   printf("free.\n");
-  TSS(ref_grid_free(ref_grid),"free");
+  RSS(ref_grid_free(ref_grid),"free");
 
   printf("done.\n");
   return 0;
