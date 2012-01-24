@@ -27,15 +27,16 @@ libref2_a_SOURCES = \
 	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
 
+bin_PROGRAMS =
+
+bin_PROGRAMS += dpw5_pole_prism
+dpw5_pole_prism_SOURCES = dpw5_pole_prism.c
+dpw5_pole_prism_LDADD = libref2.a -lm
+
 noinst_HEADERS = ref_test.h
 
 noinst_PROGRAMS =
 TESTS =
-
-TESTS += ref2_test
-noinst_PROGRAMS += ref2_test
-ref2_test_SOURCES = ref2_test.c
-ref2_test_LDADD = libref2.a -lm
 
 TESTS += ref_adj_test
 noinst_PROGRAMS += ref_adj_test
