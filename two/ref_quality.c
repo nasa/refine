@@ -101,6 +101,8 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   RSS( ref_shard_split( ref_shard ), "split hex to prism" );
 
+  RSS( ref_shard_free( ref_shard ), "free shard" );
+
   return REF_SUCCESS;
 }
 
