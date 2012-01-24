@@ -29,6 +29,10 @@ libref2_a_SOURCES = \
 
 bin_PROGRAMS =
 
+bin_PROGRAMS += dpw5_faceid_prism
+dpw5_faceid_prism_SOURCES = dpw5_faceid_prism.c
+dpw5_faceid_prism_LDADD = libref2.a -lm
+
 bin_PROGRAMS += dpw5_pole_prism
 dpw5_pole_prism_SOURCES = dpw5_pole_prism.c
 dpw5_pole_prism_LDADD = libref2.a -lm
