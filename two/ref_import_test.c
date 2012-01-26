@@ -14,6 +14,10 @@
 #include "ref_sort.h"
 #include "ref_dict.h"
 
+#include "ref_cell.h"
+#include "ref_node.h"
+#include "ref_metric.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -106,16 +110,18 @@ int main( int argc, char *argv[] )
 
     TSS(ref_import_mapbc( &ref_dict, filename ), "import" );
 
+    ref_dict_inspect(ref_dict);
+
     key = 1;
-    TFS(ref_dict_value(ref_dict,key,&value),"missing");
+    TSS(ref_dict_value(ref_dict,key,&value),"missing");
     TEIS(4000,value,"get value");
 
     key = 2;
-    TFS(ref_dict_value(ref_dict,key,&value),"missing");
+    TSS(ref_dict_value(ref_dict,key,&value),"missing");
     TEIS(5000,value,"get value");
 
     key = 3;
-    TFS(ref_dict_value(ref_dict,key,&value),"missing");
+    TSS(ref_dict_value(ref_dict,key,&value),"missing");
     TEIS(6662,value,"get value");
 
     TSS(ref_dict_free(ref_dict),"free");
