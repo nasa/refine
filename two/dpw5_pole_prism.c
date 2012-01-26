@@ -49,7 +49,7 @@ int main( int argc, char *argv[] )
   RSS(ref_grid_inspect( ref_grid ), "inspection");
 
   printf("ugrid.\n");
-  RSS(ref_export_b8_ugrid(ref_grid, "ref2.b8.ugrid"),"to ugrid");
+  RSS(ref_export_b8_ugrid(ref_grid, "pole_prism.b8.ugrid"),"to ugrid");
 
   printf("free.\n");
   RSS(ref_grid_free(ref_grid),"free");
