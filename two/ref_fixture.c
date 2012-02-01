@@ -177,7 +177,7 @@ REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  RSS(ref_node_add(ref_node,4,&node),"add node");
+  RSS(ref_node_add(ref_node,5,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
@@ -228,22 +228,22 @@ REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
 
-  RSS(ref_node_add(ref_node,0,&node),"add node");
+  RSS(ref_node_add(ref_node,4,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  RSS(ref_node_add(ref_node,1,&node),"add node");
+  RSS(ref_node_add(ref_node,5,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  RSS(ref_node_add(ref_node,2,&node),"add node");
+  RSS(ref_node_add(ref_node,6,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  RSS(ref_node_add(ref_node,3,&node),"add node");
+  RSS(ref_node_add(ref_node,7,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
