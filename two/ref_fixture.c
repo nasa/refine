@@ -248,7 +248,7 @@ REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+  RSS(ref_cell_add(ref_grid_hex(ref_grid),nodes,&cell),"add prism");
 
   nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3; nodes[4] = 10;
   RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add quad");
