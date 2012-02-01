@@ -349,9 +349,14 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 {
   REF_DBL vol;
   REF_INT cell, temp, new_cell;
+
   REF_INT pri_nodes[REF_CELL_MAX_NODE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_NODE_PER];
   REF_CELL pri, tet;
+
+  REF_INT tri_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT qua_nodes[REF_CELL_MAX_NODE_PER];
+  REF_CELL qua, tri;
 
   pri = ref_grid_pri(ref_grid);
   tet = ref_grid_tet(ref_grid);
@@ -425,6 +430,45 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 	  RAS( vol>0.0, "negative volume tet");
 	}
 
+    }
+
+  qua = ref_grid_qua(ref_grid);
+  tri = ref_grid_tri(ref_grid);
+  
+
+  each_ref_cell_valid_cell_with_nodes( qua, cell, qua_nodes )
+    {
+      RSS( ref_cell_remove( qua, cell ), "remove qua");
+      tri_nodes[3] = qua_nodes[4]; /* patch id */
+      if ( ( qua_nodes[0] < qua_nodes[1] && qua_nodes[0] < qua_nodes[3] ) ||
+	   ( qua_nodes[2] < qua_nodes[1] && qua_nodes[2] < qua_nodes[3] ) )
+	{ /* 0-2 diag split of quad */
+  /* 2-1
+     |\|
+     3-0 */
+	  tri_nodes[0] = qua_nodes[0];
+	  tri_nodes[1] = qua_nodes[2];
+	  tri_nodes[2] = qua_nodes[3];
+	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  tri_nodes[0] = qua_nodes[0];
+	  tri_nodes[1] = qua_nodes[1];
+	  tri_nodes[2] = qua_nodes[2];
+	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	}
+      else
+	{ /* 3-1 diag split of quad */
+  /* 2-1
+     |/|
+     3-0 */
+	  tri_nodes[0] = qua_nodes[0];
+	  tri_nodes[1] = qua_nodes[1];
+	  tri_nodes[2] = qua_nodes[3];
+	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  tri_nodes[0] = qua_nodes[2];
+	  tri_nodes[1] = qua_nodes[3];
+	  tri_nodes[2] = qua_nodes[1];
+	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	}
     }
 
   return REF_SUCCESS;

@@ -12,6 +12,13 @@
 
 #include "ref_shard.h"
 #include "ref_fixture.h"
+#include "ref_quality.h"
+#include "ref_subdiv.h"
+#include "ref_swap.h"
+#include "ref_math.h"
+#include "ref_export.h"
+#include "ref_edge.h"
+#include "ref_dict.h"
 
 #include "ref_test.h"
 
@@ -217,6 +224,9 @@ int main( void )
 
     TEIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"no more pri");
     TEIS(3, ref_cell_n(ref_grid_tet(ref_grid)),"into 3 tets");
+
+    TEIS(0, ref_cell_n(ref_grid_qua(ref_grid)),"no more qua");
+    TEIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"into 9 tri");
 
     TSS( ref_grid_free(ref_grid),"free" );
   }
