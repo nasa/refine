@@ -110,8 +110,6 @@ int main( int argc, char *argv[] )
 
     TSS(ref_import_mapbc( &ref_dict, filename ), "import" );
 
-    ref_dict_inspect(ref_dict);
-
     key = 1;
     TSS(ref_dict_value(ref_dict,key,&value),"missing");
     TEIS(4000,value,"get value");
