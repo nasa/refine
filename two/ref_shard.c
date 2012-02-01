@@ -4,6 +4,7 @@
 
 #include "ref_shard.h"
 #include "ref_quality.h"
+#include "ref_export.h"
 
 REF_STATUS ref_shard_create( REF_SHARD *ref_shard_ptr, REF_GRID ref_grid )
 {
@@ -345,11 +346,41 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
   return REF_SUCCESS;
 }
 
+
+#define check_tet_volume( cell )					\
+  {									\
+    REF_DBL vol;							\
+    RSS( ref_quality_tet_vol( ref_grid, (cell), &vol ), "tet vol");	\
+    if( vol<0.0 )							\
+      {									\
+	REF_GRID viz;							\
+	REF_INT newnew;							\
+	printf("tet vol %e\n",vol);					\
+	printf("minnode %d\n",minnode);					\
+	printf("orig %d %d %d %d %d %d\n",				\
+	       orig[0],orig[1],orig[2],					\
+	       orig[3],orig[4],orig[5]);				\
+	printf("prism %d %d %d %d %d %d\n",				\
+	       pri_nodes[0],pri_nodes[1],pri_nodes[2],			\
+	       pri_nodes[3],pri_nodes[4],pri_nodes[5]);			\
+	printf("tet %d %d %d %d\n",					\
+	       tet_nodes[0],tet_nodes[1],tet_nodes[2],			\
+	       tet_nodes[3]);						\
+	RSS( ref_grid_empty_cell_clone(&viz,ref_grid),"viz");		\
+	RSS( ref_cell_add( ref_grid_pri(viz), orig, &newnew ), "o");	\
+	RSS( ref_cell_add( ref_grid_pri(viz), pri_nodes, &newnew ), "p"); \
+	RSS( ref_cell_add( ref_grid_tet(viz), tet_nodes, &newnew ), "t"); \
+	RSS(ref_export_by_extension(viz, "neg.tec"),"to tec");		\
+	RSS( ref_grid_free_cell_clone(viz),"free temp grid");		\
+	RSS( REF_FAILURE, "neg vol tet");				\
+      }									\
+  }
+
 REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 {
-  REF_DBL vol;
-  REF_INT cell, temp, new_cell;
+  REF_INT cell, new_cell, minnode;
 
+  REF_INT orig[REF_CELL_MAX_NODE_PER];
   REF_INT pri_nodes[REF_CELL_MAX_NODE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_NODE_PER];
   REF_CELL pri, tet;
@@ -361,56 +392,95 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
   pri = ref_grid_pri(ref_grid);
   tet = ref_grid_tet(ref_grid);
   
-  each_ref_cell_valid_cell_with_nodes( pri, cell, pri_nodes )
+  each_ref_cell_valid_cell_with_nodes( pri, cell, orig )
     {
       RSS( ref_cell_remove( pri, cell ), "remove pri");
-      if ( pri_nodes[1] < pri_nodes[2] && pri_nodes[1] < pri_nodes[0] )
-	{ /* rotate node 1 into 0 position */
-	  temp = pri_nodes[0];
-	  pri_nodes[0] = pri_nodes[1];
-	  pri_nodes[1] = pri_nodes[2];
-	  pri_nodes[2] = temp;
-	  temp = pri_nodes[3];
-	  pri_nodes[3] = pri_nodes[4];
-	  pri_nodes[4] = pri_nodes[5];
-	  pri_nodes[5] = temp;
+
+      minnode = MIN( MIN( orig[0], orig[1] ), MIN( orig[2], orig[3] ) );
+      minnode = MIN( MIN( orig[4], orig[5] ), minnode );
+
+      pri_nodes[0] = orig[0];
+      pri_nodes[1] = orig[1];
+      pri_nodes[2] = orig[2];
+      pri_nodes[3] = orig[3];
+      pri_nodes[4] = orig[4];
+      pri_nodes[5] = orig[5];
+ 
+      if ( orig[1] == minnode )
+	{
+	  pri_nodes[0] = orig[1];
+	  pri_nodes[1] = orig[2];
+	  pri_nodes[2] = orig[0];
+	  pri_nodes[3] = orig[4];
+	  pri_nodes[4] = orig[5];
+	  pri_nodes[5] = orig[3];
 	}
-      if ( pri_nodes[2] < pri_nodes[1] && pri_nodes[2] < pri_nodes[0] )
-	{ /* rotate node 2 into 0 position */
-	  temp = pri_nodes[2];
-	  pri_nodes[2] = pri_nodes[1];
-	  pri_nodes[1] = pri_nodes[0];
-	  pri_nodes[0] = temp;
-	  temp = pri_nodes[5];
-	  pri_nodes[5] = pri_nodes[4];
-	  pri_nodes[4] = pri_nodes[3];
-	  pri_nodes[3] = temp;
+ 
+      if ( orig[2] == minnode )
+	{
+	  pri_nodes[0] = orig[2];
+	  pri_nodes[1] = orig[0];
+	  pri_nodes[2] = orig[1];
+	  pri_nodes[3] = orig[5];
+	  pri_nodes[4] = orig[3];
+	  pri_nodes[5] = orig[4];
 	}
-      /* node 0 is now the smallest index of 0,1,2 */
+ 
+      if ( orig[3] == minnode )
+	{
+	  pri_nodes[0] = orig[3];
+	  pri_nodes[1] = orig[5];
+	  pri_nodes[2] = orig[4];
+	  pri_nodes[3] = orig[0];
+	  pri_nodes[4] = orig[2];
+	  pri_nodes[5] = orig[1];
+	}
+ 
+      if ( orig[4] == minnode )
+	{
+	  pri_nodes[0] = orig[4];
+	  pri_nodes[1] = orig[3];
+	  pri_nodes[2] = orig[5];
+	  pri_nodes[3] = orig[1];
+	  pri_nodes[4] = orig[0];
+	  pri_nodes[5] = orig[2];
+	}
+ 
+      if ( orig[5] == minnode )
+	{
+	  pri_nodes[0] = orig[5];
+	  pri_nodes[1] = orig[4];
+	  pri_nodes[2] = orig[3];
+	  pri_nodes[3] = orig[2];
+	  pri_nodes[4] = orig[1];
+	  pri_nodes[5] = orig[0];
+	}
+ 
+      /* node 0 is now the smallest index of prism */
+ 
       tet_nodes[0] = pri_nodes[0];
       tet_nodes[1] = pri_nodes[4];
       tet_nodes[2] = pri_nodes[5];
       tet_nodes[3] = pri_nodes[3];
       RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-      RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
-      RAS( vol>0.0, "negative volume tet");
+      check_tet_volume( new_cell );
 
-      if ( pri_nodes[1] < pri_nodes[2] )
+      if ( ( pri_nodes[1] < pri_nodes[2] && pri_nodes[1] < pri_nodes[4] ) ||
+	   ( pri_nodes[5] < pri_nodes[2] && pri_nodes[5] < pri_nodes[4] ) )
 	{
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[5];
 	  tet_nodes[3] = pri_nodes[4];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-	  RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
-	  RAS( vol>0.0, "negative volume tet");
+	  check_tet_volume( new_cell );
+
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[2];
 	  tet_nodes[3] = pri_nodes[5];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-	  RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
-	  RAS( vol>0.0, "negative volume tet");
+	  check_tet_volume( new_cell );
 	}
       else
 	{
@@ -419,22 +489,20 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 	  tet_nodes[2] = pri_nodes[4];
 	  tet_nodes[3] = pri_nodes[5];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-	  RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
-	  RAS( vol>0.0, "negative volume tet");
+	  check_tet_volume( new_cell );
+
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[2];
 	  tet_nodes[3] = pri_nodes[4];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-	  RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
-	  RAS( vol>0.0, "negative volume tet");
+	  check_tet_volume( new_cell );
 	}
 
     }
 
   qua = ref_grid_qua(ref_grid);
   tri = ref_grid_tri(ref_grid);
-  
 
   each_ref_cell_valid_cell_with_nodes( qua, cell, qua_nodes )
     {
