@@ -11,41 +11,15 @@
 #include "ref_sort.h"
 
 #include "ref_shard.h"
+#include "ref_fixture.h"
 
 #include "ref_test.h"
 
 static REF_STATUS set_up_hex_for_shard( REF_SHARD *ref_shard_ptr )
 {
   REF_GRID ref_grid;
-  REF_INT nodes[8] = {0,1,2,3,4,5,6,7};
-  REF_INT cell, node;
 
-  TSS(ref_grid_create(&ref_grid),"create");
-
-  TSS(ref_node_add( ref_grid_node(ref_grid), 0, &node),"n0");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 1, &node),"n1");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 2, &node),"n2");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 3, &node),"n3");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 4, &node),"n4");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 5, &node),"n5");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 5, &node),"n6");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 5, &node),"n7");
-
-  TSS(ref_cell_add(ref_grid_hex(ref_grid),nodes,&cell),"add hex");
-
-  nodes[0] = 0;
-  nodes[1] = 4;
-  nodes[2] = 5;
-  nodes[3] = 1;
-  nodes[4] = 1;
-  TSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
-
-  nodes[0] = 1;
-  nodes[1] = 5;
-  nodes[2] = 6;
-  nodes[3] = 2;
-  nodes[4] = 2;
-  TSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
+  TSS( ref_fixture_hex_grid( &ref_grid ), "fixure hex" );
 
   TSS(ref_shard_create(ref_shard_ptr,ref_grid),"create");
 
@@ -207,8 +181,8 @@ int main( void )
     TEIS(0, ref_cell_n(ref_grid_hex(ref_grid)),"remove hex");
     TEIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"add two pri");
 
-    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"add two tri");
-    TEIS(1, ref_cell_n(ref_grid_qua(ref_grid)),"keep one qua");
+    TEIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"add four tri");
+    TEIS(4, ref_cell_n(ref_grid_qua(ref_grid)),"keep four qua");
 
     TSS( tear_down( ref_shard ), "tear down");
   }
@@ -227,8 +201,8 @@ int main( void )
     TEIS(0, ref_cell_n(ref_grid_hex(ref_grid)),"remove hex");
     TEIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"add two pri");
 
-    TEIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"add two pri");
-    TEIS(1, ref_cell_n(ref_grid_qua(ref_grid)),"keep one qua");
+    TEIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"add two pri");
+    TEIS(4, ref_cell_n(ref_grid_qua(ref_grid)),"keep one qua");
 
     TSS( tear_down( ref_shard ), "tear down");
   }
