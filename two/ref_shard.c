@@ -346,7 +346,6 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
   return REF_SUCCESS;
 }
 
-
 #define check_tet_volume( cell )					\
   {									\
     REF_DBL vol;							\
@@ -370,11 +369,15 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
 	RSS( ref_cell_add( ref_grid_pri(viz), orig, &newnew ), "o");	\
 	RSS( ref_cell_add( ref_grid_pri(viz), pri_nodes, &newnew ), "p"); \
 	RSS( ref_cell_add( ref_grid_tet(viz), tet_nodes, &newnew ), "t"); \
-	RSS(ref_export_by_extension(viz, "neg.tec"),"to tec");		\
 	RSS( ref_grid_free_cell_clone(viz),"free temp grid");		\
-	RSS( REF_FAILURE, "neg vol tet");				\
       }									\
   }
+
+/*
+	RSS(ref_export_by_extension(viz, "neg.tec"),"to tec");		\
+	RSS( REF_FAILURE, "neg vol tet");                               \
+ 
+*/
 
 REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 {
