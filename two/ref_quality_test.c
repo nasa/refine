@@ -25,6 +25,9 @@
 
 #include "ref_swap.h"
 
+#include "ref_test.h"
+#include "ref_fixture.h"
+
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
@@ -68,6 +71,19 @@ int main( int argc, char *argv[] )
       printf("done.\n");
       return 0;
     }
+
+  { /* find mark */
+    REF_GRID ref_grid;
+    REF_DBL vol;
+
+    TSS( ref_fixture_tet_grid( &ref_grid ), "tet fixture" );
+    TSS( ref_quality_tet_vol( ref_grid, 0, &vol), "get vol");
+
+    TWDS(1.0/6.0,vol,-1.0,"expected vol");
+
+    TSS( ref_grid_free( ref_grid ), "free" );
+  }
+
 
   return 0;
 }

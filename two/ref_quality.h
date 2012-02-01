@@ -14,6 +14,9 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
 REF_STATUS ref_quality_swap_multiple_face_cell( REF_GRID ref_grid );
 REF_STATUS ref_quality_split_multiple_face_cell( REF_GRID ref_grid );
 
+REF_STATUS ref_quality_tet_vol( REF_GRID ref_grid, REF_INT cell, 
+				REF_DBL *volume);
+
 END_C_DECLORATION
 
 #endif /* REF_QUALITY_H */
