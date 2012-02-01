@@ -343,3 +343,77 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
+{
+  REF_INT cell, temp, new_cell;
+  REF_INT pri_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT tet_nodes[REF_CELL_MAX_NODE_PER];
+  REF_CELL pri, tet;
+
+  pri = ref_grid_pri(ref_grid);
+  tet = ref_grid_tet(ref_grid);
+  
+  each_ref_cell_valid_cell_with_nodes( pri, cell, pri_nodes )
+    {
+      RSS( ref_cell_remove( pri, cell ), "remove pri");
+      if ( pri_nodes[1] < pri_nodes[2] && pri_nodes[1] < pri_nodes[0] )
+	{ /* rotate node 1 into 0 position */
+	  temp = pri_nodes[0];
+	  pri_nodes[0] = pri_nodes[1];
+	  pri_nodes[1] = pri_nodes[2];
+	  pri_nodes[2] = temp;
+	  temp = pri_nodes[3];
+	  pri_nodes[3] = pri_nodes[4];
+	  pri_nodes[4] = pri_nodes[5];
+	  pri_nodes[5] = temp;
+	}
+      if ( pri_nodes[2] < pri_nodes[1] && pri_nodes[2] < pri_nodes[0] )
+	{ /* rotate node 2 into 0 position */
+	  temp = pri_nodes[2];
+	  pri_nodes[2] = pri_nodes[1];
+	  pri_nodes[1] = pri_nodes[0];
+	  pri_nodes[0] = temp;
+	  temp = pri_nodes[5];
+	  pri_nodes[5] = pri_nodes[4];
+	  pri_nodes[4] = pri_nodes[3];
+	  pri_nodes[3] = temp;
+	}
+      /* node 0 is now the smallest index of 0,1,2 */
+      tet_nodes[0] = pri_nodes[0];
+      tet_nodes[1] = pri_nodes[4];
+      tet_nodes[2] = pri_nodes[5];
+      tet_nodes[3] = pri_nodes[1];
+      RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+
+      if ( pri_nodes[1] < pri_nodes[2] )
+	{
+	  tet_nodes[0] = pri_nodes[0];
+	  tet_nodes[1] = pri_nodes[1];
+	  tet_nodes[2] = pri_nodes[5];
+	  tet_nodes[3] = pri_nodes[4];
+	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  tet_nodes[0] = pri_nodes[0];
+	  tet_nodes[1] = pri_nodes[1];
+	  tet_nodes[2] = pri_nodes[2];
+	  tet_nodes[3] = pri_nodes[5];
+	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	}
+      else
+	{
+	  tet_nodes[0] = pri_nodes[2];
+	  tet_nodes[1] = pri_nodes[0];
+	  tet_nodes[2] = pri_nodes[4];
+	  tet_nodes[3] = pri_nodes[5];
+	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  tet_nodes[0] = pri_nodes[0];
+	  tet_nodes[1] = pri_nodes[1];
+	  tet_nodes[2] = pri_nodes[2];
+	  tet_nodes[3] = pri_nodes[4];
+	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	}
+
+    }
+
+  return REF_SUCCESS;
+}

@@ -44,6 +44,8 @@ REF_STATUS ref_shard_mark_cell_edge_split( REF_SHARD ref_shard,
 REF_STATUS ref_shard_mark_relax( REF_SHARD ref_shard );
 REF_STATUS ref_shard_split( REF_SHARD ref_shard );
 
+REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid );
+
 END_C_DECLORATION
 
 #endif /* REF_SHARD_H */

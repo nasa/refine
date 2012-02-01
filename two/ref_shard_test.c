@@ -207,5 +207,19 @@ int main( void )
     TSS( tear_down( ref_shard ), "tear down");
   }
 
+  { /* shard prism */
+
+    REF_GRID ref_grid;
+
+    TSS(ref_fixture_pri_grid(&ref_grid),"set up");
+
+    TSS(ref_shard_prism_into_tet(ref_grid),"shard prism");
+
+    TEIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"no more pri");
+    TEIS(3, ref_cell_n(ref_grid_tet(ref_grid)),"into 3 tets");
+
+    TSS( ref_grid_free(ref_grid),"free" );
+  }
+
   return 0;
 }
