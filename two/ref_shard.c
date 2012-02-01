@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "ref_shard.h"
+#include "ref_quality.h"
 
 REF_STATUS ref_shard_create( REF_SHARD *ref_shard_ptr, REF_GRID ref_grid )
 {
@@ -346,6 +347,7 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
 
 REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 {
+  REF_DBL vol;
   REF_INT cell, temp, new_cell;
   REF_INT pri_nodes[REF_CELL_MAX_NODE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_NODE_PER];
@@ -383,8 +385,10 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
       tet_nodes[0] = pri_nodes[0];
       tet_nodes[1] = pri_nodes[4];
       tet_nodes[2] = pri_nodes[5];
-      tet_nodes[3] = pri_nodes[1];
+      tet_nodes[3] = pri_nodes[3];
       RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+      RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
+      RAS( vol>0.0, "negative volume tet");
 
       if ( pri_nodes[1] < pri_nodes[2] )
 	{
@@ -393,11 +397,15 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 	  tet_nodes[2] = pri_nodes[5];
 	  tet_nodes[3] = pri_nodes[4];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
+	  RAS( vol>0.0, "negative volume tet");
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[2];
 	  tet_nodes[3] = pri_nodes[5];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
+	  RAS( vol>0.0, "negative volume tet");
 	}
       else
 	{
@@ -406,11 +414,15 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 	  tet_nodes[2] = pri_nodes[4];
 	  tet_nodes[3] = pri_nodes[5];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
+	  RAS( vol>0.0, "negative volume tet");
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[2];
 	  tet_nodes[3] = pri_nodes[4];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_quality_tet_vol( ref_grid, new_cell, &vol ), "tet vol");
+	  RAS( vol>0.0, "negative volume tet");
 	}
 
     }
