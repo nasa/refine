@@ -52,6 +52,42 @@ int main( int argc, char *argv[] )
     TEIS( 4, ref_part_first( 4, 2, 2 ), "first");
   }
 
+  { /* single */
+    TEIS( 0, ref_part_implicit( 4, 1, 0 ), "part");
+    TEIS( 0, ref_part_implicit( 4, 1, 1 ), "part");
+    TEIS( 0, ref_part_implicit( 4, 1, 2 ), "part");
+    TEIS( 0, ref_part_implicit( 4, 1, 3 ), "part");
+  }
+
+  { /* one even */
+    TEIS( 0, ref_part_implicit( 4, 4, 0 ), "part");
+    TEIS( 1, ref_part_implicit( 4, 4, 1 ), "part");
+    TEIS( 2, ref_part_implicit( 4, 4, 2 ), "part");
+    TEIS( 3, ref_part_implicit( 4, 4, 3 ), "part");
+  }
+
+  { /* one run out */
+    TEIS( 0, ref_part_implicit( 2, 4, 0 ), "part");
+    TEIS( 1, ref_part_implicit( 2, 4, 1 ), "part");
+  }
+
+  { /* two run out */
+    TEIS( 0, ref_part_implicit( 7, 4, 0 ), "part");
+    TEIS( 0, ref_part_implicit( 7, 4, 1 ), "part");
+    TEIS( 1, ref_part_implicit( 7, 4, 2 ), "part");
+    TEIS( 1, ref_part_implicit( 7, 4, 3 ), "part");
+    TEIS( 2, ref_part_implicit( 7, 4, 4 ), "part");
+    TEIS( 2, ref_part_implicit( 7, 4, 5 ), "part");
+    TEIS( 3, ref_part_implicit( 7, 4, 6 ), "part");
+  }
+
+  { /* two even */
+    TEIS( 0, ref_part_implicit( 4, 2, 0 ), "part");
+    TEIS( 0, ref_part_implicit( 4, 2, 1 ), "part");
+    TEIS( 1, ref_part_implicit( 4, 2, 2 ), "part");
+    TEIS( 1, ref_part_implicit( 4, 2, 3 ), "part");
+  }
+
   { /* part */
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.b8.ugrid";
