@@ -10,8 +10,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT cell, new_cell;
+  REF_INT cell;
   REF_INT node, new_node;
   REF_DBL swapped_dbl;
   REF_INT part;
@@ -19,8 +18,13 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_DBL *xyz;
   REF_INT end_of_message = REF_EMPTY;
   REF_INT elements_to_receive;
+  REF_INT *c2n;
+  REF_INT *elements_to_send;
+  REF_INT node_per;
+  REF_INT ncell, section_size;
 
-  REF_GRID chunk;
+  REF_INT chunk;
+
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -130,9 +134,9 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
     }
 
+
   if ( ref_mpi_master )
     {
-
       long offset;
       offset = 4*7
 	     + 8*3*nnode
@@ -140,25 +144,39 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
              + 4*5*nqua;
       fseek(file,offset,SEEK_SET);
 
-      RSS( ref_grid_create( &chunk ), "create chunk");
+      elements_to_send =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
+      RNS(elements_to_send,"malloc elements_to_send on worker failed");
 
-      ref_cell = ref_grid_tet(chunk);
-      for (cell=0;cell<ntet;cell++)
+      ref_cell = ref_grid_tet(ref_grid);
+      node_per = ref_cell_node_per(ref_cell);
+
+      chunk = MAX(10000, ntet/ref_mpi_n);
+
+      ncell = 0;
+      while ( ncell < ntet )
 	{
-	  for (node=0;node<ref_cell_node_per(ref_cell);node++)
+	  section_size = MIN(chunk,ntet-ncell);
+	  ncell += section_size;
+	  c2n =(REF_INT *)malloc(node_per*section_size*sizeof(REF_INT));
+	  
+	  for (cell=0;cell<section_size;cell++)
 	    {
-	      RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "cn" );
-	      SWAP_INT(nodes[node]);
-	      nodes[node]--;
+	      for (node=0;node<node_per;node++)
+		{
+		  RES(1, fread( &(c2n[node+node_per*cell]), 
+				sizeof(REF_INT), 1, file ), "cn" );
+		  SWAP_INT(c2n[node+node_per*cell]);
+		  c2n[node+node_per*cell]--;
+		}
 	    }
-	  RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "add cell");
+	  free(c2n);
 	}
-      RSS( ref_grid_free( chunk ), "free chunk");
 
       for ( part = 1; part<ref_mpi_n ; part++ )
 	RSS( ref_mpi_send( &end_of_message, 1, REF_INT_TYPE, part ), "send" );
 
-   }  
+      free(elements_to_send);
+    }  
   else
     {
       do {
