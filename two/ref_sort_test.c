@@ -49,5 +49,18 @@ int main( void )
     TEIS( 4, sorted[3], "sorted[3]");
   }
 
+  {  /* unique */
+    REF_INT n=4,original[4], m, unique[4];
+    original[0]=2;
+    original[1]=1;
+    original[2]=2;
+    original[3]=3;
+    TSS( ref_sort_unique( n, original, &m, unique ), "unique" );
+    TEIS( 3, m, "m");
+    TEIS( 1, unique[0], "unique[0]");
+    TEIS( 2, unique[1], "unique[1]");
+    TEIS( 3, unique[2], "unique[2]");
+  }
+
   return 0;
 }
