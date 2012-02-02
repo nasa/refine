@@ -17,6 +17,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT part;
   REF_INT n;
   REF_DBL *xyz;
+  REF_INT end_of_message = REF_EMPTY;
+  REF_INT elements_to_receive;
 
   REF_GRID chunk;
   REF_GRID ref_grid;
@@ -141,7 +143,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       RSS( ref_grid_create( &chunk ), "create chunk");
 
       ref_cell = ref_grid_tet(chunk);
-      for (cell=0;cell<ntri;cell++)
+      for (cell=0;cell<ntet;cell++)
 	{
 	  for (node=0;node<ref_cell_node_per(ref_cell);node++)
 	    {
@@ -153,8 +155,16 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 	}
       RSS( ref_grid_free( chunk ), "free chunk");
 
-   }  
+      for ( part = 1; part<ref_mpi_n ; part++ )
+	RSS( ref_mpi_send( &end_of_message, 1, REF_INT_TYPE, part ), "send" );
 
+   }  
+  else
+    {
+      do {
+	RSS( ref_mpi_recv( &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+      } while ( elements_to_receive != end_of_message );
+    }
 
   if ( ref_mpi_master ) fclose(file);
 
