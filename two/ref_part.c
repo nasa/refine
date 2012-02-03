@@ -5,6 +5,7 @@
 #include "ref_part.h"
 #include "ref_mpi.h"
 #include "ref_endian.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
@@ -19,9 +20,13 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT end_of_message = REF_EMPTY;
   REF_INT elements_to_receive;
   REF_INT *c2n;
+  REF_INT *sent_c2n;
   REF_INT *elements_to_send;
   REF_INT node_per;
   REF_INT ncell, section_size;
+  REF_INT all_procs[REF_CELL_MAX_NODE_PER];
+  REF_INT unique_procs[REF_CELL_MAX_NODE_PER];
+  REF_INT cell_procs;
 
   REF_INT chunk;
 
@@ -134,6 +139,13 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
     }
 
+  chunk = MAX(10000, ntet/ref_mpi_n);
+
+  ref_cell = ref_grid_tet(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+
+  sent_c2n =(REF_INT *)malloc(node_per*chunk*sizeof(REF_INT));
+  RNS(sent_c2n,"malloc failed");
 
   if ( ref_mpi_master )
     {
@@ -145,19 +157,19 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       fseek(file,offset,SEEK_SET);
 
       elements_to_send =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
-      RNS(elements_to_send,"malloc elements_to_send on worker failed");
+      RNS(elements_to_send,"malloc failed");
 
-      ref_cell = ref_grid_tet(ref_grid);
-      node_per = ref_cell_node_per(ref_cell);
-
-      chunk = MAX(10000, ntet/ref_mpi_n);
+      c2n =(REF_INT *)malloc(node_per*chunk*sizeof(REF_INT));
+      RNS(c2n,"malloc failed");
 
       ncell = 0;
       while ( ncell < ntet )
 	{
 	  section_size = MIN(chunk,ntet-ncell);
 	  ncell += section_size;
-	  c2n =(REF_INT *)malloc(node_per*section_size*sizeof(REF_INT));
+
+	  for ( part = 1; part<ref_mpi_n ; part++ )
+	    elements_to_send[part] = 0;
 	  
 	  for (cell=0;cell<section_size;cell++)
 	    {
@@ -167,22 +179,39 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 				sizeof(REF_INT), 1, file ), "cn" );
 		  SWAP_INT(c2n[node+node_per*cell]);
 		  c2n[node+node_per*cell]--;
+		  all_procs[node] = ref_part_implicit( nnode, ref_mpi_n, 
+						       c2n[node+node_per*cell]);
 		}
+	      RSS( ref_sort_unique( node_per, all_procs, 
+				    &cell_procs, unique_procs), "uniq" );
+	      for (node=0;node<cell_procs;node++)
+		elements_to_send[unique_procs[node]]++;
 	    }
-	  free(c2n);
+	  
+	  for ( part = 1; part<ref_mpi_n ; part++ )
+	    if ( elements_to_send[part] > 0 ) 
+	      RSS( ref_mpi_send( &(elements_to_send[part]), 
+				 1, REF_INT_TYPE, part ), "send" );
+
 	}
 
+      free(c2n);
+      free(elements_to_send);
+
+      /* signal we are done */
       for ( part = 1; part<ref_mpi_n ; part++ )
 	RSS( ref_mpi_send( &end_of_message, 1, REF_INT_TYPE, part ), "send" );
 
-      free(elements_to_send);
     }  
   else
     {
       do {
 	RSS( ref_mpi_recv( &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+	printf("part %d, inbound %d\n",ref_mpi_id,elements_to_receive);
       } while ( elements_to_receive != end_of_message );
     }
+
+  free(sent_c2n);
 
   if ( ref_mpi_master ) fclose(file);
 
