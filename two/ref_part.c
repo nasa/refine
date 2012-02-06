@@ -7,6 +7,8 @@
 #include "ref_endian.h"
 #include "ref_sort.h"
 
+#include "ref_export.h"
+
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
   FILE *file;
@@ -29,6 +31,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT cell_procs;
 
   REF_INT chunk;
+
+  REF_BOOL needcell;
+
+  REF_INT send_size, new_cell;
 
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -168,7 +174,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 	  section_size = MIN(chunk,ntet-ncell);
 	  ncell += section_size;
 
-	  for ( part = 1; part<ref_mpi_n ; part++ )
+	  for ( part = 0; part<ref_mpi_n ; part++ )
 	    elements_to_send[part] = 0;
 	  
 	  for (cell=0;cell<section_size;cell++)
@@ -188,11 +194,50 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 		elements_to_send[unique_procs[node]]++;
 	    }
 	  
+	  part=0;
+	  if ( elements_to_send[part] > 0 )
+	    {
+	      for (cell=0;cell<section_size;cell++)
+		{
+		  needcell = REF_FALSE;
+		  for (node=0;node<node_per;node++)
+		    needcell = needcell ||
+		      ( part == ref_part_implicit( nnode, ref_mpi_n, 
+						   c2n[node+node_per*cell]) );
+		  if ( needcell )
+		    {
+		      RSS( ref_cell_add( ref_cell, &(c2n[node_per*cell]), 
+					 &new_cell ), "add cell to off proc");
+		    }
+		}
+	    } 
+
 	  for ( part = 1; part<ref_mpi_n ; part++ )
 	    if ( elements_to_send[part] > 0 ) 
-	      RSS( ref_mpi_send( &(elements_to_send[part]), 
-				 1, REF_INT_TYPE, part ), "send" );
-
+	      {
+		RSS( ref_mpi_send( &(elements_to_send[part]), 
+				   1, REF_INT_TYPE, part ), "send" );
+		send_size = 0;
+		for (cell=0;cell<section_size;cell++)
+		  {
+		    needcell = REF_FALSE;
+		    for (node=0;node<node_per;node++)
+		      needcell = needcell ||
+			( part == ref_part_implicit( nnode, ref_mpi_n, 
+						     c2n[node+node_per*cell]) );
+		    if ( needcell )
+		      {
+			for (node=0;node<node_per;node++)
+			  sent_c2n[node+node_per*send_size] = 
+			    c2n[node+node_per*cell];
+			send_size++;
+		      }
+		
+		  }
+		RSS( ref_mpi_send( sent_c2n, node_per*send_size, 
+				   REF_INT_TYPE, part ), "send" );
+	      }
+		
 	}
 
       free(c2n);
@@ -208,12 +253,28 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       do {
 	RSS( ref_mpi_recv( &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
 	printf("part %d, inbound %d\n",ref_mpi_id,elements_to_receive);
+	if ( elements_to_receive > 0 )
+	  {
+	    RSS( ref_mpi_recv( sent_c2n, node_per*elements_to_receive, 
+			       REF_INT_TYPE, 0 ), "send" );
+
+	    for (cell=0;cell<elements_to_receive;cell++)
+	      RSS( ref_cell_add( ref_cell, &(sent_c2n[node_per*cell]), 
+				 &new_cell ), "add cell to off proc");
+	  }
       } while ( elements_to_receive != end_of_message );
     }
 
   free(sent_c2n);
 
   if ( ref_mpi_master ) fclose(file);
+
+  if ( ref_mpi_n > 1 )
+    {
+      char filename[256];
+      sprintf(filename, "ref_part_p%d.tec", ref_mpi_id);
+      RSS( ref_export_by_extension( ref_grid, filename ), "export");
+    }
 
   return REF_SUCCESS;
 }
