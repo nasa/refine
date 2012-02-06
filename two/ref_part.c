@@ -296,7 +296,10 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
 {
   REF_NODE ref_node;
   REF_INT *a_size, *b_size;
+  REF_INT a_total, b_total;
+  REF_INT *a_global, *b_global;
   REF_INT part, node;
+  REF_INT *a_next;
 
   if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
@@ -318,6 +321,38 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
 
   RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
+  a_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    a_total += a_size[part];
+  a_global =(REF_INT *)malloc(a_total*sizeof(REF_INT));
+  RNS(a_global,"malloc failed");
+
+  b_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    b_total += b_size[part];
+  b_global =(REF_INT *)malloc(b_total*sizeof(REF_INT));
+  RNS(b_global,"malloc failed");
+
+  a_next =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
+  RNS(a_next,"malloc failed");
+  a_next[part] = 0;
+
+  a_next[0] = 0;
+  for ( part = 1; part<ref_mpi_n ; part++ )
+    a_next[part] = a_next[part-1]+a_size[part-1];
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      {
+	a_global[a_next[part]] = ref_node_global(ref_node,node);
+	a_next[ref_node_part(ref_node,node)]++;
+      }
+
+  RSS( ref_mpi_alltoallv( a_size, a_global, b_size, b_global, REF_INT_TYPE ), 
+       "alltoallv global");
+
+  free(b_global);
+  free(a_global);
   free(b_size);
   free(a_size);
 
