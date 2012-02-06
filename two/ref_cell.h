@@ -10,6 +10,7 @@ typedef REF_CELL_STRUCT * REF_CELL;
 END_C_DECLORATION
 
 #include "ref_adj.h"
+#include "ref_node.h"
 
 BEGIN_C_DECLORATION
 
@@ -95,6 +96,8 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell );
 REF_STATUS ref_cell_inspect( REF_CELL ref_cell );
 
 REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
+REF_STATUS ref_cell_add_global( REF_CELL ref_cell, REF_NODE ref_node,
+				REF_INT *global_nodes, REF_INT *cell );
 REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell );
 
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
