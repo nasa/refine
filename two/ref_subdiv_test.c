@@ -32,30 +32,6 @@ static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 static REF_STATUS set_up_prism_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 {
   REF_GRID ref_grid;
-  REF_INT nodes[6] = {0,1,2,3,4,5};
-  REF_INT cell, node;
-
-  TSS(ref_grid_create(&ref_grid),"create");
-
-  TSS(ref_node_add( ref_grid_node(ref_grid), 0, &node),"n0");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 1, &node),"n1");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 2, &node),"n2");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 3, &node),"n3");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 4, &node),"n4");
-  TSS(ref_node_add( ref_grid_node(ref_grid), 5, &node),"n5");
-
-  ref_node_n_global(ref_grid_node(ref_grid)) = 
-    ref_node_n(ref_grid_node(ref_grid));
-
-  TSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
-  TSS(ref_subdiv_create(ref_subdiv_ptr,ref_grid),"create");
-
-  return REF_SUCCESS;
-}
-
-static REF_STATUS set_up_prism_with_boundary( REF_SUBDIV *ref_subdiv_ptr )
-{
-  REF_GRID ref_grid;
 
   TSS(ref_fixture_pri_grid( &ref_grid ), "pri");
 
@@ -175,7 +151,7 @@ int main( void )
   { /* split prism in two with bcs */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    TSS(set_up_prism_with_boundary(&ref_subdiv),"set up");
+    TSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
@@ -196,7 +172,7 @@ int main( void )
   { /* split prism in four with bcs */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    TSS(set_up_prism_with_boundary(&ref_subdiv),"set up");
+    TSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
