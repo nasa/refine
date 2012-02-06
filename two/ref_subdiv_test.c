@@ -44,6 +44,9 @@ static REF_STATUS set_up_prism_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
   TSS(ref_node_add( ref_grid_node(ref_grid), 4, &node),"n4");
   TSS(ref_node_add( ref_grid_node(ref_grid), 5, &node),"n5");
 
+  ref_node_n_global(ref_grid_node(ref_grid)) = 
+    ref_node_n(ref_grid_node(ref_grid));
+
   TSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
   TSS(ref_subdiv_create(ref_subdiv_ptr,ref_grid),"create");
 
