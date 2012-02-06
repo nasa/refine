@@ -92,8 +92,12 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 {
   REF_INT extra;
   REF_INT orig, chunk;
+  REF_STATUS status;
 
   if ( global < 0 ) RSS( REF_INVALID, "invalid global node");
+
+  status = ref_node_local( ref_node, global, node );
+  if ( REF_SUCCESS == status ) return REF_SUCCESS;
 
   if ( REF_EMPTY == ref_node->blank )
     {
@@ -158,7 +162,7 @@ REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
   for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
     if ( ref_node->global[node] == global ) (*local) = node;
 
-  if ( (*local) == REF_EMPTY ) return REF_FAILURE;
+  if ( (*local) == REF_EMPTY ) return REF_NOT_FOUND;
   return REF_SUCCESS;
 }
 

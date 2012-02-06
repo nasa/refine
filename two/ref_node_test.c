@@ -128,5 +128,23 @@ int main( void )
     TSS(ref_node_free(ref_node),"free");
   }
 
+  { /* unique */
+    TSS(ref_node_create(&ref_node),"create");
+
+    global = 10;
+    TSS(ref_node_add(ref_node,global,&node),"first");
+    global = 20;
+    TSS(ref_node_add(ref_node,global,&node),"second");
+
+    global = 10;
+    TSS(ref_node_add(ref_node,global,&node),"first");
+    TEIS(0,node,"return first");
+    global = 20;
+    TSS(ref_node_add(ref_node,global,&node),"second");
+    TEIS(1,node,"return second");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
   return 0;
 }
