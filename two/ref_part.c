@@ -280,6 +280,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   /* ghost xyz */
 
+  RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
+
   if ( ref_mpi_n > 1 )
     {
       char filename[256];
@@ -288,4 +290,36 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
     }
 
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
+{
+  REF_NODE ref_node;
+  REF_INT *a_size, *b_size;
+  REF_INT part, node;
+
+  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  a_size =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
+  RNS(a_size,"malloc failed");
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    a_size[part] = 0;
+
+  b_size =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
+  RNS(b_size,"malloc failed");
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    b_size[part] = 0;
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      a_size[ref_node_part(ref_node,node)]++;
+
+  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+
+  free(b_size);
+  free(a_size);
+
+  return REF_SUCCESS;  
 }
