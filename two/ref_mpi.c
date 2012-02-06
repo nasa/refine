@@ -11,6 +11,18 @@
 REF_INT ref_mpi_n = 1;
 REF_INT ref_mpi_id = 0;
 
+#ifdef HAVE_MPI
+
+#define ref_type_mpi_type(macro_ref_type,macro_mpi_type)	\
+  switch (macro_ref_type)					\
+    {								\
+    case REF_INT_TYPE: (macro_mpi_type) = MPI_INT; break;	\
+    case REF_DBL_TYPE: (macro_mpi_type) = MPI_DOUBLE; break;	\
+    default: RSS( REF_IMPLEMENT, "data type");			\
+    }
+
+#endif
+
 REF_STATUS ref_mpi_start( int argc, char *argv[] )
 {
 
@@ -44,12 +56,7 @@ REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
-  switch (type)
-    {
-    case REF_INT_TYPE: datatype = MPI_INT; break;
-    case REF_DBL_TYPE: datatype = MPI_DOUBLE; break;
-    default: RSS( REF_IMPLEMENT, "data type");
-    }
+  ref_type_mpi_type(type,datatype);
 
   MPI_Bcast(data, n, datatype, 0, MPI_COMM_WORLD);
 #else
@@ -67,12 +74,7 @@ REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
   MPI_Datatype datatype;
   REF_INT tag;
 
-  switch (type)
-    {
-    case REF_INT_TYPE: datatype = MPI_INT; break;
-    case REF_DBL_TYPE: datatype = MPI_DOUBLE; break;
-    default: RSS( REF_IMPLEMENT, "data type");
-    }
+  ref_type_mpi_type(type,datatype);
 
   tag = ref_mpi_n*dest+ref_mpi_id;
 
@@ -95,12 +97,7 @@ REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
   REF_INT tag;
   MPI_Status status;
 
-  switch (type)
-    {
-    case REF_INT_TYPE: datatype = MPI_INT; break;
-    case REF_DBL_TYPE: datatype = MPI_DOUBLE; break;
-    default: RSS( REF_IMPLEMENT, "data type");
-    }
+  ref_type_mpi_type(type,datatype);
 
   tag = ref_mpi_n*ref_mpi_id+source;
 
@@ -121,12 +118,7 @@ REF_STATUS ref_mpi_alltoall( void *send, void *recv, REF_TYPE type )
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
-  switch (type)
-    {
-    case REF_INT_TYPE: datatype = MPI_INT; break;
-    case REF_DBL_TYPE: datatype = MPI_DOUBLE; break;
-    default: RSS( REF_IMPLEMENT, "data type");
-    }
+  ref_type_mpi_type(type,datatype);
 
   MPI_Alltoall(send, 1, datatype, 
 	       recv, 1, datatype, 
