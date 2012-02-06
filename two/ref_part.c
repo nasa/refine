@@ -82,9 +82,11 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( ref_mpi_master )
     {
+      part = 0;
       for (node=0;node<ref_part_first( nnode, ref_mpi_n, 1 ); node++)
 	{
 	  RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+	  ref_node_part(ref_node,new_node) = ref_mpi_id;
 	  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "x" );
 	  SWAP_DBL(swapped_dbl);
 	  ref_node_xyz( ref_node, 0, new_node ) = swapped_dbl;
@@ -136,6 +138,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 						     ref_mpi_n, 
 						     ref_mpi_id ),
 				&new_node ), "new_node");
+	      ref_node_part(ref_node,new_node) = ref_mpi_id;
 	      ref_node_xyz( ref_node, 0, new_node ) = xyz[0+3*node];
 	      ref_node_xyz( ref_node, 1, new_node ) = xyz[1+3*node];
 	      ref_node_xyz( ref_node, 2, new_node ) = xyz[2+3*node];
@@ -268,6 +271,14 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   free(sent_c2n);
 
   if ( ref_mpi_master ) fclose(file);
+
+  ref_node_n_global(ref_node) = nnode;
+
+  each_ref_node_valid_node( ref_node, node )
+    ref_node_part(ref_node,node) = 
+    ref_part_implicit( nnode, ref_mpi_n, ref_node_global(ref_node,node));
+
+  /* ghost xyz */
 
   if ( ref_mpi_n > 1 )
     {
