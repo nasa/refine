@@ -115,3 +115,28 @@ REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_mpi_alltoall( void *send, void *recv, REF_TYPE type )
+{
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+
+  switch (type)
+    {
+    case REF_INT_TYPE: datatype = MPI_INT; break;
+    case REF_DBL_TYPE: datatype = MPI_DOUBLE; break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+
+  MPI_Alltoall(send, 1, datatype, 
+	       recv, 1, datatype, 
+	       MPI_COMM_WORLD );
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(send);
+  SUPRESS_UNUSED_COMPILER_WARNING(recv);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  return REF_IMPLEMENT;
+#endif
+
+  return REF_SUCCESS;
+}
