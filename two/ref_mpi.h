@@ -25,7 +25,8 @@ REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source );
 
 REF_STATUS ref_mpi_alltoall( void *send, void *recv, REF_TYPE type );
 REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size, 
-			      void *recv, REF_INT *recv_size, REF_TYPE type );
+			      void *recv, REF_INT *recv_size, 
+			      REF_INT n, REF_TYPE type );
 
 END_C_DECLORATION
 
