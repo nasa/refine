@@ -348,7 +348,7 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
 	a_next[ref_node_part(ref_node,node)]++;
       }
 
-  RSS( ref_mpi_alltoallv( a_size, a_global, b_size, b_global, REF_INT_TYPE ), 
+  RSS( ref_mpi_alltoallv( a_global, a_size, b_global, b_size, REF_INT_TYPE ), 
        "alltoallv global");
 
   free(b_global);
