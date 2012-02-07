@@ -28,6 +28,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT ncell, section_size;
   REF_INT all_procs[REF_CELL_MAX_NODE_PER];
   REF_INT unique_procs[REF_CELL_MAX_NODE_PER];
+  REF_INT local_c2n[REF_CELL_MAX_NODE_PER];
   REF_INT cell_procs;
 
   REF_INT chunk;
@@ -212,8 +213,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 		      for (node=0;node<node_per;node++)
 			RSS( ref_node_add(ref_node, 
 					  c2n[node+node_per*cell],
-					  &new_node), "needed node" );
-		      RSS( ref_cell_add( ref_cell, &(c2n[node_per*cell]), 
+					  &(local_c2n[node]) ), "needed node" );
+		      RSS( ref_cell_add( ref_cell, local_c2n, 
 					 &new_cell ), "add cell to off proc");
 		    }
 		}
@@ -270,8 +271,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 		for (node=0;node<node_per;node++)
 		  RSS( ref_node_add(ref_node, 
 				    sent_c2n[node+node_per*cell],
-				    &new_node), "needed node" );
-		RSS( ref_cell_add( ref_cell, &(sent_c2n[node_per*cell]), 
+				    &(local_c2n[node])), "needed node" );
+		RSS( ref_cell_add( ref_cell, local_c2n, 
 				   &new_cell ), "add cell to off proc");
 	      }
 	  }
@@ -370,7 +371,7 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
     }
 
   RSS( ref_mpi_alltoallv( b_xyz, b_size, a_xyz, a_size, 
-			  3, REF_INT_TYPE ), 
+			  3, REF_DBL_TYPE ), 
        "alltoallv global");
 
   for (node=0;node<a_total;node++)
