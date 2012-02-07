@@ -172,4 +172,5 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
   return REF_IMPLEMENT;
 #endif
 
+  return REF_SUCCESS;
 }
