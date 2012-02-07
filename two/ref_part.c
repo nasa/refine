@@ -344,7 +344,6 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
 
   a_next =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
   RNS(a_next,"malloc failed");
-  a_next[part] = 0;
 
   a_next[0] = 0;
   for ( part = 1; part<ref_mpi_n ; part++ )
@@ -353,6 +352,7 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
   each_ref_node_valid_node( ref_node, node )
     if ( ref_mpi_id != ref_node_part(ref_node,node) )
       {
+	part = ref_node_part(ref_node,node);
 	a_global[a_next[part]] = ref_node_global(ref_node,node);
 	a_next[ref_node_part(ref_node,node)]++;
       }
