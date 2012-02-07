@@ -209,6 +209,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 						   c2n[node+node_per*cell]) );
 		  if ( needcell )
 		    {
+		      for (node=0;node<node_per;node++)
+			RSS( ref_node_add(ref_node, 
+					  c2n[node+node_per*cell],
+					  &new_node), "needed node" );
 		      RSS( ref_cell_add( ref_cell, &(c2n[node_per*cell]), 
 					 &new_cell ), "add cell to off proc");
 		    }
@@ -262,8 +266,14 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 			       REF_INT_TYPE, 0 ), "send" );
 
 	    for (cell=0;cell<elements_to_receive;cell++)
-	      RSS( ref_cell_add( ref_cell, &(sent_c2n[node_per*cell]), 
-				 &new_cell ), "add cell to off proc");
+	      {
+		for (node=0;node<node_per;node++)
+		  RSS( ref_node_add(ref_node, 
+				    sent_c2n[node+node_per*cell],
+				    &new_node), "needed node" );
+		RSS( ref_cell_add( ref_cell, &(sent_c2n[node_per*cell]), 
+				   &new_cell ), "add cell to off proc");
+	      }
 	  }
       } while ( elements_to_receive != end_of_message );
     }
