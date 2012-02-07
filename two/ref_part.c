@@ -282,13 +282,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
 
-  if ( ref_mpi_n > 1 )
-    {
-      char filename[256];
-      sprintf(filename, "ref_part_p%d.tec", ref_mpi_id);
-      RSS( ref_export_by_extension( ref_grid, filename ), "export");
-    }
-
   return REF_SUCCESS;
 }
 
