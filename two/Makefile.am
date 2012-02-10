@@ -41,6 +41,10 @@ bin_PROGRAMS += dpw5_prism_tet
 dpw5_prism_tet_SOURCES = dpw5_prism_tet.c
 dpw5_prism_tet_LDADD = libref2.a -lm
 
+bin_PROGRAMS += projectable
+projectable_SOURCES = projectable.c
+projectable_LDADD = libref2.a -lm
+
 noinst_HEADERS = ref_test.h
 
 noinst_PROGRAMS =
