@@ -27,7 +27,6 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
-
   { /* export import .fgrid tet */
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.fgrid";
@@ -36,6 +35,8 @@ int main( int argc, char *argv[] )
     TSS(ref_import_fgrid( &import_grid, file ), "import" );
     TEIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    TEIS( ref_node_n(ref_grid_node(export_grid)),
+	  ref_node_n_global(ref_grid_node(import_grid)), "global node count" );
     TSS(ref_grid_free(import_grid),"free");
     TSS(ref_grid_free(export_grid),"free");
     TEIS(0, remove( file ), "test clean up");
@@ -49,6 +50,8 @@ int main( int argc, char *argv[] )
     TSS(ref_import_ugrid( &import_grid, file ), "import" );
     TEIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    TEIS( ref_node_n(ref_grid_node(export_grid)),
+	  ref_node_n_global(ref_grid_node(import_grid)), "global node count" );
     TSS(ref_grid_free(import_grid),"free");
     TSS(ref_grid_free(export_grid),"free");
     TEIS(0, remove( file ), "test clean up");
@@ -62,6 +65,8 @@ int main( int argc, char *argv[] )
     TSS(ref_import_b8_ugrid( &import_grid, file ), "import" );
     TEIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    TEIS( ref_node_n(ref_grid_node(export_grid)),
+	  ref_node_n_global(ref_grid_node(import_grid)), "global node count" );
     TEIS( ref_cell_n(ref_grid_tri(export_grid)),
 	  ref_cell_n(ref_grid_tri(import_grid)), "tri count" );
     TEIS( ref_cell_n(ref_grid_qua(export_grid)),
