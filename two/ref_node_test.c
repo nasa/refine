@@ -95,6 +95,9 @@ int main( void )
     TFS(ref_node_local(ref_node,5,&node),"returned invalid global");
     TFS(ref_node_local(ref_node,200,&node),"returned invalid global");
 
+    TSS(ref_node_local(ref_node,10,&node),"return global");
+    TEIS(0,node,"wrong local");
+
     TSS(ref_node_free(ref_node),"free");
   }
 
