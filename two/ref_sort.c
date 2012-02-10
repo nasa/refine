@@ -47,3 +47,47 @@ REF_STATUS ref_sort_unique( REF_INT n, REF_INT *original,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_sort_search( REF_INT n, REF_INT *ascending_list, 
+			    REF_INT target, REF_INT *position )
+{
+  int lower, upper, mid;
+
+  *position = REF_EMPTY;
+
+  if (n<1) return REF_INVALID;
+
+  if ( target < ascending_list[0] || target > ascending_list[n-1] ) 
+    return REF_NOT_FOUND;
+
+  lower = 0;
+  upper = n-1;
+  mid = n >> 1; /* fast divide by two */
+
+  if (target==ascending_list[lower]) 
+    {
+      *position = lower;
+      return REF_SUCCESS;
+    }
+  if (target==ascending_list[upper])
+    {
+      *position = upper;
+      return REF_SUCCESS;
+    }
+
+  while ( (lower < mid) && (mid < upper) ) {
+    if ( target >= ascending_list[mid] ) {
+      if ( target == ascending_list[mid] )
+	{
+	  *position = mid;
+	  return REF_SUCCESS;
+	}
+      lower = mid;
+    } else {
+      upper = mid;
+    }
+    mid = (lower+upper) >> 1;
+  }
+
+  return REF_NOT_FOUND;
+}

@@ -62,5 +62,29 @@ int main( void )
     TEIS( 3, unique[2], "unique[2]");
   }
 
+  {  /* search */
+    REF_INT n=4,ascending_list[4], position;
+    ascending_list[0]=10;
+    ascending_list[1]=20;
+    ascending_list[2]=30;
+    ascending_list[3]=40;
+
+    TSS(ref_sort_search(n,ascending_list,ascending_list[0],&position),"search");
+    TEIS( 0, position, "0");
+    TSS(ref_sort_search(n,ascending_list,ascending_list[1],&position),"search");
+    TEIS( 1, position, "1");
+    TSS(ref_sort_search(n,ascending_list,ascending_list[2],&position),"search");
+    TEIS( 2, position, "2");
+    TSS(ref_sort_search(n,ascending_list,ascending_list[3],&position),"search");
+    TEIS( 3, position, "3");
+
+    TFS(ref_sort_search(n,ascending_list,0,&position),"search");
+    TEIS( REF_EMPTY, position, "0");
+    TFS(ref_sort_search(n,ascending_list,15,&position),"search");
+    TEIS( REF_EMPTY, position, "15");
+    TFS(ref_sort_search(n,ascending_list,50,&position),"search");
+    TEIS( REF_EMPTY, position, "50");
+  }
+
   return 0;
 }
