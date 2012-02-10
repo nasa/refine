@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "ref_node.h"
+#include "ref_sort.h"
 
 /* REF_EMPTY is terminatior, next avalable is shifted by 2*/
 #define next2index(next) (-(next)-2)
@@ -178,8 +179,18 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 
 REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
 {
+  REF_INT location, sorted_node;
   if ( ! ref_node_valid(ref_node,node) ) return REF_INVALID;
  
+  RSS( ref_sort_search( ref_node_n(ref_node), ref_node->sorted_global, 
+			ref_node->global[node], &location ), 
+       "find global in sort list" );
+
+  for(sorted_node=location;sorted_node<ref_node_n(ref_node);sorted_node++)
+    ref_node->sorted_global[sorted_node]=ref_node->sorted_global[sorted_node+1];
+  for(sorted_node=location;sorted_node<ref_node_n(ref_node);sorted_node++)
+    ref_node->sorted_local[sorted_node]=ref_node->sorted_local[sorted_node+1];
+
   ref_node->global[node] = ref_node->blank;
   ref_node->blank = index2next(node);
 
@@ -198,15 +209,17 @@ REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
 
 REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
 {
-  REF_INT node;
+  REF_INT location;
 
   (*local) = REF_EMPTY;
-  if ( global < 0 ) return REF_INVALID;
 
-  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
-    if ( ref_node->global[node] == global ) (*local) = node;
+  RSS( ref_sort_search( ref_node_n(ref_node), ref_node->sorted_global, 
+			global, &location ), "find global in sort list" );
 
-  if ( (*local) == REF_EMPTY ) return REF_NOT_FOUND;
+  if ( (location) == REF_EMPTY ) return REF_NOT_FOUND;
+
+  (*local) = ref_node->sorted_local[location];
+
   return REF_SUCCESS;
 }
 
