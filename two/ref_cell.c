@@ -483,7 +483,8 @@ REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
 	{
 	  e0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
 	  e1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
-	  if ( MAX(e0,e1) == MAX(n0,n1) && MIN(e0,e1) == MIN(n0,n1) )
+	  if ( ( e0 == n0 && e1 == n1 ) ||
+	       ( e0 == n1 && e1 == n0 )  )
 	    ref_cell_c2e(ref_cell,cell_edge,cell) = edge;
 	}
     }
