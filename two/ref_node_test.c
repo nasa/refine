@@ -116,6 +116,24 @@ int main( void )
     TSS(ref_node_free(ref_node),"free");
   }
 
+  { /* lookup local from global after remove */
+    REF_INT global, node;
+    REF_NODE ref_node;
+    TSS(ref_node_create(&ref_node),"create");
+
+    global = 10;
+    RSS(ref_node_add(ref_node,global,&node),"add");
+    global = 20;
+    RSS(ref_node_add(ref_node,global,&node),"add");
+
+    TSS(ref_node_remove(ref_node,0),"remove");
+
+    TSS(ref_node_local(ref_node,20,&node),"return global");
+    TEIS(1,node,"wrong local");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
   {  /* compact nodes */
     REF_INT node;
     REF_NODE ref_node;
