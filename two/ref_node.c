@@ -104,6 +104,7 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 {
   REF_INT extra;
   REF_INT orig, chunk;
+  REF_INT location, insert_point;
   REF_STATUS status;
 
   if ( global < 0 ) RSS( REF_INVALID, "invalid global node");
@@ -150,6 +151,27 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
   ref_node->blank = ref_node->global[*node];
 
   ref_node->global[*node] = global;
+
+  /* general case of non-ascending global node, requires: 
+     search and shift (but looks to see if bigger than last early) */
+  insert_point = 0;
+  for (location=ref_node_n(ref_node)-1; location>=0; location--) {
+    if (ref_node->sorted_global[location] < global) {
+      insert_point = location+1;
+      break;
+    }
+  }
+
+  /* shift down to clear insert_point */
+  for(location=ref_node_n(ref_node);location>insert_point;location--)
+    ref_node->sorted_global[location] = ref_node->sorted_global[location-1];
+  for(location=ref_node_n(ref_node);location>insert_point;location--)
+    ref_node->sorted_local[location] = ref_node->sorted_local[location-1];
+
+  /* insert in empty location */
+  ref_node->sorted_global[insert_point] = global;
+  ref_node->sorted_local[insert_point] = *node;
+
   (ref_node->n)++;
   return REF_SUCCESS;
 }
