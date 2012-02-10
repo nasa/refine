@@ -164,6 +164,37 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
 	  RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
 	  RSS( ref_cell_add( ref_grid_cell(viz,group), nodes, &viz_cell), 
 	       "add viz cell");	  
+
+	  each_ref_cell_cell_face( ref_cell, cell_face )
+	    {
+	      for(node=0;node<4;node++)
+		nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	  
+	      if ( nodes[0] == nodes[3] )
+		{
+		  if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+						     nodes, &found ) )
+		    {
+		      RSS( ref_cell_nodes( ref_grid_tri( ref_grid ), 
+					   found, face_nodes), "tri");
+
+		      RSS( ref_cell_add( ref_grid_tri(viz), face_nodes, 
+					 &viz_cell), "add viz tri");	  
+		    }
+		}
+	      else
+		{
+		  if ( REF_SUCCESS == ref_cell_with( ref_grid_qua( ref_grid ), 
+						     nodes, &found ) )
+		    {
+		      RSS( ref_cell_nodes( ref_grid_qua( ref_grid ), 
+					   found, face_nodes), "qua");
+
+		      RSS( ref_cell_add( ref_grid_qua(viz), face_nodes, 
+					 &viz_cell), "add viz qua");	  
+		    }
+		}
+	    }
 	}
     }
 
