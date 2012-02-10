@@ -88,7 +88,15 @@ int main( void )
 
     TAS(max < ref_node_max(ref_node),"grow max");
 
-    /* lookup local from global */
+    TSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* lookup local from global */
+    TSS(ref_node_create(&ref_node),"create");
+
+    global = 10;
+    RSS(ref_node_add(ref_node,global,&node),"realloc");
+
     node = 0;
     TFS(ref_node_local(ref_node,-1,&node),"returned invalid global");
     TES(REF_EMPTY,node,"expect node empty for invalid global");
