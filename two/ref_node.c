@@ -36,6 +36,12 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   ref_node->global[(ref_node->max)-1] = REF_EMPTY;
   ref_node->blank = index2next(0);
 
+  ref_node->sorted_global = (REF_INT *)malloc(max*sizeof(REF_INT));
+  RNS(ref_node->sorted_global,"malloc sorted_global NULL");
+
+  ref_node->sorted_local = (REF_INT *)malloc(max*sizeof(REF_INT));
+  RNS(ref_node->sorted_local,"malloc sorted_local NULL");
+
   ref_node->part = (REF_INT *)malloc(max*sizeof(REF_INT));
   RNS(ref_node->part,"malloc part NULL");
 
@@ -51,6 +57,8 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
   if ( NULL == (void *)ref_node ) return REF_NULL;
   ref_cond_free( ref_node->xyz );
   ref_cond_free( ref_node->part );
+  ref_cond_free( ref_node->sorted_local );
+  ref_cond_free( ref_node->sorted_global );
   ref_cond_free( ref_node->global );
   ref_cond_free( ref_node );
   return REF_SUCCESS;
@@ -65,6 +73,10 @@ REF_STATUS ref_node_inspect( REF_NODE ref_node )
   printf(" blank = %d\n",ref_node->blank);
   for (node=0;node<ref_node_max(ref_node);node++)
     printf(" raw global[%d] = %d\n",node,ref_node->global[node]);
+  for (node=0;node<ref_node_n(ref_node);node++)
+    printf(" sorted_global[%d] = %d sorted_local[%d] = %d\n",
+	   node,ref_node->sorted_global[node],
+	   node,ref_node->sorted_local[node]);
   return REF_SUCCESS;
 }
 
@@ -112,6 +124,16 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 	  ref_node->global[extra] = index2next(extra+1);
       ref_node->global[ref_node_max(ref_node)-1] = REF_EMPTY; 
       ref_node->blank = index2next(orig);
+
+      ref_node->sorted_global = (REF_INT *)realloc( ref_node->sorted_global,
+						    ref_node_max(ref_node) *
+						    sizeof(REF_INT) );
+      RNS(ref_node->sorted_global,"remalloc sorted_global NULL");
+
+      ref_node->sorted_local = (REF_INT *)realloc( ref_node->sorted_local,
+						   ref_node_max(ref_node) *
+						   sizeof(REF_INT) );
+      RNS(ref_node->sorted_local,"remalloc sorted_local NULL");
 
       ref_node->part = (REF_INT *)realloc( ref_node->part,
 					   ref_node_max(ref_node) *

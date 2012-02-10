@@ -17,6 +17,8 @@ struct REF_NODE_STRUCT {
   REF_INT partition;
   REF_INT n_global;
   REF_INT *global;
+  REF_INT *sorted_global;
+  REF_INT *sorted_local;
   REF_INT *part;
   REF_DBL *xyz;
 };
