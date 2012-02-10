@@ -8,13 +8,11 @@
 
 int main( void )
 {
-  REF_NODE ref_node;
-  REF_INT global, node, max;
-  REF_INT *o2n;
 
   TFS(ref_node_free(NULL),"dont free NULL");
 
   { /* init */
+    REF_NODE ref_node;
     TSS(ref_node_create(&ref_node),"create");
     TEIS(0,ref_node_n(ref_node),"init zero nodes");
     TEIS(10,ref_node_max(ref_node),"init 10 max");
@@ -26,6 +24,8 @@ int main( void )
   }
 
   {
+    REF_INT global, node;
+    REF_NODE ref_node;
     TSS(ref_node_create(&ref_node),"create");
 
     TES(REF_EMPTY,ref_node_global(ref_node,0),"global empty for missing node");
@@ -69,6 +69,9 @@ int main( void )
   }
 
   { /* next global */
+    REF_NODE ref_node;
+    REF_INT node;
+
     TSS(ref_node_create(&ref_node),"create");
 
     TEIS(0,ref_node_n_global(ref_node),"init zero global");
@@ -80,6 +83,8 @@ int main( void )
   }
 
   { /* add bunch testing realloc */
+    REF_INT global, node, max;
+    REF_NODE ref_node;
     TSS(ref_node_create(&ref_node),"create");
 
     max = ref_node_max(ref_node);
@@ -92,6 +97,8 @@ int main( void )
   }
 
   { /* lookup local from global */
+    REF_INT global, node;
+    REF_NODE ref_node;
     TSS(ref_node_create(&ref_node),"create");
 
     global = 10;
@@ -110,6 +117,9 @@ int main( void )
   }
 
   {  /* compact nodes */
+    REF_INT node;
+    REF_NODE ref_node;
+    REF_INT *o2n;
     TSS(ref_node_create(&ref_node),"create");
 
     TSS(ref_node_add(ref_node,1,&node),"add");
@@ -128,6 +138,8 @@ int main( void )
   }
 
   {  /* valid */
+    REF_INT node;
+    REF_NODE ref_node;
 
     TSS(ref_node_create(&ref_node),"create");
 
@@ -140,6 +152,8 @@ int main( void )
   }
 
   { /* unique */
+    REF_INT global, node;
+    REF_NODE ref_node;
     TSS(ref_node_create(&ref_node),"create");
 
     global = 10;
