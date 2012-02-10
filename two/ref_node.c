@@ -213,8 +213,8 @@ REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
 
   (*local) = REF_EMPTY;
 
-  RSS( ref_sort_search( ref_node_n(ref_node), ref_node->sorted_global, 
-			global, &location ), "find global in sort list" );
+  RAISE( ref_sort_search( ref_node_n(ref_node), ref_node->sorted_global, 
+			  global, &location ) );
 
   if ( (location) == REF_EMPTY ) return REF_NOT_FOUND;
 
