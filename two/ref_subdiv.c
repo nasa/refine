@@ -658,6 +658,7 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	    if (ref_subdiv_mark(ref_subdiv,
 				ref_cell_c2e(ref_cell, edge, cell)))
 		split_edge = edge;
+	  RAS( REF_EMPTY != split_edge, "edge not found");
 	  global_edge = ref_cell_c2e(ref_cell, split_edge, cell);
 	  
 	  marked_for_removal[cell]=1;
