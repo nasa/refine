@@ -152,13 +152,13 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   cell_face = 0+1+2+3-cell_face0-cell_face1-cell_face2;
 
   for(node=0;node<4;node++)
-    cell_nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+    face_nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
 
-  cell_nodes[3] = faceid0;
-  temp = cell_nodes[0]; 
-  cell_nodes[0] = cell_nodes[1];
-  cell_nodes[1] = temp;
-  RSS( ref_cell_add( ref_grid_tri( ref_grid ), cell_nodes, &face ), 
+  face_nodes[3] = faceid0;
+  temp = face_nodes[0]; 
+  face_nodes[0] = face_nodes[1];
+  face_nodes[1] = temp;
+  RSS( ref_cell_add( ref_grid_tri( ref_grid ), face_nodes, &face ), 
        "add tri" );
 
   RSS( ref_cell_remove( ref_cell, cell ), "remove tet" );
