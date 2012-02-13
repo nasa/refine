@@ -35,7 +35,11 @@ REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid )
 	   ref_adj_empty( ref_cell_adj(ref_grid_hex(ref_grid)), node) )
 	{
 	  problem = REF_TRUE;
-	  printf(" hanging node %d\n",node);
+	  printf(" hanging node %d: %e %e %e\n",
+		 node,
+		 ref_node_xyz(ref_grid_node(ref_grid),0,node),
+		 ref_node_xyz(ref_grid_node(ref_grid),1,node),
+		 ref_node_xyz(ref_grid_node(ref_grid),2,node));
 	}
     }
 
