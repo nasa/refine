@@ -112,6 +112,27 @@ int main( void )
     TSS( tear_down( ref_subdiv ), "tear down");
   }
 
+  { /* relax tet oppisite edges */
+    REF_SUBDIV ref_subdiv;
+    TSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
+    TSS(ref_subdiv_mark_to_split(ref_subdiv,2,3),"mark edge 5");
+
+    TEIS(1,ref_subdiv_mark(ref_subdiv,0),"yet");
+    TEIS(1,ref_subdiv_mark(ref_subdiv,5),"yet");
+
+    TEIS(0,ref_subdiv_mark(ref_subdiv,1),"no yet");
+    TSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    TEIS(1,ref_subdiv_mark(ref_subdiv,1),"yet");
+
+    TEIS(1,ref_subdiv_mark(ref_subdiv,2),"yet");
+    TEIS(1,ref_subdiv_mark(ref_subdiv,4),"yet");
+    TEIS(1,ref_subdiv_mark(ref_subdiv,5),"yet");
+
+    TSS( tear_down( ref_subdiv ), "tear down");
+  }
+
   { /* new nodes */
     REF_SUBDIV ref_subdiv;
     REF_NODE ref_node;

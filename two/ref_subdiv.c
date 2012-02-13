@@ -164,6 +164,42 @@ REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv,
       }						\
   }
 
+#define promote_2_all()							\
+  {									\
+    REF_INT ge0, ge1, ge2, ge3, ge4, ge5, sum;				\
+    ge0 = ref_cell_c2e( ref_cell, 0, cell );				\
+    ge1 = ref_cell_c2e( ref_cell, 1, cell );				\
+    ge2 = ref_cell_c2e( ref_cell, 2, cell );				\
+    ge3 = ref_cell_c2e( ref_cell, 3, cell );				\
+    ge4 = ref_cell_c2e( ref_cell, 4, cell );				\
+    ge5 = ref_cell_c2e( ref_cell, 5, cell );				\
+    sum = ref_subdiv_mark( ref_subdiv, ge0 )				\
+        + ref_subdiv_mark( ref_subdiv, ge1 )				\
+        + ref_subdiv_mark( ref_subdiv, ge2 )				\
+        + ref_subdiv_mark( ref_subdiv, ge3 )				\
+        + ref_subdiv_mark( ref_subdiv, ge4 )				\
+        + ref_subdiv_mark( ref_subdiv, ge5 );				\
+    if ( 2 == sum )							\
+      if ( ( ge0 > 0 && ge5 > 0) ||					\
+	   ( ge1 > 0 && ge4 > 0) ||					\
+	   ( ge2 > 0 && ge1 > 3) )					\
+	{								\
+	  again = REF_TRUE;						\
+	  ref_subdiv_mark( ref_subdiv,					\
+			   ref_cell_c2e( ref_cell, 0, cell ) ) = 1;	\
+	  ref_subdiv_mark( ref_subdiv,					\
+			   ref_cell_c2e( ref_cell, 1, cell ) ) = 1;	\
+	  ref_subdiv_mark( ref_subdiv,					\
+			   ref_cell_c2e( ref_cell, 2, cell ) ) = 1;	\
+	  ref_subdiv_mark( ref_subdiv,					\
+			   ref_cell_c2e( ref_cell, 3, cell ) ) = 1;	\
+	  ref_subdiv_mark( ref_subdiv,					\
+			   ref_cell_c2e( ref_cell, 4, cell ) ) = 1;	\
+	  ref_subdiv_mark( ref_subdiv,					\
+			   ref_cell_c2e( ref_cell, 5, cell ) ) = 1;	\
+	}								\
+  }
+
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 {
   REF_INT group, cell;
@@ -187,6 +223,7 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 		promote_2_3(1,2,5);
 		promote_2_3(0,2,4);
 		promote_2_3(0,1,3);
+		promote_2_all();
 		break;
 	      case 6:
 		edge_or(0,6);
