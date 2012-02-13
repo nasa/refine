@@ -85,7 +85,7 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   REF_CELL ref_cell;
   REF_INT cell_face;
   REF_INT node;
-  REF_INT cell_nodes[4];
+  REF_INT cell_face_nodes[4];
   REF_INT face_nodes[4];
   REF_INT found;
   REF_INT face0, face1, face2;
@@ -107,9 +107,9 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   for (cell_face=0;cell_face<4;cell_face++)
     {
       for(node=0;node<4;node++)
-	cell_nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	cell_face_nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
       if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
-					 cell_nodes, &found ) )
+					 cell_face_nodes, &found ) )
 	{
 	  RSS( ref_cell_nodes( ref_grid_tri( ref_grid ), 
 			       found, face_nodes), "tri");
