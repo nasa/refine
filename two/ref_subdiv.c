@@ -132,36 +132,36 @@ REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv,
   return REF_SUCCESS;
 }
 
-#define edge_or(ce0,ce1) \
-  { \
-    REF_INT ge0, ge1; \
-    ge0 = ref_cell_c2e( ref_cell, ce0, cell );\
-    ge1 = ref_cell_c2e( ref_cell, ce1, cell );\
-    if ( ref_subdiv_mark( ref_subdiv, ge0 ) != \
-	 ref_subdiv_mark( ref_subdiv, ge1 ) ) \
-      {\
-	again = REF_TRUE;\
-	ref_subdiv_mark( ref_subdiv, ge0 ) = 1;\
-	ref_subdiv_mark( ref_subdiv, ge1 ) = 1;\
-      }\
+#define edge_or(ce0,ce1)			\
+  {						\
+    REF_INT ge0, ge1;				\
+    ge0 = ref_cell_c2e( ref_cell, ce0, cell );	\
+    ge1 = ref_cell_c2e( ref_cell, ce1, cell );	\
+    if ( ref_subdiv_mark( ref_subdiv, ge0 ) !=	\
+	 ref_subdiv_mark( ref_subdiv, ge1 ) )	\
+      {						\
+	again = REF_TRUE;			\
+	ref_subdiv_mark( ref_subdiv, ge0 ) = 1;	\
+	ref_subdiv_mark( ref_subdiv, ge1 ) = 1;	\
+      }						\
   }
 
-#define promote_2_3(ce0,ce1,ce2)			\
-  { \
+#define promote_2_3(ce0,ce1,ce2)		\
+  {						\
     REF_INT ge0, ge1, ge2, sum;			\
-    ge0 = ref_cell_c2e( ref_cell, ce0, cell );\
-    ge1 = ref_cell_c2e( ref_cell, ce1, cell );\
-    ge2 = ref_cell_c2e( ref_cell, ce2, cell );\
-    sum = ref_subdiv_mark( ref_subdiv, ge0 ) \
-        + ref_subdiv_mark( ref_subdiv, ge1 ) \
-        + ref_subdiv_mark( ref_subdiv, ge2 );    \
-    if ( 2 == sum ) \
-      {\
-	again = REF_TRUE;\
-	ref_subdiv_mark( ref_subdiv, ge0 ) = 1;\
-	ref_subdiv_mark( ref_subdiv, ge1 ) = 1;\
-	ref_subdiv_mark( ref_subdiv, ge2 ) = 1;\
-      }\
+    ge0 = ref_cell_c2e( ref_cell, ce0, cell );	\
+    ge1 = ref_cell_c2e( ref_cell, ce1, cell );	\
+    ge2 = ref_cell_c2e( ref_cell, ce2, cell );	\
+    sum = ref_subdiv_mark( ref_subdiv, ge0 )	\
+        + ref_subdiv_mark( ref_subdiv, ge1 )	\
+        + ref_subdiv_mark( ref_subdiv, ge2 );	\
+    if ( 2 == sum )				\
+      {						\
+	again = REF_TRUE;			\
+	ref_subdiv_mark( ref_subdiv, ge0 ) = 1;	\
+	ref_subdiv_mark( ref_subdiv, ge1 ) = 1;	\
+	ref_subdiv_mark( ref_subdiv, ge2 ) = 1;	\
+      }						\
   }
 
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
