@@ -12,6 +12,7 @@
 
 #include "ref_adj.h"
 #include "ref_node.h"
+#include "ref_list.h"
 #include "ref_metric.h"
 #include "ref_cell.h"
 

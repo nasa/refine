@@ -49,6 +49,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   ref_node->xyz = (REF_DBL *)malloc(max*3*sizeof(REF_DBL));
   RNS(ref_node->xyz,"malloc xyz NULL");
 
+  RSS( ref_list_create( &(ref_node->unused_global_list) ), "create list");
 
   return REF_SUCCESS;
 }
@@ -56,6 +57,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 REF_STATUS ref_node_free( REF_NODE ref_node )
 {
   if ( NULL == (void *)ref_node ) return REF_NULL;
+  ref_list_free( ref_node->unused_global_list );
   ref_cond_free( ref_node->xyz );
   ref_cond_free( ref_node->part );
   ref_cond_free( ref_node->sorted_local );
@@ -191,6 +193,8 @@ REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
   for(sorted_node=location;sorted_node<ref_node_n(ref_node);sorted_node++)
     ref_node->sorted_local[sorted_node]=ref_node->sorted_local[sorted_node+1];
 
+  RSS( ref_list_add( ref_node->unused_global_list, ref_node->global[node] ),
+       "store unused global" );
   ref_node->global[node] = ref_node->blank;
   ref_node->blank = index2next(node);
 
@@ -201,8 +205,16 @@ REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
 
 REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
 {
-  (*global) = ref_node_n_global(ref_node);
-  ref_node_n_global(ref_node)++;
+  if ( 0 < ref_list_n( ref_node->unused_global_list ) )
+    {
+      RSS( ref_list_remove( ref_node->unused_global_list, global ), 
+	   "grab an unused global from list");
+    }
+  else
+    {
+      (*global) = ref_node_n_global(ref_node);
+      ref_node_n_global(ref_node)++;
+    }
 
   return REF_SUCCESS;
 }

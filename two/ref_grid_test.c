@@ -7,6 +7,7 @@
 
 #include "ref_grid.h"
 
+#include "ref_list.h"
 #include "ref_sort.h"
 
 int main( void )

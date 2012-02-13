@@ -9,6 +9,8 @@ typedef struct REF_NODE_STRUCT REF_NODE_STRUCT;
 typedef REF_NODE_STRUCT * REF_NODE;
 END_C_DECLORATION
 
+#include "ref_list.h"
+
 BEGIN_C_DECLORATION
 
 struct REF_NODE_STRUCT {
@@ -21,6 +23,7 @@ struct REF_NODE_STRUCT {
   REF_INT *sorted_local;
   REF_INT *part;
   REF_DBL *xyz;
+  REF_LIST unused_global_list;
 };
 
 #define ref_node_n(ref_node) ((ref_node)->n)

@@ -9,6 +9,7 @@
 #include "ref_sort.h"
 
 #include "ref_node.h"
+#include "ref_list.h"
 
 static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr)
 {
