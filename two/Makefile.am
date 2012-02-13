@@ -15,6 +15,7 @@ libref2_a_SOURCES = \
 	ref_fortran.c ref_fortran.h \
 	ref_grid.c ref_grid.h \
 	ref_import.c ref_import.h \
+	ref_list.h ref_list.c \
 	ref_math.h ref_math.c \
 	ref_metric.h ref_metric.c \
 	ref_mpi.h ref_mpi.c \
@@ -99,6 +100,11 @@ TESTS += ref_import_test
 noinst_PROGRAMS += ref_import_test
 ref_import_test_SOURCES = ref_import_test.c
 ref_import_test_LDADD = libref2.a -lm
+
+TESTS += ref_list_test
+noinst_PROGRAMS += ref_list_test
+ref_list_test_SOURCES = ref_list_test.c
+ref_list_test_LDADD = libref2.a -lm
 
 TESTS += ref_math_test
 noinst_PROGRAMS += ref_math_test

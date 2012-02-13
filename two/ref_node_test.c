@@ -77,9 +77,26 @@ int main( void )
     TSS(ref_node_create(&ref_node),"create");
 
     TEIS(0,ref_node_n_global(ref_node),"init zero global");
-    TSS( ref_node_next_global(ref_node,&node), "next global");
+    TSS( ref_node_next_global(ref_node,&node), "next gloabal");
     TEIS(0,node,"expected global");
     TEIS(1,ref_node_n_global(ref_node),"increment global");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* reuse removed global */
+    REF_NODE ref_node;
+    REF_INT node, global;
+
+    TSS(ref_node_create(&ref_node),"create");
+
+    global = 3542;
+    RSS(ref_node_add(ref_node,global,&node),"add orig");
+
+    TSS(ref_node_remove(ref_node,node),"remove node");
+
+    TSS( ref_node_next_global(ref_node,&node), "next gloabal");
+    TEIS( global, node, "not reused");
 
     TSS(ref_node_free(ref_node),"free");
   }
