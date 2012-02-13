@@ -89,6 +89,8 @@ int main( void )
     TEIS(0, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
     TEIS(1, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
 
+    TEIS(3, ref_node_n(ref_grid_node(ref_grid)),"nodes");
+
     TSS( ref_grid_free( ref_grid ), "free grid");
   }
 

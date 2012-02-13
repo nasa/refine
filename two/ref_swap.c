@@ -85,6 +85,7 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   REF_CELL ref_cell;
   REF_INT cell_face;
   REF_INT node;
+  REF_INT cell_nodes[4];
   REF_INT cell_face_nodes[4];
   REF_INT face_nodes[4];
   REF_INT found;
@@ -92,6 +93,7 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   REF_INT cell_face0, cell_face1, cell_face2;
   REF_INT faceid0, faceid1, faceid2;
   REF_INT temp, face;
+  REF_INT remove_this_node;
 
   ref_cell = ref_grid_tet(ref_grid);
  
@@ -161,7 +163,15 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   RSS( ref_cell_add( ref_grid_tri( ref_grid ), face_nodes, &face ), 
        "add tri" );
 
+  RSS( ref_cell_nodes( ref_cell, cell, cell_nodes), "tet");
+
+  remove_this_node = cell_nodes[0]+cell_nodes[1]+cell_nodes[2]+cell_nodes[3]
+    -face_nodes[0]-face_nodes[1]-face_nodes[2];
+
   RSS( ref_cell_remove( ref_cell, cell ), "remove tet" );
+
+  RSS( ref_node_remove( ref_grid_node(ref_grid), remove_this_node ), 
+       "remove node" );
 
   return REF_SUCCESS;
 }
