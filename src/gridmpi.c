@@ -159,7 +159,9 @@ Grid *gridParallelAdapt(Grid *grid, Queue *queue,
 	    }else{
 	      if ( NULL == gridSmallestRatioEdge( grid, n0, &n1, &ratio) ) 
 		return NULL;
-	      if ( !gridNodeFrozen( grid, n1 ) && ratio < minLength ) { 
+	      if ( !gridNodeFrozen( grid, n0 ) && 
+		   !gridNodeFrozen( grid, n1 ) && 
+		   ratio < minLength ) { 
 		if ( grid == gridParallelEdgeCollapse(grid, queue, n0, n1) ) {
 		  nnodeRemove++;
 		}

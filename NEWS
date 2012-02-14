@@ -1,4 +1,7 @@
 
+- towards eliminating the creatation of "collapsed cells", tets with 
+  more then one boundary face: do not collapse if either node is frozen
+
 Thu Nov 17, 2011 : Released Refine 1.8.3
 
 - package cleanup and include bootstrap
