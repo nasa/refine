@@ -16,6 +16,7 @@ REF_STATUS ref_quality_split_multiple_face_cell( REF_GRID ref_grid );
 
 REF_STATUS ref_quality_tet_vol( REF_GRID ref_grid, REF_INT cell, 
 				REF_DBL *volume);
+REF_STATUS ref_quality_tet_positive_vol( REF_GRID ref_grid, REF_INT cell);
 
 END_C_DECLORATION
 

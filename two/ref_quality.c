@@ -397,3 +397,15 @@ REF_STATUS ref_quality_tet_vol( REF_GRID ref_grid, REF_INT cell,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_quality_tet_positive_vol( REF_GRID ref_grid, REF_INT cell)
+{
+  REF_DBL volume;
+  RSS( ref_quality_tet_vol( ref_grid, (cell), &volume ), "tet vol");
+  if ( volume <= 0.0 )
+    {
+      return REF_FAILURE;
+    }
+  return REF_SUCCESS;
+}
+
