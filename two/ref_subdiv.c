@@ -652,6 +652,11 @@ REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 #define node_swap(nodes,a,b) \
   {REF_INT nst;nst=(nodes)[(a)];(nodes)[(a)]=(nodes)[(b)];(nodes)[(b)]=nst;}
 
+#define add_cell_with(fnnw0, fnnw1, fnnw2, fnnw3) \
+  new_nodes[0] = (fnnw0); new_nodes[1] = (fnnw1); \
+  new_nodes[2] = (fnnw2); new_nodes[3] = (fnnw3); \
+  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+
 REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
@@ -764,6 +769,41 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 				       &(new_nodes[2])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 	  
+	  break;
+	  /*
+                              inode3------5------inode2
+                                 / \              . /
+                                /   \          .   /
+                               /     \      .     /
+                              /       \  .       /
+                             /        .\        /
+                            2      1    4      3
+                           /    .        \    /
+                          /  .            \  /
+                         /.                \/
+                      inode0------0------inode1
+	   */
+	case 63:
+	  marked_for_removal[cell]=1;
+	  { 
+	    REF_INT n0, n1, n2, n3;
+	    REF_INT e0, e1, e2, e3,e4, e5;
+	    n0 = nodes[0]; n1 = nodes[1]; n2 = nodes[2]; n3 = nodes[3];
+	    RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1],&e0),"e");
+	    RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2],&e1),"e");
+	    RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[3],&e2),"e");
+	    RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2],&e3),"e");
+	    RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[3],&e4),"e");
+	    RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[3],&e5),"e");
+	    add_cell_with(e0, e2, e1, n0);
+	    add_cell_with(e0, e3, e4, n1);
+	    add_cell_with(e1, e5, e3, n2);
+	    add_cell_with(e1, e2, e5, n3);
+	    add_cell_with(e0, e5, e1, e2);
+	    add_cell_with(e0, e5, e2, e4);
+	    add_cell_with(e0, e5, e4, e3);
+	    add_cell_with(e0, e5, e3, e1);
+	  }
 	  break;
 	default:
 	  printf("cell %d, map %d\n",cell,map);
