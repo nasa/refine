@@ -107,6 +107,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 }
 
 REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid, 
+						  REF_INT *count,
 						  char *export_to  )
 {
   REF_CELL ref_cell;
@@ -120,6 +121,8 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
 
   REF_GRID viz;
   REF_INT viz_cell;
+
+  *count = REF_EMPTY;
 
   RSS( ref_grid_empty_cell_clone( &viz, ref_grid ), "viz grid" );
   
@@ -200,6 +203,8 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
 
   for ( boundary_faces = 0 ; boundary_faces <= 4; boundary_faces++ )
     printf(" %d : %d\n", boundary_faces, targeted[boundary_faces]);
+
+  *count = targeted[4] + targeted[3] + targeted[2];
 
   if ( problem )
     {
