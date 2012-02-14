@@ -350,7 +350,7 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
   {									\
     REF_DBL vol;							\
     RSS( ref_quality_tet_vol( ref_grid, (cell), &vol ), "tet vol");	\
-    if( vol<0.0 )							\
+    if( vol<=0.0 )							\
       {									\
 	REF_GRID viz;							\
 	REF_INT newnew;							\
