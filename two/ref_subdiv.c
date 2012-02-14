@@ -798,7 +798,7 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	    add_cell_with(e0, e2, e1, n0);
 	    add_cell_with(e0, e3, e4, n1);
 	    add_cell_with(e1, e5, e3, n2);
-	    add_cell_with(e1, e2, e5, n3);
+	    add_cell_with(e2, e4, e5, n3);
 	    add_cell_with(e0, e5, e1, e2);
 	    add_cell_with(e0, e5, e2, e4);
 	    add_cell_with(e0, e5, e4, e3);
