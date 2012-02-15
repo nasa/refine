@@ -27,13 +27,15 @@
 #include "ref_math.h"
 #include "ref_swap.h"
 
+#include "ref_axi.h"
+
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
 
   if (argc<3) 
     {
-      printf("usage: %s filename.msh filename.ugrid\n",argv[0]);
+      printf("usage: %s filename.msh filename.ugrid [-axi]\n",argv[0]);
       return 0;
     }
 
@@ -42,6 +44,12 @@ int main( int argc, char *argv[] )
   printf("complete.\n");
       
   RSS(ref_grid_inspect( ref_grid ), "inspection");
+
+  if ( 4 == argc )
+    {
+      RSS(ref_axi_wedge(ref_grid),"axi wedge");
+      RSS(ref_grid_inspect( ref_grid ), "inspection");
+    }
 
   printf("exporting %s\n",argv[2]);
   RSS(ref_export_ugrid( ref_grid, argv[2] ),"to ugrid");
