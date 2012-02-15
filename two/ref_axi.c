@@ -1,8 +1,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ref_axi.h"
+
+#include "ref_math.h"
 
 #include "ref_node.h"
 #include "ref_cell.h"
@@ -20,12 +23,16 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
   REF_INT cell, nodes[8], new_nodes[8], pyr_nodes[8];
   REF_INT nunique, unique[8];
   REF_INT new_cell;
+  
+  REF_DBL radius, wedge_angle;
 
   ref_node = ref_grid_node(ref_grid);
 
-  pole_tol = 1.0e-7;
   o2n = (REF_INT *)malloc( ref_node_n(ref_node) * sizeof(REF_INT));
   RNS(o2n,"malloc o2n NULL");
+
+  pole_tol = 1.0e-7;
+  wedge_angle = ref_math_in_radians(5.0);
 
   nhalf = ref_node_n(ref_node)/2;
   each_ref_node_valid_node( ref_node, node )
@@ -39,6 +46,14 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
       else
 	{
 	  o2n[node] = node;
+	}
+      if (  ABS(ref_node_xyz(ref_node,1,node)) > 0.5 )
+	{
+	  radius = ref_node_xyz(ref_node,2,node);
+	  ref_node_xyz(ref_node,1,node) = ref_node_xyz(ref_node,1,node)
+	    * radius * sin( wedge_angle );
+	  ref_node_xyz(ref_node,2,node) = ref_node_xyz(ref_node,1,node)
+	    * radius * cos( wedge_angle );
 	}
     }
 
