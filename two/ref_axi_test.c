@@ -184,5 +184,53 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free" );
   }
 
+  { /* collapse prism to pyramid 0 */
+    REF_GRID ref_grid;
+
+    RSS( ref_prism_grid( &ref_grid, 0.0, 0.1, 0.1 ), "prism fixture" );
+    RSS( ref_axi_wedge( ref_grid ), "wedge");
+
+    REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
+    REIS( 5, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
+
+    REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
+    REIS( 1, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
+    REIS( 0, ref_cell_n(ref_grid_tet(ref_grid)), "tet n");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
+  { /* collapse prism to pyramid 1 */
+    REF_GRID ref_grid;
+
+    RSS( ref_prism_grid( &ref_grid, 0.1, 0.0, 0.1 ), "prism fixture" );
+    RSS( ref_axi_wedge( ref_grid ), "wedge");
+
+    REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
+    REIS( 5, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
+
+    REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
+    REIS( 1, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
+    REIS( 0, ref_cell_n(ref_grid_tet(ref_grid)), "tet n");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
+  { /* collapse prism to pyramid 2 */
+    REF_GRID ref_grid;
+
+    RSS( ref_prism_grid( &ref_grid, 0.1, 0.1, 0.0 ), "prism fixture" );
+    RSS( ref_axi_wedge( ref_grid ), "wedge");
+
+    REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
+    REIS( 5, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
+
+    REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
+    REIS( 1, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
+    REIS( 0, ref_cell_n(ref_grid_tet(ref_grid)), "tet n");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
   return 0;
 }

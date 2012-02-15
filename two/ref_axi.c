@@ -17,7 +17,7 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
   REF_INT *o2n, node;
   REF_INT nhalf;
 
-  REF_INT cell, nodes[8], new_nodes[8];
+  REF_INT cell, nodes[8], new_nodes[8], pyr_nodes[8];
   REF_INT nunique, unique[8];
   REF_INT new_cell;
 
@@ -81,6 +81,46 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
 	    }
 	  RSS( ref_cell_add( ref_grid_tri(ref_grid), 
 			     new_nodes, &new_cell ), "new cell" );
+	}
+    }
+
+  ref_cell = ref_grid_pri(ref_grid);
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell,cell,nodes)
+    {
+      for (node=0;node<6;node++)
+	new_nodes[node] = o2n[nodes[node]];
+      RSS( ref_sort_unique( 6, new_nodes, 
+			    &nunique, unique), "uniq" );
+      if ( 6 > nunique ) RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
+      if ( 5 == nunique )
+	{
+	  if ( new_nodes[0] == new_nodes[3] )
+	    {
+	      pyr_nodes[0] = new_nodes[1];
+	      pyr_nodes[1] = new_nodes[2];
+	      pyr_nodes[2] = new_nodes[0];
+	      pyr_nodes[3] = new_nodes[4];
+	      pyr_nodes[4] = new_nodes[5];
+	    }
+	  if ( new_nodes[1] == new_nodes[4] )
+	    {
+	      pyr_nodes[0] = new_nodes[2];
+	      pyr_nodes[1] = new_nodes[0];
+	      pyr_nodes[2] = new_nodes[1];
+	      pyr_nodes[3] = new_nodes[5];
+	      pyr_nodes[4] = new_nodes[3];
+	    }
+	  if ( new_nodes[2] == new_nodes[5] )
+	    {
+	      pyr_nodes[0] = new_nodes[0];
+	      pyr_nodes[1] = new_nodes[1];
+	      pyr_nodes[2] = new_nodes[2];
+	      pyr_nodes[3] = new_nodes[3];
+	      pyr_nodes[4] = new_nodes[4];
+	    }
+	  RSS( ref_cell_add( ref_grid_pyr(ref_grid), 
+			     pyr_nodes, &new_cell ), "new cell" );
 	}
     }
 
