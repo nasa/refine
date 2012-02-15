@@ -46,6 +46,10 @@ bin_PROGRAMS += projectable
 projectable_SOURCES = projectable.c
 projectable_LDADD = libref2.a -lm
 
+bin_PROGRAMS += msh_to_ugrid
+msh_to_ugrid_SOURCES = msh_to_ugrid.c
+msh_to_ugrid_LDADD = libref2.a -lm
+
 noinst_HEADERS = ref_test.h
 
 noinst_PROGRAMS =
