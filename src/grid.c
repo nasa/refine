@@ -5909,7 +5909,8 @@ Grid *gridSetCostConstraint(Grid *grid, int costConstraint)
   if ( costConstraint < 0 || 
        costConstraint > ( gridCOST_CNST_VOLUME | 
 			  gridCOST_CNST_VALID  |
-			  gridCOST_CNST_AREAUV ) ) return NULL;
+			  gridCOST_CNST_AREAUV |
+			  gridCOST_CNST_PROJ   ) ) return NULL;
   grid->costConstraint = costConstraint;
   return grid;
 }

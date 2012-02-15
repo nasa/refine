@@ -495,6 +495,7 @@ Grid *gridSetCostConstraint(Grid *g, int costConstraint);
 #define gridCOST_CNST_VOLUME (0x01)
 #define gridCOST_CNST_VALID  (0x02)
 #define gridCOST_CNST_AREAUV (0x04)
+#define gridCOST_CNST_PROJ   (0x08)
 
 Grid *gridSetMinInsertCost(Grid *g, double min_cost );
 double gridMinInsertCost(Grid *g );
