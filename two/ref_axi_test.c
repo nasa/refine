@@ -55,6 +55,56 @@ REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr, REF_DBL z0, REF_DBL z1 )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_prism_grid( REF_GRID *ref_grid_ptr, 
+			   REF_DBL z0, REF_DBL z1, REF_DBL z2 )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT nodes[6] = {0,1,2,3,4,5};
+  REF_INT cell, node;
+
+  RSS(ref_grid_create(ref_grid_ptr),"create");
+  ref_grid =  *ref_grid_ptr;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_node_add(ref_node,0,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = z0;
+
+  RSS(ref_node_add(ref_node,1,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = z1;
+
+  RSS(ref_node_add(ref_node,2,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.5;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = z2;
+
+  RSS(ref_node_add(ref_node,3,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = z0;
+
+  RSS(ref_node_add(ref_node,4,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = z1;
+
+  RSS(ref_node_add(ref_node,5,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.5;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = z2;
+
+  ref_node_n_global(ref_node) = ref_node_n(ref_node);
+
+  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+
+  return REF_SUCCESS;
+}
+
 int main( void )
 {
 
@@ -114,6 +164,22 @@ int main( void )
 
     REIS( 1, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
     REIS( 0, ref_cell_n(ref_grid_tri(ref_grid)), "tri n");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
+  { /* collapse prism to prism */
+    REF_GRID ref_grid;
+
+    RSS( ref_prism_grid( &ref_grid, 0.1, 0.1, 0.1 ), "prism fixture" );
+    RSS( ref_axi_wedge( ref_grid ), "wedge");
+
+    REIS( 6, ref_node_n(ref_grid_node(ref_grid)), "node n");
+    REIS( 6, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
+
+    REIS( 1, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
+    REIS( 0, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
+    REIS( 0, ref_cell_n(ref_grid_tet(ref_grid)), "tet n");
 
     RSS( ref_grid_free( ref_grid ), "free" );
   }
