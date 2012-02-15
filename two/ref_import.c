@@ -448,6 +448,13 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
   REF_GRID ref_grid;
   REF_NODE ref_node;
   FILE *file;
+  char line[1024];
+  REF_INT dummy;
+  REF_DBL x,  y;
+  REF_INT nnode, node, new_node;
+  REF_INT nedge, edge, n0, n1, n2, id;
+  REF_INT ntri, tri;
+  REF_INT nodes[REF_CELL_MAX_NODE_PER], new_cell;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -456,6 +463,83 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
   file = fopen(filename,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
   RNS(file, "unable to open file" );
+  
+  while (!feof(file))
+    {
+      REIS( 1, fscanf( file, "%s", line), "line read failed");
+
+      if ( 0 == strcmp("Vertices",line))
+	{
+	  REIS( 1, fscanf(file, "%d", &nnode), "read nnode" );
+	  for (node=0;node<nnode;node++)
+	    {
+	      REIS( 3, fscanf(file, "%lf %lf %d",&x, &y, &dummy ), "read xy" );
+	      RSS( ref_node_add( ref_node, node, &new_node ), "add node");
+	      ref_node_xyz(ref_node,0,new_node) = x;
+	      ref_node_xyz(ref_node,1,new_node) = 0.0;
+	      ref_node_xyz(ref_node,2,new_node) = y;
+	    }
+	  for (node=0;node<nnode;node++)
+	    {
+	      RSS( ref_node_add( ref_node, nnode+node, &new_node ), "add node");
+	      ref_node_xyz(ref_node,0,new_node) = 
+		ref_node_xyz(ref_node,0,node);
+	      ref_node_xyz(ref_node,1,new_node) = 1.0;
+	      ref_node_xyz(ref_node,2,new_node) = 
+		ref_node_xyz(ref_node,2,node);
+	    }
+	}
+
+      if ( 0 == strcmp("Edges",line))
+	{
+	  REIS( 1, fscanf(file, "%d", &nedge), "read nedge" );
+	  for (edge=0;edge<nedge;edge++)
+	    {
+	      REIS( 3, fscanf(file, "%d %d %d",&n0, &n1, &id ), "read edge" );
+	      n0--; n1--;
+	      nodes[0]=n0;
+	      nodes[1]=n1;
+	      nodes[2]=n1+nnode;
+	      nodes[3]=n0+nnode;
+	      nodes[4]=id;
+	      RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
+		   "quad face for an edge");
+	    }
+	}
+
+      if ( 0 == strcmp("Triangles",line))
+	{
+	  REIS( 1, fscanf(file, "%d", &ntri), "read ntri" );
+	  for (tri=0;tri<ntri;tri++)
+	    {
+	      REIS( 4, fscanf(file, "%d %d %d %d",&n0, &n1, &n2, &dummy ), 
+		    "read tri" );
+	      n0--; n1--; n2--;
+	      nodes[0]=n0+nnode;
+	      nodes[1]=n1+nnode;
+	      nodes[2]=n2+nnode;
+	      nodes[3]=100;
+	      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
+		   "tri face for tri");
+	      nodes[0]=n0;
+	      nodes[1]=n2;
+	      nodes[2]=n1;
+	      nodes[3]=101;
+	      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
+		   "tri face for tri");
+	      nodes[0]=n0+nnode;
+	      nodes[1]=n1+nnode;
+	      nodes[2]=n2+nnode;
+	      nodes[3]=n0;
+	      nodes[4]=n1;
+	      nodes[5]=n2;
+	      RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
+		   "prism for tri");
+	    }
+	  return REF_SUCCESS;
+	}
+
+    } 
 
   return REF_IMPLEMENT;
 }
