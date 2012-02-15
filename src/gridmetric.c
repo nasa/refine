@@ -599,7 +599,20 @@ double gridCostValid(Grid *grid, int *nodes )
 	   (gridCostConstraint(grid)&gridCOST_CNST_AREAUV) &&
 	   ( gridMinCellFaceAreaUV(grid,nodes) <= GRID_AREA_TOL ) ) return -2.0;
       if ( ( nodes_on_surface > 3 ) &&
-	   (gridCostConstraint(grid)&gridCOST_CNST_PROJ) ) return -5.0;
+	   (gridCostConstraint(grid)&gridCOST_CNST_PROJ) ) 
+	{
+	  int boundary_faces;
+	  boundary_faces=0;
+	  if ( EMPTY != gridFindFace(grid, nodes[1], nodes[3], nodes[2]) )
+	    boundary_faces++;
+	  if ( EMPTY != gridFindFace(grid, nodes[0], nodes[2], nodes[3]) )
+	    boundary_faces++;
+	  if ( EMPTY != gridFindFace(grid, nodes[0], nodes[3], nodes[1]) )
+	    boundary_faces++;
+	  if ( EMPTY != gridFindFace(grid, nodes[0], nodes[1], nodes[2]) )
+	    boundary_faces++;
+	  if (boundary_faces>1) return -5.0;
+	}
     }
   }
 
