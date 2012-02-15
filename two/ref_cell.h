@@ -100,6 +100,7 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
 REF_STATUS ref_cell_add_global( REF_CELL ref_cell, REF_NODE ref_node,
 				REF_INT *global_nodes, REF_INT *cell );
 REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell );
+REF_STATUS ref_cell_renumber( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 
