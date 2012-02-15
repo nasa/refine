@@ -122,6 +122,13 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
 	  RSS( ref_cell_add( ref_grid_pyr(ref_grid), 
 			     pyr_nodes, &new_cell ), "new cell" );
 	}
+      if ( 4 == nunique )
+	{
+	  if ( new_nodes[1] != new_nodes[4] ) new_nodes[3] = new_nodes[4];
+	  if ( new_nodes[2] != new_nodes[5] ) new_nodes[3] = new_nodes[5];
+	  RSS( ref_cell_add( ref_grid_tet(ref_grid), 
+			     new_nodes, &new_cell ), "new cell" );
+	}
     }
 
   free(o2n);
