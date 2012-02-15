@@ -73,7 +73,7 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free" );
   }
 
-  { /* collapse quad 0 */
+  { /* collapse quad 1a */
     REF_GRID ref_grid;
 
     RSS( ref_quad_grid( &ref_grid, 0.0, 0.1 ), "quad fixture" );
@@ -84,6 +84,36 @@ int main( void )
 
     REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
     REIS( 1, ref_cell_n(ref_grid_tri(ref_grid)), "tri n");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
+  { /* collapse quad 1b */
+    REF_GRID ref_grid;
+
+    RSS( ref_quad_grid( &ref_grid, 0.1, 0.0 ), "quad fixture" );
+    RSS( ref_axi_wedge( ref_grid ), "wedge");
+
+    REIS( 3, ref_node_n(ref_grid_node(ref_grid)), "node n");
+    REIS( 3, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
+
+    REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
+    REIS( 1, ref_cell_n(ref_grid_tri(ref_grid)), "tri n");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
+  { /* collapse quad 2 */
+    REF_GRID ref_grid;
+
+    RSS( ref_quad_grid( &ref_grid, 0.1, 0.1 ), "quad fixture" );
+    RSS( ref_axi_wedge( ref_grid ), "wedge");
+
+    REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
+    REIS( 4, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
+
+    REIS( 1, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
+    REIS( 0, ref_cell_n(ref_grid_tri(ref_grid)), "tri n");
 
     RSS( ref_grid_free( ref_grid ), "free" );
   }
