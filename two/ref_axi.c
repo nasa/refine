@@ -5,6 +5,9 @@
 #include "ref_axi.h"
 
 #include "ref_node.h"
+#include "ref_cell.h"
+
+#include "ref_sort.h"
 
 REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
 {
@@ -12,6 +15,9 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
   REF_CELL ref_cell;
   REF_DBL pole_tol;
   REF_INT *o2n, node;
+
+  REF_INT cell, nodes[8], new_nodes[8];
+  REF_INT nunique, unique[8];
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -37,7 +43,15 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
   ref_node_n_global(ref_node) = ref_node_n(ref_node);
 
   ref_cell = ref_grid_qua(ref_grid);
-  ref_cell_n(ref_cell) = 0;
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell,cell,nodes)
+    {
+      for (node=0;node<4;node++)
+	new_nodes[node] = o2n[nodes[node]];
+      RSS( ref_sort_unique( 4, new_nodes, 
+			    &nunique, unique), "uniq" );
+      if ( nunique < 4 ) RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
+    }
 
   free(o2n);
 
