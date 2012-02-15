@@ -64,10 +64,10 @@ int main( void )
     RSS( ref_quad_grid( &ref_grid, 0.0, 0.0 ), "quad fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
-    REIS( 2, ref_node_n(ref_grid_node(ref_grid)), "n");
-    REIS( 2, ref_node_n_global(ref_grid_node(ref_grid)), "n global");
+    REIS( 2, ref_node_n(ref_grid_node(ref_grid)), "node n");
+    REIS( 2, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
-    REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "n");
+    REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
 
     RSS( ref_grid_free( ref_grid ), "free" );
   }
