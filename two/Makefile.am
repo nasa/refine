@@ -4,6 +4,7 @@ lib_LIBRARIES = libref2.a
 
 libref2_a_SOURCES = \
 	ref_adj.c ref_adj.h \
+	ref_axi.c ref_axi.h \
 	ref_cell.c ref_cell.h \
 	ref_dict.c ref_dict.h \
 	ref_defs.h \
@@ -59,6 +60,11 @@ TESTS += ref_adj_test
 noinst_PROGRAMS += ref_adj_test
 ref_adj_test_SOURCES = ref_adj_test.c
 ref_adj_test_LDADD = libref2.a -lm
+
+TESTS += ref_axi_test
+noinst_PROGRAMS += ref_axi_test
+ref_axi_test_SOURCES = ref_axi_test.c
+ref_axi_test_LDADD = libref2.a -lm
 
 TESTS += ref_cell_test
 noinst_PROGRAMS += ref_cell_test
