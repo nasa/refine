@@ -91,14 +91,12 @@ int main( int argc, char *argv[] )
 
   { /* part */
     REF_GRID export_grid, import_grid;
-    char grid_file[] = "ref_import_test.b8.ugrid";
+    char grid_file[] = "ref_part_test.b8.ugrid";
     char viz_file[256];
     
     TSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
     if ( ref_mpi_master ) 
       {
-	TSS(ref_export_ugrid( export_grid, 
-			      "ref_import_test.ugrid" ), "export" );
 	TSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
       }
     TSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
