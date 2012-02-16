@@ -1,8 +1,12 @@
 
+Thu Feb 16, 2014 : Released Refine 1.8.4
+
 - towards eliminating the creatation of "collapsed cells", tets with 
   more then one boundary face: do not collapse if either node is frozen 
   (80768c4). added a cost constraint for tets with more then one 
   boundary face (2566eb8,b24f9fd)
+- two/ref_axi_test can convert some 2D grids into axi-symmetric grids
+  (with many caveats)
 
 Thu Nov 17, 2011 : Released Refine 1.8.3
 
