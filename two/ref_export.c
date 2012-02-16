@@ -455,7 +455,7 @@ REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
   RSS( ref_node_compact( ref_node, &o2n), "compact" );
 
   for ( ixyz = 0 ; ixyz< 3; ixyz++)
-    for ( node = 0; node < nnode; node++ )
+    for ( node = 0; node < ref_node_max(ref_node); node++ )
       if ( REF_EMPTY != o2n[node] )
 	fprintf(file, " %.16e\n", ref_node_xyz(ref_node,ixyz,node) ) ;
 
@@ -525,7 +525,7 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
 
   RSS( ref_node_compact( ref_node, &o2n), "compact" );
 
-  for ( node = 0; node < nnode; node++ )
+  for ( node = 0; node < ref_node_max(ref_node); node++ )
     if ( REF_EMPTY != o2n[node] )
       fprintf(file, " %.16e %.16e %.16e\n", 
 	      ref_node_xyz(ref_node,0,node),
@@ -667,7 +667,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 
   RSS( ref_node_compact( ref_node, &o2n), "compact" );
 
-  for ( node = 0; node < ref_node_n(ref_node); node++ )
+  for ( node = 0; node < ref_node_max(ref_node); node++ )
     if ( REF_EMPTY != o2n[node] )
       {
 	swapped_dbl = ref_node_xyz(ref_node,0,node);
