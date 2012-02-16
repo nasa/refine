@@ -31,7 +31,7 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
   o2n = (REF_INT *)malloc( ref_node_n(ref_node) * sizeof(REF_INT));
   RNS(o2n,"malloc o2n NULL");
 
-  pole_tol = 1.0e-7;
+  pole_tol = 1.0e-6;
   wedge_angle = ref_math_in_radians(5.0);
 
   nhalf = ref_node_n(ref_node)/2;
