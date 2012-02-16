@@ -50,10 +50,8 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
       if (  ABS(ref_node_xyz(ref_node,1,node)) > 0.5 )
 	{
 	  radius = ref_node_xyz(ref_node,2,node);
-	  ref_node_xyz(ref_node,1,node) = ref_node_xyz(ref_node,1,node)
-	    * radius * sin( wedge_angle );
-	  ref_node_xyz(ref_node,2,node) = ref_node_xyz(ref_node,1,node)
-	    * radius * cos( wedge_angle );
+	  ref_node_xyz(ref_node,1,node) = radius * sin( wedge_angle );
+	  ref_node_xyz(ref_node,2,node) = radius * cos( wedge_angle );
 	}
     }
 
