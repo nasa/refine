@@ -133,6 +133,15 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
     }
 
   conn_offset = 4*7
+    + 8*3*nnode;
+  faceid_offset = 4*7
+    + 8*3*nnode
+    + 4*3*ntri;
+  RSS( ref_part_b8_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
+			       ref_node, nnode, 
+			       file, conn_offset, faceid_offset ), "tets" );
+
+  conn_offset = 4*7
     + 8*3*nnode
     + 4*4*ntri
     + 4*5*nqua;
@@ -171,7 +180,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   REF_INT *c2n;
   REF_INT *sent_c2n;
   REF_INT *elements_to_send;
-  REF_INT node_per;
+  REF_INT node_per, total_per;
   REF_INT section_size;
   REF_INT all_procs[REF_CELL_MAX_NODE_PER];
   REF_INT unique_procs[REF_CELL_MAX_NODE_PER];
@@ -182,42 +191,60 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 
   chunk = MAX(10000, ncell/ref_mpi_n);
 
-  node_per = ref_cell_node_per(ref_cell);
+  total_per = ref_cell_node_per(ref_cell);
+  node_per = total_per;
+  if ( ref_cell_last_node_is_an_id(ref_cell) ) node_per--;
 
   sent_c2n =(REF_INT *)malloc(node_per*chunk*sizeof(REF_INT));
   RNS(sent_c2n,"malloc failed");
 
   if ( ref_mpi_master )
     {
-      fseek(file,conn_offset,SEEK_SET);
-      if ( REF_EMPTY != faceid_offset ) return REF_IMPLEMENT;
 
       elements_to_send =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
       RNS(elements_to_send,"malloc failed");
 
-      c2n =(REF_INT *)malloc(node_per*chunk*sizeof(REF_INT));
+      c2n =(REF_INT *)malloc(total_per*chunk*sizeof(REF_INT));
       RNS(c2n,"malloc failed");
 
       ncell_read = 0;
       while ( ncell_read < ncell )
 	{
 	  section_size = MIN(chunk,ncell-ncell_read);
-	  ncell_read += section_size;
 
-	  for ( part = 0; part<ref_mpi_n ; part++ )
-	    elements_to_send[part] = 0;
-	  
+	  fseek(file,conn_offset+(long)(node_per*ncell_read),SEEK_SET);
 	  for (cell=0;cell<section_size;cell++)
 	    {
 	      for (node=0;node<node_per;node++)
 		{
-		  RES(1, fread( &(c2n[node+node_per*cell]), 
+		  RES(1, fread( &(c2n[node+total_per*cell]), 
 				sizeof(REF_INT), 1, file ), "cn" );
-		  SWAP_INT(c2n[node+node_per*cell]);
-		  c2n[node+node_per*cell]--;
-		  all_procs[node] = ref_part_implicit( nnode, ref_mpi_n, 
-						       c2n[node+node_per*cell]);
+		  SWAP_INT(c2n[node+total_per*cell]);
+		  c2n[node+total_per*cell]--;
 		}
+	    }
+	  if ( ref_cell_last_node_is_an_id(ref_cell) )
+	    {
+	      fseek(file,faceid_offset+(long)ncell_read,SEEK_SET);
+	      for (cell=0;cell<section_size;cell++)
+		{
+		  node = node_per;
+		  RES(1, fread( &(c2n[node+total_per*cell]), 
+				sizeof(REF_INT), 1, file ), "cn" );
+		  SWAP_INT(c2n[node+total_per*cell]);
+		}
+	    }
+
+	  ncell_read += section_size;
+
+	  for ( part = 0; part<ref_mpi_n ; part++ )
+	    elements_to_send[part] = 0;	  
+
+	  for (cell=0;cell<section_size;cell++)
+	    {
+	      for (node=0;node<node_per;node++)
+		all_procs[node] = ref_part_implicit( nnode, ref_mpi_n, 
+						     c2n[node+total_per*cell]);
 	      RSS( ref_sort_unique( node_per, all_procs, 
 				    &cell_procs, unique_procs), "uniq" );
 	      for (node=0;node<cell_procs;node++)
@@ -233,13 +260,15 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 		  for (node=0;node<node_per;node++)
 		    needcell = needcell ||
 		      ( part == ref_part_implicit( nnode, ref_mpi_n, 
-						   c2n[node+node_per*cell]) );
+						   c2n[node+total_per*cell]) );
 		  if ( needcell )
 		    {
 		      for (node=0;node<node_per;node++)
 			RSS( ref_node_add(ref_node, 
-					  c2n[node+node_per*cell],
+					  c2n[node+total_per*cell],
 					  &(local_c2n[node]) ), "needed node" );
+		      if ( ref_cell_last_node_is_an_id(ref_cell) )
+			local_c2n[node_per] = c2n[node_per+total_per*cell];
 		      RSS( ref_cell_add( ref_cell, local_c2n, 
 					 &new_cell ), "add cell to off proc");
 		    }
@@ -258,17 +287,17 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 		    for (node=0;node<node_per;node++)
 		      needcell = needcell ||
 			( part == ref_part_implicit( nnode, ref_mpi_n, 
-						     c2n[node+node_per*cell]) );
+						     c2n[node+total_per*cell]));
 		    if ( needcell )
 		      {
-			for (node=0;node<node_per;node++)
-			  sent_c2n[node+node_per*send_size] = 
-			    c2n[node+node_per*cell];
+			for (node=0;node<total_per;node++)
+			  sent_c2n[node+total_per*send_size] = 
+			    c2n[node+total_per*cell];
 			send_size++;
 		      }
 		
 		  }
-		RSS( ref_mpi_send( sent_c2n, node_per*send_size, 
+		RSS( ref_mpi_send( sent_c2n, total_per*send_size, 
 				   REF_INT_TYPE, part ), "send" );
 	      }
 		
@@ -289,15 +318,17 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	printf("part %d, inbound %d\n",ref_mpi_id,elements_to_receive);
 	if ( elements_to_receive > 0 )
 	  {
-	    RSS( ref_mpi_recv( sent_c2n, node_per*elements_to_receive, 
+	    RSS( ref_mpi_recv( sent_c2n, total_per*elements_to_receive, 
 			       REF_INT_TYPE, 0 ), "send" );
 
 	    for (cell=0;cell<elements_to_receive;cell++)
 	      {
 		for (node=0;node<node_per;node++)
 		  RSS( ref_node_add(ref_node, 
-				    sent_c2n[node+node_per*cell],
+				    sent_c2n[node+total_per*cell],
 				    &(local_c2n[node])), "needed node" );
+		if ( ref_cell_last_node_is_an_id(ref_cell) )
+		  local_c2n[node_per] = sent_c2n[node_per+total_per*cell];
 		RSS( ref_cell_add( ref_cell, local_c2n, 
 				   &new_cell ), "add cell to off proc");
 	      }
