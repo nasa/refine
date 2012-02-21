@@ -202,6 +202,93 @@ REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid_ptr )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT nodes[6] = {0,1,2,3,4,5};
+  REF_INT cell, node;
+
+  RSS(ref_grid_create(ref_grid_ptr),"create");
+  ref_grid =  *ref_grid_ptr;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_node_add(ref_node,0,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,1,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,2,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,3,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+
+  RSS(ref_node_add(ref_node,4,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+
+  RSS(ref_node_add(ref_node,5,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+
+  RSS(ref_node_add(ref_node,6,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 2.0;
+
+  RSS(ref_node_add(ref_node,7,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 2.0;
+
+  RSS(ref_node_add(ref_node,8,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 2.0;
+
+  RSS(ref_node_add(ref_node,9,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 3.0;
+
+  RSS(ref_node_add(ref_node,10,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 3.0;
+
+  RSS(ref_node_add(ref_node,11,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 3.0;
+
+  ref_node_n_global(ref_node) = ref_node_n(ref_node);
+
+  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+
+  nodes[0] = 3; nodes[1] = 4; nodes[2] = 5; 
+  nodes[3] = 6; nodes[4] = 7; nodes[5] = 8;
+  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+
+  nodes[0] = 6; nodes[1] = 7; nodes[2] = 8; 
+  nodes[3] = 9; nodes[4] =10; nodes[5] =11;
+  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
