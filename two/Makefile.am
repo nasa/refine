@@ -47,6 +47,10 @@ bin_PROGRAMS += projectable
 projectable_SOURCES = projectable.c
 projectable_LDADD = libref2.a -lm
 
+bin_PROGRAMS += convert
+convert_SOURCES = convert.c
+convert_LDADD = libref2.a -lm
+
 noinst_HEADERS = ref_test.h
 
 noinst_PROGRAMS =
