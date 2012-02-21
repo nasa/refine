@@ -19,7 +19,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT n;
   REF_DBL *xyz;
 
-  long offset;
+  long conn_offset, faceid_offset;
 
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -132,12 +132,14 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
     }
 
-  offset = 4*7
+  conn_offset = 4*7
     + 8*3*nnode
     + 4*4*ntri
     + 4*5*nqua;
+  faceid_offset = REF_EMPTY;
   RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
-			       ref_node, nnode, file, offset ), "read tets" );
+			       ref_node, nnode, 
+			       file, conn_offset, faceid_offset ), "tets" );
 
   if ( ref_mpi_master ) fclose(file);
 
@@ -156,7 +158,9 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
 REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 				   REF_NODE ref_node, REF_INT nnode,
-				   FILE *file, long offset )
+				   FILE *file, 
+				   long conn_offset, 
+				   long faceid_offset )
 {
   REF_INT ncell_read;
   REF_INT send_size, new_cell;
@@ -185,7 +189,8 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 
   if ( ref_mpi_master )
     {
-      fseek(file,offset,SEEK_SET);
+      fseek(file,conn_offset,SEEK_SET);
+      if ( REF_EMPTY != faceid_offset ) return REF_IMPLEMENT;
 
       elements_to_send =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
       RNS(elements_to_send,"malloc failed");
