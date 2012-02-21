@@ -13,33 +13,16 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
-  REF_INT cell;
   REF_INT node, new_node;
   REF_DBL swapped_dbl;
   REF_INT part;
   REF_INT n;
   REF_DBL *xyz;
-  REF_INT end_of_message = REF_EMPTY;
-  REF_INT elements_to_receive;
-  REF_INT *c2n;
-  REF_INT *sent_c2n;
-  REF_INT *elements_to_send;
-  REF_INT node_per;
-  REF_INT ncell, section_size;
-  REF_INT all_procs[REF_CELL_MAX_NODE_PER];
-  REF_INT unique_procs[REF_CELL_MAX_NODE_PER];
-  REF_INT local_c2n[REF_CELL_MAX_NODE_PER];
-  REF_INT cell_procs;
 
-  REF_INT chunk;
-
-  REF_BOOL needcell;
-
-  REF_INT send_size, new_cell;
+  long offset;
 
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  REF_CELL ref_cell;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = *ref_grid_ptr;
@@ -149,9 +132,52 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
     }
 
-  chunk = MAX(10000, ntet/ref_mpi_n);
+  offset = 4*7
+    + 8*3*nnode
+    + 4*4*ntri
+    + 4*5*nqua;
+  RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
+			       ref_node, nnode, file, offset ), "read tets" );
 
-  ref_cell = ref_grid_tet(ref_grid);
+  if ( ref_mpi_master ) fclose(file);
+
+  ref_node_n_global(ref_node) = nnode;
+
+  each_ref_node_valid_node( ref_node, node )
+    ref_node_part(ref_node,node) = 
+    ref_part_implicit( nnode, ref_mpi_n, ref_node_global(ref_node,node));
+
+  /* ghost xyz */
+
+  RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
+				   REF_NODE ref_node, REF_INT nnode,
+				   FILE *file, long offset )
+{
+  REF_INT ncell_read;
+  REF_INT send_size, new_cell;
+  REF_BOOL needcell;
+  REF_INT chunk;
+  REF_INT end_of_message = REF_EMPTY;
+  REF_INT elements_to_receive;
+  REF_INT *c2n;
+  REF_INT *sent_c2n;
+  REF_INT *elements_to_send;
+  REF_INT node_per;
+  REF_INT section_size;
+  REF_INT all_procs[REF_CELL_MAX_NODE_PER];
+  REF_INT unique_procs[REF_CELL_MAX_NODE_PER];
+  REF_INT local_c2n[REF_CELL_MAX_NODE_PER];
+  REF_INT cell_procs;
+  REF_INT cell;
+  REF_INT part, node;
+
+  chunk = MAX(10000, ncell/ref_mpi_n);
+
   node_per = ref_cell_node_per(ref_cell);
 
   sent_c2n =(REF_INT *)malloc(node_per*chunk*sizeof(REF_INT));
@@ -159,11 +185,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( ref_mpi_master )
     {
-      long offset;
-      offset = 4*7
-	     + 8*3*nnode
-             + 4*4*ntri
-             + 4*5*nqua;
       fseek(file,offset,SEEK_SET);
 
       elements_to_send =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
@@ -172,11 +193,11 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       c2n =(REF_INT *)malloc(node_per*chunk*sizeof(REF_INT));
       RNS(c2n,"malloc failed");
 
-      ncell = 0;
-      while ( ncell < ntet )
+      ncell_read = 0;
+      while ( ncell_read < ncell )
 	{
-	  section_size = MIN(chunk,ntet-ncell);
-	  ncell += section_size;
+	  section_size = MIN(chunk,ncell-ncell_read);
+	  ncell_read += section_size;
 
 	  for ( part = 0; part<ref_mpi_n ; part++ )
 	    elements_to_send[part] = 0;
@@ -280,18 +301,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
     }
 
   free(sent_c2n);
-
-  if ( ref_mpi_master ) fclose(file);
-
-  ref_node_n_global(ref_node) = nnode;
-
-  each_ref_node_valid_node( ref_node, node )
-    ref_node_part(ref_node,node) = 
-    ref_part_implicit( nnode, ref_mpi_n, ref_node_global(ref_node,node));
-
-  /* ghost xyz */
-
-  RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
 
   return REF_SUCCESS;
 }

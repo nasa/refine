@@ -15,6 +15,9 @@ BEGIN_C_DECLORATION
   ((thing) / ((((total_things)-1)/(total_parts))+1) )
 
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid, char *filename );
+REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
+				   REF_NODE ref_node, REF_INT nnode,
+				   FILE *file, long offset );
 REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid );
 
 END_C_DECLORATION
