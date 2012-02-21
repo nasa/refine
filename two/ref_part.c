@@ -132,21 +132,67 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
     }
 
+  
   conn_offset = 4*7
     + 8*3*nnode;
   faceid_offset = 4*7
     + 8*3*nnode
-    + 4*3*ntri;
+    + 4*3*ntri
+    + 4*4*nqua;
   RSS( ref_part_b8_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
 			       ref_node, nnode, 
 			       file, conn_offset, faceid_offset ), "tets" );
 
   conn_offset = 4*7
     + 8*3*nnode
+    + 4*3*ntri;
+  faceid_offset = 4*7
+    + 8*3*nnode
+    + 4*4*ntri
+    + 4*4*nqua;
+  RSS( ref_part_b8_ugrid_cell( ref_grid_qua(ref_grid), nqua, 
+			       ref_node, nnode, 
+			       file, conn_offset, faceid_offset ), "tets" );
+  
+  conn_offset = 4*7
+    + 8*3*nnode
     + 4*4*ntri
     + 4*5*nqua;
   faceid_offset = REF_EMPTY;
   RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
+			       ref_node, nnode, 
+			       file, conn_offset, faceid_offset ), "tets" );
+
+  conn_offset = 4*7
+    + 8*3*nnode
+    + 4*4*ntri
+    + 4*5*nqua
+    + 4*4*ntet;
+  faceid_offset = REF_EMPTY;
+  RSS( ref_part_b8_ugrid_cell( ref_grid_pyr(ref_grid), npyr, 
+			       ref_node, nnode, 
+			       file, conn_offset, faceid_offset ), "tets" );
+
+  conn_offset = 4*7
+    + 8*3*nnode
+    + 4*4*ntri
+    + 4*5*nqua
+    + 4*4*ntet
+    + 4*5*npyr;
+  faceid_offset = REF_EMPTY;
+  RSS( ref_part_b8_ugrid_cell( ref_grid_pri(ref_grid), npri, 
+			       ref_node, nnode, 
+			       file, conn_offset, faceid_offset ), "tets" );
+
+  conn_offset = 4*7
+    + 8*3*nnode
+    + 4*4*ntri
+    + 4*5*nqua
+    + 4*4*ntet
+    + 4*5*npyr
+    + 4*6*npri;
+  faceid_offset = REF_EMPTY;
+  RSS( ref_part_b8_ugrid_cell( ref_grid_hex(ref_grid), nhex, 
 			       ref_node, nnode, 
 			       file, conn_offset, faceid_offset ), "tets" );
 
