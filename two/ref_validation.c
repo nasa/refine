@@ -24,7 +24,7 @@ REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid )
   REF_BOOL problem;
   REF_ADJ ref_adj;
   REF_CELL ref_cell;
-  REF_INT group, cell, node_per, *nodes;
+  REF_INT group, cell, nodes[REF_CELL_MAX_NODE_PER];
 
   problem = REF_FALSE;
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )
@@ -47,14 +47,11 @@ REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid )
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
-      node_per = ref_cell_node_per(ref_cell);
-      nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
-	  for ( node = 0; node < node_per; node++ )
+	  for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
 	    RSS( ref_adj_add( ref_adj, nodes[node], group+4*cell ), "add");
 	}
-      free(nodes);
     }
 
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )
