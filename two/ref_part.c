@@ -472,6 +472,7 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
       ref_node_xyz(ref_node,2,local) = a_xyz[2+3*node];
     }
 
+  free(a_next);
   free(b_xyz);
   free(b_global);
   free(a_xyz);
