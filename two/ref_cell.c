@@ -13,10 +13,10 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
   REF_CELL ref_cell;
 
   (*ref_cell_ptr) = NULL;
-
-  if ( node_per > REF_CELL_MAX_NODE_PER)
+  
+  if ( node_per+(last_node_is_an_id?1:0) > REF_CELL_MAX_SIZE_PER)
     {
-      RSS( REF_FAILURE, "node_per limited to REF_CELL_MAX_NODE_PER");
+      RSS( REF_FAILURE, "node_per limited to REF_CELL_MAX_SIZE_PER");
     }
 
   (*ref_cell_ptr) = (REF_CELL)malloc( sizeof(REF_CELL_STRUCT) );
@@ -27,6 +27,7 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
   ref_cell_last_node_is_an_id(ref_cell) = last_node_is_an_id;
 
   ref_cell_node_per(ref_cell) = node_per;
+  ref_cell_size_per(ref_cell) = node_per+(last_node_is_an_id?1:0);
   switch ( ref_cell_node_per(ref_cell) )
     {
     case 4:
@@ -236,7 +237,7 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
   ref_cell_max(ref_cell) = max;
 
   ref_cell->c2n = (REF_INT *)malloc(ref_cell_max(ref_cell) *
-				    ref_cell_node_per(ref_cell) *
+				    ref_cell_size_per(ref_cell) *
 				    sizeof(REF_INT));
   RNS(ref_cell->c2n,"malloc c2n NULL");
   ref_cell->c2e = (REF_INT *)malloc(ref_cell_max(ref_cell) *
@@ -273,6 +274,7 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
   REF_INT cell, node;
   REF_INT cell_edge;
   printf("ref_cell = %p\n",(void *)ref_cell);
+  printf(" size_per = %d\n",ref_cell_size_per(ref_cell));
   printf(" node_per = %d\n",ref_cell_node_per(ref_cell));
   printf(" n = %d\n",ref_cell_n(ref_cell));
   printf(" max = %d\n",ref_cell_max(ref_cell));
@@ -282,7 +284,7 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
       printf(" %d:",cell);
       if ( ref_cell_valid(ref_cell,cell) )
 	{
-	  for (node=0;node<ref_cell_node_per(ref_cell);node++)
+	  for (node=0;node<ref_cell_size_per(ref_cell);node++)
 	    printf(" %d",ref_cell_c2n(ref_cell,node,cell));
 	}
       else
@@ -312,7 +314,7 @@ REF_STATUS ref_cell_taddle( REF_CELL ref_cell, REF_INT cell )
 {
   REF_INT node;
   printf("cell %d:",cell);
-  for (node=0;node<ref_cell_node_per(ref_cell);node++)
+  for (node=0;node<ref_cell_size_per(ref_cell);node++)
     {
       printf(" %d",ref_cell_c2n(ref_cell,node,cell));
     }
@@ -333,7 +335,7 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
       chunk = 5000;
       ref_cell->max = orig + chunk;
       ref_cell->c2n = (REF_INT *)realloc( ref_cell->c2n,
-					  ref_cell_node_per(ref_cell) *
+					  ref_cell_size_per(ref_cell) *
 					  ref_cell_max(ref_cell) *
 					  sizeof(REF_INT) );
       RNS(ref_cell->c2n,"remalloc c2n NULL");
@@ -353,21 +355,12 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 
   cell = ref_cell_blank(ref_cell);
   ref_cell_blank(ref_cell) = ref_cell_c2n(ref_cell,1,cell);
-  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+  for ( node = 0 ; node < ref_cell_size_per(ref_cell) ; node++ )
     ref_cell_c2n(ref_cell,node,cell) = nodes[node];
 
-  if ( ref_cell_last_node_is_an_id(ref_cell) )
-    {
-      for ( node = 0 ; node < ref_cell_node_per(ref_cell)-1 ; node++ )
-	RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), 
-	     "register cell with id" );
-    }
-  else
-    {
-      for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
-	RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), 
-	     "register vol cell" );
-    }
+  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+    RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), 
+	 "register cell" );
 
   ref_cell_n(ref_cell)++;
 
@@ -379,20 +372,15 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 REF_STATUS ref_cell_add_global( REF_CELL ref_cell, REF_NODE ref_node,
 				REF_INT *global_nodes, REF_INT *new_cell )
 {
-  REF_INT node, local_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT node, local_nodes[REF_CELL_MAX_SIZE_PER];
+
+  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+    RSS( ref_node_add( ref_node, global_nodes[node], 
+		       &(local_nodes[node]) ), "map to local" );
 
   if ( ref_cell_last_node_is_an_id(ref_cell) )
-    {
-      for ( node = 0 ; node < ref_cell_node_per(ref_cell)-1 ; node++ )
-	RSS( ref_node_add( ref_node, global_nodes[node], 
-			   &(local_nodes[node]) ), "map to local" );
-    }
-  else
-    {
-      for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
-	RSS( ref_node_add( ref_node, global_nodes[node], 
-			   &(local_nodes[node]) ), "map to local" );
-    }
+    local_nodes[ref_cell_size_per(ref_cell)-1] = 
+      global_nodes[ref_cell_size_per(ref_cell)-1];
 
   return ref_cell_add( ref_cell, local_nodes, new_cell );
 }
@@ -403,20 +391,10 @@ REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
   if ( !ref_cell_valid(ref_cell,cell) ) return REF_FAILURE;
   ref_cell_n(ref_cell)--;
 
-  if ( ref_cell_last_node_is_an_id(ref_cell) )
-    {
-      for ( node = 0 ; node < ref_cell_node_per(ref_cell)-1 ; node++ )
-	RSS( ref_adj_remove(ref_cell->ref_adj, 
-			    ref_cell_c2n(ref_cell,node,cell), cell), 
-	     "unregister cell with id" );
-    }
-  else
-    {
-      for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
-	RSS( ref_adj_remove(ref_cell->ref_adj, 
-			    ref_cell_c2n(ref_cell,node,cell), cell), 
-	     "unregister cell" );
-    }
+  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+    RSS( ref_adj_remove(ref_cell->ref_adj, 
+			ref_cell_c2n(ref_cell,node,cell), cell), 
+	 "unregister cell" );
 
   ref_cell_c2n(ref_cell,0,cell) = REF_EMPTY;
   ref_cell_c2n(ref_cell,1,cell) = ref_cell_blank(ref_cell); 
@@ -429,32 +407,20 @@ REF_STATUS ref_cell_renumber( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
   REF_INT node;
   if ( !ref_cell_valid(ref_cell,cell) ) return REF_FAILURE;
 
+  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+    {
+      RSS( ref_adj_remove(ref_cell->ref_adj, 
+			  ref_cell_c2n(ref_cell,node,cell), cell), 
+	   "unregister cell" );
+      ref_cell_c2n(ref_cell,node,cell) = nodes[node];
+      RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), 
+	   "register cell with id" );
+    }
+
   if ( ref_cell_last_node_is_an_id(ref_cell) )
     {
-      for ( node = 0 ; node < ref_cell_node_per(ref_cell)-1 ; node++ )
-	{
-	  RSS( ref_adj_remove(ref_cell->ref_adj, 
-			      ref_cell_c2n(ref_cell,node,cell), cell), 
-	       "unregister cell with id" );
-	  ref_cell_c2n(ref_cell,node,cell) = nodes[node];
-	  RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), 
-	       "register cell with id" );
-	}
-      node = ref_cell_node_per(ref_cell)-1;
+      node = ref_cell_size_per(ref_cell)-1;
       ref_cell_c2n(ref_cell,node,cell) = nodes[node];
-    }
-  else
-    {
-      for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
-	{
-	  RSS( ref_adj_remove(ref_cell->ref_adj, 
-			      ref_cell_c2n(ref_cell,node,cell), cell), 
-	       "unregister cell" );
-	  ref_cell_c2n(ref_cell,node,cell) = nodes[node];
-	  RSS( ref_adj_add(ref_cell->ref_adj, nodes[node], cell), 
-	       "register cell with id" );
-
-	}
     }
 
   return REF_SUCCESS;
@@ -466,7 +432,7 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
   if ( cell < 0 || cell > ref_cell_max(ref_cell) ) return REF_INVALID;
   if ( REF_EMPTY == ref_cell_c2n(ref_cell,0,cell) ) 
     return REF_INVALID;
-  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+  for ( node = 0 ; node < ref_cell_size_per(ref_cell) ; node++ )
     nodes[node] = ref_cell_c2n(ref_cell,node,cell);
   return REF_SUCCESS;
 }
@@ -481,25 +447,24 @@ REF_STATUS ref_cell_make_canonical( REF_INT n,
 
 REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )
 {
-  REF_INT item, ref, node, same, nnode;
-  REF_INT target[REF_CELL_MAX_NODE_PER];
-  REF_INT canidate[REF_CELL_MAX_NODE_PER], orig[REF_CELL_MAX_NODE_PER];
+  REF_INT item, ref, node, same;
+  REF_INT target[REF_CELL_MAX_SIZE_PER];
+  REF_INT canidate[REF_CELL_MAX_SIZE_PER], orig[REF_CELL_MAX_SIZE_PER];
 
   (*cell) = REF_EMPTY;
 
-  nnode = ref_cell_node_per(ref_cell);
-  if ( ref_cell_last_node_is_an_id(ref_cell) ) nnode--;
-
-  RSS( ref_cell_make_canonical( nnode, nodes, target ), "canonical" );
+  RSS( ref_cell_make_canonical( ref_cell_node_per(ref_cell), 
+				nodes, target ), "canonical" );
 
   each_ref_adj_node_item_with_ref( ref_cell_adj(ref_cell), nodes[0], item, ref)
     {
       RSS( ref_cell_nodes( ref_cell, ref, orig ), "get orig");
-      RSS( ref_cell_make_canonical( nnode, orig, canidate ), "canonical" );
+      RSS( ref_cell_make_canonical( ref_cell_node_per(ref_cell), 
+				    orig, canidate ), "canonical" );
       same = 0;
-      for (node=0;node<nnode; node++)
+      for (node=0;node<ref_cell_node_per(ref_cell); node++)
 	if ( target[node] == canidate[node]) same++;
-      if ( nnode == same )
+      if ( ref_cell_node_per(ref_cell) == same )
 	{
 	  (*cell) = ref;
 	  return REF_SUCCESS;

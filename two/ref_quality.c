@@ -23,7 +23,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
   REF_NODE ref_node;
   REF_INT cell, cell_edge;
-  REF_INT cell_nodes[8];
+  REF_INT cell_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face_nodes[4];
   REF_INT node,face0,face1;
   REF_DBL normal0[3], normal1[3];
@@ -113,8 +113,8 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
   REF_CELL ref_cell;
   REF_INT group, cell, cell_face;
   REF_INT node;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT face_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face_nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL problem;
   REF_INT boundary_faces, found;
   REF_INT targeted[5];
@@ -221,8 +221,8 @@ REF_STATUS ref_quality_swap_multiple_face_cell( REF_GRID ref_grid )
   REF_CELL ref_cell;
   REF_INT cell, cell_face;
   REF_INT node;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT face_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT boundary_faces, found;
   REF_INT bcface[REF_CELL_MAX_FACE_PER];
 
@@ -291,8 +291,8 @@ REF_STATUS ref_quality_split_multiple_face_cell( REF_GRID ref_grid )
   REF_CELL ref_cell;
   REF_INT group, cell, cell_face;
   REF_INT node;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT face_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face_nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL problem;
   REF_INT boundary_faces, found;
   REF_INT bcface[REF_CELL_MAX_FACE_PER];

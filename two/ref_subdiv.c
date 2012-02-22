@@ -280,9 +280,9 @@ REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
   REF_INT cell;
   REF_CELL ref_cell;
   REF_CELL ref_cell_split;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT new_nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT node, new_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_cell;
   REF_INT *marked_for_removal;
 
   REF_INT edge01, edge12, edge23, edge30;
@@ -323,15 +323,15 @@ REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
 	  ref_subdiv_mark( ref_subdiv, edge23 ) )
 	{
 	  marked_for_removal[cell]=1;
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[3], 
 				       &(new_nodes[2])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[3], 
@@ -343,15 +343,15 @@ REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
 	  ref_subdiv_mark( ref_subdiv, edge30 ) )
 	{
 	  marked_for_removal[cell]=1;
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[2])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[0], 
 				       &(new_nodes[3])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[0], 
@@ -378,9 +378,9 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
   REF_INT cell;
   REF_CELL ref_cell;
   REF_CELL ref_cell_split;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT new_nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT node, new_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_cell;
   REF_INT *marked_for_removal;
 
   REF_INT edge01, edge12, edge20;
@@ -424,8 +424,7 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 	{
 	  marked_for_removal[cell]=1;
 	  /* near node 0 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
@@ -433,8 +432,7 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* near node 1 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[0], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
@@ -442,8 +440,7 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* near node 2 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
@@ -451,6 +448,7 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* center */
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
@@ -464,13 +462,11 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
       if( ref_subdiv_mark( ref_subdiv, edge01 ) )
 	{
 	  marked_for_removal[cell]=1;
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
@@ -479,13 +475,11 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
       if( ref_subdiv_mark( ref_subdiv, edge12 ) )
 	{
 	  marked_for_removal[cell]=1;
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[1])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[2])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
@@ -494,13 +488,11 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
       if( ref_subdiv_mark( ref_subdiv, edge20 ) )
 	{
 	  marked_for_removal[cell]=1;
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
 				       &(new_nodes[2])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
 				       &(new_nodes[0])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
@@ -526,9 +518,9 @@ REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
   REF_INT cell;
   REF_CELL ref_cell;
   REF_CELL ref_cell_split;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT new_nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT node, new_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_cell;
   REF_INT *marked_for_removal;
 
   REF_INT map;
@@ -554,16 +546,14 @@ REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 	case 65: /* prism split */
 	  marked_for_removal[cell]=1;
 	  
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
 				       &(new_nodes[3])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
@@ -574,8 +564,7 @@ REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 	  marked_for_removal[cell]=1;
 	  
 	  /* near edge 0-3 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
@@ -587,8 +576,7 @@ REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* near edge 1-4 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[0], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
@@ -600,8 +588,7 @@ REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* near edge 2-5 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
@@ -662,9 +649,9 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
   REF_INT cell;
   REF_CELL ref_cell;
   REF_CELL ref_cell_split;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT new_nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT node, new_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_cell;
   REF_INT *marked_for_removal;
 
   REF_INT map;
@@ -705,14 +692,12 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  
 	  marked_for_removal[cell]=1;
 	  
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  new_nodes[ref_cell_e2n_gen(ref_cell,0,split_edge)] = 
 	    ref_subdiv_node(ref_subdiv, global_edge);
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 	  
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  new_nodes[ref_cell_e2n_gen(ref_cell,1,split_edge)] = 
 	    ref_subdiv_node(ref_subdiv, global_edge);
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
@@ -731,8 +716,7 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  if ( 21 == map ) { node_swap(nodes,2,3); node_swap(nodes,0,1); }
 
 	  /* near node 0 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
@@ -740,8 +724,7 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* near node 1 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[0], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
@@ -749,8 +732,7 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* near node 2 */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[1], 
@@ -759,8 +741,7 @@ REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 
 
 	  /* center */
-	  for(node=0;node<ref_cell_node_per(ref_cell);node++)
-	    new_nodes[node] = nodes[node];
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 

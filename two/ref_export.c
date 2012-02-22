@@ -6,6 +6,7 @@
 #include "ref_export.h"
 
 #include "ref_dict.h"
+#include "ref_endian.h"
 
 #define VTK_TETRA      (10)
 #define VTK_HEXAHEDRON (12)
@@ -128,7 +129,7 @@ REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
   REF_INT node;
   REF_INT *o2n;
   REF_INT ncell,size;
-  REF_INT *nodes;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
   REF_INT group;
 
@@ -169,7 +170,6 @@ REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
       node_per = ref_cell_node_per(ref_cell);
-      nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
 	  fprintf(file," %d",node_per);
@@ -178,7 +178,6 @@ REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
 	    fprintf(file," %d",o2n[nodes[node]]);
 	  fprintf(file,"\n");
 	}
-      free(nodes);
     }
 
   fprintf(file,"CELL_TYPES %d\n",ncell);
@@ -248,7 +247,7 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
   REF_INT node;
   REF_INT *o2n, *n2o;
   REF_INT nface;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
   REF_INT nnode;
   REF_DICT ref_dict;
@@ -349,8 +348,8 @@ REF_STATUS ref_export_tec_vol_zone( REF_GRID ref_grid, FILE *file  )
   REF_CELL ref_cell;
   REF_INT node;
   REF_INT *o2n, *n2o;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT brick[REF_CELL_MAX_NODE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT brick[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
   REF_INT nnode;
   REF_INT group, node_per;
@@ -434,7 +433,7 @@ REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
   REF_INT node;
   REF_INT *o2n;
   REF_INT nnode,ntri,ntet;
-  REF_INT *nodes;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
   REF_INT ixyz;
 
@@ -461,10 +460,9 @@ REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
-      for ( node = 0; node < 3; node++ )
+      for ( node = 0; node < node_per; node++ )
 	fprintf(file," %d",o2n[nodes[node]]+1);
       fprintf(file,"\n");
     }
@@ -473,18 +471,15 @@ REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
       fprintf(file," %d",nodes[3]);
       fprintf(file,"\n");
     }
-  free(nodes);
 
   ref_cell = ref_grid_tet(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       for ( node = 0; node < node_per; node++ )
 	fprintf(file," %d",o2n[nodes[node]]+1);
       fprintf(file,"\n");
     }
-  free(nodes);
 
   free(o2n);
 
@@ -501,7 +496,7 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
   REF_INT node;
   REF_INT *o2n;
   REF_INT nnode,ntri,nqua,ntet,npyr,npri,nhex;
-  REF_INT *nodes;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
   REF_INT group;
 
@@ -534,55 +529,47 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
-      for ( node = 0; node < 3; node++ )
+      for ( node = 0; node < node_per; node++ )
 	fprintf(file," %d",o2n[nodes[node]]+1);
       fprintf(file,"\n");
     }
-  free(nodes);
+
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
-      for ( node = 0; node < 4; node++ )
+      for ( node = 0; node < node_per; node++ )
 	fprintf(file," %d",o2n[nodes[node]]+1);
       fprintf(file,"\n");
     }
-  free(nodes);
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       fprintf(file," %d",nodes[3]);
       fprintf(file,"\n");
     }
-  free(nodes);
+
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       fprintf(file," %d",nodes[4]);
       fprintf(file,"\n");
     }
-  free(nodes);
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
       node_per = ref_cell_node_per(ref_cell);
-      nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
 	  for ( node = 0; node < node_per; node++ )
 	    fprintf(file," %d",o2n[nodes[node]]+1);
 	  fprintf(file,"\n");
 	}
-      free(nodes);
     }
 
   free(o2n);
@@ -592,32 +579,6 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
-#define SWAP_INT(x) { \
-    int y; \
-    char *xp = (char *)&(x); \
-    char *yp = (char *)&(y); \
-    *(yp+3) = *(xp+0); \
-    *(yp+2) = *(xp+1); \
-    *(yp+1) = *(xp+2); \
-    *(yp+0) = *(xp+3); \
-    (x) = y; \
-  }
-
-#define SWAP_DBL(x) { \
-    double y; \
-    char *xp = (char *)&(x); \
-    char *yp = (char *)&(y); \
-    *(yp+7) = *(xp+0); \
-    *(yp+6) = *(xp+1); \
-    *(yp+5) = *(xp+2); \
-    *(yp+4) = *(xp+3); \
-    *(yp+3) = *(xp+4); \
-    *(yp+2) = *(xp+5); \
-    *(yp+1) = *(xp+6); \
-    *(yp+0) = *(xp+7); \
-    (x) = y; \
-  }
-
 REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
@@ -626,7 +587,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   REF_INT nnode,ntri,nqua,ntet,npyr,npri,nhex;
   REF_INT node;
   REF_INT *o2n;
-  REF_INT *nodes;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
   REF_DBL swapped_dbl;
   REF_INT group;
@@ -683,52 +644,43 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    for ( node = 0; node < 3; node++ )
+    for ( node = 0; node < node_per; node++ )
       {
 	nodes[node] = o2n[nodes[node]]+1;
 	SWAP_INT(nodes[node]);
 	REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"tri");
       }
-  free(nodes);
 
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    for ( node = 0; node < 4; node++ )
+    for ( node = 0; node < node_per; node++ )
       {
 	nodes[node] = o2n[nodes[node]]+1;
 	SWAP_INT(nodes[node]);
 	REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"qua");
       }
-  free(nodes);
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       SWAP_INT(nodes[3]);
       REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"tri id");
     }
-  free(nodes);
 
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       SWAP_INT(nodes[4]);
       REIS(1, fwrite(&(nodes[4]),sizeof(REF_INT),1,file),"qua id");
     }
-  free(nodes);
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
       node_per = ref_cell_node_per(ref_cell);
-      nodes = (REF_INT *) malloc( node_per * sizeof(REF_INT) );
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	for ( node = 0; node < node_per; node++ )
 	  {
@@ -736,7 +688,6 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 	    SWAP_INT(nodes[node]);
 	    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"cell");
 	  }
-      free(nodes);
     }
 
   free(o2n);

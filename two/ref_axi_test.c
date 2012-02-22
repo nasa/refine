@@ -19,6 +19,8 @@
 #include "ref_import.c"
 #include "ref_export.c"
 
+#include "ref_dict.h"
+
 REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr, REF_DBL z0, REF_DBL z1 )
 {
   REF_GRID ref_grid;

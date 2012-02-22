@@ -24,8 +24,8 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
 
   ref_grid_cell(ref_grid,4) = NULL;
 
-  RSS( ref_cell_create( &ref_grid_tri(ref_grid), 4, REF_TRUE ), "tri create" );
-  RSS( ref_cell_create( &ref_grid_qua(ref_grid), 5, REF_TRUE ), "qua create" );
+  RSS( ref_cell_create( &ref_grid_tri(ref_grid), 3, REF_TRUE ), "tri create" );
+  RSS( ref_cell_create( &ref_grid_qua(ref_grid), 4, REF_TRUE ), "qua create" );
 
   return REF_SUCCESS;
 }
@@ -49,8 +49,8 @@ REF_STATUS ref_grid_empty_cell_clone( REF_GRID *ref_grid_ptr, REF_GRID parent )
 
   ref_grid_cell(ref_grid,4) = NULL;
 
-  RSS( ref_cell_create( &ref_grid_tri(ref_grid), 4, REF_TRUE ), "tri create" );
-  RSS( ref_cell_create( &ref_grid_qua(ref_grid), 5, REF_TRUE ), "qua create" );
+  RSS( ref_cell_create( &ref_grid_tri(ref_grid), 3, REF_TRUE ), "tri create" );
+  RSS( ref_cell_create( &ref_grid_qua(ref_grid), 4, REF_TRUE ), "qua create" );
 
   return REF_SUCCESS;
 }

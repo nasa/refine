@@ -24,7 +24,7 @@ REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid )
   REF_BOOL problem;
   REF_ADJ ref_adj;
   REF_CELL ref_cell;
-  REF_INT group, cell, nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT group, cell, nodes[REF_CELL_MAX_SIZE_PER];
 
   problem = REF_FALSE;
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )

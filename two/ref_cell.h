@@ -14,12 +14,12 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-#define REF_CELL_MAX_NODE_PER (8)
+#define REF_CELL_MAX_SIZE_PER (8)
 #define REF_CELL_MAX_FACE_PER (6)
 
 struct REF_CELL_STRUCT {
   REF_BOOL last_node_is_an_id;
-  REF_INT node_per, edge_per, face_per;
+  REF_INT size_per, node_per, edge_per, face_per;
   REF_INT *e2n;
   REF_INT *f2n;
   REF_INT n, max;
@@ -31,6 +31,7 @@ struct REF_CELL_STRUCT {
 
 #define ref_cell_last_node_is_an_id(ref_cell) ((ref_cell)->last_node_is_an_id)
 
+#define ref_cell_size_per(ref_cell) ((ref_cell)->size_per)
 #define ref_cell_node_per(ref_cell) ((ref_cell)->node_per)
 #define ref_cell_edge_per(ref_cell) ((ref_cell)->edge_per)
 #define ref_cell_face_per(ref_cell) ((ref_cell)->face_per)
@@ -42,10 +43,10 @@ struct REF_CELL_STRUCT {
 
 #define ref_cell_valid(ref_cell,cell) \
   ( (cell) >=0 && (cell) < ((ref_cell)->max) && \
-    REF_EMPTY != (ref_cell)->c2n[ref_cell_node_per(ref_cell)*(cell)] )
+    REF_EMPTY != (ref_cell)->c2n[ref_cell_size_per(ref_cell)*(cell)] )
 
 #define ref_cell_c2n(ref_cell,node,cell) \
-  ((ref_cell)->c2n[(node)+ref_cell_node_per(ref_cell)*(cell)])
+  ((ref_cell)->c2n[(node)+ref_cell_size_per(ref_cell)*(cell)])
 
 #define ref_cell_c2e(ref_cell,cell_edge,cell) \
   ((ref_cell)->c2e[(cell_edge)+ref_cell_edge_per(ref_cell)*(cell)])
@@ -55,14 +56,14 @@ struct REF_CELL_STRUCT {
 
 #define ref_cell_e2n(ref_cell,node,cell,cell_edge)			\
   ((ref_cell)->c2n[ (ref_cell)->e2n[(node)+2*(cell_edge)] +		\
-		    ref_cell_node_per(ref_cell)*(cell)])
+		    ref_cell_size_per(ref_cell)*(cell)])
 
 #define ref_cell_f2n_gen(ref_cell,node,face)\
   ((ref_cell)->f2n[(node)+4*(face)])
 
 #define ref_cell_f2n(ref_cell,node,cell,cell_face)			\
   ((ref_cell)->c2n[ (ref_cell)->f2n[(node)+4*(cell_face)] +		\
-		    ref_cell_node_per(ref_cell)*(cell)])
+		    ref_cell_size_per(ref_cell)*(cell)])
 
 #define each_ref_cell_valid_cell( ref_cell, cell )			\
   for ( (cell) = 0 ;							\
@@ -90,7 +91,7 @@ struct REF_CELL_STRUCT {
 	(cell_face)++ )
 
 REF_STATUS ref_cell_create( REF_CELL *ref_cell, 
-			    REF_INT node_per, REF_BOOL last_node_is_an_id );
+			    REF_INT size_per, REF_BOOL last_node_is_an_id );
 REF_STATUS ref_cell_free( REF_CELL ref_cell );
 
 REF_STATUS ref_cell_inspect( REF_CELL ref_cell );

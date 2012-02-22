@@ -13,7 +13,7 @@
 
 static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr)
 {
-  return ref_cell_create(ref_cell_ptr,4,REF_TRUE);
+  return ref_cell_create(ref_cell_ptr,3,REF_TRUE);
 }
 
 static REF_STATUS ref_tet(REF_CELL *ref_cell_ptr)

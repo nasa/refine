@@ -116,7 +116,7 @@ REF_STATUS ref_shard_mark_n( REF_SHARD ref_shard,
 			      REF_INT *face_marks, REF_INT *hex_marks )
 {
   REF_INT face;
-  REF_INT cell, hex_nodes[8];
+  REF_INT cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL marked16, marked25;
 
   (*face_marks) = 0;
@@ -143,7 +143,7 @@ REF_STATUS ref_shard_mark_cell_edge_split( REF_SHARD ref_shard,
 					    REF_INT cell, REF_INT cell_edge )
 {
   REF_CELL ref_cell;
-  REF_INT nodes[8];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
   ref_cell = ref_grid_hex( ref_shard_grid(ref_shard) );
 
@@ -207,7 +207,7 @@ REF_STATUS ref_shard_mark_relax( REF_SHARD ref_shard )
   REF_CELL ref_cell;
   REF_BOOL again;
   REF_INT cell;
-  REF_BOOL nodes[8];
+  REF_BOOL nodes[REF_CELL_MAX_SIZE_PER];
 
   ref_cell = ref_grid_hex(ref_shard_grid(ref_shard));
 
@@ -236,7 +236,7 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
 {
   REF_GRID ref_grid;
   REF_CELL hex, pri, tri, qua;
-  REF_INT cell, hex_nodes[8];
+  REF_INT cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT pri_nodes[6], new_cell;
   REF_INT tri_nodes[4], qua_nodes[5];
   REF_BOOL marked;
@@ -383,13 +383,13 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 {
   REF_INT cell, new_cell, minnode;
 
-  REF_INT orig[REF_CELL_MAX_NODE_PER];
-  REF_INT pri_nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT tet_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT orig[REF_CELL_MAX_SIZE_PER];
+  REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL pri, tet;
 
-  REF_INT tri_nodes[REF_CELL_MAX_NODE_PER];
-  REF_INT qua_nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT qua_nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL qua, tri;
 
   pri = ref_grid_pri(ref_grid);

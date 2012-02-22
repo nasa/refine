@@ -35,7 +35,7 @@ int main( int argc, char *argv[] )
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT faceid, boundary_condition;
   REF_INT open_node0, open_node1;
 

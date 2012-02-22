@@ -162,7 +162,7 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT node, new_node;
   REF_DBL xyz[3];
   REF_INT tri, new_tri;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua, new_qua;
   REF_INT face_id;
   REF_INT cell, new_cell;
@@ -293,7 +293,7 @@ REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT node, new_node;
   REF_DBL swapped_dbl;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tri, qua, new_tri, new_qua;
   REF_INT face_id;
   REF_INT node_per, cell, new_cell;
@@ -342,7 +342,8 @@ REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   nodes[3] = REF_EMPTY;
   for( tri = 0; tri < ntri ; tri++ )
     {
-      for ( node = 0 ; node < 3 ; node++ )
+      node_per = ref_cell_node_per(ref_cell);
+      for ( node = 0 ; node < node_per ; node++ )
 	{  
 	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "tri" );
 	  SWAP_INT(nodes[node]);
@@ -356,7 +357,8 @@ REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   nodes[4] = REF_EMPTY;
   for( qua = 0; qua < nqua ; qua++ )
     {
-      for ( node = 0 ; node < 4 ; node++ )
+      node_per = ref_cell_node_per(ref_cell);
+      for ( node = 0 ; node < node_per ; node++ )
 	{  
 	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "qua" );
 	  SWAP_INT(nodes[node]);
@@ -454,7 +456,7 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT nnode, node, new_node;
   REF_INT nedge, edge, n0, n1, n2, id;
   REF_INT ntri, tri;
-  REF_INT nodes[REF_CELL_MAX_NODE_PER], new_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
