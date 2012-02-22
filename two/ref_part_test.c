@@ -23,6 +23,20 @@ int main( int argc, char *argv[] )
 
   TSS( ref_mpi_start( argc, argv ), "start" );
 
+  if ( 1 < argc )
+    { /* part */
+      REF_GRID import_grid;
+      char viz_file[256];
+
+      TSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
+
+      sprintf(viz_file, "ref_part_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
+      RSS( ref_export_by_extension( import_grid, viz_file ), "export");
+      ref_grid_inspect( import_grid );  
+
+      TSS(ref_grid_free(import_grid),"free");
+    }
+
   { /* one even */
     TEIS( 0, ref_part_first( 4, 4, 0 ), "first");
     TEIS( 1, ref_part_first( 4, 4, 1 ), "first");
