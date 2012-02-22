@@ -258,7 +258,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	{
 	  section_size = MIN(chunk,ncell-ncell_read);
 
-	  fseek(file,conn_offset+(long)(node_per*ncell_read),SEEK_SET);
+	  fseek(file,conn_offset+(long)(4*node_per*ncell_read),SEEK_SET);
 	  for (cell=0;cell<section_size;cell++)
 	    {
 	      for (node=0;node<node_per;node++)
@@ -271,7 +271,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	    }
 	  if ( ref_cell_last_node_is_an_id(ref_cell) )
 	    {
-	      fseek(file,faceid_offset+(long)ncell_read,SEEK_SET);
+	      fseek(file,faceid_offset+(long)(4*ncell_read),SEEK_SET);
 	      for (cell=0;cell<section_size;cell++)
 		{
 		  node = node_per;
