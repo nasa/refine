@@ -339,10 +339,12 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 					  ref_cell_max(ref_cell) *
 					  sizeof(REF_INT) );
       RNS(ref_cell->c2n,"remalloc c2n NULL");
-      ref_cell->c2e = (REF_INT *)realloc( ref_cell->c2e,
-					  ref_cell_edge_per(ref_cell) *
-					  ref_cell_max(ref_cell) *
-					  sizeof(REF_INT) );
+      /* realloc returns NULL for zero size realloc */
+      if ( 0 < ref_cell_edge_per(ref_cell) )
+	ref_cell->c2e = (REF_INT *)realloc( ref_cell->c2e,
+					    ref_cell_edge_per(ref_cell) *
+					    ref_cell_max(ref_cell) *
+					    sizeof(REF_INT) );
       RNS(ref_cell->c2e,"remalloc c2e NULL");
       for (cell=orig;cell < ref_cell_max(ref_cell); cell++ ) 
 	{
