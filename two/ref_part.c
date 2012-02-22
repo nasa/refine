@@ -361,7 +361,6 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
     {
       do {
 	RSS( ref_mpi_recv( &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
-	printf("part %d, inbound %d\n",ref_mpi_id,elements_to_receive);
 	if ( elements_to_receive > 0 )
 	  {
 	    RSS( ref_mpi_recv( sent_c2n, total_per*elements_to_receive, 
