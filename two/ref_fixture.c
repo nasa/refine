@@ -286,6 +286,15 @@ REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid_ptr )
   nodes[3] = 9; nodes[4] =10; nodes[5] =11;
   RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
 
+  nodes[0] = 1; nodes[1] = 0; nodes[2] = 3; nodes[3] = 4; nodes[4] = 20;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add prism");
+
+  nodes[0] = 4; nodes[1] = 3; nodes[2] = 6; nodes[3] = 7; nodes[4] = 20;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add prism");
+
+  nodes[0] = 7; nodes[1] = 6; nodes[2] = 9; nodes[3] =10; nodes[4] = 20;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add prism");
+
   return REF_SUCCESS;
 }
 
