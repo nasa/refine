@@ -142,7 +142,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 	+ 4*4*nqua;
       RSS( ref_part_b8_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
 				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tets" );
+				   file, conn_offset, faceid_offset ), "tri" );
     }
 
   if ( 0 < nqua )
@@ -156,7 +156,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 	+ 4*4*nqua;
       RSS( ref_part_b8_ugrid_cell( ref_grid_qua(ref_grid), nqua, 
 				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tets" );
+				   file, conn_offset, faceid_offset ), "qua" );
     }
 
   if ( 0 < ntet )
@@ -168,7 +168,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       faceid_offset = REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
 				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tets" );
+				   file, conn_offset, faceid_offset ), "tet" );
     }
 
   if ( 0 < npyr )
@@ -181,7 +181,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       faceid_offset = REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_pyr(ref_grid), npyr, 
 				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tets" );
+				   file, conn_offset, faceid_offset ), "pyr" );
     }
 
   if ( 0 < npri )
@@ -195,7 +195,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       faceid_offset = REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_pri(ref_grid), npri, 
 				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tets" );
+				   file, conn_offset, faceid_offset ), "pri" );
     }
 
   if ( 0 < nhex )
@@ -210,7 +210,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       faceid_offset = REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_hex(ref_grid), nhex, 
 				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tets" );
+				   file, conn_offset, faceid_offset ), "hex" );
     }
 
   if ( ref_mpi_master ) fclose(file);
