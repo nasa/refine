@@ -241,7 +241,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   node_per = total_per;
   if ( ref_cell_last_node_is_an_id(ref_cell) ) node_per--;
 
-  sent_c2n =(REF_INT *)malloc(node_per*chunk*sizeof(REF_INT));
+  sent_c2n =(REF_INT *)malloc(total_per*chunk*sizeof(REF_INT));
   RNS(sent_c2n,"malloc failed");
 
   if ( ref_mpi_master )
