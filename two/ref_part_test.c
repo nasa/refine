@@ -94,7 +94,7 @@ int main( int argc, char *argv[] )
     char grid_file[] = "ref_part_test.b8.ugrid";
     char viz_file[256];
     
-    TSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
+    TSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
     if ( ref_mpi_master ) 
       {
 	TSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
