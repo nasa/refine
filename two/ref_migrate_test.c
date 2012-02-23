@@ -40,7 +40,7 @@ int main( int argc, char *argv[] )
 
   TSS( ref_mpi_start( argc, argv ), "start" );
 
-  if ( 0 == argc )
+  if ( 1 == argc )
     {
       REF_GRID import_grid;
       REF_MIGRATE ref_migrate;
