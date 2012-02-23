@@ -10,7 +10,7 @@
 #include "zoltan.h"
 static struct Zoltan_Struct *zz;
 
-static int ref_migrate_local_nodes( void *void_ref_migrate, int *ierr )
+static int ref_migrate_local_n( void *void_ref_migrate, int *ierr )
 {
   REF_MIGRATE ref_migrate = (REF_MIGRATE)void_ref_migrate;
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
@@ -22,12 +22,63 @@ static int ref_migrate_local_nodes( void *void_ref_migrate, int *ierr )
   return local_nodes;
 }
 
+static void ref_migrate_local_ids( void *void_ref_migrate, 
+				   int global_dim, int local_dim,
+				   ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
+				   int wgt_dim, float *obj_wgts, int *ierr )
+{
+  REF_MIGRATE ref_migrate = (REF_MIGRATE)void_ref_migrate;
+  REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
+  REF_INT node, nnode;
+  if ( 1 != global_dim || 1 != local_dim || 0 !=  wgt_dim )
+    {
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
+      *ierr = ZOLTAN_FATAL;
+      return;
+    }
+  SUPRESS_UNUSED_COMPILER_WARNING(obj_wgts);
+  *ierr = 0;
+  nnode = 0;
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id == ref_node_part(ref_node,node) ) 
+      {
+	local[node] = node;
+	global[node] = ref_node_global(ref_node,node);
+	nnode++;
+      }
+}
+
 static int ref_migrate_geometric_dimensionality( void *void_ref_migrate, 
 						 int *ierr )
 {
   SUPRESS_UNUSED_COMPILER_WARNING(void_ref_migrate);
   *ierr = 0;
   return 3;
+}
+
+static void ref_migrate_xyz( void *void_ref_migrate, 
+			     int global_dim, int local_dim, int nnode,
+			     ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
+			     int xyz_dim, double *xyz, int *ierr )
+{
+  REF_MIGRATE ref_migrate = (REF_MIGRATE)void_ref_migrate;
+  REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
+  REF_INT node;
+  if ( 1 != global_dim || 1 != local_dim || 3 !=  xyz_dim )
+    {
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
+      *ierr = ZOLTAN_FATAL;
+      return;
+    }
+  SUPRESS_UNUSED_COMPILER_WARNING(global);
+  *ierr = 0;
+  for (node=0;node<nnode;node++)
+    {
+      xyz[0+3*node] = ref_node_xyz(ref_node,0,local[node]);
+      xyz[1+3*node] = ref_node_xyz(ref_node,1,local[node]);
+      xyz[2+3*node] = ref_node_xyz(ref_node,2,local[node]);
+    }
+
 }
 
 #endif
@@ -61,13 +112,18 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
     /* General parameters */
 
+    Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
     Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
     Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
 
-    Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_local_nodes, 
+    Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_local_n, 
 			  (void *)ref_migrate);
+    Zoltan_Set_Obj_List_Fn(zz, ref_migrate_local_ids, 
+			   (void *)ref_migrate);
     Zoltan_Set_Num_Geom_Fn(zz, ref_migrate_geometric_dimensionality, 
-			       (void *)ref_migrate);
+			   (void *)ref_migrate);
+    Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_xyz, 
+			     (void *)ref_migrate);
 
     REIS( ZOLTAN_OK, 
 	  Zoltan_LB_Partition(zz, /* input (all remaining fields are output) */
