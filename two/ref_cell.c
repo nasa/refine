@@ -439,8 +439,9 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_make_canonical( REF_INT n, 
-				    REF_INT *original, REF_INT *canonical )
+static REF_STATUS ref_cell_make_canonical( REF_INT n, 
+					   REF_INT *original, 
+					   REF_INT *canonical )
 {
   RSS( ref_sort_insertion( n, original, canonical ), "sort" );
 

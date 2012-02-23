@@ -335,7 +335,7 @@ int main( void )
   }
 
   { /* tet face nodes*/
-    REF_INT cell, cell_face;
+    REF_INT cell_face;
     TSS(ref_tet(&ref_cell),"create");
 
     nodes[0]= 10; nodes[1]= 20; nodes[2]= 30; nodes[3]= 40; 

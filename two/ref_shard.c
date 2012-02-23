@@ -184,9 +184,9 @@ REF_STATUS ref_shard_mark_cell_edge_split( REF_SHARD ref_shard,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_pair( REF_SHARD ref_shard, REF_BOOL *again,
-			    REF_INT a0, REF_INT a1, 
-			    REF_INT b0, REF_INT b1 )
+static REF_STATUS ref_shard_pair( REF_SHARD ref_shard, REF_BOOL *again,
+				  REF_INT a0, REF_INT a1, 
+				  REF_INT b0, REF_INT b1 )
 {
   REF_BOOL a_marked,b_marked;
   

@@ -74,8 +74,8 @@ int main( int argc, char *argv[] )
 	  ref_cell_n(ref_grid_qua(import_grid)), "qua count" );
     TEIS( ref_cell_n(ref_grid_tet(export_grid)),
 	  ref_cell_n(ref_grid_tet(import_grid)), "tet count" );
-    TES( ref_node_xyz( ref_grid_node(export_grid),0,1),
-	 ref_node_xyz( ref_grid_node(import_grid),0,1), "x 1" );
+    TWDS( ref_node_xyz( ref_grid_node(export_grid),0,1),
+	  ref_node_xyz( ref_grid_node(import_grid),0,1), 1e-15, "x 1" );
     TEIS( ref_cell_c2n(ref_grid_tet(export_grid),0,0),
 	  ref_cell_c2n(ref_grid_tet(import_grid),0,0), "tet node0" );
     TEIS( ref_cell_c2n(ref_grid_tet(export_grid),1,0),

@@ -77,7 +77,8 @@ REF_STATUS ref_face_inspect( REF_FACE ref_face )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_face_make_canonical( REF_INT *original, REF_INT *canonical )
+static REF_STATUS ref_face_make_canonical( REF_INT *original, 
+					   REF_INT *canonical )
 {
   RSS( ref_sort_insertion( 4, original, canonical ), "sort" );
 

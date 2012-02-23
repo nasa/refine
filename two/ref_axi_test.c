@@ -21,7 +21,8 @@
 
 #include "ref_dict.h"
 
-REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr, REF_DBL z0, REF_DBL z1 )
+static REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr, 
+				 REF_DBL z0, REF_DBL z1 )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -60,8 +61,8 @@ REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr, REF_DBL z0, REF_DBL z1 )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_prism_grid( REF_GRID *ref_grid_ptr, 
-			   REF_DBL z0, REF_DBL z1, REF_DBL z2 )
+static REF_STATUS ref_prism_grid( REF_GRID *ref_grid_ptr, 
+				  REF_DBL z0, REF_DBL z1, REF_DBL z2 )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;

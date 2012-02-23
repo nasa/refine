@@ -275,7 +275,7 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
+static REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
   REF_CELL ref_cell;
@@ -373,7 +373,7 @@ REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
+static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
   REF_CELL ref_cell;
@@ -513,7 +513,7 @@ REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
+static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
   REF_CELL ref_cell;
@@ -644,7 +644,7 @@ REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
   new_nodes[2] = (fnnw2); new_nodes[3] = (fnnw3); \
   RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
-REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
+static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
   REF_CELL ref_cell;
