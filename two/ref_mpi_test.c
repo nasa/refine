@@ -9,12 +9,20 @@
 int main( int argc, char *argv[] )
 {
 
-  { /* start */
-    TSS( ref_mpi_start( argc, argv ), "start" );
-    TEIS( 1, ref_mpi_n, "n" );
-    TEIS( 0, ref_mpi_id, "n" );
-    TAS( ref_mpi_master, "master" );
-  }
+  TSS( ref_mpi_start( argc, argv ), "start" );
+
+  if ( ref_mpi_n == 1 )
+    { /* start */
+      TEIS( 1, ref_mpi_n, "n" );
+      TEIS( 0, ref_mpi_id, "n" );
+      TAS( ref_mpi_master, "master" );
+    }
+  else
+    {
+      if ( ref_mpi_master ) printf("number of processors %d \n",ref_mpi_n);
+    }
+
+  TSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }
