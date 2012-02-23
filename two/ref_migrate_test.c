@@ -40,24 +40,25 @@ int main( int argc, char *argv[] )
 
   TSS( ref_mpi_start( argc, argv ), "start" );
 
-  {
-    REF_GRID import_grid;
-    REF_MIGRATE ref_migrate;
-    char grid_file[] = "ref_migrate_test.b8.ugrid";
+  if ( 0 == argc )
+    {
+      REF_GRID import_grid;
+      REF_MIGRATE ref_migrate;
+      char grid_file[] = "ref_migrate_test.b8.ugrid";
 
-    if ( ref_mpi_master ) 
-      {
-	REF_GRID export_grid;
-	TSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
-	TSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
-	TSS(ref_grid_free(export_grid),"free" );
-      }
+      if ( ref_mpi_master ) 
+	{
+	  REF_GRID export_grid;
+	  TSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
+	  TSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
+	  TSS(ref_grid_free(export_grid),"free" );
+	}
 
-    TSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
-    TSS(ref_migrate_create(&ref_migrate,import_grid),"create");
+      TSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
+      TSS(ref_migrate_create(&ref_migrate,import_grid),"create");
 
-    TSS( tear_down( ref_migrate ), "tear down");
-  }
+      TSS( tear_down( ref_migrate ), "tear down");
+    }
 
   if ( 1 < argc )
     {
