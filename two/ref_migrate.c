@@ -40,20 +40,13 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
     /* General parameters */
 
-    Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
-    Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH");
     Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
-    Zoltan_Set_Param(zz, "NUM_GID_ENTRIES", "1"); 
-    Zoltan_Set_Param(zz, "NUM_LID_ENTRIES", "1");
-    Zoltan_Set_Param(zz, "RETURN_LISTS", "ALL");
+    Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
 
-    /* Graph parameters */
-
-    Zoltan_Set_Param(zz, "CHECK_GRAPH", "2"); 
-    Zoltan_Set_Param(zz, "PHG_EDGE_SIZE_THRESHOLD", ".35");  /* 0-remove all, 1-remove none */
-
-    Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_number_of_vertices, 
+    Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_local_nodes, 
 			  (void *)ref_migrate);
+    Zoltan_Set_Num_Geom_Fn(zz, ref_migrate_geometric_dimensionality, 
+			       (void *)ref_migrate);
 
     REIS( ZOLTAN_OK, 
 	  Zoltan_LB_Partition(zz, /* input (all remaining fields are output) */
@@ -69,7 +62,7 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
         &exportGlobalGids,  /* Global IDs of the vertices I must send */
         &exportLocalGids,   /* Local IDs of the vertices I must send */
         &exportProcs,    /* Process to which I send each of the vertices */
-			      &exportToPart),  /* Partition to which each vertex will belong */
+        &exportToPart),  /* Partition to which each vertex will belong */
 	  "Zoltan is angry");
 	  
   }
@@ -100,9 +93,21 @@ REF_STATUS ref_migrate_inspect( REF_MIGRATE ref_migrate )
   return REF_SUCCESS;
 }
 
-int ref_migrate_number_of_vertices( void *void_ref_migrate, int *ierr )
+int ref_migrate_local_nodes( void *void_ref_migrate, int *ierr )
 {
   REF_MIGRATE ref_migrate = (REF_MIGRATE)void_ref_migrate;
+  REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
+  REF_INT node, local_nodes;
   *ierr = 0;
-  return ref_node_n(ref_grid_node(ref_migrate_grid(ref_migrate)));
+  local_nodes = 0;
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id == ref_node_part(ref_node,node) ) local_nodes++;
+  return local_nodes;
+}
+
+int ref_migrate_geometric_dimensionality( void *void_ref_migrate, int *ierr )
+{
+  SUPRESS_UNUSED_COMPILER_WARNING(void_ref_migrate);
+  *ierr = 0;
+  return 3;
 }

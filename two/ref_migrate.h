@@ -27,7 +27,8 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate );
 
 REF_STATUS ref_migrate_inspect( REF_MIGRATE ref_migrate );
 
-int ref_migrate_number_of_vertices( void *void_ref_migrate, int *ierr );
+int ref_migrate_local_nodes( void *void_ref_migrate, int *ierr );
+int ref_migrate_geometric_dimensionality( void *void_ref_migrate, int *ierr );
 
 END_C_DECLORATION
 
