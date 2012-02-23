@@ -6,6 +6,11 @@
 
 #include "ref_mpi.h"
 
+#ifdef HAVE_ZOLTAN
+#include "zoltan.h"
+static struct Zoltan_Struct *zz;
+#endif
+
 REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 {
   REF_MIGRATE ref_migrate;
@@ -22,12 +27,13 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 			ref_migrate_grid(ref_migrate) ), "create edge" );
 
 #ifdef HAVE_ZOLTAN
-  #include "zoltan.h"
+#define ref_migrate_zz ((Zoltan_Struct *)ref_migrate->partitioner_data)
   {
     int rc;
     float ver;
     rc = Zoltan_Initialize(ref_mpi_argc, ref_mpi_argv, &ver);
     REIS( ZOLTAN_OK, rc, "Zoltan is angry");
+    zz = Zoltan_Create(MPI_COMM_WORLD);
   }
 #endif
 
@@ -37,6 +43,10 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 {
   if ( NULL == (void *)ref_migrate ) return REF_NULL;
+
+#ifdef HAVE_ZOLTAN
+  Zoltan_Destroy( &zz );
+#endif
 
   RSS( ref_edge_free( ref_migrate_edge( ref_migrate ) ), "free edge" );
 
