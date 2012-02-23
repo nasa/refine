@@ -18,19 +18,9 @@
 #include "ref_dict.h"
 
 #include "ref_mpi.h"
+#include "ref_part.h"
 
 #include "ref_test.h"
-
-static REF_STATUS set_up_tet_for_migrate( REF_MIGRATE *ref_migrate_ptr )
-{
-  REF_GRID ref_grid;
-
-  TSS(ref_fixture_tet_grid( &ref_grid ), "tet");
-
-  TSS(ref_migrate_create(ref_migrate_ptr,ref_grid),"create");
-
-  return REF_SUCCESS;
-}
 
 static REF_STATUS tear_down( REF_MIGRATE ref_migrate )
 {
@@ -50,18 +40,35 @@ int main( int argc, char *argv[] )
 
   TSS( ref_mpi_start( argc, argv ), "start" );
 
-  { /* split tet in two, map 1 */
+  {
+    REF_GRID import_grid;
     REF_MIGRATE ref_migrate;
-    REF_GRID ref_grid;
+    char grid_file[] = "ref_migrate_test.b8.ugrid";
 
-    TSS(set_up_tet_for_migrate(&ref_migrate),"set up");
-    ref_grid = ref_migrate_grid(ref_migrate);
+    if ( ref_mpi_master ) 
+      {
+	REF_GRID export_grid;
+	TSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
+	TSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
+	TSS(ref_grid_free(export_grid),"free" );
+      }
 
-    TEIS(1, ref_cell_n(ref_grid_tet(ref_grid)),"two tet");
-    TEIS(1, ref_cell_n(ref_grid_tri(ref_grid)),"two tri");
+    TSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
+    TSS(ref_migrate_create(&ref_migrate,import_grid),"create");
 
     TSS( tear_down( ref_migrate ), "tear down");
   }
+
+  if ( 1 < argc )
+    {
+      REF_GRID import_grid;
+      REF_MIGRATE ref_migrate;
+
+      TSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
+      TSS(ref_migrate_create(&ref_migrate,import_grid),"create");
+
+      TSS( tear_down( ref_migrate ), "tear down");
+    }
 
   TSS( ref_mpi_stop(  ), "stop" );
 
