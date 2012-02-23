@@ -29,10 +29,10 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 #ifdef HAVE_ZOLTAN
 #define ref_migrate_zz ((Zoltan_Struct *)ref_migrate->partitioner_data)
   {
-    int rc;
     float ver;
-    rc = Zoltan_Initialize(ref_mpi_argc, ref_mpi_argv, &ver);
-    REIS( ZOLTAN_OK, rc, "Zoltan is angry");
+    REIS( ZOLTAN_OK, 
+	  Zoltan_Initialize(ref_mpi_argc, ref_mpi_argv, &ver), 
+	  "Zoltan is angry");
     zz = Zoltan_Create(MPI_COMM_WORLD);
   }
 #endif
