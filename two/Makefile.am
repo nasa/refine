@@ -29,6 +29,7 @@ libref2_a_SOURCES = \
 	ref_subdiv.h ref_subdiv.c \
 	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
+libref2_a_CFLAGS = @zoltan_INCLUDE@
 
 bin_PROGRAMS =
 
@@ -130,7 +131,7 @@ ref_metric_test_LDADD = libref2.a -lm
 TESTS += ref_migrate_test
 noinst_PROGRAMS += ref_migrate_test
 ref_migrate_test_SOURCES = ref_migrate_test.c
-ref_migrate_test_LDADD = libref2.a -lm
+ref_migrate_test_LDADD = libref2.a @zoltan_LDADD@ -lm
 
 TESTS += ref_mpi_test
 noinst_PROGRAMS += ref_mpi_test
