@@ -219,6 +219,35 @@ else
   AC_SUBST([CAPRIProElibrary])
 fi
 
+AC_ARG_WITH(zoltan,
+	[  --with-zoltan[=ARG]       use Zoltan partitioner [ARG=no]],
+	[with_zoltan=$withval],        [with_zoltan="no"])
+
+if test "$with_zoltan" != 'no'
+then
+  AC_CHECK_FILE([$with_zoltan/include/zoltan.h],
+                [zoltan_h_path=$with_zoltan/include],[zoltan_h_path='no'])
+  AC_CHECK_FILE([$with_zoltan/lib/libzoltan.a],
+                [zoltan_lib_path=$with_zoltan/lib],[zoltan_lib_path='no'])
+
+  if test "$zoltan_h_path" != 'no'
+  then
+    if test "$zoltan_lib_path" != 'no'
+    then
+      AC_DEFINE([HAVE_ZOLTAN],[1],[Zoltan is available])
+      zoltan_INCLUDE="-I $zoltan_h_path"
+      zoltan_LDADD="-L$zoltan_lib_path -lzoltan"
+    else
+      AC_MSG_ERROR([libzoltan.a not found in $with_zoltan/lib])
+    fi
+  else
+    AC_MSG_ERROR([zoltan.h not found in $with_zoltan/include])
+  fi
+  AC_SUBST([zoltan_INCLUDE])
+  AC_SUBST([zoltan_LDADD])
+fi
+
+
 AC_OUTPUT( \
 	   Makefile \
 	   two/Makefile \
