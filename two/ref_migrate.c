@@ -9,6 +9,27 @@
 #ifdef HAVE_ZOLTAN
 #include "zoltan.h"
 static struct Zoltan_Struct *zz;
+
+static int ref_migrate_local_nodes( void *void_ref_migrate, int *ierr )
+{
+  REF_MIGRATE ref_migrate = (REF_MIGRATE)void_ref_migrate;
+  REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
+  REF_INT node, local_nodes;
+  *ierr = 0;
+  local_nodes = 0;
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id == ref_node_part(ref_node,node) ) local_nodes++;
+  return local_nodes;
+}
+
+static int ref_migrate_geometric_dimensionality( void *void_ref_migrate, 
+						 int *ierr )
+{
+  SUPRESS_UNUSED_COMPILER_WARNING(void_ref_migrate);
+  *ierr = 0;
+  return 3;
+}
+
 #endif
 
 REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
@@ -93,21 +114,3 @@ REF_STATUS ref_migrate_inspect( REF_MIGRATE ref_migrate )
   return REF_SUCCESS;
 }
 
-int ref_migrate_local_nodes( void *void_ref_migrate, int *ierr )
-{
-  REF_MIGRATE ref_migrate = (REF_MIGRATE)void_ref_migrate;
-  REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
-  REF_INT node, local_nodes;
-  *ierr = 0;
-  local_nodes = 0;
-  each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id == ref_node_part(ref_node,node) ) local_nodes++;
-  return local_nodes;
-}
-
-int ref_migrate_geometric_dimensionality( void *void_ref_migrate, int *ierr )
-{
-  SUPRESS_UNUSED_COMPILER_WARNING(void_ref_migrate);
-  *ierr = 0;
-  return 3;
-}
