@@ -18,7 +18,7 @@ mkdir -p mpi
     --prefix=`pwd` \
     --with-zoltan=${HOME}/local/pkgs/zoltan_distrib_v3.6/Zoltan_v3.6/build \
     CC=mpicc \
-    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -Werror-all -Wcheck -ftrapuv -fp-stack-check -check-uninit -fstack-security-check -fpe0' \
+    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -Werror-all -Wcheck -ftrapuv -fp-stack-check -check-uninit -fstack-security-check' \
     ) \
     || exit
 
