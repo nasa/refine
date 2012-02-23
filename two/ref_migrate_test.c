@@ -17,6 +17,8 @@
 #include "ref_export.h"
 #include "ref_dict.h"
 
+#include "ref_mpi.h"
+
 #include "ref_test.h"
 
 static REF_STATUS set_up_tet_for_migrate( REF_MIGRATE *ref_migrate_ptr )
@@ -43,8 +45,10 @@ static REF_STATUS tear_down( REF_MIGRATE ref_migrate )
   return REF_SUCCESS;
 }
 
-int main( void )
+int main( int argc, char *argv[] )
 {
+
+  TSS( ref_mpi_start( argc, argv ), "start" );
 
   { /* split tet in two, map 1 */
     REF_MIGRATE ref_migrate;
@@ -58,5 +62,8 @@ int main( void )
 
     TSS( tear_down( ref_migrate ), "tear down");
   }
+
+  TSS( ref_mpi_stop(  ), "stop" );
+
   return 0;
 }
