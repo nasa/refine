@@ -3,29 +3,24 @@
 #include <stdio.h>
 
 #include "ref_adj.h"
+#include "ref_malloc.h"
 
 REF_STATUS ref_adj_create( REF_ADJ *ref_adj_ptr )
 {
   REF_ADJ ref_adj;
   REF_INT i;
 
-  (*ref_adj_ptr) = NULL;
-  (*ref_adj_ptr) = (REF_ADJ)malloc( sizeof(REF_ADJ_STRUCT) );
-  RNS(*ref_adj_ptr,"malloc ref_adj NULL");
+  ref_malloc( *ref_adj_ptr, 1, REF_ADJ_STRUCT );
   ref_adj = (*ref_adj_ptr);
 
   ref_adj_nnode(ref_adj) = 10;
   ref_adj_nitem(ref_adj) = 20;
 
-  ref_adj->first = (REF_INT *)malloc( ref_adj_nnode(ref_adj) * 
-				      sizeof(REF_INT) );
-  RNS(ref_adj->first,"malloc ref_adj->first NULL");
+  ref_malloc(ref_adj->first, ref_adj_nnode(ref_adj), REF_INT );
   for (i = 0; i < ref_adj_nnode(ref_adj) ; i++ )
     ref_adj->first[i] = REF_EMPTY;
 
-  ref_adj->item = (REF_ADJ_ITEM)malloc( ref_adj_nitem(ref_adj) * 
-					sizeof(REF_ADJ_ITEM_STRUCT) );
-  RNS(ref_adj->item,"malloc ref_adj->item NULL");
+  ref_malloc(ref_adj->item, ref_adj_nitem(ref_adj), REF_ADJ_ITEM_STRUCT );
   for (i = 0; i < ref_adj_nitem(ref_adj) ; i++ )
     {
       ref_adj->item[i].ref = REF_EMPTY;
@@ -40,9 +35,9 @@ REF_STATUS ref_adj_create( REF_ADJ *ref_adj_ptr )
 REF_STATUS ref_adj_free( REF_ADJ ref_adj )
 {
   if ( NULL == (void *)ref_adj ) return REF_NULL;
-  ref_cond_free( ref_adj->first );
-  ref_cond_free( ref_adj->item );
-  ref_cond_free( ref_adj );
+  ref_free( ref_adj->first );
+  ref_free( ref_adj->item );
+  ref_free( ref_adj );
   return REF_SUCCESS;
 }
 
@@ -72,10 +67,7 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
       orig = ref_adj_nnode( ref_adj );
       chunk = 100 + MAX( 0, node-orig );
       ref_adj_nnode(ref_adj) = orig + chunk;
-      ref_adj->first = (REF_INT *)realloc( ref_adj->first,
-					   ref_adj_nnode(ref_adj) * 
-					   sizeof(REF_INT) );
-      RNS(ref_adj->first,"realloc ref_adj->first NULL");
+      ref_realloc( ref_adj->first, ref_adj_nnode(ref_adj), REF_INT );
       for (i = orig; i < ref_adj_nnode(ref_adj) ; i++ )
 	ref_adj->first[i] = REF_EMPTY;
     }
@@ -85,10 +77,7 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
       orig = ref_adj_nitem( ref_adj );
       chunk = 100;
       ref_adj_nitem( ref_adj ) =  orig + chunk;
-      ref_adj->item = (REF_ADJ_ITEM)realloc( ref_adj->item,
-					     ref_adj_nitem(ref_adj) * 
-					     sizeof(REF_ADJ_ITEM_STRUCT) );
-      RNS(ref_adj->item,"realloc ref_adj->item NULL");
+      ref_realloc( ref_adj->item, ref_adj_nitem(ref_adj), REF_ADJ_ITEM_STRUCT );
       for (i = orig; i < ref_adj_nitem(ref_adj) ; i++ )
 	{
 	  ref_adj->item[i].ref = REF_EMPTY;

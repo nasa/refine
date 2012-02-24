@@ -18,6 +18,7 @@ libref2_a_SOURCES = \
 	ref_import.c ref_import.h \
 	ref_list.h ref_list.c \
 	ref_math.h ref_math.c \
+	ref_malloc.h \
 	ref_metric.h ref_metric.c \
 	ref_migrate.h ref_migrate.c \
 	ref_mpi.h ref_mpi.c \
