@@ -22,18 +22,6 @@
 
 #include "ref_test.h"
 
-static REF_STATUS tear_down( REF_MIGRATE ref_migrate )
-{
-  REF_GRID ref_grid;
-
-  ref_grid = ref_migrate_grid(ref_migrate);
-
-  TSS(ref_migrate_free(ref_migrate),"free");
-
-  TSS( ref_grid_free(ref_grid),"free" );
-
-  return REF_SUCCESS;
-}
 
 int main( int argc, char *argv[] )
 {
@@ -43,7 +31,6 @@ int main( int argc, char *argv[] )
   if ( 1 == argc )
     {
       REF_GRID import_grid;
-      REF_MIGRATE ref_migrate;
       char grid_file[] = "ref_migrate_test.b8.ugrid";
 
       if ( ref_mpi_master ) 
@@ -55,23 +42,22 @@ int main( int argc, char *argv[] )
 	}
 
       TSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
-      TSS(ref_migrate_create(&ref_migrate,import_grid),"create");
+      TSS(ref_migrate_new_part(import_grid),"create");
 
-      TSS( tear_down( ref_migrate ), "tear down");
+      TSS( ref_grid_free( import_grid ), "free");
       if ( ref_mpi_master ) TEIS(0, remove( grid_file ), "test clean up");
     }
 
   if ( 1 < argc )
     {
       REF_GRID import_grid;
-      REF_MIGRATE ref_migrate;
 
       TSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
-      TSS(ref_migrate_create(&ref_migrate,import_grid),"create");
+      TSS(ref_migrate_new_part(import_grid),"create");
 
-      TSS( ref_migrate_part_viz( ref_migrate ), "part_viz");
+      TSS( ref_migrate_part_viz( import_grid ), "part_viz");
 
-      TSS( tear_down( ref_migrate ), "tear down");
+      TSS( ref_grid_free( import_grid ), "free");
     }
 
   TSS( ref_mpi_stop(  ), "stop" );
