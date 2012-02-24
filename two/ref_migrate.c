@@ -7,6 +7,8 @@
 #include "ref_mpi.h"
 #include "ref_malloc.h"
 
+#include "ref_export.h"
+
 #ifdef HAVE_ZOLTAN
 #include "zoltan.h"
 static struct Zoltan_Struct *zz;
@@ -93,13 +95,12 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
   ref_migrate_grid(ref_migrate) = ref_grid;
 
-  ref_migrate->n = 0;
-  ref_migrate->local = NULL;
   ref_migrate->part = NULL;
 
 #ifdef HAVE_ZOLTAN
 #define ref_migrate_zz ((Zoltan_Struct *)ref_migrate->partitioner_data)
   {
+    REF_NODE ref_node = ref_grid_node( ref_migrate_grid(ref_migrate) );
     int partitions_have_changed;
     int global_id_dimension, local_id_dimension;
 
@@ -153,16 +154,13 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 			      &export_part),
 	  "Zoltan is angry");
 
-    ref_migrate_n( ref_migrate ) = export_n;
+    ref_malloc( ref_migrate->part, ref_node_max( ref_node ), REF_INT);
 
-    ref_malloc( ref_migrate->local, ref_migrate_n( ref_migrate ), REF_INT);
-    ref_malloc( ref_migrate->part, ref_migrate_n( ref_migrate ), REF_INT);
-
+    for(node=0; node<ref_node_max( ref_node ); node++)
+      ref_migrate_part( ref_migrate, node ) = REF_EMPTY;
+      
     for(node=0; node<export_n; node++)
-      ref_migrate_local( ref_migrate, node ) = export_local[node];
-
-    for(node=0; node<export_n; node++)
-      ref_migrate_part( ref_migrate, node ) = export_part[node];
+      ref_migrate_part( ref_migrate, export_local[node] ) = export_part[node];
 
     REIS( ZOLTAN_OK,
 	  Zoltan_LB_Free_Part(&import_local, &import_global,
@@ -189,7 +187,6 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 #endif
 
   ref_cond_free( ref_migrate->part );
-  ref_cond_free( ref_migrate->local );
   ref_cond_free( ref_migrate );
 
   return REF_SUCCESS;
@@ -198,6 +195,21 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 REF_STATUS ref_migrate_inspect( REF_MIGRATE ref_migrate )
 {
   RSS(ref_grid_inspect( ref_migrate_grid(ref_migrate)) , "inspect grid");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_part_viz( REF_MIGRATE ref_migrate )
+{
+  char viz_file[256];
+
+  if ( NULL == ref_migrate->part ) return REF_NULL;
+
+  sprintf(viz_file, "ref_migrate_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
+
+  RSS(ref_export_tec_int( ref_migrate_grid(ref_migrate),
+			  ref_migrate->part,
+			  viz_file ) , "viz parts as scalar");
 
   return REF_SUCCESS;
 }

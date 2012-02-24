@@ -69,6 +69,8 @@ int main( int argc, char *argv[] )
       TSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
       TSS(ref_migrate_create(&ref_migrate,import_grid),"create");
 
+      TSS( ref_migrate_part_viz( ref_migrate ), "part_viz");
+
       TSS( tear_down( ref_migrate ), "tear down");
     }
 
