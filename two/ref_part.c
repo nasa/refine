@@ -542,7 +542,7 @@ REF_STATUS ref_part_ghost_int( REF_GRID ref_grid, REF_INT *scalar )
     }
 
   RSS( ref_mpi_alltoallv( b_scalar, b_size, a_scalar, a_size, 
-			  3, REF_INT_TYPE ), 
+			  1, REF_INT_TYPE ), 
        "alltoallv global");
 
   for (node=0;node<a_total;node++)
