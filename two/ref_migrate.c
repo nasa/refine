@@ -254,6 +254,7 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
       ref_node_xyz(ref_node,0,local) = b_xyz[0+3*node];
       ref_node_xyz(ref_node,1,local) = b_xyz[1+3*node];
       ref_node_xyz(ref_node,2,local) = b_xyz[2+3*node];
+      ref_node_part(ref_node,local) = ref_mpi_id;
     }
 
   free(a_next);
@@ -279,7 +280,8 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
   REF_INT part, node, cell, i;
   REF_INT *a_next;
   REF_INT *a_c2n, *b_c2n;
-  REF_INT new_cell;
+  REF_INT *a_parts, *b_parts;
+  REF_INT new_cell, local;
 
   ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
   ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
@@ -302,12 +304,14 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
   a_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
     a_total += a_size[part];
-  ref_malloc( a_c2n, ref_cell_size_per(ref_cell)*a_total, REF_INT );
+  ref_malloc( a_c2n,   ref_cell_size_per(ref_cell)*a_total, REF_INT );
+  ref_malloc( a_parts, ref_cell_size_per(ref_cell)*a_total, REF_INT );
 
   b_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
     b_total += b_size[part];
-  ref_malloc( b_c2n, ref_cell_size_per(ref_cell)*b_total, REF_INT );
+  ref_malloc( b_c2n,   ref_cell_size_per(ref_cell)*b_total, REF_INT );
+  ref_malloc( b_parts, ref_cell_size_per(ref_cell)*b_total, REF_INT );
 
   ref_malloc( a_next, ref_mpi_n, REF_INT );
   a_next[0] = 0;
@@ -326,8 +330,12 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 	  if ( ref_mpi_id != part ) 
 	    {
 	      for (i=0;i<ref_cell_node_per(ref_cell);i++)
-		a_c2n[i+ref_cell_size_per(ref_cell)*a_next[part]] = 
-		  ref_node_global(ref_node,nodes[i]);
+		{
+		  a_c2n[i+ref_cell_size_per(ref_cell)*a_next[part]] = 
+		    ref_node_global(ref_node,nodes[i]);
+		  a_parts[i+ref_cell_size_per(ref_cell)*a_next[part]] =
+		    ref_node_part(ref_node,nodes[i]);
+		}
 	      if ( ref_cell_last_node_is_an_id(ref_cell) )
 		a_c2n[ref_cell_node_per(ref_cell) + 
 		      ref_cell_size_per(ref_cell)*a_next[part]] =
@@ -340,6 +348,9 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
   RSS( ref_mpi_alltoallv( a_c2n, a_size, b_c2n, b_size, 
 			  ref_cell_size_per(ref_cell), REF_INT_TYPE ), 
        "alltoallv c2n");
+  RSS( ref_mpi_alltoallv( a_parts, a_size, b_parts, b_size, 
+			  ref_cell_size_per(ref_cell), REF_INT_TYPE ), 
+       "alltoallv parts");
 
   for (cell=0;cell<b_total;cell++)
     {
@@ -347,6 +358,14 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 					 &(b_c2n[ref_cell_size_per(ref_cell) *
 						 cell]),
 					 &new_cell), "add uni cell" );
+      for ( node=0; node < ref_cell_node_per(ref_cell); node++ )
+	{
+	  RSS( ref_node_local( ref_node, 
+			       b_c2n[node+ref_cell_size_per(ref_cell)*cell], 
+			       &local ), "g2l");
+	  ref_node_part(ref_node,local) =
+	     b_parts[node+ref_cell_size_per(ref_cell)*cell];
+	}
     }
   free(a_next);
   free(b_c2n);
@@ -369,6 +388,8 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     ref_migrate_shufflin_cell( ref_node, ref_cell );
+
+  RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
 
   return REF_SUCCESS;
 }
