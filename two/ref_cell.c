@@ -387,6 +387,28 @@ REF_STATUS ref_cell_add_global( REF_CELL ref_cell, REF_NODE ref_node,
   return ref_cell_add( ref_cell, local_nodes, new_cell );
 }
 
+REF_STATUS ref_cell_add_global_uniquely( REF_CELL ref_cell, REF_NODE ref_node,
+					 REF_INT *global_nodes, 
+					 REF_INT *new_cell )
+{
+  REF_INT node, local_nodes[REF_CELL_MAX_SIZE_PER];
+
+  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+    RSS( ref_node_add( ref_node, global_nodes[node], 
+		       &(local_nodes[node]) ), "map to local" );
+
+  if ( ref_cell_last_node_is_an_id(ref_cell) )
+    local_nodes[ref_cell_size_per(ref_cell)-1] = 
+      global_nodes[ref_cell_size_per(ref_cell)-1];
+
+  RXS( ref_cell_with( ref_cell, local_nodes, new_cell),
+       REF_NOT_FOUND, "with failed");
+
+  if ( REF_EMPTY != (*new_cell) ) return REF_SUCCESS;
+
+  return ref_cell_add( ref_cell, local_nodes, new_cell );
+}
+
 REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
 {
   REF_INT node;
