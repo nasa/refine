@@ -436,7 +436,7 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
   REF_INT brick[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
   REF_INT ncell;
-  REF_INT group, node_per;
+  REF_INT group;
 
   FILE *file;
 
@@ -471,7 +471,6 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
-      node_per = ref_cell_node_per(ref_cell);
       switch ( ref_cell_node_per(ref_cell) )
 	{
 	case 4:
