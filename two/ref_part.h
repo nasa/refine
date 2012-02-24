@@ -21,6 +21,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 				   long conn_offset,
 				   long faceid_offset );
 REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid );
+REF_STATUS ref_part_ghost_int( REF_GRID ref_grid, REF_INT *scalar );
 
 END_C_DECLORATION
 
