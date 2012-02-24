@@ -282,6 +282,7 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
   REF_INT *a_c2n, *b_c2n;
   REF_INT *a_parts, *b_parts;
   REF_INT new_cell, local;
+  REF_BOOL need_to_keep;
 
   ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
   ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
@@ -372,6 +373,18 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
   free(a_c2n);
   free(b_size);
   free(a_size);
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      need_to_keep = REF_FALSE;
+      for ( node=0; node < ref_cell_node_per(ref_cell); node++ )
+	{
+	  need_to_keep = ( need_to_keep || 
+			   ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+	}
+      if ( ! need_to_keep )
+	RSS( ref_cell_remove( ref_cell, cell), "remove" );
+    }
 
   return REF_SUCCESS;
 }
