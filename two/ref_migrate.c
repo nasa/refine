@@ -101,9 +101,17 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 #ifdef HAVE_ZOLTAN
 #define ref_migrate_zz ((Zoltan_Struct *)ref_migrate->partitioner_data)
   {
-    int changes, numGidEntries, numLidEntries, numImport, numExport;
-    ZOLTAN_ID_PTR importGlobalGids, importLocalGids, exportGlobalGids, exportLocalGids;
-    int *importProcs, *importToPart, *exportProcs, *exportToPart;
+    int partitions_have_changed;
+    int global_id_dimension, local_id_dimension;
+
+    int import_n;
+    ZOLTAN_ID_PTR import_global, import_local;
+    int *import_proc, *import_part;
+
+    int export_n;
+    ZOLTAN_ID_PTR export_global, export_local;
+    int *export_proc, *export_part;
+
     float ver;
     REIS( ZOLTAN_OK, 
 	  Zoltan_Initialize(ref_mpi_argc, ref_mpi_argv, &ver), 
@@ -113,6 +121,7 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
     /* General parameters */
 
     Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
+    Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTS");
     Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
     Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
 
@@ -126,22 +135,27 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 			     (void *)ref_migrate);
 
     REIS( ZOLTAN_OK, 
-	  Zoltan_LB_Partition(zz, /* input (all remaining fields are output) */
-        &changes,        /* 1 if partitioning was changed, 0 otherwise */ 
-        &numGidEntries,  /* Number of integers used for a global ID */
-        &numLidEntries,  /* Number of integers used for a local ID */
-        &numImport,      /* Number of vertices to be sent to me */
-        &importGlobalGids,  /* Global IDs of vertices to be sent to me */
-        &importLocalGids,   /* Local IDs of vertices to be sent to me */
-        &importProcs,    /* Process rank for source of each incoming vertex */
-        &importToPart,   /* New partition for each incoming vertex */
-        &numExport,      /* Number of vertices I must send to other processes*/
-        &exportGlobalGids,  /* Global IDs of the vertices I must send */
-        &exportLocalGids,   /* Local IDs of the vertices I must send */
-        &exportProcs,    /* Process to which I send each of the vertices */
-        &exportToPart),  /* Partition to which each vertex will belong */
+	  Zoltan_LB_Partition(zz,
+			      &partitions_have_changed,
+			      &global_id_dimension,
+			      &local_id_dimension,
+			      &import_n,
+			      &import_global,
+			      &import_local,
+			      &import_proc,
+			      &import_part,
+			      &export_n,
+			      &export_global,
+			      &export_local,
+			      &export_proc,
+			      &export_part),
 	  "Zoltan is angry");
-	  
+
+    REIS( ZOLTAN_OK,
+	  Zoltan_LB_Free_Part(&import_local, &import_global,
+			      &import_proc, &import_proc ),
+	  "Zoltan is angry");
+
   }
 #endif
 
