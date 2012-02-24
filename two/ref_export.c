@@ -425,6 +425,84 @@ REF_STATUS ref_export_tec_vol_zone( REF_GRID ref_grid, FILE *file  )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar, 
+			       char *filename  )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *o2n;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT brick[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT ncell;
+  REF_INT group, node_per;
+
+  FILE *file;
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"tecplot refine scalar file\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\" \"s\"\n");
+
+  ncell = 0;
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    ncell += ref_cell_n(ref_cell);
+
+  fprintf(file,
+	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  ref_node_n(ref_node), ncell, "point", "febrick" );
+
+  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+
+
+  for ( node = 0; node < ref_node_max(ref_node); node++ )
+    if ( REF_EMPTY != o2n[node] )
+      {
+	fprintf(file, " %.16e %.16e %.16e %d\n", 
+		ref_node_xyz(ref_node,0,node),
+		ref_node_xyz(ref_node,1,node),
+		ref_node_xyz(ref_node,2,node),
+		scalar[node] ) ;
+      }
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      node_per = ref_cell_node_per(ref_cell);
+      switch ( ref_cell_node_per(ref_cell) )
+	{
+	case 4:
+	  TEC_BRICK_TET(brick,nodes);
+	  break;
+	case 5:
+	  TEC_BRICK_PYR(brick,nodes);
+	  break;
+	case 6:
+	  TEC_BRICK_PRI(brick,nodes);
+	  break;
+	case 8:
+	  TEC_BRICK_HEX(brick,nodes);
+	  break;
+	default:
+	  RSS( REF_IMPLEMENT, "wrong nodes per cell");
+	  break;
+	}
+
+      for ( node = 0; node < 8; node++ )
+	{
+	  fprintf(file," %d",o2n[brick[node]] + 1);
+	}
+      fprintf(file,"\n");
+    }
+
+  free(o2n);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
