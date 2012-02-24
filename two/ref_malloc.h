@@ -10,6 +10,16 @@ BEGIN_C_DECLORATION
   (ptr) = (ptr_type *)malloc( (n) * sizeof(ptr_type) );	\
   RNS((ptr),"malloc " #ptr " NULL");
 
+#define ref_malloc_init( ptr, n, ptr_type, initial_value )	\
+  (ptr) = (ptr_type *)malloc( (n) * sizeof(ptr_type) );		\
+  RNS((ptr),"malloc " #ptr " NULL");				\
+  { REF_INT ref_malloc_init_i;					\
+    for( ref_malloc_init_i = 0 ;				\
+	 ref_malloc_init_i < (n) ;				\
+	 ref_malloc_init_i++ )					\
+      (ptr)[ref_malloc_init_i] = (initial_value);		\
+  }
+
 /* realloc of size zero with return NULL */
 
 #define ref_realloc( ptr, n, ptr_type )					\

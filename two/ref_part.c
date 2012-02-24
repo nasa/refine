@@ -7,6 +7,8 @@
 #include "ref_endian.h"
 #include "ref_sort.h"
 
+#include "ref_malloc.h"
+
 #include "ref_export.h"
 
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
@@ -88,8 +90,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 	  RSS( ref_mpi_send( &n, 1, REF_INT_TYPE, part ), "send" );
 	  if ( n > 0 )
 	    {
-	      xyz=(REF_DBL*)malloc(3*n*sizeof(REF_DBL));
-	      RNS(xyz,"malloc xyz on master failed");
+	      ref_malloc( xyz, 3*n, REF_DBL);
 	      for (node=0;node<n; node++)
 		{
 		  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "x" );
@@ -112,8 +113,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       RSS( ref_mpi_recv( &n, 1, REF_INT_TYPE, 0 ), "recv" );
       if ( n > 0 )
 	{
-	  xyz=(REF_DBL*)malloc(3*n*sizeof(REF_DBL));
-	  RNS(xyz,"malloc xyz on worker failed");
+	  ref_malloc( xyz, 3*n, REF_DBL);
 	  RSS( ref_mpi_recv( xyz, 3*n, REF_DBL_TYPE, 0 ), "recv" );
 	  for (node=0;node<n; node++)
 	    {
@@ -257,17 +257,13 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
 
-  sent_c2n =(REF_INT *)malloc(size_per*chunk*sizeof(REF_INT));
-  RNS(sent_c2n,"malloc failed");
+  ref_malloc( sent_c2n, size_per*chunk, REF_INT );
 
   if ( ref_mpi_master )
     {
 
-      elements_to_send =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
-      RNS(elements_to_send,"malloc failed");
-
-      c2n =(REF_INT *)malloc(size_per*chunk*sizeof(REF_INT));
-      RNS(c2n,"malloc failed");
+      ref_malloc( elements_to_send, ref_mpi_n, REF_INT );
+      ref_malloc( c2n, size_per*chunk, REF_INT );
 
       ncell_read = 0;
       while ( ncell_read < ncell )
@@ -417,15 +413,8 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
 
   ref_node = ref_grid_node(ref_grid);
 
-  a_size =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
-  RNS(a_size,"malloc failed");
-  for ( part = 0; part<ref_mpi_n ; part++ )
-    a_size[part] = 0;
-
-  b_size =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
-  RNS(b_size,"malloc failed");
-  for ( part = 0; part<ref_mpi_n ; part++ )
-    b_size[part] = 0;
+  ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
 
   each_ref_node_valid_node( ref_node, node )
     if ( ref_mpi_id != ref_node_part(ref_node,node) )
@@ -436,22 +425,16 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
   a_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
     a_total += a_size[part];
-  a_global =(REF_INT *)malloc(a_total*sizeof(REF_INT));
-  RNS(a_global,"malloc failed");
-  a_xyz =(REF_DBL *)malloc(a_total*3*sizeof(REF_DBL));
-  RNS(a_xyz,"malloc failed");
+  ref_malloc( a_global, a_total, REF_INT );
+  ref_malloc( a_xyz, 3*a_total, REF_DBL );
 
   b_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
     b_total += b_size[part];
-  b_global =(REF_INT *)malloc(b_total*sizeof(REF_INT));
-  RNS(b_global,"malloc failed");
-  b_xyz =(REF_DBL *)malloc(b_total*3*sizeof(REF_DBL));
-  RNS(b_xyz,"malloc failed");
+  ref_malloc( b_global, b_total, REF_INT );
+  ref_malloc( b_xyz, 3*b_total, REF_DBL );
 
-  a_next =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
-  RNS(a_next,"malloc failed");
-
+  ref_malloc( a_next, a_total, REF_INT );
   a_next[0] = 0;
   for ( part = 1; part<ref_mpi_n ; part++ )
     a_next[part] = a_next[part-1]+a_size[part-1];
