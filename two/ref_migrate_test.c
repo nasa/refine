@@ -57,6 +57,8 @@ int main( int argc, char *argv[] )
 
       TSS( ref_migrate_part_viz( import_grid ), "part_viz");
 
+      TSS( ref_migrate_shufflin( import_grid ), "shufflin");
+
       TSS( ref_grid_free( import_grid ), "free");
     }
 

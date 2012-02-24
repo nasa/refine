@@ -190,3 +190,79 @@ REF_STATUS ref_migrate_part_viz( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node( ref_grid );
+
+  REF_INT *a_size, *b_size;
+  REF_INT a_total, b_total;
+  REF_INT *a_global, *b_global;
+  REF_INT part, node;
+  REF_INT *a_next;
+  REF_DBL *a_xyz, *b_xyz;
+  REF_INT local;
+
+  ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      a_size[ref_node_part(ref_node,node)]++;
+
+  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+
+  a_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    a_total += a_size[part];
+  ref_malloc( a_global, a_total, REF_INT );
+  ref_malloc( a_xyz, 3*a_total, REF_DBL );
+
+  b_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    b_total += b_size[part];
+  ref_malloc( b_global, b_total, REF_INT );
+  ref_malloc( b_xyz, 3*b_total, REF_DBL );
+
+  ref_malloc( a_next, a_total, REF_INT );
+  a_next[0] = 0;
+  for ( part = 1; part<ref_mpi_n ; part++ )
+    a_next[part] = a_next[part-1]+a_size[part-1];
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      {
+	part = ref_node_part(ref_node,node);
+	a_global[a_next[part]] = ref_node_global(ref_node,node);
+	a_xyz[0+3*a_next[part]] = ref_node_xyz(ref_node,0,node);
+	a_xyz[1+3*a_next[part]] = ref_node_xyz(ref_node,1,node);
+	a_xyz[2+3*a_next[part]] = ref_node_xyz(ref_node,2,node);
+	a_next[ref_node_part(ref_node,node)]++;
+      }
+
+  RSS( ref_mpi_alltoallv( a_global, a_size, b_global, b_size, 
+			  1, REF_INT_TYPE ), 
+       "alltoallv global");
+
+  RSS( ref_mpi_alltoallv( a_xyz, a_size, b_xyz, b_size, 
+			  3, REF_DBL_TYPE ), 
+       "alltoallv global");
+
+  for (node=0;node<b_total;node++)
+    {
+      RSS( ref_node_add( ref_node, b_global[node], &local ), "add");
+      ref_node_xyz(ref_node,0,local) = b_xyz[0+3*node];
+      ref_node_xyz(ref_node,1,local) = b_xyz[1+3*node];
+      ref_node_xyz(ref_node,2,local) = b_xyz[2+3*node];
+    }
+
+  free(a_next);
+  free(b_xyz);
+  free(b_global);
+  free(a_xyz);
+  free(a_global);
+  free(b_size);
+  free(a_size);
+
+  return REF_SUCCESS;
+}
+
