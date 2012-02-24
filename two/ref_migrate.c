@@ -9,6 +9,9 @@
 
 #include "ref_part.h"
 
+#include "ref_sort.h"
+#include "ref_node.h"
+
 #include "ref_export.h"
 
 #ifdef HAVE_ZOLTAN
@@ -221,7 +224,7 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
   ref_malloc( b_global, b_total, REF_INT );
   ref_malloc( b_xyz, 3*b_total, REF_DBL );
 
-  ref_malloc( a_next, a_total, REF_INT );
+  ref_malloc( a_next, ref_mpi_n, REF_INT );
   a_next[0] = 0;
   for ( part = 1; part<ref_mpi_n ; part++ )
     a_next[part] = a_next[part-1]+a_size[part-1];
@@ -234,7 +237,7 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 	a_xyz[0+3*a_next[part]] = ref_node_xyz(ref_node,0,node);
 	a_xyz[1+3*a_next[part]] = ref_node_xyz(ref_node,1,node);
 	a_xyz[2+3*a_next[part]] = ref_node_xyz(ref_node,2,node);
-	a_next[ref_node_part(ref_node,node)]++;
+	a_next[part]++;
       }
 
   RSS( ref_mpi_alltoallv( a_global, a_size, b_global, b_size, 
@@ -264,13 +267,108 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node, 
+					     REF_CELL ref_cell )
+{
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT all_parts[REF_CELL_MAX_SIZE_PER];
+  REF_INT nunique;
+  REF_INT unique_parts[REF_CELL_MAX_SIZE_PER];
+  REF_INT *a_size, *b_size;
+  REF_INT a_total, b_total;
+  REF_INT part, node, cell, i;
+  REF_INT *a_next;
+  REF_INT *a_c2n, *b_c2n;
+  REF_INT new_cell;
+
+  ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      for ( node=0; node < ref_cell_node_per(ref_cell); node++ )
+	all_parts[node] = ref_node_part(ref_node,nodes[node]);
+      RSS( ref_sort_unique( ref_cell_node_per(ref_cell), all_parts,
+			    &nunique, unique_parts ), "unique");
+      for ( node=0; node < nunique; node++ )
+	{
+	  part = unique_parts[node];
+	  if ( ref_mpi_id != part ) a_size[part]++;
+	}
+    }
+
+  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+
+  a_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    a_total += a_size[part];
+  ref_malloc( a_c2n, ref_cell_size_per(ref_cell)*a_total, REF_INT );
+
+  b_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    b_total += b_size[part];
+  ref_malloc( b_c2n, ref_cell_size_per(ref_cell)*b_total, REF_INT );
+
+  ref_malloc( a_next, ref_mpi_n, REF_INT );
+  a_next[0] = 0;
+  for ( part = 1; part<ref_mpi_n ; part++ )
+    a_next[part] = a_next[part-1]+a_size[part-1];
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      for ( node=0; node < ref_cell_node_per(ref_cell); node++ )
+	all_parts[node] = ref_node_part(ref_node,nodes[node]);
+      RSS( ref_sort_unique( ref_cell_node_per(ref_cell), all_parts,
+			    &nunique, unique_parts ), "unique");
+      for ( node=0; node < nunique; node++ )
+	{
+	  part = unique_parts[node];
+	  if ( ref_mpi_id != part ) 
+	    {
+	      for (i=0;i<ref_cell_node_per(ref_cell);i++)
+		a_c2n[i+ref_cell_size_per(ref_cell)*a_next[part]] = 
+		  ref_node_global(ref_node,nodes[i]);
+	      if ( ref_cell_last_node_is_an_id(ref_cell) )
+		a_c2n[ref_cell_node_per(ref_cell) + 
+		      ref_cell_size_per(ref_cell)*a_next[part]] =
+		  nodes[ref_cell_node_per(ref_cell)];
+	      a_next[part]++;
+	    }
+	}
+    }
+
+  RSS( ref_mpi_alltoallv( a_c2n, a_size, b_c2n, b_size, 
+			  ref_cell_size_per(ref_cell), REF_INT_TYPE ), 
+       "alltoallv c2n");
+
+  for (cell=0;cell<b_total;cell++)
+    {
+      RSS( ref_cell_add_global_uniquely( ref_cell, ref_node, 
+					 &(b_c2n[ref_cell_size_per(ref_cell) *
+						 cell]),
+					 &new_cell), "add uni cell" );
+    }
+  free(a_next);
+  free(b_c2n);
+  free(a_c2n);
+  free(b_size);
+  free(a_size);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node( ref_grid );
+  REF_CELL ref_cell;
+  REF_INT group;
 
   if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
   RSS( ref_migrate_shufflin_node( ref_node ), "send out nodes" );
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    ref_migrate_shufflin_cell( ref_node, ref_cell );
 
   return REF_SUCCESS;
 }

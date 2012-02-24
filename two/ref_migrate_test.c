@@ -44,6 +44,8 @@ int main( int argc, char *argv[] )
       TSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
       TSS(ref_migrate_new_part(import_grid),"create");
 
+      TSS( ref_migrate_shufflin( import_grid ), "shufflin");
+
       TSS( ref_grid_free( import_grid ), "free");
       if ( ref_mpi_master ) TEIS(0, remove( grid_file ), "test clean up");
     }

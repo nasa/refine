@@ -434,7 +434,7 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid )
   ref_malloc( b_global, b_total, REF_INT );
   ref_malloc( b_xyz, 3*b_total, REF_DBL );
 
-  ref_malloc( a_next, a_total, REF_INT );
+  ref_malloc( a_next, ref_mpi_n, REF_INT );
   a_next[0] = 0;
   for ( part = 1; part<ref_mpi_n ; part++ )
     a_next[part] = a_next[part-1]+a_size[part-1];
@@ -518,7 +518,7 @@ REF_STATUS ref_part_ghost_int( REF_GRID ref_grid, REF_INT *scalar )
   ref_malloc( b_global, b_total, REF_INT );
   ref_malloc( b_scalar, b_total, REF_INT );
 
-  ref_malloc( a_next, a_total, REF_INT );
+  ref_malloc( a_next, ref_mpi_n, REF_INT );
   a_next[0] = 0;
   for ( part = 1; part<ref_mpi_n ; part++ )
     a_next[part] = a_next[part-1]+a_size[part-1];
