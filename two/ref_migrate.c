@@ -5,6 +5,7 @@
 #include "ref_migrate.h"
 
 #include "ref_mpi.h"
+#include "ref_malloc.h"
 
 #ifdef HAVE_ZOLTAN
 #include "zoltan.h"
@@ -87,10 +88,7 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 {
   REF_MIGRATE ref_migrate;
 
-  (*ref_migrate_ptr) = NULL;
-  (*ref_migrate_ptr) = (REF_MIGRATE)malloc( sizeof(REF_MIGRATE_STRUCT) );
-  RNS(*ref_migrate_ptr,"malloc ref_migrate NULL");
-
+  ref_malloc( *ref_migrate_ptr, 1, REF_MIGRATE_STRUCT );
   ref_migrate = *ref_migrate_ptr;
 
   ref_migrate_grid(ref_migrate) = ref_grid;
@@ -157,13 +155,8 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
     ref_migrate_n( ref_migrate ) = export_n;
 
-    ref_migrate->local = (REF_INT *)malloc( ref_migrate_n( ref_migrate ) *
-					    sizeof(REF_INT) );
-    RNS(ref_migrate->local,"malloc ref_migrate->local NULL");
-
-    ref_migrate->part = (REF_INT *)malloc( ref_migrate_n( ref_migrate ) *
-					    sizeof(REF_INT) );
-    RNS(ref_migrate->part,"malloc ref_migrate->part NULL");
+    ref_malloc( ref_migrate->local, ref_migrate_n( ref_migrate ), REF_INT);
+    ref_malloc( ref_migrate->part, ref_migrate_n( ref_migrate ), REF_INT);
 
     for(node=0; node<export_n; node++)
       ref_migrate_local( ref_migrate, node ) = export_local[node];
