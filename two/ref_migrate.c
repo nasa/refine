@@ -190,10 +190,8 @@ REF_STATUS ref_migrate_part_viz( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
+static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 {
-  REF_NODE ref_node = ref_grid_node( ref_grid );
-
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
   REF_INT *a_global, *b_global;
@@ -262,6 +260,17 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
   free(a_global);
   free(b_size);
   free(a_size);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node( ref_grid );
+
+  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+
+  RSS( ref_migrate_shufflin_node( ref_node ), "send out nodes" );
 
   return REF_SUCCESS;
 }
