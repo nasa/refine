@@ -7,6 +7,8 @@
 #include "ref_mpi.h"
 #include "ref_malloc.h"
 
+#include "ref_part.h"
+
 #include "ref_export.h"
 
 #ifdef HAVE_ZOLTAN
@@ -161,6 +163,8 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
       
     for(node=0; node<export_n; node++)
       ref_migrate_part( ref_migrate, export_local[node] ) = export_part[node];
+
+    RSS( ref_part_ghost_int( ref_grid, ref_migrate->part ), "ghost part");
 
     REIS( ZOLTAN_OK,
 	  Zoltan_LB_Free_Part(&import_local, &import_global,
