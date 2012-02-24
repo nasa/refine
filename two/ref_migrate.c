@@ -95,6 +95,10 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
   ref_migrate_grid(ref_migrate) = ref_grid;
 
+  ref_migrate->n = 0;
+  ref_migrate->local = NULL;
+  ref_migrate->part = NULL;
+
 #ifdef HAVE_ZOLTAN
 #define ref_migrate_zz ((Zoltan_Struct *)ref_migrate->partitioner_data)
   {
@@ -110,6 +114,9 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
     int *export_proc, *export_part;
 
     float ver;
+
+    REF_INT node;
+
     REIS( ZOLTAN_OK, 
 	  Zoltan_Initialize(ref_mpi_argc, ref_mpi_argv, &ver), 
 	  "Zoltan is angry");
@@ -148,9 +155,30 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 			      &export_part),
 	  "Zoltan is angry");
 
+    ref_migrate_n( ref_migrate ) = export_n;
+
+    ref_migrate->local = (REF_INT *)malloc( ref_migrate_n( ref_migrate ) *
+					    sizeof(REF_INT) );
+    RNS(ref_migrate->local,"malloc ref_migrate->local NULL");
+
+    ref_migrate->part = (REF_INT *)malloc( ref_migrate_n( ref_migrate ) *
+					    sizeof(REF_INT) );
+    RNS(ref_migrate->part,"malloc ref_migrate->part NULL");
+
+    for(node=0; node<export_n; node++)
+      ref_migrate_local( ref_migrate, node ) = export_local[node];
+
+    for(node=0; node<export_n; node++)
+      ref_migrate_part( ref_migrate, node ) = export_part[node];
+
     REIS( ZOLTAN_OK,
 	  Zoltan_LB_Free_Part(&import_local, &import_global,
 			      &import_proc, &import_proc ),
+	  "Zoltan is angry");
+
+    REIS( ZOLTAN_OK,
+	  Zoltan_LB_Free_Part(&export_local, &export_global,
+			      &export_proc, &export_proc ),
 	  "Zoltan is angry");
 
   }
@@ -167,6 +195,8 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
   Zoltan_Destroy( &zz );
 #endif
 
+  ref_cond_free( ref_migrate->part );
+  ref_cond_free( ref_migrate->local );
   ref_cond_free( ref_migrate );
 
   return REF_SUCCESS;

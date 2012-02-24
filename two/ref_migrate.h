@@ -16,11 +16,15 @@ BEGIN_C_DECLORATION
 
 struct REF_MIGRATE_STRUCT {
   REF_GRID grid;
-  REF_EDGE edge;
+  REF_INT n;
+  REF_INT *local;
+  REF_INT *part;
 };
 
 #define ref_migrate_grid( ref_migrate ) ((ref_migrate)->grid)
-#define ref_migrate_edge( ref_migrate ) ((ref_migrate)->edge)
+#define ref_migrate_n( ref_migrate ) ((ref_migrate)->n)
+#define ref_migrate_local( ref_migrate, node ) ((ref_migrate)->local[(node)])
+#define ref_migrate_part( ref_migrate, node ) ((ref_migrate)->part[(node)])
 
 REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate, REF_GRID ref_grid );
 REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate );
