@@ -58,6 +58,7 @@ int main( int argc, char *argv[] )
       TSS(ref_migrate_create(&ref_migrate,import_grid),"create");
 
       TSS( tear_down( ref_migrate ), "tear down");
+      if ( ref_mpi_master ) TEIS(0, remove( grid_file ), "test clean up");
     }
 
   if ( 1 < argc )
