@@ -95,9 +95,6 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
   ref_migrate_grid(ref_migrate) = ref_grid;
 
-  RSS( ref_edge_create( &(ref_migrate_edge( ref_migrate )), 
-			ref_migrate_grid(ref_migrate) ), "create edge" );
-
 #ifdef HAVE_ZOLTAN
 #define ref_migrate_zz ((Zoltan_Struct *)ref_migrate->partitioner_data)
   {
@@ -169,8 +166,6 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 #ifdef HAVE_ZOLTAN
   Zoltan_Destroy( &zz );
 #endif
-
-  RSS( ref_edge_free( ref_migrate_edge( ref_migrate ) ), "free edge" );
 
   ref_cond_free( ref_migrate );
 
