@@ -400,7 +400,10 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
   RSS( ref_migrate_shufflin_node( ref_node ), "send out nodes" );
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    ref_migrate_shufflin_cell( ref_node, ref_cell );
+    RSS( ref_migrate_shufflin_cell( ref_node, ref_cell ), "cell" );
+  
+  RSS( ref_migrate_shufflin_cell( ref_node, ref_grid_tri(ref_grid) ), "tri");
+  RSS( ref_migrate_shufflin_cell( ref_node, ref_grid_qua(ref_grid) ), "qua");
 
   RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
 
