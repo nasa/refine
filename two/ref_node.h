@@ -35,10 +35,10 @@ struct REF_NODE_STRUCT {
   ( (node) > -1 && (node) < ref_node_max(ref_node) && \
     (ref_node)->global[(node)] >= 0 )
 
-#define ref_node_global(ref_node,node) \
+#define ref_node_global(ref_node,node)			\
   ( ( (node) > -1 && (node) < ref_node_max(ref_node) && \
-      (ref_node)->global[(node)] >= 0) ?			\
-           (ref_node)->global[(node)]:REF_EMPTY )
+      (ref_node)->global[(node)] >= 0) ?		\
+    (ref_node)->global[(node)]:REF_EMPTY )
 
 #define each_ref_node_valid_node( ref_node, node )			\
   for ( (node) = 0 ;							\
