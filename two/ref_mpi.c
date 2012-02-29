@@ -271,6 +271,7 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 	   first,
 	   first/last*100.0,
 	   message );
+  RSS( ref_mpi_stopwatch_start(), "restart" );
 #else
   printf("%12.8f %s\n",
 	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
