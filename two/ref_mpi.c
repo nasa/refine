@@ -259,14 +259,18 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 
 #ifdef HAVE_MPI
   REF_DBL before_barrier, after_barrier;
-  before_barrier = (REF_DBL)MPI_Wtime();
+  REF_DBL first, last;
+  before_barrier = (REF_DBL)MPI_Wtime()-mpi_stopwatch_start_time;
   MPI_Barrier( MPI_COMM_WORLD ); 
-  after_barrier = (REF_DBL)MPI_Wtime();
-  printf("%6d: %15.12f %15.12f %s\n",
-	 ref_mpi_id,
-	 before_barrier - mpi_stopwatch_start_time,
-	 after_barrier - mpi_stopwatch_start_time,
-	 message );
+  after_barrier = (REF_DBL)MPI_Wtime()-mpi_stopwatch_start_time;
+  RSS( ref_mpi_min( &before_barrier, &first, REF_DBL_TYPE), "min");
+  RSS( ref_mpi_min( &after_barrier, &last, REF_DBL_TYPE), "max");
+  if ( ref_mpi_master )
+    printf("%15.12f (%15.12f) %6.2f%% load balance %s\n",
+	   last,
+	   first,
+	   first/last*100.0,
+	   message );
 #else
   printf("%12.8f %s\n",
 	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
