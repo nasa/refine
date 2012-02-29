@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #ifdef HAVE_MPI
 #include "mpi.h"
@@ -190,6 +191,43 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
   SUPRESS_UNUSED_COMPILER_WARNING(n);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
   return REF_IMPLEMENT;
+#endif
+
+  return REF_SUCCESS;
+}
+
+static double mpi_stopwatch_start_time;
+
+REF_STATUS ref_mpi_stopwatch_start( void )
+{
+#ifdef HAVE_MPI
+  MPI_Barrier( MPI_COMM_WORLD ); 
+  mpi_stopwatch_start_time = MPI_Wtime();
+#else
+  mpi_stopwatch_start_time = (double)clock(  )/((double)CLOCKS_PER_SEC);
+#endif
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_mpi_stopwatch_stop( char *message )
+{
+
+#ifdef HAVE_MPI
+  double before_barrier, after_barrier;
+  before_barrier = MPI_Wtime();
+  MPI_Barrier( MPI_COMM_WORLD ); 
+  after_barrier = MPI_Wtime();
+  printf("%6d: %15.12f %15.12f %s\n",
+	 ref_mpi_id,
+	 before_barrier - mpi_stopwatch_start_time,
+	 after_barrier - mpi_stopwatch_start_time,
+	 message );
+#else
+  printf("%12.8f %s\n",
+	 (double)clock(  )/((double)CLOCKS_PER_SEC) - 
+	 mpi_stopwatch_start_time,
+	 message );
 #endif
 
   return REF_SUCCESS;
