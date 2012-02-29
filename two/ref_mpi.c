@@ -196,15 +196,15 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
   return REF_SUCCESS;
 }
 
-static double mpi_stopwatch_start_time;
+static REF_DBL mpi_stopwatch_start_time;
 
 REF_STATUS ref_mpi_stopwatch_start( void )
 {
 #ifdef HAVE_MPI
   MPI_Barrier( MPI_COMM_WORLD ); 
-  mpi_stopwatch_start_time = MPI_Wtime();
+  mpi_stopwatch_start_time = (REF_DBL)MPI_Wtime();
 #else
-  mpi_stopwatch_start_time = (double)clock(  )/((double)CLOCKS_PER_SEC);
+  mpi_stopwatch_start_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
 #endif
 
   return REF_SUCCESS;
@@ -214,10 +214,10 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 {
 
 #ifdef HAVE_MPI
-  double before_barrier, after_barrier;
-  before_barrier = MPI_Wtime();
+  REF_DBL before_barrier, after_barrier;
+  before_barrier = (REF_DBL)MPI_Wtime();
   MPI_Barrier( MPI_COMM_WORLD ); 
-  after_barrier = MPI_Wtime();
+  after_barrier = (REF_DBL)MPI_Wtime();
   printf("%6d: %15.12f %15.12f %s\n",
 	 ref_mpi_id,
 	 before_barrier - mpi_stopwatch_start_time,
@@ -225,7 +225,7 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 	 message );
 #else
   printf("%12.8f %s\n",
-	 (double)clock(  )/((double)CLOCKS_PER_SEC) - 
+	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
 	 mpi_stopwatch_start_time,
 	 message );
 #endif
