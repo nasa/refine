@@ -31,6 +31,9 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
 			      void *recv, REF_INT *recv_size, 
 			      REF_INT n, REF_TYPE type );
 
+REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type );
+REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type );
+
 REF_STATUS ref_mpi_stopwatch_start( );
 REF_STATUS ref_mpi_stopwatch_stop( char *message );
 
