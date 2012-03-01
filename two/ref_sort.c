@@ -98,7 +98,7 @@ REF_STATUS ref_sort_unique( REF_INT n, REF_INT *original,
 REF_STATUS ref_sort_search( REF_INT n, REF_INT *ascending_list, 
 			    REF_INT target, REF_INT *position )
 {
-  int lower, upper, mid;
+  REF_INT lower, upper, mid;
 
   *position = REF_EMPTY;
 
