@@ -15,9 +15,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   REF_INT max, node;
   REF_NODE ref_node;
 
-  (*ref_node_ptr) = NULL;
-  (*ref_node_ptr) = (REF_NODE)malloc( sizeof(REF_NODE_STRUCT) );
-  RNS(*ref_node_ptr,"malloc ref_node NULL");
+  ref_malloc( *ref_node_ptr, 1, REF_NODE_STRUCT );
 
   ref_node = *ref_node_ptr;
 
@@ -30,25 +28,19 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_node_n_global(ref_node) = 0;
 
-  ref_node->global = (REF_INT *)malloc(max*sizeof(REF_INT));
-  RNS(ref_node->global,"malloc global NULL");
+  ref_malloc( ref_node->global, max, REF_INT );
 
   for (node=0;node<ref_node_max(ref_node);node++)
     ref_node->global[node] = index2next(node+1);
   ref_node->global[(ref_node->max)-1] = REF_EMPTY;
   ref_node->blank = index2next(0);
 
-  ref_node->sorted_global = (REF_INT *)malloc(max*sizeof(REF_INT));
-  RNS(ref_node->sorted_global,"malloc sorted_global NULL");
+  ref_malloc( ref_node->sorted_global, max, REF_INT );
+  ref_malloc( ref_node->sorted_local, max, REF_INT );
 
-  ref_node->sorted_local = (REF_INT *)malloc(max*sizeof(REF_INT));
-  RNS(ref_node->sorted_local,"malloc sorted_local NULL");
+  ref_malloc( ref_node->part, max, REF_INT );
 
-  ref_node->part = (REF_INT *)malloc(max*sizeof(REF_INT));
-  RNS(ref_node->part,"malloc part NULL");
-
-  ref_node->xyz = (REF_DBL *)malloc(max*3*sizeof(REF_DBL));
-  RNS(ref_node->xyz,"malloc xyz NULL");
+  ref_malloc( ref_node->xyz, 3*max, REF_DBL );
 
   RSS( ref_list_create( &(ref_node->unused_global_list) ), "create list");
 
@@ -59,12 +51,12 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
 {
   if ( NULL == (void *)ref_node ) return REF_NULL;
   ref_list_free( ref_node->unused_global_list );
-  ref_cond_free( ref_node->xyz );
-  ref_cond_free( ref_node->part );
-  ref_cond_free( ref_node->sorted_local );
-  ref_cond_free( ref_node->sorted_global );
-  ref_cond_free( ref_node->global );
-  ref_cond_free( ref_node );
+  ref_free( ref_node->xyz );
+  ref_free( ref_node->part );
+  ref_free( ref_node->sorted_local );
+  ref_free( ref_node->sorted_global );
+  ref_free( ref_node->global );
+  ref_free( ref_node );
   return REF_SUCCESS;
 }
 
@@ -121,34 +113,18 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
       orig = ref_node_max(ref_node);
       chunk = 5000;
       ref_node->max = orig + chunk;
-      ref_node->global = (REF_INT *)realloc( ref_node->global,
-					     ref_node_max(ref_node) *
-					     sizeof(REF_INT) );
-      RNS(ref_node->global,"remalloc global NULL");
+      ref_realloc( ref_node->global, ref_node_max(ref_node), REF_INT);
       for (extra=orig;extra < ref_node_max(ref_node); extra++ ) 
 	  ref_node->global[extra] = index2next(extra+1);
       ref_node->global[ref_node_max(ref_node)-1] = REF_EMPTY; 
       ref_node->blank = index2next(orig);
 
-      ref_node->sorted_global = (REF_INT *)realloc( ref_node->sorted_global,
-						    ref_node_max(ref_node) *
-						    sizeof(REF_INT) );
-      RNS(ref_node->sorted_global,"remalloc sorted_global NULL");
+      ref_realloc( ref_node->sorted_global, ref_node_max(ref_node), REF_INT);
+      ref_realloc( ref_node->sorted_local, ref_node_max(ref_node), REF_INT);
 
-      ref_node->sorted_local = (REF_INT *)realloc( ref_node->sorted_local,
-						   ref_node_max(ref_node) *
-						   sizeof(REF_INT) );
-      RNS(ref_node->sorted_local,"remalloc sorted_local NULL");
+      ref_realloc( ref_node->part, ref_node_max(ref_node), REF_INT);
 
-      ref_node->part = (REF_INT *)realloc( ref_node->part,
-					   ref_node_max(ref_node) *
-					   sizeof(REF_INT) );
-      RNS(ref_node->part,"remalloc part NULL");
-
-      ref_node->xyz = (REF_DBL *)realloc( ref_node->xyz,
-					  ref_node_max(ref_node) *
-					  3 * sizeof(REF_DBL) );
-      RNS(ref_node->xyz,"remalloc xyz NULL");
+      ref_realloc( ref_node->xyz, 3*ref_node_max(ref_node), REF_DBL);
     }
 
   *node = next2index(ref_node->blank);
@@ -283,8 +259,7 @@ REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT **o2n_ptr )
   REF_INT nnode;
   REF_INT *o2n;
   
-  *o2n_ptr = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
-  RNS(*o2n_ptr,"malloc o2n NULL");
+  ref_malloc( *o2n_ptr, ref_node_max(ref_node), REF_INT );
   o2n = *o2n_ptr;
 
   nnode = 0;
