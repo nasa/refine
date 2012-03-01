@@ -423,6 +423,7 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
 	if ( !need_to_keep )
 	  RSS( ref_node_remove_without_global( ref_node, node), "remove" );
       }
+  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild" );
 
   ref_mpi_stopwatch_stop("remove");
 
