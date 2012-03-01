@@ -252,7 +252,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   REF_INT cell;
   REF_INT part, node;
 
-  chunk = MAX(10000, ncell/ref_mpi_n);
+  chunk = MAX(1000000, ncell/ref_mpi_n);
 
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
