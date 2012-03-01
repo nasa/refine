@@ -6,6 +6,8 @@
 
 REF_STATUS ref_sort_insertion( REF_INT n, REF_INT *original, REF_INT *sorted );
 
+REF_STATUS ref_sort_heap( REF_INT n, REF_INT *original, REF_INT *sorted_index );
+
 REF_STATUS ref_sort_unique( REF_INT n, REF_INT *original, 
 			    REF_INT *nunique, REF_INT *unique );
 

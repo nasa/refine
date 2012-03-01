@@ -86,5 +86,72 @@ int main( void )
     TEIS( REF_EMPTY, position, "50");
   }
 
+  {  /* heap sort zero */
+    REF_INT n=0,original[1], sorted_index[1];
+    original[0]=1;
+    sorted_index[0]=2;
+    TSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    TEIS( 2, sorted_index[0], "sorted_index[0]");
+  }
+
+  {  /* heap sort one */
+    REF_INT n=1,original[1], sorted_index[1];
+    original[0]=1;
+    sorted_index[0]=2;
+    TSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    TEIS( 0, sorted_index[0], "sorted_index[0]");
+  }
+
+  {  /* heap two order */
+    REF_INT n=2,original[2], sorted_index[2];
+    original[0]=1;
+    original[1]=2;
+    TSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    TEIS( 0, sorted_index[0], "sorted_index[0]");
+    TEIS( 1, sorted_index[1], "sorted_index[1]");
+  }
+
+  {  /* heap two reversed */
+    REF_INT n=2,original[2], sorted_index[2];
+    original[0]=2;
+    original[1]=1;
+    TSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    TEIS( 1, sorted_index[0], "sorted_index[0]");
+    TEIS( 0, sorted_index[1], "sorted_index[1]");
+  }
+
+  {  /* heap three 012 */
+    REF_INT n=3,original[3], sorted_index[3];
+    original[0]=0;
+    original[1]=1;
+    original[2]=2;
+    TSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    TEIS( 0, sorted_index[0], "sorted_index[0]");
+    TEIS( 1, sorted_index[1], "sorted_index[1]");
+    TEIS( 2, sorted_index[2], "sorted_index[2]");
+  }
+
+  {  /* heap three 012 */
+    REF_INT n=3,original[3], sorted_index[3];
+    original[0]=0;
+    original[1]=1;
+    original[2]=2;
+    TSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    TEIS( 0, sorted_index[0], "sorted_index[0]");
+    TEIS( 1, sorted_index[1], "sorted_index[1]");
+    TEIS( 2, sorted_index[2], "sorted_index[2]");
+  }
+
+  {  /* heap three 120 */
+    REF_INT n=3,original[3], sorted_index[3];
+    original[0]=2;
+    original[1]=0;
+    original[2]=1;
+    TSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    TEIS( 1, sorted_index[0], "sorted_index[0]");
+    TEIS( 2, sorted_index[1], "sorted_index[1]");
+    TEIS( 0, sorted_index[2], "sorted_index[2]");
+  }
+
   return 0;
 }
