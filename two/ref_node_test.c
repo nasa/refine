@@ -242,7 +242,7 @@ int main( void )
     TSS(ref_node_free(ref_node),"free");
   }
 
-  { /* add many */
+  { /* add many to empty */
     REF_INT n = 2, part = 0, node;
     REF_INT global[2];
     REF_DBL xyz[3*2];
@@ -261,6 +261,52 @@ int main( void )
     TEIS(0,node,"wrong local");
     TSS(ref_node_local(ref_node,10,&node),"return global");
     TEIS(1,node,"wrong local");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* add many to existing */
+    REF_INT n = 2, part = 0, node;
+    REF_INT global[2];
+    REF_DBL xyz[3*2];
+    REF_NODE ref_node;
+
+    TSS(ref_node_create(&ref_node),"create");
+
+    RSS(ref_node_add(ref_node,10,&node),"many");
+
+    global[0] = 20; xyz[0+3*0]= 2.0; xyz[1+3*0]= 0.0; xyz[2+3*0]= 0.0;
+    global[1] = 10; xyz[0+3*1]= 1.0; xyz[1+3*1]= 0.0; xyz[2+3*1]= 0.0;
+
+    RSS(ref_node_add_many(ref_node,part,n,global,xyz),"many");
+
+    TEIS(2,ref_node_n(ref_node),"init zero nodes");
+
+    TSS(ref_node_local(ref_node,20,&node),"return global");
+    TEIS(1,node,"wrong local");
+    TSS(ref_node_local(ref_node,10,&node),"return global");
+    TEIS(0,node,"wrong local");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* add many duplicates */
+    REF_INT n = 2, part = 0, node;
+    REF_INT global[2];
+    REF_DBL xyz[3*2];
+    REF_NODE ref_node;
+
+    TSS(ref_node_create(&ref_node),"create");
+
+    global[0] = 20; xyz[0+3*0]= 2.0; xyz[1+3*0]= 0.0; xyz[2+3*0]= 0.0;
+    global[1] = 20; xyz[0+3*1]= 2.0; xyz[1+3*1]= 0.0; xyz[2+3*1]= 0.0;
+
+    RSS(ref_node_add_many(ref_node,part,n,global,xyz),"many");
+
+    TEIS(1,ref_node_n(ref_node),"init zero nodes");
+
+    TSS(ref_node_local(ref_node,20,&node),"return global");
+    TEIS(0,node,"wrong local");
 
     TSS(ref_node_free(ref_node),"free");
   }
