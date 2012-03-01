@@ -95,18 +95,12 @@ REF_STATUS ref_node_location( REF_NODE ref_node, REF_INT node )
   return REF_SUCCESS;
 }
 
-
-REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
+static REF_STATUS ref_node_add_core( REF_NODE ref_node, 
+				     REF_INT global, REF_INT *node )
 {
-  REF_INT extra;
-  REF_INT orig, chunk;
-  REF_INT location, insert_point;
-  REF_STATUS status;
+  REF_INT orig, chunk, extra;
 
   if ( global < 0 ) RSS( REF_INVALID, "invalid global node");
-
-  status = ref_node_local( ref_node, global, node );
-  if ( REF_SUCCESS == status ) return REF_SUCCESS;
 
   if ( REF_EMPTY == ref_node->blank )
     {
@@ -132,10 +126,27 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 
   ref_node->global[*node] = global;
 
+  (ref_node->n)++;
+  return REF_SUCCESS;
+}
+  
+
+REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
+{
+  REF_INT location, insert_point;
+  REF_STATUS status;
+
+  if ( global < 0 ) RSS( REF_INVALID, "invalid global node");
+
+  status = ref_node_local( ref_node, global, node );
+  if ( REF_SUCCESS == status ) return REF_SUCCESS;
+
+  RSS( ref_node_add_core( ref_node,global, node ), "core");
+
   /* general case of non-ascending global node, requires: 
      search and shift (but looks to see if bigger than last early) */
   insert_point = 0;
-  for (location=ref_node_n(ref_node)-1; location>=0; location--) {
+  for (location=ref_node_n(ref_node)-2; location>=0; location--) {
     if (ref_node->sorted_global[location] < global) {
       insert_point = location+1;
       break;
@@ -143,33 +154,67 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
   }
 
   /* shift down to clear insert_point */
-  for(location=ref_node_n(ref_node);location>insert_point;location--)
+  for(location=ref_node_n(ref_node)-1;location>insert_point;location--)
     ref_node->sorted_global[location] = ref_node->sorted_global[location-1];
-  for(location=ref_node_n(ref_node);location>insert_point;location--)
+  for(location=ref_node_n(ref_node)-1;location>insert_point;location--)
     ref_node->sorted_local[location] = ref_node->sorted_local[location-1];
 
   /* insert in empty location */
   ref_node->sorted_global[insert_point] = global;
   ref_node->sorted_local[insert_point] = *node;
 
-  (ref_node->n)++;
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_node_add_many( REF_NODE ref_node, REF_INT part_id,
 			      REF_INT n, REF_INT *global, REF_DBL *xyz )
 {
-  int i, local;
+  REF_STATUS status;
+  REF_INT i, j, local;
+
+  REF_INT *sorted;
+
+  /* remove duplicates from list */
+
+  ref_malloc( sorted, n, REF_INT );
+
+  RSS( ref_sort_heap( n, global, sorted ), "heap" );
+
+  j = 0;
+  for (i=1;i<n;i++)
+    {
+      if ( global[sorted[i]] != global[sorted[j]] )
+	{
+	  j = i;
+	  continue;
+	}
+      global[sorted[i]] = REF_EMPTY;
+    }
+
+  ref_free( sorted );
+
+  /* remove existing nodes from list */
 
   for (i=0;i<n;i++)
     {
-      RSS( ref_node_add( ref_node, global[i], &local ), "add" );
-      ref_node_xyz(ref_node,0,local) = xyz[0+3*i];
-      ref_node_xyz(ref_node,1,local) = xyz[1+3*i];
-      ref_node_xyz(ref_node,2,local) = xyz[2+3*i];
-      ref_node_part(ref_node,local) = part_id;
+      status = ref_node_local( ref_node, global[i], &j );
+      if ( REF_SUCCESS == status ) global[i] = REF_EMPTY;
     }
-  
+
+  /* add remaining via core */
+
+  for (i=0;i<n;i++)
+    if ( REF_EMPTY != global[i] )
+      {
+	RSS( ref_node_add_core( ref_node, global[i], &local ), "add core" );
+	ref_node_xyz(ref_node,0,local) = xyz[0+3*i];
+	ref_node_xyz(ref_node,1,local) = xyz[1+3*i];
+	ref_node_xyz(ref_node,2,local) = xyz[2+3*i];
+	ref_node_part(ref_node,local) = part_id;
+      }
+
+  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild globals" );
+
   return REF_SUCCESS;
 }
 
