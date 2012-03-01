@@ -21,6 +21,9 @@ typedef int REF_TYPE;
 REF_STATUS ref_mpi_start( int argc, char *argv[] );
 REF_STATUS ref_mpi_stop( );
 
+REF_STATUS ref_mpi_stopwatch_start( );
+REF_STATUS ref_mpi_stopwatch_stop( char *message );
+
 REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type );
 
 REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest );
@@ -33,10 +36,6 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
 
 REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type );
 REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type );
-
-REF_STATUS ref_mpi_stopwatch_start( );
-REF_STATUS ref_mpi_stopwatch_stop( char *message );
-
 
 END_C_DECLORATION
 
