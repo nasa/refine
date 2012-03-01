@@ -201,7 +201,6 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
   REF_INT part, node;
   REF_INT *a_next;
   REF_DBL *a_xyz, *b_xyz;
-  REF_INT local;
 
   ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
   ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
