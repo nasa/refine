@@ -4,8 +4,8 @@
 
 #include "ref_subdiv.h"
 
-static int ref_subdiv_map( REF_SUBDIV ref_subdiv, 
-			   REF_CELL ref_cell, REF_INT cell )
+static REF_INT ref_subdiv_map( REF_SUBDIV ref_subdiv, 
+			       REF_CELL ref_cell, REF_INT cell )
 {
   REF_INT edge, map, bit;
 
