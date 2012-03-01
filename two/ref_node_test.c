@@ -208,5 +208,39 @@ int main( void )
     TSS(ref_node_free(ref_node),"free");
   }
 
+  { /* sorted_global rebuild */
+    REF_INT global, node;
+    REF_NODE ref_node;
+    TSS(ref_node_create(&ref_node),"create");
+
+    global = 20;
+    RSS(ref_node_add(ref_node,global,&node),"realloc");
+
+    global = 10;
+    RSS(ref_node_add(ref_node,global,&node),"realloc");
+
+    global = 30;
+    RSS(ref_node_add(ref_node,global,&node),"realloc");
+
+    TSS(ref_node_local(ref_node,20,&node),"return global");
+    TEIS(0,node,"wrong local");
+    TSS(ref_node_local(ref_node,10,&node),"return global");
+    TEIS(1,node,"wrong local");
+    TSS(ref_node_local(ref_node,30,&node),"return global");
+    TEIS(2,node,"wrong local");
+
+    RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild" );
+
+    TSS(ref_node_local(ref_node,20,&node),"return global");
+    TEIS(0,node,"wrong local");
+    TSS(ref_node_local(ref_node,10,&node),"return global");
+    TEIS(1,node,"wrong local");
+    TSS(ref_node_local(ref_node,30,&node),"return global");
+    TEIS(2,node,"wrong local");
+
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
   return 0;
 }

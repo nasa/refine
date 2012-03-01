@@ -62,6 +62,7 @@ REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global );
 REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node );
 REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node );
 REF_STATUS ref_node_remove_without_global( REF_NODE ref_node, REF_INT node );
+REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node );
 
 REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT *o2n[] );
 
