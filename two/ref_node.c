@@ -156,6 +156,23 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_add_many( REF_NODE ref_node, REF_INT part_id,
+			      REF_INT n, REF_INT *global, REF_DBL *xyz )
+{
+  int i, local;
+
+  for (i=0;i<n;i++)
+    {
+      RSS( ref_node_add( ref_node, global[i], &local ), "add" );
+      ref_node_xyz(ref_node,0,local) = xyz[0+3*i];
+      ref_node_xyz(ref_node,1,local) = xyz[1+3*i];
+      ref_node_xyz(ref_node,2,local) = xyz[2+3*i];
+      ref_node_part(ref_node,local) = part_id;
+    }
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
 {
   REF_INT location, sorted_node;

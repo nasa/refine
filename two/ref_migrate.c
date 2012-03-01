@@ -248,14 +248,8 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 			  3, REF_DBL_TYPE ), 
        "alltoallv global");
 
-  for (node=0;node<b_total;node++)
-    {
-      RSS( ref_node_add( ref_node, b_global[node], &local ), "add");
-      ref_node_xyz(ref_node,0,local) = b_xyz[0+3*node];
-      ref_node_xyz(ref_node,1,local) = b_xyz[1+3*node];
-      ref_node_xyz(ref_node,2,local) = b_xyz[2+3*node];
-      ref_node_part(ref_node,local) = ref_mpi_id;
-    }
+  RSS( ref_node_add_many( ref_node, ref_mpi_id,
+			  b_total, b_global, b_xyz ), "add many" );
 
   free(a_next);
   free(b_xyz);
