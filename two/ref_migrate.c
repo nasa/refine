@@ -270,8 +270,8 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node, 
-					     REF_CELL ref_cell )
+REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node, 
+				      REF_CELL ref_cell )
 {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT all_parts[REF_CELL_MAX_SIZE_PER];
@@ -284,6 +284,8 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
   REF_INT *a_c2n, *b_c2n;
   REF_INT *a_parts, *b_parts;
   REF_BOOL need_to_keep;
+
+  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
   ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
   ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );

@@ -147,7 +147,7 @@ ref_node_test_LDADD = libref2.a -lm
 TESTS += ref_part_test
 noinst_PROGRAMS += ref_part_test
 ref_part_test_SOURCES = ref_part_test.c
-ref_part_test_LDADD = libref2.a -lm
+ref_part_test_LDADD = libref2.a @zoltan_LDADD@ -lm
 
 TESTS += ref_quality_test
 noinst_PROGRAMS += ref_quality_test
