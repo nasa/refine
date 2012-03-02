@@ -166,17 +166,24 @@ REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_add_many( REF_NODE ref_node, REF_INT part_id,
-			      REF_INT n, REF_INT *global, REF_DBL *xyz )
+REF_STATUS ref_node_add_many( REF_NODE ref_node, 
+			      REF_INT n, REF_INT *global_orig )
 {
   REF_STATUS status;
   REF_INT i, j, local;
 
+  REF_INT *global;
   REF_INT *sorted;
+
+  /* IMPROVEMENT one less array by marking sorted... */
 
   /* remove duplicates from list */
 
+  ref_malloc( global, n, REF_INT );
   ref_malloc( sorted, n, REF_INT );
+
+  for (i=0;i<n;i++)
+    global[i]= global_orig[i];
 
   RSS( ref_sort_heap( n, global, sorted ), "heap" );
 
@@ -190,68 +197,6 @@ REF_STATUS ref_node_add_many( REF_NODE ref_node, REF_INT part_id,
 	}
       global[sorted[i]] = REF_EMPTY;
     }
-
-  ref_free( sorted );
-
-  /* remove existing nodes from list */
-
-  for (i=0;i<n;i++)
-    {
-      status = ref_node_local( ref_node, global[i], &j );
-      if ( REF_SUCCESS == status ) global[i] = REF_EMPTY;
-    }
-
-  /* add remaining via core */
-
-  for (i=0;i<n;i++)
-    if ( REF_EMPTY != global[i] )
-      {
-	RSS( ref_node_add_core( ref_node, global[i], &local ), "add core" );
-	ref_node_xyz(ref_node,0,local) = xyz[0+3*i];
-	ref_node_xyz(ref_node,1,local) = xyz[1+3*i];
-	ref_node_xyz(ref_node,2,local) = xyz[2+3*i];
-	ref_node_part(ref_node,local) = part_id;
-      }
-
-  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild globals" );
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_add_many2( REF_NODE ref_node, REF_INT n, REF_INT *global )
-{
-  REF_STATUS status;
-  REF_INT i, j, local;
-
-  REF_INT *sorted;
-
-  /* for small n just add normally */
-
-  if ( n < 10000000 )
-    {
-      for (i=0;i<n;i++)
-	RSS( ref_node_add( ref_node, global[i], &local ), "reg add" );
-      return REF_SUCCESS;
-    }
-
-  /* remove duplicates from list */
-
-  ref_malloc( sorted, n, REF_INT );
-
-  RSS( ref_sort_heap( n, global, sorted ), "heap" );
-
-  j = 0;
-  for (i=1;i<n;i++)
-    {
-      if ( global[sorted[i]] != global[sorted[j]] )
-	{
-	  j = i;
-	  continue;
-	}
-      global[sorted[i]] = REF_EMPTY;
-    }
-
-  ref_free( sorted );
 
   /* remove existing nodes from list */
 
@@ -270,6 +215,9 @@ REF_STATUS ref_node_add_many2( REF_NODE ref_node, REF_INT n, REF_INT *global )
       }
 
   RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild globals" );
+
+  ref_free( sorted );
+  ref_free( global );
 
   return REF_SUCCESS;
 }

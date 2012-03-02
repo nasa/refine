@@ -60,9 +60,7 @@ REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *node );
 REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global );
 
 REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node );
-REF_STATUS ref_node_add_many( REF_NODE ref_node, REF_INT part_id,
-			      REF_INT n, REF_INT *global, REF_DBL *xyz );
-REF_STATUS ref_node_add_many2( REF_NODE ref_node, REF_INT n, REF_INT *global );
+REF_STATUS ref_node_add_many( REF_NODE ref_node, REF_INT n, REF_INT *global );
 
 REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node );
 REF_STATUS ref_node_remove_without_global( REF_NODE ref_node, REF_INT node );

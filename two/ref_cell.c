@@ -410,7 +410,7 @@ REF_STATUS ref_cell_add_many_global( REF_CELL ref_cell, REF_NODE ref_node,
       global[node+ref_cell_node_per(ref_cell)*cell] =
 	c2n[node+ref_cell_size_per(ref_cell)*cell];
 
-  RSS( ref_node_add_many2( ref_node, nnode, global ), "many nodes" );
+  RSS( ref_node_add_many( ref_node, nnode, global ), "many nodes" );
 
   ref_free( global );
 

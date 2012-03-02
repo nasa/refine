@@ -62,9 +62,7 @@ int main( int argc, char *argv[] )
 
       TSS( ref_migrate_shufflin( import_grid ), "shufflin");
 
-      ref_mpi_stopwatch_start();
       TSS( ref_migrate_part_viz( import_grid ), "part_viz");
-      ref_mpi_stopwatch_stop("viz");
 
       TSS( ref_grid_free( import_grid ), "free");
     }

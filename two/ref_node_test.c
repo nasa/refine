@@ -243,17 +243,16 @@ int main( void )
   }
 
   { /* add many to empty */
-    REF_INT n = 2, part = 0, node;
+    REF_INT n = 2, node;
     REF_INT global[2];
-    REF_DBL xyz[3*2];
     REF_NODE ref_node;
 
     TSS(ref_node_create(&ref_node),"create");
 
-    global[0] = 20; xyz[0+3*0]= 2.0; xyz[1+3*0]= 0.0; xyz[2+3*0]= 0.0;
-    global[1] = 10; xyz[0+3*1]= 1.0; xyz[1+3*1]= 0.0; xyz[2+3*1]= 0.0;
+    global[0] = 20;
+    global[1] = 10;
 
-    RSS(ref_node_add_many(ref_node,part,n,global,xyz),"many");
+    RSS(ref_node_add_many(ref_node,n,global),"many");
 
     TEIS(2,ref_node_n(ref_node),"init zero nodes");
 
@@ -266,19 +265,18 @@ int main( void )
   }
 
   { /* add many to existing */
-    REF_INT n = 2, part = 0, node;
+    REF_INT n = 2, node;
     REF_INT global[2];
-    REF_DBL xyz[3*2];
     REF_NODE ref_node;
 
     TSS(ref_node_create(&ref_node),"create");
 
     RSS(ref_node_add(ref_node,10,&node),"many");
 
-    global[0] = 20; xyz[0+3*0]= 2.0; xyz[1+3*0]= 0.0; xyz[2+3*0]= 0.0;
-    global[1] = 10; xyz[0+3*1]= 1.0; xyz[1+3*1]= 0.0; xyz[2+3*1]= 0.0;
+    global[0] = 20;
+    global[1] = 10;
 
-    RSS(ref_node_add_many(ref_node,part,n,global,xyz),"many");
+    RSS(ref_node_add_many(ref_node,n,global),"many");
 
     TEIS(2,ref_node_n(ref_node),"init zero nodes");
 
@@ -291,17 +289,16 @@ int main( void )
   }
 
   { /* add many duplicates */
-    REF_INT n = 2, part = 0, node;
+    REF_INT n = 2, node;
     REF_INT global[2];
-    REF_DBL xyz[3*2];
     REF_NODE ref_node;
 
     TSS(ref_node_create(&ref_node),"create");
 
-    global[0] = 20; xyz[0+3*0]= 2.0; xyz[1+3*0]= 0.0; xyz[2+3*0]= 0.0;
-    global[1] = 20; xyz[0+3*1]= 2.0; xyz[1+3*1]= 0.0; xyz[2+3*1]= 0.0;
+    global[0] = 20;
+    global[1] = 20;
 
-    RSS(ref_node_add_many(ref_node,part,n,global,xyz),"many");
+    RSS(ref_node_add_many(ref_node,n,global),"many");
 
     TEIS(1,ref_node_n(ref_node),"init zero nodes");
 
