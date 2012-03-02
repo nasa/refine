@@ -225,6 +225,15 @@ REF_STATUS ref_node_add_many2( REF_NODE ref_node, REF_INT n, REF_INT *global )
 
   REF_INT *sorted;
 
+  /* for small n just add normally */
+
+  if ( n < 10000000 )
+    {
+      for (i=0;i<n;i++)
+	RSS( ref_node_add( ref_node, global[i], &local ), "reg add" );
+      return REF_SUCCESS;
+    }
+
   /* remove duplicates from list */
 
   ref_malloc( sorted, n, REF_INT );
