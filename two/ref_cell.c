@@ -20,8 +20,7 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
       RSS( REF_FAILURE, "node_per limited to REF_CELL_MAX_SIZE_PER");
     }
 
-  (*ref_cell_ptr) = (REF_CELL)malloc( sizeof(REF_CELL_STRUCT) );
-  RNS(*ref_cell_ptr,"malloc ref_cell NULL");
+  ref_malloc( *ref_cell_ptr, 1, REF_CELL_STRUCT );
 
   ref_cell = (*ref_cell_ptr);
 
@@ -50,11 +49,7 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
 
   ref_cell->e2n = NULL;
   if ( ref_cell_edge_per(ref_cell) > 0 )
-    {
-      ref_cell->e2n = (REF_INT *)malloc( 2 * ref_cell_edge_per(ref_cell) *
-					 sizeof(REF_INT));
-      RNS(ref_cell->e2n,"malloc e2n NULL");
-    }
+    ref_malloc( ref_cell->e2n, 2 * ref_cell_edge_per(ref_cell), REF_INT);
 
   switch ( ref_cell_edge_per(ref_cell) )
     {
@@ -124,11 +119,7 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
 
   ref_cell->f2n = NULL;
   if ( ref_cell_face_per(ref_cell) > 0 )
-    {
-      ref_cell->f2n = (REF_INT *)malloc( 4 * ref_cell_face_per(ref_cell) *
-					 sizeof(REF_INT));
-      RNS(ref_cell->f2n,"malloc f2n NULL");
-    }
+    ref_malloc( ref_cell->f2n, 4 * ref_cell_face_per(ref_cell), REF_INT);
 
   switch ( ref_cell_node_per(ref_cell) )
     {
@@ -237,14 +228,12 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
   ref_cell_n(ref_cell) = 0;
   ref_cell_max(ref_cell) = max;
 
-  ref_cell->c2n = (REF_INT *)malloc(ref_cell_max(ref_cell) *
-				    ref_cell_size_per(ref_cell) *
-				    sizeof(REF_INT));
-  RNS(ref_cell->c2n,"malloc c2n NULL");
-  ref_cell->c2e = (REF_INT *)malloc(ref_cell_max(ref_cell) *
-				    ref_cell_edge_per(ref_cell) *
-				    sizeof(REF_INT));
-  RNS(ref_cell->c2e,"malloc c2e NULL");
+  ref_malloc( ref_cell->c2n, ref_cell_max(ref_cell) *
+	      ref_cell_size_per(ref_cell), REF_INT);
+
+  ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
+	      ref_cell_edge_per(ref_cell), REF_INT);
+
   for ( cell = 0 ; cell < max ; cell++ ) 
     {
       ref_cell_c2n(ref_cell,0,cell) = REF_EMPTY;
@@ -335,18 +324,12 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
       orig = ref_cell_max(ref_cell);
       chunk = 5000;
       ref_cell->max = orig + chunk;
-      ref_cell->c2n = (REF_INT *)realloc( ref_cell->c2n,
-					  ref_cell_size_per(ref_cell) *
-					  ref_cell_max(ref_cell) *
-					  sizeof(REF_INT) );
-      RNS(ref_cell->c2n,"remalloc c2n NULL");
-      /* realloc returns NULL for zero size realloc */
-      if ( 0 < ref_cell_edge_per(ref_cell) )
-	ref_cell->c2e = (REF_INT *)realloc( ref_cell->c2e,
-					    ref_cell_edge_per(ref_cell) *
-					    ref_cell_max(ref_cell) *
-					    sizeof(REF_INT) );
-      RNS(ref_cell->c2e,"remalloc c2e NULL");
+
+      ref_realloc( ref_cell->c2n, ref_cell_size_per(ref_cell) *
+		   ref_cell_max(ref_cell), REF_INT );
+      ref_realloc( ref_cell->c2e, ref_cell_edge_per(ref_cell) *
+		   ref_cell_max(ref_cell), REF_INT );
+
       for (cell=orig;cell < ref_cell_max(ref_cell); cell++ ) 
 	{
 	  ref_cell_c2n(ref_cell,0,cell)= REF_EMPTY; 
