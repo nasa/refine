@@ -60,23 +60,26 @@ int main( void )
     TSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  { /* add global*/
+  { /* add many global */
     REF_NODE ref_node;
+    REF_INT parts[4];
     TSS(ref_node_create(&ref_node),"create node");
 
     TSS(ref_tet(&ref_cell),"create");
     TES(0,ref_cell_n(ref_cell),"init zero cells");
 
     nodes[0]= 0; nodes[1]= 10; nodes[2]= 20; nodes[3]= 30;
-    TSS(ref_cell_add_global(ref_cell,ref_node,nodes,&cell),"add cell");
+    parts[0]= 0; parts[1]= 1; parts[2]= 2; parts[3]= 3;
+    TSS(ref_cell_add_many_global(ref_cell,ref_node,1,nodes,parts),"add many");
 
-    TSS(ref_cell_nodes(ref_cell,cell,retrieved),"cell should exist");
+    TSS(ref_cell_nodes(ref_cell,0,retrieved),"cell should exist");
     TES(0,retrieved[0],"node 0");
     TES(1,retrieved[1],"node 1");
     TES(2,retrieved[2],"node 2");
     TES(3,retrieved[3],"node 3");
 
     TES(20,ref_node_global(ref_node,2),"global mapped");
+    TES(2,ref_node_part(ref_node,2),"part rec");
 
     TSS(ref_cell_free(ref_cell),"cleanup");
     TSS(ref_node_free(ref_node),"cleanup");

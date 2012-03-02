@@ -98,10 +98,6 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell );
 REF_STATUS ref_cell_taddle( REF_CELL ref_cell, REF_INT cell );
 
 REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
-REF_STATUS ref_cell_add_global( REF_CELL ref_cell, REF_NODE ref_node,
-				REF_INT *global_nodes, REF_INT *cell );
-REF_STATUS ref_cell_add_global_uniquely( REF_CELL ref_cell, REF_NODE ref_node,
-					 REF_INT *global_nodes, REF_INT *cell );
 
 REF_STATUS ref_cell_add_many_global( REF_CELL ref_cell, REF_NODE ref_node,
 				     REF_INT n, REF_INT *c2n, REF_INT *part );
