@@ -218,6 +218,53 @@ REF_STATUS ref_node_add_many( REF_NODE ref_node, REF_INT part_id,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_add_many2( REF_NODE ref_node, REF_INT n, REF_INT *global )
+{
+  REF_STATUS status;
+  REF_INT i, j, local;
+
+  REF_INT *sorted;
+
+  /* remove duplicates from list */
+
+  ref_malloc( sorted, n, REF_INT );
+
+  RSS( ref_sort_heap( n, global, sorted ), "heap" );
+
+  j = 0;
+  for (i=1;i<n;i++)
+    {
+      if ( global[sorted[i]] != global[sorted[j]] )
+	{
+	  j = i;
+	  continue;
+	}
+      global[sorted[i]] = REF_EMPTY;
+    }
+
+  ref_free( sorted );
+
+  /* remove existing nodes from list */
+
+  for (i=0;i<n;i++)
+    {
+      status = ref_node_local( ref_node, global[i], &j );
+      if ( REF_SUCCESS == status ) global[i] = REF_EMPTY;
+    }
+
+  /* add remaining via core */
+
+  for (i=0;i<n;i++)
+    if ( REF_EMPTY != global[i] )
+      {
+	RSS( ref_node_add_core( ref_node, global[i], &local ), "add core" );
+      }
+
+  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild globals" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
 {
   REF_INT location, sorted_node;

@@ -4,6 +4,7 @@
 
 #include "ref_cell.h"
 #include "ref_sort.h"
+#include "ref_malloc.h"
 
 REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr, 
 			    REF_INT node_per, REF_BOOL last_node_is_an_id )
@@ -408,6 +409,54 @@ REF_STATUS ref_cell_add_global_uniquely( REF_CELL ref_cell, REF_NODE ref_node,
 
   return ref_cell_add( ref_cell, local_nodes, new_cell );
 }
+
+REF_STATUS ref_cell_add_many_global( REF_CELL ref_cell, REF_NODE ref_node,
+				     REF_INT n, REF_INT *c2n, REF_INT *part )
+{
+  REF_INT *global;
+  REF_INT nnode;
+  REF_INT node, cell;
+  REF_INT local, local_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_cell;
+
+  nnode = ref_cell_node_per(ref_cell)*n;
+  ref_malloc( global, nnode, REF_INT );
+
+  for ( cell=0; cell<n; cell++ )
+    for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
+      global[node+ref_cell_node_per(ref_cell)*cell] =
+	c2n[node+ref_cell_size_per(ref_cell)*cell];
+
+  RSS( ref_node_add_many2( ref_node, nnode, global ), "many nodes" );
+
+  ref_free( global );
+
+  /* set parts */
+  for ( cell=0; cell<n; cell++ )
+    {
+      for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
+	{
+	  RSS( ref_node_local( ref_node,
+			       c2n[node+ref_cell_size_per(ref_cell)*cell], 
+			       &local ), "local" );
+	  ref_node_part(ref_node,local) = 
+	    part[node+ref_cell_size_per(ref_cell)*cell];
+	  local_nodes[node] = local;
+	}
+      if ( ref_cell_last_node_is_an_id(ref_cell) )
+	local_nodes[ref_cell_size_per(ref_cell)-1] = 
+	  c2n[(ref_cell_size_per(ref_cell)-1)+ref_cell_size_per(ref_cell)*cell];
+      
+      RXS( ref_cell_with( ref_cell, local_nodes, &new_cell),
+	   REF_NOT_FOUND, "with failed");
+      
+      if ( REF_EMPTY == new_cell ) 
+	RSS( ref_cell_add( ref_cell, local_nodes, &new_cell ), "add cell") ;
+    }
+
+  return REF_SUCCESS;
+}
+
 
 REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
 {

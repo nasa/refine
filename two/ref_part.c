@@ -217,10 +217,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   ref_node_n_global(ref_node) = nnode;
 
-  each_ref_node_valid_node( ref_node, node )
-    ref_node_part(ref_node,node) = 
-    ref_part_implicit( nnode, ref_mpi_n, ref_node_global(ref_node,node));
-
   /* ghost xyz */
 
   RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
@@ -242,6 +238,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   REF_INT elements_to_receive;
   REF_INT *c2n;
   REF_INT *sent_c2n;
+  REF_INT *sent_part;
   REF_INT *elements_to_send;
   REF_INT node_per, size_per;
   REF_INT section_size;
@@ -322,9 +319,14 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 		  if ( needcell )
 		    {
 		      for (node=0;node<node_per;node++)
-			RSS( ref_node_add(ref_node, 
-					  c2n[node+size_per*cell],
-					  &(local_c2n[node]) ), "needed node" );
+			{
+			  RSS( ref_node_add(ref_node, 
+					    c2n[node+size_per*cell],
+					    &(local_c2n[node]) ), "need node" );
+			  ref_node_part(ref_node,local_c2n[node]) =
+			    ref_part_implicit( nnode, ref_mpi_n, 
+					       c2n[node+size_per*cell]);
+			}
 		      if ( ref_cell_last_node_is_an_id(ref_cell) )
 			local_c2n[node_per] = c2n[node_per+size_per*cell];
 		      RSS( ref_cell_add( ref_cell, local_c2n, 
@@ -378,17 +380,20 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	    RSS( ref_mpi_recv( sent_c2n, size_per*elements_to_receive, 
 			       REF_INT_TYPE, 0 ), "send" );
 
+	    ref_malloc_init( sent_part, size_per*elements_to_receive, 
+			     REF_INT, REF_EMPTY );
+
 	    for (cell=0;cell<elements_to_receive;cell++)
-	      {
-		for (node=0;node<node_per;node++)
-		  RSS( ref_node_add(ref_node, 
-				    sent_c2n[node+size_per*cell],
-				    &(local_c2n[node])), "needed node" );
-		if ( ref_cell_last_node_is_an_id(ref_cell) )
-		  local_c2n[node_per] = sent_c2n[node_per+size_per*cell];
-		RSS( ref_cell_add( ref_cell, local_c2n, 
-				   &new_cell ), "add cell to off proc");
-	      }
+	      for (node=0;node<node_per;node++)
+		sent_part[node+size_per*cell] =
+		  ref_part_implicit( nnode, ref_mpi_n, 
+				     sent_c2n[node+size_per*cell] );
+
+	    RSS( ref_cell_add_many_global( ref_cell, ref_node,
+					   elements_to_receive, 
+					   sent_c2n, sent_part ), "many glob");
+
+	    ref_free( sent_part );
 	  }
       } while ( elements_to_receive != end_of_message );
     }

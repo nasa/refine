@@ -102,6 +102,10 @@ REF_STATUS ref_cell_add_global( REF_CELL ref_cell, REF_NODE ref_node,
 				REF_INT *global_nodes, REF_INT *cell );
 REF_STATUS ref_cell_add_global_uniquely( REF_CELL ref_cell, REF_NODE ref_node,
 					 REF_INT *global_nodes, REF_INT *cell );
+
+REF_STATUS ref_cell_add_many_global( REF_CELL ref_cell, REF_NODE ref_node,
+				     REF_INT n, REF_INT *c2n, REF_INT *part );
+
 REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell );
 REF_STATUS ref_cell_renumber( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 

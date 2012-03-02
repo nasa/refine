@@ -274,7 +274,6 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
   REF_INT *a_next;
   REF_INT *a_c2n, *b_c2n;
   REF_INT *a_parts, *b_parts;
-  REF_INT new_cell, local;
   REF_BOOL need_to_keep;
 
   ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
@@ -346,21 +345,10 @@ static REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 			  ref_cell_size_per(ref_cell), REF_INT_TYPE ), 
        "alltoallv parts");
 
-  for (cell=0;cell<b_total;cell++)
-    {
-      RSS( ref_cell_add_global_uniquely( ref_cell, ref_node, 
-					 &(b_c2n[ref_cell_size_per(ref_cell) *
-						 cell]),
-					 &new_cell), "add uni cell" );
-      for ( node=0; node < ref_cell_node_per(ref_cell); node++ )
-	{
-	  RSS( ref_node_local( ref_node, 
-			       b_c2n[node+ref_cell_size_per(ref_cell)*cell], 
-			       &local ), "g2l");
-	  ref_node_part(ref_node,local) =
-	     b_parts[node+ref_cell_size_per(ref_cell)*cell];
-	}
-    }
+  RSS( ref_cell_add_many_global( ref_cell, ref_node,
+				 b_total, 
+				 b_c2n, b_parts ), "many glob");
+
   free(a_next);
   free(b_c2n);
   free(a_c2n);
