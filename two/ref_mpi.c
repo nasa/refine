@@ -98,9 +98,14 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 	   message );
   RSS( ref_mpi_stopwatch_start(), "restart" );
 #else
-  printf("%12.8f %s\n",
+  printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
+	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
+	 mpi_stopwatch_first_time,
 	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
 	 mpi_stopwatch_start_time,
+	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
+	 mpi_stopwatch_start_time,
+	 110.0,
 	 message );
 #endif
 
