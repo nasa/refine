@@ -24,7 +24,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   ref_node_n(ref_node) = 0;
   ref_node_max(ref_node) = max;
 
-  ref_node_partition(ref_node) = REF_EMPTY;
+  ref_node_partition(ref_node) = 0;
 
   ref_malloc( ref_node->global, max, REF_INT );
 
@@ -126,11 +126,11 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
   ref_node->blank = ref_node->global[*node];
 
   ref_node->global[*node] = global;
+  ref_node->part[*node] = ref_node_partition(ref_node);
 
   (ref_node->n)++;
   return REF_SUCCESS;
 }
-  
 
 REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node )
 {
