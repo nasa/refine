@@ -172,6 +172,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 			      &export_proc, &export_proc ),
 	  "Zoltan is angry");
 
+    Zoltan_Destroy( &zz );
+
   }
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
