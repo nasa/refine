@@ -12,6 +12,7 @@
 #include "ref_adj.h"
 #include "ref_sort.h"
 #include "ref_metric.h"
+#include "ref_mpi.h"
 
 #include "ref_swap.h"
 

@@ -5,6 +5,7 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 #include "ref_malloc.h"
+#include "ref_mpi.h"
 
 /* REF_EMPTY is terminatior, next avalable is shifted by 2*/
 #define next2index(next) (-(next)-2)
@@ -23,8 +24,6 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_node_n(ref_node) = 0;
   ref_node_max(ref_node) = max;
-
-  ref_node_partition(ref_node) = 0;
 
   ref_malloc( ref_node->global, max, REF_INT );
 
@@ -126,7 +125,7 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
   ref_node->blank = ref_node->global[*node];
 
   ref_node->global[*node] = global;
-  ref_node->part[*node] = ref_node_partition(ref_node);
+  ref_node->part[*node] = ref_mpi_id; /* default local node */
 
   (ref_node->n)++;
   return REF_SUCCESS;

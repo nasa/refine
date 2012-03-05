@@ -40,7 +40,7 @@ do
   done
 
   compile="${CC} ${CFLAGS} -o ${root}_test ${dependencies} ${root}_test.c -lm "
-  (eval ${compile} && eval valgrind --quiet --leak-check=full ./${root}_test) || \
+  (eval ${compile} && eval ./${root}_test) || \
       ( echo ${compile} && echo FAIL: to re-run, \$ $0 ${root} ; exit 1 ) ||  exit 1
 done
 

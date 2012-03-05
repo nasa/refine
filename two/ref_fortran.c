@@ -6,6 +6,7 @@
 #include "ref_metric.h"
 #include "ref_grid.h"
 #include "ref_export.h"
+#include "ref_mpi.h"
 
 static REF_GRID ref_grid = NULL;
 
@@ -24,7 +25,7 @@ REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
   RSS( ref_grid_create( &ref_grid ), "create grid" );
   ref_node = ref_grid_node(ref_grid);
 
-  ref_node_partition(ref_node) = *partition;
+  REIS( *partition, ref_mpi_id, "processor ids do not match" );
 
   RSS( ref_node_initialize_n_global( ref_node, *nnodesg), "init nnodesg");
 
@@ -126,11 +127,9 @@ REF_STATUS ref_viz__( void )
 REF_STATUS ref_viz_( void )
 {
   char filename[1024];
-  sprintf(filename,"ref_viz%04d.vtk",
-	  ref_node_partition(ref_grid_node(ref_grid)));
+  sprintf(filename,"ref_viz%04d.vtk",ref_mpi_id);
   RSS( ref_export_vtk( ref_grid, filename ), "export vtk");
-  sprintf(filename,"ref_viz%04d.tec",
-	  ref_node_partition(ref_grid_node(ref_grid)));
+  sprintf(filename,"ref_viz%04d.tec",ref_mpi_id);
   RSS( ref_export_tec( ref_grid, filename ), "export tec");
   return REF_SUCCESS;
 }

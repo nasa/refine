@@ -7,6 +7,7 @@
 
 #include "ref_node.h"
 #include "ref_sort.h"
+#include "ref_mpi.h"
 
 int main( void )
 {
@@ -18,8 +19,6 @@ int main( void )
     TSS(ref_node_create(&ref_node),"create");
     TEIS(0,ref_node_n(ref_node),"init zero nodes");
     TEIS(10,ref_node_max(ref_node),"init 10 max");
-
-    TEIS(0,ref_node_partition(ref_node),"init unknown partition");
 
     TSS(ref_node_free(ref_node),"free");
   }

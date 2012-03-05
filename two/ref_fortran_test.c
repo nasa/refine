@@ -14,6 +14,7 @@
 #include "ref_metric.h"
 #include "ref_sort.h"
 #include "ref_dict.h"
+#include "ref_mpi.h"
 
 int main( void )
 {
@@ -62,7 +63,7 @@ int main( void )
       m[5+6*node] = 1.0;
     }
 
-  partition = 1;
+  partition = 0;
 
   TSS(ref_init_node__(&nnodes, &nnodesg,
 		      l2g, part, &partition,

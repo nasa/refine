@@ -11,6 +11,8 @@
 #include "ref_node.h"
 #include "ref_list.h"
 
+#include "ref_mpi.h"
+
 static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr)
 {
   return ref_cell_create(ref_cell_ptr,3,REF_TRUE);

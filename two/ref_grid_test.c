@@ -9,6 +9,7 @@
 
 #include "ref_list.h"
 #include "ref_sort.h"
+#include "ref_mpi.h"
 
 int main( void )
 {

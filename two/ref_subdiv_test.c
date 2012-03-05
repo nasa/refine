@@ -16,6 +16,7 @@
 #include "ref_fixture.h"
 #include "ref_export.h"
 #include "ref_dict.h"
+#include "ref_mpi.h"
 
 #include "ref_test.h"
 

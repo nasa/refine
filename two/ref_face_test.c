@@ -12,6 +12,7 @@
 #include "ref_sort.h"
 
 #include "ref_face.h"
+#include "ref_mpi.h"
 
 #include "ref_test.h"
 

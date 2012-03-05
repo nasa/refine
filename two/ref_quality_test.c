@@ -28,6 +28,7 @@
 
 #include "ref_test.h"
 #include "ref_fixture.h"
+#include "ref_mpi.h"
 
 int main( void )
 {
