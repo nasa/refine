@@ -78,12 +78,20 @@ int main( void )
     TSS(ref_sort_search(n,ascending_list,ascending_list[3],&position),"search");
     TEIS( 3, position, "3");
 
-    TFS(ref_sort_search(n,ascending_list,0,&position),"search");
+    TEIS(REF_NOT_FOUND, ref_sort_search(n,ascending_list,0,&position),"search");
     TEIS( REF_EMPTY, position, "0");
-    TFS(ref_sort_search(n,ascending_list,15,&position),"search");
+    TEIS(REF_NOT_FOUND,ref_sort_search(n,ascending_list,15,&position),"search");
     TEIS( REF_EMPTY, position, "15");
-    TFS(ref_sort_search(n,ascending_list,50,&position),"search");
+    TEIS(REF_NOT_FOUND,ref_sort_search(n,ascending_list,50,&position),"search");
     TEIS( REF_EMPTY, position, "50");
+  }
+
+  {  /* search 0 */
+    REF_INT n=0, *ascending_list=NULL, position;
+
+    position = 0;
+    TEIS(REF_NOT_FOUND,ref_sort_search(n,ascending_list,17,&position),"search");
+    TEIS( REF_EMPTY, position, "0");
   }
 
   {  /* heap sort zero */

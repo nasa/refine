@@ -102,7 +102,7 @@ REF_STATUS ref_sort_search( REF_INT n, REF_INT *ascending_list,
 
   *position = REF_EMPTY;
 
-  if (n<1) return REF_INVALID;
+  if (n<1) return REF_NOT_FOUND;
 
   if ( target < ascending_list[0] || target > ascending_list[n-1] ) 
     return REF_NOT_FOUND;
