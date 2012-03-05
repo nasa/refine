@@ -16,6 +16,7 @@
 #include "ref_adj.h"
 #include "ref_metric.h"
 #include "ref_sort.h"
+#include "ref_migrate.h"
 
 
 int main( int argc, char *argv[] )
