@@ -336,7 +336,8 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 
 	      RSS( ref_cell_add_many_global( ref_cell, ref_node,
 					     ncell_keep, 
-					     sent_c2n, sent_part ),"many glob");
+					     sent_c2n, sent_part,
+					     ref_mpi_id ),"many glob");
 
 	      ref_free(sent_part);
 	    }
@@ -384,7 +385,8 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 
 	    RSS( ref_cell_add_many_global( ref_cell, ref_node,
 					   elements_to_receive, 
-					   sent_c2n, sent_part ), "many glob");
+					   sent_c2n, sent_part,
+					   ref_mpi_id ), "many glob");
 
 	    ref_free( sent_part );
 	  }

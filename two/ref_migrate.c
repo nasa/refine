@@ -358,7 +358,7 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 
   RSS( ref_cell_add_many_global( ref_cell, ref_node,
 				 b_total, 
-				 b_c2n, b_parts ), "many glob");
+				 b_c2n, b_parts, ref_mpi_id ), "many glob");
 
   free(a_next);
   free(b_c2n);

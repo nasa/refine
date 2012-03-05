@@ -356,7 +356,8 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 }
 
 REF_STATUS ref_cell_add_many_global( REF_CELL ref_cell, REF_NODE ref_node,
-				     REF_INT n, REF_INT *c2n, REF_INT *part )
+				     REF_INT n, REF_INT *c2n, REF_INT *part,
+				     REF_INT exclude_part_id )
 {
   REF_INT *global;
   REF_INT nnode;
@@ -364,14 +365,16 @@ REF_STATUS ref_cell_add_many_global( REF_CELL ref_cell, REF_NODE ref_node,
   REF_INT local, local_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
 
-  nnode = ref_cell_node_per(ref_cell)*n;
-  ref_malloc( global, nnode, REF_INT );
+  ref_malloc( global, ref_cell_node_per(ref_cell)*n, REF_INT );
 
+  nnode = 0;
   for ( cell=0; cell<n; cell++ )
     for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
-      global[node+ref_cell_node_per(ref_cell)*cell] =
-	c2n[node+ref_cell_size_per(ref_cell)*cell];
-
+      if ( exclude_part_id != part[node+ref_cell_size_per(ref_cell)*cell] )
+	{
+	global[nnode] =	c2n[node+ref_cell_size_per(ref_cell)*cell];
+	nnode++;
+      }
   RSS( ref_node_add_many( ref_node, nnode, global ), "many nodes" );
 
   ref_free( global );

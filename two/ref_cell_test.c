@@ -70,7 +70,8 @@ int main( void )
 
     nodes[0]= 0; nodes[1]= 10; nodes[2]= 20; nodes[3]= 30;
     parts[0]= 0; parts[1]= 1; parts[2]= 2; parts[3]= 3;
-    TSS(ref_cell_add_many_global(ref_cell,ref_node,1,nodes,parts),"add many");
+    TSS(ref_cell_add_many_global(ref_cell,ref_node,
+				 1,nodes,parts,REF_EMPTY),"add many");
 
     TSS(ref_cell_nodes(ref_cell,0,retrieved),"cell should exist");
     TES(0,retrieved[0],"node 0");
