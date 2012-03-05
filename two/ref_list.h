@@ -25,6 +25,9 @@ REF_STATUS ref_list_free( REF_LIST ref_list );
 REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT value );
 REF_STATUS ref_list_remove( REF_LIST ref_list, REF_INT *value );
 
+REF_STATUS ref_list_shift( REF_LIST ref_list, 
+			   REF_INT equal_and_above, REF_INT offset );
+
 END_C_DECLORATION
 
 #endif /* REF_LIST_H */

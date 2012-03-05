@@ -65,3 +65,14 @@ REF_STATUS ref_list_remove( REF_LIST ref_list, REF_INT *value )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_list_shift( REF_LIST ref_list, 
+			   REF_INT equal_and_above, REF_INT offset )
+{
+  REF_INT i;
+
+  for(i=0;i< ref_list_n(ref_list);i++)
+    if ( ref_list->value[i] >= equal_and_above )
+      ref_list->value[i] += offset;
+
+  return REF_SUCCESS;
+}
