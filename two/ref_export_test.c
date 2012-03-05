@@ -10,6 +10,7 @@
 #include "ref_sort.h"
 #include "ref_dict.h"
 #include "ref_list.h"
+#include "ref_mpi.h"
 
 int main( int argc, char *argv[] )
 {
@@ -18,10 +19,15 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
       char file[] = "ref_export_test.tec";
+      TSS( ref_mpi_start( argc, argv ), "start" );
+      ref_mpi_stopwatch_start();
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      ref_mpi_stopwatch_stop("import");
       RSS( ref_grid_inspect( ref_grid ), "inspect");
       TSS(ref_export_tec_surf( ref_grid, file ),"export" );
+      ref_mpi_stopwatch_stop("export");
       RSS(ref_grid_free(ref_grid),"free");
+      TSS( ref_mpi_stop(  ), "stop" );
       return 0;
     }
 
