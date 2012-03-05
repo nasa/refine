@@ -1,0 +1,40 @@
+
+
+unused globals/export
+parallel stack subdivision
+projection (fake geom)
+projection linear elasticity
+tet adaptation.
+
+March
+4  unused globals/export
+11 
+18 projection
+25
+
+April
+1
+8
+15
+22
+29
+
+May
+6  case running
+13
+20
+27
+
+June
+3  approval/slides
+10
+17 DWP
+
+speedup
+
+void heap sort
+
+- optimize node add many
+
+- replace one at the top of part_cell with comp row storage
+
