@@ -54,8 +54,6 @@ static REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr,
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = z0;
 
-  ref_node_n_global(ref_node) = ref_node_n(ref_node);
-
   RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add quad");
 
   return REF_SUCCESS;
@@ -104,8 +102,6 @@ static REF_STATUS ref_prism_grid( REF_GRID *ref_grid_ptr,
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = z2;
 
-  ref_node_n_global(ref_node) = ref_node_n(ref_node);
-
   RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
 
   return REF_SUCCESS;
@@ -142,7 +138,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 2, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 2, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
     REIS( 0, ref_cell_n(ref_grid_tri(ref_grid)), "tri n");
@@ -157,7 +152,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 3, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 3, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
     REIS( 1, ref_cell_n(ref_grid_tri(ref_grid)), "tri n");
@@ -172,7 +166,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 3, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 3, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
     REIS( 1, ref_cell_n(ref_grid_tri(ref_grid)), "tri n");
@@ -187,7 +180,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 4, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 1, ref_cell_n(ref_grid_qua(ref_grid)), "qua n");
     REIS( 0, ref_cell_n(ref_grid_tri(ref_grid)), "tri n");
@@ -202,7 +194,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 6, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 6, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 1, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
     REIS( 0, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
@@ -218,7 +209,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 5, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
     REIS( 1, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
@@ -234,7 +224,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 5, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
     REIS( 1, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
@@ -250,7 +239,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 5, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
     REIS( 1, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
@@ -266,7 +254,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 4, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
     REIS( 0, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
@@ -282,7 +269,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 4, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
     REIS( 0, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
@@ -298,7 +284,6 @@ int main( int argc, char *argv[] )
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
-    REIS( 4, ref_node_n_global(ref_grid_node(ref_grid)), "node n global");
 
     REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
     REIS( 0, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");

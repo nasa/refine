@@ -36,8 +36,6 @@ REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  ref_node_n_global(ref_node) = ref_node_n(ref_node);
-
   RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
 
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
@@ -81,8 +79,6 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,0,node) = 0.5;
   ref_node_xyz(ref_node,1,node) = 0.5;
   ref_node_xyz(ref_node,2,node) = 1.0;
-
-  ref_node_n_global(ref_node) = ref_node_n(ref_node);
 
   RSS(ref_cell_add(ref_grid_pyr(ref_grid),nodes,&cell),"add pyr");
 
@@ -186,8 +182,6 @@ REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  ref_node_n_global(ref_node) = ref_node_n(ref_node);
-
   RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
 
   nodes[0] = 0; nodes[1] = 3; nodes[2] = 4; nodes[3] = 1; nodes[4] = 10;
@@ -274,8 +268,6 @@ REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 3.0;
 
-  ref_node_n_global(ref_node) = ref_node_n(ref_node);
-
   RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
 
   nodes[0] = 3; nodes[1] = 4; nodes[2] = 5; 
@@ -349,8 +341,6 @@ REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,0,node) = 0.0;
   ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
-
-  ref_node_n_global(ref_node) = ref_node_n(ref_node);
 
   RSS(ref_cell_add(ref_grid_hex(ref_grid),nodes,&cell),"add prism");
 

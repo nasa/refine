@@ -110,7 +110,6 @@ REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, char *filename )
       RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
       RES( node, new_node, "node index");
     }
-  ref_node_n_global(ref_node) = nnode;
 
   for( ixyz=0; ixyz<3 ; ixyz++ )
     for( node=0; node<nnode ; node++ ) 
@@ -194,7 +193,6 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       ref_node_xyz( ref_node, 1, new_node ) = xyz[1];
       ref_node_xyz( ref_node, 2, new_node ) = xyz[2];
     }
-  ref_node_n_global(ref_node) = nnode;
 
   ref_cell = ref_grid_tri(ref_grid);
   nodes[3] = REF_EMPTY;
@@ -336,7 +334,6 @@ REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       SWAP_DBL(swapped_dbl);
       ref_node_xyz( ref_node, 2, new_node ) = swapped_dbl;
     }
-  ref_node_n_global(ref_node) = nnode;
 
   ref_cell = ref_grid_tri(ref_grid);
   nodes[3] = REF_EMPTY;

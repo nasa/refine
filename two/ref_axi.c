@@ -55,9 +55,6 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
 	}
     }
 
-  /* FIXME, hack until globals are handled right */
-  ref_node_n_global(ref_node) = ref_node_n(ref_node);
-
   ref_cell = ref_grid_tri(ref_grid);
 
   each_ref_cell_valid_cell_with_nodes(ref_cell,cell,nodes)

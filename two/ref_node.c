@@ -26,8 +26,6 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_node_partition(ref_node) = REF_EMPTY;
 
-  ref_node_n_global(ref_node) = 0;
-
   ref_malloc( ref_node->global, max, REF_INT );
 
   for (node=0;node<ref_node_max(ref_node);node++)
@@ -297,8 +295,7 @@ REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
     }
   else
     {
-      (*global) = ref_node_n_global(ref_node);
-      ref_node_n_global(ref_node)++;
+      (*global) = ref_node_n(ref_node);
     }
 
   return REF_SUCCESS;

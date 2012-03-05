@@ -217,8 +217,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( ref_mpi_master ) fclose(file);
 
-  ref_node_n_global(ref_node) = nnode;
-
   /* ghost xyz */
 
   RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
