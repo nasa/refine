@@ -68,23 +68,6 @@ int main( void )
     TSS(ref_node_free(ref_node),"free");
   }
 
-  { /* reuse removed global */
-    REF_NODE ref_node;
-    REF_INT node, global;
-
-    TSS(ref_node_create(&ref_node),"create");
-
-    global = 3542;
-    RSS(ref_node_add(ref_node,global,&node),"add orig");
-
-    TSS(ref_node_remove(ref_node,node),"remove node");
-
-    TSS( ref_node_next_global(ref_node,&node), "next gloabal");
-    TEIS( global, node, "not reused");
-
-    TSS(ref_node_free(ref_node),"free");
-  }
-
   { /* add bunch testing realloc */
     REF_INT global, node, max;
     REF_NODE ref_node;
@@ -288,6 +271,46 @@ int main( void )
 
     TSS(ref_node_local(ref_node,20,&node),"return global");
     TEIS(0,node,"wrong local");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* reuse removed global */
+    REF_NODE ref_node;
+    REF_INT node, global;
+
+    TSS(ref_node_create(&ref_node),"create");
+
+    global = 3542;
+    RSS(ref_node_add(ref_node,global,&node),"add orig");
+
+    TSS(ref_node_remove(ref_node,node),"remove node");
+
+    TSS( ref_node_next_global(ref_node,&node), "next gloabal");
+    TEIS( global, node, "not reused");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* shift globals */
+    REF_INT local, global, node;
+    REF_NODE ref_node;
+
+    TSS(ref_node_create(&ref_node),"create");
+
+    global = 10;
+    RSS(ref_node_add(ref_node,global,&local),"add");
+    global = 20;
+    RSS(ref_node_add(ref_node,global,&local),"add");
+
+    RSS( ref_node_initialize_n_global( ref_node, 30 ), "init n glob" );
+
+    RSS( ref_node_next_global( ref_node, &global ), "next");
+    REIS( 30, global, "expected n global");
+    RSS(ref_node_add(ref_node,global,&local),"add");
+
+    TSS(ref_node_local(ref_node,30,&node),"return global");
+    TEIS(2,node,"wrong local");
 
     TSS(ref_node_free(ref_node),"free");
   }
