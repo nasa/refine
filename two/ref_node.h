@@ -23,6 +23,7 @@ struct REF_NODE_STRUCT {
   REF_INT *part;
   REF_DBL *xyz;
   REF_LIST unused_global_list;
+  REF_INT old_n_global, new_n_global;
 };
 
 #define ref_node_n(ref_node) ((ref_node)->n)
@@ -55,6 +56,7 @@ REF_STATUS ref_node_location( REF_NODE ref_node, REF_INT node );
 
 REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *node );
 
+REF_STATUS ref_node_initialize_n_global(  REF_NODE ref_node, REF_INT n_global );
 REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global );
 
 REF_STATUS ref_node_add( REF_NODE ref_node, REF_INT global, REF_INT *node );

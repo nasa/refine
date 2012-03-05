@@ -26,7 +26,7 @@ REF_STATUS ref_init_node_(REF_INT *nnodes, REF_INT *nnodesg,
 
   ref_node_partition(ref_node) = *partition;
 
-  SUPRESS_UNUSED_COMPILER_WARNING( nnodesg );
+  RSS( ref_node_initialize_n_global( ref_node, *nnodesg), "init nnodesg");
 
   for (node=0;node<(*nnodes);node++)
     {

@@ -42,6 +42,9 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   RSS( ref_list_create( &(ref_node->unused_global_list) ), "create list");
 
+  ref_node->old_n_global = REF_EMPTY;
+  ref_node->new_n_global = REF_EMPTY;
+
   return REF_SUCCESS;
 }
 
@@ -286,6 +289,14 @@ REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_initialize_n_global(  REF_NODE ref_node, REF_INT n_global )
+{
+  ref_node->old_n_global = n_global;
+  ref_node->new_n_global = n_global;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
 {
   if ( 0 < ref_list_n( ref_node->unused_global_list ) )
@@ -295,7 +306,11 @@ REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
     }
   else
     {
-      (*global) = ref_node_n(ref_node);
+      if ( REF_EMPTY == ref_node->new_n_global )
+	RSS( ref_node_initialize_n_global( ref_node, ref_node_n(ref_node) ), 
+	     "init with n");
+      (*global) = ref_node->new_n_global;
+      (ref_node->new_n_global)++;
     }
 
   return REF_SUCCESS;
