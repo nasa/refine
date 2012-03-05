@@ -315,6 +315,52 @@ REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_sync_new_globals( REF_NODE ref_node )
+{
+  REF_INT new_nodes;
+  REF_INT *everyones_new_nodes;
+  REF_INT offset, proc, total_new_nodes, node;
+
+  ref_malloc( everyones_new_nodes, ref_mpi_n, REF_INT );
+
+  new_nodes = ref_node->new_n_global - ref_node->old_n_global;
+
+  RSS( ref_mpi_allgather( &new_nodes, everyones_new_nodes, REF_INT_TYPE ),
+       "allgather");
+
+  offset = 0;
+  for( proc=0;proc<ref_mpi_id;proc++)
+    offset += everyones_new_nodes[proc];
+
+  total_new_nodes = 0;
+  for( proc=0;proc<ref_mpi_n;proc++)
+    total_new_nodes += everyones_new_nodes[proc];
+
+  ref_free( everyones_new_nodes );
+
+  if ( 0 != offset ) 
+    {
+
+      each_ref_node_valid_node( ref_node, node )
+	if ( ref_node_global(ref_node,node) >= ref_node->old_n_global )
+	  (ref_node->global[node]) += offset;
+
+      for ( node = ref_node_n(ref_node)-1 ; 
+	    node>=0 && ref_node->sorted_global[node] >= ref_node->old_n_global; 
+	    node++ )
+	ref_node->sorted_global[node] += offset;
+
+      RSS( ref_list_shift( ref_node->unused_global_list, 
+			   ref_node->old_n_global, offset ), "shift" );
+    }
+
+  RSS( ref_node_initialize_n_global( ref_node, 
+				     total_new_nodes + ref_node->old_n_global),
+       "re-init" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
 {
   REF_INT location;

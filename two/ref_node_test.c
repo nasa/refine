@@ -9,8 +9,10 @@
 #include "ref_sort.h"
 #include "ref_mpi.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
+
+  TSS( ref_mpi_start( argc, argv ), "start" );
 
   TFS(ref_node_free(NULL),"dont free NULL");
 
@@ -309,11 +311,15 @@ int main( void )
     REIS( 30, global, "expected n global");
     RSS(ref_node_add(ref_node,global,&local),"add");
 
+    RSS(ref_node_sync_new_globals(ref_node),"sync");
+
     TSS(ref_node_local(ref_node,30,&node),"return global");
     TEIS(2,node,"wrong local");
 
     TSS(ref_node_free(ref_node),"free");
   }
+
+  TSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }
