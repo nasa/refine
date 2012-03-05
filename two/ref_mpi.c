@@ -296,3 +296,27 @@ REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type )
+{
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+  
+  ref_type_mpi_type(type,datatype);
+
+  MPI_Allgather( scalar, 1, datatype, 
+		 array, 1, datatype, 
+		 MPI_COMM_WORLD);
+
+#else
+  switch (type)
+    {
+    case REF_INT_TYPE: *(REF_INT *)array = *(REF_INT *)scalar; break;
+    case REF_DBL_TYPE: *(REF_DBL *)array = *(REF_DBL *)scalar; break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+#endif
+
+  return REF_SUCCESS;
+}
+
