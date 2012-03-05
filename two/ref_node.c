@@ -170,25 +170,34 @@ REF_STATUS ref_node_add_many( REF_NODE ref_node,
 			      REF_INT n, REF_INT *global_orig )
 {
   REF_STATUS status;
-  REF_INT i, j, local;
+  REF_INT i, j, local, new;
 
   REF_INT *global;
   REF_INT *sorted;
 
-  /* IMPROVEMENT one less array by marking sorted... */
-
-  /* remove duplicates from list */
+  /* copy, removing existing nodes from list */
 
   ref_malloc( global, n, REF_INT );
-  ref_malloc( sorted, n, REF_INT );
 
+  new = 0;
   for (i=0;i<n;i++)
-    global[i]= global_orig[i];
+    {
+      status = ref_node_local( ref_node, global_orig[i], &local );
+      if ( REF_NOT_FOUND == status ) 
+	{
+	  global[new] = global_orig[i];
+	  new++;
+	}
+    }
 
-  RSS( ref_sort_heap( n, global, sorted ), "heap" );
+  /* remove duplicates from list so core add can be used with existing check */
+
+  ref_malloc( sorted, new, REF_INT );
+
+  RSS( ref_sort_heap( new, global, sorted ), "heap" );
 
   j = 0;
-  for (i=1;i<n;i++)
+  for (i=1;i<new;i++)
     {
       if ( global[sorted[i]] != global[sorted[j]] )
 	{
@@ -198,17 +207,9 @@ REF_STATUS ref_node_add_many( REF_NODE ref_node,
       global[sorted[i]] = REF_EMPTY;
     }
 
-  /* remove existing nodes from list */
-
-  for (i=0;i<n;i++)
-    {
-      status = ref_node_local( ref_node, global[i], &j );
-      if ( REF_SUCCESS == status ) global[i] = REF_EMPTY;
-    }
-
   /* add remaining via core */
 
-  for (i=0;i<n;i++)
+  for (i=0;i<new;i++)
     if ( REF_EMPTY != global[i] )
       {
 	RSS( ref_node_add_core( ref_node, global[i], &local ), "add core" );
