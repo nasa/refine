@@ -298,20 +298,27 @@ REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_sum( void *input, void *output, REF_TYPE type )
+REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
 {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
   ref_type_mpi_type(type,datatype);
 
-  MPI_Reduce( input, output, 1, datatype, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce( input, output, n, datatype, MPI_SUM, 0, MPI_COMM_WORLD);
 
 #else
+  REF_INT i;
   switch (type)
     {
-    case REF_INT_TYPE: *(REF_INT *)output = *(REF_INT *)input; break;
-    case REF_DBL_TYPE: *(REF_DBL *)output = *(REF_DBL *)input; break;
+    case REF_INT_TYPE: 
+      for (i=0;i<n;i++)
+	((REF_INT *)output)[i] = ((REF_INT *)input)[i]; 
+      break;
+    case REF_DBL_TYPE:
+      for (i=0;i<n;i++)
+	((REF_DBL *)output)[i] = ((REF_DBL *)input)[i]; 
+      break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
   SUPRESS_UNUSED_COMPILER_WARNING(type);
@@ -370,11 +377,11 @@ REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts,
   switch (type)
     {
     case REF_INT_TYPE: 
-      for (i=0;i<((REF_INT *)counts)[0];i++)
+      for (i=0;i<counts[0];i++)
 	((REF_INT *)concatenated_array)[i] = ((REF_INT *)local_array)[i]; 
       break;
     case REF_DBL_TYPE:
-      for (i=0;i<((REF_INT *)counts)[0];i++)
+      for (i=0;i<counts[0];i++)
 	((REF_DBL *)concatenated_array)[i] = ((REF_DBL *)local_array)[i]; 
       break;
     default: RSS( REF_IMPLEMENT, "data type");
