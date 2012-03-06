@@ -5,10 +5,15 @@
 #include "ref_defs.h"
 
 #include "ref_grid.h"
+#include "ref_cell.h"
+#include "ref_node.h"
 
 BEGIN_C_DECLORATION
 
 REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename );
+
+REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
+			     REF_INT *ncell );
 
 END_C_DECLORATION
 
