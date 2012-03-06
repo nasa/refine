@@ -95,3 +95,10 @@ REF_STATUS ref_list_sort( REF_LIST ref_list )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_list_erase( REF_LIST ref_list )
+{
+  ref_list_n( ref_list ) = 0;
+
+  return REF_SUCCESS;
+}

@@ -84,5 +84,18 @@ int main( void )
     TSS(ref_list_free(ref_list),"free");
   }
 
+  { /* erase */
+    TSS(ref_list_create(&ref_list),"create");
+    TSS(ref_list_add(ref_list,20),"store");
+    TSS(ref_list_add(ref_list,10),"store");
+    TSS(ref_list_sort(ref_list),"sort");
+
+    TSS(ref_list_erase(ref_list),"rm -rf");
+
+    TEIS(0,ref_list_n(ref_list),"has none");
+
+    TSS(ref_list_free(ref_list),"free");
+  }
+
   return 0;
 }

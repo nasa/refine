@@ -21,6 +21,7 @@ REF_STATUS ref_list_free( REF_LIST ref_list );
 
 #define ref_list_n( ref_list ) ((ref_list)->n)
 #define ref_list_max( ref_list ) ((ref_list)->max)
+#define ref_list_value( ref_list, i ) ((ref_list)->value[(i)])
 
 REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT value );
 REF_STATUS ref_list_remove( REF_LIST ref_list, REF_INT *value );
@@ -29,6 +30,8 @@ REF_STATUS ref_list_shift( REF_LIST ref_list,
 			   REF_INT equal_and_above, REF_INT offset );
 
 REF_STATUS ref_list_sort( REF_LIST ref_list );
+
+REF_STATUS ref_list_erase( REF_LIST ref_list );
 
 END_C_DECLORATION
 
