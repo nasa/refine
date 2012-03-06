@@ -13,6 +13,8 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nnode;
+
+  RSS( ref_node_synchronize_globals( ref_node ), "sync" );
   
   if ( ref_mpi_master )
     {
