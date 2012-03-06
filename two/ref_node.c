@@ -314,6 +314,13 @@ REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
 
   return REF_SUCCESS;
 }
+REF_STATUS ref_node_synchronize_globals( REF_NODE ref_node )
+{
+  RSS( ref_node_shift_new_globals( ref_node ), "shift" );
+  RSS( ref_node_eliminate_unused_globals( ref_node ), "shift" );
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_node_shift_new_globals( REF_NODE ref_node )
 {
