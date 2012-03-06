@@ -1,6 +1,7 @@
 
 
-unused globals/export
+export
+migrate ghost operations to grid
 parallel stack subdivision
 projection (fake geom)
 projection linear elasticity
