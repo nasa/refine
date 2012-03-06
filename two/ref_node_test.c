@@ -319,6 +319,31 @@ int main( int argc, char *argv[] )
     TSS(ref_node_free(ref_node),"free");
   }
 
+  { /* eliminate unused globals */
+    REF_INT local, global, node;
+    REF_NODE ref_node;
+
+    TSS(ref_node_create(&ref_node),"create");
+
+    global = 10;
+    RSS(ref_node_add(ref_node,global,&local),"add");
+    global = 20;
+    RSS(ref_node_add(ref_node,global,&local),"add");
+    global = 30;
+    RSS(ref_node_add(ref_node,global,&local),"add");
+
+    RSS(ref_node_remove(ref_node,1),"rm");
+
+    RSS( ref_node_initialize_n_global( ref_node, 30 ), "init n glob" );
+
+    RSS(ref_node_eliminate_unused_globals(ref_node),"sync");
+
+    TSS(ref_node_local(ref_node,29,&node),"return global");
+    TEIS(2,node,"wrong local");
+
+    TSS(ref_node_free(ref_node),"free");
+  }
+
   TSS( ref_mpi_stop( ), "stop" );
 
   return 0;

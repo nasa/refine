@@ -361,6 +361,35 @@ REF_STATUS ref_node_sync_new_globals( REF_NODE ref_node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_eliminate_unused_globals( REF_NODE ref_node )
+{
+  REF_LIST ref_list = ref_node->unused_global_list;
+  REF_INT sort, offset, local;
+
+  RSS( ref_list_sort( ref_list ), "sort unused global" );
+
+  offset = 0;
+  for (sort=0;sort<ref_node_n(ref_node);sort++) {
+    while ( (offset < ref_list_n(ref_list) ) &&
+	    ( ref_list_value(ref_list,offset) < 
+	      ref_node->sorted_global[sort]  ) ) {
+      offset++;
+    }
+    local = ref_node->sorted_local[sort];
+    ref_node->global[local] -= offset; /* move to separate loop for cashe? */
+    ref_node->sorted_global[sort] -= offset;
+  }
+
+  RSS( ref_node_initialize_n_global( ref_node, 
+				     ref_node->old_n_global - 
+				     ref_list_n(ref_list) ),
+       "re-init" );
+
+  RSS( ref_list_erase( ref_list ), "erase unused list");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
 {
   REF_INT location;
