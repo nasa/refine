@@ -28,6 +28,8 @@ REF_STATUS ref_list_remove( REF_LIST ref_list, REF_INT *value );
 REF_STATUS ref_list_shift( REF_LIST ref_list, 
 			   REF_INT equal_and_above, REF_INT offset );
 
+REF_STATUS ref_list_sort( REF_LIST ref_list );
+
 END_C_DECLORATION
 
 #endif /* REF_LIST_H */

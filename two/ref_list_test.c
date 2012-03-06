@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "ref_list.h"
+#include "ref_sort.h"
 #include "ref_test.h"
 
 int main( void )
@@ -64,6 +65,21 @@ int main( void )
 
     TSS(ref_list_remove(ref_list,&last),"rm");
     TEIS(47,last,"has none");
+
+    TSS(ref_list_free(ref_list),"free");
+  }
+
+  { /* sort */
+    REF_INT last;
+    TSS(ref_list_create(&ref_list),"create");
+    TSS(ref_list_add(ref_list,20),"store");
+    TSS(ref_list_add(ref_list,10),"store");
+    TSS(ref_list_sort(ref_list),"sort");
+
+    TSS(ref_list_remove(ref_list,&last),"rm");
+    TEIS(20,last,"has none");
+    TSS(ref_list_remove(ref_list,&last),"rm");
+    TEIS(10,last,"has none");
 
     TSS(ref_list_free(ref_list),"free");
   }
