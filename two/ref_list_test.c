@@ -9,9 +9,11 @@
 
 #include "ref_test.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
   REF_LIST ref_list;
+
+  TSS( ref_mpi_start( argc, argv ), "start" );
 
   {
     REF_INT last;
@@ -110,6 +112,8 @@ int main( void )
 
     TSS(ref_list_free(ref_list),"free");
   }
+
+  TSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }

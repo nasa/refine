@@ -9,6 +9,8 @@
 
 #include "ref_mpi.h"
 
+#include "ref_malloc.h"
+
 REF_INT ref_mpi_n = 1;
 REF_INT ref_mpi_id = 0;
 
@@ -323,9 +325,9 @@ REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type )
 REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts, 
 			       void *concatenated_array, REF_TYPE type )
 {
-  REF_INT i;
 #ifdef HAVE_MPI
-  REF_INT *displs
+  REF_INT proc;
+  REF_INT *displs;
   MPI_Datatype datatype;
   ref_type_mpi_type(type,datatype);
 
@@ -342,6 +344,7 @@ REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts,
   ref_free( displs );
 
 #else
+  REF_INT i;
   switch (type)
     {
     case REF_INT_TYPE: 
