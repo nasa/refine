@@ -311,7 +311,7 @@ int main( int argc, char *argv[] )
     REIS( 30, global, "expected n global");
     RSS(ref_node_add(ref_node,global,&local),"add");
 
-    RSS(ref_node_sync_new_globals(ref_node),"sync");
+    RSS(ref_node_shift_new_globals(ref_node),"shift");
 
     TSS(ref_node_local(ref_node,30,&node),"return global");
     TEIS(2,node,"wrong local");
@@ -336,7 +336,7 @@ int main( int argc, char *argv[] )
 
     RSS( ref_node_initialize_n_global( ref_node, 30 ), "init n glob" );
 
-    RSS(ref_node_eliminate_unused_globals(ref_node),"sync");
+    RSS(ref_node_eliminate_unused_globals(ref_node),"unused");
 
     TSS(ref_node_local(ref_node,29,&node),"return global");
     TEIS(2,node,"wrong local");

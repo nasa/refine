@@ -315,7 +315,7 @@ REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_sync_new_globals( REF_NODE ref_node )
+REF_STATUS ref_node_shift_new_globals( REF_NODE ref_node )
 {
   REF_INT new_nodes;
   REF_INT *everyones_new_nodes;
