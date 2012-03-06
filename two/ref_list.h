@@ -33,6 +33,8 @@ REF_STATUS ref_list_sort( REF_LIST ref_list );
 
 REF_STATUS ref_list_erase( REF_LIST ref_list );
 
+REF_STATUS ref_list_allgather( REF_LIST ref_list );
+
 END_C_DECLORATION
 
 #endif /* REF_LIST_H */

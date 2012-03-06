@@ -4,6 +4,7 @@
 
 #include "ref_list.h"
 #include "ref_malloc.h"
+#include "ref_mpi.h"
 #include "ref_sort.h"
 
 REF_STATUS ref_list_create( REF_LIST *ref_list_ptr )
@@ -85,10 +86,10 @@ REF_STATUS ref_list_sort( REF_LIST ref_list )
 
   RSS( ref_sort_heap( ref_list_n(ref_list), ref_list->value, order ), "heap" );
 
-  for ( i=0; i<  ref_list_n(ref_list); i++ )
+  for ( i=0; i < ref_list_n(ref_list); i++ )
     order[i] = ref_list->value[order[i]];
 
-  for ( i=0; i<  ref_list_n(ref_list); i++ )
+  for ( i=0; i < ref_list_n(ref_list); i++ )
     ref_list->value[i] = order[i];
 
   ref_free( order );
@@ -99,6 +100,43 @@ REF_STATUS ref_list_sort( REF_LIST ref_list )
 REF_STATUS ref_list_erase( REF_LIST ref_list )
 {
   ref_list_n( ref_list ) = 0;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_list_allgather( REF_LIST ref_list )
+{
+  REF_INT i;
+  REF_INT *local_copy;
+  REF_INT proc;
+  REF_INT *counts;
+  REF_INT total_count;
+
+  ref_malloc( counts, ref_mpi_n, REF_INT );
+
+  RSS( ref_mpi_allgather( &(ref_list_n(ref_list)), counts, REF_INT_TYPE ), 
+       "gather size");
+
+  total_count = 0;
+  for( proc = 0; proc < ref_mpi_n ; proc++ )
+    total_count += counts[proc];
+
+  ref_malloc( local_copy, ref_list_n( ref_list ), REF_INT );
+  for ( i=0; i < ref_list_n(ref_list); i++ )
+    local_copy[i] = ref_list->value[i];
+
+  if ( total_count > ref_list_max(ref_list) )
+    { 
+      ref_list_max(ref_list) = total_count;
+      ref_free( ref_list->value );
+      ref_malloc( ref_list->value, ref_list_max(ref_list), REF_INT );
+    }
+
+  RSS( ref_mpi_allgatherv( local_copy, counts, ref_list->value, REF_INT_TYPE ), 
+       "gather values");
+
+  ref_free( local_copy );
+  ref_free( counts );
 
   return REF_SUCCESS;
 }

@@ -5,6 +5,8 @@
 
 #include "ref_list.h"
 #include "ref_sort.h"
+#include "ref_mpi.h"
+
 #include "ref_test.h"
 
 int main( void )
@@ -93,6 +95,18 @@ int main( void )
     TSS(ref_list_erase(ref_list),"rm -rf");
 
     TEIS(0,ref_list_n(ref_list),"has none");
+
+    TSS(ref_list_free(ref_list),"free");
+  }
+
+  { /* allgather */
+    TSS(ref_list_create(&ref_list),"create");
+
+    TSS(ref_list_add(ref_list,ref_mpi_id),"store");
+
+    TSS(ref_list_allgather(ref_list),"gather");
+
+    TEIS(ref_mpi_n,ref_list_n(ref_list),"one from each");
 
     TSS(ref_list_free(ref_list),"free");
   }
