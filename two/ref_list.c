@@ -10,17 +10,14 @@ REF_STATUS ref_list_create( REF_LIST *ref_list_ptr )
 {
   REF_LIST ref_list;
 
-  (*ref_list_ptr) = NULL;
-  (*ref_list_ptr) = (REF_LIST)malloc( sizeof(REF_LIST_STRUCT) );
-  RNS(*ref_list_ptr,"malloc ref_list NULL");
+  ref_malloc( *ref_list_ptr, 1, REF_LIST_STRUCT );
+
   ref_list = (*ref_list_ptr);
 
   ref_list_n(ref_list) = 0;
   ref_list_max(ref_list) = 10;
 
-  ref_list->value = (REF_INT *)malloc( ref_list_max(ref_list) * 
-				       sizeof(REF_INT) );
-  RNS(ref_list->value,"malloc ref_list->value NULL");
+  ref_malloc( ref_list->value, ref_list_max(ref_list), REF_INT);
 
   return REF_SUCCESS;
 }
@@ -39,10 +36,7 @@ REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT value )
   if ( ref_list_max(ref_list) == ref_list_n(ref_list) )
     {
       ref_list_max(ref_list) += 1000;
-      ref_list->value = (REF_INT *)realloc( (void *)(ref_list->value),
-					    ref_list_max(ref_list) * 
-					    sizeof(REF_INT) );
-      RNS(ref_list->value,"realloc ref_list->value NULL");
+      ref_realloc( ref_list->value, ref_list_max(ref_list), REF_INT );
     }
 
   ref_list->value[ref_list_n( ref_list )] = value;
