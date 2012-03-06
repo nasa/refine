@@ -15,6 +15,8 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
 			     REF_INT *ncell );
 
+REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file );
+
 END_C_DECLORATION
 
 #endif /* REF_GATHER_H */

@@ -14,12 +14,6 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nnode,ntri,nqua,ntet,npyr,npri,nhex;
-  REF_INT chunk;
-  REF_DBL *local_xyzm, *xyzm;
-  REF_DBL swapped_dbl;
-  REF_INT nnode_written, first, last, n, i;
-  REF_INT global, local;
-  REF_STATUS status;
 
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
 
@@ -58,6 +52,38 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
       REIS(1, fwrite(&npri,sizeof(REF_INT),1,file),"npri");
       REIS(1, fwrite(&nhex,sizeof(REF_INT),1,file),"nhex");
     }
+
+  RSS( ref_gather_node( ref_node, file ), "nodes");
+
+  if ( ref_mpi_master ) fclose(file);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
+			     REF_INT *ncell )
+{
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell_local;
+
+  ncell_local = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
+      ncell_local++;
+
+  RSS( ref_mpi_sum( &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
+{
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_DBL swapped_dbl;
+  REF_INT nnode_written, first, last, n, i;
+  REF_INT global, local;
+  REF_STATUS status;
 
   chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
 
@@ -116,24 +142,6 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
 
   ref_free( xyzm );
   ref_free( local_xyzm );
-
-  if ( ref_mpi_master ) fclose(file);
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
-			     REF_INT *ncell )
-{
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncell_local;
-
-  ncell_local = 0;
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-    if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
-      ncell_local++;
-
-  RSS( ref_mpi_sum( &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
 
   return REF_SUCCESS;
 }
