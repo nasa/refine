@@ -266,8 +266,8 @@ REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type )
 #else
   switch (type)
     {
-    case REF_INT_TYPE: *(REF_INT *)input = *(REF_INT *)output; break;
-    case REF_DBL_TYPE: *(REF_DBL *)input = *(REF_DBL *)output; break;
+    case REF_INT_TYPE: *(REF_INT *)output = *(REF_INT *)input; break;
+    case REF_DBL_TYPE: *(REF_DBL *)output = *(REF_DBL *)input; break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
   SUPRESS_UNUSED_COMPILER_WARNING(type);
@@ -288,8 +288,30 @@ REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
 #else
   switch (type)
     {
-    case REF_INT_TYPE: *(REF_INT *)input = *(REF_INT *)output; break;
-    case REF_DBL_TYPE: *(REF_DBL *)input = *(REF_DBL *)output; break;
+    case REF_INT_TYPE: *(REF_INT *)output = *(REF_INT *)input; break;
+    case REF_DBL_TYPE: *(REF_DBL *)output = *(REF_DBL *)input; break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+#endif
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_mpi_sum( void *input, void *output, REF_TYPE type )
+{
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+
+  ref_type_mpi_type(type,datatype);
+
+  MPI_Reduce( input, output, 1, datatype, MPI_SUM, 0, MPI_COMM_WORLD);
+
+#else
+  switch (type)
+    {
+    case REF_INT_TYPE: *(REF_INT *)output = *(REF_INT *)input; break;
+    case REF_DBL_TYPE: *(REF_DBL *)output = *(REF_DBL *)input; break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
   SUPRESS_UNUSED_COMPILER_WARNING(type);

@@ -36,6 +36,7 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
 
 REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type );
 REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type );
+REF_STATUS ref_mpi_sum( void *input, void *output, REF_TYPE type );
 
 REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type );
 
