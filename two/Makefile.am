@@ -12,8 +12,9 @@ libref2_a_SOURCES = \
 	ref_endian.h \
 	ref_export.c ref_export.h \
 	ref_face.c ref_face.h \
-	ref_fixture.c ref_fixture.h \
+	ref_fixture.c ref_fixtusre.h \
 	ref_fortran.c ref_fortran.h \
+	ref_gather.c ref_gather.h \
 	ref_grid.c ref_grid.h \
 	ref_import.c ref_import.h \
 	ref_list.h ref_list.c \
@@ -103,6 +104,11 @@ TESTS += ref_fortran_test
 noinst_PROGRAMS += ref_fortran_test
 ref_fortran_test_SOURCES = ref_fortran_test.c
 ref_fortran_test_LDADD = libref2.a -lm
+
+TESTS += ref_gather_test
+noinst_PROGRAMS += ref_gather_test
+ref_gather_test_SOURCES = ref_gather_test.c
+ref_gather_test_LDADD = libref2.a @zoltan_LDADD@ -lm
 
 TESTS += ref_grid_test
 noinst_PROGRAMS += ref_grid_test
