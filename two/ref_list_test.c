@@ -52,7 +52,7 @@ int main( void )
     TSS(ref_list_free(ref_list),"free");
   }
 
-  { /* store lots */
+  { /* shift */
     REF_INT last;
     TSS(ref_list_create(&ref_list),"create");
     TSS(ref_list_add(ref_list,20),"store");
