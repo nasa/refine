@@ -320,3 +320,43 @@ REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts, 
+			       void *concatenated_array, REF_TYPE type )
+{
+  REF_INT i;
+#ifdef HAVE_MPI
+  REF_INT *displs
+  MPI_Datatype datatype;
+  ref_type_mpi_type(type,datatype);
+
+  ref_malloc( displs, ref_mpi_n, REF_INT );
+
+  displs[0] = 0;
+  for (proc=1;proc<ref_mpi_n;proc++)
+    displs[proc] = displs[proc-1] + counts[proc-1];
+
+  MPI_Allgatherv( local_array, counts[ref_mpi_id], datatype, 
+		  concatenated_array, counts, displs, datatype, 
+		  MPI_COMM_WORLD);
+
+  ref_free( displs );
+
+#else
+  switch (type)
+    {
+    case REF_INT_TYPE: 
+      for (i=0;i<((REF_INT *)counts)[0];i++)
+	((REF_INT *)concatenated_array)[i] = ((REF_INT *)local_array)[i]; 
+      break;
+    case REF_DBL_TYPE:
+      for (i=0;i<((REF_INT *)counts)[0];i++)
+	((REF_DBL *)concatenated_array)[i] = ((REF_DBL *)local_array)[i]; 
+      break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+#endif
+
+  return REF_SUCCESS;
+}
+

@@ -39,6 +39,9 @@ REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type );
 
 REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type );
 
+REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts, 
+			       void *concatenated_array, REF_TYPE type );
+
 END_C_DECLORATION
 
 #endif /* REF_MPI_H */
