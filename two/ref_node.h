@@ -28,6 +28,8 @@ struct REF_NODE_STRUCT {
 #define ref_node_n(ref_node) ((ref_node)->n)
 #define ref_node_max(ref_node) ((ref_node)->max)
 
+#define ref_node_n_global(ref_node) ((ref_node)->old_n_global)
+
 #define ref_node_valid(ref_node,node) \
   ( (node) > -1 && (node) < ref_node_max(ref_node) && \
     (ref_node)->global[(node)] >= 0 )
