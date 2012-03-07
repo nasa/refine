@@ -97,7 +97,7 @@ REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
   REF_DBL swapped_dbl;
-  REF_INT nnode_written, first, last, n, i;
+  REF_INT nnode_written, first, n, i;
   REF_INT global, local;
   REF_STATUS status;
 
@@ -109,15 +109,11 @@ REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
   nnode_written = 0;
   while ( nnode_written < ref_node_n_global(ref_node) )
     {
-      first = nnode_written;
-      last = MIN(nnode_written+chunk-1, ref_node_n_global(ref_node)-1);
-      n = (last-first+1);
-      nnode_written += n;
 
-      /*
-      printf(" chunk %d first %d last %d n %d nnode_written %d\n",
-	     chunk, first, last, n, nnode_written);
-      */
+      first = nnode_written;
+      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
+
+      nnode_written += n;
 
       for (i=0;i<4*chunk;i++)
 	local_xyzm[i] = 0.0;
