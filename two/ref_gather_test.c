@@ -65,6 +65,7 @@ int main( int argc, char *argv[] )
       TSS(ref_migrate_new_part(import_grid),"new part");
       ref_mpi_stopwatch_stop("new part");
       TSS( ref_migrate_shufflin( import_grid ), "shufflin");
+      ref_mpi_stopwatch_stop("shufflin");
 
       ref_mpi_stopwatch_start();
       TSS( ref_gather_b8_ugrid( import_grid, "ref_gather_test.b8.ugrid" ), 
