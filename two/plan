@@ -3,9 +3,16 @@
 export
 migrate ghost operations to grid
 parallel stack subdivision
+ edge xfer
+ parallel mark
+ parallel relax
+ parallel new nodes
+ parallel aware add
 projection (fake geom)
 projection linear elasticity
+ per-olaf
 tet adaptation.
+error estimation for mixed
 
 March
 4  shift globals/unused globals/export
