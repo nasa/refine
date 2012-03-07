@@ -20,7 +20,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_node = *ref_node_ptr;
 
-  max = 10;
+  max = 20;
 
   ref_node_n(ref_node) = 0;
   ref_node_max(ref_node) = max;
@@ -73,6 +73,8 @@ REF_STATUS ref_node_inspect( REF_NODE ref_node )
     printf(" sorted_global[%d] = %d sorted_local[%d] = %d\n",
 	   node,ref_node->sorted_global[node],
 	   node,ref_node->sorted_local[node]);
+  printf(" old_n_global = %d\n",ref_node->old_n_global);
+  printf(" new_n_global = %d\n",ref_node->new_n_global);
   return REF_SUCCESS;
 }
 
