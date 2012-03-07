@@ -14,6 +14,8 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nnode,ntri,nqua,ntet,npyr,npri,nhex;
+  REF_CELL ref_cell;
+  REF_INT group;
 
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
 
@@ -54,6 +56,20 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
     }
 
   RSS( ref_gather_node( ref_node, file ), "nodes");
+
+  RSS( ref_gather_cell( ref_node,ref_grid_tri(ref_grid), 
+			REF_FALSE, file ), "tri c2n");
+  RSS( ref_gather_cell( ref_node,ref_grid_qua(ref_grid), 
+			REF_FALSE, file ), "qua c2n");
+
+  RSS( ref_gather_cell( ref_node,ref_grid_tri(ref_grid), 
+			REF_TRUE, file ), "tri faceid");
+  RSS( ref_gather_cell( ref_node,ref_grid_qua(ref_grid), 
+			REF_TRUE, file ), "qua faceid");
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    RSS( ref_gather_cell( ref_node, ref_cell, 
+			  REF_FALSE, file ), "cell c2n");
 
   if ( ref_mpi_master ) fclose(file);
 
@@ -146,7 +162,8 @@ REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, FILE *file )
+REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, 
+			    REF_BOOL faceid_insted_of_c2n, FILE *file )
 {
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -160,13 +177,28 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, FILE *file )
     {
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
 	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
-	  for ( node = 0; node < node_per; node++ )
-	    {
-	      nodes[node] = ref_node_global(ref_node,nodes[node]);
-	      nodes[node]++;
-	      SWAP_INT(nodes[node]);
-	      REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"cel node");
+	  {
+	    if ( faceid_insted_of_c2n )
+	      {
+		for ( node = node_per; node < size_per; node++ )
+		  {
+		    SWAP_INT(nodes[node]);
+		    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
+			 "cel node");
+		  }
 	    }
+	    else
+	      {
+		for ( node = 0; node < node_per; node++ )
+		  {
+		    nodes[node] = ref_node_global(ref_node,nodes[node]);
+		    nodes[node]++;
+		    SWAP_INT(nodes[node]);
+		    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
+			 "cel node");
+		  }
+	      }
+	  }
     }
 
   if ( ref_mpi_master )
@@ -178,12 +210,24 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, FILE *file )
 	  RSS( ref_mpi_recv( c2n, ncell*size_per, 
 			     REF_INT_TYPE, proc ), "recv c2n");
 	  for ( cell = 0; cell < ncell; cell++ )
-	    for ( node = 0; node < node_per; node++ )
+	    if ( faceid_insted_of_c2n )
 	      {
-		c2n[node+size_per*cell]++;
-		SWAP_INT(c2n[node+size_per*cell]);
-		REIS(1, fwrite(&(c2n[node+size_per*cell]),
-			       sizeof(REF_INT),1,file),"cell");
+		for ( node = node_per; node < size_per; node++ )
+		  {
+		    SWAP_INT(c2n[node+size_per*cell]);
+		    REIS(1, fwrite(&(c2n[node+size_per*cell]),
+				   sizeof(REF_INT),1,file),"cell");
+		  }
+	      }
+	    else
+	      {
+		for ( node = 0; node < node_per; node++ )
+		  {
+		    c2n[node+size_per*cell]++;
+		    SWAP_INT(c2n[node+size_per*cell]);
+		    REIS(1, fwrite(&(c2n[node+size_per*cell]),
+				   sizeof(REF_INT),1,file),"cell");
+		  }
 	      }
 	  ref_free(c2n);
 	}
@@ -201,12 +245,9 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, FILE *file )
 	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
 	  {
 	    for ( node = 0; node < node_per; node++ )
-	      c2n[node+size_per*cell] = ref_node_global(ref_node,nodes[node]);
-	    if ( ref_cell_last_node_is_an_id(ref_cell) )
-	      {
-		node = size_per-1;
-		c2n[node+size_per*cell] = nodes[node];
-	      }
+	      c2n[node+size_per*ncell] = ref_node_global(ref_node,nodes[node]);
+	    for ( node = node_per; node < size_per; node++ )
+	      c2n[node+size_per*ncell] = nodes[node];
 	    ncell++;
 	  }
       RSS( ref_mpi_send( c2n, ncell*size_per, 
