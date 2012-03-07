@@ -20,7 +20,6 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     TSS(ref_node_create(&ref_node),"create");
     TEIS(0,ref_node_n(ref_node),"init zero nodes");
-    TEIS(10,ref_node_max(ref_node),"init 10 max");
 
     TSS(ref_node_free(ref_node),"free");
   }
