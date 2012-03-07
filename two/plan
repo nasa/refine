@@ -34,8 +34,8 @@ June
 speedup
 
 void heap sort
-
-- optimize node add many
-
 - replace one at the top of part_cell with comp row storage
 
+ideas
+
+only have a cell exist once, no dupliate cells?
