@@ -68,6 +68,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   /* nodes */
 
+  RSS( ref_node_initialize_n_global( ref_node, nnode ), "init nnodesg");
+
   if ( ref_mpi_master )
     {
       part = 0;
