@@ -16,6 +16,7 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
 			     REF_INT *ncell );
 
 REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file );
+REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, FILE *file );
 
 END_C_DECLORATION
 
