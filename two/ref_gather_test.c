@@ -55,6 +55,25 @@ int main( int argc, char *argv[] )
 	TEIS(0, remove( "ref_gather_test.b8.ugrid" ), "test clean up");
     }
 
+  if ( 1 < argc )
+    {
+      REF_GRID import_grid;
+
+      ref_mpi_stopwatch_start();
+      TSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
+      ref_mpi_stopwatch_stop("read");
+      TSS(ref_migrate_new_part(import_grid),"new part");
+      ref_mpi_stopwatch_stop("new part");
+      TSS( ref_migrate_shufflin( import_grid ), "shufflin");
+
+      ref_mpi_stopwatch_start();
+      TSS( ref_gather_b8_ugrid( import_grid, "ref_gather_test.b8.ugrid" ), 
+	   "gather");
+      ref_mpi_stopwatch_stop("gather");
+
+      TSS( ref_grid_free( import_grid ), "free");
+    }
+
   TSS( ref_mpi_stop(  ), "stop" );
 
   return 0;
