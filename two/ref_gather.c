@@ -110,9 +110,14 @@ REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
   while ( nnode_written < ref_node_n_global(ref_node) )
     {
       first = nnode_written;
-      last = MIN(nnode_written+chunk-1, ref_node_n_global(ref_node));
+      last = MIN(nnode_written+chunk-1, ref_node_n_global(ref_node)-1);
       n = (last-first+1);
       nnode_written += n;
+
+      /*
+      printf(" chunk %d first %d last %d n %d nnode_written %d\n",
+	     chunk, first, last, n, nnode_written);
+      */
 
       for (i=0;i<4*chunk;i++)
 	local_xyzm[i] = 0.0;
@@ -122,24 +127,25 @@ REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
 	  global = first + i;
 	  status = ref_node_local( ref_node, global, &local );
 	  RXS( status, REF_NOT_FOUND, "node local failed" );
-	  if ( REF_SUCCESS == status )
+	  if ( REF_SUCCESS == status &&
+	       ref_mpi_id == ref_node_part(ref_node,local) )
 	    {
-	      local_xyzm[0+4*chunk] = ref_node_xyz(ref_node,0,local);
-	      local_xyzm[1+4*chunk] = ref_node_xyz(ref_node,1,local);
-	      local_xyzm[2+4*chunk] = ref_node_xyz(ref_node,2,local);
-	      local_xyzm[3+4*chunk] = 1.0;
+	      local_xyzm[0+4*i] = ref_node_xyz(ref_node,0,local);
+	      local_xyzm[1+4*i] = ref_node_xyz(ref_node,1,local);
+	      local_xyzm[2+4*i] = ref_node_xyz(ref_node,2,local);
+	      local_xyzm[3+4*i] = 1.0;
 	    }
 	  else
 	    {
-	      local_xyzm[0+4*chunk] = 0.0;
-	      local_xyzm[1+4*chunk] = 0.0;
-	      local_xyzm[2+4*chunk] = 0.0;
-	      local_xyzm[3+4*chunk] = 0.0;
+	      local_xyzm[0+4*i] = 0.0;
+	      local_xyzm[1+4*i] = 0.0;
+	      local_xyzm[2+4*i] = 0.0;
+	      local_xyzm[3+4*i] = 0.0;
 	    }
 	}
 
       RSS( ref_mpi_sum( local_xyzm, xyzm, 4*n, REF_DBL_TYPE ), "sum" );
-
+      
       if ( ref_mpi_master )
 	for ( i=0; i<n; i++ )
 	  {
