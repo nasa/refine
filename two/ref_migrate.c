@@ -392,20 +392,15 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
 
   if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
-  ref_mpi_stopwatch_start();
   RSS( ref_migrate_shufflin_node( ref_node ), "send out nodes" );
-  ref_mpi_stopwatch_stop("node");
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
       RSS( ref_migrate_shufflin_cell( ref_node, ref_cell ), "cell" );
-      ref_mpi_stopwatch_stop("cell");
     }
 
   RSS( ref_migrate_shufflin_cell( ref_node, ref_grid_tri(ref_grid) ), "tri");
-  ref_mpi_stopwatch_stop("tri");
   RSS( ref_migrate_shufflin_cell( ref_node, ref_grid_qua(ref_grid) ), "qua");
-  ref_mpi_stopwatch_stop("qua");
 
   each_ref_node_valid_node( ref_node, node )
     if ( ref_mpi_id != ref_node_part(ref_node,node) )
@@ -419,11 +414,7 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
       }
   RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild" );
 
-  ref_mpi_stopwatch_stop("remove");
-
   RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
-
-  ref_mpi_stopwatch_stop("ghost");
 
   return REF_SUCCESS;
 }

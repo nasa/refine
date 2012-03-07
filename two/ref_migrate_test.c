@@ -60,10 +60,12 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_start();
       TSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
       ref_mpi_stopwatch_stop("read");
+
       TSS(ref_migrate_new_part(import_grid),"new part");
       ref_mpi_stopwatch_stop("new part");
 
       TSS( ref_migrate_shufflin( import_grid ), "shufflin");
+      ref_mpi_stopwatch_stop("shufflin");
 
       TSS( ref_migrate_part_viz( import_grid ), "part_viz");
 
