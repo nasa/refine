@@ -111,6 +111,8 @@ REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, char *filename )
       RES( node, new_node, "node index");
     }
 
+  RSS( ref_node_initialize_n_global( ref_node, nnode ), "init glob");
+
   for( ixyz=0; ixyz<3 ; ixyz++ )
     for( node=0; node<nnode ; node++ ) 
       {
@@ -193,6 +195,8 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       ref_node_xyz( ref_node, 1, new_node ) = xyz[1];
       ref_node_xyz( ref_node, 2, new_node ) = xyz[2];
     }
+
+  RSS( ref_node_initialize_n_global( ref_node, nnode ), "init glob");
 
   ref_cell = ref_grid_tri(ref_grid);
   nodes[3] = REF_EMPTY;
@@ -334,6 +338,8 @@ REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
       SWAP_DBL(swapped_dbl);
       ref_node_xyz( ref_node, 2, new_node ) = swapped_dbl;
     }
+
+  RSS( ref_node_initialize_n_global( ref_node, nnode ), "init glob");
 
   ref_cell = ref_grid_tri(ref_grid);
   nodes[3] = REF_EMPTY;
@@ -487,6 +493,7 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
 	      ref_node_xyz(ref_node,2,new_node) = 
 		ref_node_xyz(ref_node,2,node);
 	    }
+	  RSS(ref_node_initialize_n_global( ref_node, 2 * nnode ), "init glob");
 	}
 
       if ( 0 == strcmp("Edges",line))
