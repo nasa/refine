@@ -17,10 +17,6 @@ typedef int REF_BOOL;
 #define REF_TRUE (1)
 #define REF_FALSE (0)
 
-#if !defined(REF_ECHO_ASSERT)
-#define REF_ECHO_ASSERT (REF_FALSE)
-#endif
-
 #define REF_EMPTY (-1)
 
 #if !defined(ABS)
