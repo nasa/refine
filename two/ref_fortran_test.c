@@ -65,7 +65,7 @@ int main( void )
 
   partition = 0;
 
-  TSS(ref_init_node__(&nnodes, &nnodesg,
+  RSS(ref_init_node__(&nnodes, &nnodesg,
 		      l2g, part, &partition,
 		      x, y, z),"init node");
 
@@ -78,7 +78,7 @@ int main( void )
   c2n[2] = 3;
   c2n[3] = 4;
 
-  TSS(ref_import_cell__( &node_per_cell, &ncell, c2n ),"import cell");
+  RSS(ref_import_cell__( &node_per_cell, &ncell, c2n ),"import cell");
 
   node_per_face = 3;
   nface = 1;
@@ -88,12 +88,12 @@ int main( void )
   f2n[2] = 1;
 
   ibound=1;
-  TSS(ref_import_boundary__( &node_per_face, &nface, f2n, &ibound ),
+  RSS(ref_import_boundary__( &node_per_face, &nface, f2n, &ibound ),
       "import face");
 
-  TSS(ref_import_metric__(&nnodes, m),"import metric");
+  RSS(ref_import_metric__(&nnodes, m),"import metric");
 
-  TSS(ref_free__(),"free");
+  RSS(ref_free__(),"free");
 
   free(f2n);
   free(c2n);

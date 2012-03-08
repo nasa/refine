@@ -38,7 +38,7 @@ int main( void )
 
   { /* normal one */
     REF_DBL vect[3]={1.0,0.0,0.0};
-    TSS(ref_math_normalize( vect ), "expect success");
+    RSS(ref_math_normalize( vect ), "expect success");
     TWDS(1.0,vect[0],-1.0,"same");
     TWDS(0.0,vect[1],-1.0,"same");
     TWDS(0.0,vect[2],-1.0,"same");
@@ -46,7 +46,7 @@ int main( void )
 
   { /* normal two */
     REF_DBL vect[3]={2.0,0.0,0.0};
-    TSS(ref_math_normalize( vect ), "expect success");
+    RSS(ref_math_normalize( vect ), "expect success");
     TWDS(1.0,vect[0],-1.0,"same");
     TWDS(0.0,vect[1],-1.0,"same");
     TWDS(0.0,vect[2],-1.0,"same");

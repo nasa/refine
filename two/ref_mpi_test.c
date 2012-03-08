@@ -9,12 +9,12 @@
 int main( int argc, char *argv[] )
 {
 
-  TSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_start( argc, argv ), "start" );
 
   if ( ref_mpi_n == 1 )
     { /* start */
-      TEIS( 1, ref_mpi_n, "n" );
-      TEIS( 0, ref_mpi_id, "n" );
+      REIS( 1, ref_mpi_n, "n" );
+      REIS( 0, ref_mpi_id, "n" );
       TAS( ref_mpi_master, "master" );
     }
   else
@@ -26,7 +26,7 @@ int main( int argc, char *argv[] )
       RSS( ref_mpi_stopwatch_stop( "integer broadcast" ), "sw start");
     }
 
-  TSS( ref_mpi_stop( ), "stop" );
+  RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }

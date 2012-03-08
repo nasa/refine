@@ -12,84 +12,84 @@ int main( void )
 
   {
     TFS(ref_dict_free(NULL),"dont free NULL");
-    TSS(ref_dict_create(&ref_dict),"create");
-    TEIS(0,ref_dict_n(ref_dict),"init zero");
-    TSS(ref_dict_free(ref_dict),"free");
+    RSS(ref_dict_create(&ref_dict),"create");
+    REIS(0,ref_dict_n(ref_dict),"init zero");
+    RSS(ref_dict_free(ref_dict),"free");
   }
 
   { /* missing fails */
     REF_INT key, value;
      key = 2; value = 5;
-    TSS(ref_dict_create(&ref_dict),"create");
+    RSS(ref_dict_create(&ref_dict),"create");
     TFS(ref_dict_value(ref_dict,key,&value),"missing");
-    TEIS(5,value,"get value");
-    TSS(ref_dict_free(ref_dict),"free");
+    REIS(5,value,"get value");
+    RSS(ref_dict_free(ref_dict),"free");
   }
 
   { /* store one */
     REF_INT key, value;
-    TSS(ref_dict_create(&ref_dict),"create");
+    RSS(ref_dict_create(&ref_dict),"create");
     key = 2; value = 5;
-    TSS(ref_dict_store(ref_dict,key,value),"store");
-    TSS(ref_dict_value(ref_dict,key,&value),"retrieve");
-    TEIS(5,value,"get value");
-    TSS(ref_dict_free(ref_dict),"free");
+    RSS(ref_dict_store(ref_dict,key,value),"store");
+    RSS(ref_dict_value(ref_dict,key,&value),"retrieve");
+    REIS(5,value,"get value");
+    RSS(ref_dict_free(ref_dict),"free");
   }
 
   { /* store two */
     REF_INT key, value;
-    TSS(ref_dict_create(&ref_dict),"create");
+    RSS(ref_dict_create(&ref_dict),"create");
     key = 2; value = 5;
-    TSS(ref_dict_store(ref_dict,key,value),"store");
+    RSS(ref_dict_store(ref_dict,key,value),"store");
     key = 1; value = 3;
-    TSS(ref_dict_store(ref_dict,key,value),"store");
-    key = 1; TSS(ref_dict_value(ref_dict,key,&value),"retrieve");
-    TEIS(3,value,"get value");
-    key = 2; TSS(ref_dict_value(ref_dict,key,&value),"retrieve");
-    TEIS(5,value,"get value");
-    TSS(ref_dict_free(ref_dict),"free");
+    RSS(ref_dict_store(ref_dict,key,value),"store");
+    key = 1; RSS(ref_dict_value(ref_dict,key,&value),"retrieve");
+    REIS(3,value,"get value");
+    key = 2; RSS(ref_dict_value(ref_dict,key,&value),"retrieve");
+    REIS(5,value,"get value");
+    RSS(ref_dict_free(ref_dict),"free");
   }
 
   { /* remove */
     REF_INT key, value;
-    TSS(ref_dict_create(&ref_dict),"create");
+    RSS(ref_dict_create(&ref_dict),"create");
     key = 2; value = 5;
-    TSS(ref_dict_store(ref_dict,key,value),"store");
-    TSS(ref_dict_remove(ref_dict,key),"remove");
-    TEIS(0,ref_dict_n(ref_dict),"back to zero");
+    RSS(ref_dict_store(ref_dict,key,value),"store");
+    RSS(ref_dict_remove(ref_dict,key),"remove");
+    REIS(0,ref_dict_n(ref_dict),"back to zero");
     TFS(ref_dict_value(ref_dict,key,&value),"should not retrieve");
-    TSS(ref_dict_free(ref_dict),"free");
+    RSS(ref_dict_free(ref_dict),"free");
   }
 
   { /* store lots */
     REF_INT key, value, max;
-    TSS(ref_dict_create(&ref_dict),"create");
+    RSS(ref_dict_create(&ref_dict),"create");
     max = ref_dict_max(ref_dict);
     for (key=0; key <= max; key++)
       {
 	value = 10*key;
-	TSS(ref_dict_store(ref_dict,key,value),"store");
+	RSS(ref_dict_store(ref_dict,key,value),"store");
       }
     TAS(ref_dict_max(ref_dict)>max, "more?");
-    TSS(ref_dict_free(ref_dict),"free");
+    RSS(ref_dict_free(ref_dict),"free");
   }
 
   { /* store key only once with latest value */
     REF_INT key, value;
-    TSS(ref_dict_create(&ref_dict),"create");
+    RSS(ref_dict_create(&ref_dict),"create");
     key = 2; value = 5;
-    TSS(ref_dict_store(ref_dict,key,value),"store");
+    RSS(ref_dict_store(ref_dict,key,value),"store");
     key = 1; value = 3;
-    TSS(ref_dict_store(ref_dict,key,value),"store");
+    RSS(ref_dict_store(ref_dict,key,value),"store");
 
     key = 2; value = 7;
-    TSS(ref_dict_store(ref_dict,key,value),"store");
-    key = 2; TSS(ref_dict_value(ref_dict,key,&value),"retrieve");
-    TEIS(7,value,"get value");
+    RSS(ref_dict_store(ref_dict,key,value),"store");
+    key = 2; RSS(ref_dict_value(ref_dict,key,&value),"retrieve");
+    REIS(7,value,"get value");
 
-    TEIS(2, ref_dict_n( ref_dict ),"two keys");
+    REIS(2, ref_dict_n( ref_dict ),"two keys");
     
-    TSS(ref_dict_free(ref_dict),"free");
+    RSS(ref_dict_free(ref_dict),"free");
   }
 
   return 0;

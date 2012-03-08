@@ -12,8 +12,8 @@ int main( void )
 
   {
     TFS(ref_metric_free(NULL),"dont free NULL");
-    TSS(ref_metric_create(&ref_metric),"create");
-    TSS(ref_metric_free(ref_metric),"free");
+    RSS(ref_metric_create(&ref_metric),"create");
+    RSS(ref_metric_free(ref_metric),"free");
   }
 
   { /* set */
@@ -21,14 +21,14 @@ int main( void )
                         1.0, 0.0,
                              1.0};
     REF_INT i;
-    TSS(ref_metric_create(&ref_metric),"create");
+    RSS(ref_metric_create(&ref_metric),"create");
 
-    TSS(ref_metric_set(ref_metric,0,m),"set");
+    RSS(ref_metric_set(ref_metric,0,m),"set");
 
     for (i=0;i<6;i++)
       TWDS( m[i], ref_metric_m(ref_metric,i,0), -1.0, "m" );
 
-    TSS(ref_metric_free(ref_metric),"free");
+    RSS(ref_metric_free(ref_metric),"free");
   }
 
   { /* realloc */
@@ -37,17 +37,17 @@ int main( void )
                              1.0};
     REF_INT max;
     REF_INT i;
-    TSS(ref_metric_create(&ref_metric),"create");
+    RSS(ref_metric_create(&ref_metric),"create");
 
     max = ref_metric_max(ref_metric);
 
-    TSS(ref_metric_set(ref_metric,max,m),"set");
+    RSS(ref_metric_set(ref_metric,max,m),"set");
     TAS(ref_metric_max(ref_metric)>max,"max increased");
 
     for (i=0;i<6;i++)
       TWDS( m[i], ref_metric_m(ref_metric,i,max), -1.0, "m" );
 
-    TSS(ref_metric_free(ref_metric),"free");
+    RSS(ref_metric_free(ref_metric),"free");
   }
 
   return 0;

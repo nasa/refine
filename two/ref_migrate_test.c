@@ -26,7 +26,7 @@
 int main( int argc, char *argv[] )
 {
 
-  TSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_start( argc, argv ), "start" );
 
   if ( 1 == argc )
     {
@@ -36,18 +36,18 @@ int main( int argc, char *argv[] )
       if ( ref_mpi_master ) 
 	{
 	  REF_GRID export_grid;
-	  TSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
-	  TSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
-	  TSS(ref_grid_free(export_grid),"free" );
+	  RSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
+	  RSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
+	  RSS(ref_grid_free(export_grid),"free" );
 	}
 
-      TSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
-      TSS(ref_migrate_new_part(import_grid),"create");
+      RSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
+      RSS(ref_migrate_new_part(import_grid),"create");
 
-      TSS( ref_migrate_shufflin( import_grid ), "shufflin");
+      RSS( ref_migrate_shufflin( import_grid ), "shufflin");
 
-      TSS( ref_grid_free( import_grid ), "free");
-      if ( ref_mpi_master ) TEIS(0, remove( grid_file ), "test clean up");
+      RSS( ref_grid_free( import_grid ), "free");
+      if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
     }
 
   if ( 1 < argc )
@@ -58,21 +58,21 @@ int main( int argc, char *argv[] )
 	printf("%d procs, read %s\n",ref_mpi_n,argv[1]);
 
       ref_mpi_stopwatch_start();
-      TSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
+      RSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
       ref_mpi_stopwatch_stop("read");
 
-      TSS(ref_migrate_new_part(import_grid),"new part");
+      RSS(ref_migrate_new_part(import_grid),"new part");
       ref_mpi_stopwatch_stop("new part");
 
-      TSS( ref_migrate_shufflin( import_grid ), "shufflin");
+      RSS( ref_migrate_shufflin( import_grid ), "shufflin");
       ref_mpi_stopwatch_stop("shufflin");
 
-      TSS( ref_migrate_part_viz( import_grid ), "part_viz");
+      RSS( ref_migrate_part_viz( import_grid ), "part_viz");
 
-      TSS( ref_grid_free( import_grid ), "free");
+      RSS( ref_grid_free( import_grid ), "free");
     }
 
-  TSS( ref_mpi_stop(  ), "stop" );
+  RSS( ref_mpi_stop(  ), "stop" );
 
   return 0;
 }
