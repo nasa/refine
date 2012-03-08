@@ -55,8 +55,10 @@ static REF_STATUS tear_down( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-int main( void )
+int main( int argc, char *argv[] )
 {
+
+  TSS( ref_mpi_start( argc, argv ), "start" );
 
   { /* mark and relax prism*/
     REF_SUBDIV ref_subdiv;
@@ -353,6 +355,8 @@ int main( void )
 
     TSS( tear_down( ref_subdiv ), "tear down");
   }
+
+  TSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }
