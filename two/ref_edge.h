@@ -18,6 +18,7 @@ struct REF_EDGE_STRUCT {
   REF_INT n;
   REF_INT *e2n;
   REF_ADJ adj;
+  REF_NODE node;
 };
 
 REF_STATUS ref_edge_create( REF_EDGE *ref_edge, REF_GRID ref_grid );
@@ -29,6 +30,7 @@ REF_STATUS ref_edge_free( REF_EDGE ref_edge );
   ((ref_edge)->e2n[node+2*edge])
 
 #define ref_edge_adj( ref_edge ) ((ref_edge)->adj)
+#define ref_edge_node(ref_edge) ((ref_edge)->node)
 
 #define each_edge_having_node( ref_edge, node, item, edge ) \
   each_ref_adj_node_item_with_ref( ref_edge_adj( ref_edge ), node, item, edge)

@@ -68,6 +68,8 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
 			edge ), "adj n1");
     }
 
+  ref_edge_node(ref_edge) = ref_grid_node(ref_grid);
+
   return REF_SUCCESS;
 }
 
