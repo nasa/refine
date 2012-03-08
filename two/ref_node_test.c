@@ -14,7 +14,7 @@ int main( int argc, char *argv[] )
 
   RSS( ref_mpi_start( argc, argv ), "start" );
 
-  TFS(ref_node_free(NULL),"dont free NULL");
+  REIS(REF_NULL,ref_node_free(NULL),"dont free NULL");
 
   { /* init */
     REF_NODE ref_node;
@@ -31,12 +31,6 @@ int main( int argc, char *argv[] )
 
     RES(REF_EMPTY,ref_node_global(ref_node,0),"global empty for missing node");
 
-    /* dont allow neg globals */
-    /* skipped, it is an assert 
-    TFS(ref_node_add(ref_node,-3,&node),"negative global no allowed");
-    RES(0,ref_node_n(ref_node),"count not changed");
-    */
-
     /* first add in order */
     global = 10;
     RSS(ref_node_add(ref_node,global,&node),"first add");
@@ -51,8 +45,8 @@ int main( int argc, char *argv[] )
     RES(global,ref_node_global(ref_node,1),"global match for second node");
 
     /* removed node invalid */
-    TFS(ref_node_remove(ref_node,-1),"remove invalid node");
-    TFS(ref_node_remove(ref_node,2),"remove invalid node");
+    REIS(REF_INVALID,ref_node_remove(ref_node,-1),"remove invalid node");
+    REIS(REF_INVALID,ref_node_remove(ref_node,2),"remove invalid node");
 
     RSS(ref_node_remove(ref_node,0),"remove first node");
     RES(REF_EMPTY,ref_node_global(ref_node,0),"global empty for removed node");
@@ -92,10 +86,10 @@ int main( int argc, char *argv[] )
     RSS(ref_node_add(ref_node,global,&node),"realloc");
 
     node = 0;
-    TFS(ref_node_local(ref_node,-1,&node),"returned invalid global");
+    REIS(REF_NOT_FOUND,ref_node_local(ref_node,-1,&node),"invalid global");
     RES(REF_EMPTY,node,"expect node empty for invalid global");
-    TFS(ref_node_local(ref_node,5,&node),"returned invalid global");
-    TFS(ref_node_local(ref_node,200,&node),"returned invalid global");
+    REIS(REF_NOT_FOUND,ref_node_local(ref_node,5,&node),"invalid global");
+    REIS(REF_NOT_FOUND,ref_node_local(ref_node,200,&node),"invalid global");
 
     RSS(ref_node_local(ref_node,10,&node),"return global");
     REIS(0,node,"wrong local");

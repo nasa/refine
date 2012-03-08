@@ -76,13 +76,16 @@ REF_STATUS ref_dict_location( REF_DICT ref_dict,
 {
   REF_INT i;
 
+  *location = REF_EMPTY;
+
   for (i=0; i<ref_dict_n( ref_dict ); i++) 
     if ( key == ref_dict->key[i] )
       {
 	*location = i;
 	return REF_SUCCESS;
       }
-  return REF_FAILURE;
+
+  return REF_NOT_FOUND;
 }
 
 

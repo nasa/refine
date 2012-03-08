@@ -17,10 +17,10 @@ int main( int argc, char *argv[] )
 
   {
     REF_INT last;
-    TFS(ref_list_free(NULL),"dont free NULL");
+    REIS(REF_NULL,ref_list_free(NULL),"dont free NULL");
     RSS(ref_list_create(&ref_list),"create");
     REIS(0,ref_list_n(ref_list),"init zero");
-    TFS(ref_list_remove(ref_list,&last),"rm");
+    REIS(REF_FAILURE,ref_list_remove(ref_list,&last),"rm");
     REIS(REF_EMPTY,last,"remove empty");
     RSS(ref_list_free(ref_list),"free");
   }

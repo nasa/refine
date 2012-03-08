@@ -30,7 +30,7 @@ int main( void )
 
   { /* normal zero */
     REF_DBL vect[3]={0.0,0.0,0.0};
-    TFS(ref_math_normalize( vect ), "expect fail");
+    REIS(REF_DIV_ZERO,ref_math_normalize( vect ), "expect fail");
     RWDS(0.0,vect[0],-1.0,"same");
     RWDS(0.0,vect[1],-1.0,"same");
     RWDS(0.0,vect[2],-1.0,"same");

@@ -44,7 +44,7 @@ int main( void )
   REF_INT max, i;
   REF_INT ncell;
 
-  TFS(ref_cell_free(NULL),"dont free NULL");
+  REIS(REF_NULL,ref_cell_free(NULL),"dont free NULL");
 
   { /* add */
     RSS(ref_tet(&ref_cell),"create");
@@ -98,7 +98,7 @@ int main( void )
     nodes[0]= 0; nodes[1]= 4; nodes[2]= 5; nodes[3]= 6; 
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    TFS(ref_cell_remove(ref_cell,3),"remove cell missing cell");
+    REIS(REF_INVALID,ref_cell_remove(ref_cell,3),"remove cell missing cell");
     RES(2,ref_cell_n(ref_cell),"still there");
 
     RSS(ref_cell_remove(ref_cell,0),"remove cell");
@@ -155,9 +155,9 @@ int main( void )
     RSS(ref_tet(&ref_cell),"create new");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
-    TFS(ref_cell_nodes(ref_cell,0,nodes),"missing cell should fail");
-    TFS(ref_cell_nodes(ref_cell,-1,nodes),"-1 cell should fail");
-    TFS(ref_cell_nodes(ref_cell,1000000000,nodes),"large cell should fail");
+    REIS(REF_INVALID,ref_cell_nodes(ref_cell,0,nodes),"missing cell");
+    REIS(REF_INVALID,ref_cell_nodes(ref_cell,-1,nodes),"-1 cell should fail");
+    REIS(REF_INVALID,ref_cell_nodes(ref_cell,1000000000,nodes),"large cell");
 
     nodes[0]= 10; nodes[1]= 20; nodes[2]= 30; nodes[3]= 40; 
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
@@ -403,7 +403,7 @@ int main( void )
     REIS(cell,found, "not same");
 
     nodes[0]=5;
-    TFS(ref_cell_with(ref_cell,nodes,&found),"found");
+    REIS(REF_NOT_FOUND,ref_cell_with(ref_cell,nodes,&found),"found");
     REIS(REF_EMPTY,found, "not same")
 
     RSS(ref_cell_free(ref_cell),"cleanup");
@@ -425,7 +425,7 @@ int main( void )
     REIS(cell,found, "not same");
 
     nodes[0]=5;
-    TFS(ref_cell_with(ref_cell,nodes,&found),"found");
+    REIS(REF_NOT_FOUND,ref_cell_with(ref_cell,nodes,&found),"found");
     REIS(REF_EMPTY,found, "not same")
 
     RSS(ref_cell_free(ref_cell),"cleanup");

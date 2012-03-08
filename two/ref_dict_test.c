@@ -11,7 +11,7 @@ int main( void )
   REF_DICT ref_dict;
 
   {
-    TFS(ref_dict_free(NULL),"dont free NULL");
+    REIS(REF_NULL,ref_dict_free(NULL),"dont free NULL");
     RSS(ref_dict_create(&ref_dict),"create");
     REIS(0,ref_dict_n(ref_dict),"init zero");
     RSS(ref_dict_free(ref_dict),"free");
@@ -21,7 +21,7 @@ int main( void )
     REF_INT key, value;
      key = 2; value = 5;
     RSS(ref_dict_create(&ref_dict),"create");
-    TFS(ref_dict_value(ref_dict,key,&value),"missing");
+    REIS(REF_NOT_FOUND,ref_dict_value(ref_dict,key,&value),"missing");
     REIS(5,value,"get value");
     RSS(ref_dict_free(ref_dict),"free");
   }
@@ -57,7 +57,8 @@ int main( void )
     RSS(ref_dict_store(ref_dict,key,value),"store");
     RSS(ref_dict_remove(ref_dict,key),"remove");
     REIS(0,ref_dict_n(ref_dict),"back to zero");
-    TFS(ref_dict_value(ref_dict,key,&value),"should not retrieve");
+    REIS(REF_NOT_FOUND,ref_dict_value(ref_dict,key,&value),
+	 "should not retrieve");
     RSS(ref_dict_free(ref_dict),"free");
   }
 

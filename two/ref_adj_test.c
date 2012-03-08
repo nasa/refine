@@ -13,7 +13,7 @@ int main( void )
   REF_INT nitem;
 
   {
-    TFS(ref_adj_free(NULL),"dont free NULL");
+    REIS(REF_NULL, ref_adj_free(NULL),"dont free NULL");
     RSS(ref_adj_create(&ref_adj),"create");
     RSS(ref_adj_free(ref_adj),"free");
   }
@@ -35,7 +35,7 @@ int main( void )
     RSS(ref_adj_create(&ref_adj),"create");
 
     RSS(ref_adj_add(ref_adj,0,12),"add");
-    TFS(ref_adj_remove(ref_adj,0,13),"remove missing");
+    REIS(REF_INVALID,ref_adj_remove(ref_adj,0,13),"remove missing");
     RSS(ref_adj_remove(ref_adj,0,12),"remove added");
 
     item = ref_adj_first(ref_adj,0);
@@ -79,7 +79,7 @@ int main( void )
     RSS(ref_adj_create(&ref_adj),"create");
   
     RES(REF_EMPTY,ref_adj_first(ref_adj,-1),"negative first");
-    TFS(ref_adj_add(ref_adj,-1,21),"negative add");
+    REIS(REF_INVALID,ref_adj_add(ref_adj,-1,21),"negative add");
 
     RSS(ref_adj_free(ref_adj),"free");
   }

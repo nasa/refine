@@ -16,7 +16,7 @@ int main( void )
   REF_GRID ref_grid;
 
   {  /* init */
-    TFS(ref_grid_free(NULL),"dont free NULL");
+    REIS(REF_NULL,ref_grid_free(NULL),"dont free NULL");
 
     RSS(ref_grid_create(&ref_grid),"create");
     RSS(ref_grid_free(ref_grid),"free");

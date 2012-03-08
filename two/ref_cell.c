@@ -409,7 +409,7 @@ REF_STATUS ref_cell_add_many_global( REF_CELL ref_cell, REF_NODE ref_node,
 REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
 {
   REF_INT node;
-  if ( !ref_cell_valid(ref_cell,cell) ) return REF_FAILURE;
+  if ( !ref_cell_valid(ref_cell,cell) ) return REF_INVALID;
   ref_cell_n(ref_cell)--;
 
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )

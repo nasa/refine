@@ -11,7 +11,7 @@ int main( void )
   REF_METRIC ref_metric;
 
   {
-    TFS(ref_metric_free(NULL),"dont free NULL");
+    REIS(REF_NULL,ref_metric_free(NULL),"dont free NULL");
     RSS(ref_metric_create(&ref_metric),"create");
     RSS(ref_metric_free(ref_metric),"free");
   }
