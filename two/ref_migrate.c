@@ -15,16 +15,6 @@
 #ifdef HAVE_ZOLTAN
 #include "zoltan.h"
 
-REF_STATUS ref_migrate_to_balance( REF_GRID ref_grid )
-{
-
-  RSS( ref_migrate_new_part( ref_grid ), "new part" );
-  RSS( ref_migrate_shufflin( ref_grid ), "shufflin" );
-
-  return REF_SUCCESS;
-}
-
-
 static int ref_migrate_local_n( void *void_ref_grid, int *ierr )
 {
   REF_NODE ref_node = ref_grid_node((REF_GRID)void_ref_grid);
@@ -94,6 +84,15 @@ static void ref_migrate_xyz( void *void_ref_grid,
 }
 
 #endif
+
+REF_STATUS ref_migrate_to_balance( REF_GRID ref_grid )
+{
+
+  RSS( ref_migrate_new_part( ref_grid ), "new part" );
+  RSS( ref_migrate_shufflin( ref_grid ), "shufflin" );
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 {
