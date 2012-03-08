@@ -23,6 +23,8 @@ REF_STATUS ref_export_tec_vol_zone( REF_GRID ref_grid, FILE *file );
 REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
 			       char *filename );
 
+REF_STATUS ref_export_tec_part( REF_GRID ref_grid, char *root_filename );
+
 REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename );

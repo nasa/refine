@@ -182,19 +182,6 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_part_viz( REF_GRID ref_grid )
-{
-  REF_NODE ref_node = ref_grid_node( ref_grid );
-  char viz_file[256];
-
-  sprintf(viz_file, "ref_migrate_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
-
-  RSS(ref_export_tec_int( ref_grid, ref_node->part,
-			  viz_file ) , "viz parts as scalar");
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 {
   REF_INT *a_size, *b_size;

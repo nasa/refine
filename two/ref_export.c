@@ -8,6 +8,8 @@
 #include "ref_dict.h"
 #include "ref_endian.h"
 
+#include "ref_mpi.h"
+
 #define VTK_TETRA      (10)
 #define VTK_HEXAHEDRON (12)
 #define VTK_WEDGE      (13)
@@ -498,6 +500,19 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
     }
 
   free(o2n);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_part( REF_GRID ref_grid, char *root_filename )
+{
+  REF_NODE ref_node = ref_grid_node( ref_grid );
+  char viz_file[256];
+
+  sprintf(viz_file, "%s_n%d_p%d.tec", root_filename, ref_mpi_n, ref_mpi_id);
+
+  RSS(ref_export_tec_int( ref_grid, ref_node->part,
+			  viz_file ) , "viz parts as scalar");
 
   return REF_SUCCESS;
 }

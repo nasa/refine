@@ -20,9 +20,6 @@
 #include "ref_mpi.h"
 #include "ref_part.h"
 
-
-
-
 int main( int argc, char *argv[] )
 {
 
@@ -67,7 +64,7 @@ int main( int argc, char *argv[] )
       RSS( ref_migrate_shufflin( import_grid ), "shufflin");
       ref_mpi_stopwatch_stop("shufflin");
 
-      RSS( ref_migrate_part_viz( import_grid ), "part_viz");
+      RSS( ref_export_tec_part( import_grid, "ref_migrate" ), "part_viz");
 
       RSS( ref_grid_free( import_grid ), "free");
     }
