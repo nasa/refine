@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "ref_test.h"
+
 
 #include "ref_grid.h"
 #include "ref_import.h"
@@ -26,7 +26,7 @@
 
 #include "ref_swap.h"
 
-#include "ref_test.h"
+
 #include "ref_fixture.h"
 #include "ref_mpi.h"
 

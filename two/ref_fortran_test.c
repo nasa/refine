@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "ref_fortran.h"
-#include "ref_test.h"
+
 #include "ref_grid.h"
 #include "ref_export.h"
 #include "ref_node.h"

@@ -55,8 +55,6 @@ bin_PROGRAMS += convert
 convert_SOURCES = convert.c
 convert_LDADD = libref2.a -lm
 
-noinst_HEADERS = ref_test.h
-
 noinst_PROGRAMS =
 TESTS =
 

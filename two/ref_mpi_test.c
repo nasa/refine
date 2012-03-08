@@ -4,7 +4,7 @@
 
 #include "ref_mpi.h"
 
-#include "ref_test.h"
+
 
 int main( int argc, char *argv[] )
 {

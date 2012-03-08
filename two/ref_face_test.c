@@ -14,7 +14,7 @@
 #include "ref_face.h"
 #include "ref_mpi.h"
 
-#include "ref_test.h"
+
 
 int main( void )
 {

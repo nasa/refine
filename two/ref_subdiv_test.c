@@ -18,7 +18,7 @@
 #include "ref_dict.h"
 #include "ref_mpi.h"
 
-#include "ref_test.h"
+
 
 static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 {

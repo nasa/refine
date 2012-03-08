@@ -22,7 +22,7 @@
 #include "ref_dict.h"
 #include "ref_mpi.h"
 
-#include "ref_test.h"
+
 
 static REF_STATUS set_up_hex_for_shard( REF_SHARD *ref_shard_ptr )
 {

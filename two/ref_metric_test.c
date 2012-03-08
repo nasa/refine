@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "ref_metric.h"
-#include "ref_test.h"
+
 
 int main( void )
 {
