@@ -1,6 +1,4 @@
 
-
-export
 migrate ghost operations to grid
 parallel stack subdivision
  edge xfer
@@ -16,14 +14,14 @@ error estimation for mixed
 
 March
 4  shift globals/unused globals/export
-11 
-18 projection
-25
+11 subdiv prism in parallel
+18 flat plate adaptation
+25 projection
 
 April
-1
-8
-15
+1  projection
+8  tet adapt
+15 dpw
 22
 29
 
@@ -46,3 +44,4 @@ void heap sort
 ideas
 
 only have a cell exist once, no dupliate cells?
+
