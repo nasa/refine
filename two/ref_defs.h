@@ -35,8 +35,6 @@ typedef int REF_BOOL;
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
-#define ref_cond_free(ptr) {if ( NULL != (ptr) ) free((ptr));}
-
 typedef int REF_INT;
 typedef double REF_DBL;
 

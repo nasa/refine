@@ -6,14 +6,14 @@
 #include "ref_quality.h"
 #include "ref_export.h"
 
+#include "ref_malloc.h"
+
 REF_STATUS ref_shard_create( REF_SHARD *ref_shard_ptr, REF_GRID ref_grid )
 {
   REF_SHARD ref_shard;
   REF_INT face;
 
-  (*ref_shard_ptr) = NULL;
-  (*ref_shard_ptr) = (REF_SHARD)malloc( sizeof(REF_SHARD_STRUCT) );
-  RNS(*ref_shard_ptr,"malloc ref_shard NULL");
+  ref_malloc( *ref_shard_ptr, 1, REF_SHARD_STRUCT );
 
   ref_shard = *ref_shard_ptr;
 
@@ -22,9 +22,7 @@ REF_STATUS ref_shard_create( REF_SHARD *ref_shard_ptr, REF_GRID ref_grid )
   RSS( ref_face_create( &(ref_shard_face( ref_shard )), 
 			ref_shard_grid(ref_shard) ), "create face" );
 
-  ref_shard->mark = (REF_INT *)malloc( ref_face_n(ref_shard_face(ref_shard)) 
-					* sizeof(REF_INT));
-  RNS(ref_shard->mark,"malloc mark NULL");
+  ref_malloc(ref_shard->mark, ref_face_n(ref_shard_face(ref_shard)), REF_INT );
 
   for ( face=0 ; face < ref_face_n(ref_shard_face(ref_shard)) ; face++ )
     ref_shard_mark( ref_shard, face ) = 0;
@@ -36,10 +34,10 @@ REF_STATUS ref_shard_free( REF_SHARD ref_shard )
 {
   if ( NULL == (void *)ref_shard ) return REF_NULL;
 
-  free( ref_shard->mark );
+  ref_free( ref_shard->mark );
   RSS( ref_face_free( ref_shard_face( ref_shard ) ), "free face" );
 
-  ref_cond_free( ref_shard );
+  ref_free( ref_shard );
 
   return REF_SUCCESS;
 }

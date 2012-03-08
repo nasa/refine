@@ -4,25 +4,21 @@
 
 #include "ref_dict.h"
 
+#include "ref_malloc.h"
+
 REF_STATUS ref_dict_create( REF_DICT *ref_dict_ptr )
 {
   REF_DICT ref_dict;
 
-  (*ref_dict_ptr) = NULL;
-  (*ref_dict_ptr) = (REF_DICT)malloc( sizeof(REF_DICT_STRUCT) );
-  RNS(*ref_dict_ptr,"malloc ref_dict NULL");
+  ref_malloc( *ref_dict_ptr, 1, REF_DICT_STRUCT );
+
   ref_dict = (*ref_dict_ptr);
 
   ref_dict_n(ref_dict) = 0;
   ref_dict_max(ref_dict) = 10;
 
-  ref_dict->key = (REF_INT *)malloc( ref_dict_max(ref_dict) * 
-				     sizeof(REF_INT) );
-  RNS(ref_dict->key,"malloc ref_dict->key NULL");
-
-  ref_dict->value = (REF_INT *)malloc( ref_dict_max(ref_dict) * 
-				     sizeof(REF_INT) );
-  RNS(ref_dict->value,"malloc ref_dict->value NULL");
+  ref_malloc( ref_dict->key,   ref_dict_max(ref_dict), REF_INT );
+  ref_malloc( ref_dict->value, ref_dict_max(ref_dict), REF_INT );
 
   return REF_SUCCESS;
 }
@@ -30,9 +26,9 @@ REF_STATUS ref_dict_create( REF_DICT *ref_dict_ptr )
 REF_STATUS ref_dict_free( REF_DICT ref_dict )
 {
   if ( NULL == (void *)ref_dict ) return REF_NULL;
-  ref_cond_free( ref_dict->value );
-  ref_cond_free( ref_dict->key );
-  ref_cond_free( ref_dict );
+  ref_free( ref_dict->value );
+  ref_free( ref_dict->key );
+  ref_free( ref_dict );
   return REF_SUCCESS;
 }
 
@@ -43,14 +39,9 @@ REF_STATUS ref_dict_store( REF_DICT ref_dict, REF_INT key, REF_INT value )
   if ( ref_dict_max(ref_dict) == ref_dict_n(ref_dict) )
     {
       ref_dict_max(ref_dict) += 1000;
-      ref_dict->key = (REF_INT *)realloc( (void *)(ref_dict->key),
-					  ref_dict_max(ref_dict) * 
-					  sizeof(REF_INT) );
-      RNS(ref_dict->key,"realloc ref_dict->key NULL");
-      ref_dict->value = (REF_INT *)realloc( (void *)(ref_dict->value),
-					    ref_dict_max(ref_dict) * 
-					    sizeof(REF_INT) );
-      RNS(ref_dict->value,"realloc ref_dict->value NULL");
+
+      ref_realloc( ref_dict->key,   ref_dict_max(ref_dict), REF_INT );
+      ref_realloc( ref_dict->value, ref_dict_max(ref_dict), REF_INT );
     }
 
   insert_point = 0;

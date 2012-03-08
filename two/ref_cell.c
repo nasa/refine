@@ -251,11 +251,11 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
 {
   if ( NULL == (void *)ref_cell ) return REF_NULL;
   ref_adj_free( ref_cell->ref_adj );
-  ref_cond_free( ref_cell->c2n );
-  ref_cond_free( ref_cell->c2e );
-  ref_cond_free( ref_cell->f2n );
-  ref_cond_free( ref_cell->e2n );
-  ref_cond_free( ref_cell );
+  ref_free( ref_cell->c2n );
+  ref_free( ref_cell->c2e );
+  ref_free( ref_cell->f2n );
+  ref_free( ref_cell->e2n );
+  ref_free( ref_cell );
   return REF_SUCCESS;
 }
 

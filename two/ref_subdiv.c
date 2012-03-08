@@ -4,6 +4,8 @@
 
 #include "ref_subdiv.h"
 
+#include "ref_malloc.h"
+
 static REF_INT ref_subdiv_map( REF_SUBDIV ref_subdiv, 
 			       REF_CELL ref_cell, REF_INT cell )
 {
@@ -23,11 +25,8 @@ static REF_INT ref_subdiv_map( REF_SUBDIV ref_subdiv,
 REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 {
   REF_SUBDIV ref_subdiv;
-  REF_INT edge;
 
-  (*ref_subdiv_ptr) = NULL;
-  (*ref_subdiv_ptr) = (REF_SUBDIV)malloc( sizeof(REF_SUBDIV_STRUCT) );
-  RNS(*ref_subdiv_ptr,"malloc ref_subdiv NULL");
+  ref_malloc( *ref_subdiv_ptr, 1, REF_SUBDIV_STRUCT );
 
   ref_subdiv = *ref_subdiv_ptr;
 
@@ -36,19 +35,10 @@ REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
   RSS( ref_edge_create( &(ref_subdiv_edge( ref_subdiv )), 
 			ref_subdiv_grid(ref_subdiv) ), "create edge" );
 
-  ref_subdiv->mark = (REF_INT *)malloc( ref_edge_n(ref_subdiv_edge(ref_subdiv)) 
-					* sizeof(REF_INT));
-  RNS(ref_subdiv->mark,"malloc mark NULL");
-
-  for ( edge=0 ; edge < ref_edge_n(ref_subdiv_edge(ref_subdiv)) ; edge++ )
-    ref_subdiv_mark( ref_subdiv, edge ) = 0;
-
-  ref_subdiv->node = (REF_INT *)malloc( ref_edge_n(ref_subdiv_edge(ref_subdiv))
-					* sizeof(REF_INT));
-  RNS(ref_subdiv->node,"malloc node NULL");
-
-  for ( edge=0 ; edge < ref_edge_n(ref_subdiv_edge(ref_subdiv)) ; edge++ )
-    ref_subdiv_node( ref_subdiv, edge ) = REF_EMPTY;
+  ref_malloc_init( ref_subdiv->mark, ref_edge_n(ref_subdiv_edge(ref_subdiv)),
+		   REF_INT, 0 );
+  ref_malloc_init( ref_subdiv->node, ref_edge_n(ref_subdiv_edge(ref_subdiv)),
+		   REF_INT, REF_EMPTY );
 
   return REF_SUCCESS;
 }
@@ -57,11 +47,11 @@ REF_STATUS ref_subdiv_free( REF_SUBDIV ref_subdiv )
 {
   if ( NULL == (void *)ref_subdiv ) return REF_NULL;
 
-  free( ref_subdiv->node );
-  free( ref_subdiv->mark );
+  ref_free( ref_subdiv->node );
+  ref_free( ref_subdiv->mark );
   RSS( ref_edge_free( ref_subdiv_edge( ref_subdiv ) ), "free edge" );
 
-  ref_cond_free( ref_subdiv );
+  ref_free( ref_subdiv );
 
   return REF_SUCCESS;
 }

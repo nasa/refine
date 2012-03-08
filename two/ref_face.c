@@ -6,6 +6,8 @@
 #include "ref_sort.h"
 #include "ref_math.h"
 
+#include "ref_malloc.h"
+
 REF_STATUS ref_face_create( REF_FACE *ref_face_ptr, REF_GRID ref_grid )
 {
   REF_FACE ref_face;
@@ -14,18 +16,14 @@ REF_STATUS ref_face_create( REF_FACE *ref_face_ptr, REF_GRID ref_grid )
   REF_INT nodes[4];
   REF_CELL ref_cell;
 
-  (*ref_face_ptr) = NULL;
-  (*ref_face_ptr) = (REF_FACE)malloc( sizeof(REF_FACE_STRUCT) );
-  RNS(*ref_face_ptr,"malloc ref_face NULL");
+  ref_malloc( *ref_face_ptr, 1, REF_FACE_STRUCT );
 
   ref_face = *ref_face_ptr;
 
   ref_face_n(ref_face) = 0;
   ref_face_max(ref_face) = 10;
 
-  ref_face->f2n = (REF_INT *)malloc( 4 * ref_face_max(ref_face) * 
-				     sizeof(REF_INT) );
-  RNS(ref_face->f2n,"malloc ref_face->f2n NULL");
+  ref_malloc( ref_face->f2n, 4 * ref_face_max(ref_face), REF_INT );
 
   RSS( ref_adj_create( &(ref_face_adj( ref_face )) ), "create adj" );
 
@@ -46,9 +44,9 @@ REF_STATUS ref_face_free( REF_FACE ref_face )
   if ( NULL == (void *)ref_face ) return REF_NULL;
 
   RSS( ref_adj_free( ref_face_adj( ref_face ) ), "free adj" );
-  free( ref_face->f2n );
+  ref_free( ref_face->f2n );
 
-  ref_cond_free( ref_face );
+  ref_free( ref_face );
 
   return REF_SUCCESS;
 }
@@ -173,10 +171,7 @@ REF_STATUS ref_face_add_uniquely( REF_FACE ref_face, REF_INT *nodes )
       REF_INT chunk;
       chunk = 1000;
       ref_face_max(ref_face) += chunk;
-      ref_face->f2n = (REF_INT *)realloc( ref_face->f2n,
-					  4 * ref_face_max(ref_face) * 
-					  sizeof(REF_INT) );
-      RNS(ref_face->f2n,"realloc ref_face->f2n NULL");
+      ref_realloc( ref_face->f2n, 4 * ref_face_max(ref_face), REF_INT );
     }
 
   face = ref_face_n(ref_face);

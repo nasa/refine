@@ -26,8 +26,8 @@ REF_STATUS ref_list_create( REF_LIST *ref_list_ptr )
 REF_STATUS ref_list_free( REF_LIST ref_list )
 {
   if ( NULL == (void *)ref_list ) return REF_NULL;
-  ref_cond_free( ref_list->value );
-  ref_cond_free( ref_list );
+  ref_free( ref_list->value );
+  ref_free( ref_list );
   return REF_SUCCESS;
 }
 

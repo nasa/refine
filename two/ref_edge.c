@@ -4,6 +4,8 @@
 
 #include "ref_edge.h"
 
+#include "ref_malloc.h"
+
 REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
 {
   REF_EDGE ref_edge;
@@ -12,9 +14,7 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
   REF_INT n0, n1;
   REF_CELL ref_cell, ref_cell2;
 
-  (*ref_edge_ptr) = NULL;
-  (*ref_edge_ptr) = (REF_EDGE)malloc( sizeof(REF_EDGE_STRUCT) );
-  RNS(*ref_edge_ptr,"malloc ref_edge NULL");
+  ref_malloc( *ref_edge_ptr, 1, REF_EDGE_STRUCT );
 
   ref_edge = *ref_edge_ptr;
 
@@ -35,12 +35,7 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
 					ref_edge_n(ref_edge) ), "set edge");
 	      ref_edge_n(ref_edge)++;
 	    }
-
-  RSS( ref_adj_create( &(ref_edge_adj( ref_edge )) ), "create adj" );
-
-  ref_edge->e2n = (REF_INT *)malloc( ref_edge_n(ref_edge) 
-				       * 2 * sizeof(REF_INT));
-  RNS(ref_edge->e2n,"malloc global NULL");
+  ref_malloc( ref_edge->e2n, 2*ref_edge_n(ref_edge), REF_INT );
 
   for ( edge=0 ; edge < ref_edge_n(ref_edge) ; edge++ )
     {
@@ -58,6 +53,8 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
 	  ref_edge_e2n( ref_edge, edge, 1 ) = 
 	    ref_cell_e2n(ref_cell,1,cell,cell_edge);
 	}
+
+  RSS( ref_adj_create( &(ref_edge_adj( ref_edge )) ), "create adj" );
 
   for ( edge=0 ; edge < ref_edge_n(ref_edge) ; edge++ )
     {
@@ -79,9 +76,9 @@ REF_STATUS ref_edge_free( REF_EDGE ref_edge )
   if ( NULL == (void *)ref_edge ) return REF_NULL;
 
   RSS( ref_adj_free( ref_edge_adj( ref_edge ) ), "free adj" );
-  free( ref_edge->e2n );
+  ref_free( ref_edge->e2n );
 
-  ref_cond_free( ref_edge );
+  ref_free( ref_edge );
 
   return REF_SUCCESS;
 }
