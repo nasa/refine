@@ -75,13 +75,13 @@ int main( void )
     RSS(ref_shard_mark_to_split(ref_shard,1,6),"mark face for 1-6");
 
     RSS(ref_shard_marked(ref_shard,2,5,&marked),"is edge marked?");
-    TAS(!marked,"pair 2-5 not marked");
+    RAS(!marked,"pair 2-5 not marked");
 
     RSS(ref_shard_marked(ref_shard,1,6,&marked),"is edge marked?");
-    TAS( marked,"pair 1-6 marked");
+    RAS( marked,"pair 1-6 marked");
 
     RSS(ref_shard_marked(ref_shard,6,1,&marked),"is edge marked?");
-    TAS( marked,"pair 6-1 marked");
+    RAS( marked,"pair 6-1 marked");
 
     RSS( tear_down( ref_shard ), "tear down");
   }

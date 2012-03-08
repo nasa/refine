@@ -42,7 +42,7 @@ int main( void )
     max = ref_metric_max(ref_metric);
 
     RSS(ref_metric_set(ref_metric,max,m),"set");
-    TAS(ref_metric_max(ref_metric)>max,"max increased");
+    RAS(ref_metric_max(ref_metric)>max,"max increased");
 
     for (i=0;i<6;i++)
       RWDS( m[i], ref_metric_m(ref_metric,i,max), -1.0, "m" );

@@ -53,7 +53,7 @@ int main( int argc, char *argv[] )
       {
 	RSS(ref_list_add(ref_list,item),"store");
       }
-    TAS(ref_list_max(ref_list)>max, "more?");
+    RAS(ref_list_max(ref_list)>max, "more?");
     RSS(ref_list_free(ref_list),"free");
   }
 

@@ -15,7 +15,7 @@ int main( int argc, char *argv[] )
     { /* start */
       REIS( 1, ref_mpi_n, "n" );
       REIS( 0, ref_mpi_id, "n" );
-      TAS( ref_mpi_master, "master" );
+      RAS( ref_mpi_master, "master" );
     }
   else
     {

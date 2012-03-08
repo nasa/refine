@@ -70,7 +70,7 @@ int main( void )
 	value = 10*key;
 	RSS(ref_dict_store(ref_dict,key,value),"store");
       }
-    TAS(ref_dict_max(ref_dict)>max, "more?");
+    RAS(ref_dict_max(ref_dict)>max, "more?");
     RSS(ref_dict_free(ref_dict),"free");
   }
 

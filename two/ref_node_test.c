@@ -78,7 +78,7 @@ int main( int argc, char *argv[] )
     for ( global = 10; global < 10*(max+2) ; global += 10 )
       RSS(ref_node_add(ref_node,global,&node),"realloc");
 
-    TAS(max < ref_node_max(ref_node),"grow max");
+    RAS(max < ref_node_max(ref_node),"grow max");
 
     RSS(ref_node_free(ref_node),"free");
   }
@@ -148,9 +148,9 @@ int main( int argc, char *argv[] )
 
     RSS(ref_node_create(&ref_node),"create");
 
-    TAS(!ref_node_valid(ref_node,0),"empty invalid");
+    RAS(!ref_node_valid(ref_node,0),"empty invalid");
     RSS(ref_node_add(ref_node,0,&node),"add 0 global");
-    TAS(ref_node_valid(ref_node,0),"zero is valid global");
+    RAS(ref_node_valid(ref_node,0),"zero is valid global");
     RES(0,ref_node_global(ref_node,0),"zero global");
 
     RSS(ref_node_free(ref_node),"free");

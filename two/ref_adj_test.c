@@ -21,7 +21,7 @@ int main( void )
   { /* add and count */
     RSS(ref_adj_create(&ref_adj),"create");
 
-    TAS(!ref_adj_valid(ref_adj_first(ref_adj,0)),"empty");
+    RAS(!ref_adj_valid(ref_adj_first(ref_adj,0)),"empty");
 
     RSS(ref_adj_add(ref_adj,0,12),"add");
 
@@ -68,9 +68,9 @@ int main( void )
   { /* empty */
     RSS(ref_adj_create(&ref_adj),"create");
 
-    TAS( ref_adj_empty(ref_adj,0), "starts empty");
+    RAS( ref_adj_empty(ref_adj,0), "starts empty");
     RSS(ref_adj_add(ref_adj,0,14),"add");
-    TAS( !ref_adj_empty(ref_adj,0), "not empty anymore");
+    RAS( !ref_adj_empty(ref_adj,0), "not empty anymore");
 
     RSS(ref_adj_free(ref_adj),"free");
   }
@@ -90,7 +90,7 @@ int main( void )
 
     RSS(ref_adj_add(ref_adj,node,15),"add and realloc nodes");
 
-    TAS( ref_adj_nnode( ref_adj ) > node, "nodes bigger" );
+    RAS( ref_adj_nnode( ref_adj ) > node, "nodes bigger" );
 
     item = ref_adj_first(ref_adj,node);
     RES(15,ref_adj_safe_ref(ref_adj,item),"realloc has ref");
@@ -107,7 +107,7 @@ int main( void )
     for ( item = 0 ; item < nitem+1 ; item++ )
       RSS(ref_adj_add(ref_adj,0,item),"add requiring item realloc");
 
-    TAS( ref_adj_nitem( ref_adj ) > nitem, "item bigger" );
+    RAS( ref_adj_nitem( ref_adj ) > nitem, "item bigger" );
 
     RSS(ref_adj_free(ref_adj),"free");
   }

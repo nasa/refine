@@ -103,13 +103,13 @@ int main( void )
 
     RSS(ref_cell_remove(ref_cell,0),"remove cell");
     RES(1,ref_cell_n(ref_cell),"reduced count")
-    TAS(!ref_cell_valid(ref_cell,0),"cell is still here");
+    RAS(!ref_cell_valid(ref_cell,0),"cell is still here");
 
     each_ref_adj_node_item_with_ref( (ref_cell)->ref_adj, 0, item, cell)
-      TAS( !(cell == 0), "removed cell still in adj");
+      RAS( !(cell == 0), "removed cell still in adj");
 
     each_ref_adj_node_item_with_ref( (ref_cell)->ref_adj, 2, item, cell)
-      TAS( !(cell == 0), "removed cell still in adj");
+      RAS( !(cell == 0), "removed cell still in adj");
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
@@ -122,7 +122,7 @@ int main( void )
 
     RSS(ref_cell_remove(ref_cell,cell),"remove cell");
 
-    TAS( ref_adj_empty( ref_cell_adj(ref_cell), 1 ), "id");
+    RAS( ref_adj_empty( ref_cell_adj(ref_cell), 1 ), "id");
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
@@ -137,7 +137,7 @@ int main( void )
       RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
       RES(i,cell,"expected ordered new cells first block");
     }
-    TAS(ref_cell_max(ref_cell)>max,"realloc max");
+    RAS(ref_cell_max(ref_cell)>max,"realloc max");
 
     max = ref_cell_max(ref_cell);
     for (i = ref_cell_n(ref_cell); i < max+1; i++ ){
@@ -145,7 +145,7 @@ int main( void )
       RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
       RES(i,cell,"expected ordered new cells second block");
     }
-    TAS(ref_cell_max(ref_cell)>max,"realloc max");
+    RAS(ref_cell_max(ref_cell)>max,"realloc max");
 
     RSS(ref_cell_free(ref_cell),"free");
   }
@@ -176,11 +176,11 @@ int main( void )
     RSS(ref_tet(&ref_cell),"create new");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
-    TAS(!ref_cell_valid(ref_cell,-1),"invlid -1");
-    TAS(!ref_cell_valid(ref_cell,-1),"invlid 0");
-    TAS(!ref_cell_valid(ref_cell,-1),"invlid 1");
+    RAS(!ref_cell_valid(ref_cell,-1),"invlid -1");
+    RAS(!ref_cell_valid(ref_cell,-1),"invlid 0");
+    RAS(!ref_cell_valid(ref_cell,-1),"invlid 1");
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
-    TAS(ref_cell_valid(ref_cell,0),"valid 0");
+    RAS(ref_cell_valid(ref_cell,0),"valid 0");
   
     RSS(ref_cell_free(ref_cell),"free");
   }
@@ -189,14 +189,14 @@ int main( void )
     /* adj */
     RSS(ref_tet(&ref_cell),"create new");
 
-    TAS( ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
-    TAS( ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "last node");
+    RAS( ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
+    RAS( ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "last node");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    TAS( !ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
-    TAS( !ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "last node");
+    RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
+    RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "last node");
 
     RSS(ref_cell_free(ref_cell),"free");
   }
@@ -208,9 +208,9 @@ int main( void )
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    TAS( !ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
-    TAS( !ref_adj_empty( ref_cell_adj(ref_cell), 2 ), "last node");
-    TAS(  ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "id");
+    RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
+    RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 2 ), "last node");
+    RAS(  ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "id");
 
     RSS(ref_cell_free(ref_cell),"free");
   }
