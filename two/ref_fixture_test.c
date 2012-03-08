@@ -21,13 +21,17 @@
 int main( int argc, char *argv[] )
 {
 
-  if (2 == argc) 
+  RSS( ref_mpi_start( argc, argv ), "start" );
+
+  if ( 1 < ref_mpi_n ) 
     {
       REF_GRID ref_grid;
-      RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
-      RSS( ref_export_tec( ref_grid, argv[1] ), "export" );
-      return 0;
+
+      RSS( ref_fixture_pri_stack_grid( &ref_grid ), "fix" );
+      RSS( ref_export_tec_part( ref_grid, "orig_part" ), "see" );
     }
+
+  RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }
