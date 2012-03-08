@@ -7,8 +7,6 @@
 #include "ref_mpi.h"
 #include "ref_malloc.h"
 
-#include "ref_part.h"
-
 #include "ref_sort.h"
 #include "ref_node.h"
 
@@ -165,7 +163,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     for(node=0; node<export_n; node++)
       part[export_local[node]] = export_part[node];
 
-    RSS( ref_part_ghost_int( ref_grid, part ), "ghost part");
+    RSS( ref_node_ghost_int( ref_node, part ), "ghost part");
 
     for(node=0; node<ref_node_max(ref_node); node++)
       ref_node_part(ref_node, node) = part[node];
@@ -411,7 +409,7 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
       }
   RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild" );
 
-  RSS( ref_part_ghost_xyz( ref_grid ), "ghost xyz");
+  RSS( ref_node_ghost_xyz( ref_node ), "ghost xyz");
 
   return REF_SUCCESS;
 }

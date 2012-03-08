@@ -72,6 +72,9 @@ REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node );
 
 REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT *o2n[] );
 
+REF_STATUS ref_node_ghost_xyz( REF_NODE ref_node );
+REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar );
+
 END_C_DECLORATION
 
 #endif /* REF_NODE_H */
