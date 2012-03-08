@@ -8,6 +8,8 @@
 
 BEGIN_C_DECLORATION
 
+REF_STATUS ref_migrate_to_balance( REF_GRID ref_grid );
+
 REF_STATUS ref_migrate_new_part( REF_GRID ref_grid );
 
 REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid );
