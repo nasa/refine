@@ -96,7 +96,7 @@ ref_face_test_LDADD = libref2.a -lm
 TESTS += ref_fixture_test
 noinst_PROGRAMS += ref_fixture_test
 ref_fixture_test_SOURCES = ref_fixture_test.c
-ref_fixture_test_LDADD = libref2.a -lm
+ref_fixture_test_LDADD = libref2.a @zoltan_LDADD@ -lm
 
 TESTS += ref_fortran_test
 noinst_PROGRAMS += ref_fortran_test

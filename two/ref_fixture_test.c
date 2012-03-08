@@ -18,6 +18,8 @@
 #include "ref_dict.h"
 #include "ref_mpi.h"
 
+#include "ref_migrate.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -29,6 +31,10 @@ int main( int argc, char *argv[] )
 
       RSS( ref_fixture_pri_stack_grid( &ref_grid ), "fix" );
       RSS( ref_export_tec_part( ref_grid, "orig_part" ), "see" );
+
+      RSS( ref_migrate_to_balance( ref_grid ), "bal" );
+      RSS( ref_export_tec_part( ref_grid, "bal_part" ), "see" );
+
     }
 
   RSS( ref_mpi_stop( ), "stop" );
