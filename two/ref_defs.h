@@ -96,12 +96,31 @@ typedef int REF_STATUS;
     REF_INT ref_private_status_ai,ref_private_status_bi;		\
     ref_private_status_ai = (a);					\
     ref_private_status_bi = (b);					\
-    if (ref_private_status_ai!=ref_private_status_bi){		\
+    if (ref_private_status_ai!=ref_private_status_bi){			\
       printf("%s: %d: %s: %s\nexpected %d was %d\n",			\
 	     __FILE__,__LINE__,__func__,(msg),				\
 	     ref_private_status_ai,ref_private_status_bi);		\
       return REF_FAILURE;						\
     }									\
+  }
+
+#define RWDS(a,b,tol,msg)						\
+  {									\
+    REF_DBL ref_private_status_ad,ref_private_status_bd;		\
+    REF_DBL ref_private_status_del,ref_private_status_allowed;		\
+    ref_private_status_ad = (a);					\
+    ref_private_status_bd = (b);					\
+    ref_private_status_del =						\
+      ABS(ref_private_status_ad-ref_private_status_bd);			\
+    ref_private_status_allowed = (tol);					\
+    if ( tol < 0.0 ) ref_private_status_allowed = 1.0E-12;		\
+    if (ref_private_status_del>ref_private_status_allowed){		\
+      printf("%s: %d: %s: %s\nexpected %e, was %e, %e outside of %e\n",	\
+	     __FILE__,__LINE__,__func__,(msg),				\
+	     ref_private_status_ad,ref_private_status_bd,		\
+	     ref_private_status_del,ref_private_status_allowed);	\
+      return REF_FAILURE;						\
+    }     								\
   }
 
 #define RES(a,b,msg)							\

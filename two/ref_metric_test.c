@@ -26,7 +26,7 @@ int main( void )
     RSS(ref_metric_set(ref_metric,0,m),"set");
 
     for (i=0;i<6;i++)
-      TWDS( m[i], ref_metric_m(ref_metric,i,0), -1.0, "m" );
+      RWDS( m[i], ref_metric_m(ref_metric,i,0), -1.0, "m" );
 
     RSS(ref_metric_free(ref_metric),"free");
   }
@@ -45,7 +45,7 @@ int main( void )
     TAS(ref_metric_max(ref_metric)>max,"max increased");
 
     for (i=0;i<6;i++)
-      TWDS( m[i], ref_metric_m(ref_metric,i,max), -1.0, "m" );
+      RWDS( m[i], ref_metric_m(ref_metric,i,max), -1.0, "m" );
 
     RSS(ref_metric_free(ref_metric),"free");
   }

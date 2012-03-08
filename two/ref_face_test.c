@@ -118,9 +118,9 @@ int main( void )
 
     RSS( ref_face_normal( xyz0, xyz1, xyz2, xyz3, normal ), "norm");
     
-    TWDS( 0.0, normal[0], -1.0, "x-norm");
-    TWDS( 0.0, normal[1], -1.0, "y-norm");
-    TWDS( 1.0, normal[2], -1.0, "z-norm");
+    RWDS( 0.0, normal[0], -1.0, "x-norm");
+    RWDS( 0.0, normal[1], -1.0, "y-norm");
+    RWDS( 1.0, normal[2], -1.0, "z-norm");
   }
 
   {  /* tri normal */
@@ -132,9 +132,9 @@ int main( void )
 
     RSS( ref_face_normal( xyz0, xyz1, xyz2, xyz3, normal ), "norm");
     
-    TWDS( 0.0, normal[0], -1.0, "x-norm");
-    TWDS( 0.0, normal[1], -1.0, "y-norm");
-    TWDS( 0.5, normal[2], -1.0, "z-norm");
+    RWDS( 0.0, normal[0], -1.0, "x-norm");
+    RWDS( 0.0, normal[1], -1.0, "y-norm");
+    RWDS( 0.5, normal[2], -1.0, "z-norm");
   }
 
   {  /* quad open node 1 */

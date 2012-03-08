@@ -40,7 +40,7 @@ int main( void )
     RSS( ref_fixture_tet_grid( &ref_grid ), "tet fixture" );
     RSS( ref_quality_tet_vol( ref_grid, 0, &vol), "get vol");
 
-    TWDS(1.0/6.0,vol,-1.0,"expected vol");
+    RWDS(1.0/6.0,vol,-1.0,"expected vol");
 
     RSS( ref_grid_free( ref_grid ), "free" );
   }
