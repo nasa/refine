@@ -143,8 +143,11 @@ typedef int REF_STATUS;
     }									\
   }
 
-#define SUPRESS_UNUSED_COMPILER_WARNING(ptr)		\
+#define SUPRESS_UNUSED_COMPILER_WARNING(ptr)			\
   if (NULL == (&(ptr)+1)) printf("unused macro failed\n");
+
+#define SKIP_BLOCK(why)							\
+  printf(" *** %s *** at %s:%d\n",(why),__FILE__,__LINE__); if (REF_FALSE)
 
 END_C_DECLORATION
 

@@ -100,9 +100,6 @@ BEGIN_C_DECLORATION
     }									\
   }
 
-#define SKIP_TEST(why)\
-  printf(" *** %s *** at %s:%d\n",(why),__FILE__,__LINE__); if (REF_FALSE)
-
 END_C_DECLORATION
 
 #endif /* REF_TEST_H */
