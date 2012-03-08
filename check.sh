@@ -9,8 +9,6 @@ script_path=`dirname "${script_name_with_path}"`
 
 ( cd ${script_path}/mpi/two && \
     make check ) && \
-( cd ${script_path}/profile/two && \
-    make check ) && \
 ( cd ${script_path}/strict/two && \
     make check TESTS_ENVIRONMENT='valgrind --quiet --leak-check=full' ) && \
 true
