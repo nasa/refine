@@ -39,6 +39,8 @@ REF_STATUS ref_edge_with( REF_EDGE ref_edge,
 			  REF_INT node0, REF_INT node1,
 			  REF_INT *edge );
 
+REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_INT *data );
+
 END_C_DECLORATION
 
 #endif /* REF_EDGE_H */
