@@ -69,7 +69,9 @@ REF_STATUS ref_node_inspect( REF_NODE ref_node )
   printf(" blank = %d\n",ref_node->blank);
   for (node=0;node<ref_node_max(ref_node);node++)
     if ( 0 <= ref_node->global[node] ) 
-      printf(" raw global[%d] = %d\n",node,ref_node->global[node]);
+      printf(" global[%d] = %3d; part[%d] = %3d;\n",
+	     node,ref_node->global[node],
+	     node,ref_node->part[node]	     );
   for (node=0;node<ref_node_n(ref_node);node++)
     printf(" sorted_global[%d] = %d sorted_local[%d] = %d\n",
 	   node,ref_node->sorted_global[node],
