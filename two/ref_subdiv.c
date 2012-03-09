@@ -238,14 +238,9 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 
 REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 {
-  REF_GRID ref_grid;
-  REF_NODE ref_node;
-  REF_EDGE ref_edge;
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+  REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_INT edge, global, node, node0, node1, ixyz;
-
-  ref_grid = ref_subdiv_grid(ref_subdiv);
-  ref_node = ref_grid_node(ref_grid);
-  ref_edge = ref_subdiv_edge(ref_subdiv);
 
   for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
     {
