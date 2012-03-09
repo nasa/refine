@@ -158,7 +158,12 @@ REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
 
   ref_node = ref_grid_node(ref_grid);
 
-  if ( 6 > ref_mpi_id )
+  if ( ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[2] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[3] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[4] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[5] ) )
     {
       RSS(ref_node_add(ref_node,0,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
@@ -241,90 +246,191 @@ REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid_ptr )
 
   ref_node = ref_grid_node(ref_grid);
 
-  if ( ref_mpi_master )
+  nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; 
+  nodes[3] = 3; nodes[4] = 4; nodes[5] = 5;
+  if ( ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[2] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[3] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[4] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[5] ) )
     {
-
       RSS(ref_node_add(ref_node,0,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
       ref_node_xyz(ref_node,1,node) = 0.0;
       ref_node_xyz(ref_node,2,node) = 0.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_node_add(ref_node,1,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 1.0;
       ref_node_xyz(ref_node,1,node) = 0.0;
       ref_node_xyz(ref_node,2,node) = 0.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_node_add(ref_node,2,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
       ref_node_xyz(ref_node,1,node) = 1.0;
       ref_node_xyz(ref_node,2,node) = 0.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_node_add(ref_node,3,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
       ref_node_xyz(ref_node,1,node) = 0.0;
       ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_node_add(ref_node,4,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 1.0;
       ref_node_xyz(ref_node,1,node) = 0.0;
       ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_node_add(ref_node,5,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
       ref_node_xyz(ref_node,1,node) = 1.0;
       ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
+
+      RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+    }
+
+  nodes[0] = 3; nodes[1] = 4; nodes[2] = 5; 
+  nodes[3] = 6; nodes[4] = 7; nodes[5] = 8;
+  if ( ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[2] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[3] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[4] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[5] ) )
+    {
+      RSS(ref_node_add(ref_node,3,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 0.0;
+      ref_node_xyz(ref_node,1,node) = 0.0;
+      ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
+
+      RSS(ref_node_add(ref_node,4,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 1.0;
+      ref_node_xyz(ref_node,1,node) = 0.0;
+      ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
+
+      RSS(ref_node_add(ref_node,5,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 0.0;
+      ref_node_xyz(ref_node,1,node) = 1.0;
+      ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_node_add(ref_node,6,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
       ref_node_xyz(ref_node,1,node) = 0.0;
       ref_node_xyz(ref_node,2,node) = 2.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_node_add(ref_node,7,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 1.0;
       ref_node_xyz(ref_node,1,node) = 0.0;
       ref_node_xyz(ref_node,2,node) = 2.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
       
       RSS(ref_node_add(ref_node,8,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
       ref_node_xyz(ref_node,1,node) = 1.0;
       ref_node_xyz(ref_node,2,node) = 2.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
+  
+      RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+    }
+
+  nodes[0] = 6; nodes[1] = 7; nodes[2] = 8; 
+  nodes[3] = 9; nodes[4] =10; nodes[5] =11;
+  if ( ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[2] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[3] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[4] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[5] ) )
+    {
+
+      RSS(ref_node_add(ref_node,6,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 0.0;
+      ref_node_xyz(ref_node,1,node) = 0.0;
+      ref_node_xyz(ref_node,2,node) = 2.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
+
+      RSS(ref_node_add(ref_node,7,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 1.0;
+      ref_node_xyz(ref_node,1,node) = 0.0;
+      ref_node_xyz(ref_node,2,node) = 2.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
+      
+      RSS(ref_node_add(ref_node,8,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 0.0;
+      ref_node_xyz(ref_node,1,node) = 1.0;
+      ref_node_xyz(ref_node,2,node) = 2.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
   
       RSS(ref_node_add(ref_node,9,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
       ref_node_xyz(ref_node,1,node) = 0.0;
       ref_node_xyz(ref_node,2,node) = 3.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
   
       RSS(ref_node_add(ref_node,10,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 1.0;
       ref_node_xyz(ref_node,1,node) = 0.0;
       ref_node_xyz(ref_node,2,node) = 3.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_node_add(ref_node,11,&node),"add node");
       ref_node_xyz(ref_node,0,node) = 0.0;
       ref_node_xyz(ref_node,1,node) = 1.0;
       ref_node_xyz(ref_node,2,node) = 3.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit(12, ref_mpi_n, ref_node_global(ref_node,node) );
 
       RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
-
-      nodes[0] = 3; nodes[1] = 4; nodes[2] = 5; 
-      nodes[3] = 6; nodes[4] = 7; nodes[5] = 8;
-      RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
-
-      nodes[0] = 6; nodes[1] = 7; nodes[2] = 8; 
-      nodes[3] = 9; nodes[4] =10; nodes[5] =11;
-      RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
-
-      nodes[0] = 1; nodes[1] = 0; nodes[2] = 3; nodes[3] = 4; nodes[4] = 20;
-      RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add prism");
-
-      nodes[0] = 4; nodes[1] = 3; nodes[2] = 6; nodes[3] = 7; nodes[4] = 20;
-      RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add prism");
-
-      nodes[0] = 7; nodes[1] = 6; nodes[2] = 9; nodes[3] =10; nodes[4] = 20;
-      RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add prism");
     }
 
   RSS( ref_node_initialize_n_global(ref_node,12), "glob" );
+
+  nodes[0] = 1; nodes[1] = 0; nodes[2] = 3; nodes[3] = 4; nodes[4] = 20;
+  if ( ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[2] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[3] ) )
+    RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
+
+  nodes[0] = 4; nodes[1] = 3; nodes[2] = 6; nodes[3] = 7; nodes[4] = 20;
+  if ( ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[2] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[3] ) )
+  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
+
+  nodes[0] = 7; nodes[1] = 6; nodes[2] = 9; nodes[3] =10; nodes[4] = 20;
+  if ( ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[2] ) ||
+       ref_mpi_id == ref_part_implicit(12, ref_mpi_n, nodes[3] ) )
+  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
 
   return REF_SUCCESS;
 }
