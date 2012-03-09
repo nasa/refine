@@ -15,6 +15,7 @@
 #include "ref_adj.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
+#include "ref_fixture.h"
 
 int main( int argc, char *argv[] )
 {
@@ -47,14 +48,9 @@ int main( int argc, char *argv[] )
   { /* find edge with nodes */
     REF_EDGE ref_edge;
     REF_GRID ref_grid;
-    REF_INT nodes[6];
-    REF_INT cell, edge;
+    REF_INT edge;
 
-    RSS(ref_grid_create(&ref_grid),"create");
-
-    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2;
-    nodes[3] = 3; nodes[4] = 4; nodes[5] = 5;
-    RSS(ref_cell_add( ref_grid_pri(ref_grid), nodes, &cell ), "add pri");
+    RSS(ref_fixture_pri_grid(&ref_grid),"pri");
 
     RSS(ref_edge_create(&ref_edge,ref_grid),"create");
 
