@@ -16,8 +16,10 @@
 #include "ref_metric.h"
 #include "ref_mpi.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
+
+  RSS( ref_mpi_start( argc, argv ), "start" );
 
   {  /* make edges shared by two elements */
     REF_EDGE ref_edge;
@@ -64,6 +66,8 @@ int main( void )
     RSS(ref_edge_free(ref_edge),"edge");
     RSS(ref_grid_free(ref_grid),"free");
   }
+
+  RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }
