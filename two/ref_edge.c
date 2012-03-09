@@ -92,6 +92,8 @@ REF_STATUS ref_edge_with( REF_EDGE ref_edge,
   REF_INT item, ref;
   REF_INT n0, n1;
 
+  *edge=REF_EMPTY;
+
   each_ref_adj_node_item_with_ref( ref_edge_adj(ref_edge), node0, item, ref)
     {
       n0 = ref_edge_e2n(ref_edge,ref,0);
@@ -103,6 +105,6 @@ REF_STATUS ref_edge_with( REF_EDGE ref_edge,
 	  return REF_SUCCESS;
 	}
     }
-  return REF_FAILURE;
-}
 
+  return REF_NOT_FOUND;
+}

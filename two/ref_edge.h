@@ -35,7 +35,6 @@ REF_STATUS ref_edge_free( REF_EDGE ref_edge );
 #define each_edge_having_node( ref_edge, node, item, edge ) \
   each_ref_adj_node_item_with_ref( ref_edge_adj( ref_edge ), node, item, edge)
 
-
 REF_STATUS ref_edge_with( REF_EDGE ref_edge, 
 			  REF_INT node0, REF_INT node1,
 			  REF_INT *edge );
