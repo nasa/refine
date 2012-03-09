@@ -51,7 +51,6 @@ int main( int argc, char *argv[] )
     REF_INT edge;
 
     RSS(ref_fixture_pri_grid(&ref_grid),"pri");
-
     RSS(ref_edge_create(&ref_edge,ref_grid),"create");
 
     RSS( ref_edge_with( ref_edge, 0, 1, &edge ), "find" );
@@ -62,6 +61,33 @@ int main( int argc, char *argv[] )
     RSS(ref_edge_free(ref_edge),"edge");
     RSS(ref_grid_free(ref_grid),"free");
   }
+
+  { /* ref_edge_ghost */
+    REF_EDGE ref_edge;
+    REF_GRID ref_grid;
+    REF_INT edge, part;
+    REF_INT data[9]= {REF_EMPTY,REF_EMPTY,REF_EMPTY,
+                      REF_EMPTY,REF_EMPTY,REF_EMPTY,
+                      REF_EMPTY,REF_EMPTY,REF_EMPTY};
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"pri");
+    RSS(ref_edge_create(&ref_edge,ref_grid),"create");
+
+    for ( edge=0;edge<ref_edge_n(ref_edge);edge++ )
+      {
+	RSS( ref_edge_part( ref_edge, edge, &part ), "edge part" );
+	if ( ref_mpi_id == part ) data[edge]=edge;
+      }
+
+    RSS( ref_edge_ghost_int( ref_edge, data ), "ghost");
+
+    for ( edge=0;edge<ref_edge_n(ref_edge);edge++ )
+      REIS( edge, data[edge], "ghost");
+
+    RSS(ref_edge_free(ref_edge),"edge");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
 
   RSS( ref_mpi_stop( ), "stop" );
 

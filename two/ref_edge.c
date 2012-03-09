@@ -110,8 +110,8 @@ REF_STATUS ref_edge_with( REF_EDGE ref_edge,
   return REF_NOT_FOUND;
 }
 
-static REF_STATUS ref_edge_part( REF_EDGE ref_edge, REF_INT edge, 
-				 REF_INT *part )
+REF_STATUS ref_edge_part( REF_EDGE ref_edge, REF_INT edge, 
+			  REF_INT *part )
 {
   REF_NODE ref_node = ref_edge_node(ref_edge);
 
@@ -141,6 +141,8 @@ REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_INT *data )
 
   REF_INT node0, node1;
   REF_INT request;
+
+  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
   ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
   ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
