@@ -45,8 +45,8 @@ static void ref_migrate_local_ids( void *void_ref_grid,
   each_ref_node_valid_node( ref_node, node )
     if ( ref_mpi_id == ref_node_part(ref_node,node) ) 
       {
-	local[node] = node;
-	global[node] = ref_node_global(ref_node,node);
+	local[nnode] = node;
+	global[nnode] = ref_node_global(ref_node,node);
 	nnode++;
       }
 }
