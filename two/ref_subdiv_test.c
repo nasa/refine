@@ -18,8 +18,6 @@
 #include "ref_dict.h"
 #include "ref_mpi.h"
 
-
-
 static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 {
   REF_GRID ref_grid;
@@ -368,6 +366,9 @@ int main( int argc, char *argv[] )
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
 
+    if ( 1 < ref_mpi_n )
+      RSS(ref_export_tec_part(ref_grid,"stack_orig"),"stack part");
+
     REIS( 12, ref_node_n_global(ref_node), "start with 12" );
 
     if ( REF_SUCCESS == ref_node_local(ref_node,0,&node0) &&
@@ -382,7 +383,7 @@ int main( int argc, char *argv[] )
     RSS(ref_node_synchronize_globals(ref_node),"sync glob");
 
     if ( 1 < ref_mpi_n )
-      RSS(ref_export_tec_part(ref_grid,"stack"),"stack part");
+      RSS(ref_export_tec_part(ref_grid,"stack_split"),"stack part");
 
     REIS( 16, ref_node_n_global(ref_node), "where my nodes?" );
 
