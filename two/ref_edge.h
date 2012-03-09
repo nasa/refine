@@ -43,6 +43,7 @@ REF_STATUS ref_edge_part( REF_EDGE ref_edge, REF_INT edge,
 			  REF_INT *part );
 
 REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_INT *data );
+REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_DBL *data, REF_INT dim );
 
 END_C_DECLORATION
 
