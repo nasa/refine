@@ -5,6 +5,7 @@
 #include "ref_subdiv.h"
 
 #include "ref_malloc.h"
+#include "ref_mpi.h"
 
 static REF_INT ref_subdiv_map( REF_SUBDIV ref_subdiv, 
 			       REF_CELL ref_cell, REF_INT cell )
@@ -197,11 +198,12 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   REF_BOOL again;
 
   again = REF_TRUE;
-
   while (again)
     {
-
       again = REF_FALSE;
+
+      RSS( ref_edge_ghost_int( ref_subdiv_edge(ref_subdiv),
+			       ref_subdiv->mark), "ghost mark" );
 
       each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
 	each_ref_cell_valid_cell( ref_cell, cell )
@@ -227,6 +229,8 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 		break;    
 	      }
 	  }
+
+      RSS( ref_mpi_all_or( &again ), "mpi all or" );
     }
 
   return REF_SUCCESS;
