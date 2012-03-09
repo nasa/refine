@@ -1,11 +1,10 @@
 
 
 parallel stack subdivision
- edge xfer
- parallel mark
- parallel relax
  parallel new nodes
+   xfer all nodes (global, part, xyz), remove the unused ones later.
  parallel aware add
+   just the cells with a local node
 projection (fake geom)
 projection linear elasticity
  per-olaf
