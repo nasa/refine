@@ -4,6 +4,7 @@
 
 #include "ref_fixture.h"
 #include "ref_mpi.h"
+#include "ref_part.h"
 
 REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr )
 {
@@ -153,46 +154,71 @@ REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
 
   ref_node = ref_grid_node(ref_grid);
 
-  RSS(ref_node_add(ref_node,0,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
-  ref_node_xyz(ref_node,2,node) = 0.0;
+  if ( 6 > ref_mpi_id )
+    {
+      RSS(ref_node_add(ref_node,0,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 0.0;
+      ref_node_xyz(ref_node,1,node) = 0.0;
+      ref_node_xyz(ref_node,2,node) = 0.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit( 6, ref_mpi_n, ref_node_global(ref_node,node) );
 
-  RSS(ref_node_add(ref_node,1,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
-  ref_node_xyz(ref_node,2,node) = 0.0;
+      RSS(ref_node_add(ref_node,1,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 1.0;
+      ref_node_xyz(ref_node,1,node) = 0.0;
+      ref_node_xyz(ref_node,2,node) = 0.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit( 6, ref_mpi_n, ref_node_global(ref_node,node) );
 
-  RSS(ref_node_add(ref_node,2,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
-  ref_node_xyz(ref_node,2,node) = 0.0;
+      RSS(ref_node_add(ref_node,2,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 0.0;
+      ref_node_xyz(ref_node,1,node) = 1.0;
+      ref_node_xyz(ref_node,2,node) = 0.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit( 6, ref_mpi_n, ref_node_global(ref_node,node) );
 
-  RSS(ref_node_add(ref_node,3,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
-  ref_node_xyz(ref_node,2,node) = 1.0;
+      RSS(ref_node_add(ref_node,3,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 0.0;
+      ref_node_xyz(ref_node,1,node) = 0.0;
+      ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit( 6, ref_mpi_n, ref_node_global(ref_node,node) );
 
-  RSS(ref_node_add(ref_node,4,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
-  ref_node_xyz(ref_node,2,node) = 1.0;
+      RSS(ref_node_add(ref_node,4,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 1.0;
+      ref_node_xyz(ref_node,1,node) = 0.0;
+      ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit( 6, ref_mpi_n, ref_node_global(ref_node,node) );
 
-  RSS(ref_node_add(ref_node,5,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
-  ref_node_xyz(ref_node,2,node) = 1.0;
+      RSS(ref_node_add(ref_node,5,&node),"add node");
+      ref_node_xyz(ref_node,0,node) = 0.0;
+      ref_node_xyz(ref_node,1,node) = 1.0;
+      ref_node_xyz(ref_node,2,node) = 1.0;
+      ref_node_part(ref_node,node) = 
+	ref_part_implicit( 6, ref_mpi_n, ref_node_global(ref_node,node) );
 
-  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+      RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add prism");
+    }
 
   nodes[0] = 0; nodes[1] = 3; nodes[2] = 4; nodes[3] = 1; nodes[4] = 10;
-  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add quad");
+  if ( ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[2] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[3] ) )
+    RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add quad");
 
   nodes[0] = 3; nodes[1] = 5; nodes[2] = 4; nodes[3] = 100;
-  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+  if ( ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[2] ) )
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
   nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 101;
-  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+  if ( ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[0] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[1] ) ||
+       ref_mpi_id == ref_part_implicit( 6, ref_mpi_n, nodes[2] ) )
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
   return REF_SUCCESS;
 }
