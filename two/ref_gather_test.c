@@ -31,26 +31,14 @@ int main( int argc, char *argv[] )
 
   if ( 1 == argc )
     {
-      REF_GRID import_grid;
-      char grid_file[] = "ref_migrate_test.b8.ugrid";
+      REF_GRID ref_grid;
 
-      if ( ref_mpi_master ) 
-	{
-	  REF_GRID export_grid;
-	  RSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
-	  RSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
-	  RSS(ref_grid_free(export_grid),"free" );
-	}
+      RSS( ref_fixture_pri_stack_grid( &ref_grid ), "set up tet" );
 
-      RSS( ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
-      RSS( ref_migrate_new_part(import_grid),"create");
-      RSS( ref_migrate_shufflin( import_grid ), "shufflin");
-
-      RSS( ref_gather_b8_ugrid( import_grid, "ref_gather_test.b8.ugrid" ), 
+      RSS( ref_gather_b8_ugrid( ref_grid, "ref_gather_test.b8.ugrid" ), 
 	   "gather");
 
-      RSS( ref_grid_free( import_grid ), "free");
-      if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
+      RSS( ref_grid_free( ref_grid ), "free");
       if ( ref_mpi_master ) 
 	REIS(0, remove( "ref_gather_test.b8.ugrid" ), "test clean up");
     }
