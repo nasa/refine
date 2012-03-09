@@ -243,6 +243,9 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
   REF_INT edge, global, node, node0, node1, ixyz;
   REF_INT part;
 
+  REF_INT *edge_global, *edge_part;
+  REF_DBL *edge_xyz;
+
   RSS( ref_node_synchronize_globals( ref_node ), "sync glob" );
 
   for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
@@ -269,6 +272,40 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
     }
 
   RSS( ref_node_shift_new_globals( ref_node ), "shift glob" );
+  
+  ref_malloc_init( edge_global, ref_edge_n(ref_edge), REF_INT, REF_EMPTY );
+  ref_malloc_init( edge_part,   ref_edge_n(ref_edge), REF_INT, REF_EMPTY );
+  ref_malloc_init( edge_xyz,  3*ref_edge_n(ref_edge), REF_DBL, -999.0 );
+  
+  for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
+    {
+      node = ref_subdiv_node( ref_subdiv, edge );
+      if ( REF_EMPTY != node )
+	{
+	  edge_global[edge] = ref_node_global(ref_node,node);
+	  edge_part[edge] = ref_node_part(ref_node,node);
+	  for (ixyz=0;ixyz<3;ixyz++)
+	    edge_xyz[ixyz+3*edge] = ref_node_xyz(ref_node,ixyz,node);
+	}
+    }
+
+  RSS( ref_edge_ghost_int( ref_edge, edge_global ), "global ghost" );
+  RSS( ref_edge_ghost_int( ref_edge, edge_part ), "part ghost" );
+  RSS( ref_edge_ghost_dbl( ref_edge, edge_xyz, 3 ), "xyz ghost" );
+
+  for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
+    {
+      node = ref_subdiv_node( ref_subdiv, edge );
+      global = edge_global[edge];
+      if ( REF_EMPTY == node && REF_EMPTY != global )
+	{
+	  RSS( ref_node_add( ref_node, global, &node), 
+	       "add node");
+	  ref_node_part(ref_node,node) = edge_part[edge];
+	  for (ixyz=0;ixyz<3;ixyz++)
+	    ref_node_xyz(ref_node,ixyz,node) = edge_xyz[ixyz+3*edge];
+	}
+    }
 
   return REF_SUCCESS;
 }
