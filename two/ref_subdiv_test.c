@@ -381,6 +381,9 @@ int main( int argc, char *argv[] )
 
     RSS(ref_node_synchronize_globals(ref_node),"sync glob");
 
+    if ( 1 < ref_mpi_n )
+      RSS(ref_export_tec_part(ref_grid,"stack"),"stack part");
+
     REIS( 16, ref_node_n_global(ref_node), "where my nodes?" );
 
     RSS( tear_down( ref_subdiv ), "tear down");
