@@ -271,19 +271,13 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
   printf(" blank = %d\n",ref_cell->blank);
   for (cell=0;cell<ref_cell_max(ref_cell);cell++)
     {
-      printf(" %d:",cell);
       if ( ref_cell_valid(ref_cell,cell) )
 	{
+	  printf(" %d:",cell);
 	  for (node=0;node<ref_cell_size_per(ref_cell);node++)
 	    printf(" %d",ref_cell_c2n(ref_cell,node,cell));
+	  printf("\n");
 	}
-      else
-	{
-	  for (node=0;node<2;node++)
-	    printf(" %d",ref_cell_c2n(ref_cell,node,cell));
-
-	}
-      printf("\n");
     }
   
   each_ref_cell_valid_cell( ref_cell, cell )
