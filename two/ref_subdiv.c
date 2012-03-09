@@ -241,25 +241,34 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_INT edge, global, node, node0, node1, ixyz;
+  REF_INT part;
+
+  RSS( ref_node_synchronize_globals( ref_node ), "sync glob" );
 
   for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
     {
       if ( ref_subdiv_mark( ref_subdiv, edge ) )
 	{
-	  RSS( ref_node_next_global( ref_node, &global ),
-	       "next global");
-	  RSS( ref_node_add( ref_node, global, &node), 
-	       "add node");
-	  ref_subdiv_node( ref_subdiv, edge ) = node;
+	  RSS( ref_edge_part(ref_edge,edge,&part), "edge part" );
+	  if ( ref_mpi_id == part )
+	    {
+	      RSS( ref_node_next_global( ref_node, &global ),
+		   "next global");
+	      RSS( ref_node_add( ref_node, global, &node), 
+		   "add node");
+	      ref_subdiv_node( ref_subdiv, edge ) = node;
 
-	  node0 = ref_edge_e2n(ref_edge, edge, 0 );
-	  node1 = ref_edge_e2n(ref_edge, edge, 1 );
-	  for (ixyz=0;ixyz<3;ixyz++)
-	    ref_node_xyz(ref_node,ixyz,node) = 
-	      0.5 * ( ref_node_xyz(ref_node,ixyz,node0) +
-		      ref_node_xyz(ref_node,ixyz,node1) );
-  	}
+	      node0 = ref_edge_e2n(ref_edge, edge, 0 );
+	      node1 = ref_edge_e2n(ref_edge, edge, 1 );
+	      for (ixyz=0;ixyz<3;ixyz++)
+		ref_node_xyz(ref_node,ixyz,node) = 
+		  0.5 * ( ref_node_xyz(ref_node,ixyz,node0) +
+			  ref_node_xyz(ref_node,ixyz,node1) );
+	    }
+	}
     }
+
+  RSS( ref_node_shift_new_globals( ref_node ), "shift glob" );
 
   return REF_SUCCESS;
 }
