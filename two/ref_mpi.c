@@ -276,6 +276,21 @@ REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_all_or( REF_BOOL *boolean )
+{
+#ifdef HAVE_MPI
+  REF_BOOL output;
+
+  MPI_Allreduce( boolean, &output, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  *boolean = MIN(output,1);
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(boolean);
+#endif
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
 {
 #ifdef HAVE_MPI
