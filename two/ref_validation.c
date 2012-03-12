@@ -5,6 +5,7 @@
 #include "ref_validation.h"
 
 #include "ref_face.h"
+#include "ref_mpi.h"
 #include "ref_export.h"
 
 REF_STATUS ref_validation_all( REF_GRID ref_grid )
@@ -143,17 +144,30 @@ REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
 
 REF_STATUS ref_validation_cell_node( REF_GRID ref_grid )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT group;
   REF_INT cell, node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL has_local;
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
-      if ( ! ref_node_valid(ref_grid_node(ref_grid),nodes[node]))
-	{
-	  RSS( REF_FAILURE, "cell with invalid node" );
-	}
+      {
+	has_local = REF_FALSE;
+	for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
+	  {
+	    if ( ! ref_node_valid(ref_grid_node(ref_grid),nodes[node]))
+	      {
+		RSS( REF_FAILURE, "cell with invalid node" );
+	      }
+	    has_local = has_local || 
+	      ( ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+	  }
+	if ( !has_local )
+	  {
+	    RSS( REF_FAILURE, "cell with all ghost nodes" );
+	  }
+      }
 
   return REF_SUCCESS;
 }

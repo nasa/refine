@@ -17,6 +17,7 @@
 #include "ref_export.h"
 #include "ref_dict.h"
 #include "ref_mpi.h"
+#include "ref_validation.h"
 
 static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 {
@@ -88,6 +89,8 @@ int main( int argc, char *argv[] )
       RSS(ref_export_tec_part(ref_grid,"stack_split"),"stack part");
 
     REIS( 16, ref_node_n_global(ref_node), "where my nodes?" );
+
+    RSS(ref_validation_cell_node(ref_grid),"validate");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
