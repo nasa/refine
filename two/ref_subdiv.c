@@ -6,6 +6,7 @@
 
 #include "ref_malloc.h"
 #include "ref_mpi.h"
+#include "ref_adj.h"
 
 static REF_INT ref_subdiv_map( REF_SUBDIV ref_subdiv, 
 			       REF_CELL ref_cell, REF_INT cell )
@@ -316,6 +317,26 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_subdiv_add_local_cell( REF_SUBDIV ref_subdiv, 
+					     REF_CELL ref_cell, 
+					     REF_INT *nodes)
+{
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+  REF_BOOL has_local;
+  REF_INT node, new_cell;
+
+  has_local = REF_FALSE;
+
+  for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
+    has_local = has_local || 
+      ( ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+  
+  if ( has_local )
+    RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
+	
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
@@ -406,7 +427,7 @@ static REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
       RSS(ref_cell_remove(ref_cell,cell),"remove");
       
   each_ref_cell_valid_cell_with_nodes( ref_cell_split, cell, nodes)
-    RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, ref_cell, nodes),"add local");
       
   RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
   free(marked_for_removal);
@@ -546,7 +567,7 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
       RSS(ref_cell_remove(ref_cell,cell),"remove");
       
   each_ref_cell_valid_cell_with_nodes( ref_cell_split, cell, nodes)
-    RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, ref_cell, nodes),"add local");
       
   RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
   free(marked_for_removal);
@@ -669,7 +690,7 @@ static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
       RSS(ref_cell_remove(ref_cell,cell),"remove");
 
   each_ref_cell_valid_cell_with_nodes( ref_cell_split, cell, nodes)
-    RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, ref_cell, nodes),"add local");
 
   RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
   free(marked_for_removal);
@@ -838,7 +859,7 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
       RSS(ref_cell_remove(ref_cell,cell),"remove");
 
   each_ref_cell_valid_cell_with_nodes( ref_cell_split, cell, nodes)
-    RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, ref_cell, nodes),"add local");
 
   RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
   free(marked_for_removal);
@@ -848,12 +869,29 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 
 REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 {
+  REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+  REF_INT node;
 
   RSS( ref_subdiv_split_tet( ref_subdiv ), "split tet" );
   RSS( ref_subdiv_split_pri( ref_subdiv ), "split pri" );
 
   RSS( ref_subdiv_split_qua( ref_subdiv ), "split qua" );
   RSS( ref_subdiv_split_tri( ref_subdiv ), "split tri" );
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_adj_empty( ref_cell_adj(ref_grid_tet(ref_grid)), node) &&
+	 ref_adj_empty( ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
+	 ref_adj_empty( ref_cell_adj(ref_grid_pri(ref_grid)), node) &&
+	 ref_adj_empty( ref_cell_adj(ref_grid_hex(ref_grid)), node) )
+      {
+	if ( ref_mpi_id == ref_node_part(ref_node,node) )
+	  RSS( REF_FAILURE, "unused local node");
+	if ( !ref_adj_empty( ref_cell_adj(ref_grid_tri(ref_grid)), node) ||
+	     !ref_adj_empty( ref_cell_adj(ref_grid_qua(ref_grid)), node) )
+	  RSS( REF_FAILURE, "boundary face node not in vol cells");
+	RSS( ref_node_remove_without_global( ref_node, node ), "rm");
+      }
 
   return REF_SUCCESS;
 }
