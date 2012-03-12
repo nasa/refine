@@ -359,7 +359,7 @@ REF_STATUS ref_node_shift_new_globals( REF_NODE ref_node )
 
       for ( node = ref_node_n(ref_node)-1 ; 
 	    node>=0 && ref_node->sorted_global[node] >= ref_node->old_n_global; 
-	    node++ )
+	    node-- )
 	ref_node->sorted_global[node] += offset;
 
       RSS( ref_list_shift( ref_node->unused_global_list, 
