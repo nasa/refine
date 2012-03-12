@@ -307,6 +307,10 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	}
     }
 
+  ref_free( edge_xyz );
+  ref_free( edge_part );
+  ref_free( edge_global );
+
   return REF_SUCCESS;
 }
 
