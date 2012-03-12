@@ -58,6 +58,42 @@ int main( int argc, char *argv[] )
 
   RSS( ref_mpi_start( argc, argv ), "start" );
 
+  { /* split stack in two */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node0, node1;
+
+    RSS( ref_fixture_pri_stack_grid( &ref_grid ), "stack" );
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
+
+    if ( 1 < ref_mpi_n )
+      RSS(ref_export_tec_part(ref_grid,"stack_orig"),"stack part");
+
+    REIS( 12, ref_node_n_global(ref_node), "start with 12" );
+
+    if ( REF_SUCCESS == ref_node_local(ref_node,0,&node0) &&
+	 REF_SUCCESS == ref_node_local(ref_node,1,&node1) ) 
+      if ( ref_mpi_id == ref_node_part(ref_node,node0) )
+	RSS(ref_subdiv_mark_to_split(ref_subdiv,node0,node1),"mark edge");
+
+    RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    RSS(ref_node_synchronize_globals(ref_node),"sync glob");
+
+    if ( 1 < ref_mpi_n )
+      RSS(ref_export_tec_part(ref_grid,"stack_split"),"stack part");
+
+    REIS( 16, ref_node_n_global(ref_node), "where my nodes?" );
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  RSS( ref_mpi_stop( ), "stop" );
+
   { /* mark and relax prism*/
     REF_SUBDIV ref_subdiv;
     RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
@@ -358,41 +394,6 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* split stack in two */
-    REF_SUBDIV ref_subdiv;
-    REF_GRID ref_grid;
-    REF_NODE ref_node;
-    REF_INT node0, node1;
-
-    RSS( ref_fixture_pri_stack_grid( &ref_grid ), "stack" );
-    ref_node = ref_grid_node(ref_grid);
-    RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
-
-    if ( 1 < ref_mpi_n )
-      RSS(ref_export_tec_part(ref_grid,"stack_orig"),"stack part");
-
-    REIS( 12, ref_node_n_global(ref_node), "start with 12" );
-
-    if ( REF_SUCCESS == ref_node_local(ref_node,0,&node0) &&
-	 REF_SUCCESS == ref_node_local(ref_node,1,&node1) ) 
-      if ( ref_mpi_id == ref_node_part(ref_node,node0) )
-	RSS(ref_subdiv_mark_to_split(ref_subdiv,node0,node1),"mark edge");
-
-    RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-    RSS(ref_subdiv_split(ref_subdiv),"split");
-
-    RSS(ref_node_synchronize_globals(ref_node),"sync glob");
-
-    if ( 1 < ref_mpi_n )
-      RSS(ref_export_tec_part(ref_grid,"stack_split"),"stack part");
-
-    REIS( 16, ref_node_n_global(ref_node), "where my nodes?" );
-
-    RSS( tear_down( ref_subdiv ), "tear down");
-  }
-
-  RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }
