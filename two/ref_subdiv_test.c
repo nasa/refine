@@ -91,6 +91,7 @@ int main( int argc, char *argv[] )
     REIS( 16, ref_node_n_global(ref_node), "where my nodes?" );
 
     RSS(ref_validation_cell_node(ref_grid),"validate");
+    RSS(ref_validation_hanging_node(ref_grid),"validate");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
