@@ -63,6 +63,9 @@ REF_STATUS ref_mpi_stop( )
   MPI_Finalize( );
 #endif
 
+  ref_mpi_n = 1;
+  ref_mpi_id = 0;
+
   return REF_SUCCESS;
 }
 
@@ -281,6 +284,8 @@ REF_STATUS ref_mpi_all_or( REF_BOOL *boolean )
 #ifdef HAVE_MPI
   REF_BOOL output;
 
+  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+
   MPI_Allreduce( boolean, &output, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
   *boolean = MIN(output,1);
 
@@ -347,6 +352,17 @@ REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type )
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   
+  if ( 1 == ref_mpi_n ) 
+    {
+      switch (type)
+	{
+	case REF_INT_TYPE: *(REF_INT *)array = *(REF_INT *)scalar; break;
+	case REF_DBL_TYPE: *(REF_DBL *)array = *(REF_DBL *)scalar; break;
+	default: RSS( REF_IMPLEMENT, "data type");
+	}
+      return REF_SUCCESS;
+    }
+
   ref_type_mpi_type(type,datatype);
 
   MPI_Allgather( scalar, 1, datatype, 
