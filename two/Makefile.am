@@ -171,7 +171,7 @@ ref_sort_test_LDADD = libref2.a -lm
 TESTS += ref_subdiv_test
 noinst_PROGRAMS += ref_subdiv_test
 ref_subdiv_test_SOURCES = ref_subdiv_test.c
-ref_subdiv_test_LDADD = libref2.a -lm
+ref_subdiv_test_LDADD = libref2.a @zoltan_LDADD@ -lm
 
 TESTS += ref_swap_test
 noinst_PROGRAMS += ref_swap_test

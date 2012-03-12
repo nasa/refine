@@ -19,6 +19,10 @@
 #include "ref_mpi.h"
 #include "ref_validation.h"
 
+#include "ref_part.h"
+#include "ref_migrate.h"
+#include "ref_gather.h"
+
 static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 {
   REF_GRID ref_grid;
@@ -59,6 +63,30 @@ int main( int argc, char *argv[] )
 
   RSS( ref_mpi_start( argc, argv ), "start" );
 
+  if ( 1 < argc )
+    {
+      REF_SUBDIV ref_subdiv;
+      REF_GRID ref_grid;
+
+      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
+      RSS(ref_migrate_new_part(ref_grid),"new part");
+      RSS( ref_migrate_shufflin( ref_grid ), "shufflin");
+
+      RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
+
+      RSS(ref_export_tec_part(ref_grid,"ref_subdiv_orig"),"orig part");
+      
+      RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+      RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+      RSS(ref_subdiv_split(ref_subdiv),"split");
+
+      RSS(ref_export_tec_part(ref_grid,"ref_subdiv_splt"),"split part");
+
+      RSS(ref_gather_b8_ugrid(ref_grid,"ref_subdiv_test.b8.ugrid"),"gather");
+
+      RSS( tear_down( ref_subdiv ), "tear down");
+    }
+
   { /* split stack in two */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
@@ -82,8 +110,6 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
     RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
     RSS(ref_subdiv_split(ref_subdiv),"split");
-
-    RSS(ref_node_synchronize_globals(ref_node),"sync glob");
 
     if ( 1 < ref_mpi_n )
       RSS(ref_export_tec_part(ref_grid,"stack_split"),"stack part");
