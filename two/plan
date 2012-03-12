@@ -1,10 +1,6 @@
 
 
-parallel stack subdivision
- parallel new nodes
-   xfer all nodes (global, part, xyz), remove the unused ones later.
- parallel aware add
-   just the cells with a local node
+subdiv prisms
 projection (fake geom)
 projection linear elasticity
  per-olaf
@@ -37,10 +33,10 @@ June
 
 speedup
 
-void heap sort
+avoid heap sort
 - replace one at the top of part_cell with comp row storage
 
 ideas
 
-only have a cell exist once, no dupliate cells?
+only have a cell exist once, no duplicate cells?
 
