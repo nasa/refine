@@ -301,9 +301,11 @@ REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	{
 	  RSS( ref_node_add( ref_node, global, &node), 
 	       "add node");
+	  ref_subdiv_node( ref_subdiv, edge ) = node;
 	  ref_node_part(ref_node,node) = edge_part[edge];
 	  for (ixyz=0;ixyz<3;ixyz++)
 	    ref_node_xyz(ref_node,ixyz,node) = edge_xyz[ixyz+3*edge];
+
 	}
     }
 
