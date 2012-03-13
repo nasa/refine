@@ -225,6 +225,7 @@ static REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 		break;
 	      case 5:
 		edge_or(0,7);
+		edge_or(1,5);
 		edge_or(3,6);
 		break;
 	      case 6:
@@ -534,7 +535,25 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
       if( ref_subdiv_mark( ref_subdiv, edge01 ) &&
 	  ref_subdiv_mark( ref_subdiv, edge12 ) &&
 	  !ref_subdiv_mark( ref_subdiv, edge20 ) )
-	RSS( REF_IMPLEMENT, "code" );
+	{
+	  marked_for_removal[cell]=1;
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[0], 
+				       &(new_nodes[0])), "mis");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
+	  new_nodes[4] =  new_nodes[3]; /* faceid */
+	  new_nodes[3] =  new_nodes[2]; /* last node */
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[0], 
+				       &(new_nodes[1])), "mis");
+	  RSS(ref_cell_add(qua_split,new_nodes,&new_cell),"add");
+	  continue;
+	}
 
       if( ref_subdiv_mark( ref_subdiv, edge12 ) &&
 	  ref_subdiv_mark( ref_subdiv, edge20 ) &&
@@ -968,7 +987,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 				       &(new_nodes[4])), "mis");
 	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
 	  break;
-	case 72: /* split into pyr and pri*/
+	case 72: /* split into pyr and pri edge 3-6 */
 	  marked_for_removal[cell]=1;
 	  
 	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
@@ -982,6 +1001,23 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[2])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[4],nodes[2], 
+				       &(new_nodes[5])), "mis");
+	  RSS(ref_cell_add(pri_split,new_nodes,&new_cell),"add");
+	  break;
+	case 34: /* split into pyr and pri edge 1-5 */
+	  marked_for_removal[cell]=1;
+	  
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[2], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[2], 
 				       &(new_nodes[5])), "mis");
 	  RSS(ref_cell_add(pri_split,new_nodes,&new_cell),"add");
 	  break;
