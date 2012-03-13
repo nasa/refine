@@ -709,7 +709,7 @@ static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 	{
 	case 0: /* don't split */
 	  break;
-	case 65: /* prism split */
+	case 65: /* prism split edges 0, 6 */
 	  marked_for_removal[cell]=1;
 	  
 	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
@@ -724,6 +724,40 @@ static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
 				       &(new_nodes[4])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  break;
+	case 130: /* prism split edges 1, 7 */
+	  marked_for_removal[cell]=1;
+	  
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[5], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[5], 
+				       &(new_nodes[5])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  break;
+	case 264: /* prism split edges 3, 8 */
+	  marked_for_removal[cell]=1;
+	  
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[4],nodes[5], 
+				       &(new_nodes[4])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[4],nodes[5], 
+				       &(new_nodes[5])), "mis");
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 	  break;
 	case 459: /* prism split */
