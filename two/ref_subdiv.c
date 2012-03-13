@@ -29,6 +29,24 @@ static REF_INT ref_subdiv_map( REF_SUBDIV ref_subdiv,
   return map;
 }
 
+static REF_STATUS ref_subdiv_map_to_edge( REF_INT map )
+{
+  REF_INT edge, bit;
+  
+  bit = 2048;
+  for ( edge = 11; edge >= 0; edge--)
+    {
+      if ( map >= bit )
+	{ 
+	  map -= bit;
+	  printf("edge %d bit %d\n",edge,bit);
+	}
+      bit /= 2;
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
 {
   REF_SUBDIV ref_subdiv;
@@ -766,6 +784,7 @@ static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 
 	  break;
 	default:
+	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
 	  printf("pri %d, map %d\n",cell,map);
 	  RSS( REF_IMPLEMENT, "map not implemented yet" )
 	}
@@ -935,6 +954,7 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  }
 	  break;
 	default:
+	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
 	  printf("tet %d, map %d\n",cell,map);
 	  RSS( REF_IMPLEMENT, "map not implemented yet" )
 	}
@@ -1093,6 +1113,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	  
 	  break;
 	default:
+	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
 	  printf("pyr %d, map %d\n",cell,map);
 	  RSS( REF_IMPLEMENT, "map not implemented yet" )
 	}
