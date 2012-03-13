@@ -80,8 +80,8 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
   ref_node_xyz(ref_node,2,node) = 1.0;
 
   RSS(ref_node_add(ref_node,4,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
   RSS( ref_node_initialize_n_global( ref_node, 5 ), "init glob" );
