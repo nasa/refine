@@ -136,6 +136,7 @@ int main( int argc, char *argv[] )
     RES(0,ref_subdiv_mark(ref_subdiv,6),"not been marked");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    RSS(ref_subdiv_split(ref_subdiv),"split");
 
     RES(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
     RES(1,ref_subdiv_mark(ref_subdiv,6),"been relaxed");
@@ -151,7 +152,10 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 1-2");
 
     RES(0,ref_subdiv_mark(ref_subdiv,1),"no yet");
+
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
     RES(1,ref_subdiv_mark(ref_subdiv,1),"yet");
 
     RSS( tear_down( ref_subdiv ), "tear down");
@@ -168,7 +172,10 @@ int main( int argc, char *argv[] )
     REIS(1,ref_subdiv_mark(ref_subdiv,3),"yet");
 
     REIS(0,ref_subdiv_mark(ref_subdiv,1),"no yet");
+
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
     REIS(1,ref_subdiv_mark(ref_subdiv,1),"yet");
 
     REIS(0,ref_subdiv_mark(ref_subdiv,2),"no yet");
@@ -189,7 +196,10 @@ int main( int argc, char *argv[] )
     REIS(1,ref_subdiv_mark(ref_subdiv,5),"yet");
 
     REIS(0,ref_subdiv_mark(ref_subdiv,1),"no yet");
+
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
     REIS(1,ref_subdiv_mark(ref_subdiv,1),"yet");
 
     REIS(1,ref_subdiv_mark(ref_subdiv,2),"yet");
