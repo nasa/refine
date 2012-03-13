@@ -225,6 +225,7 @@ static REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 		break;
 	      case 5:
 		edge_or(0,7);
+		edge_or(3,6);
 		break;
 	      case 6:
 		edge_or(0,6);
@@ -877,8 +878,8 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
-  REF_CELL ref_cell;
-  REF_CELL ref_cell_split;
+  REF_CELL pyr, pri;
+  REF_CELL pyr_split, pri_split;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
@@ -886,20 +887,28 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 
   REF_INT map;
 
-  ref_cell = ref_grid_pyr(ref_subdiv_grid(ref_subdiv));
+  pyr = ref_grid_pyr(ref_subdiv_grid(ref_subdiv));
   marked_for_removal = 
-    (REF_INT *)malloc(ref_cell_max(ref_cell)*sizeof(REF_INT));
+    (REF_INT *)malloc(ref_cell_max(pyr)*sizeof(REF_INT));
   RNS(marked_for_removal,"malloc failed");
-  for(cell=0;cell<ref_cell_max(ref_cell);cell++)
+  for(cell=0;cell<ref_cell_max(pyr);cell++)
     marked_for_removal[cell]=0;
-  RSS( ref_cell_create( &ref_cell_split, 
-			ref_cell_node_per(ref_cell), 
-			ref_cell_last_node_is_an_id(ref_cell)), 
-       "temp cell");
-  each_ref_cell_valid_cell( ref_cell, cell )
+
+  RSS( ref_cell_create( &pyr_split, 
+			ref_cell_node_per(pyr), 
+			ref_cell_last_node_is_an_id(pyr)), 
+       "temp pyr");
+
+  pri = ref_grid_pri(ref_subdiv_grid(ref_subdiv));
+  RSS( ref_cell_create( &pri_split, 
+			ref_cell_node_per(pri), 
+			ref_cell_last_node_is_an_id(pri)), 
+       "temp pri");
+
+  each_ref_cell_valid_cell( pyr, cell )
     {
-      map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes");
+      map = ref_subdiv_map( ref_subdiv, pyr, cell );
+      RSS( ref_cell_nodes( pyr, cell, nodes ), "nodes");
       switch ( map )
 	{
 	case 0: /* don't split */
@@ -907,19 +916,19 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	case 129: /* split into two pyr*/
 	  marked_for_removal[cell]=1;
 	  
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
 				       &(new_nodes[3])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
 
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
 				       &(new_nodes[4])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
 	  break;
 	default:
 	  printf("cell %d, map %d\n",cell,map);
@@ -927,14 +936,19 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	}
     }
 
-  for(cell=0;cell<ref_cell_max(ref_cell);cell++)
+  for(cell=0;cell<ref_cell_max(pyr);cell++)
     if ( 1 == marked_for_removal[cell] )
-      RSS(ref_cell_remove(ref_cell,cell),"remove");
+      RSS(ref_cell_remove(pyr,cell),"remove");
 
-  each_ref_cell_valid_cell_with_nodes( ref_cell_split, cell, nodes)
-    RSS(ref_subdiv_add_local_cell(ref_subdiv, ref_cell, nodes),"add local");
+  each_ref_cell_valid_cell_with_nodes( pyr_split, cell, nodes)
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, pyr, nodes),"add local");
 
-  RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
+  each_ref_cell_valid_cell_with_nodes( pri_split, cell, nodes)
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, pri, nodes),"add local");
+
+  RSS( ref_cell_free( pyr_split ), "temp pyr free");
+  RSS( ref_cell_free( pri_split ), "temp pri free");
+
   free(marked_for_removal);
 
   return REF_SUCCESS;
