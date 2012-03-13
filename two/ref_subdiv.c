@@ -447,8 +447,8 @@ static REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
 static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
-  REF_CELL tri;
-  REF_CELL tri_split;
+  REF_CELL tri, qua;
+  REF_CELL tri_split, qua_split;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
@@ -462,10 +462,18 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
   RNS(marked_for_removal,"malloc failed");
   for(cell=0;cell<ref_cell_max(tri);cell++)
     marked_for_removal[cell]=0;
+
   RSS( ref_cell_create( &tri_split, 
 			ref_cell_node_per(tri), 
 			ref_cell_last_node_is_an_id(tri)), 
-       "temp cell");
+       "temp tri");
+
+  qua = ref_grid_qua(ref_subdiv_grid(ref_subdiv));
+  RSS( ref_cell_create( &qua_split, 
+			ref_cell_node_per(qua), 
+			ref_cell_last_node_is_an_id(qua)), 
+       "temp qua");
+
   each_ref_cell_valid_cell( tri, cell )
     {
       RSS( ref_cell_nodes( tri, cell, nodes ), "nodes");
@@ -577,8 +585,13 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
       
   each_ref_cell_valid_cell_with_nodes( tri_split, cell, nodes)
     RSS(ref_subdiv_add_local_cell(ref_subdiv, tri, nodes),"add local");
+
+  each_ref_cell_valid_cell_with_nodes( qua_split, cell, nodes)
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, qua, nodes),"add local");
       
   RSS( ref_cell_free( tri_split ), "temp tri free");
+  RSS( ref_cell_free( qua_split ), "temp qua free");
+
   free(marked_for_removal);
 
   return REF_SUCCESS;
@@ -986,6 +999,7 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   RSS( ref_subdiv_split_pyr( ref_subdiv ), "split pyr" );
 
   RSS( ref_subdiv_split_qua( ref_subdiv ), "split qua" );
+  /* tri comes last, it can make qua elements too */
   RSS( ref_subdiv_split_tri( ref_subdiv ), "split tri" );
 
   /* remove unused nods on partition boundaries */
