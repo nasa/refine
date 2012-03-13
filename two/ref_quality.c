@@ -363,12 +363,10 @@ REF_STATUS ref_quality_split_multiple_face_cell( REF_GRID ref_grid )
       RSS( ref_subdiv_mark_n( ref_subdiv, &marks ), "n mark");
       printf("original marks %d\n",marks);
 
-      RSS( ref_subdiv_mark_relax( ref_subdiv ), "relax subdiv");
+      RSS( ref_subdiv_split( ref_subdiv ), "split subdiv");
 
       RSS( ref_subdiv_mark_n( ref_subdiv, &marks ), "n mark");
       printf("relaxed marks %d\n",marks);
-
-      RSS( ref_subdiv_split( ref_subdiv ), "split subdiv");
     }
   RSS( ref_subdiv_free( ref_subdiv ), "free subdiv");
 

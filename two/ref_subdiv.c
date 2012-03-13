@@ -192,7 +192,7 @@ static REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv,
 	}								\
   }
 
-REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
+static REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 {
   REF_INT group, cell;
   REF_CELL ref_cell;
@@ -873,6 +873,7 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_INT node;
 
+  RSS(ref_subdiv_mark_relax(ref_subdiv),"relax marks");
   RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
 
   RSS( ref_subdiv_split_tet( ref_subdiv ), "split tet" );
