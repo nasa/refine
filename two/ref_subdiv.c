@@ -766,7 +766,7 @@ static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 
 	  break;
 	default:
-	  printf("cell %d, map %d\n",cell,map);
+	  printf("pri %d, map %d\n",cell,map);
 	  RSS( REF_IMPLEMENT, "map not implemented yet" )
 	}
     }
@@ -935,7 +935,7 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  }
 	  break;
 	default:
-	  printf("cell %d, map %d\n",cell,map);
+	  printf("tet %d, map %d\n",cell,map);
 	  RSS( REF_IMPLEMENT, "map not implemented yet" )
 	}
     }
@@ -1093,7 +1093,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	  
 	  break;
 	default:
-	  printf("cell %d, map %d\n",cell,map);
+	  printf("pyr %d, map %d\n",cell,map);
 	  RSS( REF_IMPLEMENT, "map not implemented yet" )
 	}
     }
