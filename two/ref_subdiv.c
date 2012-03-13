@@ -107,9 +107,9 @@ REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv, 
-				    REF_INT node0, REF_INT node1,
-				    REF_INT *new_node )
+static REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv, 
+					   REF_INT node0, REF_INT node1,
+					   REF_INT *new_node )
 {
   REF_INT edge;
 

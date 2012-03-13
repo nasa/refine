@@ -40,10 +40,6 @@ REF_STATUS ref_subdiv_mark_n( REF_SUBDIV ref_subdiv, REF_INT *n );
 REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv, 
 				     REF_INT node0, REF_INT node1 );
 
-REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv, 
-				    REF_INT node0, REF_INT node1,
-				    REF_INT *new_node );
-
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv );
 
 REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv );
