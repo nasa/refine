@@ -79,7 +79,10 @@ int main( int argc, char *argv[] )
     {
       REF_SUBDIV ref_subdiv;
       REF_GRID ref_grid;
-
+      REF_NODE ref_node;
+      REF_EDGE ref_edge;
+      REF_INT edge;
+      
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
       RSS(ref_migrate_new_part(ref_grid),"new part");
       RSS( ref_migrate_shufflin( ref_grid ), "shufflin");
@@ -87,7 +90,18 @@ int main( int argc, char *argv[] )
       RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
 
       RSS(ref_export_tec_part(ref_grid,"ref_subdiv_orig"),"orig part");
-      
+
+      ref_node = ref_grid_node(ref_grid);
+      ref_edge = ref_subdiv_edge(ref_subdiv);
+
+      for ( edge=0; edge<ref_edge_n(ref_edge);edge++ )
+	if ( ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,edge,0))<0.001 &&
+	     ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,edge,1))<0.001 )
+	  RSS(ref_subdiv_mark_to_split(ref_subdiv,
+				       ref_edge_e2n(ref_edge,edge,0),
+				       ref_edge_e2n(ref_edge,edge,1)
+				       ),"mark edge");
+
       RSS(ref_subdiv_split(ref_subdiv),"split");
 
       RSS(ref_export_tec_part(ref_grid,"ref_subdiv_splt"),"split part");
