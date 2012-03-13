@@ -506,5 +506,28 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
+  { /* relax and split pyramid in to pyr and 3 pri rpomoting two edges */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 1");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,2),"mark edge 1");
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
+    REIS(1,ref_subdiv_mark(ref_subdiv,1),"been marked");
+    REIS(1,ref_subdiv_mark(ref_subdiv,3),"been marked");
+
+    REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(3, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+    REIS(10,ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(4, ref_cell_n(ref_grid_qua(ref_grid)),"qua");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
   return 0;
 }
