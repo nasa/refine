@@ -436,7 +436,7 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* relax and split pyramid in two */
+  { /* relax and split pyramid in two 0-1 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
@@ -454,6 +454,29 @@ int main( int argc, char *argv[] )
 
     REIS(2, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
     REIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  SKIP_BLOCK("triangles breed quads")
+  { /* relax and split pyramid in to pyr and pri 1-2 */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 1");
+
+    REIS(1,ref_subdiv_mark(ref_subdiv,3),"been marked");
+    REIS(0,ref_subdiv_mark(ref_subdiv,6),"been marked");
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(1,ref_subdiv_mark(ref_subdiv,3),"been marked");
+    REIS(1,ref_subdiv_mark(ref_subdiv,6),"been marked");
+
+    REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(1, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }

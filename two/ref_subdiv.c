@@ -930,6 +930,23 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 				       &(new_nodes[4])), "mis");
 	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
 	  break;
+	case 72: /* split into pyr and pri*/
+	  marked_for_removal[cell]=1;
+	  
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[4],nodes[2], 
+				       &(new_nodes[4])), "mis");
+	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[4],nodes[2], 
+				       &(new_nodes[5])), "mis");
+	  RSS(ref_cell_add(pri_split,new_nodes,&new_cell),"add");
+	  break;
 	default:
 	  printf("cell %d, map %d\n",cell,map);
 	  RSS( REF_IMPLEMENT, "map not implemented yet" )
