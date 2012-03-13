@@ -218,6 +218,8 @@ static REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 		promote_2_3(0,1,3);
 		promote_2_all();
 		break;
+	      case 5:
+		break;
 	      case 6:
 		edge_or(0,6);
 		edge_or(3,8);

@@ -35,6 +35,17 @@ static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
   return REF_SUCCESS;
 }
 
+static REF_STATUS set_up_pyramid_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
+{
+  REF_GRID ref_grid;
+
+  RSS(ref_fixture_pyr_grid( &ref_grid ), "pri");
+
+  RSS(ref_subdiv_create(ref_subdiv_ptr,ref_grid),"create");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS set_up_prism_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 {
   REF_GRID ref_grid;
@@ -393,6 +404,20 @@ int main( int argc, char *argv[] )
 
     REIS(8, ref_cell_n(ref_grid_tet(ref_grid)),"eight tet");
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* unsplit pyramid */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"tri");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
