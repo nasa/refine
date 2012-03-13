@@ -580,7 +580,25 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
       if( ref_subdiv_mark( ref_subdiv, edge20 ) &&
 	  ref_subdiv_mark( ref_subdiv, edge01 ) &&
 	  !ref_subdiv_mark( ref_subdiv, edge12 ) )
-	RSS( REF_IMPLEMENT, "code" );
+	{
+	  marked_for_removal[cell]=1;
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
+	  new_nodes[4] =  new_nodes[3]; /* faceid */
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(qua_split,new_nodes,&new_cell),"add");
+	  continue;
+	}
+
 
       if( ref_subdiv_mark( ref_subdiv, edge01 ) )
 	{
