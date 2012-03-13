@@ -78,7 +78,6 @@ int main( int argc, char *argv[] )
       RSS(ref_export_tec_part(ref_grid,"ref_subdiv_orig"),"orig part");
       
       RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-      RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
       RSS(ref_subdiv_split(ref_subdiv),"split");
 
       RSS(ref_export_tec_part(ref_grid,"ref_subdiv_splt"),"split part");
@@ -109,7 +108,6 @@ int main( int argc, char *argv[] )
 	RSS(ref_subdiv_mark_to_split(ref_subdiv,node0,node1),"mark edge");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
     if ( 1 < ref_mpi_n )
@@ -211,7 +209,7 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,3,4),"mark edge 6 3-4");
 
     REIS(6, ref_node_n(ref_node), "6 node prism" );
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+    RSS(ref_subdiv_split(ref_subdiv),"split");
 
     REIS(8, ref_node_n(ref_node), "two new nodes" );
 
@@ -230,9 +228,8 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
+
     REIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"two");
 
     RSS( tear_down( ref_subdiv ), "tear down");
@@ -247,9 +244,8 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
+
     REIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"two pri");
 
     REIS(2, ref_cell_n(ref_grid_qua(ref_grid)),"two qua");
@@ -270,9 +266,8 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,2,0),"mark edge 2-0");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
+
     REIS(4, ref_cell_n(ref_grid_pri(ref_grid)),"two pri");
 
     REIS(2, ref_cell_n(ref_grid_qua(ref_grid)),"two qua");
@@ -293,8 +288,6 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"two tet");
@@ -312,8 +305,6 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,3),"mark edge 0-3");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"two tet");
@@ -332,8 +323,6 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 1-2");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
     REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
@@ -352,8 +341,6 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
     REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
@@ -372,8 +359,6 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,2),"mark edge");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
     REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
@@ -392,8 +377,6 @@ int main( int argc, char *argv[] )
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge");
 
     RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
     REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
@@ -410,9 +393,8 @@ int main( int argc, char *argv[] )
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
     RSS(ref_subdiv_mark_to_split(ref_subdiv,2,3),"mark edge 5");
-    RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
-    RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
 
+    RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
     REIS(8, ref_cell_n(ref_grid_tet(ref_grid)),"eight tet");

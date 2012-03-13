@@ -46,8 +46,6 @@ REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv,
 
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv );
 
-REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv );
-
 REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv );
 
 END_C_DECLORATION

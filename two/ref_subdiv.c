@@ -237,7 +237,7 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
+static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
@@ -873,12 +873,15 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_INT node;
 
+  RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
+
   RSS( ref_subdiv_split_tet( ref_subdiv ), "split tet" );
   RSS( ref_subdiv_split_pri( ref_subdiv ), "split pri" );
 
   RSS( ref_subdiv_split_qua( ref_subdiv ), "split qua" );
   RSS( ref_subdiv_split_tri( ref_subdiv ), "split tri" );
 
+  /* remove unused nods on partition boundaries */
   each_ref_node_valid_node( ref_node, node )
     if ( ref_adj_empty( ref_cell_adj(ref_grid_tet(ref_grid)), node) &&
 	 ref_adj_empty( ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
