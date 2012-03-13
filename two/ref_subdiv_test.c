@@ -102,6 +102,15 @@ int main( int argc, char *argv[] )
 				       ref_edge_e2n(ref_edge,edge,1)
 				       ),"mark edge");
 
+      if ( 1 == ref_mpi_n )
+	{
+	  RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+	  ref_edge_tec_int(ref_subdiv_edge(ref_subdiv),
+			   ref_grid_node(ref_grid),
+			   "edge.tec", 
+			   ref_subdiv->mark );
+	}
+ 
       RSS(ref_subdiv_split(ref_subdiv),"split");
 
       RSS(ref_export_tec_part(ref_grid,"ref_subdiv_splt"),"split part");
