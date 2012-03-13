@@ -458,7 +458,6 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  SKIP_BLOCK("triangles breed quads")
   { /* relax and split pyramid in to pyr and pri 1-2 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
@@ -477,6 +476,8 @@ int main( int argc, char *argv[] )
 
     REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
     REIS(1, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+    REIS(6, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(2, ref_cell_n(ref_grid_qua(ref_grid)),"qua");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }

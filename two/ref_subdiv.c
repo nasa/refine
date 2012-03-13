@@ -483,19 +483,6 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 			  nodes[1], nodes[2], &edge12 ), "e12" );
       RSS( ref_edge_with( ref_subdiv_edge( ref_subdiv ),
 			  nodes[2], nodes[0], &edge20 ), "e20" );
-
-      if( ref_subdiv_mark( ref_subdiv, edge01 ) &&
-	  ref_subdiv_mark( ref_subdiv, edge12 ) &&
-	  !ref_subdiv_mark( ref_subdiv, edge20 ) )
-	RSS( REF_IMPLEMENT, "code" );
-      if( ref_subdiv_mark( ref_subdiv, edge12 ) &&
-	  ref_subdiv_mark( ref_subdiv, edge20 ) &&
-	  !ref_subdiv_mark( ref_subdiv, edge01 ) )
-	RSS( REF_IMPLEMENT, "code" );
-      if( ref_subdiv_mark( ref_subdiv, edge20 ) &&
-	  ref_subdiv_mark( ref_subdiv, edge01 ) &&
-	  !ref_subdiv_mark( ref_subdiv, edge12 ) )
-	RSS( REF_IMPLEMENT, "code" );
 	  
       if( ref_subdiv_mark( ref_subdiv, edge01 ) &&
 	  ref_subdiv_mark( ref_subdiv, edge12 ) &&
@@ -537,6 +524,44 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
 	  continue;
 	}
+
+      /*
+	2   3-2
+	|\  | |
+	0-1 0-1
+       */
+
+      if( ref_subdiv_mark( ref_subdiv, edge01 ) &&
+	  ref_subdiv_mark( ref_subdiv, edge12 ) &&
+	  !ref_subdiv_mark( ref_subdiv, edge20 ) )
+	RSS( REF_IMPLEMENT, "code" );
+
+      if( ref_subdiv_mark( ref_subdiv, edge12 ) &&
+	  ref_subdiv_mark( ref_subdiv, edge20 ) &&
+	  !ref_subdiv_mark( ref_subdiv, edge01 ) )
+	{
+	  marked_for_removal[cell]=1;
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[1], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
+				       &(new_nodes[0])), "mis");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
+	  new_nodes[4] =  new_nodes[3]; /* faceid */
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[1], 
+				       &(new_nodes[2])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(qua_split,new_nodes,&new_cell),"add");
+	  continue;
+	}
+
+      if( ref_subdiv_mark( ref_subdiv, edge20 ) &&
+	  ref_subdiv_mark( ref_subdiv, edge01 ) &&
+	  !ref_subdiv_mark( ref_subdiv, edge12 ) )
+	RSS( REF_IMPLEMENT, "code" );
 
       if( ref_subdiv_mark( ref_subdiv, edge01 ) )
 	{
