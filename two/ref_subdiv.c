@@ -215,7 +215,7 @@ static REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv,
 	}								\
   }
 
-static REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
+REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 {
   REF_INT group, cell;
   REF_CELL ref_cell;
