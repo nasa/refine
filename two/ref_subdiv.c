@@ -447,8 +447,8 @@ static REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
 static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
-  REF_CELL ref_cell;
-  REF_CELL ref_cell_split;
+  REF_CELL tri;
+  REF_CELL tri_split;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
@@ -456,19 +456,19 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 
   REF_INT edge01, edge12, edge20;
 
-  ref_cell = ref_grid_tri(ref_subdiv_grid(ref_subdiv));
+  tri = ref_grid_tri(ref_subdiv_grid(ref_subdiv));
   marked_for_removal = 
-    (REF_INT *)malloc(ref_cell_max(ref_cell)*sizeof(REF_INT));
+    (REF_INT *)malloc(ref_cell_max(tri)*sizeof(REF_INT));
   RNS(marked_for_removal,"malloc failed");
-  for(cell=0;cell<ref_cell_max(ref_cell);cell++)
+  for(cell=0;cell<ref_cell_max(tri);cell++)
     marked_for_removal[cell]=0;
-  RSS( ref_cell_create( &ref_cell_split, 
-			ref_cell_node_per(ref_cell), 
-			ref_cell_last_node_is_an_id(ref_cell)), 
+  RSS( ref_cell_create( &tri_split, 
+			ref_cell_node_per(tri), 
+			ref_cell_last_node_is_an_id(tri)), 
        "temp cell");
-  each_ref_cell_valid_cell( ref_cell, cell )
+  each_ref_cell_valid_cell( tri, cell )
     {
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes");
+      RSS( ref_cell_nodes( tri, cell, nodes ), "nodes");
       RSS( ref_edge_with( ref_subdiv_edge( ref_subdiv ),
 			  nodes[0], nodes[1], &edge01 ), "e01" );
       RSS( ref_edge_with( ref_subdiv_edge( ref_subdiv ),
@@ -495,90 +495,90 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
 	{
 	  marked_for_removal[cell]=1;
 	  /* near node 0 */
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
 				       &(new_nodes[2])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
 
 	  /* near node 1 */
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[0], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[2])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
 
 	  /* near node 2 */
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
 				       &(new_nodes[0])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
 
 	  /* center */
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
 				       &(new_nodes[2])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
 	  continue;
 	}
 
       if( ref_subdiv_mark( ref_subdiv, edge01 ) )
 	{
 	  marked_for_removal[cell]=1;
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
 	}
 	  
       if( ref_subdiv_mark( ref_subdiv, edge12 ) )
 	{
 	  marked_for_removal[cell]=1;
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[1])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
 				       &(new_nodes[2])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
 	}
 	  
       if( ref_subdiv_mark( ref_subdiv, edge20 ) )
 	{
 	  marked_for_removal[cell]=1;
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
 				       &(new_nodes[2])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
+	  RSS( ref_cell_nodes( tri, cell, new_nodes ), "nodes");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
 				       &(new_nodes[0])), "mis");
-	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+	  RSS(ref_cell_add(tri_split,new_nodes,&new_cell),"add");
 	}
 	  
     }
 
-  for(cell=0;cell<ref_cell_max(ref_cell);cell++)
+  for(cell=0;cell<ref_cell_max(tri);cell++)
     if ( 1 == marked_for_removal[cell] )
-      RSS(ref_cell_remove(ref_cell,cell),"remove");
+      RSS(ref_cell_remove(tri,cell),"remove");
       
-  each_ref_cell_valid_cell_with_nodes( ref_cell_split, cell, nodes)
-    RSS(ref_subdiv_add_local_cell(ref_subdiv, ref_cell, nodes),"add local");
+  each_ref_cell_valid_cell_with_nodes( tri_split, cell, nodes)
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, tri, nodes),"add local");
       
-  RSS( ref_cell_free( ref_cell_split ), "temp ref_cell free");
+  RSS( ref_cell_free( tri_split ), "temp tri free");
   free(marked_for_removal);
 
   return REF_SUCCESS;
