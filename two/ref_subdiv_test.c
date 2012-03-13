@@ -422,6 +422,42 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
+  { /* unsplit pyramid */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* relax and split pyramid in two */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
+
+    REIS(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
+    REIS(0,ref_subdiv_mark(ref_subdiv,7),"been marked");
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
+    REIS(1,ref_subdiv_mark(ref_subdiv,7),"been marked");
+
+    REIS(2, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
 
   return 0;
 }
