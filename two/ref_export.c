@@ -501,6 +501,8 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
 
   free(o2n);
 
+  fclose(file);
+
   return REF_SUCCESS;
 }
 

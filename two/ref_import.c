@@ -547,6 +547,8 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
 
     } 
 
+  fclose(file);
+
   return REF_IMPLEMENT;
 }
 
@@ -571,6 +573,8 @@ REF_STATUS ref_import_mapbc( REF_DICT *ref_dict_ptr, char *filename )
       RES( 1, fscanf( file, "%d%*[^\n]", &value ), "read mapbc line bc type" );
       RSS( ref_dict_store( ref_dict, key, value ), "store" );
     }
+
+  fclose(file);
 
   return REF_SUCCESS;
 }
