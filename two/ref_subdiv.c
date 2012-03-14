@@ -1281,6 +1281,8 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
 	case 63:
 	   break;
 	default:
+	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
+	  printf("tet %d, map %d\n",cell,map);
 	  RSS( ref_subdiv_tec_zone( ref_subdiv, ref_cell, cell, file ), "zone");
 	}
     }
@@ -1296,7 +1298,9 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
 	case 72: case 34:
 	case 235:
 	   break;
-	default:	  
+	default:
+	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
+	  printf("pyr %d, map %d\n",cell,map);
 	  RSS( ref_subdiv_tec_zone( ref_subdiv, ref_cell, cell, file ), "zone");
 	}
     }
@@ -1312,6 +1316,8 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
 	case 459:
 	   break;
 	default:	  
+	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
+	  printf("pri %d, map %d\n",cell,map);
 	  RSS( ref_subdiv_tec_zone( ref_subdiv, ref_cell, cell, file ), "zone");
 	}
     }
