@@ -242,11 +242,8 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 		promote_2_all();
 		break;
 	      case 5:
-		edge_or(0,7);
-		edge_or(1,5);
-		edge_or(3,6);
-		promote_2_3(0,1,3);
-		promote_2_3(5,6,7);
+		edge_or(0,7); /* opposite quad edges */
+		edge_or(2,4); /* opposite quad edges */
 		break;
 	      case 6:
 		edge_or(0,6);

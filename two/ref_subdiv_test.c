@@ -463,7 +463,7 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* relax and split pyramid in two 0-1 */
+  { /* relax and split pyramid in two, mark e0:n0n1 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
@@ -471,13 +471,9 @@ int main( int argc, char *argv[] )
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
 
-    REIS(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
-    REIS(0,ref_subdiv_mark(ref_subdiv,7),"been marked");
-
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
-    REIS(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
-    REIS(1,ref_subdiv_mark(ref_subdiv,7),"been marked");
+    REIS(1,ref_subdiv_mark(ref_subdiv,7),"promoted");
 
     REIS(2, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
     REIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
@@ -485,21 +481,18 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* relax and split pyramid in to pyr and pri 1-2 */
+  /* relax and split pyramid in two, mark e2:n0n3 */
+
+  { /* relax and split pyramid in to pyr and pri, mark e6, e3 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
-    RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 1");
-
-    REIS(1,ref_subdiv_mark(ref_subdiv,3),"been marked");
-    REIS(0,ref_subdiv_mark(ref_subdiv,6),"been marked");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 3");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,4,2),"mark edge 6");
 
     RSS(ref_subdiv_split(ref_subdiv),"split");
-
-    REIS(1,ref_subdiv_mark(ref_subdiv,3),"been marked");
-    REIS(1,ref_subdiv_mark(ref_subdiv,6),"been marked");
 
     REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
     REIS(1, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
@@ -509,21 +502,16 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* relax and split pyramid in to pyr and pri 0-2 */
+  { /* relax and split pyramid in to pyr and pri e1, e5 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,2),"mark edge 1");
-
-    REIS(1,ref_subdiv_mark(ref_subdiv,1),"been marked");
-    REIS(0,ref_subdiv_mark(ref_subdiv,5),"been marked");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,3,2),"mark edge 5");
 
     RSS(ref_subdiv_split(ref_subdiv),"split");
-
-    REIS(1,ref_subdiv_mark(ref_subdiv,1),"been marked");
-    REIS(1,ref_subdiv_mark(ref_subdiv,5),"been marked");
 
     REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
     REIS(1, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
@@ -533,20 +521,21 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* relax and split pyramid in to pyr and 3 pri rpomoting two edges */
+  { /* relax and split pyramid in to pyr and 3 pri, all but e2,e2 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
-    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 1");
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,2),"mark edge 1");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 3");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,3,2),"mark edge 5");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,4,2),"mark edge 6");
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,3,4),"mark edge 7");
 
     RSS(ref_subdiv_split(ref_subdiv),"split");
-
-    REIS(1,ref_subdiv_mark(ref_subdiv,0),"been marked");
-    REIS(1,ref_subdiv_mark(ref_subdiv,1),"been marked");
-    REIS(1,ref_subdiv_mark(ref_subdiv,3),"been marked");
 
     REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
     REIS(3, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
