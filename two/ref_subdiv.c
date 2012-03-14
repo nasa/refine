@@ -850,6 +850,8 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 
   REF_INT edge,split_edge, global_edge;
 
+  REF_INT node;
+
   ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
 
   ref_malloc_init( marked_for_removal, ref_cell_max(ref_cell), REF_INT, 0);
@@ -906,7 +908,7 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  if ( 21 == map ) { node_swap(nodes,2,3); node_swap(nodes,0,1); }
 
 	  /* near node 0 */
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  for (node=0;node<4;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
@@ -914,7 +916,7 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* near node 1 */
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  for (node=0;node<4;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[0], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
@@ -922,7 +924,7 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 
 	  /* near node 2 */
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  for (node=0;node<4;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[0], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[1], 
@@ -931,7 +933,7 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 
 
 	  /* center */
-	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  for (node=0;node<4;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
