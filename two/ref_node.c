@@ -285,6 +285,7 @@ REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
 
   RSS( ref_list_add( ref_node->unused_global_list, ref_node->global[node] ),
        "store unused global" );
+
   ref_node->global[node] = ref_node->blank;
   ref_node->blank = index2next(node);
 
@@ -295,8 +296,18 @@ REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
 
 REF_STATUS ref_node_remove_without_global( REF_NODE ref_node, REF_INT node )
 {
+  REF_INT location, sorted_node;
   if ( ! ref_node_valid(ref_node,node) ) return REF_INVALID;
  
+  RSS( ref_sort_search( ref_node_n(ref_node), ref_node->sorted_global, 
+			ref_node->global[node], &location ), 
+       "find global in sort list" );
+
+  for(sorted_node=location;sorted_node<ref_node_n(ref_node);sorted_node++)
+    ref_node->sorted_global[sorted_node]=ref_node->sorted_global[sorted_node+1];
+  for(sorted_node=location;sorted_node<ref_node_n(ref_node);sorted_node++)
+    ref_node->sorted_local[sorted_node]=ref_node->sorted_local[sorted_node+1];
+
   ref_node->global[node] = ref_node->blank;
   ref_node->blank = index2next(node);
 
