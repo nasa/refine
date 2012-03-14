@@ -380,15 +380,14 @@ static REF_STATUS ref_subdiv_split_qua( REF_SUBDIV ref_subdiv )
   REF_INT edge01, edge12, edge23, edge30;
 
   ref_cell = ref_grid_qua(ref_subdiv_grid(ref_subdiv));
-  marked_for_removal = 
-    (REF_INT *)malloc(ref_cell_max(ref_cell)*sizeof(REF_INT));
-  RNS(marked_for_removal,"malloc failed");
-  for(cell=0;cell<ref_cell_max(ref_cell);cell++)
-    marked_for_removal[cell]=0;
+
+  ref_malloc_init( marked_for_removal, ref_cell_max(ref_cell), REF_INT, 0);
+
   RSS( ref_cell_create( &ref_cell_split, 
 			ref_cell_node_per(ref_cell), 
 			ref_cell_last_node_is_an_id(ref_cell)), 
        "temp cell");
+
   each_ref_cell_valid_cell( ref_cell, cell )
     {
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes");
@@ -478,11 +477,8 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
   REF_INT edge01, edge12, edge20;
 
   tri = ref_grid_tri(ref_subdiv_grid(ref_subdiv));
-  marked_for_removal = 
-    (REF_INT *)malloc(ref_cell_max(tri)*sizeof(REF_INT));
-  RNS(marked_for_removal,"malloc failed");
-  for(cell=0;cell<ref_cell_max(tri);cell++)
-    marked_for_removal[cell]=0;
+
+  ref_malloc_init( marked_for_removal, ref_cell_max(tri), REF_INT, 0);
 
   RSS( ref_cell_create( &tri_split, 
 			ref_cell_node_per(tri), 
@@ -692,11 +688,9 @@ static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
   REF_INT map;
 
   ref_cell = ref_grid_pri(ref_subdiv_grid(ref_subdiv));
-  marked_for_removal = 
-    (REF_INT *)malloc(ref_cell_max(ref_cell)*sizeof(REF_INT));
-  RNS(marked_for_removal,"malloc failed");
-  for(cell=0;cell<ref_cell_max(ref_cell);cell++)
-    marked_for_removal[cell]=0;
+
+  ref_malloc_init( marked_for_removal, ref_cell_max(ref_cell), REF_INT, 0);
+
   RSS( ref_cell_create( &ref_cell_split, 
 			ref_cell_node_per(ref_cell), 
 			ref_cell_last_node_is_an_id(ref_cell)), 
@@ -860,11 +854,9 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
   REF_INT edge,split_edge, global_edge;
 
   ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
-  marked_for_removal = 
-    (REF_INT *)malloc(ref_cell_max(ref_cell)*sizeof(REF_INT));
-  RNS(marked_for_removal,"malloc failed");
-  for(cell=0;cell<ref_cell_max(ref_cell);cell++)
-    marked_for_removal[cell]=0;
+
+  ref_malloc_init( marked_for_removal, ref_cell_max(ref_cell), REF_INT, 0);
+
   RSS( ref_cell_create( &ref_cell_split, 
 			ref_cell_node_per(ref_cell), 
 			ref_cell_last_node_is_an_id(ref_cell)), 
@@ -1019,11 +1011,8 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
   REF_INT map;
 
   pyr = ref_grid_pyr(ref_subdiv_grid(ref_subdiv));
-  marked_for_removal = 
-    (REF_INT *)malloc(ref_cell_max(pyr)*sizeof(REF_INT));
-  RNS(marked_for_removal,"malloc failed");
-  for(cell=0;cell<ref_cell_max(pyr);cell++)
-    marked_for_removal[cell]=0;
+
+  ref_malloc_init( marked_for_removal, ref_cell_max(pyr), REF_INT, 0);
 
   RSS( ref_cell_create( &pyr_split, 
 			ref_cell_node_per(pyr), 
