@@ -583,5 +583,45 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
+  { /* split pyramid in to pyrs and tets, e5e6e7 base and e0 top */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,2,3),"mark edge 5");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,2,4),"mark edge 6");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,3,4),"mark edge 7");
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(2, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* split pyramid in to pyrs and tets, e3e4e6 base and e2 top */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 3");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,1,4),"mark edge 4");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,2,4),"mark edge 6");
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,3),"mark edge 2");
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(2, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
   return 0;
 }

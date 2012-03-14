@@ -1158,7 +1158,27 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(pri_split,new_nodes,&new_cell),"add");
 	  
 	  break;
-	case 139:
+	case 139: case 225: case 92:
+
+	  if ( 225 == map )
+	    {
+	      for (node=0;node<5;node++) new_nodes[node]=nodes[node];
+	      nodes[0]=new_nodes[4];
+	      nodes[1]=new_nodes[3];
+	      nodes[2]=new_nodes[2];
+	      nodes[3]=new_nodes[1];
+	      nodes[4]=new_nodes[0];
+	    }
+
+	  if ( 92 == map )
+	    {
+	      for (node=0;node<5;node++) new_nodes[node]=nodes[node];
+	      nodes[0]=new_nodes[1];
+	      nodes[1]=new_nodes[4];
+	      nodes[2]=new_nodes[2];
+	      nodes[3]=new_nodes[0];
+	      nodes[4]=new_nodes[3];
+	    }
 
 	  marked_for_removal[cell]=1;
 	  
@@ -1371,7 +1391,7 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
 	case 129: case 20:
 	case 72: case 34:
 	case 235:
-	case 139:
+	case 139: case 225: case 92:
 	   break;
 	default:
 	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
