@@ -128,8 +128,8 @@ REF_STATUS ref_node_tattle_global( REF_NODE ref_node, REF_INT global )
       if ( global == ref_node_global(ref_node,node) )
 	{
 	  if ( found_from_exhaustive ) RSS(REF_FAILURE, "twice");
-	  found_from_exhaustive = node;
-	  local_from_exhaustive = REF_TRUE;
+	  local_from_exhaustive = node;
+	  found_from_exhaustive = REF_TRUE;
 	}
     }
 
