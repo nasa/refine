@@ -40,3 +40,23 @@ ideas
 
 only have a cell exist once, no duplicate cells?
 
+pyr
+	case 92: case 139: case 225: /* future expansion */
+
+edge 6 bit 64
+edge 4 bit 16
+edge 3 bit 8
+edge 2 bit 4
+pyr 1, map 92
+
+edge 7 bit 128
+edge 6 bit 64
+edge 5 bit 32
+edge 0 bit 1
+pyr 2, map 225
+
+edge 7 bit 128
+edge 3 bit 8
+edge 1 bit 2
+edge 0 bit 1
+pyr 10, map 139
