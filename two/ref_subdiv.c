@@ -1196,3 +1196,112 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_subdiv_tec_zone( REF_SUBDIV ref_subdiv,
+				REF_CELL ref_cell, REF_INT cell,
+				FILE *file )
+{
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+  REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
+  REF_INT cell_edge, edge, node;
+
+  fprintf(file,
+	  "zone t=celledge, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  2*ref_cell_edge_per(ref_cell), ref_cell_edge_per(ref_cell), "point", "felineseg" );
+  
+  for ( cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++ )
+    {
+      edge = ref_cell_c2e(ref_cell,cell_edge,cell);
+      node = ref_edge_e2n(ref_edge,edge,0);
+      fprintf(file, " %.16e %.16e %.16e %d\n", 
+	      ref_node_xyz(ref_node,0,node),
+	      ref_node_xyz(ref_node,1,node),
+	      ref_node_xyz(ref_node,2,node),
+	      ref_subdiv_mark( ref_subdiv, edge ) );
+      node = ref_edge_e2n(ref_edge,edge,1);
+      fprintf(file, " %.16e %.16e %.16e %d\n", 
+	      ref_node_xyz(ref_node,0,node),
+	      ref_node_xyz(ref_node,1,node),
+	      ref_node_xyz(ref_node,2,node),
+	      ref_subdiv_mark( ref_subdiv, edge ) );
+      }
+
+  for ( cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++ )
+    fprintf(file," %d %d\n",1+2*cell_edge,2+2*cell_edge);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
+{
+  REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT map;
+
+  FILE *file;
+
+  file = fopen("ref_subdiv_verify.tec","w");
+  if (NULL == (void *)file) printf("unable to open %s\n","ref_subdiv_verify.tec");
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"tecplot refine scalar file\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\" \"s\"\n");
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
+      switch ( map )
+	{
+	case 0:
+	case 1:
+	case 2:
+	case 4:
+	case 8:
+	case 16:
+	case 32:
+	case 11:
+	case 56:
+	case 38:
+	case 21:
+	case 63:
+	   break;
+	default:
+	  RSS( ref_subdiv_tec_zone( ref_subdiv, ref_cell, cell, file ), "zone");
+	}
+    }
+  
+  ref_cell = ref_grid_pyr(ref_grid);
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
+      switch ( map )
+	{
+	case 0:
+	case 129: case 72: case 34:
+	case 235:
+	   break;
+	default:	  
+	  RSS( ref_subdiv_tec_zone( ref_subdiv, ref_cell, cell, file ), "zone");
+	}
+    }
+
+  ref_cell = ref_grid_pri(ref_grid);
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
+      switch ( map )
+	{
+	case 0 :
+	case 65: case 130: case 264: 
+	case 459:
+	   break;
+	default:	  
+	  RSS( ref_subdiv_tec_zone( ref_subdiv, ref_cell, cell, file ), "zone");
+	}
+    }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
