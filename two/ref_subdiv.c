@@ -1292,7 +1292,8 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
       switch ( map )
 	{
 	case 0:
-	case 129: case 72: case 34:
+	case 129: case 20:
+	case 72: case 34:
 	case 235:
 	   break;
 	default:	  
