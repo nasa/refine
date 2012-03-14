@@ -539,7 +539,7 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  { /* relax and split pyramid in to pyr and 3 pri, all but e2,e2 */
+  { /* relax and split pyramid in to pyr and 3 pri, all but e2,e4 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
