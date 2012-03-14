@@ -563,5 +563,25 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
+  { /* split pyramid in to pyrs and tets, e0e1e3 base and e7 top */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,0,2),"mark edge 1");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 3");
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,3,4),"mark edge 7");
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(2, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
   return 0;
 }

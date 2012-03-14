@@ -998,8 +998,8 @@ static REF_STATUS ref_subdiv_split_tet( REF_SUBDIV ref_subdiv )
 static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
-  REF_CELL pyr, pri;
-  REF_CELL pyr_split, pri_split;
+  REF_CELL pyr, pri, tet;
+  REF_CELL pyr_split, pri_split, tet_split;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
@@ -1020,6 +1020,12 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
   RSS( ref_cell_create( &pri_split, 
 			ref_cell_node_per(pri), 
 			ref_cell_last_node_is_an_id(pri)), 
+       "temp pri");
+
+  tet = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
+  RSS( ref_cell_create( &tet_split, 
+			ref_cell_node_per(tet), 
+			ref_cell_last_node_is_an_id(tet)), 
        "temp pri");
 
   each_ref_cell_valid_cell( pyr, cell )
@@ -1149,6 +1155,67 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(pri_split,new_nodes,&new_cell),"add");
 	  
 	  break;
+	case 139:
+
+	  marked_for_removal[cell]=1;
+	  
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+				       &(new_nodes[3])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+				       &(new_nodes[4])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
+
+	  /* top sides */
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  new_nodes[0] = new_nodes[4];
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
+	  
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+				       &(new_nodes[0])), "mis");
+	  new_nodes[1] = new_nodes[3];
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
+	  
+	  /* center */
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
+	  
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
+
+	  break;
 	default:
 	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
 	  printf("pyr %d, map %d\n",cell,map);
@@ -1166,8 +1233,12 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
   each_ref_cell_valid_cell_with_nodes( pri_split, cell, nodes)
     RSS(ref_subdiv_add_local_cell(ref_subdiv, pri, nodes),"add local");
 
+  each_ref_cell_valid_cell_with_nodes( tet_split, cell, nodes)
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, tet, nodes),"add local");
+
   RSS( ref_cell_free( pyr_split ), "temp pyr free");
   RSS( ref_cell_free( pri_split ), "temp pri free");
+  RSS( ref_cell_free( tet_split ), "temp pri free");
 
   free(marked_for_removal);
 
@@ -1297,6 +1368,7 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
 	case 129: case 20:
 	case 72: case 34:
 	case 235:
+	case 139:
 	   break;
 	default:
 	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
