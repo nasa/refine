@@ -100,6 +100,47 @@ REF_STATUS ref_node_location( REF_NODE ref_node, REF_INT node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_tattle_global( REF_NODE ref_node, REF_INT global )
+{
+  REF_INT local_from_sorted;
+  REF_INT local_from_exhaustive;
+  REF_BOOL found_from_sorted;
+  REF_BOOL found_from_exhaustive;
+  REF_INT node;
+
+  REF_STATUS ref_status;
+  
+  ref_status = ref_node_local(ref_node, global, &local_from_sorted );
+  if ( REF_NOT_FOUND == ref_status )
+    {
+      found_from_sorted = REF_FALSE;
+    }
+  else
+    {
+      RSS( ref_status, "local search" );
+      found_from_sorted = REF_TRUE;
+    }
+
+  found_from_exhaustive = REF_FALSE;
+  local_from_exhaustive = REF_EMPTY;
+  each_ref_node_valid_node( ref_node, node )
+    {
+      if ( global == ref_node_global(ref_node,node) )
+	{
+	  if ( found_from_exhaustive ) RSS(REF_FAILURE, "twice");
+	  found_from_exhaustive = node;
+	  local_from_exhaustive = REF_TRUE;
+	}
+    }
+
+  printf("%d: global %d: search%d %d exhast%d %d\n",
+	 ref_mpi_id, global,
+	 found_from_sorted, local_from_sorted,
+	 found_from_exhaustive, local_from_exhaustive );
+      
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_node_add_core( REF_NODE ref_node, 
 				     REF_INT global, REF_INT *node )
 {
