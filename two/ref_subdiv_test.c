@@ -95,12 +95,15 @@ int main( int argc, char *argv[] )
       ref_edge = ref_subdiv_edge(ref_subdiv);
 
       for ( edge=0; edge<ref_edge_n(ref_edge);edge++ )
-	if ( ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,edge,0))<0.001 &&
-	     ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,edge,1))<0.001 )
-	  RSS(ref_subdiv_mark_to_split(ref_subdiv,
-				       ref_edge_e2n(ref_edge,edge,0),
-				       ref_edge_e2n(ref_edge,edge,1)
-				       ),"mark edge");
+	{
+	  REF_DBL zmin = 0.00005;
+	  if ( ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,edge,0))<zmin &&
+	       ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,edge,1))<zmin )
+	    RSS(ref_subdiv_mark_to_split(ref_subdiv,
+					 ref_edge_e2n(ref_edge,edge,0),
+					 ref_edge_e2n(ref_edge,edge,1)
+					 ),"mark edge");
+	}
 
       if ( 1 == ref_mpi_n )
 	{
@@ -109,6 +112,7 @@ int main( int argc, char *argv[] )
 			   ref_grid_node(ref_grid),
 			   "edge.tec", 
 			   ref_subdiv->mark );
+	  RSS( ref_subdiv_mark_verify( ref_subdiv ), "vrfy");
 	}
  
       RSS(ref_subdiv_split(ref_subdiv),"split");
