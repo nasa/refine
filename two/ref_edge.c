@@ -183,7 +183,7 @@ REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_INT *data )
 	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 0 ) );
 	  a_nodes[1+2*a_next[part]] = 
 	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 1 ) );
-	  a_next[part]++;
+	  (a_next[part])++;
 	}
     }
 
@@ -280,7 +280,7 @@ REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_DBL *data, REF_INT dim )
 	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 0 ) );
 	  a_nodes[1+2*a_next[part]] = 
 	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 1 ) );
-	  a_next[part]++;
+	  (a_next[part])++;
 	}
     }
 
