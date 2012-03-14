@@ -1008,6 +1008,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
   REF_INT *marked_for_removal;
 
   REF_INT map;
+  REF_INT node;
 
   pyr = ref_grid_pyr(ref_subdiv_grid(ref_subdiv));
 
@@ -1161,7 +1162,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 
 	  marked_for_removal[cell]=1;
 	  
-	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  for (node=0;node<5;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
@@ -1170,7 +1171,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 				       &(new_nodes[2])), "mis");
 	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
 
-	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  for (node=0;node<5;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
 				       &(new_nodes[1])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
@@ -1180,7 +1181,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
 
 	  /* top sides */
-	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  for (node=0;node<5;node++) new_nodes[node]=nodes[node];
 	  new_nodes[0] = new_nodes[4];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
 				       &(new_nodes[1])), "mis");
@@ -1188,7 +1189,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 				       &(new_nodes[3])), "mis");
 	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
 	  
-	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  for (node=0;node<5;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[3],nodes[4], 
 				       &(new_nodes[0])), "mis");
 	  new_nodes[1] = new_nodes[3];
@@ -1197,7 +1198,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
 	  
 	  /* center */
-	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  for (node=0;node<5;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[2], 
@@ -1206,7 +1207,7 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 				       &(new_nodes[3])), "mis");
 	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
 	  
-	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  for (node=0;node<5;node++) new_nodes[node]=nodes[node];
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[2], 
 				       &(new_nodes[0])), "mis");
 	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
