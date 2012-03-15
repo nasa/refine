@@ -5,7 +5,16 @@ projection (fake geom)
 projection linear elasticity
  per-olaf
 tet adaptation.
-error estimation for mixed
+  edge based
+  log metric
+
+code
+  solve bp
+  adjoint bp validation
+  cgns mixed
+  error estimation for mixed
+
+call two from fun
 
 seperate global from node add and remove
 
@@ -20,6 +29,7 @@ April
 8  tet adapt
 15 dpw
 22
+27 * data submittal **
 29
 
 May
