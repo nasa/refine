@@ -60,5 +60,12 @@ int main( void )
     RWDS(3.14159265358979,acos(-1.0),-1.0,"acos");
   }
 
+  { /* divisible */
+    REIS( REF_FALSE, ref_math_divisible( 1.0, 0.0 ), "1/0" );
+    REIS( REF_TRUE, ref_math_divisible( 1.0, 1.0 ), "1/1" );
+    REIS( REF_TRUE, ref_math_divisible( 1.0, 1.0e-15 ), "1/1e-15" );
+    REIS( REF_FALSE, ref_math_divisible( 1.0e40, 1.0e-40 ), "1e20/1e-20" );
+  }
+
   return 0;
 }
