@@ -15,13 +15,13 @@ REF_STATUS ref_matrix_diagonalize( REF_DBL *m,
   ref_matrix_vec( d, 1, 0 ) = 0.0;
   ref_matrix_vec( d, 2, 0 ) = 0.0;
 
-  ref_matrix_vec( d, 0, 1 ) = 1.0;
-  ref_matrix_vec( d, 1, 1 ) = 0.0;
+  ref_matrix_vec( d, 0, 1 ) = 0.0;
+  ref_matrix_vec( d, 1, 1 ) = 1.0;
   ref_matrix_vec( d, 2, 1 ) = 0.0;
 
-  ref_matrix_vec( d, 0, 2 ) = 1.0;
+  ref_matrix_vec( d, 0, 2 ) = 0.0;
   ref_matrix_vec( d, 1, 2 ) = 0.0;
-  ref_matrix_vec( d, 2, 2 ) = 0.0;
+  ref_matrix_vec( d, 2, 2 ) = 1.0;
 
   return REF_SUCCESS;
 }
