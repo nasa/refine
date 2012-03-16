@@ -137,5 +137,14 @@ int main( void )
     RWDS(0.0,d[11],-1,"z2");
   }
 
+  { /* diag decom, exercise self check */
+    REF_DBL m[6]={ 1.0,     2.0,     3.0, 
+                            4.0,     5.0,
+                                     6.0};
+    REF_DBL d[12];
+
+    RSS( ref_matrix_diagonalize( m, d ), "diag");
+  }
+
   return 0;
 }
