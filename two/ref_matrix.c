@@ -155,6 +155,18 @@ REF_STATUS ref_matrix_diagonalize( REF_DBL *m,
     d[l] = d[l] + f;
   } /* row_loop */
 
+  if (REF_TRUE)
+    {
+      REF_DBL m2[6];
+      REF_DBL tol = -1.0;
+      RSS( ref_matrix_form_m( d, m2 ), "reform m" );
+      RWDS( m2[0], m[0], tol, "m[0]");
+      RWDS( m2[1], m[1], tol, "m[1]");
+      RWDS( m2[2], m[2], tol, "m[2]");
+      RWDS( m2[3], m[3], tol, "m[3]");
+      RWDS( m2[4], m[4], tol, "m[4]");
+      RWDS( m2[5], m[5], tol, "m[5]");
+    }
 
   return REF_SUCCESS;
 }
@@ -204,4 +216,12 @@ REF_STATUS ref_matrix_ascending_eig( REF_DBL * d )
       }
 
    return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_form_m( REF_DBL *d,
+			      REF_DBL *m )
+{
+  /* m = d * e * d' */
+
+  return REF_SUCCESS;
 }
