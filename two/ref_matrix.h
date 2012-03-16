@@ -12,6 +12,8 @@ BEGIN_C_DECLORATION
 REF_STATUS ref_matrix_diagonalize( REF_DBL *m_upper_tri, 
 				   REF_DBL *diagonal_system );
 
+REF_STATUS ref_matrix_ascending_eig( REF_DBL *diagonal_system );
+
 END_C_DECLORATION
 
 #endif /* REF_MATRIX_H */

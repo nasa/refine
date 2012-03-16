@@ -155,5 +155,53 @@ REF_STATUS ref_matrix_diagonalize( REF_DBL *m,
     d[l] = d[l] + f;
   } /* row_loop */
 
+
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_ascending_eig( REF_DBL * d )
+{
+  REF_DBL temp;
+  REF_INT i;
+
+    if ( ref_matrix_eig( d, 1 ) > ref_matrix_eig( d, 0 ) )
+      {
+	temp = ref_matrix_eig( d, 0 ); 
+	ref_matrix_eig( d, 0 ) = ref_matrix_eig( d, 1 ); 
+	ref_matrix_eig( d, 1 ) = temp;
+	for (i=0;i<3;i++)
+	  {
+	    temp = ref_matrix_vec( d, i, 0 ); 
+	    ref_matrix_vec( d, i, 0 ) = ref_matrix_vec( d, i, 1 ); 
+	    ref_matrix_vec( d, i, 1 ) = temp;
+	  }
+      }
+
+    if ( ref_matrix_eig( d, 2 ) > ref_matrix_eig( d, 0 ) )
+      {
+	temp = ref_matrix_eig( d, 0 ); 
+	ref_matrix_eig( d, 0 ) = ref_matrix_eig( d, 2 ); 
+	ref_matrix_eig( d, 2 ) = temp;
+	for (i=0;i<3;i++)
+	  {
+	    temp = ref_matrix_vec( d, i, 0 ); 
+	    ref_matrix_vec( d, i, 0 ) = ref_matrix_vec( d, i, 2 ); 
+	    ref_matrix_vec( d, i, 2 ) = temp;
+	  }
+      }
+
+    if ( ref_matrix_eig( d, 2 ) > ref_matrix_eig( d, 1 ) )
+      {
+	temp = ref_matrix_eig( d, 1 ); 
+	ref_matrix_eig( d, 1 ) = ref_matrix_eig( d, 2 ); 
+	ref_matrix_eig( d, 2 ) = temp;
+	for (i=0;i<3;i++)
+	  {
+	    temp = ref_matrix_vec( d, i, 1 ); 
+	    ref_matrix_vec( d, i, 1 ) = ref_matrix_vec( d, i, 2 ); 
+	    ref_matrix_vec( d, i, 2 ) = temp;
+	  }
+      }
+
+   return REF_SUCCESS;
 }
