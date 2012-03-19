@@ -1,12 +1,12 @@
 
 
-subdiv prisms
-projection (fake geom)
-projection linear elasticity
- per-olaf
+
 tet adaptation.
   edge based
   log metric
+projection (fake geom)
+projection linear elasticity
+ per-olaf
 
 code
   solve bp
@@ -21,12 +21,12 @@ seperate global from node add and remove
 March
 4  shift globals/unused globals/export
 11 subdiv prism in parallel
-18 flat plate adaptation
-25 projection
+18 tet adapt / dpw adjoint
+25 flat plate adaptation / err est mixed
 
 April
 1  projection
-8  tet adapt
+8  
 15 dpw
 22
 27 * data submittal **
