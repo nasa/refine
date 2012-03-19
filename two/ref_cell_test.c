@@ -409,6 +409,39 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* list of one tet with */
+    REF_INT ncell,list[5];
+
+    RSS(ref_tet(&ref_cell),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    RSS(ref_cell_list_with(ref_cell,0,1,5,&ncell,list),"no list");
+    REIS(1,ncell, "mis count");
+    REIS(0,list[0], "not in list");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
+  { /* list of two tet with */
+    REF_INT ncell,list[5];
+
+    RSS(ref_tet(&ref_cell),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+    nodes[0] = 0; nodes[1] = 2; nodes[2] = 1; nodes[3] = 4;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    RSS(ref_cell_list_with(ref_cell,0,1,5,&ncell,list),"no list");
+    REIS(2,ncell, "mis count");
+    REIS(1,list[0], "not in list");
+    REIS(0,list[1], "not in list");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
   { /* tri with */
     REF_INT found;
 

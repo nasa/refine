@@ -110,8 +110,13 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 
 REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
 
-REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell);
+REF_STATUS ref_cell_list_with( REF_CELL ref_cell, 
+			       REF_INT node0, REF_INT node1,
+			       REF_INT max_cell, REF_INT *ncell,
+			       REF_INT *cell_list );
 
+/* edge routines */
+REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell);
 REF_STATUS ref_cell_set_edge( REF_CELL ref_cell, 
 			      REF_INT n0, REF_INT n1, REF_INT edge);
 

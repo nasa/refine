@@ -490,6 +490,28 @@ REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_cell_list_with( REF_CELL ref_cell, 
+			       REF_INT node0, REF_INT node1,
+			       REF_INT max_cell, REF_INT *ncell,
+			       REF_INT *cell_list ) 
+{
+  REF_INT cell, item, node;
+
+  *ncell = 0;
+  each_ref_cell_having_node( ref_cell, node0, item, cell )
+    for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+      if ( node1 == ref_cell_c2n(ref_cell,node,cell) )
+        {
+          if ( *ncell >= max_cell )
+            RSS( REF_INCREASE_LIMIT, "max_cell too small" );
+          cell_list[*ncell] = cell;
+	  (*ncell)++;
+          continue; /* node loop */
+        }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell)
 {
   REF_INT cell, edge;
