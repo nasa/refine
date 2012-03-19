@@ -27,9 +27,8 @@ int main( void )
 
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
     node0 = 0; node1 = 3;
-    RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
 
-    new_node = 4;
+    RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
     RSS(ref_split_edge(ref_grid,node0,node1,new_node),"split");
 
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
@@ -44,13 +43,27 @@ int main( void )
 
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
     node0 = 0; node1 = 1;
-    RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
 
-    new_node = 4;
+    RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
     RSS(ref_split_edge(ref_grid,node0,node1,new_node),"split");
 
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
     REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* split mixed allowed */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_pri_tet_cap_grid(&ref_grid),"set up");
+
+    node0 = 3; node1 = 4;
+    RSS(ref_split_edge_allowed(ref_grid,node0,node1,&allowed),"split");
+
+    REIS(REF_FALSE,allowed,"allowed?");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
