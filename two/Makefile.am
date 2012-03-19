@@ -29,6 +29,7 @@ libref2_a_SOURCES = \
 	ref_quality.h ref_quality.c \
 	ref_shard.c ref_shard.h \
 	ref_sort.h ref_sort.c \
+	ref_split.h ref_split.c \
 	ref_subdiv.h ref_subdiv.c \
 	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
@@ -173,6 +174,11 @@ TESTS += ref_sort_test
 noinst_PROGRAMS += ref_sort_test
 ref_sort_test_SOURCES = ref_sort_test.c
 ref_sort_test_LDADD = libref2.a -lm
+
+TESTS += ref_split_test
+noinst_PROGRAMS += ref_split_test
+ref_split_test_SOURCES = ref_split_test.c
+ref_split_test_LDADD = libref2.a -lm
 
 TESTS += ref_subdiv_test
 noinst_PROGRAMS += ref_subdiv_test
