@@ -142,8 +142,37 @@ int main( void )
                             4.0,     5.0,
                                      6.0};
     REF_DBL d[12];
+    REF_DBL m2[6];
+    REF_DBL tol = -1.0;
 
     RSS( ref_matrix_diagonalize( m, d ), "diag");
+
+    RSS( ref_matrix_form_m( d, m2 ), "reform m" );
+    RWDS( m[0], m2[0], tol, "m[0]");
+    RWDS( m[1], m2[1], tol, "m[1]");
+    RWDS( m[2], m2[2], tol, "m[2]");
+    RWDS( m[3], m2[3], tol, "m[3]");
+    RWDS( m[4], m2[4], tol, "m[4]");
+    RWDS( m[5], m2[5], tol, "m[5]");
+  }
+
+  { /* diag decom, exercise self check */
+    REF_DBL m[6]={ 1345234.0,    245.0,    1700.0, 
+                            45.0,     5.0,
+                                 24000.0};
+    REF_DBL d[12];
+    REF_DBL m2[6];
+    REF_DBL tol = 1e-8;
+
+    RSS( ref_matrix_diagonalize( m, d ), "diag");
+
+    RSS( ref_matrix_form_m( d, m2 ), "reform m" );
+    RWDS( m[0], m2[0], tol, "m[0]");
+    RWDS( m[1], m2[1], tol, "m[1]");
+    RWDS( m[2], m2[2], tol, "m[2]");
+    RWDS( m[3], m2[3], tol, "m[3]");
+    RWDS( m[4], m2[4], tol, "m[4]");
+    RWDS( m[5], m2[5], tol, "m[5]");
   }
 
   return 0;

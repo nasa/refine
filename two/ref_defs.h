@@ -109,7 +109,8 @@ typedef int REF_STATUS;
     ref_private_status_del =						\
       ABS(ref_private_status_ad-ref_private_status_bd);			\
     ref_private_status_allowed = (tol);					\
-    if ( tol < 0.0 ) ref_private_status_allowed = 1.0E-12;		\
+    if ( tol < 0.0 ) ref_private_status_allowed =			\
+      MAX( 1.0E-12, 1.0E-12*ABS(ref_private_status_ad) );		\
     if (ref_private_status_del>ref_private_status_allowed){		\
       printf("%s: %d: %s: %s\nexpected %e, was %e, %e outside of %e\n",	\
 	     __FILE__,__LINE__,__func__,(msg),				\

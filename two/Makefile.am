@@ -18,8 +18,9 @@ libref2_a_SOURCES = \
 	ref_grid.c ref_grid.h \
 	ref_import.c ref_import.h \
 	ref_list.h ref_list.c \
-	ref_math.h ref_math.c \
 	ref_malloc.h \
+	ref_math.h ref_math.c \
+	ref_matrix.h ref_matrix.c \
 	ref_metric.h ref_metric.c \
 	ref_migrate.h ref_migrate.c \
 	ref_mpi.h ref_mpi.c \
@@ -127,6 +128,11 @@ TESTS += ref_math_test
 noinst_PROGRAMS += ref_math_test
 ref_math_test_SOURCES = ref_math_test.c
 ref_math_test_LDADD = libref2.a -lm
+
+TESTS += ref_matrix_test
+noinst_PROGRAMS += ref_matrix_test
+ref_matrix_test_SOURCES = ref_matrix_test.c
+ref_matrix_test_LDADD = libref2.a -lm
 
 TESTS += ref_metric_test
 noinst_PROGRAMS += ref_metric_test

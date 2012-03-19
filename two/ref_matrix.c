@@ -155,7 +155,7 @@ REF_STATUS ref_matrix_diagonalize( REF_DBL *m,
     d[l] = d[l] + f;
   } /* row_loop */
 
-  if (REF_TRUE)
+  if (REF_FALSE)
     {
       REF_DBL m2[6];
       REF_DBL tol = -1.0;
