@@ -61,7 +61,7 @@ int main( void )
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
 
     node0 = 0; node1 = 1;
-    RSS(ref_split_edge_allowed(ref_grid,node0,node1,&allowed),"split");
+    RSS(ref_split_edge_mixed(ref_grid,node0,node1,&allowed),"split");
 
     REIS(REF_TRUE,allowed,"pure tet allowed?");
 
@@ -76,12 +76,13 @@ int main( void )
     RSS(ref_fixture_pri_tet_cap_grid(&ref_grid),"set up");
 
     node0 = 5; node1 = 6;
-    RSS(ref_split_edge_allowed(ref_grid,node0,node1,&allowed),"split");
+    RSS(ref_split_edge_mixed(ref_grid,node0,node1,&allowed),"split");
 
     REIS(REF_TRUE,allowed,"tet near mixed allowed?");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
+
   { /* split mixed allowed? */
     REF_GRID ref_grid;
     REF_INT node0, node1;
@@ -90,9 +91,42 @@ int main( void )
     RSS(ref_fixture_pri_tet_cap_grid(&ref_grid),"set up");
 
     node0 = 3; node1 = 4;
-    RSS(ref_split_edge_allowed(ref_grid,node0,node1,&allowed),"split");
+    RSS(ref_split_edge_mixed(ref_grid,node0,node1,&allowed),"split");
 
     REIS(REF_FALSE,allowed,"mixed split allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* split local allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+
+    node0 = 0; node1 = 1;
+    RSS(ref_split_edge_local_tets(ref_grid,node0,node1,&allowed),"split");
+
+    REIS(REF_TRUE,allowed,"local split allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* split partition border allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+
+    ref_node_part(ref_grid_node(ref_grid),2) =
+      ref_node_part(ref_grid_node(ref_grid),2) + 1;
+
+    node0 = 0; node1 = 1;
+    RSS(ref_split_edge_local_tets(ref_grid,node0,node1,&allowed),"split");
+
+    REIS(REF_FALSE,allowed,"ghost split allowed?");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }

@@ -4,6 +4,7 @@
 
 #include "ref_split.h"
 #include "ref_cell.h"
+#include "ref_mpi.h"
 
 #define MAX_CELL_SPLIT (100)
 
@@ -62,9 +63,9 @@ REF_STATUS ref_split_edge( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_allowed( REF_GRID ref_grid, 
-				   REF_INT node0, REF_INT node1,
-				   REF_BOOL *allowed )
+REF_STATUS ref_split_edge_mixed( REF_GRID ref_grid, 
+				 REF_INT node0, REF_INT node1,
+				 REF_BOOL *allowed )
 {
   REF_BOOL pyr_side, pri_side, hex_side;
 
@@ -73,6 +74,34 @@ REF_STATUS ref_split_edge_allowed( REF_GRID ref_grid,
   RSS(ref_cell_has_side(ref_grid_hex(ref_grid), node0, node1, &hex_side),"hex");
 
   *allowed = ( !pyr_side && !pri_side && !hex_side );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_split_edge_local_tets( REF_GRID ref_grid, 
+				      REF_INT node0, REF_INT node1,
+				      REF_BOOL *allowed )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell, search_node, test_node;
+
+  *allowed = REF_TRUE;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_having_node( ref_cell, node0, item, cell )
+    for ( search_node = 0 ; 
+	  search_node < ref_cell_node_per(ref_cell); 
+	  search_node++ )
+      if ( node1 == ref_cell_c2n(ref_cell,search_node,cell) )
+	for ( test_node = 0 ; 
+	      test_node < ref_cell_node_per(ref_cell); 
+	      test_node++ )
+	  if ( ref_mpi_id != ref_node_part(ref_node,test_node) )
+	    {
+	      *allowed = REF_FALSE;
+	      return REF_SUCCESS;
+	    }
 
   return REF_SUCCESS;
 }
