@@ -8,6 +8,7 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 
 /* REF_EMPTY is terminatior, next avalable is shifted by 2*/
 #define next2index(next) (-(next)-2)
@@ -660,6 +661,7 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
 			   REF_DBL *ratio )
 {
   REF_DBL direction[3], length;
+  REF_DBL ratio0, ratio1;
 
 
   if ( !ref_node_valid(ref_node,node0) ||
@@ -683,7 +685,12 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
       return REF_SUCCESS;  
     }
 
-  *ratio = length;
-				   
+  ratio0 = ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node0), 
+				   direction );
+  ratio1 = ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node0), 
+				   direction );
+
+  *ratio = 0.5*(ratio0+ratio1);
+  
   return REF_SUCCESS;  
 }

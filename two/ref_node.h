@@ -52,6 +52,8 @@ struct REF_NODE_STRUCT {
 
 #define ref_node_metric(ref_node,im,node)		\
   ((ref_node)->real[(im+3)+REF_NODE_REAL_PER*(node)])
+#define ref_node_metric_ptr(ref_node,node)		\
+  (&((ref_node)->real[3+REF_NODE_REAL_PER*(node)]))
 
 #define ref_node_real(ref_node,ireal,node)		\
   ((ref_node)->real[(ireal)+REF_NODE_REAL_PER*(node)])

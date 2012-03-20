@@ -340,7 +340,7 @@ int main( int argc, char *argv[] )
   { /* distance in metric */
     REF_NODE ref_node;
     REF_INT node0, node1, global;
-    REF_DBL ratio;
+    REF_DBL ratio, h;
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -370,6 +370,16 @@ int main( int argc, char *argv[] )
 
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RWDS( 0.0, ratio, -1.0, "ratio expected" );
+
+    ref_node_xyz(ref_node,0,node1) = 1.0;
+    RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
+    RWDS( 1.0, ratio, -1.0, "ratio expected" );
+
+    h = 0.5;
+    ref_node_metric(ref_node,0,node0) = 1.0/(h*h);
+    ref_node_metric(ref_node,0,node1) = 1.0/(h*h);
+    RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
+    RWDS( 2.0, ratio, -1.0, "ratio expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }
