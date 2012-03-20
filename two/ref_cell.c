@@ -461,6 +461,29 @@ static REF_STATUS ref_cell_make_canonical( REF_INT n,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_has_side( REF_CELL ref_cell, 
+			      REF_INT node0, REF_INT node1, 
+			      REF_BOOL *has_side)
+{
+  REF_INT item, cell;
+  REF_INT cell_edge;
+
+  *has_side = REF_FALSE;
+
+  each_ref_adj_node_item_with_ref( ref_cell_adj(ref_cell), node0, item, cell)
+    each_ref_cell_cell_edge( ref_cell, cell_edge )
+      if ( ( node0 == ref_cell_e2n(ref_cell,0,cell,cell_edge) &&
+	     node1 == ref_cell_e2n(ref_cell,1,cell,cell_edge) ) ||
+	   ( node0 == ref_cell_e2n(ref_cell,1,cell,cell_edge) &&
+	     node1 == ref_cell_e2n(ref_cell,0,cell,cell_edge) ) )
+	{	   
+	  *has_side = REF_TRUE;
+	  return REF_SUCCESS;
+	}
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )
 {
   REF_INT item, ref, node, same;

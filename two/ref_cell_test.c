@@ -503,5 +503,29 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+ { /* has side */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[8];
+    REF_INT node0, node1;
+    REF_BOOL has_side;
+
+    RSS(ref_hex(&ref_cell),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 4;
+    nodes[4] = 4; nodes[5] = 5; nodes[6] = 6; nodes[7] = 7;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    node0 = 0; node1 = 1;
+    has_side = REF_FALSE;
+    RSS(ref_cell_has_side(ref_cell,node0,node1,&has_side),"side");
+    REIS(REF_TRUE,has_side, "side expected");
+
+    node0 = 0; node1 = 2;
+    RSS(ref_cell_has_side(ref_cell,node0,node1,&has_side),"side");
+    REIS(REF_FALSE,has_side, "diagonal, not side");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
   return 0;
 }
