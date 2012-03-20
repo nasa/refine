@@ -692,6 +692,7 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
 				   direction );
 
   /* Loseille Lohner IMR 18 (2009) pg 613 */
+  /* Alauzet Finite Elements in Analysis and Design 46 (2010) pg 185 */
   
   if ( ratio0 < 1.0e-12 || ratio1 < 1.0e-12 )
     {
@@ -710,7 +711,7 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
       return REF_SUCCESS;  
     }    
  
-  *ratio = r_min * (r-1.0) / r / log(r);
+  *ratio = r_min * (r-1.0) / ( r * log(r) );
 
   return REF_SUCCESS;  
 }
