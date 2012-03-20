@@ -425,6 +425,11 @@ int main( int argc, char *argv[] )
     RSS(ref_node_tet_quality(ref_node, node0, node1, node2, node3, &qual), "q");
     RWDS( 0.839947, qual, 0.00001, "qual expected" );
 
+    /* inverted tet is negative volume */
+    ref_node_xyz(ref_node,2,node3) = -1.0;
+    RSS(ref_node_tet_quality(ref_node, node0, node1, node2, node3, &qual), "q");
+    RWDS( -1.0/6.0, qual, -1.0, "qual expected" );
+
     RSS(ref_node_free(ref_node),"free");
   }
 
