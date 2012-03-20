@@ -662,6 +662,7 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
 {
   REF_DBL direction[3], length;
   REF_DBL ratio0, ratio1;
+  REF_DBL r, r_min, r_max;
 
 
   if ( !ref_node_valid(ref_node,node0) ||
@@ -687,10 +688,29 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
 
   ratio0 = ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node0), 
 				   direction );
-  ratio1 = ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node0), 
+  ratio1 = ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node1), 
 				   direction );
 
-  *ratio = 0.5*(ratio0+ratio1);
+  /* Loseille Lohner IMR 18 (2009) pg 613 */
   
+  if ( ratio0 < 1.0e-12 || ratio1 < 1.0e-12 )
+    {
+      *ratio = MIN(ratio0,ratio1);
+      return REF_SUCCESS;  
+    }
+
+  r_min = MIN( ratio0, ratio1 );
+  r_max = MAX( ratio0, ratio1 );
+
+  r = r_min/r_max;
+
+  if ( ABS(r-1.0) < 1.0e-12 )
+    {
+      *ratio = 0.5*(ratio0+ratio1);
+      return REF_SUCCESS;  
+    }    
+ 
+  *ratio = r_min * (r-1.0) / r / log(r);
+
   return REF_SUCCESS;  
 }

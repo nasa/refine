@@ -381,6 +381,11 @@ int main( int argc, char *argv[] )
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RWDS( 2.0, ratio, -1.0, "ratio expected" );
 
+    h = 0.1;
+    ref_node_metric(ref_node,0,node0) = 1.0/(h*h);
+    RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
+    RWDS( 4.970679, ratio, 0.00001, "ratio expected" );
+
     RSS(ref_node_free(ref_node),"free");
   }
 
