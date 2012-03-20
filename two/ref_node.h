@@ -49,6 +49,8 @@ struct REF_NODE_STRUCT {
 
 #define ref_node_xyz(ref_node,ixyz,node) \
   ((ref_node)->real[(ixyz)+REF_NODE_REAL_PER*(node)])
+#define ref_node_xyz_ptr(ref_node,node)			\
+  (&((ref_node)->real[REF_NODE_REAL_PER*(node)]))
 
 #define ref_node_metric(ref_node,im,node)		\
   ((ref_node)->real[(im+3)+REF_NODE_REAL_PER*(node)])
@@ -89,6 +91,10 @@ REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar );
 
 REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1, 
 			   REF_DBL *ratio );
+REF_STATUS ref_node_tet_quality( REF_NODE ref_node, 
+				 REF_INT node0, REF_INT node1, 
+				 REF_INT node2, REF_INT node3, 
+				 REF_DBL *quality );
 
 END_C_DECLORATION
 

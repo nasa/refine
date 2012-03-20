@@ -664,9 +664,9 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
   REF_DBL ratio0, ratio1;
   REF_DBL r, r_min, r_max;
 
-
   if ( !ref_node_valid(ref_node,node0) ||
-       !ref_node_valid(ref_node,node0) ) return REF_INVALID;
+       !ref_node_valid(ref_node,node1) ) 
+    RSS( REF_INVALID, "node invalid" );
 
   direction[0] = ( ref_node_xyz(ref_node,0,node1) -
 		   ref_node_xyz(ref_node,0,node0) );
@@ -714,3 +714,56 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
 
   return REF_SUCCESS;  
 }
+
+REF_STATUS ref_node_tet_quality( REF_NODE ref_node, 
+				 REF_INT node0, REF_INT node1, 
+				 REF_INT node2, REF_INT node3, 
+				 REF_DBL *quality )
+{
+  REF_DBL l0,l1,l2,l3,l4,l5;
+  REF_DBL m[6];
+  REF_INT i;
+
+  REF_DBL *a, *b, *c, *d;
+  REF_DBL m11, m12, m13;
+  REF_DBL det, volume;
+
+  RSS( ref_node_ratio( ref_node, node0, node1, &l0 ), "l0" );
+  RSS( ref_node_ratio( ref_node, node0, node2, &l1 ), "l1" );
+  RSS( ref_node_ratio( ref_node, node0, node3, &l2 ), "l2" );
+  RSS( ref_node_ratio( ref_node, node1, node2, &l3 ), "l3" );
+  RSS( ref_node_ratio( ref_node, node1, node3, &l4 ), "l4" );
+  RSS( ref_node_ratio( ref_node, node2, node3, &l5 ), "l5" );
+  
+  for ( i = 0; i<6 ; i++ )
+    m[i] = 0.25 * ( ref_node_metric(ref_node,i,node0) +
+		    ref_node_metric(ref_node,i,node1) +
+		    ref_node_metric(ref_node,i,node2) +
+		    ref_node_metric(ref_node,i,node3) );
+
+  a = ref_node_xyz_ptr(ref_node,node0);
+  b = ref_node_xyz_ptr(ref_node,node1);
+  c = ref_node_xyz_ptr(ref_node,node2);
+  d = ref_node_xyz_ptr(ref_node,node3);
+  
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  det = ( m11 - m12 + m13 );
+
+  volume = -det/6.0;
+
+  if ( volume <= 0.0 )
+    {
+      *quality = volume;
+       return REF_SUCCESS;
+    }
+
+  /* 36/3^(1/3) */
+  *quality = 24.9610058766228 * 
+    pow(ref_matrix_m_determinate(m)*volume,2.0/3.0) /
+    ( l0*l0 + l1*l1 + l2*l2 + l3*l3 + l4*l4 + l5*l5 );
+
+  return REF_SUCCESS;  
+}
+

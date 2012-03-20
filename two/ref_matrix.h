@@ -14,6 +14,13 @@ BEGIN_C_DECLORATION
 	(v)[1] * ( (m)[1]*(v)[0] + (m)[3]*(v)[1] + (m)[4]*(v)[2] ) + \
 	(v)[2] * ( (m)[2]*(v)[0] + (m)[4]*(v)[1] + (m)[5]*(v)[2] ) )
 
+#define ref_matrix_m_determinate(m) 		\
+  ( (m)[0]*(m)[3]*(m)[5] +			\
+    (m)[1]*(m)[4]*(m)[2]*2.0 -			\
+    (m)[0]*(m)[4]*(m)[4] -			\
+    (m)[5]*(m)[1]*(m)[1] -			\
+    (m)[3]*(m)[2]*(m)[2] ) 
+
 REF_STATUS ref_matrix_diagonalize( REF_DBL *m_upper_tri, 
 				   REF_DBL *diagonal_system );
 

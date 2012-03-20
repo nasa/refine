@@ -389,6 +389,45 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* tet quality */
+    REF_NODE ref_node;
+    REF_INT node0, node1, node2, node3, global;
+    REF_DBL qual;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&node0),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&node1),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&node2),"add");
+    global = 3;
+    RSS(ref_node_add(ref_node,global,&node3),"add");
+
+    for ( global=0;global<4;global++)
+      {
+	ref_node_xyz(ref_node,0,global) = 0.0;
+	ref_node_xyz(ref_node,1,global) = 0.0;
+	ref_node_xyz(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,0,global) = 1.0;
+	ref_node_metric(ref_node,1,global) = 0.0;
+	ref_node_metric(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,3,global) = 1.0;
+	ref_node_metric(ref_node,4,global) = 0.0;
+	ref_node_metric(ref_node,5,global) = 1.0;
+      }
+
+    ref_node_xyz(ref_node,0,node1) = 1.0;
+    ref_node_xyz(ref_node,1,node2) = 1.0;
+    ref_node_xyz(ref_node,2,node3) = 1.0;
+
+    RSS(ref_node_tet_quality(ref_node, node0, node1, node2, node3, &qual), "q");
+    RWDS( 0.839947, qual, 0.00001, "qual expected" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
