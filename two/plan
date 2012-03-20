@@ -18,7 +18,9 @@ code
 
 call two from fun
 
-separate global from node add and remove
+clean up
+  separate global from node add and remove
+  single volume routine
 
 March
 4  shift globals/unused globals/export
