@@ -50,6 +50,9 @@ struct REF_NODE_STRUCT {
 #define ref_node_xyz(ref_node,ixyz,node) \
   ((ref_node)->real[(ixyz)+REF_NODE_REAL_PER*(node)])
 
+#define ref_node_metric(ref_node,im,node)		\
+  ((ref_node)->real[(im+3)+REF_NODE_REAL_PER*(node)])
+
 #define ref_node_real(ref_node,ireal,node)		\
   ((ref_node)->real[(ireal)+REF_NODE_REAL_PER*(node)])
 

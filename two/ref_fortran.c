@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "ref_fortran.h"
-#include "ref_metric.h"
+
 #include "ref_grid.h"
 #include "ref_export.h"
 #include "ref_mpi.h"
@@ -140,13 +140,12 @@ REF_STATUS ref_import_metric__(REF_INT *nnodes, REF_DBL *m )
 }
 REF_STATUS ref_import_metric_(REF_INT *nnodes, REF_DBL *m )
 {
-  int node;
-  REF_METRIC ref_metric;
-
-  ref_metric = ref_grid_metric(ref_grid);
+  int node, i;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
 
   for (node = 0; node < (*nnodes); node++)
-    RSS(ref_metric_set(ref_metric,node,&(m[6*node])),"set metric");
+    for (i = 0; i < 6 ; i++)
+      ref_node_metric(ref_node,i,node) = m[i+6*node];
 
   return REF_SUCCESS;
 }

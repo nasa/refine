@@ -16,7 +16,6 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
   ref_grid = *ref_grid_ptr;
 
   RSS( ref_node_create( &ref_grid_node(ref_grid) ), "node create" );
-  RSS( ref_metric_create( &ref_grid_metric(ref_grid) ), "metric create" );
 
   RSS( ref_cell_create( &ref_grid_tet(ref_grid), 4, REF_FALSE ), "tet create" );
   RSS( ref_cell_create( &ref_grid_pyr(ref_grid), 5, REF_FALSE ), "pyr create" );
@@ -40,7 +39,6 @@ REF_STATUS ref_grid_empty_cell_clone( REF_GRID *ref_grid_ptr, REF_GRID parent )
   ref_grid = *ref_grid_ptr;
 
   ref_grid_node(ref_grid) = ref_grid_node(parent);
-  ref_grid_metric(ref_grid) = ref_grid_metric(parent);
 
   RSS( ref_cell_create( &ref_grid_tet(ref_grid), 4, REF_FALSE ), "tet create" );
   RSS( ref_cell_create( &ref_grid_pyr(ref_grid), 5, REF_FALSE ), "pyr create" );
@@ -60,7 +58,6 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
   if ( NULL == (void *)ref_grid ) return REF_NULL;
 
   RSS( ref_node_free( ref_grid_node(ref_grid) ), "node free");
-  RSS( ref_metric_free( ref_grid_metric(ref_grid) ), "metric free");
 
   RSS( ref_cell_free( ref_grid_tet(ref_grid) ), "tet free");
   RSS( ref_cell_free( ref_grid_pyr(ref_grid) ), "pyr free");
