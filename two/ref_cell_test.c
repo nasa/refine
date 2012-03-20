@@ -37,16 +37,14 @@ static REF_STATUS ref_hex(REF_CELL *ref_cell_ptr)
 
 int main( void )
 {
-  REF_CELL ref_cell;
-  REF_INT nodes[4];
-  REF_INT retrieved[4];
-  REF_INT cell;
-  REF_INT max, i;
-  REF_INT ncell;
 
   REIS(REF_NULL,ref_cell_free(NULL),"dont free NULL");
 
   { /* add */
+    REF_CELL ref_cell;
+    REF_INT nodes[4];
+    REF_INT cell;
+
     RSS(ref_tet(&ref_cell),"create");
     RES(0,ref_cell_n(ref_cell),"init zero cells");
 
@@ -63,8 +61,12 @@ int main( void )
   }
 
   { /* add many global */
+    REF_CELL ref_cell;
     REF_NODE ref_node;
+    REF_INT nodes[4];
     REF_INT parts[4];
+    REF_INT retrieved[4];
+
     RSS(ref_node_create(&ref_node),"create node");
 
     RSS(ref_tet(&ref_cell),"create");
@@ -89,7 +91,11 @@ int main( void )
   }
 
   { /* remove */
+    REF_CELL ref_cell;
+    REF_INT nodes[4];
     REF_INT item;
+    REF_INT cell;
+
     RSS(ref_tet(&ref_cell),"create");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
@@ -115,6 +121,10 @@ int main( void )
   }
 
   { /* remove tri*/
+    REF_CELL ref_cell;
+    REF_INT nodes[4];
+    REF_INT cell;
+
     RSS(ref_tri(&ref_cell),"create");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 1;
@@ -127,8 +137,11 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  {
-    /* force realloc twice */
+  { /* force realloc twice */
+    REF_CELL ref_cell;
+    REF_INT max, i;
+    REF_INT cell, nodes[4];
+
     RSS(ref_tet(&ref_cell),"create");
 
     max = ref_cell_max(ref_cell);
@@ -150,8 +163,11 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"free");
   }
 
-  {
-    /* get nodes */
+  { /* get nodes */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
+    REF_INT retrieved[4];
+
     RSS(ref_tet(&ref_cell),"create new");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
@@ -171,8 +187,9 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"free");
   }
 
-  {
-    /* valid? */
+  { /* valid? */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
     RSS(ref_tet(&ref_cell),"create new");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
@@ -185,8 +202,10 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"free");
   }
 
-  {
-    /* adj */
+  { /* adj */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
+
     RSS(ref_tet(&ref_cell),"create new");
 
     RAS( ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
@@ -201,8 +220,10 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"free");
   }
 
-  {
-    /* adj with id */
+  {/* adj with id */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
+
     RSS(ref_tri(&ref_cell),"create new");
 
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
@@ -215,8 +236,11 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"free");
   }
 
-  {
-    /* loop cells */
+  { /* loop cells */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
+    REF_INT ncell;
+
     RSS(ref_tet(&ref_cell),"create new");
 
     ncell = 0;
@@ -243,8 +267,9 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  {
-    /* edge_per */
+  { /* edge_per */
+    REF_CELL ref_cell;
+
     RSS(ref_tet(&ref_cell),"create");
     RES(6,ref_cell_edge_per(ref_cell),"edge_per");
     RSS(ref_cell_free(ref_cell),"cleanup");
@@ -262,8 +287,8 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  {
-    /* empty edges */
+  { /* empty edges */
+    REF_CELL ref_cell;
 
     RSS(ref_tet(&ref_cell),"create");
     RSS(ref_cell_empty_edges(ref_cell),"empty edges");
@@ -271,8 +296,9 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  {
-    /* set tet edges */
+  { /* set tet edges */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
 
     RSS(ref_tet(&ref_cell),"create");
     nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
@@ -296,8 +322,9 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  {
-    /* face_per */
+  { /* face_per */
+    REF_CELL ref_cell;
+
     RSS(ref_tet(&ref_cell),"create");
     RES(4,ref_cell_face_per(ref_cell),"face_per");
     RSS(ref_cell_free(ref_cell),"cleanup");
@@ -316,6 +343,7 @@ int main( void )
   }
 
   { /* tet face */
+    REF_CELL ref_cell;
     RSS(ref_tet(&ref_cell),"create");
     REIS(1,ref_cell_f2n_gen(ref_cell,0,0),"tri face nodes");
     REIS(3,ref_cell_f2n_gen(ref_cell,1,0),"tri face nodes");
@@ -341,6 +369,8 @@ int main( void )
   }
 
   { /* tet face nodes*/
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
     REF_INT cell_face;
     RSS(ref_tet(&ref_cell),"create");
 
@@ -360,6 +390,7 @@ int main( void )
   }
 
   { /* hex edge faces */
+    REF_CELL ref_cell;
     REF_INT edge, face0, face1;
     RSS(ref_hex(&ref_cell),"create");
 
@@ -392,6 +423,8 @@ int main( void )
   }
 
   { /* tet with */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
     REF_INT found;
 
     RSS(ref_tet(&ref_cell),"create");
@@ -410,6 +443,8 @@ int main( void )
   }
 
   { /* list of one tet with */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
     REF_INT ncell,list[5];
 
     RSS(ref_tet(&ref_cell),"create");
@@ -425,6 +460,8 @@ int main( void )
   }
 
   { /* list of two tet with */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
     REF_INT ncell,list[5];
 
     RSS(ref_tet(&ref_cell),"create");
@@ -443,6 +480,8 @@ int main( void )
   }
 
   { /* tri with */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
     REF_INT found;
 
     RSS(ref_tri(&ref_cell),"create");
