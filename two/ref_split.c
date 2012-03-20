@@ -66,16 +66,13 @@ REF_STATUS ref_split_edge_allowed( REF_GRID ref_grid,
 				   REF_INT node0, REF_INT node1,
 				   REF_BOOL *allowed )
 {
-  REF_CELL pyr = ref_grid_pyr(ref_grid);
-  REF_CELL pri = ref_grid_pri(ref_grid);
-  REF_CELL hex = ref_grid_hex(ref_grid);
+  REF_BOOL pyr_side, pri_side, hex_side;
 
-  *allowed = ( ref_adj_empty( ref_cell_adj(pyr), node0 ) &&
-	       ref_adj_empty( ref_cell_adj(pyr), node1 ) &&
-	       ref_adj_empty( ref_cell_adj(pri), node0 ) &&
-	       ref_adj_empty( ref_cell_adj(pri), node1 ) &&
-	       ref_adj_empty( ref_cell_adj(hex), node0 ) &&
-	       ref_adj_empty( ref_cell_adj(hex), node1 ) );
+  RSS(ref_cell_has_side(ref_grid_pyr(ref_grid), node0, node1, &pyr_side),"pyr");
+  RSS(ref_cell_has_side(ref_grid_pri(ref_grid), node0, node1, &pri_side),"pri");
+  RSS(ref_cell_has_side(ref_grid_hex(ref_grid), node0, node1, &hex_side),"hex");
+
+  *allowed = ( !pyr_side && !pri_side && !hex_side );
 
   return REF_SUCCESS;
 }
