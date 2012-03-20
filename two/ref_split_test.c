@@ -53,7 +53,22 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
-  { /* split mixed allowed */
+  { /* split tet allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+
+    node0 = 0; node1 = 1;
+    RSS(ref_split_edge_allowed(ref_grid,node0,node1,&allowed),"split");
+
+    REIS(REF_TRUE,allowed,"allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* split mixed allowed? */
     REF_GRID ref_grid;
     REF_INT node0, node1;
     REF_BOOL allowed;
