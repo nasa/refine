@@ -1,11 +1,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ref_node.h"
 #include "ref_sort.h"
 #include "ref_malloc.h"
 #include "ref_mpi.h"
+#include "ref_math.h"
 
 /* REF_EMPTY is terminatior, next avalable is shifted by 2*/
 #define next2index(next) (-(next)-2)
@@ -651,5 +653,37 @@ REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar )
   free(b_size);
   free(a_size);
 
+  return REF_SUCCESS;  
+}
+
+REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1, 
+			   REF_DBL *ratio )
+{
+  REF_DBL direction[3], length;
+
+
+  if ( !ref_node_valid(ref_node,node0) ||
+       !ref_node_valid(ref_node,node0) ) return REF_INVALID;
+
+  direction[0] = ( ref_node_xyz(ref_node,0,node1) -
+		   ref_node_xyz(ref_node,0,node0) );
+  direction[1] = ( ref_node_xyz(ref_node,1,node1) -
+		   ref_node_xyz(ref_node,1,node0) );
+  direction[2] = ( ref_node_xyz(ref_node,2,node1) -
+		   ref_node_xyz(ref_node,2,node0) );
+
+  length = ref_math_dot(direction,direction);
+  length = sqrt(length);
+	  
+  if ( !ref_math_divisible(direction[0],length) ||
+       !ref_math_divisible(direction[1],length) ||
+       !ref_math_divisible(direction[2],length) ) 
+    {
+      *ratio = 0.0;
+      return REF_SUCCESS;  
+    }
+
+  *ratio = length;
+				   
   return REF_SUCCESS;  
 }

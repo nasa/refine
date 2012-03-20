@@ -337,6 +337,43 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* distance in metric */
+    REF_NODE ref_node;
+    REF_INT node0, node1, global;
+    REF_DBL ratio;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&node0),"add");
+    ref_node_xyz(ref_node,0,node0) = 0.0;
+    ref_node_xyz(ref_node,1,node0) = 0.0;
+    ref_node_xyz(ref_node,2,node0) = 0.0;
+    ref_node_metric(ref_node,0,node0) = 1.0;
+    ref_node_metric(ref_node,1,node0) = 0.0;
+    ref_node_metric(ref_node,2,node0) = 0.0;
+    ref_node_metric(ref_node,3,node0) = 1.0;
+    ref_node_metric(ref_node,4,node0) = 0.0;
+    ref_node_metric(ref_node,5,node0) = 1.0;
+
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&node1),"add");
+    ref_node_xyz(ref_node,0,node1) = 0.0;
+    ref_node_xyz(ref_node,1,node1) = 0.0;
+    ref_node_xyz(ref_node,2,node1) = 0.0;
+    ref_node_metric(ref_node,0,node1) = 1.0;
+    ref_node_metric(ref_node,1,node1) = 0.0;
+    ref_node_metric(ref_node,2,node1) = 0.0;
+    ref_node_metric(ref_node,3,node1) = 1.0;
+    ref_node_metric(ref_node,4,node1) = 0.0;
+    ref_node_metric(ref_node,5,node1) = 1.0;
+
+    RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
+    RWDS( 0.0, ratio, -1.0, "ratio expected" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
