@@ -63,11 +63,25 @@ int main( void )
     node0 = 0; node1 = 1;
     RSS(ref_split_edge_allowed(ref_grid,node0,node1,&allowed),"split");
 
-    REIS(REF_TRUE,allowed,"allowed?");
+    REIS(REF_TRUE,allowed,"pure tet allowed?");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  { /* split near mixed allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_pri_tet_cap_grid(&ref_grid),"set up");
+
+    node0 = 5; node1 = 6;
+    RSS(ref_split_edge_allowed(ref_grid,node0,node1,&allowed),"split");
+
+    REIS(REF_TRUE,allowed,"tet near mixed allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
   { /* split mixed allowed? */
     REF_GRID ref_grid;
     REF_INT node0, node1;
@@ -78,7 +92,7 @@ int main( void )
     node0 = 3; node1 = 4;
     RSS(ref_split_edge_allowed(ref_grid,node0,node1,&allowed),"split");
 
-    REIS(REF_FALSE,allowed,"allowed?");
+    REIS(REF_FALSE,allowed,"mixed split allowed?");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
