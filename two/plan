@@ -3,7 +3,9 @@
 
 tet adaptation.
   edge based
-  log metric
+  high level split
+  low level collapse
+  high level collapse
 projection (fake geom)
 projection linear elasticity
  per-olaf
@@ -16,7 +18,7 @@ code
 
 call two from fun
 
-seperate global from node add and remove
+separate global from node add and remove
 
 March
 4  shift globals/unused globals/export
