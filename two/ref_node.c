@@ -37,7 +37,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_malloc( ref_node->part, max, REF_INT );
 
-  ref_malloc( ref_node->xyz, 3*max, REF_DBL );
+  ref_malloc( ref_node->real, REF_NODE_REAL_PER*max, REF_DBL );
 
   RSS( ref_list_create( &(ref_node->unused_global_list) ), "create list");
 
@@ -51,7 +51,7 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
 {
   if ( NULL == (void *)ref_node ) return REF_NULL;
   ref_list_free( ref_node->unused_global_list );
-  ref_free( ref_node->xyz );
+  ref_free( ref_node->real );
   ref_free( ref_node->part );
   ref_free( ref_node->sorted_local );
   ref_free( ref_node->sorted_global );
@@ -164,7 +164,8 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
 
       ref_realloc( ref_node->part, ref_node_max(ref_node), REF_INT);
 
-      ref_realloc( ref_node->xyz, 3*ref_node_max(ref_node), REF_DBL);
+      ref_realloc( ref_node->real, 
+		   REF_NODE_REAL_PER*ref_node_max(ref_node), REF_DBL);
     }
 
   *node = next2index(ref_node->blank);
@@ -496,15 +497,16 @@ REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT **o2n_ptr )
 }
 
 
-REF_STATUS ref_node_ghost_xyz( REF_NODE ref_node )
+REF_STATUS ref_node_ghost_real( REF_NODE ref_node )
 {
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
   REF_INT *a_global, *b_global;
   REF_INT part, node;
   REF_INT *a_next;
-  REF_DBL *a_xyz, *b_xyz;
+  REF_DBL *a_real, *b_real;
   REF_INT local;
+  REF_INT i;
 
   if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
@@ -521,13 +523,13 @@ REF_STATUS ref_node_ghost_xyz( REF_NODE ref_node )
   for ( part = 0; part<ref_mpi_n ; part++ )
     a_total += a_size[part];
   ref_malloc( a_global, a_total, REF_INT );
-  ref_malloc( a_xyz, 3*a_total, REF_DBL );
+  ref_malloc( a_real, REF_NODE_REAL_PER*a_total, REF_DBL );
 
   b_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
     b_total += b_size[part];
   ref_malloc( b_global, b_total, REF_INT );
-  ref_malloc( b_xyz, 3*b_total, REF_DBL );
+  ref_malloc( b_real, REF_NODE_REAL_PER*b_total, REF_DBL );
 
   ref_malloc( a_next, ref_mpi_n, REF_INT );
   a_next[0] = 0;
@@ -549,27 +551,25 @@ REF_STATUS ref_node_ghost_xyz( REF_NODE ref_node )
   for (node=0;node<b_total;node++)
     {
       RSS( ref_node_local( ref_node, b_global[node], &local ), "g2l");
-      b_xyz[0+3*node] = ref_node_xyz(ref_node,0,local);
-      b_xyz[1+3*node] = ref_node_xyz(ref_node,1,local);
-      b_xyz[2+3*node] = ref_node_xyz(ref_node,2,local);
+      for ( i=0; i < REF_NODE_REAL_PER ; i++ )
+	b_real[i+REF_NODE_REAL_PER*node] = ref_node_real(ref_node,i,local);
     }
 
-  RSS( ref_mpi_alltoallv( b_xyz, b_size, a_xyz, a_size, 
-			  3, REF_DBL_TYPE ), 
+  RSS( ref_mpi_alltoallv( b_real, b_size, a_real, a_size, 
+			  REF_NODE_REAL_PER, REF_DBL_TYPE ), 
        "alltoallv global");
 
   for (node=0;node<a_total;node++)
     {
       RSS( ref_node_local( ref_node, a_global[node], &local ), "g2l");
-      ref_node_xyz(ref_node,0,local) = a_xyz[0+3*node];
-      ref_node_xyz(ref_node,1,local) = a_xyz[1+3*node];
-      ref_node_xyz(ref_node,2,local) = a_xyz[2+3*node];
+      for ( i=0; i < REF_NODE_REAL_PER ; i++ )
+	ref_node_real(ref_node,i,local) = a_real[i+REF_NODE_REAL_PER*node];
     }
 
   free(a_next);
-  free(b_xyz);
+  free(b_real);
   free(b_global);
-  free(a_xyz);
+  free(a_real);
   free(a_global);
   free(b_size);
   free(a_size);

@@ -221,7 +221,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   /* ghost xyz */
 
-  RSS( ref_node_ghost_xyz( ref_node ), "ghost xyz");
+  RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
   return REF_SUCCESS;
 }

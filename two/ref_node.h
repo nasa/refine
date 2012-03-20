@@ -20,10 +20,12 @@ struct REF_NODE_STRUCT {
   REF_INT *sorted_global;
   REF_INT *sorted_local;
   REF_INT *part;
-  REF_DBL *xyz;
+  REF_DBL *real;
   REF_LIST unused_global_list;
   REF_INT old_n_global, new_n_global;
 };
+
+#define REF_NODE_REAL_PER (9) /* x,y,z, m[6] */
 
 #define ref_node_n(ref_node) ((ref_node)->n)
 #define ref_node_max(ref_node) ((ref_node)->max)
@@ -45,7 +47,11 @@ struct REF_NODE_STRUCT {
 	(node)++ )							\
     if ( ref_node_valid( ref_node, node ) )
 
-#define ref_node_xyz(ref_node,ixyz,node) ((ref_node)->xyz[(ixyz)+3*(node)])
+#define ref_node_xyz(ref_node,ixyz,node) \
+  ((ref_node)->real[(ixyz)+REF_NODE_REAL_PER*(node)])
+
+#define ref_node_real(ref_node,ireal,node)		\
+  ((ref_node)->real[(ireal)+REF_NODE_REAL_PER*(node)])
 
 #define ref_node_part(ref_node,node) ((ref_node)->part[(node)])
 
@@ -73,7 +79,7 @@ REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node );
 
 REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT *o2n[] );
 
-REF_STATUS ref_node_ghost_xyz( REF_NODE ref_node );
+REF_STATUS ref_node_ghost_real( REF_NODE ref_node );
 REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar );
 
 END_C_DECLORATION
