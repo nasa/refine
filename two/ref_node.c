@@ -244,7 +244,7 @@ REF_STATUS ref_node_add_many( REF_NODE ref_node,
 
   ref_malloc( sorted, new, REF_INT );
 
-  RSS( ref_sort_heap( new, global, sorted ), "heap" );
+  RSS( ref_sort_heap_int( new, global, sorted ), "heap" );
 
   j = 0;
   for (i=1;i<new;i++)
@@ -334,9 +334,9 @@ REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node )
       nnode++;
     }
 
-  RSS( ref_sort_heap( ref_node_n(ref_node),
-		      ref_node->sorted_global,
-		      ref_node->sorted_local ), "heap" );
+  RSS( ref_sort_heap_int( ref_node_n(ref_node),
+			  ref_node->sorted_global,
+			  ref_node->sorted_local ), "heap" );
   
   for(node=0;node<ref_node_n(ref_node);node++)
     {

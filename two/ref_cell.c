@@ -456,7 +456,7 @@ static REF_STATUS ref_cell_make_canonical( REF_INT n,
 					   REF_INT *original, 
 					   REF_INT *canonical )
 {
-  RSS( ref_sort_insertion( n, original, canonical ), "sort" );
+  RSS( ref_sort_insertion_int( n, original, canonical ), "sort" );
 
   return REF_SUCCESS;
 }

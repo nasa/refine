@@ -72,8 +72,8 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
       for (node=0;node<4;node++)
 	new_nodes[node] = o2n[nodes[node]];
       new_nodes[4] = nodes[4];
-      RSS( ref_sort_unique( 4, new_nodes, 
-			    &nunique, unique), "uniq" );
+      RSS( ref_sort_unique_int( 4, new_nodes, 
+				&nunique, unique), "uniq" );
       if ( 4 > nunique ) RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
       if ( 3 == nunique )
 	{
@@ -110,8 +110,8 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
     {
       for (node=0;node<6;node++)
 	new_nodes[node] = o2n[nodes[node]];
-      RSS( ref_sort_unique( 6, new_nodes, 
-			    &nunique, unique), "uniq" );
+      RSS( ref_sort_unique_int( 6, new_nodes, 
+				&nunique, unique), "uniq" );
       if ( 6 > nunique ) RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
       if ( 5 == nunique )
 	{

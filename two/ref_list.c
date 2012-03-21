@@ -84,7 +84,8 @@ REF_STATUS ref_list_sort( REF_LIST ref_list )
 
   ref_malloc( order, ref_list_n( ref_list ), REF_INT );
 
-  RSS( ref_sort_heap( ref_list_n(ref_list), ref_list->value, order ), "heap" );
+  RSS( ref_sort_heap_int( ref_list_n(ref_list), ref_list->value, order ), 
+       "heap" );
 
   for ( i=0; i < ref_list_n(ref_list); i++ )
     order[i] = ref_list->value[order[i]];

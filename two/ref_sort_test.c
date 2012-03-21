@@ -16,7 +16,7 @@ int main( void )
     original[1]=2;
     original[2]=3;
     original[3]=4;
-    RSS( ref_sort_insertion( n, original, sorted ), "sort" );
+    RSS( ref_sort_insertion_int( n, original, sorted ), "sort" );
     REIS( 1, sorted[0], "sorted[0]");
     REIS( 2, sorted[1], "sorted[1]");
     REIS( 3, sorted[2], "sorted[2]");
@@ -29,7 +29,7 @@ int main( void )
     original[1]=3;
     original[2]=2;
     original[3]=1;
-    RSS( ref_sort_insertion( n, original, sorted ), "sort" );
+    RSS( ref_sort_insertion_int( n, original, sorted ), "sort" );
     REIS( 1, sorted[0], "sorted[0]");
     REIS( 2, sorted[1], "sorted[1]");
     REIS( 3, sorted[2], "sorted[2]");
@@ -42,7 +42,7 @@ int main( void )
     original[1]=1;
     original[2]=4;
     original[3]=3;
-    RSS( ref_sort_insertion( n, original, sorted ), "sort" );
+    RSS( ref_sort_insertion_int( n, original, sorted ), "sort" );
     REIS( 1, sorted[0], "sorted[0]");
     REIS( 2, sorted[1], "sorted[1]");
     REIS( 3, sorted[2], "sorted[2]");
@@ -55,7 +55,7 @@ int main( void )
     original[1]=1;
     original[2]=2;
     original[3]=3;
-    RSS( ref_sort_unique( n, original, &m, unique ), "unique" );
+    RSS( ref_sort_unique_int( n, original, &m, unique ), "unique" );
     REIS( 3, m, "m");
     REIS( 1, unique[0], "unique[0]");
     REIS( 2, unique[1], "unique[1]");
@@ -98,7 +98,7 @@ int main( void )
     REF_INT n=0,original[1], sorted_index[1];
     original[0]=1;
     sorted_index[0]=2;
-    RSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    RSS( ref_sort_heap_int( n, original, sorted_index ), "sort" );
     REIS( 2, sorted_index[0], "sorted_index[0]");
   }
 
@@ -106,7 +106,7 @@ int main( void )
     REF_INT n=1,original[1], sorted_index[1];
     original[0]=1;
     sorted_index[0]=2;
-    RSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    RSS( ref_sort_heap_int( n, original, sorted_index ), "sort" );
     REIS( 0, sorted_index[0], "sorted_index[0]");
   }
 
@@ -114,7 +114,7 @@ int main( void )
     REF_INT n=2,original[2], sorted_index[2];
     original[0]=1;
     original[1]=2;
-    RSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    RSS( ref_sort_heap_int( n, original, sorted_index ), "sort" );
     REIS( 0, sorted_index[0], "sorted_index[0]");
     REIS( 1, sorted_index[1], "sorted_index[1]");
   }
@@ -123,7 +123,7 @@ int main( void )
     REF_INT n=2,original[2], sorted_index[2];
     original[0]=2;
     original[1]=1;
-    RSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    RSS( ref_sort_heap_int( n, original, sorted_index ), "sort" );
     REIS( 1, sorted_index[0], "sorted_index[0]");
     REIS( 0, sorted_index[1], "sorted_index[1]");
   }
@@ -133,7 +133,7 @@ int main( void )
     original[0]=0;
     original[1]=1;
     original[2]=2;
-    RSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    RSS( ref_sort_heap_int( n, original, sorted_index ), "sort" );
     REIS( 0, sorted_index[0], "sorted_index[0]");
     REIS( 1, sorted_index[1], "sorted_index[1]");
     REIS( 2, sorted_index[2], "sorted_index[2]");
@@ -144,7 +144,7 @@ int main( void )
     original[0]=0;
     original[1]=1;
     original[2]=2;
-    RSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    RSS( ref_sort_heap_int( n, original, sorted_index ), "sort" );
     REIS( 0, sorted_index[0], "sorted_index[0]");
     REIS( 1, sorted_index[1], "sorted_index[1]");
     REIS( 2, sorted_index[2], "sorted_index[2]");
@@ -155,7 +155,7 @@ int main( void )
     original[0]=2;
     original[1]=0;
     original[2]=1;
-    RSS( ref_sort_heap( n, original, sorted_index ), "sort" );
+    RSS( ref_sort_heap_int( n, original, sorted_index ), "sort" );
     REIS( 1, sorted_index[0], "sorted_index[0]");
     REIS( 2, sorted_index[1], "sorted_index[1]");
     REIS( 0, sorted_index[2], "sorted_index[2]");

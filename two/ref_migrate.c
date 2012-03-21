@@ -290,8 +290,8 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
     {
       for ( node=0; node < ref_cell_node_per(ref_cell); node++ )
 	all_parts[node] = ref_node_part(ref_node,nodes[node]);
-      RSS( ref_sort_unique( ref_cell_node_per(ref_cell), all_parts,
-			    &nunique, unique_parts ), "unique");
+      RSS( ref_sort_unique_int( ref_cell_node_per(ref_cell), all_parts,
+				&nunique, unique_parts ), "unique");
       for ( node=0; node < nunique; node++ )
 	{
 	  part = unique_parts[node];
@@ -322,8 +322,8 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
     {
       for ( node=0; node < ref_cell_node_per(ref_cell); node++ )
 	all_parts[node] = ref_node_part(ref_node,nodes[node]);
-      RSS( ref_sort_unique( ref_cell_node_per(ref_cell), all_parts,
-			    &nunique, unique_parts ), "unique");
+      RSS( ref_sort_unique_int( ref_cell_node_per(ref_cell), all_parts,
+				&nunique, unique_parts ), "unique");
       for ( node=0; node < nunique; node++ )
 	{
 	  part = unique_parts[node];

@@ -4,7 +4,8 @@
 
 #include "ref_sort.h"
 
-REF_STATUS ref_sort_insertion( REF_INT n, REF_INT *original, REF_INT *sorted )
+REF_STATUS ref_sort_insertion_int( REF_INT n, REF_INT *original, 
+				   REF_INT *sorted )
 {
   REF_INT i, j, smallest, temp;
 
@@ -27,7 +28,8 @@ REF_STATUS ref_sort_insertion( REF_INT n, REF_INT *original, REF_INT *sorted )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_sort_heap( REF_INT n, REF_INT *original, REF_INT *sorted_index )
+REF_STATUS ref_sort_heap_int( REF_INT n, REF_INT *original, 
+			      REF_INT *sorted_index )
 {
   REF_INT i, j, l, ir, indxt, q;
 
@@ -74,14 +76,14 @@ REF_STATUS ref_sort_heap( REF_INT n, REF_INT *original, REF_INT *sorted_index )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_sort_unique( REF_INT n, REF_INT *original, 
-			    REF_INT *nunique, REF_INT *unique )
+REF_STATUS ref_sort_unique_int( REF_INT n, REF_INT *original, 
+				REF_INT *nunique, REF_INT *unique )
 {
   REF_INT i, j;
 
   *nunique = REF_EMPTY;
 
-  RSS( ref_sort_insertion( n, original, unique ), "sort in unique");
+  RSS( ref_sort_insertion_int( n, original, unique ), "sort in unique");
 
   j=0;
   for(i=1;i<n;i++)

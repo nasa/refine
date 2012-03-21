@@ -299,7 +299,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	    dest[cell] = ref_part_implicit( nnode, ref_mpi_n, 
 					    c2n[size_per*cell] );
 	  
-	  RSS( ref_sort_heap( section_size, dest, order ), "heap" );
+	  RSS( ref_sort_heap_int( section_size, dest, order ), "heap" );
 
 	  for (cell=0;cell<section_size;cell++)
 	    {

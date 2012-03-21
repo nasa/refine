@@ -68,7 +68,7 @@ REF_STATUS ref_face_inspect( REF_FACE ref_face )
     {
       for(node=0;node<4;node++)
 	orig[node]=ref_face_f2n(ref_face,node,face);
-      RSS( ref_sort_insertion( 4, orig, sort ), "sort" );
+      RSS( ref_sort_insertion_int( 4, orig, sort ), "sort" );
       printf("sort %4d : %4d %4d %4d %4d\n",face,
 	     sort[0],sort[1],sort[2],sort[3]);
     }
@@ -78,7 +78,7 @@ REF_STATUS ref_face_inspect( REF_FACE ref_face )
 static REF_STATUS ref_face_make_canonical( REF_INT *original, 
 					   REF_INT *canonical )
 {
-  RSS( ref_sort_insertion( 4, original, canonical ), "sort" );
+  RSS( ref_sort_insertion_int( 4, original, canonical ), "sort" );
 
   if ( canonical[0] == canonical[1] )
     {
