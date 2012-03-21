@@ -161,5 +161,20 @@ int main( void )
     REIS( 0, sorted_index[2], "sorted_index[2]");
   }
 
+  {  /* heap dbl */
+    REF_INT n=4;
+    REF_DBL original[4];
+    REF_INT sorted_index[3];
+    original[0]=0.0;
+    original[1]=7.0;
+    original[2]=3.0;
+    original[3]=-1.0;
+    RSS( ref_sort_heap_dbl( n, original, sorted_index ), "sort" );
+    REIS( 3, sorted_index[0], "sorted_index[0]");
+    REIS( 0, sorted_index[1], "sorted_index[1]");
+    REIS( 2, sorted_index[2], "sorted_index[2]");
+    REIS( 1, sorted_index[3], "sorted_index[3]");
+  }
+
   return 0;
 }
