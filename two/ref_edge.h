@@ -26,7 +26,7 @@ REF_STATUS ref_edge_free( REF_EDGE ref_edge );
 
 #define ref_edge_n(ref_edge) ((ref_edge)->n)
 
-#define ref_edge_e2n( ref_edge, edge, node ) \
+#define ref_edge_e2n( ref_edge, node, edge ) \
   ((ref_edge)->e2n[node+2*edge])
 
 #define ref_edge_adj( ref_edge ) ((ref_edge)->adj)

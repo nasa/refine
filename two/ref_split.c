@@ -35,8 +35,8 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   for(edge=0;edge<ref_edge_n(ref_edge);edge++)
     {
       RSS( ref_node_ratio( ref_node, 
-			   ref_edge_e2n( ref_edge, edge, 0 ),
-			   ref_edge_e2n( ref_edge, edge, 1 ),
+			   ref_edge_e2n( ref_edge, 0, edge ),
+			   ref_edge_e2n( ref_edge, 1, edge ),
 			   &(ratio[n]) ), "ratio");
       if ( ratio[n] > ratio_limit)
 	{
@@ -51,28 +51,28 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
     {
       edge = edges[i];
       RSS( ref_split_edge_mixed( ref_grid,
-				 ref_edge_e2n( ref_edge, edge, 0 ),
-				 ref_edge_e2n( ref_edge, edge, 1 ),
+				 ref_edge_e2n( ref_edge, 0, edge ),
+				 ref_edge_e2n( ref_edge, 1, edge ),
 				 &allowed ), "mixed" );
       if ( !allowed) continue;
       RSS( ref_split_edge_local_tets( ref_grid,
-				      ref_edge_e2n( ref_edge, edge, 0 ),
-				      ref_edge_e2n( ref_edge, edge, 1 ),
+				      ref_edge_e2n( ref_edge, 0, edge ),
+				      ref_edge_e2n( ref_edge, 1, edge ),
 				      &allowed ), "local tet" );
       if ( !allowed) continue;
 
       RSS( ref_node_next_global( ref_node, &global ), "next global");
       RSS( ref_node_add( ref_node, global, &new_node ), "new node");
       RSS( ref_node_interpolate_edge( ref_node, 
-				      ref_edge_e2n( ref_edge, edge, 0 ),
-				      ref_edge_e2n( ref_edge, edge, 1 ),
+				      ref_edge_e2n( ref_edge, 0, edge ),
+				      ref_edge_e2n( ref_edge, 1, edge ),
 				      new_node ), "new node");
 
       /* test potential quality */
 
       RSS( ref_split_edge( ref_grid,
-			   ref_edge_e2n( ref_edge, edge, 0 ),
-			   ref_edge_e2n( ref_edge, edge, 1 ),
+			   ref_edge_e2n( ref_edge, 0, edge ),
+			   ref_edge_e2n( ref_edge, 1, edge ),
 			   new_node ), "split" );
 
     }

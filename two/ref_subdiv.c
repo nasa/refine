@@ -289,8 +289,8 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 		   "add node");
 	      ref_subdiv_node( ref_subdiv, edge ) = node;
 
-	      node0 = ref_edge_e2n(ref_edge, edge, 0 );
-	      node1 = ref_edge_e2n(ref_edge, edge, 1 );
+	      node0 = ref_edge_e2n(ref_edge, 0, edge );
+	      node1 = ref_edge_e2n(ref_edge, 1, edge );
 	      for (ixyz=0;ixyz<3;ixyz++)
 		ref_node_xyz(ref_node,ixyz,node) = 
 		  0.5 * ( ref_node_xyz(ref_node,ixyz,node0) +
@@ -1319,13 +1319,13 @@ static REF_STATUS ref_subdiv_tec_zone( REF_SUBDIV ref_subdiv,
   for ( cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++ )
     {
       edge = ref_cell_c2e(ref_cell,cell_edge,cell);
-      node = ref_edge_e2n(ref_edge,edge,0);
+      node = ref_edge_e2n(ref_edge,0,edge);
       fprintf(file, " %.16e %.16e %.16e %d\n", 
 	      ref_node_xyz(ref_node,0,node),
 	      ref_node_xyz(ref_node,1,node),
 	      ref_node_xyz(ref_node,2,node),
 	      ref_subdiv_mark( ref_subdiv, edge ) );
-      node = ref_edge_e2n(ref_edge,edge,1);
+      node = ref_edge_e2n(ref_edge,1,edge);
       fprintf(file, " %.16e %.16e %.16e %d\n", 
 	      ref_node_xyz(ref_node,0,node),
 	      ref_node_xyz(ref_node,1,node),

@@ -40,8 +40,8 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
 
   for ( edge=0 ; edge < ref_edge_n(ref_edge) ; edge++ )
     {
-      ref_edge_e2n( ref_edge, edge, 0 ) = REF_EMPTY;
-      ref_edge_e2n( ref_edge, edge, 1 ) = REF_EMPTY;
+      ref_edge_e2n( ref_edge, 0, edge ) = REF_EMPTY;
+      ref_edge_e2n( ref_edge, 1, edge ) = REF_EMPTY;
     }
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
@@ -49,9 +49,9 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
       each_ref_cell_cell_edge( ref_cell, cell_edge )
         {
 	  edge = ref_cell_c2e(ref_cell,cell_edge,cell);
-	  ref_edge_e2n( ref_edge, edge, 0 ) = 
+	  ref_edge_e2n( ref_edge, 0, edge ) = 
 	    ref_cell_e2n(ref_cell,0,cell,cell_edge);
-	  ref_edge_e2n( ref_edge, edge, 1 ) = 
+	  ref_edge_e2n( ref_edge, 1, edge ) = 
 	    ref_cell_e2n(ref_cell,1,cell,cell_edge);
 	}
 
@@ -59,13 +59,13 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
 
   for ( edge=0 ; edge < ref_edge_n(ref_edge) ; edge++ )
     {
-      RUS(REF_EMPTY,ref_edge_e2n( ref_edge, edge, 0 ),"edge n0 empty");
-      RUS(REF_EMPTY,ref_edge_e2n( ref_edge, edge, 1 ),"edge n1 empty");
+      RUS(REF_EMPTY,ref_edge_e2n( ref_edge, 0, edge ),"edge n0 empty");
+      RUS(REF_EMPTY,ref_edge_e2n( ref_edge, 1, edge ),"edge n1 empty");
       RSS( ref_adj_add( ref_edge_adj( ref_edge ), 
-			ref_edge_e2n( ref_edge, edge, 0 ), 
+			ref_edge_e2n( ref_edge, 0, edge ), 
 			edge ), "adj n0");
       RSS( ref_adj_add( ref_edge_adj( ref_edge ), 
-			ref_edge_e2n( ref_edge, edge, 1 ), 
+			ref_edge_e2n( ref_edge, 1, edge ), 
 			edge ), "adj n1");
     }
 
@@ -97,8 +97,8 @@ REF_STATUS ref_edge_with( REF_EDGE ref_edge,
 
   each_ref_adj_node_item_with_ref( ref_edge_adj(ref_edge), node0, item, ref)
     {
-      n0 = ref_edge_e2n(ref_edge,ref,0);
-      n1 = ref_edge_e2n(ref_edge,ref,1);
+      n0 = ref_edge_e2n(ref_edge,0,ref);
+      n1 = ref_edge_e2n(ref_edge,1,ref);
       if ( ( n0==node0 && n1==node1 ) ||
 	   ( n0==node1 && n1==node0 ) )
 	{
@@ -115,14 +115,14 @@ REF_STATUS ref_edge_part( REF_EDGE ref_edge, REF_INT edge,
 {
   REF_NODE ref_node = ref_edge_node(ref_edge);
 
-  if ( ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 0 ) ) <
-       ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 1 ) ) )
+  if ( ref_node_global(ref_node,ref_edge_e2n( ref_edge, 0, edge ) ) <
+       ref_node_global(ref_node,ref_edge_e2n( ref_edge, 1, edge ) ) )
     {
-      *part = ref_node_part(ref_node,ref_edge_e2n( ref_edge, edge, 0 ));
+      *part = ref_node_part(ref_node,ref_edge_e2n( ref_edge, 0, edge ));
     }
   else
     {
-      *part = ref_node_part(ref_node,ref_edge_e2n( ref_edge, edge, 1 ));
+      *part = ref_node_part(ref_node,ref_edge_e2n( ref_edge, 1, edge ));
     }
 
   return REF_SUCCESS;
@@ -180,9 +180,9 @@ REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_INT *data )
 	{
 	  a_edge[a_next[part]] = edge;
 	  a_nodes[0+2*a_next[part]] = 
-	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 0 ) );
+	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, 0, edge ) );
 	  a_nodes[1+2*a_next[part]] = 
-	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 1 ) );
+	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, 1, edge ) );
 	  (a_next[part])++;
 	}
     }
@@ -277,9 +277,9 @@ REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_DBL *data, REF_INT dim )
 	{
 	  a_edge[a_next[part]] = edge;
 	  a_nodes[0+2*a_next[part]] = 
-	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 0 ) );
+	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, 0, edge ) );
 	  a_nodes[1+2*a_next[part]] = 
-	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, edge, 1 ) );
+	    ref_node_global(ref_node,ref_edge_e2n( ref_edge, 1, edge ) );
 	  (a_next[part])++;
 	}
     }
@@ -344,13 +344,13 @@ REF_STATUS ref_edge_tec_int( REF_EDGE ref_edge, REF_NODE ref_node,
 
   for ( edge = 0; edge < ref_edge_n(ref_edge); edge++ )
     {
-      node = ref_edge_e2n(ref_edge,edge,0);
+      node = ref_edge_e2n(ref_edge, 0, edge);
       fprintf(file, " %.16e %.16e %.16e %d\n", 
 	      ref_node_xyz(ref_node,0,node),
 	      ref_node_xyz(ref_node,1,node),
 	      ref_node_xyz(ref_node,2,node),
 	      data[edge] ) ;
-      node = ref_edge_e2n(ref_edge,edge,1);
+      node = ref_edge_e2n(ref_edge, 1, edge);
       fprintf(file, " %.16e %.16e %.16e %d\n", 
 	      ref_node_xyz(ref_node,0,node),
 	      ref_node_xyz(ref_node,1,node),

@@ -99,11 +99,11 @@ int main( int argc, char *argv[] )
       for ( edge=0; edge<ref_edge_n(ref_edge);edge++ )
 	{
 	  REF_DBL zmin = 0.00005;
-	  if ( ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,edge,0))<zmin &&
-	       ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,edge,1))<zmin )
+	  if ( ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,0,edge))<zmin &&
+	       ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge,1,edge))<zmin )
 	    RSS(ref_subdiv_mark_to_split(ref_subdiv,
-					 ref_edge_e2n(ref_edge,edge,0),
-					 ref_edge_e2n(ref_edge,edge,1)
+					 ref_edge_e2n(ref_edge,0,edge),
+					 ref_edge_e2n(ref_edge,1,edge)
 					 ),"mark edge");
 	}
 
