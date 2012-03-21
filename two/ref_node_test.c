@@ -8,6 +8,7 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 #include "ref_mpi.h"
+#include "ref_matrix.h"
 
 int main( int argc, char *argv[] )
 {
@@ -429,6 +430,64 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,node3) = -1.0;
     RSS(ref_node_tet_quality(ref_node, node0, node1, node2, node3, &qual), "q");
     RWDS( -1.0/6.0, qual, -1.0, "qual expected" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* interpolate */
+    REF_NODE ref_node;
+    REF_INT node0, node1, new_node, global;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    RSS(ref_node_next_global( ref_node, &global ), "next_global");
+    RSS(ref_node_add(ref_node,global,&node0),"add");
+    ref_node_xyz(ref_node,0,node0) = 0.0;
+    ref_node_xyz(ref_node,1,node0) = 0.0;
+    ref_node_xyz(ref_node,2,node0) = 0.0;
+    ref_node_metric(ref_node,0,node0) = 1.0;
+    ref_node_metric(ref_node,1,node0) = 0.0;
+    ref_node_metric(ref_node,2,node0) = 0.0;
+    ref_node_metric(ref_node,3,node0) = 1.0;
+    ref_node_metric(ref_node,4,node0) = 0.0;
+    ref_node_metric(ref_node,5,node0) = 1.0;
+
+    RSS(ref_node_next_global( ref_node, &global ), "next_global");
+    RSS(ref_node_add(ref_node,global,&node1),"add");
+    ref_node_xyz(ref_node,0,node1) = 1.0;
+    ref_node_xyz(ref_node,1,node1) = 0.0;
+    ref_node_xyz(ref_node,2,node1) = 0.0;
+    ref_node_metric(ref_node,0,node1) = 1.0;
+    ref_node_metric(ref_node,1,node1) = 0.0;
+    ref_node_metric(ref_node,2,node1) = 0.0;
+    ref_node_metric(ref_node,3,node1) = 1.0;
+    ref_node_metric(ref_node,4,node1) = 0.0;
+    ref_node_metric(ref_node,5,node1) = 1.0;
+
+    RSS(ref_node_next_global( ref_node, &global ), "next_global");
+    RSS(ref_node_add(ref_node,global,&new_node),"add");
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node),"interp");
+
+    RWDS( 0.5, ref_node_xyz(ref_node,0,new_node), -1.0, "x");
+    RWDS( 0.0, ref_node_xyz(ref_node,1,new_node), -1.0, "y");
+    RWDS( 0.0, ref_node_xyz(ref_node,2,new_node), -1.0, "z");
+
+    RWDS( 1.0, ref_node_metric(ref_node,0,new_node), -1.0, "m0");
+    RWDS( 0.0, ref_node_metric(ref_node,1,new_node), -1.0, "m1");
+    RWDS( 0.0, ref_node_metric(ref_node,2,new_node), -1.0, "m2");
+    RWDS( 1.0, ref_node_metric(ref_node,3,new_node), -1.0, "m3");
+    RWDS( 0.0, ref_node_metric(ref_node,4,new_node), -1.0, "m4");
+    RWDS( 1.0, ref_node_metric(ref_node,5,new_node), -1.0, "m5");
+
+    ref_node_metric(ref_node,0,node1) = 1.0/(0.1*0.1);
+
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node),"interp");
+    RWDS( 1.0/0.1, ref_node_metric(ref_node,0,new_node), -1.0, "m0");
+    RWDS( 0.0, ref_node_metric(ref_node,1,new_node), -1.0, "m1");
+    RWDS( 0.0, ref_node_metric(ref_node,2,new_node), -1.0, "m2");
+    RWDS( 1.0, ref_node_metric(ref_node,3,new_node), -1.0, "m3");
+    RWDS( 0.0, ref_node_metric(ref_node,4,new_node), -1.0, "m4");
+    RWDS( 1.0, ref_node_metric(ref_node,5,new_node), -1.0, "m5");
 
     RSS(ref_node_free(ref_node),"free");
   }

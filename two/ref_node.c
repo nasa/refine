@@ -768,3 +768,29 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node, 
+				      REF_INT node0, REF_INT node1, 
+				      REF_INT new_node )
+{
+  REF_DBL log_m0[6], log_m1[6], m[6];
+
+  if ( !ref_node_valid(ref_node,node0) ||
+       !ref_node_valid(ref_node,node1) ) 
+    RSS( REF_INVALID, "node invalid" );
+
+  ref_node_xyz(ref_node,0,new_node) = 
+    0.5 * (ref_node_xyz(ref_node,0,node0) + ref_node_xyz(ref_node,0,node1));
+  ref_node_xyz(ref_node,1,new_node) = 
+    0.5 * (ref_node_xyz(ref_node,1,node0) + ref_node_xyz(ref_node,1,node1));
+  ref_node_xyz(ref_node,2,new_node) = 
+    0.5 * (ref_node_xyz(ref_node,2,node0) + ref_node_xyz(ref_node,2,node1));
+
+  RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node0), log_m0 ),"log 0");
+  RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node1), log_m1 ),"log 1");
+
+  RSS( ref_matrix_average_m( log_m0, log_m1, m ),"log 1");
+  
+  RSS( ref_matrix_exp_m( m, ref_node_metric_ptr(ref_node,new_node) ),"exp m");
+
+  return REF_SUCCESS;
+}

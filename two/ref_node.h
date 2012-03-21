@@ -96,6 +96,10 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
 				 REF_INT node2, REF_INT node3, 
 				 REF_DBL *quality );
 
+REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node, 
+				      REF_INT node0, REF_INT node1, 
+				      REF_INT new_node );
+
 END_C_DECLORATION
 
 #endif /* REF_NODE_H */
