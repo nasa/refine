@@ -717,8 +717,7 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
 }
 
 REF_STATUS ref_node_tet_quality( REF_NODE ref_node, 
-				 REF_INT node0, REF_INT node1, 
-				 REF_INT node2, REF_INT node3, 
+				 REF_INT *nodes, 
 				 REF_DBL *quality )
 {
   REF_DBL l0,l1,l2,l3,l4,l5;
@@ -729,23 +728,23 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
   REF_DBL m11, m12, m13;
   REF_DBL det, volume;
 
-  RSS( ref_node_ratio( ref_node, node0, node1, &l0 ), "l0" );
-  RSS( ref_node_ratio( ref_node, node0, node2, &l1 ), "l1" );
-  RSS( ref_node_ratio( ref_node, node0, node3, &l2 ), "l2" );
-  RSS( ref_node_ratio( ref_node, node1, node2, &l3 ), "l3" );
-  RSS( ref_node_ratio( ref_node, node1, node3, &l4 ), "l4" );
-  RSS( ref_node_ratio( ref_node, node2, node3, &l5 ), "l5" );
+  RSS( ref_node_ratio( ref_node, nodes[0], nodes[1], &l0 ), "l0" );
+  RSS( ref_node_ratio( ref_node, nodes[0], nodes[2], &l1 ), "l1" );
+  RSS( ref_node_ratio( ref_node, nodes[0], nodes[3], &l2 ), "l2" );
+  RSS( ref_node_ratio( ref_node, nodes[1], nodes[2], &l3 ), "l3" );
+  RSS( ref_node_ratio( ref_node, nodes[1], nodes[3], &l4 ), "l4" );
+  RSS( ref_node_ratio( ref_node, nodes[2], nodes[3], &l5 ), "l5" );
   
   for ( i = 0; i<6 ; i++ )
-    m[i] = 0.25 * ( ref_node_metric(ref_node,i,node0) +
-		    ref_node_metric(ref_node,i,node1) +
-		    ref_node_metric(ref_node,i,node2) +
-		    ref_node_metric(ref_node,i,node3) );
+    m[i] = 0.25 * ( ref_node_metric(ref_node,i,nodes[0]) +
+		    ref_node_metric(ref_node,i,nodes[1]) +
+		    ref_node_metric(ref_node,i,nodes[2]) +
+		    ref_node_metric(ref_node,i,nodes[3]) );
 
-  a = ref_node_xyz_ptr(ref_node,node0);
-  b = ref_node_xyz_ptr(ref_node,node1);
-  c = ref_node_xyz_ptr(ref_node,node2);
-  d = ref_node_xyz_ptr(ref_node,node3);
+  a = ref_node_xyz_ptr(ref_node,nodes[0]);
+  b = ref_node_xyz_ptr(ref_node,nodes[1]);
+  c = ref_node_xyz_ptr(ref_node,nodes[2]);
+  d = ref_node_xyz_ptr(ref_node,nodes[3]);
   
   m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
   m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
