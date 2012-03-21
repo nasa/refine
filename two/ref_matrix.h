@@ -29,6 +29,14 @@ REF_STATUS ref_matrix_ascending_eig( REF_DBL *diagonal_system );
 REF_STATUS ref_matrix_form_m( REF_DBL *diagonal_system,
 			      REF_DBL *m_upper_tri);
 
+REF_STATUS ref_matrix_log_m( REF_DBL *m_upper_tri,
+			     REF_DBL *log_m_upper_tri);
+REF_STATUS ref_matrix_exp_m( REF_DBL *m_upper_tri,
+			     REF_DBL *exp_m_upper_tri);
+REF_STATUS ref_matrix_average_m( REF_DBL *m0_upper_tri,
+				 REF_DBL *m1_upper_tri,
+				 REF_DBL *avg_m_upper_tri);
+
 END_C_DECLORATION
 
 #endif /* REF_MATRIX_H */

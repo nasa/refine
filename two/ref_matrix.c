@@ -244,3 +244,46 @@ REF_STATUS ref_matrix_form_m( REF_DBL *d,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_matrix_log_m( REF_DBL *m_upper_tri,
+			     REF_DBL *log_m_upper_tri)
+{
+  REF_DBL d[12];
+
+  RSS( ref_matrix_diagonalize( m_upper_tri, d ), "diag");
+
+  d[0] = log(d[0]);
+  d[1] = log(d[1]);
+  d[2] = log(d[2]);
+
+  RSS( ref_matrix_form_m( d, log_m_upper_tri ), "form m");
+
+  return REF_SUCCESS;
+}
+REF_STATUS ref_matrix_exp_m( REF_DBL *m_upper_tri,
+			     REF_DBL *exp_m_upper_tri)
+{
+  REF_DBL d[12];
+
+  RSS( ref_matrix_diagonalize( m_upper_tri, d ), "diag");
+
+  d[0] = exp(d[0]);
+  d[1] = exp(d[1]);
+  d[2] = exp(d[2]);
+
+  RSS( ref_matrix_form_m( d, exp_m_upper_tri ), "form m");
+
+
+  return REF_SUCCESS;
+}
+REF_STATUS ref_matrix_average_m( REF_DBL *m0_upper_tri,
+				 REF_DBL *m1_upper_tri,
+				 REF_DBL *avg_m_upper_tri)
+{
+  REF_INT i;
+
+  for( i=0;i<6;i++)
+    avg_m_upper_tri[i] = 0.5*(m0_upper_tri[i]+m1_upper_tri[i]);
+
+  return REF_SUCCESS;
+}
