@@ -10,12 +10,14 @@
 #include "ref_list.h"
 #include "ref_adj.h"
 #include "ref_sort.h"
+#include "ref_dict.h"
 
 #include "ref_mpi.h"
 
 #include "ref_split.h"
 
 #include "ref_fixture.h"
+#include "ref_export.h"
 
 int main( void )
 {
@@ -181,6 +183,8 @@ int main( void )
 
     REIS( 7, ref_node_n(ref_node), "nodes");
     REIS( 4, ref_cell_n(ref_grid_tet(ref_grid)), "tets");
+
+    /* ref_export_by_extension(ref_grid,"ref_split_test.tec"); */
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
