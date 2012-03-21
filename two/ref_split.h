@@ -8,6 +8,8 @@
 
 BEGIN_C_DECLORATION
 
+REF_STATUS ref_split_pass( REF_GRID ref_grid );
+
 REF_STATUS ref_split_edge( REF_GRID ref_grid, 
 			   REF_INT node0, REF_INT node1,
 			   REF_INT new_node );
