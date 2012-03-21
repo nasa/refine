@@ -68,7 +68,16 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				      ref_edge_e2n( ref_edge, 1, edge ),
 				      new_node ), "new node");
 
-      /* test potential quality */
+      RSS( ref_split_edge_quality( ref_grid,
+				   ref_edge_e2n( ref_edge, 0, edge ),
+				   ref_edge_e2n( ref_edge, 1, edge ),
+				   new_node,
+				   &allowed ), "local tet" );
+      if ( !allowed) 
+	{
+	  RSS( ref_node_remove( ref_node, new_node ), "remove new node");
+	  continue;
+	}
 
       RSS( ref_split_edge( ref_grid,
 			   ref_edge_e2n( ref_edge, 0, edge ),
@@ -183,3 +192,52 @@ REF_STATUS ref_split_edge_local_tets( REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_split_edge_quality( REF_GRID ref_grid, 
+				   REF_INT node0, REF_INT node1,
+				   REF_INT new_node,
+				   REF_BOOL *allowed )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, cell_in_list;
+  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT node;
+  REF_DBL quality, quality0, quality1;
+  REF_DBL quality_tolerence = 1.0e-3;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  RSS( ref_cell_list_with(ref_cell,node0,node1,
+			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "get list" );
+
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_split[cell_in_list];
+      RSS( ref_cell_nodes(ref_cell, cell, nodes),"cell nodes");
+
+      RSS( ref_node_tet_quality( ref_node,nodes,&quality ), "q");
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node0 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_node_tet_quality( ref_node,nodes,&quality0 ), "q0");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node0;
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node1 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_node_tet_quality( ref_node,nodes,&quality1 ), "q1");
+
+      if ( quality0 < quality_tolerence ||
+	   quality1 < quality_tolerence ) return REF_SUCCESS;
+    }
+
+  /* FIXME check tris too */
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
