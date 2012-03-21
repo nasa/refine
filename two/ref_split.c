@@ -63,8 +63,12 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 
       RSS( ref_node_next_global( ref_node, &global ), "next global");
       RSS( ref_node_add( ref_node, global, &new_node ), "new node");
+      RSS( ref_node_interpolate_edge( ref_node, 
+				      ref_edge_e2n( ref_edge, edge, 0 ),
+				      ref_edge_e2n( ref_edge, edge, 1 ),
+				      new_node ), "new node");
 
-      /* test potenital quality */
+      /* test potential quality */
 
       RSS( ref_split_edge( ref_grid,
 			   ref_edge_e2n( ref_edge, edge, 0 ),
