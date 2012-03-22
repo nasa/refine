@@ -556,6 +556,35 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* list of node */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
+    REF_INT nnode,list[6];
+
+    RSS(ref_tet(&ref_cell),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    RSS(ref_cell_node_list_around(ref_cell,0,6,&nnode,list),"no list");
+    REIS(3,nnode, "mis count");
+    REIS(1,list[0], "not in list");
+    REIS(2,list[1], "not in list");
+    REIS(3,list[2], "not in list");
+
+    nodes[0] = 0; nodes[1] = 2; nodes[2] = 1; nodes[3] = 4;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    RSS(ref_cell_node_list_around(ref_cell,0,6,&nnode,list),"no list");
+    REIS(4,nnode, "mis count");
+    REIS(2,list[0], "not in list");
+    REIS(1,list[1], "not in list");
+    REIS(4,list[2], "not in list");
+    REIS(3,list[3], "not in list");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
   { /* tri with */
     REF_CELL ref_cell;
     REF_INT cell, nodes[4];
