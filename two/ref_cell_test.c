@@ -138,6 +138,25 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* replace whole tri */
+    REF_CELL ref_cell;
+    REF_INT nodes[4];
+    REF_INT cell;
+
+    RSS(ref_tri(&ref_cell),"create");
+
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 10;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    nodes[0]= 2; nodes[1]= 1; nodes[2]= 3; nodes[3]= 20;
+    RSS(ref_cell_replace_whole(ref_cell,cell,nodes),"remove cell");
+
+    RAS(  ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "old node");
+    RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "new node");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
   { /* force realloc twice */
     REF_CELL ref_cell;
     REF_INT max, i;

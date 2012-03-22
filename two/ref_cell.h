@@ -104,7 +104,8 @@ REF_STATUS ref_cell_add_many_global( REF_CELL ref_cell, REF_NODE ref_node,
 				     REF_INT exclude_part_id );
 
 REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell );
-REF_STATUS ref_cell_replace( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
+REF_STATUS ref_cell_replace_whole( REF_CELL ref_cell, 
+				   REF_INT cell, REF_INT *nodes );
 
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 
