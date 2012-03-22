@@ -133,14 +133,11 @@ int main( void )
     RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
     REIS(REF_TRUE,allowed,"parallel and interior to face?");
 
-    SKIP_BLOCK("imp edge col test")
-    {
     ref_cell_c2n(ref_grid_tri(ref_grid),3,tri2) = 10;
 
     node0 = 4; node1 = 1;
     RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
     REIS(REF_TRUE,allowed,"parallel along geom edge?");
-    }
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }

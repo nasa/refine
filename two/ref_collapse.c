@@ -59,6 +59,9 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
   REF_INT id, ids1[3]; 
   REF_BOOL already_have_it;
 
+  REF_INT ncell;
+  REF_INT cell_to_collapse[MAX_CELL_COLLAPSE];
+  REF_INT id0, id1;
 
   degree1 = 0;
   each_ref_cell_having_node( ref_cell, node1, item, cell )
@@ -84,7 +87,16 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
       *allowed = REF_FALSE;
       break;
     case 2: /* geometery edge allowed if collapse is on edge */
-      RSS( REF_IMPLEMENT, "geom edge" );
+      RSS( ref_cell_list_with(ref_cell,node0,node1,
+			      MAX_CELL_COLLAPSE, &ncell, 
+			      cell_to_collapse ),"list");
+      if ( 2 != ncell ) return REF_SUCCESS;
+      RSS( ref_cell_nodes( ref_cell, cell_to_collapse[0], nodes ), "nodes" );
+      id0 = nodes[3];
+      RSS( ref_cell_nodes( ref_cell, cell_to_collapse[1], nodes ), "nodes" );
+      id1 = nodes[3];
+      if ( ( id0 == ids1[0] && id1 == ids1[1] ) ||
+	   ( id1 == ids1[0] && id0 == ids1[1] ) ) *allowed = REF_TRUE;
       break;
     case 1: /* geometry face allowed if on that face */
       RSS( ref_cell_has_side( ref_cell, node0, node1, allowed ),
