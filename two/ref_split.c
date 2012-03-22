@@ -173,7 +173,7 @@ REF_STATUS ref_split_edge_local_tets( REF_GRID ref_grid,
   REF_CELL ref_cell;
   REF_INT item, cell, search_node, test_node;
 
-  *allowed = REF_TRUE;
+  *allowed = REF_FALSE;
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node( ref_cell, node0, item, cell )
@@ -184,11 +184,14 @@ REF_STATUS ref_split_edge_local_tets( REF_GRID ref_grid,
 	for ( test_node = 0 ; 
 	      test_node < ref_cell_node_per(ref_cell); 
 	      test_node++ )
-	  if ( ref_mpi_id != ref_node_part(ref_node,test_node) )
+	  if ( ref_mpi_id != ref_node_part( ref_node,
+					    ref_cell_c2n(ref_cell,
+							 test_node,cell) ) )
 	    {
-	      *allowed = REF_FALSE;
 	      return REF_SUCCESS;
 	    }
+
+  *allowed = REF_TRUE;
 
   return REF_SUCCESS;
 }
