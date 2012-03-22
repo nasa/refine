@@ -15,12 +15,14 @@
 REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_EDGE ref_edge;
   REF_DBL *ratio;
   REF_INT *order;
-  REF_INT ntarget, *target;
+  REF_INT ntarget, *target, *node2target;
   REF_INT node, node0, node1;
   REF_INT i, edge;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL edge_ratio;
   REF_DBL ratio_limit;
 
@@ -40,11 +42,13 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
     }
 
   ref_malloc( target, ref_node_n(ref_node), REF_INT );
+  ref_malloc_init( node2target, ref_node_max(ref_node), REF_INT, REF_EMPTY );
 
   ntarget=0;
   for ( node=0 ; node < ref_node_max(ref_node) ; node++ )
     if ( ratio[node] < ratio_limit )
       {
+	node2target[node] = ntarget;
 	target[ntarget] = node;
 	ratio[ntarget] = ratio[node];
 	ntarget++;
@@ -56,14 +60,37 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 
   for ( i = 0; i < ntarget; i++ )
     {
-      node = target[order[i]];
+      if ( ratio[order[i]] > ratio_limit ) continue; 
+      node1 = target[order[i]];
+      RSS( ref_collapse_to_remove_node1( ref_grid, &node0, node1 ), 
+	   "collapse rm" );
+      if ( !ref_node_valid(ref_node,node1) )
+	{
+	  each_ref_cell_having_node( ref_cell, node1, item, cell )
+	    {
+	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
+	      for (node=0;node<4;node++)
+		if ( REF_EMPTY != node2target[nodes[node]] )
+		  ratio[node2target[nodes[node]]] = 1.0;
+	    }
+	}
     }
   
   ref_free( order );
+  ref_free( node2target );
   ref_free( target );
   ref_free( ratio );
 
   ref_edge_free( ref_edge );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid, 
+					 REF_INT *node0, REF_INT node1 )
+{
+  ref_grid_inspect(ref_grid);
+  *node0=node1;
 
   return REF_SUCCESS;
 }
