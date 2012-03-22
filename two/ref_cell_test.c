@@ -149,10 +149,55 @@ int main( void )
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     nodes[0]= 2; nodes[1]= 1; nodes[2]= 3; nodes[3]= 20;
-    RSS(ref_cell_replace_whole(ref_cell,cell,nodes),"remove cell");
+    RSS(ref_cell_replace_whole(ref_cell,cell,nodes),"replace cell");
 
     RAS(  ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "old node");
     RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "new node");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
+  { /* replace node of tri */
+    REF_CELL ref_cell;
+    REF_INT nodes[4];
+    REF_INT retrieved[4];
+    REF_INT cell;
+
+    RSS(ref_tri(&ref_cell),"create");
+
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 10;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    RSS(ref_cell_replace_node(ref_cell,2,3),"replace node");
+
+    RSS(ref_cell_nodes(ref_cell,cell,retrieved),"cell should exist");
+    REIS(0,retrieved[0],"node 0");
+    REIS(1,retrieved[1],"node 1");
+    REIS(3,retrieved[2],"node 2");
+    REIS(10,retrieved[3],"id");
+
+    RAS(  ref_adj_empty( ref_cell_adj(ref_cell), 2 ), "old node");
+    RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "new node");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
+  { /* replace node of 2 tri */
+    REF_CELL ref_cell;
+    REF_INT nodes[4];
+    REF_INT cell;
+
+    RSS(ref_tri(&ref_cell),"create");
+
+    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 10;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+    nodes[0]= 2; nodes[1]= 1; nodes[2]= 3; nodes[3]= 10;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    RSS(ref_cell_replace_node(ref_cell,2,4),"replace node");
+
+    RAS(  ref_adj_empty( ref_cell_adj(ref_cell), 2 ), "old node");
+    RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 4 ), "new node");
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }

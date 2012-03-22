@@ -442,6 +442,36 @@ REF_STATUS ref_cell_replace_whole( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_replace_node( REF_CELL ref_cell, 
+				  REF_INT old_node, REF_INT new_node )
+{
+  REF_ADJ ref_adj = ref_cell_adj(ref_cell);
+  REF_INT node;
+  REF_INT item, cell;
+
+  item = ref_adj_first( ref_adj, old_node );
+  while ( ref_adj_valid( item ) )
+    {
+      cell = ref_adj_item_ref( ref_adj, item );
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( old_node == ref_cell_c2n(ref_cell,node,cell) ) 
+	  {
+	    RSS( ref_adj_remove(ref_cell->ref_adj, 
+				ref_cell_c2n(ref_cell,node,cell), cell), 
+		 "unregister cell" );
+	    ref_cell_c2n(ref_cell,node,cell) = new_node;
+	    RSS( ref_adj_add(ref_cell->ref_adj, 
+			     ref_cell_c2n(ref_cell,node,cell), cell), 
+		 "register cell with id" );
+	  }
+
+      item = ref_adj_first( ref_adj, old_node );
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
 {
   REF_INT node;
