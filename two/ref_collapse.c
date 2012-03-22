@@ -157,3 +157,34 @@ REF_STATUS ref_collapse_edge_local_tets( REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid, 
+				      REF_INT node0, REF_INT node1,
+				      REF_BOOL *allowed )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_DBL quality;
+  REF_DBL quality_tolerence = 1.0e-3;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_having_node( ref_cell, node1, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( node1 == nodes[node] ) nodes[node] = node0;
+      RSS( ref_node_tet_quality( ref_node,nodes,&quality ), "qual");
+      if ( quality < quality_tolerence ) return REF_SUCCESS;
+    }
+
+  /* FIXME check tris too */
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
