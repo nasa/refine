@@ -47,17 +47,53 @@ REF_STATUS ref_collapse_edge( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+
+
 REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid, 
 				       REF_INT node0, REF_INT node1,
 				       REF_BOOL *allowed )
 {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT deg, degree1;
+  REF_INT id, ids1[3]; 
+  REF_BOOL already_have_it;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(node0);
 
-  *allowed = ( ref_adj_empty( ref_cell_adj(ref_grid_tri(ref_grid)),
-			      node1 ) &&
-	       ref_adj_empty( ref_cell_adj(ref_grid_qua(ref_grid)),
-			      node1 ) );
+  degree1 = 0;
+  each_ref_cell_having_node( ref_cell, node1, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      id = nodes[3];
+      already_have_it = REF_FALSE;
+      for (deg=0;deg<degree1;deg++)
+	if ( id == ids1[deg] ) already_have_it = REF_TRUE;
+      if ( !already_have_it )
+	{
+	  ids1[degree1] = id;
+	  degree1++;
+	  if ( 3 == degree1 ) break;
+	}
+    }
+
+  *allowed = REF_FALSE;
+
+  switch ( degree1 )
+    {
+    case 3: /* geometry node never allowed to move */
+      *allowed = REF_FALSE;
+      break;
+    case 2: /* geometery edge allowed if collapse is on edge */
+      RSS( REF_IMPLEMENT, "geom edge" );
+      break;
+    case 1: /* geometry face allowed if on that face */
+      RSS( ref_cell_has_side( ref_cell, node0, node1, allowed ),
+	   "allowed if a side of a triangle" );
+      break;
+    case 0: /* volume node always allowed */
+      *allowed = REF_TRUE;
+      break;
+    }
 
   return REF_SUCCESS;
 }

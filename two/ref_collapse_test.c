@@ -89,7 +89,7 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
-  { /* geometry: collapse allowed on the interior? */
+  { /* geometry: collapse of volume node? */
     REF_GRID ref_grid;
     REF_INT node0, node1;
     REF_BOOL allowed;
@@ -101,6 +101,46 @@ int main( void )
     RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
 
     REIS(REF_TRUE,allowed,"interior edge allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* geometry: collapse allowed on face? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_INT nodes[4];
+    REF_INT tri1, tri2;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    /*
+    2---4
+    |\ 1|\
+    |0\ | \
+    |  \|2 \
+    0---1---5  
+    */
+    nodes[0]= 1; nodes[1]=4, nodes[2]=2; nodes[3]=3;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri1),"add tri");
+    nodes[0]= 1; nodes[1]=5, nodes[2]=4; nodes[3]=3;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri2),"add tri");
+
+    node0 = 0; node1 = 3;
+    RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
+    REIS(REF_TRUE,allowed,"interior node to face?");
+
+    node0 = 0; node1 = 1;
+    RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
+    REIS(REF_TRUE,allowed,"parallel and interior to face?");
+
+    SKIP_BLOCK("imp edge col test")
+    {
+    ref_cell_c2n(ref_grid_tri(ref_grid),3,tri2) = 10;
+
+    node0 = 4; node1 = 1;
+    RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
+    REIS(REF_TRUE,allowed,"parallel along geom edge?");
+    }
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
