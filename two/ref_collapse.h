@@ -10,6 +10,8 @@ BEGIN_C_DECLORATION
 
 /* node1 is removed */
 
+REF_STATUS ref_collapse_pass( REF_GRID ref_grid );
+
 REF_STATUS ref_collapse_edge( REF_GRID ref_grid, 
 			      REF_INT node0, REF_INT node1 );
 

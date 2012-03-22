@@ -12,6 +12,62 @@
 
 #define MAX_CELL_COLLAPSE (100)
 
+REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_EDGE ref_edge;
+  REF_DBL *ratio;
+  REF_INT *order;
+  REF_INT ntarget, *target;
+  REF_INT node, node0, node1;
+  REF_INT i, edge;
+  REF_DBL edge_ratio;
+  REF_DBL ratio_limit;
+
+  ratio_limit = 0.5 * sqrt(2.0);
+
+  RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
+
+  ref_malloc_init( ratio, ref_node_max(ref_node), REF_DBL, 2.0*ratio_limit );
+
+  for(edge=0;edge<ref_edge_n(ref_edge);edge++)
+    {
+      node0 = ref_edge_e2n( ref_edge, 0, edge );
+      node1 = ref_edge_e2n( ref_edge, 1, edge );
+      RSS( ref_node_ratio( ref_node, node0, node1, &edge_ratio ), "ratio");
+      ratio[node0] = MIN( ratio[node0], edge_ratio );
+      ratio[node1] = MIN( ratio[node1], edge_ratio );
+    }
+
+  ref_malloc( target, ref_node_n(ref_node), REF_INT );
+
+  ntarget=0;
+  for ( node=0 ; node < ref_node_max(ref_node) ; node++ )
+    if ( ratio[node] < ratio_limit )
+      {
+	target[ntarget] = node;
+	ratio[ntarget] = ratio[node];
+	ntarget++;
+      }
+
+  ref_malloc( order, ntarget, REF_INT );
+
+  RSS( ref_sort_heap_dbl( ntarget, ratio, order), "sort lengths" );
+
+  for ( i = 0; i < ntarget; i++ )
+    {
+      node = target[order[i]];
+    }
+  
+  ref_free( order );
+  ref_free( target );
+  ref_free( ratio );
+
+  ref_edge_free( ref_edge );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_collapse_edge( REF_GRID ref_grid, 
 			      REF_INT node0, REF_INT node1 )
 {
