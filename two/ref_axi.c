@@ -62,7 +62,7 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
       for (node=0;node<3;node++)
 	new_nodes[node] = o2n[nodes[node]];
       new_nodes[3] = nodes[3];
-      RSS( ref_cell_renumber( ref_cell, cell, new_nodes ), "renum" );
+      RSS( ref_cell_replace( ref_cell, cell, new_nodes ), "renum" );
     }
 
   ref_cell = ref_grid_qua(ref_grid);

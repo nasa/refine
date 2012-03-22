@@ -417,7 +417,7 @@ REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_renumber( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
+REF_STATUS ref_cell_replace( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
 {
   REF_INT node;
   if ( !ref_cell_valid(ref_cell,cell) ) return REF_FAILURE;
