@@ -8,6 +8,7 @@
 #include "ref_node.h"
 #include "ref_list.h"
 #include "ref_adj.h"
+#include "ref_matrix.h"
 
 #include "ref_sort.h"
 
@@ -21,8 +22,6 @@
 #include "ref_edge.h"
 #include "ref_dict.h"
 #include "ref_mpi.h"
-
-
 
 static REF_STATUS set_up_hex_for_shard( REF_SHARD *ref_shard_ptr )
 {

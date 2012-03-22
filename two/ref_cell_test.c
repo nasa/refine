@@ -7,6 +7,7 @@
 
 #include "ref_cell.h"
 #include "ref_sort.h"
+#include "ref_matrix.h"
 
 #include "ref_node.h"
 #include "ref_list.h"

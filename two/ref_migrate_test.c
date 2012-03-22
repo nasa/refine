@@ -8,6 +8,7 @@
 #include "ref_node.h"
 #include "ref_list.h"
 #include "ref_adj.h"
+#include "ref_matrix.h"
 
 #include "ref_sort.h"
 

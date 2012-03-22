@@ -11,6 +11,7 @@
 #include "ref_dict.h"
 #include "ref_list.h"
 #include "ref_mpi.h"
+#include "ref_matrix.h"
 
 int main( int argc, char *argv[] )
 {

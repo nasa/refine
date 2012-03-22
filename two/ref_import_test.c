@@ -3,8 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-
-
 #include "ref_import.h"
 #include "ref_export.h"
 
@@ -13,6 +11,7 @@
 #include "ref_adj.h"
 #include "ref_sort.h"
 #include "ref_dict.h"
+#include "ref_matrix.h"
 
 #include "ref_cell.h"
 #include "ref_node.h"
