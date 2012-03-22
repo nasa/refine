@@ -28,23 +28,42 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
 
   ref_cell_node_per(ref_cell) = node_per;
   ref_cell_size_per(ref_cell) = node_per+(last_node_is_an_id?1:0);
-  switch ( ref_cell_node_per(ref_cell) )
+
+  if ( ref_cell_last_node_is_an_id(ref_cell) )
     {
-    case 4:
-      ref_cell_edge_per(ref_cell) = 6;
-      break;
-    case 5:
-      ref_cell_edge_per(ref_cell) = 8;
-      break;
-    case 6:
-      ref_cell_edge_per(ref_cell) = 9;
-      break;
-    case 8:
-      ref_cell_edge_per(ref_cell) = 12;
-      break;
-    default:
-      ref_cell_edge_per(ref_cell) = 0;
-      break;    
+      switch ( ref_cell_node_per(ref_cell) )
+	{
+	case 3:
+	  ref_cell_edge_per(ref_cell) = 3;
+	  break;
+	case 4:
+	  ref_cell_edge_per(ref_cell) = 4;
+	  break;
+	default:
+	  ref_cell_edge_per(ref_cell) = 0;
+	  break;    
+	}
+    }
+  else
+    {
+      switch ( ref_cell_node_per(ref_cell) )
+	{
+	case 4:
+	  ref_cell_edge_per(ref_cell) = 6;
+	  break;
+	case 5:
+	  ref_cell_edge_per(ref_cell) = 8;
+	  break;
+	case 6:
+	  ref_cell_edge_per(ref_cell) = 9;
+	  break;
+	case 8:
+	  ref_cell_edge_per(ref_cell) = 12;
+	  break;
+	default:
+	  ref_cell_edge_per(ref_cell) = 0;
+	  break;    
+	}
     }
 
   ref_cell->e2n = NULL;
@@ -53,6 +72,17 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
 
   switch ( ref_cell_edge_per(ref_cell) )
     {
+    case 3:
+      ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
+      ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,2)  = 1; ref_cell_e2n_gen(ref_cell,1,2)  = 2;
+      break;
+    case 4:
+      ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
+      ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,2)  = 1; ref_cell_e2n_gen(ref_cell,1,2)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,3)  = 2; ref_cell_e2n_gen(ref_cell,1,3)  = 3;
+      break;
     case 6:
       ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
       ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 2;

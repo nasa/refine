@@ -18,6 +18,10 @@ static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr)
 {
   return ref_cell_create(ref_cell_ptr,3,REF_TRUE);
 }
+static REF_STATUS ref_qua(REF_CELL *ref_cell_ptr)
+{
+  return ref_cell_create(ref_cell_ptr,4,REF_TRUE);
+}
 
 static REF_STATUS ref_tet(REF_CELL *ref_cell_ptr)
 {
@@ -336,19 +340,27 @@ int main( void )
     REF_CELL ref_cell;
 
     RSS(ref_tet(&ref_cell),"create");
-    RES(6,ref_cell_edge_per(ref_cell),"edge_per");
+    REIS(6,ref_cell_edge_per(ref_cell),"edge_per");
     RSS(ref_cell_free(ref_cell),"cleanup");
 
     RSS(ref_pyr(&ref_cell),"create");
-    RES(8,ref_cell_edge_per(ref_cell),"edge_per");
+    REIS(8,ref_cell_edge_per(ref_cell),"edge_per");
     RSS(ref_cell_free(ref_cell),"cleanup");
 
     RSS(ref_pri(&ref_cell),"create");
-    RES(9,ref_cell_edge_per(ref_cell),"edge_per");
+    REIS(9,ref_cell_edge_per(ref_cell),"edge_per");
     RSS(ref_cell_free(ref_cell),"cleanup");
 
     RSS(ref_hex(&ref_cell),"create");
-    RES(12,ref_cell_edge_per(ref_cell),"edge_per");
+    REIS(12,ref_cell_edge_per(ref_cell),"edge_per");
+    RSS(ref_cell_free(ref_cell),"cleanup");
+
+    RSS(ref_tri(&ref_cell),"create");
+    REIS(3,ref_cell_edge_per(ref_cell),"edge_per");
+    RSS(ref_cell_free(ref_cell),"cleanup");
+
+    RSS(ref_qua(&ref_cell),"create");
+    REIS(4,ref_cell_edge_per(ref_cell),"edge_per");
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
