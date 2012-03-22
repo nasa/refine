@@ -29,6 +29,7 @@ REF_STATUS ref_collapse_edge( REF_GRID ref_grid,
       cell = cell_to_collapse[cell_in_list];
       RSS( ref_cell_remove( ref_cell, cell ), "remove" );
     }
+  RSS( ref_cell_replace_node( ref_cell, node1, node0 ), "replace node" );
 
   ref_cell = ref_grid_tri(ref_grid);
   RSS( ref_cell_list_with(ref_cell,node0,node1,
@@ -39,6 +40,9 @@ REF_STATUS ref_collapse_edge( REF_GRID ref_grid,
       cell = cell_to_collapse[cell_in_list];
       RSS( ref_cell_remove( ref_cell, cell ), "remove" );
     }
+  RSS( ref_cell_replace_node( ref_cell, node1, node0 ), "replace node" );
+
+  RSS( ref_node_remove(ref_grid_node(ref_grid),node1), "rm");
 
   return REF_SUCCESS;
 }
