@@ -6,6 +6,7 @@ libref2_a_SOURCES = \
 	ref_adj.c ref_adj.h \
 	ref_axi.c ref_axi.h \
 	ref_cell.c ref_cell.h \
+	ref_collapse.c ref_collapse.h \
 	ref_dict.c ref_dict.h \
 	ref_defs.h \
 	ref_edge.c ref_edge.h \
@@ -73,6 +74,11 @@ TESTS += ref_cell_test
 noinst_PROGRAMS += ref_cell_test
 ref_cell_test_SOURCES = ref_cell_test.c
 ref_cell_test_LDADD = libref2.a -lm
+
+TESTS += ref_collapse_test
+noinst_PROGRAMS += ref_collapse_test
+ref_collapse_test_SOURCES = ref_collapse_test.c
+ref_collapse_test_LDADD = libref2.a -lm
 
 TESTS += ref_dict_test
 noinst_PROGRAMS += ref_dict_test
