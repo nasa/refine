@@ -88,5 +88,79 @@ int main( void )
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
+
+  { /* geometry: collapse allowed on the interior? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_cell_remove(ref_grid_tri(ref_grid),0),"remove tri" );
+
+    node0 = 0; node1 = 1;
+    RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
+
+    REIS(REF_TRUE,allowed,"interior edge allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* mixed: collapse tet allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+
+    node0 = 0; node1 = 1;
+    RSS(ref_collapse_edge_mixed(ref_grid,node0,node1,&allowed),"col mixed");
+
+    REIS(REF_TRUE,allowed,"pure tet allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+  { /* mixed: collapse of/near mixed allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_pri_tet_cap_grid(&ref_grid),"set up");
+
+    node0 = 5; node1 = 6;
+    RSS(ref_collapse_edge_mixed(ref_grid,node0,node1,&allowed),"col mixed");
+    REIS(REF_TRUE,allowed,"tet near mixed allowed?");
+
+    node0 = 6; node1 = 5;
+    RSS(ref_collapse_edge_mixed(ref_grid,node0,node1,&allowed),"col mixed");
+    REIS(REF_FALSE,allowed,"tet changing mixed allowed?");
+
+    node0 = 3; node1 = 4;
+    RSS(ref_collapse_edge_mixed(ref_grid,node0,node1,&allowed),"col mixed");
+    REIS(REF_FALSE,allowed,"mixed collapse allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* local: collapse allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+
+    node0 = 0; node1 = 1;
+    RSS(ref_collapse_edge_local_tets(ref_grid,node0,node1,&allowed),"col loc");
+    REIS(REF_TRUE,allowed,"local collapse allowed?");
+
+    ref_node_part(ref_grid_node(ref_grid),2) =
+      ref_node_part(ref_grid_node(ref_grid),2) + 1;
+
+    node0 = 0; node1 = 1;
+    RSS(ref_collapse_edge_local_tets(ref_grid,node0,node1,&allowed),"col loc");
+    REIS(REF_FALSE,allowed,"ghost collapse allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
   return 0;
 }
