@@ -292,6 +292,7 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
   REF_DBL quality;
   REF_DBL quality_tolerence = 1.0e-3;
   REF_BOOL will_be_collapsed;
+  REF_DBL edge_ratio, edge_ratio_limit = 3.0;
 
   *allowed = REF_FALSE;
 
@@ -299,10 +300,21 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
   each_ref_cell_having_node( ref_cell, node1, item, cell )
     {
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+
       will_be_collapsed = REF_FALSE;
       for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
 	if ( node0 == nodes[node] ) will_be_collapsed = REF_TRUE;
       if ( will_be_collapsed ) continue;
+
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( node1 != nodes[node] )
+	  {
+	    RSS( ref_node_ratio( ref_node, node0, nodes[node], 
+				 &edge_ratio ), "ratio");
+	    if ( edge_ratio > edge_ratio_limit )
+	      return REF_SUCCESS;
+	  }
+
       for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
 	if ( node1 == nodes[node] ) nodes[node] = node0;
       RSS( ref_node_tet_quality( ref_node,nodes,&quality ), "qual");
