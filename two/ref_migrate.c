@@ -119,6 +119,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     struct Zoltan_Struct *zz;
 
+    RSS( ref_node_synchronize_globals( ref_node ), "sync global nodes");
+
     REIS( ZOLTAN_OK, 
 	  Zoltan_Initialize(ref_mpi_argc, ref_mpi_argv, &ver), 
 	  "Zoltan is angry");
