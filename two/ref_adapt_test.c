@@ -42,7 +42,7 @@ int main( int argc, char *argv[] )
       REF_DBL d[12];
       REF_DBL x;
       REF_DBL hmin, hmax, h;
-      REF_INT i;
+      REF_INT i, passes;
 
       ref_mpi_stopwatch_start();
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
@@ -75,7 +75,10 @@ int main( int argc, char *argv[] )
 	  RSS( ref_matrix_form_m(d, ref_node_metric_ptr(ref_node,node) ), "m" );
 	}
 
-      for (i = 0; i<10 ; i++ )
+      passes = 1;
+      if ( 2 < argc ) passes = atoi(argv[2]);
+
+      for (i = 0; i<passes ; i++ )
 	{
 	  RSS( ref_adapt_pass( ref_grid ), "pass");
 	  ref_mpi_stopwatch_stop("pass");
