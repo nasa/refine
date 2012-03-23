@@ -434,6 +434,7 @@ REF_STATUS ref_node_eliminate_unused_globals( REF_NODE ref_node )
   REF_LIST ref_list = ref_node->unused_global_list;
   REF_INT sort, offset, local;
 
+  RSS( ref_list_allgather( ref_list ), "gather unused global" );
   RSS( ref_list_sort( ref_list ), "sort unused global" );
 
   offset = 0;
