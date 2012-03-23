@@ -99,7 +99,7 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 	   elapsed,
 	   last,
 	   first,
-	   first/last*100.0,
+	   ( last>0.0 ? first/last*100.0 : 100.0 ),
 	   message );
   RSS( ref_mpi_stopwatch_start(), "restart" );
 #else
