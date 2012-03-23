@@ -48,10 +48,9 @@ int main( int argc, char *argv[] )
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
       ref_node = ref_grid_node(ref_grid);
       ref_mpi_stopwatch_stop("read");
-      RSS(ref_migrate_new_part(ref_grid),"new part");
-      ref_mpi_stopwatch_stop("new part");
-      RSS( ref_migrate_shufflin( ref_grid ), "shufflin");
-      ref_mpi_stopwatch_stop("shufflin");
+
+      RSS(ref_migrate_to_balance(ref_grid),"balance");
+      ref_mpi_stopwatch_stop("balance");
 
       each_ref_node_valid_node( ref_node, node )
 	{
@@ -82,9 +81,8 @@ int main( int argc, char *argv[] )
 	{
 	  RSS( ref_adapt_pass( ref_grid ), "pass");
 	  ref_mpi_stopwatch_stop("pass");
-	  RSS(ref_migrate_new_part(ref_grid),"new part");
-	  RSS( ref_migrate_shufflin( ref_grid ), "shufflin");
-	  ref_mpi_stopwatch_stop("bal");
+	  RSS(ref_migrate_to_balance(ref_grid),"balance");
+	  ref_mpi_stopwatch_stop("balance");
 	}
 
       ref_mpi_stopwatch_start();

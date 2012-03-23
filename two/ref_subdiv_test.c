@@ -85,8 +85,7 @@ int main( int argc, char *argv[] )
       REF_INT edge;
       
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
-      RSS(ref_migrate_new_part(ref_grid),"new part");
-      RSS( ref_migrate_shufflin( ref_grid ), "shufflin");
+      RSS(ref_migrate_to_balance(ref_grid),"new part");
 
       RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
 
