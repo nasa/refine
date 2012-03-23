@@ -54,10 +54,10 @@ int main( int argc, char *argv[] )
 
       each_ref_node_valid_node( ref_node, node )
 	{
-	  hmax = 0.5;
-	  hmin = 0.5;
+	  hmax = 1.0;
+	  hmin = 0.1;
 	  x = ref_node_xyz(ref_node,0, node);
-	  h = MIN( hmax, hmin+(hmax-hmin)*ABS(x));
+	  h = MIN( hmax, hmin+(hmax-hmin)*ABS(2.0*x));
 	  ref_matrix_eig( d, 0 ) = 1/(h*h);
 	  h = hmax;
 	  ref_matrix_eig( d, 1 ) = 1/(h*h);
@@ -74,6 +74,8 @@ int main( int argc, char *argv[] )
 	  RSS( ref_matrix_form_m(d, ref_node_metric_ptr(ref_node,node) ), "m" );
 	}
 
+      RSS( ref_export_tec_metric(ref_grid,"ref_adapt_orig"),"export m");
+
       passes = 1;
       if ( 2 < argc ) passes = atoi(argv[2]);
 
@@ -89,6 +91,8 @@ int main( int argc, char *argv[] )
       RSS( ref_gather_b8_ugrid( ref_grid, "ref_adapt_test.b8.ugrid" ), 
 	   "gather");
       ref_mpi_stopwatch_stop("gather");
+
+      RSS( ref_export_tec_metric(ref_grid,"ref_adapt_post"),"export m");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
