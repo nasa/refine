@@ -87,10 +87,49 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 }
 
 REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid, 
-					 REF_INT *node0, REF_INT node1 )
+					 REF_INT *actual_node0, REF_INT node1 )
 {
-  ref_grid_inspect(ref_grid);
-  *node0=node1;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT nnode, node;
+  REF_INT node_to_collapse[MAX_CELL_COLLAPSE];
+  REF_INT order[MAX_CELL_COLLAPSE];
+  REF_DBL ratio_to_collapse[MAX_CELL_COLLAPSE];
+  REF_INT node0;
+  REF_BOOL allowed;
+
+  *actual_node0 = REF_EMPTY;
+
+  RSS( ref_cell_node_list_around( ref_cell, node1, MAX_CELL_COLLAPSE,
+				  &nnode, node_to_collapse ), "da hood");
+  for ( node=0 ; node < nnode ; node++ )
+    RSS( ref_node_ratio( ref_node, node_to_collapse[node], node1, 
+			 &(ratio_to_collapse[node]) ), "ratio");
+
+  RSS( ref_sort_heap_dbl( nnode, ratio_to_collapse, order), "sort lengths" );
+
+  for ( node=0 ; node < nnode ; node++ )
+    {
+      node0 = node_to_collapse[order[node]];
+
+      RSS(ref_collapse_edge_mixed(ref_grid,node0,node1,&allowed),"col mixed");
+      if ( !allowed ) continue;
+
+      RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
+      if ( !allowed ) continue;
+
+      RSS(ref_collapse_edge_local_tets(ref_grid,node0,node1,&allowed),"colloc");
+      if ( !allowed ) continue;
+
+      RSS(ref_collapse_edge_quality(ref_grid,node0,node1,&allowed),"qual");
+      if ( !allowed ) continue;
+
+      *actual_node0 = node0;
+      RSS( ref_collapse_edge( ref_grid, node0, node1 ), "col!");
+
+      break;
+
+    }
 
   return REF_SUCCESS;
 }
