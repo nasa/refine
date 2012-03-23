@@ -164,7 +164,7 @@ int main( void )
   {  /* heap dbl */
     REF_INT n=4;
     REF_DBL original[4];
-    REF_INT sorted_index[3];
+    REF_INT sorted_index[4];
     original[0]=0.0;
     original[1]=7.0;
     original[2]=3.0;
