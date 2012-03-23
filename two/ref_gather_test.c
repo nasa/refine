@@ -49,7 +49,7 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_start();
       RSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
       ref_mpi_stopwatch_stop("read");
-      RSS(ref_migrate_to_balance(ref_grid),"balance");
+      RSS(ref_migrate_to_balance(import_grid),"balance");
       ref_mpi_stopwatch_stop("balance");
 
       ref_mpi_stopwatch_start();
