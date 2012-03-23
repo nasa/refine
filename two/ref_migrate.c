@@ -386,6 +386,8 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
 
   if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
+  RSS( ref_node_synchronize_globals( ref_node ), "sync global nodes");
+
   RSS( ref_migrate_shufflin_node( ref_node ), "send out nodes" );
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
