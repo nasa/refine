@@ -3,6 +3,7 @@
 lib_LIBRARIES = libref2.a
 
 libref2_a_SOURCES = \
+	ref_adapt.c ref_adapt.h \
 	ref_adj.c ref_adj.h \
 	ref_axi.c ref_axi.h \
 	ref_cell.c ref_cell.h \
@@ -59,6 +60,11 @@ convert_LDADD = libref2.a -lm
 
 noinst_PROGRAMS =
 TESTS =
+
+TESTS += ref_adapt_test
+noinst_PROGRAMS += ref_adapt_test
+ref_adapt_test_SOURCES = ref_adapt_test.c
+ref_adapt_test_LDADD = libref2.a @zoltan_LDADD@ -lm
 
 TESTS += ref_adj_test
 noinst_PROGRAMS += ref_adj_test
