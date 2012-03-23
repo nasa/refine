@@ -55,13 +55,13 @@ int main( int argc, char *argv[] )
       each_ref_node_valid_node( ref_node, node )
 	{
 	  hmax = 0.5;
-	  hmin = 0.05;
+	  hmin = 0.01;
 	  x = ref_node_xyz(ref_node,0, node);
 	  h = MIN( hmax, hmin+(hmax-hmin)*ABS(0.2*x));
 	  ref_matrix_eig( d, 0 ) = 1/(h*h);
 	  h = hmax;
-	  ref_matrix_eig( d, 1 ) = 1/(h*h);
-	  ref_matrix_eig( d, 2 ) = 1/(h*h);
+	  ref_matrix_eig( d, 1 ) = 1/(hmax*hmax);
+	  ref_matrix_eig( d, 2 ) = 1/(hmax*hmax);
 	  ref_matrix_vec( d, 0, 0) = 1.0;
 	  ref_matrix_vec( d, 1, 0) = 0.0;
 	  ref_matrix_vec( d, 2, 0) = 0.0;
