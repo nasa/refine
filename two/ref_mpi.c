@@ -389,7 +389,25 @@ REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts,
   REF_INT proc;
   REF_INT *displs;
   MPI_Datatype datatype;
+  REF_INT i;
   ref_type_mpi_type(type,datatype);
+
+  if ( 1 == ref_mpi_n ) 
+    {
+      switch (type)
+	{
+	case REF_INT_TYPE: 
+	  for (i=0;i<counts[0];i++)
+	    ((REF_INT *)concatenated_array)[i] = ((REF_INT *)local_array)[i]; 
+	  break;
+	case REF_DBL_TYPE:
+	  for (i=0;i<counts[0];i++)
+	    ((REF_DBL *)concatenated_array)[i] = ((REF_DBL *)local_array)[i]; 
+	  break;
+	default: RSS( REF_IMPLEMENT, "data type");
+	}
+      return REF_SUCCESS;
+    }
 
   ref_malloc( displs, ref_mpi_n, REF_INT );
 
