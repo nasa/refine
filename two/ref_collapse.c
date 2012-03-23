@@ -11,6 +11,7 @@
 #include "ref_malloc.h"
 
 #define MAX_CELL_COLLAPSE (100)
+#define MAX_NODE_LIST (1000)
 
 REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 {
@@ -92,15 +93,15 @@ REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT nnode, node;
-  REF_INT node_to_collapse[MAX_CELL_COLLAPSE];
-  REF_INT order[MAX_CELL_COLLAPSE];
-  REF_DBL ratio_to_collapse[MAX_CELL_COLLAPSE];
+  REF_INT node_to_collapse[MAX_NODE_LIST];
+  REF_INT order[MAX_NODE_LIST];
+  REF_DBL ratio_to_collapse[MAX_NODE_LIST];
   REF_INT node0;
   REF_BOOL allowed;
 
   *actual_node0 = REF_EMPTY;
 
-  RSS( ref_cell_node_list_around( ref_cell, node1, MAX_CELL_COLLAPSE,
+  RSS( ref_cell_node_list_around( ref_cell, node1, MAX_NODE_LIST,
 				  &nnode, node_to_collapse ), "da hood");
   for ( node=0 ; node < nnode ; node++ )
     RSS( ref_node_ratio( ref_node, node_to_collapse[node], node1, 
