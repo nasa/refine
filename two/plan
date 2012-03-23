@@ -2,10 +2,7 @@
 
 
 tet adaptation.
-  edge based
-  high level split
-  low level collapse
-  high level collapse
+  partition baad cells on the interor
 projection (fake geom)
 projection linear elasticity
  per-olaf
@@ -21,7 +18,6 @@ call two from fun
 clean up
   separate global from node add and remove
   single volume routine
-  flip ref_edge_e2n
 
 March
 4  shift globals/unused globals/export
