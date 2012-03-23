@@ -136,6 +136,8 @@ REF_STATUS ref_list_allgather( REF_LIST ref_list )
   RSS( ref_mpi_allgatherv( local_copy, counts, ref_list->value, REF_INT_TYPE ), 
        "gather values");
 
+  ref_list_n( ref_list ) = total_count;
+
   ref_free( local_copy );
   ref_free( counts );
 
