@@ -24,6 +24,7 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
 			       char *filename );
 
 REF_STATUS ref_export_tec_part( REF_GRID ref_grid, char *root_filename );
+REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename );
 
 REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename );

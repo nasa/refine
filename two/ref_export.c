@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "ref_export.h"
 
@@ -9,6 +10,8 @@
 #include "ref_endian.h"
 
 #include "ref_mpi.h"
+
+#include "ref_matrix.h"
 
 #define VTK_TETRA      (10)
 #define VTK_HEXAHEDRON (12)
@@ -515,6 +518,93 @@ REF_STATUS ref_export_tec_part( REF_GRID ref_grid, char *root_filename )
 
   RSS(ref_export_tec_int( ref_grid, ref_node->part,
 			  viz_file ) , "viz parts as scalar");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *o2n;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT brick[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT ncell;
+  REF_INT group;
+  REF_DBL d[12];
+  FILE *file;
+  char viz_file[256];
+
+  sprintf(viz_file, "%s_n%d_p%d.tec", root_filename, ref_mpi_n, ref_mpi_id);
+
+  file = fopen(viz_file,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",viz_file);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"tecplot refine scalar file\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\" \"h0\" \"h1\" \"h2\"\n");
+
+  ncell = 0;
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    ncell += ref_cell_n(ref_cell);
+
+  fprintf(file,
+	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  ref_node_n(ref_node), ncell, "point", "febrick" );
+
+  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+
+  for ( node = 0; node < ref_node_max(ref_node); node++ )
+    if ( REF_EMPTY != o2n[node] )
+      {
+	REF_DBL h0, h1, h2;
+	RSS( ref_matrix_diagonalize( ref_node_metric_ptr(ref_node,node),
+				     d ), "diag" );
+	RSS( ref_matrix_ascending_eig( d ), "sort eig" );
+	h0 = 1.0/sqrt(d[0]);
+	h1 = 1.0/sqrt(d[1]);
+	h2 = 1.0/sqrt(d[2]);
+	fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n", 
+		ref_node_xyz(ref_node,0,node),
+		ref_node_xyz(ref_node,1,node),
+		ref_node_xyz(ref_node,2,node),
+		h0, h1, h2 ) ;
+      }
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      switch ( ref_cell_node_per(ref_cell) )
+	{
+	case 4:
+	  TEC_BRICK_TET(brick,nodes);
+	  break;
+	case 5:
+	  TEC_BRICK_PYR(brick,nodes);
+	  break;
+	case 6:
+	  TEC_BRICK_PRI(brick,nodes);
+	  break;
+	case 8:
+	  TEC_BRICK_HEX(brick,nodes);
+	  break;
+	default:
+	  RSS( REF_IMPLEMENT, "wrong nodes per cell");
+	  break;
+	}
+
+      for ( node = 0; node < 8; node++ )
+	{
+	  fprintf(file," %d",o2n[brick[node]] + 1);
+	}
+      fprintf(file,"\n");
+    }
+
+  free(o2n);
+
+  fclose(file);
 
   return REF_SUCCESS;
 }
