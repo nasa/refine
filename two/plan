@@ -10,9 +10,11 @@ projection linear elasticity
 code
   solve bp
   adjoint bp validation
-  cgns mixed
+  cgns mixed -> tecplot bug reported
   error estimation for mixed
-
+   check flat plate derivs (BC_tests)
+   export res from adjoint
+   
 call two from fun
 
 clean up
