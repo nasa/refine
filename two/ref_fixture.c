@@ -575,10 +575,10 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
     for ( i = 1 ; i < l ; i++ )
       {
 	ijk2hex(i,j,k,l,m,n,hex);
-	quad[0]=hex[0];
-	quad[1]=hex[1];
-	quad[2]=hex[5];
-	quad[3]=hex[4];
+	quad[0]=hex[1];
+	quad[1]=hex[0];
+	quad[2]=hex[4];
+	quad[3]=hex[5];
 	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
       }
 
