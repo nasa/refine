@@ -489,7 +489,7 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
   REF_INT quad[5];
 
 
-  REF_INT l=5,m=3,n=7;
+  REF_INT l=5,m=3,n=9;
   REF_INT i, j, k;
 
   REF_DBL x0 = 0.0;
@@ -500,8 +500,8 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
 
   REF_DBL dx, dy;
 
-  REF_DBL dz0 = 0.1;
-  REF_DBL r = 1.2;
+  REF_DBL dz0 = 0.0001;
+  REF_DBL r = 1.5;
 
   dx = (x1-x0)/((REF_DBL)(l-1));
   dy = (y1-y0)/((REF_DBL)(m-1));
