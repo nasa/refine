@@ -269,5 +269,22 @@ int main( void )
     RSS( ref_grid_free(ref_grid),"free" );
   }
 
+  { /* shard pyr */
+
+    REF_GRID ref_grid;
+
+    RSS(ref_fixture_pyr_grid(&ref_grid),"set up");
+
+    RSS(ref_shard_prism_into_tet(ref_grid,2),"shard prism");
+
+    REIS(0, ref_cell_n(ref_grid_pyr(ref_grid)),"no more pri");
+    REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"into 3 tets");
+
+    REIS(0, ref_cell_n(ref_grid_qua(ref_grid)),"no more qua");
+    REIS(6, ref_cell_n(ref_grid_tri(ref_grid)),"into 9 tri");
+
+    RSS( ref_grid_free(ref_grid),"free" );
+  }
+
   return 0;
 }

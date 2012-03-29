@@ -386,6 +386,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
   REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL pri = ref_grid_pri(ref_grid);
+  REF_CELL pyr = ref_grid_pyr(ref_grid);
   REF_CELL tet = ref_grid_tet(ref_grid);
 
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
@@ -567,6 +568,49 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  check_tet_volume( new_cell );
 	}
 
+    }
+
+  each_ref_cell_valid_cell_with_nodes( pyr, cell, orig )
+    {
+      if ( mark[orig[0]] != REF_EMPTY &&
+	   mark[orig[1]] != REF_EMPTY &&
+	   mark[orig[3]] != REF_EMPTY &&
+	   mark[orig[4]] != REF_EMPTY ) continue;
+
+      RSS( ref_cell_remove( pyr, cell ), "remove qua");
+      if ( ( orig[0] < orig[1] && orig[0] < orig[3] ) ||
+	   ( orig[4] < orig[1] && orig[4] < orig[3] ) )
+	{ /* 0-4 diag split of quad */
+  /* 4-1\
+     |\| 2
+     3-0/ */
+	  tet_nodes[0] = orig[0];
+	  tet_nodes[1] = orig[4];
+	  tet_nodes[2] = orig[1];
+	  tet_nodes[3] = orig[2];
+	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  tet_nodes[0] = orig[0];
+	  tet_nodes[1] = orig[3];
+	  tet_nodes[2] = orig[4];
+	  tet_nodes[3] = orig[2];
+	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	}
+      else
+	{ /* 3-1 diag split of quad */
+  /* 4-1\
+     |/| 2
+     3-0/ */
+	  tet_nodes[0] = orig[0];
+	  tet_nodes[1] = orig[3];
+	  tet_nodes[2] = orig[1];
+	  tet_nodes[3] = orig[2];
+	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  tet_nodes[0] = orig[1];
+	  tet_nodes[1] = orig[3];
+	  tet_nodes[2] = orig[4];
+	  tet_nodes[3] = orig[2];
+	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	}
     }
 
   each_ref_cell_valid_cell_with_nodes( qua, cell, qua_nodes )
