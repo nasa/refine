@@ -44,7 +44,7 @@ int main( int argc, char *argv[] )
   RSS(ref_grid_inspect( ref_grid ), "inspection");
 
   printf("hex quality.\n");
-  RSS(ref_shard_prism_into_tet( ref_grid ),"quality");
+  RSS(ref_shard_prism_into_tet( ref_grid, 0 ),"quality");
 
   RSS(ref_grid_inspect( ref_grid ), "inspection");
 

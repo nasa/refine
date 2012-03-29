@@ -377,21 +377,24 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
  
 */
 
-REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
+REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid, 
+				     REF_INT keeping_n_layers )
 {
   REF_INT cell, new_cell, minnode;
 
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
   REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_CELL pri, tet;
+  REF_CELL pri = ref_grid_pri(ref_grid);
+  REF_CELL tet = ref_grid_tet(ref_grid);
 
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_CELL qua, tri;
+  REF_CELL qua = ref_grid_qua(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
 
-  pri = ref_grid_pri(ref_grid);
-  tet = ref_grid_tet(ref_grid);
+  if ( 0 < keeping_n_layers )
+    RSS( REF_IMPLEMENT, "can only keep zero layers" );
   
   each_ref_cell_valid_cell_with_nodes( pri, cell, orig )
     {
@@ -501,9 +504,6 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid )
 	}
 
     }
-
-  qua = ref_grid_qua(ref_grid);
-  tri = ref_grid_tri(ref_grid);
 
   each_ref_cell_valid_cell_with_nodes( qua, cell, qua_nodes )
     {

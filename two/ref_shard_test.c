@@ -221,7 +221,7 @@ int main( void )
 
     RSS(ref_fixture_pri_grid(&ref_grid),"set up");
 
-    RSS(ref_shard_prism_into_tet(ref_grid),"shard prism");
+    RSS(ref_shard_prism_into_tet(ref_grid,0),"shard prism");
 
     REIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"no more pri");
     REIS(3, ref_cell_n(ref_grid_tet(ref_grid)),"into 3 tets");
