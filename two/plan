@@ -2,19 +2,20 @@
 
 
 tet adaptation.
-  partition baad cells on the interor
+  partition poor quality cells to the interor
 projection (fake geom)
 projection linear elasticity
- per-olaf
+  per-olaf
 
-code
+chew the boundary layer
+
+fun3d
   solve bp
   adjoint bp validation
   cgns mixed -> tecplot bug reported
   error estimation for mixed
   export res from adjoint
-   
-call two from fun
+  call two from fun
 
 clean up
   separate global from node add and remove
