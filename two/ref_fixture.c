@@ -485,7 +485,7 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  REF_INT global, node, nodes[8], cell;
+  REF_INT global, node, hex[8], cell;
 
 
   REF_INT l=5,m=3,n=7;
@@ -523,19 +523,23 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
 	  ref_node_xyz(ref_node, 2, node ) = dz0*(1.0-pow(r,k))/(1.0-r);
 	}
 
+#define ijk2hex(i,j,k,hex)			  \
+  (hex)[0] = ijk2node((i)-1,(j)-1,(k)-1);	  \
+  (hex)[1] = ijk2node((i)  ,(j)-1,(k)-1);	  \
+  (hex)[2] = ijk2node((i)  ,(j)  ,(k)-1);	  \
+  (hex)[3] = ijk2node((i)-1,(j)  ,(k)-1);	  \
+  (hex)[4] = ijk2node((i)-1,(j)-1,(k)  );	  \
+  (hex)[5] = ijk2node((i)  ,(j)-1,(k)  );	  \
+  (hex)[6] = ijk2node((i)  ,(j)  ,(k)  );	  \
+  (hex)[7] = ijk2node((i)-1,(j)  ,(k)  );	  \
+  
+
   for ( k = 1 ; k < n ; k++ )
     for ( j = 1 ; j < m ; j++ )
       for ( i = 1 ; i < l ; i++ )
 	{
-	  nodes[0] = ijk2node(i-1,j-1,k-1); 
-	  nodes[1] = ijk2node(i  ,j-1,k-1); 
-	  nodes[2] = ijk2node(i  ,j  ,k-1); 
-	  nodes[3] = ijk2node(i-1,j  ,k-1); 
-	  nodes[4] = ijk2node(i-1,j-1,k  ); 
-	  nodes[5] = ijk2node(i  ,j-1,k  ); 
-	  nodes[6] = ijk2node(i  ,j  ,k  ); 
-	  nodes[7] = ijk2node(i-1,j  ,k  ); 
-	  RSS( ref_cell_add(ref_grid_hex(ref_grid),nodes, &cell),"hex");
+	  ijk2hex(i,j,k,hex);
+	  RSS( ref_cell_add(ref_grid_hex(ref_grid),hex, &cell),"hex");
 	}
 
   return REF_SUCCESS;
