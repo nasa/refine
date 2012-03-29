@@ -567,7 +567,6 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[2]=hex[5];
 	quad[3]=hex[6];
 	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
-	ref_cell_taddle( ref_grid_qua(ref_grid), cell );
       }
 
   quad[4]=3;
@@ -581,7 +580,6 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[2]=hex[5];
 	quad[3]=hex[4];
 	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
-	ref_cell_taddle( ref_grid_qua(ref_grid), cell );
       }
 
   quad[4]=4;
@@ -595,7 +593,6 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[2]=hex[6];
 	quad[3]=hex[7];
 	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
-	ref_cell_taddle( ref_grid_qua(ref_grid), cell );
       }
 
   quad[4]=5;
@@ -609,7 +606,6 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[2]=hex[2];
 	quad[3]=hex[3];
 	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
-	ref_cell_taddle( ref_grid_qua(ref_grid), cell );
       }
 
   quad[4]=6;
@@ -623,7 +619,6 @@ REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[2]=hex[7];
 	quad[3]=hex[6];
 	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
-	ref_cell_taddle( ref_grid_qua(ref_grid), cell );
       }
 
   return REF_SUCCESS;
