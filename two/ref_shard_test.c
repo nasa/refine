@@ -220,6 +220,7 @@ int main( void )
     REF_GRID ref_grid;
 
     RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_cell_remove(ref_grid_tri(ref_grid),0),"one tri");
 
     RSS(ref_shard_prism_into_tet(ref_grid,0),"shard prism");
 
@@ -227,7 +228,43 @@ int main( void )
     REIS(3, ref_cell_n(ref_grid_tet(ref_grid)),"into 3 tets");
 
     REIS(0, ref_cell_n(ref_grid_qua(ref_grid)),"no more qua");
-    REIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"into 9 tri");
+    REIS(3, ref_cell_n(ref_grid_tri(ref_grid)),"into 9 tri");
+
+    RSS( ref_grid_free(ref_grid),"free" );
+  }
+
+  { /* shard prism keeping one layer */
+
+    REF_GRID ref_grid;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_cell_remove(ref_grid_tri(ref_grid),0),"one tri");
+
+    RSS(ref_shard_prism_into_tet(ref_grid,1),"shard prism");
+
+    REIS(1, ref_cell_n(ref_grid_pri(ref_grid)),"no more pri");
+    REIS(0, ref_cell_n(ref_grid_tet(ref_grid)),"into 3 tets");
+
+    REIS(1, ref_cell_n(ref_grid_qua(ref_grid)),"no more qua");
+    REIS(1, ref_cell_n(ref_grid_tri(ref_grid)),"into 9 tri");
+
+    RSS( ref_grid_free(ref_grid),"free" );
+  }
+
+  { /* shard half stack */
+
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[] = {0,1,2,15};
+    RSS(ref_fixture_pri_stack_grid(&ref_grid),"set up");
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add one tri");
+
+    RSS(ref_shard_prism_into_tet(ref_grid,2),"shard prism");
+
+    REIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"no more pri");
+    REIS(3, ref_cell_n(ref_grid_tet(ref_grid)),"into 3 tets");
+
+    REIS(2, ref_cell_n(ref_grid_qua(ref_grid)),"no more qua");
+    REIS(3, ref_cell_n(ref_grid_tri(ref_grid)),"into 9 tri");
 
     RSS( ref_grid_free(ref_grid),"free" );
   }

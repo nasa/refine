@@ -30,13 +30,17 @@
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
+  REF_INT keeping_n_layers;
 
-  if (argc<2) 
+  if (2 > argc) 
     {
-      printf("usage: %s filename.extension\n",argv[0]);
+      printf("usage: %s filename.extension [prism layers to keep]\n",argv[0]);
       return 0;
     }
 
+  keeping_n_layers = 0;
+  if (2 < argc) keeping_n_layers = atoi(argv[2]);
+ 
   printf("reading %s\n",argv[1]);
   RSS(ref_import_by_extension( &ref_grid, argv[1] ),"by extension");
   printf("complete.\n");
@@ -44,7 +48,7 @@ int main( int argc, char *argv[] )
   RSS(ref_grid_inspect( ref_grid ), "inspection");
 
   printf("hex quality.\n");
-  RSS(ref_shard_prism_into_tet( ref_grid, 0 ),"quality");
+  RSS(ref_shard_prism_into_tet( ref_grid, keeping_n_layers ),"quality");
 
   RSS(ref_grid_inspect( ref_grid ), "inspection");
 

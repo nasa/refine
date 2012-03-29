@@ -393,11 +393,75 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
   REF_CELL qua = ref_grid_qua(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
 
-  if ( 0 < keeping_n_layers )
-    RSS( REF_IMPLEMENT, "can only keep zero layers" );
-  
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+
+  REF_INT relaxation;
+  REF_INT node;
+  REF_INT *mark, *mark_copy;
+
+  ref_malloc_init( mark,      ref_node_max(ref_node), REF_INT, REF_EMPTY );
+  ref_malloc_init( mark_copy, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+
+  /* mark nodes on prism tris */
   each_ref_cell_valid_cell_with_nodes( pri, cell, orig )
     {
+      tri_nodes[0] = orig[0];
+      tri_nodes[1] = orig[1];
+      tri_nodes[2] = orig[2];
+      RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
+      if ( REF_EMPTY != new_cell )
+	{ 
+	  mark[ tri_nodes[0] ] = 0;
+	  mark[ tri_nodes[1] ] = 0;
+	  mark[ tri_nodes[2] ] = 0;
+	}
+      tri_nodes[0] = orig[3];
+      tri_nodes[1] = orig[5];
+      tri_nodes[2] = orig[4];
+      RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
+      if ( REF_EMPTY != new_cell )
+	{ 
+	  mark[ tri_nodes[0] ] = 0;
+	  mark[ tri_nodes[1] ] = 0;
+	  mark[ tri_nodes[2] ] = 0;
+	}
+    }
+
+  for (relaxation=0;relaxation<keeping_n_layers;relaxation++)
+    {
+      for (node=0;node<ref_node_max(ref_node);node++)
+	mark_copy[node]=mark[node];
+      each_ref_cell_valid_cell_with_nodes( pri, cell, orig )
+	{
+	  if ( mark_copy[orig[0]] == REF_EMPTY &&
+	       mark_copy[orig[3]] != REF_EMPTY )
+	    mark[orig[0]] = mark_copy[orig[3]] + 1;
+	  if ( mark_copy[orig[3]] == REF_EMPTY &&
+	       mark_copy[orig[0]] != REF_EMPTY )
+	    mark[orig[3]] = mark_copy[orig[0]] + 1;
+
+	  if ( mark_copy[orig[1]] == REF_EMPTY &&
+	       mark_copy[orig[4]] != REF_EMPTY )
+	    mark[orig[1]] = mark_copy[orig[4]] + 1;
+	  if ( mark_copy[orig[4]] == REF_EMPTY &&
+	       mark_copy[orig[1]] != REF_EMPTY )
+	    mark[orig[4]] = mark_copy[orig[1]] + 1;
+
+	  if ( mark_copy[orig[2]] == REF_EMPTY &&
+	       mark_copy[orig[5]] != REF_EMPTY )
+	    mark[orig[2]] = mark_copy[orig[5]] + 1;
+	  if ( mark_copy[orig[5]] == REF_EMPTY &&
+	       mark_copy[orig[2]] != REF_EMPTY )
+	    mark[orig[5]] = mark_copy[orig[2]] + 1;
+	}
+    }
+
+  each_ref_cell_valid_cell_with_nodes( pri, cell, orig )
+    {
+
+      if ( mark[orig[0]] != REF_EMPTY &&
+	   mark[orig[3]] != REF_EMPTY ) continue;
+
       RSS( ref_cell_remove( pri, cell ), "remove pri");
 
       minnode = MIN( MIN( orig[0], orig[1] ), MIN( orig[2], orig[3] ) );
@@ -507,6 +571,11 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 
   each_ref_cell_valid_cell_with_nodes( qua, cell, qua_nodes )
     {
+      if ( mark[qua_nodes[0]] != REF_EMPTY &&
+	   mark[qua_nodes[1]] != REF_EMPTY &&
+	   mark[qua_nodes[2]] != REF_EMPTY &&
+	   mark[qua_nodes[3]] != REF_EMPTY ) continue;
+
       RSS( ref_cell_remove( qua, cell ), "remove qua");
       tri_nodes[3] = qua_nodes[4]; /* patch id */
       if ( ( qua_nodes[0] < qua_nodes[1] && qua_nodes[0] < qua_nodes[3] ) ||
@@ -539,6 +608,9 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
 	}
     }
+
+  ref_free(mark_copy);
+  ref_free(mark);
 
   return REF_SUCCESS;
 }
