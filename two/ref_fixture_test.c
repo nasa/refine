@@ -74,6 +74,16 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
+  if ( 1 < argc )
+    {
+      REF_GRID ref_grid;
+
+      RSS( ref_fixture_brick_grid( &ref_grid ), "brick" );
+      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
+      
+      RSS( ref_grid_free(ref_grid),"free");
+    }
+
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
