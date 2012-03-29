@@ -12,10 +12,7 @@ code
   adjoint bp validation
   cgns mixed -> tecplot bug reported
   error estimation for mixed
-   check flat plate derivs (BC_tests)
-     element based bc sa - problem know
-     symmetry
-   export res from adjoint
+  export res from adjoint
    
 call two from fun
 
