@@ -127,6 +127,33 @@ int main( int argc, char *argv[] )
     if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
   }
 
+  { /* metric */
+    REF_GRID ref_grid;
+    char metric_file[] = "ref_part_test.metric";
+    
+    RSS(ref_fixture_tet_grid( &ref_grid ), "set up tet" );
+
+    if ( ref_mpi_master ) 
+      {
+	REF_INT node;
+	FILE *file;
+	file = fopen(metric_file,"w");
+	RNS(file, "unable to open file" );
+
+	for (node=0;node<4;node++)
+	  fprintf(file, " %f %f %f %f %f %f\n",
+		  1.0, 0.0, 0.0, 2.0, 0.0, 4.0 );
+	
+	fclose(file);
+      }
+	  
+    RSS(ref_part_metric( ref_grid_node(ref_grid), metric_file ), "metric" );
+
+    RSS(ref_grid_free(ref_grid),"free");
+
+    if ( ref_mpi_master ) REIS(0, remove( metric_file ), "test clean up");
+  }
+
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
