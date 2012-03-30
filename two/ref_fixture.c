@@ -481,7 +481,7 @@ REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_brick_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;

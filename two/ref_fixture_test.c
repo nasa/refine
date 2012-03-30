@@ -78,7 +78,7 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
 
-      RSS( ref_fixture_brick_grid( &ref_grid ), "brick" );
+      RSS( ref_fixture_hex_brick_grid( &ref_grid ), "brick" );
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
       
       RSS( ref_grid_free(ref_grid),"free");
