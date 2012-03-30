@@ -1,9 +1,12 @@
 
 tet adaptation.
-  partition poor quality cells to the interior
+  partition poor quality cells to the interior with aging
+
 
 projection (fake geom)
   per-olaf linear elasticity
+
+input metric from file
 
 fun3d
   solve bp
