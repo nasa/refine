@@ -20,6 +20,8 @@ clean up
   separate global from node add and remove
   single volume routine
 
+chunk sizes should not be bigger than total nubmer of items (if known)
+
 March
 4  shift globals/unused globals/export
 11 subdiv prism in parallel
