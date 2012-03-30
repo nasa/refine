@@ -46,7 +46,7 @@ int main( void )
 
   { /* remove same 2 faces */
     REF_GRID ref_grid;
-    REF_INT nodes[4] = {0,3,1,3}, cell;
+    REF_INT nodes[4] = {0,3,1,10}, cell;
 
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"other tri");
@@ -80,10 +80,10 @@ int main( void )
     REF_INT nodes[4], cell;
 
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
-    nodes[0]=0;nodes[1]=3;nodes[2]=1;nodes[3]=3;
+    nodes[0]=0;nodes[1]=3;nodes[2]=1;nodes[3]=10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"other tri");
 
-    nodes[0]=0;nodes[1]=2;nodes[2]=3;nodes[3]=3;
+    nodes[0]=0;nodes[1]=2;nodes[2]=3;nodes[3]=10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"other tri");
 
     RSS(ref_swap_remove_three_face_cell(ref_grid,0),"removal failed");

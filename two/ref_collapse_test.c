@@ -120,9 +120,9 @@ int main( void )
     |  \|2 \
     0---1---5  
     */
-    nodes[0]= 1; nodes[1]=4, nodes[2]=2; nodes[3]=3;
+    nodes[0]= 1; nodes[1]=4, nodes[2]=2; nodes[3]=10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri1),"add tri");
-    nodes[0]= 1; nodes[1]=5, nodes[2]=4; nodes[3]=3;
+    nodes[0]= 1; nodes[1]=5, nodes[2]=4; nodes[3]=10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri2),"add tri");
 
     node0 = 0; node1 = 3;
@@ -133,7 +133,7 @@ int main( void )
     RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
     REIS(REF_TRUE,allowed,"parallel and interior to face?");
 
-    ref_cell_c2n(ref_grid_tri(ref_grid),3,tri2) = 10;
+    ref_cell_c2n(ref_grid_tri(ref_grid),3,tri2) = 20;
 
     node0 = 4; node1 = 1;
     RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");

@@ -7,43 +7,58 @@
 #include "ref_mpi.h"
 #include "ref_part.h"
 
+#define add_that_node( node, x, y, z )					\
+  RSS(ref_node_add(ref_node,global[(node)],&(local[(node)])),"add node"); \
+  ref_node_xyz(ref_node,0,local[(node)]) = (x);				\
+  ref_node_xyz(ref_node,1,local[(node)]) = (y);				\
+  ref_node_xyz(ref_node,2,local[(node)]) = (z);				\
+  ref_node_part(ref_node,local[(node)]) =				\
+    ref_part_implicit( nnodesg, ref_mpi_n,				\
+		       ref_node_global(ref_node,local[(node)]) );
+
 REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  REF_INT nodes[4] = {0,1,2,3};
-  REF_INT cell, node;
+  REF_INT global[REF_CELL_MAX_SIZE_PER];
+  REF_INT local[REF_CELL_MAX_SIZE_PER];
+  REF_INT nnodesg = 4;
+  REF_INT cell;
 
   RSS(ref_grid_create(ref_grid_ptr),"create");
   ref_grid =  *ref_grid_ptr;
 
   ref_node = ref_grid_node(ref_grid);
 
-  RSS(ref_node_add(ref_node,0,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
-  ref_node_xyz(ref_node,2,node) = 0.0;
 
-  RSS(ref_node_add(ref_node,1,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
-  ref_node_xyz(ref_node,2,node) = 0.0;
+  global[0]=0;global[1]=1;global[2]=2;global[3]=3;
 
-  RSS(ref_node_add(ref_node,2,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
-  ref_node_xyz(ref_node,2,node) = 0.0;
+  if ( ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[0] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[1] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[2] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[3] ) )
+    {
+      add_that_node(0,0.0,0.0,0.0);
+      add_that_node(1,1.0,0.0,0.0);
+      add_that_node(2,0.0,1.0,0.0);
+      add_that_node(3,0.0,0.0,1.0);
 
-  RSS(ref_node_add(ref_node,3,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
-  ref_node_xyz(ref_node,2,node) = 1.0;
+      RSS(ref_cell_add(ref_grid_tet(ref_grid),local,&cell),"add tet");
+    }
 
-  RSS( ref_node_initialize_n_global( ref_node, 4 ), "init glob" );
+  RSS( ref_node_initialize_n_global( ref_node, nnodesg ), "init glob" );
 
-  RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
-
-  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+  global[0]=0;global[1]=1;global[2]=2;global[3]=10;
+  if ( ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[0] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[1] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[2] ) )
+    {
+      RSS( ref_node_local(ref_node,global[0], &(local[0])),"loc");
+      RSS( ref_node_local(ref_node,global[1], &(local[1])),"loc");
+      RSS( ref_node_local(ref_node,global[2], &(local[2])),"loc");
+      local[3]=global[3];
+      RSS(ref_cell_add(ref_grid_tri(ref_grid),local,&cell),"add tri");
+    }
 
   return REF_SUCCESS;
 }
@@ -105,17 +120,7 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
   return REF_SUCCESS;
-}
-
-#define add_that_node( node, x, y, z )					\
-  RSS(ref_node_add(ref_node,global[(node)],&(local[(node)])),"add node"); \
-  ref_node_xyz(ref_node,0,local[(node)]) = (x);				\
-  ref_node_xyz(ref_node,1,local[(node)]) = (y);				\
-  ref_node_xyz(ref_node,2,local[(node)]) = (z);				\
-  ref_node_part(ref_node,local[(node)]) =				\
-    ref_part_implicit( nnodesg, ref_mpi_n,				\
-		       ref_node_global(ref_node,local[(node)]) );
-   
+}   
 
 REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
 {
