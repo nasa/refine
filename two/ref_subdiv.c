@@ -323,7 +323,7 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
-  REF_INT edge, global, node, node0, node1, ixyz;
+  REF_INT edge, global, node, ixyz;
   REF_INT part;
 
   REF_INT *edge_global, *edge_part;
@@ -343,13 +343,10 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	      RSS( ref_node_add( ref_node, global, &node), 
 		   "add node");
 	      ref_subdiv_node( ref_subdiv, edge ) = node;
-
-	      node0 = ref_edge_e2n(ref_edge, 0, edge );
-	      node1 = ref_edge_e2n(ref_edge, 1, edge );
-	      for (ixyz=0;ixyz<3;ixyz++)
-		ref_node_xyz(ref_node,ixyz,node) = 
-		  0.5 * ( ref_node_xyz(ref_node,ixyz,node0) +
-			  ref_node_xyz(ref_node,ixyz,node1) );
+	      RSS( ref_node_interpolate_edge( ref_node, 
+					      ref_edge_e2n( ref_edge, 0, edge ),
+					      ref_edge_e2n( ref_edge, 1, edge ),
+					      node ), "new node");
 	    }
 	}
     }
