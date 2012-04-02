@@ -1,6 +1,14 @@
 
 tet adaptation.
   partition poor quality cells to the interior with aging
+  statistics
+  convergence
+  stopping
+  tolerence
+  implied mixed metric
+
+adapt
+  split based on metric
 
 projection (fake geom)
   per-olaf linear elasticity
