@@ -728,6 +728,7 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
   REF_DBL *a, *b, *c, *d;
   REF_DBL m11, m12, m13;
   REF_DBL det, volume;
+  REF_DBL num, denom;
 
   RSS( ref_node_ratio( ref_node, nodes[0], nodes[1], &l0 ), "l0" );
   RSS( ref_node_ratio( ref_node, nodes[0], nodes[2], &l1 ), "l1" );
@@ -760,10 +761,19 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
        return REF_SUCCESS;
     }
 
-  /* 36/3^(1/3) */
-  *quality = 24.9610058766228 * 
-    pow(ref_matrix_m_determinate(m)*volume,2.0/3.0) /
-    ( l0*l0 + l1*l1 + l2*l2 + l3*l3 + l4*l4 + l5*l5 );
+  num = pow(ref_matrix_m_determinate(m)*volume,2.0/3.0);
+  denom = l0*l0 + l1*l1 + l2*l2 + l3*l3 + l4*l4 + l5*l5;
+
+  if ( ref_math_divisible(num,denom) )
+    {
+      /* 36/3^(1/3) */
+      *quality = 24.9610058766228 * num / denom;
+    }
+  else
+    {
+      *quality = -1.0;
+      RSS( REF_DIV_ZERO, "in quality");
+    }
 
   return REF_SUCCESS;  
 }
