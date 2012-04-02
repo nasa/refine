@@ -30,6 +30,7 @@
 #include "ref_edge.h"
 
 #include "ref_subdiv.h"
+#include "ref_validation.h"
 
 int main( int argc, char *argv[] )
 {
@@ -55,6 +56,8 @@ int main( int argc, char *argv[] )
 
       RSS( ref_export_tec_metric(ref_grid,"ref_adapt_orig"),"export m");
 
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
+
       passes = 1;
       if ( 3 < argc ) passes = atoi(argv[3]);
 
@@ -71,6 +74,7 @@ int main( int argc, char *argv[] )
 
 	RSS(ref_subdiv_free(ref_subdiv),"free");
 
+	RSS(ref_validation_cell_volume(ref_grid),"vol");
 	RSS(ref_migrate_to_balance(ref_grid),"balance");
 	ref_mpi_stopwatch_stop("balance");
       }
@@ -79,6 +83,7 @@ int main( int argc, char *argv[] )
 	{
 	  RSS( ref_adapt_pass( ref_grid ), "pass");
 	  ref_mpi_stopwatch_stop("pass");
+	  RSS(ref_validation_cell_volume(ref_grid),"vol");
 	  RSS(ref_migrate_to_balance(ref_grid),"balance");
 	  ref_mpi_stopwatch_stop("balance");
 	}
