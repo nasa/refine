@@ -34,50 +34,27 @@ int main( int argc, char *argv[] )
 
   RSS( ref_mpi_start( argc, argv ), "start" );
 
-  if ( 1 < argc )
+  if ( 2 < argc )
     {
       REF_GRID ref_grid;
       REF_NODE ref_node;
-      REF_INT node;
-      REF_DBL d[12];
-      REF_DBL x;
-      REF_DBL hmin, hmax, h;
       REF_INT i, passes;
 
       ref_mpi_stopwatch_start();
-      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
+      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
       ref_node = ref_grid_node(ref_grid);
-      ref_mpi_stopwatch_stop("read");
+      ref_mpi_stopwatch_stop("read grid");
 
       RSS(ref_migrate_to_balance(ref_grid),"balance");
       ref_mpi_stopwatch_stop("balance");
 
-      each_ref_node_valid_node( ref_node, node )
-	{
-	  hmax = 0.5;
-	  hmin = 0.01;
-	  x = ref_node_xyz(ref_node,0, node);
-	  h = MIN( hmax, hmin+(hmax-hmin)*ABS(0.2*x));
-	  ref_matrix_eig( d, 0 ) = 1/(h*h);
-	  h = hmax;
-	  ref_matrix_eig( d, 1 ) = 1/(hmax*hmax);
-	  ref_matrix_eig( d, 2 ) = 1/(hmax*hmax);
-	  ref_matrix_vec( d, 0, 0) = 1.0;
-	  ref_matrix_vec( d, 1, 0) = 0.0;
-	  ref_matrix_vec( d, 2, 0) = 0.0;
-	  ref_matrix_vec( d, 0, 1) = 0.0;
-	  ref_matrix_vec( d, 1, 1) = 1.0;
-	  ref_matrix_vec( d, 2, 1) = 0.0;
-	  ref_matrix_vec( d, 0, 2) = 0.0;
-	  ref_matrix_vec( d, 1, 2) = 0.0;
-	  ref_matrix_vec( d, 2, 2) = 1.0;
-	  RSS( ref_matrix_form_m(d, ref_node_metric_ptr(ref_node,node) ), "m" );
-	}
+      RSS(ref_part_metric( ref_node, argv[2] ), "part metric" );
+      ref_mpi_stopwatch_stop("read metric");
 
       RSS( ref_export_tec_metric(ref_grid,"ref_adapt_orig"),"export m");
 
       passes = 1;
-      if ( 2 < argc ) passes = atoi(argv[2]);
+      if ( 3 < argc ) passes = atoi(argv[3]);
 
       for (i = 0; i<passes ; i++ )
 	{
