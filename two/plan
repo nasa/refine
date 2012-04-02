@@ -4,6 +4,7 @@ adapt
 
 tet adaptation.
   statistics
+    validation tet volume
     plot edge lengths
     what changed?
       start an age to use later in partitioning...
