@@ -5,7 +5,10 @@ tet adaptation.
   convergence
   stopping
   tolerence
+  limit change in metric
   implied mixed metric
+  plot edges
+  metric smoothing
 
 adapt
   split based on metric
