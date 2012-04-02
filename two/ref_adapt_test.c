@@ -29,6 +29,8 @@
 #include "ref_split.h"
 #include "ref_edge.h"
 
+#include "ref_subdiv.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -55,6 +57,18 @@ int main( int argc, char *argv[] )
 
       passes = 1;
       if ( 3 < argc ) passes = atoi(argv[3]);
+
+      {
+	REF_SUBDIV ref_subdiv;
+
+        RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
+
+	RSS(ref_subdiv_mark_prism_by_metric(ref_subdiv),"mark metric");
+
+	RSS(ref_subdiv_split(ref_subdiv),"split");
+
+	RSS(ref_subdiv_free(ref_subdiv),"free");
+      }
 
       for (i = 0; i<passes ; i++ )
 	{
