@@ -1,17 +1,21 @@
 
-tet adaptation.
-  partition poor quality cells to the interior with aging
-  statistics
-  convergence
-  stopping
-  tolerence
-  limit change in metric
-  implied mixed metric
-  plot edges
-  metric smoothing
-
 adapt
-  split based on metric
+  split based on metric (unit tested of course)
+
+tet adaptation.
+  statistics
+    plot edge lengths
+    what changed?
+      start an age to use later in partitioning...
+      plot each change?
+  convergence
+    stopping
+    tolerence
+  metric
+    implied mixed metric
+    limit change in metric
+    smoothing
+  partition poor quality cells to the interior with aging
 
 projection (fake geom)
   per-olaf linear elasticity
