@@ -31,7 +31,6 @@ fun3d
 
 clean up
   separate global from node add and remove
-  single volume routine
 
 chunk sizes should not be bigger than total nubmer of items (if known)
 

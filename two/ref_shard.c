@@ -344,10 +344,10 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
   return REF_SUCCESS;
 }
 
-#define check_tet_volume( cell )					\
+#define check_tet_volume()						\
   {									\
     REF_DBL vol;							\
-    RSS( ref_quality_tet_vol( ref_grid, (cell), &vol ), "tet vol");	\
+    RSS( ref_node_tet_vol( ref_node, tet_nodes, &vol ), "tet vol");	\
     if( vol<=0.0 )							\
       {									\
 	REF_GRID viz;							\
@@ -532,7 +532,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
       tet_nodes[2] = pri_nodes[5];
       tet_nodes[3] = pri_nodes[3];
       RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-      check_tet_volume( new_cell );
+      check_tet_volume( );
 
       if ( ( pri_nodes[1] < pri_nodes[2] && pri_nodes[1] < pri_nodes[4] ) ||
 	   ( pri_nodes[5] < pri_nodes[2] && pri_nodes[5] < pri_nodes[4] ) )
@@ -542,14 +542,14 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  tet_nodes[2] = pri_nodes[5];
 	  tet_nodes[3] = pri_nodes[4];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-	  check_tet_volume( new_cell );
+	  check_tet_volume( );
 
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[2];
 	  tet_nodes[3] = pri_nodes[5];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-	  check_tet_volume( new_cell );
+	  check_tet_volume(  );
 	}
       else
 	{
@@ -558,14 +558,14 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  tet_nodes[2] = pri_nodes[4];
 	  tet_nodes[3] = pri_nodes[5];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-	  check_tet_volume( new_cell );
+	  check_tet_volume(  );
 
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[2];
 	  tet_nodes[3] = pri_nodes[4];
 	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
-	  check_tet_volume( new_cell );
+	  check_tet_volume(  );
 	}
 
     }

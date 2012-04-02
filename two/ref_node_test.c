@@ -390,6 +390,44 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* tet volume */
+    REF_NODE ref_node;
+    REF_INT nodes[4], global;
+    REF_DBL vol;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+    global = 3;
+    RSS(ref_node_add(ref_node,global,&(nodes[3])),"add");
+
+    for ( global=0;global<4;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+      }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
+    ref_node_xyz(ref_node,2,nodes[3]) = 1.0;
+
+    RSS(ref_node_tet_vol(ref_node, nodes, &vol), "vol");
+    RWDS( 1.0/6.0, vol, -1.0, "vol expected" );
+
+    /* inverted tet is negative volume */
+    ref_node_xyz(ref_node,2,nodes[3]) = -1.0;
+    RSS(ref_node_tet_vol(ref_node, nodes, &vol), "vol");
+    RWDS( -1.0/6.0, vol, -1.0, "vol expected" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   { /* tet quality */
     REF_NODE ref_node;
     REF_INT nodes[4], global;

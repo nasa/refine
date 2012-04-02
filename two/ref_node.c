@@ -768,6 +768,35 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_tet_vol( REF_NODE ref_node, 
+			     REF_INT *nodes, 
+			     REF_DBL *volume )
+{
+  REF_DBL *a, *b, *c, *d;
+  REF_DBL m11, m12, m13;
+  REF_DBL det;
+
+  if ( !ref_node_valid(ref_node,nodes[0]) ||
+       !ref_node_valid(ref_node,nodes[1]) ||
+       !ref_node_valid(ref_node,nodes[2]) ||
+       !ref_node_valid(ref_node,nodes[3]) ) 
+    RSS( REF_INVALID, "node invalid" );
+
+  a = ref_node_xyz_ptr(ref_node,nodes[0]);
+  b = ref_node_xyz_ptr(ref_node,nodes[1]);
+  c = ref_node_xyz_ptr(ref_node,nodes[2]);
+  d = ref_node_xyz_ptr(ref_node,nodes[3]);
+  
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  det = ( m11 - m12 + m13 );
+
+  *volume = -det/6.0;
+
+  return REF_SUCCESS;  
+}
+
 REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node, 
 				      REF_INT node0, REF_INT node1, 
 				      REF_INT new_node )

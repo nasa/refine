@@ -91,6 +91,9 @@ REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar );
 
 REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1, 
 			   REF_DBL *ratio );
+REF_STATUS ref_node_tet_vol( REF_NODE ref_node, 
+			     REF_INT *nodes,  
+			     REF_DBL *volume );
 REF_STATUS ref_node_tet_quality( REF_NODE ref_node, 
 				 REF_INT *nodes,  
 				 REF_DBL *quality );
