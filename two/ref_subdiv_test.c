@@ -627,5 +627,69 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
+  { /* split prism by metric, o.k. metric */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_INT n;
+
+    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+    ref_node = ref_grid_node(ref_grid);
+
+    each_ref_node_valid_node( ref_node, node )
+      {
+	ref_node_metric(ref_node,0,node) = 1.0;
+	ref_node_metric(ref_node,1,node) = 0.0;
+	ref_node_metric(ref_node,2,node) = 0.0;
+	ref_node_metric(ref_node,3,node) = 1.0;
+	ref_node_metric(ref_node,4,node) = 0.0;
+	ref_node_metric(ref_node,5,node) = 1.0/(0.1*0.1);
+      }
+
+    RSS(ref_subdiv_mark_prism_by_metric(ref_subdiv),"mark metric");
+    
+    RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+
+    RSS(ref_subdiv_mark_n(ref_subdiv, &n),"relax");
+    
+    REIS(0, n, "marks" );
+    
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* split prism by metric, x-split metric */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_INT n;
+
+    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+    ref_node = ref_grid_node(ref_grid);
+
+    each_ref_node_valid_node( ref_node, node )
+      {
+	ref_node_metric(ref_node,0,node) = 1.0/(0.8*0.8);
+	ref_node_metric(ref_node,1,node) = 0.0;
+	ref_node_metric(ref_node,2,node) = 0.0;
+	ref_node_metric(ref_node,3,node) = 1.0/(0.8*0.8);
+	ref_node_metric(ref_node,4,node) = 0.0;
+	ref_node_metric(ref_node,5,node) = 1.0;
+      }
+
+    RSS(ref_subdiv_mark_prism_by_metric(ref_subdiv),"mark metric");
+    
+    RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+
+    RSS(ref_subdiv_mark_n(ref_subdiv, &n),"relax");
+    
+    REIS(2, n, "marks" );
+    
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
   return 0;
 }

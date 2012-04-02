@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ref_subdiv.h"
 
@@ -126,6 +127,66 @@ REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv,
 		      &edge ), "missing edge");
 
   ref_subdiv_mark(ref_subdiv,edge) = 1;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_subdiv_mark_prism_by_metric( REF_SUBDIV ref_subdiv )
+{
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+  REF_CELL ref_cell = ref_grid_pri(ref_subdiv_grid(ref_subdiv));
+  REF_INT cell, cell_edge;
+  REF_INT node0, node1;
+  REF_DBL ratio, ratio_limit;
+
+  ratio_limit = sqrt(2.0);
+
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      cell_edge = 0;
+      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
+      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
+      printf("n %d %d r %f\n",node0,node1,ratio);
+      if ( ratio > ratio_limit ) 
+	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+      cell_edge = 1;
+      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
+      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
+      printf("n %d %d r %f\n",node0,node1,ratio);
+      if ( ratio > ratio_limit ) 
+	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+      cell_edge = 3;
+      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
+      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
+      printf("n %d %d r %f\n",node0,node1,ratio);
+      if ( ratio > ratio_limit ) 
+	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+
+      cell_edge = 6;
+      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
+      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
+      printf("n %d %d r %f\n",node0,node1,ratio);
+      if ( ratio > ratio_limit ) 
+	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+      cell_edge = 7;
+      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
+      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
+      printf("n %d %d r %f\n",node0,node1,ratio);
+      if ( ratio > ratio_limit ) 
+	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+      cell_edge = 8;
+      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
+      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
+      printf("n %d %d r %f\n",node0,node1,ratio);
+      if ( ratio > ratio_limit ) 
+	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+    }
 
   return REF_SUCCESS;
 }
