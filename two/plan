@@ -2,11 +2,8 @@
 tet adaptation.
   partition poor quality cells to the interior with aging
 
-
 projection (fake geom)
   per-olaf linear elasticity
-
-input metric from file
 
 fun3d
   solve bp
@@ -29,8 +26,8 @@ March
 25 flat plate adaptation / err est mixed
 
 April
-1  projection
-8  
+1  adapt flat plate and dpw
+8  projection
 15 dpw
 22 ( 27 ** data submit ** )
 29
