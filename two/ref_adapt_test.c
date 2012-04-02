@@ -64,10 +64,15 @@ int main( int argc, char *argv[] )
         RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
 
 	RSS(ref_subdiv_mark_prism_by_metric(ref_subdiv),"mark metric");
+	ref_mpi_stopwatch_stop("subdiv mark");
 
 	RSS(ref_subdiv_split(ref_subdiv),"split");
+	ref_mpi_stopwatch_stop("subdiv split");
 
 	RSS(ref_subdiv_free(ref_subdiv),"free");
+
+	RSS(ref_migrate_to_balance(ref_grid),"balance");
+	ref_mpi_stopwatch_stop("balance");
       }
 
       for (i = 0; i<passes ; i++ )
