@@ -323,11 +323,11 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
-  REF_INT edge, global, node, ixyz;
+  REF_INT edge, global, node, i;
   REF_INT part;
 
   REF_INT *edge_global, *edge_part;
-  REF_DBL *edge_xyz;
+  REF_DBL *edge_real;
 
   RSS( ref_node_synchronize_globals( ref_node ), "sync glob" );
 
@@ -355,7 +355,8 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
   
   ref_malloc_init( edge_global, ref_edge_n(ref_edge), REF_INT, REF_EMPTY );
   ref_malloc_init( edge_part,   ref_edge_n(ref_edge), REF_INT, REF_EMPTY );
-  ref_malloc_init( edge_xyz,  3*ref_edge_n(ref_edge), REF_DBL, -999.0 );
+  ref_malloc_init( edge_real,  REF_NODE_REAL_PER*ref_edge_n(ref_edge), 
+		   REF_DBL, -999.0 );
   
   for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
     {
@@ -364,14 +365,16 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	{
 	  edge_global[edge] = ref_node_global(ref_node,node);
 	  edge_part[edge] = ref_node_part(ref_node,node);
-	  for (ixyz=0;ixyz<3;ixyz++)
-	    edge_xyz[ixyz+3*edge] = ref_node_xyz(ref_node,ixyz,node);
+	  for (i=0;i<REF_NODE_REAL_PER;i++)
+	    edge_real[i+REF_NODE_REAL_PER*edge] = 
+	      ref_node_real(ref_node,i,node);
 	}
     }
 
   RSS( ref_edge_ghost_int( ref_edge, edge_global ), "global ghost" );
   RSS( ref_edge_ghost_int( ref_edge, edge_part ), "part ghost" );
-  RSS( ref_edge_ghost_dbl( ref_edge, edge_xyz, 3 ), "xyz ghost" );
+  RSS( ref_edge_ghost_dbl( ref_edge, edge_real, REF_NODE_REAL_PER ), 
+       "xyz ghost" );
 
   for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
     {
@@ -383,13 +386,13 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	       "add node");
 	  ref_subdiv_node( ref_subdiv, edge ) = node;
 	  ref_node_part(ref_node,node) = edge_part[edge];
-	  for (ixyz=0;ixyz<3;ixyz++)
-	    ref_node_xyz(ref_node,ixyz,node) = edge_xyz[ixyz+3*edge];
-
+	  for (i=0;i<REF_NODE_REAL_PER;i++)
+	    ref_node_real(ref_node,i,node) = 
+	      edge_real[i+REF_NODE_REAL_PER*edge];
 	}
     }
 
-  ref_free( edge_xyz );
+  ref_free( edge_real );
   ref_free( edge_part );
   ref_free( edge_global );
 
