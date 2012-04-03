@@ -1,6 +1,13 @@
 
+* why is prism uniformly refining when bl boundary corsening
+  ( plot edges ratios? )
+* how to stop vertual hanging nodes, why is quality passing?
+* best pract?
+* parallel exchange m with x in subdiv newnode
+
 adapt
   split based on metric (unit tested of course)
+
 
 tet adaptation.
   statistics
