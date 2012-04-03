@@ -1,18 +1,11 @@
 
 * why is prism uniformly refining when bl boundary corsening
-  ( plot edges ratios? )
-* how to stop vertual hanging nodes, why is quality passing?
+* is error estimation right in bl?
+* how to stop virtual hanging nodes, why is quality passing?
 * best pract?
-* parallel exchange m with x in subdiv newnode
-
-adapt
-  split based on metric (unit tested of course)
-
 
 tet adaptation.
   statistics
-    validation tet volume
-    plot edge lengths
     what changed?
       start an age to use later in partitioning...
       plot each change?
