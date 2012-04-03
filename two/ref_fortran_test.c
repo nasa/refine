@@ -16,6 +16,7 @@
 #include "ref_sort.h"
 #include "ref_dict.h"
 #include "ref_mpi.h"
+#include "ref_edge.h"
 
 int main( void )
 {

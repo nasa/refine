@@ -16,6 +16,7 @@
 
 #include "ref_sort.h"
 #include "ref_migrate.h"
+#include "ref_edge.h"
 
 int main( int argc, char *argv[] )
 {

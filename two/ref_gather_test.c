@@ -22,6 +22,7 @@
 #include "ref_part.h"
 
 #include "ref_gather.h"
+#include "ref_edge.h"
 
 int main( int argc, char *argv[] )
 {

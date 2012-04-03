@@ -22,6 +22,7 @@
 
 #include "ref_dict.h"
 #include "ref_mpi.h"
+#include "ref_edge.h"
 
 static REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr, 
 				 REF_DBL z0, REF_DBL z1 )

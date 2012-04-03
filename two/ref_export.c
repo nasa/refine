@@ -13,6 +13,9 @@
 
 #include "ref_matrix.h"
 
+#include "ref_edge.h"
+#include "ref_node.h"
+
 #define VTK_TETRA      (10)
 #define VTK_HEXAHEDRON (12)
 #define VTK_WEDGE      (13)
@@ -605,6 +608,24 @@ REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
   free(o2n);
 
   fclose(file);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_ratio( REF_GRID ref_grid, char *root_filename )
+{
+  REF_NODE ref_node = ref_grid_node( ref_grid );
+  REF_EDGE ref_edge;
+  char viz_file[256];
+
+  sprintf(viz_file, "%s_n%d_p%d.tec", root_filename, ref_mpi_n, ref_mpi_id);
+
+  RSS( ref_edge_create( &ref_edge, ref_grid ), "make edge" );
+
+  RSS(ref_edge_tec_ratio( ref_edge, ref_node,
+			  viz_file ) , "viz parts as scalar");
+
+  RSS( ref_edge_free( ref_edge ), "free edge" );
 
   return REF_SUCCESS;
 }
