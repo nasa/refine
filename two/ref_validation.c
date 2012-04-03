@@ -182,7 +182,7 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   REF_DBL min_volume, max_volume;
   REF_BOOL first_volume;
 
-  min_volume = -1.0; max_volume = -1.0;
+  min_volume = 1.0e100; max_volume = -1.0e100;
   first_volume = REF_TRUE;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
