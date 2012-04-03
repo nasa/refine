@@ -206,7 +206,8 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   volume = max_volume;
   RSS( ref_mpi_max( &volume, &max_volume, REF_DBL_TYPE ), "mpi max");
 
-  printf("volume range %e %e\n",min_volume, max_volume);
+  if ( ref_mpi_master )
+    printf("volume range %e %e\n",max_volume, min_volume);
 
   return REF_SUCCESS;
 }
