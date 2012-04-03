@@ -1,6 +1,7 @@
 
 * why is prism uniformly refining when bl boundary corsening
 * is error estimation right in bl?
+  * what is h/h0?
 * how to stop virtual hanging nodes, why is quality passing?
 * best pract?
 
