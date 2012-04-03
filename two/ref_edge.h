@@ -52,6 +52,9 @@ REF_STATUS ref_edge_tec_int( REF_EDGE ref_edge,  REF_NODE ref_node,
 REF_STATUS ref_edge_tec_dbl( REF_EDGE ref_edge,  REF_NODE ref_node,
 			     char *filename, REF_DBL *data );
 
+REF_STATUS ref_edge_tec_ratio( REF_EDGE ref_edge,  REF_NODE ref_node,
+			       char *root_filename );
+
 END_C_DECLORATION
 
 #endif /* REF_EDGE_H */
