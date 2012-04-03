@@ -722,12 +722,9 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
 				 REF_DBL *quality )
 {
   REF_DBL l0,l1,l2,l3,l4,l5;
-  REF_DBL m[6];
-  REF_INT i;
 
-  REF_DBL *a, *b, *c, *d;
-  REF_DBL m11, m12, m13;
-  REF_DBL det, volume;
+  REF_DBL min_det, volume;
+  REF_DBL volume_in_metric;
   REF_DBL num, denom;
 
   RSS( ref_node_ratio( ref_node, nodes[0], nodes[1], &l0 ), "l0" );
@@ -737,23 +734,7 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
   RSS( ref_node_ratio( ref_node, nodes[1], nodes[3], &l4 ), "l4" );
   RSS( ref_node_ratio( ref_node, nodes[2], nodes[3], &l5 ), "l5" );
   
-  for ( i = 0; i<6 ; i++ )
-    m[i] = 0.25 * ( ref_node_metric(ref_node,i,nodes[0]) +
-		    ref_node_metric(ref_node,i,nodes[1]) +
-		    ref_node_metric(ref_node,i,nodes[2]) +
-		    ref_node_metric(ref_node,i,nodes[3]) );
-
-  a = ref_node_xyz_ptr(ref_node,nodes[0]);
-  b = ref_node_xyz_ptr(ref_node,nodes[1]);
-  c = ref_node_xyz_ptr(ref_node,nodes[2]);
-  d = ref_node_xyz_ptr(ref_node,nodes[3]);
-  
-  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
-  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
-  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
-  det = ( m11 - m12 + m13 );
-
-  volume = -det/6.0;
+  RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol");
 
   if ( volume <= 0.0 )
     {
@@ -761,7 +742,24 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
        return REF_SUCCESS;
     }
 
-  num = pow(ref_matrix_m_determinate(m)*volume,2.0/3.0);
+  min_det = MIN( 
+		MIN( 
+		    ref_matrix_m_determinate(ref_node_metric_ptr(ref_node,
+								 nodes[0])),
+		    ref_matrix_m_determinate(ref_node_metric_ptr(ref_node,
+								 nodes[1]))
+		     ),
+		MIN( 
+		    ref_matrix_m_determinate(ref_node_metric_ptr(ref_node,
+								 nodes[2])),
+		    ref_matrix_m_determinate(ref_node_metric_ptr(ref_node,
+								 nodes[3]))
+		     )
+		 );
+
+  volume_in_metric = sqrt( min_det ) * volume;
+
+  num = pow(volume_in_metric,2.0/3.0);
   denom = l0*l0 + l1*l1 + l2*l2 + l3*l3 + l4*l4 + l5*l5;
 
   if ( ref_math_divisible(num,denom) )
