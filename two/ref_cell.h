@@ -61,7 +61,7 @@ struct REF_CELL_STRUCT {
 #define ref_cell_f2n_gen(ref_cell,node,face)\
   ((ref_cell)->f2n[(node)+4*(face)])
 
-#define ref_cell_f2n(ref_cell,node,cell,cell_face)			\
+#define ref_cell_f2n(ref_cell,node,cell_face,cell)			\
   ((ref_cell)->c2n[ (ref_cell)->f2n[(node)+4*(cell_face)] +		\
 		    ref_cell_size_per(ref_cell)*(cell)])
 

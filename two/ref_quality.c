@@ -52,14 +52,14 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 				     &face0, &face1 ), "edge faces" );
 	
 	for(node=0;node<4;node++)
-	  face_nodes[node] = ref_cell_f2n(ref_cell,node,cell,face0);
+	  face_nodes[node] = ref_cell_f2n(ref_cell,node,face0,cell);
 	RSS( ref_face_normal( &ref_node_xyz(ref_node,0,face_nodes[0]),
 			      &ref_node_xyz(ref_node,0,face_nodes[1]),
 			      &ref_node_xyz(ref_node,0,face_nodes[2]),
 			      &ref_node_xyz(ref_node,0,face_nodes[3]),
 			      normal0 ), "normal" );
 	for(node=0;node<4;node++)
-	  face_nodes[node] = ref_cell_f2n(ref_cell,node,cell,face1);
+	  face_nodes[node] = ref_cell_f2n(ref_cell,node,face1,cell);
 	RSS( ref_face_normal( &ref_node_xyz(ref_node,0,face_nodes[0]),
 			      &ref_node_xyz(ref_node,0,face_nodes[1]),
 			      &ref_node_xyz(ref_node,0,face_nodes[2]),
@@ -137,7 +137,7 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
       each_ref_cell_cell_face( ref_cell, cell_face )
         {
 	  for(node=0;node<4;node++)
-	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
 	  
 	  if ( nodes[0] == nodes[3] )
 	    {
@@ -171,7 +171,7 @@ REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid,
 	  each_ref_cell_cell_face( ref_cell, cell_face )
 	    {
 	      for(node=0;node<4;node++)
-		nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+		nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
 	  
 	      if ( nodes[0] == nodes[3] )
 		{
@@ -245,7 +245,7 @@ REF_STATUS ref_quality_swap_multiple_face_cell( REF_GRID ref_grid )
 	    {
 	      bcface[cell_face] = REF_EMPTY;
 	      for(node=0;node<4;node++)
-		nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+		nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
 	      if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
 						 nodes, &found ) )
 		{
@@ -314,7 +314,7 @@ REF_STATUS ref_quality_split_multiple_face_cell( REF_GRID ref_grid )
         {
 	  bcface[cell_face] = REF_EMPTY;
 	  for(node=0;node<4;node++)
-	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
 	  
 	  if ( nodes[0] == nodes[3] )
 	    {

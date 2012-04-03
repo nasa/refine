@@ -456,11 +456,11 @@ int main( void )
 
     cell = 0;
     cell_face = 3;
-    REIS(10,ref_cell_f2n(ref_cell,0,cell,cell_face),"tri face nodes");
-    REIS(20,ref_cell_f2n(ref_cell,1,cell,cell_face),"tri face nodes");
-    REIS(30,ref_cell_f2n(ref_cell,2,cell,cell_face),"tri face nodes");
-    REIS(ref_cell_f2n(ref_cell,0,cell,cell_face),
-	 ref_cell_f2n(ref_cell,3,cell,cell_face),
+    REIS(10,ref_cell_f2n(ref_cell,0,cell_face,cell),"tri face nodes");
+    REIS(20,ref_cell_f2n(ref_cell,1,cell_face,cell),"tri face nodes");
+    REIS(30,ref_cell_f2n(ref_cell,2,cell_face,cell),"tri face nodes");
+    REIS(ref_cell_f2n(ref_cell,0,cell_face,cell),
+	 ref_cell_f2n(ref_cell,3,cell_face,cell),
 	 "tri face nodes");
 
     RSS(ref_cell_free(ref_cell),"cleanup");

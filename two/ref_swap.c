@@ -28,7 +28,7 @@ REF_STATUS ref_swap_remove_two_face_cell( REF_GRID ref_grid, REF_INT cell )
   for (cell_face=0;cell_face<4;cell_face++)
     {
       for(node=0;node<4;node++)
-	cell_nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	cell_nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
       if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
 					 cell_nodes, &found ) )
 	{
@@ -63,7 +63,7 @@ REF_STATUS ref_swap_remove_two_face_cell( REF_GRID ref_grid, REF_INT cell )
   for (cell_face=0;cell_face<4;cell_face++)
     {
       for(node=0;node<4;node++)
-	cell_nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	cell_nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
       if ( cell_face != cell_face0 && cell_face != cell_face1 )
 	{
 	  cell_nodes[3] = faceid0;
@@ -109,7 +109,7 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   for (cell_face=0;cell_face<4;cell_face++)
     {
       for(node=0;node<4;node++)
-	cell_face_nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	cell_face_nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
       if ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
 					 cell_face_nodes, &found ) )
 	{
@@ -154,7 +154,7 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   cell_face = 0+1+2+3-cell_face0-cell_face1-cell_face2;
 
   for(node=0;node<4;node++)
-    face_nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+    face_nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
 
   face_nodes[3] = faceid0;
   temp = face_nodes[0]; 

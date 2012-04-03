@@ -32,7 +32,7 @@ REF_STATUS ref_face_create( REF_FACE *ref_face_ptr, REF_GRID ref_grid )
       each_ref_cell_cell_face( ref_cell, cell_face )
         {
 	  for(node=0;node<4;node++)
-	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
 	  RSS( ref_face_add_uniquely( ref_face, nodes ), "add face");
 	}
 

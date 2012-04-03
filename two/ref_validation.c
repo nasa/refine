@@ -97,7 +97,7 @@ REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
       each_ref_cell_cell_face( ref_cell, cell_face )
         {
 	  for(node=0;node<4;node++)
-	    nodes[node]=ref_cell_f2n(ref_cell,node,cell,cell_face);
+	    nodes[node]=ref_cell_f2n(ref_cell,node,cell_face,cell);
 	  RSS( ref_face_with( ref_face, nodes, &face ), "find cell face");
 	  hits[face]++;
 	}
