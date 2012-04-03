@@ -365,3 +365,46 @@ REF_STATUS ref_edge_tec_int( REF_EDGE ref_edge, REF_NODE ref_node,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_edge_tec_dbl( REF_EDGE ref_edge, REF_NODE ref_node,
+			     char *filename, REF_DBL *data  )
+{
+  REF_INT edge;
+  REF_INT node;
+
+  FILE *file;
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"tecplot refine scalar file\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\" \"r\"\n");
+
+  fprintf(file,
+	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  2*ref_edge_n(ref_edge), ref_edge_n(ref_edge), "point", "felineseg" );
+
+  for ( edge = 0; edge < ref_edge_n(ref_edge); edge++ )
+    {
+      node = ref_edge_e2n(ref_edge, 0, edge);
+      fprintf(file, " %.16e %.16e %.16e %.16e\n", 
+	      ref_node_xyz(ref_node,0,node),
+	      ref_node_xyz(ref_node,1,node),
+	      ref_node_xyz(ref_node,2,node),
+	      data[edge] ) ;
+      node = ref_edge_e2n(ref_edge, 1, edge);
+      fprintf(file, " %.16e %.16e %.16e %.16e\n", 
+	      ref_node_xyz(ref_node,0,node),
+	      ref_node_xyz(ref_node,1,node),
+	      ref_node_xyz(ref_node,2,node),
+	      data[edge] ) ;
+      }
+
+  for ( edge = 0; edge < ref_edge_n(ref_edge); edge++ )
+    fprintf(file," %d %d\n",1+2*edge,2+2*edge);
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
