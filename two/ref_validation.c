@@ -7,6 +7,7 @@
 #include "ref_face.h"
 #include "ref_mpi.h"
 #include "ref_export.h"
+#include "ref_mpi.h"
 
 REF_STATUS ref_validation_all( REF_GRID ref_grid )
 {
@@ -178,12 +179,34 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL volume;
+  REF_DBL min_volume, max_volume;
+  REF_BOOL first_volume;
 
+  min_volume = -1.0; max_volume = -1.0;
+  first_volume = REF_TRUE;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol" );
       RAS ( volume>0.0, "negative volume tet");
+      if ( first_volume )
+	{
+	  min_volume = volume;
+	  max_volume = volume;
+	  first_volume = REF_FALSE;
+	}
+      else
+	{
+	  min_volume = MIN( min_volume, volume);
+	  max_volume = MAX( max_volume, volume);
+	}
     }
+
+  volume = min_volume;
+  RSS( ref_mpi_min( &volume, &min_volume, REF_DBL_TYPE ), "mpi min");
+  volume = max_volume;
+  RSS( ref_mpi_max( &volume, &max_volume, REF_DBL_TYPE ), "mpi max");
+
+  printf("volume range %e %e\n",min_volume, max_volume);
 
   return REF_SUCCESS;
 }
