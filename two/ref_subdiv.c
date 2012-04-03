@@ -97,8 +97,8 @@ REF_STATUS ref_subdiv_inspect( REF_SUBDIV ref_subdiv )
 	    edge = ref_cell_c2e(ref_cell,cell_edge,cell);
 	    printf("  edge %d nodes %d %d mark %d\n",
 		   edge,
-		   ref_cell_e2n(ref_cell,0,cell,cell_edge),
-		   ref_cell_e2n(ref_cell,1,cell,cell_edge),
+		   ref_cell_e2n(ref_cell,0,cell_edge,cell),
+		   ref_cell_e2n(ref_cell,1,cell_edge,cell),
 		   ref_subdiv_mark(ref_subdiv,edge) );
 	  }
 
@@ -144,39 +144,39 @@ REF_STATUS ref_subdiv_mark_prism_by_metric( REF_SUBDIV ref_subdiv )
   each_ref_cell_valid_cell( ref_cell, cell )
     {
       cell_edge = 0;
-      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
       RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
       if ( ratio > ratio_limit ) 
 	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
       cell_edge = 1;
-      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
       RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
       if ( ratio > ratio_limit ) 
 	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
       cell_edge = 3;
-      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
       RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
       if ( ratio > ratio_limit ) 
 	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
 
       cell_edge = 6;
-      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
       RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
       if ( ratio > ratio_limit ) 
 	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
       cell_edge = 7;
-      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
       RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
       if ( ratio > ratio_limit ) 
 	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
       cell_edge = 8;
-      node0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-      node1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
       RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
       if ( ratio > ratio_limit ) 
 	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );

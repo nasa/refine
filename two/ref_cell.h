@@ -51,10 +51,10 @@ struct REF_CELL_STRUCT {
 #define ref_cell_c2e(ref_cell,cell_edge,cell) \
   ((ref_cell)->c2e[(cell_edge)+ref_cell_edge_per(ref_cell)*(cell)])
 
-#define ref_cell_e2n_gen(ref_cell,node,edge)\
+#define ref_cell_e2n_gen(ref_cell,node,edge)	\
   ((ref_cell)->e2n[(node)+2*(edge)])
 
-#define ref_cell_e2n(ref_cell,node,cell,cell_edge)			\
+#define ref_cell_e2n(ref_cell,node,cell_edge,cell)			\
   ((ref_cell)->c2n[ (ref_cell)->e2n[(node)+2*(cell_edge)] +		\
 		    ref_cell_size_per(ref_cell)*(cell)])
 

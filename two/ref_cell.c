@@ -316,8 +316,8 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
       each_ref_cell_cell_edge( ref_cell, cell_edge )
 	printf("  edge %d nodes %d %d\n",
 	       ref_cell_c2e(ref_cell,cell_edge,cell),
-	       ref_cell_e2n(ref_cell,0,cell,cell_edge),
-	       ref_cell_e2n(ref_cell,1,cell,cell_edge));
+	       ref_cell_e2n(ref_cell,0,cell_edge,cell),
+	       ref_cell_e2n(ref_cell,1,cell_edge,cell));
       printf("\n");
     }
 
@@ -533,10 +533,10 @@ REF_STATUS ref_cell_has_side( REF_CELL ref_cell,
 
   each_ref_adj_node_item_with_ref( ref_cell_adj(ref_cell), node0, item, cell)
     each_ref_cell_cell_edge( ref_cell, cell_edge )
-      if ( ( node0 == ref_cell_e2n(ref_cell,0,cell,cell_edge) &&
-	     node1 == ref_cell_e2n(ref_cell,1,cell,cell_edge) ) ||
-	   ( node0 == ref_cell_e2n(ref_cell,1,cell,cell_edge) &&
-	     node1 == ref_cell_e2n(ref_cell,0,cell,cell_edge) ) )
+      if ( ( node0 == ref_cell_e2n(ref_cell,0,cell_edge,cell) &&
+	     node1 == ref_cell_e2n(ref_cell,1,cell_edge,cell) ) ||
+	   ( node0 == ref_cell_e2n(ref_cell,1,cell_edge,cell) &&
+	     node1 == ref_cell_e2n(ref_cell,0,cell_edge,cell) ) )
 	{	   
 	  *has_side = REF_TRUE;
 	  return REF_SUCCESS;
@@ -648,8 +648,8 @@ REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
     {
       for (cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++)
 	{
-	  e0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-	  e1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+	  e0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+	  e1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
 	  if ( ( e0 == n0 && e1 == n1 ) ||
 	       ( e0 == n1 && e1 == n0 )  )
 	    ref_cell_c2e(ref_cell,cell_edge,cell) = edge;

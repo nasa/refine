@@ -29,8 +29,8 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
       each_ref_cell_cell_edge( ref_cell, cell_edge )
         if ( REF_EMPTY == ref_cell_c2e(ref_cell,cell_edge,cell) )
 	    {
-	      n0 = ref_cell_e2n(ref_cell,0,cell,cell_edge);
-	      n1 = ref_cell_e2n(ref_cell,1,cell,cell_edge);
+	      n0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+	      n1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
 	      each_ref_grid_ref_cell( ref_grid, group2, ref_cell2 )
 		RSS( ref_cell_set_edge( ref_cell2, n0, n1, 
 					ref_edge_n(ref_edge) ), "set edge");
@@ -50,9 +50,9 @@ REF_STATUS ref_edge_create( REF_EDGE *ref_edge_ptr, REF_GRID ref_grid )
         {
 	  edge = ref_cell_c2e(ref_cell,cell_edge,cell);
 	  ref_edge_e2n( ref_edge, 0, edge ) = 
-	    ref_cell_e2n(ref_cell,0,cell,cell_edge);
+	    ref_cell_e2n(ref_cell,0,cell_edge,cell);
 	  ref_edge_e2n( ref_edge, 1, edge ) = 
-	    ref_cell_e2n(ref_cell,1,cell,cell_edge);
+	    ref_cell_e2n(ref_cell,1,cell_edge,cell);
 	}
 
   RSS( ref_adj_create( &(ref_edge_adj( ref_edge )) ), "create adj" );
