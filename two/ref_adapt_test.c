@@ -55,7 +55,7 @@ int main( int argc, char *argv[] )
       RSS(ref_part_metric( ref_node, argv[2] ), "part metric" );
       ref_mpi_stopwatch_stop("read metric");
 
-      RSS( ref_export_tec_metric(ref_grid,"ref_adapt_orig"),"export m");
+      RSS( ref_export_tec_ratio(ref_grid,"ref_adapt_orig"),"export m");
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
 
@@ -94,7 +94,7 @@ int main( int argc, char *argv[] )
 	   "gather");
       ref_mpi_stopwatch_stop("gather");
 
-      RSS( ref_export_tec_metric(ref_grid,"ref_adapt_post"),"export m");
+      RSS( ref_export_tec_ratio(ref_grid,"ref_adapt_post"),"export m");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
