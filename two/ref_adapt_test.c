@@ -31,6 +31,7 @@
 
 #include "ref_subdiv.h"
 #include "ref_validation.h"
+#include "ref_face.h"
 
 int main( int argc, char *argv[] )
 {
