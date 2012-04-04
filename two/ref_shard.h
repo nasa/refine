@@ -45,7 +45,8 @@ REF_STATUS ref_shard_mark_relax( REF_SHARD ref_shard );
 REF_STATUS ref_shard_split( REF_SHARD ref_shard );
 
 REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid, 
-				     REF_INT keeping_n_layers );
+				     REF_INT keeping_n_layers, 
+				     REF_INT of_faceid );
 
 END_C_DECLORATION
 
