@@ -9,6 +9,8 @@
 #include "ref_mpi.h"
 #include "ref_adj.h"
 
+#include "ref_part.h"
+
 static REF_INT ref_subdiv_map( REF_SUBDIV ref_subdiv, 
 			       REF_CELL ref_cell, REF_INT cell )
 {
@@ -153,6 +155,35 @@ REF_STATUS ref_subdiv_mark_prism_by_metric( REF_SUBDIV ref_subdiv )
 	  node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
 	  RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
 	  if ( ratio > ratio_limit ) 
+	    RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_subdiv_mark_prism_by_ratio( REF_SUBDIV ref_subdiv, 
+					   REF_DBL *node_ratio )
+{
+  REF_CELL ref_cell = ref_grid_pri(ref_subdiv_grid(ref_subdiv));
+  REF_INT cell, cell_edge;
+  REF_INT node0, node1;
+  REF_DBL ratio_limit;
+
+  REF_INT tri_cell_edge;
+  REF_INT pri_tri_cell_edge[] = {0,1,3,6,7,8};
+
+  ratio_limit = 0.5*sqrt(2.0);
+
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      for ( tri_cell_edge = 0; tri_cell_edge< 6 ; tri_cell_edge++ )
+	{
+	  cell_edge = pri_tri_cell_edge[tri_cell_edge];
+	  node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+	  node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
+	  if ( node_ratio[node0] < ratio_limit && 
+	       node_ratio[node1] < ratio_limit ) 
 	    RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
 	}
     }
