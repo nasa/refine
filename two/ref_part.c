@@ -453,7 +453,59 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, char *filename )
       nnode_read += section_size;
     }
 
-  ref_free( metric )
+  ref_free( metric );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, char *filename )
+{
+  FILE *file;
+  REF_INT chunk;
+  REF_DBL *data;
+  REF_INT nnode_read, section_size;
+  REF_INT node, local, global;
+
+  file = NULL;
+  if ( ref_mpi_master )
+    {
+      file = fopen(filename,"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+    }
+
+  chunk = MAX(100000, ref_node_n_global(ref_node)/ref_mpi_n);
+  chunk = MIN( chunk, ref_node_n_global(ref_node) );
+
+  ref_malloc_init( data, chunk, REF_DBL, -1.0 );
+  
+  nnode_read = 0;
+  while ( nnode_read < ref_node_n_global(ref_node) )
+    {
+      section_size = MIN(chunk,ref_node_n_global(ref_node)-nnode_read);
+      if ( ref_mpi_master )
+	{
+	  for (node=0;node<section_size;node++)
+	    REIS( 1, fscanf( file, "%lf", 
+			     &(data[node]) ), "data ratio read error" );
+	  RSS( ref_mpi_bcast( data, chunk, REF_DBL_TYPE ), "bcast" );
+	}
+      else
+	{
+	  RSS( ref_mpi_bcast( data, chunk, REF_DBL_TYPE ), "bcast" );
+	}
+      for (node=0;node<section_size;node++)
+	{
+	  global = node + nnode_read;
+	  RXS( ref_node_local( ref_node, global, &local ), 
+	       REF_NOT_FOUND, "local" );
+	  if ( REF_EMPTY != local )
+	    ratio[local] = data[node];
+	}
+      nnode_read += section_size;
+    }
+
+  ref_free( data );
 
   return REF_SUCCESS;
 }

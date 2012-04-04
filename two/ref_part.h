@@ -25,6 +25,7 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid );
 REF_STATUS ref_part_ghost_int( REF_GRID ref_grid, REF_INT *scalar );
 
 REF_STATUS ref_part_metric( REF_NODE ref_node, char *filename );
+REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, char *filename );
 
 END_C_DECLORATION
 
