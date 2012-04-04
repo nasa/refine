@@ -33,6 +33,8 @@
 #include "ref_validation.h"
 #include "ref_face.h"
 
+#include "ref_malloc.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -43,6 +45,8 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       REF_NODE ref_node;
       REF_INT i, passes;
+
+      REIS( 4, argc, "usage: exe grid.b8.ugrid grid.metric grid.ratio");
 
       ref_mpi_stopwatch_start();
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
@@ -59,16 +63,21 @@ int main( int argc, char *argv[] )
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
 
-      passes = 1;
-      if ( 3 < argc ) passes = atoi(argv[3]);
-
       {
 	REF_SUBDIV ref_subdiv;
+	REF_DBL *node_ratio;
 
         RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
 
-	RSS(ref_subdiv_mark_prism_by_metric(ref_subdiv),"mark metric");
+	ref_malloc( node_ratio, ref_node_max(ref_node), REF_DBL );
+
+	RSS(ref_part_ratio( ref_node, node_ratio, argv[3] ), "part metric" );
+	ref_mpi_stopwatch_stop("read ratio");
+	
+	RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, node_ratio),"mark rat");
 	ref_mpi_stopwatch_stop("subdiv mark");
+	
+	ref_free( node_ratio );
 
 	RSS(ref_subdiv_split(ref_subdiv),"split");
 	ref_mpi_stopwatch_stop("subdiv split");
@@ -80,6 +89,7 @@ int main( int argc, char *argv[] )
 	ref_mpi_stopwatch_stop("balance");
       }
 
+      passes = 5;
       for (i = 0; i<passes ; i++ )
 	{
 	  RSS( ref_adapt_pass( ref_grid ), "pass");
