@@ -139,47 +139,22 @@ REF_STATUS ref_subdiv_mark_prism_by_metric( REF_SUBDIV ref_subdiv )
   REF_INT node0, node1;
   REF_DBL ratio, ratio_limit;
 
+  REF_INT tri_cell_edge;
+  REF_INT pri_tri_cell_edge[] = {0,1,3,6,7,8};
+
   ratio_limit = sqrt(2.0);
 
   each_ref_cell_valid_cell( ref_cell, cell )
     {
-      cell_edge = 0;
-      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
-      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
-      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
-      if ( ratio > ratio_limit ) 
-	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
-      cell_edge = 1;
-      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
-      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
-      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
-      if ( ratio > ratio_limit ) 
-	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
-      cell_edge = 3;
-      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
-      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
-      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
-      if ( ratio > ratio_limit ) 
-	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
-
-      cell_edge = 6;
-      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
-      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
-      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
-      if ( ratio > ratio_limit ) 
-	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
-      cell_edge = 7;
-      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
-      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
-      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
-      if ( ratio > ratio_limit ) 
-	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
-      cell_edge = 8;
-      node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
-      node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
-      RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
-      if ( ratio > ratio_limit ) 
-	RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+      for ( tri_cell_edge = 0; tri_cell_edge< 6 ; tri_cell_edge++ )
+	{
+	  cell_edge = pri_tri_cell_edge[tri_cell_edge];
+	  node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+	  node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
+	  RSS( ref_node_ratio( ref_node, node0, node1, &ratio ), "ratio");
+	  if ( ratio > ratio_limit ) 
+	    RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sp" );
+	}
     }
 
   return REF_SUCCESS;
