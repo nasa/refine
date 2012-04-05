@@ -1,10 +1,11 @@
 
 * why is prism uniformly refining when bl boundary corsening
-* is error estimation right in bl?
-  * what is h/h0?
-* export h/h0 to use directly in prism subdivision
 * how to stop virtual hanging nodes, why is quality passing?
 * best pract?
+
+nice
+  call two from fun
+  interp solution
 
 tet adaptation.
   statistics
@@ -29,12 +30,11 @@ fun3d
   cgns mixed -> tecplot bug reported
   error estimation for mixed
   export res from adjoint
-  call two from fun
 
 clean up
   separate global from node add and remove
 
-chunk sizes should not be bigger than total nubmer of items (if known)
+chunk sizes should not be bigger than total number of items (if known)
 
 March
 4  shift globals/unused globals/export
