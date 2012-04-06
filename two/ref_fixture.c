@@ -243,7 +243,7 @@ REF_STATUS ref_fixture_pri_tet_cap_grid( REF_GRID *ref_grid_ptr )
       add_that_node(0,0.0,0.0,1.0);
       add_that_node(1,1.0,0.0,1.0);
       add_that_node(2,0.0,1.0,1.0);
-      add_that_node(3,0.3,0.3,1.0);
+      add_that_node(3,0.3,0.3,2.0);
 
       RSS(ref_cell_add(ref_grid_tet(ref_grid),local,&cell),"add prism");
     }
