@@ -316,51 +316,58 @@ REF_STATUS ref_matrix_solve_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
   REF_DBL factor;
   REF_DBL rhs;
 
-  for (col=0; col<rows; col++) {
-    /* find largest pivot */
-    pivot_row = col;
-    largest_pivot = ABS(ab[pivot_row+rows*col]);    
-    for (i=col+1;i<rows;i++) {
-      pivot = ABS(ab[i+rows*col]);
-      if ( pivot > largest_pivot ) {
-	largest_pivot = pivot;
-	pivot_row = i;
-      }
-    }
-    /* exchange rows to get the best pivot on the diagonal, 
-       unless it is already there */
-    if ( pivot_row != col ) {
-      for (j=col;j<cols;j++) {
-	temp = ab[pivot_row+j*rows];
-	ab[pivot_row+j*rows] = ab[col+j*rows];
-	ab[col+j*rows] = temp;
-      }
-    }
-    /* normalize pivot row */
-    pivot = ab[col+rows*col];
-    for (j=col;j<cols;j++) {
-      if ( !ref_math_divisible( ab[col+j*rows], pivot ) ) return REF_DIV_ZERO;
-      ab[col+j*rows] /= pivot;
-    } 
-    /* elimate sub diagonal terms */
-    for (i=col+1;i<rows;i++) {
-      factor = ab[i+col*rows];
-      for (j=col;j<cols;j++) {
-	ab[i+j*rows] -= ab[col+j*rows]*factor;
-      }
-    } 
-  }
+  for (col=0; col<rows; col++) 
+    {  
+      /* find largest pivot */
+      pivot_row = col;
+      largest_pivot = ABS(ab[pivot_row+rows*col]);    
+      for (i=col+1;i<rows;i++) 
+	{
+	  pivot = ABS(ab[i+rows*col]);
+	  if ( pivot > largest_pivot ) 
+	    {
+	      largest_pivot = pivot;
+	      pivot_row = i;
+	    }
+	}
 
-  for (col=rows; col<cols; col++) {
-    for (row=rows-1;row>-1;row--) {
-      rhs = ab[row+col*rows];
-      for (k = row+1; k<rows; k++) {
-	rhs -= ab[row+k*rows]*ab[k+col*rows];
-      }
-      if ( !ref_math_divisible( rhs, ab[row+row*rows] ) ) return REF_DIV_ZERO;
-      ab[row+col*rows] = rhs/ab[row+row*rows];
+      /* exchange rows to get the best pivot on the diagonal, 
+	 unless it is already there */
+      if ( pivot_row != col ) 
+	for (j=col;j<cols;j++) 
+	  {
+	    temp = ab[pivot_row+j*rows];
+	    ab[pivot_row+j*rows] = ab[col+j*rows];
+	    ab[col+j*rows] = temp;
+	  }
+
+      /* normalize pivot row */
+      pivot = ab[col+rows*col];
+      for (j=col;j<cols;j++) 
+	{
+	  if ( !ref_math_divisible( ab[col+j*rows], pivot ))return REF_DIV_ZERO;
+	  ab[col+j*rows] /= pivot;
+	}
+
+      /* elimate sub diagonal terms */
+      for (i=col+1;i<rows;i++) 
+	{
+	  factor = ab[i+col*rows];
+	  for (j=col;j<cols;j++) 
+	    ab[i+j*rows] -= ab[col+j*rows]*factor;
+	  
+	} 
     }
-  }
+
+  for (col=rows; col<cols; col++)
+    for (row=rows-1;row>-1;row--) 
+      {
+	rhs = ab[row+col*rows];
+	for (k = row+1; k<rows; k++)
+	  rhs -= ab[row+k*rows]*ab[k+col*rows];
+	if ( !ref_math_divisible( rhs, ab[row+row*rows] ) ) return REF_DIV_ZERO;
+	ab[row+col*rows] = rhs/ab[row+row*rows];
+      }
 
   return REF_SUCCESS;
 }
