@@ -371,3 +371,36 @@ REF_STATUS ref_matrix_solve_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
 
   return REF_SUCCESS;
 }
+
+#define fill_ab(row,n1,n0)						\
+  ab[(row)+0*6] =     ((n1)[0]-(n0)[0])*((n1)[0]-(n0)[0]);		\
+  ab[(row)+1*6] = 2.0*((n1)[0]-(n0)[0])*((n1)[1]-(n0)[1]);		\
+  ab[(row)+2*6] = 2.0*((n1)[0]-(n0)[0])*((n1)[2]-(n0)[2]);		\
+  ab[(row)+3*6] =     ((n1)[1]-(n0)[1])*((n1)[1]-(n0)[1]);		\
+  ab[(row)+4*6] = 2.0*((n1)[1]-(n0)[1])*((n1)[2]-(n0)[2]);		\
+  ab[(row)+5*6] =     ((n1)[2]-(n0)[2])*((n1)[2]-(n0)[2]);
+
+REF_STATUS ref_matrix_imply_m( REF_DBL *m, 
+			       REF_DBL *xyz0, REF_DBL *xyz1, 
+			       REF_DBL *xyz2, REF_DBL *xyz3 )
+{
+  REF_DBL ab[42];
+  REF_INT i;
+
+  fill_ab(0,xyz1,xyz0);
+  fill_ab(1,xyz2,xyz0);
+  fill_ab(2,xyz3,xyz0);
+  fill_ab(3,xyz2,xyz1);
+  fill_ab(4,xyz3,xyz1);
+  fill_ab(5,xyz3,xyz2);
+
+  for ( i = 0; i<6; i++ )
+    ab[i+6*6] = 1.0;
+
+  RSS( ref_matrix_solve_ab( 6, 7, ab ), "matrix singular" );
+
+  for ( i = 0; i<6; i++ )
+    m[i] = ab[i+6*6];
+
+  return REF_SUCCESS;
+}
