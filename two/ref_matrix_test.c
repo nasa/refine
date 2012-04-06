@@ -236,7 +236,14 @@ int main( void )
     RWDS( 1.0, ab[1+0*cols+rows*rows], tol, "x[1]");
   }
 
-  { /* solve singular*/
+  { /* solve singular 1 */
+    REF_INT rows = 1, cols = 2;
+    REF_DBL ab[6]={ 0.0, 1.0};
+
+    REIS( REF_DIV_ZERO, ref_matrix_solve_ab( rows, cols, ab ), "expect sing");
+  }
+
+  { /* solve singular 2 */
     REF_INT rows = 2, cols = 3;
     REF_DBL ab[6]={ 1.0, 0.0, 1.0, 0.0, 1.0, 2.0};
 
