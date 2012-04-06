@@ -194,5 +194,55 @@ int main( void )
     RWDS( m[5], m2[5], tol, "m[5]");
   }
 
+  { /* solve x = 1*/
+    REF_DBL tol = -1.0;
+    REF_INT rows = 1, cols = 2;
+    REF_DBL ab[2]={ 1.0, 1.0 };
+
+    RSS( ref_matrix_solve_ab( rows, cols, ab ), "solve");
+
+    RWDS( 1.0, ab[0+0*cols+rows*rows], tol, "x[0]");
+  }
+
+  { /* solve 0.5x = 1*/
+    REF_DBL tol = -1.0;
+    REF_INT rows = 1, cols = 2;
+    REF_DBL ab[2]={ 0.5, 1.0 };
+
+    RSS( ref_matrix_solve_ab( rows, cols, ab ), "solve");
+
+    RWDS( 2.0, ab[0+0*cols+rows*rows], tol, "x[0]");
+  }
+
+  { /* solve Ix = [1,2]^t*/
+    REF_DBL tol = -1.0;
+    REF_INT rows = 2, cols = 3;
+    REF_DBL ab[6]={ 1.0, 0.0, 0.0, 1.0, 1.0, 2.0};
+
+    RSS( ref_matrix_solve_ab( rows, cols, ab ), "solve");
+
+    RWDS( 1.0, ab[0+0*cols+rows*rows], tol, "x[0]");
+    RWDS( 2.0, ab[1+0*cols+rows*rows], tol, "x[1]");
+  }
+
+  { /* solve flip(I)x = [1,2]^t*/
+    REF_DBL tol = -1.0;
+    REF_INT rows = 2, cols = 3;
+    REF_DBL ab[6]={ 0.0, 1.0, 1.0, 0.0, 1.0, 2.0};
+
+    RSS( ref_matrix_solve_ab( rows, cols, ab ), "solve");
+
+    RWDS( 2.0, ab[0+0*cols+rows*rows], tol, "x[0]");
+    RWDS( 1.0, ab[1+0*cols+rows*rows], tol, "x[1]");
+  }
+
+  { /* solve singular*/
+    REF_INT rows = 2, cols = 3;
+    REF_DBL ab[6]={ 1.0, 0.0, 1.0, 0.0, 1.0, 2.0};
+
+    REIS( REF_DIV_ZERO, ref_matrix_solve_ab( rows, cols, ab ), "expect sing");
+
+  }
+
   return 0;
 }

@@ -287,3 +287,82 @@ REF_STATUS ref_matrix_average_m( REF_DBL *m0_upper_tri,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_matrix_show_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
+{
+  REF_INT row, col;
+  char format[] = "%10.5f" ;
+  for ( row = 0; row < rows; row++)
+    {
+      for (col = 0; col < cols; col++ )
+	{
+	  printf(format,ab[row+rows*col]);
+	  if ( col < cols-1 ) printf(" ");
+	  if ( col == rows-1 ) printf("| ");
+	}
+      printf("\n");
+    }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_solve_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
+
+{
+  REF_INT row, col;
+  REF_INT i, j, k;
+  REF_INT pivot_row;
+  REF_DBL largest_pivot, pivot;
+  REF_DBL temp;
+  REF_DBL factor;
+  REF_DBL rhs;
+
+  for (col=0; col<rows; col++) {
+    /* find largest pivot */
+    largest_pivot = 0.0;
+    pivot_row = REF_EMPTY;
+    for (i=col;i<rows;i++) {
+      pivot = ABS(ab[i+rows*col]);
+      if ( pivot > largest_pivot ) {
+	largest_pivot = pivot;
+	pivot_row = i;
+      }
+    }
+    if ( largest_pivot < 1.0e-14 || REF_EMPTY == pivot_row ) {
+      return REF_DIV_ZERO;
+    }
+    /* exchange rows to get the best pivot on the diagonal, 
+       unless it is already there */
+    if ( pivot_row != col ) {
+      for (j=col;j<cols;j++) {
+	temp = ab[pivot_row+j*rows];
+	ab[pivot_row+j*rows] = ab[col+j*rows];
+	ab[col+j*rows] = temp;
+      }
+    }
+    /* normalize pivot row */
+    pivot = ab[col+rows*col];
+    for (j=col;j<cols;j++) {
+      ab[col+j*rows] /= pivot;
+    } 
+    /* elimate sub diagonal terms */
+    for (i=col+1;i<rows;i++) {
+      factor = ab[i+col*rows];
+      for (j=col;j<cols;j++) {
+	ab[i+j*rows] -= ab[col+j*rows]*factor;
+      }
+    } 
+
+  }
+
+  for (col=rows; col<cols; col++) {
+    for (row=rows-1;row>-1;row--) {
+      rhs = ab[row+col*rows];
+      for (k = row+1; k<rows; k++) {
+	rhs -= ab[row+k*rows]*ab[k+col*rows];
+      }
+      ab[row+col*rows] = rhs/ab[row+row*rows];
+    }
+  }
+
+  return REF_SUCCESS;
+}

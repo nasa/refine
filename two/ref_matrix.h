@@ -37,6 +37,10 @@ REF_STATUS ref_matrix_average_m( REF_DBL *m0_upper_tri,
 				 REF_DBL *m1_upper_tri,
 				 REF_DBL *avg_m_upper_tri);
 
+REF_STATUS ref_matrix_show_ab( REF_INT rows, REF_INT cols, REF_DBL *ab );
+REF_STATUS ref_matrix_solve_ab( REF_INT rows, REF_INT cols, REF_DBL *ab );
+
+
 END_C_DECLORATION
 
 #endif /* REF_MATRIX_H */
