@@ -245,6 +245,37 @@ REF_STATUS ref_matrix_form_m( REF_DBL *d,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_inv_m( REF_DBL *m,
+			     REF_DBL *inv_m_upper_tri)
+{
+  REF_DBL det;
+
+  det = ref_matrix_det_m(m);
+
+  inv_m_upper_tri[0] = (m[3]*m[5]-m[4]*m[4]);
+  inv_m_upper_tri[1] = (m[2]*m[4]-m[1]*m[5]);
+  inv_m_upper_tri[2] = (m[1]*m[4]-m[2]*m[3]);
+  inv_m_upper_tri[3] = (m[0]*m[5]-m[2]*m[2]);
+  inv_m_upper_tri[4] = (m[2]*m[1]-m[0]*m[4]);
+  inv_m_upper_tri[5] = (m[0]*m[3]-m[1]*m[1]);
+
+  if ( !ref_math_divisible( inv_m_upper_tri[0], det ) ||
+       !ref_math_divisible( inv_m_upper_tri[1], det ) ||
+       !ref_math_divisible( inv_m_upper_tri[2], det ) ||
+       !ref_math_divisible( inv_m_upper_tri[3], det ) ||
+       !ref_math_divisible( inv_m_upper_tri[4], det ) ||
+       !ref_math_divisible( inv_m_upper_tri[5], det ) ) return REF_DIV_ZERO;
+       
+  inv_m_upper_tri[0] /= det;
+  inv_m_upper_tri[1] /= det;
+  inv_m_upper_tri[2] /= det;
+  inv_m_upper_tri[3] /= det;
+  inv_m_upper_tri[4] /= det;
+  inv_m_upper_tri[5] /= det;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_log_m( REF_DBL *m_upper_tri,
 			     REF_DBL *log_m_upper_tri)
 {

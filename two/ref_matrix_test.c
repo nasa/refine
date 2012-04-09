@@ -194,6 +194,33 @@ int main( void )
     RWDS( m[5], m2[5], tol, "m[5]");
   }
 
+  { /* det */
+    REF_DBL tol = -1.0;
+    REF_DBL m[6]={10.0, 0.0, 0.0, 
+		        2.0, 0.0,
+                             5.0};
+    
+    RWDS( 100.0, ref_matrix_det_m(m), tol, "det");
+  }
+
+  { /* inv diag */
+    REF_DBL tol = -1.0;
+    REF_DBL m[6]={10.0, 0.0, 0.0, 
+		        2.0, 0.0,
+                             5.0};
+    
+    REF_DBL inv[6];
+
+    RSS( ref_matrix_inv_m( m, inv ), "diag");
+
+    RWDS(   0.1, inv[0], tol, "inv[0]");
+    RWDS(   0.0, inv[1], tol, "inv[1]");
+    RWDS(   0.0, inv[2], tol, "inv[2]");
+    RWDS(   0.5, inv[3], tol, "inv[3]");
+    RWDS(   0.0, inv[4], tol, "inv[4]");
+    RWDS(   0.2, inv[5], tol, "inv[5]");
+  }
+
   { /* solve x = 1*/
     REF_DBL tol = -1.0;
     REF_INT rows = 1, cols = 2;
@@ -322,13 +349,5 @@ int main( void )
     RWDS( 100.0, m[5], tol, "m[5]");
   }
 
-  { /* det */
-    REF_DBL tol = -1.0;
-    REF_DBL m[6]={10.0, 0.0, 0.0, 
-		        2.0, 0.0,
-                             5.0};
-    
-    RWDS( 100.0, ref_matrix_det_m(m), tol, "det");
-  }
   return 0;
 }
