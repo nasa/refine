@@ -211,7 +211,7 @@ int main( void )
     
     REF_DBL inv[6];
 
-    RSS( ref_matrix_inv_m( m, inv ), "diag");
+    RSS( ref_matrix_inv_m( m, inv ), "inv");
 
     RWDS(   0.1, inv[0], tol, "inv[0]");
     RWDS(   0.0, inv[1], tol, "inv[1]");
