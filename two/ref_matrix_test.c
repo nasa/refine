@@ -322,5 +322,13 @@ int main( void )
     RWDS( 100.0, m[5], tol, "m[5]");
   }
 
+  { /* det */
+    REF_DBL tol = -1.0;
+    REF_DBL m[6]={10.0, 0.0, 0.0, 
+		        2.0, 0.0,
+                             5.0};
+    
+    RWDS( 100.0, ref_matrix_det_m(m), tol, "det");
+  }
   return 0;
 }

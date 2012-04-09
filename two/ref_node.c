@@ -744,18 +744,14 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
 
   min_det = MIN( 
 		MIN( 
-		    ref_matrix_m_determinate(ref_node_metric_ptr(ref_node,
-								 nodes[0])),
-		    ref_matrix_m_determinate(ref_node_metric_ptr(ref_node,
-								 nodes[1]))
-		     ),
+		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0])),
+		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]))
+		    ),
 		MIN( 
-		    ref_matrix_m_determinate(ref_node_metric_ptr(ref_node,
-								 nodes[2])),
-		    ref_matrix_m_determinate(ref_node_metric_ptr(ref_node,
-								 nodes[3]))
-		     )
-		 );
+		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2])),
+		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[3]))
+		    )
+		);
 
   volume_in_metric = sqrt( min_det ) * volume;
 
