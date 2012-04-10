@@ -435,3 +435,18 @@ REF_STATUS ref_matrix_imply_m( REF_DBL *m,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_matrix_qr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r )
+{
+  REF_INT i, j;
+
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      q[i+n*j] = a[i+n*j];
+
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      r[i+n*j] = a[i+n*j];
+
+  return REF_SUCCESS;
+}

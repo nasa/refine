@@ -349,5 +349,26 @@ int main( void )
     RWDS( 100.0, m[5], tol, "m[5]");
   }
 
+  { /* qr */
+    REF_DBL tol = -1.0;
+    REF_INT n=2;
+    REF_DBL a[4]= {1.0, 0.0, 0.0, 1.0};
+    REF_DBL q[4], r[4];
+
+
+    RSS( ref_matrix_qr( n, a, q, r ), "qr");
+
+    RWDS(   1.0, q[0], tol, "q[0]");
+    RWDS(   0.0, q[1], tol, "q[1]");
+    RWDS(   0.0, q[2], tol, "q[2]");
+    RWDS(   1.0, q[3], tol, "q[3]");
+
+    RWDS(   1.0, r[0], tol, "r[0]");
+    RWDS(   0.0, r[1], tol, "r[1]");
+    RWDS(   0.0, r[2], tol, "r[2]");
+    RWDS(   1.0, r[3], tol, "r[3]");
+
+  }
+
   return 0;
 }
