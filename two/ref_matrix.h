@@ -49,6 +49,10 @@ REF_STATUS ref_matrix_imply_m( REF_DBL *m_upper_tri,
 REF_STATUS ref_matrix_show_aqr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r);
 REF_STATUS ref_matrix_qr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r );
 
+REF_STATUS ref_matrix_mult( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r );
+REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a, 
+				REF_DBL *values, REF_DBL *vectors );
+
 END_C_DECLORATION
 
 #endif /* REF_MATRIX_H */

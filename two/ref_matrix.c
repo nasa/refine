@@ -5,6 +5,7 @@
 
 #include "ref_matrix.h"
 #include "ref_math.h"
+#include "ref_malloc.h"
 
 REF_STATUS ref_matrix_diagonalize( REF_DBL *m, 
 				   REF_DBL *d )
@@ -498,3 +499,68 @@ REF_STATUS ref_matrix_qr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_matrix_mult( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
+{
+  REF_INT i, j, k;
+
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      {
+	r[i+j*n] = 0.0;
+	for (k=0;k<n;k++)
+	  r[i+j*n] += a[i+k*n]*b[k+j*n];
+      }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a, 
+				REF_DBL *values, REF_DBL *vectors )
+{
+  REF_DBL *q, *r, *qq;
+  REF_INT i,j,k;
+  REF_DBL max_lower, trace, conv;
+  
+  ref_malloc( qq, n*n, REF_DBL );
+  ref_malloc( q,  n*n, REF_DBL );
+  ref_malloc( r,  n*n, REF_DBL );
+
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      vectors[i+j*n]=0.0;
+
+  for (i=0;i<n;i++)
+    vectors[i+j*n]=1.0;
+
+  k = 0;
+  conv = 1.0;
+  while (conv > 1.0e-15)
+    {
+      k++;
+      RSS( ref_matrix_qr( n, a, q, r ), "qr");
+      ref_matrix_mult( n, r, q, a );
+      for (j = 0; j<n ; j++ )
+	for (i=0;i<n;i++)
+	  qq[i+j*n]=vectors[i+j*n];
+      ref_matrix_mult( n, qq, q, vectors );
+      max_lower=0.0;
+      for (j = 0; j<n ; j++ )
+	for (i=j+1;i<n;i++)
+	  max_lower = MAX( max_lower, ABS( a[i+j*n] ) );
+      trace = 0.0;
+      for (i=0;i<n;i++)trace+= ABS(a[i+i*n]);
+      conv = max_lower/trace;
+      printf("conv %e\n",conv);
+      if ( k > 100 ) return REF_FAILURE;
+    }
+
+  for (i=0;i<n;i++)
+    values[i]=a[i+i*n];
+
+  ref_free( r );
+  ref_free( q );
+  ref_free( qq );
+
+  return REF_SUCCESS;
+}
+

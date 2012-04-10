@@ -414,5 +414,14 @@ R=-R
 
   }
 
+  { /* diag gen */
+    REF_INT n=2;
+    REF_DBL a[4]= {3.5,-0.5,0.21429,0.35714};
+    REF_DBL vectors[4], values[2];
+
+    RSS( ref_matrix_gen_diag( n, a, values, vectors ), "gen diag");
+
+  }
+
   return 0;
 }
