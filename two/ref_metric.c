@@ -12,6 +12,14 @@
 #include "ref_malloc.h"
 #include "ref_matrix.h"
 
+REF_STATUS ref_metric_show( REF_DBL *m )
+{
+  printf(" %18.10e %18.10e %18.10e\n",m[0],m[1],m[2]);
+  printf(" %18.10e %18.10e %18.10e\n",m[1],m[3],m[4]);
+  printf(" %18.10e %18.10e %18.10e\n",m[2],m[4],m[5]);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -222,6 +230,26 @@ REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid )
 	}
 
   ref_free( total_node_volume );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, 
+			   REF_GRID ref_grid )
+{
+  REF_INT node;
+  REF_DBL metric_inv[6];
+  REF_DBL a[9];
+  REF_DBL values[3], vectors[9];
+
+  each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+    {
+      printf("node %d\n",node);
+      ref_metric_show( &(metric0[6*node]) );
+      RSS( ref_matrix_inv_m( &(metric0[6*node]), metric_inv), "inv" );
+      RSS( ref_matrix_mult_m( metric_inv, &(metric1[6*node]), a ), "mult" );
+      RSS( ref_matrix_gen_diag( 3, a, values, vectors ), "gen eig");
+    }
 
   return REF_SUCCESS;
 }

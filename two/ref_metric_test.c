@@ -18,8 +18,46 @@
 
 #include "ref_mpi.h"
 
-int main( void )
+#include "ref_part.h"
+#include "ref_import.h"
+#include "ref_migrate.h"
+#include "ref_dict.h"
+
+int main(  int argc, char *argv[] )
 {
+
+  if ( argc > 2 )
+    {
+      REF_GRID ref_grid;
+      REF_DBL *metric_file;
+      REF_DBL *metric_imply;
+      REF_INT node, im;
+
+      RSS( ref_mpi_start( argc, argv ), "start" );
+
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      ref_malloc( metric_file, 
+		  6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+      ref_malloc( metric_imply, 
+		  6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+
+      each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+	for(im=0;im<6;im++)
+	  metric_file[im+6*node] = 
+	    ref_node_metric(ref_grid_node(ref_grid),im,node);
+
+      RSS( ref_metric_imply_from( metric_imply, ref_grid ), "imply" );
+
+      RSS( ref_metric_smr( metric_imply, metric_file, ref_grid ), "smr" );
+
+      ref_free( metric_imply );
+      ref_free( metric_file );
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      RSS( ref_mpi_stop( ), "stop" );
+    }
 
   {  /* imply metric right tet */
     REF_DBL tol = -1.0;

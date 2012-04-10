@@ -320,6 +320,28 @@ REF_STATUS ref_matrix_average_m( REF_DBL *m0_upper_tri,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_mult_m( REF_DBL *m1, REF_DBL *m2,
+			      REF_DBL *product )
+{
+
+  /* first col */
+  product[0] = m1[0]*m2[0] + m1[1]*m2[1] + m1[2]*m2[2];
+  product[1] = m1[1]*m2[0] + m1[3]*m2[1] + m1[4]*m2[2];
+  product[2] = m1[2]*m2[0] + m1[4]*m2[1] + m1[5]*m2[2];
+
+  /* mid col */
+  product[3] = m1[0]*m2[1] + m1[1]*m2[3] + m1[2]*m2[4];
+  product[4] = m1[1]*m2[1] + m1[3]*m2[3] + m1[4]*m2[4];
+  product[5] = m1[2]*m2[1] + m1[4]*m2[3] + m1[5]*m2[4];
+
+  /* last col */
+  product[6] = m1[0]*m2[2] + m1[1]*m2[4] + m1[2]*m2[5];
+  product[7] = m1[1]*m2[2] + m1[3]*m2[4] + m1[4]*m2[5];
+  product[8] = m1[2]*m2[2] + m1[4]*m2[4] + m1[5]*m2[5];
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_show_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
 {
   REF_INT row, col;
@@ -538,7 +560,7 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
 
   k = 0;
   conv = 1.0;
-  while (conv > 1.0e-15)
+  while (conv > 1.0e-13)
     {
       k++;
       RSS( ref_matrix_qr( n, rq, q, r ), "qr");
@@ -554,9 +576,12 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
       trace = 0.0;
       for (i=0;i<n;i++)trace+= ABS(rq[i+i*n]);
       conv = max_lower/trace;
-      printf("conv %e\n",conv);
-      if ( k > 100 ) return REF_FAILURE;
+      if ( k > 10000 ) {
+	printf("conv %e required %d\n",conv,k);
+	return REF_FAILURE;
+      }
     }
+  printf("conv %e required %d\n",conv,k);
 
   for (i=0;i<n;i++)
     values[i]=rq[i+i*n];
