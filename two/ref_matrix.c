@@ -583,12 +583,11 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
       conv = max_lower/trace;
 
       if ( iter > 10000 ) {
-	printf("value conv %e required %d\n",conv,iter);
+	printf("value conv %e used %d\n",conv,iter);
 	return REF_FAILURE;
       }
 
     }
-  printf("value conv %e required %d\n",conv,iter);
 
   for (i=0;i<n;i++)
     values[i]=rq[i+i*n];
@@ -635,12 +634,11 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
 	    vectors[i+k*n] = ab[i+n*n];
 	  
 	  if ( iter > 10000 ) {
-	    printf("vectr %d conv %e required %d\n",k,conv,iter);	  
+	    printf("vectr %d conv %e used %d\n",k,conv,iter);	  
 	    return REF_FAILURE;
 	  }
 
 	}
-      printf("vectr %d conv %e required %d\n",k,conv,iter);	  
     }
 
   ref_free( r );
