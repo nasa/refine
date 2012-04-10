@@ -248,7 +248,7 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1,
       ref_metric_show( &(metric0[6*node]) );
       RSS( ref_matrix_inv_m( &(metric0[6*node]), metric_inv), "inv" );
       RSS( ref_matrix_mult_m( metric_inv, &(metric1[6*node]), a ), "mult" );
-      RSS( ref_matrix_gen_diag( 3, a, values, vectors ), "gen eig");
+      RSS( ref_matrix_diag_gen( 3, a, values, vectors ), "gen eig");
     }
 
   return REF_SUCCESS;

@@ -563,8 +563,8 @@ REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
     if ( REF_EMPTY != o2n[node] )
       {
 	REF_DBL h0, h1, h2;
-	RSS( ref_matrix_diagonalize( ref_node_metric_ptr(ref_node,node),
-				     d ), "diag" );
+	RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,node),
+				d ), "diag" );
 	RSS( ref_matrix_ascending_eig( d ), "sort eig" );
 	h0 = 1.0/sqrt(d[0]);
 	h1 = 1.0/sqrt(d[1]);

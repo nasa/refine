@@ -7,8 +7,8 @@
 #include "ref_math.h"
 #include "ref_malloc.h"
 
-REF_STATUS ref_matrix_diagonalize( REF_DBL *m, 
-				   REF_DBL *d )
+REF_STATUS ref_matrix_diag_m( REF_DBL *m, 
+			      REF_DBL *d )
 {
   REF_DBL L,u,v,s;
   REF_DBL e[3];
@@ -282,7 +282,7 @@ REF_STATUS ref_matrix_log_m( REF_DBL *m_upper_tri,
 {
   REF_DBL d[12];
 
-  RSS( ref_matrix_diagonalize( m_upper_tri, d ), "diag");
+  RSS( ref_matrix_diag_m( m_upper_tri, d ), "diag");
 
   d[0] = log(d[0]);
   d[1] = log(d[1]);
@@ -297,7 +297,7 @@ REF_STATUS ref_matrix_exp_m( REF_DBL *m_upper_tri,
 {
   REF_DBL d[12];
 
-  RSS( ref_matrix_diagonalize( m_upper_tri, d ), "diag");
+  RSS( ref_matrix_diag_m( m_upper_tri, d ), "diag");
 
   d[0] = exp(d[0]);
   d[1] = exp(d[1]);
@@ -536,7 +536,7 @@ REF_STATUS ref_matrix_mult( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a, 
+REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a, 
 				REF_DBL *values, REF_DBL *vectors )
 {
   REF_DBL *q, *r, *rq, *qq, *ab;

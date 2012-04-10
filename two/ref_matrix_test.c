@@ -14,7 +14,7 @@ int main( void )
                              1.0};
     REF_DBL d[12];
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RWDS(3.0,d[0],-1,"eig 0");
     RWDS(2.0,d[1],-1,"eig 1");
@@ -39,7 +39,7 @@ int main( void )
                              1.0};
     REF_DBL d[12];
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RWDS(3.0,d[0],-1,"eig 0");
     RWDS(2.0,d[1],-1,"eig 1");
@@ -64,7 +64,7 @@ int main( void )
                                10.0};
     REF_DBL d[12];
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RWDS(10.0,d[0],-1,"eig 0");
     RWDS(10.0,d[1],-1,"eig 1");
@@ -89,7 +89,7 @@ int main( void )
                                 1.0};
     REF_DBL d[12];
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RWDS(15.0,d[0],-1,"eig 0");
     RWDS( 5.0,d[1],-1,"eig 1");
@@ -103,7 +103,7 @@ int main( void )
                                 7.0};
     REF_DBL d[12];
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RWDS(15.0,d[0],-1,"eig 0");
     RWDS( 5.0,d[1],-1,"eig 1");
@@ -116,7 +116,7 @@ int main( void )
                                1000000.0};
     REF_DBL d[12];
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RSS( ref_matrix_ascending_eig( d ), "ascend");
 
@@ -145,7 +145,7 @@ int main( void )
     REF_DBL m2[6];
     REF_DBL tol = -1.0;
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RSS( ref_matrix_form_m( d, m2 ), "reform m" );
     RWDS( m[0], m2[0], tol, "m[0]");
@@ -164,7 +164,7 @@ int main( void )
     REF_DBL m2[6];
     REF_DBL tol = 1.0e-9;
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RSS( ref_matrix_form_m( d, m2 ), "reform m" );
     RWDS( m[0], m2[0], tol, "m[0]");
@@ -183,7 +183,7 @@ int main( void )
     REF_DBL m2[6];
     REF_DBL tol = 1.0e-9;
 
-    RSS( ref_matrix_diagonalize( m, d ), "diag");
+    RSS( ref_matrix_diag_m( m, d ), "diag");
 
     RSS( ref_matrix_form_m( d, m2 ), "reform m" );
     RWDS( m[0], m2[0], tol, "m[0]");
@@ -429,7 +429,7 @@ a3 = inv(a1)*a2
 [vector3, value3] = eig(a3)
      */
 
-    RSS( ref_matrix_gen_diag( n, a, values, vectors ), "gen diag");
+    RSS( ref_matrix_diag_gen( n, a, values, vectors ), "gen diag");
 
     RWDS( 3.46553, values[0], tol, "val[0]");
     RWDS( 0.39161, values[1], tol, "val[1]");
