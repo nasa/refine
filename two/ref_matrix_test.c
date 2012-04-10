@@ -277,13 +277,16 @@ int main( void )
     REIS( REF_DIV_ZERO, ref_matrix_solve_ab( rows, cols, ab ), "expect sing");
   }
 
+#define sqrt3 (1.73205080756888)
+#define sqrt6 (2.44948974278318)
+
   { /* imply m from from iso tet nodes */
     REF_DBL tol = -1.0;
     REF_DBL m[6];
-    REF_DBL xyz0[]={ 1.0/3.0*sqrt(3.0),0.0,0.0};
-    REF_DBL xyz1[]={-1.0/6.0*sqrt(3.0),0.5,0.0};
-    REF_DBL xyz2[]={-1.0/6.0*sqrt(3.0),-0.5,0.0};
-    REF_DBL xyz3[]={0.0,0.0, 1.0/3.0*sqrt(6.0)};
+    REF_DBL xyz0[]={ 1.0/3.0*sqrt3,0.0,0.0};
+    REF_DBL xyz1[]={-1.0/6.0*sqrt3,0.5,0.0};
+    REF_DBL xyz2[]={-1.0/6.0*sqrt3,-0.5,0.0};
+    REF_DBL xyz3[]={0.0,0.0, 1.0/3.0*sqrt6};
 
     RSS( ref_matrix_imply_m( m, xyz0, xyz1, xyz2, xyz3), "imply");
 
@@ -298,10 +301,10 @@ int main( void )
   { /* imply m from from short z iso tet nodes */
     REF_DBL tol = -1.0;
     REF_DBL m[6];
-    REF_DBL xyz0[]={ 1.0/3.0*sqrt(3.0),0.0,0.0};
-    REF_DBL xyz1[]={-1.0/6.0*sqrt(3.0),0.5,0.0};
-    REF_DBL xyz2[]={-1.0/6.0*sqrt(3.0),-0.5,0.0};
-    REF_DBL xyz3[]={0.0,0.0, 0.1 * 1.0/3.0*sqrt(6.0)};
+    REF_DBL xyz0[]={ 1.0/3.0*sqrt3,0.0,0.0};
+    REF_DBL xyz1[]={-1.0/6.0*sqrt3,0.5,0.0};
+    REF_DBL xyz2[]={-1.0/6.0*sqrt3,-0.5,0.0};
+    REF_DBL xyz3[]={0.0,0.0, 0.1 * 1.0/3.0*sqrt6};
 
     RSS( ref_matrix_imply_m( m, xyz0, xyz1, xyz2, xyz3), "imply");
 
