@@ -242,6 +242,24 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1,
   REF_DBL a[9];
   REF_DBL values[3], vectors[9];
 
+  /*
+a1 = [ 3 1 ;
+       1 5 ]
+a2 = [ 10 1;
+        1 2 ]
+a3 = inv(a1)*a2
+[vector3, value3] = eig(a3)
+
+val1 = vector3'*a1*vector3
+val2 = vector3'*a2*vector3
+
+vector = inv(vector3)
+
+value=max(val1,val2)
+
+smr = vector'*value*vector
+  */
+
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )
     {
       printf("node %d\n",node);
