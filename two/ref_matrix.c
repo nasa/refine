@@ -539,10 +539,12 @@ REF_STATUS ref_matrix_mult( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
 REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a, 
 				REF_DBL *values, REF_DBL *vectors )
 {
-  REF_DBL *q, *r, *rq, *qq;
-  REF_INT i,j,k;
-  REF_DBL max_lower, trace, conv;
+  REF_DBL *q, *r, *rq, *qq, *ab;
+  REF_INT i,j,k,iter;
+  REF_DBL max_lower, trace, conv, convm;
+  REF_DBL len;
   
+  ref_malloc( ab, n*(n+1), REF_DBL );
   ref_malloc( qq, n*n, REF_DBL );
   ref_malloc( rq,  n*n, REF_DBL );
   ref_malloc( q,  n*n, REF_DBL );
@@ -558,11 +560,11 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
   for (i=0;i<n;i++)
     vectors[i+i*n]=1.0;
 
-  k = 0;
+  iter = 0;
   conv = 1.0;
   while (conv > 1.0e-13)
     {
-      k++;
+      iter++;
 
       RSS( ref_matrix_qr( n, rq, q, r ), "qr");
       ref_matrix_mult( n, r, q, rq );
@@ -580,22 +582,72 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
       for (i=0;i<n;i++)trace+= ABS(rq[i+i*n]);
       conv = max_lower/trace;
 
-      if ( k > 10000 ) {
-	printf("conv %e required %d\n",conv,k);
+      if ( iter > 10000 ) {
+	printf("value conv %e required %d\n",conv,iter);
 	return REF_FAILURE;
       }
 
     }
-  printf("conv %e required %d\n",conv,k);
-  ref_matrix_show_aqr( n, a, vectors, rq );
+  printf("value conv %e required %d\n",conv,iter);
 
   for (i=0;i<n;i++)
     values[i]=rq[i+i*n];
+
+  
+  for (k=0;k<n;k++)
+    {
+      iter = 0;
+      conv = 1.0;
+      while (conv > 1.0e-13)
+	{
+	  iter++;
+	  for (j=0;j<n;j++)
+	    for (i=0;i<n;i++)
+	      ab[i+j*n]=a[i+j*n];
+	  for (i=0;i<n;i++)
+	    ab[i+i*n] -= 1.01*values[k];
+
+	  for (i=0;i<n;i++)
+	    ab[i+n*n] = vectors[i+k*n];
+
+	  RSS( ref_matrix_solve_ab( n, n+1, ab ), "solve" );
+
+	  len = 0.0;
+	  for (i=0;i<n;i++)
+	    len += ab[i+n*n]*ab[i+n*n];
+	  len = sqrt(len);
+	  for (i=0;i<n;i++)
+	    {
+	      if ( !ref_math_divisible( ab[i+n*n],len )) return REF_DIV_ZERO;
+	      ab[i+n*n] = ab[i+n*n]/len;
+	    }
+
+	  conv = 0.0;
+	  for (i=0;i<n;i++) 
+	    conv += (vectors[i+k*n]-ab[i+n*n])*(vectors[i+k*n]-ab[i+n*n]);
+	  convm = 0.0;
+	  for (i=0;i<n;i++) 
+	    convm += (vectors[i+k*n]+ab[i+n*n])*(vectors[i+k*n]+ab[i+n*n]);
+
+	  conv = MIN(conv,convm);
+
+	  for (i=0;i<n;i++)
+	    vectors[i+k*n] = ab[i+n*n];
+	  
+	  if ( iter > 10000 ) {
+	    printf("vectr %d conv %e required %d\n",k,conv,iter);	  
+	    return REF_FAILURE;
+	  }
+
+	}
+      printf("vectr %d conv %e required %d\n",k,conv,iter);	  
+    }
 
   ref_free( r );
   ref_free( q );
   ref_free( rq );
   ref_free( qq );
+  ref_free( ab );
 
   return REF_SUCCESS;
 }

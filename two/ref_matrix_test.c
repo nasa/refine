@@ -431,8 +431,13 @@ a3 = inv(a1)*a2
 
     RSS( ref_matrix_gen_diag( n, a, values, vectors ), "gen diag");
 
-    RWDS( 3.46553, values[0], tol, "q[0]");
-    RWDS( 0.39161, values[1], tol, "q[1]");
+    RWDS( 3.46553, values[0], tol, "val[0]");
+    RWDS( 0.39161, values[1], tol, "val[1]");
+
+    RWDS( -0.987300, vectors[0+0*2], tol, "vec[0,0]");
+    RWDS(  0.158814, vectors[1+0*2], tol, "vec[1,0]");
+    RWDS( -0.068775, vectors[0+1*2], tol, "vec[0,1]");
+    RWDS(  0.997632, vectors[1+1*2], tol, "vec[1,1]");
 
   }
 
