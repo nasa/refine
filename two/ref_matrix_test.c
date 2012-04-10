@@ -415,11 +415,24 @@ R=-R
   }
 
   { /* diag gen */
+    REF_DBL tol = 1.0e-5;
     REF_INT n=2;
     REF_DBL a[4]= {3.5,-0.5,0.21429,0.35714};
     REF_DBL vectors[4], values[2];
 
+    /*
+a1 = [ 3 1 ;
+       1 5 ]
+a2 = [ 10 1;
+        1 2 ]
+a3 = inv(a1)*a2
+[vector3, value3] = eig(a3)
+     */
+
     RSS( ref_matrix_gen_diag( n, a, values, vectors ), "gen diag");
+
+    RWDS( 3.46553, values[0], tol, "q[0]");
+    RWDS( 0.39161, values[1], tol, "q[1]");
 
   }
 

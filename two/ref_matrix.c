@@ -517,18 +517,22 @@ REF_STATUS ref_matrix_mult( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
 REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a, 
 				REF_DBL *values, REF_DBL *vectors )
 {
-  REF_DBL *q, *r, *qq;
+  REF_DBL *q, *r, *rq, *qq;
   REF_INT i,j,k;
   REF_DBL max_lower, trace, conv;
   
   ref_malloc( qq, n*n, REF_DBL );
+  ref_malloc( rq,  n*n, REF_DBL );
   ref_malloc( q,  n*n, REF_DBL );
   ref_malloc( r,  n*n, REF_DBL );
 
   for (j = 0; j<n ; j++ )
     for (i=0;i<n;i++)
-      vectors[i+j*n]=0.0;
+      rq[i+j*n]=a[i+j*n];
 
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      vectors[i+j*n]=0.0;
   for (i=0;i<n;i++)
     vectors[i+j*n]=1.0;
 
@@ -537,8 +541,8 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
   while (conv > 1.0e-15)
     {
       k++;
-      RSS( ref_matrix_qr( n, a, q, r ), "qr");
-      ref_matrix_mult( n, r, q, a );
+      RSS( ref_matrix_qr( n, rq, q, r ), "qr");
+      ref_matrix_mult( n, r, q, rq );
       for (j = 0; j<n ; j++ )
 	for (i=0;i<n;i++)
 	  qq[i+j*n]=vectors[i+j*n];
@@ -546,19 +550,20 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
       max_lower=0.0;
       for (j = 0; j<n ; j++ )
 	for (i=j+1;i<n;i++)
-	  max_lower = MAX( max_lower, ABS( a[i+j*n] ) );
+	  max_lower = MAX( max_lower, ABS( rq[i+j*n] ) );
       trace = 0.0;
-      for (i=0;i<n;i++)trace+= ABS(a[i+i*n]);
+      for (i=0;i<n;i++)trace+= ABS(rq[i+i*n]);
       conv = max_lower/trace;
       printf("conv %e\n",conv);
       if ( k > 100 ) return REF_FAILURE;
     }
 
   for (i=0;i<n;i++)
-    values[i]=a[i+i*n];
+    values[i]=rq[i+i*n];
 
   ref_free( r );
   ref_free( q );
+  ref_free( rq );
   ref_free( qq );
 
   return REF_SUCCESS;
