@@ -337,7 +337,6 @@ REF_STATUS ref_matrix_show_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
 }
 
 REF_STATUS ref_matrix_solve_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
-
 {
   REF_INT row, col;
   REF_INT i, j, k;
@@ -436,9 +435,39 @@ REF_STATUS ref_matrix_imply_m( REF_DBL *m,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_show_aqr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r)
+{
+  REF_INT row, col;
+  char format[] = "%10.5f" ;
+  
+  for (row = 0; row<n ; row++ )
+    {
+      for (col=0;col<n;col++)
+	{
+	  printf(format,a[row+n*col]);
+	  printf(" ");
+	  if ( col == n-1 ) printf("= ");
+	}
+      for (col=0;col<n;col++)
+	{
+	  printf(format,q[row+n*col]);
+	  printf(" ");
+	  if ( col == n-1 ) printf("x ");
+	}
+      for (col=0;col<n;col++)
+	{
+	  printf(format,r[row+n*col]);
+	  if ( col < n-1 ) printf(" ");
+	}
+      printf("\n");
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_qr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r )
 {
-  REF_INT i, j;
+  REF_INT i, j, k;
 
   for (j = 0; j<n ; j++ )
     for (i=0;i<n;i++)
@@ -446,7 +475,26 @@ REF_STATUS ref_matrix_qr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r )
 
   for (j = 0; j<n ; j++ )
     for (i=0;i<n;i++)
-      r[i+n*j] = a[i+n*j];
+      r[i+n*j] = 0.0;
+
+  for (k = 0; k<n ; k++ )
+    {
+      for (i=0;i<n;i++)
+	r[k+n*k] += q[i+n*k]*q[i+n*k];
+      r[k+n*k] = sqrt( r[k+n*k] );
+      for (i=0;i<n;i++)
+	{
+	  if ( !ref_math_divisible(  q[i+n*k], r[k+n*k] )) return REF_DIV_ZERO;
+	  q[i+n*k] /= r[k+n*k];
+	}
+      for (j=k+1;j<n;j++)
+	{
+	  for (i=0;i<n;i++)
+	    r[k+n*j] += a[i+n*j]*q[i+n*k];
+	  for (i=0;i<n;i++)
+	    q[i+n*j] -= r[k+n*j]*q[i+n*k];
+	}
+    }
 
   return REF_SUCCESS;
 }
