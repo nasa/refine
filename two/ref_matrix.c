@@ -556,19 +556,22 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
     for (i=0;i<n;i++)
       vectors[i+j*n]=0.0;
   for (i=0;i<n;i++)
-    vectors[i+j*n]=1.0;
+    vectors[i+i*n]=1.0;
 
   k = 0;
   conv = 1.0;
   while (conv > 1.0e-13)
     {
       k++;
+
       RSS( ref_matrix_qr( n, rq, q, r ), "qr");
       ref_matrix_mult( n, r, q, rq );
+
       for (j = 0; j<n ; j++ )
 	for (i=0;i<n;i++)
 	  qq[i+j*n]=vectors[i+j*n];
       ref_matrix_mult( n, qq, q, vectors );
+
       max_lower=0.0;
       for (j = 0; j<n ; j++ )
 	for (i=j+1;i<n;i++)
@@ -576,12 +579,15 @@ REF_STATUS ref_matrix_gen_diag( REF_INT n, REF_DBL *a,
       trace = 0.0;
       for (i=0;i<n;i++)trace+= ABS(rq[i+i*n]);
       conv = max_lower/trace;
+
       if ( k > 10000 ) {
 	printf("conv %e required %d\n",conv,k);
 	return REF_FAILURE;
       }
+
     }
   printf("conv %e required %d\n",conv,k);
+  ref_matrix_show_aqr( n, a, vectors, rq );
 
   for (i=0;i<n;i++)
     values[i]=rq[i+i*n];
