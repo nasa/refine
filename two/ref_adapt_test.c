@@ -34,6 +34,7 @@
 #include "ref_face.h"
 
 #include "ref_malloc.h"
+#include "ref_metric.h"
 
 int main( int argc, char *argv[] )
 {
@@ -60,6 +61,8 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop("read metric");
 
       RSS( ref_export_tec_ratio(ref_grid,"ref_adapt_orig"),"export m");
+      RSS( ref_metric_sanitize(ref_grid),"sant");
+      RSS( ref_export_tec_ratio(ref_grid,"ref_adapt_sant"),"export clean m");
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
 
