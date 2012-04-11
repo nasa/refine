@@ -441,5 +441,83 @@ a3 = inv(a1)*a2
 
   }
 
+  { /* inv gen I */
+    REF_DBL tol = -1.0;
+    REF_INT n=3;
+    REF_DBL a[9]= {1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0 };
+    REF_DBL inv[9];
+
+    RSS( ref_matrix_inv_gen( n, a, inv ), "gen inv");
+
+    RWDS(  1.0, inv[0+0*3], tol, "inv[0,0]");
+    RWDS(  0.0, inv[1+0*3], tol, "inv[1,0]");
+    RWDS(  0.0, inv[2+0*3], tol, "inv[2,0]");
+    RWDS(  0.0, inv[0+1*3], tol, "inv[0,1]");
+    RWDS(  1.0, inv[1+1*3], tol, "inv[1,1]");
+    RWDS(  0.0, inv[2+1*3], tol, "inv[2,1]");
+    RWDS(  0.0, inv[0+2*3], tol, "inv[0,2]");
+    RWDS(  0.0, inv[1+2*3], tol, "inv[1,2]");
+    RWDS(  1.0, inv[2+2*3], tol, "inv[2,2]");
+  }
+
+  { /* inv gen strang 3 */
+    REF_DBL tol = -1.0;
+    REF_INT n=3;
+    REF_DBL a[9]= {2.0,-1.0,0.0, -1.0,2.0,-1.0, 0.0,-1.0,2.0 };
+    REF_DBL inv[9];
+
+    RSS( ref_matrix_inv_gen( n, a, inv ), "gen inv");
+
+    RWDS(  3.0/4.0, inv[0+0*3], tol, "inv[0,0]");
+    RWDS(  1.0/2.0, inv[1+0*3], tol, "inv[1,0]");
+    RWDS(  1.0/4.0, inv[2+0*3], tol, "inv[2,0]");
+    RWDS(  1.0/2.0, inv[0+1*3], tol, "inv[0,1]");
+    RWDS(  1.0,     inv[1+1*3], tol, "inv[1,1]");
+    RWDS(  1.0/2.0, inv[2+1*3], tol, "inv[2,1]");
+    RWDS(  1.0/4.0, inv[0+2*3], tol, "inv[0,2]");
+    RWDS(  1.0/2.0, inv[1+2*3], tol, "inv[1,2]");
+    RWDS(  3.0/4.0, inv[2+2*3], tol, "inv[2,2]");
+  }
+
+  { /* inv gen 2 */
+    REF_DBL tol = -1.0;
+    REF_INT n=2;
+    REF_DBL a[4]= {4.0,3.0,3.0,2.0};
+    REF_DBL inv[4];
+
+    /*
+a = [ 4 3 ;
+       3 2 ]
+inv(a)
+     */
+
+    RSS( ref_matrix_inv_gen( n, a, inv ), "gen inv");
+
+    RWDS( -2.0, inv[0+0*2], tol, "inv[0,0]");
+    RWDS(  3.0, inv[1+0*2], tol, "inv[1,0]");
+    RWDS(  3.0, inv[0+1*2], tol, "inv[0,1]");
+    RWDS( -4.0, inv[1+1*2], tol, "inv[1,1]");
+  }
+
+  { /* inv gen swap 2 */
+    REF_DBL tol = -1.0;
+    REF_INT n=2;
+    REF_DBL a[4]= {0.1,1.0,2.0,0.2};
+    REF_DBL inv[4];
+
+    /*
+a = [ 0.1 2.0 ;
+      1.0 0.2 ]
+inv(a)
+     */
+
+    RSS( ref_matrix_inv_gen( n, a, inv ), "gen inv");
+
+    RWDS( -0.1010101010101010, inv[0+0*2], tol, "inv[0,0]");
+    RWDS(  0.5050505050505051, inv[1+0*2], tol, "inv[1,0]");
+    RWDS(  1.0101010101010102, inv[0+1*2], tol, "inv[0,1]");
+    RWDS( -0.0505050505050505, inv[1+1*2], tol, "inv[1,1]");
+  }
+
   return 0;
 }

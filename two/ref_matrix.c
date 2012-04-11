@@ -522,20 +522,6 @@ REF_STATUS ref_matrix_qr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_mult_gen( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
-{
-  REF_INT i, j, k;
-
-  for (j = 0; j<n ; j++ )
-    for (i=0;i<n;i++)
-      {
-	r[i+j*n] = 0.0;
-	for (k=0;k<n;k++)
-	  r[i+j*n] += a[i+k*n]*b[k+j*n];
-      }
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a, 
 				REF_DBL *values, REF_DBL *vectors )
 {
@@ -646,6 +632,78 @@ REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a,
   ref_free( rq );
   ref_free( qq );
   ref_free( ab );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_mult_gen( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
+{
+  REF_INT i, j, k;
+
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      {
+	r[i+j*n] = 0.0;
+	for (k=0;k<n;k++)
+	  r[i+j*n] += a[i+k*n]*b[k+j*n];
+      }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_inv_gen( REF_INT n, REF_DBL *orig, REF_DBL *inv )
+{
+  REF_INT i, j, k;
+  REF_DBL *a;
+  REF_DBL pivot, scale;
+
+  ref_malloc( a, n*n, REF_DBL );
+
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      a[i+n*j] = orig[i+n*j];
+
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      inv[i+n*j] = 0.0;
+  for (i=0;i<n;i++)
+    inv[i+n*i] = 1.0;
+
+  for (j = 0; j<n ; j++ )
+    {
+      /* scale row so a[j+n*j] is 1.0 */
+      pivot = a[j+n*j];
+      for (k=0;k<n;k++)
+	{
+	  if ( !ref_math_divisible( a[j+k*n], pivot )) return REF_DIV_ZERO;
+	  a[j+k*n] /= pivot;
+	  if ( !ref_math_divisible( inv[j+k*n], pivot )) return REF_DIV_ZERO;
+	  inv[j+k*n] /= pivot;
+	}
+      /* eliminate lower triangle */
+      for (i=j+1;i<n;i++)
+	{
+	  if ( !ref_math_divisible( a[i+j*n],a[j+j*n]  )) return REF_DIV_ZERO;
+	  scale = a[i+j*n] / a[j+j*n];
+	  for (k=0;k<n;k++)
+	    a[i+k*n] -= scale * a[j+k*n];
+	  for (k=0;k<n;k++)
+	    inv[i+k*n] -= scale * inv[j+k*n];
+	}
+
+      /* eliminate upper triangle */
+      for (i=0;i<j;i++)
+	{
+	  if ( !ref_math_divisible( a[i+j*n],a[j+j*n]  )) return REF_DIV_ZERO;
+	  scale = a[i+j*n] / a[j+j*n];
+	  for (k=0;k<n;k++)
+	    a[i+k*n] -= scale * a[j+k*n];
+	  for (k=0;k<n;k++)
+	    inv[i+k*n] -= scale * inv[j+k*n];
+	}
+
+    }
+
+  ref_free( a );
 
   return REF_SUCCESS;
 }
