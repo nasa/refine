@@ -249,8 +249,6 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
 
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )
     {
-      printf("node %d\n",node);
-      ref_metric_show( &(metric0[6*node]) );
       RSS( ref_matrix_inv_m( &(metric0[6*node]), metric_inv), "inv" );
       RSS( ref_matrix_mult_m( metric_inv, &(metric1[6*node]), inv_m1_m2 ), 
 	   "mult" );
@@ -270,14 +268,11 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
 	  if ( !ref_math_divisible( 1.0, h2 ) ) RSS( REF_DIV_ZERO, "zero h^2");
 	  eig = 1.0/h2;
 	  ref_matrix_eig( diagonal_system, i ) = eig;
-	  printf("eig[%d]=%f\n",i,eig);
 	}
-      RSS( ref_matrix_inv_gen( 3, vectors, inv_n_vector ), "gen eig");
-      RSS( ref_matrix_transpose_gen( 3, inv_n_vector, 
+      RSS( ref_matrix_inv_gen( 3, n_vectors, inv_n_vectors ), "gen eig");
+      RSS( ref_matrix_transpose_gen( 3, inv_n_vectors, 
 				     &(diagonal_system[3]) ), "gen eig");
-      ref_matrix_show_aqr(3,a,vectors,&(diagonal_system[3]));
       RSS( ref_matrix_form_m( diagonal_system, &(metric[6*node]) ), "reform m");
-      ref_metric_show( &(metric[6*node]) );
     }
 
   return REF_SUCCESS;
