@@ -179,5 +179,78 @@ int main(  int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free"); 
   }
 
+  { /* smr octave */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_DBL *metric_file;
+    REF_DBL *metric_imply;
+    REF_DBL *metric;
+    REF_INT node;
+
+  /*
+clear all
+format long
+a1 = [ 1 0 0 ;
+       0 1 0 ;
+       0 0 1 ]
+a2 = [ 30 -25   -2.5;
+      -25  25   1;
+      -2.5   1  1.5];
+a3 = inv(a1)*a2
+[vector3, value3] = eig(a3)
+
+val1 = vector3'*a1*vector3
+val2 = vector3'*a2*vector3
+for ii=1:3
+ h1(ii,ii) = sqrt(1/val1(ii,ii));
+ h2(ii,ii) = sqrt(1/val2(ii,ii));
+ h(ii,ii) = max(0.25*h1(ii,ii),min(4.0*h1(ii,ii),h2(ii,ii)));
+ val(ii,ii)=1.0 / (h(ii,ii)* h(ii,ii));
+end
+h1
+h2
+h
+val
+vector = inv(vector3)
+
+smr = vector'*val*vector
+[sv,se]= eig(smr)
+  */
+
+    RSS( ref_grid_create( &ref_grid ), "create grid" );
+    RSS( ref_node_add( ref_grid_node(ref_grid), 0, &node ), "add" );
+
+    ref_malloc( metric_file, 
+		6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+    ref_malloc( metric_imply, 
+		6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+    ref_malloc( metric, 
+		6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+    metric_imply[0+6*node] = 1.0;
+    metric_imply[1+6*node] = 0.0;
+    metric_imply[2+6*node] = 0.0;
+    metric_imply[3+6*node] = 1.0;
+    metric_imply[4+6*node] = 0.0;
+    metric_imply[5+6*node] = 1.0;
+
+    metric_file[0+6*node] =  30.0;
+    metric_file[1+6*node] = -25.0;
+    metric_file[2+6*node] =  -2.5;
+    metric_file[3+6*node] =  25.0;
+    metric_file[4+6*node] =   1.0;
+    metric_file[5+6*node] =   1.5;
+
+    RSS( ref_metric_smr( metric_imply, metric_file, metric, ref_grid ), "smr" );
+
+    RWDS( 9.812655244359012,  metric[0+6*node], tol, "m[0]");    
+
+    ref_free( metric );
+    ref_free( metric_imply );
+    ref_free( metric_file );
+    RSS( ref_grid_free( ref_grid ), "free");
+
+  }
+
   return 0;
 }
