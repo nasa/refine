@@ -708,3 +708,13 @@ REF_STATUS ref_matrix_inv_gen( REF_INT n, REF_DBL *orig, REF_DBL *inv )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_transpose_gen( REF_INT n, REF_DBL *a, REF_DBL *at )
+{
+  REF_INT i, j;
+
+  for (j = 0; j<n ; j++ )
+    for (i=0;i<n;i++)
+      at[j+n*i] = a[i+n*j];
+
+  return REF_SUCCESS;
+}

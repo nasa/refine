@@ -519,5 +519,25 @@ inv(a)
     RWDS( -0.0505050505050505, inv[1+1*2], tol, "inv[1,1]");
   }
 
+  { /* transpose gen 3 */
+    REF_DBL tol = -1.0;
+    REF_INT n=3;
+    REF_DBL a[9]= {1,2,3,4,5,6,7,8,9};
+    REF_DBL at[9];
+
+    RSS( ref_matrix_transpose_gen( n, a, at ), "gen inv");
+
+    RWDS( a[0+0*3], at[0+0*3], tol, "[0,0]");
+    RWDS( a[1+0*3], at[0+1*3], tol, "[1,0]");
+    RWDS( a[2+0*3], at[0+2*3], tol, "[2,0]");
+    RWDS( a[0+1*3], at[1+0*3], tol, "[0,1]");
+    RWDS( a[1+1*3], at[1+1*3], tol, "[1,1]");
+    RWDS( a[2+1*3], at[1+2*3], tol, "[2,1]");
+    RWDS( a[0+2*3], at[2+0*3], tol, "[0,2]");
+    RWDS( a[1+2*3], at[2+1*3], tol, "[1,2]");
+    RWDS( a[2+2*3], at[2+2*3], tol, "[2,2]");
+
+  }
+
   return 0;
 }
