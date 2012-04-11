@@ -31,6 +31,7 @@ int main(  int argc, char *argv[] )
       REF_GRID ref_grid;
       REF_DBL *metric_file;
       REF_DBL *metric_imply;
+      REF_DBL *metric;
       REF_INT node, im;
 
       RSS( ref_mpi_start( argc, argv ), "start" );
@@ -39,6 +40,8 @@ int main(  int argc, char *argv[] )
       ref_malloc( metric_file, 
 		  6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
       ref_malloc( metric_imply, 
+		  6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+      ref_malloc( metric, 
 		  6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
@@ -50,8 +53,9 @@ int main(  int argc, char *argv[] )
 
       RSS( ref_metric_imply_from( metric_imply, ref_grid ), "imply" );
 
-      RSS( ref_metric_smr( metric_imply, metric_file, ref_grid ), "smr" );
+      RSS( ref_metric_smr( metric_imply, metric_file, metric, ref_grid ), "smr" );
 
+      ref_free( metric );
       ref_free( metric_imply );
       ref_free( metric_file );
       RSS( ref_grid_free( ref_grid ), "free");

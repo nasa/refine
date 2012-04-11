@@ -11,6 +11,7 @@
 
 #include "ref_malloc.h"
 #include "ref_matrix.h"
+#include "ref_math.h"
 
 REF_STATUS ref_metric_show( REF_DBL *m )
 {
@@ -234,13 +235,17 @@ REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, 
+REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
 			   REF_GRID ref_grid )
 {
   REF_INT node;
   REF_DBL metric_inv[6];
   REF_DBL a[9];
   REF_DBL values[3], vectors[9];
+  REF_DBL diagonal_system[12];
+  REF_DBL h0, h1, h, hmax, hmin, h2;
+  REF_DBL eig;
+  REF_INT i;
 
   /*
 a1 = [ 3 1 ;
@@ -267,6 +272,25 @@ smr = vector'*value*vector
       RSS( ref_matrix_inv_m( &(metric0[6*node]), metric_inv), "inv" );
       RSS( ref_matrix_mult_m( metric_inv, &(metric1[6*node]), a ), "mult" );
       RSS( ref_matrix_diag_gen( 3, a, values, vectors ), "gen eig");
+      for (i=0;i<3;i++)
+	{
+	  h0 = ref_matrix_sqrt_vt_m_v( &(metric0[6*node]), &(vectors[i*3]) );
+	  if ( !ref_math_divisible( 1.0, h0 ) ) RSS( REF_DIV_ZERO, "inf h0");
+	  h0 = 1.0/h0;
+	  h1 = ref_matrix_sqrt_vt_m_v( &(metric1[6*node]), &(vectors[i*3]) );
+	  if ( !ref_math_divisible( 1.0, h1 ) ) RSS( REF_DIV_ZERO, "inf h1");
+	  h1 = 1.0/h1;
+	  hmax = 4.00*h0; 
+	  hmin = 0.25*h0; 
+	  h = MIN( hmax, MAX( hmin, h1 ));
+	  h2 = h*h;
+	  if ( !ref_math_divisible( 1.0, h2 ) ) RSS( REF_DIV_ZERO, "zero h^2");
+	  eig = 1.0/h2;
+	  ref_matrix_eig( diagonal_system, i ) = eig;
+	}
+      RSS( ref_matrix_inv_gen( 3, vectors, &(diagonal_system[3]) ), "gen eig");
+      RSS( ref_matrix_form_m( diagonal_system, &(metric[6*node]) ), "reform m");
+      ref_metric_show( &(metric[6*node]) );
     }
 
   return REF_SUCCESS;
