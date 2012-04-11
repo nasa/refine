@@ -177,6 +177,9 @@ REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid )
       RAS( 0.0 < total_node_volume[node], "zero metric contributions" );
       for( im=0; im<6; im++ )
 	{
+	  if ( !ref_math_divisible( metric[im+6*node], 
+				    total_node_volume[node]) ) 
+	    RSS( REF_DIV_ZERO, "zero volume");
 	  log_m[im] = metric[im+6*node] / total_node_volume[node];
 	}
       RSS( ref_matrix_exp_m( log_m, m ), "exp" );
@@ -275,6 +278,9 @@ REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid )
 	{
 	  for( im=0; im<6; im++ )
 	    {
+	      if ( !ref_math_divisible( metric[im+6*node], 
+					total_node_volume[pri_nodes[node]]) ) 
+		RSS( REF_DIV_ZERO, "zero volume");
 	      log_m[im] = 
 		metric[im+6*node] / total_node_volume[pri_nodes[node]];
 	    }
