@@ -522,7 +522,7 @@ REF_STATUS ref_matrix_qr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_mult( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
+REF_STATUS ref_matrix_mult_gen( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
 {
   REF_INT i, j, k;
 
@@ -567,12 +567,12 @@ REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a,
       iter++;
 
       RSS( ref_matrix_qr( n, rq, q, r ), "qr");
-      ref_matrix_mult( n, r, q, rq );
+      ref_matrix_mult_gen( n, r, q, rq );
 
       for (j = 0; j<n ; j++ )
 	for (i=0;i<n;i++)
 	  qq[i+j*n]=vectors[i+j*n];
-      ref_matrix_mult( n, qq, q, vectors );
+      ref_matrix_mult_gen( n, qq, q, vectors );
 
       max_lower=0.0;
       for (j = 0; j<n ; j++ )
