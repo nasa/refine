@@ -21,6 +21,30 @@ REF_STATUS ref_metric_show( REF_DBL *m )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_from_node( REF_DBL *metric, REF_NODE ref_node )
+{
+  REF_INT node, im;
+
+  each_ref_node_valid_node( ref_node, node )
+    for(im=0;im<6;im++)
+      metric[im+6*node] = 
+	ref_node_metric(ref_node,im,node);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_to_node( REF_DBL *metric, REF_NODE ref_node )
+{
+  REF_INT node, im;
+
+  each_ref_node_valid_node( ref_node, node )
+    for(im=0;im<6;im++)
+      ref_node_metric(ref_node,im,node) = 
+	metric[im+6*node];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);

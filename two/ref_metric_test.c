@@ -32,7 +32,6 @@ int main(  int argc, char *argv[] )
       REF_DBL *metric_file;
       REF_DBL *metric_imply;
       REF_DBL *metric;
-      REF_INT node, im;
 
       RSS( ref_mpi_start( argc, argv ), "start" );
 
@@ -45,15 +44,13 @@ int main(  int argc, char *argv[] )
 		  6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
-
-      each_ref_node_valid_node( ref_grid_node(ref_grid), node )
-	for(im=0;im<6;im++)
-	  metric_file[im+6*node] = 
-	    ref_node_metric(ref_grid_node(ref_grid),im,node);
+      RSS( ref_metric_from_node( metric_file, ref_grid_node(ref_grid)), "from");
 
       RSS( ref_metric_imply_from( metric_imply, ref_grid ), "imply" );
 
       RSS( ref_metric_smr( metric_imply, metric_file, metric, ref_grid ), "smr" );
+
+      RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
 
       ref_free( metric );
       ref_free( metric_imply );
