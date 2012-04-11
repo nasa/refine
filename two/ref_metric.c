@@ -240,8 +240,8 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
 {
   REF_INT node;
   REF_DBL metric_inv[6];
-  REF_DBL a[9];
-  REF_DBL values[3], vectors[9];
+  REF_DBL inv_m1_m2[9];
+  REF_DBL n_values[3], n_vectors[9], inv_n_vectors[9];
   REF_DBL diagonal_system[12];
   REF_DBL h0, h1, h, hmax, hmin, h2;
   REF_DBL eig;
@@ -252,14 +252,15 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
       printf("node %d\n",node);
       ref_metric_show( &(metric0[6*node]) );
       RSS( ref_matrix_inv_m( &(metric0[6*node]), metric_inv), "inv" );
-      RSS( ref_matrix_mult_m( metric_inv, &(metric1[6*node]), a ), "mult" );
-      RSS( ref_matrix_diag_gen( 3, a, values, vectors ), "gen eig");
+      RSS( ref_matrix_mult_m( metric_inv, &(metric1[6*node]), inv_m1_m2 ), 
+	   "mult" );
+      RSS( ref_matrix_diag_gen( 3, inv_m1_m2, n_values, n_vectors ), "gen eig");
       for (i=0;i<3;i++)
 	{
-	  h0 = ref_matrix_sqrt_vt_m_v( &(metric0[6*node]), &(vectors[i*3]) );
+	  h0 = ref_matrix_sqrt_vt_m_v( &(metric0[6*node]), &(n_vectors[i*3]) );
 	  if ( !ref_math_divisible( 1.0, h0 ) ) RSS( REF_DIV_ZERO, "inf h0");
 	  h0 = 1.0/h0;
-	  h1 = ref_matrix_sqrt_vt_m_v( &(metric1[6*node]), &(vectors[i*3]) );
+	  h1 = ref_matrix_sqrt_vt_m_v( &(metric1[6*node]), &(n_vectors[i*3]) );
 	  if ( !ref_math_divisible( 1.0, h1 ) ) RSS( REF_DIV_ZERO, "inf h1");
 	  h1 = 1.0/h1;
 	  hmax = 4.00*h0; 
@@ -269,11 +270,16 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
 	  if ( !ref_math_divisible( 1.0, h2 ) ) RSS( REF_DIV_ZERO, "zero h^2");
 	  eig = 1.0/h2;
 	  ref_matrix_eig( diagonal_system, i ) = eig;
+	  printf("eig[%d]=%f\n",i,eig);
 	}
-      RSS( ref_matrix_inv_gen( 3, vectors, &(diagonal_system[3]) ), "gen eig");
+      RSS( ref_matrix_inv_gen( 3, vectors, inv_n_vector ), "gen eig");
+      RSS( ref_matrix_transpose_gen( 3, inv_n_vector, 
+				     &(diagonal_system[3]) ), "gen eig");
+      ref_matrix_show_aqr(3,a,vectors,&(diagonal_system[3]));
       RSS( ref_matrix_form_m( diagonal_system, &(metric[6*node]) ), "reform m");
       ref_metric_show( &(metric[6*node]) );
     }
 
   return REF_SUCCESS;
 }
+

@@ -243,7 +243,12 @@ smr = vector'*val*vector
 
     RSS( ref_metric_smr( metric_imply, metric_file, metric, ref_grid ), "smr" );
 
-    RWDS( 9.812655244359012,  metric[0+6*node], tol, "m[0]");    
+    RWDS(  9.812655244359012, metric[0+6*node], tol, "m[0]");    
+    RWDS( -6.764301991389758, metric[1+6*node], tol, "m[0]");    
+    RWDS( -1.159409438169853, metric[2+6*node], tol, "m[0]");    
+    RWDS(  8.527269886828027, metric[3+6*node], tol, "m[0]");    
+    RWDS( -0.210986632201670, metric[4+6*node], tol, "m[0]");    
+    RWDS(  1.410974767795262, metric[5+6*node], tol, "m[0]");    
 
     ref_free( metric );
     ref_free( metric_imply );
