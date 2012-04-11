@@ -45,6 +45,36 @@ REF_STATUS ref_metric_to_node( REF_DBL *metric, REF_NODE ref_node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_sanitize( REF_GRID ref_grid )
+{
+  REF_DBL *metric_orig;
+  REF_DBL *metric_imply;
+  REF_DBL *metric;
+
+  ref_malloc( metric_orig, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+  ref_malloc( metric_imply, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+  ref_malloc( metric, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+  RSS( ref_metric_from_node( metric_orig, ref_grid_node(ref_grid)), "from");
+  
+  RSS( ref_metric_imply_from( metric_imply, ref_grid ), "imply" );
+
+  RSS( ref_metric_smr( metric_imply, metric_orig, metric, ref_grid ), "smr" );
+
+  RSS( ref_metric_imply_non_tet( metric, ref_grid ), "imply non tet");
+
+  RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
+
+  ref_free( metric );
+  ref_free( metric_imply );
+  ref_free( metric_orig );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);

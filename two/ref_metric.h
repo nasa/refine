@@ -14,6 +14,8 @@ REF_STATUS ref_metric_show( REF_DBL *metric );
 REF_STATUS ref_metric_from_node( REF_DBL *metric, REF_NODE ref_node );
 REF_STATUS ref_metric_to_node( REF_DBL *metric, REF_NODE ref_node );
 
+REF_STATUS ref_metric_sanitize( REF_GRID ref_grid );
+
 REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid );
 
 REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid );
