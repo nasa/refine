@@ -8,23 +8,28 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef __APPLE__       /* Not needed on Mac OS X */
 #include <float.h>
 #else
 #include <values.h>
 #endif
+
 #ifdef HAVE_SDK
 #include "CADGeom/CADGeom.h"
 #else
 #include "FAKEGeom.h"
 #endif
+
 #include "gridshape.h"
 #include "gridmetric.h"
 

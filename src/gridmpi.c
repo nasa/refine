@@ -11,6 +11,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "plan.h"
 #include "gridmetric.h"
 #include "gridinsert.h"

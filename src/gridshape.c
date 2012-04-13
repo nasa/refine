@@ -8,11 +8,14 @@
  * Email:Mike.Park@NASA.Gov
  */
   
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <limits.h>
 #ifdef __APPLE__       /* Not needed on Mac OS X */
 #include <float.h>
@@ -20,6 +23,7 @@
 #include <malloc.h>
 #include <values.h>
 #endif
+
 #include "gridmath.h"
 #include "gridcad.h"
 #include "gridshape.h"

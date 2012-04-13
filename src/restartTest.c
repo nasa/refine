@@ -6,12 +6,15 @@
  * Email:mike.park@nasa.gov
  */
 
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "CADGeom/CADGeom.h"
 
 #define SubtractVector(v1,v2,result) \

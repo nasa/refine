@@ -5,8 +5,6 @@
  * Phone:(757)864-6604
  * Email:m.a.park@larc.nasa.gov 
  */
-  
-
 
 #ifndef GRID_H
 #define GRID_H
@@ -14,11 +12,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef __APPLE__       /* Not needed on Mac OS X */
 #include <float.h>
 #else
 #include <values.h>
 #endif
+
 #include "refine_defs.h"
 #include "adj.h"
 #include "line.h"

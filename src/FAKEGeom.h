@@ -6,13 +6,16 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-
-
 #ifndef CADGEOM_H
 #define CADGEOM_H
 
 #include <stdlib.h>
 #include <time.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "refine_defs.h"
 
 BEGIN_C_DECLORATION

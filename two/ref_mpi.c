@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <time.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef HAVE_MPI
 #include "mpi.h"
 #endif

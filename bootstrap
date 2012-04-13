@@ -2,7 +2,8 @@
 
 set -x
 
-aclocal $ACLOCAL_FLAGS \
-&& automake --copy --gnu --add-missing \
-&& autoconf 
+aclocal && \
+autoheader --force && \
+automake --copy --gnu --add-missing && \
+autoconf 
 

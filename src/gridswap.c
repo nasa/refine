@@ -6,11 +6,14 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "plan.h"
 #include "queue.h"
 #include "gridmetric.h"

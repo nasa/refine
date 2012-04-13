@@ -11,6 +11,10 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "grid.h"
 #include "gridmetric.h"
 #include "gridswap.h"

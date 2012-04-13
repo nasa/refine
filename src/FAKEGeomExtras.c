@@ -6,10 +6,13 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-
-
 #include <stdlib.h>
 #include <stdio.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "FAKEGeom.h"
   
 GridBool UGrid_FromArrays(UGridPtr *ugp,

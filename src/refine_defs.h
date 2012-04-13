@@ -6,8 +6,6 @@
  * Email:m.a.park@larc.nasa.gov 
  */
   
-
-
 #ifndef MASTER_HEADER_H
 #define MASTER_HEADER_H
 
@@ -17,6 +15,10 @@
 #else
 #  define BEGIN_C_DECLORATION
 #  define END_C_DECLORATION
+#endif
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
 
 BEGIN_C_DECLORATION

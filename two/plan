@@ -1,6 +1,4 @@
 
-* how to stop virtual hanging nodes, why is quality passing?
-* examine nose of tiny plane to make nice grid
 * best pract?
 
 nice
@@ -16,8 +14,6 @@ tet adaptation.
     stopping
     tolerence
   metric
-    implied mixed metric
-    limit change in metric
     smoothing
   partition poor quality cells to the interior with aging
 
@@ -27,7 +23,6 @@ projection (fake geom)
 fun3d
   solve bp
   adjoint bp validation
-  cgns mixed -> tecplot bug reported
   error estimation for mixed
   export res from adjoint
 
