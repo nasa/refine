@@ -37,12 +37,12 @@ static GridMove *gm = NULL;
 static Queue *queue = NULL;
 static Plan *plan = NULL;
 
-void gridapiversion_( int *refine_api_version )
+void FC_FUNC(gridapiversion,GRIDAPIVERSION)( int *refine_api_version )
 {
   *refine_api_version = 100800000;
 }
 
-void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z )
+void FC_FUNC(gridcreate,GRIDCREATE)( int *partId, int *nnode, double *x, double *y, double *z )
 {
   int node;
 
@@ -67,13 +67,13 @@ void gridcreate_( int *partId, int *nnode, double *x, double *y, double *z )
 #endif
 }
 
-void gridfree_( void )
+void FC_FUNC(gridfree,GRIDFREE)( void )
 {
   queueFree(queue); queue = NULL;
   gridFree(grid); grid = NULL;
 }
 
-void gridinsertcells_( int *nodes_per_cell, int *ncell, int *c2n )
+void FC_FUNC(gridinsertcells,GRIDINSERTCELLS)( int *nodes_per_cell, int *ncell, int *c2n )
 {
   int cell;
  
@@ -109,7 +109,7 @@ void gridinsertcells_( int *nodes_per_cell, int *ncell, int *c2n )
   }
 }
 
-void gridinsertbc_(int *faceId, int *nodes_per_face, int *nface, int *f2n)
+void FC_FUNC(gridinsertbc,GRIDINSERTBC)(int *faceId, int *nodes_per_face, int *nface, int *f2n)
 {
   int face;
   int node0, node1, node2, node3;
@@ -151,7 +151,7 @@ void gridinsertbc_(int *faceId, int *nodes_per_face, int *nface, int *f2n)
 
 }
 
-void gridsetmap_( int *nnode, double* map )
+void FC_FUNC(gridsetmap,GRIDSETMAP)( int *nnode, double* map )
 {
   int node;
   for ( node=0; node<*nnode; node++) 
@@ -164,7 +164,7 @@ void gridsetmap_( int *nnode, double* map )
 #endif
 }
 
-void gridsetimesh_( int *nnode, int *imesh )
+void FC_FUNC(gridsetimesh,GRIDSETIMESH)( int *nnode, int *imesh )
 {
   int node;
   for ( node=0; node<*nnode; node++)
@@ -175,13 +175,13 @@ void gridsetimesh_( int *nnode, int *imesh )
   queue = queueCreate( 9 + 1 + gridNAux(grid) ); 
 }
 
-void gridsetnodepart_( int *nnode, int *part )
+void FC_FUNC(gridsetnodepart,GRIDSETNODEPART)( int *nnode, int *part )
 {
   int node;
   for ( node=0; node<*nnode; node++) gridSetNodePart(grid, node, part[node]-1);
 }
 
-void gridsetnodelocal2global_( int *partId, int *nnodeg, 
+void FC_FUNC(gridsetnodelocal2global,GRIDSETNODELOCAL2GLOBAL)( int *partId, int *nnodeg, 
 			       int *nnode, int *nnode0, int *local2global )
 {
   int node;
@@ -197,14 +197,14 @@ void gridsetnodelocal2global_( int *partId, int *nnodeg,
   }
 }
 
-void gridfreezenode_( int *nodeFortran )
+void FC_FUNC(gridfreezenode,GRIDFREEZENODE)( int *nodeFortran )
 {
   int nodeC;
   nodeC = (*nodeFortran)-1;
   gridFreezeNode( grid, nodeC );
 }
 
-void gridparallelloadcapri_( char *url, char *modeler, char *capriProject,
+void FC_FUNC(gridparallelloadcapri,GRIDPARALLELLOADCAPRI)( char *url, char *modeler, char *capriProject,
                              int *status )
 {
   gridSetCostConstraint(grid, gridCostConstraint(grid)|gridCOST_CNST_AREAUV);
@@ -217,12 +217,12 @@ void gridparallelloadcapri_( char *url, char *modeler, char *capriProject,
   }
 }
 
-void gridparallelsavecapri_( char *capriProject )
+void FC_FUNC(gridparallelsavecapri,GRIDPARALLELSAVECAPRI)( char *capriProject )
 {
   gridParallelGeomSave( grid, capriProject );
 }
 
-void gridprojectallfaces_( void )
+void FC_FUNC(gridprojectallfaces,GRIDPROJECTALLFACES)( void )
 {
   int face, node, nodes[3], faceId;
 #ifdef PARALLEL_VERBOSE 
@@ -254,7 +254,7 @@ void gridprojectallfaces_( void )
 }
 
 
-void gridtestcadparameters_( void )
+void FC_FUNC(gridtestcadparameters,GRIDTESTCADPARAMETERS)( void )
 {
   int global, local; 
   int nodes[3], edge, edgeId, face, faceId;
@@ -292,7 +292,7 @@ void gridtestcadparameters_( void )
 
 }
 
-void gridminar_( double *aspectratio )
+void FC_FUNC(gridminar,GRIDMINAR)( double *aspectratio )
 {
   *aspectratio = gridMinThawedAR( grid );
 #ifdef PARALLEL_VERBOSE 
@@ -301,7 +301,7 @@ void gridminar_( double *aspectratio )
 #endif
 }
 
-void gridwritetecplotsurfacezone_( void )
+void FC_FUNC(gridwritetecplotsurfacezone,GRIDWRITETECPLOTSURFACEZONE)( void )
 {
   char filename[256];
 
@@ -309,24 +309,24 @@ void gridwritetecplotsurfacezone_( void )
   gridWriteTecplotInvalid(grid,filename);
 }
 
-void gridexportfast_( void )
+void FC_FUNC(gridexportfast,GRIDEXPORTFAST)( void )
 {
   char filename[256];
   sprintf(filename, "grid%04d.fgrid", gridPartId(grid)+1 );
   gridExportFAST(grid,filename);
 }
 
-void gridsetcostconstraint_( int *cost_constraint )
+void FC_FUNC(gridsetcostconstraint,GRIDSETCOSTCONSTRAINT)( int *cost_constraint )
 {
   gridSetCostConstraint(grid, *cost_constraint);
 }
 
-void gridconstrainsurfacenode_( void )
+void FC_FUNC(gridconstrainsurfacenode,GRIDCONSTRAINSURFACENODE)( void )
 {
   gridConstrainSurfaceNode(grid);
 }
 
-void gridparallelswap_( int *processor, double *ARlimit )
+void FC_FUNC(gridparallelswap,GRIDPARALLELSWAP)( int *processor, double *ARlimit )
 {
 #ifdef PARALLEL_VERBOSE 
   printf(" %6d swap  processor %2d      initial AR%14.10f",
@@ -391,7 +391,7 @@ void gridparallelswap_( int *processor, double *ARlimit )
 
 }
 
-void gridparallelsmooth_( int *processor,
+void FC_FUNC(gridparallelsmooth,GRIDPARALLELSMOOTH)( int *processor,
 			  double *optimizationLimit, double *laplacianLimit,
                           int *geometryAllowed )
 {
@@ -412,7 +412,7 @@ void gridparallelsmooth_( int *processor,
 #endif
 }
 
-void gridparallelrelaxneg_( int *processor, int *geometryAllowed )
+void FC_FUNC(gridparallelrelaxneg,GRIDPARALLELRELAXNEG)( int *processor, int *geometryAllowed )
 {
   GridBool localOnly, smoothOnSurface;
   localOnly = (-1 == (*processor));
@@ -430,14 +430,14 @@ void gridparallelrelaxneg_( int *processor, int *geometryAllowed )
 #endif
 }
 
-void gridparallelrelaxsurf_( int *processor )
+void FC_FUNC(gridparallelrelaxsurf,GRIDPARALLELRELAXSURF)( int *processor )
 {
   GridBool localOnly;
   localOnly = (-1 == (*processor));
   gridParallelRelaxNegativeFaceAreaUV(grid, localOnly);
 }
 
-void gridparalleladapt_( int *processor, 
+void FC_FUNC(gridparalleladapt,GRIDPARALLELADAPT)( int *processor, 
 			 double *minLength, double *maxLength )
 {
 #ifdef PARALLEL_VERBOSE 
@@ -450,7 +450,7 @@ void gridparalleladapt_( int *processor,
   } 
 }
 
-void gridparallelpreproject_( int *processor )
+void FC_FUNC(gridparallelpreproject,GRIDPARALLELPREPROJECT)( int *processor )
 {
 #ifdef PARALLEL_VERBOSE 
   printf(" %6d prepj processor %2d ",gridPartId(grid),*processor);
@@ -462,12 +462,12 @@ void gridparallelpreproject_( int *processor )
   } 
 }
 
-void queuedumpsize_( int *nInt, int *nDouble )
+void FC_FUNC(queuedumpsize,QUEUEDUMPSIZE)( int *nInt, int *nDouble )
 {
   queueDumpSize(queue, nInt, nDouble);
 }
 
-void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
+void FC_FUNC(queuedump,QUEUEDUMP)( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   /* this is for the fortran interface */
   SUPRESS_UNUSED_COMPILER_WARNING(nInt);
@@ -477,7 +477,7 @@ void queuedump_( int *nInt, int *nDouble, int *ints, double *doubles )
   queueReset(queue);
 }
 
-void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
+void FC_FUNC(gridapplyqueue,GRIDAPPLYQUEUE)( int *nInt, int *nDouble, int *ints, double *doubles )
 {
   Queue *appliedQueue;
 
@@ -491,18 +491,18 @@ void gridapplyqueue_( int *nInt, int *nDouble, int *ints, double *doubles )
   queueFree(appliedQueue);
 }
 
-void gridglobalnnode_( int *nnodeg )
+void FC_FUNC(gridglobalnnode,GRIDGLOBALNNODE)( int *nnodeg )
 {
   *nnodeg = gridGlobalNNode(grid);
 }
 
-void gridglobalshift_( int *oldnnodeg, int *newnnodeg, int *nodeoffset )
+void FC_FUNC(gridglobalshift,GRIDGLOBALSHIFT)( int *oldnnodeg, int *newnnodeg, int *nodeoffset )
 {
   gridGlobalShiftNode( grid, *oldnnodeg, *newnnodeg, *nodeoffset);
   queueGlobalShiftNode( queue, *oldnnodeg, *nodeoffset);
 }
 
-void gridrenumberglobalnodes_( int *nnode, int *new2old )
+void FC_FUNC(gridrenumberglobalnodes,GRIDRENUMBERGLOBALNODES)( int *nnode, int *new2old )
 {
   int i;
   for (i=0;i<*nnode;i++) new2old[i]--;
@@ -510,12 +510,12 @@ void gridrenumberglobalnodes_( int *nnode, int *new2old )
   for (i=0;i<*nnode;i++) new2old[i]++;
 }
 
-void gridnunusednodeglobal_( int *nunused )
+void FC_FUNC(gridnunusednodeglobal,GRIDNUNUSEDNODEGLOBAL)( int *nunused )
 {
   *nunused = gridNUnusedNodeGlobal( grid );
 }
 
-void gridgetunusednodeglobal_( int *nunused, int *unused )
+void FC_FUNC(gridgetunusednodeglobal,GRIDGETUNUSEDNODEGLOBAL)( int *nunused, int *unused )
 {
   /* this is for the fortran interface */
   SUPRESS_UNUSED_COMPILER_WARNING(nunused);
@@ -523,13 +523,13 @@ void gridgetunusednodeglobal_( int *nunused, int *unused )
   gridGetUnusedNodeGlobal( grid, unused );
 }
 
-void gridjoinunusednodeglobal_( int *nunused, int *unused )
+void FC_FUNC(gridjoinunusednodeglobal,GRIDJOINUNUSEDNODEGLOBAL)( int *nunused, int *unused )
 {
   int i;
   for (i=0;i<(*nunused);i++) gridJoinUnusedNodeGlobal( grid, unused[i] );
 }
 
-void gridcopyunusednodeglobal_( int *nunused, int *unused )
+void FC_FUNC(gridcopyunusednodeglobal,GRIDCOPYUNUSEDNODEGLOBAL)( int *nunused, int *unused )
 {
   int i;
 
@@ -544,19 +544,19 @@ void gridcopyunusednodeglobal_( int *nunused, int *unused )
     grid->unusedNodeGlobal[i] = unused[i];
 }
 
-void grideliminateunusednodeglobal_(  )
+void FC_FUNC(grideliminateunusednodeglobal,GRIDELIMINATEUNUSEDNODEGLOBAL)(  )
 {
   gridEliminateUnusedNodeGlobal( grid );
 }
 
-void gridsortfun3d_( int *nnodes0, int *nnodes01, int *nnodesg )
+void FC_FUNC(gridsortfun3d,GRIDSORTFUN3D)( int *nnodes0, int *nnodes01, int *nnodesg )
 {
   gridSortNodeFUN3D( grid, nnodes0 );
   *nnodes01 = gridNNode(grid);
   *nnodesg = gridGlobalNNode(grid);
 }
 
-void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
+void FC_FUNC(gridgetnodes,GRIDGETNODES)( int *nnode, int *l2g, double *x, double *y, double *z)
 {
   int node;
   double xyz[3];
@@ -573,7 +573,7 @@ void gridgetnodes_( int *nnode, int *l2g, double *x, double *y, double *z)
   }
 }
 
-void gridgetmap_( int *nnode, double *map)
+void FC_FUNC(gridgetmap,GRIDGETMAP)( int *nnode, double *map)
 {
   int node;
 
@@ -585,7 +585,7 @@ void gridgetmap_( int *nnode, double *map)
   }
 }
 
-void gridgetfreezestate_( int *nnode, int *state)
+void FC_FUNC(gridgetfreezestate,GRIDGETFREEZESTATE)( int *nnode, int *state)
 {
   int node;
 
@@ -605,7 +605,7 @@ void gridgetfreezestate_( int *nnode, int *state)
     }
 }
 
-void gridgetimesh_( int *nnode, int *imesh)
+void FC_FUNC(gridgetimesh,GRIDGETIMESH)( int *nnode, int *imesh)
 {
   int node;
 
@@ -617,7 +617,7 @@ void gridgetimesh_( int *nnode, int *imesh)
   }
 }
 
-void gridgetncell_( int *nodes_per_cell, int *ncell )
+void FC_FUNC(gridgetncell,GRIDGETNCELL)( int *nodes_per_cell, int *ncell )
 {
 
   switch (*nodes_per_cell) {
@@ -639,7 +639,7 @@ void gridgetncell_( int *nodes_per_cell, int *ncell )
 
 }
 
-void gridgetcell_( int *nodes_per_cell, int *ncell, int *c2n )
+void FC_FUNC(gridgetcell,GRIDGETCELL)( int *nodes_per_cell, int *ncell, int *c2n )
 {
   int cell, total;
   int node, nodes[6];
@@ -692,7 +692,7 @@ void gridgetcell_( int *nodes_per_cell, int *ncell, int *c2n )
 
 }
 
-void gridgetbcsize_( int *ibound, int *nodes_per_face, int *nface )
+void FC_FUNC(gridgetbcsize,GRIDGETBCSIZE)( int *ibound, int *nodes_per_face, int *nface )
 {
   int face, nodes[4], id;
   
@@ -721,7 +721,7 @@ void gridgetbcsize_( int *ibound, int *nodes_per_face, int *nface )
   }
 }
 
-void gridgetbc_( int *ibound, int *nodes_per_face, int *nface, int *f2n )
+void FC_FUNC(gridgetbc,GRIDGETBC)( int *ibound, int *nodes_per_face, int *nface, int *f2n )
 {
   int face, n, nodes[4], id;
 
@@ -762,7 +762,7 @@ void gridgetbc_( int *ibound, int *nodes_per_face, int *nface, int *f2n )
 
 }
 
-void gridsetnaux_( int *naux )
+void FC_FUNC(gridsetnaux,GRIDSETNAUX)( int *naux )
 {
   int imesh_index;
 
@@ -774,12 +774,12 @@ void gridsetnaux_( int *naux )
   queue = queueCreate( 9 + imesh_index + gridNAux(grid) ); 
 }
 
-void gridgetnaux_( int *naux )
+void FC_FUNC(gridgetnaux,GRIDGETNAUX)( int *naux )
 {
   *naux = gridNAux(grid);
 }
 
-void gridsetauxvector_( int *nnode, int *offset, double *x )
+void FC_FUNC(gridsetauxvector,GRIDSETAUXVECTOR)( int *nnode, int *offset, double *x )
 {
   int node;
   for (node=0;node<(*nnode);node++) {
@@ -787,7 +787,7 @@ void gridsetauxvector_( int *nnode, int *offset, double *x )
   }
 }
 
-void gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
+void FC_FUNC(gridsetauxmatrix,GRIDSETAUXMATRIX)( int *ndim, int *nnode, int *offset, double *x )
 {
   int node, dim;
   for (node=0;node<(*nnode);node++) {
@@ -797,7 +797,7 @@ void gridsetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
   }
 }
 
-void gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
+void FC_FUNC(gridsetauxmatrix3,GRIDSETAUXMATRIX3)( int *ndim, int *nnode, int *offset, double *x )
 {
   int node, dim;
   for (node=0;node<(*nnode);node++) {
@@ -807,7 +807,7 @@ void gridsetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
   }
 }
 
-void gridgetauxvector_( int *nnode, int *offset, double *x )
+void FC_FUNC(gridgetauxvector,GRIDGETAUXVECTOR)( int *nnode, int *offset, double *x )
 {
   int node;
   for (node=0;node<(*nnode);node++) {
@@ -815,7 +815,7 @@ void gridgetauxvector_( int *nnode, int *offset, double *x )
   }
 }
 
-void gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
+void FC_FUNC(gridgetauxmatrix,GRIDGETAUXMATRIX)( int *ndim, int *nnode, int *offset, double *x )
 {
   int node, dim;
   for (node=0;node<(*nnode);node++) {
@@ -825,7 +825,7 @@ void gridgetauxmatrix_( int *ndim, int *nnode, int *offset, double *x )
   }
 }
 
-void gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
+void FC_FUNC(gridgetauxmatrix3,GRIDGETAUXMATRIX3)( int *ndim, int *nnode, int *offset, double *x )
 {
   int node, dim;
   for (node=0;node<(*nnode);node++) {
@@ -835,14 +835,14 @@ void gridgetauxmatrix3_( int *ndim, int *nnode, int *offset, double *x )
   }
 }
 
-void gridghostcount_( int *nproc, int *count )
+void FC_FUNC(gridghostcount,GRIDGHOSTCOUNT)( int *nproc, int *count )
 {
   if (grid!=gridGhostDataCountByPartition(grid, (*nproc), count))
     printf("%s: %d: gridghostcount_ %s returned error\n", __FILE__, __LINE__,
 	   "gridGhostDataCountByPartition");
 }
 
-void gridloadghostnodes_( int *nproc, int *clientindex,
+void FC_FUNC(gridloadghostnodes,GRIDLOADGHOSTNODES)( int *nproc, int *clientindex,
 			  int *clientsize, int *localnode, int *globalnode )
 {
   int node, part;
@@ -889,7 +889,7 @@ void gridloadghostnodes_( int *nproc, int *clientindex,
   free(count);
 }
 
-void gridloadlocalnodes_( int *nnode, int *global, int *local )
+void FC_FUNC(gridloadlocalnodes,GRIDLOADLOCALNODES)( int *nnode, int *global, int *local )
 {
   int node, globalnode, localnode;
 
@@ -911,7 +911,7 @@ void gridloadlocalnodes_( int *nnode, int *global, int *local )
   }
 }
 
-void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
+void FC_FUNC(gridloadglobalnodedata,GRIDLOADGLOBALNODEDATA)( int *ndim, int *nnode, int *nodes, double *data )
 {
   int node, localnode;
   int face, faceids, faceId;
@@ -958,7 +958,7 @@ void gridloadglobalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
   }
 }
 
-void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
+void FC_FUNC(gridsetlocalnodedata,GRIDSETLOCALNODEDATA)( int *ndim, int *nnode, int *nodes, double *data )
 {
   int node, localnode;
   int face, faceids, faceId;
@@ -1005,53 +1005,53 @@ void gridsetlocalnodedata_( int *ndim, int *nnode, int *nodes, double *data )
 #endif
 }
 
-void gridmovesetprojectiondisp_( void )
+void FC_FUNC(gridmovesetprojectiondisp,GRIDMOVESETPROJECTIONDISP)( void )
 {
   gm = gridmoveCreate( grid );
   gridmoveProjectionDisplacements( gm );
 }
 
-void gridmoverelaxstartup_( int *relaxationScheme )
+void FC_FUNC(gridmoverelaxstartup,GRIDMOVERELAXSTARTUP)( int *relaxationScheme )
 {
   gridmoveRelaxationStartUp(gm, *relaxationScheme);
 }
 
-void gridmoverelaxstartstep_( double *position)
+void FC_FUNC(gridmoverelaxstartstep,GRIDMOVERELAXSTARTSTEP)( double *position)
 {
   gridmoveRelaxationStartStep( gm, *position );
 }
 
-void gridmoverelaxsubiter_( double *residual)
+void FC_FUNC(gridmoverelaxsubiter,GRIDMOVERELAXSUBITER)( double *residual)
 {
   gridmoveRelaxationSubIteration( gm, residual );
 }
 
-void gridmoverelaxshutdown_( void )
+void FC_FUNC(gridmoverelaxshutdown,GRIDMOVERELAXSHUTDOWN)( void )
 {
   gridmoveRelaxationShutDown(gm);
 }
 
-void gridmoveapplydisplacements_( void )
+void FC_FUNC(gridmoveapplydisplacements,GRIDMOVEAPPLYDISPLACEMENTS)( void )
 {
   gridmoveApplyDisplacements(gm);
 }
 
-void gridmovedataleadingdim_( int *ndim )
+void FC_FUNC(gridmovedataleadingdim,GRIDMOVEDATALEADINGDIM)( int *ndim )
 {
   gridmoveDataLeadingDimension( gm, ndim );
 }
 
-void gridmoveinitializempitest_( void )
+void FC_FUNC(gridmoveinitializempitest,GRIDMOVEINITIALIZEMPITEST)( void )
 {
   gridmoveInitializeMPITest(gm);
 }
 
-void gridmovecompletempitest_( void )
+void FC_FUNC(gridmovecompletempitest,GRIDMOVECOMPLETEMPITEST)( void )
 {
   gridmoveCompleteMPITest(gm);
 }
 
-void gridmoveloadlocalnodedata_( int *ndim, int *nnode, 
+void FC_FUNC(gridmoveloadlocalnodedata,GRIDMOVELOADLOCALNODEDATA)( int *ndim, int *nnode, 
 				 int *nodes, double *data )
 {
   /* this is for the fortran interface */
@@ -1060,7 +1060,7 @@ void gridmoveloadlocalnodedata_( int *ndim, int *nnode,
   gridmoveLoadFortranNodeData( gm, *nnode, nodes, data);
 }
 
-void gridmovesetlocalnodedata_( int *ndim, int *nnode, 
+void FC_FUNC(gridmovesetlocalnodedata,GRIDMOVESETLOCALNODEDATA)( int *ndim, int *nnode, 
 				 int *nodes, double *data )
 {
   /* this is for the fortran interface */
@@ -1069,19 +1069,19 @@ void gridmovesetlocalnodedata_( int *ndim, int *nnode,
   gridmoveSetFortranNodeData( gm, *nnode, nodes, data);
 }
 
-void gridmovefree_( void )
+void FC_FUNC(gridmovefree,GRIDMOVEFREE)( void )
 {
   gridmoveFree( gm ); gm = NULL;
 }
 
-void gridgeomsize_( int *nGeomNode, int *nGeomEdge, int *nGeomFace )
+void FC_FUNC(gridgeomsize,GRIDGEOMSIZE)( int *nGeomNode, int *nGeomEdge, int *nGeomFace )
 {
   *nGeomNode = gridNGeomNode(grid);
   *nGeomEdge = gridNGeomEdge(grid);
   *nGeomFace = gridNGeomFace(grid);
 }
 
-void gridlocalboundnode_( int *nBoundNode )
+void FC_FUNC(gridlocalboundnode,GRIDLOCALBOUNDNODE)( int *nBoundNode )
 {
   int node, nnode;
   nnode = 0;
@@ -1091,18 +1091,18 @@ void gridlocalboundnode_( int *nBoundNode )
   *nBoundNode = nnode;
 }
 
-void gridgeomedgeendpoints_( int *edgeId, int *endPoints )
+void FC_FUNC(gridgeomedgeendpoints,GRIDGEOMEDGEENDPOINTS)( int *edgeId, int *endPoints )
 {
   endPoints[0] = 1 + gridGeomEdgeStart(grid,*edgeId);
   endPoints[1] = 1 + gridGeomEdgeEnd(grid,*edgeId);
 }
 
-void gridmaxedge_( int *maxedge )
+void FC_FUNC(gridmaxedge,GRIDMAXEDGE)( int *maxedge )
 {
   *maxedge = gridMaxEdge( grid );
 }
 
-void gridedge_( int *edge, int *edgeId,
+void FC_FUNC(gridedge,GRIDEDGE)( int *edge, int *edgeId,
 		int *globalnodes, int *nodeparts,
 		double *t, double *xyz)
 {
@@ -1121,17 +1121,17 @@ void gridedge_( int *edge, int *edgeId,
   }
 }
 
-void gridupdateedgegrid_(int *edgeId, int *nCurveNode, double *xyz, double *t)
+void FC_FUNC(gridupdateedgegrid,GRIDUPDATEEDGEGRID)(int *edgeId, int *nCurveNode, double *xyz, double *t)
 {
   gridUpdateEdgeGrid( grid, *edgeId, *nCurveNode, xyz, t);
 }
 
-void gridmaxface_( int *maxface )
+void FC_FUNC(gridmaxface,GRIDMAXFACE)( int *maxface )
 {
   *maxface = gridMaxFace( grid );
 }
 
-void gridface_( int *face, int *faceId, 
+void FC_FUNC(gridface,GRIDFACE)( int *face, int *faceId, 
 		int *globalnodes, int *nodeparts,
 		double *uv, double *xyz)
 {
@@ -1154,19 +1154,19 @@ void gridface_( int *face, int *faceId,
   }
 }
 
-void gridfaceedgecount_( int *faceId, int *faceEdgeCount )
+void FC_FUNC(gridfaceedgecount,GRIDFACEEDGECOUNT)( int *faceId, int *faceEdgeCount )
 {
   *faceEdgeCount = gridFaceEdgeCount( *faceId );
 }
 
-void gridfaceedgel2g_( int *faceId, int *faceEdgeCount, int *local2global )
+void FC_FUNC(gridfaceedgel2g,GRIDFACEEDGEL2G)( int *faceId, int *faceEdgeCount, int *local2global )
 {
   int i;
   gridFaceEdgeLocal2Global( grid, *faceId, *faceEdgeCount, local2global );
   for (i=0;i<*faceEdgeCount;i++) local2global[i]++;
 }
 
-void gridupdategeometryface_( int *faceId, int *nnode, double *xyz, double *uv,
+void FC_FUNC(gridupdategeometryface,GRIDUPDATEGEOMETRYFACE)( int *faceId, int *nnode, double *xyz, double *uv,
 			      int *nface, int *f2n )
 {
   int i;
@@ -1176,7 +1176,7 @@ void gridupdategeometryface_( int *faceId, int *nnode, double *xyz, double *uv,
   for( i=0 ; i<3*(*nface) ; i++) f2n[i]++; 
 }
 
-void gridcreateshellfromfaces_( void )
+void FC_FUNC(gridcreateshellfromfaces,GRIDCREATESHELLFROMFACES)( void )
 {
   gridCreateShellFromFaces( grid );
 }
