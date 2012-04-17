@@ -1,9 +1,11 @@
 
+Tue Apr 17, 2012 : Released Refine 1.8.5
+
 - use autoconf standard FC_FUNC and FC_FUNC_ macros to name mangle
     fortran interfaces
 - use config.h to define FC_FUNC_ (for xlf and xlc)
 
-Thu Feb 16, 2014 : Released Refine 1.8.4
+Thu Feb 16, 2012 : Released Refine 1.8.4
 
 - towards eliminating the creatation of "collapsed cells", tets with 
   more then one boundary face: do not collapse if either node is frozen 
