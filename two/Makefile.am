@@ -59,6 +59,10 @@ bin_PROGRAMS += convert
 convert_SOURCES = convert.c
 convert_LDADD = libref2.a -lm
 
+bin_PROGRAMS += axisymmetric
+axisimmetric_SOURCES = axisymmetric.c
+axisymmetric_LDADD = libref2.a -lm
+
 noinst_PROGRAMS =
 TESTS =
 

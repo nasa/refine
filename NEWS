@@ -1,4 +1,7 @@
 
+- two/axisymmetric can convert some 2D grids into axi-symmetric grids
+  (with many caveats)
+
 Tue Apr 17, 2012 : Released Refine 1.8.5
 
 - use autoconf standard FC_FUNC and FC_FUNC_ macros to name mangle
