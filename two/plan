@@ -40,7 +40,7 @@ March
 April
 1  adapt flat plate and dpw
 8  improve flat plate, limit metric, smooth tet metric with prism
-15 dpw
+15 dpw (const cl) + call from fun 
 22 ( 27 ** data submit ** )
 29 projection
 
