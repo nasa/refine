@@ -14,7 +14,7 @@ libref2_a_SOURCES = \
 	ref_endian.h \
 	ref_export.c ref_export.h \
 	ref_face.c ref_face.h \
-	ref_fixture.c ref_fixtusre.h \
+	ref_fixture.c ref_fixture.h \
 	ref_fortran.c ref_fortran.h \
 	ref_gather.c ref_gather.h \
 	ref_grid.c ref_grid.h \
