@@ -69,6 +69,10 @@ else
   AM_CONDITIONAL(BUILD_EXECUTABLES,false)
 fi
 
+dnl turn off mpi stuff in stand alone refine (set by fun3d)
+AM_CONDITIONAL(BUILD_MPI,false)
+AC_SUBST([MPIINC])
+
 dnl Check for SDK
 
 have_SDK='no'

@@ -35,7 +35,11 @@ libref2_a_SOURCES = \
 	ref_subdiv.h ref_subdiv.c \
 	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
+
 libref2_a_CFLAGS = @zoltan_include@
+if BUILD_MPI
+libref2_a_CFLAGS += -I @MPIINC@
+endif # BUILD_MPI
 
 bin_PROGRAMS =
 
@@ -60,11 +64,13 @@ convert_SOURCES = convert.c
 convert_LDADD = libref2.a -lm
 
 bin_PROGRAMS += axisymmetric
-axisimmetric_SOURCES = axisymmetric.c
+axisymmetric_SOURCES = axisymmetric.c
 axisymmetric_LDADD = libref2.a -lm
 
 noinst_PROGRAMS =
 TESTS =
+
+if BUILD_EXECUTABLES
 
 TESTS += ref_adapt_test
 noinst_PROGRAMS += ref_adapt_test
@@ -210,3 +216,6 @@ TESTS += ref_validation_test
 noinst_PROGRAMS += ref_validation_test
 ref_validation_test_SOURCES = ref_validation_test.c
 ref_validation_test_LDADD = libref2.a -lm
+
+endif # BUILD_EXECUTABLES
+
