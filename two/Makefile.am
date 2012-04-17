@@ -35,7 +35,7 @@ libref2_a_SOURCES = \
 	ref_subdiv.h ref_subdiv.c \
 	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
-libref2_a_CFLAGS = @zoltan_INCLUDE@
+libref2_a_CFLAGS = @zoltan_include@
 
 bin_PROGRAMS =
 
@@ -65,7 +65,7 @@ TESTS =
 TESTS += ref_adapt_test
 noinst_PROGRAMS += ref_adapt_test
 ref_adapt_test_SOURCES = ref_adapt_test.c
-ref_adapt_test_LDADD = libref2.a @zoltan_LDADD@ -lm
+ref_adapt_test_LDADD = libref2.a @zoltan_ldadd@ -lm
 
 TESTS += ref_adj_test
 noinst_PROGRAMS += ref_adj_test
@@ -110,7 +110,7 @@ ref_face_test_LDADD = libref2.a -lm
 TESTS += ref_fixture_test
 noinst_PROGRAMS += ref_fixture_test
 ref_fixture_test_SOURCES = ref_fixture_test.c
-ref_fixture_test_LDADD = libref2.a @zoltan_LDADD@ -lm
+ref_fixture_test_LDADD = libref2.a @zoltan_ldadd@ -lm
 
 TESTS += ref_fortran_test
 noinst_PROGRAMS += ref_fortran_test
@@ -120,7 +120,7 @@ ref_fortran_test_LDADD = libref2.a -lm
 TESTS += ref_gather_test
 noinst_PROGRAMS += ref_gather_test
 ref_gather_test_SOURCES = ref_gather_test.c
-ref_gather_test_LDADD = libref2.a @zoltan_LDADD@ -lm
+ref_gather_test_LDADD = libref2.a @zoltan_ldadd@ -lm
 
 TESTS += ref_grid_test
 noinst_PROGRAMS += ref_grid_test
@@ -150,12 +150,12 @@ ref_matrix_test_LDADD = libref2.a -lm
 TESTS += ref_metric_test
 noinst_PROGRAMS += ref_metric_test
 ref_metric_test_SOURCES = ref_metric_test.c
-ref_metric_test_LDADD = libref2.a @zoltan_LDADD@ -lm
+ref_metric_test_LDADD = libref2.a @zoltan_ldadd@ -lm
 
 TESTS += ref_migrate_test
 noinst_PROGRAMS += ref_migrate_test
 ref_migrate_test_SOURCES = ref_migrate_test.c
-ref_migrate_test_LDADD = libref2.a @zoltan_LDADD@ -lm
+ref_migrate_test_LDADD = libref2.a @zoltan_ldadd@ -lm
 
 TESTS += ref_mpi_test
 noinst_PROGRAMS += ref_mpi_test
@@ -170,7 +170,7 @@ ref_node_test_LDADD = libref2.a -lm
 TESTS += ref_part_test
 noinst_PROGRAMS += ref_part_test
 ref_part_test_SOURCES = ref_part_test.c
-ref_part_test_LDADD = libref2.a @zoltan_LDADD@ -lm
+ref_part_test_LDADD = libref2.a @zoltan_ldadd@ -lm
 
 TESTS += ref_quality_test
 noinst_PROGRAMS += ref_quality_test
@@ -195,7 +195,7 @@ ref_split_test_LDADD = libref2.a -lm
 TESTS += ref_subdiv_test
 noinst_PROGRAMS += ref_subdiv_test
 ref_subdiv_test_SOURCES = ref_subdiv_test.c
-ref_subdiv_test_LDADD = libref2.a @zoltan_LDADD@ -lm
+ref_subdiv_test_LDADD = libref2.a @zoltan_ldadd@ -lm
 
 TESTS += ref_swap_test
 noinst_PROGRAMS += ref_swap_test

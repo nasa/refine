@@ -238,16 +238,16 @@ then
     if test "$zoltan_lib_path" != 'no'
     then
       AC_DEFINE([HAVE_ZOLTAN],[1],[Zoltan is available])
-      zoltan_INCLUDE="-I $zoltan_h_path"
-      zoltan_LDADD="-L$zoltan_lib_path -lzoltan"
+      zoltan_include="-I $zoltan_h_path"
+      zoltan_ldadd="-L$zoltan_lib_path -lzoltan"
     else
       AC_MSG_ERROR([libzoltan.a not found in $with_zoltan/lib])
     fi
   else
     AC_MSG_ERROR([zoltan.h not found in $with_zoltan/include])
   fi
-  AC_SUBST([zoltan_INCLUDE])
-  AC_SUBST([zoltan_LDADD])
+  AC_SUBST([zoltan_include])
+  AC_SUBST([zoltan_ldadd])
 fi
 
 
