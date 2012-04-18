@@ -1,11 +1,8 @@
 
-- two unit tests activated by BUILD_EXECUTABLES AM switch to protect
-    mpi link in fun3d
+Wed Apr 18, 2012 : Released Refine 1.8.6 (1.8.5 broken)
+
 - two/axisymmetric can convert some 2D grids into axi-symmetric grids
     (with many caveats)
-
-Tue Apr 17, 2012 : Released Refine 1.8.5
-
 - use autoconf standard FC_FUNC and FC_FUNC_ macros to name mangle
     fortran interfaces
 - use config.h to define FC_FUNC_ (for xlf and xlc)
