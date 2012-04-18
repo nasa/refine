@@ -70,8 +70,6 @@ axisymmetric_LDADD = libref2.a -lm
 noinst_PROGRAMS =
 TESTS =
 
-if BUILD_EXECUTABLES
-
 TESTS += ref_adapt_test
 noinst_PROGRAMS += ref_adapt_test
 ref_adapt_test_SOURCES = ref_adapt_test.c
@@ -216,6 +214,3 @@ TESTS += ref_validation_test
 noinst_PROGRAMS += ref_validation_test
 ref_validation_test_SOURCES = ref_validation_test.c
 ref_validation_test_LDADD = libref2.a -lm
-
-endif # BUILD_EXECUTABLES
-
