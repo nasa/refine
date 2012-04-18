@@ -38,7 +38,7 @@ libref2_a_SOURCES = \
 
 libref2_a_CFLAGS = @zoltan_include@
 if BUILD_MPI
-libref2_a_CFLAGS += -I @MPIINC@
+libref2_a_CFLAGS += -I@MPIINC@
 endif # BUILD_MPI
 
 bin_PROGRAMS =
