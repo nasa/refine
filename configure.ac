@@ -72,6 +72,7 @@ fi
 dnl turn off mpi stuff in stand alone refine (set by fun3d)
 AM_CONDITIONAL(BUILD_MPI,false)
 AC_SUBST([MPIINC])
+AC_SUBST([mpi_ldadd])
 
 dnl Check for SDK
 
