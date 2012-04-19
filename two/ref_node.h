@@ -84,7 +84,7 @@ REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node );
 REF_STATUS ref_node_remove_without_global( REF_NODE ref_node, REF_INT node );
 REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node );
 
-REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT *o2n[] );
+REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT **o2n, REF_INT **n2o );
 
 REF_STATUS ref_node_ghost_real( REF_NODE ref_node );
 REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar );

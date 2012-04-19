@@ -16,6 +16,8 @@
 #include "ref_edge.h"
 #include "ref_node.h"
 
+#include "ref_malloc.h"
+
 #define VTK_TETRA      (10)
 #define VTK_HEXAHEDRON (12)
 #define VTK_WEDGE      (13)
@@ -135,7 +137,7 @@ REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
-  REF_INT *o2n;
+  REF_INT *o2n, *n2o;
   REF_INT ncell,size;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
@@ -151,19 +153,18 @@ REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
   fprintf(file,"ref_export_vtk\n");
   fprintf(file,"ASCII\n");
 
-  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+  RSS( ref_node_compact( ref_node, &o2n, &n2o ), "compact" );
 
   fprintf(file,"DARASET UNSTRUCTURED_GRID\n");
   fprintf(file,"POINTS %d double\n",ref_node_n(ref_node));
 
-  for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( REF_EMPTY != o2n[node] )
-      {
-	fprintf(file, " %.16e %.16e %.16e\n",
-		ref_node_xyz(ref_node,0,node),
-		ref_node_xyz(ref_node,1,node),
-		ref_node_xyz(ref_node,2,node) ) ;
-      }
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    {
+      fprintf(file, " %.16e %.16e %.16e\n",
+	      ref_node_xyz(ref_node,0,n2o[node]),
+	      ref_node_xyz(ref_node,1,n2o[node]),
+	      ref_node_xyz(ref_node,2,n2o[node]) ) ;
+    }
 
   ncell = 0;
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
@@ -206,7 +207,8 @@ REF_STATUS ref_export_vtk( REF_GRID ref_grid, char *filename  )
   each_ref_cell_valid_cell( ref_cell, cell )
     fprintf(file," %d\n",VTK_HEXAHEDRON);
 
-  free(o2n);
+  ref_free(n2o);
+  ref_free(o2n);
 
   fclose(file);
 
@@ -341,11 +343,11 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
 	    fprintf(file,"\n");
 	  }
 
-      free(n2o);
+      ref_free(n2o);
     }
 
   RSS( ref_dict_free( ref_dict ), "free dict" ); 
-  free(o2n);
+  ref_free(o2n);
 
   return REF_SUCCESS;
 }
@@ -425,8 +427,8 @@ REF_STATUS ref_export_tec_vol_zone( REF_GRID ref_grid, FILE *file  )
 	    fprintf(file,"\n");
 	  }
 
-	free(n2o);
-	free(o2n);
+	ref_free(n2o);
+	ref_free(o2n);
 
       }
 
@@ -439,7 +441,7 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT node;
-  REF_INT *o2n;
+  REF_INT *o2n, *n2o;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT brick[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
@@ -463,18 +465,14 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
 	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  ref_node_n(ref_node), ncell, "point", "febrick" );
 
-  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+  RSS( ref_node_compact( ref_node, &o2n, &n2o), "compact" );
 
-
-  for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( REF_EMPTY != o2n[node] )
-      {
-	fprintf(file, " %.16e %.16e %.16e %d\n", 
-		ref_node_xyz(ref_node,0,node),
-		ref_node_xyz(ref_node,1,node),
-		ref_node_xyz(ref_node,2,node),
-		scalar[node] ) ;
-      }
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    fprintf(file, " %.16e %.16e %.16e %d\n", 
+	    ref_node_xyz(ref_node,0,n2o[node]),
+	    ref_node_xyz(ref_node,1,n2o[node]),
+	    ref_node_xyz(ref_node,2,n2o[node]),
+	    scalar[n2o[node]] ) ;
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
@@ -505,7 +503,8 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
       fprintf(file,"\n");
     }
 
-  free(o2n);
+  ref_free(n2o);
+  ref_free(o2n);
 
   fclose(file);
 
@@ -530,7 +529,7 @@ REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT node;
-  REF_INT *o2n;
+  REF_INT *o2n, *n2o;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT brick[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
@@ -557,24 +556,23 @@ REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
 	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  ref_node_n(ref_node), ncell, "point", "febrick" );
 
-  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+  RSS( ref_node_compact( ref_node, &o2n, &n2o ), "compact" );
 
-  for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( REF_EMPTY != o2n[node] )
-      {
-	REF_DBL h0, h1, h2;
-	RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,node),
-				d ), "diag" );
-	RSS( ref_matrix_ascending_eig( d ), "sort eig" );
-	h0 = 1.0/sqrt(d[0]);
-	h1 = 1.0/sqrt(d[1]);
-	h2 = 1.0/sqrt(d[2]);
-	fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n", 
-		ref_node_xyz(ref_node,0,node),
-		ref_node_xyz(ref_node,1,node),
-		ref_node_xyz(ref_node,2,node),
-		h0, h1, h2 ) ;
-      }
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    {
+      REF_DBL h0, h1, h2;
+      RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,n2o[node]),
+			      d ), "diag" );
+      RSS( ref_matrix_ascending_eig( d ), "sort eig" );
+      h0 = 1.0/sqrt(d[0]);
+      h1 = 1.0/sqrt(d[1]);
+      h2 = 1.0/sqrt(d[2]);
+      fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n", 
+	      ref_node_xyz(ref_node,0,n2o[node]),
+	      ref_node_xyz(ref_node,1,n2o[node]),
+	      ref_node_xyz(ref_node,2,n2o[node]),
+	      h0, h1, h2 ) ;
+    }
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
@@ -605,7 +603,8 @@ REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
       fprintf(file,"\n");
     }
 
-  free(o2n);
+  ref_free(n2o);
+  ref_free(o2n);
 
   fclose(file);
 
@@ -636,7 +635,7 @@ REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
-  REF_INT *o2n;
+  REF_INT *o2n, *n2o;
   REF_INT nnode,ntri,ntet;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
@@ -656,12 +655,11 @@ REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
 
   fprintf(file,"%d %d %d\n",nnode,ntri,ntet);
 
-  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+  RSS( ref_node_compact( ref_node, &o2n, &n2o), "compact" );
 
   for ( ixyz = 0 ; ixyz< 3; ixyz++)
-    for ( node = 0; node < ref_node_max(ref_node); node++ )
-      if ( REF_EMPTY != o2n[node] )
-	fprintf(file, " %.16e\n", ref_node_xyz(ref_node,ixyz,node) ) ;
+    for ( node = 0; node < ref_node_n(ref_node); node++ )
+      fprintf(file, " %.16e\n", ref_node_xyz(ref_node,ixyz,n2o[node]) ) ;
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
@@ -686,7 +684,8 @@ REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename  )
       fprintf(file,"\n");
     }
 
-  free(o2n);
+  ref_free(n2o);
+  ref_free(o2n);
 
   fclose(file);
 
@@ -699,7 +698,7 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
-  REF_INT *o2n;
+  REF_INT *o2n, *n2o;
   REF_INT nnode,ntri,nqua,ntet,npyr,npri,nhex;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
@@ -723,14 +722,13 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
 
   fprintf(file,"%d %d %d %d %d %d %d\n",nnode,ntri,nqua,ntet,npyr,npri,nhex);
 
-  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+  RSS( ref_node_compact( ref_node, &o2n, &n2o), "compact" );
 
-  for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( REF_EMPTY != o2n[node] )
-      fprintf(file, " %.16e %.16e %.16e\n", 
-	      ref_node_xyz(ref_node,0,node),
-	      ref_node_xyz(ref_node,1,node),
-	      ref_node_xyz(ref_node,2,node) ) ;
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    fprintf(file, " %.16e %.16e %.16e\n", 
+	    ref_node_xyz(ref_node,0,n2o[node]),
+	    ref_node_xyz(ref_node,1,n2o[node]),
+	    ref_node_xyz(ref_node,2,n2o[node]) ) ;
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
@@ -777,7 +775,8 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
 	}
     }
 
-  free(o2n);
+  ref_free(n2o);
+  ref_free(o2n);
 
   fclose(file);
 
@@ -791,7 +790,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   REF_CELL ref_cell;
   REF_INT nnode,ntri,nqua,ntet,npyr,npri,nhex;
   REF_INT node;
-  REF_INT *o2n;
+  REF_INT *o2n, *n2o;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
   REF_DBL swapped_dbl;
@@ -831,21 +830,20 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   REIS(1, fwrite(&npri,sizeof(REF_INT),1,file),"npri");
   REIS(1, fwrite(&nhex,sizeof(REF_INT),1,file),"nhex");
 
-  RSS( ref_node_compact( ref_node, &o2n), "compact" );
+  RSS( ref_node_compact( ref_node, &o2n, &n2o), "compact" );
 
-  for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( REF_EMPTY != o2n[node] )
-      {
-	swapped_dbl = ref_node_xyz(ref_node,0,node);
-	SWAP_DBL(swapped_dbl);
-	REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"x");
-	swapped_dbl = ref_node_xyz(ref_node,1,node);
-	SWAP_DBL(swapped_dbl);
-	REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"y");
-	swapped_dbl = ref_node_xyz(ref_node,2,node);
-	SWAP_DBL(swapped_dbl);
-	REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"z");
-      }
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    {
+      swapped_dbl = ref_node_xyz(ref_node,0,n2o[node]);
+      SWAP_DBL(swapped_dbl);
+      REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"x");
+      swapped_dbl = ref_node_xyz(ref_node,1,n2o[node]);
+      SWAP_DBL(swapped_dbl);
+      REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"y");
+      swapped_dbl = ref_node_xyz(ref_node,2,n2o[node]);
+      SWAP_DBL(swapped_dbl);
+      REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"z");
+    }
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
@@ -895,7 +893,8 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 	  }
     }
 
-  free(o2n);
+  ref_free(n2o);
+  ref_free(o2n);
 
   fclose(file);
 

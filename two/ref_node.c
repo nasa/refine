@@ -475,27 +475,38 @@ REF_STATUS ref_node_local( REF_NODE ref_node, REF_INT global, REF_INT *local )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT **o2n_ptr )
+REF_STATUS ref_node_compact( REF_NODE ref_node,
+			     REF_INT **o2n_ptr, REF_INT **n2o_ptr )
 {
   REF_INT node;
   REF_INT nnode;
-  REF_INT *o2n;
+  REF_INT *o2n, *n2o;
   
-  ref_malloc( *o2n_ptr, ref_node_max(ref_node), REF_INT );
+  ref_malloc_init( *o2n_ptr, ref_node_max(ref_node), REF_INT, REF_EMPTY );
   o2n = *o2n_ptr;
+  ref_malloc( *n2o_ptr, ref_node_n(ref_node), REF_INT );
+  n2o = *n2o_ptr;
 
-  nnode = 0;
-  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
-    if ( ref_node_valid(ref_node,node) )
+  nnode = 0;    
+  
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id == ref_node_part(ref_node,node) )
       {
 	o2n[node] = nnode;
 	nnode++;
       }
-    else
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
       {
-	o2n[node] = REF_EMPTY;
+	o2n[node] = nnode;
+	nnode++;
       }
+
   RES( nnode, ref_node_n(ref_node), "nnode miscount" );
+
+  each_ref_node_valid_node( ref_node, node )
+    n2o[o2n[node]] = node;
 
   return REF_SUCCESS;
 }
