@@ -41,5 +41,19 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"free"); 
   }
 
+  {  /* cell with these many nodes */
+    REF_GRID ref_grid;
+    REF_CELL ref_cell;
+    REF_INT node_per;
+
+    RSS(ref_grid_create(&ref_grid),"create");
+
+    node_per = 4;
+    RSS( ref_grid_cell_with( ref_grid, node_per, &ref_cell ), "with" );
+    REIS( node_per, ref_cell_node_per( ref_cell ), "match" );
+
+    RSS(ref_grid_free(ref_grid),"free"); 
+  }
+
   return 0;
 }

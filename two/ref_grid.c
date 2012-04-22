@@ -102,3 +102,30 @@ REF_STATUS ref_grid_inspect( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_cell_with( REF_GRID ref_grid, REF_INT node_per_cell,
+			       REF_CELL *ref_cell )
+{
+
+  *ref_cell = NULL;
+
+  switch ( node_per_cell )
+    {
+    case 4:
+      *ref_cell = ref_grid_tet(ref_grid);
+      break;
+    case 5:
+      *ref_cell = ref_grid_pyr(ref_grid);
+      break;
+    case 6:
+      *ref_cell = ref_grid_pri(ref_grid);
+      break;
+    case 8:
+      *ref_cell = ref_grid_hex(ref_grid);
+      break;
+    default:
+      RSS(REF_FAILURE, "unexpected node_per_cell");
+      break;    
+    }
+
+  return REF_SUCCESS;
+}
