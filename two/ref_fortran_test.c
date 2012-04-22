@@ -119,7 +119,7 @@ int main( void )
   free(l2g);
 
   nnodes = nnodesg = REF_EMPTY;
-  RSS( FC_FUNC_(ref_fortran_size_node,REF_FOTRAN_SIZE_node)
+  RSS( FC_FUNC_(ref_fortran_size_node,REF_FORTRAN_SIZE_NODE)
        (&nnodes, &nnodesg),
        "size_node");
   REIS(4,nnodes,"n");
