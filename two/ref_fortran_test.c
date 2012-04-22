@@ -71,9 +71,9 @@ int main( void )
 
   partition = 0;
 
-  RSS( FC_FUNC_(ref_init_node,REF_INIT_NODE)(&nnodes, &nnodesg,
-					      l2g, part, &partition,
-					      x, y, z),"init node");
+  RSS( FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)(&nnodes, &nnodesg,
+						   l2g, part, &partition,
+						   x, y, z),"init node");
 
   node_per_cell = 4;
   ncell = 1;
@@ -84,7 +84,8 @@ int main( void )
   c2n[2] = 3;
   c2n[3] = 4;
 
-  RSS(FC_FUNC_(ref_import_cell,REF_IMPORT_CELL)( &node_per_cell, &ncell, c2n ),
+  RSS(FC_FUNC_(ref_fortran_import_cell,REF_FORTRAN_IMPORT_CELL)
+      ( &node_per_cell, &ncell, c2n ),
       "import cell");
 
   node_per_face = 3;
@@ -95,17 +96,19 @@ int main( void )
   f2n[2] = 1;
 
   ibound=1;
-  RSS(FC_FUNC_(ref_import_boundary,REF_IMPORT_BOUNDARY)( &node_per_face, 
-							 &nface, f2n, &ibound ),
+  RSS(FC_FUNC_(ref_fortran_import_boundary,REF_FORTRAN_IMPORT_BOUNDARY)
+      ( &node_per_face, &nface, f2n, &ibound ),
       "import face");
 
-  RSS( FC_FUNC_(ref_import_metric,REF_IMPORT_METRIC)(&nnodes, m),
+  RSS( FC_FUNC_(ref_fortran_import_metric,REF_FORTRAN_IMPORT_METRIC)
+       (&nnodes, m),
        "import metric");
 
-  RSS( FC_FUNC_(ref_import_ratio,REF_IMPORT_RATIO)(&nnodes, ratio),
+  RSS( FC_FUNC_(ref_fortran_import_ratio,REF_FOTRAN_IMPORT_RATIO)
+       (&nnodes, ratio),
        "import ratio");
 
-  RSS(FC_FUNC_(ref_free,REF_FREE)(),"free");
+  RSS(FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)(),"free");
 
   free(f2n);
   free(c2n);
