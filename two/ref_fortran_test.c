@@ -125,6 +125,20 @@ int main( void )
   REIS(4,nnodes,"n");
   REIS(4,nnodesg,"n");
 
+  l2g  = (REF_INT *) malloc( sizeof(REF_INT) * nnodes );
+  x = (REF_DBL *) malloc( sizeof(REF_DBL) * nnodes );
+  y = (REF_DBL *) malloc( sizeof(REF_DBL) * nnodes );
+  z = (REF_DBL *) malloc( sizeof(REF_DBL) * nnodes );
+
+  RSS( FC_FUNC_(ref_fortran_node,REF_FORTRAN_NODE)(&nnodes, 
+						   l2g,
+						   x, y, z),"get node");
+
+  free(z);
+  free(y);
+  free(x);
+  free(l2g);
+
   RSS(FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)(),"free");
 
   return 0;

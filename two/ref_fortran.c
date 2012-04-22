@@ -8,6 +8,7 @@
 #include "ref_subdiv.h"
 #include "ref_export.h"
 #include "ref_mpi.h"
+#include "ref_malloc.h"
 
 static REF_GRID ref_grid = NULL;
 
@@ -135,7 +136,7 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
 {
   REF_SUBDIV ref_subdiv;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(nnodes)
+  SUPRESS_UNUSED_COMPILER_WARNING(nnodes);
 
   RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
   RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, ratio),"mark rat");
@@ -154,6 +155,32 @@ REF_STATUS FC_FUNC_(ref_fortran_size_node,REF_FORTRAN_SIZE_NODE)
 
   *nnodes = ref_node_n(ref_node);
   *nnodesg = ref_node_n_global(ref_node);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS FC_FUNC_(ref_fortran_node,REF_FORTRAN_NODE)
+     ( REF_INT *nnodes,
+       REF_INT *l2g,
+       REF_DBL *x, REF_DBL *y, REF_DBL *z )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT *o2n, *n2o, node;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(nnodes);
+
+  RSS(ref_node_compact(ref_node,&o2n,&n2o),"compact");
+
+  for ( node = 0; node< ref_node_n( ref_node ); node++ )
+    {
+      l2g[node] = ref_node_global(ref_node,n2o[node]) + 1;
+      x[node] = ref_node_xyz(ref_node,0,n2o[node]);
+      y[node] = ref_node_xyz(ref_node,1,n2o[node]);
+      z[node] = ref_node_xyz(ref_node,2,n2o[node]);
+    }
+
+  ref_free(n2o);
+  ref_free(o2n);
 
   return REF_SUCCESS;
 }

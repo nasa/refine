@@ -35,6 +35,11 @@ REF_STATUS FC_FUNC_(ref_fortran_viz,REF_FORTRAN_VIZ)( void );
 REF_STATUS FC_FUNC_(ref_fortran_size_node,REF_FORTRAN_SIZE_NODE)
      (REF_INT *nnodes, REF_INT *nnodesg);
 
+REF_STATUS FC_FUNC_(ref_fortran_node,REF_FORTRAN_NODE)
+     ( REF_INT *nnodes,
+       REF_INT *l2g, 
+       REF_DBL *x, REF_DBL *y, REF_DBL *z );
+
 REF_STATUS FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)( void );
 
 END_C_DECLORATION
