@@ -108,8 +108,6 @@ int main( void )
        (&nnodes, ratio),
        "import ratio");
 
-  RSS(FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)(),"free");
-
   free(f2n);
   free(c2n);
   free(ratio);
@@ -119,5 +117,15 @@ int main( void )
   free(x);
   free(part);
   free(l2g);
+
+  nnodes = nnodesg = REF_EMPTY;
+  RSS( FC_FUNC_(ref_fortran_size_node,REF_FOTRAN_SIZE_node)
+       (&nnodes, &nnodesg),
+       "size_node");
+  REIS(4,nnodes,"n");
+  REIS(4,nnodesg,"n");
+
+  RSS(FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)(),"free");
+
   return 0;
 }

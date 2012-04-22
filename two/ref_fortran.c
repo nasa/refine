@@ -145,6 +145,19 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
   return REF_SUCCESS;
 }
 
+REF_STATUS FC_FUNC_(ref_fortran_size_node,REF_FORTRAN_SIZE_NODE)
+     (REF_INT *nnodes, REF_INT *nnodesg)
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  
+  RSS( ref_node_synchronize_globals( ref_node ), "sync glob" );
+
+  *nnodes = ref_node_n(ref_node);
+  *nnodesg = ref_node_n_global(ref_node);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)( void )
 {
   RSS( ref_grid_free( ref_grid ), "free grid");
