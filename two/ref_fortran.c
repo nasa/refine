@@ -168,6 +168,40 @@ REF_STATUS FC_FUNC_(ref_fortran_node,REF_FORTRAN_NODE)
   return REF_SUCCESS;
 }
 
+REF_STATUS FC_FUNC_(ref_fortran_size_cell,REF_FORTRAN_SIZE_CELL)
+     (REF_INT *node_per_cell, REF_INT *ncell)
+{
+  REF_CELL ref_cell;
+
+  RSS( ref_grid_cell_with( ref_grid, *node_per_cell, &ref_cell ), "get cell");
+  *ncell = ref_cell_n(ref_cell);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)
+     ( REF_INT *node_per_cell, REF_INT *ncell, 
+       REF_INT *c2n )
+{
+  REF_CELL ref_cell;
+  REF_INT cell, i, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  SUPRESS_UNUSED_COMPILER_WARNING(ncell);
+
+  RSS( ref_grid_cell_with( ref_grid, *node_per_cell, &ref_cell ), "get cell");
+
+  i = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for (node=0;node<ref_cell_node_per(ref_cell);node++)
+	c2n[node+(*node_per_cell)*i] = nodes[node]+1;
+      i++;
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)( void )
 {
   RSS( ref_grid_free( ref_grid ), "free grid");

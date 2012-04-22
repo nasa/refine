@@ -134,6 +134,18 @@ int main( void )
 						   l2g,
 						   x, y, z),"get node");
 
+  ncell = REF_EMPTY;
+  RSS( FC_FUNC_(ref_fortran_size_cell,REF_FORTRAN_SIZE_CELL)
+       (&node_per_cell, &ncell),
+       "size cell");
+  REIS(1,ncell,"n");
+
+  c2n  = (REF_INT *) malloc( sizeof(REF_INT) * node_per_cell * ncell );
+
+  RSS( FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)(&node_per_cell,&ncell, 
+						   c2n),"get cell");
+
+  free(c2n);
   free(z);
   free(y);
   free(x);
