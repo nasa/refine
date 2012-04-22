@@ -5,6 +5,7 @@
 #include "ref_fortran.h"
 
 #include "ref_grid.h"
+#include "ref_subdiv.h"
 #include "ref_export.h"
 #include "ref_mpi.h"
 
@@ -122,6 +123,21 @@ REF_STATUS FC_FUNC_(ref_import_metric,REF_IMPORT_METRIC)(REF_INT *nnodes, REF_DB
   for (node = 0; node < (*nnodes); node++)
     for (i = 0; i < 6 ; i++)
       ref_node_metric(ref_node,i,node) = m[i+6*node];
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS FC_FUNC_(ref_import_ratio,REF_IMPORT_RATIO)(REF_INT *nnodes, 
+						       REF_DBL *ratio )
+{
+  REF_SUBDIV ref_subdiv;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(nnodes)
+
+  RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
+  RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, ratio),"mark rat");
+  RSS(ref_subdiv_split(ref_subdiv),"split");
+  RSS(ref_subdiv_free(ref_subdiv),"free");
 
   return REF_SUCCESS;
 }

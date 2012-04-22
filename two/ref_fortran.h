@@ -22,7 +22,11 @@ REF_STATUS FC_FUNC_(ref_import_cell,REF_IMPORT_CELL)(REF_INT *node_per_cell, REF
 REF_STATUS FC_FUNC_(ref_import_boundary,REF_IMPORT_BOUNDARY)(REF_INT *node_per_face, REF_INT *nface,
 				REF_INT *f2n, REF_INT *boundary_index);
 
-REF_STATUS FC_FUNC_(ref_import_metric,REF_IMPORT_METRIC)(REF_INT *nnodes, REF_DBL *metric);
+REF_STATUS FC_FUNC_(ref_import_metric,REF_IMPORT_METRIC)(REF_INT *nnodes, 
+							 REF_DBL *metric);
+
+REF_STATUS FC_FUNC_(ref_import_ratio,REF_IMPORT_RATIO)(REF_INT *nnodes, 
+						       REF_DBL *ratio);
 
 REF_STATUS FC_FUNC_(ref_viz,REF_VIZ)( void );
 

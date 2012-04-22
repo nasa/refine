@@ -17,6 +17,7 @@
 #include "ref_dict.h"
 #include "ref_mpi.h"
 #include "ref_edge.h"
+#include "ref_subdiv.h"
 
 int main( void )
 {
@@ -31,6 +32,7 @@ int main( void )
   REF_INT *c2n;
   REF_INT *f2n;
   REF_DBL *m;
+  REF_DBL *ratio;
 
   REF_INT node_per_cell;
   REF_INT ncell;
@@ -49,6 +51,7 @@ int main( void )
   y = (REF_DBL *) malloc( sizeof(REF_DBL) * nnodes );
   z = (REF_DBL *) malloc( sizeof(REF_DBL) * nnodes );
   m = (REF_DBL *) malloc( sizeof(REF_DBL) * 6 * nnodes );
+  ratio = (REF_DBL *) malloc( sizeof(REF_DBL)  * nnodes );
 
   l2g[0] = 3; part[0] = 1; x[0] = 0; y[0] = 1; z[0] = 0;
   l2g[1] = 4; part[1] = 1; x[1] = 0; y[1] = 0; z[1] = 1;
@@ -63,6 +66,7 @@ int main( void )
       m[3+6*node] = 1.0;
       m[4+6*node] = 0.0;
       m[5+6*node] = 1.0;
+      ratio[node] = 1.0;
     }
 
   partition = 0;
@@ -98,10 +102,14 @@ int main( void )
   RSS( FC_FUNC_(ref_import_metric,REF_IMPORT_METRIC)(&nnodes, m),
        "import metric");
 
+  RSS( FC_FUNC_(ref_import_ratio,REF_IMPORT_RATIO)(&nnodes, ratio),
+       "import ratio");
+
   RSS(FC_FUNC_(ref_free,REF_FREE)(),"free");
 
   free(f2n);
   free(c2n);
+  free(ratio);
   free(m);
   free(z);
   free(y);
