@@ -381,7 +381,7 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	      ref_node_real(ref_node,i,node);
 	  for (i=0;i<ref_node_naux(ref_node);i++)
 	    edge_aux[i+ref_node_naux(ref_node)*edge] = 
-	      ref_node_realwaux(ref_node,i,node);
+	      ref_node_aux(ref_node,i,node);
 	}
     }
 
