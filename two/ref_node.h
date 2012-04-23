@@ -21,6 +21,8 @@ struct REF_NODE_STRUCT {
   REF_INT *sorted_local;
   REF_INT *part;
   REF_DBL *real;
+  REF_INT naux;
+  REF_DBL *aux;
   REF_LIST unused_global_list;
   REF_INT old_n_global, new_n_global;
 };
@@ -62,6 +64,10 @@ struct REF_NODE_STRUCT {
 
 #define ref_node_part(ref_node,node) ((ref_node)->part[(node)])
 
+#define ref_node_naux(ref_node) ((ref_node)->naux)
+#define ref_node_aux(ref_node,iaux,node)		\
+  ((ref_node)->aux[(iaux)+ref_node_naux(ref_node)*(node)])
+
 REF_STATUS ref_node_create( REF_NODE *ref_node );
 REF_STATUS ref_node_free( REF_NODE ref_node );
 REF_STATUS ref_node_inspect( REF_NODE ref_node );
@@ -101,6 +107,7 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
 REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node, 
 				      REF_INT node0, REF_INT node1, 
 				      REF_INT new_node );
+REF_STATUS ref_node_resize_aux( REF_NODE ref_node );
 
 END_C_DECLORATION
 

@@ -42,6 +42,9 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_malloc( ref_node->real, REF_NODE_REAL_PER*max, REF_DBL );
 
+  ref_node_naux(ref_node) = 0;
+  ref_node->aux = NULL;
+
   RSS( ref_list_create( &(ref_node->unused_global_list) ), "create list");
 
   ref_node->old_n_global = REF_EMPTY;
@@ -54,6 +57,7 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
 {
   if ( NULL == (void *)ref_node ) return REF_NULL;
   ref_list_free( ref_node->unused_global_list );
+  ref_free( ref_node->aux );
   ref_free( ref_node->real );
   ref_free( ref_node->part );
   ref_free( ref_node->sorted_local );
@@ -169,6 +173,10 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
 
       ref_realloc( ref_node->real, 
 		   REF_NODE_REAL_PER*ref_node_max(ref_node), REF_DBL);
+
+      if ( ref_node_naux(ref_node) > 0 )
+	ref_realloc( ref_node->aux, 
+		     ref_node_naux(ref_node)*ref_node_max(ref_node), REF_DBL);	
     }
 
   *node = next2index(ref_node->blank);
@@ -345,7 +353,7 @@ REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node )
 	ref_node->global[ref_node->sorted_local[node]];
     }
 
-  free(pack);
+  ref_free(pack);
   return REF_SUCCESS;
 }
 
@@ -520,6 +528,7 @@ REF_STATUS ref_node_ghost_real( REF_NODE ref_node )
   REF_INT part, node;
   REF_INT *a_next;
   REF_DBL *a_real, *b_real;
+  REF_DBL *a_aux, *b_aux;
   REF_INT local;
   REF_INT i;
 
@@ -539,12 +548,18 @@ REF_STATUS ref_node_ghost_real( REF_NODE ref_node )
     a_total += a_size[part];
   ref_malloc( a_global, a_total, REF_INT );
   ref_malloc( a_real, REF_NODE_REAL_PER*a_total, REF_DBL );
+  a_aux = NULL;
+  if ( ref_node_naux(ref_node) > 0 )
+    ref_malloc( a_aux, ref_node_naux(ref_node)*a_total, REF_DBL );
 
   b_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
     b_total += b_size[part];
   ref_malloc( b_global, b_total, REF_INT );
   ref_malloc( b_real, REF_NODE_REAL_PER*b_total, REF_DBL );
+  b_aux = NULL;
+  if ( ref_node_naux(ref_node) > 0 )
+    ref_malloc( b_aux, ref_node_naux(ref_node)*b_total, REF_DBL );
 
   ref_malloc( a_next, ref_mpi_n, REF_INT );
   a_next[0] = 0;
@@ -568,26 +583,37 @@ REF_STATUS ref_node_ghost_real( REF_NODE ref_node )
       RSS( ref_node_local( ref_node, b_global[node], &local ), "g2l");
       for ( i=0; i < REF_NODE_REAL_PER ; i++ )
 	b_real[i+REF_NODE_REAL_PER*node] = ref_node_real(ref_node,i,local);
+      for ( i=0; i < ref_node_naux(ref_node) ; i++ )
+	b_aux[i+ref_node_naux(ref_node)*node] = ref_node_aux(ref_node,i,local);
     }
 
   RSS( ref_mpi_alltoallv( b_real, b_size, a_real, a_size, 
 			  REF_NODE_REAL_PER, REF_DBL_TYPE ), 
        "alltoallv global");
 
+  if ( ref_node_naux(ref_node) > 0 )
+    RSS( ref_mpi_alltoallv( b_aux, b_size, a_aux, a_size, 
+			    ref_node_naux(ref_node), REF_DBL_TYPE ), 
+	 "alltoallv global");
+
   for (node=0;node<a_total;node++)
     {
       RSS( ref_node_local( ref_node, a_global[node], &local ), "g2l");
       for ( i=0; i < REF_NODE_REAL_PER ; i++ )
 	ref_node_real(ref_node,i,local) = a_real[i+REF_NODE_REAL_PER*node];
+      for ( i=0; i < ref_node_naux(ref_node) ; i++ )
+	ref_node_aux(ref_node,i,local) = a_aux[i+ref_node_naux(ref_node)*node];
     }
 
-  free(a_next);
-  free(b_real);
-  free(b_global);
-  free(a_real);
-  free(a_global);
-  free(b_size);
-  free(a_size);
+  ref_free(a_next);
+  ref_free(b_aux);
+  ref_free(b_real);
+  ref_free(b_global);
+  ref_free(a_aux);
+  ref_free(a_real);
+  ref_free(a_global);
+  ref_free(b_size);
+  ref_free(a_size);
 
   return REF_SUCCESS;  
 }
@@ -817,17 +843,19 @@ REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node,
 				      REF_INT new_node )
 {
   REF_DBL log_m0[6], log_m1[6], m[6];
+  REF_INT i;
 
   if ( !ref_node_valid(ref_node,node0) ||
        !ref_node_valid(ref_node,node1) ) 
     RSS( REF_INVALID, "node invalid" );
 
-  ref_node_xyz(ref_node,0,new_node) = 
-    0.5 * (ref_node_xyz(ref_node,0,node0) + ref_node_xyz(ref_node,0,node1));
-  ref_node_xyz(ref_node,1,new_node) = 
-    0.5 * (ref_node_xyz(ref_node,1,node0) + ref_node_xyz(ref_node,1,node1));
-  ref_node_xyz(ref_node,2,new_node) = 
-    0.5 * (ref_node_xyz(ref_node,2,node0) + ref_node_xyz(ref_node,2,node1));
+  for ( i = 0; i < 3 ; i++ )
+    ref_node_xyz(ref_node,i,new_node) = 
+      0.5 * (ref_node_xyz(ref_node,i,node0) + ref_node_xyz(ref_node,i,node1));
+
+  for ( i = 0; i < ref_node_naux(ref_node) ; i++ )
+    ref_node_aux(ref_node,i,new_node) = 
+      0.5 * (ref_node_aux(ref_node,i,node0) + ref_node_aux(ref_node,i,node1));
 
   RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node0), log_m0 ),"log 0");
   RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node1), log_m1 ),"log 1");
@@ -836,5 +864,20 @@ REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node,
   
   RSS( ref_matrix_exp_m( m, ref_node_metric_ptr(ref_node,new_node) ),"exp m");
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_resize_aux( REF_NODE ref_node )
+{
+  if ( NULL == ref_node->aux )
+    {
+      ref_malloc( ref_node->aux, 
+		  ref_node_naux(ref_node)*ref_node_max(ref_node), REF_DBL );
+    }
+  else
+    {
+      ref_realloc( ref_node->aux, 
+		   ref_node_naux(ref_node)*ref_node_max(ref_node), REF_DBL );
+    }
   return REF_SUCCESS;
 }

@@ -621,6 +621,56 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* interpolate aux */
+    REF_NODE ref_node;
+    REF_INT node0, node1, new_node, global;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    ref_node_naux(ref_node) = 2;
+    RSS(ref_node_resize_aux(ref_node),"resize aux");
+
+    RSS(ref_node_next_global( ref_node, &global ), "next_global");
+    RSS(ref_node_add(ref_node,global,&node0),"add");
+    ref_node_xyz(ref_node,0,node0) = 0.0;
+    ref_node_xyz(ref_node,1,node0) = 0.0;
+    ref_node_xyz(ref_node,2,node0) = 0.0;
+    ref_node_metric(ref_node,0,node0) = 1.0;
+    ref_node_metric(ref_node,1,node0) = 0.0;
+    ref_node_metric(ref_node,2,node0) = 0.0;
+    ref_node_metric(ref_node,3,node0) = 1.0;
+    ref_node_metric(ref_node,4,node0) = 0.0;
+    ref_node_metric(ref_node,5,node0) = 1.0;
+
+    ref_node_aux(ref_node,0,node0) =  1.0;
+    ref_node_aux(ref_node,1,node0) = 20.0;
+
+
+    RSS(ref_node_next_global( ref_node, &global ), "next_global");
+    RSS(ref_node_add(ref_node,global,&node1),"add");
+    ref_node_xyz(ref_node,0,node1) = 1.0;
+    ref_node_xyz(ref_node,1,node1) = 0.0;
+    ref_node_xyz(ref_node,2,node1) = 0.0;
+    ref_node_metric(ref_node,0,node1) = 1.0;
+    ref_node_metric(ref_node,1,node1) = 0.0;
+    ref_node_metric(ref_node,2,node1) = 0.0;
+    ref_node_metric(ref_node,3,node1) = 1.0;
+    ref_node_metric(ref_node,4,node1) = 0.0;
+    ref_node_metric(ref_node,5,node1) = 1.0;
+
+    ref_node_aux(ref_node,0,node1) =  2.0;
+    ref_node_aux(ref_node,1,node1) = 40.0;
+
+    RSS(ref_node_next_global( ref_node, &global ), "next_global");
+    RSS(ref_node_add(ref_node,global,&new_node),"add");
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node),"interp");
+
+    RWDS(  1.5, ref_node_aux(ref_node,0,new_node), -1.0, "a");
+    RWDS( 30.0, ref_node_aux(ref_node,1,new_node), -1.0, "a");
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
