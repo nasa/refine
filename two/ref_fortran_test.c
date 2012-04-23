@@ -96,8 +96,8 @@ int main( void )
   f2n[2] = 1;
 
   ibound=1;
-  RSS(FC_FUNC_(ref_fortran_import_boundary,REF_FORTRAN_IMPORT_BOUNDARY)
-      ( &node_per_face, &nface, f2n, &ibound ),
+  RSS(FC_FUNC_(ref_fortran_import_face,REF_FORTRAN_IMPORT_FACE)
+      ( &ibound, &node_per_face, &nface, f2n ),
       "import face");
 
   RSS( FC_FUNC_(ref_fortran_import_metric,REF_FORTRAN_IMPORT_METRIC)
@@ -145,6 +145,21 @@ int main( void )
   RSS( FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)(&node_per_cell,&ncell, 
 						   c2n),"get cell");
 
+  ibound=1;
+  node_per_face = 3;
+  nface = REF_EMPTY;
+  RSS( FC_FUNC_(ref_fortran_size_face,REF_FORTRAN_SIZE_FACE)
+       (&ibound, &node_per_face, &nface),
+       "size face");
+  REIS(1,nface,"n");
+
+  f2n = (REF_INT *) malloc( sizeof(REF_INT) * node_per_face * nface );
+
+  RSS(FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
+      ( &ibound, &node_per_face, &nface, f2n ),
+      "face");
+
+  free(f2n);
   free(c2n);
   free(z);
   free(y);

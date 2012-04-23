@@ -59,32 +59,23 @@ REF_STATUS FC_FUNC_(ref_fortran_import_cell,REF_FORTRAN_IMPORT_CELL)
   return REF_SUCCESS;
 }
 
-REF_STATUS FC_FUNC_(ref_fortran_import_boundary,REF_FORTRAN_IMPORT_BOUNDARY)
-     (REF_INT *node_per_face, REF_INT *nface, 
-      REF_INT *f2n, REF_INT *boundary_index )
+REF_STATUS FC_FUNC_(ref_fortran_import_face,REF_FORTRAN_IMPORT_FACE)
+     (REF_INT *face_index, REF_INT *node_per_face, REF_INT *nface, 
+      REF_INT *f2n )
 {
   REF_INT *nodes;
   REF_CELL ref_cell;
   REF_INT face, node, new_face;
-  switch ( *node_per_face )
-    {
-    case 3:
-      ref_cell = ref_grid_tri(ref_grid);
-      break;
-    case 4:
-      ref_cell = ref_grid_qua(ref_grid);
-      break;
-    default:
-      RSS(REF_IMPLEMENT, "unexpected node_per_face");
-      break;    
-    }
+
+  RSS( ref_grid_face_with(ref_grid,*node_per_face,&ref_cell),"get face");
+
   nodes = (REF_INT *)malloc( ((*node_per_face)+1) * sizeof(REF_INT));
   RNS( nodes,"malloc nodes NULL");
   for ( face = 0 ; face < (*nface) ; face++ ) 
     {
       for ( node = 0 ; node < (*node_per_face) ; node++ )
 	nodes[node] = f2n[node+(*node_per_face)*face] - 1;
-      nodes[(*node_per_face)] = (*boundary_index);
+      nodes[(*node_per_face)] = (*face_index);
       RSS( ref_cell_add( ref_cell, nodes, &new_face ), "add face");
     }
   free(nodes);
@@ -196,6 +187,46 @@ REF_STATUS FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)
     {
       for (node=0;node<ref_cell_node_per(ref_cell);node++)
 	c2n[node+(*node_per_cell)*i] = nodes[node]+1;
+      i++;
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS FC_FUNC_(ref_fortran_size_face,REF_FORTRAN_SIZE_FACE)
+     ( REF_INT *ibound, REF_INT *node_per_face, REF_INT *nface )
+{
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  RSS( ref_grid_face_with( ref_grid, *node_per_face, &ref_cell ), "get face");
+  *nface = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( *ibound == nodes[*node_per_face] )
+      (*nface)++;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
+     ( REF_INT *ibound, REF_INT *node_per_face, REF_INT *nface, 
+       REF_INT *f2n )
+{
+  REF_CELL ref_cell;
+  REF_INT cell, i, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  SUPRESS_UNUSED_COMPILER_WARNING(nface);
+
+  RSS( ref_grid_face_with( ref_grid, *node_per_face, &ref_cell ), "get face");
+
+  i = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( *ibound == nodes[ref_cell_node_per(ref_cell)] )
+    {
+      for (node=0;node<ref_cell_node_per(ref_cell);node++)
+	f2n[node+(*node_per_face)*i] = nodes[node]+1;
       i++;
     }
 

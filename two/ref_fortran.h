@@ -20,9 +20,9 @@ REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
 REF_STATUS FC_FUNC_(ref_fortran_import_cell,REF_FORTRAN_IMPORT_CELL)
      (REF_INT *node_per_cell, REF_INT *ncell,REF_INT *c2n);
 
-REF_STATUS FC_FUNC_(ref_fortran_import_boundary,REF_FORTRAN_IMPORT_BOUNDARY)
-     (REF_INT *node_per_face, REF_INT *nface,
-      REF_INT *f2n, REF_INT *boundary_index);
+REF_STATUS FC_FUNC_(ref_fortran_import_face,REF_FORTRAN_IMPORT_FACE)
+     (REF_INT *face_index, REF_INT *node_per_face, REF_INT *nface,
+      REF_INT *f2n );
 
 REF_STATUS FC_FUNC_(ref_fortran_import_metric,REF_FORTRAN_IMPORT_METRIC)
      (REF_INT *nnodes, REF_DBL *metric);
@@ -46,6 +46,13 @@ REF_STATUS FC_FUNC_(ref_fortran_size_cell,REF_FORTRAN_SIZE_CELL)
 REF_STATUS FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)
      ( REF_INT *node_per_cell, REF_INT *ncell, 
        REF_INT *c2n );
+
+REF_STATUS FC_FUNC_(ref_fortran_size_face,REF_FORTRAN_SIZE_FACE)
+     ( REF_INT *ibound, REF_INT *node_per_face, REF_INT *nface);
+
+REF_STATUS FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
+     ( REF_INT *ibound, REF_INT *node_per_face, REF_INT *nface, 
+       REF_INT *f2n );
 
 REF_STATUS FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)( void );
 
