@@ -203,6 +203,7 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
   REF_INT part, node;
   REF_INT *a_next;
   REF_DBL *a_real, *b_real;
+  REF_DBL *a_aux, *b_aux;
   REF_INT local;
   REF_INT i;
 
@@ -220,12 +221,18 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
     a_total += a_size[part];
   ref_malloc( a_global, a_total, REF_INT );
   ref_malloc( a_real, REF_NODE_REAL_PER*a_total, REF_DBL );
+  a_aux = NULL;
+  if ( ref_node_naux(ref_node) > 0 )
+    ref_malloc( a_aux, ref_node_naux(ref_node)*a_total, REF_DBL );
 
   b_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
     b_total += b_size[part];
   ref_malloc( b_global, b_total, REF_INT );
   ref_malloc( b_real, REF_NODE_REAL_PER*b_total, REF_DBL );
+  b_aux = NULL;
+  if ( ref_node_naux(ref_node) > 0 )
+    ref_malloc( b_aux, ref_node_naux(ref_node)*b_total, REF_DBL );
 
   ref_malloc( a_next, ref_mpi_n, REF_INT );
   a_next[0] = 0;
@@ -240,6 +247,9 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 	for ( i=0; i < REF_NODE_REAL_PER ; i++ )
 	  a_real[i+REF_NODE_REAL_PER*a_next[part]] = 
 	    ref_node_real(ref_node,i,node);
+	for ( i=0; i < ref_node_naux(ref_node) ; i++ )
+	  a_aux[i+ref_node_naux(ref_node)*a_next[part]] = 
+	    ref_node_aux(ref_node,i,node);
 	a_next[part]++;
       }
 
@@ -251,6 +261,11 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 			  REF_NODE_REAL_PER, REF_DBL_TYPE ), 
        "alltoallv global");
 
+  if ( ref_node_naux(ref_node) > 0 )
+    RSS( ref_mpi_alltoallv( a_aux, a_size, b_aux, b_size, 
+			    ref_node_naux(ref_node), REF_DBL_TYPE ), 
+	 "alltoallv global");
+
   RSS( ref_node_add_many( ref_node, b_total, b_global ), "add many" );
 
   for ( node=0; node < b_total; node++ )
@@ -258,16 +273,20 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
       RSS( ref_node_local( ref_node, b_global[node], &local ), "local" );
       for ( i=0; i < REF_NODE_REAL_PER ; i++ )
 	ref_node_real(ref_node,i,local) = b_real[i+REF_NODE_REAL_PER*node];
+      for ( i=0; i < ref_node_naux(ref_node) ; i++ )
+	ref_node_aux(ref_node,i,local) = b_aux[i+ref_node_naux(ref_node)*node];
       ref_node_part(ref_node,local) = ref_mpi_id;
     }
 
-  free(a_next);
-  free(b_real);
-  free(b_global);
-  free(a_real);
-  free(a_global);
-  free(b_size);
-  free(a_size);
+  ref_free(a_next);
+  ref_free(b_aux);
+  ref_free(b_real);
+  ref_free(b_global);
+  ref_free(a_aux);
+  ref_free(a_real);
+  ref_free(a_global);
+  ref_free(b_size);
+  ref_free(a_size);
 
   return REF_SUCCESS;
 }

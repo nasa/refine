@@ -334,6 +334,7 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 
   REF_INT *edge_global, *edge_part;
   REF_DBL *edge_real;
+  REF_DBL *edge_aux;
 
   RSS( ref_node_synchronize_globals( ref_node ), "sync glob" );
 
@@ -363,6 +364,10 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
   ref_malloc_init( edge_part,   ref_edge_n(ref_edge), REF_INT, REF_EMPTY );
   ref_malloc_init( edge_real,  REF_NODE_REAL_PER*ref_edge_n(ref_edge), 
 		   REF_DBL, -999.0 );
+  edge_aux = NULL;
+  if ( ref_node_naux(ref_node) > 0 )
+    ref_malloc_init( edge_aux,  ref_node_naux(ref_node)*ref_edge_n(ref_edge), 
+		     REF_DBL, 0.0 );
   
   for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
     {
@@ -374,6 +379,9 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	  for (i=0;i<REF_NODE_REAL_PER;i++)
 	    edge_real[i+REF_NODE_REAL_PER*edge] = 
 	      ref_node_real(ref_node,i,node);
+	  for (i=0;i<ref_node_naux(ref_node);i++)
+	    edge_aux[i+ref_node_naux(ref_node)*edge] = 
+	      ref_node_realwaux(ref_node,i,node);
 	}
     }
 
@@ -381,6 +389,9 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
   RSS( ref_edge_ghost_int( ref_edge, edge_part ), "part ghost" );
   RSS( ref_edge_ghost_dbl( ref_edge, edge_real, REF_NODE_REAL_PER ), 
        "xyz ghost" );
+  if ( ref_node_naux(ref_node) > 0 )
+    RSS( ref_edge_ghost_dbl( ref_edge, edge_aux, ref_node_naux(ref_node) ), 
+	 "aux ghost" );
 
   for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
     {
@@ -395,9 +406,13 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	  for (i=0;i<REF_NODE_REAL_PER;i++)
 	    ref_node_real(ref_node,i,node) = 
 	      edge_real[i+REF_NODE_REAL_PER*edge];
+	  for (i=0;i<ref_node_naux(ref_node);i++)
+	    ref_node_aux(ref_node,i,node) = 
+	      edge_aux[i+ref_node_naux(ref_node)*edge];
 	}
     }
 
+  ref_free( edge_aux );
   ref_free( edge_real );
   ref_free( edge_part );
   ref_free( edge_global );
