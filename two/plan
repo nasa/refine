@@ -6,7 +6,9 @@ make cfl dataset
 
 nice
   call two from fun
-  interp solution
+    interp solution
+      c interface aux
+    hook up ref2
 
 tet adaptation.
   statistics
