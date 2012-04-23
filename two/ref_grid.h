@@ -51,6 +51,8 @@ REF_STATUS ref_grid_inspect( REF_GRID ref_grid );
 
 REF_STATUS ref_grid_cell_with( REF_GRID ref_grid, REF_INT node_per,
 			       REF_CELL *ref_cell );
+REF_STATUS ref_grid_face_with( REF_GRID ref_grid, REF_INT node_per,
+			       REF_CELL *ref_cell );
 
 END_C_DECLORATION
 
