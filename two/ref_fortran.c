@@ -233,6 +233,39 @@ REF_STATUS FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
   return REF_SUCCESS;
 }
 
+REF_STATUS FC_FUNC_(ref_fortran_naux,REF_FORTRAN_NAUX)
+     ( REF_INT *naux )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  ref_node_naux(ref_node) = *naux;
+  RSS( ref_node_resize_aux( ref_node ), "size aux" );
+  return REF_SUCCESS;
+}
+
+REF_STATUS FC_FUNC_(ref_fortran_import_aux,REF_FORTRAN_IMPORT_AUX)
+     ( REF_INT *ldim, REF_INT *nnodes, REF_INT *offset, REF_DBL *aux)
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node, i;
+  for (node = 0; node < (*nnodes); node++)
+    for (i = 0; i < (*ldim) ; i++)
+      ref_node_aux(ref_node,i+(*offset),node) = aux[i+(*ldim)*node];
+  return REF_SUCCESS;
+}
+
+REF_STATUS FC_FUNC_(ref_fortran_aux,REF_FORTRAN_AUX)
+     ( REF_INT *ldim, REF_INT *nnodes, REF_INT *offset, REF_DBL *aux)
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node, i;
+  for (node = 0; node < (*nnodes); node++)
+    for (i = 0; i < (*ldim) ; i++)
+      aux[i+(*ldim)*node] = ref_node_aux(ref_node,i+(*offset),node);
+
+  return REF_SUCCESS;
+}
+
+
 REF_STATUS FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)( void )
 {
   RSS( ref_grid_free( ref_grid ), "free grid");

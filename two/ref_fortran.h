@@ -54,6 +54,13 @@ REF_STATUS FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
      ( REF_INT *ibound, REF_INT *node_per_face, REF_INT *nface, 
        REF_INT *f2n );
 
+REF_STATUS FC_FUNC_(ref_fortran_naux,REF_FORTRAN_NAUX)
+     ( REF_INT *naux );
+REF_STATUS FC_FUNC_(ref_fortran_import_aux,REF_FORTRAN_IMPORT_AUX)
+     ( REF_INT *ldim, REF_INT *nnodes, REF_INT *offset, REF_DBL *aux);
+REF_STATUS FC_FUNC_(ref_fortran_aux,REF_FORTRAN_AUX)
+     ( REF_INT *ldim, REF_INT *nnodes, REF_INT *offset, REF_DBL *aux);
+
 REF_STATUS FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)( void );
 
 END_C_DECLORATION

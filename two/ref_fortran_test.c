@@ -34,6 +34,9 @@ int main( void )
   REF_DBL *m;
   REF_DBL *ratio;
 
+  REF_DBL *aux;
+  REF_INT naux, offset;
+
   REF_INT node_per_cell;
   REF_INT ncell;
   REF_INT node_per_face;
@@ -53,6 +56,9 @@ int main( void )
   m = (REF_DBL *) malloc( sizeof(REF_DBL) * 6 * nnodes );
   ratio = (REF_DBL *) malloc( sizeof(REF_DBL)  * nnodes );
 
+  naux = 2;
+  aux = (REF_DBL *) malloc( sizeof(REF_DBL) * naux * nnodes );
+
   l2g[0] = 3; part[0] = 1; x[0] = 0; y[0] = 1; z[0] = 0;
   l2g[1] = 4; part[1] = 1; x[1] = 0; y[1] = 0; z[1] = 1;
   l2g[2] = 1; part[2] = 2; x[2] = 0; y[2] = 0; z[2] = 0;
@@ -67,6 +73,8 @@ int main( void )
       m[4+6*node] = 0.0;
       m[5+6*node] = 1.0;
       ratio[node] = 1.0;
+      aux[0+naux*node] = 2.0;
+      aux[1+naux*node] = 4.0;
     }
 
   partition = 0;
@@ -104,12 +112,22 @@ int main( void )
        (&nnodes, m),
        "import metric");
 
-  RSS( FC_FUNC_(ref_fortran_import_ratio,REF_FOTRAN_IMPORT_RATIO)
+  RSS( FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
        (&nnodes, ratio),
        "import ratio");
 
+  RSS( FC_FUNC_(ref_fortran_naux,REF_FORTRAN_NAUX)
+       (&naux),
+       "naux");
+
+  offset = 0;
+  RSS( FC_FUNC_(ref_fortran_import_aux,REF_FORTRAN_IMPORT_AUX)
+       (&naux, &nnodes, &offset, aux),
+       "aux");
+
   free(f2n);
   free(c2n);
+  free(aux);
   free(ratio);
   free(m);
   free(z);
@@ -133,6 +151,11 @@ int main( void )
   RSS( FC_FUNC_(ref_fortran_node,REF_FORTRAN_NODE)(&nnodes, 
 						   l2g,
 						   x, y, z),"get node");
+
+  aux = (REF_DBL *) malloc( sizeof(REF_DBL) * naux * nnodes );
+
+  RSS( FC_FUNC_(ref_fortran_aux,REF_FORTRAN_NODE)(&naux, &nnodes, &offset,
+						   aux),"get aux");
 
   ncell = REF_EMPTY;
   RSS( FC_FUNC_(ref_fortran_size_cell,REF_FORTRAN_SIZE_CELL)
@@ -161,6 +184,7 @@ int main( void )
 
   free(f2n);
   free(c2n);
+  free(aux);
   free(z);
   free(y);
   free(x);
