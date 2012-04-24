@@ -21,7 +21,7 @@
 
 int main( void )
 {
-  REF_INT nnodes;
+  REF_INT nnodes, nnodes0;
   REF_INT nnodesg;
   REF_INT *l2g;
   REF_INT *part; 
@@ -138,8 +138,9 @@ int main( void )
 
   nnodes = nnodesg = REF_EMPTY;
   RSS( FC_FUNC_(ref_fortran_size_node,REF_FORTRAN_SIZE_NODE)
-       (&nnodes, &nnodesg),
+       (&nnodes0, &nnodes, &nnodesg),
        "size_node");
+  REIS(2,nnodes0,"n");
   REIS(4,nnodes,"n");
   REIS(4,nnodesg,"n");
 

@@ -121,14 +121,20 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
 }
 
 REF_STATUS FC_FUNC_(ref_fortran_size_node,REF_FORTRAN_SIZE_NODE)
-     (REF_INT *nnodes, REF_INT *nnodesg)
+     (REF_INT *nnodes0, REF_INT *nnodes, REF_INT *nnodesg)
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  
+  REF_INT node;
+
   RSS( ref_node_synchronize_globals( ref_node ), "sync glob" );
 
   *nnodes = ref_node_n(ref_node);
   *nnodesg = ref_node_n_global(ref_node);
+
+  *nnodes0 = 0;
+  
+  each_ref_node_valid_node(ref_node,node)
+    if ( ref_mpi_id == ref_node_part(ref_node,node) ) (*nnodes0)++;
 
   return REF_SUCCESS;
 }
