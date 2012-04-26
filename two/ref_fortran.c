@@ -180,11 +180,15 @@ REF_STATUS FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)
      ( REF_INT *node_per_cell, REF_INT *ncell, 
        REF_INT *c2n )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, i, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *o2n, *n2o;
 
   SUPRESS_UNUSED_COMPILER_WARNING(ncell);
+
+  RSS(ref_node_compact(ref_node,&o2n,&n2o),"compact");
 
   RSS( ref_grid_cell_with( ref_grid, *node_per_cell, &ref_cell ), "get cell");
 
@@ -192,9 +196,12 @@ REF_STATUS FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       for (node=0;node<ref_cell_node_per(ref_cell);node++)
-	c2n[node+(*node_per_cell)*i] = nodes[node]+1;
+	c2n[node+(*node_per_cell)*i] = o2n[nodes[node]]+1;
       i++;
     }
+
+  ref_free(n2o);
+  ref_free(o2n);
 
   return REF_SUCCESS;
 }
@@ -219,11 +226,15 @@ REF_STATUS FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
      ( REF_INT *ibound, REF_INT *node_per_face, REF_INT *nface, 
        REF_INT *f2n )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, i, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *o2n, *n2o;
 
   SUPRESS_UNUSED_COMPILER_WARNING(nface);
+
+  RSS(ref_node_compact(ref_node,&o2n,&n2o),"compact");
 
   RSS( ref_grid_face_with( ref_grid, *node_per_face, &ref_cell ), "get face");
 
@@ -232,9 +243,12 @@ REF_STATUS FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
     if ( *ibound == nodes[ref_cell_node_per(ref_cell)] )
     {
       for (node=0;node<ref_cell_node_per(ref_cell);node++)
-	f2n[node+(*node_per_face)*i] = nodes[node]+1;
+	f2n[node+(*node_per_face)*i] = o2n[nodes[node]]+1;
       i++;
     }
+
+  ref_free(n2o);
+  ref_free(o2n);
 
   return REF_SUCCESS;
 }
@@ -264,9 +278,18 @@ REF_STATUS FC_FUNC_(ref_fortran_aux,REF_FORTRAN_AUX)
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, i;
-  for (node = 0; node < (*nnodes); node++)
+  REF_INT *o2n, *n2o;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(nnodes);
+
+  RSS(ref_node_compact(ref_node,&o2n,&n2o),"compact");
+
+  for (node = 0; node < ref_node_n(ref_node); node++)
     for (i = 0; i < (*ldim) ; i++)
-      aux[i+(*ldim)*node] = ref_node_aux(ref_node,i+(*offset),node);
+      aux[i+(*ldim)*node] = ref_node_aux(ref_node,i+(*offset),n2o[node]);
+
+  ref_free(n2o);
+  ref_free(o2n);
 
   return REF_SUCCESS;
 }
