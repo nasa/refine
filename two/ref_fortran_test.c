@@ -19,7 +19,7 @@
 #include "ref_edge.h"
 #include "ref_subdiv.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
   REF_INT nnodes, nnodes0;
   REF_INT nnodesg;
@@ -44,6 +44,8 @@ int main( void )
   REF_INT ibound;
 
   REF_INT node;
+
+  RSS( ref_mpi_start( argc, argv ), "start" );
 
   nnodes = 4;
   nnodesg = 4;
@@ -192,6 +194,8 @@ int main( void )
   free(l2g);
 
   RSS(FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)(),"free");
+
+  RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }

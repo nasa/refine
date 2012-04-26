@@ -19,6 +19,7 @@ typedef int REF_TYPE;
 #define REF_DBL_TYPE (2)
 
 REF_STATUS ref_mpi_start( int argc, char *argv[] );
+REF_STATUS ref_mpi_initialize( );
 REF_STATUS ref_mpi_stop( );
 
 REF_STATUS ref_mpi_stopwatch_start( );

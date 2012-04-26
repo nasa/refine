@@ -44,6 +44,17 @@ REF_STATUS ref_mpi_start( int argc, char *argv[] )
 
 #ifdef HAVE_MPI
   MPI_Init(&argc,&argv);
+#endif
+
+  RSS( ref_mpi_initialize(  ), "init");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_mpi_initialize( void )
+{
+
+#ifdef HAVE_MPI
 
   MPI_Comm_size(MPI_COMM_WORLD,&ref_mpi_n);
   MPI_Comm_rank(MPI_COMM_WORLD,&ref_mpi_id);

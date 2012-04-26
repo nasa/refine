@@ -22,6 +22,8 @@ REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
   RSS( ref_grid_create( &ref_grid ), "create grid" );
   ref_node = ref_grid_node(ref_grid);
 
+  RSS( ref_mpi_initialize(),"init ref mpi");
+
   REIS( *partition, ref_mpi_id, "processor ids do not match" );
 
   RSS( ref_node_initialize_n_global( ref_node, *nnodesg), "init nnodesg");
