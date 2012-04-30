@@ -10,6 +10,11 @@
 #include "ref_mpi.h"
 #include "ref_malloc.h"
 
+#include "ref_migrate.h"
+#include "ref_metric.h"
+#include "ref_adapt.h"
+#include "ref_validation.h"
+
 static REF_GRID ref_grid = NULL;
 
 REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
@@ -93,6 +98,29 @@ REF_STATUS FC_FUNC_(ref_fortran_viz,REF_FORTRAN_VIZ)( void )
   RSS( ref_export_tec( ref_grid, filename ), "export tec");
   return REF_SUCCESS;
 }
+
+REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
+{
+  REF_INT passes, i;
+
+  RSS(ref_migrate_to_balance(ref_grid),"balance");
+  ref_mpi_stopwatch_stop("balance");
+  RSS( ref_metric_sanitize(ref_grid),"sant");
+  ref_mpi_stopwatch_stop("metric sant");
+
+  passes = 5;
+  for (i = 0; i<passes ; i++ )
+    {
+      RSS( ref_adapt_pass( ref_grid ), "pass");
+      ref_mpi_stopwatch_stop("pass");
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
+      RSS(ref_migrate_to_balance(ref_grid),"balance");
+      ref_mpi_stopwatch_stop("balance");
+    }
+
+  return REF_SUCCESS;
+}
+
 
 REF_STATUS FC_FUNC_(ref_fortran_import_metric,REF_FORTRAN_IMPORT_METRIC)
      (REF_INT *nnodes, REF_DBL *m )

@@ -19,6 +19,15 @@
 #include "ref_edge.h"
 #include "ref_subdiv.h"
 
+#include "ref_migrate.h"
+#include "ref_metric.h"
+#include "ref_adapt.h"
+#include "ref_validation.h"
+
+#include "ref_collapse.h"
+#include "ref_split.h"
+#include "ref_face.h"
+
 int main( int argc, char *argv[] )
 {
   REF_INT nnodes, nnodes0;

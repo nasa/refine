@@ -32,6 +32,8 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
 
 REF_STATUS FC_FUNC_(ref_fortran_viz,REF_FORTRAN_VIZ)( void );
 
+REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void );
+
 REF_STATUS FC_FUNC_(ref_fortran_size_node,REF_FORTRAN_SIZE_NODE)
      (REF_INT *nnodes0, REF_INT *nnodes, REF_INT *nnodesg);
 
