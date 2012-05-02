@@ -123,7 +123,7 @@ ref_fixture_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
 TESTS += ref_fortran_test
 noinst_PROGRAMS += ref_fortran_test
 ref_fortran_test_SOURCES = ref_fortran_test.c
-ref_fortran_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_fortran_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_gather_test
 noinst_PROGRAMS += ref_gather_test
