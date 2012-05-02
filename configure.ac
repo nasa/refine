@@ -2,10 +2,10 @@
 
 AC_PREREQ(2.53)
 
-dnl define([git_describe], esyscmd([sh -c "git describe --tag | tr -d '\n'"]))dnl
-dnl AC_INIT([refine], [git_describe], [fun3d-support@lists.nasa.gov])
+define([git_describe], esyscmd([sh -c "git describe --tag | tr -d '\n'"]))dnl
+AC_INIT([refine], [git_describe], [fun3d-support@lists.nasa.gov])
 
-AC_INIT([refine], [1.8.7], [fun3d-support@lists.nasa.gov])
+dnl AC_INIT([refine], [1.8.8], [fun3d-support@lists.nasa.gov])
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_SRCDIR([src/refine_defs.h])
