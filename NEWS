@@ -1,4 +1,8 @@
 
+Wed May 2, 2012 :  Released Refine 1.8.7
+
+- fortran interface to refine/two modified for FUN3D
+
 Wed Apr 18, 2012 : Released Refine 1.8.6 (1.8.5 broken)
 
 - two/axisymmetric can convert some 2D grids into axi-symmetric grids
