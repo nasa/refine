@@ -161,6 +161,8 @@ REF_STATUS ref_grid_cell_has_face( REF_GRID ref_grid,
   REF_CELL ref_cell;
   REF_INT group;
 
+  *has_face = REF_FALSE;
+
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
       RSS( ref_cell_has_face( ref_cell, face_nodes, has_face),
