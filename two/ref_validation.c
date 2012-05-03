@@ -70,6 +70,39 @@ REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid )
   return (problem?REF_FAILURE:REF_SUCCESS);
 }
 
+REF_STATUS ref_validation_boundary_face( REF_GRID ref_grid )
+{
+  REF_CELL ref_cell;
+  REF_BOOL has_face;
+  REF_INT cell;
+  REF_INT node;
+  REF_INT nodes[4];
+  REF_BOOL problem;
+
+  problem = REF_FALSE;
+ 
+  ref_cell = ref_grid_tri( ref_grid );
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      for(node=0;node<3;node++)
+	nodes[node]=ref_cell_c2n(ref_cell,node,cell);
+      nodes[3]=nodes[0];
+      RSS( ref_grid_cell_has_face( ref_grid, nodes, &has_face ), "has_face");
+      if ( !has_face ) problem = REF_TRUE;
+    }
+ 
+  ref_cell = ref_grid_qua( ref_grid );
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      for(node=0;node<4;node++)
+	nodes[node]=ref_cell_c2n(ref_cell,node,cell);
+      RSS( ref_grid_cell_has_face( ref_grid, nodes, &has_face ), "has_face");
+      if ( !has_face ) problem = REF_TRUE;
+    }
+ 
+  return (problem?REF_FAILURE:REF_SUCCESS);
+}
+
 REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
 {
   REF_FACE ref_face;
