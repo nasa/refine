@@ -70,9 +70,11 @@ REF_STATUS FC_FUNC_(ref_fortran_import_face,REF_FORTRAN_IMPORT_FACE)
      (REF_INT *face_index, REF_INT *node_per_face, REF_INT *nface, 
       REF_INT *f2n )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT *nodes;
   REF_CELL ref_cell;
   REF_INT face, node, new_face;
+  REF_BOOL has_a_local_node;
 
   RSS( ref_grid_face_with(ref_grid,*node_per_face,&ref_cell),"get face");
 
@@ -80,10 +82,16 @@ REF_STATUS FC_FUNC_(ref_fortran_import_face,REF_FORTRAN_IMPORT_FACE)
   RNS( nodes,"malloc nodes NULL");
   for ( face = 0 ; face < (*nface) ; face++ ) 
     {
+      has_a_local_node = REF_FALSE;
       for ( node = 0 ; node < (*node_per_face) ; node++ )
-	nodes[node] = f2n[node+(*node_per_face)*face] - 1;
+	{
+	  nodes[node] = f2n[node+(*node_per_face)*face] - 1;
+	  has_a_local_node = has_a_local_node ||
+	    (ref_mpi_id == ref_node_part(ref_node,nodes[node]));
+	}
       nodes[(*node_per_face)] = (*face_index);
-      RSS( ref_cell_add( ref_cell, nodes, &new_face ), "add face");
+      if ( has_a_local_node ) 
+	RSS( ref_cell_add( ref_cell, nodes, &new_face ), "add face");
     }
   free(nodes);
   return REF_SUCCESS;
