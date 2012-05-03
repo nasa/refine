@@ -609,6 +609,34 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* cell has face */
+    REF_CELL ref_cell;
+    REF_INT cell;
+    REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT face_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_BOOL found;
+
+    RSS(ref_pri(&ref_cell),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; 
+    nodes[3] = 3; nodes[4] = 4; nodes[5] = 5; 
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    face_nodes[0]=0; face_nodes[1]=1; face_nodes[2]=5; face_nodes[3]=0; 
+    RSS(ref_cell_has_face(ref_cell,face_nodes,&found),"with");
+    REIS(REF_FALSE,found,"false positive");
+
+    face_nodes[0]=1; face_nodes[1]=0; face_nodes[2]=3; face_nodes[3]=4; 
+    RSS(ref_cell_has_face(ref_cell,face_nodes,&found),"with");
+    REIS(REF_TRUE,found,"false negative");
+
+    face_nodes[0]=0; face_nodes[1]=1; face_nodes[2]=2; face_nodes[3]=0; 
+    RSS(ref_cell_has_face(ref_cell,face_nodes,&found),"with");
+    REIS(REF_TRUE,found,"false negative");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
  { /* has side */
     REF_CELL ref_cell;
     REF_INT cell, nodes[8];
