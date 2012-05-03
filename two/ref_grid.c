@@ -153,3 +153,20 @@ REF_STATUS ref_grid_face_with( REF_GRID ref_grid, REF_INT node_per,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_cell_has_face( REF_GRID ref_grid, 
+				   REF_INT *face_nodes,
+				   REF_BOOL *has_face )
+{
+  REF_CELL ref_cell;
+  REF_INT group;
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    {
+      RSS( ref_cell_has_face( ref_cell, face_nodes, has_face),
+	   "cell has face" );
+      if ( *has_face ) return REF_SUCCESS;
+    }
+
+ return REF_SUCCESS;
+}
