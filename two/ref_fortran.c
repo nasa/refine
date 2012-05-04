@@ -149,7 +149,7 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
 {
   REF_SUBDIV ref_subdiv;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(nnodes);
+  REIS( *nnodes, ref_node_n( ref_grid_node(ref_grid) ), "nnode mismatch" );
 
   RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
   RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, ratio),"mark rat");
@@ -186,8 +186,6 @@ REF_STATUS FC_FUNC_(ref_fortran_node,REF_FORTRAN_NODE)
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT *o2n, *n2o, node;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(nnodes);
-
   RSS(ref_node_compact(ref_node,&o2n,&n2o),"compact");
 
   for ( node = 0; node< ref_node_n( ref_node ); node++ )
@@ -200,6 +198,8 @@ REF_STATUS FC_FUNC_(ref_fortran_node,REF_FORTRAN_NODE)
 
   ref_free(n2o);
   ref_free(o2n);
+
+  REIS( *nnodes, ref_node_n( ref_node ), "nnode mismatch" );
 
   return REF_SUCCESS;
 }
@@ -225,8 +225,6 @@ REF_STATUS FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *o2n, *n2o;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(ncell);
-
   RSS(ref_node_compact(ref_node,&o2n,&n2o),"compact");
 
   RSS( ref_grid_cell_with( ref_grid, *node_per_cell, &ref_cell ), "get cell");
@@ -241,6 +239,8 @@ REF_STATUS FC_FUNC_(ref_fortran_cell,REF_FORTRAN_CELL)
 
   ref_free(n2o);
   ref_free(o2n);
+
+  REIS( *ncell, i, "ncell mismatch" );
 
   return REF_SUCCESS;
 }
@@ -271,8 +271,6 @@ REF_STATUS FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *o2n, *n2o;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(nface);
-
   RSS(ref_node_compact(ref_node,&o2n,&n2o),"compact");
 
   RSS( ref_grid_face_with( ref_grid, *node_per_face, &ref_cell ), "get face");
@@ -288,6 +286,8 @@ REF_STATUS FC_FUNC_(ref_fortran_face,REF_FORTRAN_FACE)
 
   ref_free(n2o);
   ref_free(o2n);
+
+  REIS( *nface, i, "nface mismatch" );
 
   return REF_SUCCESS;
 }
@@ -330,9 +330,10 @@ REF_STATUS FC_FUNC_(ref_fortran_aux,REF_FORTRAN_AUX)
   ref_free(n2o);
   ref_free(o2n);
 
+  REIS( *nnodes, ref_node_n(ref_node), "nnode mismatch" );
+
   return REF_SUCCESS;
 }
-
 
 REF_STATUS FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)( void )
 {
