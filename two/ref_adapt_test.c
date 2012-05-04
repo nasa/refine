@@ -60,9 +60,7 @@ int main( int argc, char *argv[] )
       RSS(ref_part_metric( ref_node, argv[2] ), "part metric" );
       ref_mpi_stopwatch_stop("read metric");
 
-      RSS( ref_export_tec_ratio(ref_grid,"ref_adapt_orig"),"export m");
       RSS( ref_metric_sanitize(ref_grid),"sant");
-      RSS( ref_export_tec_ratio(ref_grid,"ref_adapt_sant"),"export clean m");
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
 
@@ -107,15 +105,13 @@ int main( int argc, char *argv[] )
 	   "gather");
       ref_mpi_stopwatch_stop("gather");
 
-      RSS( ref_export_tec_ratio(ref_grid,"ref_adapt_post"),"export m");
-
       RSS( ref_grid_free( ref_grid ), "free");
 
       if ( ref_mpi_master )
 	{
 	  RSS(ref_import_by_extension( &ref_grid, 
 				       "ref_adapt_test.b8.ugrid" ), "imp" );
-	  RSS(ref_export_by_extension( ref_grid, "ref_adapt_test.tec" ),"ex" );
+	  RSS(ref_export_tec_surf( ref_grid, "ref_adapt_test.tec" ),"ex" );
 	  RSS( ref_grid_free( ref_grid ), "free");
 	}
       ref_mpi_stopwatch_stop("post");
