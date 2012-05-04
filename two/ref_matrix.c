@@ -568,7 +568,7 @@ REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a,
       for (i=0;i<n;i++)trace+= ABS(rq[i+i*n]);
       conv = max_lower/trace;
 
-      if ( iter > 10000 ) {
+      if ( iter > 100000 ) {
 	printf("value conv %e used %d\n",conv,iter);
 	return REF_FAILURE;
       }
