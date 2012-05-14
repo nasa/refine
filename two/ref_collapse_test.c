@@ -12,6 +12,7 @@
 #include "ref_sort.h"
 #include "ref_dict.h"
 #include "ref_matrix.h"
+#include "ref_math.h"
 
 #include "ref_mpi.h"
 
@@ -138,6 +139,50 @@ int main( void )
     node0 = 4; node1 = 1;
     RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
     REIS(REF_TRUE,allowed,"parallel along geom edge?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* same normal after collapse? */
+    REF_GRID ref_grid;
+    REF_INT node;
+    REF_INT node0, node1;
+    REF_INT nodes[4];
+    REF_INT tri1, tri2;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    /*
+    2---4      y
+    |\ 1|\     
+    |0\ | \    ^
+    |  \|2 \   |
+    0---1---5  +-> x
+    */
+
+    RSS(ref_node_add(ref_grid_node(ref_grid),4,&node),"add node");
+    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 1.0;
+    ref_node_xyz(ref_grid_node(ref_grid),1,node) = 1.0;
+    ref_node_xyz(ref_grid_node(ref_grid),2,node) = 0.0;
+
+    RSS(ref_node_add(ref_grid_node(ref_grid),5,&node),"add node");
+    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 2.0;
+    ref_node_xyz(ref_grid_node(ref_grid),1,node) = 0.0;
+    ref_node_xyz(ref_grid_node(ref_grid),2,node) = 0.0;
+
+    nodes[0]= 1; nodes[1]=4, nodes[2]=2; nodes[3]=10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri1),"add tri");
+    nodes[0]= 1; nodes[1]=5, nodes[2]=4; nodes[3]=10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri2),"add tri");
+
+    node0 = 2; node1 = 1;
+    RSS(ref_collapse_edge_same_normal(ref_grid,node0,node1,&allowed),"norm");
+    REIS(REF_TRUE,allowed,"normal will be the same");
+
+    ref_node_xyz(ref_grid_node(ref_grid),2,node) = 0.5;
+
+    RSS(ref_collapse_edge_same_normal(ref_grid,node0,node1,&allowed),"norm");
+    REIS(REF_FALSE,allowed,"normal would change");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }

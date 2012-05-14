@@ -9,6 +9,7 @@
 #include "ref_mpi.h"
 #include "ref_sort.h"
 #include "ref_malloc.h"
+#include "ref_math.h"
 
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
@@ -116,10 +117,13 @@ REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid,
       RSS(ref_collapse_edge_mixed(ref_grid,node0,node1,&allowed),"col mixed");
       if ( !allowed ) continue;
 
+      RSS(ref_collapse_edge_local_tets(ref_grid,node0,node1,&allowed),"colloc");
+      if ( !allowed ) continue;
+
       RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
       if ( !allowed ) continue;
 
-      RSS(ref_collapse_edge_local_tets(ref_grid,node0,node1,&allowed),"colloc");
+      RSS(ref_collapse_edge_same_normal(ref_grid,node0,node1,&allowed),"norm");
       if ( !allowed ) continue;
 
       RSS(ref_collapse_edge_quality(ref_grid,node0,node1,&allowed),"qual");
@@ -169,8 +173,6 @@ REF_STATUS ref_collapse_edge( REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
-
-
 
 REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid, 
 				       REF_INT node0, REF_INT node1,
@@ -230,6 +232,43 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
       break;
     }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_collapse_edge_same_normal( REF_GRID ref_grid, 
+					  REF_INT node0, REF_INT node1,
+					  REF_BOOL *allowed )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL n0[3], n1[3];
+  REF_DBL dot;
+
+  *allowed = REF_TRUE;
+
+  each_ref_cell_having_node( ref_cell, node1, item, cell )
+    {
+      /* a triangle with node0 and node1 will be removed */
+      if ( node0 == ref_cell_c2n(ref_cell,0,cell) ||
+	   node0 == ref_cell_c2n(ref_cell,1,cell) ||
+	   node0 == ref_cell_c2n(ref_cell,2,cell) ) continue;
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      RSS( ref_node_tri_normal( ref_node, nodes, n0 ), "orig normal" );
+      RSS( ref_math_normalize( n0 ), "orig length one" );
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( node1 == nodes[node] ) nodes[node] = node0;
+      RSS( ref_node_tri_normal( ref_node, nodes, n1 ), "new normal" );
+      RSS( ref_math_normalize( n1 ), "new length one" );
+      dot = ref_math_dot( n0, n1 );
+      if ( dot < (1.0-1.0e-8) ) /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
+	{
+	  *allowed = REF_FALSE;
+	  return REF_SUCCESS;	  
+	}
+    }
+       
   return REF_SUCCESS;
 }
 
