@@ -184,6 +184,15 @@ int main( void )
     RSS(ref_collapse_edge_same_normal(ref_grid,node0,node1,&allowed),"norm");
     REIS(REF_FALSE,allowed,"normal would change");
 
+    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 2.0;
+    ref_node_xyz(ref_grid_node(ref_grid),1,node) =-1.0;
+    ref_node_xyz(ref_grid_node(ref_grid),2,node) = 0.0;
+
+    node0 = 2; node1 = 4;
+    RSS(ref_collapse_edge_same_normal(ref_grid,node0,node1,&allowed),"norm");
+    REIS(REF_FALSE,allowed,"tri will have zero area");
+
+
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 

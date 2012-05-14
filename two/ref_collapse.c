@@ -245,6 +245,7 @@ REF_STATUS ref_collapse_edge_same_normal( REF_GRID ref_grid,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL n0[3], n1[3];
   REF_DBL dot;
+  REF_STATUS status;
 
   *allowed = REF_TRUE;
 
@@ -256,11 +257,17 @@ REF_STATUS ref_collapse_edge_same_normal( REF_GRID ref_grid,
 	   node0 == ref_cell_c2n(ref_cell,2,cell) ) continue;
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
       RSS( ref_node_tri_normal( ref_node, nodes, n0 ), "orig normal" );
-      RSS( ref_math_normalize( n0 ), "orig length one" );
+      RSS( ref_math_normalize( n0 ), "original triangle has zero area" );
       for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
 	if ( node1 == nodes[node] ) nodes[node] = node0;
       RSS( ref_node_tri_normal( ref_node, nodes, n1 ), "new normal" );
-      RSS( ref_math_normalize( n1 ), "new length one" );
+      status = ref_math_normalize( n1 );
+      if ( REF_DIV_ZERO == status )
+	{ /* new triangle face has zero area */
+	  *allowed = REF_FALSE;
+	  return REF_SUCCESS;	  
+	}
+      RSS( status, "new normal length" )
       dot = ref_math_dot( n0, n1 );
       if ( dot < (1.0-1.0e-8) ) /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
 	{
