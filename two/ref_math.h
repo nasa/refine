@@ -16,6 +16,11 @@ BEGIN_C_DECLORATION
 /* tester : printf(" %e / %e = %e \n",n,d,n/d) */
 #define ref_math_divisible(n,d) (ABS(1.0e20*d)>ABS(n))
 
+#define ref_math_cross_product(v0,v1,product)	   \
+(product)[0] = (v0)[1]*(v1)[2] - (v0)[2]*(v1)[1]; \
+(product)[1] = (v0)[2]*(v1)[0] - (v0)[0]*(v1)[2]; \
+(product)[2] = (v0)[0]*(v1)[1] - (v0)[1]*(v1)[0]; 
+
 REF_STATUS ref_math_normalize( REF_DBL *normal );
 
 END_C_DECLORATION
