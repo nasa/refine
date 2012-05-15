@@ -17,6 +17,7 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d_ptr, char *filename )
   FILE *file;
   REF_INT fortran_record_size;
   REF_INT n;
+  REF_PATCH ref_patch;
 
   ref_malloc( *ref_plot3d_ptr, 1, REF_PLOT3D_STRUCT );
   ref_plot3d = *ref_plot3d_ptr;
@@ -36,9 +37,8 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d_ptr, char *filename )
   SWAP_INT(fortran_record_size);
   REIS( 1*4, fortran_record_size, "header end record size" );
 
-  ref_malloc( ref_plot3d->idim, ref_plot3d_ngrid(ref_plot3d), REF_INT );
-  ref_malloc( ref_plot3d->jdim, ref_plot3d_ngrid(ref_plot3d), REF_INT );
-  ref_malloc( ref_plot3d->kdim, ref_plot3d_ngrid(ref_plot3d), REF_INT );
+  ref_malloc( ref_plot3d->patch, ref_plot3d_ngrid(ref_plot3d), 
+	      REF_PATCH );
 
   RES( 1, fread( &fortran_record_size, sizeof(REF_INT), 1, file ), "srt rec" );
   SWAP_INT(fortran_record_size);
@@ -47,12 +47,17 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d_ptr, char *filename )
 
   for (n=0;n<ref_plot3d_ngrid(ref_plot3d);n++)
     {
-      RES( 1, fread( &(ref_plot3d->idim[n]), sizeof(REF_INT), 1,file),"id" );
-      SWAP_INT(ref_plot3d->idim[n]);
-      RES( 1, fread( &(ref_plot3d->jdim[n]), sizeof(REF_INT), 1,file),"jd" );
-      SWAP_INT(ref_plot3d->jdim[n]);
-      RES( 1, fread( &(ref_plot3d->kdim[n]), sizeof(REF_INT), 1,file),"kd" );
-      SWAP_INT(ref_plot3d->kdim[n]);
+      ref_malloc( ref_plot3d->patch[n], 1, REF_PATCH_STRUCT );
+      ref_patch = ref_plot3d->patch[n];
+      RES( 1, fread( &(ref_patch->idim), sizeof(REF_INT), 1,file),
+	   "id" );
+      SWAP_INT(ref_patch->idim);
+      RES( 1, fread( &(ref_patch->jdim), sizeof(REF_INT), 1,file),
+	   "jd" );
+      SWAP_INT(ref_patch->jdim);
+      RES( 1, fread( &(ref_patch->kdim), sizeof(REF_INT), 1,file),
+	   "kd" );
+      SWAP_INT(ref_patch->kdim);
     }
 
   RES( 1, fread( &fortran_record_size, sizeof(REF_INT), 1, file ), "end rec" );
