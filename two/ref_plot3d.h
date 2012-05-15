@@ -28,6 +28,8 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d, char *filename );
 #define ref_patch_xyz(ref_patch,ixyz,i,j) \
   ((ref_patch)->xyz[ (ixyz) + 3 * ( (i) + (j)*(((ref_patch)->idim)) ) ] )
 
+REF_STATUS ref_plot3d_tec( REF_PLOT3D ref_plot3d, char *filename );
+
 END_C_DECLORATION
 
 #endif /* REF_PLOT3D_H */

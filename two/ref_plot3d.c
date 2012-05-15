@@ -106,3 +106,38 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d_ptr, char *filename )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_plot3d_tec( REF_PLOT3D ref_plot3d, char *filename )
+{
+  FILE *file;
+  REF_INT i, j, n;
+  REF_PATCH ref_patch;
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"tecplot refine geometry file\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  for (n=0;n<ref_plot3d_ngrid(ref_plot3d);n++)
+    {
+      ref_patch = ref_plot3d->patch[n];
+
+      fprintf(file,
+	      "zone t=patch%d, I=%d, J=%d, datapacking=%s\n",
+	      n+1, ref_patch->idim, ref_patch->jdim, "point" );
+
+      for (j=0;j<ref_patch->jdim;j++)
+	for (i=0;i<ref_patch->idim;i++)
+	  fprintf(file, " %.16e %.16e %.16e\n",
+		  ref_patch_xyz(ref_patch,0,i,j),
+		  ref_patch_xyz(ref_patch,1,i,j),
+		  ref_patch_xyz(ref_patch,2,i,j) ) ;
+    }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
