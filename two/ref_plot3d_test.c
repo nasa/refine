@@ -34,6 +34,8 @@ int main( int argc, char *argv[] )
       RSS( ref_plot3d_from_file( &ref_plot3d, argv[1] ), "from file" );
       RSS( ref_import_by_extension( &ref_grid, argv[2] ), "by ext" );
 
+      RSS( ref_plot3d_mate( ref_plot3d, ref_grid ), "mate" );
+
       RSS( ref_plot3d_free( ref_plot3d ), "free" );
       RSS( ref_grid_free( ref_grid ), "free" );
       return 0;

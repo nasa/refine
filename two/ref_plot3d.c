@@ -162,3 +162,67 @@ REF_STATUS ref_plot3d_tec( REF_PLOT3D ref_plot3d, char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_plot3d_mate( REF_PLOT3D ref_plot3d, REF_GRID ref_grid )
+{
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT cell;
+  REF_INT node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL xyz[3], uv[2];
+  REF_INT n;
+  REF_PATCH ref_patch;
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell,cell,nodes)
+    {
+      switch ( nodes[3] )
+	{
+	case  9: n = 0; break;
+	case 10: n = 1; break;
+	case 11: n = 2; break;
+	case 12: n = 3; break;
+	case 13: n = 4; break;
+	default: continue; break;    
+	}
+      ref_patch = ref_plot3d->patch[n];
+      for ( node=0; node<3; node++ )
+	{
+	  xyz[0] = ref_node_xyz(ref_node, 0, nodes[node] );
+	  xyz[1] = ref_node_xyz(ref_node, 1, nodes[node] );
+	  xyz[2] = ref_node_xyz(ref_node, 2, nodes[node] );
+	  RSS( ref_patch_locate( ref_patch, xyz, uv), "locate");
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
+
+REF_STATUS ref_patch_locate( REF_PATCH ref_patch, REF_DBL *xyz, REF_DBL *uv )
+{
+  uv[0]=0.0;
+  uv[1]=0.0;
+
+  RSS( ref_patch_xyz_at( ref_patch, uv, xyz ), "at" );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_patch_xyz_at( REF_PATCH ref_patch, REF_DBL *uv, REF_DBL *xyz )
+{
+  REF_INT i, j;
+
+  i = (REF_INT)(uv[0]*(REF_DBL)(ref_patch->idim));
+  j = (REF_INT)(uv[1]*(REF_DBL)(ref_patch->jdim));
+
+  /*
+  printf("i %d\n",i);
+  printf("j %d\n",j);
+  */
+
+  xyz[0] = ref_patch_xyz(ref_patch,0,i,j);
+  xyz[1] = ref_patch_xyz(ref_patch,1,i,j);
+  xyz[2] = ref_patch_xyz(ref_patch,2,i,j);
+
+  return REF_SUCCESS;
+}

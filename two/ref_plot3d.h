@@ -10,7 +10,11 @@ typedef REF_PATCH_STRUCT * REF_PATCH;
 
 typedef struct REF_PLOT3D_STRUCT REF_PLOT3D_STRUCT;
 typedef REF_PLOT3D_STRUCT * REF_PLOT3D;
+END_C_DECLORATION
 
+#include "ref_grid.h"
+
+BEGIN_C_DECLORATION
 struct REF_PLOT3D_STRUCT {
   REF_INT ngrid;
   REF_PATCH *patch;
@@ -31,6 +35,10 @@ REF_STATUS ref_patch_free( REF_PATCH ref_patch );
   ((ref_patch)->xyz[ (ixyz) + 3 * ( (i) + (j)*(((ref_patch)->idim)) ) ] )
 
 REF_STATUS ref_plot3d_tec( REF_PLOT3D ref_plot3d, char *filename );
+REF_STATUS ref_plot3d_mate( REF_PLOT3D ref_plot3d, REF_GRID ref_grid );
+
+REF_STATUS ref_patch_locate( REF_PATCH ref_patch, REF_DBL *xyz, REF_DBL *uv );
+REF_STATUS ref_patch_xyz_at( REF_PATCH ref_patch, REF_DBL *uv, REF_DBL *xyz );
 
 END_C_DECLORATION
 
