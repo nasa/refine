@@ -19,12 +19,14 @@ REF_STATUS ref_import_examine_header( char *filename )
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
   RNS(file, "unable to open file" );
 
-  for(i=0;i<7;i++)
+  for(i=0;i<8;i++)
     {
       RES( 1, fread( &i4, sizeof(int), 1, file ), "int" );
       i4_swapped = i4; SWAP_INT(i4_swapped);
       printf(" %d: %d (%d swapped) ints\n",i,i4,i4_swapped);
     }
+
+  printf(" --\n");
 
   rewind(file);
 
