@@ -18,11 +18,15 @@ struct REF_PLOT3D_STRUCT {
 
 struct REF_PATCH_STRUCT {
   REF_INT idim, jdim, kdim;
+  REF_DBL *xyz;
 };
 
 REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d, char *filename );
 
 #define ref_plot3d_ngrid(ref_plot3d) ((ref_plot3d)->ngrid)
+
+#define ref_patch_xyz(ref_patch,ixyz,i,j) \
+  ((ref_patch)->xyz[ (ixyz) + 3 * ( (i) + (j)*(((ref_patch)->idim)) ) ] )
 
 END_C_DECLORATION
 

@@ -16,7 +16,8 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d_ptr, char *filename )
   REF_PLOT3D ref_plot3d;
   FILE *file;
   REF_INT fortran_record_size;
-  REF_INT n;
+  REF_INT i, j, k, n, ixyz;
+  REF_DBL dummy;
   REF_PATCH ref_patch;
 
   ref_malloc( *ref_plot3d_ptr, 1, REF_PLOT3D_STRUCT );
@@ -64,6 +65,42 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d_ptr, char *filename )
   SWAP_INT(fortran_record_size);
   REIS( ref_plot3d_ngrid(ref_plot3d)*3*4, fortran_record_size, 
 	"dims end record size" );
+
+  for (n=0;n<ref_plot3d_ngrid(ref_plot3d);n++)
+    {
+      ref_patch = ref_plot3d->patch[n];
+      ref_malloc( ref_patch->xyz, 3*ref_patch->idim*ref_patch->jdim, REF_DBL );
+
+      RES( 1, fread( &fortran_record_size, sizeof(REF_INT), 1, file ), "sxyz" );
+      SWAP_INT(fortran_record_size);
+      REIS( 8 * 3 * 
+	    ref_patch->idim *
+	    ref_patch->jdim *
+	    ref_patch->kdim, fortran_record_size, "dims end record size" );
+
+      for (j=0;j<ref_patch->jdim;j++)
+	for (i=0;i<ref_patch->idim;i++)
+	  for (ixyz=0;ixyz<3;ixyz++)
+	    {
+	      RES( 1, fread( &ref_patch_xyz(ref_patch,ixyz,i,j), 
+			     sizeof(REF_DBL), 1, file ), "xyz" );
+	      SWAP_DBL(ref_patch_xyz(ref_patch,ixyz,i,j));
+	    }
+
+      for (k=1;k<ref_patch->kdim;k++)
+	for (j=0;j<ref_patch->jdim;j++)
+	  for (i=0;i<ref_patch->idim;i++)
+	    for (ixyz=0;ixyz<3;ixyz++)
+	      RES( 1, fread( &dummy, sizeof(REF_DBL), 1, file ), "dummy xyz" );
+
+      RES( 1, fread( &fortran_record_size, sizeof(REF_INT), 1, file ), "sxyz" );
+      SWAP_INT(fortran_record_size);
+      REIS( 8 * 3 * 
+	    ref_patch->idim *
+	    ref_patch->jdim *
+	    ref_patch->kdim, fortran_record_size, "dims end record size" );
+
+    }
 
   fclose(file);
 
