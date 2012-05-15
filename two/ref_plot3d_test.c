@@ -15,6 +15,37 @@
 #include "ref_sort.h"
 #include "ref_list.h"
 
+#include "ref_malloc.h"
+
+static REF_STATUS set_up_2x2( REF_PATCH *ref_patch_ptr )
+{
+  REF_PATCH ref_patch;
+  ref_malloc( *ref_patch_ptr, 1, REF_PATCH_STRUCT );
+  ref_patch = *ref_patch_ptr;
+  ref_patch->idim = 2;
+  ref_patch->jdim = 2;
+  ref_patch->kdim = 1;
+  ref_malloc( ref_patch->xyz, 3*ref_patch->idim*ref_patch->jdim, REF_DBL );
+
+  ref_patch_xyz(ref_patch,0,0,0) = 0.0;
+  ref_patch_xyz(ref_patch,1,0,0) = 0.0;
+  ref_patch_xyz(ref_patch,2,0,0) = 0.0;
+
+  ref_patch_xyz(ref_patch,0,1,0) = 1.0;
+  ref_patch_xyz(ref_patch,1,1,0) = 0.0;
+  ref_patch_xyz(ref_patch,2,1,0) = 0.0;
+
+  ref_patch_xyz(ref_patch,0,0,1) = 0.0;
+  ref_patch_xyz(ref_patch,1,0,1) = 1.0;
+  ref_patch_xyz(ref_patch,2,0,1) = 0.0;
+
+  ref_patch_xyz(ref_patch,0,1,1) = 1.0;
+  ref_patch_xyz(ref_patch,1,1,1) = 1.0;
+  ref_patch_xyz(ref_patch,2,1,1) = 0.0;
+
+  return REF_SUCCESS;
+}
+
 int main( int argc, char *argv[] )
 {
 
@@ -40,6 +71,20 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( ref_grid ), "free" );
       return 0;
     }
+
+  {
+    REF_PATCH ref_patch;
+    REF_DBL xyz[3], uv[2];
+    RSS( set_up_2x2( &ref_patch ), "2x2" );
+
+    uv[0] = 0.0; uv[1] = 0.0;
+    RSS( ref_patch_xyz_at( ref_patch, uv, xyz ), "at");
+    RWDS( 0.0, xyz[0], -1.0, "xyz[0]");
+    RWDS( 0.0, xyz[1], -1.0, "xyz[1]");
+    RWDS( 0.0, xyz[2], -1.0, "xyz[2]");
+
+    RSS( ref_patch_free( ref_patch ), "free" );
+  }
 
   return 0;
 }
