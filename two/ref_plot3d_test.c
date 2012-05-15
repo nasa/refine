@@ -83,6 +83,24 @@ int main( int argc, char *argv[] )
     RWDS( 0.0, xyz[1], -1.0, "xyz[1]");
     RWDS( 0.0, xyz[2], -1.0, "xyz[2]");
 
+    uv[0] = 1.0; uv[1] = 0.0;
+    RSS( ref_patch_xyz_at( ref_patch, uv, xyz ), "at");
+    RWDS( 1.0, xyz[0], -1.0, "xyz[0]");
+    RWDS( 0.0, xyz[1], -1.0, "xyz[1]");
+    RWDS( 0.0, xyz[2], -1.0, "xyz[2]");
+
+    uv[0] = 0.0; uv[1] = 1.0;
+    RSS( ref_patch_xyz_at( ref_patch, uv, xyz ), "at");
+    RWDS( 0.0, xyz[0], -1.0, "xyz[0]");
+    RWDS( 1.0, xyz[1], -1.0, "xyz[1]");
+    RWDS( 0.0, xyz[2], -1.0, "xyz[2]");
+
+    uv[0] = 1.0; uv[1] = 1.0;
+    RSS( ref_patch_xyz_at( ref_patch, uv, xyz ), "at");
+    RWDS( 1.0, xyz[0], -1.0, "xyz[0]");
+    RWDS( 1.0, xyz[1], -1.0, "xyz[1]");
+    RWDS( 0.0, xyz[2], -1.0, "xyz[2]");
+
     RSS( ref_patch_free( ref_patch ), "free" );
   }
 

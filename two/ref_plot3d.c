@@ -212,13 +212,8 @@ REF_STATUS ref_patch_xyz_at( REF_PATCH ref_patch, REF_DBL *uv, REF_DBL *xyz )
 {
   REF_INT i, j;
 
-  i = (REF_INT)(uv[0]*(REF_DBL)(ref_patch->idim));
-  j = (REF_INT)(uv[1]*(REF_DBL)(ref_patch->jdim));
-
-  /*
-  printf("i %d\n",i);
-  printf("j %d\n",j);
-  */
+  i = (REF_INT)(uv[0]*(REF_DBL)(ref_patch->idim-1));
+  j = (REF_INT)(uv[1]*(REF_DBL)(ref_patch->jdim-1));
 
   xyz[0] = ref_patch_xyz(ref_patch,0,i,j);
   xyz[1] = ref_patch_xyz(ref_patch,1,i,j);
