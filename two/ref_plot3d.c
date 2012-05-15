@@ -78,20 +78,20 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d_ptr, char *filename )
 	    ref_patch->jdim *
 	    ref_patch->kdim, fortran_record_size, "dims end record size" );
 
-      for (j=0;j<ref_patch->jdim;j++)
-	for (i=0;i<ref_patch->idim;i++)
-	  for (ixyz=0;ixyz<3;ixyz++)
-	    {
-	      RES( 1, fread( &ref_patch_xyz(ref_patch,ixyz,i,j), 
-			     sizeof(REF_DBL), 1, file ), "xyz" );
-	      SWAP_DBL(ref_patch_xyz(ref_patch,ixyz,i,j));
-	    }
-
-      for (k=1;k<ref_patch->kdim;k++)
-	for (j=0;j<ref_patch->jdim;j++)
-	  for (i=0;i<ref_patch->idim;i++)
-	    for (ixyz=0;ixyz<3;ixyz++)
-	      RES( 1, fread( &dummy, sizeof(REF_DBL), 1, file ), "dummy xyz" );
+      for (ixyz=0;ixyz<3;ixyz++)
+	{
+	  for (j=0;j<ref_patch->jdim;j++)
+	    for (i=0;i<ref_patch->idim;i++)
+	      {
+		RES( 1, fread( &ref_patch_xyz(ref_patch,ixyz,i,j), 
+			       sizeof(REF_DBL), 1, file ), "xyz" );
+		SWAP_DBL(ref_patch_xyz(ref_patch,ixyz,i,j));
+	      }
+	  for (k=1;k<ref_patch->kdim;k++)
+	    for (j=0;j<ref_patch->jdim;j++)
+	      for (i=0;i<ref_patch->idim;i++)
+		RES( 1, fread( &dummy, sizeof(REF_DBL), 1, file ), "dum xyz" );
+	}
 
       RES( 1, fread( &fortran_record_size, sizeof(REF_INT), 1, file ), "sxyz" );
       SWAP_INT(fortran_record_size);
