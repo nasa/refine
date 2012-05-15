@@ -22,6 +22,8 @@ struct REF_PATCH_STRUCT {
 };
 
 REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d, char *filename );
+REF_STATUS ref_plot3d_free( REF_PLOT3D ref_plot3d );
+REF_STATUS ref_patch_free( REF_PATCH ref_patch );
 
 #define ref_plot3d_ngrid(ref_plot3d) ((ref_plot3d)->ngrid)
 

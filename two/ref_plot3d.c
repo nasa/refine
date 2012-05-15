@@ -107,6 +107,27 @@ REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d_ptr, char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_plot3d_free( REF_PLOT3D ref_plot3d )
+{
+  REF_INT n;
+
+  for (n=0;n<ref_plot3d_ngrid(ref_plot3d);n++)
+    RSS( ref_patch_free( ref_plot3d->patch[n] ), "patch free" );
+  
+  ref_free( ref_plot3d->patch );
+  ref_free( ref_plot3d );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_patch_free( REF_PATCH ref_patch )
+{
+  ref_free( ref_patch->xyz );
+  ref_free( ref_patch );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_plot3d_tec( REF_PLOT3D ref_plot3d, char *filename )
 {
   FILE *file;
