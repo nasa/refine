@@ -10,6 +10,7 @@ typedef REF_PLOT3D_STRUCT * REF_PLOT3D;
 
 struct REF_PLOT3D_STRUCT {
   REF_INT ngrid;
+  REF_INT *idim, *jdim, *kdim;
 };
 
 REF_STATUS ref_plot3d_from_file( REF_PLOT3D *ref_plot3d, char *filename );
