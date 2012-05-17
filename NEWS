@@ -1,5 +1,6 @@
 
-- limit boundary coarsening that effects normal in refine/two
+- limit boundary coarsening that effects curved surface normal in refine/two
+- two/ref_axi more general about node pair ordering
 
 Wed May 2, 2012 :  Released Refine 1.8.7
 
