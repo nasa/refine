@@ -40,7 +40,14 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
       if ( ABS(ref_node_xyz(ref_node,2,node)) < pole_tol &&
 	   ABS(ref_node_xyz(ref_node,1,node)) > 0.5 )
 	{
-	  o2n[node] = node-nhalf;
+	  if ( node < nhalf )
+	    {
+	      o2n[node] = node+nhalf;
+	    }
+	  else
+	    {
+	      o2n[node] = node-nhalf;
+	    }
 	  RSS( ref_node_remove( ref_node, node ), "remove" );
 	}
       else
