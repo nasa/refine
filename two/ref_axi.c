@@ -11,6 +11,7 @@
 #include "ref_cell.h"
 
 #include "ref_sort.h"
+#include "ref_malloc.h"
 
 REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
 {
@@ -28,8 +29,7 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
 
   ref_node = ref_grid_node(ref_grid);
 
-  o2n = (REF_INT *)malloc( ref_node_n(ref_node) * sizeof(REF_INT));
-  RNS(o2n,"malloc o2n NULL");
+  ref_malloc_init( o2n, ref_node_n(ref_node), REF_INT, REF_EMPTY );
 
   pole_tol = 1.0e-6;
   wedge_angle = ref_math_in_radians(5.0);
@@ -151,7 +151,7 @@ REF_STATUS ref_axi_wedge( REF_GRID ref_grid )
 	}
     }
 
-  free(o2n);
+  ref_free(o2n);
 
   return REF_SUCCESS;
 }
