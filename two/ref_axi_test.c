@@ -134,6 +134,62 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+  { /* collapse node pairs : node 0 */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node0, node1;
+
+    RSS(ref_grid_create(&ref_grid),"create");
+    ref_node = ref_grid_node(ref_grid);
+
+    RSS(ref_node_add(ref_node,0,&node0),"add node");
+    ref_node_xyz(ref_node,0,node0) = 0.0;
+    ref_node_xyz(ref_node,1,node0) = 1.0;
+    ref_node_xyz(ref_node,2,node0) = 0.0;
+
+    RSS(ref_node_add(ref_node,1,&node1),"add node");
+    ref_node_xyz(ref_node,0,node1) = 0.0;
+    ref_node_xyz(ref_node,1,node1) = 0.0;
+    ref_node_xyz(ref_node,2,node1) = 0.0;
+
+    RSS( ref_axi_wedge( ref_grid ), "wedge");
+
+    REIS( 1, ref_node_n(ref_grid_node(ref_grid)), "node n");
+
+    REIS( REF_FALSE, ref_node_valid(ref_node,node0), "val");
+    REIS( REF_TRUE,  ref_node_valid(ref_node,node1), "val");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
+  { /* collapse node pairs : node 1 */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node0, node1;
+
+    RSS(ref_grid_create(&ref_grid),"create");
+    ref_node = ref_grid_node(ref_grid);
+
+    RSS(ref_node_add(ref_node,0,&node0),"add node");
+    ref_node_xyz(ref_node,0,node0) = 0.0;
+    ref_node_xyz(ref_node,1,node0) = 0.0;
+    ref_node_xyz(ref_node,2,node0) = 0.0;
+
+    RSS(ref_node_add(ref_node,1,&node1),"add node");
+    ref_node_xyz(ref_node,0,node1) = 0.0;
+    ref_node_xyz(ref_node,1,node1) = 1.0;
+    ref_node_xyz(ref_node,2,node1) = 0.0;
+
+    RSS( ref_axi_wedge( ref_grid ), "wedge");
+
+    REIS( 1, ref_node_n(ref_grid_node(ref_grid)), "node n");
+
+    REIS( REF_TRUE,  ref_node_valid(ref_node,node0), "val");
+    REIS( REF_FALSE, ref_node_valid(ref_node,node1), "val");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
   { /* collapse quad 0 */
     REF_GRID ref_grid;
 
