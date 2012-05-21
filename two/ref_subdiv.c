@@ -1497,3 +1497,71 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
 
   return REF_SUCCESS;
 }
+
+#define fill_pri_xyz(ref_node,nodes,xyz)	   \
+  (xyz)[0][0] = ref_node_xyz(ref_node,0,nodes[0]); \
+  (xyz)[0][1] = ref_node_xyz(ref_node,1,nodes[0]); \
+  (xyz)[0][2] = ref_node_xyz(ref_node,2,nodes[0]); \
+  (xyz)[1][0] = ref_node_xyz(ref_node,0,nodes[1]); \
+  (xyz)[1][1] = ref_node_xyz(ref_node,1,nodes[1]); \
+  (xyz)[1][2] = ref_node_xyz(ref_node,2,nodes[1]); \
+  (xyz)[2][0] = ref_node_xyz(ref_node,0,nodes[2]); \
+  (xyz)[2][1] = ref_node_xyz(ref_node,1,nodes[2]); \
+  (xyz)[2][2] = ref_node_xyz(ref_node,2,nodes[2]); \
+  (xyz)[3][0] = ref_node_xyz(ref_node,0,nodes[3]); \
+  (xyz)[3][1] = ref_node_xyz(ref_node,1,nodes[3]); \
+  (xyz)[3][2] = ref_node_xyz(ref_node,2,nodes[3]); \
+  (xyz)[4][0] = ref_node_xyz(ref_node,0,nodes[4]); \
+  (xyz)[4][1] = ref_node_xyz(ref_node,1,nodes[4]); \
+  (xyz)[4][2] = ref_node_xyz(ref_node,2,nodes[4]); \
+  (xyz)[5][0] = ref_node_xyz(ref_node,0,nodes[5]); \
+  (xyz)[5][1] = ref_node_xyz(ref_node,1,nodes[5]); \
+  (xyz)[5][2] = ref_node_xyz(ref_node,2,nodes[5]);
+
+#define replace_xyz0_avg(xyz,n0,n1)		  \
+  (xyz)[n0][0] = 0.5*((xyz)[n0][0]+(xyz)[n1][0]); \
+  (xyz)[n0][1] = 0.5*((xyz)[n0][1]+(xyz)[n1][1]); \
+  (xyz)[n0][2] = 0.5*((xyz)[n0][2]+(xyz)[n1][2]); \
+
+REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
+{
+  REF_INT cell;
+  REF_CELL ref_cell;
+  REF_NODE ref_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL xyz[6][3];
+  REF_INT map;
+
+  ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+
+  ref_cell = ref_grid_pri(ref_subdiv_grid(ref_subdiv));
+
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      map = ref_subdiv_map( ref_subdiv, ref_cell, cell );
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes");
+      switch ( map )
+	{
+	case 0: /* don't split */
+	  break;
+	case 65: /* prism split edges 0, 6 */
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,0,1);
+	  replace_xyz0_avg(xyz,3,4);
+
+
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,1,0);
+	  replace_xyz0_avg(xyz,4,3);
+
+	  break;
+	default:
+	  RSS( ref_subdiv_map_to_edge( map ), "map2edge");
+	  printf("pri %d, map %d\n",cell,map);
+	  RSS( REF_IMPLEMENT, "map not implemented yet" )
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
