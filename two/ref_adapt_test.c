@@ -80,6 +80,10 @@ int main( int argc, char *argv[] )
 	
 	ref_free( node_ratio );
 
+	RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
+	RSS(ref_subdiv_undo_impossible_marks(ref_subdiv),"possible");
+	ref_mpi_stopwatch_stop("relax and check");
+
 	RSS(ref_subdiv_split(ref_subdiv),"split");
 	ref_mpi_stopwatch_stop("subdiv split");
 
