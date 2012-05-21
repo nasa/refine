@@ -1521,7 +1521,16 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
 #define replace_xyz0_avg(xyz,n0,n1)		  \
   (xyz)[n0][0] = 0.5*((xyz)[n0][0]+(xyz)[n1][0]); \
   (xyz)[n0][1] = 0.5*((xyz)[n0][1]+(xyz)[n1][1]); \
-  (xyz)[n0][2] = 0.5*((xyz)[n0][2]+(xyz)[n1][2]); \
+  (xyz)[n0][2] = 0.5*((xyz)[n0][2]+(xyz)[n1][2]);
+
+#define fill_xyz_avg(xyz,n,n0,n1)				\
+  (xyz)[n][0] = 0.5*(ref_node_xyz(ref_node,0,nodes[n0])+	\
+		     ref_node_xyz(ref_node,0,nodes[n1]));	\
+  (xyz)[n][1] = 0.5*(ref_node_xyz(ref_node,1,nodes[n0])+	\
+		     ref_node_xyz(ref_node,1,nodes[n1]));	\
+  (xyz)[n][2] = 0.5*(ref_node_xyz(ref_node,2,nodes[n0])+	\
+		     ref_node_xyz(ref_node,2,nodes[n1]));
+
 
 REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 {
@@ -1572,6 +1581,38 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  fill_pri_xyz(ref_node,nodes,xyz);
 	  replace_xyz0_avg(xyz,2,1);
 	  replace_xyz0_avg(xyz,5,4);
+
+	  break;
+	case 459: /* prism split */
+	  /* near edge 0-3 */
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,1,0);
+	  replace_xyz0_avg(xyz,2,0);
+	  replace_xyz0_avg(xyz,4,3);
+	  replace_xyz0_avg(xyz,5,3);
+
+	  /* near edge 1-4 */
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,0,1);
+	  replace_xyz0_avg(xyz,2,1);
+	  replace_xyz0_avg(xyz,3,4);
+	  replace_xyz0_avg(xyz,5,4);
+
+	  /* near edge 2-5 */
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,0,2);
+	  replace_xyz0_avg(xyz,1,2);
+	  replace_xyz0_avg(xyz,3,5);
+	  replace_xyz0_avg(xyz,4,5);
+
+	  /* center */
+	  fill_xyz_avg(xyz,0,0,1);
+	  fill_xyz_avg(xyz,1,1,2);
+	  fill_xyz_avg(xyz,2,2,0);
+
+	  fill_xyz_avg(xyz,3,3,4);
+	  fill_xyz_avg(xyz,4,4,5);
+	  fill_xyz_avg(xyz,5,5,0);
 
 	  break;
 	default:
