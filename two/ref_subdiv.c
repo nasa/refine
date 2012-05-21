@@ -1561,6 +1561,7 @@ static REF_STATUS ref_subdiv_test_pri( REF_DBL xyz[6][3], REF_BOOL *possible )
     {
       printf("bad pri base\n");
       *possible = REF_FALSE;
+      return REF_FAILURE;
     }
 
   n1=3;
@@ -1584,8 +1585,8 @@ static REF_STATUS ref_subdiv_test_pri( REF_DBL xyz[6][3], REF_BOOL *possible )
     {
       printf("bad pri top\n");
       *possible = REF_FALSE;
+      return REF_FAILURE;
     }
-
     
   return REF_SUCCESS;
 }
