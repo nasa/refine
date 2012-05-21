@@ -1,15 +1,6 @@
 
 * best pract?
 
-make hybrid dataset
-make cfl dataset
-
-nice
-  call two from fun
-    interp solution
-      c interface aux
-    hook up ref2
-
 tet adaptation.
   statistics
     what changed?
@@ -18,8 +9,6 @@ tet adaptation.
   convergence
     stopping
     tolerence
-  metric
-    smoothing
   partition poor quality cells to the interior with aging
 
 projection (fake geom)
@@ -28,7 +17,6 @@ projection (fake geom)
 fun3d
   solve bp
   adjoint bp validation
-  error estimation for mixed
   export res from adjoint
 
 clean up
