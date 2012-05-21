@@ -60,8 +60,6 @@ int main( int argc, char *argv[] )
       RSS(ref_part_metric( ref_node, argv[2] ), "part metric" );
       ref_mpi_stopwatch_stop("read metric");
 
-      RSS( ref_metric_sanitize(ref_grid),"sant");
-
       RSS(ref_validation_cell_volume(ref_grid),"vol");
 
       {
@@ -93,6 +91,10 @@ int main( int argc, char *argv[] )
 	RSS(ref_migrate_to_balance(ref_grid),"balance");
 	ref_mpi_stopwatch_stop("balance");
       }
+
+      RSS( ref_metric_sanitize(ref_grid),"sant");
+
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
 
       passes = 5;
       for (i = 0; i<passes ; i++ )
