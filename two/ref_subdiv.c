@@ -1531,6 +1531,65 @@ REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv )
   (xyz)[n][2] = 0.5*(ref_node_xyz(ref_node,2,nodes[n0])+	\
 		     ref_node_xyz(ref_node,2,nodes[n1]));
 
+static REF_STATUS ref_subdiv_test_pri( REF_DBL xyz[6][3], REF_BOOL *possible )
+{
+  REF_INT n1,n2,n3;
+  REF_DBL xnorm,ynorm,znorm;
+  REF_DBL dx, dy, dz;
+  REF_DBL crdot;
+
+  *possible = REF_TRUE;
+
+  n1=0;
+  n2=1;
+  n3=2;
+
+  xnorm =  0.5 * ( (xyz[n2][1] - xyz[n1][1])*(xyz[n3][2] - xyz[n1][2]) - 
+		   (xyz[n2][2] - xyz[n1][2])*(xyz[n3][1] - xyz[n1][1]) );
+  ynorm = -0.5 * ( (xyz[n2][0] - xyz[n1][0])*(xyz[n3][2] - xyz[n1][2]) - 
+		   (xyz[n2][2] - xyz[n1][2])*(xyz[n3][0] - xyz[n1][0]));
+  znorm =  0.5 * ( (xyz[n2][0] - xyz[n1][0])*(xyz[n3][1] - xyz[n1][1]) - 
+		   (xyz[n2][1] - xyz[n1][1])*(xyz[n3][0] - xyz[n1][0]));
+
+  dx= (xyz[3][0]+xyz[4][0]+xyz[5][0])/3.0 - (xyz[0][0]+xyz[1][0]+xyz[2][0])/3.0;
+  dy= (xyz[3][1]+xyz[4][1]+xyz[5][1])/3.0 - (xyz[0][1]+xyz[1][1]+xyz[2][1])/3.0;
+  dz= (xyz[3][2]+xyz[4][2]+xyz[5][2])/3.0 - (xyz[0][2]+xyz[1][2]+xyz[2][2])/3.0;
+
+  crdot = dx*xnorm + dy*ynorm + dz*znorm;
+
+  if ( crdot < 0.0 ) 
+    {
+      printf("bad pri base\n");
+      *possible = REF_FALSE;
+    }
+
+  n1=3;
+  n2=5;
+  n3=4;
+
+  xnorm =  0.5 * ( (xyz[n2][1] - xyz[n1][1])*(xyz[n3][2] - xyz[n1][2]) - 
+		   (xyz[n2][2] - xyz[n1][2])*(xyz[n3][1] - xyz[n1][1]) );
+  ynorm = -0.5 * ( (xyz[n2][0] - xyz[n1][0])*(xyz[n3][2] - xyz[n1][2]) - 
+		   (xyz[n2][2] - xyz[n1][2])*(xyz[n3][0] - xyz[n1][0]));
+  znorm =  0.5 * ( (xyz[n2][0] - xyz[n1][0])*(xyz[n3][1] - xyz[n1][1]) - 
+		   (xyz[n2][1] - xyz[n1][1])*(xyz[n3][0] - xyz[n1][0]));
+
+  dx=-(xyz[3][0]+xyz[4][0]+xyz[5][0])/3.0 + (xyz[0][0]+xyz[1][0]+xyz[2][0])/3.0;
+  dy=-(xyz[3][1]+xyz[4][1]+xyz[5][1])/3.0 + (xyz[0][1]+xyz[1][1]+xyz[2][1])/3.0;
+  dz=-(xyz[3][2]+xyz[4][2]+xyz[5][2])/3.0 + (xyz[0][2]+xyz[1][2]+xyz[2][2])/3.0;
+
+  crdot = dx*xnorm + dy*ynorm + dz*znorm;
+
+  if ( crdot < 0.0 ) 
+    {
+      printf("bad pri top\n");
+      *possible = REF_FALSE;
+    }
+
+    
+  return REF_SUCCESS;
+}
+
 
 REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 {
@@ -1540,7 +1599,7 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL xyz[6][3];
   REF_INT map;
-
+  REF_BOOL possible;
   ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
 
   ref_cell = ref_grid_pri(ref_subdiv_grid(ref_subdiv));
@@ -1561,6 +1620,7 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  fill_pri_xyz(ref_node,nodes,xyz);
 	  replace_xyz0_avg(xyz,1,0);
 	  replace_xyz0_avg(xyz,4,3);
+	  RSS( ref_subdiv_test_pri( xyz, &possible ), "test pri" );
 
 	  break;
 	case 130: /* prism split edges 1, 7 */
@@ -1571,6 +1631,7 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  fill_pri_xyz(ref_node,nodes,xyz);
 	  replace_xyz0_avg(xyz,2,0);
 	  replace_xyz0_avg(xyz,5,3);
+	  RSS( ref_subdiv_test_pri( xyz, &possible ), "test pri" );
 
 	  break;
 	case 264: /* prism split edges 3, 8 */
@@ -1581,6 +1642,7 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  fill_pri_xyz(ref_node,nodes,xyz);
 	  replace_xyz0_avg(xyz,2,1);
 	  replace_xyz0_avg(xyz,5,4);
+	  RSS( ref_subdiv_test_pri( xyz, &possible ), "test pri" );
 
 	  break;
 	case 459: /* prism split */
@@ -1590,6 +1652,7 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  replace_xyz0_avg(xyz,2,0);
 	  replace_xyz0_avg(xyz,4,3);
 	  replace_xyz0_avg(xyz,5,3);
+	  RSS( ref_subdiv_test_pri( xyz, &possible ), "test pri" );
 
 	  /* near edge 1-4 */
 	  fill_pri_xyz(ref_node,nodes,xyz);
@@ -1597,6 +1660,7 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  replace_xyz0_avg(xyz,2,1);
 	  replace_xyz0_avg(xyz,3,4);
 	  replace_xyz0_avg(xyz,5,4);
+	  RSS( ref_subdiv_test_pri( xyz, &possible ), "test pri" );
 
 	  /* near edge 2-5 */
 	  fill_pri_xyz(ref_node,nodes,xyz);
@@ -1604,6 +1668,7 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  replace_xyz0_avg(xyz,1,2);
 	  replace_xyz0_avg(xyz,3,5);
 	  replace_xyz0_avg(xyz,4,5);
+	  RSS( ref_subdiv_test_pri( xyz, &possible ), "test pri" );
 
 	  /* center */
 	  fill_xyz_avg(xyz,0,0,1);
@@ -1613,6 +1678,7 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  fill_xyz_avg(xyz,3,3,4);
 	  fill_xyz_avg(xyz,4,4,5);
 	  fill_xyz_avg(xyz,5,5,0);
+	  RSS( ref_subdiv_test_pri( xyz, &possible ), "test pri" );
 
 	  break;
 	default:
