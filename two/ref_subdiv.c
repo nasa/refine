@@ -1549,10 +1549,29 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
 	  replace_xyz0_avg(xyz,0,1);
 	  replace_xyz0_avg(xyz,3,4);
 
-
 	  fill_pri_xyz(ref_node,nodes,xyz);
 	  replace_xyz0_avg(xyz,1,0);
 	  replace_xyz0_avg(xyz,4,3);
+
+	  break;
+	case 130: /* prism split edges 1, 7 */
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,0,2);
+	  replace_xyz0_avg(xyz,3,5);
+
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,2,0);
+	  replace_xyz0_avg(xyz,5,3);
+
+	  break;
+	case 264: /* prism split edges 3, 8 */
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,1,2);
+	  replace_xyz0_avg(xyz,4,5);
+
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,2,1);
+	  replace_xyz0_avg(xyz,5,4);
 
 	  break;
 	default:
