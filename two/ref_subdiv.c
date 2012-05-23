@@ -1538,6 +1538,8 @@ static REF_STATUS ref_subdiv_test_pri( REF_DBL xyz[6][3], REF_BOOL *possible )
   REF_DBL dx, dy, dz;
   REF_DBL crdot;
 
+  REF_INT i;
+
   *possible = REF_TRUE;
 
   n1=0;
@@ -1561,7 +1563,6 @@ static REF_STATUS ref_subdiv_test_pri( REF_DBL xyz[6][3], REF_BOOL *possible )
     {
       printf("bad pri base\n");
       *possible = REF_FALSE;
-      return REF_FAILURE;
     }
 
   n1=3;
@@ -1585,7 +1586,14 @@ static REF_STATUS ref_subdiv_test_pri( REF_DBL xyz[6][3], REF_BOOL *possible )
     {
       printf("bad pri top\n");
       *possible = REF_FALSE;
-      return REF_FAILURE;
+    }
+
+  if ( ! *possible )
+    {
+      printf("zone t=bad, nodes=6, elements=1, datapacking=point, zonetype=febrick");
+      for (i=0;i<6;i++)
+	printf(" %.16e %.16e %.16e\n",xyz[i][0],xyz[i][1],xyz[i][2]);
+      printf(" 1 2 3 3 4 5 6 6\n");
     }
     
   return REF_SUCCESS;
