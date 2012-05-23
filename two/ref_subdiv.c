@@ -1351,6 +1351,7 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   REF_INT node;
 
   RSS(ref_subdiv_mark_relax(ref_subdiv),"relax marks");
+  RSS(ref_subdiv_undo_impossible_marks(ref_subdiv),"possible");
   RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
 
   RSS( ref_subdiv_split_tet( ref_subdiv ), "split tet" );
