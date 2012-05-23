@@ -344,12 +344,15 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
   return REF_SUCCESS;
 }
 
+static REF_INT bad_tet_count = 0;
+
 #define check_tet_volume()						\
   {									\
     REF_DBL vol;							\
     RSS( ref_node_tet_vol( ref_node, tet_nodes, &vol ), "tet vol");	\
     if( vol<=0.0 )							\
       {									\
+	char filename[265];						\
 	REF_GRID viz;							\
 	REF_INT newnew;							\
 	printf("tet vol %e\n",vol);					\
@@ -367,6 +370,9 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
 	RSS( ref_cell_add( ref_grid_pri(viz), orig, &newnew ), "o");	\
 	RSS( ref_cell_add( ref_grid_pri(viz), pri_nodes, &newnew ), "p"); \
 	RSS( ref_cell_add( ref_grid_tet(viz), tet_nodes, &newnew ), "t"); \
+        bad_tet_count++;						\
+	sprintf(filename,"neg%d.tec",bad_tet_count);			\
+	RSS(ref_export_by_extension(viz, filename),"to tec");		\
 	RSS( ref_grid_free_cell_clone(viz),"free temp grid");		\
       }									\
   }
