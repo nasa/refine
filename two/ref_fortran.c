@@ -112,8 +112,6 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
   REF_INT passes, i;
 
   ref_mpi_stopwatch_start(  );
-  RSS(ref_migrate_to_balance(ref_grid),"balance");
-  ref_mpi_stopwatch_stop("balance");
   RSS( ref_metric_sanitize(ref_grid),"sant");
   ref_mpi_stopwatch_stop("metric sant");
 
