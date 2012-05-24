@@ -28,6 +28,7 @@ REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
   ref_node = ref_grid_node(ref_grid);
 
   RSS( ref_mpi_initialize(),"init ref mpi");
+  ref_mpi_stopwatch_start(  );
 
   REIS( *partition, ref_mpi_id, "processor ids do not match" );
 
@@ -111,7 +112,6 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
 {
   REF_INT passes, i;
 
-  ref_mpi_stopwatch_start(  );
   RSS( ref_metric_sanitize(ref_grid),"sant");
   ref_mpi_stopwatch_stop("metric sant");
 
@@ -153,6 +153,8 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
   RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, ratio),"mark rat");
   RSS(ref_subdiv_split(ref_subdiv),"split");
   RSS(ref_subdiv_free(ref_subdiv),"free");
+
+  ref_mpi_stopwatch_stop("subdiv");
 
   return REF_SUCCESS;
 }
