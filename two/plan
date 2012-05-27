@@ -1,4 +1,9 @@
 
+lump symm plane faces
+
+L2, L3, .. grids
+
+fix refine/one changing of ff frozen cells
 
 divide and conquer...
  - frozen boundary layer only
