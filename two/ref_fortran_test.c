@@ -12,6 +12,7 @@
 #include "ref_cell.h"
 #include "ref_adj.h"
 #include "ref_matrix.h"
+#include "ref_math.h"
 
 #include "ref_sort.h"
 #include "ref_dict.h"

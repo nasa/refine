@@ -35,6 +35,7 @@
 
 #include "ref_malloc.h"
 #include "ref_metric.h"
+#include "ref_math.h"
 
 int main( int argc, char *argv[] )
 {
