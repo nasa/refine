@@ -44,6 +44,10 @@ endif # BUILD_MPI
 
 bin_PROGRAMS =
 
+bin_PROGRAMS += dpw5_faceid_lump
+dpw5_faceid_lump_SOURCES = dpw5_faceid_lump.c
+dpw5_faceid_lump_LDADD = libref2.a @mpi_ldadd@ -lm
+
 bin_PROGRAMS += dpw5_faceid_prism
 dpw5_faceid_prism_SOURCES = dpw5_faceid_prism.c
 dpw5_faceid_prism_LDADD = libref2.a @mpi_ldadd@ -lm
