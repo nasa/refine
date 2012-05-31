@@ -154,8 +154,6 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
   RSS(ref_subdiv_split(ref_subdiv),"split");
   RSS(ref_subdiv_free(ref_subdiv),"free");
 
-  ref_mpi_stopwatch_stop("subdiv");
-
   return REF_SUCCESS;
 }
 
