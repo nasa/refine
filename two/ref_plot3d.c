@@ -2,12 +2,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <math.h>
+
 #include <string.h>
 
 #include "ref_plot3d.h"
 #include "ref_malloc.h"
 
 #include "ref_endian.h"
+#include "ref_math.h"
 
 /* http://cfl3d.larc.nasa.gov/Cfl3dv6/V5Manual/FileForm.pdf */
 
@@ -200,10 +203,64 @@ REF_STATUS ref_plot3d_mate( REF_PLOT3D ref_plot3d, REF_GRID ref_grid )
 
 REF_STATUS ref_patch_locate( REF_PATCH ref_patch, REF_DBL *xyz, REF_DBL *uv )
 {
+  REF_INT ixyz;
+  REF_DBL guess[3];
+  REF_DBL dxyz_du[3];
+  REF_DBL dxyz_dv[3];
+  REF_DBL diff[3];
+  REF_DBL dir[3];
+  REF_DBL udist, vdist, len;
+  REF_DBL tol = 1.0e-12;
+
+  REF_INT iteration;
+
   uv[0]=0.0;
   uv[1]=0.0;
 
-  RSS( ref_patch_xyz_at( ref_patch, uv, xyz ), "at" );
+  for (iteration=0;iteration<10;iteration++)
+    {
+
+      RSS( ref_patch_xyz_at( ref_patch, uv, guess ), "at" );
+      RSS( ref_patch_dxyz_duv( ref_patch, uv, dxyz_du, dxyz_dv ), "at" );
+
+      for (ixyz=0;ixyz<3;ixyz++)
+	diff[ixyz] = xyz[ixyz]-guess[ixyz];
+
+      for (ixyz=0;ixyz<3;ixyz++)
+	dir[ixyz]=dxyz_du[ixyz];
+      len = sqrt( ref_math_dot(dir,dir) );
+      RSS( ref_math_normalize( dir ), "norm");
+      udist = ref_math_dot(dir,diff);
+      if ( ref_math_divisible(udist,len) )
+	{
+	  udist /= len;
+	}
+      else
+	{
+	  RSS(REF_DIV_ZERO,"dxyz_du sigular");
+	}
+
+      uv[0] = uv[0] + udist;
+
+      for (ixyz=0;ixyz<3;ixyz++)
+	dir[ixyz]=dxyz_dv[ixyz];
+      len = sqrt( ref_math_dot(dir,dir) );
+      RSS( ref_math_normalize( dir ), "norm");
+      vdist = ref_math_dot(dir,diff);
+      if ( ref_math_divisible(udist,len) )
+	{
+	  vdist /= len;
+	}
+      else
+	{
+	  RSS(REF_DIV_ZERO,"dxyz_dv sigular");
+	}
+
+      uv[1] = uv[1] + vdist;
+
+      if ( ABS(udist) < tol && ABS(udist) < tol ) break;
+
+    }
 
   return REF_SUCCESS;
 }
@@ -235,6 +292,41 @@ REF_STATUS ref_patch_xyz_at( REF_PATCH ref_patch, REF_DBL *uv, REF_DBL *xyz )
 	                  (  r)*ref_patch_xyz(ref_patch,ixyz,i+1,j  ) ) +
                 (  s) * ( (1-r)*ref_patch_xyz(ref_patch,ixyz,i  ,j+1) +
 	                  (  r)*ref_patch_xyz(ref_patch,ixyz,i+1,j+1) );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_patch_dxyz_duv( REF_PATCH ref_patch, REF_DBL *uv, 
+			       REF_DBL *dxyz_du, REF_DBL *dxyz_dv )
+{
+  REF_INT i, j, ixyz;
+  REF_DBL r, s;
+
+  i = (REF_INT)(uv[0]);
+  j = (REF_INT)(uv[1]);
+
+  i = MIN(i,ref_patch->idim-2);
+  j = MIN(j,ref_patch->jdim-2);
+
+  i = MAX(i,0);
+  j = MAX(j,0);
+
+  r = uv[0]-(REF_DBL)(i);
+  s = uv[1]-(REF_DBL)(j);
+
+  /*
+  printf("uv (%f,%f) is i %d j %d r %f s %f of %d %d\n",
+	 uv[0],uv[1],i,j,r,s,ref_patch->idim ,ref_patch->jdim);
+  */
+
+  for (ixyz=0;ixyz<3;ixyz++)
+    dxyz_du[ixyz] = ref_patch_xyz(ref_patch,ixyz,i+1,j  ) 
+                  - ref_patch_xyz(ref_patch,ixyz,i  ,j  );
+
+  for (ixyz=0;ixyz<3;ixyz++)
+    dxyz_dv[ixyz] = ref_patch_xyz(ref_patch,ixyz,i  ,j+1) 
+                  - ref_patch_xyz(ref_patch,ixyz,i  ,j  );
+
 
   return REF_SUCCESS;
 }

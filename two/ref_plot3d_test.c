@@ -15,6 +15,8 @@
 #include "ref_sort.h"
 #include "ref_list.h"
 
+#include "ref_math.h"
+
 #include "ref_malloc.h"
 
 static REF_STATUS set_up_2x2( REF_PATCH *ref_patch_ptr )
@@ -114,6 +116,34 @@ int main( int argc, char *argv[] )
     RWDS( 0.5, xyz[0], -1.0, "xyz[0]");
     RWDS( 0.0, xyz[1], -1.0, "xyz[1]");
     RWDS( 0.0, xyz[2], -1.0, "xyz[2]");
+
+    RSS( ref_patch_free( ref_patch ), "free" );
+  }
+
+  {
+    REF_PATCH ref_patch;
+    REF_DBL xyz[3], uv[2];
+    RSS( set_up_2x2( &ref_patch ), "2x2" );
+
+    xyz[0] = 0.0; xyz[1] = 0.0; xyz[3] = 0.0;
+    RSS( ref_patch_locate( ref_patch, xyz, uv ), "loc");
+    RWDS( 0.0, uv[0], -1.0, "uv[0]");
+    RWDS( 0.0, uv[1], -1.0, "uv[1]");
+
+    xyz[0] = 1.0; xyz[1] = 0.0; xyz[3] = 0.0;
+    RSS( ref_patch_locate( ref_patch, xyz, uv ), "loc");
+    RWDS( 1.0, uv[0], -1.0, "uv[0]");
+    RWDS( 0.0, uv[1], -1.0, "uv[1]");
+
+    xyz[0] = 0.0; xyz[1] = 1.0; xyz[3] = 0.0;
+    RSS( ref_patch_locate( ref_patch, xyz, uv ), "loc");
+    RWDS( 0.0, uv[0], -1.0, "uv[0]");
+    RWDS( 1.0, uv[1], -1.0, "uv[1]");
+
+    xyz[0] = 0.3; xyz[1] = 0.4; xyz[3] = 0.0;
+    RSS( ref_patch_locate( ref_patch, xyz, uv ), "loc");
+    RWDS( 0.3, uv[0], -1.0, "uv[0]");
+    RWDS( 0.4, uv[1], -1.0, "uv[1]");
 
     RSS( ref_patch_free( ref_patch ), "free" );
   }

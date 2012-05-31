@@ -39,6 +39,8 @@ REF_STATUS ref_plot3d_mate( REF_PLOT3D ref_plot3d, REF_GRID ref_grid );
 
 REF_STATUS ref_patch_locate( REF_PATCH ref_patch, REF_DBL *xyz, REF_DBL *uv );
 REF_STATUS ref_patch_xyz_at( REF_PATCH ref_patch, REF_DBL *uv, REF_DBL *xyz );
+REF_STATUS ref_patch_dxyz_duv( REF_PATCH ref_patch, REF_DBL *uv, 
+			       REF_DBL *dxyz_du, REF_DBL *dxyz_dv );
 
 END_C_DECLORATION
 
