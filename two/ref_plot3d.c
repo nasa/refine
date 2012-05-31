@@ -210,14 +210,31 @@ REF_STATUS ref_patch_locate( REF_PATCH ref_patch, REF_DBL *xyz, REF_DBL *uv )
 
 REF_STATUS ref_patch_xyz_at( REF_PATCH ref_patch, REF_DBL *uv, REF_DBL *xyz )
 {
-  REF_INT i, j;
+  REF_INT i, j, ixyz;
+  REF_DBL r, s;
 
-  i = (REF_INT)(uv[0]*(REF_DBL)(ref_patch->idim-1));
-  j = (REF_INT)(uv[1]*(REF_DBL)(ref_patch->jdim-1));
+  i = (REF_INT)(uv[0]);
+  j = (REF_INT)(uv[1]);
 
-  xyz[0] = ref_patch_xyz(ref_patch,0,i,j);
-  xyz[1] = ref_patch_xyz(ref_patch,1,i,j);
-  xyz[2] = ref_patch_xyz(ref_patch,2,i,j);
+  i = MIN(i,ref_patch->idim-2);
+  j = MIN(j,ref_patch->jdim-2);
+
+  i = MAX(i,0);
+  j = MAX(j,0);
+
+  r = uv[0]-(REF_DBL)(i);
+  s = uv[1]-(REF_DBL)(j);
+
+  /*
+  printf("uv (%f,%f) is i %d j %d r %f s %f of %d %d\n",
+	 uv[0],uv[1],i,j,r,s,ref_patch->idim ,ref_patch->jdim);
+  */
+
+  for (ixyz=0;ixyz<3;ixyz++)
+    xyz[ixyz] = (1-s) * ( (1-r)*ref_patch_xyz(ref_patch,ixyz,i  ,j  ) +
+	                  (  r)*ref_patch_xyz(ref_patch,ixyz,i+1,j  ) ) +
+                (  s) * ( (1-r)*ref_patch_xyz(ref_patch,ixyz,i  ,j+1) +
+	                  (  r)*ref_patch_xyz(ref_patch,ixyz,i+1,j+1) );
 
   return REF_SUCCESS;
 }
