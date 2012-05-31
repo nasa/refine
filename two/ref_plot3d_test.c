@@ -72,13 +72,19 @@ int main( int argc, char *argv[] )
     {
       REF_PLOT3D ref_plot3d;
       REF_GRID ref_grid;
+
+      printf("plot3d %s\n",argv[1]);
       RSS( ref_plot3d_from_file( &ref_plot3d, argv[1] ), "from file" );
+
+      printf("unstruct %s\n",argv[2]);
       RSS( ref_import_by_extension( &ref_grid, argv[2] ), "by ext" );
 
+      printf("mate\n");
       RSS( ref_plot3d_mate( ref_plot3d, ref_grid ), "mate" );
 
       RSS( ref_plot3d_free( ref_plot3d ), "free" );
       RSS( ref_grid_free( ref_grid ), "free" );
+
       return 0;
     }
 
