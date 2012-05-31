@@ -58,6 +58,14 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+  /*
+
+~/refine/strict/two/ref_plot3d_test \
+ ~/cases/dpw5/dpw5mbgrids_rev01/L1.T.rev01.p3d \
+ ~/cases/dpw5/dpw5mbgrids_rev01/fun3d/L1/L1.b8.ugrid
+
+  */
+
   if (3 == argc) 
     {
       REF_PLOT3D ref_plot3d;
