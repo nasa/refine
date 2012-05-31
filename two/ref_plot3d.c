@@ -176,8 +176,14 @@ REF_STATUS ref_plot3d_mate( REF_PLOT3D ref_plot3d, REF_GRID ref_grid )
   REF_INT n;
   REF_PATCH ref_patch;
 
+  REF_DBL guess[3];
+  REF_DBL diff[3];
+  REF_DBL dist;
+  REF_INT ixyz;
+
   each_ref_cell_valid_cell_with_nodes(ref_cell,cell,nodes)
     {
+	  printf("cell %d\n",cell);
       switch ( nodes[3] )
 	{
 	case  9: n = 0; break;
@@ -194,6 +200,17 @@ REF_STATUS ref_plot3d_mate( REF_PLOT3D ref_plot3d, REF_GRID ref_grid )
 	  xyz[1] = ref_node_xyz(ref_node, 1, nodes[node] );
 	  xyz[2] = ref_node_xyz(ref_node, 2, nodes[node] );
 	  RSS( ref_patch_locate( ref_patch, xyz, uv), "locate");
+
+	  RSS( ref_patch_xyz_at( ref_patch, uv, guess ), "at" );
+	  for (ixyz=0;ixyz<3;ixyz++)
+	    diff[ixyz] = xyz[ixyz]-guess[ixyz];
+	  dist = sqrt( ref_math_dot(diff,diff) );
+
+	  if ( dist > 1.0e-12 )
+	    {
+	      printf("dist %e\n",dist);
+	    }
+	  
 	}
     }
 
