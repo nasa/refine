@@ -22,8 +22,9 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT tri_node, qua_node;
   REF_DBL d, dist2, tol, tol2;
   REF_INT *t2q;
-  REF_CELL ref_cell;
+  REF_CELL ref_cell, hex;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT hex_cell;
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -91,17 +92,24 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   printf("rebuild sorted globals.\n");
   RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild");
 
-  printf("removing iterior boundary faces.\n");
+  printf("removing iterior triangles.\n");
 
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     if ( tri_boundary == nodes[3] )
       RSS( ref_cell_remove( ref_cell, cell ), "rm tri" );
 
+  printf("removing iterior quads and splitting near hexes.\n");
+
+  hex = ref_grid_hex(ref_grid);
+
   ref_cell = ref_grid_qua(ref_grid);
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     if ( qua_boundary == nodes[4] )
-      RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
+      {
+	RSS( ref_cell_with_face( hex, nodes, &hex_cell ), "missing hex" );
+	RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
+      }
 
   ref_free( t2q );
   ref_free( qua_l2g );
