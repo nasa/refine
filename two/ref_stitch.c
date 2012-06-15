@@ -82,9 +82,13 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
     }
 
   printf("removing duplicate nodes.\n");
-
+  
   for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
-    RSS( ref_node_remove( ref_node, tri_l2g[tri_node] ), "rm node");
+    RSS( ref_node_remove_requiring_rebuild( ref_node, tri_l2g[tri_node] ), 
+	 "rm node");
+
+  printf("rebuild sorted globals.\n");
+  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild");
 
   printf("removing iterior boundary faces.\n");
 
