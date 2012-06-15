@@ -479,6 +479,8 @@ REF_STATUS ref_cell_replace_node( REF_CELL ref_cell,
   REF_INT node;
   REF_INT item, cell;
 
+  if ( old_node == new_node ) return REF_SUCCESS;
+
   item = ref_adj_first( ref_adj, old_node );
   while ( ref_adj_valid( item ) )
     {
