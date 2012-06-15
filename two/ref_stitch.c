@@ -66,7 +66,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	    ref_node_xyz(ref_node,2,qua_l2g[qua_node]);
 	  dist2 += d*d;
 	  if ( dist2 < tol2 ) {
-	    t2q[tri_node] = qua_node;
+	    t2q[tri_node] = qua_l2g[qua_node];
 	    break;
 	  }
 	}
