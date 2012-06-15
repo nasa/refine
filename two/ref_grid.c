@@ -172,3 +172,55 @@ REF_STATUS ref_grid_cell_has_face( REF_GRID ref_grid,
 
  return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_boundary_nodes( REF_GRID ref_grid, 
+				    REF_INT boundary_tag, 
+				    REF_INT *nnode, REF_INT *nface, 
+				    REF_INT **g2l, REF_INT **l2g )
+{
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT cell, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_malloc_init( *g2l, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+
+  (*nnode) = 0;
+  (*nface) = 0;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( boundary_tag == nodes[3] )
+      {
+	(*nface)++;
+	for ( node = 0; node < 3; node++ )
+	  if ( REF_EMPTY == (*g2l)[nodes[node]] )
+	    { (*g2l)[nodes[node]] = (*nnode); (*nnode)++; }
+      }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( boundary_tag == nodes[4] )
+      {
+	(*nface)++;
+	for ( node = 0; node < 4; node++ )
+	  if ( REF_EMPTY == (*g2l)[nodes[node]] )
+	    { (*g2l)[nodes[node]] = (*nnode); (*nnode)++; }
+      }
+
+  ref_malloc( *l2g, *nnode, REF_INT );
+
+  (*nnode) = 0;
+  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+    if ( REF_EMPTY != (*g2l)[node] ) 
+      {
+	(*g2l)[node] = (*nnode);
+	(*l2g)[(*nnode)] = node;
+	(*nnode)++;
+      }
+
+  return REF_SUCCESS;
+
+}

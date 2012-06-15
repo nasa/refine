@@ -255,7 +255,7 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
-  REF_INT *o2n, *n2o;
+  REF_INT *g2l, *l2g;
   REF_INT nface;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
@@ -264,9 +264,6 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
   REF_INT boundary_tag,boundary_index;
 
   ref_node = ref_grid_node(ref_grid);
-
-  o2n = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
-  RNS(o2n,"malloc o2n NULL");
 
   RSS( ref_dict_create( &ref_dict ), "create dict" ); 
 
@@ -280,37 +277,9 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
 
   each_ref_dict_key( ref_dict, boundary_index, boundary_tag )
     {
-      nnode = 0;
-      for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
-	o2n[node] = REF_EMPTY;
-
-      nface = 0;
-
-      ref_cell = ref_grid_tri(ref_grid);
-      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-	if ( boundary_tag == nodes[3] )
-	  {
-	    nface++;
-	    for ( node = 0; node < 3; node++ )
-	      if ( REF_EMPTY == o2n[nodes[node]] )
-		{ o2n[nodes[node]] = nnode; nnode++; }
-	  }
-
-      ref_cell = ref_grid_qua(ref_grid);
-      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-	if ( boundary_tag == nodes[4] )
-	  {
-	    nface++;
-	    for ( node = 0; node < 4; node++ )
-	      if ( REF_EMPTY == o2n[nodes[node]] )
-		{ o2n[nodes[node]] = nnode; nnode++; }
-	  }
-
-      n2o = (REF_INT *)malloc( nnode * sizeof(REF_INT) );
-      RNS(n2o,"malloc n2o NULL");
-
-      for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
-	if ( REF_EMPTY != o2n[node] ) n2o[o2n[node]] = node;
+      RSS( ref_grid_boundary_nodes( ref_grid, boundary_tag,
+				    &nnode, &nface, &g2l, &l2g ),
+	   "extract this boundary");
 
       fprintf(file,
 	  "zone t=surf%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -318,9 +287,9 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
 
       for ( node = 0; node < nnode; node++ )
 	fprintf(file, " %.16e %.16e %.16e\n",
-		ref_node_xyz(ref_node,0,n2o[node]),
-		ref_node_xyz(ref_node,1,n2o[node]),
-		ref_node_xyz(ref_node,2,n2o[node]) ) ;
+		ref_node_xyz(ref_node,0,l2g[node]),
+		ref_node_xyz(ref_node,1,l2g[node]),
+		ref_node_xyz(ref_node,2,l2g[node]) ) ;
 
       ref_cell = ref_grid_tri(ref_grid);
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
@@ -329,7 +298,7 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
 	    nodes[3] = nodes[2];
 	    for ( node = 0; node < 4; node++ )
 	      {
-		fprintf(file," %d",o2n[nodes[node]] + 1);
+		fprintf(file," %d",g2l[nodes[node]] + 1);
 	      }
 	    fprintf(file,"\n");
 	  }
@@ -339,15 +308,15 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
 	if ( boundary_tag == nodes[4] )
 	  {
 	    for ( node = 0; node < 4; node++ )
-	      fprintf(file," %d",o2n[nodes[node]] + 1);
+	      fprintf(file," %d",g2l[nodes[node]] + 1);
 	    fprintf(file,"\n");
 	  }
 
-      ref_free(n2o);
+      ref_free(l2g);
+      ref_free(g2l);
     }
 
   RSS( ref_dict_free( ref_dict ), "free dict" ); 
-  ref_free(o2n);
 
   return REF_SUCCESS;
 }

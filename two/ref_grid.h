@@ -58,6 +58,11 @@ REF_STATUS ref_grid_cell_has_face( REF_GRID ref_grid,
 				   REF_INT *face_nodes,
 				   REF_BOOL *has_face );
 
+REF_STATUS ref_grid_boundary_nodes( REF_GRID ref_grid, 
+				    REF_INT boundary_tag, 
+				    REF_INT *nnode, REF_INT *nface, 
+				    REF_INT **g2l, REF_INT **l2g );
+
 END_C_DECLORATION
 
 #endif /* REF_GRID_H */
