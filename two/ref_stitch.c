@@ -20,7 +20,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT tri_nnode, tri_nface, *tri_g2l, *tri_l2g;
   REF_INT qua_nnode, qua_nface, *qua_g2l, *qua_l2g;
   REF_INT tri_node, qua_node;
-  REF_DBL d, dist2, tol2;
+  REF_DBL d, dist2, tol, tol2;
   REF_INT *t2q;
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -45,8 +45,9 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 
   ref_malloc_init( t2q, tri_nnode, REF_INT, REF_EMPTY );
 
-  tol2 = 1.0e-12;
-  printf("same point tol2 %e\n",tol2);
+  tol = 1.0e-8;
+  printf("same point tol %e\n",tol);
+  tol2 = tol*tol;
 
   printf("start %d sized n-squared search\n",tri_nnode);
 
