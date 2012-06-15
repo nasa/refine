@@ -146,8 +146,8 @@ typedef int REF_STATUS;
   }
 
 #define THROW(msg)							\
-  printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));		\
-  return REF_FAILURE;
+  { printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
+    return REF_FAILURE; }
 
 #define RAISE(fcn)							\
   {									\
