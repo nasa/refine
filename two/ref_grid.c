@@ -224,3 +224,27 @@ REF_STATUS ref_grid_boundary_nodes( REF_GRID ref_grid,
   return REF_SUCCESS;
 
 }
+
+REF_STATUS ref_grid_replace_node( REF_GRID ref_grid, 
+				  REF_INT old_node, REF_INT new_node )
+{
+  REF_CELL ref_cell;
+  REF_INT group;
+
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    {
+      RSS( ref_cell_replace_node( ref_cell, old_node, new_node ),
+	   "cell node replace" );
+    }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS( ref_cell_replace_node( ref_cell, old_node, new_node ),
+       "cell node replace" );
+
+  ref_cell = ref_grid_qua(ref_grid);
+  RSS( ref_cell_replace_node( ref_cell, old_node, new_node ),
+       "cell node replace" );
+
+  return REF_SUCCESS;
+
+}
