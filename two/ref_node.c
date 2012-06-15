@@ -328,6 +328,21 @@ REF_STATUS ref_node_remove_without_global( REF_NODE ref_node, REF_INT node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_remove_requiring_rebuild( REF_NODE ref_node, REF_INT node )
+{
+  if ( ! ref_node_valid(ref_node,node) ) return REF_INVALID;
+ 
+  RSS( ref_list_add( ref_node->unused_global_list, ref_node->global[node] ),
+       "store unused global" );
+
+  ref_node->global[node] = ref_node->blank;
+  ref_node->blank = index2next(node);
+
+  (ref_node->n)--;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node )
 {
   REF_INT node, nnode, *pack;
