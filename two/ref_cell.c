@@ -547,15 +547,15 @@ REF_STATUS ref_cell_has_side( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_has_face( REF_CELL ref_cell, 
+REF_STATUS ref_cell_with_face( REF_CELL ref_cell, 
 			      REF_INT *face_nodes,
-			      REF_BOOL *has_face)
+			      REF_INT *containing_cell)
 {
   REF_INT item, node, same, cell_face, cell;
   REF_INT target[REF_CELL_MAX_SIZE_PER];
   REF_INT canidate[REF_CELL_MAX_SIZE_PER], orig[REF_CELL_MAX_SIZE_PER];
 
-  (*has_face) = REF_FALSE;
+  (*containing_cell) = REF_EMPTY;
 
   RSS( ref_cell_make_canonical( 4, face_nodes, target ), "canonical" );
 
@@ -573,12 +573,12 @@ REF_STATUS ref_cell_has_face( REF_CELL ref_cell,
 
 	if ( 4 == same )
 	  {
-	    (*has_face) = REF_TRUE;
+	    (*containing_cell) = cell;
 	    return REF_SUCCESS;
 	  }
       }
 
-  return REF_SUCCESS;
+  return REF_NOT_FOUND;
 }
 
 REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )

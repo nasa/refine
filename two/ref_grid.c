@@ -160,13 +160,16 @@ REF_STATUS ref_grid_cell_has_face( REF_GRID ref_grid,
 {
   REF_CELL ref_cell;
   REF_INT group;
+  REF_INT containing_cell;
 
   *has_face = REF_FALSE;
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
-      RSS( ref_cell_has_face( ref_cell, face_nodes, has_face),
+      RXS( ref_cell_with_face( ref_cell, face_nodes, &containing_cell),
+	   REF_NOT_FOUND,
 	   "cell has face" );
+      *has_face = ( REF_EMPTY != containing_cell );
       if ( *has_face ) return REF_SUCCESS;
     }
 
