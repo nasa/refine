@@ -102,6 +102,12 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
     if ( qua_boundary == nodes[4] )
       RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
 
+  ref_free( t2q );
+  ref_free( qua_l2g );
+  ref_free( qua_g2l );
+  ref_free( tri_l2g );
+  ref_free( tri_g2l );
+
   return REF_SUCCESS;
 }
 
