@@ -36,12 +36,17 @@ int main( int argc, char *argv[] )
       RSS(ref_import_by_extension( &ref_grid, argv[1] ),"imp");
       printf("complete.\n");
 
+      RSS(ref_grid_inspect( ref_grid ), "inspection");
+
       tri_boundary = atoi(argv[2]);
       qua_boundary = atoi(argv[3]);
 
       RSS(ref_stitch_together( ref_grid, tri_boundary, qua_boundary ),"stitch");
 
       RSS(ref_grid_inspect( ref_grid ), "inspection");
+
+      RSS(ref_export_by_extension( ref_grid, "ref_stitch_test.b8.ugrid" ),"out");
+
       return 0;
     }
 
