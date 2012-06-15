@@ -24,7 +24,10 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT *t2q;
   REF_CELL ref_cell, hex;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT hex_cell;
+  REF_INT hex_cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_node, global;
+  REF_INT node;
+  REF_INT cell_face, base[4];
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -75,6 +78,52 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	THROW("point not matched. stop.");
     }
 
+  printf("removing iterior quads and splitting near hexes.\n");
+
+  hex = ref_grid_hex(ref_grid);
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    if ( qua_boundary == nodes[4] )
+      {
+	RSS( ref_cell_with_face( hex, nodes, &hex_cell ), "missing hex" );
+	RSS( ref_cell_nodes( hex, hex_cell, hex_nodes),"hex nodes");
+
+	RSS( ref_node_next_global(ref_node,&global), "get glob");
+	RSS( ref_node_add(ref_node,global,&new_node), "add node");
+
+	ref_node_xyz(ref_node,0,new_node) = 0.0;
+	ref_node_xyz(ref_node,1,new_node) = 0.0;
+	ref_node_xyz(ref_node,2,new_node) = 0.0;
+	for( node = 0 ; node < 8 ; node++ )
+	  {
+	    ref_node_xyz(ref_node,0,new_node) += 
+	      0.125 * ref_node_xyz(ref_node,0,hex_nodes[node]);
+	    ref_node_xyz(ref_node,1,new_node) += 
+	      0.125 * ref_node_xyz(ref_node,1,hex_nodes[node]);
+	    ref_node_xyz(ref_node,2,new_node) += 
+	      0.125 * ref_node_xyz(ref_node,2,hex_nodes[node]);
+	  }
+	for (cell_face=0;cell_face<ref_cell_face_per(hex);cell_face++)
+	  {
+	    for (node=0;node<4; node++)
+	      base[node] = ref_cell_f2n(hex,node,cell_face,hex_cell);
+	    
+	    /* see if there is a triagle -> make tets */
+	    /* no tri, make pyrimid */
+
+	  }
+
+	RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
+      }
+
+  printf("removing iterior triangles.\n");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    if ( tri_boundary == nodes[3] )
+      RSS( ref_cell_remove( ref_cell, cell ), "rm tri" );
+
   printf("collapsing duplicate nodes.\n");
 
   for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
@@ -91,25 +140,6 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 
   printf("rebuild sorted globals.\n");
   RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild");
-
-  printf("removing iterior triangles.\n");
-
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-    if ( tri_boundary == nodes[3] )
-      RSS( ref_cell_remove( ref_cell, cell ), "rm tri" );
-
-  printf("removing iterior quads and splitting near hexes.\n");
-
-  hex = ref_grid_hex(ref_grid);
-
-  ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-    if ( qua_boundary == nodes[4] )
-      {
-	RSS( ref_cell_with_face( hex, nodes, &hex_cell ), "missing hex" );
-	RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
-      }
 
   ref_free( t2q );
   ref_free( qua_l2g );
