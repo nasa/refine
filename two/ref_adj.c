@@ -75,7 +75,7 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
   if ( REF_EMPTY == ref_adj_blank(ref_adj) )
     {
       orig = ref_adj_nitem( ref_adj );
-      chunk = 100;
+      chunk = MAX(100,(REF_INT)(1.5*(REF_DBL)orig));
       ref_adj_nitem( ref_adj ) =  orig + chunk;
       ref_realloc( ref_adj->item, ref_adj_nitem(ref_adj), REF_ADJ_ITEM_STRUCT );
       for (i = orig; i < ref_adj_nitem(ref_adj) ; i++ )

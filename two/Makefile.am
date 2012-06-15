@@ -33,6 +33,7 @@ libref2_a_SOURCES = \
 	ref_shard.c ref_shard.h \
 	ref_sort.h ref_sort.c \
 	ref_split.h ref_split.c \
+	ref_stitch.h ref_stitch.c \
 	ref_subdiv.h ref_subdiv.c \
 	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
@@ -209,6 +210,11 @@ TESTS += ref_split_test
 noinst_PROGRAMS += ref_split_test
 ref_split_test_SOURCES = ref_split_test.c
 ref_split_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
+TESTS += ref_stitch_test
+noinst_PROGRAMS += ref_stitch_test
+ref_stitch_test_SOURCES = ref_stitch_test.c
+ref_stitch_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_subdiv_test
 noinst_PROGRAMS += ref_subdiv_test

@@ -158,7 +158,7 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
   if ( REF_EMPTY == ref_node->blank )
     {
       orig = ref_node_max(ref_node);
-      chunk = 5000;
+      chunk = MAX(5000,(REF_INT)(1.5*(REF_DBL)orig));
       ref_node->max = orig + chunk;
       ref_realloc( ref_node->global, ref_node_max(ref_node), REF_INT);
       for (extra=orig;extra < ref_node_max(ref_node); extra++ ) 

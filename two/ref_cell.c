@@ -346,7 +346,7 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
   if ( REF_EMPTY == ref_cell_blank(ref_cell) ) 
     {
       orig = ref_cell_max(ref_cell);
-      chunk = 5000;
+      chunk = MAX(5000,(REF_INT)(1.5*(REF_DBL)orig));
       ref_cell->max = orig + chunk;
 
       ref_realloc( ref_cell->c2n, ref_cell_size_per(ref_cell) *

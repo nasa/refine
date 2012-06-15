@@ -169,7 +169,7 @@ REF_STATUS ref_face_add_uniquely( REF_FACE ref_face, REF_INT *nodes )
   if ( ref_face_n(ref_face) >= ref_face_max(ref_face) )
     {
       REF_INT chunk;
-      chunk = 1000;
+      chunk = MAX(5000,(REF_INT)(1.5*(REF_DBL)ref_face_max(ref_face)));
       ref_face_max(ref_face) += chunk;
       ref_realloc( ref_face->f2n, 4 * ref_face_max(ref_face), REF_INT );
     }
