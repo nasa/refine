@@ -22,6 +22,8 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT tri_node, qua_node;
   REF_DBL d, dist2, tol2;
   REF_INT *t2q;
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -46,31 +48,55 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   tol2 = 1.0e-12;
   printf("same point tol2 %e\n",tol2);
 
-  printf("start %d squared search\n",tri_nnode);
-
+  printf("start %d sized n-squared search\n",tri_nnode);
 
   for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
     {
       for( qua_node = 0 ; qua_node < qua_nnode ; qua_node++ )
 	{
 	  dist2 = 0.0;
-	  d = ref_node_xyz(ref_node,0,tri_l2g[tri_nnode]) - 
-	    ref_node_xyz(ref_node,0,qua_l2g[qua_nnode]);
+	  d = ref_node_xyz(ref_node,0,tri_l2g[tri_node]) - 
+	    ref_node_xyz(ref_node,0,qua_l2g[qua_node]);
 	  dist2 += d*d;
-	  d = ref_node_xyz(ref_node,1,tri_l2g[tri_nnode]) - 
-	    ref_node_xyz(ref_node,1,qua_l2g[qua_nnode]);
+	  d = ref_node_xyz(ref_node,1,tri_l2g[tri_node]) - 
+	    ref_node_xyz(ref_node,1,qua_l2g[qua_node]);
 	  dist2 += d*d;
-	  d = ref_node_xyz(ref_node,2,tri_l2g[tri_nnode]) - 
-	    ref_node_xyz(ref_node,2,qua_l2g[qua_nnode]);
+	  d = ref_node_xyz(ref_node,2,tri_l2g[tri_node]) - 
+	    ref_node_xyz(ref_node,2,qua_l2g[qua_node]);
 	  dist2 += d*d;
 	  if ( dist2 < tol2 ) {
-	    t2q[tri_nnode] = qua_nnode;
+	    t2q[tri_node] = qua_node;
 	    break;
 	  }
 	}
-      if ( REF_EMPTY == t2q[tri_nnode] )
+      if ( REF_EMPTY == t2q[tri_node] )
 	THROW("point not matched. stop.");
     }
+
+  printf("collapsing duplicate nodes.\n");
+
+  for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
+    {
+      RSS( ref_grid_replace_node( ref_grid, tri_l2g[tri_node], t2q[tri_node] ), 
+	   "repl");
+    }
+
+  printf("removing duplicate nodes.\n");
+
+  for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
+    RSS( ref_node_remove( ref_node, tri_l2g[tri_node] ), "rm node");
+
+  printf("removing iterior boundary faces.\n");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    if ( tri_boundary == nodes[3] )
+      RSS( ref_cell_remove( ref_cell, cell ), "rm tri" );
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    if ( qua_boundary == nodes[4] )
+      RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
 
   return REF_SUCCESS;
 }
