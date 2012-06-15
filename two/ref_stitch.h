@@ -8,7 +8,8 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_stitch_together( REF_GRID ref_grid );
+REF_STATUS ref_stitch_together( REF_GRID ref_grid, 
+				REF_INT tri_boundary, REF_INT qua_boundary );
 
 END_C_DECLORATION
 

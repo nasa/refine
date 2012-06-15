@@ -26,14 +26,20 @@
 int main( int argc, char *argv[] )
 {
 
-  if (argc>1)
+  if (argc == 4)
     {      
       REF_GRID ref_grid;
+      REF_INT tri_boundary;
+      REF_INT qua_boundary;
+
       printf("importing %s\n",argv[1]);
       RSS(ref_import_by_extension( &ref_grid, argv[1] ),"imp");
       printf("complete.\n");
 
-      RSS(ref_stitch_together( ref_grid ),"stitch");
+      tri_boundary = atoi(argv[2]);
+      qua_boundary = atoi(argv[3]);
+
+      RSS(ref_stitch_together( ref_grid, tri_boundary, qua_boundary ),"stitch");
 
       RSS(ref_grid_inspect( ref_grid ), "inspection");
       return 0;
