@@ -129,6 +129,8 @@ int main( int argc, char *argv[] )
 
       printf("exporting %s\n",argv[2]);
       RSS(ref_export_by_extension( ref_grid, argv[2] ),"to file");
+
+      RSS( ref_grid_free( ref_grid ), "free" );
       printf("done.\n");
 
       return 0;

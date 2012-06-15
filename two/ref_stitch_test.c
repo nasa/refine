@@ -47,6 +47,9 @@ int main( int argc, char *argv[] )
 
       RSS(ref_export_by_extension( ref_grid, "ref_stitch_test.b8.ugrid" ),"out");
 
+      RSS( ref_grid_free( ref_grid ), "free" );
+      printf("done.\n");
+
       return 0;
     }
 
