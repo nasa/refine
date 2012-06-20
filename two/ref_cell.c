@@ -146,111 +146,125 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
       ref_cell_face_per(ref_cell) = 0;
       break;    
     }
+  if ( ref_cell_last_node_is_an_id(ref_cell) )
+    ref_cell_face_per(ref_cell) = 1;
 
   ref_cell->f2n = NULL;
   if ( ref_cell_face_per(ref_cell) > 0 )
     ref_malloc( ref_cell->f2n, 4 * ref_cell_face_per(ref_cell), REF_INT);
 
-  switch ( ref_cell_node_per(ref_cell) )
+  if ( ref_cell_last_node_is_an_id(ref_cell) )
     {
-    case 4:
-      ref_cell_f2n_gen(ref_cell,0,0) = 1; 
-      ref_cell_f2n_gen(ref_cell,1,0) = 3;
-      ref_cell_f2n_gen(ref_cell,2,0) = 2;
-      ref_cell_f2n_gen(ref_cell,3,0) = ref_cell_f2n_gen(ref_cell,0,0);
-      ref_cell_f2n_gen(ref_cell,0,1) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,1) = 2;
-      ref_cell_f2n_gen(ref_cell,2,1) = 3;
-      ref_cell_f2n_gen(ref_cell,3,1) = ref_cell_f2n_gen(ref_cell,0,1);
-      ref_cell_f2n_gen(ref_cell,0,2) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,2) = 3;
-      ref_cell_f2n_gen(ref_cell,2,2) = 1;
-      ref_cell_f2n_gen(ref_cell,3,2) = ref_cell_f2n_gen(ref_cell,0,2);
-      ref_cell_f2n_gen(ref_cell,0,3) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,3) = 1;
-      ref_cell_f2n_gen(ref_cell,2,3) = 2;
-      ref_cell_f2n_gen(ref_cell,3,3) = ref_cell_f2n_gen(ref_cell,0,3);
-      break;
-    case 5:
       ref_cell_f2n_gen(ref_cell,0,0) = 0; 
       ref_cell_f2n_gen(ref_cell,1,0) = 1;
       ref_cell_f2n_gen(ref_cell,2,0) = 2;
-      ref_cell_f2n_gen(ref_cell,3,0) = ref_cell_f2n_gen(ref_cell,0,0);
-      ref_cell_f2n_gen(ref_cell,0,1) = 1; 
-      ref_cell_f2n_gen(ref_cell,1,1) = 4;
-      ref_cell_f2n_gen(ref_cell,2,1) = 2;
-      ref_cell_f2n_gen(ref_cell,3,1) = ref_cell_f2n_gen(ref_cell,0,1);
-      ref_cell_f2n_gen(ref_cell,0,2) = 2; 
-      ref_cell_f2n_gen(ref_cell,1,2) = 4;
-      ref_cell_f2n_gen(ref_cell,2,2) = 3;
-      ref_cell_f2n_gen(ref_cell,3,2) = ref_cell_f2n_gen(ref_cell,0,2);
-      ref_cell_f2n_gen(ref_cell,0,3) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,3) = 2;
-      ref_cell_f2n_gen(ref_cell,2,3) = 3;
-      ref_cell_f2n_gen(ref_cell,3,3) = ref_cell_f2n_gen(ref_cell,0,3);
-      ref_cell_f2n_gen(ref_cell,0,4) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,4) = 3;
-      ref_cell_f2n_gen(ref_cell,2,4) = 4;
-      ref_cell_f2n_gen(ref_cell,3,4) = 1;
-      break;
-    case 6:
-      ref_cell_f2n_gen(ref_cell,0,0) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,0) = 3;
-      ref_cell_f2n_gen(ref_cell,2,0) = 4;
-      ref_cell_f2n_gen(ref_cell,3,0) = 1;
+      ref_cell_f2n_gen(ref_cell,3,0) = 3;
+      if ( 3 == ref_cell_node_per(ref_cell) )
+	ref_cell_f2n_gen(ref_cell,3,0) = ref_cell_f2n_gen(ref_cell,0,0);
+    }
+  else
+    {
+      switch ( ref_cell_node_per(ref_cell) )
+	{
+	case 4:
+	  ref_cell_f2n_gen(ref_cell,0,0) = 1; 
+	  ref_cell_f2n_gen(ref_cell,1,0) = 3;
+	  ref_cell_f2n_gen(ref_cell,2,0) = 2;
+	  ref_cell_f2n_gen(ref_cell,3,0) = ref_cell_f2n_gen(ref_cell,0,0);
+	  ref_cell_f2n_gen(ref_cell,0,1) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,1) = 2;
+	  ref_cell_f2n_gen(ref_cell,2,1) = 3;
+	  ref_cell_f2n_gen(ref_cell,3,1) = ref_cell_f2n_gen(ref_cell,0,1);
+	  ref_cell_f2n_gen(ref_cell,0,2) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,2) = 3;
+	  ref_cell_f2n_gen(ref_cell,2,2) = 1;
+	  ref_cell_f2n_gen(ref_cell,3,2) = ref_cell_f2n_gen(ref_cell,0,2);
+	  ref_cell_f2n_gen(ref_cell,0,3) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,3) = 1;
+	  ref_cell_f2n_gen(ref_cell,2,3) = 2;
+	  ref_cell_f2n_gen(ref_cell,3,3) = ref_cell_f2n_gen(ref_cell,0,3);
+	  break;
+	case 5:
+	  ref_cell_f2n_gen(ref_cell,0,0) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,0) = 1;
+	  ref_cell_f2n_gen(ref_cell,2,0) = 2;
+	  ref_cell_f2n_gen(ref_cell,3,0) = ref_cell_f2n_gen(ref_cell,0,0);
+	  ref_cell_f2n_gen(ref_cell,0,1) = 1; 
+	  ref_cell_f2n_gen(ref_cell,1,1) = 4;
+	  ref_cell_f2n_gen(ref_cell,2,1) = 2;
+	  ref_cell_f2n_gen(ref_cell,3,1) = ref_cell_f2n_gen(ref_cell,0,1);
+	  ref_cell_f2n_gen(ref_cell,0,2) = 2; 
+	  ref_cell_f2n_gen(ref_cell,1,2) = 4;
+	  ref_cell_f2n_gen(ref_cell,2,2) = 3;
+	  ref_cell_f2n_gen(ref_cell,3,2) = ref_cell_f2n_gen(ref_cell,0,2);
+	  ref_cell_f2n_gen(ref_cell,0,3) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,3) = 2;
+	  ref_cell_f2n_gen(ref_cell,2,3) = 3;
+	  ref_cell_f2n_gen(ref_cell,3,3) = ref_cell_f2n_gen(ref_cell,0,3);
+	  ref_cell_f2n_gen(ref_cell,0,4) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,4) = 3;
+	  ref_cell_f2n_gen(ref_cell,2,4) = 4;
+	  ref_cell_f2n_gen(ref_cell,3,4) = 1;
+	  break;
+	case 6:
+	  ref_cell_f2n_gen(ref_cell,0,0) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,0) = 3;
+	  ref_cell_f2n_gen(ref_cell,2,0) = 4;
+	  ref_cell_f2n_gen(ref_cell,3,0) = 1;
+	 
+	  ref_cell_f2n_gen(ref_cell,0,1) = 1; 
+	  ref_cell_f2n_gen(ref_cell,1,1) = 4;
+	  ref_cell_f2n_gen(ref_cell,2,1) = 5;
+	  ref_cell_f2n_gen(ref_cell,3,1) = 2;
 
-      ref_cell_f2n_gen(ref_cell,0,1) = 1; 
-      ref_cell_f2n_gen(ref_cell,1,1) = 4;
-      ref_cell_f2n_gen(ref_cell,2,1) = 5;
-      ref_cell_f2n_gen(ref_cell,3,1) = 2;
+	  ref_cell_f2n_gen(ref_cell,0,2) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,2) = 2;
+	  ref_cell_f2n_gen(ref_cell,2,2) = 5;
+	  ref_cell_f2n_gen(ref_cell,3,2) = 3;
 
-      ref_cell_f2n_gen(ref_cell,0,2) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,2) = 2;
-      ref_cell_f2n_gen(ref_cell,2,2) = 5;
-      ref_cell_f2n_gen(ref_cell,3,2) = 3;
+	  ref_cell_f2n_gen(ref_cell,0,3) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,3) = 1;
+	  ref_cell_f2n_gen(ref_cell,2,3) = 2;
+	  ref_cell_f2n_gen(ref_cell,3,3) = ref_cell_f2n_gen(ref_cell,0,3);
 
-      ref_cell_f2n_gen(ref_cell,0,3) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,3) = 1;
-      ref_cell_f2n_gen(ref_cell,2,3) = 2;
-      ref_cell_f2n_gen(ref_cell,3,3) = ref_cell_f2n_gen(ref_cell,0,3);
+	  ref_cell_f2n_gen(ref_cell,0,4) = 3; 
+	  ref_cell_f2n_gen(ref_cell,1,4) = 5;
+	  ref_cell_f2n_gen(ref_cell,2,4) = 4;
+	  ref_cell_f2n_gen(ref_cell,3,4) = ref_cell_f2n_gen(ref_cell,0,4);
+	  break;
+	case 8:
+	  ref_cell_f2n_gen(ref_cell,0,0) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,0) = 4;
+	  ref_cell_f2n_gen(ref_cell,2,0) = 5;
+	  ref_cell_f2n_gen(ref_cell,3,0) = 1;
 
-      ref_cell_f2n_gen(ref_cell,0,4) = 3; 
-      ref_cell_f2n_gen(ref_cell,1,4) = 5;
-      ref_cell_f2n_gen(ref_cell,2,4) = 4;
-      ref_cell_f2n_gen(ref_cell,3,4) = ref_cell_f2n_gen(ref_cell,0,4);
-      break;
-    case 8:
-      ref_cell_f2n_gen(ref_cell,0,0) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,0) = 4;
-      ref_cell_f2n_gen(ref_cell,2,0) = 5;
-      ref_cell_f2n_gen(ref_cell,3,0) = 1;
+	  ref_cell_f2n_gen(ref_cell,0,1) = 1; 
+	  ref_cell_f2n_gen(ref_cell,1,1) = 5;
+	  ref_cell_f2n_gen(ref_cell,2,1) = 6;
+	  ref_cell_f2n_gen(ref_cell,3,1) = 2;
 
-      ref_cell_f2n_gen(ref_cell,0,1) = 1; 
-      ref_cell_f2n_gen(ref_cell,1,1) = 5;
-      ref_cell_f2n_gen(ref_cell,2,1) = 6;
-      ref_cell_f2n_gen(ref_cell,3,1) = 2;
+	  ref_cell_f2n_gen(ref_cell,0,2) = 2; 
+	  ref_cell_f2n_gen(ref_cell,1,2) = 6;
+	  ref_cell_f2n_gen(ref_cell,2,2) = 7;
+	  ref_cell_f2n_gen(ref_cell,3,2) = 3;
 
-      ref_cell_f2n_gen(ref_cell,0,2) = 2; 
-      ref_cell_f2n_gen(ref_cell,1,2) = 6;
-      ref_cell_f2n_gen(ref_cell,2,2) = 7;
-      ref_cell_f2n_gen(ref_cell,3,2) = 3;
+	  ref_cell_f2n_gen(ref_cell,0,3) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,3) = 3;
+	  ref_cell_f2n_gen(ref_cell,2,3) = 7;
+	  ref_cell_f2n_gen(ref_cell,3,3) = 4;
 
-      ref_cell_f2n_gen(ref_cell,0,3) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,3) = 3;
-      ref_cell_f2n_gen(ref_cell,2,3) = 7;
-      ref_cell_f2n_gen(ref_cell,3,3) = 4;
+	  ref_cell_f2n_gen(ref_cell,0,4) = 0; 
+	  ref_cell_f2n_gen(ref_cell,1,4) = 1;
+	  ref_cell_f2n_gen(ref_cell,2,4) = 2;
+	  ref_cell_f2n_gen(ref_cell,3,4) = 3;
 
-      ref_cell_f2n_gen(ref_cell,0,4) = 0; 
-      ref_cell_f2n_gen(ref_cell,1,4) = 1;
-      ref_cell_f2n_gen(ref_cell,2,4) = 2;
-      ref_cell_f2n_gen(ref_cell,3,4) = 3;
+	  ref_cell_f2n_gen(ref_cell,0,5) = 4; 
+	  ref_cell_f2n_gen(ref_cell,1,5) = 7;
+	  ref_cell_f2n_gen(ref_cell,2,5) = 6;
+	  ref_cell_f2n_gen(ref_cell,3,5) = 5;
 
-      ref_cell_f2n_gen(ref_cell,0,5) = 4; 
-      ref_cell_f2n_gen(ref_cell,1,5) = 7;
-      ref_cell_f2n_gen(ref_cell,2,5) = 6;
-      ref_cell_f2n_gen(ref_cell,3,5) = 5;
-
-      break;
+	  break;
+	}
     }
 
   max = 100;
