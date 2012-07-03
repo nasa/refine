@@ -65,6 +65,7 @@ int main( int argc, char *argv[] )
   }
 
   {
+    REF_INT nodes[REF_CELL_MAX_SIZE_PER], cell;
     REF_GRID ref_grid;
     RSS(ref_grid_create(&ref_grid),"create");
 
@@ -120,12 +121,35 @@ int main( int argc, char *argv[] )
     add_next_node( ref_grid, 1.0, 1.0, 1.0 );
     add_next_node( ref_grid, 0.0, 1.0, 1.0 );
 
+    nodes[0]=0;nodes[1]=1;nodes[2]=2;nodes[3]=3;
+    nodes[4]=4;nodes[5]=5;nodes[6]=6;nodes[7]=7;
+    RSS(ref_cell_add(ref_grid_hex(ref_grid),nodes,&cell),"hex");
+
+    nodes[0]=7;nodes[1]=6;nodes[2]=5;nodes[3]=4; nodes[4]=20;
+    RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"qua");
+
     add_next_node( ref_grid, 0.0, 0.0, 1.0 );
     add_next_node( ref_grid, 0.0, 1.0, 1.0 );
     add_next_node( ref_grid, 1.0, 1.0, 1.0 );
     add_next_node( ref_grid, 0.0, 1.0, 1.0 );
 
     add_next_node( ref_grid, 0.5, 0.5, 2.0 );
+
+    nodes[0]=8;nodes[1]=9;nodes[2]=11;nodes[3]=12;
+    RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"tet");
+    nodes[0]=9;nodes[1]=10;nodes[2]=11;nodes[3]=12;
+    RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"tet");
+
+    nodes[0]=8;nodes[1]=9;nodes[2]=11;nodes[3]=10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"tri");
+    nodes[0]=9;nodes[1]=10;nodes[2]=11;nodes[3]=10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"tri");
+
+    RSS(ref_grid_inspect( ref_grid ), "inspection");
+
+    RSS(ref_stitch_together( ref_grid, 10, 20 ),"stitch");
+
+    RSS(ref_grid_inspect( ref_grid ), "inspection");
 
     RSS(ref_grid_free(ref_grid),"create");
   }
