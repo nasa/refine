@@ -22,12 +22,13 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT tri_node, qua_node;
   REF_DBL d, dist2, tol, tol2;
   REF_INT *t2q;
-  REF_CELL ref_cell, hex;
+  REF_CELL ref_cell, hex, tri;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT hex_cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_node, global;
   REF_INT node;
-  REF_INT cell_face, base[4];
+  REF_INT cell_face, base[4], tri_nodes[4], tri_cell;
+  REF_INT top_face;
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -78,9 +79,27 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	THROW("point not matched. stop.");
     }
 
+  printf("collapsing duplicate nodes.\n");
+
+  for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
+    {
+      RSS( ref_grid_replace_node( ref_grid, tri_l2g[tri_node], t2q[tri_node] ), 
+	   "repl");
+    }
+
+  printf("removing duplicate nodes.\n");
+  
+  for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
+    RSS( ref_node_remove_requiring_rebuild( ref_node, tri_l2g[tri_node] ), 
+	 "rm node");
+
+  printf("rebuild sorted globals.\n");
+  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild");
+
   printf("removing iterior quads and splitting near hexes.\n");
 
   hex = ref_grid_hex(ref_grid);
+  tri = ref_grid_tri(ref_grid);
 
   ref_cell = ref_grid_qua(ref_grid);
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
@@ -104,15 +123,42 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	    ref_node_xyz(ref_node,2,new_node) += 
 	      0.125 * ref_node_xyz(ref_node,2,hex_nodes[node]);
 	  }
+
+	top_face = REF_EMPTY;
 	for (cell_face=0;cell_face<ref_cell_face_per(hex);cell_face++)
 	  {
 	    for (node=0;node<4; node++)
 	      base[node] = ref_cell_f2n(hex,node,cell_face,hex_cell);
+
+	    for (node=0;node<3; node++)
+	      tri_nodes[node] = base[node];
+	    tri_nodes[3]=tri_nodes[0];
+
+	    RXS( ref_cell_with_face( tri, tri_nodes, &tri_cell),
+		 REF_NOT_FOUND,
+		 "cell has face" );
+
+	    if ( REF_EMPTY != tri_cell )
+	      printf("hex_cell %d face %d\n",hex_cell,cell_face);
+
+	    for (node=0;node<3; node++)
+	      tri_nodes[node] = base[node+1];
+	    tri_nodes[3]=tri_nodes[0];
+
+	    RXS( ref_cell_with_face( tri, tri_nodes, &tri_cell),
+		 REF_NOT_FOUND,
+		 "cell has face" );
+
+	    if ( REF_EMPTY != tri_cell )
+	      printf("hex_cell %d face %d\n",hex_cell,cell_face);
+
 	    
 	    /* see if there is a triagle -> make tets */
 	    /* no tri, make pyrimid */
 
 	  }
+
+	if ( REF_EMPTY == top_face ) THROW( "top tris not found" );
 
 	RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
       }
@@ -123,23 +169,6 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     if ( tri_boundary == nodes[3] )
       RSS( ref_cell_remove( ref_cell, cell ), "rm tri" );
-
-  printf("collapsing duplicate nodes.\n");
-
-  for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
-    {
-      RSS( ref_grid_replace_node( ref_grid, tri_l2g[tri_node], t2q[tri_node] ), 
-	   "repl");
-    }
-
-  printf("removing duplicate nodes.\n");
-  
-  for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
-    RSS( ref_node_remove_requiring_rebuild( ref_node, tri_l2g[tri_node] ), 
-	 "rm node");
-
-  printf("rebuild sorted globals.\n");
-  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild");
 
   ref_free( t2q );
   ref_free( qua_l2g );
