@@ -22,8 +22,8 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT tri_node, qua_node;
   REF_DBL d, dist2, tol, tol2;
   REF_INT *t2q;
-  REF_CELL ref_cell, hex, tri;
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL hex, qua, tri;
+  REF_INT qua_cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT hex_cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_node, global;
   REF_INT node;
@@ -100,9 +100,9 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 
   hex = ref_grid_hex(ref_grid);
   tri = ref_grid_tri(ref_grid);
+  qua = ref_grid_qua(ref_grid);
 
-  ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+  each_ref_cell_valid_cell_with_nodes( qua, qua_cell, nodes)
     if ( qua_boundary == nodes[4] )
       {
 	RSS( ref_cell_with_face( hex, nodes, &hex_cell ), "missing hex" );
@@ -160,15 +160,15 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 
 	if ( REF_EMPTY == top_face ) THROW( "top tris not found" );
 
-	RSS( ref_cell_remove( ref_cell, cell ), "rm qua" );
+	RSS( ref_cell_remove( qua, qua_cell ), "rm qua" );
       }
 
   printf("removing iterior triangles.\n");
 
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+  tri = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( tri, tri_cell, nodes)
     if ( tri_boundary == nodes[3] )
-      RSS( ref_cell_remove( ref_cell, cell ), "rm tri" );
+      RSS( ref_cell_remove( tri, tri_cell ), "rm tri" );
 
   ref_free( t2q );
   ref_free( qua_l2g );
