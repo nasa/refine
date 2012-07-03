@@ -54,5 +54,81 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+#define add_next_node( ref_grid, x, y, z )				\
+  {REF_INT global,local;						\
+    REF_NODE ref_node = ref_grid_node(ref_grid);			\
+    RSS( ref_node_next_global(ref_node,&global), "get glob");		\
+    RSS(ref_node_add(ref_node,global,&local),"add node");		\
+    ref_node_xyz(ref_node,0,local) = (x);				\
+    ref_node_xyz(ref_node,1,local) = (y);				\
+    ref_node_xyz(ref_node,2,local) = (z);				\
+  }
+
+  {
+    REF_GRID ref_grid;
+    RSS(ref_grid_create(&ref_grid),"create");
+
+
+    /*
+                                 inode12
+                                   /|\
+
+
+                               inode11-----------inode10
+                                 / \               /
+                                /   \             /
+                               /     \           /
+                              /       \         /
+                             /         \       /
+                            /           \     /
+                           /             \   /
+                          /               \ /
+                       inode8------------inode9
+    */
+
+    /*
+                               inode7------------inode6
+                                 /.                /|
+                                / .               / |
+                               /  .              /  |
+                              /   .             /   |
+                             /    .            /    |
+                            /     .           /     |
+                           /      .          /      |
+                          /       .         /       |
+                       inode4------------inode5     |
+                         |      inode3.....|......inode2
+                         |       .         |       /
+                         |      .          |      /
+     Z                   |     .           |     /
+     ^   Y               |    .            |    /
+     |  /                |   .             |   /
+     | /                 |  .              |  /
+     |/                  | .               | /
+     +-----> X           |.                |/
+                       inode0------------inode1
+
+*/
+
+    add_next_node( ref_grid, 0.0, 0.0, 0.0 );
+    add_next_node( ref_grid, 0.0, 1.0, 0.0 );
+    add_next_node( ref_grid, 1.0, 1.0, 0.0 );
+    add_next_node( ref_grid, 0.0, 1.0, 0.0 );
+
+    add_next_node( ref_grid, 0.0, 0.0, 1.0 );
+    add_next_node( ref_grid, 0.0, 1.0, 1.0 );
+    add_next_node( ref_grid, 1.0, 1.0, 1.0 );
+    add_next_node( ref_grid, 0.0, 1.0, 1.0 );
+
+    add_next_node( ref_grid, 0.0, 0.0, 1.0 );
+    add_next_node( ref_grid, 0.0, 1.0, 1.0 );
+    add_next_node( ref_grid, 1.0, 1.0, 1.0 );
+    add_next_node( ref_grid, 0.0, 1.0, 1.0 );
+
+    add_next_node( ref_grid, 0.5, 0.5, 2.0 );
+
+    RSS(ref_grid_free(ref_grid),"create");
+  }
+
   return 0;
 }
