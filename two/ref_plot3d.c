@@ -317,7 +317,6 @@ REF_STATUS ref_patch_dxyz_duv( REF_PATCH ref_patch, REF_DBL *uv,
 			       REF_DBL *dxyz_du, REF_DBL *dxyz_dv )
 {
   REF_INT i, j, ixyz;
-  REF_DBL r, s;
 
   i = (REF_INT)(uv[0]);
   j = (REF_INT)(uv[1]);
@@ -327,9 +326,6 @@ REF_STATUS ref_patch_dxyz_duv( REF_PATCH ref_patch, REF_DBL *uv,
 
   i = MAX(i,0);
   j = MAX(j,0);
-
-  r = uv[0]-(REF_DBL)(i);
-  s = uv[1]-(REF_DBL)(j);
 
   /*
   printf("uv (%f,%f) is i %d j %d r %f s %f of %d %d\n",

@@ -131,22 +131,22 @@ int main( int argc, char *argv[] )
     REF_DBL xyz[3], uv[2];
     RSS( set_up_2x2( &ref_patch ), "2x2" );
 
-    xyz[0] = 0.0; xyz[1] = 0.0; xyz[3] = 0.0;
+    xyz[0] = 0.0; xyz[1] = 0.0; xyz[2] = 0.0;
     RSS( ref_patch_locate( ref_patch, xyz, uv ), "loc");
     RWDS( 0.0, uv[0], -1.0, "uv[0]");
     RWDS( 0.0, uv[1], -1.0, "uv[1]");
 
-    xyz[0] = 1.0; xyz[1] = 0.0; xyz[3] = 0.0;
+    xyz[0] = 1.0; xyz[1] = 0.0; xyz[2] = 0.0;
     RSS( ref_patch_locate( ref_patch, xyz, uv ), "loc");
     RWDS( 1.0, uv[0], -1.0, "uv[0]");
     RWDS( 0.0, uv[1], -1.0, "uv[1]");
 
-    xyz[0] = 0.0; xyz[1] = 1.0; xyz[3] = 0.0;
+    xyz[0] = 0.0; xyz[1] = 1.0; xyz[2] = 0.0;
     RSS( ref_patch_locate( ref_patch, xyz, uv ), "loc");
     RWDS( 0.0, uv[0], -1.0, "uv[0]");
     RWDS( 1.0, uv[1], -1.0, "uv[1]");
 
-    xyz[0] = 0.3; xyz[1] = 0.4; xyz[3] = 0.0;
+    xyz[0] = 0.3; xyz[1] = 0.4; xyz[2] = 0.0;
     RSS( ref_patch_locate( ref_patch, xyz, uv ), "loc");
     RWDS( 0.3, uv[0], -1.0, "uv[0]");
     RWDS( 0.4, uv[1], -1.0, "uv[1]");
