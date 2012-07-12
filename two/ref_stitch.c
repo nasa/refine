@@ -141,7 +141,11 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 		 "cell has face" );
 
 	    if ( REF_EMPTY != tri_cell )
-	      printf("hex_cell %d face %d\n",hex_cell,cell_face);
+	      {
+		top_face = cell_face;
+		printf("hex_cell %d face %d\n",hex_cell,cell_face);
+		break;
+	      }
 
 	    for (node=0;node<3; node++)
 	      tri_nodes[node] = base[node+1];
@@ -152,8 +156,11 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 		 "cell has face" );
 
 	    if ( REF_EMPTY != tri_cell )
-	      printf("hex_cell %d face %d\n",hex_cell,cell_face);
-
+	      {
+		top_face = cell_face;
+		printf("hex_cell %d face %d\n",hex_cell,cell_face);
+		break;
+	      }
 	    
 	    /* see if there is a triagle -> make tets */
 	    /* no tri, make pyrimid */
