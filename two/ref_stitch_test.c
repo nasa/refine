@@ -112,12 +112,12 @@ int main( int argc, char *argv[] )
 */
 
     add_next_node( ref_grid, 0.0, 0.0, 0.0 );
-    add_next_node( ref_grid, 0.0, 1.0, 0.0 );
+    add_next_node( ref_grid, 1.0, 0.0, 0.0 );
     add_next_node( ref_grid, 1.0, 1.0, 0.0 );
     add_next_node( ref_grid, 0.0, 1.0, 0.0 );
 
     add_next_node( ref_grid, 0.0, 0.0, 1.0 );
-    add_next_node( ref_grid, 0.0, 1.0, 1.0 );
+    add_next_node( ref_grid, 1.0, 0.0, 1.0 );
     add_next_node( ref_grid, 1.0, 1.0, 1.0 );
     add_next_node( ref_grid, 0.0, 1.0, 1.0 );
 
@@ -129,7 +129,7 @@ int main( int argc, char *argv[] )
     RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"qua");
 
     add_next_node( ref_grid, 0.0, 0.0, 1.0 );
-    add_next_node( ref_grid, 0.0, 1.0, 1.0 );
+    add_next_node( ref_grid, 1.0, 0.0, 1.0 );
     add_next_node( ref_grid, 1.0, 1.0, 1.0 );
     add_next_node( ref_grid, 0.0, 1.0, 1.0 );
 
