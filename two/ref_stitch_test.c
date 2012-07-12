@@ -152,6 +152,8 @@ int main( int argc, char *argv[] )
     REIS( 0, ref_cell_n(ref_grid_hex(ref_grid)), "still have hex" );
     REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "still have qua" );
 
+    REIS( 4, ref_cell_n(ref_grid_tet(ref_grid)), "where my tets at?" );
+
     RSS(ref_grid_inspect( ref_grid ), "inspection");
 
     RSS(ref_grid_free(ref_grid),"create");

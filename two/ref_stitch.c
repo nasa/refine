@@ -22,7 +22,8 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT tri_node, qua_node;
   REF_DBL d, dist2, tol, tol2;
   REF_INT *t2q;
-  REF_CELL hex, qua, tri;
+  REF_CELL hex, qua, tri, tet;
+  REF_INT tet_cell, tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua_cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT hex_cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_node, global;
@@ -101,6 +102,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   printf("removing iterior quads and splitting near hexes.\n");
 
   hex = ref_grid_hex(ref_grid);
+  tet = ref_grid_tet(ref_grid);
   tri = ref_grid_tri(ref_grid);
   qua = ref_grid_qua(ref_grid);
 
@@ -143,8 +145,18 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	    if ( REF_EMPTY != tri_cell )
 	      {
 		top_face = cell_face;
-		printf("hex_cell %d face %d\n",hex_cell,cell_face);
-		break;
+
+		tet_nodes[0] = base[0];
+		tet_nodes[1] = base[1];
+		tet_nodes[2] = base[2];
+		tet_nodes[3] = new_node;
+		RSS( ref_cell_add(tet,tet_nodes,&tet_cell),"add tet");
+		tet_nodes[0] = base[0];
+		tet_nodes[1] = base[2];
+		tet_nodes[2] = base[3];
+		tet_nodes[3] = new_node;
+		RSS( ref_cell_add(tet,tet_nodes,&tet_cell),"add tet");
+		continue;
 	      }
 
 	    for (node=0;node<3; node++)
@@ -158,11 +170,20 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	    if ( REF_EMPTY != tri_cell )
 	      {
 		top_face = cell_face;
-		printf("hex_cell %d face %d\n",hex_cell,cell_face);
-		break;
+
+		tet_nodes[0] = base[1];
+		tet_nodes[1] = base[2];
+		tet_nodes[2] = base[3];
+		tet_nodes[3] = new_node;
+		RSS( ref_cell_add(tet,tet_nodes,&tet_cell),"add tet");
+		tet_nodes[0] = base[0];
+		tet_nodes[1] = base[1];
+		tet_nodes[2] = base[3];
+		tet_nodes[3] = new_node;
+		RSS( ref_cell_add(tet,tet_nodes,&tet_cell),"add tet");
+		continue;
 	      }
 	    
-	    /* see if there is a triagle -> make tets */
 	    /* no tri, make pyrimid */
 
 	  }
