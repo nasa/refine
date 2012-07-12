@@ -517,15 +517,6 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cell_make_canonical( REF_INT n, 
-					   REF_INT *original, 
-					   REF_INT *canonical )
-{
-  RSS( ref_sort_insertion_int( n, original, canonical ), "sort" );
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_cell_has_side( REF_CELL ref_cell, 
 			      REF_INT node0, REF_INT node1, 
 			      REF_BOOL *has_side)
@@ -554,12 +545,13 @@ REF_STATUS ref_cell_with_face( REF_CELL ref_cell,
 			      REF_INT *containing_cell)
 {
   REF_INT item, node, same, cell_face, cell;
-  REF_INT target[REF_CELL_MAX_SIZE_PER];
-  REF_INT canidate[REF_CELL_MAX_SIZE_PER], orig[REF_CELL_MAX_SIZE_PER];
+  REF_INT ntarget, target[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncanidate, canidate[REF_CELL_MAX_SIZE_PER];
+  REF_INT orig[REF_CELL_MAX_SIZE_PER];
 
   (*containing_cell) = REF_EMPTY;
 
-  RSS( ref_cell_make_canonical( 4, face_nodes, target ), "canonical" );
+  RSS( ref_sort_unique_int( 4, face_nodes, &ntarget, target ), "t uniq" );
 
   each_ref_cell_having_node( ref_cell, face_nodes[0], item, cell )
     each_ref_cell_cell_face( ref_cell, cell_face )
@@ -567,17 +559,21 @@ REF_STATUS ref_cell_with_face( REF_CELL ref_cell,
 	for (node=0;node<4; node++)
 	  orig[node] = ref_cell_f2n(ref_cell,node,cell_face,cell);
 
-	RSS( ref_cell_make_canonical( 4, orig, canidate ), "canonical" );
+	RSS( ref_sort_unique_int( 4, orig, &ncanidate, canidate ), "c uniq" );
 
-	same = 0;
-	for (node=0;node<4; node++)
-	  if ( target[node] == canidate[node]) same++;
-
-	if ( 4 == same )
+	if ( ntarget == ncanidate ) 
 	  {
-	    (*containing_cell) = cell;
-	    return REF_SUCCESS;
+	    same = 0;
+	    for (node=0;node<ntarget; node++)
+	      if ( target[node] == canidate[node]) same++;
+
+	    if ( ntarget == same )
+	      {
+		(*containing_cell) = cell;
+		return REF_SUCCESS;
+	      }
 	  }
+
       }
 
   return REF_NOT_FOUND;
@@ -586,26 +582,30 @@ REF_STATUS ref_cell_with_face( REF_CELL ref_cell,
 REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )
 {
   REF_INT item, ref, node, same;
-  REF_INT target[REF_CELL_MAX_SIZE_PER];
-  REF_INT canidate[REF_CELL_MAX_SIZE_PER], orig[REF_CELL_MAX_SIZE_PER];
+  REF_INT ntarget, target[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncanidate, canidate[REF_CELL_MAX_SIZE_PER];
+  REF_INT orig[REF_CELL_MAX_SIZE_PER];
 
   (*cell) = REF_EMPTY;
 
-  RSS( ref_cell_make_canonical( ref_cell_node_per(ref_cell), 
-				nodes, target ), "canonical" );
+  RSS( ref_sort_unique_int( ref_cell_node_per(ref_cell), 
+			    nodes, &ntarget, target ), "canonical" );
 
   each_ref_adj_node_item_with_ref( ref_cell_adj(ref_cell), nodes[0], item, ref)
     {
       RSS( ref_cell_nodes( ref_cell, ref, orig ), "get orig");
-      RSS( ref_cell_make_canonical( ref_cell_node_per(ref_cell), 
-				    orig, canidate ), "canonical" );
-      same = 0;
-      for (node=0;node<ref_cell_node_per(ref_cell); node++)
-	if ( target[node] == canidate[node]) same++;
-      if ( ref_cell_node_per(ref_cell) == same )
+      RSS( ref_sort_unique_int( ref_cell_node_per(ref_cell), 
+				orig, &ncanidate, canidate ), "canonical" );
+      if ( ntarget == ncanidate )
 	{
-	  (*cell) = ref;
-	  return REF_SUCCESS;
+	  same = 0;
+	  for (node=0;node<ntarget; node++)
+	    if ( target[node] == canidate[node]) same++;
+	  if ( ntarget == same )
+	    {
+	      (*cell) = ref;
+	      return REF_SUCCESS;
+	    }
 	}
     }
   

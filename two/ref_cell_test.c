@@ -637,7 +637,7 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
- { /* has side */
+  { /* has side */
     REF_CELL ref_cell;
     REF_INT cell, nodes[8];
     REF_INT node0, node1;
@@ -660,6 +660,35 @@ int main( void )
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
+  
+  { /* triangle has face */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[8];
+
+    RSS(ref_tri(&ref_cell),"create");
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 10;
+ 
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    nodes[3] = 0;
+    cell = REF_EMPTY;
+    RSS( ref_cell_with_face(ref_cell, nodes, &cell),"has");
+    REIS( 0, cell, "wrong cell");
+
+    nodes[0] = 1;
+    nodes[1] = 2;
+    nodes[2] = 0;
+    nodes[3] = 1;
+    cell = REF_EMPTY;
+    RSS( ref_cell_with_face(ref_cell, nodes, &cell),"has");
+    REIS( 0, cell, "wrong cell");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
 
   return 0;
 }
