@@ -689,6 +689,35 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* triangle has second face */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[8];
+
+    RSS(ref_tri(&ref_cell),"create");
+
+    nodes[0] = 4;
+    nodes[1] = 5;
+    nodes[2] = 7;
+    nodes[3] = 10; 
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    nodes[0] = 5;
+    nodes[1] = 6;
+    nodes[2] = 7;
+    nodes[3] = 10; 
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    nodes[0] = 7;
+    nodes[1] = 6;
+    nodes[2] = 5;
+    nodes[3] = 7;
+    cell = REF_EMPTY;
+    RSS( ref_cell_with_face(ref_cell, nodes, &cell),"has");
+    REIS( 1, cell, "wrong cell");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
 
   return 0;
 }
