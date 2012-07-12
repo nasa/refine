@@ -37,14 +37,8 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   RSS(ref_grid_boundary_nodes(ref_grid,tri_boundary,
 			      &tri_nnode,&tri_nface,&tri_g2l,&tri_l2g),"l2g");
 
-  printf("tri bound %d : %d nnode %d nface\n",
-	 tri_boundary,tri_nnode,tri_nface);
-
   RSS(ref_grid_boundary_nodes(ref_grid,qua_boundary,
 			      &qua_nnode,&qua_nface,&qua_g2l,&qua_l2g),"l2g");
-
-  printf("qua bound %d : %d nnode %d nface\n",
-	 qua_boundary,qua_nnode,qua_nface);
 
   if ( tri_nnode != qua_nnode ||
        tri_nface != 2*qua_nface )
@@ -53,10 +47,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   ref_malloc_init( t2q, tri_nnode, REF_INT, REF_EMPTY );
 
   tol = 1.0e-8;
-  printf("same point tol %e\n",tol);
   tol2 = tol*tol;
-
-  printf("start %d sized n-squared search\n",tri_nnode);
 
   for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
     {
@@ -83,24 +74,17 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	THROW("point not matched. stop.");
     }
 
-  printf("collapsing duplicate nodes.\n");
-
   for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
     {
       RSS( ref_grid_replace_node( ref_grid, tri_l2g[tri_node], t2q[tri_node] ), 
 	   "repl");
     }
 
-  printf("removing duplicate nodes.\n");
-  
   for( tri_node = 0 ; tri_node < tri_nnode ; tri_node++ )
     RSS( ref_node_remove_requiring_rebuild( ref_node, tri_l2g[tri_node] ), 
 	 "rm node");
 
-  printf("rebuild sorted globals.\n");
   RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild");
-
-  printf("removing iterior quads and splitting near hexes.\n");
 
   hex = ref_grid_hex(ref_grid);
   pyr = ref_grid_pyr(ref_grid);
@@ -201,8 +185,6 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	RSS( ref_cell_remove( hex, hex_cell ), "rm hex" );
 	RSS( ref_cell_remove( qua, qua_cell ), "rm qua" );
       }
-
-  printf("removing iterior triangles.\n");
 
   tri = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes( tri, tri_cell, nodes)
