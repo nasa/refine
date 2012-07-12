@@ -71,6 +71,8 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	    ref_node_xyz(ref_node,2,qua_l2g[qua_node]);
 	  dist2 += d*d;
 	  if ( dist2 < tol2 ) {
+	    if ( REF_EMPTY != t2q[tri_node] )
+	      THROW("point already matched. dupicate node? stop.");
 	    t2q[tri_node] = qua_l2g[qua_node];
 	    break;
 	  }
