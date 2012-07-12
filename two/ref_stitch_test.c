@@ -145,17 +145,13 @@ int main( int argc, char *argv[] )
     nodes[0]=9;nodes[1]=10;nodes[2]=11;nodes[3]=10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"tri");
 
-    RSS(ref_grid_inspect( ref_grid ), "inspection");
-
-    RSS(ref_stitch_together( ref_grid, 10, 20 ),"stitch");
+   RSS(ref_stitch_together( ref_grid, 10, 20 ),"stitch");
 
     REIS( 0, ref_cell_n(ref_grid_hex(ref_grid)), "still have hex" );
     REIS( 0, ref_cell_n(ref_grid_qua(ref_grid)), "still have qua" );
 
     REIS( 4, ref_cell_n(ref_grid_tet(ref_grid)), "where my tets at?" );
     REIS( 5, ref_cell_n(ref_grid_pyr(ref_grid)), "where my pyramids at?" );
-
-    RSS(ref_grid_inspect( ref_grid ), "inspection");
 
     RSS(ref_grid_free(ref_grid),"create");
   }
