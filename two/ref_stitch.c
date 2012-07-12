@@ -22,8 +22,9 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT tri_node, qua_node;
   REF_DBL d, dist2, tol, tol2;
   REF_INT *t2q;
-  REF_CELL hex, qua, tri, tet;
+  REF_CELL hex, pyr, qua, tri, tet;
   REF_INT tet_cell, tet_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT pyr_cell, pyr_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua_cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT hex_cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_node, global;
@@ -102,6 +103,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   printf("removing iterior quads and splitting near hexes.\n");
 
   hex = ref_grid_hex(ref_grid);
+  pyr = ref_grid_pyr(ref_grid);
   tet = ref_grid_tet(ref_grid);
   tri = ref_grid_tri(ref_grid);
   qua = ref_grid_qua(ref_grid);
@@ -185,6 +187,12 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	      }
 	    
 	    /* no tri, make pyrimid */
+	    pyr_nodes[0] = base[0];
+	    pyr_nodes[1] = base[3];
+	    pyr_nodes[2] = new_node;
+	    pyr_nodes[3] = base[1];
+	    pyr_nodes[4] = base[2];
+	    RSS( ref_cell_add(pyr,pyr_nodes,&pyr_cell),"add pyr");
 
 	  }
 
