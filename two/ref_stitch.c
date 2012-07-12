@@ -169,6 +169,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 
 	if ( REF_EMPTY == top_face ) THROW( "top tris not found" );
 
+	RSS( ref_cell_remove( hex, hex_cell ), "rm hex" );
 	RSS( ref_cell_remove( qua, qua_cell ), "rm qua" );
       }
 
