@@ -189,6 +189,40 @@ int main(  int argc, char *argv[] )
     RWDS( 2.525674e-01, metric[4+6*node], tol, "m[4]");
     RWDS( 9.690913e-01, metric[5+6*node], tol, "m[5]");
 
+    ref_free( metric );
+
+    RSS(ref_grid_free(ref_grid),"free"); 
+  }
+
+  {  /* imply metric hex */
+    REF_DBL tol = 0.00001;
+    REF_GRID ref_grid;
+    REF_DBL *metric;
+    REF_INT node;
+
+    RSS( ref_fixture_hex_grid( &ref_grid ), "tet" );
+
+    ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+    RSS( ref_metric_imply_from( metric, ref_grid ), "imply" );
+
+    node = 0;
+    RWDS( 7.854306e-01, metric[0+6*node], tol, "m[0]");
+    RWDS( 1.331808e-01, metric[1+6*node], tol, "m[1]");
+    RWDS( 1.331808e-01, metric[2+6*node], tol, "m[2]");
+    RWDS( 9.960985e-01, metric[3+6*node], tol, "m[3]");
+    RWDS(-5.352162e-01, metric[4+6*node], tol, "m[4]");
+    RWDS( 9.960985e-01, metric[5+6*node], tol, "m[5]");
+
+    RSS( ref_metric_imply_non_tet( metric, ref_grid ), "imply" );
+
+    node = 0;
+    RWDS( 7.854306e-01, metric[0+6*node], tol, "m[0]");
+    RWDS( 1.331808e-01, metric[1+6*node], tol, "m[1]");
+    RWDS( 1.331808e-01, metric[2+6*node], tol, "m[2]");
+    RWDS( 9.960985e-01, metric[3+6*node], tol, "m[3]");
+    RWDS(-5.352162e-01, metric[4+6*node], tol, "m[4]");
+    RWDS( 9.960985e-01, metric[5+6*node], tol, "m[5]");
 
     ref_free( metric );
 

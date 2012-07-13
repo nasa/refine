@@ -134,6 +134,18 @@ REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid )
       sub_tet_contribution(0,3,4,2);
     }
 
+  ref_cell = ref_grid_hex(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      sub_tet_contribution(0,5,7,4);
+      sub_tet_contribution(0,1,7,5);
+      sub_tet_contribution(1,6,7,5);
+
+      sub_tet_contribution(0,7,2,3);
+      sub_tet_contribution(0,7,1,2);
+      sub_tet_contribution(1,7,6,2);
+    }
+
   each_ref_node_valid_node( ref_node, node )
     {
       RAS( 0.0 < total_node_volume[node], "zero metric contributions" );
@@ -191,6 +203,23 @@ REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid )
     {
       sub_tet_contribution(0,4,1,2);
       sub_tet_contribution(0,3,4,2);
+    }
+
+  /*
+VI1 VI6 VI8 VI5  VI1 VI2 VI8 VI6  VI2 VI7 VI8 VI6  
+VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
+  */
+
+  ref_cell = ref_grid_hex(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      sub_tet_contribution(0,5,7,4);
+      sub_tet_contribution(0,1,7,5);
+      sub_tet_contribution(1,6,7,5);
+
+      sub_tet_contribution(0,7,2,3);
+      sub_tet_contribution(0,7,1,2);
+      sub_tet_contribution(1,7,6,2);
     }
 
   each_ref_node_valid_node( ref_node, node )
