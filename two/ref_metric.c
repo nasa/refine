@@ -147,6 +147,7 @@ REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid )
       RSS( ref_matrix_exp_m( log_m, m ), "exp" );
       for( im=0; im<6; im++ )
 	metric[im+6*node] = m[im];
+      total_node_volume[node] = 0.0;
     }
 
   ref_free( total_node_volume );
@@ -166,10 +167,16 @@ REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid )
   ref_malloc_init( total_node_volume, ref_node_max(ref_node),
 		   REF_DBL, 0.0 );
 
-  each_ref_cell_valid_cell_with_nodes( ref_grid_pri(ref_grid), cell, nodes)
-    for( node=0; node<6; node++ )
+  
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_adj_valid( ref_adj_first( ref_cell_adj(ref_grid_pyr(ref_grid)), 
+				       node ) ) ||
+	 ref_adj_valid( ref_adj_first( ref_cell_adj(ref_grid_pri(ref_grid)), 
+				       node ) ) ||
+	 ref_adj_valid( ref_adj_first( ref_cell_adj(ref_grid_hex(ref_grid)), 
+				       node ) ) )
       for( im=0; im<6; im++ )
-	metric[im+6*nodes[node]] = 0.0;
+	metric[im+6*node] = 0.0;
 
   ref_cell = ref_grid_pri(ref_grid);
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
@@ -186,24 +193,27 @@ REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid )
       sub_tet_contribution(0,3,4,2);
     }
 
-  each_ref_cell_valid_cell_with_nodes( ref_grid_pri(ref_grid), cell, nodes)
-    for( node=0; node<6; node++ )
-      if ( 0.0 < total_node_volume[nodes[node]] )
-	{
-	  for( im=0; im<6; im++ )
-	    {
-	      if ( !ref_math_divisible( metric[im+6*nodes[node]], 
-					total_node_volume[nodes[node]]) ) 
-		RSS( REF_DIV_ZERO, "zero volume");
-	      log_m[im] = 
-		metric[im+6*nodes[node]] / 
-		total_node_volume[nodes[node]];
-	    }
-	  RSS( ref_matrix_exp_m( log_m, m ), "exp" );
-	  for( im=0; im<6; im++ )
-	    metric[im+6*nodes[node]] = m[im];
-	  total_node_volume[nodes[node]] = 0.0;
-	}
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_adj_valid( ref_adj_first( ref_cell_adj(ref_grid_pyr(ref_grid)), 
+				       node ) ) ||
+	 ref_adj_valid( ref_adj_first( ref_cell_adj(ref_grid_pri(ref_grid)), 
+				       node ) ) ||
+	 ref_adj_valid( ref_adj_first( ref_cell_adj(ref_grid_hex(ref_grid)), 
+				       node ) ) )
+      {
+	RAS( 0.0 < total_node_volume[node], "zero metric contributions" );
+	for( im=0; im<6; im++ )
+	  {
+	    if ( !ref_math_divisible( metric[im+6*node], 
+				      total_node_volume[node]) ) 
+	      RSS( REF_DIV_ZERO, "zero volume");
+	    log_m[im] = metric[im+6*node] / total_node_volume[node];
+	  }
+	RSS( ref_matrix_exp_m( log_m, m ), "exp" );
+	for( im=0; im<6; im++ )
+	  metric[im+6*node] = m[im];
+	total_node_volume[node] = 0.0;
+      }
 
   ref_free( total_node_volume );
 

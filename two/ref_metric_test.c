@@ -179,6 +179,16 @@ int main(  int argc, char *argv[] )
     RWDS( 2.525674e-01, metric[4+6*node], tol, "m[4]");
     RWDS( 9.690913e-01, metric[5+6*node], tol, "m[5]");
 
+    RSS( ref_metric_imply_non_tet( metric, ref_grid ), "imply" );
+
+    node = 2;
+    RWDS( 9.690913e-01, metric[0+6*node], tol, "m[0]");
+    RWDS( 2.525674e-01, metric[1+6*node], tol, "m[1]");
+    RWDS(-4.689688e-01, metric[2+6*node], tol, "m[2]");
+    RWDS( 9.503095e-01, metric[3+6*node], tol, "m[3]");
+    RWDS( 2.525674e-01, metric[4+6*node], tol, "m[4]");
+    RWDS( 9.690913e-01, metric[5+6*node], tol, "m[5]");
+
 
     ref_free( metric );
 
