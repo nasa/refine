@@ -150,12 +150,6 @@ REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid )
       tet_nodes[1] = pri_nodes[1];
       tet_nodes[2] = pri_nodes[2];
       tet_nodes[3] = pri_nodes[5];
-      for( node=0; node<6; node++ )
-	{
-	  total_node_volume[pri_nodes[node]]++;
-	  for( im=0; im<6; im++ )
-	    metric[im+6*pri_nodes[node]] += log_m[im];
-	}
       RSS( ref_matrix_imply_m( m, 
 			       ref_node_xyz_ptr(ref_node,tet_nodes[0]), 
 			       ref_node_xyz_ptr(ref_node,tet_nodes[1]), 
@@ -250,12 +244,6 @@ REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid )
       tet_nodes[1] = pri_nodes[1];
       tet_nodes[2] = pri_nodes[2];
       tet_nodes[3] = pri_nodes[5];
-      for( node=0; node<6; node++ )
-	{
-	  total_node_volume[pri_nodes[node]]++;
-	  for( im=0; im<6; im++ )
-	    metric[im+6*pri_nodes[node]] += log_m[im];
-	}
       RSS( ref_matrix_imply_m( m, 
 			       ref_node_xyz_ptr(ref_node,tet_nodes[0]), 
 			       ref_node_xyz_ptr(ref_node,tet_nodes[1]), 
