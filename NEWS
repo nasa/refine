@@ -1,6 +1,8 @@
 
 - limit boundary coarsening that effects curved surface normal in refine/two
 - two/ref_axi more general about node pair ordering
+- can impy metric of pyramid and hex
+- stitch grids with pairs of faces interior to the domain
 
 Wed May 2, 2012 :  Released Refine 1.8.7
 
