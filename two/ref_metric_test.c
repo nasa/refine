@@ -84,12 +84,12 @@ int main(  int argc, char *argv[] )
 
     each_ref_node_valid_node( ref_grid_node(ref_grid), node )
       {
-	RWDS( 0.97569,  metric[0+6*node], tol, "m[0]");
-	RWDS( 0.864269, metric[1+6*node], tol, "m[1]");
-	RWDS(-0.43566,  metric[2+6*node], tol, "m[2]");
-	RWDS( 1.714524, metric[3+6*node], tol, "m[3]");
-	RWDS(-0.864269, metric[4+6*node], tol, "m[4]");
-	RWDS( 0.97569,  metric[5+6*node], tol, "m[5]");
+	RWDS( 9.546890e-01, metric[0+6*node], tol, "m[0]");
+	RWDS( 6.394720e-01, metric[1+6*node], tol, "m[1]");
+	RWDS(-3.247285e-01, metric[2+6*node], tol, "m[2]");
+	RWDS( 1.259596e+00, metric[3+6*node], tol, "m[3]");
+	RWDS(-6.394720e-01, metric[4+6*node], tol, "m[4]");
+	RWDS( 9.546890e-01, metric[5+6*node], tol, "m[5]");
       }
 
     ref_free( metric );
@@ -111,12 +111,12 @@ int main(  int argc, char *argv[] )
 
     each_ref_node_valid_node( ref_grid_node(ref_grid), node )
       {
-	RWDS( 0.97569,  metric[0+6*node], tol, "m[0]");
-	RWDS( 0.864269, metric[1+6*node], tol, "m[1]");
-	RWDS(-0.43566,  metric[2+6*node], tol, "m[2]");
-	RWDS( 1.714524, metric[3+6*node], tol, "m[3]");
-	RWDS(-0.864269, metric[4+6*node], tol, "m[4]");
-	RWDS( 0.97569,  metric[5+6*node], tol, "m[5]");
+	RWDS( 9.546890e-01, metric[0+6*node], tol, "m[0]");
+	RWDS( 6.394720e-01, metric[1+6*node], tol, "m[1]");
+	RWDS(-3.247285e-01, metric[2+6*node], tol, "m[2]");
+	RWDS( 1.259596e+00, metric[3+6*node], tol, "m[3]");
+	RWDS(-6.394720e-01, metric[4+6*node], tol, "m[4]");
+	RWDS( 9.546890e-01, metric[5+6*node], tol, "m[5]");
       }
 
     ref_free( metric );
