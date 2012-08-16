@@ -382,7 +382,9 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 				 b_c2n, b_parts, ref_mpi_id ), "many glob");
 
   free(a_next);
+  free(b_parts);
   free(b_c2n);
+  free(a_parts);
   free(a_c2n);
   free(b_size);
   free(a_size);
