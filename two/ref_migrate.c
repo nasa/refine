@@ -61,13 +61,12 @@ static void ref_migrate_local_ids( void *void_ref_migrate,
   REF_NODE ref_node = 
     ref_grid_node(ref_migrate_grid((REF_MIGRATE)void_ref_migrate));
   REF_INT node, nnode;
-  if ( 1 != global_dim || 1 != local_dim || 0 !=  wgt_dim )
+  if ( 1 != global_dim || 1 != local_dim || 1 !=  wgt_dim )
     {
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
       *ierr = ZOLTAN_FATAL;
       return;
     }
-  SUPRESS_UNUSED_COMPILER_WARNING(obj_wgts);
   *ierr = 0;
   nnode = 0;
   each_ref_node_valid_node( ref_node, node )
@@ -75,6 +74,7 @@ static void ref_migrate_local_ids( void *void_ref_migrate,
       {
 	local[nnode] = node;
 	global[nnode] = ref_node_global(ref_node,node);
+	obj_wgts[nnode] = 1.0;
 	nnode++;
       }
 }
@@ -164,6 +164,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTS");
     Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
     Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
+
+    Zoltan_Set_Param(zz, "OBJ_WEIGHT_DIM", "1");
 
     Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_local_n, 
 			  (void *)ref_migrate);
