@@ -28,6 +28,8 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
   RSS( ref_cell_create( &ref_grid_tri(ref_grid), 3, REF_TRUE ), "tri create" );
   RSS( ref_cell_create( &ref_grid_qua(ref_grid), 4, REF_TRUE ), "qua create" );
 
+  ref_grid_twod(ref_grid) = REF_FALSE;
+
   return REF_SUCCESS;
 }
 

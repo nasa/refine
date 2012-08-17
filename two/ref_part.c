@@ -66,6 +66,11 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   RSS( ref_mpi_bcast( &npri, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_mpi_bcast( &nhex, 1, REF_INT_TYPE ), "bcast" ); 
 
+  /* guess twod status */
+
+  if ( 0 == ntet && 0 == npyr && 0 != npri && 0 == nhex )
+    ref_grid_twod(ref_grid) = REF_TRUE;
+
   /* nodes */
 
   RSS( ref_node_initialize_n_global( ref_node, nnode ), "init nnodesg");

@@ -197,6 +197,11 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     RSS( ref_migrate_create( &ref_migrate, ref_grid ), "create migrate");
 
+    if ( ref_grid_twod(ref_grid) )
+      {
+	if ( ref_mpi_master ) printf("guessing 2d\n");
+      }
+
     REIS( ZOLTAN_OK, 
 	  Zoltan_Initialize(ref_mpi_argc, ref_mpi_argv, &ver), 
 	  "Zoltan is angry");
