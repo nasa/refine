@@ -31,19 +31,20 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
   ref_migrate_grid(ref_migrate) = ref_grid;
 
-  ref_migrate_n(ref_migrate) = 0;
-  each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id == ref_node_part(ref_node,node) )  
-      ref_migrate_n(ref_migrate)++;
+  ref_migrate_max(ref_migrate) = ref_node_max(ref_node);
 
-  ref_malloc( ref_migrate->global, ref_migrate_n(ref_migrate), REF_INT);
-  ref_malloc( ref_migrate->xyz, 3*ref_migrate_n(ref_migrate), REF_DBL);
-  ref_malloc( ref_migrate->weight, ref_migrate_n(ref_migrate), REF_DBL);
+  ref_malloc_init( ref_migrate->global, ref_migrate_max(ref_migrate), 
+		   REF_INT, REF_EMPTY);
+  ref_malloc_init( ref_migrate->grid_node, ref_migrate_max(ref_migrate), 
+		   REF_INT, REF_EMPTY);
+  ref_malloc( ref_migrate->xyz, 3*ref_migrate_max(ref_migrate), REF_DBL);
+  ref_malloc( ref_migrate->weight, ref_migrate_max(ref_migrate), REF_DBL);
 
   each_ref_node_valid_node( ref_node, node )
     if ( ref_mpi_id == ref_node_part(ref_node,node) )
       {
 	ref_migrate_global(ref_migrate,node) = ref_node_global(ref_node,node);
+	ref_migrate_grid_node(ref_migrate,node) = node;
 	ref_migrate_xyz( ref_migrate, 0, node ) = 
 	  ref_node_xyz(ref_node,0,node);
 	ref_migrate_xyz( ref_migrate, 1, node ) = 
@@ -71,10 +72,15 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 static int ref_migrate_local_n( void *void_ref_migrate, int *ierr )
 {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
+  int node, n;
 
   *ierr = 0;
 
-  return ref_migrate_n(ref_migrate);
+  n = 0;
+  each_ref_migrate_node( ref_migrate, node )
+    n++;
+
+  return n;
 }
 
 static void ref_migrate_local_ids( void *void_ref_migrate, 
@@ -121,15 +127,14 @@ static void ref_migrate_geom( void *void_ref_migrate,
   SUPRESS_UNUSED_COMPILER_WARNING(global);
   *ierr = 0;
 
-  if ( 1 != global_dim || 1 != local_dim || 
-       3 != xyz_dim || ref_migrate_n(ref_migrate) != nnode )
+  if ( 1 != global_dim || 1 != local_dim || 3 != xyz_dim  )
     {
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
       *ierr = ZOLTAN_FATAL;
       return;
     }
 
-  each_ref_migrate_node( ref_migrate, node )
+  for ( node=0 ;node < nnode ; node++ )
     {
       xyz[0+3*node] = ref_migrate_xyz(ref_migrate,0,local[node]);
       xyz[1+3*node] = ref_migrate_xyz(ref_migrate,1,local[node]);
@@ -171,7 +176,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     REF_INT node;
 
-    REF_INT *part;
+    REF_INT *migrate_part;
+    REF_INT *node_part;
 
     struct Zoltan_Struct *zz;
 
@@ -219,17 +225,25 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 			      &export_part),
 	  "Zoltan is angry");
 
-    ref_malloc_init( part, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+    ref_malloc_init( migrate_part, ref_migrate_max(ref_node), 
+		     REF_INT, REF_EMPTY );
+    ref_malloc_init( node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY );
 
     for(node=0; node<export_n; node++)
-      part[export_local[node]] = export_part[node];
+      migrate_part[export_local[node]] = export_part[node];
 
-    RSS( ref_node_ghost_int( ref_node, part ), "ghost part");
+    each_ref_node_valid_node( ref_node, node )
+      if ( ref_mpi_id == ref_node_part(ref_node,node) )
+	node_part[node] = 
+	  migrate_part[ref_migrate_grid_node( ref_migrate, node )];
+
+    RSS( ref_node_ghost_int( ref_node, node_part ), "ghost part");
 
     for(node=0; node<ref_node_max(ref_node); node++)
-      ref_node_part(ref_node, node) = part[node];
+      ref_node_part(ref_node, node) = node_part[node];
 
-    ref_free( part );
+    ref_free( node_part );
+    ref_free( migrate_part );
 
     REIS( ZOLTAN_OK,
 	  Zoltan_LB_Free_Part(&import_local, &import_global,
