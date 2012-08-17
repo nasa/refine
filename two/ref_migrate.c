@@ -185,6 +185,11 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     REF_INT *migrate_part;
     REF_INT *node_part;
+ 
+    REF_INT *a_next;
+    REF_INT *a_parts, *b_parts;
+    REF_INT *a_size, *b_size;
+    REF_INT a_total, b_total;
 
     struct Zoltan_Struct *zz;
 
@@ -239,16 +244,74 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     for(node=0; node<export_n; node++)
       migrate_part[export_local[node]] = export_part[node];
 
+    ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
+    ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
+
     each_ref_node_valid_node( ref_node, node )
       if ( ref_mpi_id == ref_node_part(ref_node,node) )
 	each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate), 
 					node, item, global )
 	  {
 	    part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
-	    REIS( ref_mpi_id, part, "only handle local parts" );
-	    RSS( ref_node_local( ref_node, global, &local ), "g2l" );
-	    node_part[local] = migrate_part[node];
+	    if ( ref_mpi_id != part )
+	      {
+		a_size[part]++;
+	      }
+	    else
+	      {
+		RSS( ref_node_local( ref_node, global, &local ), "g2l" );
+		node_part[local] = migrate_part[node];
+	      }
 	  }
+    
+    RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+
+    a_total = 0;
+    for ( part = 0; part<ref_mpi_n ; part++ )
+      a_total += a_size[part];
+    ref_malloc( a_parts, 2*a_total, REF_INT );
+
+    b_total = 0;
+    for ( part = 0; part<ref_mpi_n ; part++ )
+      b_total += b_size[part];
+    ref_malloc( b_parts, 2*b_total, REF_INT );
+
+    ref_malloc( a_next, ref_mpi_n, REF_INT );
+    a_next[0] = 0;
+    for ( part = 1; part<ref_mpi_n ; part++ )
+      a_next[part] = a_next[part-1]+a_size[part-1];
+
+    each_ref_node_valid_node( ref_node, node )
+      if ( ref_mpi_id == ref_node_part(ref_node,node) )
+	each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate), 
+					node, item, global )
+	  {
+	    part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
+	    if ( ref_mpi_id != part )
+	      {
+		a_parts[0+2*a_next[part]] = global;
+		a_parts[1+2*a_next[part]] = migrate_part[node];
+		a_next[part]++;
+	      }
+	  }
+
+    RSS( ref_mpi_alltoallv( a_parts, a_size, b_parts, b_size, 
+			    2, REF_INT_TYPE ), 
+	 "alltoallv parts");
+
+    for ( node = 0; node < b_total ; node++ )
+      {
+	global = b_parts[0+2*node];
+	part = b_parts[1+2*node];
+	RSS( ref_node_local( ref_node, global, &local ), "g2l" );
+	node_part[local] = part;
+      }
+
+    free(a_next);
+    free(b_parts);
+    free(a_parts);
+    free(b_size);
+    free(a_size);
 
     RSS( ref_node_ghost_int( ref_node, node_part ), "ghost part");
 
