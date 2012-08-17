@@ -22,12 +22,36 @@
 REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 {
   REF_MIGRATE ref_migrate;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
 
   ref_malloc( *ref_migrate_ptr, 1, REF_MIGRATE_STRUCT );
 
   ref_migrate = *ref_migrate_ptr;
 
   ref_migrate_grid(ref_migrate) = ref_grid;
+
+  ref_migrate_n(ref_migrate) = 0;
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id == ref_node_part(ref_node,node) )  
+      ref_migrate_n(ref_migrate)++;
+
+  ref_malloc( ref_migrate->global, ref_migrate_n(ref_migrate), REF_INT);
+  ref_malloc( ref_migrate->xyz, 3*ref_migrate_n(ref_migrate), REF_DBL);
+  ref_malloc( ref_migrate->weight, ref_migrate_n(ref_migrate), REF_DBL);
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id == ref_node_part(ref_node,node) )
+      {
+	ref_migrate_global(ref_migrate,node) = ref_node_global(ref_node,node);
+	ref_migrate_xyz( ref_migrate, 0, node ) = 
+	  ref_node_xyz(ref_node,0,node);
+	ref_migrate_xyz( ref_migrate, 1, node ) = 
+	  ref_node_xyz(ref_node,1,node);
+	ref_migrate_xyz( ref_migrate, 2, node ) = 
+	  ref_node_xyz(ref_node,2,node);
+	ref_migrate_weight(ref_migrate,node) = 1.0;
+      }
 
   return REF_SUCCESS;
 }
@@ -36,6 +60,9 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 {
   if ( NULL == (void *)ref_migrate ) return REF_NULL;
 
+  ref_free( ref_migrate->global );
+  ref_free( ref_migrate->xyz );
+  ref_free( ref_migrate->weight );
   ref_free( ref_migrate );
 
   return REF_SUCCESS;
@@ -43,14 +70,11 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 
 static int ref_migrate_local_n( void *void_ref_migrate, int *ierr )
 {
-  REF_NODE ref_node = 
-    ref_grid_node(ref_migrate_grid((REF_MIGRATE)void_ref_migrate));
-  REF_INT node, local_nodes;
+  REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
+
   *ierr = 0;
-  local_nodes = 0;
-  each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id == ref_node_part(ref_node,node) ) local_nodes++;
-  return local_nodes;
+
+  return ref_migrate_n(ref_migrate);
 }
 
 static void ref_migrate_local_ids( void *void_ref_migrate, 
@@ -58,56 +82,58 @@ static void ref_migrate_local_ids( void *void_ref_migrate,
 				   ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
 				   int wgt_dim, float *obj_wgts, int *ierr )
 {
-  REF_NODE ref_node = 
-    ref_grid_node(ref_migrate_grid((REF_MIGRATE)void_ref_migrate));
-  REF_INT node, nnode;
+  REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
+  REF_INT node;
+
   if ( 1 != global_dim || 1 != local_dim || 1 !=  wgt_dim )
     {
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
       *ierr = ZOLTAN_FATAL;
       return;
     }
+
   *ierr = 0;
-  nnode = 0;
-  each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id == ref_node_part(ref_node,node) ) 
-      {
-	local[nnode] = node;
-	global[nnode] = ref_node_global(ref_node,node);
-	obj_wgts[nnode] = 1.0;
-	nnode++;
-      }
+
+  each_ref_migrate_node( ref_migrate, node )
+    {
+      local[node] = node;
+      global[node] = ref_migrate_global(ref_migrate,node);
+      obj_wgts[node] = (float)ref_migrate_weight(ref_migrate,node);
+    }
 }
 
-static int ref_migrate_geometric_dimensionality( void *void_ref_migrate, 
-						 int *ierr )
+static int ref_migrate_geom_dimensionality( void *void_ref_migrate, 
+					    int *ierr )
 {
   SUPRESS_UNUSED_COMPILER_WARNING(void_ref_migrate);
   *ierr = 0;
   return 3;
 }
 
-static void ref_migrate_xyz( void *void_ref_migrate, 
-			     int global_dim, int local_dim, int nnode,
-			     ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
-			     int xyz_dim, double *xyz, int *ierr )
+static void ref_migrate_geom( void *void_ref_migrate, 
+			      int global_dim, int local_dim, int nnode,
+			      ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
+			      int xyz_dim, double *xyz, int *ierr )
 {
-  REF_NODE ref_node = 
-    ref_grid_node(ref_migrate_grid((REF_MIGRATE)void_ref_migrate));
+  REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
   REF_INT node;
-  if ( 1 != global_dim || 1 != local_dim || 3 !=  xyz_dim )
+
+  SUPRESS_UNUSED_COMPILER_WARNING(global);
+  *ierr = 0;
+
+  if ( 1 != global_dim || 1 != local_dim || 
+       3 != xyz_dim || ref_migrate_n(ref_migrate) != nnode )
     {
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
       *ierr = ZOLTAN_FATAL;
       return;
     }
-  SUPRESS_UNUSED_COMPILER_WARNING(global);
-  *ierr = 0;
-  for (node=0;node<nnode;node++)
+
+  each_ref_migrate_node( ref_migrate, node )
     {
-      xyz[0+3*node] = ref_node_xyz(ref_node,0,local[node]);
-      xyz[1+3*node] = ref_node_xyz(ref_node,1,local[node]);
-      xyz[2+3*node] = ref_node_xyz(ref_node,2,local[node]);
+      xyz[0+3*node] = ref_migrate_xyz(ref_migrate,0,local[node]);
+      xyz[1+3*node] = ref_migrate_xyz(ref_migrate,1,local[node]);
+      xyz[2+3*node] = ref_migrate_xyz(ref_migrate,2,local[node]);
     }
 
 }
@@ -171,9 +197,9 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 			  (void *)ref_migrate);
     Zoltan_Set_Obj_List_Fn(zz, ref_migrate_local_ids, 
 			   (void *)ref_migrate);
-    Zoltan_Set_Num_Geom_Fn(zz, ref_migrate_geometric_dimensionality, 
+    Zoltan_Set_Num_Geom_Fn(zz, ref_migrate_geom_dimensionality, 
 			   (void *)ref_migrate);
-    Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_xyz, 
+    Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_geom, 
 			     (void *)ref_migrate);
 
     REIS( ZOLTAN_OK, 
