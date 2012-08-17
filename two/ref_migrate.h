@@ -9,13 +9,14 @@ typedef struct REF_MIGRATE_STRUCT REF_MIGRATE_STRUCT;
 typedef REF_MIGRATE_STRUCT * REF_MIGRATE;
 END_C_DECLORATION
 
+#include "ref_adj.h"
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
 
 struct REF_MIGRATE_STRUCT {
   REF_GRID grid;
-  REF_INT *grid_node;
+  REF_ADJ parent;
   REF_INT max;
   REF_INT *global;
   REF_DBL *xyz;
@@ -23,10 +24,10 @@ struct REF_MIGRATE_STRUCT {
 };
 
 #define ref_migrate_grid( ref_migrate ) ((ref_migrate)->grid)
+#define ref_migrate_parent( ref_migrate ) ((ref_migrate)->parent)
 
 #define ref_migrate_max( ref_migrate ) ((ref_migrate)->max)
-#define ref_migrate_grid_node( ref_migrate, node )	\
-  ((ref_migrate)->grid_node[(node)])
+
 #define ref_migrate_global( ref_migrate, node ) ((ref_migrate)->global[(node)])
 #define ref_migrate_valid( ref_migrate, node )			\
   (REF_EMPTY != ref_migrate_global( ref_migrate, node ))
