@@ -150,6 +150,90 @@ static void ref_migrate_geom( void *void_ref_migrate,
 
 }
 
+static REF_STATUS ref_migrate_2d_agglomeration( REF_MIGRATE ref_migrate )
+{
+  REF_GRID ref_grid = ref_migrate_grid( ref_migrate );
+  REF_NODE ref_node = ref_grid_node( ref_migrate_grid(ref_migrate) );
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT keep, lose;
+
+  each_ref_cell_valid_cell_with_nodes( ref_grid_pri(ref_grid), cell, nodes)
+    {
+      if ( ref_node_global(ref_node,nodes[0]) <
+	   ref_node_global(ref_node,nodes[3]) )
+	{
+	  keep = nodes[0]; lose = nodes[3];
+	}
+      else
+	{
+	  keep = nodes[3]; lose = nodes[0];
+	}
+      if ( ref_mpi_id == ref_node_part(ref_node,keep) )
+	{
+	  ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
+	  ref_migrate_weight(ref_migrate,keep) = 2.0;
+	  RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate), 
+			    keep, ref_node_global(ref_node, lose) ),"add");
+	  RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate), 
+			    keep, ref_node_part(ref_node, lose) ),"add");
+	}
+      if ( ref_mpi_id == ref_node_part(ref_node,lose) )
+	{
+	  ref_migrate_global(ref_migrate,lose) = REF_EMPTY;
+	}
+	
+      if ( ref_node_global(ref_node,nodes[1]) <
+	   ref_node_global(ref_node,nodes[4]) )
+	{
+	  keep = nodes[1]; lose = nodes[4];
+	}
+      else
+	{
+	  keep = nodes[4]; lose = nodes[1];
+	}
+      if ( ref_mpi_id == ref_node_part(ref_node,keep) )
+	{
+	  ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
+	  ref_migrate_weight(ref_migrate,keep) = 2.0;
+	  RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate), 
+			    keep, ref_node_global(ref_node, lose) ),"add");
+	  RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate), 
+			    keep, ref_node_part(ref_node, lose) ),"add");
+	}
+      if ( ref_mpi_id == ref_node_part(ref_node,lose) )
+	{
+	  ref_migrate_global(ref_migrate,lose) = REF_EMPTY;
+	}
+	
+      if ( ref_node_global(ref_node,nodes[2]) <
+	   ref_node_global(ref_node,nodes[5]) )
+	{
+	  keep = nodes[2]; lose = nodes[5];
+	}
+      else
+	{
+	  keep = nodes[5]; lose = nodes[2];
+	}
+      if ( ref_mpi_id == ref_node_part(ref_node,keep) )
+	{
+	  ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
+	  ref_migrate_weight(ref_migrate,keep) = 2.0;
+	  RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate), 
+			    keep, ref_node_global(ref_node, lose) ),"add");
+	  RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate), 
+			    keep, ref_node_part(ref_node, lose) ),"add");
+	}
+      if ( ref_mpi_id == ref_node_part(ref_node,lose) )
+	{
+	  ref_migrate_global(ref_migrate,lose) = REF_EMPTY;
+	}
+      
+    }
+
+  return REF_SUCCESS;
+}
+
 #endif
 
 REF_STATUS ref_migrate_to_balance( REF_GRID ref_grid )
@@ -200,6 +284,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     if ( ref_grid_twod(ref_grid) )
       {
 	if ( ref_mpi_master ) printf("guessing 2d\n");
+	RSS( ref_migrate_2d_agglomeration( ref_migrate ), "2d agglom" );
       }
 
     REIS( ZOLTAN_OK, 
