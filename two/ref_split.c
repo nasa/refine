@@ -244,3 +244,104 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+
+REF_STATUS ref_split_face( REF_GRID ref_grid, 
+			   REF_INT node0, REF_INT node1, REF_INT new_node0, 
+			   REF_INT node2, REF_INT node3, REF_INT new_node1 )
+{
+
+  REF_CELL pri = ref_grid_pri(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+
+  REF_INT ncell, cell_in_list;
+  REF_INT cell_to_split[2];
+  REF_INT orig_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell, new_cell, node;
+
+  RSS( ref_cell_list_with( pri, node0, node1,
+			   2, &ncell, cell_to_split), "more than two" );
+
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_split[cell_in_list];
+      RSS( ref_cell_nodes( pri, cell, orig_nodes),"cell nodes");
+      RSS( ref_cell_remove( pri, cell ), "remove" );
+
+      for ( node = 0 ; node < ref_cell_node_per(pri); node++ )
+	{
+	  new_nodes[node] = orig_nodes[node];
+	  if ( node0 == orig_nodes[node] ) new_nodes[node] = new_node0;
+	  if ( node2 == orig_nodes[node] ) new_nodes[node] = new_node1;
+	}
+      RSS( ref_cell_add(pri,new_nodes,&new_cell),
+	   "add node0-node2 version");
+
+      for ( node = 0 ; node < ref_cell_node_per(pri); node++ )
+	{
+	  new_nodes[node] = orig_nodes[node];
+	  if ( node1 == orig_nodes[node] ) new_nodes[node] = new_node0;
+	  if ( node3 == orig_nodes[node] ) new_nodes[node] = new_node1;
+	}
+      RSS( ref_cell_add(pri,new_nodes,&new_cell),
+	   "add node1-node3 version");
+    }
+
+  tri = ref_grid_tri(ref_grid);
+  RSS( ref_cell_list_with(tri,node0,node1,
+			  2, &ncell, cell_to_split ), "more then two" );
+
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_split[cell_in_list];
+      RSS( ref_cell_nodes(tri, cell, orig_nodes),"cell nodes");
+      RSS( ref_cell_remove( tri, cell ), "remove" );
+
+      for ( node = 0 ; node < ref_cell_node_per(tri); node++ )
+	{
+	  new_nodes[node] = orig_nodes[node];
+	  if ( node0 == orig_nodes[node] ) new_nodes[node] = new_node0;
+	}
+      new_nodes[ref_cell_node_per(tri)] =  orig_nodes[ref_cell_node_per(tri)];
+      RSS( ref_cell_add(tri,new_nodes,&new_cell),"add node0 version");
+
+      for ( node = 0 ; node < ref_cell_node_per(tri); node++ )
+	{
+	  new_nodes[node] = orig_nodes[node];
+	  if ( node1 == orig_nodes[node] ) new_nodes[node] = new_node0;
+	}
+      new_nodes[ref_cell_node_per(tri)] =  orig_nodes[ref_cell_node_per(tri)];
+      RSS( ref_cell_add(tri,new_nodes,&new_cell),"add node1 version");
+
+    }
+
+  tri = ref_grid_tri(ref_grid);
+  RSS( ref_cell_list_with(tri,node2,node3,
+			  2, &ncell, cell_to_split ), "more then two" );
+
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_split[cell_in_list];
+      RSS( ref_cell_nodes(tri, cell, orig_nodes),"cell nodes");
+      RSS( ref_cell_remove( tri, cell ), "remove" );
+
+      for ( node = 0 ; node < ref_cell_node_per(tri); node++ )
+	{
+	  new_nodes[node] = orig_nodes[node];
+	  if ( node2 == orig_nodes[node] ) new_nodes[node] = new_node1;
+	}
+      new_nodes[ref_cell_node_per(tri)] =  orig_nodes[ref_cell_node_per(tri)];
+      RSS( ref_cell_add(tri,new_nodes,&new_cell),"add node0 version");
+
+      for ( node = 0 ; node < ref_cell_node_per(tri); node++ )
+	{
+	  new_nodes[node] = orig_nodes[node];
+	  if ( node3 == orig_nodes[node] ) new_nodes[node] = new_node1;
+	}
+      new_nodes[ref_cell_node_per(tri)] =  orig_nodes[ref_cell_node_per(tri)];
+      RSS( ref_cell_add(tri,new_nodes,&new_cell),"add node1 version");
+
+    }
+
+  return REF_SUCCESS;
+}
