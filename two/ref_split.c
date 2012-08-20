@@ -49,7 +49,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 
   for ( i = n-1; i>= 0; i-- )
     {
-      edge = edges[i];
+      edge = edges[order[i]];
       RSS( ref_split_edge_mixed( ref_grid,
 				 ref_edge_e2n( ref_edge, 0, edge ),
 				 ref_edge_e2n( ref_edge, 1, edge ),
