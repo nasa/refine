@@ -244,6 +244,66 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_split_active_twod( REF_NODE ref_node, 
+					 REF_INT node0, REF_INT node1, 
+					 REF_BOOL *active )
+{
+  REF_DBL mid_plane = 0.5;
+
+  *active = ( ( ref_node_xyz(ref_node,2,node0) < mid_plane ) &&
+	      ( ref_node_xyz(ref_node,2,node1) < mid_plane ) );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_EDGE ref_edge;
+  REF_DBL *ratio;
+  REF_INT *edges, *order;
+  REF_INT edge, n;
+  REF_DBL ratio_limit;
+  REF_BOOL active;
+
+  RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
+
+  ref_malloc( ratio, ref_edge_n(ref_edge), REF_DBL );
+  ref_malloc( order, ref_edge_n(ref_edge), REF_INT );
+  ref_malloc( edges, ref_edge_n(ref_edge), REF_INT );
+  
+  ratio_limit = sqrt(2.0);
+
+  n=0;
+  for(edge=0;edge<ref_edge_n(ref_edge);edge++)
+    {
+      RSS( ref_split_active_twod( ref_node, 
+				  ref_edge_e2n( ref_edge, 0, edge ),
+				  ref_edge_e2n( ref_edge, 1, edge ),
+				  &active ), "act" );
+      if ( !active ) continue;
+
+      RSS( ref_node_ratio( ref_node, 
+			   ref_edge_e2n( ref_edge, 0, edge ),
+			   ref_edge_e2n( ref_edge, 1, edge ),
+			   &(ratio[n]) ), "ratio");
+      if ( ratio[n] > ratio_limit)
+	{
+	  edges[n] = edge;
+	  n++;
+	}
+    }
+
+  RSS( ref_sort_heap_dbl( n, ratio, order), "sort lengths" );
+
+  ref_free( edges );
+  ref_free( order );
+  ref_free( ratio );
+
+  ref_edge_free( ref_edge );
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_split_face( REF_GRID ref_grid, 
 			   REF_INT node0, REF_INT node1, REF_INT new_node0, 
