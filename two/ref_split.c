@@ -250,8 +250,8 @@ static REF_STATUS ref_split_active_twod( REF_NODE ref_node,
 {
   REF_DBL mid_plane = 0.5;
 
-  *active = ( ( ref_node_xyz(ref_node,2,node0) < mid_plane ) &&
-	      ( ref_node_xyz(ref_node,2,node1) < mid_plane ) );
+  *active = ( ( ref_node_xyz(ref_node,1,node0) < mid_plane ) &&
+	      ( ref_node_xyz(ref_node,1,node1) < mid_plane ) );
 
   return REF_SUCCESS;
 }
