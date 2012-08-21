@@ -258,7 +258,6 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
-SKIP_BLOCK("need opposite edge to implement")	
   { /* twod prism, splits */
     REF_GRID ref_grid;
     REF_NODE ref_node;
@@ -284,6 +283,11 @@ SKIP_BLOCK("need opposite edge to implement")
 
     REIS( 10, ref_node_n(ref_node), "nodes");
     REIS( 3, ref_cell_n(ref_grid_pri(ref_grid)), "tets");
+
+    /*
+#include "ref_export.h"
+    ref_export_by_extension( ref_grid, "splitpri.tec" );
+    */
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }

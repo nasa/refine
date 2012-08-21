@@ -262,9 +262,11 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   REF_EDGE ref_edge;
   REF_DBL *ratio;
   REF_INT *edges, *order;
-  REF_INT edge, n;
+  REF_INT edge, n, i;
   REF_DBL ratio_limit;
   REF_BOOL active;
+  REF_INT node0, node1, node2, node3, new_node0, new_node1;
+  REF_INT global;
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
@@ -295,6 +297,27 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
     }
 
   RSS( ref_sort_heap_dbl( n, ratio, order), "sort lengths" );
+
+  for ( i = n-1; i>= 0; i-- )
+    {
+      edge = edges[order[i]];
+      node0 = ref_edge_e2n( ref_edge, 0, edge );
+      node1 = ref_edge_e2n( ref_edge, 1, edge );
+      RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
+
+      RSS( ref_node_next_global( ref_node, &global ), "next global");
+      RSS( ref_node_add( ref_node, global, &new_node0 ), "new node");
+      RSS( ref_node_interpolate_edge( ref_node, node0, node1,
+				      new_node0 ), "new node");
+
+      RSS( ref_node_next_global( ref_node, &global ), "next global");
+      RSS( ref_node_add( ref_node, global, &new_node1 ), "new node");
+      RSS( ref_node_interpolate_edge( ref_node, node2, node3,
+				      new_node1 ), "new node");
+
+      RSS( ref_split_face( ref_grid, node0, node1, new_node0,
+			   node2, node3, new_node1 ), "split face");
+    }
 
   ref_free( edges );
   ref_free( order );
