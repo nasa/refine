@@ -670,9 +670,9 @@ int main( int argc, char *argv[] )
 	ref_node_metric(ref_node,0,node) = 1.0;
 	ref_node_metric(ref_node,1,node) = 0.0;
 	ref_node_metric(ref_node,2,node) = 0.0;
-	ref_node_metric(ref_node,3,node) = 1.0;
+	ref_node_metric(ref_node,3,node) = 1.0/(0.1*0.1);
 	ref_node_metric(ref_node,4,node) = 0.0;
-	ref_node_metric(ref_node,5,node) = 1.0/(0.1*0.1);
+	ref_node_metric(ref_node,5,node) = 1.0;
       }
 
     RSS(ref_subdiv_mark_prism_by_metric(ref_subdiv),"mark metric");
