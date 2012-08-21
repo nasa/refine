@@ -33,6 +33,10 @@ REF_STATUS ref_split_face( REF_GRID ref_grid,
 			   REF_INT node0, REF_INT node1, REF_INT new_node0, 
 			   REF_INT node2, REF_INT node3, REF_INT new_node1 );
 
+REF_STATUS ref_split_opposite_edge( REF_GRID ref_grid, 
+			   REF_INT node0, REF_INT node1,  
+			   REF_INT *node2, REF_INT *node3 );
+
 END_C_DECLORATION
 
 #endif /* REF_SPLIT_H */

@@ -288,5 +288,33 @@ SKIP_BLOCK("need opposite edge to implement")
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  { /* opposite prism edge */
+    REF_GRID ref_grid;
+    REF_INT node0, node1, node2, node3;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+
+    node0=0;node1=1;
+    RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
+    REIS(3,node2,"n2");
+    REIS(4,node3,"n3");
+
+    node0=1;node1=0;
+    RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
+    REIS(4,node2,"n2");
+    REIS(3,node3,"n3");
+
+    node0=4;node1=5;
+    RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
+    REIS(1,node2,"n2");
+    REIS(2,node3,"n3");
+
+    node0=5;node1=4;
+    RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
+    REIS(2,node2,"n2");
+    REIS(1,node3,"n3");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
   return 0;
 }

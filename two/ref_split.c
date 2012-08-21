@@ -438,3 +438,55 @@ REF_STATUS ref_split_face( REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_split_opposite_edge( REF_GRID ref_grid, 
+			   REF_INT node0, REF_INT node1,  
+			   REF_INT *node2, REF_INT *node3 )
+{
+  REF_CELL pri = ref_grid_pri(ref_grid);
+
+  REF_INT ncell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell_to_split[2];
+
+  *node2 = REF_EMPTY;
+  *node3 = REF_EMPTY;
+
+  RSS( ref_cell_list_with( pri, node0, node1,
+			   2, &ncell, cell_to_split), "more than two" );
+
+  RAS( ncell > 0, "no cells found");
+
+  RSS( ref_cell_nodes(pri, cell_to_split[0], nodes), "nodes" );
+
+  if ( node0 == nodes[0] && node1 == nodes[1] )
+    { *node2=nodes[3]; *node3=nodes[4]; return REF_SUCCESS; }
+  if ( node0 == nodes[1] && node1 == nodes[0] )
+    { *node2=nodes[4]; *node3=nodes[3]; return REF_SUCCESS; }
+
+  if ( node0 == nodes[1] && node1 == nodes[2] )
+    { *node2=nodes[4]; *node3=nodes[5]; return REF_SUCCESS; }
+  if ( node0 == nodes[2] && node1 == nodes[1] )
+    { *node2=nodes[5]; *node3=nodes[4]; return REF_SUCCESS; }
+
+  if ( node0 == nodes[2] && node1 == nodes[0] )
+    { *node2=nodes[5]; *node3=nodes[3]; return REF_SUCCESS; }
+  if ( node0 == nodes[0] && node1 == nodes[2] )
+    { *node2=nodes[3]; *node3=nodes[5]; return REF_SUCCESS; }
+
+  if ( node0 == nodes[3] && node1 == nodes[4] )
+    { *node2=nodes[0]; *node3=nodes[1]; return REF_SUCCESS; }
+  if ( node0 == nodes[4] && node1 == nodes[3] )
+    { *node2=nodes[1]; *node3=nodes[0]; return REF_SUCCESS; }
+
+  if ( node0 == nodes[4] && node1 == nodes[5] )
+    { *node2=nodes[1]; *node3=nodes[2]; return REF_SUCCESS; }
+  if ( node0 == nodes[5] && node1 == nodes[4] )
+    { *node2=nodes[2]; *node3=nodes[1]; return REF_SUCCESS; }
+
+  if ( node0 == nodes[5] && node1 == nodes[3] )
+    { *node2=nodes[2]; *node3=nodes[0]; return REF_SUCCESS; }
+  if ( node0 == nodes[3] && node1 == nodes[5] )
+    { *node2=nodes[0]; *node3=nodes[2]; return REF_SUCCESS; }
+
+   return REF_FAILURE;
+}
