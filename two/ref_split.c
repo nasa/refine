@@ -66,13 +66,13 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       RSS( ref_node_interpolate_edge( ref_node, 
 				      ref_edge_e2n( ref_edge, 0, edge ),
 				      ref_edge_e2n( ref_edge, 1, edge ),
-				      new_node ), "new node");
+				      new_node ), "interp new node");
 
       RSS( ref_split_edge_quality( ref_grid,
 				   ref_edge_e2n( ref_edge, 0, edge ),
 				   ref_edge_e2n( ref_edge, 1, edge ),
 				   new_node,
-				   &allowed ), "local tet" );
+				   &allowed ), "edge qual" );
       if ( !allowed) 
 	{
 	  RSS( ref_node_remove( ref_node, new_node ), "remove new node");
@@ -308,12 +308,12 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
       RSS( ref_node_next_global( ref_node, &global ), "next global");
       RSS( ref_node_add( ref_node, global, &new_node0 ), "new node");
       RSS( ref_node_interpolate_edge( ref_node, node0, node1,
-				      new_node0 ), "new node");
+				      new_node0 ), "interp new node");
 
       RSS( ref_node_next_global( ref_node, &global ), "next global");
       RSS( ref_node_add( ref_node, global, &new_node1 ), "new node");
       RSS( ref_node_interpolate_edge( ref_node, node2, node3,
-				      new_node1 ), "new node");
+				      new_node1 ), "interp new node");
 
       RSS( ref_split_face( ref_grid, node0, node1, new_node0,
 			   node2, node3, new_node1 ), "split face");
