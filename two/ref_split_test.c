@@ -283,9 +283,10 @@ int main( void )
 
     REIS( 10, ref_node_n(ref_node), "nodes");
     REIS( 3, ref_cell_n(ref_grid_pri(ref_grid)), "tets");
+    REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
+    REIS( 2, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
 
     /*
-#include "ref_export.h"
     ref_export_by_extension( ref_grid, "splitpri.tec" );
     */
 

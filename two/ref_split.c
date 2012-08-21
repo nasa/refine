@@ -443,7 +443,7 @@ REF_STATUS ref_split_face( REF_GRID ref_grid,
 	{
 	  new_nodes[node] = orig_nodes[node];
 	  if ( node0 == orig_nodes[node] ) new_nodes[node] = new_node0;
-	  if ( node3 == orig_nodes[node] ) new_nodes[node] = new_node1;
+	  if ( node2 == orig_nodes[node] ) new_nodes[node] = new_node1;
 	}
       new_nodes[ref_cell_node_per(qua)] =  orig_nodes[ref_cell_node_per(qua)];
       RSS( ref_cell_add(qua,new_nodes,&new_cell),"add node0-node3 version");
@@ -452,7 +452,7 @@ REF_STATUS ref_split_face( REF_GRID ref_grid,
 	{
 	  new_nodes[node] = orig_nodes[node];
 	  if ( node1 == orig_nodes[node] ) new_nodes[node] = new_node0;
-	  if ( node2 == orig_nodes[node] ) new_nodes[node] = new_node1;
+	  if ( node3 == orig_nodes[node] ) new_nodes[node] = new_node1;
 	}
       new_nodes[ref_cell_node_per(qua)] =  orig_nodes[ref_cell_node_per(qua)];
       RSS( ref_cell_add(qua,new_nodes,&new_cell),"add node1-node2 version");
