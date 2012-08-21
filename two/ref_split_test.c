@@ -258,5 +258,35 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+SKIP_BLOCK("need opposite edge to implement")	
+  { /* twod prism, splits */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+
+    ref_node = ref_grid_node(ref_grid);
+    each_ref_node_valid_node( ref_node, node )
+      {
+	ref_node_metric(ref_node,0,node) = 1.0;
+	ref_node_metric(ref_node,1,node) = 0.0;
+	ref_node_metric(ref_node,2,node) = 0.0;
+	ref_node_metric(ref_node,3,node) = 1.0;
+	ref_node_metric(ref_node,4,node) = 0.0;
+	ref_node_metric(ref_node,5,node) = 1.0;
+      }
+
+    ref_node_metric(ref_node,5,1) = 1/(0.25*0.25);
+    ref_node_metric(ref_node,5,4) = 1/(0.25*0.25);
+
+    RSS(ref_split_twod_pass(ref_grid),"pass");
+
+    REIS( 10, ref_node_n(ref_node), "nodes");
+    REIS( 3, ref_cell_n(ref_grid_pri(ref_grid)), "tets");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
   return 0;
 }
