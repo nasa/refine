@@ -140,7 +140,6 @@ int main( void )
 
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
 
-
     ref_node = ref_grid_node(ref_grid);
     each_ref_node_valid_node( ref_node, node )
       {
@@ -333,6 +332,24 @@ int main( void )
     RSS(ref_split_edge_local_prisms(ref_grid,node0,node1,&allowed),"split");
 
     REIS(REF_TRUE,allowed,"local split allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* split border allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+
+    ref_node_part(ref_grid_node(ref_grid),2) =
+      ref_node_part(ref_grid_node(ref_grid),2) + 1;
+
+    node0 = 0; node1 = 1;
+    RSS(ref_split_edge_local_prisms(ref_grid,node0,node1,&allowed),"split");
+
+    REIS(REF_FALSE,allowed,"local split allowed?");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
