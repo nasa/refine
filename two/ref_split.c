@@ -264,7 +264,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   REF_INT *edges, *order;
   REF_INT edge, n, i;
   REF_DBL ratio_limit;
-  REF_BOOL active;
+  REF_BOOL active, allowed;
   REF_INT node0, node1, node2, node3, new_node0, new_node1;
   REF_INT global;
 
@@ -303,6 +303,11 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
       edge = edges[order[i]];
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
+
+      RSS( ref_split_edge_local_prisms( ref_grid, node0, node1,
+					&allowed ), "local pri" );
+      if ( !allowed ) continue;
+
       RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
 
       RSS( ref_node_next_global( ref_node, &global ), "next global");
