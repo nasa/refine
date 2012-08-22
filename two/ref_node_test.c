@@ -462,7 +462,7 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
-  { /* tri normal */
+  { /* right tri normal */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
     REF_DBL norm[3];
@@ -499,6 +499,72 @@ int main( int argc, char *argv[] )
     RWDS( 0.0, norm[0], -1.0, "nx" );
     RWDS( 0.0, norm[1], -1.0, "ny" );
     RWDS(-0.5, norm[2], -1.0, "nz" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* right tri area */
+    REF_NODE ref_node;
+    REF_INT nodes[3], global;
+    REF_DBL area;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+
+    for ( global=0;global<3;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+      }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
+
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "norm");
+    RWDS( 0.5, area, -1.0, "nz" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* right tri quality */
+    REF_NODE ref_node;
+    REF_INT nodes[3], global;
+    REF_DBL qual;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+
+    for ( global=0;global<3;global++)
+      {
+	ref_node_xyz(ref_node,0,global) = 0.0;
+	ref_node_xyz(ref_node,1,global) = 0.0;
+	ref_node_xyz(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,0,global) = 1.0;
+	ref_node_metric(ref_node,1,global) = 0.0;
+	ref_node_metric(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,3,global) = 1.0;
+	ref_node_metric(ref_node,4,global) = 0.0;
+	ref_node_metric(ref_node,5,global) = 1.0;
+      }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
+
+    RSS(ref_node_tri_quality(ref_node, nodes, &qual), "q");
+    RWDS( 0.8660254, qual, 0.00001, "qual expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }

@@ -818,7 +818,49 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
   else
     {
       *quality = -1.0;
-      RSS( REF_DIV_ZERO, "in quality");
+      RSS( REF_DIV_ZERO, "in tet quality");
+    }
+
+  return REF_SUCCESS;  
+}
+
+REF_STATUS ref_node_tri_quality( REF_NODE ref_node, 
+				 REF_INT *nodes, 
+				 REF_DBL *quality )
+{
+  REF_DBL l0,l1,l2;
+
+  REF_DBL min_det, area;
+  REF_DBL area_in_metric;
+  REF_DBL num, denom;
+
+  RSS( ref_node_ratio( ref_node, nodes[0], nodes[1], &l0 ), "l0" );
+  RSS( ref_node_ratio( ref_node, nodes[0], nodes[2], &l1 ), "l1" );
+  RSS( ref_node_ratio( ref_node, nodes[1], nodes[2], &l2 ), "l2" );
+  
+  RSS( ref_node_tri_area( ref_node, nodes, &area ), "area");
+
+  min_det = MIN( 
+		MIN( 
+		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0])),
+		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]))
+		     ),
+		ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]))
+		 );
+
+  area_in_metric = sqrt( min_det ) * area;
+
+  num = area_in_metric;
+  denom = l0*l0 + l1*l1 + l2*l2;
+
+  if ( ref_math_divisible(num,denom) )
+    {
+      *quality = 4.0 / sqrt(3.0) * 3 * num / denom;
+    }
+  else
+    {
+      *quality = -1.0;
+      RSS( REF_DIV_ZERO, "in tri quality");
     }
 
   return REF_SUCCESS;  
@@ -853,6 +895,19 @@ REF_STATUS ref_node_tri_normal( REF_NODE ref_node,
   normal[0] *= 0.5;
   normal[1] *= 0.5;
   normal[2] *= 0.5;
+
+  return REF_SUCCESS;  
+}
+
+REF_STATUS ref_node_tri_area( REF_NODE ref_node, 
+			      REF_INT *nodes, 
+			      REF_DBL *area )
+{
+  REF_DBL normal[3];
+
+  RSS( ref_node_tri_normal( ref_node, nodes, normal ), "norm inside of area");
+ 
+  *area = 2.0 * ref_math_dot(normal,normal);
 
   return REF_SUCCESS;  
 }
