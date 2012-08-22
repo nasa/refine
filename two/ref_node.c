@@ -906,8 +906,12 @@ REF_STATUS ref_node_tri_area( REF_NODE ref_node,
   REF_DBL normal[3];
 
   RSS( ref_node_tri_normal( ref_node, nodes, normal ), "norm inside of area");
- 
-  *area = 2.0 * ref_math_dot(normal,normal);
+
+  normal[0] *= 2.0;
+  normal[1] *= 2.0;
+  normal[2] *= 2.0;
+
+  *area = 0.5 * sqrt(ref_math_dot(normal,normal));
 
   return REF_SUCCESS;  
 }
