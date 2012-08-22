@@ -308,12 +308,21 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 					&allowed ), "local pri" );
       if ( !allowed ) continue;
 
-      RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
-
       RSS( ref_node_next_global( ref_node, &global ), "next global");
       RSS( ref_node_add( ref_node, global, &new_node0 ), "new node");
       RSS( ref_node_interpolate_edge( ref_node, node0, node1,
 				      new_node0 ), "interp new node");
+
+      RSS( ref_split_prism_tri_quality( ref_grid, node0, node1, new_node0,
+					&allowed ), "quality of new tri" );
+      if ( !allowed ) 
+	{
+	  RSS( ref_node_remove( ref_node, new_node0 ), "remove new node");
+	  continue;
+	}
+
+
+      RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
 
       RSS( ref_node_next_global( ref_node, &global ), "next global");
       RSS( ref_node_add( ref_node, global, &new_node1 ), "new node");
@@ -549,3 +558,50 @@ REF_STATUS ref_split_edge_local_prisms( REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid, 
+					REF_INT node0, REF_INT node1,
+					REF_INT new_node,
+					REF_BOOL *allowed )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, cell_in_list;
+  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT node;
+  REF_DBL quality, quality0, quality1;
+  REF_DBL quality_tolerence = 1.0e-3;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS( ref_cell_list_with(ref_cell,node0,node1,
+			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "get list" );
+
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_split[cell_in_list];
+      RSS( ref_cell_nodes(ref_cell, cell, nodes),"cell nodes");
+
+      RSS( ref_node_tri_quality( ref_node,nodes,&quality ), "q");
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node0 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_node_tri_quality( ref_node,nodes,&quality0 ), "q0");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node0;
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node1 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_node_tri_quality( ref_node,nodes,&quality1 ), "q1");
+
+      if ( quality0 < quality_tolerence ||
+	   quality1 < quality_tolerence ) return REF_SUCCESS;
+    }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
