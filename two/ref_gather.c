@@ -9,7 +9,7 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-REF_STATUS ref_gather_tec( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -35,7 +35,7 @@ REF_STATUS ref_gather_tec( REF_GRID ref_grid, char *filename  )
 	      nnode, ntri, "point", "fetriangle" );
     }
 
-  RSS( ref_gather_node_tec( ref_node, file ), "nodes");
+  RSS( ref_gather_node_tec_part( ref_node, file ), "nodes");
 
   if ( ref_mpi_master ) fclose(file);
 
@@ -196,7 +196,7 @@ REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_gather_node_tec( REF_NODE ref_node, FILE *file )
+REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 {
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
