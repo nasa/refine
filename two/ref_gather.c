@@ -9,6 +9,39 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
+REF_STATUS ref_gather_tec( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nnode,ntri;
+
+  RSS( ref_node_synchronize_globals( ref_node ), "sync" );
+
+  nnode = ref_node_n_global(ref_node);
+
+  RSS( ref_gather_ncell( ref_node, ref_grid_tri(ref_grid), &ntri ), "ntri");
+
+  file = NULL;
+  if ( ref_mpi_master )
+    {
+      file = fopen(filename,"w");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+
+      fprintf(file, "title=\"tecplot refine partion file\"\n");
+      fprintf(file, "variables = \"x\" \"y\" \"z\" \"p\"\n");
+      fprintf(file,
+	"zone t=part, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	      nnode, ntri, "point", "fetriangle" );
+    }
+
+  RSS( ref_gather_node_tec( ref_node, file ), "nodes");
+
+  if ( ref_mpi_master ) fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
@@ -163,6 +196,74 @@ REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
 
   return REF_SUCCESS;
 }
+REF_STATUS ref_gather_node_tec( REF_NODE ref_node, FILE *file )
+{
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_INT nnode_written, first, n, i;
+  REF_INT global, local;
+  REF_STATUS status;
+
+  chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
+
+  ref_malloc( local_xyzm, 5*chunk, REF_DBL );
+  ref_malloc( xyzm, 5*chunk, REF_DBL );
+
+  nnode_written = 0;
+  while ( nnode_written < ref_node_n_global(ref_node) )
+    {
+
+      first = nnode_written;
+      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
+
+      nnode_written += n;
+
+      for (i=0;i<5*chunk;i++)
+	local_xyzm[i] = 0.0;
+
+      for (i=0;i<n;i++)
+	{
+	  global = first + i;
+	  status = ref_node_local( ref_node, global, &local );
+	  RXS( status, REF_NOT_FOUND, "node local failed" );
+	  if ( REF_SUCCESS == status &&
+	       ref_mpi_id == ref_node_part(ref_node,local) )
+	    {
+	      local_xyzm[0+5*i] = ref_node_xyz(ref_node,0,local);
+	      local_xyzm[1+5*i] = ref_node_xyz(ref_node,1,local);
+	      local_xyzm[2+5*i] = ref_node_xyz(ref_node,2,local);
+	      local_xyzm[4+5*i] = (REF_DBL)ref_node_part(ref_node,local);
+	      local_xyzm[3+5*i] = 1.0;
+	    }
+	  else
+	    {
+	      local_xyzm[0+5*i] = 0.0;
+	      local_xyzm[1+5*i] = 0.0;
+	      local_xyzm[2+5*i] = 0.0;
+	      local_xyzm[3+5*i] = 0.0;
+	      local_xyzm[4+5*i] = 0.0;
+	    }
+	}
+
+      RSS( ref_mpi_sum( local_xyzm, xyzm, 5*n, REF_DBL_TYPE ), "sum" );
+      
+      if ( ref_mpi_master )
+	for ( i=0; i<n; i++ )
+	  {
+	    if ( ABS( xyzm[4+5*i] - 1.0 ) > 0.1 )
+	      {
+		printf("error gather node %d %f\n",first+i, xyzm[3+5*i]);
+	      }
+	    fprintf(file,"%.15f %.15f %.15f %.0f\n",
+		    xyzm[0+5*i], xyzm[1+5*i], xyzm[2+5*i], xyzm[3+5*i] );
+	  }
+    }
+
+  ref_free( xyzm );
+  ref_free( local_xyzm );
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, 
 			    REF_BOOL faceid_insted_of_c2n, FILE *file )
@@ -183,11 +284,11 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
 	    if ( faceid_insted_of_c2n )
 	      {
 		for ( node = node_per; node < size_per; node++ )
-		  {
-		    SWAP_INT(nodes[node]);
-		    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
-			 "cel node");
-		  }
+                 {
+                   SWAP_INT(nodes[node]);
+                   REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
+                        "cel node");
+                 }
 	    }
 	    else
 	      {
