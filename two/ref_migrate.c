@@ -265,6 +265,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     RSS( ref_node_synchronize_globals( ref_node ), "sync global nodes");
 
+    if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+
     RSS( ref_migrate_create( &ref_migrate, ref_grid ), "create migrate");
 
     if ( ref_grid_twod(ref_grid) )
