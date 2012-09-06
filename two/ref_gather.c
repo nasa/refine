@@ -36,6 +36,7 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename  )
     }
 
   RSS( ref_gather_node_tec_part( ref_node, file ), "nodes");
+  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), file ), "nodes");
 
   if ( ref_mpi_master ) fclose(file);
 
@@ -332,6 +333,79 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
 				   sizeof(REF_INT),1,file),"cell");
 		  }
 	      }
+	  ref_free(c2n);
+	}
+    }
+  else
+    {
+      ncell = 0;
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
+	  ncell++;
+      RSS( ref_mpi_send( &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
+      ref_malloc(c2n, ncell*size_per, REF_INT);
+      ncell = 0;
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
+	  {
+	    for ( node = 0; node < node_per; node++ )
+	      c2n[node+size_per*ncell] = ref_node_global(ref_node,nodes[node]);
+	    for ( node = node_per; node < size_per; node++ )
+	      c2n[node+size_per*ncell] = nodes[node];
+	    ncell++;
+	  }
+      RSS( ref_mpi_send( c2n, ncell*size_per, 
+			 REF_INT_TYPE, 0 ), "send c2n");
+
+      ref_free(c2n);
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell, 
+				FILE *file )
+{
+  REF_INT cell, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node_per = ref_cell_node_per(ref_cell);
+  REF_INT size_per = ref_cell_size_per(ref_cell);
+  REF_INT ncell;
+  REF_INT *c2n;
+  REF_INT proc;
+
+  if ( ref_mpi_master )
+    {
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
+	  {
+	    for ( node = 0; node < node_per; node++ )
+	      {
+		nodes[node] = ref_node_global(ref_node,nodes[node]);
+		nodes[node]++;
+		fprintf(file," %d",nodes[node]);
+	      }
+	    fprintf(file,"\n");
+	  }
+    }
+
+  if ( ref_mpi_master )
+    {
+      for (proc=1;proc<ref_mpi_n;proc++)
+	{
+	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
+	  ref_malloc(c2n, ncell*size_per, REF_INT);
+	  RSS( ref_mpi_recv( c2n, ncell*size_per, 
+			     REF_INT_TYPE, proc ), "recv c2n");
+	  for ( cell = 0; cell < ncell; cell++ )
+	    {
+	      for ( node = 0; node < node_per; node++ )
+		{
+		  c2n[node+size_per*cell]++;
+		  fprintf(file," %d",c2n[node+size_per*cell]);
+		}
+	      fprintf(file,"\n");
+	    }
 	  ref_free(c2n);
 	}
     }
