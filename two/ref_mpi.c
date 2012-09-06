@@ -335,15 +335,32 @@ REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
 
 REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
 {
+  REF_INT i;
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
-  ref_type_mpi_type(type,datatype);
-
-  MPI_Reduce( input, output, n, datatype, MPI_SUM, 0, MPI_COMM_WORLD);
+  if ( 1 == ref_mpi_n )
+    {
+      switch (type)
+	{
+	case REF_INT_TYPE: 
+	  for (i=0;i<n;i++)
+	    ((REF_INT *)output)[i] = ((REF_INT *)input)[i]; 
+	  break;
+	case REF_DBL_TYPE:
+	  for (i=0;i<n;i++)
+	    ((REF_DBL *)output)[i] = ((REF_DBL *)input)[i]; 
+	  break;
+	default: RSS( REF_IMPLEMENT, "data type");
+	}
+    }
+  else
+    {
+      ref_type_mpi_type(type,datatype);
+      MPI_Reduce( input, output, n, datatype, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
 
 #else
-  REF_INT i;
   switch (type)
     {
     case REF_INT_TYPE: 
