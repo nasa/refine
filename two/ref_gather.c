@@ -232,8 +232,8 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 	      local_xyzm[0+5*i] = ref_node_xyz(ref_node,0,local);
 	      local_xyzm[1+5*i] = ref_node_xyz(ref_node,1,local);
 	      local_xyzm[2+5*i] = ref_node_xyz(ref_node,2,local);
-	      local_xyzm[4+5*i] = (REF_DBL)ref_node_part(ref_node,local);
-	      local_xyzm[3+5*i] = 1.0;
+	      local_xyzm[3+5*i] = (REF_DBL)ref_node_part(ref_node,local);
+	      local_xyzm[4+5*i] = 1.0;
 	    }
 	  else
 	    {
@@ -246,15 +246,15 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 	}
 
       RSS( ref_mpi_sum( local_xyzm, xyzm, 5*n, REF_DBL_TYPE ), "sum" );
-      
+
       if ( ref_mpi_master )
 	for ( i=0; i<n; i++ )
 	  {
 	    if ( ABS( xyzm[4+5*i] - 1.0 ) > 0.1 )
 	      {
-		printf("error gather node %d %f\n",first+i, xyzm[3+5*i]);
+		printf("error gather node %d %f\n",first+i, xyzm[4+5*i]);
 	      }
-	    fprintf(file,"%.15f %.15f %.15f %.0f\n",
+	    fprintf(file,"%.15e %.15e %.15e %.0f\n",
 		    xyzm[0+5*i], xyzm[1+5*i], xyzm[2+5*i], xyzm[3+5*i] );
 	  }
     }
