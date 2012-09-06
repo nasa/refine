@@ -17,6 +17,7 @@
 #include "ref_sort.h"
 #include "ref_migrate.h"
 #include "ref_edge.h"
+#include "ref_gather.h"
 
 int main( int argc, char *argv[] )
 {
@@ -29,12 +30,17 @@ int main( int argc, char *argv[] )
       char viz_file[256];
 
       RSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
-
-      sprintf(viz_file, "ref_part_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
-      RSS( ref_export_by_extension( import_grid, viz_file ), "export");
       ref_grid_inspect( import_grid );  
 
+      sprintf(viz_file, "ref_part_test_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
+      RSS( ref_export_by_extension( import_grid, viz_file ), "export");
+
+      RSS( ref_gather_tec_part( import_grid, "ref_part_test.tec" ), "part_viz");
+
       RSS(ref_grid_free(import_grid),"free");
+
+      RSS( ref_mpi_stop( ), "stop" );
+      return 0;
     }
 
   { /* one even */
