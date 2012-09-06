@@ -67,7 +67,8 @@ int main( int argc, char *argv[] )
       RSS( ref_migrate_shufflin( import_grid ), "shufflin");
       ref_mpi_stopwatch_stop("shufflin");
 
-      RSS( ref_gather_tec_part( import_grid, "ref_migrate.tec" ), "part_viz");
+      RSS( ref_gather_tec_part( import_grid, "ref_migrate_test.tec" ), 
+	   "part_viz");
 
       RSS( ref_grid_free( import_grid ), "free");
     }
