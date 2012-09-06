@@ -20,6 +20,25 @@ BEGIN_C_DECLORATION
 	      (a)[ref_debug_print_int_array_i]);	\
   }
 
+#define ref_debug_print_dbl2_array( a, l, n )		\
+  { REF_INT ref_debug_print_int_array_i;		\
+    REF_INT ref_debug_print_int_array_j;		\
+    for( ref_debug_print_int_array_j = 0 ;		\
+	 ref_debug_print_int_array_j<(n);		\
+	 ref_debug_print_int_array_j++ )		\
+      {							\
+	printf( " " #a "[%d] =",			\
+		ref_debug_print_int_array_j);		\
+	for( ref_debug_print_int_array_i = 0 ;		\
+	     ref_debug_print_int_array_i<(l);		\
+	     ref_debug_print_int_array_i++ )		\
+	  printf( " %f",					\
+		  (a)[ref_debug_print_int_array_i+		\
+		      (l)*ref_debug_print_int_array_j]);	\
+	printf( "\n");						\
+      }								\
+  }
+
 END_C_DECLORATION
 
 #endif /* REF_DEBUG_H */
