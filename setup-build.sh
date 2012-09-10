@@ -9,6 +9,7 @@ mkdir -p strict
     ../configure \
     --prefix=`pwd` \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused' \
+    FC=gfortran \
     ) \
     || exit
 
@@ -18,6 +19,7 @@ mkdir -p mpi
     --prefix=`pwd` \
     --with-zoltan=${HOME}/local/pkgs/zoltan_distrib_v3.6/Zoltan_v3.6/build \
     CC=mpicc \
+    FC=mpif90 \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -Wcheck -ftrapuv -fp-stack-check -check-uninit -fstack-security-check' \
     ) \
     || exit
@@ -27,6 +29,7 @@ mkdir -p profile
     ../configure \
     --prefix=`pwd` \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -pg' \
+    FC=gfortran \
     ) \
     || exit
 
