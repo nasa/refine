@@ -9,6 +9,7 @@
 BEGIN_C_DECLORATION
 
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid );
+REF_STATUS ref_adapt_twod_pass( REF_GRID ref_grid );
 
 END_C_DECLORATION
 

@@ -120,6 +120,57 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop("post");
     }
 
+  if ( 2 == argc )
+    {
+      REF_GRID ref_grid;
+      REF_INT i, passes;
+
+      ref_mpi_stopwatch_start();
+      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
+      ref_mpi_stopwatch_stop("read grid");
+
+      RSS(ref_migrate_to_balance(ref_grid),"balance");
+      ref_mpi_stopwatch_stop("balance");
+
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
+
+      {
+	REF_DBL *metric;
+	ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+	RSS( ref_metric_from_node( metric, ref_grid_node(ref_grid)), 
+	     "from");
+	RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
+      }
+
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
+
+      passes = 5;
+      for (i = 0; i<passes ; i++ )
+	{
+	  RSS( ref_adapt_twod_pass( ref_grid ), "pass");
+	  ref_mpi_stopwatch_stop("pass");
+	  RSS(ref_validation_cell_volume(ref_grid),"vol");
+	  RSS(ref_migrate_to_balance(ref_grid),"balance");
+	  ref_mpi_stopwatch_stop("balance");
+	}
+
+      ref_mpi_stopwatch_start();
+      RSS( ref_gather_b8_ugrid( ref_grid, "ref_adapt_test.b8.ugrid" ), 
+	   "gather");
+      ref_mpi_stopwatch_stop("gather");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      if ( ref_mpi_master )
+	{
+	  RSS(ref_import_by_extension( &ref_grid, 
+				       "ref_adapt_test.b8.ugrid" ), "imp" );
+	  RSS(ref_export_tec_surf( ref_grid, "ref_adapt_test.tec" ),"ex" );
+	  RSS( ref_grid_free( ref_grid ), "free");
+	}
+      ref_mpi_stopwatch_stop("post");
+    }
+
   RSS( ref_mpi_stop(  ), "stop" );
 
   return 0;
