@@ -96,7 +96,7 @@ static void ref_migrate_local_ids( void *void_ref_migrate,
 				   int wgt_dim, float *obj_wgts, int *ierr )
 {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
-  REF_INT node;
+  REF_INT node, n;
 
   if ( 1 != global_dim || 1 != local_dim || 1 !=  wgt_dim )
     {
@@ -107,11 +107,13 @@ static void ref_migrate_local_ids( void *void_ref_migrate,
 
   *ierr = 0;
 
+  n = 0;
   each_ref_migrate_node( ref_migrate, node )
     {
-      local[node] = node;
-      global[node] = ref_migrate_global(ref_migrate,node);
-      obj_wgts[node] = (float)ref_migrate_weight(ref_migrate,node);
+      local[n] = node;
+      global[n] = ref_migrate_global(ref_migrate,node);
+      obj_wgts[n] = (float)ref_migrate_weight(ref_migrate,node);
+      n++;
     }
 }
 
@@ -143,6 +145,13 @@ static void ref_migrate_geom( void *void_ref_migrate,
 
   for ( node=0 ;node < nnode ; node++ )
     {
+      if ( !ref_migrate_valid( ref_migrate, local[node] ) )
+	{
+	  printf("%s: %d: %s: %d %d invalid\n",
+		 __FILE__,__LINE__,__func__,node,(REF_INT)local[node]);
+	  *ierr = ZOLTAN_FATAL;
+	  return;
+	}
       xyz[0+3*node] = ref_migrate_xyz(ref_migrate,0,local[node]);
       xyz[1+3*node] = ref_migrate_xyz(ref_migrate,1,local[node]);
       xyz[2+3*node] = ref_migrate_xyz(ref_migrate,2,local[node]);
@@ -154,20 +163,29 @@ static REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
 						     REF_INT keep, REF_INT lose)
 {
   REF_NODE ref_node = ref_grid_node( ref_migrate_grid(ref_migrate) );
+  REF_INT item, global;
 
-  if ( ref_mpi_id == ref_node_part(ref_node,keep) )
-    {
-      ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
-      ref_migrate_weight(ref_migrate,keep) = 2.0;
-      RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate), 
-			keep, ref_node_global(ref_node, lose) ),"add");
-      RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate), 
-			keep, ref_node_part(ref_node, lose) ),"add");
-    }
-  if ( ref_mpi_id == ref_node_part(ref_node,lose) )
-    {
-      ref_migrate_global(ref_migrate,lose) = REF_EMPTY;
-    }
+  /* not working for general agglomeration, ghost lose? */
+
+  RAS( ref_node_valid( ref_node, keep ), "keep node invalid" );
+  RAS( ref_node_valid( ref_node, lose ), "lose node invalid" );
+
+  /* skip if keep node is off-proc or already agglomerated */
+  if ( ! ref_migrate_valid( ref_migrate, keep ) ) return REF_SUCCESS;
+
+  /* skip if the lose node has been agglomerated */
+  each_ref_adj_node_item_with_ref( ref_migrate_parent_global( ref_migrate ), 
+				   keep, item, global)
+    if ( global == ref_node_global(ref_node,lose) ) return REF_SUCCESS;
+
+  ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
+  ref_migrate_weight(ref_migrate,keep) = 2.0;
+  RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate), 
+		    keep, ref_node_global(ref_node, lose) ),"add");
+  RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate), 
+		    keep, ref_node_part(ref_node, lose) ),"add");
+
+  ref_migrate_global(ref_migrate,lose) = REF_EMPTY;
  
   return REF_SUCCESS;
 }
