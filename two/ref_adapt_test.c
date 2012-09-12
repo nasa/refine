@@ -90,6 +90,7 @@ int main( int argc, char *argv[] )
       }
 
       RSS( ref_metric_sanitize(ref_grid),"sant");
+      RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
 
@@ -137,9 +138,11 @@ int main( int argc, char *argv[] )
       {
 	REF_DBL *metric;
 	ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
-	RSS( ref_metric_from_node( metric, ref_grid_node(ref_grid)), 
+	RSS( ref_metric_imply_from( metric, ref_grid ), 
 	     "from");
 	RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
+	RSS( ref_node_ghost_real( ref_grid_node(ref_grid) ), "ghost real");
+	ref_free( metric );
       }
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
