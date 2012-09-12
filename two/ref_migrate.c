@@ -456,7 +456,18 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 
   each_ref_node_valid_node( ref_node, node )
     if ( ref_mpi_id != ref_node_part(ref_node,node) )
-      a_size[ref_node_part(ref_node,node)]++;
+      {
+	if( ref_node_part(ref_node,node) < 0 ||
+	    ref_node_part(ref_node,node) >= ref_mpi_n )
+	  {
+	    printf("id %d node %d global %d part %d",
+		   ref_mpi_id, node, 
+		   ref_node_global(ref_node,node), 
+		   ref_node_part(ref_node,node));
+	    THROW( "part out of range" );
+	  }
+	a_size[ref_node_part(ref_node,node)]++;
+      }
 
   RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
