@@ -47,6 +47,8 @@ struct REF_MIGRATE_STRUCT {
 REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate, REF_GRID ref_grid );
 REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate );
 
+REF_STATUS ref_migrate_inspect( REF_MIGRATE ref_migrate );
+
 REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
 					      REF_INT keep, REF_INT lose);
 

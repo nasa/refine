@@ -73,6 +73,27 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_migrate_inspect( REF_MIGRATE ref_migrate )
+{
+  REF_NODE ref_node = ref_grid_node( ref_migrate_grid(ref_migrate) );
+  REF_INT node,item,global,part;
+
+  each_ref_migrate_node( ref_migrate, node )
+    {
+      printf(" %2d : %3d :",
+	     ref_mpi_id,
+	     ref_node_global(ref_node,node));
+      each_ref_adj_node_item_with_ref(ref_migrate_parent_global( ref_migrate ), 
+				      node, item, global)
+	{
+	  part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
+	  printf(" %3d+%d",global,part);
+	}
+      printf("\n");
+    }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
 					      REF_INT keep, REF_INT lose)
 {
