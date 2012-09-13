@@ -121,13 +121,21 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop("post");
     }
 
-  if ( 2 == argc )
+  if ( 2 >= argc )
     {
       REF_GRID ref_grid;
       REF_INT i, passes;
 
       ref_mpi_stopwatch_start();
-      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
+      if ( 2 == argc ) 
+	{
+	  RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
+	}
+      else
+	{
+	  RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
+	  ref_grid_twod(ref_grid) = REF_TRUE;
+	}
       ref_mpi_stopwatch_stop("read grid");
 
       RSS(ref_migrate_to_balance(ref_grid),"balance");
