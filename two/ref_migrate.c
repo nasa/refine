@@ -33,7 +33,7 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
   ref_migrate_max(ref_migrate) = ref_node_max(ref_node);
 
-  ref_malloc_init( ref_migrate->global, ref_migrate_max(ref_migrate), 
+  ref_malloc_init( ref_migrate->global, ref_migrate_max(ref_migrate),
 		   REF_INT, REF_EMPTY);
   ref_malloc( ref_migrate->xyz, 3*ref_migrate_max(ref_migrate), REF_DBL);
   ref_malloc( ref_migrate->weight, ref_migrate_max(ref_migrate), REF_DBL);
@@ -42,9 +42,9 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
     if ( ref_mpi_id == ref_node_part(ref_node,node) )
       {
 	ref_migrate_global(ref_migrate,node) = ref_node_global(ref_node,node);
-	RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate), 
+	RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate),
 			  node, ref_node_global(ref_node, node) ),"add");
-	RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate), 
+	RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate),
 			  node, ref_node_part(ref_node, node) ),"add");
 	ref_migrate_xyz( ref_migrate, 0, node ) = 
 	  ref_node_xyz(ref_node,0,node);
@@ -117,9 +117,9 @@ REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
 
   ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
   ref_migrate_weight(ref_migrate,keep) = 2.0;
-  RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate), 
+  RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate),
 		    keep, ref_node_global(ref_node, lose) ),"add");
-  RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate), 
+  RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate),
 		    keep, ref_node_part(ref_node, lose) ),"add");
 
  
@@ -365,22 +365,21 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
     ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
 
-    each_ref_node_valid_node( ref_node, node )
-      if ( ref_mpi_id == ref_node_part(ref_node,node) )
-	each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate), 
-					node, item, global )
-	  {
-	    part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
-	    if ( ref_mpi_id != part )
-	      {
-		a_size[part]++;
-	      }
-	    else
-	      {
-		RSS( ref_node_local( ref_node, global, &local ), "g2l" );
-		node_part[local] = migrate_part[node];
-	      }
-	  }
+    each_ref_migrate_node( ref_migrate, node )
+      each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
+				      node, item, global )
+        {
+	  part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
+	  if ( ref_mpi_id != part )
+	    {
+	      a_size[part]++;
+	    }
+	  else
+	    {
+	      RSS( ref_node_local( ref_node, global, &local ), "g2l" );
+	      node_part[local] = migrate_part[node];
+	    }
+	}
     
     RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
@@ -399,19 +398,18 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     for ( part = 1; part<ref_mpi_n ; part++ )
       a_next[part] = a_next[part-1]+a_size[part-1];
 
-    each_ref_node_valid_node( ref_node, node )
-      if ( ref_mpi_id == ref_node_part(ref_node,node) )
-	each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate), 
-					node, item, global )
-	  {
-	    part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
-	    if ( ref_mpi_id != part )
-	      {
-		a_parts[0+2*a_next[part]] = global;
-		a_parts[1+2*a_next[part]] = migrate_part[node];
-		a_next[part]++;
-	      }
-	  }
+    each_ref_migrate_node( ref_migrate, node )
+      each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
+				      node, item, global )
+        {
+	  part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
+	  if ( ref_mpi_id != part )
+	    {
+	      a_parts[0+2*a_next[part]] = global;
+	      a_parts[1+2*a_next[part]] = migrate_part[node];
+	      a_next[part]++;
+	    }
+	}
 
     RSS( ref_mpi_alltoallv( a_parts, a_size, b_parts, b_size, 
 			    2, REF_INT_TYPE ), 
