@@ -137,12 +137,22 @@ int main( int argc, char *argv[] )
 
       {
 	REF_DBL *metric;
+	REF_INT node;
 	ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 	RSS( ref_metric_imply_from( metric, ref_grid ), 
 	     "from");
 	RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
 	RSS( ref_node_ghost_real( ref_grid_node(ref_grid) ), "ghost real");
 	ref_free( metric );
+
+	each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+  	  {
+	    ref_node_metric(ref_grid_node(ref_grid),0,node) *= 4.0;
+	    ref_node_metric(ref_grid_node(ref_grid),1,node)  = 0.0;
+	    ref_node_metric(ref_grid_node(ref_grid),3,node)  = 1.0;
+	    ref_node_metric(ref_grid_node(ref_grid),4,node)  = 0.0;
+	    ref_node_metric(ref_grid_node(ref_grid),5,node) *= 4.0;
+	  }
       }
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
