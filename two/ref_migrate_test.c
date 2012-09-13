@@ -33,6 +33,8 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       REF_MIGRATE ref_migrate;
       REF_INT keep, lose;
+      REF_INT update_global, update_part;
+      REF_ADJ ref_adj;
 
       RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
       RSS(ref_migrate_create(&ref_migrate,ref_grid),"set up mig");
@@ -47,6 +49,14 @@ int main( int argc, char *argv[] )
 
       REIS( 0,         ref_migrate_global( ref_migrate, 0 ), "mark" );
       REIS( REF_EMPTY, ref_migrate_global( ref_migrate, 3 ), "mark" );
+
+      ref_adj = ref_migrate_parent_global(ref_migrate);
+      update_global = ref_adj_item_ref(ref_adj, ref_adj_first( ref_adj, keep));
+      REIS( 3, update_global, "glob" );
+
+      ref_adj = ref_migrate_parent_part(ref_migrate);
+      update_part = ref_adj_item_ref(ref_adj, ref_adj_first( ref_adj, keep));
+      REIS( 1, update_part, "glob" );
 
       RSS( ref_migrate_free( ref_migrate ), "free migrate");
       RSS( ref_grid_free( ref_grid ), "free gride");
