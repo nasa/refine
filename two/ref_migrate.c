@@ -16,9 +16,6 @@
 
 #include "ref_export.h"
 
-#ifdef HAVE_ZOLTAN
-#include "zoltan.h"
-
 REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 {
   REF_MIGRATE ref_migrate;
@@ -75,6 +72,9 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 
   return REF_SUCCESS;
 }
+
+#ifdef HAVE_ZOLTAN
+#include "zoltan.h"
 
 static int ref_migrate_local_n( void *void_ref_migrate, int *ierr )
 {

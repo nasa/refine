@@ -28,6 +28,17 @@ int main( int argc, char *argv[] )
 
   RSS( ref_mpi_start( argc, argv ), "start" );
 
+  {
+    REF_GRID ref_grid;
+    REF_MIGRATE ref_migrate;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
+    RSS(ref_migrate_create(&ref_migrate,ref_grid),"set up mig");
+
+    RSS( ref_migrate_free( ref_migrate ), "free migrate");
+    RSS( ref_grid_free( ref_grid ), "free gride");
+  }
+
   if ( 1 == argc )
     {
       REF_GRID import_grid;
