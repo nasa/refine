@@ -311,7 +311,6 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     if ( ref_grid_twod(ref_grid) )
       {
-	if ( ref_mpi_master ) printf("guessing 2d\n");
 	RSS( ref_migrate_2d_agglomeration( ref_migrate ), "2d agglom" );
       }
 
