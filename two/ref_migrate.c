@@ -159,8 +159,8 @@ static void ref_migrate_geom( void *void_ref_migrate,
 
 }
 
-static REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
-						     REF_INT keep, REF_INT lose)
+REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
+					      REF_INT keep, REF_INT lose)
 {
   REF_NODE ref_node = ref_grid_node( ref_migrate_grid(ref_migrate) );
   REF_INT item, global;

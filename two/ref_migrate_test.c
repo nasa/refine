@@ -28,16 +28,29 @@ int main( int argc, char *argv[] )
 
   RSS( ref_mpi_start( argc, argv ), "start" );
 
-  {
-    REF_GRID ref_grid;
-    REF_MIGRATE ref_migrate;
+  if ( 1 == ref_mpi_n )
+    {
+      REF_GRID ref_grid;
+      REF_MIGRATE ref_migrate;
+      REF_INT keep, lose;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
-    RSS(ref_migrate_create(&ref_migrate,ref_grid),"set up mig");
+      RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
+      RSS(ref_migrate_create(&ref_migrate,ref_grid),"set up mig");
 
-    RSS( ref_migrate_free( ref_migrate ), "free migrate");
-    RSS( ref_grid_free( ref_grid ), "free gride");
-  }
+      /* fake 2 proc */
+      ref_node_part(ref_grid_node(ref_grid),3) = 1;
+      ref_node_part(ref_grid_node(ref_grid),4) = 1;
+      ref_node_part(ref_grid_node(ref_grid),5) = 1;
+
+      keep = 0; lose = 3; 
+      RSS( ref_migrate_2d_agglomeration_keep( ref_migrate, keep, lose), "0-3");
+
+      REIS( 0,         ref_migrate_global( ref_migrate, 0 ), "mark" );
+      REIS( REF_EMPTY, ref_migrate_global( ref_migrate, 3 ), "mark" );
+
+      RSS( ref_migrate_free( ref_migrate ), "free migrate");
+      RSS( ref_grid_free( ref_grid ), "free gride");
+    }
 
   if ( 1 == argc )
     {
