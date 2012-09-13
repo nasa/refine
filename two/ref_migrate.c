@@ -84,13 +84,15 @@ REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
   RAS( ref_node_valid( ref_node, keep ), "keep node invalid" );
   RAS( ref_node_valid( ref_node, lose ), "lose node invalid" );
 
-  /* skip if keep node is off-proc or already agglomerated */
-  if ( ! ref_migrate_valid( ref_migrate, keep ) ) return REF_SUCCESS;
+  ref_migrate_global(ref_migrate,lose) = REF_EMPTY;
 
   /* skip if the lose node has been agglomerated */
   each_ref_adj_node_item_with_ref( ref_migrate_parent_global( ref_migrate ), 
 				   keep, item, global)
     if ( global == ref_node_global(ref_node,lose) ) return REF_SUCCESS;
+
+  /* skip if keep node is off-proc or already agglomerated */
+  if ( ! ref_migrate_valid( ref_migrate, keep ) ) return REF_SUCCESS;
 
   ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
   ref_migrate_weight(ref_migrate,keep) = 2.0;
@@ -99,7 +101,6 @@ REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
   RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate), 
 		    keep, ref_node_part(ref_node, lose) ),"add");
 
-  ref_migrate_global(ref_migrate,lose) = REF_EMPTY;
  
   return REF_SUCCESS;
 }

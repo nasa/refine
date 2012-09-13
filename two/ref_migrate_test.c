@@ -29,7 +29,7 @@ int main( int argc, char *argv[] )
   RSS( ref_mpi_start( argc, argv ), "start" );
 
   if ( 1 == ref_mpi_n )
-    {
+    { /* keep local, lose ghost */
       REF_GRID ref_grid;
       REF_MIGRATE ref_migrate;
       REF_INT keep, lose;
@@ -37,12 +37,11 @@ int main( int argc, char *argv[] )
       REF_ADJ ref_adj;
 
       RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
-      RSS(ref_migrate_create(&ref_migrate,ref_grid),"set up mig");
-
       /* fake 2 proc */
       ref_node_part(ref_grid_node(ref_grid),3) = 1;
       ref_node_part(ref_grid_node(ref_grid),4) = 1;
       ref_node_part(ref_grid_node(ref_grid),5) = 1;
+      RSS(ref_migrate_create(&ref_migrate,ref_grid),"set up mig");
 
       keep = 0; lose = 3; 
       RSS( ref_migrate_2d_agglomeration_keep( ref_migrate, keep, lose), "0-3");
@@ -56,13 +55,43 @@ int main( int argc, char *argv[] )
 
       ref_adj = ref_migrate_parent_part(ref_migrate);
       update_part = ref_adj_item_ref(ref_adj, ref_adj_first( ref_adj, keep));
-      REIS( 1, update_part, "glob" );
+      REIS( 1, update_part, "part" );
 
       RSS( ref_migrate_free( ref_migrate ), "free migrate");
       RSS( ref_grid_free( ref_grid ), "free gride");
     }
 
-  if ( 1 == argc )
+  if ( 1 == ref_mpi_n )
+    { /* keep ghost, lose local */
+      REF_GRID ref_grid;
+      REF_MIGRATE ref_migrate;
+      REF_INT keep, lose;
+      REF_ADJ ref_adj;
+
+      RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
+      /* fake 2 proc */
+      ref_node_part(ref_grid_node(ref_grid),0) = 1;
+      ref_node_part(ref_grid_node(ref_grid),1) = 1;
+      ref_node_part(ref_grid_node(ref_grid),2) = 1;
+      RSS(ref_migrate_create(&ref_migrate,ref_grid),"set up mig");
+
+      keep = 0; lose = 3; 
+      RSS( ref_migrate_2d_agglomeration_keep( ref_migrate, keep, lose), "0-3");
+
+      REIS( REF_EMPTY, ref_migrate_global( ref_migrate, 0 ), "mark" );
+      REIS( REF_EMPTY, ref_migrate_global( ref_migrate, 3 ), "mark" );
+
+      ref_adj = ref_migrate_parent_global(ref_migrate);
+      RAS( ref_adj_empty( ref_adj, keep ), "glob" );
+
+      ref_adj = ref_migrate_parent_part(ref_migrate);
+      RAS( ref_adj_empty( ref_adj, keep ), "part" );
+
+      RSS( ref_migrate_free( ref_migrate ), "free migrate");
+      RSS( ref_grid_free( ref_grid ), "free gride");
+    }
+
+   if ( 1 == argc )
     {
       REF_GRID import_grid;
       char grid_file[] = "ref_migrate_test.b8.ugrid";
