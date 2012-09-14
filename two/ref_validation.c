@@ -255,11 +255,21 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   REF_DBL min_volume, max_volume;
   REF_BOOL first_volume;
 
+  ref_cell = ref_grid_tet(ref_grid);
+  if (ref_grid_twod(ref_grid) ) ref_cell = ref_grid_tri(ref_grid);
+
   min_volume = 1.0e100; max_volume = -1.0e100;
   first_volume = REF_TRUE;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
-      RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol" );
+      if ( ref_grid_twod(ref_grid) )
+	{
+	  RSS( ref_node_tri_area( ref_node, nodes, &volume ), "area" );
+	}
+      else
+	{
+	  RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol" );
+	}
       RAS ( volume>0.0, "negative volume tet");
       if ( first_volume )
 	{
