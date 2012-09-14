@@ -1,5 +1,6 @@
 - coarsen
 - metric conformity and or ellipse...
+- graph agglom to remove artifacts
 
 + ref_adapt_test half-square/hs01.b8.ugrid twod memory prob
 + scale metric
