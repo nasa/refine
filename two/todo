@@ -1,4 +1,6 @@
-- ref_adapt_test half-square/hs01.b8.ugrid twod memory prob
 - volume validation should be area in twod
-- scale metric
 - coarsen
+- metric conformity and or ellipse...
+
++ ref_adapt_test half-square/hs01.b8.ugrid twod memory prob
++ scale metric
