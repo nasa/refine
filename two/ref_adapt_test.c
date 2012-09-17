@@ -147,11 +147,12 @@ int main( int argc, char *argv[] )
 
 	each_ref_node_valid_node( ref_grid_node(ref_grid), node )
   	  {
-	    ref_node_metric(ref_grid_node(ref_grid),0,node) *= 4.0;
+	    REF_DBL scale = 0.5;
+	    ref_node_metric(ref_grid_node(ref_grid),0,node) /= (scale*scale);
 	    ref_node_metric(ref_grid_node(ref_grid),1,node)  = 0.0;
 	    ref_node_metric(ref_grid_node(ref_grid),3,node)  = 1.0;
 	    ref_node_metric(ref_grid_node(ref_grid),4,node)  = 0.0;
-	    ref_node_metric(ref_grid_node(ref_grid),5,node) *= 4.0;
+	    ref_node_metric(ref_grid_node(ref_grid),5,node) /= (scale*scale);
 	  }
       }
 
