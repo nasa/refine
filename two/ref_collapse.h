@@ -41,6 +41,12 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
 REF_STATUS ref_collapse_face( REF_GRID ref_grid,
 			      REF_INT keep0, REF_INT remove0,
 			      REF_INT keep1, REF_INT remove1);
+
+
+REF_STATUS ref_collapse_edge_local_pris( REF_GRID ref_grid, 
+					 REF_INT node0, REF_INT node1,
+					 REF_BOOL *allowed );
+
 END_C_DECLORATION
 
 #endif /* REF_COLLAPSE_H */

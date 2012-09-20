@@ -345,5 +345,27 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  { /* local prism: collapse allowed? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+
+    node0 = 0; node1 = 1;
+    RSS(ref_collapse_edge_local_pris(ref_grid,node0,node1,&allowed),"col loc");
+    REIS(REF_TRUE,allowed,"local collapse allowed?");
+
+    ref_node_part(ref_grid_node(ref_grid),3) =
+      ref_node_part(ref_grid_node(ref_grid),3) + 1;
+
+    node0 = 0; node1 = 1;
+    RSS(ref_collapse_edge_local_pris(ref_grid,node0,node1,&allowed),"col loc");
+    REIS(REF_FALSE,allowed,"ghost collapse allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
   return 0;
 }
+
