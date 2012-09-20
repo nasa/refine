@@ -384,22 +384,31 @@ int main( void )
 
   { /* face tangent: collapse allowed? */
     REF_GRID ref_grid;
-    REF_INT node, keep, remove;
+    REF_INT node0, node1, keep, remove;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
     REF_BOOL allowed;
 
     RSS(ref_fixture_pri_grid(&ref_grid),"set up");
-    RSS(ref_node_add(ref_grid_node(ref_grid),6,&node),"add node");
-    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 0.0;
-    ref_node_xyz(ref_grid_node(ref_grid),1,node) = 0.0;
-    ref_node_xyz(ref_grid_node(ref_grid),2,node) = 2.0;
+    RSS(ref_node_add(ref_grid_node(ref_grid),6,&node0),"add node");
+    ref_node_xyz(ref_grid_node(ref_grid),0,node0) = 0.0;
+    ref_node_xyz(ref_grid_node(ref_grid),1,node0) = 0.0;
+    ref_node_xyz(ref_grid_node(ref_grid),2,node0) = 2.0;
+    RSS(ref_node_add(ref_grid_node(ref_grid),7,&node1),"add node");
+    ref_node_xyz(ref_grid_node(ref_grid),0,node1) = 0.0;
+    ref_node_xyz(ref_grid_node(ref_grid),1,node1) = 1.0;
+    ref_node_xyz(ref_grid_node(ref_grid),2,node1) = 2.0;
 
-    keep = node; remove = 0;
+    nodes[0] = 6; nodes[1] = 7; nodes[2] = 4; nodes[3] = 1;  nodes[4] = 10;
+    RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),"add qua");
+
+    keep = node0; remove = 1;
     RSS(ref_collapse_face_same_tangent(ref_grid,keep,remove,&allowed),"same");
     REIS(REF_TRUE,allowed,"straight tangent collapse allowed?");
 
-    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 0.5;
+    ref_node_xyz(ref_grid_node(ref_grid),0,node0) = 0.5;
+    ref_node_xyz(ref_grid_node(ref_grid),0,node1) = 0.5;
 
-    keep = node; remove = 0;
+    keep = node0; remove = 0;
     RSS(ref_collapse_face_same_tangent(ref_grid,keep,remove,&allowed),"same");
     REIS(REF_FALSE,allowed,"curved boundary collapse allowed?");
 

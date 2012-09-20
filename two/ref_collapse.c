@@ -562,10 +562,14 @@ REF_STATUS ref_collapse_face_same_tangent( REF_GRID ref_grid,
 					   REF_BOOL *allowed )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell = ref_grid_qua(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell;
-  REF_INT other, node;
+  REF_INT other, node, ixyz;
+  REF_DBL tangent0[3], tangent1[3];
+  REF_DBL dot;
+  REF_STATUS status;
+
   *allowed = REF_TRUE;
 
   each_ref_cell_having_node( ref_cell, remove, item, cell )
@@ -583,7 +587,26 @@ REF_STATUS ref_collapse_face_same_tangent( REF_GRID ref_grid,
 			ref_node_xyz(ref_node,1,remove) ) )
 	  other = nodes[node];
       RAS( REF_EMPTY != other, "other not found" );
-	    
+      for (ixyz=0;ixyz<3;ixyz++)
+	{
+	  tangent0[ixyz] = ref_node_xyz(ref_node,ixyz,remove) -
+                           ref_node_xyz(ref_node,ixyz,other );
+	  tangent1[ixyz] = ref_node_xyz(ref_node,ixyz,keep  ) -
+                           ref_node_xyz(ref_node,ixyz,other );
+	}
+      RSS( ref_math_normalize( tangent0 ), "zero length orig quad" );
+      status = ref_math_normalize( tangent1 );
+      if ( REF_DIV_ZERO == status )
+	{ /* new quad face has zero area */
+	  *allowed = REF_FALSE;
+	  return REF_SUCCESS;	  
+	}
+      dot = ref_math_dot( tangent0, tangent1 );
+      if ( dot < (1.0-1.0e-8) ) /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
+	{
+	  *allowed = REF_FALSE;
+	  return REF_SUCCESS;	  
+	}
     }
 
   return REF_SUCCESS;
