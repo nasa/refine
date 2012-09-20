@@ -561,10 +561,11 @@ REF_STATUS ref_collapse_face_same_tangent( REF_GRID ref_grid,
 					   REF_INT keep, REF_INT remove,
 					   REF_BOOL *allowed )
 {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell;
-
+  REF_INT other, node;
   *allowed = REF_TRUE;
 
   each_ref_cell_having_node( ref_cell, remove, item, cell )
@@ -575,6 +576,14 @@ REF_STATUS ref_collapse_face_same_tangent( REF_GRID ref_grid,
 	   keep == ref_cell_c2n(ref_cell,2,cell) ||
 	   keep == ref_cell_c2n(ref_cell,3,cell) ) continue;
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      other = REF_EMPTY;
+      for ( node=0; node<4 ; node++ )
+	if (nodes[node] != remove && 
+	    0.1 > ABS ( ref_node_xyz(ref_node,1,nodes[node] ) -
+			ref_node_xyz(ref_node,1,remove) ) )
+	  other = nodes[node];
+      RAS( REF_EMPTY != other, "other not found" );
+	    
     }
 
   return REF_SUCCESS;
