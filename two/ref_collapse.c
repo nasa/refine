@@ -465,3 +465,50 @@ REF_STATUS ref_collapse_face_local_pris( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_collapse_face_quality( REF_GRID ref_grid, 
+				      REF_INT keep, REF_INT remove,
+				      REF_BOOL *allowed )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_DBL quality;
+  REF_DBL quality_tolerence = 1.0e-3;
+  REF_BOOL will_be_collapsed;
+  REF_DBL edge_ratio, edge_ratio_limit = 3.0;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node( ref_cell, remove, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+
+      will_be_collapsed = REF_FALSE;
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( keep == nodes[node] ) will_be_collapsed = REF_TRUE;
+      if ( will_be_collapsed ) continue;
+
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( remove != nodes[node] )
+	  {
+	    RSS( ref_node_ratio( ref_node, keep, nodes[node], 
+				 &edge_ratio ), "ratio");
+	    if ( edge_ratio > edge_ratio_limit )
+	      return REF_SUCCESS;
+	  }
+
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( remove == nodes[node] ) nodes[node] = keep;
+      RSS( ref_node_tri_quality( ref_node,nodes,&quality ), "qual");
+      if ( quality < quality_tolerence ) return REF_SUCCESS;
+    }
+
+  /* FIXME check quads too */
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
