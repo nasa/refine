@@ -366,6 +366,22 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  { /* geometry: collapse of interior face */
+    REF_GRID ref_grid;
+    REF_INT keep, remove;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_cell_remove(ref_grid_qua(ref_grid),0),"remove qua" );
+
+    keep = 0; remove = 1;
+    RSS(ref_collapse_face_geometry(ref_grid,keep,remove,&allowed),"col geom");
+
+    REIS(REF_TRUE,allowed,"interior edge allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
   return 0;
 }
 

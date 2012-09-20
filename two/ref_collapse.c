@@ -512,3 +512,48 @@ REF_STATUS ref_collapse_face_quality( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_collapse_face_geometry( REF_GRID ref_grid, 
+				       REF_INT keep, REF_INT remove,
+				       REF_BOOL *allowed )
+{
+  REF_CELL ref_cell = ref_grid_qua(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT deg, degree1;
+  REF_INT id, ids1[2]; 
+  REF_BOOL already_have_it;
+
+  degree1 = 0;
+  each_ref_cell_having_node( ref_cell, remove, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      id = nodes[ref_cell_node_per(ref_cell)];
+      already_have_it = REF_FALSE;
+      for (deg=0;deg<degree1;deg++)
+	if ( id == ids1[deg] ) already_have_it = REF_TRUE;
+      if ( !already_have_it )
+	{
+	  ids1[degree1] = id;
+	  degree1++;
+	  if ( 2 == degree1 ) break;
+	}
+    }
+
+  *allowed = REF_FALSE;
+
+  switch ( degree1 )
+    {
+    case 2: /* geometry node never allowed to move */
+      *allowed = REF_FALSE;
+      break;
+    case 1: /* geometry face allowed if on that face */
+      RSS( ref_cell_has_side( ref_cell, keep, remove, allowed ),
+	   "allowed if a side of a quad" );
+      break;
+    case 0: /* volume node always allowed */
+      *allowed = REF_TRUE;
+      break;
+    }
+
+  return REF_SUCCESS;
+}
+
