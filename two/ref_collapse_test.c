@@ -309,5 +309,41 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  { /* collapse prism, keep qua */
+    REF_GRID ref_grid;
+    REF_INT keep0, remove0;
+    REF_INT keep1, remove1;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    keep0 = 1; remove0 = 2;
+    keep1 = 4; remove1 = 5;
+
+    RSS(ref_collapse_face(ref_grid,keep0,remove0,keep1,remove1),"split");
+
+    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+    REIS(0, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(1, ref_cell_n(ref_grid_qua(ref_grid)),"qua");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* collapse prism and qua */
+    REF_GRID ref_grid;
+    REF_INT keep0, remove0;
+    REF_INT keep1, remove1;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    keep0 = 0; remove0 = 1;
+    keep1 = 3; remove1 = 4;
+
+    RSS(ref_collapse_face(ref_grid,keep0,remove0,keep1,remove1),"split");
+
+    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+    REIS(0, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(0, ref_cell_n(ref_grid_qua(ref_grid)),"qua");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
   return 0;
 }

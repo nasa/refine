@@ -374,3 +374,61 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_collapse_face( REF_GRID ref_grid,
+			      REF_INT keep0, REF_INT remove0,
+			      REF_INT keep1, REF_INT remove1)
+{
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT ncell, cell_in_list;
+  REF_INT cell_to_collapse[MAX_CELL_COLLAPSE];
+
+  ref_cell = ref_grid_pri(ref_grid);
+  RSS( ref_cell_list_with(ref_cell,keep0,remove0,
+			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_collapse[cell_in_list];
+      RSS( ref_cell_remove( ref_cell, cell ), "remove" );
+    }
+  RSS( ref_cell_replace_node( ref_cell, remove0, keep0 ), "replace node0" );
+  RSS( ref_cell_replace_node( ref_cell, remove1, keep1 ), "replace node1" );
+
+  ref_cell = ref_grid_qua(ref_grid);
+  RSS( ref_cell_list_with(ref_cell,keep0,remove0,
+			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_collapse[cell_in_list];
+      RSS( ref_cell_remove( ref_cell, cell ), "remove" );
+    }
+  RSS( ref_cell_replace_node( ref_cell, remove0, keep0 ), "replace node0" );
+  RSS( ref_cell_replace_node( ref_cell, remove1, keep1 ), "replace node1" );
+
+  ref_cell = ref_grid_tri(ref_grid);
+
+  RSS( ref_cell_list_with(ref_cell,keep0,remove0,
+			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_collapse[cell_in_list];
+      RSS( ref_cell_remove( ref_cell, cell ), "remove" );
+    }
+  RSS( ref_cell_replace_node( ref_cell, remove0, keep0 ), "replace node" );
+
+  RSS( ref_cell_list_with(ref_cell,keep1,remove1,
+			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_collapse[cell_in_list];
+      RSS( ref_cell_remove( ref_cell, cell ), "remove" );
+    }
+  RSS( ref_cell_replace_node( ref_cell, remove1, keep1 ), "replace node" );
+
+  RSS( ref_node_remove(ref_grid_node(ref_grid),remove0), "rm");
+  RSS( ref_node_remove(ref_grid_node(ref_grid),remove1), "rm");
+
+  return REF_SUCCESS;
+}
