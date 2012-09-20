@@ -382,6 +382,30 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  { /* face tangent: collapse allowed? */
+    REF_GRID ref_grid;
+    REF_INT node, keep, remove;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_node_add(ref_grid_node(ref_grid),6,&node),"add node");
+    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 0.0;
+    ref_node_xyz(ref_grid_node(ref_grid),1,node) = 0.0;
+    ref_node_xyz(ref_grid_node(ref_grid),2,node) = 2.0;
+
+    keep = node; remove = 0;
+    RSS(ref_collapse_face_same_tangent(ref_grid,keep,remove,&allowed),"same");
+    REIS(REF_TRUE,allowed,"straight tangent collapse allowed?");
+
+    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 0.5;
+
+    keep = node; remove = 0;
+    RSS(ref_collapse_face_same_tangent(ref_grid,keep,remove,&allowed),"same");
+    REIS(REF_FALSE,allowed,"curved boundary collapse allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
   return 0;
 }
 

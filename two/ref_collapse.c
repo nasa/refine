@@ -557,3 +557,25 @@ REF_STATUS ref_collapse_face_geometry( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_collapse_face_same_tangent( REF_GRID ref_grid, 
+					   REF_INT keep, REF_INT remove,
+					   REF_BOOL *allowed )
+{
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, cell;
+
+  *allowed = REF_TRUE;
+
+  each_ref_cell_having_node( ref_cell, remove, item, cell )
+    {
+      /* a quad with keep and remove will be removed */
+      if ( keep == ref_cell_c2n(ref_cell,0,cell) ||
+	   keep == ref_cell_c2n(ref_cell,1,cell) ||
+	   keep == ref_cell_c2n(ref_cell,2,cell) ||
+	   keep == ref_cell_c2n(ref_cell,3,cell) ) continue;
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+    }
+
+  return REF_SUCCESS;
+}

@@ -55,6 +55,10 @@ REF_STATUS ref_collapse_face_geometry( REF_GRID ref_grid,
 				       REF_INT keep, REF_INT remove,
 				       REF_BOOL *allowed );
 
+REF_STATUS ref_collapse_face_same_tangent( REF_GRID ref_grid, 
+					   REF_INT keep, REF_INT remove,
+					   REF_BOOL *allowed );
+
 END_C_DECLORATION
 
 #endif /* REF_COLLAPSE_H */
