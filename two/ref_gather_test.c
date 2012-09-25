@@ -49,12 +49,12 @@ int main( int argc, char *argv[] )
 
       RSS( ref_fixture_pri_grid( &ref_grid ), "set up tet" );
 
-      RSS( ref_gather_plot( ref_grid, "ref_gather_script.ps" ), 
+      RSS( ref_gather_plot( ref_grid, "ref_gather_script.eps" ), 
 	   "gather");
 
       RSS( ref_grid_free( ref_grid ), "free");
       if ( ref_mpi_master ) 
-	REIS(0, remove( "ref_gather_script.ps" ), "test clean up");
+	REIS(0, remove( "ref_gather_script.eps" ), "test clean up");
     }
 
   if ( 1 < argc )

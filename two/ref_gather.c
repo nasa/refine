@@ -57,8 +57,9 @@ REF_STATUS ref_gather_plot( REF_GRID ref_grid, char *filename  )
       fprintf(file, "      NaN\n");
       fprintf(file, "    ];\n");
       fprintf(file, "end\n");
-      fprintf(file, "plot(x,z)\n");
-      fprintf(file, "print(filename,'-dps')\n");
+      fprintf(file, "axis('square');\n");
+      fprintf(file, "plot(x,z);\n");
+      fprintf(file, "print(filename,'-deps');\n");
       fprintf(file, "\n");
       fclose(file);
 
