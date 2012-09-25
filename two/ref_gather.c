@@ -9,6 +9,66 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
+REF_STATUS ref_gather_plot( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+
+  RSS( ref_node_synchronize_globals( ref_node ), "sync" );
+
+  file = NULL;
+  if ( ref_mpi_master )
+    {
+      file = fopen("ref_gather_script.m","w");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+
+      fprintf(file, "filename='%s';\n",filename);
+      fprintf(file, "nodes=[\n");
+    }
+
+  RSS( ref_gather_node_tec_part( ref_node, file ), "nodes");
+
+  if ( ref_mpi_master )
+    {
+      fprintf(file, "];\n");
+      fprintf(file, "elements=[\n");
+    }
+
+  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), file ), "nodes");
+
+  if ( ref_mpi_master )
+    {
+      fprintf(file, "];\n");
+      fprintf(file, "x=[];z=[];\n");
+      fprintf(file, "for elem=1:size(elements,1)\n");
+      fprintf(file, "  x=[ x\n");
+      fprintf(file, "      nodes(elements(elem,1),1)\n");
+      fprintf(file, "      nodes(elements(elem,2),1)\n");
+      fprintf(file, "      nodes(elements(elem,3),1)\n");
+      fprintf(file, "      nodes(elements(elem,1),1)\n");
+      fprintf(file, "      NaN\n");
+      fprintf(file, "    ];\n");
+      fprintf(file, "  z=[ z\n");
+      fprintf(file, "      nodes(elements(elem,1),3)\n");
+      fprintf(file, "      nodes(elements(elem,2),3)\n");
+      fprintf(file, "      nodes(elements(elem,3),3)\n");
+      fprintf(file, "      nodes(elements(elem,1),3)\n");
+      fprintf(file, "      NaN\n");
+      fprintf(file, "    ];\n");
+      fprintf(file, "end\n");
+      fprintf(file, "plot(x,z)\n");
+      fprintf(file, "print(filename,'-dps')\n");
+      fprintf(file, "\n");
+      fclose(file);
+
+      system("octave -q ref_gather_script.m && rm ref_gather_script.m");
+
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;

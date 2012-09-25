@@ -10,6 +10,8 @@
 
 BEGIN_C_DECLORATION
 
+REF_STATUS ref_gather_plot( REF_GRID ref_grid, char *filename );
+
 REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename );
 
 REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename );
