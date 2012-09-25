@@ -23,6 +23,7 @@ REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 REF_STATUS ref_adapt_twod_pass( REF_GRID ref_grid )
 {
 
+  RSS( ref_collapse_twod_pass( ref_grid ), "col pass");
   RSS( ref_split_twod_pass( ref_grid ), "split pass");
 
   return REF_SUCCESS;
