@@ -43,6 +43,20 @@ int main( int argc, char *argv[] )
 	REIS(0, remove( "ref_gather_test.b8.ugrid" ), "test clean up");
     }
 
+  if ( 0 == argc ) /* off, octave is not quiet */
+    {
+      REF_GRID ref_grid;
+
+      RSS( ref_fixture_pri_grid( &ref_grid ), "set up tet" );
+
+      RSS( ref_gather_plot( ref_grid, "ref_gather_script.ps" ), 
+	   "gather");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+      if ( ref_mpi_master ) 
+	REIS(0, remove( "ref_gather_script.ps" ), "test clean up");
+    }
+
   if ( 1 < argc )
     {
       REF_GRID import_grid;
