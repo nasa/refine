@@ -543,9 +543,9 @@ REF_STATUS ref_collapse_face_outward_norm( REF_GRID ref_grid,
       RSS( ref_node_tri_normal( ref_node,nodes,normal ), "norm");
 
       if ( ( ref_node_xyz(ref_node,1,nodes[0]) > 0.5 &&
-	     normal[1] <= 0.0 ) ||
+	     normal[1] >= 0.0 ) ||
 	   ( ref_node_xyz(ref_node,1,nodes[0]) < 0.5 &&
-	     normal[1] >= 0.0 ) ) return REF_SUCCESS;
+	     normal[1] <= 0.0 ) ) return REF_SUCCESS;
     }
 
   *allowed = REF_TRUE;
