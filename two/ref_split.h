@@ -46,6 +46,10 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
 					REF_INT new_node,
 					REF_BOOL *allowed );
 
+REF_STATUS ref_split_active_twod( REF_NODE ref_node, 
+				  REF_INT node0, REF_INT node1, 
+				  REF_BOOL *active );
+
 END_C_DECLORATION
 
 #endif /* REF_SPLIT_H */

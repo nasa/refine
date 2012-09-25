@@ -244,9 +244,9 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_split_active_twod( REF_NODE ref_node, 
-					 REF_INT node0, REF_INT node1, 
-					 REF_BOOL *active )
+REF_STATUS ref_split_active_twod( REF_NODE ref_node, 
+				  REF_INT node0, REF_INT node1, 
+				  REF_BOOL *active )
 {
   REF_DBL mid_plane = 0.5;
 
