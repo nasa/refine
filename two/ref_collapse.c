@@ -71,7 +71,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 	  each_ref_cell_having_node( ref_cell, node1, item, cell )
 	    {
 	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
-	      for (node=0;node<4;node++)
+	      for (node=0;node<ref_cell_node_per(ref_cell);node++)
 		if ( REF_EMPTY != node2target[nodes[node]] )
 		  ratio[node2target[nodes[node]]] = 1.0;
 	    }
@@ -581,7 +581,7 @@ REF_STATUS ref_collapse_face_same_tangent( REF_GRID ref_grid,
 	   keep == ref_cell_c2n(ref_cell,3,cell) ) continue;
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
       other = REF_EMPTY;
-      for ( node=0; node<4 ; node++ )
+      for ( node=0; node<ref_cell_node_per(ref_cell) ; node++ )
 	if (nodes[node] != remove && 
 	    0.1 > ABS ( ref_node_xyz(ref_node,1,nodes[node] ) -
 			ref_node_xyz(ref_node,1,remove) ) )
