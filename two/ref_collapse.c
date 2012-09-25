@@ -11,6 +11,8 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
+#include "ref_split.h"
+
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
 
@@ -611,3 +613,135 @@ REF_STATUS ref_collapse_face_same_tangent( REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_EDGE ref_edge;
+  REF_DBL *ratio;
+  REF_INT *order;
+  REF_INT ntarget, *target, *node2target;
+  REF_INT node, node0, node1;
+  REF_INT i, edge;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL edge_ratio;
+  REF_DBL ratio_limit;
+  REF_BOOL active;
+
+  ratio_limit = 0.5 * sqrt(2.0);
+
+  RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
+
+  ref_malloc_init( ratio, ref_node_max(ref_node), REF_DBL, 2.0*ratio_limit );
+
+  for(edge=0;edge<ref_edge_n(ref_edge);edge++)
+    {
+      node0 = ref_edge_e2n( ref_edge, 0, edge );
+      node1 = ref_edge_e2n( ref_edge, 1, edge );
+      RSS( ref_split_active_twod( ref_node, node0, node1, 
+				  &active ), "act" );
+      if ( !active ) continue;
+
+      RSS( ref_node_ratio( ref_node, node0, node1,
+			   &edge_ratio ), "ratio");
+      ratio[node0] = MIN( ratio[node0], edge_ratio );
+      ratio[node1] = MIN( ratio[node1], edge_ratio );
+    }
+
+  ref_malloc( target, ref_node_n(ref_node), REF_INT );
+  ref_malloc_init( node2target, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+
+  ntarget=0;
+  for ( node=0 ; node < ref_node_max(ref_node) ; node++ )
+    if ( ratio[node] < ratio_limit )
+      {
+	node2target[node] = ntarget;
+	target[ntarget] = node;
+	ratio[ntarget] = ratio[node];
+	ntarget++;
+      }
+
+  ref_malloc( order, ntarget, REF_INT );
+
+  RSS( ref_sort_heap_dbl( ntarget, ratio, order), "sort lengths" );
+
+  for ( i = 0; i < ntarget; i++ )
+    {
+      if ( ratio[order[i]] > ratio_limit ) continue; 
+      node1 = target[order[i]];
+      RSS( ref_collapse_face_remove_node1( ref_grid, &node0, node1 ), 
+	   "collapse rm" );
+      if ( !ref_node_valid(ref_node,node1) )
+	{
+	  each_ref_cell_having_node( ref_cell, node1, item, cell )
+	    {
+	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
+	      for (node=0;node<ref_cell_node_per(ref_cell);node++)
+		if ( REF_EMPTY != node2target[nodes[node]] )
+		  ratio[node2target[nodes[node]]] = 1.0;
+	    }
+	}
+    }
+  
+  ref_free( order );
+  ref_free( node2target );
+  ref_free( target );
+  ref_free( ratio );
+
+  ref_edge_free( ref_edge );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_collapse_face_remove_node1( REF_GRID ref_grid, 
+					   REF_INT *actual_node0, 
+					   REF_INT node1 )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT nnode, node;
+  REF_INT node_to_collapse[MAX_NODE_LIST];
+  REF_INT order[MAX_NODE_LIST];
+  REF_DBL ratio_to_collapse[MAX_NODE_LIST];
+  REF_INT node0, node2, node3;
+  REF_BOOL allowed;
+
+  *actual_node0 = REF_EMPTY;
+
+  RSS( ref_cell_node_list_around( ref_cell, node1, MAX_NODE_LIST,
+				  &nnode, node_to_collapse ), "da hood");
+  for ( node=0 ; node < nnode ; node++ )
+    RSS( ref_node_ratio( ref_node, node_to_collapse[node], node1, 
+			 &(ratio_to_collapse[node]) ), "ratio");
+
+  RSS( ref_sort_heap_dbl( nnode, ratio_to_collapse, order), "sort lengths" );
+
+  for ( node=0 ; node < nnode ; node++ )
+    {
+      node0 = node_to_collapse[order[node]];
+  
+      RSS(ref_collapse_face_local_pris(ref_grid,node0,node1,&allowed),"colloc");
+      if ( !allowed ) continue;
+
+      RSS(ref_collapse_face_geometry(ref_grid,node0,node1,&allowed),"col geom");
+      if ( !allowed ) continue;
+
+      RSS(ref_collapse_face_same_tangent(ref_grid,node0,node1,&allowed),"norm");
+      if ( !allowed ) continue;
+
+      RSS(ref_collapse_face_quality(ref_grid,node0,node1,&allowed),"qual");
+      if ( !allowed ) continue;
+
+      *actual_node0 = node0;
+      RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
+
+      RSS( ref_collapse_face( ref_grid, node0, node1, node2, node3 ), "col!");
+
+      break;
+
+    }
+
+  return REF_SUCCESS;
+}
+

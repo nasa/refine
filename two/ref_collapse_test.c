@@ -14,6 +14,8 @@
 #include "ref_matrix.h"
 #include "ref_math.h"
 
+#include "ref_split.h"
+
 #include "ref_mpi.h"
 
 #include "ref_collapse.h"
@@ -411,6 +413,63 @@ int main( void )
     keep = node0; remove = 0;
     RSS(ref_collapse_face_same_tangent(ref_grid,keep,remove,&allowed),"same");
     REIS(REF_FALSE,allowed,"curved boundary collapse allowed?");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* no collapse, close enough, twod */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+
+    ref_node = ref_grid_node(ref_grid);
+    each_ref_node_valid_node( ref_node, node )
+      {
+	ref_node_metric(ref_node,0,node) = 1.0;
+	ref_node_metric(ref_node,1,node) = 0.0;
+	ref_node_metric(ref_node,2,node) = 0.0;
+	ref_node_metric(ref_node,3,node) = 1.0;
+	ref_node_metric(ref_node,4,node) = 0.0;
+	ref_node_metric(ref_node,5,node) = 1.0;
+      }
+
+    RSS(ref_collapse_twod_pass(ref_grid),"pass");
+
+    REIS( 6, ref_node_n(ref_node), "nodes");
+    REIS( 1, ref_cell_n(ref_grid_pri(ref_grid)), "tets");
+    REIS( 2, ref_cell_n(ref_grid_tri(ref_grid)), "tets");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* top big, twod */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+
+    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+
+    ref_node = ref_grid_node(ref_grid);
+    each_ref_node_valid_node( ref_node, node )
+      {
+	ref_node_metric(ref_node,0,node) = 1.0;
+	ref_node_metric(ref_node,1,node) = 0.0;
+	ref_node_metric(ref_node,2,node) = 0.0;
+	ref_node_metric(ref_node,3,node) = 1.0;
+	ref_node_metric(ref_node,4,node) = 0.0;
+	ref_node_metric(ref_node,5,node) = 1.0;
+      }
+
+    ref_node_metric(ref_node,5,1) = 1/(10.0*10.0);
+    ref_node_metric(ref_node,5,4) = 1/(10.0*10.0);
+
+    RSS(ref_collapse_twod_pass(ref_grid),"pass");
+
+    REIS( 4, ref_node_n(ref_node), "nodes");
+    REIS( 0, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
+    REIS( 0, ref_cell_n(ref_grid_pri(ref_grid)), "pri");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
