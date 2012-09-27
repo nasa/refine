@@ -724,13 +724,13 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
 	      nodes[0]=n0+nnode;
 	      nodes[1]=n1+nnode;
 	      nodes[2]=n2+nnode;
-	      nodes[3]=100;
+	      nodes[3]=1;
 	      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
 		   "tri face for tri");
 	      nodes[0]=n0;
 	      nodes[1]=n2;
 	      nodes[2]=n1;
-	      nodes[3]=101;
+	      nodes[3]=2;
 	      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
 		   "tri face for tri");
 	      nodes[0]=n0+nnode;
