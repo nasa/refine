@@ -110,15 +110,10 @@ char *ErrMgr_GetErrStr(void);
 
 GridBool UGMgr_LoadLibs( void );
 GridBool CADGeom_Start( void );
-#ifdef HAVE_CAPRI2
 GridBool GeoMesh_LoadModel( char *url, char *modeler, char *project, int *mdl );
 GridBool CADGeom_LoadModel( char *url, char *modeler, char *project, int *mdl );
-#else
-GridBool GeoMesh_LoadPart( char *project );
-GridBool CADGeom_LoadPart( char *project );
-#endif
 
-GridBool CADGeom_SavePart(int vol, char *project);
+GridBool CADGeom_SaveModel(int model, char *project);
 
 extern GridBool CADGeom_SetVolumeGrid( int, UGridPtr );
 

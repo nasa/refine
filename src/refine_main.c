@@ -124,7 +124,6 @@ int main( int argc, char *argv[] )
       printf("-t argument %d\n",i);
    } else if( strcmp(argv[i],"-h") == 0 ) {
       printf("Usage: flag value pairs:\n");
-#ifdef HAVE_CAPRI2
       printf(" -felisa input FELISA project name\n");
       printf(" -open input OpenCASCADE project name\n");
       printf(" -proe input Pro/E project name\n");
@@ -132,9 +131,6 @@ int main( int argc, char *argv[] )
       printf(" -catia input Catia V5 project name\n");
       printf(" -ug input Unigraphics project name\n");
       printf(" -sw input SolidWorks project name\n");
-#else
-      printf(" -p input project name\n");
-#endif
       printf(" -o output project name\n");
       printf(" -a party project_adapt_hess file name\n");
       printf(" -r initial edge length ratio for adapt\n");

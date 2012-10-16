@@ -47,16 +47,13 @@ int main( int argc, char *argv[] )
 
   int *l2g, volumeEdgeNode, patchEdgeNode;
 
+  int model;
   int vol;
   vol=1;
 
   i = 1;
   while( i < argc ) {
-    if( strcmp(argv[i],"-p") == 0 ) {
-      i++; sprintf( project, "%s", argv[i] );
-      printf("-p argument %d: %s\n",i, project);
-      sprintf( modeler, "FELISA" );
-    } else if( strcmp(argv[i],"-felisa") == 0 ) {
+    if( strcmp(argv[i],"-felisa") == 0 ) {
       i++; sprintf( project, "%s", argv[i] );
       printf("-felisa argument %d: %s\n",i, project);
       sprintf( modeler, "FELISA" );
@@ -98,12 +95,8 @@ int main( int argc, char *argv[] )
   }  
 
   printf("calling CADGeom_Load for project <%s> ... \n",project);
-#ifdef HAVE_CAPRI2
-  if ( ! CADGeom_LoadPart( modeler, project ) ){
-#else
-  if ( ! CADGeom_LoadPart( project ) ){
-#endif
-    printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
+  if ( ! CADGeom_LoadModel( NULL, modeler, project, &model ) ){
+    printf("ERROR: CADGeom_LoadModel broke.\n%s\n",ErrMgr_GetErrStr());
     return 1;
   }
 

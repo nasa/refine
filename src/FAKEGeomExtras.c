@@ -141,23 +141,21 @@ GridBool CADGeom_Start( void )
   return FALSE;
 }
 
-#ifdef HAVE_CAPRI2
 GridBool GeoMesh_LoadModel( char *url, char *modeler, char *project, int *mod )
-#else
-GridBool GeoMesh_LoadPart( char *project )
-#endif
 {
+  SUPRESS_UNUSED_COMPILER_WARNING(url);
+  SUPRESS_UNUSED_COMPILER_WARNING(modeler);
   SUPRESS_UNUSED_COMPILER_WARNING(project);
+  SUPRESS_UNUSED_COMPILER_WARNING(mod);
   return FALSE;
 }
 
-#ifdef HAVE_CAPRI2
 GridBool CADGeom_LoadModel( char *url, char *modeler, char *project, int *mod )
-#else
-GridBool CADGeom_LoadPart( char *project )
-#endif
 {
+  SUPRESS_UNUSED_COMPILER_WARNING(url);
+  SUPRESS_UNUSED_COMPILER_WARNING(modeler);
   SUPRESS_UNUSED_COMPILER_WARNING(project);
+  SUPRESS_UNUSED_COMPILER_WARNING(mod);
   return FALSE;
 }
 
@@ -169,9 +167,9 @@ void CADGeom_UseDefaultIOCallbacks( void )
 {
 }
 
-GridBool CADGeom_SavePart( int vol, char *project )
+GridBool CADGeom_SaveModel( int model, char *project )
 {
-  SUPRESS_UNUSED_COMPILER_WARNING(vol);
+  SUPRESS_UNUSED_COMPILER_WARNING(model);
   SUPRESS_UNUSED_COMPILER_WARNING(project);
   return FALSE;
 }

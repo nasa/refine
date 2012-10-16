@@ -77,8 +77,6 @@ all_ldflags = @dynamicFlag@
 
 LastLib = @Xlibrary@ -lX11 -lm @ARCHlibrary@
 
-if BUILD_CAPRI2
-
 bin_PROGRAMS += refine
 refine_CFLAGS = $(all_cflags)
 refine_SOURCES = refine_main.c
@@ -92,61 +90,6 @@ restartTest_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
 	 @CAPRIlibrary@ $(LastLib)
 restartTest_LDFLAGS = $(all_ldflags)
 
-endif # BUILD_CAPRI2
-
-if BUILD_NATIVE_KERNEL
-
-bin_PROGRAMS += refineNative
-refineNative_CFLAGS = $(all_cflags)
-refineNative_SOURCES = refine_main.c
-refineNative_LDADD = $(refineLib) @CAPRINativelibrary@ $(LastLib)
-refineNative_LDFLAGS = $(all_ldflags)
-
-bin_PROGRAMS += restartTestNative
-restartTestNative_CFLAGS = $(all_cflags)
-restartTestNative_SOURCES = restartTest.c
-restartTestNative_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
-	@CAPRINativelibrary@ $(LastLib)
-restartTestNative_LDFLAGS = $(all_ldflags)
-
-if BUILD_PROE_KERNEL
-
-bin_PROGRAMS += librefine-Linux.Pro.dll
-librefine_Linux_Pro_dll_CFLAGS = $(all_cflags) -DPROE_MAIN
-librefine_Linux_Pro_dll_SOURCES = refine_main.c
-librefine_Linux_Pro_dll_LDADD = $(refineLib) @CAPRIProElibrary@ $(LastLib)
-librefine_Linux_Pro_dll_LDFLAGS = $(all_ldflags) -shared
-
-endif # BUILD_PROE_KERNEL
-
-if BUILD_PARASOLID_KERNEL
-bin_PROGRAMS += refineParasolid
-refineParasolid_CFLAGS = $(all_cflags)
-refineParasolid_SOURCES = refine_main.c
-refineParasolid_LDADD = $(refineLib) @CAPRIParasolidlibrary@ $(LastLib)
-refineParasolid_LDFLAGS = $(all_ldflags)
-
-bin_PROGRAMS += restartTestParasolid
-restartTestParasolid_CFLAGS = $(all_cflags)
-restartTestParasolid_SOURCES = restartTest.c
-restartTestParasolid_LDADD = @SDKlibrary@ -lCADGeom-CAPRI -lMeat \
-	@CAPRIParasolidlibrary@ $(LastLib)
-restartTestParasolid_LDFLAGS = $(all_ldflags)
-
-endif # BUILD_PARASOLID_KERNEL
-
-if BUILD_OPENCASCADE_KERNEL
-bin_PROGRAMS += refineOpenCASCADE
-refineOpenCASCADE_CFLAGS = $(all_cflags)
-refineOpenCASCADE_SOURCES = refine_main.c
-refineOpenCASCADE_LDADD = $(refineLib) @CAPRIOpenCASCADElibrary@ $(LastLib)
-refineOpenCASCADE_LDFLAGS = $(all_ldflags)
-
-endif # BUILD_OPENCASCADE_KERNEL
-
-endif # BUILD_NATIVE_KERNEL
-
 endif # BUILD_SDK_DEPENDENTS
 
 endif # BUILD_EXECUTABLES
-

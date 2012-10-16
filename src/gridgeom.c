@@ -23,7 +23,7 @@
 
 #define UG_REFINE (6) /* Lifted from SDK/UG_API/UG_API.h to remove dependency */
 
-Grid *gridGeomStartOnly( Grid *grid, char *project )
+Grid *gridGeomStartOnly( Grid *grid, char *url, char *modeler, char *project )
 {
 
   if ( ! CADGeom_Start( ) ){
@@ -31,12 +31,8 @@ Grid *gridGeomStartOnly( Grid *grid, char *project )
     return NULL;
   }  
 
-#ifdef HAVE_CAPRI2
   if ( ! CADGeom_LoadModel( url, modeler, project, &(grid->model) ) ){
-#else
-  if ( ! CADGeom_LoadPart( project ) ){
-#endif
-    printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
+    printf("ERROR: CADGeom_LoadModel broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }
 
@@ -66,14 +62,8 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
     return NULL;
   }  
 
-#ifdef HAVE_CAPRI2
   if ( ! CADGeom_LoadModel( url, modeler, project, &(grid->model) ) ){
-#else
-  SUPRESS_UNUSED_COMPILER_WARNING(url);
-  SUPRESS_UNUSED_COMPILER_WARNING(modeler);
-  if ( ! CADGeom_LoadPart( project ) ){
-#endif
-    printf("ERROR: CADGeom_LoadPart broke.\n%s\n",ErrMgr_GetErrStr());
+    printf("ERROR: CADGeom_LoadModel broke.\n%s\n",ErrMgr_GetErrStr());
     return NULL;
   }
 
@@ -164,15 +154,9 @@ Grid *gridParallelGeomSave( Grid *grid, char *project )
   int vol=1;
 
   CADGeom_UseDefaultIOCallbacks();
-#ifdef HAVE_CAPRI2
   if( !CADGeom_SaveModel(grid->model,project) ) {
     printf("%s: %d: Could not save CAPRI model.\n",
 	   __FILE__, __LINE__);    
-#else
-  if( !CADGeom_SavePart(vol,project) ) {
-    printf("%s: %d: Could not save CAPRI part.\n",
-	   __FILE__, __LINE__);    
-#endif
     return NULL;
   }
 
