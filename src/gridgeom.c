@@ -151,7 +151,6 @@ Grid *gridParallelGeomLoad( Grid *grid, char *url, char *modeler,
 
 Grid *gridParallelGeomSave( Grid *grid, char *project )
 {
-  int vol=1;
 
   CADGeom_UseDefaultIOCallbacks();
   if( !CADGeom_SaveModel(grid->model,project) ) {
