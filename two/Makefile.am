@@ -18,6 +18,7 @@ libref2_a_SOURCES = \
 	ref_fortran.c ref_fortran.h \
 	ref_gather.c ref_gather.h \
 	ref_grid.c ref_grid.h \
+	ref_histogram.c ref_histogram.h \
 	ref_import.c ref_import.h \
 	ref_list.h ref_list.c \
 	ref_malloc.h \
@@ -140,6 +141,11 @@ TESTS += ref_grid_test
 noinst_PROGRAMS += ref_grid_test
 ref_grid_test_SOURCES = ref_grid_test.c
 ref_grid_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
+TESTS += ref_histogram_test
+noinst_PROGRAMS += ref_histogram_test
+ref_histogram_test_SOURCES = ref_histogram_test.c
+ref_histogram_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_import_test
 noinst_PROGRAMS += ref_import_test
