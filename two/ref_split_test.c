@@ -12,10 +12,13 @@
 #include "ref_sort.h"
 #include "ref_dict.h"
 #include "ref_matrix.h"
+#include "ref_math.h"
 
 #include "ref_mpi.h"
 
 #include "ref_split.h"
+#include "ref_adapt.h"
+#include "ref_collapse.h"
 
 #include "ref_fixture.h"
 #include "ref_export.h"

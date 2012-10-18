@@ -19,6 +19,7 @@
 #include "ref_mpi.h"
 
 #include "ref_collapse.h"
+#include "ref_adapt.h"
 
 #include "ref_fixture.h"
 #include "ref_export.h"

@@ -8,6 +8,13 @@
 
 BEGIN_C_DECLORATION
 
+extern REF_DBL ref_adapt_split_ratio;
+extern REF_DBL ref_adapt_split_quality;
+
+extern REF_DBL ref_adapt_collapse_ratio;
+extern REF_DBL ref_adapt_collapse_quality;
+extern REF_DBL ref_adapt_collapse_ratio_limit;
+
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid );
 REF_STATUS ref_adapt_twod_pass( REF_GRID ref_grid );
 

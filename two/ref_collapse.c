@@ -13,6 +13,8 @@
 
 #include "ref_split.h"
 
+#include "ref_adapt.h"
+
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
 
@@ -28,13 +30,11 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
   REF_INT i, edge;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL edge_ratio;
-  REF_DBL ratio_limit;
-
-  ratio_limit = 0.5 * sqrt(2.0);
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
-  ref_malloc_init( ratio, ref_node_max(ref_node), REF_DBL, 2.0*ratio_limit );
+  ref_malloc_init( ratio, ref_node_max(ref_node), 
+		   REF_DBL, 2.0*ref_adapt_collapse_ratio );
 
   for(edge=0;edge<ref_edge_n(ref_edge);edge++)
     {
@@ -50,7 +50,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 
   ntarget=0;
   for ( node=0 ; node < ref_node_max(ref_node) ; node++ )
-    if ( ratio[node] < ratio_limit )
+    if ( ratio[node] < ref_adapt_collapse_ratio )
       {
 	node2target[node] = ntarget;
 	target[ntarget] = node;
@@ -64,7 +64,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 
   for ( i = 0; i < ntarget; i++ )
     {
-      if ( ratio[order[i]] > ratio_limit ) continue; 
+      if ( ratio[order[i]] > ref_adapt_collapse_ratio ) continue; 
       node1 = target[order[i]];
       RSS( ref_collapse_to_remove_node1( ref_grid, &node0, node1 ), 
 	   "collapse rm" );
@@ -75,7 +75,8 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
 	      for (node=0;node<ref_cell_node_per(ref_cell);node++)
 		if ( REF_EMPTY != node2target[nodes[node]] )
-		  ratio[node2target[nodes[node]]] = 1.0;
+		  ratio[node2target[nodes[node]]] = 
+		    2.0*ref_adapt_collapse_ratio;
 	    }
 	}
     }
@@ -338,9 +339,8 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_DBL quality;
-  REF_DBL quality_tolerence = 1.0e-3;
   REF_BOOL will_be_collapsed;
-  REF_DBL edge_ratio, edge_ratio_limit = 3.0;
+  REF_DBL edge_ratio;
 
   *allowed = REF_FALSE;
 
@@ -359,14 +359,14 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
 	  {
 	    RSS( ref_node_ratio( ref_node, node0, nodes[node], 
 				 &edge_ratio ), "ratio");
-	    if ( edge_ratio > edge_ratio_limit )
+	    if ( edge_ratio > ref_adapt_collapse_ratio_limit )
 	      return REF_SUCCESS;
 	  }
 
       for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
 	if ( node1 == nodes[node] ) nodes[node] = node0;
       RSS( ref_node_tet_quality( ref_node,nodes,&quality ), "qual");
-      if ( quality < quality_tolerence ) return REF_SUCCESS;
+      if ( quality < ref_adapt_collapse_quality ) return REF_SUCCESS;
     }
 
   /* FIXME check tris too */
@@ -476,9 +476,8 @@ REF_STATUS ref_collapse_face_quality( REF_GRID ref_grid,
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_DBL quality;
-  REF_DBL quality_tolerence = 1.0e-3;
   REF_BOOL will_be_collapsed;
-  REF_DBL edge_ratio, edge_ratio_limit = 3.0;
+  REF_DBL edge_ratio;
 
   *allowed = REF_FALSE;
 
@@ -497,14 +496,14 @@ REF_STATUS ref_collapse_face_quality( REF_GRID ref_grid,
 	  {
 	    RSS( ref_node_ratio( ref_node, keep, nodes[node], 
 				 &edge_ratio ), "ratio");
-	    if ( edge_ratio > edge_ratio_limit )
+	    if ( edge_ratio > ref_adapt_collapse_ratio_limit )
 	      return REF_SUCCESS;
 	  }
 
       for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
 	if ( remove == nodes[node] ) nodes[node] = keep;
       RSS( ref_node_tri_quality( ref_node,nodes,&quality ), "qual");
-      if ( quality < quality_tolerence ) return REF_SUCCESS;
+      if ( quality < ref_adapt_collapse_quality ) return REF_SUCCESS;
     }
 
   /* FIXME check quads too */
@@ -665,14 +664,12 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
   REF_INT i, edge;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL edge_ratio;
-  REF_DBL ratio_limit;
   REF_BOOL active;
-
-  ratio_limit = 0.5 * sqrt(2.0);
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
-  ref_malloc_init( ratio, ref_node_max(ref_node), REF_DBL, 2.0*ratio_limit );
+  ref_malloc_init( ratio, ref_node_max(ref_node), 
+		   REF_DBL, 2.0*ref_adapt_collapse_ratio );
 
   for(edge=0;edge<ref_edge_n(ref_edge);edge++)
     {
@@ -693,7 +690,7 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
 
   ntarget=0;
   for ( node=0 ; node < ref_node_max(ref_node) ; node++ )
-    if ( ratio[node] < ratio_limit )
+    if ( ratio[node] < ref_adapt_collapse_ratio )
       {
 	node2target[node] = ntarget;
 	target[ntarget] = node;
@@ -707,7 +704,7 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
 
   for ( i = 0; i < ntarget; i++ )
     {
-      if ( ratio[order[i]] > ratio_limit ) continue; 
+      if ( ratio[order[i]] > ref_adapt_collapse_ratio ) continue; 
       node1 = target[order[i]];
       RSS( ref_collapse_face_remove_node1( ref_grid, &node0, node1 ), 
 	   "collapse rm" );
@@ -718,7 +715,8 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
 	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
 	      for (node=0;node<ref_cell_node_per(ref_cell);node++)
 		if ( REF_EMPTY != node2target[nodes[node]] )
-		  ratio[node2target[nodes[node]]] = 1.0;
+		  ratio[node2target[nodes[node]]] = 
+		    2.0*ref_adapt_collapse_ratio;
 	    }
 	}
     }

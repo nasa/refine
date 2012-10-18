@@ -10,6 +10,8 @@
 #include "ref_sort.h"
 #include "ref_malloc.h"
 
+#include "ref_adapt.h"
+
 #define MAX_CELL_SPLIT (100)
 
 REF_STATUS ref_split_pass( REF_GRID ref_grid )
@@ -19,7 +21,6 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT i, n, edge;
-  REF_DBL ratio_limit;
   REF_BOOL allowed;
   REF_INT global, new_node;
 
@@ -29,8 +30,6 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   ref_malloc( order, ref_edge_n(ref_edge), REF_INT );
   ref_malloc( edges, ref_edge_n(ref_edge), REF_INT );
   
-  ratio_limit = sqrt(2.0);
-
   n=0;
   for(edge=0;edge<ref_edge_n(ref_edge);edge++)
     {
@@ -38,7 +37,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 			   ref_edge_e2n( ref_edge, 0, edge ),
 			   ref_edge_e2n( ref_edge, 1, edge ),
 			   &(ratio[n]) ), "ratio");
-      if ( ratio[n] > ratio_limit)
+      if ( ratio[n] > ref_adapt_split_ratio )
 	{
 	  edges[n] = edge;
 	  n++;
@@ -208,7 +207,6 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
   REF_INT cell_to_split[MAX_CELL_SPLIT];
   REF_INT node;
   REF_DBL quality, quality0, quality1;
-  REF_DBL quality_tolerence = 1.0e-3;
 
   *allowed = REF_FALSE;
 
@@ -233,8 +231,8 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
 	if ( node1 == nodes[node] ) nodes[node] = new_node;
       RSS( ref_node_tet_quality( ref_node,nodes,&quality1 ), "q1");
 
-      if ( quality0 < quality_tolerence ||
-	   quality1 < quality_tolerence ) return REF_SUCCESS;
+      if ( quality0 < ref_adapt_split_quality ||
+	   quality1 < ref_adapt_split_quality ) return REF_SUCCESS;
     }
 
   /* FIXME check tris too */
@@ -263,7 +261,6 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT edge, n, i;
-  REF_DBL ratio_limit;
   REF_BOOL active, allowed;
   REF_INT node0, node1, node2, node3, new_node0, new_node1;
   REF_INT global;
@@ -274,8 +271,6 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   ref_malloc( order, ref_edge_n(ref_edge), REF_INT );
   ref_malloc( edges, ref_edge_n(ref_edge), REF_INT );
   
-  ratio_limit = sqrt(2.0);
-
   n=0;
   for(edge=0;edge<ref_edge_n(ref_edge);edge++)
     {
@@ -289,7 +284,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 			   ref_edge_e2n( ref_edge, 0, edge ),
 			   ref_edge_e2n( ref_edge, 1, edge ),
 			   &(ratio[n]) ), "ratio");
-      if ( ratio[n] > ratio_limit)
+      if ( ratio[n] > ref_adapt_split_ratio )
 	{
 	  edges[n] = edge;
 	  n++;
@@ -571,7 +566,6 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
   REF_INT cell_to_split[MAX_CELL_SPLIT];
   REF_INT node;
   REF_DBL quality, quality0, quality1;
-  REF_DBL quality_tolerence = 1.0e-3;
 
   *allowed = REF_FALSE;
 
@@ -596,8 +590,8 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
 	if ( node1 == nodes[node] ) nodes[node] = new_node;
       RSS( ref_node_tri_quality( ref_node,nodes,&quality1 ), "q1");
 
-      if ( quality0 < quality_tolerence ||
-	   quality1 < quality_tolerence ) return REF_SUCCESS;
+      if ( quality0 < ref_adapt_split_quality ||
+	   quality1 < ref_adapt_split_quality ) return REF_SUCCESS;
     }
 
   *allowed = REF_TRUE;
