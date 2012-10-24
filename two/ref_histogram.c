@@ -51,10 +51,12 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, REF_DBL observation )
 
   ref_histogram_bin( ref_histogram, i )++;
 
-  printf("%f:%f:%f\n",
-	 ref_histogram_to_obs(i),
-	 observation,
-	 ref_histogram_to_obs(i-1));
+  /*
+    printf("%f:%f:%f\n",
+    ref_histogram_to_obs(i),
+    observation,
+    ref_histogram_to_obs(i-1));
+  */
 
   return REF_SUCCESS;
 }
@@ -93,6 +95,7 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
 REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
 {
   REF_INT *bins;
+  REF_DBL min, max;
   REF_INT i;
 
   if ( 1 == ref_mpi_n ) return REF_SUCCESS;
@@ -101,32 +104,44 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
 
   RSS( ref_mpi_sum( ref_histogram->bins, bins, 
 		    ref_histogram_n(ref_histogram), REF_INT_TYPE ), "sum" );
+  RSS( ref_mpi_max( &ref_histogram_max( ref_histogram ), &max, 
+		    REF_DBL_TYPE ), "max" );
+  RSS( ref_mpi_min( &ref_histogram_min( ref_histogram ), &min, 
+		    REF_DBL_TYPE ), "min" );
 
-
-  for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
-    if ( ref_mpi_master )
-      {
+  if ( ref_mpi_master )
+    {
+      ref_histogram_max( ref_histogram ) = max;
+      ref_histogram_min( ref_histogram ) = min;
+      for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
 	ref_histogram->bins[i] = bins[i];
-      }
-    else
-      {
+    }
+  else
+    {
+      ref_histogram_max( ref_histogram ) = -1.0e20;
+      ref_histogram_min( ref_histogram ) =  1.0e20;
+      for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
 	ref_histogram->bins[i] = 0;
-      }
+    }
 
   ref_free( bins );
-
-  if ( ref_mpi_master ) printf("imp min max\n");
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram )
 {
-  REF_INT i;
+  REF_INT i, sum;
 
+  sum = 0;
+  for (i=0;i<ref_histogram_n(ref_histogram);i++)
+    sum += ref_histogram_bin( ref_histogram, i );
+
+  printf("%10.3f\n", ref_histogram_min( ref_histogram ));
   for (i=0;i<ref_histogram_n(ref_histogram);i++)
     printf("%2d:%7.3f:%10d\n", i, 
 	   ref_histogram_to_obs(i),ref_histogram_bin( ref_histogram, i ));
+  printf("%10.3f:%10d\n", ref_histogram_max( ref_histogram ), sum);
 
   return REF_SUCCESS;
 }
