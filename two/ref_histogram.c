@@ -81,6 +81,7 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
   RSS( ref_histogram_gather( ref_histogram ), "gather");
 
   RSS( ref_edge_free(ref_edge), "free edge" );
+  RSS( ref_histogram_free(ref_histogram), "free gram" );
   return REF_SUCCESS;
 }
 

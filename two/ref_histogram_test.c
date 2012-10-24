@@ -18,6 +18,7 @@
 #include "ref_math.h"
 
 #include "ref_edge.h"
+#include "ref_metric.h"
 
 int main( int argc, char *argv[] )
 {
@@ -29,6 +30,7 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
 
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
+      RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
       RSS( ref_histogram_ratio( ref_grid ), "gram");
 
