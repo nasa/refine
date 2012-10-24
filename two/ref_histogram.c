@@ -79,6 +79,7 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
     }
 
   RSS( ref_histogram_gather( ref_histogram ), "gather");
+  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram ), "print");
 
   RSS( ref_edge_free(ref_edge), "free edge" );
   RSS( ref_histogram_free(ref_histogram), "free gram" );
@@ -111,6 +112,16 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
   ref_free( bins );
 
   if ( ref_mpi_master ) printf("imp min max\n");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram )
+{
+  REF_INT i;
+
+  for (i=0;i<ref_histogram_n(ref_histogram);i++)
+    printf("%2d:%10d\n",i,ref_histogram_bin( ref_histogram, i ));
 
   return REF_SUCCESS;
 }
