@@ -145,7 +145,7 @@ ref_grid_test_LDADD = libref2.a @mpi_ldadd@ -lm
 TESTS += ref_histogram_test
 noinst_PROGRAMS += ref_histogram_test
 ref_histogram_test_SOURCES = ref_histogram_test.c
-ref_histogram_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_histogram_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_import_test
 noinst_PROGRAMS += ref_import_test
