@@ -43,7 +43,6 @@ int main( int argc, char *argv[] )
     REF_HISTOGRAM ref_histogram;
     REIS(REF_NULL, ref_histogram_free(NULL),"dont free NULL");
     RSS(ref_histogram_create(&ref_histogram),"create");
-    REIS(10, ref_histogram_n(ref_histogram),"bins");
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
