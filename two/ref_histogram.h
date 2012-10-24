@@ -9,8 +9,9 @@ typedef struct REF_HISTOGRAM_STRUCT REF_HISTOGRAM_STRUCT;
 typedef REF_HISTOGRAM_STRUCT * REF_HISTOGRAM;
 END_C_DECLORATION
 
-BEGIN_C_DECLORATION
+#include "ref_grid.h"
 
+BEGIN_C_DECLORATION
 struct REF_HISTOGRAM_STRUCT {
   REF_INT n;
   REF_DBL max, min;
@@ -28,6 +29,8 @@ REF_STATUS ref_histogram_free( REF_HISTOGRAM ref_histogram );
 REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, 
 			      REF_DBL observation );
 
+REF_STATUS ref_histogram_ratio( REF_GRID ref_grid );
+REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram );
 
 END_C_DECLORATION
 
