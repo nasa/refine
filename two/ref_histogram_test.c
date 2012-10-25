@@ -22,6 +22,10 @@
 
 #include "ref_malloc.h"
 
+#include "ref_adapt.h"
+#include "ref_split.h"
+#include "ref_collapse.h"
+
 int main( int argc, char *argv[] )
 {
 

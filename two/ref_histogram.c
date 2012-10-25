@@ -8,6 +8,8 @@
 #include "ref_edge.h"
 #include "ref_mpi.h"
 
+#include "ref_adapt.h"
+
 REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
 {
   REF_HISTOGRAM ref_histogram;
@@ -145,8 +147,18 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram )
 
   printf("%10.3f\n", ref_histogram_min( ref_histogram ));
   for (i=0;i<ref_histogram_n(ref_histogram);i++)
-    printf("%2d:%7.3f:%10d\n", i, 
-	   ref_histogram_to_obs(i),ref_histogram_bin( ref_histogram, i ));
+    if ( ( ref_histogram_to_obs(i)   > ref_adapt_split_ratio ||
+	   ref_histogram_to_obs(i-1) < ref_adapt_collapse_ratio ) &&
+	 ref_histogram_bin( ref_histogram, i ) > 0 )
+      {
+	printf("%2d:%7.3f:%10d *\n", i, 
+	       ref_histogram_to_obs(i),ref_histogram_bin( ref_histogram, i ));
+      }
+    else
+      {
+	printf("%2d:%7.3f:%10d\n", i, 
+	       ref_histogram_to_obs(i),ref_histogram_bin( ref_histogram, i ));
+       }
   printf("%10.3f:%10d\n", ref_histogram_max( ref_histogram ), sum);
 
   return REF_SUCCESS;
