@@ -37,6 +37,8 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram,
 			      REF_DBL observation );
 
 REF_STATUS ref_histogram_ratio( REF_GRID ref_grid );
+REF_STATUS ref_histogram_quality( REF_GRID ref_grid );
+
 REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram );
 REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram );
 

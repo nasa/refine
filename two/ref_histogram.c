@@ -100,6 +100,34 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
+{
+  REF_HISTOGRAM ref_histogram;
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL quality;
+
+  RSS( ref_histogram_create(&ref_histogram),"create");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) == ref_mpi_id )
+	{
+	  RSS( ref_node_tri_quality( ref_grid_node(ref_grid),
+				     nodes,&quality ), "qual");
+	  RSS( ref_histogram_add( ref_histogram, quality ), "add");
+	}
+    }
+
+  RSS( ref_histogram_gather( ref_histogram ), "gather");
+  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram ), "print");
+
+  RSS( ref_histogram_free(ref_histogram), "free gram" );
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
 {
   REF_INT *bins;
