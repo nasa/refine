@@ -20,6 +20,7 @@ struct REF_NODE_STRUCT {
   REF_INT *sorted_global;
   REF_INT *sorted_local;
   REF_INT *part;
+  REF_INT *age;
   REF_DBL *real;
   REF_INT naux;
   REF_DBL *aux;
@@ -63,6 +64,7 @@ struct REF_NODE_STRUCT {
   ((ref_node)->real[(ireal)+REF_NODE_REAL_PER*(node)])
 
 #define ref_node_part(ref_node,node) ((ref_node)->part[(node)])
+#define ref_node_age(ref_node,node) ((ref_node)->age[(node)])
 
 #define ref_node_naux(ref_node) ((ref_node)->naux)
 #define ref_node_aux(ref_node,iaux,node)		\

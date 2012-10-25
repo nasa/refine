@@ -39,6 +39,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   ref_malloc( ref_node->sorted_local, max, REF_INT );
 
   ref_malloc( ref_node->part, max, REF_INT );
+  ref_malloc( ref_node->age, max, REF_INT );
 
   ref_malloc( ref_node->real, REF_NODE_REAL_PER*max, REF_DBL );
 
@@ -59,6 +60,7 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
   ref_list_free( ref_node->unused_global_list );
   ref_free( ref_node->aux );
   ref_free( ref_node->real );
+  ref_free( ref_node->age );
   ref_free( ref_node->part );
   ref_free( ref_node->sorted_local );
   ref_free( ref_node->sorted_global );
@@ -170,6 +172,7 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
       ref_realloc( ref_node->sorted_local, ref_node_max(ref_node), REF_INT);
 
       ref_realloc( ref_node->part, ref_node_max(ref_node), REF_INT);
+      ref_realloc( ref_node->age, ref_node_max(ref_node), REF_INT);
 
       ref_realloc( ref_node->real, 
 		   REF_NODE_REAL_PER*ref_node_max(ref_node), REF_DBL);
@@ -184,6 +187,7 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
 
   ref_node->global[*node] = global;
   ref_node->part[*node] = ref_mpi_id; /* default local node */
+  ref_node->age[*node] = 0; /* default new born */
 
   (ref_node->n)++;
   return REF_SUCCESS;
