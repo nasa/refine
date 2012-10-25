@@ -675,8 +675,8 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
     {
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
-      RSS( ref_split_active_twod( ref_node, node0, node1, 
-				  &active ), "act" );
+      RSS( ref_node_edge_twod( ref_node, node0, node1, 
+			       &active ), "act" );
       if ( !active ) continue;
 
       RSS( ref_node_ratio( ref_node, node0, node1,
