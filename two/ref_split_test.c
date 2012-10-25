@@ -24,6 +24,8 @@
 #include "ref_export.h"
 #include "ref_metric.h"
 
+#include "ref_gather.h"
+
 int main( void )
 {
 

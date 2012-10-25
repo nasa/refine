@@ -26,6 +26,8 @@
 
 #include "ref_metric.h"
 
+#include "ref_gather.h"
+
 int main( void )
 {
 
