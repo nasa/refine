@@ -7,12 +7,6 @@ partition boundary artifacts
    - age
    - parallel agglomeration to protect age
 
-quality of edge primitive
-  - measure / define quaility (edge length, mean ratio, metric norm)
-    - histogram
-    - statistics
-  - tune parameters not available in paper or extend edge primitive scheme?
-
 surface projection
  - surface reconstruction
    - consult white
@@ -26,3 +20,8 @@ surface projection
 + scale metric
 + volume validation should be area in twod
 + coarsen
+
++ quality of edge primitive
+  + measure / define quaility (edge length, mean ratio, metric norm)
+    + histogram
+  + tune parameters not available in paper or extend edge primitive scheme?
