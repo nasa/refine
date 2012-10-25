@@ -20,6 +20,8 @@
 #include "ref_edge.h"
 #include "ref_metric.h"
 
+#include "ref_malloc.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -31,6 +33,16 @@ int main( int argc, char *argv[] )
 
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
       RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
+
+      {
+	REF_DBL *metric;
+	ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+	RSS( ref_metric_imply_from( metric, ref_grid ), 
+	     "from");
+	RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
+	RSS( ref_node_ghost_real( ref_grid_node(ref_grid) ), "ghost real");
+	ref_free( metric );
+      }
 
       RSS( ref_histogram_ratio( ref_grid ), "gram");
 
