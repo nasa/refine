@@ -1,4 +1,12 @@
 
+- refactor twod migrate
+- have graph in migrate
+- agree on age
+- agree on agglomeration
+
+http://www.cs.sandia.gov/Zoltan/ug_html/ug_query_lb.html#Graph-based%20Functions
+http://www.cs.sandia.gov/Zoltan/ug_html/ug_alg_phg.html
+
 partition boundary artifacts
  - graph based partitioner
    - provide zoltan callbacks
