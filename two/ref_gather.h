@@ -10,7 +10,13 @@
 
 BEGIN_C_DECLORATION
 
+#define ref_gather_frame( ref_grid ) \
+  RSS( ref_gather_tec_movie_frame( ref_grid ), "movie frame" )
+
 REF_STATUS ref_gather_plot( REF_GRID ref_grid, char *filename );
+
+REF_STATUS ref_gather_tec_movie_record_button( REF_BOOL on_or_off );
+REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid );
 
 REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename );
 

@@ -12,6 +12,8 @@
 
 #include "ref_adapt.h"
 
+#include "ref_gather.h"
+
 #define MAX_CELL_SPLIT (100)
 
 REF_STATUS ref_split_pass( REF_GRID ref_grid )
@@ -253,6 +255,8 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   REF_INT node0, node1, node2, node3, new_node0, new_node1;
   REF_INT global;
 
+  ref_gather_frame( ref_grid );
+
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc( ratio, ref_edge_n(ref_edge), REF_DBL );
@@ -314,6 +318,8 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 
       RSS( ref_split_face( ref_grid, node0, node1, new_node0,
 			   node2, node3, new_node1 ), "split face");
+
+      ref_gather_frame( ref_grid );
     }
 
   ref_free( edges );

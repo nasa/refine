@@ -15,6 +15,8 @@
 
 #include "ref_adapt.h"
 
+#include "ref_gather.h"
+
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
 
@@ -666,6 +668,8 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
   REF_DBL edge_ratio;
   REF_BOOL active;
 
+  ref_gather_frame( ref_grid );
+
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc_init( ratio, ref_node_max(ref_node), 
@@ -710,6 +714,7 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
 	   "collapse rm" );
       if ( !ref_node_valid(ref_node,node1) )
 	{
+	  ref_gather_frame( ref_grid );
 	  each_ref_cell_having_node( ref_cell, node1, item, cell )
 	    {
 	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");

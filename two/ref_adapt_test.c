@@ -149,7 +149,7 @@ int main( int argc, char *argv[] )
 
 	each_ref_node_valid_node( ref_grid_node(ref_grid), node )
   	  {
-	    REF_DBL scale = 0.5;
+	    REF_DBL scale = 2.0;
 	    ref_node_metric(ref_grid_node(ref_grid),0,node) /= (scale*scale);
 	    ref_node_metric(ref_grid_node(ref_grid),1,node)  = 0.0;
 	    ref_node_metric(ref_grid_node(ref_grid),2,node) /= (scale*scale);
@@ -158,6 +158,9 @@ int main( int argc, char *argv[] )
 	    ref_node_metric(ref_grid_node(ref_grid),5,node) /= (scale*scale);
 	  }
       }
+
+      if ( 1 == ref_mpi_n ) 
+	RSS( ref_gather_tec_movie_record_button( REF_TRUE ), "rec" );
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");

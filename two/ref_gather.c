@@ -70,6 +70,52 @@ REF_STATUS ref_gather_plot( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
+static REF_BOOL recording_movie = REF_FALSE;
+
+REF_STATUS ref_gather_tec_movie_record_button( REF_BOOL on_or_off )
+{
+  recording_movie = on_or_off;
+  return REF_SUCCESS;
+}
+
+static FILE *movie_file = NULL;
+
+REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nnode,ntri;
+
+  if ( !recording_movie ) return REF_SUCCESS;
+
+  RSS( ref_node_synchronize_globals( ref_node ), "sync" );
+
+  nnode = ref_node_n_global(ref_node);
+
+  RSS( ref_gather_ncell( ref_node, ref_grid_tri(ref_grid), &ntri ), "ntri");
+
+  if ( ref_mpi_master )
+    {
+      if ( NULL == (void *)movie_file )
+	{ 
+	  movie_file = fopen("ref_gather_movie.tec","w");
+	  if ( NULL == (void *)movie_file ) 
+	    printf("unable to open ref_gather_movie.tec\n");
+	  RNS(movie_file, "unable to open file" );
+	  
+	  fprintf(movie_file, "title=\"tecplot refine partion file\"\n");
+	  fprintf(movie_file, "variables = \"x\" \"y\" \"z\" \"p\"\n");
+	}
+      fprintf(movie_file,
+	      "zone t=part, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	      nnode, ntri, "point", "fetriangle" );
+    }
+
+  RSS( ref_gather_node_tec_part( ref_node, movie_file ), "nodes");
+  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), movie_file ), "nodes");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
