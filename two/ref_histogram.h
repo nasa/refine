@@ -28,10 +28,10 @@ REF_STATUS ref_histogram_free( REF_HISTOGRAM ref_histogram );
 #define ref_histogram_bin( ref_histogram, i ) ((ref_histogram)->bins[(i)])
 
 #define ref_histogram_to_bin(o) \
-  ( ((REF_INT)(5.0*log10((o)))) + ref_histogram_n(ref_histogram)/2 )
+  ( ((REF_INT)(10.0*log10((o)))) + ref_histogram_n(ref_histogram)/2 )
 
 #define ref_histogram_to_obs(i) \
-  ( pow(10.0,0.2*((REF_DBL)((i)-ref_histogram_n(ref_histogram)/2) ) ) )
+  ( pow(10.0,0.1*((REF_DBL)((i)-ref_histogram_n(ref_histogram)/2) ) ) )
 
 REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, 
 			      REF_DBL observation );
