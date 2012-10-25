@@ -67,6 +67,7 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
   REF_EDGE ref_edge;
   REF_INT edge, part;
   REF_DBL ratio;
+  REF_BOOL active;
 
   RSS( ref_histogram_create(&ref_histogram),"create");
   RSS( ref_edge_create( &ref_edge, ref_grid ), "make edges" );
@@ -74,7 +75,12 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
   for (edge=0;edge< ref_edge_n(ref_edge);edge++)
     {
       RSS( ref_edge_part( ref_edge, edge, &part ), "edge part");
-      if ( part == ref_mpi_id )
+      RSS( ref_node_edge_twod( ref_grid_node(ref_grid), 
+			       ref_edge_e2n(ref_edge, 0, edge),
+			       ref_edge_e2n(ref_edge, 1, edge), 
+			       &active ), "twod edge");
+      active = ( active || !ref_grid_twod(ref_grid) );
+      if ( part == ref_mpi_id && active )
 	{
 	  RSS( ref_node_ratio( ref_grid_node(ref_grid), 
 			       ref_edge_e2n(ref_edge, 0, edge),
