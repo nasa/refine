@@ -166,7 +166,7 @@ int main( int argc, char *argv[] )
       RSS( ref_histogram_ratio( ref_grid ), "gram");
       RSS( ref_histogram_quality( ref_grid ), "qual");
 
-      passes = 5;
+      passes = 10;
       for (i = 0; i<passes ; i++ )
 	{
 	  RSS( ref_adapt_twod_pass( ref_grid ), "pass");
