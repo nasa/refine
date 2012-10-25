@@ -72,7 +72,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 	   "collapse rm" );
       if ( !ref_node_valid(ref_node,node1) )
 	{
-	  each_ref_cell_having_node( ref_cell, node1, item, cell )
+	  each_ref_cell_having_node( ref_cell, node0, item, cell )
 	    {
 	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
 	      for (node=0;node<ref_cell_node_per(ref_cell);node++)
@@ -715,7 +715,7 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
       if ( !ref_node_valid(ref_node,node1) )
 	{
 	  ref_gather_frame( ref_grid );
-	  each_ref_cell_having_node( ref_cell, node1, item, cell )
+	  each_ref_cell_having_node( ref_cell, node0, item, cell )
 	    {
 	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
 	      for (node=0;node<ref_cell_node_per(ref_cell);node++)
