@@ -159,8 +159,7 @@ int main( int argc, char *argv[] )
 	  }
       }
 
-      if ( 1 == ref_mpi_n ) 
-	RSS( ref_gather_tec_movie_record_button( REF_TRUE ), "rec" );
+      RSS( ref_gather_tec_movie_record_button( REF_TRUE ), "rec" );
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");

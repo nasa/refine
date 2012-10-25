@@ -255,7 +255,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   REF_INT node0, node1, node2, node3, new_node0, new_node1;
   REF_INT global;
 
-  ref_gather_frame( ref_grid );
+  ref_gather_blocking_frame( ref_grid );
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
@@ -319,7 +319,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
       RSS( ref_split_face( ref_grid, node0, node1, new_node0,
 			   node2, node3, new_node1 ), "split face");
 
-      ref_gather_frame( ref_grid );
+      ref_gather_seq_only_frame( ref_grid );
     }
 
   ref_free( edges );
@@ -327,6 +327,8 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   ref_free( ratio );
 
   ref_edge_free( ref_edge );
+
+  ref_gather_blocking_frame( ref_grid );
 
   return REF_SUCCESS;
 }

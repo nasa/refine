@@ -8,9 +8,15 @@
 #include "ref_cell.h"
 #include "ref_node.h"
 
+#include "ref_mpi.h"
+
 BEGIN_C_DECLORATION
 
-#define ref_gather_frame( ref_grid ) \
+#define ref_gather_seq_only_frame( ref_grid )				\
+  if ( 1 == ref_mpi_n )							\
+    RSS( ref_gather_tec_movie_frame( ref_grid ), "movie frame" )
+
+#define ref_gather_blocking_frame( ref_grid )			\
   RSS( ref_gather_tec_movie_frame( ref_grid ), "movie frame" )
 
 REF_STATUS ref_gather_plot( REF_GRID ref_grid, char *filename );
