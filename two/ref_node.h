@@ -96,8 +96,13 @@ REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT **o2n, REF_INT **n2o );
 REF_STATUS ref_node_ghost_real( REF_NODE ref_node );
 REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar );
 
+REF_STATUS ref_node_edge_twod( REF_NODE ref_node, 
+			       REF_INT node0, REF_INT node1, 
+			       REF_BOOL *twod );
+
 REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1, 
 			   REF_DBL *ratio );
+
 REF_STATUS ref_node_tri_normal( REF_NODE ref_node, 
 				REF_INT *nodes,  
 				REF_DBL *normal );
