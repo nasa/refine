@@ -29,6 +29,8 @@
 #include "ref_split.h"
 #include "ref_face.h"
 
+#include "ref_gather.h"
+
 int main( int argc, char *argv[] )
 {
   REF_INT nnodes, nnodes0;

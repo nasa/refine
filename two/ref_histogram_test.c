@@ -26,6 +26,8 @@
 #include "ref_split.h"
 #include "ref_collapse.h"
 
+#include "ref_gather.h"
+
 int main( int argc, char *argv[] )
 {
 
