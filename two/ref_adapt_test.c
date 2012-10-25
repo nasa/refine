@@ -37,6 +37,8 @@
 #include "ref_metric.h"
 #include "ref_math.h"
 
+#include "ref_histogram.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -158,6 +160,7 @@ int main( int argc, char *argv[] )
       }
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
+      RSS( ref_histogram_ratio( ref_grid ), "gram");
 
       passes = 5;
       for (i = 0; i<passes ; i++ )
@@ -165,6 +168,7 @@ int main( int argc, char *argv[] )
 	  RSS( ref_adapt_twod_pass( ref_grid ), "pass");
 	  ref_mpi_stopwatch_stop("pass");
 	  RSS(ref_validation_cell_volume(ref_grid),"vol");
+	  RSS( ref_histogram_ratio( ref_grid ), "gram");
 	  RSS(ref_migrate_to_balance(ref_grid),"balance");
 	  ref_mpi_stopwatch_stop("balance");
 	}
