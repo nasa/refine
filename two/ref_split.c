@@ -291,10 +291,6 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
 
-      RSS( ref_split_edge_local_prisms( ref_grid, node0, node1,
-					&allowed ), "local pri" );
-      if ( !allowed ) continue;
-
       RSS( ref_node_next_global( ref_node, &global ), "next global");
       RSS( ref_node_add( ref_node, global, &new_node0 ), "new node");
       RSS( ref_node_interpolate_edge( ref_node, node0, node1,
@@ -308,6 +304,15 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 	  continue;
 	}
 
+      RSS( ref_split_edge_local_prisms( ref_grid, node0, node1,
+					&allowed ), "local pri" );
+      if ( !allowed ) 
+	{
+	  ref_node_age(ref_node,node0)++;
+	  ref_node_age(ref_node,node1)++;
+	  RSS( ref_node_remove( ref_node, new_node0 ), "remove new node");
+	  continue;
+	}
 
       RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
 
@@ -318,6 +323,9 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 
       RSS( ref_split_face( ref_grid, node0, node1, new_node0,
 			   node2, node3, new_node1 ), "split face");
+
+      ref_node_age(ref_node,node0) = 0;
+      ref_node_age(ref_node,node1) = 0;
 
       ref_gather_seq_only_frame( ref_grid );
     }
