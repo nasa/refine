@@ -103,7 +103,7 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid )
 	  RNS(movie_file, "unable to open file" );
 	  
 	  fprintf(movie_file, "title=\"tecplot refine partion file\"\n");
-	  fprintf(movie_file, "variables = \"x\" \"y\" \"z\" \"p\"\n");
+	  fprintf(movie_file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
 	}
       fprintf(movie_file,
 	      "zone t=part, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -136,7 +136,7 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename  )
       RNS(file, "unable to open file" );
 
       fprintf(file, "title=\"tecplot refine partion file\"\n");
-      fprintf(file, "variables = \"x\" \"y\" \"z\" \"p\"\n");
+      fprintf(file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
       fprintf(file,
 	"zone t=part, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	      nnode, ntri, "point", "fetriangle" );
@@ -314,19 +314,18 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 
   chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
 
-  ref_malloc( local_xyzm, 5*chunk, REF_DBL );
-  ref_malloc( xyzm, 5*chunk, REF_DBL );
+  ref_malloc( local_xyzm, 6*chunk, REF_DBL );
+  ref_malloc( xyzm, 6*chunk, REF_DBL );
 
   nnode_written = 0;
   while ( nnode_written < ref_node_n_global(ref_node) )
     {
-
       first = nnode_written;
       n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
 
       nnode_written += n;
 
-      for (i=0;i<5*chunk;i++)
+      for (i=0;i<6*chunk;i++)
 	local_xyzm[i] = 0.0;
 
       for (i=0;i<n;i++)
@@ -337,33 +336,36 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 	  if ( REF_SUCCESS == status &&
 	       ref_mpi_id == ref_node_part(ref_node,local) )
 	    {
-	      local_xyzm[0+5*i] = ref_node_xyz(ref_node,0,local);
-	      local_xyzm[1+5*i] = ref_node_xyz(ref_node,1,local);
-	      local_xyzm[2+5*i] = ref_node_xyz(ref_node,2,local);
-	      local_xyzm[3+5*i] = (REF_DBL)ref_node_part(ref_node,local);
-	      local_xyzm[4+5*i] = 1.0;
+	      local_xyzm[0+6*i] = ref_node_xyz(ref_node,0,local);
+	      local_xyzm[1+6*i] = ref_node_xyz(ref_node,1,local);
+	      local_xyzm[2+6*i] = ref_node_xyz(ref_node,2,local);
+	      local_xyzm[3+6*i] = (REF_DBL)ref_node_part(ref_node,local);
+	      local_xyzm[4+6*i] = (REF_DBL)ref_node_age(ref_node,local);
+	      local_xyzm[5+6*i] = 1.0;
 	    }
 	  else
 	    {
-	      local_xyzm[0+5*i] = 0.0;
-	      local_xyzm[1+5*i] = 0.0;
-	      local_xyzm[2+5*i] = 0.0;
-	      local_xyzm[3+5*i] = 0.0;
-	      local_xyzm[4+5*i] = 0.0;
+	      local_xyzm[0+6*i] = 0.0;
+	      local_xyzm[1+6*i] = 0.0;
+	      local_xyzm[2+6*i] = 0.0;
+	      local_xyzm[3+6*i] = 0.0;
+	      local_xyzm[4+6*i] = 0.0;
+	      local_xyzm[5+6*i] = 0.0;
 	    }
 	}
 
-      RSS( ref_mpi_sum( local_xyzm, xyzm, 5*n, REF_DBL_TYPE ), "sum" );
+      RSS( ref_mpi_sum( local_xyzm, xyzm, 6*n, REF_DBL_TYPE ), "sum" );
 
       if ( ref_mpi_master )
 	for ( i=0; i<n; i++ )
 	  {
-	    if ( ABS( xyzm[4+5*i] - 1.0 ) > 0.1 )
+	    if ( ABS( xyzm[5+6*i] - 1.0 ) > 0.1 )
 	      {
-		printf("error gather node %d %f\n",first+i, xyzm[4+5*i]);
+		printf("error gather node %d %f\n",first+i, xyzm[5+6*i]);
 	      }
-	    fprintf(file,"%.15e %.15e %.15e %.0f\n",
-		    xyzm[0+5*i], xyzm[1+5*i], xyzm[2+5*i], xyzm[3+5*i] );
+	    fprintf(file,"%.15e %.15e %.15e %.0f %.0f\n",
+		    xyzm[0+6*i], xyzm[1+6*i], xyzm[2+6*i], 
+		    xyzm[3+6*i], xyzm[4+6*i]);
 	  }
     }
 
