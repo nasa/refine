@@ -55,6 +55,7 @@ REF_STATUS ref_adj_free( REF_ADJ ref_adj );
 	  (ref) =  ref_adj_safe_ref( ref_adj, item ) )
 
 REF_STATUS ref_adj_inspect( REF_ADJ ref_adj );
+REF_STATUS ref_adj_node_inspect( REF_ADJ ref_adj, REF_INT node );
 
 REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference );
 REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference );
