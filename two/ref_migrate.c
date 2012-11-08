@@ -130,16 +130,6 @@ REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
 				   keep, item, global)
     if ( global == ref_node_global(ref_node,lose) ) return REF_SUCCESS;
 
-  /* skip if keep node is off-proc or already agglomerated */
-  if ( ! ref_migrate_valid( ref_migrate, keep ) ) return REF_SUCCESS;
-
-  ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
-  ref_migrate_weight(ref_migrate,keep) = 2.0;
-  RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate),
-		    keep, ref_node_global(ref_node, lose) ),"add");
-  RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate),
-		    keep, ref_node_part(ref_node, lose) ),"add");
-
   /* update edges pointing to lose node */
   each_ref_adj_node_item_with_ref( conn_adj, lose, item, from_node)
     {
@@ -161,6 +151,16 @@ REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
 			   ),
 	   "rm from lose");
     }
+
+  /* skip if keep node is off-proc or already agglomerated */
+  if ( ! ref_migrate_valid( ref_migrate, keep ) ) return REF_SUCCESS;
+
+  ref_migrate_xyz( ref_migrate, 1, keep ) = 0.5;
+  ref_migrate_weight(ref_migrate,keep) = 2.0;
+  RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate),
+		    keep, ref_node_global(ref_node, lose) ),"add");
+  RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate),
+		    keep, ref_node_part(ref_node, lose) ),"add");
 
   return REF_SUCCESS;
 }
