@@ -290,7 +290,7 @@ static void ref_migrate_edge_list( void *void_ref_migrate,
   SUPRESS_UNUSED_COMPILER_WARNING(weight);
   *ierr = 0;
 
-  if ( 1 != global_dim || 1 != local_dim || 0 != weight_dim  )
+  if ( 1 != global_dim || 1 != local_dim || 1 != weight_dim  )
     {
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
       *ierr = ZOLTAN_FATAL;
@@ -305,6 +305,8 @@ static void ref_migrate_edge_list( void *void_ref_migrate,
     {
       conn_global[degree] = ref_node_global(ref_node,ref);
       conn_part[degree] = ref_node_part(ref_node,ref);
+      weight[degree] = (float)( ref_node_age(ref_node,node) +
+				ref_node_age(ref_node,ref) + 1);
       degree++;
     }
 
@@ -425,6 +427,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
 
     Zoltan_Set_Param(zz, "OBJ_WEIGHT_DIM", "1");
+
+    Zoltan_Set_Param(zz, "EDGE_WEIGHT_DIM", "1");
 
     Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_local_n, 
 			  (void *)ref_migrate);
