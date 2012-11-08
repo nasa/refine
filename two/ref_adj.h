@@ -59,6 +59,9 @@ REF_STATUS ref_adj_inspect( REF_ADJ ref_adj );
 REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference );
 REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference );
 
+REF_STATUS ref_adj_add_uniquely( REF_ADJ ref_adj, 
+				 REF_INT node, REF_INT reference );
+
 END_C_DECLORATION
 
 #endif /* REF_ADJ_H */

@@ -121,5 +121,22 @@ int main( void )
     RSS(ref_adj_free(ref_adj),"free");
   }
 
+  { /* add uniquely */
+    REF_ADJ ref_adj;
+    REF_INT item;
+    RSS(ref_adj_create(&ref_adj),"create");
+
+    RAS(!ref_adj_valid(ref_adj_first(ref_adj,0)),"empty");
+
+    RSS(ref_adj_add_uniquely(ref_adj,0,12),"add");
+    RSS(ref_adj_add_uniquely(ref_adj,0,12),"add");
+
+    item = ref_adj_first(ref_adj,0);
+    REIS(12,ref_adj_safe_ref(ref_adj,item),"added ref");
+    REIS(REF_FALSE,ref_adj_valid(ref_adj_item_next(ref_adj,item)),"no next");
+
+    RSS(ref_adj_free(ref_adj),"free");
+  }
+
   return 0;
 }
