@@ -62,6 +62,8 @@ REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference );
 
 REF_STATUS ref_adj_add_uniquely( REF_ADJ ref_adj, 
 				 REF_INT node, REF_INT reference );
+REF_STATUS ref_adj_degree( REF_ADJ ref_adj, 
+			   REF_INT node, REF_INT *degree );
 
 END_C_DECLORATION
 

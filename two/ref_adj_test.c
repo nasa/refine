@@ -138,5 +138,26 @@ int main( void )
     RSS(ref_adj_free(ref_adj),"free");
   }
 
+  { /* degree */
+    REF_ADJ ref_adj;
+    REF_INT degree;
+    RSS(ref_adj_create(&ref_adj),"create");
+
+    RSS(ref_adj_degree(ref_adj,0,&degree),"deg");
+    REIS(0, degree, "zeroth degree");
+
+    RSS(ref_adj_add(ref_adj,0,12),"add");
+
+    RSS(ref_adj_degree(ref_adj,0,&degree),"deg");
+    REIS(1, degree, "first degree")
+
+    RSS(ref_adj_add(ref_adj,0,17),"add");
+
+    RSS(ref_adj_degree(ref_adj,0,&degree),"deg");
+    REIS(2, degree, "second degree")
+
+    RSS(ref_adj_free(ref_adj),"free");
+  }
+
   return 0;
 }

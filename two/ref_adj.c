@@ -165,3 +165,18 @@ REF_STATUS ref_adj_add_uniquely( REF_ADJ ref_adj,
 
   return ref_adj_add( ref_adj, node, reference );
 }
+
+REF_STATUS ref_adj_degree( REF_ADJ ref_adj, 
+			   REF_INT node, REF_INT *degree )
+{
+  REF_INT item;
+  *degree = 0;
+
+  for ( item = ref_adj_first( ref_adj, node );
+	ref_adj_valid( item ) ;
+	(item) = ref_adj_item_next( ref_adj, item ) )
+    (*degree)++;
+
+  return REF_SUCCESS;
+}
+
