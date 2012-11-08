@@ -5,20 +5,19 @@
 
 #include "ref_adj.h"
 
-
 int main( void )
 {
-  REF_ADJ ref_adj;
-  REF_INT degree, item, ref, node;
-  REF_INT nitem;
 
   {
+    REF_ADJ ref_adj;
     REIS(REF_NULL, ref_adj_free(NULL),"dont free NULL");
     RSS(ref_adj_create(&ref_adj),"create");
     RSS(ref_adj_free(ref_adj),"free");
   }
 
   { /* add and count */
+    REF_ADJ ref_adj;
+    REF_INT item;
     RSS(ref_adj_create(&ref_adj),"create");
 
     RAS(!ref_adj_valid(ref_adj_first(ref_adj,0)),"empty");
@@ -32,6 +31,8 @@ int main( void )
   }
 
   { /* remove*/
+    REF_ADJ ref_adj;
+    REF_INT item;
     RSS(ref_adj_create(&ref_adj),"create");
 
     RSS(ref_adj_add(ref_adj,0,12),"add");
@@ -45,6 +46,8 @@ int main( void )
   }
 
   { /* iterate */
+    REF_ADJ ref_adj;
+    REF_INT item, ref, degree;
     RSS(ref_adj_create(&ref_adj),"create");
 
     degree = 0;
@@ -66,6 +69,7 @@ int main( void )
   }
 
   { /* empty */
+    REF_ADJ ref_adj;
     RSS(ref_adj_create(&ref_adj),"create");
 
     RAS( ref_adj_empty(ref_adj,0), "starts empty");
@@ -76,6 +80,7 @@ int main( void )
   }
 
   {  /* negative node */
+    REF_ADJ ref_adj;
     RSS(ref_adj_create(&ref_adj),"create");
   
     RES(REF_EMPTY,ref_adj_first(ref_adj,-1),"negative first");
@@ -85,6 +90,8 @@ int main( void )
   }
 
   { /* reallocate nodes */
+    REF_ADJ ref_adj;
+    REF_INT node, item;
     RSS(ref_adj_create(&ref_adj),"create");
     node = ref_adj_nnode( ref_adj );
 
@@ -102,6 +109,8 @@ int main( void )
   }
 
   { /* reallocate adj */
+    REF_ADJ ref_adj;
+    REF_INT nitem, item;
     RSS(ref_adj_create(&ref_adj),"create");
     nitem =  ref_adj_nitem( ref_adj );
     for ( item = 0 ; item < nitem+1 ; item++ )
