@@ -251,6 +251,30 @@ static void ref_migrate_geom( void *void_ref_migrate,
 
 }
 
+static int ref_migrate_num_edges( void *void_ref_migrate, 
+				  int global_dim, int local_dim, 
+				  ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
+				  int *ierr )
+{
+  REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
+  REF_INT node, degree;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(global);
+  *ierr = 0;
+
+  if ( 1 != global_dim || 1 != local_dim  )
+    {
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
+      *ierr = ZOLTAN_FATAL;
+      return 0;
+    }
+
+  node = local[0];
+  RSS( ref_adj_degree(ref_migrate_conn( ref_migrate ), node, &degree), "deg" );
+
+  return degree;
+}
+
 static REF_STATUS ref_migrate_2d_agglomeration( REF_MIGRATE ref_migrate )
 {
   REF_GRID ref_grid = ref_migrate_grid( ref_migrate );
@@ -376,6 +400,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_geom, 
 			     (void *)ref_migrate);
 
+    Zoltan_Set_Num_Edges_Fn(zz, ref_migrate_num_edges,
+			     (void *)ref_migrate);
     /*
 http://www.cs.sandia.gov/Zoltan/ug_html/ug_alg_parmetis.html
 http://www.cs.sandia.gov/Zoltan/ug_html/ug_query_lb.html#ZOLTAN_NUM_EDGES_MULTI_FN
