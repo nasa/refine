@@ -275,6 +275,41 @@ static int ref_migrate_num_edges( void *void_ref_migrate,
   return degree;
 }
 
+static void ref_migrate_edge_list( void *void_ref_migrate, 
+				   int global_dim, int local_dim, 
+				   ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
+				   ZOLTAN_ID_PTR conn_global, int *conn_part,
+				   int weight_dim, float *weight,
+				   int *ierr )
+{
+  REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
+  REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
+  REF_INT node, item, ref, degree;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(global);
+  SUPRESS_UNUSED_COMPILER_WARNING(weight);
+  *ierr = 0;
+
+  if ( 1 != global_dim || 1 != local_dim || 0 != weight_dim  )
+    {
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,"bad sizes");
+      *ierr = ZOLTAN_FATAL;
+      return;
+    }
+
+  node = local[0];
+  degree = 0;
+
+  each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate),
+				  node, item, ref )
+    {
+      conn_global[degree] = ref_node_global(ref_node,ref);
+      conn_part[degree] = ref_node_part(ref_node,ref);
+      degree++;
+    }
+
+}
+
 static REF_STATUS ref_migrate_2d_agglomeration( REF_MIGRATE ref_migrate )
 {
   REF_GRID ref_grid = ref_migrate_grid( ref_migrate );
@@ -402,11 +437,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     Zoltan_Set_Num_Edges_Fn(zz, ref_migrate_num_edges,
 			     (void *)ref_migrate);
-    /*
-http://www.cs.sandia.gov/Zoltan/ug_html/ug_alg_parmetis.html
-http://www.cs.sandia.gov/Zoltan/ug_html/ug_query_lb.html#ZOLTAN_NUM_EDGES_MULTI_FN
-http://www.cs.sandia.gov/Zoltan/ug_html/ug_query_lb.html#ZOLTAN_EDGE_LIST_MULTI_FN
-    */
+    Zoltan_Set_Edge_List_Fn(zz, ref_migrate_edge_list,
+			    (void *)ref_migrate);
 
     REIS( ZOLTAN_OK, 
 	  Zoltan_LB_Partition(zz,
