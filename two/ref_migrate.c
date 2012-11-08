@@ -337,6 +337,12 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_geom, 
 			     (void *)ref_migrate);
 
+    /*
+http://www.cs.sandia.gov/Zoltan/ug_html/ug_alg_parmetis.html
+http://www.cs.sandia.gov/Zoltan/ug_html/ug_query_lb.html#ZOLTAN_NUM_EDGES_MULTI_FN
+http://www.cs.sandia.gov/Zoltan/ug_html/ug_query_lb.html#ZOLTAN_EDGE_LIST_MULTI_FN
+    */
+
     REIS( ZOLTAN_OK, 
 	  Zoltan_LB_Partition(zz,
 			      &partitions_have_changed,
