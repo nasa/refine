@@ -20,7 +20,9 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 {
   REF_MIGRATE ref_migrate;
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
   REF_INT node;
+  REF_INT group, cell, cell_edge, n0, n1;
 
   ref_malloc( *ref_migrate_ptr, 1, REF_MIGRATE_STRUCT );
 
@@ -30,6 +32,7 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 
   RSS( ref_adj_create( &(ref_migrate_parent_global(ref_migrate)) ), "make adj");
   RSS( ref_adj_create( &(ref_migrate_parent_part(ref_migrate)) ), "make adj");
+  RSS( ref_adj_create( &(ref_migrate_conn(ref_migrate)) ), "make adj");
 
   ref_migrate_max(ref_migrate) = ref_node_max(ref_node);
 
@@ -55,6 +58,18 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 	ref_migrate_weight(ref_migrate,node) = 1.0;
       }
 
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell( ref_cell, cell )
+      each_ref_cell_cell_edge( ref_cell, cell_edge )
+        { /* need ghost nodes for agglomeration */
+	  n0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+	  n1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
+	  RSS( ref_adj_add_uniquely( ref_migrate_conn(ref_migrate), 
+				     n0, n1 ),"uniq");
+	  RSS( ref_adj_add_uniquely( ref_migrate_conn(ref_migrate), 
+				     n1, n0 ),"uniq");
+	}
+
   return REF_SUCCESS;
 }
 
@@ -62,6 +77,7 @@ REF_STATUS ref_migrate_free( REF_MIGRATE ref_migrate )
 {
   if ( NULL == (void *)ref_migrate ) return REF_NULL;
 
+  RSS( ref_adj_free( ref_migrate_conn(ref_migrate) ), "free adj");
   RSS( ref_adj_free( ref_migrate_parent_part(ref_migrate) ), "free adj");
   RSS( ref_adj_free( ref_migrate_parent_global(ref_migrate) ), "free adj");
 
@@ -98,7 +114,9 @@ REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
 					      REF_INT keep, REF_INT lose)
 {
   REF_NODE ref_node = ref_grid_node( ref_migrate_grid(ref_migrate) );
+  REF_ADJ conn_adj = ref_migrate_conn( ref_migrate );
   REF_INT item, global;
+  REF_INT from_node;
 
   /* not working for general agglomeration, ghost lose? */
 
@@ -122,7 +140,28 @@ REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
   RSS( ref_adj_add( ref_migrate_parent_part(ref_migrate),
 		    keep, ref_node_part(ref_node, lose) ),"add");
 
- 
+  /* update edges pointing to lose node */
+  each_ref_adj_node_item_with_ref( conn_adj, lose, item, from_node)
+    {
+      RSS( ref_adj_remove( conn_adj, from_node, lose),"rm to lose");
+      if ( from_node != keep )
+	{
+	  RSS( ref_adj_add_uniquely(conn_adj, from_node, keep),"add to keep");
+	  RSS( ref_adj_add_uniquely(conn_adj, keep, from_node),"add to keep");
+	}
+    }
+
+  /* update edges pointing from lose node */
+  while ( ref_adj_valid( ref_adj_first(conn_adj, lose) ) )
+    {
+      RSS( ref_adj_remove( conn_adj, 
+			   lose,
+			   ref_adj_item_ref(conn_adj,
+					    ref_adj_first( conn_adj,lose)) 
+			   ),
+	   "rm from lose");
+    }
+
   return REF_SUCCESS;
 }
 
