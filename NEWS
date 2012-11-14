@@ -1,4 +1,6 @@
 
+- Zoltan GRAPH LB_METHOD required callbacks added.
+
 Wed Sep 12, 2012 : Released Refine 1.8.8
 
 - limit boundary coarsening that effects curved surface normal in refine/two
