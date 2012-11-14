@@ -424,7 +424,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
     Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTS");
     Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
-    Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
+    Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH"); /* was RCB */
 
     Zoltan_Set_Param(zz, "OBJ_WEIGHT_DIM", "1");
 
