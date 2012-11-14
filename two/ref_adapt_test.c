@@ -168,7 +168,14 @@ int main( int argc, char *argv[] )
       passes = 10;
       for (i = 0; i<passes ; i++ )
 	{
-	  RSS( ref_adapt_twod_pass( ref_grid ), "pass");
+	  if (ref_grid_twod(ref_grid)) 
+	    {
+	      RSS( ref_adapt_twod_pass( ref_grid ), "pass");
+	    }
+	  else
+	    {
+	      RSS( ref_adapt_pass( ref_grid ), "pass");
+	    }
 	  ref_mpi_stopwatch_stop("pass");
 	  RSS(ref_validation_cell_volume(ref_grid),"vol");
 	  RSS( ref_histogram_ratio( ref_grid ), "gram");
