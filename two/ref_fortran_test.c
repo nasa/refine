@@ -30,6 +30,7 @@
 #include "ref_face.h"
 
 #include "ref_gather.h"
+#include "ref_histogram.h"
 
 int main( int argc, char *argv[] )
 {
