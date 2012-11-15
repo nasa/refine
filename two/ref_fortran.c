@@ -15,6 +15,9 @@
 #include "ref_adapt.h"
 #include "ref_validation.h"
 
+#include "ref_gather.h"
+#include "ref_histogram.h"
+
 static REF_GRID ref_grid = NULL;
 
 REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
