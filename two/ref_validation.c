@@ -254,6 +254,7 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   REF_DBL volume;
   REF_DBL min_volume, max_volume;
   REF_BOOL first_volume;
+  REF_INT part_nnode, total_nnode, node;
 
   ref_cell = ref_grid_tet(ref_grid);
   if (ref_grid_twod(ref_grid) ) ref_cell = ref_grid_tri(ref_grid);
@@ -289,8 +290,13 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   volume = max_volume;
   RSS( ref_mpi_max( &volume, &max_volume, REF_DBL_TYPE ), "mpi max");
 
+  part_nnode=0;
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id == ref_node_part(ref_node,node) ) part_nnode++;
+  RSS( ref_mpi_sum( &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "mpi max");
+
   if ( ref_mpi_master )
-    printf("volume range %e %e\n",max_volume, min_volume);
+    printf("nnode %d volume range %e %e\n",total_nnode,max_volume, min_volume);
 
   return REF_SUCCESS;
 }
