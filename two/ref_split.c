@@ -570,6 +570,7 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
   REF_INT cell_to_split[MAX_CELL_SPLIT];
   REF_INT node;
   REF_DBL quality, quality0, quality1;
+  REF_DBL min_existing_quality;
 
   *allowed = REF_FALSE;
 
@@ -577,12 +578,20 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
   RSS( ref_cell_list_with(ref_cell,node0,node1,
 			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "get list" );
 
+  min_existing_quality = 1.0;
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
     {
       cell = cell_to_split[cell_in_list];
       RSS( ref_cell_nodes(ref_cell, cell, nodes),"cell nodes");
-
+      
       RSS( ref_node_tri_quality( ref_node,nodes,&quality ), "q");
+      min_existing_quality = MIN( min_existing_quality, quality );
+    }
+
+  for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+    {
+      cell = cell_to_split[cell_in_list];
+      RSS( ref_cell_nodes(ref_cell, cell, nodes),"cell nodes");
 
       for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
 	if ( node0 == nodes[node] ) nodes[node] = new_node;
@@ -595,7 +604,10 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
       RSS( ref_node_tri_quality( ref_node,nodes,&quality1 ), "q1");
 
       if ( quality0 < ref_adapt_split_quality_absolute ||
-	   quality1 < ref_adapt_split_quality_absolute ) return REF_SUCCESS;
+	   quality1 < ref_adapt_split_quality_absolute ||
+	   quality0 < ref_adapt_split_quality_relative*min_existing_quality ||
+	   quality1 < ref_adapt_split_quality_relative*min_existing_quality ) 
+	return REF_SUCCESS;
     }
 
   *allowed = REF_TRUE;

@@ -14,6 +14,7 @@
 
 REF_DBL ref_adapt_split_ratio = 1.5;
 REF_DBL ref_adapt_split_quality_absolute = 1.0e-3;
+REF_DBL ref_adapt_split_quality_relative = 0.6;
 
 REF_DBL ref_adapt_collapse_ratio = 0.6;
 REF_DBL ref_adapt_collapse_quality_absolute = 1.0e-3;
