@@ -233,8 +233,8 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
 	if ( node1 == nodes[node] ) nodes[node] = new_node;
       RSS( ref_node_tet_quality( ref_node,nodes,&quality1 ), "q1");
 
-      if ( quality0 < ref_adapt_split_quality ||
-	   quality1 < ref_adapt_split_quality ) return REF_SUCCESS;
+      if ( quality0 < ref_adapt_split_quality_absolute ||
+	   quality1 < ref_adapt_split_quality_absolute ) return REF_SUCCESS;
     }
 
   /* FIXME check tris too */
@@ -594,8 +594,8 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
 	if ( node1 == nodes[node] ) nodes[node] = new_node;
       RSS( ref_node_tri_quality( ref_node,nodes,&quality1 ), "q1");
 
-      if ( quality0 < ref_adapt_split_quality ||
-	   quality1 < ref_adapt_split_quality ) return REF_SUCCESS;
+      if ( quality0 < ref_adapt_split_quality_absolute ||
+	   quality1 < ref_adapt_split_quality_absolute ) return REF_SUCCESS;
     }
 
   *allowed = REF_TRUE;

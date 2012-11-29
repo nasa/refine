@@ -368,7 +368,7 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
       for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
 	if ( node1 == nodes[node] ) nodes[node] = node0;
       RSS( ref_node_tet_quality( ref_node,nodes,&quality ), "qual");
-      if ( quality < ref_adapt_collapse_quality ) return REF_SUCCESS;
+      if ( quality < ref_adapt_collapse_quality_absolute ) return REF_SUCCESS;
     }
 
   /* FIXME check tris too */
@@ -505,7 +505,7 @@ REF_STATUS ref_collapse_face_quality( REF_GRID ref_grid,
       for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
 	if ( remove == nodes[node] ) nodes[node] = keep;
       RSS( ref_node_tri_quality( ref_node,nodes,&quality ), "qual");
-      if ( quality < ref_adapt_collapse_quality ) return REF_SUCCESS;
+      if ( quality < ref_adapt_collapse_quality_absolute ) return REF_SUCCESS;
     }
 
   /* FIXME check quads too */
