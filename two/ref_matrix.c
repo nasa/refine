@@ -353,15 +353,15 @@ REF_STATUS ref_matrix_show_m( REF_DBL *m )
   printf(format,m[0]);
   printf(format,m[1]);
   printf(format,m[2]);
-  printf("/n");
+  printf("\n");
   printf(format,m[1]);
   printf(format,m[3]);
   printf(format,m[4]);
-  printf("/n");
+  printf("\n");
   printf(format,m[2]);
   printf(format,m[4]);
   printf(format,m[5]);
-  printf("/n");
+  printf("\n");
 
   return REF_SUCCESS;
 }
