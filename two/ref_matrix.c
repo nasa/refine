@@ -342,6 +342,26 @@ REF_STATUS ref_matrix_mult_m( REF_DBL *m1, REF_DBL *m2,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_show_m( REF_DBL *m )
+{
+  char format[] = "%24.15e" ;
+
+  printf(format,m[0]);
+  printf(format,m[1]);
+  printf(format,m[2]);
+  printf("/n");
+  printf(format,m[1]);
+  printf(format,m[3]);
+  printf(format,m[4]);
+  printf("/n");
+  printf(format,m[2]);
+  printf(format,m[4]);
+  printf(format,m[5]);
+  printf("/n");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_show_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
 {
   REF_INT row, col;
