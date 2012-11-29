@@ -267,6 +267,10 @@ REF_STATUS ref_matrix_inv_m( REF_DBL *m,
        !ref_math_divisible( inv_m_upper_tri[4], det ) ||
        !ref_math_divisible( inv_m_upper_tri[5], det ) ) 
     {
+      REF_INT i;
+      for (i=0;i<6;i++)
+	printf("%2d: %.15e\n",i, inv_m_upper_tri[i]);
+      printf("det %.15e\n",det);
       RSS(ref_matrix_show_m( m ), "show");
       return REF_DIV_ZERO;
     } 
