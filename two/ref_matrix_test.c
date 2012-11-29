@@ -221,6 +221,24 @@ int main( void )
     RWDS(   0.2, inv[5], tol, "inv[5]");
   }
 
+  { /* inv trunc act */
+    REF_DBL tol = -1.0;
+    REF_DBL m[6]={1.1635e+13,  -1.1826e+13,   1.3501e+13, 
+                                1.2021e+13,  -1.3723e+13,
+                                              1.5665e+13};
+    
+    REF_DBL inv[6];
+
+    RSS( ref_matrix_inv_m( m, inv ), "inv");
+
+    RWDS(   8.2237e-10, inv[0], tol, "inv[0]");
+    RWDS(   1.3934e-09, inv[1], tol, "inv[1]");
+    RWDS(   5.1192e-10, inv[2], tol, "inv[2]");
+    RWDS(   1.0294e-09, inv[3], tol, "inv[3]");
+    RWDS(  -2.9913e-10, inv[4], tol, "inv[4]");
+    RWDS(  -7.0318e-10, inv[5], tol, "inv[5]");
+  }
+
   { /* solve x = 1*/
     REF_DBL tol = -1.0;
     REF_INT rows = 1, cols = 2;
