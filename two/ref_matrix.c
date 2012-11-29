@@ -265,8 +265,12 @@ REF_STATUS ref_matrix_inv_m( REF_DBL *m,
        !ref_math_divisible( inv_m_upper_tri[2], det ) ||
        !ref_math_divisible( inv_m_upper_tri[3], det ) ||
        !ref_math_divisible( inv_m_upper_tri[4], det ) ||
-       !ref_math_divisible( inv_m_upper_tri[5], det ) ) return REF_DIV_ZERO;
-       
+       !ref_math_divisible( inv_m_upper_tri[5], det ) ) 
+    {
+      RSS(ref_matrix_show_m( m ), "show");
+      return REF_DIV_ZERO;
+    } 
+
   inv_m_upper_tri[0] /= det;
   inv_m_upper_tri[1] /= det;
   inv_m_upper_tri[2] /= det;
