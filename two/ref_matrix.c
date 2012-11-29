@@ -260,27 +260,36 @@ REF_STATUS ref_matrix_inv_m( REF_DBL *m,
   inv_m_upper_tri[4] = (m[2]*m[1]-m[0]*m[4]);
   inv_m_upper_tri[5] = (m[0]*m[3]-m[1]*m[1]);
 
-  if ( !ref_math_divisible( inv_m_upper_tri[0], det ) ||
-       !ref_math_divisible( inv_m_upper_tri[1], det ) ||
-       !ref_math_divisible( inv_m_upper_tri[2], det ) ||
-       !ref_math_divisible( inv_m_upper_tri[3], det ) ||
-       !ref_math_divisible( inv_m_upper_tri[4], det ) ||
-       !ref_math_divisible( inv_m_upper_tri[5], det ) ) 
+  /* if conditioning is good enough, use fast invert with 1/det */
+  if ( ref_math_divisible( inv_m_upper_tri[0], det ) &&
+       ref_math_divisible( inv_m_upper_tri[1], det ) &&
+       ref_math_divisible( inv_m_upper_tri[2], det ) &&
+       ref_math_divisible( inv_m_upper_tri[3], det ) &&
+       ref_math_divisible( inv_m_upper_tri[4], det ) &&
+       ref_math_divisible( inv_m_upper_tri[5], det ) ) 
     {
-      REF_INT i;
-      for (i=0;i<6;i++)
-	printf("%2d: %.15e\n",i, inv_m_upper_tri[i]);
-      printf("det %.15e\n",det);
-      RSS(ref_matrix_show_m( m ), "show");
-      return REF_DIV_ZERO;
+      inv_m_upper_tri[0] /= det;
+      inv_m_upper_tri[1] /= det;
+      inv_m_upper_tri[2] /= det;
+      inv_m_upper_tri[3] /= det;
+      inv_m_upper_tri[4] /= det;
+      inv_m_upper_tri[5] /= det;
+    }
+  else
+    {
+      /* try general inv with better stability */
+      REF_DBL a[9], inv[9];
+      a[0] = m[0]; a[1] = m[1]; a[2] = m[2];
+      a[3] = m[1]; a[4] = m[3]; a[5] = m[4];
+      a[6] = m[2]; a[7] = m[4]; a[8] = m[5];
+      RSS( ref_matrix_inv_gen( 3, a, inv ), "general inverse" );
+      inv_m_upper_tri[0] = inv[0];
+      inv_m_upper_tri[1] = inv[1];
+      inv_m_upper_tri[2] = inv[2];
+      inv_m_upper_tri[3] = inv[4];
+      inv_m_upper_tri[4] = inv[5];
+      inv_m_upper_tri[5] = inv[8];
     } 
-
-  inv_m_upper_tri[0] /= det;
-  inv_m_upper_tri[1] /= det;
-  inv_m_upper_tri[2] /= det;
-  inv_m_upper_tri[3] /= det;
-  inv_m_upper_tri[4] /= det;
-  inv_m_upper_tri[5] /= det;
 
   return REF_SUCCESS;
 }

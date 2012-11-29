@@ -239,7 +239,6 @@ int main( void )
     RWDS(  -7.0318e-10, inv[5], tol, "inv[5]");
   }
 
-  SKIP_BLOCK("conditioning problem in ref_matrix_inv_m")
   { /* inv act */
     REF_DBL tol = -1.0;
     REF_DBL m[6]={ 3.677054186758148e+14,
@@ -253,16 +252,16 @@ int main( void )
 
     RSS( ref_matrix_inv_m( m, inv ), "inv");
 
-    RWDS( 8.22369800769580e-10, inv[0], tol, "inv[0]");
-    RWDS( 1.39342887102516e-09, inv[1], tol, "inv[0]");
-    RWDS( 5.11918909472597e-10, inv[2], tol, "inv[0]");
-    RWDS( 1.02943026913674e-09, inv[3], tol, "inv[0]");
-    RWDS(-2.99126179657434e-10, inv[4], tol, "inv[0]");
-    RWDS(-7.03180706047143e-10, inv[5], tol, "inv[0]");
+    RWDS( 9.36499074558910e-07, inv[0], tol, "inv[0]");
+    RWDS(-6.42146778265400e-07, inv[1], tol, "inv[0]");
+    RWDS( 1.07409260466118e-06, inv[2], tol, "inv[0]");
+    RWDS( 4.85485288834797e-07, inv[3], tol, "inv[0]");
+    RWDS(-7.92007026311118e-07, inv[4], tol, "inv[0]");
+    RWDS( 1.30012461180195e-06, inv[5], tol, "inv[0]");
   }
 
   { /* inv gen act */
-    REF_DBL tol = 1.0e-10;
+    REF_DBL tol = 1.0e-11;
     REF_INT n=3;
     REF_DBL a[9]= {
        11635040597145.2,  -11826239282213.9,   13500655116445.6,
