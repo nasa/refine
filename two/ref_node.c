@@ -833,8 +833,9 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
     }
   else
     {
+      printf("%s: %d: %s: div zero %.18e / %.18e\n",__FILE__,__LINE__,__func__,
+	     num, denom );
       *quality = -1.0;
-      RSS( REF_DIV_ZERO, "in tet quality");
     }
 
   return REF_SUCCESS;  
