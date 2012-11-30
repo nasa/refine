@@ -791,7 +791,7 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
 {
   REF_DBL l0,l1,l2,l3,l4,l5;
 
-  REF_DBL min_det, volume;
+  REF_DBL det, min_det, volume;
   REF_DBL volume_in_metric;
   REF_DBL num, denom;
 
@@ -810,16 +810,14 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
        return REF_SUCCESS;
     }
 
-  min_det = MIN( 
-		MIN( 
-		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0])),
-		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]))
-		    ),
-		MIN( 
-		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2])),
-		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[3]))
-		    )
-		);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det),"n0");
+  min_det = det;
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det),"n1");
+  min_det = MIN(min_det,det);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det),"n2");
+  min_det = MIN(min_det,det);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[3]), &det),"n3");
+  min_det = MIN(min_det,det);
 
   volume_in_metric = sqrt( min_det ) * volume;
 
@@ -848,7 +846,7 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
 {
   REF_DBL l0,l1,l2;
 
-  REF_DBL min_det, area;
+  REF_DBL det, min_det, area;
   REF_DBL area_in_metric;
   REF_DBL num, denom;
 
@@ -858,13 +856,12 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
   
   RSS( ref_node_tri_area( ref_node, nodes, &area ), "area");
 
-  min_det = MIN( 
-		MIN( 
-		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0])),
-		    ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]))
-		     ),
-		ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]))
-		 );
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det),"n0");
+  min_det = det;
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det),"n1");
+  min_det = MIN(min_det,det);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det),"n2");
+  min_det = MIN(min_det,det);
 
   area_in_metric = sqrt( min_det ) * area;
 

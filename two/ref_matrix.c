@@ -7,6 +7,15 @@
 #include "ref_math.h"
 #include "ref_malloc.h"
 
+REF_STATUS ref_matrix_det_m( REF_DBL *m, REF_DBL *det )
+{
+  *det = ( (m)[0] * ( (m)[3]*(m)[5] - (m)[4]*(m)[4] ) + 
+	   (m)[1] * ( (m)[2]*(m)[4] - (m)[1]*(m)[5] ) + 
+	   (m)[2] * ( (m)[1]*(m)[4] - (m)[2]*(m)[4] ) );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_diag_m( REF_DBL *m, 
 			      REF_DBL *d )
 {
