@@ -56,11 +56,6 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				 ref_edge_e2n( ref_edge, 1, edge ),
 				 &allowed ), "mixed" );
       if ( !allowed) continue;
-      RSS( ref_split_edge_local_tets( ref_grid,
-				      ref_edge_e2n( ref_edge, 0, edge ),
-				      ref_edge_e2n( ref_edge, 1, edge ),
-				      &allowed ), "local tet" );
-      if ( !allowed) continue;
 
       RSS( ref_node_next_global( ref_node, &global ), "next global");
       RSS( ref_node_add( ref_node, global, &new_node ), "new node");
@@ -80,10 +75,25 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 	  continue;
 	}
 
+      RSS( ref_split_edge_local_tets( ref_grid,
+				      ref_edge_e2n( ref_edge, 0, edge ),
+				      ref_edge_e2n( ref_edge, 1, edge ),
+				      &allowed ), "local tet" );
+      if ( !allowed) 
+	{
+	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge ))++;
+	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge ))++;
+	  RSS( ref_node_remove( ref_node, new_node ), "remove new node");
+	  continue;
+	}
+
       RSS( ref_split_edge( ref_grid,
 			   ref_edge_e2n( ref_edge, 0, edge ),
 			   ref_edge_e2n( ref_edge, 1, edge ),
 			   new_node ), "split" );
+
+      ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge )) = 0;
+      ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge )) = 0;
 
     }
   

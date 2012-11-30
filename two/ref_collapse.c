@@ -72,6 +72,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 	   "collapse rm" );
       if ( !ref_node_valid(ref_node,node1) )
 	{
+	  ref_node_age(ref_node,node0) = 0;
 	  each_ref_cell_having_node( ref_cell, node0, item, cell )
 	    {
 	      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell nodes");
@@ -122,9 +123,6 @@ REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid,
       RSS(ref_collapse_edge_mixed(ref_grid,node0,node1,&allowed),"col mixed");
       if ( !allowed ) continue;
 
-      RSS(ref_collapse_edge_local_tets(ref_grid,node0,node1,&allowed),"colloc");
-      if ( !allowed ) continue;
-
       RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
       if ( !allowed ) continue;
 
@@ -133,6 +131,14 @@ REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid,
 
       RSS(ref_collapse_edge_quality(ref_grid,node0,node1,&allowed),"qual");
       if ( !allowed ) continue;
+
+      RSS(ref_collapse_edge_local_tets(ref_grid,node0,node1,&allowed),"colloc");
+      if ( !allowed ) 
+	{
+	  ref_node_age(ref_node,node0)++;
+	  ref_node_age(ref_node,node1)++;
+	  continue;
+	}
 
       *actual_node0 = node0;
       RSS( ref_collapse_edge( ref_grid, node0, node1 ), "col!");
