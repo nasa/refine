@@ -255,8 +255,6 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   REF_INT node0, node1, node2, node3, new_node0, new_node1;
   REF_INT global;
 
-  ref_gather_blocking_frame( ref_grid );
-
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc( ratio, ref_edge_n(ref_edge), REF_DBL );
@@ -327,7 +325,6 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
       ref_node_age(ref_node,node0) = 0;
       ref_node_age(ref_node,node1) = 0;
 
-      ref_gather_seq_only_frame( ref_grid );
     }
 
   ref_free( edges );
@@ -335,8 +332,6 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   ref_free( ratio );
 
   ref_edge_free( ref_edge );
-
-  ref_gather_blocking_frame( ref_grid );
 
   return REF_SUCCESS;
 }

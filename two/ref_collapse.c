@@ -668,8 +668,6 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
   REF_DBL edge_ratio;
   REF_BOOL active;
 
-  ref_gather_blocking_frame( ref_grid );
-
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc_init( ratio, ref_node_max(ref_node), 
@@ -714,7 +712,6 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
 	   "collapse rm" );
       if ( !ref_node_valid(ref_node,node1) )
 	{
-	  ref_gather_seq_only_frame( ref_grid );
 	  ref_node_age(ref_node,node0) = 0;
 	  each_ref_cell_having_node( ref_cell, node0, item, cell )
 	    {
@@ -733,8 +730,6 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
   ref_free( ratio );
 
   ref_edge_free( ref_edge );
-
-  ref_gather_blocking_frame( ref_grid );
 
   return REF_SUCCESS;
 }
