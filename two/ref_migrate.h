@@ -25,6 +25,10 @@ struct REF_MIGRATE_STRUCT {
   REF_DBL *weight;
 };
 
+extern REF_INT ref_migrate_method;
+#define REF_MIGRATE_GRAPH (0)
+#define REF_MIGRATE_RCB   (1)
+
 #define ref_migrate_grid( ref_migrate ) ((ref_migrate)->grid)
 #define ref_migrate_parent_global( ref_migrate ) ((ref_migrate)->parent_global)
 #define ref_migrate_parent_part( ref_migrate ) ((ref_migrate)->parent_part)
