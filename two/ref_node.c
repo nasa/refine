@@ -877,9 +877,9 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
     }
   else
     {
-      printf("%s: %d: %s: div zero vol %.18e min_det %.18e (%.18e / %.18e)\n",
+      printf("%s: %d: %s: div zero area %.18e min_det %.18e (%.18e / %.18e)\n",
 	     __FILE__,__LINE__,__func__,
-	     volume, min_det, num, denom );
+	     area, min_det, num, denom );
       RSS( REF_DIV_ZERO, "in tri quality");
     }
 
