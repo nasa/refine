@@ -9,9 +9,29 @@
 
 REF_STATUS ref_matrix_det_m( REF_DBL *m, REF_DBL *det )
 {
-  *det = ( (m)[0] * ( (m)[3]*(m)[5] - (m)[4]*(m)[4] ) + 
-	   (m)[1] * ( (m)[2]*(m)[4] - (m)[1]*(m)[5] ) + 
-	   (m)[2] * ( (m)[1]*(m)[4] - (m)[2]*(m)[4] ) );
+  REF_INT n = 3;
+  REF_INT i, j, k;
+  REF_DBL scale;
+  REF_DBL a[9];
+  a[0] = m[0]; a[1] = m[1]; a[2] = m[2]; 
+  a[3] = m[1]; a[4] = m[3]; a[5] = m[4]; 
+  a[6] = m[2]; a[7] = m[4]; a[8] = m[5]; 
+
+  *det = 1.0;
+
+  for (j = 0; j<n ; j++ )
+    {
+      (*det) *= a[j+n*j];
+      /* eliminate lower triangle */
+      for (i=j+1;i<n;i++)
+	{
+	  if ( !ref_math_divisible( a[i+j*n],a[j+j*n]  )) return REF_DIV_ZERO;
+	  scale = a[i+j*n] / a[j+j*n];
+	  for (k=0;k<n;k++)
+	    a[i+k*n] -= scale * a[j+k*n];
+	}
+    }
+
 
   return REF_SUCCESS;
 }
