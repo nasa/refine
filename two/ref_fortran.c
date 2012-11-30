@@ -122,7 +122,6 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
 
   RSS(ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
-  RSS( ref_histogram_quality( ref_grid ), "qual");
 
   passes = 10;
   for (i = 0; i<passes ; i++ )
@@ -131,7 +130,6 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       ref_mpi_stopwatch_stop("pass");
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
-      RSS( ref_histogram_quality( ref_grid ), "qual");
       RSS(ref_migrate_to_balance(ref_grid),"balance");
       ref_mpi_stopwatch_stop("balance");
     }
