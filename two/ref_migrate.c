@@ -434,8 +434,6 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
       default: RSS( REF_IMPLEMENT, "ref_migrate_method"); break;
       }
 
-    Zoltan_Set_Param(zz, "LB_METHOD", "RCB"); /* was RCB */
-
     Zoltan_Set_Param(zz, "OBJ_WEIGHT_DIM", "1");
 
     Zoltan_Set_Param(zz, "EDGE_WEIGHT_DIM", "1");
