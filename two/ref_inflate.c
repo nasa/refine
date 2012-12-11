@@ -57,6 +57,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 	}
   printf("new  nnode %d\n",ref_node_n(ref_node));	
 
+  printf("orig nquad %d\n",ref_cell_n(qua));	
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( faceid == nodes[3] )
       {
@@ -91,7 +92,17 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 	      }
 	  }
       }
+  printf("new  nquad %d\n",ref_cell_n(qua));	
 
+  printf("shft ntri  %d\n",ref_cell_n(tri));	
+  each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
+    if ( faceid == nodes[3] )
+      {
+	nodes[0] = o2n[nodes[0]];
+	nodes[1] = o2n[nodes[1]];
+	nodes[2] = o2n[nodes[2]];
+	RSS( ref_cell_replace_whole( tri, cell, nodes ), "repl");
+      }
   ref_free( o2n );
 
   return REF_SUCCESS;
