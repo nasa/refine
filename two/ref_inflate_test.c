@@ -37,6 +37,7 @@ int main( int argc, char *argv[] )
       RSS( ref_inflate_face( ref_grid, faceid ), "inflate" );
 
       RSS( ref_export_by_extension( ref_grid, "ref_inflate_test.vtk" ), "tec" );
+      RSS( ref_export_by_extension( ref_grid, "ref_inflate_test.tec" ), "tec" );
 
       RSS(ref_grid_free(ref_grid),"free");
     }
