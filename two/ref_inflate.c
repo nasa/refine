@@ -18,7 +18,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
   REF_INT cell, tri_side, node0, node1;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT ntri, tris[2];
+  REF_INT ntri, tris[2], nquad, quads[2];
   REF_INT tri_node;
   REF_INT *o2n;
   REF_INT global, new_node;
@@ -70,7 +70,21 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 				     node0, node1,
 				     2, &ntri,
 				     tris ),"bad tri count");
-	    if ( 2 != ntri ) THROW("not manifold");
+	    if ( 1 == ntri ) 
+	      {
+		RSS( ref_cell_list_with( qua, 
+					 node0, node1,
+					 2, &nquad,
+					 quads ),"bad quad count");
+		if ( 1 != nquad ) THROW("tri without quad");
+		new_nodes[4] = ref_cell_c2n(qua,4,quads[0]);
+		new_nodes[0] = node0;
+		new_nodes[1] = node1;
+		new_nodes[2] = o2n[node1];
+		new_nodes[3] = o2n[node0];
+		RSS( ref_cell_add( qua, new_nodes, &new_cell ), "qua tri1");
+		continue;
+	      }
 	    if ( ref_cell_c2n(tri,3,tris[0]) == faceid &&
 		 ref_cell_c2n(tri,3,tris[1]) != faceid  )
 	      {
@@ -80,6 +94,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 		new_nodes[2] = o2n[node1];
 		new_nodes[3] = o2n[node0];
 		RSS( ref_cell_add( qua, new_nodes, &new_cell ), "qua tri1");
+		continue;
 	      }
 	    if ( ref_cell_c2n(tri,3,tris[0]) != faceid &&
 		 ref_cell_c2n(tri,3,tris[1]) == faceid  )
@@ -90,6 +105,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 		new_nodes[2] = o2n[node1];
 		new_nodes[3] = o2n[node0];
 		RSS( ref_cell_add( qua, new_nodes, &new_cell ), "qua tri1");
+		continue;
 	      }
 	  }
       }
