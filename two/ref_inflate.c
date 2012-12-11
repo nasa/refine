@@ -14,6 +14,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL qua = ref_grid_qua(ref_grid);
+  REF_CELL pri = ref_grid_pri(ref_grid);
   REF_INT cell, tri_side, node0, node1;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
@@ -94,6 +95,20 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
       }
   printf("new  nquad %d\n",ref_cell_n(qua));	
 
+  printf("orig prism %d\n",ref_cell_n(pri));	
+  each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
+    if ( faceid == nodes[3] )
+      {
+	new_nodes[0] = nodes[0];
+	new_nodes[1] = nodes[1];
+	new_nodes[2] = nodes[2];
+	new_nodes[3] = o2n[nodes[0]];
+	new_nodes[4] = o2n[nodes[1]];
+	new_nodes[5] = o2n[nodes[2]];
+	RSS( ref_cell_add( pri, new_nodes, &new_cell ), "pri");
+      }
+  printf("new  prism %d\n",ref_cell_n(pri));	
+
   printf("shft ntri  %d\n",ref_cell_n(tri));	
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( faceid == nodes[3] )
@@ -104,6 +119,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 	RSS( ref_cell_replace_whole( tri, cell, nodes ), "repl");
       }
   ref_free( o2n );
+
 
   return REF_SUCCESS;
 }
