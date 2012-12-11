@@ -30,9 +30,6 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
 
-  thickness = 0.025;
-
-  printf("orig nnode %d\n",ref_node_n(ref_node));
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( faceid == nodes[3] )
       for(tri_node=0;tri_node<3;tri_node++)
@@ -58,9 +55,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		scale * ref_node_xyz(ref_node,2,node0);
 	    }
 	}
-  printf("new  nnode %d\n",ref_node_n(ref_node));	
 
-  printf("orig nquad %d\n",ref_cell_n(qua));	
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( faceid == nodes[3] )
       {
@@ -111,9 +106,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	      }
 	  }
       }
-  printf("new  nquad %d\n",ref_cell_n(qua));	
 
-  printf("orig prism %d\n",ref_cell_n(pri));	
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( faceid == nodes[3] )
       {
@@ -125,9 +118,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	new_nodes[5] = o2n[nodes[1]];
 	RSS( ref_cell_add( pri, new_nodes, &new_cell ), "pri");
       }
-  printf("new  prism %d\n",ref_cell_n(pri));	
 
-  printf("shft ntri  %d\n",ref_cell_n(tri));	
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( faceid == nodes[3] )
       {
@@ -136,8 +127,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	nodes[2] = o2n[nodes[2]];
 	RSS( ref_cell_replace_whole( tri, cell, nodes ), "repl");
       }
-  ref_free( o2n );
 
+  ref_free( o2n );
 
   return REF_SUCCESS;
 }

@@ -58,8 +58,12 @@ int main( int argc, char *argv[] )
       printf("total thickness %f\n", total_thickness);
 
       for( layer=0;layer<nlayers;layer++)
-	RSS( ref_inflate_face( ref_grid, faceid, thickness, xshift ), 
-	     "inflate" );
+	{
+	  RSS( ref_inflate_face( ref_grid, faceid, thickness, xshift ), 
+	       "inflate" );
+	  printf("layer %d of %d : %d nodes\n",
+		 layer+1,nlayers,ref_node_n(ref_grid_node(ref_grid)));
+	}
 
       RSS( ref_export_by_extension( ref_grid, "ref_inflate_test.tec" ), "tec" );
       RSS( ref_export_by_extension( ref_grid, "ref_inflate_test.b8.ugrid" ), "b8" );
