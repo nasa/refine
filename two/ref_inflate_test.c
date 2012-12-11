@@ -48,7 +48,7 @@ int main( int argc, char *argv[] )
 
       thickness = total_thickness/(REF_DBL)nlayers;
       mach_angle_rad = asin(1/mach);
-      xshift = thickness * tan(mach_angle_rad);
+      xshift = thickness / tan(mach_angle_rad);
 
       printf("inflating face %d\n",faceid);
       printf("mach %f mach angle %f rad %f deg\n",
