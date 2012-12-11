@@ -9,7 +9,9 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
-REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
+REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
+			     REF_INT faceid, 
+			     REF_DBL thickness, REF_DBL xshift )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -22,7 +24,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
   REF_INT tri_node;
   REF_INT *o2n;
   REF_INT global, new_node;
-  REF_DBL thickness, radius, scale;
+  REF_DBL radius, scale;
   REF_INT new_cell;
 
   ref_malloc_init( o2n, ref_node_max(ref_node), 
@@ -49,11 +51,11 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 		THROW("div zero");
 	      scale = (radius+thickness)/radius;
 	      ref_node_xyz(ref_node,0,new_node) = 
-		ref_node_xyz(ref_node,0,node0);
+		xshift + ref_node_xyz(ref_node,0,node0);
 	      ref_node_xyz(ref_node,1,new_node) = 
-		scale*ref_node_xyz(ref_node,1,node0);
+		scale * ref_node_xyz(ref_node,1,node0);
 	      ref_node_xyz(ref_node,2,new_node) = 
-		scale*ref_node_xyz(ref_node,2,node0);
+		scale * ref_node_xyz(ref_node,2,node0);
 	    }
 	}
   printf("new  nnode %d\n",ref_node_n(ref_node));	

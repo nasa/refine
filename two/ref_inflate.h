@@ -8,7 +8,9 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid );
+REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
+			     REF_INT faceid, 
+			     REF_DBL thickness, REF_DBL xshift );
 
 END_C_DECLORATION
 
