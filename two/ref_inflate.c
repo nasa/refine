@@ -13,13 +13,17 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_CELL qua = ref_grid_qua(ref_grid);
   REF_INT cell, tri_side, node0, node1;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ntri, tris[2];
   REF_INT tri_node;
   REF_INT *o2n;
   REF_INT global, new_node;
   REF_DBL thickness, radius, scale;
+  REF_INT new_cell;
+
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
 
@@ -65,12 +69,25 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
 				     2, &ntri,
 				     tris ),"bad tri count");
 	    if ( 2 != ntri ) THROW("not manifold");
-	    if ( ( ref_cell_c2n(tri,3,tris[0]) == faceid &&
-		   ref_cell_c2n(tri,3,tris[1]) != faceid  ) || 
-		 ( ref_cell_c2n(tri,3,tris[0]) != faceid &&
-		   ref_cell_c2n(tri,3,tris[1]) == faceid )  )
+	    if ( ref_cell_c2n(tri,3,tris[0]) == faceid &&
+		 ref_cell_c2n(tri,3,tris[1]) != faceid  )
 	      {
-		
+		new_nodes[4] = ref_cell_c2n(tri,3,tris[1]);
+		new_nodes[0] = node0;
+		new_nodes[1] = node1;
+		new_nodes[2] = o2n[node1];
+		new_nodes[3] = o2n[node0];
+		RSS( ref_cell_add( qua, new_nodes, &new_cell ), "qua tri1");
+	      }
+	    if ( ref_cell_c2n(tri,3,tris[0]) != faceid &&
+		 ref_cell_c2n(tri,3,tris[1]) == faceid  )
+	      {
+		new_nodes[4] = ref_cell_c2n(tri,3,tris[0]);
+		new_nodes[0] = node0;
+		new_nodes[1] = node1;
+		new_nodes[2] = o2n[node1];
+		new_nodes[3] = o2n[node0];
+		RSS( ref_cell_add( qua, new_nodes, &new_cell ), "qua tri1");
 	      }
 	  }
       }
