@@ -74,14 +74,14 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
     {
     case 3:
       ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
-      ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 2;
-      ref_cell_e2n_gen(ref_cell,0,2)  = 1; ref_cell_e2n_gen(ref_cell,1,2)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,1)  = 1; ref_cell_e2n_gen(ref_cell,1,1)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,2)  = 2; ref_cell_e2n_gen(ref_cell,1,2)  = 0;
       break;
     case 4:
       ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
-      ref_cell_e2n_gen(ref_cell,0,1)  = 0; ref_cell_e2n_gen(ref_cell,1,1)  = 3;
-      ref_cell_e2n_gen(ref_cell,0,2)  = 1; ref_cell_e2n_gen(ref_cell,1,2)  = 2;
-      ref_cell_e2n_gen(ref_cell,0,3)  = 2; ref_cell_e2n_gen(ref_cell,1,3)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,1)  = 1; ref_cell_e2n_gen(ref_cell,1,1)  = 2;
+      ref_cell_e2n_gen(ref_cell,0,2)  = 2; ref_cell_e2n_gen(ref_cell,1,2)  = 3;
+      ref_cell_e2n_gen(ref_cell,0,3)  = 3; ref_cell_e2n_gen(ref_cell,1,3)  = 0;
       break;
     case 6:
       ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
