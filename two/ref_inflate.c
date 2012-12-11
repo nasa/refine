@@ -100,11 +100,11 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid, REF_INT faceid )
     if ( faceid == nodes[3] )
       {
 	new_nodes[0] = nodes[0];
-	new_nodes[1] = nodes[1];
-	new_nodes[2] = nodes[2];
+	new_nodes[1] = nodes[2];
+	new_nodes[2] = nodes[1];
 	new_nodes[3] = o2n[nodes[0]];
-	new_nodes[4] = o2n[nodes[1]];
-	new_nodes[5] = o2n[nodes[2]];
+	new_nodes[4] = o2n[nodes[2]];
+	new_nodes[5] = o2n[nodes[1]];
 	RSS( ref_cell_add( pri, new_nodes, &new_cell ), "pri");
       }
   printf("new  prism %d\n",ref_cell_n(pri));	
