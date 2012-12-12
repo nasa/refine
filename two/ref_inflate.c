@@ -9,6 +9,57 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
+REF_STATUS ref_inflate_normal( REF_GRID ref_grid, 
+			       REF_INT faceid, 
+			       REF_DBL thickness, REF_DBL xshift )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL projection[2];
+  REF_DBL normal[3];
+  REF_DBL rx[2];
+  REF_DBL len, dot;
+
+  projection[0] = xshift;
+  projection[1] = thickness;
+  len = sqrt( projection[0]*projection[0] + projection[1]*projection[1] );
+  if ( !ref_math_divisible(projection[0],len) ||
+       !ref_math_divisible(projection[1],len))
+    THROW("div zero");
+  projection[0] /= len;
+  projection[1] /= len;
+
+  each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
+    if ( faceid == nodes[3] )
+      {
+	RSS( ref_node_tri_normal( ref_node, nodes, normal ), "norm" );
+	rx[0] = normal[0];
+	rx[1] = sqrt( normal[1]*normal[1] + normal[2]*normal[2] );
+
+	len = sqrt( rx[0]*rx[0] + rx[1]*rx[1] );
+	if ( !ref_math_divisible(rx[0],len) ||
+	     !ref_math_divisible(rx[1],len))
+	  THROW("div zero");
+	rx[0] /= len;
+	rx[1] /= len;
+
+	dot = rx[0]*projection[0] + rx[1]*projection[1];
+	if ( dot <= 0.0 )
+	  {
+	    printf("neg pri\n");
+	  }
+	if ( dot <= 0.1 )
+	  {
+	    printf("proj [%f,%f] rx [%f,%f] dot %f\n",
+		   projection[0],projection[1],rx[0],rx[1],dot);
+	  }
+      }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
 			     REF_INT faceid, 
 			     REF_DBL thickness, REF_DBL xshift )
