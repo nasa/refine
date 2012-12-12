@@ -77,6 +77,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   REF_INT global, new_node;
   REF_DBL radius, scale;
   REF_INT new_cell;
+  REF_DBL min_dot;
 
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
@@ -167,6 +168,10 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	new_nodes[3] = o2n[nodes[0]];
 	new_nodes[4] = o2n[nodes[2]];
 	new_nodes[5] = o2n[nodes[1]];
+	
+	RSS( ref_node_pri_min_dot( ref_node, new_nodes, &min_dot ), "md");
+	if ( min_dot <= 0.0 ) printf("min_dot %f\n",min_dot);
+	
 	RSS( ref_cell_add( pri, new_nodes, &new_cell ), "pri");
       }
 
