@@ -962,6 +962,42 @@ REF_STATUS ref_node_tet_vol( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_pri_min_dot( REF_NODE ref_node, 
+				 REF_INT *nodes,  
+				 REF_DBL *min_dot )
+{
+  REF_INT tri_nodes[3];
+  REF_DBL top_normal[3];
+  REF_DBL bot_normal[3];
+  REF_DBL edge[3];
+  REF_INT node, i;
+
+  tri_nodes[0]= nodes[0];
+  tri_nodes[1]= nodes[1];
+  tri_nodes[2]= nodes[2];
+  RSS( ref_node_tri_normal( ref_node, tri_nodes, bot_normal ), "bot"); 
+  RSS( ref_math_normalize( bot_normal ), "norm bot");
+
+  tri_nodes[0]= nodes[3];
+  tri_nodes[1]= nodes[4];
+  tri_nodes[2]= nodes[5];
+  RSS( ref_node_tri_normal( ref_node, tri_nodes, top_normal ), "top"); 
+  RSS( ref_math_normalize( top_normal ), "norm top");
+
+  *min_dot = 1.0;
+  for ( node=0;node<3;node++)
+    {
+      for ( i = 0; i < 3 ; i++ )
+	edge[i] = ref_node_xyz(ref_node,i,nodes[node+3]) 
+	  - ref_node_xyz(ref_node,i,nodes[node]); 
+      RSS( ref_math_normalize( edge ), "norm edge0");
+      *min_dot = MIN(*min_dot,ref_math_dot(edge,bot_normal));
+      *min_dot = MIN(*min_dot,ref_math_dot(edge,top_normal));
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node, 
 				      REF_INT node0, REF_INT node1, 
 				      REF_INT new_node )
