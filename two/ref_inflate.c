@@ -75,7 +75,6 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   REF_INT tri_node;
   REF_INT *o2n;
   REF_INT global, new_node;
-  REF_DBL radius, scale;
   REF_INT new_cell;
   REF_DBL min_dot;
 
@@ -92,19 +91,52 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	      RSS( ref_node_next_global( ref_node, &global ), "global" );
 	      RSS( ref_node_add( ref_node, global, &new_node ), "add node" );
 	      o2n[node0] = new_node;
-	      radius = sqrt( ref_node_xyz(ref_node,1,node0) *
-			     ref_node_xyz(ref_node,1,node0) +
-			     ref_node_xyz(ref_node,2,node0) *
-			     ref_node_xyz(ref_node,2,node0) );
-	      if ( !ref_math_divisible(radius+thickness,radius) )
-		THROW("div zero");
-	      scale = (radius+thickness)/radius;
-	      ref_node_xyz(ref_node,0,new_node) = 
-		xshift + ref_node_xyz(ref_node,0,node0);
-	      ref_node_xyz(ref_node,1,new_node) = 
-		scale * ref_node_xyz(ref_node,1,node0);
-	      ref_node_xyz(ref_node,2,new_node) = 
-		scale * ref_node_xyz(ref_node,2,node0);
+	      if ( REF_TRUE )
+		{
+		  REF_DBL normal[3], ref_normal[3], dot, len;
+		  REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
+		  REF_INT item, ref;
+		  normal[0]=0.0;
+		  normal[1]=ref_node_xyz(ref_node,1,node0);
+		  normal[2]=ref_node_xyz(ref_node,2,node0);
+		  RSS( ref_math_normalize( ref_normal ), "make norm" );
+		  each_ref_cell_having_node( tri, node0, item, ref )
+		    {
+		      ref_cell_nodes( tri, ref, ref_nodes );
+		      if ( !ref_dict_has_key( faceids, ref_nodes[3] ) )
+			continue;
+		      RSS( ref_node_tri_normal( ref_node, 
+						ref_nodes, ref_normal ), "n" );
+		      RSS( ref_math_normalize( ref_normal ), "make norm" );
+		      dot = -ref_math_dot(normal, ref_normal);
+		      normal[1] /= dot;
+		      normal[2] /= dot;
+		    }
+		  len = sqrt( ref_math_dot(normal,normal) );
+		  ref_node_xyz(ref_node,0,new_node) = 
+		    len*xshift + ref_node_xyz(ref_node,0,node0);
+		  ref_node_xyz(ref_node,1,new_node) = 
+		    thickness*normal[1] + ref_node_xyz(ref_node,1,node0);
+		  ref_node_xyz(ref_node,2,new_node) = 
+		    thickness*normal[2] + ref_node_xyz(ref_node,2,node0);
+		}
+	      else
+		{
+		  REF_DBL radius, scale;
+		  radius = sqrt( ref_node_xyz(ref_node,1,node0) *
+				 ref_node_xyz(ref_node,1,node0) +
+				 ref_node_xyz(ref_node,2,node0) *
+				 ref_node_xyz(ref_node,2,node0) );
+		  if ( !ref_math_divisible(radius+thickness,radius) )
+		    THROW("div zero");
+		  scale = (radius+thickness)/radius;
+		  ref_node_xyz(ref_node,0,new_node) = 
+		    xshift + ref_node_xyz(ref_node,0,node0);
+		  ref_node_xyz(ref_node,1,new_node) = 
+		    scale * ref_node_xyz(ref_node,1,node0);
+		  ref_node_xyz(ref_node,2,new_node) = 
+		    scale * ref_node_xyz(ref_node,2,node0);
+		}
 	    }
 	}
 
