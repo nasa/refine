@@ -10,7 +10,7 @@
 #include "ref_math.h"
 
 REF_STATUS ref_inflate_normal( REF_GRID ref_grid, 
-			       REF_INT faceid, 
+			       REF_DICT faceids, 
 			       REF_DBL thickness, REF_DBL xshift )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -32,7 +32,7 @@ REF_STATUS ref_inflate_normal( REF_GRID ref_grid,
   projection[1] /= len;
 
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
-    if ( faceid == nodes[3] )
+    if ( ref_dict_has_key( faceids, nodes[3] ) )
       {
 	RSS( ref_node_tri_normal( ref_node, nodes, normal ), "norm" );
 	rx[0] = normal[0];
@@ -61,7 +61,7 @@ REF_STATUS ref_inflate_normal( REF_GRID ref_grid,
 }
 
 REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
-			     REF_INT faceid, 
+			     REF_DICT faceids, 
 			     REF_DBL thickness, REF_DBL xshift )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -83,7 +83,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		   REF_INT, REF_EMPTY );
 
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
-    if ( faceid == nodes[3] )
+    if ( ref_dict_has_key( faceids, nodes[3] ) )
       for(tri_node=0;tri_node<3;tri_node++)
 	{
 	  node0 = nodes[tri_node];
@@ -109,7 +109,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	}
 
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
-    if ( faceid == nodes[3] )
+    if ( ref_dict_has_key( faceids, nodes[3] ) )
       {
 	for(tri_side=0;tri_side<3;tri_side++)
 	  {
@@ -134,8 +134,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		RSS( ref_cell_add( qua, new_nodes, &new_cell ), "qua tri1");
 		continue;
 	      }
-	    if ( ref_cell_c2n(tri,3,tris[0]) == faceid &&
-		 ref_cell_c2n(tri,3,tris[1]) != faceid  )
+	    if (  ref_dict_has_key( faceids, ref_cell_c2n(tri,3,tris[0]) ) &&
+		 !ref_dict_has_key( faceids, ref_cell_c2n(tri,3,tris[1]) ) )
 	      {
 		new_nodes[4] = ref_cell_c2n(tri,3,tris[1]);
 		new_nodes[0] = node0;
@@ -145,8 +145,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		RSS( ref_cell_add( qua, new_nodes, &new_cell ), "qua tri1");
 		continue;
 	      }
-	    if ( ref_cell_c2n(tri,3,tris[0]) != faceid &&
-		 ref_cell_c2n(tri,3,tris[1]) == faceid  )
+	    if ( !ref_dict_has_key( faceids, ref_cell_c2n(tri,3,tris[0]) ) &&
+		  ref_dict_has_key( faceids, ref_cell_c2n(tri,3,tris[1]) ) )
 	      {
 		new_nodes[4] = ref_cell_c2n(tri,3,tris[0]);
 		new_nodes[0] = node0;
@@ -160,7 +160,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
       }
 
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
-    if ( faceid == nodes[3] )
+    if ( ref_dict_has_key( faceids, nodes[3] ) )
       {
 	new_nodes[0] = nodes[0];
 	new_nodes[1] = nodes[2];
@@ -176,7 +176,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
       }
 
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
-    if ( faceid == nodes[3] )
+    if ( ref_dict_has_key( faceids, nodes[3] ) )
       {
 	nodes[0] = o2n[nodes[0]];
 	nodes[1] = o2n[nodes[1]];

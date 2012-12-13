@@ -34,6 +34,7 @@ int main( int argc, char *argv[] )
   if ( 6 == argc )
     {
       REF_GRID ref_grid;
+      REF_DICT faceids;
       REF_INT faceid, nlayers;
       REF_DBL total_thickness, mach;
       REF_INT layer;
@@ -41,7 +42,10 @@ int main( int argc, char *argv[] )
 
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
 
+      RSS( ref_dict_create( &faceids ), "create" );
+
       faceid = atoi( argv[2] );
+      RSS( ref_dict_store( faceids, faceid, REF_EMPTY ), "store" );
       nlayers = atoi( argv[3] );
       total_thickness = atof( argv[4] );
       mach = atof( argv[5] );
@@ -59,9 +63,9 @@ int main( int argc, char *argv[] )
 
       for( layer=0;layer<nlayers;layer++)
 	{
-	  RSS( ref_inflate_normal( ref_grid, faceid, thickness, xshift ), 
+	  RSS( ref_inflate_normal( ref_grid, faceids, thickness, xshift ), 
 	       "normals" );
-	  RSS( ref_inflate_face( ref_grid, faceid, thickness, xshift ), 
+	  RSS( ref_inflate_face( ref_grid, faceids, thickness, xshift ), 
 	       "inflate" );
 	  printf("layer %d of %d : %d nodes\n",
 		 layer+1,nlayers,ref_node_n(ref_grid_node(ref_grid)));
@@ -70,6 +74,7 @@ int main( int argc, char *argv[] )
       RSS( ref_export_by_extension( ref_grid, "ref_inflate_test.tec" ), "tec" );
       RSS( ref_export_by_extension( ref_grid, "ref_inflate_test.b8.ugrid" ), "b8" );
 
+      RSS(ref_dict_free( faceids ), "free" );
       RSS(ref_grid_free(ref_grid),"free");
     }
 
