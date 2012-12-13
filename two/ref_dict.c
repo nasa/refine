@@ -114,6 +114,19 @@ REF_STATUS ref_dict_value( REF_DICT ref_dict, REF_INT key, REF_INT *value )
   return REF_SUCCESS;
 }
 
+REF_BOOL ref_dict_has_key( REF_DICT ref_dict, REF_INT key )
+{
+  REF_INT i;
+
+  for (i=0; i<ref_dict_n( ref_dict ); i++) 
+    if ( key == ref_dict->key[i] )
+      {
+	return REF_TRUE;
+      }
+
+  return REF_FALSE;
+}
+
 REF_STATUS ref_dict_inspect( REF_DICT ref_dict )
 {
   REF_INT i;

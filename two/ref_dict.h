@@ -35,6 +35,8 @@ REF_STATUS ref_dict_location( REF_DICT ref_dict,
 REF_STATUS ref_dict_remove( REF_DICT ref_dict, REF_INT key );
 REF_STATUS ref_dict_value( REF_DICT ref_dict, REF_INT key, REF_INT *value );
 
+REF_BOOL ref_dict_has_key( REF_DICT ref_dict, REF_INT key );
+
 REF_STATUS ref_dict_inspect( REF_DICT ref_dict );
 END_C_DECLORATION
 
