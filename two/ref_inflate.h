@@ -5,9 +5,14 @@
 #include "ref_defs.h"
 
 #include "ref_grid.h"
+#include "ref_node.h"
 #include "ref_dict.h"
 
 BEGIN_C_DECLORATION
+
+REF_STATUS ref_inflate_pri_min_dot( REF_NODE ref_node, 
+				    REF_INT *nodes,  
+				    REF_DBL *min_dot );
 
 REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
 			     REF_DICT faceids, 

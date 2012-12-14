@@ -5,9 +5,44 @@
 #include "ref_inflate.h"
 
 #include "ref_cell.h"
-#include "ref_node.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+
+REF_STATUS ref_inflate_pri_min_dot( REF_NODE ref_node, 
+				    REF_INT *nodes,  
+				    REF_DBL *min_dot )
+{
+  REF_INT tri_nodes[3];
+  REF_DBL top_normal[3];
+  REF_DBL bot_normal[3];
+  REF_DBL edge[3];
+  REF_INT node, i;
+
+  tri_nodes[0]= nodes[0];
+  tri_nodes[1]= nodes[1];
+  tri_nodes[2]= nodes[2];
+  RSS( ref_node_tri_normal( ref_node, tri_nodes, bot_normal ), "bot"); 
+  RSS( ref_math_normalize( bot_normal ), "norm bot");
+
+  tri_nodes[0]= nodes[3];
+  tri_nodes[1]= nodes[4];
+  tri_nodes[2]= nodes[5];
+  RSS( ref_node_tri_normal( ref_node, tri_nodes, top_normal ), "top"); 
+  RSS( ref_math_normalize( top_normal ), "norm top");
+
+  *min_dot = 1.0;
+  for ( node=0;node<3;node++)
+    {
+      for ( i = 0; i < 3 ; i++ )
+	edge[i] = ref_node_xyz(ref_node,i,nodes[node+3]) 
+	  - ref_node_xyz(ref_node,i,nodes[node]); 
+      RSS( ref_math_normalize( edge ), "norm edge0");
+      *min_dot = MIN(*min_dot,ref_math_dot(edge,bot_normal));
+      *min_dot = MIN(*min_dot,ref_math_dot(edge,top_normal));
+    }
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_inflate_normal( REF_GRID ref_grid, 
 			       REF_DICT faceids, 
@@ -201,7 +236,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	new_nodes[4] = o2n[nodes[2]];
 	new_nodes[5] = o2n[nodes[1]];
 	
-	RSS( ref_node_pri_min_dot( ref_node, new_nodes, &min_dot ), "md");
+	RSS( ref_inflate_pri_min_dot( ref_node, new_nodes, &min_dot ), "md");
 	if ( min_dot <= 0.0 ) printf("min_dot %f\n",min_dot);
 	
 	RSS( ref_cell_add( pri, new_nodes, &new_cell ), "pri");

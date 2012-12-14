@@ -124,10 +124,6 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
 				 REF_INT *nodes,  
 				 REF_DBL *quality );
 
-REF_STATUS ref_node_pri_min_dot( REF_NODE ref_node, 
-				 REF_INT *nodes,  
-				 REF_DBL *min_dot );
-
 REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node, 
 				      REF_INT node0, REF_INT node1, 
 				      REF_INT new_node );
