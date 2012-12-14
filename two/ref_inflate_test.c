@@ -27,28 +27,31 @@ int main( int argc, char *argv[] )
 
   if ( 2 == argc )
     {
-      printf("usage: \n %s input.grid faceid nlayers total_thickness mach\n",
+      printf("usage: \n %s input.grid nlayers total_thickness mach faceid [faceid]\n",
 	     argv[0]);
     }
 
-  if ( 6 == argc )
+  if ( 6 <= argc )
     {
       REF_GRID ref_grid;
       REF_DICT faceids;
-      REF_INT faceid, nlayers;
+      REF_INT arg, faceid, nlayers;
       REF_DBL total_thickness, mach;
       REF_INT layer;
       REF_DBL thickness, xshift, mach_angle_rad;
 
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
 
-      RSS( ref_dict_create( &faceids ), "create" );
+      nlayers = atoi( argv[2] );
+      total_thickness = atof( argv[3] );
+      mach = atof( argv[4] );
 
-      faceid = atoi( argv[2] );
-      RSS( ref_dict_store( faceids, faceid, REF_EMPTY ), "store" );
-      nlayers = atoi( argv[3] );
-      total_thickness = atof( argv[4] );
-      mach = atof( argv[5] );
+      RSS( ref_dict_create( &faceids ), "create" );
+      for( arg=5;arg<argc;arg++)
+	{
+	  faceid = atoi( argv[arg] );
+	  RSS( ref_dict_store( faceids, faceid, REF_EMPTY ), "store" );
+	}
 
       thickness = total_thickness/(REF_DBL)nlayers;
       mach_angle_rad = asin(1/mach);
