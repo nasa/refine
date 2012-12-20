@@ -113,6 +113,10 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   REF_INT new_cell;
   REF_DBL min_dot;
 
+  REF_DBL normal[3], ref_normal[3], dot, len;
+  REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, ref;
+
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
 
@@ -128,9 +132,6 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	      o2n[node0] = new_node;
 	      if ( REF_TRUE )
 		{
-		  REF_DBL normal[3], ref_normal[3], dot, len;
-		  REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
-		  REF_INT item, ref;
 		  normal[0]=0.0;
 		  normal[1]=ref_node_xyz(ref_node,1,node0);
 		  normal[2]=ref_node_xyz(ref_node,2,node0);
