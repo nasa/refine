@@ -8,7 +8,7 @@ mkdir -p strict
 ( cd strict && \
     ../configure \
     --prefix=`pwd` \
-    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused' \
+    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
     FC=gfortran \
     ) \
     || exit
