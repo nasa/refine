@@ -9,9 +9,7 @@ REF_STATUS ref_math_normalize( REF_DBL *normal )
 {
   REF_DBL length;
 
-  length = ref_math_dot(normal,normal);
-
-  length = sqrt(length);
+  length = sqrt(ref_math_dot(normal,normal));
 
   if ( !ref_math_divisible(normal[0],length) ||
        !ref_math_divisible(normal[1],length) ||
