@@ -132,6 +132,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	      o2n[node0] = new_node;
 	      if ( REF_TRUE )
 		{
+		  RAS( ref_node_valid(ref_node,node0),"inlvalid tri node");
 		  normal[0]=0.0;
 		  normal[1]=ref_node_xyz(ref_node,1,node0);
 		  normal[2]=ref_node_xyz(ref_node,2,node0);
