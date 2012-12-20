@@ -74,7 +74,7 @@ int main( int argc, char *argv[] )
 		 layer+1,nlayers,ref_node_n(ref_grid_node(ref_grid)));
 	}
 
-      RSS( ref_export_by_extension( ref_grid, "ref_inflate_test.tec" ), "tec" );
+      RSS( ref_export_tec_surf( ref_grid, "ref_inflate_test.tec" ), "tec" );
       RSS( ref_export_by_extension( ref_grid, "ref_inflate_test.b8.ugrid" ), "b8" );
 
       RSS(ref_dict_free( faceids ), "free" );
