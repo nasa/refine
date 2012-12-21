@@ -22,8 +22,9 @@ REF_STATUS ref_inflate_normal( REF_GRID ref_grid,
 			       REF_DICT faceids, 
 			       REF_DBL thickness, REF_DBL xshift );
 
-REF_STATUS ref_inflate_fix( REF_GRID ref_grid, REF_INT *o2n,
-			    REF_INT triangle );
+REF_STATUS ref_inflate_fix( REF_GRID ref_grid, 
+			    REF_DICT faceids, 
+			    REF_INT *o2n );
 
 END_C_DECLORATION
 
