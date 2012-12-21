@@ -92,7 +92,7 @@ REF_STATUS ref_node_inspect( REF_NODE ref_node )
 
 REF_STATUS ref_node_location( REF_NODE ref_node, REF_INT node )
 {
-  printf("ref_node %d\n",node);
+  printf("ref_node %d ",node);
   if ( ref_node_valid(ref_node,node) )
     {
       printf ("(%.15e,%.15e,%.15e)\n",
