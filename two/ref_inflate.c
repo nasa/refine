@@ -117,6 +117,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, ref;
 
+  REF_DBL area0, area1;
+
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
 
@@ -225,6 +227,26 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		RSS( ref_cell_add( qua, new_nodes, &new_cell ), "qua tri1");
 		continue;
 	      }
+	  }
+      }
+
+  each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
+    if ( ref_dict_has_key( faceids, nodes[3] ) )
+      {
+	new_nodes[0] = nodes[0];
+	new_nodes[1] = nodes[1];
+	new_nodes[2] = nodes[2];
+	RSS( ref_node_tri_area( ref_node, new_nodes, &area0 ), "a0");
+	new_nodes[0] = o2n[nodes[0]];
+	new_nodes[1] = o2n[nodes[1]];
+	new_nodes[2] = o2n[nodes[2]];
+	RSS( ref_node_tri_area( ref_node, new_nodes, &area1 ), "a1");
+	if ( area1/area0 < 1.0 )
+	  {
+	    printf("prism triangle area ration %f\n",area1/area0);
+	    RSS( ref_node_location( ref_node, nodes[0] ), "n0");
+	    RSS( ref_node_location( ref_node, nodes[1] ), "n1");
+	    RSS( ref_node_location( ref_node, nodes[2] ), "n2");
 	  }
       }
 
