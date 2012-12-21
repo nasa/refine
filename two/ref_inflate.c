@@ -247,6 +247,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	    RSS( ref_node_location( ref_node, nodes[0] ), "n0");
 	    RSS( ref_node_location( ref_node, nodes[1] ), "n1");
 	    RSS( ref_node_location( ref_node, nodes[2] ), "n2");
+	    RSS( ref_inflate_fix(ref_grid,o2n,cell), "fix" );
 	  }
       }
 
@@ -280,3 +281,73 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_inflate_fix( REF_GRID ref_grid, REF_INT *o2n,
+			    REF_INT triangle )
+{
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+
+  REF_DBL theta[3];
+  REF_DBL area0, area1;
+  REF_INT i;
+  REF_INT node, node0, node1;
+  REF_DBL projection[3], edge[3];
+  REF_DBL dot;
+
+  RSS( ref_cell_nodes(tri,triangle,nodes), "tri");
+  RSS( ref_node_tri_area( ref_node, nodes, &area0 ), "a0");
+  new_nodes[0] = o2n[nodes[0]];
+  new_nodes[1] = o2n[nodes[1]];
+  new_nodes[2] = o2n[nodes[2]];
+  RSS( ref_node_tri_area( ref_node, new_nodes, &area1 ), "a1");
+
+  for(i=0;i<3;i++)
+    theta[i] = 180.0/ref_math_pi *atan2(ref_node_xyz(ref_node,1,nodes[i]),
+					ref_node_xyz(ref_node,2,nodes[i]));
+
+  node = REF_EMPTY;
+  if ( theta[1] < theta[0] && theta[0] < theta[2] ) node = 0;
+  if ( theta[2] < theta[0] && theta[0] < theta[1] ) node = 0;
+
+  if ( theta[0] < theta[1] && theta[1] < theta[2] ) node = 1;
+  if ( theta[2] < theta[1] && theta[1] < theta[0] ) node = 1;
+
+  if ( theta[0] < theta[2] && theta[2] < theta[1] ) node = 2;
+  if ( theta[1] < theta[2] && theta[2] < theta[0] ) node = 2;
+
+  node0 = node + 1;
+  if ( 2 < node0 ) node0 -= 3;
+  node1 = node0 + 1;
+  if ( 2 < node1 ) node1 -= 3;
+
+  printf("theta %f %f %f %d %d %d\n",
+	 theta[0],theta[1],theta[2],node,node0,node1);
+
+  for ( i = 0; i < 3 ; i++ )
+    projection[i] = ref_node_xyz(ref_node,i,new_nodes[node]) 
+      - ref_node_xyz(ref_node,i,new_nodes[node0]); 
+
+  for ( i = 0; i < 3 ; i++ )
+    edge[i] = ref_node_xyz(ref_node,i,new_nodes[node1]) 
+      - ref_node_xyz(ref_node,i,new_nodes[node0]); 
+
+  RSS( ref_math_normalize( edge ), "edge");
+
+  dot = ref_math_dot( edge, projection );
+
+  for ( i = 0; i < 3 ; i++ )
+    projection[i] -= dot*edge[i];
+  
+  for ( i = 0; i < 3 ; i++ )
+    ref_node_xyz(ref_node,i,new_nodes[node]) += (area0/area1-1.0)*projection[i];
+
+  RSS( ref_node_tri_area( ref_node, nodes, &area0 ), "a0");
+  RSS( ref_node_tri_area( ref_node, new_nodes, &area1 ), "a1");
+
+  printf("ratio %f\n",area1/area0);
+    
+  return REF_SUCCESS;
+}
