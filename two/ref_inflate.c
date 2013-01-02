@@ -135,7 +135,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	    }
 	}
 
-  RSS( ref_inflate_fix(ref_grid,faceids, o2n), "fix" );
+  if ( ref_inflation_style != ref_inflate_parallel )
+    RSS( ref_inflate_fix(ref_grid,faceids, o2n), "fix" );
 
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( ref_dict_has_key( faceids, nodes[3] ) )
