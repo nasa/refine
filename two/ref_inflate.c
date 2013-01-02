@@ -68,9 +68,10 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   REF_DBL radius, scale;
 
 #define ref_inflate_hyperbolically 0
-#define ref_inflate_cylindrically 1
+#define ref_inflate_parallel 1
+#define ref_inflate_cylindrically 2
 
-  REF_INT ref_inflation_style = ref_inflate_hyperbolically;
+  REF_INT ref_inflation_style = ref_inflate_parallel;
 
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
@@ -88,6 +89,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	      switch (ref_inflation_style) 
 		{
 		case ref_inflate_hyperbolically:
+		case ref_inflate_parallel:
 		  RAS( ref_node_valid(ref_node,node0),"inlvalid tri node");
 		  normal[0]=0.0;
 		  normal[1]=ref_node_xyz(ref_node,1,node0);
@@ -106,6 +108,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		      normal[2] /= dot;
 		    }
 		  len = sqrt( ref_math_dot(normal,normal) );
+		  if ( ref_inflate_parallel ) len = 1.0;
 		  ref_node_xyz(ref_node,0,new_node) = 
 		    len*xshift + ref_node_xyz(ref_node,0,node0);
 		  ref_node_xyz(ref_node,1,new_node) = 
