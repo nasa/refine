@@ -66,8 +66,6 @@ int main( int argc, char *argv[] )
 
       for( layer=0;layer<nlayers;layer++)
 	{
-	  RSS( ref_inflate_normal( ref_grid, faceids, thickness, xshift ), 
-	       "normals" );
 	  RSS( ref_inflate_face( ref_grid, faceids, thickness, xshift ), 
 	       "inflate" );
 	  printf("layer %d of %d : %d nodes\n",
