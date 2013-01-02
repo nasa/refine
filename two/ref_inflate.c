@@ -306,6 +306,8 @@ REF_STATUS ref_inflate_fix( REF_GRID ref_grid,
 	if ( theta[0] < theta[2] && theta[2] < theta[1] ) node = 2;
 	if ( theta[1] < theta[2] && theta[2] < theta[0] ) node = 2;
 
+	RUS(REF_EMPTY,node,"middle node not found, symmetry plane included?");
+
 	node0 = node + 1;
 	if ( 2 < node0 ) node0 -= 3;
 	node1 = node0 + 1;
