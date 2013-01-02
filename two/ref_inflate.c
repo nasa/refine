@@ -65,6 +65,12 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   REF_DBL normal[3], ref_normal[3], dot, len;
   REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, ref;
+  REF_DBL radius, scale;
+
+#define ref_inflate_hyperbolically 0
+#define ref_inflate_cylindrically 1
+
+  REF_INT ref_inflation_style = ref_inflate_hyperbolically;
 
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
@@ -79,8 +85,9 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	      RSS( ref_node_next_global( ref_node, &global ), "global" );
 	      RSS( ref_node_add( ref_node, global, &new_node ), "add node" );
 	      o2n[node0] = new_node;
-	      if ( REF_TRUE )
+	      switch (ref_inflation_style) 
 		{
+		case ref_inflate_hyperbolically:
 		  RAS( ref_node_valid(ref_node,node0),"inlvalid tri node");
 		  normal[0]=0.0;
 		  normal[1]=ref_node_xyz(ref_node,1,node0);
@@ -105,10 +112,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		    thickness*normal[1] + ref_node_xyz(ref_node,1,node0);
 		  ref_node_xyz(ref_node,2,new_node) = 
 		    thickness*normal[2] + ref_node_xyz(ref_node,2,node0);
-		}
-	      else
-		{
-		  REF_DBL radius, scale;
+		  break;
+		case ref_inflate_cylindrically:
 		  radius = sqrt( ref_node_xyz(ref_node,1,node0) *
 				 ref_node_xyz(ref_node,1,node0) +
 				 ref_node_xyz(ref_node,2,node0) *
@@ -122,6 +127,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		    scale * ref_node_xyz(ref_node,1,node0);
 		  ref_node_xyz(ref_node,2,new_node) = 
 		    scale * ref_node_xyz(ref_node,2,node0);
+		  break;
 		}
 	    }
 	}
