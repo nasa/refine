@@ -200,7 +200,11 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	new_nodes[5] = o2n[nodes[1]];
 	
 	RSS( ref_inflate_pri_min_dot( ref_node, new_nodes, &min_dot ), "md");
-	if ( min_dot <= 0.0 ) printf("min_dot %f\n",min_dot);
+	if ( min_dot <= 0.0 ) 
+	  {
+	    printf("min_dot %f\n",min_dot);
+	    THROW("malformed prism");
+	  }
 	
 	RSS( ref_cell_add( pri, new_nodes, &new_cell ), "pri");
       }
