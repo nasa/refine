@@ -106,11 +106,12 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 			continue;
 		      RSS( ref_node_tri_normal( ref_node, 
 						ref_nodes, ref_normal ), "n" );
+		      ref_normal[0] = 0.0;
 		      RSS( ref_math_normalize( ref_normal ), "make norm" );
 		      dot = -ref_math_dot(normal, ref_normal);
 		      if ( dot < 0.5 || dot > 2.0 ) 
 			{
-			  printf("dot %f\n",dot);
+			  printf("out-of-range dot %.15f\n",dot);
 			  problem_detected = REF_TRUE;
 			}
 		      normal[1] /= dot;
