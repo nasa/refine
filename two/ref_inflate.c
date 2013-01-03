@@ -8,6 +8,8 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
+#include "ref_export.h"
+
 REF_STATUS ref_inflate_pri_min_dot( REF_NODE ref_node, 
 				    REF_INT *nodes,  
 				    REF_DBL *min_dot )
@@ -73,6 +75,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 
   REF_INT ref_inflation_style = ref_inflate_parallel;
 
+  REF_BOOL problem_detected = REF_FALSE;
+
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
 
@@ -104,7 +108,11 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 						ref_nodes, ref_normal ), "n" );
 		      RSS( ref_math_normalize( ref_normal ), "make norm" );
 		      dot = -ref_math_dot(normal, ref_normal);
-		      if ( dot < 0.5 || dot > 2.0 ) printf("dot %f\n",dot);
+		      if ( dot < 0.5 || dot > 2.0 ) 
+			{
+			  printf("dot %f\n",dot);
+			  problem_detected = REF_TRUE;
+			}
 		      normal[1] /= dot;
 		      normal[2] /= dot;
 		    }
@@ -204,7 +212,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	if ( min_dot <= 0.0 ) 
 	  {
 	    printf("min_dot %f\n",min_dot);
-	    THROW("malformed prism");
+	    problem_detected = REF_TRUE;
 	  }
 	
 	RSS( ref_cell_add( pri, new_nodes, &new_cell ), "pri");
@@ -220,6 +228,12 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
       }
 
   ref_free( o2n );
+
+  if ( problem_detected )
+    {
+      RSS( ref_export_tec_surf( ref_grid, "ref_inflate_problem.tec" ), "tec" );
+      THROW("problem detected, examine ref_inflate_problem.tec");
+    }
 
   return REF_SUCCESS;
 }
