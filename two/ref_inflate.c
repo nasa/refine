@@ -94,7 +94,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		  normal[0]=0.0;
 		  normal[1]=ref_node_xyz(ref_node,1,node0);
 		  normal[2]=ref_node_xyz(ref_node,2,node0);
-		  RSS( ref_math_normalize( ref_normal ), "make norm" );
+		  RSS( ref_math_normalize( normal ), "make norm" );
 		  each_ref_cell_having_node( tri, node0, item, ref )
 		    {
 		      ref_cell_nodes( tri, ref, ref_nodes );
@@ -104,6 +104,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 						ref_nodes, ref_normal ), "n" );
 		      RSS( ref_math_normalize( ref_normal ), "make norm" );
 		      dot = -ref_math_dot(normal, ref_normal);
+		      if ( dot < 0.5 || dot > 2.0 ) printf("dot %f\n",dot);
 		      normal[1] /= dot;
 		      normal[2] /= dot;
 		    }
