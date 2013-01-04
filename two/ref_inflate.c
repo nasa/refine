@@ -46,6 +46,65 @@ REF_STATUS ref_inflate_pri_min_dot( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_node_tri_normal_yz( REF_NODE ref_node, 
+					  REF_INT *nodes, 
+					  REF_DBL *normal )
+{
+  REF_DBL *xyz0, *xyz1, *xyz2;
+  REF_DBL dy, dz, dt, largest_dt;
+  REF_DBL radius[3];
+
+  if ( !ref_node_valid(ref_node,nodes[0]) ||
+       !ref_node_valid(ref_node,nodes[1]) ||
+       !ref_node_valid(ref_node,nodes[2]) ) 
+    RSS( REF_INVALID, "node invalid" );
+
+  xyz0 = ref_node_xyz_ptr(ref_node,nodes[0]);
+  xyz1 = ref_node_xyz_ptr(ref_node,nodes[1]);
+  xyz2 = ref_node_xyz_ptr(ref_node,nodes[2]);
+
+  normal[0] = 0.0;
+
+  dy = xyz1[1] - xyz0[1];
+  dz = xyz1[2] - xyz0[2];
+  dt = sqrt( dy*dy+dz*dz );
+  largest_dt = dt;
+  normal[1] =  dz;
+  normal[2] = -dy;
+
+  dy = xyz2[1] - xyz1[1];
+  dz = xyz2[2] - xyz1[2];
+  dt = sqrt( dy*dy+dz*dz );
+  if ( dt > largest_dt )
+    {
+      normal[1] =  dz;
+      normal[2] = -dy;
+    }
+
+  dy = xyz0[1] - xyz2[1];
+  dz = xyz0[2] - xyz2[2];
+  dt = sqrt( dy*dy+dz*dz );
+  if ( dt > largest_dt )
+    {
+      normal[1] =  dz;
+      normal[2] = -dy;
+    }
+
+  radius[0] = 0.0;
+  radius[1] = xyz0[1];
+  radius[2] = xyz1[2];
+
+  /* point towards origin */
+  if ( 0 < ref_math_dot(normal, radius) )
+    {
+      normal[0] = -normal[0];
+      normal[1] = -normal[1];
+      normal[2] = -normal[2];
+    }
+
+  return REF_SUCCESS;  
+}
+
 REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
 			     REF_DICT faceids, 
 			     REF_DBL thickness, REF_DBL xshift )
@@ -104,8 +163,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		      ref_cell_nodes( tri, ref, ref_nodes );
 		      if ( !ref_dict_has_key( faceids, ref_nodes[3] ) )
 			continue;
-		      RSS( ref_node_tri_normal( ref_node, 
-						ref_nodes, ref_normal ), "n" );
+		      RSS( ref_node_tri_normal_yz( ref_node, 
+						   ref_nodes, ref_normal ),"n");
 		      ref_normal[0] = 0.0;
 		      RSS( ref_math_normalize( ref_normal ), "make norm" );
 		      dot = -ref_math_dot(normal, ref_normal);
