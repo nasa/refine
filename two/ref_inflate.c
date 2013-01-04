@@ -46,65 +46,6 @@ REF_STATUS ref_inflate_pri_min_dot( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_node_tri_normal_yz( REF_NODE ref_node, 
-					  REF_INT *nodes, 
-					  REF_DBL *normal )
-{
-  REF_DBL *xyz0, *xyz1, *xyz2;
-  REF_DBL dy, dz, dt, largest_dt;
-  REF_DBL radius[3];
-
-  if ( !ref_node_valid(ref_node,nodes[0]) ||
-       !ref_node_valid(ref_node,nodes[1]) ||
-       !ref_node_valid(ref_node,nodes[2]) ) 
-    RSS( REF_INVALID, "node invalid" );
-
-  xyz0 = ref_node_xyz_ptr(ref_node,nodes[0]);
-  xyz1 = ref_node_xyz_ptr(ref_node,nodes[1]);
-  xyz2 = ref_node_xyz_ptr(ref_node,nodes[2]);
-
-  normal[0] = 0.0;
-
-  dy = xyz1[1] - xyz0[1];
-  dz = xyz1[2] - xyz0[2];
-  dt = sqrt( dy*dy+dz*dz );
-  largest_dt = dt;
-  normal[1] =  dz;
-  normal[2] = -dy;
-
-  dy = xyz2[1] - xyz1[1];
-  dz = xyz2[2] - xyz1[2];
-  dt = sqrt( dy*dy+dz*dz );
-  if ( dt > largest_dt )
-    {
-      normal[1] =  dz;
-      normal[2] = -dy;
-    }
-
-  dy = xyz0[1] - xyz2[1];
-  dz = xyz0[2] - xyz2[2];
-  dt = sqrt( dy*dy+dz*dz );
-  if ( dt > largest_dt )
-    {
-      normal[1] =  dz;
-      normal[2] = -dy;
-    }
-
-  radius[0] = 0.0;
-  radius[1] = xyz0[1];
-  radius[2] = xyz1[2];
-
-  /* point towards origin */
-  if ( 0 < ref_math_dot(normal, radius) )
-    {
-      normal[0] = -normal[0];
-      normal[1] = -normal[1];
-      normal[2] = -normal[2];
-    }
-
-  return REF_SUCCESS;  
-}
-
 REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
 			     REF_DICT faceids, 
 			     REF_DBL thickness, REF_DBL xshift )
@@ -123,14 +64,66 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   REF_INT new_cell;
   REF_DBL min_dot;
 
-  REF_DBL normal[3], ref_normal[3], dot, len;
+  REF_DBL normal[3], dot, len;
   REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, ref;
+
+  REF_DBL *tmin, *tmax;
+  REF_INT *imin, *imax;
+  REF_DBL *face_normal;
+  REF_INT i;
+  REF_DBL theta;
 
   REF_BOOL problem_detected = REF_FALSE;
 
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
+
+  ref_malloc( face_normal, 3*ref_dict_n(faceids), REF_DBL );
+
+  /* determine each faceids normal */
+
+  ref_malloc_init( tmin, ref_dict_n(faceids), REF_DBL,  2.0*ref_math_pi );
+  ref_malloc_init( tmax, ref_dict_n(faceids), REF_DBL, -2.0*ref_math_pi);
+  ref_malloc_init( imin, ref_dict_n(faceids), REF_INT,  REF_EMPTY);
+  ref_malloc_init( imax, ref_dict_n(faceids), REF_INT,  REF_EMPTY);
+
+  each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
+    if ( ref_dict_has_key( faceids, nodes[3] ) )
+      for(tri_node=0;tri_node<3;tri_node++)
+	{
+	  RSS(ref_dict_location(faceids, nodes[3], &i),"key loc");
+	  node0 = nodes[tri_node];
+	  theta = atan2( ref_node_xyz(ref_node,1,node0),
+			 ref_node_xyz(ref_node,2,node0));
+	  if ( tmin[i] > theta )
+	    {
+	      tmin[i] = theta;
+	      imin[i] = node0;
+	    }
+	  if ( tmax[i] < theta )
+	    {
+	      tmax[i] = theta;
+	      imax[i] = node0;
+	    }
+	}
+
+  each_ref_dict_key_index( faceids, i )
+    {
+      RUS( REF_EMPTY, imin[i],"imin");
+      RUS( REF_EMPTY, imax[i],"imax");
+      face_normal[0+3*i] = 0.0;
+      face_normal[1+3*i] =  ( ref_node_xyz(ref_node,2,imax[i]) -
+			      ref_node_xyz(ref_node,2,imin[i]) );
+      face_normal[2+3*i] = -( ref_node_xyz(ref_node,1,imax[i]) -
+			      ref_node_xyz(ref_node,1,imin[i]) );
+      RSS( ref_math_normalize( &(face_normal[3*i]) ), "make face norm" );
+    }
+
+  ref_free( tmax );
+  ref_free( tmin );
+  ref_free( imax );
+  ref_free( imin );
 
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( ref_dict_has_key( faceids, nodes[3] ) )
@@ -153,12 +146,9 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		  ref_cell_nodes( tri, ref, ref_nodes );
 		  if ( !ref_dict_has_key( faceids, ref_nodes[3] ) )
 		    continue;
-		  RSS( ref_node_tri_normal_yz( ref_node, 
-					       ref_nodes, ref_normal ),"n");
-		  ref_normal[0] = 0.0;
-		  RSS( ref_math_normalize( ref_normal ), "make norm" );
-		  dot = -ref_math_dot(normal, ref_normal);
-		  if ( dot < 0.5 || dot > 2.0 ) 
+		  RSS(ref_dict_location(faceids, ref_nodes[3], &i),"key loc");
+		  dot = -ref_math_dot(normal, &(face_normal[3*i]));
+		  if ( dot < 0.70 || dot > 1.01 ) 
 		    {
 		      printf("out-of-range dot %.15f\n",dot);
 		      problem_detected = REF_TRUE;
@@ -175,6 +165,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		thickness*normal[2] + ref_node_xyz(ref_node,2,node0);
 	    }
 	}
+
+  ref_free( face_normal );
 
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
     if ( ref_dict_has_key( faceids, nodes[3] ) )
