@@ -7,9 +7,16 @@ script_path=`dirname "${script_name_with_path}"`
 
 # TESTS_ENVIRONMENT='valgrind --quiet --leak-check=full'
 
-( cd ${script_path}/mpi/two && \
-    make -j check ) && \
-( cd ${script_path}/strict/two && \
-    make -j check TESTS_ENVIRONMENT='valgrind --quiet --leak-check=full' ) && \
-true
+if test -d mpi
+then
+  ( cd ${script_path}/mpi/two && \
+     check ) || exit
+fi
+
+if test -d strict
+then
+  ( cd ${script_path}/strict/two && \
+    make -j check TESTS_ENVIRONMENT='valgrind --quiet --leak-check=full' ) || exit
+
+fi
 
