@@ -10,7 +10,7 @@ script_path=`dirname "${script_name_with_path}"`
 if test -d mpi
 then
   ( cd ${script_path}/mpi/two && \
-     check ) || exit
+     make -j check ) || exit
 fi
 
 if test -d strict
