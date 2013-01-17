@@ -11,6 +11,8 @@
 #  define END_C_DECLORATION
 #endif
 
+#include <limits.h>
+
 BEGIN_C_DECLORATION
 
 typedef int REF_BOOL;
@@ -32,6 +34,9 @@ typedef int REF_BOOL;
 #endif
 
 typedef int REF_INT;
+#define REF_INT_MAX (INT_MAX)
+#define REF_INT_MIN (INT_MIN)
+
 typedef double REF_DBL;
 
 typedef int REF_STATUS;
