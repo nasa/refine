@@ -870,3 +870,29 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_export_faceid_range( REF_GRID ref_grid, 
+				    REF_INT *min_faceid, REF_INT *max_faceid )
+{
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_faceid = REF_INT_MAX;
+  *max_faceid = REF_INT_MIN;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      *min_faceid = MIN( *min_faceid, nodes[ref_cell_node_per(ref_cell)] );
+      *max_faceid = MAX( *max_faceid, nodes[ref_cell_node_per(ref_cell)] );
+    }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      *min_faceid = MIN( *min_faceid, nodes[ref_cell_node_per(ref_cell)] );
+      *max_faceid = MAX( *max_faceid, nodes[ref_cell_node_per(ref_cell)] );
+    }
+
+  return REF_SUCCESS;
+}
