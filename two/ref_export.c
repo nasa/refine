@@ -672,6 +672,7 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
   REF_INT group;
+  REF_INT faceid, min_faceid, max_faceid;
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -699,39 +700,49 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
 	    ref_node_xyz(ref_node,1,n2o[node]),
 	    ref_node_xyz(ref_node,2,n2o[node]) ) ;
 
-  ref_cell = ref_grid_tri(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      for ( node = 0; node < node_per; node++ )
-	fprintf(file," %d",o2n[nodes[node]]+1);
-      fprintf(file,"\n");
-    }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      for ( node = 0; node < node_per; node++ )
-	fprintf(file," %d",o2n[nodes[node]]+1);
-      fprintf(file,"\n");
-    }
+  RSS( ref_export_faceid_range( ref_grid, &min_faceid, &max_faceid), "range");
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      fprintf(file," %d",nodes[3]);
-      fprintf(file,"\n");
-    }
+  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      if ( nodes[node_per] == faceid )
+	{
+	  for ( node = 0; node < node_per; node++ )
+	    fprintf(file," %d",o2n[nodes[node]]+1);
+	  fprintf(file,"\n");
+	}
 
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      fprintf(file," %d",nodes[4]);
-      fprintf(file,"\n");
-    }
+  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      if ( nodes[node_per] == faceid )
+	{
+	  for ( node = 0; node < node_per; node++ )
+	    fprintf(file," %d",o2n[nodes[node]]+1);
+	  fprintf(file,"\n");
+	}
+
+  ref_cell = ref_grid_tri(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      if ( nodes[node_per] == faceid )
+	{
+	  fprintf(file," %d",nodes[3]);
+	  fprintf(file,"\n");
+	}
+
+  ref_cell = ref_grid_qua(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      if ( nodes[node_per] == faceid )
+	{
+	  fprintf(file," %d",nodes[4]);
+	  fprintf(file,"\n");
+	}
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
@@ -764,6 +775,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   REF_INT node_per, cell;
   REF_DBL swapped_dbl;
   REF_INT group;
+  REF_INT faceid, min_faceid, max_faceid;
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -814,41 +826,51 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
       REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"z");
     }
 
-  ref_cell = ref_grid_tri(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    for ( node = 0; node < node_per; node++ )
-      {
-	nodes[node] = o2n[nodes[node]]+1;
-	SWAP_INT(nodes[node]);
-	REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"tri");
-      }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    for ( node = 0; node < node_per; node++ )
-      {
-	nodes[node] = o2n[nodes[node]]+1;
-	SWAP_INT(nodes[node]);
-	REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"qua");
-      }
+  RSS( ref_export_faceid_range( ref_grid, &min_faceid, &max_faceid), "range");
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      SWAP_INT(nodes[3]);
-      REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"tri id");
-    }
+  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      if ( nodes[node_per] == faceid )
+	for ( node = 0; node < node_per; node++ )
+	  {
+	    nodes[node] = o2n[nodes[node]]+1;
+	    SWAP_INT(nodes[node]);
+	    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"tri");
+	  }
 
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      SWAP_INT(nodes[4]);
-      REIS(1, fwrite(&(nodes[4]),sizeof(REF_INT),1,file),"qua id");
-    }
+  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      if ( nodes[node_per] == faceid )
+	for ( node = 0; node < node_per; node++ )
+	  {
+	    nodes[node] = o2n[nodes[node]]+1;
+	    SWAP_INT(nodes[node]);
+	    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"qua");
+	  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      if ( nodes[node_per] == faceid )
+	{
+	  SWAP_INT(nodes[3]);
+	  REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"tri id");
+	}
+
+  ref_cell = ref_grid_qua(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      if ( nodes[node_per] == faceid )
+	{
+	  SWAP_INT(nodes[4]);
+	  REIS(1, fwrite(&(nodes[4]),sizeof(REF_INT),1,file),"qua id");
+	}
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
