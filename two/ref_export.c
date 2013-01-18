@@ -1139,7 +1139,7 @@ REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename )
   i = nbn; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"nbn");
   i = 0; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"npv");
   i = 0; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"nev");
-  t = 0.0; SWAP_DBL(i); REIS(1, fwrite(&i,sizeof(REF_DBL),1,file),"t");
+  t = 0.0; SWAP_DBL(t); REIS(1, fwrite(&t,sizeof(REF_DBL),1,file),"t");
 
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
@@ -1159,7 +1159,7 @@ REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename )
     for ( node = 0 ; node < nnode ; node++ )
       {
 	t = ref_node_xyz(ref_node,ixyz,n2o[node]);
-	SWAP_DBL(i); REIS(1, fwrite(&i,sizeof(REF_DBL),1,file),"crd");
+	SWAP_DBL(t); REIS(1, fwrite(&t,sizeof(REF_DBL),1,file),"crd");
       }
   i = fortran_record_size; 
   SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
