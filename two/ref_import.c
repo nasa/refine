@@ -660,6 +660,7 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT nedge, edge, n0, n1, n2, id;
   REF_INT ntri, tri;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+  REF_INT status;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -671,7 +672,9 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
   
   while (!feof(file))
     {
-      REIS( 1, fscanf( file, "%s", line), "line read failed");
+      status = fscanf( file, "%s", line);
+      if ( EOF == status ) return REF_SUCCESS;
+      REIS( 1, status, "line read failed");
 
       if ( 0 == strcmp("Vertices",line))
 	{
@@ -742,7 +745,6 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
 	      RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
 		   "prism for tri");
 	    }
-	  return REF_SUCCESS;
 	}
 
     } 
