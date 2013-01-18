@@ -98,11 +98,11 @@ int main( int argc, char *argv[] )
 
   { /* export .cogsg tet */
     REF_GRID ref_grid;
-    char file[] = "ref_export_test.cogsg";
     RSS(ref_fixture_tet_grid( &ref_grid ), "set up tet" );
-    RSS(ref_export_cogsg( ref_grid, file ),"export" );
+    RSS(ref_export_cogsg( ref_grid, "ref_export_test.cogsg" ),"export" );
     RSS(ref_grid_free(ref_grid),"free");
-    REIS(0, remove( file ), "test clean up");
+    REIS(0, remove( "ref_export_test.cogsg" ), "test clean up");
+    REIS(0, remove( "ref_export_test.bc" ), "test clean up");
   }
 
   return 0;

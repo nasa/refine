@@ -1059,27 +1059,34 @@ c
 
  */
 
-REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename )
+REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename_cogsg )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, cell, ixyz;
-  REF_INT nnode, nbn;
+  REF_INT nnode, nbn, ntri;
   REF_INT *o2n, *n2o;
   REF_CELL ref_cell;
   REF_DICT ref_dict;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   FILE *file;
+  REF_INT boundary_index, boundary_tag;
 
   int fortran_record_size;
   REF_INT i;
   REF_DBL t;
   size_t end_of_string;
-
-  end_of_string = strlen(filename);
+  char filename_bc[1024];
+  char *period_bc;
+  end_of_string = strlen(filename_cogsg);
 
   RAS( end_of_string > 6, "filename too short" );
-  REIS(0, strcmp(&filename[end_of_string-6],".cogsg"), 
+  RAS( end_of_string < 1023, "filename too long" );
+  REIS(0, strcmp(&filename_cogsg[end_of_string-6],".cogsg"), 
        "filename must end in .cogsg" );
+
+  sprintf(filename_bc, "%s", filename_cogsg);
+  period_bc = strrchr(filename_bc, '.');
+  sprintf(period_bc, ".bc" );
 
   REIS( 0, ref_cell_n( ref_grid_qua(ref_grid) ), "no quad support");
   REIS( 0, ref_cell_n( ref_grid_pyr(ref_grid) ), "no pyramid support");
@@ -1119,10 +1126,38 @@ REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename )
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     RSS( ref_dict_store( ref_dict, nodes[3], REF_EMPTY ), "mark tri" );
 
+   file = fopen(filename_bc,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename_bc);
+  RNS(file, "unable to open file" );
+
+  fprintf(file,"%d %d %d %d\n",
+	  ref_cell_n(ref_cell),
+	  0,
+	  ref_dict_n(ref_dict),
+	  0);
+  fprintf(file,"exported by ref_export_cogsg x         x         x         x         x        80\n");
+ 
+  ntri = 0;
+
+  each_ref_dict_key( ref_dict, boundary_index, boundary_tag )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( boundary_tag == nodes[3] )
+      {
+	fprintf(file," %d %d",ntri+1,boundary_index + 1);
+	ntri++;
+	for ( node = 0; node < 3; node++ )
+	  {
+	    fprintf(file," %d",o2n[nodes[node]] + 1);
+	  }
+	fprintf(file,"\n");
+      }
+
+  fclose(file);
+
   RSS( ref_dict_free( ref_dict), "free");
 
-  file = fopen(filename,"w");
-  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  file = fopen(filename_cogsg,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename_cogsg);
   RNS(file, "unable to open file" );
 
   ref_cell = ref_grid_tet(ref_grid);
@@ -1144,7 +1179,7 @@ REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename )
   for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
       {
-	i = o2n[nodes[node]];
+	i = o2n[nodes[node]] + 1;
 	SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"int");
       }
 
