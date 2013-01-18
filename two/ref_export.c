@@ -918,3 +918,264 @@ REF_STATUS ref_export_faceid_range( REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+/*
+
+------------------------------------------------------------
+
+  1)  project.mapbc:  Patch/flow-boundary-condition file (ASCII)
+
+                    ----------format------------
+c
+       parameter(mpatch=***)
+c
+       integer bcpch(mpatch)
+       character*1 text(80)
+c
+       open(13,file='project.mapbc',form='formatted')
+c
+       read(13,900)text
+       read(13,900)text
+       read(13,900)text
+       read(13,900)text
+       do ipatch=1,npatch
+        read(13,*)jpatch,bcpch(ipatch),idum1,idum2,idum3
+       enddo
+c
+  900 format(80a1)
+c
+                   ----------------------------
+
+  where
+
+       text = text line
+     npatch = number of surface patches defining the geometry
+     jpatch = surface patch index
+      bcpch = flow boundary condition assigned to surface patch "jpatch"
+      idum1,idum2,idum3 = dummy variables
+**********************************************************************
+
+
+  2)  project.bc: patch/surface-triangle file (ASCII)
+
+                   ----------format-------------
+c
+       parameter(mbf=***)
+c
+       integer fapch(mbf),fnode(mbf,3)
+       character*1 text(80)
+c
+       open(unit=12,file='project.bc',form='formatted')
+c
+       read(12,*)nbf,nbc,npatch,igrid
+       read(12,900)text
+       do if=1,nbf
+        read(12,*)jf,fapch(if),fnode(if,in),in=1,3)
+       enddo
+  900  format(80a1)
+c
+                   ----------------------------
+
+  where
+
+        nbf = number of boundary triangular faces
+        nbc = number of surface grid nodes along patch boundaries (curves)
+     npatch = number of surface patches
+      igrid = 1 for inviscid grids; 2 for viscous grids
+       text = text line
+         jf = triangle index
+  fapch(if) = surface patch index containing surface triangle "if"
+fnode(if,in) = node "in" of triangle "if"
+
+Note: triangle connectivities are according to the right-hand rule with
+      the outward normals pointing into the computational domain.
+
+***********************************************************************
+
+
+  3)  project.cogsg: x,y,z coordinates of the grid nodes and
+                    tetrahedral node connectivity
+
+                   ----------format------------
+c
+      parameter(mp=***, mc=***)   !maximum number of grid nodes and cells
+      real(8)  crd(mp,3),t
+      integer int(mc,4)
+c
+       open(9,file='project.cogrd',form='unformatted',iostat=ios,
+     &      err=555,status='old')
+c
+      npoic=0
+      npois=1
+      nelec=0
+      neles=1
+      read(9)inew,nc,npo,nbn,npv,nev,t,
+     &       ((int(ie,in),ie=neles,nelee),in=1,4)
+      read(9)((crd(ip,id),ip=npois,npoie),id=1,3)
+      nelec=nelee
+      npoic=npoie
+c
+ 100  continue
+      neles=neles+nelec
+      read(9,end=400)nelec
+      if(nelec .eq. 0) goto 400
+      nelee=neles+nelec-1
+      read(9)((int(ie,in),ie=neles,nelee),in=1,4)
+      npois=npois+npoic
+      read(9)npoic
+      npoie=npois+npoic-1
+      read(9)((crd(ip,id),ip=npois,npoie),id=1,3)
+c
+      goto 100
+ 400  continue
+      npo=npoie
+      nc=nelee
+c
+                   ----------------------------
+
+  where
+
+         inew = a dummy variable (integer)
+           nc = number of tetrahedral cells
+          npo = total number of grid nodes (including nbn)
+          nbn = number of grid nodes on the boundaries (including nbc)
+          npv = number of grid points in the viscous layers
+                (=0 for Euler grids)
+          ncv = number of cells in the viscous layers
+                (=0 for Euler grids)
+            t = a dummy variable (real - double)
+   int(ie,in) = tetradhedral cell connectivity
+                (node "in" of cell "ie")
+   crd(ip,id) = x, y, and z coordinates of node "ip"
+
+  Note 1: the first "nbn" coordinates listed in this file are those of
+         the boundary nodes.
+
+  Note 2:  tetrahedral cell connectivities are given according to the
+           right-hand rule (3 nodes of the base in the counter-clockwise
+           direction followed by the 4th node.)
+
+************************************************************************
+
+ */
+
+REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node, cell, ixyz;
+  REF_INT nnode, nbn;
+  REF_INT *o2n, *n2o;
+  REF_CELL ref_cell;
+  REF_DICT ref_dict;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  FILE *file;
+
+  int fortran_record_size;
+  REF_INT i;
+  REF_DBL t;
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  RAS( end_of_string > 6, "filename too short" );
+  REIS(0, strcmp(&filename[end_of_string-6],".cogsg"), 
+       "filename must end in .cogsg" );
+
+  REIS( 0, ref_cell_n( ref_grid_qua(ref_grid) ), "no quad support");
+  REIS( 0, ref_cell_n( ref_grid_pyr(ref_grid) ), "no pyramid support");
+  REIS( 0, ref_cell_n( ref_grid_pri(ref_grid) ), "no prism support");
+  REIS( 0, ref_cell_n( ref_grid_hex(ref_grid) ), "no hex support");
+
+  ref_malloc_init( o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+  ref_malloc( n2o, ref_node_n(ref_node), REF_INT );
+
+  nnode = 0;
+
+  ref_cell = ref_grid_tri(ref_grid);
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+      if ( REF_EMPTY == o2n[nodes[node]] )
+	{
+	  o2n[nodes[node]] = nnode;
+	  nnode++;
+	}
+  nbn = nnode;
+  
+  each_ref_node_valid_node( ref_node, node )
+    if ( REF_EMPTY == o2n[node] )
+      {
+	o2n[node] = nnode;
+	nnode++;
+      }
+
+  REIS( nnode, ref_node_n(ref_node), "nnode miscount" );
+
+  each_ref_node_valid_node( ref_node, node )
+    n2o[o2n[node]] = node;
+
+  RSS( ref_dict_create( &ref_dict ), "create dict" ); 
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    RSS( ref_dict_store( ref_dict, nodes[3], REF_EMPTY ), "mark tri" );
+
+  RSS( ref_dict_free( ref_dict), "free");
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  ref_cell = ref_grid_tet(ref_grid);
+
+  fortran_record_size = 4*6 + 8*1 + 4*4*ref_cell_n(ref_cell);
+
+  i = fortran_record_size; 
+  SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
+  
+  i = 0; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"inew");
+  i = ref_cell_n(ref_cell); SWAP_INT(i); 
+  REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"nc");
+  i = nnode; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"npo");
+  i = nbn; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"nbn");
+  i = 0; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"npv");
+  i = 0; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"nev");
+  t = 0.0; SWAP_DBL(i); REIS(1, fwrite(&i,sizeof(REF_DBL),1,file),"t");
+
+  for ( node = 0 ; node < ref_cell_node_per(ref_cell) ; node++ )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      {
+	i = o2n[nodes[node]];
+	SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"int");
+      }
+
+  i = fortran_record_size; 
+  SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
+
+  fortran_record_size = 8*3*nnode;
+
+  i = fortran_record_size; 
+  SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
+  for ( ixyz = 0 ; ixyz < 3 ; ixyz++ )
+    for ( node = 0 ; node < nnode ; node++ )
+      {
+	t = ref_node_xyz(ref_node,ixyz,n2o[node]);
+	SWAP_DBL(i); REIS(1, fwrite(&i,sizeof(REF_DBL),1,file),"crd");
+      }
+  i = fortran_record_size; 
+  SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
+
+  i = 4; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
+  i = 0; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"nelec");
+  i = 4; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
+
+  i = 4; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
+  i = 0; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"npoic");
+  i = 4; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
+
+  fclose(file);
+
+  ref_free( o2n );
+  ref_free( n2o );
+
+  return REF_SUCCESS;
+}
