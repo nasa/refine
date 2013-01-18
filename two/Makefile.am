@@ -17,6 +17,7 @@ libref2_a_SOURCES = \
 	ref_fixture.c ref_fixture.h \
 	ref_fortran.c ref_fortran.h \
 	ref_gather.c ref_gather.h \
+	ref_gen.c ref_gen.h \
 	ref_grid.c ref_grid.h \
 	ref_histogram.c ref_histogram.h \
 	ref_import.c ref_import.h \
@@ -137,6 +138,11 @@ TESTS += ref_gather_test
 noinst_PROGRAMS += ref_gather_test
 ref_gather_test_SOURCES = ref_gather_test.c
 ref_gather_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+
+TESTS += ref_gen_test
+noinst_PROGRAMS += ref_gen_test
+ref_gen_test_SOURCES = ref_gen_test.c
+ref_gen_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_grid_test
 noinst_PROGRAMS += ref_grid_test
