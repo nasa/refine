@@ -105,34 +105,39 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
       RSS( ref_export_vtk( ref_grid, filename ), "vtk export failed");
     } 
   else 
-    if( strcmp(&filename[end_of_string-4],".tec") == 0 ) 
+    if( strcmp(&filename[end_of_string-2],".c") == 0 ) 
       {
-	RSS( ref_export_tec( ref_grid, filename ), "tec export failed");
+	RSS( ref_export_c( ref_grid, filename ), "C export failed");
       } 
     else 
-      if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
+      if( strcmp(&filename[end_of_string-4],".tec") == 0 ) 
 	{
-	  RSS( ref_export_b8_ugrid( ref_grid, filename ), 
-	       "b8.ugrid export failed");
+	  RSS( ref_export_tec( ref_grid, filename ), "tec export failed");
 	} 
       else 
-	if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
+	if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
 	  {
-	    RSS( ref_export_ugrid( ref_grid, filename ), 
-		 "ugrid export failed");
+	    RSS( ref_export_b8_ugrid( ref_grid, filename ), 
+		 "b8.ugrid export failed");
 	  } 
 	else 
-	  if( strcmp(&filename[end_of_string-6],".cogsg") == 0 ) 
+	  if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
 	    {
-	      RSS( ref_export_cogsg( ref_grid, filename ), 
-		   "cogsg export failed");
+	      RSS( ref_export_ugrid( ref_grid, filename ), 
+		   "ugrid export failed");
 	    } 
 	  else 
-	    {
-	      printf("%s: %d: %s %s\n",__FILE__,__LINE__,
-		     "export file name extension unknown", filename);
-	      RSS( REF_FAILURE, "unknown file extension");
-	    }
+	    if( strcmp(&filename[end_of_string-6],".cogsg") == 0 ) 
+	      {
+		RSS( ref_export_cogsg( ref_grid, filename ), 
+		     "cogsg export failed");
+	      } 
+	    else 
+	      {
+		printf("%s: %d: %s %s\n",__FILE__,__LINE__,
+		       "export file name extension unknown", filename);
+		RSS( REF_FAILURE, "unknown file extension");
+	      }
 
   return REF_SUCCESS;
 }
@@ -1140,6 +1145,49 @@ Note: triangle connectivities are according to the right-hand rule with
 
   ref_free( o2n );
   ref_free( n2o );
+
+  return REF_SUCCESS;
+}
+
+
+REF_STATUS ref_export_c( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node, ixyz;
+  REF_INT *o2n, *n2o;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  RSS( ref_node_compact( ref_node, &o2n, &n2o), "compact" );
+
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    {
+      fprintf(file, "  RSS(ref_node_add(ref_node,%d,&node),\"node\");\n", node);
+      for ( ixyz = 0; ixyz < 3; ixyz++ ) 
+	fprintf(file, "  ref_node_xyz(ref_node,%d,node) = %.15e;\n",
+		ixyz, ref_node_xyz(ref_node,ixyz,n2o[node]));
+    }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < ref_cell_size_per(ref_cell); node++ )
+	fprintf(file,"  nodes[%d] = %d;\n",node,o2n[nodes[node]]);
+      fprintf(file,"  RSS(ref_cell_add(ref_grid_qua(ref_grid),nodes,&cell),\"qua\");\n");
+    }
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(file);
 
   return REF_SUCCESS;
 }

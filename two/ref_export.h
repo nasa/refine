@@ -30,10 +30,12 @@ REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename );
 
-REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename );
-
 REF_STATUS ref_export_faceid_range( REF_GRID ref_grid, 
 				    REF_INT *min_faceid, REF_INT *max_faceid );
+
+REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename );
+
+REF_STATUS ref_export_c( REF_GRID ref_grid, char *filename );
 
 END_C_DECLORATION
 
