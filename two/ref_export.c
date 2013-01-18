@@ -1173,7 +1173,7 @@ REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename_cogsg )
   i = fortran_record_size; 
   SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"record");
   
-  i = 0; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"inew");
+  i = -1; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"inew");
   i = ref_cell_n(ref_cell); SWAP_INT(i); 
   REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"nc");
   i = nnode; SWAP_INT(i); REIS(1, fwrite(&i,sizeof(REF_INT),1,file),"npo");
