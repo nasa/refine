@@ -10,6 +10,56 @@
 
 #include "ref_math.h"
 
+/*
+                                                     5
+                                                  . /|
+                                               .   / |
+                                            .     /  |
+                                         .       /   |
+                                      .         /    |
+                                   .           /     |
+                                .             /      |
+                             .               /       |
+                          .                 /        |
+                         3--q3---------q2--4         2
+                         |                 |      . /
+                         |                 |   .   /
+                         |                 |.     /
+                   y     |               . |     /
+                   ^     |            .    |    /
+                   |     |         .       |   /
+                   |     |      .          |  /
+                         |   .             | /
+                         |.                |/
+                         0--q0---------q1--1
+
+ */
+
+/*
+                                                     5
+                                                  . /|
+                                               .   / |
+                                            .     /  |
+                                         .       /   |
+                                      .         /    |
+                                   .           /     |
+                                .             /      |
+                             .               /       |
+                          .                 /        |
+                         3-----------------4         2
+                         |                 |      . /
+                         |                 |   .   /
+                         |                 |.     /
+                         |               . |     /
+                         |            .    |    /
+                         |         .       |   /
+                         |      .          |  /
+                         |   .             | /
+                         |.                |/
+                         0-----------------1
+
+ */
+
 REF_STATUS ref_gen_fill( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -18,6 +68,7 @@ REF_STATUS ref_gen_fill( REF_GRID ref_grid )
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT pri[REF_CELL_MAX_SIZE_PER];
   REF_INT tri[REF_CELL_MAX_SIZE_PER];
+  REF_INT qua[REF_CELL_MAX_SIZE_PER];
   REF_INT global;
 
   RSS( ref_cell_create( &front, 4, REF_TRUE ), "qua front" );
@@ -78,6 +129,11 @@ REF_STATUS ref_gen_fill( REF_GRID ref_grid )
       tri[2] = pri[5];
       tri[3] = 1;
       RSS( ref_cell_add( ref_grid_tri(ref_grid), tri, &new_cell ), "tri add" );
+
+      RSS( ref_cell_add( ref_grid_pri(ref_grid), pri, &new_cell ), "pri add" );
+
+      qua[0] = pri[2];
+      qua[1] = pri[1];
 
       RSS(ref_cell_remove(front,cell),"rm");
     }
