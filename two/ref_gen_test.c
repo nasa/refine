@@ -22,6 +22,8 @@
 #include "ref_mpi.h"
 #include "ref_edge.h"
 
+#include "ref_math.h"
+
 #include "ref_fixture.h"
 
 int main( int argc, char *argv[] )
@@ -32,6 +34,9 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
 
       RSS( ref_fixture_clock( &ref_grid ), "clock" );
+
+      RSS( ref_gen_fill( ref_grid ), "fill" );
+
       printf("export to %s\n",argv[1]);
       RSS(ref_export_by_extension( ref_grid, argv[1] ),"export");
       printf("complete.\n");
