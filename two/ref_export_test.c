@@ -105,5 +105,13 @@ int main( int argc, char *argv[] )
     REIS(0, remove( "ref_export_test.bc" ), "test clean up");
   }
 
+  { /* export .eps pri */
+    REF_GRID ref_grid;
+    RSS(ref_fixture_pri_grid( &ref_grid ), "set up tet" );
+    RSS(ref_export_eps( ref_grid, "ref_export_test.eps" ),"export" );
+    REIS(0, remove( "ref_export_test.eps" ), "test clean up");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
   return 0;
 }

@@ -36,6 +36,7 @@ REF_STATUS ref_export_faceid_range( REF_GRID ref_grid,
 REF_STATUS ref_export_cogsg( REF_GRID ref_grid, char *filename );
 
 REF_STATUS ref_export_c( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_export_eps( REF_GRID ref_grid, char *filename );
 
 END_C_DECLORATION
 

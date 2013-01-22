@@ -115,29 +115,34 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 	  RSS( ref_export_tec( ref_grid, filename ), "tec export failed");
 	} 
       else 
-	if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
+	if( strcmp(&filename[end_of_string-4],".eps") == 0 ) 
 	  {
-	    RSS( ref_export_b8_ugrid( ref_grid, filename ), 
-		 "b8.ugrid export failed");
+	    RSS( ref_export_eps( ref_grid, filename ), "eps export failed");
 	  } 
 	else 
-	  if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
+	  if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
 	    {
-	      RSS( ref_export_ugrid( ref_grid, filename ), 
-		   "ugrid export failed");
+	      RSS( ref_export_b8_ugrid( ref_grid, filename ), 
+		   "b8.ugrid export failed");
 	    } 
 	  else 
-	    if( strcmp(&filename[end_of_string-6],".cogsg") == 0 ) 
+	    if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
 	      {
-		RSS( ref_export_cogsg( ref_grid, filename ), 
-		     "cogsg export failed");
+		RSS( ref_export_ugrid( ref_grid, filename ), 
+		     "ugrid export failed");
 	      } 
 	    else 
-	      {
-		printf("%s: %d: %s %s\n",__FILE__,__LINE__,
-		       "export file name extension unknown", filename);
-		RSS( REF_FAILURE, "unknown file extension");
-	      }
+	      if( strcmp(&filename[end_of_string-6],".cogsg") == 0 ) 
+		{
+		  RSS( ref_export_cogsg( ref_grid, filename ), 
+		       "cogsg export failed");
+		} 
+	      else 
+		{
+		  printf("%s: %d: %s %s\n",__FILE__,__LINE__,
+			 "export file name extension unknown", filename);
+		  RSS( REF_FAILURE, "unknown file extension");
+		}
 
   return REF_SUCCESS;
 }
@@ -1188,6 +1193,69 @@ REF_STATUS ref_export_c( REF_GRID ref_grid, char *filename  )
   ref_free(o2n);
 
   fclose(file);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_eps( REF_GRID ref_grid, char *filename )
+{
+  FILE *f;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT node, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  f = fopen("ref_export.gnuplot","w");
+  if (NULL == (void *)f) printf("unable to open ref_export.gnuplot\n");
+  RNS(f, "unable to open file" );
+
+  fprintf(f,"reset\n");
+  fprintf(f,"set term postscript eps\n");
+  fprintf(f,"set output '%s'\n",filename);
+  fprintf(f,"set size ratio -1\n");
+  fprintf(f,"set xlabel 'X'\n");
+  fprintf(f,"set ylabel 'Z'\n");
+  fprintf(f,"plot '-' title '' with lines lw 0.5\n");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
+	{
+	  fprintf(f,"%25.15f %25.15f\n", 
+		  ref_node_xyz(ref_node,0,nodes[node]),
+		  ref_node_xyz(ref_node,2,nodes[node]));
+	}
+      node = 0;
+      fprintf(f,"%25.15f %25.15f\n", 
+	      ref_node_xyz(ref_node,0,nodes[node]),
+	      ref_node_xyz(ref_node,2,nodes[node]));
+      fprintf(f,"\n\n");
+
+    }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
+	{
+	  fprintf(f,"%25.15f %25.15f\n", 
+		  ref_node_xyz(ref_node,0,nodes[node]),
+		  ref_node_xyz(ref_node,2,nodes[node]));
+	}
+      node = 0;
+      fprintf(f,"%25.15f %25.15f\n", 
+	      ref_node_xyz(ref_node,0,nodes[node]),
+	      ref_node_xyz(ref_node,2,nodes[node]));
+      fprintf(f,"\n\n");
+
+    }
+
+  fprintf(f,"e\n");
+  fclose(f);
+
+  REIS(0, system("gnuplot ref_export.gnuplot"),"gnuplot failed");
+  REIS(0, remove( "ref_export.gnuplot" ), "temp clean up");
 
   return REF_SUCCESS;
 }
