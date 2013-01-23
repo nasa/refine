@@ -1045,7 +1045,7 @@ Note: triangle connectivities are according to the right-hand rule with
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     if ( boundary_tag == nodes[3] )
       {
-	fprintf(file," %d %d",ntri+1,boundary_index + 1);
+	fprintf(file," %d %d",ntri+1,boundary_tag);
 	ntri++;
 	for ( node = 0; node < 3; node++ )
 	  {
