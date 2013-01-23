@@ -1036,7 +1036,7 @@ Note: triangle connectivities are according to the right-hand rule with
 	  ref_cell_n(ref_cell),
 	  0,
 	  ref_dict_n(ref_dict),
-	  0);
+	  1);
   fprintf(file,"exported by ref_export_cogsg x         x         x         x         x        80\n");
  
   ntri = 0;
