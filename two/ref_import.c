@@ -648,6 +648,22 @@ REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
+/*
+                           2 
+                        ./   \
+                     .  / nt2 \
+                  .    /       \
+               .      /nt0  nt1 \
+            .        0-ne0---ne1-1  y=1 second plane
+         4       .           .
+       /   \  .           .
+      /  t1 \          .
+     /   .   \      .
+    / t0   t2 \  .
+   3--e0----e1-5   y=0 first plane
+
+ */
+
 REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
 {
   REF_GRID ref_grid;
