@@ -132,17 +132,23 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 		     "ugrid export failed");
 	      } 
 	    else 
-	      if( strcmp(&filename[end_of_string-6],".cogsg") == 0 ) 
+	      if( strcmp(&filename[end_of_string-6],".fgrid") == 0 ) 
 		{
-		  RSS( ref_export_cogsg( ref_grid, filename ), 
-		       "cogsg export failed");
+		  RSS( ref_export_fgrid( ref_grid, filename ), 
+		       "ugrid export failed");
 		} 
 	      else 
-		{
-		  printf("%s: %d: %s %s\n",__FILE__,__LINE__,
-			 "export file name extension unknown", filename);
-		  RSS( REF_FAILURE, "unknown file extension");
-		}
+		if( strcmp(&filename[end_of_string-6],".cogsg") == 0 ) 
+		  {
+		    RSS( ref_export_cogsg( ref_grid, filename ), 
+			 "cogsg export failed");
+		  } 
+		else 
+		  {
+		    printf("%s: %d: %s %s\n",__FILE__,__LINE__,
+			   "export file name extension unknown", filename);
+		    RSS( REF_FAILURE, "unknown file extension");
+		  }
 
   return REF_SUCCESS;
 }
