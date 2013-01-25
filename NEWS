@@ -1,5 +1,8 @@
 
 - Zoltan GRAPH LB_METHOD required callbacks added.
+- Impoved load balancing for part boundary adapt
+- Fixed edge-based primitive logic
+- add grid inflation for sonic boom grids
 
 Wed Sep 12, 2012 : Released Refine 1.8.8
 
