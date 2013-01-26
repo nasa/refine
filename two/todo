@@ -21,6 +21,11 @@ surface projection
  - surface reconstruction
    - consult white
  - linear elasticity
+ -- insert with ball
+ -- approximate normal as angle weighted, 
+     Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+ -- create an embbeded surface as a debug measure,
+      create norm/tests for problems
 
 - metric conformity and or ellipse...
 - graph agglom to remove artifacts
