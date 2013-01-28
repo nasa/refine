@@ -42,19 +42,24 @@ int main( int argc, char *argv[] )
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
       printf(" complete.\n");
 
+      printf("imply metric\n");
       ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
       RSS( ref_metric_imply_from( metric, ref_grid ), "imply" );
       RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid) ), "to n" );
       ref_free( metric );
-
-      printf("export ref_project_test_orig.tec\n");
-      RSS(ref_export_by_extension( ref_grid, "ref_project_test_orig.tec" ),"e");
       printf(" complete.\n");
 
+      printf("export ref_project_test_orig.tec\n");
+      RSS(ref_export_tec_surf( ref_grid, "ref_project_test_orig.tec" ),"e");
+      printf(" complete.\n");
+
+      printf("subdivide\n");
       RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "subdiv c");
       RSS( ref_subdiv_mark_all( ref_subdiv ), "mark all");
       RSS( ref_subdiv_split( ref_subdiv ), "split");
+      printf(" complete.\n");
 
+      printf("project.\n");
       ref_edge = ref_subdiv_edge( ref_subdiv );
       for (edge = 0 ; 
 	   edge < ref_edge_n( ref_edge ) ; 
@@ -65,9 +70,10 @@ int main( int argc, char *argv[] )
 				 ref_edge_e2n( ref_edge, 1, edge ),
 				 ref_subdiv_node( ref_subdiv, edge ) ), "proj");
 	}
+      printf(" complete.\n");
 
       printf("export ref_project_test_embed.tec\n");
-      RSS(ref_export_by_extension( ref_grid, "ref_project_test_embed.tec"),"e");
+      RSS(ref_export_tec_surf( ref_grid, "ref_project_test_embed.tec"),"e");
       printf(" complete.\n");
 
       RSS( ref_subdiv_free( ref_subdiv), "free" );
