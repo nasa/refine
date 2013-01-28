@@ -14,7 +14,7 @@ REF_STATUS ref_project_edge( REF_GRID ref_grid,
 			     REF_INT node0, REF_INT node1,
 			     REF_INT new_node )
 {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_CELL ref_cell;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ncell;
   REF_INT cell_list[2];
@@ -27,6 +27,9 @@ REF_STATUS ref_project_edge( REF_GRID ref_grid,
   REF_DBL len;
   REF_INT i;
   REF_INT faceid;
+  REF_DBL volume, min_volume;
+
+  ref_cell = ref_grid_tri(ref_grid);
 
   /* exclude interior edges */
   RSS( ref_cell_list_with( ref_cell, node0, new_node,
@@ -108,6 +111,19 @@ REF_STATUS ref_project_edge( REF_GRID ref_grid,
       0.500 * ref_node_xyz(ref_node,i,node0) +
       0.125 * r0[i] - 0.125 * r1[i] +
       0.500 * ref_node_xyz(ref_node,i,node1);
+
+  ref_cell = ref_grid_tet(ref_grid);
+  min_volume = 1.0;
+  each_ref_cell_having_node( ref_cell, new_node, item, cell)
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol" );
+      min_volume = MIN( min_volume, volume);
+    }
+  if ( min_volume <= 0.0 )
+    {
+      printf("vol %e\n",min_volume);
+    }
 
   return REF_SUCCESS;
 }
