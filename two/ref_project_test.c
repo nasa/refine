@@ -34,7 +34,9 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
       REF_SUBDIV ref_subdiv;
+      REF_EDGE ref_edge;
       REF_DBL *metric;
+      REF_INT edge;
 
       printf("import from %s\n",argv[1]);
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
@@ -52,6 +54,17 @@ int main( int argc, char *argv[] )
       RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "subdiv c");
       RSS( ref_subdiv_mark_all( ref_subdiv ), "mark all");
       RSS( ref_subdiv_split( ref_subdiv ), "split");
+
+      ref_edge = ref_subdiv_edge( ref_subdiv );
+      for (edge = 0 ; 
+	   edge < ref_edge_n( ref_edge ) ; 
+	   edge++ )
+	{
+	  RSS( ref_project_edge( ref_grid,
+				 ref_edge_e2n( ref_edge, 0, edge ),
+				 ref_edge_e2n( ref_edge, 1, edge ),
+				 ref_subdiv_node( ref_subdiv, edge ) ), "proj");
+	}
 
       printf("export ref_project_test_embed.tec\n");
       RSS(ref_export_by_extension( ref_grid, "ref_project_test_embed.tec"),"e");
