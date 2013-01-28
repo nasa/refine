@@ -17,7 +17,7 @@ REF_STATUS ref_project_edge( REF_GRID ref_grid,
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ncell;
-  REF_INT cell_to_split[2];
+  REF_INT cell_list[2];
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL norm[3], area;
@@ -26,18 +26,27 @@ REF_STATUS ref_project_edge( REF_GRID ref_grid,
   REF_DBL s[3], r0[3], r1[3], temp[3];
   REF_DBL len;
   REF_INT i;
+  REF_INT faceid;
 
   /* exclude interior edges */
   RSS( ref_cell_list_with( ref_cell, node0, new_node,
-			   2, &ncell, cell_to_split), "more than two" );
+			   2, &ncell, cell_list), "more than two" );
   if ( 2 != ncell ) return REF_SUCCESS;
 
+  faceid = ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),
+			cell_list[0]);
+
+  /* exclude edges for now */
+  if ( faceid != ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),
+			      cell_list[1]) ) return REF_SUCCESS;
 
   /* replace area with angle weight */
   norm0[0] = 0.0; norm0[1] = 0.0; norm0[2] = 0.0; area0 = 0.0;
   each_ref_cell_having_node( ref_cell, node0, item, cell )
     {
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      /* only use same faceid */
+      if ( faceid != nodes[ref_cell_node_per(ref_cell)] ) continue;
       RSS( ref_node_tri_normal( ref_node, nodes, norm ), "norm" );
       RSS( ref_node_tri_area( ref_node, nodes, &area ), "area" );
       norm0[0] += area*norm[0];
@@ -57,6 +66,8 @@ REF_STATUS ref_project_edge( REF_GRID ref_grid,
   each_ref_cell_having_node( ref_cell, node1, item, cell )
     {
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      /* only use same faceid */
+      if ( faceid != nodes[ref_cell_node_per(ref_cell)] ) continue;
       RSS( ref_node_tri_normal( ref_node, nodes, norm ), "norm" );
       RSS( ref_node_tri_area( ref_node, nodes, &area ), "area" );
       norm1[0] += area*norm[0];
