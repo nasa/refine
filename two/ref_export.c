@@ -1298,7 +1298,7 @@ REF_STATUS ref_export_html( REF_GRID ref_grid, char *filename )
   fprintf(f,"    </script>\n");
   fprintf(f,"  </head>\n");
   fprintf(f,"  <body>\n");
-  fprintf(f,"    <x3d><scene><shape>\n");
+  fprintf(f,"    <x3d width='800' height='800'><scene><shape>\n");
 
   fprintf(f,"      <IndexedLineSet coordIndex='\n");
   ref_cell = ref_grid_tri(ref_grid);
