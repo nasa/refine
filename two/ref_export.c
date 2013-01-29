@@ -1308,6 +1308,13 @@ REF_STATUS ref_export_html( REF_GRID ref_grid, char *filename )
 	fprintf(f," %d",o2n[nodes[node]]);
       fprintf(f," %d %d\n",o2n[nodes[0]],-1);
     }
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
+	fprintf(f," %d",o2n[nodes[node]]);
+      fprintf(f," %d %d\n",o2n[nodes[0]],-1);
+    }
   fprintf(f,"      ' >\n");
 
   fprintf(f,"      <Coordinate point='\n");
