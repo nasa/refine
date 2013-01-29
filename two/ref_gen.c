@@ -18,6 +18,7 @@ REF_STATUS ref_gen_fill( REF_GRID ref_grid )
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT pri[REF_CELL_MAX_SIZE_PER];
   REF_INT tri[REF_CELL_MAX_SIZE_PER];
+  REF_INT qua[REF_CELL_MAX_SIZE_PER];
   REF_INT global;
   REF_INT max_front;
 
