@@ -144,11 +144,17 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 			 "cogsg export failed");
 		  } 
 		else 
-		  {
-		    printf("%s: %d: %s %s\n",__FILE__,__LINE__,
-			   "export file name extension unknown", filename);
-		    RSS( REF_FAILURE, "unknown file extension");
-		  }
+		  if( strcmp(&filename[end_of_string-5],".html") == 0 ) 
+		    {
+		      RSS( ref_export_html( ref_grid, filename ), 
+			   "html export failed");
+		    } 
+		  else 
+		    {
+		      printf("%s: %d: %s %s\n",__FILE__,__LINE__,
+			     "export file name extension unknown", filename);
+		      RSS( REF_FAILURE, "unknown file extension");
+		    }
 
   return REF_SUCCESS;
 }
@@ -1262,6 +1268,67 @@ REF_STATUS ref_export_eps( REF_GRID ref_grid, char *filename )
 
   REIS(0, system("gnuplot ref_export.gnuplot"),"gnuplot failed");
   REIS(0, remove( "ref_export.gnuplot" ), "temp clean up");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_html( REF_GRID ref_grid, char *filename )
+{
+  FILE *f;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT node, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *o2n, *n2o;
+
+  f = fopen(filename,"w");
+  if (NULL == (void *)f) printf("unable to open %s\n",filename);
+  RNS(f, "unable to open file" );
+
+  RSS( ref_node_compact( ref_node, &o2n, &n2o), "compact" );
+
+  fprintf(f,"<html>\n");
+  fprintf(f,"  <head>\n");
+  fprintf(f,"    <title>refine export</title>\n");
+  fprintf(f,"    <link rel='stylesheet' type='text/css'\n");
+  fprintf(f,"          href='http://www.x3dom.org/download/x3dom.css'>\n");
+  fprintf(f,"    </link>\n");
+  fprintf(f,"    <script type='text/javascript'\n");
+  fprintf(f,"          src='http://www.x3dom.org/download/x3dom.js'>\n");
+  fprintf(f,"    </script>\n");
+  fprintf(f,"  </head>\n");
+  fprintf(f,"  <body>\n");
+  fprintf(f,"    <x3d><scene><shape>\n");
+
+  fprintf(f,"      <IndexedLineSet coordIndex='\n");
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
+	fprintf(f," %d",o2n[nodes[node]]);
+      fprintf(f," %d %d\n",o2n[nodes[0]],-1);
+    }
+  fprintf(f,"      ' >\n");
+
+  fprintf(f,"      <Coordinate point='\n");
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    {
+      fprintf(f," %.15e",ref_node_xyz(ref_node,0,n2o[node]));
+      fprintf(f," %.15e",ref_node_xyz(ref_node,1,n2o[node]));
+      fprintf(f," %.15e\n",ref_node_xyz(ref_node,2,n2o[node]));
+    }
+  fprintf(f,"      ' />\n");
+
+  fprintf(f,"      </IndexedLineSet>\n");
+
+  fprintf(f,"    </shape></scene></x3d>\n");
+  fprintf(f,"  </body>\n");
+  fprintf(f,"</html>\n");
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(f);
 
   return REF_SUCCESS;
 }
