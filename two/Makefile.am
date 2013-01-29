@@ -69,9 +69,9 @@ bin_PROGRAMS += projectable
 projectable_SOURCES = projectable.c
 projectable_LDADD = libref2.a @mpi_ldadd@ -lm
 
-bin_PROGRAMS += convert
-convert_SOURCES = convert.c
-convert_LDADD = libref2.a @mpi_ldadd@ -lm
+bin_PROGRAMS += ref_translate
+ref_translate_SOURCES = ref_translate.c
+ref_translate_LDADD = libref2.a @mpi_ldadd@ -lm
 
 bin_PROGRAMS += axisymmetric
 axisymmetric_SOURCES = axisymmetric.c
