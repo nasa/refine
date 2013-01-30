@@ -796,8 +796,8 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  REF_INT global, node, hex[8], cell;
-  REF_INT quad[5];
+  REF_INT global, node, hex[8], tet[4], cell;
+  REF_INT quad[5], tri[4];
 
 
   REF_INT l=4,m=3,n=4;
@@ -849,16 +849,45 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
   (hex)[6] = ijk2node((i)  ,(j)  ,(k)  ,(l),(m),(n));	  \
   (hex)[7] = ijk2node((i)-1,(j)  ,(k)  ,(l),(m),(n));	  \
   
-
+  /* fig. 15, first row tab 6 */
   for ( k = 1 ; k < n ; k++ )
     for ( j = 1 ; j < m ; j++ )
       for ( i = 1 ; i < l ; i++ )
 	{
 	  ijk2hex(i,j,k,l,m,n,hex);
-	  RSS( ref_cell_add(ref_grid_hex(ref_grid),hex, &cell),"hex");
+	  tet[1] = hex[0];
+	  tet[0] = hex[4];
+	  tet[2] = hex[5];
+	  tet[3] = hex[6];
+	  RSS( ref_cell_add(ref_grid_tet(ref_grid),tet, &cell),"tet");
+	  tet[1] = hex[0];
+	  tet[0] = hex[3];
+	  tet[2] = hex[7];
+	  tet[3] = hex[6];
+	  RSS( ref_cell_add(ref_grid_tet(ref_grid),tet, &cell),"tet");
+	  tet[1] = hex[0];
+	  tet[0] = hex[7];
+	  tet[2] = hex[4];
+	  tet[3] = hex[6];
+	  RSS( ref_cell_add(ref_grid_tet(ref_grid),tet, &cell),"tet");
+	  tet[1] = hex[0];
+	  tet[0] = hex[1];
+	  tet[2] = hex[2];
+	  tet[3] = hex[5];
+	  RSS( ref_cell_add(ref_grid_tet(ref_grid),tet, &cell),"tet");
+	  tet[1] = hex[0];
+	  tet[0] = hex[3];
+	  tet[2] = hex[6];
+	  tet[3] = hex[2];
+	  RSS( ref_cell_add(ref_grid_tet(ref_grid),tet, &cell),"tet");
+	  tet[1] = hex[0];
+	  tet[0] = hex[6];
+	  tet[2] = hex[5];
+	  tet[3] = hex[2];
+	  RSS( ref_cell_add(ref_grid_tet(ref_grid),tet, &cell),"tet");
 	}
 
-  quad[4]=1;
+  quad[4]=1;tri[3]=quad[4];
   i = 1;
   for ( k = 1 ; k < n ; k++ )
     for ( j = 1 ; j < m ; j++ )
@@ -868,10 +897,17 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[1]=hex[3];
 	quad[2]=hex[7];
 	quad[3]=hex[4];
-	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[1];
+	tri[2] = quad[2];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[2];
+	tri[2] = quad[3];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
       }
 
-  quad[4]=2;
+  quad[4]=2;tri[3]=quad[4];
   i = l-1;
   for ( k = 1 ; k < n ; k++ )
     for ( j = 1 ; j < m ; j++ )
@@ -881,10 +917,17 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[1]=hex[1];
 	quad[2]=hex[5];
 	quad[3]=hex[6];
-	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
-      }
+	tri[1] = quad[0];
+	tri[0] = quad[1];
+	tri[2] = quad[2];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[2];
+	tri[2] = quad[3];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
+       }
 
-  quad[4]=3;
+  quad[4]=3;tri[3]=quad[4];
   j=1;
   for ( k = 1 ; k < n ; k++ )
     for ( i = 1 ; i < l ; i++ )
@@ -894,10 +937,17 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[1]=hex[0];
 	quad[2]=hex[4];
 	quad[3]=hex[5];
-	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[1];
+	tri[2] = quad[3];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
+	tri[1] = quad[1];
+	tri[0] = quad[2];
+	tri[2] = quad[3];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
       }
 
-  quad[4]=4;
+  quad[4]=4;tri[3]=quad[4];
   j=m-1;
   for ( k = 1 ; k < n ; k++ )
     for ( i = 1 ; i < l ; i++ )
@@ -907,10 +957,17 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[1]=hex[2];
 	quad[2]=hex[6];
 	quad[3]=hex[7];
-	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[1];
+	tri[2] = quad[2];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[2];
+	tri[2] = quad[3];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
       }
 
-  quad[4]=5;
+  quad[4]=5;tri[3]=quad[4];
   k=1;
   for ( j = 1 ; j < m ; j++ )
     for ( i = 1 ; i < l ; i++ )
@@ -920,10 +977,17 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[1]=hex[1];
 	quad[2]=hex[2];
 	quad[3]=hex[3];
-	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[1];
+	tri[2] = quad[2];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[2];
+	tri[2] = quad[3];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
       }
 
-  quad[4]=6;
+  quad[4]=6;tri[3]=quad[4];
   k=n-1;
   for ( j = 1 ; j < m ; j++ )
     for ( i = 1 ; i < l ; i++ )
@@ -933,7 +997,14 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 	quad[1]=hex[4];
 	quad[2]=hex[7];
 	quad[3]=hex[6];
-	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+	tri[1] = quad[0];
+	tri[0] = quad[1];
+	tri[2] = quad[3];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
+	tri[1] = quad[1];
+	tri[0] = quad[2];
+	tri[2] = quad[3];
+	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
       }
 
   return REF_SUCCESS;
