@@ -1301,20 +1301,45 @@ REF_STATUS ref_export_html( REF_GRID ref_grid, char *filename )
   fprintf(f,"    <x3d width='800' height='800'><scene><shape>\n");
 
   fprintf(f,"      <IndexedLineSet coordIndex='\n");
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+  if ( REF_TRUE )
     {
-      for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
-	fprintf(f," %d",o2n[nodes[node]]);
-      fprintf(f," %d %d\n",o2n[nodes[0]],-1);
+      ref_cell = ref_grid_tri(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
+	    fprintf(f," %d",o2n[nodes[node]]);
+	  fprintf(f," %d %d\n",o2n[nodes[0]],-1);
+	}
     }
-  ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+     
+  if ( REF_TRUE )
     {
-      for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
-	fprintf(f," %d",o2n[nodes[node]]);
-      fprintf(f," %d %d\n",o2n[nodes[0]],-1);
+      ref_cell = ref_grid_qua(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
+	    fprintf(f," %d",o2n[nodes[node]]);
+	  fprintf(f," %d %d\n",o2n[nodes[0]],-1);
+	}
     }
+
+  if ( REF_TRUE )
+    {
+      ref_cell = ref_grid_tet(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  fprintf(f," %d %d %d %d %d %d %d %d\n",
+		  o2n[nodes[0]],
+		  o2n[nodes[1]],
+		  o2n[nodes[2]],
+		  o2n[nodes[3]],
+		  o2n[nodes[0]],
+		  o2n[nodes[3]],
+		  o2n[nodes[1]],
+		  -1);
+	}
+    }
+
   fprintf(f,"      ' >\n");
 
   fprintf(f,"      <Coordinate point='\n");
