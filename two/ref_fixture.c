@@ -806,8 +806,8 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
   REF_DBL t0 = ref_math_pi;
   REF_DBL t1 = 0.0;
 
-  REF_DBL r0 = 0.1;
-  REF_DBL r1 = 0.2;
+  REF_DBL r0 = 0.10;
+  REF_DBL r1 = 0.15;
 
   REF_DBL y0 = 0.0;
   REF_DBL y1 = 0.5;
