@@ -85,5 +85,58 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+
+  {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node, tri[4], cell;
+    RSS(ref_grid_create(&ref_grid),"create");
+    ref_node = ref_grid_node(ref_grid);
+    RSS( ref_node_add( ref_node, 0, &node ), "node");
+    ref_node_xyz(ref_node, 0, node ) = 0.0;
+    ref_node_xyz(ref_node, 1, node ) = 0.0;
+    ref_node_xyz(ref_node, 2, node ) = 0.0;
+    RSS( ref_node_add( ref_node, 1, &node ), "node");
+    ref_node_xyz(ref_node, 0, node ) = 0.5;
+    ref_node_xyz(ref_node, 1, node ) = 0.0;
+    ref_node_xyz(ref_node, 2, node ) = 0.0;
+    RSS( ref_node_add( ref_node, 2, &node ), "node");
+    ref_node_xyz(ref_node, 0, node ) = 1.0;
+    ref_node_xyz(ref_node, 1, node ) = 0.0;
+    ref_node_xyz(ref_node, 2, node ) = 0.0;
+    RSS( ref_node_add( ref_node, 3, &node ), "node");
+    ref_node_xyz(ref_node, 0, node ) = 2.0;
+    ref_node_xyz(ref_node, 1, node ) = 1.0;
+    ref_node_xyz(ref_node, 2, node ) = 0.0;
+    RSS( ref_node_add( ref_node, 4, &node ), "node");
+    ref_node_xyz(ref_node, 0, node ) = 1.0;
+    ref_node_xyz(ref_node, 1, node ) = 0.0;
+    ref_node_xyz(ref_node, 2, node ) =-1.0;
+    RSS( ref_node_add( ref_node, 5, &node ), "node");
+    ref_node_xyz(ref_node, 0, node ) = 2.0;
+    ref_node_xyz(ref_node, 1, node ) = 0.0;
+    ref_node_xyz(ref_node, 2, node ) = 1.0;
+
+    tri[3]=10;
+    tri[0]=0;tri[1]=1;tri[2]=4;
+    RSS( ref_cell_add(ref_grid_tri(ref_grid), tri, &cell),"tri");
+    tri[0]=1;tri[1]=2;tri[2]=4;
+    RSS( ref_cell_add(ref_grid_tri(ref_grid), tri, &cell),"tri");
+    tri[0]=2;tri[1]=3;tri[2]=4;
+    RSS( ref_cell_add(ref_grid_tri(ref_grid), tri, &cell),"tri");
+
+    tri[3]=20;
+    tri[0]=3;tri[1]=2;tri[2]=5;
+    RSS( ref_cell_add(ref_grid_tri(ref_grid), tri, &cell),"tri");
+    tri[0]=2;tri[1]=1;tri[2]=5;
+    RSS( ref_cell_add(ref_grid_tri(ref_grid), tri, &cell),"tri");
+    tri[0]=1;tri[1]=0;tri[2]=5;
+    RSS( ref_cell_add(ref_grid_tri(ref_grid), tri, &cell),"tri");
+
+    RSS( ref_project_edge( ref_grid, 0, 2, 1 ), "proj");
+
+    RSS( ref_grid_free( ref_grid ), "free" );
+  }
+
   return 0;
 }
