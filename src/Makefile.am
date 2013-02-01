@@ -20,8 +20,6 @@ EXTRA_DIST = \
 	gridmoveMT.rb gridmove_ruby.c \
 	faux_input
 
-TESTS = adjMT.rb lineMT.rb sortMT.rb tableauMT.rb planMT.rb queueMT.rb gridMT.rb gridmathMT.rb gridmetricMT.rb gridshapeMT.rb gridinsertMT.rb gridswapMT.rb gridcadMT.rb gridmpiMT.rb gridmoveMT.rb
-
 lib_LIBRARIES =
 
 lib_LIBRARIES += librefine.a
