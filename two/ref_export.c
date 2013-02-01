@@ -1296,9 +1296,13 @@ REF_STATUS ref_export_html( REF_GRID ref_grid, char *filename )
   fprintf(f,"    <script type='text/javascript'\n");
   fprintf(f,"          src='http://www.x3dom.org/download/x3dom.js'>\n");
   fprintf(f,"    </script>\n");
+  fprintf(f,"    <style>\n");
+  fprintf(f,"      x3d {width:100%%;height:100%%;border:none}\n");
+  fprintf(f,"      body {margin:0;width:100%%;height:100%%;}\n");
+  fprintf(f,"    </style>\n");
   fprintf(f,"  </head>\n");
-  fprintf(f,"  <body>\n");
-  fprintf(f,"    <x3d width='800' height='800'><scene><shape>\n");
+  fprintf(f,"  <body id='body'>\n");
+  fprintf(f,"    <x3d id='x3d'><scene><shape>\n");
 
   fprintf(f,"      <IndexedLineSet coordIndex='\n");
   if ( REF_TRUE )
