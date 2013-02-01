@@ -113,7 +113,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node, 1, node ) = 0.0;
     ref_node_xyz(ref_node, 2, node ) =-1.0;
     RSS( ref_node_add( ref_node, 5, &node ), "node");
-    ref_node_xyz(ref_node, 0, node ) = 2.0;
+    ref_node_xyz(ref_node, 0, node ) = 1.0;
     ref_node_xyz(ref_node, 1, node ) = 0.0;
     ref_node_xyz(ref_node, 2, node ) = 1.0;
 
