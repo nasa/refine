@@ -49,8 +49,9 @@ int main( int argc, char *argv[] )
       ref_free( metric );
       printf(" complete.\n");
 
-      printf("export ref_project_test_orig.tec\n");
+      printf("export\n");
       RSS(ref_export_tec_surf( ref_grid, "ref_project_test_orig.tec" ),"e");
+      RSS(ref_export_html( ref_grid, "ref_project_test_orig.html" ),"e");
       printf(" complete.\n");
 
       printf("subdivide\n");
@@ -72,8 +73,9 @@ int main( int argc, char *argv[] )
 	}
       printf(" complete.\n");
 
-      printf("export ref_project_test_embed.tec\n");
+      printf("export\n");
       RSS(ref_export_tec_surf( ref_grid, "ref_project_test_embed.tec"),"e");
+      RSS(ref_export_html( ref_grid, "ref_project_test_embed.html"),"e");
       printf(" complete.\n");
 
       RSS( ref_subdiv_free( ref_subdiv), "free" );
