@@ -39,78 +39,81 @@ REF_STATUS ref_project_edge( REF_GRID ref_grid,
   faceid = ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),
 			cell_list[0]);
 
-  /* exclude edges for now */
-  if ( faceid != ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),
-			      cell_list[1]) ) return REF_SUCCESS;
-
-  /* replace area with angle weight */
-  norm0[0] = 0.0; norm0[1] = 0.0; norm0[2] = 0.0; area0 = 0.0;
-  each_ref_cell_having_node( ref_cell, node0, item, cell )
-    {
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-      /* only use same faceid */
-      if ( faceid != nodes[ref_cell_node_per(ref_cell)] ) continue;
-      RSS( ref_node_tri_normal( ref_node, nodes, norm ), "norm" );
-      RSS( ref_node_tri_area( ref_node, nodes, &area ), "area" );
-      norm0[0] += area*norm[0];
-      norm0[1] += area*norm[1];
-      norm0[2] += area*norm[2];
-      area0 += area;
+  if ( faceid == ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),
+			      cell_list[1]) )
+    { /* inbetween faces */
     }
-  if ( !ref_math_divisible(norm0[0],area0) ||
-       !ref_math_divisible(norm0[1],area0) ||
-       !ref_math_divisible(norm0[2],area0) ) THROW("divide area0");
-  norm0[0] /= area0;
-  norm0[1] /= area0;
-  norm0[2] /= area0;
-  RSS( ref_math_normalize( norm0 ), "n0" );
-
-  norm1[0] = 0.0; norm1[1] = 0.0; norm1[2] = 0.0; area1 = 0.0;
-  each_ref_cell_having_node( ref_cell, node1, item, cell )
+  else
     {
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-      /* only use same faceid */
-      if ( faceid != nodes[ref_cell_node_per(ref_cell)] ) continue;
-      RSS( ref_node_tri_normal( ref_node, nodes, norm ), "norm" );
-      RSS( ref_node_tri_area( ref_node, nodes, &area ), "area" );
-      norm1[0] += area*norm[0];
-      norm1[1] += area*norm[1];
-      norm1[2] += area*norm[2];
-      area1 += area;
+      /* replace area with angle weight */
+      norm0[0] = 0.0; norm0[1] = 0.0; norm0[2] = 0.0; area0 = 0.0;
+      each_ref_cell_having_node( ref_cell, node0, item, cell )
+	{
+	  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+	  /* only use same faceid */
+	  if ( faceid != nodes[ref_cell_node_per(ref_cell)] ) continue;
+	  RSS( ref_node_tri_normal( ref_node, nodes, norm ), "norm" );
+	  RSS( ref_node_tri_area( ref_node, nodes, &area ), "area" );
+	  norm0[0] += area*norm[0];
+	  norm0[1] += area*norm[1];
+	  norm0[2] += area*norm[2];
+	  area0 += area;
+	}
+      if ( !ref_math_divisible(norm0[0],area0) ||
+	   !ref_math_divisible(norm0[1],area0) ||
+	   !ref_math_divisible(norm0[2],area0) ) THROW("divide area0");
+      norm0[0] /= area0;
+      norm0[1] /= area0;
+      norm0[2] /= area0;
+      RSS( ref_math_normalize( norm0 ), "n0" );
+      
+      norm1[0] = 0.0; norm1[1] = 0.0; norm1[2] = 0.0; area1 = 0.0;
+      each_ref_cell_having_node( ref_cell, node1, item, cell )
+	{
+	  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+	  /* only use same faceid */
+	  if ( faceid != nodes[ref_cell_node_per(ref_cell)] ) continue;
+	  RSS( ref_node_tri_normal( ref_node, nodes, norm ), "norm" );
+	  RSS( ref_node_tri_area( ref_node, nodes, &area ), "area" );
+	  norm1[0] += area*norm[0];
+	  norm1[1] += area*norm[1];
+	  norm1[2] += area*norm[2];
+	  area1 += area;
+	}
+      if ( !ref_math_divisible(norm1[0],area1) ||
+	   !ref_math_divisible(norm1[1],area1) ||
+	   !ref_math_divisible(norm1[2],area1) ) THROW("divide area1");
+      norm1[0] /= area1;
+      norm1[1] /= area1;
+      norm1[2] /= area1;
+      RSS( ref_math_normalize( norm1 ), "n1" );
+
+      s[0] = ref_node_xyz(ref_node,0,node1) - ref_node_xyz(ref_node,0,node0);
+      s[1] = ref_node_xyz(ref_node,1,node1) - ref_node_xyz(ref_node,1,node0);
+      s[2] = ref_node_xyz(ref_node,2,node1) - ref_node_xyz(ref_node,2,node0);
+
+      len = sqrt( ref_math_dot(s,s) );
+      
+      ref_math_cross_product(s,norm0,temp);
+      ref_math_cross_product(norm0,temp,r0);
+      RSS( ref_math_normalize( r0 ), "r0" );
+      r0[0] *= len;
+      r0[1] *= len;
+      r0[2] *= len;
+
+      ref_math_cross_product(s,norm1,temp);
+      ref_math_cross_product(norm1,temp,r1);
+      RSS( ref_math_normalize( r1 ), "r1" );
+      r1[0] *= len;
+      r1[1] *= len;
+      r1[2] *= len;
+
+      for (i=0;i<3;i++)
+	ref_node_xyz(ref_node,i,new_node) = 
+	  0.500 * ref_node_xyz(ref_node,i,node0) +
+	  0.125 * r0[i] - 0.125 * r1[i] +
+	  0.500 * ref_node_xyz(ref_node,i,node1);
     }
-  if ( !ref_math_divisible(norm1[0],area1) ||
-       !ref_math_divisible(norm1[1],area1) ||
-       !ref_math_divisible(norm1[2],area1) ) THROW("divide area1");
-  norm1[0] /= area1;
-  norm1[1] /= area1;
-  norm1[2] /= area1;
-  RSS( ref_math_normalize( norm1 ), "n1" );
-
-  s[0] = ref_node_xyz(ref_node,0,node1) - ref_node_xyz(ref_node,0,node0);
-  s[1] = ref_node_xyz(ref_node,1,node1) - ref_node_xyz(ref_node,1,node0);
-  s[2] = ref_node_xyz(ref_node,2,node1) - ref_node_xyz(ref_node,2,node0);
-
-  len = sqrt( ref_math_dot(s,s) );
-
-  ref_math_cross_product(s,norm0,temp);
-  ref_math_cross_product(norm0,temp,r0);
-  RSS( ref_math_normalize( r0 ), "r0" );
-  r0[0] *= len;
-  r0[1] *= len;
-  r0[2] *= len;
-
-  ref_math_cross_product(s,norm1,temp);
-  ref_math_cross_product(norm1,temp,r1);
-  RSS( ref_math_normalize( r1 ), "r1" );
-  r1[0] *= len;
-  r1[1] *= len;
-  r1[2] *= len;
-
-  for (i=0;i<3;i++)
-    ref_node_xyz(ref_node,i,new_node) = 
-      0.500 * ref_node_xyz(ref_node,i,node0) +
-      0.125 * r0[i] - 0.125 * r1[i] +
-      0.500 * ref_node_xyz(ref_node,i,node1);
 
   ref_cell = ref_grid_tet(ref_grid);
   min_volume = 1.0;
