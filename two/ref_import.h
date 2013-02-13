@@ -13,6 +13,7 @@ REF_STATUS ref_import_by_extension( REF_GRID *ref_grid, char *filename );
 
 REF_STATUS ref_import_fgrid( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_import_ugrid( REF_GRID *ref_grid, char *filename );
+REF_STATUS ref_import_lb8_ugrid( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_import_msh( REF_GRID *ref_grid, char *filename );
