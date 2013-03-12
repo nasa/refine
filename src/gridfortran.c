@@ -332,12 +332,13 @@ void FC_FUNC(gridparallelswap,GRIDPARALLELSWAP)( int *processor, double *ARlimit
   printf(" %6d swap  processor %2d      initial AR%14.10f",
 	 gridPartId(grid),*processor,gridMinAR(grid));
 #endif
-  if (*processor == -1) {
+  if (*processor < 0) {
     int plan_size_guess, plan_chunk_size;
     int cell, nodes[4];
     double ar;
     int nodes_on_surface;
     gridParallelSwap(grid,NULL,*ARlimit);
+    if (*processor < -1) return;
     plan_size_guess = gridNCell(grid)/10;
     plan_chunk_size = 5000;
     plan = planCreate(plan_size_guess, plan_chunk_size);
