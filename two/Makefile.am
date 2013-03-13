@@ -49,17 +49,17 @@ endif # BUILD_MPI
 
 bin_PROGRAMS =
 
-bin_PROGRAMS += projectable
-projectable_SOURCES = projectable.c
-projectable_LDADD = libref2.a @mpi_ldadd@ -lm
+bin_PROGRAMS += ref_projectable
+ref_projectable_SOURCES = ref_projectable.c
+ref_projectable_LDADD = libref2.a @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_translate
 ref_translate_SOURCES = ref_translate.c
 ref_translate_LDADD = libref2.a @mpi_ldadd@ -lm
 
-bin_PROGRAMS += axisymmetric
-axisymmetric_SOURCES = axisymmetric.c
-axisymmetric_LDADD = libref2.a @mpi_ldadd@ -lm
+bin_PROGRAMS += ref_axisymmetric
+ref_axisymmetric_SOURCES = ref_axisymmetric.c
+ref_axisymmetric_LDADD = libref2.a @mpi_ldadd@ -lm
 
 noinst_PROGRAMS =
 TESTS =
