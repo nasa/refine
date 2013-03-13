@@ -4,6 +4,11 @@
 - Fixed edge-based primitive logic
 - add grid inflation for sonic boom grids
 - renamed convert to ref_translate
+- adaptation quality on partition boundaries improved
+- mem leak in gridparallelswap addressed
+- x3d html output
+- little endian .lb8.ugrid import
+- removed ruby-wrapped unit tests to fix fun3d makedistcheck
 
 Wed Sep 12, 2012 : Released Refine 1.8.8
 
