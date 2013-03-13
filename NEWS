@@ -9,6 +9,7 @@
 - x3d html output
 - little endian .lb8.ugrid import
 - removed ruby-wrapped unit tests to fix fun3d makedistcheck
+- removed dpw cruft
 
 Wed Sep 12, 2012 : Released Refine 1.8.8
 
