@@ -11,6 +11,7 @@
 - removed ruby-wrapped unit tests to fix fun3d makedistcheck
 - removed dpw cruft
 - renamed ref_projectable and ref_axisymmetric
+- added ref_inflatable
 
 Wed Sep 12, 2012 : Released Refine 1.8.8
 

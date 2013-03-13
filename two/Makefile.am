@@ -61,6 +61,10 @@ bin_PROGRAMS += ref_axisymmetric
 ref_axisymmetric_SOURCES = ref_axisymmetric.c
 ref_axisymmetric_LDADD = libref2.a @mpi_ldadd@ -lm
 
+bin_PROGRAMS += ref_inflatable
+ref_inflatable_SOURCES = ref_inflatable.c
+ref_inflatable_LDADD = libref2.a @mpi_ldadd@ -lm
+
 noinst_PROGRAMS =
 TESTS =
 
@@ -143,11 +147,6 @@ TESTS += ref_import_test
 noinst_PROGRAMS += ref_import_test
 ref_import_test_SOURCES = ref_import_test.c
 ref_import_test_LDADD = libref2.a @mpi_ldadd@ -lm
-
-TESTS += ref_inflate_test
-noinst_PROGRAMS += ref_inflate_test
-ref_inflate_test_SOURCES = ref_inflate_test.c
-ref_inflate_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_list_test
 noinst_PROGRAMS += ref_list_test
