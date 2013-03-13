@@ -1,17 +1,16 @@
 
+Wed, Mar 13, 2013 : Released Refine 1.8.9
+
 - Zoltan GRAPH LB_METHOD required callbacks added.
-- Impoved load balancing for part boundary adapt
-- Fixed edge-based primitive logic
-- add grid inflation for sonic boom grids
-- renamed convert to ref_translate
-- adaptation quality on partition boundaries improved
+- improved load balancing for part boundary adapt
+- fixed edge-based primitive logic
+- add grid inflation (ref_inflatable) for sonic boom grids
+- renamed convert to ref_translate; ref_projectable; ref_axisymmetric
 - mem leak in gridparallelswap addressed
 - x3d html output
 - little endian .lb8.ugrid import
-- removed ruby-wrapped unit tests to fix fun3d makedistcheck
 - removed dpw cruft
-- renamed ref_projectable and ref_axisymmetric
-- added ref_inflatable
+- removed ruby-wrapped unit tests to fix fun3d makedistcheck
 - removed old refine executables
 
 Wed Sep 12, 2012 : Released Refine 1.8.8
