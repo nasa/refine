@@ -1226,7 +1226,7 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr )
   REF_INT quad[5];
 
 
-  REF_INT l=2*10+1,m=2,n=11;
+  REF_INT l=2*20+1,m=2,n=11;
   REF_INT i, j, k;
 
   REF_DBL x0 = -1.0;
@@ -1240,9 +1240,12 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr )
 
   REF_DBL dx, dy, dz;
 
-  REF_DBL theta_deg = 10.0;
-  REF_DBL beta_deg = 51.1153393629217;
+  REF_DBL theta_deg;
+  REF_DBL beta_deg;
   REF_DBL tan_beta, tan_theta;
+
+  theta_deg = 10.0;
+  beta_deg = 51.1153393629217;
 
   tan_beta = tan(ref_math_in_radians(beta_deg));
   tan_theta = tan(ref_math_in_radians(theta_deg));
