@@ -1218,7 +1218,9 @@ msh.export('clock_g.msh')
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr, 
+				    REF_DBL theta_deg,
+				    REF_DBL beta_deg )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -1240,12 +1242,7 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr )
 
   REF_DBL dx, dy, dz;
 
-  REF_DBL theta_deg;
-  REF_DBL beta_deg;
   REF_DBL tan_beta, tan_theta;
-
-  theta_deg = 5.0;
-  beta_deg = 44.1081632495196;
 
   tan_beta = tan(ref_math_in_radians(beta_deg));
   tan_theta = tan(ref_math_in_radians(theta_deg));

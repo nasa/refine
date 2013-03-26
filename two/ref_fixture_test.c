@@ -75,12 +75,14 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
-  if ( 1 < argc )
+  if ( 4 == argc )
     {
       REF_GRID ref_grid;
 
-      RSS( ref_fixture_boom2d_grid( &ref_grid ), "boom2d" );
-      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
+      RSS( ref_fixture_boom2d_grid( &ref_grid, 
+				    atof(argv[1]),
+				    atof(argv[2]) ), "boom2d" );
+      RSS( ref_export_by_extension( ref_grid, argv[3] ), "export" );
       
       RSS( ref_grid_free(ref_grid),"free");
     }
