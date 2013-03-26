@@ -1244,8 +1244,8 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr )
   REF_DBL beta_deg;
   REF_DBL tan_beta, tan_theta;
 
-  theta_deg = 10.0;
-  beta_deg = 51.1153393629217;
+  theta_deg = 5.0;
+  beta_deg = 44.1081632495196;
 
   tan_beta = tan(ref_math_in_radians(beta_deg));
   tan_theta = tan(ref_math_in_radians(theta_deg));
