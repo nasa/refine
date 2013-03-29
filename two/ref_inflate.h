@@ -18,6 +18,11 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 			     REF_DICT faceids, 
 			     REF_DBL thickness, REF_DBL xshift );
 
+REF_STATUS ref_inflate_rate( REF_INT nlayers,
+			     REF_DBL first_thickness,
+			     REF_DBL total_thickness,
+			     REF_DBL *rate );
+
 END_C_DECLORATION
 
 #endif /* REF_INFLATE_H */

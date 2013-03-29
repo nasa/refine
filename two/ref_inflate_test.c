@@ -25,5 +25,15 @@
 int main(  )
 {
 
+  {
+    REF_DBL H, h0, rate;
+    REF_INT n;
+    H = 10.0;
+    h0 = 1.0;
+    n = 10;
+    RSS( ref_inflate_rate(n,h0,H,&rate),"rate");
+    RWDS( 1.0, rate, -1.0, "uniform" );
+  }
+
   return 0;
 }

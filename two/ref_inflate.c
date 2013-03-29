@@ -259,3 +259,32 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_inflate_rate( REF_INT nlayers,
+			     REF_DBL first_thickness,
+			     REF_DBL total_thickness,
+			     REF_DBL *rate )
+{
+  REF_DBL r, H, err, dHdr, dnum, dden;
+  REF_DBL fd;
+  REF_DBL tol =1.0e-4;
+  r = 1.2;
+
+  H = first_thickness*(1.0-pow(r,nlayers))/(1.0-r);
+  err = H-total_thickness;
+
+  dnum = -((REF_DBL)nlayers)*pow(r,nlayers-1);
+  dden = -1.0;
+
+  dHdr = first_thickness * ( dnum*(1.0-r) 
+			   - (1.0-pow(r,nlayers))*dden )/(1.0-r)/(1.0-r) ;
+
+  fd = first_thickness*(1.0-pow(r+tol,nlayers))/(1.0-r+tol) 
+     - first_thickness*(1.0-pow(r-tol,nlayers))/(1.0-r-tol);
+  fd = fd / 2.0 / tol;
+
+  printf(" dHdr %e fd %e dHdr-fd %e\n",dHdr,fd,dHdr-fd);
+
+  *rate = 1.0;
+
+  return REF_SUCCESS;
+}
