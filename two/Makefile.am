@@ -148,6 +148,11 @@ noinst_PROGRAMS += ref_import_test
 ref_import_test_SOURCES = ref_import_test.c
 ref_import_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
+TESTS += ref_inflate_test
+noinst_PROGRAMS += ref_inflate_test
+ref_inflate_test_SOURCES = ref_inflate_test.c
+ref_inflate_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
 TESTS += ref_list_test
 noinst_PROGRAMS += ref_list_test
 ref_list_test_SOURCES = ref_list_test.c
