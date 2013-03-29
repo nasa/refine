@@ -288,3 +288,13 @@ REF_STATUS ref_inflate_rate( REF_INT nlayers,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_inflate_total_thickness( REF_INT nlayers,
+					REF_DBL first_thickness,
+					REF_DBL rate,
+					REF_DBL *total_thickness )
+{
+  *total_thickness = first_thickness*(1.0-pow(rate,nlayers))/(1.0-rate);
+
+  return REF_SUCCESS;
+}

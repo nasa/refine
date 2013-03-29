@@ -35,5 +35,15 @@ int main(  )
     RWDS( 1.0, rate, -1.0, "uniform" );
   }
 
+  {
+    REF_DBL H, h0, rate;
+    REF_INT n;
+    h0 = 0.5;
+    n = 10;
+    rate = 1.1469;
+    RSS( ref_inflate_total_thickness(n,h0,rate,&H),"total");
+    RWDS( 10.0, H, 1.0e-3, "not total" );
+  }
+
   return 0;
 }

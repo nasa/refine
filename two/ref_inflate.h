@@ -22,6 +22,10 @@ REF_STATUS ref_inflate_rate( REF_INT nlayers,
 			     REF_DBL first_thickness,
 			     REF_DBL total_thickness,
 			     REF_DBL *rate );
+REF_STATUS ref_inflate_total_thickness( REF_INT nlayers,
+					REF_DBL first_thickness,
+					REF_DBL rate,
+					REF_DBL *total_thickness );
 
 END_C_DECLORATION
 
