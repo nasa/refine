@@ -32,7 +32,17 @@ int main(  )
     h0 = 1.0;
     n = 10;
     RSS( ref_inflate_rate(n,h0,H,&rate),"rate");
-    RWDS( 1.0, rate, -1.0, "uniform" );
+    RWDS( 1.0, rate, 1.0e-8, "uniform" );
+  }
+
+  {
+    REF_DBL H, h0, rate;
+    REF_INT n;
+    H = 10.0;
+    h0 = 0.5;
+    n = 10;
+    RSS( ref_inflate_rate(n,h0,H,&rate),"rate");
+    RWDS( 1.1469, rate, 1.0e-3, "growth" );
   }
 
   {
@@ -43,6 +53,22 @@ int main(  )
     rate = 1.1469;
     RSS( ref_inflate_total_thickness(n,h0,rate,&H),"total");
     RWDS( 10.0, H, 1.0e-3, "not total" );
+  }
+
+  {
+    REF_DBL dHdr, h0, rate;
+    REF_INT n;
+    REF_DBL tol=1.0e-6, fd,Hp,Hm;
+    h0 = 0.5;
+    n = 10;
+    rate = 1.1469;
+    RSS( ref_inflate_total_thickness(n,h0,rate+tol,&Hp),"total+");
+    RSS( ref_inflate_total_thickness(n,h0,rate-tol,&Hm),"total-");
+    fd = (Hp-Hm)/2.0/tol;
+
+    RSS( ref_inflate_dthickness(n,h0,rate,&dHdr),"deriv");
+
+    RWDS( fd, dHdr, 1.0e-8, "not total" );
   }
 
   return 0;

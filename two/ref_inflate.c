@@ -264,27 +264,31 @@ REF_STATUS ref_inflate_rate( REF_INT nlayers,
 			     REF_DBL total_thickness,
 			     REF_DBL *rate )
 {
-  REF_DBL r, H, err, dHdr, dnum, dden;
-  REF_DBL fd;
-  REF_DBL tol =1.0e-4;
-  r = 1.2;
+  REF_DBL r, H, err, dHdr;
+  REF_BOOL keep_going;
+  REF_INT iters;
+  r = 1.1;
 
-  H = first_thickness*(1.0-pow(r,nlayers))/(1.0-r);
-  err = H-total_thickness;
+  iters = 0;
+  keep_going = REF_TRUE;
+  while (keep_going)
+    {
+      iters++;
+      if ( iters > 100) THROW("iteration count exceeded");
 
-  dnum = -((REF_DBL)nlayers)*pow(r,nlayers-1);
-  dden = -1.0;
+      RSS( ref_inflate_total_thickness(nlayers,first_thickness,r,&H),"total");
+      err = H-total_thickness;
 
-  dHdr = first_thickness * ( dnum*(1.0-r) 
-			   - (1.0-pow(r,nlayers))*dden )/(1.0-r)/(1.0-r) ;
+      RSS( ref_inflate_dthickness(nlayers,first_thickness,r,&dHdr),"total");
 
-  fd = first_thickness*(1.0-pow(r+tol,nlayers))/(1.0-r+tol) 
-     - first_thickness*(1.0-pow(r-tol,nlayers))/(1.0-r-tol);
-  fd = fd / 2.0 / tol;
+      /* printf(" r %e H %e err %e dHdr %e\n",r,H,err,dHdr); */
 
-  printf(" dHdr %e fd %e dHdr-fd %e\n",dHdr,fd,dHdr-fd);
+      r = r - err/dHdr;
 
-  *rate = 1.0;
+      keep_going = ( ABS(err) > 1.0e-12 );
+    }
+
+  *rate = r;
 
   return REF_SUCCESS;
 }
@@ -296,5 +300,20 @@ REF_STATUS ref_inflate_total_thickness( REF_INT nlayers,
 {
   *total_thickness = first_thickness*(1.0-pow(rate,nlayers))/(1.0-rate);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_inflate_dthickness( REF_INT nlayers,
+				   REF_DBL first_thickness,
+				   REF_DBL rate,
+				   REF_DBL *dHdr )
+{
+  REF_DBL dnum, dden;
+  dnum = -((REF_DBL)nlayers)*pow(rate,nlayers-1);
+  dden = -1.0;
+
+  *dHdr = first_thickness * ( dnum*(1.0-rate) 
+  			   - (1.0-pow(rate,nlayers))*dden )
+    /(1.0-rate)/(1.0-rate) ;
   return REF_SUCCESS;
 }
