@@ -553,6 +553,29 @@ a3 = inv(a1)*a2
 
   }
 
+  { /* diag gen */
+    REF_DBL tol = 4.0e-5;
+    REF_INT n=3;
+    REF_DBL a[9]= {1.6972e+05,  -2.5054e+04,  -1.9482e+05,
+		   -2.5054e+04,   2.0420e+05,    2.2926e+05,
+		   -1.9482e+05,   2.2926e+05,    4.2414e+05};
+    REF_DBL vectors[9], values[3];
+
+    /*
+a=[
+1.6972e+05,  -2.5054e+04,  -1.9482e+05;
+-2.5054e+04,   2.0420e+05,    2.2926e+05;
+-1.9482e+05,   2.2926e+05,    4.2414e+05]
+[val,vec]=eig(a)
+     */
+
+    RSS( ref_matrix_diag_gen( n, a, values, vectors ), "gen diag");
+
+    RWDS( 6.3802e+05, values[0], tol*1e5, "val[0]");
+    RWDS( 1.6004e+05, values[1], tol*1e5, "val[1]");
+    RWDS( 2.6620e+00, values[2], tol, "val[2]");
+  }
+
   { /* inv gen I */
     REF_DBL tol = -1.0;
     REF_INT n=3;
