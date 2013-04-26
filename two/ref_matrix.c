@@ -673,9 +673,9 @@ REF_STATUS ref_matrix_mult_gen( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r )
 
 REF_STATUS ref_matrix_inv_gen( REF_INT n, REF_DBL *orig, REF_DBL *inv )
 {
-  REF_INT i, j, k;
+  REF_INT i, j, k, best;
   REF_DBL *a;
-  REF_DBL pivot, scale;
+  REF_DBL pivot, scale, temp;
 
   ref_malloc( a, n*n, REF_DBL );
 
@@ -691,6 +691,25 @@ REF_STATUS ref_matrix_inv_gen( REF_INT n, REF_DBL *orig, REF_DBL *inv )
 
   for (j = 0; j<n ; j++ )
     {
+
+      /* find the best lower row */
+      best = j;
+      for (k=j+1;k<n;k++)
+	if ( ABS( a[k+n*j] ) >  ABS( a[best+n*j] ) ) best = k;
+      
+      if ( best != j ) /* if there is a better row then swap */
+	{
+	  for (k=0;k<n;k++)
+	    {
+	      temp = a[j+n*k];
+	      a[j+n*k] = a[best+n*k];
+	      a[best+n*k] = temp;
+	      temp = inv[j+n*k];
+	      inv[j+n*k] = inv[best+n*k];
+	      inv[best+n*k] = temp;
+	    }
+	}
+
       /* scale row so a[j+n*j] is 1.0 */
       pivot = a[j+n*j];
       for (k=0;k<n;k++)
@@ -708,6 +727,7 @@ REF_STATUS ref_matrix_inv_gen( REF_INT n, REF_DBL *orig, REF_DBL *inv )
 	  }
 	  inv[j+k*n] /= pivot;
 	}
+
       /* eliminate lower triangle */
       for (i=j+1;i<n;i++)
 	{
