@@ -53,6 +53,7 @@ REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a,
 REF_STATUS ref_matrix_inv_gen( REF_INT n, REF_DBL *a, REF_DBL *inv );
 REF_STATUS ref_matrix_mult_gen( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r );
 REF_STATUS ref_matrix_transpose_gen( REF_INT n, REF_DBL *a, REF_DBL *at );
+REF_STATUS ref_matrix_det_gen( REF_INT n, REF_DBL *a, REF_DBL *det );
 
 END_C_DECLORATION
 
