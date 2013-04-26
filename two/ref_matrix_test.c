@@ -631,6 +631,30 @@ inv(a)
     RWDS( -0.0505050505050505, inv[1+1*2], tol, "inv[1,1]");
   }
 
+  { /* inv gen pivots */
+    REF_DBL tol = -1.0;
+    REF_INT n=3;
+    REF_DBL a[9]= {0.00000,  -1.00000,   0.00000,
+		   0.73860,   0.00000,   0.67414,
+		   0.67414,   0.00000,  -0.73860};
+    REF_DBL inv[9];
+    REF_DBL at[9];
+
+    /*
+a = [ 0.00000  -1.00000   0.00000 ;
+      0.73860   0.00000   0.67414 ;
+      0.67414   0.00000  -0.73860 ]
+inv(a)
+     */
+
+    RSS( ref_matrix_inv_gen( n, a, inv ), "gen inv");
+    RSS( ref_matrix_transpose_gen( n, a, at ), "gen inv");
+
+    /* orthog: inv = at */
+    RWDS( inv[0+0*3], at[0+0*3], tol, "[0,0]");
+
+  }
+
   { /* transpose gen 3 */
     REF_DBL tol = -1.0;
     REF_INT n=3;
