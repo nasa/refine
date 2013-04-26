@@ -1,4 +1,6 @@
 
+- increased robustness of matrix inverse with pivot in metric SMR
+
 Wed, Mar 13, 2013 : Released Refine 1.8.9
 
 - Zoltan GRAPH LB_METHOD required callbacks added.
