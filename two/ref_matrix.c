@@ -366,7 +366,7 @@ REF_STATUS ref_matrix_show_m( REF_DBL *m )
 REF_STATUS ref_matrix_show_ab( REF_INT rows, REF_INT cols, REF_DBL *ab )
 {
   REF_INT row, col;
-  char format[] = "%10.5f" ;
+  char format[] = "%12.4e" ;
   for ( row = 0; row < rows; row++)
     {
       for (col = 0; col < cols; col++ )
@@ -482,7 +482,7 @@ REF_STATUS ref_matrix_imply_m( REF_DBL *m,
 REF_STATUS ref_matrix_show_aqr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r)
 {
   REF_INT row, col;
-  char format[] = "%10.5f" ;
+  char format[] = "%12.4e" ;
   
   for (row = 0; row<n ; row++ )
     {
@@ -539,6 +539,34 @@ REF_STATUS ref_matrix_qr( REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r )
 	  for (i=0;i<n;i++)
 	    q[i+n*j] -= r[k+n*j]*q[i+n*k];
 	}
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_show_eig( REF_INT n, REF_DBL *a, 
+				REF_DBL *values, REF_DBL *vectors)
+{
+  REF_INT row, col;
+  char format[] = "%12.4e" ;
+  
+  for (row = 0; row<n ; row++ )
+    {
+      for (col=0;col<n;col++)
+	if ( NULL != a )
+	  {
+	    printf(format,a[row+n*col]);
+	    printf(" ");
+	    if ( col == n-1 ) printf(" |");
+	  }
+      printf(format,values[row]);
+      printf(" |");
+      for (col=0;col<n;col++)
+	{
+	  printf(format,vectors[row+n*col]);
+	  if ( col < n-1 ) printf(" ");
+	}
+      printf("\n");
     }
 
   return REF_SUCCESS;
@@ -616,7 +644,13 @@ REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a,
 	  for (i=0;i<n;i++)
 	    ab[i+n*n] = vectors[i+k*n];
 
-	  RSS( ref_matrix_solve_ab( n, n+1, ab ), "solve" );
+	  if ( REF_SUCCESS != ref_matrix_solve_ab( n, n+1, ab ) )
+	    {
+	      ref_matrix_show_ab( n, n+1, ab );
+	      ref_matrix_show_eig( n, a, values, vectors );
+	      printf("vectr %d conv %e used %d\n",k,conv,iter);
+	      THROW( "solve" );
+	    }
 
 	  len = 0.0;
 	  for (i=0;i<n;i++)
