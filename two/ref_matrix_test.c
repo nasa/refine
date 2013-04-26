@@ -638,7 +638,6 @@ inv(a)
 		   0.73860,   0.00000,   0.67414,
 		   0.67414,   0.00000,  -0.73860};
     REF_DBL inv[9];
-    REF_DBL at[9];
 
     /*
 a = [ 0.00000  -1.00000   0.00000 ;
@@ -648,10 +647,17 @@ inv(a)
      */
 
     RSS( ref_matrix_inv_gen( n, a, inv ), "gen inv");
-    RSS( ref_matrix_transpose_gen( n, a, at ), "gen inv");
 
     /* orthog: inv = at */
-    RWDS( inv[0+0*3], at[0+0*3], tol, "[0,0]");
+    RWDS( inv[0+0*3], a[0+0*3], tol, "[0,0]");
+    RWDS( inv[1+0*3], a[0+1*3], tol, "[1,0]");
+    RWDS( inv[2+0*3], a[0+2*3], tol, "[2,0]");
+    RWDS( inv[0+1*3], a[1+0*3], tol, "[0,1]");
+    RWDS( inv[1+1*3], a[1+1*3], tol, "[1,1]");
+    RWDS( inv[2+1*3], a[1+2*3], tol, "[2,1]");
+    RWDS( inv[0+2*3], a[2+0*3], tol, "[0,2]");
+    RWDS( inv[1+2*3], a[2+1*3], tol, "[1,2]");
+    RWDS( inv[2+2*3], a[2+2*3], tol, "[2,2]");
 
   }
 
