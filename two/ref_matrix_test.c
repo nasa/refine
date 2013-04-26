@@ -632,7 +632,7 @@ inv(a)
   }
 
   { /* inv gen pivots */
-    REF_DBL tol = -1.0;
+    REF_DBL tol = 1.0e-5;
     REF_INT n=3;
     REF_DBL a[9]= {0.00000,  -1.00000,   0.00000,
 		   0.73860,   0.00000,   0.67414,
