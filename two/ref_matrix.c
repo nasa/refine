@@ -639,7 +639,7 @@ REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a,
 	    for (i=0;i<n;i++)
 	      ab[i+j*n]=a[i+j*n];
 	  for (i=0;i<n;i++)
-	    ab[i+i*n] -= 1.00001*values[k];
+	    ab[i+i*n] -= 1.0001*values[k];
 
 	  for (i=0;i<n;i++)
 	    ab[i+n*n] = vectors[i+k*n];

@@ -548,8 +548,8 @@ a3 = inv(a1)*a2
 
     RWDS( -0.987300, vectors[0+0*2], tol, "vec[0,0]");
     RWDS(  0.158814, vectors[1+0*2], tol, "vec[1,0]");
-    RWDS( -0.068775, vectors[0+1*2], tol, "vec[0,1]");
-    RWDS(  0.997632, vectors[1+1*2], tol, "vec[1,1]");
+    RWDS(  0.068775, vectors[0+1*2], tol, "vec[0,1]");
+    RWDS( -0.997632, vectors[1+1*2], tol, "vec[1,1]");
 
   }
 
