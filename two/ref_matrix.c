@@ -714,13 +714,13 @@ REF_STATUS ref_matrix_inv_gen( REF_INT n, REF_DBL *orig, REF_DBL *inv )
 	  if ( !ref_math_divisible( a[j+k*n], pivot )) {
 	    RSS( ref_matrix_show_aqr(3,NULL,a,inv), "show");
 	    printf("a pivot %d %e %e\n",j,a[j+k*n],pivot);
-	    RSS( REF_DIV_ZERO, "pivot" );
+	    goto pivot_problems_ref_matrix_inv_gen;
 	  }
 	  a[j+k*n] /= pivot;
 	  if ( !ref_math_divisible( inv[j+k*n], pivot )) {
 	    RSS( ref_matrix_show_aqr(3,NULL,a,inv), "show");
 	    printf("inv pivot %d %e %e\n",j,inv[j+k*n],pivot);
-	    RSS( REF_DIV_ZERO, "pivot" );
+	    goto pivot_problems_ref_matrix_inv_gen;
 	  }
 	  inv[j+k*n] /= pivot;
 	}
@@ -749,6 +749,14 @@ REF_STATUS ref_matrix_inv_gen( REF_INT n, REF_DBL *orig, REF_DBL *inv )
     }
 
   ref_free( a );
+
+  return REF_SUCCESS;
+
+ pivot_problems_ref_matrix_inv_gen:
+
+  ref_free( a );
+
+  RSS( REF_DIV_ZERO, "pivot" );
 
   return REF_SUCCESS;
 }
