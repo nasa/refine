@@ -300,7 +300,14 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
 	  eig = 1.0/h2;
 	  ref_matrix_eig( diagonal_system, i ) = eig;
 	}
-      RSS( ref_matrix_inv_gen( 3, n_vectors, inv_n_vectors ), "gen eig");
+      if ( REF_SUCCESS != ref_matrix_inv_gen( 3, n_vectors, inv_n_vectors ) )
+	{
+	  printf(" unable to invert eigenvectors:\n");
+	  printf(" %f %f %f\n",n_vectors[0],n_vectors[1],n_vectors[2]);
+	  printf(" %f %f %f\n",n_vectors[3],n_vectors[4],n_vectors[5]);
+	  printf(" %f %f %f\n",n_vectors[6],n_vectors[7],n_vectors[8]);
+	  RSS( REF_FAILURE, "gen eig" );
+	}
       RSS( ref_matrix_transpose_gen( 3, inv_n_vectors, 
 				     &(diagonal_system[3]) ), "gen eig");
       RSS( ref_matrix_form_m( diagonal_system, &(metric[6*node]) ), "reform m");
