@@ -17,6 +17,7 @@ REF_STATUS ref_import_lb8_ugrid( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_import_msh( REF_GRID *ref_grid, char *filename );
+REF_STATUS ref_import_meshb( REF_GRID *ref_grid, char *filename );
 
 REF_STATUS ref_import_mapbc( REF_DICT *ref_dict, char *filename );
 

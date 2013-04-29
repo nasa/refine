@@ -25,7 +25,9 @@ int main( int argc, char *argv[] )
 
   if (2 == argc) 
     {
-      RSS( ref_import_examine_header( argv[1] ), "examine header" );
+      REF_GRID ref_grid;
+      RSS( ref_import_meshb( &ref_grid, argv[1] ), "meshb" );
+      RSS(ref_grid_free(ref_grid),"free");
       return 0;
     }
 

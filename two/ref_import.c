@@ -918,6 +918,60 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
   return REF_IMPLEMENT;
 }
 
+REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  FILE *file;
+  REF_INT code, version, dim;
+  REF_INT keyword_code, position, next_position, end_position;
+  REF_DICT ref_dict;
+
+  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS( ref_dict_create( &ref_dict ), "create dict" );
+
+  file = fopen(filename,"r");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+  
+  REIS(1, fread((unsigned char *)&code, 4, 1, file), "code");
+  REIS(1, code, "code");
+  REIS(1, fread((unsigned char *)&version, 4, 1, file), "version");
+  REIS(1, version, "version");
+
+  position = ftell(file);
+  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
+  REIS(3, keyword_code, "keyword code");
+  RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
+  REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+
+  REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
+  REIS(2, dim, "dim");
+
+  fseek(file, 0, SEEK_END);
+  end_position = ftell(file);
+
+  while ( next_position <= end_position )
+    {
+      position = next_position;
+      fseek(file, position, SEEK_SET);
+      REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
+	   "keyword code");
+      RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
+      REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+    }  
+
+  ref_dict_inspect(ref_dict);
+  ref_dict_free( ref_dict );
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_import_mapbc( REF_DICT *ref_dict_ptr, char *filename )
 {
   FILE *file;
