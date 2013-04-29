@@ -194,8 +194,6 @@ int main( int argc, char *argv[] )
 	   "gather");
       ref_mpi_stopwatch_stop("gather");
 
-      RSS( ref_gather_plot( ref_grid, "ref_adapt_test.eps" ), 
-	   "gather");
       RSS( ref_gather_tec_part( ref_grid, "ref_adapt_test_part.tec" ), 
 	   "part_viz");
 
