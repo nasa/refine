@@ -533,77 +533,82 @@ REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
   REF_INT ncell;
   REF_INT group;
   REF_DBL d[12];
+  REF_DBL dx,dy,dz;
   FILE *file;
   char viz_file[256];
+  REF_INT e;
 
-  sprintf(viz_file, "%s_n%d_p%d.tec", root_filename, ref_mpi_n, ref_mpi_id);
+  for (e=0;e<3;e++)
+    {
+      sprintf(viz_file, "%s_n%d_p%d_ax%d.tec", 
+	      root_filename, ref_mpi_n, ref_mpi_id, e);
 
-  file = fopen(viz_file,"w");
-  if (NULL == (void *)file) printf("unable to open %s\n",viz_file);
-  RNS(file, "unable to open file" );
+      file = fopen(viz_file,"w");
+      if (NULL == (void *)file) printf("unable to open %s\n",viz_file);
+      RNS(file, "unable to open file" );
 
-  fprintf(file, "title=\"tecplot refine scalar file\"\n");
-  fprintf(file, "variables = \"x\" \"y\" \"z\" \"h0\" \"h1\" \"h2\"\n");
+      fprintf(file, "title=\"tecplot refine metric axes\"\n");
+      fprintf(file, "variables = \"x\" \"y\" \"z\" \"u\" \"v\" \"w\"\n");
 
-  ncell = 0;
-  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    ncell += ref_cell_n(ref_cell);
+      ncell = 0;
+      each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+	ncell += ref_cell_n(ref_cell);
 
-  fprintf(file,
+      fprintf(file,
 	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  ref_node_n(ref_node), ncell, "point", "febrick" );
 
-  RSS( ref_node_compact( ref_node, &o2n, &n2o ), "compact" );
+      RSS( ref_node_compact( ref_node, &o2n, &n2o ), "compact" );
 
-  for ( node = 0; node < ref_node_n(ref_node); node++ )
-    {
-      REF_DBL h0, h1, h2;
-      RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,n2o[node]),
-			      d ), "diag" );
-      RSS( ref_matrix_ascending_eig( d ), "sort eig" );
-      h0 = 1.0/sqrt(d[0]);
-      h1 = 1.0/sqrt(d[1]);
-      h2 = 1.0/sqrt(d[2]);
-      fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n", 
-	      ref_node_xyz(ref_node,0,n2o[node]),
-	      ref_node_xyz(ref_node,1,n2o[node]),
-	      ref_node_xyz(ref_node,2,n2o[node]),
-	      h0, h1, h2 ) ;
-    }
-
-  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      switch ( ref_cell_node_per(ref_cell) )
+      for ( node = 0; node < ref_node_n(ref_node); node++ )
 	{
-	case 4:
-	  TEC_BRICK_TET(brick,nodes);
-	  break;
-	case 5:
-	  TEC_BRICK_PYR(brick,nodes);
-	  break;
-	case 6:
-	  TEC_BRICK_PRI(brick,nodes);
-	  break;
-	case 8:
-	  TEC_BRICK_HEX(brick,nodes);
-	  break;
-	default:
-	  RSS( REF_IMPLEMENT, "wrong nodes per cell");
-	  break;
+	  RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,n2o[node]),
+				  d ), "diag" );
+	  RSS( ref_matrix_ascending_eig( d ), "sort eig" );
+	  dx = d[3+3*e]/sqrt(d[e]);
+	  dy = d[4+3*e]/sqrt(d[e]);
+	  dz = d[5+3*e]/sqrt(d[e]);
+	  fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n", 
+		  ref_node_xyz(ref_node,0,n2o[node]),
+		  ref_node_xyz(ref_node,1,n2o[node]),
+		  ref_node_xyz(ref_node,2,n2o[node]),
+		  dx, dy, dz);
 	}
 
-      for ( node = 0; node < 8; node++ )
+      each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+	each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
-	  fprintf(file," %d",o2n[brick[node]] + 1);
+	  switch ( ref_cell_node_per(ref_cell) )
+	    {
+	    case 4:
+	      TEC_BRICK_TET(brick,nodes);
+	      break;
+	    case 5:
+	      TEC_BRICK_PYR(brick,nodes);
+	      break;
+	    case 6:
+	      TEC_BRICK_PRI(brick,nodes);
+	      break;
+	    case 8:
+	      TEC_BRICK_HEX(brick,nodes);
+	      break;
+	    default:
+	      RSS( REF_IMPLEMENT, "wrong nodes per cell");
+	      break;
+	    }
+
+	  for ( node = 0; node < 8; node++ )
+	    {
+	      fprintf(file," %d",o2n[brick[node]] + 1);
+	    }
+	  fprintf(file,"\n");
 	}
-      fprintf(file,"\n");
-    }
 
-  ref_free(n2o);
-  ref_free(o2n);
+      ref_free(n2o);
+      ref_free(o2n);
 
-  fclose(file);
+      fclose(file);
+    } /* each eigenpair */
 
   return REF_SUCCESS;
 }
