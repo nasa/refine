@@ -95,6 +95,8 @@ int main( int argc, char *argv[] )
       RSS( ref_metric_sanitize(ref_grid),"sant");
       RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
+      RSS( ref_gather_tec_movie_record_button( REF_TRUE ), "rec" );
+
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
 
