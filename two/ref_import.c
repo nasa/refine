@@ -80,13 +80,19 @@ REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr, char *filename )
 	    if( strcmp(&filename[end_of_string-4],".msh") == 0 ) 
 	      {
 		RSS( ref_import_msh( ref_grid_ptr, filename ), "msh failed");
-	      } 
-	    else 
-	      {
-		printf("%s: %d: %s %s\n",__FILE__,__LINE__,
-		       "input file name extension unknown", filename);
-		RSS( REF_FAILURE, "unknown file extension");
 	      }
+	    else 
+	      if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
+		{
+		  RSS( ref_import_meshb( ref_grid_ptr, filename ), 
+		       "meshb failed");
+		} 
+	      else 
+		{
+		  printf("%s: %d: %s %s\n",__FILE__,__LINE__,
+			 "input file name extension unknown", filename);
+		  RSS( REF_FAILURE, "unknown file extension");
+		}
   
   return REF_SUCCESS;
 }
