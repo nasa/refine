@@ -751,5 +751,12 @@ inv(a)
 
   }
 
+  { /* orthog ident 3 */
+    REF_INT n=3;
+    REF_DBL a[9]= {1,0,0,0,1,0,0,0,1};
+
+    RSS( ref_matrix_orthog( n, a ), "orth");
+  }
+
   return 0;
 }

@@ -842,3 +842,27 @@ REF_STATUS ref_matrix_det_gen( REF_INT n, REF_DBL *orig, REF_DBL *det )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_orthog( REF_INT n, REF_DBL *a )
+{
+  REF_INT i, j, k;
+  REF_DBL norm;
+
+  for (i = 0; i<n ; i++ )
+    for (j=i+1;j<n;j++)
+      {
+	norm = 0.0;
+	for (k=0;k<n;k++)
+	  norm += a[k+n*i]*a[k+n*j];
+	if ( ABS(norm) > 1.0e-13 )
+	  {
+	    printf(" %d-%d not orthog: %e\n",i,j,norm);
+	    printf(" %f %f %f\n",a[0],a[3],a[6]);
+	    printf(" %f %f %f\n",a[1],a[4],a[7]);
+	    printf(" %f %f %f\n",a[2],a[5],a[8]);
+	    return REF_INVALID; 
+	  }
+      }
+
+  return REF_SUCCESS;
+}
+

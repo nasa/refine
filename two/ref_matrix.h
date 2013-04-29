@@ -58,6 +58,8 @@ REF_STATUS ref_matrix_mult_gen( REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r );
 REF_STATUS ref_matrix_transpose_gen( REF_INT n, REF_DBL *a, REF_DBL *at );
 REF_STATUS ref_matrix_det_gen( REF_INT n, REF_DBL *a, REF_DBL *det );
 
+REF_STATUS ref_matrix_orthog( REF_INT n, REF_DBL *a );
+
 END_C_DECLORATION
 
 #endif /* REF_MATRIX_H */
