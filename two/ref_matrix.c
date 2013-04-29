@@ -619,7 +619,10 @@ REF_STATUS ref_matrix_diag_gen( REF_INT n, REF_DBL *a,
       conv = max_lower/trace;
 
       if ( iter > 100000 ) {
-	printf("value conv %e used %d\n",conv,iter);
+	for (i=0;i<n;i++)
+	  values[i]=rq[i+i*n];
+	RSS( ref_matrix_show_eig( n, a, values, vectors), "show" );
+	printf("conv before shift %e used %d\n",conv,iter);
 	break;
       }
 
