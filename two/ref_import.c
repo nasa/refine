@@ -926,6 +926,10 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT code, version, dim;
   REF_INT keyword_code, position, next_position, end_position;
   REF_DICT ref_dict;
+  REF_INT vertex_keyword, triangle_keyword, edge_keyword;
+  REF_INT nnode, node, new_node;
+  REF_INT ntri, nedge;
+  float temp;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -965,6 +969,47 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
     }  
 
   ref_dict_inspect(ref_dict);
+
+  vertex_keyword = 4;
+  RSS( ref_dict_value( ref_dict, vertex_keyword, &position), "kw pos");
+  fseek(file, (long)position, SEEK_SET);
+  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
+  REIS(vertex_keyword, keyword_code, "keyword code");
+  REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+  REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "keyword code");
+  printf("nnode %d\n",nnode);
+
+  for (node=0;node<nnode;node++)
+    {
+      RSS( ref_node_add( ref_node, node, &new_node ), "add node");
+      REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read x" );
+      ref_node_xyz(ref_node,0,new_node) = temp;
+      REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read y" );
+      ref_node_xyz(ref_node,1,new_node) = temp;
+      REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read z" );
+      ref_node_xyz(ref_node,2,new_node) = temp;
+      /* ref_node_location(ref_node, node ); */
+    }
+  REIS( next_position, ftell(file), "end location" );
+
+  edge_keyword = 5;
+  RSS( ref_dict_value( ref_dict, edge_keyword, &position), "kw pos");
+  fseek(file, (long)position, SEEK_SET);
+  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
+  REIS(edge_keyword, keyword_code, "keyword code");
+  REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+  REIS(1, fread((unsigned char *)&nedge, 4, 1, file), "keyword code");
+  printf("nedge %d\n",nedge);
+
+  triangle_keyword = 6;
+  RSS( ref_dict_value( ref_dict, triangle_keyword, &position), "kw pos");
+  fseek(file, (long)position, SEEK_SET);
+  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
+  REIS(triangle_keyword, keyword_code, "keyword code");
+  REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+  REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "keyword code");
+  printf("ntri %d\n",ntri);
+
   ref_dict_free( ref_dict );
 
   fclose(file);
