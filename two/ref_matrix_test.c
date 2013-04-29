@@ -599,6 +599,30 @@ a=[
     RWDS( 2.9545e-06, values[2], tol, "val[2]");
   }
 
+  { /* diag gen repeat */
+    REF_DBL tol = 1.0e-4;
+    REF_INT n=3;
+    REF_DBL a[9]= {   6.7943,   2.2648,   2.2648,
+		      2.2648,   6.7943,  -2.2648,
+		      2.2648,  -2.2648,   6.7943 };
+    REF_DBL vectors[9], values[3];
+
+    /*
+a=[
+   6.7943   2.2648   2.2648;
+   2.2648   6.7943  -2.2648;
+   2.2648  -2.2648   6.7943;
+];
+[val,vec]=eig(a)
+     */
+
+    RSS( ref_matrix_diag_gen( n, a, values, vectors ), "gen diag");
+
+    RWDS( 9.0591, values[0], tol, "val[0]");
+    RWDS( 9.0591, values[1], tol, "val[1]");
+    RWDS( 2.2647, values[2], tol, "val[2]");
+  }
+
   { /* inv gen I */
     REF_DBL tol = -1.0;
     REF_INT n=3;
