@@ -42,6 +42,8 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid );
 REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram );
 REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram );
 
+REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid );
+
 END_C_DECLORATION
 
 #endif /* REF_HISTOGRAM_H */
