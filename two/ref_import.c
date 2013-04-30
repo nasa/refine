@@ -924,6 +924,44 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
   return REF_IMPLEMENT;
 }
 
+static REF_STATUS meshb_real( FILE *file, REF_INT version, REF_DBL *real )
+{
+  float temp_float;
+  double temp_double;
+
+  if ( 1 == version )
+    {
+      REIS( 1, fread(&temp_float,sizeof(temp_float), 1, file ), "read float" );
+      *real = temp_float;
+    }
+  else
+    {
+      REIS( 1, fread(&temp_double,sizeof(temp_double), 1, file),"read double");
+      *real = temp_double;
+    }
+
+  return REF_SUCCESS;
+} 
+
+static REF_STATUS meshb_pos( FILE *file, REF_INT version, REF_INT *pos )
+{
+  int temp_int;
+  long temp_long;
+
+  if ( 3 == version )
+    {
+      REIS( 1, fread(&temp_long,sizeof(temp_long), 1, file ), "read long" );
+      *pos = temp_long;
+    }
+  else
+    {
+      REIS( 1, fread(&temp_int,sizeof(temp_int), 1, file),"read double");
+      *pos = temp_int;
+    }
+
+  return REF_SUCCESS;
+} 
+
 REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
 {
   REF_GRID ref_grid;
@@ -935,7 +973,6 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT vertex_keyword, triangle_keyword, edge_keyword;
   REF_INT nnode, node, new_node;
   REF_INT ntri, tri, nedge, edge;
-  float temp;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT n0, n1, n2, id;
 
@@ -952,16 +989,24 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REIS(1, fread((unsigned char *)&code, 4, 1, file), "code");
   REIS(1, code, "code");
   REIS(1, fread((unsigned char *)&version, 4, 1, file), "version");
-  REIS(1, version, "version");
+  if ( version < 1 || 3 < version )
+    {
+      printf("version %d not supported\n",version);
+      THROW("version");
+    }
 
   position = ftell(file);
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
   REIS(3, keyword_code, "keyword code");
   RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
-  REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+  RSS( meshb_pos( file, version, &next_position), "pos");
 
   REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
-  REIS(2, dim, "dim");
+  if ( dim < 2 || 3 < dim )
+    {
+      printf("dim %d not supported\n",dim);
+      THROW("dim");
+    }
 
   fseek(file, 0, SEEK_END);
   end_position = ftell(file);
@@ -973,7 +1018,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
 	   "keyword code");
       RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
-      REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+      RSS( meshb_pos( file, version, &next_position), "pos");
     }  
 
   ref_dict_inspect(ref_dict);
@@ -983,19 +1028,31 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   fseek(file, (long)position, SEEK_SET);
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
   REIS(vertex_keyword, keyword_code, "keyword code");
-  REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+  RSS( meshb_pos( file, version, &next_position), "pos");
   REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "keyword code");
   printf("nnode %d\n",nnode);
 
   for (node=0;node<nnode;node++)
     {
       RSS( ref_node_add( ref_node, node, &new_node ), "add node");
-      REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read x" );
-      ref_node_xyz(ref_node,0,new_node) = temp;
-      REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read y" );
-      ref_node_xyz(ref_node,2,new_node) = temp;
-      REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read z" );
-      ref_node_xyz(ref_node,1,new_node) = 0.0;
+      if ( 2 == dim )
+	{
+	  RSS(meshb_real(file, version, 
+			 &(ref_node_xyz(ref_node,0,new_node)) ),"x");
+	  ref_node_xyz(ref_node,1,new_node) = 0.0;
+	  RSS(meshb_real(file, version, 
+			 &(ref_node_xyz(ref_node,2,new_node)) ),"y");
+	}
+      else
+	{
+	  RSS(meshb_real(file, version, 
+			 &(ref_node_xyz(ref_node,0,new_node)) ),"x");
+	  RSS(meshb_real(file, version, 
+			 &(ref_node_xyz(ref_node,1,new_node)) ),"y");
+	  RSS(meshb_real(file, version, 
+			 &(ref_node_xyz(ref_node,2,new_node)) ),"z");
+	}
+      REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
       /* ref_node_location(ref_node, node ); */
     }
   REIS( next_position, ftell(file), "end location" );
@@ -1014,7 +1071,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   fseek(file, (long)position, SEEK_SET);
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
   REIS(edge_keyword, keyword_code, "keyword code");
-  REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+  RSS( meshb_pos( file, version, &next_position), "pos");
   REIS(1, fread((unsigned char *)&nedge, 4, 1, file), "keyword code");
   printf("nedge %d\n",nedge);
 
@@ -1038,7 +1095,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   fseek(file, (long)position, SEEK_SET);
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
   REIS(triangle_keyword, keyword_code, "keyword code");
-  REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
+  RSS( meshb_pos( file, version, &next_position), "pos");
   REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "keyword code");
   printf("ntri %d\n",ntri);
 
