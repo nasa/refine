@@ -934,10 +934,10 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REF_DICT ref_dict;
   REF_INT vertex_keyword, triangle_keyword, edge_keyword;
   REF_INT nnode, node, new_node;
-  REF_INT ntri, tri, nedge;
+  REF_INT ntri, tri, nedge, edge;
   float temp;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
-  REF_INT dummy;
+  REF_INT n0, n1, n2, id;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -993,12 +993,21 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read x" );
       ref_node_xyz(ref_node,0,new_node) = temp;
       REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read y" );
-      ref_node_xyz(ref_node,1,new_node) = temp;
-      REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read z" );
       ref_node_xyz(ref_node,2,new_node) = temp;
+      REIS( 1, fread(&temp,sizeof(temp), 1, file ), "read z" );
+      ref_node_xyz(ref_node,1,new_node) = 0.0;
       /* ref_node_location(ref_node, node ); */
     }
   REIS( next_position, ftell(file), "end location" );
+  for (node=0;node<nnode;node++)
+    {
+      RSS( ref_node_add( ref_node, nnode+node, &new_node ), "add node");
+      ref_node_xyz(ref_node,0,new_node) = 
+	ref_node_xyz(ref_node,0,node);
+      ref_node_xyz(ref_node,1,new_node) = 1.0;
+      ref_node_xyz(ref_node,2,new_node) = 
+	ref_node_xyz(ref_node,2,node);
+    }
 
   edge_keyword = 5;
   RSS( ref_dict_value( ref_dict, edge_keyword, &position), "kw pos");
@@ -1008,6 +1017,21 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REIS(1, fread((unsigned char *)&next_position, 4, 1, file), "pos");
   REIS(1, fread((unsigned char *)&nedge, 4, 1, file), "keyword code");
   printf("nedge %d\n",nedge);
+
+  for (edge=0;edge<nedge;edge++)
+    {
+      REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "n0" );
+      REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "n1" );
+      REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
+      n0--; n1--;
+      nodes[0]=n0;
+      nodes[1]=n1;
+      nodes[2]=n1+nnode;
+      nodes[3]=n0+nnode;
+      nodes[4]=id;
+      RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
+	   "quad face for an edge");
+    }
 
   triangle_keyword = 6;
   RSS( ref_dict_value( ref_dict, triangle_keyword, &position), "kw pos");
@@ -1020,16 +1044,31 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
 
   for (tri=0;tri<ntri;tri++)
     {
-      REIS( 1, fread(&(nodes[0]),sizeof(dummy), 1, file ), "n0" );
-      REIS( 1, fread(&(nodes[1]),sizeof(dummy), 1, file ), "n1" );
-      REIS( 1, fread(&(nodes[2]),sizeof(dummy), 1, file ), "n2" );
-      REIS( 1, fread(&(dummy),sizeof(dummy), 1, file ), "id" );
-      nodes[0]--;
-      nodes[1]--;
-      nodes[2]--;
+      REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "n0" );
+      REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "n1" );
+      REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "n2" );
+      REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
+      n0--; n1--; n2--;
+      nodes[0]=n0+nnode;
+      nodes[1]=n1+nnode;
+      nodes[2]=n2+nnode;
       nodes[3]=1;
       RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
 	   "tri face for tri");
+      nodes[0]=n0;
+      nodes[1]=n2;
+      nodes[2]=n1;
+      nodes[3]=2;
+      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
+	   "tri face for tri");
+      nodes[0]=n0+nnode;
+      nodes[1]=n1+nnode;
+      nodes[2]=n2+nnode;
+      nodes[3]=n0;
+      nodes[4]=n1;
+      nodes[5]=n2;
+      RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
+	   "prism for tri");
     }
   REIS( next_position, ftell(file), "end location" );
 
