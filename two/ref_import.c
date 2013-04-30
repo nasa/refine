@@ -970,11 +970,11 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT code, version, dim;
   REF_INT keyword_code, position, next_position, end_position;
   REF_DICT ref_dict;
-  REF_INT vertex_keyword, triangle_keyword, edge_keyword;
+  REF_INT vertex_keyword, triangle_keyword, edge_keyword, tet_keyword;
   REF_INT nnode, node, new_node;
-  REF_INT ntri, tri, nedge, edge;
+  REF_INT ntri, tri, nedge, edge, ntet, tet;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
-  REF_INT n0, n1, n2, id;
+  REF_INT n0, n1, n2, n3, id;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -1142,6 +1142,37 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
 	  nodes[3]=1;
 	  RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
 	       "tri face for tri");
+	}
+    }
+  REIS( next_position, ftell(file), "end location" );
+
+  tet_keyword = 8;
+  code = ref_dict_value( ref_dict, tet_keyword, &position);
+  RXS( code, REF_NOT_FOUND, "kw pos");
+  if ( 3==dim && code != REF_NOT_FOUND )
+    {
+      fseek(file, (long)position, SEEK_SET);
+      REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
+	   "keyword code");
+      REIS(tet_keyword, keyword_code, "keyword code");
+      RSS( meshb_pos( file, version, &next_position), "pos");
+      REIS(1, fread((unsigned char *)&ntet, 4, 1, file), "keyword code");
+      printf("ntet %d\n",ntet);
+
+      for (tet=0;tet<ntet;tet++)
+	{
+	  REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "n0" );
+	  REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "n1" );
+	  REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "n2" );
+	  REIS( 1, fread(&(n3),sizeof(n3), 1, file ), "n3" );
+	  REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
+	  n0--; n1--; n2--; n3--;
+	  nodes[0]=n0;
+	  nodes[1]=n1;
+	  nodes[2]=n2;
+	  nodes[3]=n3;
+	  RSS( ref_cell_add( ref_grid_tet(ref_grid), nodes, &new_cell ), 
+	       "tet");
 	}
     }
   REIS( next_position, ftell(file), "end location" );
