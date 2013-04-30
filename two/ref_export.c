@@ -1307,6 +1307,9 @@ REF_STATUS ref_export_html( REF_GRID ref_grid, char *filename )
   fprintf(f,"    </style>\n");
   fprintf(f,"  </head>\n");
   fprintf(f,"  <body id='body'>\n");
+  fprintf(f,"    <a href=\"http://x3dom.org/docs/dev/navigation.html\">\n");
+  fprintf(f,"camera control help\n");
+  fprintf(f,"    </a>\n");
   fprintf(f,"    <x3d id='x3d'><scene><shape>\n");
 
   fprintf(f,"      <IndexedLineSet coordIndex='\n");
