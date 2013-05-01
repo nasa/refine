@@ -1387,6 +1387,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename )
   REF_INT node;
   REF_INT min_faceid, max_faceid, node_per, faceid, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT id;
 
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -1444,6 +1445,26 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename )
 	    }
 	  REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"tri id");
 	}
+
+  ref_cell = ref_grid_tet(ref_grid);
+
+  next_position = 4+8+4+ref_cell_n(ref_cell)*(4*5)+ftell(file);
+  keyword_code = 8;
+  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+  REIS(1, fwrite(&next_position,sizeof(long),1,file),"next pos");
+  REIS(1, fwrite(&(ref_cell_n(ref_cell)),sizeof(int),1,file),"nnode");
+  node_per = ref_cell_node_per(ref_cell);
+  id = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      id++;
+      for ( node = 0; node < node_per; node++ )
+	{
+	  nodes[node] = o2n[nodes[node]]+1;
+	  REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"cell");
+	}
+      REIS(1, fwrite(&(id),sizeof(REF_INT),1,file),"tri id");
+    }
 
   /* End */
   keyword_code = 54;
