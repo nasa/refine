@@ -994,6 +994,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       printf("version %d not supported\n",version);
       THROW("version");
     }
+  printf("meshb version %d\n",version);
 
   position = ftell(file);
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
@@ -1007,11 +1008,12 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       printf("dim %d not supported\n",dim);
       THROW("dim");
     }
+  printf("meshb dim %d\n",dim);
 
   fseek(file, 0, SEEK_END);
   end_position = ftell(file);
 
-  while ( next_position <= end_position )
+  while ( next_position <= end_position && 0 != next_position )
     {
       position = next_position;
       fseek(file, position, SEEK_SET);
