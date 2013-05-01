@@ -122,5 +122,14 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  { /* export .meshb */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.meshb";
+    RSS(ref_fixture_tet_grid( &ref_grid ), "set up tet" );
+    RSS(ref_export_meshb( ref_grid, file ),"export" );
+    REIS(0, remove( file ), "test clean up");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
   return 0;
 }
