@@ -1461,9 +1461,9 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename )
       for ( node = 0; node < node_per; node++ )
 	{
 	  nodes[node] = o2n[nodes[node]]+1;
-	  REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"cell");
+	  REIS(1, fwrite(&(nodes[node]),sizeof(int),1,file),"cell");
 	}
-      REIS(1, fwrite(&(id),sizeof(REF_INT),1,file),"tri id");
+      REIS(1, fwrite(&(id),sizeof(int),1,file),"tri id");
     }
 
   /* End */
