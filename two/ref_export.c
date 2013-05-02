@@ -1426,7 +1426,8 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename )
 		     sizeof(double),1,file),"y");
       REIS(1, fwrite(&(ref_node_xyz(ref_node,2,n2o[node])),
 		     sizeof(double),1,file),"z");
-      REIS(1, fwrite(&(node),sizeof(int),1,file),"id");
+      id = node+1;
+      REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
     }
 
   ref_cell = ref_grid_tri(ref_grid);
