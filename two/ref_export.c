@@ -1389,7 +1389,8 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT *o2n, *n2o;
-  REF_INT code, version, keyword_code, next_position, dim;
+  REF_INT code, version, keyword_code, dim;
+  long next_position;
   REF_INT node;
   REF_INT min_faceid, max_faceid, node_per, faceid, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
