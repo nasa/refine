@@ -50,8 +50,6 @@ int main( int argc, char *argv[] )
       REF_NODE ref_node;
       REF_INT i, passes;
 
-      REIS( 4, argc, "usage: exe grid.b8.ugrid grid.metric grid.ratio");
-
       ref_mpi_stopwatch_start();
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
       ref_node = ref_grid_node(ref_grid);
@@ -66,6 +64,7 @@ int main( int argc, char *argv[] )
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
 
+      if ( 3 < argc )
       {
 	REF_SUBDIV ref_subdiv;
 	REF_DBL *node_ratio;
