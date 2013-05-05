@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <string.h>
+
 #include "ref_part.h"
 #include "ref_mpi.h"
 #include "ref_endian.h"
@@ -412,13 +414,47 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, char *filename )
   REF_DBL *metric;
   REF_INT nnode_read, section_size;
   REF_INT node, local, global, im;
+  size_t end_of_string;
+  REF_BOOL sol_format, found_keyword;
+  REF_INT nnode, ntype, type;
+  REF_INT status;
+  char line[1024];
 
   file = NULL;
+  sol_format = REF_FALSE;
   if ( ref_mpi_master )
     {
       file = fopen(filename,"r");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
       RNS(file, "unable to open file" );
+
+      end_of_string = strlen(filename);
+      if( strcmp(&filename[end_of_string-4],".sol") == 0 ) 
+	{
+	  sol_format = REF_TRUE;
+	  found_keyword = REF_FALSE;
+	  while (!feof(file))
+	    {
+	      status = fscanf( file, "%s", line);
+	      if ( EOF == status ) break;
+	      REIS( 1, status, "line read failed");
+	      
+	      if ( 0 == strcmp("SolAtVertices",line))
+		{
+		  REIS( 1, fscanf(file, "%d", &nnode), "read nnode" );
+		  REIS( ref_node_n_global(ref_node), nnode, 
+			"wrong vertex number in .sol" );
+		  REIS( 2, fscanf(file, "%d %d", 
+				  &ntype, &type),"read header" );
+		  REIS( 1, ntype, "expected one type in .sol" );
+		  REIS( 3, type, "expected type GmfSymMat in .sol" );
+		  fscanf(file, "%*[^1234567890-+.]"); /* remove blank line */
+		  found_keyword = REF_TRUE;
+		  break;
+		}
+	    }
+	  RAS(found_keyword,"SolAtVertices keyword missing from .sol metric");
+	}
     }
 
   chunk = MAX(100000, ref_node_n_global(ref_node)/ref_mpi_n);
@@ -433,13 +469,26 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, char *filename )
       if ( ref_mpi_master )
 	{
 	  for (node=0;node<section_size;node++)
-	    REIS( 6, fscanf( file, "%lf %lf %lf %lf %lf %lf", 
-			     &(metric[0+6*node]),
-			     &(metric[1+6*node]),
-			     &(metric[2+6*node]),
-			     &(metric[3+6*node]),
-			     &(metric[4+6*node]),
-			     &(metric[5+6*node]) ), "metric read error" );
+	  if ( sol_format ) 
+	    {
+	      REIS( 6, fscanf( file, "%lf %lf %lf %lf %lf %lf", 
+			       &(metric[0+6*node]),
+			       &(metric[1+6*node]),
+			       &(metric[3+6*node]), /* transposed 3,2 */
+			       &(metric[2+6*node]),
+			       &(metric[4+6*node]),
+			       &(metric[5+6*node]) ), "metric read error" );
+	    }
+	  else
+	    {
+	      REIS( 6, fscanf( file, "%lf %lf %lf %lf %lf %lf", 
+			       &(metric[0+6*node]),
+			       &(metric[1+6*node]),
+			       &(metric[2+6*node]),
+			       &(metric[3+6*node]),
+			       &(metric[4+6*node]),
+			       &(metric[5+6*node]) ), "metric read error" );
+	    }
 	  RSS( ref_mpi_bcast( metric, 6*chunk, REF_DBL_TYPE ), "bcast" );
 	}
       else
