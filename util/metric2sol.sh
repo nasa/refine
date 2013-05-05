@@ -10,7 +10,7 @@ MeshVersionFormatted 2
 Dimension 3
 
 SolAtVertices
-`wc -l $1`
+`cat $1 | wc -l`
 1 3
 
 EOF
