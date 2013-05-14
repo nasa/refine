@@ -153,7 +153,7 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 		    if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
 		      {
 			RSS( ref_export_meshb( ref_grid, filename ), 
-			     "html export failed");
+			     "meshb export failed");
 		      } 
 		    else 
 		      {
