@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 if [ ! "$#" -eq 2 ];then
-  echo usage: $0 file.metric file.sol
+  echo usage:
+  echo "  " $0 file.metric file.sol
+  exit
 fi
 
 cat > $2 <<EOF
