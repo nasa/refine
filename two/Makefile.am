@@ -66,6 +66,10 @@ bin_PROGRAMS += ref_inflatable
 ref_inflatable_SOURCES = ref_inflatable.c
 ref_inflatable_LDADD = libref2.a @mpi_ldadd@ -lm
 
+bin_PROGRAMS += ref_olympics
+ref_olympics_SOURCES = ref_olympics.c
+ref_olympics_LDADD = libref2.a @mpi_ldadd@ -lm
+
 noinst_PROGRAMS =
 TESTS =
 
