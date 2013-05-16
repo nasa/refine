@@ -20,6 +20,7 @@ libref2_a_SOURCES = \
 	ref_gen.c ref_gen.h \
 	ref_grid.c ref_grid.h \
 	ref_histogram.c ref_histogram.h \
+	ref_html.c ref_html.h \
 	ref_import.c ref_import.h \
 	ref_inflate.c ref_inflate.h \
 	ref_list.h ref_list.c \
@@ -142,6 +143,11 @@ TESTS += ref_histogram_test
 noinst_PROGRAMS += ref_histogram_test
 ref_histogram_test_SOURCES = ref_histogram_test.c
 ref_histogram_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+
+TESTS += ref_html_test
+noinst_PROGRAMS += ref_html_test
+ref_html_test_SOURCES = ref_html_test.c
+ref_html_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_import_test
 noinst_PROGRAMS += ref_import_test
