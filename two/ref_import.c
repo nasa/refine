@@ -1069,6 +1069,8 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
 	  ref_node_xyz(ref_node,2,node);
       }
 
+  RSS( ref_node_initialize_n_global( ref_node, nnode ), "init glob");
+
   if ( 2 == dim )
     {
       edge_keyword = 5;
