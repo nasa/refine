@@ -792,6 +792,26 @@ REF_STATUS ref_fixture_pri_brick_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
+/*
+  REF_DBL t0 = ref_math_pi;
+  REF_DBL t1 = 0.0;
+  REF_DBL r0 = 0.10;
+  REF_DBL r1 = 0.15;
+  REF_DBL y0 = 0.0;
+  REF_DBL y1 = 0.5;
+
+  dt = (t1-t0)/((REF_DBL)(l-1));
+  dr = (r1-r0)/((REF_DBL)(m-1));
+  dy = (y1-y0)/((REF_DBL)(m-1));
+
+	  t = t0 + dt*(REF_DBL)i;
+	  y = y0 + dy*(REF_DBL)j;
+	  r = r0 + dr*(REF_DBL)k;
+	  ref_node_xyz(ref_node, 0, node ) = r*cos(t);
+	  ref_node_xyz(ref_node, 1, node ) = y;
+	  ref_node_xyz(ref_node, 2, node ) = r*sin(t);
+ */
+
 REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;
@@ -800,23 +820,23 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
   REF_INT quad[5], tri[4];
 
 
-  REF_INT l=4,m=3,n=4;
+  REF_INT l=4,m=4,n=4;
   REF_INT i, j, k;
 
-  REF_DBL t0 = ref_math_pi;
-  REF_DBL t1 = 0.0;
-
-  REF_DBL r0 = 0.10;
-  REF_DBL r1 = 0.15;
+  REF_DBL x0 = 0.0;
+  REF_DBL x1 = 1.0;
 
   REF_DBL y0 = 0.0;
-  REF_DBL y1 = 0.5;
+  REF_DBL y1 = 1.0;
 
-  REF_DBL dt, dy, dr, t, y, r;
+  REF_DBL z0 = 0.0;
+  REF_DBL z1 = 1.0;
 
-  dt = (t1-t0)/((REF_DBL)(l-1));
-  dr = (r1-r0)/((REF_DBL)(m-1));
+  REF_DBL dx, dy, dz;
+
+  dx = (x1-x0)/((REF_DBL)(l-1));
   dy = (y1-y0)/((REF_DBL)(m-1));
+  dz = (z1-z0)/((REF_DBL)(m-1));
 
   RSS(ref_grid_create(ref_grid_ptr),"create");
   ref_grid =  *ref_grid_ptr;
@@ -831,12 +851,9 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 	{
 	  global = ijk2node(i,j,k,l,m,n);
 	  RSS( ref_node_add( ref_node, global, &node ), "node");
-	  t = t0 + dt*(REF_DBL)i;
-	  y = y0 + dy*(REF_DBL)j;
-	  r = r0 + dr*(REF_DBL)k;
-	  ref_node_xyz(ref_node, 0, node ) = r*cos(t);
-	  ref_node_xyz(ref_node, 1, node ) = y;
-	  ref_node_xyz(ref_node, 2, node ) = r*sin(t);
+	  ref_node_xyz(ref_node, 0, node ) = x0 + dx*(REF_DBL)i;
+	  ref_node_xyz(ref_node, 1, node ) = y0 + dy*(REF_DBL)j;
+	  ref_node_xyz(ref_node, 2, node ) = z0 + dz*(REF_DBL)k;
 	}
 
 #define ijk2hex(i,j,k,l,m,n,hex)			\
