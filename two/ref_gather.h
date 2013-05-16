@@ -27,12 +27,14 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid );
 REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename );
 
 REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_gather_metric( REF_GRID ref_grid, char *filename );
 
 REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
 			     REF_INT *ncell );
 
 REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file );
 REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file );
+REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file );
 
 REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, 
 			    REF_BOOL faceid_insted_of_c2n,FILE *file );

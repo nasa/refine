@@ -217,6 +217,31 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_gather_metric( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nnode;
+
+  RSS( ref_node_synchronize_globals( ref_node ), "sync" );
+
+  nnode = ref_node_n_global(ref_node);
+
+  file = NULL;
+  if ( ref_mpi_master )
+    {
+      file = fopen(filename,"w");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+    }
+
+  RSS( ref_gather_node_metric( ref_node, file ), "nodes");
+
+  if ( ref_mpi_master ) fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
 			     REF_INT *ncell )
 {
@@ -366,6 +391,70 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 	    fprintf(file,"%.15e %.15e %.15e %.0f %.0f\n",
 		    xyzm[0+6*i], xyzm[1+6*i], xyzm[2+6*i], 
 		    xyzm[3+6*i], xyzm[4+6*i]);
+	  }
+    }
+
+  ref_free( xyzm );
+  ref_free( local_xyzm );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file )
+{
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_INT nnode_written, first, n, i, im;
+  REF_INT global, local;
+  REF_STATUS status;
+
+  chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
+
+  ref_malloc( local_xyzm, 7*chunk, REF_DBL );
+  ref_malloc( xyzm, 7*chunk, REF_DBL );
+
+  nnode_written = 0;
+  while ( nnode_written < ref_node_n_global(ref_node) )
+    {
+      first = nnode_written;
+      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
+
+      nnode_written += n;
+
+      for (i=0;i<7*chunk;i++)
+	local_xyzm[i] = 0.0;
+
+      for (i=0;i<n;i++)
+	{
+	  global = first + i;
+	  status = ref_node_local( ref_node, global, &local );
+	  RXS( status, REF_NOT_FOUND, "node local failed" );
+	  if ( REF_SUCCESS == status &&
+	       ref_mpi_id == ref_node_part(ref_node,local) )
+	    {
+	      for (im=0;im<6;im++)
+		local_xyzm[im+7*i] = ref_node_metric(ref_node,im,local);
+	      local_xyzm[6+7*i] = 1.0;
+	    }
+	  else
+	    {
+	      for (im=0;im<7;im++)
+		local_xyzm[im+7*i] = 0.0;
+	    }
+	}
+
+      RSS( ref_mpi_sum( local_xyzm, xyzm, 7*n, REF_DBL_TYPE ), "sum" );
+
+      if ( ref_mpi_master )
+	for ( i=0; i<n; i++ )
+	  {
+	    if ( ABS( xyzm[6+7*i] - 1.0 ) > 0.1 )
+	      {
+		printf("error gather node %d %f\n",first+i, xyzm[6+7*i]);
+	      }
+	    fprintf(file,"%.15e %.15e %.15e %.15e %.15e %.15e \n",
+		    xyzm[0+7*i], xyzm[1+7*i], xyzm[2+7*i], 
+		    xyzm[3+7*i], xyzm[4+7*i], xyzm[5+7*i]);
 	  }
     }
 

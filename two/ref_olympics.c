@@ -24,6 +24,7 @@
 
 #include "ref_fixture.h"
 #include "ref_metric.h"
+#include "ref_gather.h"
 
 int main( int argc, char *argv[] )
 {
@@ -37,11 +38,12 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
-  if ( 3 == argc )
+  if ( 4 == argc )
     {
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
-      RSS( ref_metric_olympic_node( ref_grid_node(ref_grid), atof(argv[2]) ),
+      RSS( ref_metric_olympic_node( ref_grid_node(ref_grid), atof(argv[3]) ),
 	   "oly" );
+      RSS( ref_gather_metric( ref_grid, argv[2] ), "in");
 
       return 0;
     }
