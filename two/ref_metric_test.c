@@ -20,8 +20,11 @@
 
 #include "ref_part.h"
 #include "ref_import.h"
+#include "ref_export.h"
 #include "ref_migrate.h"
 #include "ref_dict.h"
+
+#include "ref_histogram.h"
 
 int main(  int argc, char *argv[] )
 {
@@ -36,7 +39,9 @@ int main(  int argc, char *argv[] )
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
-      RSS( ref_metric_sanitize( ref_grid ), "wash");
+      RSS( ref_histogram_ratio( ref_grid ), "gram");
+
+      RSS( ref_export_tec_ratio( ref_grid, "ref_metric_test" ), "gram");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
