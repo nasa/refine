@@ -221,11 +221,8 @@ REF_STATUS ref_gather_metric( REF_GRID ref_grid, char *filename  )
 {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT nnode;
 
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
-
-  nnode = ref_node_n_global(ref_node);
 
   file = NULL;
   if ( ref_mpi_master )
