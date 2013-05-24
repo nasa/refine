@@ -411,29 +411,30 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
   ref_malloc_init( mark_copy, ref_node_max(ref_node), REF_INT, REF_EMPTY );
 
   /* mark nodes on prism tris */
-  each_ref_cell_valid_cell_with_nodes( pri, cell, orig )
-    {
-      tri_nodes[0] = orig[0];
-      tri_nodes[1] = orig[1];
-      tri_nodes[2] = orig[2];
-      RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
-      if ( REF_EMPTY != new_cell && of_faceid == ref_cell_c2n(tri,3,new_cell) )
-	{ 
-	  mark[ tri_nodes[0] ] = 0;
-	  mark[ tri_nodes[1] ] = 0;
-	  mark[ tri_nodes[2] ] = 0;
-	}
-      tri_nodes[0] = orig[3];
-      tri_nodes[1] = orig[5];
-      tri_nodes[2] = orig[4];
-      RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
-      if ( REF_EMPTY != new_cell && of_faceid == ref_cell_c2n(tri,3,new_cell) )
-	{ 
-	  mark[ tri_nodes[0] ] = 0;
-	  mark[ tri_nodes[1] ] = 0;
-	  mark[ tri_nodes[2] ] = 0;
-	}
-    }
+  if ( 0 < keeping_n_layers ) 
+    each_ref_cell_valid_cell_with_nodes( pri, cell, orig )
+      {
+	tri_nodes[0] = orig[0];
+	tri_nodes[1] = orig[1];
+	tri_nodes[2] = orig[2];
+	RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
+	if (REF_EMPTY != new_cell && of_faceid == ref_cell_c2n(tri,3,new_cell) )
+	  { 
+	    mark[ tri_nodes[0] ] = 0;
+	    mark[ tri_nodes[1] ] = 0;
+	    mark[ tri_nodes[2] ] = 0;
+	  }
+	tri_nodes[0] = orig[3];
+	tri_nodes[1] = orig[5];
+	tri_nodes[2] = orig[4];
+	RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
+	if (REF_EMPTY != new_cell && of_faceid == ref_cell_c2n(tri,3,new_cell) )
+	  { 
+	    mark[ tri_nodes[0] ] = 0;
+	    mark[ tri_nodes[1] ] = 0;
+	    mark[ tri_nodes[2] ] = 0;
+	  }
+      }
 
   for (relaxation=0;relaxation<keeping_n_layers;relaxation++)
     {
