@@ -418,7 +418,9 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	tri_nodes[1] = orig[1];
 	tri_nodes[2] = orig[2];
 	RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
-	if (REF_EMPTY != new_cell && of_faceid == ref_cell_c2n(tri,3,new_cell) )
+	if ( REF_EMPTY != new_cell && 
+	     ( of_faceid == REF_EMPTY || 
+	       of_faceid == ref_cell_c2n(tri,3,new_cell) ) )
 	  { 
 	    mark[ tri_nodes[0] ] = 0;
 	    mark[ tri_nodes[1] ] = 0;
@@ -428,7 +430,9 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	tri_nodes[1] = orig[5];
 	tri_nodes[2] = orig[4];
 	RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
-	if (REF_EMPTY != new_cell && of_faceid == ref_cell_c2n(tri,3,new_cell) )
+	if ( REF_EMPTY != new_cell && 
+	     ( of_faceid == REF_EMPTY || 
+	       of_faceid == ref_cell_c2n(tri,3,new_cell) ) )
 	  { 
 	    mark[ tri_nodes[0] ] = 0;
 	    mark[ tri_nodes[1] ] = 0;
