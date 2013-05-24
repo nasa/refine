@@ -23,6 +23,8 @@
 #include "ref_dict.h"
 #include "ref_mpi.h"
 
+#include "ref_import.h"
+
 static REF_STATUS set_up_hex_for_shard( REF_SHARD *ref_shard_ptr )
 {
   REF_GRID ref_grid;
@@ -47,8 +49,19 @@ static REF_STATUS tear_down( REF_SHARD ref_shard )
   return REF_SUCCESS;
 }
 
-int main( void )
+int main( int argc, char *argv[] )
 {
+
+  if (3 == argc) 
+    {
+      REF_GRID ref_grid;
+      char file[] = "ref_shard_test.tec";
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      RSS( ref_shard_prism_into_tet( ref_grid, atoi(argv[2]), 4000 ), "shrd");
+      RSS(ref_export_tec( ref_grid, file ),"export" );
+      RSS(ref_grid_free(ref_grid),"free");
+      return 0;
+    }
 
   { /* mark */
     REF_SHARD ref_shard;
