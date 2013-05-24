@@ -55,13 +55,13 @@ int main( int argc, char *argv[] )
   if (3 == argc) 
     {
       REF_GRID ref_grid;
-      char file[] = "ref_shard_test.tec";
+      char file[] = "ref_shard_test.b8.ugrid";
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
       RSS( ref_grid_inspect( ref_grid ), "insp" );
       RSS( ref_shard_prism_into_tet( ref_grid, atoi(argv[2]), REF_EMPTY ), 
 	   "shrd");
       RSS( ref_grid_inspect( ref_grid ), "insp" );
-      RSS(ref_export_tec( ref_grid, file ),"export" );
+      RSS(ref_export_by_extension( ref_grid, file ),"export" );
       RSS(ref_grid_free(ref_grid),"free");
       return 0;
     }
