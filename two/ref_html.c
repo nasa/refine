@@ -48,20 +48,23 @@ REF_STATUS ref_html_diagonal_system( REF_HTML ref_html,
 				     REF_DBL *d )
 {
   FILE *f = ref_html_file(ref_html);
-  REF_INT i, n;
+  REF_INT i, j, n;
   REF_DBL dt, t;
   REF_DBL x, y, z;
-  n = 36;
+  n = 72;
   dt = 2*ref_math_pi/(REF_DBL)n;
 
   fprintf(f,"      <IndexedLineSet coordIndex='\n");
-  for ( i = 0; i < n; i++ )
-    fprintf(f," %d",i);
-  fprintf(f," %d %d\n",0,-1);
+  for ( j = 0; j < 3 ; j++ )
+    {
+      for ( i = 0; i < n; i++ )
+	fprintf(f," %d",j*n+i);
+      fprintf(f," %d %d\n",j*n+0,-1);
+    }
   fprintf(f,"      ' >\n");
 
   fprintf(f,"      <Coordinate point='\n");
-  for ( i = 0; i <= n; i++ )
+  for ( i = 0; i < n; i++ )
     {
       t = dt*(REF_DBL)i;
 
@@ -76,6 +79,42 @@ REF_STATUS ref_html_diagonal_system( REF_HTML ref_html,
       z = origin[2] 
 	+ ref_matrix_eig( d, 0 )*ref_matrix_vec( d, 2, 0)*sin(t)
 	+ ref_matrix_eig( d, 1 )*ref_matrix_vec( d, 2, 1)*cos(t);
+
+      fprintf(f," %.15e %.15e %.15e\n",x,y,z);
+    }
+  for ( i = 0; i < n; i++ )
+    {
+      t = dt*(REF_DBL)i;
+
+      x = origin[0] 
+	+ ref_matrix_eig( d, 0 )*ref_matrix_vec( d, 0, 0)*sin(t)
+	+ ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 0, 2)*cos(t);
+
+      y = origin[1] 
+	+ ref_matrix_eig( d, 0 )*ref_matrix_vec( d, 1, 0)*sin(t)
+	+ ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 1, 2)*cos(t);
+
+      z = origin[2] 
+	+ ref_matrix_eig( d, 0 )*ref_matrix_vec( d, 2, 0)*sin(t)
+	+ ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 2, 2)*cos(t);
+
+      fprintf(f," %.15e %.15e %.15e\n",x,y,z);
+    }
+  for ( i = 0; i < n; i++ )
+    {
+      t = dt*(REF_DBL)i;
+
+      x = origin[0] 
+	+ ref_matrix_eig( d, 1 )*ref_matrix_vec( d, 0, 1)*sin(t)
+	+ ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 0, 2)*cos(t);
+
+      y = origin[1] 
+	+ ref_matrix_eig( d, 1 )*ref_matrix_vec( d, 1, 1)*sin(t)
+	+ ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 1, 2)*cos(t);
+
+      z = origin[2] 
+	+ ref_matrix_eig( d, 1 )*ref_matrix_vec( d, 2, 1)*sin(t)
+	+ ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 2, 2)*cos(t);
 
       fprintf(f," %.15e %.15e %.15e\n",x,y,z);
     }

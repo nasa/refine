@@ -16,7 +16,7 @@ int main( int argc, char *argv[] )
       RSS(ref_html_create( &ref_html, argv[1] ), "open html" );
 
       origin[0] = 0.0;origin[1] = 0.0;origin[2] = 0.0;
-      sys[0] = 2.0; sys[1] = 1.0; sys[2] = 1.0;
+      sys[0] = 0.25; sys[1] = 0.5; sys[2] = 1.0;
       sys[ 3] = 1.0; sys[ 4] = 0.0; sys[ 5] = 0.0;
       sys[ 6] = 0.0; sys[ 7] = 1.0; sys[ 8] = 0.0;
       sys[ 9] = 0.0; sys[10] = 0.0; sys[11] = 1.0;      
