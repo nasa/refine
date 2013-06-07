@@ -105,11 +105,24 @@ int main( int argc, char *argv[] )
     REIS(0, remove( file ), "test clean up");
   }
 
+  { /* export import .lb8.ugrid tet by extension */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.lb8.ugrid";
+    RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
+    REIS( ref_node_n(ref_grid_node(export_grid)),
+	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    RSS(ref_grid_free(import_grid),"free");
+    RSS(ref_grid_free(export_grid),"free");
+    REIS(0, remove( file ), "test clean up");
+  }
+
   { /* export import .b8.ugrid tet by extension */
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.b8.ugrid";
     RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
-    RSS(ref_export_b8_ugrid( export_grid, file ), "export" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
     RSS(ref_import_by_extension( &import_grid, file ), "import" );
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );

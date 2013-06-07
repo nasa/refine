@@ -125,6 +125,7 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 	      RSS( ref_export_lb8_ugrid( ref_grid, filename ), 
 		   "lb8.ugrid export failed");
 	    } 
+	  else 
 	  if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
 	    {
 	      RSS( ref_export_b8_ugrid( ref_grid, filename ), 
