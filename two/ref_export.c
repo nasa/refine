@@ -120,6 +120,11 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 	    RSS( ref_export_eps( ref_grid, filename ), "eps export failed");
 	  } 
 	else 
+	  if( strcmp(&filename[end_of_string-10],".lb8.ugrid") == 0 ) 
+	    {
+	      RSS( ref_export_lb8_ugrid( ref_grid, filename ), 
+		   "b8.ugrid export failed");
+	    } 
 	  if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
 	    {
 	      RSS( ref_export_b8_ugrid( ref_grid, filename ), 
@@ -802,7 +807,8 @@ REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
+static REF_STATUS ref_export_bin_ugrid( REF_GRID ref_grid, char *filename,
+					REF_BOOL swap)
 {
   FILE *file;
   REF_NODE ref_node;
@@ -832,13 +838,13 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   npri = ref_cell_n(ref_grid_pri(ref_grid));
   nhex = ref_cell_n(ref_grid_hex(ref_grid));
 
-  SWAP_INT(nnode);
-  SWAP_INT(ntri);
-  SWAP_INT(nqua);
-  SWAP_INT(ntet);
-  SWAP_INT(npyr);
-  SWAP_INT(npri);
-  SWAP_INT(nhex);
+  if (swap) SWAP_INT(nnode);
+  if (swap) SWAP_INT(ntri);
+  if (swap) SWAP_INT(nqua);
+  if (swap) SWAP_INT(ntet);
+  if (swap) SWAP_INT(npyr);
+  if (swap) SWAP_INT(npri);
+  if (swap) SWAP_INT(nhex);
 
   REIS(1, fwrite(&nnode,sizeof(REF_INT),1,file),"nnode");
 
@@ -855,13 +861,13 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
   for ( node = 0; node < ref_node_n(ref_node); node++ )
     {
       swapped_dbl = ref_node_xyz(ref_node,0,n2o[node]);
-      SWAP_DBL(swapped_dbl);
+      if (swap) SWAP_DBL(swapped_dbl);
       REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"x");
       swapped_dbl = ref_node_xyz(ref_node,1,n2o[node]);
-      SWAP_DBL(swapped_dbl);
+      if (swap) SWAP_DBL(swapped_dbl);
       REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"y");
       swapped_dbl = ref_node_xyz(ref_node,2,n2o[node]);
-      SWAP_DBL(swapped_dbl);
+      if (swap) SWAP_DBL(swapped_dbl);
       REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"z");
     }
 
@@ -875,7 +881,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 	for ( node = 0; node < node_per; node++ )
 	  {
 	    nodes[node] = o2n[nodes[node]]+1;
-	    SWAP_INT(nodes[node]);
+	    if (swap) SWAP_INT(nodes[node]);
 	    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"tri");
 	  }
 
@@ -887,7 +893,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 	for ( node = 0; node < node_per; node++ )
 	  {
 	    nodes[node] = o2n[nodes[node]]+1;
-	    SWAP_INT(nodes[node]);
+	    if (swap) SWAP_INT(nodes[node]);
 	    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"qua");
 	  }
 
@@ -897,7 +903,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
       if ( nodes[node_per] == faceid )
 	{
-	  SWAP_INT(nodes[3]);
+	  if (swap) SWAP_INT(nodes[3]);
 	  REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"tri id");
 	}
 
@@ -907,7 +913,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
       if ( nodes[node_per] == faceid )
 	{
-	  SWAP_INT(nodes[4]);
+	  if (swap) SWAP_INT(nodes[4]);
 	  REIS(1, fwrite(&(nodes[4]),sizeof(REF_INT),1,file),"qua id");
 	}
 
@@ -918,7 +924,7 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 	for ( node = 0; node < node_per; node++ )
 	  {
 	    nodes[node] = o2n[nodes[node]]+1;
-	    SWAP_INT(nodes[node]);
+	    if (swap) SWAP_INT(nodes[node]);
 	    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"cell");
 	  }
     }
@@ -928,6 +934,20 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
 
   fclose(file);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_lb8_ugrid( REF_GRID ref_grid, char *filename  )
+{
+  RSS( ref_export_bin_ugrid( ref_grid, filename, REF_FALSE ), 
+       "bin not swapped" );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, char *filename  )
+{
+  RSS( ref_export_bin_ugrid( ref_grid, filename, REF_TRUE ), 
+       "bin swap" );
   return REF_SUCCESS;
 }
 
