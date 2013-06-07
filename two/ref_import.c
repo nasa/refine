@@ -470,7 +470,7 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
 REF_STATUS ref_import_lb8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
   RSS( ref_import_bin_ugrid( ref_grid_ptr, filename, REF_FALSE ),
-       "importbin ugrid unswapped");
+       "import bin ugrid unswapped");
   return REF_SUCCESS;
 }
 
