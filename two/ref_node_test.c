@@ -457,7 +457,7 @@ int main( int argc, char *argv[] )
     REF_INT node0, node1, global;
     REF_DBL ratio;
     REF_DBL f, d[3];
-    REF_DBL fd[3], x0, step = 1.0e-8, tol = 1.0e-8;
+    REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-7;
     REF_INT dir;
 
     RSS(ref_node_create(&ref_node),"create");
@@ -514,8 +514,6 @@ int main( int argc, char *argv[] )
     RWDS( fd[1], d[1], tol, "dy expected" );
     RWDS( fd[2], d[2], tol, "dz expected" );
 
-    SKIP_BLOCK("implement in matrix first ")
-      {
     /* length one in xyz */
     ref_node_xyz(ref_node,0,node1) = 1.0;
     ref_node_xyz(ref_node,1,node1) = 1.0;
@@ -536,7 +534,6 @@ int main( int argc, char *argv[] )
     RWDS( fd[0], d[0], tol, "dx expected" );
     RWDS( fd[1], d[1], tol, "dy expected" );
     RWDS( fd[2], d[2], tol, "dz expected" );
-      }
 
     RSS(ref_node_free(ref_node),"free");
   }

@@ -791,7 +791,9 @@ REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node,
 {
   REF_DBL direction[3], length;
   REF_DBL ratio0, ratio1;
+  REF_DBL d0[3], d1[3], d_min[3], d_max[3], dr[3];
   REF_DBL r, r_min, r_max;
+  REF_INT i;
 
   if ( !ref_node_valid(ref_node,node0) ||
        !ref_node_valid(ref_node,node1) ) 
@@ -815,45 +817,78 @@ REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node,
       d[0] = 0.0;
       d[1] = 0.0;
       d[2] = 0.0;
+      printf("div\n");
       return REF_SUCCESS;  
     }
 
-  ratio0 = ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node0), 
-				   direction );
-  ratio1 = ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node1), 
-				   direction );
+  RSS( ref_matrix_sqrt_vt_m_v_deriv( ref_node_metric_ptr(ref_node,node0),
+				     direction, &ratio0, d0 ),"vt m v0");
+  d0[0] = -d0[0]; d0[1] = -d0[1]; d0[2] = -d0[2]; /* node 0 is neg */
+  RSS( ref_matrix_sqrt_vt_m_v_deriv( ref_node_metric_ptr(ref_node,node1),
+				     direction, &ratio1, d1 ),"vt m v0");
+  d1[0] = -d1[0]; d1[1] = -d1[1]; d1[2] = -d1[2]; /* node 0 is neg */
 
   /* Loseille Lohner IMR 18 (2009) pg 613 */
   /* Alauzet Finite Elements in Analysis and Design 46 (2010) pg 185 */
   
   if ( ratio0 < 1.0e-12 || ratio1 < 1.0e-12 )
     {
-      *f = MIN(ratio0,ratio1);
-      d[0] = 1.0;
-      d[1] = 0.0;
-      d[2] = 0.0;
+      if (ratio0<ratio1)
+	{
+	  *f = ratio0;
+	  d[0] = d0[0];
+	  d[1] = d0[1];
+	  d[2] = d0[2];
+	}
+      else
+	{
+	  *f = ratio1;
+	  d[0] = d1[0];
+	  d[1] = d1[1];
+	  d[2] = d1[2];
+	}
+      printf("small\n");
       return REF_SUCCESS;  
     }
 
-  r_min = MIN( ratio0, ratio1 );
-  r_max = MAX( ratio0, ratio1 );
-
+  if (ratio0<ratio1)
+    {
+      r_min = ratio0;
+      d_min[0] = d0[0];
+      d_min[1] = d0[1];
+      d_min[2] = d0[2];
+      r_max = ratio1;
+      d_max[0] = d1[0];
+      d_max[1] = d1[1];
+      d_max[2] = d1[2];
+    }
+  else
+    {
+      r_min = ratio1;
+      d_min[0] = d1[0];
+      d_min[1] = d1[1];
+      d_min[2] = d1[2];
+      r_max = ratio0;
+      d_max[0] = d0[0];
+      d_max[1] = d0[1];
+      d_max[2] = d0[2];
+    }
+ 
   r = r_min/r_max;
+  for(i=0;i<3;i++) dr[i] = (d_min[i]*r_max-r_min*d_max[i]) / r_max / r_max;
 
   if ( ABS(r-1.0) < 1.0e-12 )
     {
-      *f = 0.5*(ratio0+ratio1);
-      d[0] =-1.0;
-      d[1] = 0.0;
-      d[2] = 0.0;
+      *f = 0.5*(r_min+r_max);
+      for(i=0;i<3;i++) d[i] =0.5*(d_min[i]+d_max[i]);
+      printf("same\n");
       return REF_SUCCESS;  
     }    
  
   *f = r_min * (r-1.0) / ( r * log(r) );
-  d[0] = 1.0;
-  d[1] = 0.0;
-  d[2] = 0.0;
+  for(i=0;i<3;i++) d[i]=dr[i];
 
+      printf("gen\n");
   return REF_SUCCESS;  
 }
 
