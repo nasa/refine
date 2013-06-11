@@ -843,7 +843,7 @@ REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node,
   if ( ABS(r-1.0) < 1.0e-12 )
     {
       *f = 0.5*(ratio0+ratio1);
-      d[0] = 1.0;
+      d[0] =-1.0;
       d[1] = 0.0;
       d[2] = 0.0;
       return REF_SUCCESS;  
