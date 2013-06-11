@@ -474,7 +474,7 @@ int main( int argc, char *argv[] )
 
     global = 1;
     RSS(ref_node_add(ref_node,global,&node1),"add");
-    ref_node_xyz(ref_node,0,node1) = 1.0;
+    ref_node_xyz(ref_node,0,node1) = 0.0;
     ref_node_xyz(ref_node,1,node1) = 0.0;
     ref_node_xyz(ref_node,2,node1) = 0.0;
     ref_node_metric(ref_node,0,node1) = 1.0;
@@ -484,8 +484,17 @@ int main( int argc, char *argv[] )
     ref_node_metric(ref_node,4,node1) = 0.0;
     ref_node_metric(ref_node,5,node1) = 1.0;
 
+    /* same node */
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
+    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+			      &f, d), "ratio deriv" );
+    RWDS( ratio, f, -1.0, "ratio expected" );
+    RWDS( 0.0, d[0], -1.0, "dx expected" );
+    RWDS( 0.0, d[1], -1.0, "dy expected" );
+    RWDS( 0.0, d[2], -1.0, "dz expected" );
 
+    ref_node_xyz(ref_node,0,node1) = 1.0;
+    RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
 			      &f, d), "ratio deriv" );
     RWDS( ratio, f, -1.0, "ratio expected" );

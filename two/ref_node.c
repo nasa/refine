@@ -812,7 +812,7 @@ REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node,
        !ref_math_divisible(direction[2],length) ) 
     {
       *f = 0.0;
-      d[0] = 1.0;
+      d[0] = 0.0;
       d[1] = 0.0;
       d[2] = 0.0;
       return REF_SUCCESS;  
