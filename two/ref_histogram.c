@@ -110,13 +110,28 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
 
   RSS( ref_histogram_create(&ref_histogram),"create");
 
-  ref_cell = ref_grid_tri(ref_grid);
+  if ( ref_grid_twod(ref_grid) )
+    {
+      ref_cell = ref_grid_tri(ref_grid);
+    }
+  else
+    {
+      ref_cell = ref_grid_tet(ref_grid);
+    }
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     {
       if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) == ref_mpi_id )
 	{
-	  RSS( ref_node_tri_quality( ref_grid_node(ref_grid),
-				     nodes,&quality ), "qual");
+	  if ( ref_grid_twod(ref_grid) )
+	    {
+	      RSS( ref_node_tri_quality( ref_grid_node(ref_grid),
+					 nodes,&quality ), "qual");
+	    }
+	  else
+	    {
+	      RSS( ref_node_tet_quality( ref_grid_node(ref_grid),
+					 nodes,&quality ), "qual");
+	    }
 	  RSS( ref_histogram_add( ref_histogram, quality ), "add");
 	}
     }
