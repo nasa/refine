@@ -514,6 +514,30 @@ int main( int argc, char *argv[] )
     RWDS( fd[1], d[1], tol, "dy expected" );
     RWDS( fd[2], d[2], tol, "dz expected" );
 
+    SKIP_BLOCK("implement in matrix first ")
+      {
+    /* length one in xyz */
+    ref_node_xyz(ref_node,0,node1) = 1.0;
+    ref_node_xyz(ref_node,1,node1) = 1.0;
+    ref_node_xyz(ref_node,2,node1) = 1.0;
+
+    RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
+    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+			      &f, d), "ratio deriv" );
+    for ( dir=0;dir<3;dir++) 
+      {
+	x0 = ref_node_xyz(ref_node,dir,node0);
+	ref_node_xyz(ref_node,dir,node0) = x0+step;
+	RSS( ref_node_ratio(ref_node, node0, node1, &(fd[dir])), "fd+" );
+	fd[dir] = (fd[dir]-ratio)/step;
+	ref_node_xyz(ref_node,dir,node0) = x0;
+      }
+    RWDS( ratio, f, -1.0, "ratio expected" );
+    RWDS( fd[0], d[0], tol, "dx expected" );
+    RWDS( fd[1], d[1], tol, "dy expected" );
+    RWDS( fd[2], d[2], tol, "dz expected" );
+      }
+
     RSS(ref_node_free(ref_node),"free");
   }
 
