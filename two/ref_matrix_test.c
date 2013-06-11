@@ -24,7 +24,18 @@ int main( void )
     RWDS( 4.1740, ratio, 1.0e-4, "ratio");
   }
 
-  {
+  { /* macro matches deriv f */
+    REF_DBL m[6]={ 1.0, 1.3, 0.4, 
+                        1.8, 0.6,
+                             0.5};
+    REF_DBL v[3]={ 1.4, 1.5, 1.6 };
+    REF_DBL f, d[3];
+    RSS( ref_matrix_sqrt_vt_m_v_deriv( m, v, &f, d ), "deriv")
+    RWDS( ref_matrix_sqrt_vt_m_v( m, v ), f, -1, "ratio");
+
+  }
+
+  { /* finite diff deriv */
     REF_DBL m[6]={ 1.0, 1.3, 0.4, 
                         1.8, 0.6,
                              0.5};
