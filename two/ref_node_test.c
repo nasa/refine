@@ -488,17 +488,19 @@ int main( int argc, char *argv[] )
 
     /* same node */
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
-
     RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
 			      &f, d), "ratio deriv" );
     RWDS( ratio, f, -1.0, "ratio expected" );
-
-    ref_node_xyz(ref_node,0,node1) = 1.0;
-    RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RWDS( 0.0, d[0], -1.0, "dx expected" );
     RWDS( 0.0, d[1], -1.0, "dy expected" );
     RWDS( 0.0, d[2], -1.0, "dz expected" );
 
+    /* length one in x */
+    ref_node_xyz(ref_node,0,node1) = 1.0;
+
+    RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
+    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+			      &f, d), "ratio deriv" );
     for ( dir=0;dir<3;dir++) 
       {
 	x0 = ref_node_xyz(ref_node,dir,node0);
@@ -507,9 +509,6 @@ int main( int argc, char *argv[] )
 	fd[dir] = (fd[dir]-ratio)/step;
 	ref_node_xyz(ref_node,dir,node0) = x0;
       }
-
-    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
-			      &f, d), "ratio deriv" );
     RWDS( ratio, f, -1.0, "ratio expected" );
     RWDS( fd[0], d[0], tol, "dx expected" );
     RWDS( fd[1], d[1], tol, "dy expected" );
