@@ -8,6 +8,23 @@
 int main( void )
 {
 
+  { /* v^t M v */
+    /* 
+       m = [ 1.0 1.3 0.4 ; 1.3 1.8 0.6 ; 0.4 0.6 0.5 ] 
+       v = [1.4;1.5;1.6]
+       ratio = sqrt(v'*m*v)
+    */ 
+    REF_DBL m[6]={ 1.0, 1.3, 0.4, 
+                        1.8, 0.6,
+                             0.5};
+    REF_DBL v[3]={ 1.4, 1.5, 1.6 };
+    REF_DBL ratio;
+    
+    ratio = ref_matrix_sqrt_vt_m_v( m, v );
+    RWDS( 4.1740, ratio, 1.0e-4, "ratio");
+  }
+    
+
   { /* diag decom, already diag and decending */
     REF_DBL m[6]={ 3.0, 0.0, 0.0, 
                         2.0, 0.0,
