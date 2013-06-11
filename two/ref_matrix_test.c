@@ -31,7 +31,7 @@ int main( void )
     REF_DBL v[3]={ 1.4, 1.5, 1.6 };
 
     REF_DBL f, d[3];
-    REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-8;
+    REF_DBL fd[3], x0, step = 1.0e-7, tol = 2.0e-7;
     REF_INT dir;
 
     RSS( ref_matrix_sqrt_vt_m_v_deriv( m, v, &f, d ), "deriv")
@@ -44,9 +44,9 @@ int main( void )
 	v[dir] = x0;
       }
     RSS( ref_matrix_sqrt_vt_m_v_deriv( m, v, &f, d ), "deriv")
-    RWDS( fd[0], d[0], tol, "dx expected" );
-    RWDS( fd[1], d[1], tol, "dy expected" );
-    RWDS( fd[2], d[2], tol, "dz expected" );
+    RWDS( fd[0], d[0], tol, "d[0] expected" );
+    RWDS( fd[1], d[1], tol, "d[1] expected" );
+    RWDS( fd[2], d[2], tol, "d[2] expected" );
   }
     
 
