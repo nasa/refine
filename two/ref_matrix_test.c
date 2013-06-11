@@ -23,6 +23,31 @@ int main( void )
     ratio = ref_matrix_sqrt_vt_m_v( m, v );
     RWDS( 4.1740, ratio, 1.0e-4, "ratio");
   }
+
+  {
+    REF_DBL m[6]={ 1.0, 1.3, 0.4, 
+                        1.8, 0.6,
+                             0.5};
+    REF_DBL v[3]={ 1.4, 1.5, 1.6 };
+
+    REF_DBL f, d[3];
+    REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-8;
+    REF_INT dir;
+
+    RSS( ref_matrix_sqrt_vt_m_v_deriv( m, v, &f, d ), "deriv")
+    for ( dir=0;dir<3;dir++) 
+      {
+	x0 = v[dir];
+	v[dir] = x0+step;
+	RSS( ref_matrix_sqrt_vt_m_v_deriv( m, v, &(fd[dir]), d ), "fd")
+	fd[dir] = (fd[dir]-f)/step;
+	v[dir] = x0;
+      }
+    RSS( ref_matrix_sqrt_vt_m_v_deriv( m, v, &f, d ), "deriv")
+    RWDS( fd[0], d[0], tol, "dx expected" );
+    RWDS( fd[1], d[1], tol, "dy expected" );
+    RWDS( fd[2], d[2], tol, "dz expected" );
+  }
     
 
   { /* diag decom, already diag and decending */

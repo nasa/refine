@@ -7,6 +7,17 @@
 #include "ref_math.h"
 #include "ref_malloc.h"
 
+REF_STATUS ref_matrix_sqrt_vt_m_v_deriv( REF_DBL *m, REF_DBL *v, 
+					 REF_DBL *f, REF_DBL *d )
+{
+  *f =  ( (m)[0]*(v)[0] + (m)[1]*(v)[1] + (m)[2]*(v)[2] ) ;
+  d[0] = (m)[0];
+  d[1] = (m)[1];
+  d[2] = (m)[2];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_det_m( REF_DBL *m, REF_DBL *det )
 {
 
