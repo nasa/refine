@@ -104,6 +104,9 @@ REF_STATUS ref_node_edge_twod( REF_NODE ref_node,
 
 REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1, 
 			   REF_DBL *ratio );
+REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node, 
+				 REF_INT node0, REF_INT node1, 
+				 REF_DBL *f, REF_DBL *d );
 
 REF_STATUS ref_node_tri_normal( REF_NODE ref_node, 
 				REF_INT *nodes,  
