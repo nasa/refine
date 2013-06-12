@@ -817,7 +817,6 @@ REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node,
       d[0] = 0.0;
       d[1] = 0.0;
       d[2] = 0.0;
-      printf("div\n");
       return REF_SUCCESS;  
     }
 
@@ -847,7 +846,6 @@ REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node,
 	  d[1] = d1[1];
 	  d[2] = d1[2];
 	}
-      printf("small\n");
       return REF_SUCCESS;  
     }
 
@@ -881,19 +879,16 @@ REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node,
     {
       *f = 0.5*(r_min+r_max);
       for(i=0;i<3;i++) d[i] =0.5*(d_min[i]+d_max[i]);
-      printf("same\n");
       return REF_SUCCESS;  
     }    
  
   *f = r_min * (r-1.0) / ( r * log(r) );
 
-  *f = r_min*(r-1.0);
-  for(i=0;i<3;i++) d[i]=r_min*dr[i]+d_min[i]*(r-1.0);
+  for(i=0;i<3;i++)
+    d[i] = ( (r_min*dr[i]+d_min[i]*(r-1.0)) * (r * log(r)) -
+	     r_min*(r-1.0) * (r * 1/r*dr[i] + dr[i]*log(r)) )
+      / (r * log(r)) / (r * log(r));
 
-  *f = r * log(r);
-  for(i=0;i<3;i++) d[i]= r * 1/r*dr[i] + dr[i]*log(r);
-
-      printf("gen\n");
   return REF_SUCCESS;  
 }
 
