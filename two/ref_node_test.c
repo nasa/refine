@@ -538,6 +538,60 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  SKIP_BLOCK("fd tester")
+  { /* derivative of node0 distance in metric  gen */
+    REF_NODE ref_node;
+    REF_INT node0, node1, global;
+    REF_DBL f, d[3];
+    REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-7;
+    REF_INT dir;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&node0),"add");
+    ref_node_xyz(ref_node,0,node0) = 0.0;
+    ref_node_xyz(ref_node,1,node0) = 0.0;
+    ref_node_xyz(ref_node,2,node0) = 0.0;
+    ref_node_metric(ref_node,0,node0) = 1.0;
+    ref_node_metric(ref_node,1,node0) = 1.3;
+    ref_node_metric(ref_node,2,node0) = 0.4;
+    ref_node_metric(ref_node,3,node0) = 1.8;
+    ref_node_metric(ref_node,4,node0) = 0.5;
+    ref_node_metric(ref_node,5,node0) = 0.5;
+
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&node1),"add");
+    ref_node_xyz(ref_node,0,node1) = 0.6;
+    ref_node_xyz(ref_node,1,node1) = 0.7;
+    ref_node_xyz(ref_node,2,node1) = 0.8;
+    ref_node_metric(ref_node,0,node1) = 1.0;
+    ref_node_metric(ref_node,1,node1) = 0.0;
+    ref_node_metric(ref_node,2,node1) = 0.0;
+    ref_node_metric(ref_node,3,node1) = 1.0;
+    ref_node_metric(ref_node,4,node1) = 0.0;
+    ref_node_metric(ref_node,5,node1) = 1.0;
+
+    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+			      &f, d), "ratio deriv" );
+    for ( dir=0;dir<3;dir++) 
+      {
+	x0 = ref_node_xyz(ref_node,dir,node0);
+	ref_node_xyz(ref_node,dir,node0) = x0+step;
+	RSS( ref_node_ratio_deriv(ref_node, node0, node1, &(fd[dir]), d), 
+	     "fd+" );
+	fd[dir] = (fd[dir]-f)/step;
+	ref_node_xyz(ref_node,dir,node0) = x0;
+      }
+    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+			      &f, d), "ratio deriv" );
+    RWDS( fd[0], d[0], tol, "dx expected" );
+    RWDS( fd[1], d[1], tol, "dy expected" );
+    RWDS( fd[2], d[2], tol, "dz expected" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   { /* tet volume */
     REF_NODE ref_node;
     REF_INT nodes[4], global;
