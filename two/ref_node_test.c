@@ -538,7 +538,6 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
-  SKIP_BLOCK("fd tester")
   { /* derivative of node0 distance in metric  gen */
     REF_NODE ref_node;
     REF_INT node0, node1, global;

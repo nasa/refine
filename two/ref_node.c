@@ -886,7 +886,12 @@ REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node,
     }    
  
   *f = r_min * (r-1.0) / ( r * log(r) );
-  for(i=0;i<3;i++) d[i]=dr[i];
+
+  *f = r_min*(r-1.0);
+  for(i=0;i<3;i++) d[i]=r_min*dr[i]+d_min[i]*(r-1.0);
+
+  *f = r * log(r);
+  for(i=0;i<3;i++) d[i]= r * 1/r*dr[i] + dr[i]*log(r);
 
       printf("gen\n");
   return REF_SUCCESS;  
