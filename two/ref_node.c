@@ -1168,7 +1168,7 @@ REF_STATUS ref_node_tet_vol( REF_NODE ref_node,
 
 REF_STATUS ref_node_tet_dvol_dnode0( REF_NODE ref_node, 
 				     REF_INT *nodes, 
-				     REF_DBL *func, REF_DBL *deriv )
+				     REF_DBL *vol, REF_DBL *d_vol )
 {
   REF_DBL *a, *b, *c, *d;
   REF_DBL m11, m12, m13;
@@ -1190,11 +1190,10 @@ REF_STATUS ref_node_tet_dvol_dnode0( REF_NODE ref_node,
   m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
   det = ( m11 - m12 + m13 );
 
-
-  *func = -det/6.0;
-  deriv[0] = -((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]))/6.0;
-  deriv[1] =  ((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]))/6.0;
-  deriv[2] = -((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]))/6.0;
+  *vol = -det/6.0;
+  d_vol[0] = -((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]))/6.0;
+  d_vol[1] =  ((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]))/6.0;
+  d_vol[2] = -((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]))/6.0;
 
   return REF_SUCCESS;  
 }
