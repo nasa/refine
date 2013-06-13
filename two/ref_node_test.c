@@ -752,9 +752,7 @@ int main( int argc, char *argv[] )
   { /* tri area quality deriv */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
-    REF_DBL f, d[3], area;
-    REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-6;
-    REF_INT dir;
+    REF_DBL f, d[3], area, quality;
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -787,44 +785,20 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,1,nodes[2]) = 2.0;
     ref_node_xyz(ref_node,2,nodes[2]) = 0.6;
 
-    /* area */
-
-    RSS(ref_node_tri_darea_dnode0(ref_node, nodes, &f, d), "area");
-    for ( dir=0;dir<3;dir++) 
-      {
-	x0 = ref_node_xyz(ref_node,dir,nodes[0]);
-	ref_node_xyz(ref_node,dir,nodes[0]) = x0+step;
-	RSS( ref_node_tri_darea_dnode0(ref_node, nodes, &(fd[dir]), d), 
-	     "fd+" );
-	fd[dir] = (fd[dir]-f)/step;
-	ref_node_xyz(ref_node,dir,nodes[0]) = x0;
-      }
+    FD_NODES0( ref_node_tri_darea_dnode0 );
     RSS( ref_node_tri_darea_dnode0(ref_node, nodes, 
 				 &f, d), "area deriv" );
-    RWDS( fd[0], d[0], tol, "dx expected" );
-    RWDS( fd[1], d[1], tol, "dy expected" );
-    RWDS( fd[2], d[2], tol, "dz expected" );
-
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS( area, f, -1.0, "expected area" );
 
     /* quality */
 
-    RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &f, d), "qual");
-    for ( dir=0;dir<3;dir++) 
-      {
-	x0 = ref_node_xyz(ref_node,dir,nodes[0]);
-	ref_node_xyz(ref_node,dir,nodes[0]) = x0+step;
-	RSS( ref_node_tri_dquality_dnode0(ref_node, nodes, &(fd[dir]), d), 
-	     "fd+" );
-	fd[dir] = (fd[dir]-f)/step;
-	ref_node_xyz(ref_node,dir,nodes[0]) = x0;
-      }
+    FD_NODES0( ref_node_tri_dquality_dnode0 );
     RSS( ref_node_tri_dquality_dnode0(ref_node, nodes, 
-				    &f, d), "qual deriv" );
-    RWDS( fd[0], d[0], tol, "dx expected" );
-    RWDS( fd[1], d[1], tol, "dy expected" );
-    RWDS( fd[2], d[2], tol, "dz expected" );
+				      &f, d), "qual deriv" );
+    RSS( ref_node_tri_quality(ref_node, nodes, 
+			      &quality), "qual deriv" );
+    RWDS( quality, f, -1.0, "expected quality" );
 
     RSS(ref_node_free(ref_node),"free");
   }
