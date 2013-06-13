@@ -24,6 +24,9 @@
 #include "ref_migrate.h"
 #include "ref_dict.h"
 
+#include "ref_edge.h"
+#include "ref_adapt.h"
+
 #include "ref_histogram.h"
 
 int main(  int argc, char *argv[] )
