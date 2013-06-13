@@ -1016,10 +1016,6 @@ REF_STATUS ref_node_tri_normal( REF_NODE ref_node,
 
   ref_math_cross_product(edge10,edge20,normal);
 
-  normal[0] *= 0.5;
-  normal[1] *= 0.5;
-  normal[2] *= 0.5;
-
   return REF_SUCCESS;  
 }
 
@@ -1030,10 +1026,6 @@ REF_STATUS ref_node_tri_area( REF_NODE ref_node,
   REF_DBL normal[3];
 
   RSS( ref_node_tri_normal( ref_node, nodes, normal ), "norm inside of area");
-
-  normal[0] *= 2.0;
-  normal[1] *= 2.0;
-  normal[2] *= 2.0;
 
   *area = 0.5 * sqrt(ref_math_dot(normal,normal));
 
