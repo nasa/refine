@@ -991,7 +991,8 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
 
 REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node, 
 					 REF_INT *nodes, 
-					 REF_DBL *f, REF_DBL *d )
+					 REF_DBL *quality, 
+					 REF_DBL *d_quality )
 {
   REF_DBL l0,l1,l2;
 
@@ -1025,9 +1026,9 @@ REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node,
 
   if ( ref_math_divisible(num,denom) )
     {
-      *f = 4.0 / sqrt(3.0) * 3 * num / denom;
+      *quality = 4.0 / sqrt(3.0) * 3 * num / denom;
       for(i=0;i<3;i++) 
-	d[i] 
+	d_quality[i] 
 	  = 4.0 / sqrt(3.0) * 3
 	  * ( d_num[i]*denom - num*d_denom[i] )
 	  / denom / denom;
@@ -1037,8 +1038,8 @@ REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node,
       printf("%s: %d: %s: div zero area %.18e min_det %.18e (%.18e / %.18e)\n",
 	     __FILE__,__LINE__,__func__,
 	     area, min_det, num, denom );
-      *f = -1.0;
-      for(i=0;i<3;i++) d[i] = 0.0;
+      *quality = -1.0;
+      for(i=0;i<3;i++) d_quality[i] = 0.0;
     }
 
   return REF_SUCCESS;  
