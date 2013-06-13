@@ -452,13 +452,33 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+ #define FD_NODE0( xfuncx )				\
+    {							\
+      REF_DBL f, d[3];					\
+      REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-6;	\
+      REF_INT dir;					\
+      RSS(xfuncx(ref_node,node0,node1,&f,d), "fd0");	\
+      for ( dir=0;dir<3;dir++)				\
+	{						\
+	  x0 = ref_node_xyz(ref_node,dir,node0);	\
+	  ref_node_xyz(ref_node,dir,node0)=		\
+	    x0+step;					\
+	  RSS(xfuncx(ref_node,node0,node1,		\
+		     &(fd[dir]),d), "fd+");		\
+	  fd[dir] = (fd[dir]-f)/step;			\
+	  ref_node_xyz(ref_node,dir,node0) = x0;	\
+	}						\
+      RSS(xfuncx(ref_node,node0,node1,&f,d), "exact");	\
+      RWDS( fd[0], d[0], tol, "dx expected" );		\
+      RWDS( fd[1], d[1], tol, "dy expected" );		\
+      RWDS( fd[2], d[2], tol, "dz expected" );		\
+    }
+
   { /* derivative of node0 distance in metric */
     REF_NODE ref_node;
     REF_INT node0, node1, global;
     REF_DBL ratio;
     REF_DBL f, d[3];
-    REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-7;
-    REF_INT dir;
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -498,42 +518,22 @@ int main( int argc, char *argv[] )
     /* length one in x */
     ref_node_xyz(ref_node,0,node1) = 1.0;
 
+    FD_NODE0( ref_node_dratio_dnode0 );
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
-			      &f, d), "ratio deriv" );
-    for ( dir=0;dir<3;dir++) 
-      {
-	x0 = ref_node_xyz(ref_node,dir,node0);
-	ref_node_xyz(ref_node,dir,node0) = x0+step;
-	RSS( ref_node_ratio(ref_node, node0, node1, &(fd[dir])), "fd+" );
-	fd[dir] = (fd[dir]-ratio)/step;
-	ref_node_xyz(ref_node,dir,node0) = x0;
-      }
+				&f, d), "ratio deriv" );
     RWDS( ratio, f, -1.0, "ratio expected" );
-    RWDS( fd[0], d[0], tol, "dx expected" );
-    RWDS( fd[1], d[1], tol, "dy expected" );
-    RWDS( fd[2], d[2], tol, "dz expected" );
 
     /* length one in xyz */
     ref_node_xyz(ref_node,0,node1) = 1.0;
     ref_node_xyz(ref_node,1,node1) = 1.0;
     ref_node_xyz(ref_node,2,node1) = 1.0;
 
+    FD_NODE0( ref_node_dratio_dnode0 );
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
-			      &f, d), "ratio deriv" );
-    for ( dir=0;dir<3;dir++) 
-      {
-	x0 = ref_node_xyz(ref_node,dir,node0);
-	ref_node_xyz(ref_node,dir,node0) = x0+step;
-	RSS( ref_node_ratio(ref_node, node0, node1, &(fd[dir])), "fd+" );
-	fd[dir] = (fd[dir]-ratio)/step;
-	ref_node_xyz(ref_node,dir,node0) = x0;
-      }
+				&f, d), "ratio deriv" );
     RWDS( ratio, f, -1.0, "ratio expected" );
-    RWDS( fd[0], d[0], tol, "dx expected" );
-    RWDS( fd[1], d[1], tol, "dy expected" );
-    RWDS( fd[2], d[2], tol, "dz expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }
@@ -542,8 +542,6 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node0, node1, global;
     REF_DBL ratio, f, d[3];
-    REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-7;
-    REF_INT dir;
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -571,23 +569,10 @@ int main( int argc, char *argv[] )
     ref_node_metric(ref_node,4,node1) = 0.0;
     ref_node_metric(ref_node,5,node1) = 1.0;
 
-    RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
-			      &f, d), "ratio deriv" );
-    for ( dir=0;dir<3;dir++) 
-      {
-	x0 = ref_node_xyz(ref_node,dir,node0);
-	ref_node_xyz(ref_node,dir,node0) = x0+step;
-	RSS( ref_node_dratio_dnode0(ref_node, node0, node1, &(fd[dir]), d), 
-	     "fd+" );
-	fd[dir] = (fd[dir]-f)/step;
-	ref_node_xyz(ref_node,dir,node0) = x0;
-      }
-    RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
-			      &f, d), "ratio deriv" );
-    RWDS( fd[0], d[0], tol, "dx expected" );
-    RWDS( fd[1], d[1], tol, "dy expected" );
-    RWDS( fd[2], d[2], tol, "dz expected" );
+    FD_NODE0( ref_node_dratio_dnode0 );
 
+    RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
+			      &f, d), "ratio deriv" );
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RWDS( ratio, f, -1.0, "ratio expected" );
 
