@@ -28,6 +28,10 @@
 #include "ref_adapt.h"
 
 #include "ref_histogram.h"
+#include "ref_gather.h"
+#include "ref_collapse.h"
+#include "ref_split.h"
+#include "ref_math.h"
 
 int main(  int argc, char *argv[] )
 {
