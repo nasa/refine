@@ -11,21 +11,22 @@
 
 #include "ref_malloc.h"
 
-#define FD_NODE0( xfuncx, xrefx, xnodesx, xnodex )	\
+#define FD_NODES0( xfuncx )				\
     {							\
       REF_DBL f, d[3];					\
       REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-6;	\
       REF_INT dir;					\
-      RSS(xfuncx(xrefx,xnodesx,&f,d), "fd0");		\
+      RSS(xfuncx(ref_node,nodes,&f,d), "fd0");		\
       for ( dir=0;dir<3;dir++)				\
 	{						\
-	x0 = ref_node_xyz(ref_node,dir,xnodex);		\
-	ref_node_xyz(ref_node,dir,xnodex) = x0+step;	\
-	RSS(xfuncx(xrefx,xnodesx,&(fd[dir]),d), "fd+");	\
-	fd[dir] = (fd[dir]-f)/step;			\
-	ref_node_xyz(ref_node,dir,xnodex) = x0;		\
+	  x0 = ref_node_xyz(ref_node,dir,nodes[0]);	\
+	  ref_node_xyz(ref_node,dir,nodes[0])= x0+step;	\
+	  RSS(xfuncx(ref_node,nodes,&(fd[dir]),d),	\
+	      "fd+");					\
+	  fd[dir] = (fd[dir]-f)/step;			\
+	  ref_node_xyz(ref_node,dir,nodes[0]) = x0;	\
 	}						\
-      RSS(xfuncx(xrefx,xnodesx,&f,d), "exact");		\
+      RSS(xfuncx(ref_node,nodes,&f,d), "exact");	\
       RWDS( fd[0], d[0], tol, "dx expected" );		\
       RWDS( fd[1], d[1], tol, "dy expected" );		\
       RWDS( fd[2], d[2], tol, "dz expected" );		\
@@ -684,7 +685,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,1,nodes[3]) = 0.7;
     ref_node_xyz(ref_node,2,nodes[3]) = 1.9;
 
-    FD_NODE0( ref_node_tet_dvol_dnode0, ref_node, nodes, nodes[0] );
+    FD_NODES0( ref_node_tet_dvol_dnode0 );
 
     RSS( ref_node_tet_dvol_dnode0(ref_node, nodes, 
 				  &f, d), "ratio deriv" );
