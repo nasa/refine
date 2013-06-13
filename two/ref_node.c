@@ -990,6 +990,61 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_tri_quality_deriv( REF_NODE ref_node, 
+				       REF_INT *nodes, 
+				       REF_DBL *f, REF_DBL *d )
+{
+  REF_DBL l0,l1,l2;
+
+  REF_DBL det, min_det, area, d_area[3];
+  REF_DBL area_in_metric, d_area_in_metric[3];
+  REF_DBL num, d_num[3], denom, d_denom[3];
+  REF_DBL d_l0[3], d_l1[3]; 
+  REF_INT i;
+
+  RSS( ref_node_ratio_deriv( ref_node, nodes[0], nodes[1], &l0, d_l0 ), "l0" );
+  RSS( ref_node_ratio_deriv( ref_node, nodes[0], nodes[2], &l1, d_l1 ), "l1" );
+  RSS( ref_node_ratio( ref_node, nodes[1], nodes[2], &l2 ), "l2" );
+  
+  RSS( ref_node_tri_area_deriv( ref_node, nodes, &area, d_area ), "area");
+
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det),"n0");
+  min_det = det;
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det),"n1");
+  min_det = MIN(min_det,det);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det),"n2");
+  min_det = MIN(min_det,det);
+
+  area_in_metric = sqrt( min_det ) * area;
+  for(i=0;i<3;i++)
+    d_area_in_metric[i] = sqrt( min_det ) * d_area[i];
+
+  num = area_in_metric;
+  for(i=0;i<3;i++) d_num[i] = d_area_in_metric[i];
+  denom = l0*l0 + l1*l1 + l2*l2;
+  for(i=0;i<3;i++) d_denom[i] = 2.0*l0*d_l0[i] + 2.0*l1*d_l1[i];
+
+  if ( ref_math_divisible(num,denom) )
+    {
+      *f = 4.0 / sqrt(3.0) * 3 * num / denom;
+      for(i=0;i<3;i++) 
+	d[i] 
+	  = 4.0 / sqrt(3.0) * 3
+	  * ( d_num[i]*denom - num*d_denom[i] )
+	  / denom / denom;
+    }
+  else
+    {
+      printf("%s: %d: %s: div zero area %.18e min_det %.18e (%.18e / %.18e)\n",
+	     __FILE__,__LINE__,__func__,
+	     area, min_det, num, denom );
+      *f = -1.0;
+      for(i=0;i<3;i++) d[i] = 0.0;
+    }
+
+  return REF_SUCCESS;  
+}
+
 REF_STATUS ref_node_tri_normal( REF_NODE ref_node, 
 				REF_INT *nodes, 
 				REF_DBL *normal )
@@ -1016,7 +1071,7 @@ REF_STATUS ref_node_tri_normal( REF_NODE ref_node,
 
   ref_math_cross_product(edge10,edge20,normal);
 
-  return REF_SUCCESS;  
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_node_tri_area( REF_NODE ref_node, 

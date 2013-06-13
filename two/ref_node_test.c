@@ -742,7 +742,7 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
-  { /* tri area deriv */
+  { /* tri area quality deriv */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
     REF_DBL f, d[3], area;
@@ -758,6 +758,16 @@ int main( int argc, char *argv[] )
     global = 2;
     RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
 
+    for ( global=0;global<3;global++)
+      {
+	ref_node_metric(ref_node,0,global) = 1.0;
+	ref_node_metric(ref_node,1,global) = 0.0;
+	ref_node_metric(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,3,global) = 1.0;
+	ref_node_metric(ref_node,4,global) = 0.0;
+	ref_node_metric(ref_node,5,global) = 1.0;
+       }
+
     ref_node_xyz(ref_node,0,nodes[0]) = 0.1;
     ref_node_xyz(ref_node,1,nodes[0]) = 0.2;
     ref_node_xyz(ref_node,2,nodes[0]) = 0.3;
@@ -770,7 +780,9 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,1,nodes[2]) = 2.0;
     ref_node_xyz(ref_node,2,nodes[2]) = 0.6;
 
-    RSS(ref_node_tri_area_deriv(ref_node, nodes, &f, d), "vol");
+    /* area */
+
+    RSS(ref_node_tri_area_deriv(ref_node, nodes, &f, d), "area");
     for ( dir=0;dir<3;dir++) 
       {
 	x0 = ref_node_xyz(ref_node,dir,nodes[0]);
@@ -781,13 +793,31 @@ int main( int argc, char *argv[] )
 	ref_node_xyz(ref_node,dir,nodes[0]) = x0;
       }
     RSS( ref_node_tri_area_deriv(ref_node, nodes, 
-				 &f, d), "ratio deriv" );
+				 &f, d), "area deriv" );
     RWDS( fd[0], d[0], tol, "dx expected" );
     RWDS( fd[1], d[1], tol, "dy expected" );
     RWDS( fd[2], d[2], tol, "dz expected" );
 
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS( area, f, -1.0, "expected area" );
+
+    /* quality */
+
+    RSS(ref_node_tri_quality_deriv(ref_node, nodes, &f, d), "qual");
+    for ( dir=0;dir<3;dir++) 
+      {
+	x0 = ref_node_xyz(ref_node,dir,nodes[0]);
+	ref_node_xyz(ref_node,dir,nodes[0]) = x0+step;
+	RSS( ref_node_tri_quality_deriv(ref_node, nodes, &(fd[dir]), d), 
+	     "fd+" );
+	fd[dir] = (fd[dir]-f)/step;
+	ref_node_xyz(ref_node,dir,nodes[0]) = x0;
+      }
+    RSS( ref_node_tri_quality_deriv(ref_node, nodes, 
+				    &f, d), "qual deriv" );
+    RWDS( fd[0], d[0], tol, "dx expected" );
+    RWDS( fd[1], d[1], tol, "dy expected" );
+    RWDS( fd[2], d[2], tol, "dz expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }

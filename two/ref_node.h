@@ -122,6 +122,9 @@ REF_STATUS ref_node_tri_area_deriv( REF_NODE ref_node,
 REF_STATUS ref_node_tri_quality( REF_NODE ref_node, 
 				 REF_INT *nodes,  
 				 REF_DBL *quality );
+REF_STATUS ref_node_tri_quality_deriv( REF_NODE ref_node, 
+				       REF_INT *nodes,  
+				       REF_DBL *f, REF_DBL *d );
 
 REF_STATUS ref_node_tet_vol( REF_NODE ref_node, 
 			     REF_INT *nodes,  
