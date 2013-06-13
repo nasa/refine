@@ -742,6 +742,53 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* tri area deriv */
+    REF_NODE ref_node;
+    REF_INT nodes[3], global;
+    REF_DBL f, d[3];
+    REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-6;
+    REF_INT dir;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+
+    ref_node_xyz(ref_node,0,nodes[0]) = 0.1;
+    ref_node_xyz(ref_node,1,nodes[0]) = 0.2;
+    ref_node_xyz(ref_node,2,nodes[0]) = 0.3;
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.1;
+    ref_node_xyz(ref_node,1,nodes[1]) = 0.5;
+    ref_node_xyz(ref_node,2,nodes[1]) = 0.7;
+
+    ref_node_xyz(ref_node,0,nodes[2]) = 0.4;
+    ref_node_xyz(ref_node,1,nodes[2]) = 2.0;
+    ref_node_xyz(ref_node,2,nodes[2]) = 0.6;
+
+    RSS(ref_node_tri_area_deriv(ref_node, nodes, &f, d), "vol");
+    for ( dir=0;dir<3;dir++) 
+      {
+	x0 = ref_node_xyz(ref_node,dir,nodes[0]);
+	ref_node_xyz(ref_node,dir,nodes[0]) = x0+step;
+	RSS( ref_node_tri_area_deriv(ref_node, nodes, &(fd[dir]), d), 
+	     "fd+" );
+	fd[dir] = (fd[dir]-f)/step;
+	ref_node_xyz(ref_node,dir,nodes[0]) = x0;
+      }
+    RSS( ref_node_tri_area_deriv(ref_node, nodes, 
+				 &f, d), "ratio deriv" );
+    RWDS( fd[0], d[0], tol, "dx expected" );
+    RWDS( fd[1], d[1], tol, "dy expected" );
+    RWDS( fd[2], d[2], tol, "dz expected" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   { /* equilateral tri normal, area, qual */
     REF_NODE ref_node;
     REF_INT nodes[3], global;

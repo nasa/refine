@@ -1040,6 +1040,55 @@ REF_STATUS ref_node_tri_area( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_tri_area_deriv( REF_NODE ref_node, 
+				    REF_INT *nodes,  
+				    REF_DBL *f, REF_DBL *d )
+{
+  REF_DBL *xyz0, *xyz1, *xyz2;
+  REF_DBL v0[3], v1[3];
+  REF_DBL normx, normy, normz;
+  REF_DBL d_normx[3], d_normy[3], d_normz[3];
+  REF_INT i;
+
+  if ( !ref_node_valid(ref_node,nodes[0]) ||
+       !ref_node_valid(ref_node,nodes[1]) ||
+       !ref_node_valid(ref_node,nodes[2]) ) 
+    RSS( REF_INVALID, "node invalid" );
+
+  xyz0 = ref_node_xyz_ptr(ref_node,nodes[0]);
+  xyz1 = ref_node_xyz_ptr(ref_node,nodes[1]);
+  xyz2 = ref_node_xyz_ptr(ref_node,nodes[2]);
+
+  v0[0] = xyz1[0] - xyz0[0];
+  v0[1] = xyz1[1] - xyz0[1];
+  v0[2] = xyz1[2] - xyz0[2];
+  
+  v1[0] = xyz2[0] - xyz0[0];
+  v1[1] = xyz2[1] - xyz0[1];
+  v1[2] = xyz2[2] - xyz0[2];
+
+  normx = (v0)[1]*(v1)[2] - (v0)[2]*(v1)[1];
+  d_normx[0] = 0.0;
+  d_normx[1] = -(v1)[2]+(v0)[2];
+  d_normx[2] = -(v0)[1]+(v1)[1];
+
+  normy =  (v0)[2]*(v1)[0] - (v0)[0]*(v1)[2];
+  d_normy[0] = -(v0)[2]+(v1)[2];
+  d_normy[1] = 0.0;
+  d_normy[2] = -(v1)[0]+(v0)[0];
+
+  normz =  (v0)[0]*(v1)[1] - (v0)[1]*(v1)[0]; 
+  d_normz[0] = -(v1)[1]+(v0)[1];
+  d_normz[1] = -(v0)[0]+(v1)[0];
+  d_normz[2] = 0.0;
+
+  *f = normx*normx + normy*normy + normz*normz;
+  for(i=0;i<3;i++) 
+    d[i] = 2.0*normx*d_normx[i] + 2.0*normy*d_normy[i] + 2.0*normz*d_normz[i];
+
+  return REF_SUCCESS;  
+}
+
 REF_STATUS ref_node_tet_vol( REF_NODE ref_node, 
 			     REF_INT *nodes, 
 			     REF_DBL *volume )
