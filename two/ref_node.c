@@ -787,12 +787,11 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
 
 REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node, 
 				   REF_INT node0, REF_INT node1, 
-				   REF_DBL *f, REF_DBL *d )
+				   REF_DBL *ratio, REF_DBL *d_ratio )
 {
   REF_DBL direction[3], length;
-  REF_DBL ratio0, ratio1;
-  REF_DBL d0[3], d1[3], d_min[3], d_max[3], dr[3];
-  REF_DBL r, r_min, r_max;
+  REF_DBL ratio0, d_ratio0[3], ratio1, d_ratio1[3];
+  REF_DBL r, d_r[3], r_min, d_r_min[3], r_max, d_r_max[3];
   REF_INT i;
 
   if ( !ref_node_valid(ref_node,node0) ||
@@ -813,19 +812,19 @@ REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node,
        !ref_math_divisible(direction[1],length) ||
        !ref_math_divisible(direction[2],length) ) 
     {
-      *f = 0.0;
-      d[0] = 0.0;
-      d[1] = 0.0;
-      d[2] = 0.0;
+      *ratio = 0.0;
+      d_ratio[0] = 0.0;
+      d_ratio[1] = 0.0;
+      d_ratio[2] = 0.0;
       return REF_SUCCESS;  
     }
 
   RSS( ref_matrix_sqrt_vt_m_v_deriv( ref_node_metric_ptr(ref_node,node0),
-				     direction, &ratio0, d0 ),"vt m v0");
-  d0[0] = -d0[0]; d0[1] = -d0[1]; d0[2] = -d0[2]; /* node 0 is neg */
+				     direction, &ratio0, d_ratio0 ),"vt m v0");
+  for(i=0;i<3;i++) d_ratio0[i] = -d_ratio0[i]; /* node 0 is neg */
   RSS( ref_matrix_sqrt_vt_m_v_deriv( ref_node_metric_ptr(ref_node,node1),
-				     direction, &ratio1, d1 ),"vt m v0");
-  d1[0] = -d1[0]; d1[1] = -d1[1]; d1[2] = -d1[2]; /* node 0 is neg */
+				     direction, &ratio1, d_ratio1 ),"vt m v0");
+  for(i=0;i<3;i++) d_ratio1[i] = -d_ratio1[i]; /* node 0 is neg */
 
   /* Loseille Lohner IMR 18 (2009) pg 613 */
   /* Alauzet Finite Elements in Analysis and Design 46 (2010) pg 185 */
@@ -834,17 +833,17 @@ REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node,
     {
       if (ratio0<ratio1)
 	{
-	  *f = ratio0;
-	  d[0] = d0[0];
-	  d[1] = d0[1];
-	  d[2] = d0[2];
+	  *ratio = ratio0;
+	  d_ratio[0] = d_ratio0[0];
+	  d_ratio[1] = d_ratio0[1];
+	  d_ratio[2] = d_ratio0[2];
 	}
       else
 	{
-	  *f = ratio1;
-	  d[0] = d1[0];
-	  d[1] = d1[1];
-	  d[2] = d1[2];
+	  *ratio = ratio1;
+	  d_ratio[0] = d_ratio1[0];
+	  d_ratio[1] = d_ratio1[1];
+	  d_ratio[2] = d_ratio1[2];
 	}
       return REF_SUCCESS;  
     }
@@ -852,41 +851,41 @@ REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node,
   if (ratio0<ratio1)
     {
       r_min = ratio0;
-      d_min[0] = d0[0];
-      d_min[1] = d0[1];
-      d_min[2] = d0[2];
+      d_r_min[0] = d_ratio0[0];
+      d_r_min[1] = d_ratio0[1];
+      d_r_min[2] = d_ratio0[2];
       r_max = ratio1;
-      d_max[0] = d1[0];
-      d_max[1] = d1[1];
-      d_max[2] = d1[2];
+      d_r_max[0] = d_ratio1[0];
+      d_r_max[1] = d_ratio1[1];
+      d_r_max[2] = d_ratio1[2];
     }
   else
     {
       r_min = ratio1;
-      d_min[0] = d1[0];
-      d_min[1] = d1[1];
-      d_min[2] = d1[2];
+      d_r_min[0] = d_ratio1[0];
+      d_r_min[1] = d_ratio1[1];
+      d_r_min[2] = d_ratio1[2];
       r_max = ratio0;
-      d_max[0] = d0[0];
-      d_max[1] = d0[1];
-      d_max[2] = d0[2];
+      d_r_max[0] = d_ratio0[0];
+      d_r_max[1] = d_ratio0[1];
+      d_r_max[2] = d_ratio0[2];
     }
  
   r = r_min/r_max;
-  for(i=0;i<3;i++) dr[i] = (d_min[i]*r_max-r_min*d_max[i]) / r_max / r_max;
+  for(i=0;i<3;i++) d_r[i] = (d_r_min[i]*r_max-r_min*d_r_max[i]) / r_max / r_max;
 
   if ( ABS(r-1.0) < 1.0e-12 )
     {
-      *f = 0.5*(r_min+r_max);
-      for(i=0;i<3;i++) d[i] =0.5*(d_min[i]+d_max[i]);
+      *ratio = 0.5*(r_min+r_max);
+      for(i=0;i<3;i++) d_ratio[i] =0.5*(d_r_min[i]+d_r_max[i]);
       return REF_SUCCESS;  
     }    
  
-  *f = r_min * (r-1.0) / ( r * log(r) );
+  *ratio = r_min * (r-1.0) / ( r * log(r) );
 
   for(i=0;i<3;i++)
-    d[i] = ( (r_min*dr[i]+d_min[i]*(r-1.0)) * (r * log(r)) -
-	     r_min*(r-1.0) * (r * 1/r*dr[i] + dr[i]*log(r)) )
+    d_ratio[i] = ( (r_min*d_r[i]+d_r_min[i]*(r-1.0)) * (r * log(r)) -
+		   r_min*(r-1.0) * (r * 1/r*d_r[i] + d_r[i]*log(r)) )
       / (r * log(r)) / (r * log(r));
 
   return REF_SUCCESS;  
