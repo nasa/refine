@@ -11,27 +11,6 @@
 
 #include "ref_malloc.h"
 
-#define FD_NODES0( xfuncx )				\
-    {							\
-      REF_DBL f, d[3];					\
-      REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-6;	\
-      REF_INT dir;					\
-      RSS(xfuncx(ref_node,nodes,&f,d), "fd0");		\
-      for ( dir=0;dir<3;dir++)				\
-	{						\
-	  x0 = ref_node_xyz(ref_node,dir,nodes[0]);	\
-	  ref_node_xyz(ref_node,dir,nodes[0])= x0+step;	\
-	  RSS(xfuncx(ref_node,nodes,&(fd[dir]),d),	\
-	      "fd+");					\
-	  fd[dir] = (fd[dir]-f)/step;			\
-	  ref_node_xyz(ref_node,dir,nodes[0]) = x0;	\
-	}						\
-      RSS(xfuncx(ref_node,nodes,&f,d), "exact");	\
-      RWDS( fd[0], d[0], tol, "dx expected" );		\
-      RWDS( fd[1], d[1], tol, "dy expected" );		\
-      RWDS( fd[2], d[2], tol, "dz expected" );		\
-    }
-
 int main( int argc, char *argv[] )
 {
 
@@ -652,6 +631,27 @@ int main( int argc, char *argv[] )
 
     RSS(ref_node_free(ref_node),"free");
   }
+
+#define FD_NODES0( xfuncx )				\
+    {							\
+      REF_DBL f, d[3];					\
+      REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-6;	\
+      REF_INT dir;					\
+      RSS(xfuncx(ref_node,nodes,&f,d), "fd0");		\
+      for ( dir=0;dir<3;dir++)				\
+	{						\
+	  x0 = ref_node_xyz(ref_node,dir,nodes[0]);	\
+	  ref_node_xyz(ref_node,dir,nodes[0])= x0+step;	\
+	  RSS(xfuncx(ref_node,nodes,&(fd[dir]),d),	\
+	      "fd+");					\
+	  fd[dir] = (fd[dir]-f)/step;			\
+	  ref_node_xyz(ref_node,dir,nodes[0]) = x0;	\
+	}						\
+      RSS(xfuncx(ref_node,nodes,&f,d), "exact");	\
+      RWDS( fd[0], d[0], tol, "dx expected" );		\
+      RWDS( fd[1], d[1], tol, "dy expected" );		\
+      RWDS( fd[2], d[2], tol, "dz expected" );		\
+    }
 
   { /* tet volume deriv */
     REF_NODE ref_node;
