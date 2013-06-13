@@ -123,6 +123,9 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
 REF_STATUS ref_node_tet_vol( REF_NODE ref_node, 
 			     REF_INT *nodes,  
 			     REF_DBL *volume );
+REF_STATUS ref_node_tet_vol_deriv( REF_NODE ref_node, 
+				   REF_INT *nodes,  
+				   REF_DBL *f, REF_DBL *d );
 REF_STATUS ref_node_tet_quality( REF_NODE ref_node, 
 				 REF_INT *nodes,  
 				 REF_DBL *quality );
