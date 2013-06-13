@@ -15,7 +15,7 @@ BEGIN_C_DECLORATION
 	(v)[2] * ( (m)[2]*(v)[0] + (m)[4]*(v)[1] + (m)[5]*(v)[2] ) )
 
 REF_STATUS ref_matrix_sqrt_vt_m_v_deriv( REF_DBL *m_upper_tri, REF_DBL *v, 
-					 REF_DBL *f, REF_DBL *d );
+					 REF_DBL *f, REF_DBL *df_dv );
 
 REF_STATUS ref_matrix_det_m( REF_DBL *m_upper_tri, REF_DBL *det );
 
