@@ -488,7 +488,7 @@ int main( int argc, char *argv[] )
 
     /* same node */
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
-    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+    RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
 			      &f, d), "ratio deriv" );
     RWDS( ratio, f, -1.0, "ratio expected" );
     RWDS( 0.0, d[0], -1.0, "dx expected" );
@@ -499,7 +499,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,0,node1) = 1.0;
 
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
-    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+    RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
 			      &f, d), "ratio deriv" );
     for ( dir=0;dir<3;dir++) 
       {
@@ -520,7 +520,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,node1) = 1.0;
 
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
-    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+    RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
 			      &f, d), "ratio deriv" );
     for ( dir=0;dir<3;dir++) 
       {
@@ -571,18 +571,18 @@ int main( int argc, char *argv[] )
     ref_node_metric(ref_node,4,node1) = 0.0;
     ref_node_metric(ref_node,5,node1) = 1.0;
 
-    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+    RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
 			      &f, d), "ratio deriv" );
     for ( dir=0;dir<3;dir++) 
       {
 	x0 = ref_node_xyz(ref_node,dir,node0);
 	ref_node_xyz(ref_node,dir,node0) = x0+step;
-	RSS( ref_node_ratio_deriv(ref_node, node0, node1, &(fd[dir]), d), 
+	RSS( ref_node_dratio_dnode0(ref_node, node0, node1, &(fd[dir]), d), 
 	     "fd+" );
 	fd[dir] = (fd[dir]-f)/step;
 	ref_node_xyz(ref_node,dir,node0) = x0;
       }
-    RSS( ref_node_ratio_deriv(ref_node, node0, node1, 
+    RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
 			      &f, d), "ratio deriv" );
     RWDS( fd[0], d[0], tol, "dx expected" );
     RWDS( fd[1], d[1], tol, "dy expected" );
@@ -666,17 +666,17 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,1,nodes[3]) = 0.7;
     ref_node_xyz(ref_node,2,nodes[3]) = 1.9;
 
-    RSS(ref_node_tet_vol_deriv(ref_node, nodes, &f, d), "vol");
+    RSS(ref_node_tet_dvol_dnode0(ref_node, nodes, &f, d), "vol");
     for ( dir=0;dir<3;dir++) 
       {
 	x0 = ref_node_xyz(ref_node,dir,nodes[0]);
 	ref_node_xyz(ref_node,dir,nodes[0]) = x0+step;
-	RSS( ref_node_tet_vol_deriv(ref_node, nodes, &(fd[dir]), d), 
+	RSS( ref_node_tet_dvol_dnode0(ref_node, nodes, &(fd[dir]), d), 
 	     "fd+" );
 	fd[dir] = (fd[dir]-f)/step;
 	ref_node_xyz(ref_node,dir,nodes[0]) = x0;
       }
-    RSS( ref_node_tet_vol_deriv(ref_node, nodes, 
+    RSS( ref_node_tet_dvol_dnode0(ref_node, nodes, 
 			      &f, d), "ratio deriv" );
     RWDS( fd[0], d[0], tol, "dx expected" );
     RWDS( fd[1], d[1], tol, "dy expected" );
@@ -782,17 +782,17 @@ int main( int argc, char *argv[] )
 
     /* area */
 
-    RSS(ref_node_tri_area_deriv(ref_node, nodes, &f, d), "area");
+    RSS(ref_node_tri_darea_dnode0(ref_node, nodes, &f, d), "area");
     for ( dir=0;dir<3;dir++) 
       {
 	x0 = ref_node_xyz(ref_node,dir,nodes[0]);
 	ref_node_xyz(ref_node,dir,nodes[0]) = x0+step;
-	RSS( ref_node_tri_area_deriv(ref_node, nodes, &(fd[dir]), d), 
+	RSS( ref_node_tri_darea_dnode0(ref_node, nodes, &(fd[dir]), d), 
 	     "fd+" );
 	fd[dir] = (fd[dir]-f)/step;
 	ref_node_xyz(ref_node,dir,nodes[0]) = x0;
       }
-    RSS( ref_node_tri_area_deriv(ref_node, nodes, 
+    RSS( ref_node_tri_darea_dnode0(ref_node, nodes, 
 				 &f, d), "area deriv" );
     RWDS( fd[0], d[0], tol, "dx expected" );
     RWDS( fd[1], d[1], tol, "dy expected" );
@@ -803,17 +803,17 @@ int main( int argc, char *argv[] )
 
     /* quality */
 
-    RSS(ref_node_tri_quality_deriv(ref_node, nodes, &f, d), "qual");
+    RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &f, d), "qual");
     for ( dir=0;dir<3;dir++) 
       {
 	x0 = ref_node_xyz(ref_node,dir,nodes[0]);
 	ref_node_xyz(ref_node,dir,nodes[0]) = x0+step;
-	RSS( ref_node_tri_quality_deriv(ref_node, nodes, &(fd[dir]), d), 
+	RSS( ref_node_tri_dquality_dnode0(ref_node, nodes, &(fd[dir]), d), 
 	     "fd+" );
 	fd[dir] = (fd[dir]-f)/step;
 	ref_node_xyz(ref_node,dir,nodes[0]) = x0;
       }
-    RSS( ref_node_tri_quality_deriv(ref_node, nodes, 
+    RSS( ref_node_tri_dquality_dnode0(ref_node, nodes, 
 				    &f, d), "qual deriv" );
     RWDS( fd[0], d[0], tol, "dx expected" );
     RWDS( fd[1], d[1], tol, "dy expected" );

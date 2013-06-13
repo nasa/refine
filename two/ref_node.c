@@ -785,9 +785,9 @@ REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;  
 }
 
-REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node, 
-				 REF_INT node0, REF_INT node1, 
-				 REF_DBL *f, REF_DBL *d )
+REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node, 
+				   REF_INT node0, REF_INT node1, 
+				   REF_DBL *f, REF_DBL *d )
 {
   REF_DBL direction[3], length;
   REF_DBL ratio0, ratio1;
@@ -990,9 +990,9 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
-REF_STATUS ref_node_tri_quality_deriv( REF_NODE ref_node, 
-				       REF_INT *nodes, 
-				       REF_DBL *f, REF_DBL *d )
+REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node, 
+					 REF_INT *nodes, 
+					 REF_DBL *f, REF_DBL *d )
 {
   REF_DBL l0,l1,l2;
 
@@ -1002,11 +1002,11 @@ REF_STATUS ref_node_tri_quality_deriv( REF_NODE ref_node,
   REF_DBL d_l0[3], d_l1[3]; 
   REF_INT i;
 
-  RSS( ref_node_ratio_deriv( ref_node, nodes[0], nodes[1], &l0, d_l0 ), "l0" );
-  RSS( ref_node_ratio_deriv( ref_node, nodes[0], nodes[2], &l1, d_l1 ), "l1" );
+  RSS(ref_node_dratio_dnode0( ref_node, nodes[0], nodes[1], &l0, d_l0 ), "l0" );
+  RSS(ref_node_dratio_dnode0( ref_node, nodes[0], nodes[2], &l1, d_l1 ), "l1" );
   RSS( ref_node_ratio( ref_node, nodes[1], nodes[2], &l2 ), "l2" );
   
-  RSS( ref_node_tri_area_deriv( ref_node, nodes, &area, d_area ), "area");
+  RSS( ref_node_tri_darea_dnode0( ref_node, nodes, &area, d_area ), "area");
 
   RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det),"n0");
   min_det = det;
@@ -1087,9 +1087,9 @@ REF_STATUS ref_node_tri_area( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
-REF_STATUS ref_node_tri_area_deriv( REF_NODE ref_node, 
-				    REF_INT *nodes,  
-				    REF_DBL *f, REF_DBL *d )
+REF_STATUS ref_node_tri_darea_dnode0( REF_NODE ref_node, 
+				      REF_INT *nodes,  
+				      REF_DBL *f, REF_DBL *d )
 {
   REF_DBL *xyz0, *xyz1, *xyz2;
   REF_DBL v0[3], v1[3];
@@ -1166,9 +1166,9 @@ REF_STATUS ref_node_tet_vol( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
-REF_STATUS ref_node_tet_vol_deriv( REF_NODE ref_node, 
-				   REF_INT *nodes, 
-				   REF_DBL *func, REF_DBL *deriv )
+REF_STATUS ref_node_tet_dvol_dnode0( REF_NODE ref_node, 
+				     REF_INT *nodes, 
+				     REF_DBL *func, REF_DBL *deriv )
 {
   REF_DBL *a, *b, *c, *d;
   REF_DBL m11, m12, m13;

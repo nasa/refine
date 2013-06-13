@@ -104,9 +104,9 @@ REF_STATUS ref_node_edge_twod( REF_NODE ref_node,
 
 REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1, 
 			   REF_DBL *ratio );
-REF_STATUS ref_node_ratio_deriv( REF_NODE ref_node, 
-				 REF_INT node0, REF_INT node1, 
-				 REF_DBL *f, REF_DBL *d );
+REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node, 
+				   REF_INT node0, REF_INT node1, 
+				   REF_DBL *ratio, REF_DBL *dratio_dnode0 );
 
 REF_STATUS ref_node_tri_normal( REF_NODE ref_node, 
 				REF_INT *nodes,  
@@ -115,23 +115,24 @@ REF_STATUS ref_node_tri_normal( REF_NODE ref_node,
 REF_STATUS ref_node_tri_area( REF_NODE ref_node, 
 			      REF_INT *nodes,  
 			      REF_DBL *area );
-REF_STATUS ref_node_tri_area_deriv( REF_NODE ref_node, 
-				    REF_INT *nodes,  
-				    REF_DBL *f, REF_DBL *d );
+REF_STATUS ref_node_tri_darea_dnode0( REF_NODE ref_node, 
+				      REF_INT *nodes,  
+				      REF_DBL *area, REF_DBL *darea_dnode0);
 
 REF_STATUS ref_node_tri_quality( REF_NODE ref_node, 
 				 REF_INT *nodes,  
 				 REF_DBL *quality );
-REF_STATUS ref_node_tri_quality_deriv( REF_NODE ref_node, 
-				       REF_INT *nodes,  
-				       REF_DBL *f, REF_DBL *d );
+REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node, 
+					 REF_INT *nodes,  
+					 REF_DBL *quality, 
+					 REF_DBL *dquality_dnode0 );
 
 REF_STATUS ref_node_tet_vol( REF_NODE ref_node, 
 			     REF_INT *nodes,  
 			     REF_DBL *volume );
-REF_STATUS ref_node_tet_vol_deriv( REF_NODE ref_node, 
-				   REF_INT *nodes,  
-				   REF_DBL *f, REF_DBL *d );
+REF_STATUS ref_node_tet_dvol_dnode0( REF_NODE ref_node, 
+				     REF_INT *nodes,  
+				     REF_DBL *vol, REF_DBL *dvol_dnode0 );
 
 REF_STATUS ref_node_tet_quality( REF_NODE ref_node, 
 				 REF_INT *nodes,  
