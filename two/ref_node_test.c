@@ -745,7 +745,7 @@ int main( int argc, char *argv[] )
   { /* tri area deriv */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
-    REF_DBL f, d[3];
+    REF_DBL f, d[3], area;
     REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-6;
     REF_INT dir;
 
@@ -785,6 +785,9 @@ int main( int argc, char *argv[] )
     RWDS( fd[0], d[0], tol, "dx expected" );
     RWDS( fd[1], d[1], tol, "dy expected" );
     RWDS( fd[2], d[2], tol, "dz expected" );
+
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    RWDS( area, f, -1.0, "expected area" );
 
     RSS(ref_node_free(ref_node),"free");
   }

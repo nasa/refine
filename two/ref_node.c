@@ -1074,9 +1074,10 @@ REF_STATUS ref_node_tri_area_deriv( REF_NODE ref_node,
   d_normz[1] = -(v0)[0]+(v1)[0];
   d_normz[2] = 0.0;
 
-  *f = normx*normx + normy*normy + normz*normz;
+  *f = 0.5 * sqrt(normx*normx + normy*normy + normz*normz);
   for(i=0;i<3;i++) 
-    d[i] = 2.0*normx*d_normx[i] + 2.0*normy*d_normy[i] + 2.0*normz*d_normz[i];
+    d[i] = 0.5 * 0.5 / sqrt(normx*normx + normy*normy + normz*normz) *
+      (2.0*normx*d_normx[i] + 2.0*normy*d_normy[i] + 2.0*normz*d_normz[i]);
 
   return REF_SUCCESS;  
 }
