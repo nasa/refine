@@ -694,6 +694,16 @@ int main( int argc, char *argv[] )
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
     RWDS( quality, f, -1.0, "vol expected" );
 
+    /* test negative tet */
+    ref_node_xyz(ref_node,2,nodes[3]) = -1.9;
+
+    FD_NODES0( ref_node_tet_dquality_dnode0 );
+
+    RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
+				      &f, d), "deriv" );
+    RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
+    RWDS( quality, f, -1.0, "vol expected" );
+
     RSS(ref_node_free(ref_node),"free");
   }
 
