@@ -638,10 +638,10 @@ int main( int argc, char *argv[] )
       RWDS( fd[2], d[2], tol, "dz expected" );		\
     }
 
-  { /* tet volume deriv */
+  { /* tet volume quality deriv */
     REF_NODE ref_node;
     REF_INT nodes[4], global;
-    REF_DBL f, d[3], vol;
+    REF_DBL f, d[3], vol, quality;
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -676,6 +676,23 @@ int main( int argc, char *argv[] )
 				  &f, d), "ratio deriv" );
     RSS(ref_node_tet_vol(ref_node, nodes, &vol), "vol");
     RWDS( vol, f, -1.0, "vol expected" );
+
+    for ( global=0;global<4;global++)
+      {
+	ref_node_metric(ref_node,0,nodes[global]) = 1.0;
+	ref_node_metric(ref_node,1,nodes[global]) = 0.0;
+	ref_node_metric(ref_node,2,nodes[global]) = 0.0;
+	ref_node_metric(ref_node,3,nodes[global]) = 1.0;
+	ref_node_metric(ref_node,4,nodes[global]) = 0.0;
+	ref_node_metric(ref_node,5,nodes[global]) = 1.0;
+       }
+
+    FD_NODES0( ref_node_tet_dquality_dnode0 );
+
+    RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
+				      &f, d), "deriv" );
+    RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
+    RWDS( quality, f, -1.0, "vol expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }

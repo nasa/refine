@@ -137,6 +137,10 @@ REF_STATUS ref_node_tet_dvol_dnode0( REF_NODE ref_node,
 REF_STATUS ref_node_tet_quality( REF_NODE ref_node, 
 				 REF_INT *nodes,  
 				 REF_DBL *quality );
+REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node, 
+					 REF_INT *nodes,  
+					 REF_DBL *quality,
+					 REF_DBL *dquality_dnode0);
 
 REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node, 
 				      REF_INT node0, REF_INT node1, 

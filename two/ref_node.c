@@ -946,6 +946,77 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node, 
+					 REF_INT *nodes, 
+					 REF_DBL *quality,
+					 REF_DBL *d_quality )
+{
+  REF_DBL l0,l1,l2,l3,l4,l5;
+  REF_DBL d_l0[3],d_l1[3],d_l2[3];
+
+  REF_DBL det, min_det, volume, d_volume[3];
+  REF_DBL volume_in_metric, d_volume_in_metric[3];
+  REF_DBL num, denom;
+  REF_DBL d_num[3], d_denom[3];
+  REF_INT i;
+
+  RSS(ref_node_dratio_dnode0( ref_node, nodes[0], nodes[1], &l0, d_l0 ), "l0" );
+  RSS(ref_node_dratio_dnode0( ref_node, nodes[0], nodes[2], &l1, d_l1 ), "l1" );
+  RSS(ref_node_dratio_dnode0( ref_node, nodes[0], nodes[3], &l2, d_l2 ), "l2" );
+  RSS( ref_node_ratio( ref_node, nodes[1], nodes[2], &l3 ), "l3" );
+  RSS( ref_node_ratio( ref_node, nodes[1], nodes[3], &l4 ), "l4" );
+  RSS( ref_node_ratio( ref_node, nodes[2], nodes[3], &l5 ), "l5" );
+  
+  RSS( ref_node_tet_dvol_dnode0( ref_node, nodes, &volume, d_volume ), "vol");
+
+  if ( volume <= 0.0 )
+    {
+      *quality = volume;
+      for(i=0;i<3;i++) d_quality[i] = d_volume[i];
+      return REF_SUCCESS;
+    }
+
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det),"n0");
+  min_det = det;
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det),"n1");
+  min_det = MIN(min_det,det);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det),"n2");
+  min_det = MIN(min_det,det);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[3]), &det),"n3");
+  min_det = MIN(min_det,det);
+
+  volume_in_metric = sqrt( min_det ) * volume;
+  for(i=0;i<3;i++) d_volume_in_metric[i] = sqrt( min_det ) * d_volume[i];
+
+  num = pow(volume_in_metric,2.0/3.0);
+  for(i=0;i<3;i++) 
+    d_num[i] = 2.0/3.0 * pow(volume_in_metric,-1.0/3.0) * d_volume_in_metric[i];
+  denom = l0*l0 + l1*l1 + l2*l2 + l3*l3 + l4*l4 + l5*l5;
+  for(i=0;i<3;i++) 
+    d_denom[i] = 2.0*l0*d_l0[i] + 2.0*l1*d_l1[i] + 2.0*l2*d_l2[i];
+
+  if ( ref_math_divisible(num,denom) )
+    {
+      /* 36/3^(1/3) */
+      *quality = 24.9610058766228 * num / denom;
+      for(i=0;i<3;i++) 
+	d_quality[i] 
+	  = 24.9610058766228
+	  * ( d_num[i]*denom - num*d_denom[i] )
+	  / denom / denom;
+     }
+  else
+    {
+      printf("%s: %d: %s: div zero vol %.18e min_det %.18e (%.18e / %.18e)\n",
+	     __FILE__,__LINE__,__func__,
+	     volume, min_det, num, denom );
+      *quality = -1.0;
+      for(i=0;i<3;i++) d_quality[i] = 0.0;
+   }
+
+  return REF_SUCCESS;  
+}
+
 REF_STATUS ref_node_tri_quality( REF_NODE ref_node, 
 				 REF_INT *nodes, 
 				 REF_DBL *quality )
