@@ -478,7 +478,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node0, node1, global;
     REF_DBL ratio;
-    REF_DBL f, d[3];
+    REF_DBL f_ratio, d_ratio[3];
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -509,11 +509,11 @@ int main( int argc, char *argv[] )
     /* same node */
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
-			      &f, d), "ratio deriv" );
-    RWDS( ratio, f, -1.0, "ratio expected" );
-    RWDS( 0.0, d[0], -1.0, "dx expected" );
-    RWDS( 0.0, d[1], -1.0, "dy expected" );
-    RWDS( 0.0, d[2], -1.0, "dz expected" );
+			      &f_ratio, d_ratio), "ratio deriv" );
+    RWDS( ratio, f_ratio, -1.0, "ratio expected" );
+    RWDS( 0.0, d_ratio[0], -1.0, "dx expected" );
+    RWDS( 0.0, d_ratio[1], -1.0, "dy expected" );
+    RWDS( 0.0, d_ratio[2], -1.0, "dz expected" );
 
     /* length one in x */
     ref_node_xyz(ref_node,0,node1) = 1.0;
@@ -521,8 +521,8 @@ int main( int argc, char *argv[] )
     FD_NODE0( ref_node_dratio_dnode0 );
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
-				&f, d), "ratio deriv" );
-    RWDS( ratio, f, -1.0, "ratio expected" );
+				&f_ratio, d_ratio), "ratio deriv" );
+    RWDS( ratio, f_ratio, -1.0, "ratio expected" );
 
     /* length one in xyz */
     ref_node_xyz(ref_node,0,node1) = 1.0;
@@ -532,8 +532,8 @@ int main( int argc, char *argv[] )
     FD_NODE0( ref_node_dratio_dnode0 );
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
     RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
-				&f, d), "ratio deriv" );
-    RWDS( ratio, f, -1.0, "ratio expected" );
+				&f_ratio, d_ratio), "ratio deriv" );
+    RWDS( ratio, f_ratio, -1.0, "ratio expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }
@@ -541,7 +541,7 @@ int main( int argc, char *argv[] )
   { /* derivative of node0 distance in metric  gen */
     REF_NODE ref_node;
     REF_INT node0, node1, global;
-    REF_DBL ratio, f, d[3];
+    REF_DBL ratio, f_ratio, d_ratio[3];
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -572,9 +572,9 @@ int main( int argc, char *argv[] )
     FD_NODE0( ref_node_dratio_dnode0 );
 
     RSS( ref_node_dratio_dnode0(ref_node, node0, node1, 
-			      &f, d), "ratio deriv" );
+			      &f_ratio, d_ratio), "ratio deriv" );
     RSS( ref_node_ratio(ref_node, node0, node1, &ratio), "ratio" );
-    RWDS( ratio, f, -1.0, "ratio expected" );
+    RWDS( ratio, f_ratio, -1.0, "ratio expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }
@@ -641,7 +641,8 @@ int main( int argc, char *argv[] )
   { /* tet volume quality deriv */
     REF_NODE ref_node;
     REF_INT nodes[4], global;
-    REF_DBL f, d[3], vol, quality;
+    REF_DBL f_vol, d_vol[3], vol;
+    REF_DBL f_quality, d_quality[3], quality;
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -673,9 +674,9 @@ int main( int argc, char *argv[] )
     FD_NODES0( ref_node_tet_dvol_dnode0 );
 
     RSS( ref_node_tet_dvol_dnode0(ref_node, nodes, 
-				  &f, d), "ratio deriv" );
+				  &f_vol, d_vol), "ratio deriv" );
     RSS(ref_node_tet_vol(ref_node, nodes, &vol), "vol");
-    RWDS( vol, f, -1.0, "vol expected" );
+    RWDS( vol, f_vol, -1.0, "vol expected" );
 
     for ( global=0;global<4;global++)
       {
@@ -690,9 +691,9 @@ int main( int argc, char *argv[] )
     FD_NODES0( ref_node_tet_dquality_dnode0 );
 
     RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
-				      &f, d), "deriv" );
+				      &f_quality, d_quality), "deriv" );
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-    RWDS( quality, f, -1.0, "vol expected" );
+    RWDS( quality, f_quality, -1.0, "vol expected" );
 
     /* test negative tet */
     ref_node_xyz(ref_node,2,nodes[3]) = -1.9;
@@ -700,9 +701,9 @@ int main( int argc, char *argv[] )
     FD_NODES0( ref_node_tet_dquality_dnode0 );
 
     RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
-				      &f, d), "deriv" );
+				      &f_quality, d_quality), "deriv" );
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-    RWDS( quality, f, -1.0, "vol expected" );
+    RWDS( quality, f_quality, -1.0, "vol expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }
@@ -764,7 +765,8 @@ int main( int argc, char *argv[] )
   { /* tri area quality deriv */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
-    REF_DBL f, d[3], area, quality;
+    REF_DBL f_area, d_area[3], area;
+    REF_DBL f_quality, d_quality[3], quality;
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -799,18 +801,18 @@ int main( int argc, char *argv[] )
 
     FD_NODES0( ref_node_tri_darea_dnode0 );
     RSS( ref_node_tri_darea_dnode0(ref_node, nodes, 
-				 &f, d), "area deriv" );
+				 &f_area, d_area), "area deriv" );
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
-    RWDS( area, f, -1.0, "expected area" );
+    RWDS( area, f_area, -1.0, "expected area" );
 
     /* quality */
 
     FD_NODES0( ref_node_tri_dquality_dnode0 );
     RSS( ref_node_tri_dquality_dnode0(ref_node, nodes, 
-				      &f, d), "qual deriv" );
+				      &f_quality, d_quality), "qual deriv" );
     RSS( ref_node_tri_quality(ref_node, nodes, 
 			      &quality), "qual deriv" );
-    RWDS( quality, f, -1.0, "expected quality" );
+    RWDS( quality, f_quality, -1.0, "expected quality" );
 
     RSS(ref_node_free(ref_node),"free");
   }
