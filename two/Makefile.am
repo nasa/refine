@@ -36,6 +36,7 @@ libref2_a_SOURCES = \
 	ref_project.h ref_project.c \
 	ref_quality.h ref_quality.c \
 	ref_shard.c ref_shard.h \
+	ref_smooth.h ref_smooth.c \
 	ref_sort.h ref_sort.c \
 	ref_split.h ref_split.c \
 	ref_stitch.h ref_stitch.c \
@@ -222,6 +223,11 @@ TESTS += ref_shard_test
 noinst_PROGRAMS += ref_shard_test
 ref_shard_test_SOURCES = ref_shard_test.c
 ref_shard_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
+TESTS += ref_smooth_test
+noinst_PROGRAMS += ref_smooth_test
+ref_smooth_test_SOURCES = ref_smooth_test.c
+ref_smooth_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_sort_test
 noinst_PROGRAMS += ref_sort_test
