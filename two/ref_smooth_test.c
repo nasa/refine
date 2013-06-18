@@ -79,7 +79,6 @@ int main( void )
     RSS( ref_smooth_tri_twod( &ref_grid ), "2d fixture" );
 
     RSS( ref_smooth_twod( ref_grid, 0 ), "smooth" );
-   
 
     RSS(ref_grid_free(ref_grid),"free");
   }
