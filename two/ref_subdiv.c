@@ -1244,6 +1244,29 @@ static REF_STATUS ref_subdiv_split_pyr( REF_SUBDIV ref_subdiv )
 	  RSS(ref_cell_add(pri_split,new_nodes,&new_cell),"add");
 	  
 	  break;
+	case 64: /* split into 1 pyr, 3 tet, on edge 6, nodes 2, 4*/
+	  marked_for_removal[cell]=1;
+
+	  RSS( ref_cell_nodes( pyr, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[4],nodes[2], 
+				       &(new_nodes[2])), "mis");
+	  RSS(ref_cell_add(pyr_split,new_nodes,&new_cell),"add");
+
+	  new_nodes[0]=nodes[0];
+	  new_nodes[1]=nodes[1];
+	  new_nodes[2]=nodes[2];
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[4],nodes[2], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
+
+	  new_nodes[0]=nodes[0];
+	  new_nodes[1]=nodes[2];
+	  new_nodes[2]=nodes[3];
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[4],nodes[2], 
+				       &(new_nodes[3])), "mis");
+	  RSS(ref_cell_add(tet_split,new_nodes,&new_cell),"add");
+
+	  break;
 	case 139: case 225: case 92:
 
 	  if ( 225 == map )

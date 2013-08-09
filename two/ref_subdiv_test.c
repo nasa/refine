@@ -514,7 +514,23 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  /* relax and split pyramid in two, mark e2:n0n3 */
+  { /* relax and split pyramid in two, mark e6:n2n4, no promotion */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,2,4),"mark edge 6");
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    ref_export_tec( ref_grid, "ref_subdiv_pyr6.tec");
+
+    REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
+    REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
 
   { /* relax and split pyramid in to pyr and pri, mark e6, e3 */
     REF_SUBDIV ref_subdiv;
