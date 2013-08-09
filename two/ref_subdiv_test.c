@@ -524,7 +524,7 @@ int main( int argc, char *argv[] )
 
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
-    ref_export_tec( ref_grid, "ref_subdiv_pyr6.tec");
+    /* ref_export_tec( ref_grid, "ref_subdiv_pyr6.tec"); */
 
     REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)),"pyr");
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
