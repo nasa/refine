@@ -161,10 +161,14 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
 
   REIS( *nnodes, ref_node_n( ref_grid_node(ref_grid) ), "nnode mismatch" );
 
+  RSS(ref_validation_cell_volume(ref_grid),"vol");
+
   RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
-  RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, ratio),"mark rat");
+  RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, ratio),"mark ratio");
   RSS(ref_subdiv_split(ref_subdiv),"split");
   RSS(ref_subdiv_free(ref_subdiv),"free");
+
+  RSS(ref_validation_cell_volume(ref_grid),"vol");
 
   return REF_SUCCESS;
 }
