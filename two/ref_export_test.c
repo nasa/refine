@@ -105,6 +105,7 @@ int main( int argc, char *argv[] )
     REIS(0, remove( "ref_export_test.bc" ), "test clean up");
   }
 
+  if ( REF_FALSE ) /* removes gnuplot dependency from unit tests */
   { /* export .eps pri */
     REF_GRID ref_grid;
     RSS(ref_fixture_pri_grid( &ref_grid ), "set up tet" );
