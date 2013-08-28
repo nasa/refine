@@ -94,6 +94,8 @@ int main( int argc, char *argv[] )
 
   partition = 0;
 
+  ref_fortran_allow_screen_output = REF_FALSE;
+
   RSS( FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)(&nnodes, &nnodesg,
 						   l2g, part, &partition,
 						   x, y, z),"init node");

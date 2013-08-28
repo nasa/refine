@@ -12,6 +12,8 @@
 
 BEGIN_C_DECLORATION
 
+extern REF_BOOL ref_fortran_allow_screen_output;
+
 REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
      ( REF_INT *nnodes, REF_INT *nnodesg,
        REF_INT *l2g, REF_INT *part, REF_INT *partition, 

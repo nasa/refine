@@ -20,6 +20,8 @@
 
 static REF_GRID ref_grid = NULL;
 
+REF_BOOL ref_fortran_allow_screen_output = REF_TRUE;
+
 REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
      (REF_INT *nnodes, REF_INT *nnodesg,
       REF_INT *l2g, REF_INT *part, REF_INT *partition, 
@@ -161,14 +163,16 @@ REF_STATUS FC_FUNC_(ref_fortran_import_ratio,REF_FORTRAN_IMPORT_RATIO)
 
   REIS( *nnodes, ref_node_n( ref_grid_node(ref_grid) ), "nnode mismatch" );
 
-  RSS(ref_validation_cell_volume(ref_grid),"vol");
+  if ( ref_fortran_allow_screen_output )
+    RSS(ref_validation_cell_volume(ref_grid),"vol");
 
   RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
   RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, ratio),"mark ratio");
   RSS(ref_subdiv_split(ref_subdiv),"split");
   RSS(ref_subdiv_free(ref_subdiv),"free");
 
-  RSS(ref_validation_cell_volume(ref_grid),"vol");
+  if ( ref_fortran_allow_screen_output )
+    RSS(ref_validation_cell_volume(ref_grid),"vol");
 
   return REF_SUCCESS;
 }
