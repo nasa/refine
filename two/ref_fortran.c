@@ -116,6 +116,19 @@ REF_STATUS FC_FUNC_(ref_fortran_viz,REF_FORTRAN_VIZ)( void )
 REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
 {
   REF_INT passes, i;
+  REF_INT ntet, npri;
+
+  RSS( ref_gather_ncell( ref_grid_node(ref_grid), 
+			 ref_grid_tet(ref_grid), &ntet ), "ntet");
+  RSS( ref_gather_ncell( ref_grid_node(ref_grid), 
+			 ref_grid_pri(ref_grid), &npri ), "npri");
+
+  if ( ref_mpi_master )
+    {
+      ref_grid_twod(ref_grid) = ( 0 == ntet && 0 != npri );
+      if ( ref_grid_twod(ref_grid) ) printf ("assuming twod mode\n");
+    }
+  RSS( ref_mpi_bcast( &ref_grid_twod(ref_grid), 1, REF_INT_TYPE ), "bcast" );
 
   if ( REF_FALSE ) 
     {
