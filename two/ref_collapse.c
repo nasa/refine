@@ -752,6 +752,7 @@ REF_STATUS ref_collapse_face_remove_node1( REF_GRID ref_grid,
   REF_DBL ratio_to_collapse[MAX_NODE_LIST];
   REF_INT node0, node2, node3;
   REF_BOOL allowed;
+  REF_BOOL verbose = REF_FALSE;
 
   *actual_node0 = REF_EMPTY;
 
@@ -768,24 +769,31 @@ REF_STATUS ref_collapse_face_remove_node1( REF_GRID ref_grid,
       node0 = node_to_collapse[order[node]];
   
       RSS(ref_collapse_face_geometry(ref_grid,node0,node1,&allowed),"col geom");
+      if ( !allowed && verbose ) printf("%d geom\n",node);
       if ( !allowed ) continue;
 
       RSS(ref_collapse_face_same_tangent(ref_grid,node0,node1,&allowed),"tan");
+      if ( !allowed && verbose ) printf("%d tang\n",node);
       if ( !allowed ) continue;
 
       RSS(ref_collapse_face_outward_norm(ref_grid,node0,node1,&allowed),"norm");
+      if ( !allowed && verbose ) printf("%d outw\n",node);
       if ( !allowed ) continue;
 
       RSS(ref_collapse_face_quality(ref_grid,node0,node1,&allowed),"qual");
+      if ( !allowed && verbose ) printf("%d qual\n",node);
       if ( !allowed ) continue;
 
       RSS(ref_collapse_face_local_pris(ref_grid,node0,node1,&allowed),"colloc");
+      if ( !allowed && verbose ) printf("%d loca\n",node);
       if ( !allowed ) 
 	{
 	  ref_node_age(ref_node,node0)++;
 	  ref_node_age(ref_node,node1)++;
 	  continue;
 	}
+
+      if (verbose) printf("%d split!\n",node);
 
       *actual_node0 = node0;
       RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
