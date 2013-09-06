@@ -17,6 +17,7 @@ extern REF_DBL ref_adapt_collapse_quality_absolute;
 extern REF_DBL ref_adapt_collapse_ratio_limit;
 
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid );
+REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid );
 REF_STATUS ref_adapt_twod_pass( REF_GRID ref_grid );
 
 END_C_DECLORATION

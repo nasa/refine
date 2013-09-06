@@ -24,6 +24,19 @@ REF_DBL ref_adapt_collapse_ratio_limit = 3.0;
 
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 {
+  if (ref_grid_twod(ref_grid)) 
+    {
+      RSS( ref_adapt_twod_pass( ref_grid ), "pass");
+    }
+  else
+    {
+      RSS( ref_adapt_threed_pass( ref_grid ), "pass");
+    }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
+{
 
   ref_gather_blocking_frame( ref_grid );
   RSS( ref_collapse_pass( ref_grid ), "col pass");
@@ -32,6 +45,7 @@ REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 
   return REF_SUCCESS;
 }
+
 REF_STATUS ref_adapt_twod_pass( REF_GRID ref_grid )
 {
 
