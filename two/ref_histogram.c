@@ -93,7 +93,8 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
     }
 
   RSS( ref_histogram_gather( ref_histogram ), "gather");
-  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram ), "print");
+  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram,
+						  "edge ratio"), "print");
 
   RSS( ref_edge_free(ref_edge), "free edge" );
   RSS( ref_histogram_free(ref_histogram), "free gram" );
@@ -137,7 +138,8 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
     }
 
   RSS( ref_histogram_gather( ref_histogram ), "gather");
-  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram ), "print");
+  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram,
+						  "quality"), "print");
 
   RSS( ref_histogram_free(ref_histogram), "free gram" );
   return REF_SUCCESS;
@@ -180,7 +182,8 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram )
+REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram, 
+				char *description )
 {
   REF_INT i, sum;
 
@@ -188,7 +191,7 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram )
   for (i=0;i<ref_histogram_n(ref_histogram);i++)
     sum += ref_histogram_bin( ref_histogram, i );
 
-  printf("%7.3f min\n", ref_histogram_min( ref_histogram ));
+  printf("%7.3f min %s\n", ref_histogram_min( ref_histogram ), description );
 
   for (i=0;i<ref_histogram_n(ref_histogram);i++)
     if ( ref_histogram_to_obs(i+1) > ref_histogram_min( ref_histogram ) &&
