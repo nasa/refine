@@ -83,8 +83,15 @@ REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h )
 
 REF_STATUS ref_metric_sanitize( REF_GRID ref_grid )
 {
-  RSS( ref_metric_sanitize_threed( ref_grid ), "threed" );
-
+  if (ref_grid_twod(ref_grid)) 
+    {
+      RSS( ref_metric_sanitize_twod( ref_grid ), "threed" );
+    }
+  else
+    {
+      RSS( ref_metric_sanitize_threed( ref_grid ), "threed" );
+    }
+ 
   return REF_SUCCESS;
 }
 
@@ -108,6 +115,47 @@ REF_STATUS ref_metric_sanitize_threed( REF_GRID ref_grid )
   RSS( ref_metric_smr( metric_imply, metric_orig, metric, ref_grid ), "smr" );
 
   RSS( ref_metric_imply_non_tet( metric, ref_grid ), "imply non tet");
+
+  RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
+
+  ref_free( metric );
+  ref_free( metric_imply );
+  ref_free( metric_orig );
+
+  return REF_SUCCESS;
+}
+REF_STATUS ref_metric_sanitize_twod( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *metric_orig;
+  REF_DBL *metric_imply;
+  REF_DBL *metric;
+  REF_INT node;
+
+  ref_malloc( metric_orig, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+  ref_malloc( metric_imply, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+  ref_malloc( metric, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+  RSS( ref_metric_from_node( metric_orig, ref_grid_node(ref_grid)), "from");
+  for( node=0; node<ref_node_max(ref_node); node++ )
+    {
+      metric_orig[1+6*node] = 0.0;
+      metric_orig[3+6*node] = 1.0;
+      metric_orig[4+6*node] = 0.0;
+    }
+  
+  RSS( ref_metric_imply_from( metric_imply, ref_grid ), "imply" );
+  for( node=0; node<ref_node_max(ref_node); node++ )
+    {
+      metric_imply[1+6*node] = 0.0;
+      metric_imply[3+6*node] = 1.0;
+      metric_imply[4+6*node] = 0.0;
+    }
+
+  RSS( ref_metric_smr( metric_imply, metric_orig, metric, ref_grid ), "smr" );
 
   RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
 

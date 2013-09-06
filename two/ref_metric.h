@@ -19,6 +19,7 @@ REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h );
 
 REF_STATUS ref_metric_sanitize( REF_GRID ref_grid );
 REF_STATUS ref_metric_sanitize_threed( REF_GRID ref_grid );
+REF_STATUS ref_metric_sanitize_twod( REF_GRID ref_grid );
 
 REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid );
 
