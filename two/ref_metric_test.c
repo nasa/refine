@@ -277,6 +277,7 @@ vector = inv(vector3)
 
 smr = vector'*val*vector
 [sv,se]= eig(smr)
+se.^-0.5
   */
 
     RSS( ref_grid_create( &ref_grid ), "create grid" );
