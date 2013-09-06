@@ -83,6 +83,13 @@ REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h )
 
 REF_STATUS ref_metric_sanitize( REF_GRID ref_grid )
 {
+  RSS( ref_metric_sanitize_threed( ref_grid ), "threed" );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_sanitize_threed( REF_GRID ref_grid )
+{
   REF_DBL *metric_orig;
   REF_DBL *metric_imply;
   REF_DBL *metric;
