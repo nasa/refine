@@ -802,7 +802,7 @@ REF_STATUS ref_fixture_pri_brick_grid( REF_GRID *ref_grid_ptr )
 
   dt = (t1-t0)/((REF_DBL)(l-1));
   dr = (r1-r0)/((REF_DBL)(m-1));
-  dy = (y1-y0)/((REF_DBL)(m-1));
+  dy = (y1-y0)/((REF_DBL)(n-1));
 
 	  t = t0 + dt*(REF_DBL)i;
 	  y = y0 + dy*(REF_DBL)j;
@@ -836,7 +836,7 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 
   dx = (x1-x0)/((REF_DBL)(l-1));
   dy = (y1-y0)/((REF_DBL)(m-1));
-  dz = (z1-z0)/((REF_DBL)(m-1));
+  dz = (z1-z0)/((REF_DBL)(n-1));
 
   RSS(ref_grid_create(ref_grid_ptr),"create");
   ref_grid =  *ref_grid_ptr;
