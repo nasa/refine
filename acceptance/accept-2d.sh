@@ -12,7 +12,7 @@ function adapt_cycle {
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.html
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
-    ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.1
+    ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
     ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
 
 }
