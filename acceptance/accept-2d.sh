@@ -12,7 +12,7 @@ function adapt_cycle {
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.html
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
-    ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
+    ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.0001
     ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
 
 }
@@ -22,4 +22,9 @@ adapt_cycle accept-2d-01
 adapt_cycle accept-2d-02
 adapt_cycle accept-2d-03
 adapt_cycle accept-2d-04
+adapt_cycle accept-2d-05
+adapt_cycle accept-2d-06
+adapt_cycle accept-2d-07
+adapt_cycle accept-2d-08
+adapt_cycle accept-2d-09
 
