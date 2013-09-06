@@ -21,6 +21,7 @@ REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid );
 REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid );
 REF_STATUS ref_fixture_pri_brick_grid( REF_GRID *ref_grid );
 REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid );
+REF_STATUS ref_fixture_twod_brick_grid( REF_GRID *ref_grid );
 
 REF_STATUS ref_fixture_clock( REF_GRID *ref_grid );
 
