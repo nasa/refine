@@ -17,7 +17,7 @@ int main( void )
     RSS(ref_front_free(ref_front),"free");
   }
 
-  { /* add face */
+  { /* add face increments count */
     REF_FRONT ref_front;
     REF_INT nodes[2];
 
@@ -29,7 +29,7 @@ int main( void )
     RSS(ref_front_free(ref_front),"free");
   }
 
-  { /* add faces, fore realloc */
+  { /* add faces, force realloc */
     REF_FRONT ref_front;
     REF_INT nodes[2];
     REF_INT f, n;
@@ -43,6 +43,35 @@ int main( void )
 	RSS(ref_front_insert(ref_front,nodes),"insert");
 	REIS( f+1, ref_front_n(ref_front), "init no front");
       }
+
+    REIS( n, ref_front_n(ref_front), "count");
+
+    RSS(ref_front_free(ref_front),"free");
+  }
+
+  { /* add same face, raise rror */
+    REF_FRONT ref_front;
+    REF_INT nodes[2];
+
+    RSS(ref_front_create(&ref_front,2),"create");
+    nodes[0]=1;nodes[1]=2;
+    RSS(ref_front_insert(ref_front,nodes),"insert first");
+    REIS(REF_INVALID,ref_front_insert(ref_front,nodes),"insert second");
+
+    RSS(ref_front_free(ref_front),"free");
+  }
+
+  { /* add opposite face, mutual destruction */
+    REF_FRONT ref_front;
+    REF_INT nodes[2];
+
+    RSS(ref_front_create(&ref_front,2),"create");
+    nodes[0]=1;nodes[1]=2;
+    RSS(ref_front_insert(ref_front,nodes),"insert first");
+    nodes[0]=2;nodes[1]=1;
+    RSS(ref_front_insert(ref_front,nodes),"insert opposite");
+
+    REIS( 0, ref_front_n(ref_front), "cancel");
 
     RSS(ref_front_free(ref_front),"free");
   }

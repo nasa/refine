@@ -44,6 +44,21 @@ REF_STATUS ref_front_insert( REF_FRONT ref_front, REF_INT *nodes )
   REF_INT node, face;
   REF_INT orig, chunk;
 
+  for (face=0;face < ref_front_max(ref_front); face++ )
+    {
+      if ( nodes[0] == ref_front_f2n(ref_front,0,face) &&
+	   nodes[1] == ref_front_f2n(ref_front,1,face) )
+	return REF_INVALID;
+      if ( nodes[1] == ref_front_f2n(ref_front,0,face) &&
+	   nodes[0] == ref_front_f2n(ref_front,1,face) )
+	{
+	  ref_front_f2n(ref_front,0,face) = REF_EMPTY;
+	  ref_front_f2n(ref_front,1,face) = ref_front_blank(ref_front);
+	  ref_front_n(ref_front)--;
+	  return REF_SUCCESS;
+	}
+    }
+
   if ( REF_EMPTY == ref_front_blank(ref_front) ) 
     {
       orig = ref_front_max(ref_front);
