@@ -31,6 +31,16 @@ REF_STATUS ref_front_free( REF_FRONT ref_front );
 #define ref_front_max( ref_front ) ((ref_front)->max)
 #define ref_front_blank( ref_front ) ((ref_front)->blank)
 
+#define ref_front_valid(ref_front,face) \
+  ( (face) >=0 && (face) < ref_front_max(ref_front) &&			\
+    REF_EMPTY != ref_front_f2n(ref_front,0,face) )
+
+#define each_ref_front_valid_face( ref_front, face )			\
+  for ( (face) = 0 ;							\
+	(face) < ref_front_max(ref_front);				\
+	(face)++ )							\
+    if ( ref_front_valid( ref_front, face ) )
+
 REF_STATUS ref_front_insert( REF_FRONT ref_front, REF_INT *nodes );
 REF_STATUS ref_front_find( REF_FRONT ref_front, REF_INT *nodes,
 			   REF_INT *found_face, REF_BOOL *reversed);

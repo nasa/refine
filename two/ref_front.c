@@ -98,7 +98,7 @@ REF_STATUS ref_front_find( REF_FRONT ref_front, REF_INT *nodes,
 
   *found_face = REF_EMPTY;
 
-  for (face=0;face < ref_front_max(ref_front); face++ )
+  each_ref_front_valid_face( ref_front, face )
     {
       if ( nodes[0] == ref_front_f2n(ref_front,0,face) &&
 	   nodes[1] == ref_front_f2n(ref_front,1,face) )
