@@ -349,7 +349,7 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
     {
       orig = ref_cell_max(ref_cell);
       chunk = MAX(5000,(REF_INT)(1.5*(REF_DBL)orig));
-      ref_cell->max = orig + chunk;
+      ref_cell_max(ref_cell) = orig + chunk;
 
       ref_realloc( ref_cell->c2n, ref_cell_size_per(ref_cell) *
 		   ref_cell_max(ref_cell), REF_INT );
@@ -361,7 +361,7 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 	  ref_cell_c2n(ref_cell,0,cell)= REF_EMPTY; 
 	  ref_cell_c2n(ref_cell,1,cell) = cell+1; 
 	}
-      ref_cell_c2n(ref_cell,1,(ref_cell->max)-1) = REF_EMPTY; 
+      ref_cell_c2n(ref_cell,1,ref_cell_max(ref_cell)-1) = REF_EMPTY; 
       ref_cell_blank(ref_cell) = orig;
     }
 
