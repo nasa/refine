@@ -76,5 +76,32 @@ int main( void )
     RSS(ref_front_free(ref_front),"free");
   }
 
+  { /* find face */
+    REF_FRONT ref_front;
+    REF_INT nodes[2];
+    REF_INT face;
+    REF_BOOL reversed;
+
+    RSS(ref_front_create(&ref_front,2),"create");
+    nodes[0]=1;nodes[1]=2;
+    RSS(ref_front_insert(ref_front,nodes),"insert first");
+
+    RSS(ref_front_find(ref_front,nodes,&face,&reversed),"find same");
+    REIS(0,face,"found");
+    REIS(REF_FALSE,reversed,"not rev");
+
+    nodes[0]=2;nodes[1]=1;
+    RSS(ref_front_find(ref_front,nodes,&face,&reversed),"find reversed");
+    REIS(0,face,"found");
+    REIS(REF_TRUE,reversed,"not rev");
+
+    nodes[0]=3;nodes[1]=4;
+    REIS(REF_NOT_FOUND,ref_front_find(ref_front,nodes,
+				      &face,&reversed),"missing");
+    REIS(REF_EMPTY,face,"found");
+
+    RSS(ref_front_free(ref_front),"free");
+  }
+
   return 0;
 }

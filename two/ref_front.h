@@ -32,6 +32,8 @@ REF_STATUS ref_front_free( REF_FRONT ref_front );
 #define ref_front_blank( ref_front ) ((ref_front)->blank)
 
 REF_STATUS ref_front_insert( REF_FRONT ref_front, REF_INT *nodes );
+REF_STATUS ref_front_find( REF_FRONT ref_front, REF_INT *nodes,
+			   REF_INT *found_face, REF_BOOL *reversed);
 
 END_C_DECLORATION
 
