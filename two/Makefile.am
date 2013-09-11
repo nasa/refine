@@ -36,6 +36,7 @@ libref2_a_SOURCES = \
 	ref_plot3d.h ref_plot3d.c \
 	ref_project.h ref_project.c \
 	ref_quality.h ref_quality.c \
+	ref_recover.h ref_recover.c \
 	ref_shard.c ref_shard.h \
 	ref_smooth.h ref_smooth.c \
 	ref_sort.h ref_sort.c \
@@ -228,6 +229,11 @@ TESTS += ref_quality_test
 noinst_PROGRAMS += ref_quality_test
 ref_quality_test_SOURCES = ref_quality_test.c
 ref_quality_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
+TESTS += ref_recover_test
+noinst_PROGRAMS += ref_recover_test
+ref_recover_test_SOURCES = ref_recover_test.c
+ref_recover_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_shard_test
 noinst_PROGRAMS += ref_shard_test
