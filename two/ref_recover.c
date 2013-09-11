@@ -5,13 +5,14 @@
 #include "ref_recover.h"
 #include "ref_malloc.h"
 
-REF_STATUS ref_recover_create( REF_RECOVER *ref_recover_ptr )
+REF_STATUS ref_recover_create( REF_RECOVER *ref_recover_ptr, REF_GRID ref_grid )
 {
   REF_RECOVER ref_recover;
 
   ref_malloc( *ref_recover_ptr, 1, REF_RECOVER_STRUCT );
   ref_recover = (*ref_recover_ptr);
 
+  ref_recover_grid(ref_recover) = ref_grid;
   ref_recover_n(ref_recover) = 0;
 
   return REF_SUCCESS;
