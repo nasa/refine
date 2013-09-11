@@ -10,9 +10,7 @@ typedef REF_GRID_STRUCT * REF_GRID;
 END_C_DECLORATION
 
 #include "ref_node.h"
-
 #include "ref_cell.h"
-#include "ref_adj.h"
 
 BEGIN_C_DECLORATION
 
