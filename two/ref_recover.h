@@ -24,6 +24,10 @@ REF_STATUS ref_recover_free( REF_RECOVER ref_recover );
 #define ref_recover_n( ref_recover ) ((ref_recover)->n)
 #define ref_recover_grid( ref_recover ) ((ref_recover)->ref_grid)
 
+REF_STATUS ref_recover_enclosing_triangle( REF_RECOVER ref_recover, 
+					   REF_INT node,
+					   REF_INT *enclosing_cell,
+					   REF_DBL *enclosing_bary);
 REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
 				    REF_INT *node );
 

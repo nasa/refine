@@ -4,6 +4,7 @@
 
 #include "ref_recover.h"
 #include "ref_malloc.h"
+#include "ref_math.h"
 
 REF_STATUS ref_recover_create( REF_RECOVER *ref_recover_ptr, REF_GRID ref_grid )
 {
@@ -23,6 +24,62 @@ REF_STATUS ref_recover_free( REF_RECOVER ref_recover )
   if ( NULL == (void *)ref_recover ) return REF_NULL;
   ref_free( ref_recover );
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_recover_enclosing_triangle( REF_RECOVER ref_recover, 
+					   REF_INT node,
+					   REF_INT *enclosing_cell,
+					   REF_DBL *enclosing_bary)
+{
+  REF_GRID ref_grid = ref_recover_grid(ref_recover);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT subnodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL twod;
+  REF_DBL bary[3], best_min, bary_min, total;
+  REF_INT i;
+
+  *enclosing_cell = REF_EMPTY;
+  enclosing_bary[0]=0.0;enclosing_bary[1]=0.0;enclosing_bary[2]=0.0;
+  best_min = -10.0;
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      RSS( ref_node_edge_twod( ref_node, nodes[0], nodes[1], &twod ), "2d");
+      if (twod)
+	{
+	  for (i=0;i<3;i++)
+	    {
+	      subnodes[0]=nodes[0];subnodes[1]=nodes[1];subnodes[2]=nodes[2];
+	      subnodes[i]=node;
+	      RSS( ref_node_tri_area( ref_node, subnodes, &(bary[i]) ),"bar");
+	    }
+	  total = bary[0]+bary[1]+bary[2];
+	  if ( ref_math_divisible(bary[0],total) &&
+	       ref_math_divisible(bary[1],total) &&
+	       ref_math_divisible(bary[2],total) )
+	    {
+	      bary[0] /= total;
+	      bary[1] /= total;
+	      bary[2] /= total;
+	    }
+	  else
+	    {
+	      return REF_DIV_ZERO;
+	    }
+	  bary_min = MIN(MIN(bary[0],bary[1]),bary[2]);
+	  if ( bary_min > best_min )
+	    {
+	      best_min = bary_min;
+	      for (i=0;i<3;i++)
+		enclosing_bary[i]=bary[i];
+	      *enclosing_cell = cell;
+	    }
+	}
+    }
+
+  return (REF_EMPTY==(*enclosing_cell)?REF_FAILURE:REF_SUCCESS);
 }
 
 REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
