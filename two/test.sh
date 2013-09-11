@@ -17,7 +17,7 @@ do
 
   dependencies=''
   if [ -a ${root}.h ]; then
-    for dep_header in `grep '#include "ref_' ${root}.h`
+    for dep_header in `grep '#include' ${root}.h | grep '"ref_'`
     do
       source_with_leading_quote=${dep_header%.h\"}.c
       source=${source_with_leading_quote#\"}
@@ -28,7 +28,7 @@ do
       fi
     done
   fi
-  for dep_header in `grep '#include "ref_' ${root}_test.c`
+  for dep_header in `grep '#include' ${root}_test.c | grep '"ref_'`
   do
     source_with_leading_quote=${dep_header%.h\"}.c
     source=${source_with_leading_quote#\"}
