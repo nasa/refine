@@ -134,10 +134,10 @@ REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
 
   RSS(ref_grid_create(ref_grid_ptr),"create");
   ref_grid =  *ref_grid_ptr;
-
   ref_node = ref_grid_node(ref_grid);
 
-  
+  ref_grid_twod(ref_grid) = REF_TRUE;
+ 
   global[0] = 0; global[1] = 1; global[2] = 2;
   global[3] = 3; global[4] = 4; global[5] = 5;
   if ( ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[0] ) ||
