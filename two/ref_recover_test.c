@@ -12,6 +12,7 @@
 #include   "ref_list.h"
 #include  "ref_cell.h"
 #include   "ref_adj.h"
+#include "ref_fixture.h"
 
 int main( void )
 {
@@ -23,6 +24,24 @@ int main( void )
     RSS(ref_grid_create(&ref_grid),"create");
     RSS(ref_recover_create(&ref_recover,ref_grid),"create");
     REIS( 0, ref_recover_n(ref_recover), "init no recover");
+    RSS(ref_recover_free(ref_recover),"free");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* insert a node */
+    REF_GRID ref_grid;
+    REF_RECOVER ref_recover;
+    REF_DBL xz[2];
+    REF_INT node;
+
+    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fixture" );
+    ref_grid_twod(ref_grid) = REF_TRUE;
+
+    RSS(ref_recover_create(&ref_recover,ref_grid),"create");
+
+    xz[0] = 0.3; xz[1] = 0.3;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
+ 
     RSS(ref_recover_free(ref_recover),"free");
     RSS(ref_grid_free(ref_grid),"free");
   }

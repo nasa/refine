@@ -24,6 +24,9 @@ REF_STATUS ref_recover_free( REF_RECOVER ref_recover );
 #define ref_recover_n( ref_recover ) ((ref_recover)->n)
 #define ref_recover_grid( ref_recover ) ((ref_recover)->ref_grid)
 
+REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
+				    REF_INT *node );
+
 END_C_DECLORATION
 
 #endif /* REF_RECOVER_H */
