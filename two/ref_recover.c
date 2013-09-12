@@ -89,6 +89,12 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT global;
   REF_INT node0, node1;
+  REF_INT tri0, tri1, pri;
+  REF_DBL bary[3];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new, cell;
 
   *node_ptr = REF_EMPTY;
 
@@ -98,11 +104,42 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
   ref_node_xyz(ref_node,1,node0) = 0.0;
   ref_node_xyz(ref_node,2,node0) = xz[1];
 
+  RSS(ref_recover_enclosing_triangle(ref_recover,node0,&tri0,bary),"create");
+  RSS(ref_cell_nodes(ref_grid_tri(ref_grid),tri0,nodes),"tri0 nodes");
+  face_nodes[0]=nodes[0];face_nodes[1]=nodes[1];face_nodes[2]=nodes[2];
+  face_nodes[3]=nodes[0];
+  RSS(ref_cell_with_face(ref_grid_pri(ref_grid),face_nodes,&pri),"pri");
+  RSS( ref_recover_opposite_node( ref_grid, face_nodes[0], 
+				  &(face_nodes[0]) ),"n0");
+  RSS( ref_recover_opposite_node( ref_grid, face_nodes[1], 
+				  &(face_nodes[1]) ),"n1");
+  RSS( ref_recover_opposite_node( ref_grid, face_nodes[2], 
+				  &(face_nodes[2]) ),"n2");
+  RSS( ref_recover_opposite_node( ref_grid, face_nodes[3], 
+				  &(face_nodes[3]) ),"n3");
+  RSS(ref_cell_with_face(ref_grid_tri(ref_grid),face_nodes,&tri1),"tri1");
+
   RSS( ref_node_next_global( ref_node, &global ), "next global");
   RSS( ref_node_add( ref_node, global, &node1 ), "add node");
   ref_node_xyz(ref_node,0,node1) = xz[0];
   ref_node_xyz(ref_node,1,node1) = 1.0;
   ref_node_xyz(ref_node,2,node1) = xz[1];
+
+  for (new=0;new<3;new++)
+    {
+      RSS(ref_cell_nodes(ref_grid_tri(ref_grid),tri0,new_nodes),"tri0 nodes");
+      new_nodes[new]=node0;
+      RSS(ref_cell_add(ref_grid_tri(ref_grid),new_nodes,&cell),"add");
+    }
+  RSS(ref_cell_remove(ref_grid_tri(ref_grid),tri0),"rm");
+
+  for (new=0;new<3;new++)
+    {
+      RSS(ref_cell_nodes(ref_grid_tri(ref_grid),tri1,new_nodes),"tri0 nodes");
+      new_nodes[new]=node1;
+      RSS(ref_cell_add(ref_grid_tri(ref_grid),new_nodes,&cell),"add");
+    }
+  RSS(ref_cell_remove(ref_grid_tri(ref_grid),tri1),"rm");
 
   return REF_SUCCESS;
 }

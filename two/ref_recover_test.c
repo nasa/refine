@@ -28,7 +28,6 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  SKIP_BLOCK("implement")  
   { /* insert a node */
     REF_GRID ref_grid;
     REF_RECOVER ref_recover;
@@ -43,7 +42,7 @@ int main( void )
     xz[0] = 0.3; xz[1] = 0.3;
     RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
  
-    REIS(8, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(6, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
 
     RSS(ref_recover_free(ref_recover),"free");
     RSS(ref_grid_free(ref_grid),"free");
@@ -82,3 +81,4 @@ int main( void )
 
   return 0;
 }
+
