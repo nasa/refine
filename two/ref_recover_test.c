@@ -28,27 +28,6 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  { /* insert a node */
-    REF_GRID ref_grid;
-    REF_RECOVER ref_recover;
-    REF_DBL xz[2];
-    REF_INT node;
-
-    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fixture" );
-    RSS(ref_recover_create(&ref_recover,ref_grid),"create");
-
-    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
-
-    xz[0] = 0.3; xz[1] = 0.3;
-    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
- 
-    REIS(6, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
-    REIS(3, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
-
-    RSS(ref_recover_free(ref_recover),"free");
-    RSS(ref_grid_free(ref_grid),"free");
-  }
-
   { /* triangle enclosing a node */
     REF_GRID ref_grid;
     REF_NODE ref_node;
@@ -75,6 +54,27 @@ int main( void )
     RWDS(1.0/3.0, bary[0], tol, "b[0]");
     RWDS(1.0/3.0, bary[1], tol, "b[1]");
     RWDS(1.0/3.0, bary[2], tol, "b[2]");
+
+    RSS(ref_recover_free(ref_recover),"free");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* insert a node */
+    REF_GRID ref_grid;
+    REF_RECOVER ref_recover;
+    REF_DBL xz[2];
+    REF_INT node;
+
+    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fixture" );
+    RSS(ref_recover_create(&ref_recover,ref_grid),"create");
+
+    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+
+    xz[0] = 0.3; xz[1] = 0.3;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
+ 
+    REIS(6, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(3, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
 
     RSS(ref_recover_free(ref_recover),"free");
     RSS(ref_grid_free(ref_grid),"free");
