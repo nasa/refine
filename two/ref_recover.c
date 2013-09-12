@@ -111,7 +111,7 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
   face_nodes[3]=nodes[0];
   RSS(ref_cell_with_face(ref_grid_pri(ref_grid),face_nodes,&pri),"pri");
 
-  RSS(ref_cell_nodes(ref_grid_tri(ref_grid),pri,nodes),"pri nodes");
+  RSS(ref_cell_nodes(ref_grid_pri(ref_grid),pri,nodes),"pri nodes");
   node0_offset = 3;
   if ( face_nodes[0]==nodes[0] ||
        face_nodes[0]==nodes[1] ||
