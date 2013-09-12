@@ -53,7 +53,8 @@ REF_STATUS ref_recover_enclosing_triangle( REF_RECOVER ref_recover,
 	    {
 	      subnodes[0]=nodes[0];subnodes[1]=nodes[1];subnodes[2]=nodes[2];
 	      subnodes[i]=node;
-	      RSS( ref_node_tri_area( ref_node, subnodes, &(bary[i]) ),"bar");
+	      RSS( ref_node_tri_y_projection( ref_node, subnodes, 
+					      &(bary[i]) ),"bar");
 	    }
 	  total = bary[0]+bary[1]+bary[2];
 	  if ( ref_math_divisible(bary[0],total) &&
