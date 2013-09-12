@@ -95,6 +95,7 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new, cell;
+  REF_INT node0_offset, node1_offset;
 
   *node_ptr = REF_EMPTY;
 
@@ -109,6 +110,14 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
   face_nodes[0]=nodes[0];face_nodes[1]=nodes[1];face_nodes[2]=nodes[2];
   face_nodes[3]=nodes[0];
   RSS(ref_cell_with_face(ref_grid_pri(ref_grid),face_nodes,&pri),"pri");
+
+  RSS(ref_cell_nodes(ref_grid_tri(ref_grid),pri,nodes),"pri nodes");
+  node0_offset = 3;
+  if ( face_nodes[0]==nodes[0] ||
+       face_nodes[0]==nodes[1] ||
+       face_nodes[0]==nodes[2] ) node0_offset = 0;
+  node1_offset = 3-node0_offset;
+
   RSS( ref_recover_opposite_node( ref_grid, face_nodes[0], 
 				  &(face_nodes[0]) ),"n0");
   RSS( ref_recover_opposite_node( ref_grid, face_nodes[1], 
@@ -140,6 +149,15 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
       RSS(ref_cell_add(ref_grid_tri(ref_grid),new_nodes,&cell),"add");
     }
   RSS(ref_cell_remove(ref_grid_tri(ref_grid),tri1),"rm");
+
+  for (new=0;new<3;new++)
+    {
+      RSS(ref_cell_nodes(ref_grid_pri(ref_grid),pri,new_nodes),"tri0 nodes");
+      new_nodes[new+node0_offset]=node0;
+      new_nodes[new+node1_offset]=node1;
+      RSS(ref_cell_add(ref_grid_pri(ref_grid),new_nodes,&cell),"add");
+    }
+  RSS(ref_cell_remove(ref_grid_pri(ref_grid),pri),"rm");
 
   return REF_SUCCESS;
 }

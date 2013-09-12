@@ -43,6 +43,7 @@ int main( void )
     RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
  
     REIS(6, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(3, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
 
     RSS(ref_recover_free(ref_recover),"free");
     RSS(ref_grid_free(ref_grid),"free");
