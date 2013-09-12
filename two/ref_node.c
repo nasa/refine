@@ -793,6 +793,7 @@ REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node,
   REF_DBL ratio0, d_ratio0[3], ratio1, d_ratio1[3];
   REF_DBL r, d_r[3], r_min, d_r_min[3], r_max, d_r_max[3];
   REF_INT i;
+  REF_DBL r_log_r;
 
   if ( !ref_node_valid(ref_node,node0) ||
        !ref_node_valid(ref_node,node1) ) 
@@ -881,15 +882,13 @@ REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node,
       return REF_SUCCESS;  
     }    
  
-  *ratio = r_min * (r-1.0) / ( r * log(r) );
+  r_log_r = r * log(r);
+  *ratio = r_min * (r-1.0) / r_log_r;
 
   for(i=0;i<3;i++)
-    {
-      REF_DBL r_log_r = r * log(r);
-      d_ratio[i] = ( (r_min*d_r[i]+d_r_min[i]*(r-1.0)) * r_log_r -
-		     r_min*(r-1.0) * (r * 1/r*d_r[i] + d_r[i]*log(r)) )
-	/ r_log_r / r_log_r;
-    }
+    d_ratio[i] = ( (r_min*d_r[i]+d_r_min[i]*(r-1.0)) * r_log_r -
+		   r_min*(r-1.0) * (r * 1/r*d_r[i] + d_r[i]*log(r)) )
+      / r_log_r / r_log_r;
 
   return REF_SUCCESS;  
 }
