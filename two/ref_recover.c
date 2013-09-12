@@ -160,6 +160,8 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
     }
   RSS(ref_cell_remove(ref_grid_pri(ref_grid),pri),"rm");
 
+  *node_ptr = node0;
+
   return REF_SUCCESS;
 }
 
@@ -193,3 +195,14 @@ REF_STATUS ref_recover_opposite_node( REF_GRID ref_grid,
    return REF_FAILURE;
 }
 
+REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover, 
+				  REF_INT node0, REF_INT node1 )
+{
+  REF_GRID ref_grid = ref_recover_grid(ref_recover);
+  REF_BOOL has_side;
+  
+  RSS( ref_cell_has_side( ref_grid_tri(ref_grid), node0, node1, 
+			  &has_side),"has");
+
+  return (has_side?REF_SUCCESS:REF_FAILURE);
+}

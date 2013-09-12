@@ -32,6 +32,8 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
 				    REF_INT *node );
 REF_STATUS ref_recover_opposite_node( REF_GRID ref_grid, 
 				      REF_INT node0, REF_INT *node1 );
+REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover, 
+				  REF_INT node0, REF_INT node1 );
 
 END_C_DECLORATION
 
