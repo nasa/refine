@@ -112,6 +112,9 @@ REF_STATUS ref_node_tri_normal( REF_NODE ref_node,
 				REF_INT *nodes,  
 				REF_DBL *normal );
 
+REF_STATUS ref_node_tri_y_projection( REF_NODE ref_node, 
+				      REF_INT *nodes,  
+				      REF_DBL *y_projection );
 REF_STATUS ref_node_tri_area( REF_NODE ref_node, 
 			      REF_INT *nodes,  
 			      REF_DBL *area );

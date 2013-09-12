@@ -742,12 +742,16 @@ int main( int argc, char *argv[] )
 
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS( 2.0, area, -1.0, "expected area" );
+    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
+    RWDS(-2.0, area, -1.0, "expected area" );
 
     ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
     ref_node_xyz(ref_node,2,nodes[2]) = 1.0;
 
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS( 0.5, area, -1.0, "expected area" );
+    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
+    RWDS(-0.5, area, -1.0, "expected area" );
 
     RSS(ref_node_tri_quality(ref_node, nodes, &qual), "q");
     RWDS( 0.5*sqrt(3.0), qual, -1.0, "qual expected" );
@@ -761,6 +765,8 @@ int main( int argc, char *argv[] )
     nodes[2]=nodes[1];
     nodes[1]=global;
 
+    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
+    RWDS( 0.5, area, -1.0, "expected area" );
     RSS(ref_node_tri_normal(ref_node, nodes, norm), "norm");
     RWDS( 0.0, norm[0], -1.0, "nx" );
     RWDS( 1.0, norm[1], -1.0, "ny" );

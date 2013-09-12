@@ -1145,6 +1145,19 @@ REF_STATUS ref_node_tri_normal( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_tri_y_projection( REF_NODE ref_node, 
+				      REF_INT *nodes,  
+				      REF_DBL *y_projection )
+{
+  REF_DBL normal[3];
+
+  RSS( ref_node_tri_normal( ref_node, nodes, normal ), "norm inside of area");
+
+  *y_projection = 0.5 * normal[1];
+
+  return REF_SUCCESS;  
+}
+
 REF_STATUS ref_node_tri_area( REF_NODE ref_node, 
 			      REF_INT *nodes, 
 			      REF_DBL *area )
