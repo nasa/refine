@@ -737,6 +737,12 @@ int main( int argc, char *argv[] )
 	ref_node_metric(ref_node,5,global) = 1.0;
        }
 
+    ref_node_xyz(ref_node,0,nodes[1]) = 2.0;
+    ref_node_xyz(ref_node,2,nodes[2]) = 2.0;
+
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    RWDS( 2.0, area, -1.0, "expected area" );
+
     ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
     ref_node_xyz(ref_node,2,nodes[2]) = 1.0;
 
