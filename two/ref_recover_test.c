@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "ref_recover.h"
+
 #include "ref_grid.h"
 #include  "ref_node.h"
 #include   "ref_mpi.h"
@@ -12,7 +13,14 @@
 #include   "ref_list.h"
 #include  "ref_cell.h"
 #include   "ref_adj.h"
+
 #include "ref_fixture.h"
+
+#include "ref_export.h"
+#include  "ref_dict.h"
+#include  "ref_edge.h"
+
+/* RSS(ref_export_tec( ref_grid, "ref_recover_test.tec" ),"export" ); */
 
 int main( void )
 {
@@ -75,6 +83,54 @@ int main( void )
  
     REIS(6, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
     REIS(3, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+
+    RSS(ref_recover_free(ref_recover),"free");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* insert 2 nodes */
+    REF_GRID ref_grid;
+    REF_RECOVER ref_recover;
+    REF_DBL xz[2];
+    REF_INT node;
+
+    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fixture" );
+    RSS(ref_recover_create(&ref_recover,ref_grid),"create");
+
+    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+
+    xz[0] = 0.2; xz[1] = 0.4;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
+    xz[0] = 0.4; xz[1] = 0.2;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
+ 
+    REIS(10, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS( 5, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
+
+    RSS(ref_recover_free(ref_recover),"free");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* insert 3 nodes */
+    REF_GRID ref_grid;
+    REF_RECOVER ref_recover;
+    REF_DBL xz[2];
+    REF_INT node;
+
+    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fixture" );
+    RSS(ref_recover_create(&ref_recover,ref_grid),"create");
+
+    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+
+    xz[0] = 0.35; xz[1] = 0.35;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
+    xz[0] = 0.2; xz[1] = 0.4;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
+    xz[0] = 0.4; xz[1] = 0.2;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
+ 
+    REIS(14, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS( 7, ref_cell_n(ref_grid_pri(ref_grid)),"pri");
 
     RSS(ref_recover_free(ref_recover),"free");
     RSS(ref_grid_free(ref_grid),"free");
