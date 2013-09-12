@@ -169,6 +169,30 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  SKIP_BLOCK("implement")
+  { /* recover missing edge */
+    REF_GRID ref_grid;
+    REF_RECOVER ref_recover;
+    REF_DBL xz[2];
+    REF_INT node, node0, node1;
+
+    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fixture" );
+    RSS(ref_recover_create(&ref_recover,ref_grid),"create");
+
+    xz[0] = 0.35; xz[1] = 0.35;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node),"create");
+
+    xz[0] = 0.2; xz[1] = 0.4;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node0),"create");
+    xz[0] = 0.4; xz[1] = 0.2;
+    RSS(ref_recover_insert_twod(ref_recover,xz,&node1),"create");
+
+    RSS(ref_recover_edge_twod(ref_recover,node0,node1),"create");
+
+    RSS(ref_recover_free(ref_recover),"free");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
   return 0;
 }
 
