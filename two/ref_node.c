@@ -884,9 +884,12 @@ REF_STATUS ref_node_dratio_dnode0( REF_NODE ref_node,
   *ratio = r_min * (r-1.0) / ( r * log(r) );
 
   for(i=0;i<3;i++)
-    d_ratio[i] = ( (r_min*d_r[i]+d_r_min[i]*(r-1.0)) * (r * log(r)) -
-		   r_min*(r-1.0) * (r * 1/r*d_r[i] + d_r[i]*log(r)) )
-      / (r * log(r)) / (r * log(r));
+    {
+      REF_DBL r_log_r = r * log(r);
+      d_ratio[i] = ( (r_min*d_r[i]+d_r_min[i]*(r-1.0)) * r_log_r -
+		     r_min*(r-1.0) * (r * 1/r*d_r[i] + d_r[i]*log(r)) )
+	/ r_log_r / r_log_r;
+    }
 
   return REF_SUCCESS;  
 }
