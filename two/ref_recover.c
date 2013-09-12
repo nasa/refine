@@ -106,3 +106,34 @@ REF_STATUS ref_recover_insert_twod( REF_RECOVER ref_recover, REF_DBL *xz,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_recover_opposite_node( REF_GRID ref_grid, 
+				      REF_INT node0, REF_INT *node1 )
+{
+  REF_CELL pri = ref_grid_pri(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+  *node1 = REF_EMPTY;
+
+  each_ref_cell_having_node( pri, node0, item, cell )
+    {
+      RSS( ref_cell_nodes(pri, cell, nodes), "nodes" );
+
+      if ( node0 == nodes[0]  )
+	{ *node1 = nodes[3]; return REF_SUCCESS; }
+      if ( node0 == nodes[1]  )
+	{ *node1 = nodes[4]; return REF_SUCCESS; }
+      if ( node0 == nodes[2]  )
+	{ *node1 = nodes[5]; return REF_SUCCESS; }
+
+      if ( node0 == nodes[3]  )
+	{ *node1 = nodes[0]; return REF_SUCCESS; }
+      if ( node0 == nodes[4]  )
+	{ *node1 = nodes[1]; return REF_SUCCESS; }
+      if ( node0 == nodes[5]  )
+	{ *node1 = nodes[2]; return REF_SUCCESS; }
+    }
+
+   return REF_FAILURE;
+}
+
