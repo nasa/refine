@@ -738,7 +738,7 @@ int main( int argc, char *argv[] )
        }
 
     ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
-    ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
+    ref_node_xyz(ref_node,2,nodes[2]) = 1.0;
 
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS( 0.5, area, -1.0, "expected area" );
@@ -748,8 +748,8 @@ int main( int argc, char *argv[] )
 
     RSS(ref_node_tri_normal(ref_node, nodes, norm), "norm");
     RWDS( 0.0, norm[0], -1.0, "nx" );
-    RWDS( 0.0, norm[1], -1.0, "ny" );
-    RWDS( 1.0, norm[2], -1.0, "nz" );
+    RWDS(-1.0, norm[1], -1.0, "ny" );
+    RWDS( 0.0, norm[2], -1.0, "nz" );
 
     global=nodes[2];
     nodes[2]=nodes[1];
@@ -757,8 +757,8 @@ int main( int argc, char *argv[] )
 
     RSS(ref_node_tri_normal(ref_node, nodes, norm), "norm");
     RWDS( 0.0, norm[0], -1.0, "nx" );
-    RWDS( 0.0, norm[1], -1.0, "ny" );
-    RWDS(-1.0, norm[2], -1.0, "nz" );
+    RWDS( 1.0, norm[1], -1.0, "ny" );
+    RWDS( 0.0, norm[2], -1.0, "nz" );
 
     RSS(ref_node_free(ref_node),"free");
   }
