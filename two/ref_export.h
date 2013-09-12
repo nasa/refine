@@ -3,9 +3,6 @@
 #define REF_EXPORT_H
 
 #include "ref_grid.h"
-#include "ref_node.h"
-#include "ref_cell.h"
-#include "ref_adj.h"
 
 BEGIN_C_DECLORATION
 
