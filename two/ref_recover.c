@@ -272,7 +272,6 @@ REF_STATUS ref_recover_first_block_twod( REF_RECOVER ref_recover,
 	  best_block1 = nodes[1];
 	  best_block2 = nodes[2];
 	}
-      printf(" 1 0 %f %f\n",proj1,proj2);
     }
 
   if ( best_proj < 1.0e-14 )
