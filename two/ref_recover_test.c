@@ -190,6 +190,9 @@ int main( void )
     RXS(ref_recover_edge_twod(ref_recover,node0,node1),
 	REF_IMPLEMENT,"recov edge");
 
+    if ( REF_FALSE ) 
+      RSS(ref_export_tec( ref_grid, "ref_recover_test.tec" ),"export" );
+
     RSS(ref_recover_free(ref_recover),"free");
     RSS(ref_grid_free(ref_grid),"free");
   }
