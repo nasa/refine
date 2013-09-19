@@ -5,6 +5,7 @@
 
 #include "ref_recover.h"
 
+#include "ref_front.h"
 #include "ref_grid.h"
 #include  "ref_node.h"
 #include   "ref_mpi.h"
@@ -169,7 +170,6 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  SKIP_BLOCK("implement")
   { /* recover missing edge */
     REF_GRID ref_grid;
     REF_RECOVER ref_recover;
@@ -187,7 +187,8 @@ int main( void )
     xz[0] = 0.4; xz[1] = 0.2;
     RSS(ref_recover_insert_twod(ref_recover,xz,&node1),"create");
 
-    RSS(ref_recover_edge_twod(ref_recover,node0,node1),"create");
+    RXS(ref_recover_edge_twod(ref_recover,node0,node1),
+	REF_IMPLEMENT,"recov edge");
 
     RSS(ref_recover_free(ref_recover),"free");
     RSS(ref_grid_free(ref_grid),"free");

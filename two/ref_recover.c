@@ -6,6 +6,8 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
+#include "ref_front.h"
+
 REF_STATUS ref_recover_create( REF_RECOVER *ref_recover_ptr, REF_GRID ref_grid )
 {
   REF_RECOVER ref_recover;
@@ -200,11 +202,43 @@ REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover,
 {
   REF_GRID ref_grid = ref_recover_grid(ref_recover);
   REF_BOOL has_side;
-  
+  REF_INT block1, block2;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_FRONT ref_front;
+
   RSS( ref_cell_has_side( ref_grid_tri(ref_grid), node0, node1, 
 			  &has_side),"has");
+  if ( has_side ) return REF_SUCCESS;
 
-  return (has_side?REF_SUCCESS:REF_FAILURE);
+  RSS( ref_recover_first_block_twod( ref_recover, node0, node1, 
+				     &block1, &block2 ), "first block");
+  RSS( ref_front_create( &ref_front, 2), "create front");
+
+  nodes[0] = node0;
+  nodes[1] = block1;
+  nodes[2] = block2;
+
+  /* add three edges to front */
+  nodes[3] = node0;
+  RSS( ref_front_insert( ref_front, &(nodes[0]) ), "ins 0");
+  RSS( ref_front_insert( ref_front, &(nodes[1]) ), "ins 1");
+  RSS( ref_front_insert( ref_front, &(nodes[2]) ), "ins 2");
+
+  /* for prism (top and bottom switch o.k.) */
+  RSS( ref_recover_opposite_node( ref_grid, nodes[0], &(nodes[3]) ),"n3");
+  RSS( ref_recover_opposite_node( ref_grid, nodes[1], &(nodes[4]) ),"n4");
+  RSS( ref_recover_opposite_node( ref_grid, nodes[2], &(nodes[5]) ),"n5");
+
+  RSS( ref_cell_with( ref_grid_pri(ref_grid), nodes, &cell), "pri" );
+  RSS( ref_cell_remove( ref_grid_pri(ref_grid), cell), "pri" );
+  RSS( ref_cell_with( ref_grid_tri(ref_grid), nodes, &cell), "t0" );
+  RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t0" );
+  RSS( ref_cell_with( ref_grid_tri(ref_grid), &(nodes[3]), &cell), "t1" );
+  RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t1" );
+
+  RSS( ref_front_free( ref_front), "create free");
+
+  return REF_IMPLEMENT;
 }
 
 REF_STATUS ref_recover_first_block_twod( REF_RECOVER ref_recover, 
