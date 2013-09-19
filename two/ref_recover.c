@@ -246,6 +246,9 @@ REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover,
 
   if ( node1 == nodes[0] || node1 == nodes[1] || node1 == nodes[2] )
     { /* got it */
+
+  /* refactor: repeated removal */
+
   /* add three edges to front */
   nodes[3] = node0;
   RSS( ref_front_insert( ref_front, &(nodes[0]) ), "ins 0");
@@ -264,6 +267,8 @@ REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover,
   RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t0" );
   RSS( ref_cell_with( ref_grid_tri(ref_grid), &(nodes[3]), &cell), "t1" );
   RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t1" );
+
+  /* create an element with protected edge */
     }
 
   RSS( ref_front_free( ref_front), "create free");
