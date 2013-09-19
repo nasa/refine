@@ -206,3 +206,83 @@ REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover,
 
   return (has_side?REF_SUCCESS:REF_FAILURE);
 }
+
+REF_STATUS ref_recover_first_block_twod( REF_RECOVER ref_recover, 
+					 REF_INT node0, REF_INT node1,
+					 REF_INT *block1, REF_INT *block2 )
+{
+  REF_GRID ref_grid = ref_recover_grid(ref_recover);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT sub_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL proj, proj1, proj2;
+  REF_DBL best_proj, min_proj;
+  REF_INT best_block1, best_block2;
+
+  *block1 = REF_EMPTY;
+  *block2 = REF_EMPTY;
+
+  best_proj = -1.0;
+  best_block1 = REF_EMPTY;
+  best_block2 = REF_EMPTY;
+
+  each_ref_cell_having_node( tri, node0, item, cell )
+    {
+      /* get the nodes rotated so node0 is nodes[0] */
+      RSS( ref_cell_nodes(tri, cell, nodes), "nodes" );
+      if ( node0 == nodes[1] )
+	{
+	  nodes[3] = nodes[0];
+	  nodes[0] = nodes[1];
+	  nodes[1] = nodes[2];
+	  nodes[2] = nodes[3];
+	}
+      if ( node0 == nodes[2] )
+	{
+	  nodes[3] = nodes[0];
+	  nodes[0] = nodes[2];
+	  nodes[2] = nodes[1];
+	  nodes[1] = nodes[3];
+	}
+      /*
+              nodes[2] (block2)
+             / |  
+	node0- | -  -  - node1
+             \ |
+              nodes[1] (block1)
+      */
+      sub_nodes[0] = nodes[1];
+      sub_nodes[1] = node1;
+      sub_nodes[2] = node0;
+      RSS( ref_node_tri_y_projection( ref_node, sub_nodes, &proj1 ),"p1");
+      sub_nodes[0] = nodes[2];
+      sub_nodes[1] = node0;
+      sub_nodes[2] = node1;
+      RSS( ref_node_tri_y_projection( ref_node, sub_nodes, &proj2 ),"p2");
+      RSS( ref_node_tri_y_projection( ref_node, nodes, &proj ),"p");
+      if ( !ref_math_divisible(proj1,proj) ||
+	   !ref_math_divisible(proj1,proj) ) return REF_DIV_ZERO;
+      proj1 /= proj;
+      proj2 /= proj;
+      min_proj = MIN(proj1, proj2);
+      if ( min_proj > best_proj )
+	{ 
+	  best_proj = min_proj;
+	  best_block1 = nodes[1];
+	  best_block2 = nodes[2];
+	}
+      printf(" 1 0 %f %f\n",proj1,proj2);
+    }
+
+  if ( best_proj < 1.0e-14 )
+    {
+      printf("%s: %d: %s: best proj %e\n",__FILE__,__LINE__,__func__,best_proj);
+      return REF_FAILURE;
+    }
+
+  *block1 = best_block1;
+  *block2 = best_block2;
+
+  return REF_SUCCESS;
+}

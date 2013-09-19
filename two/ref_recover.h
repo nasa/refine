@@ -35,6 +35,10 @@ REF_STATUS ref_recover_opposite_node( REF_GRID ref_grid,
 REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover, 
 				  REF_INT node0, REF_INT node1 );
 
+REF_STATUS ref_recover_first_block_twod( REF_RECOVER ref_recover, 
+					 REF_INT node0, REF_INT node1,
+					 REF_INT *block1, REF_INT *block2 );
+
 END_C_DECLORATION
 
 #endif /* REF_RECOVER_H */
