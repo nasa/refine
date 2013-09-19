@@ -213,6 +213,13 @@ int main( void )
 
     RSS(ref_recover_first_block_twod(ref_recover,node0,node1,
 				     &block1, &block2),"create");
+    REIS(   0, block2,"b1");
+    REIS(node, block1,"b2");
+
+    RSS(ref_recover_first_block_twod(ref_recover,node1,node0,
+				     &block1, &block2),"create");
+    REIS(node, block2,"b1");
+    REIS(   0, block1,"b2");
 
     RSS(ref_recover_free(ref_recover),"free");
     RSS(ref_grid_free(ref_grid),"free");
