@@ -197,6 +197,37 @@ REF_STATUS ref_recover_opposite_node( REF_GRID ref_grid,
    return REF_FAILURE;
 }
 
+static REF_STATUS ref_recover_rm_tri_to_front( REF_GRID ref_grid,
+					       REF_FRONT ref_front,
+					       REF_INT *nodes );
+static REF_STATUS ref_recover_rm_tri_to_front( REF_GRID ref_grid,
+					       REF_FRONT ref_front,
+					       REF_INT *nodes )
+{
+  REF_INT cell;
+
+  /* add three edges to front */
+  nodes[3] = nodes[0];
+  RSS( ref_front_insert( ref_front, &(nodes[0]) ), "ins 0");
+  RSS( ref_front_insert( ref_front, &(nodes[1]) ), "ins 1");
+  RSS( ref_front_insert( ref_front, &(nodes[2]) ), "ins 2");
+
+  /* for prism (top and bottom switch o.k.) */
+  RSS( ref_recover_opposite_node( ref_grid, nodes[0], &(nodes[3]) ),"n3");
+  RSS( ref_recover_opposite_node( ref_grid, nodes[1], &(nodes[4]) ),"n4");
+  RSS( ref_recover_opposite_node( ref_grid, nodes[2], &(nodes[5]) ),"n5");
+
+  /* remove cells */
+  RSS( ref_cell_with( ref_grid_pri(ref_grid), nodes, &cell), "pri" );
+  RSS( ref_cell_remove( ref_grid_pri(ref_grid), cell), "pri" );
+  RSS( ref_cell_with( ref_grid_tri(ref_grid), nodes, &cell), "t0" );
+  RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t0" );
+  RSS( ref_cell_with( ref_grid_tri(ref_grid), &(nodes[3]), &cell), "t1" );
+  RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t1" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover, 
 				  REF_INT node0, REF_INT node1 )
 {
@@ -226,24 +257,7 @@ REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover,
 				  nodes, &orig_proj ),"op");
   positive_projection = ( orig_proj > 0.0 );
 
-  /* add three edges to front */
-  nodes[3] = node0;
-  RSS( ref_front_insert( ref_front, &(nodes[0]) ), "ins 0");
-  RSS( ref_front_insert( ref_front, &(nodes[1]) ), "ins 1");
-  RSS( ref_front_insert( ref_front, &(nodes[2]) ), "ins 2");
-
-  /* for prism (top and bottom switch o.k.) */
-  RSS( ref_recover_opposite_node( ref_grid, nodes[0], &(nodes[3]) ),"n3");
-  RSS( ref_recover_opposite_node( ref_grid, nodes[1], &(nodes[4]) ),"n4");
-  RSS( ref_recover_opposite_node( ref_grid, nodes[2], &(nodes[5]) ),"n5");
-
-  /* remove first block */
-  RSS( ref_cell_with( ref_grid_pri(ref_grid), nodes, &cell), "pri" );
-  RSS( ref_cell_remove( ref_grid_pri(ref_grid), cell), "pri" );
-  RSS( ref_cell_with( ref_grid_tri(ref_grid), nodes, &cell), "t0" );
-  RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t0" );
-  RSS( ref_cell_with( ref_grid_tri(ref_grid), &(nodes[3]), &cell), "t1" );
-  RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t1" );
+  RSS ( ref_recover_rm_tri_to_front( ref_grid, ref_front, nodes ), "rm");
 
   /* next tri */
   RSS( ref_cell_list_with( ref_grid_tri(ref_grid), block2, block1, 1,
@@ -253,30 +267,12 @@ REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover,
 
   if ( node1 == nodes[0] || node1 == nodes[1] || node1 == nodes[2] )
     { /* got it */
-
-  /* refactor: repeated removal */
-
-  /* add three edges to front */
-  nodes[3] = node0;
-  RSS( ref_front_insert( ref_front, &(nodes[0]) ), "ins 0");
-  RSS( ref_front_insert( ref_front, &(nodes[1]) ), "ins 1");
-  RSS( ref_front_insert( ref_front, &(nodes[2]) ), "ins 2");
-
-  /* for prism (top and bottom switch o.k.) */
-  RSS( ref_recover_opposite_node( ref_grid, nodes[0], &(nodes[3]) ),"n3");
-  RSS( ref_recover_opposite_node( ref_grid, nodes[1], &(nodes[4]) ),"n4");
-  RSS( ref_recover_opposite_node( ref_grid, nodes[2], &(nodes[5]) ),"n5");
-
-  /* remove block */
-  RSS( ref_cell_with( ref_grid_pri(ref_grid), nodes, &cell), "pri" );
-  RSS( ref_cell_remove( ref_grid_pri(ref_grid), cell), "pri" );
-  RSS( ref_cell_with( ref_grid_tri(ref_grid), nodes, &cell), "t0" );
-  RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t0" );
-  RSS( ref_cell_with( ref_grid_tri(ref_grid), &(nodes[3]), &cell), "t1" );
-  RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell), "t1" );
+      RSS ( ref_recover_rm_tri_to_front( ref_grid, ref_front, nodes ), "rm");
+    }
 
   /* create an element with protected edge */
-    }
+
+  /* add smallest positive element */
 
   RSS( ref_front_free( ref_front), "create free");
 
