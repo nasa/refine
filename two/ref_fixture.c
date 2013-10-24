@@ -1564,7 +1564,7 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
   quad[4]=5;
   k=1;
   for ( j = 1 ; j < m ; j++ )
-    for ( i = 1 ; i < l ; i++ )
+    for ( i = 1 ; i < l/2 ; i++ )
       {
 	ijk2hex(i,j,k,l,m,n,hex);
 	quad[0]=hex[0];
@@ -1575,6 +1575,19 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
       }
 
   quad[4]=6;
+  k=1;
+  for ( j = 1 ; j < m ; j++ )
+    for ( i = l/2 ; i < l ; i++ )
+      {
+	ijk2hex(i,j,k,l,m,n,hex);
+	quad[0]=hex[0];
+	quad[1]=hex[1];
+	quad[2]=hex[2];
+	quad[3]=hex[3];
+	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+      }
+
+  quad[4]=7;
   k=n-1;
   for ( j = 1 ; j < m ; j++ )
     for ( i = 1 ; i < l ; i++ )
