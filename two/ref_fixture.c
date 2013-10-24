@@ -1441,17 +1441,17 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
   REF_INT global, node, hex[8], cell;
   REF_INT quad[5];
 
-  REF_INT l=8*nx+1,m=2,n=nz+1;
+  REF_INT l=16*nx+1,m=2,n=2*nz+1;
   REF_INT i, j, k;
 
-  REF_DBL x0 = -4.0;
-  REF_DBL x1 =  4.0;
+  REF_DBL x0 = -8.0;
+  REF_DBL x1 =  8.0;
 
   REF_DBL y0 = 0.0;
   REF_DBL y1 = 1.0;
 
   REF_DBL z0 = 0.0;
-  REF_DBL z1 =10.0;
+  REF_DBL z1 =20.0;
 
   REF_DBL dx, dy, dz;
 
