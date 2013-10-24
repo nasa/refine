@@ -1485,9 +1485,9 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 	    ref_node_xyz(ref_node, 2, node )
 	      += tan_theta * ref_node_xyz(ref_node, 0, node );
 	  /* shear */
-	  ref_node_xyz(ref_node, 0, node ) 
-	    += ref_node_xyz(ref_node, 2, node ) / tan_beta;
-	    
+	  if ( ABS(beta_deg) > 1.0e-8 )
+	    ref_node_xyz(ref_node, 0, node ) 
+	      += ref_node_xyz(ref_node, 2, node ) / tan_beta;
 	}
 
 #define ijk2hex(i,j,k,l,m,n,hex)			\
