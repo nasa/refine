@@ -1484,6 +1484,16 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 	  if ( ref_node_xyz(ref_node, 0, node ) > 0.0 )
 	    ref_node_xyz(ref_node, 2, node )
 	      += tan_theta * ref_node_xyz(ref_node, 0, node );
+
+	  /* cosine
+	  if ( ref_node_xyz(ref_node, 0, node ) > -2.0 &&
+	       ref_node_xyz(ref_node, 0, node ) < 2.0 )
+	    {
+	      ref_node_xyz(ref_node, 2, node )
+		+= 0.005 * (1+cos(ref_math_pi*ref_node_xyz(ref_node, 0, node )/2.0));
+	    }
+	  */
+
 	  /* shear */
 	  if ( ABS(beta_deg) > 1.0e-8 )
 	    ref_node_xyz(ref_node, 0, node ) 
