@@ -1441,11 +1441,11 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
   REF_INT global, node, hex[8], cell;
   REF_INT quad[5];
 
-  REF_INT l=16*nx+1,m=2,n=2*nz+1;
+  REF_INT l=8*nx+1,m=2,n=10*nz+1;
   REF_INT i, j, k;
 
-  REF_DBL x0 = -8.0;
-  REF_DBL x1 =  8.0;
+  REF_DBL x0 = -4.0;
+  REF_DBL x1 =  4.0;
 
   REF_DBL y0 = 0.0;
   REF_DBL y1 = 1.0;
@@ -1480,19 +1480,19 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 	  ref_node_xyz(ref_node, 0, node ) = x0 + dx*(REF_DBL)i;
 	  ref_node_xyz(ref_node, 1, node ) = y0 + dy*(REF_DBL)j;
 	  ref_node_xyz(ref_node, 2, node ) = z0 + dz*(REF_DBL)k;
-	  /* ramp */
+	  /* ramp
 	  if ( ref_node_xyz(ref_node, 0, node ) > 0.0 )
 	    ref_node_xyz(ref_node, 2, node )
 	      += tan_theta * ref_node_xyz(ref_node, 0, node );
-
-	  /* cosine
+ */
+	  /* cosine */
 	  if ( ref_node_xyz(ref_node, 0, node ) > -2.0 &&
 	       ref_node_xyz(ref_node, 0, node ) < 2.0 )
 	    {
 	      ref_node_xyz(ref_node, 2, node )
-		+= 0.005 * (1+cos(ref_math_pi*ref_node_xyz(ref_node, 0, node )/2.0));
+		-= 0.005 * (1+cos(ref_math_pi*ref_node_xyz(ref_node, 0, node )/2.0));
 	    }
-	  */
+	  
 
 	  /* shear */
 	  if ( ABS(beta_deg) > 1.0e-8 )
