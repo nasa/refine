@@ -87,12 +87,6 @@ REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr, char *filename )
 		  RSS( ref_import_meshb( ref_grid_ptr, filename ), 
 		       "meshb failed");
 		} 
-	    else 
-	      if( strcmp(&filename[end_of_string-6],".cogsg") == 0 ) 
-		{
-		  RSS( ref_import_cogsg( ref_grid_ptr, filename ), 
-		       "cogsg failed");
-		} 
 	      else 
 		{
 		  printf("%s: %d: %s %s\n",__FILE__,__LINE__,
