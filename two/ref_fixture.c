@@ -1455,10 +1455,10 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 
   REF_DBL dx, dy, dz;
 
-  REF_DBL tan_beta, tan_theta;
+  REF_DBL tan_beta;
 
+  tan_beta = tan(ref_math_in_radians(theta_deg));
   tan_beta = tan(ref_math_in_radians(beta_deg));
-  tan_theta = tan(ref_math_in_radians(theta_deg));
   
   dx = (x1-x0)/((REF_DBL)(l-1));
   dy = (y1-y0)/((REF_DBL)(m-1));
