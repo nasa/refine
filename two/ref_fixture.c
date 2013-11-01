@@ -1628,11 +1628,11 @@ REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
   REF_INT i, j, k;
 
   REF_DBL x0 = 0.0;
-  REF_DBL x1 = 1.0;
+  REF_DBL x1 = 4.0;
   REF_DBL t0 = 0.0;
   REF_DBL t1 = -0.5*ref_math_pi;
   REF_DBL r0 = 1.0;
-  REF_DBL r1 = 2.0;
+  REF_DBL r1 = 4.0;
 
   REF_DBL mach, mu, tan_mu;
 
@@ -1644,9 +1644,9 @@ REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
   tan_mu = tan(mu);
   printf("mach %f mu %f tan %f\n",mach,mu,tan_mu);
 
-  dx = (x1-x0)/((REF_DBL)(n-1));
-  dt = (t1-t0)/((REF_DBL)(l-1));
-  dr = (r1-r0)/((REF_DBL)(m-1));
+  dx = (x1-x0)/((REF_DBL)(l-1));
+  dt = (t1-t0)/((REF_DBL)(m-1));
+  dr = (r1-r0)/((REF_DBL)(n-1));
 
   RSS(ref_grid_create(ref_grid_ptr),"create");
   ref_grid =  *ref_grid_ptr;
@@ -1664,9 +1664,19 @@ REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
 	  x = x0 + dx*(REF_DBL)i;
 	  t = t0 + dt*(REF_DBL)j;
 	  r = r0 + dr*(REF_DBL)k;
+
+	  /* cosine */
+	  if ( x > 1.0 &&
+	       x < 3.0 &&
+	       k == 0 )
+	    {
+	      r -= 0.005 * (1+cos(2.0*ref_math_pi*((x-2.0)/2.0)));
+	    }
+
 	  ref_node_xyz(ref_node, 0, node ) = x;
 	  ref_node_xyz(ref_node, 1, node ) = r*cos(t);
 	  ref_node_xyz(ref_node, 2, node ) = r*sin(t);
+
 	  /* shear */
 	  ref_node_xyz(ref_node, 0, node ) += r / tan_mu;
 	}
