@@ -1612,3 +1612,161 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 
   return REF_SUCCESS;
 }
+
+
+REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
+				    REF_INT nx,
+				    REF_INT nt,
+				    REF_INT nr )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT global, node, hex[8], cell;
+  REF_INT quad[5];
+
+  REF_INT l=nx,m=nt,n=nr;
+  REF_INT i, j, k;
+
+  REF_DBL x0 = 0.0;
+  REF_DBL x1 = 1.0;
+  REF_DBL t0 = 0.0;
+  REF_DBL t1 = -0.5*ref_math_pi;
+  REF_DBL r0 = 1.0;
+  REF_DBL r1 = 2.0;
+
+  REF_DBL mach, mu, tan_mu;
+
+  REF_DBL x, t, r;
+  REF_DBL dx, dt, dr;
+
+  mach = 1.6;
+  mu = asin(1.0/mach);
+  tan_mu = tan(mu);
+  printf("mach %f mu %f tan %f\n",mach,mu,tan_mu);
+
+  dx = (x1-x0)/((REF_DBL)(n-1));
+  dt = (t1-t0)/((REF_DBL)(l-1));
+  dr = (r1-r0)/((REF_DBL)(m-1));
+
+  RSS(ref_grid_create(ref_grid_ptr),"create");
+  ref_grid =  *ref_grid_ptr;
+
+  ref_node = ref_grid_node(ref_grid);
+
+#define ijk2node(i,j,k,l,m,n) ((i) + (j)*(l) + (k)*(l)*(m))
+
+  for ( k = 0 ; k < n ; k++ )
+    for ( j = 0 ; j < m ; j++ )
+      for ( i = 0 ; i < l ; i++ )
+	{
+	  global = ijk2node(i,j,k,l,m,n);
+	  RSS( ref_node_add( ref_node, global, &node ), "node");
+	  x = x0 + dx*(REF_DBL)i;
+	  t = t0 + dt*(REF_DBL)j;
+	  r = r0 + dr*(REF_DBL)k;
+	  ref_node_xyz(ref_node, 0, node ) = x;
+	  ref_node_xyz(ref_node, 1, node ) = r*cos(t);
+	  ref_node_xyz(ref_node, 2, node ) = r*sin(t);
+	  /* shear */
+	  ref_node_xyz(ref_node, 0, node ) += r / tan_mu;
+	}
+
+#define ijk2hex(i,j,k,l,m,n,hex)			\
+  (hex)[0] = ijk2node((i)-1,(j)-1,(k)-1,(l),(m),(n));	\
+  (hex)[1] = ijk2node((i)  ,(j)-1,(k)-1,(l),(m),(n));	  \
+  (hex)[2] = ijk2node((i)  ,(j)  ,(k)-1,(l),(m),(n));	  \
+  (hex)[3] = ijk2node((i)-1,(j)  ,(k)-1,(l),(m),(n));	  \
+  (hex)[4] = ijk2node((i)-1,(j)-1,(k)  ,(l),(m),(n));	  \
+  (hex)[5] = ijk2node((i)  ,(j)-1,(k)  ,(l),(m),(n));	  \
+  (hex)[6] = ijk2node((i)  ,(j)  ,(k)  ,(l),(m),(n));	  \
+  (hex)[7] = ijk2node((i)-1,(j)  ,(k)  ,(l),(m),(n));	  \
+  
+
+  for ( k = 1 ; k < n ; k++ )
+    for ( j = 1 ; j < m ; j++ )
+      for ( i = 1 ; i < l ; i++ )
+	{
+	  ijk2hex(i,j,k,l,m,n,hex);
+	  RSS( ref_cell_add(ref_grid_hex(ref_grid),hex, &cell),"hex");
+	}
+
+  quad[4]=1;
+  i = 1;
+  for ( k = 1 ; k < n ; k++ )
+    for ( j = 1 ; j < m ; j++ )
+      {
+	ijk2hex(i,j,k,l,m,n,hex);
+	quad[0]=hex[0];
+	quad[1]=hex[3];
+	quad[2]=hex[7];
+	quad[3]=hex[4];
+	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+      }
+
+  quad[4]=2;
+  i = l-1;
+  for ( k = 1 ; k < n ; k++ )
+    for ( j = 1 ; j < m ; j++ )
+      {
+	ijk2hex(i,j,k,l,m,n,hex);
+	quad[0]=hex[2];
+	quad[1]=hex[1];
+	quad[2]=hex[5];
+	quad[3]=hex[6];
+	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+      }
+
+  quad[4]=3;
+  j=1;
+  for ( k = 1 ; k < n ; k++ )
+    for ( i = 1 ; i < l ; i++ )
+      {
+	ijk2hex(i,j,k,l,m,n,hex);
+	quad[0]=hex[1];
+	quad[1]=hex[0];
+	quad[2]=hex[4];
+	quad[3]=hex[5];
+	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+      }
+
+  quad[4]=4;
+  j=m-1;
+  for ( k = 1 ; k < n ; k++ )
+    for ( i = 1 ; i < l ; i++ )
+      {
+	ijk2hex(i,j,k,l,m,n,hex);
+	quad[0]=hex[3];
+	quad[1]=hex[2];
+	quad[2]=hex[6];
+	quad[3]=hex[7];
+	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+      }
+
+  quad[4]=5;
+  k=1;
+  for ( j = 1 ; j < m ; j++ )
+    for ( i = 1 ; i < l ; i++ )
+      {
+	ijk2hex(i,j,k,l,m,n,hex);
+	quad[0]=hex[0];
+	quad[1]=hex[1];
+	quad[2]=hex[2];
+	quad[3]=hex[3];
+	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+      }
+
+  quad[4]=6;
+  k=n-1;
+  for ( j = 1 ; j < m ; j++ )
+    for ( i = 1 ; i < l ; i++ )
+      {
+	ijk2hex(i,j,k,l,m,n,hex);
+	quad[0]=hex[5];
+	quad[1]=hex[4];
+	quad[2]=hex[7];
+	quad[3]=hex[6];
+	RSS( ref_cell_add(ref_grid_qua(ref_grid),quad, &cell),"qua");
+      }
+
+  return REF_SUCCESS;
+}
