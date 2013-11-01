@@ -1643,7 +1643,6 @@ REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
   mach = 1.6;
   mu = asin(1.0/mach);
   tan_mu = tan(mu + rot_deg/180.0*ref_math_pi);
-  printf("mach %f mu %f tan %f\n",mach,mu,tan_mu);
 
   dx = (x1-x0)/((REF_DBL)(l-1));
   dt = (t1-t0)/((REF_DBL)(m-1));
