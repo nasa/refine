@@ -1617,7 +1617,8 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
 				    REF_INT nx,
 				    REF_INT nt,
-				    REF_INT nr )
+				    REF_INT nr,
+				    REF_DBL rot_deg  )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -1641,7 +1642,7 @@ REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
 
   mach = 1.6;
   mu = asin(1.0/mach);
-  tan_mu = tan(mu);
+  tan_mu = tan(mu + rot_deg/180.0*ref_math_pi);
   printf("mach %f mu %f tan %f\n",mach,mu,tan_mu);
 
   dx = (x1-x0)/((REF_DBL)(l-1));
@@ -1678,7 +1679,8 @@ REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
 	  ref_node_xyz(ref_node, 2, node ) = r*sin(t);
 
 	  /* shear */
-	  ref_node_xyz(ref_node, 0, node ) += r / tan_mu;
+	  if ( r > r0 + 0.5 * dr)
+	    ref_node_xyz(ref_node, 0, node ) += (r-r0) / tan_mu;
 	}
 
 #define ijk2hex(i,j,k,l,m,n,hex)			\

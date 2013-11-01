@@ -32,7 +32,8 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid,
 REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
 				    REF_INT nx,
 				    REF_INT nt,
-				    REF_INT nr );
+				    REF_INT nr,
+				    REF_DBL rot_deg );
 
 END_C_DECLORATION
 
