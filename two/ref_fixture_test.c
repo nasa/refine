@@ -87,15 +87,16 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
-  if ( 5 == argc )
+  if ( 6 == argc )
     {
       REF_GRID ref_grid;
       REF_INT nx = atoi(argv[1]);
       REF_INT nt = atoi(argv[2]);
       REF_INT nr = atoi(argv[3]);
+      REF_DBL rot_deg  = atof(argv[4]);
       RSS( ref_fixture_boom3d_grid( &ref_grid, 
-				    nx, nt, nr ), "boom3d" );
-      RSS( ref_export_by_extension( ref_grid, argv[4] ), "export" );
+				    nx, nt, nr, rot_deg  ), "boom3d" );
+      RSS( ref_export_by_extension( ref_grid, argv[5] ), "export" );
       
       RSS( ref_grid_free(ref_grid),"free");
     }
