@@ -238,7 +238,6 @@ REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover,
   REF_FRONT ref_front;
   REF_INT ncell;
   REF_DBL orig_proj;
-  REF_BOOL positive_projection;
 
   RSS( ref_cell_has_side( ref_grid_tri(ref_grid), node0, node1, 
 			  &has_side),"has");
@@ -255,7 +254,6 @@ REF_STATUS ref_recover_edge_twod( REF_RECOVER ref_recover,
   /* note the orientation */
   RSS( ref_node_tri_y_projection( ref_grid_node(ref_grid), 
 				  nodes, &orig_proj ),"op");
-  positive_projection = ( orig_proj > 0.0 );
 
   RSS ( ref_recover_rm_tri_to_front( ref_grid, ref_front, nodes ), "rm");
 
