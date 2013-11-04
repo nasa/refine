@@ -115,6 +115,7 @@ REF_STATUS ref_shard_mark_n( REF_SHARD ref_shard,
 {
   REF_INT face;
   REF_INT cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL marked14, marked05;
   REF_BOOL marked16, marked25;
   REF_BOOL marked02, marked13;
 
@@ -128,6 +129,13 @@ REF_STATUS ref_shard_mark_n( REF_SHARD ref_shard,
 				       cell, hex_nodes)
     {
       
+      RSS( ref_shard_marked( ref_shard, hex_nodes[1], hex_nodes[4], 
+			      &marked14 ), "1-4");
+      RSS( ref_shard_marked( ref_shard, hex_nodes[0], hex_nodes[5], 
+			      &marked05 ), "0-5");
+
+      if ( marked14 || marked05 ) (*hex_marks)++;
+
       RSS( ref_shard_marked( ref_shard, hex_nodes[1], hex_nodes[6], 
 			      &marked16 ), "1-6");
       RSS( ref_shard_marked( ref_shard, hex_nodes[2], hex_nodes[5], 
@@ -228,6 +236,13 @@ REF_STATUS ref_shard_mark_relax( REF_SHARD ref_shard )
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
 	  RSS( ref_shard_pair( ref_shard, &again, 
+				nodes[1], nodes[4],
+				nodes[2], nodes[7] ), "not consist");
+	  RSS( ref_shard_pair( ref_shard, &again, 
+				nodes[5], nodes[0],
+				nodes[6], nodes[3] ), "not consist");
+
+	  RSS( ref_shard_pair( ref_shard, &again, 
 				nodes[1], nodes[6],
 				nodes[0], nodes[7] ), "not consist");
 	  RSS( ref_shard_pair( ref_shard, &again, 
@@ -299,12 +314,48 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
 
   each_ref_cell_valid_cell_with_nodes( hex, cell, hex_nodes)
     {
-      RSS( ref_shard_marked( ref_shard, hex_nodes[0], hex_nodes[5], 
-			      &marked ), "0-5"); 
-      if ( marked ) RSS( REF_IMPLEMENT, "add split 0-5")
       RSS( ref_shard_marked( ref_shard, hex_nodes[1], hex_nodes[4], 
 			      &marked ), "1-4"); 
-      if ( marked ) RSS( REF_IMPLEMENT, "add split 1-4")
+      if ( marked )
+	{
+	  RSS( ref_cell_remove( hex, cell ), "remove hex");
+	  pri_nodes[0] = hex_nodes[1];
+	  pri_nodes[1] = hex_nodes[0];
+	  pri_nodes[2] = hex_nodes[4];
+	  pri_nodes[3] = hex_nodes[2];
+	  pri_nodes[4] = hex_nodes[3];
+	  pri_nodes[5] = hex_nodes[7];
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex pri 1");
+	  pri_nodes[0] = hex_nodes[1];
+	  pri_nodes[1] = hex_nodes[4];
+	  pri_nodes[2] = hex_nodes[5];
+	  pri_nodes[3] = hex_nodes[2];
+	  pri_nodes[4] = hex_nodes[7];
+	  pri_nodes[5] = hex_nodes[6];
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex_pri 2");
+	  continue;
+	}
+      RSS( ref_shard_marked( ref_shard, hex_nodes[0], hex_nodes[5], 
+			      &marked ), "0-5"); 
+      if ( marked )
+	{
+	  RSS( ref_cell_remove( hex, cell ), "remove hex");
+	  pri_nodes[0] = hex_nodes[0];
+	  pri_nodes[1] = hex_nodes[5];
+	  pri_nodes[2] = hex_nodes[1];
+	  pri_nodes[3] = hex_nodes[3];
+	  pri_nodes[4] = hex_nodes[6];
+	  pri_nodes[5] = hex_nodes[2];
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex pri 1");
+	  pri_nodes[0] = hex_nodes[4];
+	  pri_nodes[1] = hex_nodes[5];
+	  pri_nodes[2] = hex_nodes[0];
+	  pri_nodes[3] = hex_nodes[7];
+	  pri_nodes[4] = hex_nodes[6];
+	  pri_nodes[5] = hex_nodes[3];
+	  RSS( ref_cell_add( pri, pri_nodes, &new_cell ), "add hex_pri 2");
+	  continue;
+	}
 
       RSS( ref_shard_marked( ref_shard, hex_nodes[1], hex_nodes[6], 
 			      &marked ), "1-6"); 
