@@ -285,10 +285,10 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
     {
       RSS( ref_shard_marked( ref_shard, hex_nodes[0], hex_nodes[5], 
 			      &marked ), "0-5"); 
-      if ( marked ) RSS( REF_IMPLEMENT, "add split")
+      if ( marked ) RSS( REF_IMPLEMENT, "add split 0-5")
       RSS( ref_shard_marked( ref_shard, hex_nodes[1], hex_nodes[4], 
 			      &marked ), "1-4"); 
-      if ( marked ) RSS( REF_IMPLEMENT, "add split")
+      if ( marked ) RSS( REF_IMPLEMENT, "add split 1-4")
 
       RSS( ref_shard_marked( ref_shard, hex_nodes[1], hex_nodes[6], 
 			      &marked ), "1-6"); 
@@ -335,10 +335,10 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
 
       RSS( ref_shard_marked( ref_shard, hex_nodes[0], hex_nodes[2], 
 			      &marked ), "0-2"); 
-      if ( marked ) RSS( REF_IMPLEMENT, "add split")
+      if ( marked ) RSS( REF_IMPLEMENT, "add split 0-2")
       RSS( ref_shard_marked( ref_shard, hex_nodes[1], hex_nodes[3], 
 			      &marked ), "1-3"); 
-      if ( marked ) RSS( REF_IMPLEMENT, "add split")
+      if ( marked ) RSS( REF_IMPLEMENT, "add split 1-3")
     }
 
   return REF_SUCCESS;
