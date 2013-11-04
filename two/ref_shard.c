@@ -116,6 +116,7 @@ REF_STATUS ref_shard_mark_n( REF_SHARD ref_shard,
   REF_INT face;
   REF_INT cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL marked16, marked25;
+  REF_BOOL marked02, marked13;
 
   (*face_marks) = 0;
 
@@ -131,7 +132,15 @@ REF_STATUS ref_shard_mark_n( REF_SHARD ref_shard,
 			      &marked16 ), "1-6");
       RSS( ref_shard_marked( ref_shard, hex_nodes[2], hex_nodes[5], 
 			      &marked25 ), "2-5");
+
       if ( marked16 || marked25 ) (*hex_marks)++;
+
+      RSS( ref_shard_marked( ref_shard, hex_nodes[0], hex_nodes[2], 
+			      &marked02 ), "0-2");
+      RSS( ref_shard_marked( ref_shard, hex_nodes[1], hex_nodes[3], 
+			      &marked13 ), "1-3");
+
+      if ( marked02 || marked13 ) (*hex_marks)++;
     }
 
   return REF_SUCCESS;
@@ -224,6 +233,13 @@ REF_STATUS ref_shard_mark_relax( REF_SHARD ref_shard )
 	  RSS( ref_shard_pair( ref_shard, &again, 
 				nodes[5], nodes[2],
 				nodes[4], nodes[3] ), "not consist");
+
+	  RSS( ref_shard_pair( ref_shard, &again, 
+				nodes[0], nodes[2],
+				nodes[4], nodes[6] ), "not consist");
+	  RSS( ref_shard_pair( ref_shard, &again, 
+				nodes[1], nodes[3],
+				nodes[5], nodes[7] ), "not consist");
 	}
     }
 
