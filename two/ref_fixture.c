@@ -1432,9 +1432,8 @@ msh.export('clock_g.msh')
 }
 
 REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr, 
-				    REF_DBL theta_deg,
-				    REF_DBL beta_deg,
-				    REF_INT nx, REF_INT nz )
+				    REF_INT nx, REF_INT nz,
+				    REF_DBL rot_deg )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -1444,8 +1443,8 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
   REF_INT l=8*nx+1,m=2,n=10*nz+1;
   REF_INT i, j, k;
 
-  REF_DBL x0 = -4.0;
-  REF_DBL x1 =  4.0;
+  REF_DBL x0 = -2.0;
+  REF_DBL x1 =  6.0;
 
   REF_DBL y0 = 0.0;
   REF_DBL y1 = 1.0;
@@ -1453,12 +1452,15 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
   REF_DBL z0 = 0.0;
   REF_DBL z1 =20.0;
 
+  REF_DBL x, y, z;
   REF_DBL dx, dy, dz;
 
-  REF_DBL tan_beta;
+  REF_DBL mach, mu, tan_mu;
+  REF_DBL tan_theta = 0.01;
 
-  tan_beta = tan(ref_math_in_radians(theta_deg));
-  tan_beta = tan(ref_math_in_radians(beta_deg));
+  mach = 1.6;
+  mu = asin(1.0/mach);
+  tan_mu = tan(mu + rot_deg/180.0*ref_math_pi);
   
   dx = (x1-x0)/((REF_DBL)(l-1));
   dy = (y1-y0)/((REF_DBL)(m-1));
@@ -1477,27 +1479,43 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 	{
 	  global = ijk2node(i,j,k,l,m,n);
 	  RSS( ref_node_add( ref_node, global, &node ), "node");
-	  ref_node_xyz(ref_node, 0, node ) = x0 + dx*(REF_DBL)i;
-	  ref_node_xyz(ref_node, 1, node ) = y0 + dy*(REF_DBL)j;
-	  ref_node_xyz(ref_node, 2, node ) = z0 + dz*(REF_DBL)k;
+	  x = x0 + dx*(REF_DBL)i;
+	  y = y0 + dy*(REF_DBL)j;
+	  z = z0 + dz*(REF_DBL)k;
+	  ref_node_xyz(ref_node, 0, node ) = x;
+	  ref_node_xyz(ref_node, 1, node ) = y;
+	  ref_node_xyz(ref_node, 2, node ) = z;
 	  /* ramp
 	  if ( ref_node_xyz(ref_node, 0, node ) > 0.0 )
 	    ref_node_xyz(ref_node, 2, node )
 	      += tan_theta * ref_node_xyz(ref_node, 0, node );
- */
-	  /* cosine */
+	  */
+	  /* cosine
 	  if ( ref_node_xyz(ref_node, 0, node ) > -2.0 &&
 	       ref_node_xyz(ref_node, 0, node ) < 2.0 )
 	    {
 	      ref_node_xyz(ref_node, 2, node )
 		-= 0.005 * (1+cos(ref_math_pi*ref_node_xyz(ref_node, 0, node )/2.0));
 	    }
-	  
+	  */
+	  /* step */
+	  if ( x >= 0.0 && x < 1.0 && k == 0 )
+	    ref_node_xyz(ref_node, 2, node )
+	      += tan_theta * ( ref_node_xyz(ref_node, 0, node ) - 0.0 );
+	  if ( x >= 1.0 && x < 2.0 && k == 0 )
+	    ref_node_xyz(ref_node, 2, node )
+	      += tan_theta;
+	  if ( x >= 2.0 && x < 3.0  && k == 0 )
+	    ref_node_xyz(ref_node, 2, node )
+	      += ( tan_theta +
+		   tan_theta * ( ref_node_xyz(ref_node, 0, node ) - 2.0 ) );
+	  if ( x >= 3.0 && k == 0 )
+	    ref_node_xyz(ref_node, 2, node )
+	      += 2.0*tan_theta;
 
 	  /* shear */
-	  if ( ABS(beta_deg) > 1.0e-8 )
-	    ref_node_xyz(ref_node, 0, node ) 
-	      += ref_node_xyz(ref_node, 2, node ) / tan_beta;
+	  if ( k > 0 )
+	    ref_node_xyz(ref_node, 0, node ) += (z-z0) / tan_mu;
 	}
 
 #define ijk2hex(i,j,k,l,m,n,hex)			\

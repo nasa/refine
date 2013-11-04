@@ -26,9 +26,9 @@ REF_STATUS ref_fixture_twod_brick_grid( REF_GRID *ref_grid );
 REF_STATUS ref_fixture_clock( REF_GRID *ref_grid );
 
 REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid, 
-				    REF_DBL theta_deg,
-				    REF_DBL beta_deg,
-				    REF_INT nx, REF_INT nz );
+				    REF_INT nx, 
+				    REF_INT nz,
+				    REF_DBL rot_deg );
 REF_STATUS ref_fixture_boom3d_grid( REF_GRID *ref_grid_ptr,
 				    REF_INT nx,
 				    REF_INT nt,
