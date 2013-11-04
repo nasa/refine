@@ -58,8 +58,50 @@ int main( int argc, char *argv[] )
       char file[] = "ref_shard_test.b8.ugrid";
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
       RSS( ref_grid_inspect( ref_grid ), "insp" );
-      RSS( ref_shard_prism_into_tet( ref_grid, atoi(argv[2]), REF_EMPTY ), 
-	   "shrd");
+      if ( 0 < ref_cell_n( ref_grid_hex(ref_grid) ) )
+	{
+	  REF_SHARD ref_shard;
+	  REF_CELL ref_cell;
+	  REF_NODE ref_node = ref_grid_node(ref_grid);
+	  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+	  REF_INT faceid;
+	  REF_INT open_node0, open_node1;
+	  REF_INT face_marks, hex_marks;
+	  RSS(ref_shard_create(&ref_shard,ref_grid),"create");
+	  ref_cell = ref_grid_qua(ref_grid);
+	  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	    {
+	      faceid = nodes[4];
+	      if ( atoi(argv[2]) == faceid )
+		{
+		  RSS( ref_face_open_node( &ref_node_xyz(ref_node,0,nodes[0]),
+					   &ref_node_xyz(ref_node,0,nodes[1]),
+					   &ref_node_xyz(ref_node,0,nodes[2]),
+					   &ref_node_xyz(ref_node,0,nodes[3]),
+					   &open_node0 ), "find open" );
+		  open_node1 = open_node0+2;
+		  if ( open_node1 >= 4 ) open_node1 -= 4;
+		  RSS( ref_shard_mark_to_split( ref_shard, 
+						nodes[open_node0], 
+						nodes[open_node1]), 
+		       "mark");
+		}
+	    }
+	  RSS( ref_shard_mark_n( ref_shard, 
+				 &face_marks, &hex_marks ), "count marks");
+	  printf("marked faces %d hexes %d\n",face_marks,hex_marks);
+	  RSS( ref_shard_mark_relax( ref_shard ), "relax" );
+	  RSS( ref_shard_mark_n( ref_shard, 
+				 &face_marks, &hex_marks ), "count marks");
+	  printf("relaxed faces %d hexes %d\n",face_marks,hex_marks);
+	  RSS( ref_shard_split( ref_shard ), "split hex to prism" );
+	  RSS(ref_shard_free(ref_shard),"free");
+	}
+      else
+	{
+	  RSS( ref_shard_prism_into_tet( ref_grid, atoi(argv[2]), REF_EMPTY ), 
+	       "shrd");
+	}
       RSS( ref_grid_inspect( ref_grid ), "insp" );
       RSS(ref_export_by_extension( ref_grid, file ),"export" );
       RSS(ref_grid_free(ref_grid),"free");
