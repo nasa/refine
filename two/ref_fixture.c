@@ -1450,13 +1450,15 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
   REF_DBL y1 = 1.0;
 
   REF_DBL z0 = 0.0;
-  REF_DBL z1 =100.0;
 
   REF_DBL x, y, z;
-  REF_DBL dx, dy, dz;
+  REF_DBL dx, dy;
 
   REF_DBL mach, mu, tan_mu;
   REF_DBL tan_theta = 0.01;
+
+  REF_DBL h0=0.100000*8.0/(REF_DBL)nz;
+  REF_DBL rate=exp((8.0/(REF_DBL)nz)*log(1.050505));
 
   mach = 1.6;
   mu = asin(1.0/mach);
@@ -1464,7 +1466,6 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
   
   dx = (x1-x0)/((REF_DBL)(l-1));
   dy = (y1-y0)/((REF_DBL)(m-1));
-  dz = (z1-z0)/((REF_DBL)(n-1));
 
   RSS(ref_grid_create(ref_grid_ptr),"create");
   ref_grid =  *ref_grid_ptr;
@@ -1474,6 +1475,9 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 #define ijk2node(i,j,k,l,m,n) ((i) + (j)*(l) + (k)*(l)*(m))
 
   for ( k = 0 ; k < n ; k++ )
+    {
+      z = z0;
+      z0 += h0*pow(rate,k);
     for ( j = 0 ; j < m ; j++ )
       for ( i = 0 ; i < l ; i++ )
 	{
@@ -1481,7 +1485,7 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 	  RSS( ref_node_add( ref_node, global, &node ), "node");
 	  x = x0 + dx*(REF_DBL)i;
 	  y = y0 + dy*(REF_DBL)j;
-	  z = z0 + dz*(REF_DBL)k;
+	  
 	  ref_node_xyz(ref_node, 0, node ) = x;
 	  ref_node_xyz(ref_node, 1, node ) = y;
 	  ref_node_xyz(ref_node, 2, node ) = z;
@@ -1515,9 +1519,9 @@ REF_STATUS ref_fixture_boom2d_grid( REF_GRID *ref_grid_ptr,
 
 	  /* shear */
 	  if ( k > 0 )
-	    ref_node_xyz(ref_node, 0, node ) += (z-z0) / tan_mu;
+	    ref_node_xyz(ref_node, 0, node ) += (z-0.0) / tan_mu;
 	}
-
+    }
 #define ijk2hex(i,j,k,l,m,n,hex)			\
   (hex)[0] = ijk2node((i)-1,(j)-1,(k)-1,(l),(m),(n));	\
   (hex)[1] = ijk2node((i)  ,(j)-1,(k)-1,(l),(m),(n));	  \
