@@ -25,6 +25,20 @@
 int main(  )
 {
 
+  if (REF_FALSE)
+    {
+      REF_DBL H, h0, rate;
+      REF_INT n;
+      H = 100.0;
+      h0 = 0.1;
+      n = 80;
+      RSS( ref_inflate_rate(n,h0,H,&rate),"rate");
+
+      printf("H=%f;\n",H);
+      printf("REF_INT nz=%d;\n",n);
+      printf("REF_DBL h0=%f, rate=%f;\n",h0,rate);
+    }
+
   {
     REF_DBL H, h0, rate;
     REF_INT n;
