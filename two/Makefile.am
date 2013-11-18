@@ -1,5 +1,7 @@
 # -*- Makefile -*-
 
+EXTRA_DIST = test.sh
+
 lib_LIBRARIES = libref2.a
 
 libref2_a_SOURCES = \
