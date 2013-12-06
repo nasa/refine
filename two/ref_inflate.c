@@ -64,7 +64,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
   REF_INT new_cell;
   REF_DBL min_dot;
 
-  REF_DBL normal[3], dot, len;
+  REF_DBL normal[3], dot;
   REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, ref;
 
@@ -156,9 +156,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		  normal[1] /= dot;
 		  normal[2] /= dot;
 		}
-	      len = 1.0;
 	      ref_node_xyz(ref_node,0,new_node) = 
-		len*xshift + ref_node_xyz(ref_node,0,node0);
+		xshift + ref_node_xyz(ref_node,0,node0);
 	      ref_node_xyz(ref_node,1,new_node) = 
 		thickness*normal[1] + ref_node_xyz(ref_node,1,node0);
 	      ref_node_xyz(ref_node,2,new_node) = 
