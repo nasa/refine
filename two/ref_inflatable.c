@@ -31,6 +31,7 @@ int main( int argc, char *argv[] )
   REF_DBL rate, total;
   REF_INT layer;
   REF_DBL thickness, xshift, mach_angle_rad;
+  REF_BOOL extrude_radially = REF_FALSE;
 
   if ( 7 > argc )
     {
@@ -38,6 +39,7 @@ int main( int argc, char *argv[] )
 	     argv[0]);
       printf("  when first_thickness <= 0, it is set to a uniform grid,\n");
       printf("    first_thickness = total_thickness/nlayers\n");
+      printf("  when nlayers < 0, extrude radially\n");
       return 1;
     }
 
@@ -45,6 +47,11 @@ int main( int argc, char *argv[] )
   RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
 
   nlayers = atoi( argv[2] );
+  if ( nlayers < 0 )
+    {
+      nlayers = ABS(nlayers);
+      extrude_radially = REF_TRUE;
+    }
   first_thickness = atof( argv[3] );
   total_thickness = atof( argv[4] );
   mach = atof( argv[5] );
@@ -82,8 +89,16 @@ int main( int argc, char *argv[] )
       thickness = first_thickness * pow(rate,layer);
       total = total+thickness;
       xshift = thickness / tan(mach_angle_rad);
-      RSS( ref_inflate_face( ref_grid, faceids, thickness, xshift ), 
-	   "inflate" );
+      if ( extrude_radially )
+	{
+	  RSS( ref_inflate_radially( ref_grid, faceids, thickness, xshift ), 
+	       "inflate" );
+	} 
+      else 
+	{
+	  RSS( ref_inflate_face( ref_grid, faceids, thickness, xshift ), 
+	       "inflate" );
+	}
       printf("layer%5d of%5d : thickness %15.8e total %15.8e :%9d nodes\n",
 	     layer+1,nlayers,thickness, total,
 	     ref_node_n(ref_grid_node(ref_grid)));
