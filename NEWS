@@ -1,4 +1,8 @@
 
+- started software process and classification report
+- started linearization of mean ratio quality
+- meshb export, soln import of metric, fun3d .metric to soln converter
+- ref_inflatable can extrude normally and radially  
 - turned off ref_metric_sanitize metric SMR in fortran interface
 - increased robustness of matrix inverse with pivot in metric SMR
 
