@@ -402,6 +402,22 @@ m=[
     RWDS( 1.0, sqrt_eye[5], tol, "m[5]");
   }
 
+  { /* M^(1/2) of 1,4,16 */
+    REF_DBL tol = -1.0;
+    REF_DBL m[6]={ 16.0, 0.0, 0.0, 
+		         4.0, 0.0,
+		              1.0};
+    REF_DBL sqrt_m[6];
+    RSS( ref_matrix_sqrt_m( m, sqrt_m ), "sqrt m");
+
+    RWDS( 0.25, sqrt_m[0], tol, "m[0]");
+    RWDS( 0.0,  sqrt_m[1], tol, "m[1]");
+    RWDS( 0.0,  sqrt_m[2], tol, "m[2]");
+    RWDS( 0.5,  sqrt_m[3], tol, "m[3]");
+    RWDS( 0.0,  sqrt_m[4], tol, "m[4]");
+    RWDS( 1.0,  sqrt_m[5], tol, "m[5]");
+  }
+
   { /* solve x = 1*/
     REF_DBL tol = -1.0;
     REF_INT rows = 1, cols = 2;
