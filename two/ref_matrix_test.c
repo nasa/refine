@@ -843,5 +843,36 @@ inv(a)
     RSS( ref_matrix_orthog( n, a ), "orth");
   }
 
+  /*
+#!/usr/bin/env octave
+
+a1=rand(3,3);
+a2=rand(3,3);
+
+m1=a1*a1'
+[m1p, m1d]=eig(m1)
+m2=a2*a2'
+[m2p, m2d]=eig(m2)
+
+m1d(1,1)=1.0/sqrt(m1d(1,1));
+m1d(2,2)=1.0/sqrt(m1d(2,2));
+m1d(3,3)=1.0/sqrt(m1d(3,3));
+m1bar=m1p*m1d*m1p'
+
+id=m1bar*m1*m1bar'
+
+m2bar = m1bar*m2*m1bar'
+
+[m12p, m12d]=eig(m2bar)
+m12d(1,1)=max(1.0,m12d(1,1));
+m12d(2,2)=max(1.0,m12d(2,2));
+m12d(3,3)=max(1.0,m12d(3,3));
+
+m12d
+
+m12 = m12p*m12d*m12p'
+   */
+
+
   return 0;
 }
