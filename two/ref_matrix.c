@@ -390,6 +390,35 @@ REF_STATUS ref_matrix_mult_m( REF_DBL *m1, REF_DBL *m2,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_mult_m0m1m0( REF_DBL *m1, REF_DBL *m2,
+				   REF_DBL *m )
+{
+  REF_DBL product[9];
+  /* first col */
+  product[0] = m1[0]*m2[0] + m1[1]*m2[1] + m1[2]*m2[2];
+  product[1] = m1[1]*m2[0] + m1[3]*m2[1] + m1[4]*m2[2];
+  product[2] = m1[2]*m2[0] + m1[4]*m2[1] + m1[5]*m2[2];
+
+  /* mid col */
+  product[3] = m1[0]*m2[1] + m1[1]*m2[3] + m1[2]*m2[4];
+  product[4] = m1[1]*m2[1] + m1[3]*m2[3] + m1[4]*m2[4];
+  product[5] = m1[2]*m2[1] + m1[4]*m2[3] + m1[5]*m2[4];
+
+  /* last col */
+  product[6] = m1[0]*m2[2] + m1[1]*m2[4] + m1[2]*m2[5];
+  product[7] = m1[1]*m2[2] + m1[3]*m2[4] + m1[4]*m2[5];
+  product[8] = m1[2]*m2[2] + m1[4]*m2[4] + m1[5]*m2[5];
+ 
+  m[0] = product[0]*m1[0] + product[3]*m1[1] + product[6]*m1[2];
+  m[1] = product[0]*m1[1] + product[3]*m1[3] + product[6]*m1[4];
+  m[2] = product[0]*m1[2] + product[3]*m1[4] + product[6]*m1[5];
+  m[3] = product[1]*m1[1] + product[4]*m1[3] + product[7]*m1[4];
+  m[4] = product[1]*m1[2] + product[4]*m1[4] + product[7]*m1[5];
+  m[5] = product[2]*m1[2] + product[5]*m1[4] + product[8]*m1[5];
+ 
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_show_m( REF_DBL *m )
 {
   char format[] = "%24.15e" ;

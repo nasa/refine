@@ -40,6 +40,8 @@ REF_STATUS ref_matrix_average_m( REF_DBL *m0_upper_tri,
 				 REF_DBL *avg_m_upper_tri);
 REF_STATUS ref_matrix_mult_m( REF_DBL *m0, REF_DBL *m1,
 			      REF_DBL *a);
+REF_STATUS ref_matrix_mult_m0m1m0( REF_DBL *m0, REF_DBL *m1,
+				   REF_DBL *m);
 
 REF_STATUS ref_matrix_show_m( REF_DBL *m );
 

@@ -418,6 +418,35 @@ m=[
     RWDS( 1.0,  sqrt_m[5], tol, "m[5]");
   }
 
+  { /* M0 * M1 * M0' where M are Symmetric */
+    REF_DBL tol = -1.0;
+    REF_DBL m0[6]={ 1.0, 2.0, 3.0, 
+	 	         4.0, 5.0,
+		              6.0};
+    REF_DBL m1[6]={ 3.0, 4.0, 5.0, 
+	 	         6.0, 7.0,
+		              8.0};
+    REF_DBL m[6];
+    /*
+      m0=[ 1 2 3
+           2 4 5
+           3 5 6 ];
+      m1=[ 3 4 5
+           4 6 7
+           5 7 8 ];
+      m0*m1*m0'
+    */
+
+    RSS( ref_matrix_mult_m0m1m0( m0, m1, m ), "m0m1m0" );
+
+    RWDS( 229,  m[0], tol, "m[0]");
+    RWDS( 415,  m[1], tol, "m[1]");
+    RWDS( 521,  m[2], tol, "m[2]");
+    RWDS( 752,  m[3], tol, "m[3]");
+    RWDS( 944,  m[4], tol, "m[4]");
+    RWDS(1185,  m[5], tol, "m[5]");
+  }
+
   { /* solve x = 1*/
     REF_DBL tol = -1.0;
     REF_INT rows = 1, cols = 2;
