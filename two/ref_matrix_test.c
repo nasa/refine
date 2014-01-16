@@ -386,6 +386,22 @@ m=[
     RWDS(  3.10037074072063e-06, inv[2+2*3], tol, "inv[2,2]");
   }
 
+  { /* M^(1/2) of eye */
+    REF_DBL tol = -1.0;
+    REF_DBL eye[6]={ 1.0, 0.0, 0.0, 
+		          1.0, 0.0,
+		               1.0};
+    REF_DBL sqrt_eye[6];
+    RSS( ref_matrix_sqrt_m( eye, sqrt_eye ), "sqrt m");
+
+    RWDS( 1.0, sqrt_eye[0], tol, "m[0]");
+    RWDS( 0.0, sqrt_eye[1], tol, "m[1]");
+    RWDS( 0.0, sqrt_eye[2], tol, "m[2]");
+    RWDS( 1.0, sqrt_eye[3], tol, "m[3]");
+    RWDS( 0.0, sqrt_eye[4], tol, "m[4]");
+    RWDS( 1.0, sqrt_eye[5], tol, "m[5]");
+  }
+
   { /* solve x = 1*/
     REF_DBL tol = -1.0;
     REF_INT rows = 1, cols = 2;

@@ -332,6 +332,30 @@ REF_STATUS ref_matrix_exp_m( REF_DBL *m_upper_tri,
 
   return REF_SUCCESS;
 }
+REF_STATUS ref_matrix_sqrt_m( REF_DBL *m_upper_tri,
+			      REF_DBL *sqrt_m_upper_tri)
+{
+  REF_DBL d[12];
+  REF_DBL sqrt_d;
+
+  RSS( ref_matrix_diag_m( m_upper_tri, d ), "diag");
+
+  sqrt_d = sqrt(d[0]);
+  if ( !ref_math_divisible( 1.0, sqrt_d ) ) return REF_DIV_ZERO;
+  d[0] = 1.0/sqrt_d;
+
+  sqrt_d = sqrt(d[1]);
+  if ( !ref_math_divisible( 1.0, sqrt_d ) ) return REF_DIV_ZERO;
+  d[1] = 1.0/sqrt_d;
+
+  sqrt_d = sqrt(d[2]);
+  if ( !ref_math_divisible( 1.0, sqrt_d ) ) return REF_DIV_ZERO;
+  d[2] = 1.0/sqrt_d;
+
+  RSS( ref_matrix_form_m( d, sqrt_m_upper_tri ), "form m");
+
+  return REF_SUCCESS;
+}
 REF_STATUS ref_matrix_average_m( REF_DBL *m0_upper_tri,
 				 REF_DBL *m1_upper_tri,
 				 REF_DBL *avg_m_upper_tri)
