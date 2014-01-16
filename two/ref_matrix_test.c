@@ -882,14 +882,22 @@ m1=a1*a1'
 [m1p, m1d]=eig(m1)
 m2=a2*a2'
 [m2p, m2d]=eig(m2)
+   */
 
-m1d(1,1)=1.0/sqrt(m1d(1,1));
-m1d(2,2)=1.0/sqrt(m1d(2,2));
-m1d(3,3)=1.0/sqrt(m1d(3,3));
-m1bar=m1p*m1d*m1p'
-
-id=m1bar*m1*m1bar'
-
+  { /* intersect two metrics */
+    /*
+    m1 = [1.5 1.6 1.0
+          1.6 2.0 1.3
+          1.0 1.3 1.0]
+    m2 = [1.1 0.3 0.7
+          0.3 1.1 0.7
+          0.7 0.7 0.8]
+[m1p, m1d]=eig(m1)
+m1halfd=m1d;
+m1halfd(1,1)=1.0/sqrt(m1halfd(1,1));
+m1halfd(2,2)=1.0/sqrt(m1halfd(2,2));
+m1halfd(3,3)=1.0/sqrt(m1halfd(3,3));
+m1bar=m1p*m1halfd*m1p'
 m2bar = m1bar*m2*m1bar'
 
 [m12p, m12d]=eig(m2bar)
@@ -899,9 +907,9 @@ m12d(3,3)=max(1.0,m12d(3,3));
 
 m12d
 
-m12 = m12p*m12d*m12p'
-   */
-
+m12 = m1p*m12d*m1p'
+    */
+  }
 
   return 0;
 }
