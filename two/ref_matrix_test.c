@@ -892,22 +892,25 @@ m2=a2*a2'
     m2 = [1.1 0.3 0.7
           0.3 1.1 0.7
           0.7 0.7 0.8]
-[m1p, m1d]=eig(m1)
-m1halfd=m1d;
-m1halfd(1,1)=1.0/sqrt(m1halfd(1,1));
-m1halfd(2,2)=1.0/sqrt(m1halfd(2,2));
-m1halfd(3,3)=1.0/sqrt(m1halfd(3,3));
-m1bar=m1p*m1halfd*m1p'
-m2bar = m1bar*m2*m1bar'
+# barral-unpublished-intersection-metric-french
+[m1p, m1d] = eig(m1)
+m1halfd = m1d;
+m1halfd(1,1) = 1.0/sqrt(m1halfd(1,1));
+m1halfd(2,2) = 1.0/sqrt(m1halfd(2,2));
+m1halfd(3,3) = 1.0/sqrt(m1halfd(3,3));
+m1half = m1p*m1halfd*m1p'
 
-[m12p, m12d]=eig(m2bar)
-m12d(1,1)=max(1.0,m12d(1,1));
-m12d(2,2)=max(1.0,m12d(2,2));
-m12d(3,3)=max(1.0,m12d(3,3));
+m1bar_id_check = m1half'*m1*m1half
+m2bar = m1half'*m2*m1half'
 
-m12d
+[m12barp, m12bard]=eig(m2bar)
+m12bard(1,1)=max(1.0,m12bard(1,1));
+m12bard(2,2)=max(1.0,m12bard(2,2));
+m12bard(3,3)=max(1.0,m12bard(3,3));
 
-m12 = m1p*m12d*m1p'
+m12bar = m12barp*m12bard*m12barp'
+m12 = m1half'*m12bar*m1half
+[m12p, m12d]=eig(m12)
     */
   }
 
