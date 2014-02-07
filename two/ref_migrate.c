@@ -647,7 +647,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 		     real_t, 1.0/(REF_DBL)ref_mpi_n );
     ref_malloc_init( ubvec, ref_mpi_n, 
 		     real_t, 1.01 );
-    ref_malloc_init( part, ref_migrate_max(ref_migrate), 
+    ref_malloc_init( part, n,
 		     idx_t, ref_mpi_id );
 
     REIS( METIS_OK,
@@ -656,10 +656,12 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 				 numflag, ncon, nparts, 
 				 tpwgts, ubvec,
 				 options,
-				 part,
 				 edgecut,
+				 part,
 				 &comm ),
 	  "ParMETIS is not o.k." );
+
+    printf("%d: edgecut= %d\n",ref_mpi_id,edgecut[0]);
 
     ref_free( part );
     ref_free( ubvec );
