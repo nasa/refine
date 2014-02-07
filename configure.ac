@@ -146,6 +146,35 @@ then
   AC_SUBST([zoltan_ldadd])
 fi
 
+AC_ARG_WITH(ParMetis,
+        [[  --with-ParMetis[=ARG]   ParMetis library install path [ARG=no]]],
+        [with_ParMetis=$withval],   [with_ParMetis="no"])
+
+if test "$with_ParMetis" != 'no'
+then
+  AC_CHECK_FILE([$with_ParMetis/libparmetis.a],
+                [have_parmetis='yes'],[have_parmetis='no'])
+  AC_CHECK_FILE([$with_ParMetis/libmetis.a],
+                [have_metis='yes'],[have_metis='no'])
+
+  if test "$have_parmetis" != 'no'
+  then
+    if test "$have_metis" != 'no'
+    then
+      AC_DEFINE([HAVE_PARMETIS],[1],[ParMetis is available])
+      parmetis_ldadd="-L$with_ParMetis -lparmetis -lmetis"
+    else
+      AC_MSG_ERROR([ParMetis requested but libmetis.a not found])
+    fi
+  else
+    AC_MSG_ERROR([ParMetis requested but libparmetis.a not found])
+  fi
+  AM_CONDITIONAL(BUILD_PARMETIS_SUPPORT,true)
+  AC_SUBST([parmetis_ldadd])
+else
+  AM_CONDITIONAL(BUILD_PARMETIS_SUPPORT,false)
+fi
+
 
 AC_OUTPUT( \
 	   Makefile \
