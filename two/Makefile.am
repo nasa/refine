@@ -48,6 +48,8 @@ libref2_a_SOURCES = \
 	ref_swap.h ref_swap.c \
 	ref_validation.h ref_validation.c
 
+partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
+
 libref2_a_CFLAGS = @zoltan_include@
 if BUILD_MPI
 libref2_a_CFLAGS += -I@MPIINC@
@@ -85,7 +87,7 @@ TESTS =
 TESTS += ref_adapt_test
 noinst_PROGRAMS += ref_adapt_test
 ref_adapt_test_SOURCES = ref_adapt_test.c
-ref_adapt_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_adapt_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_adj_test
 noinst_PROGRAMS += ref_adj_test
@@ -130,12 +132,12 @@ ref_face_test_LDADD = libref2.a @mpi_ldadd@ -lm
 TESTS += ref_fixture_test
 noinst_PROGRAMS += ref_fixture_test
 ref_fixture_test_SOURCES = ref_fixture_test.c
-ref_fixture_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_fixture_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_fortran_test
 noinst_PROGRAMS += ref_fortran_test
 ref_fortran_test_SOURCES = ref_fortran_test.c
-ref_fortran_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_fortran_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_front_test
 noinst_PROGRAMS += ref_front_test
@@ -145,12 +147,12 @@ ref_front_test_LDADD = libref2.a @mpi_ldadd@ -lm
 TESTS += ref_gather_test
 noinst_PROGRAMS += ref_gather_test
 ref_gather_test_SOURCES = ref_gather_test.c
-ref_gather_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_gather_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_gen_test
 noinst_PROGRAMS += ref_gen_test
 ref_gen_test_SOURCES = ref_gen_test.c
-ref_gen_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_gen_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_grid_test
 noinst_PROGRAMS += ref_grid_test
@@ -160,7 +162,7 @@ ref_grid_test_LDADD = libref2.a @mpi_ldadd@ -lm
 TESTS += ref_histogram_test
 noinst_PROGRAMS += ref_histogram_test
 ref_histogram_test_SOURCES = ref_histogram_test.c
-ref_histogram_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_histogram_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_html_test
 noinst_PROGRAMS += ref_html_test
@@ -195,12 +197,12 @@ ref_matrix_test_LDADD = libref2.a @mpi_ldadd@ -lm
 TESTS += ref_metric_test
 noinst_PROGRAMS += ref_metric_test
 ref_metric_test_SOURCES = ref_metric_test.c
-ref_metric_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_metric_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_migrate_test
 noinst_PROGRAMS += ref_migrate_test
 ref_migrate_test_SOURCES = ref_migrate_test.c
-ref_migrate_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_migrate_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_mpi_test
 noinst_PROGRAMS += ref_mpi_test
@@ -215,7 +217,7 @@ ref_node_test_LDADD = libref2.a @mpi_ldadd@ -lm
 TESTS += ref_part_test
 noinst_PROGRAMS += ref_part_test
 ref_part_test_SOURCES = ref_part_test.c
-ref_part_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_part_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_plot3d_test
 noinst_PROGRAMS += ref_plot3d_test
@@ -265,7 +267,7 @@ ref_stitch_test_LDADD = libref2.a @mpi_ldadd@ -lm
 TESTS += ref_subdiv_test
 noinst_PROGRAMS += ref_subdiv_test
 ref_subdiv_test_SOURCES = ref_subdiv_test.c
-ref_subdiv_test_LDADD = libref2.a @zoltan_ldadd@ @mpi_ldadd@ -lm
+ref_subdiv_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_swap_test
 noinst_PROGRAMS += ref_swap_test

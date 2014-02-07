@@ -567,7 +567,72 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
   }
 #else
+#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+
+#include "parmetis.h"
+#include "mpi.h"
+
+  {
+    REF_NODE ref_node = ref_grid_node(ref_grid);
+    REF_MIGRATE ref_migrate;
+    idx_t *vtxdist;
+    idx_t *xadj, *xadjncy;
+    idx_t wgtflag[] = {0};
+    idx_t numflag[] = {0};
+    idx_t ncon[] = {0};
+    idx_t nparts[1];
+    idx_t edgecut[1];
+    idx_t options[] = {0, 0, 42};
+    idx_t *part;
+    MPI_Comm comm = MPI_COMM_WORLD;
+
+    REF_INT node, n, proc, *partition_size;
+
+    nparts[0] = ref_mpi_n;
+
+    RSS( ref_node_synchronize_globals( ref_node ), "sync global nodes");
+
+    if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+
+    RSS( ref_migrate_create( &ref_migrate, ref_grid ), "create migrate");
+
+    n=0;
+    each_ref_migrate_node( ref_migrate, node )
+      n++;
+
+    ref_malloc( partition_size, ref_mpi_n, REF_INT );
+    RSS( ref_mpi_allgather( &n, partition_size, REF_INT_TYPE ), 
+	 "gather size of each part" );
+
+    ref_malloc( vtxdist, ref_mpi_n+1, idx_t );
+    vtxdist[0] = 0;
+    for ( proc = 0; proc < ref_mpi_n; proc++ )
+      vtxdist[proc+1] = vtxdist[proc] + partition_size[proc];
+
+    xadj = NULL;
+    xadjncy = NULL;
+    part = NULL;
+
+    REIS( METIS_OK,
+	  ParMETIS_V3_PartKway ( vtxdist, xadj, xadjncy,
+				 (idx_t *)NULL, (idx_t *)NULL, wgtflag,
+				 numflag, ncon, nparts, 
+				 (real_t *)NULL, (real_t *)NULL,
+				 options,
+				 part,
+				 edgecut,
+				 &comm ),
+	  "ParMETIS is not o.k." );
+
+    ref_free( vtxdist );
+    ref_free( partition_size );
+
+    RSS( ref_migrate_free( ref_migrate ), "free migrate");
+
+  }
+#else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#endif
 #endif
 
   return REF_SUCCESS;
