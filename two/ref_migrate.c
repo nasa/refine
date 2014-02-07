@@ -583,7 +583,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     idx_t ncon[] = {1};
     idx_t nparts[1];
     idx_t edgecut[1];
-    idx_t options[] = {0, 0, 42};
+    idx_t options[] = {1, 1|2|4|8|16|32|64, 42};
     idx_t *part;
     MPI_Comm comm = MPI_COMM_WORLD;
 
