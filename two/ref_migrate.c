@@ -589,6 +589,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     REF_INT node, n, proc, *partition_size, *implied, shift, degree;
     REF_INT item, ref;
+    REF_INT *node_part;
 
     nparts[0] = ref_mpi_n;
 
@@ -597,6 +598,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
     RSS( ref_migrate_create( &ref_migrate, ref_grid ), "create migrate");
+
+    /* skip agglomeration stuff */
 
     n=0;
     each_ref_migrate_node( ref_migrate, node )
@@ -663,6 +666,22 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     printf("%d: edgecut= %d\n",ref_mpi_id,edgecut[0]);
 
+    ref_malloc_init( node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+    n=0;
+    each_ref_migrate_node( ref_migrate, node )
+      {
+	node_part[node] = part[n];
+	n++;
+      }
+
+    /* skip agglomeration stuff */
+
+    RSS( ref_node_ghost_int( ref_node, node_part ), "ghost part");
+
+    for(node=0; node<ref_node_max(ref_node); node++)
+      ref_node_part(ref_node, node) = node_part[node];
+
+    ref_free( node_part );
     ref_free( part );
     ref_free( ubvec );
     ref_free( tpwgts );
@@ -674,7 +693,6 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     RSS( ref_migrate_free( ref_migrate ), "free migrate");
 
-    RSS( REF_IMPLEMENT, "finish ParMetis");
 
   }
 #else
