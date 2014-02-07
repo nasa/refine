@@ -577,16 +577,18 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     REF_MIGRATE ref_migrate;
     idx_t *vtxdist;
     idx_t *xadj, *xadjncy;
+    real_t *tpwgts, *ubvec;
     idx_t wgtflag[] = {0};
     idx_t numflag[] = {0};
-    idx_t ncon[] = {0};
+    idx_t ncon[] = {1};
     idx_t nparts[1];
     idx_t edgecut[1];
     idx_t options[] = {0, 0, 42};
     idx_t *part;
     MPI_Comm comm = MPI_COMM_WORLD;
 
-    REF_INT node, n, proc, *partition_size;
+    REF_INT node, n, proc, *partition_size, *implied, shift, degree;
+    REF_INT item, ref;
 
     nparts[0] = ref_mpi_n;
 
@@ -605,29 +607,72 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 	 "gather size of each part" );
 
     ref_malloc( vtxdist, ref_mpi_n+1, idx_t );
+    ref_malloc_init( implied, ref_migrate_max(ref_migrate), 
+		     REF_INT, REF_EMPTY );
+    ref_malloc( xadj, n+1, idx_t );
+
     vtxdist[0] = 0;
     for ( proc = 0; proc < ref_mpi_n; proc++ )
       vtxdist[proc+1] = vtxdist[proc] + partition_size[proc];
 
-    xadj = NULL;
-    xadjncy = NULL;
-    part = NULL;
+    shift = vtxdist[ref_mpi_id];
+    n=0;
+    xadj[0]=0;
+    each_ref_migrate_node( ref_migrate, node )
+      {
+	implied[node] = shift+n;
+	RSS( ref_adj_degree( ref_migrate_conn( ref_migrate ), 
+			     node, &degree), "deg" );
+	xadj[n+1] = xadj[n] + degree;
+	n++;
+      }
+    RSS( ref_node_ghost_int( ref_node, implied ), "implied ghosts");
+
+    ref_malloc( xadjncy, xadj[n], idx_t );
+
+    n=0;
+    each_ref_migrate_node( ref_migrate, node )
+      {
+	degree = 0;
+	each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate),
+					node, item, ref )
+	  {
+	    xadjncy[xadj[n]+degree] = implied[ref];
+	    degree++;
+	  }
+	n++;
+      }
+
+    ref_malloc_init( tpwgts, ref_mpi_n, 
+		     real_t, 1.0/(REF_DBL)ref_mpi_n );
+    ref_malloc_init( ubvec, ref_mpi_n, 
+		     real_t, 1.01 );
+    ref_malloc_init( part, ref_migrate_max(ref_migrate), 
+		     idx_t, ref_mpi_id );
 
     REIS( METIS_OK,
 	  ParMETIS_V3_PartKway ( vtxdist, xadj, xadjncy,
 				 (idx_t *)NULL, (idx_t *)NULL, wgtflag,
 				 numflag, ncon, nparts, 
-				 (real_t *)NULL, (real_t *)NULL,
+				 tpwgts, ubvec,
 				 options,
 				 part,
 				 edgecut,
 				 &comm ),
 	  "ParMETIS is not o.k." );
 
+    ref_free( part );
+    ref_free( ubvec );
+    ref_free( tpwgts );
+    ref_free( xadjncy );
+    ref_free( xadj );
+    ref_free( implied );
     ref_free( vtxdist );
     ref_free( partition_size );
 
     RSS( ref_migrate_free( ref_migrate ), "free migrate");
+
+    RSS( REF_IMPLEMENT, "finish ParMetis");
 
   }
 #else
