@@ -50,7 +50,7 @@ libref2_a_SOURCES = \
 
 partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
 
-libref2_a_CFLAGS = @zoltan_include@
+libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@
 if BUILD_MPI
 libref2_a_CFLAGS += -I@MPIINC@
 endif # BUILD_MPI
