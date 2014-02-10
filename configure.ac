@@ -146,35 +146,55 @@ then
   AC_SUBST([zoltan_ldadd])
 fi
 
-AC_ARG_WITH(ParMetis,
-        [[  --with-ParMetis[=ARG]   ParMetis library install path [ARG=no]]],
-        [with_ParMetis=$withval],   [with_ParMetis="no"])
+AC_ARG_WITH(parmetis,
+	[  --with-parmetis[=ARG]       use ParMETIS partitioner [ARG=no]],
+	[with_parmetis=$withval],        [with_parmetis="no"])
 
-if test "$with_ParMetis" != 'no'
+if test "$with_parmetis" != 'no'
 then
-  AC_CHECK_FILE([$with_ParMetis/libparmetis.a],
-                [have_parmetis='yes'],[have_parmetis='no'])
-  AC_CHECK_FILE([$with_ParMetis/libmetis.a],
-                [have_metis='yes'],[have_metis='no'])
+  AC_CHECK_FILE([$with_parmetis/include/parmetis.h],
+                [parmetis_h_path=$with_parmetis/include],
+                [parmetis_h_path='no'])
+  AC_CHECK_FILE([$with_parmetis/include/metis.h],
+                [metis_h_path=$with_parmetis/include],
+                [metis_h_path='no'])
+  AC_CHECK_FILE([$with_parmetis/lib/libparmetis.a],
+                [libparmetis_a_path=$with_parmetis/lib],
+		[libparmetis_a_path='no'])
+  AC_CHECK_FILE([$with_parmetis/lib/libmetis.a],
+                [libmetis_a_path=$with_parmetis/lib],
+		[libmetis_a_path='no'])
 
-  if test "$have_parmetis" != 'no'
+  if test "$parmetis_h_path" == 'no'
   then
-    if test "$have_metis" != 'no'
-    then
-      AC_DEFINE([HAVE_PARMETIS],[1],[ParMetis is available])
-      parmetis_ldadd="-L$with_ParMetis -lparmetis -lmetis"
-    else
-      AC_MSG_ERROR([ParMetis requested but libmetis.a not found])
-    fi
-  else
-    AC_MSG_ERROR([ParMetis requested but libparmetis.a not found])
+    AC_MSG_ERROR([parmetis.h not found in $with_parmetis/include])
   fi
-  AM_CONDITIONAL(BUILD_PARMETIS_SUPPORT,true)
+
+  if test "$metis_h_path" == 'no'
+  then
+    AC_MSG_ERROR([metis.h not found in $with_parmetis/include])
+  fi
+
+  if test "$libparmetis_a_path" == 'no'
+  then
+    AC_MSG_ERROR([libparmetis.a not found in $with_parmetis/lib])
+  fi
+
+  if test "$libmetis_a_path" == 'no'
+  then
+    AC_MSG_ERROR([libmetis.a not found in $with_parmetis/lib])
+  fi
+
+  parmetis_include="-I$parmetis_h_path"
+  parmetis_ldadd="-L$libparmetis_a_path -lparmetis -lmetis"
+
+  AC_SUBST([parmetis_include])
   AC_SUBST([parmetis_ldadd])
+  AC_DEFINE([HAVE_PARMETIS],[1],[ParMETIS is available])
+  AM_CONDITIONAL(BUILD_PARMETIS_SUPPORT,true)
 else
   AM_CONDITIONAL(BUILD_PARMETIS_SUPPORT,false)
 fi
-
 
 AC_OUTPUT( \
 	   Makefile \

@@ -17,7 +17,7 @@ mkdir -p parmetis
 ( cd parmetis && \
     ../configure \
     --prefix=`pwd` \
-    --with-ParMetis=/usr/local/pkgs-modules/ParMETIS_4.0.3-openmpi_1.6.5_intel_2013-intel.2013.4.183_64/lib \
+    --with-parmetis=/usr/local/pkgs-modules/ParMETIS_4.0.3-openmpi_1.6.5_intel_2013-intel.2013.4.183_64 \
     CC=mpicc \
     FC=mpif90 \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
