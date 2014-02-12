@@ -572,19 +572,27 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 #include "parmetis.h"
 #include "mpi.h"
 
+#if PARMETIS_MAJOR_VERSION == 3
+#define PARM_INT  idxtype
+#define PARM_REAL float
+#else
+#define PARM_INT  idx_t
+#define PARM_REAL real_t
+#endif
+
   {
     REF_NODE ref_node = ref_grid_node(ref_grid);
     REF_MIGRATE ref_migrate;
-    idx_t *vtxdist;
-    idx_t *xadj, *xadjncy;
-    real_t *tpwgts, *ubvec;
-    idx_t wgtflag[] = {0};
-    idx_t numflag[] = {0};
-    idx_t ncon[] = {1};
-    idx_t nparts[1];
-    idx_t edgecut[1];
-    idx_t options[] = {1, 1|2|4|8|16|32|64, 42};
-    idx_t *part;
+    PARM_INT *vtxdist;
+    PARM_INT *xadj, *xadjncy;
+    PARM_REAL *tpwgts, *ubvec;
+    PARM_INT wgtflag[] = {0};
+    PARM_INT numflag[] = {0};
+    PARM_INT ncon[] = {1};
+    PARM_INT nparts[1];
+    PARM_INT edgecut[1];
+    PARM_INT options[] = {1, 1|2|4|8|16|32|64, 42};
+    PARM_INT *part;
     MPI_Comm comm = MPI_COMM_WORLD;
 
     REF_INT node, n, proc, *partition_size, *implied, shift, degree;
@@ -609,10 +617,10 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     RSS( ref_mpi_allgather( &n, partition_size, REF_INT_TYPE ), 
 	 "gather size of each part" );
 
-    ref_malloc( vtxdist, ref_mpi_n+1, idx_t );
+    ref_malloc( vtxdist, ref_mpi_n+1, PARM_INT );
     ref_malloc_init( implied, ref_migrate_max(ref_migrate), 
 		     REF_INT, REF_EMPTY );
-    ref_malloc( xadj, n+1, idx_t );
+    ref_malloc( xadj, n+1, PARM_INT );
 
     vtxdist[0] = 0;
     for ( proc = 0; proc < ref_mpi_n; proc++ )
@@ -631,7 +639,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
       }
     RSS( ref_node_ghost_int( ref_node, implied ), "implied ghosts");
 
-    ref_malloc( xadjncy, xadj[n], idx_t );
+    ref_malloc( xadjncy, xadj[n], PARM_INT );
 
     n=0;
     each_ref_migrate_node( ref_migrate, node )
@@ -647,15 +655,15 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
       }
 
     ref_malloc_init( tpwgts, ref_mpi_n, 
-		     real_t, 1.0/(REF_DBL)ref_mpi_n );
+		     PARM_REAL, 1.0/(REF_DBL)ref_mpi_n );
     ref_malloc_init( ubvec, ref_mpi_n, 
-		     real_t, 1.01 );
+		     PARM_REAL, 1.01 );
     ref_malloc_init( part, n,
-		     idx_t, ref_mpi_id );
+		     PARM_INT, ref_mpi_id );
 
     REIS( METIS_OK,
 	  ParMETIS_V3_PartKway ( vtxdist, xadj, xadjncy,
-				 (idx_t *)NULL, (idx_t *)NULL, wgtflag,
+				 (PARM_INT *)NULL, (PARM_INT *)NULL, wgtflag,
 				 numflag, ncon, nparts, 
 				 tpwgts, ubvec,
 				 options,
