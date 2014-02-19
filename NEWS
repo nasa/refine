@@ -1,5 +1,12 @@
 
+Wed, Feb 19, 2014 : Released Refine 1.8.11
+
 - added ParMETIS bindings for testing with FUN3D
+- ref_translate learned --shift
+- overhaul of metric intersection to use more robust matrix sqrt
+
+Mon, Jan 13, 2014 : Released Refine 1.8.10
+
 - started software process and classification report
 - started linearization of mean ratio quality
 - meshb export, soln import of metric, fun3d .metric to soln converter
