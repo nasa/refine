@@ -1,4 +1,5 @@
 
+- added ParMETIS bindings for testing with FUN3D
 - started software process and classification report
 - started linearization of mean ratio quality
 - meshb export, soln import of metric, fun3d .metric to soln converter
