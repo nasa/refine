@@ -172,7 +172,9 @@ then
 
   if test "$metis_h_path" == 'no'
   then
-    AC_MSG_ERROR([metis.h not found in $with_parmetis/include])
+    AC_MSG_WARN([metis.h not found in $with_parmetis/include,
+                    this is not an issue for ParMETIS 3.*, 
+                    but compiling will fail for ParMETIS 4.*])
   fi
 
   if test "$libparmetis_a_path" == 'no'
