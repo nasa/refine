@@ -1,4 +1,8 @@
 
+Mon, Mar 10, 2014 : Released Refine 1.8.12
+
+- allow use of older ParMETIS 3.* bindings
+
 Wed, Feb 19, 2014 : Released Refine 1.8.11
 
 - added ParMETIS bindings for testing with FUN3D
