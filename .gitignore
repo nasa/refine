@@ -6,9 +6,12 @@ Makefile.in
 /aclocal.m4
 /compile
 /configure
+/config.guess
+/config.sub
 /depcomp
 /install-sh
 /missing
+/test-driver
 
 # unit tests
 
