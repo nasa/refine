@@ -135,7 +135,7 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype;
+  MPI_Datatype datatype = NULL;
 
   ref_type_mpi_type(type,datatype);
 
@@ -152,7 +152,7 @@ REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
 REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype;
+  MPI_Datatype datatype = NULL;
   REF_INT tag;
 
   ref_type_mpi_type(type,datatype);
@@ -174,7 +174,7 @@ REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
 REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype;
+  MPI_Datatype datatype = NULL;
   REF_INT tag;
   MPI_Status status;
 
@@ -197,7 +197,7 @@ REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
 REF_STATUS ref_mpi_alltoall( void *send, void *recv, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype;
+  MPI_Datatype datatype = NULL;
 
   ref_type_mpi_type(type,datatype);
 
@@ -275,7 +275,7 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
 REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype;
+  MPI_Datatype datatype = NULL;
 
   ref_type_mpi_type(type,datatype);
 
@@ -314,7 +314,7 @@ REF_STATUS ref_mpi_all_or( REF_BOOL *boolean )
 REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype;
+  MPI_Datatype datatype = NULL;
 
   ref_type_mpi_type(type,datatype);
 
@@ -337,7 +337,7 @@ REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
 {
   REF_INT i;
 #ifdef HAVE_MPI
-  MPI_Datatype datatype;
+  MPI_Datatype datatype = NULL;
 
   if ( 1 == ref_mpi_n )
     {
@@ -382,7 +382,7 @@ REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
 REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype;
+  MPI_Datatype datatype = NULL;
   
   if ( 1 == ref_mpi_n ) 
     {
