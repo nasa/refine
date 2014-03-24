@@ -1,4 +1,7 @@
 
+- fix header error on SGI ICE due to wrong include location
+- eliminated compiler warnings 
+
 Mon, Mar 10, 2014 : Released Refine 1.8.12
 
 - allow use of older ParMETIS 3.* bindings
