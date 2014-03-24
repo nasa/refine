@@ -6,6 +6,22 @@
 #include "config.h"
 #endif
 
+#ifdef HAVE_ZOLTAN
+#include "zoltan.h"
+#endif
+
+#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+#include "parmetis.h"
+#include "mpi.h"
+#if PARMETIS_MAJOR_VERSION == 3
+#define PARM_INT  idxtype
+#define PARM_REAL float
+#else
+#define PARM_INT  idx_t
+#define PARM_REAL real_t
+#endif
+#endif
+
 #include "ref_migrate.h"
 
 #include "ref_mpi.h"
@@ -168,7 +184,6 @@ REF_STATUS ref_migrate_2d_agglomeration_keep( REF_MIGRATE ref_migrate,
 }
 
 #ifdef HAVE_ZOLTAN
-#include "zoltan.h"
 
 static int ref_migrate_local_n( void *void_ref_migrate, int *ierr )
 {
@@ -568,17 +583,6 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
   }
 #else
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-
-#include "parmetis.h"
-#include "mpi.h"
-
-#if PARMETIS_MAJOR_VERSION == 3
-#define PARM_INT  idxtype
-#define PARM_REAL float
-#else
-#define PARM_INT  idx_t
-#define PARM_REAL real_t
-#endif
 
   {
     REF_NODE ref_node = ref_grid_node(ref_grid);
