@@ -1,4 +1,6 @@
 
+Mon, Mar 24, 2014 : Released Refine 1.8.13
+
 - fix header error on SGI ICE due to wrong include location
 - eliminated compiler warnings 
 
