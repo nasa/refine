@@ -23,12 +23,13 @@ char **ref_mpi_argv = NULL;
 
 #ifdef HAVE_MPI
 
-#define ref_type_mpi_type(macro_ref_type,macro_mpi_type)	\
-  switch (macro_ref_type)					\
-    {								\
-    case REF_INT_TYPE: (macro_mpi_type) = MPI_INT; break;	\
-    case REF_DBL_TYPE: (macro_mpi_type) = MPI_DOUBLE; break;	\
-    default: RSS( REF_IMPLEMENT, "data type");			\
+#define ref_type_mpi_type(macro_ref_type,macro_mpi_type)		\
+  switch (macro_ref_type)						\
+    {									\
+    case REF_INT_TYPE: (macro_mpi_type) = MPI_INT; break;		\
+    case REF_DBL_TYPE: (macro_mpi_type) = MPI_DOUBLE; break;		\
+    default: (macro_mpi_type) = MPI_DATATYPE_NULL;			\
+      RSS( REF_IMPLEMENT, "data type");					\
     }
 
 #endif
@@ -135,7 +136,7 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype = NULL;
+  MPI_Datatype datatype;
 
   ref_type_mpi_type(type,datatype);
 
@@ -152,7 +153,7 @@ REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
 REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype = NULL;
+  MPI_Datatype datatype;
   REF_INT tag;
 
   ref_type_mpi_type(type,datatype);
@@ -174,7 +175,7 @@ REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
 REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype = NULL;
+  MPI_Datatype datatype;
   REF_INT tag;
   MPI_Status status;
 
@@ -197,7 +198,7 @@ REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
 REF_STATUS ref_mpi_alltoall( void *send, void *recv, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype = NULL;
+  MPI_Datatype datatype;
 
   ref_type_mpi_type(type,datatype);
 
@@ -275,7 +276,7 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
 REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype = NULL;
+  MPI_Datatype datatype;
 
   ref_type_mpi_type(type,datatype);
 
@@ -314,7 +315,7 @@ REF_STATUS ref_mpi_all_or( REF_BOOL *boolean )
 REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype = NULL;
+  MPI_Datatype datatype;
 
   ref_type_mpi_type(type,datatype);
 
@@ -337,7 +338,7 @@ REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
 {
   REF_INT i;
 #ifdef HAVE_MPI
-  MPI_Datatype datatype = NULL;
+  MPI_Datatype datatype;
 
   if ( 1 == ref_mpi_n )
     {
@@ -382,7 +383,7 @@ REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
 REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type )
 {
 #ifdef HAVE_MPI
-  MPI_Datatype datatype = NULL;
+  MPI_Datatype datatype;
   
   if ( 1 == ref_mpi_n ) 
     {
