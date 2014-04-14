@@ -4,6 +4,8 @@
 
 #include "ref_defs.h"
 
+BEGIN_C_DECLORATION
+
 REF_STATUS ref_sort_insertion_int( REF_INT n, REF_INT *original, 
 				   REF_INT *sorted );
 

@@ -6,6 +6,8 @@
 
 #include "ref_grid.h"
 
+BEGIN_C_DECLORATION
+
 REF_STATUS ref_validation_all( REF_GRID ref_grid );
 REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid );
 REF_STATUS ref_validation_boundary_face( REF_GRID ref_grid );

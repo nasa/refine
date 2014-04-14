@@ -6,6 +6,8 @@
 
 #include "ref_grid.h"
 
+BEGIN_C_DECLORATION
+
 REF_STATUS ref_quality_hex( REF_GRID ref_grid );
 
 REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid, 
