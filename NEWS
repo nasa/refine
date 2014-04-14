@@ -1,7 +1,12 @@
 
+Mon, Apr 14, 2014 : Released Refine 1.8.14
+
+- added missing BEGIN_C_DECLORATION C/C++ compatibility macros that
+    should come in pairs
+
 Mon, Mar 24, 2014 : Released Refine 1.8.13
 
-- fix header error on SGI ICE due to wrong include location
+- fix header error on SGI ICE due to wrong include location of parmetis.h
 - eliminated compiler warnings 
 
 Mon, Mar 10, 2014 : Released Refine 1.8.12
