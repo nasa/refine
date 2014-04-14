@@ -15,6 +15,8 @@
 #include "grid.h"
 #include "queue.h"
 
+BEGIN_C_DECLORATION
+
 Grid *gridSwapFace(Grid *g, Queue *q, int n0, int n1, int n2 );
 Grid *gridSwapEdge(Grid *g, Queue *q, int n0, int n1 );
 Grid *gridSwapNearNode(Grid *g, int node, double limit );
@@ -23,5 +25,7 @@ Grid *gridSwapNearNodeExceptBoundary(Grid *g, int node );
 Grid *gridSwap(Grid *g, double improvementLimit );
 Grid *gridRemoveTwoFaceCell(Grid *g, Queue *q, int cell );
 Grid *gridRemoveThreeFaceCell(Grid *g, Queue *q, int cell );
+
+END_C_DECLORATION
 
 #endif /* GRIDSWAP_H */
