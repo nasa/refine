@@ -378,6 +378,9 @@ Grid *gridScaleSpacing(Grid *grid, int node, double scale )
 
 Grid *gridScaleSpacingSphere( Grid *grid, 
 			      double x, double y, double z, double r,
+			      double scale );
+Grid *gridScaleSpacingSphere( Grid *grid, 
+			      double x, double y, double z, double r,
 			      double scale )
 {
   int node;
@@ -399,6 +402,9 @@ Grid *gridScaleSpacingSphere( Grid *grid,
   return grid;
 }
 
+Grid *gridScaleSpacingSphereDirection( Grid *grid, 
+			      double x, double y, double z, double r,
+  		              double scalex, double scaley, double scalez );
 Grid *gridScaleSpacingSphereDirection( Grid *grid, 
 			      double x, double y, double z, double r,
 			      double scalex, double scaley, double scalez )
@@ -429,6 +435,10 @@ Grid *gridScaleSpacingSphereDirection( Grid *grid,
   return grid;
 }
 
+Grid *gridSetGlobalMap(Grid *grid,
+		       double m11, double m12, double m13,
+		                   double m22, double m23,
+		                               double m33);
 Grid *gridSetGlobalMap(Grid *grid,
 		       double m11, double m12, double m13,
 		                   double m22, double m23,

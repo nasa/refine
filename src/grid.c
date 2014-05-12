@@ -3341,6 +3341,7 @@ Grid *gridReconnectAllCell(Grid *grid, int oldNode, int newNode )
   return grid;
 }
 
+Grid *gridReconnectCellUnlessFrozen(Grid *grid, int oldNode, int newNode );
 Grid *gridReconnectCellUnlessFrozen(Grid *grid, int oldNode, int newNode )
 {
   AdjIterator it;
@@ -5116,6 +5117,7 @@ Grid *gridCycleEquator( Grid *grid )
   return grid;
 }
 
+int gridGetNextNodeGlobal(Grid *grid);
 int gridGetNextNodeGlobal(Grid *grid)
 {
   int global, i;
@@ -6058,6 +6060,7 @@ Grid *gridReportLinesLocation(Grid *grid)
   return grid;
 }
 
+int gridMirrorNodeAboutY0(Grid *grid, int node, int origGlobal, int mirrorAux );
 int gridMirrorNodeAboutY0(Grid *grid, int node, int origGlobal, int mirrorAux )
 {
   int newNode;
