@@ -595,7 +595,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     PARM_INT ncon[] = {1};
     PARM_INT nparts[1];
     PARM_INT edgecut[1];
-    PARM_INT options[] = {1, 1|2|4|8|16|32|64, 42};
+    PARM_INT options[] = {1, 0, 42};
     PARM_INT *part;
     MPI_Comm comm = MPI_COMM_WORLD;
 
