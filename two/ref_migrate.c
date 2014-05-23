@@ -687,7 +687,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 	  "ParMETIS is not o.k." );
 #endif
 
-    printf("%d: edgecut= %d\n",ref_mpi_id,edgecut[0]);
+    /* printf("%d: edgecut= %d\n",ref_mpi_id,edgecut[0]); */
 
     ref_malloc_init( node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY );
     n=0;
