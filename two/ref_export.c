@@ -641,6 +641,7 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
   REF_INT i, n=36;
   REF_INT e0, e1;
   REF_DBL dt = ref_math_in_radians(360.0/(REF_DBL)n);
+  REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
 
   sprintf(viz_file, "%s_n%d_p%d_ellipse.tec", 
 	  root_filename, ref_mpi_n, ref_mpi_id);
@@ -672,8 +673,8 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
 	    e1 = 0;
 	  for (i=0;i<n;i++)
 	    {
-	      ex = cos(i*dt)/sqrt(d[e0]);
-	      ey = sin(i*dt)/sqrt(d[e1]);
+	      ex = scale*cos(i*dt)/sqrt(d[e0]);
+	      ey = scale*sin(i*dt)/sqrt(d[e1]);
 	      x = d[3+3*e0]*ex + d[3+3*e1]*ey;
 	      y = d[4+3*e0]*ex + d[4+3*e1]*ey;
 	      z = d[5+3*e0]*ex + d[5+3*e1]*ey;
