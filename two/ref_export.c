@@ -17,6 +17,7 @@
 #include "ref_node.h"
 
 #include "ref_malloc.h"
+#include "ref_math.h"
 
 #define VTK_TETRA      (10)
 #define VTK_HEXAHEDRON (12)
@@ -533,7 +534,7 @@ REF_STATUS ref_export_tec_part( REF_GRID ref_grid, char *root_filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
+REF_STATUS ref_export_tec_metric_axis( REF_GRID ref_grid, char *root_filename )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -621,6 +622,76 @@ REF_STATUS ref_export_tec_metric( REF_GRID ref_grid, char *root_filename )
 
       fclose(file);
     } /* each eigenpair */
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid, 
+					  char *root_filename )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+  REF_INT *o2n, *n2o;
+  REF_INT ncell;
+  REF_DBL d[12];
+  REF_DBL x,y,z;
+  REF_DBL ex,ey;
+  FILE *file;
+  char viz_file[256];
+  REF_INT i, n=36;
+  REF_INT e0, e1;
+  REF_DBL dt = ref_math_in_radians(360.0/(REF_DBL)n);
+
+  sprintf(viz_file, "%s_n%d_p%d_ellipse.tec", 
+	  root_filename, ref_mpi_n, ref_mpi_id);
+
+  file = fopen(viz_file,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",viz_file);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"tecplot refine metric axes\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  ncell = ref_node_n(ref_node)*n;
+
+  fprintf(file,
+	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  ncell, ncell, "point", "felineseg" );
+
+  RSS( ref_node_compact( ref_node, &o2n, &n2o ), "compact" );
+
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    {
+      RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,n2o[node]),
+			      d ), "diag" );
+      RSS( ref_matrix_ascending_eig( d ), "sort eig" );
+      for (i=0;i<n;i++)
+	{
+	  e0=0;
+	  e1=1;
+	  ex = cos(i*dt)/sqrt(d[e0]);
+	  ey = sin(i*dt)/sqrt(d[e1]);
+	  x = d[3+3*e0]*ex + d[3+3*e1]*ey;
+	  y = d[4+3*e0]*ex + d[4+3*e1]*ey;
+	  z = d[5+3*e0]*ex + d[5+3*e1]*ey;
+	  fprintf(file, " %.16e %.16e %.16e\n", 
+		  ref_node_xyz(ref_node,0,n2o[node])+x,
+		  ref_node_xyz(ref_node,1,n2o[node])+y,
+		  ref_node_xyz(ref_node,2,n2o[node])+z);
+	}
+    }
+  
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    {
+      for (i=0;i<n-1;i++)
+	fprintf(file," %d %d\n",i+node*n+1,i+1+node*n+1);
+      fprintf(file," %d %d\n",n+node*n,1+node*n);
+    }
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(file);
 
   return REF_SUCCESS;
 }
