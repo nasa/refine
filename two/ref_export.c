@@ -656,7 +656,7 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
 
   fprintf(file,
 	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-	  ncell, ncell, "point", "felineseg" );
+	  3*ncell, 3*ncell, "point", "felineseg" );
 
   RSS( ref_node_compact( ref_node, &o2n, &n2o ), "compact" );
 
@@ -665,28 +665,33 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
       RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,n2o[node]),
 			      d ), "diag" );
       RSS( ref_matrix_ascending_eig( d ), "sort eig" );
-      for (i=0;i<n;i++)
+      for (e0=0;e0<3;e0++)
 	{
-	  e0=0;
-	  e1=1;
-	  ex = cos(i*dt)/sqrt(d[e0]);
-	  ey = sin(i*dt)/sqrt(d[e1]);
-	  x = d[3+3*e0]*ex + d[3+3*e1]*ey;
-	  y = d[4+3*e0]*ex + d[4+3*e1]*ey;
-	  z = d[5+3*e0]*ex + d[5+3*e1]*ey;
-	  fprintf(file, " %.16e %.16e %.16e\n", 
-		  ref_node_xyz(ref_node,0,n2o[node])+x,
-		  ref_node_xyz(ref_node,1,n2o[node])+y,
-		  ref_node_xyz(ref_node,2,n2o[node])+z);
+	  e1 = e0+1;
+	  if (e1==3) 
+	    e1 = 0;
+	  for (i=0;i<n;i++)
+	    {
+	      ex = cos(i*dt)/sqrt(d[e0]);
+	      ey = sin(i*dt)/sqrt(d[e1]);
+	      x = d[3+3*e0]*ex + d[3+3*e1]*ey;
+	      y = d[4+3*e0]*ex + d[4+3*e1]*ey;
+	      z = d[5+3*e0]*ex + d[5+3*e1]*ey;
+	      fprintf(file, " %.16e %.16e %.16e\n", 
+		      ref_node_xyz(ref_node,0,n2o[node])+x,
+		      ref_node_xyz(ref_node,1,n2o[node])+y,
+		      ref_node_xyz(ref_node,2,n2o[node])+z);
+	    }
 	}
     }
   
-  for ( node = 0; node < ref_node_n(ref_node); node++ )
-    {
-      for (i=0;i<n-1;i++)
-	fprintf(file," %d %d\n",i+node*n+1,i+1+node*n+1);
-      fprintf(file," %d %d\n",n+node*n,1+node*n);
-    }
+  for (e0=0;e0<3;e0++)
+    for ( node = 0; node < ref_node_n(ref_node); node++ )
+      {
+	for (i=0;i<n-1;i++)
+	  fprintf(file," %d %d\n",i+node*n+1+ncell*e0,i+1+node*n+1+ncell*e0);
+	fprintf(file," %d %d\n",n+node*n+ncell*e0,1+node*n+ncell*e0);
+      }
 
   ref_free(n2o);
   ref_free(o2n);
