@@ -49,6 +49,14 @@ REF_STATUS ref_grid_free_cell_clone( REF_GRID ref_grid );
 	(group) < 4;							\
 	(group)++  , (ref_cell) = ref_grid_cell(ref_grid,group) )
 
+#define ref_grid_guess_twod_status( ref_grd )    \
+  if ( 0 == ref_cell_n(ref_grid_tet(ref_grd)) && \
+       0 == ref_cell_n(ref_grid_pyr(ref_grd)) && \
+       0 != ref_cell_n(ref_grid_pri(ref_grd)) && \
+       0 == ref_cell_n(ref_grid_hex(ref_grd)) )  \
+    ref_grid_twod(ref_grd) = REF_TRUE;
+
+
 REF_STATUS ref_grid_inspect( REF_GRID ref_grid );
 
 REF_STATUS ref_grid_cell_with( REF_GRID ref_grid, REF_INT node_per,
