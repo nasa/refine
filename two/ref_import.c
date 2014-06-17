@@ -94,6 +94,8 @@ REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr, char *filename )
 		  RSS( REF_FAILURE, "unknown file extension");
 		}
   
+  ref_grid_guess_twod_status( *ref_grid_ptr );
+
   return REF_SUCCESS;
 }
 
