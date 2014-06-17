@@ -46,9 +46,12 @@ int main(  int argc, char *argv[] )
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
-      RSS( ref_histogram_ratio( ref_grid ), "gram");
+      RSS( ref_histogram_quality( ref_grid ), "qual");
+      RSS( ref_histogram_ratio( ref_grid ), "rat");
 
-      RSS( ref_export_tec_ratio( ref_grid, "ref_metric_test" ), "gram");
+      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test" ), "al");
+      RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_surf.tec" ), 
+	   "surf");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
