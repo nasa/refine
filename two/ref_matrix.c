@@ -419,6 +419,29 @@ REF_STATUS ref_matrix_mult_m0m1m0( REF_DBL *m1, REF_DBL *m2,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_intersect( REF_DBL *m1, REF_DBL *m2,
+				 REF_DBL *m12)
+{
+  REF_DBL m1half[6];
+  REF_DBL m2bar[6];
+  REF_DBL m12bar[6];
+  REF_DBL m12bar_system[12];
+  RSS( ref_matrix_sqrt_m( m1, m1half ), "sqrt m1" );
+  RSS( ref_matrix_mult_m0m1m0( m1half, m2, m2bar ), "m2bar=m1half*m2*m1half" );
+  RSS( ref_matrix_diag_m( m2bar, m12bar_system ), "diag m12bar");
+  ref_matrix_eig(m12bar_system, 0) = MAX(1.0, ref_matrix_eig(m12bar_system, 0));
+  ref_matrix_eig(m12bar_system, 1) = MAX(1.0, ref_matrix_eig(m12bar_system, 1));
+  ref_matrix_eig(m12bar_system, 2) = MAX(1.0, ref_matrix_eig(m12bar_system, 2));
+
+  RSS( ref_matrix_form_m( m12bar_system, m12bar ), "form m12bar");
+
+  RSS( ref_matrix_mult_m0m1m0( m1half, m12bar, m12 ), "m12=m1half*m12bar*m1half" );
+
+  return REF_SUCCESS;
+}
+
+
+
 REF_STATUS ref_matrix_show_m( REF_DBL *m )
 {
   char format[] = "%24.15e" ;
