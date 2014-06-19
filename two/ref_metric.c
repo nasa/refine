@@ -81,6 +81,34 @@ REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_gradiation( REF_GRID ref_grid )
+{
+  REF_DBL *metric_limit;
+  REF_DBL *metric;
+  REF_INT node, i;
+  REF_DBL r = 1.5;
+
+  ref_malloc( metric_limit, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+  ref_malloc( metric, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+  RSS( ref_metric_from_node( metric_limit, ref_grid_node(ref_grid)), "from");
+  RSS( ref_metric_from_node( metric, ref_grid_node(ref_grid)), "from");
+  
+  each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+    {
+      for (i=0;i<6;i++) metric_limit[i+6*node] *= (1.0/r/r);
+    }
+
+  RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
+
+  ref_free( metric );
+  ref_free( metric_limit );
+
+  return REF_IMPLEMENT;
+}
+
 REF_STATUS ref_metric_sanitize( REF_GRID ref_grid )
 {
   if (ref_grid_twod(ref_grid)) 
