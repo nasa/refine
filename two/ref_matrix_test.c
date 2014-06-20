@@ -898,7 +898,6 @@ m2=a2*a2'
 [m2p, m2d]=eig(m2)
    */
 
-  if(REF_FALSE)
   { /* intersect two metrics */
     REF_DBL m1[6]={ 1.5, 1.6, 1.0, 
 		         2.0, 1.3,
@@ -916,13 +915,17 @@ m2=a2*a2'
 # barral-unpublished-intersection-metric-french
 [m1p, m1d] = eig(m1)
 m1halfd = m1d;
-m1halfd(1,1) = 1.0/sqrt(m1halfd(1,1));
-m1halfd(2,2) = 1.0/sqrt(m1halfd(2,2));
-m1halfd(3,3) = 1.0/sqrt(m1halfd(3,3));
+m1halfd(1,1) = sqrt(m1halfd(1,1));
+m1halfd(2,2) = sqrt(m1halfd(2,2));
+m1halfd(3,3) = sqrt(m1halfd(3,3));
 m1half = m1p*m1halfd*m1p' 
+m1halfd(1,1) = 1/m1halfd(1,1);
+m1halfd(2,2) = 1/m1halfd(2,2);
+m1halfd(3,3) = 1/m1halfd(3,3);
+m1neghalf = m1p*m1halfd*m1p' 
 
-m1bar_id_check = m1half'*m1*m1half
-m2bar = m1half'*m2*m1half
+m1bar_id_check = m1neghalf'*m1*m1neghalf
+m2bar = m1neghalf'*m2*m1neghalf
 
 [m12barp, m12bard]=eig(m2bar)
 m12bard(1,1)=max(1.0,m12bard(1,1));
@@ -936,12 +939,12 @@ m12 = m1half'*m12bar*m1half
     REF_DBL m12[6];
     REF_DBL tol = -1.0;
     RSS( ref_matrix_intersect( m1, m2, m12 ), "int");
-    RWDS(  37.1562780040532, m12[0], tol, "m12[0]");
-    RWDS( -48.6781595289391, m12[1], tol, "m12[1]");
-    RWDS(  27.4911908346420, m12[2], tol, "m12[2]");
-    RWDS(  67.6399811867610, m12[3], tol, "m12[3]");
-    RWDS( -41.1120788324833, m12[4], tol, "m12[4]");
-    RWDS(  28.0619944414831, m12[5], tol, "m12[5]");
+    RWDS(  2.08172628978234, m12[0], tol, "m12[0]");
+    RWDS(  1.30947862683631, m12[1], tol, "m12[1]");
+    RWDS(  1.18305446069511, m12[2], tol, "m12[2]");
+    RWDS(  2.14509000151343, m12[3], tol, "m12[3]");
+    RWDS(  1.20858031651830, m12[4], tol, "m12[4]");
+    RWDS(  1.05760258074793, m12[5], tol, "m12[5]");
   }
 
   if(REF_FALSE)
