@@ -947,46 +947,53 @@ m12 = m1half'*m12bar*m1half
     RWDS(  1.05760258074793, m12[5], tol, "m12[5]");
   }
 
-  if(REF_FALSE)
-  { /* intersect one direction */
+  { /* intersect same */
     REF_DBL m1[6]={ 1.0, 0.0, 0.0, 
-                         1.0, 0.0,
-                              4.0};
+                         2.0, 0.0,
+                              3.0};
     REF_DBL m2[6]={ 1.0, 0.0, 0.0, 
-                         1.0, 0.0,
-                              4.0};
-    /*
-    m1 = [4.0 0.0 0.0
-          0.0 1.0 0.0
-          0.0 0.0 1.0]
-    m2 = [1.0 0.0 0.0
-          0.0 1.0 0.0
-          0.0 0.0 1.0]
-# barral-unpublished-intersection-metric-french
-[m1p, m1d] = eig(m1)
-m1halfd = m1d;
-m1halfd(1,1) = 1.0/sqrt(m1halfd(1,1));
-m1halfd(2,2) = 1.0/sqrt(m1halfd(2,2));
-m1halfd(3,3) = 1.0/sqrt(m1halfd(3,3));
-m1half = m1p*m1halfd*m1p' 
-
-m1bar_id_check = m1half'*m1*m1half
-m2bar = m1half'*m2*m1half
-
-[m12barp, m12bard]=eig(m2bar)
-m12bard(1,1)=max(1.0,m12bard(1,1));
-m12bard(2,2)=max(1.0,m12bard(2,2));
-m12bard(3,3)=max(1.0,m12bard(3,3));
-
-m12bar = m12barp*m12bard*m12barp'
-m12 = m1half'*m12bar*m1half
-[m12p, m12d]=eig(m12)
-    */
+                         2.0, 0.0,
+                              3.0};
     REF_DBL m12[6];
     REF_DBL tol = -1.0;
     RSS( ref_matrix_intersect( m1, m2, m12 ), "int");
-    ref_matrix_show_m(m12);
-    RWDS(   4.0, m12[0], tol, "m12[0]");
+    RWDS(   1.0, m12[0], tol, "m12[0]");
+    RWDS(   0.0, m12[1], tol, "m12[1]");
+    RWDS(   0.0, m12[2], tol, "m12[2]");
+    RWDS(   2.0, m12[3], tol, "m12[3]");
+    RWDS(   0.0, m12[4], tol, "m12[4]");
+    RWDS(   3.0, m12[5], tol, "m12[5]");
+  }
+
+  { /* intersect one direction small */
+    REF_DBL m1[6]={ 1.0, 0.0, 0.0, 
+                         2.0, 0.0,
+                              4.0};
+    REF_DBL m2[6]={ 8.0, 0.0, 0.0, 
+                         1.0, 0.0,
+                              1.0};
+    REF_DBL m12[6];
+    REF_DBL tol = -1.0;
+    RSS( ref_matrix_intersect( m1, m2, m12 ), "int");
+    RWDS(   8.0, m12[0], tol, "m12[0]");
+    RWDS(   0.0, m12[1], tol, "m12[1]");
+    RWDS(   0.0, m12[2], tol, "m12[2]");
+    RWDS(   2.0, m12[3], tol, "m12[3]");
+    RWDS(   0.0, m12[4], tol, "m12[4]");
+    RWDS(   4.0, m12[5], tol, "m12[5]");
+  }
+
+  { /* intersect one direction big */
+    REF_DBL m1[6]={ 0.25, 0.0, 0.0, 
+                          1.0, 0.0,
+                               1.0};
+    REF_DBL m2[6]={ 1.0,  0.0, 0.0, 
+                          1.0, 0.0,
+                               0.5};
+    REF_DBL m12[6];
+    REF_DBL tol = -1.0;
+    RSS( ref_matrix_intersect( m1, m2, m12 ), "int");
+    RWDS(   1.0, m12[0], tol, "m12[0]");
     RWDS(   0.0, m12[1], tol, "m12[1]");
     RWDS(   0.0, m12[2], tol, "m12[2]");
     RWDS(   1.0, m12[3], tol, "m12[3]");
