@@ -391,8 +391,8 @@ m=[
     REF_DBL eye[6]={ 1.0, 0.0, 0.0, 
 		          1.0, 0.0,
 		               1.0};
-    REF_DBL sqrt_eye[6];
-    RSS( ref_matrix_sqrt_m( eye, sqrt_eye ), "sqrt m");
+    REF_DBL sqrt_eye[6], inv_sqrt_eye[6];
+    RSS( ref_matrix_sqrt_m( eye, sqrt_eye, inv_sqrt_eye ), "sqrt m");
 
     RWDS( 1.0, sqrt_eye[0], tol, "m[0]");
     RWDS( 0.0, sqrt_eye[1], tol, "m[1]");
@@ -400,6 +400,13 @@ m=[
     RWDS( 1.0, sqrt_eye[3], tol, "m[3]");
     RWDS( 0.0, sqrt_eye[4], tol, "m[4]");
     RWDS( 1.0, sqrt_eye[5], tol, "m[5]");
+
+    RWDS( 1.0, inv_sqrt_eye[0], tol, "m[0]");
+    RWDS( 0.0, inv_sqrt_eye[1], tol, "m[1]");
+    RWDS( 0.0, inv_sqrt_eye[2], tol, "m[2]");
+    RWDS( 1.0, inv_sqrt_eye[3], tol, "m[3]");
+    RWDS( 0.0, inv_sqrt_eye[4], tol, "m[4]");
+    RWDS( 1.0, inv_sqrt_eye[5], tol, "m[5]");
   }
 
   { /* M^(1/2) of 1,4,16 */
@@ -407,15 +414,22 @@ m=[
     REF_DBL m[6]={ 16.0, 0.0, 0.0, 
 		         4.0, 0.0,
 		              1.0};
-    REF_DBL sqrt_m[6];
-    RSS( ref_matrix_sqrt_m( m, sqrt_m ), "sqrt m");
+    REF_DBL sqrt_m[6], inv_sqrt_m[6];
+    RSS( ref_matrix_sqrt_m( m, sqrt_m, inv_sqrt_m ), "sqrt m");
 
-    RWDS( 0.25, sqrt_m[0], tol, "m[0]");
+    RWDS( 4.0,  sqrt_m[0], tol, "m[0]");
     RWDS( 0.0,  sqrt_m[1], tol, "m[1]");
     RWDS( 0.0,  sqrt_m[2], tol, "m[2]");
-    RWDS( 0.5,  sqrt_m[3], tol, "m[3]");
+    RWDS( 2.0,  sqrt_m[3], tol, "m[3]");
     RWDS( 0.0,  sqrt_m[4], tol, "m[4]");
     RWDS( 1.0,  sqrt_m[5], tol, "m[5]");
+
+    RWDS( 0.25, inv_sqrt_m[0], tol, "m[0]");
+    RWDS( 0.0,  inv_sqrt_m[1], tol, "m[1]");
+    RWDS( 0.0,  inv_sqrt_m[2], tol, "m[2]");
+    RWDS( 0.5,  inv_sqrt_m[3], tol, "m[3]");
+    RWDS( 0.0,  inv_sqrt_m[4], tol, "m[4]");
+    RWDS( 1.0,  inv_sqrt_m[5], tol, "m[5]");
   }
 
   { /* M0 * M1 * M0' where M are Symmetric */
@@ -884,6 +898,7 @@ m2=a2*a2'
 [m2p, m2d]=eig(m2)
    */
 
+  if(REF_FALSE)
   { /* intersect two metrics */
     REF_DBL m1[6]={ 1.5, 1.6, 1.0, 
 		         2.0, 1.3,

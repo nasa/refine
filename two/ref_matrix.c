@@ -333,26 +333,29 @@ REF_STATUS ref_matrix_exp_m( REF_DBL *m_upper_tri,
   return REF_SUCCESS;
 }
 REF_STATUS ref_matrix_sqrt_m( REF_DBL *m_upper_tri,
-			      REF_DBL *sqrt_m_upper_tri)
+			      REF_DBL *sqrt_m_upper_tri,
+			      REF_DBL *inv_sqrt_m_upper_tri)
 {
   REF_DBL d[12];
-  REF_DBL sqrt_d;
 
   RSS( ref_matrix_diag_m( m_upper_tri, d ), "diag");
 
-  sqrt_d = sqrt(d[0]);
-  if ( !ref_math_divisible( 1.0, sqrt_d ) ) return REF_DIV_ZERO;
-  d[0] = 1.0/sqrt_d;
-
-  sqrt_d = sqrt(d[1]);
-  if ( !ref_math_divisible( 1.0, sqrt_d ) ) return REF_DIV_ZERO;
-  d[1] = 1.0/sqrt_d;
-
-  sqrt_d = sqrt(d[2]);
-  if ( !ref_math_divisible( 1.0, sqrt_d ) ) return REF_DIV_ZERO;
-  d[2] = 1.0/sqrt_d;
+  d[0] = sqrt(d[0]);
+  d[1] = sqrt(d[1]);
+  d[2] = sqrt(d[2]);
 
   RSS( ref_matrix_form_m( d, sqrt_m_upper_tri ), "form m");
+
+  if ( !ref_math_divisible( 1.0, d[0] ) ) return REF_DIV_ZERO;
+  d[0] = 1.0/d[0];
+
+  if ( !ref_math_divisible( 1.0, d[1] ) ) return REF_DIV_ZERO;
+  d[1] = 1.0/d[1];
+
+  if ( !ref_math_divisible( 1.0, d[2] ) ) return REF_DIV_ZERO;
+  d[2] = 1.0/d[2];
+
+  RSS( ref_matrix_form_m( d, inv_sqrt_m_upper_tri ), "form inv m");
 
   return REF_SUCCESS;
 }
@@ -423,11 +426,13 @@ REF_STATUS ref_matrix_intersect( REF_DBL *m1, REF_DBL *m2,
 				 REF_DBL *m12)
 {
   REF_DBL m1half[6];
+  REF_DBL m1neghalf[6];
   REF_DBL m2bar[6];
   REF_DBL m12bar[6];
   REF_DBL m12bar_system[12];
-  RSS( ref_matrix_sqrt_m( m1, m1half ), "sqrt m1" );
-  RSS( ref_matrix_mult_m0m1m0( m1half, m2, m2bar ), "m2bar=m1half*m2*m1half" );
+  RSS( ref_matrix_sqrt_m( m1, m1half, m1neghalf ), "sqrt m1" );
+  RSS( ref_matrix_mult_m0m1m0( m1neghalf, m2, m2bar ), 
+       "m2bar=m1half*m2*m1half" );
   RSS( ref_matrix_diag_m( m2bar, m12bar_system ), "diag m12bar");
   ref_matrix_eig(m12bar_system, 0) = MAX(1.0, ref_matrix_eig(m12bar_system, 0));
   ref_matrix_eig(m12bar_system, 1) = MAX(1.0, ref_matrix_eig(m12bar_system, 1));
