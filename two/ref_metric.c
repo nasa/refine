@@ -8,6 +8,7 @@
 #include "ref_grid.h"
 #include "ref_node.h"
 #include "ref_cell.h"
+#include "ref_edge.h"
 
 #include "ref_malloc.h"
 #include "ref_matrix.h"
@@ -83,28 +84,51 @@ REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h )
 
 REF_STATUS ref_metric_gradiation( REF_GRID ref_grid )
 {
+  REF_EDGE ref_edge;
+  REF_DBL *metric_orig;
   REF_DBL *metric_limit;
   REF_DBL *metric;
+  REF_DBL m0[6], m1[6];
   REF_INT node, i;
+  REF_INT edge, node0, node1;
   REF_DBL r = 1.5;
 
+  RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
+
+  ref_malloc( metric_orig, 
+	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
   ref_malloc( metric_limit, 
 	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
   ref_malloc( metric, 
 	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
+  RSS( ref_metric_from_node( metric_orig, ref_grid_node(ref_grid)), "from");
   RSS( ref_metric_from_node( metric_limit, ref_grid_node(ref_grid)), "from");
-  RSS( ref_metric_from_node( metric, ref_grid_node(ref_grid)), "from");
   
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )
     {
       for (i=0;i<6;i++) metric_limit[i+6*node] *= (1.0/r/r);
     }
 
+  each_ref_edge( ref_edge, edge )
+    {
+      node0 = ref_edge_e2n( ref_edge, 0, edge );
+      node1 = ref_edge_e2n( ref_edge, 1, edge );
+      RSS( ref_matrix_intersect( &(metric[6*node0]), &(metric_limit[6*node1]),
+				 m0 ), "m0" );  
+      RSS( ref_matrix_intersect( &(metric[6*node1]), &(metric_limit[6*node0]),
+				 m1 ), "m1" );  
+      for (i=0;i<6;i++) metric[i+6*node0] = m0[i];
+      for (i=0;i<6;i++) metric[i+6*node1] = m1[i];
+    }
+
   RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
 
   ref_free( metric );
   ref_free( metric_limit );
+  ref_free( metric_orig );
+
+  ref_edge_free( ref_edge );
 
   return REF_IMPLEMENT;
 }
