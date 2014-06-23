@@ -346,13 +346,25 @@ REF_STATUS ref_matrix_sqrt_m( REF_DBL *m_upper_tri,
 
   RSS( ref_matrix_form_m( d, sqrt_m_upper_tri ), "form m");
 
-  if ( !ref_math_divisible( 1.0, d[0] ) ) return REF_DIV_ZERO;
+  if ( !ref_math_divisible( 1.0, d[0] ) ) 
+    {
+      ref_matrix_show_m( m_upper_tri );
+      return REF_DIV_ZERO;
+    }
   d[0] = 1.0/d[0];
 
-  if ( !ref_math_divisible( 1.0, d[1] ) ) return REF_DIV_ZERO;
+  if ( !ref_math_divisible( 1.0, d[1] ) )
+    {
+      ref_matrix_show_m( m_upper_tri );
+      return REF_DIV_ZERO;
+    }
   d[1] = 1.0/d[1];
 
-  if ( !ref_math_divisible( 1.0, d[2] ) ) return REF_DIV_ZERO;
+  if ( !ref_math_divisible( 1.0, d[2] ) )
+    {
+      ref_matrix_show_m( m_upper_tri );
+      return REF_DIV_ZERO;
+    }
   d[2] = 1.0/d[2];
 
   RSS( ref_matrix_form_m( d, inv_sqrt_m_upper_tri ), "form inv m");
