@@ -93,8 +93,11 @@ int main( int argc, char *argv[] )
 
       if (REF_TRUE)
 	{
+	  RSS(ref_export_tec( ref_grid, "ref_adapt_ellipseg.tec" ),"ex" );
+	  RSS(ref_export_tec_metric_ellipse( ref_grid, "ref_adapt_0" ),"ex" );
 	  RSS( ref_metric_sanitize(ref_grid),"sant");
 	  RSS( ref_node_ghost_real( ref_node ), "ghost real");
+	  RSS(ref_export_tec_metric_ellipse( ref_grid, "ref_adapt_1" ),"ex" );
 	}
 
       RSS( ref_gather_tec_movie_record_button( REF_TRUE ), "rec" );

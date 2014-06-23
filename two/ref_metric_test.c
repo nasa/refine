@@ -53,6 +53,9 @@ int main(  int argc, char *argv[] )
       RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_surf.tec" ), 
 	   "surf");
 
+      RSS( ref_metric_gradation( ref_grid ), "grad");
+      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_smooth" ), "al");
+
       RSS( ref_grid_free( ref_grid ), "free");
 
       RSS( ref_mpi_stop( ), "stop" );
