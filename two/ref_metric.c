@@ -114,9 +114,11 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid )
     {
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
-      RSS( ref_matrix_intersect( &(metric[6*node0]), &(metric_limit[6*node1]),
+      RSS( ref_matrix_intersect( &(metric_orig[6*node0]), 
+				 &(metric_limit[6*node1]),
 				 m0 ), "m0" );  
-      RSS( ref_matrix_intersect( &(metric[6*node1]), &(metric_limit[6*node0]),
+      RSS( ref_matrix_intersect( &(metric_orig[6*node1]), 
+				 &(metric_limit[6*node0]),
 				 m1 ), "m1" );  
       for (i=0;i<6;i++) metric[i+6*node0] = m0[i];
       for (i=0;i<6;i++) metric[i+6*node1] = m1[i];
@@ -130,7 +132,7 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid )
 
   ref_edge_free( ref_edge );
 
-  return REF_IMPLEMENT;
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_metric_sanitize( REF_GRID ref_grid )
