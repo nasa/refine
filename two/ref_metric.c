@@ -82,7 +82,7 @@ REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_gradiation( REF_GRID ref_grid )
+REF_STATUS ref_metric_gradation( REF_GRID ref_grid )
 {
   REF_EDGE ref_edge;
   REF_DBL *metric_orig;
