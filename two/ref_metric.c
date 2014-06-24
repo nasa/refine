@@ -104,6 +104,7 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid )
 
   RSS( ref_metric_from_node( metric_orig, ref_grid_node(ref_grid)), "from");
   RSS( ref_metric_from_node( metric_limit, ref_grid_node(ref_grid)), "from");
+  RSS( ref_metric_from_node( metric, ref_grid_node(ref_grid)), "from");
   
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )
     {
@@ -119,9 +120,13 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid )
 				 m0 ), "m0" );  
       RSS( ref_matrix_intersect( &(metric_orig[6*node1]), 
 				 &(metric_limit[6*node0]),
-				 m1 ), "m1" );  
-      for (i=0;i<6;i++) metric[i+6*node0] = m0[i];
-      for (i=0;i<6;i++) metric[i+6*node1] = m1[i];
+				 m1 ), "m1" );
+      RSS( ref_matrix_intersect( m0,
+				 &(metric[6*node0]), 
+				 &(metric[6*node0]) ), "m0" );  
+      RSS( ref_matrix_intersect( m1,
+				 &(metric[6*node1]), 
+				 &(metric[6*node1]) ), "m0" );  
     }
 
   RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
