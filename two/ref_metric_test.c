@@ -39,6 +39,8 @@ int main(  int argc, char *argv[] )
   if ( argc > 2 )
     {
       REF_GRID ref_grid;
+      REF_INT i;
+      char output[256];
 
       RSS( ref_mpi_start( argc, argv ), "start" );
 
@@ -49,12 +51,15 @@ int main(  int argc, char *argv[] )
       RSS( ref_histogram_quality( ref_grid ), "qual");
       RSS( ref_histogram_ratio( ref_grid ), "rat");
 
-      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test" ), "al");
+      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_s00" ), "al");
       RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_surf.tec" ), 
 	   "surf");
-
-      RSS( ref_metric_gradation( ref_grid ), "grad");
-      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_smooth" ), "al");
+      for ( i=0 ; i<10 ; i++ )
+	{
+	  RSS( ref_metric_gradation( ref_grid ), "grad");
+	  sprintf(output, "ref_metric_test_s%02d", i+1);
+	  RSS( ref_export_tec_metric_ellipse( ref_grid, output ), "al");
+	}
 
       RSS( ref_grid_free( ref_grid ), "free");
 
