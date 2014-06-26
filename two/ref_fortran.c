@@ -136,6 +136,18 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       ref_mpi_stopwatch_stop("metric sant");
     }
 
+  if (REF_TRUE)
+    {
+      REF_INT gradation;
+      for ( gradation =0 ; gradation<10 ; gradation++ )
+	{
+	  if ( ref_mpi_master )
+	    printf("gradation %d\n",gradation);
+	  RSS( ref_metric_gradation( ref_grid ), "grad");
+	  RSS( ref_node_ghost_real( ref_node ), "ghost real");
+	}
+    }
+
   RSS( ref_gather_tec_movie_record_button( REF_FALSE ), "rec" );
 
   RSS(ref_validation_cell_volume(ref_grid),"vol");
