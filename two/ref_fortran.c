@@ -133,6 +133,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
   if ( REF_FALSE ) 
     {
       RSS( ref_metric_sanitize(ref_grid),"sant");
+      RSS( ref_node_ghost_real( ref_grid_node(ref_grid) ), "ghost real");
       ref_mpi_stopwatch_stop("metric sant");
     }
 
@@ -144,8 +145,9 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
 	  if ( ref_mpi_master )
 	    printf("gradation %d\n",gradation);
 	  RSS( ref_metric_gradation( ref_grid ), "grad");
-	  RSS( ref_node_ghost_real( ref_node ), "ghost real");
+	  RSS( ref_node_ghost_real( ref_grid_node(ref_grid) ), "ghost real");
 	}
+      ref_mpi_stopwatch_stop("metric gradation");
     }
 
   RSS( ref_gather_tec_movie_record_button( REF_FALSE ), "rec" );
