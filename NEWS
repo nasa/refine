@@ -1,4 +1,8 @@
 
+- added isotropic gradation control of anisotropic metric
+- added Barral/McKenzie metric intersection
+- quieted parMETIS debug statements that crashed MPI stdout buffers
+
 Mon, Apr 14, 2014 : Released Refine 1.8.14
 
 - added missing BEGIN_C_DECLORATION C/C++ compatibility macros that
