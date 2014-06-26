@@ -137,6 +137,8 @@ int main( int argc, char *argv[] )
 	   "gather");
       ref_mpi_stopwatch_stop("gather");
 
+      RSS(ref_export_tec_metric_ellipse( ref_grid, "ref_adapt_f" ),"ex" );
+
       RSS( ref_grid_free( ref_grid ), "free");
 
       if ( ref_mpi_master )
