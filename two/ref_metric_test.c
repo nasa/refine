@@ -54,7 +54,7 @@ int main(  int argc, char *argv[] )
       RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_s00" ), "al");
       RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_surf.tec" ), 
 	   "surf");
-      for ( i=0 ; i<10 ; i++ )
+      for ( i=0 ; i<0 ; i++ )
 	{
 	  RSS( ref_metric_gradation( ref_grid ), "grad");
 	  sprintf(output, "ref_metric_test_s%02d", i+1);
