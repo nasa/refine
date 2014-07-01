@@ -137,7 +137,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       ref_mpi_stopwatch_stop("metric sant");
     }
 
-  if (REF_TRUE)
+  if ( REF_FALSE )
     {
       REF_INT gradation;
       for ( gradation =0 ; gradation<10 ; gradation++ )

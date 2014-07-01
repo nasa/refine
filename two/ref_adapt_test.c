@@ -91,7 +91,7 @@ int main( int argc, char *argv[] )
 	ref_mpi_stopwatch_stop("balance");
       }
 
-      if (REF_TRUE)
+      if ( REF_FALSE )
 	{
 	  REF_INT gradation;
 	  RSS(ref_export_tec( ref_grid, "ref_adapt_ellipseg.tec" ),"ex" );

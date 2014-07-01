@@ -1,5 +1,5 @@
 
-- added isotropic gradation control of anisotropic metric
+- implemented isotropic gradation control of anisotropic metric
 - added Barral/McKenzie metric intersection
 - quieted parMETIS debug statements that crashed MPI stdout buffers
 
