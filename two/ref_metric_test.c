@@ -33,7 +33,7 @@
 #include "ref_split.h"
 #include "ref_math.h"
 
-int main(  int argc, char *argv[] )
+int main( int argc, char *argv[] )
 {
 
   if ( argc > 2 )

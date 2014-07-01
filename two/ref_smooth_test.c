@@ -13,6 +13,20 @@
 #include "ref_list.h"
 #include "ref_node.h"
 #include "ref_matrix.h"
+#include "ref_math.h"
+
+#include "ref_import.h"
+#include "ref_export.h"
+#include "ref_part.h"
+#include "ref_histogram.h"
+
+#include "ref_edge.h"
+#include "ref_dict.h"
+#include "ref_migrate.h"
+#include "ref_gather.h"
+#include "ref_adapt.h"
+#include "ref_collapse.h"
+#include "ref_split.h"
 
 #include "ref_mpi.h"
 
@@ -71,8 +85,28 @@ static REF_STATUS ref_smooth_tri_twod( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-int main( void )
+int main( int argc, char *argv[] )
 {
+
+  if ( argc > 2 )
+    {
+      REF_GRID ref_grid;
+
+      RSS( ref_mpi_start( argc, argv ), "start" );
+
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+
+      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+
+      RSS( ref_histogram_quality( ref_grid ), "qual");
+
+      RSS( ref_export_tec_surf( ref_grid, "ref_smooth_test_0.tec" ), 
+	   "surf");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      RSS( ref_mpi_stop( ), "stop" );
+    }
 
   { /*  */
     REF_GRID ref_grid;
