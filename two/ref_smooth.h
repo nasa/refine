@@ -14,6 +14,11 @@ REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
 					  REF_INT node,
 					  REF_DBL *min_quality );
 
+REF_STATUS ref_smooth_ideal_tri( REF_GRID ref_grid, 
+				 REF_INT node,
+				 REF_INT tri,
+				 REF_DBL *ideal_location );
+
 END_C_DECLORATION
 
 #endif /* REF_SMOOTH_H */

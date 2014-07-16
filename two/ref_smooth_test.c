@@ -41,6 +41,7 @@ static REF_STATUS ref_smooth_tri_twod( REF_GRID *ref_grid_ptr )
   REF_INT node;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL ideal[3];
 
   RSS( ref_grid_create( ref_grid_ptr ), "grid" );
   ref_grid = *ref_grid_ptr;
@@ -75,6 +76,8 @@ static REF_STATUS ref_smooth_tri_twod( REF_GRID *ref_grid_ptr )
   RSS( ref_metric_unit_node( ref_node ), "unit node" )
 
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  RSS(ref_smooth_ideal_tri(ref_grid,nodes[0], cell, ideal),"ideal");
 
   return REF_SUCCESS;
 }
