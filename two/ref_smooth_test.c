@@ -28,6 +28,8 @@
 #include "ref_collapse.h"
 #include "ref_split.h"
 
+#include "ref_metric.h"
+
 #include "ref_mpi.h"
 
 #include "ref_malloc.h"
@@ -70,15 +72,7 @@ static REF_STATUS ref_smooth_tri_twod( REF_GRID *ref_grid_ptr )
 
   nodes[3] = 10;
 
-  for ( node=0;node<4;node++)
-    {
-      ref_node_metric(ref_node,0,node) = 1.0;
-      ref_node_metric(ref_node,1,node) = 0.0;
-      ref_node_metric(ref_node,2,node) = 0.0;
-      ref_node_metric(ref_node,3,node) = 1.0;
-      ref_node_metric(ref_node,4,node) = 0.0;
-      ref_node_metric(ref_node,5,node) = 1.0;
-    }
+  RSS( ref_metric_unit_node( ref_node ), "unit node" )
 
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
