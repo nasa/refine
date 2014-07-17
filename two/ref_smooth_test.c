@@ -83,6 +83,63 @@ static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr,
 
   return REF_SUCCESS;
 }
+static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr, 
+					      REF_INT *target_node )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT node;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  RSS( ref_grid_create( ref_grid_ptr ), "grid" );
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  /*
+   1-0  z
+   |/|  |
+   2-3  +-x
+   */
+
+  RSS(ref_node_add(ref_node,0,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+  nodes[0] = node;
+
+  *target_node = node;
+
+  RSS(ref_node_add(ref_node,1,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+  nodes[1] = node;
+
+  RSS(ref_node_add(ref_node,2,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+  nodes[2] = node;
+
+  nodes[3] = 10;
+
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  nodes[1] = nodes[2];
+
+  RSS(ref_node_add(ref_node,3,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+  nodes[2] = node;
+
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  RSS( ref_metric_unit_node( ref_node ), "unit node" );
+
+  return REF_SUCCESS;
+}
 
 int main( int argc, char *argv[] )
 {
@@ -165,5 +222,20 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-   return 0;
+ { /* weighted ideal */
+    REF_GRID ref_grid;
+    REF_INT node;
+    REF_DBL ideal[3];
+
+    RSS( ref_smooth_tri_two_fixture( &ref_grid, &node ), "2d fix" );
+
+    RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal),"ideal");
+    RWDS(0.5*(0.5+0.5*sqrt(3.0)),ideal[0],-1,"ideal x");
+    RWDS(0.0,ideal[1],-1,"ideal y");
+    RWDS(0.5*(0.5+0.5*sqrt(3.0)),ideal[2],-1,"ideal z");
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  return 0;
 }
