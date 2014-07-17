@@ -247,7 +247,7 @@ ref_shard_test_LDADD = libref2.a @mpi_ldadd@ -lm
 TESTS += ref_smooth_test
 noinst_PROGRAMS += ref_smooth_test
 ref_smooth_test_SOURCES = ref_smooth_test.c
-ref_smooth_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_smooth_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_sort_test
 noinst_PROGRAMS += ref_sort_test
