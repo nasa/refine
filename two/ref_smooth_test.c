@@ -105,8 +105,8 @@ int main( int argc, char *argv[] )
 
       RSS( ref_histogram_quality( ref_grid ), "qual");
 
-      RSS( ref_export_tec_surf( ref_grid, "ref_smooth_test_0.tec" ), 
-	   "surf");
+      RSS( ref_export_tec_surf( ref_grid, "ref_smooth_test_0.tec" ),
+           "surf");
 
       RSS( ref_grid_free( ref_grid ), "free");
 

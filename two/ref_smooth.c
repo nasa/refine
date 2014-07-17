@@ -18,13 +18,13 @@ REF_STATUS ref_smooth_twod( REF_GRID ref_grid, REF_INT node )
   REF_BOOL verbose = REF_FALSE;
 
   each_ref_cell_having_node( ref_cell, node, item, cell )
-    {
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-      RSS( ref_node_tri_dquality_dnode0(ref_node, nodes, 
-					&f, d), "qual deriv" );
-      if (verbose)
-	printf("cost %10.8f : %12.8f %12.8f %12.8f\n",f,d[0],d[1],d[2]);
-    }
+  {
+    RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+    RSS( ref_node_tri_dquality_dnode0(ref_node, nodes,
+                                      &f, d), "qual deriv" );
+    if (verbose)
+      printf("cost %10.8f : %12.8f %12.8f %12.8f\n",f,d[0],d[1],d[2]);
+  }
 
   dcost = 1.0-f;
   dcost_dl = sqrt(d[0]*d[0]+d[1]*d[1]*d[2]*d[2]);
@@ -33,25 +33,25 @@ REF_STATUS ref_smooth_twod( REF_GRID ref_grid, REF_INT node )
   ref_node_xyz(ref_node,0,node) += dl*d[0];
   ref_node_xyz(ref_node,1,node) += dl*d[1];
   ref_node_xyz(ref_node,2,node) += dl*d[2];
- 
+
   each_ref_cell_having_node( ref_cell, node, item, cell )
-    {
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-      RSS( ref_node_tri_dquality_dnode0(ref_node, nodes, 
-					&f, d), "qual deriv" );
-    }
+  {
+    RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+    RSS( ref_node_tri_dquality_dnode0(ref_node, nodes,
+                                      &f, d), "qual deriv" );
+  }
 
   if (verbose)
     printf("rate %12.8f dcost %12.8f dl %12.8f\n",
-	   (1.0-f)/dcost,dcost,dl);
-  
+           (1.0-f)/dcost,dcost,dl);
+
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid, 
-					  REF_INT node,
-					  REF_DBL *min_quality )
+REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
+                                          REF_INT node,
+                                          REF_DBL *min_quality )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -62,15 +62,15 @@ REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
 
   *min_quality = 1.0;
   each_ref_cell_having_node( ref_cell, node, item, cell )
-    {
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-      none_found = REF_FALSE;
-      RSS( ref_node_tri_quality( ref_node, 
-				 nodes,  
-				 &quality ), "qual" );
-      *min_quality = MIN( *min_quality, quality );
-    }
-      
+  {
+    RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+    none_found = REF_FALSE;
+    RSS( ref_node_tri_quality( ref_node,
+                               nodes,
+                               &quality ), "qual" );
+    *min_quality = MIN( *min_quality, quality );
+  }
+
   if ( none_found )
     {
       *min_quality = -2.0;
@@ -80,10 +80,10 @@ REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_ideal_tri( REF_GRID ref_grid, 
-				 REF_INT node,
-				 REF_INT tri,
-				 REF_DBL *ideal_location )
+REF_STATUS ref_smooth_ideal_tri( REF_GRID ref_grid,
+                                 REF_INT node,
+                                 REF_INT tri,
+                                 REF_DBL *ideal_location )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -94,55 +94,55 @@ REF_STATUS ref_smooth_ideal_tri( REF_GRID ref_grid,
   REF_DBL tangent_length, projection, scale, length_in_metric;
 
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
-  n0=REF_EMPTY;n1=REF_EMPTY;
+  n0 = REF_EMPTY; n1 = REF_EMPTY;
   if ( node == nodes[0])
     {
-      n0=nodes[1];
-      n1=nodes[2];
+      n0 = nodes[1];
+      n1 = nodes[2];
     }
   if ( node == nodes[1])
     {
-      n0=nodes[2];
-      n1=nodes[0];
+      n0 = nodes[2];
+      n1 = nodes[0];
     }
   if ( node == nodes[2])
     {
-      n0=nodes[0];
-      n1=nodes[1];
+      n0 = nodes[0];
+      n1 = nodes[1];
     }
   if ( n0==REF_EMPTY || n1==REF_EMPTY)
     THROW("empty triangle side");
 
-  for (ixyz=0;ixyz<3;ixyz++)
+  for (ixyz = 0; ixyz<3; ixyz++)
     ideal_location[ixyz] = 0.5*( ref_node_xyz(ref_node,ixyz,n0) +
-				 ref_node_xyz(ref_node,ixyz,n1) );
-  for (ixyz=0;ixyz<3;ixyz++)
+                                 ref_node_xyz(ref_node,ixyz,n1) );
+  for (ixyz = 0; ixyz<3; ixyz++)
     dn[ixyz] = ref_node_xyz(ref_node,ixyz,node) - ideal_location[ixyz];
-  for (ixyz=0;ixyz<3;ixyz++)
+  for (ixyz = 0; ixyz<3; ixyz++)
     dt[ixyz] = ref_node_xyz(ref_node,ixyz,n1) - ref_node_xyz(ref_node,ixyz,n0);
 
   tangent_length = ref_math_dot(dt,dt);
   projection = ref_math_dot(dn,dt);
 
-  if ( ref_math_divisible(projection,tangent_length) ) 
+  if ( ref_math_divisible(projection,tangent_length) )
     {
-      for (ixyz=0;ixyz<3;ixyz++)
-	dn[ixyz] -=  (projection/tangent_length) * dt[ixyz];
+      for (ixyz = 0; ixyz<3; ixyz++)
+        dn[ixyz] -=  (projection/tangent_length) * dt[ixyz];
     }
   else
     {
       printf("projection = %e tangent_length = %e\n",
-	     projection,tangent_length);
+             projection,tangent_length);
       return REF_DIV_ZERO;
     }
- 
+
   RSS( ref_math_normalize( dn ), "normalize direction" );
   /* would an averaged metric be more appropriate? */
-  length_in_metric = 
+  length_in_metric =
     ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node), dn );
 
   scale = 0.5*sqrt(3.0); /* altitude of equilateral triangle */
-  if ( ref_math_divisible(scale,length_in_metric) ) 
+  if ( ref_math_divisible(scale,length_in_metric) )
     {
       scale = scale/length_in_metric;
     }
@@ -152,7 +152,8 @@ REF_STATUS ref_smooth_ideal_tri( REF_GRID ref_grid,
       return REF_DIV_ZERO;
     }
 
-  for (ixyz=0;ixyz<3;ixyz++) ideal_location[ixyz] += scale*dn[ixyz];
+  for (ixyz = 0; ixyz<3; ixyz++)
+    ideal_location[ixyz] += scale*dn[ixyz];
 
   return REF_SUCCESS;
 }
