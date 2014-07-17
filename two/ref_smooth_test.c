@@ -95,7 +95,6 @@ static REF_STATUS ref_smooth_tri_twod( REF_GRID *ref_grid_ptr )
   RWDS(0.0,ideal[1],-1,"ideal y");
   RWDS(2.0*0.5*sqrt(3.0),ideal[2],-1,"ideal z");
 
-
   return REF_SUCCESS;
 }
 
