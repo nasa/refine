@@ -709,11 +709,14 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  /* FIXME, break this test up into pieces */
+
   { /* right tri normal, area, qual */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
     REF_DBL norm[3];
     REF_DBL area, qual;
+    REF_BOOL valid;
 
     RSS(ref_node_create(&ref_node),"create");
 
@@ -752,6 +755,8 @@ int main( int argc, char *argv[] )
     RWDS( 0.5, area, -1.0, "expected area" );
     RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
     RWDS(-0.5, area, -1.0, "expected area" );
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+    RAS( !valid, "expected invalid" );
 
     RSS(ref_node_tri_quality(ref_node, nodes, &qual), "q");
     RWDS( 0.5*sqrt(3.0), qual, -1.0, "qual expected" );
@@ -767,10 +772,20 @@ int main( int argc, char *argv[] )
 
     RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
     RWDS( 0.5, area, -1.0, "expected area" );
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+    RAS( valid, "expected valid" );
     RSS(ref_node_tri_normal(ref_node, nodes, norm), "norm");
     RWDS( 0.0, norm[0], -1.0, "nx" );
     RWDS( 1.0, norm[1], -1.0, "ny" );
     RWDS( 0.0, norm[2], -1.0, "nz" );
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 0.5;
+    ref_node_xyz(ref_node,2,nodes[1]) = 0.0;
+
+    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
+    RWDS( 0.0, area, -1.0, "expected area" );
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+    RAS( !valid, "expected zero area is invalid" );
 
     RSS(ref_node_free(ref_node),"free");
   }

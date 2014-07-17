@@ -1160,6 +1160,23 @@ REF_STATUS ref_node_tri_y_projection( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_tri_twod_orientation( REF_NODE ref_node, 
+					  REF_INT *nodes,  
+					  REF_BOOL *valid )
+{
+  REF_DBL normal[3];
+
+  *valid = REF_FALSE;
+
+  RSS( ref_node_tri_normal( ref_node, nodes, normal ), "norm inside of area");
+
+  if ( ( ref_node_xyz(ref_node,1,nodes[0]) > 0.5 && normal[1] < 0.0 ) ||
+       ( ref_node_xyz(ref_node,1,nodes[0]) < 0.5 && normal[1] > 0.0 ) ) 
+    *valid = REF_TRUE;
+
+  return REF_SUCCESS;  
+}
+
 REF_STATUS ref_node_tri_area( REF_NODE ref_node, 
 			      REF_INT *nodes, 
 			      REF_DBL *area )
