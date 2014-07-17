@@ -34,7 +34,7 @@
 
 #include "ref_malloc.h"
 
-static REF_STATUS ref_smooth_single_tri_fixture( REF_GRID *ref_grid_ptr, 
+static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr, 
 						 REF_INT *target_node, 
 						 REF_INT *target_cell )
 {
@@ -110,9 +110,9 @@ int main( int argc, char *argv[] )
   {   
     REF_GRID ref_grid;
     REF_INT node, cell;
-    RSS( ref_smooth_single_tri_fixture( &ref_grid, &node, &cell ), "2d fix" );
+    RSS( ref_smooth_tri_single_fixture( &ref_grid, &node, &cell ), "2d fix" );
 
-    RSS( ref_smooth_twod( ref_grid, node ), "smooth" );
+    RSS( ref_smooth_tri_steepest_descent( ref_grid, node ), "smooth" );
 
     RSS(ref_grid_free(ref_grid),"free");
   }
@@ -121,9 +121,9 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_INT node, cell;
     REF_DBL ideal[3];
-    RSS( ref_smooth_single_tri_fixture( &ref_grid, &node, &cell ), "2d fix" );
+    RSS( ref_smooth_tri_single_fixture( &ref_grid, &node, &cell ), "2d fix" );
 
-    RSS(ref_smooth_ideal_tri(ref_grid, node, cell, ideal),"ideal");
+    RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal),"ideal");
     RWDS(0.5,ideal[0],-1,"ideal x");
     RWDS(0.0,ideal[1],-1,"ideal y");
     RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
@@ -136,11 +136,11 @@ int main( int argc, char *argv[] )
     REF_INT node, cell;
     REF_DBL ideal[3];
 
-    RSS( ref_smooth_single_tri_fixture( &ref_grid, &node, &cell ), "2d fix" );
+    RSS( ref_smooth_tri_single_fixture( &ref_grid, &node, &cell ), "2d fix" );
 
     ref_node_metric( ref_grid_node(ref_grid), 0, node ) = 0.25;
 
-    RSS(ref_smooth_ideal_tri(ref_grid, node, cell, ideal),"ideal");
+    RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal),"ideal");
     RWDS(0.5,ideal[0],-1,"ideal x");
     RWDS(0.0,ideal[1],-1,"ideal y");
     RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
@@ -153,11 +153,11 @@ int main( int argc, char *argv[] )
     REF_INT node, cell;
     REF_DBL ideal[3];
 
-    RSS( ref_smooth_single_tri_fixture( &ref_grid, &node, &cell ), "2d fix" );
+    RSS( ref_smooth_tri_single_fixture( &ref_grid, &node, &cell ), "2d fix" );
 
     ref_node_metric( ref_grid_node(ref_grid), 5, node ) = 0.25;
 
-    RSS(ref_smooth_ideal_tri(ref_grid, node, cell, ideal),"ideal");
+    RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal),"ideal");
     RWDS(0.5,ideal[0],-1,"ideal x");
     RWDS(0.0,ideal[1],-1,"ideal y");
     RWDS(2.0*0.5*sqrt(3.0),ideal[2],-1,"ideal z");

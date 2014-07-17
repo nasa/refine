@@ -8,13 +8,13 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_smooth_twod( REF_GRID ref_grid, REF_INT node );
+REF_STATUS ref_smooth_tri_steepest_descent( REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
                                           REF_INT node,
                                           REF_DBL *min_quality );
 
-REF_STATUS ref_smooth_ideal_tri( REF_GRID ref_grid,
+REF_STATUS ref_smooth_tri_ideal( REF_GRID ref_grid,
                                  REF_INT node,
                                  REF_INT tri,
                                  REF_DBL *ideal_location );
