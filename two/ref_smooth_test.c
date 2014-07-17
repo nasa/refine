@@ -34,14 +34,15 @@
 
 #include "ref_malloc.h"
 
-static REF_STATUS ref_smooth_tri_twod( REF_GRID *ref_grid_ptr )
+static REF_STATUS ref_smooth_single_tri_fixture( REF_GRID *ref_grid_ptr, 
+						 REF_INT *target_node, 
+						 REF_INT *target_cell )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT node;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL ideal[3];
 
   RSS( ref_grid_create( ref_grid_ptr ), "grid" );
   ref_grid = *ref_grid_ptr;
@@ -76,32 +77,12 @@ static REF_STATUS ref_smooth_tri_twod( REF_GRID *ref_grid_ptr )
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
   RSS( ref_metric_unit_node( ref_node ), "unit node" );
-  RSS(ref_smooth_ideal_tri(ref_grid,nodes[0], cell, ideal),"ideal");
-  RWDS(0.5,ideal[0],-1,"ideal x");
-  RWDS(0.0,ideal[1],-1,"ideal y");
-  RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
 
-  RSS( ref_metric_unit_node( ref_node ), "unit node" );
-  ref_node_metric( ref_node, 0, 0 ) = 0.25;
-  RSS(ref_smooth_ideal_tri(ref_grid,nodes[0], cell, ideal),"ideal");
-  RWDS(0.5,ideal[0],-1,"ideal x");
-  RWDS(0.0,ideal[1],-1,"ideal y");
-  RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
-
-  RSS( ref_metric_unit_node( ref_node ), "unit node" );
-  ref_node_metric( ref_node, 5, nodes[0] ) = 0.25;
-  RSS(ref_smooth_ideal_tri(ref_grid,nodes[0], cell, ideal),"ideal");
-  RWDS(0.5,ideal[0],-1,"ideal x");
-  RWDS(0.0,ideal[1],-1,"ideal y");
-  RWDS(2.0*0.5*sqrt(3.0),ideal[2],-1,"ideal z");
+  *target_node = nodes[0];
+  *target_cell = cell;
 
   return REF_SUCCESS;
 }
-
-/*
-ev ~/bibtex-refs/Ref/alauzet-ec-2013-topology-moving-mesh.pdf
-*/
-
 
 int main( int argc, char *argv[] )
 {
@@ -126,14 +107,63 @@ int main( int argc, char *argv[] )
       RSS( ref_mpi_stop( ), "stop" );
     }
 
-  { /*  */
+  {   
     REF_GRID ref_grid;
-    RSS( ref_smooth_tri_twod( &ref_grid ), "2d fixture" );
+    REF_INT node, cell;
+    RSS( ref_smooth_single_tri_fixture( &ref_grid, &node, &cell ), "2d fix" );
 
-    RSS( ref_smooth_twod( ref_grid, 0 ), "smooth" );
+    RSS( ref_smooth_twod( ref_grid, node ), "smooth" );
 
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  return 0;
+  { /* ideal in unit metric  */
+    REF_GRID ref_grid;
+    REF_INT node, cell;
+    REF_DBL ideal[3];
+    RSS( ref_smooth_single_tri_fixture( &ref_grid, &node, &cell ), "2d fix" );
+
+    RSS(ref_smooth_ideal_tri(ref_grid, node, cell, ideal),"ideal");
+    RWDS(0.5,ideal[0],-1,"ideal x");
+    RWDS(0.0,ideal[1],-1,"ideal y");
+    RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* ideal in hx=0.5 metric  */
+    REF_GRID ref_grid;
+    REF_INT node, cell;
+    REF_DBL ideal[3];
+
+    RSS( ref_smooth_single_tri_fixture( &ref_grid, &node, &cell ), "2d fix" );
+
+    ref_node_metric( ref_grid_node(ref_grid), 0, node ) = 0.25;
+
+    RSS(ref_smooth_ideal_tri(ref_grid, node, cell, ideal),"ideal");
+    RWDS(0.5,ideal[0],-1,"ideal x");
+    RWDS(0.0,ideal[1],-1,"ideal y");
+    RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* ideal in hz=0.5 metric  */
+    REF_GRID ref_grid;
+    REF_INT node, cell;
+    REF_DBL ideal[3];
+
+    RSS( ref_smooth_single_tri_fixture( &ref_grid, &node, &cell ), "2d fix" );
+
+    ref_node_metric( ref_grid_node(ref_grid), 5, node ) = 0.25;
+
+    RSS(ref_smooth_ideal_tri(ref_grid, node, cell, ideal),"ideal");
+    RWDS(0.5,ideal[0],-1,"ideal x");
+    RWDS(0.0,ideal[1],-1,"ideal y");
+    RWDS(2.0*0.5*sqrt(3.0),ideal[2],-1,"ideal z");
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+   return 0;
 }
