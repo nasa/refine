@@ -73,15 +73,29 @@ static REF_STATUS ref_smooth_tri_twod( REF_GRID *ref_grid_ptr )
 
   nodes[3] = 10;
 
-  RSS( ref_metric_unit_node( ref_node ), "unit node" )
-
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
+  RSS( ref_metric_unit_node( ref_node ), "unit node" );
   RSS(ref_smooth_ideal_tri(ref_grid,nodes[0], cell, ideal),"ideal");
-
   RWDS(0.5,ideal[0],-1,"ideal x");
   RWDS(0.0,ideal[1],-1,"ideal y");
   RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
+
+  RSS( ref_metric_unit_node( ref_node ), "unit node" );
+  ref_node_metric( ref_node, 0, 0 ) = 0.25;
+  RSS(ref_smooth_ideal_tri(ref_grid,nodes[0], cell, ideal),"ideal");
+  RWDS(0.5,ideal[0],-1,"ideal x");
+  RWDS(0.0,ideal[1],-1,"ideal y");
+  RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
+
+  RSS( ref_metric_unit_node( ref_node ), "unit node" );
+  ref_node_metric( ref_node, 5, nodes[0] ) = 0.25;
+  RSS(ref_smooth_ideal_tri(ref_grid,nodes[0], cell, ideal),"ideal");
+  RWDS(0.5,ideal[0],-1,"ideal x");
+  RWDS(0.0,ideal[1],-1,"ideal y");
+  RWDS(2.0*0.5*sqrt(3.0),ideal[2],-1,"ideal z");
+
+
   return REF_SUCCESS;
 }
 
