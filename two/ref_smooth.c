@@ -167,7 +167,7 @@ REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
   REF_INT ixyz;
   REF_DBL tri_ideal[3];
   REF_DBL quality, weight, normalization;
-  REF_DBL min_quality = 1.0e3;
+  REF_DBL min_quality = 1.0e-3;
 
   normalization = 0.0;
   for (ixyz = 0; ixyz<3; ixyz++)
