@@ -6,6 +6,7 @@
 #include "ref_smooth.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
+#include "ref_cell.h"
 
 REF_STATUS ref_smooth_tri_steepest_descent( REF_GRID ref_grid, REF_INT node )
 {
@@ -198,6 +199,49 @@ REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
       printf("normalization = %e\n",normalization);
       return REF_DIV_ZERO;
     }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
+				   REF_INT node )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT tries;
+  REF_DBL ideal[3], original[3];
+  REF_DBL backoff, quality0, quality;
+  REF_INT ixyz;
+
+  /* can't handle boundaries yet */
+  if ( !ref_cell_node_empty( ref_grid_qua( ref_grid ), node ) )
+    return REF_SUCCESS;
+
+  for (ixyz = 0; ixyz<3; ixyz++)
+    original[ixyz] = ref_node_xyz(ref_node,ixyz,node);
+
+  RSS( ref_smooth_tri_weighted_ideal( ref_grid, node, ideal ), "ideal" );
+
+  RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality0),"q");
+
+  backoff = 1.0;
+  for (tries = 0; tries < 8; tries++)
+    {
+      for (ixyz = 0; ixyz<3; ixyz++)
+	ref_node_xyz(ref_node,ixyz,node) = backoff*ideal[ixyz] +
+	  (1.0 - backoff) * original[ixyz];
+      RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality),"q");
+      if ( quality > quality0 )
+	{
+	  return REF_SUCCESS;
+	}
+      else
+	{
+	  backoff *= 0.5;
+	}
+    }
+
+  for (ixyz = 0; ixyz<3; ixyz++)
+    ref_node_xyz(ref_node,ixyz,node) = original[ixyz];
 
   return REF_SUCCESS;
 }
