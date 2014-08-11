@@ -241,7 +241,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_INT node;
     REF_DBL ideal[3];
-    REF_DBL quality;
+    REF_DBL quality0, quality1;
 
     RSS( ref_smooth_tri_two_fixture( &ref_grid, &node ), "2d fix" );
 
@@ -252,9 +252,16 @@ int main( int argc, char *argv[] )
 
     RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal),"ideal");
 
-    RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality),"q");
+    RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality0),"q");
 
-    printf("ideal %e: %e %e %e\n",quality,ideal[0],ideal[1],ideal[2]);
+    ref_node_xyz( ref_grid_node(ref_grid), 0, node ) = ideal[0];
+    ref_node_xyz( ref_grid_node(ref_grid), 1, node ) = ideal[1];
+    ref_node_xyz( ref_grid_node(ref_grid), 2, node ) = ideal[2];
+
+    RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality1),"q");
+
+    RAS( quality1 > quality0, "expected improvment");
+    RAS( quality1 > 0, "expected validity");
 
     RSS(ref_grid_free(ref_grid),"free");
   }
