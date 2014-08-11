@@ -23,6 +23,9 @@ REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
 					  REF_INT node,
 					  REF_DBL *ideal_location );
 
+REF_STATUS ref_smooth_opposite_node( REF_GRID ref_grid,
+				     REF_INT node, REF_INT *opposite);
+
 REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
 				   REF_INT node );
 
