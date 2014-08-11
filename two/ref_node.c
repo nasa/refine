@@ -726,6 +726,17 @@ REF_STATUS ref_node_edge_twod( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_node_twod( REF_NODE ref_node, 
+			       REF_INT node,
+			       REF_BOOL *twod )
+{
+  REF_DBL mid_plane = 0.5;
+
+  *twod = ( ref_node_xyz(ref_node,1,node) < mid_plane );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_ratio( REF_NODE ref_node, REF_INT node0, REF_INT node1, 
 			   REF_DBL *ratio )
 {
