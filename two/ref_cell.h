@@ -65,6 +65,9 @@ struct REF_CELL_STRUCT {
   ((ref_cell)->c2n[ (ref_cell)->f2n[(node)+4*(cell_face)] +		\
 		    ref_cell_size_per(ref_cell)*(cell)])
 
+#define ref_cell_node_empty( ref_cell, node )	\
+  ref_adj_empty( (ref_cell)->ref_adj, node )
+
 #define each_ref_cell_valid_cell( ref_cell, cell )			\
   for ( (cell) = 0 ;							\
 	(cell) < ref_cell_max(ref_cell);				\
