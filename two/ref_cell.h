@@ -68,6 +68,9 @@ struct REF_CELL_STRUCT {
 #define ref_cell_node_empty( ref_cell, node )	\
   ref_adj_empty( (ref_cell)->ref_adj, node )
 
+#define ref_cell_first( ref_cell, node )	\
+  ref_adj_first( (ref_cell)->ref_adj, node )
+
 #define each_ref_cell_valid_cell( ref_cell, cell )			\
   for ( (cell) = 0 ;							\
 	(cell) < ref_cell_max(ref_cell);				\
