@@ -68,8 +68,8 @@ struct REF_CELL_STRUCT {
 #define ref_cell_node_empty( ref_cell, node )	\
   ref_adj_empty( (ref_cell)->ref_adj, node )
 
-#define ref_cell_first( ref_cell, node )	\
-  ref_adj_first( (ref_cell)->ref_adj, node )
+#define ref_cell_adj( ref_cell )	\
+  ((ref_cell)->ref_adj)
 
 #define each_ref_cell_valid_cell( ref_cell, cell )			\
   for ( (cell) = 0 ;							\
