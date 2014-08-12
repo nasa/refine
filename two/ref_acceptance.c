@@ -54,6 +54,14 @@ int main( int argc, char *argv[] )
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
       RSS( ref_metric_olympic_node( ref_grid_node(ref_grid), atof(argv[3]) ),
 	   "oly" );
+
+      if (ref_grid_twod(ref_grid))
+	{
+	  REF_INT node;
+	  each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+	    ref_node_metric(ref_grid_node(ref_grid),3,node) = 1.0;
+	}
+
       RSS( ref_gather_metric( ref_grid, argv[2] ), "in");
 
       return 0;
