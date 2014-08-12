@@ -208,12 +208,15 @@ REF_STATUS ref_smooth_opposite_node( REF_GRID ref_grid,
 				     REF_INT node, REF_INT *opposite)
 {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_CELL ref_cell = ref_grid_pri( ref_grid );
+  REF_ADJ ref_adj = ref_cell_adj( ref_cell );
 
   *opposite = REF_EMPTY;
   
-  RSS( ref_cell_nodes( ref_grid_pri( ref_grid ),
-		       ref_cell_first( ref_grid_pri( ref_grid ), node ),
-		       nodes ), "get first prism about node" );
+  cell = ref_adj_safe_ref( ref_adj, ref_adj_first( ref_adj, node ) );
+
+  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "get first prism about node" );
 
   if ( node == nodes[0] ) *opposite = nodes[3];
   if ( node == nodes[3] ) *opposite = nodes[0];
@@ -234,7 +237,7 @@ REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
   REF_INT tries;
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality;
-  REF_INT ixyz;
+  REF_INT ixyz, opposite;
 
   /* can't handle boundaries yet */
   if ( !ref_cell_node_empty( ref_grid_qua( ref_grid ), node ) )
@@ -256,6 +259,11 @@ REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
       RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality),"q");
       if ( quality > quality0 )
 	{
+	  /* update opposite side */
+	  RSS( ref_smooth_opposite_node( ref_grid, node, &opposite ), "opp" );
+	  for (ixyz = 0; ixyz<3; ixyz++)
+	    ref_node_xyz(ref_node,ixyz,opposite) = 
+	      ref_node_xyz(ref_node,ixyz,node);
 	  return REF_SUCCESS;
 	}
       else
