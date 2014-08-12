@@ -210,11 +210,10 @@ REF_STATUS ref_smooth_opposite_node( REF_GRID ref_grid,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
   REF_CELL ref_cell = ref_grid_pri( ref_grid );
-  REF_ADJ ref_adj = ref_cell_adj( ref_cell );
 
   *opposite = REF_EMPTY;
   
-  cell = ref_adj_safe_ref( ref_adj, ref_adj_first( ref_adj, node ) );
+  cell = ref_cell_first_with( ref_cell, node );
 
   RSS( ref_cell_nodes( ref_cell, cell, nodes ), "get first prism about node" );
 
