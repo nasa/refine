@@ -76,10 +76,30 @@ static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
-  RSS( ref_metric_unit_node( ref_node ), "unit node" );
-
   *target_node = nodes[0];
   *target_cell = cell;
+
+  RSS(ref_node_add(ref_node,3,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+  nodes[3] = node;
+
+  RSS(ref_node_add(ref_node,4,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+  nodes[4] = node;
+
+  RSS(ref_node_add(ref_node,5,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+  nodes[5] = node;
+
+  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add pri");
+
+  RSS( ref_metric_unit_node( ref_node ), "unit node" );
 
   return REF_SUCCESS;
 }
@@ -126,7 +146,28 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
 
+  RSS(ref_node_add(ref_node,4,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+  nodes[3] = node;
+
+  RSS(ref_node_add(ref_node,5,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+  nodes[4] = node;
+
+  RSS(ref_node_add(ref_node,6,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+  nodes[5] = node;
+
+  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add pri");
+
   nodes[1] = nodes[2];
+  nodes[4] = nodes[5];
 
   RSS(ref_node_add(ref_node,3,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
@@ -135,6 +176,14 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
   nodes[2] = node;
 
   RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tri");
+
+  RSS(ref_node_add(ref_node,7,&node),"add node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+  nodes[5] = node;
+
+  RSS(ref_cell_add(ref_grid_pri(ref_grid),nodes,&cell),"add pri");
 
   RSS( ref_metric_unit_node( ref_node ), "unit node" );
 
