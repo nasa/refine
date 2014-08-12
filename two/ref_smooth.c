@@ -258,11 +258,10 @@ REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
       RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality),"q");
       if ( quality > quality0 )
 	{
-	  /* update opposite side */
+	  /* update opposite side: X and Z only */
 	  RSS( ref_smooth_opposite_node( ref_grid, node, &opposite ), "opp" );
-	  for (ixyz = 0; ixyz<3; ixyz++)
-	    ref_node_xyz(ref_node,ixyz,opposite) = 
-	      ref_node_xyz(ref_node,ixyz,node);
+	  ref_node_xyz(ref_node,0,opposite) = ref_node_xyz(ref_node,0,node);
+	  ref_node_xyz(ref_node,2,opposite) = ref_node_xyz(ref_node,2,node);
 	  return REF_SUCCESS;
 	}
       else
