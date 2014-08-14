@@ -11,6 +11,7 @@
 
 #include "ref_collapse.h"
 #include "ref_split.h"
+#include "ref_smooth.h"
 
 #include "ref_gather.h"
 
@@ -53,6 +54,8 @@ REF_STATUS ref_adapt_twod_pass( REF_GRID ref_grid )
   RSS( ref_collapse_twod_pass( ref_grid ), "col pass");
   ref_gather_blocking_frame( ref_grid );
   RSS( ref_split_twod_pass( ref_grid ), "split pass");
+  ref_gather_blocking_frame( ref_grid );
+  RSS( ref_smooth_tri_pass( ref_grid ), "smooth pass");
 
   return REF_SUCCESS;
 }
