@@ -56,19 +56,19 @@ static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_node_add(ref_node,0,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
   nodes[0] = node;
 
   RSS(ref_node_add(ref_node,1,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[1] = node;
 
   RSS(ref_node_add(ref_node,2,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[2] = node;
 
@@ -81,19 +81,19 @@ static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_node_add(ref_node,3,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
   nodes[3] = node;
 
   RSS(ref_node_add(ref_node,4,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[4] = node;
 
   RSS(ref_node_add(ref_node,5,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[5] = node;
 
@@ -124,7 +124,7 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_node_add(ref_node,0,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
   nodes[0] = node;
 
@@ -132,13 +132,13 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_node_add(ref_node,1,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
   nodes[1] = node;
 
   RSS(ref_node_add(ref_node,2,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[2] = node;
 
@@ -148,19 +148,19 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_node_add(ref_node,4,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
   nodes[3] = node;
 
   RSS(ref_node_add(ref_node,5,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 0.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[4] = node;
 
   RSS(ref_node_add(ref_node,6,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[5] = node;
 
@@ -171,7 +171,7 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_node_add(ref_node,3,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[2] = node;
 
@@ -179,7 +179,7 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
 
   RSS(ref_node_add(ref_node,7,&node),"add node");
   ref_node_xyz(ref_node,0,node) = 1.0;
-  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
   nodes[5] = node;
 
@@ -231,7 +231,7 @@ int main( int argc, char *argv[] )
 
     RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal),"ideal");
     RWDS(0.5,ideal[0],-1,"ideal x");
-    RWDS(0.0,ideal[1],-1,"ideal y");
+    RWDS(1.0,ideal[1],-1,"ideal y");
     RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
 
     RSS(ref_grid_free(ref_grid),"free");
@@ -248,7 +248,7 @@ int main( int argc, char *argv[] )
 
     RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal),"ideal");
     RWDS(0.5,ideal[0],-1,"ideal x");
-    RWDS(0.0,ideal[1],-1,"ideal y");
+    RWDS(1.0,ideal[1],-1,"ideal y");
     RWDS(0.5*sqrt(3.0),ideal[2],-1,"ideal z");
 
     RSS(ref_grid_free(ref_grid),"free");
@@ -265,7 +265,7 @@ int main( int argc, char *argv[] )
 
     RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal),"ideal");
     RWDS(0.5,ideal[0],-1,"ideal x");
-    RWDS(0.0,ideal[1],-1,"ideal y");
+    RWDS(1.0,ideal[1],-1,"ideal y");
     RWDS(2.0*0.5*sqrt(3.0),ideal[2],-1,"ideal z");
 
     RSS(ref_grid_free(ref_grid),"free");
@@ -280,7 +280,7 @@ int main( int argc, char *argv[] )
 
     RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal),"ideal");
     RWDS(0.5*(0.5+0.5*sqrt(3.0)),ideal[0],-1,"ideal x");
-    RWDS(0.0,ideal[1],-1,"ideal y");
+    RWDS(1.0,ideal[1],-1,"ideal y");
     RWDS(0.5*(0.5+0.5*sqrt(3.0)),ideal[2],-1,"ideal z");
 
     RSS(ref_grid_free(ref_grid),"free");
