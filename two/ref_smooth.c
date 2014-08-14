@@ -231,6 +231,38 @@ REF_STATUS ref_smooth_opposite_node( REF_GRID ref_grid,
   return ((REF_EMPTY==(*opposite))?REF_NOT_FOUND:REF_SUCCESS);
 }
 
+REF_STATUS ref_smooth_outward_norm( REF_GRID ref_grid, 
+				    REF_INT node,
+				    REF_BOOL *allowed );
+REF_STATUS ref_smooth_outward_norm( REF_GRID ref_grid, 
+				    REF_INT node,
+				    REF_BOOL *allowed )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL normal[3];
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node( ref_cell, node, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+
+      RSS( ref_node_tri_normal( ref_node,nodes,normal ), "norm");
+
+      if ( ( ref_node_xyz(ref_node,1,nodes[0]) > 0.5 &&
+	     normal[1] >= 0.0 ) ||
+	   ( ref_node_xyz(ref_node,1,nodes[0]) < 0.5 &&
+	     normal[1] <= 0.0 ) ) return REF_SUCCESS;
+    }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
 				   REF_INT node )
 {
@@ -239,6 +271,7 @@ REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality;
   REF_INT ixyz, opposite;
+  REF_BOOL allowed;
 
   /* can't handle boundaries yet */
   if ( !ref_cell_node_empty( ref_grid_qua( ref_grid ), node ) )
@@ -257,19 +290,20 @@ REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
       for (ixyz = 0; ixyz<3; ixyz++)
 	ref_node_xyz(ref_node,ixyz,node) = backoff*ideal[ixyz] +
 	  (1.0 - backoff) * original[ixyz];
-      RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality),"q");
-      if ( quality > quality0 )
+      RSS( ref_smooth_outward_norm( ref_grid, node, &allowed ), "normals" );
+      if ( allowed )
 	{
-	  /* update opposite side: X and Z only */
-	  RSS( ref_smooth_opposite_node( ref_grid, node, &opposite ), "opp" );
-	  ref_node_xyz(ref_node,0,opposite) = ref_node_xyz(ref_node,0,node);
-	  ref_node_xyz(ref_node,2,opposite) = ref_node_xyz(ref_node,2,node);
-	  return REF_SUCCESS;
+	  RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality),"q");
+	  if ( quality > quality0 )
+	    {
+	      /* update opposite side: X and Z only */
+	      RSS( ref_smooth_opposite_node( ref_grid, node, &opposite ),"opp");
+	      ref_node_xyz(ref_node,0,opposite) = ref_node_xyz(ref_node,0,node);
+	      ref_node_xyz(ref_node,2,opposite) = ref_node_xyz(ref_node,2,node);
+	      return REF_SUCCESS;
+	    }
 	}
-      else
-	{
-	  backoff *= 0.5;
-	}
+      backoff *= 0.5;
     }
 
   for (ixyz = 0; ixyz<3; ixyz++)
