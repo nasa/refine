@@ -31,6 +31,7 @@
 #include "ref_gather.h"
 #include "ref_collapse.h"
 #include "ref_split.h"
+#include "ref_smooth.h"
 #include "ref_math.h"
 
 int main( int argc, char *argv[] )

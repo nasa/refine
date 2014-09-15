@@ -18,6 +18,7 @@
 
 #include "ref_mpi.h"
 
+#include "ref_smooth.h"
 #include "ref_collapse.h"
 #include "ref_adapt.h"
 
