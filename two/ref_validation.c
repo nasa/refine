@@ -1,11 +1,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ref_validation.h"
 
 #include "ref_face.h"
-#include "ref_mpi.h"
+#include "ref_matrix.h"
 #include "ref_export.h"
 #include "ref_mpi.h"
 
@@ -253,6 +254,8 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL volume;
   REF_DBL min_volume, max_volume;
+  REF_INT cell_node;
+  REF_DBL part_complexity, complexity, det;
   REF_BOOL first_volume;
   REF_INT part_nnode, total_nnode, node;
 
@@ -283,6 +286,15 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
 	  min_volume = MIN( min_volume, volume);
 	  max_volume = MAX( max_volume, volume);
 	}
+      for ( cell_node = 0 ; 
+	    cell_node < ref_cell_node_per( ref_cell ) ;
+	    cell_node++ )
+	{
+	  RSS( ref_matrix_det_m( ref_node_metric_ptr(ref_node, 
+						     nodes[cell_node]), 
+				 &det),"det");
+	  complexity += sqrt(det)*volume/((REF_DBL)ref_cell_node_per(ref_cell));
+	}
     }
 
   volume = min_volume;
@@ -293,10 +305,15 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   part_nnode=0;
   each_ref_node_valid_node( ref_node, node )
     if ( ref_mpi_id == ref_node_part(ref_node,node) ) part_nnode++;
-  RSS( ref_mpi_sum( &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "mpi max");
+  RSS( ref_mpi_sum( &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "int sum");
+
+  part_complexity=complexity;
+  RSS( ref_mpi_sum( &part_complexity, &complexity, 1, REF_DBL_TYPE ),"dbl sum");
 
   if ( ref_mpi_master )
-    printf("nnode %d volume range %e %e\n",total_nnode,max_volume, min_volume);
+    printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
+	   total_nnode, complexity, (REF_DBL)total_nnode/complexity,
+	   max_volume, min_volume);
 
   return REF_SUCCESS;
 }
