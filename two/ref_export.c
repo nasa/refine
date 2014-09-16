@@ -1594,10 +1594,18 @@ REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename )
   REF_INT *o2n, *n2o;
   REF_BOOL twod_node;
   REF_INT nnode;
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node0, node1;
+  REF_INT nedge;
+  REF_BOOL twod_edge;
 
   f = fopen(filename,"w");
   if (NULL == (void *)f) printf("unable to open %s\n",filename);
   RNS(f, "unable to open file" );
+
+  fprintf(f, "MeshVersionFormatted 0\n\n");
+  fprintf(f, "Dimension 2\n\n");
 
   ref_malloc_init( o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY );
   ref_malloc_init( n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY );
@@ -1613,6 +1621,40 @@ REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename )
 	  nnode++;
 	}
     }
+
+  fprintf(f, "\nVertices\n%d\n", nnode );
+  for ( node = 0; node < nnode; node++ )
+    {
+      fprintf(f, "%.16E %.16E %d\n", 
+	      ref_node_xyz(ref_node,0,n2o[node]), 
+	      ref_node_xyz(ref_node,2,n2o[node]), 
+	      1);
+    }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  fprintf(f, "\nEdges\n%d\n", ref_cell_n(ref_cell) );
+  nedge=0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      for ( node0 = 0; node0 < 4; node0++ )
+	{
+	  node1 = node0+1;
+	  if ( node1>3 ) node1 = 0;
+	  RSS( ref_node_edge_twod( ref_node, 
+				   nodes[node0], 
+				   nodes[node1],
+				   &twod_edge ), "twod edge" );
+	  if ( twod_edge )
+	    {
+	      nedge++;
+	      fprintf(f, "%d %d %d\n", 
+		      o2n[nodes[node0]]+1, 
+		      o2n[nodes[node1]]+1, 
+		      nodes[4]);
+	    }
+	}
+    }
+  REIS( nedge, ref_cell_n(ref_cell), "edge/quad miscount" );
 
   ref_free(n2o);
   ref_free(o2n);
