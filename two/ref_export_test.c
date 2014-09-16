@@ -38,6 +38,16 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+  if (3 == argc) 
+    {
+      REF_GRID ref_grid;
+      char file[] = "ref_export_test.msh";
+      RSS(ref_fixture_twod_brick_grid( &ref_grid ), "set up brick" );
+      RSS(ref_export_twod_msh( ref_grid, file ),"export" );
+      RSS(ref_grid_free(ref_grid),"free");
+      return 0;
+    }
+
   { /* export .vtk tet */
     REF_GRID ref_grid;
     char file[] = "ref_export_test.vtk";

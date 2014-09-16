@@ -39,6 +39,7 @@ REF_STATUS ref_export_c( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_eps( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_html( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename );
 
 END_C_DECLORATION
 

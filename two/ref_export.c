@@ -1586,3 +1586,38 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename )
+{
+  FILE *f;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+  REF_INT *o2n, *n2o;
+  REF_BOOL twod_node;
+  REF_INT nnode;
+
+  f = fopen(filename,"w");
+  if (NULL == (void *)f) printf("unable to open %s\n",filename);
+  RNS(f, "unable to open file" );
+
+  ref_malloc_init( o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+  ref_malloc_init( n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+ 
+  nnode = 0;
+  each_ref_node_valid_node( ref_node, node )
+    {
+      RSS( ref_node_node_twod( ref_node, node, &twod_node ), "twod node" );
+      if ( twod_node ) 
+	{
+	  o2n[node] = nnode;
+	  n2o[nnode] = node;
+	  nnode++;
+	}
+    }
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(f);
+
+  return REF_SUCCESS;
+}
