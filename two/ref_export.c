@@ -1599,6 +1599,7 @@ REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename )
   REF_INT node0, node1;
   REF_INT nedge;
   REF_BOOL twod_edge;
+  REF_INT ntri;
 
   f = fopen(filename,"w");
   if (NULL == (void *)f) printf("unable to open %s\n",filename);
@@ -1655,6 +1656,24 @@ REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename )
 	}
     }
   REIS( nedge, ref_cell_n(ref_cell), "edge/quad miscount" );
+
+  ref_cell = ref_grid_tri(ref_grid);
+  fprintf(f, "\nTriangles\n%d\n", ref_cell_n(ref_cell)/2 );
+  ntri = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      RSS( ref_node_node_twod( ref_node, nodes[0], &twod_node ), "twod node" );
+      if ( twod_node )
+	{
+	  ntri++;
+	  fprintf(f, "%d %d %d %d\n", 
+		  o2n[nodes[0]]+1, 
+		  o2n[nodes[1]]+1, 
+		  o2n[nodes[2]]+1, 
+		  nodes[3]);
+	}
+    }
+  REIS( ntri, ref_cell_n(ref_cell)/2, "triangle miscount" );
 
   ref_free(n2o);
   ref_free(o2n);
