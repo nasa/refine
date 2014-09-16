@@ -20,6 +20,8 @@
 
 #include "ref_import.h"
 
+#include "ref_metric.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -41,11 +43,13 @@ int main( int argc, char *argv[] )
   if (3 == argc) 
     {
       REF_GRID ref_grid;
-      char grid[] = "ref_export_test.msh";
-      char metric[] = "ref_export_test.metric2d";
       RSS(ref_fixture_twod_brick_grid( &ref_grid ), "set up brick" );
-      RSS(ref_export_twod_msh( ref_grid, grid ),"export" );
-      RSS(ref_export_metric2d( ref_grid, metric ),"export" );
+      RSS( ref_metric_olympic_node( ref_grid_node(ref_grid), 0.0001 ),
+	   "oly" );
+      RSS( ref_metric_twod_node( ref_grid_node(ref_grid) ), "2d" );
+
+      RSS(ref_export_twod_msh( ref_grid, argv[1] ),"export grid" );
+      RSS(ref_export_metric2d( ref_grid, argv[2] ),"export m2d" );
       RSS(ref_grid_free(ref_grid),"free");
       return 0;
     }
