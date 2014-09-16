@@ -15,6 +15,7 @@ function adapt_cycle {
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
     ${bin}/ref_olympics ${proj}.b8.ugrid ${proj}.metric 0.01
+    echo ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
     ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
 
 }
