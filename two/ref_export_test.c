@@ -41,9 +41,11 @@ int main( int argc, char *argv[] )
   if (3 == argc) 
     {
       REF_GRID ref_grid;
-      char file[] = "ref_export_test.msh";
+      char grid[] = "ref_export_test.msh";
+      char metric[] = "ref_export_test.metric2d";
       RSS(ref_fixture_twod_brick_grid( &ref_grid ), "set up brick" );
-      RSS(ref_export_twod_msh( ref_grid, file ),"export" );
+      RSS(ref_export_twod_msh( ref_grid, grid ),"export" );
+      RSS(ref_export_metric2d( ref_grid, metric ),"export" );
       RSS(ref_grid_free(ref_grid),"free");
       return 0;
     }
