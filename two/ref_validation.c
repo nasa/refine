@@ -264,6 +264,7 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
 
   min_volume = 1.0e100; max_volume = -1.0e100;
   first_volume = REF_TRUE;
+  complexity = 0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       if ( ref_grid_twod(ref_grid) )
