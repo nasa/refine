@@ -81,6 +81,10 @@ bin_PROGRAMS += ref_acceptance
 ref_acceptance_SOURCES = ref_acceptance.c
 ref_acceptance_LDADD = libref2.a @mpi_ldadd@ -lm
 
+bin_PROGRAMS += ref_bamg
+ref_bamg_SOURCES = ref_bamg.c
+ref_bamg_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+
 noinst_PROGRAMS =
 TESTS =
 
