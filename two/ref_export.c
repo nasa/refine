@@ -1601,6 +1601,8 @@ REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename )
   REF_BOOL twod_edge;
   REF_INT ntri;
 
+  RAS( ref_grid_twod(ref_grid), "expected twod convention grid" );
+
   f = fopen(filename,"w");
   if (NULL == (void *)f) printf("unable to open %s\n",filename);
   RNS(f, "unable to open file" );
@@ -1668,8 +1670,8 @@ REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename )
 	  ntri++;
 	  fprintf(f, "%d %d %d %d\n", 
 		  o2n[nodes[0]]+1, 
-		  o2n[nodes[1]]+1, 
 		  o2n[nodes[2]]+1, 
+		  o2n[nodes[1]]+1, 
 		  nodes[3]);
 	}
     }
