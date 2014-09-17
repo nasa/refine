@@ -7,6 +7,8 @@
 #include "ref_import.h"
 #include "ref_part.h"
 #include "ref_grid.h"
+#include "ref_validation.h"
+#include "ref_histogram.h"
 
 int main( int argc, char *argv[] )
 {
@@ -25,6 +27,10 @@ int main( int argc, char *argv[] )
   RSS( ref_export_by_extension( ref_grid, "bamg.msh" ), "export" );
   RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "part metric" );
   RSS( ref_export_metric2d( ref_grid, "bamg.metric2d" ), "export" );
+
+  RSS( ref_validation_cell_volume(ref_grid),"vol");
+  RSS( ref_histogram_quality( ref_grid ), "gram");
+  RSS( ref_histogram_ratio( ref_grid ), "gram");
 
   RSS(ref_grid_free(ref_grid),"free");
 
