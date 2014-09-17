@@ -140,6 +140,16 @@ int main( int argc, char *argv[] )
 
       RSS(ref_export_tec_metric_ellipse( ref_grid, "ref_adapt_f" ),"ex" );
 
+      if ( ref_mpi_n == 1 && 
+	   ref_node_n(ref_grid_node(ref_grid))) < 50000 )
+	{
+	  REF_EDGE ref_edge;
+	  RSS( ref_edge_create( &ref_edge, ref_grid ), "edge init" );
+	  RSS( ref_edge_tec_ratio( ref_edge, ref_grid_node(ref_grid), 
+				   "ref_adapt_test_edge.tec"), "edge tec");
+	  RSS( ref_edge_free( ref_edge ), "edge free" );
+	}
+
       RSS( ref_grid_free( ref_grid ), "free");
 
       if ( ref_mpi_master )
