@@ -239,7 +239,7 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  { /* ideal in hx=0.5 metric  */
+  { /* ideal in hx=2.0 metric  */
     REF_GRID ref_grid;
     REF_INT node, cell;
     REF_DBL ideal[3];
@@ -256,7 +256,7 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  { /* ideal in hz=0.5 metric  */
+  { /* ideal in hz=2.0 metric  */
     REF_GRID ref_grid;
     REF_INT node, cell;
     REF_DBL ideal[3];
