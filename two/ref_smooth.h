@@ -28,6 +28,11 @@ REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
 
 REF_STATUS ref_smooth_tri_pass( REF_GRID ref_grid );
 
+REF_STATUS ref_smooth_tet_ideal( REF_GRID ref_grid,
+                                 REF_INT node,
+                                 REF_INT tet,
+                                 REF_DBL *ideal_location );
+
 END_C_DECLORATION
 
 #endif /* REF_SMOOTH_H */

@@ -30,6 +30,8 @@
 
 #include "ref_metric.h"
 
+#include "ref_fixture.h"
+
 #include "ref_mpi.h"
 
 #include "ref_malloc.h"
@@ -335,6 +337,26 @@ int main( int argc, char *argv[] )
 
     RAS( quality1 > quality0, "expected improvment");
     RAS( quality1 > 0, "expected validity");
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* ideal tet in unit metric  */
+    REF_GRID ref_grid;
+    REF_INT node, cell;
+    REF_DBL ideal[3];
+    RSS( ref_fixture_tet_grid( &ref_grid ), "2d fix" );
+    node = 3;
+    cell = 0;
+    RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
+
+    ref_node_xyz( ref_grid_node(ref_grid), 0, 2 ) = 0.5;
+    ref_node_xyz( ref_grid_node(ref_grid), 1, 2 ) = 0.5*sqrt(3.0);
+
+    RSS(ref_smooth_tet_ideal(ref_grid, node, cell, ideal),"ideal");
+    RWDS(0.5,               ideal[0],-1,"ideal x");
+    RWDS(1.0/6.0*sqrt(3.0), ideal[1],-1,"ideal y");
+    RWDS(1.0/3.0*sqrt(6.0), ideal[2],-1,"ideal z");
 
     RSS(ref_grid_free(ref_grid),"free");
   }

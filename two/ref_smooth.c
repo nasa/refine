@@ -363,3 +363,60 @@ REF_STATUS ref_smooth_tri_pass( REF_GRID ref_grid )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_smooth_tet_ideal( REF_GRID ref_grid,
+                                 REF_INT node,
+                                 REF_INT tet,
+                                 REF_DBL *ideal_location )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet_node, tri_node;
+  REF_INT ixyz;
+  REF_DBL dn[3];
+  REF_DBL scale, length_in_metric;
+
+  RSS(ref_cell_nodes(ref_cell, tet, nodes ), "get tri");
+  tri_nodes[0] = REF_EMPTY; tri_nodes[1] = REF_EMPTY; tri_nodes[2] = REF_EMPTY;
+  for ( tet_node=0 ; tet_node<4; tet_node++ )
+    if ( node == nodes[tet_node])
+      {
+	for ( tri_node=0 ; tri_node<3; tri_node++ )
+	  tri_nodes[tri_node] = 
+	    nodes[ref_cell_f2n_gen(ref_cell,tri_node,tet_node)];
+      }
+  if ( tri_nodes[0] == REF_EMPTY ||
+       tri_nodes[1] == REF_EMPTY ||
+       tri_nodes[2] == REF_EMPTY )
+    THROW("empty tetrahedra face");
+
+  for (ixyz = 0; ixyz<3; ixyz++)
+    ideal_location[ixyz] = ( ref_node_xyz(ref_node,ixyz,tri_nodes[0]) +
+			     ref_node_xyz(ref_node,ixyz,tri_nodes[1]) +
+			     ref_node_xyz(ref_node,ixyz,tri_nodes[2]) ) / 3.0;
+
+  RSS( ref_node_tri_normal( ref_node, tri_nodes, dn ), "tri normal" );
+
+  RSS( ref_math_normalize( dn ), "normalize direction" );
+  /* would an averaged metric be more appropriate? */
+  length_in_metric =
+    ref_matrix_sqrt_vt_m_v( ref_node_metric_ptr(ref_node,node), dn );
+
+  scale = sqrt(6.0)/3.0; /* altitude of regular tetrahedra */
+  if ( ref_math_divisible(scale,length_in_metric) )
+    {
+      scale = scale/length_in_metric;
+    }
+  else
+    {
+      printf(" length_in_metric = %e, not invertable\n", length_in_metric);
+      return REF_DIV_ZERO;
+    }
+
+  for (ixyz = 0; ixyz<3; ixyz++)
+    ideal_location[ixyz] += scale*dn[ixyz];
+
+  return REF_SUCCESS;
+}
