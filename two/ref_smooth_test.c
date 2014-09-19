@@ -361,5 +361,29 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  { /* ideal tet in hz=2.0 metric  */
+    REF_GRID ref_grid;
+    REF_INT node, cell;
+    REF_DBL ideal[3];
+    REF_DBL hz;
+    RSS( ref_fixture_tet_grid( &ref_grid ), "2d fix" );
+    node = 3;
+    cell = 0;
+    RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
+
+    hz = 2.0;
+    ref_node_metric( ref_grid_node(ref_grid), 5, node ) = 1.0/hz/hz;
+
+    ref_node_xyz( ref_grid_node(ref_grid), 0, 2 ) = 0.5;
+    ref_node_xyz( ref_grid_node(ref_grid), 1, 2 ) = 0.5*sqrt(3.0);
+
+    RSS(ref_smooth_tet_ideal(ref_grid, node, cell, ideal),"ideal");
+    RWDS(0.5,               ideal[0],-1,"ideal x");
+    RWDS(1.0/6.0*sqrt(3.0), ideal[1],-1,"ideal y");
+    RWDS(hz*1.0/3.0*sqrt(6.0), ideal[2],-1,"ideal z");
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
   return 0;
 }
