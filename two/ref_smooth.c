@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "ref_smooth.h"
+#include "ref_adapt.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_cell.h"
@@ -169,7 +170,6 @@ REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
   REF_INT ixyz;
   REF_DBL tri_ideal[3];
   REF_DBL quality, weight, normalization;
-  REF_DBL min_quality = 1.0e-3;
 
   normalization = 0.0;
   for (ixyz = 0; ixyz<3; ixyz++)
@@ -183,7 +183,7 @@ REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
       RSS( ref_node_tri_quality( ref_grid_node(ref_grid), 
 				 nodes,  
 				 &quality ), "tri qual");
-      quality = MAX(quality,min_quality);
+      quality = MAX(quality,ref_adapt_smooth_min_quality);
       weight = 1.0/quality;
       normalization += weight;
       for (ixyz = 0; ixyz<3; ixyz++)

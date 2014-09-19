@@ -23,6 +23,8 @@ REF_DBL ref_adapt_collapse_ratio = 0.6;
 REF_DBL ref_adapt_collapse_quality_absolute = 1.0e-3;
 REF_DBL ref_adapt_collapse_ratio_limit = 3.0;
 
+REF_DBL ref_adapt_smooth_min_quality = 1.0e-3;
+
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 {
   if (ref_grid_twod(ref_grid)) 

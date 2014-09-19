@@ -16,6 +16,8 @@ extern REF_DBL ref_adapt_collapse_ratio;
 extern REF_DBL ref_adapt_collapse_quality_absolute;
 extern REF_DBL ref_adapt_collapse_ratio_limit;
 
+extern REF_DBL ref_adapt_smooth_min_quality;
+
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid );
 REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid );
 REF_STATUS ref_adapt_twod_pass( REF_GRID ref_grid );
