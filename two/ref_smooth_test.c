@@ -227,9 +227,9 @@ static REF_STATUS ref_smooth_tet_two_fixture( REF_GRID *ref_grid_ptr,
   nodes[2] = node;
 
   RSS(ref_node_add(ref_node,3,&node),"add node");
-  ref_node_xyz(ref_node,0,node) = 1.5;
-  ref_node_xyz(ref_node,1,node) = 1.5;
-  ref_node_xyz(ref_node,2,node) = 1.5;
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
   nodes[3] = node;
 
   *target_node = node;
@@ -242,7 +242,7 @@ static REF_STATUS ref_smooth_tet_two_fixture( REF_GRID *ref_grid_ptr,
   ref_node_xyz(ref_node,0,node) = 0.0;
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
-  nodes[3] = node;
+  nodes[2] = node;
 
   RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tri");
 
@@ -452,9 +452,9 @@ int main( int argc, char *argv[] )
     RSS( ref_smooth_tet_two_fixture( &ref_grid, &node ), "2d fix" );
 
     RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal),"ideal");
-    RWDS(1.0/3.0,ideal[0],-1,"ideal x");
+    RWDS(0.574914957130530,ideal[0],-1,"ideal x");
     RWDS(1.0/3.0,ideal[1],-1,"ideal y");
-    RWDS(0.816496580927730,ideal[2],-1,"ideal z");
+    RWDS(0.574914957130530,ideal[2],-1,"ideal z");
 
     RSS(ref_grid_free(ref_grid),"free");
   }
