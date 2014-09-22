@@ -347,39 +347,11 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
- { /* weighted neg ideal */
-    REF_GRID ref_grid;
-    REF_INT node;
-    REF_DBL ideal[3];
-    REF_DBL quality0, quality1;
-
-    RSS( ref_smooth_tri_two_fixture( &ref_grid, &node ), "2d fix" );
-
-    ref_node_xyz( ref_grid_node(ref_grid), 2, node ) = 0.0000001;
-
-    ref_node_xyz( ref_grid_node(ref_grid), 0, 1 ) = 1.0;
-    ref_node_xyz( ref_grid_node(ref_grid), 2, 1 ) = 0.5;
-
-    RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal),"ideal");
-
-    RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality0),"q");
-
-    ref_node_xyz( ref_grid_node(ref_grid), 0, node ) = ideal[0];
-    ref_node_xyz( ref_grid_node(ref_grid), 1, node ) = ideal[1];
-    ref_node_xyz( ref_grid_node(ref_grid), 2, node ) = ideal[2];
-
-    RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality1),"q");
-
-    RAS( quality1 > quality0, "expected improvment");
-    RAS( quality1 > 0, "expected validity");
-
-    RSS(ref_grid_free(ref_grid),"free");
-  }
-
  { /* set to new ideal */
     REF_GRID ref_grid;
     REF_INT node;
     REF_DBL quality0, quality1;
+    REF_BOOL allowed;
 
     RSS( ref_smooth_tri_two_fixture( &ref_grid, &node ), "2d fix" );
 
@@ -395,7 +367,9 @@ int main( int argc, char *argv[] )
     RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality1),"q");
 
     RAS( quality1 > quality0, "expected improvment");
-    RAS( quality1 > 0, "expected validity");
+
+    RSS( ref_smooth_outward_norm( ref_grid, node, &allowed ),"outward allowed");
+    RAS( allowed, "expected validity");
 
     RSS(ref_grid_free(ref_grid),"free");
   }

@@ -14,6 +14,10 @@ REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
                                           REF_INT node,
                                           REF_DBL *min_quality );
 
+REF_STATUS ref_smooth_outward_norm( REF_GRID ref_grid, 
+				    REF_INT node,
+				    REF_BOOL *allowed );
+
 REF_STATUS ref_smooth_tri_ideal( REF_GRID ref_grid,
                                  REF_INT node,
                                  REF_INT tri,
