@@ -420,3 +420,46 @@ REF_STATUS ref_smooth_tet_ideal( REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_smooth_tet_weighted_ideal( REF_GRID ref_grid,
+					  REF_INT node,
+					  REF_DBL *ideal_location )
+{
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ixyz;
+  REF_DBL tet_ideal[3];
+  REF_DBL quality, weight, normalization;
+
+  normalization = 0.0;
+  for (ixyz = 0; ixyz<3; ixyz++)
+    ideal_location[ixyz] = 0.0;
+
+  each_ref_cell_having_node( ref_grid_tet(ref_grid), node, item, cell )
+    {
+      RSS( ref_smooth_tet_ideal( ref_grid, node, cell, 
+				 tet_ideal ), "tet ideal");
+      RSS( ref_cell_nodes( ref_grid_tet(ref_grid), cell, nodes ), "nodes" );
+      RSS( ref_node_tet_quality( ref_grid_node(ref_grid), 
+				 nodes,  
+				 &quality ), "tet qual");
+      quality = MAX(quality,ref_adapt_smooth_min_quality);
+      weight = 1.0/quality;
+      normalization += weight;
+      for (ixyz = 0; ixyz<3; ixyz++)
+	ideal_location[ixyz] += weight*tet_ideal[ixyz];
+    }
+
+  if ( ref_math_divisible(1.0,normalization) )
+    {
+      for (ixyz = 0; ixyz<3; ixyz++)
+        ideal_location[ixyz] =  (1.0/normalization) * ideal_location[ixyz];
+    }
+  else
+    {
+      printf("normalization = %e\n",normalization);
+      return REF_DIV_ZERO;
+    }
+
+  return REF_SUCCESS;
+}
