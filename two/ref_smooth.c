@@ -330,7 +330,7 @@ REF_STATUS ref_smooth_local_pris_about( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_pass( REF_GRID ref_grid )
+REF_STATUS ref_smooth_twod_pass( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;

@@ -33,7 +33,7 @@ REF_STATUS ref_smooth_opposite_node( REF_GRID ref_grid,
 REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
 				   REF_INT node );
 
-REF_STATUS ref_smooth_tri_pass( REF_GRID ref_grid );
+REF_STATUS ref_smooth_twod_pass( REF_GRID ref_grid );
 
 REF_STATUS ref_smooth_tet_quality_around( REF_GRID ref_grid,
                                           REF_INT node,

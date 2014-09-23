@@ -57,7 +57,7 @@ REF_STATUS ref_adapt_twod_pass( REF_GRID ref_grid )
   ref_gather_blocking_frame( ref_grid );
   RSS( ref_split_twod_pass( ref_grid ), "split pass");
   ref_gather_blocking_frame( ref_grid );
-  RSS( ref_smooth_tri_pass( ref_grid ), "smooth pass");
+  RSS( ref_smooth_twod_pass( ref_grid ), "smooth pass");
 
   return REF_SUCCESS;
 }
