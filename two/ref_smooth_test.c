@@ -194,7 +194,8 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
 }
 
 static REF_STATUS ref_smooth_tet_two_fixture( REF_GRID *ref_grid_ptr, 
-					      REF_INT *target_node )
+					      REF_INT *target_node,
+					      REF_INT *top_node )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -243,6 +244,8 @@ static REF_STATUS ref_smooth_tet_two_fixture( REF_GRID *ref_grid_ptr,
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
   nodes[2] = node;
+
+  *top_node = node;
 
   RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tri");
 
@@ -429,10 +432,10 @@ int main( int argc, char *argv[] )
 
  { /* weighted tet ideal */
     REF_GRID ref_grid;
-    REF_INT node;
+    REF_INT node, top_node;
     REF_DBL ideal[3];
 
-    RSS( ref_smooth_tet_two_fixture( &ref_grid, &node ), "2d fix" );
+    RSS( ref_smooth_tet_two_fixture( &ref_grid, &node, &top_node ), "3d 2tet" );
 
     RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal),"ideal");
     RWDS(0.574914957130530,ideal[0],-1,"ideal x");
