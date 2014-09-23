@@ -445,5 +445,32 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+ { /* weighted tet ideal */
+    REF_GRID ref_grid;
+    REF_INT node, top_node;
+    REF_DBL quality0, quality1;
+
+    RSS( ref_smooth_tet_two_fixture( &ref_grid, &node, &top_node ), "3d 2tet" );
+
+    ref_node_xyz( ref_grid_node(ref_grid), 0, node ) = 1.0;
+    ref_node_xyz( ref_grid_node(ref_grid), 1, node ) = 0.0;
+    ref_node_xyz( ref_grid_node(ref_grid), 2, node ) = 0.0001;
+
+    ref_node_xyz( ref_grid_node(ref_grid), 0, top_node ) = 0.8;
+    ref_node_xyz( ref_grid_node(ref_grid), 1, top_node ) = 0.0;
+    ref_node_xyz( ref_grid_node(ref_grid), 2, top_node ) = 0.5;
+
+    RSS( ref_smooth_tet_quality_around( ref_grid, node, &quality0),"q");
+
+    RSS( ref_smooth_tet_improve( ref_grid, node ),"imp");
+
+    RSS( ref_smooth_tet_quality_around( ref_grid, node, &quality1),"q");
+
+    RAS( quality1 > quality0, "expected improvment");
+    RAS( quality1 > 0, "expected validity");
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
   return 0;
 }

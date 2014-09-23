@@ -49,6 +49,9 @@ REF_STATUS ref_smooth_tet_weighted_ideal( REF_GRID ref_grid,
 					  REF_DBL *ideal_location );
 
 
+REF_STATUS ref_smooth_tet_improve( REF_GRID ref_grid,
+				   REF_INT node );
+
 END_C_DECLORATION
 
 #endif /* REF_SMOOTH_H */
