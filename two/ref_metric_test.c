@@ -27,6 +27,7 @@
 #include "ref_edge.h"
 #include "ref_adapt.h"
 
+#include "ref_validation.h"
 #include "ref_histogram.h"
 #include "ref_gather.h"
 #include "ref_collapse.h"
@@ -49,6 +50,7 @@ int main( int argc, char *argv[] )
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "qual");
       RSS( ref_histogram_ratio( ref_grid ), "rat");
 
