@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+cat > faux_input <<EOF
+6
+1 xplane 0
+2 xplane 1
+3 yplane 0
+4 yplane 1
+5 zplane 0
+6 zplane 1
+EOF
+
 two=${HOME}/refine/strict/two
 one=${HOME}/refine/strict/src
 
