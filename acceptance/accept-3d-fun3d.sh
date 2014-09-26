@@ -17,14 +17,14 @@ ${two}/ref_acceptance 1 ref_adapt_test.lb8.ugrid
 function adapt_cycle {
     proj=$1
 
-     cp ref_adapt_test.b8.ugrid ${proj}.lb8.ugrid
+     cp ref_adapt_test.lb8.ugrid ${proj}.lb8.ugrid
 
 #     ${two}/ref_translate ${proj}.fgrid ${proj}.html
     ${two}/ref_translate ${proj}.lb8.ugrid ${proj}.tec
 
     ${two}/ref_acceptance ${proj}.lb8.ugrid ${proj}.metric 0.001
 
-cat > f.mapbc <<EOF
+cat > ${proj}.mapbc <<EOF
 6
 1 5000
 2 5000
@@ -57,12 +57,11 @@ adapt_project='ref_adapt_test'
 /
 EOF
 
-    nodet_npi --adapt
+    nodet_mpi --adapt
 
 }
 
 adapt_cycle accept-3d-00
-exit
 adapt_cycle accept-3d-01
 adapt_cycle accept-3d-02
 adapt_cycle accept-3d-03
