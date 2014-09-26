@@ -54,6 +54,7 @@ restart_read='off'
 /
 &adapt_mechanics
 adapt_project='ref_adapt_test'
+adapt_cycles = 6
 /
 EOF
 
