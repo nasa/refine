@@ -30,11 +30,11 @@
 static void usage( char *executable );
 static void usage( char *executable )
 {
-  printf("Usage: %s -g input.gri -g projectx.metric -o output.gri\n",
+  printf("Usage: %s -g input.gri -m projectx.metric -o output.gri\n",
 	 executable );
   printf(" -g input.{gri|fgrid}\n");
   printf(" -m input.metric\n");
-  printf(" -o output.gri\n");
+  printf(" -o output.{gri|fgrid}\n");
 }
 
 #ifdef PROE_MAIN
@@ -47,7 +47,7 @@ int main( int argc, char *argv[] )
   int end_of_string;
   char file_input[256] = "";
   char metric_input[256] = "";
-  char gri_output[256] = "";
+  char file_output[256] = "";
 
   int i;
 
@@ -64,8 +64,8 @@ int main( int argc, char *argv[] )
       i++; sprintf( metric_input, "%s", argv[i] );
       printf("-m argument %d: %s\n",i, metric_input);
     } else if( strcmp(argv[i],"-o") == 0 ) {
-      i++; sprintf( gri_output, "%s", argv[i] );
-      printf("-o argument %d: %s\n",i, gri_output);
+      i++; sprintf( file_output, "%s", argv[i] );
+      printf("-o argument %d: %s\n",i, file_output);
     } else if( strcmp(argv[i],"-h") == 0 ) {
       usage( argv[0] );
       return(0);
@@ -77,7 +77,7 @@ int main( int argc, char *argv[] )
   }
   
   if ( (strcmp(file_input,"")==0) ||
-       (strcmp(gri_output,"")==0) ) {
+       (strcmp(file_output,"")==0) ) {
     printf("no input or output file names specified.\n");
     usage( argv[0] );
     printf("Done.\n");  
@@ -169,11 +169,15 @@ int main( int argc, char *argv[] )
 
   }
 
-
-  gridExportFAST( grid, "grid_orig.fgrid" );
-  if ( !(strcmp(gri_output,"")==0) ) 
-    gridExportGRI( grid, gri_output );
-
+  if( strcmp(&file_output[end_of_string-4],".gri") == 0 ) {
+    printf("gri output file %s\n", file_output);
+    gridExportGRI( grid, file_output );
+  } else if( strcmp(&file_output[end_of_string-6],".fgrid") == 0 ) {
+    printf("fast output file %s\n", file_output);
+    gridExportFAST( grid, file_output );
+  } else {
+    printf("output file name extension unknown %s\n", file_output );
+  }
 
   printf("Done.\n");
   
