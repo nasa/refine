@@ -169,6 +169,7 @@ int main( int argc, char *argv[] )
 
   }
 
+  end_of_string = strlen(file_output);
   if( strcmp(&file_output[end_of_string-4],".gri") == 0 ) {
     printf("gri output file %s\n", file_output);
     gridExportGRI( grid, file_output );
