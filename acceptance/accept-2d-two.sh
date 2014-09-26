@@ -15,6 +15,7 @@ function adapt_cycle {
     ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.0001
     ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
 
+    ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric
 }
 
 adapt_cycle accept-2d-00
