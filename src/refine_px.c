@@ -131,7 +131,7 @@ int main( int argc, char *argv[] )
     double ratioSplit, ratioCollapse;
 
     ratioCollapse = 0.3;
-    ratioSplit    = 1.0;      
+    ratioSplit    = 1.8;      
 
     STATUS;
 
