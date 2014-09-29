@@ -48,6 +48,7 @@ REF_STATUS ref_inflate_pri_min_dot( REF_NODE ref_node,
 
 REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
 			     REF_DICT faceids, 
+			     REF_DBL *origin, 
 			     REF_DBL thickness, REF_DBL xshift )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -94,8 +95,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	{
 	  RSS(ref_dict_location(faceids, nodes[3], &i),"key loc");
 	  node0 = nodes[tri_node];
-	  theta = atan2( ref_node_xyz(ref_node,1,node0),
-			 ref_node_xyz(ref_node,2,node0));
+	  theta = atan2( ref_node_xyz(ref_node,1,node0)-origin[1],
+			 ref_node_xyz(ref_node,2,node0)-origin[2]);
 	  if ( tmin[i] > theta )
 	    {
 	      tmin[i] = theta;
@@ -138,8 +139,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 
 	      RAS( ref_node_valid(ref_node,node0),"inlvalid tri node");
 	      normal[0]=0.0;
-	      normal[1]=ref_node_xyz(ref_node,1,node0);
-	      normal[2]=ref_node_xyz(ref_node,2,node0);
+	      normal[1]=ref_node_xyz(ref_node,1,node0)-origin[1];
+	      normal[2]=ref_node_xyz(ref_node,2,node0)-origin[2];
 	      RSS( ref_math_normalize( normal ), "make norm" );
 	      each_ref_cell_having_node( tri, node0, item, ref )
 		{
@@ -260,6 +261,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 
 REF_STATUS ref_inflate_radially( REF_GRID ref_grid, 
 				 REF_DICT faceids, 
+				 REF_DBL *origin, 
 				 REF_DBL thickness, REF_DBL xshift )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -296,8 +298,8 @@ REF_STATUS ref_inflate_radially( REF_GRID ref_grid,
 
 	      RAS( ref_node_valid(ref_node,node0),"inlvalid tri node");
 	      normal[0]=0.0;
-	      normal[1]=ref_node_xyz(ref_node,1,node0);
-	      normal[2]=ref_node_xyz(ref_node,2,node0);
+	      normal[1]=ref_node_xyz(ref_node,1,node0)-origin[1];
+	      normal[2]=ref_node_xyz(ref_node,2,node0)-origin[2];
 	      RSS( ref_math_normalize( normal ), "make norm" );
 	      ref_node_xyz(ref_node,0,new_node) = 
 		xshift + ref_node_xyz(ref_node,0,node0);
@@ -455,5 +457,46 @@ REF_STATUS ref_inflate_dthickness( REF_INT nlayers,
   *dHdr = first_thickness * ( dnum*(1.0-rate) 
   			   - (1.0-pow(rate,nlayers))*dden )
     /(1.0-rate)/(1.0-rate) ;
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_inflate_origin( REF_GRID ref_grid,
+			       REF_DICT faceids,
+			       REF_DBL *origin )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL z0, z1;
+  REF_INT node;
+  REF_BOOL first_time;
+
+  first_time = REF_TRUE;
+  z0=0;z1=0;
+  each_ref_cell_valid_cell_with_nodes( tri, cell, nodes)
+    if ( ref_dict_has_key( faceids, nodes[3] ) )
+      {
+	for (node=0;node<3;node++)
+	  {
+	    if ( !first_time )
+	      {
+		z0 = MIN( z0, ref_node_xyz(ref_node,2,nodes[node]) );
+		z1 = MAX( z1, ref_node_xyz(ref_node,2,nodes[node]) );
+	      }
+	    else
+	      {
+		z0 = ref_node_xyz(ref_node,2,nodes[node]);
+		z1 = ref_node_xyz(ref_node,2,nodes[node]);		
+		first_time = REF_FALSE;
+	      }
+	  }
+      }
+
+  printf("the z range is %f %f\n",z0,z1);
+  origin[0] = 0;
+  origin[1] = 0;
+  origin[2] = 0.5*(z0+z1);
+
   return REF_SUCCESS;
 }

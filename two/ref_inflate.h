@@ -16,10 +16,12 @@ REF_STATUS ref_inflate_pri_min_dot( REF_NODE ref_node,
 
 REF_STATUS ref_inflate_face( REF_GRID ref_grid, 
 			     REF_DICT faceids, 
+			     REF_DBL *origin, 
 			     REF_DBL thickness, REF_DBL xshift );
 
 REF_STATUS ref_inflate_radially( REF_GRID ref_grid, 
-				 REF_DICT faceids, 
+				 REF_DICT faceids,
+				 REF_DBL *origin, 
 				 REF_DBL thickness, REF_DBL xshift );
 
 REF_STATUS ref_inflate_rate( REF_INT nlayers,
@@ -34,6 +36,10 @@ REF_STATUS ref_inflate_dthickness( REF_INT nlayers,
 				   REF_DBL first_thickness,
 				   REF_DBL rate,
 				   REF_DBL *dHdr );
+
+REF_STATUS ref_inflate_origin( REF_GRID ref_grid,
+			       REF_DICT faceids,
+			       REF_DBL *origin );
 
 END_C_DECLORATION
 

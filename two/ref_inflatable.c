@@ -32,6 +32,7 @@ int main( int argc, char *argv[] )
   REF_INT layer;
   REF_DBL thickness, xshift, mach_angle_rad;
   REF_BOOL extrude_radially = REF_FALSE;
+  REF_DBL origin[3];
 
   if ( 7 > argc )
     {
@@ -83,6 +84,8 @@ int main( int argc, char *argv[] )
   printf("total thickness %f\n", total_thickness);
   printf("rate %f\n", rate);
 
+  RSS( ref_inflate_origin( ref_grid, faceids, origin ), "orig" );
+
   total = 0.0;
   for( layer=0;layer<nlayers;layer++)
     {
@@ -91,12 +94,14 @@ int main( int argc, char *argv[] )
       xshift = thickness / tan(mach_angle_rad);
       if ( extrude_radially )
 	{
-	  RSS( ref_inflate_radially( ref_grid, faceids, thickness, xshift ), 
+	  RSS( ref_inflate_radially( ref_grid, faceids, 
+				     origin, thickness, xshift ), 
 	       "inflate" );
 	} 
       else 
 	{
-	  RSS( ref_inflate_face( ref_grid, faceids, thickness, xshift ), 
+	  RSS( ref_inflate_face( ref_grid, faceids, 
+				 origin, thickness, xshift ), 
 	       "inflate" );
 	}
       printf("layer%5d of%5d : thickness %15.8e total %15.8e :%9d nodes\n",
