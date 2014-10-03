@@ -427,7 +427,7 @@ REF_STATUS ref_inflate_rate( REF_INT nlayers,
 
       r = r - err/dHdr;
 
-      keep_going = ( ABS(err) > 1.0e-12 );
+      keep_going = ( ABS(err/total_thickness) > 1.0e-12 );
     }
 
   *rate = r;
