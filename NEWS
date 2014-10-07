@@ -3,6 +3,7 @@
 - added Barral/McKenzie metric intersection
 - quieted parMETIS debug statements that crashed MPI stdout buffers
 - extended ref_inflatable use an origin at mean of Z min/max
+- extended ref_inflatable to have an optional angle of attack argument
 
 Mon, Apr 14, 2014 : Released Refine 1.8.14
 

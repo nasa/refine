@@ -30,13 +30,15 @@ int main( int argc, char *argv[] )
   REF_DBL first_thickness, total_thickness, mach;
   REF_DBL rate, total;
   REF_INT layer;
-  REF_DBL thickness, xshift, mach_angle_rad, alpha_rad;
+  REF_DBL thickness, xshift, mach_angle_rad;
+  REF_DBL alpha_deg = 0;
+  REF_DBL alpha_rad = 0;
   REF_BOOL extrude_radially = REF_FALSE;
   REF_DBL origin[3];
 
   if ( 7 > argc )
     {
-      printf("usage: \n %s input.grid nlayers first_thickness total_thickness mach faceid [faceid...]\n",
+      printf("usage: \n %s input.grid nlayers first_thickness total_thickness mach faceid [faceid...] [-a angle_of_attack_in_degrees]\n",
 	     argv[0]);
       printf("  when first_thickness <= 0, it is set to a uniform grid,\n");
       printf("    first_thickness = total_thickness/nlayers\n");
@@ -59,10 +61,20 @@ int main( int argc, char *argv[] )
 
   RSS( ref_dict_create( &faceids ), "create" );
   for( arg=6;arg<argc;arg++)
-    {
-      faceid = atoi( argv[arg] );
-      RSS( ref_dict_store( faceids, faceid, REF_EMPTY ), "store" );
-    }
+    if (0 == strcmp(argv[arg], "-a") )
+      {
+	if (arg==argc-1)
+	  THROW("-a requires a value");
+	arg++;
+	alpha_deg = atof(argv[arg]);
+	alpha_rad = ref_math_in_radians(alpha_deg);
+	printf(" -a %f deg\n",alpha_deg);
+      }
+    else
+      {
+	faceid = atoi( argv[arg] );
+	RSS( ref_dict_store( faceids, faceid, REF_EMPTY ), "store" );
+      }
 
   if ( first_thickness <= 0.0 )
     {
@@ -94,7 +106,6 @@ int main( int argc, char *argv[] )
       xshift = thickness / tan(mach_angle_rad);
       if ( extrude_radially )
 	{
-	  alpha_rad = ref_math_in_radians(0.0);
 	  RSS( ref_inflate_radially( ref_grid, faceids, 
 				     origin, thickness, 
 				     mach_angle_rad, alpha_rad ), 
