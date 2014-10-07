@@ -262,7 +262,9 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 REF_STATUS ref_inflate_radially( REF_GRID ref_grid, 
 				 REF_DICT faceids, 
 				 REF_DBL *origin, 
-				 REF_DBL thickness, REF_DBL xshift )
+				 REF_DBL thickness, 
+				 REF_DBL mach_angle_rad,
+				 REF_DBL alpha_rad )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -277,6 +279,7 @@ REF_STATUS ref_inflate_radially( REF_GRID ref_grid,
   REF_INT global, new_node;
   REF_INT new_cell;
   REF_DBL min_dot;
+  REF_DBL phi_rad, alpha_weighting, xshift;
 
   REF_DBL normal[3];
 
@@ -301,6 +304,10 @@ REF_STATUS ref_inflate_radially( REF_GRID ref_grid,
 	      normal[1]=ref_node_xyz(ref_node,1,node0)-origin[1];
 	      normal[2]=ref_node_xyz(ref_node,2,node0)-origin[2];
 	      RSS( ref_math_normalize( normal ), "make norm" );
+	      phi_rad = atan2( normal[1], normal[2] );
+	      alpha_weighting = cos(phi_rad);
+	      xshift = thickness 
+		/ tan(mach_angle_rad+alpha_weighting*alpha_rad);
 	      ref_node_xyz(ref_node,0,new_node) = 
 		xshift + ref_node_xyz(ref_node,0,node0);
 	      ref_node_xyz(ref_node,1,new_node) = 

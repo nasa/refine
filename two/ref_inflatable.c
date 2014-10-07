@@ -30,7 +30,7 @@ int main( int argc, char *argv[] )
   REF_DBL first_thickness, total_thickness, mach;
   REF_DBL rate, total;
   REF_INT layer;
-  REF_DBL thickness, xshift, mach_angle_rad;
+  REF_DBL thickness, xshift, mach_angle_rad, alpha_rad;
   REF_BOOL extrude_radially = REF_FALSE;
   REF_DBL origin[3];
 
@@ -94,8 +94,10 @@ int main( int argc, char *argv[] )
       xshift = thickness / tan(mach_angle_rad);
       if ( extrude_radially )
 	{
+	  alpha_rad = ref_math_in_radians(0.0);
 	  RSS( ref_inflate_radially( ref_grid, faceids, 
-				     origin, thickness, xshift ), 
+				     origin, thickness, 
+				     mach_angle_rad, alpha_rad ), 
 	       "inflate" );
 	} 
       else 
