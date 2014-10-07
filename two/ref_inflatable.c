@@ -43,6 +43,7 @@ int main( int argc, char *argv[] )
       printf("  when first_thickness <= 0, it is set to a uniform grid,\n");
       printf("    first_thickness = total_thickness/nlayers\n");
       printf("  when nlayers < 0, extrude radially\n");
+      printf("    (-a option only available for radial extrusion)\n");
       return 1;
     }
 
