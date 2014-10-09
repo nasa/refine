@@ -351,6 +351,9 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
       chunk = MAX(5000,(REF_INT)(1.5*(REF_DBL)orig));
       ref_cell_max(ref_cell) = orig + chunk;
 
+      if ( ref_cell_max(ref_cell) > 300000000 )
+	printf("ref_cell resized to %d cells\n",ref_cell_max(ref_cell));
+
       ref_realloc( ref_cell->c2n, ref_cell_size_per(ref_cell) *
 		   ref_cell_max(ref_cell), REF_INT );
       ref_realloc( ref_cell->c2e, ref_cell_edge_per(ref_cell) *
