@@ -222,7 +222,7 @@ REF_STATUS ref_shard_mark_relax( REF_SHARD ref_shard )
   REF_CELL ref_cell;
   REF_BOOL again;
   REF_INT cell;
-  REF_BOOL nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
   ref_cell = ref_grid_hex(ref_shard_grid(ref_shard));
 

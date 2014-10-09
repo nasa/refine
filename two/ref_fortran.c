@@ -28,7 +28,7 @@ REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
       REF_DBL *x, REF_DBL *y, REF_DBL *z )
 {
   REF_NODE ref_node;
-  int node, pos;
+  REF_INT node, pos;
   RSS( ref_grid_create( &ref_grid ), "create grid" );
   ref_node = ref_grid_node(ref_grid);
 
@@ -173,7 +173,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
 REF_STATUS FC_FUNC_(ref_fortran_import_metric,REF_FORTRAN_IMPORT_METRIC)
      (REF_INT *nnodes, REF_DBL *m )
 {
-  int node, i;
+  REF_INT node, i;
   REF_NODE ref_node = ref_grid_node(ref_grid);
 
   for (node = 0; node < (*nnodes); node++)
