@@ -218,6 +218,39 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram, 
+				 char *description )
+{
+  REF_INT i;
+  FILE *f;
+  char filename[1024];
+
+  sprintf(filename,"ref_histogram_%s.gnuplot",description);
+  f = fopen(filename,"w");
+  if (NULL == (void *)f) printf("unable to open %s\n",filename);
+  RNS(f, "unable to open file" );
+
+  fprintf(f,"set terminal postscript eps enhanced color\n");
+  sprintf(filename,"ref_histogram_%s.eps",description);
+  fprintf(f,"set output '%s'\n",filename);
+
+  fprintf(f,"set style histogram cluster gap 1\n");
+  fprintf(f,"set style fill solid border -1\n");
+  fprintf(f,"set boxwidth 0.9\n");
+  fprintf(f,"set xtic rotate by -45 scale 0\n");
+  fprintf(f,"plot '-' using 2:xticlabels(1) title '%s'\n",description);
+
+  for (i=0;i<ref_histogram_n(ref_histogram)-1;i++)
+    {
+      printf("%.3f-%.3f %d\n", 
+	     ref_histogram_to_obs(i),
+	     ref_histogram_to_obs(i+1),
+	     ref_histogram_bin( ref_histogram, i ));
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid )
 {
   REF_EDGE ref_edge;
