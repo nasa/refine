@@ -95,6 +95,8 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
   RSS( ref_histogram_gather( ref_histogram ), "gather");
   if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram,
 						  "edge ratio"), "print");
+  if ( 1 == ref_mpi_n ) RSS( ref_histogram_export( ref_histogram,
+						   "edge-ratio"), "print");
 
   RSS( ref_edge_free(ref_edge), "free edge" );
   RSS( ref_histogram_free(ref_histogram), "free gram" );
@@ -234,6 +236,7 @@ REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram,
   sprintf(filename,"ref_histogram_%s.eps",description);
   fprintf(f,"set output '%s'\n",filename);
 
+  fprintf(f,"set style data histogram\n");
   fprintf(f,"set style histogram cluster gap 1\n");
   fprintf(f,"set style fill solid border -1\n");
   fprintf(f,"set boxwidth 0.9\n");
@@ -242,11 +245,13 @@ REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram,
 
   for (i=0;i<ref_histogram_n(ref_histogram)-1;i++)
     {
-      printf("%.3f-%.3f %d\n", 
-	     ref_histogram_to_obs(i),
-	     ref_histogram_to_obs(i+1),
-	     ref_histogram_bin( ref_histogram, i ));
+      fprintf(f,"%.3f-%.3f %d\n", 
+	      ref_histogram_to_obs(i),
+	      ref_histogram_to_obs(i+1),
+	      ref_histogram_bin( ref_histogram, i ));
     }
+
+  fclose(f);
 
   return REF_SUCCESS;
 }
