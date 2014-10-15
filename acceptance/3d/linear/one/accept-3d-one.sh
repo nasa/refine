@@ -27,7 +27,7 @@ function adapt_cycle {
 
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.fgrid
     ${one}/refine-px -g ${proj}.fgrid -m ${proj}.metric -o refine-one.fgrid
-    ${bin}/ref_translate ${proj}.fgrid ref_adapt_test.b8.ugrid
+    ${bin}/ref_translate refine-one.fgrid ref_adapt_test.b8.ugrid
 
     ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
     cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
