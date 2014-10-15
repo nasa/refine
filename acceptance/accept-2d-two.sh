@@ -16,16 +16,18 @@ function adapt_cycle {
     ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
 
     ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric
+    cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
+    cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
 }
 
-adapt_cycle accept-2d-00
-adapt_cycle accept-2d-01
-adapt_cycle accept-2d-02
-adapt_cycle accept-2d-03
-adapt_cycle accept-2d-04
-adapt_cycle accept-2d-05
-adapt_cycle accept-2d-06
-adapt_cycle accept-2d-07
-adapt_cycle accept-2d-08
-adapt_cycle accept-2d-09
+adapt_cycle accept-2d-two-00
+adapt_cycle accept-2d-two-01
+adapt_cycle accept-2d-two-02
+adapt_cycle accept-2d-two-03
+adapt_cycle accept-2d-two-04
+adapt_cycle accept-2d-two-05
+adapt_cycle accept-2d-two-06
+adapt_cycle accept-2d-two-07
+adapt_cycle accept-2d-two-08
+adapt_cycle accept-2d-two-09
 

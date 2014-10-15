@@ -1,6 +1,6 @@
 #!MC 1400
 # Created by Tecplot 360 build 14.0.2.33414
-$!VarSet |LFDSFN1| = '"accept-bamg-09.tec"'
+$!VarSet |LFDSFN1| = '"accept-2d-bamg-09.tec"'
 $!VarSet |LFDSVL1| = '"x" "y" "z"'
 $!SETSTYLEBASE FACTORY
 $!GLOBALLINKING 
