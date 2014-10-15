@@ -22,7 +22,7 @@ function adapt_cycle {
 	-out ref_adapt_test.meshb
     ${bin}/ref_translate ref_adapt_test.meshb ref_adapt_test.b8.ugrid
 
-    ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric
+    ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
     cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
     gnuplot ref_histogram_edge-ratio.gnuplot
