@@ -15,13 +15,19 @@ function adapt_cycle {
     ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
     ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
 
+    ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric
+    cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
+    cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
+    gnuplot ref_histogram_edge-ratio.gnuplot
+    epstopdf ref_histogram_edge-ratio.eps
+    cp ref_histogram_edge-ratio.pdf ${proj}_edge-ratio.pdf
 }
 
-adapt_cycle accept-3d-00
-adapt_cycle accept-3d-01
-adapt_cycle accept-3d-02
-adapt_cycle accept-3d-03
-adapt_cycle accept-3d-04
-adapt_cycle accept-3d-05
-adapt_cycle accept-3d-06
+adapt_cycle accept-3d-two-00
+adapt_cycle accept-3d-two-01
+adapt_cycle accept-3d-two-02
+adapt_cycle accept-3d-two-03
+adapt_cycle accept-3d-two-04
+adapt_cycle accept-3d-two-05
+adapt_cycle accept-3d-two-06
 
