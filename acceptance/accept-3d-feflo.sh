@@ -21,14 +21,18 @@ function adapt_cycle {
 
     ${bin}/ref_translate ref_adapt_test.meshb ref_adapt_test.b8.ugrid
     ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric
-
+    cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
+    cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
+    gnuplot ref_histogram_edge-ratio.gnuplot
+    epstopdf ref_histogram_edge-ratio.eps
+    cp ref_histogram_edge-ratio.pdf ${proj}_edge-ratio.pdf
 }
 
-adapt_cycle accept-3d-00
-adapt_cycle accept-3d-01
-adapt_cycle accept-3d-02
-adapt_cycle accept-3d-03
-adapt_cycle accept-3d-04
-adapt_cycle accept-3d-05
-adapt_cycle accept-3d-06
+adapt_cycle accept-3d-feflo-00
+adapt_cycle accept-3d-feflo-01
+adapt_cycle accept-3d-feflo-02
+adapt_cycle accept-3d-feflo-03
+adapt_cycle accept-3d-feflo-04
+adapt_cycle accept-3d-feflo-05
+adapt_cycle accept-3d-feflo-06
 
