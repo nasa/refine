@@ -44,7 +44,7 @@ int main( int argc, char *argv[] )
     printf("fieldview input file %s\n", file_name);
     grid = gridImportFV( file_name );
   } else if( strcmp(&file_name[end_of_string-4],".gri") == 0 ) {
-    printf("fieldview input file %s\n", file_name);
+    printf("gri input file %s\n", file_name);
     grid = gridImportGRI( file_name );
   } else {
     printf("input file name extension unknown %s\n", file_name);
