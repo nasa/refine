@@ -27,3 +27,8 @@ Makefile.in
 /src/Sort
 /src/Tableau
 
+# acceptance
+
+/acceptance
+
+
