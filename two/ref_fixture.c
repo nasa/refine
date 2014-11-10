@@ -500,11 +500,11 @@ REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid_ptr, REF_INT dn )
   REF_DBL x0 = -6.0;
   REF_DBL x1 =  9.0;
 
-  REF_DBL y0 = -4.5;
-  REF_DBL y1 =  4.5;
+  REF_DBL y0 = -0.42;
+  REF_DBL y1 =  0.42;
 
-  REF_DBL z0 = -4.5;
-  REF_DBL z1 =  4.5;
+  REF_DBL z0 = -0.42;
+  REF_DBL z1 =  0.42;
 
   REF_DBL dx, dy, dz;
 
@@ -528,6 +528,11 @@ REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid_ptr, REF_INT dn )
 	  ref_node_xyz(ref_node, 0, node ) = x0 + dx*(REF_DBL)i;
 	  ref_node_xyz(ref_node, 1, node ) = y0 + dy*(REF_DBL)j;
 	  ref_node_xyz(ref_node, 2, node ) = z0 + dz*(REF_DBL)k;
+
+	  ref_node_xyz(ref_node, 1, node ) = 
+	    tan(ref_math_pi*ref_node_xyz(ref_node, 1, node ));
+	  ref_node_xyz(ref_node, 2, node ) = 
+	    tan(ref_math_pi*ref_node_xyz(ref_node, 2, node ));
 	}
 
 #define ijk2hex(i,j,k,l,m,n,hex)			\
