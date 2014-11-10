@@ -106,6 +106,16 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
+  if ( 3 == argc )
+    {
+      REF_GRID ref_grid;
+      REF_INT dn;
+      dn = atoi(argv[1]);
+      RSS( ref_fixture_hex_brick_grid( &ref_grid, dn ), "boom3d" );
+      RSS( ref_export_by_extension( ref_grid, argv[2] ), "export" );
+      RSS( ref_grid_free(ref_grid),"free");
+    }
+
   if ( 5 == argc )
     {
       REF_GRID ref_grid;

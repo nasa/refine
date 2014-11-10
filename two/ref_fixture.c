@@ -487,30 +487,30 @@ REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid_ptr, REF_INT dn )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT global, node, hex[8], cell;
   REF_INT quad[5];
 
-
-  REF_INT l=5,m=3,n=9;
+  REF_INT l=15*dn+1,m=9*dn+1,n=9*dn+1;
   REF_INT i, j, k;
 
-  REF_DBL x0 = 0.0;
-  REF_DBL x1 = 1.0;
+  REF_DBL x0 = -6.0;
+  REF_DBL x1 =  9.0;
 
-  REF_DBL y0 = 0.0;
-  REF_DBL y1 = 0.1;
+  REF_DBL y0 = -4.5;
+  REF_DBL y1 =  4.5;
 
-  REF_DBL dx, dy;
+  REF_DBL z0 = -4.5;
+  REF_DBL z1 =  4.5;
 
-  REF_DBL dz0 = 0.0005;
-  REF_DBL r = 1.5;
+  REF_DBL dx, dy, dz;
 
   dx = (x1-x0)/((REF_DBL)(l-1));
   dy = (y1-y0)/((REF_DBL)(m-1));
+  dz = (z1-z0)/((REF_DBL)(n-1));
 
   RSS(ref_grid_create(ref_grid_ptr),"create");
   ref_grid =  *ref_grid_ptr;
@@ -527,7 +527,7 @@ REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid_ptr )
 	  RSS( ref_node_add( ref_node, global, &node ), "node");
 	  ref_node_xyz(ref_node, 0, node ) = x0 + dx*(REF_DBL)i;
 	  ref_node_xyz(ref_node, 1, node ) = y0 + dy*(REF_DBL)j;
-	  ref_node_xyz(ref_node, 2, node ) = dz0*(1.0-pow(r,k))/(1.0-r);
+	  ref_node_xyz(ref_node, 2, node ) = z0 + dz*(REF_DBL)k;
 	}
 
 #define ijk2hex(i,j,k,l,m,n,hex)			\
