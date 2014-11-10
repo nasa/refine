@@ -497,8 +497,8 @@ REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid_ptr, REF_INT dn )
   REF_INT l=15*dn+1,m=9*dn+1,n=9*dn+1;
   REF_INT i, j, k;
 
-  REF_DBL x0 = -6.0;
-  REF_DBL x1 =  9.0;
+  REF_DBL x0 = -0.45;
+  REF_DBL x1 =  0.47;
 
   REF_DBL y0 = -0.42;
   REF_DBL y1 =  0.42;
@@ -529,6 +529,8 @@ REF_STATUS ref_fixture_hex_brick_grid( REF_GRID *ref_grid_ptr, REF_INT dn )
 	  ref_node_xyz(ref_node, 1, node ) = y0 + dy*(REF_DBL)j;
 	  ref_node_xyz(ref_node, 2, node ) = z0 + dz*(REF_DBL)k;
 
+	  ref_node_xyz(ref_node, 0, node ) = 
+	    tan(ref_math_pi*ref_node_xyz(ref_node, 0, node ));
 	  ref_node_xyz(ref_node, 1, node ) = 
 	    tan(ref_math_pi*ref_node_xyz(ref_node, 1, node ));
 	  ref_node_xyz(ref_node, 2, node ) = 
