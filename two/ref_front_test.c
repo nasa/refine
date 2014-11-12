@@ -49,7 +49,7 @@ int main( void )
     RSS(ref_front_free(ref_front),"free");
   }
 
-  { /* add same face, raise rror */
+  { /* add same face, raise error */
     REF_FRONT ref_front;
     REF_INT nodes[2];
 
