@@ -42,6 +42,7 @@ REF_STATUS ref_cavity_free( REF_CAVITY ref_cavity );
     if ( ref_cavity_valid( ref_cavity, face ) )
 
 REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes );
+REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, REF_INT *nodes );
 REF_STATUS ref_cavity_find( REF_CAVITY ref_cavity, REF_INT *nodes,
 			   REF_INT *found_face, REF_BOOL *reversed);
 

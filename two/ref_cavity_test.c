@@ -103,5 +103,27 @@ int main( void )
     RSS(ref_cavity_free(ref_cavity),"free");
   }
 
+  { /* add triangle */
+    REF_CAVITY ref_cavity;
+    REF_INT nodes[3];
+    REF_INT face;
+    REF_BOOL reversed;
+
+    RSS(ref_cavity_create(&ref_cavity,2),"create");
+    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    RSS(ref_cavity_add_tri(ref_cavity,nodes),"insert first");
+
+    nodes[0]=1;nodes[1]=2;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
+
+    nodes[0]=2;nodes[1]=3;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
+
+    nodes[0]=3;nodes[1]=1;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+  }
+
   return 0;
 }

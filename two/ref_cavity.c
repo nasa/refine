@@ -39,6 +39,18 @@ REF_STATUS ref_cavity_free( REF_CAVITY ref_cavity )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, REF_INT *tri )
+{
+  REF_INT nodes[2];
+  nodes[0]=tri[1];nodes[1]=tri[2];
+  RSS( ref_cavity_insert( ref_cavity, nodes ), "side 0" ); 
+  nodes[0]=tri[2];nodes[1]=tri[0];
+  RSS( ref_cavity_insert( ref_cavity, nodes ), "side 1" ); 
+  nodes[0]=tri[0];nodes[1]=tri[1];
+  RSS( ref_cavity_insert( ref_cavity, nodes ), "side 2" ); 
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes )
 {
   REF_INT node, face;
