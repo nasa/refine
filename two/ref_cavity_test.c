@@ -5,6 +5,17 @@
 
 #include "ref_cavity.h"
 
+#include "ref_grid.h"
+#include  "ref_node.h"
+#include   "ref_sort.h"
+#include   "ref_mpi.h"
+#include   "ref_matrix.h"
+#include   "ref_list.h"
+#include  "ref_cell.h"
+#include   "ref_adj.h"
+#include "ref_fixture.h"
+
+
 int main( void )
 {
 
@@ -123,6 +134,14 @@ int main( void )
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
 
     RSS(ref_cavity_free(ref_cavity),"free");
+  }
+
+  { /* insert node */
+    REF_GRID ref_grid;
+
+    RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+
+    RSS(ref_grid_free(ref_grid),"free");
   }
 
   return 0;
