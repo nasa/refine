@@ -121,6 +121,11 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 	    RSS( ref_export_eps( ref_grid, filename ), "eps export failed");
 	  } 
 	else 
+	if( strcmp(&filename[end_of_string-4],".pdf") == 0 ) 
+	  {
+	    RSS( ref_export_pdf( ref_grid, filename ), "pdf export failed");
+	  } 
+	else 
 	  if( strcmp(&filename[end_of_string-10],".lb8.ugrid") == 0 ) 
 	    {
 	      RSS( ref_export_lb8_ugrid( ref_grid, filename ), 
@@ -1320,6 +1325,18 @@ REF_STATUS ref_export_c( REF_GRID ref_grid, char *filename  )
   ref_free(o2n);
 
   fclose(file);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_pdf( REF_GRID ref_grid, char *pdf_filename )
+{
+  char temp_filename[] = "ref_export_temp_for_pdf.eps";
+  char command[1024];
+  RSS( ref_export_eps( ref_grid, temp_filename ), "temp eps");
+  sprintf( command, "epstopdf %s -o=%s", temp_filename, pdf_filename );
+  REIS(0, system( command ), "epstopdf failed");
+  REIS(0, remove( temp_filename ), "temp clean up");
 
   return REF_SUCCESS;
 }
