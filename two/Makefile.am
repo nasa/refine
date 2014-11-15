@@ -8,6 +8,7 @@ libref2_a_SOURCES = \
 	ref_adapt.c ref_adapt.h \
 	ref_adj.c ref_adj.h \
 	ref_axi.c ref_axi.h \
+	ref_cavity.c ref_cavity.h \
 	ref_cell.c ref_cell.h \
 	ref_collapse.c ref_collapse.h \
 	ref_dict.c ref_dict.h \
@@ -98,6 +99,11 @@ TESTS += ref_axi_test
 noinst_PROGRAMS += ref_axi_test
 ref_axi_test_SOURCES = ref_axi_test.c
 ref_axi_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
+TESTS += ref_cavity_test
+noinst_PROGRAMS += ref_cavity_test
+ref_cavity_test_SOURCES = ref_cavity_test.c
+ref_cavity_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_cell_test
 noinst_PROGRAMS += ref_cell_test
