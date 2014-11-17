@@ -57,8 +57,8 @@ REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, 
 			       REF_GRID ref_grid, REF_INT tri );
 
-REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity, 
-			       REF_GRID ref_grid, REF_INT node );
+REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity, 
+				   REF_GRID ref_grid, REF_INT node );
 
 END_C_DECLORATION
 

@@ -243,8 +243,8 @@ REF_STATUS ref_cavity_tri_pri_tri( REF_GRID ref_grid, REF_INT cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity, 
-			       REF_GRID ref_grid, REF_INT node )
+REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity, 
+				   REF_GRID ref_grid, REF_INT node )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell, pri, tri;

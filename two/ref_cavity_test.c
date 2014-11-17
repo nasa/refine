@@ -250,7 +250,7 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  { /* insert node */
+  { /* insert tri node */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
@@ -268,7 +268,7 @@ int main( void )
     ref_node_xyz(ref_node,1,node) = 1.0;
     ref_node_xyz(ref_node,2,node) = 0.3;
 
-    RSS(ref_cavity_replace(ref_cavity, ref_grid, 6 ),"free");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, 6 ),"free");
 
     REIS( 8, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
     REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
