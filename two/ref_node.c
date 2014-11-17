@@ -1312,6 +1312,29 @@ REF_STATUS ref_node_tet_dvol_dnode0( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_twod_clone( REF_NODE ref_node, 
+				REF_INT original, REF_INT *clone_ptr )
+{
+  REF_INT global, clone;
+  REF_INT i;
+
+  RSS( ref_node_next_global( ref_node, &global ), "next global");
+  RSS( ref_node_add( ref_node, global, clone_ptr ), "new node");
+  clone = *clone_ptr;
+
+  ref_node_xyz(ref_node,0,clone) = ref_node_xyz(ref_node,0,original);
+  ref_node_xyz(ref_node,1,clone) = 1.0-ref_node_xyz(ref_node,1,original);
+  ref_node_xyz(ref_node,2,clone) = ref_node_xyz(ref_node,2,original);
+
+  for ( i = 0; i < ref_node_naux(ref_node) ; i++ )
+    ref_node_aux(ref_node,i,clone) = ref_node_aux(ref_node,i,original);
+
+  for ( i = 0; i < 6 ; i++ )
+    ref_node_metric(ref_node,i,clone) = ref_node_metric(ref_node,i,original);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node, 
 				      REF_INT node0, REF_INT node1, 
 				      REF_INT new_node )
