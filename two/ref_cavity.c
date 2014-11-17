@@ -3,7 +3,9 @@
 #include <stdio.h>
 
 #include "ref_cavity.h"
+
 #include "ref_malloc.h"
+#include "ref_list.h"
 
 REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
 {
@@ -28,12 +30,15 @@ REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
   ref_cavity_f2n(ref_cavity,1,ref_cavity_max(ref_cavity)-1) = REF_EMPTY;
   ref_cavity_blank(ref_cavity) = 0;
 
+  RSS( ref_list_create( &(ref_cavity->ref_list) ), "add list" );
+
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_cavity_free( REF_CAVITY ref_cavity )
 {
   if ( NULL == (void *)ref_cavity ) return REF_NULL;
+  ref_list_free( ref_cavity->ref_list );
   ref_free( ref_cavity->f2n );
   ref_free( ref_cavity );
   return REF_SUCCESS;
@@ -129,5 +134,31 @@ REF_STATUS ref_cavity_find( REF_CAVITY ref_cavity, REF_INT *nodes,
     }
 
   return REF_NOT_FOUND;
+}
+
+REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity, 
+			       REF_GRID ref_grid, REF_INT node )
+{
+  REF_INT cell;
+  REF_INT face;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  
+  nodes[3] = REF_EMPTY; /* faceid */
+  while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )
+    {
+      RSS( ref_list_remove( ref_cavity_list(ref_cavity), &cell ), "list" );
+      RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), 
+	   "grab faceid");
+      RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell ), "rm" );
+    }
+
+  each_ref_cavity_valid_face( ref_cavity, face )
+    {
+      nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
+      nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
+      nodes[2] = node;
+    }
+
+  return REF_SUCCESS;
 }
 

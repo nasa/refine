@@ -14,6 +14,9 @@
 #include  "ref_cell.h"
 #include   "ref_adj.h"
 #include "ref_fixture.h"
+#include "ref_export.h"
+#include  "ref_dict.h"
+#include  "ref_edge.h"
 
 
 int main( void )
@@ -136,10 +139,22 @@ int main( void )
     RSS(ref_cavity_free(ref_cavity),"free");
   }
 
+  SKIP_BLOCK("incomplete")
   { /* insert node */
     REF_GRID ref_grid;
+    REF_CAVITY ref_cavity;
+    REF_INT nodes[3];
 
     RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+
+    RSS(ref_cavity_create(&ref_cavity,2),"create");
+    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    RSS(ref_cavity_add_tri(ref_cavity,nodes),"insert first");
+    RSS(ref_cavity_free(ref_cavity),"free");
+
+    RSS(ref_cavity_replace(ref_cavity, ref_grid, 6 ),"free");
+
+    ref_export_by_extension( ref_grid, "cavity.pdf" );
 
     RSS(ref_grid_free(ref_grid),"free");
   }
