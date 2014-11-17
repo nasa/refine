@@ -24,7 +24,7 @@
 #include   "ref_smooth.h"
 #include   "ref_gather.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
 
   { /* init 2 */
@@ -303,6 +303,25 @@ int main( void )
 
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
+  }
+
+    if ( 2 == argc )
+  { /* gobble */
+    REF_GRID ref_grid;
+    REF_CAVITY ref_cavity;
+    REF_INT node;
+
+    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+
+    node = 10;
+    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+
+    if ( 2 == argc )
+      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+    RSS( ref_grid_free(ref_grid),"free");
   }
 
   return 0;

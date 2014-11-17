@@ -234,6 +234,18 @@ REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity, 
+				REF_GRID ref_grid, REF_INT node )
+{
+  REF_INT item, cell;
+
+  each_ref_cell_having_node( ref_grid_tri(ref_grid), node, item, cell )
+    {
+      RSS( ref_cavity_add_tri( ref_cavity, ref_grid, cell ), "insert");
+    }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_tri_pri_tri( REF_GRID ref_grid, REF_INT cell,
 				   REF_INT *pri, REF_INT *tri )
 {
