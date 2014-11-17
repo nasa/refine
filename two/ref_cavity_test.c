@@ -129,7 +129,7 @@ int main( void )
     RSS(ref_cavity_free(ref_cavity),"free");
   }
 
-  { /* find face */
+  { /* find face 2 */
     REF_CAVITY ref_cavity;
     REF_INT nodes[2];
     REF_INT face;
@@ -149,6 +149,50 @@ int main( void )
     REIS(REF_TRUE,reversed,"not rev");
 
     nodes[0]=3;nodes[1]=4;
+    REIS(REF_NOT_FOUND,ref_cavity_find(ref_cavity,nodes,
+				      &face,&reversed),"missing");
+    REIS(REF_EMPTY,face,"found");
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+  }
+
+  { /* find face 3 */
+    REF_CAVITY ref_cavity;
+    REF_INT nodes[3];
+    REF_INT face;
+    REF_BOOL reversed;
+
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
+
+    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find same");
+    REIS(0,face,"found");
+    REIS(REF_FALSE,reversed,"not rev");
+    nodes[0]=3;nodes[1]=1;nodes[2]=2;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find same");
+    REIS(0,face,"found");
+    REIS(REF_FALSE,reversed,"not rev");
+    nodes[0]=2;nodes[1]=3;nodes[2]=1;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find same");
+    REIS(0,face,"found");
+    REIS(REF_FALSE,reversed,"not rev");
+
+    nodes[0]=2;nodes[1]=1;nodes[2]=3;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
+    REIS(0,face,"found");
+    REIS(REF_TRUE,reversed,"not rev");
+    nodes[0]=3;nodes[1]=2;nodes[2]=1;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
+    REIS(0,face,"found");
+    REIS(REF_TRUE,reversed,"not rev");
+    nodes[0]=1;nodes[1]=3;nodes[2]=2;
+    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
+    REIS(0,face,"found");
+    REIS(REF_TRUE,reversed,"not rev");
+
+    nodes[0]=3;nodes[1]=4;nodes[2]=5;
     REIS(REF_NOT_FOUND,ref_cavity_find(ref_cavity,nodes,
 				      &face,&reversed),"missing");
     REIS(REF_EMPTY,face,"found");
