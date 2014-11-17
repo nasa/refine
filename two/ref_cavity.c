@@ -146,11 +146,45 @@ REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_tri_pri_tri( REF_GRID ref_grid, REF_INT cell,
+				   REF_INT *pri, REF_INT *tri )
+{
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face[4];
+  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, tri_nodes ), 
+       "grab tri");
+  face[0]=tri_nodes[0];face[1]=tri_nodes[1];face[2]=tri_nodes[2];
+  face[3]=face[0];
+  RSS( ref_cell_with_face( ref_grid_pri( ref_grid) , face, pri ), "pri" );
+
+  RSS( ref_cell_nodes( ref_grid_pri(ref_grid), *pri, pri_nodes ), 
+       "grab pri");
+  if ( tri_nodes[0] == pri_nodes[0] ||
+       tri_nodes[0] == pri_nodes[1] ||
+       tri_nodes[0] == pri_nodes[2] )
+    {
+      tri_nodes[0] = pri_nodes[3];
+      tri_nodes[1] = pri_nodes[5];
+      tri_nodes[2] = pri_nodes[4];
+    }
+  else
+    {
+      tri_nodes[0] = pri_nodes[0];
+      tri_nodes[1] = pri_nodes[1];
+      tri_nodes[2] = pri_nodes[2];
+    }
+    
+  RSS( ref_cell_with( ref_grid_tri(ref_grid), tri_nodes, tri ), "tri" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity, 
 			       REF_GRID ref_grid, REF_INT node )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT cell;
+  REF_INT cell, pri, tri;
   REF_INT face;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT clone;
@@ -163,7 +197,10 @@ REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity,
       RSS( ref_list_remove( ref_cavity_list(ref_cavity), &cell ), "list" );
       RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), 
 	   "grab faceid");
+      RSS( ref_cavity_tri_pri_tri( ref_grid, cell, &pri, &tri ), "tpt");
       RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell ), "rm" );
+      RSS( ref_cell_remove( ref_grid_tri(ref_grid), tri ), "rm" );
+      RSS( ref_cell_remove( ref_grid_pri(ref_grid), pri ), "rm" );
     }
 
   each_ref_cavity_valid_face( ref_cavity, face )

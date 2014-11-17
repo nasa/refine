@@ -160,9 +160,9 @@ int main( void )
 
     RSS( ref_node_next_global( ref_node, &global ), "next global");
     RSS( ref_node_add( ref_node, global, &node ), "new node");
-    ref_node_xyz(ref_node,0,node) = 0.25;
+    ref_node_xyz(ref_node,0,node) = 0.2;
     ref_node_xyz(ref_node,1,node) = 0.0;
-    ref_node_xyz(ref_node,2,node) = 0.25;
+    ref_node_xyz(ref_node,2,node) = 0.3;
 
     RSS(ref_cavity_replace(ref_cavity, ref_grid, 6 ),"free");
 
