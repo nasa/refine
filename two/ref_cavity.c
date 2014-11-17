@@ -163,6 +163,30 @@ REF_STATUS ref_cavity_find( REF_CAVITY ref_cavity, REF_INT *nodes,
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity, 
+			       REF_GRID ref_grid, REF_INT tet )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell_face, node;
+  REF_INT face_nodes[4];
+
+  RSS( ref_list_add( ref_cavity_list(ref_cavity), tet ), 
+       "save tet");
+
+  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tet, nodes ), 
+       "grab faceid");
+
+  each_ref_cell_cell_face( ref_cell, cell_face )
+    {
+      for(node=0;node<3;node++)
+	face_nodes[node] = ref_cell_f2n(ref_cell,node,cell_face,tet);
+      RSS( ref_cavity_insert( ref_cavity, face_nodes ), "tet side" ); 
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, 
 			       REF_GRID ref_grid, REF_INT tri )
 {

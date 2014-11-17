@@ -51,6 +51,9 @@ REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes );
 REF_STATUS ref_cavity_find( REF_CAVITY ref_cavity, REF_INT *nodes,
 			   REF_INT *found_face, REF_BOOL *reversed);
 
+REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity, 
+			       REF_GRID ref_grid, REF_INT tet );
+
 REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, 
 			       REF_GRID ref_grid, REF_INT tri );
 
