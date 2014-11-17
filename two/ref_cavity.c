@@ -7,6 +7,8 @@
 #include "ref_malloc.h"
 #include "ref_list.h"
 
+#include "ref_split.h"
+
 REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
 {
   REF_CAVITY ref_cavity;
@@ -187,28 +189,50 @@ REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity,
   REF_INT cell, pri, tri;
   REF_INT face;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT faceid0, faceid1;
+  REF_INT node2, node3;
   REF_INT clone;
   
-  RSS( ref_node_twod_clone( ref_node, node, &clone ), "clone" );
+  if ( 0 == ref_list_n( ref_cavity_list(ref_cavity) ) )
+    return REF_INVALID;
 
-  nodes[3] = REF_EMPTY; /* faceid */
-  while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )
-    {
-      RSS( ref_list_remove( ref_cavity_list(ref_cavity), &cell ), "list" );
-      RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), 
-	   "grab faceid");
-      RSS( ref_cavity_tri_pri_tri( ref_grid, cell, &pri, &tri ), "tpt");
-      RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell ), "rm" );
-      RSS( ref_cell_remove( ref_grid_tri(ref_grid), tri ), "rm" );
-      RSS( ref_cell_remove( ref_grid_pri(ref_grid), pri ), "rm" );
-    }
+  cell = ref_list_value( ref_cavity_list(ref_cavity), 0 );
+  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), 
+       "grab faceid");
+  faceid0 = nodes[3];
+  RSS( ref_cavity_tri_pri_tri( ref_grid, cell, &pri, &tri ), "tpt");
+  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tri, nodes ), 
+       "grab faceid");
+  faceid1 = nodes[3];
+
+  RSS( ref_node_twod_clone( ref_node, node, &clone ), "clone" );
 
   each_ref_cavity_valid_face( ref_cavity, face )
     {
       nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
       nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
       nodes[2] = node;
+      nodes[3] = faceid0;
       RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &cell ), "add" );
+
+      RSS( ref_split_opposite_edge(ref_grid,
+				   ref_cavity_f2n(ref_cavity,0,face),
+				   ref_cavity_f2n(ref_cavity,1,face),
+				   &node2,&node3),"opp");
+      nodes[0] = node3;
+      nodes[1] = node2;
+      nodes[2] = clone;
+      nodes[3] = faceid1;
+      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &cell ), "add" );  
+    }
+
+  while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )
+    {
+      RSS( ref_list_remove( ref_cavity_list(ref_cavity), &cell ), "list" );
+      RSS( ref_cavity_tri_pri_tri( ref_grid, cell, &pri, &tri ), "tpt");
+      RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell ), "rm" );
+      RSS( ref_cell_remove( ref_grid_tri(ref_grid), tri ), "rm" );
+      RSS( ref_cell_remove( ref_grid_pri(ref_grid), pri ), "rm" );
     }
 
   return REF_SUCCESS;

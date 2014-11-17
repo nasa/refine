@@ -17,7 +17,12 @@
 #include "ref_export.h"
 #include  "ref_dict.h"
 #include  "ref_edge.h"
-
+#include "ref_split.h"
+#include  "ref_adapt.h"
+#include   "ref_collapse.h"
+#include    "ref_math.h"
+#include   "ref_smooth.h"
+#include   "ref_gather.h"
 
 int main( void )
 {
@@ -167,6 +172,7 @@ int main( void )
     RSS(ref_cavity_replace(ref_cavity, ref_grid, 6 ),"free");
 
     REIS( 8, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+    REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
 
     ref_export_by_extension( ref_grid, "cavity.pdf" );
 
