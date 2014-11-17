@@ -223,7 +223,15 @@ REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity,
       nodes[1] = node2;
       nodes[2] = clone;
       nodes[3] = faceid1;
-      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &cell ), "add" );  
+      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &cell ), "add" );
+
+      nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
+      nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
+      nodes[2] = node;
+      nodes[3] = node2;
+      nodes[4] = node3;
+      nodes[5] = clone;
+      RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &cell ), "add" );
     }
 
   while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )

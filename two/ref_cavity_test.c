@@ -166,15 +166,16 @@ int main( void )
     RSS( ref_node_next_global( ref_node, &global ), "next global");
     RSS( ref_node_add( ref_node, global, &node ), "new node");
     ref_node_xyz(ref_node,0,node) = 0.2;
-    ref_node_xyz(ref_node,1,node) = 0.0;
+    ref_node_xyz(ref_node,1,node) = 1.0;
     ref_node_xyz(ref_node,2,node) = 0.3;
 
     RSS(ref_cavity_replace(ref_cavity, ref_grid, 6 ),"free");
 
     REIS( 8, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
     REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
+    REIS( 3, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
 
-    ref_export_by_extension( ref_grid, "cavity.pdf" );
+    ref_export_by_extension( ref_grid, "cavity.tec" );
 
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
