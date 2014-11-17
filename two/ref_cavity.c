@@ -44,18 +44,6 @@ REF_STATUS ref_cavity_free( REF_CAVITY ref_cavity )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, REF_INT *tri )
-{
-  REF_INT nodes[2];
-  nodes[0]=tri[1];nodes[1]=tri[2];
-  RSS( ref_cavity_insert( ref_cavity, nodes ), "side 0" ); 
-  nodes[0]=tri[2];nodes[1]=tri[0];
-  RSS( ref_cavity_insert( ref_cavity, nodes ), "side 1" ); 
-  nodes[0]=tri[0];nodes[1]=tri[1];
-  RSS( ref_cavity_insert( ref_cavity, nodes ), "side 2" ); 
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes )
 {
   REF_INT node, face;
@@ -134,6 +122,28 @@ REF_STATUS ref_cavity_find( REF_CAVITY ref_cavity, REF_INT *nodes,
     }
 
   return REF_NOT_FOUND;
+}
+
+REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, 
+			       REF_GRID ref_grid, REF_INT tri )
+{
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face[2];
+
+  RSS( ref_list_add( ref_cavity_list(ref_cavity), tri ), 
+       "save tri");
+
+  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tri, nodes ), 
+       "grab faceid");
+
+  face[0]=nodes[1];face[1]=nodes[2];
+  RSS( ref_cavity_insert( ref_cavity, face ), "side 0" ); 
+  face[0]=nodes[2];face[1]=nodes[0];
+  RSS( ref_cavity_insert( ref_cavity, face ), "side 1" ); 
+  face[0]=nodes[0];face[1]=nodes[1];
+  RSS( ref_cavity_insert( ref_cavity, face ), "side 2" ); 
+
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity, 
