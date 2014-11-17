@@ -149,10 +149,14 @@ REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity, 
 			       REF_GRID ref_grid, REF_INT node )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell;
   REF_INT face;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT clone;
   
+  RSS( ref_node_twod_clone( ref_node, node, &clone ), "clone" );
+
   nodes[3] = REF_EMPTY; /* faceid */
   while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )
     {

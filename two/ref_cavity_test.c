@@ -148,20 +148,25 @@ int main( void )
 
   { /* insert node */
     REF_GRID ref_grid;
+    REF_NODE ref_node;
     REF_CAVITY ref_cavity;
-    REF_INT node;
+    REF_INT global, node;
 
     RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+    ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
     RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
 
-    node = 6;
-    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 0.25;
-    ref_node_xyz(ref_grid_node(ref_grid),1,node) = 0.0;
-    ref_node_xyz(ref_grid_node(ref_grid),2,node) = 0.25;
+    RSS( ref_node_next_global( ref_node, &global ), "next global");
+    RSS( ref_node_add( ref_node, global, &node ), "new node");
+    ref_node_xyz(ref_node,0,node) = 0.25;
+    ref_node_xyz(ref_node,1,node) = 0.0;
+    ref_node_xyz(ref_node,2,node) = 0.25;
 
     RSS(ref_cavity_replace(ref_cavity, ref_grid, 6 ),"free");
+
+    REIS( 8, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
 
     ref_export_by_extension( ref_grid, "cavity.pdf" );
 
