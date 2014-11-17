@@ -105,21 +105,58 @@ REF_STATUS ref_cavity_find( REF_CAVITY ref_cavity, REF_INT *nodes,
 
   *found_face = REF_EMPTY;
 
-  each_ref_cavity_valid_face( ref_cavity, face )
+  if ( 2 == ref_cavity_node_per( ref_cavity ) )
     {
-      if ( nodes[0] == ref_cavity_f2n(ref_cavity,0,face) &&
-	   nodes[1] == ref_cavity_f2n(ref_cavity,1,face) )
+      each_ref_cavity_valid_face( ref_cavity, face )
 	{
-	  *found_face = face;
-	  *reversed = REF_FALSE;
-	  return REF_SUCCESS;
+	  if ( nodes[0] == ref_cavity_f2n(ref_cavity,0,face) &&
+	       nodes[1] == ref_cavity_f2n(ref_cavity,1,face) )
+	    {
+	      *found_face = face;
+	      *reversed = REF_FALSE;
+	      return REF_SUCCESS;
+	    }
+	  if ( nodes[1] == ref_cavity_f2n(ref_cavity,0,face) &&
+	       nodes[0] == ref_cavity_f2n(ref_cavity,1,face) )
+	    {
+	      *found_face = face;
+	      *reversed = REF_TRUE;
+	      return REF_SUCCESS;
+	    }
 	}
-      if ( nodes[1] == ref_cavity_f2n(ref_cavity,0,face) &&
-	   nodes[0] == ref_cavity_f2n(ref_cavity,1,face) )
+    }
+  else
+    {
+      each_ref_cavity_valid_face( ref_cavity, face )
 	{
-	  *found_face = face;
-	  *reversed = REF_TRUE;
-	  return REF_SUCCESS;
+	  if ( ( nodes[0] == ref_cavity_f2n(ref_cavity,0,face) &&
+		 nodes[1] == ref_cavity_f2n(ref_cavity,1,face) &&
+		 nodes[2] == ref_cavity_f2n(ref_cavity,2,face) ) ||
+	       ( nodes[1] == ref_cavity_f2n(ref_cavity,0,face) &&
+		 nodes[2] == ref_cavity_f2n(ref_cavity,1,face) &&
+		 nodes[0] == ref_cavity_f2n(ref_cavity,2,face) ) ||
+	       ( nodes[2] == ref_cavity_f2n(ref_cavity,0,face) &&
+		 nodes[0] == ref_cavity_f2n(ref_cavity,1,face) &&
+		 nodes[1] == ref_cavity_f2n(ref_cavity,2,face) ) )
+	    {
+	      *found_face = face;
+	      *reversed = REF_FALSE;
+	      return REF_SUCCESS;
+	    }
+	  if ( ( nodes[2] == ref_cavity_f2n(ref_cavity,0,face) &&
+		 nodes[1] == ref_cavity_f2n(ref_cavity,1,face) &&
+		 nodes[0] == ref_cavity_f2n(ref_cavity,2,face) ) ||
+	       ( nodes[1] == ref_cavity_f2n(ref_cavity,0,face) &&
+		 nodes[0] == ref_cavity_f2n(ref_cavity,1,face) &&
+		 nodes[2] == ref_cavity_f2n(ref_cavity,2,face) ) ||
+	       ( nodes[0] == ref_cavity_f2n(ref_cavity,0,face) &&
+		 nodes[2] == ref_cavity_f2n(ref_cavity,1,face) &&
+		 nodes[1] == ref_cavity_f2n(ref_cavity,2,face) ) )
+	    {
+	      *found_face = face;
+	      *reversed = REF_TRUE;
+	      return REF_SUCCESS;
+	    }
 	}
     }
 

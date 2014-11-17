@@ -27,7 +27,7 @@
 int main( void )
 {
 
-  { /* init */
+  { /* init 2 */
     REF_CAVITY ref_cavity;
     REIS(REF_NULL, ref_cavity_free(NULL),"dont free NULL");
     RSS(ref_cavity_create(&ref_cavity,2),"create");
@@ -68,7 +68,7 @@ int main( void )
     RSS(ref_cavity_free(ref_cavity),"free");
   }
 
-  { /* add same face, raise error */
+  { /* add same face 2, raise error */
     REF_CAVITY ref_cavity;
     REF_INT nodes[2];
 
@@ -80,7 +80,26 @@ int main( void )
     RSS(ref_cavity_free(ref_cavity),"free");
   }
 
-  { /* add opposite face, mutual destruction */
+  { /* add same face 3, raise error */
+    REF_CAVITY ref_cavity;
+    REF_INT nodes[3];
+
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+
+    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
+    REIS(REF_INVALID,ref_cavity_insert(ref_cavity,nodes),"insert second");
+
+    nodes[0]=2;nodes[1]=3;nodes[2]=1;
+    REIS(REF_INVALID,ref_cavity_insert(ref_cavity,nodes),"insert second");
+
+    nodes[0]=3;nodes[1]=1;nodes[2]=2;
+    REIS(REF_INVALID,ref_cavity_insert(ref_cavity,nodes),"insert second");
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+  }
+
+  { /* add opposite face 2, mutual destruction */
     REF_CAVITY ref_cavity;
     REF_INT nodes[2];
 
@@ -88,6 +107,21 @@ int main( void )
     nodes[0]=1;nodes[1]=2;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
     nodes[0]=2;nodes[1]=1;
+    RSS(ref_cavity_insert(ref_cavity,nodes),"insert opposite");
+
+    REIS( 0, ref_cavity_n(ref_cavity), "cancel");
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+  }
+
+  { /* add opposite face 3, mutual destruction */
+    REF_CAVITY ref_cavity;
+    REF_INT nodes[3];
+
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
+    nodes[0]=1;nodes[1]=3;nodes[2]=2;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert opposite");
 
     REIS( 0, ref_cavity_n(ref_cavity), "cancel");
