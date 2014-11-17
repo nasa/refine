@@ -175,8 +175,6 @@ int main( void )
     REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
     REIS( 3, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
 
-    ref_export_by_extension( ref_grid, "cavity.tec" );
-
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
   }
