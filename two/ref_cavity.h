@@ -53,6 +53,8 @@ REF_STATUS ref_cavity_find( REF_CAVITY ref_cavity, REF_INT *nodes,
 
 REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity, 
 			       REF_GRID ref_grid, REF_INT tet );
+REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity, 
+				   REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, 
 			       REF_GRID ref_grid, REF_INT tri );

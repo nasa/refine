@@ -268,11 +268,38 @@ int main( void )
     ref_node_xyz(ref_node,1,node) = 1.0;
     ref_node_xyz(ref_node,2,node) = 0.3;
 
-    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, 6 ),"free");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node ),"free");
 
     REIS( 8, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
     REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
     REIS( 3, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* insert tet node */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_CAVITY ref_cavity;
+    REF_INT global, node;
+
+    RSS( ref_fixture_tet_grid( &ref_grid ), "pri" );
+    ref_node = ref_grid_node(ref_grid);
+
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+    RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first");
+
+    RSS( ref_node_next_global( ref_node, &global ), "next global");
+    RSS( ref_node_add( ref_node, global, &node ), "new node");
+    ref_node_xyz(ref_node,0,node) = 0.1;
+    ref_node_xyz(ref_node,1,node) = 0.2;
+    ref_node_xyz(ref_node,2,node) = 0.3;
+
+    RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"free");
+
+    REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+    REIS( 4, ref_cell_n(ref_grid_tet(ref_grid)), "nodes" );
 
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
