@@ -167,6 +167,7 @@ REF_STATUS ref_cavity_replace( REF_CAVITY ref_cavity,
       nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
       nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
       nodes[2] = node;
+      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &cell ), "add" );
     }
 
   return REF_SUCCESS;

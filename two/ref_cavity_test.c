@@ -149,11 +149,17 @@ int main( void )
   { /* insert node */
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
+    REF_INT node;
 
     RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
     RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
+
+    node = 6;
+    ref_node_xyz(ref_grid_node(ref_grid),0,node) = 0.25;
+    ref_node_xyz(ref_grid_node(ref_grid),1,node) = 0.0;
+    ref_node_xyz(ref_grid_node(ref_grid),2,node) = 0.25;
 
     RSS(ref_cavity_replace(ref_cavity, ref_grid, 6 ),"free");
 
