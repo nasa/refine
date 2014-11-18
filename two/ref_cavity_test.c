@@ -308,8 +308,8 @@ int main( int argc, char *argv[] )
 
   { /* gobble */
     REF_GRID ref_grid;
-   REF_NODE ref_node;
-     REF_CAVITY ref_cavity;
+    REF_NODE ref_node;
+    REF_CAVITY ref_cavity;
     REF_INT node, opp;
 
     RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
