@@ -25,6 +25,7 @@ struct REF_CAVITY_STRUCT {
 
 REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity, REF_INT node_per );
 REF_STATUS ref_cavity_free( REF_CAVITY ref_cavity );
+REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity );
 
 #define ref_cavity_n( ref_cavity ) ((ref_cavity)->n)
 #define ref_cavity_node_per( ref_cavity ) ((ref_cavity)->node_per)

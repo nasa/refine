@@ -46,6 +46,26 @@ REF_STATUS ref_cavity_free( REF_CAVITY ref_cavity )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity )
+{
+  REF_INT face, node;
+  if ( NULL == (void *)ref_cavity ) return REF_NULL;
+  printf("node_per = %d n = %d max = %d blank = %d\n",
+	 ref_cavity_node_per( ref_cavity ),
+	 ref_cavity_n( ref_cavity ),
+	 ref_cavity_max( ref_cavity ),
+	 ref_cavity_blank( ref_cavity ));
+  for ( face = 0 ; face < ref_cavity_max(ref_cavity); face++ )
+    {
+      printf(" f2n[%d] = ",face); 
+      for ( node = 0 ; node < ref_cavity_node_per(ref_cavity); node++ )
+	printf(" %d ",ref_cavity_f2n(ref_cavity,node,face)); 
+      printf("\n");
+    } 
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes )
 {
   REF_INT node, face;
