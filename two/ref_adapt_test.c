@@ -26,6 +26,7 @@
 #include "ref_adapt.h"
 
 #include "ref_smooth.h"
+#include  "ref_twod.h"
 #include "ref_collapse.h"
 #include "ref_split.h"
 #include "ref_edge.h"

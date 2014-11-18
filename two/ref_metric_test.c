@@ -28,11 +28,13 @@
 #include "ref_adapt.h"
 
 #include "ref_validation.h"
+#include  "ref_face.h"
 #include "ref_histogram.h"
 #include "ref_gather.h"
 #include "ref_collapse.h"
 #include "ref_split.h"
 #include "ref_smooth.h"
+#include  "ref_twod.h"
 #include "ref_math.h"
 
 int main( int argc, char *argv[] )

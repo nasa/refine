@@ -22,6 +22,7 @@
 #include   "ref_collapse.h"
 #include    "ref_math.h"
 #include   "ref_smooth.h"
+#include    "ref_twod.h"
 #include   "ref_gather.h"
 
 int main( int argc, char *argv[] )
