@@ -255,7 +255,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
-    REF_INT global, node;
+    REF_INT global, node, clone;
 
     RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
     ref_node = ref_grid_node(ref_grid);
@@ -268,8 +268,9 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,0,node) = 0.2;
     ref_node_xyz(ref_node,1,node) = 1.0;
     ref_node_xyz(ref_node,2,node) = 0.3;
+    RSS( ref_node_twod_clone( ref_node, node, &clone ), "new node");
 
-    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node ),"free");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, clone ),"free");
 
     REIS( 8, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
     REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
@@ -314,6 +315,7 @@ int main( int argc, char *argv[] )
 
     RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
     ref_node = ref_grid_node(ref_grid);
+    REIS( 32, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
 
@@ -326,7 +328,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,opp ) = 0.5;
     
     RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
-    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node ),"free");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
     if ( 2 == argc )
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );

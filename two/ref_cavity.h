@@ -62,7 +62,8 @@ REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity,
 				REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity, 
-				   REF_GRID ref_grid, REF_INT node );
+				   REF_GRID ref_grid, 
+				   REF_INT node, REF_INT clone );
 
 REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity, 
 			       REF_NODE ref_node, REF_INT node, REF_INT face,

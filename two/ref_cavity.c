@@ -248,15 +248,14 @@ REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity,
 }
 
 REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity, 
-				   REF_GRID ref_grid, REF_INT node )
+				   REF_GRID ref_grid, 
+				   REF_INT node, REF_INT clone )
 {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell, pri, tri;
   REF_INT face;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT faceid0, faceid1;
   REF_INT node2, node3;
-  REF_INT clone;
   
   if ( 0 == ref_list_n( ref_cavity_list(ref_cavity) ) )
     return REF_INVALID;
@@ -270,8 +269,6 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
   RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tri, nodes ), 
        "grab faceid");
   faceid1 = nodes[3];
-
-  RSS( ref_node_twod_clone( ref_node, node, &clone ), "clone" );
 
   each_ref_cavity_valid_face( ref_cavity, face )
     {
