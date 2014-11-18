@@ -87,6 +87,11 @@ struct REF_CELL_STRUCT {
 	(cell)++ )							\
     if ( REF_SUCCESS == ref_cell_nodes( ref_cell, cell, nodes ) )
 
+#define each_ref_cell_cell_node( ref_cell, cell_node )			\
+  for ( (cell_node) = 0 ;						\
+	(cell_node) < ref_cell_node_per(ref_cell);			\
+	(cell_node)++ )
+
 #define each_ref_cell_cell_edge( ref_cell, cell_edge )			\
   for ( (cell_edge) = 0 ;						\
 	(cell_edge) < ref_cell_edge_per(ref_cell);			\
