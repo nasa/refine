@@ -36,6 +36,8 @@
 
 #include "ref_malloc.h"
 
+#include "ref_twod.h"
+
 static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr, 
 						 REF_INT *target_node, 
 						 REF_INT *target_cell )
@@ -359,14 +361,16 @@ int main( int argc, char *argv[] )
     RSS( ref_smooth_tri_two_fixture( &ref_grid, &node ), "2d fix" );
 
     ref_node_xyz( ref_grid_node(ref_grid), 2, node ) = 0.0000001;
-    RSS( ref_smooth_opposite_node( ref_grid, node, &opposite), "opp");
+    RSS( ref_twod_opposite_node( ref_grid_pri(ref_grid), 
+				 node, &opposite), "opp");
     ref_node_xyz( ref_grid_node(ref_grid), 2, opposite ) =
       ref_node_xyz( ref_grid_node(ref_grid), 2, node );
 
     ref_node_xyz( ref_grid_node(ref_grid), 0, 1 ) = 1.0;
     ref_node_xyz( ref_grid_node(ref_grid), 2, 1 ) = 0.5;
 
-    RSS( ref_smooth_opposite_node( ref_grid, 1, &opposite), "opp");
+    RSS( ref_twod_opposite_node( ref_grid_pri(ref_grid), 
+				 1, &opposite), "opp");
     ref_node_xyz( ref_grid_node(ref_grid), 0, opposite ) =
       ref_node_xyz( ref_grid_node(ref_grid), 0, 1 );
     ref_node_xyz( ref_grid_node(ref_grid), 2, opposite ) =
