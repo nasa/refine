@@ -47,6 +47,7 @@ libref2_a_SOURCES = \
 	ref_stitch.h ref_stitch.c \
 	ref_subdiv.h ref_subdiv.c \
 	ref_swap.h ref_swap.c \
+	ref_twod.h ref_twod.c \
 	ref_validation.h ref_validation.c
 
 partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
@@ -279,6 +280,11 @@ TESTS += ref_swap_test
 noinst_PROGRAMS += ref_swap_test
 ref_swap_test_SOURCES = ref_swap_test.c
 ref_swap_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
+TESTS += ref_twod_test
+noinst_PROGRAMS += ref_twod_test
+ref_twod_test_SOURCES = ref_twod_test.c
+ref_twod_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_validation_test
 noinst_PROGRAMS += ref_validation_test
