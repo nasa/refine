@@ -81,6 +81,7 @@ REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes )
 	{
 	  ref_cavity_f2n(ref_cavity,0,face) = REF_EMPTY;
 	  ref_cavity_f2n(ref_cavity,1,face) = ref_cavity_blank(ref_cavity);
+	  ref_cavity_blank(ref_cavity) = face;
 	  ref_cavity_n(ref_cavity)--;
 	  return REF_SUCCESS;	
 	}
