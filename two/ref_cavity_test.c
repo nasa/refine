@@ -308,15 +308,23 @@ int main( int argc, char *argv[] )
 
   { /* gobble */
     REF_GRID ref_grid;
-    REF_CAVITY ref_cavity;
-    REF_INT node;
+   REF_NODE ref_node;
+     REF_CAVITY ref_cavity;
+    REF_INT node, opp;
 
     RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+    ref_node = ref_grid_node(ref_grid);
+
     RSS(ref_cavity_create(&ref_cavity,2),"create");
 
-    node = 7;
+    node = 1;
+    RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
+
     RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
 
+    ref_node_xyz(ref_node,2,node) = 0.5;
+    ref_node_xyz(ref_node,2,opp ) = 0.5;
+    
     if ( 2 == argc )
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
 
