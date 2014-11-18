@@ -313,7 +313,7 @@ int main( int argc, char *argv[] )
     RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
     RSS(ref_cavity_create(&ref_cavity,2),"create");
 
-    node = 10;
+    node = 7;
     RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
 
     if ( 2 == argc )
