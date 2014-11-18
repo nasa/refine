@@ -19,7 +19,6 @@ libref2_a_SOURCES = \
 	ref_face.c ref_face.h \
 	ref_fixture.c ref_fixture.h \
 	ref_fortran.c ref_fortran.h \
-	ref_front.c ref_front.h \
 	ref_gather.c ref_gather.h \
 	ref_gen.c ref_gen.h \
 	ref_grid.c ref_grid.h \
@@ -39,7 +38,6 @@ libref2_a_SOURCES = \
 	ref_plot3d.h ref_plot3d.c \
 	ref_project.h ref_project.c \
 	ref_quality.h ref_quality.c \
-	ref_recover.h ref_recover.c \
 	ref_shard.c ref_shard.h \
 	ref_smooth.h ref_smooth.c \
 	ref_sort.h ref_sort.c \
@@ -146,11 +144,6 @@ noinst_PROGRAMS += ref_fortran_test
 ref_fortran_test_SOURCES = ref_fortran_test.c
 ref_fortran_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
-TESTS += ref_front_test
-noinst_PROGRAMS += ref_front_test
-ref_front_test_SOURCES = ref_front_test.c
-ref_front_test_LDADD = libref2.a @mpi_ldadd@ -lm
-
 TESTS += ref_gather_test
 noinst_PROGRAMS += ref_gather_test
 ref_gather_test_SOURCES = ref_gather_test.c
@@ -240,11 +233,6 @@ TESTS += ref_quality_test
 noinst_PROGRAMS += ref_quality_test
 ref_quality_test_SOURCES = ref_quality_test.c
 ref_quality_test_LDADD = libref2.a @mpi_ldadd@ -lm
-
-TESTS += ref_recover_test
-noinst_PROGRAMS += ref_recover_test
-ref_recover_test_SOURCES = ref_recover_test.c
-ref_recover_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_shard_test
 noinst_PROGRAMS += ref_shard_test
