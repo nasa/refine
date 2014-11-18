@@ -67,6 +67,8 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity, 
 			       REF_NODE ref_node, REF_INT node, REF_INT face,
 			       REF_BOOL *visible );
+REF_STATUS ref_cavity_enlarge( REF_CAVITY ref_cavity, 
+			       REF_GRID ref_grid, REF_INT node );
 
 END_C_DECLORATION
 

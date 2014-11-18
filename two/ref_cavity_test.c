@@ -325,6 +325,9 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
     
+    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node ),"free");
+
     if ( 2 == argc )
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
 
