@@ -79,3 +79,37 @@ REF_STATUS ref_twod_opposite_edge( REF_CELL pri,
    return REF_FAILURE;
 }
 
+REF_STATUS ref_twod_tri_pri_tri( REF_CELL tri, REF_CELL pri, REF_INT cell,
+				 REF_INT *pri_cell, REF_INT *tri_cell )
+{
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face[4];
+
+  RSS( ref_cell_nodes( tri, cell, tri_nodes ), 
+       "grab tri");
+  face[0]=tri_nodes[0];face[1]=tri_nodes[1];face[2]=tri_nodes[2];
+  face[3]=face[0];
+  RSS( ref_cell_with_face( pri, face, pri_cell ), "pri" );
+
+  RSS( ref_cell_nodes( pri, *pri_cell, pri_nodes ), 
+       "grab pri");
+  if ( tri_nodes[0] == pri_nodes[0] ||
+       tri_nodes[0] == pri_nodes[1] ||
+       tri_nodes[0] == pri_nodes[2] )
+    {
+      tri_nodes[0] = pri_nodes[3];
+      tri_nodes[1] = pri_nodes[5];
+      tri_nodes[2] = pri_nodes[4];
+    }
+  else
+    {
+      tri_nodes[0] = pri_nodes[0];
+      tri_nodes[1] = pri_nodes[1];
+      tri_nodes[2] = pri_nodes[2];
+    }
+    
+  RSS( ref_cell_with( tri, tri_nodes, tri_cell ), "tri" );
+
+  return REF_SUCCESS;
+}

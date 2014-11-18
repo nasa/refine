@@ -65,5 +65,20 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  { /* pri tri stack */
+    REF_GRID ref_grid;
+    REF_INT cell, tri, pri;
+    
+    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fix" );
+
+    cell = 0;
+    RSS( ref_twod_tri_pri_tri( ref_grid_tri(ref_grid), ref_grid_pri(ref_grid), 
+			       cell, &pri, &tri ), "stack" );
+    REIS( 0, pri, "only pri" );
+    REIS( 1, tri, "other tri" );
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
   return 0;
 }
