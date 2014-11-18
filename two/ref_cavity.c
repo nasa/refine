@@ -243,6 +243,7 @@ REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity,
     {
       RSS( ref_cavity_add_tri( ref_cavity, ref_grid, cell ), "insert");
     }
+
   return REF_SUCCESS;
 }
 
