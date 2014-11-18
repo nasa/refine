@@ -307,38 +307,6 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  { /* gobble */
-    REF_GRID ref_grid;
-    REF_NODE ref_node;
-    REF_CAVITY ref_cavity;
-    REF_INT node, opp;
-
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
-    ref_node = ref_grid_node(ref_grid);
-    REIS( 32, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
-
-    RSS(ref_cavity_create(&ref_cavity,2),"create");
-
-    node = 1;
-    RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
-
-    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
-
-    ref_node_xyz(ref_node,2,node) = 0.5;
-    ref_node_xyz(ref_node,2,opp ) = 0.5;
-    
-    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
-    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
-
-    REIS( 30, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
-
-    if ( 2 == argc )
-      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
-
-    RSS(ref_cavity_free(ref_cavity),"free");
-    RSS( ref_grid_free(ref_grid),"free");
-  }
-
   { /* visible */
     REF_GRID ref_grid;
     REF_NODE ref_node;
@@ -371,6 +339,38 @@ int main( int argc, char *argv[] )
 
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* gobble */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_CAVITY ref_cavity;
+    REF_INT node, opp;
+
+    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+    ref_node = ref_grid_node(ref_grid);
+    REIS( 32, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+
+    RSS(ref_cavity_create(&ref_cavity,2),"create");
+
+    node = 1;
+    RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
+
+    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+
+    ref_node_xyz(ref_node,2,node) = 0.5;
+    ref_node_xyz(ref_node,2,opp ) = 0.5;
+    
+    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
+
+    REIS( 30, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+
+    if ( 2 == argc )
+      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+    RSS( ref_grid_free(ref_grid),"free");
   }
 
   return 0;
