@@ -35,6 +35,9 @@ REF_STATUS ref_list_erase( REF_LIST ref_list );
 
 REF_STATUS ref_list_allgather( REF_LIST ref_list );
 
+REF_STATUS ref_list_contains( REF_LIST ref_list, REF_INT item, 
+			      REF_BOOL *contains );
+
 END_C_DECLORATION
 
 #endif /* REF_LIST_H */

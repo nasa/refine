@@ -113,6 +113,19 @@ int main( int argc, char *argv[] )
     RSS(ref_list_free(ref_list),"free");
   }
 
+  { /* contains */
+    REF_INT item;
+    REF_BOOL contains;
+    RSS(ref_list_create(&ref_list),"create");
+    item = 27;
+    RSS(ref_list_add(ref_list,item),"add");
+    RSS(ref_list_contains(ref_list, item, &contains), "have");
+    REIS(REF_TRUE,contains,"does have");
+    RSS(ref_list_contains(ref_list, 5, &contains), "have");
+    REIS(REF_FALSE,contains,"does have");
+    RSS(ref_list_free(ref_list),"free");
+  }
+
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;

@@ -143,3 +143,20 @@ REF_STATUS ref_list_allgather( REF_LIST ref_list )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_list_contains( REF_LIST ref_list, REF_INT item, 
+			      REF_BOOL *contains )
+{
+  REF_INT i;
+
+  *contains = REF_FALSE;
+
+  for(i=0;i< ref_list_n(ref_list);i++)
+    if (ref_list->value[i] == item)
+      {
+	*contains = REF_TRUE;
+	return REF_SUCCESS;
+      }
+
+  return REF_SUCCESS;
+}
