@@ -7,7 +7,7 @@
 #include "ref_malloc.h"
 #include "ref_list.h"
 
-#include "ref_split.h"
+#include "ref_twod.h"
 
 REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
 {
@@ -314,10 +314,10 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
       nodes[3] = faceid0;
       RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &cell ), "add" );
 
-      RSS( ref_split_opposite_edge(ref_grid,
-				   ref_cavity_f2n(ref_cavity,0,face),
-				   ref_cavity_f2n(ref_cavity,1,face),
-				   &node2,&node3),"opp");
+      RSS( ref_twod_opposite_edge(ref_grid_pri(ref_grid),
+				  ref_cavity_f2n(ref_cavity,0,face),
+				  ref_cavity_f2n(ref_cavity,1,face),
+				  &node2,&node3),"opp");
       nodes[0] = node3;
       nodes[1] = node2;
       nodes[2] = clone;

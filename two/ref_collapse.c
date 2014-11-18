@@ -11,11 +11,10 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
-#include "ref_split.h"
-
 #include "ref_adapt.h"
 
 #include "ref_gather.h"
+#include "ref_twod.h"
 
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
@@ -796,7 +795,8 @@ REF_STATUS ref_collapse_face_remove_node1( REF_GRID ref_grid,
       if (verbose) printf("%d split!\n",node);
 
       *actual_node0 = node0;
-      RSS(ref_split_opposite_edge(ref_grid,node0,node1,&node2,&node3),"opp");
+      RSS(ref_twod_opposite_edge(ref_grid_pri(ref_grid),
+				 node0,node1,&node2,&node3),"opp");
 
       RSS( ref_collapse_face( ref_grid, node0, node1, node2, node3 ), "col!");
 
