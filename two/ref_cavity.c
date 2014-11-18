@@ -314,3 +314,27 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity, 
+			       REF_NODE ref_node, REF_INT node, REF_INT face,
+			       REF_BOOL *visible )
+{
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL normal[3];
+
+  *visible = REF_FALSE;
+
+  nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
+  nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
+  nodes[2] = node;
+
+  RSS( ref_node_tri_normal( ref_node,nodes,normal ), "norm");
+
+  if ( ( ref_node_xyz(ref_node,1,nodes[0]) > 0.5 &&
+	 normal[1] >= 0.0 ) ||
+       ( ref_node_xyz(ref_node,1,nodes[0]) < 0.5 &&
+	 normal[1] <= 0.0 ) ) return REF_SUCCESS;
+
+  *visible = REF_TRUE;
+
+  return REF_SUCCESS;
+}
