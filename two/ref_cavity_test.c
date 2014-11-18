@@ -330,6 +330,8 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
+    REIS( 30, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+
     if ( 2 == argc )
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
 

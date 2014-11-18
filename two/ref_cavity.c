@@ -256,6 +256,7 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT faceid0, faceid1;
   REF_INT node2, node3;
+  REF_INT cell_node;
   
   if ( 0 == ref_list_n( ref_cavity_list(ref_cavity) ) )
     return REF_INVALID;
@@ -303,9 +304,25 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
       RSS( ref_twod_tri_pri_tri( ref_grid_tri(ref_grid), 
 				 ref_grid_pri(ref_grid), 
 				 cell, &pri, &tri ), "tpt");
-      RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell ), "rm" );
-      RSS( ref_cell_remove( ref_grid_tri(ref_grid), tri ), "rm" );
+
       RSS( ref_cell_remove( ref_grid_pri(ref_grid), pri ), "rm" );
+
+      RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), 
+	   "save nodes");
+      RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell ), "rm" );
+      each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
+	if ( ref_cell_node_empty( ref_grid_tri(ref_grid), nodes[cell_node] ) )
+	  RSS( ref_node_remove( ref_grid_node(ref_grid), 
+				nodes[cell_node] ),"rm");
+
+      RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tri, nodes ), 
+	   "save nodes");
+      RSS( ref_cell_remove( ref_grid_tri(ref_grid), tri ), "rm" );
+      each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
+	if ( ref_cell_node_empty( ref_grid_tri(ref_grid), nodes[cell_node] ) )
+	  RSS( ref_node_remove( ref_grid_node(ref_grid), 
+				nodes[cell_node] ),"rm");
+
     }
 
   return REF_SUCCESS;
