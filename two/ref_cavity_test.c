@@ -454,6 +454,25 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  { /* enlarge shrink face */
+    REF_GRID ref_grid;
+    REF_CAVITY ref_cavity;
+
+    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+
+    RSS(ref_cavity_create(&ref_cavity,2),"create");
+    RSS(ref_cavity_add_tri(ref_cavity,ref_grid,8),"insert first tri");
+    REIS( 3, ref_cavity_n(ref_cavity), "n" );
+    RSS(ref_cavity_enlarge_face(ref_cavity,ref_grid,1),"enl face 1");
+    REIS( 4, ref_cavity_n(ref_cavity), "n" );
+    RSS(ref_cavity_shrink_face(ref_cavity,ref_grid,3),"insert first tri");
+    REIS( 3, ref_cavity_n(ref_cavity), "n" );
+    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+    RSS( ref_grid_free(ref_grid),"free");
+  }
+
   { /* small edge */
     REF_GRID ref_grid;
     REF_NODE ref_node;

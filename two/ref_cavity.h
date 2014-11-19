@@ -59,6 +59,8 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
 
 REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, 
 			       REF_GRID ref_grid, REF_INT tri );
+REF_STATUS ref_cavity_rm_tri( REF_CAVITY ref_cavity, 
+			      REF_GRID ref_grid, REF_INT tri );
 REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity, 
 				REF_GRID ref_grid, REF_INT node );
 
@@ -74,6 +76,8 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
 
 REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity, 
 				    REF_GRID ref_grid, REF_INT face );
+REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity, 
+				   REF_GRID ref_grid, REF_INT face );
 
 END_C_DECLORATION
 
