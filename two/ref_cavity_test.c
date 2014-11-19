@@ -201,7 +201,7 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_free(ref_cavity),"free");
   }
 
-  { /* add triangle */
+  { /* add triangle adds faces*/
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
     REF_INT nodes[2];
@@ -225,6 +225,25 @@ int main( int argc, char *argv[] )
     nodes[0]=1;nodes[1]=2;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 2");
     REIS(REF_FALSE,reversed,"not rev");
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  { /* add rm triangle counts */
+    REF_GRID ref_grid;
+    REF_CAVITY ref_cavity;
+
+    RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+
+    RSS(ref_cavity_create(&ref_cavity,2),"create");
+
+    RSS(ref_cavity_add_tri(ref_cavity,ref_grid,1),"insert first");
+    REIS( 3, ref_cavity_n(ref_cavity), "n" );
+    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+    RSS(ref_cavity_rm_tri(ref_cavity,ref_grid,1),"insert first");
+    REIS( 0, ref_cavity_n(ref_cavity), "n" );
+    REIS( 0, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
 
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
