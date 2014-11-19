@@ -383,9 +383,7 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
 				       REF_GRID ref_grid, REF_INT node )
 {
   REF_INT face;
-  REF_INT ncell, cells[2];
   REF_BOOL visible;
-  REF_BOOL have_cell0, have_cell1;
   REF_BOOL keep_growing;
 
   keep_growing = REF_TRUE;
@@ -403,24 +401,36 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
 	  if ( ! visible )
 	    {
 	      keep_growing = REF_TRUE;
-	      RSS( ref_cell_list_with( ref_grid_tri(ref_grid), 
-				       ref_cavity_f2n(ref_cavity,0,face), 
-				       ref_cavity_f2n(ref_cavity,1,face), 
-				       2, &ncell, cells), "more than two" );
-	      if ( 0 == ncell ) THROW("cavity triangle missing");
-	      if ( 1 == ncell ) continue; /* boundary? */
-	      RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
-				      &have_cell0 ), "cell0" );
-	      RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
-				      &have_cell1 ), "cell1" );
-	      if ( have_cell0 == have_cell1 ) THROW("cavity same state");
-	      if ( have_cell0 ) RSS( ref_cavity_add_tri( ref_cavity, ref_grid,
-							 cells[1] ), "add c1" );
-	      if ( have_cell1 ) RSS( ref_cavity_add_tri( ref_cavity, ref_grid,
-							 cells[0] ), "add c0" );
+	      RSS( ref_cavity_enlarge_face( ref_cavity, ref_grid, face ),"ef" );
 	    }
 	}
     }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity, 
+				    REF_GRID ref_grid, REF_INT face )
+{
+  REF_INT ncell, cells[2];
+  REF_BOOL have_cell0, have_cell1;
+
+
+  RSS( ref_cell_list_with( ref_grid_tri(ref_grid), 
+			   ref_cavity_f2n(ref_cavity,0,face), 
+			   ref_cavity_f2n(ref_cavity,1,face), 
+			   2, &ncell, cells), "more than two" );
+  if ( 0 == ncell ) THROW("cavity triangle missing");
+  if ( 1 == ncell ) THROW("boundary");
+  RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
+			  &have_cell0 ), "cell0" );
+  RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
+			  &have_cell1 ), "cell1" );
+  if ( have_cell0 == have_cell1 ) THROW("cavity same state");
+  if ( have_cell0 ) RSS( ref_cavity_add_tri( ref_cavity, ref_grid,
+					     cells[1] ), "add c1" );
+  if ( have_cell1 ) RSS( ref_cavity_add_tri( ref_cavity, ref_grid,
+					     cells[0] ), "add c0" );
 
   return REF_SUCCESS;
 }
