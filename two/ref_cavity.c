@@ -294,6 +294,11 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
 
   each_ref_cavity_valid_face( ref_cavity, face )
     {
+
+      /* skip a collapsed triangle that in on the boundary of cavity */
+      if ( node == ref_cavity_f2n(ref_cavity,0,face) ||
+	   node == ref_cavity_f2n(ref_cavity,1,face) ) continue;
+
       nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
       nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
       nodes[2] = node;
