@@ -25,7 +25,7 @@ REF_STATUS ref_list_inspect( REF_LIST ref_list );
 #define ref_list_value( ref_list, i ) ((ref_list)->value[(i)])
 
 REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT value );
-REF_STATUS ref_list_remove( REF_LIST ref_list, REF_INT *value );
+REF_STATUS ref_list_pop( REF_LIST ref_list, REF_INT *value );
 
 REF_STATUS ref_list_shift( REF_LIST ref_list, 
 			   REF_INT equal_and_above, REF_INT offset );

@@ -388,7 +388,7 @@ REF_STATUS ref_node_next_global( REF_NODE ref_node, REF_INT *global )
 {
   if ( 0 < ref_list_n( ref_node->unused_global_list ) )
     {
-      RSS( ref_list_remove( ref_node->unused_global_list, global ), 
+      RSS( ref_list_pop( ref_node->unused_global_list, global ), 
 	   "grab an unused global from list");
     }
   else

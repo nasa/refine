@@ -1,4 +1,8 @@
 
+cavity
+- face based grow and shrink
+ - shrink needs list delete
+
 - det stability in quality
 
 - refactor twod migrate

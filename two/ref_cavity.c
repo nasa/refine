@@ -226,7 +226,7 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
 
   while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )
     {
-      RSS( ref_list_remove( ref_cavity_list(ref_cavity), &cell ), "list" );
+      RSS( ref_list_pop( ref_cavity_list(ref_cavity), &cell ), "list" );
       RSS( ref_cell_remove( ref_grid_tet(ref_grid), cell ), "rm" );
     }
 
@@ -326,7 +326,7 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
 
   while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )
     {
-      RSS( ref_list_remove( ref_cavity_list(ref_cavity), &cell ), "list" );
+      RSS( ref_list_pop( ref_cavity_list(ref_cavity), &cell ), "list" );
       RSS( ref_twod_tri_pri_tri( ref_grid_tri(ref_grid), 
 				 ref_grid_pri(ref_grid), 
 				 cell, &pri, &tri ), "tpt");
