@@ -62,7 +62,7 @@ REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity )
 	printf(" %d ",ref_cavity_f2n(ref_cavity,node,face)); 
       printf("\n");
     } 
-
+  RSS( ref_list_inspect( ref_cavity_list(ref_cavity) ), "insp" );
   return REF_SUCCESS;
 }
 
