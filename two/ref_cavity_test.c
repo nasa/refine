@@ -341,7 +341,6 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  SKIP_BLOCK("fix gobble")
   { /* gobble */
     REF_GRID ref_grid;
     REF_NODE ref_node;
@@ -363,6 +362,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,opp ) = 0.5;
     
     RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    ref_cavity_inspect(ref_cavity);
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
     if ( 2 == argc )
@@ -379,12 +379,9 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
     REF_INT global, node, clone, opp;
-    REF_BOOL pdf=REF_FALSE;
 
     RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
     ref_node = ref_grid_node(ref_grid);
-
-    if (pdf) ref_export_by_extension( ref_grid, "cav0.pdf" );
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
     RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
@@ -398,8 +395,6 @@ int main( int argc, char *argv[] )
 
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, clone ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
-
-    if (pdf) ref_export_by_extension( ref_grid, "cav1.pdf" );
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
 
@@ -417,8 +412,6 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
     RSS(ref_cavity_free(ref_cavity),"free");
-
-    if (pdf) ref_export_by_extension( ref_grid, "cav2.pdf" );
 
     REIS( 6, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
     REIS( 2, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
