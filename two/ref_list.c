@@ -75,8 +75,29 @@ REF_STATUS ref_list_pop( REF_LIST ref_list, REF_INT *value )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_shift( REF_LIST ref_list, 
-			   REF_INT equal_and_above, REF_INT offset )
+REF_STATUS ref_list_delete( REF_LIST ref_list, REF_INT item )
+{
+  REF_INT to, from;
+
+  to = 0;
+  for(from=0;from< ref_list_n(ref_list);from++)
+    {
+      if ( item != ref_list->value[from] ) 
+	{
+	  ref_list->value[to] = ref_list->value[from];
+	  to++;
+	}
+    }
+
+  if ( to == ref_list_n(ref_list) ) return REF_NOT_FOUND;
+
+  ref_list_n(ref_list) = to;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_list_shift( REF_LIST ref_list,
+                          REF_INT equal_and_above, REF_INT offset )
 {
   REF_INT i;
 

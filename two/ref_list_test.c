@@ -20,7 +20,6 @@ int main( int argc, char *argv[] )
     REIS(REF_NULL,ref_list_free(NULL),"dont free NULL");
     RSS(ref_list_create(&ref_list),"create");
     REIS(0,ref_list_n(ref_list),"init zero");
-    REIS(REF_FAILURE,ref_list_pop(ref_list,&last),"rm");
     REIS(REF_EMPTY,last,"remove empty");
     RSS(ref_list_free(ref_list),"free");
   }
@@ -37,6 +36,9 @@ int main( int argc, char *argv[] )
   { /* remove */
     REF_INT item, last;
     RSS(ref_list_create(&ref_list),"create");
+
+    REIS(REF_FAILURE,ref_list_pop(ref_list,&last),"rm");
+
     item = 27;
     RSS(ref_list_add(ref_list,item),"add");
     RSS(ref_list_pop(ref_list,&last),"rm");
@@ -123,6 +125,30 @@ int main( int argc, char *argv[] )
     REIS(REF_TRUE,contains,"does have");
     RSS(ref_list_contains(ref_list, 5, &contains), "have");
     REIS(REF_FALSE,contains,"does have");
+    RSS(ref_list_free(ref_list),"free");
+  }
+
+  { /* delete first */
+    REF_INT item;
+    RSS(ref_list_create(&ref_list),"create");
+
+    item = 5;
+    REIS(REF_NOT_FOUND,ref_list_delete(ref_list,item),"rm");
+
+    item = 21;RSS(ref_list_add(ref_list,item),"add");
+    item = 22;RSS(ref_list_add(ref_list,item),"add");
+    item = 23;RSS(ref_list_add(ref_list,item),"add");
+    REIS(3,ref_list_n(ref_list),"has 3");
+
+    item = 21;RSS(ref_list_delete(ref_list, item), "have");
+    REIS(2,ref_list_n(ref_list),"has 2");
+
+    item = 23;RSS(ref_list_delete(ref_list, item), "have");
+    REIS(1,ref_list_n(ref_list),"has 1");
+
+    item = 22;RSS(ref_list_delete(ref_list, item), "have");
+    REIS(0,ref_list_n(ref_list),"has 0");
+
     RSS(ref_list_free(ref_list),"free");
   }
 
