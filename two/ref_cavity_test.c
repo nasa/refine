@@ -364,14 +364,50 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
-    if ( 2 == argc )
-      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
-
     REIS( 30, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
     REIS( 32, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
     REIS( 16, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
 
     RSS(ref_cavity_free(ref_cavity),"free");
+    RSS( ref_grid_free(ref_grid),"free");
+  }
+
+  { /* gobble gooble*/
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_CAVITY ref_cavity;
+    REF_INT node, opp;
+
+    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+    ref_node = ref_grid_node(ref_grid);
+
+    RSS(ref_cavity_create(&ref_cavity,2),"create");
+    node = 1;
+    RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
+    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+    ref_node_xyz(ref_node,2,node) = 0.5;
+    ref_node_xyz(ref_node,2,opp ) = 0.5;
+    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
+    RSS(ref_cavity_free(ref_cavity),"free");
+
+    RSS(ref_cavity_create(&ref_cavity,2),"create");
+    node = 2;
+    RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
+    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+    ref_node_xyz(ref_node,2,node) = 0.5;
+    ref_node_xyz(ref_node,2,opp ) = 0.5;
+    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
+    RSS(ref_cavity_free(ref_cavity),"free");
+
+    if ( 2 == argc )
+      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
+
+    REIS( 28, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+    REIS( 28, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
+    REIS( 14, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
+
     RSS( ref_grid_free(ref_grid),"free");
   }
 
