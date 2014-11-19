@@ -379,8 +379,8 @@ REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_enlarge( REF_CAVITY ref_cavity, 
-			       REF_GRID ref_grid, REF_INT node )
+REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity, 
+				       REF_GRID ref_grid, REF_INT node )
 {
   REF_INT face;
   REF_INT ncell, cells[2];

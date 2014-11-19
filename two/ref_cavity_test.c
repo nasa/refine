@@ -361,7 +361,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
     
-    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
     REIS( 30, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
@@ -387,7 +387,7 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
-    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
@@ -397,7 +397,7 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
-    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
@@ -442,7 +442,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,node) = 0.3;
     ref_node_xyz(ref_node,2,opp ) = 0.3;
     
-    RSS(ref_cavity_enlarge(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
     RSS(ref_cavity_free(ref_cavity),"free");
