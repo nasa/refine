@@ -10,6 +10,7 @@ libref2_a_SOURCES = \
 	ref_axi.c ref_axi.h \
 	ref_cavity.c ref_cavity.h \
 	ref_cell.c ref_cell.h \
+	ref_clump.c ref_clump.h \
 	ref_collapse.c ref_collapse.h \
 	ref_dict.c ref_dict.h \
 	ref_defs.h \
@@ -108,6 +109,11 @@ TESTS += ref_cell_test
 noinst_PROGRAMS += ref_cell_test
 ref_cell_test_SOURCES = ref_cell_test.c
 ref_cell_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
+TESTS += ref_clump_test
+noinst_PROGRAMS += ref_clump_test
+ref_clump_test_SOURCES = ref_clump_test.c
+ref_clump_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_collapse_test
 noinst_PROGRAMS += ref_collapse_test
