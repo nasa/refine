@@ -35,10 +35,9 @@ int main( int argc, char *argv[] )
     RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
 
     node = 10;
-    RSS(ref_clump_around(ref_grid,node),"clump");
 
     if ( 2 == argc )
-      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
+      RSS(ref_clump_around(ref_grid,node, argv[1]),"clump");
 
     RSS( ref_grid_free(ref_grid),"free");
   }

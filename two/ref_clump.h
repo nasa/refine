@@ -11,7 +11,7 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node );
+REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node, char *filename );
 
 END_C_DECLORATION
 
