@@ -18,6 +18,7 @@ struct REF_LIST_STRUCT {
 
 REF_STATUS ref_list_create( REF_LIST *ref_list );
 REF_STATUS ref_list_free( REF_LIST ref_list );
+REF_STATUS ref_list_inspect( REF_LIST ref_list );
 
 #define ref_list_n( ref_list ) ((ref_list)->n)
 #define ref_list_max( ref_list ) ((ref_list)->max)
