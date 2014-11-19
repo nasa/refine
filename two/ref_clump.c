@@ -17,6 +17,7 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node, char *filename )
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT local;
+  REF_DBL xyz[3];
 
   FILE *f;
 
@@ -45,11 +46,14 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node, char *filename )
 
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
     {
-      node = ref_dict_key(node_dict,item);
-      fprintf(f, " %.16e %.16e %.16e\n",
-	      ref_node_xyz(ref_grid_node(ref_grid),0,node),
-	      ref_node_xyz(ref_grid_node(ref_grid),1,node),
-	      ref_node_xyz(ref_grid_node(ref_grid),2,node) );
+      local = ref_dict_key(node_dict,item);
+      xyz[0] = ref_node_xyz(ref_grid_node(ref_grid),0,local) 
+	- ref_node_xyz(ref_grid_node(ref_grid),0,node); 
+      xyz[1] = ref_node_xyz(ref_grid_node(ref_grid),1,local) 
+	- ref_node_xyz(ref_grid_node(ref_grid),1,node); 
+      xyz[2] = ref_node_xyz(ref_grid_node(ref_grid),2,local) 
+	- ref_node_xyz(ref_grid_node(ref_grid),2,node); 
+      fprintf(f, " %.16e %.16e %.16e\n", xyz[0], xyz[1], xyz[2] );
     }
 
   for ( item = 0; item < ref_dict_n(tri_dict); item++ )
