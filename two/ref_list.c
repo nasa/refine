@@ -39,7 +39,7 @@ REF_STATUS ref_list_inspect( REF_LIST ref_list )
 
   printf("list has %d items\n",ref_list_n(ref_list));
   for(i=0;i< ref_list_n(ref_list);i++)
-    printf( "value[%d] = %d", i, ref_list->value[i] );
+    printf( "value[%d] = %d\n", i, ref_list->value[i] );
 
   return REF_SUCCESS;
 }
