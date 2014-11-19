@@ -341,6 +341,7 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  SKIP_BLOCK("fix gobble")
   { /* gobble */
     REF_GRID ref_grid;
     REF_NODE ref_node;
