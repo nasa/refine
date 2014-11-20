@@ -282,6 +282,32 @@ REF_STATUS ref_matrix_form_m( REF_DBL *d,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_jacob_m( REF_DBL *m_upper_tri,
+			       REF_DBL *j)
+{
+  REF_DBL d[12];
+
+  RSS( ref_matrix_diag_m( m_upper_tri, d ), "diag");
+
+  d[0] = sqrt(d[0]);
+  d[1] = sqrt(d[1]);
+  d[2] = sqrt(d[2]);
+
+  j[0] = ref_matrix_eig( d, 0 )*ref_matrix_vec( d, 0, 0);
+  j[1] = ref_matrix_eig( d, 0 )*ref_matrix_vec( d, 1, 0);
+  j[2] = ref_matrix_eig( d, 0 )*ref_matrix_vec( d, 2, 0);
+
+  j[3] = ref_matrix_eig( d, 1 )*ref_matrix_vec( d, 0, 1);
+  j[4] = ref_matrix_eig( d, 1 )*ref_matrix_vec( d, 1, 1);
+  j[5] = ref_matrix_eig( d, 1 )*ref_matrix_vec( d, 2, 1);
+
+  j[6] = ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 0, 2);
+  j[7] = ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 1, 2);
+  j[8] = ref_matrix_eig( d, 2 )*ref_matrix_vec( d, 2, 2);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_inv_m( REF_DBL *m,
 			     REF_DBL *inv_m)
 {

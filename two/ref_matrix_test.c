@@ -247,6 +247,27 @@ int main( void )
     RWDS( m[5], m2[5], tol, "m[5]");
   }
 
+  { /* 10-1 jacobian identity */
+    REF_DBL m[6]={ 1.0,  0.0,  0.0, 
+                         1.0,  0.0,
+                             100.0};
+    REF_DBL j[9];
+
+    RSS( ref_matrix_jacob_m( m, j ), "jacob");
+
+    RWDS( 1.0,j[0],-1,"dadx");
+    RWDS( 0.0,j[1],-1,"dady");
+    RWDS( 0.0,j[2],-1,"dadz");
+
+    RWDS( 0.0,j[3],-1,"dbdx");
+    RWDS( 1.0,j[4],-1,"dbdy");
+    RWDS( 0.0,j[5],-1,"dbdz");
+
+    RWDS( 0.0,j[6],-1,"dcdx");
+    RWDS( 0.0,j[7],-1,"dcdy");
+    RWDS(10.0,j[8],-1,"dcdz");
+  }
+
   { /* det */
     REF_DBL tol = -1.0;
     REF_DBL m[6]={10.0, 0.0, 0.0, 
