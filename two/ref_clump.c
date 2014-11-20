@@ -9,6 +9,7 @@
 #include "ref_edge.h"
 #include "ref_malloc.h"
 #include "ref_adapt.h"
+#include "ref_matrix.h"
 
 REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node, char *filename )
 {
@@ -17,7 +18,8 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node, char *filename )
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT local;
-  REF_DBL xyz[3];
+  REF_DBL xyz_comp[3], xyz_phys[3];
+  REF_DBL jacob[9];
 
   FILE *f;
 
@@ -44,16 +46,19 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node, char *filename )
 	  ref_dict_n(node_dict), ref_dict_n(tri_dict), 
 	  "point", "fequadrilateral" );
 
+  RSS( ref_matrix_jacob_m( ref_node_metric_ptr(ref_grid_node(ref_grid),node),
+			   jacob ), "jac");
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
     {
       local = ref_dict_key(node_dict,item);
-      xyz[0] = ref_node_xyz(ref_grid_node(ref_grid),0,local) 
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid),0,local) 
 	- ref_node_xyz(ref_grid_node(ref_grid),0,node); 
-      xyz[1] = ref_node_xyz(ref_grid_node(ref_grid),1,local) 
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid),1,local) 
 	- ref_node_xyz(ref_grid_node(ref_grid),1,node); 
-      xyz[2] = ref_node_xyz(ref_grid_node(ref_grid),2,local) 
-	- ref_node_xyz(ref_grid_node(ref_grid),2,node); 
-      fprintf(f, " %.16e %.16e %.16e\n", xyz[0], xyz[1], xyz[2] );
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid),2,local) 
+	- ref_node_xyz(ref_grid_node(ref_grid),2,node);
+      RSS( ref_matrix_vect_mult( jacob, xyz_phys, xyz_comp ), "ax");
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_comp[0], xyz_comp[1], xyz_comp[2]);
     }
 
   for ( item = 0; item < ref_dict_n(tri_dict); item++ )
