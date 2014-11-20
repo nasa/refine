@@ -482,6 +482,56 @@ m=[
     RWDS(1185,  m[5], tol, "m[5]");
   }
 
+  { /* matrix vector product eye*/
+    REF_DBL tol = -1.0;
+    REF_DBL a[9];
+    REF_DBL x[3];
+    REF_DBL b[3];
+
+    a[0] = 1.0; a[3] = 0.0; a[6] = 0.0;
+    a[1] = 0.0; a[4] = 1.0; a[7] = 0.0;
+    a[2] = 0.0; a[5] = 0.0; a[8] =10.0;
+
+    x[0] = 1.0;
+    x[1] = 1.0;
+    x[2] = 0.1;
+
+    RSS( ref_matrix_vect_mult( a, x, b ), "ax=b" );
+
+    RWDS( 1.0,  b[0], tol, "b[0]");
+    RWDS( 1.0,  b[1], tol, "b[1]");
+    RWDS( 1.0,  b[2], tol, "b[2]");
+  }
+
+  { /* matrix vector product gen*/
+    REF_DBL tol = -1.0;
+    REF_DBL a[9];
+    REF_DBL x[3];
+    REF_DBL b[3];
+    /*
+      a=[1 2 3; 4 5 6; 7 8 9];
+      x=[3 4 5]';
+      b=a*x
+   26
+   62
+   98
+    */
+
+    a[0] = 1.0; a[3] = 2.0; a[6] = 3.0;
+    a[1] = 4.0; a[4] = 5.0; a[7] = 6.0;
+    a[2] = 7.0; a[5] = 8.0; a[8] = 9.0;
+
+    x[0] = 3.0;
+    x[1] = 4.0;
+    x[2] = 5.0;
+
+    RSS( ref_matrix_vect_mult( a, x, b ), "ax=b" );
+
+    RWDS( 26.0,  b[0], tol, "b[0]");
+    RWDS( 62.0,  b[1], tol, "b[1]");
+    RWDS( 98.0,  b[2], tol, "b[2]");
+  }
+
   { /* solve x = 1*/
     REF_DBL tol = -1.0;
     REF_INT rows = 1, cols = 2;

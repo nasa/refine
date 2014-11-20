@@ -460,6 +460,17 @@ REF_STATUS ref_matrix_mult_m0m1m0( REF_DBL *m1, REF_DBL *m2,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_vect_mult( REF_DBL *a, REF_DBL *x,
+				 REF_DBL *b )
+{
+
+  b[0] = a[0]*x[0] + a[3]*x[1] + a[6]*x[2];
+  b[1] = a[1]*x[0] + a[4]*x[1] + a[7]*x[2];
+  b[2] = a[2]*x[0] + a[5]*x[1] + a[8]*x[2];
+ 
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_intersect( REF_DBL *m1, REF_DBL *m2,
 				 REF_DBL *m12)
 {
