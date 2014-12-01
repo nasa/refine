@@ -15,7 +15,7 @@ function adapt_cycle {
     ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
 
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.meshb
-    ~/refine/util/metric2sol.sh ${proj}.metric ${proj}.sol
+    ~/refine/util/ref_metric2sol ${proj}.metric ${proj}.sol
     ~/inria-file-tools/mac-bin/feflo.a \
 	-in ${proj}.meshb \
 	-met ${proj}.sol \

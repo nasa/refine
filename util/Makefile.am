@@ -5,3 +5,5 @@ EXTRA_DIST = \
 	front2tec.rb front2off.rb \
 	mesh3d2fgrid.rb
 
+dist_bin_SCRIPTS = ref_metric2sol
+
