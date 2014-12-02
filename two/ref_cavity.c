@@ -15,7 +15,7 @@ REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
   REF_INT face;
 
   ref_malloc( *ref_cavity_ptr, 1, REF_CAVITY_STRUCT );
-  ref_cavity = (*ref_cavity_ptr);
+  ref_cavity = ( *ref_cavity_ptr );
 
   ref_cavity_n(ref_cavity) = 0;
   ref_cavity_node_per(ref_cavity) = node_per;
@@ -32,7 +32,7 @@ REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
   ref_cavity_f2n(ref_cavity,1,ref_cavity_max(ref_cavity)-1) = REF_EMPTY;
   ref_cavity_blank(ref_cavity) = 0;
 
-  RSS( ref_list_create( &(ref_cavity->ref_list) ), "add list" );
+  RSS( ref_list_create( &( ref_cavity->ref_list ) ), "add list" );
 
   return REF_SUCCESS;
 }
@@ -96,7 +96,7 @@ REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes )
   if ( REF_EMPTY == ref_cavity_blank(ref_cavity) )
     {
       orig = ref_cavity_max(ref_cavity);
-      chunk = MAX(100,(REF_INT)(1.5*(REF_DBL)orig));
+      chunk = MAX(100,(REF_INT)( 1.5*(REF_DBL)orig ));
       ref_cavity_max(ref_cavity) = orig + chunk;
 
       ref_realloc( ref_cavity->f2n, ref_cavity_node_per(ref_cavity) *
@@ -107,7 +107,7 @@ REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes )
           ref_cavity_f2n(ref_cavity,0,face) = REF_EMPTY;
           ref_cavity_f2n(ref_cavity,1,face) = face+1;
         }
-      ref_cavity_f2n(ref_cavity,1,(ref_cavity->max)-1) = REF_EMPTY;
+      ref_cavity_f2n(ref_cavity,1,( ref_cavity->max )-1) = REF_EMPTY;
       ref_cavity_blank(ref_cavity) = orig;
     }
 

@@ -27,25 +27,25 @@ REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity, REF_INT node_per );
 REF_STATUS ref_cavity_free( REF_CAVITY ref_cavity );
 REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity );
 
-#define ref_cavity_n( ref_cavity ) ((ref_cavity)->n)
-#define ref_cavity_node_per( ref_cavity ) ((ref_cavity)->node_per)
+#define ref_cavity_n( ref_cavity ) (( ref_cavity )->n )
+#define ref_cavity_node_per( ref_cavity ) (( ref_cavity )->node_per )
 
 #define ref_cavity_f2n(ref_cavity,node,cavity) \
-  ((ref_cavity)->f2n[(node)+ref_cavity_node_per(ref_cavity)*(cavity)])
+  (( ref_cavity )->f2n[( node )+ref_cavity_node_per(ref_cavity)*( cavity )] )
 
-#define ref_cavity_max( ref_cavity ) ((ref_cavity)->max)
-#define ref_cavity_blank( ref_cavity ) ((ref_cavity)->blank)
+#define ref_cavity_max( ref_cavity ) (( ref_cavity )->max )
+#define ref_cavity_blank( ref_cavity ) (( ref_cavity )->blank )
 
-#define ref_cavity_list( ref_cavity ) ((ref_cavity)->ref_list)
+#define ref_cavity_list( ref_cavity ) (( ref_cavity )->ref_list )
 
 #define ref_cavity_valid(ref_cavity,face)                \
-  ( (face) >=0 && (face) < ref_cavity_max(ref_cavity) && \
+  ( ( face ) >=0 && ( face ) < ref_cavity_max(ref_cavity) && \
     REF_EMPTY != ref_cavity_f2n(ref_cavity,0,face) )
 
 #define each_ref_cavity_valid_face( ref_cavity, face )                  \
-  for ( (face) = 0;                                                    \
-        (face) < ref_cavity_max(ref_cavity);                            \
-        (face)++ )                                                      \
+  for ( ( face ) = 0;                                                    \
+        ( face ) < ref_cavity_max(ref_cavity);                            \
+        ( face )++ )                                                      \
     if ( ref_cavity_valid( ref_cavity, face ) )
 
 REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes );
