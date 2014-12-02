@@ -42,7 +42,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[2];
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
-    nodes[0]=1;nodes[1]=2;
+    nodes[0] = 1; nodes[1] = 2;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert");
     REIS( 1, ref_cavity_n(ref_cavity), "init no cavity");
 
@@ -57,11 +57,11 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_create(&ref_cavity,2),"create");
 
     n = ref_cavity_max(ref_cavity) + 3;
-    for (f=0;f<n;f++)
+    for (f = 0; f<n; f++)
       {
-	nodes[0]=f;nodes[1]=f+1;
-	RSS(ref_cavity_insert(ref_cavity,nodes),"insert");
-	REIS( f+1, ref_cavity_n(ref_cavity), "init no cavity");
+        nodes[0] = f; nodes[1] = f+1;
+        RSS(ref_cavity_insert(ref_cavity,nodes),"insert");
+        REIS( f+1, ref_cavity_n(ref_cavity), "init no cavity");
       }
 
     REIS( n, ref_cavity_n(ref_cavity), "count");
@@ -74,7 +74,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[2];
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
-    nodes[0]=1;nodes[1]=2;
+    nodes[0] = 1; nodes[1] = 2;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
     REIS(REF_INVALID,ref_cavity_insert(ref_cavity,nodes),"insert second");
 
@@ -87,14 +87,14 @@ int main( int argc, char *argv[] )
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
-    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    nodes[0] = 1; nodes[1] = 2; nodes[2] = 3;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
     REIS(REF_INVALID,ref_cavity_insert(ref_cavity,nodes),"insert second");
 
-    nodes[0]=2;nodes[1]=3;nodes[2]=1;
+    nodes[0] = 2; nodes[1] = 3; nodes[2] = 1;
     REIS(REF_INVALID,ref_cavity_insert(ref_cavity,nodes),"insert second");
 
-    nodes[0]=3;nodes[1]=1;nodes[2]=2;
+    nodes[0] = 3; nodes[1] = 1; nodes[2] = 2;
     REIS(REF_INVALID,ref_cavity_insert(ref_cavity,nodes),"insert second");
 
     RSS(ref_cavity_free(ref_cavity),"free");
@@ -105,9 +105,9 @@ int main( int argc, char *argv[] )
     REF_INT nodes[2];
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
-    nodes[0]=1;nodes[1]=2;
+    nodes[0] = 1; nodes[1] = 2;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
-    nodes[0]=2;nodes[1]=1;
+    nodes[0] = 2; nodes[1] = 1;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert opposite");
 
     REIS( 0, ref_cavity_n(ref_cavity), "cancel");
@@ -120,9 +120,9 @@ int main( int argc, char *argv[] )
     REF_INT nodes[3];
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
-    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    nodes[0] = 1; nodes[1] = 2; nodes[2] = 3;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
-    nodes[0]=1;nodes[1]=3;nodes[2]=2;
+    nodes[0] = 1; nodes[1] = 3; nodes[2] = 2;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert opposite");
 
     REIS( 0, ref_cavity_n(ref_cavity), "cancel");
@@ -137,21 +137,21 @@ int main( int argc, char *argv[] )
     REF_BOOL reversed;
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
-    nodes[0]=1;nodes[1]=2;
+    nodes[0] = 1; nodes[1] = 2;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
 
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find same");
     REIS(0,face,"found");
     REIS(REF_FALSE,reversed,"not rev");
 
-    nodes[0]=2;nodes[1]=1;
+    nodes[0] = 2; nodes[1] = 1;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
     REIS(0,face,"found");
     REIS(REF_TRUE,reversed,"not rev");
 
-    nodes[0]=3;nodes[1]=4;
+    nodes[0] = 3; nodes[1] = 4;
     REIS(REF_NOT_FOUND,ref_cavity_find(ref_cavity,nodes,
-				      &face,&reversed),"missing");
+                                       &face,&reversed),"missing");
     REIS(REF_EMPTY,face,"found");
 
     RSS(ref_cavity_free(ref_cavity),"free");
@@ -164,38 +164,38 @@ int main( int argc, char *argv[] )
     REF_BOOL reversed;
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
-    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    nodes[0] = 1; nodes[1] = 2; nodes[2] = 3;
     RSS(ref_cavity_insert(ref_cavity,nodes),"insert first");
 
-    nodes[0]=1;nodes[1]=2;nodes[2]=3;
+    nodes[0] = 1; nodes[1] = 2; nodes[2] = 3;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find same");
     REIS(0,face,"found");
     REIS(REF_FALSE,reversed,"not rev");
-    nodes[0]=3;nodes[1]=1;nodes[2]=2;
+    nodes[0] = 3; nodes[1] = 1; nodes[2] = 2;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find same");
     REIS(0,face,"found");
     REIS(REF_FALSE,reversed,"not rev");
-    nodes[0]=2;nodes[1]=3;nodes[2]=1;
+    nodes[0] = 2; nodes[1] = 3; nodes[2] = 1;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find same");
     REIS(0,face,"found");
     REIS(REF_FALSE,reversed,"not rev");
 
-    nodes[0]=2;nodes[1]=1;nodes[2]=3;
+    nodes[0] = 2; nodes[1] = 1; nodes[2] = 3;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
     REIS(0,face,"found");
     REIS(REF_TRUE,reversed,"not rev");
-    nodes[0]=3;nodes[1]=2;nodes[2]=1;
+    nodes[0] = 3; nodes[1] = 2; nodes[2] = 1;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
     REIS(0,face,"found");
     REIS(REF_TRUE,reversed,"not rev");
-    nodes[0]=1;nodes[1]=3;nodes[2]=2;
+    nodes[0] = 1; nodes[1] = 3; nodes[2] = 2;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find reversed");
     REIS(0,face,"found");
     REIS(REF_TRUE,reversed,"not rev");
 
-    nodes[0]=3;nodes[1]=4;nodes[2]=5;
+    nodes[0] = 3; nodes[1] = 4; nodes[2] = 5;
     REIS(REF_NOT_FOUND,ref_cavity_find(ref_cavity,nodes,
-				      &face,&reversed),"missing");
+                                       &face,&reversed),"missing");
     REIS(REF_EMPTY,face,"found");
 
     RSS(ref_cavity_free(ref_cavity),"free");
@@ -214,15 +214,15 @@ int main( int argc, char *argv[] )
 
     RSS(ref_cavity_add_tri(ref_cavity,ref_grid,1),"insert first");
 
-    nodes[0]=1;nodes[1]=2;
+    nodes[0] = 1; nodes[1] = 2;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 0");
     REIS(REF_FALSE,reversed,"not rev");
 
-    nodes[0]=2;nodes[1]=0;
+    nodes[0] = 2; nodes[1] = 0;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 1");
     REIS(REF_FALSE,reversed,"not rev");
 
-    nodes[0]=1;nodes[1]=2;
+    nodes[0] = 1; nodes[1] = 2;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 2");
     REIS(REF_FALSE,reversed,"not rev");
 
@@ -262,7 +262,7 @@ int main( int argc, char *argv[] )
 
     RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first");
 
-    nodes[0]=0;nodes[1]=1;nodes[2]=2;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2;
     RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 0");
     REIS(REF_FALSE,reversed,"not rev");
 
@@ -413,7 +413,7 @@ int main( int argc, char *argv[] )
 
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
-    
+
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
@@ -494,7 +494,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,0,opp ) = 0.3;
     ref_node_xyz(ref_node,2,node) = 0.3;
     ref_node_xyz(ref_node,2,opp ) = 0.3;
-    
+
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 

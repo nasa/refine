@@ -38,46 +38,46 @@ REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity );
 
 #define ref_cavity_list( ref_cavity ) ((ref_cavity)->ref_list)
 
-#define ref_cavity_valid(ref_cavity,face)		 \
+#define ref_cavity_valid(ref_cavity,face)                \
   ( (face) >=0 && (face) < ref_cavity_max(ref_cavity) && \
     REF_EMPTY != ref_cavity_f2n(ref_cavity,0,face) )
 
-#define each_ref_cavity_valid_face( ref_cavity, face )			\
-  for ( (face) = 0 ;							\
-	(face) < ref_cavity_max(ref_cavity);				\
-	(face)++ )							\
+#define each_ref_cavity_valid_face( ref_cavity, face )                  \
+  for ( (face) = 0;                                                    \
+        (face) < ref_cavity_max(ref_cavity);                            \
+        (face)++ )                                                      \
     if ( ref_cavity_valid( ref_cavity, face ) )
 
 REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes );
 REF_STATUS ref_cavity_find( REF_CAVITY ref_cavity, REF_INT *nodes,
-			   REF_INT *found_face, REF_BOOL *reversed);
+                            REF_INT *found_face, REF_BOOL *reversed);
 
-REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity, 
-			       REF_GRID ref_grid, REF_INT tet );
-REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity, 
-				   REF_GRID ref_grid, REF_INT node );
+REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
+                               REF_GRID ref_grid, REF_INT tet );
+REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
+                                   REF_GRID ref_grid, REF_INT node );
 
-REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity, 
-			       REF_GRID ref_grid, REF_INT tri );
-REF_STATUS ref_cavity_rm_tri( REF_CAVITY ref_cavity, 
-			      REF_GRID ref_grid, REF_INT tri );
-REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity, 
-				REF_GRID ref_grid, REF_INT node );
+REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity,
+                               REF_GRID ref_grid, REF_INT tri );
+REF_STATUS ref_cavity_rm_tri( REF_CAVITY ref_cavity,
+                              REF_GRID ref_grid, REF_INT tri );
+REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity,
+                                REF_GRID ref_grid, REF_INT node );
 
-REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity, 
-				   REF_GRID ref_grid, 
-				   REF_INT node, REF_INT clone );
+REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
+                                   REF_GRID ref_grid,
+                                   REF_INT node, REF_INT clone );
 
-REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity, 
-			       REF_NODE ref_node, REF_INT node, REF_INT face,
-			       REF_BOOL *visible );
-REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity, 
-				       REF_GRID ref_grid, REF_INT node );
+REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity,
+                               REF_NODE ref_node, REF_INT node, REF_INT face,
+                               REF_BOOL *visible );
+REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
+                                       REF_GRID ref_grid, REF_INT node );
 
-REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity, 
-				    REF_GRID ref_grid, REF_INT face );
-REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity, 
-				   REF_GRID ref_grid, REF_INT face );
+REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
+                                    REF_GRID ref_grid, REF_INT face );
+REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
+                                   REF_GRID ref_grid, REF_INT face );
 
 END_C_DECLORATION
 
