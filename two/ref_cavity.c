@@ -324,9 +324,6 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
     if ( node == ref_cavity_f2n(ref_cavity,0,face) ||
          node == ref_cavity_f2n(ref_cavity,1,face) )
       continue;
-    if ( 3 == ref_cavity_node_per(ref_cavity) &&
-         node == ref_cavity_f2n(ref_cavity,2,face) )
-      continue;
 
     nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
     nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
@@ -446,6 +443,9 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
         if ( node == ref_cavity_f2n(ref_cavity,0,face) ||
              node == ref_cavity_f2n(ref_cavity,1,face) )
           continue;
+	if ( 3 == ref_cavity_node_per(ref_cavity) &&
+	     node == ref_cavity_f2n(ref_cavity,2,face) )
+	  continue;
 
         RSS(ref_cavity_visible(ref_cavity, ref_grid_node(ref_grid),
                                node, face, &visible ),"free");
