@@ -383,19 +383,38 @@ REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity,
 {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL normal[3];
+  REF_DBL volume;
 
   *visible = REF_FALSE;
 
-  nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
-  nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
-  nodes[2] = node;
+  switch ( ref_cavity_node_per( ref_cavity ) )
+    {
+    case ( 2 ) :
+      nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
+      nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
+      nodes[2] = node;
+    
+      RSS( ref_node_tri_normal( ref_node,nodes,normal ), "norm");
 
-  RSS( ref_node_tri_normal( ref_node,nodes,normal ), "norm");
+      if ( ( ref_node_xyz(ref_node,1,nodes[0]) > 0.5 &&
+	     normal[1] >= 0.0 ) ||
+	   ( ref_node_xyz(ref_node,1,nodes[0]) < 0.5 &&
+	     normal[1] <= 0.0 ) ) return REF_SUCCESS;
+      break;
+    case ( 3 ) :
+      nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
+      nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
+      nodes[2] = ref_cavity_f2n(ref_cavity,2,face);
+      nodes[3] = node;
+      
+      RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "norm");
 
-  if ( ( ref_node_xyz(ref_node,1,nodes[0]) > 0.5 &&
-	 normal[1] >= 0.0 ) ||
-       ( ref_node_xyz(ref_node,1,nodes[0]) < 0.5 &&
-	 normal[1] <= 0.0 ) ) return REF_SUCCESS;
+      if ( volume <= 0.0 ) return REF_SUCCESS;
+
+      break;
+    default :
+      THROW("unknown node_per");
+    }
 
   *visible = REF_TRUE;
 
