@@ -5,7 +5,8 @@
 #include "ref_defs.h"
 
 BEGIN_C_DECLORATION
-END_C_DECLORATION
+
+  END_C_DECLORATION
 
 #include "ref_grid.h"
 
