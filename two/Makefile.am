@@ -58,6 +58,10 @@ endif # BUILD_MPI
 
 bin_PROGRAMS =
 
+bin_PROGRAMS += ref_cornerrefine
+ref_cornerrefine_SOURCES = ref_cornerrefine.c
+ref_cornerrefine_LDADD = libref2.a @mpi_ldadd@ -lm
+
 bin_PROGRAMS += ref_projectable
 ref_projectable_SOURCES = ref_projectable.c
 ref_projectable_LDADD = libref2.a @mpi_ldadd@ -lm
