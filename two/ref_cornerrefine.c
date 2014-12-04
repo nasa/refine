@@ -36,11 +36,13 @@ int main( int argc, char *argv[] )
   REF_BOOL valid_inputs;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node, item;
-  valid_inputs = (3 == argc);  
+  REF_INT node_refinements, extra_at_node;
+
+  valid_inputs = (4 == argc);  
 
   if ( !valid_inputs )
     {
-      printf("usage: %s input_grid.extension output_grid.extension\n",argv[0]);
+      printf("usage: %s input_grid.extension output_grid.extension extra_at_node\n",argv[0]);
       return 1;
     }
 
@@ -59,17 +61,24 @@ int main( int argc, char *argv[] )
   RSS(ref_subdiv_split(ref_subdiv),"split");
   RSS(ref_subdiv_free(ref_subdiv),"free");
 
-  RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "init" );
-  node = 0;
-  each_ref_cell_having_node( ref_cell, node, item, cell )
+  extra_at_node = atoi(argv[3]);
+
+  for (node_refinements = 0 ; 
+       node_refinements < extra_at_node ;
+       node_refinements++ )
     {
-      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-      RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[1], nodes[2] ), "o0" );
-      RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[2], nodes[0] ), "o1" );
-      RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[0], nodes[1] ), "o2" );
+      RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "init" );
+      node = 0;
+      each_ref_cell_having_node( ref_cell, node, item, cell )
+	{
+	  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+	  RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[1], nodes[2] ), "o0" );
+	  RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[2], nodes[0] ), "o1" );
+	  RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[0], nodes[1] ), "o2" );
+	}
+      RSS(ref_subdiv_split(ref_subdiv),"split");
+      RSS(ref_subdiv_free(ref_subdiv),"free");
     }
-  RSS(ref_subdiv_split(ref_subdiv),"split");
-  RSS(ref_subdiv_free(ref_subdiv),"free");
 
   RSS( ref_export_by_extension( ref_grid, argv[2] ), "out");
 
