@@ -80,7 +80,7 @@ int main( int argc, char *argv[] )
 	x = ref_node_xyz(ref_node,0,node);
 	z = ref_node_xyz(ref_node,2,node);
 	r = sqrt( x*x + z*z );
-	r = MAX( r, 4e-3*c );
+	r = MAX( r, 0.02*c*c );
 	h = c * pow(r,k); 
  
 	ref_node_metric(ref_node,0,node) = 1.0/(h*h);
