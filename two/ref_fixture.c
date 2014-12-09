@@ -64,6 +64,56 @@ REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_fixture_tet2_grid( REF_GRID *ref_grid_ptr )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT global[REF_CELL_MAX_SIZE_PER];
+  REF_INT local[REF_CELL_MAX_SIZE_PER];
+  REF_INT nnodesg = 5;
+  REF_INT cell;
+
+  RSS(ref_grid_create(ref_grid_ptr),"create");
+  ref_grid =  *ref_grid_ptr;
+
+  ref_node = ref_grid_node(ref_grid);
+
+
+  global[0]=0;global[1]=1;global[2]=2;global[3]=3;
+
+  if ( ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[0] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[1] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[2] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[3] ) )
+    {
+      add_that_node(0,0.0,0.0,0.0);
+      add_that_node(1,1.0,0.0,0.0);
+      add_that_node(2,0.0,1.0,0.0);
+      add_that_node(3,0.0,0.0,1.0);
+
+      RSS(ref_cell_add(ref_grid_tet(ref_grid),local,&cell),"add tet");
+    }
+
+  global[0]=4;global[1]=2;global[2]=1;global[3]=3;
+
+  if ( ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[0] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[1] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[2] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[3] ) )
+    {
+      add_that_node(0,1.0,1.0,1.0);
+      add_that_node(1,0.0,1.0,0.0);
+      add_that_node(2,1.0,0.0,0.0);
+      add_that_node(3,0.0,0.0,1.0);
+
+      RSS(ref_cell_add(ref_grid_tet(ref_grid),local,&cell),"add tet");
+    }
+
+  RSS( ref_node_initialize_n_global( ref_node, nnodesg ), "init glob" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
 {
   REF_GRID ref_grid;

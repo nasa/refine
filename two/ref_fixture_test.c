@@ -23,6 +23,8 @@
 #include "ref_validation.h"
 #include "ref_edge.h"
 
+#include "ref_metric.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -45,6 +47,16 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
 
     RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
+
+    RSS( ref_validation_cell_node( ref_grid ), "invalid pri" );
+
+    RSS( ref_grid_free(ref_grid),"free");
+  }
+
+  {
+    REF_GRID ref_grid;
+
+    RSS( ref_fixture_tet2_grid( &ref_grid ), "fix" );
 
     RSS( ref_validation_cell_node( ref_grid ), "invalid pri" );
 
