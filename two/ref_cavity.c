@@ -190,15 +190,11 @@ REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
                                REF_GRID ref_grid, REF_INT tet )
 {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell_face, node;
   REF_INT face_nodes[4];
 
   RSS( ref_list_add( ref_cavity_list(ref_cavity), tet ),
        "save tet");
-
-  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tet, nodes ),
-       "grab faceid");
 
   each_ref_cell_cell_face( ref_cell, cell_face )
   {
