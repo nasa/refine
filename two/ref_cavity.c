@@ -22,8 +22,8 @@ REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
 
   ref_cavity_max(ref_cavity) = 10;
 
-  ref_malloc( ref_cavity->f2n, ref_cavity_max(ref_cavity) *
-              ref_cavity_node_per(ref_cavity), REF_INT);
+  ref_malloc_init( ref_cavity->f2n, ref_cavity_max(ref_cavity) *
+		   ref_cavity_node_per(ref_cavity), REF_INT, 0);
   for ( face = 0; face < ref_cavity_max(ref_cavity); face++ )
     {
       ref_cavity_f2n(ref_cavity,0,face) = REF_EMPTY;
