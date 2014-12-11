@@ -38,14 +38,14 @@ REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity );
 
 #define ref_cavity_list( ref_cavity ) (( ref_cavity )->ref_list )
 
-#define ref_cavity_valid(ref_cavity,face)                \
+#define ref_cavity_valid(ref_cavity,face)                    \
   ( ( face ) >=0 && ( face ) < ref_cavity_max(ref_cavity) && \
     REF_EMPTY != ref_cavity_f2n(ref_cavity,0,face) )
 
-#define each_ref_cavity_valid_face( ref_cavity, face )                  \
-  for ( ( face ) = 0;                                                    \
-        ( face ) < ref_cavity_max(ref_cavity);                            \
-        ( face )++ )                                                      \
+#define each_ref_cavity_valid_face( ref_cavity, face ) \
+  for ( ( face ) = 0;                                  \
+        ( face ) < ref_cavity_max(ref_cavity);         \
+        ( face )++ )                                   \
     if ( ref_cavity_valid( ref_cavity, face ) )
 
 REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes );
