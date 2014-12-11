@@ -85,13 +85,22 @@ REF_STATUS ref_twod_tri_pri_tri( REF_CELL tri, REF_CELL pri, REF_INT cell,
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face[4];
+  REF_INT pri_cell2;
 
   RSS( ref_cell_nodes( tri, cell, tri_nodes ), 
        "grab tri");
   face[0]=tri_nodes[0];face[1]=tri_nodes[1];face[2]=tri_nodes[2];
   face[3]=face[0];
-  RSS( ref_cell_with_face( pri, face, pri_cell ), "pri" );
+  RSS( ref_cell_with_face( pri, face, pri_cell, &pri_cell2 ), "pri" );
 
+  if ( REF_EMPTY == *pri_cell )
+    THROW( "prism missing" );
+  if ( REF_EMPTY != pri_cell2 )
+    {ref_cell_inspect(pri);
+      printf("prisms %d %d\n",*pri_cell,pri_cell2);
+      printf("face %d %d %d\n",face[0],face[1],face[2]);
+      THROW( "mulitple prisms found" );
+    }
   RSS( ref_cell_nodes( pri, *pri_cell, pri_nodes ), 
        "grab pri");
   if ( tri_nodes[0] == pri_nodes[0] ||

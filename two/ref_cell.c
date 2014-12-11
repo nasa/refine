@@ -155,7 +155,7 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
 
   if ( ref_cell_last_node_is_an_id(ref_cell) )
     {
-      ref_cell_f2n_gen(ref_cell,0,0) = 0; 
+      ref_cell_f2n_gen(ref_cell,0,0) = 0;
       ref_cell_f2n_gen(ref_cell,1,0) = 1;
       ref_cell_f2n_gen(ref_cell,2,0) = 2;
       ref_cell_f2n_gen(ref_cell,3,0) = 3;
@@ -551,15 +551,16 @@ REF_STATUS ref_cell_has_side( REF_CELL ref_cell,
 }
 
 REF_STATUS ref_cell_with_face( REF_CELL ref_cell, 
-			      REF_INT *face_nodes,
-			      REF_INT *containing_cell)
+			       REF_INT *face_nodes,
+			       REF_INT *cell0, REF_INT *cell1)
 {
   REF_INT item, node, same, cell_face, cell;
   REF_INT ntarget, target[REF_CELL_MAX_SIZE_PER];
   REF_INT ncanidate, canidate[REF_CELL_MAX_SIZE_PER];
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
 
-  (*containing_cell) = REF_EMPTY;
+  (*cell0) = REF_EMPTY;
+  (*cell1) = REF_EMPTY;
 
   RSS( ref_sort_unique_int( 4, face_nodes, &ntarget, target ), "t uniq" );
 
@@ -576,17 +577,24 @@ REF_STATUS ref_cell_with_face( REF_CELL ref_cell,
 	    same = 0;
 	    for (node=0;node<ntarget; node++)
 	      if ( target[node] == canidate[node]) same++;
-
+	    
 	    if ( ntarget == same )
 	      {
-		(*containing_cell) = cell;
-		return REF_SUCCESS;
+		if (REF_EMPTY == *cell0)
+		  {
+		    (*cell0) = cell;
+		  }
+		else
+		  {
+		    if (REF_EMPTY != *cell1)
+		      return REF_INVALID; /* more than 2 cells with face */
+		    (*cell1) = cell;
+		  }
 	      }
-	  }
-
+	  }	
       }
 
-  return REF_NOT_FOUND;
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )

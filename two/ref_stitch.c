@@ -27,6 +27,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   REF_INT pyr_cell, pyr_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua_cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT hex_cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT second_hex, second_tri;
   REF_INT new_node, global;
   REF_INT node;
   REF_INT cell_face, base[4], tri_nodes[4], tri_cell;
@@ -95,7 +96,10 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
   each_ref_cell_valid_cell_with_nodes( qua, qua_cell, nodes)
     if ( qua_boundary == nodes[4] )
       {
-	RSS( ref_cell_with_face( hex, nodes, &hex_cell ), "missing hex" );
+	RSS( ref_cell_with_face( hex, nodes,
+				 &hex_cell, &second_hex ), "missing hex" );
+	if ( REF_EMPTY != second_hex )
+	  THROW( "mulitple hexes found" );
 	RSS( ref_cell_nodes( hex, hex_cell, hex_nodes),"hex nodes");
 
 	RSS( ref_node_next_global(ref_node,&global), "get glob");
@@ -124,8 +128,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	      tri_nodes[node] = base[node];
 	    tri_nodes[3]=tri_nodes[0];
 
-	    RXS( ref_cell_with_face( tri, tri_nodes, &tri_cell),
-		 REF_NOT_FOUND,
+	    RSS( ref_cell_with_face( tri, tri_nodes, &tri_cell, &second_tri),
 		 "cell has face" );
 
 	    if ( REF_EMPTY != tri_cell )
@@ -149,8 +152,7 @@ REF_STATUS ref_stitch_together( REF_GRID ref_grid,
 	      tri_nodes[node] = base[node+1];
 	    tri_nodes[3]=tri_nodes[0];
 
-	    RXS( ref_cell_with_face( tri, tri_nodes, &tri_cell),
-		 REF_NOT_FOUND,
+	    RSS( ref_cell_with_face( tri, tri_nodes, &tri_cell, &second_tri),
 		 "cell has face" );
 
 	    if ( REF_EMPTY != tri_cell )

@@ -612,12 +612,12 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  { /* cell has face */
+  { /* pri cell has face */
     REF_CELL ref_cell;
     REF_INT cell;
     REF_INT nodes[REF_CELL_MAX_SIZE_PER];
     REF_INT face_nodes[REF_CELL_MAX_SIZE_PER];
-    REF_INT found;
+    REF_INT found0, found1;
 
     RSS(ref_pri(&ref_cell),"create");
 
@@ -626,16 +626,19 @@ int main( void )
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     face_nodes[0]=0; face_nodes[1]=1; face_nodes[2]=5; face_nodes[3]=0; 
-    REIS(REF_NOT_FOUND,ref_cell_with_face(ref_cell,face_nodes,&found),"with");
-    REIS(REF_EMPTY,found,"false positive");
+    RSS(ref_cell_with_face(ref_cell,face_nodes,&found0,&found1),"with");
+    REIS(REF_EMPTY,found0,"false positive");
+    REIS(REF_EMPTY,found1,"false positive");
 
     face_nodes[0]=1; face_nodes[1]=0; face_nodes[2]=3; face_nodes[3]=4; 
-    RSS(ref_cell_with_face(ref_cell,face_nodes,&found),"with");
-    REIS(0,found,"false negative");
+    RSS(ref_cell_with_face(ref_cell,face_nodes,&found0,&found1),"with");
+    REIS(0,found0,"false negative");
+    REIS(REF_EMPTY,found1,"false positive");
 
     face_nodes[0]=0; face_nodes[1]=1; face_nodes[2]=2; face_nodes[3]=0; 
-    RSS(ref_cell_with_face(ref_cell,face_nodes,&found),"with");
-    REIS(0,found,"false negative");
+    RSS(ref_cell_with_face(ref_cell,face_nodes,&found0,&found1),"with");
+    REIS(0,found0,"false negative");
+    REIS(REF_EMPTY,found1,"false positive");
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
@@ -666,7 +669,7 @@ int main( void )
   
   { /* triangle has face */
     REF_CELL ref_cell;
-    REF_INT cell, nodes[8];
+    REF_INT cell0, cell1, nodes[8];
 
     RSS(ref_tri(&ref_cell),"create");
     nodes[0] = 0;
@@ -674,20 +677,24 @@ int main( void )
     nodes[2] = 2;
     nodes[3] = 10;
  
-    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+    RSS(ref_cell_add(ref_cell,nodes,&cell0),"add cell");
 
     nodes[3] = 0;
-    cell = REF_EMPTY;
-    RSS( ref_cell_with_face(ref_cell, nodes, &cell),"has");
-    REIS( 0, cell, "wrong cell");
+    cell0 = 55;
+    cell1 = 55;
+    RSS( ref_cell_with_face(ref_cell, nodes, &cell0, &cell1),"has");
+    REIS( 0, cell0, "wrong cell");
+    REIS( REF_EMPTY, cell1, "false pos");
 
     nodes[0] = 1;
     nodes[1] = 2;
     nodes[2] = 0;
     nodes[3] = 1;
-    cell = REF_EMPTY;
-    RSS( ref_cell_with_face(ref_cell, nodes, &cell),"has");
-    REIS( 0, cell, "wrong cell");
+    cell0 = 55;
+    cell1 = 55;
+    RSS( ref_cell_with_face(ref_cell, nodes, &cell0, &cell1),"has");
+    REIS( 0, cell0, "wrong cell");
+    REIS( REF_EMPTY, cell1, "false pos");
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
