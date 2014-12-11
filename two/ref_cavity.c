@@ -299,6 +299,7 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
   REF_INT faceid0, faceid1;
   REF_INT node2, node3;
   REF_INT cell_node;
+  REF_INT existing_cell;
 
   if ( 0 == ref_list_n( ref_cavity_list(ref_cavity) ) )
     return REF_INVALID;
@@ -325,6 +326,15 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
     nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
     nodes[2] = node;
     nodes[3] = faceid0;
+    /* skip exisiting triangle */
+    RXS( ref_cell_with( ref_grid_tri(ref_grid), nodes, &existing_cell),
+	 REF_NOT_FOUND, "with failed");
+    if ( REF_EMPTY != existing_cell )
+      {
+	RSS( ref_list_delete( ref_cavity_list(ref_cavity), existing_cell ),
+	     "existing tri was not marked for removal");
+	continue;
+      }
     RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &cell ), "add" );
 
     RSS( ref_twod_opposite_edge(ref_grid_pri(ref_grid),
