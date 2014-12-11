@@ -41,7 +41,7 @@ struct REF_CELL_STRUCT {
 #define ref_cell_blank(ref_cell) (( ref_cell )->blank )
 #define ref_cell_adj(ref_cell) (( ref_cell )->ref_adj )
 
-#define ref_cell_valid(ref_cell,cell) \
+#define ref_cell_valid(ref_cell,cell)                  \
   ( ( cell ) >=0 && ( cell ) < (( ref_cell )->max ) && \
     REF_EMPTY != ( ref_cell )->c2n[ref_cell_size_per(ref_cell)*( cell )] )
 
@@ -51,55 +51,55 @@ struct REF_CELL_STRUCT {
 #define ref_cell_c2e(ref_cell,cell_edge,cell) \
   (( ref_cell )->c2e[( cell_edge )+ref_cell_edge_per(ref_cell)*( cell )] )
 
-#define ref_cell_e2n_gen(ref_cell,node,edge)    \
+#define ref_cell_e2n_gen(ref_cell,node,edge) \
   (( ref_cell )->e2n[( node )+2*( edge )] )
 
-#define ref_cell_e2n(ref_cell,node,cell_edge,cell)                      \
-  (( ref_cell )->c2n[ ( ref_cell )->e2n[( node )+2*( cell_edge )] +             \
+#define ref_cell_e2n(ref_cell,node,cell_edge,cell)                  \
+  (( ref_cell )->c2n[ ( ref_cell )->e2n[( node )+2*( cell_edge )] + \
                       ref_cell_size_per(ref_cell)*( cell )] )
 
 #define ref_cell_f2n_gen(ref_cell,node,face) \
   (( ref_cell )->f2n[( node )+4*( face )] )
 
-#define ref_cell_f2n(ref_cell,node,cell_face,cell)                      \
-  (( ref_cell )->c2n[ ( ref_cell )->f2n[( node )+4*( cell_face )] +             \
+#define ref_cell_f2n(ref_cell,node,cell_face,cell)                  \
+  (( ref_cell )->c2n[ ( ref_cell )->f2n[( node )+4*( cell_face )] + \
                       ref_cell_size_per(ref_cell)*( cell )] )
 
-#define ref_cell_node_empty( ref_cell, node )   \
+#define ref_cell_node_empty( ref_cell, node ) \
   ref_adj_empty( ( ref_cell )->ref_adj, node )
 
-#define ref_cell_first_with( ref_cell, node )   \
-  ref_adj_safe_ref( ref_cell_adj(ref_cell), \
+#define ref_cell_first_with( ref_cell, node ) \
+  ref_adj_safe_ref( ref_cell_adj(ref_cell),   \
                     ref_adj_first( ref_cell_adj(ref_cell), ( node ) ) )
 
-#define each_ref_cell_valid_cell( ref_cell, cell )                      \
-  for ( ( cell ) = 0;                                                    \
-        ( cell ) < ref_cell_max(ref_cell);                                \
-        ( cell )++ )                                                      \
+#define each_ref_cell_valid_cell( ref_cell, cell ) \
+  for ( ( cell ) = 0;                              \
+        ( cell ) < ref_cell_max(ref_cell);         \
+        ( cell )++ )                               \
     if ( ref_cell_valid( ref_cell, cell ) )
 
-#define each_ref_cell_having_node( ref_cell, node, item, cell )         \
+#define each_ref_cell_having_node( ref_cell, node, item, cell ) \
   each_ref_adj_node_item_with_ref( ( ref_cell )->ref_adj, node, item, cell)
 
-#define each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)     \
-  for ( ( cell ) = 0;                                                    \
-        ( cell ) < ref_cell_max(ref_cell);                                \
-        ( cell )++ )                                                      \
+#define each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes) \
+  for ( ( cell ) = 0;                                               \
+        ( cell ) < ref_cell_max(ref_cell);                          \
+        ( cell )++ )                                                \
     if ( REF_SUCCESS == ref_cell_nodes( ref_cell, cell, nodes ) )
 
-#define each_ref_cell_cell_node( ref_cell, cell_node )                  \
-  for ( ( cell_node ) = 0;                                               \
-        ( cell_node ) < ref_cell_node_per(ref_cell);                      \
+#define each_ref_cell_cell_node( ref_cell, cell_node ) \
+  for ( ( cell_node ) = 0;                             \
+        ( cell_node ) < ref_cell_node_per(ref_cell);   \
         ( cell_node )++ )
 
-#define each_ref_cell_cell_edge( ref_cell, cell_edge )                  \
-  for ( ( cell_edge ) = 0;                                               \
-        ( cell_edge ) < ref_cell_edge_per(ref_cell);                      \
+#define each_ref_cell_cell_edge( ref_cell, cell_edge ) \
+  for ( ( cell_edge ) = 0;                             \
+        ( cell_edge ) < ref_cell_edge_per(ref_cell);   \
         ( cell_edge )++ )
 
-#define each_ref_cell_cell_face( ref_cell, cell_face )                  \
-  for ( ( cell_face ) = 0;                                               \
-        ( cell_face ) < ref_cell_face_per(ref_cell);                      \
+#define each_ref_cell_cell_face( ref_cell, cell_face ) \
+  for ( ( cell_face ) = 0;                             \
+        ( cell_face ) < ref_cell_face_per(ref_cell);   \
         ( cell_face )++ )
 
 REF_STATUS ref_cell_create( REF_CELL *ref_cell,
