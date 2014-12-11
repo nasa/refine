@@ -460,29 +460,42 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                     REF_GRID ref_grid, REF_INT face )
 {
   REF_INT ncell, cells[2];
+  REF_INT face_nodes[4];
   REF_BOOL have_cell0, have_cell1;
 
-
-  RSS( ref_cell_list_with2( ref_grid_tri(ref_grid),
-			    ref_cavity_f2n(ref_cavity,0,face),
-			    ref_cavity_f2n(ref_cavity,1,face),
-			    2, &ncell, cells), "more than two" );
-  if ( 0 == ncell )
-    THROW("cavity triangle missing");
-  if ( 1 == ncell )
-    THROW("boundary");
-  RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
-                          &have_cell0 ), "cell0" );
-  RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
-                          &have_cell1 ), "cell1" );
-  if ( have_cell0 == have_cell1 )
-    THROW("cavity same state");
-  if ( have_cell0 )
-    RSS( ref_cavity_add_tri( ref_cavity, ref_grid,
-                             cells[1] ), "add c1" );
-  if ( have_cell1 )
-    RSS( ref_cavity_add_tri( ref_cavity, ref_grid,
-                             cells[0] ), "add c0" );
+  switch ( ref_cavity_node_per( ref_cavity ) )
+    {
+    case ( 2 ):
+      RSS( ref_cell_list_with2( ref_grid_tri(ref_grid),
+				ref_cavity_f2n(ref_cavity,0,face),
+				ref_cavity_f2n(ref_cavity,1,face),
+				2, &ncell, cells), "more than two" );
+      if ( 0 == ncell )
+	THROW("cavity triangle missing");
+      if ( 1 == ncell )
+	THROW("boundary");
+      RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
+			      &have_cell0 ), "cell0" );
+      RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
+			      &have_cell1 ), "cell1" );
+      if ( have_cell0 == have_cell1 )
+	THROW("cavity same state");
+      if ( have_cell0 )
+	RSS( ref_cavity_add_tri( ref_cavity, ref_grid,
+				 cells[1] ), "add c1" );
+      if ( have_cell1 )
+	RSS( ref_cavity_add_tri( ref_cavity, ref_grid,
+				 cells[0] ), "add c0" );
+      break;
+    case ( 3 ):
+      face_nodes[0]=ref_cavity_f2n(ref_cavity,0,face);
+      face_nodes[1]=ref_cavity_f2n(ref_cavity,1,face);
+      face_nodes[2]=ref_cavity_f2n(ref_cavity,2,face);
+      face_nodes[3]=face_nodes[0];
+      break;
+    default:
+      THROW("unknown node_per");
+    }
 
   return REF_SUCCESS;
 }
