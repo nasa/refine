@@ -528,7 +528,7 @@ int main( void )
     nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    RSS(ref_cell_list_with(ref_cell,0,1,5,&ncell,list),"no list");
+    RSS(ref_cell_list_with2(ref_cell,0,1,5,&ncell,list),"no list");
     REIS(1,ncell, "mis count");
     REIS(0,list[0], "not in list");
 
@@ -548,10 +548,10 @@ int main( void )
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     REIS(REF_INCREASE_LIMIT,
-	 ref_cell_list_with(ref_cell,0,1,1,&ncell,list),
+	 ref_cell_list_with2(ref_cell,0,1,1,&ncell,list),
 	 "one should be too small");
 
-    RSS(ref_cell_list_with(ref_cell,0,1,5,&ncell,list),"no list");
+    RSS(ref_cell_list_with2(ref_cell,0,1,5,&ncell,list),"no list");
     REIS(2,ncell, "mis count");
     REIS(1,list[0], "not in list");
     REIS(0,list[1], "not in list");

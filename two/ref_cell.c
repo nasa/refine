@@ -622,10 +622,10 @@ REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_cell_list_with( REF_CELL ref_cell, 
-			       REF_INT node0, REF_INT node1,
-			       REF_INT max_cell, REF_INT *ncell,
-			       REF_INT *cell_list ) 
+REF_STATUS ref_cell_list_with2( REF_CELL ref_cell, 
+				REF_INT node0, REF_INT node1,
+				REF_INT max_cell, REF_INT *ncell,
+				REF_INT *cell_list ) 
 {
   REF_INT cell, item, node;
 

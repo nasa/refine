@@ -118,7 +118,7 @@ REF_STATUS ref_split_edge( REF_GRID ref_grid,
   REF_INT node, new_cell;
 
   ref_cell = ref_grid_tet(ref_grid);
-  RSS( ref_cell_list_with(ref_cell,node0,node1,
+  RSS( ref_cell_list_with2(ref_cell,node0,node1,
 			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "get list" );
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
@@ -139,7 +139,7 @@ REF_STATUS ref_split_edge( REF_GRID ref_grid,
     }
 
   ref_cell = ref_grid_tri(ref_grid);
-  RSS( ref_cell_list_with(ref_cell,node0,node1,
+  RSS( ref_cell_list_with2(ref_cell,node0,node1,
 			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "get list" );
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
@@ -225,7 +225,7 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
   *allowed = REF_FALSE;
 
   ref_cell = ref_grid_tet(ref_grid);
-  RSS( ref_cell_list_with(ref_cell,node0,node1,
+  RSS( ref_cell_list_with2(ref_cell,node0,node1,
 			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "get list" );
 
   min_existing_quality = 1.0;
@@ -375,7 +375,7 @@ REF_STATUS ref_split_face( REF_GRID ref_grid,
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell, node;
 
-  RSS( ref_cell_list_with( pri, node0, node1,
+  RSS( ref_cell_list_with2( pri, node0, node1,
 			   2, &ncell, cell_to_split), "more than two" );
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
@@ -404,7 +404,7 @@ REF_STATUS ref_split_face( REF_GRID ref_grid,
     }
 
   tri = ref_grid_tri(ref_grid);
-  RSS( ref_cell_list_with(tri,node0,node1,
+  RSS( ref_cell_list_with2(tri,node0,node1,
 			  2, &ncell, cell_to_split ), "more then two" );
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
@@ -432,7 +432,7 @@ REF_STATUS ref_split_face( REF_GRID ref_grid,
     }
 
   tri = ref_grid_tri(ref_grid);
-  RSS( ref_cell_list_with(tri,node2,node3,
+  RSS( ref_cell_list_with2(tri,node2,node3,
 			  2, &ncell, cell_to_split ), "more then two" );
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
@@ -542,7 +542,7 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
   *allowed = REF_FALSE;
 
   ref_cell = ref_grid_tri(ref_grid);
-  RSS( ref_cell_list_with(ref_cell,node0,node1,
+  RSS( ref_cell_list_with2(ref_cell,node0,node1,
 			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "get list" );
 
   min_existing_quality = 1.0;

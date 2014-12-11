@@ -158,8 +158,8 @@ REF_STATUS ref_collapse_edge( REF_GRID ref_grid,
   REF_INT cell_to_collapse[MAX_CELL_COLLAPSE];
 
   ref_cell = ref_grid_tet(ref_grid);
-  RSS( ref_cell_list_with(ref_cell,node0,node1,
-			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+  RSS( ref_cell_list_with2(ref_cell,node0,node1,
+			   MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"lst");
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
     {
@@ -169,8 +169,8 @@ REF_STATUS ref_collapse_edge( REF_GRID ref_grid,
   RSS( ref_cell_replace_node( ref_cell, node1, node0 ), "replace node" );
 
   ref_cell = ref_grid_tri(ref_grid);
-  RSS( ref_cell_list_with(ref_cell,node0,node1,
-			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+  RSS( ref_cell_list_with2(ref_cell,node0,node1,
+			   MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"lst");
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
     {
@@ -222,9 +222,9 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
       *allowed = REF_FALSE;
       break;
     case 2: /* geometery edge allowed if collapse is on edge */
-      RSS( ref_cell_list_with(ref_cell,node0,node1,
-			      MAX_CELL_COLLAPSE, &ncell, 
-			      cell_to_collapse ),"list");
+      RSS( ref_cell_list_with2(ref_cell,node0,node1,
+			       MAX_CELL_COLLAPSE, &ncell, 
+			       cell_to_collapse ),"list");
       if ( 2 != ncell ) return REF_SUCCESS;
       RSS( ref_cell_nodes( ref_cell, cell_to_collapse[0], nodes ), "nodes" );
       id0 = nodes[3];
@@ -393,8 +393,8 @@ REF_STATUS ref_collapse_face( REF_GRID ref_grid,
   REF_INT cell_to_collapse[MAX_CELL_COLLAPSE];
 
   ref_cell = ref_grid_pri(ref_grid);
-  RSS( ref_cell_list_with(ref_cell,keep0,remove0,
-			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+  RSS( ref_cell_list_with2(ref_cell,keep0,remove0,
+			   MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"lst");
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
     {
@@ -405,8 +405,8 @@ REF_STATUS ref_collapse_face( REF_GRID ref_grid,
   RSS( ref_cell_replace_node( ref_cell, remove1, keep1 ), "replace node1" );
 
   ref_cell = ref_grid_qua(ref_grid);
-  RSS( ref_cell_list_with(ref_cell,keep0,remove0,
-			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+  RSS( ref_cell_list_with2(ref_cell,keep0,remove0,
+			   MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"lst");
 
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
     {
@@ -418,8 +418,8 @@ REF_STATUS ref_collapse_face( REF_GRID ref_grid,
 
   ref_cell = ref_grid_tri(ref_grid);
 
-  RSS( ref_cell_list_with(ref_cell,keep0,remove0,
-			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+  RSS( ref_cell_list_with2(ref_cell,keep0,remove0,
+			   MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"lst");
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
     {
       cell = cell_to_collapse[cell_in_list];
@@ -427,8 +427,8 @@ REF_STATUS ref_collapse_face( REF_GRID ref_grid,
     }
   RSS( ref_cell_replace_node( ref_cell, remove0, keep0 ), "replace node" );
 
-  RSS( ref_cell_list_with(ref_cell,keep1,remove1,
-			  MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"list");
+  RSS( ref_cell_list_with2(ref_cell,keep1,remove1,
+			   MAX_CELL_COLLAPSE, &ncell, cell_to_collapse ),"lst");
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
     {
       cell = cell_to_collapse[cell_in_list];

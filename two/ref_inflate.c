@@ -175,16 +175,16 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	  {
 	    node0 = ref_cell_e2n(tri,0,tri_side,cell);
 	    node1 = ref_cell_e2n(tri,1,tri_side,cell);
-	    RSS( ref_cell_list_with( tri, 
-				     node0, node1,
-				     2, &ntri,
-				     tris ),"bad tri count");
+	    RSS( ref_cell_list_with2( tri, 
+				      node0, node1,
+				      2, &ntri,
+				      tris ),"bad tri count");
 	    if ( 1 == ntri ) 
 	      {
-		RSS( ref_cell_list_with( qua, 
-					 node0, node1,
-					 2, &nquad,
-					 quads ),"bad quad count");
+		RSS( ref_cell_list_with2( qua, 
+					  node0, node1,
+					  2, &nquad,
+					  quads ),"bad quad count");
 		if ( 1 != nquad ) THROW("tri without quad");
 		new_nodes[4] = ref_cell_c2n(qua,4,quads[0]);
 		new_nodes[0] = node0;
@@ -324,13 +324,13 @@ REF_STATUS ref_inflate_radially( REF_GRID ref_grid,
 	  {
 	    node0 = ref_cell_e2n(tri,0,tri_side,cell);
 	    node1 = ref_cell_e2n(tri,1,tri_side,cell);
-	    RSS( ref_cell_list_with( tri, 
+	    RSS( ref_cell_list_with2( tri, 
 				     node0, node1,
 				     2, &ntri,
 				     tris ),"bad tri count");
 	    if ( 1 == ntri ) 
 	      {
-		RSS( ref_cell_list_with( qua, 
+		RSS( ref_cell_list_with2( qua, 
 					 node0, node1,
 					 2, &nquad,
 					 quads ),"bad quad count");

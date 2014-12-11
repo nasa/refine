@@ -39,8 +39,8 @@ REF_STATUS ref_twod_opposite_edge( REF_CELL pri,
   *node2 = REF_EMPTY;
   *node3 = REF_EMPTY;
 
-  RSS( ref_cell_list_with( pri, node0, node1,
-			   2, &ncell, cell_to_split), "more than two" );
+  RSS( ref_cell_list_with2( pri, node0, node1,
+			    2, &ncell, cell_to_split), "more than two" );
 
   RAS( ncell > 0, "no cells found");
 

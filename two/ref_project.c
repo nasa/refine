@@ -32,8 +32,8 @@ REF_STATUS ref_project_edge( REF_GRID ref_grid,
   ref_cell = ref_grid_tri(ref_grid);
 
   /* exclude interior edges */
-  RSS( ref_cell_list_with( ref_cell, node0, new_node,
-			   2, &ncell, cell_list), "more than two" );
+  RSS( ref_cell_list_with2( ref_cell, node0, new_node,
+			    2, &ncell, cell_list), "more than two" );
   if ( 2 != ncell ) return REF_SUCCESS;
 
   faceid = ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),

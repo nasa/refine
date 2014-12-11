@@ -463,10 +463,10 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
   REF_BOOL have_cell0, have_cell1;
 
 
-  RSS( ref_cell_list_with( ref_grid_tri(ref_grid),
-                           ref_cavity_f2n(ref_cavity,0,face),
-                           ref_cavity_f2n(ref_cavity,1,face),
-                           2, &ncell, cells), "more than two" );
+  RSS( ref_cell_list_with2( ref_grid_tri(ref_grid),
+			    ref_cavity_f2n(ref_cavity,0,face),
+			    ref_cavity_f2n(ref_cavity,1,face),
+			    2, &ncell, cells), "more than two" );
   if ( 0 == ncell )
     THROW("cavity triangle missing");
   if ( 1 == ncell )
@@ -494,10 +494,10 @@ REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
   REF_BOOL have_cell0, have_cell1;
 
 
-  RSS( ref_cell_list_with( ref_grid_tri(ref_grid),
-                           ref_cavity_f2n(ref_cavity,0,face),
-                           ref_cavity_f2n(ref_cavity,1,face),
-                           2, &ncell, cells), "more than two" );
+  RSS( ref_cell_list_with2( ref_grid_tri(ref_grid),
+			    ref_cavity_f2n(ref_cavity,0,face),
+			    ref_cavity_f2n(ref_cavity,1,face),
+			    2, &ncell, cells), "more than two" );
   if ( 0 == ncell )
     THROW("cavity triangle missing");
   if ( 1 == ncell )
