@@ -472,6 +472,7 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
   REF_INT ncell, cells[2];
   REF_INT face_nodes[4];
   REF_BOOL have_cell0, have_cell1;
+  REF_INT tet0, tet1;
 
   switch ( ref_cavity_node_per( ref_cavity ) )
     {
@@ -502,6 +503,26 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
       face_nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
       face_nodes[2] = ref_cavity_f2n(ref_cavity,2,face);
       face_nodes[3] = face_nodes[0];
+      RSS( ref_cell_with_face( ref_grid_tet(ref_grid), face_nodes,
+			       &tet0, &tet1 ), 
+	   "unable to find tets with face"); 
+      if ( REF_EMPTY == tet0 )
+        THROW("cavity tets missing");
+      if ( REF_EMPTY == tet1 )
+        THROW("boundary");
+      
+      RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet0,
+                              &have_cell0 ), "cell0" );
+      RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet1,
+                              &have_cell1 ), "cell1" );
+      if ( have_cell0 == have_cell1 )
+        THROW("cavity same state");
+      if ( have_cell0 )
+        RSS( ref_cavity_add_tet( ref_cavity, ref_grid,
+                                 tet1 ), "add c1" );
+      if ( have_cell1 )
+        RSS( ref_cavity_add_tet( ref_cavity, ref_grid,
+                                 tet0 ), "add c0" );
       break;
     default:
       THROW("unknown node_per");

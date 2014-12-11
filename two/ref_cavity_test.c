@@ -526,7 +526,6 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
-  SKIP_BLOCK("implement test ops")
   { /* enlarge shrink threed face */
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
@@ -537,14 +536,15 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first tri");
     REIS( 4, ref_cavity_n(ref_cavity), "n" );
     REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-    ref_cavity_inspect( ref_cavity );
     RSS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),"enl face 1");
     REIS( 6, ref_cavity_n(ref_cavity), "n" );
     REIS( 2, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-    RSS(ref_cavity_shrink_face(ref_cavity,ref_grid,5),"insert first tri");
-    REIS( 4, ref_cavity_n(ref_cavity), "n" );
-    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-
+    SKIP_BLOCK("implement shrink")
+      {
+	RSS(ref_cavity_shrink_face(ref_cavity,ref_grid,5),"insert first tri");
+	REIS( 4, ref_cavity_n(ref_cavity), "n" );
+	REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+      }
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS( ref_grid_free(ref_grid),"free");
   }
