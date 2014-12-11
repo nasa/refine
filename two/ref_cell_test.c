@@ -52,11 +52,11 @@ int main( void )
     RSS(ref_tet(&ref_cell),"create");
     RES(0,ref_cell_n(ref_cell),"init zero cells");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     RES(0,cell,"first cell is zero");
     RES(1,ref_cell_n(ref_cell),"first cell incements n");
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     RES(1,cell,"second cell is one");
     RES(2,ref_cell_n(ref_cell),"second cell incements n");
@@ -76,10 +76,10 @@ int main( void )
     RSS(ref_tet(&ref_cell),"create");
     RES(0,ref_cell_n(ref_cell),"init zero cells");
 
-    nodes[0]= 0; nodes[1]= 10; nodes[2]= 20; nodes[3]= 30;
-    parts[0]= 0; parts[1]= 1; parts[2]= 2; parts[3]= 3;
+    nodes[0] = 0; nodes[1] = 10; nodes[2] = 20; nodes[3] = 30;
+    parts[0] = 0; parts[1] = 1; parts[2] = 2; parts[3] = 3;
     RSS(ref_cell_add_many_global(ref_cell,ref_node,
-				 1,nodes,parts,REF_EMPTY),"add many");
+                                 1,nodes,parts,REF_EMPTY),"add many");
 
     RSS(ref_cell_nodes(ref_cell,0,retrieved),"cell should exist");
     RES(0,retrieved[0],"node 0");
@@ -102,10 +102,10 @@ int main( void )
 
     RSS(ref_tet(&ref_cell),"create");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    nodes[0]= 0; nodes[1]= 4; nodes[2]= 5; nodes[3]= 6; 
+    nodes[0] = 0; nodes[1] = 4; nodes[2] = 5; nodes[3] = 6;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     REIS(REF_INVALID,ref_cell_remove(ref_cell,3),"remove cell missing cell");
@@ -115,11 +115,11 @@ int main( void )
     RES(1,ref_cell_n(ref_cell),"reduced count")
     RAS(!ref_cell_valid(ref_cell,0),"cell is still here");
 
-    each_ref_adj_node_item_with_ref( (ref_cell)->ref_adj, 0, item, cell)
-      RAS( !(cell == 0), "removed cell still in adj");
+    each_ref_adj_node_item_with_ref( ( ref_cell )->ref_adj, 0, item, cell)
+    RAS( !( cell == 0 ), "removed cell still in adj");
 
-    each_ref_adj_node_item_with_ref( (ref_cell)->ref_adj, 2, item, cell)
-      RAS( !(cell == 0), "removed cell still in adj");
+    each_ref_adj_node_item_with_ref( ( ref_cell )->ref_adj, 2, item, cell)
+    RAS( !( cell == 0 ), "removed cell still in adj");
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
@@ -131,7 +131,7 @@ int main( void )
 
     RSS(ref_tri(&ref_cell),"create");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 1;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 1;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     RSS(ref_cell_remove(ref_cell,cell),"remove cell");
@@ -148,10 +148,10 @@ int main( void )
 
     RSS(ref_tri(&ref_cell),"create");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 10;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 10;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    nodes[0]= 2; nodes[1]= 1; nodes[2]= 3; nodes[3]= 20;
+    nodes[0] = 2; nodes[1] = 1; nodes[2] = 3; nodes[3] = 20;
     RSS(ref_cell_replace_whole(ref_cell,cell,nodes),"replace cell");
 
     RAS(  ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "old node");
@@ -168,7 +168,7 @@ int main( void )
 
     RSS(ref_tri(&ref_cell),"create");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 10;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 10;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     RSS(ref_cell_replace_node(ref_cell,2,3),"replace node");
@@ -192,9 +192,9 @@ int main( void )
 
     RSS(ref_tri(&ref_cell),"create");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 10;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 10;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
-    nodes[0]= 2; nodes[1]= 1; nodes[2]= 3; nodes[3]= 10;
+    nodes[0] = 2; nodes[1] = 1; nodes[2] = 3; nodes[3] = 10;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     RSS(ref_cell_replace_node(ref_cell,2,4),"replace node");
@@ -213,19 +213,21 @@ int main( void )
     RSS(ref_tet(&ref_cell),"create");
 
     max = ref_cell_max(ref_cell);
-    for (i = 0; i < max+1; i++ ){
-      nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
-      RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
-      RES(i,cell,"expected ordered new cells first block");
-    }
+    for (i = 0; i < max+1; i++ )
+      {
+        nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+        RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+        RES(i,cell,"expected ordered new cells first block");
+      }
     RAS(ref_cell_max(ref_cell)>max,"realloc max");
 
     max = ref_cell_max(ref_cell);
-    for (i = ref_cell_n(ref_cell); i < max+1; i++ ){
-      nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
-      RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
-      RES(i,cell,"expected ordered new cells second block");
-    }
+    for (i = ref_cell_n(ref_cell); i < max+1; i++ )
+      {
+        nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+        RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+        RES(i,cell,"expected ordered new cells second block");
+      }
     RAS(ref_cell_max(ref_cell)>max,"realloc max");
 
     RSS(ref_cell_free(ref_cell),"free");
@@ -238,12 +240,12 @@ int main( void )
 
     RSS(ref_tet(&ref_cell),"create new");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3;
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     REIS(REF_INVALID,ref_cell_nodes(ref_cell,0,nodes),"missing cell");
     REIS(REF_INVALID,ref_cell_nodes(ref_cell,-1,nodes),"-1 cell should fail");
     REIS(REF_INVALID,ref_cell_nodes(ref_cell,1000000000,nodes),"large cell");
 
-    nodes[0]= 10; nodes[1]= 20; nodes[2]= 30; nodes[3]= 40; 
+    nodes[0] = 10; nodes[1] = 20; nodes[2] = 30; nodes[3] = 40;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     RSS(ref_cell_nodes(ref_cell,0,retrieved),"cell should exist");
@@ -260,13 +262,13 @@ int main( void )
     REF_INT cell, nodes[4];
     RSS(ref_tet(&ref_cell),"create new");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RAS(!ref_cell_valid(ref_cell,-1),"invlid -1");
     RAS(!ref_cell_valid(ref_cell,-1),"invlid 0");
     RAS(!ref_cell_valid(ref_cell,-1),"invlid 1");
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     RAS(ref_cell_valid(ref_cell,0),"valid 0");
-  
+
     RSS(ref_cell_free(ref_cell),"free");
   }
 
@@ -279,7 +281,7 @@ int main( void )
     RAS( ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
     RAS( ref_adj_empty( ref_cell_adj(ref_cell), 3 ), "last node");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
@@ -288,13 +290,13 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"free");
   }
 
-  {/* adj with id */
+  { /* adj with id */
     REF_CELL ref_cell;
     REF_INT cell, nodes[4];
 
     RSS(ref_tri(&ref_cell),"create new");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     RAS( !ref_adj_empty( ref_cell_adj(ref_cell), 0 ), "first node");
@@ -313,18 +315,18 @@ int main( void )
 
     ncell = 0;
     each_ref_cell_valid_cell( ref_cell, cell )
-      ncell++;
+    ncell++;
 
     RES(0,ncell,"start zero cells");
 
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    nodes[0]= -1; nodes[1]= -1; nodes[2]= -1; nodes[3]= -1; 
+    nodes[0] = -1; nodes[1] = -1; nodes[2] = -1; nodes[3] = -1;
 
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-      ncell++;
+    ncell++;
 
     RES(1,ncell,"found cell");
     RES(0,nodes[0],"got node 0");
@@ -377,7 +379,7 @@ int main( void )
     REF_INT cell, nodes[4];
 
     RSS(ref_tet(&ref_cell),"create");
-    nodes[0]= 0; nodes[1]= 1; nodes[2]= 2; nodes[3]= 3; 
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
     RSS(ref_cell_empty_edges(ref_cell),"empty edges");
 
@@ -425,22 +427,22 @@ int main( void )
     REIS(3,ref_cell_f2n_gen(ref_cell,1,0),"tri face nodes");
     REIS(2,ref_cell_f2n_gen(ref_cell,2,0),"tri face nodes");
     REIS(ref_cell_f2n_gen(ref_cell,0,0),ref_cell_f2n_gen(ref_cell,3,0),
-	 "quad not tri");
+         "quad not tri");
     REIS(0,ref_cell_f2n_gen(ref_cell,0,1),"tri face nodes");
     REIS(2,ref_cell_f2n_gen(ref_cell,1,1),"tri face nodes");
     REIS(3,ref_cell_f2n_gen(ref_cell,2,1),"tri face nodes");
     REIS(ref_cell_f2n_gen(ref_cell,0,1),ref_cell_f2n_gen(ref_cell,3,1),
-	 "quad not tri");
+         "quad not tri");
     REIS(0,ref_cell_f2n_gen(ref_cell,0,2),"tri face nodes");
     REIS(3,ref_cell_f2n_gen(ref_cell,1,2),"tri face nodes");
     REIS(1,ref_cell_f2n_gen(ref_cell,2,2),"tri face nodes");
     REIS(ref_cell_f2n_gen(ref_cell,0,2),ref_cell_f2n_gen(ref_cell,3,2),
-	 "quad not tri");
+         "quad not tri");
     REIS(0,ref_cell_f2n_gen(ref_cell,0,3),"tri face nodes");
     REIS(1,ref_cell_f2n_gen(ref_cell,1,3),"tri face nodes");
     REIS(2,ref_cell_f2n_gen(ref_cell,2,3),"tri face nodes");
     REIS(ref_cell_f2n_gen(ref_cell,0,3),ref_cell_f2n_gen(ref_cell,3,3),
-	 "quad not tri");
+         "quad not tri");
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
@@ -450,7 +452,7 @@ int main( void )
     REF_INT cell_face;
     RSS(ref_tet(&ref_cell),"create");
 
-    nodes[0]= 10; nodes[1]= 20; nodes[2]= 30; nodes[3]= 40; 
+    nodes[0] = 10; nodes[1] = 20; nodes[2] = 30; nodes[3] = 40;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     cell = 0;
@@ -459,8 +461,8 @@ int main( void )
     REIS(20,ref_cell_f2n(ref_cell,1,cell_face,cell),"tri face nodes");
     REIS(30,ref_cell_f2n(ref_cell,2,cell_face,cell),"tri face nodes");
     REIS(ref_cell_f2n(ref_cell,0,cell_face,cell),
-	 ref_cell_f2n(ref_cell,3,cell_face,cell),
-	 "tri face nodes");
+         ref_cell_f2n(ref_cell,3,cell_face,cell),
+         "tri face nodes");
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
@@ -511,7 +513,7 @@ int main( void )
     RSS(ref_cell_with(ref_cell,nodes,&found),"not found");
     REIS(cell,found, "not same");
 
-    nodes[0]=5;
+    nodes[0] = 5;
     REIS(REF_NOT_FOUND,ref_cell_with(ref_cell,nodes,&found),"found");
     REIS(REF_EMPTY,found, "not same")
 
@@ -548,8 +550,8 @@ int main( void )
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     REIS(REF_INCREASE_LIMIT,
-	 ref_cell_list_with2(ref_cell,0,1,1,&ncell,list),
-	 "one should be too small");
+         ref_cell_list_with2(ref_cell,0,1,1,&ncell,list),
+         "one should be too small");
 
     RSS(ref_cell_list_with2(ref_cell,0,1,5,&ncell,list),"no list");
     REIS(2,ncell, "mis count");
@@ -601,11 +603,11 @@ int main( void )
     RSS(ref_cell_with(ref_cell,nodes,&found),"not found");
     REIS(cell,found, "not same");
 
-    nodes[3]=5;
+    nodes[3] = 5;
     RSS(ref_cell_with(ref_cell,nodes,&found),"not found");
     REIS(cell,found, "not same");
 
-    nodes[0]=5;
+    nodes[0] = 5;
     REIS(REF_NOT_FOUND,ref_cell_with(ref_cell,nodes,&found),"found");
     REIS(REF_EMPTY,found, "not same")
 
@@ -621,21 +623,21 @@ int main( void )
 
     RSS(ref_pri(&ref_cell),"create");
 
-    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; 
-    nodes[3] = 3; nodes[4] = 4; nodes[5] = 5; 
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2;
+    nodes[3] = 3; nodes[4] = 4; nodes[5] = 5;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    face_nodes[0]=0; face_nodes[1]=1; face_nodes[2]=5; face_nodes[3]=0; 
+    face_nodes[0] = 0; face_nodes[1] = 1; face_nodes[2] = 5; face_nodes[3] = 0;
     RSS(ref_cell_with_face(ref_cell,face_nodes,&found0,&found1),"with");
     REIS(REF_EMPTY,found0,"false positive");
     REIS(REF_EMPTY,found1,"false positive");
 
-    face_nodes[0]=1; face_nodes[1]=0; face_nodes[2]=3; face_nodes[3]=4; 
+    face_nodes[0] = 1; face_nodes[1] = 0; face_nodes[2] = 3; face_nodes[3] = 4;
     RSS(ref_cell_with_face(ref_cell,face_nodes,&found0,&found1),"with");
     REIS(0,found0,"false negative");
     REIS(REF_EMPTY,found1,"false positive");
 
-    face_nodes[0]=0; face_nodes[1]=1; face_nodes[2]=2; face_nodes[3]=0; 
+    face_nodes[0] = 0; face_nodes[1] = 1; face_nodes[2] = 2; face_nodes[3] = 0;
     RSS(ref_cell_with_face(ref_cell,face_nodes,&found0,&found1),"with");
     REIS(0,found0,"false negative");
     REIS(REF_EMPTY,found1,"false positive");
@@ -666,7 +668,7 @@ int main( void )
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
-  
+
   { /* triangle has face */
     REF_CELL ref_cell;
     REF_INT cell0, cell1, nodes[8];
@@ -676,7 +678,7 @@ int main( void )
     nodes[1] = 1;
     nodes[2] = 2;
     nodes[3] = 10;
- 
+
     RSS(ref_cell_add(ref_cell,nodes,&cell0),"add cell");
 
     nodes[3] = 0;
