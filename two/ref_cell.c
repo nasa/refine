@@ -635,7 +635,7 @@ REF_STATUS ref_cell_list_with( REF_CELL ref_cell,
       if ( node1 == ref_cell_c2n(ref_cell,node,cell) )
         {
           if ( *ncell >= max_cell )
-            RSS( REF_INCREASE_LIMIT, "max_cell too small" );
+            return REF_INCREASE_LIMIT;
           cell_list[*ncell] = cell;
 	  (*ncell)++;
           continue; /* node loop */
