@@ -518,7 +518,7 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  { /* list of one tet with */
+  { /* list of one tet with two nodes */
     REF_CELL ref_cell;
     REF_INT cell, nodes[4];
     REF_INT ncell,list[5];
@@ -535,7 +535,7 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
-  { /* list of two tet with */
+  { /* list of two tet with two nodes */
     REF_CELL ref_cell;
     REF_INT cell, nodes[4];
     REF_INT ncell,list[5];
