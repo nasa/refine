@@ -504,13 +504,13 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
       face_nodes[2] = ref_cavity_f2n(ref_cavity,2,face);
       face_nodes[3] = face_nodes[0];
       RSS( ref_cell_with_face( ref_grid_tet(ref_grid), face_nodes,
-			       &tet0, &tet1 ), 
-	   "unable to find tets with face"); 
+                               &tet0, &tet1 ),
+           "unable to find tets with face");
       if ( REF_EMPTY == tet0 )
         THROW("cavity tets missing");
       if ( REF_EMPTY == tet1 )
         THROW("boundary");
-      
+
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet0,
                               &have_cell0 ), "cell0" );
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet1,
