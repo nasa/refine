@@ -206,6 +206,28 @@ REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_rm_tet( REF_CAVITY ref_cavity,
+                               REF_GRID ref_grid, REF_INT tet )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT cell_face;
+  REF_INT face_nodes[4];
+
+  RSS( ref_list_delete( ref_cavity_list(ref_cavity), tet ),
+       "dump tet");
+
+  each_ref_cell_cell_face( ref_cell, cell_face )
+  {
+    /* reverse face nodes orientation */
+    face_nodes[0] = ref_cell_f2n(ref_cell,1,cell_face,tet);
+    face_nodes[1] =  ref_cell_f2n(ref_cell,0,cell_face,tet);
+    face_nodes[2] =  ref_cell_f2n(ref_cell,2,cell_face,tet);
+    RSS( ref_cavity_insert( ref_cavity, face_nodes ), "tet side" );
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
                                    REF_GRID ref_grid, REF_INT node )
 {
@@ -260,7 +282,7 @@ REF_STATUS ref_cavity_rm_tri( REF_CAVITY ref_cavity,
   REF_INT face[2];
 
   RSS( ref_list_delete( ref_cavity_list(ref_cavity), tri ),
-       "save tri");
+       "dump tri");
 
   RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tri, nodes ),
        "grab faceid");
@@ -525,7 +547,7 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                  tet0 ), "add c0" );
       break;
     default:
-      THROW("unknown node_per");
+      THROW("enlarge unknown node_per");
     }
 
   return REF_SUCCESS;
@@ -535,17 +557,21 @@ REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
                                    REF_GRID ref_grid, REF_INT face )
 {
   REF_INT ncell, cells[2];
+  REF_INT face_nodes[4];
   REF_BOOL have_cell0, have_cell1;
+  REF_INT tet0, tet1;
 
 
+  switch ( ref_cavity_node_per( ref_cavity ) )
+    {
+    case ( 2 ):
   RSS( ref_cell_list_with2( ref_grid_tri(ref_grid),
                             ref_cavity_f2n(ref_cavity,0,face),
                             ref_cavity_f2n(ref_cavity,1,face),
                             2, &ncell, cells), "more than two" );
   if ( 0 == ncell )
     THROW("cavity triangle missing");
-  if ( 1 == ncell )
-    THROW("boundary");
+  /* boundary is allowed, use the interior tri */
   RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
                           &have_cell0 ), "cell0" );
   RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
@@ -558,6 +584,35 @@ REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
   if ( !have_cell1 )
     RSS( ref_cavity_rm_tri( ref_cavity, ref_grid,
                             cells[0] ), "rm c0" );
+      break;
+    case ( 3 ):
+      face_nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
+      face_nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
+      face_nodes[2] = ref_cavity_f2n(ref_cavity,2,face);
+      face_nodes[3] = face_nodes[0];
+      RSS( ref_cell_with_face( ref_grid_tet(ref_grid), face_nodes,
+                               &tet0, &tet1 ),
+           "unable to find tets with face");
+      if ( REF_EMPTY == tet0 )
+        THROW("cavity tets missing");
+      /* boundary is allowed, use the interior tet */
+
+      RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet0,
+                              &have_cell0 ), "cell0" );
+      RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet1,
+                              &have_cell1 ), "cell1" );
+      if ( have_cell0 == have_cell1 )
+        THROW("cavity same state");
+      if ( !have_cell0 )
+        RSS( ref_cavity_rm_tet( ref_cavity, ref_grid,
+                                 tet1 ), "add c1" );
+      if ( !have_cell1 )
+        RSS( ref_cavity_rm_tet( ref_cavity, ref_grid,
+                                 tet0 ), "add c0" );
+      break;
+    default:
+      THROW("shrink unknown node_per");
+    }
 
   return REF_SUCCESS;
 }
