@@ -207,7 +207,7 @@ REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
 }
 
 REF_STATUS ref_cavity_rm_tet( REF_CAVITY ref_cavity,
-                               REF_GRID ref_grid, REF_INT tet )
+                              REF_GRID ref_grid, REF_INT tet )
 {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell_face;
@@ -565,25 +565,25 @@ REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
   switch ( ref_cavity_node_per( ref_cavity ) )
     {
     case ( 2 ):
-  RSS( ref_cell_list_with2( ref_grid_tri(ref_grid),
-                            ref_cavity_f2n(ref_cavity,0,face),
-                            ref_cavity_f2n(ref_cavity,1,face),
-                            2, &ncell, cells), "more than two" );
-  if ( 0 == ncell )
-    THROW("cavity triangle missing");
-  /* boundary is allowed, use the interior tri */
-  RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
-                          &have_cell0 ), "cell0" );
-  RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
-                          &have_cell1 ), "cell1" );
-  if ( have_cell0 == have_cell1 )
-    THROW("cavity same state");
-  if ( !have_cell0 )
-    RSS( ref_cavity_rm_tri( ref_cavity, ref_grid,
-                            cells[1] ), "rm c1" );
-  if ( !have_cell1 )
-    RSS( ref_cavity_rm_tri( ref_cavity, ref_grid,
-                            cells[0] ), "rm c0" );
+      RSS( ref_cell_list_with2( ref_grid_tri(ref_grid),
+                                ref_cavity_f2n(ref_cavity,0,face),
+                                ref_cavity_f2n(ref_cavity,1,face),
+                                2, &ncell, cells), "more than two" );
+      if ( 0 == ncell )
+        THROW("cavity triangle missing");
+      /* boundary is allowed, use the interior tri */
+      RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
+                              &have_cell0 ), "cell0" );
+      RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
+                              &have_cell1 ), "cell1" );
+      if ( have_cell0 == have_cell1 )
+        THROW("cavity same state");
+      if ( !have_cell0 )
+        RSS( ref_cavity_rm_tri( ref_cavity, ref_grid,
+                                cells[1] ), "rm c1" );
+      if ( !have_cell1 )
+        RSS( ref_cavity_rm_tri( ref_cavity, ref_grid,
+                                cells[0] ), "rm c0" );
       break;
     case ( 3 ):
       face_nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
@@ -605,10 +605,10 @@ REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
         THROW("cavity same state");
       if ( !have_cell0 )
         RSS( ref_cavity_rm_tet( ref_cavity, ref_grid,
-                                 tet1 ), "add c1" );
+                                tet1 ), "add c1" );
       if ( !have_cell1 )
         RSS( ref_cavity_rm_tet( ref_cavity, ref_grid,
-                                 tet0 ), "add c0" );
+                                tet0 ), "add c0" );
       break;
     default:
       THROW("shrink unknown node_per");
