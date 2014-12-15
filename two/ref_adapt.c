@@ -27,7 +27,7 @@ REF_DBL ref_adapt_smooth_min_quality = 1.0e-3;
 
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 {
-  if (ref_grid_twod(ref_grid)) 
+  if (ref_grid_twod(ref_grid))
     {
       RSS( ref_adapt_twod_pass( ref_grid ), "pass");
     }
