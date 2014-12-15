@@ -466,6 +466,7 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
   REF_INT face;
   REF_BOOL visible;
   REF_BOOL keep_growing;
+  REF_STATUS status;
 
   keep_growing = REF_TRUE;
   while (keep_growing)
@@ -485,8 +486,18 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
                                node, face, &visible ),"free");
         if ( !visible )
           {
-            keep_growing = REF_TRUE;
-            RSS( ref_cavity_enlarge_face( ref_cavity, ref_grid, face ),"ef" );
+            status =  ref_cavity_enlarge_face( ref_cavity, ref_grid, face );
+	    RXS( status, REF_INVALID, "enlarge face" );
+	    if ( REF_SUCCESS == status )
+	      {
+		keep_growing = REF_TRUE;
+	      }
+	    else
+	      {
+		RSS( ref_cavity_tec( ref_cavity, ref_grid, node, 
+				     "ref_cavity_debug_enlarge.tec" ), "tec");
+		THROW("boundary, see debug");
+	      }
           }
       }
     }
