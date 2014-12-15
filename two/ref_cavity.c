@@ -13,6 +13,8 @@
 #include "ref_adapt.h"
 #include "ref_sort.h"
 
+#include "ref_dict.h"
+
 REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
 {
   REF_CAVITY ref_cavity;
@@ -737,6 +739,75 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
   ref_free( ratio );
 
   ref_edge_free( ref_edge );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
+			   REF_INT node, char *filename )
+{
+  REF_DICT node_dict, face_dict;
+  REF_INT face, face_node;
+  REF_INT item, local;
+  REF_DBL xyz_phys[3];
+
+  FILE *f;
+
+  RSS(ref_dict_create(&node_dict),"create nodes");
+  RSS(ref_dict_create(&face_dict),"create faces");
+
+  RSS( ref_dict_store( node_dict, node, 0 ), "store");
+  each_ref_cavity_valid_face( ref_cavity, face )
+  {
+    RSS( ref_dict_store( face_dict, face, 0 ), "store");    
+    each_ref_cavity_face_node( ref_cavity, face_node )
+      RSS( ref_dict_store( node_dict, 
+			   ref_cavity_f2n(ref_cavity,face_node,face), 0 ), 
+	   "store");
+  }
+
+  f = fopen(filename,"w");
+  if (NULL == (void *)f)
+    printf("unable to open %s\n",filename);
+  RNS(f, "unable to open file" );
+
+  fprintf(f, "title=\"tecplot refine cavity\"\n");
+  fprintf(f, "variables = \"x\" \"y\" \"z\"\n");
+
+  fprintf(f,
+          "zone t=clump, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          ref_dict_n(node_dict), ref_dict_n(face_dict),
+          "point", "fequadrilateral" );
+  for ( item = 0; item < ref_dict_n(node_dict); item++ )
+    {
+      local = ref_dict_key(node_dict,item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid),0,local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid),1,local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid),2,local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+    }
+
+  for ( item = 0; item < ref_dict_n(face_dict); item++ )
+    {
+      face = ref_dict_key(face_dict,item);
+      RSS( ref_dict_location( node_dict, node, &local), "center node");
+      fprintf(f," %d",local + 1);
+      each_ref_cavity_face_node( ref_cavity, face_node )
+	{
+	  RSS( ref_dict_location( node_dict,
+				  ref_cavity_f2n(ref_cavity,face_node,face), 
+				  &local), "ret");
+	  fprintf(f," %d",local + 1);
+	}
+      RSS( ref_dict_location( node_dict, node, &local), "center node");
+      fprintf(f," %d",local + 1);
+      fprintf(f,"\n");
+    }
+
+  fclose(f);
+
+  RSS(ref_dict_free(face_dict),"free tris");
+  RSS(ref_dict_free(node_dict),"free nodes");
 
   return REF_SUCCESS;
 }
