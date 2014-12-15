@@ -80,6 +80,8 @@ REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity,
                                REF_BOOL *visible );
 REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
                                        REF_GRID ref_grid, REF_INT node );
+REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
+                                       REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_cavity_enlarge_metric( REF_CAVITY ref_cavity,
 				      REF_GRID ref_grid, REF_INT node );

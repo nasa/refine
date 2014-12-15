@@ -505,6 +505,51 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
+                                       REF_GRID ref_grid, REF_INT node )
+{
+  REF_INT face;
+  REF_BOOL visible;
+  REF_BOOL keep_growing;
+  REF_STATUS status;
+
+  keep_growing = REF_TRUE;
+  while (keep_growing)
+    {
+      keep_growing = REF_FALSE;
+      each_ref_cavity_valid_face( ref_cavity, face )
+      {
+        /* skip a face attached to node */
+        if ( node == ref_cavity_f2n(ref_cavity,0,face) ||
+             node == ref_cavity_f2n(ref_cavity,1,face) )
+          continue;
+        if ( 3 == ref_cavity_node_per(ref_cavity) &&
+             node == ref_cavity_f2n(ref_cavity,2,face) )
+          continue;
+
+        RSS(ref_cavity_visible(ref_cavity, ref_grid_node(ref_grid),
+                               node, face, &visible ),"free");
+        if ( !visible )
+          {
+            status =  ref_cavity_shrink_face( ref_cavity, ref_grid, face );
+	    RXS( status, REF_INVALID, "shrink face" );
+	    if ( REF_SUCCESS == status )
+	      {
+		keep_growing = REF_TRUE;
+	      }
+	    else
+	      {
+		RSS( ref_cavity_tec( ref_cavity, ref_grid, node, 
+				     "ref_cavity_debug_shrink.tec" ), "tec");
+		THROW("boundary, see debug");
+	      }
+          }
+      }
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_enlarge_metric( REF_CAVITY ref_cavity,
                                        REF_GRID ref_grid, REF_INT node )
 {
