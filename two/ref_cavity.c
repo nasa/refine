@@ -516,9 +516,7 @@ REF_STATUS ref_cavity_enlarge_metric( REF_CAVITY ref_cavity,
           continue;
 
 	largest_ratio = 0.0;
-	for ( face_node = 0;
-	      face_node < ref_cavity_node_per(ref_cavity);
-	      face_node++ )
+	each_ref_cavity_face_node( ref_cavity, face_node )
 	  {
 	    RSS( ref_node_ratio( ref_grid_node(ref_grid), 
 				 node,
