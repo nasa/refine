@@ -494,9 +494,7 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
 	      }
 	    else
 	      {
-		RSS( ref_cavity_tec( ref_cavity, ref_grid, node, 
-				     "ref_cavity_debug_enlarge.tec" ), "tec");
-		THROW("boundary, see debug");
+		return status;
 	      }
           }
       }
@@ -547,6 +545,16 @@ REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
       }
     }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_make_visible( REF_CAVITY ref_cavity,
+                                       REF_GRID ref_grid, REF_INT node )
+{
+  if ( REF_SUCCESS == ref_cavity_enlarge_visible(ref_cavity,ref_grid,node) )
+    return REF_SUCCESS;
+  RSS( ref_cavity_shrink_visible(ref_cavity,ref_grid,node), 
+       "shrink failed too");
   return REF_SUCCESS;
 }
 
@@ -782,7 +790,7 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
 	  RSS(ref_cavity_create(&ref_cavity,2),"create");
 	  RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
 	  RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
-	  RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
+	  RSS(ref_cavity_make_visible(ref_cavity,ref_grid,node),"make valid");
 	  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
 	  RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 	  RSS(ref_cavity_free(ref_cavity),"free");
