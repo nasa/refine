@@ -24,6 +24,7 @@
 #include   "ref_smooth.h"
 #include    "ref_twod.h"
 #include   "ref_gather.h"
+#include "ref_metric.h"
 
 int main( int argc, char *argv[] )
 {
@@ -554,13 +555,16 @@ int main( int argc, char *argv[] )
 
     RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
     ref_node = ref_grid_node(ref_grid);
+    RSS(ref_metric_unit_node( ref_node ), "unit metric");
 
     node = 10;
     RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
-    RSS(ref_cavity_create(&ref_cavity,2),"create");
-    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
     ref_node_xyz(ref_node,2,node) = 0.6;
     ref_node_xyz(ref_node,2,opp ) = 0.6;
+    RSS(ref_cavity_create(&ref_cavity,2),"create");
+    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
+    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
     if ( 2 == argc )

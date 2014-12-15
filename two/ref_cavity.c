@@ -488,6 +488,53 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_enlarge_metric( REF_CAVITY ref_cavity,
+                                       REF_GRID ref_grid, REF_INT node )
+{
+  REF_INT face;
+  REF_BOOL keep_growing;
+  REF_DBL ratio, largest_ratio;
+  REF_INT face_node;
+  REF_STATUS status;
+
+  keep_growing = REF_TRUE;
+  while (keep_growing)
+    {
+      keep_growing = REF_FALSE;
+      each_ref_cavity_valid_face( ref_cavity, face )
+      {
+        /* skip a face attached to node */
+        if ( node == ref_cavity_f2n(ref_cavity,0,face) ||
+             node == ref_cavity_f2n(ref_cavity,1,face) )
+          continue;
+        if ( 3 == ref_cavity_node_per(ref_cavity) &&
+             node == ref_cavity_f2n(ref_cavity,2,face) )
+          continue;
+
+	largest_ratio = 0.0;
+	for ( face_node = 0;
+	      face_node < ref_cavity_node_per(ref_cavity);
+	      face_node++ )
+	  {
+	    RSS( ref_node_ratio( ref_grid_node(ref_grid), 
+				 node,
+				 ref_cavity_f2n(ref_cavity,face_node,face),
+				 &ratio ), "ratio" );
+	    largest_ratio = MAX( largest_ratio, ratio );
+	  }
+        if ( largest_ratio < 1.0 )
+          {
+	    status = ref_cavity_enlarge_face( ref_cavity, ref_grid, face );
+	    RXS( status, REF_INVALID, "enlarge face" );
+	    if ( REF_SUCCESS == status )
+		 keep_growing = REF_TRUE;
+          }
+      }
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                     REF_GRID ref_grid, REF_INT face )
 {
