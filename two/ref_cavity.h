@@ -48,9 +48,9 @@ REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity );
         ( face )++ )                                   \
     if ( ref_cavity_valid( ref_cavity, face ) )
 
-#define each_ref_cavity_face_node( ref_cavity, face_node )	\
-  for ( ( face_node ) = 0;                                  \
-        ( face_node ) < ref_cavity_node_per(ref_cavity);         \
+#define each_ref_cavity_face_node( ref_cavity, face_node ) \
+  for ( ( face_node ) = 0;                                 \
+        ( face_node ) < ref_cavity_node_per(ref_cavity);   \
         ( face_node )++ )
 
 REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes );
@@ -81,12 +81,12 @@ REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
                                        REF_GRID ref_grid, REF_INT node );
 REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
-                                       REF_GRID ref_grid, REF_INT node );
+                                      REF_GRID ref_grid, REF_INT node );
 REF_STATUS ref_cavity_make_visible( REF_CAVITY ref_cavity,
-				    REF_GRID ref_grid, REF_INT node );
+                                    REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_cavity_enlarge_metric( REF_CAVITY ref_cavity,
-				      REF_GRID ref_grid, REF_INT node );
+                                      REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                     REF_GRID ref_grid, REF_INT face );
@@ -95,7 +95,7 @@ REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
 
 REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid );
 REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
-			   REF_INT node, char *filename );
+                           REF_INT node, char *filename );
 
 END_C_DECLORATION
 

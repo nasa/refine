@@ -487,15 +487,15 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
         if ( !visible )
           {
             status =  ref_cavity_enlarge_face( ref_cavity, ref_grid, face );
-	    RXS( status, REF_INVALID, "enlarge face" );
-	    if ( REF_SUCCESS == status )
-	      {
-		keep_growing = REF_TRUE;
-	      }
-	    else
-	      {
-		return status;
-	      }
+            RXS( status, REF_INVALID, "enlarge face" );
+            if ( REF_SUCCESS == status )
+              {
+                keep_growing = REF_TRUE;
+              }
+            else
+              {
+                return status;
+              }
           }
       }
     }
@@ -504,7 +504,7 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
 }
 
 REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
-                                       REF_GRID ref_grid, REF_INT node )
+                                      REF_GRID ref_grid, REF_INT node )
 {
   REF_INT face;
   REF_BOOL visible;
@@ -530,17 +530,17 @@ REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
         if ( !visible )
           {
             status =  ref_cavity_shrink_face( ref_cavity, ref_grid, face );
-	    RXS( status, REF_INVALID, "shrink face" );
-	    if ( REF_SUCCESS == status )
-	      {
-		keep_growing = REF_TRUE;
-	      }
-	    else
-	      {
-		RSS( ref_cavity_tec( ref_cavity, ref_grid, node, 
-				     "ref_cavity_debug_shrink.tec" ), "tec");
-		THROW("boundary, see debug");
-	      }
+            RXS( status, REF_INVALID, "shrink face" );
+            if ( REF_SUCCESS == status )
+              {
+                keep_growing = REF_TRUE;
+              }
+            else
+              {
+                RSS( ref_cavity_tec( ref_cavity, ref_grid, node,
+                                     "ref_cavity_debug_shrink.tec" ), "tec");
+                THROW("boundary, see debug");
+              }
           }
       }
     }
@@ -549,17 +549,17 @@ REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
 }
 
 REF_STATUS ref_cavity_make_visible( REF_CAVITY ref_cavity,
-                                       REF_GRID ref_grid, REF_INT node )
+                                    REF_GRID ref_grid, REF_INT node )
 {
   if ( REF_SUCCESS == ref_cavity_enlarge_visible(ref_cavity,ref_grid,node) )
     return REF_SUCCESS;
-  RSS( ref_cavity_shrink_visible(ref_cavity,ref_grid,node), 
+  RSS( ref_cavity_shrink_visible(ref_cavity,ref_grid,node),
        "shrink failed too");
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_cavity_enlarge_metric( REF_CAVITY ref_cavity,
-                                       REF_GRID ref_grid, REF_INT node )
+                                      REF_GRID ref_grid, REF_INT node )
 {
   REF_INT face;
   REF_BOOL keep_growing;
@@ -581,21 +581,21 @@ REF_STATUS ref_cavity_enlarge_metric( REF_CAVITY ref_cavity,
              node == ref_cavity_f2n(ref_cavity,2,face) )
           continue;
 
-	largest_ratio = 0.0;
-	each_ref_cavity_face_node( ref_cavity, face_node )
-	  {
-	    RSS( ref_node_ratio( ref_grid_node(ref_grid), 
-				 node,
-				 ref_cavity_f2n(ref_cavity,face_node,face),
-				 &ratio ), "ratio" );
-	    largest_ratio = MAX( largest_ratio, ratio );
-	  }
+        largest_ratio = 0.0;
+        each_ref_cavity_face_node( ref_cavity, face_node )
+        {
+          RSS( ref_node_ratio( ref_grid_node(ref_grid),
+                               node,
+                               ref_cavity_f2n(ref_cavity,face_node,face),
+                               &ratio ), "ratio" );
+          largest_ratio = MAX( largest_ratio, ratio );
+        }
         if ( largest_ratio < 1.0 )
           {
-	    status = ref_cavity_enlarge_face( ref_cavity, ref_grid, face );
-	    RXS( status, REF_INVALID, "enlarge face" );
-	    if ( REF_SUCCESS == status )
-		 keep_growing = REF_TRUE;
+            status = ref_cavity_enlarge_face( ref_cavity, ref_grid, face );
+            RXS( status, REF_INVALID, "enlarge face" );
+            if ( REF_SUCCESS == status )
+              keep_growing = REF_TRUE;
           }
       }
     }
@@ -620,8 +620,8 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                 2, &ncell, cells), "more than two" );
       if ( 0 == ncell )
         THROW("cavity triangle missing");
-      if ( 1 == ncell ) 
-	return REF_INVALID; /* boundary */
+      if ( 1 == ncell )
+        return REF_INVALID; /* boundary */
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
                               &have_cell0 ), "cell0" );
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
@@ -646,7 +646,7 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
       if ( REF_EMPTY == tet0 )
         THROW("cavity tets missing");
       if ( REF_EMPTY == tet1 )
-	return REF_INVALID; /* boundary */
+        return REF_INVALID; /* boundary */
 
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet0,
                               &have_cell0 ), "cell0" );
@@ -747,19 +747,20 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
-  ref_malloc_init( ratio, ref_node_max(ref_node), 
-		   REF_DBL, 2.0*ref_adapt_collapse_ratio );
+  ref_malloc_init( ratio, ref_node_max(ref_node),
+                   REF_DBL, 2.0*ref_adapt_collapse_ratio );
 
-  for(edge=0;edge<ref_edge_n(ref_edge);edge++)
+  for (edge = 0; edge<ref_edge_n(ref_edge); edge++)
     {
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
-      RSS( ref_node_edge_twod( ref_node, node0, node1, 
-			       &active ), "act" );
-      if ( !active ) continue;
+      RSS( ref_node_edge_twod( ref_node, node0, node1,
+                               &active ), "act" );
+      if ( !active )
+        continue;
 
       RSS( ref_node_ratio( ref_node, node0, node1,
-			   &edge_ratio ), "ratio");
+                           &edge_ratio ), "ratio");
       ratio[node0] = MIN( ratio[node0], edge_ratio );
       ratio[node1] = MIN( ratio[node1], edge_ratio );
     }
@@ -767,14 +768,14 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
   ref_malloc( target, ref_node_n(ref_node), REF_INT );
   ref_malloc_init( node2target, ref_node_max(ref_node), REF_INT, REF_EMPTY );
 
-  ntarget=0;
-  for ( node=0 ; node < ref_node_max(ref_node) ; node++ )
+  ntarget = 0;
+  for ( node = 0; node < ref_node_max(ref_node); node++ )
     if ( ratio[node] < ref_adapt_collapse_ratio )
       {
-	node2target[node] = ntarget;
-	target[ntarget] = node;
-	ratio[ntarget] = ratio[node];
-	ntarget++;
+        node2target[node] = ntarget;
+        target[ntarget] = node;
+        ratio[ntarget] = ratio[node];
+        ntarget++;
       }
 
   ref_malloc( order, ntarget, REF_INT );
@@ -783,20 +784,21 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
 
   for ( i = 0; i < ntarget; i++ )
     {
-      if ( ratio[order[i]] > ref_adapt_collapse_ratio ) continue; 
+      if ( ratio[order[i]] > ref_adapt_collapse_ratio )
+        continue;
       node = target[order[i]];
       if ( ref_node_valid(ref_node,node) )
-	{
-	  RSS(ref_cavity_create(&ref_cavity,2),"create");
-	  RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
-	  RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
-	  RSS(ref_cavity_make_visible(ref_cavity,ref_grid,node),"make valid");
-	  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
-	  RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
-	  RSS(ref_cavity_free(ref_cavity),"free");
-	}
+        {
+          RSS(ref_cavity_create(&ref_cavity,2),"create");
+          RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+          RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
+          RSS(ref_cavity_make_visible(ref_cavity,ref_grid,node),"make valid");
+          RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
+          RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
+          RSS(ref_cavity_free(ref_cavity),"free");
+        }
     }
-  
+
   ref_free( order );
   ref_free( node2target );
   ref_free( target );
@@ -808,7 +810,7 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
 }
 
 REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
-			   REF_INT node, char *filename )
+                           REF_INT node, char *filename )
 {
   REF_DICT node_dict, face_dict;
   REF_INT face, face_node;
@@ -823,11 +825,11 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   RSS( ref_dict_store( node_dict, node, 0 ), "store");
   each_ref_cavity_valid_face( ref_cavity, face )
   {
-    RSS( ref_dict_store( face_dict, face, 0 ), "store");    
+    RSS( ref_dict_store( face_dict, face, 0 ), "store");
     each_ref_cavity_face_node( ref_cavity, face_node )
-      RSS( ref_dict_store( node_dict, 
-			   ref_cavity_f2n(ref_cavity,face_node,face), 0 ), 
-	   "store");
+    RSS( ref_dict_store( node_dict,
+                         ref_cavity_f2n(ref_cavity,face_node,face), 0 ),
+         "store");
   }
 
   f = fopen(filename,"w");
@@ -857,12 +859,12 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
       RSS( ref_dict_location( node_dict, node, &local), "center node");
       fprintf(f," %d",local + 1);
       each_ref_cavity_face_node( ref_cavity, face_node )
-	{
-	  RSS( ref_dict_location( node_dict,
-				  ref_cavity_f2n(ref_cavity,face_node,face), 
-				  &local), "ret");
-	  fprintf(f," %d",local + 1);
-	}
+      {
+        RSS( ref_dict_location( node_dict,
+                                ref_cavity_f2n(ref_cavity,face_node,face),
+                                &local), "ret");
+        fprintf(f," %d",local + 1);
+      }
       RSS( ref_dict_location( node_dict, node, &local), "center node");
       fprintf(f," %d",local + 1);
       fprintf(f,"\n");
