@@ -84,6 +84,8 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
                                    REF_GRID ref_grid, REF_INT face );
 
+REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid );
+
 END_C_DECLORATION
 
 #endif /* REF_CAVITY_H */
