@@ -505,8 +505,8 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                 2, &ncell, cells), "more than two" );
       if ( 0 == ncell )
         THROW("cavity triangle missing");
-      if ( 1 == ncell )
-        THROW("boundary");
+      if ( 1 == ncell ) 
+	return REF_INVALID; /* boundary */
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[0],
                               &have_cell0 ), "cell0" );
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), cells[1],
@@ -531,7 +531,7 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
       if ( REF_EMPTY == tet0 )
         THROW("cavity tets missing");
       if ( REF_EMPTY == tet1 )
-        THROW("boundary");
+	return REF_INVALID; /* boundary */
 
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet0,
                               &have_cell0 ), "cell0" );
