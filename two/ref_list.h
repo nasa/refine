@@ -24,6 +24,9 @@ REF_STATUS ref_list_inspect( REF_LIST ref_list );
 #define ref_list_max( ref_list ) ((ref_list)->max)
 #define ref_list_value( ref_list, i ) ((ref_list)->value[(i)])
 
+#define each_ref_list_item( ref_list, item )		\
+  for ( ( item ) = 0; ( item ) < ref_list_n( ref_list ); ( item )++ )
+
 REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT value );
 REF_STATUS ref_list_pop( REF_LIST ref_list, REF_INT *value );
 REF_STATUS ref_list_delete( REF_LIST ref_list, REF_INT value );
