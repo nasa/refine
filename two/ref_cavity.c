@@ -877,3 +877,36 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
+			      REF_INT node )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL quality;
+  REF_INT face;
+
+  each_ref_list_item( ref_cavity_list(ref_cavity), item )
+    {
+      cell = ref_list_value( ref_cavity_list(ref_cavity), item );
+      RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "cell");
+      RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
+      printf("- %12.8f\n",quality);
+    }
+
+  each_ref_cavity_valid_face( ref_cavity, face )
+  {
+    /* skip a collapsed triangle that in on the boundary of cavity */
+    if ( node == ref_cavity_f2n(ref_cavity,0,face) ||
+         node == ref_cavity_f2n(ref_cavity,1,face) )
+      continue;
+    nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
+    nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
+    nodes[2] = node;
+    RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
+    printf("+ %12.8f\n",quality);
+  }
+
+  return REF_SUCCESS;
+}
