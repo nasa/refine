@@ -551,10 +551,8 @@ REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_make_visible( REF_CAVITY ref_cavity,
                                     REF_GRID ref_grid, REF_INT node )
 {
-  if ( REF_SUCCESS == ref_cavity_enlarge_visible(ref_cavity,ref_grid,node) )
-    return REF_SUCCESS;
   RSS( ref_cavity_shrink_visible(ref_cavity,ref_grid,node),
-       "shrink failed too");
+       "shrink failed");
   return REF_SUCCESS;
 }
 
@@ -794,6 +792,7 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
           RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
           RSS(ref_cavity_make_visible(ref_cavity,ref_grid,node),"make valid");
           RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
+	  RSS(ref_cavity_change(ref_cavity, ref_grid, node), "change" );
           RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
           RSS(ref_cavity_free(ref_cavity),"free");
         }
