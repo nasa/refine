@@ -551,8 +551,9 @@ REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_make_visible( REF_CAVITY ref_cavity,
                                     REF_GRID ref_grid, REF_INT node )
 {
-  RSS( ref_cavity_shrink_visible(ref_cavity,ref_grid,node),
-       "shrink failed");
+  RSB( ref_cavity_shrink_visible(ref_cavity,ref_grid,node),
+       "shrink failed",
+       ref_cavity_tec(ref_cavity,ref_grid,node,"ref_cavity_fail.tec"));
   return REF_SUCCESS;
 }
 
@@ -813,6 +814,7 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 {
   REF_DICT node_dict, face_dict;
   REF_INT face, face_node;
+  REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local;
   REF_DBL xyz_phys[3];
 
@@ -829,6 +831,50 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   RSS(ref_dict_create(&node_dict),"create nodes");
   RSS(ref_dict_create(&face_dict),"create faces");
 
+  each_ref_list_item( ref_cavity_list(ref_cavity), item )
+  {
+    cell = ref_list_value( ref_cavity_list(ref_cavity), item );
+    RSS( ref_dict_store( face_dict, cell, 0 ), "store");
+    RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "nodes");
+    each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
+      RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+  }
+
+  fprintf(f,
+          "zone t=cavity, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          ref_dict_n(node_dict), ref_dict_n(face_dict),
+          "point", "fequadrilateral" );
+  for ( item = 0; item < ref_dict_n(node_dict); item++ )
+    {
+      local = ref_dict_key(node_dict,item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid),0,local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid),1,local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid),2,local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+    }
+
+  for ( item = 0; item < ref_dict_n(face_dict); item++ )
+    {
+      cell = ref_dict_key(face_dict,item);
+      RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "nodes");
+      each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
+	{
+	  RSS( ref_dict_location( node_dict,
+				  nodes[cell_node],
+				  &local), "ret");
+	  fprintf(f," %d",local + 1);
+	}
+      RSS( ref_dict_location( node_dict, nodes[0], &local), "center node");
+      fprintf(f," %d",local + 1);
+      fprintf(f,"\n");
+    }
+
+  RSS(ref_dict_free(face_dict),"free tris");
+  RSS(ref_dict_free(node_dict),"free nodes");
+
+  RSS(ref_dict_create(&node_dict),"create nodes");
+  RSS(ref_dict_create(&face_dict),"create faces");
+
   RSS( ref_dict_store( node_dict, node, 0 ), "store");
   each_ref_cavity_valid_face( ref_cavity, face )
   {
@@ -840,7 +886,7 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   }
 
   fprintf(f,
-          "zone t=cavity, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=ball, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           ref_dict_n(node_dict), ref_dict_n(face_dict),
           "point", "fequadrilateral" );
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
