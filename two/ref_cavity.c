@@ -818,6 +818,14 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
   FILE *f;
 
+  f = fopen(filename,"w");
+  if (NULL == (void *)f)
+    printf("unable to open %s\n",filename);
+  RNS(f, "unable to open file" );
+
+  fprintf(f, "title=\"tecplot refine cavity\"\n");
+  fprintf(f, "variables = \"x\" \"y\" \"z\"\n");
+
   RSS(ref_dict_create(&node_dict),"create nodes");
   RSS(ref_dict_create(&face_dict),"create faces");
 
@@ -831,16 +839,8 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
          "store");
   }
 
-  f = fopen(filename,"w");
-  if (NULL == (void *)f)
-    printf("unable to open %s\n",filename);
-  RNS(f, "unable to open file" );
-
-  fprintf(f, "title=\"tecplot refine cavity\"\n");
-  fprintf(f, "variables = \"x\" \"y\" \"z\"\n");
-
   fprintf(f,
-          "zone t=clump, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=cavity, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           ref_dict_n(node_dict), ref_dict_n(face_dict),
           "point", "fequadrilateral" );
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
@@ -869,10 +869,11 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
       fprintf(f,"\n");
     }
 
-  fclose(f);
 
   RSS(ref_dict_free(face_dict),"free tris");
   RSS(ref_dict_free(node_dict),"free nodes");
+
+  fclose(f);
 
   return REF_SUCCESS;
 }
