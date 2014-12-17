@@ -42,6 +42,7 @@
 #include "ref_histogram.h"
 
 #include "ref_clump.h"
+#include "ref_cavity.h"
 
 int main( int argc, char *argv[] )
 {
