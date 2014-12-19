@@ -102,8 +102,10 @@ int main( int argc, char *argv[] )
   if ( 5 < argc )
     {
       REF_DBL h0, r;
+      REF_DBL z, hx, hz;
 
       REF_INT pos;
+      REF_INT node;
 
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
       ref_node = ref_grid_node(ref_grid);
@@ -112,11 +114,26 @@ int main( int argc, char *argv[] )
       while( pos < argc ) {
 	if( strcmp(argv[pos],"-e") == 0 ) {
 	  printf("-p\n"); pos++;
+	  hx = atof( argv[pos] );
+	  printf(" hx = %e\n",hx); pos++;
 	  h0 = atof( argv[pos] );
 	  printf(" h0 = %e\n",h0); pos++;
 	  r = atof( argv[pos] );
 	  printf(" r = %e\n",r); pos++;
-	  printf(" h = h0 * (1+r) ** (h0*z)\n");
+	  printf(" hz = h0 * (1+r) ** (z/h0)\n");
+
+	  each_ref_node_valid_node( ref_node, node )
+	    {
+	      z = ref_node_xyz(ref_node,2,node);
+	      hz = h0 * pow(1.0+r,z/h0); 
+ 
+	      ref_node_metric(ref_node,0,node) = 1.0/(hx*hx);
+	      ref_node_metric(ref_node,1,node) = 0.0;
+	      ref_node_metric(ref_node,2,node) = 0.0;
+	      ref_node_metric(ref_node,3,node) = 1.0;
+	      ref_node_metric(ref_node,4,node) = 0.0;
+	      ref_node_metric(ref_node,5,node) = 1.0/(hz*hz);
+	    } 
 	  
 	} else if( strcmp(argv[pos],"-h") == 0 ) {
 	  printf(" usage\n");
