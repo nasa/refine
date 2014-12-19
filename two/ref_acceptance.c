@@ -99,5 +99,41 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+  if ( 5 < argc )
+    {
+      REF_DBL h0, r;
+
+      REF_INT pos;
+
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
+      ref_node = ref_grid_node(ref_grid);
+
+      pos = 3;
+      while( pos < argc ) {
+	if( strcmp(argv[pos],"-e") == 0 ) {
+	  printf("-p\n"); pos++;
+	  h0 = atof( argv[pos] );
+	  printf(" h0 = %e\n",h0); pos++;
+	  r = atof( argv[pos] );
+	  printf(" r = %e\n",r); pos++;
+	  printf(" h = h0 * (1+r) ** (h0*z)\n");
+	  
+	} else if( strcmp(argv[pos],"-h") == 0 ) {
+	  printf(" usage\n");
+	  return(0);
+	} else {
+	  fprintf(stderr,"Argument \"%s\" Ignored\n",argv[pos]);
+	  pos++;
+	}
+      }
+
+      if (ref_grid_twod(ref_grid))
+	RSS( ref_metric_twod_node( ref_grid_node(ref_grid) ), "2d" );
+
+      RSS( ref_gather_metric( ref_grid, argv[2] ), "in");
+
+      return 0;
+    }
+
   return 0;
 }
