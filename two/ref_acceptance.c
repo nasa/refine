@@ -103,7 +103,10 @@ int main( int argc, char *argv[] )
     {
       REF_DBL h0, r;
       REF_DBL z, hx, hz;
+      REF_DBL x0, c, k, x, h;
+      REF_DBL m0[6], m1[6];
 
+      REF_INT i;
       REF_INT pos;
       REF_INT node;
 
@@ -133,6 +136,39 @@ int main( int argc, char *argv[] )
 	      ref_node_metric(ref_node,3,node) = 1.0;
 	      ref_node_metric(ref_node,4,node) = 0.0;
 	      ref_node_metric(ref_node,5,node) = 1.0/(hz*hz);
+	    } 
+	  
+	} else if( strcmp(argv[pos],"-r") == 0 ) {
+	  printf("-r\n"); pos++;
+	  x0 = atof( argv[pos] );
+	  printf(" x0 = %e\n",x0); pos++;
+	  c = atof( argv[pos] );
+	  printf(" c = %e\n",c); pos++;
+	  k = atof( argv[pos] );
+	  printf(" k = %e\n",k); pos++;
+	  printf(" at x0, h = c * r ** k\n");
+
+	  each_ref_node_valid_node( ref_node, node )
+	    {
+	      x = ref_node_xyz(ref_node,0,node);
+	      z = ref_node_xyz(ref_node,2,node);
+	      r = sqrt( (x-x0)*(x-x0) + z*z );
+	      r = MAX( r, 0.32*c*c );
+	      h = c * pow(r,k);
+	      
+	      for (i=0;i<6;i++)
+		m0[i] = ref_node_metric(ref_node,i,node);
+
+	      m1[0] = 1.0/(h*h);
+	      m1[1] = 0.0;
+	      m1[2] = 0.0;
+	      m1[3] = 1.0;
+	      m1[4] = 0.0;
+	      m1[5] = 1.0/(h*h);
+
+	      RSS( ref_matrix_intersect( m0, m1,
+					 ref_node_metric_ptr(ref_node,node) ),
+		   "intersect" );
 	    } 
 	  
 	} else if( strcmp(argv[pos],"-h") == 0 ) {
