@@ -1,4 +1,3 @@
-# -*- Makefile -*-
 
 EXTRA_DIST = \
 	makeRubyExtension.rb RubyExtensionBuilder.rb \

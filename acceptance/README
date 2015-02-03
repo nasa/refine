@@ -1,0 +1,8 @@
+
+Each of these subdirectories contains a bash script to drive an
+adaptation verification test. There is a 'bin' variable in each script
+to specify the path to executables.
+
+Mike.Park@NASA.gov
++1 (757) 864-6604
+

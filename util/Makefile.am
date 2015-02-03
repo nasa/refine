@@ -1,4 +1,3 @@
-# -*- Makefile -*-
 
 EXTRA_DIST = \
 	fgrid2gri.rb fgrid2tec.rb \

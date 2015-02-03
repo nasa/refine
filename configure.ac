@@ -198,9 +198,14 @@ else
   AM_CONDITIONAL(BUILD_PARMETIS_SUPPORT,false)
 fi
 
-AC_OUTPUT( \
+AC_CONFIG_FILES( \
 	   Makefile \
 	   two/Makefile \
 	   src/Makefile \
-	   util/Makefile \
+	   util/Makefile
 	   )
+AC_CONFIG_FILES( \
+	   acceptance/Makefile
+	   )
+
+AC_OUTPUT
