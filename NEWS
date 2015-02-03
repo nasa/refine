@@ -1,4 +1,6 @@
 
+Tue, Feb  3, 2015 : Released Refine 1.8.15
+
 - implemented isotropic gradation control of anisotropic metric
 - added Barral/McKenzie metric intersection
 - quieted parMETIS debug statements that crashed MPI stdout buffers
