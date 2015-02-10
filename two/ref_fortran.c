@@ -155,7 +155,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
   RSS(ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
 
-  passes = 10;
+  passes = 20;
   for (i = 0; i<passes ; i++ )
     {
       RSS( ref_adapt_pass( ref_grid ), "pass");
