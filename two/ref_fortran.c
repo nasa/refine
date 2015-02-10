@@ -162,7 +162,15 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       ref_mpi_stopwatch_stop("pass");
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
-      RSS(ref_migrate_to_balance(ref_grid),"balance");
+      if ( ref_grid_twod(ref_grid) )
+	{
+	  if ( ref_mpi_master ) printf("twod single image\n");
+	  RSS(ref_migrate_to_single_image(ref_grid),"balance");
+	}
+      else
+	{
+	  RSS(ref_migrate_to_balance(ref_grid),"balance");
+	}
       ref_mpi_stopwatch_stop("balance");
     }
 
