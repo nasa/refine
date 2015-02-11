@@ -23,6 +23,9 @@ REF_STATUS ref_export_tec_part( REF_GRID ref_grid, char *root_filename );
 REF_STATUS ref_export_tec_metric_axis( REF_GRID ref_grid, char *root_filename );
 REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid, 
 					  char *root_filename );
+REF_STATUS ref_export_tec_metric_box( REF_GRID ref_grid, 
+				      char *root_filename,
+				      REF_DBL *bounding_box );
 REF_STATUS ref_export_tec_ratio( REF_GRID ref_grid, char *root_filename );
 
 REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename );

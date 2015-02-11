@@ -713,6 +713,115 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_export_tec_metric_box( REF_GRID ref_grid, 
+				      char *root_filename,
+				      REF_DBL *bounding_box)
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT node, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nnode, *o2n, *n2o;
+  REF_INT ncell;
+  REF_DBL d[12];
+  REF_DBL x,y,z;
+  REF_DBL ex,ey;
+  FILE *file;
+  char viz_file[256];
+  REF_INT i, n=36;
+  REF_INT e0, e1;
+  REF_DBL dt = ref_math_in_radians(360.0/(REF_DBL)n);
+  REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
+
+  sprintf(viz_file, "%s_n%d_p%d_ellipse.tec", 
+	  root_filename, ref_mpi_n, ref_mpi_id);
+
+  file = fopen(viz_file,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",viz_file);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"tecplot refine metric axes\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  RSS( ref_node_in_bounding_box( ref_node, bounding_box,
+				 &nnode, &o2n, &n2o ), "bbox" );
+
+  ncell = ref_node_n(ref_node)*n;
+
+  fprintf(file,
+	  "zone t=met, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  3*ncell, 3*ncell, "point", "felineseg" );
+
+  for ( node = 0; node < nnode; node++ )
+    {
+      RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,n2o[node]),
+			      d ), "diag" );
+      RSS( ref_matrix_ascending_eig( d ), "sort eig" );
+      for (e0=0;e0<3;e0++)
+	{
+	  e1 = e0+1;
+	  if (e1==3) 
+	    e1 = 0;
+	  for (i=0;i<n;i++)
+	    {
+	      ex = scale*cos(i*dt)/sqrt(d[e0]);
+	      ey = scale*sin(i*dt)/sqrt(d[e1]);
+	      x = d[3+3*e0]*ex + d[3+3*e1]*ey;
+	      y = d[4+3*e0]*ex + d[4+3*e1]*ey;
+	      z = d[5+3*e0]*ex + d[5+3*e1]*ey;
+	      fprintf(file, " %.16e %.16e %.16e\n", 
+		      ref_node_xyz(ref_node,0,n2o[node])+x,
+		      ref_node_xyz(ref_node,1,n2o[node])+y,
+		      ref_node_xyz(ref_node,2,n2o[node])+z);
+	    }
+	}
+    }
+  
+  for (e0=0;e0<3;e0++)
+    for ( node = 0; node < ref_node_n(ref_node); node++ )
+      {
+	for (i=0;i<n-1;i++)
+	  fprintf(file," %d %d\n",i+node*n+1+ncell*e0,i+1+node*n+1+ncell*e0);
+	fprintf(file," %d %d\n",n+node*n+ncell*e0,1+node*n+ncell*e0);
+      }
+
+  ncell = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( REF_EMPTY != o2n[nodes[0]] &&
+	 REF_EMPTY != o2n[nodes[1]] &&
+	 REF_EMPTY != o2n[nodes[2]] ) 
+      ncell++;
+ 
+  fprintf(file,
+	  "zone t=tri, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  nnode, ncell, "point", "fetriangle" );
+
+  for ( node = 0; node < nnode; node++ )
+    {
+      fprintf(file, " %.16e %.16e %.16e\n", 
+	      ref_node_xyz(ref_node,0,n2o[node]),
+	      ref_node_xyz(ref_node,1,n2o[node]),
+	      ref_node_xyz(ref_node,2,n2o[node]));
+    }
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( REF_EMPTY != o2n[nodes[0]] &&
+	 REF_EMPTY != o2n[nodes[1]] &&
+	 REF_EMPTY != o2n[nodes[2]] )
+      {
+	for ( node = 0; node < 3; node++ )
+	  fprintf(file," %d",o2n[nodes[node]] + 1);
+	fprintf(file,"\n");
+      }
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_export_tec_ratio( REF_GRID ref_grid, char *root_filename )
 {
   REF_NODE ref_node = ref_grid_node( ref_grid );
