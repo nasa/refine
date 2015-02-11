@@ -67,7 +67,7 @@ int main( int argc, char *argv[] )
       RSS( ref_mpi_stop( ), "stop" );
     }
 
-  if ( argc > 2 )
+  if ( argc == 3 )
     {
       REF_GRID ref_grid;
 
@@ -84,6 +84,32 @@ int main( int argc, char *argv[] )
       RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_s00" ), "al");
       RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_surf.tec" ), 
 	   "surf");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      RSS( ref_mpi_stop( ), "stop" );
+    }
+
+  if ( argc == 9 )
+    {
+      REF_GRID ref_grid;
+      REF_DBL bounding_box[6];
+      REF_INT i;
+
+      RSS( ref_mpi_start( argc, argv ), "start" );
+
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+
+      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+
+      for ( i=0; i<6; i++)
+	{
+	  bounding_box[i] = atof(argv[3+i]);
+	  printf("bounding box[%d] = %f\n",i,bounding_box[i]);
+	}
+
+      RSS( ref_export_tec_metric_box( ref_grid, "ref_metric_box", 
+				      bounding_box ), "bbox");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
