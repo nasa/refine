@@ -95,7 +95,7 @@ REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node );
 
 REF_STATUS ref_node_compact( REF_NODE ref_node, REF_INT **o2n, REF_INT **n2o );
 REF_STATUS ref_node_in_bounding_box( REF_NODE ref_node, REF_DBL *bounding_box,
-				     REF_INT **o2n, REF_INT **n2o );
+				     REF_INT *n, REF_INT **o2n, REF_INT **n2o );
 
 REF_STATUS ref_node_ghost_real( REF_NODE ref_node );
 REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar );

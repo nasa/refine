@@ -174,7 +174,7 @@ int main( int argc, char *argv[] )
   {  /* in bounding box */
     REF_INT node;
     REF_NODE ref_node;
-    REF_INT *o2n, *n2o;
+    REF_INT n, *o2n, *n2o;
     REF_DBL bounding_box[6];
     RSS(ref_node_create(&ref_node),"create");
 
@@ -195,8 +195,10 @@ int main( int argc, char *argv[] )
     bounding_box[2] = -0.0; bounding_box[3] =  0.5; 
     bounding_box[4] = -0.5; bounding_box[5] =  1.5; 
 
-    RSS(ref_node_in_bounding_box(ref_node,bounding_box,&o2n,&n2o),"bbox");
+    RSS(ref_node_in_bounding_box(ref_node,bounding_box,&n,&o2n,&n2o),"bbox");
  
+    REIS(2,n,"o2n");
+
     REIS(0,o2n[0],"o2n");
     REIS(REF_EMPTY,o2n[1],"o2n");
     REIS(1,o2n[2],"o2n");

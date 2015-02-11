@@ -539,6 +539,7 @@ REF_STATUS ref_node_compact( REF_NODE ref_node,
 }
 
 REF_STATUS ref_node_in_bounding_box( REF_NODE ref_node, REF_DBL *bounding_box,
+				     REF_INT *n,
 				     REF_INT **o2n_ptr, REF_INT **n2o_ptr )
 {
   REF_INT node;
@@ -563,6 +564,8 @@ REF_STATUS ref_node_in_bounding_box( REF_NODE ref_node, REF_DBL *bounding_box,
 	o2n[node] = nnode;
 	nnode++;
       }
+
+  *n = nnode;
 
   each_ref_node_valid_node( ref_node, node )
     if ( REF_EMPTY != o2n[node] )
