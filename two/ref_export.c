@@ -746,7 +746,7 @@ REF_STATUS ref_export_tec_metric_box( REF_GRID ref_grid,
   RSS( ref_node_in_bounding_box( ref_node, bounding_box,
 				 &nnode, &o2n, &n2o ), "bbox" );
 
-  ncell = ref_node_n(ref_node)*n;
+  ncell = nnode*n;
 
   fprintf(file,
 	  "zone t=met, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
