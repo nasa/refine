@@ -778,7 +778,7 @@ REF_STATUS ref_export_tec_metric_box( REF_GRID ref_grid,
     }
   
   for (e0=0;e0<3;e0++)
-    for ( node = 0; node < ref_node_n(ref_node); node++ )
+    for ( node = 0; node < nnode; node++ )
       {
 	for (i=0;i<n-1;i++)
 	  fprintf(file," %d %d\n",i+node*n+1+ncell*e0,i+1+node*n+1+ncell*e0);
