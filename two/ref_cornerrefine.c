@@ -32,17 +32,21 @@ int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
   REF_CELL ref_cell;
+  REF_NODE ref_node;
   REF_SUBDIV ref_subdiv;
   REF_BOOL valid_inputs;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node, item;
-  REF_INT node_refinements, extra_at_node;
+  REF_INT arg_parse_position;
+  REF_INT best_node;
+  REF_DBL x_node, y_node, best_dist;
+  REF_DBL dx, dy, dist;
 
-  valid_inputs = (4 == argc);  
+  valid_inputs = (3 <= argc);  
 
   if ( !valid_inputs )
     {
-      printf("usage: %s input_grid.extension output_grid.extension extra_at_node\n",argv[0]);
+      printf("usage: %s input_grid.extension output_grid.extension -xy x_node y_node ...\n",argv[0]);
       return 1;
     }
 
@@ -50,6 +54,7 @@ int main( int argc, char *argv[] )
   RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "met");
 
   ref_cell = ref_grid_pri(ref_grid);
+  ref_node = ref_grid_node(ref_grid);
 
   RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "init" );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
@@ -61,14 +66,54 @@ int main( int argc, char *argv[] )
   RSS(ref_subdiv_split(ref_subdiv),"split");
   RSS(ref_subdiv_free(ref_subdiv),"free");
 
-  extra_at_node = atoi(argv[3]);
-
-  for (node_refinements = 0 ; 
-       node_refinements < extra_at_node ;
-       node_refinements++ )
+  arg_parse_position = 3;
+  while ( arg_parse_position < argc &&
+	  strcmp(argv[arg_parse_position],"-xy") == 0 )
     {
+      if (argc < arg_parse_position+3) THROW("incomplete -xy argument");
+      printf("%s %s %s\n",
+	     argv[arg_parse_position], 
+	     argv[arg_parse_position+1], 
+	     argv[arg_parse_position+2]);
+      x_node = atof(argv[arg_parse_position+1]);
+      y_node = atof(argv[arg_parse_position+2]);
+      printf("%s %.15e %.15e\n",
+	     argv[arg_parse_position], 
+	     x_node, 
+	     y_node);
+      arg_parse_position += 3;
+      best_dist = 0;
+      best_node = REF_EMPTY;
+      each_ref_node_valid_node(ref_node,node)
+	{
+	  dx = ref_node_xyz(ref_node,0,node)-x_node;
+	  dy = ref_node_xyz(ref_node,2,node)-y_node;
+	  dist = sqrt(dx*dx+dy*dy);
+	  if ( best_node == REF_EMPTY )
+	    {
+	      best_node = node;
+	      best_dist = dist;
+	    }
+	  else
+	    {
+	      if ( dist < best_dist )
+		{
+		  best_node = node;
+		  best_dist = dist;
+		}
+	    }
+	}
+	
+      if ( best_node == REF_EMPTY ) THROW("missing nodes?");
+
+      printf("node %d x %.15e y %.15e dist %.15e\n",
+	     best_node, 
+	     ref_node_xyz(ref_node,0,best_node),
+	     ref_node_xyz(ref_node,2,best_node),
+	     best_dist);
+     
       RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "init" );
-      node = 0;
+      node = best_node;
       each_ref_cell_having_node( ref_cell, node, item, cell )
 	{
 	  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
