@@ -26,6 +26,7 @@ struct REF_NODE_STRUCT {
   REF_DBL *aux;
   REF_LIST unused_global_list;
   REF_INT old_n_global, new_n_global;
+  REF_DBL twod_mid_plane;
 };
 
 #define REF_NODE_REAL_PER (9) /* x,y,z, m[6] */
@@ -69,6 +70,8 @@ struct REF_NODE_STRUCT {
 #define ref_node_naux(ref_node) ((ref_node)->naux)
 #define ref_node_aux(ref_node,iaux,node)		\
   ((ref_node)->aux[(iaux)+ref_node_naux(ref_node)*(node)])
+
+#define ref_node_twod_mid_plane(ref_node) ((ref_node)->twod_mid_plane)
 
 REF_STATUS ref_node_create( REF_NODE *ref_node );
 REF_STATUS ref_node_free( REF_NODE ref_node );

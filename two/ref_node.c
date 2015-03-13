@@ -51,6 +51,8 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   ref_node->old_n_global = REF_EMPTY;
   ref_node->new_n_global = REF_EMPTY;
 
+  ref_node->twod_mid_plane = 0.5;
+
   return REF_SUCCESS;
 }
 
@@ -753,7 +755,7 @@ REF_STATUS ref_node_edge_twod( REF_NODE ref_node,
 			       REF_INT node0, REF_INT node1, 
 			       REF_BOOL *twod )
 {
-  REF_DBL mid_plane = 0.5;
+  REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
 
   *twod = ( ( ref_node_xyz(ref_node,1,node0) < mid_plane ) &&
 	    ( ref_node_xyz(ref_node,1,node1) < mid_plane ) );
@@ -765,7 +767,7 @@ REF_STATUS ref_node_node_twod( REF_NODE ref_node,
 			       REF_INT node,
 			       REF_BOOL *twod )
 {
-  REF_DBL mid_plane = 0.5;
+  REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
 
   *twod = ( ref_node_xyz(ref_node,1,node) < mid_plane );
 
@@ -1210,14 +1212,15 @@ REF_STATUS ref_node_tri_twod_orientation( REF_NODE ref_node,
 					  REF_INT *nodes,  
 					  REF_BOOL *valid )
 {
+  REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
   REF_DBL normal[3];
 
   *valid = REF_FALSE;
 
   RSS( ref_node_tri_normal( ref_node, nodes, normal ), "norm inside of area");
 
-  if ( ( ref_node_xyz(ref_node,1,nodes[0]) > 0.5 && normal[1] < 0.0 ) ||
-       ( ref_node_xyz(ref_node,1,nodes[0]) < 0.5 && normal[1] > 0.0 ) ) 
+  if ( ( ref_node_xyz(ref_node,1,nodes[0]) > mid_plane && normal[1] < 0.0 ) ||
+       ( ref_node_xyz(ref_node,1,nodes[0]) < mid_plane && normal[1] > 0.0 ) ) 
     *valid = REF_TRUE;
 
   return REF_SUCCESS;  
@@ -1350,6 +1353,7 @@ REF_STATUS ref_node_tet_dvol_dnode0( REF_NODE ref_node,
 REF_STATUS ref_node_twod_clone( REF_NODE ref_node, 
 				REF_INT original, REF_INT *clone_ptr )
 {
+  REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
   REF_INT global, clone;
   REF_INT i;
 
@@ -1358,7 +1362,8 @@ REF_STATUS ref_node_twod_clone( REF_NODE ref_node,
   clone = *clone_ptr;
 
   ref_node_xyz(ref_node,0,clone) = ref_node_xyz(ref_node,0,original);
-  ref_node_xyz(ref_node,1,clone) = 1.0-ref_node_xyz(ref_node,1,original);
+  ref_node_xyz(ref_node,1,clone) = 
+    2*mid_plane-ref_node_xyz(ref_node,1,original);
   ref_node_xyz(ref_node,2,clone) = ref_node_xyz(ref_node,2,original);
 
   for ( i = 0; i < ref_node_naux(ref_node) ; i++ )
