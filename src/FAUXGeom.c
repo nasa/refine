@@ -56,6 +56,33 @@ static struct face *faux_faces = NULL;
 #define general_plane  (3)
 #define cylinder  (4)
 
+void inspect_faux(void)
+{
+  int i;
+
+  for (i=0;i<nfaux;i++){
+    printf("%4d: %4d of %4d type %3d offset %15.8f\n",
+	   i, faux_faces[i].faceid, nfaux, 
+	   faux_faces[i].faceType, faux_faces[i].offset);
+    printf("%4d: normal %15.8f %15.8f %15.8f\n", i, 
+	   faux_faces[i].normal[0],
+	   faux_faces[i].normal[1],
+	   faux_faces[i].normal[2]);
+    printf("%4d: u_dir  %15.8f %15.8f %15.8f\n", i, 
+	   faux_faces[i].u_dir[0],
+	   faux_faces[i].u_dir[1],
+	   faux_faces[i].u_dir[2]);
+    printf("%4d: v_dir  %15.8f %15.8f %15.8f\n", i, 
+	   faux_faces[i].v_dir[0],
+	   faux_faces[i].v_dir[1],
+	   faux_faces[i].v_dir[2]);
+    printf("%4d: center %15.8f %15.8f %15.8f\n", i, 
+	   faux_faces[i].center[0],
+	   faux_faces[i].center[1],
+	   faux_faces[i].center[2]);
+  }
+}
+
 static GridBool initialize_faux(void)
 {
   char flavor[1025];

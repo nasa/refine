@@ -56,3 +56,9 @@ bin_PROGRAMS += refine-px
 refine_px_SOURCES = refine_px.c
 refine_px_LDADD = librefine.a libFAUXGeom.a -lm
 
+noinst_PROGRAMS =
+
+noinst_PROGRAMS += refine-faux-test
+refine_faux_test_SOURCES = FAUXTest.c
+refine_faux_test_LDADD = libFAUXGeom.a librefine.a -lm
+
