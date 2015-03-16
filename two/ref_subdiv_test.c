@@ -26,6 +26,9 @@
 #include "ref_gather.h"
 #include "ref_metric.h"
 
+#include "ref_import.h"
+#include "ref_export.h"
+
 static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
 {
   REF_GRID ref_grid;
@@ -83,7 +86,7 @@ int main( int argc, char *argv[] )
 
   RSS( ref_mpi_start( argc, argv ), "start" );
 
-  if ( 1 < argc )
+  if ( 2 == argc )
     {
       REF_SUBDIV ref_subdiv;
       REF_GRID ref_grid;
@@ -133,6 +136,30 @@ int main( int argc, char *argv[] )
       RSS(ref_export_tec_part(ref_grid,"ref_subdiv_splt"),"split part");
 
       RSS(ref_gather_b8_ugrid(ref_grid,"ref_subdiv_test.b8.ugrid"),"gather");
+
+      RSS( tear_down( ref_subdiv ), "tear down");
+    }
+
+  if ( 3 == argc )
+    {
+      REF_SUBDIV ref_subdiv;
+      REF_GRID ref_grid;
+      
+      RSS(ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+
+      RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
+
+      RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
+
+      RSS(ref_subdiv_mark_prism_sides(ref_subdiv),"mark sides");
+
+      if ( ref_mpi_master ) ref_grid_inspect(ref_grid);
+
+      RSS(ref_subdiv_split(ref_subdiv),"split");
+
+      if ( ref_mpi_master ) ref_grid_inspect(ref_grid);
+
+      RSS(ref_export_by_extension(ref_grid,argv[2]),"export");
 
       RSS( tear_down( ref_subdiv ), "tear down");
     }
@@ -329,6 +356,23 @@ int main( int argc, char *argv[] )
     REIS(8, ref_cell_n(ref_grid_tri(ref_grid)),"four tri");
 
     /*    ref_export_tec(ref_grid,"pri4.tec");  */
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
+  { /* cleave prism across quads */
+    REF_SUBDIV ref_subdiv;
+    REF_GRID ref_grid;
+    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    ref_grid = ref_subdiv_grid(ref_subdiv);
+
+    RSS(ref_subdiv_mark_prism_sides( ref_subdiv ), "sides");
+
+    RSS(ref_subdiv_split(ref_subdiv),"split");
+
+    REIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"two");
+
+    REIS(9, ref_node_n(ref_grid_node(ref_grid)),"9");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }

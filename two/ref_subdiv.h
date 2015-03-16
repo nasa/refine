@@ -45,6 +45,7 @@ REF_STATUS ref_subdiv_mark_all( REF_SUBDIV ref_subdiv );
 REF_STATUS ref_subdiv_mark_prism_by_metric( REF_SUBDIV ref_subdiv );
 REF_STATUS ref_subdiv_mark_prism_by_ratio( REF_SUBDIV ref_subdiv, 
 					   REF_DBL *node_ratio );
+REF_STATUS ref_subdiv_mark_prism_sides( REF_SUBDIV ref_subdiv );
 
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv );
 

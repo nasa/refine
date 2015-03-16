@@ -201,6 +201,29 @@ REF_STATUS ref_subdiv_mark_prism_by_ratio( REF_SUBDIV ref_subdiv,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_mark_prism_sides( REF_SUBDIV ref_subdiv )
+{
+  REF_CELL ref_cell = ref_grid_pri(ref_subdiv_grid(ref_subdiv));
+  REF_INT cell, cell_edge;
+  REF_INT node0, node1;
+
+  REF_INT pri_side_edge;
+  REF_INT pri_side_cell_edge[] = {2,4,5};
+
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      for ( pri_side_edge = 0; pri_side_edge< 3 ; pri_side_edge++ )
+	{
+	  cell_edge = pri_side_cell_edge[pri_side_edge];
+	  node0 = ref_cell_e2n(ref_cell,0,cell_edge,cell);
+	  node1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
+	  RSS( ref_subdiv_mark_to_split( ref_subdiv, node0, node1 ), "sd" );
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv, 
 					   REF_INT node0, REF_INT node1,
 					   REF_INT *new_node )
@@ -785,6 +808,27 @@ static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
       switch ( map )
 	{
 	case 0: /* don't split */
+	  break;
+	case 52: /* prism split top and bottom, edges 2,4,5 */
+	  marked_for_removal[cell]=1;
+	  
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[3], 
+				       &(new_nodes[0])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[4], 
+				       &(new_nodes[1])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[5], 
+				       &(new_nodes[2])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
+
+	  RSS( ref_cell_nodes( ref_cell, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[3], 
+				       &(new_nodes[3])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[1],nodes[4], 
+				       &(new_nodes[4])), "mis");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[2],nodes[5], 
+				       &(new_nodes[5])), "mis");
+	  RSS(ref_cell_add(ref_cell_split,new_nodes,&new_cell),"add");
 	  break;
 	case 65: /* prism split edges 0, 6 */
 	  marked_for_removal[cell]=1;
@@ -1654,6 +1698,19 @@ REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv )
       switch ( map )
 	{
 	case 0: /* don't split */
+	  break;
+	case 52: /* prism split top and bottom, edges 2,4,5 */
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,0,3);
+	  replace_xyz0_avg(xyz,1,4);
+	  replace_xyz0_avg(xyz,2,5);
+
+	  fill_pri_xyz(ref_node,nodes,xyz);
+	  replace_xyz0_avg(xyz,3,0);
+	  replace_xyz0_avg(xyz,4,1);
+	  replace_xyz0_avg(xyz,5,2);
+	  RSS( ref_subdiv_test_pri( xyz, &possible ), "test pri" );
+
 	  break;
 	case 65: /* prism split edges 0, 6 */
 	  fill_pri_xyz(ref_node,nodes,xyz);
