@@ -85,6 +85,10 @@ bin_PROGRAMS += ref_bamg
 ref_bamg_SOURCES = ref_bamg.c
 ref_bamg_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
+bin_PROGRAMS += ref_fefloa2d
+ref_fefloa2d_SOURCES = ref_fefloa2d.c
+ref_fefloa2d_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+
 noinst_PROGRAMS =
 TESTS =
 
