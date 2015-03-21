@@ -849,7 +849,8 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REF_INT ntri, tri, nedge, edge, ntet, tet;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT n0, n1, n2, n3, id;
-
+  REF_BOOL verbose = REF_FALSE;
+  
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
@@ -868,7 +869,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       printf("version %d not supported\n",version);
       THROW("version");
     }
-  printf("meshb version %d\n",version);
+  if (verbose) printf("meshb version %d\n",version);
 
   position = ftell(file);
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
@@ -882,7 +883,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       printf("dim %d not supported\n",dim);
       THROW("dim");
     }
-  printf("meshb dim %d\n",dim);
+  if (verbose) printf("meshb dim %d\n",dim);
 
   fseek(file, 0, SEEK_END);
   end_position = ftell(file);
@@ -897,7 +898,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       RSS( meshb_pos( file, version, &next_position), "pos");
     }  
 
-  ref_dict_inspect(ref_dict);
+  if (verbose) ref_dict_inspect(ref_dict);
 
   vertex_keyword = 4;
   RSS( ref_dict_value( ref_dict, vertex_keyword, &position), "kw pos");
@@ -906,7 +907,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REIS(vertex_keyword, keyword_code, "keyword code");
   RSS( meshb_pos( file, version, &next_position), "pos");
   REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "keyword code");
-  printf("nnode %d\n",nnode);
+  if (verbose) printf("nnode %d\n",nnode);
 
   for (node=0;node<nnode;node++)
     {
@@ -955,7 +956,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       REIS(edge_keyword, keyword_code, "keyword code");
       RSS( meshb_pos( file, version, &next_position), "pos");
       REIS(1, fread((unsigned char *)&nedge, 4, 1, file), "keyword code");
-      printf("nedge %d\n",nedge);
+      if (verbose) printf("nedge %d\n",nedge);
 
       for (edge=0;edge<nedge;edge++)
 	{
@@ -980,7 +981,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   REIS(triangle_keyword, keyword_code, "keyword code");
   RSS( meshb_pos( file, version, &next_position), "pos");
   REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "keyword code");
-  printf("ntri %d\n",ntri);
+  if (verbose) printf("ntri %d\n",ntri);
 
   for (tri=0;tri<ntri;tri++)
     {
@@ -1035,7 +1036,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
       REIS(tet_keyword, keyword_code, "keyword code");
       RSS( meshb_pos( file, version, &next_position), "pos");
       REIS(1, fread((unsigned char *)&ntet, 4, 1, file), "keyword code");
-      printf("ntet %d\n",ntet);
+      if (verbose) printf("ntet %d\n",ntet);
 
       for (tet=0;tet<ntet;tet++)
 	{
