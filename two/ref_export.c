@@ -162,6 +162,12 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 			   "html export failed");
 		    } 
 		  else 
+		    if( strcmp(&filename[end_of_string-9],".2d.meshb") == 0 ) 
+		      {
+			RSS( ref_export_twod_meshb( ref_grid, filename ), 
+			     "twod meshb export failed");
+		      } 
+		  else 
 		    if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
 		      {
 			RSS( ref_export_meshb( ref_grid, filename ), 
