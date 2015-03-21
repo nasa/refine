@@ -163,5 +163,14 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  { /* export .2d.meshb */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.2d.meshb";
+    RSS(ref_fixture_twod_brick_grid( &ref_grid ), "set up pri brick" );
+    RSS(ref_export_twod_meshb( ref_grid, file ),"export" );
+    REIS(0, remove( file ), "test clean up");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
   return 0;
 }
