@@ -131,6 +131,14 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
     }
   RSS( ref_mpi_bcast( &ref_grid_twod(ref_grid), 1, REF_INT_TYPE ), "bcast" );
 
+  if ( REF_FALSE ) /* Pointwise midplane location for Troy Lake */
+    {
+      ref_node_twod_mid_plane(ref_grid_node(ref_grid))=-1;
+      if ( ref_mpi_master ) 
+	printf ("twod midplane %f\n",
+		ref_node_twod_mid_plane(ref_grid_node(ref_grid)));
+    }
+
   if ( REF_FALSE ) 
     {
       RSS( ref_metric_sanitize(ref_grid),"sant");
