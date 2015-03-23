@@ -1821,7 +1821,7 @@ REF_STATUS ref_export_twod_meshb( REF_GRID ref_grid, char *filename )
 		  REIS(1, fwrite(&(node1_1),sizeof(REF_INT),1,file),"edge n1");
 		}
 	    }
-	  REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"edge id");
+	  REIS(1, fwrite(&(nodes[4]),sizeof(REF_INT),1,file),"edge id");
 	}
   REIS( nedge, ref_cell_n(ref_cell), "edge/quad miscount" );
 
