@@ -696,15 +696,17 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
+  REF_CELL ref_cell;
   FILE *file;
   char line[1024];
-  REF_INT dummy;
-  REF_DBL x,  y;
+  REF_INT dummy, row;
+  REF_DBL x, y, z;
   REF_INT nnode, node, new_node;
   REF_INT nedge, edge, n0, n1, n2, id;
   REF_INT ntri, tri;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT status;
+  REF_INT elem, nelem, type, flag, three, zero;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -789,6 +791,57 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
 	      RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
 		   "prism for tri");
 	    }
+	}
+
+      if ( 0 == strcmp("$Nodes",line))
+	{
+	  REIS( 1, fscanf(file, "%d", &nnode), "read nnode" );
+	  printf("$Nodes\n%d\n",nnode);
+	  for (node=0;node<nnode;node++)
+	    {
+	      REIS( 4, fscanf(file, "%d %lf %lf %lf",&row, &x, &y, &z ), 
+		    "read $Nodes xyz" );
+	      REIS(node+1,row,"row index missmatch in $Nodes");
+	      RSS( ref_node_add( ref_node, node, &new_node ), "add node");
+	      ref_node_xyz(ref_node,0,new_node) = x;
+	      ref_node_xyz(ref_node,1,new_node) = y;
+	      ref_node_xyz(ref_node,2,new_node) = z;
+	    }
+	  RSS(ref_node_initialize_n_global( ref_node, nnode ), "init glob");
+	}
+
+      if ( 0 == strcmp("$Elements",line))
+	{
+	  REIS( 1, fscanf(file, "%d", &nelem), "read nelements" );
+	  printf("$Elements\n%d\n",nelem);
+	  for (elem=0;elem<nelem;elem++)
+	    {
+	      REIS( 6, fscanf(file, "%d %d %d %d %d %d",
+			      &row, &type, &three, &id, &flag, &zero ), 
+		    "$Elements description" );
+	      REIS(elem+1,row,"row index missmatch in $Elements");
+	      switch( type )
+		{
+		case 5:
+		  ref_cell = ref_grid_hex(ref_grid);
+		  break;
+		case 3:
+		  ref_cell = ref_grid_qua(ref_grid);
+		  break;
+		default:
+		   printf("type = %d\n",type);
+		   THROW("unknown $Elements type");
+		}
+	      for (node=0;node<ref_cell_node_per(ref_cell);node++)
+		{
+		  REIS( 1, fscanf(file, "%d", &(nodes[node]) ),
+			"$Elements node" );
+		  (nodes[node])--;
+		}
+	      if ( 3 == type ) nodes[4] = id;
+	      RSS( ref_cell_add( ref_cell, nodes, &new_cell ), "add $Element");
+	    }
+	  ref_grid_inspect(ref_grid);
 	}
 
     } 
