@@ -24,6 +24,7 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
 
   ref_histogram_max(ref_histogram) = -1.0e20;
   ref_histogram_min(ref_histogram) =  1.0e20;
+  ref_histogram_total(ref_histogram) = 0.0;
 
   return REF_SUCCESS;
 }
@@ -46,6 +47,7 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, REF_DBL observation )
     MAX(ref_histogram_max(ref_histogram),observation);
   ref_histogram_min(ref_histogram) = 
     MIN(ref_histogram_min(ref_histogram),observation);
+  ref_histogram_total(ref_histogram) += log2(observation);
 
   i = ref_histogram_to_bin(observation);
   i = MIN(i,ref_histogram_n(ref_histogram)-1);
@@ -150,7 +152,7 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
 REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
 {
   REF_INT *bins;
-  REF_DBL min, max;
+  REF_DBL min, max, total;
   REF_INT i;
 
   if ( 1 == ref_mpi_n ) return REF_SUCCESS;
@@ -163,11 +165,16 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
 		    REF_DBL_TYPE ), "max" );
   RSS( ref_mpi_min( &ref_histogram_min( ref_histogram ), &min, 
 		    REF_DBL_TYPE ), "min" );
+  RSS( ref_mpi_sum( &ref_histogram_total( ref_histogram ), &total, 
+		    1, REF_INT_TYPE ), "total" );
+
+  printf(" t %f\n",total);
 
   if ( ref_mpi_master )
     {
       ref_histogram_max( ref_histogram ) = max;
       ref_histogram_min( ref_histogram ) = min;
+      ref_histogram_total( ref_histogram ) = total;
       for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
 	ref_histogram->bins[i] = bins[i];
     }
@@ -175,6 +182,7 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
     {
       ref_histogram_max( ref_histogram ) = -1.0e20;
       ref_histogram_min( ref_histogram ) =  1.0e20;
+      ref_histogram_total( ref_histogram ) = 0.0;
       for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
 	ref_histogram->bins[i] = 0;
     }
@@ -188,6 +196,7 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
 				char *description )
 {
   REF_INT i, sum;
+  REF_DBL mean;
 
   sum = 0;
   for (i=0;i<ref_histogram_n(ref_histogram);i++)
@@ -216,6 +225,8 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
       }
 
   printf("%7.3f:%10d max\n", ref_histogram_max( ref_histogram ), sum);
+  mean = ref_histogram_total( ref_histogram ) / (REF_DBL)sum;
+  printf("%18.10f mean\n", pow(2.0,mean));
 
   return REF_SUCCESS;
 }
