@@ -17,10 +17,10 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
   ref_malloc( *ref_histogram_ptr, 1, REF_HISTOGRAM_STRUCT );
   ref_histogram = (*ref_histogram_ptr);
 
-  ref_histogram_n(ref_histogram) = 21;
+  ref_histogram_nbin(ref_histogram) = 21;
 
   ref_malloc_init( ref_histogram->bins, 
-		   ref_histogram_n(ref_histogram), REF_INT, 0 );
+		   ref_histogram_nbin(ref_histogram), REF_INT, 0 );
 
   ref_histogram_max(ref_histogram) = -1.0e20;
   ref_histogram_min(ref_histogram) =  1.0e20;
@@ -51,7 +51,7 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, REF_DBL observation )
   ref_histogram_log_total(ref_histogram) += log2(observation);
 
   i = ref_histogram_to_bin(observation);
-  i = MIN(i,ref_histogram_n(ref_histogram)-1);
+  i = MIN(i,ref_histogram_nbin(ref_histogram)-1);
   i = MAX(i,0);
 
   ref_histogram_bin( ref_histogram, i )++;
@@ -72,10 +72,10 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
   REF_DBL min, max, log_total;
   REF_INT i, observations;
 
-  ref_malloc( bins, ref_histogram_n(ref_histogram), REF_INT );
+  ref_malloc( bins, ref_histogram_nbin(ref_histogram), REF_INT );
 
   RSS( ref_mpi_sum( ref_histogram->bins, bins, 
-		    ref_histogram_n(ref_histogram), REF_INT_TYPE ), "sum" );
+		    ref_histogram_nbin(ref_histogram), REF_INT_TYPE ), "sum" );
   RSS( ref_mpi_max( &ref_histogram_max( ref_histogram ), &max, 
 		    REF_DBL_TYPE ), "max" );
   RSS( ref_mpi_min( &ref_histogram_min( ref_histogram ), &min, 
@@ -88,10 +88,10 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
       ref_histogram_max( ref_histogram ) = max;
       ref_histogram_min( ref_histogram ) = min;
       ref_histogram_log_total( ref_histogram ) = log_total;
-      for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
+      for ( i=0;i<ref_histogram_nbin(ref_histogram);i++ )
 	ref_histogram->bins[i] = bins[i];
       observations = 0;
-      for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
+      for ( i=0;i<ref_histogram_nbin(ref_histogram);i++ )
 	observations += ref_histogram->bins[i];
       ref_histogram_log_mean( ref_histogram ) = 0.0;
       if ( observations > 0 ) 
@@ -103,7 +103,7 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
       ref_histogram_max( ref_histogram ) = -1.0e20;
       ref_histogram_min( ref_histogram ) =  1.0e20;
       ref_histogram_log_total( ref_histogram ) = 0.0;
-      for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
+      for ( i=0;i<ref_histogram_nbin(ref_histogram);i++ )
 	ref_histogram->bins[i] = 0;
       ref_histogram_log_mean( ref_histogram ) = 0.0;
     }
@@ -123,12 +123,12 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
   REF_DBL log_mean;
 
   sum = 0;
-  for (i=0;i<ref_histogram_n(ref_histogram);i++)
+  for (i=0;i<ref_histogram_nbin(ref_histogram);i++)
     sum += ref_histogram_bin( ref_histogram, i );
 
   printf("%7.3f min %s\n", ref_histogram_min( ref_histogram ), description );
 
-  for (i=0;i<ref_histogram_n(ref_histogram);i++)
+  for (i=0;i<ref_histogram_nbin(ref_histogram);i++)
     if ( ref_histogram_to_obs(i+1) > ref_histogram_min( ref_histogram ) &&
 	 ref_histogram_to_obs(i-1) < ref_histogram_max( ref_histogram ) )
       {
@@ -178,7 +178,7 @@ REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram,
   fprintf(f,"set xtic rotate by -45 scale 0\n");
   fprintf(f,"plot '-' using 2:xticlabels(1) title '%s'\n",description);
 
-  for (i=0;i<ref_histogram_n(ref_histogram)-1;i++)
+  for (i=0;i<ref_histogram_nbin(ref_histogram)-1;i++)
     {
       fprintf(f,"%.3f-%.3f %d\n", 
 	      ref_histogram_to_obs(i),
