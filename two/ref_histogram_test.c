@@ -128,6 +128,24 @@ int main( int argc, char *argv[] )
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
+  { /* stat two three */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL tol = -1.0;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    RSS(ref_histogram_add(ref_histogram, 4.0),"add 4.0");
+    RSS(ref_histogram_add(ref_histogram, 2.0),"add 2.0");
+    RSS(ref_histogram_gather(ref_histogram),"gather");
+    RSS(ref_histogram_add_stat(ref_histogram, 4.0),"add 4.0");
+    RSS(ref_histogram_add_stat(ref_histogram, 2.0),"add 2.0");
+    RSS(ref_histogram_gather_stat(ref_histogram),"gather");
+    RWDS(1.0,   ref_histogram_stat(ref_histogram,0),tol,"stat 0");
+    RWDS(0.0,   ref_histogram_stat(ref_histogram,1),tol,"stat 1");
+    RWDS(0.25,  ref_histogram_stat(ref_histogram,2),tol,"stat 2");
+    RWDS(0.00,  ref_histogram_stat(ref_histogram,3),tol,"stat 3");
+    RWDS(0.0625,ref_histogram_stat(ref_histogram,4),tol,"stat 4");
+    RSS(ref_histogram_free(ref_histogram),"free");
+  }
+
   RSS( ref_mpi_stop(  ), "stop" );
   return 0;
 }

@@ -27,18 +27,25 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
   ref_histogram_log_total(ref_histogram) = 0.0;
   ref_histogram_log_mean(ref_histogram)  = 0.0;
 
+  ref_histogram_nstat(ref_histogram) = 5;
+
+  ref_malloc_init( ref_histogram->stats, 
+		   ref_histogram_nstat(ref_histogram), REF_DBL, 0.0 );
+
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_histogram_free( REF_HISTOGRAM ref_histogram )
 {
   if ( NULL == (void *)ref_histogram ) return REF_NULL;
+  ref_free( ref_histogram->stats );
   ref_free( ref_histogram->bins );
   ref_free( ref_histogram );
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, REF_DBL observation )
+REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, 
+			      REF_DBL observation )
 {
   REF_INT i;
 
@@ -187,6 +194,54 @@ REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram,
     }
 
   fclose(f);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_add_stat( REF_HISTOGRAM ref_histogram, 
+				   REF_DBL observation )
+{
+  REF_INT i;
+  REF_DBL log_obs;
+
+  if ( observation <= 0.0 ) return REF_INVALID;
+  
+  log_obs = log2(observation);
+
+  for ( i=0;i<ref_histogram_nstat(ref_histogram);i++ )
+    ref_histogram_stat( ref_histogram, i ) 
+      += pow(log_obs-ref_histogram_log_mean( ref_histogram ),i);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram )
+{
+  REF_DBL *stats;
+  REF_INT i, observations;
+
+  ref_malloc( stats, ref_histogram_nstat(ref_histogram), REF_DBL );
+
+  RSS( ref_mpi_sum( ref_histogram->stats, stats, 
+		    ref_histogram_nstat(ref_histogram), REF_DBL_TYPE ), "sum" );
+
+  if ( ref_mpi_master )
+    {
+      observations = 0;
+      for ( i=0;i<ref_histogram_nbin(ref_histogram);i++ )
+	observations += ref_histogram->bins[i];
+      if ( observations > 0 ) 
+	for ( i=0;i<ref_histogram_nstat(ref_histogram);i++ )
+	  ref_histogram_stat( ref_histogram, i ) = 
+	  stats[i] / (REF_DBL)observations;
+    }
+  else
+    {
+      for ( i=0;i<ref_histogram_nstat(ref_histogram);i++ )
+	ref_histogram_stat( ref_histogram, i ) = 0.0;
+    }
+
+  ref_free( stats );
 
   return REF_SUCCESS;
 }
