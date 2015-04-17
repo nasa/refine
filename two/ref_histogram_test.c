@@ -109,6 +109,25 @@ int main( int argc, char *argv[] )
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
+  { /* mean init */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL tol = -1.0;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    RWDS(0.0,ref_histogram_log_mean(ref_histogram),tol,"mean");
+    RSS(ref_histogram_free(ref_histogram),"free");
+  }
+
+  { /* mean two three */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL tol = -1.0;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    RSS(ref_histogram_add(ref_histogram, 4.0),"add 4.0");
+    RSS(ref_histogram_add(ref_histogram, 2.0),"add 2.0");
+    RSS(ref_histogram_gather(ref_histogram),"gather");
+    RWDS(1.5,ref_histogram_log_mean(ref_histogram),tol,"mean");
+    RSS(ref_histogram_free(ref_histogram),"free");
+  }
+
   RSS( ref_mpi_stop(  ), "stop" );
   return 0;
 }

@@ -25,6 +25,7 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
   ref_histogram_max(ref_histogram) = -1.0e20;
   ref_histogram_min(ref_histogram) =  1.0e20;
   ref_histogram_log_total(ref_histogram) = 0.0;
+  ref_histogram_log_mean(ref_histogram)  = 0.0;
 
   return REF_SUCCESS;
 }
@@ -153,9 +154,7 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
 {
   REF_INT *bins;
   REF_DBL min, max, log_total;
-  REF_INT i;
-
-  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+  REF_INT i, observations;
 
   ref_malloc( bins, ref_histogram_n(ref_histogram), REF_INT );
 
@@ -166,7 +165,7 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
   RSS( ref_mpi_min( &ref_histogram_min( ref_histogram ), &min, 
 		    REF_DBL_TYPE ), "min" );
   RSS( ref_mpi_sum( &ref_histogram_log_total( ref_histogram ), &log_total, 
-		    1, REF_INT_TYPE ), "log_total" );
+		    1, REF_DBL_TYPE ), "log_total" );
 
   if ( ref_mpi_master )
     {
@@ -175,6 +174,13 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
       ref_histogram_log_total( ref_histogram ) = log_total;
       for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
 	ref_histogram->bins[i] = bins[i];
+      observations = 0;
+      for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
+	observations += ref_histogram->bins[i];
+      ref_histogram_log_mean( ref_histogram ) = 0.0;
+      if ( observations > 0 ) 
+	ref_histogram_log_mean( ref_histogram ) = 
+	  log_total / (REF_DBL)observations;
     }
   else
     {
@@ -183,7 +189,11 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
       ref_histogram_log_total( ref_histogram ) = 0.0;
       for ( i=0;i<ref_histogram_n(ref_histogram);i++ )
 	ref_histogram->bins[i] = 0;
+      ref_histogram_log_mean( ref_histogram ) = 0.0;
     }
+
+  RSS( ref_mpi_bcast( &ref_histogram_log_mean( ref_histogram ), 
+		      1, REF_DBL_TYPE ), "log_mean" );
 
   ref_free( bins );
 

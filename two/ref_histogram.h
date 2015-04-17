@@ -16,6 +16,7 @@ struct REF_HISTOGRAM_STRUCT {
   REF_INT n;
   REF_DBL max, min;
   REF_DBL log_total;
+  REF_DBL log_mean;
   REF_INT *bins;
 };
 
@@ -26,6 +27,7 @@ REF_STATUS ref_histogram_free( REF_HISTOGRAM ref_histogram );
 #define ref_histogram_max( ref_histogram ) ((ref_histogram)->max)
 #define ref_histogram_min( ref_histogram ) ((ref_histogram)->min)
 #define ref_histogram_log_total( ref_histogram ) ((ref_histogram)->log_total)
+#define ref_histogram_log_mean( ref_histogram ) ((ref_histogram)->log_mean)
 #define ref_histogram_bin( ref_histogram, i ) ((ref_histogram)->bins[(i)])
 
 #define ref_histogram_to_bin(o) \
