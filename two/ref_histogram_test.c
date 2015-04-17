@@ -66,6 +66,26 @@ int main( int argc, char *argv[] )
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
+  { /* total zero */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL tol = -1.0;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    RSS(ref_histogram_add(ref_histogram, 0.5),"add 0.5");
+    RSS(ref_histogram_add(ref_histogram, 2.0),"add 2.0");
+    RWDS(0.0,ref_histogram_log_total(ref_histogram),tol,"tot");
+    RSS(ref_histogram_free(ref_histogram),"free");
+  }
+
+  { /* total three */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL tol = -1.0;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    RSS(ref_histogram_add(ref_histogram, 4.0),"add 4.0");
+    RSS(ref_histogram_add(ref_histogram, 2.0),"add 2.0");
+    RWDS(3.0,ref_histogram_log_total(ref_histogram),tol,"tot");
+    RSS(ref_histogram_free(ref_histogram),"free");
+  }
+
   RSS( ref_mpi_stop(  ), "stop" );
   return 0;
 }
