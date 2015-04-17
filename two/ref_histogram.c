@@ -310,6 +310,27 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
   if ( 1 == ref_mpi_n ) RSS( ref_histogram_export( ref_histogram,
 						   "edge-ratio"), "print");
 
+  for (edge=0;edge< ref_edge_n(ref_edge);edge++)
+    {
+      RSS( ref_edge_part( ref_edge, edge, &part ), "edge part");
+      RSS( ref_node_edge_twod( ref_grid_node(ref_grid), 
+			       ref_edge_e2n(ref_edge, 0, edge),
+			       ref_edge_e2n(ref_edge, 1, edge), 
+			       &active ), "twod edge");
+      active = ( active || !ref_grid_twod(ref_grid) );
+      if ( part == ref_mpi_id && active )
+	{
+	  RSS( ref_node_ratio( ref_grid_node(ref_grid), 
+			       ref_edge_e2n(ref_edge, 0, edge),
+			       ref_edge_e2n(ref_edge, 1, edge), 
+			       &ratio ), "rat");
+	  RSS( ref_histogram_add_stat( ref_histogram, ratio ), "add");
+	}
+    }
+  RSS( ref_histogram_gather_stat( ref_histogram ), "gather");
+  if ( ref_mpi_master ) 
+    RSS( ref_histogram_print_stat( ref_histogram), "pr stat");
+
   RSS( ref_edge_free(ref_edge), "free edge" );
   RSS( ref_histogram_free(ref_histogram), "free gram" );
   return REF_SUCCESS;
