@@ -168,8 +168,6 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
   RSS( ref_mpi_sum( &ref_histogram_total( ref_histogram ), &total, 
 		    1, REF_INT_TYPE ), "total" );
 
-  printf(" t %f\n",total);
-
   if ( ref_mpi_master )
     {
       ref_histogram_max( ref_histogram ) = max;
