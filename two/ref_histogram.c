@@ -8,6 +8,8 @@
 #include "ref_edge.h"
 #include "ref_mpi.h"
 
+#include "ref_math.h"
+
 #include "ref_adapt.h"
 
 REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
@@ -242,6 +244,33 @@ REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram )
     }
 
   ref_free( stats );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_print_stat( REF_HISTOGRAM ref_histogram )
+{
+  REF_INT i;
+  REF_DBL skewness, kurtosis, n, d;
+
+  printf("mom ");
+  for (i=0;i<ref_histogram_nstat(ref_histogram);i++)
+    printf("%12.8f(%d)",ref_histogram_stat( ref_histogram, i ), i);
+  printf("\n");
+
+  n = ref_histogram_stat( ref_histogram, 3 );
+  d = pow(ref_histogram_stat( ref_histogram, 2 ),1.5);
+  skewness = 0.0;
+  if ( ref_math_divisible(n,d) )
+    skewness = n/d;
+
+  n = ref_histogram_stat( ref_histogram, 4 );
+  d = pow(ref_histogram_stat( ref_histogram, 2 ),2);
+  kurtosis = 0.0;
+  if ( ref_math_divisible(n,d) )
+    kurtosis = n/d - 3.0;
+
+  printf("skewness %12.8f kertosis %12.8f\n",skewness,kurtosis);
 
   return REF_SUCCESS;
 }
