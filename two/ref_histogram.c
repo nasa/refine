@@ -170,6 +170,15 @@ REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram,
   REF_INT i;
   FILE *f;
   char filename[1024];
+  REF_INT sum;
+  REF_DBL norm, portion;
+
+  sum = 0;
+  for (i=0;i<ref_histogram_nbin(ref_histogram);i++)
+    sum += ref_histogram_bin( ref_histogram, i );
+  norm = 0.0;
+  if ( 0 < sum )
+    norm = 1.0 / (REF_DBL)sum;
 
   sprintf(filename,"ref_histogram_%s.gnuplot",description);
   f = fopen(filename,"w");
@@ -185,14 +194,16 @@ REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram,
   fprintf(f,"set style fill solid border -1\n");
   fprintf(f,"set boxwidth 0.9\n");
   fprintf(f,"set xtic rotate by -45 scale 0\n");
+  fprintf(f,"set yrange [0:0.7]\n");
   fprintf(f,"plot '-' using 2:xticlabels(1) title '%s'\n",description);
 
   for (i=0;i<ref_histogram_nbin(ref_histogram)-1;i++)
     {
-      fprintf(f,"%.3f-%.3f %d\n", 
+      portion = (REF_DBL)ref_histogram_bin( ref_histogram, i ) * norm;
+      fprintf(f,"%.3f-%.3f %.8f\n", 
 	      ref_histogram_to_obs(i),
 	      ref_histogram_to_obs(i+1),
-	      ref_histogram_bin( ref_histogram, i ));
+	      portion);
     }
 
   fclose(f);
