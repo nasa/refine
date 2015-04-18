@@ -9,7 +9,7 @@ dnl AC_INIT([refine], [1.8.16], [fun3d-support@lists.nasa.gov])
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_SRCDIR([src/refine_defs.h])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([tar-pax])
 
 AC_ARG_ENABLE(exec,
 	[  --enable-exec[=ARG]       build stand alone executables [ARG=yes]],
