@@ -2,7 +2,7 @@
 
 bin=${HOME}/refine/strict/two
 
-proj=epic_L2_qShape_InsertCollapse
+proj=epic_L2_qShape_InsertCollapseSwapMove
 
 ${bin}/ref_translate ${proj}.b8.ugrid accept-3d.tec
 
