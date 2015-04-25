@@ -37,25 +37,19 @@ int main( int argc, char *argv[] )
 
   if ( 2 == argc )
     {
-      REF_GRID ref_grid;
-
-      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
-      RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
-
-      {
-	REF_DBL *metric;
-	ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
-	RSS( ref_metric_imply_from( metric, ref_grid ), 
-	     "from");
-	RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
-	RSS( ref_node_ghost_real( ref_grid_node(ref_grid) ), "ghost real");
-	ref_free( metric );
-      }
-
-      RSS( ref_histogram_ratio( ref_grid ), "gram");
-
-      RSS( ref_grid_free( ref_grid ), "free");
-      RSS( ref_mpi_stop(  ), "stop" );
+      FILE *file;
+      REF_DBL ratio;
+      REF_INT n;
+      file = fopen(argv[1],"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",argv[1]);
+      RNS(file, "unable to open file" );
+      n=0;
+      while(1 == fscanf(file,"%lf",&ratio))
+	{
+	  n++;
+	}
+      printf("%d lines\n",n);
+      fclose(file);
       return 0;
     }
 
