@@ -37,19 +37,25 @@ int main( int argc, char *argv[] )
 
   if ( 2 == argc )
     {
+      REF_HISTOGRAM ref_histogram;
       FILE *file;
       REF_DBL ratio;
-      REF_INT n;
+      RSS( ref_histogram_create(&ref_histogram),"create");
       file = fopen(argv[1],"r");
       if (NULL == (void *)file) printf("unable to open %s\n",argv[1]);
       RNS(file, "unable to open file" );
-      n=0;
       while(1 == fscanf(file,"%lf",&ratio))
 	{
-	  n++;
+	  RSS( ref_histogram_add( ref_histogram, ratio ), "add");
 	}
-      printf("%d lines\n",n);
       fclose(file);
+
+      RSS( ref_histogram_gather( ref_histogram ), "gather");
+      if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram,
+						      "edge ratio"), "print");
+      if ( 1 == ref_mpi_n ) RSS( ref_histogram_export( ref_histogram,
+						       "edge-ratio"), "print");
+
       return 0;
     }
 
