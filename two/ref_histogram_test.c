@@ -40,7 +40,9 @@ int main( int argc, char *argv[] )
       REF_HISTOGRAM ref_histogram;
       FILE *file;
       REF_DBL ratio;
+      
       RSS( ref_histogram_create(&ref_histogram),"create");
+
       file = fopen(argv[1],"r");
       if (NULL == (void *)file) printf("unable to open %s\n",argv[1]);
       RNS(file, "unable to open file" );
@@ -55,6 +57,21 @@ int main( int argc, char *argv[] )
 						      "edge ratio"), "print");
       if ( 1 == ref_mpi_n ) RSS( ref_histogram_export( ref_histogram,
 						       "edge-ratio"), "print");
+
+      file = fopen(argv[1],"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",argv[1]);
+      RNS(file, "unable to open file" );
+      while(1 == fscanf(file,"%lf",&ratio))
+	{
+	  RSS( ref_histogram_add_stat( ref_histogram, ratio ), "add");
+	}
+      fclose(file);
+
+      RSS( ref_histogram_gather_stat( ref_histogram ), "gather");
+      if ( ref_mpi_master ) 
+	RSS( ref_histogram_print_stat( ref_histogram), "pr stat");
+      
+      RSS( ref_histogram_free(ref_histogram), "free gram" );
 
       return 0;
     }
