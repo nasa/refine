@@ -9,6 +9,7 @@ typedef struct REF_HISTOGRAM_STRUCT REF_HISTOGRAM_STRUCT;
 typedef REF_HISTOGRAM_STRUCT * REF_HISTOGRAM;
 END_C_DECLORATION
 
+#include <stdio.h>
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
@@ -20,6 +21,7 @@ struct REF_HISTOGRAM_STRUCT {
   REF_INT *bins;
   REF_INT nstat;
   REF_DBL *stats;
+  FILE *df;
 };
 
 REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram );
@@ -59,6 +61,9 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid );
 REF_STATUS ref_histogram_quality( REF_GRID ref_grid );
 
 REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid );
+
+REF_STATUS ref_histogram_debug( REF_HISTOGRAM ref_histogram,
+				char *filename );
 
 END_C_DECLORATION
 

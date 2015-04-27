@@ -34,12 +34,15 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
   ref_malloc_init( ref_histogram->stats, 
 		   ref_histogram_nstat(ref_histogram), REF_DBL, 0.0 );
 
+  ref_histogram->df = NULL;
+
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_histogram_free( REF_HISTOGRAM ref_histogram )
 {
   if ( NULL == (void *)ref_histogram ) return REF_NULL;
+  if ( NULL != ref_histogram->df ) fclose(ref_histogram->df);
   ref_free( ref_histogram->stats );
   ref_free( ref_histogram->bins );
   ref_free( ref_histogram );
@@ -71,6 +74,9 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram,
     observation,
     ref_histogram_to_obs(i-1));
   */
+
+  if ( NULL != ref_histogram->df ) 
+    fprintf(ref_histogram->df,"%f\n",observation);
 
   return REF_SUCCESS;
 }
@@ -478,6 +484,16 @@ REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid )
 
   fclose(file);
   RSS( ref_edge_free(ref_edge), "free edge" );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_debug( REF_HISTOGRAM ref_histogram,
+				char *filename )
+{
+  ref_histogram->df = fopen(filename,"w");
+  if (NULL == (void *)ref_histogram->df) printf("unable to open %s\n",filename);
+  RNS(ref_histogram->df, "unable to open file" );
 
   return REF_SUCCESS;
 }
