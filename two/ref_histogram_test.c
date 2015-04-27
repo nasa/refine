@@ -163,6 +163,17 @@ int main( int argc, char *argv[] )
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
+  { /* mean init */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL obs;
+    REF_INT bin;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    obs = 1.00001;
+    bin = ref_histogram_to_bin(obs);
+    REIS(10,bin,"wrong bin");
+    RSS(ref_histogram_free(ref_histogram),"free");
+  }
+
   RSS( ref_mpi_stop(  ), "stop" );
   return 0;
 }
