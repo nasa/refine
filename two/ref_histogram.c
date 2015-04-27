@@ -68,12 +68,13 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram,
 
   ref_histogram_bin( ref_histogram, i )++;
 
-  /*
-    printf("%f:%f:%f\n",
-    ref_histogram_to_obs(i),
-    observation,
-    ref_histogram_to_obs(i-1));
-  */
+
+  if (REF_FALSE)
+    printf("%f < %f <= %f --> bucket[%d]\n",
+	   ref_histogram_to_obs(i-1),
+	   observation,
+	   ref_histogram_to_obs(i),
+	   i);
 
   if ( NULL != ref_histogram->df ) 
     fprintf(ref_histogram->df,"%f\n",observation);
