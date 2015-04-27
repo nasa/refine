@@ -301,6 +301,10 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
   REF_BOOL active;
 
   RSS( ref_histogram_create(&ref_histogram),"create");
+  
+  if ( REF_FALSE )
+    RSS( ref_histogram_debug(ref_histogram,"ref_histogram.len"),"dbug");
+
   RSS( ref_edge_create( &ref_edge, ref_grid ), "make edges" );
 
   for (edge=0;edge< ref_edge_n(ref_edge);edge++)
