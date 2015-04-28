@@ -207,7 +207,7 @@ REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram,
   for (i=0;i<ref_histogram_nbin(ref_histogram)-1;i++)
     {
       portion = (REF_DBL)ref_histogram_bin( ref_histogram, i ) * norm;
-      fprintf(f,"%.3f-%.3f %.8f\n", 
+      fprintf(f,"%.3f-%.3f %.5f\n", 
 	      ref_histogram_to_obs(i),
 	      ref_histogram_to_obs(i+1),
 	      portion);
