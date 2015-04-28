@@ -201,7 +201,7 @@ REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram,
   fprintf(f,"set style fill solid border -1\n");
   fprintf(f,"set boxwidth 0.9\n");
   fprintf(f,"set xtic rotate by -45 scale 0\n");
-  fprintf(f,"set yrange [0:0.7]\n");
+  fprintf(f,"set yrange [0:0.4]\n");
   fprintf(f,"plot '-' using 2:xticlabels(1) title '%s' linecolor rgb \"#FF0000\"\n",description);
 
   for (i=0;i<ref_histogram_nbin(ref_histogram)-1;i++)
