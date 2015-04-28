@@ -163,7 +163,7 @@ int main( int argc, char *argv[] )
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
-  { /* mean init */
+  { /* larger than 1 */
     REF_HISTOGRAM ref_histogram;
     REF_DBL obs;
     REF_INT bin;
@@ -171,6 +171,17 @@ int main( int argc, char *argv[] )
     obs = 1.00001;
     bin = ref_histogram_to_bin(obs);
     REIS(10,bin,"wrong bin");
+    RSS(ref_histogram_free(ref_histogram),"free");
+  }
+
+  { /* first box */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL obs;
+    REF_INT bin;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    obs = 0.00001;
+    bin = ref_histogram_to_bin(obs);
+    REIS(0,bin,"wrong bin");
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
