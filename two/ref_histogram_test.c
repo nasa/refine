@@ -163,6 +163,18 @@ int main( int argc, char *argv[] )
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
+  { /* smaller than 1 */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL obs;
+    REF_INT bin;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    obs = 0.99999;
+    bin = ref_histogram_to_bin(obs);
+    REIS(9,bin,"wrong bin");
+    RAS(obs>=ref_histogram_to_obs(bin),  "lower bound");
+    RAS(obs<=ref_histogram_to_obs(bin+1),"upper bound");
+    RSS(ref_histogram_free(ref_histogram),"free");
+  }
   { /* larger than 1 */
     REF_HISTOGRAM ref_histogram;
     REF_DBL obs;
@@ -171,6 +183,8 @@ int main( int argc, char *argv[] )
     obs = 1.00001;
     bin = ref_histogram_to_bin(obs);
     REIS(10,bin,"wrong bin");
+    RAS(obs>=ref_histogram_to_obs(bin),  "lower bound");
+    RAS(obs<=ref_histogram_to_obs(bin+1),"upper bound");
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
@@ -179,9 +193,22 @@ int main( int argc, char *argv[] )
     REF_DBL obs;
     REF_INT bin;
     RSS(ref_histogram_create(&ref_histogram),"create");
-    obs = 0.00001;
+    obs = 1e-10;
     bin = ref_histogram_to_bin(obs);
     REIS(0,bin,"wrong bin");
+    RAS(obs<=ref_histogram_to_obs(bin+1),"upper bound");
+   RSS(ref_histogram_free(ref_histogram),"free");
+  }
+  
+  { /* last box */
+    REF_HISTOGRAM ref_histogram;
+    REF_DBL obs;
+    REF_INT bin;
+    RSS(ref_histogram_create(&ref_histogram),"create");
+    obs = 1e10;
+    bin = ref_histogram_to_bin(obs);
+    REIS(ref_histogram_nbin(ref_histogram)-1,bin,"wrong bin");
+    RAS(obs>ref_histogram_to_obs(bin),"upper bound");
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
