@@ -37,10 +37,10 @@ REF_STATUS ref_histogram_free( REF_HISTOGRAM ref_histogram );
 #define ref_histogram_stat( ref_histogram, i ) ((ref_histogram)->stats[(i)])
 
 #define ref_histogram_to_bin(o) \
-  MAX(MIN( (floor(6.4*log2((o)))) + ref_histogram_nbin(ref_histogram)/2,  ref_histogram_nbin(ref_histogram)-1),0)
+  MAX(MIN( (floor((9.0/1.5)*log2((o)))) + ref_histogram_nbin(ref_histogram)/2,  ref_histogram_nbin(ref_histogram)-1),0)
 
 #define ref_histogram_to_obs(i) \
-  ( pow(2.0,0.15625*((REF_DBL)((i)-ref_histogram_nbin(ref_histogram)/2) ) ) )
+  ( pow(2.0,(1.5/9.0)*((REF_DBL)((i)-ref_histogram_nbin(ref_histogram)/2) ) ) )
 
 REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, 
 			      REF_DBL observation );

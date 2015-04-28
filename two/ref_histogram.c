@@ -19,7 +19,7 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
   ref_malloc( *ref_histogram_ptr, 1, REF_HISTOGRAM_STRUCT );
   ref_histogram = (*ref_histogram_ptr);
 
-  ref_histogram_nbin(ref_histogram) = 21;
+  ref_histogram_nbin(ref_histogram) = 18;
 
   ref_malloc_init( ref_histogram->bins, 
 		   ref_histogram_nbin(ref_histogram), REF_INT, 0 );
