@@ -115,6 +115,11 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 	{
 	  RSS( ref_export_tec( ref_grid, filename ), "tec export failed");
 	} 
+    else 
+      if( strcmp(&filename[end_of_string-4],".plt") == 0 ) 
+	{
+	  RSS( ref_export_plt( ref_grid, filename ), "plt export failed");
+	} 
       else 
 	if( strcmp(&filename[end_of_string-4],".eps") == 0 ) 
 	  {
