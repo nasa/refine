@@ -49,6 +49,8 @@ REF_STATUS ref_export_twod_msh( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_metric2d( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_twod_sol( REF_GRID ref_grid, char *filename );
 
+REF_STATUS ref_export_plt( REF_GRID ref_grid, char *filename );
+
 END_C_DECLORATION
 
 #endif /* REF_EXPORT_H */

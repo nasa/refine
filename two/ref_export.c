@@ -2061,3 +2061,95 @@ REF_STATUS ref_export_twod_sol( REF_GRID ref_grid, char *filename )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_export_plt( REF_GRID ref_grid, char *filename  )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  FILE *file;
+  int one = 1;
+  int filetype = 0;
+  int ascii[8];
+  int numvar = 3;
+  float zonemarker = 299.0;
+  int parentzone = -1;
+  int strandid = -1;
+  double solutiontime = 0.0;
+  int notused = -1;
+  int zonetype = 4; /*4=FETETRAHEDRON*/
+  int datapacking = 1; /*1=Point*/
+  int varloc = 0; /*0 = Don't specify, all data is located at nodes*/
+  int faceneighbors = 0;
+  int numpts = ref_node_n(ref_node);
+  int numelements = ref_cell_n(ref_cell);
+  int celldim = 0;
+  int aux = 0;
+  float eohmarker = 357.0;
+  int dataformat = 1;
+  int passive = 0;
+  int varsharing = 0;
+  int connsharing = -1;
+  float data;
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  printf("%p\n",(void *)ref_grid);
+
+  REIS(8, fwrite(&"#!TDV112",sizeof(char),8,file),"header");
+  REIS(1, fwrite(&one,sizeof(int),1,file),"magic");
+  REIS(1, fwrite(&filetype,sizeof(int),1,file),"filetype");
+
+  ascii[0] = (int)'f';
+  ascii[1] = (int)'t';
+  ascii[2] = 0;
+  REIS(3, fwrite(&ascii,sizeof(int),3,file),"title");
+
+  REIS(1, fwrite(&numvar,sizeof(int),1,file),"numvar");
+  ascii[0] = (int)'x';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii,sizeof(int),2,file),"var");
+  ascii[0] = (int)'y';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii,sizeof(int),2,file),"var");
+  ascii[0] = (int)'z';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii,sizeof(int),2,file),"var");
+
+  REIS(1, fwrite(&zonemarker,sizeof(float),1,file),"zonemarker");
+
+  ascii[0] = (int)'e';
+  ascii[1] = (int)'4';
+  ascii[2] = 0;
+  REIS(3, fwrite(&ascii,sizeof(int),3,file),"title");
+
+  REIS(1, fwrite(&parentzone,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&strandid,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&solutiontime,sizeof(double),1,file),"double");
+  REIS(1, fwrite(&notused,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&zonetype,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&datapacking,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&varloc,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&faceneighbors,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&numpts,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&numelements,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&celldim,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&celldim,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&celldim,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&aux,sizeof(int),1,file),"int");
+
+  REIS(1, fwrite(&eohmarker,sizeof(float),1,file),"eohmarker");
+  REIS(1, fwrite(&zonemarker,sizeof(float),1,file),"zonemarker");
+
+  REIS(1, fwrite(&dataformat,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&dataformat,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&dataformat,sizeof(int),1,file),"int");
+
+  REIS(1, fwrite(&passive,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&varsharing,sizeof(int),1,file),"int");
+  REIS(1, fwrite(&connsharing,sizeof(int),1,file),"int");
+
+  fclose(file);
+  return REF_SUCCESS;
+}
