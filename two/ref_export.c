@@ -2082,7 +2082,7 @@ REF_STATUS ref_export_plt( REF_GRID ref_grid, char *filename  )
   double solutiontime = 0.0;
   int notused = -1;
   int zonetype = 4; /*4=FETETRAHEDRON*/
-  int datapacking = 0; /*1=Point*/
+  int datapacking = 0; /*0=Block, point does not work.*/
   int varloc = 0; /*0 = Don't specify, all data is located at nodes*/
   int faceneighbors = 0;
   int numpts = ref_node_n(ref_node);
