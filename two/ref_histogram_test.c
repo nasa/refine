@@ -76,6 +76,20 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+  /*
+
+#!/usr/bin/env octave
+
+nbin = 18
+
+for i=0:nbin
+  bin=i-9;
+  ex=1.5/9*bin;
+  printf("%2d : %3d : %f : 2^%f\n",i,bin,2^ex,ex)
+end
+
+   */
+
   {
     REF_HISTOGRAM ref_histogram;
     REIS(REF_NULL, ref_histogram_free(NULL),"dont free NULL");
