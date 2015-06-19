@@ -50,6 +50,7 @@ REF_STATUS ref_export_metric2d( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_twod_sol( REF_GRID ref_grid, char *filename );
 
 REF_STATUS ref_export_plt( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_export_plt_tet_zone( REF_GRID ref_grid, FILE *file );
 
 END_C_DECLORATION
 

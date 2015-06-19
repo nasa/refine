@@ -2069,37 +2069,11 @@ REF_STATUS ref_export_twod_sol( REF_GRID ref_grid, char *filename )
 
 REF_STATUS ref_export_plt( REF_GRID ref_grid, char *filename  )
 {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   FILE *file;
   int one = 1;
   int filetype = 0;
   int ascii[8];
   int numvar = 3;
-  float zonemarker = 299.0;
-  int parentzone = -1;
-  int strandid = -1;
-  double solutiontime = 0.0;
-  int notused = -1;
-  int zonetype = 4; /*4=FETETRAHEDRON*/
-  int datapacking = 0; /*0=Block, point does not work.*/
-  int varloc = 0; /*0 = Don't specify, all data is located at nodes*/
-  int faceneighbors = 0;
-  int numpts = ref_node_n(ref_node);
-  int numelements = ref_cell_n(ref_cell);
-  int celldim = 0;
-  int aux = 0;
-  float eohmarker = 357.0;
-  int dataformat = 1;
-  int passive = 0;
-  int varsharing = 0;
-  int connsharing = -1;
-  float data;
-  double mindata, maxdata;
-  REF_INT *o2n, *n2o;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT cell, node, node_per, ixyz;
-  int index;
 
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -2124,6 +2098,43 @@ REF_STATUS ref_export_plt( REF_GRID ref_grid, char *filename  )
   ascii[0] = (int)'z';
   ascii[1] = 0;
   REIS(2, fwrite(&ascii,sizeof(int),2,file),"var");
+
+  RSS(ref_export_plt_tet_zone( ref_grid, file ), "plt tet zone" );
+  
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_plt_tet_zone( REF_GRID ref_grid, FILE *file )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  int ascii[8];
+  float zonemarker = 299.0;
+  int parentzone = -1;
+  int strandid = -1;
+  double solutiontime = 0.0;
+  int notused = -1;
+  int zonetype = 4; /*4=FETETRAHEDRON*/
+  int datapacking = 0; /*0=Block, point does not work.*/
+  int varloc = 0; /*0 = Don't specify, all data is located at nodes*/
+  int faceneighbors = 0;
+  int numpts = ref_node_n(ref_node);
+  int numelements = ref_cell_n(ref_cell);
+  int celldim = 0;
+  int aux = 0;
+  float eohmarker = 357.0;
+  int dataformat = 1;
+  int passive = 0;
+  int varsharing = 0;
+  int connsharing = -1;
+  float data;
+  double mindata, maxdata;
+  REF_INT *o2n, *n2o;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell, node, node_per, ixyz;
+  int index;
 
   REIS(1, fwrite(&zonemarker,sizeof(float),1,file),"zonemarker");
 
@@ -2192,8 +2203,6 @@ REF_STATUS ref_export_plt( REF_GRID ref_grid, char *filename  )
 
   ref_free(n2o);
   ref_free(o2n);
-
-  fclose(file);
 
   return REF_SUCCESS;
 }
