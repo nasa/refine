@@ -2206,3 +2206,134 @@ REF_STATUS ref_export_plt_tet_zone( REF_GRID ref_grid, FILE *file )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_export_plt_surf_zone( REF_GRID ref_grid, FILE *file )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  int ascii[8];
+  float zonemarker = 299.0;
+  int parentzone = -1;
+  int strandid = -1;
+  double solutiontime = 0.0;
+  int notused = -1;
+  int zonetype = 3; /*3=FEQUADRILATERAL*/
+  int datapacking = 0; /*0=Block, point does not work.*/
+  int varloc = 0; /*0 = Don't specify, all data is located at nodes*/
+  int faceneighbors = 0;
+  int numpts = ref_node_n(ref_node);
+  int numelements = ref_cell_n(ref_cell);
+  int celldim = 0;
+  int aux = 0;
+  float eohmarker = 357.0;
+  int dataformat = 1;
+  int passive = 0;
+  int varsharing = 0;
+  int connsharing = -1;
+  float data;
+  double mindata, maxdata;
+  REF_INT *g2l, *l2g;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell, node, ixyz;
+  int index;
+
+  REF_DICT ref_dict;
+  REF_INT boundary_tag,boundary_index;
+  REF_INT nnode, nface;
+  
+  RSS( ref_dict_create( &ref_dict ), "create dict" ); 
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    RSS( ref_dict_store( ref_dict, nodes[3], REF_EMPTY ), "mark tri" );
+
+  each_ref_dict_key( ref_dict, boundary_index, boundary_tag )
+    {
+      RSS( ref_grid_boundary_nodes( ref_grid, boundary_tag,
+				    &nnode, &nface, &g2l, &l2g ),
+	   "extract this boundary");
+
+      REIS(1, fwrite(&zonemarker,sizeof(float),1,file),"zonemarker");
+
+      ascii[0] = (int)'s';
+      ascii[1] = 0;
+      REIS(2, fwrite(&ascii,sizeof(int),2,file),"title");
+
+      numpts = nnode;
+      numelements = nface;
+      
+      REIS(1, fwrite(&parentzone,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&strandid,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&solutiontime,sizeof(double),1,file),"double");
+      REIS(1, fwrite(&notused,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&zonetype,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&datapacking,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&varloc,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&faceneighbors,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&numpts,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&numelements,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&celldim,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&celldim,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&celldim,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&aux,sizeof(int),1,file),"int");
+
+      REIS(1, fwrite(&eohmarker,sizeof(float),1,file),"eohmarker");
+      REIS(1, fwrite(&zonemarker,sizeof(float),1,file),"zonemarker");
+
+      REIS(1, fwrite(&dataformat,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&dataformat,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&dataformat,sizeof(int),1,file),"int");
+
+      REIS(1, fwrite(&passive,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&varsharing,sizeof(int),1,file),"int");
+      REIS(1, fwrite(&connsharing,sizeof(int),1,file),"int");
+
+      for (ixyz=0; ixyz <3;ixyz++)
+	{
+	  mindata = ref_node_xyz(ref_node,ixyz,l2g[0]);
+	  maxdata = ref_node_xyz(ref_node,ixyz,l2g[0]);
+	  for ( node = 1; node < nnode; node++ )
+	    {
+	      mindata = MIN(mindata,ref_node_xyz(ref_node,ixyz,l2g[node]));
+	      maxdata = MAX(maxdata,ref_node_xyz(ref_node,ixyz,l2g[node])); 
+	    }
+	  REIS(1, fwrite(&mindata,sizeof(double),1,file),"mindata");
+	  REIS(1, fwrite(&maxdata,sizeof(double),1,file),"maxdata");
+	}
+
+      for (ixyz=0; ixyz <3;ixyz++)
+	for ( node = 0; node < nnode ; node++ )
+	  {
+	    data = ref_node_xyz(ref_node,ixyz,l2g[node]);
+	    REIS(1, fwrite(&data,sizeof(float),1,file),"data");
+	  }
+
+      ref_cell = ref_grid_tri(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	if ( boundary_tag == nodes[3] )
+	  {
+	    nodes[3] = nodes[2];
+	    for ( node = 0; node < 4; node++ )
+	      {
+		index = g2l[nodes[node]];
+		REIS(1, fwrite(&index,sizeof(int),1,file),"index");
+	      }
+	  }
+
+      ref_cell = ref_grid_qua(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	if ( boundary_tag == nodes[4] )
+	  {
+	    for ( node = 0; node < 4; node++ )
+	      {
+		index = g2l[nodes[node]];
+		REIS(1, fwrite(&index,sizeof(int),1,file),"index");
+	      }
+	  }
+
+      ref_free(l2g);
+      ref_free(g2l);
+    }
+
+  return REF_SUCCESS;
+}
