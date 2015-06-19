@@ -274,13 +274,13 @@ static REF_STATUS ref_smooth_tet_tri_fixture( REF_GRID *ref_grid_ptr,
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 0.0;
 
+  *target_node = node;
+  
   RSS(ref_node_add(ref_node,1,&node),"node");
   ref_node_xyz(ref_node,0,node) = 0.0;
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
-  *target_node = node;
-  
   RSS(ref_node_add(ref_node,2,&node),"node");
   ref_node_xyz(ref_node,0,node) = 0.0;
   ref_node_xyz(ref_node,1,node) = 1.0;
@@ -566,6 +566,26 @@ int main( int argc, char *argv[] )
 
     RSS(ref_grid_free(ref_grid),"free");
   }
+
+ { /* planar tri face on tet grid */
+   REF_GRID ref_grid;
+   REF_INT target_node;
+   REF_INT cell;
+   REF_DBL ideal[3];
+   RSS( ref_smooth_tet_tri_fixture( &ref_grid, &target_node ), "fix" );
+
+   ref_node_xyz(ref_grid_node(ref_grid),0,target_node) = 0.5;
+
+   cell = 0;
+   RSS(ref_smooth_tri_ideal(ref_grid, target_node, cell, ideal),"ideal");
+
+   RWDS( 0.1123724356957946, ideal[0],-1,"ideal x");
+   RWDS(-0.1123724356957946, ideal[1],-1,"ideal y");
+   RWDS( 0.0,                ideal[2],-1,"ideal z");
+
+   
+   RSS( ref_grid_free( ref_grid ), "free");
+ }
 
   return 0;
 }
