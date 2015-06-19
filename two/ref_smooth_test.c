@@ -262,7 +262,7 @@ static REF_STATUS ref_smooth_tet_tri_fixture( REF_GRID *ref_grid_ptr,
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT cell;
+  REF_INT node, cell;
   
   RSS(ref_grid_create(ref_grid_ptr),"create");
   ref_grid =  *ref_grid_ptr;
@@ -279,6 +279,8 @@ static REF_STATUS ref_smooth_tet_tri_fixture( REF_GRID *ref_grid_ptr,
   ref_node_xyz(ref_node,1,node) = 0.0;
   ref_node_xyz(ref_node,2,node) = 1.0;
 
+  *target_node = node;
+  
   RSS(ref_node_add(ref_node,2,&node),"node");
   ref_node_xyz(ref_node,0,node) = 0.0;
   ref_node_xyz(ref_node,1,node) = 1.0;
@@ -345,6 +347,24 @@ int main( int argc, char *argv[] )
 
       RSS( ref_export_tec_surf( ref_grid, "ref_smooth_test_0.tec" ),
            "surf");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      RSS( ref_mpi_stop( ), "stop" );
+    }
+
+  if ( argc == 2 )
+    {
+      REF_GRID ref_grid;
+      REF_INT target_node;
+
+      RSS( ref_mpi_start( argc, argv ), "start" );
+
+      RSS( ref_smooth_tet_tri_fixture( &ref_grid, &target_node ), "fix" );
+      /*      SUPRESS_UNUSED_COMPILER_WARNING(&target_node);*/
+      
+      RSS( ref_export_by_extension( ref_grid, argv[1] ),
+           "fixture");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
