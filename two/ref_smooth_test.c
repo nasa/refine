@@ -361,7 +361,6 @@ int main( int argc, char *argv[] )
       RSS( ref_mpi_start( argc, argv ), "start" );
 
       RSS( ref_smooth_tet_tri_fixture( &ref_grid, &target_node ), "fix" );
-      /*      SUPRESS_UNUSED_COMPILER_WARNING(&target_node);*/
       
       RSS( ref_export_by_extension( ref_grid, argv[1] ),
            "fixture");
