@@ -256,6 +256,78 @@ static REF_STATUS ref_smooth_tet_two_fixture( REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_smooth_tet_tri_fixture( REF_GRID *ref_grid_ptr, 
+					      REF_INT *target_node )
+{
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  
+  RSS(ref_grid_create(ref_grid_ptr),"create");
+  ref_grid =  *ref_grid_ptr;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_node_add(ref_node,0,&node),"node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,1,&node),"node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 1.0;
+
+  RSS(ref_node_add(ref_node,2,&node),"node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) = 1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,3,&node),"node");
+  ref_node_xyz(ref_node,0,node) =-1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,4,&node),"node");
+  ref_node_xyz(ref_node,0,node) = 0.0;
+  ref_node_xyz(ref_node,1,node) =-1.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  RSS(ref_node_add(ref_node,5,&node),"node");
+  ref_node_xyz(ref_node,0,node) = 1.0;
+  ref_node_xyz(ref_node,1,node) = 0.0;
+  ref_node_xyz(ref_node,2,node) = 0.0;
+
+  /*  2
+
+  3   01  5
+
+      4  */
+
+  nodes[0] = 0; nodes[3] = 1; /* common tet top node and face id */
+
+  nodes[1] = 2; nodes[2] = 3;
+  RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tet");
+
+  nodes[1] = 3; nodes[2] = 4;
+  RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tet");
+
+  nodes[1] = 4; nodes[2] = 5;
+  RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tet");
+
+  nodes[1] = 5; nodes[2] = 2;
+  RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
+  RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add tet");
+
+  RSS( ref_metric_unit_node( ref_node ), "unit node" );
+
+  return REF_SUCCESS;
+}
+
 int main( int argc, char *argv[] )
 {
 
