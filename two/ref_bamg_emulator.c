@@ -39,7 +39,8 @@ int main( int argc, char *argv[] )
   printf("'%s'\n",output_filename);
 
   RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
-
+  ref_grid_inspect(ref_grid);
+  RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
 
   
   RSS( ref_export_by_extension( ref_grid, output_filename ), "out" );
