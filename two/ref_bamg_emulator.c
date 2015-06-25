@@ -17,24 +17,28 @@ int main( int argc, char *argv[] )
   char *output_filename = NULL;
   char *metric_filename = NULL;
   REF_INT location;
+
+  REF_GRID ref_grid;
   
   RSS( ref_args_find( argc, argv, "-b", &location), "-b argument missing" );
-  printf(" %s : ",argv[location]);
+  printf(" %s ",argv[location]);
   RAS( location<argc-1, "-b missing");
   input_filename = argv[1+location];
-  printf(" %s : ",input_filename);
+  printf("'%s'\n",input_filename);
   
   RSS( ref_args_find( argc, argv, "-M", &location), "-M argument missing" );
-  printf(" %s : ",argv[location]);
+  printf(" %s ",argv[location]);
   RAS( location<argc-1, "-M missing");
   metric_filename = argv[1+location];
-  printf(" %s : ",metric_filename);
+  printf("'%s'\n",metric_filename);
   
   RSS( ref_args_find( argc, argv, "-o", &location), "-o argument missing" );
-  printf(" %s : ",argv[location]);
+  printf(" %s ",argv[location]);
   RAS( location<argc-1, "-o missing");
   output_filename = argv[1+location];
-  printf(" %s : ",output_filename);
+  printf("'%s'\n",output_filename);
+
+  RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
   
   return 0;
 }
