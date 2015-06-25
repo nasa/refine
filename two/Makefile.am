@@ -6,6 +6,7 @@ lib_LIBRARIES = libref2.a
 libref2_a_SOURCES = \
 	ref_adapt.c ref_adapt.h \
 	ref_adj.c ref_adj.h \
+	ref_args.c ref_args.h \
 	ref_axi.c ref_axi.h \
 	ref_cavity.c ref_cavity.h \
 	ref_cell.c ref_cell.h \
@@ -101,6 +102,11 @@ TESTS += ref_adj_test
 noinst_PROGRAMS += ref_adj_test
 ref_adj_test_SOURCES = ref_adj_test.c
 ref_adj_test_LDADD = libref2.a @mpi_ldadd@ -lm
+
+TESTS += ref_args_test
+noinst_PROGRAMS += ref_args_test
+ref_args_test_SOURCES = ref_args_test.c
+ref_args_test_LDADD = libref2.a @mpi_ldadd@ -lm
 
 TESTS += ref_axi_test
 noinst_PROGRAMS += ref_axi_test
