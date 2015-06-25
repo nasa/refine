@@ -575,7 +575,6 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, char *filename )
 	      ref_node_metric(ref_node,3,local) = 1.0;
 	      ref_node_metric(ref_node,4,local) = 0.0;
 	      ref_node_metric(ref_node,5,local) = metric[2+3*node];
-
 	      RSS( ref_twod_opposite_node( ref_grid_pri(ref_grid),
 					   local, &opposite ),
 		   "opposite twod node on other plane missing" );
@@ -585,8 +584,6 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, char *filename )
 	      ref_node_metric(ref_node,3,opposite) = 1.0;
 	      ref_node_metric(ref_node,4,opposite) = 0.0;
 	      ref_node_metric(ref_node,5,opposite) = metric[2+3*node];
-	      
-	      THROW("find and copy mate");
 	    }
 	  nnode_read += section_size;
 	}

@@ -10,6 +10,9 @@
 #include "ref_validation.h"
 #include "ref_histogram.h"
 #include "ref_args.h"
+#include "ref_adapt.h"
+#include "ref_mpi.h"
+#include "ref_migrate.h"
 
 int main( int argc, char *argv[] )
 {
@@ -17,6 +20,7 @@ int main( int argc, char *argv[] )
   char *output_filename = NULL;
   char *metric_filename = NULL;
   REF_INT location;
+  REF_INT i, passes;
 
   REF_GRID ref_grid;
   
@@ -42,6 +46,21 @@ int main( int argc, char *argv[] )
   ref_grid_inspect(ref_grid);
   RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
 
+  RSS( ref_histogram_quality( ref_grid ), "gram");
+  RSS( ref_histogram_ratio( ref_grid ), "gram");
+
+  passes = 20;
+  for (i = 0; i<passes; i++ )
+    {
+      printf(" pass %d of %d\n",i,passes);
+      RSS( ref_adapt_pass( ref_grid ), "pass");
+      ref_mpi_stopwatch_stop("pass");
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
+      RSS( ref_histogram_quality( ref_grid ), "gram");
+      RSS( ref_histogram_ratio( ref_grid ), "gram");
+      RSS(ref_migrate_to_balance(ref_grid),"balance");
+      ref_mpi_stopwatch_stop("balance");
+    }
   
   RSS( ref_export_by_extension( ref_grid, output_filename ), "out" );
 
