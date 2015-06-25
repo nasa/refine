@@ -585,8 +585,8 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, char *filename )
 	      ref_node_metric(ref_node,4,opposite) = 0.0;
 	      ref_node_metric(ref_node,5,opposite) = metric[2+3*node];
 	    }
-	  nnode_read += section_size;
 	}
+      nnode_read += section_size;
     }
 
   ref_free( metric );
