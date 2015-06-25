@@ -15,6 +15,8 @@
 
 #include "ref_export.h"
 
+#include "ref_twod.h"
+
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 {
   FILE *file;
@@ -505,6 +507,89 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, char *filename )
 	      ref_node_metric(ref_node,im,local) = metric[im+6*node];
 	}
       nnode_read += section_size;
+    }
+
+  ref_free( metric );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, char *filename )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  FILE *file;
+  REF_INT chunk;
+  REF_DBL *metric;
+  REF_INT file_nnode, nnode_read, section_size;
+  REF_INT node, local, opposite, global;
+  REF_INT nterm, nnode;
+
+  nnode = ref_node_n_global(ref_node)/2;
+  
+  file = NULL;
+  if ( ref_mpi_master )
+    {
+      file = fopen(filename,"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+      REIS( 2, fscanf(file, "%d %d", 
+		      &file_nnode, &nterm),"read header" );
+      REIS( nnode, file_nnode, "wrong node count" );
+      REIS( 3, nterm, "expected 3 term 2x2 anisotropic M" );
+    }
+
+  chunk = MAX(100000, nnode/ref_mpi_n);
+  chunk = MIN( chunk, nnode );
+
+  ref_malloc_init( metric, 3*chunk, REF_DBL, -1.0 );
+  
+  nnode_read = 0;
+  while ( nnode_read < nnode )
+    {
+      section_size = MIN(chunk,ref_node_n_global(ref_node)-nnode_read);
+      if ( ref_mpi_master )
+	{
+	  for (node=0;node<section_size;node++)
+	    {
+	      REIS( 3, fscanf( file, "%lf %lf %lf", 
+			       &(metric[0+3*node]),
+			       &(metric[1+3*node]),
+			       &(metric[2+3*node]) ), "metric read error" );
+	    }
+	  RSS( ref_mpi_bcast( metric, 3*chunk, REF_DBL_TYPE ), "bcast" );
+	}
+      else
+	{
+	  RSS( ref_mpi_bcast( metric, 3*chunk, REF_DBL_TYPE ), "bcast" );
+	}
+      for (node=0;node<section_size;node++)
+	{
+	  global = node + nnode_read;
+	  RXS( ref_node_local( ref_node, global, &local ), 
+	       REF_NOT_FOUND, "local" );
+	  if ( REF_EMPTY != local )
+	    {
+	      ref_node_metric(ref_node,0,local) = metric[0+3*node];
+	      ref_node_metric(ref_node,1,local) = 0.0;
+	      ref_node_metric(ref_node,2,local) = metric[1+3*node];
+	      ref_node_metric(ref_node,3,local) = 1.0;
+	      ref_node_metric(ref_node,4,local) = 0.0;
+	      ref_node_metric(ref_node,5,local) = metric[2+3*node];
+
+	      RSS( ref_twod_opposite_node( ref_grid_pri(ref_grid),
+					   local, &opposite ),
+		   "opposite twod node on other plane missing" );
+	      ref_node_metric(ref_node,0,opposite) = metric[0+3*node];
+	      ref_node_metric(ref_node,1,opposite) = 0.0;
+	      ref_node_metric(ref_node,2,opposite) = metric[1+3*node];
+	      ref_node_metric(ref_node,3,opposite) = 1.0;
+	      ref_node_metric(ref_node,4,opposite) = 0.0;
+	      ref_node_metric(ref_node,5,opposite) = metric[2+3*node];
+	      
+	      THROW("find and copy mate");
+	    }
+	  nnode_read += section_size;
+	}
     }
 
   ref_free( metric );
