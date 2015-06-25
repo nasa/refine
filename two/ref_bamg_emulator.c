@@ -13,6 +13,7 @@
 #include "ref_adapt.h"
 #include "ref_mpi.h"
 #include "ref_migrate.h"
+#include "ref_metric.h"
 
 int main( int argc, char *argv[] )
 {
@@ -45,6 +46,8 @@ int main( int argc, char *argv[] )
   RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
   ref_grid_inspect(ref_grid);
   RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
+
+  RSS( ref_metric_inspect( ref_grid_node(ref_grid) ), "insp");
 
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
