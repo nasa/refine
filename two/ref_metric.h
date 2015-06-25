@@ -10,6 +10,7 @@
 BEGIN_C_DECLORATION
 
 REF_STATUS ref_metric_show( REF_DBL *metric );
+REF_STATUS ref_metric_inspect( REF_NODE ref_node );
 
 REF_STATUS ref_metric_from_node( REF_DBL *metric, REF_NODE ref_node );
 REF_STATUS ref_metric_to_node( REF_DBL *metric, REF_NODE ref_node );

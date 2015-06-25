@@ -22,6 +22,15 @@ REF_STATUS ref_metric_show( REF_DBL *m )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_inspect( REF_NODE ref_node )
+{
+  REF_INT node;
+  each_ref_node_valid_node( ref_node, node )
+    RSS( ref_metric_show( ref_node_metric_ptr(ref_node,node) ), "show it" );
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_from_node( REF_DBL *metric, REF_NODE ref_node )
 {
   REF_INT node, im;
