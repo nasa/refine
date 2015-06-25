@@ -39,6 +39,10 @@ int main( int argc, char *argv[] )
   printf("'%s'\n",output_filename);
 
   RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
+
+
   
+  RSS( ref_export_by_extension( ref_grid, output_filename ), "out" );
+
   return 0;
 }
