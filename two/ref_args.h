@@ -6,7 +6,7 @@
 
 BEGIN_C_DECLORATION
 
-
+REF_STATUS ref_args_inspect( REF_INT n, char **args );
 
 END_C_DECLORATION
 

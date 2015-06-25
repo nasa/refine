@@ -9,9 +9,7 @@ int main( int argc, char *argv[] )
 
   if ( argc > 1 )
     {
-      REF_INT i;
-      for (i=0;i<argc;i++)
-	printf("%d : '%s'\n",i,argv[i]);
+      RSS(ref_args_inspect( argc, argv ), "echo");
     }
 
   {
@@ -20,11 +18,9 @@ int main( int argc, char *argv[] )
     char *a1 = "-1";
     char *a2 = "-2";
     char *as[3];
-    REF_INT i;
     as[0]=a0; as[1]=a1;as[2]=a2;
-    
-    for (i=0;i<n;i++)
-      printf("%d : '%s'\n",i,as[i]);
+
+    RSS(ref_args_inspect( n, as ), "echo");
   }
 
 
