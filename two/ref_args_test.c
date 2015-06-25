@@ -29,9 +29,7 @@ int main( int argc, char *argv[] )
 
     REIS(REF_NOT_FOUND, ref_args_find( n, as, "--long", &pos ), "not found");
     REIS( REF_EMPTY, pos, "location" );
-}
+  }
 
-
-  
   return 0;
 }
