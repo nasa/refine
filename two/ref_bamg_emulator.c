@@ -14,12 +14,14 @@
 #include "ref_mpi.h"
 #include "ref_migrate.h"
 #include "ref_metric.h"
+#include "ref_malloc.h"
 
 int main( int argc, char *argv[] )
 {
   char *input_filename = NULL;
   char *output_filename = NULL;
   char *metric_filename = NULL;
+  REF_BOOL noop;
   REF_INT location;
   REF_INT i, passes;
 
@@ -30,12 +32,19 @@ int main( int argc, char *argv[] )
   RAS( location<argc-1, "-b missing");
   input_filename = argv[1+location];
   printf("'%s'\n",input_filename);
-  
-  RSS( ref_args_find( argc, argv, "-M", &location), "-M argument missing" );
-  printf(" %s ",argv[location]);
-  RAS( location<argc-1, "-M missing");
-  metric_filename = argv[1+location];
-  printf("'%s'\n",metric_filename);
+
+  RXS( ref_args_find( argc, argv, "-noop", &location ), 
+       REF_NOT_FOUND, "noop" );
+  noop = ( location != REF_EMPTY );
+
+  if ( !noop )
+    {
+      RSS( ref_args_find( argc, argv, "-M", &location), "-M argument missing" );
+      printf(" %s ",argv[location]);
+      RAS( location<argc-1, "-M missing");
+      metric_filename = argv[1+location];
+      printf("'%s'\n",metric_filename);
+    }
   
   RSS( ref_args_find( argc, argv, "-o", &location), "-o argument missing" );
   printf(" %s ",argv[location]);
@@ -45,7 +54,19 @@ int main( int argc, char *argv[] )
 
   RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
   ref_grid_inspect(ref_grid);
-  RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
+  if ( noop )
+    {
+      REF_DBL *metric;
+      ref_malloc( metric, 
+		   6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+      RSS( ref_metric_imply_from( metric, ref_grid ), "imply" );
+      RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
+      ref_free( metric );
+    }
+  else
+    {
+      RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
+    }
 
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
