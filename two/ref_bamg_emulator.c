@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 #include "ref_export.h"
 #include "ref_import.h"
@@ -26,6 +27,12 @@ int main( int argc, char *argv[] )
   REF_INT i, passes;
 
   REF_GRID ref_grid;
+  char timestamp[512];
+
+  time_t rawtime = time(0);
+  struct tm *now = localtime(&rawtime);
+  RAS (0<strftime(timestamp,512,"%Y-%m-%d_%H:%M:%S",now),
+       "unable to format time stamp");
   
   RSS( ref_args_find( argc, argv, "-b", &location), "-b argument missing" );
   printf(" %s ",argv[location]);
@@ -51,6 +58,8 @@ int main( int argc, char *argv[] )
   RAS( location<argc-1, "-o missing");
   output_filename = argv[1+location];
   printf("'%s'\n",output_filename);
+
+  printf("start up at %s\n",timestamp);
 
   RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
   ref_grid_inspect(ref_grid);
