@@ -28,6 +28,7 @@ int main( int argc, char *argv[] )
 
   REF_GRID ref_grid;
   char timestamp[512];
+  char command[1024];
 
   time_t rawtime = time(0);
   struct tm *now = localtime(&rawtime);
@@ -60,9 +61,15 @@ int main( int argc, char *argv[] )
   printf("'%s'\n",output_filename);
 
   printf("start up at %s\n",timestamp);
+  RAS(0<sprintf(command,"cp %s ref-bu-%s-in.msh",
+		input_filename,timestamp),"in");
+  printf("%s",command);
+  REIS( 0, system(command), "cp command failed" );
 
   RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
   ref_grid_inspect(ref_grid);
+
+
   if ( noop )
     {
       REF_DBL *metric;
@@ -75,6 +82,10 @@ int main( int argc, char *argv[] )
   else
     {
       RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
+      RAS(0<sprintf(command,"cp %s ref-bu-%s.metric",
+		    metric_filename,timestamp),"in");
+      printf("%s",command);
+      REIS( 0, system(command), "cp command failed" );
     }
 
   RSS( ref_histogram_quality( ref_grid ), "gram");
@@ -94,6 +105,11 @@ int main( int argc, char *argv[] )
     }
   
   RSS( ref_export_by_extension( ref_grid, output_filename ), "out" );
+
+  RAS(0<sprintf(command,"cp %s ref-bu-%s-out.msh",
+		output_filename,timestamp),"in");
+  printf("%s",command);
+  REIS( 0, system(command), "cp command failed" );
 
   return 0;
 }
