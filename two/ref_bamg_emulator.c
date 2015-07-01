@@ -63,7 +63,7 @@ int main( int argc, char *argv[] )
   printf("start up at %s\n",timestamp);
   RAS(0<sprintf(command,"cp %s ref-bu-%s-in.msh",
 		input_filename,timestamp),"in");
-  printf("%s",command);
+  printf("%s\n",command);
   REIS( 0, system(command), "cp command failed" );
 
   RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
@@ -84,7 +84,7 @@ int main( int argc, char *argv[] )
       RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
       RAS(0<sprintf(command,"cp %s ref-bu-%s.metric",
 		    metric_filename,timestamp),"in");
-      printf("%s",command);
+      printf("%s\n",command);
       REIS( 0, system(command), "cp command failed" );
     }
 
@@ -108,7 +108,7 @@ int main( int argc, char *argv[] )
 
   RAS(0<sprintf(command,"cp %s ref-bu-%s-out.msh",
 		output_filename,timestamp),"in");
-  printf("%s",command);
+  printf("%s\n",command);
   REIS( 0, system(command), "cp command failed" );
 
   return 0;
