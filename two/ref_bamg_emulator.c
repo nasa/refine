@@ -88,6 +88,7 @@ int main( int argc, char *argv[] )
       REIS( 0, system(command), "cp command failed" );
     }
 
+  RSS(ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
 
