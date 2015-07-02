@@ -366,6 +366,7 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality;
+  REF_BOOL active_twod;
 
   RSS( ref_histogram_create(&ref_histogram),"create");
 
@@ -383,6 +384,9 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
 	{
 	  if ( ref_grid_twod(ref_grid) )
 	    {
+	      RSS( ref_node_node_twod( ref_grid_node(ref_grid),nodes[0], 
+				       &active_twod ), "active twod tri" );
+	      if ( !active_twod ) continue;
 	      RSS( ref_node_tri_quality( ref_grid_node(ref_grid),
 					 nodes,&quality ), "qual");
 	    }
