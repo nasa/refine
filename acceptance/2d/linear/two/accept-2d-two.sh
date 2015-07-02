@@ -13,7 +13,7 @@ function adapt_cycle {
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
     ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.0001
-    ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric || exit 1
+    ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric | tee ${proj}.out || exit 1
 
     ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric
     cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
