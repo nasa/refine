@@ -164,9 +164,10 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
 	  }
       }
 
-  printf("%7.3f:%10d max\n", ref_histogram_max( ref_histogram ), sum);
+  printf("%7.3f:%10d max %s\n", 
+	 ref_histogram_max( ref_histogram ), sum, description);
   log_mean = ref_histogram_log_total( ref_histogram ) / (REF_DBL)sum;
-  printf("%18.10f mean\n", pow(2.0,log_mean));
+  printf("%18.10f mean %s\n", pow(2.0,log_mean), description);
 
   return REF_SUCCESS;
 }
