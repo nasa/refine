@@ -91,6 +91,28 @@ REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_masabl_node( REF_NODE ref_node )
+{
+  REF_INT node;
+  REF_DBL hx, hz, c,k1;
+
+  each_ref_node_valid_node( ref_node, node )
+    {
+      hx = 0.01+0.2*cos(ref_math_pi*(ref_node_xyz(ref_node,0,node)-0.5));
+      ref_node_metric(ref_node,0,node) = 1.0/(hx*hx);
+      ref_node_metric(ref_node,1,node) = 0.0;
+      ref_node_metric(ref_node,2,node) = 0.0;
+      ref_node_metric(ref_node,3,node) = 1.0/(0.1*0.1);
+      ref_node_metric(ref_node,4,node) = 0.0;
+      c = 0.001;
+      k1 = 6.0;
+      hz = c*exp(k1*ref_node_xyz(ref_node,2,node));
+      ref_node_metric(ref_node,5,node) = 1.0/(hz*hz);
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_twod_node( REF_NODE ref_node )
 {
   REF_INT node;

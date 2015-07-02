@@ -25,12 +25,30 @@
 #include "ref_fixture.h"
 #include "ref_metric.h"
 #include "ref_gather.h"
+#include "ref_args.h"
 
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  
+  REF_INT masabl_pos;
+
+  RXS(ref_args_find( argc, argv, "-masabl", &masabl_pos ), 
+      REF_NOT_FOUND, "arg");
+
+  if ( REF_EMPTY != masabl_pos )
+    {
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
+
+      RSS( ref_metric_masabl_node( ref_grid_node(ref_grid) ),
+	   "masabl" );
+      if (ref_grid_twod(ref_grid))
+	RSS( ref_metric_twod_node( ref_grid_node(ref_grid) ), "2d" );
+
+      RSS( ref_gather_metric( ref_grid, argv[2] ), "in");
+      return 0;
+    }
+
   if ( 3 == argc )
     {
       switch ( atoi(argv[1]) )

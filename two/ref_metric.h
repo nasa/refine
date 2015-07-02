@@ -17,6 +17,7 @@ REF_STATUS ref_metric_to_node( REF_DBL *metric, REF_NODE ref_node );
 
 REF_STATUS ref_metric_unit_node( REF_NODE ref_node );
 REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h );
+REF_STATUS ref_metric_masabl_node( REF_NODE ref_node );
 REF_STATUS ref_metric_twod_node( REF_NODE ref_node );
 
 REF_STATUS ref_metric_gradation( REF_GRID ref_grid );
