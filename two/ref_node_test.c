@@ -1222,6 +1222,42 @@ int main( int argc, char *argv[] )
     RWDS( 0.0, bary[1], -1.0, "b1" );
     RWDS( 0.0, bary[2], -1.0, "b2" );
 
+    xyz[0] = 1.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+
+    RSS(ref_node_bary3(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 0.0, bary[0], -1.0, "b0" );
+    RWDS( 1.0, bary[1], -1.0, "b1" );
+    RWDS( 0.0, bary[2], -1.0, "b2" );
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 1.0;
+
+    RSS(ref_node_bary3(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 0.0, bary[0], -1.0, "b0" );
+    RWDS( 0.0, bary[1], -1.0, "b1" );
+    RWDS( 1.0, bary[2], -1.0, "b2" );
+
+    xyz[0] = 0.5;
+    xyz[1] = 0.0;
+    xyz[2] = 0.5;
+
+    RSS(ref_node_bary3(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 0.0, bary[0], -1.0, "b0" );
+    RWDS( 0.5, bary[1], -1.0, "b1" );
+    RWDS( 0.5, bary[2], -1.0, "b2" );
+
+    xyz[0] = 1.0/3.0;
+    xyz[1] = 0.0;
+    xyz[2] = 1.0/3.0;
+
+    RSS(ref_node_bary3(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 1.0/3.0, bary[0], -1.0, "b0" );
+    RWDS( 1.0/3.0, bary[1], -1.0, "b1" );
+    RWDS( 1.0/3.0, bary[2], -1.0, "b2" );
+
     RSS(ref_node_free(ref_node),"free");
   }
 
