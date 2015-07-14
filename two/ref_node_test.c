@@ -1188,6 +1188,43 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* twod bary */
+    REF_NODE ref_node;
+    REF_INT nodes[3], global;
+    REF_DBL xyz[3];
+    REF_DBL bary[3];
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+
+    for ( global=0;global<3;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+       }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,2,nodes[2]) = 1.0;
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+
+    RSS(ref_node_bary3(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 1.0, bary[0], -1.0, "b0" );
+    RWDS( 0.0, bary[1], -1.0, "b1" );
+    RWDS( 0.0, bary[2], -1.0, "b2" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;

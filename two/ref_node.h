@@ -164,6 +164,9 @@ REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node,
 				      REF_INT new_node );
 REF_STATUS ref_node_resize_aux( REF_NODE ref_node );
 
+REF_STATUS ref_node_bary3( REF_NODE ref_node, REF_INT *nodes,
+			   REF_DBL *xyz, REF_DBL *bary );
+
 END_C_DECLORATION
 
 #endif /* REF_NODE_H */
