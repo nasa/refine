@@ -76,6 +76,11 @@ REF_STATUS ref_grid_boundary_nodes( REF_GRID ref_grid,
 REF_STATUS ref_grid_replace_node( REF_GRID ref_grid, 
 				  REF_INT old_node, REF_INT new_node );
 
+
+REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
+				   REF_INT *tri, REF_DBL *bary );
+
+
 END_C_DECLORATION
 
 #endif /* REF_GRID_H */

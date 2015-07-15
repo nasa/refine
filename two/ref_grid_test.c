@@ -12,6 +12,8 @@
 #include  "ref_cell.h"
 #include   "ref_adj.h"
 
+#include   "ref_fixture.h"
+
 #include "ref_malloc.h"
 
 int main( void )
@@ -125,5 +127,23 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"cleanup");
   }
 
+  {
+    REF_GRID ref_grid;
+    REF_DBL xyz[3], bary[3];
+    REF_INT tri;
+    RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
+
+    xyz[0]= 0.2;
+    xyz[1]= 0.0;
+    xyz[2]= 0.3;
+    tri = 0;
+    RSS( ref_grid_enclosing_tri( ref_grid, xyz,
+				 &tri, bary ), "enclose");
+
+    RWDS( 0.5, bary[0], -1, "b0" );
+    RWDS( 0.2, bary[1], -1, "b1" );
+    RWDS( 0.3, bary[2], -1, "b2" );
+    RSS(ref_grid_free(ref_grid),"cleanup");
+  }
   return 0;
 }
