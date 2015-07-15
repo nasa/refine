@@ -127,7 +127,7 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"cleanup");
   }
 
-  {
+  { /* single tri enclosing */
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[3];
     REF_INT tri;
@@ -159,5 +159,30 @@ int main( void )
 
     RSS(ref_grid_free(ref_grid),"cleanup");
   }
+  
+  { /* walk to find enclosing */
+    REF_GRID ref_grid;
+    REF_DBL xyz[3], bary[3];
+    REF_INT tri;
+    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "fix" );
+
+    xyz[0]= 0.5;
+    xyz[1]= 0.0;
+    xyz[2]= 0.5;
+    tri = REF_EMPTY;
+    RSS( ref_grid_enclosing_tri( ref_grid, xyz,
+				 &tri, bary ), "enclose");
+
+    SKIP_BLOCK("add walk")
+      {
+	REIS( 0, tri, "tri" );
+	RWDS( 0.0, bary[0], -1, "b0" );
+	RWDS( 0.0, bary[1], -1, "b1" );
+	RWDS( 0.0, bary[2], -1, "b2" );
+      }
+    
+    RSS(ref_grid_free(ref_grid),"cleanup");
+  }
+
   return 0;
 }
