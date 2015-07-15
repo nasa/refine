@@ -258,8 +258,20 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  RSS( ref_cell_nodes( ref_cell, *tri, nodes), "cell" );
+  REF_INT guess;
+
+  guess = *tri;
+  if ( ! ref_cell_valid(ref_cell,guess) )
+    {
+      each_ref_cell_valid_cell( ref_cell, guess)
+	{
+	  break;
+	}
+    }
+  RAS( ref_cell_valid(ref_cell,guess), "unable to find start");
+  
+  RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
   RSS( ref_node_bary3( ref_node, nodes, xyz, bary ), "bary");
-		       
+  *tri = guess;
   return REF_SUCCESS;
 }
