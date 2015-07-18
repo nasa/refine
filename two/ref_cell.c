@@ -6,24 +6,9 @@
 #include "ref_sort.h"
 #include "ref_malloc.h"
 
-REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
-                            REF_INT node_per, REF_BOOL last_node_is_an_id )
+REF_STATUS ref_cell_initialize( REF_CELL ref_cell,
+				REF_INT node_per, REF_BOOL last_node_is_an_id )
 {
-  REF_INT cell;
-  REF_INT max;
-  REF_CELL ref_cell;
-
-  ( *ref_cell_ptr ) = NULL;
-
-  if ( node_per+( last_node_is_an_id ? 1 : 0 ) > REF_CELL_MAX_SIZE_PER)
-    {
-      RSS( REF_FAILURE, "node_per limited to REF_CELL_MAX_SIZE_PER");
-    }
-
-  ref_malloc( *ref_cell_ptr, 1, REF_CELL_STRUCT );
-
-  ref_cell = ( *ref_cell_ptr );
-
   ref_cell_last_node_is_an_id(ref_cell) = last_node_is_an_id;
 
   ref_cell_node_per(ref_cell) = node_per;
@@ -267,6 +252,29 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
         }
     }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
+                            REF_INT node_per, REF_BOOL last_node_is_an_id )
+{
+  REF_INT cell;
+  REF_INT max;
+  REF_CELL ref_cell;
+
+  ( *ref_cell_ptr ) = NULL;
+
+  if ( node_per+( last_node_is_an_id ? 1 : 0 ) > REF_CELL_MAX_SIZE_PER)
+    {
+      RSS( REF_FAILURE, "node_per limited to REF_CELL_MAX_SIZE_PER");
+    }
+
+  ref_malloc( *ref_cell_ptr, 1, REF_CELL_STRUCT );
+
+  ref_cell = ( *ref_cell_ptr );
+
+  RSS( ref_cell_initialize( ref_cell, node_per, last_node_is_an_id ), "init" );
+  
   max = 100;
 
   ref_cell_n(ref_cell) = 0;
