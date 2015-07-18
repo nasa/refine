@@ -15,6 +15,15 @@ int main( void )
     RSS(ref_adj_free(ref_adj),"free");
   }
 
+  { /* deep copy empty */
+    REF_ADJ original;
+    REF_ADJ ref_adj;
+    RSS(ref_adj_create(&original),"create");
+    RSS(ref_adj_deep_copy(&ref_adj,original),"create");
+    RSS(ref_adj_free(original),"free");
+    RSS(ref_adj_free(ref_adj),"free");
+  }
+
   { /* add and count */
     REF_ADJ ref_adj;
     REF_INT item;

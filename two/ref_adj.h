@@ -28,6 +28,8 @@ struct REF_ADJ_ITEM_STRUCT {
 REF_STATUS ref_adj_create( REF_ADJ *ref_adj );
 REF_STATUS ref_adj_free( REF_ADJ ref_adj );
 
+REF_STATUS ref_adj_deep_copy( REF_ADJ *ref_adj, REF_ADJ original );
+
 #define ref_adj_nnode( ref_adj ) ((ref_adj)->nnode)
 #define ref_adj_nitem( ref_adj ) ((ref_adj)->nitem)
 #define ref_adj_blank( ref_adj ) ((ref_adj)->blank)

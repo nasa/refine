@@ -41,6 +41,32 @@ REF_STATUS ref_adj_free( REF_ADJ ref_adj )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_adj_deep_copy( REF_ADJ *ref_adj_ptr, REF_ADJ original )
+{
+  REF_ADJ ref_adj;
+  REF_INT i;
+
+  ref_malloc( *ref_adj_ptr, 1, REF_ADJ_STRUCT );
+  ref_adj = (*ref_adj_ptr);
+
+  ref_adj_nnode(ref_adj) = ref_adj_nnode(original);
+  ref_adj_nitem(ref_adj) = ref_adj_nitem(original);
+
+  ref_malloc(ref_adj->first, ref_adj_nnode(ref_adj), REF_INT );
+  for (i = 0; i < ref_adj_nnode(ref_adj) ; i++ )
+    ref_adj->first[i] = original->first[i];
+
+  ref_malloc(ref_adj->item, ref_adj_nitem(ref_adj), REF_ADJ_ITEM_STRUCT );
+  for (i = 0; i < ref_adj_nitem(ref_adj) ; i++ )
+    {
+      ref_adj->item[i].ref = original->item[i].ref;
+      ref_adj->item[i].next = original->item[i].next;
+    }
+  ref_adj->blank = original->blank;
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_adj_inspect( REF_ADJ ref_adj )
 {
   REF_INT node, item;
