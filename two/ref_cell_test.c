@@ -44,6 +44,17 @@ int main( void )
 
   REIS(REF_NULL,ref_cell_free(NULL),"dont free NULL");
 
+  { /* deep copy empty */
+    REF_CELL ref_cell;
+    REF_CELL original;
+
+    RSS(ref_tet(&original),"create");
+    RSS(ref_cell_deep_copy(&ref_cell,original),"deep copy");
+	
+    RSS(ref_cell_free(original),"cleanup");
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+  
   { /* add */
     REF_CELL ref_cell;
     REF_INT nodes[4];

@@ -314,16 +314,37 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
 
 REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell_ptr, REF_CELL original )
 {
+  REF_INT node, cell;
+  REF_INT max;
   REF_CELL ref_cell;
   ref_malloc( *ref_cell_ptr, 1, REF_CELL_STRUCT );
 
   ref_cell = ( *ref_cell_ptr );
 
-  ref_cell_last_node_is_an_id(ref_cell) = ref_cell_last_node_is_an_id(original);
-  ref_cell_node_per(ref_cell) = ref_cell_node_per(original);
-  ref_cell_size_per(ref_cell) = ref_cell_size_per(original);
+  RSS( ref_cell_initialize( ref_cell,
+			    original->node_per,
+			    original->last_node_is_an_id ), "init" );
 
-  THROW("implement initialize for reuse with create");
+  max = ref_cell_max(original);
+  ref_cell_n(ref_cell) = ref_cell_n(original);
+  ref_cell_max(ref_cell) = max;
+
+  ref_malloc( ref_cell->c2n, ref_cell_max(ref_cell) *
+              ref_cell_size_per(ref_cell), REF_INT);
+  for ( cell = 0; cell < max; cell++ )
+    for ( node = 0; node < ref_cell_size_per(ref_cell) ; node++ )
+      ref_cell_c2n(ref_cell,node,cell) = ref_cell_c2n(original,node,cell);
+   
+  ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
+              ref_cell_edge_per(ref_cell), REF_INT);
+  for ( cell = 0; cell < max; cell++ )
+    for ( node = 0; node < ref_cell_edge_per(ref_cell) ; node++ )
+      ref_cell_c2e(ref_cell,node,cell) = ref_cell_c2e(original,node,cell);
+   
+  ref_cell_blank(ref_cell) = ref_cell_blank(original);
+
+  RSS( ref_adj_deep_copy( &( ref_cell->ref_adj ), original->ref_adj ),
+       "deep copy ref_adj for ref_cell" );
 
   return REF_SUCCESS;
 }
