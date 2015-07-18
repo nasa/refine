@@ -117,7 +117,8 @@ REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
 	  ref_node_aux(ref_node,i,node) = ref_node_aux(original,i,node);
     }
 
-  RSS( ref_list_create( &(ref_node->unused_global_list) ), "create list");
+  RSS( ref_list_deep_copy( &(ref_node->unused_global_list),
+			   original->unused_global_list), "deep copy list");
 
   ref_node->old_n_global = original->old_n_global;
   ref_node->new_n_global = original->new_n_global;
