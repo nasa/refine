@@ -31,6 +31,24 @@ REF_STATUS ref_list_free( REF_LIST ref_list )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_list_deep_copy( REF_LIST *ref_list_ptr, REF_LIST original )
+{
+  REF_LIST ref_list;
+  REF_INT i;
+
+  ref_malloc( *ref_list_ptr, 1, REF_LIST_STRUCT );
+  ref_list = (*ref_list_ptr);
+
+  ref_list_n(ref_list)   = ref_list_n(original);
+  ref_list_max(ref_list) = ref_list_max(original);
+
+  ref_malloc( ref_list->value, ref_list_max(ref_list), REF_INT);
+  for(i=0;i< ref_list_n(ref_list);i++)
+    ref_list->value[i] = original->value[i];
+    
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_list_inspect( REF_LIST ref_list )
 {
   REF_INT i;

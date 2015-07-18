@@ -7,8 +7,6 @@
 #include "ref_sort.h"
 #include "ref_mpi.h"
 
-
-
 int main( int argc, char *argv[] )
 {
   REF_LIST ref_list;
@@ -19,6 +17,14 @@ int main( int argc, char *argv[] )
     REIS(REF_NULL,ref_list_free(NULL),"dont free NULL");
     RSS(ref_list_create(&ref_list),"create");
     REIS(0,ref_list_n(ref_list),"init zero");
+    RSS(ref_list_free(ref_list),"free");
+  }
+
+  { /* deep copy empty */
+    REF_LIST original;
+    RSS(ref_list_create(&original),"create");
+    RSS(ref_list_deep_copy(&ref_list,original),"deep copy");
+    RSS(ref_list_free(original),"free");
     RSS(ref_list_free(ref_list),"free");
   }
 
