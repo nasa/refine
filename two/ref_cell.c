@@ -304,6 +304,22 @@ REF_STATUS ref_cell_free( REF_CELL ref_cell )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell_ptr, REF_CELL original )
+{
+  REF_CELL ref_cell;
+  ref_malloc( *ref_cell_ptr, 1, REF_CELL_STRUCT );
+
+  ref_cell = ( *ref_cell_ptr );
+
+  ref_cell_last_node_is_an_id(ref_cell) = ref_cell_last_node_is_an_id(original);
+  ref_cell_node_per(ref_cell) = ref_cell_node_per(original);
+  ref_cell_size_per(ref_cell) = ref_cell_size_per(original);
+
+  THROW("implement initialize for reuse with create");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
 {
   REF_INT cell, node;

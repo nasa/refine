@@ -106,6 +106,8 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell,
                             REF_INT size_per, REF_BOOL last_node_is_an_id );
 REF_STATUS ref_cell_free( REF_CELL ref_cell );
 
+REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell, REF_CELL original );
+
 REF_STATUS ref_cell_inspect( REF_CELL ref_cell );
 REF_STATUS ref_cell_taddle( REF_CELL ref_cell, REF_INT cell );
 

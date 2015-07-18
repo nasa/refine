@@ -75,6 +75,9 @@ struct REF_NODE_STRUCT {
 
 REF_STATUS ref_node_create( REF_NODE *ref_node );
 REF_STATUS ref_node_free( REF_NODE ref_node );
+
+REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original );
+
 REF_STATUS ref_node_inspect( REF_NODE ref_node );
 REF_STATUS ref_node_location( REF_NODE ref_node, REF_INT node );
 REF_STATUS ref_node_tattle_global( REF_NODE ref_node, REF_INT global );

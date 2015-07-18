@@ -71,6 +71,24 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
+{
+  REF_INT max;
+  REF_NODE ref_node;
+
+  ref_malloc( *ref_node_ptr, 1, REF_NODE_STRUCT );
+  ref_node = *ref_node_ptr;
+
+  max = ref_node_n(original);
+  
+  ref_node_n(ref_node) = ref_node_n(original);
+  ref_node_max(ref_node) = max;
+  
+  THROW("complete low level node copy with n=max");
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_inspect( REF_NODE ref_node )
 {
   REF_INT node;

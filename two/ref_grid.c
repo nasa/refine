@@ -33,6 +33,38 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid_ptr, REF_GRID original )
+{
+  REF_GRID ref_grid;
+
+  ref_malloc( *ref_grid_ptr, 1, REF_GRID_STRUCT );
+
+  ref_grid = *ref_grid_ptr;
+
+  RSS( ref_node_deep_copy( &ref_grid_node(ref_grid),
+			   ref_grid_node(original) ), "node deep copy" );
+
+  RSS( ref_cell_deep_copy( &ref_grid_tet(ref_grid),
+			   ref_grid_tet(original) ), "tet deep copy" );
+  RSS( ref_cell_deep_copy( &ref_grid_pyr(ref_grid),
+			   ref_grid_pyr(original) ), "pyr deep copy" );
+  RSS( ref_cell_deep_copy( &ref_grid_pri(ref_grid),
+			   ref_grid_pri(original) ), "pri deep copy" );
+  RSS( ref_cell_deep_copy( &ref_grid_hex(ref_grid),
+			   ref_grid_hex(original) ), "hex deep copy" );
+
+  ref_grid_cell(ref_grid,4) = NULL;
+
+  RSS( ref_cell_deep_copy( &ref_grid_tri(ref_grid),
+			   ref_grid_tri(original) ), "tri deep copy" );
+  RSS( ref_cell_deep_copy( &ref_grid_qua(ref_grid),
+			   ref_grid_qua(original) ), "qua deep copy" );
+
+  ref_grid_twod(ref_grid) = ref_grid_twod(original);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_empty_cell_clone( REF_GRID *ref_grid_ptr, REF_GRID parent )
 {
   REF_GRID ref_grid;
