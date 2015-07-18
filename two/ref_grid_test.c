@@ -173,13 +173,10 @@ int main( void )
     RSS( ref_grid_enclosing_tri( ref_grid, xyz,
 				 &tri, bary ), "enclose");
 
-    SKIP_BLOCK("add walk")
-      {
-	REIS( 0, tri, "tri" );
-	RWDS( 0.0, bary[0], -1, "b0" );
-	RWDS( 0.0, bary[1], -1, "b1" );
-	RWDS( 0.0, bary[2], -1, "b2" );
-      }
+    REIS( 8, tri, "tri" );
+    RWDS( 0.0, bary[0], -1, "b0" );
+    RWDS( 0.5, bary[1], -1, "b1" );
+    RWDS( 0.5, bary[2], -1, "b2" );
     
     RSS(ref_grid_free(ref_grid),"cleanup");
   }

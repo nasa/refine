@@ -252,6 +252,30 @@ REF_STATUS ref_grid_replace_node( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_update_guess( REF_CELL ref_cell, REF_INT node0, REF_INT node1,
+			     REF_INT *guess)
+{
+  REF_INT ncell, max_cell = 2, cell_list[2];
+
+  RSS( ref_cell_list_with2( ref_cell, node0, node1,
+			    max_cell, &ncell, cell_list ), "next" );
+  if ( ncell == 1 )
+    THROW("bary update hit boundary");
+
+  if ( *guess == cell_list[0] )
+    {
+      *guess = cell_list[1];
+      return REF_SUCCESS;
+    }
+  if ( *guess == cell_list[1] )
+    {
+      *guess = cell_list[0];
+      return REF_SUCCESS;
+    }
+
+  return REF_NOT_FOUND;
+}
+
 REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
                                   REF_INT *tri, REF_DBL *bary )
 {
@@ -259,7 +283,9 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT guess;
-
+  REF_DBL inside = -1.0e-12;
+  REF_INT step, limit;
+  
   guess = *tri;
   if ( ! ref_cell_valid(ref_cell,guess) )
     {
@@ -269,9 +295,47 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
 	}
     }
   RAS( ref_cell_valid(ref_cell,guess), "unable to find start");
-  
-  RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
-  RSS( ref_node_bary3( ref_node, nodes, xyz, bary ), "bary");
-  *tri = guess;
+
+  limit = 100; /* 10e6^(1/3) */
+
+  for ( step=0; step < limit; step++)
+    {
+      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      RSS( ref_node_bary3( ref_node, nodes, xyz, bary ), "bary");
+
+      if ( bary[0] >= inside &&
+	   bary[1] >= inside &&
+	   bary[2] >= inside )
+	{
+	  *tri = guess;
+	  return REF_SUCCESS;
+	}
+      
+      if ( bary[0] < bary[1] && bary[0] < bary[2] )
+	{
+	  RSS( ref_update_guess( ref_cell, nodes[1], nodes[2], &guess ),
+	       "update 1 2");
+	  continue;
+	}
+
+      if ( bary[1] < bary[0] && bary[1] < bary[2] )
+	{
+	  RSS( ref_update_guess( ref_cell, nodes[2], nodes[0], &guess ),
+	       "update 2 0");
+	  continue;
+	}
+
+      if ( bary[2] < bary[0] && bary[2] < bary[1] )
+	{
+	  RSS( ref_update_guess( ref_cell, nodes[0], nodes[1], &guess ),
+	       "update 0 1");
+	  continue;
+	}
+
+      THROW("unable to find the next step");
+    }
+
+  THROW("max steps exceeded");
+
   return REF_SUCCESS;
 }
