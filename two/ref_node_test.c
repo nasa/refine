@@ -27,6 +27,15 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* deep copy empty */
+    REF_NODE original, copy;
+    RSS(ref_node_create(&original),"create");
+    RSS(ref_node_deep_copy(&copy,original),"deep copy");
+
+    RSS(ref_node_free(original),"free");
+    RSS(ref_node_free(copy),"free");
+  }
+
   {
     REF_INT global, node;
     REF_NODE ref_node;

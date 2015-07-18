@@ -73,18 +73,56 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
 
 REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
 {
-  REF_INT max;
+  REF_INT max, node, i;
   REF_NODE ref_node;
 
   ref_malloc( *ref_node_ptr, 1, REF_NODE_STRUCT );
   ref_node = *ref_node_ptr;
 
-  max = ref_node_n(original);
+  max = ref_node_max(original);
   
   ref_node_n(ref_node) = ref_node_n(original);
   ref_node_max(ref_node) = max;
+
+  ref_malloc( ref_node->global, max, REF_INT );
+  ref_node->blank = original->blank;
+  for (node=0;node<max;node++)
+    ref_node->global[node] = original->global[node];
+
+  ref_malloc( ref_node->sorted_global, max, REF_INT );
+  ref_malloc( ref_node->sorted_local, max, REF_INT );
+  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild sorted globals");
+    
+  ref_malloc( ref_node->part, max, REF_INT );
+  for (node=0;node<max;node++)
+      ref_node_part(ref_node,node) = ref_node_part(original,node);
+
+  ref_malloc( ref_node->age, max, REF_INT );
+  for (node=0;node<max;node++)
+    ref_node_age(ref_node,node) = ref_node_age(original,node);
+
+  ref_malloc( ref_node->real, REF_NODE_REAL_PER*max, REF_DBL );
+  for (node=0;node<max;node++)
+    for ( i=0; i < REF_NODE_REAL_PER ; i++ )
+      ref_node_real(ref_node,i,node) = ref_node_real(original,i,node);
+
+  ref_node_naux(ref_node) = ref_node_naux(original);
+  ref_node->aux = NULL;
+  if ( ref_node_naux(original)>0 )
+    {
+      ref_realloc( ref_node->aux, 
+		   ref_node_naux(ref_node)*ref_node_max(ref_node), REF_DBL);	
+      for (node=0;node<max;node++)
+	for ( i=0; i < ref_node_naux(ref_node) ; i++ )
+	  ref_node_aux(ref_node,i,node) = ref_node_aux(original,i,node);
+    }
+
+  RSS( ref_list_create( &(ref_node->unused_global_list) ), "create list");
+
+  ref_node->old_n_global = original->old_n_global;
+  ref_node->new_n_global = original->new_n_global;
   
-  THROW("complete low level node copy with n=max");
+  ref_node->twod_mid_plane = original->twod_mid_plane;
   
   return REF_SUCCESS;
 }
