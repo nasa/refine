@@ -36,10 +36,16 @@
 #include "ref_smooth.h"
 #include  "ref_twod.h"
 #include "ref_math.h"
+#include "ref_args.h"
 
 int main( int argc, char *argv[] )
 {
-
+  REF_INT parent_pos = REF_EMPTY;
+  RXS( ref_args_find( argc, argv, "--parent", &parent_pos ),
+       REF_NOT_FOUND, "arg search" );
+  if ( parent_pos != REF_EMPTY )
+    printf("pos %d\n",parent_pos);
+  
   if ( argc == 2 )
     {
       REF_GRID ref_grid;
