@@ -38,6 +38,13 @@
 #include "ref_math.h"
 #include "ref_args.h"
 
+/*
+./test.sh ref_metric && ./ref_metric_test \
+../acceptance/2d/linear/two/accept-2d-two-09.b8.ugrid \
+--parent ../acceptance/2d/linear/two/accept-2d-two-08.b8.ugrid \
+../acceptance/2d/linear/two/accept-2d-two-08.metric
+*/
+
 int main( int argc, char *argv[] )
 {
   REF_INT parent_pos = REF_EMPTY;
@@ -46,7 +53,11 @@ int main( int argc, char *argv[] )
 
   if ( parent_pos != REF_EMPTY )
     {
-      printf("pos %d\n",parent_pos);
+      REF_GRID ref_grid;
+      REIS( 2, parent_pos,
+	    "required args: grid.ext --parent pgrid.ext pgrid.metric");
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ),
+	   "unable to load grid in position 1" );
       return 0;
     }
   
