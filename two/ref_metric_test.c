@@ -43,8 +43,12 @@ int main( int argc, char *argv[] )
   REF_INT parent_pos = REF_EMPTY;
   RXS( ref_args_find( argc, argv, "--parent", &parent_pos ),
        REF_NOT_FOUND, "arg search" );
+
   if ( parent_pos != REF_EMPTY )
-    printf("pos %d\n",parent_pos);
+    {
+      printf("pos %d\n",parent_pos);
+      return 0;
+    }
   
   if ( argc == 2 )
     {
