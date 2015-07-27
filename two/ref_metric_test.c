@@ -40,9 +40,9 @@
 
 /*
 ./test.sh ref_metric && ./ref_metric_test \
-../acceptance/2d/linear/two/accept-2d-two-09.b8.ugrid \
---parent ../acceptance/2d/linear/two/accept-2d-two-08.b8.ugrid \
-../acceptance/2d/linear/two/accept-2d-two-08.metric
+  ../acceptance/2d/linear/two/accept-2d-two-09.b8.ugrid \
+  --parent ../acceptance/2d/linear/two/accept-2d-two-08.b8.ugrid \
+  ../acceptance/2d/linear/two/accept-2d-two-08.metric
 */
 
 int main( int argc, char *argv[] )
@@ -53,11 +53,16 @@ int main( int argc, char *argv[] )
 
   if ( parent_pos != REF_EMPTY )
     {
-      REF_GRID ref_grid;
+      REF_GRID ref_grid, parent_grid;
+
       REIS( 2, parent_pos,
 	    "required args: grid.ext --parent pgrid.ext pgrid.metric");
       RSS( ref_import_by_extension( &ref_grid, argv[1] ),
-	   "unable to load grid in position 1" );
+	   "unable to load target grid in position 1" );
+      RSS( ref_import_by_extension( &parent_grid, argv[3] ),
+	   "unable to load parent grid in position 3" );
+      RSS( ref_part_metric( ref_grid_node(parent_grid), argv[4] ),
+	   "unable to load parent grid in position 4");
       return 0;
     }
   
