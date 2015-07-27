@@ -54,7 +54,9 @@ int main( int argc, char *argv[] )
   if ( parent_pos != REF_EMPTY )
     {
       REF_GRID ref_grid, parent_grid;
-
+      REF_NODE ref_node;
+      REF_INT node;
+      REF_DBL *real;
       REIS( 2, parent_pos,
 	    "required args: grid.ext --parent pgrid.ext pgrid.metric");
       RSS( ref_import_by_extension( &ref_grid, argv[1] ),
@@ -63,6 +65,47 @@ int main( int argc, char *argv[] )
 	   "unable to load parent grid in position 3" );
       RSS( ref_part_metric( ref_grid_node(parent_grid), argv[4] ),
 	   "unable to load parent grid in position 4");
+
+      ref_node = ref_grid_node(ref_grid);
+      ref_malloc( real, REF_NODE_REAL_PER*ref_node_max(ref_node), REF_DBL );
+      each_ref_node_valid_node( ref_node, node )
+	{
+	  REF_DBL xyz[3], bary[3];
+	  REF_DBL tol = -1.0;
+	  REF_INT i, tri, nodes[REF_CELL_MAX_SIZE_PER];
+	  xyz[0] = ref_node_xyz(ref_node,0,node); 
+	  xyz[1] = ref_node_xyz(ref_node,1,node); 
+	  xyz[2] = ref_node_xyz(ref_node,2,node);
+	  tri = REF_EMPTY;
+	  RSS( ref_grid_enclosing_tri( parent_grid, xyz,
+				       &tri, bary ), "enclosing tri" );
+	  RSS( ref_cell_nodes( ref_grid_tri(parent_grid), tri, nodes ), "c2n");
+	  for (i=0; i< REF_NODE_REAL_PER; i++)
+	    {
+	      real[i+REF_NODE_REAL_PER*node] =
+		bary[0]*ref_node_real(ref_grid_node(parent_grid),i,nodes[0]) +
+		bary[1]*ref_node_real(ref_grid_node(parent_grid),i,nodes[1]) +
+		bary[2]*ref_node_real(ref_grid_node(parent_grid),i,nodes[2]);
+	    }
+	  /* override y for fake twod */
+	  real[1+REF_NODE_REAL_PER*node] =ref_node_xyz(ref_node,1,node);  
+	  printf("node %d : (%f,%f,%f) (%f,%f,%f) b %f,%f,%f\n",
+		 node,
+		 xyz[0],xyz[1],xyz[2],
+		 real[0+REF_NODE_REAL_PER*node],
+		 real[1+REF_NODE_REAL_PER*node],
+		 real[2+REF_NODE_REAL_PER*node],
+		 bary[0],bary[1],bary[2]);
+	  for (i=0; i< 3; i++)
+	    {
+	      RWDS( ref_node_xyz(ref_node,i,node),
+		    real[i+REF_NODE_REAL_PER*node],
+		    tol, "xyz check");
+	    }
+	}
+
+      ref_free( real );
+      
       return 0;
     }
   
