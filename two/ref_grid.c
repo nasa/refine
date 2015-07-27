@@ -328,13 +328,19 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
     }
   RAS( ref_cell_valid(ref_cell,guess), "unable to find start");
 
-  limit = 100; /* 10e6^(1/3) */
+  limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
 
   for ( step=0; step < limit; step++)
     {
       RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
       RSS( ref_node_bary3( ref_node, nodes, xyz, bary ), "bary");
 
+      if ( step > 990 )
+	{
+	  printf("step %d, tri %d, bary %f %f %f\n",
+		 step,guess,bary[0],bary[1],bary[2]);
+	}
+      
       if ( bary[0] >= inside &&
 	   bary[1] >= inside &&
 	   bary[2] >= inside )
