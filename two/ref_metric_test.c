@@ -89,13 +89,14 @@ int main( int argc, char *argv[] )
 	    }
 	  /* override y for fake twod */
 	  real[1+REF_NODE_REAL_PER*node] =ref_node_xyz(ref_node,1,node);  
-	  printf("node %d : (%f,%f,%f) (%f,%f,%f) b %f,%f,%f\n",
-		 node,
-		 xyz[0],xyz[1],xyz[2],
-		 real[0+REF_NODE_REAL_PER*node],
-		 real[1+REF_NODE_REAL_PER*node],
-		 real[2+REF_NODE_REAL_PER*node],
-		 bary[0],bary[1],bary[2]);
+	  if (REF_FALSE)
+	    printf("node %d : (%f,%f,%f) (%f,%f,%f) b %f,%f,%f\n",
+		   node,
+		   xyz[0],xyz[1],xyz[2],
+		   real[0+REF_NODE_REAL_PER*node],
+		   real[1+REF_NODE_REAL_PER*node],
+		   real[2+REF_NODE_REAL_PER*node],
+		   bary[0],bary[1],bary[2]);
 	  for (i=0; i< 3; i++)
 	    {
 	      RWDS( ref_node_xyz(ref_node,i,node),
