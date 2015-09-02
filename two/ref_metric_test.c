@@ -118,10 +118,16 @@ int main( int argc, char *argv[] )
 	  for (im=0; im<6; im++)
 	    lm[im] = bary[0]*lm0[im] + bary[1]*lm1[im] + bary[2]*lm2[im];
 	  RSS( ref_matrix_exp_m( lm, m ), "exp(M)");
+	  for (im=0; im<6; im++)
+	    ref_node_metric(ref_node,im,node) = m[im];
 	}
 
       ref_free( real );
       
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
+      RSS( ref_histogram_quality( ref_grid ), "qual");
+      RSS( ref_histogram_ratio( ref_grid ), "rat");
+
       RSS( ref_grid_free( ref_grid ), "free");
       RSS( ref_grid_free( parent_grid ), "free");
 
