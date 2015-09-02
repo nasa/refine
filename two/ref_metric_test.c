@@ -54,9 +54,7 @@ int main( int argc, char *argv[] )
   if ( parent_pos != REF_EMPTY )
     {
       REF_GRID ref_grid, parent_grid;
-      REF_NODE ref_node;
-      REF_INT node;
-      REF_DBL *real;
+
       REIS( 2, parent_pos,
 	    "required args: grid.ext --parent pgrid.ext pgrid.metric");
       RSS( ref_import_by_extension( &ref_grid, argv[1] ),
@@ -67,64 +65,6 @@ int main( int argc, char *argv[] )
 	   "unable to load parent grid in position 4");
 
       RSS( ref_metric_interpolate( ref_grid, parent_grid ), "interp" );
-
-      ref_node = ref_grid_node(ref_grid);
-      ref_malloc( real, REF_NODE_REAL_PER*ref_node_max(ref_node), REF_DBL );
-      each_ref_node_valid_node( ref_node, node )
-	{
-	  REF_DBL xyz[3], bary[3];
-	  REF_DBL tol = -1.0;
-	  REF_INT i, tri, nodes[REF_CELL_MAX_SIZE_PER];
-	  REF_INT im;
-	  REF_DBL m[6], m0[6], m1[6], m2[6];
-	  REF_DBL lm[6], lm0[6], lm1[6], lm2[6];
-	  xyz[0] = ref_node_xyz(ref_node,0,node); 
-	  xyz[1] = ref_node_xyz(ref_node,1,node); 
-	  xyz[2] = ref_node_xyz(ref_node,2,node);
-	  tri = REF_EMPTY;
-	  RSS( ref_grid_enclosing_tri( parent_grid, xyz,
-				       &tri, bary ), "enclosing tri" );
-	  RSS( ref_cell_nodes( ref_grid_tri(parent_grid), tri, nodes ), "c2n");
-	  for (i=0; i< REF_NODE_REAL_PER; i++)
-	    {
-	      real[i+REF_NODE_REAL_PER*node] =
-		bary[0]*ref_node_real(ref_grid_node(parent_grid),i,nodes[0]) +
-		bary[1]*ref_node_real(ref_grid_node(parent_grid),i,nodes[1]) +
-		bary[2]*ref_node_real(ref_grid_node(parent_grid),i,nodes[2]);
-	    }
-	  /* override y for fake twod */
-	  real[1+REF_NODE_REAL_PER*node] =ref_node_xyz(ref_node,1,node);  
-	  if (REF_FALSE)
-	    printf("node %d : (%f,%f,%f) (%f,%f,%f) b %f,%f,%f\n",
-		   node,
-		   xyz[0],xyz[1],xyz[2],
-		   real[0+REF_NODE_REAL_PER*node],
-		   real[1+REF_NODE_REAL_PER*node],
-		   real[2+REF_NODE_REAL_PER*node],
-		   bary[0],bary[1],bary[2]);
-	  for (i=0; i< 3; i++)
-	    {
-	      RWDS( ref_node_xyz(ref_node,i,node),
-		    real[i+REF_NODE_REAL_PER*node],
-		    tol, "xyz check");
-	    }
-	  for (im=0; im<6; im++)
-	    {
-	      m0[im] = ref_node_metric(ref_grid_node(parent_grid),im,nodes[0]);
-	      m1[im] = ref_node_metric(ref_grid_node(parent_grid),im,nodes[1]);
-	      m2[im] = ref_node_metric(ref_grid_node(parent_grid),im,nodes[2]);
-	    }
-	  RSS( ref_matrix_log_m( m0, lm0 ), "log(M0)");
-	  RSS( ref_matrix_log_m( m1, lm1 ), "log(M1)");
-	  RSS( ref_matrix_log_m( m2, lm2 ), "log(M2)");
-	  for (im=0; im<6; im++)
-	    lm[im] = bary[0]*lm0[im] + bary[1]*lm1[im] + bary[2]*lm2[im];
-	  RSS( ref_matrix_exp_m( lm, m ), "exp(M)");
-	  for (im=0; im<6; im++)
-	    ref_node_metric(ref_node,im,node) = m[im];
-	}
-
-      ref_free( real );
       
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "qual");
