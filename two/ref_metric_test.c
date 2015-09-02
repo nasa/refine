@@ -73,6 +73,9 @@ int main( int argc, char *argv[] )
 	  REF_DBL xyz[3], bary[3];
 	  REF_DBL tol = -1.0;
 	  REF_INT i, tri, nodes[REF_CELL_MAX_SIZE_PER];
+	  REF_INT im;
+	  REF_DBL m[6], m0[6], m1[6], m2[6];
+	  REF_DBL lm[6], lm0[6], lm1[6], lm2[6];
 	  xyz[0] = ref_node_xyz(ref_node,0,node); 
 	  xyz[1] = ref_node_xyz(ref_node,1,node); 
 	  xyz[2] = ref_node_xyz(ref_node,2,node);
@@ -103,10 +106,25 @@ int main( int argc, char *argv[] )
 		    real[i+REF_NODE_REAL_PER*node],
 		    tol, "xyz check");
 	    }
+	  for (im=0; im<6; im++)
+	    {
+	      m0[im] = ref_node_metric(ref_grid_node(parent_grid),im,nodes[0]);
+	      m1[im] = ref_node_metric(ref_grid_node(parent_grid),im,nodes[1]);
+	      m2[im] = ref_node_metric(ref_grid_node(parent_grid),im,nodes[2]);
+	    }
+	  RSS( ref_matrix_log_m( m0, lm0 ), "log(M0)");
+	  RSS( ref_matrix_log_m( m1, lm1 ), "log(M1)");
+	  RSS( ref_matrix_log_m( m2, lm2 ), "log(M2)");
+	  for (im=0; im<6; im++)
+	    lm[im] = bary[0]*lm0[im] + bary[1]*lm1[im] + bary[2]*lm2[im];
+	  RSS( ref_matrix_exp_m( lm, m ), "exp(M)");
 	}
 
       ref_free( real );
       
+      RSS( ref_grid_free( ref_grid ), "free");
+      RSS( ref_grid_free( parent_grid ), "free");
+
       return 0;
     }
   
