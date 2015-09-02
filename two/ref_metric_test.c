@@ -66,6 +66,8 @@ int main( int argc, char *argv[] )
       RSS( ref_part_metric( ref_grid_node(parent_grid), argv[4] ),
 	   "unable to load parent grid in position 4");
 
+      RSS( ref_metric_interpolate( ref_grid, parent_grid ), "interp" );
+
       ref_node = ref_grid_node(ref_grid);
       ref_malloc( real, REF_NODE_REAL_PER*ref_node_max(ref_node), REF_DBL );
       each_ref_node_valid_node( ref_node, node )
