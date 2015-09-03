@@ -27,6 +27,7 @@ int main( int argc, char *argv[] )
   REF_INT i, passes;
 
   REF_GRID ref_grid;
+  REF_GRID background_grid = NULL;
   char timestamp[512];
   char command[1024];
 
@@ -67,6 +68,7 @@ int main( int argc, char *argv[] )
   REIS( 0, system(command), "cp command failed" );
 
   RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
+  RSS( ref_import_by_extension( &background_grid, input_filename ), "in" );
   ref_grid_inspect(ref_grid);
 
 
@@ -82,6 +84,8 @@ int main( int argc, char *argv[] )
   else
     {
       RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
+      if ( NULL != background_grid )
+	RSS( ref_part_bamg_metric( background_grid, metric_filename ), "metric" );
       RAS(0<sprintf(command,"cp %s ref-bu-%s.metric",
 		    metric_filename,timestamp),"in");
       printf("%s\n",command);
@@ -98,6 +102,11 @@ int main( int argc, char *argv[] )
       printf(" pass %d of %d\n",i,passes);
       RSS( ref_adapt_pass( ref_grid ), "pass");
       ref_mpi_stopwatch_stop("pass");
+      if ( NULL != background_grid )
+	{
+	  RSS( ref_metric_interpolate( ref_grid, background_grid ), "interp" );
+	  ref_mpi_stopwatch_stop("interp");
+	}
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
