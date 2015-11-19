@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 if [ ! "$#" -eq 2 ];then
   echo usage:
   echo "  " $0 file.metric file.sol
