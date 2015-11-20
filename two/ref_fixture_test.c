@@ -118,6 +118,14 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
+  if ( 2 == argc )
+    {
+      REF_GRID ref_grid;
+      RSS( ref_fixture_tet_brick_grid( &ref_grid ), "boom3d" );
+      RSS( ref_export_by_extension( ref_grid, argv[2] ), "export" );
+      RSS( ref_grid_free(ref_grid),"free");
+    }
+
   if ( 3 == argc )
     {
       REF_GRID ref_grid;
