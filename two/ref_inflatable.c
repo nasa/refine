@@ -22,6 +22,8 @@
 
 #include "ref_edge.h"
 
+#include "ref_args.h"
+
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
@@ -35,18 +37,18 @@ int main( int argc, char *argv[] )
   REF_DBL alpha_rad = 0;
   REF_BOOL extrude_radially = REF_FALSE;
   REF_DBL origin[3];
+  REF_INT aoa_pos, last_face_arg;
 
   if ( 7 > argc )
     {
-      printf("usage: \n %s input.grid nlayers first_thickness total_thickness mach faceid [faceid...] [-a angle_of_attack_in_degrees]\n",
+      printf("usage: \n %s input.grid nlayers first_thickness total_thickness mach faceid [faceid...] [--aoa angle_of_attack_in_degrees]\n",
 	     argv[0]);
       printf("  when first_thickness <= 0, it is set to a uniform grid,\n");
       printf("    first_thickness = total_thickness/nlayers\n");
       printf("  when nlayers < 0, extrude radially\n");
-      printf("    (-a option only available for radial extrusion)\n");
+      printf("    (--aoa option only available for radial extrusion)\n");
       return 1;
     }
-
 
   RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
 
@@ -60,22 +62,30 @@ int main( int argc, char *argv[] )
   total_thickness = atof( argv[4] );
   mach = atof( argv[5] );
 
+  aoa_pos = REF_EMPTY;
+  RXS( ref_args_find( argc, argv, "--aoa", &aoa_pos ),
+       REF_NOT_FOUND, "aoa search" );
+
+  if ( REF_EMPTY != aoa_pos )
+    {
+      if (aoa_pos >= argc)
+	THROW("--aoa requires a value");
+      if ( !extrude_radially )
+	THROW("--aoa requires radial extrusion, nlayers < 0");
+      alpha_deg = atof(argv[aoa_pos+1]);
+      alpha_rad = ref_math_in_radians(alpha_deg);
+      printf(" --aoa %f deg\n",alpha_deg);
+    }
+
+  last_face_arg = argc;
+  last_face_arg = MIN( last_face_arg, aoa_pos );
+
   RSS( ref_dict_create( &faceids ), "create" );
-  for( arg=6;arg<argc;arg++)
-    if (0 == strcmp(argv[arg], "-a") )
-      {
-	if (arg==argc-1)
-	  THROW("-a requires a value");
-	arg++;
-	alpha_deg = atof(argv[arg]);
-	alpha_rad = ref_math_in_radians(alpha_deg);
-	printf(" -a %f deg\n",alpha_deg);
-      }
-    else
-      {
-	faceid = atoi( argv[arg] );
-	RSS( ref_dict_store( faceids, faceid, REF_EMPTY ), "store" );
-      }
+  for( arg=6;arg<last_face_arg;arg++)
+    {
+      faceid = atoi( argv[arg] );
+      RSS( ref_dict_store( faceids, faceid, REF_EMPTY ), "store" );
+    }
 
   if ( first_thickness <= 0.0 )
     {
