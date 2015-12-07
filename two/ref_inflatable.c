@@ -86,7 +86,7 @@ int main( int argc, char *argv[] )
 
 
   rotate_pos = REF_EMPTY;
-  RXS( ref_args_find( argc, argv, "--rotate", &aoa_pos ),
+  RXS( ref_args_find( argc, argv, "--rotate", &rotate_pos ),
        REF_NOT_FOUND, "rotate search" );
 
   if ( REF_EMPTY != rotate_pos )
