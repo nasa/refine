@@ -151,7 +151,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 		  dot = -ref_math_dot(normal, &(face_normal[3*i]));
 		  if ( dot < 0.70 || dot > 1.01 ) 
 		    {
-		      printf("out-of-range dot %.15f\n",dot);
+		      /* printf("out-of-range dot %.15f\n",dot); */
 		      problem_detected = REF_TRUE;
 		    }
 		  normal[1] /= dot;
@@ -232,7 +232,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	RSS( ref_inflate_pri_min_dot( ref_node, new_nodes, &min_dot ), "md");
 	if ( min_dot <= 0.0 ) 
 	  {
-	    printf("min_dot %f\n",min_dot);
+	    /* printf("min_dot %f\n",min_dot); */
 	    problem_detected = REF_TRUE;
 	  }
 	

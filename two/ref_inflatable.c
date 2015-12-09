@@ -12,6 +12,7 @@
 
 #include "ref_cell.h"
 #include "ref_grid.h"
+#include "ref_node.h"
 #include "ref_sort.h"
 #include "ref_adj.h"
 #include "ref_node.h"
@@ -27,6 +28,7 @@
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
+  REF_NODE ref_node;
   REF_DICT faceids;
   REF_INT arg, faceid, nlayers;
   REF_DBL first_thickness, total_thickness, mach;
@@ -39,6 +41,8 @@ int main( int argc, char *argv[] )
   REF_INT rotate_pos;
   REF_DBL rotate_deg = 0;
   REF_DBL rotate_rad = 0;
+  REF_INT node;
+  REF_DBL x, z;
   REF_BOOL extrude_radially = REF_FALSE;
   REF_DBL origin[3];
   REF_INT last_face_arg;
@@ -97,6 +101,15 @@ int main( int argc, char *argv[] )
       rotate_rad = ref_math_in_radians(rotate_deg);
       printf(" --rotate %f deg (%f rad)\n",rotate_deg,rotate_rad);
       last_face_arg = MIN( last_face_arg, rotate_pos );
+
+      ref_node = ref_grid_node(ref_grid);
+      each_ref_node_valid_node( ref_node, node )
+	{
+	  x = ref_node_xyz(ref_node,0,node);
+	  z = ref_node_xyz(ref_node,2,node);
+	  ref_node_xyz(ref_node,0,node) = x*cos(rotate_rad) - z*sin(rotate_rad);
+	  ref_node_xyz(ref_node,2,node) = x*sin(rotate_rad) + z*cos(rotate_rad);
+	}
     }
 
   printf("faceids");
