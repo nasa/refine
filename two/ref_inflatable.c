@@ -38,6 +38,7 @@ int main( int argc, char *argv[] )
   REF_INT aoa_pos;
   REF_DBL alpha_deg = 0;
   REF_DBL alpha_rad = 0;
+  REF_INT origin_pos;
   REF_INT rotate_pos;
   REF_DBL rotate_deg = 0;
   REF_DBL rotate_rad = 0;
@@ -86,6 +87,21 @@ int main( int argc, char *argv[] )
       alpha_rad = ref_math_in_radians(alpha_deg);
       printf(" --aoa %f deg\n",alpha_deg);
       last_face_arg = MIN( last_face_arg, aoa_pos );
+    }
+
+  origin_pos = REF_EMPTY;
+  RXS( ref_args_find( argc, argv, "--origin", &origin_pos ),
+       REF_NOT_FOUND, "origin search" );
+
+  if ( REF_EMPTY != origin_pos )
+    {
+      if (origin_pos >= argc-3)
+	THROW("--origin requires a value");
+      origin[0] = atof(argv[origin_pos+1]);
+      origin[1] = atof(argv[origin_pos+2]);
+      origin[2] = atof(argv[origin_pos+3]);
+      printf(" --origin %f %f %f\n",origin[0],origin[1],origin[2]);
+      last_face_arg = MIN( last_face_arg, origin_pos );
     }
 
 
@@ -142,7 +158,8 @@ int main( int argc, char *argv[] )
   printf("total thickness %f\n", total_thickness);
   printf("rate %f\n", rate);
 
-  RSS( ref_inflate_origin( ref_grid, faceids, origin ), "orig" );
+  if ( REF_EMPTY == origin_pos )
+    RSS( ref_inflate_origin( ref_grid, faceids, origin ), "orig" );
 
   total = 0.0;
   for( layer=0;layer<nlayers;layer++)
