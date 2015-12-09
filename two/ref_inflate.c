@@ -77,6 +77,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 
   REF_BOOL problem_detected = REF_FALSE;
 
+  REF_BOOL debug = REF_TRUE;
+
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
 
@@ -109,6 +111,9 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 	    }
 	}
 
+  if (debug)
+    ref_dict_inspect( faceids );
+
   each_ref_dict_key_index( faceids, i )
     {
       RUS( REF_EMPTY, imin[i],"imin");
@@ -119,6 +124,11 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
       face_normal[2+3*i] = -( ref_node_xyz(ref_node,1,imax[i]) -
 			      ref_node_xyz(ref_node,1,imin[i]) );
       RSS( ref_math_normalize( &(face_normal[3*i]) ), "make face norm" );
+      if (debug)
+	printf("faceid[%d]=%d t=(%f,%f) n=(%f,%f,%f)\n",
+	       i, ref_dict_key( faceids, i ),
+	       tmin[i],tmax[i],
+	       face_normal[0+3*i], face_normal[1+3*i], face_normal[2+3*i]);
     }
 
   ref_free( tmax );
