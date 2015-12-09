@@ -500,10 +500,11 @@ REF_STATUS ref_inflate_origin( REF_GRID ref_grid,
 	  }
       }
 
-  printf("the z range is %f %f\n",z0,z1);
   origin[0] = 0;
   origin[1] = 0;
   origin[2] = 0.5*(z0+z1);
+
+  printf("the z range is %f %f and origin %f\n",z0,z1,origin[2]);
 
   return REF_SUCCESS;
 }
