@@ -123,13 +123,16 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 			      ref_node_xyz(ref_node,2,imin[i]) );
       face_normal[2+3*i] = -( ref_node_xyz(ref_node,1,imax[i]) -
 			      ref_node_xyz(ref_node,1,imin[i]) );
-      RSS( ref_math_normalize( &(face_normal[3*i]) ), "make face norm" );
       if (debug)
-	printf("faceid[%d]=%d t=(%f,%f) n=(%f,%f,%f)\n",
+	printf("faceid[%d]=%d t=(%f,%f)\nn=(%f,%f,%f)\n",
 	       i, ref_dict_key( faceids, i ),
 	       tmin[i],tmax[i],
 	       face_normal[0+3*i], face_normal[1+3*i], face_normal[2+3*i]);
-    }
+      RSS( ref_math_normalize( &(face_normal[3*i]) ), "make face norm" );
+      if (debug)
+	printf("n=(%f,%f,%f)\n",
+	       face_normal[0+3*i], face_normal[1+3*i], face_normal[2+3*i]);
+   }
 
   ref_free( tmax );
   ref_free( tmin );
