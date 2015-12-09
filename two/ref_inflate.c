@@ -77,7 +77,7 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 
   REF_BOOL problem_detected = REF_FALSE;
 
-  REF_BOOL debug = REF_TRUE;
+  REF_BOOL debug = REF_FALSE;
 
   ref_malloc_init( o2n, ref_node_max(ref_node), 
 		   REF_INT, REF_EMPTY );
