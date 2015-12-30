@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+input = ARGV[0]
+output = input.gsub(/\.surf$/,'.ugrid')
+
+puts input
+puts output
+
+throw "refuse to overwrite" if ( input == output )
+
+lines = IO.readlines(input)
+
+puts lines[0]
+ntri = lines[0].split[0].to_i
+nqua = lines[0].split[1].to_i
+nnode = lines[0].split[2].to_i
+
+puts "nnode #{nnode}"
+puts "nqua #{nqua}"
+puts "ntri #{ntri}"
+
+throw "can't handle quads" if (nqua>0)
+
+File.open(output,'w') do |f|
+  f.puts "#{nnode} #{ntri} 0 0 0 0 0"
+  f.puts lines[1..nnode]
+  lines[(nnode+1)..(nnode+ntri)].each do |line|
+    f.puts line.split[0..2].join(' ')
+  end
+  lines[(nnode+1)..(nnode+ntri)].each do |line|
+    f.puts line.split[3]
+  end
+end
+
