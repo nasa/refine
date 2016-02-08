@@ -22,7 +22,7 @@ int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
   REF_INT node;
-  REF_DBL dx, dy, dz;
+  REF_DBL dx, dy, dz, ds;
   REF_NODE ref_node;
   char *endptr;
   REF_INT pos;
@@ -48,6 +48,20 @@ int main( int argc, char *argv[] )
 	  ref_node_xyz(ref_node,0,node) += dx;
 	  ref_node_xyz(ref_node,1,node) += dy;
 	  ref_node_xyz(ref_node,2,node) += dz;
+	}
+    }
+    if( strcmp(argv[pos],"--scale") == 0 ) {
+      printf("%d: --scale\n",pos);
+      if ( pos+2 > argc )
+	return(print_usage(argv[0]));
+      ref_node = ref_grid_node(ref_grid);
+      pos++; ds = strtod( argv[pos], &endptr);RAS(argv[pos]!=endptr,"parse ds");
+      printf("%f\n",ds);
+      each_ref_node_valid_node( ref_node, node )
+	{
+	  ref_node_xyz(ref_node,0,node) *= ds;
+	  ref_node_xyz(ref_node,1,node) *= ds;
+	  ref_node_xyz(ref_node,2,node) *= ds;
 	}
     }
     pos++; 
