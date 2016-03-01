@@ -42,6 +42,8 @@ int main( int argc, char *argv[] )
   REF_INT rotate_pos;
   REF_DBL rotate_deg = 0;
   REF_DBL rotate_rad = 0;
+  REF_INT scale_pos;
+  REF_DBL scale = 0;
   REF_INT node;
   REF_DBL x, z;
   REF_BOOL extrude_radially = REF_FALSE;
@@ -50,8 +52,11 @@ int main( int argc, char *argv[] )
 
   if ( 7 > argc )
     {
-      printf("usage: \n %s input.grid nlayers first_thickness total_thickness mach faceid [faceid...] [--aoa angle_of_attack_in_degrees] [--rotate angle_in_degrees]\n",
+      printf("usage: \n %s input.grid nlayers first_thickness total_thickness mach faceid  [faceid...]\n",
 	     argv[0]);
+      printf("       [--aoa angle_of_attack_in_degrees]\n");
+      printf("       [--rotate angle_in_degrees]\n");
+      printf("       [--scale factor] (applied after inflation)\n");
       printf("  when first_thickness <= 0, it is set to a uniform grid,\n");
       printf("    first_thickness = total_thickness/nlayers\n");
       printf("  when nlayers < 0, extrude radially\n");
@@ -127,6 +132,19 @@ int main( int argc, char *argv[] )
 	}
     }
 
+  scale_pos = REF_EMPTY;
+  RXS( ref_args_find( argc, argv, "--scale", &scale_pos ),
+       REF_NOT_FOUND, "scale search" );
+
+  if ( REF_EMPTY != scale_pos )
+    {
+      if (scale_pos >= argc-1)
+	THROW("--scale requires a value");
+      scale = atof(argv[scale_pos+1]);
+      printf(" --scale %f\n",scale);
+      last_face_arg = MIN( last_face_arg, scale_pos );
+    }
+
   printf("faceids");
   RSS( ref_dict_create( &faceids ), "create" );
   for( arg=6;arg<last_face_arg;arg++)
@@ -182,6 +200,18 @@ int main( int argc, char *argv[] )
       printf("layer%5d of%5d : thickness %15.8e total %15.8e :%9d nodes\n",
 	     layer+1,nlayers,thickness, total,
 	     ref_node_n(ref_grid_node(ref_grid)));
+    }
+
+  if ( REF_EMPTY != scale_pos )
+    {
+      printf("scale grid after infation by %f\n",scale);
+      ref_node = ref_grid_node(ref_grid);
+      each_ref_node_valid_node( ref_node, node )
+	{
+	  ref_node_xyz(ref_node,0,node) *= scale;
+	  ref_node_xyz(ref_node,1,node) *= scale;
+	  ref_node_xyz(ref_node,2,node) *= scale;
+	}
     }
 
   RSS( ref_export_tec_surf( ref_grid, "inflated_boundary.tec" ), "tec" );
