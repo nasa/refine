@@ -104,14 +104,13 @@ int main( int argc, char *argv[] )
       last_face_arg = MIN( last_face_arg, origin_pos );
     }
 
-
   rotate_pos = REF_EMPTY;
   RXS( ref_args_find( argc, argv, "--rotate", &rotate_pos ),
        REF_NOT_FOUND, "rotate search" );
 
   if ( REF_EMPTY != rotate_pos )
     {
-      if (rotate_pos >= argc)
+      if (rotate_pos >= argc-1)
 	THROW("--rotate requires a value");
       rotate_deg = atof(argv[rotate_pos+1]);
       rotate_rad = ref_math_in_radians(rotate_deg);
