@@ -204,7 +204,7 @@ int main( int argc, char *argv[] )
 
   if ( REF_EMPTY != scale_pos )
     {
-      printf("scale grid after infation by %f\n",scale);
+      printf("scale grid after inflation by %f\n",scale);
       ref_node = ref_grid_node(ref_grid);
       each_ref_node_valid_node( ref_node, node )
 	{
