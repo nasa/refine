@@ -6,6 +6,8 @@
 #include "ref_quality.h"
 #include "ref_export.h"
 
+#include "ref_mpi.h"
+
 #include "ref_malloc.h"
 
 REF_STATUS ref_shard_create( REF_SHARD *ref_shard_ptr, REF_GRID ref_grid )
@@ -487,14 +489,35 @@ static REF_INT bad_tet_count = 0;
  
 */
 
+static REF_STATUS ref_shard_cell_add_local( REF_NODE ref_node, 
+					    REF_CELL ref_cell, 
+					    REF_INT *nodes)
+{
+  REF_BOOL has_local;
+  REF_INT node, new_cell;
+
+  has_local = REF_FALSE;
+
+  for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
+    has_local = has_local || 
+      ( ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+  
+  if ( has_local )
+    RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
+	
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid, 
 				     REF_INT keeping_n_layers, 
 				     REF_INT of_faceid )
 {
-  REF_INT cell, new_cell, minnode;
+  REF_INT cell, tri_mark, minnode;
 
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
+  REF_INT global[REF_CELL_MAX_SIZE_PER];
   REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT pri_global[REF_CELL_MAX_SIZE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL pri = ref_grid_pri(ref_grid);
   REF_CELL pyr = ref_grid_pyr(ref_grid);
@@ -502,6 +525,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT qua_global[REF_CELL_MAX_SIZE_PER];
   REF_CELL qua = ref_grid_qua(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
 
@@ -521,10 +545,10 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	tri_nodes[0] = orig[0];
 	tri_nodes[1] = orig[1];
 	tri_nodes[2] = orig[2];
-	RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
-	if ( REF_EMPTY != new_cell && 
+	RXS( ref_cell_with( tri, tri_nodes, &tri_mark ), REF_NOT_FOUND, "with");
+	if ( REF_EMPTY != tri_mark && 
 	     ( of_faceid == REF_EMPTY || 
-	       of_faceid == ref_cell_c2n(tri,3,new_cell) ) )
+	       of_faceid == ref_cell_c2n(tri,3,tri_mark) ) )
 	  { 
 	    mark[ tri_nodes[0] ] = 0;
 	    mark[ tri_nodes[1] ] = 0;
@@ -533,16 +557,17 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	tri_nodes[0] = orig[3];
 	tri_nodes[1] = orig[5];
 	tri_nodes[2] = orig[4];
-	RXS( ref_cell_with( tri, tri_nodes, &new_cell ), REF_NOT_FOUND, "with");
-	if ( REF_EMPTY != new_cell && 
+	RXS( ref_cell_with( tri, tri_nodes, &tri_mark ), REF_NOT_FOUND, "with");
+	if ( REF_EMPTY != tri_mark && 
 	     ( of_faceid == REF_EMPTY || 
-	       of_faceid == ref_cell_c2n(tri,3,new_cell) ) )
+	       of_faceid == ref_cell_c2n(tri,3,tri_mark) ) )
 	  { 
 	    mark[ tri_nodes[0] ] = 0;
 	    mark[ tri_nodes[1] ] = 0;
 	    mark[ tri_nodes[2] ] = 0;
 	  }
       }
+  RSS( ref_node_ghost_int( ref_node, mark ), "update ghost mark");
 
   for (relaxation=0;relaxation<keeping_n_layers;relaxation++)
     {
@@ -571,6 +596,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	       mark_copy[orig[2]] != REF_EMPTY )
 	    mark[orig[5]] = mark_copy[orig[2]] + 1;
 	}
+      RSS( ref_node_ghost_int( ref_node, mark ), "update ghost mark");
     }
 
   each_ref_cell_valid_cell_with_nodes( pri, cell, orig )
@@ -581,8 +607,11 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 
       RSS( ref_cell_remove( pri, cell ), "remove pri");
 
-      minnode = MIN( MIN( orig[0], orig[1] ), MIN( orig[2], orig[3] ) );
-      minnode = MIN( MIN( orig[4], orig[5] ), minnode );
+      for ( node=0; node<ref_cell_node_per(pri); node++ )
+	global[node] = ref_node_global(ref_node,orig[node]);
+
+      minnode = MIN( MIN( global[0], global[1] ), MIN( global[2], global[3] ) );
+      minnode = MIN( MIN( global[4], global[5] ), minnode );
 
       pri_nodes[0] = orig[0];
       pri_nodes[1] = orig[1];
@@ -591,7 +620,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
       pri_nodes[4] = orig[4];
       pri_nodes[5] = orig[5];
  
-      if ( orig[1] == minnode )
+      if ( global[1] == minnode )
 	{
 	  pri_nodes[0] = orig[1];
 	  pri_nodes[1] = orig[2];
@@ -601,7 +630,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  pri_nodes[5] = orig[3];
 	}
  
-      if ( orig[2] == minnode )
+      if ( global[2] == minnode )
 	{
 	  pri_nodes[0] = orig[2];
 	  pri_nodes[1] = orig[0];
@@ -611,7 +640,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  pri_nodes[5] = orig[4];
 	}
  
-      if ( orig[3] == minnode )
+      if ( global[3] == minnode )
 	{
 	  pri_nodes[0] = orig[3];
 	  pri_nodes[1] = orig[5];
@@ -621,7 +650,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  pri_nodes[5] = orig[1];
 	}
  
-      if ( orig[4] == minnode )
+      if ( global[4] == minnode )
 	{
 	  pri_nodes[0] = orig[4];
 	  pri_nodes[1] = orig[3];
@@ -631,7 +660,7 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  pri_nodes[5] = orig[2];
 	}
  
-      if ( orig[5] == minnode )
+      if ( global[5] == minnode )
 	{
 	  pri_nodes[0] = orig[5];
 	  pri_nodes[1] = orig[4];
@@ -641,30 +670,33 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  pri_nodes[5] = orig[0];
 	}
  
-      /* node 0 is now the smallest index of prism */
+      /* node 0 is now the smallest global index of prism */
  
       tet_nodes[0] = pri_nodes[0];
       tet_nodes[1] = pri_nodes[4];
       tet_nodes[2] = pri_nodes[5];
       tet_nodes[3] = pri_nodes[3];
-      RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+      RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "add tet");
       check_tet_volume( );
 
-      if ( ( pri_nodes[1] < pri_nodes[2] && pri_nodes[1] < pri_nodes[4] ) ||
-	   ( pri_nodes[5] < pri_nodes[2] && pri_nodes[5] < pri_nodes[4] ) )
+      for ( node=0; node<ref_cell_node_per(pri); node++ )
+	pri_global[node] = ref_node_global(ref_node,pri_nodes[node]);
+
+      if ( ( pri_global[1] < pri_global[2] && pri_global[1] < pri_global[4] ) ||
+	   ( pri_global[5] < pri_global[2] && pri_global[5] < pri_global[4] ) )
 	{
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[5];
 	  tet_nodes[3] = pri_nodes[4];
-	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "a tet");
 	  check_tet_volume( );
 
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[2];
 	  tet_nodes[3] = pri_nodes[5];
-	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "a tet");
 	  check_tet_volume(  );
 	}
       else
@@ -673,14 +705,14 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  tet_nodes[1] = pri_nodes[0];
 	  tet_nodes[2] = pri_nodes[4];
 	  tet_nodes[3] = pri_nodes[5];
-	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "a tet");
 	  check_tet_volume(  );
 
 	  tet_nodes[0] = pri_nodes[0];
 	  tet_nodes[1] = pri_nodes[1];
 	  tet_nodes[2] = pri_nodes[2];
 	  tet_nodes[3] = pri_nodes[4];
-	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "a tet");
 	  check_tet_volume(  );
 	}
 
@@ -693,9 +725,12 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	   mark[orig[3]] != REF_EMPTY &&
 	   mark[orig[4]] != REF_EMPTY ) continue;
 
+      for ( node=0; node<ref_cell_node_per(pyr); node++ )
+	global[node] = ref_node_global(ref_node,orig[node]);
+
       RSS( ref_cell_remove( pyr, cell ), "remove qua");
-      if ( ( orig[0] < orig[1] && orig[0] < orig[3] ) ||
-	   ( orig[4] < orig[1] && orig[4] < orig[3] ) )
+      if ( ( global[0] < global[1] && global[0] < global[3] ) ||
+	   ( global[4] < global[1] && global[4] < global[3] ) )
 	{ /* 0-4 diag split of quad */
   /* 4-1\
      |\| 2
@@ -704,12 +739,12 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  tet_nodes[1] = orig[4];
 	  tet_nodes[2] = orig[1];
 	  tet_nodes[3] = orig[2];
-	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "a tet");
 	  tet_nodes[0] = orig[0];
 	  tet_nodes[1] = orig[3];
 	  tet_nodes[2] = orig[4];
 	  tet_nodes[3] = orig[2];
-	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "a tet");
 	}
       else
 	{ /* 3-1 diag split of quad */
@@ -720,12 +755,12 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  tet_nodes[1] = orig[3];
 	  tet_nodes[2] = orig[1];
 	  tet_nodes[3] = orig[2];
-	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "a tet");
 	  tet_nodes[0] = orig[1];
 	  tet_nodes[1] = orig[3];
 	  tet_nodes[2] = orig[4];
 	  tet_nodes[3] = orig[2];
-	  RSS( ref_cell_add( tet, tet_nodes, &new_cell ), "add tet");
+	  RSS( ref_shard_cell_add_local( ref_node, tet, tet_nodes ), "a tet");
 	}
     }
 
@@ -738,8 +773,12 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 
       RSS( ref_cell_remove( qua, cell ), "remove qua");
       tri_nodes[3] = qua_nodes[4]; /* patch id */
-      if ( ( qua_nodes[0] < qua_nodes[1] && qua_nodes[0] < qua_nodes[3] ) ||
-	   ( qua_nodes[2] < qua_nodes[1] && qua_nodes[2] < qua_nodes[3] ) )
+
+      for ( node=0; node<ref_cell_node_per(qua); node++ )
+	qua_global[node] = ref_node_global(ref_node,qua_nodes[node]);
+
+      if ( ( qua_global[0] < qua_global[1] && qua_global[0] < qua_global[3] ) ||
+	   ( qua_global[2] < qua_global[1] && qua_global[2] < qua_global[3] ) )
 	{ /* 0-2 diag split of quad */
   /* 2-1
      |\|
@@ -747,11 +786,11 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  tri_nodes[0] = qua_nodes[0];
 	  tri_nodes[1] = qua_nodes[2];
 	  tri_nodes[2] = qua_nodes[3];
-	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  RSS( ref_shard_cell_add_local( ref_node, tri, tri_nodes ), "a tri");
 	  tri_nodes[0] = qua_nodes[0];
 	  tri_nodes[1] = qua_nodes[1];
 	  tri_nodes[2] = qua_nodes[2];
-	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  RSS( ref_shard_cell_add_local( ref_node, tri, tri_nodes ), "a tri");
 	}
       else
 	{ /* 3-1 diag split of quad */
@@ -761,16 +800,27 @@ REF_STATUS ref_shard_prism_into_tet( REF_GRID ref_grid,
 	  tri_nodes[0] = qua_nodes[0];
 	  tri_nodes[1] = qua_nodes[1];
 	  tri_nodes[2] = qua_nodes[3];
-	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  RSS( ref_shard_cell_add_local( ref_node, tri, tri_nodes ), "a tri");
 	  tri_nodes[0] = qua_nodes[2];
 	  tri_nodes[1] = qua_nodes[3];
 	  tri_nodes[2] = qua_nodes[1];
-	  RSS( ref_cell_add( tri, tri_nodes, &new_cell ), "add tri");
+	  RSS( ref_shard_cell_add_local( ref_node, tri, tri_nodes ), "a tri");
 	}
     }
 
   ref_free(mark_copy);
   ref_free(mark);
+
+  each_ref_node_valid_node( ref_node, node )
+    {
+      if ( ref_adj_empty( ref_cell_adj(ref_grid_tet(ref_grid)), node) &&
+	   ref_adj_empty( ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
+	   ref_adj_empty( ref_cell_adj(ref_grid_pri(ref_grid)), node) &&
+	   ref_adj_empty( ref_cell_adj(ref_grid_hex(ref_grid)), node) )
+	{
+	  RSS( ref_node_remove_without_global( ref_node, node ), "hang node");
+	}
+    }
 
   return REF_SUCCESS;
 }

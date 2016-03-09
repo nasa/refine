@@ -21,6 +21,10 @@
 #include "ref_export.h"
 #include "ref_edge.h"
 #include "ref_dict.h"
+#include "ref_part.h"
+#include  "ref_migrate.h"
+#include  "ref_twod.h"
+#include "ref_gather.h"
 #include "ref_mpi.h"
 
 #include "ref_import.h"
@@ -51,14 +55,18 @@ static REF_STATUS tear_down( REF_SHARD ref_shard )
 
 int main( int argc, char *argv[] )
 {
+  REF_INT nhex;
+
+  RSS( ref_mpi_start( argc, argv ), "start" );
 
   if (3 == argc) 
     {
       REF_GRID ref_grid;
       char file[] = "ref_shard_test.b8.ugrid";
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
-      RSS( ref_grid_inspect( ref_grid ), "insp" );
-      if ( 0 < ref_cell_n( ref_grid_hex(ref_grid) ) )
+      RSS( ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
+      RSS( ref_gather_ncell( ref_grid_node(ref_grid), ref_grid_hex(ref_grid), 
+			     &nhex ), "nhex");
+      if ( 0 < nhex )
 	{
 	  REF_SHARD ref_shard;
 	  REF_CELL ref_cell;
@@ -67,6 +75,12 @@ int main( int argc, char *argv[] )
 	  REF_INT faceid;
 	  REF_INT open_node0, open_node1;
 	  REF_INT face_marks, hex_marks;
+
+	  if ( ref_mpi_n > 1 ){
+	    RSS( ref_mpi_stop( ), "stop" );
+	    THROW("hex shard not parallel");
+	  }
+
 	  RSS(ref_shard_create(&ref_shard,ref_grid),"create");
 	  ref_cell = ref_grid_qua(ref_grid);
 	  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
@@ -102,9 +116,9 @@ int main( int argc, char *argv[] )
 	  RSS( ref_shard_prism_into_tet( ref_grid, atoi(argv[2]), REF_EMPTY ), 
 	       "shrd");
 	}
-      RSS( ref_grid_inspect( ref_grid ), "insp" );
-      RSS(ref_export_by_extension( ref_grid, file ),"export" );
-      RSS(ref_grid_free(ref_grid),"free");
+      RSS( ref_gather_b8_ugrid( ref_grid, file ),"export" );
+      RSS( ref_grid_free(ref_grid),"free");
+      RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
 
@@ -343,6 +357,8 @@ int main( int argc, char *argv[] )
 
     RSS( ref_grid_free(ref_grid),"free" );
   }
+
+  RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }
