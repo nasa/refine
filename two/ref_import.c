@@ -307,6 +307,46 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_import_bin_ugrid_bound_c2n( REF_CELL ref_cell,
+						  REF_INT ncell,
+						  FILE *file,
+						  REF_BOOL swap )
+{
+  REF_INT node_per, max_chunk, nread, chunk, cell, node, new_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *c2n;
+
+  if ( 0 < ncell )
+    {
+      node_per = ref_cell_node_per(ref_cell);
+      max_chunk = MIN(1000000, ncell);
+      ref_malloc( c2n, node_per*max_chunk, REF_INT);
+      nread = 0;
+      while ( nread < ncell )
+	{
+	  chunk = MIN(max_chunk, ncell-nread);
+	  REIS((size_t)(node_per*chunk),
+	       fread( c2n, sizeof(REF_INT), node_per*chunk, file ), "c2n" );
+	  for( cell=0; cell<chunk ; cell++ )
+	    {
+	      nodes[node_per] = REF_EMPTY;
+	      for ( node = 0 ; node < node_per ; node++ )
+		{
+		  nodes[node] = c2n[node+node_per*cell];
+		  if (swap) SWAP_INT(nodes[node]);
+		  nodes[node]--;
+		}
+	      RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "new cell");
+	      RES( cell+nread, new_cell, "cell index");
+	    }
+	  nread += ncell;
+	}
+      ref_free( c2n );
+    }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
 					REF_BOOL swap )
 {
@@ -317,7 +357,7 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT node, new_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT tri, qua, new_tri, new_qua;
+  REF_INT tri, qua;
   REF_INT face_id;
   REF_INT node_per, cell, new_cell;
 
@@ -373,35 +413,10 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
 
   RSS( ref_node_initialize_n_global( ref_node, nnode ), "init glob");
 
-  ref_cell = ref_grid_tri(ref_grid);
-  nodes[3] = REF_EMPTY;
-  for( tri = 0; tri < ntri ; tri++ )
-    {
-      node_per = ref_cell_node_per(ref_cell);
-      for ( node = 0 ; node < node_per ; node++ )
-	{  
-	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "tri" );
-	  if (swap) SWAP_INT(nodes[node]);
-	  nodes[node]--;
-	}
-      RSS( ref_cell_add(ref_cell, nodes, &new_tri ), "new tri");
-      RES( tri, new_tri, "tri index");
-    }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  nodes[4] = REF_EMPTY;
-  for( qua = 0; qua < nqua ; qua++ )
-    {
-      node_per = ref_cell_node_per(ref_cell);
-      for ( node = 0 ; node < node_per ; node++ )
-	{  
-	  RES(1, fread( &(nodes[node]), sizeof(REF_INT), 1, file ), "qua" );
-	  if (swap) SWAP_INT(nodes[node]);
-	  nodes[node]--;
-	}
-      RSS( ref_cell_add(ref_cell, nodes, &new_qua ), "new qua");
-      RES( qua, new_qua, "qua index");
-    }
+  RSS( ref_import_bin_ugrid_bound_c2n( ref_grid_tri(ref_grid), ntri,
+				       file, swap ), "tri face nodes");
+  RSS( ref_import_bin_ugrid_bound_c2n( ref_grid_qua(ref_grid), nqua,
+				       file, swap ), "qua face nodes");
 
   ref_cell = ref_grid_tri(ref_grid);
   for( tri = 0; tri < ntri ; tri++ )
