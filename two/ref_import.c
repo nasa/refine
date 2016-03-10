@@ -347,6 +347,38 @@ static REF_STATUS ref_import_bin_ugrid_bound_c2n( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_import_bin_ugrid_bound_tag( REF_CELL ref_cell,
+						  REF_INT ncell,
+						  FILE *file,
+						  REF_BOOL swap )
+{
+  REF_INT node_per, max_chunk, nread, chunk, cell;
+  REF_INT *tag;
+
+  if ( 0 < ncell )
+    {
+      node_per = ref_cell_node_per(ref_cell);
+      max_chunk = MIN(1000000, ncell);
+      ref_malloc( tag, max_chunk, REF_INT);
+      nread = 0;
+      while ( nread < ncell )
+	{
+	  chunk = MIN(max_chunk, ncell-nread);
+	  REIS((size_t)(chunk),
+	       fread( tag, sizeof(REF_INT), chunk, file ), "tags" );
+	  for( cell=0; cell<chunk ; cell++ )
+	    {
+	      if (swap) SWAP_INT(tag[cell]);
+	      ref_cell_c2n(ref_cell,node_per,cell) = tag[cell];
+	    }
+	  nread += ncell;
+	}
+      ref_free( tag );
+    }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
 					REF_BOOL swap )
 {
@@ -357,8 +389,6 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT node, new_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT tri, qua;
-  REF_INT face_id;
   REF_INT node_per, cell, new_cell;
 
   REF_INT max_chunk, nread, chunk, ixyz;
@@ -418,21 +448,10 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
   RSS( ref_import_bin_ugrid_bound_c2n( ref_grid_qua(ref_grid), nqua,
 				       file, swap ), "qua face nodes");
 
-  ref_cell = ref_grid_tri(ref_grid);
-  for( tri = 0; tri < ntri ; tri++ )
-    {
-      RES(1, fread( &face_id, sizeof(REF_INT), 1, file ), "tri" );
-      if (swap) SWAP_INT(face_id);
-      ref_cell_c2n(ref_cell,3,tri) = face_id;
-    }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  for( qua = 0; qua < nqua ; qua++ )
-    {
-      RES(1, fread( &face_id, sizeof(REF_INT), 1, file ), "qua" );
-      if (swap) SWAP_INT(face_id);
-      ref_cell_c2n(ref_cell,4,qua) = face_id;
-    }
+  RSS( ref_import_bin_ugrid_bound_tag( ref_grid_tri(ref_grid), ntri,
+				       file, swap ), "tri face tags");
+  RSS( ref_import_bin_ugrid_bound_tag( ref_grid_qua(ref_grid), nqua,
+				       file, swap ), "tri face tags");
 
   ref_cell = ref_grid_tet(ref_grid);
   for( cell = 0; cell < ntet ; cell++ )
