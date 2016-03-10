@@ -7,7 +7,6 @@
 #include "ref_part.h"
 #include "ref_mpi.h"
 #include "ref_endian.h"
-#include "ref_sort.h"
 
 #include "ref_malloc.h"
 
@@ -260,7 +259,6 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   REF_INT *c2t;
   REF_INT *sent_c2n;
   REF_INT *dest;
-  REF_INT *order;
   REF_INT *sent_part;
   REF_INT *elements_to_send;
   REF_INT *start_to_send;
@@ -269,6 +267,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   REF_INT cell;
   REF_INT part, node;
   REF_INT ncell_keep;
+  REF_INT new_location;
 
   chunk = MAX(1000000, ncell/ref_mpi_n);
 
@@ -286,7 +285,6 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
       ref_malloc( tag, chunk, REF_INT );
       ref_malloc( c2t, chunk, REF_INT );
       ref_malloc( dest, chunk, REF_INT );
-      ref_malloc( order, chunk, REF_INT );
 
       ncell_read = 0;
       while ( ncell_read < ncell )
@@ -325,29 +323,28 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	  for (cell=0;cell<section_size;cell++)
 	    dest[cell] = ref_part_implicit( nnode, ref_mpi_n, 
 					    c2n[size_per*cell] );
-	  
-	  RSS( ref_sort_heap_int( section_size, dest, order ), "heap" );
 
+	  for ( part = 0; part< ref_mpi_n;part++ )
+	    elements_to_send[part] = 0;
+	  for (cell=0;cell<section_size;cell++)
+	    elements_to_send[dest[cell]]++;
+
+	  start_to_send[0]=0;
+	  for ( part = 0; part< ref_mpi_n-1;part++ )
+	    start_to_send[part+1] = start_to_send[part]+elements_to_send[part];
+
+	  for ( part = 0; part< ref_mpi_n;part++ )
+	    elements_to_send[part] = 0;
 	  for (cell=0;cell<section_size;cell++)
 	    {
+	      new_location = start_to_send[dest[cell]]
+		+ elements_to_send[dest[cell]];
 	      for (node=0;node<size_per;node++)
-		sent_c2n[node+size_per*cell] = c2n[node+size_per*order[cell]];
-	      dest[cell] = ref_part_implicit( nnode, ref_mpi_n, 
-					      sent_c2n[size_per*cell] );
+		sent_c2n[node+size_per*new_location] = c2n[node+size_per*cell];
+	      elements_to_send[dest[cell]]++;
 	    }
 
 	  /* master keepers */
-	  
-	  for ( part = 0; part< ref_mpi_n;part++ )
-	    elements_to_send[part] = 0;
-	  for ( part = 0; part< ref_mpi_n;part++ )
-	    start_to_send[part] = REF_EMPTY;
-
-	  for (cell=section_size-1; cell >= 0; cell--)
-	    {
-	      elements_to_send[dest[cell]]++;
-	      start_to_send[dest[cell]] = cell;
-	    }
 
 	  ncell_keep = elements_to_send[0];
 	  if ( 0 < ncell_keep )
@@ -381,7 +378,6 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 
 	}
 
-      ref_free(order);
       ref_free(dest);
       ref_free(c2t);
       ref_free(tag);
