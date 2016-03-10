@@ -432,10 +432,10 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
 	  SWAP_DBL(xyz[ixyz]);
       for( node=0; node<chunk ; node++ )
 	{
-	  RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+	  RSS( ref_node_add(ref_node, node+nread, &new_node ), "new_node");
 	  ref_node_xyz( ref_node, 0, new_node ) = xyz[0+3*node];
-	  ref_node_xyz( ref_node, 1, new_node ) = xyz[0+3*node];
-	  ref_node_xyz( ref_node, 2, new_node ) = xyz[0+3*node];
+	  ref_node_xyz( ref_node, 1, new_node ) = xyz[1+3*node];
+	  ref_node_xyz( ref_node, 2, new_node ) = xyz[2+3*node];
 	}
       nread += chunk;
     }
