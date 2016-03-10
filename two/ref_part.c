@@ -32,6 +32,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_GRID ref_grid;
   REF_NODE ref_node;
 
+  REF_BOOL instrument = REF_FALSE;
+
+  if (instrument) ref_mpi_stopwatch_start();
+
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
@@ -145,6 +149,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
     }
 
+  if (instrument) ref_mpi_stopwatch_stop("nodes");
+
   if ( 0 < ntri )
     {
       conn_offset = 4*7
@@ -171,6 +177,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 				   ref_node, nnode, 
 				   file, conn_offset, faceid_offset ), "qua" );
     }
+
+  if (instrument) ref_mpi_stopwatch_stop("bound");
 
   if ( 0 < ntet )
     {
@@ -231,6 +239,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   /* ghost xyz */
 
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
+
+  if (instrument) ref_mpi_stopwatch_stop("volume");
 
   return REF_SUCCESS;
 }
