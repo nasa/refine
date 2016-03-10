@@ -32,7 +32,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_GRID ref_grid;
   REF_NODE ref_node;
 
-  REF_BOOL instrument = REF_FALSE;
+  REF_BOOL instrument = REF_TRUE;
 
   if (instrument) ref_mpi_stopwatch_start();
 
@@ -256,6 +256,8 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   REF_INT end_of_message = REF_EMPTY;
   REF_INT elements_to_receive;
   REF_INT *c2n;
+  REF_INT *tag;
+  REF_INT *c2t;
   REF_INT *sent_c2n;
   REF_INT *dest;
   REF_INT *order;
@@ -281,6 +283,8 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
       ref_malloc( elements_to_send, ref_mpi_n, REF_INT );
       ref_malloc( start_to_send, ref_mpi_n, REF_INT );
       ref_malloc( c2n, size_per*chunk, REF_INT );
+      ref_malloc( tag, chunk, REF_INT );
+      ref_malloc( c2t, chunk, REF_INT );
       ref_malloc( dest, chunk, REF_INT );
       ref_malloc( order, chunk, REF_INT );
 
@@ -290,26 +294,30 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	  section_size = MIN(chunk,ncell-ncell_read);
 
 	  fseek(file,conn_offset+(long)(4*node_per*ncell_read),SEEK_SET);
-	  for (cell=0;cell<section_size;cell++)
-	    {
-	      for (node=0;node<node_per;node++)
-		{
-		  RES(1, fread( &(c2n[node+size_per*cell]), 
-				sizeof(REF_INT), 1, file ), "cn" );
-		  SWAP_INT(c2n[node+size_per*cell]);
-		  c2n[node+size_per*cell]--;
-		}
-	    }
+	  RES((size_t)(section_size*node_per),
+	      fread( c2n,
+		     sizeof(REF_INT), section_size*node_per, file ), "cn" );
+	  for (cell=0;cell<section_size*node_per;cell++)
+	    SWAP_INT(c2n[cell]);
+	  for (cell=0;cell<section_size*node_per;cell++)
+	    c2n[cell]--;
 	  if ( ref_cell_last_node_is_an_id(ref_cell) )
 	    {
 	      fseek(file,faceid_offset+(long)(4*ncell_read),SEEK_SET);
+	      RES((size_t)(section_size),
+		  fread( tag,
+			 sizeof(REF_INT), section_size, file ), "tag" );
 	      for (cell=0;cell<section_size;cell++)
-		{
-		  node = node_per;
-		  RES(1, fread( &(c2n[node+size_per*cell]), 
-				sizeof(REF_INT), 1, file ), "cn" );
-		  SWAP_INT(c2n[node+size_per*cell]);
-		}
+		SWAP_INT(tag[cell]);
+
+	      /* sort into right locations */
+	      for (cell=0;cell<section_size;cell++)
+		for (node=0;node<node_per;node++)
+		  c2t[node+cell*size_per] = c2n[node+cell*node_per];
+	      for (cell=0;cell<section_size;cell++)
+		c2t[node_per+cell*size_per] = tag[cell];
+	      for (cell=0;cell<section_size*size_per;cell++)
+		c2n[cell]=c2t[cell];
 	    }
 
 	  ncell_read += section_size;
@@ -375,6 +383,8 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 
       ref_free(order);
       ref_free(dest);
+      ref_free(c2t);
+      ref_free(tag);
       ref_free(c2n);
       ref_free(start_to_send);
       ref_free(elements_to_send);
