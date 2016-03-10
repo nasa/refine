@@ -152,12 +152,12 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( 0 < ntri )
     {
-      conn_offset = 4*7
-	+ 8*3*nnode;
-      faceid_offset = 4*7
-	+ 8*3*nnode
-	+ 4*3*ntri
-	+ 4*4*nqua;
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode;
+      faceid_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)3*(long)ntri
+	+ (long)4*(long)4*(long)nqua;
       RSS( ref_part_b8_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
 				   ref_node, nnode, 
 				   file, conn_offset, faceid_offset ), "tri" );
@@ -165,13 +165,13 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( 0 < nqua )
     {
-      conn_offset = 4*7
-	+ 8*3*nnode
-	+ 4*3*ntri;
-      faceid_offset = 4*7
-	+ 8*3*nnode
-	+ 4*4*ntri
-	+ 4*4*nqua;
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)3*(long)ntri;
+      faceid_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)4*(long)nqua;
       RSS( ref_part_b8_ugrid_cell( ref_grid_qua(ref_grid), nqua, 
 				   ref_node, nnode, 
 				   file, conn_offset, faceid_offset ), "qua" );
@@ -181,11 +181,11 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( 0 < ntet )
     {
-      conn_offset = 4*7
-	+ 8*3*nnode
-	+ 4*4*ntri
-	+ 4*5*nqua;
-      faceid_offset = REF_EMPTY;
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)5*(long)nqua;
+      faceid_offset = (long)REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
 				   ref_node, nnode, 
 				   file, conn_offset, faceid_offset ), "tet" );
@@ -193,12 +193,12 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( 0 < npyr )
     {
-      conn_offset = 4*7
-	+ 8*3*nnode
-	+ 4*4*ntri
-	+ 4*5*nqua
-	+ 4*4*ntet;
-      faceid_offset = REF_EMPTY;
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)5*(long)nqua
+	+ (long)4*(long)4*(long)ntet;
+      faceid_offset = (long)REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_pyr(ref_grid), npyr, 
 				   ref_node, nnode, 
 				   file, conn_offset, faceid_offset ), "pyr" );
@@ -206,13 +206,13 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( 0 < npri )
     {
-      conn_offset = 4*7
-	+ 8*3*nnode
-	+ 4*4*ntri
-	+ 4*5*nqua
-	+ 4*4*ntet
-	+ 4*5*npyr;
-      faceid_offset = REF_EMPTY;
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)5*(long)nqua
+	+ (long)4*(long)4*(long)ntet
+	+ (long)4*(long)5*(long)npyr;
+      faceid_offset = (long)REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_pri(ref_grid), npri, 
 				   ref_node, nnode, 
 				   file, conn_offset, faceid_offset ), "pri" );
@@ -220,13 +220,13 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
   if ( 0 < nhex )
     {
-      conn_offset = 4*7
-	+ 8*3*nnode
-	+ 4*4*ntri
-	+ 4*5*nqua
-	+ 4*4*ntet
-	+ 4*5*npyr
-	+ 4*6*npri;
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)5*(long)nqua
+	+ (long)4*(long)4*(long)ntet
+	+ (long)4*(long)5*(long)npyr
+	+ (long)4*(long)6*(long)npri;
       faceid_offset = REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_hex(ref_grid), nhex, 
 				   ref_node, nnode, 
@@ -291,7 +291,9 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	{
 	  section_size = MIN(chunk,ncell-ncell_read);
 
-	  fseek(file,conn_offset+(long)(4*node_per*ncell_read),SEEK_SET);
+	  REIS(0,
+	       fseek(file,conn_offset+(long)4*(long)node_per*(long)ncell_read,
+		     SEEK_SET), "seek conn failed");
 	  RES((size_t)(section_size*node_per),
 	      fread( c2n,
 		     sizeof(REF_INT), section_size*node_per, file ), "cn" );
@@ -301,7 +303,8 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	    c2n[cell]--;
 	  if ( ref_cell_last_node_is_an_id(ref_cell) )
 	    {
-	      fseek(file,faceid_offset+(long)(4*ncell_read),SEEK_SET);
+	      REIS(0,fseek(file,faceid_offset+(long)4*(long)ncell_read,
+			   SEEK_SET),"seek tag failed");
 	      RES((size_t)(section_size),
 		  fread( tag,
 			 sizeof(REF_INT), section_size, file ), "tag" );
