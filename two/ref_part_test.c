@@ -29,13 +29,16 @@ int main( int argc, char *argv[] )
       REF_GRID import_grid;
       char viz_file[256];
 
+      ref_mpi_stopwatch_start();
       RSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
-      ref_grid_inspect( import_grid );  
+      ref_mpi_stopwatch_stop("import");
 
       sprintf(viz_file, "ref_part_test_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
       RSS( ref_export_by_extension( import_grid, viz_file ), "export");
+      ref_mpi_stopwatch_stop("export");
 
       RSS( ref_gather_tec_part( import_grid, "ref_part_test.tec" ), "part_viz");
+      ref_mpi_stopwatch_stop("gather");
 
       RSS(ref_grid_free(import_grid),"free");
 
