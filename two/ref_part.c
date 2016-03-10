@@ -31,7 +31,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
   REF_GRID ref_grid;
   REF_NODE ref_node;
 
-  REF_BOOL instrument = REF_TRUE;
+  REF_BOOL instrument = REF_FALSE;
 
   if (instrument) ref_mpi_stopwatch_start();
 
