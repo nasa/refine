@@ -111,12 +111,15 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
   RSS( ref_mpi_min( &before_barrier, &first, REF_DBL_TYPE), "min");
   RSS( ref_mpi_min( &after_barrier, &last, REF_DBL_TYPE), "max");
   if ( ref_mpi_master )
-    printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
-	   elapsed,
-	   last,
-	   first,
-	   ( last>0.0 ? first/last*100.0 : 100.0 ),
-	   message );
+    {
+      printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
+	     elapsed,
+	     last,
+	     first,
+	     ( last>0.0 ? first/last*100.0 : 100.0 ),
+	     message );
+      fflush(stdout);
+    }
   RSS( ref_mpi_stopwatch_start(), "restart" );
 #else
   printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
@@ -128,6 +131,7 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 	 mpi_stopwatch_start_time,
 	 110.0,
 	 message );
+  fflush(stdout);
 #endif
 
   return REF_SUCCESS;
