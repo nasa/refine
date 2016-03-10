@@ -63,9 +63,12 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
       char file[] = "ref_shard_test.b8.ugrid";
+      ref_mpi_stopwatch_start();
       RSS( ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
+      ref_mpi_stopwatch_stop("import");
       RSS( ref_gather_ncell( ref_grid_node(ref_grid), ref_grid_hex(ref_grid), 
 			     &nhex ), "nhex");
+      ref_mpi_stopwatch_stop("nhex");
       if ( 0 < nhex )
 	{
 	  REF_SHARD ref_shard;
@@ -115,8 +118,10 @@ int main( int argc, char *argv[] )
 	{
 	  RSS( ref_shard_prism_into_tet( ref_grid, atoi(argv[2]), REF_EMPTY ), 
 	       "shrd");
+	  ref_mpi_stopwatch_stop("shard");
 	}
       RSS( ref_gather_b8_ugrid( ref_grid, file ),"export" );
+      ref_mpi_stopwatch_stop("export");
       RSS( ref_grid_free(ref_grid),"free");
       RSS( ref_mpi_stop( ), "stop" );
       return 0;
