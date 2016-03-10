@@ -6,6 +6,7 @@
 
 #include "ref_import.h"
 
+#include "ref_malloc.h"
 #include "ref_endian.h"
 
 REF_STATUS ref_import_examine_header( char *filename )
@@ -315,11 +316,13 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT node, new_node;
-  REF_DBL swapped_dbl;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tri, qua, new_tri, new_qua;
   REF_INT face_id;
   REF_INT node_per, cell, new_cell;
+
+  REF_INT max_chunk, nread, chunk, ixyz;
+  REF_DBL *xyz;
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -345,20 +348,28 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
   if (swap) SWAP_INT(npri);
   if (swap) SWAP_INT(nhex);
 
-  for( node=0; node<nnode ; node++ ) 
+  /* large block reads reccomended for IO performance */
+  max_chunk = MIN(1000000, nnode);
+  ref_malloc( xyz, 3*max_chunk, REF_DBL);
+  nread = 0;
+  while ( nread < nnode )
     {
-      RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
-      RES( node, new_node, "node index");
-      RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "x" );
-      if (swap) SWAP_DBL(swapped_dbl);
-      ref_node_xyz( ref_node, 0, new_node ) = swapped_dbl;
-      RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "y" );
-      if (swap) SWAP_DBL(swapped_dbl);
-      ref_node_xyz( ref_node, 1, new_node ) = swapped_dbl;
-      RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "z" );
-      if (swap) SWAP_DBL(swapped_dbl);
-      ref_node_xyz( ref_node, 2, new_node ) = swapped_dbl;
+      chunk = MIN(max_chunk, nnode-nread);
+      REIS((size_t)(3*chunk),
+	   fread( xyz, sizeof(REF_DBL), 3*chunk, file ), "xyz" );
+      if (swap)
+	for( ixyz=0; ixyz<3*chunk ; ixyz++ )
+	  SWAP_DBL(xyz[ixyz]);
+      for( node=0; node<chunk ; node++ )
+	{
+	  RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+	  ref_node_xyz( ref_node, 0, new_node ) = xyz[0+3*node];
+	  ref_node_xyz( ref_node, 1, new_node ) = xyz[0+3*node];
+	  ref_node_xyz( ref_node, 2, new_node ) = xyz[0+3*node];
+	}
+      nread += chunk;
     }
+  ref_free( xyz );
 
   RSS( ref_node_initialize_n_global( ref_node, nnode ), "init glob");
 
