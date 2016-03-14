@@ -283,7 +283,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
       ref_malloc( start_to_send, ref_mpi_n, REF_INT );
       ref_malloc( c2n, size_per*chunk, REF_INT );
       ref_malloc( tag, chunk, REF_INT );
-      ref_malloc( c2t, chunk, REF_INT );
+      ref_malloc( c2t, size_per*chunk, REF_INT );
       ref_malloc( dest, chunk, REF_INT );
 
       ncell_read = 0;
