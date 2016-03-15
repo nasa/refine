@@ -480,12 +480,12 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
 	    if ( faceid_insted_of_c2n )
 	      {
 		for ( node = node_per; node < size_per; node++ )
-                 {
-                   SWAP_INT(nodes[node]);
-                   REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
-                        "cel node");
-                 }
-	    }
+		  {
+		    SWAP_INT(nodes[node]);
+		    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
+			 "cel node");
+		  }
+	      }
 	    else
 	      {
 		for ( node = 0; node < node_per; node++ )
