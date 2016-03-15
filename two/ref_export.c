@@ -1184,6 +1184,19 @@ REF_STATUS ref_export_faceid_range( REF_GRID ref_grid,
       *max_faceid = MAX( *max_faceid, nodes[ref_cell_node_per(ref_cell)] );
     }
 
+  if ( ref_mpi_n > 1 )
+    {
+      REF_INT global;
+
+      RSS( ref_mpi_min( min_faceid, &global, REF_INT_TYPE ), "mpi min face" );
+      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi min face" );
+      *min_faceid = global;
+
+      RSS( ref_mpi_max( max_faceid, &global, REF_INT_TYPE ), "mpi max face" );
+      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi max face" );
+      *max_faceid = global;
+    }
+
   return REF_SUCCESS;
 }
 
