@@ -23,6 +23,7 @@
 
 #include "ref_gather.h"
 #include "ref_edge.h"
+#include "ref_twod.h"
 
 int main( int argc, char *argv[] )
 {
