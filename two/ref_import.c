@@ -371,7 +371,7 @@ static REF_STATUS ref_import_bin_ugrid_bound_tag( REF_CELL ref_cell,
 	  for( cell=0; cell<chunk ; cell++ )
 	    {
 	      if (swap) SWAP_INT(tag[cell]);
-	      ref_cell_c2n(ref_cell,node_per,cell) = tag[cell];
+	      ref_cell_c2n(ref_cell,node_per,nread+cell) = tag[cell];
 	    }
 	  nread += chunk;
 	}
