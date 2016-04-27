@@ -1,4 +1,6 @@
 
+Wed, Apr 27, 2016 : Released Refine 1.8.16
+
 - refine/two fortran binding uses a single partition
 - mid plane of twod grids in now a varaible (for pointwise)
 - ref_export learned to extract twod grid to meshb format
