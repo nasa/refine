@@ -104,7 +104,7 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
     {
       orig = ref_adj_nnode( ref_adj );
       chunk = 100 + MAX( 0, node-orig );
-      chunk = MAX( chunk, (REF_INT)(1.5*(REF_DBL)orig) );
+      chunk = MAX( chunk, (REF_INT)(0.5*(REF_DBL)orig) );
       /* try to keep under 32-bit limit */
       chunk = MIN( chunk, max_limit-orig );
       ref_adj_nnode(ref_adj) = orig + chunk;
@@ -119,7 +119,7 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
            "the number of ref_adj items is too large for int, cannot grow");
 
       orig = ref_adj_nitem( ref_adj );
-      chunk = MAX(100,(REF_INT)(1.5*(REF_DBL)orig));
+      chunk = MAX(100,(REF_INT)(0.5*(REF_DBL)orig));
       /* try to keep under 32-bit limit */
       chunk = MIN( chunk, max_limit-orig );
       ref_adj_nitem( ref_adj ) =  orig + chunk;
