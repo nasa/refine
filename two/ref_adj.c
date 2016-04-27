@@ -96,6 +96,7 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
 {
   REF_INT item;
   REF_INT orig, chunk, i;
+  REF_INT max_limit = REF_INT_MAX;
 
   if ( node < 0 ) return REF_INVALID;
 
@@ -103,6 +104,9 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
     {
       orig = ref_adj_nnode( ref_adj );
       chunk = 100 + MAX( 0, node-orig );
+      chunk = MAX( chunk, (REF_INT)(1.5*(REF_DBL)orig) );
+      /* try to keep under 32-bit limit */
+      chunk = MIN( chunk, max_limit-orig );
       ref_adj_nnode(ref_adj) = orig + chunk;
       ref_realloc( ref_adj->first, ref_adj_nnode(ref_adj), REF_INT );
       for (i = orig; i < ref_adj_nnode(ref_adj) ; i++ )
@@ -111,8 +115,13 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
 
   if ( REF_EMPTY == ref_adj_blank(ref_adj) )
     {
+      RAS( ref_adj_nitem( ref_adj ) != max_limit,
+           "the number of ref_adj items is too large for int, cannot grow");
+
       orig = ref_adj_nitem( ref_adj );
       chunk = MAX(100,(REF_INT)(1.5*(REF_DBL)orig));
+      /* try to keep under 32-bit limit */
+      chunk = MIN( chunk, max_limit-orig );
       ref_adj_nitem( ref_adj ) =  orig + chunk;
       ref_realloc( ref_adj->item, ref_adj_nitem(ref_adj), REF_ADJ_ITEM_STRUCT );
       for (i = orig; i < ref_adj_nitem(ref_adj) ; i++ )
