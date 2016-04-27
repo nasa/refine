@@ -2,7 +2,20 @@
 - refine/two fortran binding uses a single partition
 - mid plane of twod grids in now a varaible (for pointwise)
 - ref_export learned to extract twod grid to meshb format
+- ref_export learned tecplot .plt
 - ref_translate learned --scale
+- ref_inflatable learned --rotate, --scale, and --origin
+- ref_fefloa2d driver and ref_bamg_emulator added
+- histogram fixed and made pretty for paper
+- ref_arg created to parse arguments
+- ref_metric_interpolate twod adapt uses background grid to interp metric 
+- ref_surf2ugrid for debuging aflr3 problems
+- ref_shard_prism_into_tet paralleized
+- ref_import_bin_ugrid uses blocks to read contiguously (broke and fixed tags)
+- ref_part uses blocks to read contiguously (face tags hop)
+- ref_part uses longs for file offsets to read big grids
+- ref_gather_cell contiguous faceids for cgns conversion 
+- ref_adj better realloc heuristics for increased performance
 
 Tue, Feb  3, 2015 : Released Refine 1.8.15
 
