@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+input = ARGV[0]
+output = input.gsub(/\.mapbc$/,'.fun3dmapbc')
+
+puts input
+puts output
+
+throw "refuse to overwrite" if ( input == output )
+
+bcmap = Hash.new(-999)
+bcmap[0]   = 3000 # farfield_riem
+bcmap[1]   = 6662 # symmetry_y
+bcmap[2]   = 5026 # extrapolate
+bcmap[3]   = 5000 # farfield_riem
+bcmap[4]   = 4000 # viscous_solid
+bcmap[44]  = 4000 # viscous_solid
+bcmap[5]   = 5000 # tangency
+bcmap[55]  = 4000 # viscous_solid
+bcmap[101] = 5051 # back_pressure
+bcmap[102] = 5051 # back_pressure
+bcmap[103] = 5051 # back_pressure
+bcmap[104] = 5051 # back_pressure
+bcmap[201] = 7011 # total pressure
+bcmap[202] = 7011 # total pressure
+bcmap[203] = 7011 # total pressure
+bcmap[204] = 7011 # total pressure
+
+bcmap[111] = 4000 # viscous_solid for bleed
+bcmap[211] = 4000 # viscous_solid for bleed
+bcmap[311] = 4000 # viscous_solid for bleed
+bcmap[411] = 4000 # viscous_solid for bleed
+
+puts bcmap
+
+lines = IO.readlines(input)
+
+puts lines[0..3]
+
+File.open(output,'w') do |f|
+  f.puts (lines.size-4)
+  lines[(4)..(lines.size-1)].each do |line|
+    cols = line.split
+    face_tag = cols[0].to_i
+    usm3d_boundary_type = cols[1].to_i
+    fun3d_boundary_type = if (usm3d_boundary_type<1000)
+                            bcmap[usm3d_boundary_type] 
+                          else
+                            usm3d_boundary_type
+                          end
+    family = cols[5]
+    f.printf("%-6d %5d %s\n", face_tag, fun3d_boundary_type, family )
+    puts line
+    printf("%-6d %5d %s\n", face_tag, fun3d_boundary_type, family )
+  end
+end
