@@ -4,6 +4,10 @@ set -x
 
 # TESTS_ENVIRONMENT='valgrind --quiet --leak-check=full'
 
+module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
+parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2013-2013.4.183_64"
+zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2013-2013.4.183_64"
+
 mkdir -p strict
 ( cd strict && \
     ../configure \
@@ -17,7 +21,7 @@ mkdir -p parmetis
 ( cd parmetis && \
     ../configure \
     --prefix=`pwd` \
-    --with-parmetis=/ump/fldmd/home/mpark/modules/ParMETIS/4.0.3-1.6.5_intel_2013-2013.4.183_64 \
+    --with-parmetis=${parmetis_path} \
     CC=mpicc \
     FC=mpif90 \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
@@ -28,7 +32,7 @@ mkdir -p zoltan
 ( cd zoltan && \
     ../configure \
     --prefix=`pwd` \
-    --with-zoltan=/ump/fldmd/home/mpark/modules/Zoltan/3.82-1.6.5_intel_2013-2013.4.183_64 \
+    --with-zoltan=${zoltan_path} \
     CC=mpicc \
     FC=mpif90 \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
