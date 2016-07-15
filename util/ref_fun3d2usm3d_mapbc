@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+
+input = ARGV[0]
+output = input.gsub(/\.mapbc$/,'.usm3dmapbc')
+
+puts input
+puts output
+
+throw "refuse to overwrite" if ( input == output )
+
+bcmap = Hash.new(-999)
+bcmap[3000] =   0 # farfield_riem
+bcmap[6662] =   1 # symmetry_y
+bcmap[5026] =   2 # extrapolate
+bcmap[5000] =   3 # farfield_riem
+bcmap[4000] =   4 # viscous_solid
+
+bcmap[5052] = 101 # back_pressure
+bcmap[7011] = 102 # total pressure
+bcmap[7036] = 103 # total pressure
+
+puts bcmap
+
+lines = IO.readlines(input)
+
+File.open(output,'w') do |f|
+  f.puts <<EOF
+ # the date
+ # WARNING: mapbc file created from ugrid file
+ # WARNING: Boundary conditions must be remapped
+ # patch no.     bc      family   surfs    surfids    name
+EOF
+  f.puts (lines.size-1)
+  lines[(1)..(lines.size-1)].each do |line|
+    cols = line.split
+    face_tag = cols[0].to_i
+    fun3d_boundary_type = cols[1].to_i
+    usm3d_boundary_type = bcmap[fun3d_boundary_type] 
+    family = cols[2]
+    f.printf("%10d%10d%10d%7d%7d %s\n",
+             face_tag, usm3d_boundary_type, usm3d_boundary_type, 0, 0, family )
+  end
+end
