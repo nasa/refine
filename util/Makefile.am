@@ -4,5 +4,8 @@ EXTRA_DIST = \
 	front2tec.rb front2off.rb \
 	mesh3d2fgrid.rb
 
-dist_bin_SCRIPTS = ref_metric2sol ref_surf2ugrid ref_vgrid2fun3d_mapbc
+dist_bin_SCRIPTS = \
+	ref_metric2sol \
+	ref_surf2ugrid \
+	ref_usm3d2fun3d_mapbc
 
