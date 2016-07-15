@@ -19,8 +19,6 @@ bcmap[5052] = 101 # back_pressure
 bcmap[7011] = 102 # total pressure
 bcmap[7036] = 103 # total pressure
 
-puts bcmap
-
 lines = IO.readlines(input)
 
 File.open(output,'w') do |f|
@@ -30,7 +28,6 @@ File.open(output,'w') do |f|
  # WARNING: Boundary conditions must be remapped
  # patch no.     bc      family   surfs    surfids    name
 EOF
-  f.puts (lines.size-1)
   lines[(1)..(lines.size-1)].each do |line|
     cols = line.split
     face_tag = cols[0].to_i
