@@ -15,6 +15,7 @@ bcmap[5026] =   2 # extrapolate
 bcmap[5000] =   3 # farfield_riem
 bcmap[4000] =   4 # viscous_solid
 
+bcmap[5051] = 101 # back_pressure
 bcmap[5052] = 101 # back_pressure
 bcmap[7011] = 102 # total pressure
 bcmap[7036] = 103 # total pressure
