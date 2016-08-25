@@ -46,7 +46,7 @@ int main( int argc, char *argv[] )
       pos++; dx = strtod( argv[pos], &endptr);RAS(argv[pos]!=endptr,"parse dx");
       pos++; dy = strtod( argv[pos], &endptr);RAS(argv[pos]!=endptr,"parse dy");
       pos++; dz = strtod( argv[pos], &endptr);RAS(argv[pos]!=endptr,"parse dz");
-      printf("%f %f %f\n",dx,dy,dy);
+      printf("%f %f %f\n",dx,dy,dz);
       each_ref_node_valid_node( ref_node, node )
 	{
 	  ref_node_xyz(ref_node,0,node) += dx;
