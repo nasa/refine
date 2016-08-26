@@ -9,22 +9,29 @@ puts output
 throw "refuse to overwrite" if ( input == output )
 
 bcmap = Hash.new(-999)
-bcmap[0]   = 3000 # farfield_riem
+bcmap[0]   = 5000 # farfield_riem
 bcmap[1]   = 6662 # symmetry_y
 bcmap[2]   = 5026 # extrapolate
 bcmap[3]   = 5000 # farfield_riem
 bcmap[4]   = 4000 # viscous_solid
 bcmap[44]  = 4000 # viscous_solid
-bcmap[5]   = 5000 # tangency
-bcmap[55]  = 4000 # viscous_solid
+bcmap[5]   = 3000 # tangency
+bcmap[55]  = 3000 # tangency
+
 bcmap[101] = 5051 # back_pressure
-bcmap[102] = 5051 # back_pressure
-bcmap[103] = 5051 # back_pressure
-bcmap[104] = 5051 # back_pressure
-bcmap[201] = 7011 # total pressure
-bcmap[202] = 7011 # total pressure
-bcmap[203] = 7011 # total pressure
-bcmap[204] = 7011 # total pressure
+bcmap[201] = 5051 # back_pressure
+bcmap[301] = 5051 # back_pressure
+bcmap[401] = 5051 # back_pressure
+
+bcmap[102] = 7011 # total pressure/temp
+bcmap[202] = 7011 # total pressure/temp
+bcmap[302] = 7011 # total pressure/temp
+bcmap[402] = 7011 # total pressure/temp
+
+bcmap[103] = 7011 # total pressure/temp
+bcmap[203] = 7011 # total pressure/temp
+bcmap[303] = 7011 # total pressure/temp
+bcmap[403] = 7011 # total pressure/temp
 
 bcmap[111] = 4000 # viscous_solid for bleed
 bcmap[211] = 4000 # viscous_solid for bleed
