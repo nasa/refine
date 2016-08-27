@@ -682,7 +682,7 @@ Grid *gridLinearProgramUV(Grid *grid, int node, GridBool *callAgain )
      *       would be EMPTY and previous block would execute.
      */
     denom = g00 + g11 - 2*g01;
-    if( abs(denom) < 1.0e-12 ) {
+    if( ABS(denom) < 1.0e-12 ) {
       nearestRatio = 0.0;
     } else {
       nearestRatio = (g00-g01)/denom;
