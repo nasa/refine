@@ -551,6 +551,8 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 	  continue;
 	}
 
+      RSS( ref_smooth_tet_improve( ref_grid, node ), "ideal node for tet" );
+      
       ref_node_age(ref_node,node) = 0;
       for ( i = 0 ; i < 3 ; i++ )
 	RSS( ref_smooth_tet_improve( ref_grid, node ), "improve" );
