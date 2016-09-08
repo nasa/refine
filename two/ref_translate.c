@@ -30,6 +30,8 @@ int main( int argc, char *argv[] )
   REF_DBL x, z, rotate_deg, rotate_rad;
   REF_INT faceid;
   REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   char *endptr;
   REF_INT pos;
 
@@ -97,8 +99,12 @@ int main( int argc, char *argv[] )
       faceid = strtol( argv[pos], &endptr, 10);
       RAS(argv[pos]!=endptr,"parse faceid to drop");
       printf(" dropping faceid %d\n",faceid);
-
-      RSS(REF_IMPLEMENT,"implement face id drop");
+      ref_cell = ref_grid_tri( ref_grid );
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  if ( faceid == nodes[ref_cell_size_per(ref_cell)] )
+	    RSS( ref_cell_remove( ref_cell, cell ), "drop" );
+	}
 
     }
     pos++; 
