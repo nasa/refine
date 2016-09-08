@@ -10,6 +10,7 @@
 #include "ref_list.h"
 
 #include "ref_math.h"
+#include "ref_malloc.h"
 
 static int print_usage(char *name)
 {
@@ -19,6 +20,7 @@ static int print_usage(char *name)
   printf("     [--scale s]\n");
   printf("     [--rotate degrees]\n");
   printf("     [--drop-face faceid]\n");
+  printf("     [--compact-faceids]\n");
   return 0;
 }
 
@@ -34,6 +36,8 @@ int main( int argc, char *argv[] )
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   char *endptr;
   REF_INT pos;
+  REF_INT min_faceid, max_faceid, nfaceid;
+  REF_INT *new_faceid;
 
   if ( 3 > argc )
     return(print_usage(argv[0]));
@@ -121,6 +125,48 @@ int main( int argc, char *argv[] )
 	    }
 	}
       printf("dropped %d quadrilaterals from face %d\n",ndrop,faceid);
+    }
+    if( strcmp(argv[pos],"--compact-faceids") == 0 ) {
+      printf("%d: --compact-faceids\n",pos);
+      RSS( ref_export_faceid_range( ref_grid, 
+				    &min_faceid, &max_faceid ),
+	   "min max faceid");
+      printf(" faceid range %d %d\n", min_faceid, max_faceid);
+      ref_malloc_init( new_faceid, max_faceid-min_faceid+1, REF_INT, REF_EMPTY);
+      ref_cell = ref_grid_tri( ref_grid );
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  faceid = nodes[ref_cell_node_per(ref_cell)];
+	  new_faceid[faceid-min_faceid] = 1;
+	}
+      ref_cell = ref_grid_qua( ref_grid );
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  faceid = nodes[ref_cell_node_per(ref_cell)];
+	  new_faceid[faceid-min_faceid] = 1;
+	}
+      nfaceid=0;
+      for ( faceid = 0; faceid < (max_faceid-min_faceid+1); faceid++)
+	if ( new_faceid[faceid] > 0 )
+	  {
+	    nfaceid++;
+	    new_faceid[faceid] = nfaceid;
+	  }
+      printf("%d unique faceids detected\n",nfaceid);
+      ref_cell = ref_grid_tri( ref_grid );
+      each_ref_cell_valid_cell( ref_cell, cell )
+	{
+	  faceid = ref_cell_c2n( ref_cell, ref_cell_node_per(ref_cell), cell );
+	  ref_cell_c2n( ref_cell, ref_cell_node_per(ref_cell), cell ) =
+	    new_faceid[faceid - min_faceid];
+	}
+      ref_cell = ref_grid_qua( ref_grid );
+      each_ref_cell_valid_cell( ref_cell, cell )
+	{
+	  faceid = ref_cell_c2n( ref_cell, ref_cell_node_per(ref_cell), cell );
+	  ref_cell_c2n( ref_cell, ref_cell_node_per(ref_cell), cell ) =
+	    new_faceid[faceid - min_faceid];
+	}
     }
     pos++; 
   }
