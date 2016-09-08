@@ -147,11 +147,15 @@ int main( int argc, char *argv[] )
 	}
       nfaceid=0;
       for ( faceid = 0; faceid < (max_faceid-min_faceid+1); faceid++)
-	if ( new_faceid[faceid] > 0 )
-	  {
-	    nfaceid++;
-	    new_faceid[faceid] = nfaceid;
-	  }
+	{
+	  if ( new_faceid[faceid] > 0 )
+	    {
+	      nfaceid++;
+	      new_faceid[faceid] = nfaceid;
+	    }
+	  printf("faceid %d is now %d\n",
+		 faceid+min_faceid, new_faceid[faceid]);
+	}
       printf("%d unique faceids detected\n",nfaceid);
       ref_cell = ref_grid_tri( ref_grid );
       each_ref_cell_valid_cell( ref_cell, cell )
