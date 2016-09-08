@@ -28,7 +28,7 @@ int main( int argc, char *argv[] )
   REF_INT node;
   REF_DBL dx, dy, dz, ds;
   REF_DBL x, z, rotate_deg, rotate_rad;
-  REF_INT faceid;
+  REF_INT faceid, ndrop;
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -100,12 +100,27 @@ int main( int argc, char *argv[] )
       RAS(argv[pos]!=endptr,"parse faceid to drop");
       printf(" dropping faceid %d\n",faceid);
       ref_cell = ref_grid_tri( ref_grid );
+      ndrop = 0;
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
 	  if ( faceid == nodes[ref_cell_node_per(ref_cell)] )
-	    RSS( ref_cell_remove( ref_cell, cell ), "drop" );
+	    {
+	      ndrop++;
+	      RSS( ref_cell_remove( ref_cell, cell ), "drop" );
+	    }
 	}
-
+      printf("dropped %d triangles from face %d\n",ndrop,faceid);
+      ref_cell = ref_grid_qua( ref_grid );
+      ndrop = 0;
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  if ( faceid == nodes[ref_cell_node_per(ref_cell)] )
+	    {
+	      ndrop++;
+	      RSS( ref_cell_remove( ref_cell, cell ), "drop" );
+	    }
+	}
+      printf("dropped %d quadrilaterals from face %d\n",ndrop,faceid);
     }
     pos++; 
   }
