@@ -102,7 +102,7 @@ int main( int argc, char *argv[] )
       ref_cell = ref_grid_tri( ref_grid );
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
-	  if ( faceid == nodes[ref_cell_size_per(ref_cell)] )
+	  if ( faceid == nodes[ref_cell_node_per(ref_cell)] )
 	    RSS( ref_cell_remove( ref_cell, cell ), "drop" );
 	}
 
