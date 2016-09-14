@@ -41,7 +41,6 @@
 
 #include "ref_histogram.h"
 
-#include "ref_clump.h"
 #include "ref_cavity.h"
 
 int main( int argc, char *argv[] )
@@ -159,13 +158,6 @@ int main( int argc, char *argv[] )
           RSS( ref_edge_tec_ratio( ref_edge, ref_grid_node(ref_grid),
                                    "ref_adapt_test_edge.tec"), "edge tec");
           RSS( ref_edge_free( ref_edge ), "edge free" );
-        }
-
-      if ( ref_mpi_n == 1 &&
-           ref_node_n(ref_grid_node(ref_grid)) < 50000 &&
-           REF_FALSE )
-        {
-          RSS( ref_clump_stuck_edges( ref_grid ), "stuck" );
         }
 
       RSS( ref_grid_free( ref_grid ), "free");
