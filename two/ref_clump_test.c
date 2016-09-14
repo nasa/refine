@@ -37,7 +37,7 @@ int main( int argc, char *argv[] )
     node = 10;
 
     if ( 2 == argc )
-      RSS(ref_clump_around(ref_grid,node, argv[1]),"clump");
+      RSS(ref_clump_tri_around(ref_grid,node, argv[1]),"clump");
 
     RSS( ref_grid_free(ref_grid),"free");
   }

@@ -11,7 +11,8 @@
 #include "ref_adapt.h"
 #include "ref_matrix.h"
 
-REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node, char *filename )
+REF_STATUS ref_clump_tri_around( REF_GRID ref_grid, REF_INT node,
+				 char *filename )
 {
   REF_DICT node_dict, tri_dict;
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -86,7 +87,7 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node, char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid )
+REF_STATUS ref_clump_stuck_edges_twod( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -124,7 +125,7 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid )
     if ( ratio[node] < ref_adapt_collapse_ratio )
       {
         sprintf(filename,"clump%d.t",ntarget);
-        RSS(ref_clump_around(ref_grid, node, filename ), "dump");
+        RSS(ref_clump_tri_around(ref_grid, node, filename ), "dump");
         ntarget++;
       }
 
