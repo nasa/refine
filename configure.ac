@@ -198,6 +198,28 @@ else
   AM_CONDITIONAL(BUILD_PARMETIS_SUPPORT,false)
 fi
 
+AC_ARG_WITH(EGADS,
+	[  --with-EGADS[=ARG]      use EGADS package [ARG=no]],
+	[with_egads=$withval],     [with_egads="no"])
+
+if test "$with_egads" != 'no'
+then
+  AC_CHECK_FILE([$with_egads/include/egads.h],
+                [egads_h_path=$with_egads/include],[egads_h_path='no'])
+
+  if test "$egads_h_path"	!= 'no'
+  then	  
+    AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
+    egads_include="-I$egads_h_path"
+    egads_lib_path="$with_egads/lib"
+    egads_ldadd="-L$egads_lib_path -legads"
+  else
+    AC_MSG_ERROR([egads.h not found in $with_egads/include])
+  fi
+  AC_SUBST([egads_include])
+  AC_SUBST([egads_ldadd])
+fi
+
 AC_CONFIG_FILES( \
 	   Makefile \
 	   two/Makefile \
