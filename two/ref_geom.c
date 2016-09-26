@@ -11,6 +11,13 @@
 #include "ref_adapt.h"
 #include "ref_matrix.h"
 
+REF_STATUS ref_geom_egads_fixture( char *filename )
+{
+  printf("EGAGS project %s\n",filename);
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 {
   REF_GRID ref_grid;
