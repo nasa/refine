@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "ref_geom.h"
 
 #include "ref_dict.h"
@@ -13,7 +17,11 @@
 
 REF_STATUS ref_geom_egads_fixture( char *filename )
 {
+#ifdef HAVE_EGADS
   printf("EGAGS project %s\n",filename);
+#else
+  printf("No EGAGS linked %s\n",filename);
+#endif
   
   return REF_SUCCESS;
 }

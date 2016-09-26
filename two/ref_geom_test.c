@@ -28,8 +28,13 @@
 int main( int argc, char *argv[] )
 {
 
+  if ( 2 == argc )
+    { /* fixture */
+      RSS( ref_geom_egads_fixture( argv[1] ), "egads fixture" );
+    }
+
   if ( 3 == argc )
-    { /* ball */
+    { /* egads to grid */
       REF_GRID ref_grid;
       RSS( ref_geom_from_egads( &ref_grid, argv[1] ), "from egads" );
       RSS( ref_export_by_extension( ref_grid, argv[2] ), "export" );
