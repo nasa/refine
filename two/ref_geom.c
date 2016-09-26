@@ -80,7 +80,7 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 	      (box[2]-box[5])*(box[2]-box[5]));
   printf(" box %f %f %f %f %f %f\n",box[0],box[1],box[2],box[3],box[4],box[5]);
 
-  params[0] =  0.025*size;
+  params[0] =  0.25*size;
   params[1] =  0.001*size;
   params[2] = 15.0;
 
