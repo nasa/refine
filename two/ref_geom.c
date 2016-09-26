@@ -62,6 +62,9 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   ego context;
   ego model = NULL;
   double params[3], box[6], size;
+  ego geom, *bodies, *dum;
+  int oclass, mtype, nbody, *senses, j;
+  ego solid, tess;
   
   printf("EGAGS project %s\n",filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
@@ -80,7 +83,22 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   params[1] =  0.001*size;
   params[2] = 15.0;
 
-  REIS( EGADS_SUCCESS, EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies, &senses), "EG bounding box");
+  REIS( EGADS_SUCCESS,
+	EG_getTopology(model, &geom, &oclass, &mtype, NULL,
+		       &nbody, &bodies, &senses), "EG topo bodies");
+  printf(" %d bodies\n",nbody);
+  REIS( EGADS_SUCCESS,
+	EG_getTopology(bodies[0], &geom, &oclass, &mtype,
+		       NULL, &j, &dum, &senses), "EG topo body type");
+  REIS( SOLIDBODY, mtype, "expected SOLIDBODY" );
+  REIS( EGADS_SUCCESS,
+	EG_makeTopology(context, NULL, BODY, SOLIDBODY, NULL, j, dum,
+			NULL, &solid), "EG topo solid");
+  
+  REIS( EGADS_SUCCESS,
+	EG_makeTessBody(solid, params, &tess), "EG tess");
+
+  
   
 #else
   printf("returning empty grid, No EGADS linked for %s\n",filename);
