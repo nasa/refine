@@ -64,8 +64,11 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   double params[3], box[6], size;
   ego geom, *bodies, *dum;
   int oclass, mtype, nbody, *senses, j;
-  ego solid, tess;
+  ego solid, tess, *faces;
   int tess_status, nvert;
+  int ntri, face, nface, plen, tlen;
+  const double *points, *uv;
+  const int    *ptype, *pindex, *tris, *tric;
   
   printf("EGAGS project %s\n",filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
@@ -88,22 +91,33 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 	EG_getTopology(model, &geom, &oclass, &mtype, NULL,
 		       &nbody, &bodies, &senses), "EG topo bodies");
   printf(" %d bodies\n",nbody);
+  REIS( 1, nbody, "expected 1 body" );
+  solid = bodies[0];
   REIS( EGADS_SUCCESS,
 	EG_getTopology(bodies[0], &geom, &oclass, &mtype,
 		       NULL, &j, &dum, &senses), "EG topo body type");
   REIS( SOLIDBODY, mtype, "expected SOLIDBODY" );
-  REIS( EGADS_SUCCESS,
-	EG_makeTopology(context, NULL, BODY, SOLIDBODY, NULL, j, dum,
-			NULL, &solid), "EG topo solid");
   
   REIS( EGADS_SUCCESS,
 	EG_makeTessBody(solid, params, &tess), "EG tess");
 
   REIS( EGADS_SUCCESS,
+	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG tess");
+
+  REIS( EGADS_SUCCESS,
 	EG_statusTessBody(tess, &geom, &tess_status, &nvert), "EG tess");
   REIS( 1, tess_status, "tess not closed" );
   printf(" %d global vertex\n",nvert);
-  
+
+  ntri = 0;
+  for (face = 0; face < nface; face++) {
+    REIS( EGADS_SUCCESS,
+	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
+			 &tlen, &tris, &tric), "tess query face" );
+    ntri += tlen;
+    printf(" face %d has %d triangles\n",face,tlen);
+  }
+
   
   
 #else
