@@ -22,6 +22,7 @@ libref2_a_SOURCES = \
 	ref_fortran.c ref_fortran.h \
 	ref_gather.c ref_gather.h \
 	ref_gen.c ref_gen.h \
+	ref_geom.c ref_geom.h \
 	ref_grid.c ref_grid.h \
 	ref_histogram.c ref_histogram.h \
 	ref_html.c ref_html.h \
@@ -176,6 +177,11 @@ TESTS += ref_gen_test
 noinst_PROGRAMS += ref_gen_test
 ref_gen_test_SOURCES = ref_gen_test.c
 ref_gen_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+
+TESTS += ref_geom_test
+noinst_PROGRAMS += ref_geom_test
+ref_geom_test_SOURCES = ref_geom_test.c
+ref_geom_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_grid_test
 noinst_PROGRAMS += ref_grid_test
