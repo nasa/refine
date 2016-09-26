@@ -59,6 +59,9 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 #ifdef HAVE_EGADS
   REF_GRID ref_grid;
   REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tri, new_tri;
   ego context;
   ego model = NULL;
   double params[3], box[6], size;
@@ -76,7 +79,8 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
-
+  ref_cell = ref_grid_tri(ref_grid);
+			  
   REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
   REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
   REIS( EGADS_SUCCESS, EG_getBoundingBox(model, box), "EG bounding box");
@@ -130,6 +134,25 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     ref_node_xyz( ref_node, 2, node ) = verts[2];
   }
 
+  for (face = 0; face < nface; face++) {
+    REIS( EGADS_SUCCESS,
+	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
+			 &tlen, &tris, &tric), "tess query face" );
+    printf(" face %d has %d triangles\n",face,tlen);
+    for ( tri = 0; tri<tlen; tri++ ) {
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, face+1, tris[0+3*tri], &(nodes[0])), "l2g0");
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, face+1, tris[1+3*tri], &(nodes[1])), "l2g1");
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, face+1, tris[2+3*tri], &(nodes[2])), "l2g2");
+      nodes[0] -= 1;
+      nodes[1] -= 1;
+      nodes[2] -= 1;
+      nodes[3] = face + 1;
+      RSS( ref_cell_add(ref_cell, nodes, &new_tri ), "new tri");
+    }
+  }
   
 #else
   printf("returning empty grid, No EGADS linked for %s\n",filename);
