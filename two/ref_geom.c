@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -29,7 +30,7 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
   ego model = NULL;
   
   REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
-  stype = 1;
+  stype = 1; /* box */
   data[0]=0.0; /* corner */
   data[1]=0.0;
   data[2]=0.0;
@@ -44,10 +45,10 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
 			NULL, &model), "topo");
   REIS( EGADS_SUCCESS,
 	EG_saveModel(model, filename), "save");
-  printf("wrote EGAGS project %s\n",filename);
+  printf("wrote EGADS project %s\n",filename);
 
 #else
-  printf("No EGAGS linked %s\n",filename);
+  printf("No EGADS linked for %s\n",filename);
 #endif
   
   return REF_SUCCESS;
@@ -55,13 +56,36 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
 
 REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 {
+#ifdef HAVE_EGADS
   REF_GRID ref_grid;
   REF_NODE ref_node;
-
+  ego context;
+  ego model = NULL;
+  double params[3], box[6], size;
+  
   printf("EGAGS project %s\n",filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
 
+  REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
+  REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
+  REIS( EGADS_SUCCESS, EG_getBoundingBox(model, box), "EG bounding box");
+  size = sqrt((box[0]-box[3])*(box[0]-box[3]) +
+	      (box[1]-box[4])*(box[1]-box[4]) +
+	      (box[2]-box[5])*(box[2]-box[5]));
+  printf(" box %f %f %f %f %f %f\n",box[0],box[1],box[2],box[3],box[4],box[5]);
+
+  params[0] =  0.025*size;
+  params[1] =  0.001*size;
+  params[2] = 15.0;
+
+  REIS( EGADS_SUCCESS, EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies, &senses), "EG bounding box");
+  
+#else
+  printf("returning empty grid, No EGADS linked for %s\n",filename);
+  RSS( ref_grid_create( ref_grid_ptr ), "create grid");  
+#endif
+  
   return REF_SUCCESS;
 }
