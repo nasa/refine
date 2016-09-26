@@ -65,6 +65,7 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   ego geom, *bodies, *dum;
   int oclass, mtype, nbody, *senses, j;
   ego solid, tess;
+  int tess_status, nvert;
   
   printf("EGAGS project %s\n",filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
@@ -98,6 +99,11 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   REIS( EGADS_SUCCESS,
 	EG_makeTessBody(solid, params, &tess), "EG tess");
 
+  REIS( EGADS_SUCCESS,
+	EG_statusTessBody(tess, &geom, &tess_status, &nvert), "EG tess");
+  REIS( 1, tess_status, "tess not closed" );
+  printf(" %d global vertex\n",nvert);
+  
   
   
 #else
