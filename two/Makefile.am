@@ -52,7 +52,7 @@ libref2_a_SOURCES = \
 
 partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
 
-libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@
+libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@
 if BUILD_MPI
 libref2_a_CFLAGS += -I@MPIINC@
 endif # BUILD_MPI
@@ -181,7 +181,7 @@ ref_gen_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
 TESTS += ref_geom_test
 noinst_PROGRAMS += ref_geom_test
 ref_geom_test_SOURCES = ref_geom_test.c
-ref_geom_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_geom_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ @egads_ldadd@ -lm
 
 TESTS += ref_grid_test
 noinst_PROGRAMS += ref_grid_test

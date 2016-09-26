@@ -6,6 +6,10 @@
 #include "config.h"
 #endif
 
+#ifdef HAVE_EGADS
+#include "egads.h"
+#endif
+
 #include "ref_geom.h"
 
 #include "ref_dict.h"
@@ -18,7 +22,9 @@
 REF_STATUS ref_geom_egads_fixture( char *filename )
 {
 #ifdef HAVE_EGADS
+  ego context;
   printf("EGAGS project %s\n",filename);
+  REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
 #else
   printf("No EGAGS linked %s\n",filename);
 #endif
