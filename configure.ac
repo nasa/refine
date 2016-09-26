@@ -212,7 +212,7 @@ then
     AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
     egads_include="-I$egads_h_path"
     egads_lib_path="$with_egads/lib"
-    egads_ldadd="-L$egads_lib_path -legads"
+    egads_ldadd="-rpath $egads_lib_path -L$egads_lib_path -legads"
   else
     AC_MSG_ERROR([egads.h not found in $with_egads/include])
   fi
