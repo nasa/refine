@@ -69,6 +69,8 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   int ntri, face, nface, plen, tlen;
   const double *points, *uv;
   const int    *ptype, *pindex, *tris, *tric;
+  int node, new_node, pty, pin;
+  double verts[3];
   
   printf("EGAGS project %s\n",filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
@@ -118,7 +120,16 @@ REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     printf(" face %d has %d triangles\n",face,tlen);
   }
 
-  
+  for (node = 0; node < nvert; node++) {
+    REIS( EGADS_SUCCESS,
+	  EG_getGlobal(tess, node+1, &pty, &pin, verts), "global node info");
+    RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+    RES( node, new_node, "node index");
+    ref_node_xyz( ref_node, 0, node ) = verts[0];
+    ref_node_xyz( ref_node, 1, node ) = verts[1];
+    ref_node_xyz( ref_node, 2, node ) = verts[2];
+  }
+
   
 #else
   printf("returning empty grid, No EGADS linked for %s\n",filename);
