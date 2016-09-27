@@ -52,6 +52,7 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
 REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
   char *smesh_name = "ref_geom_test.smesh";
   char *node_name = "ref_geom_test.1.node";
   char *ele_name = "ref_geom_test.1.ele";
@@ -61,6 +62,7 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   REF_INT ntet, node_per;
   REF_INT node, nnode_surface, item, new_node;
   REF_DBL xyz[3], dist;
+  REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   RSS( ref_export_smesh( ref_grid, smesh_name ), "smesh" );
   sprintf( command, "tetgen -pYq1.0/0z %s", smesh_name );
   printf(" %s\n", command);
@@ -114,10 +116,11 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
       ref_node_xyz( ref_node, 1, new_node ) = xyz[1];
       ref_node_xyz( ref_node, 2, new_node ) = xyz[2];
     }
-
   
   fclose( file );
   
+  /* check faces when paranoid, but -z should not mess with them */
+
   file = fopen(ele_name,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",ele_name);
   RNS(file, "unable to open file" );
@@ -128,6 +131,17 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   REIS( 1, fscanf( file, "%d", &mark ), "ele header mark" );
   REIS( 0, mark, "ele have mark");
 
+  ref_cell = ref_grid_tet(ref_grid);
+  for( cell = 0; cell < ntet ; cell++ )
+    {
+      REIS( 1, fscanf( file, "%d", &item ), "tet item" );
+      RES( cell, item, "node index");
+      for ( node = 0 ; node < 4 ; node++ )  
+	RES( 1, fscanf( file, "%d", &(nodes[node]) ), "tet" );
+      RSS( ref_cell_add(ref_cell, nodes, &new_cell ), "new tet");
+      RES( cell, new_cell, "tet index");
+    }
+  
   fclose( file );
   
   return REF_SUCCESS;
