@@ -51,6 +51,7 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
 
 REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   char *smesh_name = "ref_geom_test.smesh";
   char *node_name = "ref_geom_test.1.node";
   char *ele_name = "ref_geom_test.1.ele";
@@ -58,6 +59,8 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
   REF_INT ntet, node_per;
+  REF_INT node, nnode_surface, item;
+  REF_DBL xyz[3], dist;
   RSS( ref_export_smesh( ref_grid, smesh_name ), "smesh" );
   sprintf( command, "tetgen -pYq1.0/0z %s", smesh_name );
   printf(" %s\n", command);
@@ -75,6 +78,30 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   REIS( 1, fscanf( file, "%d", &mark ), "node header mark" );
   REIS( 0, mark, "nodes have mark");
 
+  /* verify surface nodes */
+  nnode_surface = ref_node_n(ref_node);
+  for( node=0; node<nnode_surface ; node++ ) 
+    {
+      REIS( 1, fscanf( file, "%d", &item ), "node item" );
+      RES( node, item, "node index");
+      RES( 1, fscanf( file, "%lf", &(xyz[0]) ), "x" );
+      RES( 1, fscanf( file, "%lf", &(xyz[1]) ), "y" );
+      RES( 1, fscanf( file, "%lf", &(xyz[2]) ), "z" );
+      dist = sqrt( (xyz[0]-ref_node_xyz( ref_node, 0, node )) *
+		   (xyz[0]-ref_node_xyz( ref_node, 0, node )) +
+		   (xyz[1]-ref_node_xyz( ref_node, 1, node )) *
+		   (xyz[1]-ref_node_xyz( ref_node, 1, node )) +
+		   (xyz[2]-ref_node_xyz( ref_node, 2, node )) *
+		   (xyz[2]-ref_node_xyz( ref_node, 2, node )) );
+      if ( dist > 1.0e-12 )
+	{
+	  printf("node %d off by %e\n",node,dist);
+	  THROW("tetgen moved node");
+	}
+    }
+
+
+  
   fclose( file );
   
   file = fopen(ele_name,"r");
