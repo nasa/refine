@@ -149,6 +149,12 @@ REF_STATUS ref_export_by_extension( REF_GRID ref_grid, char *filename )
 		     "ugrid export failed");
 	      } 
 	    else 
+	      if( strcmp(&filename[end_of_string-6],".smesh") == 0 ) 
+		{
+		  RSS( ref_export_smesh( ref_grid, filename ), 
+		       "smesh export failed");
+		} 
+	      else 
 	      if( strcmp(&filename[end_of_string-6],".fgrid") == 0 ) 
 		{
 		  RSS( ref_export_fgrid( ref_grid, filename ), 
@@ -847,6 +853,67 @@ REF_STATUS ref_export_tec_ratio( REF_GRID ref_grid, char *root_filename )
 			  viz_file ) , "viz parts as scalar");
 
   RSS( ref_edge_free( ref_edge ), "free edge" );
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_smesh( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *o2n, *n2o;
+  REF_INT nnode,ntri;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node_per, cell;
+  REF_INT dim, attr, mark;
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  nnode = ref_node_n(ref_node);
+
+  dim = 3;
+  attr = 0;
+  mark = 0;
+    
+  fprintf(file,"%d  %d  %d  %d\n",nnode,dim,attr,mark);
+
+  RSS( ref_node_compact( ref_node, &o2n, &n2o), "compact" );
+
+  for ( node = 0; node < ref_node_n(ref_node); node++ )
+    fprintf(file, "%d  %.16e  %.16e  %.16e\n",
+	    node,
+	    ref_node_xyz(ref_node,0,n2o[node]),
+	    ref_node_xyz(ref_node,1,n2o[node]),
+	    ref_node_xyz(ref_node,2,n2o[node]) ) ;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  ntri = ref_cell_n(ref_cell);
+
+  mark = 1;
+  fprintf(file,"%d  %d\n",ntri,mark);
+  
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      fprintf(file,"%d  %d %d %d  %d\n",
+	      node_per,
+	      o2n[nodes[0]],
+	      o2n[nodes[1]],
+	      o2n[nodes[2]],
+	      nodes[3]);
+    }
+
+  fprintf(file,"0\n0\n");
+  
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(file);
 
   return REF_SUCCESS;
 }

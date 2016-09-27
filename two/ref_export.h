@@ -28,6 +28,7 @@ REF_STATUS ref_export_tec_metric_box( REF_GRID ref_grid,
 				      REF_DBL *bounding_box );
 REF_STATUS ref_export_tec_ratio( REF_GRID ref_grid, char *root_filename );
 
+REF_STATUS ref_export_smesh( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_fgrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_ugrid( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_export_lb8_ugrid( REF_GRID ref_grid, char *filename );
