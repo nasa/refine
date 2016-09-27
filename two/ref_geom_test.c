@@ -42,5 +42,8 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free(ref_grid),"free");
     }
 
+  REIS(REF_NULL,ref_geom_free(NULL),"dont free NULL");
+
+  
   return 0;
 }

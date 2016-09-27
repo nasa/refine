@@ -5,12 +5,19 @@
 #include "ref_defs.h"
 
 BEGIN_C_DECLORATION
-
+typedef struct REF_GEOM_STRUCT REF_GEOM_STRUCT;
+typedef REF_GEOM_STRUCT * REF_GEOM;
   END_C_DECLORATION
 
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
+
+struct REF_GEOM_STRUCT {
+  REF_INT n, max;
+  };
+  
+REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 
 REF_STATUS ref_geom_egads_fixture( char *filename );
 

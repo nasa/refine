@@ -16,6 +16,13 @@
 #include "ref_export.h"
 #include "ref_cell.h"
 
+REF_STATUS ref_geom_free( REF_GEOM ref_geom )
+{
+  if ( NULL == (void *)ref_geom )
+    return REF_NULL;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_egads_fixture( char *filename )
 {
 #ifdef HAVE_EGADS
