@@ -15,6 +15,7 @@ BEGIN_C_DECLORATION
 REF_STATUS ref_geom_egads_fixture( char *filename );
 
 REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid, char *filename );
+REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid );
 REF_STATUS ref_geom_grid_from_egads( REF_GRID *ref_grid, char *filename );
 
 END_C_DECLORATION

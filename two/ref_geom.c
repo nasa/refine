@@ -13,12 +13,8 @@
 
 #include "ref_geom.h"
 
-#include "ref_dict.h"
+#include "ref_export.h"
 #include "ref_cell.h"
-#include "ref_edge.h"
-#include "ref_malloc.h"
-#include "ref_adapt.h"
-#include "ref_matrix.h"
 
 REF_STATUS ref_geom_egads_fixture( char *filename )
 {
@@ -53,11 +49,55 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
+{
+  char *smesh_name = "ref_geom_test.smesh";
+  char *node_name = "ref_geom_test.1.node";
+  char *ele_name = "ref_geom_test.1.ele";
+  char command[1024];
+  FILE *file;
+  REF_INT nnode, ndim, attr, mark;
+  REF_INT ntet, node_per;
+  RSS( ref_export_smesh( ref_grid, smesh_name ), "smesh" );
+  sprintf( command, "tetgen -pYq1.0/0z %s", smesh_name );
+  printf(" %s\n", command);
+  REIS(0, system( command ), "epstopdf failed");
+
+  file = fopen(node_name,"r");
+  if (NULL == (void *)file) printf("unable to open %s\n",node_name);
+  RNS(file, "unable to open file" );
+
+  REIS( 1, fscanf( file, "%d", &nnode ), "node header nnode" );
+  REIS( 1, fscanf( file, "%d", &ndim ), "node header ndim" );
+  REIS( 3, ndim, "not 3D");
+  REIS( 1, fscanf( file, "%d", &attr ), "node header attr" );
+  REIS( 0, attr, "nodes have attribute 3D");
+  REIS( 1, fscanf( file, "%d", &mark ), "node header mark" );
+  REIS( 0, mark, "nodes have mark");
+
+  fclose( file );
+  
+  file = fopen(ele_name,"r");
+  if (NULL == (void *)file) printf("unable to open %s\n",ele_name);
+  RNS(file, "unable to open file" );
+
+  REIS( 1, fscanf( file, "%d", &ntet ), "ele header ntet" );
+  REIS( 1, fscanf( file, "%d", &node_per ), "ele header node_per" );
+  REIS( 4, node_per, "expected tets");
+  REIS( 1, fscanf( file, "%d", &mark ), "ele header mark" );
+  REIS( 0, mark, "ele have mark");
+
+  fclose( file );
+  
+  return REF_SUCCESS;
+}
+  
 REF_STATUS ref_geom_grid_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 {
   REF_GRID ref_grid;
   RSS( ref_geom_brep_from_egads( ref_grid_ptr, filename ), "brep" );
   ref_grid = (*ref_grid_ptr);
+  RSS( ref_geom_tetgen_volume( ref_grid ), "tetgen volume" );
   return REF_SUCCESS;
 }
   
