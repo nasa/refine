@@ -226,7 +226,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 			 &tlen, &tris, &tric), "tess query face" );
     ntri += tlen;
     printf(" face %d has %d triangles\n",face,tlen);
-    
   }
 
   for (node = 0; node < nvert; node++) {
