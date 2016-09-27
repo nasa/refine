@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <math.h>
 
 #include "ref_geom.h"
@@ -30,13 +31,15 @@ int main( int argc, char *argv[] )
 
   if ( 2 == argc )
     { /* fixture */
+      if ( 0 == access( argv[1], R_OK ) )
+	REIS(0, remove( argv[1] ), "test clean up");
       RSS( ref_geom_egads_fixture( argv[1] ), "egads fixture" );
     }
 
   if ( 3 == argc )
     { /* egads to grid */
       REF_GRID ref_grid;
-      RSS( ref_geom_from_egads( &ref_grid, argv[1] ), "from egads" );
+      RSS( ref_geom_grid_from_egads( &ref_grid, argv[1] ), "from egads" );
       RSS( ref_export_by_extension( ref_grid, argv[2] ), "export" );
       RSS( ref_grid_free(ref_grid),"free");
     }

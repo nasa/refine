@@ -54,7 +54,15 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_from_egads( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_geom_grid_from_egads( REF_GRID *ref_grid_ptr, char *filename )
+{
+  REF_GRID ref_grid;
+  RSS( ref_geom_brep_from_egads( ref_grid_ptr, filename ), "brep" );
+  ref_grid = (*ref_grid_ptr);
+  return REF_SUCCESS;
+}
+  
+REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 {
 #ifdef HAVE_EGADS
   REF_GRID ref_grid;
