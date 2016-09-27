@@ -212,6 +212,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 
   REIS( EGADS_SUCCESS,
 	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG tess");
+  EG_free(faces);
 
   REIS( EGADS_SUCCESS,
 	EG_statusTessBody(tess, &geom, &tess_status, &nvert), "EG tess");
@@ -225,6 +226,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 			 &tlen, &tris, &tric), "tess query face" );
     ntri += tlen;
     printf(" face %d has %d triangles\n",face,tlen);
+    
   }
 
   for (node = 0; node < nvert; node++) {
@@ -257,6 +259,8 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     }
   }
   
+  REIS( EGADS_SUCCESS, EG_close(context), "EG close");
+
 #else
   printf("returning empty grid, No EGADS linked for %s\n",filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");  

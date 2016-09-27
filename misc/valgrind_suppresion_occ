@@ -23,3 +23,18 @@
    fun:__Balloc_D2A
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:currentlocale
+   fun:_ZSt14__convert_to_vIdEvPKcRT_RSt12_Ios_IostateRKPi
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:_ZN17TopTools_ShapeSet4ReadERSi
+   ...
+}
