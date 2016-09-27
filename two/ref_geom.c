@@ -15,11 +15,28 @@
 
 #include "ref_export.h"
 #include "ref_cell.h"
+#include "ref_malloc.h"
+
+REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
+{
+  REF_GEOM ref_geom;
+  ( *ref_geom_ptr ) = NULL;
+
+  ref_malloc( *ref_geom_ptr, 1, REF_GEOM_STRUCT );
+
+  ref_geom = ( *ref_geom_ptr );
+
+  ref_geom_n(ref_geom) = 0;
+  ref_geom_max(ref_geom) = 0;
+  
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_geom_free( REF_GEOM ref_geom )
 {
   if ( NULL == (void *)ref_geom )
     return REF_NULL;
+  ref_free( ref_geom );
   return REF_SUCCESS;
 }
 

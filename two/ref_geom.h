@@ -16,7 +16,11 @@ BEGIN_C_DECLORATION
 struct REF_GEOM_STRUCT {
   REF_INT n, max;
   };
-  
+
+#define ref_geom_n(ref_geom) (( ref_geom )->n )
+#define ref_geom_max(ref_geom) (( ref_geom )->max )
+
+REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr );
 REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 
 REF_STATUS ref_geom_egads_fixture( char *filename );

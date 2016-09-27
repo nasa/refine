@@ -44,6 +44,12 @@ int main( int argc, char *argv[] )
 
   REIS(REF_NULL,ref_geom_free(NULL),"dont free NULL");
 
+  { /* create and destroy */
+    REF_GEOM ref_geom;
+    RSS(ref_geom_create(&ref_geom),"create");
+    REIS( 0, ref_geom_n(ref_geom), "init no nodes" )
+    RSS(ref_geom_free(ref_geom),"free");
+  }
   
   return 0;
 }
