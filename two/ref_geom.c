@@ -59,7 +59,7 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
   REF_INT ntet, node_per;
-  REF_INT node, nnode_surface, item;
+  REF_INT node, nnode_surface, item, new_node;
   REF_DBL xyz[3], dist;
   RSS( ref_export_smesh( ref_grid, smesh_name ), "smesh" );
   sprintf( command, "tetgen -pYq1.0/0z %s", smesh_name );
@@ -100,6 +100,20 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
 	}
     }
 
+  /* interior nodes */
+  for( node=nnode_surface; node<nnode ; node++ ) 
+    {
+      REIS( 1, fscanf( file, "%d", &item ), "node item" );
+      RES( node, item, "node index");
+      RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+      RES( node, new_node, "node index");
+      RES( 1, fscanf( file, "%lf", &(xyz[0]) ), "x" );
+      RES( 1, fscanf( file, "%lf", &(xyz[1]) ), "y" );
+      RES( 1, fscanf( file, "%lf", &(xyz[2]) ), "z" );
+      ref_node_xyz( ref_node, 0, new_node ) = xyz[0];
+      ref_node_xyz( ref_node, 1, new_node ) = xyz[1];
+      ref_node_xyz( ref_node, 2, new_node ) = xyz[2];
+    }
 
   
   fclose( file );
