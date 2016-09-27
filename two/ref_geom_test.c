@@ -18,13 +18,6 @@
 #include "ref_export.h"
 #include  "ref_dict.h"
 #include  "ref_edge.h"
-#include "ref_split.h"
-#include  "ref_adapt.h"
-#include   "ref_collapse.h"
-#include    "ref_math.h"
-#include   "ref_smooth.h"
-#include    "ref_twod.h"
-#include   "ref_gather.h"
 
 int main( int argc, char *argv[] )
 {
