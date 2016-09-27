@@ -45,7 +45,6 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
 			NULL, &model), "topo");
   REIS( EGADS_SUCCESS,
 	EG_saveModel(model, filename), "save");
-  printf("wrote EGADS project %s\n",filename);
 
 #else
   printf("No EGADS linked for %s\n",filename);

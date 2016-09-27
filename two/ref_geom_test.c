@@ -31,9 +31,14 @@ int main( int argc, char *argv[] )
 
   if ( 2 == argc )
     { /* fixture */
-      if ( 0 == access( argv[1], R_OK ) )
-	REIS(0, remove( argv[1] ), "test clean up");
-      RSS( ref_geom_egads_fixture( argv[1] ), "egads fixture" );
+      char *filename = argv[1];
+      if ( 0 == access( filename, R_OK ) )
+	{
+	  printf("EGADS project %s exisits, deleting\n",filename);
+	  REIS(0, remove( filename ), "test clean up");
+	}
+      RSS( ref_geom_egads_fixture( filename ), "egads fixture" );
+      printf("wrote EGADS project %s\n",filename);
     }
 
   if ( 3 == argc )
