@@ -83,6 +83,29 @@ REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_remove( REF_GEOM ref_geom, REF_INT node,
+			    REF_INT type, REF_INT id)
+{
+  REF_INT item, geom;
+  each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom), node, item, geom)
+    {
+      if ( type == ref_geom_type(ref_geom,geom) &&
+	   id   == ref_geom_id(ref_geom,geom) )
+	{
+	  RSS( ref_adj_remove(ref_geom_adj(ref_geom),
+			      ref_geom_node(ref_geom,geom), geom),
+	       "unregister geom" );
+	  
+	  ref_geom_descr(ref_geom,0,geom) = REF_EMPTY;
+	  ref_geom_descr(ref_geom,1,geom) = ref_geom_blank(ref_geom);
+	  ref_geom_blank(ref_geom) = geom;
+	  ref_geom_n(ref_geom)--;
+	  return REF_SUCCESS;
+	}   
+    }
+  return REF_NOT_FOUND;
+}
+
 REF_STATUS ref_geom_egads_fixture( char *filename )
 {
 #ifdef HAVE_EGADS

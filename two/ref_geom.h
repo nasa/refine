@@ -29,6 +29,7 @@ BEGIN_C_DECLORATION
 #define ref_geom_n(ref_geom)     (( ref_geom )->n )
 #define ref_geom_max(ref_geom)   (( ref_geom )->max )
 #define ref_geom_blank(ref_geom) (( ref_geom )->blank )
+#define ref_geom_adj(ref_geom)   (( ref_geom )->ref_adj )
 
 #define ref_geom_descr(ref_geom,attribute,geom) \
   (( ref_geom )->descr[( attribute )+3*( geom )] )
@@ -49,6 +50,9 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
 			 REF_INT type, REF_INT id,
 			 REF_DBL *param );
+
+REF_STATUS ref_geom_remove( REF_GEOM ref_geom, REF_INT node,
+			    REF_INT type, REF_INT id);
 
 REF_STATUS ref_geom_egads_fixture( char *filename );
 
