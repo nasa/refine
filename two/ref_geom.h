@@ -34,11 +34,11 @@ BEGIN_C_DECLORATION
 #define ref_geom_descr(ref_geom,attribute,geom) \
   (( ref_geom )->descr[( attribute )+3*( geom )] )
 
-#define ref_geom_node(ref_geom,geom) \
-  (ref_geom_descr((ref_geom),0,(geom)))
 #define ref_geom_type(ref_geom,geom) \
-  (ref_geom_descr((ref_geom),1,(geom)))
+  (ref_geom_descr((ref_geom),0,(geom)))
 #define ref_geom_id(ref_geom,geom) \
+  (ref_geom_descr((ref_geom),1,(geom)))
+#define ref_geom_node(ref_geom,geom) \
   (ref_geom_descr((ref_geom),2,(geom)))
 
 #define ref_geom_param(ref_geom,dimension,geom) \

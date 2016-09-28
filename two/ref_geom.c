@@ -35,10 +35,10 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
 
   for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
     {
-      ref_geom_descr(ref_geom,0,geom) = REF_EMPTY;
-      ref_geom_descr(ref_geom,1,geom) = geom+1;
+      ref_geom_type(ref_geom,geom) = REF_EMPTY;
+      ref_geom_id(ref_geom,geom) = geom+1;
     }
-  ref_geom_descr(ref_geom,1,ref_geom_max(ref_geom)-1) = REF_EMPTY;
+  ref_geom_id(ref_geom,ref_geom_max(ref_geom)-1) = REF_EMPTY;
   ref_geom_blank(ref_geom) = 0;
 
   RSS( ref_adj_create( &( ref_geom->ref_adj ) ), "create ref_adj for ref_geom" );
@@ -67,11 +67,11 @@ REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
     return REF_INVALID;
   
   geom = ref_geom_blank(ref_geom);
-  ref_geom_blank(ref_geom) = ref_geom_descr(ref_geom,1,geom);
+  ref_geom_blank(ref_geom) = ref_geom_id(ref_geom,geom);
 
-  ref_geom_node(ref_geom,geom) = node;
   ref_geom_type(ref_geom,geom) = type;
   ref_geom_id(ref_geom,geom) = id;
+  ref_geom_node(ref_geom,geom) = node;
 
   if ( type > 0 ) ref_geom_param(ref_geom,0,geom) = param[0];
   if ( type > 1 ) ref_geom_param(ref_geom,1,geom) = param[1];
@@ -96,8 +96,8 @@ REF_STATUS ref_geom_remove( REF_GEOM ref_geom, REF_INT node,
 			      ref_geom_node(ref_geom,geom), geom),
 	       "unregister geom" );
 	  
-	  ref_geom_descr(ref_geom,0,geom) = REF_EMPTY;
-	  ref_geom_descr(ref_geom,1,geom) = ref_geom_blank(ref_geom);
+	  ref_geom_type(ref_geom,geom) = REF_EMPTY;
+	  ref_geom_id(ref_geom,geom) = ref_geom_blank(ref_geom);
 	  ref_geom_blank(ref_geom) = geom;
 	  ref_geom_n(ref_geom)--;
 	  return REF_SUCCESS;
