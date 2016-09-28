@@ -20,6 +20,7 @@
 REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
 {
   REF_GEOM ref_geom;
+  REF_INT geom;
   ( *ref_geom_ptr ) = NULL;
 
   ref_malloc( *ref_geom_ptr, 1, REF_GEOM_STRUCT );
@@ -27,7 +28,20 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   ref_geom = ( *ref_geom_ptr );
 
   ref_geom_n(ref_geom) = 0;
-  ref_geom_max(ref_geom) = 0;
+  ref_geom_max(ref_geom) = 10;
+
+  ref_malloc( ref_geom->descr, 3*ref_geom_max(ref_geom), REF_INT);
+  ref_malloc( ref_geom->param, 2*ref_geom_max(ref_geom), REF_DBL);
+
+  for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
+    {
+      ref_geom_descr(ref_geom,0,geom) = REF_EMPTY;
+      ref_geom_descr(ref_geom,1,geom) = geom+1;
+    }
+  ref_geom_descr(ref_geom,1,ref_geom_max(ref_geom)-1) = REF_EMPTY;
+  ref_geom_blank(ref_geom) = 0;
+
+  RSS( ref_adj_create( &( ref_geom->ref_adj ) ), "create ref_adj for ref_geom" );
   
   return REF_SUCCESS;
 }
@@ -36,7 +50,36 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
 {
   if ( NULL == (void *)ref_geom )
     return REF_NULL;
+  RSS( ref_adj_free( ref_geom->ref_adj ), "adj free" );
+  ref_free( ref_geom->param );
+  ref_free( ref_geom->descr );
   ref_free( ref_geom );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
+			 REF_INT type, REF_INT id,
+			 REF_DBL *param )
+{
+  REF_INT geom;
+
+  if ( type < 0 || 2 < type )
+    return REF_INVALID;
+  
+  geom = ref_geom_blank(ref_geom);
+  ref_geom_blank(ref_geom) = ref_geom_descr(ref_geom,1,geom);
+
+  ref_geom_node(ref_geom,geom) = node;
+  ref_geom_type(ref_geom,geom) = type;
+  ref_geom_id(ref_geom,geom) = id;
+
+  if ( type > 0 ) ref_geom_param(ref_geom,0,geom) = param[0];
+  if ( type > 1 ) ref_geom_param(ref_geom,1,geom) = param[1];
+  
+  RSS( ref_adj_add(ref_geom->ref_adj, node, geom),"register geom" );
+
+  ref_geom_n(ref_geom)++;
+
   return REF_SUCCESS;
 }
 
