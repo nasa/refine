@@ -248,6 +248,25 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"free");
   }
 
+  { /* reuse without reallocation */
+    REF_CELL ref_cell;
+    REF_INT max, i;
+    REF_INT cell, nodes[4];
+
+    RSS(ref_tet(&ref_cell),"create");
+
+    max = ref_cell_max(ref_cell);
+    for (i = 0; i < max+10; i++ )
+      {
+        nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+        RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+	RSS(ref_cell_remove(ref_cell,cell),"rm cell");
+      }
+    REIS(max,ref_cell_max(ref_cell),"do not realloc max");
+
+    RSS(ref_cell_free(ref_cell),"free");
+  }
+
   { /* get nodes */
     REF_CELL ref_cell;
     REF_INT cell, nodes[4];

@@ -515,7 +515,8 @@ REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
 
   ref_cell_c2n(ref_cell,0,cell) = REF_EMPTY;
   ref_cell_c2n(ref_cell,1,cell) = ref_cell_blank(ref_cell);
-
+  ref_cell_blank(ref_cell) = cell;
+  
   return REF_SUCCESS;
 }
 

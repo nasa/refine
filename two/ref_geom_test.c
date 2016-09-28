@@ -117,7 +117,7 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
 
-  { /* reuse with reallocation */
+  { /* reuse without reallocation */
     REF_GEOM ref_geom;
     REF_INT node, type, id;
     REF_INT geom, max;
