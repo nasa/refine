@@ -13,6 +13,10 @@
 #include  "ref_sort.h"
 #include  "ref_list.h"
 
+static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr)
+{
+  return ref_cell_create(ref_cell_ptr,2,REF_TRUE);
+}
 static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr)
 {
   return ref_cell_create(ref_cell_ptr,3,REF_TRUE);
@@ -365,6 +369,10 @@ int main( void )
 
     RSS(ref_hex(&ref_cell),"create");
     REIS(12,ref_cell_edge_per(ref_cell),"edge_per");
+    RSS(ref_cell_free(ref_cell),"cleanup");
+
+    RSS(ref_edg(&ref_cell),"create");
+    REIS(1,ref_cell_edge_per(ref_cell),"edge_per");
     RSS(ref_cell_free(ref_cell),"cleanup");
 
     RSS(ref_tri(&ref_cell),"create");

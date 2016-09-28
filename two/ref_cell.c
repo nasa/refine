@@ -18,6 +18,9 @@ REF_STATUS ref_cell_initialize( REF_CELL ref_cell,
     {
       switch ( ref_cell_node_per(ref_cell) )
         {
+        case 2:
+          ref_cell_edge_per(ref_cell) = 1;
+          break;
         case 3:
           ref_cell_edge_per(ref_cell) = 3;
           break;
@@ -57,6 +60,9 @@ REF_STATUS ref_cell_initialize( REF_CELL ref_cell,
 
   switch ( ref_cell_edge_per(ref_cell) )
     {
+    case 1:
+      ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
+      break;
     case 3:
       ref_cell_e2n_gen(ref_cell,0,0)  = 0; ref_cell_e2n_gen(ref_cell,1,0)  = 1;
       ref_cell_e2n_gen(ref_cell,0,1)  = 1; ref_cell_e2n_gen(ref_cell,1,1)  = 2;
@@ -134,6 +140,13 @@ REF_STATUS ref_cell_initialize( REF_CELL ref_cell,
   if ( ref_cell_last_node_is_an_id(ref_cell) )
     ref_cell_face_per(ref_cell) = 1;
 
+  /* geometry edges do not have faces */
+  if ( 2 == ref_cell_node_per(ref_cell) )
+    {
+      ref_cell->f2n = NULL;
+      return REF_SUCCESS;
+    }
+  
   ref_cell->f2n = NULL;
   if ( ref_cell_face_per(ref_cell) > 0 )
     ref_malloc( ref_cell->f2n, 4 * ref_cell_face_per(ref_cell), REF_INT);
