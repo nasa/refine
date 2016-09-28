@@ -57,6 +57,36 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
+{
+  REF_GEOM ref_geom;
+  REF_INT geom, i;
+  ( *ref_geom_ptr ) = NULL;
+
+  ref_malloc( *ref_geom_ptr, 1, REF_GEOM_STRUCT );
+
+  ref_geom = ( *ref_geom_ptr );
+
+  ref_geom_n(ref_geom) = ref_geom_n(original);
+  ref_geom_max(ref_geom) = ref_geom_max(original);
+
+  ref_malloc( ref_geom->descr, 3*ref_geom_max(ref_geom), REF_INT);
+  ref_malloc( ref_geom->param, 2*ref_geom_max(ref_geom), REF_DBL);
+
+  for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
+    for ( i = 0; i < 3; i++ )
+      ref_geom_descr(ref_geom,i,geom) = ref_geom_descr(original,i,geom);
+  ref_geom_blank(ref_geom) = ref_geom_blank(original);
+  for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
+    for ( i = 0; i < 2; i++ )
+      ref_geom_param(ref_geom,i,geom) = ref_geom_param(original,i,geom);
+
+  RSS( ref_adj_deep_copy( &( ref_geom->ref_adj ), original->ref_adj ),
+       "deep copy ref_adj for ref_geom" );
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
 			 REF_INT type, REF_INT id,
 			 REF_DBL *param )

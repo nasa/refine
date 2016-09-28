@@ -51,6 +51,18 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
   
+  { /* deep copy empty */
+    REF_GEOM ref_geom;
+    REF_GEOM original;
+
+    RSS(ref_geom_create(&original),"create");
+    RSS(ref_geom_deep_copy(&ref_geom,original),"deep copy");
+    REIS( ref_geom_n(original), ref_geom_n(ref_geom), "items" );
+    REIS( ref_geom_max(original), ref_geom_max(ref_geom), "items" );	
+    RSS(ref_geom_free(original),"cleanup");
+    RSS(ref_geom_free(ref_geom),"cleanup");
+  }
+
   { /* add geom node */
     REF_GEOM ref_geom;
     REF_INT node, type, id;

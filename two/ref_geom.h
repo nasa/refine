@@ -44,8 +44,10 @@ BEGIN_C_DECLORATION
 #define ref_geom_param(ref_geom,dimension,geom) \
   (( ref_geom )->param[( dimension )+2*( geom )] )
 
-REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr );
+REF_STATUS ref_geom_create( REF_GEOM *ref_geom );
 REF_STATUS ref_geom_free( REF_GEOM ref_geom );
+
+REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
 
 REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
 			 REF_INT type, REF_INT id,
