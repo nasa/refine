@@ -116,6 +116,24 @@ int main( int argc, char *argv[] )
 	  "not really gone" );
     RSS(ref_geom_free(ref_geom),"free");
   }
+
+  { /* reuse with reallocation */
+    REF_GEOM ref_geom;
+    REF_INT node, type, id;
+    REF_INT geom, max;
+    REF_DBL params[2];
+    RSS(ref_geom_create(&ref_geom),"create");
+    max = ref_geom_max(ref_geom);
+    
+    for ( geom = 0 ; geom < max+10 ; geom++ )
+      {
+	node = 2; type = REF_GEOM_FACE; id = 5; params[0] =1.0; params[1] =2.0;
+	REIS( 0, ref_geom_add(ref_geom,node,type,id,params), "add face" );
+	REIS( 0, ref_geom_remove(ref_geom,node,type,id), "rm" );
+      }
+    REIS( max, ref_geom_max(ref_geom), "items" );
+    RSS(ref_geom_free(ref_geom),"free");
+  }
   
   return 0;
 }
