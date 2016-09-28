@@ -94,6 +94,29 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
   
+  { /* add updates face uv*/
+    REF_GEOM ref_geom;
+    REF_INT node, type, id;
+    REF_DBL params[2], uv[2];
+    REF_DBL tol = 1.0e-14;
+    RSS(ref_geom_create(&ref_geom),"create");
+    node = 2;
+    type = REF_GEOM_FACE;
+    id = 5;
+    params[0] = 11.0; params[1] = 21.0;
+    REIS( 0, ref_geom_add(ref_geom,node,type,id,params), "add face" );
+    REIS( 0, ref_geom_tuv(ref_geom,node,type,id,uv), "face uv" );
+    RWDS( params[0], uv[0], tol, "u" );
+    RWDS( params[1], uv[1], tol, "v" );
+    params[0] = 12.0; params[1] = 22.0;
+    REIS( 0, ref_geom_add(ref_geom,node,type,id,params), "add face" );
+    REIS( 0, ref_geom_tuv(ref_geom,node,type,id,uv), "face uv" );
+    RWDS( params[0], uv[0], tol, "u" );
+    RWDS( params[1], uv[1], tol, "v" );
+    REIS( 1, ref_geom_n(ref_geom), "items" );
+    RSS(ref_geom_free(ref_geom),"free");
+  }
+  
   { /* add and remove */
     REF_GEOM ref_geom;
     REF_INT node, type, id;

@@ -54,6 +54,14 @@ REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
 REF_STATUS ref_geom_remove( REF_GEOM ref_geom, REF_INT node,
 			    REF_INT type, REF_INT id);
 
+REF_STATUS ref_geom_find( REF_GEOM ref_geom, REF_INT node,
+			  REF_INT type, REF_INT id,
+			  REF_INT *geom);
+
+REF_STATUS ref_geom_tuv( REF_GEOM ref_geom, REF_INT node,
+			 REF_INT type, REF_INT id,
+			 REF_DBL *param );
+
 REF_STATUS ref_geom_egads_fixture( char *filename );
 
 REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid, char *filename );
