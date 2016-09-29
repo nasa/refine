@@ -92,6 +92,42 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_inspect( REF_GEOM ref_geom )
+{
+  REF_INT geom;
+  printf("ref_geom = %p\n",(void *)ref_geom);
+  printf(" n = %d, max = %d\n",ref_geom_n(ref_geom),ref_geom_max(ref_geom));
+  for ( geom = 0 ; geom < ref_geom_max( ref_geom ) ; geom++ )
+    {
+      switch(ref_geom_type(ref_geom,geom))
+	{
+	case REF_GEOM_NODE:
+	  printf("%d node: %d global, %d id\n",
+		 geom,
+		 ref_geom_id(ref_geom,geom),
+		 ref_geom_node(ref_geom,geom));
+	  break;
+	case REF_GEOM_EDGE:
+	  printf("%d edge: %d id, %d global, t=%e\n",
+		 geom,
+		 ref_geom_id(ref_geom,geom),
+		 ref_geom_node(ref_geom,geom),
+		 ref_geom_param(ref_geom,0,geom));
+	  break;
+	case REF_GEOM_FACE:
+	  printf("%d face: %d id, %d global, uv= %e %e\n",
+		 geom,
+		 ref_geom_id(ref_geom,geom),
+		 ref_geom_node(ref_geom,geom),
+		 ref_geom_param(ref_geom,0,geom),
+		 ref_geom_param(ref_geom,1,geom) );
+	  break;
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
 			 REF_INT type, REF_INT id,
 			 REF_DBL *param )
