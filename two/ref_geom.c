@@ -569,7 +569,7 @@ REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
 	      ref_geom_param(ref_geom,1,geom),
 	      0.0 ) ;
     }
-  ref_dict_inspect(ref_dict);
+
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     if ( id == nodes[3] )
       {
