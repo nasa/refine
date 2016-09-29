@@ -14,6 +14,8 @@
 #include "ref_geom.h"
 
 #include "ref_export.h"
+#include "ref_grid.h"
+#include "ref_node.h"
 #include "ref_cell.h"
 #include "ref_malloc.h"
 
@@ -354,18 +356,19 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 #ifdef HAVE_EGADS
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  REF_CELL ref_cell;
+  REF_GEOM ref_geom;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT tri, new_tri;
+  REF_INT tri, new_cell;
+  REF_DBL param[2];
   ego context;
   ego model = NULL;
   double params[3], box[6], size;
   ego geom, *bodies, *dum;
   int oclass, mtype, nbody, *senses, j;
-  ego solid, tess, *faces;
+  ego solid, tess, *faces, *edges;
   int tess_status, nvert;
-  int ntri, face, nface, plen, tlen;
-  const double *points, *uv;
+  int face, nface, edge, nedge, plen, tlen;
+  const double *points, *uv, *t;
   const int    *ptype, *pindex, *tris, *tric;
   int node, new_node, pty, pin;
   double verts[3];
@@ -374,7 +377,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
-  ref_cell = ref_grid_tri(ref_grid);
+  ref_geom = ref_grid_geom(ref_grid);
 			  
   REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
   REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
@@ -403,22 +406,16 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 	EG_makeTessBody(solid, params, &tess), "EG tess");
 
   REIS( EGADS_SUCCESS,
-	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG tess");
+	EG_getBodyTopos(solid, NULL, FACE, &nedge, &edges), "EG edge typo");
+  EG_free(edges);
+  REIS( EGADS_SUCCESS,
+	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG face typo");
   EG_free(faces);
 
   REIS( EGADS_SUCCESS,
 	EG_statusTessBody(tess, &geom, &tess_status, &nvert), "EG tess");
   REIS( 1, tess_status, "tess not closed" );
   printf(" %d global vertex\n",nvert);
-
-  ntri = 0;
-  for (face = 0; face < nface; face++) {
-    REIS( EGADS_SUCCESS,
-	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
-			 &tlen, &tris, &tric), "tess query face" );
-    ntri += tlen;
-    printf(" face %d has %d triangles\n",face,tlen);
-  }
 
   for (node = 0; node < nvert; node++) {
     REIS( EGADS_SUCCESS,
@@ -428,8 +425,34 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     ref_node_xyz( ref_node, 0, node ) = verts[0];
     ref_node_xyz( ref_node, 1, node ) = verts[1];
     ref_node_xyz( ref_node, 2, node ) = verts[2];
+    if ( 0 == pty )
+      RSS( ref_geom_add( ref_geom, node, REF_GEOM_NODE, node, NULL), "node");
   }
 
+  for (edge = 0; edge < nedge; edge++) {
+    REIS( EGADS_SUCCESS,
+	  EG_getTessEdge(tess, edge+1, &plen, &points, &t), "tess query edge" );
+    printf(" edge %d has %d nodes\n",edge,plen);
+    for ( node = 0; node<plen; node++ ) {
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g0");
+      param[0] = t[node];
+      RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_EDGE, edge+1, param),
+	   "edge t");
+    }
+    for ( node = 0; node<(plen-1); node++ ) {
+      /* assue edge index is 1-bias */
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g1");
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, -(edge+1), node+2, &(nodes[1])), "l2g2");
+      nodes[0] -= 1;
+      nodes[1] -= 1;
+      nodes[2] = edge + 1;
+      RSS( ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell ), "new edge");
+    }
+  }
+  
   for (face = 0; face < nface; face++) {
     REIS( EGADS_SUCCESS,
 	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
@@ -446,7 +469,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
       nodes[1] -= 1;
       nodes[2] -= 1;
       nodes[3] = face + 1;
-      RSS( ref_cell_add(ref_cell, nodes, &new_tri ), "new tri");
+      RSS( ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell ), "new tri");
     }
   }
   
