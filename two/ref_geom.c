@@ -589,8 +589,9 @@ REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
 
 REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
 {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   FILE *file;
-  REF_INT id;
+  REF_INT geom, id, min_id, max_id;
   
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -599,8 +600,16 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
   fprintf(file, "title=\"refine cad coupling in tecplot format\"\n");
   fprintf(file, "variables = \"x\" \"y\" \"z\" \"u\" \"v\" \"t\"\n");
 
-  id = 1;
-  RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "surf" );
+  min_id = REF_INT_MAX;
+  max_id = REF_INT_MIN;
+  each_ref_geom_face( ref_geom, geom )
+    {
+      min_id = MIN( min_id, ref_geom_id(ref_geom,geom) );
+      max_id = MAX( max_id, ref_geom_id(ref_geom,geom) );
+    }
+
+  for ( id = min_id ; id <= max_id ; id++ )
+    RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "surf" );
 
   fclose(file);
   return REF_SUCCESS;
