@@ -38,7 +38,8 @@ int main( int argc, char *argv[] )
     { /* egads to grid */
       REF_GRID ref_grid;
       RSS( ref_geom_grid_from_egads( &ref_grid, argv[1] ), "from egads" );
-      RSS( ref_export_by_extension( ref_grid, argv[2] ), "export" );
+      RSS( ref_export_by_extension( ref_grid, argv[2] ), "argv export" );
+      RSS( ref_geom_tec( ref_grid, "ref_geom_test.tec" ), "geom export" );
       RSS( ref_grid_free(ref_grid),"free");
     }
 
