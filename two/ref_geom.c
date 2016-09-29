@@ -443,9 +443,9 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     for ( node = 0; node<(plen-1); node++ ) {
       /* assue edge index is 1-bias */
       REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g1");
+	    EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g0");
       REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, -(edge+1), node+2, &(nodes[1])), "l2g2");
+	    EG_localToGlobal(tess, -(edge+1), node+2, &(nodes[1])), "l2g1");
       nodes[0] -= 1;
       nodes[1] -= 1;
       nodes[2] = edge + 1;
@@ -458,6 +458,14 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
 			 &tlen, &tris, &tric), "tess query face" );
     printf(" face %d has %d triangles\n",face,tlen);
+    for ( node = 0; node<plen; node++ ) {
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, face+1, node+1, &(nodes[0])), "l2g0");
+      param[0] = uv[0+2*node];
+      param[1] = uv[1+2*node];
+      RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_FACE, face+1, param),
+	   "face uv");
+    }
     for ( tri = 0; tri<tlen; tri++ ) {
       REIS( EGADS_SUCCESS,
 	    EG_localToGlobal(tess, face+1, tris[0+3*tri], &(nodes[0])), "l2g0");
