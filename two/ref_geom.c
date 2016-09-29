@@ -475,6 +475,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     for ( node = 0; node<plen; node++ ) {
       REIS( EGADS_SUCCESS,
 	    EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g0");
+      nodes[0] -= 1;
       param[0] = t[node];
       RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_EDGE, edge+1, param),
 	   "edge t");
@@ -500,6 +501,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     for ( node = 0; node<plen; node++ ) {
       REIS( EGADS_SUCCESS,
 	    EG_localToGlobal(tess, face+1, node+1, &(nodes[0])), "l2g0");
+      nodes[0] -= 1;
       param[0] = uv[0+2*node];
       param[1] = uv[1+2*node];
       RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_FACE, face+1, param),
