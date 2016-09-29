@@ -17,6 +17,9 @@
 #include "ref_grid.h"
 #include "ref_node.h"
 #include "ref_cell.h"
+
+#include "ref_dict.h"
+
 #include "ref_malloc.h"
 
 REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
@@ -488,5 +491,79 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");  
 #endif
   
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_DICT ref_dict;
+  REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, local, node;
+  REF_INT nnode, ntri;
+
+  RSS( ref_dict_create( &ref_dict ), "create dict" ); 
+
+  each_ref_geom_face( ref_geom, geom )
+    if ( id == ref_geom_id(ref_geom,geom) )
+      RSS( ref_dict_store( ref_dict, ref_geom_node(ref_geom,geom), geom ),
+	   "mark nodes");
+  nnode = ref_dict_n( ref_dict );
+  
+  ntri = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    if ( id == nodes[3] )
+      ntri++;
+    
+  fprintf(file,
+	  "zone t=face%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  id, nnode, ntri, "point", "fetriangle" );
+
+  each_ref_dict_key_value( ref_dict, item, node, geom )
+    {
+      fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+	      ref_node_xyz(ref_node,0,node),
+	      ref_node_xyz(ref_node,1,node),
+	      ref_node_xyz(ref_node,2,node),
+	      ref_geom_param(ref_geom,0,geom),
+	      ref_geom_param(ref_geom,1,geom),
+	      0.0 ) ;
+    }
+  ref_dict_inspect(ref_dict);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( id == nodes[3] )
+      {
+	for ( node = 0; node < 3; node++ )
+	  {
+	    RSS( ref_dict_location( ref_dict, nodes[node], &local),
+		 "localize");
+	    fprintf(file," %d",local+1);
+	  }
+	fprintf(file,"\n");
+      }
+
+  RSS( ref_dict_free( ref_dict ), "free dict" ); 
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
+{
+  FILE *file;
+  REF_INT id;
+  
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"refine cad coupling in tecplot format\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\" \"u\" \"v\" \"t\"\n");
+
+  id = 1;
+  RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "surf" );
+
+  fclose(file);
   return REF_SUCCESS;
 }

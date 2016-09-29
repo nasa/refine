@@ -44,6 +44,12 @@ BEGIN_C_DECLORATION
 #define ref_geom_param(ref_geom,dimension,geom) \
   (( ref_geom )->param[( dimension )+2*( geom )] )
 
+#define each_ref_geom_face( ref_geom, geom )			\
+  for ( ( geom ) = 0;						\
+        ( geom ) < ref_geom_max(ref_geom);			\
+        ( geom )++ )						\
+    if ( REF_GEOM_FACE == ref_geom_type( ref_geom, geom ) )
+
 REF_STATUS ref_geom_create( REF_GEOM *ref_geom );
 REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 
@@ -69,6 +75,9 @@ REF_STATUS ref_geom_egads_fixture( char *filename );
 REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid );
 REF_STATUS ref_geom_grid_from_egads( REF_GRID *ref_grid, char *filename );
+
+REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );
+REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  );
 
 END_C_DECLORATION
 
