@@ -61,39 +61,39 @@ bin_PROGRAMS =
 
 bin_PROGRAMS += ref_cornerrefine
 ref_cornerrefine_SOURCES = ref_cornerrefine.c
-ref_cornerrefine_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_cornerrefine_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_projectable
 ref_projectable_SOURCES = ref_projectable.c
-ref_projectable_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_projectable_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_translate
 ref_translate_SOURCES = ref_translate.c
-ref_translate_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_translate_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_axisymmetric
 ref_axisymmetric_SOURCES = ref_axisymmetric.c
-ref_axisymmetric_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_axisymmetric_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_inflatable
 ref_inflatable_SOURCES = ref_inflatable.c
-ref_inflatable_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_inflatable_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_acceptance
 ref_acceptance_SOURCES = ref_acceptance.c
-ref_acceptance_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_acceptance_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_bamg
 ref_bamg_SOURCES = ref_bamg.c
-ref_bamg_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_bamg_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_bamg_emulator
 ref_bamg_emulator_SOURCES = ref_bamg_emulator.c
-ref_bamg_emulator_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_bamg_emulator_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_fefloa2d
 ref_fefloa2d_SOURCES = ref_fefloa2d.c
-ref_fefloa2d_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_fefloa2d_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 noinst_PROGRAMS =
 TESTS =
@@ -101,209 +101,209 @@ TESTS =
 TESTS += ref_adapt_test
 noinst_PROGRAMS += ref_adapt_test
 ref_adapt_test_SOURCES = ref_adapt_test.c
-ref_adapt_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_adapt_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_adj_test
 noinst_PROGRAMS += ref_adj_test
 ref_adj_test_SOURCES = ref_adj_test.c
-ref_adj_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_adj_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_args_test
 noinst_PROGRAMS += ref_args_test
 ref_args_test_SOURCES = ref_args_test.c
-ref_args_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_args_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_axi_test
 noinst_PROGRAMS += ref_axi_test
 ref_axi_test_SOURCES = ref_axi_test.c
-ref_axi_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_axi_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_cavity_test
 noinst_PROGRAMS += ref_cavity_test
 ref_cavity_test_SOURCES = ref_cavity_test.c
-ref_cavity_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_cavity_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_cell_test
 noinst_PROGRAMS += ref_cell_test
 ref_cell_test_SOURCES = ref_cell_test.c
-ref_cell_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_cell_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_clump_test
 noinst_PROGRAMS += ref_clump_test
 ref_clump_test_SOURCES = ref_clump_test.c
-ref_clump_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_clump_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_collapse_test
 noinst_PROGRAMS += ref_collapse_test
 ref_collapse_test_SOURCES = ref_collapse_test.c
-ref_collapse_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_collapse_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_dict_test
 noinst_PROGRAMS += ref_dict_test
 ref_dict_test_SOURCES = ref_dict_test.c
-ref_dict_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_dict_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_edge_test
 noinst_PROGRAMS += ref_edge_test
 ref_edge_test_SOURCES = ref_edge_test.c
-ref_edge_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_edge_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_export_test
 noinst_PROGRAMS += ref_export_test
 ref_export_test_SOURCES = ref_export_test.c
-ref_export_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_export_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_face_test
 noinst_PROGRAMS += ref_face_test
 ref_face_test_SOURCES = ref_face_test.c
-ref_face_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_face_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_fixture_test
 noinst_PROGRAMS += ref_fixture_test
 ref_fixture_test_SOURCES = ref_fixture_test.c
-ref_fixture_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_fixture_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_fortran_test
 noinst_PROGRAMS += ref_fortran_test
 ref_fortran_test_SOURCES = ref_fortran_test.c
-ref_fortran_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_fortran_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_gather_test
 noinst_PROGRAMS += ref_gather_test
 ref_gather_test_SOURCES = ref_gather_test.c
-ref_gather_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_gather_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_gen_test
 noinst_PROGRAMS += ref_gen_test
 ref_gen_test_SOURCES = ref_gen_test.c
-ref_gen_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_gen_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_geom_test
 noinst_PROGRAMS += ref_geom_test
 ref_geom_test_SOURCES = ref_geom_test.c
-ref_geom_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ @egads_ldadd@ -lm
+ref_geom_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_grid_test
 noinst_PROGRAMS += ref_grid_test
 ref_grid_test_SOURCES = ref_grid_test.c
-ref_grid_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_grid_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_histogram_test
 noinst_PROGRAMS += ref_histogram_test
 ref_histogram_test_SOURCES = ref_histogram_test.c
-ref_histogram_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_histogram_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_html_test
 noinst_PROGRAMS += ref_html_test
 ref_html_test_SOURCES = ref_html_test.c
-ref_html_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_html_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_import_test
 noinst_PROGRAMS += ref_import_test
 ref_import_test_SOURCES = ref_import_test.c
-ref_import_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_import_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_inflate_test
 noinst_PROGRAMS += ref_inflate_test
 ref_inflate_test_SOURCES = ref_inflate_test.c
-ref_inflate_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_inflate_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_list_test
 noinst_PROGRAMS += ref_list_test
 ref_list_test_SOURCES = ref_list_test.c
-ref_list_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_list_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_math_test
 noinst_PROGRAMS += ref_math_test
 ref_math_test_SOURCES = ref_math_test.c
-ref_math_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_math_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_matrix_test
 noinst_PROGRAMS += ref_matrix_test
 ref_matrix_test_SOURCES = ref_matrix_test.c
-ref_matrix_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_matrix_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_metric_test
 noinst_PROGRAMS += ref_metric_test
 ref_metric_test_SOURCES = ref_metric_test.c
-ref_metric_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_metric_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_migrate_test
 noinst_PROGRAMS += ref_migrate_test
 ref_migrate_test_SOURCES = ref_migrate_test.c
-ref_migrate_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_migrate_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_mpi_test
 noinst_PROGRAMS += ref_mpi_test
 ref_mpi_test_SOURCES = ref_mpi_test.c
-ref_mpi_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_mpi_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_node_test
 noinst_PROGRAMS += ref_node_test
 ref_node_test_SOURCES = ref_node_test.c
-ref_node_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_node_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_part_test
 noinst_PROGRAMS += ref_part_test
 ref_part_test_SOURCES = ref_part_test.c
-ref_part_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_part_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_plot3d_test
 noinst_PROGRAMS += ref_plot3d_test
 ref_plot3d_test_SOURCES = ref_plot3d_test.c
-ref_plot3d_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_plot3d_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_project_test
 noinst_PROGRAMS += ref_project_test
 ref_project_test_SOURCES = ref_project_test.c
-ref_project_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_project_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_quality_test
 noinst_PROGRAMS += ref_quality_test
 ref_quality_test_SOURCES = ref_quality_test.c
-ref_quality_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_quality_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_shard_test
 noinst_PROGRAMS += ref_shard_test
 ref_shard_test_SOURCES = ref_shard_test.c
-ref_shard_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_shard_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_smooth_test
 noinst_PROGRAMS += ref_smooth_test
 ref_smooth_test_SOURCES = ref_smooth_test.c
-ref_smooth_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_smooth_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_sort_test
 noinst_PROGRAMS += ref_sort_test
 ref_sort_test_SOURCES = ref_sort_test.c
-ref_sort_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_sort_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_split_test
 noinst_PROGRAMS += ref_split_test
 ref_split_test_SOURCES = ref_split_test.c
-ref_split_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_split_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_stitch_test
 noinst_PROGRAMS += ref_stitch_test
 ref_stitch_test_SOURCES = ref_stitch_test.c
-ref_stitch_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_stitch_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_subdiv_test
 noinst_PROGRAMS += ref_subdiv_test
 ref_subdiv_test_SOURCES = ref_subdiv_test.c
-ref_subdiv_test_LDADD = libref2.a $(partioner_ldadd) @mpi_ldadd@ -lm
+ref_subdiv_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_swap_test
 noinst_PROGRAMS += ref_swap_test
 ref_swap_test_SOURCES = ref_swap_test.c
-ref_swap_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_swap_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_twod_test
 noinst_PROGRAMS += ref_twod_test
 ref_twod_test_SOURCES = ref_twod_test.c
-ref_twod_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_twod_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_validation_test
 noinst_PROGRAMS += ref_validation_test
 ref_validation_test_SOURCES = ref_validation_test.c
-ref_validation_test_LDADD = libref2.a @mpi_ldadd@ -lm
+ref_validation_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
