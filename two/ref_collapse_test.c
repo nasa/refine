@@ -7,6 +7,7 @@
 #include "ref_cell.h"
 #include "ref_edge.h"
 #include "ref_node.h"
+#include "ref_geom.h"
 #include "ref_list.h"
 #include "ref_adj.h"
 #include "ref_sort.h"
@@ -33,7 +34,7 @@
 int main( void )
 {
 
-  { /* collapse tet in to triangle */
+  { /* collapse tet into triangle, keep renumbered edge */
     REF_GRID ref_grid;
     REF_INT node0, node1;
 
@@ -44,13 +45,15 @@ int main( void )
 
     REIS(0, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
     REIS(1, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"edg");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
-  { /* collapse tet in to nothing */
+  { /* collapse tet into nothing, keep edge */
     REF_GRID ref_grid;
     REF_INT node0, node1;
+    REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
     node0 = 0; node1 = 1;
@@ -59,6 +62,11 @@ int main( void )
 
     REIS(0, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
     REIS(0, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"edg");
+
+    RSS( ref_cell_nodes(ref_grid_edg(ref_grid),0,nodes),"nodes");
+    REIS( 0, nodes[0], "1" );
+    REIS( 2, nodes[1], "2" );
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }

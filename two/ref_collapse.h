@@ -17,6 +17,7 @@ REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid,
 
 REF_STATUS ref_collapse_edge( REF_GRID ref_grid, 
 			      REF_INT node0, REF_INT node1 );
+/*                               keep node0,  remove node1 */
 
 REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid, 
 				       REF_INT node0, REF_INT node1,
