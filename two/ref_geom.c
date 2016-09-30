@@ -262,12 +262,25 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
 #ifdef HAVE_EGADS
   ego context;
   int stype;
-  double data[6];
-  ego body;
+  double data[7];
+  ego cylinder;
+  ego box;
+
   ego model = NULL;
   
   REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
-  stype = 1; /* box */
+  stype = CYLINDER;
+  data[0]=0.0; /* axis end point */
+  data[1]=0.0;
+  data[2]=-0.1;
+  data[3]=0.0; /* axis end point */
+  data[4]=0.0;
+  data[5]=1.1;
+  data[6]=0.5; /* radius */
+
+  REIS( EGADS_SUCCESS,
+	EG_makeSolidBody(context, stype, data, &cylinder), "EG cylinder");
+  stype = BOX;
   data[0]=0.0; /* corner */
   data[1]=0.0;
   data[2]=0.0;
@@ -275,11 +288,11 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
   data[4]=1.0;
   data[5]=1.0;
   REIS( EGADS_SUCCESS,
-	EG_makeSolidBody(context, stype, data, &body), "EG box");
+	EG_makeSolidBody(context, stype, data, &box), "EG box");
+
   REIS( EGADS_SUCCESS,
-	EG_makeTopology(context, NULL, MODEL, 0,
-			NULL, 1, &body,
-			NULL, &model), "topo");
+	EG_solidBoolean(box, cylinder, SUBTRACTION, &model), "EG subtract");
+
   REIS( EGADS_SUCCESS,
 	EG_saveModel(model, filename), "save");
   REIS( EGADS_SUCCESS, EG_close(context), "EG close");
