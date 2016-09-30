@@ -532,6 +532,61 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_DICT ref_dict;
+  REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, local, node;
+  REF_INT nnode, nedg;
+
+  RSS( ref_dict_create( &ref_dict ), "create dict" ); 
+
+  each_ref_geom_edge( ref_geom, geom )
+    if ( id == ref_geom_id(ref_geom,geom) )
+      RSS( ref_dict_store( ref_dict, ref_geom_node(ref_geom,geom), geom ),
+	   "mark nodes");
+  nnode = ref_dict_n( ref_dict );
+  
+  nedg = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    if ( id == nodes[2] )
+      nedg++;
+    
+  fprintf(file,
+	  "zone t=face%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  id, nnode, nedg, "point", "felineseg" );
+
+  each_ref_dict_key_value( ref_dict, item, node, geom )
+    {
+      fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+	      ref_node_xyz(ref_node,0,node),
+	      ref_node_xyz(ref_node,1,node),
+	      ref_node_xyz(ref_node,2,node),
+	      0.0,
+	      0.0,
+	      ref_geom_param(ref_geom,0,geom) ) ;
+    }
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( id == nodes[2] )
+      {
+	for ( node = 0; node < 2; node++ )
+	  {
+	    RSS( ref_dict_location( ref_dict, nodes[node], &local),
+		 "localize");
+	    fprintf(file," %d",local+1);
+	  }
+	fprintf(file,"\n");
+      }
+
+  RSS( ref_dict_free( ref_dict ), "free dict" ); 
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -602,6 +657,17 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
 
   min_id = REF_INT_MAX;
   max_id = REF_INT_MIN;
+  each_ref_geom_edge( ref_geom, geom )
+    {
+      min_id = MIN( min_id, ref_geom_id(ref_geom,geom) );
+      max_id = MAX( max_id, ref_geom_id(ref_geom,geom) );
+    }
+
+  for ( id = min_id ; id <= max_id ; id++ )
+    RSS( ref_geom_edge_tec_zone( ref_grid, id, file ), "tec edge" );
+
+  min_id = REF_INT_MAX;
+  max_id = REF_INT_MIN;
   each_ref_geom_face( ref_geom, geom )
     {
       min_id = MIN( min_id, ref_geom_id(ref_geom,geom) );
@@ -609,7 +675,7 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
     }
 
   for ( id = min_id ; id <= max_id ; id++ )
-    RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "surf" );
+    RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "tec face" );
 
   fclose(file);
   return REF_SUCCESS;
