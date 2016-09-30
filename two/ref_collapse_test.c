@@ -71,6 +71,23 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  { /* collapse tet into nothing, no more edge */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    node0 = 1; node1 = 2;
+
+    RSS(ref_collapse_edge(ref_grid,node0,node1),"collapse");
+
+    REIS(0, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
+    REIS(0, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(0, ref_cell_n(ref_grid_edg(ref_grid)),"edg");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
   { /* collapse removes node */
     REF_GRID ref_grid;
     REF_INT node0, node1;
