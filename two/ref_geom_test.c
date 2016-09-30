@@ -198,7 +198,7 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
   
-  { /* evaluate new edge only */
+  { /* evaluate common edge */
     REF_GEOM ref_geom;
     REF_INT node0, node1, new_node;
     REF_INT type, id;
@@ -218,6 +218,32 @@ int main( int argc, char *argv[] )
     RSS( ref_geom_evaluate_between(ref_geom,node0,node1,new_node), "eval" );
     RSS( ref_geom_tuv(ref_geom,new_node,type,id,params), "node1 edge" );
     RWDS( 12.0, params[0], tol, "v" );
+
+    RSS(ref_geom_free(ref_geom),"free");
+  }
+  
+  { /* evaluate skip different edge */
+    REF_GEOM ref_geom;
+    REF_INT node0, node1, new_node;
+    REF_INT type, id, geom;
+    REF_DBL params[2];
+
+    RSS(ref_geom_create(&ref_geom),"create");
+
+    node0 = 0; node1 = 1; new_node = 10;
+
+    type = REF_GEOM_EDGE; id = 5; params[0] = 11.0;
+    RSS( ref_geom_add(ref_geom,node0,type,id,params), "node0 edge" );
+    type = REF_GEOM_EDGE; id = 7; params[0] = 13.0;
+    RSS( ref_geom_add(ref_geom,node1,type,id,params), "node1 edge" );
+    params[0] = 0.0;
+    
+    RSS( ref_geom_evaluate_between(ref_geom,node0,node1,new_node), "eval" );
+    REIS( REF_NOT_FOUND,
+	  ref_geom_find(ref_geom,new_node,type,id,&geom), "what edge" );
+    id = 5;
+    REIS( REF_NOT_FOUND,
+	  ref_geom_find(ref_geom,new_node,type,id,&geom), "what edge" );
 
     RSS(ref_geom_free(ref_geom),"free");
   }
