@@ -61,6 +61,16 @@ REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr )
       RSS(ref_cell_add(ref_grid_tri(ref_grid),local,&cell),"add tri");
     }
 
+  global[0]=1;global[1]=2;global[3]=20;
+  if ( ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[0] ) ||
+       ref_mpi_id == ref_part_implicit( nnodesg, ref_mpi_n, global[1] ) )
+    {
+      RSS( ref_node_local(ref_node,global[0], &(local[0])),"loc");
+      RSS( ref_node_local(ref_node,global[1], &(local[1])),"loc");
+      local[3]=global[3];
+      RSS(ref_cell_add(ref_grid_edg(ref_grid),local,&cell),"add edg");
+    }
+
   return REF_SUCCESS;
 }
 
