@@ -298,7 +298,7 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   REF_DBL xyz[3], dist;
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   RSS( ref_export_smesh( ref_grid, smesh_name ), "smesh" );
-  sprintf( command, "tetgen -pYq1.0/0z %s", smesh_name );
+  sprintf( command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name );
   printf(" %s\n", command);
   REIS(0, system( command ), "epstopdf failed");
 
