@@ -299,7 +299,6 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   RSS( ref_export_smesh( ref_grid, smesh_name ), "smesh" );
   sprintf( command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name );
-  printf(" %s\n", command);
   REIS(0, system( command ), "epstopdf failed");
 
   file = fopen(node_name,"r");
@@ -412,7 +411,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   int node, new_node, pty, pin;
   double verts[3];
   
-  printf("EGAGS project %s\n",filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
@@ -424,7 +422,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   size = sqrt((box[0]-box[3])*(box[0]-box[3]) +
 	      (box[1]-box[4])*(box[1]-box[4]) +
 	      (box[2]-box[5])*(box[2]-box[5]));
-  printf(" box %f %f %f %f %f %f\n",box[0],box[1],box[2],box[3],box[4],box[5]);
 
   params[0] =  0.25*size; /*spacing*/
   params[1] =  0.001*size;
@@ -433,7 +430,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   REIS( EGADS_SUCCESS,
 	EG_getTopology(model, &geom, &oclass, &mtype, NULL,
 		       &nbody, &bodies, &senses), "EG topo bodies");
-  printf(" %d bodies\n",nbody);
   REIS( 1, nbody, "expected 1 body" );
   solid = bodies[0];
   REIS( EGADS_SUCCESS,
@@ -454,7 +450,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   REIS( EGADS_SUCCESS,
 	EG_statusTessBody(tess, &geom, &tess_status, &nvert), "EG tess");
   REIS( 1, tess_status, "tess not closed" );
-  printf(" %d global vertex\n",nvert);
 
   for (node = 0; node < nvert; node++) {
     REIS( EGADS_SUCCESS,
@@ -471,7 +466,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   for (edge = 0; edge < nedge; edge++) {
     REIS( EGADS_SUCCESS,
 	  EG_getTessEdge(tess, edge+1, &plen, &points, &t), "tess query edge" );
-    printf(" edge %d has %d nodes\n",edge,plen);
     for ( node = 0; node<plen; node++ ) {
       REIS( EGADS_SUCCESS,
 	    EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g0");
@@ -497,7 +491,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     REIS( EGADS_SUCCESS,
 	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
 			 &tlen, &tris, &tric), "tess query face" );
-    printf(" face %d has %d triangles\n",face,tlen);
     for ( node = 0; node<plen; node++ ) {
       REIS( EGADS_SUCCESS,
 	    EG_localToGlobal(tess, face+1, node+1, &(nodes[0])), "l2g0");
