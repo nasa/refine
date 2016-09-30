@@ -441,7 +441,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 	EG_makeTessBody(solid, params, &tess), "EG tess");
 
   REIS( EGADS_SUCCESS,
-	EG_getBodyTopos(solid, NULL, FACE, &nedge, &edges), "EG edge typo");
+	EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges), "EG edge typo");
   EG_free(edges);
   REIS( EGADS_SUCCESS,
 	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG face typo");
@@ -549,7 +549,7 @@ REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
       nedg++;
     
   fprintf(file,
-	  "zone t=face%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=edge%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  id, nnode, nedg, "point", "felineseg" );
 
   each_ref_dict_key_value( ref_dict, item, node, geom )
