@@ -1,4 +1,12 @@
 
+/*
+  restart file
+  load bal
+  node acc during split and collapse
+  smooth face
+  add cylinder to box and add ot UGAWG
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
