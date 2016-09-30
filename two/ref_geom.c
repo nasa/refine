@@ -257,6 +257,36 @@ REF_STATUS ref_geom_tuv( REF_GEOM ref_geom, REF_INT node,
   return REF_SUCCESS;
 }
 
+
+REF_STATUS ref_geom_evaluate_between( REF_GEOM ref_geom,
+				      REF_INT node0, REF_INT node1, 
+				      REF_INT new_node )
+{
+  REF_INT item0, item1;
+  REF_INT geom0, geom1;
+  REF_INT type, id;
+  REF_DBL t, t0, t1;
+
+  type = REF_GEOM_EDGE;
+  each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+				   node0, item0, geom0)
+    each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+				     node1, item1, geom1)
+    if ( geom0 != geom1 &&
+	 type == ref_geom_type(ref_geom,geom0) &&
+	 type == ref_geom_type(ref_geom,geom1)	&&
+	 ref_geom_id(ref_geom,geom0) == ref_geom_id(ref_geom,geom1) )
+      {
+	id = ref_geom_id(ref_geom,geom0);
+	RSS( ref_geom_tuv(ref_geom,node0,type,id,&t0), "t0" );
+	RSS( ref_geom_tuv(ref_geom,node1,type,id,&t1), "t1" );
+	t = 0.5*(t0+t1);
+	RSS( ref_geom_add(ref_geom,new_node,type,id,&t), "new t" );
+      }
+    
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_egads_fixture( char *filename )
 {
 #ifdef HAVE_EGADS

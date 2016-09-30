@@ -78,6 +78,10 @@ REF_STATUS ref_geom_tuv( REF_GEOM ref_geom, REF_INT node,
 			 REF_INT type, REF_INT id,
 			 REF_DBL *param );
 
+REF_STATUS ref_geom_evaluate_between( REF_GEOM ref_geom,
+				      REF_INT node0, REF_INT node1, 
+				      REF_INT new_node );
+
 REF_STATUS ref_geom_egads_fixture( char *filename );
 
 REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid, char *filename );
