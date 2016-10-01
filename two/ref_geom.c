@@ -4,7 +4,12 @@
   load bal
   node acc during split and collapse
   smooth face
-  add cylinder to box and add ot UGAWG
+  add cylinder-box to UGAWG
+
+save NULL context, edges, and faces with free
+eval
+
+ask bob how to get body and edge eog by index
 */
 
 #include <stdlib.h>
@@ -256,7 +261,6 @@ REF_STATUS ref_geom_tuv( REF_GEOM ref_geom, REF_INT node,
 
   return REF_SUCCESS;
 }
-
 
 REF_STATUS ref_geom_add_between( REF_GEOM ref_geom,
 				 REF_INT node0, REF_INT node1, 
