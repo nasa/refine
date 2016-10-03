@@ -1,15 +1,16 @@
 
 /*
+
+save NULL context, edges, and faces with free
+eval
+
+ask bob how to get body and edge ego by index
+
   restart file
   load bal
   node acc during split and collapse
   smooth face
   add cylinder-box to UGAWG
-
-save NULL context, edges, and faces with free
-eval
-
-ask bob how to get body and edge eog by index
 */
 
 #include <stdlib.h>
