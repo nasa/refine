@@ -350,7 +350,7 @@ REF_STATUS ref_geom_egads_fixture( char *filename )
   REIS( EGADS_SUCCESS, EG_close(context), "EG close");
   
 #else
-  printf("No EGADS linked for %s\n",filename);
+  printf("No EGADS linked for %s in %s\n",filename,__func__);
 #endif
   
   return REF_SUCCESS;
@@ -590,7 +590,8 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   }
   
 #else
-  printf("returning empty grid, No EGADS linked for %s\n",filename);
+  printf("returning empty grid from %s, No EGADS linked for %s\n",
+	 __func__,filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");  
 #endif
   
