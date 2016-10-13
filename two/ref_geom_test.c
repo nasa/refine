@@ -27,7 +27,7 @@ int main( int argc, char *argv[] )
       char *filename = argv[1];
       if ( 0 == access( filename, R_OK ) )
 	{
-	  printf("EGADS project %s exisits, deleting\n",filename);
+	  printf("EGADS project %s exists, deleting\n",filename);
 	  REIS(0, remove( filename ), "test clean up");
 	}
       RSS( ref_geom_egads_fixture( filename ), "egads fixture" );
