@@ -6,6 +6,8 @@ eval
 
 ask bob how to get body and edge ego by index
 
+EG_setTessEdge and EG_setTessFace
+
   restart file
   load bal
   node acc during split and collapse
