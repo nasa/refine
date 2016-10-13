@@ -62,6 +62,17 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   ref_geom_id(ref_geom,ref_geom_max(ref_geom)-1) = REF_EMPTY;
   ref_geom_blank(ref_geom) = 0;
 
+  ref_geom->context = NULL;
+#ifdef HAVE_EGADS
+  {
+    ego context;
+    REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
+    ref_geom->context = (void *)context;
+  }
+#endif
+  ref_geom->edges = NULL;
+  ref_geom->faces = NULL;
+  
   RSS( ref_adj_create( &( ref_geom->ref_adj ) ), "create ref_adj for ref_geom" );
   
   return REF_SUCCESS;
@@ -72,6 +83,10 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
   if ( NULL == (void *)ref_geom )
     return REF_NULL;
   RSS( ref_adj_free( ref_geom->ref_adj ), "adj free" );
+#ifdef HAVE_EGADS
+  if ( NULL != ref_geom->context)
+    REIS( EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
+#endif
   ref_free( ref_geom->param );
   ref_free( ref_geom->descr );
   ref_free( ref_geom );
@@ -473,7 +488,8 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
   ref_geom = ref_grid_geom(ref_grid);
-			  
+
+  context = (ego)(ref_geom->context);
   REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
   REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
   REIS( EGADS_SUCCESS, EG_getBoundingBox(model, box), "EG bounding box");
@@ -573,8 +589,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     }
   }
   
-  REIS( EGADS_SUCCESS, EG_close(context), "EG close");
-
 #else
   printf("returning empty grid, No EGADS linked for %s\n",filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");  

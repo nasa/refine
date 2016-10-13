@@ -23,6 +23,9 @@ BEGIN_C_DECLORATION
     REF_INT blank;
     REF_INT *descr;
     REF_DBL *param;
+    void *context;
+    void *faces;
+    void *edges;
     REF_ADJ ref_adj;
   };
 
