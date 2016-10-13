@@ -38,3 +38,10 @@
    fun:_ZN17TopTools_ShapeSet4ReadERSi
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   fun:_ZN16Standard_MMgrRaw8AllocateEm
+   ...
+}
