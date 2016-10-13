@@ -23,10 +23,10 @@ BEGIN_C_DECLORATION
     REF_INT blank;
     REF_INT *descr;
     REF_DBL *param;
+    REF_ADJ ref_adj;
     void *context;
     void *faces;
     void *edges;
-    REF_ADJ ref_adj;
   };
 
 #define ref_geom_n(ref_geom)     (( ref_geom )->n )

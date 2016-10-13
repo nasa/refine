@@ -61,7 +61,9 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
     }
   ref_geom_id(ref_geom,ref_geom_max(ref_geom)-1) = REF_EMPTY;
   ref_geom_blank(ref_geom) = 0;
-
+  
+  RSS( ref_adj_create( &( ref_geom->ref_adj ) ), "create ref_adj for ref_geom" );
+  
   ref_geom->context = NULL;
 #ifdef HAVE_EGADS
   {
@@ -72,9 +74,7 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
 #endif
   ref_geom->edges = NULL;
   ref_geom->faces = NULL;
-  
-  RSS( ref_adj_create( &( ref_geom->ref_adj ) ), "create ref_adj for ref_geom" );
-  
+
   return REF_SUCCESS;
 }
 
@@ -82,11 +82,11 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
 {
   if ( NULL == (void *)ref_geom )
     return REF_NULL;
-  RSS( ref_adj_free( ref_geom->ref_adj ), "adj free" );
 #ifdef HAVE_EGADS
   if ( NULL != ref_geom->context)
     REIS( EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
 #endif
+  RSS( ref_adj_free( ref_geom->ref_adj ), "adj free" );
   ref_free( ref_geom->param );
   ref_free( ref_geom->descr );
   ref_free( ref_geom );
