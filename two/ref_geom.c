@@ -83,6 +83,10 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
   if ( NULL == (void *)ref_geom )
     return REF_NULL;
 #ifdef HAVE_EGADS
+  if ( NULL != ref_geom->faces)
+    EG_free((ego *)(ref_geom->faces));
+  if ( NULL != ref_geom->edges)
+    EG_free((ego *)(ref_geom->edges));
   if ( NULL != ref_geom->context)
     REIS( EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
 #endif
@@ -120,6 +124,10 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
   RSS( ref_adj_deep_copy( &( ref_geom->ref_adj ), original->ref_adj ),
        "deep copy ref_adj for ref_geom" );
   
+  ref_geom->context = NULL;
+  ref_geom->edges = NULL;
+  ref_geom->faces = NULL;
+
   return REF_SUCCESS;
 }
 
@@ -490,7 +498,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   ref_geom = ref_grid_geom(ref_grid);
 
   context = (ego)(ref_geom->context);
-  REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
   REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
   REIS( EGADS_SUCCESS, EG_getBoundingBox(model, box), "EG bounding box");
   size = sqrt((box[0]-box[3])*(box[0]-box[3]) +
@@ -516,10 +523,10 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 
   REIS( EGADS_SUCCESS,
 	EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges), "EG edge typo");
-  EG_free(edges);
+  ref_geom->edges = (void *)edges;
   REIS( EGADS_SUCCESS,
 	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG face typo");
-  EG_free(faces);
+  ref_geom->faces = (void *)faces;
 
   REIS( EGADS_SUCCESS,
 	EG_statusTessBody(tess, &geom, &tess_status, &nvert), "EG tess");
