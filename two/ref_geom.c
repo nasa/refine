@@ -702,8 +702,25 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-      printf("geom %d node %d dist %e\n",geom,node,dist);	 
-      RSS( ref_geom_tattle( ref_geom, node ), "tattle");
+      if ( dist > 1.0e-12 )
+	{
+	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
+	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
+	}
+    }
+  
+  each_ref_geom_face( ref_geom, geom )
+    {
+      RSS( ref_geom_eval( ref_geom, geom, xyz ), "eval xyz" );
+      node = ref_geom_node(ref_geom,geom);
+      dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
+		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
+		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
+      if ( dist > 1.0e-12 )
+	{
+	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
+	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
+	}
     }
   
   return REF_SUCCESS;
