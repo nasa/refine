@@ -1,11 +1,10 @@
 
 /*
 
-  eval 
-
   restart file
   load bal
-  node acc during split and collapse
+  geom accounting during split and collapse
+  evalaute new nodes
   smooth face
   add cylinder-box to UGAWG
 */
