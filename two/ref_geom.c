@@ -1,12 +1,7 @@
 
 /*
 
-save NULL context, edges, and faces with free
-eval
-
-ask bob how to get body and edge ego by index
-
-EG_setTessEdge and EG_setTessFace
+  eval 
 
   restart file
   load bal
