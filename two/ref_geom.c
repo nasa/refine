@@ -3,7 +3,8 @@
 
   restart file
   load bal
-  geom accounting during split and collapse
+  parallel update ghost geom param
+  geom accounting during split
   evalaute new nodes
   smooth face
   add cylinder-box to UGAWG
