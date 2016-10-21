@@ -65,6 +65,7 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
 
 REF_STATUS ref_geom_inspect( REF_GEOM ref_geom );
+REF_STATUS ref_geom_tattle( REF_GEOM ref_geom, REF_INT node );
 
 REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
 			 REF_INT type, REF_INT id,
