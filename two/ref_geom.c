@@ -4,7 +4,7 @@
   restart file
   load bal
   parallel update ghost geom param
-  geom accounting during split
+  eom constrain during split
   evalaute new nodes
   smooth face
   add cylinder-box to UGAWG
