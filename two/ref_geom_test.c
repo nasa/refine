@@ -251,16 +251,10 @@ int main( int argc, char *argv[] )
   
   { /* eval out of range */
     REF_GEOM ref_geom;
-    REF_INT node;
-    REF_INT type, id, geom;
-    REF_DBL params[2];
+    REF_INT geom;
     REF_DBL xyz[3];
 
     RSS(ref_geom_create(&ref_geom),"create");
-
-    node = 0;
-    type = REF_GEOM_EDGE; id = 5; params[0] = 11.0;
-    RSS( ref_geom_add(ref_geom,node,type,id,params), "node edge" );
 
     geom = -1;
     REIS( REF_INVALID,
@@ -271,6 +265,6 @@ int main( int argc, char *argv[] )
 
     RSS(ref_geom_free(ref_geom),"free");
   }
-  
+
   return 0;
 }
