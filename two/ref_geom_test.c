@@ -40,6 +40,7 @@ int main( int argc, char *argv[] )
       RSS( ref_geom_grid_from_egads( &ref_grid, argv[1] ), "from egads" );
       RSS( ref_export_by_extension( ref_grid, argv[2] ), "argv export" );
       RSS( ref_geom_tec( ref_grid, "ref_geom_test.tec" ), "geom export" );
+      RSS( ref_geom_verify_param( ref_grid ), "params" );
       RSS( ref_grid_free(ref_grid),"free");
     }
 
@@ -198,7 +199,7 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
   
-  { /* evaluate common edge */
+  { /* add between common edge */
     REF_GEOM ref_geom;
     REF_INT node0, node1, new_node;
     REF_INT type, id;
@@ -222,7 +223,7 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
   
-  { /* evaluate skip different edge */
+  { /* add between skip different edge */
     REF_GEOM ref_geom;
     REF_INT node0, node1, new_node;
     REF_INT type, id, geom;
@@ -244,6 +245,29 @@ int main( int argc, char *argv[] )
     id = 5;
     REIS( REF_NOT_FOUND,
 	  ref_geom_find(ref_geom,new_node,type,id,&geom), "what edge" );
+
+    RSS(ref_geom_free(ref_geom),"free");
+  }
+  
+  { /* eval out of range */
+    REF_GEOM ref_geom;
+    REF_INT node;
+    REF_INT type, id, geom;
+    REF_DBL params[2];
+    REF_DBL xyz[3];
+
+    RSS(ref_geom_create(&ref_geom),"create");
+
+    node = 0;
+    type = REF_GEOM_EDGE; id = 5; params[0] = 11.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,params), "node edge" );
+
+    geom = -1;
+    REIS( REF_INVALID,
+	  ref_geom_eval(ref_geom,geom,xyz), "invalid geom" );
+    geom = 1+ref_geom_max(ref_geom);
+    REIS( REF_INVALID,
+	  ref_geom_eval(ref_geom,geom,xyz), "invalid geom" );
 
     RSS(ref_geom_free(ref_geom),"free");
   }

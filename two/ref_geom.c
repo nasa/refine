@@ -600,6 +600,36 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz )
+{
+  if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
+    return REF_INVALID;
+  xyz[0]=0;
+  return REF_SUCCESS;
+}
+
+  REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT geom;
+  REF_INT node;
+  REF_DBL xyz[3];
+  REF_DBL dist;
+  
+  each_ref_geom_edge( ref_geom, geom )
+    {
+      RSS( ref_geom_eval( ref_geom, geom, xyz ), "eval xyz" );
+      node = ref_geom_node(ref_geom,geom);
+      dist = sqrt( pow(xyz[0]*ref_node_xyz(ref_node,0,node),2) +
+		   pow(xyz[1]*ref_node_xyz(ref_node,1,node),2) +
+		   pow(xyz[2]*ref_node_xyz(ref_node,2,node),2) );
+      printf("geom %d node %d dist %e\n",geom,node,dist);
+    }
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
