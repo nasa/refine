@@ -7,6 +7,9 @@
   evalaute new nodes
   smooth face
   add cylinder-box to UGAWG
+
+  refactor remove methods and tests, how is it used, what is needed?
+
 */
 
 #include <stdlib.h>
@@ -284,6 +287,29 @@ REF_STATUS ref_geom_remove( REF_GEOM ref_geom, REF_INT node,
     }
   
   return status;
+}
+
+REF_STATUS ref_geom_remove_all( REF_GEOM ref_geom, REF_INT node)
+{
+  REF_ADJ ref_adj = ref_geom_adj(ref_geom);
+  REF_INT item, geom;
+
+  item = ref_adj_first( ref_adj, node );
+  while ( ref_adj_valid( item ) )
+    {
+      geom = ref_adj_item_ref( ref_adj, item );
+      RSS( ref_adj_remove(ref_adj, node, geom),
+	   "unregister geom" );
+      
+      ref_geom_type(ref_geom,geom) = REF_EMPTY;
+      ref_geom_id(ref_geom,geom) = ref_geom_blank(ref_geom);
+      ref_geom_blank(ref_geom) = geom;
+      ref_geom_n(ref_geom)--;
+
+      item = ref_adj_first( ref_adj, node );
+    }
+  
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_geom_find( REF_GEOM ref_geom, REF_INT node,

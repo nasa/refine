@@ -154,6 +154,25 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
 
+  { /* add and remove all */
+    REF_GEOM ref_geom;
+    REF_INT node, type, id;
+    REF_DBL params[2];
+    RSS(ref_geom_create(&ref_geom),"create");
+    node = 2; type = REF_GEOM_FACE; id = 5; params[0] = 11.0; params[1] = 21.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,params), "add face" );
+    node = 2; type = REF_GEOM_EDGE; id = 2; params[0] = 5.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,params), "add edge" );
+    REIS( 2, ref_geom_n(ref_geom), "items" );
+    node = 4; type = REF_GEOM_EDGE; id = 2; params[0] = 5.0;
+    RSS( ref_geom_remove_all(ref_geom,node), "ok with nothing there" );
+    REIS( 2, ref_geom_n(ref_geom), "items" );
+    node = 2;
+    RSS( ref_geom_remove_all(ref_geom,node), "remove all at node" );
+    REIS( 0, ref_geom_n(ref_geom), "items" );
+    RSS(ref_geom_free(ref_geom),"free");
+  }
+
   { /* reuse without reallocation */
     REF_GEOM ref_geom;
     REF_INT node, type, id;
