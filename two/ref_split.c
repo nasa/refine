@@ -73,6 +73,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       if ( !allowed) 
 	{
 	  RSS( ref_node_remove( ref_node, new_node ), "remove new node");
+	  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
 	  continue;
 	}
 
@@ -85,6 +86,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge ))++;
 	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge ))++;
 	  RSS( ref_node_remove( ref_node, new_node ), "remove new node");
+	  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
 	  continue;
 	}
 
@@ -343,6 +345,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
       if ( !allowed ) 
 	{
 	  RSS( ref_node_remove( ref_node, new_node0 ), "remove new node");
+	  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
 	  continue;
 	}
 
@@ -353,6 +356,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 	  ref_node_age(ref_node,node0)++;
 	  ref_node_age(ref_node,node1)++;
 	  RSS( ref_node_remove( ref_node, new_node0 ), "remove new node");
+	  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
 	  continue;
 	}
 

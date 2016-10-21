@@ -398,16 +398,24 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
       RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell ), "rm" );
       each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
       if ( ref_cell_node_empty( ref_grid_tri(ref_grid), nodes[cell_node] ) )
-        RSS( ref_node_remove( ref_grid_node(ref_grid),
-                              nodes[cell_node] ),"rm");
+	{
+	  RSS( ref_node_remove( ref_grid_node(ref_grid),
+				nodes[cell_node] ),"rm");
+	  RSS( ref_geom_remove_all( ref_grid_geom(ref_grid),
+				    nodes[cell_node] ),"rm");
+	}
 
       RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tri, nodes ),
            "save nodes");
       RSS( ref_cell_remove( ref_grid_tri(ref_grid), tri ), "rm" );
       each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
       if ( ref_cell_node_empty( ref_grid_tri(ref_grid), nodes[cell_node] ) )
-        RSS( ref_node_remove( ref_grid_node(ref_grid),
-                              nodes[cell_node] ),"rm");
+	{
+	  RSS( ref_node_remove( ref_grid_node(ref_grid),
+				nodes[cell_node] ),"rm");
+	  RSS( ref_geom_remove_all( ref_grid_geom(ref_grid),
+				    nodes[cell_node] ),"rm");
+	}
 
     }
 

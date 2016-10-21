@@ -193,7 +193,8 @@ REF_STATUS ref_collapse_edge( REF_GRID ref_grid,
   RSS( ref_cell_replace_node( ref_cell, node1, node0 ), "replace node" );
 
   RSS( ref_node_remove(ref_grid_node(ref_grid),node1), "rm");
-
+  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid),node1), "rm");
+  
   return REF_SUCCESS;
 }
 
@@ -451,6 +452,8 @@ REF_STATUS ref_collapse_face( REF_GRID ref_grid,
 
   RSS( ref_node_remove(ref_grid_node(ref_grid),remove0), "rm");
   RSS( ref_node_remove(ref_grid_node(ref_grid),remove1), "rm");
+  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid),remove0), "rm");
+  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid),remove1), "rm");
 
   return REF_SUCCESS;
 }

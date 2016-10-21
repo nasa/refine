@@ -1453,6 +1453,7 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 	     !ref_adj_empty( ref_cell_adj(ref_grid_qua(ref_grid)), node) )
 	  RSS( REF_FAILURE, "boundary face node not in vol cells");
 	RSS( ref_node_remove_without_global( ref_node, node ), "rm");
+	RSS( ref_geom_remove_all( ref_grid_geom(ref_grid), node ), "rm");
       }
 
   return REF_SUCCESS;
