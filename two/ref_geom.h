@@ -87,14 +87,14 @@ REF_STATUS ref_geom_add_between( REF_GEOM ref_geom,
 				 REF_INT node0, REF_INT node1, 
 				 REF_INT new_node );
 
+REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz );
+REF_STATUS ref_geom_verify_param( REF_GRID ref_grid );
+
 REF_STATUS ref_geom_egads_fixture( char *filename );
 
 REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid, char *filename );
 REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid );
 REF_STATUS ref_geom_grid_from_egads( REF_GRID *ref_grid, char *filename );
-
-REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz );
-REF_STATUS ref_geom_verify_param( REF_GRID ref_grid );
 
 REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );
 REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );

@@ -378,6 +378,96 @@ REF_STATUS ref_geom_add_between( REF_GEOM ref_geom,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz )
+{
+#ifdef HAVE_EGADS
+  double eval[18];
+  double params[2];
+  ego *edges, *faces;
+  ego object;
+  if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
+    return REF_INVALID;
+  params[0] = 0.0; params[1] = 0.0;
+  object = (ego)NULL;
+  switch (ref_geom_type(ref_geom,geom))
+    {
+    case (REF_GEOM_NODE) :
+      RSS(REF_IMPLEMENT, "geom node" );
+      break;
+    case (REF_GEOM_EDGE) :
+      RNS(ref_geom->edges,"edges not loaded");
+      edges = (ego *)(ref_geom->edges);
+      object = edges[ref_geom_id(ref_geom,geom) - 1]; 
+      params[0] = ref_geom_param(ref_geom,0,geom);
+      break;
+    case (REF_GEOM_FACE) :
+      RNS(ref_geom->faces,"faces not loaded");
+      faces = (ego *)(ref_geom->faces);
+      object = faces[ref_geom_id(ref_geom,geom) - 1]; 
+      params[0] = ref_geom_param(ref_geom,0,geom);
+      params[1] = ref_geom_param(ref_geom,1,geom);
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unknown geom" );
+    }
+  
+  REIS( EGADS_SUCCESS,
+	EG_evaluate(object, params, eval), "eval");
+  xyz[0]=eval[0];
+  xyz[1]=eval[1];
+  xyz[2]=eval[2];
+  return REF_SUCCESS;
+#else
+  if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
+    return REF_INVALID;
+  printf("evaluating to (0,0,0), No EGADS linked for %s\n", __func__);
+  xyz[0] = 0.0;
+  xyz[1] = 0.0;
+  xyz[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT geom;
+  REF_INT node;
+  REF_DBL xyz[3];
+  REF_DBL dist;
+  
+  each_ref_geom_edge( ref_geom, geom )
+    {
+      RSS( ref_geom_eval( ref_geom, geom, xyz ), "eval xyz" );
+      node = ref_geom_node(ref_geom,geom);
+      dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
+		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
+		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
+      if ( dist > 1.0e-12 )
+	{
+	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
+	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
+	}
+    }
+  
+  each_ref_geom_face( ref_geom, geom )
+    {
+      RSS( ref_geom_eval( ref_geom, geom, xyz ), "eval xyz" );
+      node = ref_geom_node(ref_geom,geom);
+      dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
+		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
+		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
+      if ( dist > 1.0e-12 )
+	{
+	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
+	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
+	}
+    }
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_egads_fixture( char *filename )
 {
 #ifdef HAVE_EGADS
@@ -662,96 +752,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 	 __func__,filename);
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");  
 #endif
-  
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz )
-{
-#ifdef HAVE_EGADS
-  double eval[18];
-  double params[2];
-  ego *edges, *faces;
-  ego object;
-  if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
-    return REF_INVALID;
-  params[0] = 0.0; params[1] = 0.0;
-  object = (ego)NULL;
-  switch (ref_geom_type(ref_geom,geom))
-    {
-    case (REF_GEOM_NODE) :
-      RSS(REF_IMPLEMENT, "geom node" );
-      break;
-    case (REF_GEOM_EDGE) :
-      RNS(ref_geom->edges,"edges not loaded");
-      edges = (ego *)(ref_geom->edges);
-      object = edges[ref_geom_id(ref_geom,geom) - 1]; 
-      params[0] = ref_geom_param(ref_geom,0,geom);
-      break;
-    case (REF_GEOM_FACE) :
-      RNS(ref_geom->faces,"faces not loaded");
-      faces = (ego *)(ref_geom->faces);
-      object = faces[ref_geom_id(ref_geom,geom) - 1]; 
-      params[0] = ref_geom_param(ref_geom,0,geom);
-      params[1] = ref_geom_param(ref_geom,1,geom);
-      break;
-    default:
-      RSS(REF_IMPLEMENT, "unknown geom" );
-    }
-  
-  REIS( EGADS_SUCCESS,
-	EG_evaluate(object, params, eval), "eval");
-  xyz[0]=eval[0];
-  xyz[1]=eval[1];
-  xyz[2]=eval[2];
-  return REF_SUCCESS;
-#else
-  if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
-    return REF_INVALID;
-  printf("evaluating to (0,0,0), No EGADS linked for %s\n", __func__);
-  xyz[0] = 0.0;
-  xyz[1] = 0.0;
-  xyz[2] = 0.0;
-  return REF_IMPLEMENT;
-#endif
-}
-
-REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
-{
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT geom;
-  REF_INT node;
-  REF_DBL xyz[3];
-  REF_DBL dist;
-  
-  each_ref_geom_edge( ref_geom, geom )
-    {
-      RSS( ref_geom_eval( ref_geom, geom, xyz ), "eval xyz" );
-      node = ref_geom_node(ref_geom,geom);
-      dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
-		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
-		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-      if ( dist > 1.0e-12 )
-	{
-	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
-	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
-	}
-    }
-  
-  each_ref_geom_face( ref_geom, geom )
-    {
-      RSS( ref_geom_eval( ref_geom, geom, xyz ), "eval xyz" );
-      node = ref_geom_node(ref_geom,geom);
-      dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
-		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
-		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-      if ( dist > 1.0e-12 )
-	{
-	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
-	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
-	}
-    }
   
   return REF_SUCCESS;
 }
