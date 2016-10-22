@@ -285,5 +285,24 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
 
+  { /* constrain without geom or on node */
+    REF_GRID ref_grid;
+    REF_GEOM ref_geom;
+    REF_INT node;
+    REF_INT type, id;
+    REF_DBL params[2];
+
+    RSS(ref_grid_create(&ref_grid),"create");
+    ref_geom = ref_grid_geom(ref_grid);
+    
+    node = 4;
+    RSS( ref_geom_constrain(ref_grid,node), "no geom" );
+    node = 4; type = REF_GEOM_NODE; id = 2;
+    REIS( 0, ref_geom_add(ref_geom,node,type,id,params), "add node" );
+    RSS( ref_geom_constrain(ref_grid,node), "no geom" );
+
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
   return 0;
 }

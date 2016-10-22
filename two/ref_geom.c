@@ -378,6 +378,33 @@ REF_STATUS ref_geom_add_between( REF_GEOM ref_geom,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_ADJ ref_adj = ref_geom_adj(ref_geom);
+  REF_INT item, geom;
+  REF_BOOL have_geom_node;
+
+  /* no geom */
+  if (ref_adj_empty( ref_adj, node )) return REF_SUCCESS;
+
+  have_geom_node = REF_FALSE;
+  each_ref_adj_node_item_with_ref( ref_adj, node, item, geom)
+    {
+      if (REF_GEOM_NODE == ref_geom_type(ref_geom,geom))
+	{
+	  have_geom_node = REF_FALSE;
+	  break;
+	}
+    }
+
+  /* node geom */
+  if (ref_adj_empty( ref_adj, node )) return REF_SUCCESS;
+
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz )
 {
 #ifdef HAVE_EGADS
