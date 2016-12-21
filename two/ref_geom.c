@@ -412,6 +412,9 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
 	}
     }
   
+  SUPRESS_UNUSED_COMPILER_WARNING( have_geom_node );
+  SUPRESS_UNUSED_COMPILER_WARNING( have_geom_edge );
+
   /* edge geom, evaluate edge and update face uv */
 
   /* face geom, evaluate face */
