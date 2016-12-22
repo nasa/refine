@@ -11,7 +11,6 @@
   geom constrain during split
   evalaute new nodes
   smooth face
-  add cylinder-box to UGAWG
 
   refactor remove methods and tests, how is it used, what is needed?
 
