@@ -377,6 +377,51 @@ REF_STATUS ref_geom_add_between( REF_GEOM ref_geom,
   return REF_SUCCESS;
 }
 
+
+REF_STATUS ref_geom_eval_edge_face_uv( REF_GEOM ref_geom, REF_INT edge_geom )
+{
+#ifdef HAVE_EGADS
+  REF_ADJ ref_adj = ref_geom_adj(ref_geom);
+  REF_INT node, item, face_geom;
+  double t;
+  double uv[2];
+  int sense = 0;
+  ego *edges, *faces;
+  ego edge, face;
+
+  if ( edge_geom < 0 || ref_geom_max(ref_geom) <= edge_geom )
+    return REF_INVALID;
+  if ( REF_GEOM_EDGE != ref_geom_type(ref_geom,edge_geom) )
+    return REF_INVALID;
+
+  edges = (ego *)(ref_geom->edges);
+  edge = edges[ref_geom_id(ref_geom,edge_geom) - 1]; 
+
+  t = ref_geom_param(ref_geom,0,edge_geom);
+
+  node = ref_geom_node(ref_geom,edge_geom);
+
+  faces = (ego *)(ref_geom->edges);
+  each_ref_adj_node_item_with_ref( ref_adj, node, item, face_geom)
+    {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom,face_geom))
+	{
+	  face = edges[ref_geom_id(ref_geom,edge_geom) - 1]; 
+	  REIS( EGADS_SUCCESS,
+		EG_getEdgeUV(face, edge, sense, t, uv), "eval edge face uv");
+	  ref_geom_param(ref_geom,0,face_geom) = uv[0];
+	  ref_geom_param(ref_geom,0,face_geom) = uv[1];
+	}
+    }
+
+  return REF_SUCCESS;
+#else
+  if ( edge_geom < 0 || ref_geom_max(ref_geom) <= edge_geom )
+    return REF_INVALID;
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -422,10 +467,14 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
     }
   
   /* edge geom, evaluate edge and update face uv */
-  RSS( ref_geom_eval( ref_geom, edge_geom, xyz ), "eval edge" );
-  ref_node_xyz(ref_node,0,node) = xyz[0];
-  ref_node_xyz(ref_node,1,node) = xyz[1];
-  ref_node_xyz(ref_node,2,node) = xyz[2];
+  if (have_geom_edge)
+    {
+      RSS( ref_geom_eval( ref_geom, edge_geom, xyz ), "eval edge" );
+      ref_node_xyz(ref_node,0,node) = xyz[0];
+      ref_node_xyz(ref_node,1,node) = xyz[1];
+      ref_node_xyz(ref_node,2,node) = xyz[2];
+      RSS( ref_geom_eval_edge_face_uv( ref_geom, edge_geom ), "resol edge uv");
+    }
   
   /* face geom, evaluate face */
 

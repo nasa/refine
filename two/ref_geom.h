@@ -90,6 +90,7 @@ REF_STATUS ref_geom_add_between( REF_GEOM ref_geom,
 REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz );
+
 REF_STATUS ref_geom_verify_param( REF_GRID ref_grid );
 
 REF_STATUS ref_geom_egads_export( char *filename );
