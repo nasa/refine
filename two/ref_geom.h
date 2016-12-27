@@ -47,6 +47,12 @@ BEGIN_C_DECLORATION
 #define ref_geom_param(ref_geom,dimension,geom) \
   (( ref_geom )->param[( dimension )+2*( geom )] )
 
+#define each_ref_geom( ref_geom, geom )				\
+  for ( ( geom ) = 0;						\
+        ( geom ) < ref_geom_max(ref_geom);			\
+        ( geom )++ )						\
+    if ( REF_EMPTY != ref_geom_type( ref_geom, geom ) )
+
 #define each_ref_geom_edge( ref_geom, geom )			\
   for ( ( geom ) = 0;						\
         ( geom ) < ref_geom_max(ref_geom);			\
@@ -63,6 +69,8 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom );
 REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 
 REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
+
+REF_STATUS ref_geom_save( REF_GRID ref_grid, char *filename );
 
 REF_STATUS ref_geom_inspect( REF_GEOM ref_geom );
 REF_STATUS ref_geom_tattle( REF_GEOM ref_geom, REF_INT node );
@@ -101,7 +109,7 @@ REF_STATUS ref_geom_grid_from_egads( REF_GRID *ref_grid, char *filename );
 
 REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );
 REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );
-REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  );
+REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename );
 
 END_C_DECLORATION
 

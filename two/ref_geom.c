@@ -127,6 +127,30 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_save( REF_GRID ref_grid, char *filename )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  FILE *file;
+  REF_INT geom, global;
+  RSS( ref_node_synchronize_globals( ref_node ), "sync" );
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+  each_ref_geom( ref_geom, geom )
+    {
+      global = ref_node_global(ref_node,ref_geom_node(ref_geom,geom));
+      fprintf(file,"%d %d %d %.18e %.18e\n",
+	      ref_geom_type(ref_geom,geom),
+	      ref_geom_id(ref_geom,geom),
+	      global,
+	      ref_geom_param(ref_geom,0,geom),
+	      ref_geom_param(ref_geom,1,geom));
+    }
+  fclose(file);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_inspect( REF_GEOM ref_geom )
 {
   REF_INT geom;
