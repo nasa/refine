@@ -1,10 +1,5 @@
 
 /*
-  constrain
-  - if node do nothing
-  - if have edge, evaluate it and update adjacent faces
-  - if only face, evaluate it
-
   restart file
   load bal
   parallel update ghost geom param
