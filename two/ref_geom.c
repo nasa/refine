@@ -409,7 +409,7 @@ REF_STATUS ref_geom_eval_edge_face_uv( REF_GEOM ref_geom, REF_INT edge_geom )
 	  REIS( EGADS_SUCCESS,
 		EG_getEdgeUV(face, edge, sense, t, uv), "eval edge face uv");
 	  ref_geom_param(ref_geom,0,face_geom) = uv[0];
-	  ref_geom_param(ref_geom,0,face_geom) = uv[1];
+	  ref_geom_param(ref_geom,1,face_geom) = uv[1];
 	}
     }
 
