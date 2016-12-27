@@ -379,12 +379,17 @@ REF_STATUS ref_geom_add_between( REF_GEOM ref_geom,
 
 REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
   REF_INT item, geom;
   REF_BOOL have_geom_node;
   REF_BOOL have_geom_edge;
+  REF_INT edge_geom;
+  REF_DBL xyz[3];
 
+  /* put sloppy geom handling here */
+  
   /* no geom, do nothing */
   if (ref_adj_empty( ref_adj, node )) return REF_SUCCESS;
 
@@ -399,23 +404,29 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
     }
 
   /* node geom, do nothing */
-  if (ref_adj_empty( ref_adj, node )) return REF_SUCCESS;
-
+  if (have_geom_node)
+    {
+      return REF_SUCCESS;
+    }
+  
   have_geom_edge = REF_FALSE;
+  edge_geom = REF_EMPTY;
   each_ref_adj_node_item_with_ref( ref_adj, node, item, geom)
     {
       if (REF_GEOM_EDGE == ref_geom_type(ref_geom,geom))
 	{
 	  have_geom_edge = REF_TRUE;
+	  edge_geom = geom;
 	  break;
 	}
     }
   
-  SUPRESS_UNUSED_COMPILER_WARNING( have_geom_node );
-  SUPRESS_UNUSED_COMPILER_WARNING( have_geom_edge );
-
   /* edge geom, evaluate edge and update face uv */
-
+  RSS( ref_geom_eval( ref_geom, edge_geom, xyz ), "eval edge" );
+  ref_node_xyz(ref_node,0,node) = xyz[0];
+  ref_node_xyz(ref_node,1,node) = xyz[1];
+  ref_node_xyz(ref_node,2,node) = xyz[2];
+  
   /* face geom, evaluate face */
 
   return REF_SUCCESS;
