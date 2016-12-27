@@ -37,10 +37,14 @@ int main( int argc, char *argv[] )
   if ( 3 == argc )
     { /* egads to grid */
       REF_GRID ref_grid;
+      REF_INT node;
       RSS( ref_geom_grid_from_egads( &ref_grid, argv[1] ), "from egads" );
       RSS( ref_export_by_extension( ref_grid, argv[2] ), "argv export" );
       RSS( ref_geom_tec( ref_grid, "ref_geom_test.tec" ), "geom export" );
-      RSS( ref_geom_verify_param( ref_grid ), "params" );
+      RSS( ref_geom_verify_param( ref_grid ), "original params" );
+      each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+	RSS( ref_geom_constrain( ref_grid, node ), "original params" );
+      RSS( ref_geom_verify_param( ref_grid ), "constrained params" );
       RSS( ref_grid_free(ref_grid),"free");
     }
 
