@@ -30,7 +30,7 @@ int main( int argc, char *argv[] )
 	  printf("EGADS project %s exists, deleting\n",filename);
 	  REIS(0, remove( filename ), "test clean up");
 	}
-      RSS( ref_geom_egads_fixture( filename ), "egads fixture" );
+      RSS( ref_geom_egads_export( filename ), "egads fixture" );
       printf("wrote EGADS project %s\n",filename);
     }
 

@@ -522,7 +522,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_egads_fixture( char *filename )
+REF_STATUS ref_geom_egads_export( char *filename )
 {
 #ifdef HAVE_EGADS
   ego context;
