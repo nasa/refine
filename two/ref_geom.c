@@ -469,6 +469,7 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
   if (have_geom_edge)
     {
       RSS( ref_geom_eval( ref_geom, edge_geom, xyz ), "eval edge" );
+      node = ref_geom_node(ref_geom,edge_geom);
       ref_node_xyz(ref_node,0,node) = xyz[0];
       ref_node_xyz(ref_node,1,node) = xyz[1];
       ref_node_xyz(ref_node,2,node) = xyz[2];
