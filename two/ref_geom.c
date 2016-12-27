@@ -1,6 +1,6 @@
 
 /*
-  restart file
+  parallel restart file
   load bal
   parallel update ghost geom param
   geom constrain during split
