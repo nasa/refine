@@ -254,6 +254,8 @@ REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
   ref_geom_id(ref_geom,geom) = id;
   ref_geom_node(ref_geom,geom) = node;
 
+  ref_geom_param(ref_geom,0,geom) = 0.0;
+  ref_geom_param(ref_geom,1,geom) = 0.0;
   if ( type > 0 ) ref_geom_param(ref_geom,0,geom) = param[0];
   if ( type > 1 ) ref_geom_param(ref_geom,1,geom) = param[1];
   
