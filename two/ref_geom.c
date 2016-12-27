@@ -400,7 +400,7 @@ REF_STATUS ref_geom_eval_edge_face_uv( REF_GEOM ref_geom, REF_INT edge_geom )
 
   node = ref_geom_node(ref_geom,edge_geom);
 
-  faces = (ego *)(ref_geom->edges);
+  faces = (ego *)(ref_geom->faces);
   each_ref_adj_node_item_with_ref( ref_adj, node, item, face_geom)
     {
       if (REF_GEOM_FACE == ref_geom_type(ref_geom,face_geom))
