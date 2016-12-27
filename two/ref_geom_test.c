@@ -41,11 +41,29 @@ int main( int argc, char *argv[] )
       RSS( ref_geom_grid_from_egads( &ref_grid, argv[1] ), "from egads" );
       RSS( ref_export_by_extension( ref_grid, argv[2] ), "argv export" );
       RSS( ref_geom_tec( ref_grid, "ref_geom_test.tec" ), "geom export" );
+      printf("verify\n");
       RSS( ref_geom_verify_param( ref_grid ), "original params" );
+      printf("constrain\n");
       each_ref_node_valid_node( ref_grid_node(ref_grid), node )
 	RSS( ref_geom_constrain( ref_grid, node ), "original params" );
+      printf("verify\n");
+      RSS( ref_geom_verify_param( ref_grid ), "constrained params" );
+      printf("save\n");
+      RSS( ref_geom_save( ref_grid, "ref_geom_test.gas" ), "save" );
+      printf("clear\n");
+      each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+	RSS( ref_geom_remove_all( ref_grid_geom(ref_grid), node ), "erasure" );
+      printf("load\n");
+      RSS( ref_geom_load( ref_grid, "ref_geom_test.gas" ), "load" );
+      printf("verify\n");
+      RSS( ref_geom_verify_param( ref_grid ), "loaded params" );
+      printf("constrain\n");
+      each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+	RSS( ref_geom_constrain( ref_grid, node ), "original params" );
+      printf("verify\n");
       RSS( ref_geom_verify_param( ref_grid ), "constrained params" );
       RSS( ref_grid_free(ref_grid),"free");
+      REIS(0, remove( "ref_geom_test.gas" ), "test clean up");
     }
 
   REIS(REF_NULL,ref_geom_free(NULL),"dont free NULL");
