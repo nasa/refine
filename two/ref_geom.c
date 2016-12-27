@@ -151,6 +151,32 @@ REF_STATUS ref_geom_save( REF_GRID ref_grid, char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_load( REF_GRID ref_grid, char *filename )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  FILE *file;
+  REF_INT global, node, gtype, id;
+  REF_DBL param[2];
+  RSS( ref_node_synchronize_globals( ref_node ), "sync" );
+  file = fopen(filename,"r");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+  while (5 == fscanf(file, "%d %d %d %lf %lf\n",
+		     &gtype, &id, &global, &(param[0]), &(param[1]) ) )
+    {
+      RSS( ref_node_local( ref_node, global, &node ), "g2l" );
+      RSS( ref_geom_add( ref_geom, node, gtype, id, param), "add geom");
+    }
+  if (!feof(file)) 
+    {
+      printf("problem reading file %s\n",filename);
+      return REF_FAILURE;
+    }
+  fclose(file);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_inspect( REF_GEOM ref_geom )
 {
   REF_INT geom;
