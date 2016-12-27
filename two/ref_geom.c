@@ -429,7 +429,9 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
   REF_INT item, geom;
   REF_BOOL have_geom_node;
   REF_BOOL have_geom_edge;
+  REF_BOOL have_geom_face;
   REF_INT edge_geom;
+  REF_INT face_geom;
   REF_DBL xyz[3];
 
   /* put sloppy geom handling here */
@@ -474,9 +476,32 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
       ref_node_xyz(ref_node,1,node) = xyz[1];
       ref_node_xyz(ref_node,2,node) = xyz[2];
       RSS( ref_geom_eval_edge_face_uv( ref_geom, edge_geom ), "resol edge uv");
+      return REF_SUCCESS;
     }
   
-  /* face geom, evaluate face */
+  /* look for face geom */
+  have_geom_face = REF_FALSE;
+  face_geom = REF_EMPTY;
+  each_ref_adj_node_item_with_ref( ref_adj, node, item, geom)
+    {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom,geom))
+	{
+	  have_geom_face = REF_TRUE;
+	  face_geom = geom;
+	  break;
+	}
+    }
+
+  /* face geom, evaluate on face uv */
+  if (have_geom_face)
+    {
+      RSS( ref_geom_eval( ref_geom, face_geom, xyz ), "eval face" );
+      node = ref_geom_node(ref_geom,face_geom);
+      ref_node_xyz(ref_node,0,node) = xyz[0];
+      ref_node_xyz(ref_node,1,node) = xyz[1];
+      ref_node_xyz(ref_node,2,node) = xyz[2];
+      return REF_SUCCESS;
+    }
 
   return REF_SUCCESS;
 }
