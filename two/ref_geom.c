@@ -3,8 +3,6 @@
   parallel restart file
   load bal
   parallel update ghost geom param
-  geom constrain during split
-  evalaute new nodes
   smooth face
 
   refactor remove methods and tests, how is it used, what is needed?

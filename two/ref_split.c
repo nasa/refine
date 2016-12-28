@@ -68,6 +68,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				 ref_edge_e2n( ref_edge, 0, edge ),
 				 ref_edge_e2n( ref_edge, 1, edge ),
 				 new_node ), "geom new node");
+      RSS( ref_geom_constrain( ref_grid, new_node ), "geom constraint");
 
       RSS( ref_split_edge_quality( ref_grid,
 				   ref_edge_e2n( ref_edge, 0, edge ),
@@ -345,6 +346,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 				      new_node0 ), "interp new node");
       RSS( ref_geom_add_between( ref_grid_geom(ref_grid), node0, node1,
 				 new_node0 ), "geom new node");
+      RSS( ref_geom_constrain( ref_grid, new_node0 ), "geom constraint");
 
       RSS( ref_split_prism_tri_quality( ref_grid, node0, node1, new_node0,
 					&allowed ), "quality of new tri" );
@@ -375,6 +377,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 				      new_node1 ), "interp new node");
       RSS( ref_geom_add_between( ref_grid_geom(ref_grid), node2, node3,
 				 new_node1 ), "geom new node");
+      RSS( ref_geom_constrain( ref_grid, new_node1 ), "geom constraint");
 
       RSS( ref_split_face( ref_grid, node0, node1, new_node0,
 			   node2, node3, new_node1 ), "split face");
