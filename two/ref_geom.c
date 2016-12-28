@@ -1,9 +1,12 @@
 
 /*
+  run test cases from UGAWG
+
+  smooth face
+
   parallel restart file
   load bal
   parallel update ghost geom param
-  smooth face
 
   refactor remove methods and tests, how is it used, what is needed?
 
