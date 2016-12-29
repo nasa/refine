@@ -66,6 +66,8 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   {
     ego context;
     REIS( EGADS_SUCCESS, EG_open(&context), "EG open");
+    /* Success returns the old output level. (0-silent to 3-debug) */
+    RAS( EG_setOutLevel(context, 0) >= 0, "make silent");
     ref_geom->context = (void *)context;
   }
 #endif
