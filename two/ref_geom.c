@@ -828,14 +828,6 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 
   context = (ego)(ref_geom->context);
   REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
-  REIS( EGADS_SUCCESS, EG_getBoundingBox(model, box), "EG bounding box");
-  size = sqrt((box[0]-box[3])*(box[0]-box[3]) +
-	      (box[1]-box[4])*(box[1]-box[4]) +
-	      (box[2]-box[5])*(box[2]-box[5]));
-
-  params[0] =  0.25*size; /*spacing*/
-  params[1] =  0.001*size;
-  params[2] = 15.0;
 
   REIS( EGADS_SUCCESS,
 	EG_getTopology(model, &geom, &oclass, &mtype, NULL,
@@ -843,13 +835,10 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   REIS( 1, nbody, "expected 1 body" );
   solid = bodies[0];
   REIS( EGADS_SUCCESS,
-	EG_getTopology(bodies[0], &geom, &oclass, &mtype,
+	EG_getTopology(solid, &geom, &oclass, &mtype,
 		       NULL, &j, &dum, &senses), "EG topo body type");
   REIS( SOLIDBODY, mtype, "expected SOLIDBODY" );
   
-  REIS( EGADS_SUCCESS,
-	EG_makeTessBody(solid, params, &tess), "EG tess");
-
   REIS( EGADS_SUCCESS,
 	EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges), "EG edge typo");
   ref_geom->edges = (void *)edges;
@@ -857,6 +846,16 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
 	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG face typo");
   ref_geom->faces = (void *)faces;
 
+  REIS( EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
+  size = sqrt((box[0]-box[3])*(box[0]-box[3]) +
+	      (box[1]-box[4])*(box[1]-box[4]) +
+	      (box[2]-box[5])*(box[2]-box[5]));
+
+  params[0] =  0.25*size; /*spacing*/
+  params[1] =  0.001*size;
+  params[2] = 15.0;
+  REIS( EGADS_SUCCESS,
+	EG_makeTessBody(solid, params, &tess), "EG tess");
   REIS( EGADS_SUCCESS,
 	EG_statusTessBody(tess, &geom, &tess_status, &nvert), "EG tess");
   REIS( 1, tess_status, "tess not closed" );
