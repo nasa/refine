@@ -60,20 +60,31 @@ int main( int argc, char *argv[] )
   
   echo_argv( argc, argv );
 
-  while ((opt = getopt(argc, argv, "i:m:g:")) != -1)
+  while ((opt = getopt(argc, argv, "i:m:g:p:")) != -1)
     {
-      switch (opt) 
+      switch (opt)
 	{
 	case 'i':
 	  RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
 	  break;
+	case 'g':
+	  RSS( REF_IMPLEMENT, "load geom" );
+	  break;
+	case 'p':
+	  RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
+	  break;
+	case 'm':
+	  RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part metric" );
+	  break;
 	case '?':
+	default:
 	  printf("parse error -%c\n",optopt);
 	  printf("usage: \n %s\n",argv[0]);
 	  printf("       [-i input_grid.ext]\n");
+	  printf("./ref_geom_test ega.egads \n");
+	  printf("./ref_geom_test ega.egads ega.ugrid\n");
+	  printf("./ref_driver -i ega.ugrid -g ega.egads -p ref_geom_test.gas -m ega.metric\n");
 	  return 1;
-	default:
-	  abort();
 	}
     }
   
