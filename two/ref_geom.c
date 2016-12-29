@@ -762,7 +762,7 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   
   fclose( file );
   
-  /* check faces when paranoid, but -z should not mess with them */
+  /* check faces when paranoid, but tetgen -z should not mess with them */
 
   file = fopen(ele_name,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",ele_name);
