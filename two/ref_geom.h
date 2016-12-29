@@ -25,6 +25,7 @@ BEGIN_C_DECLORATION
     REF_DBL *param;
     REF_ADJ ref_adj;
     void *context;
+    void *solid;
     void *faces;
     void *edges;
   };

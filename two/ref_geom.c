@@ -71,6 +71,7 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
     ref_geom->context = (void *)context;
   }
 #endif
+  ref_geom->solid = NULL;
   ref_geom->edges = NULL;
   ref_geom->faces = NULL;
 
@@ -86,6 +87,7 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
     EG_free((ego *)(ref_geom->faces));
   if ( NULL != ref_geom->edges)
     EG_free((ego *)(ref_geom->edges));
+  /* solid is not freeable */
   if ( NULL != ref_geom->context)
     REIS( EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
 #endif
@@ -124,6 +126,7 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
        "deep copy ref_adj for ref_geom" );
   
   ref_geom->context = NULL;
+  ref_geom->solid = NULL;
   ref_geom->edges = NULL;
   ref_geom->faces = NULL;
 
