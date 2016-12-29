@@ -7,12 +7,23 @@ set -x
 module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
 parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2013-2013.4.183_64"
 zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2013-2013.4.183_64"
+egads_path="/ump/fldmd/home/mpark/local/pkgs/ESP110/EngSketchPad"
 
 mkdir -p strict
 ( cd strict && \
     ../configure \
     --prefix=`pwd` \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    FC=gfortran \
+    ) \
+    || exit
+
+mkdir -p egads
+( cd egads && \
+    ../configure \
+    --prefix=`pwd` \
+    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    --with-EGADS=${egads_path}
     FC=gfortran \
     ) \
     || exit
