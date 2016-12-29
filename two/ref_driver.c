@@ -93,8 +93,9 @@ int main( int argc, char *argv[] )
   RSS(ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
+  RSS( ref_grid_inspect( ref_grid ), "inspect");
 
-  passes = 20;
+  passes = 2;
   for (pass = 0; pass<passes; pass++ )
     {
       printf(" pass %d of %d\n",pass,passes);
@@ -103,6 +104,7 @@ int main( int argc, char *argv[] )
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
+      RSS( ref_grid_inspect( ref_grid ), "inspect");
       RSS(ref_migrate_to_balance(ref_grid),"balance");
       ref_mpi_stopwatch_stop("balance");
     }
