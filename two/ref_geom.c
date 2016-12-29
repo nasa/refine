@@ -155,6 +155,7 @@ REF_STATUS ref_geom_save( REF_GRID ref_grid, char *filename )
 	      ref_geom_param(ref_geom,1,geom));
     }
   fclose(file);
+  RSS( ref_grid_inspect( ref_grid ), "inspect");
   return REF_SUCCESS;
 }
 
