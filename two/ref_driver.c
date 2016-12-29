@@ -57,6 +57,7 @@ int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid = NULL;
   int opt;
+  int passes, pass;
   
   echo_argv( argc, argv );
 
@@ -68,7 +69,7 @@ int main( int argc, char *argv[] )
 	  RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
 	  break;
 	case 'g':
-	  RSS( REF_IMPLEMENT, "load geom" );
+	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
 	  break;
 	case 'p':
 	  RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
@@ -88,6 +89,34 @@ int main( int argc, char *argv[] )
 	}
     }
   
+  ref_mpi_stopwatch_stop("read grid");
+  RSS(ref_validation_cell_volume(ref_grid),"vol");
+  RSS( ref_histogram_quality( ref_grid ), "gram");
+  RSS( ref_histogram_ratio( ref_grid ), "gram");
+
+  passes = 20;
+  for (pass = 0; pass<passes; pass++ )
+    {
+      printf(" pass %d of %d\n",pass,passes);
+      RSS( ref_adapt_pass( ref_grid ), "pass");
+      ref_mpi_stopwatch_stop("pass");
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
+      RSS( ref_histogram_quality( ref_grid ), "gram");
+      RSS( ref_histogram_ratio( ref_grid ), "gram");
+      RSS(ref_migrate_to_balance(ref_grid),"balance");
+      ref_mpi_stopwatch_stop("balance");
+    }
+
+  RSS( ref_gather_b8_ugrid( ref_grid, "ref_driver.b8.ugrid" ),
+       "gather");
+  ref_mpi_stopwatch_stop("gather");
+  RSS(ref_export_tec_surf( ref_grid, "ref_driver_surf.tec" ),"surf tec" );
+  ref_mpi_stopwatch_stop("surf tec");
+  RSS(ref_geom_tec( ref_grid, "ref_driver_geom.tec" ),"geom tec" );
+  ref_mpi_stopwatch_stop("geom tec");
+  RSS(ref_geom_save( ref_grid, "ref_driver.gas" ),"geom tec" );
+  ref_mpi_stopwatch_stop("geom association");
+ 
   if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");
 
   return 0;
