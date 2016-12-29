@@ -43,20 +43,55 @@
 
 #include "ref_cavity.h"
 
-void usage( char *name )
+static int print_usage( char *name )
 {
-  printf("usage: \n %s\n",name);
-  printf("       [-i input_grid.ext]\n");
-  printf("       [-o output_grid.ext]\n");
+  if ( ref_mpi_master )
+    {
+      printf("usage: \n %s\n",name);
+      printf("       [-ig input_grid.ext]\n");
+      printf("       [-og output_grid.ext]\n");
+    }
+  RSS( ref_mpi_stop(  ), "stop" );
+  return 1;
 }
 
 int main( int argc, char *argv[] )
 {
+  REF_INT pos;
+  REF_GRID ref_grid = NULL;
+  REF_BOOL parse_error;
 
   RSS( ref_mpi_start( argc, argv ), "start" );
-
-  usage( argv[0] );
   
+  if ( ref_mpi_master )
+    {
+      printf("\n");
+      for ( pos = 0 ; pos < argc ; pos++ ) 
+	printf(" %s",argv[pos]);
+      printf("\n\n");
+    }
+
+  parse_error = REF_TRUE;
+  pos = 1;
+  while( pos < argc ) {
+    if( strcmp(argv[pos],"-ic") == 0 ) {
+      if ( ref_mpi_master )
+	printf("%d: -ic\n",pos);
+      if ( pos+2 > argc )
+	return(print_usage(argv[0]));
+      pos++;
+      if ( ref_mpi_master )
+	printf("%d: %s\n",pos,argv[pos]);
+      if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");
+      RSS( ref_import_by_extension( &ref_grid, argv[pos] ), "import" );
+      parse_error = REF_FALSE;
+    }
+    if ( parse_error ) return(print_usage(argv[0]));
+   pos++; 
+  }
+  
+  if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");
+
   RSS( ref_mpi_stop(  ), "stop" );
 
   return 0;
