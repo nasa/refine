@@ -38,7 +38,12 @@ int main( int argc, char *argv[] )
     { /* egads to grid */
       REF_GRID ref_grid;
       REF_INT node;
-      RSS( ref_geom_grid_from_egads( &ref_grid, argv[1] ), "from egads" );
+      RSS(ref_grid_create(&ref_grid),"create");
+
+      RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[1] ), "ld egads" );
+      RSS(ref_geom_egads_tess(ref_grid ), "tess egads" );
+      RSS(ref_geom_tetgen_volume(ref_grid ), "tetgen surface to volume " );
+
       RSS( ref_export_by_extension( ref_grid, argv[2] ), "argv export" );
       RSS( ref_geom_tec( ref_grid, "ref_geom_test.tec" ), "geom export" );
       printf("verify\n");

@@ -60,7 +60,8 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   ref_geom_blank(ref_geom) = 0;
   
   RSS( ref_adj_create( &( ref_geom->ref_adj ) ), "create ref_adj for ref_geom" );
-  
+  ref_geom->nedge = REF_EMPTY;
+  ref_geom->nface = REF_EMPTY;
   ref_geom->context = NULL;
 #ifdef HAVE_EGADS
   {
@@ -793,42 +794,16 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
   
-REF_STATUS ref_geom_grid_from_egads( REF_GRID *ref_grid_ptr, char *filename )
-{
-  REF_GRID ref_grid;
-  RSS( ref_geom_brep_from_egads( ref_grid_ptr, filename ), "brep" );
-  ref_grid = (*ref_grid_ptr);
-  RSS( ref_geom_tetgen_volume( ref_grid ), "tetgen volume" );
-  return REF_SUCCESS;
-}
-  
-REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, char *filename )
 {
 #ifdef HAVE_EGADS
-  REF_GRID ref_grid;
-  REF_NODE ref_node;
-  REF_GEOM ref_geom;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT tri, new_cell;
-  REF_DBL param[2];
   ego context;
   ego model = NULL;
-  double params[3], box[6], size;
-  ego geom, *bodies, *dum;
-  int oclass, mtype, nbody, *senses, j;
-  ego solid, tess, *faces, *edges;
-  int tess_status, nvert;
-  int face, nface, edge, nedge, plen, tlen;
-  const double *points, *uv, *t;
-  const int    *ptype, *pindex, *tris, *tric;
-  int node, new_node, pty, pin;
-  double verts[3];
-  
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
-  ref_grid = (*ref_grid_ptr);
-  ref_node = ref_grid_node(ref_grid);
-  ref_geom = ref_grid_geom(ref_grid);
-
+  ego geom, *bodies, *children;
+  int oclass, mtype, nbody, *senses, nchild;
+  ego solid, *faces, *edges;
+  int nface, nedge;
+ 
   context = (ego)(ref_geom->context);
   REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
 
@@ -839,15 +814,47 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   solid = bodies[0];
   REIS( EGADS_SUCCESS,
 	EG_getTopology(solid, &geom, &oclass, &mtype,
-		       NULL, &j, &dum, &senses), "EG topo body type");
+		       NULL, &nchild, &children, &senses), "EG topo body type");
   REIS( SOLIDBODY, mtype, "expected SOLIDBODY" );
+  ref_geom->solid = (void *)solid;
   
   REIS( EGADS_SUCCESS,
 	EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges), "EG edge typo");
+  ref_geom->nedge = nedge;
   ref_geom->edges = (void *)edges;
   REIS( EGADS_SUCCESS,
 	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG face typo");
+  ref_geom->nface = nface;
   ref_geom->faces = (void *)faces;
+  
+#else
+  printf("returning empty grid from %s, No EGADS linked for %s\n",
+	 __func__,filename);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+#endif
+  
+  return REF_SUCCESS;
+}
+  
+REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
+{
+#ifdef HAVE_EGADS
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tri, new_cell;
+  REF_DBL param[2];
+  double params[3], box[6], size;
+  ego geom;
+  ego solid, tess;
+  int tess_status, nvert;
+  int face, edge, plen, tlen;
+  const double *points, *uv, *t;
+  const int    *ptype, *pindex, *tris, *tric;
+  int node, new_node, pty, pin;
+  double verts[3];
+  
+  solid = (ego)(ref_geom->solid);
 
   REIS( EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
   size = sqrt((box[0]-box[3])*(box[0]-box[3]) +
@@ -875,7 +882,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
       RSS( ref_geom_add( ref_geom, node, REF_GEOM_NODE, node, NULL), "node");
   }
 
-  for (edge = 0; edge < nedge; edge++) {
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
     REIS( EGADS_SUCCESS,
 	  EG_getTessEdge(tess, edge+1, &plen, &points, &t), "tess query edge" );
     for ( node = 0; node<plen; node++ ) {
@@ -899,7 +906,7 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
     }
   }
   
-  for (face = 0; face < nface; face++) {
+  for (face = 0; face < (ref_geom->nface); face++) {
     REIS( EGADS_SUCCESS,
 	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
 			 &tlen, &tris, &tric), "tess query face" );
@@ -928,9 +935,8 @@ REF_STATUS ref_geom_brep_from_egads( REF_GRID *ref_grid_ptr, char *filename )
   }
   
 #else
-  printf("returning empty grid from %s, No EGADS linked for %s\n",
-	 __func__,filename);
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");  
+  printf("returning empty grid from %s, No EGADS linked.\n",__func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 #endif
   
   return REF_SUCCESS;
