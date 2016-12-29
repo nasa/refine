@@ -84,6 +84,7 @@ int main( int argc, char *argv[] )
 	  printf("       [-i input_grid.ext]\n");
 	  printf("./ref_geom_test ega.egads \n");
 	  printf("./ref_geom_test ega.egads ega.ugrid\n");
+	  printf("./ref_acceptance ega.ugrid ega.metric 0.1\n");
 	  printf("./ref_driver -i ega.ugrid -g ega.egads -p ref_geom_test.gas -m ega.metric\n");
 	  return 1;
 	}
