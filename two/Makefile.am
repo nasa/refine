@@ -14,7 +14,6 @@ libref2_a_SOURCES = \
 	ref_collapse.c ref_collapse.h \
 	ref_dict.c ref_dict.h \
 	ref_defs.h \
-	ref_driver.c \
 	ref_edge.c ref_edge.h \
 	ref_endian.h \
 	ref_export.c ref_export.h \
