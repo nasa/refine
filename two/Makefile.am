@@ -14,6 +14,7 @@ libref2_a_SOURCES = \
 	ref_collapse.c ref_collapse.h \
 	ref_dict.c ref_dict.h \
 	ref_defs.h \
+	ref_driver.c \
 	ref_edge.c ref_edge.h \
 	ref_endian.h \
 	ref_export.c ref_export.h \
@@ -58,6 +59,10 @@ libref2_a_CFLAGS += -I@MPIINC@
 endif # BUILD_MPI
 
 bin_PROGRAMS =
+
+bin_PROGRAMS += ref_driver
+ref_driver_SOURCES = ref_driver.c
+ref_driver_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_cornerrefine
 ref_cornerrefine_SOURCES = ref_cornerrefine.c
