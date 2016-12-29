@@ -63,7 +63,7 @@ int main( int argc, char *argv[] )
       printf("verify\n");
       RSS( ref_geom_verify_param( ref_grid ), "constrained params" );
       RSS( ref_grid_free(ref_grid),"free");
-      REIS(0, remove( "ref_geom_test.gas" ), "test clean up");
+      /* REIS(0, remove( "ref_geom_test.gas" ), "test clean up"); */
     }
 
   REIS(REF_NULL,ref_geom_free(NULL),"dont free NULL");
