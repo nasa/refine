@@ -211,7 +211,7 @@ REF_STATUS ref_clump_tri_around( REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid )
+REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -240,7 +240,7 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid )
 
   ntarget = 0;
   for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( ratio[node] < ref_adapt_collapse_ratio )
+    if ( ratio[node] < ratio_tol*ref_adapt_collapse_ratio )
       {
         sprintf(filename,"clump%d.t",ntarget);
         RSS(ref_clump_around(ref_grid, node, filename ), "dump");

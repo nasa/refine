@@ -16,7 +16,7 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
 			     char *filename );
 REF_STATUS ref_clump_tri_around( REF_GRID ref_grid, REF_INT node,
 				 char *filename );
-REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid );
+REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol );
 REF_STATUS ref_clump_stuck_edges_twod( REF_GRID ref_grid );
 
 END_C_DECLORATION

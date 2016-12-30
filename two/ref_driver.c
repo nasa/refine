@@ -120,7 +120,7 @@ int main( int argc, char *argv[] )
   ref_mpi_stopwatch_stop("geom tec");
   RSS(ref_geom_save( ref_grid, "ref_driver.gas" ),"geom tec" );
   ref_mpi_stopwatch_stop("geom association");
-  RSS(ref_clump_stuck_edges( ref_grid ), "clump" );
+  RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
   ref_mpi_stopwatch_stop("clump stuck edges");
  
   if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");
