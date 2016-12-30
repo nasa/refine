@@ -408,6 +408,22 @@ REF_STATUS ref_geom_remove_all( REF_GEOM ref_geom, REF_INT node)
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_is_a( REF_GEOM ref_geom, REF_INT node,
+			  REF_INT type, REF_BOOL *it_is )
+{
+  REF_INT item, geom;
+  *it_is = REF_FALSE;
+  each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom), node, item, geom)
+    {
+      if ( type == ref_geom_type(ref_geom,geom) )
+	{
+	  *it_is = REF_TRUE;
+	  return REF_SUCCESS;
+	}   
+    }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_find( REF_GEOM ref_geom, REF_INT node,
 			  REF_INT type, REF_INT id,
 			  REF_INT *found )
