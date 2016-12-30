@@ -38,6 +38,7 @@ int main( int argc, char *argv[] )
     { /* egads to grid */
       REF_GRID ref_grid;
       REF_INT node;
+      REF_INT nedge;
       RSS(ref_grid_create(&ref_grid),"create");
 
       RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[1] ), "ld egads" );
@@ -46,20 +47,23 @@ int main( int argc, char *argv[] )
 
       RSS( ref_export_by_extension( ref_grid, argv[2] ), "argv export" );
       RSS( ref_geom_tec( ref_grid, "ref_geom_test.tec" ), "geom export" );
-      printf("verify\n");
       RSS( ref_geom_verify_param( ref_grid ), "original params" );
       printf("constrain\n");
       each_ref_node_valid_node( ref_grid_node(ref_grid), node )
 	RSS( ref_geom_constrain( ref_grid, node ), "original params" );
       printf("verify\n");
       RSS( ref_geom_verify_param( ref_grid ), "constrained params" );
-      printf("save\n");
+      nedge = ref_cell_n(ref_grid_edg(ref_grid));
+      printf("save %d edge\n",nedge);
       RSS( ref_geom_save( ref_grid, "ref_geom_test.gas" ), "save" );
       printf("clear\n");
       each_ref_node_valid_node( ref_grid_node(ref_grid), node )
 	RSS( ref_geom_remove_all( ref_grid_geom(ref_grid), node ), "erasure" );
+      RSS( ref_cell_free( ref_grid_edg(ref_grid) ), "free edge");
+      RSS( ref_cell_create( &ref_grid_edg(ref_grid), 2, REF_TRUE ), "new edg" );
       printf("load\n");
       RSS( ref_geom_load( ref_grid, "ref_geom_test.gas" ), "load" );
+      REIS( nedge, ref_cell_n(ref_grid_edg(ref_grid)), "nedge");
       printf("verify\n");
       RSS( ref_geom_verify_param( ref_grid ), "loaded params" );
       printf("constrain\n");
