@@ -545,7 +545,7 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
       if ( it_is ) continue;
       
       /* can't handle boundaries yet */
-      allowed = ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) ||
+      allowed = ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
                 ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
       if ( !allowed ) continue;
 
