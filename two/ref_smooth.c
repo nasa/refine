@@ -535,10 +535,15 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, i;
-  REF_BOOL allowed;
+  REF_BOOL allowed, it_is;
 
   each_ref_node_valid_node( ref_node, node )
     {
+      /* don't move geom nodes */
+      RSS( ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_NODE, &it_is),
+	   "node check");
+      if ( it_is ) continue;
+      
       /* can't handle boundaries yet */
       allowed = ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) ||
                 ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
