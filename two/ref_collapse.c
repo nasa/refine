@@ -103,7 +103,7 @@ REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid,
   REF_INT order[MAX_NODE_LIST];
   REF_DBL ratio_to_collapse[MAX_NODE_LIST];
   REF_INT node0;
-  REF_BOOL allowed;
+  REF_BOOL allowed, have_geometry_support;
 
   *actual_node0 = REF_EMPTY;
 
@@ -125,8 +125,10 @@ REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid,
       RSS(ref_collapse_edge_geometry(ref_grid,node0,node1,&allowed),"col geom");
       if ( !allowed ) continue;
 
+      RSS(ref_geom_supported(ref_grid_geom(ref_grid),node0,
+			     &have_geometry_support),"geom");
       RSS(ref_collapse_edge_same_normal(ref_grid,node0,node1,&allowed),"norm");
-      if ( !allowed ) continue;
+      if ( !(have_geometry_support || allowed) ) continue;
 
       RSS(ref_collapse_edge_quality(ref_grid,node0,node1,&allowed),"qual");
       if ( !allowed ) continue;
