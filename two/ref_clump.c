@@ -46,8 +46,10 @@ static REF_STATUS ref_clump_zone_around( FILE *f,
 	- ref_node_xyz(ref_node,2,node);
       RSS( ref_matrix_vect_mult( jacob, xyz_phys, xyz_comp ), "ax");
       fprintf(f, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
-	      xyz_comp[0], xyz_comp[1], xyz_comp[2],
-	      xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+	      ref_node_xyz(ref_node,0,local),
+	      ref_node_xyz(ref_node,1,local),
+	      ref_node_xyz(ref_node,2,local),	      
+	      xyz_comp[0], xyz_comp[1], xyz_comp[2]);
     }
   
   for ( item = 0; item < ref_dict_n(ref_dict); item++ )
@@ -108,7 +110,7 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
   RNS(f, "unable to open file" );
 
   fprintf(f, "title=\"tecplot refine clump file\"\n");
-  fprintf(f, "variables = \"x\" \"y\" \"z\" \"xp\" \"yp\" \"zp\"\n");
+  fprintf(f, "variables = \"x\" \"y\" \"z\" \"xm\" \"ym\" \"zm\"\n");
 
   ref_cell = ref_grid_tri(ref_grid);
   ref_dict = tri_dict;
