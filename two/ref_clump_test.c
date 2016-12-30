@@ -24,23 +24,28 @@
 #include   "ref_smooth.h"
 #include    "ref_twod.h"
 #include   "ref_gather.h"
+#include   "ref_metric.h"
 
 int main( int argc, char *argv[] )
 {
 
-  { /* ball */
-    REF_GRID ref_grid;
-    REF_INT node;
+  if ( 2 == argc )
+    { /* ball */
+      REF_GRID ref_grid;
+      REF_INT node;
 
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+      RSS( ref_fixture_twod_brick_grid( &ref_grid ), "2d brick" );
+      node = 10;
+      RSS(ref_clump_tri_around(ref_grid, node, argv[1]),"clump");
+      RSS( ref_grid_free(ref_grid),"free");
+      
+      RSS( ref_fixture_tet_brick_grid( &ref_grid ), "tet brick" );
+      RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit metric" );
+      node = 10;
+      RSS(ref_clump_around(ref_grid, node, argv[1]),"clump");
+      RSS( ref_grid_free(ref_grid),"free");
 
-    node = 10;
-
-    if ( 2 == argc )
-      RSS(ref_clump_tri_around(ref_grid,node, argv[1]),"clump");
-
-    RSS( ref_grid_free(ref_grid),"free");
-  }
+    }
 
   return 0;
 }
