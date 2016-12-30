@@ -559,8 +559,9 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   RSS( ref_node_ratio(ref_node,nodes[0],node,&r0), "get r0" );
   RSS( ref_node_ratio(ref_node,nodes[1],node,&r1), "get r1" );
 
+  /*
   printf("edge %d t %f %f %f r %f %f\n",id,t0,t_orig,t1,r0,r1);
-  
+  */
   return REF_SUCCESS;
 }
 
