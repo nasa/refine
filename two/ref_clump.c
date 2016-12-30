@@ -11,6 +11,61 @@
 #include "ref_adapt.h"
 #include "ref_matrix.h"
 
+static REF_STATUS ref_clump_zone_around( FILE *f,
+					 REF_CELL ref_cell,
+					 REF_DICT ref_dict,
+					 char *zonetype,
+					 REF_DICT node_dict,
+					 REF_NODE ref_node,
+					 REF_INT node )
+{
+  REF_INT item, cell, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL xyz_comp[3], xyz_phys[3];
+  REF_INT local;
+  REF_DBL jacob[9];
+
+  if ( ref_dict_n(ref_dict) <= 0 ) return REF_SUCCESS;
+
+  RSS( ref_matrix_jacob_m( ref_node_metric_ptr(ref_node,node),
+                           jacob ), "jac");
+
+  fprintf(f,
+	  "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
+	  "point", zonetype );
+
+  for ( item = 0; item < ref_dict_n(node_dict); item++ )
+    {
+      local = ref_dict_key(node_dict,item);
+      xyz_phys[0] = ref_node_xyz(ref_node,0,local)
+	- ref_node_xyz(ref_node,0,node);
+      xyz_phys[1] = ref_node_xyz(ref_node,1,local)
+	- ref_node_xyz(ref_node,1,node);
+      xyz_phys[2] = ref_node_xyz(ref_node,2,local)
+	- ref_node_xyz(ref_node,2,node);
+      RSS( ref_matrix_vect_mult( jacob, xyz_phys, xyz_comp ), "ax");
+      fprintf(f, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+	      xyz_comp[0], xyz_comp[1], xyz_comp[2],
+	      xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+    }
+  
+  for ( item = 0; item < ref_dict_n(ref_dict); item++ )
+    {
+      cell = ref_dict_key(ref_dict,item);
+      RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+      each_ref_cell_cell_node(ref_cell,cell_node)
+	{
+	  RSS( ref_dict_location( node_dict,
+				  nodes[cell_node], &local), "ret");
+	  fprintf(f," %d",local + 1);
+	}
+      fprintf(f,"\n");
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
 			     char *filename )
 {
@@ -19,9 +74,6 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
   REF_CELL ref_cell;
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT local;
-  REF_DBL xyz_comp[3], xyz_phys[3];
-  REF_DBL jacob[9];
   char *zonetype;
 
   FILE *f;
@@ -49,8 +101,6 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
 	RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
     }
 
-  RSS( ref_matrix_jacob_m( ref_node_metric_ptr(ref_grid_node(ref_grid),node),
-                           jacob ), "jac");
 
   f = fopen(filename,"w");
   if (NULL == (void *)f)
@@ -63,82 +113,16 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
   ref_cell = ref_grid_tri(ref_grid);
   ref_dict = tri_dict;
   zonetype="fetriangle";
-
-  if ( ref_dict_n(ref_dict) > 0 )
-    {
-      fprintf(f,
-	      "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-	      zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
-	      "point", zonetype );
-
-      for ( item = 0; item < ref_dict_n(node_dict); item++ )
-	{
-	  local = ref_dict_key(node_dict,item);
-	  xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid),0,local)
-	    - ref_node_xyz(ref_grid_node(ref_grid),0,node);
-	  xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid),1,local)
-	    - ref_node_xyz(ref_grid_node(ref_grid),1,node);
-	  xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid),2,local)
-	    - ref_node_xyz(ref_grid_node(ref_grid),2,node);
-	  RSS( ref_matrix_vect_mult( jacob, xyz_phys, xyz_comp ), "ax");
-	  fprintf(f, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
-		  xyz_comp[0], xyz_comp[1], xyz_comp[2],
-		  xyz_phys[0], xyz_phys[1], xyz_phys[2]);
-	}
-
-      for ( item = 0; item < ref_dict_n(ref_dict); item++ )
-	{
-	  cell = ref_dict_key(ref_dict,item);
-	  RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
-	  each_ref_cell_cell_node(ref_cell,cell_node)
-	    {
-	      RSS( ref_dict_location( node_dict,
-				      nodes[cell_node], &local), "ret");
-	      fprintf(f," %d",local + 1);
-	    }
-	  fprintf(f,"\n");
-	}
-    }
-      
+  RSS( ref_clump_zone_around( f, ref_cell, ref_dict, zonetype,
+			      node_dict,
+			      ref_grid_node(ref_grid), node ), "zone" );
+  
   ref_cell = ref_grid_tet(ref_grid);
   ref_dict = tet_dict;
   zonetype = "fetetrahedron";
-
-  if ( ref_dict_n(ref_dict) > 0 )
-    {
-      fprintf(f,
-	      "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-	      zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
-	      "point", zonetype );
-
-      for ( item = 0; item < ref_dict_n(node_dict); item++ )
-	{
-	  local = ref_dict_key(node_dict,item);
-	  xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid),0,local)
-	    - ref_node_xyz(ref_grid_node(ref_grid),0,node);
-	  xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid),1,local)
-	    - ref_node_xyz(ref_grid_node(ref_grid),1,node);
-	  xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid),2,local)
-	    - ref_node_xyz(ref_grid_node(ref_grid),2,node);
-	  RSS( ref_matrix_vect_mult( jacob, xyz_phys, xyz_comp ), "ax");
-	  fprintf(f, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
-		  xyz_comp[0], xyz_comp[1], xyz_comp[2],
-		  xyz_phys[0], xyz_phys[1], xyz_phys[2]);
-	}
-
-      for ( item = 0; item < ref_dict_n(ref_dict); item++ )
-	{
-	  cell = ref_dict_key(ref_dict,item);
-	  RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
-	  each_ref_cell_cell_node(ref_cell,cell_node)
-	    {
-	      RSS( ref_dict_location( node_dict,
-				      nodes[cell_node], &local), "ret");
-	      fprintf(f," %d",local + 1);
-	    }
-	  fprintf(f,"\n");
-	}
-    }
+       RSS( ref_clump_zone_around( f, ref_cell, ref_dict, zonetype,
+			      node_dict,
+			      ref_grid_node(ref_grid), node ), "zone" );
 
   fclose(f);
 
