@@ -3,6 +3,7 @@
   run test cases from UGAWG
 
   smooth face
+  eliminate short edges
 
   parallel restart file
   load bal
