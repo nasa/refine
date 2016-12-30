@@ -385,5 +385,35 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
 
+  { /* determine unique id */
+    REF_GEOM ref_geom;
+    REF_INT node;
+    REF_INT type, id;
+    REF_DBL params[2];
+
+    RSS(ref_geom_create(&ref_geom),"create");
+
+    type = REF_GEOM_EDGE;
+    node = 0;
+    
+    REIS( REF_NOT_FOUND, ref_geom_unique_id(ref_geom,node,type,&id),
+	  "found nothing" );
+
+    id = 5; params[0] = 15.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,params), "node edge 5" );
+
+    id = REF_EMPTY;
+    RSS( ref_geom_unique_id(ref_geom,node,type,&id),
+	 "found it" );
+    REIS( 5, id, "expected 5" );
+    
+    id = 7; params[0] = 17.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,params), "node edge 7" );
+    REIS( REF_INVALID, ref_geom_unique_id(ref_geom,node,type,&id),
+	  "two found" );
+
+    RSS(ref_geom_free(ref_geom),"free");
+  }
+  
   return 0;
 }

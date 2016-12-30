@@ -91,6 +91,8 @@ REF_STATUS ref_geom_remove_all( REF_GEOM ref_geom, REF_INT node );
 
 REF_STATUS ref_geom_is_a( REF_GEOM ref_geom, REF_INT node,
 			  REF_INT type, REF_BOOL *it_is );
+REF_STATUS ref_geom_unique_id( REF_GEOM ref_geom, REF_INT node,
+			       REF_INT type, REF_BOOL *id );
 
 REF_STATUS ref_geom_find( REF_GEOM ref_geom, REF_INT node,
 			  REF_INT type, REF_INT id,

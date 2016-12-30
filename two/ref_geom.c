@@ -427,6 +427,25 @@ REF_STATUS ref_geom_is_a( REF_GEOM ref_geom, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_unique_id( REF_GEOM ref_geom, REF_INT node,
+			       REF_INT type, REF_INT *id)
+{
+  REF_INT item, geom;
+  REF_BOOL found_one;
+  found_one = REF_FALSE;
+  each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom), node, item, geom)
+    {
+      if ( type == ref_geom_type(ref_geom,geom) )
+	{
+	  if ( found_one ) return REF_INVALID; /* second one makes invalid */
+	  found_one = REF_TRUE;
+	  *id = ref_geom_id(ref_geom,geom);
+	}   
+    }
+  if ( found_one ) return REF_SUCCESS;
+  return REF_NOT_FOUND;
+}
+
 REF_STATUS ref_geom_find( REF_GEOM ref_geom, REF_INT node,
 			  REF_INT type, REF_INT id,
 			  REF_INT *found )
