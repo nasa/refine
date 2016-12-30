@@ -334,6 +334,30 @@ int main( int argc, char *argv[] )
 
     RSS(ref_grid_free(ref_grid),"free");
   }
+  
+  { /* has_support */
+    REF_GEOM ref_geom;
+    REF_INT node, type, id;
+    REF_DBL *params;
+    REF_BOOL has_support;
+
+    RSS(ref_geom_create(&ref_geom),"create");
+
+    node = 2;
+    type = REF_GEOM_NODE;
+    id = 5;
+    params = NULL;
+
+    RSS( ref_geom_supported( ref_geom, node, &has_support ), "empty" );
+    RAS( REF_FALSE == has_support, "phantom support" );
+
+    REIS( 0, ref_geom_add(ref_geom,node,type,id,params), "add node" );
+
+    RSS( ref_geom_supported( ref_geom, node, &has_support ), "empty" );
+    RAS( REF_TRUE == has_support, "missing support" );
+
+    RSS(ref_geom_free(ref_geom),"free");
+  }
 
   return 0;
 }

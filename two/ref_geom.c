@@ -287,6 +287,13 @@ REF_STATUS ref_geom_tattle( REF_GEOM ref_geom, REF_INT node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_supported( REF_GEOM ref_geom, REF_INT node,
+			       REF_BOOL *has_support )
+{
+  *has_support = !ref_adj_empty( ref_geom_adj(ref_geom), node );
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_add( REF_GEOM ref_geom, REF_INT node,
 			 REF_INT type, REF_INT id,
 			 REF_DBL *param )
