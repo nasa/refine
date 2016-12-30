@@ -531,25 +531,41 @@ REF_STATUS ref_smooth_local_tet_about( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
+				 REF_INT node )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_BOOL geom_node, geom_edge;
+
+  RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
+  RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
+  RAS( !geom_node, "geom node not allowed" );
+  RAS( geom_edge, "geom edge required" );
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, i;
-  REF_BOOL allowed, geom_node;
+  REF_BOOL allowed, geom_node, geom_edge, interior;
 
   each_ref_node_valid_node( ref_node, node )
     {
       /* don't move geom nodes */
       RSS( ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_NODE,
-			 &geom_node),
-	   "node check");
+			 &geom_node), "node check");
       if ( geom_node ) continue;
       
       /* can't handle boundaries yet */
-      allowed = ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
-                ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
-      if ( !allowed ) continue;
-
+      RSS( ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_EDGE,
+			 &geom_edge), "edge check");
+      interior =
+	ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
+	ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
+      if ( !(interior || geom_edge) ) continue;
+      
       RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
       if ( !allowed )
 	{
@@ -557,11 +573,13 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 	  continue;
 	}
 
-      RSS( ref_smooth_tet_improve( ref_grid, node ), "ideal node for tet" );
+      if ( interior )
+	for ( i = 0 ; i < 3 ; i++ )
+	  RSS( ref_smooth_tet_improve( ref_grid, node ), "ideal node for tet" );
+      if ( geom_edge )
+      	RSS( ref_smooth_geom_edge( ref_grid, node ), "ideal node for edge" );
       
       ref_node_age(ref_node,node) = 0;
-      for ( i = 0 ; i < 3 ; i++ )
-	RSS( ref_smooth_tet_improve( ref_grid, node ), "improve" );
     }
 
   return REF_SUCCESS;
