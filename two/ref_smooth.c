@@ -534,13 +534,32 @@ REF_STATUS ref_smooth_local_tet_about( REF_GRID ref_grid,
 REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
 				 REF_INT node )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL edg = ref_grid_edg(ref_grid);
   REF_BOOL geom_node, geom_edge;
+  REF_INT id;
+  REF_INT nodes[2], nnode;
+  REF_DBL t_orig, t0, t1, r0, r1;
 
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RAS( !geom_node, "geom node not allowed" );
   RAS( geom_edge, "geom edge required" );
+
+  RSS( ref_geom_unique_id(ref_geom,node,REF_GEOM_EDGE,&id), "get id" );
+  RSS( ref_cell_node_list_around( edg, node, 2,
+				  &nnode, nodes ), "edge neighbors");
+  REIS( 2, nnode, "expected two nodes" );
+
+  RSS( ref_geom_tuv(ref_geom,nodes[0],REF_GEOM_EDGE, id, &t0), "get id0" );
+  RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_EDGE, id, &t_orig), "get idorig" );
+  RSS( ref_geom_tuv(ref_geom,nodes[1],REF_GEOM_EDGE, id, &t1), "get id1" );
+  
+  RSS( ref_node_ratio(ref_node,nodes[0],node,&r0), "get r0" );
+  RSS( ref_node_ratio(ref_node,nodes[1],node,&r1), "get r1" );
+
+  printf("edge %d t %f %f %f r %f %f\n",id,t0,t_orig,t1,r0,r1);
   
   return REF_SUCCESS;
 }
