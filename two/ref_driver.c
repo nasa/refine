@@ -97,7 +97,7 @@ int main( int argc, char *argv[] )
   RSS( ref_histogram_ratio( ref_grid ), "gram");
   RSS( ref_grid_inspect( ref_grid ), "inspect");
 
-  passes = 2;
+  passes = 5;
   for (pass = 0; pass<passes; pass++ )
     {
       printf(" pass %d of %d\n",pass,passes);
