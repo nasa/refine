@@ -2,8 +2,11 @@
 /*
   run test cases from UGAWG
 
+  smooth edge
   smooth face
   eliminate short edges
+
+  don't remove geom nodes
 
   parallel restart file
   load bal
