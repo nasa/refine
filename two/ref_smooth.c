@@ -541,7 +541,8 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   REF_INT id;
   REF_INT nodes[2], nnode;
   REF_DBL t_orig, t0, t1, r0, r1;
-
+  REF_DBL rdiff, rmax;
+  
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RAS( !geom_node, "geom node not allowed" );
@@ -552,16 +553,28 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
 				  &nnode, nodes ), "edge neighbors");
   REIS( 2, nnode, "expected two nodes" );
 
-  RSS( ref_geom_tuv(ref_geom,nodes[0],REF_GEOM_EDGE, id, &t0), "get id0" );
-  RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_EDGE, id, &t_orig), "get idorig" );
-  RSS( ref_geom_tuv(ref_geom,nodes[1],REF_GEOM_EDGE, id, &t1), "get id1" );
-  
   RSS( ref_node_ratio(ref_node,nodes[0],node,&r0), "get r0" );
   RSS( ref_node_ratio(ref_node,nodes[1],node,&r1), "get r1" );
 
-  /*
+  rdiff = ABS(r1-r0);
+  rmax = MAX(r1,r0);
+  if ( ref_math_divisible(rdiff,rmax) )
+    {
+      /* one percent imblance is good enough */
+      if ( rdiff / rmax < 0.01 ) return REF_SUCCESS;
+    }
+  else
+    {
+      printf("div zero %e r0 %e r1\n",r1,r0);
+      return REF_DIV_ZERO;
+    }
+
+  RSS( ref_geom_tuv(ref_geom,nodes[0],REF_GEOM_EDGE, id, &t0), "get id0" );
+  RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_EDGE, id, &t_orig), "get idorig" );
+  RSS( ref_geom_tuv(ref_geom,nodes[1],REF_GEOM_EDGE, id, &t1), "get id1" );
+
   printf("edge %d t %f %f %f r %f %f\n",id,t0,t_orig,t1,r0,r1);
-  */
+  
   return REF_SUCCESS;
 }
 
