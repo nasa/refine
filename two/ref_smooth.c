@@ -540,7 +540,9 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   REF_BOOL geom_node, geom_edge;
   REF_INT id;
   REF_INT nodes[2], nnode;
-  REF_DBL t_orig, t0, t1, r0, r1;
+  REF_DBL t_orig, t0, t1;
+  REF_DBL r0, r1;
+  REF_DBL q_orig;
   REF_DBL rdiff, rmax;
   
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
@@ -569,12 +571,13 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
       return REF_DIV_ZERO;
     }
 
-  RSS( ref_geom_tuv(ref_geom,nodes[0],REF_GEOM_EDGE, id, &t0), "get id0" );
-  RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_EDGE, id, &t_orig), "get idorig" );
-  RSS( ref_geom_tuv(ref_geom,nodes[1],REF_GEOM_EDGE, id, &t1), "get id1" );
+  RSS( ref_geom_tuv(ref_geom,nodes[0],REF_GEOM_EDGE, id, &t0), "get t0" );
+  RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_EDGE, id, &t_orig), "get t_orig" );
+  RSS( ref_geom_tuv(ref_geom,nodes[1],REF_GEOM_EDGE, id, &t1), "get t1" );
+  RSS( ref_smooth_tet_quality_around( ref_grid, node, &q_orig ), "q_orig");
+    printf("edge %d t %f %f %f r %f %f q %f\n",
+	   id,t0,t_orig,t1,r0,r1,q_orig);
 
-  printf("edge %d t %f %f %f r %f %f\n",id,t0,t_orig,t1,r0,r1);
-  
   return REF_SUCCESS;
 }
 
