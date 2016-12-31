@@ -543,7 +543,9 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   REF_DBL t_orig, t0, t1;
   REF_DBL r0, r1;
   REF_DBL q_orig;
-  REF_DBL rdiff, rmax;
+  REF_DBL s_orig, rsum;
+
+  REF_DBL t,st,sr,q;
   
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
@@ -558,12 +560,12 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   RSS( ref_node_ratio(ref_node,nodes[0],node,&r0), "get r0" );
   RSS( ref_node_ratio(ref_node,nodes[1],node,&r1), "get r1" );
 
-  rdiff = ABS(r1-r0);
-  rmax = MAX(r1,r0);
-  if ( ref_math_divisible(rdiff,rmax) )
+  rsum = r1+r0;
+  if ( ref_math_divisible(r0,rsum) )
     {
+      s_orig = r0/rsum;
       /* one percent imblance is good enough */
-      if ( rdiff / rmax < 0.01 ) return REF_SUCCESS;
+      if ( ABS(s_orig-0.5) < 0.01 ) return REF_SUCCESS;
     }
   else
     {
@@ -575,8 +577,29 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_EDGE, id, &t_orig), "get t_orig" );
   RSS( ref_geom_tuv(ref_geom,nodes[1],REF_GEOM_EDGE, id, &t1), "get t1" );
   RSS( ref_smooth_tet_quality_around( ref_grid, node, &q_orig ), "q_orig");
-    printf("edge %d t %f %f %f r %f %f q %f\n",
-	   id,t0,t_orig,t1,r0,r1,q_orig);
+  
+  printf("edge %d t %f %f %f r %f %f q %f\n",
+	 id,t0,t_orig,t1,r0,r1,q_orig);
+
+  t = t_orig;
+  sr = r0/(r1+r0);
+  st = t/(t1-t0);
+  st = st + (0.5-sr);
+  t = st*t1+(1.0-st)*t0; 
+
+  RSS( ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t ), "set t");
+  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
+  RSS( ref_node_ratio(ref_node,nodes[0],node,&r0), "get r0" );
+  RSS( ref_node_ratio(ref_node,nodes[1],node,&r1), "get r1" );
+  RSS( ref_smooth_tet_quality_around( ref_grid, node, &q ), "q");
+  
+  printf("t %f r %f %f q %f \n", t, r0, r1, q );
+
+  RSS( ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t_orig ), "set t");
+  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
+  RSS( ref_smooth_tet_quality_around( ref_grid, node, &q ), "q");
+  
+  printf("undo q %f\n",q);
 
   return REF_SUCCESS;
 }
