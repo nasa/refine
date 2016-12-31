@@ -547,6 +547,7 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
 
   REF_DBL t,st,sr,q,backoff,t_target;
   REF_INT tries;
+  REF_BOOL verbose = REF_FALSE;
   
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
@@ -579,16 +580,16 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   RSS( ref_geom_tuv(ref_geom,nodes[1],REF_GEOM_EDGE, id, &t1), "get t1" );
   RSS( ref_smooth_tet_quality_around( ref_grid, node, &q_orig ), "q_orig");
   
-  printf("edge %d t %f %f %f r %f %f q %f\n",
-	 id,t0,t_orig,t1,r0,r1,q_orig);
+  if (verbose) printf("edge %d t %f %f %f r %f %f q %f\n",
+		      id,t0,t_orig,t1,r0,r1,q_orig);
 
   sr = r0/(r1+r0);
   st = (t_orig-t0)/(t1-t0);
   st = st + (0.5-sr);
   t_target = st*t1+(1.0-st)*t0; 
 
-  printf("t_target %f sr %f st %f %f \n",
-	 t_target, sr, (t_orig-t0)/(t1-t0), st );
+  if (verbose) printf("t_target %f sr %f st %f %f \n",
+		      t_target, sr, (t_orig-t0)/(t1-t0), st );
   
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++)
@@ -601,7 +602,7 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
       RSS( ref_node_ratio(ref_node,nodes[1],node,&r1), "get r1" );
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &q ), "q");
   
-      printf("t %f r %f %f q %f \n", t, r0, r1, q );
+      if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q );
       if ( q > ref_adapt_smooth_min_quality )
 	{
 	  return REF_SUCCESS;
@@ -613,7 +614,7 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   RSS( ref_geom_constrain(ref_grid, node ), "constrain");
   RSS( ref_smooth_tet_quality_around( ref_grid, node, &q ), "q");
   
-  printf("undo q %f\n",q);
+  if (verbose) printf("undo q %f\n",q);
 
   return REF_SUCCESS;
 }
