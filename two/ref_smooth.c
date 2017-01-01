@@ -619,27 +619,43 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
+				 REF_INT node )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_BOOL geom_node, geom_edge, geom_face, no_quads;
+  REF_INT id;
+  RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
+  RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
+  RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
+  no_quads = ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
+  RAS( !geom_node, "geom node not allowed" );
+  RAS( !geom_edge, "geom edge not allowed" );
+  RAS( geom_face, "geom face required" );
+  RAS( no_quads,  "quads not allowed" );
+
+  RSS( ref_geom_unique_id(ref_geom,node,REF_GEOM_FACE,&id), "get id" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node, i;
-  REF_BOOL allowed, geom_node, geom_edge, interior;
+  REF_INT node;
+  REF_BOOL allowed, geom_node, geom_edge, geom_face, interior, no_quads;
 
+  /* sort worst to best? */
+  /* requeue neighbors with large changes? particulary quality drops */
+  
   each_ref_node_valid_node( ref_node, node )
     {
       /* don't move geom nodes */
       RSS( ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_NODE,
 			 &geom_node), "node check");
       if ( geom_node ) continue;
-      
-      /* can't handle boundaries yet */
-      RSS( ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_EDGE,
-			 &geom_edge), "edge check");
-      interior =
-	ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
-	ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
-      if ( !(interior || geom_edge) ) continue;
-      
+
+      /* next to ghost node, can't move */
       RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
       if ( !allowed )
 	{
@@ -647,13 +663,33 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 	  continue;
 	}
 
-      if ( interior )
-	for ( i = 0 ; i < 3 ; i++ )
-	  RSS( ref_smooth_tet_improve( ref_grid, node ), "ideal node for tet" );
+      RSS( ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_EDGE,
+			 &geom_edge), "edge check");
       if ( geom_edge )
-      	RSS( ref_smooth_geom_edge( ref_grid, node ), "ideal node for edge" );
-      
-      ref_node_age(ref_node,node) = 0;
+	{
+	  RSS( ref_smooth_geom_edge( ref_grid, node ), "ideal node for edge" );
+	  ref_node_age(ref_node,node) = 0;
+	  continue;
+	}
+
+      no_quads = ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
+      RSS( ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_FACE,
+			 &geom_face), "face check");
+      if ( geom_face && no_quads )
+	{
+	  RSS( ref_smooth_geom_face( ref_grid, node ), "ideal node for face" );
+	  ref_node_age(ref_node,node) = 0;
+	  continue;
+	}
+
+      interior =
+	ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
+	ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
+      if ( interior )
+	{
+	  RSS( ref_smooth_tet_improve( ref_grid, node ), "ideal tet node" );
+	  ref_node_age(ref_node,node) = 0;
+	}
     }
 
   return REF_SUCCESS;
