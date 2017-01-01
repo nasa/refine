@@ -95,7 +95,6 @@ int main( int argc, char *argv[] )
   RSS(ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
-  RSS( ref_grid_inspect( ref_grid ), "inspect");
 
   passes = 5;
   for (pass = 0; pass<passes; pass++ )
@@ -106,7 +105,6 @@ int main( int argc, char *argv[] )
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
-      RSS( ref_grid_inspect( ref_grid ), "inspect");
       RSS(ref_migrate_to_balance(ref_grid),"balance");
       ref_mpi_stopwatch_stop("balance");
     }
@@ -115,11 +113,9 @@ int main( int argc, char *argv[] )
        "gather");
   ref_mpi_stopwatch_stop("gather");
   RSS(ref_export_tec_surf( ref_grid, "ref_driver_surf.tec" ),"surf tec" );
-  ref_mpi_stopwatch_stop("surf tec");
   RSS(ref_geom_tec( ref_grid, "ref_driver_geom.tec" ),"geom tec" );
-  ref_mpi_stopwatch_stop("geom tec");
   RSS(ref_geom_save( ref_grid, "ref_driver.gas" ),"geom tec" );
-  ref_mpi_stopwatch_stop("geom assoc");
+  ref_mpi_stopwatch_stop("tec");
   RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
   ref_mpi_stopwatch_stop("clump stuck");
  
