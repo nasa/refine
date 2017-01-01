@@ -625,6 +625,7 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_BOOL geom_node, geom_edge, geom_face, no_quads;
   REF_INT id;
+  REF_DBL uv_orig[2];
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
@@ -635,7 +636,8 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   RAS( no_quads,  "quads not allowed" );
 
   RSS( ref_geom_unique_id(ref_geom,node,REF_GEOM_FACE,&id), "get id" );
-
+  RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_FACE, id, uv_orig), "get uv_orig" );
+  
   return REF_SUCCESS;
 }
 
