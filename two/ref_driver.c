@@ -109,6 +109,8 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop("balance");
     }
 
+  RSS( ref_geom_verify_param( ref_grid ), "loaded params" );
+  ref_mpi_stopwatch_stop("verify params");
   RSS( ref_gather_b8_ugrid( ref_grid, "ref_driver.b8.ugrid" ),
        "gather");
   ref_mpi_stopwatch_stop("gather");
