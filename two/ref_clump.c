@@ -247,6 +247,9 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
         ntarget++;
       }
 
+  ref_free( ratio )
+  RSS( ref_edge_free( ref_edge ), "free edges" );
+
   return REF_SUCCESS;
 }
 
