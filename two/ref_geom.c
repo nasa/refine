@@ -2,8 +2,11 @@
 /*
   run test cases from UGAWG
 
-  smooth edge
+  validate normal deviation (make metric big across cylinder)
+
   smooth face
+    get ideal uv using metric and triangle info
+    average
   eliminate short edges
 
   don't remove geom nodes
