@@ -73,6 +73,7 @@ REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
                                nodes,
                                &quality ), "qual" );
     *min_quality = MIN( *min_quality, quality );
+    printf ("qual %f\n",quality);
   }
 
   if ( none_found )
@@ -626,6 +627,7 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   REF_BOOL geom_node, geom_edge, geom_face, no_quads;
   REF_INT id;
   REF_DBL uv_orig[2];
+  REF_DBL qtet_orig, qtri_orig;
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
@@ -637,6 +639,10 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
 
   RSS( ref_geom_unique_id(ref_geom,node,REF_GEOM_FACE,&id), "get id" );
   RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_FACE, id, uv_orig), "get uv_orig" );
+  RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet_orig ), "q tet");
+  RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri_orig ), "q tri");
+
+  printf("uv %f %f tet %f tri %f\n",uv_orig[0],uv_orig[1],qtet_orig,qtri_orig);
   
   return REF_SUCCESS;
 }
