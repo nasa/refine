@@ -1036,6 +1036,19 @@ int main( int argc, char *argv[] )
     RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
     RWDS( 0.839947, qual, 0.00001, "qual expected" );
 
+    for ( global=0;global<4;global++)
+      {
+	ref_node_metric(ref_node,0,global) = 100.0;
+	ref_node_metric(ref_node,1,global) = 0.0;
+	ref_node_metric(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,3,global) = 100.0;
+	ref_node_metric(ref_node,4,global) = 0.0;
+	ref_node_metric(ref_node,5,global) = 100.0;
+      }
+
+    RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
+    RWDS( 0.839947, qual, 0.00001, "qual expected not metric dep" );
+
     /* inverted tet is negative volume */
     ref_node_xyz(ref_node,2,nodes[3]) = -1.0;
     RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
