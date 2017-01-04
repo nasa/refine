@@ -234,6 +234,49 @@ REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tri_weighted_ideal_uv( REF_GRID ref_grid,
+					     REF_INT node,
+					     REF_DBL *ideal_uv )
+{
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT iuv;
+  REF_DBL tri_uv[2];
+  REF_DBL quality, weight, normalization;
+
+  normalization = 0.0;
+  for (iuv = 0; iuv<2; iuv++)
+    ideal_uv[iuv] = 0.0;
+
+  each_ref_cell_having_node( ref_grid_tri(ref_grid), node, item, cell )
+    {
+      RSS( ref_smooth_tri_ideal( ref_grid, node, cell, 
+				    tri_uv ), "tri ideal");
+      RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), "nodes" );
+      RSS( ref_node_tri_quality( ref_grid_node(ref_grid), 
+				 nodes,  
+				 &quality ), "tri qual");
+      quality = MAX(quality,ref_adapt_smooth_min_quality);
+      weight = 1.0/quality;
+      normalization += weight;
+      for (iuv = 0; iuv<2; iuv++)
+	ideal_uv[iuv] += weight*tri_uv[iuv];
+    }
+
+  if ( ref_math_divisible(1.0,normalization) )
+    {
+      for (iuv = 0; iuv<2; iuv++)
+        ideal_uv[iuv] =  (1.0/normalization) * ideal_uv[iuv];
+    }
+  else
+    {
+      printf("normalization = %e\n",normalization);
+      return REF_DIV_ZERO;
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
 				   REF_INT node )
 {
