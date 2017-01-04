@@ -4,6 +4,8 @@
 
   validate normal deviation (make metric big across cylinder)
 
+  implement refine/one quality measures
+
   smooth face
     get ideal uv using metric and triangle info
     average

@@ -73,7 +73,6 @@ REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
                                nodes,
                                &quality ), "qual" );
     *min_quality = MIN( *min_quality, quality );
-    printf ("qual %f\n",quality);
   }
 
   if ( none_found )
