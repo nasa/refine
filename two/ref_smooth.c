@@ -202,8 +202,10 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_INT n0, n1;
   REF_INT id;
   REF_DBL r0, r1;
+  REF_DBL uv_orig[2];
   REF_DBL uv0[2], uv1[2];
-  REF_DBL omega = 0.5;
+  REF_DBL q0, q1;
+  REF_DBL omega = 0.25;
   
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
   n0 = REF_EMPTY; n1 = REF_EMPTY;
@@ -226,23 +228,37 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
     THROW("empty triangle side");
 
   RSS( ref_geom_unique_id( ref_geom, node, REF_GEOM_FACE, &id ), "id");
-  RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, ideal_uv ), "uv" );
+  RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "uv" );
   RSS( ref_geom_tuv( ref_geom, n0, REF_GEOM_FACE, id, uv0 ), "uv0" );
   RSS( ref_geom_tuv( ref_geom, n1, REF_GEOM_FACE, id, uv1 ), "uv1" );
-  uv0[0] = ideal_uv[0] - uv0[0];
-  uv0[1] = ideal_uv[1] - uv0[1];
-  uv1[0] = ideal_uv[0] - uv1[0];
-  uv1[1] = ideal_uv[1] - uv1[1];
+  uv0[0] = uv_orig[0] - uv0[0];
+  uv0[1] = uv_orig[1] - uv0[1];
+  uv1[0] = uv_orig[0] - uv1[0];
+  uv1[1] = uv_orig[1] - uv1[1];
   
   RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
   RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
+  RSS( ref_node_tri_quality( ref_node,
+			     nodes,
+			     &q0 ), "qual" );
+  
+  printf(" orig  r %f %f q %f\n",r0,r1,q0);
 
-  printf(" r %f %f \n",r0,r1);
+  ideal_uv[0]= uv_orig[0] + omega*uv0[0]*(1.0-r0)/r0 + omega*uv1[0]*(1.0-r1)/r1;
+  ideal_uv[1]= uv_orig[1] + omega*uv0[1]*(1.0-r0)/r0 + omega*uv1[1]*(1.0-r1)/r1;
 
-  ideal_uv[0] += omega*uv0[0]*(1.0-r0)/r0;   
-  ideal_uv[1] += omega*uv0[1]*(1.0-r0)/r0;   
-  ideal_uv[0] += omega*uv1[0]*(1.0-r1)/r1;   
-  ideal_uv[1] += omega*uv1[1]*(1.0-r1)/r1;   
+  RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, ideal_uv ), "set uv");
+  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
+
+  RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
+  RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
+  RSS( ref_node_tri_quality( ref_node,
+			     nodes,
+			     &q1 ), "qual" );
+  
+  printf(" ideal r %f %f q %f\n",r0,r1,q1);
+
+  RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "set uv");
 
   return REF_SUCCESS;
 }
