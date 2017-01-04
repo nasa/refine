@@ -191,6 +191,62 @@ REF_STATUS ref_smooth_tri_ideal( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
+				    REF_INT node,
+				    REF_INT tri,
+				    REF_DBL *ideal_uv )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT n0, n1;
+  REF_INT id;
+  REF_DBL r0, r1;
+  REF_DBL uv0[2], uv1[2];
+  REF_DBL omega = 0.5;
+  
+  RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
+  n0 = REF_EMPTY; n1 = REF_EMPTY;
+  if ( node == nodes[0])
+    {
+      n0 = nodes[1];
+      n1 = nodes[2];
+    }
+  if ( node == nodes[1])
+    {
+      n0 = nodes[2];
+      n1 = nodes[0];
+    }
+  if ( node == nodes[2])
+    {
+      n0 = nodes[0];
+      n1 = nodes[1];
+    }
+  if ( n0==REF_EMPTY || n1==REF_EMPTY)
+    THROW("empty triangle side");
+
+  RSS( ref_geom_unique_id( ref_geom, node, REF_GEOM_FACE, &id ), "id");
+  RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, ideal_uv ), "uv" );
+  RSS( ref_geom_tuv( ref_geom, n0, REF_GEOM_FACE, id, uv0 ), "uv0" );
+  RSS( ref_geom_tuv( ref_geom, n1, REF_GEOM_FACE, id, uv1 ), "uv1" );
+  uv0[0] = ideal_uv[0] - uv0[0];
+  uv0[1] = ideal_uv[1] - uv0[1];
+  uv1[0] = ideal_uv[0] - uv1[0];
+  uv1[1] = ideal_uv[1] - uv1[1];
+  
+  RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
+  RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
+
+  printf(" r %f %f \n",r0,r1);
+
+  ideal_uv[0] += omega*uv0[0]*(1.0-r0)/r0;   
+  ideal_uv[1] += omega*uv0[1]*(1.0-r0)/r0;   
+  ideal_uv[0] += omega*uv1[0]*(1.0-r1)/r1;   
+  ideal_uv[1] += omega*uv1[1]*(1.0-r1)/r1;   
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
 					  REF_INT node,
 					  REF_DBL *ideal_location )
@@ -250,7 +306,7 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv( REF_GRID ref_grid,
 
   each_ref_cell_having_node( ref_grid_tri(ref_grid), node, item, cell )
     {
-      RSS( ref_smooth_tri_ideal( ref_grid, node, cell, 
+      RSS( ref_smooth_tri_ideal_uv( ref_grid, node, cell, 
 				    tri_uv ), "tri ideal");
       RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), "nodes" );
       RSS( ref_node_tri_quality( ref_grid_node(ref_grid), 
@@ -668,8 +724,11 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_BOOL geom_node, geom_edge, geom_face, no_quads;
   REF_INT id;
-  REF_DBL uv_orig[2];
+  REF_DBL uv_orig[2], uv_ideal[2];
   REF_DBL qtet_orig, qtri_orig;
+  REF_DBL qtri, qtet;
+  REF_DBL backoff, uv[2];
+  REF_INT tries, iuv;
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
@@ -684,8 +743,36 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet_orig ), "q tet");
   RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri_orig ), "q tri");
 
-  printf("uv %f %f tet %f tri %f\n",uv_orig[0],uv_orig[1],qtet_orig,qtri_orig);
+  printf("uv %f %f tri %f tet %f\n",uv_orig[0],uv_orig[1],qtri_orig,qtet_orig);
+
+  RSS( ref_smooth_tri_weighted_ideal_uv( ref_grid, node,uv_ideal ),"ideal");
   
+  backoff = 1.0;
+  for (tries = 0; tries < 8; tries++)
+    {
+      for (iuv = 0; iuv<2; iuv++)
+	uv[iuv] = backoff*uv_ideal[iuv] +
+	  (1.0 - backoff) * uv_orig[iuv];
+      
+      RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv ), "set uv");
+      RSS( ref_geom_constrain(ref_grid, node ), "constrain");
+      RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet ), "q tet");
+      RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri ), "q tri");
+      if ( qtri >= qtri_orig && qtet > ref_adapt_smooth_min_quality )
+	{
+	  printf("better qtri %f qtet %f\n", qtri, qtet );
+	  return REF_SUCCESS;
+	}
+      backoff *= 0.5;
+    }
+
+  RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "set t");
+  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
+  RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet ), "q tet");
+  RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri ), "q tri");
+
+  printf("undo qtri %f qtet %f\n", qtri, qtet );
+
   return REF_SUCCESS;
 }
 
