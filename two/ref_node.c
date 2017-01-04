@@ -1147,7 +1147,7 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
   RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det),"n2");
   min_det = MIN(min_det,det);
 
-  area_in_metric = sqrt( min_det ) * area;
+  area_in_metric = pow( min_det, 1.0/3.0 ) * area;
 
   num = area_in_metric;
   denom = l0*l0 + l1*l1 + l2*l2;
@@ -1193,9 +1193,9 @@ REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node,
   RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det),"n2");
   min_det = MIN(min_det,det);
 
-  area_in_metric = sqrt( min_det ) * area;
+  area_in_metric = pow( min_det, 1.0/3.0 ) * area;
   for(i=0;i<3;i++)
-    d_area_in_metric[i] = sqrt( min_det ) * d_area[i];
+    d_area_in_metric[i] = pow( min_det, 1.0/3.0 ) * d_area[i];
 
   num = area_in_metric;
   for(i=0;i<3;i++) d_num[i] = d_area_in_metric[i];

@@ -761,7 +761,7 @@ int main( int argc, char *argv[] )
 
   /* FIXME, break this test up into pieces */
 
-  { /* right tri normal, area, qual */
+  { /* right tri normal, area */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
     REF_DBL norm[3];
@@ -837,7 +837,7 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
-  { /* right tri normal, area, qual */
+  { /* right tri qual */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
     REF_DBL qual;
@@ -869,6 +869,24 @@ int main( int argc, char *argv[] )
     RSS(ref_node_tri_quality(ref_node, nodes, &qual), "q");
     RWDS( 0.5*sqrt(3.0), qual, -1.0, "qual expected" );
 
+    for ( global=0;global<3;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+	ref_node_metric(ref_node,0,global) = 100.0;
+	ref_node_metric(ref_node,1,global) = 0.0;
+	ref_node_metric(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,3,global) = 100.0;
+	ref_node_metric(ref_node,4,global) = 0.0;
+	ref_node_metric(ref_node,5,global) = 100.0;
+       }
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,2,nodes[2]) = 1.0;
+
+    RSS(ref_node_tri_quality(ref_node, nodes, &qual), "q");
+    RWDS( 0.5*sqrt(3.0), qual, -1.0, "qual expected" );
+
     RSS(ref_node_free(ref_node),"free");
   }
 
@@ -889,12 +907,12 @@ int main( int argc, char *argv[] )
 
     for ( global=0;global<3;global++)
       {
-	ref_node_metric(ref_node,0,global) = 1.0;
+	ref_node_metric(ref_node,0,global) = 10.0;
 	ref_node_metric(ref_node,1,global) = 0.0;
 	ref_node_metric(ref_node,2,global) = 0.0;
-	ref_node_metric(ref_node,3,global) = 1.0;
+	ref_node_metric(ref_node,3,global) = 10.0;
 	ref_node_metric(ref_node,4,global) = 0.0;
-	ref_node_metric(ref_node,5,global) = 1.0;
+	ref_node_metric(ref_node,5,global) = 10.0;
        }
 
     ref_node_xyz(ref_node,0,nodes[0]) = 0.1;
