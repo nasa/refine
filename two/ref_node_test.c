@@ -731,12 +731,12 @@ int main( int argc, char *argv[] )
 
     for ( global=0;global<4;global++)
       {
-	ref_node_metric(ref_node,0,nodes[global]) = 1.0;
+	ref_node_metric(ref_node,0,nodes[global]) = 20.0;
 	ref_node_metric(ref_node,1,nodes[global]) = 0.0;
 	ref_node_metric(ref_node,2,nodes[global]) = 0.0;
-	ref_node_metric(ref_node,3,nodes[global]) = 1.0;
+	ref_node_metric(ref_node,3,nodes[global]) = 20.0;
 	ref_node_metric(ref_node,4,nodes[global]) = 0.0;
-	ref_node_metric(ref_node,5,nodes[global]) = 1.0;
+	ref_node_metric(ref_node,5,nodes[global]) = 20.0;
        }
 
     FD_NODES0( ref_node_tet_dquality_dnode0 );
