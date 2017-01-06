@@ -203,11 +203,11 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_INT id, geom;
   REF_DBL r, r0, r1;
   REF_DBL uv_orig[2];
-  REF_DBL uv[2];
-  REF_DBL q0, q;
+  REF_DBL uv[2],uvnew[2];
+  REF_DBL q0, q, qnew;
   REF_DBL xyz[3], dxyz_duv[12], dq_dxyz[3], dq_duv[2];
   REF_DBL step, slope;
-  REF_INT tries;
+  REF_INT tries, search;
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
   n0 = REF_EMPTY; n1 = REF_EMPTY;
   if ( node == nodes[0])
@@ -242,8 +242,6 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 			     nodes,
 			     &q0 ), "qual" );
   
-  printf(" orig  r %f %f %f q %f\n",r,r0,r1,q0);
-
   uv[0]=uv_orig[0];
   uv[1]=uv_orig[1];
   q= q0;
@@ -251,7 +249,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
     {
       RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv ), "set uv");
       RSS( ref_geom_constrain(ref_grid, node ), "constrain");
-
+      
       RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
       RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
       RSS( ref_node_tri_dquality_dnode0( ref_node,
@@ -268,13 +266,26 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	dq_dxyz[2]*dxyz_duv[5]; 
       slope = sqrt(dq_duv[0]*dq_duv[0]+dq_duv[1]*dq_duv[1]);
       step = (1.0-q)/slope;
-      uv[0] += step*dq_duv[0];
-      uv[1] += step*dq_duv[1];
-      if ( q < q0)
-	printf(" ideal r %f %f %f q %f dq_duv %f %f\n",r,r0,r1,q,dq_duv[0],dq_duv[1]);
+      qnew=0;
+      for (search=0; search<8 && qnew <q;search++)
+	{
+	  uvnew[0] = uv[0] + step*dq_duv[0];
+	  uvnew[1] = uv[1] + step*dq_duv[1];
+	  RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uvnew ), "set uv");
+	  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
+	  RSS( ref_node_tri_quality( ref_node,
+				     nodes,
+				     &qnew ), "qual" );
+	  step *= 0.5;
+	}
+      uv[0]=uvnew[0];
+      uv[1]=uvnew[1];
     }
 
-  printf(" ideal r %f %f %f q %f dq_duv %f %f\n",r,r0,r1,q,dq_duv[0],dq_duv[1]);
+  if ( q<0.99)
+    {
+      printf(" bad ideal r %f %f %f q %f dq_duv %f %f\n",r,r0,r1,q,dq_duv[0],dq_duv[1]);
+    }
 
   RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "set uv");
 
