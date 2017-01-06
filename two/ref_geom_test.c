@@ -266,7 +266,7 @@ int main( int argc, char *argv[] )
     RSS( ref_geom_add(ref_geom,node1,type,id,params), "node1 edge" );
     params[0] = 0.0;
     
-    RSS( ref_geom_add_between(ref_geom,node0,node1,new_node), "eval" );
+    RSS( ref_geom_add_between(ref_geom,node0,node1,new_node), "between" );
     RSS( ref_geom_tuv(ref_geom,new_node,type,id,params), "node1 edge" );
     RWDS( 12.0, params[0], tol, "v" );
 
@@ -289,7 +289,7 @@ int main( int argc, char *argv[] )
     RSS( ref_geom_add(ref_geom,node1,type,id,params), "node1 edge" );
     params[0] = 0.0;
     
-    RSS( ref_geom_add_between(ref_geom,node0,node1,new_node), "eval" );
+    RSS( ref_geom_add_between(ref_geom,node0,node1,new_node), "between" );
     REIS( REF_NOT_FOUND,
 	  ref_geom_find(ref_geom,new_node,type,id,&geom), "what edge" );
     id = 5;
