@@ -308,10 +308,10 @@ int main( int argc, char *argv[] )
 
     geom = -1;
     REIS( REF_INVALID,
-	  ref_geom_eval(ref_geom,geom,xyz), "invalid geom" );
+	  ref_geom_eval(ref_geom,geom,xyz,NULL), "invalid geom" );
     geom = 1+ref_geom_max(ref_geom);
     REIS( REF_INVALID,
-	  ref_geom_eval(ref_geom,geom,xyz), "invalid geom" );
+	  ref_geom_eval(ref_geom,geom,xyz,NULL), "invalid geom" );
 
     RSS(ref_geom_free(ref_geom),"free");
   }

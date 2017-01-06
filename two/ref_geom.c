@@ -605,7 +605,7 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
   /* edge geom, evaluate edge and update face uv */
   if (have_geom_edge)
     {
-      RSS( ref_geom_eval( ref_geom, edge_geom, xyz ), "eval edge" );
+      RSS( ref_geom_eval( ref_geom, edge_geom, xyz, NULL ), "eval edge" );
       node = ref_geom_node(ref_geom,edge_geom);
       ref_node_xyz(ref_node,0,node) = xyz[0];
       ref_node_xyz(ref_node,1,node) = xyz[1];
@@ -630,7 +630,7 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
   /* face geom, evaluate on face uv */
   if (have_geom_face)
     {
-      RSS( ref_geom_eval( ref_geom, face_geom, xyz ), "eval face" );
+      RSS( ref_geom_eval( ref_geom, face_geom, xyz, NULL ), "eval face" );
       node = ref_geom_node(ref_geom,face_geom);
       ref_node_xyz(ref_node,0,node) = xyz[0];
       ref_node_xyz(ref_node,1,node) = xyz[1];
@@ -641,11 +641,13 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz )
+REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
+			  REF_DBL *xyz, REF_DBL *dxyz_dtuv )
 {
 #ifdef HAVE_EGADS
   double eval[18];
   double params[2];
+  REF_INT i;
   ego *edges, *faces;
   ego object;
   if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
@@ -679,6 +681,12 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz )
   xyz[0]=eval[0];
   xyz[1]=eval[1];
   xyz[2]=eval[2];
+  if ( NULL != dxyz_dtuv )
+    {
+      for (i=0;i<9;i++) dxyz_dtuv[i] = eval[3+i];
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom,geom))
+	for (i=0;i<6;i++) dxyz_dtuv[9+i] = eval[12+i];
+    }
   return REF_SUCCESS;
 #else
   if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
@@ -687,6 +695,7 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz )
   xyz[0] = 0.0;
   xyz[1] = 0.0;
   xyz[2] = 0.0;
+  if ( NULL != dxyz_dtuv ) dxyz_dtuv[0] = 0.0;
   return REF_IMPLEMENT;
 #endif
 }
@@ -702,7 +711,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   
   each_ref_geom_edge( ref_geom, geom )
     {
-      RSS( ref_geom_eval( ref_geom, geom, xyz ), "eval xyz" );
+      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       node = ref_geom_node(ref_geom,geom);
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
@@ -716,7 +725,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   
   each_ref_geom_face( ref_geom, geom )
     {
-      RSS( ref_geom_eval( ref_geom, geom, xyz ), "eval xyz" );
+      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       node = ref_geom_node(ref_geom,geom);
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
