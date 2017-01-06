@@ -200,13 +200,14 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT n0, n1;
-  REF_INT id;
-  REF_DBL r0, r1;
+  REF_INT id, geom;
+  REF_DBL r, r0, r1;
   REF_DBL uv_orig[2];
-  REF_DBL uv0[2], uv1[2];
-  REF_DBL q0, q1;
-  REF_DBL omega = 0.25;
-  
+  REF_DBL uv[2];
+  REF_DBL q0, q;
+  REF_DBL xyz[3], dxyz_duv[12], dq_dxyz[3], dq_duv[2];
+  REF_DBL step, slope;
+  REF_INT tries;
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
   n0 = REF_EMPTY; n1 = REF_EMPTY;
   if ( node == nodes[0])
@@ -226,39 +227,59 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
     }
   if ( n0==REF_EMPTY || n1==REF_EMPTY)
     THROW("empty triangle side");
-
+  nodes[0]=node;
+  nodes[1]=n0;
+  nodes[2]=n1;
+  
   RSS( ref_geom_unique_id( ref_geom, node, REF_GEOM_FACE, &id ), "id");
   RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "uv" );
-  RSS( ref_geom_tuv( ref_geom, n0, REF_GEOM_FACE, id, uv0 ), "uv0" );
-  RSS( ref_geom_tuv( ref_geom, n1, REF_GEOM_FACE, id, uv1 ), "uv1" );
-  uv0[0] = uv_orig[0] - uv0[0];
-  uv0[1] = uv_orig[1] - uv0[1];
-  uv1[0] = uv_orig[0] - uv1[0];
-  uv1[1] = uv_orig[1] - uv1[1];
+  RSS( ref_geom_find( ref_geom, node, REF_GEOM_FACE, id, &geom ), "geom" );
   
+  RSS( ref_node_ratio(ref_node,n0,n1,&r), "get r0" );
   RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
   RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
   RSS( ref_node_tri_quality( ref_node,
 			     nodes,
 			     &q0 ), "qual" );
   
-  printf(" orig  r %f %f q %f\n",r0,r1,q0);
+  printf(" orig  r %f %f %f q %f\n",r,r0,r1,q0);
 
-  ideal_uv[0]= uv_orig[0] + omega*uv0[0]*(1.0-r0)/r0 + omega*uv1[0]*(1.0-r1)/r1;
-  ideal_uv[1]= uv_orig[1] + omega*uv0[1]*(1.0-r0)/r0 + omega*uv1[1]*(1.0-r1)/r1;
+  uv[0]=uv_orig[0];
+  uv[1]=uv_orig[1];
+  q= q0;
+  for (tries=0; tries<15 && q <0.99;tries++)
+    {
+      RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv ), "set uv");
+      RSS( ref_geom_constrain(ref_grid, node ), "constrain");
 
-  RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, ideal_uv ), "set uv");
-  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
+      RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
+      RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
+      RSS( ref_node_tri_dquality_dnode0( ref_node,
+					 nodes,
+					 &q, dq_dxyz ), "qual" );
+      RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval face" );
+      dq_duv[0] =
+	dq_dxyz[0]*dxyz_duv[0] +
+	dq_dxyz[1]*dxyz_duv[1] +
+	dq_dxyz[2]*dxyz_duv[2]; 
+      dq_duv[1] =
+	dq_dxyz[0]*dxyz_duv[3] +
+	dq_dxyz[1]*dxyz_duv[4] +
+	dq_dxyz[2]*dxyz_duv[5]; 
+      slope = sqrt(dq_duv[0]*dq_duv[0]+dq_duv[1]*dq_duv[1]);
+      step = (1.0-q)/slope;
+      uv[0] += step*dq_duv[0];
+      uv[1] += step*dq_duv[1];
+      if ( q < q0)
+	printf(" ideal r %f %f %f q %f dq_duv %f %f\n",r,r0,r1,q,dq_duv[0],dq_duv[1]);
+    }
 
-  RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
-  RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
-  RSS( ref_node_tri_quality( ref_node,
-			     nodes,
-			     &q1 ), "qual" );
-  
-  printf(" ideal r %f %f q %f\n",r0,r1,q1);
+  printf(" ideal r %f %f %f q %f dq_duv %f %f\n",r,r0,r1,q,dq_duv[0],dq_duv[1]);
 
   RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "set uv");
+
+  ideal_uv[0]=uv[0];
+  ideal_uv[1]=uv[1];
 
   return REF_SUCCESS;
 }
