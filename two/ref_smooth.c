@@ -245,7 +245,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   uv[0]=uv_orig[0];
   uv[1]=uv_orig[1];
   q= q0;
-  for (tries=0; tries<15 && q <0.99;tries++)
+  for (tries=0; tries<30 && q <0.99;tries++)
     {
       RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv ), "set uv");
       RSS( ref_geom_constrain(ref_grid, node ), "constrain");
@@ -267,7 +267,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
       slope = sqrt(dq_duv[0]*dq_duv[0]+dq_duv[1]*dq_duv[1]);
       step = (1.0-q)/slope;
       qnew=0;
-      for (search=0; search<8 && qnew <q;search++)
+      for (search=0; search<15 && qnew <q;search++)
 	{
 	  uvnew[0] = uv[0] + step*dq_duv[0];
 	  uvnew[1] = uv[1] + step*dq_duv[1];
@@ -280,6 +280,11 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	}
       uv[0]=uvnew[0];
       uv[1]=uvnew[1];
+
+      if (tries>20)
+	printf(" slow conv %d step s %f q %f dq_duv %f %f %s\n",
+	       tries,step,q,dq_duv[0],dq_duv[1], __func__);
+
     }
 
   if ( q<0.99)
@@ -777,6 +782,7 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   REF_DBL qtri, qtet;
   REF_DBL backoff, uv[2];
   REF_INT tries, iuv;
+  REF_BOOL verbose = REF_FALSE;
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
@@ -791,7 +797,8 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet_orig ), "q tet");
   RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri_orig ), "q tri");
 
-  printf("uv %f %f tri %f tet %f\n",uv_orig[0],uv_orig[1],qtri_orig,qtet_orig);
+  if (verbose)
+    printf("uv %f %f tri %f tet %f\n",uv_orig[0],uv_orig[1],qtri_orig,qtet_orig);
 
   RSS( ref_smooth_tri_weighted_ideal_uv( ref_grid, node,uv_ideal ),"ideal");
   
@@ -808,7 +815,8 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
       RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri ), "q tri");
       if ( qtri >= qtri_orig && qtet > ref_adapt_smooth_min_quality )
 	{
-	  printf("better qtri %f qtet %f\n", qtri, qtet );
+	  if (verbose)
+	    printf("better qtri %f qtet %f\n", qtri, qtet );
 	  return REF_SUCCESS;
 	}
       backoff *= 0.5;
@@ -816,10 +824,9 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
 
   RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "set t");
   RSS( ref_geom_constrain(ref_grid, node ), "constrain");
-  RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet ), "q tet");
-  RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri ), "q tri");
 
-  printf("undo qtri %f qtet %f\n", qtri, qtet );
+  if (verbose)
+    printf("undo qtri %f qtet %f was %f %f\n", qtri, qtet, qtri_orig, qtet_orig );
 
   return REF_SUCCESS;
 }
