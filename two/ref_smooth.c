@@ -191,6 +191,28 @@ REF_STATUS ref_smooth_tri_ideal( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tri_quality( REF_GRID ref_grid,
+				   REF_INT node,
+				   REF_INT id,
+				   REF_INT *nodes,
+				   REF_DBL *uv,
+				   REF_DBL *dq_duv,
+				   REF_DBL step,
+				   REF_DBL *qnew )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_DBL uvnew[2];
+  uvnew[0] = uv[0] + step*dq_duv[0];
+  uvnew[1] = uv[1] + step*dq_duv[1];
+  RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uvnew ), "set uv");
+  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
+  RSS( ref_node_tri_quality( ref_node,
+			     nodes,
+			     qnew ), "qual" );
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 				    REF_INT node,
 				    REF_INT tri,
@@ -202,10 +224,11 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_INT n0, n1;
   REF_INT id, geom;
   REF_DBL uv_orig[2];
-  REF_DBL uv[2],uvnew[2];
-  REF_DBL q0, q, qnew;
+  REF_DBL uv[2];
+  REF_DBL q0, q;
   REF_DBL xyz[3], dxyz_duv[12], dq_dxyz[3], dq_duv[2];
-  REF_DBL step, slope;
+  REF_DBL slope;
+  REF_DBL step1, step2, step3, q1, q2, q3;
   REF_INT tries, search;
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
   n0 = REF_EMPTY; n1 = REF_EMPTY;
@@ -240,12 +263,11 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   
   uv[0]=uv_orig[0];
   uv[1]=uv_orig[1];
-  q= q0;
+  q = q0;
   for (tries=0; tries<30 && q <0.99;tries++)
     {
       RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv ), "set uv");
       RSS( ref_geom_constrain(ref_grid, node ), "constrain");
-      
       RSS( ref_node_tri_dquality_dnode0( ref_node,
 					 nodes,
 					 &q, dq_dxyz ), "qual" );
@@ -259,25 +281,36 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	dq_dxyz[1]*dxyz_duv[4] +
 	dq_dxyz[2]*dxyz_duv[5]; 
       slope = sqrt(dq_duv[0]*dq_duv[0]+dq_duv[1]*dq_duv[1]);
-      step = (1.0-q)/slope;
-      qnew=0;
-      for (search=0; search<15 && qnew <q;search++)
+      step3 = (1.0-q)/slope;
+      step1 = 0;
+      step2 = 0.5*(step1+step3);
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
+				  dq_duv, step1, &q1 ), "set uv for q1");
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
+				  dq_duv, step2, &q2 ), "set uv for q2");
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
+				  dq_duv, step3, &q3 ), "set uv for q3");
+      for (search=0; search<15 ;search++)
 	{
-	  uvnew[0] = uv[0] + step*dq_duv[0];
-	  uvnew[1] = uv[1] + step*dq_duv[1];
-	  RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uvnew ), "set uv");
-	  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
-	  RSS( ref_node_tri_quality( ref_node,
-				     nodes,
-				     &qnew ), "qual" );
-	  step *= 0.5;
+	  if ( q1 > q3 )
+	    {
+	      step3=step2;
+	      q3=q2;
+	    }
+	  else
+	    {
+	      step1=step2;
+	      q1=q2;
+	    }
+	  step2 = 0.5*(step1+step3);
+	  RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
+				      dq_duv, step2, &q2 ), "set uv for q2");
 	}
-      uv[0]=uvnew[0];
-      uv[1]=uvnew[1];
-
-      if (tries>20)
+      RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv ), "uv" );
+	
+      if (tries>5)
 	printf(" slow conv %d step s %f q %f dq_duv %f %f %s\n",
-	       tries,step,q,dq_duv[0],dq_duv[1], __func__);
+	       tries,step2,q,dq_duv[0],dq_duv[1], __func__);
 
     }
 
