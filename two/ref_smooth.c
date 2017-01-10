@@ -201,7 +201,6 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT n0, n1;
   REF_INT id, geom;
-  REF_DBL r, r0, r1;
   REF_DBL uv_orig[2];
   REF_DBL uv[2],uvnew[2];
   REF_DBL q0, q, qnew;
@@ -235,9 +234,6 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "uv" );
   RSS( ref_geom_find( ref_geom, node, REF_GEOM_FACE, id, &geom ), "geom" );
   
-  RSS( ref_node_ratio(ref_node,n0,n1,&r), "get r0" );
-  RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
-  RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
   RSS( ref_node_tri_quality( ref_node,
 			     nodes,
 			     &q0 ), "qual" );
@@ -289,7 +285,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 
   if ( q<0.99)
     {
-      printf(" bad ideal r %f %f %f q %f dq_duv %f %f\n",r,r0,r1,q,dq_duv[0],dq_duv[1]);
+      printf(" bad ideal q %f dq_duv %f %f\n",q,dq_duv[0],dq_duv[1]);
     }
 
   RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "set uv");
