@@ -27,9 +27,13 @@ struct REF_NODE_STRUCT {
   REF_LIST unused_global_list;
   REF_INT old_n_global, new_n_global;
   REF_DBL twod_mid_plane;
+  REF_INT tri_quality;
 };
 
 #define REF_NODE_REAL_PER (9) /* x,y,z, m[6] */
+
+#define REF_NODE_EPIC_QUALITY (1)
+#define REF_NODE_JAC_QUALITY (2)
 
 #define ref_node_n(ref_node) ((ref_node)->n)
 #define ref_node_max(ref_node) ((ref_node)->max)

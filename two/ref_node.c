@@ -53,6 +53,8 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_node->twod_mid_plane = 0.5;
 
+  ref_node->tri_quality = REF_NODE_EPIC_QUALITY;
+
   return REF_SUCCESS;
 }
 
@@ -1124,9 +1126,9 @@ REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
-REF_STATUS ref_node_tri_quality( REF_NODE ref_node, 
-				 REF_INT *nodes, 
-				 REF_DBL *quality )
+static REF_STATUS ref_node_tri_epic_quality( REF_NODE ref_node, 
+					     REF_INT *nodes, 
+					     REF_DBL *quality )
 {
   REF_DBL l0,l1,l2;
 
@@ -1166,11 +1168,26 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
 
   return REF_SUCCESS;  
 }
+REF_STATUS ref_node_tri_quality( REF_NODE ref_node, 
+				 REF_INT *nodes, 
+				 REF_DBL *quality )
+{
+  switch (ref_node->tri_quality)
+    {
+    case REF_NODE_EPIC_QUALITY:
+      RSS( ref_node_tri_epic_quality(ref_node,nodes,quality), "epic");
+      break;
+    default:
+      THROW("case not recognized");
+      break;
+    }
+  return REF_SUCCESS;
+}
 
-REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node, 
-					 REF_INT *nodes, 
-					 REF_DBL *quality, 
-					 REF_DBL *d_quality )
+static REF_STATUS ref_node_tri_epic_dquality_dnode0( REF_NODE ref_node, 
+					      REF_INT *nodes, 
+					      REF_DBL *quality, 
+					      REF_DBL *d_quality )
 {
   REF_DBL l0,l1,l2;
 
@@ -1221,6 +1238,23 @@ REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node,
     }
 
   return REF_SUCCESS;  
+}
+REF_STATUS ref_node_tri_dquality_dnode0( REF_NODE ref_node, 
+					 REF_INT *nodes, 
+					 REF_DBL *quality, 
+					 REF_DBL *d_quality )
+{
+  switch (ref_node->tri_quality)
+    {
+    case REF_NODE_EPIC_QUALITY:
+      RSS( ref_node_tri_epic_dquality_dnode0(ref_node,nodes,
+					     quality,d_quality), "epic");
+      break;
+    default:
+      THROW("case not recognized");
+      break;
+    }
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_node_xyz_normal( REF_DBL *xyz0, 
