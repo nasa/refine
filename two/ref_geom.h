@@ -112,6 +112,7 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
 			  REF_DBL *xyz, REF_DBL *dxyz_dtuv );
 
 REF_STATUS ref_geom_verify_param( REF_GRID ref_grid );
+REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid );
 
 REF_STATUS ref_geom_egads_export( char *filename );
 

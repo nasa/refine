@@ -10,6 +10,7 @@
 #include "ref_cell.h"
 #include "ref_mpi.h"
 #include "ref_twod.h"
+#include "ref_geom.h"
 
 REF_STATUS ref_smooth_tri_steepest_descent( REF_GRID ref_grid, REF_INT node )
 {
@@ -866,7 +867,9 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 
   /* sort worst to best? */
   /* requeue neighbors with large changes? particulary quality drops */
-  
+
+  RSS( ref_geom_verify_topo( ref_grid ), "typo check");
+
   each_ref_node_valid_node( ref_node, node )
     {
       /* don't move geom nodes */

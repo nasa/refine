@@ -745,6 +745,41 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT node;
+  REF_BOOL geom_node, geom_edge, geom_face;
+  REF_BOOL no_face, no_edge;
+  each_ref_node_valid_node( ref_node, node )
+    {
+      RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "nd chk");
+      RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "ed chk");
+      RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "fa chk");
+      no_face =
+	ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
+	ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
+      no_edge =
+	ref_cell_node_empty( ref_grid_edg( ref_grid ), node );
+      if ( geom_node )
+	{
+	  if (no_edge) THROW("geom node missing edge");
+	  if (no_face) THROW("geom node missing tri and qua");
+	}
+      if ( geom_edge )
+	{
+	  if (no_edge) THROW("geom edge missing edge");
+	  if (no_face) THROW("geom edge missing tri and qua");
+	}
+      if ( geom_face )
+	{
+	  if (no_face) THROW("geom edge missing tri and qua");
+	}
+    }
+    return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_egads_export( char *filename )
 {
 #ifdef HAVE_EGADS
@@ -914,11 +949,11 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, char *filename )
   ref_geom->solid = (void *)solid;
   
   REIS( EGADS_SUCCESS,
-	EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges), "EG edge typo");
+	EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges), "EG edge topo");
   ref_geom->nedge = nedge;
   ref_geom->edges = (void *)edges;
   REIS( EGADS_SUCCESS,
-	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG face typo");
+	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG face topo");
   ref_geom->nface = nface;
   ref_geom->faces = (void *)faces;
   
