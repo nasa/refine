@@ -253,10 +253,10 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_GEOM ref_geom;
     REF_INT node0, node1, new_node;
-    REF_INT type, id;
+    REF_INT type, id, geom;
     REF_DBL params[2];
     REF_DBL tol =1.0e-12;
-
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
     RSS(ref_grid_create(&ref_grid),"create");
     ref_geom = ref_grid_geom(ref_grid);
  
@@ -268,6 +268,13 @@ int main( int argc, char *argv[] )
     RSS( ref_geom_add(ref_geom,node1,type,id,params), "node1 edge" );
     params[0] = 0.0;
     
+    RSS( ref_geom_add_between(ref_grid,node0,node1,new_node), "between" );
+    id = 5;
+    REIS( REF_NOT_FOUND,
+	  ref_geom_find(ref_geom,new_node,type,id,&geom), "what edge" );
+
+    nodes[0]=node0;nodes[1]=node1;nodes[2]=id;
+    RSS(ref_cell_add(ref_grid_edg(ref_grid),nodes,&cell),"add edge");
     RSS( ref_geom_add_between(ref_grid,node0,node1,new_node), "between" );
     RSS( ref_geom_tuv(ref_geom,new_node,type,id,params), "node1 edge" );
     RWDS( 12.0, params[0], tol, "v" );
@@ -294,6 +301,7 @@ int main( int argc, char *argv[] )
     params[0] = 0.0;
     
     RSS( ref_geom_add_between(ref_grid,node0,node1,new_node), "between" );
+    id = 7;
     REIS( REF_NOT_FOUND,
 	  ref_geom_find(ref_geom,new_node,type,id,&geom), "what edge" );
     id = 5;
