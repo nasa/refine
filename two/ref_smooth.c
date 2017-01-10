@@ -78,7 +78,7 @@ REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
   if ( none_found )
     {
       *min_quality = -2.0;
-      return REF_NOT_FOUND;
+      THROW("no triagle found, can not compute quality");
     }
 
   return REF_SUCCESS;
