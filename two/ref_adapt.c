@@ -43,8 +43,10 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
 
   ref_gather_blocking_frame( ref_grid );
   RSS( ref_collapse_pass( ref_grid ), "col pass");
+  RSS( ref_geom_verify_topo( ref_grid ), "collapse geom typo check");
   ref_gather_blocking_frame( ref_grid );
   RSS( ref_split_pass( ref_grid ), "split pass");
+  RSS( ref_geom_verify_topo( ref_grid ), "split geom typo check");
   ref_gather_blocking_frame( ref_grid );
   RSS( ref_smooth_threed_pass( ref_grid ), "smooth pass");
 
