@@ -1168,6 +1168,54 @@ static REF_STATUS ref_node_tri_epic_quality( REF_NODE ref_node,
 
   return REF_SUCCESS;  
 }
+static REF_STATUS ref_node_tri_jac_quality( REF_NODE ref_node, 
+					    REF_INT *nodes, 
+					    REF_DBL *quality )
+{
+  REF_DBL mlog0[6], mlog1[6], mlog2[6];
+  REF_DBL mlog[6], m[6], jac[9];
+  REF_DBL xyz0[3], xyz1[3], xyz2[3];
+  REF_DBL e0[3], e1[3], e2[3], n[3];
+  REF_DBL a, l2;
+  REF_INT i;
+  
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0),"log0");
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1),"log1");
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2),"log2");
+  for (i=0;i<6;i++)
+    mlog[i]=(mlog0[i]+mlog1[i]+mlog2[i])/3.0;
+  RSS( ref_matrix_exp_m(mlog, m),"exp");
+  RSS( ref_matrix_jacob_m(m, jac),"jac");
+
+  RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[0]),
+			     xyz0 ), "xyz0");
+  RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[1]),
+			     xyz1 ), "xyz1");
+  RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[2]),
+			     xyz2 ), "xyz2");
+
+  for (i=0;i<3;i++) e0[i] = xyz2[i]-xyz1[i];
+  for (i=0;i<3;i++) e1[i] = xyz0[i]-xyz2[i];
+  for (i=0;i<3;i++) e2[i] = xyz1[i]-xyz0[i];
+
+  ref_math_cross_product(e2,e0,n);
+  l2 = ref_math_dot(e0,e0) + ref_math_dot(e1,e1) + ref_math_dot(e2,e2);
+  
+  a = 0.5*sqrt(ref_math_dot(n,n));
+  
+  if ( ref_math_divisible(l2,a) )
+    {
+      *quality = 4.0 / sqrt(3.0) * (l2/a);
+    }
+  else
+    {
+      printf("%s: %d: %s: div zero area %.18e l2 %.18e\n",
+	     __FILE__,__LINE__,__func__, a, l2 );
+      *quality = -1.0;
+    }
+
+  return REF_SUCCESS;  
+}
 REF_STATUS ref_node_tri_quality( REF_NODE ref_node, 
 				 REF_INT *nodes, 
 				 REF_DBL *quality )
@@ -1176,6 +1224,9 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
     {
     case REF_NODE_EPIC_QUALITY:
       RSS( ref_node_tri_epic_quality(ref_node,nodes,quality), "epic");
+      break;
+    case REF_NODE_JAC_QUALITY:
+      RSS( ref_node_tri_jac_quality(ref_node,nodes,quality), "epic");
       break;
     default:
       THROW("case not recognized");
