@@ -483,10 +483,11 @@ REF_STATUS ref_geom_tuv( REF_GEOM ref_geom, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_add_between( REF_GEOM ref_geom,
+REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 				 REF_INT node0, REF_INT node1, 
 				 REF_INT new_node )
 {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT item0, item1;
   REF_INT geom0, geom1;
   REF_INT type, id;

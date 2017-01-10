@@ -250,14 +250,16 @@ int main( int argc, char *argv[] )
   }
   
   { /* add between common edge */
+    REF_GRID ref_grid;
     REF_GEOM ref_geom;
     REF_INT node0, node1, new_node;
     REF_INT type, id;
     REF_DBL params[2];
     REF_DBL tol =1.0e-12;
 
-    RSS(ref_geom_create(&ref_geom),"create");
-
+    RSS(ref_grid_create(&ref_grid),"create");
+    ref_geom = ref_grid_geom(ref_grid);
+ 
     node0 = 0; node1 = 1; new_node = 10;
 
     type = REF_GEOM_EDGE; id = 5; params[0] = 11.0;
@@ -266,20 +268,22 @@ int main( int argc, char *argv[] )
     RSS( ref_geom_add(ref_geom,node1,type,id,params), "node1 edge" );
     params[0] = 0.0;
     
-    RSS( ref_geom_add_between(ref_geom,node0,node1,new_node), "between" );
+    RSS( ref_geom_add_between(ref_grid,node0,node1,new_node), "between" );
     RSS( ref_geom_tuv(ref_geom,new_node,type,id,params), "node1 edge" );
     RWDS( 12.0, params[0], tol, "v" );
 
-    RSS(ref_geom_free(ref_geom),"free");
+    RSS(ref_grid_free(ref_grid),"free");
   }
   
   { /* add between skip different edge */
+    REF_GRID ref_grid;
     REF_GEOM ref_geom;
     REF_INT node0, node1, new_node;
     REF_INT type, id, geom;
     REF_DBL params[2];
 
-    RSS(ref_geom_create(&ref_geom),"create");
+    RSS(ref_grid_create(&ref_grid),"create");
+    ref_geom = ref_grid_geom(ref_grid);
 
     node0 = 0; node1 = 1; new_node = 10;
 
@@ -289,14 +293,14 @@ int main( int argc, char *argv[] )
     RSS( ref_geom_add(ref_geom,node1,type,id,params), "node1 edge" );
     params[0] = 0.0;
     
-    RSS( ref_geom_add_between(ref_geom,node0,node1,new_node), "between" );
+    RSS( ref_geom_add_between(ref_grid,node0,node1,new_node), "between" );
     REIS( REF_NOT_FOUND,
 	  ref_geom_find(ref_geom,new_node,type,id,&geom), "what edge" );
     id = 5;
     REIS( REF_NOT_FOUND,
 	  ref_geom_find(ref_geom,new_node,type,id,&geom), "what edge" );
 
-    RSS(ref_geom_free(ref_geom),"free");
+    RSS(ref_grid_free(ref_grid),"free");
   }
   
   { /* eval out of range */
