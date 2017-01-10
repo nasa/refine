@@ -246,8 +246,6 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
       RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv ), "set uv");
       RSS( ref_geom_constrain(ref_grid, node ), "constrain");
       
-      RSS( ref_node_ratio(ref_node,n0,node,&r0), "get r0" );
-      RSS( ref_node_ratio(ref_node,n1,node,&r1), "get r1" );
       RSS( ref_node_tri_dquality_dnode0( ref_node,
 					 nodes,
 					 &q, dq_dxyz ), "qual" );
