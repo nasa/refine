@@ -776,7 +776,11 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  }
 	if ( geom_face )
 	  {
-	    if (no_face) THROW("geom face missing tri or qua");
+	    if (no_face)
+	      {
+		ref_node_taddle(ref_node,node);
+		THROW("geom face missing tri or qua");
+	      }
 	  }
       }
     else
