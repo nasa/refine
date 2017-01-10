@@ -778,7 +778,10 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  {
 	    if (no_face)
 	      {
-		ref_node_taddle(ref_node,node);
+		RSS(ref_node_location(ref_node,node),"loc");
+		RSS(ref_geom_tattle(ref_geom,node),"tatt");
+		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
+		    "geom tec" );
 		THROW("geom face missing tri or qua");
 	      }
 	  }
