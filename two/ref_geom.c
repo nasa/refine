@@ -752,31 +752,39 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
   REF_INT node;
   REF_BOOL geom_node, geom_edge, geom_face;
   REF_BOOL no_face, no_edge;
-  each_ref_node_valid_node( ref_node, node )
-    {
-      RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "nd chk");
-      RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "ed chk");
-      RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "fa chk");
-      no_face =
-	ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
-	ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
-      no_edge =
-	ref_cell_node_empty( ref_grid_edg( ref_grid ), node );
-      if ( geom_node )
-	{
-	  if (no_edge) THROW("geom node missing edge");
-	  if (no_face) THROW("geom node missing tri and qua");
+  
+  for ( node = 0 ;node < ref_node_max(ref_node);node++ )
+    if ( ref_node_valid( ref_node, node ) )
+      {
+	RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node");
+	RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge");
+	RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face");
+	no_face =
+	  ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
+	  ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
+	no_edge =
+	  ref_cell_node_empty( ref_grid_edg( ref_grid ), node );
+	if ( geom_node )
+	  {
+	    if (no_edge) THROW("geom node missing edge");
+	    if (no_face) THROW("geom node missing tri or qua");
 	}
-      if ( geom_edge )
-	{
-	  if (no_edge) THROW("geom edge missing edge");
-	  if (no_face) THROW("geom edge missing tri and qua");
-	}
-      if ( geom_face )
-	{
-	  if (no_face) THROW("geom edge missing tri and qua");
-	}
-    }
+	if ( geom_edge )
+	  {
+	    if (no_edge) THROW("geom edge missing edge");
+	    if (no_face) THROW("geom edge missing tri or qua");
+	  }
+	if ( geom_face )
+	  {
+	    if (no_face) THROW("geom edge missing tri or qua");
+	  }
+      }
+    else
+      {
+	if (!ref_adj_empty( ref_geom_adj(ref_geom), node ) )
+	  THROW("invalid node has geom");
+      }
+     
     return REF_SUCCESS;
 }
 
