@@ -257,6 +257,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
       RSS(ref_clump_around(ref_grid, nodes[0], "debugnode0.tec" ), "dump");
       RSS(ref_clump_around(ref_grid, nodes[1], "debugnode1.tec" ), "dump");
       RSS(ref_clump_around(ref_grid, nodes[2], "debugnode2.tec" ), "dump");
+      RSS(ref_geom_tec(ref_grid, "debuggeom.tec" ), "dump");
       THROW("empty triangle side");
     }
   nodes[0]=node;
