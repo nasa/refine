@@ -11,6 +11,7 @@
 #include "ref_mpi.h"
 #include "ref_twod.h"
 #include "ref_geom.h"
+#include "ref_clump.h"
 
 REF_STATUS ref_smooth_tri_steepest_descent( REF_GRID ref_grid, REF_INT node )
 {
@@ -249,7 +250,15 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
       n1 = nodes[1];
     }
   if ( n0==REF_EMPTY || n1==REF_EMPTY)
-    THROW("empty triangle side");
+    {
+      printf("nodes %d %d %d %d node %d\n",
+	     nodes[0],nodes[1],nodes[2],nodes[3],node);
+      RSS(ref_clump_around(ref_grid, node, "debugnode.tec" ), "dump");
+      RSS(ref_clump_around(ref_grid, nodes[0], "debugnode0.tec" ), "dump");
+      RSS(ref_clump_around(ref_grid, nodes[1], "debugnode1.tec" ), "dump");
+      RSS(ref_clump_around(ref_grid, nodes[2], "debugnode2.tec" ), "dump");
+      THROW("empty triangle side");
+    }
   nodes[0]=node;
   nodes[1]=n0;
   nodes[2]=n1;
