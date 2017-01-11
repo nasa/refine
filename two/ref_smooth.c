@@ -228,7 +228,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_DBL uv_orig[2];
   REF_DBL uv[2];
   REF_DBL q0, q;
-  REF_DBL xyz[3], dxyz_duv[12], dq_dxyz[3], dq_duv[2];
+  REF_DBL xyz[3], dxyz_duv[15], dq_dxyz[3], dq_duv[2];
   REF_DBL slope;
   REF_DBL step1, step2, step3, q1, q2, q3;
   REF_INT tries, search;
