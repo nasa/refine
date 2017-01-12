@@ -1298,9 +1298,11 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0( REF_NODE ref_node,
   REF_DBL mlog0[6], mlog1[6], mlog2[6];
   REF_DBL mlog[6], m[6], jac[9];
   REF_DBL xyz0[3], xyz1[3], xyz2[3];
+  REF_DBL dxyz0[3][3];
   REF_DBL e0[3], e1[3], e2[3], n[3];
-  REF_DBL a, l2;
-  REF_INT i;
+  REF_DBL de1[3][3], de2[3][3], dn[3][3];
+  REF_DBL a, l2, dl2[3];
+  REF_INT i, j;
 
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0),"log0");
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1),"log1");
@@ -1317,18 +1319,49 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0( REF_NODE ref_node,
   RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[2]),
 			     xyz2 ), "xyz2");
 
-  *quality = 0;
-  d_quality[0] = 0.0;
-  d_quality[1] = 0.0;
-  d_quality[2] = 0.0;
-  return REF_SUCCESS;  
+  dxyz0[0][0] = jac[0];
+  dxyz0[0][1] = jac[3];
+  dxyz0[0][2] = jac[6];
+
+  dxyz0[1][0] = jac[1];
+  dxyz0[1][1] = jac[4];
+  dxyz0[1][2] = jac[7];
+
+  dxyz0[2][0] = jac[2];
+  dxyz0[2][1] = jac[5];
+  dxyz0[2][2] = jac[8];
   
   for (i=0;i<3;i++) e0[i] = xyz2[i]-xyz1[i];
   for (i=0;i<3;i++) e1[i] = xyz0[i]-xyz2[i];
   for (i=0;i<3;i++) e2[i] = xyz1[i]-xyz0[i];
 
+  for (i=0;i<3;i++) for (j=0;j<3;j++) de1[i][j] = dxyz0[i][j];
+  for (i=0;i<3;i++) for (j=0;j<3;j++) de2[i][j] =-dxyz0[i][j];
+
   ref_math_cross_product(e2,e0,n);
+  for (j=0;j<3;j++)
+    {
+      dn[0][j] = de2[1][j]*e0[2] - de2[2][j]*e0[1];
+      dn[1][j] = de2[2][j]*e0[0] - de2[0][j]*e0[2];
+      dn[2][j] = de2[0][j]*e0[1] - de2[1][j]*e0[0]; 
+    }
+
+  *quality = de1[0][0];
+  *quality = dn[0][0];
+
   l2 = ref_math_dot(e0,e0) + ref_math_dot(e1,e1) + ref_math_dot(e2,e2);
+
+  for (j=0;j<3;j++)
+    dl2[j] = 2.0*e1[0]*de1[0][j]+2.0*e1[1]*de1[1][j]+2.0*e1[2]*de1[2][j]
+           + 2.0*e2[0]*de2[0][j]+2.0*e2[1]*de2[1][j]+2.0*e2[2]*de2[2][j];
+
+  *quality = l2;
+  d_quality[0] = dl2[0];
+  d_quality[1] = dl2[1];
+  d_quality[2] = dl2[2];
+
+  return REF_SUCCESS;  
+
   
   a = 0.5*sqrt(ref_math_dot(n,n));
 
