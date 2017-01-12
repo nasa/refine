@@ -1302,10 +1302,6 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0( REF_NODE ref_node,
   REF_DBL a, l2;
   REF_INT i;
 
-  d_quality[0] = 0.0;
-  d_quality[1] = 0.0;
-  d_quality[2] = 0.0;
-
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0),"log0");
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1),"log1");
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2),"log2");
@@ -1321,6 +1317,12 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0( REF_NODE ref_node,
   RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[2]),
 			     xyz2 ), "xyz2");
 
+  *quality = 0;
+  d_quality[0] = 0.0;
+  d_quality[1] = 0.0;
+  d_quality[2] = 0.0;
+  return REF_SUCCESS;  
+  
   for (i=0;i<3;i++) e0[i] = xyz2[i]-xyz1[i];
   for (i=0;i<3;i++) e1[i] = xyz0[i]-xyz2[i];
   for (i=0;i<3;i++) e2[i] = xyz1[i]-xyz0[i];
