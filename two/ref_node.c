@@ -1202,10 +1202,10 @@ static REF_STATUS ref_node_tri_jac_quality( REF_NODE ref_node,
   l2 = ref_math_dot(e0,e0) + ref_math_dot(e1,e1) + ref_math_dot(e2,e2);
   
   a = 0.5*sqrt(ref_math_dot(n,n));
-  
-  if ( ref_math_divisible(l2,a) )
+
+  if ( ref_math_divisible(a,l2) )
     {
-      *quality = 4.0 / sqrt(3.0) * (l2/a);
+      *quality = 12.0 / sqrt(3.0) * (a/l2);
     }
   else
     {
