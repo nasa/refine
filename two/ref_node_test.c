@@ -1062,7 +1062,6 @@ int main( int argc, char *argv[] )
 				      &f_quality, d_quality), "qual deriv" );
     RSS( ref_node_tri_quality(ref_node, nodes, 
 			      &quality), "qual deriv" );
-    SKIP_BLOCK("wire up real qual")
     RWDS( quality, f_quality, -1.0, "expected quality" );
 
     RSS(ref_node_free(ref_node),"free");
