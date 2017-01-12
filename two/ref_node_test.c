@@ -1018,6 +1018,55 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* tri quality jac deriv */
+    REF_NODE ref_node;
+    REF_INT nodes[3], global;
+    REF_DBL f_quality, d_quality[3], quality;
+
+    RSS(ref_node_create(&ref_node),"create");
+    ref_node->tri_quality = REF_NODE_JAC_QUALITY;
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+
+    for ( global=0;global<3;global++)
+      {
+	ref_node_metric(ref_node,0,global) = 1.0;
+	ref_node_metric(ref_node,1,global) = 0.0;
+	ref_node_metric(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,3,global) = 1.0;
+	ref_node_metric(ref_node,4,global) = 0.0;
+	ref_node_metric(ref_node,5,global) = 1.0;
+       }
+
+    ref_node_xyz(ref_node,0,nodes[0]) = 0.1;
+    ref_node_xyz(ref_node,1,nodes[0]) = 0.2;
+    ref_node_xyz(ref_node,2,nodes[0]) = 0.3;
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.1;
+    ref_node_xyz(ref_node,1,nodes[1]) = 0.5;
+    ref_node_xyz(ref_node,2,nodes[1]) = 0.7;
+
+    ref_node_xyz(ref_node,0,nodes[2]) = 0.4;
+    ref_node_xyz(ref_node,1,nodes[2]) = 2.0;
+    ref_node_xyz(ref_node,2,nodes[2]) = 0.6;
+
+    /* quality */
+
+    FD_NODES0( ref_node_tri_dquality_dnode0 );
+    RSS( ref_node_tri_dquality_dnode0(ref_node, nodes, 
+				      &f_quality, d_quality), "qual deriv" );
+    RSS( ref_node_tri_quality(ref_node, nodes, 
+			      &quality), "qual deriv" );
+    RWDS( quality, f_quality, -1.0, "expected quality" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   { /* equilateral tri normal, area, qual */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
