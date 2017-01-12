@@ -671,7 +671,7 @@ int main( int argc, char *argv[] )
 #define FD_NODES0( xfuncx )				\
     {							\
       REF_DBL f, d[3];					\
-      REF_DBL fd[3], x0, step = 1.0e-7, tol = 1.0e-6;	\
+      REF_DBL fd[3], x0, step = 1.0e-8, tol = 5.0e-6;	\
       REF_INT dir;					\
       RSS(xfuncx(ref_node,nodes,&f,d), "fd0");		\
       for ( dir=0;dir<3;dir++)				\
