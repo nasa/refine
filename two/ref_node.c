@@ -1301,7 +1301,7 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0( REF_NODE ref_node,
   REF_DBL dxyz0[3][3];
   REF_DBL e0[3], e1[3], e2[3], n[3];
   REF_DBL de1[3][3], de2[3][3], dn[3][3];
-  REF_DBL a, l2, dl2[3];
+  REF_DBL a, l2, da[3], dl2[3];
   REF_INT i, j;
 
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0),"log0");
@@ -1346,28 +1346,25 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0( REF_NODE ref_node,
       dn[2][j] = de2[0][j]*e0[1] - de2[1][j]*e0[0]; 
     }
 
-  *quality = de1[0][0];
-  *quality = dn[0][0];
-
   l2 = ref_math_dot(e0,e0) + ref_math_dot(e1,e1) + ref_math_dot(e2,e2);
 
   for (j=0;j<3;j++)
     dl2[j] = 2.0*e1[0]*de1[0][j]+2.0*e1[1]*de1[1][j]+2.0*e1[2]*de1[2][j]
            + 2.0*e2[0]*de2[0][j]+2.0*e2[1]*de2[1][j]+2.0*e2[2]*de2[2][j];
 
-  *quality = l2;
-  d_quality[0] = dl2[0];
-  d_quality[1] = dl2[1];
-  d_quality[2] = dl2[2];
-
-  return REF_SUCCESS;  
-
-  
   a = 0.5*sqrt(ref_math_dot(n,n));
+
+  for(j=0;j<3;j++) 
+    da[j] = 0.5 * 0.5 / sqrt(ref_math_dot(n,n)) *
+      (2.0*n[0]*dn[0][j]+2.0*n[1]*dn[1][j]+2.0*n[2]*dn[2][j]);
 
   if ( ref_math_divisible(a,l2) )
     {
       *quality = 4.0 * sqrt(3.0) * (a/l2);
+      for(j=0;j<3;j++)
+	d_quality[j] = 4.0 * sqrt(3.0)
+	  * ( da[j]*l2 - a*dl2[j])
+	  / l2 / l2;
     }
   else
     {
