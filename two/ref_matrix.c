@@ -308,6 +308,26 @@ REF_STATUS ref_matrix_jacob_m( REF_DBL *m_upper_tri,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_show_jacob( REF_DBL *j )
+{
+  char format[] = "%24.15e" ;
+
+  printf(format,j[0]);
+  printf(format,j[3]);
+  printf(format,j[6]);
+  printf("\n");
+  printf(format,j[1]);
+  printf(format,j[4]);
+  printf(format,j[7]);
+  printf("\n");
+  printf(format,j[2]);
+  printf(format,j[5]);
+  printf(format,j[8]);
+  printf("\n");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_inv_m( REF_DBL *m,
 			     REF_DBL *inv_m)
 {

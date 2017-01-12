@@ -29,6 +29,7 @@ REF_STATUS ref_matrix_form_m( REF_DBL *diagonal_system,
 
 REF_STATUS ref_matrix_jacob_m( REF_DBL *m_upper_tri,
 			       REF_DBL *jacobian);
+REF_STATUS ref_matrix_show_jacob( REF_DBL *jacobian );
 
 REF_STATUS ref_matrix_inv_m( REF_DBL *m_upper_tri,
 			     REF_DBL *inv_m_upper_tri);
