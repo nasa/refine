@@ -14,32 +14,31 @@ create jenkins test
   - 3d linear
   - 3d geom
 
-jacobian form of tet quality with optimizer
-- implement refine/one quality measures
-- det stability in quality no longer issue
-
-ideal tet using principle direction? but faces dissaggree?
+run test cases from UGAWG
 
 interp metric in threed and parallel
 
 clean up driver codes
-
-run test cases from UGAWG
 
 validate normal deviation (make metric big across cylinder)
 -- insert with ball
 -- create an embbeded surface as a debug measure,
       create norm/tests for problems
 
+jacobian form of tet quality
+- implement refine/one quality measures
+- det stability in quality no longer issue
+
+ideal tet using principle direction? but faces dissaggree? optimizer?
+
 smooth
  sort worst to best? edge, surface, volume sequence
  requeue neighbors with large changes? particulary quality drops
 
-parallel geom gas restart file IO
-
-parallel
+parallel geom
  ref_geom load bal
  parallel update ghost geom param
+ geom gas restart file IO
 
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
 
@@ -64,7 +63,6 @@ partition boundary artifacts
 - graph agglomeration to remove artifacts
    - age
    - parallel agglomeration to protect age
-
 
 low priority surface reconstruction
 - consult white
