@@ -228,8 +228,8 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_DBL uv_orig[2];
   REF_DBL uv[2];
   REF_DBL q0, q;
-  REF_DBL xyz[3], dxyz_duv[15], dq_dxyz[3], dq_duv[2];
-  REF_DBL slope;
+  REF_DBL xyz[3], dxyz_duv[15], dq_dxyz[3], dq_duv[2], dq_duv0[2], dq_duv1[2];
+  REF_DBL slope, beta, num, denom;
   REF_DBL step1, step2, step3, q1, q2, q3;
   REF_INT tries, search;
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
@@ -276,14 +276,40 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 					 nodes,
 					 &q, dq_dxyz ), "qual" );
       RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval face" );
-      dq_duv[0] =
+      dq_duv1[0] =
 	dq_dxyz[0]*dxyz_duv[0] +
 	dq_dxyz[1]*dxyz_duv[1] +
 	dq_dxyz[2]*dxyz_duv[2]; 
-      dq_duv[1] =
+      dq_duv1[1] =
 	dq_dxyz[0]*dxyz_duv[3] +
 	dq_dxyz[1]*dxyz_duv[4] +
-	dq_dxyz[2]*dxyz_duv[5]; 
+	dq_dxyz[2]*dxyz_duv[5];
+
+      if (0==tries)
+	{
+	  beta = 0;
+	  dq_duv[0] = dq_duv1[0]; 
+	  dq_duv[1] = dq_duv1[1]; 
+	}
+      else
+	{
+	  /* fletcher-reeves */
+	  num   = dq_duv1[0]*dq_duv1[0] + dq_duv1[1]*dq_duv1[1];
+	  denom = dq_duv0[0]*dq_duv0[0] + dq_duv0[1]*dq_duv0[1];
+	  /* polak-ribiere */
+	  num   = dq_duv1[0]*(dq_duv1[0]-dq_duv0[0])
+	        + dq_duv1[1]*(dq_duv1[1]-dq_duv0[1]);
+	  denom = dq_duv0[0]*dq_duv0[0]+dq_duv0[1]*dq_duv0[1];
+	  beta = 0;
+	  if ( ref_math_divisible(num,denom) )
+	    beta = num/denom;
+	  beta = MAX(0.0,beta);
+	  dq_duv[0] = dq_duv1[0] + beta*dq_duv[0]; 
+	  dq_duv[1] = dq_duv1[1] + beta*dq_duv[1]; 
+	}
+      dq_duv0[0] = dq_duv1[0]; 
+      dq_duv0[1] = dq_duv1[1]; 
+      
       slope = sqrt(dq_duv[0]*dq_duv[0]+dq_duv[1]*dq_duv[1]);
       step3 = (1.0-q)/slope;
       step1 = 0;
@@ -312,10 +338,13 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	}
       RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv ), "uv" );
 	
-      if (tries>5)
-	printf(" slow conv %d step s %f %f q %f %f dq_duv %f %f\n",
-	       tries,step1,step3,q1,q3,dq_duv[0],dq_duv[1]);
-
+      if (tries>25)
+	{
+	  printf(" slow conv %2d    q %f dq_duv1 %f %f\n",
+		 tries,q2,dq_duv1[0],dq_duv1[1]);
+	  printf("              step %f dq_duv  %f %f beta %f\n",
+		 step2,dq_duv[0],dq_duv[1], beta);
+	}
     }
 
   if ( q<0.99)
