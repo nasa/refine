@@ -3,8 +3,6 @@ move repo to gitlab
 
 open source
 
-only use single part load balance under certain size 
-
 create jenkins test
 - make check
 - make check valgrind
@@ -68,6 +66,8 @@ low priority surface reconstruction
 - consult white
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+
++ only use single part load balance under certain size 0.5M
 
 + ref_adapt_test half-square/hs01.b8.ugrid twod memory prob
 + scale metric

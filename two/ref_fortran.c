@@ -117,7 +117,6 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
 {
   REF_INT passes, i;
   REF_INT ntet, npri;
-  REF_BOOL single_partition_adaptation = REF_TRUE;
 
   RSS( ref_gather_ncell( ref_grid_node(ref_grid), 
 			 ref_grid_tet(ref_grid), &ntet ), "ntet");
@@ -171,9 +170,12 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       ref_mpi_stopwatch_stop("pass");
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
-      if ( single_partition_adaptation )
+      RSS( ref_node_synchronize_globals( ref_node ), "sync global nodes");
+      if ( 500000 > ref_node_n_global(ref_node) )
 	{
-	  if ( ref_mpi_master ) printf("use single parition\n");
+	  if ( ref_mpi_master )
+	    printf("use single parition under 0.5M nodes %d\n",
+		   ref_node_n_global(ref_node));
 	  RSS(ref_migrate_to_single_image(ref_grid),"balance");
 	}
       else
