@@ -313,8 +313,8 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
       RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv ), "uv" );
 	
       if (tries>5)
-	printf(" slow conv %d step s %f q %f dq_duv %f %f %s\n",
-	       tries,step2,q,dq_duv[0],dq_duv[1], __func__);
+	printf(" slow conv %d step s %f %f q %f %f dq_duv %f %f\n",
+	       tries,step1,step3,q1,q3,dq_duv[0],dq_duv[1]);
 
     }
 
