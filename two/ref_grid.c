@@ -303,8 +303,9 @@ REF_STATUS ref_grid_replace_node( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_update_guess( REF_CELL ref_cell, REF_INT node0, REF_INT node1,
-			     REF_INT *guess)
+static REF_STATUS ref_update_guess( REF_CELL ref_cell,
+				    REF_INT node0, REF_INT node1,
+				    REF_INT *guess)
 {
   REF_INT ncell, max_cell = 2, cell_list[2];
 
