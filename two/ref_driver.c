@@ -57,6 +57,7 @@ static void echo_argv( int argc, char *argv[] )
 int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid = NULL;
+  REF_GRID background_grid = NULL;
   int opt;
   int passes, pass;
   
@@ -68,6 +69,7 @@ int main( int argc, char *argv[] )
 	{
 	case 'i':
 	  RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
+	  RSS( ref_import_by_extension( &background_grid, optarg ), "import" );
 	  break;
 	case 'g':
 	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
@@ -76,7 +78,10 @@ int main( int argc, char *argv[] )
 	  RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
 	  break;
 	case 'm':
-	  RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part metric" );
+	  RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part m");
+	  if ( NULL != background_grid )
+	    RSS(ref_part_metric( ref_grid_node(background_grid), optarg ),
+		"part m back" );
 	  break;
 	case '?':
 	default:
@@ -102,6 +107,11 @@ int main( int argc, char *argv[] )
       printf(" pass %d of %d\n",pass,passes);
       RSS( ref_adapt_pass( ref_grid ), "pass");
       ref_mpi_stopwatch_stop("pass");
+      if ( NULL != background_grid )
+	{
+	  RSS( ref_metric_interpolate( ref_grid, background_grid ), "interp" );
+	  ref_mpi_stopwatch_stop("interp");
+	}
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
