@@ -170,12 +170,12 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       ref_mpi_stopwatch_stop("pass");
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
-      RSS( ref_node_synchronize_globals( ref_node ), "sync global nodes");
-      if ( 500000 > ref_node_n_global(ref_node) )
+      RSS( ref_node_synchronize_globals( ref_grid_node(ref_grid) ), "sync g");
+      if ( 500000 > ref_node_n_global(ref_grid_node(ref_grid)) )
 	{
 	  if ( ref_mpi_master )
 	    printf("use single parition under 0.5M nodes %d\n",
-		   ref_node_n_global(ref_node));
+		   ref_node_n_global(ref_grid_node(ref_grid)));
 	  RSS(ref_migrate_to_single_image(ref_grid),"balance");
 	}
       else
