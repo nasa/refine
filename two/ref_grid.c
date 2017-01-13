@@ -303,7 +303,7 @@ REF_STATUS ref_grid_replace_node( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_update_guess( REF_CELL ref_cell,
+static REF_STATUS ref_update_tri_guess( REF_CELL ref_cell,
 				    REF_INT node0, REF_INT node1,
 				    REF_INT *guess)
 {
@@ -371,21 +371,21 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
       
       if ( bary[0] < bary[1] && bary[0] < bary[2] )
 	{
-	  RSS( ref_update_guess( ref_cell, nodes[1], nodes[2], &guess ),
+	  RSS( ref_update_tri_guess( ref_cell, nodes[1], nodes[2], &guess ),
 	       "update 1 2");
 	  continue;
 	}
 
       if ( bary[1] < bary[0] && bary[1] < bary[2] )
 	{
-	  RSS( ref_update_guess( ref_cell, nodes[2], nodes[0], &guess ),
+	  RSS( ref_update_tri_guess( ref_cell, nodes[2], nodes[0], &guess ),
 	       "update 2 0");
 	  continue;
 	}
 
       if ( bary[2] < bary[0] && bary[2] < bary[1] )
 	{
-	  RSS( ref_update_guess( ref_cell, nodes[0], nodes[1], &guess ),
+	  RSS( ref_update_tri_guess( ref_cell, nodes[0], nodes[1], &guess ),
 	       "update 0 1");
 	  continue;
 	}
