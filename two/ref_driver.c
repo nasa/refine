@@ -92,6 +92,10 @@ int main( int argc, char *argv[] )
 	  printf("./ref_geom_test ega.egads ega.ugrid\n");
 	  printf("./ref_acceptance ega.ugrid ega.metric 0.1\n");
 	  printf("./ref_driver -i ega.ugrid -g ega.egads -p ref_geom_test.gas -m ega.metric\n");
+	  printf("cp ref_driver.b8.ugrid ref_driver1.b8.ugrid\n");
+	  printf("cp ref_driver.gas ref_driver1.gas\n");
+	  printf("./ref_acceptance ref_driver1.b8.ugrid ref_driver1.metric 0.1\n");
+	  printf("./ref_driver -i ref_driver1.b8.ugrid -g ega.egads -p ref_driver1.gas -m ref_driver1.metric\n");
 	  return 1;
 	}
     }
