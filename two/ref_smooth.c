@@ -251,13 +251,6 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
     }
   if ( n0==REF_EMPTY || n1==REF_EMPTY)
     {
-      printf("nodes %d %d %d %d node %d\n",
-	     nodes[0],nodes[1],nodes[2],nodes[3],node);
-      RSS(ref_clump_around(ref_grid, node, "debugnode.tec" ), "dump");
-      RSS(ref_clump_around(ref_grid, nodes[0], "debugnode0.tec" ), "dump");
-      RSS(ref_clump_around(ref_grid, nodes[1], "debugnode1.tec" ), "dump");
-      RSS(ref_clump_around(ref_grid, nodes[2], "debugnode2.tec" ), "dump");
-      RSS(ref_geom_tec(ref_grid, "debuggeom.tec" ), "dump");
       THROW("empty triangle side");
     }
   nodes[0]=node;
