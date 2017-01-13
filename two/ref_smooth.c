@@ -897,9 +897,6 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
   REF_INT node;
   REF_BOOL allowed, geom_node, geom_edge, geom_face, interior, no_quads;
 
-  /* sort worst to best? edge, surface, volume sequence */
-  /* requeue neighbors with large changes? particulary quality drops */
-
   RSS( ref_geom_verify_topo( ref_grid ), "typo check");
 
   each_ref_node_valid_node( ref_node, node )

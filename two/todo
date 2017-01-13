@@ -1,4 +1,36 @@
 
+
+jacobian form of tet quality with optimizer
+- implement refine/one quality measures
+
+ideal tet using principle direction? but faces dissaggree?
+
+interp metric in threed and parallel
+
+clean up driver codes
+
+run test cases from UGAWG
+
+validate normal deviation (make metric big across cylinder)
+
+smooth
+ sort worst to best? edge, surface, volume sequence
+ requeue neighbors with large changes? particulary quality drops
+
+
+  eliminate short edges
+
+  don't remove geom nodes
+
+  parallel restart file
+  load bal
+  parallel update ghost geom param
+
+  refactor remove methods and tests, how is it used, what is needed?
+
+*/
+
+
 cavity
 - face based grow and shrink
  - shrink needs list delete
@@ -44,3 +76,7 @@ surface projection
   + measure / define quaility (edge length, mean ratio, metric norm)
     + histogram
   + tune parameters not available in paper or extend edge primitive scheme?
+
++  smooth face
++    get ideal uv using metric and triangle info
++    average

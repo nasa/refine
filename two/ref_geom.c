@@ -1,26 +1,4 @@
 
-/*
-  run test cases from UGAWG
-
-  validate normal deviation (make metric big across cylinder)
-
-  implement refine/one quality measures
-
-  smooth face
-    get ideal uv using metric and triangle info
-    average
-  eliminate short edges
-
-  don't remove geom nodes
-
-  parallel restart file
-  load bal
-  parallel update ghost geom param
-
-  refactor remove methods and tests, how is it used, what is needed?
-
-*/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
