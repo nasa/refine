@@ -180,13 +180,51 @@ static REF_STATUS ref_metric_interpolate_twod( REF_GRID ref_grid, REF_GRID paren
 
 REF_STATUS ref_metric_interpolate( REF_GRID ref_grid, REF_GRID parent_grid )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_NODE parent_node = ref_grid_node(parent_grid);
+  REF_INT node, tet, ixyz, ibary, im;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL xyz[3], interpolated_xyz[3], bary[4];
+  REF_DBL tol = -1.0;
+  REF_DBL log_parent_m[4][6];
+  REF_DBL log_interpolated_m[6];
+  
   if (ref_grid_twod(ref_grid))
     {
       RSS( ref_metric_interpolate_twod( ref_grid, parent_grid ), "2d version");
       return REF_SUCCESS;
     }
   
-  RSS(REF_IMPLEMENT,"ref_metric_interpolate only implemented for twod");
+  each_ref_node_valid_node( ref_node, node )
+    {
+      for (ixyz=0; ixyz<3; ixyz++)
+	xyz[ixyz] = ref_node_xyz(ref_node,ixyz,node); 
+      tet = REF_EMPTY;
+      RSS( ref_grid_enclosing_tet( parent_grid, xyz,
+				   &tet, bary ), "enclosing tet" );
+      RSS( ref_cell_nodes( ref_grid_tet(parent_grid), tet, nodes ), "c2n");
+      for (ixyz=0; ixyz<3; ixyz++)
+	{
+	  interpolated_xyz[ixyz] = 0.0;
+	  for (ibary=0; ibary<4; ibary++)
+	    interpolated_xyz[ixyz] += 
+	      bary[ibary]*ref_node_real(parent_node,ixyz,nodes[ibary]);
+	}
+      for (ixyz=0; ixyz<3; ixyz++)
+	RWDS( xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
+      for (ibary=0; ibary<4; ibary++)
+	RSS( ref_matrix_log_m( ref_node_metric_ptr(parent_node,nodes[ibary]),
+			       log_parent_m[ibary] ), "log(parentM)");
+      for (im=0; im<6; im++)
+	{
+	  log_interpolated_m[im] = 0.0;
+	  for (ibary=0; ibary<4; ibary++)
+	    log_interpolated_m[im] += 
+	      bary[ibary]*log_parent_m[ibary][im];
+	}
+      RSS(ref_matrix_exp_m( log_interpolated_m, 
+			    ref_node_metric_ptr(ref_node,node) ),"exp(intrpM)");
+    }
 
   return REF_SUCCESS;
 }

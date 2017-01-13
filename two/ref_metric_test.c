@@ -38,6 +38,8 @@
 #include "ref_math.h"
 #include "ref_args.h"
 
+#include "ref_geom.h"
+
 /*
 ./test.sh ref_metric && ./ref_metric_test \
   ../acceptance/2d/linear/two/accept-2d-two-09.b8.ugrid \
@@ -440,6 +442,28 @@ se.^-0.5
     RSS( ref_grid_free( parent_grid ), "free");
   }
 
+  {
+    REF_GRID ref_grid, parent_grid;
+    REF_INT node, im;
+    REF_DBL tol = -1.0;
+
+    RSS( ref_fixture_tet_brick_grid( &parent_grid ), "brick");
+    RSS( ref_fixture_tet_brick_grid( &ref_grid ), "brick");
+
+    RSS( ref_metric_olympic_node( ref_grid_node(parent_grid), 0.001 ),
+	   "oly" );
+
+    RSS( ref_metric_interpolate( ref_grid, parent_grid ), "interp" );
+
+    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+      for(im=0;im<6;im++)
+	RWDS( ref_node_metric(ref_grid_node(parent_grid),im,node),
+	      ref_node_metric(ref_grid_node(ref_grid),im,node),
+	      tol, "interpolant");    
+
+    RSS( ref_grid_free( ref_grid ), "free");
+    RSS( ref_grid_free( parent_grid ), "free");
+  }
 
   return 0;
 }
