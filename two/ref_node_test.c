@@ -1455,6 +1455,97 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* threed bary */
+    REF_NODE ref_node;
+    REF_INT nodes[4], global;
+    REF_DBL xyz[3];
+    REF_DBL bary[4];
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+    global = 3;
+    RSS(ref_node_add(ref_node,global,&(nodes[3])),"add");
+
+    for ( global=0;global<4;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+       }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
+    ref_node_xyz(ref_node,2,nodes[3]) = 1.0;
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+
+    RSS(ref_node_bary4(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 1.0, bary[0], -1.0, "b0" );
+    RWDS( 0.0, bary[1], -1.0, "b1" );
+    RWDS( 0.0, bary[2], -1.0, "b2" );
+    RWDS( 0.0, bary[3], -1.0, "b3" );
+
+    xyz[0] = 1.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+
+    RSS(ref_node_bary4(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 0.0, bary[0], -1.0, "b0" );
+    RWDS( 1.0, bary[1], -1.0, "b1" );
+    RWDS( 0.0, bary[2], -1.0, "b2" );
+    RWDS( 0.0, bary[3], -1.0, "b3" );
+
+    xyz[0] = 0.0;
+    xyz[1] = 1.0;
+    xyz[2] = 0.0;
+
+    RSS(ref_node_bary4(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 0.0, bary[0], -1.0, "b0" );
+    RWDS( 0.0, bary[1], -1.0, "b1" );
+    RWDS( 1.0, bary[2], -1.0, "b2" );
+    RWDS( 0.0, bary[3], -1.0, "b3" );
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 1.0;
+
+    RSS(ref_node_bary4(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 0.0, bary[0], -1.0, "b0" );
+    RWDS( 0.0, bary[1], -1.0, "b1" );
+    RWDS( 0.0, bary[2], -1.0, "b2" );
+    RWDS( 1.0, bary[3], -1.0, "b3" );
+
+    xyz[0] = 1.0/3.0;
+    xyz[1] = 1.0/3.0;
+    xyz[2] = 1.0/3.0;
+
+    RSS(ref_node_bary4(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 0.0, bary[0], -1.0, "b0" );
+    RWDS( 1.0/3.0, bary[1], -1.0, "b1" );
+    RWDS( 1.0/3.0, bary[2], -1.0, "b2" );
+    RWDS( 1.0/3.0, bary[3], -1.0, "b3" );
+
+    xyz[0] = 0.25;
+    xyz[1] = 0.25;
+    xyz[2] = 0.25;
+
+    RSS(ref_node_bary4(ref_node, nodes, xyz, bary ), "bary");
+    RWDS( 0.25, bary[0], -1.0, "b0" );
+    RWDS( 0.25, bary[1], -1.0, "b1" );
+    RWDS( 0.25, bary[2], -1.0, "b2" );
+    RWDS( 0.25, bary[3], -1.0, "b3" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;

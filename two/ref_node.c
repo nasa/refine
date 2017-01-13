@@ -1705,3 +1705,72 @@ REF_STATUS ref_node_bary3( REF_NODE ref_node, REF_INT *nodes,
   
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_bary4( REF_NODE ref_node, REF_INT *nodes,
+			   REF_DBL *xyz, REF_DBL *bary )
+{
+  REF_DBL *a, *b, *c, *d;
+  REF_DBL total, m11, m12, m13;
+  
+  if ( !ref_node_valid(ref_node,nodes[0]) ||
+       !ref_node_valid(ref_node,nodes[1]) ||
+       !ref_node_valid(ref_node,nodes[2]) ) 
+    RSS( REF_INVALID, "node invalid" );
+
+  a = ref_node_xyz_ptr(ref_node,nodes[0]);
+  b = ref_node_xyz_ptr(ref_node,nodes[1]);
+  c = ref_node_xyz_ptr(ref_node,nodes[2]);
+  d = ref_node_xyz_ptr(ref_node,nodes[3]);
+
+  a = xyz;
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  bary[0] = ( m11 - m12 + m13 );
+  a = ref_node_xyz_ptr(ref_node,nodes[0]);
+  
+  b = xyz;
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  bary[1] = ( m11 - m12 + m13 );
+  b = ref_node_xyz_ptr(ref_node,nodes[1]);
+  
+  c = xyz;
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  bary[2] = ( m11 - m12 + m13 );
+  c = ref_node_xyz_ptr(ref_node,nodes[2]);
+  
+  d = xyz;
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  bary[3] = ( m11 - m12 + m13 );
+  d = ref_node_xyz_ptr(ref_node,nodes[3]);
+  
+  total = bary[0]+bary[1]+bary[2]+bary[3];
+
+  if ( ref_math_divisible(bary[0],total) &&
+       ref_math_divisible(bary[1],total) &&
+       ref_math_divisible(bary[2],total) &&
+       ref_math_divisible(bary[3],total) )
+    {
+      bary[0] /= total;
+      bary[1] /= total;
+      bary[2] /= total;
+      bary[3] /= total;
+    }
+  else
+    {
+      REF_INT i;
+      printf("%s: %d: %s: div zero total %.18e vol %.18e %.18e %.18e %.18e\n",
+	     __FILE__,__LINE__,__func__,
+	     total, bary[0], bary[1], bary[2], bary[2] );
+      for(i=0;i<4;i++) bary[i] = 0.0;
+      return REF_DIV_ZERO;
+    }
+  
+  return REF_SUCCESS;
+}
