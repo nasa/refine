@@ -220,5 +220,27 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"cleanup");
   }
   
+  { /* walk to find enclosing tet */
+    REF_GRID ref_grid;
+    REF_DBL xyz[3], bary[4];
+    REF_INT tet;
+    RSS( ref_fixture_tet_brick_grid( &ref_grid ), "fix" );
+
+    xyz[0]= 0.5;
+    xyz[1]= 0.5;
+    xyz[2]= 0.5;
+    tet = REF_EMPTY;
+    RSS( ref_grid_enclosing_tet( ref_grid, xyz,
+				 &tet, bary ), "enclose");
+
+    REIS( 79, tet, "tet" );
+    RWDS( 0.0, bary[0], -1, "b0" );
+    RWDS( 0.5, bary[1], -1, "b1" );
+    RWDS( 0.0, bary[2], -1, "b2" );
+    RWDS( 0.5, bary[3], -1, "b3" );
+    
+    RSS(ref_grid_free(ref_grid),"cleanup");
+  }
+
   return 0;
 }

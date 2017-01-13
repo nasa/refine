@@ -473,6 +473,7 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
 	  return REF_SUCCESS;
 	}
       
+      /* less than */
       if ( bary[0] < bary[1] && bary[0] < bary[2] && bary[0] < bary[3] )
 	{
 	  RSS( ref_update_tet_guess( ref_cell, nodes[1], nodes[2], nodes[3],
@@ -495,6 +496,35 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
 	}
 
       if ( bary[3] < bary[0] && bary[3] < bary[2] && bary[3] < bary[1] )
+	{
+	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[2], nodes[1],
+				     &guess ), "update 0 2 1");
+	  continue;
+	}
+      
+      /* less than or equal */
+      if ( bary[0] <= bary[1] && bary[0] <= bary[2] && bary[0] <= bary[3] )
+	{
+	  RSS( ref_update_tet_guess( ref_cell, nodes[1], nodes[2], nodes[3],
+				     &guess ), "update 1 2 3");
+	  continue;
+	}
+
+      if ( bary[1] <= bary[0] && bary[1] <= bary[3] && bary[1] <= bary[2] )
+	{
+	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[3], nodes[2],
+				     &guess ), "update 0 3 2");
+	  continue;
+	}
+
+      if ( bary[2] <= bary[0] && bary[2] <= bary[1] && bary[2] <= bary[3] )
+	{
+	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[1], nodes[3],
+				     &guess ), "update 0 1 3");
+	  continue;
+	}
+
+      if ( bary[3] <= bary[0] && bary[3] <= bary[2] && bary[3] <= bary[1] )
 	{
 	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[2], nodes[1],
 				     &guess ), "update 0 2 1");
