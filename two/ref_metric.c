@@ -127,7 +127,7 @@ REF_STATUS ref_metric_twod_node( REF_NODE ref_node )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate( REF_GRID ref_grid, REF_GRID parent_grid )
+static REF_STATUS ref_metric_interpolate_twod( REF_GRID ref_grid, REF_GRID parent_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_NODE parent_node = ref_grid_node(parent_grid);
@@ -173,6 +173,20 @@ REF_STATUS ref_metric_interpolate( REF_GRID ref_grid, REF_GRID parent_grid )
       RSS(ref_matrix_exp_m( log_interpolated_m, 
 			    ref_node_metric_ptr(ref_node,node) ),"exp(intrpM)");
     }
+
+  return REF_SUCCESS;
+}
+
+
+REF_STATUS ref_metric_interpolate( REF_GRID ref_grid, REF_GRID parent_grid )
+{
+  if (ref_grid_twod(ref_grid))
+    {
+      RSS( ref_metric_interpolate_twod( ref_grid, parent_grid ), "2d version");
+      return REF_SUCCESS;
+    }
+  
+  RSS(REF_IMPLEMENT,"ref_metric_interpolate only implemented for twod");
 
   return REF_SUCCESS;
 }
