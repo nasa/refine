@@ -14,6 +14,10 @@
 
 #include   "ref_fixture.h"
 
+#include  "ref_export.h"
+#include   "ref_dict.h"
+#include   "ref_edge.h"
+
 #include "ref_malloc.h"
 
 int main( void )
@@ -160,7 +164,7 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"cleanup");
   }
   
-  { /* walk to find enclosing */
+  { /* walk to find enclosing tri */
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[3];
     REF_INT tri;
@@ -181,5 +185,40 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"cleanup");
   }
 
+  { /* single tet enclosing */
+    REF_GRID ref_grid;
+    REF_DBL xyz[3], bary[4];
+    REF_INT tet;
+    RSS( ref_fixture_tet_grid( &ref_grid ), "fix" );
+
+    xyz[0]= 0.2;
+    xyz[1]= 0.1;
+    xyz[2]= 0.3;
+    tet = 0;
+    RSS( ref_grid_enclosing_tet( ref_grid, xyz,
+				 &tet, bary ), "enclose");
+
+    REIS( 0, tet, "tet" );
+    RWDS( 0.4, bary[0], -1, "b0" );
+    RWDS( 0.2, bary[1], -1, "b1" );
+    RWDS( 0.1, bary[2], -1, "b2" );
+    RWDS( 0.3, bary[3], -1, "b3" );
+
+    xyz[0]= 0.2;
+    xyz[1]= 0.1;
+    xyz[2]= 0.3;
+    tet = REF_EMPTY;
+    RSS( ref_grid_enclosing_tet( ref_grid, xyz,
+				 &tet, bary ), "enclose");
+
+    REIS( 0, tet, "tet" );
+    RWDS( 0.4, bary[0], -1, "b0" );
+    RWDS( 0.2, bary[1], -1, "b1" );
+    RWDS( 0.1, bary[2], -1, "b2" );
+    RWDS( 0.3, bary[3], -1, "b3" );
+
+    RSS(ref_grid_free(ref_grid),"cleanup");
+  }
+  
   return 0;
 }

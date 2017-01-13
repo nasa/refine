@@ -397,3 +397,114 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
 
   return REF_SUCCESS;
 }
+
+static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
+					REF_INT node0,
+					REF_INT node1,
+					REF_INT node2,
+					REF_INT *guess)
+{
+  REF_INT face_nodes[4], cell0, cell1;
+
+  face_nodes[0]=node0;
+  face_nodes[1]=node1;
+  face_nodes[2]=node2;
+  face_nodes[3]=node0;
+
+  RSS( ref_cell_with_face( ref_cell, face_nodes, &cell0, &cell1 ), "next" );
+  if ( REF_EMPTY == cell0 )
+    THROW("bary update missing first");
+  if ( REF_EMPTY == cell1 )
+    THROW("bary update hit boundary");
+
+  if ( *guess == cell0 )
+    {
+      *guess = cell1;
+      return REF_SUCCESS;
+    }
+  if ( *guess == cell1 )
+    {
+      *guess = cell0;
+      return REF_SUCCESS;
+    }
+
+  return REF_NOT_FOUND;
+}
+
+REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
+                                  REF_INT *tet, REF_DBL *bary )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT guess;
+  REF_DBL inside = -1.0e-12;
+  REF_INT step, limit;
+  
+  guess = *tet;
+  if ( ! ref_cell_valid(ref_cell,guess) )
+    {
+      each_ref_cell_valid_cell( ref_cell, guess)
+	{
+	  break;
+	}
+    }
+  RAS( ref_cell_valid(ref_cell,guess), "unable to find start");
+
+  limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
+
+  for ( step=0; step < limit; step++)
+    {
+      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+
+      if ( step > 990 )
+	{
+	  printf("step %d, tet %d, bary %f %f %f %f\n",
+		 step,guess,bary[0],bary[1],bary[2],bary[3]);
+	}
+      
+      if ( bary[0] >= inside &&
+	   bary[1] >= inside &&
+	   bary[2] >= inside &&
+	   bary[3] >= inside )
+	{
+	  *tet = guess;
+	  return REF_SUCCESS;
+	}
+      
+      if ( bary[0] < bary[1] && bary[0] < bary[2] && bary[0] < bary[3] )
+	{
+	  RSS( ref_update_tet_guess( ref_cell, nodes[1], nodes[2], nodes[3],
+				     &guess ), "update 1 2 3");
+	  continue;
+	}
+
+      if ( bary[1] < bary[0] && bary[1] < bary[3] && bary[1] < bary[2] )
+	{
+	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[3], nodes[2],
+				     &guess ), "update 0 3 2");
+	  continue;
+	}
+
+      if ( bary[2] < bary[0] && bary[2] < bary[1] && bary[2] < bary[3] )
+	{
+	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[1], nodes[3],
+				     &guess ), "update 0 1 3");
+	  continue;
+	}
+
+      if ( bary[3] < bary[0] && bary[3] < bary[2] && bary[3] < bary[1] )
+	{
+	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[2], nodes[1],
+				     &guess ), "update 0 2 1");
+	  continue;
+	}
+
+      THROW("unable to find the next step");
+    }
+
+  THROW("max steps exceeded");
+
+  return REF_SUCCESS;
+}

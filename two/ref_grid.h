@@ -88,6 +88,8 @@ REF_STATUS ref_grid_replace_node( REF_GRID ref_grid,
 
 REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
 				   REF_INT *tri, REF_DBL *bary );
+REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
+				   REF_INT *tet, REF_DBL *bary );
 
 
 END_C_DECLORATION
