@@ -14,7 +14,8 @@ create jenkins test
 
 run test cases from UGAWG
 
-interp metric in threed and parallel
+interp metric on curved surface and parallel
+ make debug tecplot status
 
 clean up driver codes
 

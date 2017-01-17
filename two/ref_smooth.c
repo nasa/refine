@@ -267,6 +267,8 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   
   uv[0]=uv_orig[0];
   uv[1]=uv_orig[1];
+  dq_duv0[0] = 0; /* uninit warning */ 
+  dq_duv0[1] = 0; 
   q = q0;
   for (tries=0; tries<30 && q <0.99;tries++)
     {
