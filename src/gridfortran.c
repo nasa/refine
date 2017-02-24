@@ -657,7 +657,7 @@ void FC_FUNC(gridgetncell,GRIDGETNCELL)( int *nodes_per_cell, int *ncell )
 void FC_FUNC(gridgetcell,GRIDGETCELL)( int *nodes_per_cell, int *ncell, int *c2n )
 {
   int cell, total;
-  int node, nodes[6];
+  int node, nodes[8];
 
   /* this is for the fortran interface */
   SUPRESS_UNUSED_COMPILER_WARNING(ncell);
