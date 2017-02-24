@@ -65,6 +65,9 @@ Grid *gridImport(int maxnode, int nnode,
   grid->npyramid=0;
   grid->maxpyramid=0;
   grid->pyramid=NULL;
+  grid->nhex=0;
+  grid->maxhex=0;
+  grid->hex=NULL;
   grid->nquad=0;
   grid->maxquad=0;
   grid->quad=NULL;
@@ -1379,7 +1382,7 @@ Grid *gridExportAFLR3( Grid *grid, char *filename )
 
   fprintf(file,"%10d %10d %10d %10d %10d %10d %10d\n",
 	  grid->nnode,grid->nface,grid->nquad,
-	  grid->ncell,grid->npyramid,grid->nprism,0);
+	  grid->ncell,grid->npyramid,grid->nprism,grid->nhex);
 
   printf("gridExportAFLR3: writing xyz...\n");
   
@@ -1436,7 +1439,17 @@ Grid *gridExportAFLR3( Grid *grid, char *filename )
 	    grid->prism[i].nodes[5]+1);
   }
 
-  /* ain't got no hexes */
+  for( i=0; i<grid->nhex ; i++ ) {
+    fprintf(file,"%10d %10d %10d %10d %10d %10d %10d %10d\n",
+	    grid->hex[i].nodes[0]+1,
+	    grid->hex[i].nodes[1]+1,
+	    grid->hex[i].nodes[2]+1,
+	    grid->hex[i].nodes[3]+1,
+	    grid->hex[i].nodes[4]+1,
+	    grid->hex[i].nodes[5]+1,
+	    grid->hex[i].nodes[6]+1,
+	    grid->hex[i].nodes[7]+1);
+  }
 
   fclose(file);
 
@@ -1835,6 +1848,7 @@ void gridFree(Grid *grid)
 
   if (NULL != grid->quad) free(grid->quad);
   if (NULL != grid->pyramid) free(grid->pyramid);
+  if (NULL != grid->hex) free(grid->hex);
   if (NULL != grid->prism) free(grid->prism);
   adjFree(grid->edgeAdj);
   free(grid->edgeId);
@@ -1870,7 +1884,7 @@ Grid *gridPack(Grid *grid)
   int iface, n0, n1, id, n[3];
   double t0, t1, u[3], v[3];
   int *nodeo2n, *cello2n, *faceo2n, *edgeo2n;
-  int prismIndex, pyramidIndex, quadIndex;
+  int prismIndex, pyramidIndex, hexIndex, quadIndex;
 
   nodeo2n = (int *)malloc(grid->maxnode*sizeof(int));
   for (i=0;i<grid->maxnode;i++) nodeo2n[i] = EMPTY;
@@ -2102,6 +2116,11 @@ Grid *gridPack(Grid *grid)
 			nodeo2n[grid->pyramid[pyramidIndex].nodes[i]];
   }
 
+  for (hexIndex=0;hexIndex<gridNHex(grid);hexIndex++){
+    for (i=0;i<8;i++) grid->hex[hexIndex].nodes[i] =
+			nodeo2n[grid->hex[hexIndex].nodes[i]];
+  }
+
   /* note, these should be counted as boundaries */
   for (quadIndex=0;quadIndex<gridNQuad(grid);quadIndex++){
     for (i=0;i<4;i++) grid->quad[quadIndex].nodes[i] =
@@ -2254,7 +2273,7 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   double *temp_xyz;
   GridBool *temp_frozen;
   int *temp_int;
-  int prismIndex, pyramidIndex, quadIndex;
+  int prismIndex, pyramidIndex, hexIndex, quadIndex;
 
   temp_xyz = (double *)malloc( grid->nnode * sizeof(double) );
   for ( ixyz = 0; ixyz < 3 ; ixyz++ ){
@@ -2361,6 +2380,11 @@ Grid *gridRenumber(Grid *grid, int *o2n)
   for (pyramidIndex=0;pyramidIndex<gridNPyramid(grid);pyramidIndex++){
     for (i=0;i<5;i++) grid->pyramid[pyramidIndex].nodes[i] =
 			o2n[grid->pyramid[pyramidIndex].nodes[i]];
+  }
+
+  for (hexIndex=0;hexIndex<gridNHex(grid);hexIndex++){
+    for (i=0;i<8;i++) grid->hex[hexIndex].nodes[i] =
+			o2n[grid->hex[hexIndex].nodes[i]];
   }
 
   /* note, these should be counted as boundaries */
@@ -2951,6 +2975,11 @@ int gridNPrism(Grid *grid)
 int gridNPyramid(Grid *grid)
 {
   return grid->npyramid;
+}
+
+int gridNHex(Grid *grid)
+{
+  return grid->nhex;
 }
 
 int gridNQuad(Grid *grid)
@@ -5805,6 +5834,52 @@ Grid *gridPyramid(Grid *grid, int pyramidIndex, int *nodes)
 
   for (i=0;i<5;i++){
     nodes[i]=grid->pyramid[pyramidIndex].nodes[i];
+  }
+
+  return grid;
+}
+
+Grid *gridAddHex(Grid *grid, int n0, int n1, int n2, int n3, int n4, 
+		 int n5, int n6, int n7)
+{
+  int origSize;
+
+  if (grid->nhex >= grid->maxhex) {
+    origSize = grid->maxhex;
+    grid->maxhex += 5000;
+    if (grid->hex == NULL) {
+      grid->hex = (Hex *)malloc(grid->maxhex*sizeof(Hex));
+    }else{
+      grid->hex =
+             (Hex *)realloc(grid->hex,grid->maxhex*sizeof(Hex));
+      if (NULL != grid->reallocFunc)
+	(*grid->reallocFunc)( grid->reallocData, 
+			      gridREALLOC_HEX, 
+			      origSize, grid->maxhex);
+    }
+  }
+
+  grid->hex[grid->nhex].nodes[0] = n0;
+  grid->hex[grid->nhex].nodes[1] = n1;
+  grid->hex[grid->nhex].nodes[2] = n2;
+  grid->hex[grid->nhex].nodes[3] = n3;
+  grid->hex[grid->nhex].nodes[4] = n4;
+  grid->hex[grid->nhex].nodes[5] = n5;
+  grid->hex[grid->nhex].nodes[6] = n6;
+  grid->hex[grid->nhex].nodes[7] = n7;
+
+  grid->nhex++;
+
+  return grid;
+}
+
+Grid *gridHex(Grid *grid, int hexIndex, int *nodes)
+{
+  int i;
+  if (hexIndex<0 || hexIndex >= gridNHex(grid) ) return NULL; 
+
+  for (i=0;i<8;i++){
+    nodes[i]=grid->hex[hexIndex].nodes[i];
   }
 
   return grid;

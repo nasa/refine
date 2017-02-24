@@ -44,6 +44,11 @@ struct Pyramid {
   int nodes[5];
 };
 
+typedef struct Hex Hex;
+struct Hex {
+  int nodes[8];
+};
+
 typedef struct Quad Quad;
 struct Quad {
   int nodes[4];
@@ -94,6 +99,9 @@ struct Grid {
 
   int npyramid, maxpyramid;
   Pyramid *pyramid;
+
+  int nhex, maxhex;
+  Hex *hex;
 
   int nquad, maxquad;
   Quad *quad;
@@ -213,6 +221,7 @@ Grid *gridDetachReallocator(Grid *g);
 #define gridREALLOC_PRISM (5)
 #define gridREALLOC_PYRAMID (6)
 #define gridREALLOC_QUAD (7)
+#define gridREALLOC_HEX (8)
 
 Grid *gridAttachFreeNotifier(Grid *g, void (*freeNotificationFunc)
 			     (void *freeNotificationData),
@@ -256,6 +265,7 @@ Grid *gridWriteVTK(Grid *g, char *filename );
 #define gridNEdge(grid)   ((grid)->nedge)
 int gridNPrism(Grid *g);
 int gridNPyramid(Grid *g);
+int gridNHex(Grid *g);
 int gridNQuad(Grid *g);
 int gridNAux(Grid *g);
 Grid *gridSetNAux(Grid *g, int naux);
@@ -472,6 +482,10 @@ Grid *gridPrism(Grid *g, int prismIndex, int *nodes);
 
 Grid *gridAddPyramid(Grid *g, int n0, int n1, int n2, int n3, int n4);
 Grid *gridPyramid(Grid *g, int pyramidIndex, int *nodes);
+
+Grid *gridAddHex(Grid *g, int n0, int n1, int n2, int n3,
+		 int n4, int n5, int n6, int n7);
+Grid *gridHex(Grid *g, int hexIndex, int *nodes);
 
 Grid *gridAddQuad(Grid *g, int n0, int n1, int n2, int n3, int faceId );
 Grid *gridQuad(Grid *g, int quadIndex, int *nodes, int *faceId );
