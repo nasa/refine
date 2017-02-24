@@ -102,6 +102,17 @@ void FC_FUNC(gridinsertcells,GRIDINSERTCELLS)( int *nodes_per_cell, int *ncell, 
 						     c2n[4+6*cell] - 1,
 						     c2n[5+6*cell] - 1 );
     break;
+  case 8:
+    for ( cell=0; cell<*ncell; cell++) gridAddHex( grid,
+						   c2n[0+8*cell] - 1,
+						   c2n[1+8*cell] - 1,
+						   c2n[2+8*cell] - 1,
+						   c2n[3+8*cell] - 1,
+						   c2n[4+8*cell] - 1,
+						   c2n[5+8*cell] - 1,
+						   c2n[6+8*cell] - 1,
+						   c2n[7+8*cell] - 1 );
+    break;
   default:
     printf( "ERROR: %s: %d: Cannot handle %d node elements\n",
 	    __FILE__, __LINE__, (*nodes_per_cell) );
@@ -631,6 +642,9 @@ void FC_FUNC(gridgetncell,GRIDGETNCELL)( int *nodes_per_cell, int *ncell )
   case 6:
     *ncell = gridNPrism(grid);
     break;
+  case 8:
+    *ncell = gridNHex(grid);
+    break;
   default:
     *ncell = 0;
     printf( "ERROR: %s: %d: Cannot handle %d node elements\n",
@@ -678,6 +692,18 @@ void FC_FUNC(gridgetcell,GRIDGETCELL)( int *nodes_per_cell, int *ncell, int *c2n
     for ( cell = 0 ; cell < gridNPrism(grid) ; cell++ )
       {
 	if ( grid == gridPrism(grid,cell,nodes) )
+	  {
+	    for ( node = 0 ; node < (*nodes_per_cell) ; node++ )
+	      c2n[node+(*nodes_per_cell)*total] = nodes[node] + 1;
+	    total++;
+	  }
+      }
+    break;
+  case 8:
+    total = 0;
+    for ( cell = 0 ; cell < gridNHex(grid) ; cell++ )
+      {
+	if ( grid == gridHex(grid,cell,nodes) )
 	  {
 	    for ( node = 0 ; node < (*nodes_per_cell) ; node++ )
 	      c2n[node+(*nodes_per_cell)*total] = nodes[node] + 1;
