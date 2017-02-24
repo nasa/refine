@@ -1,4 +1,5 @@
 
+- refine/one fortran interface can now store hex elements without modification
 - added tetgen .smesh output format
 
 Tue, Aug 23, 2016 : Released Refine 1.8.17
