@@ -14,7 +14,7 @@ cat > faux_input <<EOF
 6 zplane 1
 EOF
 
-if [ $# -gt 1 ] ; then
+if [ $# -gt 0 ] ; then
     one=$1/src
     two=$1/two
 else
