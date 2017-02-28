@@ -10,8 +10,11 @@ cat > faux_input <<EOF
 6 zplane 1
 EOF
 
-bin=${HOME}/refine/strict/two
-one=${HOME}/refine/strict/src
+if [ -z $1 ] ; then
+    bin=${HOME}/refine/strict/two
+else
+    bin=$1
+fi
 
 ${bin}/ref_acceptance 1 ref_adapt_test.b8.ugrid
 
