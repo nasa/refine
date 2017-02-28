@@ -45,9 +45,9 @@ trap "cat $LOG" EXIT
 env TMPDIR=${PWD} make -j 8  > $LOG 2>&1
 trap - EXIT
 
-LOG=${root_dir}/log.make-check
+LOG=${root_dir}/log.make-distcheck
 trap "cat $LOG" EXIT
-make check > $LOG 2>&1
+make distcheck > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.make-install
