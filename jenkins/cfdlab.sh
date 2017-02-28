@@ -10,8 +10,8 @@ zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2013-2013.4.183_64"
 
 egads_path=/ump/fldmd/home/wtjones1/local/pkgs-modules/ESP/svn
 
-source_dir=$(dirname $PWD)
-build_dir=${source_dir}/../_refine
+source_dir=$(dirname $PWD)/refine
+build_dir=${source_dir}/_refine
 
 cd ${source_dir}
 ./bootstrap
