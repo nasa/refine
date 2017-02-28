@@ -46,5 +46,4 @@ ssh fun3d@${build_machine} <<EOF
    ${BUILD_NUMBER} \
    "${build_directory_root}/jenkins-${JOB_NAME}"
 EOF
-}
 
