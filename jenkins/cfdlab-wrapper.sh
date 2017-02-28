@@ -44,7 +44,7 @@ ssh fun3d@${build_machine} <<EOF
  cd ${build_directory_root}/${BUILD_TAG}/refine && \
   ./jenkins/remove_old_builds.sh \
    ${BUILD_NUMBER} \
-   "${build_directory}/jenkins-${JOB_NAME}"
+   "${build_directory_root}/jenkins-${JOB_NAME}"
 EOF
 }
 
