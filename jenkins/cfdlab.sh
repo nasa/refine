@@ -21,19 +21,36 @@ source_dir=${root_dir}/refine
 build_dir=${root_dir}/_refine
 
 cd ${source_dir}
-./bootstrap
+LOG=${root_dir}/log.bootstrap
+trap "cat $LOG" EXIT
+./bootstrap > $LOG 2>&1
+trap - EXIT
 
 mkdir -p ${build_dir}
 cd ${build_dir}
+LOG=${root_dir}/log.configure
+trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${build_dir} \
     --with-EGADS=${egads_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran
+    FC=gfortran  > $LOG 2>&1
+trap - EXIT
 
-env TMPDIR=${PWD} make -j 8
-make check
-make install
+LOG=${root_dir}/log.make
+trap "cat $LOG" EXIT
+env TMPDIR=${PWD} make -j 8  > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.make-check
+trap "cat $LOG" EXIT
+make check > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.make-install
+trap "cat $LOG" EXIT
+make install > $LOG 2>&1
+trap - EXIT
 
 
 
