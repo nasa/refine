@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -x # echo commands
+set -e # exit on first error
+set -u # Treat unset variables as error
+
 cat > faux_input <<EOF
 6
 1 xplane 0
@@ -10,29 +14,31 @@ cat > faux_input <<EOF
 6 zplane 1
 EOF
 
-if [ -z $1 ] ; then
-    bin=${HOME}/refine/strict/two
+if [ $# -gt 1 ] ; then
+    one=$1/src
+    two=$1/two
 else
-    bin=$1
+    one=${HOME}/refine/strict/src
+    two=${HOME}/refine/strict/two
 fi
 
-${bin}/ref_acceptance 1 ref_adapt_test.b8.ugrid
+${two}/ref_acceptance 1 ref_adapt_test.b8.ugrid
 
 function adapt_cycle {
     proj=$1
 
     cp ref_adapt_test.b8.ugrid ${proj}.b8.ugrid
 
-    ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.html
-    ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.tec
+    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.html
+    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
-    ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
+    ${two}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
 
-    ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.fgrid
+    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.fgrid
     ${one}/refine-px -g ${proj}.fgrid -m ${proj}.metric -o refine-one.fgrid
-    ${bin}/ref_translate refine-one.fgrid ref_adapt_test.b8.ugrid
+    ${two}/ref_translate refine-one.fgrid ref_adapt_test.b8.ugrid
 
-    ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
+    ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
     cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
     gnuplot ref_histogram_edge-ratio.gnuplot
