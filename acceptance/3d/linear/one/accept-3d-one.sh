@@ -50,7 +50,4 @@ adapt_cycle accept-3d-one-00
 adapt_cycle accept-3d-one-01
 adapt_cycle accept-3d-one-02
 adapt_cycle accept-3d-one-03
-adapt_cycle accept-3d-one-04
-adapt_cycle accept-3d-one-05
-adapt_cycle accept-3d-one-06
 
