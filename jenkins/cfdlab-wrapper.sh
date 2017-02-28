@@ -39,6 +39,8 @@ EOF
 build_machine=cypher-work13
 ssh -o StrictHostKeyChecking=no fun3d@${build_machine} true
 
+scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .
+
 ssh fun3d@${build_machine} <<EOF
  whoami && \
  cd ${build_directory_root}/${BUILD_TAG}/refine && \
