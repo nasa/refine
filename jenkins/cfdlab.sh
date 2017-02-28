@@ -6,10 +6,14 @@ set -u # Treat unset variables as error
 
 set +x # echo commands
 . /usr/local/pkgs/modules/init/bash
+
+module add gcc_4.9.1_64
+module add git # for git describe
+
 module use --append /ump/fldmd/home/wtjones1/Modules/modulefiles
 module load OpenCASCADE/6.6.0
 module load ESP/svn
-module add gcc_4.9.1_64
+
 module list
 set -x # echo commands
 
