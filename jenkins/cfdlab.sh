@@ -4,6 +4,8 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
+. /usr/local/pkgs/modules/init/bash
+
 module use --append /ump/fldmd/home/wtjones1/Modules/modulefiles
 module load OpenCASCADE/6.6.0
 module load ESP/svn
