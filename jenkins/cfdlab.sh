@@ -17,6 +17,7 @@ build_dir=${root_dir}/_refine
 cd ${source_dir}
 ./bootstrap
 
+mkdir -p ${build_dir}
 cd ${build_dir}
 ${source_dir}/configure \
     --prefix=${build_dir} \
