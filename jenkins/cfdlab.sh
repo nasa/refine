@@ -65,7 +65,11 @@ cd ${source_dir}/acceptance/3d/linear/one
 ./accept-3d-one.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
-
+LOG=${root_dir}/log.accept-3d-linear-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/3d/linear/two
+./accept-3d-two.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
 
 
 
