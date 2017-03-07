@@ -1,22 +1,34 @@
 #!/usr/bin/env bash
 
-bin=${HOME}/refine/strict/two
+set -x # echo commands
+set -e # exit on first error
+set -u # Treat unset variables as error
 
-${bin}/ref_acceptance 1 ref_adapt_test.b8.ugrid
+if [ $# -gt 0 ] ; then
+    one=$1/src
+    two=$1/two
+else
+    one=${HOME}/refine/strict/src
+    two=${HOME}/refine/strict/two
+fi
+
+${two}/ref_acceptance 1 ref_adapt_test.b8.ugrid
 
 function adapt_cycle {
     proj=$1
 
     cp ref_adapt_test.b8.ugrid ${proj}.b8.ugrid
 
-    ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.html
-    ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.tec
+    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.html
+    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
-    ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
+    ${two}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
 
-    ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
-
-    ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
+    rm ref_adapt_test.b8.ugrid
+    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric
+    cp ref_driver.b8.ugrid ref_adapt_test.b8.ugrid
+    
+    ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
     cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
     gnuplot ref_histogram_edge-ratio.gnuplot
@@ -30,5 +42,9 @@ adapt_cycle accept-3d-two-02
 adapt_cycle accept-3d-two-03
 adapt_cycle accept-3d-two-04
 adapt_cycle accept-3d-two-05
-adapt_cycle accept-3d-two-06
+
+cat accept-3d-two-05.status
+../../../check.rb accept-3d-two-05.status 0.23 1.7
+
+
 
