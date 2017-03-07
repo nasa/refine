@@ -40,7 +40,4 @@ adapt_cycle accept-2d-two-03
 adapt_cycle accept-2d-two-04
 adapt_cycle accept-2d-two-05
 adapt_cycle accept-2d-two-06
-adapt_cycle accept-2d-two-07
-adapt_cycle accept-2d-two-08
-adapt_cycle accept-2d-two-09
 
