@@ -60,10 +60,11 @@ int main( int argc, char *argv[] )
   REF_GRID background_grid = NULL;
   int opt;
   int passes, pass;
-  
+  REF_BOOL output_clumps = REF_FALSE;
+	  
   echo_argv( argc, argv );
 
-  while ((opt = getopt(argc, argv, "i:m:g:p:")) != -1)
+  while ((opt = getopt(argc, argv, "i:m:g:p:c")) != -1)
     {
       switch (opt)
 	{
@@ -83,11 +84,15 @@ int main( int argc, char *argv[] )
 	    RSS(ref_part_metric( ref_grid_node(background_grid), optarg ),
 		"part m back" );
 	  break;
+	case 'c':
+	  output_clumps = REF_TRUE;
+	  break;
 	case '?':
 	default:
 	  printf("parse error -%c\n",optopt);
 	  printf("usage: \n %s\n",argv[0]);
 	  printf("       [-i input_grid.ext]\n");
+	  printf("       [-c] output clumps\n");
 	  printf("./ref_geom_test ega.egads \n");
 	  printf("./ref_geom_test ega.egads ega.ugrid\n");
 	  printf("./ref_acceptance ega.ugrid ega.metric 0.1\n");
@@ -132,9 +137,12 @@ int main( int argc, char *argv[] )
   RSS(ref_geom_tec( ref_grid, "ref_driver_geom.tec" ),"geom tec" );
   RSS(ref_geom_save( ref_grid, "ref_driver.gas" ),"geom tec" );
   ref_mpi_stopwatch_stop("tec");
-  RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
-  ref_mpi_stopwatch_stop("clump stuck");
- 
+  if ( output_clumps)
+    {
+      RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
+      ref_mpi_stopwatch_stop("clump stuck");
+    }
+  
   if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");
 
   return 0;
