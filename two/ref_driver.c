@@ -143,7 +143,7 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop("clump stuck");
     }
   
-  if ( NULL != ref_background ) RSS(ref_grid_free( ref_background ), "free");
+  if ( NULL != background_grid ) RSS(ref_grid_free( background_grid ), "free");
   if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");
 
   return 0;
