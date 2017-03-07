@@ -415,7 +415,7 @@ static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
   if ( REF_EMPTY == cell0 )
     THROW("bary update missing first");
   if ( REF_EMPTY == cell1 )
-    THROW("bary update hit boundary");
+    RAISE(NOT_FOUND);
 
   if ( *guess == cell0 )
     {

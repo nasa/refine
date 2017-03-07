@@ -12,8 +12,8 @@ else
     two=${HOME}/refine/strict/two
 fi
 
-${two}/ref_geom_test ega.egads
-${two}/ref_geom_test ega.egads ega.ugrid
+# ${two}/ref_geom_test ega.egads
+# ${two}/ref_geom_test ega.egads ega.ugrid
 ${two}/ref_acceptance ega.ugrid ega.metric 0.1
 ${two}/ref_driver -i ega.ugrid -g ega.egads -p ref_geom_test.gas -m ega.metric
 cp ref_driver.b8.ugrid ref_driver1.b8.ugrid
