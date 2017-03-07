@@ -59,6 +59,12 @@ trap "cat $LOG" EXIT
 make install > $LOG 2>&1
 trap - EXIT
 
+LOG=${root_dir}/log.accept-2d-linear-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/2d/linear/two
+./accept-2d-two.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
 LOG=${root_dir}/log.accept-3d-linear-one
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/one
@@ -70,6 +76,4 @@ trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
 ./accept-3d-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
-
-
 
