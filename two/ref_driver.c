@@ -61,10 +61,14 @@ int main( int argc, char *argv[] )
   int opt;
   int passes, pass;
   REF_BOOL output_clumps = REF_FALSE;
+  char output_project[1024];
+  char output_filename[1024];
+
+  snprintf( output_project, 1024, "ref_driver" );
 	  
   echo_argv( argc, argv );
 
-  while ((opt = getopt(argc, argv, "i:m:g:p:c")) != -1)
+  while ((opt = getopt(argc, argv, "i:m:g:p:o:c")) != -1)
     {
       switch (opt)
 	{
@@ -84,6 +88,9 @@ int main( int argc, char *argv[] )
 	    RSS(ref_part_metric( ref_grid_node(background_grid), optarg ),
 		"part m back" );
 	  break;
+	case 'o':
+	  snprintf( output_project, 1024, optarg );
+	  break;
 	case 'c':
 	  output_clumps = REF_TRUE;
 	  break;
@@ -95,6 +102,7 @@ int main( int argc, char *argv[] )
 	  printf("       [-g geometry.egads]\n");
 	  printf("       [-p parameterization-restart.gas]\n");
 	  printf("       [-m input_project.metric]\n");
+	  printf("       [-o output_project]\n");
 	  printf("       [-c] output clumps\n");
 	  printf("./ref_geom_test ega.egads \n");
 	  printf("./ref_geom_test ega.egads ega.ugrid\n");
@@ -133,12 +141,16 @@ int main( int argc, char *argv[] )
 
   RSS( ref_geom_verify_param( ref_grid ), "loaded params" );
   ref_mpi_stopwatch_stop("verify params");
-  RSS( ref_gather_b8_ugrid( ref_grid, "ref_driver.b8.ugrid" ),
+  snprintf( output_filename, 1024, "%s.b8.ugrid", output_project );
+  RSS( ref_gather_b8_ugrid( ref_grid, output_filename ),
        "gather");
   ref_mpi_stopwatch_stop("gather");
-  RSS(ref_export_tec_surf( ref_grid, "ref_driver_surf.tec" ),"surf tec" );
-  RSS(ref_geom_tec( ref_grid, "ref_driver_geom.tec" ),"geom tec" );
-  RSS(ref_geom_save( ref_grid, "ref_driver.gas" ),"geom tec" );
+  snprintf( output_filename, 1024, "%s_surf.tec", output_project );
+  RSS(ref_export_tec_surf( ref_grid, output_filename ),"surf tec" );
+  snprintf( output_filename, 1024, "%s_geom.tec", output_project );
+  RSS(ref_geom_tec( ref_grid, output_filename ),"geom tec" );
+  snprintf( output_filename, 1024, "%s.gas", output_project );
+  RSS(ref_geom_save( ref_grid, output_filename ),"geom tec" );
   ref_mpi_stopwatch_stop("tec");
   if ( output_clumps)
     {
