@@ -89,7 +89,7 @@ int main( int argc, char *argv[] )
 		"part m back" );
 	  break;
 	case 'o':
-	  snprintf( output_project, 1024, optarg );
+	  snprintf( output_project, 1024, "%s", optarg );
 	  break;
 	case 's':
 	  passes = atoi(optarg);
