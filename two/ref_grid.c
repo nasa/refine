@@ -415,7 +415,10 @@ static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
   if ( REF_EMPTY == cell0 )
     THROW("bary update missing first");
   if ( REF_EMPTY == cell1 )
-    THROW("bary update hit boundary");
+    { /* hit boundary */
+      *guess = REF_EMPTY;
+      return REF_SUCCESS;
+    }
 
   if ( *guess == cell0 )
     {
@@ -431,8 +434,40 @@ static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_grid_exahstive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
+					     REF_INT *tet, REF_DBL *bary )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT guess, best_guess;
+  REF_DBL best_bary, min_bary;
+ 
+  best_guess = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_cell_valid_cell( ref_cell, guess)
+    {
+      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+      min_bary = MIN( MIN(bary[0],bary[1]),MIN(bary[2],bary[3]));
+      if ( REF_EMPTY == best_guess || min_bary > best_bary )
+	{
+	  best_guess = guess;
+	  best_bary = min_bary;
+	}
+    }
+  
+  RUS( REF_EMPTY, best_guess, "failed to find cell");
+
+  *tet = best_guess;
+  RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
+  RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
-                                  REF_INT *tet, REF_DBL *bary )
+				   REF_INT *tet, REF_DBL *bary )
 {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -449,12 +484,19 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
 	  break;
 	}
     }
-  RAS( ref_cell_valid(ref_cell,guess), "unable to find start");
 
   limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
 
   for ( step=0; step < limit; step++)
     {
+      /* exhastive serach if cell is invalid */
+      if ( !ref_cell_valid(ref_cell,guess) )
+	{
+	  RSS( ref_grid_exahstive_enclosing_tet( ref_grid, xyz,
+						 tet, bary ), "enclose");
+	  return REF_SUCCESS;
+	}
+
       RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
       RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
 
