@@ -1,6 +1,4 @@
 
-move repo to gitlab
-
 open source
 
 create jenkins test
@@ -85,4 +83,6 @@ low priority surface reconstruction
 +    average
 
 +  don't collapse remove geom nodes
+
++ move repo to gitlab
 
