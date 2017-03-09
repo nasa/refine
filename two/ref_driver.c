@@ -59,7 +59,7 @@ int main( int argc, char *argv[] )
   REF_GRID ref_grid = NULL;
   REF_GRID background_grid = NULL;
   int opt;
-  int passes, pass;
+  int passes = 15, pass;
   REF_BOOL output_clumps = REF_FALSE;
   char output_project[1024];
   char output_filename[1024];
@@ -68,7 +68,7 @@ int main( int argc, char *argv[] )
 	  
   echo_argv( argc, argv );
 
-  while ((opt = getopt(argc, argv, "i:m:g:p:o:c")) != -1)
+  while ((opt = getopt(argc, argv, "i:m:g:p:o:s:c")) != -1)
     {
       switch (opt)
 	{
@@ -91,6 +91,9 @@ int main( int argc, char *argv[] )
 	case 'o':
 	  snprintf( output_project, 1024, optarg );
 	  break;
+	case 's':
+	  passes = atoi(optarg);
+	  break;
 	case 'c':
 	  output_clumps = REF_TRUE;
 	  break;
@@ -102,6 +105,7 @@ int main( int argc, char *argv[] )
 	  printf("       [-g geometry.egads]\n");
 	  printf("       [-p parameterization-restart.gas]\n");
 	  printf("       [-m input_project.metric]\n");
+	  printf("       [-s adapt_cycles] default is 15\n");
 	  printf("       [-o output_project]\n");
 	  printf("       [-c] output clumps\n");
 	  printf("./ref_geom_test ega.egads \n");
@@ -121,7 +125,6 @@ int main( int argc, char *argv[] )
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
 
-  passes = 15;
   for (pass = 0; pass<passes; pass++ )
     {
       printf(" pass %d of %d\n",pass,passes);
