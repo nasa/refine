@@ -83,3 +83,9 @@ cd ${source_dir}/acceptance/cube-cylinder/uniform/two
 ./accept-cube-cylinder-uniform-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+LOG=${root_dir}/log.accept-cube-cylinder-linear010-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-cylinder/linear010/two
+./accept-cube-cylinder-linear010-two.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
