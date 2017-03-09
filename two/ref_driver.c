@@ -92,6 +92,9 @@ int main( int argc, char *argv[] )
 	  printf("parse error -%c\n",optopt);
 	  printf("usage: \n %s\n",argv[0]);
 	  printf("       [-i input_grid.ext]\n");
+	  printf("       [-g geometry.egads]\n");
+	  printf("       [-p parameterization-restart.gas]\n");
+	  printf("       [-m input_project.metric]\n");
 	  printf("       [-c] output clumps\n");
 	  printf("./ref_geom_test ega.egads \n");
 	  printf("./ref_geom_test ega.egads ega.ugrid\n");
