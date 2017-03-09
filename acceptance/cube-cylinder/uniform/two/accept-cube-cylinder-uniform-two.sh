@@ -16,15 +16,16 @@ fi
 # ${two}/ref_geom_test ega.egads ega.ugrid
 # mv ref_geom_test.gas ega.gas
 ${two}/ref_acceptance ega.ugrid ega.metric 0.1
-${two}/ref_driver -i ega.ugrid -g ega.egads -p ega.gas -m ega.metric
-cp ref_driver.b8.ugrid ref_driver1.b8.ugrid
-cp ref_driver.gas ref_driver1.gas
+${two}/ref_driver -i ega.ugrid -g ega.egads -p ega.gas -m ega.metric -o ref_driver1
 ${two}/ref_acceptance ref_driver1.b8.ugrid ref_driver1.metric 0.1
-
 ${two}/ref_metric_test ref_driver1.b8.ugrid ref_driver1.metric > accept-cube-cylinder-uniform-two-01.status
 
-cat accept-cube-cylinder-uniform-two-01.status
-../../../check.rb accept-cube-cylinder-uniform-two-01.status 0.15 1.8
+${two}/ref_driver -i ref_driver1.b8.ugrid -g ega.egads -p ref_driver1.gas -m ref_driver1.metric -o ref_driver2
+${two}/ref_acceptance ref_driver2.b8.ugrid ref_driver2.metric 0.1
+${two}/ref_metric_test ref_driver2.b8.ugrid ref_driver2.metric > accept-cube-cylinder-uniform-two-02.status
+
+cat accept-cube-cylinder-uniform-two-02.status
+../../../check.rb accept-cube-cylinder-uniform-two-02.status 0.4 1.6
 
 
 
