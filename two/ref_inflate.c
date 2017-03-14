@@ -86,8 +86,8 @@ REF_STATUS ref_inflate_face( REF_GRID ref_grid,
 
   /* determine each faceids normal */
 
-  ref_malloc_init( tmin, ref_dict_n(faceids), REF_DBL,  2.0*ref_math_pi );
-  ref_malloc_init( tmax, ref_dict_n(faceids), REF_DBL, -2.0*ref_math_pi);
+  ref_malloc_init( tmin, ref_dict_n(faceids), REF_DBL,  4.0*ref_math_pi );
+  ref_malloc_init( tmax, ref_dict_n(faceids), REF_DBL, -4.0*ref_math_pi);
   ref_malloc_init( imin, ref_dict_n(faceids), REF_INT,  REF_EMPTY);
   ref_malloc_init( imax, ref_dict_n(faceids), REF_INT,  REF_EMPTY);
 
