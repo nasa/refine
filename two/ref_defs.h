@@ -93,6 +93,15 @@ typedef int REF_STATUS;
     }									\
   }
 
+#define RNB(ptr,msg,block)						\
+  {									\
+    if (NULL == (ptr)){							\
+      printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
+      block;								\
+      return REF_NULL;							\
+    }									\
+  }
+
 #define REIS(a,b,msg)							\
   {									\
     REF_INT ref_private_status_ai,ref_private_status_bi;		\
