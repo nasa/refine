@@ -236,11 +236,13 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
       ref_realloc( ref_node->age, ref_node_max(ref_node), REF_INT);
 
       ref_realloc( ref_node->real, 
-		   REF_NODE_REAL_PER*ref_node_max(ref_node), REF_DBL);
+		   ( (unsigned long)REF_NODE_REAL_PER *
+		     (unsigned long)ref_node_max(ref_node) ), REF_DBL);
 
       if ( ref_node_naux(ref_node) > 0 )
 	ref_realloc( ref_node->aux, 
-		     ref_node_naux(ref_node)*ref_node_max(ref_node), REF_DBL);	
+		     ( (unsigned long)ref_node_naux(ref_node) *
+		       (unsigned long)ref_node_max(ref_node) ), REF_DBL);	
     }
 
   *node = next2index(ref_node->blank);
