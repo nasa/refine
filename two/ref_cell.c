@@ -296,8 +296,7 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
   ref_malloc( ref_cell->c2n, ref_cell_max(ref_cell) *
               ref_cell_size_per(ref_cell), REF_INT);
 
-  ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
-              ref_cell_edge_per(ref_cell), REF_INT);
+  ref_cell->c2e = NULL;
 
   for ( cell = 0; cell < max; cell++ )
     {
@@ -347,14 +346,21 @@ REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell_ptr, REF_CELL original )
   for ( cell = 0; cell < max; cell++ )
     for ( node = 0; node < ref_cell_size_per(ref_cell) ; node++ )
       ref_cell_c2n(ref_cell,node,cell) = ref_cell_c2n(original,node,cell);
-   
-  ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
-              ref_cell_edge_per(ref_cell), REF_INT);
-  for ( cell = 0; cell < max; cell++ )
-    for ( node = 0; node < ref_cell_edge_per(ref_cell) ; node++ )
-      ref_cell_c2e_set(ref_cell,node,cell) = 
-	ref_cell_c2e(original,node,cell);
-   
+  
+  if ( NULL == original->c2e )
+    {
+      ref_cell->c2e = NULL;
+    }
+  else
+    {
+      ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
+		  ref_cell_edge_per(ref_cell), REF_INT);
+      for ( cell = 0; cell < max; cell++ )
+	for ( node = 0; node < ref_cell_edge_per(ref_cell) ; node++ )
+	  ref_cell_c2e_set(ref_cell,node,cell) = 
+	    ref_cell_c2e(original,node,cell);
+    }
+
   ref_cell_blank(ref_cell) = ref_cell_blank(original);
 
   RSS( ref_adj_deep_copy( &( ref_cell->ref_adj ), original->ref_adj ),
@@ -423,8 +429,9 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
 
       ref_realloc( ref_cell->c2n, ref_cell_size_per(ref_cell) *
                    ref_cell_max(ref_cell), REF_INT );
-      ref_realloc( ref_cell->c2e, ref_cell_edge_per(ref_cell) *
-                   ref_cell_max(ref_cell), REF_INT );
+      if ( NULL != ref_cell->c2e )
+	ref_realloc( ref_cell->c2e, ref_cell_edge_per(ref_cell) *
+		     ref_cell_max(ref_cell), REF_INT );
 
       for (cell = orig; cell < ref_cell_max(ref_cell); cell++ )
         {
@@ -755,6 +762,11 @@ REF_STATUS ref_cell_node_list_around( REF_CELL ref_cell,
 REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell)
 {
   REF_INT cell, edge;
+
+  if ( NULL == ref_cell->c2e )
+    ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
+		ref_cell_edge_per(ref_cell), REF_INT);
+
   for ( cell = 0; cell < ref_cell_max(ref_cell); cell++ )
     for ( edge = 0; edge < ref_cell_edge_per(ref_cell); edge++ )
       ref_cell_c2e_set(ref_cell,edge,cell) = REF_EMPTY;
@@ -767,6 +779,10 @@ REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
 {
   REF_INT item, cell, cell_edge;
   REF_INT e0, e1;
+
+  if ( NULL == ref_cell->c2e )
+    ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
+		ref_cell_edge_per(ref_cell), REF_INT);
 
   each_ref_cell_having_node( ref_cell, n0, item, cell)
   {
