@@ -29,7 +29,7 @@ BEGIN_C_DECLORATION
     if ( 0 < (n))							\
       (ptr) = (ptr_type *)realloc( (ptr), (n) * sizeof(ptr_type) );	\
     RNB((ptr),"realloc " #ptr " NULL",					\
-	printf("n %d size_of %lu = %lu\n",				\
+	printf("failed to realloc n %d size_of %lu = %lu\n",		\
 	       (n),sizeof(ptr_type),(n) * sizeof(ptr_type)));		\
   }
 
