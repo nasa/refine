@@ -26,6 +26,11 @@ BEGIN_C_DECLORATION
 
 #define ref_realloc( ptr, n, ptr_type )					\
   {									\
+    if (REF_FALSE)							\
+      printf("%d: %s: realloc n int %d uLong %lu size_of %lu = %lu\n",	\
+	     __LINE__,__func__,						\
+	     (REF_INT)(n),(unsigned long)(n),				\
+	     sizeof(ptr_type),(n) * sizeof(ptr_type));fflush(stdout);	\
     if ( 0 < (n))							\
       (ptr) = (ptr_type *)realloc( (ptr), (n) * sizeof(ptr_type) );	\
     RNB((ptr),"realloc " #ptr " NULL",					\
