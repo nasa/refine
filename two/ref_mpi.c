@@ -132,6 +132,7 @@ REF_STATUS ref_mpi_stopwatch_stop( char *message )
 	 110.0,
 	 message );
   fflush(stdout);
+  RSS( ref_mpi_stopwatch_start(), "restart" );
 #endif
 
   return REF_SUCCESS;
