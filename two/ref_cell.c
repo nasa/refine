@@ -352,7 +352,8 @@ REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell_ptr, REF_CELL original )
               ref_cell_edge_per(ref_cell), REF_INT);
   for ( cell = 0; cell < max; cell++ )
     for ( node = 0; node < ref_cell_edge_per(ref_cell) ; node++ )
-      ref_cell_c2e(ref_cell,node,cell) = ref_cell_c2e(original,node,cell);
+      ref_cell_c2e_set(ref_cell,node,cell) = 
+	ref_cell_c2e(original,node,cell);
    
   ref_cell_blank(ref_cell) = ref_cell_blank(original);
 
@@ -756,7 +757,7 @@ REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell)
   REF_INT cell, edge;
   for ( cell = 0; cell < ref_cell_max(ref_cell); cell++ )
     for ( edge = 0; edge < ref_cell_edge_per(ref_cell); edge++ )
-      ref_cell_c2e(ref_cell,edge,cell) = REF_EMPTY;
+      ref_cell_c2e_set(ref_cell,edge,cell) = REF_EMPTY;
 
   return REF_SUCCESS;
 }
@@ -775,7 +776,7 @@ REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
         e1 = ref_cell_e2n(ref_cell,1,cell_edge,cell);
         if ( ( e0 == n0 && e1 == n1 ) ||
              ( e0 == n1 && e1 == n0 )  )
-          ref_cell_c2e(ref_cell,cell_edge,cell) = edge;
+          ref_cell_c2e_set(ref_cell,cell_edge,cell) = edge;
       }
   }
 
