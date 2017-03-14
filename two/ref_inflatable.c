@@ -56,6 +56,7 @@ int main( int argc, char *argv[] )
 	     argv[0]);
       printf("       [--aoa angle_of_attack_in_degrees]\n");
       printf("       [--rotate angle_in_degrees]\n");
+      printf("       [--origin ox oy oz]\n");
       printf("       [--scale factor] (applied after inflation)\n");
       printf("  when first_thickness <= 0, it is set to a uniform grid,\n");
       printf("    first_thickness = total_thickness/nlayers\n");
