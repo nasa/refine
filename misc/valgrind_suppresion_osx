@@ -57,3 +57,81 @@
    ...
 }
 
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:currentlocale
+   obj:/bin/sh
+   obj:/bin/sh
+   fun:start
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:class_createInstance
+   fun:_os_object_alloc_realized
+   fun:_xpc_pipe_create
+   fun:xpc_pipe_create
+   fun:_od_xpc_pipe
+   fun:_od_running
+   fun:ds_user_byuid
+   fun:search_item_bynumber
+   fun:getpwuid
+   obj:/bin/sh
+   obj:/bin/sh
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:_objc_fetch_pthread_data
+   fun:_ZL27_fetchInitializingClassLista
+   fun:_class_initialize
+   fun:_class_initialize
+   fun:_class_initialize
+   fun:_class_initialize
+   fun:lookUpImpOrForward
+   fun:objc_msgSend
+   fun:xpc_pipe_routine
+   fun:_xpc_interface_routine
+   fun:bootstrap_look_up3
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:LI_get_thread_info
+   fun:LI_set_thread_item
+   fun:getpwuid
+   obj:/bin/sh
+   obj:/bin/sh
+   fun:start
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:_object_remove_assocations
+   fun:objc_destructInstance
+   fun:object_dispose
+   fun:-[OS_xpc_object _xref_dispose]
+   fun:xpc_pipe_routine
+   fun:_xpc_interface_routine
+   fun:bootstrap_look_up3
+   fun:bootstrap_look_up2
+   fun:___notify_lib_init_block_invoke
+   fun:_dispatch_client_callout
+   fun:dispatch_once_f
+}
+
