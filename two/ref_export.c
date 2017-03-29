@@ -1748,7 +1748,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename )
 		     sizeof(double),1,file),"y");
       REIS(1, fwrite(&(ref_node_xyz(ref_node,2,n2o[node])),
 		     sizeof(double),1,file),"z");
-      id = node+1;
+      id = 0;
       REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
     }
 
@@ -1786,13 +1786,13 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, char *filename )
   id = 0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
-      id++;
       for ( node = 0; node < node_per; node++ )
 	{
 	  nodes[node] = o2n[nodes[node]]+1;
 	  REIS(1, fwrite(&(nodes[node]),sizeof(int),1,file),"cell");
 	}
-      REIS(1, fwrite(&(id),sizeof(int),1,file),"tri id");
+      id = 0;
+      REIS(1, fwrite(&(id),sizeof(int),1,file),"tet id");
     }
 
   /* End */
@@ -1868,7 +1868,7 @@ REF_STATUS ref_export_twod_meshb( REF_GRID ref_grid, char *filename )
 		     sizeof(double),1,file),"x");
       REIS(1, fwrite(&(ref_node_xyz(ref_node,2,n2o[node])),
 		     sizeof(double),1,file),"z");
-      id = node+1;
+      id = 0;
       REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
     }
 
@@ -1936,7 +1936,8 @@ REF_STATUS ref_export_twod_meshb( REF_GRID ref_grid, char *filename )
 		  nodes[node] = o2n[nodes[node]]+1;
 		  REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"tri");
 		}
-	      REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"tri id");
+	      id = 0;
+	      REIS(1, fwrite(&(id),sizeof(int),1,file),"tet id");
 	    }
 	}
   REIS( ntri, ref_cell_n(ref_cell)/2, "triangle miscount" );

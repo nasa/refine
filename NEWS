@@ -1,6 +1,8 @@
 
 - refine/one fortran interface can now store hex elements without modification
 - added tetgen .smesh output format
+- 3D .meshb export now uses 0 to mark vertex and tetra ids. (triangles
+  continue to use face/patch id)
 
 Tue, Aug 23, 2016 : Released Refine 1.8.17
 
