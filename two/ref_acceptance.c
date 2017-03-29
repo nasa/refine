@@ -44,6 +44,7 @@ int main( int argc, char *argv[] )
 	{
 	  printf("usage:\n");
 	  printf("  %s -ugawg [linear,polar-1,polar-2] input.grid_format output.metric\n", argv[0]);
+	  return(1);
 	}
       printf("%s reading\n",argv[3]);
       RSS( ref_import_by_extension( &ref_grid, argv[3] ), "in");
@@ -55,8 +56,20 @@ int main( int argc, char *argv[] )
 	  printf(" -ugawg linear metric\n");
 	  RSS( ref_metric_olympic_node( ref_grid_node(ref_grid), 0.001 ),"lin");
 	}
-      printf("%s metric exported\n",argv[4]);
+      if( strcmp(argv[2],"polar-1") == 0 ) 
+	{
+	  metric_recognized = REF_TRUE;
+	  printf(" -ugawg polar-1 metric\n");
+	  RSS( ref_metric_ugawg_node( ref_grid_node(ref_grid), 1 ),"p1");
+	}
+      if( strcmp(argv[2],"polar-2") == 0 ) 
+	{
+	  metric_recognized = REF_TRUE;
+	  printf(" -ugawg polar-2 metric\n");
+	  RSS( ref_metric_ugawg_node( ref_grid_node(ref_grid), 2 ),"p2");
+	}
       RAS( metric_recognized, "did not recognize metric field name" );
+      printf("%s metric exported\n",argv[4]);
       RSS( ref_gather_metric( ref_grid, argv[4] ), "in");
       return 0;
     }
