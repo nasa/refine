@@ -32,6 +32,21 @@ int main( int argc, char *argv[] )
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT masabl_pos;
+  REF_INT ugawg_pos;
+
+  RXS(ref_args_find( argc, argv, "-ugawg", &ugawg_pos ),
+      REF_NOT_FOUND, "arg");
+
+  if ( REF_EMPTY != ugawg_pos )
+    {
+      if ( 6 != argc )
+	{
+	  printf("usage:\n");
+	  printf("  %s -ugawg [linear,polar-1,polar-2] input.grid_format output.metric\n", argv[0]);
+	}
+
+      return 0;
+    }
 
   RXS(ref_args_find( argc, argv, "-masabl", &masabl_pos ), 
       REF_NOT_FOUND, "arg");
