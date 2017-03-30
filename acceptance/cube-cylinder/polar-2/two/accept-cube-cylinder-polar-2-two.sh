@@ -32,11 +32,26 @@ function adapt_cycle {
 ${two}/ref_translate ega.ugrid ega.b8.ugrid
 ${two}/ref_acceptance -ugawg ${field} ega.b8.ugrid ega.metric
 
-adapt_cycle ega cycle1 2
-adapt_cycle cycle1 cycle2 2
-adapt_cycle cycle2 cycle3 2
-adapt_cycle cycle3 cycle4 2
-adapt_cycle cycle4 cycle5 2
+adapt_cycle ega cycle01 2
+adapt_cycle cycle01 cycle02 2
+adapt_cycle cycle02 cycle03 2
+adapt_cycle cycle03 cycle04 2
+adapt_cycle cycle04 cycle05 2
+adapt_cycle cycle05 cycle06 2
+adapt_cycle cycle06 cycle07 2
+adapt_cycle cycle07 cycle08 2
+adapt_cycle cycle08 cycle09 2
+adapt_cycle cycle09 cycle10 2
+adapt_cycle cycle10 cycle11 4
+adapt_cycle cycle11 cycle12 4
+adapt_cycle cycle12 cycle13 4
+adapt_cycle cycle13 cycle14 4
+adapt_cycle cycle14 cycle15 4
+adapt_cycle cycle15 cycle16 4
+adapt_cycle cycle16 cycle17 4
+adapt_cycle cycle17 cycle18 4
+adapt_cycle cycle18 cycle19 4
+adapt_cycle cycle19 cycle20 4
 
 cat accept-cube-cylinder-linear010-two-02.status
 ../../../check.rb accept-cube-cylinder-linear010-two-02.status 0.08 1.8
