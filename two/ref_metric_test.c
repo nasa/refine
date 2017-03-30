@@ -128,6 +128,25 @@ int main( int argc, char *argv[] )
       RSS( ref_mpi_stop( ), "stop" );
     }
 
+  if ( argc == 4 )
+    {
+      REF_GRID ref_grid;
+
+      RSS( ref_mpi_start( argc, argv ), "start" );
+
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
+
+      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+
+      RSS( ref_metric_sanitize( ref_grid ), "sant metric");
+
+      RSS( ref_gather_metric( ref_grid, argv[3] ), "in");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      RSS( ref_mpi_stop( ), "stop" );
+    }
+
   if ( argc == 9 )
     {
       REF_GRID ref_grid;
