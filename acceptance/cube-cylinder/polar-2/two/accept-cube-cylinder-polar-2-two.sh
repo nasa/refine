@@ -14,17 +14,29 @@ fi
 
 field=polar-2
 
+function adapt_cycle {
+    inproj=$1
+    outproj=$2
+    sweeps=$3
+
+    ${two}/ref_driver -i ${inproj}.b8.ugrid -g ega.egads -p ${inproj}.gas -m ${inproj}.metric -o ${outproj} -s ${sweeps}
+    ${two}/ref_acceptance -ugawg ${field} ${outproj}.b8.ugrid ${outproj}.metric
+    ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
+
+}
+
 # ${two}/ref_geom_test ega.egads
 # ${two}/ref_geom_test ega.egads ega.ugrid
 # mv ref_geom_test.gas ega.gas
-${two}/ref_acceptance -ugawg ${field} ega.ugrid ega.metric
-${two}/ref_driver -i ega.ugrid -g ega.egads -p ega.gas -m ega.metric -o ref_driver1
-${two}/ref_acceptance -ugawg ${field} ref_driver1.b8.ugrid ref_driver1.metric
-${two}/ref_metric_test ref_driver1.b8.ugrid ref_driver1.metric > accept-cube-cylinder-linear010-two-01.status
 
-${two}/ref_driver -i ref_driver1.b8.ugrid -g ega.egads -p ref_driver1.gas -m ref_driver1.metric -o ref_driver2
-${two}/ref_acceptance -ugawg ${field} ref_driver2.b8.ugrid ref_driver2.metric
-${two}/ref_metric_test ref_driver2.b8.ugrid ref_driver2.metric > accept-cube-cylinder-linear010-two-02.status
+${two}/ref_translate ega.ugrid ega.b8.ugrid
+${two}/ref_acceptance -ugawg ${field} ega.b8.ugrid ega.metric
+
+adapt_cycle ega cycle1 2
+adapt_cycle cycle1 cycle2 2
+adapt_cycle cycle2 cycle3 2
+adapt_cycle cycle3 cycle4 2
+adapt_cycle cycle4 cycle5 2
 
 cat accept-cube-cylinder-linear010-two-02.status
 ../../../check.rb accept-cube-cylinder-linear010-two-02.status 0.08 1.8
