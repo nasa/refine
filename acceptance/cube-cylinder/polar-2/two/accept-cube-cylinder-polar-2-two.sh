@@ -19,7 +19,8 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.b8.ugrid -g ega.egads -p ${inproj}.gas -m ${inproj}.metric -o ${outproj} -s ${sweeps}
+    ${two}/ref_metric_test ${inproj}.b8.ugrid ${inproj}.metric ${inproj}-sant.metric
+    ${two}/ref_driver -i ${inproj}.b8.ugrid -g ega.egads -p ${inproj}.gas -m ${inproj}-sant.metric -o ${outproj} -s ${sweeps}
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.b8.ugrid ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
 
