@@ -232,6 +232,8 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_DBL slope, beta, num, denom;
   REF_DBL step1, step2, step3, q1, q2, q3;
   REF_INT tries, search;
+  REF_BOOL verbose = REF_FALSE;
+
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
   n0 = REF_EMPTY; n1 = REF_EMPTY;
   if ( node == nodes[0])
@@ -340,7 +342,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	}
       RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv ), "uv" );
 	
-      if (tries>25)
+      if (verbose && tries > 25)
 	{
 	  printf(" slow conv %2d    q %f dq_duv1 %f %f\n",
 		 tries,q2,dq_duv1[0],dq_duv1[1]);
@@ -349,7 +351,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	}
     }
 
-  if ( q<0.99)
+  if (verbose && q < 0.99)
     {
       printf(" bad ideal q %f dq_duv %f %f\n",q,dq_duv[0],dq_duv[1]);
     }
