@@ -14,6 +14,7 @@
 #include "ref_node.h"
 #include "ref_matrix.h"
 #include "ref_math.h"
+#include "ref_geom.h"
 
 #include "ref_import.h"
 #include "ref_export.h"
