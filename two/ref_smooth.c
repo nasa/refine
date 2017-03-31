@@ -895,7 +895,7 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
 	{
 	  printf("reject out of box u %f %f %f v %f %f %f\n",
 		 uv_min[0],uv_ideal[0],uv_max[0],
-		 uv_min[1],uv_ideal[1],uv_max[1]););
+		 uv_min[1],uv_ideal[1],uv_max[1]);
 	  return REF_SUCCESS;
 	}
     }
