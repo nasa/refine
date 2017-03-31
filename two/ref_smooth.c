@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <float.h>
 
 #include "ref_smooth.h"
 #include "ref_adapt.h"
@@ -901,25 +900,8 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   if (REF_TRUE)
     {
       REF_DBL uv_min[2], uv_max[2];
-      REF_CELL ref_cell = ref_grid_tri(ref_grid);
-      REF_INT item, cell, cell_node, id;
-      for (iuv = 0; iuv<2; iuv++)
-	uv_min[iuv] = DBL_MAX;
-      for (iuv = 0; iuv<2; iuv++)
-	uv_max[iuv] = -DBL_MAX;
-      RSS( ref_geom_unique_id( ref_geom, node, REF_GEOM_FACE, &id ), "id");
-      each_ref_cell_having_node( ref_cell, node, item, cell )
-	each_ref_cell_cell_node( ref_cell, cell_node )
-	{
-	  RSS( ref_geom_tuv( ref_geom,
-			     ref_cell_c2n(ref_cell,cell_node,cell),
-			     REF_GEOM_FACE, id, uv ), "uv" );
-	  if (verbose) printf("i %d c %d cn %d n %d u %f v %f\n",item, cell,cell_node,ref_cell_c2n(ref_cell,cell_node,cell),uv[0],uv[1]);
-	  for (iuv = 0; iuv<2; iuv++)
-	    uv_min[iuv] = MIN(uv_min[iuv],uv[iuv]);
-	  for (iuv = 0; iuv<2; iuv++)
-	    uv_max[iuv] = MAX(uv_max[iuv],uv[iuv]);
-	}
+      RSS( ref_smooth_tri_uv_bounding_box( ref_grid, node,
+					   uv_min, uv_max ), "bb" );
       if ( uv_ideal[0] < uv_min[0] || uv_max[0] <  uv_ideal[0] ||
 	   uv_ideal[1] < uv_min[1] || uv_max[1] <  uv_ideal[1] )
 	{
