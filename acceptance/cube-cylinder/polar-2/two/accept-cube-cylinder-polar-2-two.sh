@@ -14,6 +14,17 @@ fi
 
 field=polar-2
 
+function adapt_cycle_sant {
+    inproj=$1
+    outproj=$2
+    sweeps=$3
+
+    ${two}/ref_metric_test ${inproj}.b8.ugrid ${inproj}.metric ${inproj}-sant.metric
+    ${two}/ref_driver -i ${inproj}.b8.ugrid -g ega.egads -p ${inproj}.gas -m ${inproj}-sant.metric -o ${outproj} -s ${sweeps}
+    ${two}/ref_acceptance -ugawg ${field} ${outproj}.b8.ugrid ${outproj}.metric
+    ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
+
+}
 function adapt_cycle {
     inproj=$1
     outproj=$2
@@ -33,12 +44,12 @@ function adapt_cycle {
 ${two}/ref_translate ega.ugrid ega.b8.ugrid
 ${two}/ref_acceptance -ugawg ${field} ega.b8.ugrid ega.metric
 
-adapt_cycle ega cycle01 2
-adapt_cycle cycle01 cycle02 2
-adapt_cycle cycle02 cycle03 2
-adapt_cycle cycle03 cycle04 2
-adapt_cycle cycle04 cycle05 2
-adapt_cycle cycle05 cycle06 2
+adapt_cycle_sant ega cycle01 2
+adapt_cycle_sant cycle01 cycle02 2
+adapt_cycle_sant cycle02 cycle03 2
+adapt_cycle_sant cycle03 cycle04 2
+adapt_cycle_sant cycle04 cycle05 2
+adapt_cycle_sant cycle05 cycle06 2
 adapt_cycle cycle06 cycle07 2
 adapt_cycle cycle07 cycle08 2
 adapt_cycle cycle08 cycle09 2
