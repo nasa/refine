@@ -1,21 +1,21 @@
 
 open source
 
+time adapt pass elements
+profile
+
+move the uv bounding box test lower in ideal tri uv
+
 create jenkins test
-- make check
 - make check valgrind
 - make check stack fuzz
 - UGAWG test cases
-  - 2d linear
-  - 3d linear
   - 3d geom
 
 run test cases from UGAWG
 
 interp metric on curved surface and parallel
  make debug tecplot status
-
-clean up driver codes
 
 validate normal deviation (make metric big across cylinder)
 -- insert with ball
@@ -39,7 +39,7 @@ parallel geom
 
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
 
-eliminate short edges
+eliminate short edges (cavity)
 
 cavity
 - face based grow and shrink
@@ -65,6 +65,14 @@ low priority surface reconstruction
 - consult white
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+
++create jenkins test
++ make check
++ UGAWG test cases
+  + 2d linear
+  + 3d linear
+
++ clean up driver codes
 
 + only use single part load balance under certain size 0.5M
 
