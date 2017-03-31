@@ -903,7 +903,8 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   RAS( geom_face, "geom face required" );
   RAS( no_quads,  "quads not allowed" );
 
-  RSS( ref_geom_unique_id(ref_geom,node,REF_GEOM_FACE,&id), "get id" );
+  RSB( ref_geom_unique_id(ref_geom,node,REF_GEOM_FACE,&id), "get-id",
+       ref_clump_around(ref_grid,node,"get-id") );
   RSS( ref_geom_tuv(ref_geom,node,REF_GEOM_FACE, id, uv_orig), "get uv_orig" );
   RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet_orig ), "q tet");
   RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri_orig ), "q tri");
