@@ -216,6 +216,36 @@ REF_STATUS ref_smooth_tri_quality( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tri_uv_bounding_box( REF_GRID ref_grid,
+					   REF_INT node,
+					   REF_DBL *uv_min,
+					   REF_DBL *uv_max )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell, cell_node, id, iuv;
+  REF_DBL uv[2];
+
+  /* get face id and initialize min and max */
+  RSS( ref_geom_unique_id( ref_geom, node, REF_GEOM_FACE, &id ), "id");
+  RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv_min ), "uv_min" );
+  RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv_max ), "uv_max" );
+
+  each_ref_cell_having_node( ref_cell, node, item, cell )
+    each_ref_cell_cell_node( ref_cell, cell_node )
+    {
+      RSS( ref_geom_tuv( ref_geom,
+			 ref_cell_c2n(ref_cell,cell_node,cell),
+			 REF_GEOM_FACE, id, uv ), "uv" );
+      for (iuv = 0; iuv<2; iuv++)
+	uv_min[iuv] = MIN(uv_min[iuv],uv[iuv]);
+      for (iuv = 0; iuv<2; iuv++)
+	uv_max[iuv] = MAX(uv_max[iuv],uv[iuv]);
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 				    REF_INT node,
 				    REF_INT tri,
