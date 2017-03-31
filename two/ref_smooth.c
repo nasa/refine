@@ -357,6 +357,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
     }
 
   RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv_orig ), "set uv");
+  RSS( ref_geom_constrain(ref_grid, node ), "constrain");
 
   ideal_uv[0]=uv[0];
   ideal_uv[1]=uv[1];
