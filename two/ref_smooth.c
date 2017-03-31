@@ -198,6 +198,8 @@ REF_STATUS ref_smooth_tri_quality( REF_GRID ref_grid,
 				   REF_INT id,
 				   REF_INT *nodes,
 				   REF_DBL *uv,
+				   REF_DBL *uv_min,
+				   REF_DBL *uv_max,
 				   REF_DBL *dq_duv,
 				   REF_DBL step,
 				   REF_DBL *qnew )
@@ -207,11 +209,20 @@ REF_STATUS ref_smooth_tri_quality( REF_GRID ref_grid,
   REF_DBL uvnew[2];
   uvnew[0] = uv[0] + step*dq_duv[0];
   uvnew[1] = uv[1] + step*dq_duv[1];
+
+  if ( uvnew[0] < uv_min[0] || uv_max[0] <  uvnew[0] ||
+       uvnew[1] < uv_min[1] || uv_max[1] <  uvnew[1] )
+    {
+      *qnew = -2.0;
+      return REF_SUCCESS;
+    }
+
   RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uvnew ), "set uv");
   RSS( ref_geom_constrain(ref_grid, node ), "constrain");
   RSS( ref_node_tri_quality( ref_node,
 			     nodes,
 			     qnew ), "qual" );
+
   return REF_SUCCESS;
 }
 
@@ -263,6 +274,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_DBL step1, step2, step3, q1, q2, q3;
   REF_INT tries, search;
   REF_BOOL verbose = REF_FALSE;
+  REF_DBL uv_min[2], uv_max[2];
 
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
   n0 = REF_EMPTY; n1 = REF_EMPTY;
@@ -296,6 +308,9 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   RSS( ref_node_tri_quality( ref_node,
 			     nodes,
 			     &q0 ), "qual" );
+
+  RSS( ref_smooth_tri_uv_bounding_box( ref_grid, node,
+				       uv_min, uv_max ), "bb" );
   
   uv[0]=uv_orig[0];
   uv[1]=uv_orig[1];
@@ -348,11 +363,11 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
       step3 = (1.0-q)/slope;
       step1 = 0;
       step2 = 0.5*(step1+step3);
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, uv_min, uv_max,
 				  dq_duv, step1, &q1 ), "set uv for q1");
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, uv_min, uv_max,
 				  dq_duv, step2, &q2 ), "set uv for q2");
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, uv_min, uv_max,
 				  dq_duv, step3, &q3 ), "set uv for q3");
       for (search=0; search<15 ;search++)
 	{
@@ -368,6 +383,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	    }
 	  step2 = 0.5*(step1+step3);
 	  RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
+				      uv_min, uv_max,
 				      dq_duv, step2, &q2 ), "set uv for q2");
 	}
       RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv ), "uv" );
