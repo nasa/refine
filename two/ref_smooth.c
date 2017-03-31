@@ -275,6 +275,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_INT tries, search;
   REF_BOOL verbose = REF_FALSE;
   REF_DBL uv_min[2], uv_max[2];
+  REF_DBL bb_min[2], bb_max[2], inflate;
 
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
   n0 = REF_EMPTY; n1 = REF_EMPTY;
@@ -311,6 +312,12 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 
   RSS( ref_smooth_tri_uv_bounding_box( ref_grid, node,
 				       uv_min, uv_max ), "bb" );
+
+  inflate = 2.0;
+  bb_min[0] = uv_min[0] - inflate*(uv_max[0]-uv_min[0]);
+  bb_max[0] = uv_max[0] + inflate*(uv_max[0]-uv_min[0]);
+  bb_min[1] = uv_min[1] - inflate*(uv_max[1]-uv_min[1]);
+  bb_max[1] = uv_max[1] + inflate*(uv_max[1]-uv_min[1]);
   
   uv[0]=uv_orig[0];
   uv[1]=uv_orig[1];
@@ -363,11 +370,11 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
       step3 = (1.0-q)/slope;
       step1 = 0;
       step2 = 0.5*(step1+step3);
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, uv_min, uv_max,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, bb_min, bb_max,
 				  dq_duv, step1, &q1 ), "set uv for q1");
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, uv_min, uv_max,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, bb_min, bb_max,
 				  dq_duv, step2, &q2 ), "set uv for q2");
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, uv_min, uv_max,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, bb_min, bb_max,
 				  dq_duv, step3, &q3 ), "set uv for q3");
       for (search=0; search<15 ;search++)
 	{
@@ -383,7 +390,7 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	    }
 	  step2 = 0.5*(step1+step3);
 	  RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
-				      uv_min, uv_max,
+				      bb_min, bb_max,
 				      dq_duv, step2, &q2 ), "set uv for q2");
 	}
       RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv ), "uv" );
@@ -917,10 +924,17 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   if (REF_TRUE)
     {
       REF_DBL uv_min[2], uv_max[2];
+      REF_DBL bb_min[2], bb_max[2], inflate;
+
       RSS( ref_smooth_tri_uv_bounding_box( ref_grid, node,
 					   uv_min, uv_max ), "bb" );
-      if ( uv_ideal[0] < uv_min[0] || uv_max[0] <  uv_ideal[0] ||
-	   uv_ideal[1] < uv_min[1] || uv_max[1] <  uv_ideal[1] )
+      inflate = 2.0;
+      bb_min[0] = uv_min[0] - inflate*(uv_max[0]-uv_min[0]);
+      bb_max[0] = uv_max[0] + inflate*(uv_max[0]-uv_min[0]);
+      bb_min[1] = uv_min[1] - inflate*(uv_max[1]-uv_min[1]);
+      bb_max[1] = uv_max[1] + inflate*(uv_max[1]-uv_min[1]);
+      if ( uv_ideal[0] < bb_min[0] || bb_max[0] <  uv_ideal[0] ||
+	   uv_ideal[1] < bb_min[1] || bb_max[1] <  uv_ideal[1] )
 	{
 	  printf("reject out of box u %f %f %f v %f %f %f\n",
 		 uv_min[0],uv_ideal[0],uv_max[0],
