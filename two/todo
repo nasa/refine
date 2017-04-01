@@ -4,7 +4,8 @@ open source
 time adapt pass elements
 profile
 
-move the uv bounding box test lower in ideal tri uv
+move the uv bounding box test to hihgest level
+improve surface smoothing with confidence?
 
 create jenkins test
 - make check valgrind
