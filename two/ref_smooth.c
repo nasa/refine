@@ -198,8 +198,6 @@ REF_STATUS ref_smooth_tri_quality( REF_GRID ref_grid,
 				   REF_INT id,
 				   REF_INT *nodes,
 				   REF_DBL *uv,
-				   REF_DBL *uv_min,
-				   REF_DBL *uv_max,
 				   REF_DBL *dq_duv,
 				   REF_DBL step,
 				   REF_DBL *qnew )
@@ -209,13 +207,6 @@ REF_STATUS ref_smooth_tri_quality( REF_GRID ref_grid,
   REF_DBL uvnew[2];
   uvnew[0] = uv[0] + step*dq_duv[0];
   uvnew[1] = uv[1] + step*dq_duv[1];
-
-  if ( uvnew[0] < uv_min[0] || uv_max[0] <  uvnew[0] ||
-       uvnew[1] < uv_min[1] || uv_max[1] <  uvnew[1] )
-    {
-      *qnew = -2.0;
-      return REF_SUCCESS;
-    }
 
   RSS( ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uvnew ), "set uv");
   RSS( ref_geom_constrain(ref_grid, node ), "constrain");
@@ -274,8 +265,6 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
   REF_DBL step1, step2, step3, q1, q2, q3;
   REF_INT tries, search;
   REF_BOOL verbose = REF_FALSE;
-  REF_DBL uv_min[2], uv_max[2];
-  REF_DBL bb_min[2], bb_max[2], inflate;
 
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes ), "get tri");
   n0 = REF_EMPTY; n1 = REF_EMPTY;
@@ -310,15 +299,6 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 			     nodes,
 			     &q0 ), "qual" );
 
-  RSS( ref_smooth_tri_uv_bounding_box( ref_grid, node,
-				       uv_min, uv_max ), "bb" );
-
-  inflate = 2.0;
-  bb_min[0] = uv_min[0] - inflate*(uv_max[0]-uv_min[0]);
-  bb_max[0] = uv_max[0] + inflate*(uv_max[0]-uv_min[0]);
-  bb_min[1] = uv_min[1] - inflate*(uv_max[1]-uv_min[1]);
-  bb_max[1] = uv_max[1] + inflate*(uv_max[1]-uv_min[1]);
-  
   uv[0]=uv_orig[0];
   uv[1]=uv_orig[1];
   dq_duv0[0] = 0; /* uninit warning */ 
@@ -370,11 +350,11 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
       step3 = (1.0-q)/slope;
       step1 = 0;
       step2 = 0.5*(step1+step3);
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, bb_min, bb_max,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
 				  dq_duv, step1, &q1 ), "set uv for q1");
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, bb_min, bb_max,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
 				  dq_duv, step2, &q2 ), "set uv for q2");
-      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, bb_min, bb_max,
+      RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
 				  dq_duv, step3, &q3 ), "set uv for q3");
       for (search=0; search<15 ;search++)
 	{
@@ -390,7 +370,6 @@ REF_STATUS ref_smooth_tri_ideal_uv( REF_GRID ref_grid,
 	    }
 	  step2 = 0.5*(step1+step3);
 	  RSS( ref_smooth_tri_quality(ref_grid, node, id, nodes, uv,
-				      bb_min, bb_max,
 				      dq_duv, step2, &q2 ), "set uv for q2");
 	}
       RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE, id, uv ), "uv" );
@@ -900,6 +879,7 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   REF_DBL qtri, qtet;
   REF_DBL backoff, uv[2];
   REF_INT tries, iuv;
+  REF_DBL uv_min[2], uv_max[2];
   REF_BOOL verbose = REF_FALSE;
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
@@ -921,27 +901,8 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
 
   RSS( ref_smooth_tri_weighted_ideal_uv( ref_grid, node,uv_ideal ),"ideal");
 
-  if (REF_TRUE)
-    {
-      REF_DBL uv_min[2], uv_max[2];
-      REF_DBL bb_min[2], bb_max[2], inflate;
-
-      RSS( ref_smooth_tri_uv_bounding_box( ref_grid, node,
-					   uv_min, uv_max ), "bb" );
-      inflate = 2.0;
-      bb_min[0] = uv_min[0] - inflate*(uv_max[0]-uv_min[0]);
-      bb_max[0] = uv_max[0] + inflate*(uv_max[0]-uv_min[0]);
-      bb_min[1] = uv_min[1] - inflate*(uv_max[1]-uv_min[1]);
-      bb_max[1] = uv_max[1] + inflate*(uv_max[1]-uv_min[1]);
-      if ( uv_ideal[0] < bb_min[0] || bb_max[0] <  uv_ideal[0] ||
-	   uv_ideal[1] < bb_min[1] || bb_max[1] <  uv_ideal[1] )
-	{
-	  printf("reject out of box u %f %f %f v %f %f %f\n",
-		 uv_min[0],uv_ideal[0],uv_max[0],
-		 uv_min[1],uv_ideal[1],uv_max[1]);
-	  return REF_SUCCESS;
-	}
-    }
+  RSS( ref_smooth_tri_uv_bounding_box( ref_grid, node,
+				       uv_min, uv_max ), "bb" );
   
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++)
@@ -954,7 +915,9 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
       RSS( ref_geom_constrain(ref_grid, node ), "constrain");
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet ), "q tet");
       RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri ), "q tri");
-      if ( qtri >= qtri_orig && qtet > ref_adapt_smooth_min_quality )
+      if ( qtri >= qtri_orig && qtet > ref_adapt_smooth_min_quality &&
+	   uv_min[0] < uv[0] && uv[0] < uv_max[0] &&
+	   uv_min[1] < uv[1] && uv[1] < uv_max[1] )
 	{
 	  if (verbose)
 	    printf("better qtri %f qtet %f\n", qtri, qtet );
