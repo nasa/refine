@@ -61,6 +61,7 @@ int main( int argc, char *argv[] )
   int opt;
   int passes = 15, pass;
   REF_BOOL output_clumps = REF_FALSE;
+  REF_BOOL tecplot_movie = REF_FALSE;
   char output_project[1024];
   char output_filename[1024];
 
@@ -68,7 +69,7 @@ int main( int argc, char *argv[] )
 	  
   echo_argv( argc, argv );
 
-  while ((opt = getopt(argc, argv, "i:m:g:p:o:s:c")) != -1)
+  while ((opt = getopt(argc, argv, "i:m:g:p:o:s:ct")) != -1)
     {
       switch (opt)
 	{
@@ -97,6 +98,9 @@ int main( int argc, char *argv[] )
 	case 'c':
 	  output_clumps = REF_TRUE;
 	  break;
+	case 't':
+	  tecplot_movie = REF_TRUE;
+	  break;
 	case '?':
 	default:
 	  printf("parse error -%c\n",optopt);
@@ -108,6 +112,7 @@ int main( int argc, char *argv[] )
 	  printf("       [-s adapt_cycles] default is 15\n");
 	  printf("       [-o output_project]\n");
 	  printf("       [-c] output clumps\n");
+	  printf("       [-t] tecplot movie\n");
 	  printf("./ref_geom_test ega.egads \n");
 	  printf("./ref_geom_test ega.egads ega.ugrid\n");
 	  printf("./ref_acceptance ega.ugrid ega.metric 0.1\n");
@@ -119,6 +124,8 @@ int main( int argc, char *argv[] )
 	  return 1;
 	}
     }
+
+  RSS( ref_gather_tec_movie_record_button( tecplot_movie ), "show time" );
   
   ref_mpi_stopwatch_stop("read grid");
   RSS(ref_validation_cell_volume(ref_grid),"vol");
