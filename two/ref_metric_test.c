@@ -40,6 +40,8 @@
 
 #include "ref_geom.h"
 
+#include "ref_clump.h"
+
 /*
 ./test.sh ref_metric && ./ref_metric_test \
   ../acceptance/2d/linear/two/accept-2d-two-09.b8.ugrid \
