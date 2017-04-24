@@ -12,10 +12,6 @@
 
 BEGIN_C_DECLORATION
 
-#define ref_gather_seq_only_frame( ref_grid )				\
-  if ( 1 == ref_mpi_n )							\
-    RSS( ref_gather_tec_movie_frame( ref_grid ), "movie frame" )
-
 #define ref_gather_blocking_frame( ref_grid )			\
   RSS( ref_gather_tec_movie_frame( ref_grid, NULL ), "movie frame" )
 
