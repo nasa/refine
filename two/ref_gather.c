@@ -81,7 +81,7 @@ REF_STATUS ref_gather_tec_movie_record_button( REF_BOOL on_or_off )
 
 static FILE *movie_file = NULL;
 
-REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid )
+REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid, char *zone_title )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nnode,ntri;
@@ -106,9 +106,18 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid )
 	  fprintf(movie_file, "title=\"tecplot refine partion file\"\n");
 	  fprintf(movie_file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
 	}
-      fprintf(movie_file,
-	      "zone t=part, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-	      nnode, ntri, "point", "fetriangle" );
+      if ( NULL == zone_title )
+	{
+	  fprintf(movie_file,
+		  "zone t=part, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+		  nnode, ntri, "point", "fetriangle" );
+	}
+      else
+	{
+	  fprintf(movie_file,
+		  "zone t='%s', nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+		  zone_title, nnode, ntri, "point", "fetriangle" );
+	}
     }
 
   RSS( ref_gather_node_tec_part( ref_node, movie_file ), "nodes");
