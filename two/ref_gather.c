@@ -109,13 +109,13 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid, char *zone_title )
       if ( NULL == zone_title )
 	{
 	  fprintf(movie_file,
-		  "zone t=part, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+		  "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 		  nnode, ntri, "point", "fetriangle" );
 	}
       else
 	{
 	  fprintf(movie_file,
-		  "zone t='%s', nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+		  "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 		  zone_title, nnode, ntri, "point", "fetriangle" );
 	}
     }
