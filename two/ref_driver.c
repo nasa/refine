@@ -62,6 +62,7 @@ int main( int argc, char *argv[] )
   int passes = 15, pass;
   REF_BOOL output_clumps = REF_FALSE;
   REF_BOOL tecplot_movie = REF_FALSE;
+  REF_BOOL sanitize_metric = REF_FALSE;
   char output_project[1024];
   char output_filename[1024];
 
@@ -69,7 +70,7 @@ int main( int argc, char *argv[] )
 	  
   echo_argv( argc, argv );
 
-  while ((opt = getopt(argc, argv, "i:m:g:p:o:s:ct")) != -1)
+  while ((opt = getopt(argc, argv, "i:m:g:p:o:s:clt")) != -1)
     {
       switch (opt)
 	{
@@ -98,6 +99,9 @@ int main( int argc, char *argv[] )
 	case 'c':
 	  output_clumps = REF_TRUE;
 	  break;
+	case 'l':
+	  sanitize_metric = REF_TRUE;
+	  break;
 	case 't':
 	  tecplot_movie = REF_TRUE;
 	  break;
@@ -112,6 +116,7 @@ int main( int argc, char *argv[] )
 	  printf("       [-s adapt_cycles] default is 15\n");
 	  printf("       [-o output_project]\n");
 	  printf("       [-c] output clumps\n");
+	  printf("       [-l] limit metric change\n");
 	  printf("       [-t] tecplot movie\n");
 	  printf("./ref_geom_test ega.egads \n");
 	  printf("./ref_geom_test ega.egads ega.ugrid\n");
@@ -132,6 +137,14 @@ int main( int argc, char *argv[] )
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
 
+  if ( sanitize_metric )
+    {
+      printf("sanitizing metric\n");
+      RSS( ref_metric_sanitize( ref_grid ), "sant metric");
+      RSS( ref_histogram_quality( ref_grid ), "gram");
+      RSS( ref_histogram_ratio( ref_grid ), "gram");
+    }
+  
   for (pass = 0; pass<passes; pass++ )
     {
       printf(" pass %d of %d\n",pass,passes);
@@ -141,6 +154,11 @@ int main( int argc, char *argv[] )
 	{
 	  RSS( ref_metric_interpolate( ref_grid, background_grid ), "interp" );
 	  ref_mpi_stopwatch_stop("interp");
+	  if ( sanitize_metric )
+	    {
+	      RSS( ref_metric_sanitize( ref_grid ), "sant metric");
+	      ref_mpi_stopwatch_stop("sant");
+	    }
 	}
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
