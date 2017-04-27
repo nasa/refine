@@ -785,6 +785,18 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  }
 	if ( geom_face )
 	  {
+	    if (no_face)
+	      {
+		printf("no face\n");
+		RSS(ref_node_location(ref_node,node),"loc");
+		RSS(ref_geom_tattle(ref_geom,node),"tatt");
+		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
+		    "geom tec" );
+		THROW("geom face missing tri or qua");
+	      }
+	  }
+	if ( geom_face && !geom_edge )
+	  {
 	    REF_INT item, geom;
 	    REF_BOOL found_one;
 	    REF_BOOL found_too_many;
@@ -799,11 +811,10 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 		    found_one = REF_TRUE;
 		  }   
 	      }
-	    if (!found_one || found_too_many || no_face)
+	    if (!found_one || found_too_many)
 	      {
 		if (!found_one) printf("none found\n");
 		if (found_too_many) printf("found too many\n");
-		if (no_face) printf("no face\n");
 		RSS(ref_node_location(ref_node,node),"loc");
 		RSS(ref_geom_tattle(ref_geom,node),"tatt");
 		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
