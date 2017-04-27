@@ -41,16 +41,17 @@ REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
 {
 
-  RSS( ref_geom_verify_topo( ref_grid ), "adapt preflight check");
   ref_gather_blocking_frame( ref_grid, "threed pass" );
+  RSS( ref_geom_verify_topo( ref_grid ), "adapt preflight check");
   RSS( ref_collapse_pass( ref_grid ), "col pass");
-  RSS( ref_geom_verify_topo( ref_grid ), "collapse geom typo check");
   ref_gather_blocking_frame( ref_grid, "collapse" );
+  RSS( ref_geom_verify_topo( ref_grid ), "collapse geom typo check");
   RSS( ref_split_pass( ref_grid ), "split pass");
-  RSS( ref_geom_verify_topo( ref_grid ), "split geom typo check");
   ref_gather_blocking_frame( ref_grid, "split" );
+  RSS( ref_geom_verify_topo( ref_grid ), "split geom typo check");
   RSS( ref_smooth_threed_pass( ref_grid ), "smooth pass");
   ref_gather_blocking_frame( ref_grid, "smooth" );
+  RSS( ref_geom_verify_topo( ref_grid ), "split geom typo check");
 
   return REF_SUCCESS;
 }
