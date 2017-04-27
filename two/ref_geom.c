@@ -1065,27 +1065,36 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
   }
 
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    int egads_status;
+    REF_BOOL degenerate;
+    degenerate = REF_FALSE;
     REIS( EGADS_SUCCESS,
 	  EG_getTessEdge(tess, edge+1, &plen, &points, &t), "tess query edge" );
     for ( node = 0; node<plen; node++ ) {
-      REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g0");
-      nodes[0] -= 1;
-      param[0] = t[node];
-      RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_EDGE, edge+1, param),
-	   "edge t");
+      egads_status = EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0]));
+      if ( EGADS_DEGEN == egads_status ) {
+	degenerate = REF_TRUE;
+      }else{
+	REIS( EGADS_SUCCESS, egads_status, "l2g0");
+	nodes[0] -= 1;
+	param[0] = t[node];
+	RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_EDGE, edge+1, param),
+	     "edge t");
+      }
     }
-    for ( node = 0; node<(plen-1); node++ ) {
-      /* assue edge index is 1-bias */
-      REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g0");
-      REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, -(edge+1), node+2, &(nodes[1])), "l2g1");
-      nodes[0] -= 1;
-      nodes[1] -= 1;
-      nodes[2] = edge + 1;
-      RSS( ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell ), "new edge");
-    }
+    if ( !degenerate )
+      for ( node = 0; node<(plen-1); node++ ) {
+	/* assue edge index is 1-bias */
+	REIS( EGADS_SUCCESS,
+	      EG_localToGlobal(tess, -(edge+1), node+1, &(nodes[0])), "l2g0");
+	REIS( EGADS_SUCCESS,
+	      EG_localToGlobal(tess, -(edge+1), node+2, &(nodes[1])), "l2g1");
+	nodes[0] -= 1;
+	nodes[1] -= 1;
+	nodes[2] = edge + 1;
+	RSS( ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell ),
+	     "new edge");
+      }
   }
   
   for (face = 0; face < (ref_geom->nface); face++) {
