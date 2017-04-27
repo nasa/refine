@@ -1155,7 +1155,9 @@ REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     if ( id == nodes[2] )
       nedg++;
-    
+
+  if ( 0 == nnode || 0 == nedg ) return REF_SUCCESS; /* skip degenerate */
+  
   fprintf(file,
 	  "zone t=edge%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  id, nnode, nedg, "point", "felineseg" );
