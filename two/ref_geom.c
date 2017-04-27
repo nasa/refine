@@ -785,8 +785,25 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  }
 	if ( geom_face )
 	  {
-	    if (no_face)
+	    REF_INT item, geom;
+	    REF_BOOL found_one;
+	    REF_BOOL found_too_many;
+	    found_one = REF_FALSE;
+	    found_too_many = REF_FALSE;
+	    each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+					     node, item, geom)
 	      {
+		if ( REF_GEOM_FACE == ref_geom_type(ref_geom,geom) )
+		  {
+		    if ( found_one ) found_too_many = REF_TRUE;
+		    found_one = REF_TRUE;
+		  }   
+	      }
+	    if (!found_one || found_too_many || no_face)
+	      {
+		if (!found_one) printf("none found\n");
+		if (found_too_many) printf("found too many\n");
+		if (no_face) printf("no face\n");
 		RSS(ref_node_location(ref_node,node),"loc");
 		RSS(ref_geom_tattle(ref_geom,node),"tatt");
 		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
