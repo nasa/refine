@@ -71,7 +71,13 @@ struct REF_NODE_STRUCT {
 
 #define ref_node_part(ref_node,node) ((ref_node)->part[(node)])
 #define ref_node_age(ref_node,node) ((ref_node)->age[(node)])
+
 #define ref_node_raw_guess(ref_node,node) ((ref_node)->guess[(node)])
+#define ref_node_guess(ref_node,node)					\
+  ( NULL==(( ref_node )->guess) ?					\
+    REF_EMPTY :	ref_node_raw_guess(ref_node,node) )
+#define ref_node_guess_allocated(ref_node) \
+  ( NULL != (( ref_node )->guess) )
 
 #define ref_node_naux(ref_node) ((ref_node)->naux)
 #define ref_node_aux(ref_node,iaux,node)		\
