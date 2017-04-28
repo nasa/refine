@@ -9,14 +9,15 @@ insert once, right place
 
 move the uv bounding box test to hihgest level
 improve surface smoothing with confidence?
-improve smoothing with anositropy in 45 degree to axis (cube, rotating metric)
-make sure all triangles have one tet. tet hs one neighbor.
+improve smoothing with anisotropy in 45 degree to axis (cube, rotating metric)
+make sure all triangles have one tet and tet has one neighbor by
+turning on validation.
 
 bl insert
 
 cavity in 2D/3D
 
-include surface curavature constraints
+include surface curvature constraints in metric
 
 create jenkins test
 - make check valgrind
@@ -30,7 +31,6 @@ run test cases from UGAWG
 interp metric on curved surface and parallel
  make debug tecplot status
  interpolate in u,v,s
- faster background interp (store guess)
 
 validate normal deviation (make metric big across cylinder)
 -- insert with ball
@@ -80,6 +80,8 @@ low priority surface reconstruction
 - consult white
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+
++ faster background interp (store guess)
 
 +create jenkins test
 + make check
