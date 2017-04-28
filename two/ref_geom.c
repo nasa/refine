@@ -470,7 +470,7 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
   REF_INT geom0, geom1;
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
-  REF_BOOL has_side;
+  REF_BOOL has_side, has_id;
 
   RSS( ref_cell_has_side( ref_grid_edg(ref_grid), node0, node1, &has_side),
        "side check");
@@ -510,11 +510,20 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 	     ref_geom_id(ref_geom,geom0) == ref_geom_id(ref_geom,geom1) )
 	  {
 	    id = ref_geom_id(ref_geom,geom0);
-	    RSS( ref_geom_tuv(ref_geom,node0,type,id,param0), "node0" );
-	    RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
-	    if ( type > 0 ) param[0] = 0.5 * ( param0[0] + param1[0] );
-	    if ( type > 1 ) param[1] = 0.5 * ( param0[1] + param1[1] );
-	    RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
+	    RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid),node0,node1,id,
+				     &has_id),"hi");
+	    if ( has_id )
+	      {
+		RSS( ref_geom_tuv(ref_geom,node0,type,id,param0), "node0" );
+		RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
+		if ( type > 0 ) param[0] = 0.5 * ( param0[0] + param1[0] );
+		if ( type > 1 ) param[1] = 0.5 * ( param0[1] + param1[1] );
+		RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
+	      }
+	    else
+	      {
+		printf("skipped %d\n",id);
+	      }
 	  }
     }
     

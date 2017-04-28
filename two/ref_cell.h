@@ -134,11 +134,17 @@ REF_STATUS ref_cell_has_side( REF_CELL ref_cell,
                               REF_INT node0, REF_INT node1,
                               REF_BOOL *has_side);
 
+REF_STATUS ref_cell_side_has_id( REF_CELL ref_cell,
+				 REF_INT node0, REF_INT node1,
+				 REF_INT id,
+				 REF_BOOL *has_id );
+
 REF_STATUS ref_cell_with_face( REF_CELL ref_cell,
                                REF_INT *face_nodes,
                                REF_INT *cell0, REF_INT *cell1 );
 
 REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell );
+
 
 REF_STATUS ref_cell_list_with2( REF_CELL ref_cell,
                                 REF_INT node0, REF_INT node1,

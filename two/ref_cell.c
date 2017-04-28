@@ -622,6 +622,32 @@ REF_STATUS ref_cell_has_side( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_side_has_id( REF_CELL ref_cell,
+				 REF_INT node0, REF_INT node1, REF_INT id,
+				 REF_BOOL *has_id)
+{
+  REF_INT item, cell;
+  REF_INT cell_edge;
+
+  *has_id = REF_FALSE;
+
+  if ( !ref_cell_last_node_is_an_id(ref_cell) ) return REF_SUCCESS;
+
+  each_ref_adj_node_item_with_ref( ref_cell_adj(ref_cell), node0, item, cell)
+    each_ref_cell_cell_edge( ref_cell, cell_edge )
+    if ( ( node0 == ref_cell_e2n(ref_cell,0,cell_edge,cell) &&
+	   node1 == ref_cell_e2n(ref_cell,1,cell_edge,cell) ) ||
+	 ( node0 == ref_cell_e2n(ref_cell,1,cell_edge,cell) &&
+	   node1 == ref_cell_e2n(ref_cell,0,cell_edge,cell) ) )
+      if (id == ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),cell))
+	{
+	  *has_id = REF_TRUE;
+	  return REF_SUCCESS;
+	}
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_with_face( REF_CELL ref_cell,
                                REF_INT *face_nodes,
                                REF_INT *cell0, REF_INT *cell1)
