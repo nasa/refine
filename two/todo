@@ -6,6 +6,14 @@ profile
 
 move the uv bounding box test to hihgest level
 improve surface smoothing with confidence?
+improve smoothing with anositropy in 45 degree to axis (cube, rotating metric)
+make sure all triangles have one tet. tet hs one neighbor.
+
+bl insert
+
+cavity in 2D/3D
+
+include surface curavature constraints
 
 create jenkins test
 - make check valgrind
@@ -17,6 +25,8 @@ run test cases from UGAWG
 
 interp metric on curved surface and parallel
  make debug tecplot status
+ interpolate in u,v,s
+ faster background
 
 validate normal deviation (make metric big across cylinder)
 -- insert with ball
