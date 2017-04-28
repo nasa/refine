@@ -40,7 +40,8 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_malloc( ref_node->part, max, REF_INT );
   ref_malloc( ref_node->age, max, REF_INT );
-
+  ref_node->guess = NULL;
+  
   ref_malloc( ref_node->real, REF_NODE_REAL_PER*max, REF_DBL );
 
   ref_node_naux(ref_node) = 0;
@@ -64,6 +65,7 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
   ref_list_free( ref_node->unused_global_list );
   ref_free( ref_node->aux );
   ref_free( ref_node->real );
+  ref_free( ref_node->guess );
   ref_free( ref_node->age );
   ref_free( ref_node->part );
   ref_free( ref_node->sorted_local );
@@ -103,6 +105,17 @@ REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
   for (node=0;node<max;node++)
     ref_node_age(ref_node,node) = ref_node_age(original,node);
 
+  if ( NULL == original->guess )
+    {
+      ref_node->guess = NULL;
+    }
+  else
+    {
+      ref_malloc( ref_node->guess, max, REF_INT );
+      for (node=0;node<max;node++)
+	ref_node_guess(ref_node,node) = ref_node_guess(original,node);
+    }
+  
   ref_malloc( ref_node->real, REF_NODE_REAL_PER*max, REF_DBL );
   for (node=0;node<max;node++)
     for ( i=0; i < REF_NODE_REAL_PER ; i++ )
@@ -235,6 +248,9 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
       ref_realloc( ref_node->part, ref_node_max(ref_node), REF_INT);
       ref_realloc( ref_node->age, ref_node_max(ref_node), REF_INT);
 
+      if ( NULL != ref_node->guess )
+	ref_realloc( ref_node->guess, ref_node_max(ref_node), REF_INT);
+
       ref_realloc( ref_node->real, 
 		   ( (unsigned long)REF_NODE_REAL_PER *
 		     (unsigned long)ref_node_max(ref_node) ), REF_DBL);
@@ -251,6 +267,8 @@ static REF_STATUS ref_node_add_core( REF_NODE ref_node,
   ref_node->global[*node] = global;
   ref_node->part[*node] = ref_mpi_id; /* default local node */
   ref_node->age[*node] = 0; /* default new born */
+  if ( NULL != ref_node->guess )
+    ref_node->guess[*node] = REF_EMPTY; /* default new born */
 
   (ref_node->n)++;
   return REF_SUCCESS;
