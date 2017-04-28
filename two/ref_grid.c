@@ -328,6 +328,32 @@ static REF_STATUS ref_update_tri_guess( REF_CELL ref_cell,
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_grid_identity_interp_guess( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT node;
+  
+  if (ref_grid_twod(ref_grid))
+    {
+      ref_cell = ref_grid_tri(ref_grid);
+    }
+  else
+    {
+      ref_cell = ref_grid_tet(ref_grid);
+    }
+  
+  RSS( ref_node_allocate_guess( ref_node ), "alloc");
+
+  each_ref_node_valid_node( ref_node, node )
+    {
+      ref_node_guess(ref_node,node) =
+	ref_adj_first(ref_cell_adj(ref_cell),node);
+    }
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
                                   REF_INT *tri, REF_DBL *bary )
 {
