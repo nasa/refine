@@ -3,6 +3,9 @@ open source
 
 time adapt pass elements
 profile
+make faster, more efficient
+don't balloon up in size
+insert once, right place
 
 move the uv bounding box test to hihgest level
 improve surface smoothing with confidence?
@@ -27,7 +30,7 @@ run test cases from UGAWG
 interp metric on curved surface and parallel
  make debug tecplot status
  interpolate in u,v,s
- faster background
+ faster background interp (store guess)
 
 validate normal deviation (make metric big across cylinder)
 -- insert with ball
