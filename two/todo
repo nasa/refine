@@ -20,6 +20,7 @@ create jenkins test
 - make check stack fuzz
 - UGAWG test cases
   - 3d geom
+- add curved cases
 
 run test cases from UGAWG
 
