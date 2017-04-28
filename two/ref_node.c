@@ -1655,6 +1655,10 @@ REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node,
        !ref_node_valid(ref_node,node1) ) 
     RSS( REF_INVALID, "node invalid" );
 
+  if ( ref_node_guess_allocated(ref_node) )
+    ref_node_raw_guess(ref_node,new_node) =
+      ref_node_raw_guess(ref_node,node0);  
+  
   for ( i = 0; i < 3 ; i++ )
     ref_node_xyz(ref_node,i,new_node) = 
       0.5 * (ref_node_xyz(ref_node,i,node0) + ref_node_xyz(ref_node,i,node1));
