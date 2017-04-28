@@ -77,7 +77,7 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
 
 REF_STATUS ref_node_allocate_guess( REF_NODE ref_node )
 {
-  if ( NULL != ref_node->guess )
+  if ( NULL == ref_node->guess )
     ref_malloc( ref_node->guess, ref_node_max(ref_node), REF_INT );
   return REF_SUCCESS;
 }
