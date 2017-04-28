@@ -120,7 +120,7 @@ REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
     {
       ref_malloc( ref_node->guess, max, REF_INT );
       for (node=0;node<max;node++)
-	ref_node_guess(ref_node,node) = ref_node_guess(original,node);
+	ref_node_raw_guess(ref_node,node) = ref_node_raw_guess(original,node);
     }
   
   ref_malloc( ref_node->real, REF_NODE_REAL_PER*max, REF_DBL );

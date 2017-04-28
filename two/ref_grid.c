@@ -347,7 +347,7 @@ REF_STATUS ref_grid_identity_interp_guess( REF_GRID ref_grid )
 
   each_ref_node_valid_node( ref_node, node )
     {
-      ref_node_guess(ref_node,node) =
+      ref_node_raw_guess(ref_node,node) =
 	ref_adj_first(ref_cell_adj(ref_cell),node);
     }
   
