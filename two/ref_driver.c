@@ -77,6 +77,7 @@ int main( int argc, char *argv[] )
 	case 'i':
 	  RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
 	  RSS( ref_import_by_extension( &background_grid, optarg ), "import" );
+	  RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
 	  break;
 	case 'g':
 	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
