@@ -1,8 +1,8 @@
 
 
-~/esp/EngSketchPad/bin/serveCSM -batch hemi-cyl.csm
+~/esp/EngSketchPad/bin/serveCSM -batch cube.csm
 
-~/refine/egads/two/ref_geom_test hsc01.egads hsc01.meshb
+~/refine/egads/two/ref_geom_test cube.egads cube.ugrid
 
-mv ref_geom_test.gas hsc01.gas
+mv ref_geom_test.gas cube.gas
 
