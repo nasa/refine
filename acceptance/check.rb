@@ -28,5 +28,7 @@ if ( max_limit < max_edge )
   need_to_throw = true
 end
 
-throw("edge out of range") if (need_to_throw)
-
+if (need_to_throw)
+  puts `pwd`
+  throw("edge out of range")
+end
