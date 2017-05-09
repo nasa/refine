@@ -218,6 +218,43 @@ REF_STATUS ref_geom_uv_area( REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_uv_area_sign( REF_GRID ref_grid, REF_INT id,
+				  REF_DBL *sign )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  if ( id < 1 || id > ref_geom->nface ) return REF_INVALID;
+  if ( NULL == ((ref_geom)->uv_area_sign) )
+    {
+      REF_CELL ref_cell = ref_grid_tri(ref_grid);
+      REF_INT face;
+      REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+      REF_DBL uv_area;
+      ref_malloc_init( ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 0.0);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	{
+	  face = nodes[3];
+	  if ( face < 1 || ref_geom->nface < face ) continue;
+	  RSS( ref_geom_uv_area( ref_geom, nodes, &uv_area), "uv area");
+	  ((ref_geom)->uv_area_sign)[face-1] += uv_area;
+	}
+      for (face=0;face<ref_geom->nface ;face++)
+	{
+	  if ( ((ref_geom)->uv_area_sign)[face] < 0.0 )
+	    {
+	      ((ref_geom)->uv_area_sign)[face] = -1.0;
+	    }
+	  else
+	    {
+	      ((ref_geom)->uv_area_sign)[face] = 1.0;
+	    }
+	}
+    }
+
+  *sign = ((ref_geom)->uv_area_sign)[id-1];
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_uv_area_report( REF_GRID ref_grid )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -225,7 +262,7 @@ REF_STATUS ref_geom_uv_area_report( REF_GRID ref_grid )
   REF_INT geom, id, min_id, max_id;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL no_cell;
-  REF_DBL uv_area, total_uv_area, min_uv_area, max_uv_area;
+  REF_DBL uv_area, total_uv_area, min_uv_area, max_uv_area, sign_uv_area;
   REF_INT n_neg, n_pos;
   
   min_id = REF_INT_MAX;
@@ -271,8 +308,9 @@ REF_STATUS ref_geom_uv_area_report( REF_GRID ref_grid )
 	  }
       if ( !no_cell )
 	{
-	  printf ("face%5d: %9.2e total %13.6e min %13.6e max %d pos %d neg\n",
-		  id, total_uv_area, min_uv_area, max_uv_area, n_pos, n_neg);
+	  RSS( ref_geom_uv_area_sign( ref_grid, id, &sign_uv_area ), "sign");
+	  printf ("face%5d: %4.1f %9.2e total (%10.3e,%10.3e) %d + %d -\n",
+		  id, sign_uv_area, total_uv_area, min_uv_area, max_uv_area, n_pos, n_neg);
 	}
     }
 
