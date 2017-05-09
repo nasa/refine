@@ -86,6 +86,44 @@ REF_STATUS ref_smooth_tri_quality_around( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tri_uv_area_around( REF_GRID ref_grid,
+                                          REF_INT node,
+                                          REF_DBL *min_uv_area )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT id, item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL none_found = REF_TRUE;
+  REF_DBL sign_uv_area, uv_area;
+  
+  *min_uv_area = -2.0;
+
+  RSS( ref_geom_unique_id(ref_geom,node,REF_GEOM_FACE,&id), "id" );
+  RSS( ref_geom_uv_area_sign( ref_grid, id, &sign_uv_area ), "sign");
+  
+  each_ref_cell_having_node( ref_cell, node, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      RSS( ref_geom_uv_area( ref_geom, nodes, &uv_area), "uv area");
+      uv_area *= sign_uv_area;
+      if ( none_found )
+	{
+	  *min_uv_area = uv_area;
+	  none_found = REF_FALSE;
+	}
+      else
+	{
+	  *min_uv_area = MIN( *min_uv_area, uv_area);
+	}
+    }
+
+  if ( none_found )
+    THROW("no triagle found, can not compute min uv area");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_outward_norm( REF_GRID ref_grid, 
 				    REF_INT node,
 				    REF_BOOL *allowed )
@@ -876,7 +914,7 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
   REF_INT id;
   REF_DBL uv_orig[2], uv_ideal[2];
   REF_DBL qtet_orig, qtri_orig;
-  REF_DBL qtri, qtet;
+  REF_DBL qtri, qtet, min_uv_area;
   REF_DBL backoff, uv[2];
   REF_INT tries, iuv;
   REF_DBL uv_min[2], uv_max[2];
@@ -915,7 +953,9 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
       RSS( ref_geom_constrain(ref_grid, node ), "constrain");
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet ), "q tet");
       RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri ), "q tri");
+      RSS( ref_smooth_tri_uv_area_around( ref_grid, node, &min_uv_area ), "a");
       if ( qtri >= qtri_orig && qtet > ref_adapt_smooth_min_quality &&
+	   min_uv_area > 1.0e-12 &&
 	   uv_min[0] < uv[0] && uv[0] < uv_max[0] &&
 	   uv_min[1] < uv[1] && uv[1] < uv_max[1] )
 	{
