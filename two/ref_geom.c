@@ -201,7 +201,7 @@ REF_STATUS ref_geom_load( REF_GRID ref_grid, char *filename )
       return REF_FAILURE;
     }
   fclose(file);
-  RSS( ref_geom_report_uv_area( ref_grid ), "report");
+  RSS( ref_geom_uv_area_report( ref_grid ), "report");
   return REF_SUCCESS;
 }
 
@@ -218,7 +218,7 @@ REF_STATUS ref_geom_uv_area( REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_report_uv_area( REF_GRID ref_grid )
+REF_STATUS ref_geom_uv_area_report( REF_GRID ref_grid )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
