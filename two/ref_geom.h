@@ -23,6 +23,7 @@ BEGIN_C_DECLORATION
     REF_INT blank;
     REF_INT *descr;
     REF_DBL *param;
+    REF_DBL *uv_area_sign;
     REF_ADJ ref_adj;
     REF_INT nedge, nface;
     void *context;

@@ -37,7 +37,8 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
 
   ref_malloc( ref_geom->descr, 3*ref_geom_max(ref_geom), REF_INT);
   ref_malloc( ref_geom->param, 2*ref_geom_max(ref_geom), REF_DBL);
-
+  ref_geom->uv_area_sign = NULL;
+  
   for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
     {
       ref_geom_type(ref_geom,geom) = REF_EMPTY;
@@ -80,6 +81,7 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
     REIS( EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
 #endif
   RSS( ref_adj_free( ref_geom->ref_adj ), "adj free" );
+  ref_free( ref_geom->uv_area_sign );
   ref_free( ref_geom->param );
   ref_free( ref_geom->descr );
   ref_free( ref_geom );
