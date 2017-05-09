@@ -198,6 +198,81 @@ REF_STATUS ref_geom_load( REF_GRID ref_grid, char *filename )
       return REF_FAILURE;
     }
   fclose(file);
+  RSS( ref_geom_report_uv_area( ref_grid ), "report");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_uv_area( REF_GEOM ref_geom, REF_INT *nodes,
+			     REF_DBL *uv_area )
+{
+  REF_INT id = nodes[3];
+  REF_DBL uv0[2], uv1[2], uv2[2];
+  RSS( ref_geom_tuv( ref_geom, nodes[0], REF_GEOM_FACE, id, uv0 ), "uv0" );
+  RSS( ref_geom_tuv( ref_geom, nodes[1], REF_GEOM_FACE, id, uv1 ), "uv1" );
+  RSS( ref_geom_tuv( ref_geom, nodes[2], REF_GEOM_FACE, id, uv2 ), "uv2" );
+  *uv_area = 0.5 * ( -uv1[0]*uv0[1] + uv2[0]*uv0[1] + uv0[0]*uv1[1]
+		     -uv2[0]*uv1[1] - uv0[0]*uv2[1] + uv1[0]*uv2[1] );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_report_uv_area( REF_GRID ref_grid )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT geom, id, min_id, max_id;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL no_cell;
+  REF_DBL uv_area, total_uv_area, min_uv_area, max_uv_area;
+  REF_INT n_neg, n_pos;
+  
+  min_id = REF_INT_MAX;
+  max_id = REF_INT_MIN;
+  each_ref_geom_face( ref_geom, geom )
+    {
+      min_id = MIN( min_id, ref_geom_id(ref_geom,geom) );
+      max_id = MAX( max_id, ref_geom_id(ref_geom,geom) );
+    }
+
+  for ( id = min_id ; id <= max_id ; id++ )
+    {
+      no_cell = REF_TRUE;
+      total_uv_area = 0.0;
+      min_uv_area = 0.0;
+      max_uv_area = 0.0;
+      n_neg = 0;
+      n_pos = 0;
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	if ( id == nodes[3] )
+	  {
+	    RSS( ref_geom_uv_area( ref_geom, nodes, &uv_area), "uv area");
+	    total_uv_area += uv_area;
+	    if (no_cell)
+	      {
+		min_uv_area = uv_area;
+		max_uv_area = uv_area;
+		no_cell = REF_FALSE;
+	      }
+	    else
+	      {
+		min_uv_area = MIN(min_uv_area,uv_area);
+		max_uv_area = MAX(max_uv_area,uv_area);
+	      }
+	    if ( uv_area < 0.0 )
+	      {
+		n_neg++;
+	      }
+	    else
+	      {
+		n_pos++;
+	      }
+	  }
+      if ( !no_cell )
+	{
+	  printf ("face%5d: %9.2e total %13.6e min %13.6e max %d pos %d neg\n",
+		  id, total_uv_area, min_uv_area, max_uv_area, n_pos, n_neg);
+	}
+    }
+
   return REF_SUCCESS;
 }
 
@@ -1286,7 +1361,6 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
       max_id = MAX( max_id, ref_geom_id(ref_geom,geom) );
     }
 
-  for ( id = min_id ; id <= max_id ; id++ )
     RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "tec face" );
 
   fclose(file);

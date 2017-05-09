@@ -75,6 +75,10 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
 REF_STATUS ref_geom_save( REF_GRID ref_grid, char *filename );
 REF_STATUS ref_geom_load( REF_GRID ref_grid, char *filename );
 
+REF_STATUS ref_geom_uv_area( REF_GEOM ref_geom, REF_INT *nodes,
+			     REF_DBL *uv_area );
+REF_STATUS ref_geom_report_uv_area( REF_GRID ref_grid );
+
 REF_STATUS ref_geom_inspect( REF_GEOM ref_geom );
 REF_STATUS ref_geom_tattle( REF_GEOM ref_geom, REF_INT node );
 
