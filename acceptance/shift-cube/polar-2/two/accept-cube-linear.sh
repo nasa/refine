@@ -49,7 +49,7 @@ adapt_cycle_sant cycle01 cycle02 2
 adapt_cycle_sant cycle02 cycle03 2
 adapt_cycle_sant cycle03 cycle04 2
 adapt_cycle_sant cycle04 cycle05 2
-adapt_cycle_sant cycle05 cycle06 2
+adapt_cycle cycle05 cycle06 10
 adapt_cycle cycle06 cycle07 10
 adapt_cycle cycle07 cycle08 10
 adapt_cycle cycle08 cycle09 10
