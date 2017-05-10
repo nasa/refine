@@ -110,7 +110,7 @@ REF_STATUS ref_metric_ugawg_node( REF_NODE ref_node, REF_INT version )
       h_r = h0 + 2*(0.1-h0)*ABS(r-0.5);
       if (2 == version)
 	{ 
-	  d0 = (0.6 - r) * 10.0;
+	  d0 = ABS(0.6 - r) * 10.0;
 	  h_t = (d0 < 0.0) ? (0.1) : (d0 * (1.0 / 40.0) + (1.0 - d0) * 0.1);
 	}
       ref_matrix_eig( d, 0 ) = 1/(h_r*h_r);
