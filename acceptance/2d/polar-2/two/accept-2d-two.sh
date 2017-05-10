@@ -21,7 +21,7 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.b8.ugrid -g cube.egads -p ${inproj}.gas -m ${inproj}.metric -o ${outproj} -s ${sweeps} ${tecplot}
+    ${two}/ref_driver -i ${inproj}.b8.ugrid -m ${inproj}.metric -o ${outproj} -s ${sweeps} ${tecplot}
     mv ref_gather_movie.tec ${inproj}_movie.tec
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.b8.ugrid ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
