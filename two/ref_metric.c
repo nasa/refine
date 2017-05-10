@@ -91,6 +91,47 @@ REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_polar2d_node( REF_NODE ref_node )
+{
+  REF_INT node;
+  REF_DBL x, z, r, t;
+  REF_DBL h_y, h_t, h_r, h0;
+  REF_DBL d[12], m[6];
+  
+  each_ref_node_valid_node( ref_node, node )
+    {
+      x = ref_node_xyz(ref_node,0,node);
+      z = ref_node_xyz(ref_node,2,node);
+      r = sqrt(x*x+z*z);
+      t = atan2(z,x);
+      h_y = 1.0;
+      h_t = 0.1;
+      h0 = 0.001;
+      h_r = h0 + 2*(0.1-h0)*ABS(r-0.5);
+      ref_matrix_eig( d, 0 ) = 1/(h_r*h_r);
+      ref_matrix_eig( d, 1 ) = 1/(h_t*h_t);
+      ref_matrix_eig( d, 2 ) = 1/(h_y*h_y);
+      ref_matrix_vec( d, 0, 0 ) = cos( t );
+      ref_matrix_vec( d, 1, 0 ) = 0.0;
+      ref_matrix_vec( d, 2, 0 ) = sin( t );
+      ref_matrix_vec( d, 0, 1 ) =-sin( t );
+      ref_matrix_vec( d, 1, 1 ) = 0.0;
+      ref_matrix_vec( d, 2, 1 ) = cos( t );
+      ref_matrix_vec( d, 0, 2 ) = 0.0;
+      ref_matrix_vec( d, 1, 2 ) = 1.0;
+      ref_matrix_vec( d, 2, 2 ) = 0.0;
+      ref_matrix_form_m( d, m );
+      ref_node_metric(ref_node,0,node) = m[0];
+      ref_node_metric(ref_node,1,node) = m[1];
+      ref_node_metric(ref_node,2,node) = m[2];
+      ref_node_metric(ref_node,3,node) = m[3];
+      ref_node_metric(ref_node,4,node) = m[4];
+      ref_node_metric(ref_node,5,node) = m[5];
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_ugawg_node( REF_NODE ref_node, REF_INT version )
 {
   REF_INT node;

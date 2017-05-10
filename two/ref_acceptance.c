@@ -33,6 +33,7 @@ int main( int argc, char *argv[] )
   REF_NODE ref_node;
   REF_INT masabl_pos;
   REF_INT ugawg_pos;
+  REF_INT polar2d_pos;
 
   RXS(ref_args_find( argc, argv, "-ugawg", &ugawg_pos ),
       REF_NOT_FOUND, "arg");
@@ -71,6 +72,26 @@ int main( int argc, char *argv[] )
       RAS( metric_recognized, "did not recognize metric field name" );
       printf("%s metric exported\n",argv[4]);
       RSS( ref_gather_metric( ref_grid, argv[4] ), "in");
+      return 0;
+    }
+
+  RXS(ref_args_find( argc, argv, "-polar2d", &polar2d_pos ),
+      REF_NOT_FOUND, "arg");
+
+  if ( REF_EMPTY != polar2d_pos )
+    {
+      if ( 4 != argc )
+	{
+	  printf("usage:\n");
+	  printf("  %s -polar2d input.grid_format output.metric\n", argv[0]);
+	  return(1);
+	}
+      printf("%s reading\n",argv[3]);
+      RSS( ref_import_by_extension( &ref_grid, argv[2] ), "in");
+      
+      RSS( ref_metric_polar2d_node( ref_grid_node(ref_grid) ),"lin");
+      printf("%s metric exported\n",argv[3]);
+      RSS( ref_gather_metric( ref_grid, argv[3] ), "in");
       return 0;
     }
 
