@@ -352,11 +352,12 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
   REF_INT nnode_written, first, n, i;
   REF_INT global, local;
   REF_STATUS status;
+  REF_INT dim=6;
 
   chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
 
-  ref_malloc( local_xyzm, 6*chunk, REF_DBL );
-  ref_malloc( xyzm, 6*chunk, REF_DBL );
+  ref_malloc( local_xyzm, dim*chunk, REF_DBL );
+  ref_malloc( xyzm, dim*chunk, REF_DBL );
 
   nnode_written = 0;
   while ( nnode_written < ref_node_n_global(ref_node) )
@@ -366,7 +367,7 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 
       nnode_written += n;
 
-      for (i=0;i<6*chunk;i++)
+      for (i=0;i<dim*chunk;i++)
 	local_xyzm[i] = 0.0;
 
       for (i=0;i<n;i++)
@@ -377,36 +378,36 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 	  if ( REF_SUCCESS == status &&
 	       ref_mpi_id == ref_node_part(ref_node,local) )
 	    {
-	      local_xyzm[0+6*i] = ref_node_xyz(ref_node,0,local);
-	      local_xyzm[1+6*i] = ref_node_xyz(ref_node,1,local);
-	      local_xyzm[2+6*i] = ref_node_xyz(ref_node,2,local);
-	      local_xyzm[3+6*i] = (REF_DBL)ref_node_part(ref_node,local);
-	      local_xyzm[4+6*i] = (REF_DBL)ref_node_age(ref_node,local);
-	      local_xyzm[5+6*i] = 1.0;
+	      local_xyzm[0+dim*i] = ref_node_xyz(ref_node,0,local);
+	      local_xyzm[1+dim*i] = ref_node_xyz(ref_node,1,local);
+	      local_xyzm[2+dim*i] = ref_node_xyz(ref_node,2,local);
+	      local_xyzm[3+dim*i] = (REF_DBL)ref_node_part(ref_node,local);
+	      local_xyzm[4+dim*i] = (REF_DBL)ref_node_age(ref_node,local);
+	      local_xyzm[5+dim*i] = 1.0;
 	    }
 	  else
 	    {
-	      local_xyzm[0+6*i] = 0.0;
-	      local_xyzm[1+6*i] = 0.0;
-	      local_xyzm[2+6*i] = 0.0;
-	      local_xyzm[3+6*i] = 0.0;
-	      local_xyzm[4+6*i] = 0.0;
-	      local_xyzm[5+6*i] = 0.0;
+	      local_xyzm[0+dim*i] = 0.0;
+	      local_xyzm[1+dim*i] = 0.0;
+	      local_xyzm[2+dim*i] = 0.0;
+	      local_xyzm[3+dim*i] = 0.0;
+	      local_xyzm[4+dim*i] = 0.0;
+	      local_xyzm[5+dim*i] = 0.0;
 	    }
 	}
 
-      RSS( ref_mpi_sum( local_xyzm, xyzm, 6*n, REF_DBL_TYPE ), "sum" );
+      RSS( ref_mpi_sum( local_xyzm, xyzm, dim*n, REF_DBL_TYPE ), "sum" );
 
       if ( ref_mpi_master )
 	for ( i=0; i<n; i++ )
 	  {
-	    if ( ABS( xyzm[5+6*i] - 1.0 ) > 0.1 )
+	    if ( ABS( xyzm[5+dim*i] - 1.0 ) > 0.1 )
 	      {
-		printf("error gather node %d %f\n",first+i, xyzm[5+6*i]);
+		printf("error gather node %d %f\n",first+i, xyzm[5+dim*i]);
 	      }
 	    fprintf(file,"%.15e %.15e %.15e %.0f %.0f\n",
-		    xyzm[0+6*i], xyzm[1+6*i], xyzm[2+6*i], 
-		    xyzm[3+6*i], xyzm[4+6*i]);
+		    xyzm[0+dim*i], xyzm[1+dim*i], xyzm[2+dim*i], 
+		    xyzm[3+dim*i], xyzm[4+dim*i]);
 	  }
     }
 
