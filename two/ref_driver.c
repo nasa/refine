@@ -63,6 +63,7 @@ int main( int argc, char *argv[] )
   REF_BOOL output_clumps = REF_FALSE;
   REF_BOOL tecplot_movie = REF_FALSE;
   REF_BOOL sanitize_metric = REF_FALSE;
+  REF_BOOL debug_verbose = REF_FALSE;
   char output_project[1024];
   char output_filename[1024];
 
@@ -70,7 +71,7 @@ int main( int argc, char *argv[] )
 	  
   echo_argv( argc, argv );
 
-  while ((opt = getopt(argc, argv, "i:m:g:p:o:s:clt")) != -1)
+  while ((opt = getopt(argc, argv, "i:m:g:p:o:s:cltd")) != -1)
     {
       switch (opt)
 	{
@@ -106,6 +107,9 @@ int main( int argc, char *argv[] )
 	case 't':
 	  tecplot_movie = REF_TRUE;
 	  break;
+	case 'd':
+	  debug_verbose = REF_TRUE;
+	  break;
 	case '?':
 	default:
 	  printf("parse error -%c\n",optopt);
@@ -119,6 +123,7 @@ int main( int argc, char *argv[] )
 	  printf("       [-c] output clumps\n");
 	  printf("       [-l] limit metric change\n");
 	  printf("       [-t] tecplot movie\n");
+	  printf("       [-d] debug verbose\n");
 	  printf("./ref_geom_test ega.egads \n");
 	  printf("./ref_geom_test ega.egads ega.ugrid\n");
 	  printf("./ref_acceptance ega.ugrid ega.metric 0.1\n");
@@ -181,6 +186,12 @@ int main( int argc, char *argv[] )
   snprintf( output_filename, 1024, "%s.gas", output_project );
   RSS(ref_geom_save( ref_grid, output_filename ),"geom tec" );
   ref_mpi_stopwatch_stop("tec");
+  if (debug_verbose)
+    {
+      snprintf( output_filename, 1024, "%s_metric_ellipse.tec", output_project );
+      RSS( ref_export_tec_metric_ellipse( ref_grid, output_project ), "al");
+      ref_mpi_stopwatch_stop("ellipse");
+    }
   if ( output_clumps)
     {
       RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
