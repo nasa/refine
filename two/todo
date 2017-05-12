@@ -3,6 +3,7 @@ EGADS questions:
 - degnerate edges (faces)
 - INRIA meshb to store parameterization with grid
 - surface normal
+- curvatures for metric
 
 open source
 
