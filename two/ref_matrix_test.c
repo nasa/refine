@@ -268,6 +268,41 @@ int main( void )
     RWDS(10.0,j[8],-1,"dcdz");
   }
 
+  { /* polar-1 jacobian at (sqrt(2)/4,sqrt(2)/4) */
+    /*
+      x=sqrt(2)/4;y=sqrt(2)/4
+      r=sqrt(x^2+y^2)
+      t=atan2(y,x)
+      hz=0.1,ht=0.1
+      h0=0.001,hr=h0+2*(1.0-h0)*abs(r-0.5)
+      r=[cos(t),-sin(t),0;sin(t),cos(t),0;0,0,1]
+      d=[hr^-2,0,0;0,ht^-2,0;0,0,hz^-2]
+      m=r*d*r'
+      [eigvec,eigval]=eig(m)
+      sd=sqrt(eigval)
+      j=sd*eigvec'
+      m2=j'*j
+    */
+    REF_DBL m[6]={ 500050.0,  499950.0,  0.0,
+                              500050.0,  0.0,
+                                       100.0};
+    REF_DBL j[9];
+
+    RSS( ref_matrix_jacob_m( m, j ), "jacob");
+
+    RWDS( 7.071067811865476,j[0],-1,"dadx");
+    RWDS(-7.07106781186547,j[1],-1,"dady");
+    RWDS( 0.0,j[2],-1,"dadz");
+
+    RWDS( 707.1067811865477,j[3],-1,"dbdx");
+    RWDS( 707.1067811865477,j[4],-1,"dbdy");
+    RWDS(   0.0,j[5],-1,"dbdz");
+
+    RWDS(  0.0,j[6],-1,"dcdx");
+    RWDS(  0.0,j[7],-1,"dcdy");
+    RWDS(-10.0,j[8],-1,"dcdz");
+  }
+
   { /* det */
     REF_DBL tol = -1.0;
     REF_DBL m[6]={10.0, 0.0, 0.0, 
