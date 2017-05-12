@@ -233,7 +233,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 				   file, conn_offset, faceid_offset ), "hex" );
     }
 
-  if ( ref_mpi_master ) fclose(file);
+  if ( ref_mpi_master )
+    REIS(0,fclose(file),"close file");
 
   /* ghost xyz */
 
@@ -529,6 +530,8 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, char *filename )
     }
 
   ref_free( metric );
+  if ( ref_mpi_master )
+    REIS(0,fclose(file),"close file");
 
   return REF_SUCCESS;
 }
@@ -609,6 +612,8 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, char *filename )
     }
 
   ref_free( metric );
+  if ( ref_mpi_master )
+    REIS(0,fclose(file),"close file");
 
   return REF_SUCCESS;
 }
@@ -661,6 +666,8 @@ REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, char *filename )
     }
 
   ref_free( data );
+  if ( ref_mpi_master )
+    REIS(0,fclose(file),"close file");
 
   return REF_SUCCESS;
 }
