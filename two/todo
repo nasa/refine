@@ -7,9 +7,6 @@ make faster, more efficient
 don't balloon up in size
 insert once, right place
 
-move the uv bounding box test to hihgest level
-improve surface smoothing with confidence?
-improve smoothing with anisotropy in 45 degree to axis (cube, rotating metric)
 make sure all triangles have one tet and tet has one neighbor by
 turning on validation.
 
@@ -26,7 +23,7 @@ create jenkins test
   - 3d geom
 - add curved cases
 
-run test cases from UGAWG
+add solution testcases toX UGAWG
 
 interp metric on curved surface and parallel
  make debug tecplot status
@@ -84,6 +81,10 @@ low priority surface reconstruction
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
++ improve surface smoothing with confidence?
+
++ improve smoothing with anisotropy in 45 degree to axis (cube, rotating metric)
++ move the uv bounding box test to hihgest level
 + faster background interp (store guess)
 
 +create jenkins test
