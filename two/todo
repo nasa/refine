@@ -1,7 +1,4 @@
 
-
-ref_driver valgind mem leak free
-
 open source
 
 time adapt pass elements
@@ -54,6 +51,9 @@ parallel geom
  ref_geom load bal
  parallel update ghost geom param
  geom gas restart file IO
+
+mem leak, static, movie file pointer in grid
+static, lmpi time
 
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
 
