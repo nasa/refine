@@ -62,6 +62,12 @@ adapt_cycle cycle16 cycle17 2
 adapt_cycle cycle17 cycle18 2
 adapt_cycle cycle18 cycle19 2
 adapt_cycle cycle19 cycle20 2
+
+cat cycle20.status
+../../../check.rb cycle20.status 0.012 3.1
+
+exit
+
 adapt_cycle cycle20 cycle21 2
 adapt_cycle cycle21 cycle22 2
 adapt_cycle cycle22 cycle23 2
@@ -72,9 +78,4 @@ adapt_cycle cycle26 cycle27 2
 adapt_cycle cycle27 cycle28 2
 adapt_cycle cycle28 cycle29 2
 adapt_cycle cycle29 cycle30 2
-
-cat accept-cube-cylinder-linear010-two-02.status
-../../../check.rb cycle30.status 0.012 3.1
-
-
 

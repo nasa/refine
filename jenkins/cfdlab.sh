@@ -95,6 +95,12 @@ cd ${source_dir}/acceptance/cube-cylinder/linear010/two
 ./accept-cube-cylinder-linear010-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+LOG=${root_dir}/log.accept-cube-cylinder-polar-2-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
+./accept-cube-cylinder-polar-2-two.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
 LOG=${root_dir}/log.accept-3d-polar-1-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/polar-1/two
