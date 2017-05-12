@@ -232,9 +232,11 @@ static REF_STATUS ref_metric_interpolate_twod( REF_GRID ref_grid, REF_GRID paren
     {
       for (ixyz=0; ixyz<3; ixyz++)
 	xyz[ixyz] = ref_node_xyz(ref_node,ixyz,node); 
-      tri = REF_EMPTY;
+      tri = ref_node_guess(ref_node,node);
       RSS( ref_grid_enclosing_tri( parent_grid, xyz,
 				   &tri, bary ), "enclosing tri" );
+      if ( ref_node_guess_allocated(ref_node) )
+	ref_node_raw_guess(ref_node,node) = tri;
       RSS( ref_cell_nodes( ref_grid_tri(parent_grid), tri, nodes ), "c2n");
       for (ixyz=0; ixyz<3; ixyz++)
 	{
