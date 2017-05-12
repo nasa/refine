@@ -1347,15 +1347,15 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0( REF_NODE ref_node,
 			     xyz2 ), "xyz2");
 
   dxyz0[0][0] = jac[0];
-  dxyz0[0][1] = jac[3];
-  dxyz0[0][2] = jac[6];
+  dxyz0[0][1] = jac[1];
+  dxyz0[0][2] = jac[2];
 
-  dxyz0[1][0] = jac[1];
+  dxyz0[1][0] = jac[3];
   dxyz0[1][1] = jac[4];
-  dxyz0[1][2] = jac[7];
+  dxyz0[1][2] = jac[5];
 
-  dxyz0[2][0] = jac[2];
-  dxyz0[2][1] = jac[5];
+  dxyz0[2][0] = jac[6];
+  dxyz0[2][1] = jac[7];
   dxyz0[2][2] = jac[8];
   
   for (i=0;i<3;i++) e0[i] = xyz2[i]-xyz1[i];
