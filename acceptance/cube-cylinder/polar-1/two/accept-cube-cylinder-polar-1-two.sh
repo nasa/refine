@@ -75,7 +75,7 @@ adapt_cycle cycle28 cycle29 10
 adapt_cycle cycle29 cycle30 10
 
 cat cycle30.status
-../../../check.rb cycle30.status 0.08 1.8
+../../../check.rb cycle30.status 0.060 10.0
 
 
 
