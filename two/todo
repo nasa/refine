@@ -5,6 +5,8 @@ EGADS questions:
 - surface normal
 - curvatures for metric
 
+add solution testcases to UGAWG
+
 open source
 
 time adapt pass elements
@@ -28,8 +30,6 @@ create jenkins test
 - UGAWG test cases
   - 3d geom
 - add curved cases
-
-add solution testcases toX UGAWG
 
 interp metric on curved surface and parallel
  make debug tecplot status
