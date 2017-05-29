@@ -23,6 +23,8 @@ bl insert
 cavity in 2D/3D
 
 include surface curvature constraints in metric
+Ref/aiaa-2010-0169-loseille-lohner-adapt-boom.pdf
+Ref/frey-imr9-2000-about-surface-remeshing.pdf
 
 create jenkins test
 - make check valgrind
