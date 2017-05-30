@@ -1168,8 +1168,12 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
 	      (box[1]-box[4])*(box[1]-box[4]) +
 	      (box[2]-box[5])*(box[2]-box[5]));
 
-  params[0] =  0.25*size; /*spacing*/
+  /* maximum length of an EDGE segment or triangle side (in physical space) */
+  params[0] =  0.25*size;
+  /* curvature-based value that looks locally at the deviation between
+     the centroid of the discrete object and the underlying geometry */
   params[1] =  0.001*size;
+  /* maximum interior dihedral angle (in degrees) */
   params[2] = 15.0;
   REIS( EGADS_SUCCESS,
 	EG_makeTessBody(solid, params, &tess), "EG tess");
