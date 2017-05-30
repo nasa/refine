@@ -1025,8 +1025,8 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   if ( 0 != system_status )
     {
       printf("debug export ref_geom_test_debug_surf.tec\n");
-      RSS( ref_export_smesh( ref_grid,
-			     "ref_geom_test_debug_surf.tec"), "smesh" );
+      RSS( ref_export_tec( ref_grid,
+			   "ref_geom_test_debug_surf.tec"), "smesh" );
     }
   REIS(0, system_status, "tetgen failed");
 
