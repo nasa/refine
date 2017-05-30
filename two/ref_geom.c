@@ -1018,9 +1018,17 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   REF_INT node, nnode_surface, item, new_node;
   REF_DBL xyz[3], dist;
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
+  int system_status;
   RSS( ref_export_smesh( ref_grid, smesh_name ), "smesh" );
   sprintf( command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name );
-  REIS(0, system( command ), "tetgen failed");
+  system_status = system( command );
+  if ( 0 != system_status )
+    {
+      printf("debug export ref_geom_test_debug_surf.tec\n");
+      RSS( ref_export_smesh( ref_grid,
+			     "ref_geom_test_debug_surf.tec"), "smesh" );
+    }
+  REIS(0, system_status, "tetgen failed");
 
   file = fopen(node_name,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",node_name);
