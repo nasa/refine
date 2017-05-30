@@ -1353,7 +1353,9 @@ REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     if ( id == nodes[3] )
       ntri++;
-    
+
+  if ( 0 == nnode || 0 == ntri ) return REF_SUCCESS; /* skip degenerate */
+  
   fprintf(file,
 	  "zone t=face%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  id, nnode, ntri, "point", "fetriangle" );
@@ -1417,7 +1419,8 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
       min_id = MIN( min_id, ref_geom_id(ref_geom,geom) );
       max_id = MAX( max_id, ref_geom_id(ref_geom,geom) );
     }
-
+  
+  for ( id = min_id ; id <= max_id ; id++ )
     RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "tec face" );
 
   fclose(file);
