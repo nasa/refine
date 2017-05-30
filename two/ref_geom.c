@@ -1024,9 +1024,12 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   system_status = system( command );
   if ( 0 != system_status )
     {
-      printf("debug export ref_geom_test_debug_surf.tec\n");
-      RSS( ref_export_tec( ref_grid,
-			   "ref_geom_test_debug_surf.tec"), "smesh" );
+      printf("tec360 ref_geom_test_debug_geom.tec\n");
+      RSS(ref_geom_tec( ref_grid, "ref_geom_test_debug_geom.tec" ),
+	  "dbg geom" );
+      printf("tec360 ref_geom_test_debug_surf.tec\n");
+      RSS( ref_export_tec_surf( ref_grid,
+				"ref_geom_test_debug_surf.tec"), "dbg surf" );
     }
   REIS(0, system_status, "tetgen failed");
 
