@@ -2,8 +2,9 @@
 EGADS questions:
 - degnerate edges (faces)
 - INRIA meshb to store parameterization with grid
-- surface normal
+- surface normal (direction and inside/outside orientation)
 - curvatures for metric
+- easiest way to build the planar delta wing
 
 add solution testcases to UGAWG
 
