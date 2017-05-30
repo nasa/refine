@@ -5,6 +5,7 @@ EGADS questions:
 - surface normal (direction and inside/outside orientation)
 - curvatures for metric
 - easiest way to build the planar delta wing
+- analytic hemisphere-cylinder 5e-7 tolerance?
 
 add solution testcases to UGAWG
 
