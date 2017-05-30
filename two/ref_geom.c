@@ -1183,6 +1183,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
   params[1] =  0.001*size;
   /* maximum interior dihedral angle (in degrees) */
   params[2] = 15.0;
+  /* printf("params = %f,%f,%f\n",params[0],params[1],params[2]); */
   REIS( EGADS_SUCCESS,
 	EG_makeTessBody(solid, params, &tess), "EG tess");
   REIS( EGADS_SUCCESS,
