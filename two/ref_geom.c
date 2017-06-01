@@ -822,9 +822,9 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
   xyz[2]=eval[2];
   if ( NULL != dxyz_dtuv )
     {
-      for (i=0;i<9;i++) dxyz_dtuv[i] = eval[3+i];
+      for (i=0;i<6;i++) dxyz_dtuv[i] = eval[3+i];
       if (REF_GEOM_FACE == ref_geom_type(ref_geom,geom))
-	for (i=0;i<6;i++) dxyz_dtuv[9+i] = eval[12+i];
+	for (i=0;i<9;i++) dxyz_dtuv[6+i] = eval[9+i];
     }
   return REF_SUCCESS;
 #else
