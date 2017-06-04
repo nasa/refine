@@ -455,7 +455,6 @@ int main( int argc, char *argv[] )
     RWDS( 0.0,   drsduv[1], tol, "drdv" );
     RWDS(-0.375, drsduv[2], tol, "dsdu" );
     RWDS( 0.25,  drsduv[3], tol, "dsdv" );
-    
   }
 
   return 0;
