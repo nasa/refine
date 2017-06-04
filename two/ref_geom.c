@@ -21,6 +21,7 @@
 #include "ref_dict.h"
 
 #include "ref_malloc.h"
+#include "ref_math.h"
 
 REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
 {
@@ -838,6 +839,36 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
   return REF_IMPLEMENT;
 #endif
 }
+
+REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
+			 REF_DBL *r, REF_DBL *s, REF_DBL *n )
+{
+  REF_INT i;
+  REF_DBL xyz[3], dxyz_duv[15];
+  REF_DBL dot;
+  RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval face" );
+  for (i=0;i<3;i++) r[i] = dxyz_duv[i];  
+  for (i=0;i<3;i++) s[i] = dxyz_duv[i+3];
+  RSS( ref_math_normalize( r ), "norm r (u)" );
+  RSS( ref_math_normalize( s ), "norm s (v)" );
+  dot = ref_math_dot(r,s);
+  for (i=0;i<3;i++) s[i] += dot*r[i];
+  ref_math_cross_product( r, s, n );
+  {
+    REF_DBL len;
+    printf("geom %4d",geom);
+    len = sqrt(ref_math_dot(r,r));
+    printf(" %f r",len);
+    len = sqrt(ref_math_dot(s,s));
+    printf(" %f s",len);
+    len = sqrt(ref_math_dot(n,n));
+    printf(" %f n",len);
+    len = ref_math_dot(r,s);
+    printf(" %f rs",len);
+  }
+  return REF_SUCCESS;
+}
+
 
 REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
 {
