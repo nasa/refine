@@ -1430,6 +1430,7 @@ REF_STATUS ref_geom_norm_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
   REF_INT item, local, node;
   REF_INT nnode, ntri;
   REF_DBL r[3], s[3], n[3];
+  REF_DBL area_sign;
 
   RSS( ref_dict_create( &ref_dict ), "create dict" ); 
 
@@ -1455,13 +1456,14 @@ REF_STATUS ref_geom_norm_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
       RSS( ref_geom_find( ref_geom, node, REF_GEOM_FACE, id, &geom ),
 	   "not found");
       RSS( ref_geom_rsn( ref_geom, geom, r, s, n ), "rsn");
+      RSS( ref_geom_uv_area_sign( ref_grid, id, &area_sign ), "a sign" );
       fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
 	      ref_node_xyz(ref_node,0,node),
 	      ref_node_xyz(ref_node,1,node),
 	      ref_node_xyz(ref_node,2,node),
-	      n[0],
-	      n[1],
-	      n[2] ) ;
+	      -area_sign*n[0],
+	      -area_sign*n[1],
+	      -area_sign*n[2] ) ;
     }
 
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
