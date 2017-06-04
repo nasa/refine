@@ -441,6 +441,12 @@ int main( int argc, char *argv[] )
     duv[5] = 0.0;
     
     RSS( ref_geom_uv_rsn( duv, r, s, n, drsduv ), "make orthog" );
+    RWDS( 1.0, r[0], tol, "r[0]" );
+    RWDS( 0.0, r[1], tol, "r[1]" );
+    RWDS( 0.0, r[2], tol, "r[2]" );
+    RWDS( 0.0, s[0], tol, "s[0]" );
+    RWDS( 1.0, s[1], tol, "s[1]" );
+    RWDS( 0.0, s[2], tol, "s[2]" );
     RWDS( 0.0, n[0], tol, "n[0]" );
     RWDS( 0.0, n[1], tol, "n[1]" );
     RWDS( 1.0, n[2], tol, "n[2]" );
