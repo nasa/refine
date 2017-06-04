@@ -865,6 +865,7 @@ REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
     printf(" %f n",len);
     len = ref_math_dot(r,s);
     printf(" %f rs",len);
+    printf("\n");
   }
   return REF_SUCCESS;
 }
@@ -1419,6 +1420,67 @@ REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_norm_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_DICT ref_dict;
+  REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, local, node;
+  REF_INT nnode, ntri;
+  REF_DBL r[3], s[3], n[3];
+
+  RSS( ref_dict_create( &ref_dict ), "create dict" ); 
+
+  each_ref_geom_face( ref_geom, geom )
+    if ( id == ref_geom_id(ref_geom,geom) )
+      RSS( ref_dict_store( ref_dict, ref_geom_node(ref_geom,geom), geom ),
+	   "mark nodes");
+  nnode = ref_dict_n( ref_dict );
+  
+  ntri = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    if ( id == nodes[3] )
+      ntri++;
+
+  if ( 0 == nnode || 0 == ntri ) return REF_SUCCESS; /* skip degenerate */
+  
+  fprintf(file,
+	  "zone t=norm%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  id, nnode, ntri, "point", "fetriangle" );
+  
+  each_ref_dict_key_value( ref_dict, item, node, geom )
+    {
+      RSS( ref_geom_find( ref_geom, node, REF_GEOM_FACE, id, &geom ),
+	   "not found");
+      RSS( ref_geom_rsn( ref_geom, geom, r, s, n ), "rsn");
+      fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+	      ref_node_xyz(ref_node,0,node),
+	      ref_node_xyz(ref_node,1,node),
+	      ref_node_xyz(ref_node,2,node),
+	      n[0],
+	      n[1],
+	      n[2] ) ;
+    }
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( id == nodes[3] )
+      {
+	for ( node = 0; node < 3; node++ )
+	  {
+	    RSS( ref_dict_location( ref_dict, nodes[node], &local),
+		 "localize");
+	    fprintf(file," %d",local+1);
+	  }
+	fprintf(file,"\n");
+      }
+
+  RSS( ref_dict_free( ref_dict ), "free dict" ); 
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1453,6 +1515,8 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
   
   for ( id = min_id ; id <= max_id ; id++ )
     RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "tec face" );
+  for ( id = min_id ; id <= max_id ; id++ )
+    RSS( ref_geom_norm_tec_zone( ref_grid, id, file ), "tec norm" );
 
   fclose(file);
   return REF_SUCCESS;
