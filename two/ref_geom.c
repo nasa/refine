@@ -841,18 +841,30 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
 }
 
 REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
-			    REF_DBL *r, REF_DBL *s, REF_DBL *n )
+			    REF_DBL *r, REF_DBL *s, REF_DBL *n,
+			    REF_DBL *drsduv )
 {
   REF_INT i;
   REF_DBL dot;
+  REF_DBL len;
 
-  for (i=0;i<3;i++) r[i] = uv[i];  
+  for (i=0;i<3;i++) r[i] = uv[i];
+  drsduv[0]=1.0;drsduv[1]=0.0;
   for (i=0;i<3;i++) s[i] = uv[i+3];
+  drsduv[2]=0.0;drsduv[3]=1.0;
+  len = sqrt(ref_math_dot(r,r));
+  drsduv[0] /= len;
+  drsduv[1] /= len;
   RSS( ref_math_normalize( r ), "norm r (u)" );
+  len = sqrt(ref_math_dot(s,s));
+  drsduv[2] /= len;
+  drsduv[3] /= len;  
   RSS( ref_math_normalize( s ), "norm s (v)" );
 
   dot = ref_math_dot(r,s);
   for (i=0;i<3;i++) s[i] += dot*r[i];
+  drsduv[2] += dot*drsduv[0];
+  drsduv[3] += dot*drsduv[1];
   ref_math_cross_product( r, s, n );
 
   return REF_SUCCESS;
@@ -861,9 +873,9 @@ REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
 REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
 			 REF_DBL *r, REF_DBL *s, REF_DBL *n )
 {
-  REF_DBL xyz[3], dxyz_duv[15];
+  REF_DBL xyz[3], dxyz_duv[15], drsduv[4];
   RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval face" );
-  RSS( ref_geom_uv_rsn( dxyz_duv, r, s, n ), "make orthog" );
+  RSS( ref_geom_uv_rsn( dxyz_duv, r, s, n, drsduv ), "make orthog" );
   return REF_SUCCESS;
 }
 
