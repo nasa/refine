@@ -450,6 +450,11 @@ int main( int argc, char *argv[] )
     RWDS( 0.0, n[0], tol, "n[0]" );
     RWDS( 0.0, n[1], tol, "n[1]" );
     RWDS( 1.0, n[2], tol, "n[2]" );
+
+    RWDS( 0.5,   drsduv[0], tol, "drdu" );
+    RWDS( 0.0,   drsduv[1], tol, "drdv" );
+    RWDS(-0.375, drsduv[2], tol, "dsdu" );
+    RWDS( 0.25,  drsduv[3], tol, "dsdv" );
     
   }
 
