@@ -119,6 +119,9 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
 			  REF_DBL *xyz, REF_DBL *dxyz_dtuv );
 REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
 			 REF_DBL *r, REF_DBL *s, REF_DBL *n );
+REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
+			    REF_DBL *r, REF_DBL *s, REF_DBL *n,
+			    REF_DBL *drsduv );
 
 REF_STATUS ref_geom_verify_param( REF_GRID ref_grid );
 REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid );

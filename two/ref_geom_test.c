@@ -19,6 +19,8 @@
 #include  "ref_dict.h"
 #include  "ref_edge.h"
 
+#include  "ref_math.h"
+
 int main( int argc, char *argv[] )
 {
 
@@ -427,5 +429,24 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
   
+  { /* system transform */
+    REF_DBL tol = 1.0e-12;
+    REF_DBL duv[6];
+    REF_DBL r[3], s[3], n[3], drsduv[4];
+    duv[0] = 2.0;
+    duv[1] = 0.0;
+    duv[2] = 0.0;
+    duv[3] = 3.0;
+    duv[4] = 4.0;
+    duv[5] = 0.0;
+    
+    RSS( ref_geom_uv_rsn( duv, r, s, n, drsduv ), "make orthog" );
+    RWDS( 0.0, n[0], tol, "n[0]" );
+    RWDS( 0.0, n[1], tol, "n[1]" );
+    RWDS( 1.0, n[2], tol, "n[2]" );
+    
+  }
+
   return 0;
 }
+

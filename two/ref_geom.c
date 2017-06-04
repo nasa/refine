@@ -862,9 +862,15 @@ REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
   RSS( ref_math_normalize( s ), "norm s (v)" );
 
   dot = ref_math_dot(r,s);
-  for (i=0;i<3;i++) s[i] += dot*r[i];
-  drsduv[2] += dot*drsduv[0];
-  drsduv[3] += dot*drsduv[1];
+  for (i=0;i<3;i++) s[i] -= dot*r[i];
+  drsduv[2] -= dot*drsduv[0];
+  drsduv[3] -= dot*drsduv[1];
+  
+  len = sqrt(ref_math_dot(s,s));
+  drsduv[2] /= len;
+  drsduv[3] /= len;  
+  RSS( ref_math_normalize( s ), "norm s (v)" );
+
   ref_math_cross_product( r, s, n );
 
   return REF_SUCCESS;
