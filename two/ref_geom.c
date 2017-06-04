@@ -858,7 +858,6 @@ REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
   return REF_SUCCESS;
 }
 
-
 REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
 			 REF_DBL *r, REF_DBL *s, REF_DBL *n )
 {
@@ -867,7 +866,6 @@ REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
   RSS( ref_geom_uv_rsn( dxyz_duv, r, s, n ), "make orthog" );
   return REF_SUCCESS;
 }
-
 
 REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
 {
