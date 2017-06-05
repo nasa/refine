@@ -885,6 +885,19 @@ REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_curve( REF_GEOM ref_geom, REF_INT geom )
+{
+  REF_DBL xyz[3], dxyz_duv[15], drsduv[4];
+  REF_DBL uu,uv,vv;
+  REF_DBL r[3], s[3], n[3];
+  RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval face" );
+  RSS( ref_geom_uv_rsn( dxyz_duv, r, s, n, drsduv ), "make orthog" );
+  uu = n[0]*dxyz_duv[6]  + n[1]*dxyz_duv[7]  + n[2]*dxyz_duv[8];
+  uv = n[0]*dxyz_duv[9]  + n[1]*dxyz_duv[10] + n[2]*dxyz_duv[11];
+  vv = n[0]*dxyz_duv[12] + n[1]*dxyz_duv[13] + n[2]*dxyz_duv[14];
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
