@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+
+lines = IO.readlines(ARGV[0])
+
+File.open(ARGV[1],'w') do |f|
+  f.puts "MeshVersionFormatted 2"
+  f.puts "Dimension 2"
+  f.puts "SolAtVertices"
+  nnode3 = lines[3].to_i
+  nnode = nnode3/2
+  printf("twod %d nodes\n",nnode)
+  f.puts nnode
+  f.puts "3 1 2 1"
+  nnode.times do |i|
+    line = lines[i+5]
+    col = line.split(/,/)
+    rho = col[0].to_f
+    u = col[1].to_f
+    w = col[2].to_f
+    p = col[3].to_f
+    f.printf(" %.18e %.18e %.18e %.18e\n", rho, u, w, p)
+  end
+end
