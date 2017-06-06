@@ -1,5 +1,13 @@
 #!/usr/bin/env ruby
 
+unless (ARGV[2]) then
+  puts "usage :\n #{$0} fun3d.sol wolf.sol Mach"
+  exit 1
+end
+
+mach = ARGV[2].to_f
+
+printf("Mach %f\n",mach)
 
 lines = IO.readlines(ARGV[0])
 
