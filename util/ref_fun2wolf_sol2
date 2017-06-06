@@ -6,8 +6,9 @@ unless (ARGV[2]) then
 end
 
 mach = ARGV[2].to_f
+gamma = 1.6
 
-printf("Mach %f\n",mach)
+printf("Mach %f gamma %f\n",mach,gamma)
 
 lines = IO.readlines(ARGV[0])
 
@@ -27,6 +28,8 @@ File.open(ARGV[1],'w') do |f|
     u = col[1].to_f
     w = col[2].to_f
     p = col[3].to_f
-    f.printf(" %.18e %.18e %.18e %.18e\n", rho, u, w, p)
+    q2=(u*u+w*w)
+    f.printf( " %.18e %.18e %.18e %.18e\n",
+              rho, u/mach, w/mach, p/mach/mach*(gamma-1.0)+0.5*rho*q2 )
   end
 end
