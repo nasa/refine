@@ -30,6 +30,11 @@ cavity in 2D/3D
 include surface curvature constraints in metric
 Ref/aiaa-2010-0169-loseille-lohner-adapt-boom.pdf
 Ref/frey-imr9-2000-about-surface-remeshing.pdf
+Ref/chuang-hoffman-esaim-1992-curvature-parametric-surfaces.pdf
+
+https://math.stackexchange.com/questions/359851/hessian-after-coordinate-changing
+The chain rule is not valid for the second derivative except if the
+change of variable is linear, that is here the case.
 
 create jenkins test
 - make check valgrind
