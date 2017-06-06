@@ -28,8 +28,7 @@ File.open(ARGV[1],'w') do |f|
     u = col[1].to_f
     w = col[2].to_f
     p = col[3].to_f
-    q2=(u*u+w*w)
     f.printf( " %.18e %.18e %.18e %.18e\n",
-              rho, u/mach, w/mach, p/mach/mach*(gamma-1.0)+0.5*rho*q2 )
+              rho, u/mach, w/mach, p/mach/mach )
   end
 end
