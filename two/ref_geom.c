@@ -895,7 +895,8 @@ REF_STATUS ref_geom_curve( REF_GEOM ref_geom, REF_INT geom )
   uu = n[0]*dxyz_duv[6]  + n[1]*dxyz_duv[7]  + n[2]*dxyz_duv[8];
   uv = n[0]*dxyz_duv[9]  + n[1]*dxyz_duv[10] + n[2]*dxyz_duv[11];
   vv = n[0]*dxyz_duv[12] + n[1]*dxyz_duv[13] + n[2]*dxyz_duv[14];
-  
+  printf(" %f %f \n",uu,uv);
+  printf(" %f %f \n",uv,vv);
   return REF_SUCCESS;
 }
 
