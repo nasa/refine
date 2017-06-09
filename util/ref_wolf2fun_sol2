@@ -20,7 +20,14 @@ File.open(ARGV[1],'w') do |f|
   nnode = nnode2*2
   printf("threed %d nodes\n",nnode)
   f.puts nnode
-  f.puts "3 1 2 1"
+  datatype = lines[6].split(' ')
+  puts datatype.join(" ")
+  turbtoo = ( datatype[4] == '1' )
+  if (turbtoo) then
+    f.puts "3 1 2 1 1"
+  else
+    f.puts "3 1 2 1"
+  end
   2.times do
     nnode2.times do |i|
       line = lines[i+8]
@@ -30,8 +37,14 @@ File.open(ARGV[1],'w') do |f|
       v = 0.0
       w = col[2].to_f
       p = col[3].to_f
-      f.printf( " %.18e %.18e %.18e %.18e %.18e\n",
-                rho, u*mach, v*mach, w*mach, p/mach/mach )
-    end
+      if (turbtoo) then
+        nu = col[4].to_f
+        f.printf( " %.18e %.18e %.18e %.18e %.18e %.18e\n",
+                  rho, u*mach, v*mach, w*mach, p/mach/mach, nu )
+      else
+        f.printf( " %.18e %.18e %.18e %.18e %.18e\n",
+                  rho, u*mach, v*mach, w*mach, p/mach/mach )
+      end
+      end
   end
 end
