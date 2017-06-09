@@ -24,7 +24,7 @@ File.open(ARGV[1],'w') do |f|
   puts datatype.join(" ")
   turbtoo = ( datatype[4] == '1' )
   if (turbtoo) then
-    f.puts "3 1 2 1 1"
+    f.puts "4 1 2 1 1"
   else
     f.puts "3 1 2 1"
   end
