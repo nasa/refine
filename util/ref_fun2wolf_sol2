@@ -6,7 +6,7 @@ unless (ARGV[2]) then
 end
 
 mach = ARGV[2].to_f
-gamma = 1.6
+gamma = 1.4
 
 printf("Mach %f gamma %f\n",mach,gamma)
 
