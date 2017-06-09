@@ -6,9 +6,11 @@ unless (ARGV[2]) then
 end
 
 mach = ARGV[2].to_f
+re = ARGV[3].to_f
 gamma = 1.4
 
 printf("Mach %f gamma %f\n",mach,gamma)
+printf("Re %f\n",re)
 
 lines = IO.readlines(ARGV[0])
 
@@ -40,7 +42,7 @@ File.open(ARGV[1],'w') do |f|
       if (turbtoo) then
         nu = col[4].to_f
         f.printf( " %.18e %.18e %.18e %.18e %.18e %.18e\n",
-                  rho, u*mach, v*mach, w*mach, p/mach/mach, nu )
+                  rho, u*mach, v*mach, w*mach, p/mach/mach, nu*re )
       else
         f.printf( " %.18e %.18e %.18e %.18e %.18e\n",
                   rho, u*mach, v*mach, w*mach, p/mach/mach )
