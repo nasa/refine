@@ -42,10 +42,10 @@ File.open(ARGV[1],'w') do |f|
       if (turbtoo) then
         nu = col[4].to_f
         f.printf( " %.18e %.18e %.18e %.18e %.18e %.18e\n",
-                  rho, u*mach, v*mach, w*mach, p/mach/mach, nu*re )
+                  rho, u*mach, v*mach, w*mach, p*mach*mach, nu*re )
       else
         f.printf( " %.18e %.18e %.18e %.18e %.18e\n",
-                  rho, u*mach, v*mach, w*mach, p/mach/mach )
+                  rho, u*mach, v*mach, w*mach, p*mach*mach )
       end
       end
   end
