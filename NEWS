@@ -1,4 +1,11 @@
 
+- ref_matrix repaired jacobian cost transform
+- ref_smooth edge and face optimization with ref_geom
+- added acceptance tests based on github.com/UGAWG
+- ref_metric 3D metric interpolated (extrapolated on boundary, not parallel)
+- ref_geom geometry association cached in a .gas file
+- ref_geom .egads model can be tessellated with tetgen
+- ref_geom can use EGADS for geometry evaluation
 - refine/one fortran interface can now store hex elements without modification
 - added tetgen .smesh output format
 - 3D .meshb export now uses 0 to mark vertex and tetra ids. (triangles
