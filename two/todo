@@ -3,6 +3,7 @@ EGADS questions:
 - degnerate edges (faces)
 - INRIA meshb to store parameterization with grid
 - surface normal (direction and inside/outside orientation)
+- best way to recover uv, t
 - curvatures for metric
   - EG_curvature, uv derivatives not orthogonal
   - noise
