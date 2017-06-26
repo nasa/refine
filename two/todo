@@ -4,7 +4,7 @@ EGADS questions:
 - INRIA meshb to store parameterization with grid
 - surface normal (direction and inside/outside orientation)
 - curvatures for metric
-  - uv derivatives not orthogonal
+  - EG_curvature, uv derivatives not orthogonal
   - noise
   - descrete reconstruction
 - easiest way to build the planar delta wing
