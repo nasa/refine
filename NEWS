@@ -1,4 +1,6 @@
 
+Mon, Jun 26, 2017 : Released Refine 1.8.18
+
 - ref_matrix repaired jacobian cost transform
 - ref_smooth edge and face optimization with ref_geom
 - added acceptance tests based on github.com/UGAWG
