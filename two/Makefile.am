@@ -4,51 +4,62 @@ EXTRA_DIST = test.sh
 lib_LIBRARIES = libref2.a
 
 libref2_a_SOURCES = \
-	ref_adapt.c ref_adapt.h \
-	ref_adj.c ref_adj.h \
-	ref_args.c ref_args.h \
-	ref_axi.c ref_axi.h \
-	ref_cavity.c ref_cavity.h \
-	ref_cell.c ref_cell.h \
-	ref_clump.c ref_clump.h \
-	ref_collapse.c ref_collapse.h \
-	ref_dict.c ref_dict.h \
+	ref_adapt.c \
+	ref_adj.c \
+	ref_args.c \
+	ref_axi.c \
+	ref_cavity.c \
+	ref_cell.c \
+	ref_clump.c \
+	ref_collapse.c \
+	ref_dict.c \
 	ref_defs.h \
-	ref_edge.c ref_edge.h \
+	ref_edge.c \
 	ref_endian.h \
-	ref_export.c ref_export.h \
-	ref_face.c ref_face.h \
-	ref_fixture.c ref_fixture.h \
-	ref_fortran.c ref_fortran.h \
-	ref_gather.c ref_gather.h \
-	ref_gen.c ref_gen.h \
-	ref_geom.c ref_geom.h \
-	ref_grid.c ref_grid.h \
-	ref_histogram.c ref_histogram.h \
-	ref_html.c ref_html.h \
-	ref_import.c ref_import.h \
-	ref_inflate.c ref_inflate.h \
-	ref_list.h ref_list.c \
+	ref_export.c \
+	ref_face.c \
+	ref_fixture.c \
+	ref_fortran.c \
+	ref_gather.c \
+	ref_gen.c \
+	ref_geom.c \
+	ref_grid.c \
+	ref_histogram.c \
+	ref_html.c \
+	ref_import.c \
+	ref_inflate.c \
+	ref_list.c \
 	ref_malloc.h \
-	ref_math.h ref_math.c \
-	ref_matrix.h ref_matrix.c \
-	ref_metric.h ref_metric.c \
-	ref_migrate.h ref_migrate.c \
-	ref_mpi.h ref_mpi.c \
-	ref_node.h ref_node.c \
-	ref_part.h ref_part.c \
-	ref_plot3d.h ref_plot3d.c \
-	ref_project.h ref_project.c \
-	ref_quality.h ref_quality.c \
-	ref_shard.c ref_shard.h \
-	ref_smooth.h ref_smooth.c \
-	ref_sort.h ref_sort.c \
-	ref_split.h ref_split.c \
-	ref_stitch.h ref_stitch.c \
-	ref_subdiv.h ref_subdiv.c \
-	ref_swap.h ref_swap.c \
-	ref_twod.h ref_twod.c \
-	ref_validation.h ref_validation.c
+	ref_math.c \
+	ref_matrix.c \
+	ref_metric.c \
+	ref_migrate.c \
+	ref_mpi.c \
+	ref_node.c \
+	ref_part.c \
+	ref_plot3d.c \
+	ref_project.c \
+	ref_quality.c \
+	ref_shard.c \
+	ref_smooth.c \
+	ref_sort.c \
+	ref_split.c \
+	ref_stitch.c \
+	ref_subdiv.c \
+	ref_swap.c \
+	ref_twod.c \
+	ref_validation.c
+
+include_HEADERS = ref_adapt.h ref_adj.h ref_args.h ref_axi.h \
+	ref_cavity.h ref_cell.h ref_clump.h ref_collapse.h \
+	ref_dict.h ref_edge.h ref_export.h \
+	ref_face.h ref_fixture.h ref_fortran.h \
+	ref_gather.h ref_gen.h ref_geom.h ref_grid.h \
+	ref_histogram.h ref_html.h ref_import.h ref_inflate.h ref_list.h \
+	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
+	ref_node.h ref_part.h ref_plot3d.h ref_project.h ref_quality.h \
+	ref_shard.h ref_smooth.h ref_sort.h ref_split.h ref_stitch.h \
+	ref_subdiv.h ref_swap.h ref_twod.h ref_validation.h 
 
 partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
 
