@@ -849,6 +849,7 @@ REF_STATUS ref_geom_curvature( REF_GEOM ref_geom, REF_INT geom,
   double params[2];
   ego *faces;
   ego object;
+  int egads_status;
   if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
     return REF_INVALID;
   params[0] = 0.0; params[1] = 0.0;
@@ -871,9 +872,22 @@ REF_STATUS ref_geom_curvature( REF_GEOM ref_geom, REF_INT geom,
     default:
       RSS(REF_IMPLEMENT, "unknown geom" );
     }
+
+  egads_status = EG_curvature(object, params, curvature);
+  if ( EGADS_DEGEN == egads_status )
+    {
+      *kr=0.0;
+      r[0] = 1.0;
+      r[1] = 0.0;
+      r[2] = 0.0;
+      *ks=0.0;
+      s[0] = 0.0;
+      s[1] = 1.0;
+      s[2] = 0.0;
+      return REF_SUCCESS;
+    }
   
-  REIS( EGADS_SUCCESS,
-	EG_curvature(object, params, curvature), "eval");
+  REIS( EGADS_SUCCESS, egads_status, "curve");
   *kr=curvature[0];
   r[0] = curvature[1];
   r[1] = curvature[2];
