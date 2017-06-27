@@ -1,16 +1,26 @@
 
+chat with Bill about parallel egads communication
+
 EGADS questions:
 - degnerate edges (faces)
-- INRIA meshb to store parameterization with grid
+  EG_getTopology (mtype edge)
+
+- INRIA meshb to store parameterization with grid (call MARCUM)
 - surface normal (direction and inside/outside orientation)
+  EG_getTopology (mtype UxV out domain sforward)
+  
 - best way to recover uv, t
 - curvatures for metric
-  - EG_curvature: dir1+dir2 right handed? negative? degenerate?
+  - EG_curvature: dir1+dir2 right handed anything? negative dot normal?
+  degenerate move neriby?
   - transform uv derivatives not orthogonal
   - noise
   - descrete reconstruction
 - easiest way to build the planar delta wing
 - analytic hemisphere-cylinder 5e-7 tolerance?
+- geode (PW adapt)
+
+init grid, set .tParams, vtess
 
 add solution testcases to UGAWG
 
