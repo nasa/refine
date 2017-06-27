@@ -938,10 +938,9 @@ REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
 REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
 			 REF_DBL *r, REF_DBL *s, REF_DBL *n )
 {
-  REF_DBL kr,ks, len;
+  REF_DBL kr,ks;
   RSS( ref_geom_curvature( ref_geom, geom, &kr, r, &ks, s ), "eval face" );
   ref_math_cross_product( r, s, n );
-  len = sqrt(ref_math_dot(n,n));
   return REF_SUCCESS;
 }
 
