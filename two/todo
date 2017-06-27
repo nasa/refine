@@ -5,7 +5,7 @@ EGADS questions:
 - surface normal (direction and inside/outside orientation)
 - best way to recover uv, t
 - curvatures for metric
-  - EG_curvature: dir1+dir2 right handed?
+  - EG_curvature: dir1+dir2 right handed? negative? degenerate?
   - transform uv derivatives not orthogonal
   - noise
   - descrete reconstruction
