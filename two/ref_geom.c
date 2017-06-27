@@ -1609,8 +1609,8 @@ REF_STATUS ref_geom_curve_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
 	      ref_node_xyz(ref_node,0,node),
 	      ref_node_xyz(ref_node,1,node),
 	      ref_node_xyz(ref_node,2,node),
-	      kr,
-	      ks,
+	      ABS(kr),
+	      ABS(ks),
 	      0.0) ;
     }
 
