@@ -840,6 +840,65 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
 #endif
 }
 
+REF_STATUS ref_geom_curvature( REF_GEOM ref_geom, REF_INT geom,
+			       REF_DBL *kr, REF_DBL *r,
+			       REF_DBL *ks, REF_DBL *s )
+{
+#ifdef HAVE_EGADS
+  double curvature[8];
+  double params[2];
+  ego *faces;
+  ego object;
+  if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
+    return REF_INVALID;
+  params[0] = 0.0; params[1] = 0.0;
+  object = (ego)NULL;
+  switch (ref_geom_type(ref_geom,geom))
+    {
+    case (REF_GEOM_NODE) :
+      RSS(REF_IMPLEMENT, "geom node" );
+      break;
+    case (REF_GEOM_EDGE) :
+      RSS(REF_IMPLEMENT, "geom edge" );
+      break;
+    case (REF_GEOM_FACE) :
+      RNS(ref_geom->faces,"faces not loaded");
+      faces = (ego *)(ref_geom->faces);
+      object = faces[ref_geom_id(ref_geom,geom) - 1]; 
+      params[0] = ref_geom_param(ref_geom,0,geom);
+      params[1] = ref_geom_param(ref_geom,1,geom);
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unknown geom" );
+    }
+  
+  REIS( EGADS_SUCCESS,
+	EG_curvature(object, params, curvature), "eval");
+  *kr=curvature[0];
+  r[0] = curvature[1];
+  r[1] = curvature[2];
+  r[2] = curvature[3];
+  *ks=curvature[4];
+  s[0] = curvature[5];
+  s[1] = curvature[6];
+  s[2] = curvature[7];
+  return REF_SUCCESS;
+#else
+  if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
+    return REF_INVALID;
+  printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
+  *kr=0.0;
+  r[0] = 1.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+  *ks=0.0;
+  s[0] = 0.0;
+  s[1] = 1.0;
+  s[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
 			    REF_DBL *r, REF_DBL *s, REF_DBL *n,
 			    REF_DBL *drsduv )
@@ -879,24 +938,10 @@ REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
 REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
 			 REF_DBL *r, REF_DBL *s, REF_DBL *n )
 {
-  REF_DBL xyz[3], dxyz_duv[15], drsduv[4];
-  RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval face" );
-  RSS( ref_geom_uv_rsn( dxyz_duv, r, s, n, drsduv ), "make orthog" );
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_geom_curve( REF_GEOM ref_geom, REF_INT geom )
-{
-  REF_DBL xyz[3], dxyz_duv[15], drsduv[4];
-  REF_DBL uu,uv,vv;
-  REF_DBL r[3], s[3], n[3];
-  RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval face" );
-  RSS( ref_geom_uv_rsn( dxyz_duv, r, s, n, drsduv ), "make orthog" );
-  uu = n[0]*dxyz_duv[6]  + n[1]*dxyz_duv[7]  + n[2]*dxyz_duv[8];
-  uv = n[0]*dxyz_duv[9]  + n[1]*dxyz_duv[10] + n[2]*dxyz_duv[11];
-  vv = n[0]*dxyz_duv[12] + n[1]*dxyz_duv[13] + n[2]*dxyz_duv[14];
-  printf(" %f %f \n",uu,uv);
-  printf(" %f %f \n",uv,vv);
+  REF_DBL kr,ks, len;
+  RSS( ref_geom_curvature( ref_geom, geom, &kr, r, &ks, s ), "eval face" );
+  ref_math_cross_product( r, s, n );
+  len = sqrt(ref_math_dot(n,n));
   return REF_SUCCESS;
 }
 
