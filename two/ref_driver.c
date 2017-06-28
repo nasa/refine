@@ -77,8 +77,6 @@ int main( int argc, char *argv[] )
 	{
 	case 'i':
 	  RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
-	  RSS( ref_import_by_extension( &background_grid, optarg ), "import" );
-	  RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
 	  break;
 	case 'g':
 	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
@@ -88,9 +86,6 @@ int main( int argc, char *argv[] )
 	  break;
 	case 'm':
 	  RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part m");
-	  if ( NULL != background_grid )
-	    RSS(ref_part_metric( ref_grid_node(background_grid), optarg ),
-		"part m back" );
 	  break;
 	case 'o':
 	  snprintf( output_project, 1024, "%s", optarg );
@@ -135,6 +130,10 @@ int main( int argc, char *argv[] )
 	  return 1;
 	}
     }
+
+  RNS( ref_grid, "input grid required" );
+  RSS( ref_grid_deep_copy( &background_grid, ref_grid ), "import" );
+  RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
 
   RSS( ref_gather_tec_movie_record_button( tecplot_movie ), "show time" );
   
