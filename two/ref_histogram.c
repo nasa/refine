@@ -290,7 +290,7 @@ REF_STATUS ref_histogram_print_stat( REF_HISTOGRAM ref_histogram )
   if ( ref_math_divisible(n,d) )
     kurtosis = n/d - 3.0;
 
-  printf("skewness %12.8f kertosis %12.8f\n",skewness,kurtosis);
+  printf("skewness %12.8f kurtosis %12.8f\n",skewness,kurtosis);
 
   return REF_SUCCESS;
 }
