@@ -876,17 +876,27 @@ REF_STATUS ref_geom_curvature( REF_GEOM ref_geom, REF_INT geom,
   egads_status = EG_curvature(object, params, curvature);
   if ( EGADS_DEGEN == egads_status )
     {
-      *kr=0.0;
-      r[0] = 1.0;
-      r[1] = 0.0;
-      r[2] = 0.0;
-      *ks=0.0;
-      s[0] = 0.0;
-      s[1] = 1.0;
-      s[2] = 0.0;
-      return REF_SUCCESS;
+      REF_DBL xyz[3], dxyz_duv[15], du, dv;
+      ego ref, *pchldrn;
+      int oclass, mtype, nchild, *psens;
+      double uv_range[4];
+      REF_DBL shift=1.0e-4;
+      RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval" );
+      du = sqrt(ref_math_dot(&(dxyz_duv[0]),&(dxyz_duv[0])));
+      dv = sqrt(ref_math_dot(&(dxyz_duv[3]),&(dxyz_duv[3])));
+      REIS( EGADS_SUCCESS,
+	    EG_getTopology(object, &ref, &oclass, &mtype, uv_range,
+			   &nchild, &pchldrn, &psens), "EG topo face");
+      if (du > dv)
+	{
+	  params[0] = (1.0-shift)*params[0]+shift*0.5*(uv_range[0]+uv_range[1]);
+	}
+      else
+	{
+	  params[1] = (1.0-shift)*params[1]+shift*0.5*(uv_range[2]+uv_range[3]);
+	}
+      egads_status = EG_curvature(object, params, curvature);
     }
-  
   REIS( EGADS_SUCCESS, egads_status, "curve");
   *kr=curvature[0];
   r[0] = curvature[1];
