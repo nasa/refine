@@ -1432,7 +1432,11 @@ REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
     if ( id == nodes[2] )
       nedg++;
 
-  if ( 0 == nnode || 0 == nedg ) return REF_SUCCESS; /* skip degenerate */
+  if ( 0 == nnode || 0 == nedg ) /* skip degenerate */
+    {
+      RSS( ref_dict_free( ref_dict ), "free dict" ); 
+      return REF_SUCCESS;
+    }
   
   fprintf(file,
 	  "zone t=edge%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -1489,7 +1493,11 @@ REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
     if ( id == nodes[3] )
       ntri++;
 
-  if ( 0 == nnode || 0 == ntri ) return REF_SUCCESS; /* skip degenerate */
+  if ( 0 == nnode || 0 == ntri )  /* skip degenerate */
+    {
+      RSS( ref_dict_free( ref_dict ), "free dict" ); 
+      return REF_SUCCESS;
+    }
   
   fprintf(file,
 	  "zone t=face%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -1548,7 +1556,11 @@ REF_STATUS ref_geom_norm_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
     if ( id == nodes[3] )
       ntri++;
 
-  if ( 0 == nnode || 0 == ntri ) return REF_SUCCESS; /* skip degenerate */
+  if ( 0 == nnode || 0 == ntri ) /* skip degenerate */
+    {
+      RSS( ref_dict_free( ref_dict ), "free dict" ); 
+      return REF_SUCCESS;
+    }
   
   fprintf(file,
 	  "zone t=norm%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -1610,7 +1622,11 @@ REF_STATUS ref_geom_curve_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
     if ( id == nodes[3] )
       ntri++;
 
-  if ( 0 == nnode || 0 == ntri ) return REF_SUCCESS; /* skip degenerate */
+  if ( 0 == nnode || 0 == ntri ) /* skip degenerate */
+    {
+      RSS( ref_dict_free( ref_dict ), "free dict" ); 
+      return REF_SUCCESS;
+    }
   
   fprintf(file,
 	  "zone t=curve%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
