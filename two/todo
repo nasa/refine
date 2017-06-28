@@ -4,25 +4,18 @@ chat with Bill about parallel egads communication
 EGADS questions:
 - degnerate edges (faces)
   EG_getTopology (mtype edge)
-
 - INRIA meshb to store parameterization with grid (call MARCUM)
 - surface normal (direction and inside/outside orientation)
-  EG_getTopology (mtype UxV out domain sforward)
-  
-- best way to recover uv, t
+  EG_getTopology (mtype sforward is UxV out of domain)
+- best way to recover uv, t (don't)
 - curvatures for metric
-  - EG_curvature: dir1+dir2 right handed anything? negative dot normal?
-  degenerate move neriby?
-  - transform uv derivatives not orthogonal
-  - noise
-  - descrete reconstruction
+  - EG_curvature: when degenerate, move nearby
+  - noise in surface will be present
 - easiest way to build the planar delta wing
-- analytic hemisphere-cylinder 5e-7 tolerance?
-- geode (PW adapt)
-
-init grid, set .tParams, vtess
-
-add solution testcases to UGAWG
+  - draw 2D planform, extrude, trim with booleans
+- analytic hemisphere-cylinder 5e-7 tolerance is typical, edge to surface
+- geode: unclear about support, see how PW adapt develops 
+- for initial grids, set .tParams, vtess to visualize
 
 open source
 
@@ -37,23 +30,9 @@ turning on validation.
 
 bl insert
 
-cavity in 2D/3D
-
-include surface curvature constraints in metric
-Ref/aiaa-2010-0169-loseille-lohner-adapt-boom.pdf
-Ref/frey-imr9-2000-about-surface-remeshing.pdf
-Ref/chuang-hoffman-esaim-1992-curvature-parametric-surfaces.pdf
-
-https://math.stackexchange.com/questions/359851/hessian-after-coordinate-changing
-The chain rule is not valid for the second derivative except if the
-change of variable is linear, that is here the case.
-
 create jenkins test
 - make check valgrind
 - make check stack fuzz
-- UGAWG test cases
-  - 3d geom
-- add curved cases
 
 interp metric on curved surface and parallel
  make debug tecplot status
@@ -86,7 +65,7 @@ refactor ref_geom to remove methods and tests, how is it used, what is needed?
 
 eliminate short edges (cavity)
 
-cavity
+cavity operator in 2D/3D
 - face based grow and shrink
  - shrink needs list delete
 
@@ -106,11 +85,17 @@ partition boundary artifacts
    - age
    - parallel agglomeration to protect age
 
-low priority surface reconstruction
+low priority surface reconstruction when EGADS not available
 - consult white
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
++ if descrete reconstruciton surface curvature constraints in metric needed,
+  + Ref/aiaa-2010-0169-loseille-lohner-adapt-boom.pdf
+  + Ref/frey-imr9-2000-about-surface-remeshing.pdf
+  + Ref/chuang-hoffman-esaim-1992-curvature-parametric-surfaces.pdf
+
++ add solution testcases to UGAWG
 + improve surface smoothing with confidence?
 
 + improve smoothing with anisotropy in 45 degree to axis (cube, rotating metric)
@@ -122,6 +107,8 @@ low priority surface reconstruction
 + UGAWG test cases
   + 2d linear
   + 3d linear
+  + 3d geom
+  + add curved cases
 
 + clean up driver codes
 
