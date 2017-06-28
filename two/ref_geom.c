@@ -966,6 +966,8 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   REF_INT node;
   REF_DBL xyz[3];
   REF_DBL dist;
+  REF_DBL tol;
+  REF_BOOL geom_edge;
   
   each_ref_geom_edge( ref_geom, geom )
     {
@@ -974,7 +976,8 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-      if ( dist > 1.0e-12 )
+      tol = 1.0e-12;
+      if ( dist > tol )
 	{
 	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
 	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
@@ -985,10 +988,13 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
     {
       RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       node = ref_geom_node(ref_geom,geom);
+      RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge");
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-      if ( dist > 1.0e-12 )
+      tol = 1.0e-12;
+      if (geom_edge) tol = 2.0e-5;
+      if ( dist > tol )
 	{
 	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
 	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
