@@ -463,6 +463,38 @@ REF_STATUS ref_metric_sanitize_twod( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
+{
+  REF_GEOM ref_geom;
+  REF_INT geom, node;
+  REF_DBL kr, r[3], ks, s[3], n[3];
+  REF_DBL diagonal_system[12];
+  REF_INT i;
+  REF_DBL control = 1.0;
+  REF_DBL hmax = 100.0;
+  RSS( ref_metric_imply_from( metric, ref_grid ), "imply");
+  ref_geom = ref_grid_geom(ref_grid);
+  RNS( ref_geom, "geometry association absent" );
+
+  each_ref_geom_face( ref_geom, geom )
+    {
+      RSS( ref_geom_curvature( ref_geom, geom, &kr, r, &ks, s ), "curve" );
+      ref_math_cross_product( r, s, n );
+      node = ref_geom_node(ref_geom,geom);
+      for ( i=0 ; i<3 ; i++ )
+	ref_matrix_vec(diagonal_system, i, 0 ) = r[i];
+      ref_matrix_eig(diagonal_system, 0 ) = kr*kr/control/control;
+      for ( i=0 ; i<3 ; i++ )
+	ref_matrix_vec(diagonal_system, i, 1 ) = s[i];
+      ref_matrix_eig(diagonal_system, 1 ) = kr*kr/control/control;
+      for ( i=0 ; i<3 ; i++ )
+	ref_matrix_vec(diagonal_system, i, 2 ) = n[i];
+      ref_matrix_eig(diagonal_system, 2 ) = 1/hmax/hmax;
+    }
+  
+  return REF_SUCCESS;
+}
+
 #define sub_tet_contribution(n0,n1,n2,n3)	\
   {						\
     tet_nodes[0] = nodes[(n0)];			\
