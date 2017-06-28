@@ -13,7 +13,6 @@ libref2_a_SOURCES = \
 	ref_clump.c \
 	ref_collapse.c \
 	ref_dict.c \
-	ref_defs.h \
 	ref_edge.c \
 	ref_endian.h \
 	ref_export.c \
@@ -29,7 +28,6 @@ libref2_a_SOURCES = \
 	ref_import.c \
 	ref_inflate.c \
 	ref_list.c \
-	ref_malloc.h \
 	ref_math.c \
 	ref_matrix.c \
 	ref_metric.c \
@@ -52,10 +50,11 @@ libref2_a_SOURCES = \
 
 include_HEADERS = ref_adapt.h ref_adj.h ref_args.h ref_axi.h \
 	ref_cavity.h ref_cell.h ref_clump.h ref_collapse.h \
-	ref_dict.h ref_edge.h ref_export.h \
+	ref_dict.h ref_defs.h ref_edge.h ref_export.h \
 	ref_face.h ref_fixture.h ref_fortran.h \
 	ref_gather.h ref_gen.h ref_geom.h ref_grid.h \
 	ref_histogram.h ref_html.h ref_import.h ref_inflate.h ref_list.h \
+	ref_malloc.h \
 	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
 	ref_node.h ref_part.h ref_plot3d.h ref_project.h ref_quality.h \
 	ref_shard.h ref_smooth.h ref_sort.h ref_split.h ref_stitch.h \
