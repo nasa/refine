@@ -490,6 +490,7 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
       for ( i=0 ; i<3 ; i++ )
 	ref_matrix_vec(diagonal_system, i, 2 ) = n[i];
       ref_matrix_eig(diagonal_system, 2 ) = 1/hmax/hmax;
+      RSS( ref_matrix_form_m( diagonal_system, &(metric[6*node]) ), "reform m");
     }
   
   return REF_SUCCESS;
