@@ -13,6 +13,8 @@
 #include  "ref_sort.h"
 #include  "ref_list.h"
 
+#include  "ref_malloc.h"
+
 static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr)
 {
   return ref_cell_create(ref_cell_ptr,2,REF_TRUE);
@@ -135,6 +137,40 @@ int main( void )
 
     each_ref_adj_node_item_with_ref( ( ref_cell )->ref_adj, 2, item, cell)
     RAS( !( cell == 0 ), "removed cell still in adj");
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
+  { /* compact */
+    REF_CELL ref_cell;
+    REF_INT nodes[4];
+    REF_INT cell;
+    REF_INT *o2n, *n2o;
+
+    RSS(ref_tet(&ref_cell),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    nodes[0] = 1; nodes[1] = 2; nodes[2] = 3; nodes[3] = 4;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    nodes[0] = 3; nodes[1] = 4; nodes[2] = 5; nodes[3] = 6;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    RSS(ref_cell_remove(ref_cell,1),"remove cell");
+
+    RSS(ref_cell_compact(ref_cell,&o2n,&n2o),"compact");
+    
+    REIS(0,o2n[0],"o2n");
+    REIS(REF_EMPTY,o2n[1],"o2n");
+    REIS(1,o2n[2],"o2n");
+
+    REIS(0,n2o[0],"n2o");
+    REIS(2,n2o[1],"n2o");
+
+    ref_free(n2o);
+    ref_free(o2n);
 
     RSS(ref_cell_free(ref_cell),"cleanup");
   }

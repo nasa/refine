@@ -587,6 +587,34 @@ REF_STATUS ref_cell_replace_node( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_compact( REF_CELL ref_cell,
+			     REF_INT **o2n_ptr, REF_INT **n2o_ptr )
+{
+  REF_INT cell;
+  REF_INT ncell;
+  REF_INT *o2n, *n2o;
+  
+  ref_malloc_init( *o2n_ptr, ref_cell_max(ref_cell), REF_INT, REF_EMPTY );
+  o2n = *o2n_ptr;
+  ref_malloc( *n2o_ptr, ref_cell_n(ref_cell), REF_INT );
+  n2o = *n2o_ptr;
+
+  ncell = 0;    
+  
+  each_ref_cell_valid_cell( ref_cell, cell )
+    {
+      o2n[cell] = ncell;
+      ncell++;
+    }
+
+  RES( ncell, ref_cell_n(ref_cell), "ncell miscount" );
+
+  each_ref_cell_valid_cell( ref_cell, cell )
+    n2o[o2n[cell]] = cell;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
 {
   REF_INT node;
