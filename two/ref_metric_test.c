@@ -51,10 +51,41 @@
 
 int main( int argc, char *argv[] )
 {
+  REF_INT curvature_pos = REF_EMPTY;
+  RXS( ref_args_find( argc, argv, "--curvature", &curvature_pos ),
+       REF_NOT_FOUND, "arg search" );
   REF_INT parent_pos = REF_EMPTY;
   RXS( ref_args_find( argc, argv, "--parent", &parent_pos ),
        REF_NOT_FOUND, "arg search" );
 
+  if ( curvature_pos != REF_EMPTY )
+    {
+      REF_GRID ref_grid;
+      REF_DBL *metric;
+      
+      REIS( 1, curvature_pos,
+	    "required args: grid.ext --curvature grid.ext geom.egads assoc.gas");
+      RSS( ref_import_by_extension( &ref_grid, argv[2] ),
+	   "unable to load target grid in position 1" );
+      RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[3] ),
+	   "unable to load egads in position 2" );
+      RSS( ref_geom_load( ref_grid, argv[4] ),
+	   "unable to load geom assoc in position 3" );
+
+      ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+      RSS( ref_metric_from_curvature( metric, ref_grid ), "curve" );
+      RSS(ref_metric_to_node( metric, ref_grid_node(ref_grid) ), "to node");
+      ref_free( metric );
+      
+      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_curve" ), "al");
+      RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_curve_surf.tec" ), 
+	   "surf");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      return 0;
+    }
+  
   if ( parent_pos != REF_EMPTY )
     {
       REF_GRID ref_grid, parent_grid;

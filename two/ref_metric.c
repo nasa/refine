@@ -470,8 +470,9 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
   REF_DBL kr, r[3], ks, s[3], n[3];
   REF_DBL diagonal_system[12];
   REF_INT i;
-  REF_DBL control = 1.0;
-  REF_DBL hmax = 100.0;
+  REF_DBL drad = 1.0/6.0; /* segments per radian */
+  REF_DBL h, hmax = 100.0; /* normal spacing and max tangential spacing */
+  REF_DBL rlimit = hmax/drad; /* h = r*drad, r = h/drad */
   RSS( ref_metric_imply_from( metric, ref_grid ), "imply");
   ref_geom = ref_grid_geom(ref_grid);
   RNS( ref_geom, "geometry association absent" );
@@ -483,10 +484,16 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
       node = ref_geom_node(ref_geom,geom);
       for ( i=0 ; i<3 ; i++ )
 	ref_matrix_vec(diagonal_system, i, 0 ) = r[i];
-      ref_matrix_eig(diagonal_system, 0 ) = kr*kr/control/control;
+      h = hmax;
+      if ( 1.0/rlimit < kr )
+	h = drad/kr;
+      ref_matrix_eig(diagonal_system, 0 ) = 1.0/h/h;
       for ( i=0 ; i<3 ; i++ )
 	ref_matrix_vec(diagonal_system, i, 1 ) = s[i];
-      ref_matrix_eig(diagonal_system, 1 ) = kr*kr/control/control;
+      h = hmax;
+      if ( 1.0/rlimit < ks )
+	h = drad/ks;
+      ref_matrix_eig(diagonal_system, 1 ) = 1.0/h/h;
       for ( i=0 ; i<3 ; i++ )
 	ref_matrix_vec(diagonal_system, i, 2 ) = n[i];
       ref_matrix_eig(diagonal_system, 2 ) = 1/hmax/hmax;
