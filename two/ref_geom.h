@@ -132,6 +132,7 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid );
 REF_STATUS ref_geom_egads_export( char *filename );
 
 REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, char *filename );
+REF_STATUS ref_geom_egads_diagonal( REF_GEOM ref_geom, REF_DBL *diag );
 REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid );
 
 REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid );

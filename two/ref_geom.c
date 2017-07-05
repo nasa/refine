@@ -1289,6 +1289,28 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, char *filename )
   return REF_SUCCESS;
 }
   
+REF_STATUS ref_geom_egads_diagonal( REF_GEOM ref_geom, REF_DBL *diag )
+{
+#ifdef HAVE_EGADS
+  ego solid;
+  double box[6];
+  solid = (ego)(ref_geom->solid);
+
+  REIS( EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
+  *diag = sqrt((box[0]-box[3])*(box[0]-box[3]) +
+	       (box[1]-box[4])*(box[1]-box[4]) +
+	       (box[2]-box[5])*(box[2]-box[5]));
+
+#else
+  printf("returning 1.0 from %s, No EGADS\n",
+	 __func__);
+  *diag = 1.0;
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+#endif
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
 {
 #ifdef HAVE_EGADS
@@ -1297,7 +1319,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tri, new_cell;
   REF_DBL param[2];
-  double params[3], box[6], size;
+  double params[3], size;
   ego geom;
   ego solid, tess;
   int tess_status, nvert;
@@ -1309,11 +1331,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
   
   solid = (ego)(ref_geom->solid);
 
-  REIS( EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
-  size = sqrt((box[0]-box[3])*(box[0]-box[3]) +
-	      (box[1]-box[4])*(box[1]-box[4]) +
-	      (box[2]-box[5])*(box[2]-box[5]));
-
+  RSS( ref_geom_egads_diagonal( ref_geom, &size ), "bbox diag");
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   params[0] =  0.25*size;
   /* curvature-based value that looks locally at the deviation between
@@ -1322,6 +1340,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
   /* maximum interior dihedral angle (in degrees) */
   params[2] = 15.0;
   /* printf("params = %f,%f,%f\n",params[0],params[1],params[2]); */
+
   REIS( EGADS_SUCCESS,
 	EG_makeTessBody(solid, params, &tess), "EG tess");
   REIS( EGADS_SUCCESS,
