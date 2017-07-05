@@ -52,9 +52,9 @@
 int main( int argc, char *argv[] )
 {
   REF_INT curvature_pos = REF_EMPTY;
+  REF_INT parent_pos = REF_EMPTY;
   RXS( ref_args_find( argc, argv, "--curvature", &curvature_pos ),
        REF_NOT_FOUND, "arg search" );
-  REF_INT parent_pos = REF_EMPTY;
   RXS( ref_args_find( argc, argv, "--parent", &parent_pos ),
        REF_NOT_FOUND, "arg search" );
 
