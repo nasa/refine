@@ -326,6 +326,8 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid, REF_DBL r )
   REF_DBL *metric_orig;
   REF_DBL *metric_limit;
   REF_DBL *metric;
+  REF_DBL ratio, lr;
+  REF_DBL l0[6], l1[6];
   REF_DBL m0[6], m1[6];
   REF_INT node, i;
   REF_INT edge, node0, node1;
@@ -352,11 +354,16 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid, REF_DBL r )
     {
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
+      RSS( ref_node_ratio( ref_grid_node(ref_grid), 
+			   node0, node1, &ratio),"ratio");
+      lr = pow(r,ratio);
+      for (i=0;i<6;i++) l0[i] = metric_limit[i+6*node0] * (1.0/lr/lr);
+      for (i=0;i<6;i++) l1[i] = metric_limit[i+6*node1] * (1.0/lr/lr);
       RSS( ref_matrix_intersect( &(metric_orig[6*node0]), 
-				 &(metric_limit[6*node1]),
+				 l1,
 				 m0 ), "m0" );  
       RSS( ref_matrix_intersect( &(metric_orig[6*node1]), 
-				 &(metric_limit[6*node0]),
+				 l0,
 				 m1 ), "m1" );
       RSS( ref_matrix_intersect( m0,
 				 &(metric[6*node0]), 

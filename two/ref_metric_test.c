@@ -62,6 +62,7 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
       REF_DBL *metric;
+      REF_INT gradation;
       
       REIS( 1, curvature_pos,
 	    "required args: grid.ext --curvature grid.ext geom.egads assoc.gas");
@@ -76,6 +77,11 @@ int main( int argc, char *argv[] )
       RSS( ref_metric_from_curvature( metric, ref_grid ), "curve" );
       RSS(ref_metric_to_node( metric, ref_grid_node(ref_grid) ), "to node");
       ref_free( metric );
+
+      for ( gradation =0 ; gradation<10 ; gradation++ )
+	{
+	  RSS( ref_metric_gradation( ref_grid, 1.2 ), "grad");
+	}      
       
       RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_curve" ), "al");
       RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_curve_surf.tec" ), 
