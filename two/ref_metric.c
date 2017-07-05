@@ -465,17 +465,28 @@ REF_STATUS ref_metric_sanitize_twod( REF_GRID ref_grid )
 
 REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
 {
-  REF_GEOM ref_geom;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
   REF_DBL kr, r[3], ks, s[3], n[3];
   REF_DBL diagonal_system[12];
   REF_INT i;
-  REF_DBL drad = 1.0/6.0; /* segments per radian */
-  REF_DBL h, hmax = 100.0; /* normal spacing and max tangential spacing */
+  REF_DBL drad = 1.0/6.0; /* 1/segments per radian */
+  REF_DBL hmax = 100.0; /* normal spacing and max tangential spacing */
   REF_DBL rlimit = hmax/drad; /* h = r*drad, r = h/drad */
-  RSS( ref_metric_imply_from( metric, ref_grid ), "imply");
-  ref_geom = ref_grid_geom(ref_grid);
+  REF_DBL h;
+
   RNS( ref_geom, "geometry association absent" );
+
+  each_ref_node_valid_node( ref_node, node )
+    {
+      metric[0+6*node] = 1.0/(hmax*hmax);
+      metric[1+6*node] = 0.0;
+      metric[2+6*node] = 0.0;
+      metric[3+6*node] = 1.0/(hmax*hmax);
+      metric[4+6*node] = 0.0;
+      metric[5+6*node] = 1.0/(hmax*hmax);
+    }
 
   each_ref_geom_face( ref_geom, geom )
     {
