@@ -480,17 +480,20 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
 
   each_ref_node_valid_node( ref_node, node )
     {
-      metric[0+6*node] = 1.0/(hmax*hmax);
+      h = hmax;
+      metric[0+6*node] = 1.0/(h*h);
       metric[1+6*node] = 0.0;
       metric[2+6*node] = 0.0;
-      metric[3+6*node] = 1.0/(hmax*hmax);
+      metric[3+6*node] = 1.0/(h*h);
       metric[4+6*node] = 0.0;
-      metric[5+6*node] = 1.0/(hmax*hmax);
+      metric[5+6*node] = 1.0/(h*h);
     }
 
   each_ref_geom_face( ref_geom, geom )
     {
       RSS( ref_geom_curvature( ref_geom, geom, &kr, r, &ks, s ), "curve" );
+      kr = ABS(kr);
+      ks = ABS(ks);
       ref_math_cross_product( r, s, n );
       node = ref_geom_node(ref_geom,geom);
       for ( i=0 ; i<3 ; i++ )
@@ -507,7 +510,8 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
       ref_matrix_eig(diagonal_system, 1 ) = 1.0/h/h;
       for ( i=0 ; i<3 ; i++ )
 	ref_matrix_vec(diagonal_system, i, 2 ) = n[i];
-      ref_matrix_eig(diagonal_system, 2 ) = 1/hmax/hmax;
+      h = hmax;
+      ref_matrix_eig(diagonal_system, 2 ) = 1/h/h;
       RSS( ref_matrix_form_m( diagonal_system, &(metric[6*node]) ), "reform m");
     }
   
