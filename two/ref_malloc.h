@@ -8,6 +8,7 @@ BEGIN_C_DECLORATION
 
 #define ref_malloc( ptr, n, ptr_type )				\
   {								\
+    RAS((n)>=0,"malloc " #ptr " of " #ptr_type " negative");	\
     (ptr) = (ptr_type *)malloc( (n) * sizeof(ptr_type) );	\
     RNS((ptr),"malloc " #ptr " of " #ptr_type " NULL");         \
   }
