@@ -480,8 +480,8 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
   REF_DBL drad;
   REF_DBL hmax;
   REF_DBL rlimit;
-  REF_DBL h;
-  REF_DBL aspect_ratio;
+  REF_DBL h, hr, hs, hn;
+  REF_DBL curvature_ratio, norm_ratio;
 
   RNS( ref_geom, "geometry association absent" );
 
@@ -489,7 +489,8 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
   RSS( ref_geom_egads_diagonal( ref_geom, &hmax ), "bbox diag");
   hmax *= 0.1; /* normal spacing and max tangential spacing */
   rlimit = hmax/drad; /* h = r*drad, r = h/drad */
-  aspect_ratio = 1.0/20.0;
+  curvature_ratio = 1.0/20.0;
+  norm_ratio = 5.0;
 
   each_ref_node_valid_node( ref_node, node )
     {
@@ -507,26 +508,28 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
       RSS( ref_geom_curvature( ref_geom, geom, &kr, r, &ks, s ), "curve" );
       kr = ABS(kr);
       ks = ABS(ks);
-      kr = MAX(kr,aspect_ratio*ks);
-      ks = MAX(ks,aspect_ratio*kr);
+      kr = MAX(kr,curvature_ratio*ks);
+      ks = MAX(ks,curvature_ratio*kr);
       ref_math_cross_product( r, s, n );
       node = ref_geom_node(ref_geom,geom);
       for ( i=0 ; i<3 ; i++ )
 	ref_matrix_vec(diagonal_system, i, 0 ) = r[i];
-      h = hmax;
+      hr = hmax;
       if ( 1.0/rlimit < kr )
-	h = drad/kr;
-      ref_matrix_eig(diagonal_system, 0 ) = 1.0/h/h;
+	hr = drad/kr;
+      ref_matrix_eig(diagonal_system, 0 ) = 1.0/hr/hr;
       for ( i=0 ; i<3 ; i++ )
 	ref_matrix_vec(diagonal_system, i, 1 ) = s[i];
-      h = hmax;
+      hs = hmax;
       if ( 1.0/rlimit < ks )
-	h = drad/ks;
-      ref_matrix_eig(diagonal_system, 1 ) = 1.0/h/h;
+	hs = drad/ks;
+      ref_matrix_eig(diagonal_system, 1 ) = 1.0/hs/hs;
       for ( i=0 ; i<3 ; i++ )
 	ref_matrix_vec(diagonal_system, i, 2 ) = n[i];
-      h = hmax;
-      ref_matrix_eig(diagonal_system, 2 ) = 1/h/h;
+      hn = hmax;
+      hn = MIN(hn, norm_ratio*hr);
+      hn = MIN(hn, norm_ratio*hs);
+      ref_matrix_eig(diagonal_system, 2 ) = 1/hn/hn;
       RSS( ref_matrix_form_m( diagonal_system, &(metric[6*node]) ), "reform m");
     }
   
