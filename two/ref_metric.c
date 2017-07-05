@@ -471,12 +471,17 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
   REF_DBL kr, r[3], ks, s[3], n[3];
   REF_DBL diagonal_system[12];
   REF_INT i;
-  REF_DBL drad = 1.0/6.0; /* 1/segments per radian */
-  REF_DBL hmax = 100.0; /* normal spacing and max tangential spacing */
-  REF_DBL rlimit = hmax/drad; /* h = r*drad, r = h/drad */
+  REF_DBL drad;
+  REF_DBL hmax;
+  REF_DBL rlimit;
   REF_DBL h;
 
   RNS( ref_geom, "geometry association absent" );
+
+  drad = 1.0/10.0; /* 1/segments per radian */
+  RSS( ref_geom_egads_diagonal( ref_geom, &hmax ), "bbox diag");
+  hmax *= 0.1; /* normal spacing and max tangential spacing */
+  rlimit = hmax/drad; /* h = r*drad, r = h/drad */
 
   each_ref_node_valid_node( ref_node, node )
     {
