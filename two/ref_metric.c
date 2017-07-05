@@ -320,7 +320,7 @@ REF_STATUS ref_metric_interpolate( REF_GRID ref_grid, REF_GRID parent_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_gradation( REF_GRID ref_grid )
+REF_STATUS ref_metric_gradation( REF_GRID ref_grid, REF_DBL r )
 {
   REF_EDGE ref_edge;
   REF_DBL *metric_orig;
@@ -329,7 +329,6 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid )
   REF_DBL m0[6], m1[6];
   REF_INT node, i;
   REF_INT edge, node0, node1;
-  REF_DBL r = 1.5;
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 

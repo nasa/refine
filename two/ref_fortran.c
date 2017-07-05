@@ -152,7 +152,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
 	{
 	  if ( ref_mpi_master )
 	    printf("gradation %d\n",gradation);
-	  RSS( ref_metric_gradation( ref_grid ), "grad");
+	  RSS( ref_metric_gradation( ref_grid, 1.5 ), "grad");
 	  RSS( ref_node_ghost_real( ref_grid_node(ref_grid) ), "ghost real");
 	}
       ref_mpi_stopwatch_stop("metric gradation");

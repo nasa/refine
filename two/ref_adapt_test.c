@@ -108,7 +108,7 @@ int main( int argc, char *argv[] )
           for ( gradation = 0; gradation<10; gradation++ )
             {
               printf("gradation %d\n",gradation);
-              RSS( ref_metric_gradation( ref_grid ), "grad");
+              RSS( ref_metric_gradation( ref_grid, 1.5 ), "grad");
               RSS( ref_node_ghost_real( ref_node ), "ghost real");
             }
           RSS(ref_export_tec_metric_ellipse( ref_grid, "ref_adapt_1" ),"ex" );
