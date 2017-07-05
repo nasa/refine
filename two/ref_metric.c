@@ -481,6 +481,7 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
   REF_DBL hmax;
   REF_DBL rlimit;
   REF_DBL h;
+  REF_DBL aspect_ratio;
 
   RNS( ref_geom, "geometry association absent" );
 
@@ -488,6 +489,7 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
   RSS( ref_geom_egads_diagonal( ref_geom, &hmax ), "bbox diag");
   hmax *= 0.1; /* normal spacing and max tangential spacing */
   rlimit = hmax/drad; /* h = r*drad, r = h/drad */
+  aspect_ratio = 1.0/20.0;
 
   each_ref_node_valid_node( ref_node, node )
     {
@@ -505,6 +507,8 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
       RSS( ref_geom_curvature( ref_geom, geom, &kr, r, &ks, s ), "curve" );
       kr = ABS(kr);
       ks = ABS(ks);
+      kr = MAX(kr,aspect_ratio*ks);
+      ks = MAX(ks,aspect_ratio*kr);
       ref_math_cross_product( r, s, n );
       node = ref_geom_node(ref_geom,geom);
       for ( i=0 ; i<3 ; i++ )
