@@ -331,8 +331,6 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
   RSS( ref_histogram_gather( ref_histogram ), "gather");
   if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram,
 						  "edge ratio"), "print");
-  if ( 1 == ref_mpi_n ) RSS( ref_histogram_export( ref_histogram,
-						   "edge-ratio"), "print");
 
   for (edge=0;edge< ref_edge_n(ref_edge);edge++)
     {
