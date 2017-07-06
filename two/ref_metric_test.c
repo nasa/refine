@@ -76,9 +76,8 @@ int main( int argc, char *argv[] )
       RSS( ref_gather_metric( ref_grid, "ref_metric_test_curve.metric" ), 
 	   "export curve metric");
 
-      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_curve" ), "al");
-      RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_curve_surf.tec" ), 
-	   "surf");
+      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_curve" ),
+	   "al");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
@@ -128,9 +127,9 @@ int main( int argc, char *argv[] )
       RSS( ref_histogram_quality( ref_grid ), "qual");
       RSS( ref_histogram_ratio( ref_grid ), "rat");
 
-      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_implied_met" ), "al");
-      RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_implied_surf.tec" ), 
-	   "surf");
+      RSS( ref_export_tec_metric_ellipse( ref_grid,
+					  "ref_metric_test_implied_met" ),
+	   "al");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
@@ -152,9 +151,8 @@ int main( int argc, char *argv[] )
       RSS( ref_histogram_quality( ref_grid ), "qual");
       RSS( ref_histogram_ratio( ref_grid ), "rat");
 
-      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_s00" ), "al");
-      RSS( ref_export_tec_surf( ref_grid, "ref_metric_test_surf.tec" ), 
-	   "surf");
+      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_s00" ),
+	   "al");
 
       RSS( ref_grid_free( ref_grid ), "free");
 

@@ -725,6 +725,8 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
   ref_free(n2o);
   ref_free(o2n);
 
+  RSS( ref_export_tec_surf_zone( ref_grid, file ), "ellipse surf" );
+
   fclose(file);
 
   return REF_SUCCESS;
