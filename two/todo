@@ -3,6 +3,8 @@ curvature adapt
 smooth curve metric function
 include surface in metric ellipse
 ellipsoid viz 
+marshall debug
+strip histogram gnuplot from accept test
 
 docs?
 const char *
