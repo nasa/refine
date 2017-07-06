@@ -22,7 +22,6 @@ function adapt_cycle {
     ${bin}/ref_translate ref_fefloa_test.meshb ref_fefloa_test.b8.ugrid
     
     ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric
-    cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
 }
 

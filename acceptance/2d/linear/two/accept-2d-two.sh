@@ -26,7 +26,6 @@ function adapt_cycle {
     ${two}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric | tee ${proj}.out || exit 1
 
     ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
-    cp ref_metric_test_surf.tec ${proj}_metric_surf.tec
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
 }
 
