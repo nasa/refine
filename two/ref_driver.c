@@ -63,6 +63,7 @@ int main( int argc, char *argv[] )
   REF_BOOL output_clumps = REF_FALSE;
   REF_BOOL tecplot_movie = REF_FALSE;
   REF_BOOL sanitize_metric = REF_FALSE;
+  REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL debug_verbose = REF_FALSE;
   char output_project[1024];
   char output_filename[1024];
@@ -86,6 +87,7 @@ int main( int argc, char *argv[] )
 	  break;
 	case 'm':
 	  RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part m");
+	  curvature_metric = REF_FALSE;
 	  break;
 	case 'o':
 	  snprintf( output_project, 1024, "%s", optarg );
@@ -112,7 +114,7 @@ int main( int argc, char *argv[] )
 	  printf("       [-i input_grid.ext]\n");
 	  printf("       [-g geometry.egads]\n");
 	  printf("       [-p parameterization-restart.gas]\n");
-	  printf("       [-m input_project.metric]\n");
+	  printf("       [-m input_project.metric] (curvature metric when missing)\n");
 	  printf("       [-s adapt_cycles] default is 15\n");
 	  printf("       [-o output_project]\n");
 	  printf("       [-c] output clumps\n");
@@ -132,6 +134,10 @@ int main( int argc, char *argv[] )
     }
 
   RNS( ref_grid, "input grid required" );
+
+  if (curvature_metric)
+    RSS( ref_metric_interpolated_curvature( ref_grid ), "interp curve" );
+
   RSS( ref_grid_deep_copy( &background_grid, ref_grid ), "import" );
   RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
 
@@ -141,7 +147,7 @@ int main( int argc, char *argv[] )
   RSS(ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
-
+  
   if ( sanitize_metric )
     {
       printf("sanitizing metric\n");
@@ -157,8 +163,18 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop("pass");
       if ( NULL != background_grid )
 	{
-	  RSS( ref_metric_interpolate( ref_grid, background_grid ), "interp" );
-	  ref_mpi_stopwatch_stop("interp");
+	  if (curvature_metric)
+	    {
+	      RSS( ref_metric_interpolated_curvature( ref_grid ),
+		   "interp curve" );
+	      ref_mpi_stopwatch_stop("curvature");
+	    }
+	  else
+	    {
+	      RSS( ref_metric_interpolate( ref_grid, background_grid ),
+		   "interp" );
+	      ref_mpi_stopwatch_stop("interp");
+	    }
 	  if ( sanitize_metric )
 	    {
 	      RSS( ref_metric_sanitize( ref_grid ), "sant metric");
