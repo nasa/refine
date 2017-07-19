@@ -25,7 +25,7 @@ ${two}/ref_acceptance ref_driver2.b8.ugrid ref_driver2.metric 0.1
 ${two}/ref_metric_test ref_driver2.b8.ugrid ref_driver2.metric > accept-cube-cylinder-uniform-two-02.status
 
 cat accept-cube-cylinder-uniform-two-02.status
-../../../check.rb accept-cube-cylinder-uniform-two-02.status 0.4 1.6
+../../../check.rb accept-cube-cylinder-uniform-two-02.status 0.15 1.5
 
 
 
