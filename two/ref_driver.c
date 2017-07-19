@@ -64,6 +64,7 @@ int main( int argc, char *argv[] )
   REF_BOOL tecplot_movie = REF_FALSE;
   REF_BOOL sanitize_metric = REF_FALSE;
   REF_BOOL curvature_metric = REF_TRUE;
+  REF_BOOL curvature_constraint = REF_FALSE;
   REF_BOOL debug_verbose = REF_FALSE;
   char output_project[1024];
   char output_filename[1024];
@@ -84,6 +85,7 @@ int main( int argc, char *argv[] )
 	  break;
 	case 'p':
 	  RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
+	  curvature_constraint = REF_TRUE;
 	  break;
 	case 'm':
 	  RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part m");
@@ -148,6 +150,11 @@ int main( int argc, char *argv[] )
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
   
+  if ( curvature_constraint )
+    {
+      RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
+      ref_mpi_stopwatch_stop("crv const");
+    }
   if ( sanitize_metric )
     {
       printf("sanitizing metric\n");
@@ -174,6 +181,11 @@ int main( int argc, char *argv[] )
 	      RSS( ref_metric_interpolate( ref_grid, background_grid ),
 		   "interp" );
 	      ref_mpi_stopwatch_stop("interp");
+	    }
+	  if ( curvature_constraint )
+	    {
+	      RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
+	      ref_mpi_stopwatch_stop("crv const");
 	    }
 	  if ( sanitize_metric )
 	    {
