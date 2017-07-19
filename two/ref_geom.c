@@ -639,7 +639,17 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 	      }
 	    else
 	      {
-		printf("skipped %d\n",id);
+		printf("%s skipped uv update on new node\n",__func__);
+		printf("see ref_geom_add_between.tec \n");
+		RSS(ref_geom_tec( ref_grid, "ref_geom_add_between.tec" ),
+		    "geom tec" );
+		RSS( ref_node_location(ref_grid_node(ref_grid),node0),"n0");
+		RSS( ref_geom_tattle(ref_geom,node0),"t0");
+		RSS( ref_node_location(ref_grid_node(ref_grid),node1),"n1");
+		RSS( ref_geom_tattle(ref_geom,node1),"t1");
+		RSS( ref_node_location(ref_grid_node(ref_grid),new_node),"nn");
+		RSS( ref_geom_tattle(ref_geom,new_node),"tn");
+		return REF_INVALID;
 	      }
 	  }
     }
