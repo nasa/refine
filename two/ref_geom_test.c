@@ -36,15 +36,19 @@ int main( int argc, char *argv[] )
       printf("wrote EGADS project %s\n",filename);
     }
 
-  if ( 3 == argc )
+  if ( 3 == argc || 4 == argc )
     { /* egads to grid */
       REF_GRID ref_grid;
       REF_INT node;
       REF_INT nedge;
+      
+      REF_DBL max_edge = -0.25;
+      if ( 4 == argc ) max_edge = atof( argv[3] );
+
       RSS(ref_grid_create(&ref_grid),"create");
 
       RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[1] ), "ld egads" );
-      RSS(ref_geom_egads_tess(ref_grid ), "tess egads" );
+      RSS(ref_geom_egads_tess( ref_grid, max_edge ), "tess egads" );
       RSS(ref_geom_tetgen_volume(ref_grid ), "tetgen surface to volume " );
 
       RSS( ref_export_by_extension( ref_grid, argv[2] ), "argv export" );

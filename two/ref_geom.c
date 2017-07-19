@@ -1311,7 +1311,7 @@ REF_STATUS ref_geom_egads_diagonal( REF_GEOM ref_geom, REF_DBL *diag )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
+REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 {
 #ifdef HAVE_EGADS
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1333,7 +1333,14 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
 
   RSS( ref_geom_egads_diagonal( ref_geom, &size ), "bbox diag");
   /* maximum length of an EDGE segment or triangle side (in physical space) */
-  params[0] =  0.25*size;
+  if ( max_length > 0.0 )
+    {
+      params[0] = max_length;
+    }
+  else
+    {
+      params[0] = ABS(max_length)*size;
+    }
   /* curvature-based value that looks locally at the deviation between
      the centroid of the discrete object and the underlying geometry */
   params[1] =  0.001*size;
@@ -1423,6 +1430,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid )
 #else
   printf("returning empty grid from %s, No EGADS linked.\n",__func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(max_length);
 #endif
   
   return REF_SUCCESS;
