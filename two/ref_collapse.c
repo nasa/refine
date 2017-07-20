@@ -216,6 +216,9 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
 
   REF_BOOL geom_node1;
 
+  *allowed = REF_FALSE;
+
+  /* ids1 is a list of degree1 face ids for node1 */
   degree1 = 0;
   each_ref_cell_having_node( ref_cell, node1, item, cell )
     {
@@ -232,8 +235,6 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
 	}
     }
 
-  *allowed = REF_FALSE;
-
   RSS( ref_geom_is_a( ref_grid_geom(ref_grid),
 		      node1, REF_GEOM_NODE, &geom_node1), "node check");
   if ( geom_node1 )
@@ -242,6 +243,7 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
       return REF_SUCCESS;
     }
 
+  /* need to double check this logic */
   switch ( degree1 )
     {
     case 3: /* geometry node never allowed to move */
