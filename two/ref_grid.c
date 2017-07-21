@@ -363,7 +363,7 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT guess;
-  REF_DBL inside = -1.0e-12;
+  REF_DBL inside;
   REF_INT step, limit;
   
   guess = *tri;
@@ -377,6 +377,7 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
   RAS( ref_cell_valid(ref_cell,guess), "unable to find start");
 
   limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
+  inside = -1.0e-12; /* initial inside tolerence  */
 
   for ( step=0; step < limit; step++)
     {
@@ -385,8 +386,8 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
 
       if ( step > 990 )
 	{
-	  printf("step %d, tri %d, bary %f %f %f\n",
-		 step,guess,bary[0],bary[1],bary[2]);
+	  printf("step %d, tri %d, bary %e %e %e inside %e\n",
+		 step,guess,bary[0],bary[1],bary[2],inside);
 	}
       
       if ( bary[0] >= inside &&
@@ -501,7 +502,7 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT guess;
-  REF_DBL inside = -1.0e-12;
+  REF_DBL inside;
   REF_INT step, limit;
   
   guess = *tet;
@@ -514,6 +515,7 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
     }
 
   limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
+  inside = -1.0e-12; /* initial inside tolerence  */
 
   for ( step=0; step < limit; step++)
     {
@@ -530,8 +532,8 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
 
       if ( step > 990 )
 	{
-	  printf("step %d, tet %d, bary %f %f %f %f\n",
-		 step,guess,bary[0],bary[1],bary[2],bary[3]);
+	  printf("step %d, tet %d, bary %e %e %e %e inside %e\n",
+		 step,guess,bary[0],bary[1],bary[2],bary[3],inside);
 	}
       
       if ( bary[0] >= inside &&
