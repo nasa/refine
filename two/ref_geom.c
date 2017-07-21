@@ -587,71 +587,47 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
   REF_INT geom0, geom1;
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
-  REF_BOOL has_side, has_id;
+  REF_BOOL has_id;
 
-  RSS( ref_cell_has_side( ref_grid_edg(ref_grid), node0, node1, &has_side),
-       "side check");
-  if ( has_side )
+  each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+				   node0, item0, geom0)
+    each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+				     node1, item1, geom1)
     {
       type = REF_GEOM_EDGE;
-      each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
-				       node0, item0, geom0)
-	each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
-					 node1, item1, geom1)
-	if ( geom0 != geom1 &&
-	     ref_geom_type(ref_geom,geom0) == type &&
-	     ref_geom_type(ref_geom,geom1) == type &&
-	     ref_geom_id(ref_geom,geom0) == ref_geom_id(ref_geom,geom1) )
-	  {
-	    id = ref_geom_id(ref_geom,geom0);
-	    RSS( ref_geom_tuv(ref_geom,node0,type,id,param0), "node0" );
-	    RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
-	    if ( type > 0 ) param[0] = 0.5 * ( param0[0] + param1[0] );
-	    if ( type > 1 ) param[1] = 0.5 * ( param0[1] + param1[1] );
-	    RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
-	  }
-    }
-    
-  RSS( ref_cell_has_side( ref_grid_tri(ref_grid), node0, node1, &has_side),
-       "side check");
-  if ( has_side )
-    {
+      if ( ref_geom_type(ref_geom,geom0) == type &&
+	   ref_geom_type(ref_geom,geom1) == type &&
+	   ref_geom_id(ref_geom,geom0) == ref_geom_id(ref_geom,geom1) )
+	{
+	  id = ref_geom_id(ref_geom,geom0);
+	  RSS(ref_cell_side_has_id(ref_grid_edg(ref_grid),node0,node1,id,
+				   &has_id), "has edge id");
+	  if ( has_id )
+	    {
+	      RSS( ref_geom_tuv(ref_geom,node0,type,id,param0), "node0" );
+	      RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
+	      if ( type > 0 ) param[0] = 0.5 * ( param0[0] + param1[0] );
+	      if ( type > 1 ) param[1] = 0.5 * ( param0[1] + param1[1] );
+	      RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
+	    }
+	}
       type = REF_GEOM_FACE;
-      each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
-				       node0, item0, geom0)
-	each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
-					 node1, item1, geom1)
-	if ( geom0 != geom1 &&
-	     ref_geom_type(ref_geom,geom0) == type &&
-	     ref_geom_type(ref_geom,geom1) == type &&
-	     ref_geom_id(ref_geom,geom0) == ref_geom_id(ref_geom,geom1) )
-	  {
-	    id = ref_geom_id(ref_geom,geom0);
-	    RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid),node0,node1,id,
-				     &has_id),"hi");
-	    if ( has_id )
-	      {
-		RSS( ref_geom_tuv(ref_geom,node0,type,id,param0), "node0" );
-		RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
-		if ( type > 0 ) param[0] = 0.5 * ( param0[0] + param1[0] );
-		if ( type > 1 ) param[1] = 0.5 * ( param0[1] + param1[1] );
-		RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
-	      }
-	    else
-	      {
-		printf("%s skipped uv update on new node\n",__func__);
-		printf("see ref_geom_add_between.tec \n");
-		RSS(ref_geom_tec( ref_grid, "ref_geom_add_between.tec" ),
-		    "geom tec" );
-		RSS( ref_node_location(ref_grid_node(ref_grid),node0),"n0");
-		RSS( ref_geom_tattle(ref_geom,node0),"t0");
-		RSS( ref_node_location(ref_grid_node(ref_grid),node1),"n1");
-		RSS( ref_geom_tattle(ref_geom,node1),"t1");
-		RSS( ref_node_location(ref_grid_node(ref_grid),new_node),"nn");
-		RSS( ref_geom_tattle(ref_geom,new_node),"tn");
-		return REF_INVALID;
-	      }
-	  }
+      if ( ref_geom_type(ref_geom,geom0) == type &&
+	   ref_geom_type(ref_geom,geom1) == type &&
+	   ref_geom_id(ref_geom,geom0) == ref_geom_id(ref_geom,geom1) )
+	{
+	  id = ref_geom_id(ref_geom,geom0);
+	  RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid),node0,node1,id,
+				   &has_id), "has edge id");
+	  if ( has_id )
+	    {
+	      RSS( ref_geom_tuv(ref_geom,node0,type,id,param0), "node0" );
+	      RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
+	      if ( type > 0 ) param[0] = 0.5 * ( param0[0] + param1[0] );
+	      if ( type > 1 ) param[1] = 0.5 * ( param0[1] + param1[1] );
+	      RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
+	    }
+	}
     }
     
   return REF_SUCCESS;
