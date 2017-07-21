@@ -495,6 +495,8 @@ REF_STATUS ref_metric_constrain_curvature( REF_GRID ref_grid )
   REF_DBL m[6];
   REF_INT node, im;
   
+  if ( NULL == ref_grid_geom(ref_grid) ) return REF_SUCCESS;
+
   ref_malloc( curvature_metric, 6*ref_node_max(ref_node), REF_DBL );
 
   RSS( ref_metric_from_curvature( curvature_metric, ref_grid ), "curve" );
