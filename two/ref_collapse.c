@@ -127,8 +127,18 @@ REF_STATUS ref_collapse_to_remove_node1( REF_GRID ref_grid,
 
       RSS(ref_geom_supported(ref_grid_geom(ref_grid),node0,
 			     &have_geometry_support),"geom");
-      RSS(ref_collapse_edge_same_normal(ref_grid,node0,node1,&allowed),"norm");
-      if ( !(have_geometry_support || allowed) ) continue;
+      if ( have_geometry_support )
+	{
+	  RSS(ref_collapse_edge_cad_constrained(ref_grid,node0,node1,&allowed),
+	      "cad constrained");
+	  if ( !allowed ) continue;
+	}
+      else
+	{
+	  RSS(ref_collapse_edge_same_normal(ref_grid,node0,node1,&allowed),
+	      "normal deviation");
+	  if ( !allowed ) continue;
+	}
 
       RSS(ref_collapse_edge_quality(ref_grid,node0,node1,&allowed),"qual");
       if ( !allowed ) continue;
@@ -365,6 +375,43 @@ REF_STATUS ref_collapse_edge_local_tets( REF_GRID ref_grid,
   *allowed =  REF_TRUE;
 
   return REF_SUCCESS;
+}
+
+/* triangle can not be fully constrained by CAD edges after a collapse */
+REF_STATUS ref_collapse_edge_cad_constrained( REF_GRID ref_grid, 
+					      REF_INT node0, REF_INT node1,
+					      REF_BOOL *allowed )
+{
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT item, cell, node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL will_be_collapsed;
+  REF_BOOL edge0, edge1, edge2;
+  
+  *allowed = REF_TRUE;
+  
+  each_ref_cell_having_node( ref_cell, node1, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+
+      will_be_collapsed = REF_FALSE;
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( node0 == nodes[node] ) will_be_collapsed = REF_TRUE;
+      if ( will_be_collapsed ) continue;
+
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( node1 == nodes[node] ) nodes[node] = node0;
+      RSS( ref_geom_is_a(ref_geom, nodes[0], REF_GEOM_EDGE, &edge0 ), "e0");
+      RSS( ref_geom_is_a(ref_geom, nodes[1], REF_GEOM_EDGE, &edge1 ), "e1");
+      RSS( ref_geom_is_a(ref_geom, nodes[2], REF_GEOM_EDGE, &edge2 ), "e2");
+      if ( edge0 && edge1 && edge2 )
+	{
+	  *allowed = REF_FALSE;
+	  break;
+	}
+    }
+
+ return REF_SUCCESS;
 }
 
 REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid, 
