@@ -243,7 +243,6 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
       return REF_SUCCESS;
     }
 
-  /* need to double check this logic */
   switch ( degree1 )
     {
     case 3: /* geometry node never allowed to move */
@@ -253,7 +252,10 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
       RSS( ref_cell_list_with2(ref_cell,node0,node1,
 			       MAX_CELL_COLLAPSE, &ncell, 
 			       cell_to_collapse ),"list");
-      if ( 2 != ncell ) return REF_SUCCESS;
+      if ( 2 != ncell ) {
+	*allowed = REF_FALSE;
+	break;
+      }
       RSS( ref_cell_nodes( ref_cell, cell_to_collapse[0], nodes ), "nodes" );
       id0 = nodes[3];
       RSS( ref_cell_nodes( ref_cell, cell_to_collapse[1], nodes ), "nodes" );
