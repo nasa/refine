@@ -12,7 +12,7 @@
 #include "ref_math.h"
 #include "ref_malloc.h"
 
-static int print_usage(char *name)
+static int print_usage(const char *name)
 {
   printf("usage:\n");
   printf("  %s input_grid.extension output_grid.extension\n",name);

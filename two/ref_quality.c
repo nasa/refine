@@ -108,7 +108,7 @@ REF_STATUS ref_quality_hex( REF_GRID ref_grid )
 
 REF_STATUS ref_quality_report_multiple_face_cell( REF_GRID ref_grid, 
 						  REF_INT *count,
-						  char *export_to  )
+						  const char *export_to  )
 {
   REF_CELL ref_cell;
   REF_INT group, cell, cell_face;
