@@ -134,8 +134,6 @@ REF_STATUS ref_geom_save( REF_GRID ref_grid, const char *filename )
   REF_INT geom, global;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
-  if ( NULL == (void *)ref_geom ) return REF_SUCCESS;
-
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
