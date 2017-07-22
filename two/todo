@@ -68,6 +68,7 @@ parallel geom
  parallel update ghost geom param
  geom gas restart file IO
 
+create REF_MPI and REF_GATHER to eliminate static
 mem leak, static, movie file pointer in grid
 static, lmpi time
 
