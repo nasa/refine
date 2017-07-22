@@ -860,7 +860,6 @@ REF_STATUS ref_geom_curvature( REF_GEOM ref_geom, REF_INT geom,
     default:
       RSS(REF_IMPLEMENT, "unknown geom" );
     }
-
   RNS(object,"EGADS object is NULL. Has the geometry been loaded?");
   
   egads_status = EG_curvature(object, params, curvature);
@@ -1285,7 +1284,9 @@ REF_STATUS ref_geom_egads_diagonal( REF_GEOM ref_geom, REF_DBL *diag )
   ego solid;
   double box[6];
   solid = (ego)(ref_geom->solid);
-
+  
+  RNS(solid,"EGADS solid object is NULL. Has the geometry been loaded?");
+  
   REIS( EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
   *diag = sqrt((box[0]-box[3])*(box[0]-box[3]) +
 	       (box[1]-box[4])*(box[1]-box[4]) +
