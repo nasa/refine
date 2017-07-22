@@ -76,10 +76,6 @@ bin_PROGRAMS += ref_cornerrefine
 ref_cornerrefine_SOURCES = ref_cornerrefine.c
 ref_cornerrefine_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
-bin_PROGRAMS += ref_projectable
-ref_projectable_SOURCES = ref_projectable.c
-ref_projectable_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
-
 bin_PROGRAMS += ref_translate
 ref_translate_SOURCES = ref_translate.c
 ref_translate_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
