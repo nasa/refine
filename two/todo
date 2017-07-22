@@ -1,6 +1,3 @@
-
-
-cleanup projectable and quality to remove empty cell for viz
  
 ellipsoid viz 
 marshall debug
@@ -38,13 +35,21 @@ insert once, right place
 make sure all triangles have one tet and tet has one neighbor by
 turning on validation.
 
+cavity operator
 bl insert
 
 create jenkins test
 - make check valgrind
 - make check stack fuzz
 
-interp metric on curved surface and parallel
+interp metric parallel
+
+parallel geom
+ ref_geom load bal
+ parallel update ghost geom param
+ geom gas restart file IO
+
+interp metric on curved surface
  make debug tecplot status
  interpolate in u,v,s
 
@@ -62,11 +67,6 @@ ideal tet using principle direction? but faces dissaggree? optimizer?
 smooth
  sort worst to best? edge, surface, volume sequence
  requeue neighbors with large changes? particulary quality drops
-
-parallel geom
- ref_geom load bal
- parallel update ghost geom param
- geom gas restart file IO
 
 create REF_MPI and REF_GATHER to eliminate static
 mem leak, static, movie file pointer in grid
@@ -101,6 +101,14 @@ low priority surface reconstruction when EGADS not available
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
++ remove projectable and quality to remove empty cell for viz
++ include surface in metric ellipse
+
++ strip histogram gnuplot from accept test
++ kirtosis spelling
+
++ curvature adapt
++ smooth curve metric function
 + if descrete reconstruciton surface curvature constraints in metric needed,
   + Ref/aiaa-2010-0169-loseille-lohner-adapt-boom.pdf
   + Ref/frey-imr9-2000-about-surface-remeshing.pdf
@@ -113,7 +121,7 @@ low priority surface reconstruction when EGADS not available
 + move the uv bounding box test to hihgest level
 + faster background interp (store guess)
 
-+create jenkins test
++ create jenkins test
 + make check
 + UGAWG test cases
   + 2d linear
