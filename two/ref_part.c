@@ -16,7 +16,7 @@
 
 #include "ref_twod.h"
 
-REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
@@ -429,7 +429,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_metric( REF_NODE ref_node, char *filename )
+REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename )
 {
   FILE *file;
   REF_INT chunk;
@@ -536,7 +536,7 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, char *filename )
+REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
@@ -618,7 +618,7 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, char *filename )
+REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, const char *filename )
 {
   FILE *file;
   REF_INT chunk;
