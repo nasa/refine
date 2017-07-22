@@ -449,17 +449,12 @@ REF_STATUS ref_shard_split( REF_SHARD ref_shard )
   return REF_SUCCESS;
 }
 
-static REF_INT bad_tet_count = 0;
-
 #define check_tet_volume()						\
   {									\
     REF_DBL vol;							\
     RSS( ref_node_tet_vol( ref_node, tet_nodes, &vol ), "tet vol");	\
     if( vol<=0.0 )							\
       {									\
-	char filename[265];						\
-	REF_GRID viz;							\
-	REF_INT newnew;							\
 	printf("tet vol %e\n",vol);					\
 	printf("minnode %d\n",minnode);					\
 	printf("orig %d %d %d %d %d %d\n",				\
@@ -471,22 +466,8 @@ static REF_INT bad_tet_count = 0;
 	printf("tet %d %d %d %d\n",					\
 	       tet_nodes[0],tet_nodes[1],tet_nodes[2],			\
 	       tet_nodes[3]);						\
-	RSS( ref_grid_empty_cell_clone(&viz,ref_grid),"viz");		\
-	RSS( ref_cell_add( ref_grid_pri(viz), orig, &newnew ), "o");	\
-	RSS( ref_cell_add( ref_grid_pri(viz), pri_nodes, &newnew ), "p"); \
-	RSS( ref_cell_add( ref_grid_tet(viz), tet_nodes, &newnew ), "t"); \
-        bad_tet_count++;						\
-	sprintf(filename,"neg%d.tec",bad_tet_count);			\
-	RSS(ref_export_by_extension(viz, filename),"to tec");		\
-	RSS( ref_grid_free_cell_clone(viz),"free temp grid");		\
       }									\
   }
-
-/*
-	RSS(ref_export_by_extension(viz, "neg.tec"),"to tec");		\
-	RSS( REF_FAILURE, "neg vol tet");                               \
- 
-*/
 
 static REF_STATUS ref_shard_cell_add_local( REF_NODE ref_node, 
 					    REF_CELL ref_cell, 
