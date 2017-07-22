@@ -9,7 +9,7 @@
 #include "ref_math.h"
 #include "ref_matrix.h"
 
-REF_STATUS ref_html_create( REF_HTML *ref_html_ptr, char *filename )
+REF_STATUS ref_html_create( REF_HTML *ref_html_ptr, const char *filename )
 {
   FILE *f;
 
