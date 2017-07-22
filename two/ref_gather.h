@@ -15,15 +15,16 @@ BEGIN_C_DECLORATION
 #define ref_gather_blocking_frame( ref_grid, zone_title )				\
   RSS( ref_gather_tec_movie_frame( ref_grid, zone_title ), "movie frame" )
 
-REF_STATUS ref_gather_plot( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_gather_plot( REF_GRID ref_grid, const char *filename );
 
 REF_STATUS ref_gather_tec_movie_record_button( REF_BOOL on_or_off );
-REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid, char *zone_title );
+REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
+				       const char *zone_title );
 
-REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename );
 
-REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename );
-REF_STATUS ref_gather_metric( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename );
+REF_STATUS ref_gather_metric( REF_GRID ref_grid, const char *filename );
 
 REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
 			     REF_INT *ncell );

@@ -10,7 +10,7 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-REF_STATUS ref_gather_plot( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_gather_plot( REF_GRID ref_grid, const char *filename  )
 {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -82,7 +82,8 @@ REF_STATUS ref_gather_tec_movie_record_button( REF_BOOL on_or_off )
 static FILE *movie_file = NULL;
 static REF_DBL movie_time = 0.0;
 
-REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid, char *zone_title )
+REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
+				       const char *zone_title )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nnode,ntri;
@@ -128,7 +129,7 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid, char *zone_title )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename  )
 {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -162,7 +163,7 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
 {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -236,7 +237,7 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, char *filename  )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_metric( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_gather_metric( REF_GRID ref_grid, const char *filename  )
 {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
