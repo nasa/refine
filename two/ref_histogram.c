@@ -133,7 +133,7 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
 }
 
 REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram, 
-				char *description )
+				const char *description )
 {
   REF_INT i, sum;
   REF_DBL log_mean;
@@ -173,7 +173,7 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
 }
 
 REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram, 
-				 char *description )
+				 const char *description )
 {
   REF_INT i;
   FILE *f;
@@ -498,7 +498,7 @@ REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid )
 }
 
 REF_STATUS ref_histogram_debug( REF_HISTOGRAM ref_histogram,
-				char *filename )
+				const char *filename )
 {
   ref_histogram->df = fopen(filename,"w");
   if (NULL == (void *)ref_histogram->df) printf("unable to open %s\n",filename);

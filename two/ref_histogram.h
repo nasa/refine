@@ -47,9 +47,9 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram,
 REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram );
 
 REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram, 
-				char *description );
+				const char *description );
 REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram, 
-				 char *description );
+				 const char *description );
 
 REF_STATUS ref_histogram_add_stat( REF_HISTOGRAM ref_histogram, 
 				    REF_DBL observation );
@@ -63,7 +63,7 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid );
 REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid );
 
 REF_STATUS ref_histogram_debug( REF_HISTOGRAM ref_histogram,
-				char *filename );
+				const char *filename );
 
 END_C_DECLORATION
 
