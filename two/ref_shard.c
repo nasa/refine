@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 #include "ref_shard.h"
-#include "ref_quality.h"
 #include "ref_export.h"
 
 #include "ref_mpi.h"
