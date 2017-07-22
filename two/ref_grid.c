@@ -96,6 +96,8 @@ REF_STATUS ref_grid_empty_cell_clone( REF_GRID *ref_grid_ptr, REF_GRID parent )
 
   RSS( ref_geom_create( &ref_grid_geom(ref_grid) ), "geom create" );
 
+  ref_grid_twod(ref_grid) = ref_grid_twod(parent);
+
   return REF_SUCCESS;
 }
 
