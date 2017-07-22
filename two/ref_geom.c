@@ -125,7 +125,7 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_save( REF_GRID ref_grid, char *filename )
+REF_STATUS ref_geom_save( REF_GRID ref_grid, const char *filename )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -163,7 +163,7 @@ REF_STATUS ref_geom_save( REF_GRID ref_grid, char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_load( REF_GRID ref_grid, char *filename )
+REF_STATUS ref_geom_load( REF_GRID ref_grid, const char *filename )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1080,7 +1080,7 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
     return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_egads_export( char *filename )
+REF_STATUS ref_geom_egads_export( const char *filename )
 {
 #ifdef HAVE_EGADS
   ego context;
@@ -1235,7 +1235,7 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
   
-REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, char *filename )
+REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
 {
 #ifdef HAVE_EGADS
   ego context;
@@ -1678,7 +1678,7 @@ REF_STATUS ref_geom_curve_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename  )
+REF_STATUS ref_geom_tec( REF_GRID ref_grid, const char *filename  )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   FILE *file;

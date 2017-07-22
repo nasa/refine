@@ -73,8 +73,8 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 
 REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
 
-REF_STATUS ref_geom_save( REF_GRID ref_grid, char *filename );
-REF_STATUS ref_geom_load( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_geom_save( REF_GRID ref_grid, const char *filename );
+REF_STATUS ref_geom_load( REF_GRID ref_grid, const char *filename );
 
 REF_STATUS ref_geom_uv_area( REF_GEOM ref_geom, REF_INT *nodes,
 			     REF_DBL *uv_area );
@@ -129,9 +129,9 @@ REF_STATUS ref_geom_uv_rsn( REF_DBL *uv,
 REF_STATUS ref_geom_verify_param( REF_GRID ref_grid );
 REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid );
 
-REF_STATUS ref_geom_egads_export( char *filename );
+REF_STATUS ref_geom_egads_export( const char *filename );
 
-REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, char *filename );
+REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename );
 REF_STATUS ref_geom_egads_diagonal( REF_GEOM ref_geom, REF_DBL *diag );
 /* positive max_length is absolute, negative max_length is relative to bbox */
 REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length );
@@ -141,7 +141,7 @@ REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid );
 REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );
 REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );
 REF_STATUS ref_geom_norm_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );
-REF_STATUS ref_geom_tec( REF_GRID ref_grid, char *filename );
+REF_STATUS ref_geom_tec( REF_GRID ref_grid, const char *filename );
 
 END_C_DECLORATION
 
